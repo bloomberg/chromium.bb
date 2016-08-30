@@ -3,14 +3,12 @@
 # found in the LICENSE file.
 
 {
+  'includes': [
+    '../../platform/inspector_protocol/inspector_protocol.gypi',
+  ],
   'variables': {
     'blink_core_output_dir': '<(SHARED_INTERMEDIATE_DIR)/blink/core',
     'blink_platform_output_dir': '<(SHARED_INTERMEDIATE_DIR)/blink/platform',
-    'jinja_module_files': [
-      # jinja2/__init__.py contains version string, so sufficient for package
-      '<(DEPTH)/third_party/jinja2/__init__.py',
-      '<(DEPTH)/third_party/markupsafe/__init__.py',  # jinja2 dep
-    ],
   },
   'targets': [
     {
@@ -52,35 +50,9 @@
           'action_name': 'generateInspectorProtocolBackendSources',
           'inputs': [
             '<@(jinja_module_files)',
-            # Source code templates.
-            '../../platform/inspector_protocol/Allocator_h.template',
-            '../../platform/inspector_protocol/Array_h.template',
-            '../../platform/inspector_protocol/BackendCallback_h.template',
-            '../../platform/inspector_protocol/CodeGenerator.py',
-            '../../platform/inspector_protocol/Collections_h.template',
-            '../../platform/inspector_protocol/DispatcherBase_cpp.template',
-            '../../platform/inspector_protocol/DispatcherBase_h.template',
-            '../../platform/inspector_protocol/ErrorSupport_cpp.template',
-            '../../platform/inspector_protocol/ErrorSupport_h.template',
-            '../../platform/inspector_protocol/Exported_h.template',
-            '../../platform/inspector_protocol/FrontendChannel_h.template',
-            '../../platform/inspector_protocol/Forward_h.template',
-            '../../platform/inspector_protocol/Imported_h.template',
-            '../../platform/inspector_protocol/Protocol_cpp.template',
-            '../../platform/inspector_protocol/Maybe_h.template',
-            '../../platform/inspector_protocol/Object_cpp.template',
-            '../../platform/inspector_protocol/Object_h.template',
-            '../../platform/inspector_protocol/Parser_cpp.template',
-            '../../platform/inspector_protocol/Parser_h.template',
-            '../../platform/inspector_protocol/TypeBuilder_cpp.template',
-            '../../platform/inspector_protocol/TypeBuilder_h.template',
-            '../../platform/inspector_protocol/ValueConversions_h.template',
-            '../../platform/inspector_protocol/Values_cpp.template',
-            '../../platform/inspector_protocol/Values_h.template',
-            # Protocol definition
+            '<@(inspector_protocol_files)',
             'browser_protocol.json',
             '../../platform/v8_inspector/js_protocol.json',
-            # Config
             'inspector_protocol_config.json'
           ],
           'outputs': [
@@ -145,6 +117,7 @@
           'action': [
             'python',
             '../../platform/inspector_protocol/CodeGenerator.py',
+            '--jinja_dir', '../../../../',  # jinja is in chromium's third_party
             '--output_base', '<(blink_core_output_dir)',
             '--config', 'inspector_protocol_config.json',
           ],
@@ -160,7 +133,27 @@
          {
           'action_name': 'generateInspectorProtocolVersion',
           'inputs': [
-            '../../platform/inspector_protocol/generate-inspector-protocol-version',
+            '../../platform/inspector_protocol/CheckProtocolCompatibility.py',
+            'browser_protocol.json',
+            '../../platform/v8_inspector/js_protocol.json',
+          ],
+          'outputs': [
+            '<(blink_core_output_dir)/inspector/browser_protocol.stamp',
+          ],
+          'action': [
+            'python',
+            '../../platform/inspector_protocol/CheckProtocolCompatibility.py',
+            '--stamp',
+            '<@(_outputs)',
+            'browser_protocol.json',
+            '../../platform/v8_inspector/js_protocol.json'
+          ],
+          'message': 'Validate inspector protocol for backwards compatibility',
+        },
+         {
+          'action_name': 'concatenate_protocol',
+          'inputs': [
+            '../../platform/inspector_protocol/ConcatenateProtocols.py',
             'browser_protocol.json',
             '../../platform/v8_inspector/js_protocol.json',
           ],
@@ -169,13 +162,12 @@
           ],
           'action': [
             'python',
-            '../../platform/inspector_protocol/generate-inspector-protocol-version',
-            '--o',
-            '<@(_outputs)',
+            '../../platform/inspector_protocol/ConcatenateProtocols.py',
             'browser_protocol.json',
-            '../../platform/v8_inspector/js_protocol.json'
+            '../../platform/v8_inspector/js_protocol.json',
+            '<@(_outputs)',
           ],
-          'message': 'Validate inspector protocol for backwards compatibility and generate version file',
+          'message': 'Concatenate inspector protocol',
         },
       ]
     },

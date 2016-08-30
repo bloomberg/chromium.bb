@@ -167,7 +167,7 @@ std::unique_ptr<Value> FundamentalValue::clone() const
     case TypeInteger: return FundamentalValue::create(m_integerValue);
     case TypeBoolean: return FundamentalValue::create(m_boolValue);
     default:
-        NOTREACHED();
+        DCHECK(false);
     }
     return nullptr;
 }

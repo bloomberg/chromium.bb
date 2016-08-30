@@ -45,11 +45,9 @@
 #
 # Adding --show_changes to the command line prints out a list of valid public API changes.
 
-import collections
 import copy
 import os.path
 import optparse
-import re
 import sys
 
 try:
@@ -57,10 +55,11 @@ try:
 except ImportError:
     import simplejson as json
 
+
 def list_to_map(items, key):
     result = {}
     for item in items:
-        if not "experimental" in item and not "hidden" in item:
+        if "experimental" not in item and "hidden" not in item:
             result[item[key]] = item
     return result
 
@@ -95,7 +94,7 @@ def compare_schemas(d_1, d_2, reverse):
 
     for name in domains_by_name_1:
         domain_1 = domains_by_name_1[name]
-        if not name in domains_by_name_2:
+        if name not in domains_by_name_2:
             errors.append("%s: domain has been %s" % (name, removed(reverse)))
             continue
         compare_domains(domain_1, domains_by_name_2[name], types_1, types_2, errors, reverse)
@@ -108,7 +107,7 @@ def compare_domains(domain_1, domain_2, types_map_1, types_map_2, errors, revers
     commands_2 = named_list_to_map(domain_2, "commands", "name")
     for name in commands_1:
         command_1 = commands_1[name]
-        if not name in commands_2:
+        if name not in commands_2:
             errors.append("%s.%s: command has been %s" % (domain_1["domain"], name, removed(reverse)))
             continue
         compare_commands(domain_name, command_1, commands_2[name], types_map_1, types_map_2, errors, reverse)
@@ -117,7 +116,7 @@ def compare_domains(domain_1, domain_2, types_map_1, types_map_2, errors, revers
     events_2 = named_list_to_map(domain_2, "events", "name")
     for name in events_1:
         event_1 = events_1[name]
-        if not name in events_2:
+        if name not in events_2:
             errors.append("%s.%s: event has been %s" % (domain_1["domain"], name, removed(reverse)))
             continue
         compare_events(domain_name, event_1, events_2[name], types_map_1, types_map_2, errors, reverse)
@@ -146,13 +145,13 @@ def compare_events(domain_name, event_1, event_2, types_map_1, types_map_2, erro
 def compare_params_list(context, kind, params_1, params_2, types_map_1, types_map_2, depth, errors, reverse):
     for name in params_1:
         param_1 = params_1[name]
-        if not name in params_2:
-            if not "optional" in param_1:
+        if name not in params_2:
+            if "optional" not in param_1:
                 errors.append("%s.%s: required %s has been %s" % (context, name, kind, removed(reverse)))
             continue
 
         param_2 = params_2[name]
-        if param_2 and "optional" in param_2 and not "optional" in param_1:
+        if param_2 and "optional" in param_2 and "optional" not in param_1:
             errors.append("%s.%s: %s %s is now %s" % (context, name, required(reverse), kind, required(not reverse)))
             continue
         type_1 = extract_type(param_1, types_map_1, errors)
@@ -187,7 +186,7 @@ def compare_types(context, kind, type_1, type_2, types_map_1, types_map_2, depth
 
 def extract_type(typed_object, types_map, errors):
     if "type" in typed_object:
-        result = { "id": "<transient>", "type": typed_object["type"] }
+        result = {"id": "<transient>", "type": typed_object["type"]}
         if typed_object["type"] == "object":
             result["properties"] = []
         elif typed_object["type"] == "array":
@@ -195,9 +194,9 @@ def extract_type(typed_object, types_map, errors):
         return result
     elif "$ref" in typed_object:
         ref = typed_object["$ref"]
-        if not ref in types_map:
+        if ref not in types_map:
             errors.append("Can not resolve type: %s" % ref)
-            types_map[ref] = { "id": "<transient>", "type": "object" }
+            types_map[ref] = {"id": "<transient>", "type": "object"}
         return types_map[ref]
 
 
@@ -224,10 +223,11 @@ def normalize_types(obj, domain_name, types):
                 normalize_types(value, domain_name, types)
 
 
-def load_schema(file, domains):
-    if not os.path.isfile(file):
+def load_schema(file_name, domains):
+    # pylint: disable=W0613
+    if not os.path.isfile(file_name):
         return
-    input_file = open(file, "r")
+    input_file = open(file_name, "r")
     json_string = input_file.read()
     parsed_json = json.loads(json_string)
     domains += parsed_json["domains"]
@@ -237,141 +237,141 @@ def load_schema(file, domains):
 def self_test():
     def create_test_schema_1():
         return [
-        {
-            "domain": "Network",
-            "types": [
-                {
-                    "id": "LoaderId",
-                    "type": "string"
-                },
-                {
-                    "id": "Headers",
-                    "type": "object"
-                },
-                {
-                    "id": "Request",
-                    "type": "object",
-                    "properties": [
-                        { "name": "url", "type": "string" },
-                        { "name": "method", "type": "string" },
-                        { "name": "headers", "$ref": "Headers" },
-                        { "name": "becameOptionalField", "type": "string" },
-                        { "name": "removedField", "type": "string" },
-                    ]
-                }
-            ],
-            "commands": [
-                {
-                    "name": "removedCommand",
-                },
-                {
-                    "name": "setExtraHTTPHeaders",
-                    "parameters": [
-                        { "name": "headers", "$ref": "Headers" },
-                        { "name": "mismatched", "type": "string" },
-                        { "name": "becameOptional", "$ref": "Headers" },
-                        { "name": "removedRequired", "$ref": "Headers" },
-                        { "name": "becameRequired", "$ref": "Headers", "optional": True },
-                        { "name": "removedOptional", "$ref": "Headers", "optional": True },
-                    ],
-                    "returns": [
-                        { "name": "mimeType", "type": "string" },
-                        { "name": "becameOptional", "type": "string" },
-                        { "name": "removedRequired", "type": "string" },
-                        { "name": "becameRequired", "type": "string", "optional": True },
-                        { "name": "removedOptional", "type": "string", "optional": True },
-                    ]
-                }
-            ],
-            "events": [
-                {
-                    "name": "requestWillBeSent",
-                    "parameters": [
-                        { "name": "frameId", "type": "string", "experimental": True },
-                        { "name": "request", "$ref": "Request" },
-                        { "name": "becameOptional", "type": "string" },
-                        { "name": "removedRequired", "type": "string" },
-                        { "name": "becameRequired", "type": "string", "optional": True },
-                        { "name": "removedOptional", "type": "string", "optional": True },
+            {
+                "domain": "Network",
+                "types": [
+                    {
+                        "id": "LoaderId",
+                        "type": "string"
+                    },
+                    {
+                        "id": "Headers",
+                        "type": "object"
+                    },
+                    {
+                        "id": "Request",
+                        "type": "object",
+                        "properties": [
+                            {"name": "url", "type": "string"},
+                            {"name": "method", "type": "string"},
+                            {"name": "headers", "$ref": "Headers"},
+                            {"name": "becameOptionalField", "type": "string"},
+                            {"name": "removedField", "type": "string"},
                         ]
-                },
-                {
-                    "name": "removedEvent",
-                    "parameters": [
-                        { "name": "errorText", "type": "string" },
-                        { "name": "canceled", "type": "boolean", "optional": True }
-                    ]
-                }
-            ]
-        },
-        {
-            "domain":  "removedDomain"
-        }
-    ]
+                    }
+                ],
+                "commands": [
+                    {
+                        "name": "removedCommand",
+                    },
+                    {
+                        "name": "setExtraHTTPHeaders",
+                        "parameters": [
+                            {"name": "headers", "$ref": "Headers"},
+                            {"name": "mismatched", "type": "string"},
+                            {"name": "becameOptional", "$ref": "Headers"},
+                            {"name": "removedRequired", "$ref": "Headers"},
+                            {"name": "becameRequired", "$ref": "Headers", "optional": True},
+                            {"name": "removedOptional", "$ref": "Headers", "optional": True},
+                        ],
+                        "returns": [
+                            {"name": "mimeType", "type": "string"},
+                            {"name": "becameOptional", "type": "string"},
+                            {"name": "removedRequired", "type": "string"},
+                            {"name": "becameRequired", "type": "string", "optional": True},
+                            {"name": "removedOptional", "type": "string", "optional": True},
+                        ]
+                    }
+                ],
+                "events": [
+                    {
+                        "name": "requestWillBeSent",
+                        "parameters": [
+                            {"name": "frameId", "type": "string", "experimental": True},
+                            {"name": "request", "$ref": "Request"},
+                            {"name": "becameOptional", "type": "string"},
+                            {"name": "removedRequired", "type": "string"},
+                            {"name": "becameRequired", "type": "string", "optional": True},
+                            {"name": "removedOptional", "type": "string", "optional": True},
+                        ]
+                    },
+                    {
+                        "name": "removedEvent",
+                        "parameters": [
+                            {"name": "errorText", "type": "string"},
+                            {"name": "canceled", "type": "boolean", "optional": True}
+                        ]
+                    }
+                ]
+            },
+            {
+                "domain":  "removedDomain"
+            }
+        ]
 
     def create_test_schema_2():
         return [
-        {
-            "domain": "Network",
-            "types": [
-                {
-                    "id": "LoaderId",
-                    "type": "string"
-                },
-                {
-                    "id": "Request",
-                    "type": "object",
-                    "properties": [
-                        { "name": "url", "type": "string" },
-                        { "name": "method", "type": "string" },
-                        { "name": "headers", "type": "object" },
-                        { "name": "becameOptionalField", "type": "string", "optional": True },
-                    ]
-                }
-            ],
-            "commands": [
-                {
-                    "name": "addedCommand",
-                },
-                {
-                    "name": "setExtraHTTPHeaders",
-                    "parameters": [
-                        { "name": "headers", "type": "object" },
-                        { "name": "mismatched", "type": "object" },
-                        { "name": "becameOptional", "type": "object" , "optional": True },
-                        { "name": "addedRequired", "type": "object" },
-                        { "name": "becameRequired", "type": "object" },
-                        { "name": "addedOptional", "type": "object", "optional": True  },
-                    ],
-                    "returns": [
-                        { "name": "mimeType", "type": "string" },
-                        { "name": "becameOptional", "type": "string", "optional": True },
-                        { "name": "addedRequired", "type": "string"},
-                        { "name": "becameRequired", "type": "string" },
-                        { "name": "addedOptional", "type": "string", "optional": True  },
-                    ]
-                }
-            ],
-            "events": [
-                {
-                    "name": "requestWillBeSent",
-                    "parameters": [
-                        { "name": "request", "$ref": "Request" },
-                        { "name": "becameOptional", "type": "string", "optional": True },
-                        { "name": "addedRequired", "type": "string"},
-                        { "name": "becameRequired", "type": "string" },
-                        { "name": "addedOptional", "type": "string", "optional": True  },
-                    ]
-                },
-                {
-                    "name": "addedEvent"
-                }
-            ]
-        },
-        {
-            "domain": "addedDomain"
-        }
-    ]
+            {
+                "domain": "Network",
+                "types": [
+                    {
+                        "id": "LoaderId",
+                        "type": "string"
+                    },
+                    {
+                        "id": "Request",
+                        "type": "object",
+                        "properties": [
+                            {"name": "url", "type": "string"},
+                            {"name": "method", "type": "string"},
+                            {"name": "headers", "type": "object"},
+                            {"name": "becameOptionalField", "type": "string", "optional": True},
+                        ]
+                    }
+                ],
+                "commands": [
+                    {
+                        "name": "addedCommand",
+                    },
+                    {
+                        "name": "setExtraHTTPHeaders",
+                        "parameters": [
+                            {"name": "headers", "type": "object"},
+                            {"name": "mismatched", "type": "object"},
+                            {"name": "becameOptional", "type": "object", "optional": True},
+                            {"name": "addedRequired", "type": "object"},
+                            {"name": "becameRequired", "type": "object"},
+                            {"name": "addedOptional", "type": "object", "optional": True},
+                        ],
+                        "returns": [
+                            {"name": "mimeType", "type": "string"},
+                            {"name": "becameOptional", "type": "string", "optional": True},
+                            {"name": "addedRequired", "type": "string"},
+                            {"name": "becameRequired", "type": "string"},
+                            {"name": "addedOptional", "type": "string", "optional": True},
+                        ]
+                    }
+                ],
+                "events": [
+                    {
+                        "name": "requestWillBeSent",
+                        "parameters": [
+                            {"name": "request", "$ref": "Request"},
+                            {"name": "becameOptional", "type": "string", "optional": True},
+                            {"name": "addedRequired", "type": "string"},
+                            {"name": "becameRequired", "type": "string"},
+                            {"name": "addedOptional", "type": "string", "optional": True},
+                        ]
+                    },
+                    {
+                        "name": "addedEvent"
+                    }
+                ]
+            },
+            {
+                "domain": "addedDomain"
+            }
+        ]
 
     expected_errors = [
         "removedDomain: domain has been removed",
@@ -389,16 +389,16 @@ def self_test():
     ]
 
     expected_errors_reverse = [
-       "addedDomain: domain has been added",
-       "Network.addedEvent: event has been added",
-       "Network.addedCommand: command has been added",
-       "Network.setExtraHTTPHeaders.mismatched: parameter base type mismatch, 'string' vs 'object'",
-       "Network.setExtraHTTPHeaders.removedRequired: required parameter has been removed",
-       "Network.setExtraHTTPHeaders.becameOptional: required parameter is now optional",
-       "Network.setExtraHTTPHeaders.addedRequired: required response parameter has been added",
-       "Network.setExtraHTTPHeaders.becameRequired: optional response parameter is now required",
-       "Network.requestWillBeSent.becameRequired: optional parameter is now required",
-       "Network.requestWillBeSent.addedRequired: required parameter has been added",
+        "addedDomain: domain has been added",
+        "Network.addedEvent: event has been added",
+        "Network.addedCommand: command has been added",
+        "Network.setExtraHTTPHeaders.mismatched: parameter base type mismatch, 'string' vs 'object'",
+        "Network.setExtraHTTPHeaders.removedRequired: required parameter has been removed",
+        "Network.setExtraHTTPHeaders.becameOptional: required parameter is now optional",
+        "Network.setExtraHTTPHeaders.addedRequired: required response parameter has been added",
+        "Network.setExtraHTTPHeaders.becameRequired: optional response parameter is now required",
+        "Network.requestWillBeSent.becameRequired: optional parameter is now required",
+        "Network.requestWillBeSent.addedRequired: required parameter has been added",
     ]
 
     def is_subset(subset, superset, message):
@@ -418,11 +418,10 @@ def self_test():
                          compare_schemas(create_test_schema_2(), create_test_schema_1(), True)))
 
 
-
-def load_domains_and_baselines(file, domains, baseline_domains):
-    version = load_schema(os.path.normpath(file), domains)
+def load_domains_and_baselines(file_name, domains, baseline_domains):
+    version = load_schema(os.path.normpath(file_name), domains)
     suffix = "-%s.%s.json" % (version["major"], version["minor"])
-    baseline_file = file.replace(".json", suffix)
+    baseline_file = file_name.replace(".json", suffix)
     load_schema(os.path.normpath(baseline_file), baseline_domains)
     return version
 
@@ -434,29 +433,25 @@ def main():
 
     cmdline_parser = optparse.OptionParser()
     cmdline_parser.add_option("--show_changes")
-    cmdline_parser.add_option("--o")
+    cmdline_parser.add_option("--expected_errors")
+    cmdline_parser.add_option("--stamp")
     arg_options, arg_values = cmdline_parser.parse_args()
 
-    if len(arg_values) < 1 or not arg_options.o:
-        sys.stderr.write("Usage: %s --o OUTPUT_FILE [--show_changes] PROTOCOL_FOLDER1 ?PROTOCOL_FOLDER2 \n" % sys.argv[0])
+    if len(arg_values) < 1:
+        sys.stderr.write("Usage: %s [--show_changes] <protocol-1> [, <protocol-2>...]\n" % sys.argv[0])
         return 1
-
-    output_path = arg_options.o
-    output_file = open(output_path, "w")
 
     domains = []
     baseline_domains = []
     version = load_domains_and_baselines(arg_values[0], domains, baseline_domains)
-    if len(arg_values) > 1:
-        load_domains_and_baselines(arg_values[1], domains, baseline_domains)
+    for dependency in arg_values[1:]:
+        load_domains_and_baselines(dependency, domains, baseline_domains)
 
-    expected_errors = [
-        "Debugger.globalObjectCleared: event has been removed",
-        "Runtime.executionContextCreated.context parameter->Runtime.ExecutionContextDescription.frameId: required property has been removed",
-        "Debugger.canSetScriptSource: command has been removed",
-        "Console.messageRepeatCountUpdated: event has been removed",
-        "Console.messagesCleared: event has been removed"
-    ]
+    expected_errors = []
+    if arg_options.expected_errors:
+        expected_errors_file = open(arg_options.expected_errors, "r")
+        expected_errors = json.loads(expected_errors_file.read())["errors"]
+        expected_errors_file.close()
 
     errors = compare_schemas(baseline_domains, domains, False)
     unexpected_errors = []
@@ -466,7 +461,7 @@ def main():
     if len(unexpected_errors) > 0:
         sys.stderr.write("  Compatibility checks FAILED\n")
         for error in unexpected_errors:
-            sys.stderr.write( "    %s\n" % error)
+            sys.stderr.write("    %s\n" % error)
         return 1
 
     if arg_options.show_changes:
@@ -476,8 +471,9 @@ def main():
             for change in changes:
                 print "    %s" % change
 
-    json.dump({"version": version, "domains": domains}, output_file, indent=4, sort_keys=False, separators=(',', ': '))
-    output_file.close()
+    if arg_options.stamp:
+        with open(arg_options.stamp, 'a') as _:
+            pass
 
 if __name__ == '__main__':
     sys.exit(main())

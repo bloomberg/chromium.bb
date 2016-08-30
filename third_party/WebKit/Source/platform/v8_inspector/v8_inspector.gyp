@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 {
+  'includes': [
+    '../inspector_protocol/inspector_protocol.gypi',
+  ],
   'variables': {
     'blink_platform_output_dir': '<(SHARED_INTERMEDIATE_DIR)/blink/platform',
   },
@@ -19,34 +22,8 @@
               {
                 'action_name': 'generateV8InspectorProtocolBackendSources',
                 'inputs': [
-                  # Source code templates.
-                  '../inspector_protocol/Allocator_h.template',
-                  '../inspector_protocol/Array_h.template',
-                  '../inspector_protocol/BackendCallback_h.template',
-                  '../inspector_protocol/CodeGenerator.py',
-                  '../inspector_protocol/Collections_h.template',
-                  '../inspector_protocol/DispatcherBase_cpp.template',
-                  '../inspector_protocol/DispatcherBase_h.template',
-                  '../inspector_protocol/ErrorSupport_cpp.template',
-                  '../inspector_protocol/ErrorSupport_h.template',
-                  '../inspector_protocol/Exported_h.template',
-                  '../inspector_protocol/FrontendChannel_h.template',
-                  '../inspector_protocol/Forward_h.template',
-                  '../inspector_protocol/Imported_h.template',
-                  '../inspector_protocol/Protocol_cpp.template',
-                  '../inspector_protocol/Maybe_h.template',
-                  '../inspector_protocol/Object_cpp.template',
-                  '../inspector_protocol/Object_h.template',
-                  '../inspector_protocol/Parser_cpp.template',
-                  '../inspector_protocol/Parser_h.template',
-                  '../inspector_protocol/TypeBuilder_cpp.template',
-                  '../inspector_protocol/TypeBuilder_h.template',
-                  '../inspector_protocol/ValueConversions_h.template',
-                  '../inspector_protocol/Values_cpp.template',
-                  '../inspector_protocol/Values_h.template',
-                  # Protocol definitions
+                  '<@(inspector_protocol_files)',
                   'js_protocol.json',
-                  # Config
                   'inspector_protocol_config.json',
                 ],
                 'outputs': [
@@ -72,6 +49,7 @@
                 'action': [
                   'python',
                   '../inspector_protocol/CodeGenerator.py',
+                  '--jinja_dir', '../../../',  # jinja is in chromium's third_party
                   '--output_base', '<(blink_platform_output_dir)',
                   '--config', 'inspector_protocol_config.json',
                 ],
@@ -133,20 +111,20 @@
          {
           'action_name': 'generateV8InspectorProtocolVersion',
           'inputs': [
-            '../inspector_protocol/generate-inspector-protocol-version',
+            '../inspector_protocol/CheckProtocolCompatibility.py',
             'js_protocol.json',
           ],
           'outputs': [
-            '<(blink_platform_output_dir)/v8_inspector/protocol.json',
+            '<(blink_platform_output_dir)/v8_inspector/js_protocol.stamp',
           ],
           'action': [
             'python',
-            '../inspector_protocol/generate-inspector-protocol-version',
-            '--o',
+            '../inspector_protocol/CheckProtocolCompatibility.py',
+            '--stamp',
             '<@(_outputs)',
             'js_protocol.json',
           ],
-          'message': 'Validate v8_inspector protocol for backwards compatibility and generate version file',
+          'message': 'Validate v8_inspector protocol for backwards compatibility',
         },
       ]
     },
@@ -158,34 +136,8 @@
         {
           'action_name': 'generateV8InspectorProtocolBackendSourcesSTL',
           'inputs': [
-            # Source code templates.
-            '../inspector_protocol/Allocator_h.template',
-            '../inspector_protocol/Array_h.template',
-            '../inspector_protocol/BackendCallback_h.template',
-            '../inspector_protocol/CodeGenerator.py',
-            '../inspector_protocol/Collections_h.template',
-            '../inspector_protocol/DispatcherBase_cpp.template',
-            '../inspector_protocol/DispatcherBase_h.template',
-            '../inspector_protocol/ErrorSupport_cpp.template',
-            '../inspector_protocol/ErrorSupport_h.template',
-            '../inspector_protocol/Exported_h.template',
-            '../inspector_protocol/FrontendChannel_h.template',
-            '../inspector_protocol/Forward_h.template',
-            '../inspector_protocol/Imported_h.template',
-            '../inspector_protocol/Protocol_cpp.template',
-            '../inspector_protocol/Maybe_h.template',
-            '../inspector_protocol/Object_cpp.template',
-            '../inspector_protocol/Object_h.template',
-            '../inspector_protocol/Parser_cpp.template',
-            '../inspector_protocol/Parser_h.template',
-            '../inspector_protocol/TypeBuilder_cpp.template',
-            '../inspector_protocol/TypeBuilder_h.template',
-            '../inspector_protocol/ValueConversions_h.template',
-            '../inspector_protocol/Values_cpp.template',
-            '../inspector_protocol/Values_h.template',
-            # Protocol definitions
+            '<@(inspector_protocol_files)',
             'js_protocol.json',
-            # Config
             'inspector_protocol_config_stl.json',
           ],
           'outputs': [
@@ -211,6 +163,7 @@
           'action': [
             'python',
             '../inspector_protocol/CodeGenerator.py',
+            '--jinja_dir', '../../../',
             '--output_base', '<(blink_platform_output_dir)',
             '--config', 'inspector_protocol_config_stl.json',
           ],
@@ -262,7 +215,6 @@
         'InspectedContext.h',
         'JavaScriptCallFrame.cpp',
         'JavaScriptCallFrame.h',
-        'MuteConsoleScope.h',
         'ProtocolPlatformSTL.h',
         'RemoteObjectId.cpp',
         'RemoteObjectId.h',

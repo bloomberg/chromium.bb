@@ -21,34 +21,6 @@ except ImportError:
 # is regenerated, which causes a race condition and breaks concurrent build,
 # since some compile processes will try to read the partially written cache.
 module_path, module_filename = os.path.split(os.path.realpath(__file__))
-templates_dir = module_path
-
-# In Blink, jinja2 is in chromium's third_party directory.
-# Insert at 1 so at front to override system libraries, and
-# after path[0] == invoking script dir
-blink_third_party_dir = os.path.normpath(os.path.join(
-    module_path, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir,
-    "third_party"))
-if os.path.isdir(blink_third_party_dir):
-    sys.path.insert(1, blink_third_party_dir)
-
-# In V8, it is in third_party folder
-v8_third_party_dir = os.path.normpath(os.path.join(
-    module_path, os.pardir, os.pardir, "third_party"))
-
-if os.path.isdir(v8_third_party_dir):
-    sys.path.insert(1, v8_third_party_dir)
-
-# In Node, it is in deps folder
-deps_dir = os.path.normpath(os.path.join(
-    module_path, os.pardir, os.pardir, os.pardir, os.pardir, "third_party"))
-
-if os.path.isdir(deps_dir):
-    sys.path.insert(1, os.path.join(deps_dir, "jinja2"))
-    sys.path.insert(1, os.path.join(deps_dir, "markupsafe"))
-
-import jinja2
-
 
 def read_config():
     # pylint: disable=W0703
@@ -63,8 +35,12 @@ def read_config():
     try:
         cmdline_parser = optparse.OptionParser()
         cmdline_parser.add_option("--output_base")
+        cmdline_parser.add_option("--jinja_dir")
         cmdline_parser.add_option("--config")
         arg_options, _ = cmdline_parser.parse_args()
+        jinja_dir = arg_options.jinja_dir
+        if not jinja_dir:
+            raise Exception("jinja directory must be specified")
         output_base = arg_options.output_base
         if not output_base:
             raise Exception("Base output directory must be specified")
@@ -89,7 +65,7 @@ def read_config():
                 keys.append(optional)
                 values.append(False)
         config_json_file.close()
-        return (config_file, collections.namedtuple('X', keys)(*values))
+        return (jinja_dir, config_file, collections.namedtuple('X', keys)(*values))
     except Exception:
         # Work with python 2 and 3 http://docs.python.org/py3k/howto/pyporting.html
         exc = sys.exc_info()[1]
@@ -109,9 +85,13 @@ def dash_to_camelcase(word):
     return prefix + "".join(to_title_case(x) or "-" for x in word.split("-"))
 
 
-def initialize_jinja_env(cache_dir):
+def initialize_jinja_env(jinja_dir, cache_dir):
+    # pylint: disable=F0401
+    sys.path.insert(1, os.path.abspath(jinja_dir))
+    import jinja2
+
     jinja_env = jinja2.Environment(
-        loader=jinja2.FileSystemLoader(templates_dir),
+        loader=jinja2.FileSystemLoader(module_path),
         # Bytecode cache is not concurrency-safe unless pre-cached:
         # if pre-cached this is read-only, but writing creates a race condition.
         bytecode_cache=jinja2.FileSystemBytecodeCache(cache_dir),
@@ -362,7 +342,7 @@ class Protocol(object):
 
 
 def main():
-    config_file, config = read_config()
+    jinja_dir, config_file, config = read_config()
 
     protocol = Protocol()
     protocol.json_api = {"domains": []}
@@ -382,7 +362,7 @@ def main():
         os.mkdir(config.protocol.output)
     if protocol.json_api["has_exports"] and not os.path.exists(config.exported.output):
         os.mkdir(config.exported.output)
-    jinja_env = initialize_jinja_env(config.protocol.output)
+    jinja_env = initialize_jinja_env(jinja_dir, config.protocol.output)
 
     inputs = []
     inputs.append(__file__)
@@ -390,15 +370,16 @@ def main():
     inputs.append(config.protocol.path)
     if config.imported:
         inputs.append(config.imported.path)
+    templates_dir = os.path.join(module_path, "templates")
     inputs.append(os.path.join(templates_dir, "TypeBuilder_h.template"))
     inputs.append(os.path.join(templates_dir, "TypeBuilder_cpp.template"))
     inputs.append(os.path.join(templates_dir, "Exported_h.template"))
     inputs.append(os.path.join(templates_dir, "Imported_h.template"))
 
-    h_template = jinja_env.get_template("TypeBuilder_h.template")
-    cpp_template = jinja_env.get_template("TypeBuilder_cpp.template")
-    exported_template = jinja_env.get_template("Exported_h.template")
-    imported_template = jinja_env.get_template("Imported_h.template")
+    h_template = jinja_env.get_template("templates/TypeBuilder_h.template")
+    cpp_template = jinja_env.get_template("templates/TypeBuilder_cpp.template")
+    exported_template = jinja_env.get_template("templates/Exported_h.template")
+    imported_template = jinja_env.get_template("templates/Imported_h.template")
 
     outputs = dict()
 
@@ -426,6 +407,7 @@ def main():
             "config": config
         }
 
+        lib_templates_dir = os.path.join(module_path, "lib")
         # Note these should be sorted in the right order.
         # TODO(dgozman): sort them programmatically based on commented includes.
         lib_h_templates = [
@@ -459,8 +441,8 @@ def main():
         def generate_lib_file(file_name, template_files):
             parts = []
             for template_file in template_files:
-                inputs.append(os.path.join(templates_dir, template_file))
-                template = jinja_env.get_template(template_file)
+                inputs.append(os.path.join(lib_templates_dir, template_file))
+                template = jinja_env.get_template("lib/" + template_file)
                 parts.append(template.render(template_context))
             outputs[file_name] = "\n\n".join(parts)
 

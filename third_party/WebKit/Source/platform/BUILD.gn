@@ -8,6 +8,8 @@ import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 import("//third_party/WebKit/Source/build/scripts/scripts.gni")
 import("//third_party/WebKit/Source/config.gni")
+import(
+    "//third_party/WebKit/Source/platform/inspector_protocol/inspector_protocol.gni")
 import("//third_party/WebKit/Source/platform/platform.gni")
 import("//third_party/WebKit/Source/platform/platform_generated.gni")
 
@@ -193,34 +195,9 @@ executable("character_data_generator") {
 action("inspector_protocol_sources") {
   script = "inspector_protocol/CodeGenerator.py"
   deps = [
-    ":inspector_protocol_version",
+    ":inspector_protocol_compatibility",
   ]
-  sources = [
-    "inspector_protocol/Allocator_h.template",
-    "inspector_protocol/Array_h.template",
-    "inspector_protocol/BackendCallback_h.template",
-    "inspector_protocol/CodeGenerator.py",
-    "inspector_protocol/Collections_h.template",
-    "inspector_protocol/DispatcherBase_cpp.template",
-    "inspector_protocol/DispatcherBase_h.template",
-    "inspector_protocol/ErrorSupport_cpp.template",
-    "inspector_protocol/ErrorSupport_h.template",
-    "inspector_protocol/Exported_h.template",
-    "inspector_protocol/Forward_h.template",
-    "inspector_protocol/FrontendChannel_h.template",
-    "inspector_protocol/Imported_h.template",
-    "inspector_protocol/Maybe_h.template",
-    "inspector_protocol/Object_cpp.template",
-    "inspector_protocol/Object_h.template",
-    "inspector_protocol/Parser_cpp.template",
-    "inspector_protocol/Parser_h.template",
-    "inspector_protocol/Protocol_cpp.template",
-    "inspector_protocol/TypeBuilder_cpp.template",
-    "inspector_protocol/TypeBuilder_h.template",
-    "inspector_protocol/ValueConversions_h.template",
-    "inspector_protocol/Values_cpp.template",
-    "inspector_protocol/Values_h.template",
-  ]
+  sources = inspector_protocol_sources
   inputs = [
     "v8_inspector/js_protocol.json",
     "v8_inspector/inspector_protocol_config.json",
@@ -247,6 +224,8 @@ action("inspector_protocol_sources") {
   ]
 
   args = [
+    "--jinja_dir",
+    rebase_path("../../../", root_build_dir),  # jinja is in chromium's third_party
     "--output_base",
     rebase_path(blink_platform_output_dir, root_build_dir),
     "--config",
@@ -254,21 +233,19 @@ action("inspector_protocol_sources") {
   ]
 }
 
-action("inspector_protocol_version") {
-  script = "inspector_protocol/generate-inspector-protocol-version"
-
+action("inspector_protocol_compatibility") {
+  script = "inspector_protocol/CheckProtocolCompatibility.py"
   inputs = [
     "v8_inspector/js_protocol.json",
   ]
-  output_file =
-      "$blink_platform_output_dir/v8_inspector/protocol/v8inspector.json"
+  _stamp = "$blink_platform_output_dir/v8_inspector/js_protocol.stamp"
   outputs = [
-    output_file,
+    _stamp,
   ]
 
   args = [
-    "--o",
-    rebase_path(output_file, root_build_dir),
+    "--stamp",
+    rebase_path(_stamp, root_build_dir),
     rebase_path("v8_inspector/js_protocol.json", root_build_dir),
   ]
 }

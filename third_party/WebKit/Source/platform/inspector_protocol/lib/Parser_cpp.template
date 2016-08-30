@@ -325,7 +325,7 @@ int hexToInt(Char c)
         return c - 'A' + 10;
     if ('a' <= c && c <= 'f')
         return c - 'a' + 10;
-    NOTREACHED();
+    DCHECK(false);
     return 0;
 }
 
