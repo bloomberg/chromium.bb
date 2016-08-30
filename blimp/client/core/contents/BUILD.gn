@@ -15,6 +15,7 @@ source_set("contents") {
     "blimp_contents_impl.h",
     "blimp_contents_manager.cc",
     "blimp_contents_manager.h",
+    "blimp_contents_view.h",
     "blimp_navigation_controller_delegate.h",
     "blimp_navigation_controller_impl.cc",
     "blimp_navigation_controller_impl.h",
@@ -38,6 +39,7 @@ source_set("contents") {
   deps = [
     "//blimp/common",
     "//components/url_formatter",
+    "//skia",
   ]
 
   if (is_android) {
@@ -50,9 +52,20 @@ source_set("contents") {
       "android/blimp_contents_observer_proxy.h",
       "android/blimp_navigation_controller_impl_android.cc",
       "android/blimp_navigation_controller_impl_android.h",
+      "blimp_contents_view_android.cc",
+      "blimp_contents_view_android.h",
     ]
 
-    deps += [ ":jni_headers" ]
+    deps += [
+      ":jni_headers",
+      "//cc",
+      "//ui/android",
+    ]
+  } else {
+    sources += [
+      "blimp_contents_view_aura.cc",
+      "blimp_contents_view_aura.h",
+    ]
   }
 }
 

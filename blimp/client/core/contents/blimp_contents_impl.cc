@@ -6,6 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/supports_user_data.h"
+#include "blimp/client/core/contents/blimp_contents_view.h"
 #include "blimp/client/core/contents/tab_control_feature.h"
 #include "blimp/client/public/contents/blimp_contents_observer.h"
 
@@ -29,7 +30,9 @@ BlimpContentsImpl::BlimpContentsImpl(int id,
                                      TabControlFeature* tab_control_feature)
     : navigation_controller_(this, navigation_feature),
       id_(id),
-      tab_control_feature_(tab_control_feature) {}
+      tab_control_feature_(tab_control_feature) {
+  blimp_contents_view_ = BlimpContentsView::Create(this);
+}
 
 BlimpContentsImpl::~BlimpContentsImpl() {
   FOR_EACH_OBSERVER(BlimpContentsObserver, observers_, BlimpContentsDying());
@@ -64,6 +67,10 @@ void BlimpContentsImpl::AddObserver(BlimpContentsObserver* observer) {
 
 void BlimpContentsImpl::RemoveObserver(BlimpContentsObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+gfx::NativeView BlimpContentsImpl::GetNativeView() {
+  return blimp_contents_view_->GetNativeView();
 }
 
 bool BlimpContentsImpl::HasObserver(BlimpContentsObserver* observer) {

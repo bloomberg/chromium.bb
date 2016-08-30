@@ -25,6 +25,7 @@ class BlimpContentsImplAndroid;
 #endif  // defined(OS_ANDROID)
 
 class BlimpContentsObserver;
+class BlimpContentsView;
 class BlimpNavigationController;
 class ImeFeature;
 class NavigationFeature;
@@ -49,6 +50,7 @@ class BlimpContentsImpl : public BlimpContents,
   BlimpNavigationControllerImpl& GetNavigationController() override;
   void AddObserver(BlimpContentsObserver* observer) override;
   void RemoveObserver(BlimpContentsObserver* observer) override;
+  gfx::NativeView GetNativeView() override;
 
   // Check if some observer is in the observer list.
   bool HasObserver(BlimpContentsObserver* observer);
@@ -78,6 +80,10 @@ class BlimpContentsImpl : public BlimpContents,
   // TODO(mlliu): in the long term, we want to put size and scale in a different
   // feature instead of tab control feature. crbug.com/639154.
   TabControlFeature* tab_control_feature_ = nullptr;
+
+  // The BlimpContentsView abstracts the platform specific view system details
+  // from the BlimpContents.
+  std::unique_ptr<BlimpContentsView> blimp_contents_view_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpContentsImpl);
 };

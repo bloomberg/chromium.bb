@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/supports_user_data.h"
+#include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
@@ -34,6 +35,9 @@ class BlimpContents : public base::SupportsUserData {
   // Enables adding and removing observers to this BlimpContents.
   virtual void AddObserver(BlimpContentsObserver* observer) = 0;
   virtual void RemoveObserver(BlimpContentsObserver* observer) = 0;
+
+  // Returns the native view that holds the contents of this tab.
+  virtual gfx::NativeView GetNativeView() = 0;
 
 #if defined(OS_ANDROID)
   // Returns a Java object of the type BlimpContents for the given

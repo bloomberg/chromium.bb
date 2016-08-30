@@ -416,7 +416,8 @@ void TabAndroid::InitWebContents(
   if (instant_service)
     instant_service->AddObserver(this);
 
-  content_layer_->InsertChild(web_contents_->GetNativeView()->GetLayer(), 0);
+  if (!blimp_contents_)
+    content_layer_->InsertChild(web_contents_->GetNativeView()->GetLayer(), 0);
 }
 
 base::android::ScopedJavaLocalRef<jobject> TabAndroid::InitBlimpContents(
@@ -430,6 +431,18 @@ base::android::ScopedJavaLocalRef<jobject> TabAndroid::InitBlimpContents(
   DCHECK(context);
   blimp_contents_ = context->CreateBlimpContents();
   DCHECK(blimp_contents_);
+
+  // Let's detach the layer from WebContents first, just to be sure.
+  if (web_contents_ && web_contents_->GetNativeView() &&
+      web_contents_->GetNativeView()->GetLayer()) {
+    cc::Layer* web_contents_layer = web_contents_->GetNativeView()->GetLayer();
+    if (web_contents_layer->parent() == content_layer_.get())
+      web_contents_layer->RemoveFromParent();
+  }
+
+  // Attach the layer holding the tab contents to the |content_layer_|.
+  content_layer_->InsertChild(blimp_contents_->GetNativeView()->GetLayer(), 0);
+
   return blimp_contents_->GetJavaObject();
 }
 
