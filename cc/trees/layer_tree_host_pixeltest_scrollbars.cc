@@ -10,7 +10,6 @@
 #include "cc/layers/painted_scrollbar_layer.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/test/layer_tree_pixel_test.h"
-#include "cc/test/pixel_comparator.h"
 #include "cc/test/test_in_process_context_provider.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 
@@ -163,18 +162,6 @@ TEST_F(LayerTreeHostScrollbarsPixelTest, HugeTransformScale) {
   gfx::Transform scale_transform;
   scale_transform.Scale(scale, scale);
   layer->SetTransform(scale_transform);
-
-  // The edges are antialiased and get off-by-one differences.
-  float percentage_pixels_large_error = 0.80125f;
-  float percentage_pixels_small_error = 0.f;
-  float average_error_allowed_in_bad_pixels = 1.f;
-  int large_error_allowed = 1;
-  int small_error_allowed = 0;
-  pixel_comparator_.reset(new FuzzyPixelComparator(
-      true,  // discard_alpha
-      percentage_pixels_large_error, percentage_pixels_small_error,
-      average_error_allowed_in_bad_pixels, large_error_allowed,
-      small_error_allowed));
 
   RunPixelTest(PIXEL_TEST_GL, background,
                base::FilePath(FILE_PATH_LITERAL("spiral_64_scale.png")));

@@ -3820,6 +3820,11 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
     scaled_bitmap.allocN32Pixels(upload_size.width(), upload_size.height());
     SkCanvas scaled_canvas(scaled_bitmap);
     scaled_canvas.scale(canvas_scale_x, canvas_scale_y);
+    // The |canvas_scale_x| and |canvas_scale_y| may have some floating point
+    // error for large enough values, causing pixels on the edge to be not
+    // fully filled by drawBitmap(), so we ensure they start empty. (See
+    // crbug.com/642011 for an example.)
+    scaled_canvas.clear(SK_ColorTRANSPARENT);
     scaled_canvas.drawBitmap(source_bitmap, 0, 0);
 
     SkAutoLockPixels scaled_bitmap_lock(scaled_bitmap);
