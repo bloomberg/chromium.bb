@@ -213,9 +213,12 @@ static IDBKey* createIDBKeyFromValue(v8::Isolate* isolate, v8::Local<v8::Value> 
         IDBKey::KeyArray subkeys;
         uint32_t length = array->Length();
         v8::TryCatch block(isolate);
+        v8::Local<v8::Context> context = isolate->GetCurrentContext();
         for (uint32_t i = 0; i < length; ++i) {
+            if (!v8CallBoolean(array->HasOwnProperty(context, i)))
+                return nullptr;
             v8::Local<v8::Value> item;
-            if (!v8Call(array->Get(isolate->GetCurrentContext(), i), item, block)) {
+            if (!v8Call(array->Get(context, i), item, block)) {
                 exceptionState.rethrowV8Exception(block.Exception());
                 return nullptr;
             }

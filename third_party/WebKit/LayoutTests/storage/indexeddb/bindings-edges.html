@@ -14,6 +14,7 @@ indexeddb_test(
 
         var setter_called = false;
         Object.defineProperty(Object.prototype, '10', {
+            configurable: true,
             set: t.step_func(function(value) { setter_called = true; })
         });
         request.onerror = t.unreached_func('request should not fail');
@@ -25,6 +26,8 @@ indexeddb_test(
                         'Result should have own-property overriding prototype setter.');
             assert_equals(result[10], 'key',
                           'Result should have expected property.');
+
+            delete Object.prototype['10'];
             t.done();
         });
     },
@@ -42,6 +45,7 @@ indexeddb_test(
 
         var setter_called = false;
         Object.defineProperty(Object.prototype, 'id', {
+            configurable: true,
             set: t.step_func(function(value) { setter_called = true; })
         });
         request.onerror = t.unreached_func('request should not fail');
@@ -53,6 +57,8 @@ indexeddb_test(
                         'Result should have own-property overriding prototype setter.');
             assert_equals(result.id, 1,
                           'Own property should match primary key generator value');
+
+            delete Object.prototype['id'];
             t.done();
         });
     },
@@ -384,4 +390,38 @@ indexeddb_test(
     },
     'Key path evaluation: Exceptions from enumerable getters on prototype'
 );
+
+indexeddb_test(
+    function(t, db) {
+        var store = db.createObjectStore('store');
+        store.createIndex('index', 'index0');
+    },
+    function(t, db) {
+        var tx = db.transaction('store', 'readwrite');
+
+        var array = [];
+        array[99] = 1;
+
+        var getter_called = 0;
+        var prop = '50';
+        Object.defineProperty(Object.prototype, prop, {
+            enumerable: true, configurable: true,
+            get: function() {
+                ++getter_called;
+                return 'foo';
+            }
+        });
+
+        var request = tx.objectStore('store').put({index0: array}, 'key');
+        request.onerror = t.unreached_func('put should not fail');
+        request.onsuccess = t.step_func(function() {
+            assert_equals(getter_called, 0,
+                          'Prototype getter should not be called');
+            delete Object.prototype[prop];
+            t.done();
+        });
+    },
+    'Array key conversion should not invoke prototype getters'
+);
+
 </script>
