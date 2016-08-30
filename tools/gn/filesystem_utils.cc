@@ -336,6 +336,10 @@ bool IsPathAbsolute(const base::StringPiece& path) {
   return true;
 }
 
+bool IsPathSourceAbsolute(const base::StringPiece& path) {
+  return (path.size() >= 2 && path[0] == '/' && path[1] == '/');
+}
+
 bool MakeAbsolutePathRelativeIfPossible(const base::StringPiece& source_root,
                                         const base::StringPiece& path,
                                         std::string* dest) {
@@ -754,6 +758,11 @@ bool WriteFileIfChanged(const base::FilePath& file_path,
   if (ContentsEqual(file_path, data))
     return true;
 
+  return WriteFile(file_path, data, err);
+}
+
+bool WriteFile(const base::FilePath& file_path, const std::string& data,
+               Err* err) {
   // Create the directory if necessary.
   if (!base::CreateDirectory(file_path.DirName())) {
     if (err) {

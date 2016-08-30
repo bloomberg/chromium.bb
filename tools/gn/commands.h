@@ -29,6 +29,11 @@ namespace commands {
 
 typedef int (*CommandRunner)(const std::vector<std::string>&);
 
+extern const char kAnalyze[];
+extern const char kAnalyze_HelpShort[];
+extern const char kAnalyze_Help[];
+int RunAnalyze(const std::vector<std::string>& args);
+
 extern const char kArgs[];
 extern const char kArgs_HelpShort[];
 extern const char kArgs_Help[];

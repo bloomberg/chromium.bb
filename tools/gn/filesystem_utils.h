@@ -100,6 +100,11 @@ bool EnsureStringIsInOutputDir(const SourceDir& output_dir,
 // paths of both the native format: "C:/foo" and ours "/C:/foo"
 bool IsPathAbsolute(const base::StringPiece& path);
 
+// Returns true if the input string is source-absolute. Source-absolute
+// paths begin with two forward slashes and resolve as if they are
+// relative to the source root.
+bool IsPathSourceAbsolute(const base::StringPiece& path);
+
 // Given an absolute path, checks to see if is it is inside the source root.
 // If it is, fills a source-absolute path into the given output and returns
 // true. If it isn't, clears the dest and returns false.
@@ -174,6 +179,11 @@ bool ContentsEqual(const base::FilePath& file_path, const std::string& data);
 bool WriteFileIfChanged(const base::FilePath& file_path,
                         const std::string& data,
                         Err* err);
+
+// Writes given stream contents to the given file. Returns true if data was
+// successfully written, false otherwise. |err| is set on error if not nullptr.
+bool WriteFile(const base::FilePath& file_path, const std::string& data,
+               Err* err);
 
 // -----------------------------------------------------------------------------
 

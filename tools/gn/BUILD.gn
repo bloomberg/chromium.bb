@@ -15,6 +15,8 @@ static_library("gn_lib") {
     "action_target_generator.h",
     "action_values.cc",
     "action_values.h",
+    "analyzer.cc",
+    "analyzer.h",
     "args.cc",
     "args.h",
     "binary_target_generator.cc",
@@ -33,6 +35,7 @@ static_library("gn_lib") {
     "bundle_file_rule.h",
     "c_include_iterator.cc",
     "c_include_iterator.h",
+    "command_analyze.cc",
     "command_args.cc",
     "command_check.cc",
     "command_clean.cc",
@@ -274,6 +277,7 @@ executable("gn") {
 test("gn_unittests") {
   sources = [
     "action_target_generator_unittest.cc",
+    "analyzer_unittest.cc",
     "args_unittest.cc",
     "builder_unittest.cc",
     "c_include_iterator_unittest.cc",

@@ -360,6 +360,7 @@ const CommandInfoMap& GetCommands() {
                                        k##cmd##_Help, \
                                        &Run##cmd);
 
+    INSERT_COMMAND(Analyze)
     INSERT_COMMAND(Args)
     INSERT_COMMAND(Check)
     INSERT_COMMAND(Clean)
