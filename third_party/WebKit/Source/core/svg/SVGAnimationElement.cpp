@@ -376,7 +376,11 @@ bool SVGAnimationElement::isTargetAttributeCSSProperty(SVGElement* targetElement
 
 SVGAnimationElement::ShouldApplyAnimationType SVGAnimationElement::shouldApplyAnimation(SVGElement* targetElement, const QualifiedName& attributeName)
 {
-    if (!hasValidAttributeType() || !targetElement || attributeName == anyQName() || !targetElement->inActiveDocument())
+    if (!hasValidAttributeType()
+        || attributeName == anyQName()
+        || !targetElement
+        || !targetElement->inActiveDocument()
+        || !targetElement->parentNode())
         return DontApplyAnimation;
 
     // Always animate CSS properties, using the ApplyCSSAnimation code path, regardless of the attributeType value.

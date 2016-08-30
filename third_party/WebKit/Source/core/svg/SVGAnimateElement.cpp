@@ -178,7 +178,6 @@ void SVGAnimateElement::resetAnimatedType()
     m_animator.reset(targetElement);
 
     ShouldApplyAnimationType shouldApply = shouldApplyAnimation(targetElement, attributeName);
-
     if (shouldApply == DontApplyAnimation)
         return;
     if (shouldApply == ApplyXMLAnimation || shouldApply == ApplyXMLandCSSAnimation) {
@@ -206,12 +205,6 @@ void SVGAnimateElement::resetAnimatedType()
     m_animatedProperty = m_animator.constructFromString(baseValue);
 }
 
-static bool targetIsUsable(SVGElement* targetElement, const QualifiedName& attribute)
-{
-    return attribute != anyQName()
-        && targetElement->isConnected() && targetElement->parentNode();
-}
-
 void SVGAnimateElement::clearAnimatedType()
 {
     if (!m_animatedProperty)
@@ -231,7 +224,7 @@ void SVGAnimateElement::clearAnimatedType()
     ShouldApplyAnimationType shouldApply = shouldApplyAnimation(targetElement, attributeName());
     if (shouldApply == ApplyXMLandCSSAnimation || m_animator.isAnimatingCSSProperty()) {
         // CSS properties animation code-path.
-        if (targetIsUsable(targetElement, attributeName())) {
+        if (shouldApply != DontApplyAnimation) {
             CSSPropertyID id = cssPropertyID(attributeName().localName());
             targetElement->ensureAnimatedSMILStyleProperties()->removeProperty(id);
             targetElement->setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Animation));
@@ -240,7 +233,7 @@ void SVGAnimateElement::clearAnimatedType()
     if (shouldApply == ApplyXMLandCSSAnimation || m_animator.isAnimatingSVGDom()) {
         // SVG DOM animVal animation code-path.
         m_animator.stopAnimValAnimation();
-        if (targetIsUsable(targetElement, attributeName()))
+        if (shouldApply != DontApplyAnimation)
             targetElement->invalidateAnimatedAttribute(attributeName());
     }
 
@@ -259,8 +252,7 @@ void SVGAnimateElement::applyResultsToTarget()
 
     // We do update the style and the animation property independent of each other.
     ShouldApplyAnimationType shouldApply = shouldApplyAnimation(targetElement(), attributeName());
-    DCHECK(targetElement());
-    if (!targetIsUsable(targetElement(), attributeName()))
+    if (shouldApply == DontApplyAnimation)
         return;
     if (shouldApply == ApplyXMLandCSSAnimation || m_animator.isAnimatingCSSProperty()) {
         // CSS properties animation code-path.
