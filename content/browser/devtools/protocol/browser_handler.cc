@@ -4,6 +4,9 @@
 
 #include "content/browser/devtools/protocol/browser_handler.h"
 
+#include "content/browser/devtools/devtools_manager.h"
+#include "content/public/browser/devtools_manager_delegate.h"
+
 namespace content {
 namespace devtools {
 namespace browser {
@@ -38,9 +41,16 @@ Response BrowserHandler::CreateTarget(const std::string& url,
                                       const int* height,
                                       const std::string* context_id,
                                       std::string* out_target_id) {
-  // For layering reasons this needs to be handled by
-  // DevToolsManagerDelegate::HandleCommand.
-  return Response::ServerError("Not supported");
+  DevToolsManagerDelegate* delegate =
+      DevToolsManager::GetInstance()->delegate();
+  if (!delegate)
+    return Response::ServerError("Not supported");
+  scoped_refptr<content::DevToolsAgentHost> agent_host =
+      delegate->CreateNewTarget(GURL(url));
+  if (!agent_host)
+    return Response::ServerError("Not supported");
+  *out_target_id = agent_host->GetId();
+  return Response::OK();
 }
 
 Response BrowserHandler::CloseTarget(const std::string& target_id,

@@ -2,25 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/dev_tools_discovery_provider_android.h"
+#include "chrome/browser/android/devtools_manager_delegate_android.h"
 
 #include "base/bind.h"
-#include "base/compiler_specific.h"
-#include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/android/tab_android.h"
-#include "chrome/browser/browser_process.h"
+#include "chrome/browser/devtools/devtools_network_protocol_handler.h"
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
-#include "components/devtools_discovery/devtools_discovery_manager.h"
+#include "chrome/common/features.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_agent_host_client.h"
 #include "content/public/browser/devtools_external_agent_proxy.h"
 #include "content/public/browser/devtools_external_agent_proxy_delegate.h"
-#include "content/public/browser/favicon_status.h"
-#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 
 using content::DevToolsAgentHost;
@@ -157,41 +153,13 @@ class TabProxyDelegate : public content::DevToolsExternalAgentProxyDelegate,
   const int tab_id_;
   const std::string title_;
   const GURL url_;
-  scoped_refptr<content::DevToolsAgentHost> agent_host_;
+  scoped_refptr<DevToolsAgentHost> agent_host_;
   content::DevToolsExternalAgentProxy* proxy_;
   DISALLOW_COPY_AND_ASSIGN(TabProxyDelegate);
 };
 
-scoped_refptr<content::DevToolsAgentHost> CreateNewAndroidTab(const GURL& url) {
-  if (TabModelList::empty())
-    return nullptr;
-
-  TabModel* tab_model = TabModelList::get(0);
-  if (!tab_model)
-    return nullptr;
-
-  WebContents* web_contents = tab_model->CreateNewTabForDevTools(url);
-  if (!web_contents)
-    return nullptr;
-
-  TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
-  if (!tab)
-    return nullptr;
-
-  return content::DevToolsAgentHost::Create(new TabProxyDelegate(tab));
-}
-
-}  // namespace
-
-DevToolsDiscoveryProviderAndroid::DevToolsDiscoveryProviderAndroid() {
-}
-
-DevToolsDiscoveryProviderAndroid::~DevToolsDiscoveryProviderAndroid() {
-}
-
-content::DevToolsAgentHost::List
-DevToolsDiscoveryProviderAndroid::GetDescriptors() {
-  content::DevToolsAgentHost::List result;
+DevToolsAgentHost::List GetDescriptors() {
+  DevToolsAgentHost::List result;
 
   // Enumerate existing tabs, including the ones with no WebContents.
   std::set<WebContents*> tab_web_contents;
@@ -203,7 +171,7 @@ DevToolsDiscoveryProviderAndroid::GetDescriptors() {
       if (!tab)
         continue;
 
-      scoped_refptr<content::DevToolsAgentHost> host =
+      scoped_refptr<DevToolsAgentHost> host =
           DevToolsAgentHost::Create(new TabProxyDelegate(tab));
     }
   }
@@ -222,11 +190,67 @@ DevToolsDiscoveryProviderAndroid::GetDescriptors() {
   return result;
 }
 
-// static
-void DevToolsDiscoveryProviderAndroid::Install() {
-  devtools_discovery::DevToolsDiscoveryManager* discovery_manager =
-      devtools_discovery::DevToolsDiscoveryManager::GetInstance();
-  discovery_manager->AddProvider(
-      base::WrapUnique(new DevToolsDiscoveryProviderAndroid()));
-  discovery_manager->SetCreateCallback(base::Bind(&CreateNewAndroidTab));
+} //  namespace
+
+DevToolsManagerDelegateAndroid::DevToolsManagerDelegateAndroid()
+    : network_protocol_handler_(new DevToolsNetworkProtocolHandler()) {
+#if BUILDFLAG(ANDROID_JAVA_UI)
+  DevToolsAgentHost::AddDiscoveryProvider(base::Bind(&GetDescriptors));
+#endif  // BUILDFLAG(ANDROID_JAVA_UI)
+}
+
+DevToolsManagerDelegateAndroid::~DevToolsManagerDelegateAndroid() {
+}
+
+void DevToolsManagerDelegateAndroid::Inspect(
+    DevToolsAgentHost* agent_host) {
+}
+
+base::DictionaryValue* DevToolsManagerDelegateAndroid::HandleCommand(
+    DevToolsAgentHost* agent_host,
+    base::DictionaryValue* command_dict) {
+  return network_protocol_handler_->HandleCommand(agent_host, command_dict);
+}
+
+std::string DevToolsManagerDelegateAndroid::GetTargetType(
+    content::RenderFrameHost* host) {
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(host);
+  TabAndroid* tab = web_contents ? TabAndroid::FromWebContents(web_contents)
+      : nullptr;
+  return tab ? DevToolsAgentHost::kTypePage :
+      DevToolsAgentHost::kTypeOther;
+}
+
+std::string DevToolsManagerDelegateAndroid::GetTargetTitle(
+    content::RenderFrameHost* host) {
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(host);
+  TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
+  return tab ? base::UTF16ToUTF8(tab->GetTitle()) : "";
+}
+
+scoped_refptr<DevToolsAgentHost>
+DevToolsManagerDelegateAndroid::CreateNewTarget(const GURL& url) {
+  if (TabModelList::empty())
+    return nullptr;
+
+  TabModel* tab_model = TabModelList::get(0);
+  if (!tab_model)
+    return nullptr;
+
+  WebContents* web_contents = tab_model->CreateNewTabForDevTools(url);
+  if (!web_contents)
+    return nullptr;
+
+  TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
+  if (!tab)
+    return nullptr;
+
+  return DevToolsAgentHost::Create(new TabProxyDelegate(tab));
+}
+
+void DevToolsManagerDelegateAndroid::DevToolsAgentStateChanged(
+    DevToolsAgentHost* agent_host, bool attached) {
+  network_protocol_handler_->DevToolsAgentStateChanged(agent_host, attached);
 }

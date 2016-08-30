@@ -2,7 +2,6 @@ include_rules = [
   "+blimp/client/public",
   "-components/devtools_bridge",
   "+cc/layers/layer.h",
-  "+components/devtools_discovery",
   "+components/devtools_http_handler",
   "+components/ntp_snippets",
   "+components/spellcheck/browser",

@@ -17,7 +17,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "components/devtools_discovery/devtools_discovery_manager.h"
 #include "components/devtools_http_handler/devtools_http_handler.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -134,21 +133,12 @@ CreateSocketFactory() {
 #endif
 }
 
-scoped_refptr<content::DevToolsAgentHost>
-CreateNewShellTarget(BrowserContext* browser_context, const GURL& url) {
-  Shell* shell = Shell::CreateNewWindow(browser_context,
-                                        url,
-                                        nullptr,
-                                        gfx::Size());
-  return DevToolsAgentHost::GetOrCreateFor(shell->web_contents());
-}
-
 // ShellDevToolsDelegate ----------------------------------------------------
 
 class ShellDevToolsDelegate :
     public devtools_http_handler::DevToolsHttpHandlerDelegate {
  public:
-  explicit ShellDevToolsDelegate(BrowserContext* browser_context);
+  explicit ShellDevToolsDelegate();
   ~ShellDevToolsDelegate() override;
 
   // devtools_http_handler::DevToolsHttpHandlerDelegate implementation.
@@ -162,16 +152,10 @@ class ShellDevToolsDelegate :
   DISALLOW_COPY_AND_ASSIGN(ShellDevToolsDelegate);
 };
 
-ShellDevToolsDelegate::ShellDevToolsDelegate(BrowserContext* browser_context) {
-  devtools_discovery::DevToolsDiscoveryManager::GetInstance()->
-      SetCreateCallback(base::Bind(&CreateNewShellTarget,
-                                   base::Unretained(browser_context)));
+ShellDevToolsDelegate::ShellDevToolsDelegate() {
 }
 
 ShellDevToolsDelegate::~ShellDevToolsDelegate() {
-  devtools_discovery::DevToolsDiscoveryManager::GetInstance()->
-      SetCreateCallback(
-          devtools_discovery::DevToolsDiscoveryManager::CreateCallback());
 }
 
 std::string ShellDevToolsDelegate::GetDiscoveryPageHTML() {
@@ -212,14 +196,16 @@ ShellDevToolsManagerDelegate::CreateHttpHandler(
   return new DevToolsHttpHandler(
       CreateSocketFactory(),
       frontend_url,
-      new ShellDevToolsDelegate(browser_context),
+      new ShellDevToolsDelegate(),
       browser_context->GetPath(),
       base::FilePath(),
       std::string(),
       GetShellUserAgent());
 }
 
-ShellDevToolsManagerDelegate::ShellDevToolsManagerDelegate() {
+ShellDevToolsManagerDelegate::ShellDevToolsManagerDelegate(
+    BrowserContext* browser_context)
+    : browser_context_(browser_context) {
 }
 
 ShellDevToolsManagerDelegate::~ShellDevToolsManagerDelegate() {
@@ -228,10 +214,7 @@ ShellDevToolsManagerDelegate::~ShellDevToolsManagerDelegate() {
 base::DictionaryValue* ShellDevToolsManagerDelegate::HandleCommand(
     DevToolsAgentHost* agent_host,
     base::DictionaryValue* command_dict) {
-  std::unique_ptr<base::DictionaryValue> result =
-      devtools_discovery::DevToolsDiscoveryManager::GetInstance()
-          ->HandleCreateTargetCommand(command_dict);
-  return result.release();  // Caller takes ownership.
+  return nullptr;
 }
 
 std::string ShellDevToolsManagerDelegate::GetTargetType(RenderFrameHost* host) {
@@ -241,6 +224,16 @@ std::string ShellDevToolsManagerDelegate::GetTargetType(RenderFrameHost* host) {
 std::string ShellDevToolsManagerDelegate::GetTargetTitle(
     RenderFrameHost* host) {
   return "";
+}
+
+
+scoped_refptr<DevToolsAgentHost>
+ShellDevToolsManagerDelegate::CreateNewTarget(const GURL& url) {
+  Shell* shell = Shell::CreateNewWindow(browser_context_,
+                                        url,
+                                        nullptr,
+                                        gfx::Size());
+  return DevToolsAgentHost::GetOrCreateFor(shell->web_contents());
 }
 
 }  // namespace content

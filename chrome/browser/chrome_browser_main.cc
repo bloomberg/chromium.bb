@@ -175,12 +175,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/strings/grit/app_locale_settings.h"
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
-#include "chrome/browser/android/dev_tools_discovery_provider_android.h"
-#else
-#include "chrome/browser/devtools/chrome_devtools_discovery_provider.h"
-#endif
-
 #if defined(OS_ANDROID)
 #include "chrome/browser/metrics/thread_watcher_android.h"
 #include "ui/base/resource/resource_bundle_android.h"
@@ -1429,13 +1423,6 @@ void ChromeBrowserMainParts::PreProfileInit() {
 
 void ChromeBrowserMainParts::PostProfileInit() {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::PostProfileInit");
-
-#if BUILDFLAG(ANDROID_JAVA_UI)
-  DevToolsDiscoveryProviderAndroid::Install();
-#else
-  ChromeDevToolsDiscoveryProvider::Install();
-#endif  // BUILDFLAG(ANDROID_JAVA_UI)
-
   LaunchDevToolsHandlerIfNeeded(parsed_command_line());
   if (parsed_command_line().HasSwitch(::switches::kAutoOpenDevToolsForTabs))
     g_browser_process->CreateDevToolsAutoOpener();

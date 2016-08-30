@@ -10,7 +10,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "components/devtools_discovery/devtools_discovery_manager.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/web_contents.h"
 
@@ -39,32 +38,28 @@ std::string GetViewDescription(WebContents* web_contents) {
   return json;
 }
 
-}  // namespace
-
-namespace android_webview {
-
-// static
-void AwDevToolsDiscoveryProvider::Install() {
-  devtools_discovery::DevToolsDiscoveryManager* discovery_manager =
-      devtools_discovery::DevToolsDiscoveryManager::GetInstance();
-  discovery_manager->AddProvider(
-      base::WrapUnique(new AwDevToolsDiscoveryProvider()));
-}
-
-AwDevToolsDiscoveryProvider::AwDevToolsDiscoveryProvider() {
-}
-
-AwDevToolsDiscoveryProvider::~AwDevToolsDiscoveryProvider() {
-}
-
-content::DevToolsAgentHost::List
-AwDevToolsDiscoveryProvider::GetDescriptors() {
+content::DevToolsAgentHost::List GetDescriptors() {
   DevToolsAgentHost::List agent_hosts = DevToolsAgentHost::GetOrCreateAll();
   for (auto& agent_host : agent_hosts) {
     agent_host->SetDescriptionOverride(
         GetViewDescription(agent_host->GetWebContents()));
   }
   return agent_hosts;
+}
+
+}  // namespace
+
+namespace android_webview {
+
+// static
+void AwDevToolsDiscoveryProvider::Install() {
+  content::DevToolsAgentHost::AddDiscoveryProvider(base::Bind(&GetDescriptors));
+}
+
+AwDevToolsDiscoveryProvider::AwDevToolsDiscoveryProvider() {
+}
+
+AwDevToolsDiscoveryProvider::~AwDevToolsDiscoveryProvider() {
 }
 
 }  // namespace android_webview

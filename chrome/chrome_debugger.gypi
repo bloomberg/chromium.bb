@@ -61,8 +61,6 @@
             'common/extensions/api/api.gyp:chrome_api',
           ],
           'sources': [
-            'browser/devtools/chrome_devtools_discovery_provider.cc',
-            'browser/devtools/chrome_devtools_discovery_provider.h',
             'browser/devtools/device/adb/adb_client_socket.cc',
             'browser/devtools/device/adb/adb_client_socket.h',
             'browser/devtools/device/adb/adb_device_provider.cc',

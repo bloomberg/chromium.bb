@@ -6,6 +6,8 @@
 #define CONTENT_PUBLIC_BROWSER_DEVTOOLS_MANAGER_DELEGATE_H_
 
 #include <string>
+#include "base/memory/ref_counted.h"
+#include "url/gurl.h"
 
 namespace base {
 class DictionaryValue;
@@ -32,6 +34,9 @@ class DevToolsManagerDelegate {
 
   // Returns DevToolsAgentHost title to use for given |host| target.
   virtual std::string GetTargetTitle(RenderFrameHost* host) = 0;
+
+  // Creates new inspectable target given the |url|.
+  virtual scoped_refptr<DevToolsAgentHost> CreateNewTarget(const GURL& url) = 0;
 
   // Result ownership is passed to the caller.
   virtual base::DictionaryValue* HandleCommand(

@@ -28,6 +28,7 @@ namespace content {
 
 class BrowserContext;
 class DevToolsExternalAgentProxyDelegate;
+class DevToolsManagerDelegate;
 class RenderFrameHost;
 class WebContents;
 
@@ -42,6 +43,10 @@ class CONTENT_EXPORT DevToolsAgentHost
   static char kTypeExternal[];
   static char kTypeBrowser[];
   static char kTypeOther[];
+
+  // This is temporary while we are merging http handler and discovery
+  // into content/.
+  static DevToolsManagerDelegate* GetDevToolsManagerDelegate();
 
   // Latest DevTools protocol version supported.
   static std::string GetProtocolVersion();
@@ -92,10 +97,19 @@ class CONTENT_EXPORT DevToolsAgentHost
 
   static bool IsDebuggerAttached(WebContents* web_contents);
 
-  typedef std::vector<scoped_refptr<DevToolsAgentHost> > List;
+  using List = std::vector<scoped_refptr<DevToolsAgentHost>>;
 
-  // Returns all possible DevToolsAgentHosts.
+  using DiscoveryCallback = base::Callback<List()>;
+
+  // Registers embedder's custom host providers that are available via
+  // DiscoverAllHosts.
+  static void AddDiscoveryProvider(const DiscoveryCallback& callback);
+
+  // Returns all DevToolsAgentHosts content is aware of.
   static List GetOrCreateAll();
+
+  // Returns all possible DevToolsAgentHosts embedder is aware of.
+  static List DiscoverAllHosts();
 
   // Attaches |client| to this agent host to start debugging.
   // Returns true iff attach succeeded.

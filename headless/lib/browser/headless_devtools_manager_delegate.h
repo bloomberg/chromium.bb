@@ -34,6 +34,8 @@ class HeadlessDevToolsManagerDelegate
                                        base::DictionaryValue* command) override;
   std::string GetTargetType(content::RenderFrameHost* host) override;
   std::string GetTargetTitle(content::RenderFrameHost* host) override;
+  scoped_refptr<content::DevToolsAgentHost> CreateNewTarget(
+      const GURL& url) override;
 
  private:
   std::unique_ptr<base::Value> CreateTarget(

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DEVTOOLS_CHROME_DEVTOOLS_MANAGER_DELEGATE_H_
-#define CHROME_BROWSER_DEVTOOLS_CHROME_DEVTOOLS_MANAGER_DELEGATE_H_
+#ifndef CHROME_BROWSER_ANDROID_DEVTOOLS_MANAGER_DELEGATE_ANDROID_H_
+#define CHROME_BROWSER_ANDROID_DEVTOOLS_MANAGER_DELEGATE_ANDROID_H_
 
 #include <memory>
 
@@ -13,13 +13,10 @@
 
 class DevToolsNetworkProtocolHandler;
 
-class ChromeDevToolsManagerDelegate : public content::DevToolsManagerDelegate {
+class DevToolsManagerDelegateAndroid : public content::DevToolsManagerDelegate {
  public:
-  static char kTypeApp[];
-  static char kTypeBackgroundPage[];
-
-  ChromeDevToolsManagerDelegate();
-  ~ChromeDevToolsManagerDelegate() override;
+  DevToolsManagerDelegateAndroid();
+  ~DevToolsManagerDelegateAndroid() override;
 
   // content::DevToolsManagerDelegate implementation.
   void Inspect(content::DevToolsAgentHost* agent_host) override;
@@ -36,7 +33,7 @@ class ChromeDevToolsManagerDelegate : public content::DevToolsManagerDelegate {
  private:
   std::unique_ptr<DevToolsNetworkProtocolHandler> network_protocol_handler_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeDevToolsManagerDelegate);
+  DISALLOW_COPY_AND_ASSIGN(DevToolsManagerDelegateAndroid);
 };
 
-#endif  // CHROME_BROWSER_DEVTOOLS_CHROME_DEVTOOLS_MANAGER_DELEGATE_H_
+#endif  // CHROME_BROWSER_ANDROID_DEVTOOLS_MANAGER_DELEGATE_ANDROID_H_

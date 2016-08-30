@@ -46,7 +46,6 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/devtools/chrome_devtools_manager_delegate.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/engagement/site_engagement_eviction_policy.h"
 #include "chrome/browser/font_family_cache.h"
@@ -238,8 +237,11 @@
 #endif
 
 #if defined(OS_ANDROID)
+#include "chrome/browser/android/devtools_manager_delegate_android.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/gfx/android/device_display_info.h"
+#else
+#include "chrome/browser/devtools/chrome_devtools_manager_delegate.h"
 #endif
 
 #if defined(TOOLKIT_VIEWS)
@@ -3088,7 +3090,11 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
 
 content::DevToolsManagerDelegate*
 ChromeContentBrowserClient::GetDevToolsManagerDelegate() {
+#if defined(OS_ANDROID)
+  return new DevToolsManagerDelegateAndroid();
+#else
   return new ChromeDevToolsManagerDelegate();
+#endif
 }
 
 content::TracingDelegate* ChromeContentBrowserClient::GetTracingDelegate() {

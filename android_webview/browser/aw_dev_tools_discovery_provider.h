@@ -6,24 +6,17 @@
 #define ANDROID_WEBVIEW_BROWSER_AW_DEV_TOOLS_DISCOVERY_PROVIDER_H_
 
 #include "base/macros.h"
-#include "components/devtools_discovery/devtools_discovery_manager.h"
 
 namespace android_webview {
 
-class AwDevToolsDiscoveryProvider :
-    public devtools_discovery::DevToolsDiscoveryManager::Provider {
+class AwDevToolsDiscoveryProvider {
  public:
   // Installs provider to devtools_discovery.
   static void Install();
 
-  ~AwDevToolsDiscoveryProvider() override;
-
-  // devtools_discovery::DevToolsDiscoveryManager::Provider implementation.
-  content::DevToolsAgentHost::List GetDescriptors() override;
-
  private:
   AwDevToolsDiscoveryProvider();
-
+  ~AwDevToolsDiscoveryProvider();
   DISALLOW_COPY_AND_ASSIGN(AwDevToolsDiscoveryProvider);
 };
 

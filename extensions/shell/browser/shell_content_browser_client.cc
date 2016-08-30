@@ -225,7 +225,7 @@ void ShellContentBrowserClient::GetAdditionalAllowedSchemesForFileSystem(
 
 content::DevToolsManagerDelegate*
 ShellContentBrowserClient::GetDevToolsManagerDelegate() {
-  return new content::ShellDevToolsManagerDelegate();
+  return new content::ShellDevToolsManagerDelegate(GetBrowserContext());
 }
 
 ShellBrowserMainParts* ShellContentBrowserClient::CreateShellBrowserMainParts(

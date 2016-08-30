@@ -582,7 +582,6 @@ source_set("common") {
     "//components/cdm/renderer",
     "//components/crash/content/app",
     "//components/crash/content/browser",
-    "//components/devtools_discovery",
     "//components/metrics",
     "//components/metrics:gpu",
     "//components/metrics:net",

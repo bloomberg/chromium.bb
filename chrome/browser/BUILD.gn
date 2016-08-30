@@ -124,7 +124,6 @@ split_static_library("browser") {
     "//components/data_use_measurement/content",
     "//components/data_use_measurement/core",
     "//components/device_event_log",
-    "//components/devtools_discovery",
     "//components/devtools_http_handler",
     "//components/dom_distiller/content/browser",
     "//components/domain_reliability",

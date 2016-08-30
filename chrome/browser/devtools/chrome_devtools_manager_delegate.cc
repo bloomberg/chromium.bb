@@ -7,32 +7,28 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/devtools/devtools_network_protocol_handler.h"
-#include "components/devtools_discovery/devtools_discovery_manager.h"
-#include "content/public/browser/devtools_agent_host.h"
-#include "content/public/browser/web_contents.h"
-
-#if !defined(OS_ANDROID)
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
+#include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_manager.h"
-#else  // !defined(OS_ANDROID)
-#include "chrome/browser/android/tab_android.h"
-#include "chrome/browser/ui/android/tab_model/tab_model.h"
-#include "chrome/browser/ui/android/tab_model/tab_model_list.h"
-#endif  // !defined(OS_ANDROID)
-
-using devtools_discovery::DevToolsDiscoveryManager;
 
 char ChromeDevToolsManagerDelegate::kTypeApp[] = "app";
 char ChromeDevToolsManagerDelegate::kTypeBackgroundPage[] = "background_page";
 
+
 ChromeDevToolsManagerDelegate::ChromeDevToolsManagerDelegate()
     : network_protocol_handler_(new DevToolsNetworkProtocolHandler()) {
+  content::DevToolsAgentHost::AddDiscoveryProvider(
+      base::Bind(&content::DevToolsAgentHost::GetOrCreateAll));
 }
 
 ChromeDevToolsManagerDelegate::~ChromeDevToolsManagerDelegate() {
@@ -40,7 +36,6 @@ ChromeDevToolsManagerDelegate::~ChromeDevToolsManagerDelegate() {
 
 void ChromeDevToolsManagerDelegate::Inspect(
     content::DevToolsAgentHost* agent_host) {
-#if !defined(OS_ANDROID)
   Profile* profile =
       Profile::FromBrowserContext(agent_host->GetBrowserContext());
   if (!profile)
@@ -54,17 +49,11 @@ void ChromeDevToolsManagerDelegate::Inspect(
   content::WebContents* web_contents = agent_host->GetWebContents();
   if (web_contents)
     DevToolsWindow::OpenDevToolsWindow(web_contents);
-#endif  // !defined(OS_ANDROID)
 }
 
 base::DictionaryValue* ChromeDevToolsManagerDelegate::HandleCommand(
     content::DevToolsAgentHost* agent_host,
     base::DictionaryValue* command_dict) {
-  std::unique_ptr<base::DictionaryValue> result =
-      DevToolsDiscoveryManager::GetInstance()->HandleCreateTargetCommand(
-          command_dict);
-  if (result)
-    return result.release();  // Caller takes ownership.
   return network_protocol_handler_->HandleCommand(agent_host, command_dict);
 }
 
@@ -72,7 +61,6 @@ std::string ChromeDevToolsManagerDelegate::GetTargetType(
     content::RenderFrameHost* host) {
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(host);
-#if !defined(OS_ANDROID)
   for (TabContentsIterator it; !it.done(); it.Next()) {
     if (*it == web_contents)
       return content::DevToolsAgentHost::kTypePage;
@@ -103,23 +91,11 @@ std::string ChromeDevToolsManagerDelegate::GetTargetType(
              || extension->is_platform_app()) {
     return kTypeApp;
   }
-#else  // !defined(OS_ANDROID)
-  for (TabModelList::const_iterator iter = TabModelList::begin();
-      iter != TabModelList::end(); ++iter) {
-    TabModel* model = *iter;
-    for (int i = 0; i < model->GetTabCount(); ++i) {
-      TabAndroid* tab = model->GetTabAt(i);
-      if (tab && web_contents == tab->web_contents())
-        return content::DevToolsAgentHost::kTypePage;
-    }
-  }
-#endif  // !defined(OS_ANDROID)
   return content::DevToolsAgentHost::kTypeOther;
 }
 
 std::string ChromeDevToolsManagerDelegate::GetTargetTitle(
     content::RenderFrameHost* host) {
-#if !defined(OS_ANDROID)
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(host);
   if (host->GetParent())
@@ -133,8 +109,18 @@ std::string ChromeDevToolsManagerDelegate::GetTargetTitle(
           host->GetLastCommittedURL().host());
   if (extension)
     return extension->name();
-#endif  // !defined(OS_ANDROID)
   return "";
+}
+
+scoped_refptr<content::DevToolsAgentHost>
+ChromeDevToolsManagerDelegate::CreateNewTarget(const GURL& url) {
+  chrome::NavigateParams params(ProfileManager::GetLastUsedProfile(),
+      url, ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
+  params.disposition = NEW_FOREGROUND_TAB;
+  chrome::Navigate(&params);
+  if (!params.target_contents)
+    return nullptr;
+  return content::DevToolsAgentHost::GetOrCreateFor(params.target_contents);
 }
 
 void ChromeDevToolsManagerDelegate::DevToolsAgentStateChanged(

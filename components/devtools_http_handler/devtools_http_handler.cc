@@ -22,11 +22,11 @@
 #include "base/threading/thread.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "components/devtools_discovery/devtools_discovery_manager.h"
 #include "components/devtools_http_handler/devtools_http_handler.h"
 #include "components/devtools_http_handler/devtools_http_handler_delegate.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_external_agent_proxy_delegate.h"
+#include "content/public/browser/devtools_manager_delegate.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/user_agent.h"
 #include "net/base/escape.h"
@@ -575,8 +575,7 @@ void DevToolsHttpHandler::OnJsonRequest(
   if (command == "list") {
     std::string host = info.headers["host"];
     DevToolsAgentHost::List agent_hosts =
-        devtools_discovery::DevToolsDiscoveryManager::GetInstance()->
-            GetDescriptors();
+        content::DevToolsAgentHost::DiscoverAllHosts();
     std::sort(agent_hosts.begin(), agent_hosts.end(), TimeComparator);
     agent_host_map_.clear();
     base::ListValue list_value;
@@ -594,9 +593,11 @@ void DevToolsHttpHandler::OnJsonRequest(
                    net::UnescapeRule::PATH_SEPARATORS));
     if (!url.is_valid())
       url = GURL(url::kAboutBlankURL);
-    scoped_refptr<DevToolsAgentHost> agent_host =
-        devtools_discovery::DevToolsDiscoveryManager::GetInstance()->CreateNew(
-            url);
+    scoped_refptr<DevToolsAgentHost> agent_host = nullptr;
+    content::DevToolsManagerDelegate* delegate =
+        DevToolsAgentHost::GetDevToolsManagerDelegate();
+    if (delegate)
+      agent_host = delegate->CreateNewTarget(url);
     if (!agent_host) {
       SendJson(connection_id,
                net::HTTP_INTERNAL_SERVER_ERROR,

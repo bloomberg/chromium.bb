@@ -272,7 +272,7 @@ bool ShellContentBrowserClient::ShouldSwapProcessesForRedirect(
 
 DevToolsManagerDelegate*
 ShellContentBrowserClient::GetDevToolsManagerDelegate() {
-  return new ShellDevToolsManagerDelegate();
+  return new ShellDevToolsManagerDelegate(browser_context());
 }
 
 void ShellContentBrowserClient::OpenURL(

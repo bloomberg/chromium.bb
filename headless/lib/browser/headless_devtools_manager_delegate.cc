@@ -72,6 +72,11 @@ std::string HeadlessDevToolsManagerDelegate::GetTargetTitle(
   return "";
 }
 
+scoped_refptr<content::DevToolsAgentHost>
+HeadlessDevToolsManagerDelegate::CreateNewTarget(const GURL& url) {
+  return nullptr;
+}
+
 std::unique_ptr<base::Value> HeadlessDevToolsManagerDelegate::CreateTarget(
     const base::DictionaryValue* params) {
   std::string url;
