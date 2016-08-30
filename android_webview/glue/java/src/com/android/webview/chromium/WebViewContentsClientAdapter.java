@@ -4,6 +4,7 @@
 
 package com.android.webview.chromium;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -110,11 +111,13 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
 
     private WeakHashMap<AwPermissionRequest, WeakReference<PermissionRequestAdapter>>
             mOngoingPermissionRequests;
+
     /**
      * Adapter constructor.
      *
      * @param webView the {@link WebView} instance that this adapter is serving.
      */
+    @SuppressLint("HandlerLeak")
     WebViewContentsClientAdapter(WebView webView, Context context,
             WebViewDelegate webViewDelegate) {
         if (webView == null || webViewDelegate == null) {
