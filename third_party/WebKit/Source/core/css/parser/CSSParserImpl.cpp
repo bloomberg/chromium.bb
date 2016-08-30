@@ -766,7 +766,8 @@ void CSSParserImpl::consumeDeclaration(CSSParserTokenRange range, StyleRule::Rul
     }
 
     size_t propertiesCount = m_parsedProperties.size();
-    if (unresolvedProperty == CSSPropertyInvalid && CSSVariableParser::isValidVariableName(token)) {
+    // TODO(timloh): This only be for StyleRule::Style, crbug.com/641873.
+    if (unresolvedProperty == CSSPropertyVariable) {
         AtomicString variableName = token.value().toAtomicString();
         consumeVariableValue(range.makeSubRange(&range.peek(), declarationValueEnd), variableName, important);
     }
@@ -774,7 +775,7 @@ void CSSParserImpl::consumeDeclaration(CSSParserTokenRange range, StyleRule::Rul
     if (important && (ruleType == StyleRule::FontFace || ruleType == StyleRule::Keyframe))
         return;
 
-    if (unresolvedProperty != CSSPropertyInvalid) {
+    if (unresolvedProperty != CSSPropertyInvalid && unresolvedProperty != CSSPropertyVariable) {
         if (m_styleSheet && m_styleSheet->singleOwnerDocument())
             Deprecation::warnOnDeprecatedProperties(m_styleSheet->singleOwnerDocument()->frame(), unresolvedProperty);
         consumeDeclarationValue(range.makeSubRange(&range.peek(), declarationValueEnd), unresolvedProperty, important, ruleType);

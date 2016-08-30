@@ -49,7 +49,7 @@ private:
 CSSStyleValue* StylePropertyMap::get(const String& propertyName, ExceptionState& exceptionState)
 {
     CSSPropertyID propertyID = cssPropertyID(propertyName);
-    if (propertyID == CSSPropertyInvalid) {
+    if (propertyID == CSSPropertyInvalid || propertyID == CSSPropertyVariable) {
         // TODO(meade): Handle custom properties here.
         exceptionState.throwTypeError("Invalid propertyName: " + propertyName);
         return nullptr;
@@ -65,7 +65,7 @@ CSSStyleValue* StylePropertyMap::get(const String& propertyName, ExceptionState&
 CSSStyleValueVector StylePropertyMap::getAll(const String& propertyName, ExceptionState& exceptionState)
 {
     CSSPropertyID propertyID = cssPropertyID(propertyName);
-    if (propertyID != CSSPropertyInvalid)
+    if (propertyID != CSSPropertyInvalid && propertyID != CSSPropertyVariable)
         return getAllInternal(propertyID);
 
     // TODO(meade): Handle custom properties here.
@@ -76,7 +76,7 @@ CSSStyleValueVector StylePropertyMap::getAll(const String& propertyName, Excepti
 bool StylePropertyMap::has(const String& propertyName, ExceptionState& exceptionState)
 {
     CSSPropertyID propertyID = cssPropertyID(propertyName);
-    if (propertyID != CSSPropertyInvalid)
+    if (propertyID != CSSPropertyInvalid && propertyID != CSSPropertyVariable)
         return !getAllInternal(propertyID).isEmpty();
 
     // TODO(meade): Handle custom properties here.
@@ -87,7 +87,7 @@ bool StylePropertyMap::has(const String& propertyName, ExceptionState& exception
 void StylePropertyMap::set(const String& propertyName, CSSStyleValueOrCSSStyleValueSequenceOrString& item, ExceptionState& exceptionState)
 {
     CSSPropertyID propertyID = cssPropertyID(propertyName);
-    if (propertyID != CSSPropertyInvalid) {
+    if (propertyID != CSSPropertyInvalid && propertyID != CSSPropertyVariable) {
         set(propertyID, item, exceptionState);
         return;
     }
@@ -98,7 +98,7 @@ void StylePropertyMap::set(const String& propertyName, CSSStyleValueOrCSSStyleVa
 void StylePropertyMap::append(const String& propertyName, CSSStyleValueOrCSSStyleValueSequenceOrString& item, ExceptionState& exceptionState)
 {
     CSSPropertyID propertyID = cssPropertyID(propertyName);
-    if (propertyID != CSSPropertyInvalid) {
+    if (propertyID != CSSPropertyInvalid && propertyID != CSSPropertyVariable) {
         append(propertyID, item, exceptionState);
         return;
     }
@@ -109,7 +109,7 @@ void StylePropertyMap::append(const String& propertyName, CSSStyleValueOrCSSStyl
 void StylePropertyMap::remove(const String& propertyName, ExceptionState& exceptionState)
 {
     CSSPropertyID propertyID = cssPropertyID(propertyName);
-    if (propertyID != CSSPropertyInvalid) {
+    if (propertyID != CSSPropertyInvalid && propertyID != CSSPropertyVariable) {
         remove(propertyID, exceptionState);
         return;
     }

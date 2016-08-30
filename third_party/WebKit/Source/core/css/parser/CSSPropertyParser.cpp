@@ -165,6 +165,13 @@ bool CSSPropertyParser::parseValueStart(CSSPropertyID unresolvedProperty, bool i
 template <typename CharacterType>
 static CSSPropertyID unresolvedCSSPropertyID(const CharacterType* propertyName, unsigned length)
 {
+    if (length == 0)
+        return CSSPropertyInvalid;
+    if (length >= 2 && propertyName[0] == '-' && propertyName[1] == '-')
+        return CSSPropertyVariable;
+    if (length > maxCSSPropertyNameLength)
+        return CSSPropertyInvalid;
+
     char buffer[maxCSSPropertyNameLength + 1]; // 1 for null character
 
     for (unsigned i = 0; i != length; ++i) {
@@ -188,24 +195,12 @@ static CSSPropertyID unresolvedCSSPropertyID(const CharacterType* propertyName, 
 CSSPropertyID unresolvedCSSPropertyID(const String& string)
 {
     unsigned length = string.length();
-
-    if (!length)
-        return CSSPropertyInvalid;
-    if (length > maxCSSPropertyNameLength)
-        return CSSPropertyInvalid;
-
     return string.is8Bit() ? unresolvedCSSPropertyID(string.characters8(), length) : unresolvedCSSPropertyID(string.characters16(), length);
 }
 
 CSSPropertyID unresolvedCSSPropertyID(StringView string)
 {
     unsigned length = string.length();
-
-    if (!length)
-        return CSSPropertyInvalid;
-    if (length > maxCSSPropertyNameLength)
-        return CSSPropertyInvalid;
-
     return string.is8Bit() ? unresolvedCSSPropertyID(string.characters8(), length) : unresolvedCSSPropertyID(string.characters16(), length);
 }
 
@@ -297,7 +292,7 @@ static CSSValue* consumeWillChange(CSSParserTokenRange& range)
         if (range.peek().type() != IdentToken)
             return nullptr;
         CSSPropertyID unresolvedProperty = unresolvedCSSPropertyID(range.peek().value());
-        if (unresolvedProperty) {
+        if (unresolvedProperty != CSSPropertyInvalid && unresolvedProperty != CSSPropertyVariable) {
             ASSERT(CSSPropertyMetadata::isEnabledProperty(unresolvedProperty));
             // Now "all" is used by both CSSValue and CSSPropertyValue.
             // Need to return nullptr when currentValue is CSSPropertyAll.
@@ -1128,10 +1123,11 @@ static CSSValue* consumeTransitionProperty(CSSParserTokenRange& range)
     if (token.id() == CSSValueNone)
         return consumeIdent(range);
 
-    if (CSSPropertyID property = token.parseAsUnresolvedCSSPropertyID()) {
-        ASSERT(CSSPropertyMetadata::isEnabledProperty(property));
+    CSSPropertyID unresolvedProperty = token.parseAsUnresolvedCSSPropertyID();
+    if (unresolvedProperty != CSSPropertyInvalid && unresolvedProperty != CSSPropertyVariable) {
+        DCHECK(CSSPropertyMetadata::isEnabledProperty(unresolvedProperty));
         range.consumeIncludingWhitespace();
-        return CSSCustomIdentValue::create(property);
+        return CSSCustomIdentValue::create(unresolvedProperty);
     }
     return consumeCustomIdent(range);
 }

@@ -33,7 +33,6 @@
 #include "core/css/CSSVariableData.h"
 #include "core/css/ComputedStyleCSSValueMapping.h"
 #include "core/css/parser/CSSParser.h"
-#include "core/css/parser/CSSVariableParser.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
@@ -640,12 +639,12 @@ CSSRule* CSSComputedStyleDeclaration::parentRule() const
 String CSSComputedStyleDeclaration::getPropertyValue(const String& propertyName)
 {
     CSSPropertyID propertyID = cssPropertyID(propertyName);
-    if (!propertyID) {
-        if (CSSVariableParser::isValidVariableName(propertyName)) {
-            const CSSValue* value = getPropertyCSSValue(AtomicString(propertyName));
-            if (value)
-                return value->cssText();
-        }
+    if (!propertyID)
+        return String();
+    if (propertyID == CSSPropertyVariable) {
+        const CSSValue* value = getPropertyCSSValue(AtomicString(propertyName));
+        if (value)
+            return value->cssText();
         return String();
     }
     ASSERT(CSSPropertyMetadata::isEnabledProperty(propertyID));

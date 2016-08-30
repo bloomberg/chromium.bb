@@ -21,7 +21,8 @@ ScriptValue CSSStyleValue::parse(ScriptState* scriptState, const String& propert
     }
 
     CSSPropertyID propertyID = cssPropertyID(propertyName);
-    if (propertyID == CSSPropertyInvalid) {
+    // TODO(timloh): Handle custom properties
+    if (propertyID == CSSPropertyInvalid || propertyID == CSSPropertyVariable) {
         exceptionState.throwTypeError("Invalid property name");
         return ScriptValue::createNull(scriptState);
     }

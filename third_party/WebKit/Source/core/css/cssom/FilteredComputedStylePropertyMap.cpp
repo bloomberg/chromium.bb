@@ -4,8 +4,6 @@
 
 #include "core/css/cssom/FilteredComputedStylePropertyMap.h"
 
-#include "core/css/parser/CSSVariableParser.h"
-
 namespace blink {
 
 FilteredComputedStylePropertyMap::FilteredComputedStylePropertyMap(CSSComputedStyleDeclaration* computedStyleDeclaration, const Vector<CSSPropertyID>& nativeProperties, const Vector<AtomicString>& customProperties)
@@ -24,7 +22,7 @@ FilteredComputedStylePropertyMap::FilteredComputedStylePropertyMap(CSSComputedSt
 CSSStyleValue* FilteredComputedStylePropertyMap::get(const String& propertyName, ExceptionState& exceptionState)
 {
     CSSPropertyID propertyID = cssPropertyID(propertyName);
-    if (propertyID != CSSPropertyInvalid && m_nativeProperties.contains(propertyID)) {
+    if (propertyID >= firstCSSProperty && m_nativeProperties.contains(propertyID)) {
         CSSStyleValueVector styleVector = getAllInternal(propertyID);
         if (styleVector.isEmpty())
             return nullptr;
@@ -32,7 +30,7 @@ CSSStyleValue* FilteredComputedStylePropertyMap::get(const String& propertyName,
         return styleVector[0];
     }
 
-    if (propertyID == CSSPropertyInvalid && CSSVariableParser::isValidVariableName(propertyName) && m_customProperties.contains(AtomicString(propertyName))) {
+    if (propertyID == CSSPropertyVariable && m_customProperties.contains(AtomicString(propertyName))) {
         CSSStyleValueVector styleVector = getAllInternal(AtomicString(propertyName));
         if (styleVector.isEmpty())
             return nullptr;
@@ -47,10 +45,10 @@ CSSStyleValue* FilteredComputedStylePropertyMap::get(const String& propertyName,
 CSSStyleValueVector FilteredComputedStylePropertyMap::getAll(const String& propertyName, ExceptionState& exceptionState)
 {
     CSSPropertyID propertyID = cssPropertyID(propertyName);
-    if (propertyID != CSSPropertyInvalid && m_nativeProperties.contains(propertyID))
+    if (propertyID >= firstCSSProperty && m_nativeProperties.contains(propertyID))
         return getAllInternal(propertyID);
 
-    if (propertyID == CSSPropertyInvalid && CSSVariableParser::isValidVariableName(propertyName) && m_customProperties.contains(AtomicString(propertyName)))
+    if (propertyID == CSSPropertyVariable && m_customProperties.contains(AtomicString(propertyName)))
         return getAllInternal(AtomicString(propertyName));
 
     exceptionState.throwTypeError("Invalid propertyName: " + propertyName);
@@ -60,10 +58,10 @@ CSSStyleValueVector FilteredComputedStylePropertyMap::getAll(const String& prope
 bool FilteredComputedStylePropertyMap::has(const String& propertyName, ExceptionState& exceptionState)
 {
     CSSPropertyID propertyID = cssPropertyID(propertyName);
-    if (propertyID != CSSPropertyInvalid && m_nativeProperties.contains(propertyID))
+    if (propertyID >= firstCSSProperty && m_nativeProperties.contains(propertyID))
         return !getAllInternal(propertyID).isEmpty();
 
-    if (propertyID == CSSPropertyInvalid && CSSVariableParser::isValidVariableName(propertyName) && m_customProperties.contains(AtomicString(propertyName)))
+    if (propertyID == CSSPropertyVariable && m_customProperties.contains(AtomicString(propertyName)))
         return !getAllInternal(AtomicString(propertyName)).isEmpty();
 
     exceptionState.throwTypeError("Invalid propertyName: " + propertyName);

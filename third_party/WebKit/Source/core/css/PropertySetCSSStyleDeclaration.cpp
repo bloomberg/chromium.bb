@@ -28,7 +28,6 @@
 #include "core/css/CSSKeyframesRule.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/StylePropertySet.h"
-#include "core/css/parser/CSSVariableParser.h"
 #include "core/dom/Element.h"
 #include "core/dom/MutationObserverInterestGroup.h"
 #include "core/dom/MutationRecord.h"
@@ -186,25 +185,24 @@ void AbstractPropertySetCSSStyleDeclaration::setCSSText(const String& text, Exce
 String AbstractPropertySetCSSStyleDeclaration::getPropertyValue(const String& propertyName)
 {
     CSSPropertyID propertyID = cssPropertyID(propertyName);
-    if (!propertyID) {
-        if (!CSSVariableParser::isValidVariableName(propertyName))
-            return String();
+    if (!propertyID)
+        return String();
+    if (propertyID == CSSPropertyVariable)
         return propertySet().getPropertyValue(AtomicString(propertyName));
-    }
     return propertySet().getPropertyValue(propertyID);
 }
 
 String AbstractPropertySetCSSStyleDeclaration::getPropertyPriority(const String& propertyName)
 {
-    bool important = false;
     CSSPropertyID propertyID = cssPropertyID(propertyName);
-    if (!propertyID) {
-        if (!CSSVariableParser::isValidVariableName(propertyName))
-            return String();
+    if (!propertyID)
+        return String();
+
+    bool important = false;
+    if (propertyID == CSSPropertyVariable)
         important = propertySet().propertyIsImportant(AtomicString(propertyName));
-    } else {
+    else
         important = propertySet().propertyIsImportant(propertyID);
-    }
     return important ? "important" : "";
 }
 
@@ -213,7 +211,7 @@ String AbstractPropertySetCSSStyleDeclaration::getPropertyShorthand(const String
     CSSPropertyID propertyID = cssPropertyID(propertyName);
 
     // Custom properties don't have shorthands, so we can ignore them here.
-    if (!propertyID)
+    if (!propertyID || propertyID == CSSPropertyVariable)
         return String();
     if (isShorthandProperty(propertyID))
         return String();
@@ -228,7 +226,7 @@ bool AbstractPropertySetCSSStyleDeclaration::isPropertyImplicit(const String& pr
     CSSPropertyID propertyID = cssPropertyID(propertyName);
 
     // Custom properties don't have shorthands, so we can ignore them here.
-    if (!propertyID)
+    if (!propertyID || propertyID == CSSPropertyVariable)
         return false;
     return propertySet().isPropertyImplicit(propertyID);
 }
@@ -236,11 +234,8 @@ bool AbstractPropertySetCSSStyleDeclaration::isPropertyImplicit(const String& pr
 void AbstractPropertySetCSSStyleDeclaration::setProperty(const String& propertyName, const String& value, const String& priority, ExceptionState& exceptionState)
 {
     CSSPropertyID propertyID = unresolvedCSSPropertyID(propertyName);
-    if (!propertyID) {
-        if (!CSSVariableParser::isValidVariableName(propertyName))
-            return;
-        propertyID = CSSPropertyVariable;
-    }
+    if (!propertyID)
+        return;
 
     bool important = equalIgnoringCase(priority, "important");
     if (!important && !priority.isEmpty())
@@ -252,11 +247,8 @@ void AbstractPropertySetCSSStyleDeclaration::setProperty(const String& propertyN
 String AbstractPropertySetCSSStyleDeclaration::removeProperty(const String& propertyName, ExceptionState& exceptionState)
 {
     CSSPropertyID propertyID = cssPropertyID(propertyName);
-    if (!propertyID) {
-        if (!CSSVariableParser::isValidVariableName(propertyName))
-            return String();
-        propertyID = CSSPropertyVariable;
-    }
+    if (!propertyID)
+        return String();
 
     StyleAttributeMutationScope mutationScope(this);
     willMutate();

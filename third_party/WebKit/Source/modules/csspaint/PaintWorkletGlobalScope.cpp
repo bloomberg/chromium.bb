@@ -7,7 +7,6 @@
 #include "bindings/core/v8/V8BindingMacros.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/CSSPropertyNames.h"
-#include "core/css/parser/CSSVariableParser.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/inspector/MainThreadDebugger.h"
 #include "modules/csspaint/CSSPaintDefinition.h"
@@ -75,10 +74,9 @@ void PaintWorkletGlobalScope::registerPaint(const String& name, const ScriptValu
 
         for (const auto& property : properties) {
             CSSPropertyID propertyID = cssPropertyID(property);
-            if (propertyID == CSSPropertyInvalid) {
-                if (CSSVariableParser::isValidVariableName(property))
-                    customInvalidationProperties.append(property);
-            } else {
+            if (propertyID == CSSPropertyVariable) {
+                customInvalidationProperties.append(property);
+            } else if (propertyID != CSSPropertyInvalid) {
                 nativeInvalidationProperties.append(propertyID);
             }
         }
