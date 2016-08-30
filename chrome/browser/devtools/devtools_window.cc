@@ -374,7 +374,9 @@ void DevToolsWindow::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kDevToolsPortForwardingDefaultSet,
                                 false);
   registry->RegisterDictionaryPref(prefs::kDevToolsPortForwardingConfig);
-  registry->RegisterListPref(prefs::kDevToolsTargetDiscoveryConfig);
+  registry->RegisterBooleanPref(prefs::kDevToolsDiscoverTCPTargetsEnabled,
+                                false);
+  registry->RegisterListPref(prefs::kDevToolsTCPDiscoveryConfig);
   registry->RegisterDictionaryPref(prefs::kDevToolsPreferences);
 }
 

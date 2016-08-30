@@ -550,7 +550,8 @@ extern const char kDevToolsPortForwardingEnabled[];
 extern const char kDevToolsPortForwardingDefaultSet[];
 extern const char kDevToolsPortForwardingConfig[];
 extern const char kDevToolsPreferences[];
-extern const char kDevToolsTargetDiscoveryConfig[];
+extern const char kDevToolsDiscoverTCPTargetsEnabled[];
+extern const char kDevToolsTCPDiscoveryConfig[];
 #if defined(OS_ANDROID)
 extern const char kDevToolsRemoteEnabled[];
 #endif

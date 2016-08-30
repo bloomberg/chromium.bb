@@ -1537,9 +1537,13 @@ const char kDevToolsPortForwardingDefaultSet[] =
 // A dictionary of port->location pairs for port forwarding.
 const char kDevToolsPortForwardingConfig[] = "devtools.port_forwarding_config";
 
+// A boolean specifying whether or not Chrome will scan for available remote
+// debugging targets.
+const char kDevToolsDiscoverTCPTargetsEnabled[] =
+    "devtools.discover_tcp_targets";
+
 // A list of strings representing devtools target discovery servers.
-const char kDevToolsTargetDiscoveryConfig[] =
-    "devtools.target_discovery_config";
+const char kDevToolsTCPDiscoveryConfig[] = "devtools.tcp_discovery_config";
 
 // A dictionary with generic DevTools settings.
 const char kDevToolsPreferences[] = "devtools.preferences";

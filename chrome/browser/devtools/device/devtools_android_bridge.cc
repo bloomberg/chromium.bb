@@ -70,6 +70,9 @@ const char kPageReloadCommand[] = "Page.reload";
 
 const char kWebViewSocketPrefix[] = "webview_devtools_remote";
 
+const char kChromeDiscoveryURL[] = "localhost:9222";
+const char kNodeDiscoveryURL[] = "localhost:9229";
+
 bool BrowserIdFromString(const std::string& browser_id_str,
                          DevToolsAndroidBridge::BrowserId* browser_id) {
   size_t colon_pos = browser_id_str.find(':');
@@ -728,9 +731,17 @@ DevToolsAndroidBridge::DevToolsAndroidBridge(
   pref_change_registrar_.Add(prefs::kDevToolsDiscoverUsbDevicesEnabled,
       base::Bind(&DevToolsAndroidBridge::CreateDeviceProviders,
                  base::Unretained(this)));
-  pref_change_registrar_.Add(prefs::kDevToolsTargetDiscoveryConfig,
+  pref_change_registrar_.Add(prefs::kDevToolsTCPDiscoveryConfig,
       base::Bind(&DevToolsAndroidBridge::CreateDeviceProviders,
                  base::Unretained(this)));
+  pref_change_registrar_.Add(prefs::kDevToolsDiscoverTCPTargetsEnabled,
+      base::Bind(&DevToolsAndroidBridge::CreateDeviceProviders,
+                 base::Unretained(this)));
+  base::ListValue* target_discovery = new base::ListValue();
+  target_discovery->AppendString(kChromeDiscoveryURL);
+  target_discovery->AppendString(kNodeDiscoveryURL);
+  profile->GetPrefs()->SetDefaultPrefValue(
+      prefs::kDevToolsTCPDiscoveryConfig, target_discovery);
   CreateDeviceProviders();
 }
 
@@ -954,7 +965,9 @@ void DevToolsAndroidBridge::CreateDeviceProviders() {
   AndroidDeviceManager::DeviceProviders device_providers;
   PrefService* service = profile_->GetPrefs();
   const base::ListValue* targets =
-      service->GetList(prefs::kDevToolsTargetDiscoveryConfig);
+      service->GetBoolean(prefs::kDevToolsDiscoverTCPTargetsEnabled)
+          ? service->GetList(prefs::kDevToolsTCPDiscoveryConfig)
+          : nullptr;
   scoped_refptr<TCPDeviceProvider> provider = CreateTCPDeviceProvider(targets);
   if (tcp_provider_callback_)
     tcp_provider_callback_.Run(provider);
