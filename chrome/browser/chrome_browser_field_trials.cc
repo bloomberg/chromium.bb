@@ -18,11 +18,14 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/metrics/chrome_metrics_service_client.h"
+#include "chrome/browser/metrics/chrome_metrics_services_manager_client.h"
 #include "chrome/browser/tracing/background_tracing_field_trial.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/variations/variations_associated_data.h"
+#include "components/version_info/version_info.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/chrome_browser_field_trials_mobile.h"
@@ -111,6 +114,27 @@ void InstantiatePersistentHistograms() {
   allocator->SetPersistentLocation(active_file);
 }
 
+// Create a field trial to control metrics/crash sampling for Stable on
+// Windows/Android if no variations seed was applied.
+void CreateFallbackSamplingTrialIfNeeded(bool has_seed,
+                                         base::FeatureList* feature_list) {
+#if defined(OS_WIN) || defined(OS_ANDROID)
+  // Only create the fallback trial if there isn't already a variations seed
+  // being applied. This should occur during first run when first-run variations
+  // isn't supported. It's assumed that, if there is a seed, then it either
+  // contains the relavent study, or is intentionally omitted, so no fallback is
+  // needed.
+  if (has_seed)
+    return;
+
+  // Sampling is only supported on Stable.
+  if (chrome::GetChannel() != version_info::Channel::STABLE)
+    return;
+
+  ChromeMetricsServicesManagerClient::CreateFallbackSamplingTrial(feature_list);
+#endif  // defined(OS_WIN) || defined(OS_ANDROID)
+}
+
 }  // namespace
 
 ChromeBrowserFieldTrials::ChromeBrowserFieldTrials(
@@ -130,6 +154,12 @@ void ChromeBrowserFieldTrials::SetupFieldTrials() {
 #else
   chrome::SetupDesktopFieldTrials(parsed_command_line_);
 #endif
+}
+
+void ChromeBrowserFieldTrials::SetupFeatureControllingFieldTrials(
+    bool has_seed,
+    base::FeatureList* feature_list) {
+  CreateFallbackSamplingTrialIfNeeded(has_seed, feature_list);
 }
 
 void ChromeBrowserFieldTrials::InstantiateDynamicTrials() {

@@ -9,6 +9,7 @@
 #include "base/macros.h"
 
 namespace base {
+class FeatureList;
 class Time;
 }
 
@@ -18,6 +19,15 @@ class ChromeBrowserFieldTrials {
   ~ChromeBrowserFieldTrials();
 
   void SetupFieldTrials();
+
+  // Create field trials that will control feature list features. This should be
+  // called during the same timing window as
+  // FeatureList::AssociateReportingFieldTrial. |has_seed| indicates that the
+  // variations service used a seed to create field trials. This can be used to
+  // prevent associating a field trial with a feature that you expect to be
+  // controlled by the variations seed.
+  void SetupFeatureControllingFieldTrials(bool has_seed,
+                                          base::FeatureList* feature_list);
 
  private:
   // Instantiates dynamic trials by querying their state, to ensure they get

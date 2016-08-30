@@ -900,8 +900,12 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
 
   variations::VariationsService* variations_service =
       browser_process_->variations_service();
-  if (variations_service)
-    variations_service->CreateTrialsFromSeed(feature_list.get());
+
+  bool has_seed = variations_service &&
+                  variations_service->CreateTrialsFromSeed(feature_list.get());
+
+  browser_field_trials_.SetupFeatureControllingFieldTrials(has_seed,
+                                                           feature_list.get());
 
   base::FeatureList::SetInstance(std::move(feature_list));
 

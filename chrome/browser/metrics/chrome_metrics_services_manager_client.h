@@ -27,6 +27,14 @@ class ChromeMetricsServicesManagerClient
   explicit ChromeMetricsServicesManagerClient(PrefService* local_state);
   ~ChromeMetricsServicesManagerClient() override;
 
+  // Unconditionally attempts to create a field trial to control client side
+  // metrics/crash sampling to use as a fallback when one hasn't been
+  // provided. This is expected to occur on first-run on platforms that don't
+  // have first-run variations support. This should only be called when there is
+  // no existing field trial controlling the sampling feature, and on the
+  // correct platform and channel.
+  static void CreateFallbackSamplingTrial(base::FeatureList* feature_list);
+
   // Determines if this client is eligible to send metrics. If they are, and
   // there was user consent, then metrics and crashes would be reported.
   static bool IsClientInSample();

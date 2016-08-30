@@ -63,6 +63,17 @@ void PostStoreMetricsClientInfo(const metrics::ClientInfo& client_info) {
       base::Bind(&GoogleUpdateSettings::StoreMetricsClientInfo, client_info));
 }
 
+// Appends a group to the sampling controlling |trial|. The group will be
+// associated with a variation param for reporting sampling |rate| in per mille.
+void AppendSamplingTrialGroup(const std::string& group_name,
+                              int rate,
+                              base::FieldTrial* trial) {
+  std::map<std::string, std::string> params = {
+      {kRateParamName, base::IntToString(rate)}};
+  variations::AssociateVariationParams(trial->trial_name(), group_name, params);
+  trial->AppendGroup(group_name, rate);
+}
+
 // Only clients that were given an opt-out metrics-reporting consent flow are
 // eligible for sampling.
 bool IsClientEligibleForSampling() {
@@ -102,6 +113,40 @@ ChromeMetricsServicesManagerClient::ChromeMetricsServicesManagerClient(
 }
 
 ChromeMetricsServicesManagerClient::~ChromeMetricsServicesManagerClient() {}
+
+// static
+void ChromeMetricsServicesManagerClient::CreateFallbackSamplingTrial(
+    base::FeatureList* feature_list) {
+  // The trial name must be kept in sync with the server config controlling
+  // sampling. If they don't match, then clients will be shuffled into different
+  // groups when the server config takes over from the fallback trial.
+  static const char kTrialName[] = "MetricsAndCrashSampling";
+  scoped_refptr<base::FieldTrial> trial(
+      base::FieldTrialList::FactoryGetFieldTrial(
+          kTrialName, 1000, "Default", base::FieldTrialList::kNoExpirationYear,
+          1, 1, base::FieldTrial::ONE_TIME_RANDOMIZED, nullptr));
+
+  // Like the trial name, the order that these two groups are added to the trial
+  // must be kept in sync with the order that they appear in the server
+  // config.
+
+  // 100 per-mille sampling rate group.
+  static const char kInSampleGroup[] = "InReportingSample";
+  AppendSamplingTrialGroup(kInSampleGroup, 100, trial.get());
+
+  // 900 per-mille sampled out.
+  static const char kSampledOutGroup[] = "OutOfReportingSample";
+  AppendSamplingTrialGroup(kSampledOutGroup, 900, trial.get());
+
+  // Setup the feature.
+  const std::string& group_name = trial->GetGroupNameWithoutActivation();
+  feature_list->RegisterFieldTrialOverride(
+      kMetricsReportingFeature.name,
+      group_name == kSampledOutGroup
+          ? base::FeatureList::OVERRIDE_DISABLE_FEATURE
+          : base::FeatureList::OVERRIDE_ENABLE_FEATURE,
+      trial.get());
+}
 
 // static
 bool ChromeMetricsServicesManagerClient::IsClientInSample() {
