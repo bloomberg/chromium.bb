@@ -248,13 +248,14 @@ var SiteSettingsBehaviorImpl = {
   /**
    * A utility function to compute the description for the category.
    * @param {string} category The category to show the description for.
-   * @param {boolean} categoryEnabled The state of the global toggle.
+   * @param {string} setting The string value of the setting.
    * @param {boolean} showRecommendation Whether to show the '(recommended)'
    *     label prefix.
    * @return {string} The category description.
    * @protected
    */
-  computeCategoryDesc: function(category, categoryEnabled, showRecommendation) {
+  computeCategoryDesc: function(category, setting, showRecommendation) {
+    var categoryEnabled = this.computeIsSettingEnabled(category, setting);
     switch (category) {
       case settings.ContentSettingsTypes.JAVASCRIPT:
         // "Allowed (recommended)" vs "Blocked".
@@ -315,14 +316,11 @@ var SiteSettingsBehaviorImpl = {
             loadTimeData.getString('siteSettingsShowAllRecommended') :
             loadTimeData.getString('siteSettingsShowAll');
       case settings.ContentSettingsTypes.PLUGINS:
-        // "Detect and run important content (recommended)" vs "Let me choose".
-        if (!categoryEnabled) {
-          return loadTimeData.getString('siteSettingsLetMeChoose');
-        }
-        return showRecommendation ?
-            loadTimeData.getString(
-                 'siteSettingsDetectAndRunImportantRecommended') :
-            loadTimeData.getString('siteSettingsDetectAndRunImportant');
+        if (setting == settings.PermissionValues.ALLOW)
+          return loadTimeData.getString('siteSettingsFlashAllow');
+        if (setting == settings.PermissionValues.BLOCK)
+          return loadTimeData.getString('siteSettingsFlashBlock');
+        return loadTimeData.getString('siteSettingsFlashAskBefore');
       case settings.ContentSettingsTypes.BACKGROUND_SYNC:
         // "Allow sites to finish sending and receiving data" vs "Do not allow".
         if (!categoryEnabled) {

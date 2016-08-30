@@ -14,6 +14,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/policy_indicator_localized_strings_provider.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -1123,13 +1124,11 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source) {
       {"cookieServiceWorker", IDS_COOKIES_SERVICE_WORKER},
       {"cookieSingular", IDS_COOKIES_SINGLE_COOKIE},
       {"embeddedOnHost", IDS_EXCEPTIONS_GEOLOCATION_EMBEDDED_ON_HOST},
-      {"appCacheManifest",
-       IDS_COOKIES_APPLICATION_CACHE_MANIFEST_LABEL},
+      {"appCacheManifest", IDS_COOKIES_APPLICATION_CACHE_MANIFEST_LABEL},
       {"cacheStorageLastModified",
        IDS_COOKIES_LOCAL_STORAGE_LAST_MODIFIED_LABEL},
       {"cacheStorageOrigin", IDS_COOKIES_LOCAL_STORAGE_ORIGIN_LABEL},
-      {"cacheStorageSize",
-       IDS_COOKIES_LOCAL_STORAGE_SIZE_ON_DISK_LABEL},
+      {"cacheStorageSize", IDS_COOKIES_LOCAL_STORAGE_SIZE_ON_DISK_LABEL},
       {"channelIdServerId", IDS_COOKIES_CHANNEL_ID_ORIGIN_LABEL},
       {"channelIdType", IDS_COOKIES_CHANNEL_ID_TYPE_LABEL},
       {"channelIdCreated", IDS_COOKIES_CHANNEL_ID_CREATED_LABEL},
@@ -1150,18 +1149,15 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source) {
       {"fileSystemTemporaryUsage",
        IDS_COOKIES_FILE_SYSTEM_TEMPORARY_USAGE_LABEL},
       {"indexedDbSize", IDS_COOKIES_LOCAL_STORAGE_SIZE_ON_DISK_LABEL},
-      {"indexedDbLastModified",
-       IDS_COOKIES_LOCAL_STORAGE_LAST_MODIFIED_LABEL},
+      {"indexedDbLastModified", IDS_COOKIES_LOCAL_STORAGE_LAST_MODIFIED_LABEL},
       {"indexedDbOrigin", IDS_COOKIES_LOCAL_STORAGE_ORIGIN_LABEL},
       {"localStorageLastModified",
        IDS_COOKIES_LOCAL_STORAGE_LAST_MODIFIED_LABEL},
       {"localStorageOrigin", IDS_COOKIES_LOCAL_STORAGE_ORIGIN_LABEL},
-      {"localStorageSize",
-       IDS_COOKIES_LOCAL_STORAGE_SIZE_ON_DISK_LABEL},
+      {"localStorageSize", IDS_COOKIES_LOCAL_STORAGE_SIZE_ON_DISK_LABEL},
       {"serviceWorkerOrigin", IDS_COOKIES_LOCAL_STORAGE_ORIGIN_LABEL},
       {"serviceWorkerScopes", IDS_COOKIES_SERVICE_WORKER_SCOPES_LABEL},
-      {"serviceWorkerSize",
-       IDS_COOKIES_LOCAL_STORAGE_SIZE_ON_DISK_LABEL},
+      {"serviceWorkerSize", IDS_COOKIES_LOCAL_STORAGE_SIZE_ON_DISK_LABEL},
       {"webdbDesc", IDS_COOKIES_WEB_DATABASE_DESCRIPTION_LABEL},
       {"siteSettingsCategoryPageTitle", IDS_SETTINGS_SITE_SETTINGS_CATEGORY},
       {"siteSettingsCategoryAllSites", IDS_SETTINGS_SITE_SETTINGS_ALL_SITES},
@@ -1193,8 +1189,7 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source) {
       {"siteSettingsPopups", IDS_SETTINGS_SITE_SETTINGS_POPUPS},
       {"siteSettingsUnsandboxedPlugins",
        IDS_SETTINGS_SITE_SETTINGS_UNSANDBOXED_PLUGINS},
-      {"siteSettingsUsbDevices",
-       IDS_SETTINGS_SITE_SETTINGS_USB_DEVICES},
+      {"siteSettingsUsbDevices", IDS_SETTINGS_SITE_SETTINGS_USB_DEVICES},
       {"siteSettingsFullscreen", IDS_SETTINGS_SITE_SETTINGS_FULLSCREEN},
       {"siteSettingsMaySaveCookies",
        IDS_SETTINGS_SITE_SETTINGS_MAY_SAVE_COOKIES},
@@ -1209,28 +1204,21 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_SITE_SETTINGS_ASK_BEFORE_SENDING},
       {"siteSettingsAskBeforeSendingRecommended",
        IDS_SETTINGS_SITE_SETTINGS_ASK_BEFORE_SENDING_RECOMMENDED},
-      {"siteSettingsDetectAndRunImportant",
-       IDS_SETTINGS_SITE_SETTINGS_PLUGINS_DETECT_IMPORTANT},
-      {"siteSettingsDetectAndRunImportantRecommended",
-       IDS_SETTINGS_SITE_SETTINGS_PLUGINS_DETECT_IMPORTANT_RECOMMENDED},
-      {"siteSettingsLetMeChoose",
-       IDS_SETTINGS_SITE_SETTINGS_PLUGINS_CHOOSE},
+      {"siteSettingsFlashAllow", IDS_SETTINGS_SITE_SETTINGS_FLASH_ALLOW},
+      {"siteSettingsFlashBlock", IDS_SETTINGS_SITE_SETTINGS_FLASH_BLOCK},
       {"siteSettingsAllowRecentlyClosedSites",
        IDS_SETTINGS_SITE_SETTINGS_BACKGROUND_SYNC_ALLOW_RECENTLY_CLOSED_SITES},
       {"siteSettingsAllowRecentlyClosedSitesRecommended",
        IDS_SETTINGS_SITE_SETTINGS_BACKGROUND_SYNC_ALLOW_RECENTLY_CLOSED_SITES_RECOMMENDED},
       {"siteSettingsBackgroundSyncBlocked",
        IDS_SETTINGS_SITE_SETTINGS_BACKGROUND_SYNC_BLOCKED},
-      {"siteSettingsHandlersAsk",
-       IDS_SETTINGS_SITE_SETTINGS_HANDLERS_ASK},
+      {"siteSettingsHandlersAsk", IDS_SETTINGS_SITE_SETTINGS_HANDLERS_ASK},
       {"siteSettingsHandlersAskRecommended",
        IDS_SETTINGS_SITE_SETTINGS_HANDLERS_ASK_RECOMMENDED},
       {"siteSettingsHandlersBlocked",
        IDS_SETTINGS_SITE_SETTINGS_HANDLERS_BLOCKED},
-      {"siteSettingsKeygenAllow",
-       IDS_SETTINGS_SITE_SETTINGS_KEYGEN_ALLOW},
-      {"siteSettingsKeygenBlock",
-       IDS_SETTINGS_SITE_SETTINGS_KEYGEN_BLOCK},
+      {"siteSettingsKeygenAllow", IDS_SETTINGS_SITE_SETTINGS_KEYGEN_ALLOW},
+      {"siteSettingsKeygenBlock", IDS_SETTINGS_SITE_SETTINGS_KEYGEN_BLOCK},
       {"siteSettingsKeygenBlockRecommended",
        IDS_SETTINGS_SITE_SETTINGS_KEYGEN_BLOCK_RECOMMENDED},
       {"siteSettingsAutoDownloadAsk",
@@ -1291,6 +1279,26 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source) {
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
+
+  if (base::FeatureList::IsEnabled(features::kPreferHtmlOverPlugins)) {
+    LocalizedString flash_strings[] = {
+        {"siteSettingsFlashAskBefore",
+         IDS_SETTINGS_SITE_SETTINGS_FLASH_ASK_BEFORE_RUNNING},
+        {"siteSettingsFlashAskBeforeSubtitle",
+         IDS_SETTINGS_SITE_SETTINGS_FLASH_ASK_BEFORE_RUNNING_SUBTITLE},
+    };
+    AddLocalizedStringsBulk(html_source, flash_strings,
+                            arraysize(flash_strings));
+  } else {
+    LocalizedString flash_strings[] = {
+        {"siteSettingsFlashAskBefore",
+         IDS_SETTINGS_SITE_SETTINGS_FLASH_DETECT_IMPORTANT},
+        {"siteSettingsFlashAskBeforeSubtitle",
+         IDS_SETTINGS_SITE_SETTINGS_FLASH_DETECT_IMPORTANT_SUBTITLE},
+    };
+    AddLocalizedStringsBulk(html_source, flash_strings,
+                            arraysize(flash_strings));
+  }
 }
 
 void AddUsersStrings(content::WebUIDataSource* html_source) {

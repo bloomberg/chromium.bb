@@ -78,8 +78,10 @@ Polymer({
    * @private
    */
   computeHandlersDescription_: function(categoryEnabled) {
+    var setting = categoryEnabled ?
+        settings.PermissionValues.ALLOW : settings.PermissionValues.BLOCK;
     return this.computeCategoryDesc(
-        settings.ContentSettingsTypes.PROTOCOL_HANDLERS, categoryEnabled, true);
+        settings.ContentSettingsTypes.PROTOCOL_HANDLERS, setting, true);
   },
 
   /**

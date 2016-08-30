@@ -1257,14 +1257,23 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIES_ALLOW_SITES_RECOMMENDED" desc="The 'allow cookies' label in site settings -- the recommended setting for when sites want to read/write cookie information.">
     Allow sites to save and read cookie data (recommended)
   </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_PLUGINS_DETECT_IMPORTANT" desc="The 'detect and run important content' label in site settings.">
-    Detect and run important plugin content
+  <message name="IDS_SETTINGS_SITE_SETTINGS_FLASH_ALLOW" desc="The 'allow' label for Flash in site settings.">
+    Allow sites to run Flash
   </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_PLUGINS_DETECT_IMPORTANT_RECOMMENDED" desc="The 'detect and run important content' label in site settings -- the recommended setting for when sites want to run plugins.">
-    Detect and run important plugin content (recommended)
+  <message name="IDS_SETTINGS_SITE_SETTINGS_FLASH_BLOCK" desc="The 'block' label for Flash in site settings.">
+    Block sites from running Flash
   </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_PLUGINS_CHOOSE" desc="The 'let me choose' label in site settings.">
-    Let me choose when to run plugin content
+  <message name="IDS_SETTINGS_SITE_SETTINGS_FLASH_DETECT_IMPORTANT" desc="The 'detect and run important content' label in site settings.">
+    Run only important content
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_FLASH_DETECT_IMPORTANT_SUBTITLE" desc="The 'detect and run important content' subtitle label in site settings.">
+    Detect and run only important Flash content (recommended)
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_FLASH_ASK_BEFORE_RUNNING" desc="The 'ask before running' label for Flash in site settings.">
+    Ask first
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_FLASH_ASK_BEFORE_RUNNING_SUBTITLE" desc="The 'ask before running' subtitle label for Flash in site settings.">
+    Ask before allowing sites to run Flash (recommended)
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_BACKGROUND_SYNC_ALLOW_RECENTLY_CLOSED_SITES" desc="The allow label for background sync in site settings.">
     Allow recently closed sites to finish sending and receiving data

@@ -30,12 +30,19 @@ Polymer({
     },
 
     /**
-     * Whether to show the '(recommended)' label prefix for permissions.
+     * The description to be shown next to the slider.
      */
-    showRecommendation: {
+    sliderDescription_: String,
+
+    /**
+     * Used only for the Flash to persist the Ask First checkbox state.
+     * Defaults to true, as the checkbox should be checked unless the user
+     * has explicitly unchecked it or has the ALLOW setting on Flash.
+     */
+    flashAskFirst_: {
       type: Boolean,
       value: true,
-    },
+    }
   },
 
   observers: [
@@ -58,10 +65,10 @@ Polymer({
   },
 
   /**
-   * A handler for flipping the toggle value.
+   * A handler for changing the default permission value for a content type.
    * @private
    */
-  onToggleChange_: function(event) {
+  onChangePermissionControl_: function(event) {
     switch (this.category) {
       case settings.ContentSettingsTypes.BACKGROUND_SYNC:
       case settings.ContentSettingsTypes.COOKIES:
@@ -91,12 +98,14 @@ Polymer({
                 settings.PermissionValues.BLOCK);
         break;
       case settings.ContentSettingsTypes.PLUGINS:
-        // "Detect important" vs "Let me choose".
-        this.browserProxy.setDefaultValueForContentType(
-            this.category,
-            this.categoryEnabled ?
-                settings.PermissionValues.IMPORTANT_CONTENT :
-                settings.PermissionValues.BLOCK);
+        // This category is tri-state: "Allow", "Block", "Ask before running".
+        var value = settings.PermissionValues.BLOCK;
+        if (this.categoryEnabled) {
+          value = this.flashAskFirst_ ?
+              settings.PermissionValues.IMPORTANT_CONTENT :
+              settings.PermissionValues.ALLOW;
+        }
+        this.browserProxy.setDefaultValueForContentType(this.category, value);
         break;
       default:
         assertNotReached('Invalid category: ' + this.category);
@@ -113,7 +122,28 @@ Polymer({
             this.category).then(function(setting) {
               this.categoryEnabled =
                   this.computeIsSettingEnabled(this.category, setting);
+
+              // Flash only shows ALLOW or BLOCK descriptions on the slider.
+              var sliderSetting = setting;
+              if (this.category == settings.ContentSettingsTypes.PLUGINS &&
+                  setting == settings.PermissionValues.IMPORTANT_CONTENT) {
+                sliderSetting = settings.PermissionValues.ALLOW;
+              }
+              this.sliderDescription_ =
+                  this.computeCategoryDesc(this.category, sliderSetting, true);
+
+              // The checkbox should only be cleared when the Flash setting
+              // is explicitly set to ALLOW.
+              if (this.category == settings.ContentSettingsTypes.PLUGINS &&
+                  setting == settings.PermissionValues.ALLOW) {
+                this.flashAskFirst_ = false;
+              }
             }.bind(this));
+  },
+
+  /** @private */
+  isFlashCategory_: function(category) {
+    return category == settings.ContentSettingsTypes.PLUGINS;
   },
 
   /**

@@ -53,8 +53,7 @@ Polymer({
   setDefaultValue_: function(category, id) {
     this.browserProxy.getDefaultValueForContentType(
         category).then(function(setting) {
-          var enabled = this.computeIsSettingEnabled(category, setting);
-          var description = this.computeCategoryDesc(category, enabled, false);
+          var description = this.computeCategoryDesc(category, setting, false);
           this.$$(id).innerText = description;
         }.bind(this));
   },

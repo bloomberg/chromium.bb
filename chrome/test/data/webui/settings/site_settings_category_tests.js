@@ -44,6 +44,18 @@ cr.define('site_settings_category', function() {
         },
       };
 
+      /**
+       * An example pref where the Flash category is set on detect mode.
+       */
+      var prefsFlashDetect = {
+        defaults: {
+          plugins: 'detect_important_content',
+        },
+        exceptions: {
+          plugins: [],
+        },
+      };
+
       // Import necessary html before running suite.
       suiteSetup(function() {
         return PolymerTest.importHtml(
@@ -122,14 +134,23 @@ cr.define('site_settings_category', function() {
               category != settings.ContentSettingsTypes.USB_DEVICES) {
             assertNotEquals('', testElement.computeCategoryTextId(category));
 
-            assertNotEquals(
-                '', testElement.computeCategoryDesc(category, true, true));
-            assertNotEquals(
-                '', testElement.computeCategoryDesc(category, true, false));
-            assertNotEquals(
-                '', testElement.computeCategoryDesc(category, false, true));
-            assertNotEquals(
-                '', testElement.computeCategoryDesc(category, false, false));
+            assertNotEquals('', testElement.computeCategoryDesc(
+                category, settings.PermissionValues.ALLOW, true));
+            assertNotEquals('', testElement.computeCategoryDesc(
+                category, settings.PermissionValues.ALLOW, false));
+            assertNotEquals('', testElement.computeCategoryDesc(
+                category, settings.PermissionValues.BLOCK, true));
+            assertNotEquals('', testElement.computeCategoryDesc(
+                category, settings.PermissionValues.BLOCK, false));
+
+            // Test additional tri-state values:
+            if (category == settings.ContentSettingsTypes.PLUGINS) {
+              assertNotEquals('', testElement.computeCategoryDesc(
+                  category, settings.PermissionValues.IMPORTANT_CONTENT, true));
+              assertNotEquals('', testElement.computeCategoryDesc(
+                  category, settings.PermissionValues.IMPORTANT_CONTENT,
+                  false));
+            }
           }
 
           // All categories have an icon and a title.
@@ -139,6 +160,113 @@ cr.define('site_settings_category', function() {
               '', testElement.computeTitleForContentCategory(category));
         }
       });
+
+      test('test special tri-state Flash category', function() {
+        browserProxy.setPrefs(prefsFlashDetect);
+
+        testElement.category = settings.ContentSettingsTypes.PLUGINS;
+        var askCheckbox = null;
+
+        return browserProxy.whenCalled('getDefaultValueForContentType').then(
+          function(contentType) {
+            Polymer.dom.flush();
+
+            askCheckbox = testElement.$$('#flashAskCheckbox');
+            assertTrue(!!askCheckbox);
+
+            assertEquals(
+                settings.ContentSettingsTypes.PLUGINS, contentType);
+            assertTrue(testElement.categoryEnabled);
+            assertFalse(askCheckbox.disabled);
+            assertTrue(askCheckbox.checked);
+
+            MockInteractions.tap(testElement.$.toggle);
+            return browserProxy.whenCalled('setDefaultValueForContentType');
+          }).then(function(arguments) {
+            // Check DETECT => BLOCK transition succeeded.
+            Polymer.dom.flush();
+
+            assertEquals(
+                settings.ContentSettingsTypes.PLUGINS, arguments[0]);
+            assertEquals(settings.PermissionValues.BLOCK, arguments[1]);
+            assertFalse(testElement.categoryEnabled);
+            assertTrue(askCheckbox.disabled);
+            assertTrue(askCheckbox.checked);
+
+            browserProxy.resetResolver('setDefaultValueForContentType');
+            MockInteractions.tap(testElement.$.toggle);
+            return browserProxy.whenCalled('setDefaultValueForContentType');
+          }).then(function(arguments) {
+            // Check BLOCK => DETECT transition succeeded.
+            Polymer.dom.flush();
+
+            assertEquals(
+                settings.ContentSettingsTypes.PLUGINS, arguments[0]);
+            assertEquals(
+                settings.PermissionValues.IMPORTANT_CONTENT, arguments[1]);
+            assertTrue(testElement.categoryEnabled);
+            assertFalse(askCheckbox.disabled);
+            assertTrue(askCheckbox.checked);
+
+            browserProxy.resetResolver('setDefaultValueForContentType');
+            MockInteractions.tap(askCheckbox);
+            return browserProxy.whenCalled('setDefaultValueForContentType');
+          }).then(function(arguments) {
+            // Check DETECT => ALLOW transition succeeded.
+            Polymer.dom.flush();
+
+            assertEquals(
+                settings.ContentSettingsTypes.PLUGINS, arguments[0]);
+            assertEquals(
+                settings.PermissionValues.ALLOW, arguments[1]);
+            assertTrue(testElement.categoryEnabled);
+            assertFalse(askCheckbox.disabled);
+            assertFalse(askCheckbox.checked);
+
+            browserProxy.resetResolver('setDefaultValueForContentType');
+            MockInteractions.tap(testElement.$.toggle);
+            return browserProxy.whenCalled('setDefaultValueForContentType');
+          }).then(function(arguments) {
+            // Check ALLOW => BLOCK transition succeeded.
+            Polymer.dom.flush();
+
+            assertEquals(
+                settings.ContentSettingsTypes.PLUGINS, arguments[0]);
+            assertEquals(settings.PermissionValues.BLOCK, arguments[1]);
+            assertFalse(testElement.categoryEnabled);
+            assertTrue(askCheckbox.disabled);
+            assertFalse(askCheckbox.checked);
+
+            browserProxy.resetResolver('setDefaultValueForContentType');
+            MockInteractions.tap(testElement.$.toggle);
+            return browserProxy.whenCalled('setDefaultValueForContentType');
+          }).then(function(arguments) {
+            // Check BLOCK => ALLOW transition succeeded.
+            Polymer.dom.flush();
+
+            assertEquals(
+                settings.ContentSettingsTypes.PLUGINS, arguments[0]);
+            assertEquals(settings.PermissionValues.ALLOW, arguments[1]);
+            assertTrue(testElement.categoryEnabled);
+            assertFalse(askCheckbox.disabled);
+            assertFalse(askCheckbox.checked);
+
+            browserProxy.resetResolver('setDefaultValueForContentType');
+            MockInteractions.tap(askCheckbox);
+            return browserProxy.whenCalled('setDefaultValueForContentType');
+          }).then(function(arguments) {
+            // Check ALLOW => DETECT transition succeeded.
+            Polymer.dom.flush();
+
+            assertEquals(
+                settings.ContentSettingsTypes.PLUGINS, arguments[0]);
+            assertEquals(
+                settings.PermissionValues.IMPORTANT_CONTENT, arguments[1]);
+            assertTrue(testElement.categoryEnabled);
+            assertFalse(askCheckbox.disabled);
+            assertTrue(askCheckbox.checked);
+          });;
+        });
     });
   }
 
