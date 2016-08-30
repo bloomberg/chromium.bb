@@ -1101,7 +1101,7 @@ void BrowsingDataRemover::RemoveImpl(
 
   // For now we're considering offline pages as cache, so if we're removing
   // cache we should remove offline pages as well.
-  if ((remove_mask & REMOVE_CACHE) && offline_pages::IsOfflinePagesEnabled()) {
+  if ((remove_mask & REMOVE_CACHE)) {
     waiting_for_clear_offline_page_data_ = true;
     offline_pages::OfflinePageModelFactory::GetForBrowserContext(profile_)
         ->DeleteCachedPagesByURLPredicate(
