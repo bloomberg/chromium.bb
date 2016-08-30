@@ -1853,6 +1853,15 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // page, and should not be associated.
   if (_webUIManager)
     return;
+  // The WKWebViewConfiguration's |userScripts| are not injected when navigating
+  // via BFLI to a page created using window.history.pushState.  This means that
+  // calling window.history navigation functions will invoke WKWebView's
+  // non-overridden implementations, causing a mismatch between the
+  // WKBackForwardList and NavigationManager.
+  web::NavigationItemImpl* currentItem =
+      [self currentSessionEntry].navigationItemImpl;
+  if (currentItem->IsCreatedFromPushState())
+    return;
 
   web::WKBackForwardListItemHolder* holder =
       [self currentBackForwardListItemHolder];
