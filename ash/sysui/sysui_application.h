@@ -9,7 +9,6 @@
 
 #include "ash/public/interfaces/wallpaper.mojom.h"
 #include "base/macros.h"
-#include "mash/shelf/public/interfaces/shelf.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/shell/public/cpp/service.h"
 #include "services/tracing/public/cpp/provider.h"
@@ -22,7 +21,6 @@ class AshInit;
 
 class SysUIApplication
     : public shell::Service,
-      public shell::InterfaceFactory<mash::shelf::mojom::ShelfController>,
       public shell::InterfaceFactory<mojom::WallpaperController> {
  public:
   SysUIApplication();
@@ -34,10 +32,6 @@ class SysUIApplication
   bool OnConnect(const ::shell::Identity& remote_identity,
                  ::shell::InterfaceRegistry* registry) override;
 
-  // InterfaceFactory<mash::shelf::mojom::ShelfController>:
-  void Create(const shell::Identity& remote_identity,
-              mash::shelf::mojom::ShelfControllerRequest request) override;
-
   // InterfaceFactory<mojom::WallpaperController>:
   void Create(const shell::Identity& remote_identity,
               mojom::WallpaperControllerRequest request) override;
@@ -45,8 +39,6 @@ class SysUIApplication
   tracing::Provider tracing_;
   std::unique_ptr<AshInit> ash_init_;
 
-  mojo::BindingSet<mash::shelf::mojom::ShelfController>
-      shelf_controller_bindings_;
   mojo::BindingSet<mojom::WallpaperController> wallpaper_controller_bindings_;
 
   // Subscribes to updates about input-devices.

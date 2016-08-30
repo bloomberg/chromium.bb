@@ -25,6 +25,7 @@ namespace mus {
 WmTestHelper::WmTestHelper() {}
 
 WmTestHelper::~WmTestHelper() {
+  window_manager_app_.window_manager_.reset();
   ash::test::MaterialDesignControllerTestAPI::Uninitialize();
   ui::test::MaterialDesignControllerTestAPI::Uninitialize();
 }

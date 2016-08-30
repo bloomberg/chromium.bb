@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "ash/mus/disconnected_app_handler.h"
-#include "ash/mus/shelf_layout_manager_delegate.h"
 #include "ash/public/interfaces/container.mojom.h"
 #include "services/ui/public/cpp/window_observer.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
@@ -38,12 +37,12 @@ class WmWindowMus;
 // RootWindowController is tied to the lifetime of the ui::Window it is
 // created with. It is assumed the RootWindowController is deleted once the
 // associated ui::Window is destroyed.
-class RootWindowController : public ShelfLayoutManagerDelegate {
+class RootWindowController {
  public:
   RootWindowController(WindowManager* window_manager,
                        ui::Window* root,
                        const display::Display& display);
-  ~RootWindowController() override;
+  ~RootWindowController();
 
   shell::Connector* GetConnector();
 
@@ -76,9 +75,6 @@ class RootWindowController : public ShelfLayoutManagerDelegate {
 
   gfx::Rect CalculateDefaultBounds(ui::Window* window) const;
   gfx::Rect GetMaximizedWindowBounds() const;
-
-  // ShelfLayoutManagerDelegate:
-  void OnShelfWindowAvailable() override;
 
   // Creates the necessary set of layout managers in the shell windows.
   void CreateLayoutManagers();

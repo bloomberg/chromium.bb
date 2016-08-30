@@ -301,7 +301,6 @@ split_static_library("ui") {
       "//ash/common/strings",
       "//ash/public/interfaces",
       "//components/user_manager",
-      "//mash/shelf/public/interfaces",
       "//ui/app_list/presenter",
       "//ui/app_list/presenter:mojom",
       "//ui/keyboard:mojom",

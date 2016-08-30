@@ -7,8 +7,8 @@
       "*": { "classes": [ "app" ] },
       "mojo:ash": {
         "interfaces": [
-          "ash::mojom::WallpaperController",
-          "mash::shelf::mojom::ShelfController"
+          "ash::mojom::ShelfController",
+          "ash::mojom::WallpaperController"
         ]
       }
     },

@@ -8,10 +8,11 @@ mojom("interfaces") {
   sources = [
     "ash_window_type.mojom",
     "container.mojom",
+    "shelf.mojom",
     "wallpaper.mojom",
   ]
 
-  deps = [
+  public_deps = [
     "//skia/public/interfaces",
   ]
 }

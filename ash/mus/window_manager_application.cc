@@ -7,8 +7,10 @@
 #include <utility>
 
 #include "ash/common/material_design/material_design_controller.h"
+#include "ash/common/wm_shell.h"
 #include "ash/mus/accelerators/accelerator_registrar_impl.h"
 #include "ash/mus/native_widget_factory_mus.h"
+#include "ash/mus/shelf_delegate_mus.h"
 #include "ash/mus/window_manager.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
@@ -119,6 +121,7 @@ void WindowManagerApplication::OnStart(const shell::Identity& identity) {
 
 bool WindowManagerApplication::OnConnect(const shell::Identity& remote_identity,
                                          shell::InterfaceRegistry* registry) {
+  registry->AddInterface<ash::mojom::ShelfController>(this);
   registry->AddInterface<ui::mojom::AcceleratorRegistrar>(this);
   if (remote_identity.name() == "mojo:mash_session") {
     connector()->ConnectToInterface(remote_identity, &session_);
@@ -130,7 +133,16 @@ bool WindowManagerApplication::OnConnect(const shell::Identity& remote_identity,
 
 void WindowManagerApplication::Create(
     const shell::Identity& remote_identity,
-    mojo::InterfaceRequest<ui::mojom::AcceleratorRegistrar> request) {
+    ash::mojom::ShelfControllerRequest request) {
+  ash::mojom::ShelfController* shelf_controller =
+      static_cast<ShelfDelegateMus*>(WmShell::Get()->shelf_delegate());
+  DCHECK(shelf_controller);
+  shelf_controller_bindings_.AddBinding(shelf_controller, std::move(request));
+}
+
+void WindowManagerApplication::Create(
+    const shell::Identity& remote_identity,
+    ui::mojom::AcceleratorRegistrarRequest request) {
   if (!window_manager_->window_manager_client())
     return;  // Can happen during shutdown.
 

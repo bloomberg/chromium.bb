@@ -23,7 +23,6 @@
 #include "ash/shell_init_params.h"
 #include "ash/sysui/app_list_presenter_mus.h"
 #include "ash/sysui/keyboard_ui_mus.h"
-#include "ash/sysui/shelf_delegate_mus.h"
 #include "ash/sysui/shell_delegate_mus.h"
 #include "ash/sysui/stub_context_factory.h"
 #include "ash/sysui/wallpaper_delegate_mus.h"
@@ -324,18 +323,8 @@ void SysUIApplication::OnStart(const ::shell::Identity& identity) {
 
 bool SysUIApplication::OnConnect(const ::shell::Identity& remote_identity,
                                  ::shell::InterfaceRegistry* registry) {
-  registry->AddInterface<mash::shelf::mojom::ShelfController>(this);
   registry->AddInterface<mojom::WallpaperController>(this);
   return true;
-}
-
-void SysUIApplication::Create(
-    const ::shell::Identity& remote_identity,
-    mash::shelf::mojom::ShelfControllerRequest request) {
-  mash::shelf::mojom::ShelfController* shelf_controller =
-      static_cast<ShelfDelegateMus*>(WmShell::Get()->shelf_delegate());
-  DCHECK(shelf_controller);
-  shelf_controller_bindings_.AddBinding(shelf_controller, std::move(request));
 }
 
 void SysUIApplication::Create(const ::shell::Identity& remote_identity,

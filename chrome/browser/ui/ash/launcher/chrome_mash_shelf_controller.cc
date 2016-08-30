@@ -20,7 +20,7 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 
-class ChromeShelfItemDelegate : public mash::shelf::mojom::ShelfItemDelegate {
+class ChromeShelfItemDelegate : public ash::mojom::ShelfItemDelegate {
  public:
   explicit ChromeShelfItemDelegate(const std::string& app_id,
                                    ChromeMashShelfController* controller)
@@ -29,16 +29,16 @@ class ChromeShelfItemDelegate : public mash::shelf::mojom::ShelfItemDelegate {
         controller_(controller) {}
   ~ChromeShelfItemDelegate() override {}
 
-  mash::shelf::mojom::ShelfItemDelegateAssociatedPtrInfo
-  CreateInterfacePtrInfoAndBind(mojo::AssociatedGroup* associated_group) {
+  ash::mojom::ShelfItemDelegateAssociatedPtrInfo CreateInterfacePtrInfoAndBind(
+      mojo::AssociatedGroup* associated_group) {
     DCHECK(!item_delegate_binding_.is_bound());
-    mash::shelf::mojom::ShelfItemDelegateAssociatedPtrInfo ptr_info;
+    ash::mojom::ShelfItemDelegateAssociatedPtrInfo ptr_info;
     item_delegate_binding_.Bind(&ptr_info, associated_group);
     return ptr_info;
   }
 
  private:
-  // mash::shelf::mojom::ShelfItemDelegate:
+  // ash::mojom::ShelfItemDelegate:
   void LaunchItem() override { controller_->LaunchItem(app_id_); }
   void ExecuteCommand(uint32_t command_id, int32_t event_flags) override {
     NOTIMPLEMENTED();
@@ -48,8 +48,7 @@ class ChromeShelfItemDelegate : public mash::shelf::mojom::ShelfItemDelegate {
   void ItemReordered(uint32_t order) override { NOTIMPLEMENTED(); }
 
   std::string app_id_;
-  mojo::AssociatedBinding<mash::shelf::mojom::ShelfItemDelegate>
-      item_delegate_binding_;
+  mojo::AssociatedBinding<ash::mojom::ShelfItemDelegate> item_delegate_binding_;
 
   // Not owned.
   ChromeMashShelfController* controller_;
@@ -74,21 +73,16 @@ void ChromeMashShelfController::Init() {
       content::MojoShellConnection::GetForProcess()->GetConnector();
   connector->ConnectToInterface("mojo:ash", &shelf_controller_);
 
-  // Set shelf alignment and auto-hide behavior from preferences.
-  Profile* profile = ProfileManager::GetActiveUserProfile();
-  int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
-  shelf_controller_->SetAlignment(static_cast<mash::shelf::mojom::Alignment>(
-      ash::launcher::GetShelfAlignmentPref(profile->GetPrefs(), display_id)));
-  shelf_controller_->SetAutoHideBehavior(
-      static_cast<mash::shelf::mojom::AutoHideBehavior>(
-          ash::launcher::GetShelfAutoHideBehaviorPref(profile->GetPrefs(),
-                                                      display_id)));
+  // Initialize shelf alignment and auto-hide behavior from preferences.
+  for (const auto& display : display::Screen::GetScreen()->GetAllDisplays())
+    OnShelfCreated(display.id());
 
   // TODO(skuhne): The AppIconLoaderImpl has the same problem. Each loaded
   // image is associated with a profile (its loader requires the profile).
   // Since icon size changes are possible, the icon could be requested to be
   // reloaded. However - having it not multi profile aware would cause problems
   // if the icon cache gets deleted upon user switch.
+  Profile* profile = ProfileManager::GetActiveUserProfile();
   std::unique_ptr<AppIconLoader> extension_app_icon_loader(
       new extensions::ExtensionAppIconLoader(
           profile, extension_misc::EXTENSION_ICON_SMALL, this));
@@ -103,7 +97,7 @@ void ChromeMashShelfController::Init() {
   PinAppsFromPrefs();
 
   // Start observing the shelf now that it has been initialized.
-  mash::shelf::mojom::ShelfObserverAssociatedPtrInfo ptr_info;
+  ash::mojom::ShelfObserverAssociatedPtrInfo ptr_info;
   observer_binding_.Bind(&ptr_info, shelf_controller_.associated_group());
   shelf_controller_->AddObserver(std::move(ptr_info));
 }
@@ -117,7 +111,7 @@ void ChromeMashShelfController::PinAppsFromPrefs() {
     if (app == ash::launcher::kPinnedAppsPlaceholder)
       continue;
 
-    mash::shelf::mojom::ShelfItemPtr item(mash::shelf::mojom::ShelfItem::New());
+    ash::mojom::ShelfItemPtr item(ash::mojom::ShelfItem::New());
     item->app_id = app;
     item->app_title = mojo::String::From(helper_.GetAppTitle(profile, app));
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
@@ -148,20 +142,37 @@ AppIconLoader* ChromeMashShelfController::GetAppIconLoaderForApp(
   return nullptr;
 }
 
+void ChromeMashShelfController::OnShelfCreated(int64_t display_id) {
+  // The pref helper functions return default values for invalid display ids.
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  shelf_controller_->SetAlignment(
+      ash::launcher::GetShelfAlignmentPref(profile->GetPrefs(), display_id),
+      display_id);
+  shelf_controller_->SetAutoHideBehavior(
+      ash::launcher::GetShelfAutoHideBehaviorPref(profile->GetPrefs(),
+                                                  display_id),
+      display_id);
+}
+
 void ChromeMashShelfController::OnAlignmentChanged(
-    mash::shelf::mojom::Alignment alignment) {
+    ash::ShelfAlignment alignment,
+    int64_t display_id) {
+  // The locked alignment is set temporarily and not saved to preferences.
+  if (alignment == ash::SHELF_ALIGNMENT_BOTTOM_LOCKED)
+    return;
+  // This will uselessly store a preference value for invalid display ids.
   ash::launcher::SetShelfAlignmentPref(
-      ProfileManager::GetActiveUserProfile()->GetPrefs(),
-      display::Screen::GetScreen()->GetPrimaryDisplay().id(),
-      static_cast<ash::ShelfAlignment>(alignment));
+      ProfileManager::GetActiveUserProfile()->GetPrefs(), display_id,
+      alignment);
 }
 
 void ChromeMashShelfController::OnAutoHideBehaviorChanged(
-    mash::shelf::mojom::AutoHideBehavior auto_hide) {
+    ash::ShelfAutoHideBehavior auto_hide,
+    int64_t display_id) {
+  // This will uselessly store a preference value for invalid display ids.
   ash::launcher::SetShelfAutoHideBehaviorPref(
-      ProfileManager::GetActiveUserProfile()->GetPrefs(),
-      display::Screen::GetScreen()->GetPrimaryDisplay().id(),
-      static_cast<ash::ShelfAutoHideBehavior>(auto_hide));
+      ProfileManager::GetActiveUserProfile()->GetPrefs(), display_id,
+      auto_hide);
 }
 
 void ChromeMashShelfController::OnAppImageUpdated(const std::string& app_id,

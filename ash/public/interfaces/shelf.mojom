@@ -2,30 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module mash.shelf.mojom;
+module ash.mojom;
 
-import "mash/shelf/public/interfaces/shelf_constants.mojom";
 import "skia/public/interfaces/bitmap.mojom";
 
-// TODO(msw): Add support for multiple displays (with unified and multi-shelf).
+// These values match ash::ShelfAlignment.
+enum ShelfAlignment { BOTTOM, LEFT, RIGHT, BOTTOM_LOCKED, };
 
-// The Shelf controller allows clients (eg. Chrome) to control the mash shelf.
+// These values match ash::ShelfAutoHideBehavior.
+enum ShelfAutoHideBehavior { ALWAYS, NEVER, HIDDEN, };
+
+// The Shelf controller allows clients (eg. Chrome) to control the ash shelf.
 interface ShelfController {
+  // Observers are immediately notified of the current shelf states when added.
   AddObserver(associated ShelfObserver observer);
 
-  SetAlignment(Alignment alignment);
-  SetAutoHideBehavior(AutoHideBehavior auto_hide);
+  // Set the shelf alignment and auto-hide behavior. See WmShelf for details.
+  SetAlignment(ShelfAlignment alignment, int64 display_id);
+  SetAutoHideBehavior(ShelfAutoHideBehavior auto_hide, int64 display_id);
 
+  // Pin and unpin items on the shelf, or update shelf item images.
   PinItem(ShelfItem item, associated ShelfItemDelegate delegate);
   UnpinItem(string app_id);
-
   SetItemImage(string app_id, skia.mojom.Bitmap image);
 };
 
 // ShelfObserver is notified on shelf changes; used to persist profile settings.
 interface ShelfObserver {
-  OnAlignmentChanged(Alignment alignment);
-  OnAutoHideBehaviorChanged(AutoHideBehavior auto_hide);
+  OnShelfCreated(int64 display_id);
+  OnAlignmentChanged(ShelfAlignment alignment, int64 display_id);
+  OnAutoHideBehaviorChanged(ShelfAutoHideBehavior auto_hide, int64 display_id);
 };
 
 // ShelfItemDelegate handles command execution and observes shelf item changes.

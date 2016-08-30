@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 _typemap_imports = [
+  "//ash/public/interfaces/typemaps.gni",
   "//cc/ipc/typemaps.gni",
   "//chrome/browser/media/router/mojo/typemaps.gni",
   "//components/arc/common/typemaps.gni",
