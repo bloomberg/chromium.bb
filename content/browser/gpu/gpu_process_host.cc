@@ -969,13 +969,6 @@ void GpuProcessHost::StopGpuProcess() {
 }
 
 bool GpuProcessHost::LaunchGpuProcess(gpu::GpuPreferences* gpu_preferences) {
-  if (!(gpu_enabled_ &&
-      GpuDataManagerImpl::GetInstance()->ShouldUseSwiftShader()) &&
-      !hardware_gpu_enabled_) {
-    SendOutstandingReplies();
-    return false;
-  }
-
   const base::CommandLine& browser_command_line =
       *base::CommandLine::ForCurrentProcess();
 
@@ -1030,6 +1023,13 @@ bool GpuProcessHost::LaunchGpuProcess(gpu::GpuPreferences* gpu_preferences) {
   if (cmd_line->HasSwitch(switches::kUseGL)) {
     swiftshader_rendering_ =
         (cmd_line->GetSwitchValueASCII(switches::kUseGL) == "swiftshader");
+  }
+
+  bool current_gpu_type_enabled =
+      swiftshader_rendering_ ? gpu_enabled_ : hardware_gpu_enabled_;
+  if (!current_gpu_type_enabled) {
+    SendOutstandingReplies();
+    return false;
   }
 
   UMA_HISTOGRAM_BOOLEAN("GPU.GPU.GPUProcessSoftwareRendering",
