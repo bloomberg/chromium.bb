@@ -114,21 +114,32 @@ class RunIsolatedTestBase(auto_stub.TestCase):
 class RunIsolatedTest(RunIsolatedTestBase):
   def setUp(self):
     super(RunIsolatedTest, self).setUp()
+    # list of func(args, **kwargs) -> retcode
+    # if the func returns None, then it's skipped. The first function to return
+    # non-None is taken as the retcode for the mocked Popen call.
+    self.popen_mocks = []
     self.popen_calls = []
     # pylint: disable=no-self-argument
     class Popen(object):
       def __init__(self2, args, **kwargs):
         kwargs.pop('cwd', None)
         kwargs.pop('env', None)
-        self.popen_calls.append((args, kwargs))
         self2.returncode = None
+        self2.args = args
+        self2.kwargs = kwargs
+        self.popen_calls.append((args, kwargs))
 
       def yield_any_line(self, timeout=None):  # pylint: disable=unused-argument
         return ()
 
-      def wait(self, timeout=None):  # pylint: disable=unused-argument
-        self.returncode = 0
-        return self.returncode
+      def wait(self2, timeout=None):  # pylint: disable=unused-argument
+        self2.returncode = 0
+        for mock_fn in self.popen_mocks:
+          ret = mock_fn(self2.args, **self2.kwargs)
+          if ret is not None:
+            self2.returncode = ret
+            break
+        return self2.returncode
 
       def kill(self):
         pass
@@ -334,6 +345,33 @@ class RunIsolatedTest(RunIsolatedTestBase):
         self.popen_calls)
 
   def test_main_naked_with_packages(self):
+    pin_idx_ref = [0]
+    pins = [
+      [
+        ('infra/data/x', 'badc0fee'*5),
+        ('infra/data/y', 'cafebabe'*5),
+      ],
+      [
+        ('infra/tools/echo/linux-amd64', 'deadbeef'*5),
+      ],
+    ]
+
+    def fake_ensure(args, **_kwargs):
+      if (args[0].endswith('/cipd') and
+          args[1] == 'ensure'
+          and '-json-output' in args):
+        idx = args.index('-json-output')
+        with open(args[idx+1], 'w') as json_out:
+          json.dump({
+            'result': [
+              {'package': pkg, 'instance_id': ver}
+              for pkg, ver in pins[pin_idx_ref[0]]
+            ],
+          }, json_out)
+        pin_idx_ref[0] += 1
+        return 0
+
+    self.popen_mocks.append(fake_ensure)
     cipd_cache = os.path.join(self.tempdir, 'cipd_cache')
     cmd = [
       '--no-log',

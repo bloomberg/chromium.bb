@@ -27,9 +27,10 @@ state of the host to tasks. It is written to by the swarming bot's
 on_before_task() hook in the swarming server's custom bot_config.py.
 """
 
-__version__ = '0.8.4'
+__version__ = '0.8.5'
 
 import base64
+import collections
 import logging
 import optparse
 import os
@@ -383,6 +384,13 @@ def map_and_run(
     #    },
     #  },
     },
+    # 'cipd_pins': {
+    #   'packages': [
+    #     {'package_name': ..., 'version': ..., 'path': ...},
+    #     ...
+    #   ],
+    #  'client_package': {'package_name': ..., 'version': ...},
+    # },
     'outputs_ref': None,
     'version': 5,
   }
@@ -400,9 +408,10 @@ def map_and_run(
   cwd = run_dir
 
   try:
-    cipd_stats = install_packages_fn(run_dir)
-    if cipd_stats:
-      result['stats']['cipd'] = cipd_stats
+    cipd_info = install_packages_fn(run_dir)
+    if cipd_info:
+      result['stats']['cipd'] = cipd_info['stats']
+      result['cipd_pins'] = cipd_info['cipd_pins']
 
     if isolated_hash:
       isolated_stats = result['stats'].setdefault('isolated', {})
@@ -539,7 +548,8 @@ def run_tha_test(
     grace_period: number of seconds to wait between SIGTERM and SIGKILL.
     extra_args: optional arguments to add to the command stated in the .isolate
                 file. Ignored if isolate_hash is empty.
-    install_packages_fn: function (dir) => cipd_stats. Installs packages.
+    install_packages_fn: function (dir) => {"stats": cipd_stats, "pins":
+                         cipd_pins}. Installs packages.
     use_symlinks: create tree with symlinks instead of hardlinks.
 
   Returns:
@@ -595,11 +605,24 @@ def run_tha_test(
 def install_packages(
     run_dir, packages, service_url, client_package_name,
     client_version, cache_dir=None, timeout=None):
-  """Installs packages. Returns stats.
+  """Installs packages. Returns stats, cipd client info and pins.
+
+  pins and the cipd client info are in the form of:
+    [
+      {
+        "path": path, "package_name": package_name, "version": version,
+      },
+      ...
+    ]
+  (the cipd client info is a single dictionary instead of a list)
+
+  such that they correspond 1:1 to all input package arguments from the command
+  line. These dictionaries make their all the way back to swarming, where they
+  become the arguments of CipdPackage.
 
   Args:
     run_dir (str): root of installation.
-    packages: packages to install, dict {path: [(package_name, version)].
+    packages: packages to install, list [(path, package_name, version), ...]
     service_url (str): CIPD server url, e.g.
       "https://chrome-infra-packages.appspot.com."
     client_package_name (str): CIPD package name of CIPD client.
@@ -617,13 +640,32 @@ def install_packages(
 
   run_dir = os.path.abspath(run_dir)
 
+  package_pins = [None]*len(packages)
+  def insert_pin(path, name, version, idx):
+    path = path.replace(os.path.sep, '/')
+    package_pins[idx] = {
+      'package_name': name,
+      'path': path,
+      'version': version,
+    }
+
   get_client_start = time.time()
   client_manager = cipd.get_client(
       service_url, client_package_name, client_version, cache_dir,
       timeout=timeoutfn())
+
+  by_path = collections.defaultdict(list)
+  for i, (path, name, version) in enumerate(packages):
+    path = path.replace('/', os.path.sep)
+    by_path[path].append((name, version, i))
+
   with client_manager as client:
+    client_package = {
+      'package_name': client.package_name,
+      'version': client.instance_id,
+    }
     get_client_duration = time.time() - get_client_start
-    for path, packages in sorted(packages.iteritems()):
+    for path, pkgs in sorted(by_path.iteritems()):
       site_root = os.path.abspath(os.path.join(run_dir, path))
       if not site_root.startswith(run_dir):
         raise cipd.Error('Invalid CIPD package path "%s"' % path)
@@ -631,19 +673,29 @@ def install_packages(
       # Do not clean site_root before installation because it may contain other
       # site roots.
       file_path.ensure_tree(site_root, 0770)
-      client.ensure(
-          site_root, packages,
+      pins = client.ensure(
+          site_root, [(name, vers) for name, vers, _ in pkgs],
           cache_dir=os.path.join(cache_dir, 'cipd_internal'),
           timeout=timeoutfn())
+      for i, pin in enumerate(pins):
+        insert_pin(path, pin[0], pin[1], pkgs[i][2])
       file_path.make_tree_files_read_only(site_root)
 
   total_duration = time.time() - start
   logging.info(
       'Installing CIPD client and packages took %d seconds', total_duration)
 
+  assert None not in package_pins
+
   return {
-    'duration': total_duration,
-    'get_client_duration': get_client_duration,
+    'stats': {
+      'duration': total_duration,
+      'get_client_duration': get_client_duration,
+    },
+    'cipd_pins': {
+      'client_package': client_package,
+      'packages': package_pins,
+    }
   }
 
 

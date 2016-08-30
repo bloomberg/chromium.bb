@@ -4,11 +4,12 @@
 
 """Fetches CIPD client and installs packages."""
 
-__version__ = '0.2'
+__version__ = '0.3'
 
 import collections
 import contextlib
 import hashlib
+import json
 import logging
 import optparse
 import os
@@ -104,15 +105,19 @@ def validate_cipd_options(parser, options):
 class CipdClient(object):
   """Installs packages."""
 
-  def __init__(self, binary_path, service_url=None):
+  def __init__(self, binary_path, package_name, instance_id, service_url):
     """Initializes CipdClient.
 
     Args:
       binary_path (str): path to the CIPD client binary.
+      package_name (str): the CIPD package name for the client itself.
+      instance_id (str): the CIPD instance_id for the client itself.
       service_url (str): if not None, URL of the CIPD backend that overrides
         the default one.
     """
     self.binary_path = binary_path
+    self.package_name = package_name
+    self.instance_id = instance_id
     self.service_url = service_url
 
   def ensure(
@@ -129,6 +134,10 @@ class CipdClient(object):
       tmp_dir (str): if not None, dir for temp files.
       timeout (int): if not None, timeout in seconds for this function to run.
 
+    Returns:
+      Pinned packages in the form of [(package_name, package_id)], which
+      correspond 1:1 with the input packages argument.
+
     Raises:
       Error if could not install packages or timed out.
     """
@@ -137,6 +146,10 @@ class CipdClient(object):
 
     list_file_handle, list_file_path = tempfile.mkstemp(
         dir=tmp_dir, prefix=u'cipd-ensure-list-', suffix='.txt')
+    json_out_file_handle, json_file_path = tempfile.mkstemp(
+      dir=tmp_dir, prefix=u'cipd-ensure-result-', suffix='.json')
+    os.close(json_out_file_handle)
+
     try:
       try:
         for pkg, version in packages:
@@ -150,6 +163,7 @@ class CipdClient(object):
         '-root', site_root,
         '-list', list_file_path,
         '-verbose',  # this is safe because cipd-ensure does not print a lot
+        '-json-output', json_file_path,
       ]
       if cache_dir:
         cmd += ['-cache-dir', cache_dir]
@@ -180,8 +194,12 @@ class CipdClient(object):
         raise Error(
             'Could not install packages; exit code %d\noutput:%s' % (
             exit_code, '\n'.join(output)))
+      with open(json_file_path) as jfile:
+        result_json = json.load(jfile)
+      return [(x['package'], x['instance_id']) for x in result_json['result']]
     finally:
       fs.remove(list_file_path)
+      fs.remove(json_file_path)
 
 
 def get_platform():
@@ -399,7 +417,8 @@ def get_client(
     with instance_cache.getfileobj(instance_id) as f:
       isolateserver.putfile(f, binary_path, 0511)  # -r-x--x--x
 
-    yield CipdClient(binary_path)
+    yield CipdClient(binary_path, package_name=package_name,
+                     instance_id=instance_id, service_url=service_url)
 
 
 def parse_package_args(packages):
@@ -408,15 +427,14 @@ def parse_package_args(packages):
   Assumes |packages| were validated by validate_cipd_options.
 
   Returns:
-    A map {path: [(package, version)]}.
+    A list of [(path, package_name, version), ...]
   """
-  result = collections.defaultdict(list)
+  result = []
   for pkg in packages:
     path, name, version = pkg.split(':', 2)
-    path = path.replace('/', os.path.sep)
     if not name:
       raise Error('Invalid package "%s": package name is not specified' % pkg)
     if not version:
       raise Error('Invalid package "%s": version is not specified' % pkg)
-    result[path].append((name, version))
+    result.append((path, name, version))
   return result
