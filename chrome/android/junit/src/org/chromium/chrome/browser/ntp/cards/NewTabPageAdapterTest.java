@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.ntp.cards;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -16,6 +17,7 @@ import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
 import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCardLayout;
 import org.chromium.chrome.browser.ntp.snippets.FakeSuggestionsSource;
 import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
+import org.chromium.chrome.browser.ntp.snippets.SectionHeader;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.Before;
@@ -43,64 +45,145 @@ public class NewTabPageAdapterTest {
     private NewTabPageAdapter mAdapter;
 
     /**
-     * Asserts that {@link #mAdapter}.{@link NewTabPageAdapter#getItemCount()} corresponds to an
-     * NTP with the given sections in it.
-     * @param sections A list of sections, each represented by the number of items that are required
-     *                 to represent it in the UI. For readability, these numbers should be generated
-     *                 with the methods below.
+     * Stores information about a section that should be present in the adapter.
      */
-    private void assertItemsFor(int... sections) {
-        int expectedCount = 1; // above-the-fold.
-        for (int section : sections) expectedCount += section;
-        if (sections.length > 0) expectedCount += 2; // footer and bottom spacer.
-        int actualCount = mAdapter.getItemCount();
-        assertEquals("Expected " + expectedCount + " items, but the following " + actualCount
-                        + " were present: " + mAdapter.getItems(),
-                expectedCount, mAdapter.getItemCount());
+    private static class SectionDescriptor {
+        public final boolean mMoreButton;
+        public final boolean mStatusCard;
+        public final int mNumSuggestions;
+
+        public SectionDescriptor(boolean moreButton, boolean statusCard, int numSuggestions) {
+            mMoreButton = moreButton;
+            mStatusCard = statusCard;
+            mNumSuggestions = numSuggestions;
+            if (statusCard) {
+                assertEquals(0, numSuggestions);
+            } else {
+                assertTrue(numSuggestions > 0);
+            }
+        }
     }
 
     /**
-     * To be used with {@link #assertItemsFor(int...)}, for a section with {@code numSuggestions}
-     * cards in it.
+     * Checks the list of items from the adapter against a sequence of expectation, which is
+     * expressed as a sequence of calls to the {@link #expect} methods.
+     */
+    private static class ItemsMatcher { // TODO(pke): Find better name.
+        private final List<NewTabPageItem> mItems;
+        private int mCurrentIndex;
+
+        public ItemsMatcher(List<NewTabPageItem> items) {
+            mItems = items;
+        }
+
+        public void expect(Class<? extends NewTabPageItem> itemType) {
+            if (mCurrentIndex >= mItems.size()) {
+                fail("Expected another " + itemType.getSimpleName() + " after the following items: "
+                        + mItems);
+            }
+            NewTabPageItem item = mItems.get(mCurrentIndex);
+            if (!itemType.isInstance(item)) {
+                fail("Expected the element at position " + mCurrentIndex + " to be a "
+                        + itemType.getSimpleName() + " instead of a "
+                        + item.getClass().getSimpleName() + "; full list: " + mItems);
+            }
+            mCurrentIndex++;
+        }
+
+        public void expect(SectionDescriptor descriptor) {
+            expect(SectionHeader.class);
+            if (descriptor.mStatusCard) {
+                expect(StatusItem.class);
+                if (descriptor.mMoreButton) {
+                    expect(ActionItem.class);
+                }
+                expect(ProgressItem.class);
+            } else {
+                for (int i = 1; i <= descriptor.mNumSuggestions; i++) {
+                    expect(SnippetArticle.class);
+                }
+                if (descriptor.mMoreButton) {
+                    expect(ActionItem.class);
+                }
+            }
+        }
+
+        public void expectFinished() {
+            assertEquals(mItems.size(), mCurrentIndex);
+        }
+    }
+
+    /**
+     * Asserts that the given itemGroup is a {@link SuggestionsSection} that matches the given
+     * {@link SectionDescriptor}.
+     * @param descriptor The section descriptor to match against.
+     * @param itemGroup The items from the adapter.
+     */
+    private void assertMatches(SectionDescriptor descriptor, ItemGroup itemGroup) {
+        ItemsMatcher matcher = new ItemsMatcher(itemGroup.getItems());
+        matcher.expect(descriptor);
+        matcher.expectFinished();
+    }
+
+    /**
+     * Asserts that {@link #mAdapter}.{@link NewTabPageAdapter#getItemCount()} corresponds to an
+     * NTP with the given sections in it.
+     * @param descriptors A list of descriptors, each describing a section that should be present on
+     *                    the UI.
+     */
+    private void assertItemsFor(SectionDescriptor... descriptors) {
+        ItemsMatcher matcher = new ItemsMatcher(mAdapter.getItems());
+        matcher.expect(AboveTheFoldItem.class);
+        for (SectionDescriptor descriptor : descriptors) matcher.expect(descriptor);
+        if (descriptors.length > 0) {
+            matcher.expect(Footer.class);
+            matcher.expect(SpacingItem.class);
+        }
+        matcher.expectFinished();
+    }
+
+    /**
+     * To be used with {@link #assertItemsFor(SectionDescriptor...)}, for a section with
+     * {@code numSuggestions} cards in it.
      * @param numSuggestions The number of suggestions in the section. If there are zero, use either
      *                       no section at all (if it is not displayed) or
      *                       {@link #sectionWithStatusCard()}.
-     * @return The number of items that should be used by the adapter to represent this section.
+     * @return A descriptor for the section.
      */
-    private int section(int numSuggestions) {
+    private SectionDescriptor section(int numSuggestions) {
         assert numSuggestions > 0;
-        return 1 + numSuggestions; // Header and the content.
+        return new SectionDescriptor(false, false, numSuggestions);
     }
 
     /**
-     * To be used with {@link #assertItemsFor(int...)}, for a section with {@code numSuggestions}
-     * cards and a more-button.
+     * To be used with {@link #assertItemsFor(SectionDescriptor...)}, for a section with
+     * {@code numSuggestions} cards and a more-button.
      * @param numSuggestions The number of suggestions in the section. If this is zero, the
      *                       more-button is still shown.
      *                       TODO(pke): In the future, we additionally show an empty-card if
      *                       numSuggestions is zero.
-     * @return The number of items that should be used by the adapter to represent this section.
+     * @return A descriptor for the section.
      */
-    private int sectionWithMoreButton(int numSuggestions) {
-        return 1 + numSuggestions + 1; // Header, the content and the more-button.
+    private SectionDescriptor sectionWithMoreButton(int numSuggestions) {
+        return new SectionDescriptor(true, false, numSuggestions);
     }
 
     /**
-     * To be used with {@link #assertItemsFor(int...)}, for a section that has no suggestions, but
-     * a status card to be displayed.
-     * @return The number of items that should be used by the adapter to represent this section.
+     * To be used with {@link #assertItemsFor(SectionDescriptor...)}, for a section that has no
+     * suggestions, but a status card to be displayed.
+     * @return A descriptor for the section.
      */
-    private int sectionWithStatusCard() {
-        return 3; // Header, status card and progress indicator.
+    private SectionDescriptor sectionWithStatusCard() {
+        return new SectionDescriptor(false, true, 0);
     }
 
     /**
-     * To be used with {@link #assertItemsFor(int...)}, for a section with button that has no
-     * suggestions and instead displays a status card.
-     * @return The number of items that should be used by the adapter to represent this section.
+     * To be used with {@link #assertItemsFor(SectionDescriptor...)}, for a section with button that
+     * has no suggestions and instead displays a status card.
+     * @return A descriptor for the section.
      */
-    private int sectionWithStatusCardAndMoreButton() {
-        return 4; // Header, status card, More button, progress indicator.
+    private SectionDescriptor sectionWithStatusCardAndMoreButton() {
+        return new SectionDescriptor(true, true, 0);
     }
 
     @Before
@@ -343,7 +426,6 @@ public class NewTabPageAdapterTest {
         final List<SnippetArticle> articles =
                 Collections.unmodifiableList(createDummySuggestions(3));
         FakeSuggestionsSource suggestionsSource;
-        SuggestionsSection section;
 
         // Part 1: VisibleIfEmpty = true
         suggestionsSource = new FakeSuggestionsSource();
@@ -363,11 +445,11 @@ public class NewTabPageAdapterTest {
 
         // 1.3 - When all suggestions are dismissed
         assertEquals(SuggestionsSection.class, mAdapter.getGroups().get(sectionIdx).getClass());
-        section = (SuggestionsSection) mAdapter.getGroups().get(sectionIdx);
-        assertEquals(section(3), section.getItems().size());
-        section.removeSuggestion(articles.get(0));
-        section.removeSuggestion(articles.get(1));
-        section.removeSuggestion(articles.get(2));
+        SuggestionsSection section42 = (SuggestionsSection) mAdapter.getGroups().get(sectionIdx);
+        assertMatches(section(3), section42);
+        section42.removeSuggestion(articles.get(0));
+        section42.removeSuggestion(articles.get(1));
+        section42.removeSuggestion(articles.get(2));
         assertItemsFor(sectionWithStatusCard());
 
         // Part 2: VisibleIfEmpty = false
@@ -400,7 +482,7 @@ public class NewTabPageAdapterTest {
         final List<SnippetArticle> articles =
                 Collections.unmodifiableList(createDummySuggestions(3));
         FakeSuggestionsSource suggestionsSource;
-        SuggestionsSection section;
+        SuggestionsSection section42;
 
         // Part 1: ShowMoreButton = true
         suggestionsSource = new FakeSuggestionsSource();
@@ -420,11 +502,11 @@ public class NewTabPageAdapterTest {
 
         // 1.3 - When all suggestions are dismissed.
         assertEquals(SuggestionsSection.class, mAdapter.getGroups().get(sectionIdx).getClass());
-        section = (SuggestionsSection) mAdapter.getGroups().get(sectionIdx);
-        assertEquals(sectionWithMoreButton(3), section.getItems().size());
-        section.removeSuggestion(articles.get(0));
-        section.removeSuggestion(articles.get(1));
-        section.removeSuggestion(articles.get(2));
+        section42 = (SuggestionsSection) mAdapter.getGroups().get(sectionIdx);
+        assertMatches(sectionWithMoreButton(3), section42);
+        section42.removeSuggestion(articles.get(0));
+        section42.removeSuggestion(articles.get(1));
+        section42.removeSuggestion(articles.get(2));
         assertItemsFor(sectionWithStatusCardAndMoreButton());
 
         // Part 1: ShowMoreButton = false
@@ -445,11 +527,11 @@ public class NewTabPageAdapterTest {
 
         // 2.3 - When all suggestions are dismissed.
         assertEquals(SuggestionsSection.class, mAdapter.getGroups().get(sectionIdx).getClass());
-        section = (SuggestionsSection) mAdapter.getGroups().get(sectionIdx);
-        assertEquals(section(3), section.getItems().size());
-        section.removeSuggestion(articles.get(0));
-        section.removeSuggestion(articles.get(1));
-        section.removeSuggestion(articles.get(2));
+        section42 = (SuggestionsSection) mAdapter.getGroups().get(sectionIdx);
+        assertMatches(section(3), section42);
+        section42.removeSuggestion(articles.get(0));
+        section42.removeSuggestion(articles.get(1));
+        section42.removeSuggestion(articles.get(2));
         assertItemsFor(sectionWithStatusCard());
     }
 
