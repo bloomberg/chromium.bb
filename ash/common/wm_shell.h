@@ -64,6 +64,7 @@ class WindowSelectorController;
 class WmActivationObserver;
 class WmDisplayObserver;
 class WmWindow;
+class WorkspaceEventHandler;
 
 enum class TaskSwitchSource;
 
@@ -269,6 +270,9 @@ class ASH_EXPORT WmShell {
 
   virtual std::unique_ptr<wm::MaximizeModeEventHandler>
   CreateMaximizeModeEventHandler() = 0;
+
+  virtual std::unique_ptr<WorkspaceEventHandler> CreateWorkspaceEventHandler(
+      WmWindow* workspace_window) = 0;
 
   virtual std::unique_ptr<ScopedDisableInternalMouseAndKeyboard>
   CreateScopedDisableInternalMouseAndKeyboard() = 0;

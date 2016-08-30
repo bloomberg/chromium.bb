@@ -26,6 +26,7 @@
 #include "ash/mus/bridge/immersive_handler_factory_mus.h"
 #include "ash/mus/bridge/wm_root_window_controller_mus.h"
 #include "ash/mus/bridge/wm_window_mus.h"
+#include "ash/mus/bridge/workspace_event_handler_mus.h"
 #include "ash/mus/container_ids.h"
 #include "ash/mus/drag_window_resizer.h"
 #include "ash/mus/root_window_controller.h"
@@ -343,6 +344,12 @@ WmShellMus::CreateScopedDisableInternalMouseAndKeyboard() {
   // TODO: needs implementation for mus, http://crbug.com/624967.
   NOTIMPLEMENTED();
   return nullptr;
+}
+
+std::unique_ptr<WorkspaceEventHandler> WmShellMus::CreateWorkspaceEventHandler(
+    WmWindow* workspace_window) {
+  return base::MakeUnique<WorkspaceEventHandlerMus>(
+      WmWindowMus::GetMusWindow(workspace_window));
 }
 
 std::unique_ptr<ImmersiveFullscreenController>

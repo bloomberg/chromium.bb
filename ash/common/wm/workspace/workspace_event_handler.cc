@@ -2,16 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/workspace/workspace_event_handler.h"
+#include "ash/common/wm/workspace/workspace_event_handler.h"
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "ash/wm/window_state_aura.h"
-#include "ui/aura/window.h"
-#include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
 #include "ui/events/event.h"
 
@@ -21,13 +17,12 @@ WorkspaceEventHandler::WorkspaceEventHandler() : click_component_(HTNOWHERE) {}
 
 WorkspaceEventHandler::~WorkspaceEventHandler() {}
 
-void WorkspaceEventHandler::OnMouseEvent(ui::MouseEvent* event) {
-  aura::Window* target = static_cast<aura::Window*>(event->target());
+void WorkspaceEventHandler::OnMouseEvent(ui::MouseEvent* event,
+                                         WmWindow* target) {
   if (event->type() == ui::ET_MOUSE_PRESSED && event->IsOnlyLeftMouseButton() &&
       ((event->flags() & (ui::EF_IS_DOUBLE_CLICK | ui::EF_IS_TRIPLE_CLICK)) ==
        0)) {
-    click_component_ =
-        target->delegate()->GetNonClientComponent(event->location());
+    click_component_ = target->GetNonClientComponent(event->location());
   }
 
   if (event->handled())
@@ -35,9 +30,8 @@ void WorkspaceEventHandler::OnMouseEvent(ui::MouseEvent* event) {
 
   switch (event->type()) {
     case ui::ET_MOUSE_MOVED: {
-      int component =
-          target->delegate()->GetNonClientComponent(event->location());
-      multi_window_resize_controller_.Show(WmWindowAura::Get(target), component,
+      int component = target->GetNonClientComponent(event->location());
+      multi_window_resize_controller_.Show(target, component,
                                            event->location());
       break;
     }
@@ -47,12 +41,11 @@ void WorkspaceEventHandler::OnMouseEvent(ui::MouseEvent* event) {
     case ui::ET_MOUSE_EXITED:
       break;
     case ui::ET_MOUSE_PRESSED: {
-      wm::WindowState* target_state = wm::GetWindowState(target);
+      wm::WindowState* target_state = target->GetWindowState();
 
       if (event->IsOnlyLeftMouseButton()) {
         if (event->flags() & ui::EF_IS_DOUBLE_CLICK) {
-          int component =
-              target->delegate()->GetNonClientComponent(event->location());
+          int component = target->GetNonClientComponent(event->location());
           if (component == HTCAPTION && component == click_component_) {
             WmShell::Get()->RecordUserMetricsAction(
                 UMA_TOGGLE_MAXIMIZE_CAPTION_CLICK);
@@ -74,14 +67,13 @@ void WorkspaceEventHandler::OnMouseEvent(ui::MouseEvent* event) {
   }
 }
 
-void WorkspaceEventHandler::OnGestureEvent(ui::GestureEvent* event) {
+void WorkspaceEventHandler::OnGestureEvent(ui::GestureEvent* event,
+                                           WmWindow* target) {
   if (event->handled() || event->type() != ui::ET_GESTURE_TAP)
     return;
 
-  aura::Window* target = static_cast<aura::Window*>(event->target());
   int previous_target_component = click_component_;
-  click_component_ =
-      target->delegate()->GetNonClientComponent(event->location());
+  click_component_ = target->GetNonClientComponent(event->location());
 
   if (click_component_ != HTCAPTION)
     return;
@@ -96,7 +88,7 @@ void WorkspaceEventHandler::OnGestureEvent(ui::GestureEvent* event) {
         UMA_TOGGLE_MAXIMIZE_CAPTION_GESTURE);
     WmShell::Get()->RecordGestureAction(GESTURE_MAXIMIZE_DOUBLETAP);
     const wm::WMEvent wm_event(wm::WM_EVENT_TOGGLE_MAXIMIZE_CAPTION);
-    wm::GetWindowState(target)->OnWMEvent(&wm_event);
+    target->GetWindowState()->OnWMEvent(&wm_event);
     event->StopPropagation();
   }
   click_component_ = HTNOWHERE;

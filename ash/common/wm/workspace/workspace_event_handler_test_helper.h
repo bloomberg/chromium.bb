@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_WORKSPACE_WORKSPACE_EVENT_HANDLER_TEST_HELPER_H_
-#define ASH_WM_WORKSPACE_WORKSPACE_EVENT_HANDLER_TEST_HELPER_H_
+#ifndef ASH_COMMON_WM_WORKSPACE_WORKSPACE_EVENT_HANDLER_TEST_HELPER_H_
+#define ASH_COMMON_WM_WORKSPACE_WORKSPACE_EVENT_HANDLER_TEST_HELPER_H_
 
-#include "ash/wm/workspace/workspace_event_handler.h"
+#include "ash/common/wm/workspace/workspace_event_handler.h"
 
 #include "base/macros.h"
 
@@ -28,4 +28,4 @@ class WorkspaceEventHandlerTestHelper {
 
 }  // namespace ash
 
-#endif  // ASH_WM_WORKSPACE_WORKSPACE_EVENT_HANDLER_TEST_HELPER_H_
+#endif  // ASH_COMMON_WM_WORKSPACE_WORKSPACE_EVENT_HANDLER_TEST_HELPER_H_

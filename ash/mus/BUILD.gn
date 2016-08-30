@@ -34,6 +34,8 @@ source_set("lib") {
     "bridge/wm_shell_mus.h",
     "bridge/wm_window_mus.cc",
     "bridge/wm_window_mus.h",
+    "bridge/workspace_event_handler_mus.cc",
+    "bridge/workspace_event_handler_mus.h",
     "container_ids.cc",
     "container_ids.h",
     "context_menu_mus.cc",

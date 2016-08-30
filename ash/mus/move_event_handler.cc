@@ -5,6 +5,7 @@
 #include "ash/mus/move_event_handler.h"
 
 #include "ash/mus/bridge/wm_window_mus.h"
+#include "ash/mus/bridge/workspace_event_handler_mus.h"
 #include "services/ui/public/cpp/window.h"
 #include "services/ui/public/cpp/window_manager_delegate.h"
 #include "services/ui/public/cpp/window_property.h"
@@ -110,6 +111,13 @@ void MoveEventHandler::Detach() {
   root_window_ = nullptr;
 }
 
+WorkspaceEventHandlerMus* MoveEventHandler::GetWorkspaceEventHandlerMus() {
+  if (!wm_window_->GetParent())
+    return nullptr;
+
+  return WorkspaceEventHandlerMus::Get(wm_window_->mus_window()->parent());
+}
+
 void MoveEventHandler::OnMouseEvent(ui::MouseEvent* event) {
   toplevel_window_event_handler_.OnMouseEvent(event, wm_window_);
   if (!toplevel_window_event_handler_.is_drag_in_progress() &&
@@ -120,10 +128,20 @@ void MoveEventHandler::OnMouseEvent(ui::MouseEvent* event) {
     window_manager_client_->SetNonClientCursor(
         wm_window_->mus_window(), CursorForWindowComponent(hit_test_location));
   }
+
+  WorkspaceEventHandlerMus* workspace_event_handler =
+      GetWorkspaceEventHandlerMus();
+  if (workspace_event_handler)
+    workspace_event_handler->OnMouseEvent(event, wm_window_);
 }
 
 void MoveEventHandler::OnGestureEvent(ui::GestureEvent* event) {
   toplevel_window_event_handler_.OnGestureEvent(event, wm_window_);
+
+  WorkspaceEventHandlerMus* workspace_event_handler =
+      GetWorkspaceEventHandlerMus();
+  if (workspace_event_handler)
+    workspace_event_handler->OnGestureEvent(event, wm_window_);
 }
 
 void MoveEventHandler::OnCancelMode(ui::CancelModeEvent* event) {

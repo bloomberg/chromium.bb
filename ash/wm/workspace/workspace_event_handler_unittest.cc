@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/workspace/workspace_event_handler.h"
+#include "ash/common/wm/workspace/workspace_event_handler.h"
 
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"

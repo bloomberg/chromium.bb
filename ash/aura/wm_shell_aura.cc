@@ -27,6 +27,7 @@
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/window_cycle_event_filter_aura.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/workspace/workspace_event_handler_aura.h"
 #include "base/memory/ptr_util.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/focus_client.h"
@@ -201,6 +202,11 @@ WmShellAura::CreateWindowCycleEventFilter() {
 std::unique_ptr<wm::MaximizeModeEventHandler>
 WmShellAura::CreateMaximizeModeEventHandler() {
   return base::WrapUnique(new wm::MaximizeModeEventHandlerAura);
+}
+
+std::unique_ptr<WorkspaceEventHandler> WmShellAura::CreateWorkspaceEventHandler(
+    WmWindow* workspace_window) {
+  return base::MakeUnique<WorkspaceEventHandlerAura>(workspace_window);
 }
 
 std::unique_ptr<ScopedDisableInternalMouseAndKeyboard>

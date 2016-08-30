@@ -309,6 +309,8 @@ class ASH_EXPORT WmWindow {
   // this window handles the events itself; the handler does not recieve events
   // from embedded windows. This only supports windows with internal widgets;
   // see GetInternalWidget(). Ownership of the handler is not transferred.
+  //
+  // Also note that the target of these events is always an aura::Window.
   virtual void AddLimitedPreTargetHandler(ui::EventHandler* handler) = 0;
   virtual void RemoveLimitedPreTargetHandler(ui::EventHandler* handler) = 0;
 

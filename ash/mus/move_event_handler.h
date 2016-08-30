@@ -26,9 +26,13 @@ namespace ash {
 namespace mus {
 
 class WmWindowMus;
+class WorkspaceEventHandlerMus;
 
 // EventHandler attached to windows that may be dragged and/or resized. This
 // forwards to WmToplevelWindowEventHandler to handle the actual drag/resize.
+//
+// TODO(sky): rename this class to better reflect that it handles redirecting
+// events in addition to drag.
 class MoveEventHandler : public ui::EventHandler, public aura::WindowObserver {
  public:
   MoveEventHandler(ui::Window* mus_window,
@@ -58,6 +62,10 @@ class MoveEventHandler : public ui::EventHandler, public aura::WindowObserver {
  private:
   // Removes observer and EventHandler installed on |root_window_|.
   void Detach();
+
+  // Returns the WorkspaceEventHandlerMus, or null if the window is not in a
+  // workspace.
+  WorkspaceEventHandlerMus* GetWorkspaceEventHandlerMus();
 
   // Overridden from ui::EventHandler:
   void OnMouseEvent(ui::MouseEvent* event) override;

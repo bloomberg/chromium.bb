@@ -12,11 +12,12 @@
 #include "ash/common/wm/fullscreen_window_finder.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_window_animations.h"
+#include "ash/common/wm/workspace/workspace_event_handler.h"
 #include "ash/common/wm/workspace/workspace_layout_manager.h"
 #include "ash/common/wm/workspace/workspace_layout_manager_backdrop_delegate.h"
 #include "ash/common/wm_root_window_controller.h"
+#include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "ash/wm/workspace/workspace_event_handler.h"
 #include "base/memory/ptr_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -41,16 +42,14 @@ const int kInitialAnimationDurationMS = 200;
 
 WorkspaceController::WorkspaceController(WmWindow* viewport)
     : viewport_(viewport),
-      event_handler_(new WorkspaceEventHandler),
+      event_handler_(WmShell::Get()->CreateWorkspaceEventHandler(viewport)),
       layout_manager_(new WorkspaceLayoutManager(viewport)) {
   viewport_->SetVisibilityAnimationTransition(::wm::ANIMATE_NONE);
   viewport_->SetLayoutManager(base::WrapUnique(layout_manager_));
-  viewport_->AddLimitedPreTargetHandler(event_handler_.get());
 }
 
 WorkspaceController::~WorkspaceController() {
   viewport_->SetLayoutManager(nullptr);
-  viewport_->RemoveLimitedPreTargetHandler(event_handler_.get());
 }
 
 wm::WorkspaceWindowState WorkspaceController::GetWindowState() const {
