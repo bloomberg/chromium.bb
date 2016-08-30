@@ -31,15 +31,16 @@ CustomElementUpgradeSorter::AddResult CustomElementUpgradeSorter::addToParentChi
     Node* parent,
     Node* child)
 {
-    ParentChildMap::iterator it = m_parentChildMap->find(parent);
-    if (it != m_parentChildMap->end()) {
-        it->value.add(child);
+    ParentChildMap::AddResult result = m_parentChildMap->add(parent, nullptr);
+    if (!result.isNewEntry) {
+        result.storedValue->value->add(child);
         // The entry for the parent exists; so must its parents.
         return kParentAlreadyExistsInMap;
     }
-    ParentChildMap::AddResult result =
-        m_parentChildMap->add(parent, HeapHashSet<Member<Node>>());
-    result.storedValue->value.add(child);
+
+    ChildSet* childSet = new ChildSet();
+    childSet->add(child);
+    result.storedValue->value = childSet;
     return kParentAddedToMap;
 }
 
@@ -86,10 +87,10 @@ void CustomElementUpgradeSorter::sorted(
     if (childrenIterator == m_parentChildMap->end())
         return;
 
-    ChildSet& children = childrenIterator->value;
+    ChildSet* children = childrenIterator->value.get();
 
-    if (children.size() == 1) {
-        visit(result, children, children.begin());
+    if (children->size() == 1) {
+        visit(result, *children, children->begin());
         return;
     }
 
@@ -99,19 +100,19 @@ void CustomElementUpgradeSorter::sorted(
         ? toElement(parent)->authorShadowRoot()
         : nullptr;
     if (shadowRoot)
-        visit(result, children, children.find(shadowRoot));
+        visit(result, *children, children->find(shadowRoot));
 
     for (Element* e = ElementTraversal::firstChild(*parent);
-        e && children.size() > 1;
+        e && children->size() > 1;
         e = ElementTraversal::nextSibling(*e)) {
 
-        visit(result, children, children.find(e));
+        visit(result, *children, children->find(e));
     }
 
-    if (children.size() == 1)
-        visit(result, children, children.begin());
+    if (children->size() == 1)
+        visit(result, *children, children->begin());
 
-    DCHECK(children.isEmpty());
+    DCHECK(children->isEmpty());
 }
 
 } // namespace blink

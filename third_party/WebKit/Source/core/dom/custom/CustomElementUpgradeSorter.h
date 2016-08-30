@@ -32,7 +32,7 @@ public:
 
 private:
     using ChildSet = HeapHashSet<Member<Node>>;
-    using ParentChildMap = HeapHashMap<Member<Node>, ChildSet>;
+    using ParentChildMap = HeapHashMap<Member<Node>, Member<ChildSet>>;
 
     enum AddResult {
         kParentAlreadyExistsInMap,
