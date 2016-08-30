@@ -45,8 +45,7 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
   struct ResourceRow {
     ResourceRow();
     ResourceRow(const ResourceRow& other);
-    ResourceRow(const std::string& main_frame_url,
-                const std::string& resource_url,
+    ResourceRow(const std::string& resource_url,
                 content::ResourceType resource_type,
                 int number_of_hits,
                 int number_of_misses,
@@ -59,11 +58,6 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
     bool operator==(const ResourceRow& rhs) const;
     static void FromProto(const ResourceData& proto, ResourceRow* row);
     void ToProto(ResourceData* resource_data) const;
-
-    // Stores the host for host based data, main frame Url for the Url based
-    // data. This field is cleared for efficiency reasons and the code outside
-    // this class should not assume it is set.
-    std::string primary_key;
 
     GURL resource_url;
     content::ResourceType resource_type;
@@ -127,7 +121,7 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
   virtual void DeleteAllData();
 
   // The maximum length of the string that can be stored in the DB.
-  static const size_t kMaxStringLength;
+  static constexpr size_t kMaxStringLength = 1024;
 
  private:
   friend class PredictorDatabaseInternal;
@@ -151,7 +145,7 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
 
   // Returns true if the strings in the |data| are less than |kMaxStringLength|
   // in length.
-  bool StringsAreSmallerThanDBLimit(const PrefetchData& data) const;
+  static bool StringsAreSmallerThanDBLimit(const PrefetchData& data);
 
   // PredictorTableBase methods.
   void CreateTableIfNonExistent() override;
@@ -159,7 +153,7 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
 
   // Database version. Always increment it when any change is made to the data
   // schema (including the .proto).
-  static constexpr int kDatabaseVersion = 1;
+  static constexpr int kDatabaseVersion = 2;
 
   static bool DropTablesIfOutdated(sql::Connection* db);
   static int GetDatabaseVersion(sql::Connection* db);

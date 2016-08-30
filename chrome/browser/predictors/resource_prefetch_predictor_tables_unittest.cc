@@ -171,26 +171,24 @@ void ResourcePrefetchPredictorTablesTest::TestDeleteSingleDataPoint() {
 void ResourcePrefetchPredictorTablesTest::TestUpdateData() {
   PrefetchData google(PREFETCH_KEY_TYPE_URL, "http://www.google.com");
   google.last_visit = base::Time::FromInternalValue(10);
-  google.resources.push_back(ResourceRow(std::string(),
-                                         "http://www.google.com/style.css",
+  google.resources.push_back(ResourceRow("http://www.google.com/style.css",
                                          content::RESOURCE_TYPE_STYLESHEET, 6,
                                          2, 0, 1.0, net::MEDIUM, true, false));
-  google.resources.push_back(ResourceRow(
-      std::string(), "http://www.google.com/image.png",
-      content::RESOURCE_TYPE_IMAGE, 6, 4, 1, 4.2, net::MEDIUM, false, false));
-  google.resources.push_back(ResourceRow(std::string(),
-                                         "http://www.google.com/a.xml",
+  google.resources.push_back(ResourceRow("http://www.google.com/image.png",
+                                         content::RESOURCE_TYPE_IMAGE, 6, 4, 1,
+                                         4.2, net::MEDIUM, false, false));
+  google.resources.push_back(ResourceRow("http://www.google.com/a.xml",
                                          content::RESOURCE_TYPE_LAST_TYPE, 1, 0,
                                          0, 6.1, net::MEDIUM, false, false));
   google.resources.push_back(ResourceRow(
-      std::string(), "http://www.resources.google.com/script.js",
+      "http://www.resources.google.com/script.js",
       content::RESOURCE_TYPE_SCRIPT, 12, 0, 0, 8.5, net::MEDIUM, true, true));
 
   PrefetchData yahoo(PREFETCH_KEY_TYPE_HOST, "www.yahoo.com");
   yahoo.last_visit = base::Time::FromInternalValue(7);
-  yahoo.resources.push_back(ResourceRow(
-      std::string(), "http://www.yahoo.com/image.png",
-      content::RESOURCE_TYPE_IMAGE, 120, 1, 1, 10.0, net::MEDIUM, true, false));
+  yahoo.resources.push_back(ResourceRow("http://www.yahoo.com/image.png",
+                                        content::RESOURCE_TYPE_IMAGE, 120, 1, 1,
+                                        10.0, net::MEDIUM, true, false));
 
   tables_->UpdateData(google, yahoo);
 
@@ -223,13 +221,11 @@ void ResourcePrefetchPredictorTablesTest::TestPrefetchDataAreEqual(
     const PrefetchDataMap& rhs) const {
   EXPECT_EQ(lhs.size(), rhs.size());
 
-  for (PrefetchDataMap::const_iterator rhs_it = rhs.begin();
-       rhs_it != rhs.end(); ++rhs_it) {
-    PrefetchDataMap::const_iterator lhs_it = lhs.find(rhs_it->first);
-    ASSERT_TRUE(lhs_it != lhs.end()) << rhs_it->first;
+  for (const std::pair<std::string, PrefetchData>& p : rhs) {
+    PrefetchDataMap::const_iterator lhs_it = lhs.find(p.first);
+    ASSERT_TRUE(lhs_it != lhs.end()) << p.first;
 
-    TestResourceRowsAreEqual(lhs_it->second.resources,
-                             rhs_it->second.resources);
+    TestResourceRowsAreEqual(lhs_it->second.resources, p.second.resources);
   }
 }
 
@@ -272,41 +268,35 @@ void ResourcePrefetchPredictorTablesTest::InitializeSampleData() {
   {  // Url data.
     PrefetchData google(PREFETCH_KEY_TYPE_URL, "http://www.google.com");
     google.last_visit = base::Time::FromInternalValue(1);
-    google.resources.push_back(
-        ResourceRow(std::string(), "http://www.google.com/style.css",
-                    content::RESOURCE_TYPE_STYLESHEET, 5, 2, 1, 1.1,
-                    net::MEDIUM, false, false));
-    google.resources.push_back(ResourceRow(std::string(),
-                                           "http://www.google.com/script.js",
+    google.resources.push_back(ResourceRow(
+        "http://www.google.com/style.css", content::RESOURCE_TYPE_STYLESHEET, 5,
+        2, 1, 1.1, net::MEDIUM, false, false));
+    google.resources.push_back(ResourceRow("http://www.google.com/script.js",
                                            content::RESOURCE_TYPE_SCRIPT, 4, 0,
                                            1, 2.1, net::MEDIUM, false, false));
+    google.resources.push_back(ResourceRow("http://www.google.com/image.png",
+                                           content::RESOURCE_TYPE_IMAGE, 6, 3,
+                                           0, 2.2, net::MEDIUM, false, false));
     google.resources.push_back(ResourceRow(
-        std::string(), "http://www.google.com/image.png",
-        content::RESOURCE_TYPE_IMAGE, 6, 3, 0, 2.2, net::MEDIUM, false, false));
+        "http://www.google.com/a.font", content::RESOURCE_TYPE_LAST_TYPE, 2, 0,
+        0, 5.1, net::MEDIUM, false, false));
     google.resources.push_back(
-        ResourceRow(std::string(), "http://www.google.com/a.font",
-                    content::RESOURCE_TYPE_LAST_TYPE, 2, 0, 0, 5.1, net::MEDIUM,
-                    false, false));
-    google.resources.push_back(
-        ResourceRow(std::string(), "http://www.resources.google.com/script.js",
+        ResourceRow("http://www.resources.google.com/script.js",
                     content::RESOURCE_TYPE_SCRIPT, 11, 0, 0, 8.5, net::MEDIUM,
                     false, false));
 
     PrefetchData reddit(PREFETCH_KEY_TYPE_URL, "http://www.reddit.com");
     reddit.last_visit = base::Time::FromInternalValue(2);
-    reddit.resources.push_back(
-        ResourceRow(std::string(), "http://reddit-resource.com/script1.js",
-                    content::RESOURCE_TYPE_SCRIPT, 4, 0, 1, 1.0, net::MEDIUM,
-                    false, false));
-    reddit.resources.push_back(
-        ResourceRow(std::string(), "http://reddit-resource.com/script2.js",
-                    content::RESOURCE_TYPE_SCRIPT, 2, 0, 0, 2.1, net::MEDIUM,
-                    false, false));
+    reddit.resources.push_back(ResourceRow(
+        "http://reddit-resource.com/script1.js", content::RESOURCE_TYPE_SCRIPT,
+        4, 0, 1, 1.0, net::MEDIUM, false, false));
+    reddit.resources.push_back(ResourceRow(
+        "http://reddit-resource.com/script2.js", content::RESOURCE_TYPE_SCRIPT,
+        2, 0, 0, 2.1, net::MEDIUM, false, false));
 
     PrefetchData yahoo(PREFETCH_KEY_TYPE_URL, "http://www.yahoo.com");
     yahoo.last_visit = base::Time::FromInternalValue(3);
-    yahoo.resources.push_back(ResourceRow(std::string(),
-                                          "http://www.google.com/image.png",
+    yahoo.resources.push_back(ResourceRow("http://www.google.com/image.png",
                                           content::RESOURCE_TYPE_IMAGE, 20, 1,
                                           0, 10.0, net::MEDIUM, false, false));
 
@@ -324,30 +314,26 @@ void ResourcePrefetchPredictorTablesTest::InitializeSampleData() {
   {  // Host data.
     PrefetchData facebook(PREFETCH_KEY_TYPE_HOST, "www.facebook.com");
     facebook.last_visit = base::Time::FromInternalValue(4);
-    facebook.resources.push_back(
-        ResourceRow(std::string(), "http://www.facebook.com/style.css",
-                    content::RESOURCE_TYPE_STYLESHEET, 5, 2, 1, 1.1,
-                    net::MEDIUM, false, false));
-    facebook.resources.push_back(
-        ResourceRow(std::string(), "http://www.facebook.com/script.js",
-                    content::RESOURCE_TYPE_SCRIPT, 4, 0, 1, 2.1, net::MEDIUM,
-                    false, false));
     facebook.resources.push_back(ResourceRow(
-        std::string(), "http://www.facebook.com/image.png",
-        content::RESOURCE_TYPE_IMAGE, 6, 3, 0, 2.2, net::MEDIUM, false, false));
-    facebook.resources.push_back(
-        ResourceRow(std::string(), "http://www.facebook.com/a.font",
-                    content::RESOURCE_TYPE_LAST_TYPE, 2, 0, 0, 5.1, net::MEDIUM,
-                    false, false));
+        "http://www.facebook.com/style.css", content::RESOURCE_TYPE_STYLESHEET,
+        5, 2, 1, 1.1, net::MEDIUM, false, false));
     facebook.resources.push_back(ResourceRow(
-        std::string(), "http://www.resources.facebook.com/script.js",
-        content::RESOURCE_TYPE_SCRIPT, 11, 0, 0, 8.5, net::MEDIUM, false,
-        false));
+        "http://www.facebook.com/script.js", content::RESOURCE_TYPE_SCRIPT, 4,
+        0, 1, 2.1, net::MEDIUM, false, false));
+    facebook.resources.push_back(ResourceRow(
+        "http://www.facebook.com/image.png", content::RESOURCE_TYPE_IMAGE, 6, 3,
+        0, 2.2, net::MEDIUM, false, false));
+    facebook.resources.push_back(ResourceRow(
+        "http://www.facebook.com/a.font", content::RESOURCE_TYPE_LAST_TYPE, 2,
+        0, 0, 5.1, net::MEDIUM, false, false));
+    facebook.resources.push_back(
+        ResourceRow("http://www.resources.facebook.com/script.js",
+                    content::RESOURCE_TYPE_SCRIPT, 11, 0, 0, 8.5, net::MEDIUM,
+                    false, false));
 
     PrefetchData yahoo(PREFETCH_KEY_TYPE_HOST, "www.yahoo.com");
     yahoo.last_visit = base::Time::FromInternalValue(5);
-    yahoo.resources.push_back(ResourceRow(std::string(),
-                                          "http://www.google.com/image.png",
+    yahoo.resources.push_back(ResourceRow("http://www.google.com/image.png",
                                           content::RESOURCE_TYPE_IMAGE, 20, 1,
                                           0, 10.0, net::MEDIUM, false, false));
 
@@ -371,18 +357,16 @@ void ResourcePrefetchPredictorTablesTest::ReopenDatabase() {
 
 TEST_F(ResourcePrefetchPredictorTablesTest, ComputeScore) {
   typedef ResourcePrefetchPredictorTables::ResourceRow ResourceRow;
-  ResourceRow js_resource(
-      std::string(), "http://www.resources.google.com/script.js",
-      content::RESOURCE_TYPE_SCRIPT, 11, 0, 0, 1., net::MEDIUM, false, false);
-  ResourceRow image_resource(
-      std::string(), "http://www.resources.google.com/image.jpg",
-      content::RESOURCE_TYPE_IMAGE, 11, 0, 0, 1., net::MEDIUM, false, false);
-  ResourceRow css_resource(std::string(),
-                           "http://www.resources.google.com/stylesheet.css",
+  ResourceRow js_resource("http://www.resources.google.com/script.js",
+                          content::RESOURCE_TYPE_SCRIPT, 11, 0, 0, 1.,
+                          net::MEDIUM, false, false);
+  ResourceRow image_resource("http://www.resources.google.com/image.jpg",
+                             content::RESOURCE_TYPE_IMAGE, 11, 0, 0, 1.,
+                             net::MEDIUM, false, false);
+  ResourceRow css_resource("http://www.resources.google.com/stylesheet.css",
                            content::RESOURCE_TYPE_STYLESHEET, 11, 0, 0, 1.,
                            net::MEDIUM, false, false);
-  ResourceRow font_resource(std::string(),
-                            "http://www.resources.google.com/font.woff",
+  ResourceRow font_resource("http://www.resources.google.com/font.woff",
                             content::RESOURCE_TYPE_FONT_RESOURCE, 11, 0, 0, 1.,
                             net::MEDIUM, false, false);
   EXPECT_TRUE(js_resource.score == css_resource.score);

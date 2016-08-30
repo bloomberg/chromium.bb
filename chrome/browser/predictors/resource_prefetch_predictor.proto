@@ -51,14 +51,13 @@ message ResourceData {
     REQUEST_PRIORITY_HIGHEST = 4;
   }
 
-  optional string primary_key = 1;
-  optional string resource_url = 2;
-  optional ResourceType resource_type = 3;
-  optional uint32 number_of_hits = 4;
-  optional uint32 number_of_misses = 5;
-  optional uint32 consecutive_misses = 6;
-  optional double average_position = 7;
-  optional Priority priority = 8;
-  optional bool has_validators = 9;
-  optional bool always_revalidate = 10;
+  optional string resource_url = 1;
+  optional ResourceType resource_type = 2;
+  optional uint32 number_of_hits = 3;
+  optional uint32 number_of_misses = 4;
+  optional uint32 consecutive_misses = 5;
+  optional double average_position = 6;
+  optional Priority priority = 7;
+  optional bool has_validators = 8;
+  optional bool always_revalidate = 9;
 }

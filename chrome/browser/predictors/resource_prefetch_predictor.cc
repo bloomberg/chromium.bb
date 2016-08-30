@@ -707,17 +707,16 @@ bool ResourcePrefetchPredictor::GetPrefetchData(
 void ResourcePrefetchPredictor::PopulatePrefetcherRequest(
     const PrefetchData& data,
     ResourcePrefetcher::RequestVector* requests) {
-  for (ResourceRows::const_iterator it = data.resources.begin();
-       it != data.resources.end(); ++it) {
-    float confidence = static_cast<float>(it->number_of_hits) /
-        (it->number_of_hits + it->number_of_misses);
+  for (const ResourceRow& row : data.resources) {
+    float confidence = static_cast<float>(row.number_of_hits) /
+                       (row.number_of_hits + row.number_of_misses);
     if (confidence < config_.min_resource_confidence_to_trigger_prefetch ||
-        it->number_of_hits < config_.min_resource_hits_to_trigger_prefetch) {
+        row.number_of_hits < config_.min_resource_hits_to_trigger_prefetch) {
       continue;
     }
 
-    ResourcePrefetcher::Request* req = new ResourcePrefetcher::Request(
-        it->resource_url);
+    ResourcePrefetcher::Request* req =
+        new ResourcePrefetcher::Request(row.resource_url);
     requests->push_back(req);
   }
 }

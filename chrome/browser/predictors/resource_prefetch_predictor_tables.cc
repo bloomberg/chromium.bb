@@ -68,9 +68,13 @@ void BindResourceRowToStatement(const ResourceRow& row,
   statement->BindBlob(2, &proto_buffer[0], size);
 }
 
-bool StepAndInitializeResourceRow(Statement* statement, ResourceRow* row) {
+bool StepAndInitializeResourceRow(Statement* statement,
+                                  ResourceRow* row,
+                                  std::string* primary_key) {
   if (!statement->Step())
     return false;
+
+  *primary_key = statement->ColumnString(0);
 
   int size = statement->ColumnByteLength(2);
   const void* data = statement->ColumnBlob(2);
@@ -79,17 +83,15 @@ bool StepAndInitializeResourceRow(Statement* statement, ResourceRow* row) {
   proto.ParseFromArray(data, size);
   ResourceRow::FromProto(proto, row);
 
-  row->primary_key = statement->ColumnString(0);
-  row->resource_url = GURL(statement->ColumnString(1));
+  GURL resource_url(statement->ColumnString(1));
+  DCHECK(resource_url == row->resource_url);
+
   return true;
 }
 
 }  // namespace
 
 namespace predictors {
-
-// static
-const size_t ResourcePrefetchPredictorTables::kMaxStringLength = 1024;
 
 ResourceRow::ResourceRow()
     : resource_type(content::RESOURCE_TYPE_LAST_TYPE),
@@ -103,8 +105,7 @@ ResourceRow::ResourceRow()
       score(0.0) {}
 
 ResourceRow::ResourceRow(const ResourceRow& other)
-    : primary_key(other.primary_key),
-      resource_url(other.resource_url),
+    : resource_url(other.resource_url),
       resource_type(other.resource_type),
       number_of_hits(other.number_of_hits),
       number_of_misses(other.number_of_misses),
@@ -115,8 +116,7 @@ ResourceRow::ResourceRow(const ResourceRow& other)
       always_revalidate(other.always_revalidate),
       score(other.score) {}
 
-ResourceRow::ResourceRow(const std::string& i_primary_key,
-                         const std::string& i_resource_url,
+ResourceRow::ResourceRow(const std::string& i_resource_url,
                          content::ResourceType i_resource_type,
                          int i_number_of_hits,
                          int i_number_of_misses,
@@ -125,8 +125,7 @@ ResourceRow::ResourceRow(const std::string& i_primary_key,
                          net::RequestPriority i_priority,
                          bool i_has_validators,
                          bool i_always_revalidate)
-    : primary_key(i_primary_key),
-      resource_url(i_resource_url),
+    : resource_url(i_resource_url),
       resource_type(i_resource_type),
       number_of_hits(i_number_of_hits),
       number_of_misses(i_number_of_misses),
@@ -159,7 +158,7 @@ void ResourceRow::UpdateScore() {
 }
 
 bool ResourceRow::operator==(const ResourceRow& rhs) const {
-  return primary_key == rhs.primary_key && resource_url == rhs.resource_url &&
+  return resource_url == rhs.resource_url &&
          resource_type == rhs.resource_type &&
          number_of_hits == rhs.number_of_hits &&
          number_of_misses == rhs.number_of_misses &&
@@ -173,7 +172,6 @@ void ResourceRow::ToProto(ResourceData* resource_data) const {
   using chrome_browser_predictors::ResourceData_Priority;
   using chrome_browser_predictors::ResourceData_ResourceType;
 
-  resource_data->set_primary_key(primary_key);
   resource_data->set_resource_url(resource_url.spec());
   resource_data->set_resource_type(
       static_cast<ResourceData_ResourceType>(resource_type));
@@ -188,8 +186,6 @@ void ResourceRow::ToProto(ResourceData* resource_data) const {
 
 // static
 void ResourceRow::FromProto(const ResourceData& proto, ResourceRow* row) {
-  DCHECK(proto.has_primary_key());
-  row->primary_key = proto.primary_key();
   row->resource_url = GURL(proto.resource_url());
   row->resource_type =
       static_cast<content::ResourceType>(proto.resource_type());
@@ -200,6 +196,7 @@ void ResourceRow::FromProto(const ResourceData& proto, ResourceRow* row) {
   row->priority = static_cast<net::RequestPriority>(proto.priority());
   row->has_validators = proto.has_validators();
   row->always_revalidate = proto.always_revalidate();
+  row->UpdateScore();
 }
 
 // static
@@ -303,18 +300,14 @@ void ResourcePrefetchPredictorTables::DeleteAllData() {
   if (CantAccessDatabase())
     return;
 
-  Statement deleter(DB()->GetUniqueStatement(
-      base::StringPrintf("DELETE FROM %s", kUrlResourceTableName).c_str()));
-  deleter.Run();
-  deleter.Assign(DB()->GetUniqueStatement(
-      base::StringPrintf("DELETE FROM %s", kUrlMetadataTableName).c_str()));
-  deleter.Run();
-  deleter.Assign(DB()->GetUniqueStatement(
-      base::StringPrintf("DELETE FROM %s", kHostResourceTableName).c_str()));
-  deleter.Run();
-  deleter.Assign(DB()->GetUniqueStatement(
-      base::StringPrintf("DELETE FROM %s", kHostMetadataTableName).c_str()));
-  deleter.Run();
+  Statement deleter;
+  for (const char* table_name :
+       {kUrlResourceTableName, kUrlMetadataTableName, kHostResourceTableName,
+        kHostMetadataTableName}) {
+    deleter.Assign(DB()->GetUniqueStatement(
+        base::StringPrintf("DELETE FROM %s", table_name).c_str()));
+    deleter.Run();
+  }
 }
 
 ResourcePrefetchPredictorTables::ResourcePrefetchPredictorTables()
@@ -337,12 +330,8 @@ void ResourcePrefetchPredictorTables::GetAllDataHelper(
       base::StringPrintf("SELECT * FROM %s", resource_table_name).c_str()));
 
   ResourceRow row;
-  while (StepAndInitializeResourceRow(&resource_reader, &row)) {
-    row.UpdateScore();
-    std::string primary_key = row.primary_key;
-    // Don't need to store primary key since the data is grouped by primary key.
-    row.primary_key.clear();
-
+  std::string primary_key;
+  while (StepAndInitializeResourceRow(&resource_reader, &row, &primary_key)) {
     PrefetchDataMap::iterator it = data_map->find(primary_key);
     if (it == data_map->end()) {
       it = data_map->insert(std::make_pair(
@@ -399,8 +388,7 @@ bool ResourcePrefetchPredictorTables::UpdateDataHelper(
     return false;
 
   // Add the new data to the tables.
-  const ResourceRows& resources = data.resources;
-  for (const ResourceRow& resource : resources) {
+  for (const ResourceRow& resource : data.resources) {
     std::unique_ptr<Statement> resource_inserter(
         data.is_host() ? GetHostResourceUpdateStatement()
                        : GetUrlResourceUpdateStatement());
@@ -426,29 +414,28 @@ void ResourcePrefetchPredictorTables::DeleteDataHelper(
     const std::vector<std::string>& keys) {
   bool is_host = key_type == PREFETCH_KEY_TYPE_HOST;
 
-  for (std::vector<std::string>::const_iterator it = keys.begin();
-       it != keys.end(); ++it) {
+  for (const std::string& key : keys) {
     std::unique_ptr<Statement> deleter(is_host
                                            ? GetHostResourceDeleteStatement()
                                            : GetUrlResourceDeleteStatement());
-    deleter->BindString(0, *it);
+    deleter->BindString(0, key);
     deleter->Run();
 
     deleter.reset(is_host ? GetHostMetadataDeleteStatement() :
         GetUrlMetadataDeleteStatement());
-    deleter->BindString(0, *it);
+    deleter->BindString(0, key);
     deleter->Run();
   }
 }
 
+// static
 bool ResourcePrefetchPredictorTables::StringsAreSmallerThanDBLimit(
-    const PrefetchData& data) const {
+    const PrefetchData& data) {
   if (data.primary_key.length() > kMaxStringLength)
     return false;
 
-  for (ResourceRows::const_iterator it = data.resources.begin();
-       it != data.resources.end(); ++it) {
-    if (it->resource_url.spec().length() > kMaxStringLength)
+  for (const ResourceRow& row : data.resources) {
+    if (row.resource_url.spec().length() > kMaxStringLength)
       return false;
   }
   return true;
