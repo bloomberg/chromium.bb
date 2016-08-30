@@ -12,6 +12,7 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "chrome/common/chrome_features.h"
+#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/ntp_snippets/features.h"
 #include "components/offline_pages/offline_page_feature.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -30,13 +31,14 @@ namespace {
 // this array may either refer to features defined in the header of this file or
 // in other locations in the code base (e.g. chrome/, components/, etc).
 const base::Feature* kFeaturesExposedToJava[] = {
+    &autofill::kAutofillScanCardholderName,
     &features::kAutoplayMutedVideos,
     &features::kCredentialManagementAPI,
     &features::kSimplifiedFullscreenUI,
     &features::kWebPayments,
     &kAllBookmarksFeature,
-    &kDownloadsUiFeature,
     &kAndroidPayIntegrationV1,
+    &kDownloadsUiFeature,
     &kImportantSitesInCBD,
     &ntp_snippets::kContentSuggestionsFeature,
     &ntp_snippets::kSaveToOfflineFeature,

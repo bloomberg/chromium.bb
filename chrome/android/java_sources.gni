@@ -75,6 +75,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/autofill/AutofillPopupBridge.java",
   "java/src/org/chromium/chrome/browser/autofill/CardUnmaskBridge.java",
   "java/src/org/chromium/chrome/browser/autofill/CardUnmaskPrompt.java",
+  "java/src/org/chromium/chrome/browser/autofill/CreditCardScannerBridge.java",
   "java/src/org/chromium/chrome/browser/autofill/CreditCardScanner.java",
   "java/src/org/chromium/chrome/browser/autofill/PasswordGenerationAdapter.java",
   "java/src/org/chromium/chrome/browser/autofill/PasswordGenerationPopupBridge.java",

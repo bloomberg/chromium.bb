@@ -29,8 +29,9 @@ public abstract class ChromeFeatureList {
         return nativeIsEnabled(featureName);
     }
 
-    /** Whether we show an important sites dialog in the "Clear Browsing Data" flow. */
     public static final String ANDROID_PAY_INTEGRATION_V1 = "AndroidPayIntegrationV1";
+    public static final String AUTOFILL_SCAN_CARDHOLDER_NAME = "AutofillScanCardholderName";
+    /** Whether we show an important sites dialog in the "Clear Browsing Data" flow. */
     public static final String IMPORTANT_SITES_IN_CBD = "ImportantSitesInCBD";
     public static final String NTP_FAKE_OMNIBOX_TEXT = "NTPFakeOmniboxText";
     public static final String NTP_MATERIAL_DESIGN = "NTPMaterialDesign";

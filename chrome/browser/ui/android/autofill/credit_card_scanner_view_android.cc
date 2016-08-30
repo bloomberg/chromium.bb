@@ -17,7 +17,7 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "content/public/browser/android/content_view_core.h"
-#include "jni/CreditCardScanner_jni.h"
+#include "jni/CreditCardScannerBridge_jni.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
 
@@ -29,9 +29,9 @@ namespace autofill {
 bool CreditCardScannerView::CanShow() {
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaGlobalRef<jobject> java_object(
-      Java_CreditCardScanner_create(
+      Java_CreditCardScannerBridge_create(
           env, 0, base::android::GetApplicationContext(), nullptr));
-  return Java_CreditCardScanner_canScan(env, java_object);
+  return Java_CreditCardScannerBridge_canScan(env, java_object);
 }
 
 // static
@@ -51,7 +51,7 @@ CreditCardScannerViewAndroid::CreditCardScannerViewAndroid(
     const base::WeakPtr<CreditCardScannerViewDelegate>& delegate,
     content::WebContents* web_contents)
     : delegate_(delegate),
-      java_object_(Java_CreditCardScanner_create(
+      java_object_(Java_CreditCardScannerBridge_create(
           base::android::AttachCurrentThread(),
           reinterpret_cast<intptr_t>(this),
           base::android::GetApplicationContext(),
@@ -80,18 +80,18 @@ void CreditCardScannerViewAndroid::ScanCompleted(
   card.SetExpirationMonth(static_cast<int>(expiration_month));
   card.SetExpirationYear(static_cast<int>(expiration_year));
 
-  if (base::FeatureList::IsEnabled(kAutofillScanCardholderName)) {
-    card.SetRawInfo(
-        CREDIT_CARD_NAME_FULL,
-        base::android::ConvertJavaStringToUTF16(env, card_holder_name));
-  }
+  base::string16 name =
+      base::android::ConvertJavaStringToUTF16(env, card_holder_name);
+  DCHECK(name.empty() ||
+         base::FeatureList::IsEnabled(kAutofillScanCardholderName));
+  card.SetRawInfo(CREDIT_CARD_NAME_FULL, name);
 
   delegate_->ScanCompleted(card);
 }
 
 void CreditCardScannerViewAndroid::Show() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_CreditCardScanner_scan(env, java_object_);
+  Java_CreditCardScannerBridge_scan(env, java_object_);
 }
 
 }  // namespace autofill
