@@ -65,8 +65,8 @@ public:
     void advanceToNextMisspelling(bool startBeforeSelection = false);
     void showSpellingGuessPanel();
     void didBeginEditing(Element*);
-    void clearMisspellingsAndBadGrammar(const VisibleSelection&);
-    void markMisspellingsAndBadGrammar(const VisibleSelection&);
+    void clearMisspellingsAndBadGrammarForMovingParagraphs(const VisibleSelection&);
+    void markMisspellingsAndBadGrammarForMovingParagraphs(const VisibleSelection&);
     void respondToChangedSelection(const VisibleSelection& oldSelection, FrameSelection::SetSelectionOptions);
     void replaceMisspelledRange(const String&);
     void removeSpellingMarkers();
@@ -111,6 +111,7 @@ private:
 
     void removeMarkers(const VisibleSelection&, DocumentMarker::MarkerTypes);
 
+    void markMisspellingsAndBadGrammar(const VisibleSelection&);
     void chunkAndMarkAllMisspellingsAndBadGrammar(const TextCheckingParagraph& fullParagraphToCheck);
     void spellCheckOldSelection(const VisibleSelection& oldSelection, const VisibleSelection& newAdjacentWords);
 

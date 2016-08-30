@@ -308,9 +308,14 @@ void SpellChecker::showSpellingGuessPanel()
     spellCheckerClient().showSpellingUI(true);
 }
 
-void SpellChecker::clearMisspellingsAndBadGrammar(const VisibleSelection &movingSelection)
+void SpellChecker::clearMisspellingsAndBadGrammarForMovingParagraphs(const VisibleSelection& movingSelection)
 {
     removeMarkers(movingSelection, DocumentMarker::MisspellingMarkers());
+}
+
+void SpellChecker::markMisspellingsAndBadGrammarForMovingParagraphs(const VisibleSelection& movingSelection)
+{
+    markMisspellingsAndBadGrammar(movingSelection);
 }
 
 void SpellChecker::markMisspellingsAndBadGrammar(const VisibleSelection& selection)
