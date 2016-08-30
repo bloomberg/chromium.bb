@@ -20,6 +20,12 @@
 class PrefRegistrySimple;
 class PrefService;
 
+namespace chromeos {
+namespace attestation {
+class AttestationFlow;
+}
+}
+
 namespace net {
 class URLRequestContextGetter;
 }
@@ -142,6 +148,11 @@ class BrowserPolicyConnectorChromeOS
   // Restarts the device cloud policy initializer, because the device's
   // registration status changed from registered to unregistered.
   void RestartDeviceCloudPolicyInitializer();
+
+  // Creates an attestation flow using our async method handler and
+  // cryptohome client.
+  std::unique_ptr<chromeos::attestation::AttestationFlow>
+  CreateAttestationFlow();
 
   // Components of the device cloud policy implementation.
   std::unique_ptr<ServerBackedStateKeysBroker> state_keys_broker_;

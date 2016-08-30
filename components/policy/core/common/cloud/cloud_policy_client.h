@@ -24,10 +24,6 @@
 #include "components/policy/policy_export.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 
-namespace cryptohome {
-class AsyncMethodCaller;
-}
-
 namespace net {
 class URLRequestContextGetter;
 }
@@ -36,6 +32,7 @@ namespace policy {
 
 class DeviceManagementRequestJob;
 class DeviceManagementService;
+class SigningService;
 
 // Implements the core logic required to talk to the device management service.
 // Also keeps track of the current state of the association with the service,
@@ -83,18 +80,7 @@ class POLICY_EXPORT CloudPolicyClient {
     virtual void OnClientError(CloudPolicyClient* client) = 0;
   };
 
-  // Data signing interface.
-  class POLICY_EXPORT SigningService {
-   public:
-    using SigningCallback = base::Callback<void(bool success,
-        enterprise_management::SignedData signed_data)>;
-
-    // Signs |data| and calls |callback| with the signed data.
-    virtual void SignData(const std::string& data,
-                          const SigningCallback& callback) = 0;
-  };
-
-  // |provider| and |service| are weak pointers and it's the caller's
+  // |service| and |signing_service| are weak pointers and it's the caller's
   // responsibility to keep them valid for the lifetime of CloudPolicyClient.
   // |verification_key_hash| contains an identifier telling the DMServer which
   // verification key to use. The |signing_service| is used to sign sensitive

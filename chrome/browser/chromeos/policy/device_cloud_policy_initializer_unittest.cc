@@ -5,12 +5,14 @@
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
 
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "chrome/browser/chromeos/policy/server_backed_device_state.h"
 #include "chrome/browser/chromeos/policy/stub_enterprise_install_attributes.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/attestation/mock_attestation_flow.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "chromeos/system/statistics_provider.h"
@@ -31,15 +33,16 @@ class DeviceCloudPolicyInitializerTest
     : public testing::TestWithParam<ZeroTouchParam> {
  protected:
   DeviceCloudPolicyInitializerTest()
-      : device_cloud_policy_initializer_(&local_state_,
-                                         nullptr,
-                                         nullptr,
-                                         &install_attributes_,
-                                         nullptr,
-                                         nullptr,
-                                         nullptr,
-                                         nullptr,
-                                         nullptr) {
+      : device_cloud_policy_initializer_(
+            &local_state_,
+            nullptr,
+            nullptr,
+            &install_attributes_,
+            nullptr,
+            nullptr,
+            nullptr,
+            nullptr,
+            base::MakeUnique<chromeos::attestation::MockAttestationFlow>()) {
     chrome::RegisterLocalState(local_state_.registry());
     statistics_provider_.SetMachineStatistic("serial_number", "fake-serial");
   }

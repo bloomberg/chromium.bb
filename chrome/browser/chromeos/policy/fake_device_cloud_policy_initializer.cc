@@ -4,8 +4,10 @@
 
 #include "chrome/browser/chromeos/policy/fake_device_cloud_policy_initializer.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
+#include "chromeos/attestation/mock_attestation_flow.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 
 namespace policy {
@@ -16,12 +18,12 @@ FakeDeviceCloudPolicyInitializer::FakeDeviceCloudPolicyInitializer()
           NULL,  // enterprise_service
           // background_task_runner
           scoped_refptr<base::SequencedTaskRunner>(NULL),
-          NULL,   // install_attributes
-          NULL,   // state_keys_broker
-          NULL,   // device_store
-          NULL,   // manager
-          NULL,   // async_caller
-          NULL),  // cryptohome_client
+          NULL,  // install_attributes
+          NULL,  // state_keys_broker
+          NULL,  // device_store
+          NULL,  // manager
+          NULL,  // async_caller
+          base::MakeUnique<chromeos::attestation::MockAttestationFlow>()),
       was_start_enrollment_called_(false),
       enrollment_status_(
           EnrollmentStatus::ForStatus(EnrollmentStatus::STATUS_SUCCESS)) {}

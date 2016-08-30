@@ -27,15 +27,9 @@ class SequencedTaskRunner;
 }
 
 namespace chromeos {
-class CryptohomeClient;
-
 namespace attestation {
 class AttestationFlow;
 }
-}
-
-namespace cryptohome {
-class AsyncMethodCaller;
 }
 
 namespace policy {
@@ -72,8 +66,7 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
       DeviceCloudPolicyStoreChromeOS* store,
       EnterpriseInstallAttributes* install_attributes,
       ServerBackedStateKeysBroker* state_keys_broker,
-      cryptohome::AsyncMethodCaller* async_method_caller,
-      chromeos::CryptohomeClient* cryptohome_client,
+      chromeos::attestation::AttestationFlow* attestation_flow,
       std::unique_ptr<CloudPolicyClient> client,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner,
       const EnrollmentConfig& enrollment_config,
@@ -175,12 +168,10 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   DeviceCloudPolicyStoreChromeOS* store_;
   EnterpriseInstallAttributes* install_attributes_;
   ServerBackedStateKeysBroker* state_keys_broker_;
-  cryptohome::AsyncMethodCaller* async_method_caller_;
-  chromeos::CryptohomeClient* cryptohome_client_;
+  chromeos::attestation::AttestationFlow* attestation_flow_;
   std::unique_ptr<CloudPolicyClient> client_;
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
   std::unique_ptr<gaia::GaiaOAuthClient> gaia_oauth_client_;
-  std::unique_ptr<chromeos::attestation::AttestationFlow> attestation_flow_;
 
   EnrollmentConfig enrollment_config_;
   std::string auth_token_;

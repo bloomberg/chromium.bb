@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
+#include "components/policy/core/common/cloud/signing_service.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -271,13 +272,10 @@ void CloudPolicyClient::FetchPolicy() {
 
 void CloudPolicyClient::FetchRobotAuthCodes(const std::string& auth_token) {
   CHECK(is_registered());
-  DCHECK(!auth_token.empty());
 
   policy_fetch_request_job_.reset(service_->CreateJob(
       DeviceManagementRequestJob::TYPE_API_AUTH_CODE_FETCH,
       GetRequestContext()));
-  // The credentials of a domain user are needed in order to mint a new OAuth2
-  // authorization token for the robot account.
   policy_fetch_request_job_->SetOAuthToken(auth_token);
   policy_fetch_request_job_->SetDMToken(dm_token_);
   policy_fetch_request_job_->SetClientID(client_id_);

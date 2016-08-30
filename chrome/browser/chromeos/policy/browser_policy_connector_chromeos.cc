@@ -12,12 +12,14 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/chromeos/attestation/attestation_ca_client.h"
 #include "chrome/browser/chromeos/policy/affiliated_cloud_policy_invalidator.h"
 #include "chrome/browser/chromeos/policy/affiliated_invalidation_service_provider.h"
 #include "chrome/browser/chromeos/policy/affiliated_invalidation_service_provider_impl.h"
@@ -35,6 +37,7 @@
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/policy/device_management_service_configuration.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/attestation/attestation_flow.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/async_method_caller.h"
@@ -321,9 +324,16 @@ void BrowserPolicyConnectorChromeOS::RestartDeviceCloudPolicyInitializer() {
       install_attributes_.get(), state_keys_broker_.get(),
       device_cloud_policy_manager_->device_store(),
       device_cloud_policy_manager_,
-      cryptohome::AsyncMethodCaller::GetInstance(),
-      chromeos::DBusThreadManager::Get()->GetCryptohomeClient()));
+      cryptohome::AsyncMethodCaller::GetInstance(), CreateAttestationFlow()));
   device_cloud_policy_initializer_->Init();
+}
+
+std::unique_ptr<chromeos::attestation::AttestationFlow>
+BrowserPolicyConnectorChromeOS::CreateAttestationFlow() {
+  return base::MakeUnique<chromeos::attestation::AttestationFlow>(
+      cryptohome::AsyncMethodCaller::GetInstance(),
+      chromeos::DBusThreadManager::Get()->GetCryptohomeClient(),
+      base::MakeUnique<chromeos::attestation::AttestationCAClient>());
 }
 
 chromeos::AffiliationIDSet

@@ -17,6 +17,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
+#include "components/policy/core/common/cloud/signing_service.h"
 
 class PrefService;
 
@@ -25,7 +26,9 @@ class SequencedTaskRunner;
 }
 
 namespace chromeos {
-class CryptohomeClient;
+namespace attestation {
+class AttestationFlow;
+}
 }
 
 namespace cryptohome {
@@ -59,8 +62,8 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
       ServerBackedStateKeysBroker* state_keys_broker,
       DeviceCloudPolicyStoreChromeOS* device_store,
       DeviceCloudPolicyManagerChromeOS* manager,
-      cryptohome::AsyncMethodCaller* async_caller,
-      chromeos::CryptohomeClient* cryptohome_client);
+      cryptohome::AsyncMethodCaller* async_method_caller,
+      std::unique_ptr<chromeos::attestation::AttestationFlow> attestation_flow);
 
   ~DeviceCloudPolicyInitializer() override;
 
@@ -95,6 +98,29 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
   void OnStoreError(CloudPolicyStore* store) override;
 
  private:
+  // Signing class implemting the policy::SigningService interface to
+  // sign data using the enrollment certificate's TPM-bound key.
+  class TpmEnrollmentKeySigningService : public policy::SigningService {
+   public:
+    TpmEnrollmentKeySigningService(
+        cryptohome::AsyncMethodCaller* async_method_caller);
+    ~TpmEnrollmentKeySigningService();
+
+    void SignData(const std::string& data,
+                  const SigningCallback& callback) override;
+
+   private:
+    void OnDataSigned(const std::string& data,
+                      const SigningCallback& callback,
+                      bool success,
+                      const std::string& signed_data);
+
+    cryptohome::AsyncMethodCaller* async_method_caller_;
+
+    // Used to create tasks which run delayed on the UI thread.
+    base::WeakPtrFactory<TpmEnrollmentKeySigningService> weak_ptr_factory_;
+  };
+
   // Handles completion signaled by |enrollment_handler_|.
   void EnrollmentCompleted(const EnrollmentCallback& enrollment_callback,
                            EnrollmentStatus status);
@@ -113,14 +139,16 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
   ServerBackedStateKeysBroker* state_keys_broker_;
   DeviceCloudPolicyStoreChromeOS* device_store_;
   DeviceCloudPolicyManagerChromeOS* manager_;
-  cryptohome::AsyncMethodCaller* async_method_caller_;
-  chromeos::CryptohomeClient* cryptohome_client_;
-  bool is_initialized_;
+  std::unique_ptr<chromeos::attestation::AttestationFlow> attestation_flow_;
+  bool is_initialized_ = false;
 
   // Non-NULL if there is an enrollment operation pending.
   std::unique_ptr<EnrollmentHandlerChromeOS> enrollment_handler_;
 
   ServerBackedStateKeysBroker::Subscription state_keys_update_subscription_;
+
+  // Our signing service.
+  TpmEnrollmentKeySigningService signing_service_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceCloudPolicyInitializer);
 };

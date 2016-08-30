@@ -14,6 +14,8 @@
 #include "base/sequenced_task_runner.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/attestation/attestation_ca_client.h"
+#include "chrome/browser/chromeos/attestation/attestation_signed_data.pb.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_status_collector.h"
@@ -24,7 +26,11 @@
 #include "chrome/browser/chromeos/policy/server_backed_device_state.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/attestation/attestation_flow.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/cryptohome/async_method_caller.h"
+#include "chromeos/cryptohome/cryptohome_parameters.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
@@ -58,7 +64,7 @@ DeviceCloudPolicyInitializer::DeviceCloudPolicyInitializer(
     DeviceCloudPolicyStoreChromeOS* device_store,
     DeviceCloudPolicyManagerChromeOS* manager,
     cryptohome::AsyncMethodCaller* async_method_caller,
-    chromeos::CryptohomeClient* cryptohome_client)
+    std::unique_ptr<chromeos::attestation::AttestationFlow> attestation_flow)
     : local_state_(local_state),
       enterprise_service_(enterprise_service),
       background_task_runner_(background_task_runner),
@@ -66,9 +72,8 @@ DeviceCloudPolicyInitializer::DeviceCloudPolicyInitializer(
       state_keys_broker_(state_keys_broker),
       device_store_(device_store),
       manager_(manager),
-      async_method_caller_(async_method_caller),
-      cryptohome_client_(cryptohome_client),
-      is_initialized_(false) {}
+      attestation_flow_(std::move(attestation_flow)),
+      signing_service_(async_method_caller) {}
 
 DeviceCloudPolicyInitializer::~DeviceCloudPolicyInitializer() {
   DCHECK(!is_initialized_);
@@ -107,10 +112,10 @@ void DeviceCloudPolicyInitializer::StartEnrollment(
   manager_->core()->Disconnect();
   enrollment_handler_.reset(new EnrollmentHandlerChromeOS(
       device_store_, install_attributes_, state_keys_broker_,
-      async_method_caller_, cryptohome_client_,
-      CreateClient(device_management_service), background_task_runner_,
-      enrollment_config, auth_token, install_attributes_->GetDeviceId(),
-      manager_->GetDeviceRequisition(), allowed_device_modes,
+      attestation_flow_.get(), CreateClient(device_management_service),
+      background_task_runner_, enrollment_config, auth_token,
+      install_attributes_->GetDeviceId(), manager_->GetDeviceRequisition(),
+      allowed_device_modes,
       base::Bind(&DeviceCloudPolicyInitializer::EnrollmentCompleted,
                  base::Unretained(this), enrollment_callback)));
   enrollment_handler_->StartEnrollment();
@@ -252,8 +257,7 @@ std::unique_ptr<CloudPolicyClient> DeviceCloudPolicyInitializer::CreateClient(
       DeviceCloudPolicyManagerChromeOS::GetMachineID(),
       DeviceCloudPolicyManagerChromeOS::GetMachineModel(),
       kPolicyVerificationKeyHash, device_management_service,
-      g_browser_process->system_request_context(),
-      nullptr /* signing_service */);
+      g_browser_process->system_request_context(), &signing_service_);
 }
 
 void DeviceCloudPolicyInitializer::TryToCreateClient() {
@@ -270,6 +274,47 @@ void DeviceCloudPolicyInitializer::StartConnection(
     std::unique_ptr<CloudPolicyClient> client) {
   if (!manager_->core()->service())
     manager_->StartConnection(std::move(client), install_attributes_);
+}
+
+DeviceCloudPolicyInitializer::TpmEnrollmentKeySigningService::
+    TpmEnrollmentKeySigningService(
+        cryptohome::AsyncMethodCaller* async_method_caller)
+    : async_method_caller_(async_method_caller), weak_ptr_factory_(this) {}
+
+DeviceCloudPolicyInitializer::TpmEnrollmentKeySigningService::
+    ~TpmEnrollmentKeySigningService() {}
+
+void DeviceCloudPolicyInitializer::TpmEnrollmentKeySigningService::SignData(
+    const std::string& data,
+    const SigningCallback& callback) {
+  const chromeos::attestation::AttestationCertificateProfile cert_profile =
+      chromeos::attestation::PROFILE_ENTERPRISE_ENROLLMENT_CERTIFICATE;
+  const cryptohome::Identification identification;
+  async_method_caller_->TpmAttestationSignSimpleChallenge(
+      chromeos::attestation::AttestationFlow::GetKeyTypeForProfile(
+          cert_profile),
+      identification,
+      chromeos::attestation::AttestationFlow::GetKeyNameForProfile(cert_profile,
+                                                                   ""),
+      data, base::Bind(&DeviceCloudPolicyInitializer::
+                           TpmEnrollmentKeySigningService::OnDataSigned,
+                       weak_ptr_factory_.GetWeakPtr(), data, callback));
+}
+
+void DeviceCloudPolicyInitializer::TpmEnrollmentKeySigningService::OnDataSigned(
+    const std::string& data,
+    const SigningCallback& callback,
+    bool success,
+    const std::string& signed_data) {
+  enterprise_management::SignedData em_signed_data;
+  chromeos::attestation::SignedData att_signed_data;
+  if (success && (success = att_signed_data.ParseFromString(signed_data))) {
+    em_signed_data.set_data(att_signed_data.data());
+    em_signed_data.set_signature(att_signed_data.signature());
+    em_signed_data.set_extra_data_bytes(att_signed_data.data().size() -
+                                        data.size());
+  }
+  callback.Run(success, em_signed_data);
 }
 
 }  // namespace policy
