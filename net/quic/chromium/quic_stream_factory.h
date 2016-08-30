@@ -196,6 +196,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       bool allow_server_migration,
       bool force_hol_blocking,
       bool race_cert_verification,
+      bool quic_do_not_fragment,
       const QuicTagVector& connection_options,
       bool enable_token_binding);
   ~QuicStreamFactory() override;
@@ -622,6 +623,9 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   // Set if cert verification is to be raced with host resolution.
   bool race_cert_verification_;
+
+  // If set, configure QUIC sockets to not fragment packets.
+  bool quic_do_not_fragment_;
 
   // Each profile will (probably) have a unique port_seed_ value.  This value
   // is used to help seed a pseudo-random number generator (PortSuggester) so

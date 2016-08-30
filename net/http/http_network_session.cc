@@ -131,6 +131,7 @@ HttpNetworkSession::Params::Params()
       quic_disable_bidirectional_streams(false),
       quic_force_hol_blocking(false),
       quic_race_cert_verification(false),
+      quic_do_not_fragment(false),
       proxy_delegate(NULL),
       enable_token_binding(false) {
   quic_supported_versions.push_back(QUIC_VERSION_35);
@@ -193,6 +194,7 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
           params.quic_allow_server_migration,
           params.quic_force_hol_blocking,
           params.quic_race_cert_verification,
+          params.quic_do_not_fragment,
           params.quic_connection_options,
           params.enable_token_binding),
       spdy_session_pool_(params.host_resolver,

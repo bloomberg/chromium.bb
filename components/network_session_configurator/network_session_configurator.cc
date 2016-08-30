@@ -226,6 +226,13 @@ bool ShouldQuicRaceCertVerification(
       "true");
 }
 
+bool ShouldQuicDoNotFragment(
+    const VariationParameters& quic_trial_params) {
+   return base::LowerCaseEqualsASCII(
+      GetVariationParam(quic_trial_params, "do_not_fragment"),
+      "true");
+}
+
 bool ShouldQuicDisablePreConnectIfZeroRtt(
     const VariationParameters& quic_trial_params) {
   return base::LowerCaseEqualsASCII(
@@ -348,6 +355,8 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
     }
     params->quic_race_cert_verification =
         ShouldQuicRaceCertVerification(quic_trial_params);
+    params->quic_do_not_fragment =
+        ShouldQuicDoNotFragment(quic_trial_params);
     params->quic_disable_preconnect_if_0rtt =
         ShouldQuicDisablePreConnectIfZeroRtt(quic_trial_params);
     params->quic_host_whitelist = GetQuicHostWhitelist(quic_trial_params);

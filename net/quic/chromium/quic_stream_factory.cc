@@ -743,6 +743,7 @@ QuicStreamFactory::QuicStreamFactory(
     bool allow_server_migration,
     bool force_hol_blocking,
     bool race_cert_verification,
+    bool quic_do_not_fragment,
     const QuicTagVector& connection_options,
     bool enable_token_binding)
     : require_confirmation_(true),
@@ -800,6 +801,7 @@ QuicStreamFactory::QuicStreamFactory(
       allow_server_migration_(allow_server_migration),
       force_hol_blocking_(force_hol_blocking),
       race_cert_verification_(race_cert_verification),
+      quic_do_not_fragment_(quic_do_not_fragment),
       port_seed_(random_generator_->RandUint64()),
       check_persisted_supports_quic_(true),
       has_initialized_data_(false),
@@ -1705,11 +1707,13 @@ int QuicStreamFactory::ConfigureSocket(DatagramClientSocket* socket,
     return rv;
   }
 
-  rv = socket->SetDoNotFragment();
-  // SetDoNotFragment is not implemented on all platforms, so ignore errors.
-  if (rv != OK && rv != ERR_NOT_IMPLEMENTED) {
-    HistogramCreateSessionFailure(CREATION_ERROR_SETTING_DO_NOT_FRAGMENT);
-    return rv;
+  if (quic_do_not_fragment_) {
+    rv = socket->SetDoNotFragment();
+    // SetDoNotFragment is not implemented on all platforms, so ignore errors.
+    if (rv != OK && rv != ERR_NOT_IMPLEMENTED) {
+      HistogramCreateSessionFailure(CREATION_ERROR_SETTING_DO_NOT_FRAGMENT);
+      return rv;
+    }
   }
 
   // Set a buffer large enough to contain the initial CWND's worth of packet

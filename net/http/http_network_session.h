@@ -186,6 +186,8 @@ class NET_EXPORT HttpNetworkSession
     bool quic_force_hol_blocking;
     // If true, race cert verification with host resolution.
     bool quic_race_cert_verification;
+    // If true, configure QUIC sockets to not fragment packets.
+    bool quic_do_not_fragment;
 
     ProxyDelegate* proxy_delegate;
     // Enable support for Token Binding.
