@@ -10,7 +10,6 @@
 #include "ash/common/frame/header_painter.h"
 #include "base/compiler_specific.h"  // override
 #include "base/macros.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/animation/animation_delegate.h"
 
 class BrowserNonClientFrameViewAsh;
