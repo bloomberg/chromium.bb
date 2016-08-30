@@ -101,6 +101,7 @@ public:
     void TraceEpilogue() override;
     void AbortTracing() override;
     void EnterFinalPause() override;
+    size_t NumberOfWrappersToTrace() override;
 
     void dispatchTraceWrappers(const ScriptWrappable*) const override;
 #define DECLARE_DISPATCH_TRACE_WRAPPERS(className)                   \

@@ -55,6 +55,11 @@ void ScriptWrappableVisitor::AbortTracing()
     performCleanup();
 }
 
+size_t ScriptWrappableVisitor::NumberOfWrappersToTrace()
+{
+    return m_markingDeque.size();
+}
+
 void ScriptWrappableVisitor::performCleanup()
 {
     for (auto header : m_headersToUnmark) {
