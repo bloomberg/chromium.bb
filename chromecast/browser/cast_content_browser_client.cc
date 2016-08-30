@@ -82,7 +82,8 @@ static std::unique_ptr<::shell::Service> CreateMojoMediaApplication(
           base::Bind(&CastContentBrowserClient::CreateMediaPipelineBackend,
                      base::Unretained(browser_client)),
           base::Bind(&CastContentBrowserClient::CreateCdmFactory,
-                     base::Unretained(browser_client))));
+                     base::Unretained(browser_client)),
+          browser_client->GetVideoResolutionPolicy()));
   return std::unique_ptr<::shell::Service>(
       new ::media::MojoMediaApplication(std::move(mojo_media_client),
                                         quit_closure));
@@ -132,6 +133,11 @@ std::unique_ptr<CastService> CastContentBrowserClient::CreateCastService(
 }
 
 #if !defined(OS_ANDROID)
+media::VideoResolutionPolicy*
+CastContentBrowserClient::GetVideoResolutionPolicy() {
+  return nullptr;
+}
+
 scoped_refptr<base::SingleThreadTaskRunner>
 CastContentBrowserClient::GetMediaTaskRunner() {
   DCHECK(cast_browser_main_parts_);

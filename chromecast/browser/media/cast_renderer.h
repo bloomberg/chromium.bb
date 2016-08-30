@@ -2,8 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CHROMECAST_BROWSER_MEDIA_CAST_RENDERER_H_
+#define CHROMECAST_BROWSER_MEDIA_CAST_RENDERER_H_
+
 #include "base/memory/weak_ptr.h"
 #include "chromecast/browser/media/media_pipeline_backend_factory.h"
+#include "chromecast/browser/media/video_resolution_policy.h"
 #include "media/base/renderer.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -23,11 +27,13 @@ class BalancedMediaTaskRunnerFactory;
 class CastCdmContext;
 class MediaPipelineImpl;
 
-class CastRenderer : public ::media::Renderer {
+class CastRenderer : public ::media::Renderer,
+                     public VideoResolutionPolicy::Observer {
  public:
   CastRenderer(const CreateMediaPipelineBackendCB& create_backend_cb,
                const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-               const std::string& audio_device_id);
+               const std::string& audio_device_id,
+               VideoResolutionPolicy* video_resolution_policy);
   ~CastRenderer() final;
 
   // ::media::Renderer implementation.
@@ -44,6 +50,9 @@ class CastRenderer : public ::media::Renderer {
   bool HasAudio() final;
   bool HasVideo() final;
 
+  // VideoResolutionPolicy::Observer implementation.
+  void OnVideoResolutionPolicyChanged() override;
+
  private:
   enum Stream { STREAM_AUDIO, STREAM_VIDEO };
   void OnError(::media::PipelineStatus status);
@@ -53,16 +62,19 @@ class CastRenderer : public ::media::Renderer {
   void OnWaitingForDecryptionKey();
   void OnVideoNaturalSizeChange(const gfx::Size& size);
   void OnVideoOpacityChange(bool opaque);
+  void CheckVideoResolutionPolicy();
 
   const CreateMediaPipelineBackendCB create_backend_cb_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   std::string audio_device_id_;
+  VideoResolutionPolicy* video_resolution_policy_;
   ::media::RendererClient* client_;
   CastCdmContext* cast_cdm_context_;
   scoped_refptr<BalancedMediaTaskRunnerFactory> media_task_runner_factory_;
   std::unique_ptr<TaskRunnerImpl> backend_task_runner_;
   std::unique_ptr<MediaPipelineImpl> pipeline_;
   bool eos_[2];
+  gfx::Size video_res_;
   base::WeakPtrFactory<CastRenderer> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CastRenderer);
@@ -70,3 +82,5 @@ class CastRenderer : public ::media::Renderer {
 
 }  // namespace media
 }  // namespace chromecast
+
+#endif  // CHROMECAST_BROWSER_MEDIA_CAST_RENDERER_H_

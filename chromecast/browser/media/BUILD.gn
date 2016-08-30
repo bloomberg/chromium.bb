@@ -47,6 +47,8 @@ source_set("media") {
     sources += [
       "cma_message_filter_host.cc",
       "cma_message_filter_host.h",
+      "video_resolution_policy.cc",
+      "video_resolution_policy.h",
     ]
   }
 }

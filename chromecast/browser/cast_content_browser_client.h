@@ -43,6 +43,7 @@ class MediaPipelineBackendManager;
 struct MediaPipelineDeviceParams;
 class MediaResourceTracker;
 class VideoPlaneController;
+class VideoResolutionPolicy;
 }
 
 namespace shell {
@@ -74,6 +75,9 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
       media::VideoPlaneController* video_plane_controller);
 
 #if !defined(OS_ANDROID)
+  // Gets object for enforcing video resolution policy restrictions.
+  virtual media::VideoResolutionPolicy* GetVideoResolutionPolicy();
+
   // Returns the task runner that must be used for media IO.
   scoped_refptr<base::SingleThreadTaskRunner> GetMediaTaskRunner();
 

@@ -15,9 +15,11 @@ namespace media {
 
 CastMojoMediaClient::CastMojoMediaClient(
     const CreateMediaPipelineBackendCB& create_backend_cb,
-    const CreateCdmFactoryCB& create_cdm_factory_cb)
+    const CreateCdmFactoryCB& create_cdm_factory_cb,
+    VideoResolutionPolicy* video_resolution_policy)
     : create_backend_cb_(create_backend_cb),
-      create_cdm_factory_cb_(create_cdm_factory_cb) {}
+      create_cdm_factory_cb_(create_cdm_factory_cb),
+      video_resolution_policy_(video_resolution_policy) {}
 
 CastMojoMediaClient::~CastMojoMediaClient() {}
 
@@ -26,7 +28,8 @@ std::unique_ptr<::media::Renderer> CastMojoMediaClient::CreateRenderer(
     scoped_refptr<::media::MediaLog> media_log,
     const std::string& audio_device_id) {
   return base::MakeUnique<chromecast::media::CastRenderer>(
-      create_backend_cb_, std::move(media_task_runner), audio_device_id);
+      create_backend_cb_, std::move(media_task_runner), audio_device_id,
+      video_resolution_policy_);
 }
 
 std::unique_ptr<::media::CdmFactory> CastMojoMediaClient::CreateCdmFactory(

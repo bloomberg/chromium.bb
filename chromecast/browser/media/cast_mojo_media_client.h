@@ -11,13 +11,16 @@
 namespace chromecast {
 namespace media {
 
+class VideoResolutionPolicy;
+
 class CastMojoMediaClient : public ::media::MojoMediaClient {
  public:
   using CreateCdmFactoryCB =
       base::Callback<std::unique_ptr<::media::CdmFactory>()>;
 
   CastMojoMediaClient(const CreateMediaPipelineBackendCB& create_backend_cb,
-                      const CreateCdmFactoryCB& create_cdm_factory_cb);
+                      const CreateCdmFactoryCB& create_cdm_factory_cb,
+                      VideoResolutionPolicy* video_resolution_policy);
   ~CastMojoMediaClient() override;
 
   // MojoMediaClient overrides.
@@ -31,6 +34,7 @@ class CastMojoMediaClient : public ::media::MojoMediaClient {
  private:
   const CreateMediaPipelineBackendCB create_backend_cb_;
   const CreateCdmFactoryCB create_cdm_factory_cb_;
+  VideoResolutionPolicy* video_resolution_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(CastMojoMediaClient);
 };
