@@ -225,6 +225,22 @@ bool LaunchApp(content::BrowserContext* context,
     if (!ash::Shell::HasInstance())
       return false;
 
+    ArcAuthService* auth_service = ArcAuthService::Get();
+    DCHECK(auth_service);
+
+    if (!auth_service->IsArcEnabled()) {
+      if (!prefs->IsDefault(app_id)) {
+        NOTREACHED();
+        return false;
+      }
+
+      auth_service->EnableArc();
+      if (!auth_service->IsArcEnabled()) {
+        NOTREACHED();
+        return false;
+      }
+    }
+
     ChromeLauncherController* chrome_controller =
         ChromeLauncherController::instance();
     DCHECK(chrome_controller);

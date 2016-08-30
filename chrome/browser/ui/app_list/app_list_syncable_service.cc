@@ -40,6 +40,7 @@
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/genius_app/app_id.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_item.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_model_builder.h"
 #endif
 
@@ -1047,6 +1048,12 @@ syncer::StringOrdinal AppListSyncableService::GetOemFolderPos() {
 }
 
 bool AppListSyncableService::AppIsOem(const std::string& id) {
+#if defined(OS_CHROMEOS)
+  const ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile_);
+  if (arc_prefs && arc_prefs->IsOem(id))
+    return true;
+#endif
+
   if (!extension_system_->extension_service())
     return false;
   const extensions::Extension* extension =

@@ -48,9 +48,11 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
+#include "chrome/browser/ui/app_list/arc/arc_default_app_list.h"
 #include "chrome/browser/ui/apps/chrome_app_delegate.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/arc_app_deferred_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/browser_status_monitor.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
 #include "chrome/browser/ui/ash/launcher/extension_app_window_launcher_item_controller.h"
@@ -3573,6 +3575,22 @@ class ChromeLauncherControllerOrientationTest
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerOrientationTest);
 };
 
+class ChromeLauncherControllerArcDefaultAppsTest
+    : public ChromeLauncherControllerImplTest {
+ public:
+  ChromeLauncherControllerArcDefaultAppsTest() {}
+  ~ChromeLauncherControllerArcDefaultAppsTest() override {}
+
+ protected:
+  void SetUp() override {
+    ArcDefaultAppList::UseTestAppsDirectory();
+    ChromeLauncherControllerImplTest::SetUp();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerArcDefaultAppsTest);
+};
+
 }  // namespace
 
 TEST_F(ChromeLauncherControllerOrientationTest, ArcOrientationLock) {
@@ -3735,4 +3753,40 @@ TEST_F(ChromeLauncherControllerOrientationTest, CurrentWithLandscapeDisplay) {
   EXPECT_TRUE(controller->rotation_locked());
   EXPECT_EQ(display::Display::ROTATE_0,
             display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
+}
+
+TEST_F(ChromeLauncherControllerArcDefaultAppsTest, DefaultApps) {
+  arc_test_.SetUp(profile());
+  InitLauncherController();
+  ChromeLauncherController::set_instance(launcher_controller_.get());
+
+  ArcAppListPrefs* const prefs = arc_test_.arc_app_list_prefs();
+  EnableArc(false);
+  EXPECT_FALSE(arc_test_.arc_auth_service()->IsArcEnabled());
+  ASSERT_TRUE(prefs->GetAppIds().size());
+
+  const std::string app_id =
+      ArcAppTest::GetAppId(arc_test_.fake_default_apps()[0]);
+  EXPECT_EQ(0, launcher_controller_->GetShelfIDForAppID(app_id));
+  EXPECT_TRUE(arc::LaunchApp(profile(), app_id));
+  EXPECT_TRUE(arc_test_.arc_auth_service()->IsArcEnabled());
+  EXPECT_NE(0, launcher_controller_->GetShelfIDForAppID(app_id));
+
+  // Stop Arc again. Shelf item should go away.
+  EnableArc(false);
+  EXPECT_EQ(0, launcher_controller_->GetShelfIDForAppID(app_id));
+
+  EXPECT_TRUE(arc::LaunchApp(profile(), app_id));
+  EXPECT_TRUE(arc_test_.arc_auth_service()->IsArcEnabled());
+
+  EXPECT_NE(0, launcher_controller_->GetShelfIDForAppID(app_id));
+  EXPECT_TRUE(launcher_controller_->GetArcDeferredLauncher()->HasApp(app_id));
+
+  std::string window_app_id("org.chromium.arc.1");
+  CreateArcWindow(window_app_id);
+  arc_test_.app_instance()->SendTaskCreated(1,
+                                            arc_test_.fake_default_apps()[0]);
+
+  EXPECT_NE(0, launcher_controller_->GetShelfIDForAppID(app_id));
+  EXPECT_FALSE(launcher_controller_->GetArcDeferredLauncher()->HasApp(app_id));
 }

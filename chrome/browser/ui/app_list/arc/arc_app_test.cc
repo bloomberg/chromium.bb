@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 
 #include "base/command_line.h"
+#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
@@ -31,6 +32,7 @@ std::string ArcAppTest::GetAppId(const arc::mojom::AppInfo& app_info) {
   return ArcAppListPrefs::GetAppId(app_info.package_name, app_info.activity);
 }
 
+// static
 std::string ArcAppTest::GetAppId(const arc::mojom::ShortcutInfo& shortcut) {
   return ArcAppListPrefs::GetAppId(shortcut.package_name, shortcut.intent_uri);
 }
@@ -64,10 +66,9 @@ void ArcAppTest::SetUp(Profile* profile) {
   // profile manager (which is null).
   chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(user,
                                                                     profile_);
-
+  arc::mojom::AppInfo app;
   // Make sure we have enough data for test.
   for (int i = 0; i < 3; ++i) {
-    arc::mojom::AppInfo app;
     app.name = base::StringPrintf("Fake App %d", i);
     app.package_name = base::StringPrintf("fake.app.%d", i);
     app.activity = base::StringPrintf("fake.app.%d.activity", i);
@@ -75,6 +76,18 @@ void ArcAppTest::SetUp(Profile* profile) {
     fake_apps_.push_back(app);
   }
   fake_apps_[0].sticky = true;
+
+  app.name = "TestApp1";
+  app.package_name = "test.app1";
+  app.activity = "test.app1.activity";
+  app.sticky = true;
+  fake_default_apps_.push_back(app);
+
+  app.name = "TestApp2";
+  app.package_name = "test.app2";
+  app.activity = "test.app2.activity";
+  app.sticky = true;
+  fake_default_apps_.push_back(app);
 
   arc::mojom::ArcPackageInfo package1;
   package1.package_name = kPackageName1;
@@ -124,11 +137,14 @@ void ArcAppTest::SetUp(Profile* profile) {
   DCHECK(arc::ArcAuthService::Get());
   arc::ArcAuthService::DisableUIForTesting();
   arc_auth_service()->OnPrimaryUserProfilePrepared(profile_);
-  auth_service_->EnableArc();
 
   arc_app_list_pref_ = ArcAppListPrefs::Get(profile_);
   DCHECK(arc_app_list_pref_);
+  base::RunLoop run_loop;
+  arc_app_list_pref_->SetDefaltAppsReadyCallback(run_loop.QuitClosure());
+  run_loop.Run();
 
+  auth_service_->EnableArc();
   app_instance_.reset(new arc::FakeAppInstance(arc_app_list_pref_));
   bridge_service_->app()->SetInstance(app_instance_.get());
 

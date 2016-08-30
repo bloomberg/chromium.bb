@@ -10,17 +10,21 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/arc/arc_auth_service.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon_loader.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 
 class ArcAppDeferredLauncherItemController;
 class ChromeLauncherControllerImpl;
 
-class ArcAppDeferredLauncherController : public ArcAppListPrefs::Observer {
+class ArcAppDeferredLauncherController : public ArcAppListPrefs::Observer,
+                                         public arc::ArcAuthService::Observer {
  public:
   explicit ArcAppDeferredLauncherController(
       ChromeLauncherControllerImpl* owner);
   ~ArcAppDeferredLauncherController() override;
+
+  bool HasApp(const std::string& app_id) const;
 
   base::TimeDelta GetActiveTime(const std::string& app_id) const;
 
@@ -34,6 +38,9 @@ class ArcAppDeferredLauncherController : public ArcAppListPrefs::Observer {
   // ArcAppListPrefs::Observer:
   void OnAppReadyChanged(const std::string& app_id, bool ready) override;
   void OnAppRemoved(const std::string& app_id) override;
+
+  // arc::ArcAuthService::Observer:
+  void OnOptInEnabled(bool enabled) override;
 
   // Removes entry from the list of tracking items.
   void Remove(const std::string& app_id);

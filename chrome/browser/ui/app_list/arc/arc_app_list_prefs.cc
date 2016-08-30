@@ -7,10 +7,8 @@
 #include <stddef.h>
 
 #include <string>
-#include <unordered_map>
 
 #include "base/files/file_util.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
@@ -28,23 +26,24 @@
 
 namespace {
 
-const char kName[] = "name";
-const char kPackageName[] = "package_name";
-const char kPackageVersion[] = "package_version";
 const char kActivity[] = "activity";
-const char kShortcut[] = "shortcut";
-const char kIntentUri[] = "intent_uri";
 const char kIconResourceId[] = "icon_resource_id";
-const char kSticky[] = "sticky";
-const char kNotificationsEnabled[] = "notifications_enabled";
+const char kInstallTime[] = "install_time";
+const char kIntentUri[] = "intent_uri";
 const char kLastBackupAndroidId[] = "last_backup_android_id";
 const char kLastBackupTime[] = "last_backup_time";
 const char kLastLaunchTime[] = "lastlaunchtime";
 const char kLaunchable[] = "launchable";
+const char kName[] = "name";
+const char kNotificationsEnabled[] = "notifications_enabled";
+const char kOrientationLock[] = "orientation_lock";
+const char kPackageName[] = "package_name";
+const char kPackageVersion[] = "package_version";
+const char kSticky[] = "sticky";
+const char kShortcut[] = "shortcut";
 const char kShouldSync[] = "should_sync";
 const char kSystem[] = "system";
-const char kOrientationLock[] = "orientation_lock";
-const char kInstallTime[] = "install_time";
+const char kUninstalled[] = "uninstalled";
 
 constexpr int kSetNotificationsEnabledMinVersion = 6;
 
@@ -164,39 +163,6 @@ bool GetInt64FromPref(const base::DictionaryValue* dict,
   return true;
 }
 
-// Add or update local pref for given package.
-void AddOrUpdatePackagePrefs(PrefService* prefs,
-                             const arc::mojom::ArcPackageInfo& package) {
-  DCHECK(IsArcEnabled());
-  const std::string& package_name = package.package_name;
-  if (package_name.empty()) {
-    VLOG(2) << "Package name cannot be empty.";
-    return;
-  }
-  ScopedArcPrefUpdate update(prefs, package_name, prefs::kArcPackages);
-  base::DictionaryValue* package_dict = update.Get();
-  const std::string id_str =
-      base::Int64ToString(package.last_backup_android_id);
-  const std::string time_str = base::Int64ToString(package.last_backup_time);
-
-  package_dict->SetBoolean(kShouldSync, package.sync);
-  package_dict->SetInteger(kPackageVersion, package.package_version);
-  package_dict->SetString(kLastBackupAndroidId, id_str);
-  package_dict->SetString(kLastBackupTime, time_str);
-  package_dict->SetBoolean(kSystem, package.system);
-}
-
-// Remove given package from local pref.
-void RemovePackageFromPrefs(PrefService* prefs,
-                            const std::string& package_name) {
-  DCHECK(IsArcEnabled());
-  DictionaryPrefUpdate update(prefs, prefs::kArcPackages);
-  base::DictionaryValue* packages = update.Get();
-  const bool removed = packages->RemoveWithoutPathExpansion(package_name,
-                                                            nullptr);
-  DCHECK(removed);
-}
-
 }  // namespace
 
 // static
@@ -234,9 +200,11 @@ ArcAppListPrefs::ArcAppListPrefs(
       app_instance_holder_(app_instance_holder),
       sync_service_(nullptr),
       binding_(this),
+      default_apps_(this),
       weak_ptr_factory_(this) {
   DCHECK(profile);
   DCHECK(app_instance_holder);
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   const base::FilePath& base_path = profile->GetPath();
   base_path_ = base_path.AppendASCII(prefs::kArcApps);
 
@@ -244,13 +212,9 @@ ArcAppListPrefs::ArcAppListPrefs(
   if (!auth_service)
     return;
 
-  if (auth_service->state() != arc::ArcAuthService::State::NOT_INITIALIZED)
-    OnOptInEnabled(auth_service->IsArcEnabled());
-  auth_service->AddObserver(this);
+  DCHECK(arc::ArcAuthService::IsAllowedForProfile(profile));
 
-  app_instance_holder_->AddObserver(this);
-  if (!app_instance_holder_->instance())
-    OnInstanceClosed();
+  // Once default apps are ready OnDefaultAppsReady is called.
 }
 
 ArcAppListPrefs::~ArcAppListPrefs() {
@@ -266,7 +230,29 @@ ArcAppListPrefs::~ArcAppListPrefs() {
     auth_service->RemoveObserver(this);
 }
 
+void ArcAppListPrefs::StartPrefs() {
+  arc::ArcAuthService* auth_service = arc::ArcAuthService::Get();
+  CHECK(auth_service);
+
+  if (auth_service->state() != arc::ArcAuthService::State::NOT_INITIALIZED)
+    OnOptInEnabled(auth_service->IsArcEnabled());
+  auth_service->AddObserver(this);
+
+  app_instance_holder_->AddObserver(this);
+  if (!app_instance_holder_->instance())
+    OnInstanceClosed();
+}
+
 base::FilePath ArcAppListPrefs::GetAppPath(const std::string& app_id) const {
+  const ArcDefaultAppList::AppInfo* default_app = default_apps_.GetApp(app_id);
+  if (default_app) {
+    const base::DictionaryValue* app = nullptr;
+    const base::DictionaryValue* apps = prefs_->GetDictionary(prefs::kArcApps);
+    // If app is not ready yet, use resources from pre-build.
+    if (!apps || !apps->GetDictionaryWithoutPathExpansion(app_id, &app))
+      return default_app->app_path;
+  }
+
   return base_path_.AppendASCII(app_id);
 }
 
@@ -420,16 +406,36 @@ std::unique_ptr<ArcAppListPrefs::PackageInfo> ArcAppListPrefs::GetPackage(
 }
 
 std::vector<std::string> ArcAppListPrefs::GetAppIds() const {
-  if (!IsArcEnabled())
-    return std::vector<std::string>();
+  if (!IsArcEnabled()) {
+    // Default Arc apps available before OptIn.
+    std::vector<std::string> ids;
+    for (const auto& default_app : default_apps_.app_map()) {
+      if (default_apps_.HasApp(default_app.first))
+        ids.push_back(default_app.first);
+    }
+    return ids;
+  }
   return GetAppIdsNoArcEnabledCheck();
 }
 
 std::vector<std::string> ArcAppListPrefs::GetAppIdsNoArcEnabledCheck() const {
   std::vector<std::string> ids;
 
-  // crx_file::id_util is de-facto utility for id generation.
   const base::DictionaryValue* apps = prefs_->GetDictionary(prefs::kArcApps);
+  DCHECK(apps);
+
+  // Include default app ids into the list. In order not to list app twice,
+  // at first step include default apps that do not exist yet.
+  for (const auto& default_app : default_apps_.app_map()) {
+    const std::string& app_id = default_app.first;
+    const base::DictionaryValue* app = nullptr;
+    if (default_apps_.HasApp(default_app.first) &&
+        !apps->GetDictionaryWithoutPathExpansion(app_id, &app)) {
+      ids.push_back(app_id);
+    }
+  }
+
+  // crx_file::id_util is de-facto utility for id generation.
   for (base::DictionaryValue::Iterator app_id(*apps); !app_id.IsAtEnd();
        app_id.Advance()) {
     if (!crx_file::id_util::IdIsValid(app_id.key()))
@@ -443,13 +449,27 @@ std::vector<std::string> ArcAppListPrefs::GetAppIdsNoArcEnabledCheck() const {
 
 std::unique_ptr<ArcAppListPrefs::AppInfo> ArcAppListPrefs::GetApp(
     const std::string& app_id) const {
-  if (!IsArcEnabled())
+  // Information for default app is available before Arc enabled.
+  const ArcDefaultAppList::AppInfo* default_app = default_apps_.GetApp(app_id);
+  if (!IsArcEnabled() && !default_app)
     return std::unique_ptr<AppInfo>();
 
   const base::DictionaryValue* app = nullptr;
   const base::DictionaryValue* apps = prefs_->GetDictionary(prefs::kArcApps);
-  if (!apps || !apps->GetDictionaryWithoutPathExpansion(app_id, &app))
+  if (!apps || !apps->GetDictionaryWithoutPathExpansion(app_id, &app)) {
+    // Default app may not be available at this point so create app info based
+    // on its forward declaration.
+    if (default_app) {
+      return base::MakeUnique<AppInfo>(
+          default_app->name, default_app->package_name, default_app->activity,
+          std::string() /* intent_uri */, std::string() /* icon_resource_id */,
+          base::Time() /* last_launch_time */, base::Time() /* install_time */,
+          false /* sticky */, false /* notifications_enabled */,
+          false /* ready */, true /* showInLauncher */, false /* shortcut */,
+          true /* launchable */,  arc::mojom::OrientationLock::NONE);
+    }
     return std::unique_ptr<AppInfo>();
+  }
 
   std::string name;
   std::string package_name;
@@ -498,12 +518,24 @@ std::unique_ptr<ArcAppListPrefs::AppInfo> ArcAppListPrefs::GetApp(
 }
 
 bool ArcAppListPrefs::IsRegistered(const std::string& app_id) const {
+  if (default_apps_.HasApp(app_id))
+    return true;
+
   if (!IsArcEnabled())
     return false;
 
   const base::DictionaryValue* app = nullptr;
   const base::DictionaryValue* apps = prefs_->GetDictionary(prefs::kArcApps);
   return apps && apps->GetDictionaryWithoutPathExpansion(app_id, &app);
+}
+
+bool ArcAppListPrefs::IsDefault(const std::string& app_id) const {
+  return default_apps_.HasApp(app_id);
+}
+
+bool ArcAppListPrefs::IsOem(const std::string& app_id) const {
+  const ArcDefaultAppList::AppInfo* app_info = default_apps_.GetApp(app_id);
+  return app_info && app_info->oem;
 }
 
 bool ArcAppListPrefs::IsShortcut(const std::string& app_id) const {
@@ -549,6 +581,9 @@ void ArcAppListPrefs::NotifyRegisteredApps() {
       NOTREACHED();
       continue;
     }
+    // Default apps are reported earlier.
+    if (default_apps_.HasApp(app_id))
+      continue;
     FOR_EACH_OBSERVER(Observer, observer_list_,
                       OnAppRegistered(app_id, *app_info));
   }
@@ -558,8 +593,10 @@ void ArcAppListPrefs::NotifyRegisteredApps() {
 
 void ArcAppListPrefs::RemoveAllApps() {
   std::vector<std::string> app_ids = GetAppIdsNoArcEnabledCheck();
-  for (const auto& app_id : app_ids)
-    RemoveApp(app_id);
+  for (const auto& app_id : app_ids) {
+    if (!default_apps_.HasApp(app_id))
+      RemoveApp(app_id);
+  }
 }
 
 void ArcAppListPrefs::OnOptInEnabled(bool enabled) {
@@ -567,6 +604,38 @@ void ArcAppListPrefs::OnOptInEnabled(bool enabled) {
     NotifyRegisteredApps();
   else
     RemoveAllApps();
+}
+
+void ArcAppListPrefs::OnDefaultAppsReady() {
+  // Apply uninstalled packages now.
+  const std::vector<std::string> uninstalled_package_names =
+      GetPackagesFromPrefs(false);
+  for (const auto& uninstalled_package_name : uninstalled_package_names)
+    default_apps_.MaybeMarkPackageUninstalled(uninstalled_package_name, true);
+
+  // Report default apps first.
+  for (const auto& default_app : default_apps_.app_map()) {
+    const std::string& app_id = default_app.first;
+    std::unique_ptr<AppInfo> app_info = GetApp(app_id);
+    if (app_info) {
+      FOR_EACH_OBSERVER(Observer, observer_list_,
+                        OnAppRegistered(app_id, *app_info));
+    }
+  }
+
+  default_apps_ready_ = true;
+  if (!default_apps_ready_callback_.is_null())
+    default_apps_ready_callback_.Run();
+
+  StartPrefs();
+}
+
+void ArcAppListPrefs::SetDefaltAppsReadyCallback(base::Closure callback) {
+  DCHECK(!callback.is_null());
+  DCHECK(default_apps_ready_callback_.is_null());
+  default_apps_ready_callback_ = callback;
+  if (default_apps_ready_)
+    default_apps_ready_callback_.Run();
 }
 
 void ArcAppListPrefs::OnInstanceReady() {
@@ -599,9 +668,9 @@ void ArcAppListPrefs::OnInstanceClosed() {
   is_initialized_ = false;
 }
 
-void ArcAppListPrefs::MayAddNonLaunchableApp(const std::string& name,
-                                             const std::string& package_name,
-                                             const std::string& activity) {
+void ArcAppListPrefs::MaybeAddNonLaunchableApp(const std::string& name,
+                                               const std::string& package_name,
+                                               const std::string& activity) {
   DCHECK(IsArcEnabled());
   if (IsRegistered(GetAppId(package_name, activity)))
     return;
@@ -624,8 +693,8 @@ void ArcAppListPrefs::AddAppAndShortcut(
     const bool shortcut,
     const bool launchable,
     const arc::mojom::OrientationLock orientation_lock) {
-  std::string app_id = shortcut ? GetAppId(package_name, intent_uri)
-                                : GetAppId(package_name, activity);
+  const std::string app_id = shortcut ? GetAppId(package_name, intent_uri)
+                                      : GetAppId(package_name, activity);
   const bool was_registered = IsRegistered(app_id);
   if (was_registered) {
     std::unique_ptr<ArcAppListPrefs::AppInfo> app_old_info = GetApp(app_id);
@@ -706,19 +775,61 @@ void ArcAppListPrefs::RemoveApp(const std::string& app_id) {
   // From now, app is not available.
   ready_apps_.erase(app_id);
 
+  // app_id may be released by observers, get the path first. It should be done
+  // before removing prefs entry in order not to mix with pre-build default apps
+  // files.
+  const base::FilePath app_path = GetAppPath(app_id);
+
   // Remove from prefs.
   DictionaryPrefUpdate update(prefs_, prefs::kArcApps);
   base::DictionaryValue* apps = update.Get();
   const bool removed = apps->Remove(app_id, nullptr);
   DCHECK(removed);
-  // app_id may be released by observers, get the path first.
-  const base::FilePath app_path = GetAppPath(app_id);
 
   FOR_EACH_OBSERVER(Observer, observer_list_, OnAppRemoved(app_id));
 
   // Remove local data on file system.
   content::BrowserThread::GetBlockingPool()->PostTask(
       FROM_HERE, base::Bind(&DeleteAppFolderFromFileThread, app_path));
+}
+
+void ArcAppListPrefs::AddOrUpdatePackagePrefs(
+    PrefService* prefs, const arc::mojom::ArcPackageInfo& package) {
+  DCHECK(IsArcEnabled());
+  const std::string& package_name = package.package_name;
+  default_apps_.MaybeMarkPackageUninstalled(package_name, false);
+  if (package_name.empty()) {
+    VLOG(2) << "Package name cannot be empty.";
+    return;
+  }
+  ScopedArcPrefUpdate update(prefs, package_name, prefs::kArcPackages);
+  base::DictionaryValue* package_dict = update.Get();
+  const std::string id_str =
+      base::Int64ToString(package.last_backup_android_id);
+  const std::string time_str = base::Int64ToString(package.last_backup_time);
+
+  package_dict->SetBoolean(kShouldSync, package.sync);
+  package_dict->SetInteger(kPackageVersion, package.package_version);
+  package_dict->SetString(kLastBackupAndroidId, id_str);
+  package_dict->SetString(kLastBackupTime, time_str);
+  package_dict->SetBoolean(kSystem, package.system);
+}
+
+void ArcAppListPrefs::RemovePackageFromPrefs(PrefService* prefs,
+                                             const std::string& package_name) {
+  DCHECK(IsArcEnabled());
+  default_apps_.MaybeMarkPackageUninstalled(package_name, true);
+  if (!default_apps_.HasPackage(package_name)) {
+    DictionaryPrefUpdate update(prefs, prefs::kArcPackages);
+    base::DictionaryValue* packages = update.Get();
+    const bool removed = packages->RemoveWithoutPathExpansion(package_name,
+                                                              nullptr);
+    DCHECK(removed);
+  } else {
+    ScopedArcPrefUpdate update(prefs, package_name, prefs::kArcPackages);
+    base::DictionaryValue* package_dict = update.Get();
+    package_dict->SetBoolean(kUninstalled, true);
+  }
 }
 
 void ArcAppListPrefs::OnAppListRefreshed(
@@ -745,7 +856,9 @@ void ArcAppListPrefs::OnAppListRefreshed(
       // If this is a shortcut, we just mark it as ready.
       ready_apps_.insert(app_id);
     } else {
-      RemoveApp(app_id);
+      // Default apps may not be installed yet at this moment.
+      if (!default_apps_.HasApp(app_id))
+        RemoveApp(app_id);
     }
   }
 
@@ -886,7 +999,7 @@ void ArcAppListPrefs::OnTaskCreated(int32_t task_id,
                                     const mojo::String& package_name,
                                     const mojo::String& activity,
                                     const mojo::String& name) {
-  MayAddNonLaunchableApp(name, package_name, activity);
+  MaybeAddNonLaunchableApp(name, package_name, activity);
   FOR_EACH_OBSERVER(Observer, observer_list_,
                     OnTaskCreated(task_id, package_name, activity));
 }
@@ -996,14 +1109,25 @@ void ArcAppListPrefs::OnPackageListRefreshed(
 }
 
 std::vector<std::string> ArcAppListPrefs::GetPackagesFromPrefs() const {
+  return GetPackagesFromPrefs(true);
+}
+
+std::vector<std::string> ArcAppListPrefs::GetPackagesFromPrefs(
+    bool installed) const {
   std::vector<std::string> packages;
-  if (!IsArcEnabled())
+  if (!IsArcEnabled() && installed)
     return packages;
 
   const base::DictionaryValue* package_prefs =
       prefs_->GetDictionary(prefs::kArcPackages);
   for (base::DictionaryValue::Iterator package(*package_prefs);
        !package.IsAtEnd(); package.Advance()) {
+
+    bool uninstalled = false;
+    package_prefs->GetBoolean(kSystem, &uninstalled);
+    if (installed != !uninstalled)
+      continue;
+
     packages.push_back(package.key());
   }
 

@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_model_builder.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
+#include "chrome/browser/ui/app_list/arc/arc_default_app_list.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/test/fake_app_instance.h"
@@ -318,6 +319,10 @@ class ArcAppModelBuilderTest : public AppListTestBase {
     return arc_test_.fake_apps();
   }
 
+  const std::vector<arc::mojom::AppInfo>& fake_default_apps() const {
+    return arc_test_.fake_default_apps();
+  }
+
   const std::vector<arc::mojom::ArcPackageInfo>& fake_packages() const {
     return arc_test_.fake_packages();
   }
@@ -337,6 +342,21 @@ class ArcAppModelBuilderTest : public AppListTestBase {
   std::unique_ptr<ArcAppModelBuilder> builder_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAppModelBuilderTest);
+};
+
+class ArcDefaulAppTest : public ArcAppModelBuilderTest {
+ public:
+  ArcDefaulAppTest() {}
+  ~ArcDefaulAppTest() override {}
+
+
+  void SetUp() override {
+    ArcDefaultAppList::UseTestAppsDirectory();
+    ArcAppModelBuilderTest::SetUp();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ArcDefaulAppTest);
 };
 
 TEST_F(ArcAppModelBuilderTest, ArcPackagePref) {
@@ -966,4 +986,54 @@ TEST_F(ArcAppModelBuilderTest, ArcAppsOnPackageUpdated) {
       prefs->GetApp(app_id);
   ASSERT_TRUE(app_info_after);
   EXPECT_EQ(now_time, app_info_after->last_launch_time);
+}
+
+TEST_F(ArcDefaulAppTest, DefaultApps) {
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
+  ASSERT_NE(nullptr, prefs);
+
+  ValidateHaveApps(fake_default_apps());
+
+  // Start normal apps. We should have apps from 2 subsets.
+  app_instance()->RefreshAppList();
+  app_instance()->SendRefreshAppList(fake_apps());
+
+  std::vector<arc::mojom::AppInfo> all_apps = fake_default_apps();
+  all_apps.insert(all_apps.end(), fake_apps().begin(), fake_apps().end());
+  ValidateHaveApps(all_apps);
+
+  // However default apps are still not ready.
+  for (const auto& default_app : fake_default_apps()) {
+    std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(
+        ArcAppTest::GetAppId(default_app));
+    ASSERT_TRUE(app_info);
+    EXPECT_FALSE(app_info->ready);
+  }
+
+  // Install default apps.
+  for (const auto& default_app : fake_default_apps()) {
+    std::vector<arc::mojom::AppInfo> package_apps;
+    package_apps.push_back(default_app);
+    app_instance()->SendPackageAppListRefreshed(default_app.package_name,
+                                                package_apps);
+  }
+
+  // And now default apps are ready.
+  for (const auto& default_app : fake_default_apps()) {
+    std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(
+        ArcAppTest::GetAppId(default_app));
+    ASSERT_TRUE(app_info);
+    EXPECT_TRUE(app_info->ready);
+  }
+
+  // Uninstall first default package. Default app should go away.
+  app_instance()->SendPackageUninstalled(all_apps[0].package_name);
+  all_apps.erase(all_apps.begin());
+  ValidateHaveApps(all_apps);
+
+  // OptOut and default apps should exist minus first.
+  arc_test()->arc_auth_service()->DisableArc();
+  all_apps = fake_default_apps();
+  all_apps.erase(all_apps.begin());
+  ValidateHaveApps(all_apps);
 }
