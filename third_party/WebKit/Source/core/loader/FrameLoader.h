@@ -279,8 +279,6 @@ private:
 
     TaskRunnerTimer<FrameLoader> m_checkTimer;
 
-    bool m_didAccessInitialDocument;
-
     SandboxFlags m_forcedSandboxFlags;
 
     bool m_dispatchingDidClearWindowObjectInMainWorld;

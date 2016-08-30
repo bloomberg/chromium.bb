@@ -180,7 +180,6 @@ FrameLoader::FrameLoader(LocalFrame* frame)
     , m_loadType(FrameLoadTypeStandard)
     , m_inStopAllLoaders(false)
     , m_checkTimer(TaskRunnerHelper::get(TaskType::Networking, frame), this, &FrameLoader::checkTimerFired)
-    , m_didAccessInitialDocument(false)
     , m_forcedSandboxFlags(SandboxNone)
     , m_dispatchingDidClearWindowObjectInMainWorld(false)
     , m_protectProvisionalLoader(false)
@@ -1073,10 +1072,8 @@ void FrameLoader::stopAllLoaders()
 
 void FrameLoader::didAccessInitialDocument()
 {
-    // We only need to notify the client once, and only for the main frame.
-    if (isLoadingMainFrame() && !m_didAccessInitialDocument) {
-        m_didAccessInitialDocument = true;
-
+    // We only need to notify the client for the main frame.
+    if (isLoadingMainFrame()) {
         // Forbid script execution to prevent re-entering V8, since this is
         // called from a binding security check.
         ScriptForbiddenScope forbidScripts;

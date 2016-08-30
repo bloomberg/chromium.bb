@@ -5432,7 +5432,6 @@ public:
 
     virtual void didAccessInitialDocument()
     {
-        EXPECT_TRUE(!m_didAccessInitialDocument);
         m_didAccessInitialDocument = true;
     }
 

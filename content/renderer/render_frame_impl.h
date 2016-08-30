@@ -1273,6 +1273,9 @@ class CONTENT_EXPORT RenderFrameImpl
   mojo::Binding<mojom::Frame> frame_binding_;
   mojom::FrameHostPtr frame_host_;
 
+  // Indicates whether |didAccessInitialDocument| was called.
+  bool has_accessed_initial_document_;
+
   base::WeakPtrFactory<RenderFrameImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameImpl);

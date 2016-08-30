@@ -12,7 +12,10 @@ function performAction()
 
     var iframe = document.createElement("iframe");
     div.appendChild(iframe);
-    return Promise.resolve();
+    return new Promise(resolve => {
+        iframe.onload = resolve;
+        iframe.src = "../resources/blank.html";
+    });
 }
 
 function test()
