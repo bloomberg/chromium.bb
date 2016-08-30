@@ -5,14 +5,12 @@
 #ifndef IOS_WEB_PUBLIC_PAYMENTS_PAYMENT_REQUEST_H_
 #define IOS_WEB_PUBLIC_PAYMENTS_PAYMENT_REQUEST_H_
 
-#include <memory>
 #include <vector>
 
 #include "base/strings/string16.h"
 
-// C++ bindings for the PaymentRequest API. Conforms to the following specs:
-// https://w3c.github.io/browser-payment-api/ (18 July 2016 editor's draft)
-// https://w3c.github.io/webpayments-methods-card/ (31 May 2016 editor's draft)
+// C++ bindings for the PaymentRequest API. Conforms to the 18 July 2016
+// editor's draft at https://w3c.github.io/browser-payment-api/.
 
 namespace base {
 class DictionaryValue;
@@ -29,9 +27,6 @@ class PaymentAddress {
 
   bool operator==(const PaymentAddress& other) const;
   bool operator!=(const PaymentAddress& other) const;
-
-  // Populates |value| with the properties of this PaymentAddress.
-  std::unique_ptr<base::DictionaryValue> ToDictionaryValue() const;
 
   // The CLDR (Common Locale Data Repository) region code. For example, US, GB,
   // CN, or JP.
@@ -266,65 +261,28 @@ class PaymentRequest {
   PaymentOptions options;
 };
 
-// Contains the response from the PaymentRequest API when a user accepts
-// payment with a Basic Payment Card payment method (which is currently the only
-// method supported on iOS).
-class BasicCardResponse {
- public:
-  BasicCardResponse();
-  BasicCardResponse(const BasicCardResponse& other);
-  ~BasicCardResponse();
-
-  bool operator==(const BasicCardResponse& other) const;
-  bool operator!=(const BasicCardResponse& other) const;
-
-  // Populates |value| with the properties of this BasicCardResponse.
-  std::unique_ptr<base::DictionaryValue> ToDictionaryValue() const;
-
-  // The cardholder's name as it appears on the card.
-  base::string16 cardholder_name;
-
-  // The primary account number (PAN) for the payment card.
-  base::string16 card_number;
-
-  // A two-digit string for the expiry month of the card in the range 01 to 12.
-  base::string16 expiry_month;
-
-  // A two-digit string for the expiry year of the card in the range 00 to 99.
-  base::string16 expiry_year;
-
-  // A three or four digit string for the security code of the card (sometimes
-  // known as the CVV, CVC, CVN, CVE or CID).
-  base::string16 card_security_code;
-
-  // The billing address information associated with the payment card.
-  PaymentAddress billing_address;
-};
-
 // Information provided in the Promise returned by a call to
 // PaymentRequest.show().
 class PaymentResponse {
  public:
   PaymentResponse();
-  PaymentResponse(const PaymentResponse& other);
   ~PaymentResponse();
 
   bool operator==(const PaymentResponse& other) const;
   bool operator!=(const PaymentResponse& other) const;
 
   // Populates |value| with the properties of this PaymentResponse.
-  std::unique_ptr<base::DictionaryValue> ToDictionaryValue() const;
-
-  // TODO(jdonnelly): Remove this after removing downstream use.
   void ToDictionaryValue(base::DictionaryValue* value) const;
 
   // The payment method identifier for the payment method that the user selected
   // to fulfil the transaction.
   base::string16 method_name;
 
-  // A credit card response object used by the merchant to process the
-  // transaction and determine successful fund transfer.
-  BasicCardResponse details;
+  // A JSON-serialized object that provides a payment method specific message
+  // used by the merchant to process the transaction and determine successful
+  // fund transfer. This data is returned by the payment app that satisfies the
+  // payment request.
+  base::string16 details;
 };
 
 }  // namespace web
