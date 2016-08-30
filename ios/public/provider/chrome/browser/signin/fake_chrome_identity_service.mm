@@ -6,9 +6,67 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/mac/scoped_block.h"
 #include "base/strings/sys_string_conversions.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
+#include "ios/public/provider/chrome/browser/signin/signin_resources_provider.h"
+
+using ::testing::_;
+using ::testing::Invoke;
+
+namespace {
+
+void FakeGetAccessToken(ChromeIdentity*,
+                        const std::string&,
+                        const std::string&,
+                        const std::set<std::string>&,
+                        const ios::AccessTokenCallback& callback) {
+  base::mac::ScopedBlock<ios::AccessTokenCallback> safe_callback(
+      [callback copy]);
+
+  // |GetAccessToken| is normally an asynchronous operation (that requires some
+  // network calls), this is replicated here by dispatching it.
+  dispatch_async(dispatch_get_main_queue(), ^{
+    // Token and expiration date. It should be larger than typical test
+    // execution because tests usually setup mock to expect one token request
+    // and then rely on access token being served from cache.
+    NSTimeInterval expiration = 60.0;
+    NSDate* expiresDate = [NSDate dateWithTimeIntervalSinceNow:expiration];
+    NSString* token = [expiresDate description];
+
+    safe_callback.get()(token, expiresDate, nil);
+  });
+}
+
+UIImage* FakeGetCachedAvatarForIdentity(ChromeIdentity*) {
+  ios::SigninResourcesProvider* provider =
+      ios::GetChromeBrowserProvider()->GetSigninResourcesProvider();
+  return provider ? provider->GetDefaultAvatar() : nil;
+}
+
+void FakeGetAvatarForIdentity(ChromeIdentity* identity,
+                              ios::GetAvatarCallback callback) {
+  // |GetAvatarForIdentity| is normally an asynchronous operation, this is
+  // replicated here by dispatching it.
+  dispatch_async(dispatch_get_main_queue(), ^{
+    callback(FakeGetCachedAvatarForIdentity(identity));
+  });
+}
+
+void FakeGetHostedDomainForIdentity(ChromeIdentity* identity,
+                                    ios::GetHostedDomainCallback callback) {
+  NSString* domain = base::SysUTF8ToNSString(gaia::ExtractDomainName(
+      gaia::CanonicalizeEmail(base::SysNSStringToUTF8(identity.userEmail))));
+
+  // |GetHostedDomainForIdentity| is normally an asynchronous operation , this
+  // is replicated here by dispatching it.
+  dispatch_async(dispatch_get_main_queue(), ^{
+    callback(domain, nil);
+  });
+}
+}
 
 namespace ios {
 
@@ -70,6 +128,20 @@ void FakeChromeIdentityService::ForgetIdentity(
       callback(nil);
     });
   }
+}
+
+void FakeChromeIdentityService::SetUpForIntegrationTests() {
+  ON_CALL(*this, GetAccessToken(_, _, _, _, _))
+      .WillByDefault(Invoke(FakeGetAccessToken));
+
+  ON_CALL(*this, GetAvatarForIdentity(_, _))
+      .WillByDefault(Invoke(FakeGetAvatarForIdentity));
+
+  ON_CALL(*this, GetCachedAvatarForIdentity(_))
+      .WillByDefault(Invoke(FakeGetCachedAvatarForIdentity));
+
+  ON_CALL(*this, GetHostedDomainForIdentity(_, _))
+      .WillByDefault(Invoke(FakeGetHostedDomainForIdentity));
 }
 
 void FakeChromeIdentityService::AddIdentities(NSArray* identitiesNames) {

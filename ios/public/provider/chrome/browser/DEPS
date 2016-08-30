@@ -4,6 +4,7 @@ include_rules = [
   "+components/metrics",
   "+components/signin/ios/browser",
   "+components/sync_sessions",
+  "+google_apis/gaia",
   "+ios/web/public",
   "+net",
 
