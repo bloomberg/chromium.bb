@@ -263,9 +263,6 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature)
     case UseCounter::GetMatchedCSSRules:
         return "'getMatchedCSSRules()' is deprecated. For more help, check https://code.google.com/p/chromium/issues/detail?id=437569#c2";
 
-    case UseCounter::PrefixedImageSmoothingEnabled:
-        return replacedWillBeRemoved("'CanvasRenderingContext2D.webkitImageSmoothingEnabled'", "'CanvasRenderingContext2D.imageSmoothingEnabled'", 55, "5639849247768576");
-
     case UseCounter::AudioListenerDopplerFactor:
         return dopplerWillBeRemoved("'AudioListener.dopplerFactor'", 55, "5238926818148352");
 

@@ -226,7 +226,6 @@ public:
         DeprecatedWebKitRepeatingLinearGradient = 262,
         DeprecatedWebKitRadialGradient = 263,
         DeprecatedWebKitRepeatingRadialGradient = 264,
-        PrefixedImageSmoothingEnabled = 267,
         UnprefixedImageSmoothingEnabled = 268,
         // The above items are available in M34 branch.
 

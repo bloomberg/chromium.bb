@@ -1,4 +1,3 @@
-CONSOLE WARNING: line 1: 'CanvasRenderingContext2D.webkitImageSmoothingEnabled' is deprecated and will be removed in M55, around November 2016. Please use 'CanvasRenderingContext2D.imageSmoothingEnabled' instead. See https://www.chromestatus.com/features/5639849247768576 for more details.
 Tests for the imageSmoothingEnabled attribute.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -6,10 +5,8 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 Test that the default value is true.
 PASS ctx.imageSmoothingEnabled is true
-PASS ctx.webkitImageSmoothingEnabled is true
 Test that false is returned after a the attribute is set to false.
 PASS ctx.imageSmoothingEnabled is false
-PASS ctx.webkitImageSmoothingEnabled is false
 Test that restore works. We save a false state; create, then save a true state; and then finally restore.
 PASS ctx.imageSmoothingEnabled is false
 New canvas element created.

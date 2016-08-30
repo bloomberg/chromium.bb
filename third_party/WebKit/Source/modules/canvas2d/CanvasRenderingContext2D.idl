@@ -59,7 +59,6 @@ enum ImageSmoothingQuality {"low", "medium", "high"};
     attribute DOMString filter; // (default 'none')
 
     // image smoothing
-    [ImplementedAs=imageSmoothingEnabled, DeprecateAs=PrefixedImageSmoothingEnabled] attribute boolean webkitImageSmoothingEnabled;
     [MeasureAs=UnprefixedImageSmoothingEnabled] attribute boolean imageSmoothingEnabled; // (default True)
     attribute ImageSmoothingQuality imageSmoothingQuality; // (default "low")
 

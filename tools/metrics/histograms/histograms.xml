@@ -78781,7 +78781,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="264" label="DeprecatedWebKitRepeatingRadialGradient"/>
   <int value="265" label="PrefixedGetImageDataHD"/>
   <int value="266" label="PrefixedPutImageDataHD"/>
-  <int value="267" label="PrefixedImageSmoothingEnabled"/>
+  <int value="267" label="PrefixedImageSmoothingEnabled (obsolete)"/>
   <int value="268" label="UnprefixedImageSmoothingEnabled"/>
   <int value="269" label="ShadowRootApplyAuthorStyles"/>
   <int value="270" label="PromiseConstructor"/>

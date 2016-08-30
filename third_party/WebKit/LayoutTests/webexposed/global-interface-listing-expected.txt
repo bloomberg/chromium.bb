@@ -733,7 +733,6 @@ interface CanvasRenderingContext2D
     getter strokeStyle
     getter textAlign
     getter textBaseline
-    getter webkitImageSmoothingEnabled
     method addHitRegion
     method arc
     method arcTo
@@ -801,7 +800,6 @@ interface CanvasRenderingContext2D
     setter strokeStyle
     setter textAlign
     setter textBaseline
-    setter webkitImageSmoothingEnabled
 interface ChannelMergerNode : AudioNode
     attribute @@toStringTag
     method constructor

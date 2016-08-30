@@ -371,7 +371,6 @@ interface CanvasRenderingContext2D
     getter strokeStyle
     getter textAlign
     getter textBaseline
-    getter webkitImageSmoothingEnabled
     method arc
     method arcTo
     method beginPath
@@ -430,7 +429,6 @@ interface CanvasRenderingContext2D
     setter strokeStyle
     setter textAlign
     setter textBaseline
-    setter webkitImageSmoothingEnabled
 interface ChannelMergerNode : AudioNode
     method constructor
 interface ChannelSplitterNode : AudioNode

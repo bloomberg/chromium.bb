@@ -3,12 +3,10 @@ var ctx = document.createElement('canvas').getContext('2d');
 
 debug("Test that the default value is true.");
 shouldBe("ctx.imageSmoothingEnabled", "true");
-shouldBe("ctx.webkitImageSmoothingEnabled", "true");
 
 debug("Test that false is returned after a the attribute is set to false.");
 ctx.imageSmoothingEnabled = false;
 shouldBe("ctx.imageSmoothingEnabled", "false");
-shouldBe("ctx.webkitImageSmoothingEnabled", "false");
 
 debug("Test that restore works. We save a false state; create, then save a true state; and then finally restore.");
 ctx.save();
