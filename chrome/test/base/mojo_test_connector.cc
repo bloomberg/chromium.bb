@@ -34,44 +34,8 @@ using shell::mojom::ServicePtr;
 
 namespace {
 
-const char kTestRunnerName[] = "mojo:test-runner";
+const char kTestRunnerName[] = "exe:mash_browser_tests";
 const char kTestName[] = "exe:chrome";
-
-// Returns the Dictionary value of |parent| under the specified key, creating
-// and adding as necessary.
-base::DictionaryValue* EnsureDictionary(base::DictionaryValue* parent,
-                                        const char* key) {
-  base::DictionaryValue* dictionary = nullptr;
-  if (parent->GetDictionary(key, &dictionary))
-    return dictionary;
-
-  std::unique_ptr<base::DictionaryValue> owned_dictionary(
-      new base::DictionaryValue);
-  dictionary = owned_dictionary.get();
-  parent->Set(key, std::move(owned_dictionary));
-  return dictionary;
-}
-
-// This builds a permissive catalog with the addition of the 'instance_name'
-// permission.
-std::unique_ptr<shell::TestCatalogStore> BuildTestCatalogStore() {
-  std::unique_ptr<base::ListValue> apps(new base::ListValue);
-  std::unique_ptr<base::DictionaryValue> test_app_config =
-      shell::BuildPermissiveSerializedAppInfo(kTestRunnerName, "test");
-  base::DictionaryValue* capabilities =
-      EnsureDictionary(test_app_config.get(), catalog::Store::kCapabilitiesKey);
-  base::DictionaryValue* required_capabilities =
-      EnsureDictionary(capabilities, catalog::Store::kCapabilities_RequiredKey);
-  std::unique_ptr<base::ListValue> required_shell_classes(new base::ListValue);
-  required_shell_classes->AppendString("instance_name");
-  required_shell_classes->AppendString("client_process");
-  std::unique_ptr<base::DictionaryValue> shell_caps(new base::DictionaryValue);
-  shell_caps->Set(catalog::Store::kCapabilities_ClassesKey,
-                  std::move(required_shell_classes));
-  required_capabilities->Set("mojo:shell", std::move(shell_caps));
-  apps->Append(std::move(test_app_config));
-  return base::WrapUnique(new shell::TestCatalogStore(std::move(apps)));
-}
 
 // BackgroundTestState maintains all the state necessary to bind the test to
 // mojo. This class is only used on the thread created by BackgroundShell.
@@ -220,20 +184,67 @@ class MojoTestState : public content::TestState {
   DISALLOW_COPY_AND_ASSIGN(MojoTestState);
 };
 
+// The name in the manifest results in getting exe:mash_browser_tests used,
+// remap that to browser_tests.
+void RemoveMashFromBrowserTests(base::CommandLine* command_line) {
+  base::FilePath exe_path(command_line->GetProgram());
+#if defined(OS_WIN)
+  exe_path = exe_path.DirName().Append(FILE_PATH_LITERAL("browser_tests.exe"));
+#else
+  exe_path = exe_path.DirName().Append(FILE_PATH_LITERAL("browser_tests"));
+#endif
+  command_line->SetProgram(exe_path);
+}
+
 }  // namespace
+
+// NativeRunnerDelegate that makes exe:mash_browser_tests to exe:browser_tests,
+// and removes '--run-in-mash'.
+class MojoTestConnector::NativeRunnerDelegateImpl
+    : public shell::NativeRunnerDelegate {
+ public:
+  NativeRunnerDelegateImpl() {}
+  ~NativeRunnerDelegateImpl() override {}
+
+ private:
+  // shell::NativeRunnerDelegate:
+  void AdjustCommandLineArgumentsForTarget(
+      const shell::Identity& target,
+      base::CommandLine* command_line) override {
+    if (target.name() != "exe:chrome") {
+      if (target.name() == "exe:mash_browser_tests")
+        RemoveMashFromBrowserTests(command_line);
+      command_line->AppendSwitch(MojoTestConnector::kMashApp);
+      return;
+    }
+
+    base::CommandLine::StringVector argv(command_line->argv());
+    auto iter =
+        std::find(argv.begin(), argv.end(), FILE_PATH_LITERAL("--run-in-mash"));
+    if (iter != argv.end())
+      argv.erase(iter);
+    *command_line = base::CommandLine(argv);
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(NativeRunnerDelegateImpl);
+};
 
 // static
 const char MojoTestConnector::kTestSwitch[] = "is_test";
+// static
+const char MojoTestConnector::kMashApp[] = "mash-app";
 
 MojoTestConnector::MojoTestConnector() {}
 
 shell::mojom::ServiceRequest MojoTestConnector::Init() {
+  native_runner_delegate_ = base::MakeUnique<NativeRunnerDelegateImpl>();
+
   std::unique_ptr<shell::BackgroundShell::InitParams> init_params(
       new shell::BackgroundShell::InitParams);
-  init_params->catalog_store = BuildTestCatalogStore();
   // When running in single_process mode chrome initializes the edk.
   init_params->init_edk = !base::CommandLine::ForCurrentProcess()->HasSwitch(
       content::kSingleProcessTestsFlag);
+  init_params->native_runner_delegate = native_runner_delegate_.get();
   background_shell_.Init(std::move(init_params));
   return background_shell_.CreateServiceRequest(kTestRunnerName);
 }

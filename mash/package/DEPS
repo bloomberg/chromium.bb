@@ -1,0 +1,6 @@
+include_rules = [
+  "+ash/mus",
+  "+ash/touch_hud",
+  "+components/font_service",
+  "+services/ui/service.h",
+]

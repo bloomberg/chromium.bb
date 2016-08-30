@@ -16,10 +16,7 @@ source_set("mash") {
     "//base:i18n",
     "//components/tracing:startup_tracing",
     "//content/public/common",
-    "//mash/app_driver:lib",
-    "//mash/quick_launch:lib",
-    "//mash/session:lib",
-    "//mash/task_viewer:lib",
+    "//mash/package",
     "//services/shell",
     "//services/shell/background:lib",
     "//services/shell/public/cpp",
@@ -27,7 +24,6 @@ source_set("mash") {
     "//services/shell/runner/common",
     "//services/shell/runner/host:child_process_base",
     "//services/shell/runner/host:lib",
-    "//services/ui:lib",
     "//url",
   ]
   data_deps = [

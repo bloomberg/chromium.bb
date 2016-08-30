@@ -230,8 +230,10 @@ void Service::OnFirstDisplayReady() {
 
 void Service::OnNoMoreDisplays() {
   // We may get here from the destructor, in which case there is no messageloop.
-  if (base::MessageLoop::current())
+  if (base::MessageLoop::current() &&
+      base::MessageLoop::current()->is_running()) {
     base::MessageLoop::current()->QuitWhenIdle();
+  }
 }
 
 bool Service::IsTestConfig() const {

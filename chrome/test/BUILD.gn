@@ -11,6 +11,7 @@ import("//chrome/chrome_tests.gni")
 import("//chrome/common/features.gni")
 import("//chrome/test/base/js2gtest.gni")
 import("//components/os_crypt/features.gni")
+import("//services/shell/public/service_manifest.gni")
 import("//testing/test.gni")
 import("//v8/gni/v8.gni")
 
@@ -857,16 +858,15 @@ if (!is_android) {
 
 static_library("browser_tests_runner") {
   testonly = true
-  sources = [
-    "base/browser_tests_main.cc",
-  ]
+  sources = []
 
   deps = [
     ":test_support",
   ]
 
-  if (use_aura) {
+  if (is_chromeos) {
     sources += [
+      "base/browser_tests_main_chromeos.cc",
       "base/mash_browser_tests_main.cc",
       "base/mash_browser_tests_main.h",
       "base/mojo_test_connector.cc",
@@ -874,14 +874,18 @@ static_library("browser_tests_runner") {
     ]
 
     deps += [
+      "//mash/package",
       "//services/shell/background:lib",
       "//services/shell/background/tests:test_support",
     ]
 
     data_deps = [
+      ":mash_browser_tests_manifest",
       "//chrome/app:mojo_manifests",
       "//mash/session",
     ]
+  } else {
+    sources += [ "base/browser_tests_main.cc" ]
   }
 }
 
@@ -2468,5 +2472,37 @@ if (is_android) {
       "//chrome/android:chrome_java",
       "//content/public/android:content_java",
     ]
+  }
+}
+
+if (is_chromeos) {
+  service_manifest("mash_browser_tests_manifest") {
+    type = "exe"
+    name = "mash_browser_tests"
+
+    source = "base/mash_browser_tests_manifest.json"
+    deps = [
+      "//ash/mus:manifest",
+      "//ash/touch_hud/mus:manifest",
+      "//mash/app_driver:manifest",
+      "//mash/quick_launch:manifest",
+      "//mash/session:manifest",
+      "//mash/task_viewer:manifest",
+      "//services/ui:manifest",
+    ]
+    packaged_services = [
+      "app_driver",
+      "ash",
+      "mash_session",
+      "quick_launch",
+      "task_viewer",
+      "touch_hud",
+      "ui",
+    ]
+
+    if (is_linux && !is_android) {
+      deps += [ "//components/font_service:manifest" ]
+      packaged_services += [ "font_service" ]
+    }
   }
 }
