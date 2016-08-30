@@ -360,8 +360,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // This will always be NULL if |content_view_core_| is NULL.
   std::unique_ptr<ui::TouchSelectionController> selection_controller_;
 
-  // Size to use if we have no backing ContentViewCore
-  gfx::Size default_size_;
+  // Bounds to use if we have no backing ContentViewCore
+  gfx::Rect default_bounds_;
 
   const bool using_browser_compositor_;
   std::unique_ptr<SynchronousCompositorHost> sync_compositor_;

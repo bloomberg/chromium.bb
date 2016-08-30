@@ -386,11 +386,11 @@ void RenderWidgetHostViewAndroid::WasResized() {
 void RenderWidgetHostViewAndroid::SetSize(const gfx::Size& size) {
   // Ignore the given size as only the Java code has the power to
   // resize the view on Android.
-  default_size_ = size;
+  default_bounds_ = gfx::Rect(default_bounds_.origin(), size);
 }
 
 void RenderWidgetHostViewAndroid::SetBounds(const gfx::Rect& rect) {
-  SetSize(rect.size());
+  default_bounds_ = rect;
 }
 
 void RenderWidgetHostViewAndroid::GetScaledContentBitmap(
@@ -548,7 +548,7 @@ void RenderWidgetHostViewAndroid::ReleaseLocksOnSurface() {
 
 gfx::Rect RenderWidgetHostViewAndroid::GetViewBounds() const {
   if (!content_view_core_)
-    return gfx::Rect(default_size_);
+    return default_bounds_;
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableOSKOverscroll))
@@ -559,14 +559,20 @@ gfx::Rect RenderWidgetHostViewAndroid::GetViewBounds() const {
 
 gfx::Size RenderWidgetHostViewAndroid::GetVisibleViewportSize() const {
   if (!content_view_core_)
-    return default_size_;
+    return default_bounds_.size();
 
   return content_view_core_->GetViewSize();
 }
 
 gfx::Size RenderWidgetHostViewAndroid::GetPhysicalBackingSize() const {
-  if (!content_view_core_)
-    return gfx::Size();
+  if (!content_view_core_) {
+    if (default_bounds_.IsEmpty()) return gfx::Size();
+
+    return gfx::Size(default_bounds_.right()
+        * ui::GetScaleFactorForNativeView(GetNativeView()),
+        default_bounds_.bottom()
+        * ui::GetScaleFactorForNativeView(GetNativeView()));
+  }
 
   return content_view_core_->GetPhysicalBackingSize();
 }
@@ -580,7 +586,7 @@ bool RenderWidgetHostViewAndroid::DoTopControlsShrinkBlinkSize() const {
 
 float RenderWidgetHostViewAndroid::GetTopControlsHeight() const {
   if (!content_view_core_)
-    return 0.f;
+    return default_bounds_.x();
 
   // The height of the top controls.
   return content_view_core_->GetTopControlsHeightDip();

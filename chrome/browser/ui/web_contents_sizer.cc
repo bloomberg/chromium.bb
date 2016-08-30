@@ -21,6 +21,6 @@ void ResizeWebContents(content::WebContents* web_contents,
 #elif defined(OS_ANDROID)
   content::RenderWidgetHostView* view = web_contents->GetRenderWidgetHostView();
   if (view)
-    view->SetSize(new_bounds.size());
+    view->SetBounds(new_bounds);
 #endif
 }

@@ -10,7 +10,6 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.Point;
 import android.graphics.Rect;
 import android.net.ConnectivityManager;
 import android.net.Uri;
@@ -744,7 +743,7 @@ public class CustomTabsConnection {
         if (mExternalPrerenderHandler == null) {
             mExternalPrerenderHandler = new ExternalPrerenderHandler();
         }
-        Point contentSize = ExternalPrerenderHandler.estimateContentSize(mApplication, true);
+        Rect contentBounds = ExternalPrerenderHandler.estimateContentSize(mApplication, true);
         Context context = mApplication.getApplicationContext();
         String referrer = IntentHandler.getReferrerUrlIncludingExtraHeaders(extrasIntent, context);
         if (referrer == null && getReferrerForSession(session) != null) {
@@ -753,7 +752,7 @@ public class CustomTabsConnection {
         if (referrer == null) referrer = "";
         WebContents webContents = mExternalPrerenderHandler.addPrerender(
                 Profile.getLastUsedProfile(), url, referrer,
-                new Rect(0, 0, contentSize.x, contentSize.y),
+                contentBounds,
                 shouldPrerenderOnCellularForSession(session));
         if (webContents == null) return false;
         if (throttle) mClientManager.registerPrerenderRequest(uid, url);

@@ -11,7 +11,7 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.Point;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -2564,11 +2564,12 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             mContentViewCore.onHide();
         }
 
+        Rect bounds = new Rect();
         if (originalWidth == 0 && originalHeight == 0) {
-            Point size = ExternalPrerenderHandler.estimateContentSize(
+            bounds = ExternalPrerenderHandler.estimateContentSize(
                     (Application) getApplicationContext(), false);
-            originalWidth = size.x;
-            originalHeight = size.y;
+            originalWidth = bounds.right - bounds.left;
+            originalHeight = bounds.bottom - bounds.top;
         }
 
         destroyContentViewCore(deleteOldNativeWebContents);
@@ -2580,6 +2581,9 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         // However, this size fluttering may confuse Blink and rendered result can be broken
         // (see http://crbug.com/340987).
         newContentViewCore.onSizeChanged(originalWidth, originalHeight, 0, 0);
+        if (!bounds.isEmpty()) {
+            newContentViewCore.onPhysicalBackingSizeChanged(bounds.right, bounds.bottom);
+        }
         newContentViewCore.onShow();
         setContentViewCore(newContentViewCore);
 

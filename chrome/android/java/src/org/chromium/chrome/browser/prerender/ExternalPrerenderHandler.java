@@ -119,29 +119,34 @@ public class ExternalPrerenderHandler {
      * @param convertToDp Whether the value should be converted to dp from pixels.
      * @return The estimated prerender size in pixels or dp.
      */
-    public static Point estimateContentSize(Application application, boolean convertToDp) {
+    public static Rect estimateContentSize(Application application, boolean convertToDp) {
         // The size is estimated as:
         // X = screenSizeX
         // Y = screenSizeY - top bar - bottom bar - custom tabs bar
+        // The bounds rectangle includes the bottom bar and the custom tabs bar as well.
+        Rect screenBounds = new Rect();
         Point screenSize = new Point();
         WindowManager wm = (WindowManager) application.getSystemService(Context.WINDOW_SERVICE);
         wm.getDefaultDisplay().getSize(screenSize);
         Resources resources = application.getResources();
         int statusBarId = resources.getIdentifier("status_bar_height", "dimen", "android");
         try {
-            screenSize.y -=
-                    resources.getDimensionPixelSize(R.dimen.custom_tabs_control_container_height);
             screenSize.y -= resources.getDimensionPixelSize(statusBarId);
         } catch (Resources.NotFoundException e) {
             // Nothing, this is just a best effort estimate.
         }
+        screenBounds.set(0,
+                resources.getDimensionPixelSize(R.dimen.custom_tabs_control_container_height),
+                screenSize.x, screenSize.y);
 
         if (convertToDp) {
             float density = resources.getDisplayMetrics().density;
-            screenSize.x = (int) Math.ceil(screenSize.x / density);
-            screenSize.y = (int) Math.ceil(screenSize.y / density);
+            screenBounds.top = (int) Math.ceil(screenBounds.top / density);
+            screenBounds.left = (int) Math.ceil(screenBounds.left / density);
+            screenBounds.right = (int) Math.ceil(screenBounds.right / density);
+            screenBounds.bottom = (int) Math.ceil(screenBounds.bottom / density);
         }
-        return screenSize;
+        return screenBounds;
     }
 
     private static native long nativeInit();
