@@ -137,7 +137,7 @@ EasyUnlockPrivateGetStringsFunction::EasyUnlockPrivateGetStringsFunction() {
 EasyUnlockPrivateGetStringsFunction::~EasyUnlockPrivateGetStringsFunction() {
 }
 
-bool EasyUnlockPrivateGetStringsFunction::RunSync() {
+ExtensionFunction::ResponseAction EasyUnlockPrivateGetStringsFunction::Run() {
   std::unique_ptr<base::DictionaryValue> strings(new base::DictionaryValue);
 
 #if defined(OS_CHROMEOS)
@@ -359,8 +359,7 @@ bool EasyUnlockPrivateGetStringsFunction::RunSync() {
                      l10n_util::GetStringUTF16(
                          IDS_EASY_UNLOCK_SETUP_ERROR_CONNECTING_TO_PHONE));
 
-  SetResult(std::move(strings));
-  return true;
+  return RespondNow(OneArgument(std::move(strings)));
 }
 
 EasyUnlockPrivatePerformECDHKeyAgreementFunction::
@@ -534,18 +533,18 @@ EasyUnlockPrivateUpdateScreenlockStateFunction::
 EasyUnlockPrivateUpdateScreenlockStateFunction::
     ~EasyUnlockPrivateUpdateScreenlockStateFunction() {}
 
-bool EasyUnlockPrivateUpdateScreenlockStateFunction::RunSync() {
+ExtensionFunction::ResponseAction
+EasyUnlockPrivateUpdateScreenlockStateFunction::Run() {
   std::unique_ptr<easy_unlock_private::UpdateScreenlockState::Params> params(
       easy_unlock_private::UpdateScreenlockState::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
   if (EasyUnlockService::Get(profile)->UpdateScreenlockState(
-          ToScreenlockState(params->state)))
-    return true;
-
-  SetError("Not allowed");
-  return false;
+          ToScreenlockState(params->state))) {
+    return RespondNow(NoArguments());
+  }
+  return RespondNow(Error("Not allowed"));
 }
 
 EasyUnlockPrivateSetPermitAccessFunction::
@@ -556,7 +555,8 @@ EasyUnlockPrivateSetPermitAccessFunction::
     ~EasyUnlockPrivateSetPermitAccessFunction() {
 }
 
-bool EasyUnlockPrivateSetPermitAccessFunction::RunSync() {
+ExtensionFunction::ResponseAction
+EasyUnlockPrivateSetPermitAccessFunction::Run() {
   std::unique_ptr<easy_unlock_private::SetPermitAccess::Params> params(
       easy_unlock_private::SetPermitAccess::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -564,8 +564,7 @@ bool EasyUnlockPrivateSetPermitAccessFunction::RunSync() {
   Profile* profile = Profile::FromBrowserContext(browser_context());
   EasyUnlockService::Get(profile)
       ->SetPermitAccess(*params->permit_access.ToValue());
-
-  return true;
+  return RespondNow(NoArguments());
 }
 
 EasyUnlockPrivateGetPermitAccessFunction::
@@ -576,23 +575,25 @@ EasyUnlockPrivateGetPermitAccessFunction::
     ~EasyUnlockPrivateGetPermitAccessFunction() {
 }
 
-bool EasyUnlockPrivateGetPermitAccessFunction::RunSync() {
+ExtensionFunction::ResponseAction
+EasyUnlockPrivateGetPermitAccessFunction::Run() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           proximity_auth::switches::kEnableBluetoothLowEnergyDiscovery)) {
-    ReturnPermitAccessForExperiment();
-    return true;
+    return GetPermitAccessForExperiment();
   }
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
   const base::DictionaryValue* permit_value =
       EasyUnlockService::Get(profile)->GetPermitAccess();
+
   if (permit_value) {
     std::unique_ptr<easy_unlock_private::PermitRecord> permit =
         easy_unlock_private::PermitRecord::FromValue(*permit_value);
-    results_ = easy_unlock_private::GetPermitAccess::Results::Create(*permit);
+    return RespondNow(ArgumentList(
+        easy_unlock_private::GetPermitAccess::Results::Create(*permit)));
   }
 
-  return true;
+  return RespondNow(NoArguments());
 }
 
 void EasyUnlockPrivateGetPermitAccessFunction::GetKeyPairForExperiment(
@@ -611,15 +612,14 @@ void EasyUnlockPrivateGetPermitAccessFunction::GetKeyPairForExperiment(
                         user_private_key);
 }
 
-void EasyUnlockPrivateGetPermitAccessFunction::
-    ReturnPermitAccessForExperiment() {
+ExtensionFunction::ResponseAction
+EasyUnlockPrivateGetPermitAccessFunction::GetPermitAccessForExperiment() {
   // Check that we are inside a user session.
   Profile* profile = Profile::FromBrowserContext(browser_context());
   EasyUnlockService* easy_unlock_service = EasyUnlockService::Get(profile);
   if (easy_unlock_service->GetType() != EasyUnlockService::TYPE_REGULAR) {
-    SetError("This function must be called inside a user session.");
-    SendResponse(true);
-    return;
+    return RespondNow(
+        Error("This function must be called inside a user session."));
   }
 
   std::string b64_public_key, b64_private_key;
@@ -640,9 +640,7 @@ void EasyUnlockPrivateGetPermitAccessFunction::
                << "chrome.easyUnlockPrivate.getPermitAccess:\n"
                << "  id: " << b64_public_key;
 
-  std::unique_ptr<easy_unlock_private::PermitRecord> result =
-      easy_unlock_private::PermitRecord::FromValue(*permit_access);
-  results_ = easy_unlock_private::GetPermitAccess::Results::Create(*result);
+  return RespondNow(OneArgument(std::move(permit_access)));
 }
 
 EasyUnlockPrivateClearPermitAccessFunction::
@@ -653,10 +651,11 @@ EasyUnlockPrivateClearPermitAccessFunction::
     ~EasyUnlockPrivateClearPermitAccessFunction() {
 }
 
-bool EasyUnlockPrivateClearPermitAccessFunction::RunSync() {
+ExtensionFunction::ResponseAction
+EasyUnlockPrivateClearPermitAccessFunction::Run() {
   Profile* profile = Profile::FromBrowserContext(browser_context());
   EasyUnlockService::Get(profile)->ClearPermitAccess();
-  return true;
+  return RespondNow(NoArguments());
 }
 
 EasyUnlockPrivateSetRemoteDevicesFunction::
@@ -667,7 +666,8 @@ EasyUnlockPrivateSetRemoteDevicesFunction::
     ~EasyUnlockPrivateSetRemoteDevicesFunction() {
 }
 
-bool EasyUnlockPrivateSetRemoteDevicesFunction::RunSync() {
+ExtensionFunction::ResponseAction
+EasyUnlockPrivateSetRemoteDevicesFunction::Run() {
   std::unique_ptr<easy_unlock_private::SetRemoteDevices::Params> params(
       easy_unlock_private::SetRemoteDevices::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -685,7 +685,7 @@ bool EasyUnlockPrivateSetRemoteDevicesFunction::RunSync() {
     EasyUnlockService::Get(profile)->SetRemoteDevices(devices);
   }
 
-  return true;
+  return RespondNow(NoArguments());
 }
 
 EasyUnlockPrivateGetRemoteDevicesFunction::
@@ -876,7 +876,8 @@ EasyUnlockPrivateTrySignInSecretFunction::
     ~EasyUnlockPrivateTrySignInSecretFunction() {
 }
 
-bool EasyUnlockPrivateTrySignInSecretFunction::RunSync() {
+ExtensionFunction::ResponseAction
+EasyUnlockPrivateTrySignInSecretFunction::Run() {
   std::unique_ptr<easy_unlock_private::TrySignInSecret::Params> params(
       easy_unlock_private::TrySignInSecret::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -884,7 +885,7 @@ bool EasyUnlockPrivateTrySignInSecretFunction::RunSync() {
   Profile* profile = Profile::FromBrowserContext(browser_context());
   EasyUnlockService::Get(profile)->FinalizeSignin(std::string(
       params->sign_in_secret.begin(), params->sign_in_secret.end()));
-  return true;
+  return RespondNow(NoArguments());
 }
 
 EasyUnlockPrivateGetUserInfoFunction::EasyUnlockPrivateGetUserInfoFunction() {
@@ -893,7 +894,7 @@ EasyUnlockPrivateGetUserInfoFunction::EasyUnlockPrivateGetUserInfoFunction() {
 EasyUnlockPrivateGetUserInfoFunction::~EasyUnlockPrivateGetUserInfoFunction() {
 }
 
-bool EasyUnlockPrivateGetUserInfoFunction::RunSync() {
+ExtensionFunction::ResponseAction EasyUnlockPrivateGetUserInfoFunction::Run() {
   EasyUnlockService* service =
       EasyUnlockService::Get(Profile::FromBrowserContext(browser_context()));
   std::vector<easy_unlock_private::UserInfo> users;
@@ -916,8 +917,8 @@ bool EasyUnlockPrivateGetUserInfoFunction::RunSync() {
             proximity_auth::switches::kEnableBluetoothLowEnergyDiscovery);
     users.push_back(std::move(user));
   }
-  results_ = easy_unlock_private::GetUserInfo::Results::Create(users);
-  return true;
+  return RespondNow(
+      ArgumentList(easy_unlock_private::GetUserInfo::Results::Create(users)));
 }
 
 EasyUnlockPrivateGetConnectionInfoFunction::
@@ -971,12 +972,11 @@ EasyUnlockPrivateShowErrorBubbleFunction::
     ~EasyUnlockPrivateShowErrorBubbleFunction() {
 }
 
-bool EasyUnlockPrivateShowErrorBubbleFunction::RunSync() {
+ExtensionFunction::ResponseAction
+EasyUnlockPrivateShowErrorBubbleFunction::Run() {
   content::WebContents* web_contents = GetAssociatedWebContents();
-  if (!web_contents) {
-    SetError("A foreground app window is required.");
-    return true;
-  }
+  if (!web_contents)
+    return RespondNow(Error("A foreground app window is required."));
 
   std::unique_ptr<easy_unlock_private::ShowErrorBubble::Params> params(
       easy_unlock_private::ShowErrorBubble::Params::Create(*args_));
@@ -986,8 +986,7 @@ bool EasyUnlockPrivateShowErrorBubbleFunction::RunSync() {
       params->link_range.end < 0 ||
       base::saturated_cast<size_t>(params->link_range.end) >
           params->message.size()) {
-    SetError("Invalid link range.");
-    return true;
+    return RespondNow(Error("Invalid link range."));
   }
 
 #if defined(TOOLKIT_VIEWS)
@@ -1000,10 +999,10 @@ bool EasyUnlockPrivateShowErrorBubbleFunction::RunSync() {
       base::UTF8ToUTF16(params->message),
       gfx::Range(params->link_range.start, params->link_range.end),
       GURL(params->link_target), anchor_rect, web_contents);
+  return RespondNow(NoArguments());
 #else
-  SetError("Not supported on non-Views platforms.");
+  return RespondNow(Error("Not supported on non-Views platforms."));
 #endif
-  return true;
 }
 
 EasyUnlockPrivateHideErrorBubbleFunction::
@@ -1014,13 +1013,14 @@ EasyUnlockPrivateHideErrorBubbleFunction::
     ~EasyUnlockPrivateHideErrorBubbleFunction() {
 }
 
-bool EasyUnlockPrivateHideErrorBubbleFunction::RunSync() {
+ExtensionFunction::ResponseAction
+EasyUnlockPrivateHideErrorBubbleFunction::Run() {
 #if defined(TOOLKIT_VIEWS)
   HideProximityAuthErrorBubble();
+  return RespondNow(NoArguments());
 #else
-  SetError("Not supported on non-Views platforms.");
+  return RespondNow(Error("Not supported on non-Views platforms."));
 #endif
-  return true;
 }
 
 EasyUnlockPrivateSetAutoPairingResultFunction::
@@ -1031,7 +1031,8 @@ EasyUnlockPrivateSetAutoPairingResultFunction::
     ~EasyUnlockPrivateSetAutoPairingResultFunction() {
 }
 
-bool EasyUnlockPrivateSetAutoPairingResultFunction::RunSync() {
+ExtensionFunction::ResponseAction
+EasyUnlockPrivateSetAutoPairingResultFunction::Run() {
   std::unique_ptr<easy_unlock_private::SetAutoPairingResult::Params> params =
       easy_unlock_private::SetAutoPairingResult::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -1044,7 +1045,7 @@ bool EasyUnlockPrivateSetAutoPairingResultFunction::RunSync() {
   EasyUnlockService::Get(profile)
       ->SetAutoPairingResult(params->result.success, error_message);
 
-  return true;
+  return RespondNow(NoArguments());
 }
 
 EasyUnlockPrivateFindSetupConnectionFunction::
@@ -1111,18 +1112,18 @@ EasyUnlockPrivateSetupConnectionStatusFunction::
 EasyUnlockPrivateSetupConnectionStatusFunction::
     ~EasyUnlockPrivateSetupConnectionStatusFunction() {}
 
-bool EasyUnlockPrivateSetupConnectionStatusFunction::RunSync() {
+ExtensionFunction::ResponseAction
+EasyUnlockPrivateSetupConnectionStatusFunction::Run() {
   std::unique_ptr<easy_unlock_private::SetupConnectionStatus::Params> params =
       easy_unlock_private::SetupConnectionStatus::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
   api::easy_unlock_private::ConnectionStatus status =
       GetConnectionManager(browser_context())
           ->ConnectionStatus(extension(), params->connection_id);
-  results_ =
-      easy_unlock_private::SetupConnectionStatus::Results::Create(status);
   if (status == api::easy_unlock_private::CONNECTION_STATUS_NONE)
-    SetError("Invalid connectionId");
-  return true;
+    return RespondNow(Error("Invalid connectionId"));
+  return RespondNow(ArgumentList(
+      easy_unlock_private::SetupConnectionStatus::Results::Create(status)));
 }
 
 EasyUnlockPrivateSetupConnectionDisconnectFunction::
@@ -1131,16 +1132,17 @@ EasyUnlockPrivateSetupConnectionDisconnectFunction::
 EasyUnlockPrivateSetupConnectionDisconnectFunction::
     ~EasyUnlockPrivateSetupConnectionDisconnectFunction() {}
 
-bool EasyUnlockPrivateSetupConnectionDisconnectFunction::RunSync() {
+ExtensionFunction::ResponseAction
+EasyUnlockPrivateSetupConnectionDisconnectFunction::Run() {
   std::unique_ptr<easy_unlock_private::SetupConnectionDisconnect::Params>
       params = easy_unlock_private::SetupConnectionDisconnect::Params::Create(
           *args_);
   EXTENSION_FUNCTION_VALIDATE(params);
-  bool success = GetConnectionManager(browser_context())
-                     ->Disconnect(extension(), params->connection_id);
-  if (!success)
-    SetError("Invalid connectionId.");
-  return true;
+  if (!GetConnectionManager(browser_context())
+           ->Disconnect(extension(), params->connection_id)) {
+    return RespondNow(Error("Invalid connectionId."));
+  }
+  return RespondNow(NoArguments());
 }
 
 EasyUnlockPrivateSetupConnectionSendFunction::
@@ -1149,16 +1151,17 @@ EasyUnlockPrivateSetupConnectionSendFunction::
 EasyUnlockPrivateSetupConnectionSendFunction::
     ~EasyUnlockPrivateSetupConnectionSendFunction() {}
 
-bool EasyUnlockPrivateSetupConnectionSendFunction::RunSync() {
+ExtensionFunction::ResponseAction
+EasyUnlockPrivateSetupConnectionSendFunction::Run() {
   std::unique_ptr<easy_unlock_private::SetupConnectionSend::Params> params =
       easy_unlock_private::SetupConnectionSend::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
   std::string payload(params->data.begin(), params->data.end());
-  bool success = GetConnectionManager(browser_context())
-                     ->SendMessage(extension(), params->connection_id, payload);
-  if (!success)
-    SetError("Invalid connectionId.");
-  return true;
+  if (!GetConnectionManager(browser_context())
+           ->SendMessage(extension(), params->connection_id, payload)) {
+    return RespondNow(Error("Invalid connectionId."));
+  }
+  return RespondNow(NoArguments());
 }
 
 EasyUnlockPrivateSetupConnectionGetDeviceAddressFunction::
@@ -1167,7 +1170,8 @@ EasyUnlockPrivateSetupConnectionGetDeviceAddressFunction::
 EasyUnlockPrivateSetupConnectionGetDeviceAddressFunction::
     ~EasyUnlockPrivateSetupConnectionGetDeviceAddressFunction() {}
 
-bool EasyUnlockPrivateSetupConnectionGetDeviceAddressFunction::RunSync() {
+ExtensionFunction::ResponseAction
+EasyUnlockPrivateSetupConnectionGetDeviceAddressFunction::Run() {
   std::unique_ptr<easy_unlock_private::SetupConnectionGetDeviceAddress::Params>
       params =
           easy_unlock_private::SetupConnectionGetDeviceAddress::Params::Create(
@@ -1176,12 +1180,11 @@ bool EasyUnlockPrivateSetupConnectionGetDeviceAddressFunction::RunSync() {
   std::string device_address =
       GetConnectionManager(browser_context())
           ->GetDeviceAddress(extension(), params->connection_id);
-  results_ =
-      easy_unlock_private::SetupConnectionGetDeviceAddress::Results::Create(
-          device_address);
   if (device_address.empty())
-    SetError("Invalid connectionId.");
-  return true;
+    return RespondNow(Error("Invalid connectionId."));
+  return RespondNow(ArgumentList(
+      easy_unlock_private::SetupConnectionGetDeviceAddress::Results::Create(
+          device_address)));
 }
 
 }  // namespace extensions

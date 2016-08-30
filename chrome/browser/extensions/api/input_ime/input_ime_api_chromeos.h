@@ -21,7 +21,7 @@ class InputMethodEngine;
 
 namespace extensions {
 
-class InputImeClearCompositionFunction : public SyncExtensionFunction {
+class InputImeClearCompositionFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("input.ime.clearComposition",
                              INPUT_IME_CLEARCOMPOSITION)
@@ -30,11 +30,11 @@ class InputImeClearCompositionFunction : public SyncExtensionFunction {
   ~InputImeClearCompositionFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class InputImeSetCandidateWindowPropertiesFunction
-    : public SyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("input.ime.setCandidateWindowProperties",
                              INPUT_IME_SETCANDIDATEWINDOWPROPERTIES)
@@ -43,10 +43,10 @@ class InputImeSetCandidateWindowPropertiesFunction
   ~InputImeSetCandidateWindowPropertiesFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
-class InputImeSetCandidatesFunction : public SyncExtensionFunction {
+class InputImeSetCandidatesFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("input.ime.setCandidates", INPUT_IME_SETCANDIDATES)
 
@@ -54,10 +54,10 @@ class InputImeSetCandidatesFunction : public SyncExtensionFunction {
   ~InputImeSetCandidatesFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
-class InputImeSetCursorPositionFunction : public SyncExtensionFunction {
+class InputImeSetCursorPositionFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("input.ime.setCursorPosition",
                              INPUT_IME_SETCURSORPOSITION)
@@ -66,10 +66,10 @@ class InputImeSetCursorPositionFunction : public SyncExtensionFunction {
   ~InputImeSetCursorPositionFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
-class InputImeSetMenuItemsFunction : public SyncExtensionFunction {
+class InputImeSetMenuItemsFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("input.ime.setMenuItems", INPUT_IME_SETMENUITEMS)
 
@@ -77,10 +77,10 @@ class InputImeSetMenuItemsFunction : public SyncExtensionFunction {
   ~InputImeSetMenuItemsFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
-class InputImeUpdateMenuItemsFunction : public SyncExtensionFunction {
+class InputImeUpdateMenuItemsFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("input.ime.updateMenuItems",
                              INPUT_IME_UPDATEMENUITEMS)
@@ -89,10 +89,10 @@ class InputImeUpdateMenuItemsFunction : public SyncExtensionFunction {
   ~InputImeUpdateMenuItemsFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
-class InputImeDeleteSurroundingTextFunction : public SyncExtensionFunction {
+class InputImeDeleteSurroundingTextFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("input.ime.deleteSurroundingText",
                              INPUT_IME_DELETESURROUNDINGTEXT)
@@ -100,7 +100,7 @@ class InputImeDeleteSurroundingTextFunction : public SyncExtensionFunction {
   ~InputImeDeleteSurroundingTextFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class InputImeHideInputViewFunction : public AsyncExtensionFunction {
