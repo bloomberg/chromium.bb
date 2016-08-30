@@ -703,11 +703,10 @@ AnimatedPropertyType SVGElement::animatedPropertyTypeForCSSAttribute(const Quali
         for (size_t i = 0; i < WTF_ARRAY_LENGTH(attrToTypes); i++)
             cssPropertyMap.set(attrToTypes[i].attr, attrToTypes[i].propType);
     }
-
-    if (cssPropertyMap.contains(attributeName))
-        return cssPropertyMap.get(attributeName);
-
-    return AnimatedUnknown;
+    // If the attribute is not present in the map, this will return the "empty
+    // value" per HashTraits - which is AnimatedUnknown.
+    DCHECK_EQ(HashTraits<AnimatedPropertyType>::emptyValue(), AnimatedUnknown);
+    return cssPropertyMap.get(attributeName);
 }
 
 void SVGElement::addToPropertyMap(SVGAnimatedPropertyBase* property)
