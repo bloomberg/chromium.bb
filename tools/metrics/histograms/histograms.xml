@@ -20504,6 +20504,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="interstitial.ssl.clockstate.network" enum="ClockStates">
+  <obsolete>
+    Deprecated August 2016. Replaced with interstitial.ssl.clockstate.network2,
+    which records reasons why network time might be unavailable.
+  </obsolete>
+  <owner>mab@chromium.org</owner>
+  <summary>
+    State of the system clock, relative to network time, when an SSL
+    CERT_INVALID_DATE error is seen.
+  </summary>
+</histogram>
+
+<histogram name="interstitial.ssl.clockstate.network2"
+    enum="NetworkClockStates">
+  <owner>estark@chromium.org</owner>
   <owner>mab@chromium.org</owner>
   <summary>
     State of the system clock, relative to network time, when an SSL
@@ -35620,6 +35634,40 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NetworkTimeTracker.ClockDivergence.Negative" units="seconds">
+  <owner>estark@chromium.org</owner>
+  <owner>mab@chromium.org</owner>
+  <summary>
+    NetworkTimeTracker observes a tick clock and a wall clock to determine
+    whether a timestamp retrieved from the network in the past can be used to
+    compute a current timestamp. When the tick clock and wall clock diverge from
+    each other, the NetworkTimeTracker must discard the network timestamp
+    because it has no way to compute a reliable current timestamp. Whenever the
+    NetworkTimeTracker discards a network timestamp due to the tick and wall
+    clocks diverging, this histogram records the difference of the tick clock's
+    delta minus the wall clock's delta since the network timestamp was
+    retrieved. For cases where the the tick clock delta is bigger than the wall
+    clock delta, see NetworkTimeTracker.ClockDivergence.Positive.
+  </summary>
+</histogram>
+
+<histogram name="NetworkTimeTracker.ClockDivergence.Positive" units="seconds">
+  <owner>estark@chromium.org</owner>
+  <owner>mab@chromium.org</owner>
+  <summary>
+    NetworkTimeTracker observes a tick clock and a wall clock to determine
+    whether a timestamp retrieved from the network in the past can be used to
+    compute a current timestamp. When the tick clock and wall clock diverge from
+    each other, the NetworkTimeTracker must discard the network timestamp
+    because it has no way to compute a reliable current timestamp. Whenever the
+    NetworkTimeTracker discards a network timestamp due to the tick and wall
+    clocks diverging, this histogram records the difference of the tick clock's
+    delta minus the wall clock's delta since the network timestamp was
+    retrieved. For cases where the the wall clock delta is bigger than the tick
+    clock delta, see NetworkTimeTracker.ClockDivergence.Negative.
+  </summary>
+</histogram>
+
 <histogram name="NetworkTimeTracker.UpdateTimeFetchAttempted">
   <obsolete>
     Deprecated 08/2016 because it does not provide additional information beyond
@@ -35653,6 +35701,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     the network. Whenever one of these requests results in a successful 200
     status code, this histogram records true if the response parsed and
     validated successfully, and false otherwise.
+  </summary>
+</histogram>
+
+<histogram name="NetworkTimeTracker.WallClockRanBackwards" units="seconds">
+  <owner>estark@chromium.org</owner>
+  <owner>mab@chromium.org</owner>
+  <summary>
+    NetworkTimeTracker observes a tick clock and a wall clock to determine
+    whether a timestamp retrieved from the network in the past can be used to
+    compute a current timestamp. When the NetworkTimeTracker observes that the
+    wall clock ran backwards, the NetworkTimeTracker must discard the network
+    timestamp because it has no way to compute a reliable current timestamp.
+    Whenever the NetworkTimeTracker discards a network timestamp due to the wall
+    clock running backwards, this histogram records the magnitude of the
+    difference of the current wall clock time minus the wall clock time when the
+    network timestamp was retrieved.
   </summary>
 </histogram>
 
@@ -87687,6 +87751,26 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="40" label="5190"/>
   <int value="41" label="5210"/>
   <int value="42" label="5230"/>
+</enum>
+
+<enum name="NetworkClockStates" type="int">
+  <int value="0"
+      label="NETWORK_CLOCK_STATE_UNKNOWN_NO_SYNC: accuracy of system clock is
+             unknown because there is no information available from the
+             network about what time it is"/>
+  <int value="1"
+      label="NETWORK_CLOCK_STATE_UNKNOWN_SYNC_LOST: system clock is unknown
+             because the system clock has fallen out of sync with the network
+             clock since the last time that network time was retrieved"/>
+  <int value="2"
+      label="NETWORK_CLOCK_STATE_OK: system clock is roughly accurate
+             relative to network time"/>
+  <int value="3"
+      label="NETWORK_CLOCK_STATE_CLOCK_IN_PAST: system clock is in the past
+             relative to network time"/>
+  <int value="4"
+      label="NETWORK_CLOCK_STATE_CLOCK_IN_FUTURE: system clock is in the
+             future relative to network time"/>
 </enum>
 
 <enum name="NetworkConnectionIPType" type="int">

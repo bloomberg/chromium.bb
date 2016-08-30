@@ -38,6 +38,26 @@ using base::TimeDelta;
 namespace ssl_errors {
 namespace {
 
+// Describes the result of getting network time and if it was
+// unavailable, why it was unavailable. This enum is being histogrammed
+// so do not reorder or remove values.
+enum NetworkClockState {
+  // The clock state relative to network time is unknown because the
+  // NetworkTimeTracker has no information from the network.
+  NETWORK_CLOCK_STATE_UNKNOWN_NO_SYNC = 0,
+  // The clock state relative to network time is unknown because the
+  // user's clock has fallen out of sync with the latest information
+  // from the network (due to e.g. suspend/resume).
+  NETWORK_CLOCK_STATE_UNKNOWN_SYNC_LOST,
+  // The clock is "close enough" to the network time.
+  NETWORK_CLOCK_STATE_OK,
+  // The clock is in the past relative to network time.
+  NETWORK_CLOCK_STATE_CLOCK_IN_PAST,
+  // The clock is in the future relative to network time.
+  NETWORK_CLOCK_STATE_CLOCK_IN_FUTURE,
+  NETWORK_CLOCK_STATE_MAX
+};
+
 // Events for UMA. Do not reorder or change!
 enum SSLInterstitialCause {
   CLOCK_PAST,
@@ -207,15 +227,25 @@ ClockState GetClockState(
   base::Time now_network;
   base::TimeDelta uncertainty;
   const base::TimeDelta kNetworkTimeFudge = base::TimeDelta::FromMinutes(5);
-  ClockState network_state = CLOCK_STATE_UNKNOWN;
-  if (network_time_tracker->GetNetworkTime(&now_network, &uncertainty)) {
-    if (now_system < now_network - uncertainty - kNetworkTimeFudge) {
-      network_state = CLOCK_STATE_PAST;
-    } else if (now_system > now_network + uncertainty + kNetworkTimeFudge) {
-      network_state = CLOCK_STATE_FUTURE;
-    } else {
-      network_state = CLOCK_STATE_OK;
-    }
+  NetworkClockState network_state = NETWORK_CLOCK_STATE_MAX;
+  network_time::NetworkTimeTracker::NetworkTimeResult network_time_result =
+      network_time_tracker->GetNetworkTime(&now_network, &uncertainty);
+  switch (network_time_result) {
+    case network_time::NetworkTimeTracker::NETWORK_TIME_AVAILABLE:
+      if (now_system < now_network - uncertainty - kNetworkTimeFudge) {
+        network_state = NETWORK_CLOCK_STATE_CLOCK_IN_PAST;
+      } else if (now_system > now_network + uncertainty + kNetworkTimeFudge) {
+        network_state = NETWORK_CLOCK_STATE_CLOCK_IN_FUTURE;
+      } else {
+        network_state = NETWORK_CLOCK_STATE_OK;
+      }
+      break;
+    case network_time::NetworkTimeTracker::NETWORK_TIME_SYNC_LOST:
+      network_state = NETWORK_CLOCK_STATE_UNKNOWN_SYNC_LOST;
+      break;
+    case network_time::NetworkTimeTracker::NETWORK_TIME_NO_SYNC:
+      network_state = NETWORK_CLOCK_STATE_UNKNOWN_NO_SYNC;
+      break;
   }
 
   ClockState build_time_state = CLOCK_STATE_UNKNOWN;
@@ -228,13 +258,28 @@ ClockState GetClockState(
     build_time_state = CLOCK_STATE_FUTURE;
   }
 
-  UMA_HISTOGRAM_ENUMERATION("interstitial.ssl.clockstate.network",
-                            network_state, CLOCK_STATE_MAX);
+  UMA_HISTOGRAM_ENUMERATION("interstitial.ssl.clockstate.network2",
+                            network_time_result, NETWORK_CLOCK_STATE_MAX);
   UMA_HISTOGRAM_ENUMERATION("interstitial.ssl.clockstate.build_time",
                             build_time_state, CLOCK_STATE_MAX);
 
-  return network_state == CLOCK_STATE_UNKNOWN ? build_time_state
-                                              : network_state;
+  switch (network_state) {
+    case NETWORK_CLOCK_STATE_UNKNOWN_NO_SYNC:
+    case NETWORK_CLOCK_STATE_UNKNOWN_SYNC_LOST:
+      return build_time_state;
+    case NETWORK_CLOCK_STATE_OK:
+      return CLOCK_STATE_OK;
+    case NETWORK_CLOCK_STATE_CLOCK_IN_PAST:
+      return CLOCK_STATE_PAST;
+    case NETWORK_CLOCK_STATE_CLOCK_IN_FUTURE:
+      return CLOCK_STATE_FUTURE;
+    case NETWORK_CLOCK_STATE_MAX:
+      NOTREACHED();
+      return CLOCK_STATE_UNKNOWN;
+  }
+
+  NOTREACHED();
+  return CLOCK_STATE_UNKNOWN;
 }
 
 void SetBuildTimeForTesting(const base::Time& testing_time) {
