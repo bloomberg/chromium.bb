@@ -202,6 +202,7 @@ bool WorkerOrWorkletScriptController::initializeContextIfNeeded()
 
 ScriptValue WorkerOrWorkletScriptController::evaluate(const String& script, const String& fileName, const TextPosition& scriptStartPosition, CachedMetadataHandler* cacheHandler, V8CacheOptions v8CacheOptions)
 {
+    TRACE_EVENT1("devtools.timeline", "EvaluateScript", "data", InspectorEvaluateScriptEvent::data(nullptr, fileName, scriptStartPosition));
     if (!initializeContextIfNeeded())
         return ScriptValue();
 

@@ -88,6 +88,8 @@ function test()
 
     function processEvent(expectedFunctions, event)
     {
+        if (event.name === WebInspector.TimelineModel.RecordType.EvaluateScript)
+            InspectorTest.printTraceEventProperties(event);
         if (event.name === WebInspector.TimelineModel.RecordType.JSFrame)
             expectedFunctions.delete(event.args.data.functionName);
         return expectedFunctions;
