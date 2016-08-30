@@ -47,9 +47,6 @@ void
 weston_desktop_api_surface_removed(struct weston_desktop *desktop,
 				   struct weston_desktop_surface *surface);
 void
-weston_desktop_api_surface_drop_idle_inhibitor(struct weston_desktop *desktop,
-					       struct weston_desktop_surface *surface);
-void
 weston_desktop_api_committed(struct weston_desktop *desktop,
 			     struct weston_desktop_surface *surface,
 			     int32_t sx, int32_t sy);
