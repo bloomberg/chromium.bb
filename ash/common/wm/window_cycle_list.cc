@@ -390,10 +390,6 @@ class WindowCycleView : public views::WidgetDelegateView {
     }
   }
 
-  void OnMouseCaptureLost() override {
-    WmShell::Get()->window_cycle_controller()->StopCycling();
-  }
-
   View* GetContentsView() override { return this; }
 
   View* GetInitiallyFocusedView() override {
@@ -620,8 +616,6 @@ void WindowCycleList::InitWindowCycleView() {
   widget_rect.set_height(widget_height);
   widget->SetBounds(widget_rect);
   widget->Show();
-  widget->SetCapture(cycle_view_);
-  widget->set_auto_release_capture(false);
   cycle_ui_widget_.reset(widget);
 }
 

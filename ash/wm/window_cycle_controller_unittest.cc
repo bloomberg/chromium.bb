@@ -40,32 +40,24 @@ namespace ash {
 
 namespace {
 
-class EventCounter : public ui::EventHandler {
+class KeyEventCounter : public ui::EventHandler {
  public:
-  EventCounter() : key_events_(0), mouse_events_(0) {}
-  ~EventCounter() override {}
+  KeyEventCounter() : key_events_(0) {}
+  ~KeyEventCounter() override {}
 
-  int GetKeyEventCountAndReset() {
-    int count = key_events_;
+  size_t GetCountAndReset() {
+    size_t count = key_events_;
     key_events_ = 0;
-    return count;
-  }
-
-  int GetMouseEventCountAndReset() {
-    int count = mouse_events_;
-    mouse_events_ = 0;
     return count;
   }
 
   // ui::EventHandler:
   void OnKeyEvent(ui::KeyEvent* event) override { key_events_++; }
-  void OnMouseEvent(ui::MouseEvent* event) override { mouse_events_++; }
 
  private:
-  int key_events_;
-  int mouse_events_;
+  size_t key_events_;
 
-  DISALLOW_COPY_AND_ASSIGN(EventCounter);
+  DISALLOW_COPY_AND_ASSIGN(KeyEventCounter);
 };
 
 bool IsWindowMinimized(aura::Window* window) {
@@ -566,71 +558,20 @@ TEST_F(WindowCycleControllerTest, CycleMruPanelDestroyed) {
 TEST_F(WindowCycleControllerTest, TabKeyNotLeaked) {
   std::unique_ptr<Window> w0(CreateTestWindowInShellWithId(0));
   std::unique_ptr<Window> w1(CreateTestWindowInShellWithId(1));
-  EventCounter event_count;
-  w0->AddPreTargetHandler(&event_count);
-  w1->AddPreTargetHandler(&event_count);
+  KeyEventCounter key_count;
+  w0->AddPreTargetHandler(&key_count);
+  w1->AddPreTargetHandler(&key_count);
   ui::test::EventGenerator& generator = GetEventGenerator();
   wm::GetWindowState(w0.get())->Activate();
   generator.PressKey(ui::VKEY_MENU, ui::EF_NONE);
-  EXPECT_EQ(1, event_count.GetKeyEventCountAndReset());
+  EXPECT_EQ(1u, key_count.GetCountAndReset());
   generator.PressKey(ui::VKEY_TAB, ui::EF_ALT_DOWN);
-  EXPECT_EQ(0, event_count.GetKeyEventCountAndReset());
+  EXPECT_EQ(0u, key_count.GetCountAndReset());
   generator.ReleaseKey(ui::VKEY_TAB, ui::EF_ALT_DOWN);
-  EXPECT_EQ(0, event_count.GetKeyEventCountAndReset());
+  EXPECT_EQ(0u, key_count.GetCountAndReset());
   generator.ReleaseKey(ui::VKEY_MENU, ui::EF_NONE);
   EXPECT_TRUE(wm::GetWindowState(w1.get())->IsActive());
-  EXPECT_EQ(0, event_count.GetKeyEventCountAndReset());
-}
-
-// While the UI is active, mouse events are captured.
-TEST_F(WindowCycleControllerTest, MouseEventsCaptured) {
-  // This delegate allows the window to receive mouse events.
-  aura::test::TestWindowDelegate delegate;
-  std::unique_ptr<Window> w0(CreateTestWindowInShellWithDelegate(
-      &delegate, 0, gfx::Rect(0, 0, 100, 100)));
-  std::unique_ptr<Window> w1(CreateTestWindowInShellWithId(1));
-  EventCounter event_count;
-  w0->AddPreTargetHandler(&event_count);
-  w1->SetTargetHandler(&event_count);
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  wm::ActivateWindow(w0.get());
-
-  // Events get through.
-  generator.MoveMouseToCenterOf(w0.get());
-  generator.ClickLeftButton();
-  EXPECT_LT(0, event_count.GetMouseEventCountAndReset());
-
-  // Start cycling.
-  WindowCycleController* controller = WmShell::Get()->window_cycle_controller();
-  controller->HandleCycleWindow(WindowCycleController::FORWARD);
-
-  // Events don't get through.
-  generator.ClickLeftButton();
-  EXPECT_EQ(0, event_count.GetMouseEventCountAndReset());
-
-  // Stop cycling: once again, events get through.
-  controller->StopCycling();
-  generator.ClickLeftButton();
-  EXPECT_LT(0, event_count.GetMouseEventCountAndReset());
-}
-
-// If mouse capture is lost, the UI closes.
-TEST_F(WindowCycleControllerTest, MouseCaptureLost) {
-  // This delegate allows the window to receive mouse events.
-  aura::test::TestWindowDelegate delegate;
-  std::unique_ptr<Window> w0(CreateTestWindowInShellWithDelegate(
-      &delegate, 0, gfx::Rect(0, 0, 100, 100)));
-  std::unique_ptr<Window> w1(CreateTestWindowInShellWithId(1));
-
-  // Start cycling.
-  WindowCycleController* controller = WmShell::Get()->window_cycle_controller();
-  controller->HandleCycleWindow(WindowCycleController::FORWARD);
-
-  // Some other widget grabs capture and this causes Alt+Tab to cease.
-  std::unique_ptr<views::Widget> widget = CreateTestWidget(
-      nullptr, kShellWindowId_DefaultContainer, gfx::Rect(1, 2, 3, 4));
-  widget.get()->SetCapture(nullptr);
-  EXPECT_FALSE(controller->IsCycling());
+  EXPECT_EQ(0u, key_count.GetCountAndReset());
 }
 
 // Tests that we can cycle past fullscreen windows: https://crbug.com/622396.
@@ -663,11 +604,11 @@ TEST_F(WindowCycleControllerTest, TabPastFullscreenWindow) {
   // pass on the alt+tab to continue cycling). To make this test work with or
   // without the new alt+tab selector we check for the event on either
   // fullscreen window.
-  EventCounter event_count;
-  w0->AddPreTargetHandler(&event_count);
-  w1->AddPreTargetHandler(&event_count);
+  KeyEventCounter key_count;
+  w0->AddPreTargetHandler(&key_count);
+  w1->AddPreTargetHandler(&key_count);
   generator.PressKey(ui::VKEY_TAB, ui::EF_ALT_DOWN);
-  EXPECT_EQ(1, event_count.GetKeyEventCountAndReset());
+  EXPECT_EQ(1u, key_count.GetCountAndReset());
 }
 
 }  // namespace ash
