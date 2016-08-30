@@ -282,7 +282,7 @@ static bool ShouldCreateGpuOutputSurface(ui::Compositor* compositor) {
 void GpuProcessTransportFactory::CreateOutputSurface(
     base::WeakPtr<ui::Compositor> compositor) {
   DCHECK(!!compositor);
-  PerCompositorData* data = per_compositor_data_[compositor.get()];
+  PerCompositorData* data = per_compositor_data_[compositor.get()].get();
   if (!data) {
     data = CreatePerCompositorData(compositor.get());
   } else {
@@ -326,7 +326,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
   if (it == per_compositor_data_.end())
     return;
 
-  PerCompositorData* data = it->second;
+  PerCompositorData* data = it->second.get();
   DCHECK(data);
 
   if (num_attempts > kNumRetriesBeforeSoftwareFallback) {
@@ -573,7 +573,8 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
 std::unique_ptr<ui::Reflector> GpuProcessTransportFactory::CreateReflector(
     ui::Compositor* source_compositor,
     ui::Layer* target_layer) {
-  PerCompositorData* source_data = per_compositor_data_[source_compositor];
+  PerCompositorData* source_data =
+      per_compositor_data_[source_compositor].get();
   DCHECK(source_data);
 
   std::unique_ptr<ReflectorImpl> reflector(
@@ -587,7 +588,7 @@ std::unique_ptr<ui::Reflector> GpuProcessTransportFactory::CreateReflector(
 void GpuProcessTransportFactory::RemoveReflector(ui::Reflector* reflector) {
   ReflectorImpl* reflector_impl = static_cast<ReflectorImpl*>(reflector);
   PerCompositorData* data =
-      per_compositor_data_[reflector_impl->mirrored_compositor()];
+      per_compositor_data_[reflector_impl->mirrored_compositor()].get();
   DCHECK(data);
   data->reflector->Shutdown();
   data->reflector = nullptr;
@@ -597,13 +598,12 @@ void GpuProcessTransportFactory::RemoveCompositor(ui::Compositor* compositor) {
   PerCompositorDataMap::iterator it = per_compositor_data_.find(compositor);
   if (it == per_compositor_data_.end())
     return;
-  PerCompositorData* data = it->second;
+  PerCompositorData* data = it->second.get();
   DCHECK(data);
 #if !defined(GPU_SURFACE_HANDLE_IS_ACCELERATED_WINDOW)
   if (data->surface_handle)
     GpuSurfaceTracker::Get()->RemoveSurface(data->surface_handle);
 #endif
-  delete data;
   per_compositor_data_.erase(it);
   if (per_compositor_data_.empty()) {
     // Destroying the GLHelper may cause some async actions to be cancelled,
@@ -663,7 +663,7 @@ void GpuProcessTransportFactory::SetDisplayVisible(ui::Compositor* compositor,
   PerCompositorDataMap::iterator it = per_compositor_data_.find(compositor);
   if (it == per_compositor_data_.end())
     return;
-  PerCompositorData* data = it->second;
+  PerCompositorData* data = it->second.get();
   DCHECK(data);
   // The compositor will always SetVisible on the Display once it is set up, so
   // do nothing if |display| is null.
@@ -676,7 +676,7 @@ void GpuProcessTransportFactory::ResizeDisplay(ui::Compositor* compositor,
   PerCompositorDataMap::iterator it = per_compositor_data_.find(compositor);
   if (it == per_compositor_data_.end())
     return;
-  PerCompositorData* data = it->second;
+  PerCompositorData* data = it->second.get();
   DCHECK(data);
   if (data->display)
     data->display->Resize(size);
@@ -688,7 +688,7 @@ void GpuProcessTransportFactory::SetDisplayColorSpace(
   PerCompositorDataMap::iterator it = per_compositor_data_.find(compositor);
   if (it == per_compositor_data_.end())
     return;
-  PerCompositorData* data = it->second;
+  PerCompositorData* data = it->second.get();
   DCHECK(data);
   data->color_space = color_space;
   if (data->display)
@@ -701,7 +701,7 @@ void GpuProcessTransportFactory::SetAuthoritativeVSyncInterval(
   PerCompositorDataMap::iterator it = per_compositor_data_.find(compositor);
   if (it == per_compositor_data_.end())
     return;
-  PerCompositorData* data = it->second;
+  PerCompositorData* data = it->second.get();
   DCHECK(data);
   if (data->begin_frame_source)
     data->begin_frame_source->SetAuthoritativeVSyncInterval(interval);
@@ -714,7 +714,7 @@ void GpuProcessTransportFactory::SetDisplayVSyncParameters(
   PerCompositorDataMap::iterator it = per_compositor_data_.find(compositor);
   if (it == per_compositor_data_.end())
     return;
-  PerCompositorData* data = it->second;
+  PerCompositorData* data = it->second.get();
   DCHECK(data);
   if (data->begin_frame_source)
     data->begin_frame_source->OnUpdateVSyncParameters(timebase, interval);
@@ -725,7 +725,7 @@ void GpuProcessTransportFactory::SetOutputIsSecure(ui::Compositor* compositor,
   PerCompositorDataMap::iterator it = per_compositor_data_.find(compositor);
   if (it == per_compositor_data_.end())
     return;
-  PerCompositorData* data = it->second;
+  PerCompositorData* data = it->second.get();
   DCHECK(data);
   data->output_is_secure = secure;
   if (data->display)
@@ -770,7 +770,7 @@ void GpuProcessTransportFactory::SetCompositorSuspendedForRecycle(
   PerCompositorDataMap::iterator it = per_compositor_data_.find(compositor);
   if (it == per_compositor_data_.end())
     return;
-  PerCompositorData* data = it->second;
+  PerCompositorData* data = it->second.get();
   DCHECK(data);
   if (data->display_output_surface)
     data->display_output_surface->SetSurfaceSuspendedForRecycle(suspended);
@@ -820,7 +820,7 @@ GpuProcessTransportFactory::CreatePerCompositorData(
 
   gfx::AcceleratedWidget widget = compositor->widget();
 
-  PerCompositorData* data = new PerCompositorData;
+  auto data = base::MakeUnique<PerCompositorData>();
   if (widget == gfx::kNullAcceleratedWidget) {
     data->surface_handle = gpu::kNullSurfaceHandle;
   } else {
@@ -832,9 +832,9 @@ GpuProcessTransportFactory::CreatePerCompositorData(
 #endif
   }
 
-  per_compositor_data_[compositor] = data;
-
-  return data;
+  PerCompositorData* return_ptr = data.get();
+  per_compositor_data_[compositor] = std::move(data);
+  return return_ptr;
 }
 
 void GpuProcessTransportFactory::OnLostMainThreadSharedContextInsideCallback() {

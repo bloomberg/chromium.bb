@@ -105,7 +105,8 @@ class GpuProcessTransportFactory
   scoped_refptr<cc::VulkanInProcessContextProvider>
   SharedVulkanContextProvider();
 
-  typedef std::map<ui::Compositor*, PerCompositorData*> PerCompositorDataMap;
+  typedef std::map<ui::Compositor*, std::unique_ptr<PerCompositorData>>
+      PerCompositorDataMap;
   PerCompositorDataMap per_compositor_data_;
   scoped_refptr<ContextProviderCommandBuffer> shared_main_thread_contexts_;
   std::unique_ptr<display_compositor::GLHelper> gl_helper_;
