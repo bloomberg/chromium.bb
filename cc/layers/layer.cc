@@ -477,6 +477,15 @@ void Layer::SetBackgroundFilters(const FilterOperations& filters) {
   SetNeedsCommit();
 }
 
+void Layer::SetFiltersOrigin(const gfx::PointF& filters_origin) {
+  DCHECK(IsPropertyChangeAllowed());
+  if (inputs_.filters_origin == filters_origin)
+    return;
+  inputs_.filters_origin = filters_origin;
+  SetSubtreePropertyChanged();
+  SetNeedsCommit();
+}
+
 void Layer::SetOpacity(float opacity) {
   DCHECK(IsPropertyChangeAllowed());
   DCHECK_GE(opacity, 0.f);

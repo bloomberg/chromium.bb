@@ -665,7 +665,8 @@ static sk_sp<SkImage> ApplyImageFilter(
     const Resource* source_texture_resource,
     SkIPoint* offset,
     SkIRect* subset,
-    bool flip_texture) {
+    bool flip_texture,
+    const gfx::PointF& origin) {
   if (!filter || !use_gr_context)
     return nullptr;
 
@@ -683,8 +684,9 @@ static sk_sp<SkImage> ApplyImageFilter(
   }
 
   SkMatrix local_matrix;
-  local_matrix.setTranslate(-src_rect.x(), -src_rect.y());
+  local_matrix.setTranslate(origin.x(), origin.y());
   local_matrix.postScale(scale.x(), scale.y());
+  local_matrix.postTranslate(-src_rect.x(), -src_rect.y());
 
   SkIRect clip_bounds = gfx::RectFToSkRect(dst_rect).roundOut();
   clip_bounds.offset(-src_rect.x(), -src_rect.y());
@@ -1071,9 +1073,10 @@ void GLRenderer::DrawRenderPassQuadInternal(
 bool GLRenderer::InitializeRPDQParameters(
     DrawRenderPassDrawQuadParams* params) {
   const RenderPassDrawQuad* quad = params->quad;
-  SkMatrix scale_matrix;
-  scale_matrix.setScale(quad->filters_scale.x(), quad->filters_scale.y());
-  gfx::Rect dst_rect = quad->filters.MapRect(quad->rect, scale_matrix);
+  SkMatrix local_matrix;
+  local_matrix.setTranslate(quad->filters_origin.x(), quad->filters_origin.y());
+  local_matrix.postScale(quad->filters_scale.x(), quad->filters_scale.y());
+  gfx::Rect dst_rect = quad->filters.MapRect(quad->rect, local_matrix);
   params->dst_rect.SetRect(static_cast<float>(dst_rect.x()),
                            static_cast<float>(dst_rect.y()),
                            static_cast<float>(dst_rect.width()),
@@ -1217,7 +1220,8 @@ bool GLRenderer::UpdateRPDQWithSkiaFilters(
         params->filter_image = ApplyImageFilter(
             ScopedUseGrContext::Create(this), resource_provider_, src_rect,
             params->dst_rect, quad->filters_scale, std::move(filter),
-            params->contents_texture, &offset, &subset, params->flip_texture);
+            params->contents_texture, &offset, &subset, params->flip_texture,
+            quad->filters_origin);
         if (!params->filter_image)
           return false;
         params->dst_rect =

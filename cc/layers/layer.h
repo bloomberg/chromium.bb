@@ -309,6 +309,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void SetHideLayerAndSubtree(bool hide);
   bool hide_layer_and_subtree() const { return inputs_.hide_layer_and_subtree; }
 
+  void SetFiltersOrigin(const gfx::PointF& origin);
+  gfx::PointF filters_origin() const { return inputs_.filters_origin; }
+
   void SetReplicaLayer(Layer* layer);
   Layer* replica_layer() { return inputs_.replica_layer.get(); }
   const Layer* replica_layer() const { return inputs_.replica_layer.get(); }
@@ -653,6 +656,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
     FilterOperations filters;
     FilterOperations background_filters;
+    gfx::PointF filters_origin;
 
     gfx::ScrollOffset scroll_offset;
 

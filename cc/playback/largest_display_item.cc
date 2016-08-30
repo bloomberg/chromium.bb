@@ -19,11 +19,11 @@
 #include "third_party/skia/include/core/SkPicture.h"
 
 namespace {
-// Either ClipDisplayItem or TransformDisplayItem is largest. It depends on the
-// platform.
+// Either FilterDisplayItem or TransformDisplayItem is largest. It depends on
+// the platform.
 constexpr size_t kLargestDisplayItemSize =
-    sizeof(cc::ClipDisplayItem) > sizeof(cc::TransformDisplayItem)
-        ? sizeof(cc::ClipDisplayItem)
+    sizeof(cc::FilterDisplayItem) > sizeof(cc::TransformDisplayItem)
+        ? sizeof(cc::FilterDisplayItem)
         : sizeof(cc::TransformDisplayItem);
 }  // namespace
 

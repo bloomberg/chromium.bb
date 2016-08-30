@@ -48,6 +48,7 @@ bool EffectNode::operator==(const EffectNode& other) const {
          has_copy_request == other.has_copy_request &&
          filters == other.filters &&
          background_filters == other.background_filters &&
+         filters_origin == other.filters_origin &&
          blend_mode == other.blend_mode &&
          surface_contents_scale == other.surface_contents_scale &&
          unscaled_mask_target_size == other.unscaled_mask_target_size &&

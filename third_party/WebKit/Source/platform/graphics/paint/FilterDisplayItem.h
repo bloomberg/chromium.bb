@@ -18,11 +18,12 @@ namespace blink {
 
 class PLATFORM_EXPORT BeginFilterDisplayItem final : public PairedBeginDisplayItem {
 public:
-    BeginFilterDisplayItem(const DisplayItemClient& client, sk_sp<SkImageFilter> imageFilter, const FloatRect& bounds, CompositorFilterOperations filterOperations)
+    BeginFilterDisplayItem(const DisplayItemClient& client, sk_sp<SkImageFilter> imageFilter, const FloatRect& bounds, const FloatPoint& origin, CompositorFilterOperations filterOperations)
         : PairedBeginDisplayItem(client, BeginFilter, sizeof(*this))
         , m_imageFilter(std::move(imageFilter))
         , m_compositorFilterOperations(std::move(filterOperations))
-        , m_bounds(bounds) { }
+        , m_bounds(bounds)
+        , m_origin(origin) { }
 
     void replay(GraphicsContext&) const override;
     void appendToWebDisplayItemList(const IntRect&, WebDisplayItemList*) const override;
@@ -37,7 +38,8 @@ private:
     {
         return DisplayItem::equals(other)
             // TODO(wangxianzhu): compare m_imageFilter and m_webFilterOperations.
-            && m_bounds == static_cast<const BeginFilterDisplayItem&>(other).m_bounds;
+            && m_bounds == static_cast<const BeginFilterDisplayItem&>(other).m_bounds
+            && m_origin == static_cast<const BeginFilterDisplayItem&>(other).m_origin;
     }
 #endif
 
@@ -45,6 +47,7 @@ private:
     sk_sp<SkImageFilter> m_imageFilter;
     CompositorFilterOperations m_compositorFilterOperations;
     const FloatRect m_bounds;
+    const FloatPoint m_origin;
 };
 
 class PLATFORM_EXPORT EndFilterDisplayItem final : public PairedEndDisplayItem {

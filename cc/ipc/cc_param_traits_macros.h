@@ -74,6 +74,7 @@ IPC_STRUCT_TRAITS_BEGIN(cc::RenderPassDrawQuad)
   IPC_STRUCT_TRAITS_MEMBER(mask_texture_size)
   IPC_STRUCT_TRAITS_MEMBER(filters)
   IPC_STRUCT_TRAITS_MEMBER(filters_scale)
+  IPC_STRUCT_TRAITS_MEMBER(filters_origin)
   IPC_STRUCT_TRAITS_MEMBER(background_filters)
 IPC_STRUCT_TRAITS_END()
 

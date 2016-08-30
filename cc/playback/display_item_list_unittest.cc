@@ -479,8 +479,8 @@ TEST(DisplayItemListTest, FilterItem) {
   filters.Append(FilterOperation::CreateReferenceFilter(image_filter));
   filters.Append(FilterOperation::CreateBrightnessFilter(0.5f));
   gfx::RectF filter_bounds(10.f, 10.f, 50.f, 50.f);
-  list->CreateAndAppendPairedBeginItem<FilterDisplayItem>(filters,
-                                                          filter_bounds);
+  list->CreateAndAppendPairedBeginItem<FilterDisplayItem>(
+      filters, filter_bounds, filter_bounds.origin());
 
   // Include a rect drawing so that filter is actually applied to something.
   {
@@ -927,7 +927,8 @@ TEST(DisplayItemListTest, AppendVisualRectOneFilterNoDrawings) {
 
   gfx::Rect filter_bounds(5, 6, 1, 1);
   list->CreateAndAppendPairedBeginItemWithVisualRect<FilterDisplayItem>(
-      filter_bounds, FilterOperations(), gfx::RectF(filter_bounds));
+      filter_bounds, FilterOperations(), gfx::RectF(filter_bounds),
+      gfx::PointF(filter_bounds.origin()));
 
   list->CreateAndAppendPairedEndItem<EndFilterDisplayItem>();
 
@@ -947,7 +948,8 @@ TEST(DisplayItemListTest, AppendVisualRectBlockContainingFilterNoDrawings) {
 
   gfx::Rect filter_bounds(5, 6, 1, 1);
   list->CreateAndAppendPairedBeginItemWithVisualRect<FilterDisplayItem>(
-      filter_bounds, FilterOperations(), gfx::RectF(filter_bounds));
+      filter_bounds, FilterOperations(), gfx::RectF(filter_bounds),
+      gfx::PointF(filter_bounds.origin()));
 
   list->CreateAndAppendPairedEndItem<EndFilterDisplayItem>();
   list->CreateAndAppendPairedEndItem<EndClipDisplayItem>();

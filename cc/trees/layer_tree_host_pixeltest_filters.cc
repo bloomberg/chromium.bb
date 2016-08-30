@@ -329,6 +329,50 @@ TEST_F(ImageFilterClippedPixelTest, ImageFilterClipped_Software) {
   RunPixelTestType(PIXEL_TEST_SOFTWARE);
 }
 
+class ImageFilterNonZeroOriginPixelTest : public LayerTreeHostFiltersPixelTest {
+ protected:
+  void RunPixelTestType(PixelTestType test_type) {
+    scoped_refptr<SolidColorLayer> background =
+        CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorYELLOW);
+
+    scoped_refptr<SolidColorLayer> foreground =
+        CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorRED);
+    background->AddChild(foreground);
+
+    SkScalar matrix[20];
+    memset(matrix, 0, 20 * sizeof(matrix[0]));
+    // This filter does a red-blue swap, so the foreground becomes blue.
+    matrix[2] = matrix[6] = matrix[10] = matrix[18] = SK_Scalar1;
+    // Set up a crop rec to filter the bottom 200x100 pixels of the foreground.
+    SkImageFilter::CropRect crop_rect(SkRect::MakeXYWH(0, 100, 200, 100));
+    FilterOperations filters;
+    filters.Append(
+        FilterOperation::CreateReferenceFilter(SkColorFilterImageFilter::Make(
+            SkColorFilter::MakeMatrixFilterRowMajor255(matrix), nullptr,
+            &crop_rect)));
+
+    // Make the foreground layer's render surface be clipped by the background
+    // layer.
+    background->SetMasksToBounds(true);
+    foreground->SetFilters(filters);
+
+    // Now move the filters origin up by 100 pixels, so the crop rect is
+    // applied only to the top 100 pixels, not the bottom.
+    foreground->SetFiltersOrigin(gfx::PointF(0.0f, -100.0f));
+
+    RunPixelTest(test_type, background,
+                 base::FilePath(FILE_PATH_LITERAL("blue_yellow.png")));
+  }
+};
+
+TEST_F(ImageFilterNonZeroOriginPixelTest, ImageFilterNonZeroOrigin_GL) {
+  RunPixelTestType(PIXEL_TEST_GL);
+}
+
+TEST_F(ImageFilterNonZeroOriginPixelTest, ImageFilterNonZeroOrigin_Software) {
+  RunPixelTestType(PIXEL_TEST_SOFTWARE);
+}
+
 class ImageScaledBackgroundFilter : public LayerTreeHostFiltersPixelTest {
  protected:
   void RunPixelTestType(PixelTestType test_type, base::FilePath image_name) {

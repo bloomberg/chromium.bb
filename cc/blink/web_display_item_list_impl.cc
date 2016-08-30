@@ -132,10 +132,11 @@ void WebDisplayItemListImpl::appendEndCompositingItem() {
 
 void WebDisplayItemListImpl::appendFilterItem(
     const cc::FilterOperations& filters,
-    const blink::WebFloatRect& filter_bounds) {
+    const blink::WebFloatRect& filter_bounds,
+    const blink::WebFloatPoint& origin) {
   display_item_list_
       ->CreateAndAppendPairedBeginItemWithVisualRect<cc::FilterDisplayItem>(
-          gfx::ToEnclosingRect(filter_bounds), filters, filter_bounds);
+          gfx::ToEnclosingRect(filter_bounds), filters, filter_bounds, origin);
 }
 
 void WebDisplayItemListImpl::appendEndFilterItem() {

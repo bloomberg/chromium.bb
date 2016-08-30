@@ -170,6 +170,12 @@ struct StructTraits<cc::mojom::RenderPassQuadStateDataView, cc::DrawQuad> {
     return quad->filters_scale;
   }
 
+  static const gfx::PointF& filters_origin(const cc::DrawQuad& input) {
+    const cc::RenderPassDrawQuad* quad =
+        cc::RenderPassDrawQuad::MaterialCast(&input);
+    return quad->filters_origin;
+  }
+
   static const cc::FilterOperations& background_filters(
       const cc::DrawQuad& input) {
     const cc::RenderPassDrawQuad* quad =

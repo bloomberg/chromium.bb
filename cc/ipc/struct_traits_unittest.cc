@@ -452,6 +452,7 @@ TEST_F(StructTraitsTest, QuadListBasic) {
   filters.Append(FilterOperation::CreateBlurFilter(0.f));
   filters.Append(FilterOperation::CreateZoomFilter(2.0f, 1));
   gfx::Vector2dF filters_scale(1234.1f, 4321.2f);
+  gfx::PointF filters_origin(8765.4f, 4567.8f);
   FilterOperations background_filters;
   background_filters.Append(FilterOperation::CreateSaturateFilter(4.f));
   background_filters.Append(FilterOperation::CreateZoomFilter(2.0f, 1));
@@ -461,7 +462,7 @@ TEST_F(StructTraitsTest, QuadListBasic) {
       render_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
   render_pass_quad->SetNew(sqs, rect4, rect4, render_pass_id, resource_id4,
                            mask_uv_scale, mask_texture_size, filters,
-                           filters_scale, background_filters);
+                           filters_scale, filters_origin, background_filters);
 
   const gfx::Rect rect5(123, 567, 91011, 131415);
   const ResourceId resource_id5(1337);

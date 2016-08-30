@@ -614,7 +614,8 @@ sk_sp<SkImage> SoftwareRenderer::ApplyImageFilter(
     return nullptr;
 
   SkMatrix local_matrix;
-  local_matrix.setScale(quad->filters_scale.x(), quad->filters_scale.y());
+  local_matrix.setTranslate(quad->filters_origin.x(), quad->filters_origin.y());
+  local_matrix.postScale(quad->filters_scale.x(), quad->filters_scale.y());
   SkIRect dst_rect;
   if (auto_bounds) {
     dst_rect =

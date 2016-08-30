@@ -11,16 +11,17 @@ namespace blink {
 
 void BeginFilterDisplayItem::replay(GraphicsContext& context) const
 {
-    FloatRect imageFilterBounds(FloatPoint(), m_bounds.size());
+    FloatRect imageFilterBounds(m_bounds);
+    imageFilterBounds.move(-m_origin.x(), -m_origin.y());
     context.save();
-    context.translate(m_bounds.x(), m_bounds.y());
+    context.translate(m_origin.x(), m_origin.y());
     context.beginLayer(1, SkXfermode::kSrcOver_Mode, &imageFilterBounds, ColorFilterNone, m_imageFilter);
-    context.translate(-m_bounds.x(), -m_bounds.y());
+    context.translate(-m_origin.x(), -m_origin.y());
 }
 
 void BeginFilterDisplayItem::appendToWebDisplayItemList(const IntRect& visualRect, WebDisplayItemList* list) const
 {
-    list->appendFilterItem(m_compositorFilterOperations.asCcFilterOperations(), m_bounds);
+    list->appendFilterItem(m_compositorFilterOperations.asCcFilterOperations(), m_bounds, m_origin);
 }
 
 bool BeginFilterDisplayItem::drawsContent() const

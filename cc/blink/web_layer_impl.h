@@ -19,6 +19,7 @@
 #include "third_party/WebKit/public/platform/WebColor.h"
 #include "third_party/WebKit/public/platform/WebDoublePoint.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
+#include "third_party/WebKit/public/platform/WebFloatSize.h"
 #include "third_party/WebKit/public/platform/WebLayer.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
@@ -96,6 +97,7 @@ class WebLayerImpl : public blink::WebLayer {
   void setBackgroundColor(blink::WebColor color) override;
   blink::WebColor backgroundColor() const override;
   void setFilters(const cc::FilterOperations& filters) override;
+  void setFiltersOrigin(const blink::WebFloatPoint& origin) override;
   void setBackgroundFilters(const cc::FilterOperations& filters) override;
   bool hasActiveAnimationForTesting() override;
   void setScrollPositionDouble(blink::WebDoublePoint position) override;

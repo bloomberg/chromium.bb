@@ -141,6 +141,7 @@ cc::CompositorFrame FrameGenerator::GenerateCompositorFrame(
                  0 /* mask_resource_id */, gfx::Vector2dF() /* mask_uv_scale */,
                  gfx::Size() /* mask_texture_size */, filters,
                  gfx::Vector2dF() /* filters_scale */,
+                 gfx::PointF() /* filters_origin */,
                  cc::FilterOperations() /* background_filters */);
     frame_data->render_pass_list.push_back(std::move(invert_pass));
   }

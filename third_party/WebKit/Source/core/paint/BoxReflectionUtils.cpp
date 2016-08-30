@@ -44,20 +44,10 @@ BoxReflection boxReflectionForPaintLayer(const PaintLayer& layer, const Computed
         break;
     }
 
-    // Since the filter origin is the corner of the input bounds, which may
-    // include visual overflow (e.g. due to box-shadow), we must adjust the
-    // offset to also account for this offset (this is equivalent to using
-    // SkLocalMatrixImageFilter, but simpler).
-    // The rect used here should match the one used in FilterPainter.
-    LayoutRect filterInputBounds = layer.physicalBoundingBoxIncludingReflectionAndStackingChildren(LayoutPoint());
-    offset -= 2 * (direction == BoxReflection::VerticalReflection ? filterInputBounds.y() : filterInputBounds.x()).toFloat();
-
     RefPtr<SkPicture> mask;
     const NinePieceImage& maskNinePiece = reflectStyle->mask();
     if (maskNinePiece.hasImage()) {
         LayoutRect maskRect(LayoutPoint(), frameLayoutRect.size());
-        maskRect.moveBy(-filterInputBounds.location());
-
         LayoutRect maskBoundingRect(maskRect);
         maskBoundingRect.expand(style.imageOutsets(maskNinePiece));
         FloatRect maskBoundingFloatRect(maskBoundingRect);

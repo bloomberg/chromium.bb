@@ -31,6 +31,7 @@
 #include "WebCommon.h"
 #include "WebDoublePoint.h"
 #include "WebFloatPoint3D.h"
+#include "WebFloatSize.h"
 #include "WebPoint.h"
 #include "WebRect.h"
 #include "WebSize.h"
@@ -134,6 +135,9 @@ public:
     // Clear the filters in use by passing in a newly instantiated
     // FilterOperations object.
     virtual void setFilters(const cc::FilterOperations&) = 0;
+
+    // The position of the original primitive inside the total bounds.
+    virtual void setFiltersOrigin(const WebFloatPoint&) = 0;
 
     // Clear the background filters in use by passing in a newly instantiated
     // FilterOperations object.

@@ -294,16 +294,10 @@ void SurfaceAggregator::HandleSurfaceQuad(
 
     RenderPassDrawQuad* quad =
         dest_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
-    quad->SetNew(shared_quad_state,
-                 surface_quad->rect,
-                 surface_quad->visible_rect,
-                 remapped_pass_id,
-                 0,
-                 gfx::Vector2dF(),
-                 gfx::Size(),
-                 FilterOperations(),
-                 gfx::Vector2dF(),
-                 FilterOperations());
+    quad->SetNew(shared_quad_state, surface_quad->rect,
+                 surface_quad->visible_rect, remapped_pass_id, 0,
+                 gfx::Vector2dF(), gfx::Size(), FilterOperations(),
+                 gfx::Vector2dF(), gfx::PointF(), FilterOperations());
   }
 
   referenced_surfaces_.erase(it);

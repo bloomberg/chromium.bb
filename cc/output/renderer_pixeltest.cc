@@ -96,15 +96,13 @@ void CreateTestRenderPassDrawQuad(const SharedQuadState* shared_state,
                                   RenderPass* render_pass) {
   RenderPassDrawQuad* quad =
       render_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
-  quad->SetNew(shared_state,
-               rect,
-               rect,
-               pass_id,
+  quad->SetNew(shared_state, rect, rect, pass_id,
                0,                    // mask_resource_id
                gfx::Vector2dF(),     // mask_uv_scale
                gfx::Size(),          // mask_texture_size
                FilterOperations(),   // foreground filters
                gfx::Vector2dF(),     // filters scale
+               gfx::PointF(),        // filter origin
                FilterOperations());  // background filters
 }
 
@@ -1416,15 +1414,9 @@ TYPED_TEST(RendererPixelTest, FastPassColorFilterAlpha) {
 
   RenderPassDrawQuad* render_pass_quad =
       root_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
-  render_pass_quad->SetNew(pass_shared_state,
-                           pass_rect,
-                           pass_rect,
-                           child_pass_id,
-                           0,
-                           gfx::Vector2dF(),
-                           gfx::Size(),
-                           filters,
-                           gfx::Vector2dF(),
+  render_pass_quad->SetNew(pass_shared_state, pass_rect, pass_rect,
+                           child_pass_id, 0, gfx::Vector2dF(), gfx::Size(),
+                           filters, gfx::Vector2dF(), gfx::PointF(),
                            FilterOperations());
 
   RenderPassList pass_list;
@@ -1488,15 +1480,9 @@ TYPED_TEST(RendererPixelTest, FastPassSaturateFilter) {
 
   RenderPassDrawQuad* render_pass_quad =
       root_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
-  render_pass_quad->SetNew(pass_shared_state,
-                           pass_rect,
-                           pass_rect,
-                           child_pass_id,
-                           0,
-                           gfx::Vector2dF(),
-                           gfx::Size(),
-                           filters,
-                           gfx::Vector2dF(),
+  render_pass_quad->SetNew(pass_shared_state, pass_rect, pass_rect,
+                           child_pass_id, 0, gfx::Vector2dF(), gfx::Size(),
+                           filters, gfx::Vector2dF(), gfx::PointF(),
                            FilterOperations());
 
   RenderPassList pass_list;
@@ -1560,15 +1546,9 @@ TYPED_TEST(RendererPixelTest, FastPassFilterChain) {
 
   RenderPassDrawQuad* render_pass_quad =
       root_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
-  render_pass_quad->SetNew(pass_shared_state,
-                           pass_rect,
-                           pass_rect,
-                           child_pass_id,
-                           0,
-                           gfx::Vector2dF(),
-                           gfx::Size(),
-                           filters,
-                           gfx::Vector2dF(),
+  render_pass_quad->SetNew(pass_shared_state, pass_rect, pass_rect,
+                           child_pass_id, 0, gfx::Vector2dF(), gfx::Size(),
+                           filters, gfx::Vector2dF(), gfx::PointF(),
                            FilterOperations());
 
   RenderPassList pass_list;
@@ -1653,15 +1633,9 @@ TYPED_TEST(RendererPixelTest, FastPassColorFilterAlphaTranslation) {
 
   RenderPassDrawQuad* render_pass_quad =
       root_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
-  render_pass_quad->SetNew(pass_shared_state,
-                           pass_rect,
-                           pass_rect,
-                           child_pass_id,
-                           0,
-                           gfx::Vector2dF(),
-                           gfx::Size(),
-                           filters,
-                           gfx::Vector2dF(),
+  render_pass_quad->SetNew(pass_shared_state, pass_rect, pass_rect,
+                           child_pass_id, 0, gfx::Vector2dF(), gfx::Size(),
+                           filters, gfx::Vector2dF(), gfx::PointF(),
                            FilterOperations());
 
   RenderPassList pass_list;
@@ -1861,6 +1835,7 @@ TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad) {
                     gfx::Size(mask_rect.size()),  // mask_texture_size
                     FilterOperations(),           // foreground filters
                     gfx::Vector2dF(),             // filters scale
+                    gfx::PointF(),                // filter origin
                     FilterOperations());          // background filters
 
   // White background behind the masked render pass.
@@ -1955,6 +1930,7 @@ TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad2) {
                     gfx::Size(mask_rect.size()),  // mask_texture_size
                     FilterOperations(),           // foreground filters
                     gfx::Vector2dF(),             // filters scale
+                    gfx::PointF(),                // filter origin
                     FilterOperations());          // background filters
 
   // White background behind the masked render pass.
@@ -2015,6 +1991,7 @@ class RendererPixelTestWithBackgroundFilter
                                gfx::Size(),                 // mask_texture_size
                                FilterOperations(),          // filters
                                gfx::Vector2dF(1.0f, 1.0f),  // filters_scale
+                               gfx::PointF(),               // filters_origin
                                this->background_filters_);
     }
 

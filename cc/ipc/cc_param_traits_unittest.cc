@@ -138,6 +138,7 @@ class CCParamTraitsTest : public testing::Test {
       }
     }
     EXPECT_EQ(a->filters_scale, b->filters_scale);
+    EXPECT_EQ(a->filters_origin, b->filters_origin);
     EXPECT_EQ(a->background_filters, b->background_filters);
   }
 
@@ -326,7 +327,8 @@ TEST_F(CCParamTraitsTest, AllQuads) {
       shared_state2_in, arbitrary_rect1, arbitrary_rect2_inside_rect1,
       arbitrary_rect1_inside_rect1, arbitrary_bool1, child_id,
       arbitrary_resourceid2, arbitrary_vector2df1, arbitrary_size1,
-      arbitrary_filters1, arbitrary_vector2df2, arbitrary_filters2);
+      arbitrary_filters1, arbitrary_vector2df2, arbitrary_pointf2,
+      arbitrary_filters2);
   pass_cmp->CopyFromAndAppendRenderPassDrawQuad(
       renderpass_in, renderpass_in->shared_quad_state,
       renderpass_in->render_pass_id);

@@ -782,6 +782,14 @@ static inline const FilterOperations& Filters(Layer* layer) {
   return layer->filters();
 }
 
+static inline const gfx::PointF FiltersOrigin(Layer* layer) {
+  return layer->filters_origin();
+}
+
+static inline const gfx::PointF FiltersOrigin(LayerImpl* layer) {
+  return layer->test_properties()->filters_origin;
+}
+
 static inline const FilterOperations& Filters(LayerImpl* layer) {
   return layer->test_properties()->filters;
 }
@@ -987,6 +995,7 @@ bool AddEffectNodeIfNeeded(
   node.has_copy_request = HasCopyRequest(layer);
   node.filters = Filters(layer);
   node.background_filters = BackgroundFilters(layer);
+  node.filters_origin = FiltersOrigin(layer);
   node.has_potential_opacity_animation = has_potential_opacity_animation;
   node.has_potential_filter_animation = has_potential_filter_animation;
   node.double_sided = DoubleSided(layer);

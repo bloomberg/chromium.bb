@@ -8,6 +8,7 @@
 #include "cc/base/cc_export.h"
 #include "cc/output/filter_operations.h"
 #include "third_party/skia/include/core/SkXfermode.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/size_f.h"
 
 namespace base {
@@ -37,6 +38,7 @@ struct CC_EXPORT EffectNode {
 
   FilterOperations filters;
   FilterOperations background_filters;
+  gfx::PointF filters_origin;
 
   SkXfermode::Mode blend_mode;
 

@@ -21,7 +21,9 @@ namespace cc {
 
 class CC_EXPORT FilterDisplayItem : public DisplayItem {
  public:
-  FilterDisplayItem(const FilterOperations& filters, const gfx::RectF& bounds);
+  FilterDisplayItem(const FilterOperations& filters,
+                    const gfx::RectF& bounds,
+                    const gfx::PointF& origin);
   explicit FilterDisplayItem(const proto::DisplayItem& proto);
   ~FilterDisplayItem() override;
 
@@ -35,10 +37,13 @@ class CC_EXPORT FilterDisplayItem : public DisplayItem {
   int ApproximateOpCount() const { return 1; }
 
  private:
-  void SetNew(const FilterOperations& filters, const gfx::RectF& bounds);
+  void SetNew(const FilterOperations& filters,
+              const gfx::RectF& bounds,
+              const gfx::PointF& origin);
 
   FilterOperations filters_;
   gfx::RectF bounds_;
+  gfx::PointF origin_;
 };
 
 class CC_EXPORT EndFilterDisplayItem : public DisplayItem {

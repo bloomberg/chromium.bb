@@ -89,6 +89,9 @@ crbug.com/630615 [ Win7 ] fast/images/color-profile-background-image-space.html 
 
 crbug.com/638293 [ Linux ] virtual/gpu-rasterization/fast/images/color-profile-reflection.html [ Failure ]
 
+crbug.com/638091 compositing/reflections/nested-reflection-transformed.html [ NeedsRebaseline ]
+crbug.com/638091 compositing/reflections/nested-reflection-transformed2.html [ NeedsRebaseline ]
+
 # Fails consistently on WebKit Mac10.10, WebKit Mac10.11 (retina) and mac10.10_blink_rel tryserver, but not on other Mac bots.
 crbug.com/614910 [ Mac ] virtual/gpu-rasterization/fast/images/pixel-crack-image-background-webkit-transform-scale.html [ Pass Failure ]
 

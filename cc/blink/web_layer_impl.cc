@@ -209,6 +209,10 @@ void WebLayerImpl::setFilters(const cc::FilterOperations& filters) {
   layer_->SetFilters(filters);
 }
 
+void WebLayerImpl::setFiltersOrigin(const blink::WebFloatPoint& origin) {
+  layer_->SetFiltersOrigin(origin);
+}
+
 void WebLayerImpl::setBackgroundFilters(const cc::FilterOperations& filters) {
   layer_->SetBackgroundFilters(filters);
 }

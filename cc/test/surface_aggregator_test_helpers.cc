@@ -54,7 +54,7 @@ void AddRenderPassQuad(RenderPass* pass, RenderPassId render_pass_id) {
       pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
   quad->SetNew(shared_state, output_rect, output_rect, render_pass_id, 0,
                gfx::Vector2dF(), gfx::Size(), FilterOperations(),
-               gfx::Vector2dF(), FilterOperations());
+               gfx::Vector2dF(), gfx::PointF(), FilterOperations());
 }
 
 void AddQuadInPass(RenderPass* pass, Quad desc) {

@@ -171,6 +171,10 @@ const FilterOperations& RenderSurfaceImpl::Filters() const {
   return OwningEffectNode()->filters;
 }
 
+gfx::PointF RenderSurfaceImpl::FiltersOrigin() const {
+  return OwningEffectNode()->filters_origin;
+}
+
 gfx::Transform RenderSurfaceImpl::FiltersTransform() const {
   return owning_layer_->DrawTransform();
 }
@@ -415,7 +419,7 @@ void RenderSurfaceImpl::AppendQuads(RenderPass* render_pass,
   quad->SetNew(shared_quad_state, content_rect(), visible_layer_rect,
                render_pass_id, mask_resource_id, mask_uv_scale,
                mask_texture_size, Filters(), owning_layer_to_target_scale,
-               BackgroundFilters());
+               FiltersOrigin(), BackgroundFilters());
 }
 
 }  // namespace cc

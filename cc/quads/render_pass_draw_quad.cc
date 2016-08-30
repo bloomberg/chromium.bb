@@ -31,23 +31,15 @@ void RenderPassDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                                 const gfx::Size& mask_texture_size,
                                 const FilterOperations& filters,
                                 const gfx::Vector2dF& filters_scale,
+                                const gfx::PointF& filters_origin,
                                 const FilterOperations& background_filters) {
   DCHECK(render_pass_id.IsValid());
 
   gfx::Rect opaque_rect;
   bool needs_blending = false;
-  SetAll(shared_quad_state,
-         rect,
-         opaque_rect,
-         visible_rect,
-         needs_blending,
-         render_pass_id,
-         mask_resource_id,
-         mask_uv_scale,
-         mask_texture_size,
-         filters,
-         filters_scale,
-         background_filters);
+  SetAll(shared_quad_state, rect, opaque_rect, visible_rect, needs_blending,
+         render_pass_id, mask_resource_id, mask_uv_scale, mask_texture_size,
+         filters, filters_scale, filters_origin, background_filters);
 }
 
 void RenderPassDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
@@ -61,6 +53,7 @@ void RenderPassDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                                 const gfx::Size& mask_texture_size,
                                 const FilterOperations& filters,
                                 const gfx::Vector2dF& filters_scale,
+                                const gfx::PointF& filters_origin,
                                 const FilterOperations& background_filters) {
   DCHECK(render_pass_id.IsValid());
 
@@ -73,6 +66,7 @@ void RenderPassDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
   this->mask_texture_size = mask_texture_size;
   this->filters = filters;
   this->filters_scale = filters_scale;
+  this->filters_origin = filters_origin;
   this->background_filters = background_filters;
 }
 

@@ -101,16 +101,9 @@ void AddRenderPassQuad(RenderPass* to_pass, RenderPass* contributing_pass) {
                        0);
   RenderPassDrawQuad* quad =
       to_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
-  quad->SetNew(shared_state,
-               output_rect,
-               output_rect,
-               contributing_pass->id,
-               0,
-               gfx::Vector2dF(),
-               gfx::Size(),
-               FilterOperations(),
-               gfx::Vector2dF(),
-               FilterOperations());
+  quad->SetNew(shared_state, output_rect, output_rect, contributing_pass->id, 0,
+               gfx::Vector2dF(), gfx::Size(), FilterOperations(),
+               gfx::Vector2dF(), gfx::PointF(), FilterOperations());
 }
 
 void AddRenderPassQuad(RenderPass* to_pass,
@@ -132,15 +125,9 @@ void AddRenderPassQuad(RenderPass* to_pass,
   RenderPassDrawQuad* quad =
       to_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
   gfx::Size arbitrary_nonzero_size(1, 1);
-  quad->SetNew(shared_state,
-               output_rect,
-               output_rect,
-               contributing_pass->id,
-               mask_resource_id,
-               gfx::Vector2dF(1.f, 1.f),
-               arbitrary_nonzero_size,
-               filters,
-               gfx::Vector2dF(),
+  quad->SetNew(shared_state, output_rect, output_rect, contributing_pass->id,
+               mask_resource_id, gfx::Vector2dF(1.f, 1.f),
+               arbitrary_nonzero_size, filters, gfx::Vector2dF(), gfx::PointF(),
                FilterOperations());
 }
 
@@ -213,17 +200,17 @@ void AddOneOfEveryQuadType(RenderPass* to_pass,
   if (child_pass.layer_id) {
     RenderPassDrawQuad* render_pass_quad =
         to_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
-    render_pass_quad->SetNew(shared_state, rect, visible_rect, child_pass,
-                             resource5, gfx::Vector2dF(1.f, 1.f),
-                             resource5_size, FilterOperations(),
-                             gfx::Vector2dF(), FilterOperations());
+    render_pass_quad->SetNew(
+        shared_state, rect, visible_rect, child_pass, resource5,
+        gfx::Vector2dF(1.f, 1.f), resource5_size, FilterOperations(),
+        gfx::Vector2dF(), gfx::PointF(), FilterOperations());
 
     RenderPassDrawQuad* render_pass_replica_quad =
         to_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
     render_pass_replica_quad->SetNew(
         shared_state, rect, visible_rect, child_pass, resource5,
         gfx::Vector2dF(1.f, 1.f), resource5_size, FilterOperations(),
-        gfx::Vector2dF(), FilterOperations());
+        gfx::Vector2dF(), gfx::PointF(), FilterOperations());
   }
 
   SolidColorDrawQuad* solid_color_quad =

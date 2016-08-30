@@ -315,6 +315,7 @@ void GraphicsLayer::setOffsetDoubleFromLayoutObject(const DoubleSize& offset, Sh
         return;
 
     m_offsetFromLayoutObject = offset;
+    platformLayer()->setFiltersOrigin(FloatPoint() - toFloatSize(offset));
 
     // If the compositing layer offset changes, we need to repaint.
     if (shouldSetNeedsDisplay == SetNeedsDisplay)

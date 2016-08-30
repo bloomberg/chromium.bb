@@ -21,8 +21,9 @@
 namespace cc {
 
 FilterDisplayItem::FilterDisplayItem(const FilterOperations& filters,
-                                     const gfx::RectF& bounds) {
-  SetNew(filters, bounds);
+                                     const gfx::RectF& bounds,
+                                     const gfx::PointF& origin) {
+  SetNew(filters, bounds, origin);
 }
 
 FilterDisplayItem::FilterDisplayItem(const proto::DisplayItem& proto) {
@@ -33,16 +34,18 @@ FilterDisplayItem::FilterDisplayItem(const proto::DisplayItem& proto) {
 
   // TODO(dtrainor): Support deserializing FilterOperations (crbug.com/541321).
   FilterOperations filters;
-
-  SetNew(filters, bounds);
+  gfx::PointF origin(.0f, .0f);  // TODO(senorblanco): Support origin.
+  SetNew(filters, bounds, origin);
 }
 
 FilterDisplayItem::~FilterDisplayItem() {}
 
 void FilterDisplayItem::SetNew(const FilterOperations& filters,
-                               const gfx::RectF& bounds) {
+                               const gfx::RectF& bounds,
+                               const gfx::PointF& origin) {
   filters_ = filters;
   bounds_ = bounds;
+  origin_ = origin;
 }
 
 void FilterDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
@@ -57,18 +60,19 @@ void FilterDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
 void FilterDisplayItem::Raster(SkCanvas* canvas,
                                SkPicture::AbortCallback* callback) const {
   canvas->save();
-  canvas->translate(bounds_.x(), bounds_.y());
+  canvas->translate(origin_.x(), origin_.y());
 
   sk_sp<SkImageFilter> image_filter = RenderSurfaceFilters::BuildImageFilter(
       filters_, gfx::SizeF(bounds_.width(), bounds_.height()));
-  SkRect boundaries = SkRect::MakeWH(bounds_.width(), bounds_.height());
+  SkRect boundaries = RectFToSkRect(bounds_);
+  boundaries.offset(-origin_.x(), -origin_.y());
 
   SkPaint paint;
   paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
   paint.setImageFilter(std::move(image_filter));
   canvas->saveLayer(&boundaries, &paint);
 
-  canvas->translate(-bounds_.x(), -bounds_.y());
+  canvas->translate(-origin_.x(), -origin_.y());
 }
 
 void FilterDisplayItem::AsValueInto(

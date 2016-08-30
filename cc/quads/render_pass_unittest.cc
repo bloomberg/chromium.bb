@@ -209,16 +209,10 @@ TEST(RenderPassTest, CopyAllShouldBeIdentical) {
   // And a RenderPassDrawQuad for the contributing pass.
   std::unique_ptr<RenderPassDrawQuad> pass_quad =
       base::WrapUnique(new RenderPassDrawQuad);
-  pass_quad->SetNew(pass->shared_quad_state_list.back(),
-                    contrib_output_rect,
-                    contrib_output_rect,
-                    contrib_id,
-                    0,
-                    gfx::Vector2dF(),
-                    gfx::Size(),
-                    FilterOperations(),
-                    gfx::Vector2dF(),
-                    FilterOperations());
+  pass_quad->SetNew(pass->shared_quad_state_list.back(), contrib_output_rect,
+                    contrib_output_rect, contrib_id, 0, gfx::Vector2dF(),
+                    gfx::Size(), FilterOperations(), gfx::Vector2dF(),
+                    gfx::PointF(), FilterOperations());
 
   pass_list.push_back(std::move(pass));
   pass_list.push_back(std::move(contrib));

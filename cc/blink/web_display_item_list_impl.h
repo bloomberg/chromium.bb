@@ -24,6 +24,7 @@ class SkRRect;
 
 namespace blink {
 struct WebFloatRect;
+struct WebFloatPoint;
 struct WebRect;
 }
 
@@ -62,7 +63,8 @@ class WebDisplayItemListImpl : public blink::WebDisplayItemList {
                              SkColorFilter*) override;
   void appendEndCompositingItem() override;
   void appendFilterItem(const cc::FilterOperations& filters,
-                        const blink::WebFloatRect& filter_bounds) override;
+                        const blink::WebFloatRect& filter_bounds,
+                        const blink::WebFloatPoint& origin) override;
   void appendEndFilterItem() override;
   void appendScrollItem(const blink::WebSize& scrollOffset,
                         ScrollContainerId) override;
