@@ -165,7 +165,8 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
                 blink::WebMediaStreamSource::Type track_type);
 
   // Tells the |client_| to close RTCPeerConnection.
-  void CloseClientPeerConnection();
+  // Make it virtual for testing purpose.
+  virtual void CloseClientPeerConnection();
 
   // Start recording an event log.
   void StartEventLog(IPC::PlatformFileForTransit file,

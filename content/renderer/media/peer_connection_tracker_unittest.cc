@@ -44,6 +44,7 @@ bool MockSendTargetThread::OnMessageReceived(const IPC::Message& msg) {
 class MockPeerConnectionHandler : public RTCPeerConnectionHandler {
  public:
   MockPeerConnectionHandler() : RTCPeerConnectionHandler(&client_, nullptr) {}
+  MOCK_METHOD0(CloseClientPeerConnection, void());
 
  private:
   MockWebRTCPeerConnectionHandlerClient client_;
@@ -75,6 +76,26 @@ TEST(PeerConnectionTrackerTest, TrackCreateOffer) {
                   "options: {offerToReceiveVideo: 0, offerToReceiveAudio: 0, "
                   "voiceActivityDetection: false, iceRestart: false}"));
   tracker.TrackCreateOffer(&pc_handler, options);
+}
+
+TEST(PeerConnectionTrackerTest, OnSuspend) {
+  PeerConnectionTracker tracker;
+  // Initialization stuff.
+  MockPeerConnectionHandler pc_handler;
+  MockSendTargetThread target_thread;
+  webrtc::PeerConnectionInterface::RTCConfiguration config;
+  blink::WebMediaConstraints constraints;
+  tracker.OverrideSendTargetForTesting(&target_thread);
+  EXPECT_CALL(target_thread, OnAddPeerConnection(_));
+  tracker.RegisterPeerConnection(&pc_handler, config, constraints, nullptr);
+// Back to the test.
+#if defined(OS_ANDROID)
+  EXPECT_CALL(pc_handler, CloseClientPeerConnection()).Times(0);
+#else
+  EXPECT_CALL(pc_handler, CloseClientPeerConnection());
+#endif
+  std::unique_ptr<IPC::Message> message(new PeerConnectionTracker_OnSuspend());
+  tracker.OnControlMessageReceived(*message.get());
 }
 
 // TODO(hta): Write tests for the other tracking functions.
