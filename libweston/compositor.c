@@ -459,7 +459,6 @@ weston_surface_create(struct weston_compositor *compositor)
 
 	wl_signal_init(&surface->destroy_signal);
 	wl_signal_init(&surface->commit_signal);
-	wl_signal_init(&surface->drop_idle_inhibitor_signal);
 
 	surface->compositor = compositor;
 	surface->ref_count = 1;
@@ -4730,7 +4729,15 @@ struct weston_idle_inhibitor {
 	struct weston_surface *surface;
 };
 
-/* Called when the client requests destruction of the idle inhibitor */
+static void
+destroy_idle_inhibitor(struct wl_resource *resource)
+{
+	struct weston_idle_inhibitor *inhibitor = wl_resource_get_user_data(resource);
+
+	inhibitor->surface = NULL;
+	free(inhibitor);
+}
+
 static void
 idle_inhibitor_destroy(struct wl_client *client, struct wl_resource *resource)
 {
@@ -4739,24 +4746,6 @@ idle_inhibitor_destroy(struct wl_client *client, struct wl_resource *resource)
 	assert(inhibitor);
 
 	inhibitor->surface->inhibit_idling = false;
-
-	// Notify to re-queue any idle behaviors
-	wl_signal_emit(&inhibitor->surface->drop_idle_inhibitor_signal,
-		       inhibitor->surface);
-
-	weston_log("idle_inhibitor_destroy\n");
-}
-
-/* Called when the idle inhibitor is destroyed on the server-side */
-static void
-destroy_idle_inhibitor(struct wl_resource *resource)
-{
-	struct weston_idle_inhibitor *inhibitor = wl_resource_get_user_data(resource);
-
-	weston_log("destroy_idle_inhibitor\n");
-
-	inhibitor->surface = NULL;
-	free(inhibitor);
 }
 
 static const struct zwp_idle_inhibitor_v1_interface idle_inhibitor_interface = {
