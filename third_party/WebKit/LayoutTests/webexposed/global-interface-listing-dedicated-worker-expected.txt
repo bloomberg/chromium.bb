@@ -366,6 +366,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method get
 [Worker]     method getAll
 [Worker]     method getAllKeys
+[Worker]     method getKey
 [Worker]     method index
 [Worker]     method openCursor
 [Worker]     method openKeyCursor
@@ -1391,6 +1392,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method get
 [Worker]     method getAll
 [Worker]     method getAllKeys
+[Worker]     method getKey
 [Worker]     method index
 [Worker]     method openCursor
 [Worker]     method openKeyCursor

@@ -114,7 +114,39 @@ IDBRequest* IDBObjectStore::get(ScriptState* scriptState, const ScriptValue& key
     }
 
     IDBRequest* request = IDBRequest::create(scriptState, IDBAny::create(this), m_transaction.get());
-    backendDB()->get(m_transaction->id(), id(), IDBIndexMetadata::InvalidId, keyRange, false, WebIDBCallbacksImpl::create(request).release());
+    backendDB()->get(m_transaction->id(), id(), IDBIndexMetadata::InvalidId, keyRange, false /* keyOnly */, WebIDBCallbacksImpl::create(request).release());
+    return request;
+}
+
+IDBRequest* IDBObjectStore::getKey(ScriptState* scriptState, const ScriptValue& key, ExceptionState& exceptionState)
+{
+    IDB_TRACE("IDBObjectStore::getKey");
+    if (isDeleted()) {
+        exceptionState.throwDOMException(InvalidStateError, IDBDatabase::objectStoreDeletedErrorMessage);
+        return nullptr;
+    }
+    if (m_transaction->isFinished() || m_transaction->isFinishing()) {
+        exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
+        return nullptr;
+    }
+    if (!m_transaction->isActive()) {
+        exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
+        return nullptr;
+    }
+    IDBKeyRange* keyRange = IDBKeyRange::fromScriptValue(scriptState->getExecutionContext(), key, exceptionState);
+    if (exceptionState.hadException())
+        return nullptr;
+    if (!keyRange) {
+        exceptionState.throwDOMException(DataError, IDBDatabase::noKeyOrKeyRangeErrorMessage);
+        return nullptr;
+    }
+    if (!backendDB()) {
+        exceptionState.throwDOMException(InvalidStateError, IDBDatabase::databaseClosedErrorMessage);
+        return nullptr;
+    }
+
+    IDBRequest* request = IDBRequest::create(scriptState, IDBAny::create(this), m_transaction.get());
+    backendDB()->get(m_transaction->id(), id(), IDBIndexMetadata::InvalidId, keyRange, true /* keyOnly */, WebIDBCallbacksImpl::create(request).release());
     return request;
 }
 

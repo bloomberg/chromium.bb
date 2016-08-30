@@ -883,15 +883,16 @@ void IndexedDBDatabase::GetOperation(
     key = &key_range->lower();
   } else {
     if (index_id == IndexedDBIndexMetadata::kInvalidId) {
-      DCHECK_NE(cursor_type, indexed_db::CURSOR_KEY_ONLY);
       // ObjectStore Retrieval Operation
-      backing_store_cursor = backing_store_->OpenObjectStoreCursor(
-          transaction->BackingStoreTransaction(),
-          id(),
-          object_store_id,
-          *key_range,
-          blink::WebIDBCursorDirectionNext,
-          &s);
+      if (cursor_type == indexed_db::CURSOR_KEY_ONLY) {
+        backing_store_cursor = backing_store_->OpenObjectStoreKeyCursor(
+            transaction->BackingStoreTransaction(), id(), object_store_id,
+            *key_range, blink::WebIDBCursorDirectionNext, &s);
+      } else {
+        backing_store_cursor = backing_store_->OpenObjectStoreCursor(
+            transaction->BackingStoreTransaction(), id(), object_store_id,
+            *key_range, blink::WebIDBCursorDirectionNext, &s);
+      }
     } else if (cursor_type == indexed_db::CURSOR_KEY_ONLY) {
       // Index Value Retrieval Operation
       backing_store_cursor = backing_store_->OpenIndexKeyCursor(
@@ -952,6 +953,11 @@ void IndexedDBDatabase::GetOperation(
 
     if (value.empty()) {
       callbacks->OnSuccess();
+      return;
+    }
+
+    if (cursor_type == indexed_db::CURSOR_KEY_ONLY) {
+      callbacks->OnSuccess(*key);
       return;
     }
 

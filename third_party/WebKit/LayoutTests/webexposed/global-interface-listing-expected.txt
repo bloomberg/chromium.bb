@@ -3501,6 +3501,7 @@ interface IDBObjectStore
     method get
     method getAll
     method getAllKeys
+    method getKey
     method index
     method openCursor
     method openKeyCursor
@@ -7458,6 +7459,7 @@ interface webkitIDBObjectStore
     method get
     method getAll
     method getAllKeys
+    method getKey
     method index
     method openCursor
     method openKeyCursor
