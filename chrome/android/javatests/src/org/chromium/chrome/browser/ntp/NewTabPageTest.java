@@ -72,7 +72,7 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
                 "chrome/test/data/android/render_tests", "NewTabPageTest");
         viewRenderer.renderAndCompare(mMostVisitedLayout, "most_visited");
         viewRenderer.renderAndCompare(mFakebox, "fakebox");
-        viewRenderer.renderAndCompare(mNtp.getView(), "new_tab_page");
+        viewRenderer.renderAndCompare(mNtp.getView().getRootView(), "new_tab_page");
 
         // Scroll to search bar
         final NewTabPageRecyclerView recyclerView = (NewTabPageRecyclerView)
@@ -92,7 +92,7 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
             }
         });
 
-        viewRenderer.renderAndCompare(mNtp.getView(), "new_tab_page_scrolled");
+        viewRenderer.renderAndCompare(mNtp.getView().getRootView(), "new_tab_page_scrolled");
     }
 
     @Override

@@ -13,12 +13,14 @@ import android.view.View;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.ui.UiUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.concurrent.Callable;
 
 /**
  * A collection of methods to aid in creating Render Tests - tests that render UI components.
@@ -89,9 +91,15 @@ public class RenderUtils {
          *
          * @throws IOException if the rendered image could not be saved to the device.
          */
-        public void renderAndCompare(View view, String id) throws IOException {
+        public void renderAndCompare(final View view, String id) throws IOException {
             // Compare the image against the Golden.
-            Bitmap bitmap = UiUtils.generateScaledScreenshot(view, 0, Bitmap.Config.ARGB_8888);
+            Bitmap bitmap = ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Bitmap>() {
+                @Override
+                public Bitmap call() throws Exception {
+                    return UiUtils.generateScaledScreenshot(view, 0, Bitmap.Config.ARGB_8888);
+                }
+            });
+
             String imagename = imageName(mActivity, mTestClass, id);
             File goldenFile = createPath(mGoldenFolder, imagename);
             ComparisonResult result = compareBmpToGolden(bitmap, goldenFile);
