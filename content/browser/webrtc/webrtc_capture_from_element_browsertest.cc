@@ -8,10 +8,17 @@
 #include "content/public/common/content_switches.h"
 #include "media/base/test_data_util.h"
 
+#if defined(ENABLE_MOJO_RENDERER)
+// Remote mojo renderer does not send audio/video frames back to the renderer
+// process and hence does not support capture: crbug.com/641559.
+#define DISABLE_CAPTURE_FROM_MEDIA_ELEMENT_TESTS 1
+#endif  // ENABLE_MOJO_RENDERER
+
 namespace {
 
 static const char kCanvasTestHtmlPage[] = "/media/canvas_capture_color.html";
 
+#if !defined(DISABLE_CAPTURE_FROM_MEDIA_ELEMENT_TESTS)
 static const char kVideoAudioHtmlFile[] =
     "/media/video_audio_element_capture_test.html";
 
@@ -26,6 +33,7 @@ static struct FileAndTypeParameters {
     {true, true, false, "bear-320x240.webm"},
     {false, true, true, "bear-320x240-audio-only.webm"},
 };
+#endif  // DISABLE_CAPTURE_FROM_MEDIA_ELEMENT_TESTS
 
 }  // namespace
 
@@ -60,6 +68,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcCaptureFromElementBrowserTest,
   MakeTypicalCall("testCanvasCaptureColors();", kCanvasTestHtmlPage);
 }
 
+#if !defined(DISABLE_CAPTURE_FROM_MEDIA_ELEMENT_TESTS)
 IN_PROC_BROWSER_TEST_P(WebRtcCaptureFromElementBrowserTest,
                        CaptureFromMediaElement) {
   MakeTypicalCall(
@@ -74,4 +83,5 @@ IN_PROC_BROWSER_TEST_P(WebRtcCaptureFromElementBrowserTest,
 INSTANTIATE_TEST_CASE_P(,
                         WebRtcCaptureFromElementBrowserTest,
                         testing::ValuesIn(kFileAndTypeParameters));
+#endif  // !defined(DISABLE_CAPTURE_FROM_MEDIA_ELEMENT_TESTS)
 }  // namespace content
