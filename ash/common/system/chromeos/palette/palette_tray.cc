@@ -231,6 +231,10 @@ void PaletteTray::SessionStateChanged(
   UpdateIconVisibility();
 }
 
+void PaletteTray::OnLockStateChanged(bool locked) {
+  UpdateIconVisibility();
+}
+
 void PaletteTray::ClickedOutsideBubble() {
   bubble_.reset();
 }

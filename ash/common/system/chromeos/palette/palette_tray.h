@@ -45,6 +45,9 @@ class ASH_EXPORT PaletteTray : public TrayBackgroundView,
   // SessionStateObserver:
   void SessionStateChanged(SessionStateDelegate::SessionState state) override;
 
+  // ShellObserver:
+  void OnLockStateChanged(bool locked) override;
+
   // TrayBackgroundView:
   void ClickedOutsideBubble() override;
   base::string16 GetAccessibleNameForTray() override;
