@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<script src='../../../resources/testharness.js'></script>
+<script src='../../../resources/testharnessreport.js'></script>
+<style type="text/css">
+#box {
+    width: 300px;
+    height: 100px;
+}
+</style>
+<div id="box" ></div>
+
+<script type="text/javascript">
+
+test(function(t) {
+var receivedTap = false;
+var box = document.getElementById('box');
+var targetRect = box.getBoundingClientRect();
+var offset = 50;
+var x = targetRect.left + offset;
+var y = targetRect.top + offset;
+
+function validTapResult(event) {
+    receivedTap = true;
+    assert_equals(event.target.id, "box");
+    assert_equals(event.clientX, x);
+    assert_equals(event.clientY, y);  
+    assert_equals(event.screenX, x+window.screenX);
+    assert_equals(event.screenY, y+window.screenY);
+}
+
+var testTap = async_test('Send a tap event.');
+testTap.step(function () {
+    box.addEventListener('click', validTapResult);
+    if (window.chrome && chrome.gpuBenchmarking) {
+        chrome.gpuBenchmarking.tap(x, y, function() {
+            assert_true(receivedTap);
+            testTap.done();
+        });
+    }
+});
+
+}, 'Test that chrome.gpuBenchmarking.tap always taps on the expected position no matter what the screen scale factor is.');
+
+</script>

@@ -837,6 +837,8 @@ crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_touch-action-in
 crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_touch-action-inherit_child-none_touch-manual.html  [ Skip ]
 crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_touch-action-inherit_child-pan-x-child-pan-y_touch-manual.html  [ Skip ]
 crbug.com/613672 [ Mac ] imported/wpt/pointerevents/pointerevent_touch-action-inherit_child-auto-child-none_touch-manual.html  [ Skip ]
+crbug.com/613672 [ Mac ] fast/events/synthetic-events/tap-on-scaled-screen.html  [ Skip ]
+crbug.com/613672 [ Mac ] virtual/scalefactor150/fast/events/synthetic-events/tap-on-scaled-screen.html  [ Skip ]
 
 # These are errors even when running the tests manually.
 crbug.com/629722 imported/wpt/pointerevents/pointerevent_lostpointercapture_is_first-manual.html  [ Skip ]
