@@ -5,7 +5,7 @@
 #include "components/sync/syncable/on_disk_directory_backing_store.h"
 
 #include "base/logging.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "components/sync/syncable/syncable-inl.h"
 

@@ -4,7 +4,7 @@
 
 #include "components/signin/core/browser/signin_status_metrics_provider_base.h"
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 
 SigninStatusMetricsProviderBase::SigninStatusMetricsProviderBase()
     : signin_status_(UNKNOWN_SIGNIN_STATUS) {}

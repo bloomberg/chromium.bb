@@ -13,7 +13,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "components/sync/core/attachments/attachment_util.h"
 #include "components/sync/core_impl/attachments/proto/attachment_store.pb.h"

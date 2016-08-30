@@ -5,6 +5,7 @@
 #include "content/browser/appcache/appcache_histograms.h"
 
 #include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "content/public/common/origin_util.h"
 
 namespace content {

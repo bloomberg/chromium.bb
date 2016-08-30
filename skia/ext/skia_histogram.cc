@@ -5,7 +5,7 @@
 #include "skia/ext/skia_histogram.h"
 
 #include <type_traits>
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 
 // In order to prevent Chrome headers from leaking into Skia, we use a raw
 // intptr_t in the header, rather than the base::subtle::AtomicWord. Make sure

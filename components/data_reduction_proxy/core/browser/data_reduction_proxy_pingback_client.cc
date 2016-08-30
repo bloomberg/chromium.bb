@@ -4,7 +4,7 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_pingback_client.h"
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/rand_util.h"
 #include "base/time/time.h"

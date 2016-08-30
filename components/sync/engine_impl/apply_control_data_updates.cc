@@ -8,7 +8,7 @@
 
 #include <vector>
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "components/sync/base/cryptographer.h"
 #include "components/sync/engine_impl/conflict_resolver.h"
 #include "components/sync/engine_impl/conflict_util.h"

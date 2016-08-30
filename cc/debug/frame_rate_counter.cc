@@ -10,7 +10,7 @@
 #include <limits>
 
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "cc/trees/proxy.h"
 
 namespace cc {

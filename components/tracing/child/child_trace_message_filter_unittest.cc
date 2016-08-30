@@ -8,6 +8,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/run_loop.h"
 #include "components/tracing/common/tracing_messages.h"
 #include "ipc/ipc_message.h"

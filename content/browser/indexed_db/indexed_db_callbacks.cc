@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <utility>
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "content/browser/child_process_security_policy_impl.h"

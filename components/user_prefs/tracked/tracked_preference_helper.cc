@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "components/user_prefs/tracked/tracked_preference_histogram_names.h"
 
 TrackedPreferenceHelper::TrackedPreferenceHelper(

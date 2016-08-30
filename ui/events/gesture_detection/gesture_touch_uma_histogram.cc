@@ -4,7 +4,7 @@
 
 #include "ui/events/gesture_detection/gesture_touch_uma_histogram.h"
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 
 namespace ui {
 

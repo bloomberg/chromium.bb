@@ -8,7 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/mac/foundation_util.h"
 #include "base/message_loop/message_loop.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "content/browser/cocoa/system_hotkey_map.h"
 #include "content/public/browser/browser_thread.h"
 

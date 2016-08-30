@@ -7,7 +7,7 @@
 #include <stdint.h>
 
 #include "base/logging.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "content/browser/device_sensors/ambient_light_mac.h"
 #include "third_party/sudden_motion_sensor/sudden_motion_sensor_mac.h"

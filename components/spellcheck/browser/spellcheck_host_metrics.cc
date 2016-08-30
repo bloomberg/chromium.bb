@@ -7,7 +7,7 @@
 #include <stdint.h>
 
 #include "base/md5.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 
 SpellCheckHostMetrics::SpellCheckHostMetrics()
     : misspelled_word_count_(0),

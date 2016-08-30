@@ -6,7 +6,7 @@
 
 #include <vector>
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 
