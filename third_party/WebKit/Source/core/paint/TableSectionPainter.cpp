@@ -274,13 +274,13 @@ void TableSectionPainter::paintBackgroundsBehindCell(const LayoutTableCell& cell
     // Note that we deliberately ignore whether or not the cell has a layer, since these backgrounds paint "behind" the
     // cell.
     if (columnGroup && columnGroup->styleRef().hasBackground())
-        tableCellPainter.paintContainerBackgroundBehindCell(paintInfoForCells, cellPoint, *columnGroup, DisplayItem::TableCellBackgroundFromColumnGroup);
+        tableCellPainter.paintContainerBackgroundBehindCell(paintInfoForCells, cellPoint, *columnGroup, DisplayItem::kTableCellBackgroundFromColumnGroup);
     if (column && column->styleRef().hasBackground())
-        tableCellPainter.paintContainerBackgroundBehindCell(paintInfoForCells, cellPoint, *column, DisplayItem::TableCellBackgroundFromColumn);
+        tableCellPainter.paintContainerBackgroundBehindCell(paintInfoForCells, cellPoint, *column, DisplayItem::kTableCellBackgroundFromColumn);
 
     // Paint the row group next.
     if (m_layoutTableSection.styleRef().hasBackground())
-        tableCellPainter.paintContainerBackgroundBehindCell(paintInfoForCells, cellPoint, m_layoutTableSection, DisplayItem::TableCellBackgroundFromSection);
+        tableCellPainter.paintContainerBackgroundBehindCell(paintInfoForCells, cellPoint, m_layoutTableSection, DisplayItem::kTableCellBackgroundFromSection);
 }
 
 void TableSectionPainter::paintCell(const LayoutTableCell& cell, const PaintInfo& paintInfoForCells, const LayoutPoint& paintOffset)
@@ -297,7 +297,7 @@ void TableSectionPainter::paintBoxShadow(const PaintInfo& paintInfo, const Layou
     if (!m_layoutTableSection.styleRef().boxShadow())
         return;
 
-    DisplayItem::Type type = shadowStyle == Normal ? DisplayItem::TableSectionBoxShadowNormal : DisplayItem::TableSectionBoxShadowInset;
+    DisplayItem::Type type = shadowStyle == Normal ? DisplayItem::kTableSectionBoxShadowNormal : DisplayItem::kTableSectionBoxShadowInset;
     if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutTableSection, type))
         return;
 

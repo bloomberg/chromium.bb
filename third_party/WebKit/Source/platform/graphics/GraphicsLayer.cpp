@@ -386,7 +386,7 @@ void GraphicsLayer::notifyFirstPaintToClient()
         DisplayItemList& itemList = m_paintController->newDisplayItemList();
         for (DisplayItem& item : itemList) {
             DisplayItem::Type type = item.getType();
-            if (DisplayItem::isDrawingType(type) && type != DisplayItem::DocumentBackground && static_cast<const DrawingDisplayItem&>(item).picture()) {
+            if (DisplayItem::isDrawingType(type) && type != DisplayItem::kDocumentBackground && static_cast<const DrawingDisplayItem&>(item).picture()) {
                 m_painted = true;
                 isFirstPaint = true;
                 break;

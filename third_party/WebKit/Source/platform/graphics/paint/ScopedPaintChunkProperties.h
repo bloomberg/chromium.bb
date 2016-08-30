@@ -28,7 +28,7 @@ public:
 
     // Omits the type parameter, in case that the client creates only one PaintChunkProperties node during each painting.
     ScopedPaintChunkProperties(PaintController& paintController, const DisplayItemClient& client, const PaintChunkProperties& properties)
-        : ScopedPaintChunkProperties(paintController, client, DisplayItem::UninitializedType, properties)
+        : ScopedPaintChunkProperties(paintController, client, DisplayItem::kUninitializedType, properties)
     { }
 
     ~ScopedPaintChunkProperties()

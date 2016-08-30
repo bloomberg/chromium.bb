@@ -2280,10 +2280,10 @@ void CompositedLayerMapping::doPaintTask(const GraphicsLayerPaintInfo& paintInfo
         // FIXME: Is it correct to clip to dirtyRect in slimming paint mode?
         // FIXME: Combine similar code here and LayerClipRecorder.
         dirtyRect.intersect(paintInfo.localClipRectForSquashedLayer);
-        context.getPaintController().createAndAppend<ClipDisplayItem>(graphicsLayer, DisplayItem::ClipLayerOverflowControls, dirtyRect);
+        context.getPaintController().createAndAppend<ClipDisplayItem>(graphicsLayer, DisplayItem::kClipLayerOverflowControls, dirtyRect);
 
         PaintLayerPainter(*paintInfo.paintLayer).paintLayer(context, paintingInfo, paintLayerFlags);
-        context.getPaintController().endItem<EndClipDisplayItem>(graphicsLayer, DisplayItem::clipTypeToEndClipType(DisplayItem::ClipLayerOverflowControls));
+        context.getPaintController().endItem<EndClipDisplayItem>(graphicsLayer, DisplayItem::clipTypeToEndClipType(DisplayItem::kClipLayerOverflowControls));
     }
 }
 
@@ -2510,7 +2510,7 @@ void CompositedLayerMapping::paintScrollableArea(const GraphicsLayer* graphicsLa
     // Note the composited scrollable area painted here is never associated with a frame. For
     // painting frame ScrollableAreas, see PaintLayerCompositor::paintContents.
 
-    if (DrawingRecorder::useCachedDrawingIfPossible(context, *graphicsLayer, DisplayItem::ScrollbarCompositedScrollbar))
+    if (DrawingRecorder::useCachedDrawingIfPossible(context, *graphicsLayer, DisplayItem::kScrollbarCompositedScrollbar))
         return;
 
     FloatRect layerBounds(FloatPoint(), graphicsLayer->size());
@@ -2530,7 +2530,7 @@ void CompositedLayerMapping::paintScrollableArea(const GraphicsLayer* graphicsLa
     // Replay the painted scrollbar content with the GraphicsLayer backing as the DisplayItemClient
     // in order for the resulting DrawingDisplayItem to produce the correct visualRect (i.e., the
     // bounds of the involved GraphicsLayer).
-    DrawingRecorder drawingRecorder(context, *graphicsLayer, DisplayItem::ScrollbarCompositedScrollbar, layerBounds);
+    DrawingRecorder drawingRecorder(context, *graphicsLayer, DisplayItem::kScrollbarCompositedScrollbar, layerBounds);
     pictureBuilder.endRecording()->playback(context.canvas());
 }
 

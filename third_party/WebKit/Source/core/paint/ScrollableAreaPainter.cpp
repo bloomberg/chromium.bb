@@ -36,10 +36,10 @@ void ScrollableAreaPainter::paintResizer(GraphicsContext& context, const IntPoin
         return;
     }
 
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, getScrollableArea().box(), DisplayItem::Resizer))
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, getScrollableArea().box(), DisplayItem::kResizer))
         return;
 
-    LayoutObjectDrawingRecorder recorder(context, getScrollableArea().box(), DisplayItem::Resizer, absRect);
+    LayoutObjectDrawingRecorder recorder(context, getScrollableArea().box(), DisplayItem::kResizer, absRect);
 
     drawPlatformResizerImage(context, absRect);
 
@@ -133,7 +133,7 @@ void ScrollableAreaPainter::paintOverflowControls(GraphicsContext& context, cons
             if (objectProperties && objectProperties->scrollbarPaintOffset()) {
                 PaintChunkProperties properties(context.getPaintController().currentPaintChunkProperties());
                 properties.transform = objectProperties->scrollbarPaintOffset();
-                scopedTransformProperty.emplace(context.getPaintController(), getScrollableArea().box(), DisplayItem::ScrollOverflowControls, properties);
+                scopedTransformProperty.emplace(context.getPaintController(), getScrollableArea().box(), DisplayItem::kScrollOverflowControls, properties);
             }
         }
         if (getScrollableArea().horizontalScrollbar() && !getScrollableArea().layerForHorizontalScrollbar()) {
@@ -195,10 +195,10 @@ void ScrollableAreaPainter::paintScrollCorner(GraphicsContext& context, const In
     if (getScrollableArea().hasOverlayScrollbars())
         return;
 
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, getScrollableArea().box(), DisplayItem::ScrollbarCorner))
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, getScrollableArea().box(), DisplayItem::kScrollbarCorner))
         return;
 
-    LayoutObjectDrawingRecorder recorder(context, getScrollableArea().box(), DisplayItem::ScrollbarCorner, absRect);
+    LayoutObjectDrawingRecorder recorder(context, getScrollableArea().box(), DisplayItem::kScrollbarCorner, absRect);
     context.fillRect(absRect, Color::white);
 }
 

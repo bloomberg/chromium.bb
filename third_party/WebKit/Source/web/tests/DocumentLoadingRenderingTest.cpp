@@ -277,8 +277,8 @@ TEST_F(DocumentLoadingRenderingTest, ShouldNotPaintIframeContentWithPendingSheet
     // Check that the DisplayItemList has no subsequene caching markers. These are not allowed in pending-style-sheets mode
     // since otherwise caching would be incorrect.
     ASSERT_EQ(2u, displayItemList.size());
-    EXPECT_EQ(DisplayItem::DocumentBackground, displayItemList[0].getType());
-    EXPECT_EQ(DisplayItem::BoxDecorationBackground, displayItemList[1].getType());
+    EXPECT_EQ(DisplayItem::kDocumentBackground, displayItemList[0].getType());
+    EXPECT_EQ(DisplayItem::kBoxDecorationBackground, displayItemList[1].getType());
 
     // 1 for the main frame background (white),
     // 1 for the iframe background (pink)

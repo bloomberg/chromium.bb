@@ -332,7 +332,7 @@ public:
 
             // Fill the whole background by white.
             {
-                DrawingRecorder backgroundRecorder(context, pictureBuilder, DisplayItem::PrintedContentBackground, allPagesRect);
+                DrawingRecorder backgroundRecorder(context, pictureBuilder, DisplayItem::kPrintedContentBackground, allPagesRect);
                 context.fillRect(FloatRect(0, 0, pageWidth, totalHeight), Color::white);
             }
 
@@ -341,7 +341,7 @@ public:
             for (size_t pageIndex = 0; pageIndex < numPages; pageIndex++) {
                 // Draw a line for a page boundary if this isn't the first page.
                 if (pageIndex > 0) {
-                    DrawingRecorder lineBoundaryRecorder(context, pictureBuilder, DisplayItem::PrintedContentLineBoundary, allPagesRect);
+                    DrawingRecorder lineBoundaryRecorder(context, pictureBuilder, DisplayItem::kPrintedContentLineBoundary, allPagesRect);
                     context.save();
                     context.setStrokeColor(Color(0, 0, 255));
                     context.setFillColor(Color(0, 0, 255));
@@ -385,12 +385,12 @@ protected:
         transform.translate(static_cast<float>(-pageRect.x()), static_cast<float>(-pageRect.y()));
         TransformRecorder transformRecorder(context, pictureBuilder, transform);
 
-        ClipRecorder clipRecorder(context, pictureBuilder, DisplayItem::ClipPrintedPage, pageRect);
+        ClipRecorder clipRecorder(context, pictureBuilder, DisplayItem::kClipPrintedPage, pageRect);
 
         frame()->view()->paintContents(context, GlobalPaintNormalPhase, pageRect);
 
         {
-            DrawingRecorder lineBoundaryRecorder(context, pictureBuilder, DisplayItem::PrintedContentDestinationLocations, pageRect);
+            DrawingRecorder lineBoundaryRecorder(context, pictureBuilder, DisplayItem::kPrintedContentDestinationLocations, pageRect);
             outputLinkedDestinations(context, pageRect);
         }
 

@@ -57,16 +57,16 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence)
 
     EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 11,
         TestDisplayItem(layoutView(), documentBackgroundType),
-        TestDisplayItem(htmlLayer, DisplayItem::Subsequence),
-        TestDisplayItem(container1Layer, DisplayItem::Subsequence),
+        TestDisplayItem(htmlLayer, DisplayItem::kSubsequence),
+        TestDisplayItem(container1Layer, DisplayItem::kSubsequence),
         TestDisplayItem(container1, backgroundType),
         TestDisplayItem(content1, backgroundType),
-        TestDisplayItem(container1Layer, DisplayItem::EndSubsequence),
-        TestDisplayItem(container2Layer, DisplayItem::Subsequence),
+        TestDisplayItem(container1Layer, DisplayItem::kEndSubsequence),
+        TestDisplayItem(container2Layer, DisplayItem::kSubsequence),
         TestDisplayItem(container2, backgroundType),
         TestDisplayItem(content2, backgroundType),
-        TestDisplayItem(container2Layer, DisplayItem::EndSubsequence),
-        TestDisplayItem(htmlLayer, DisplayItem::EndSubsequence));
+        TestDisplayItem(container2Layer, DisplayItem::kEndSubsequence),
+        TestDisplayItem(htmlLayer, DisplayItem::kEndSubsequence));
 
     toHTMLElement(content1.node())->setAttribute(HTMLNames::styleAttr, "position: absolute; width: 100px; height: 100px; background-color: green");
     document().view()->updateAllLifecyclePhasesExceptPaint();
@@ -78,16 +78,16 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence)
 
     EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 11,
         TestDisplayItem(layoutView(), documentBackgroundType),
-        TestDisplayItem(htmlLayer, DisplayItem::Subsequence),
-        TestDisplayItem(container1Layer, DisplayItem::Subsequence),
+        TestDisplayItem(htmlLayer, DisplayItem::kSubsequence),
+        TestDisplayItem(container1Layer, DisplayItem::kSubsequence),
         TestDisplayItem(container1, backgroundType),
         TestDisplayItem(content1, backgroundType),
-        TestDisplayItem(container1Layer, DisplayItem::EndSubsequence),
-        TestDisplayItem(container2Layer, DisplayItem::Subsequence),
+        TestDisplayItem(container1Layer, DisplayItem::kEndSubsequence),
+        TestDisplayItem(container2Layer, DisplayItem::kSubsequence),
         TestDisplayItem(container2, backgroundType),
         TestDisplayItem(content2, backgroundType),
-        TestDisplayItem(container2Layer, DisplayItem::EndSubsequence),
-        TestDisplayItem(htmlLayer, DisplayItem::EndSubsequence));
+        TestDisplayItem(container2Layer, DisplayItem::kEndSubsequence),
+        TestDisplayItem(htmlLayer, DisplayItem::kEndSubsequence));
 }
 
 TEST_P(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange)
@@ -131,20 +131,20 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange)
     // Container3 is partly in the interest rect.
     EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 15,
         TestDisplayItem(layoutView(), documentBackgroundType),
-        TestDisplayItem(htmlLayer, DisplayItem::Subsequence),
-        TestDisplayItem(container1Layer, DisplayItem::Subsequence),
+        TestDisplayItem(htmlLayer, DisplayItem::kSubsequence),
+        TestDisplayItem(container1Layer, DisplayItem::kSubsequence),
         TestDisplayItem(container1, backgroundType),
         TestDisplayItem(content1, backgroundType),
-        TestDisplayItem(container1Layer, DisplayItem::EndSubsequence),
-        TestDisplayItem(container2Layer, DisplayItem::Subsequence),
+        TestDisplayItem(container1Layer, DisplayItem::kEndSubsequence),
+        TestDisplayItem(container2Layer, DisplayItem::kSubsequence),
         TestDisplayItem(container2, backgroundType),
         TestDisplayItem(content2a, backgroundType),
-        TestDisplayItem(container2Layer, DisplayItem::EndSubsequence),
-        TestDisplayItem(container3Layer, DisplayItem::Subsequence),
+        TestDisplayItem(container2Layer, DisplayItem::kEndSubsequence),
+        TestDisplayItem(container3Layer, DisplayItem::kSubsequence),
         TestDisplayItem(container3, backgroundType),
         TestDisplayItem(content3, backgroundType),
-        TestDisplayItem(container3Layer, DisplayItem::EndSubsequence),
-        TestDisplayItem(htmlLayer, DisplayItem::EndSubsequence));
+        TestDisplayItem(container3Layer, DisplayItem::kEndSubsequence),
+        TestDisplayItem(htmlLayer, DisplayItem::kEndSubsequence));
 
     document().view()->updateAllLifecyclePhasesExceptPaint();
     IntRect newInterestRect(0, 100, 300, 1000);
@@ -161,19 +161,19 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange)
 
     EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 14,
         TestDisplayItem(layoutView(), documentBackgroundType),
-        TestDisplayItem(htmlLayer, DisplayItem::Subsequence),
-        TestDisplayItem(container1Layer, DisplayItem::Subsequence),
+        TestDisplayItem(htmlLayer, DisplayItem::kSubsequence),
+        TestDisplayItem(container1Layer, DisplayItem::kSubsequence),
         TestDisplayItem(container1, backgroundType),
         TestDisplayItem(content1, backgroundType),
-        TestDisplayItem(container1Layer, DisplayItem::EndSubsequence),
-        TestDisplayItem(container2Layer, DisplayItem::Subsequence),
+        TestDisplayItem(container1Layer, DisplayItem::kEndSubsequence),
+        TestDisplayItem(container2Layer, DisplayItem::kSubsequence),
         TestDisplayItem(container2, backgroundType),
         TestDisplayItem(content2a, backgroundType),
         TestDisplayItem(content2b, backgroundType),
-        TestDisplayItem(container2Layer, DisplayItem::EndSubsequence),
-        TestDisplayItem(container3Layer, DisplayItem::Subsequence),
-        TestDisplayItem(container3Layer, DisplayItem::EndSubsequence),
-        TestDisplayItem(htmlLayer, DisplayItem::EndSubsequence));
+        TestDisplayItem(container2Layer, DisplayItem::kEndSubsequence),
+        TestDisplayItem(container3Layer, DisplayItem::kSubsequence),
+        TestDisplayItem(container3Layer, DisplayItem::kEndSubsequence),
+        TestDisplayItem(htmlLayer, DisplayItem::kEndSubsequence));
 }
 
 TEST_P(PaintLayerPainterTest, CachedSubsequenceOnStyleChangeWithInterestRectClipping)
@@ -199,16 +199,16 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnStyleChangeWithInterestRectClip
 
     EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 11,
         TestDisplayItem(layoutView(), documentBackgroundType),
-        TestDisplayItem(htmlLayer, DisplayItem::Subsequence),
-        TestDisplayItem(container1Layer, DisplayItem::Subsequence),
+        TestDisplayItem(htmlLayer, DisplayItem::kSubsequence),
+        TestDisplayItem(container1Layer, DisplayItem::kSubsequence),
         TestDisplayItem(container1, backgroundType),
         TestDisplayItem(content1, backgroundType),
-        TestDisplayItem(container1Layer, DisplayItem::EndSubsequence),
-        TestDisplayItem(container2Layer, DisplayItem::Subsequence),
+        TestDisplayItem(container1Layer, DisplayItem::kEndSubsequence),
+        TestDisplayItem(container2Layer, DisplayItem::kSubsequence),
         TestDisplayItem(container2, backgroundType),
         TestDisplayItem(content2, backgroundType),
-        TestDisplayItem(container2Layer, DisplayItem::EndSubsequence),
-        TestDisplayItem(htmlLayer, DisplayItem::EndSubsequence));
+        TestDisplayItem(container2Layer, DisplayItem::kEndSubsequence),
+        TestDisplayItem(htmlLayer, DisplayItem::kEndSubsequence));
 
     toHTMLElement(content1.node())->setAttribute(HTMLNames::styleAttr, "position: absolute; width: 100px; height: 100px; background-color: green");
     document().view()->updateAllLifecyclePhasesExceptPaint();
@@ -220,16 +220,16 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnStyleChangeWithInterestRectClip
 
     EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 11,
         TestDisplayItem(layoutView(), documentBackgroundType),
-        TestDisplayItem(htmlLayer, DisplayItem::Subsequence),
-        TestDisplayItem(container1Layer, DisplayItem::Subsequence),
+        TestDisplayItem(htmlLayer, DisplayItem::kSubsequence),
+        TestDisplayItem(container1Layer, DisplayItem::kSubsequence),
         TestDisplayItem(container1, backgroundType),
         TestDisplayItem(content1, backgroundType),
-        TestDisplayItem(container1Layer, DisplayItem::EndSubsequence),
-        TestDisplayItem(container2Layer, DisplayItem::Subsequence),
+        TestDisplayItem(container1Layer, DisplayItem::kEndSubsequence),
+        TestDisplayItem(container2Layer, DisplayItem::kSubsequence),
         TestDisplayItem(container2, backgroundType),
         TestDisplayItem(content2, backgroundType),
-        TestDisplayItem(container2Layer, DisplayItem::EndSubsequence),
-        TestDisplayItem(htmlLayer, DisplayItem::EndSubsequence));
+        TestDisplayItem(container2Layer, DisplayItem::kEndSubsequence),
+        TestDisplayItem(htmlLayer, DisplayItem::kEndSubsequence));
 }
 
 TEST_P(PaintLayerPainterTest, PaintPhaseOutline)
@@ -306,7 +306,7 @@ TEST_P(PaintLayerPainterTest, PaintPhaseFloat)
     EXPECT_TRUE(selfPaintingLayer.needsPaintPhaseFloat());
     EXPECT_FALSE(nonSelfPaintingLayer.needsPaintPhaseFloat());
     paint();
-    EXPECT_TRUE(displayItemListContains(rootPaintController().getDisplayItemList(), floatDiv, DisplayItem::BoxDecorationBackground));
+    EXPECT_TRUE(displayItemListContains(rootPaintController().getDisplayItemList(), floatDiv, DisplayItem::kBoxDecorationBackground));
 }
 
 TEST_P(PaintLayerPainterTest, PaintPhaseFloatUnderInlineLayer)
@@ -335,7 +335,7 @@ TEST_P(PaintLayerPainterTest, PaintPhaseFloatUnderInlineLayer)
     EXPECT_TRUE(selfPaintingLayer.needsPaintPhaseFloat());
     EXPECT_FALSE(nonSelfPaintingLayer.needsPaintPhaseFloat());
     EXPECT_FALSE(spanLayer.needsPaintPhaseFloat());
-    EXPECT_TRUE(displayItemListContains(rootPaintController().getDisplayItemList(), floatDiv, DisplayItem::BoxDecorationBackground));
+    EXPECT_TRUE(displayItemListContains(rootPaintController().getDisplayItemList(), floatDiv, DisplayItem::kBoxDecorationBackground));
 }
 
 TEST_P(PaintLayerPainterTest, PaintPhaseBlockBackground)
@@ -369,7 +369,7 @@ TEST_P(PaintLayerPainterTest, PaintPhaseBlockBackground)
     document().view()->updateAllLifecyclePhases();
     EXPECT_FALSE(selfPaintingLayer.needsPaintPhaseDescendantBlockBackgrounds());
     EXPECT_FALSE(nonSelfPaintingLayer.needsPaintPhaseDescendantBlockBackgrounds());
-    EXPECT_TRUE(displayItemListContains(rootPaintController().getDisplayItemList(), selfPaintingLayerObject, DisplayItem::BoxDecorationBackground));
+    EXPECT_TRUE(displayItemListContains(rootPaintController().getDisplayItemList(), selfPaintingLayerObject, DisplayItem::kBoxDecorationBackground));
 
     // needsPaintPhaseDescendantBlockBackgrounds should be set when any descendant on the same layer has Background.
     toHTMLElement(backgroundDiv.node())->setAttribute(HTMLNames::styleAttr, styleWithBackground);
@@ -377,7 +377,7 @@ TEST_P(PaintLayerPainterTest, PaintPhaseBlockBackground)
     EXPECT_TRUE(selfPaintingLayer.needsPaintPhaseDescendantBlockBackgrounds());
     EXPECT_FALSE(nonSelfPaintingLayer.needsPaintPhaseDescendantBlockBackgrounds());
     paint();
-    EXPECT_TRUE(displayItemListContains(rootPaintController().getDisplayItemList(), backgroundDiv, DisplayItem::BoxDecorationBackground));
+    EXPECT_TRUE(displayItemListContains(rootPaintController().getDisplayItemList(), backgroundDiv, DisplayItem::kBoxDecorationBackground));
 }
 
 TEST_P(PaintLayerPainterTest, PaintPhasesUpdateOnLayerRemoval)

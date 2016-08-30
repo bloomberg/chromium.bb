@@ -61,7 +61,7 @@ void FramePainter::paint(GraphicsContext& context, const GlobalPaintFlags global
         TransformRecorder transformRecorder(context, *frameView().layoutView(),
             AffineTransform::translation(frameView().x() - frameView().scrollX(), frameView().y() - frameView().scrollY()));
 
-        ClipRecorder recorder(context, *frameView().layoutView(), DisplayItem::ClipFrameToVisibleContentRect, frameView().visibleContentRect());
+        ClipRecorder recorder(context, *frameView().layoutView(), DisplayItem::kClipFrameToVisibleContentRect, frameView().visibleContentRect());
 
         documentDirtyRect.moveBy(-frameView().location() + frameView().scrollPosition());
         paintContents(context, globalPaintFlags, documentDirtyRect);
@@ -85,7 +85,7 @@ void FramePainter::paint(GraphicsContext& context, const GlobalPaintFlags global
         TransformRecorder transformRecorder(context, *frameView().layoutView(),
             AffineTransform::translation(frameView().x(), frameView().y()));
 
-        ClipRecorder recorder(context, *frameView().layoutView(), DisplayItem::ClipFrameScrollbars, IntRect(IntPoint(), visibleAreaWithScrollbars.size()));
+        ClipRecorder recorder(context, *frameView().layoutView(), DisplayItem::kClipFrameScrollbars, IntRect(IntPoint(), visibleAreaWithScrollbars.size()));
 
         paintScrollbars(context, scrollViewDirtyRect);
     }
@@ -173,8 +173,8 @@ void FramePainter::paintScrollCorner(GraphicsContext& context, const IntRect& co
 {
     if (frameView().scrollCorner()) {
         bool needsBackground = frameView().frame().isMainFrame();
-        if (needsBackground && !LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, *frameView().layoutView(), DisplayItem::ScrollbarCorner)) {
-            LayoutObjectDrawingRecorder drawingRecorder(context, *frameView().layoutView(), DisplayItem::ScrollbarCorner, FloatRect(cornerRect));
+        if (needsBackground && !LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, *frameView().layoutView(), DisplayItem::kScrollbarCorner)) {
+            LayoutObjectDrawingRecorder drawingRecorder(context, *frameView().layoutView(), DisplayItem::kScrollbarCorner, FloatRect(cornerRect));
             context.fillRect(cornerRect, frameView().baseBackgroundColor());
 
         }

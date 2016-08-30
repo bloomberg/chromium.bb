@@ -58,7 +58,7 @@ BoxReflection boxReflectionForPaintLayer(const PaintLayer& layer, const Computed
         SkPictureBuilder recorder(maskBoundingFloatRect);
         {
             GraphicsContext& context = recorder.context();
-            DrawingRecorder drawingRecorder(context, *layer.layoutObject(), DisplayItem::ReflectionMask, maskBoundingFloatRect);
+            DrawingRecorder drawingRecorder(context, *layer.layoutObject(), DisplayItem::kReflectionMask, maskBoundingFloatRect);
             NinePieceImagePainter(*layer.layoutObject()).paint(
                 recorder.context(), maskRect, style, maskNinePiece, SkXfermode::kSrcOver_Mode);
         }

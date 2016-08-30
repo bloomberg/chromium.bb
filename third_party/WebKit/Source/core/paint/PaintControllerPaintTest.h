@@ -116,9 +116,9 @@ public:
     } while (false);
 
 // Shorter names for frequently used display item types in tests.
-const DisplayItem::Type backgroundType = DisplayItem::BoxDecorationBackground;
+const DisplayItem::Type backgroundType = DisplayItem::kBoxDecorationBackground;
 const DisplayItem::Type foregroundType = DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground);
-const DisplayItem::Type documentBackgroundType = DisplayItem::DocumentBackground;
+const DisplayItem::Type documentBackgroundType = DisplayItem::kDocumentBackground;
 
 } // namespace blink
 

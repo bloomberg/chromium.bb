@@ -663,7 +663,7 @@ TEST_F(WebPluginContainerTest, CompositedPluginSPv2)
     const auto& displayItems = paintController->paintArtifact().getDisplayItemList();
     ASSERT_EQ(1u, displayItems.size());
     EXPECT_EQ(element->layoutObject(), &displayItems[0].client());
-    ASSERT_EQ(DisplayItem::ForeignLayerPlugin, displayItems[0].getType());
+    ASSERT_EQ(DisplayItem::kForeignLayerPlugin, displayItems[0].getType());
     const auto& foreignLayerDisplayItem = static_cast<const ForeignLayerDisplayItem&>(displayItems[0]);
     EXPECT_EQ(plugin->getWebLayer()->ccLayer(), foreignLayerDisplayItem.layer());
 }

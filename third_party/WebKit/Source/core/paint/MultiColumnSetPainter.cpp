@@ -38,12 +38,12 @@ void MultiColumnSetPainter::paintColumnRules(const PaintInfo& paintInfo, const L
     if (!m_layoutMultiColumnSet.computeColumnRuleBounds(paintOffset, columnRuleBounds))
         return;
 
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutMultiColumnSet, DisplayItem::ColumnRules))
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutMultiColumnSet, DisplayItem::kColumnRules))
         return;
 
     LayoutRect paintRect = m_layoutMultiColumnSet.visualOverflowRect();
     paintRect.moveBy(paintOffset);
-    LayoutObjectDrawingRecorder drawingRecorder(paintInfo.context, m_layoutMultiColumnSet, DisplayItem::ColumnRules, paintRect);
+    LayoutObjectDrawingRecorder drawingRecorder(paintInfo.context, m_layoutMultiColumnSet, DisplayItem::kColumnRules, paintRect);
 
     const ComputedStyle& blockStyle = m_layoutMultiColumnSet.multiColumnBlockFlow()->styleRef();
     EBorderStyle ruleStyle = blockStyle.columnRuleStyle();

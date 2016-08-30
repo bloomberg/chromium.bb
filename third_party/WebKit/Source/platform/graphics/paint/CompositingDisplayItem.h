@@ -18,7 +18,7 @@ namespace blink {
 class PLATFORM_EXPORT BeginCompositingDisplayItem final : public PairedBeginDisplayItem {
 public:
     BeginCompositingDisplayItem(const DisplayItemClient& client, const SkXfermode::Mode xferMode, const float opacity, const FloatRect* bounds, ColorFilter colorFilter = ColorFilterNone)
-        : PairedBeginDisplayItem(client, BeginCompositing, sizeof(*this))
+        : PairedBeginDisplayItem(client, kBeginCompositing, sizeof(*this))
         , m_xferMode(xferMode)
         , m_opacity(opacity)
         , m_hasBounds(bounds)
@@ -57,14 +57,14 @@ private:
 class PLATFORM_EXPORT EndCompositingDisplayItem final : public PairedEndDisplayItem {
 public:
     EndCompositingDisplayItem(const DisplayItemClient& client)
-        : PairedEndDisplayItem(client, EndCompositing, sizeof(*this)) { }
+        : PairedEndDisplayItem(client, kEndCompositing, sizeof(*this)) { }
 
     void replay(GraphicsContext&) const override;
     void appendToWebDisplayItemList(const IntRect&, WebDisplayItemList*) const override;
 
 private:
 #if ENABLE(ASSERT)
-    bool isEndAndPairedWith(DisplayItem::Type otherType) const final { return otherType == BeginCompositing; }
+    bool isEndAndPairedWith(DisplayItem::Type otherType) const final { return otherType == kBeginCompositing; }
 #endif
 };
 

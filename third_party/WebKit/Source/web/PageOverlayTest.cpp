@@ -53,10 +53,10 @@ public:
 
     void paintPageOverlay(const PageOverlay& pageOverlay, GraphicsContext& graphicsContext, const WebSize& size) const override
     {
-        if (DrawingRecorder::useCachedDrawingIfPossible(graphicsContext, pageOverlay, DisplayItem::PageOverlay))
+        if (DrawingRecorder::useCachedDrawingIfPossible(graphicsContext, pageOverlay, DisplayItem::kPageOverlay))
             return;
         FloatRect rect(0, 0, size.width, size.height);
-        DrawingRecorder drawingRecorder(graphicsContext, pageOverlay, DisplayItem::PageOverlay, rect);
+        DrawingRecorder drawingRecorder(graphicsContext, pageOverlay, DisplayItem::kPageOverlay, rect);
         graphicsContext.fillRect(rect, m_color);
     }
 

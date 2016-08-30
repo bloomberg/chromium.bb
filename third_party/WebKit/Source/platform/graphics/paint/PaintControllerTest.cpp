@@ -53,9 +53,9 @@ private:
     RuntimeEnabledFeatures::Backup m_featuresBackup;
 };
 
-const DisplayItem::Type foregroundDrawingType = static_cast<DisplayItem::Type>(DisplayItem::DrawingPaintPhaseFirst + 4);
-const DisplayItem::Type backgroundDrawingType = DisplayItem::DrawingPaintPhaseFirst;
-const DisplayItem::Type clipType = DisplayItem::ClipFirst;
+const DisplayItem::Type foregroundDrawingType = static_cast<DisplayItem::Type>(DisplayItem::kDrawingPaintPhaseFirst + 4);
+const DisplayItem::Type backgroundDrawingType = DisplayItem::kDrawingPaintPhaseFirst;
+const DisplayItem::Type clipType = DisplayItem::kClipFirst;
 
 class TestDisplayItem final : public DisplayItem {
 public:
@@ -115,7 +115,7 @@ class PaintControllerTest : public PaintControllerTestBase, public testing::With
 public:
     PaintControllerTest()
         : m_rootPaintPropertyClient("root")
-        , m_rootPaintChunkId(m_rootPaintPropertyClient, DisplayItem::UninitializedType)
+        , m_rootPaintChunkId(m_rootPaintPropertyClient, DisplayItem::kUninitializedType)
     { }
 
 protected:
@@ -810,19 +810,19 @@ TEST_P(PaintControllerTest, CachedSubsequenceSwapOrder)
     getPaintController().commitNewDisplayItems();
 
     EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 12,
-        TestDisplayItem(container1, DisplayItem::Subsequence),
+        TestDisplayItem(container1, DisplayItem::kSubsequence),
         TestDisplayItem(container1, backgroundDrawingType),
         TestDisplayItem(content1, backgroundDrawingType),
         TestDisplayItem(content1, foregroundDrawingType),
         TestDisplayItem(container1, foregroundDrawingType),
-        TestDisplayItem(container1, DisplayItem::EndSubsequence),
+        TestDisplayItem(container1, DisplayItem::kEndSubsequence),
 
-        TestDisplayItem(container2, DisplayItem::Subsequence),
+        TestDisplayItem(container2, DisplayItem::kSubsequence),
         TestDisplayItem(container2, backgroundDrawingType),
         TestDisplayItem(content2, backgroundDrawingType),
         TestDisplayItem(content2, foregroundDrawingType),
         TestDisplayItem(container2, foregroundDrawingType),
-        TestDisplayItem(container2, DisplayItem::EndSubsequence));
+        TestDisplayItem(container2, DisplayItem::kEndSubsequence));
 
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
         EXPECT_EQ(2u, getPaintController().paintChunks().size());
@@ -877,19 +877,19 @@ TEST_P(PaintControllerTest, CachedSubsequenceSwapOrder)
     getPaintController().commitNewDisplayItems();
 
     EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 12,
-        TestDisplayItem(container2, DisplayItem::Subsequence),
+        TestDisplayItem(container2, DisplayItem::kSubsequence),
         TestDisplayItem(container2, backgroundDrawingType),
         TestDisplayItem(content2, backgroundDrawingType),
         TestDisplayItem(content2, foregroundDrawingType),
         TestDisplayItem(container2, foregroundDrawingType),
-        TestDisplayItem(container2, DisplayItem::EndSubsequence),
+        TestDisplayItem(container2, DisplayItem::kEndSubsequence),
 
-        TestDisplayItem(container1, DisplayItem::Subsequence),
+        TestDisplayItem(container1, DisplayItem::kSubsequence),
         TestDisplayItem(container1, backgroundDrawingType),
         TestDisplayItem(content1, backgroundDrawingType),
         TestDisplayItem(content1, foregroundDrawingType),
         TestDisplayItem(container1, foregroundDrawingType),
-        TestDisplayItem(container1, DisplayItem::EndSubsequence));
+        TestDisplayItem(container1, DisplayItem::kEndSubsequence));
 
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
     DisplayItemClient::endShouldKeepAliveAllClients();
@@ -910,10 +910,10 @@ TEST_P(PaintControllerTest, OutOfOrderNoCrash)
     FakeDisplayItemClient client("client");
     GraphicsContext context(getPaintController());
 
-    const DisplayItem::Type type1 = DisplayItem::DrawingFirst;
-    const DisplayItem::Type type2 = static_cast<DisplayItem::Type>(DisplayItem::DrawingFirst + 1);
-    const DisplayItem::Type type3 = static_cast<DisplayItem::Type>(DisplayItem::DrawingFirst + 2);
-    const DisplayItem::Type type4 = static_cast<DisplayItem::Type>(DisplayItem::DrawingFirst + 3);
+    const DisplayItem::Type type1 = DisplayItem::kDrawingFirst;
+    const DisplayItem::Type type2 = static_cast<DisplayItem::Type>(DisplayItem::kDrawingFirst + 1);
+    const DisplayItem::Type type3 = static_cast<DisplayItem::Type>(DisplayItem::kDrawingFirst + 2);
+    const DisplayItem::Type type4 = static_cast<DisplayItem::Type>(DisplayItem::kDrawingFirst + 3);
 
     drawRect(context, client, type1, FloatRect(100, 100, 100, 100));
     drawRect(context, client, type2, FloatRect(100, 100, 50, 200));
@@ -990,21 +990,21 @@ TEST_P(PaintControllerTest, CachedNestedSubsequenceUpdate)
     getPaintController().commitNewDisplayItems();
 
     EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 14,
-        TestDisplayItem(container1, DisplayItem::Subsequence),
+        TestDisplayItem(container1, DisplayItem::kSubsequence),
         TestDisplayItem(container1, backgroundDrawingType),
-        TestDisplayItem(content1, DisplayItem::Subsequence),
+        TestDisplayItem(content1, DisplayItem::kSubsequence),
         TestDisplayItem(content1, backgroundDrawingType),
         TestDisplayItem(content1, foregroundDrawingType),
-        TestDisplayItem(content1, DisplayItem::EndSubsequence),
+        TestDisplayItem(content1, DisplayItem::kEndSubsequence),
         TestDisplayItem(container1, foregroundDrawingType),
-        TestDisplayItem(container1, DisplayItem::EndSubsequence),
+        TestDisplayItem(container1, DisplayItem::kEndSubsequence),
 
-        TestDisplayItem(container2, DisplayItem::Subsequence),
+        TestDisplayItem(container2, DisplayItem::kSubsequence),
         TestDisplayItem(container2, backgroundDrawingType),
-        TestDisplayItem(content2, DisplayItem::Subsequence),
+        TestDisplayItem(content2, DisplayItem::kSubsequence),
         TestDisplayItem(content2, backgroundDrawingType),
-        TestDisplayItem(content2, DisplayItem::EndSubsequence),
-        TestDisplayItem(container2, DisplayItem::EndSubsequence));
+        TestDisplayItem(content2, DisplayItem::kEndSubsequence),
+        TestDisplayItem(container2, DisplayItem::kEndSubsequence));
 
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
         EXPECT_EQ(5u, getPaintController().paintChunks().size());
@@ -1075,17 +1075,17 @@ TEST_P(PaintControllerTest, CachedNestedSubsequenceUpdate)
     getPaintController().commitNewDisplayItems();
 
     EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 10,
-        TestDisplayItem(content2, DisplayItem::Subsequence),
+        TestDisplayItem(content2, DisplayItem::kSubsequence),
         TestDisplayItem(content2, foregroundDrawingType),
-        TestDisplayItem(content2, DisplayItem::EndSubsequence),
+        TestDisplayItem(content2, DisplayItem::kEndSubsequence),
 
-        TestDisplayItem(container1, DisplayItem::Subsequence),
-        TestDisplayItem(content1, DisplayItem::Subsequence),
+        TestDisplayItem(container1, DisplayItem::kSubsequence),
+        TestDisplayItem(content1, DisplayItem::kSubsequence),
         TestDisplayItem(content1, backgroundDrawingType),
         TestDisplayItem(content1, foregroundDrawingType),
-        TestDisplayItem(content1, DisplayItem::EndSubsequence),
+        TestDisplayItem(content1, DisplayItem::kEndSubsequence),
         TestDisplayItem(container1, foregroundDrawingType),
-        TestDisplayItem(container1, DisplayItem::EndSubsequence));
+        TestDisplayItem(container1, DisplayItem::kEndSubsequence));
 
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
         EXPECT_EQ(3u, getPaintController().paintChunks().size());
@@ -1281,9 +1281,9 @@ TEST_F(PaintControllerTestBase, OptimizeNoopPairs)
     getPaintController().commitNewDisplayItems();
     EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 5,
         TestDisplayItem(first, backgroundDrawingType),
-        TestDisplayItem(second, DisplayItem::BeginClipPath),
+        TestDisplayItem(second, DisplayItem::kBeginClipPath),
         TestDisplayItem(second, backgroundDrawingType),
-        TestDisplayItem(second, DisplayItem::EndClipPath),
+        TestDisplayItem(second, DisplayItem::kEndClipPath),
         TestDisplayItem(third, backgroundDrawingType));
 
     drawRect(context, first, backgroundDrawingType, FloatRect(0, 0, 100, 100));

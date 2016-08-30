@@ -91,7 +91,7 @@ bool PaintController::useCachedSubsequenceIfPossible(const DisplayItemClient& cl
     }
 #endif
 
-    size_t cachedItem = findCachedItem(DisplayItem::Id(client, DisplayItem::Subsequence));
+    size_t cachedItem = findCachedItem(DisplayItem::Id(client, DisplayItem::kSubsequence));
     if (cachedItem == kNotFound) {
         NOTREACHED();
         return false;
@@ -180,9 +180,9 @@ void PaintController::processNewItem(DisplayItem& displayItem, NewItemSource new
             }
         }
 
-        if (displayItem.getType() == DisplayItem::Subsequence) {
+        if (displayItem.getType() == DisplayItem::kSubsequence) {
             m_currentSubsequenceClients.append(&displayItem.client());
-        } else if (displayItem.getType() == DisplayItem::EndSubsequence) {
+        } else if (displayItem.getType() == DisplayItem::kEndSubsequence) {
             CHECK(m_currentSubsequenceClients.last() == &displayItem.client());
             m_currentSubsequenceClients.removeLast();
         }
@@ -211,7 +211,7 @@ void PaintController::processNewItem(DisplayItem& displayItem, NewItemSource new
     // Verify noop begin/end pairs have been removed.
     if (m_newDisplayItemList.size() >= 2 && displayItem.isEnd()) {
         const auto& beginDisplayItem = m_newDisplayItemList[m_newDisplayItemList.size() - 2];
-        if (beginDisplayItem.isBegin() && beginDisplayItem.getType() != DisplayItem::Subsequence && !beginDisplayItem.drawsContent())
+        if (beginDisplayItem.isBegin() && beginDisplayItem.getType() != DisplayItem::kSubsequence && !beginDisplayItem.drawsContent())
             DCHECK(!displayItem.isEndAndPairedWith(beginDisplayItem.getType()));
     }
 
@@ -359,7 +359,7 @@ void PaintController::copyCachedSubsequence(size_t& cachedItemIndex)
 {
     DisplayItem* cachedItem = &m_currentPaintArtifact.getDisplayItemList()[cachedItemIndex];
 #if DCHECK_IS_ON()
-    DCHECK(cachedItem->getType() == DisplayItem::Subsequence);
+    DCHECK(cachedItem->getType() == DisplayItem::kSubsequence);
     if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled()) {
         DCHECK(!isCheckingUnderInvalidation());
         m_underInvalidationCheckingBegin = cachedItemIndex;
@@ -367,7 +367,7 @@ void PaintController::copyCachedSubsequence(size_t& cachedItemIndex)
     }
 #endif
 
-    DisplayItem::Id endSubsequenceId(cachedItem->client(), DisplayItem::EndSubsequence);
+    DisplayItem::Id endSubsequenceId(cachedItem->client(), DisplayItem::kEndSubsequence);
     Vector<PaintChunk>::const_iterator cachedChunk;
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
         cachedChunk = m_currentPaintArtifact.findChunkByDisplayItemIndex(cachedItemIndex);
@@ -528,7 +528,7 @@ size_t PaintController::approximateUnsharedMemoryUsage() const
 void PaintController::appendDebugDrawingAfterCommit(const DisplayItemClient& displayItemClient, PassRefPtr<SkPicture> picture, const LayoutSize& offsetFromLayoutObject)
 {
     DCHECK(m_newDisplayItemList.isEmpty());
-    DrawingDisplayItem& displayItem = m_currentPaintArtifact.getDisplayItemList().allocateAndConstruct<DrawingDisplayItem>(displayItemClient, DisplayItem::DebugDrawing, picture);
+    DrawingDisplayItem& displayItem = m_currentPaintArtifact.getDisplayItemList().allocateAndConstruct<DrawingDisplayItem>(displayItemClient, DisplayItem::kDebugDrawing, picture);
     displayItem.setSkippedCache();
     // TODO(wkorman): Only compute and append visual rect for drawings.
     m_currentPaintArtifact.getDisplayItemList().appendVisualRect(visualRectForDisplayItem(displayItem, offsetFromLayoutObject));
@@ -657,7 +657,7 @@ void PaintController::checkUnderInvalidation()
         }
         if (newItem.isDrawing() && m_skippedProbableUnderInvalidationCount == 1) {
             DCHECK_GE(m_newDisplayItemList.size(), 2u);
-            if (m_newDisplayItemList[m_newDisplayItemList.size() - 2].getType() == DisplayItem::BeginCompositing) {
+            if (m_newDisplayItemList[m_newDisplayItemList.size() - 2].getType() == DisplayItem::kBeginCompositing) {
                 // This might be a drawing item between a pair of begin/end compositing display items that will be folded
                 // into a single drawing display item.
                 ++m_skippedProbableUnderInvalidationCount;

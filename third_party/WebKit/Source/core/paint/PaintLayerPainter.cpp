@@ -482,7 +482,7 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerWithTransform(Graphi
             if (needsToClip(paintingInfo, clipRectForFragment)) {
                 if (m_paintLayer.layoutObject()->isPositioned() && clipRectForFragment.isClippedByClipCss())
                     UseCounter::count(m_paintLayer.layoutObject()->document(), UseCounter::ClipCssOfPositionedElement);
-                clipRecorder.emplace(context, *parentLayer->layoutObject(), DisplayItem::ClipLayerParent, clipRectForFragment, &paintingInfo, fragment.paginationOffset, paintFlags);
+                clipRecorder.emplace(context, *parentLayer->layoutObject(), DisplayItem::kClipLayerParent, clipRectForFragment, &paintingInfo, fragment.paginationOffset, paintFlags);
             }
         }
         if (paintFragmentByApplyingTransform(context, paintingInfo, paintFlags, fragment.paginationOffset) == MayBeClippedByPaintDirtyRect)
@@ -509,7 +509,7 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintFragmentByApplyingTransfo
     // TODO(jbroman): Put the real transform origin here, instead of using a
     // matrix with the origin baked in.
     FloatPoint3D transformOrigin;
-    Transform3DRecorder transform3DRecorder(context, *m_paintLayer.layoutObject(), DisplayItem::Transform3DElementTransform, transform, transformOrigin);
+    Transform3DRecorder transform3DRecorder(context, *m_paintLayer.layoutObject(), DisplayItem::kTransform3DElementTransform, transform, transformOrigin);
 
     // Now do a paint with the root layer shifted to be us.
     PaintLayerPaintingInfo transformedPaintingInfo(&m_paintLayer, LayoutRect(enclosingIntRect(transform.inverse().mapRect(paintingInfo.paintDirtyRect))), paintingInfo.getGlobalPaintFlags(),
@@ -597,12 +597,12 @@ void PaintLayerPainter::paintOverflowControlsForFragments(const PaintLayerFragme
 
         Optional<LayerClipRecorder> clipRecorder;
         if (needsToClip(localPaintingInfo, fragment.backgroundRect))
-            clipRecorder.emplace(context, *m_paintLayer.layoutObject(), DisplayItem::ClipLayerOverflowControls, fragment.backgroundRect, &localPaintingInfo, fragment.paginationOffset, paintFlags);
+            clipRecorder.emplace(context, *m_paintLayer.layoutObject(), DisplayItem::kClipLayerOverflowControls, fragment.backgroundRect, &localPaintingInfo, fragment.paginationOffset, paintFlags);
 
         Optional<ScrollRecorder> scrollRecorder;
         if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() && !localPaintingInfo.scrollOffsetAccumulation.isZero()) {
             cullRect.move(localPaintingInfo.scrollOffsetAccumulation);
-            scrollRecorder.emplace(context, *m_paintLayer.layoutObject(), DisplayItem::ScrollOverflowControls, localPaintingInfo.scrollOffsetAccumulation);
+            scrollRecorder.emplace(context, *m_paintLayer.layoutObject(), DisplayItem::kScrollOverflowControls, localPaintingInfo.scrollOffsetAccumulation);
         }
 
         // We pass IntPoint() as the paint offset here, because
@@ -682,7 +682,7 @@ void PaintLayerPainter::paintForegroundForFragments(const PaintLayerFragments& l
     ClipState clipState = HasNotClipped;
     Optional<LayerClipRecorder> clipRecorder;
     if (shouldClip && needsToClip(localPaintingInfo, layerFragments[0].foregroundRect)) {
-        clipRecorder.emplace(context, *m_paintLayer.layoutObject(), DisplayItem::ClipLayerForeground, layerFragments[0].foregroundRect, &localPaintingInfo, layerFragments[0].paginationOffset, paintFlags);
+        clipRecorder.emplace(context, *m_paintLayer.layoutObject(), DisplayItem::kClipLayerForeground, layerFragments[0].foregroundRect, &localPaintingInfo, layerFragments[0].paginationOffset, paintFlags);
         clipState = HasClipped;
     }
 

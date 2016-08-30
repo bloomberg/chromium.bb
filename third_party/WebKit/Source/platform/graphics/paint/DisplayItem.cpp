@@ -33,7 +33,7 @@ static WTF::String paintPhaseAsDebugString(int paintPhase)
     case 8: return "PaintPhaseSelection";
     case 9: return "PaintPhaseTextClip";
     case 10: return "PaintPhaseMask";
-    case DisplayItem::PaintPhaseMax: return "PaintPhaseClippingMask";
+    case DisplayItem::kPaintPhaseMax: return "PaintPhaseClippingMask";
     default:
         ASSERT_NOT_REACHED();
         return "Unknown";
@@ -41,20 +41,20 @@ static WTF::String paintPhaseAsDebugString(int paintPhase)
 }
 
 #define PAINT_PHASE_BASED_DEBUG_STRINGS(Category) \
-    if (type >= DisplayItem::Category##PaintPhaseFirst && type <= DisplayItem::Category##PaintPhaseLast) \
-        return #Category + paintPhaseAsDebugString(type - DisplayItem::Category##PaintPhaseFirst);
+    if (type >= DisplayItem::k##Category##PaintPhaseFirst && type <= DisplayItem::k##Category##PaintPhaseLast) \
+        return #Category + paintPhaseAsDebugString(type - DisplayItem::k##Category##PaintPhaseFirst);
 
 #define DEBUG_STRING_CASE(DisplayItemName) \
-    case DisplayItem::DisplayItemName: return #DisplayItemName
+    case DisplayItem::k##DisplayItemName: return #DisplayItemName
 
 #define DEFAULT_CASE default: ASSERT_NOT_REACHED(); return "Unknown"
 
 static WTF::String specialDrawingTypeAsDebugString(DisplayItem::Type type)
 {
-    if (type >= DisplayItem::TableCollapsedBorderUnalignedBase) {
-        if (type <= DisplayItem::TableCollapsedBorderBase)
+    if (type >= DisplayItem::kTableCollapsedBorderUnalignedBase) {
+        if (type <= DisplayItem::kTableCollapsedBorderBase)
             return "TableCollapsedBorderAlignment";
-        if (type <= DisplayItem::TableCollapsedBorderLast) {
+        if (type <= DisplayItem::kTableCollapsedBorderLast) {
             StringBuilder sb;
             sb.append("TableCollapsedBorder");
             if (type & DisplayItem::TableCollapsedBorderTop)
@@ -194,7 +194,7 @@ WTF::String DisplayItem::typeAsDebugString(Type type)
     if (isEndClipType(type))
         return "End" + clipTypeAsDebugString(endClipTypeToClipType(type));
 
-    if (type == UninitializedType)
+    if (type == kUninitializedType)
         return "UninitializedType";
 
     PAINT_PHASE_BASED_DEBUG_STRINGS(FloatClip);

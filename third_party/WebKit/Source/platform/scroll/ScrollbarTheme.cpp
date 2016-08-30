@@ -184,10 +184,10 @@ void ScrollbarTheme::paintScrollCorner(GraphicsContext& context, const DisplayIt
     if (cornerRect.isEmpty())
         return;
 
-    if (DrawingRecorder::useCachedDrawingIfPossible(context, displayItemClient, DisplayItem::ScrollbarCorner))
+    if (DrawingRecorder::useCachedDrawingIfPossible(context, displayItemClient, DisplayItem::kScrollbarCorner))
         return;
 
-    DrawingRecorder recorder(context, displayItemClient, DisplayItem::ScrollbarCorner, cornerRect);
+    DrawingRecorder recorder(context, displayItemClient, DisplayItem::kScrollbarCorner, cornerRect);
 #if OS(MACOSX)
     context.fillRect(cornerRect, Color::white);
 #else
@@ -325,16 +325,16 @@ DisplayItem::Type ScrollbarTheme::buttonPartToDisplayItemType(ScrollbarPart part
 {
     switch (part) {
     case BackButtonStartPart:
-        return DisplayItem::ScrollbarBackButtonStart;
+        return DisplayItem::kScrollbarBackButtonStart;
     case BackButtonEndPart:
-        return DisplayItem::ScrollbarBackButtonEnd;
+        return DisplayItem::kScrollbarBackButtonEnd;
     case ForwardButtonStartPart:
-        return DisplayItem::ScrollbarForwardButtonStart;
+        return DisplayItem::kScrollbarForwardButtonStart;
     case ForwardButtonEndPart:
-        return DisplayItem::ScrollbarForwardButtonEnd;
+        return DisplayItem::kScrollbarForwardButtonEnd;
     default:
         ASSERT_NOT_REACHED();
-        return DisplayItem::ScrollbarBackButtonStart;
+        return DisplayItem::kScrollbarBackButtonStart;
     }
 }
 
@@ -342,12 +342,12 @@ DisplayItem::Type ScrollbarTheme::trackPiecePartToDisplayItemType(ScrollbarPart 
 {
     switch (part) {
     case BackTrackPart:
-        return DisplayItem::ScrollbarBackTrack;
+        return DisplayItem::kScrollbarBackTrack;
     case ForwardTrackPart:
-        return DisplayItem::ScrollbarForwardTrack;
+        return DisplayItem::kScrollbarForwardTrack;
     default:
         ASSERT_NOT_REACHED();
-        return DisplayItem::ScrollbarBackTrack;
+        return DisplayItem::kScrollbarBackTrack;
     }
 }
 

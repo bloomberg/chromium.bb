@@ -112,10 +112,10 @@ IntRect LayoutScrollbarTheme::constrainTrackRectToTrackPieces(const ScrollbarThe
 
 void LayoutScrollbarTheme::paintScrollCorner(GraphicsContext& context, const DisplayItemClient& displayItemClient, const IntRect& cornerRect)
 {
-    if (DrawingRecorder::useCachedDrawingIfPossible(context, displayItemClient, DisplayItem::ScrollbarCorner))
+    if (DrawingRecorder::useCachedDrawingIfPossible(context, displayItemClient, DisplayItem::kScrollbarCorner))
         return;
 
-    DrawingRecorder recorder(context, displayItemClient, DisplayItem::ScrollbarCorner, cornerRect);
+    DrawingRecorder recorder(context, displayItemClient, DisplayItem::kScrollbarCorner, cornerRect);
     // FIXME: Implement.
     context.fillRect(cornerRect, Color::white);
 }

@@ -36,7 +36,7 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV1AndV2, FullDocumentPaintingWith
     EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 3,
         TestDisplayItem(layoutView(), documentBackgroundType),
         TestDisplayItem(textInlineBox, foregroundType),
-        TestDisplayItem(divLayoutObject, DisplayItem::Caret)); // New!
+        TestDisplayItem(divLayoutObject, DisplayItem::kCaret)); // New!
 }
 
 TEST_P(PaintControllerPaintTestForSlimmingPaintV1AndV2, InlineRelayout)
@@ -77,12 +77,12 @@ TEST_F(PaintControllerPaintTestForSlimmingPaintV2, ChunkIdClientCacheFlag)
     LayoutObject& subDiv2 = *subDiv.nextSibling();
     EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 7,
         TestDisplayItem(layoutView(), documentBackgroundType),
-        TestDisplayItem(htmlLayer, DisplayItem::Subsequence),
-        TestDisplayItem(div, DisplayItem::BeginCompositing),
+        TestDisplayItem(htmlLayer, DisplayItem::kSubsequence),
+        TestDisplayItem(div, DisplayItem::kBeginCompositing),
         TestDisplayItem(subDiv, backgroundType),
         TestDisplayItem(subDiv2, backgroundType),
-        TestDisplayItem(div, DisplayItem::EndCompositing),
-        TestDisplayItem(htmlLayer, DisplayItem::EndSubsequence));
+        TestDisplayItem(div, DisplayItem::kEndCompositing),
+        TestDisplayItem(htmlLayer, DisplayItem::kEndSubsequence));
 
     const EffectPaintPropertyNode* effectNode = div.objectPaintProperties()->effect();
     EXPECT_EQ(0.5f, effectNode->opacity());
@@ -110,10 +110,10 @@ TEST_F(PaintControllerPaintTestForSlimmingPaintV2, CompositingFold)
 
     EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 4,
         TestDisplayItem(layoutView(), documentBackgroundType),
-        TestDisplayItem(htmlLayer, DisplayItem::Subsequence),
+        TestDisplayItem(htmlLayer, DisplayItem::kSubsequence),
         // The begin and end compositing display items have been folded into this one.
         TestDisplayItem(subDiv, backgroundType),
-        TestDisplayItem(htmlLayer, DisplayItem::EndSubsequence));
+        TestDisplayItem(htmlLayer, DisplayItem::kEndSubsequence));
 }
 
 

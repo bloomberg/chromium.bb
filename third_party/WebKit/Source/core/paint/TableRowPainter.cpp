@@ -30,7 +30,7 @@ void TableRowPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paint
         if (m_layoutTableRow.styleRef().hasBackground()) {
             // Paint row background of behind the cells.
             for (LayoutTableCell* cell = m_layoutTableRow.firstCell(); cell; cell = cell->nextCell())
-                TableCellPainter(*cell).paintContainerBackgroundBehindCell(paintInfoForCells, paintOffset, m_layoutTableRow, DisplayItem::TableCellBackgroundFromRow);
+                TableCellPainter(*cell).paintContainerBackgroundBehindCell(paintInfoForCells, paintOffset, m_layoutTableRow, DisplayItem::kTableCellBackgroundFromRow);
         }
         paintBoxShadow(paintInfo, paintOffset, Inset);
     }
@@ -57,7 +57,7 @@ void TableRowPainter::paintBoxShadow(const PaintInfo& paintInfo, const LayoutPoi
     if (!m_layoutTableRow.styleRef().boxShadow())
         return;
 
-    DisplayItem::Type type = shadowStyle == Normal ? DisplayItem::TableRowBoxShadowNormal : DisplayItem::TableRowBoxShadowInset;
+    DisplayItem::Type type = shadowStyle == Normal ? DisplayItem::kTableRowBoxShadowNormal : DisplayItem::kTableRowBoxShadowInset;
     if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutTableRow, type))
         return;
 
@@ -71,7 +71,7 @@ void TableRowPainter::paintBackgroundBehindCell(const LayoutTableCell& cell, con
 {
     DCHECK(m_layoutTableRow.styleRef().hasBackground() && !m_layoutTableRow.hasSelfPaintingLayer());
     LayoutPoint cellPoint = m_layoutTableRow.section()->flipForWritingModeForChild(&cell, paintOffset);
-    TableCellPainter(cell).paintContainerBackgroundBehindCell(paintInfo, cellPoint, m_layoutTableRow, DisplayItem::TableCellBackgroundFromRow);
+    TableCellPainter(cell).paintContainerBackgroundBehindCell(paintInfo, cellPoint, m_layoutTableRow, DisplayItem::kTableCellBackgroundFromRow);
 }
 
 } // namespace blink

@@ -83,10 +83,10 @@ static void paintInternal(Page& page, WebCanvas* canvas,
         IntRect dirtyRect(rect);
         FrameView* view = root.view();
         if (view) {
-            ClipRecorder clipRecorder(paintContext, pictureBuilder, DisplayItem::PageWidgetDelegateClip, dirtyRect);
+            ClipRecorder clipRecorder(paintContext, pictureBuilder, DisplayItem::kPageWidgetDelegateClip, dirtyRect);
             view->paint(paintContext, globalPaintFlags, CullRect(dirtyRect));
         } else {
-            DrawingRecorder drawingRecorder(paintContext, pictureBuilder, DisplayItem::PageWidgetDelegateBackgroundFallback, dirtyRect);
+            DrawingRecorder drawingRecorder(paintContext, pictureBuilder, DisplayItem::kPageWidgetDelegateBackgroundFallback, dirtyRect);
             paintContext.fillRect(dirtyRect, Color::white);
         }
     }

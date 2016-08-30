@@ -77,7 +77,7 @@ TestPaintArtifact& TestPaintArtifact::rectDrawing(const FloatRect& bounds, Color
 {
     std::unique_ptr<DummyRectClient> client = wrapUnique(new DummyRectClient(bounds, color));
     m_displayItemList.allocateAndConstruct<DrawingDisplayItem>(
-        *client, DisplayItem::DrawingFirst, client->makePicture());
+        *client, DisplayItem::kDrawingFirst, client->makePicture());
     m_dummyClients.append(std::move(client));
     return *this;
 }
@@ -87,7 +87,7 @@ TestPaintArtifact& TestPaintArtifact::foreignLayer(const FloatPoint& location, c
     FloatRect floatBounds(location, FloatSize(size));
     std::unique_ptr<DummyRectClient> client = wrapUnique(new DummyRectClient(floatBounds, Color::transparent));
     m_displayItemList.allocateAndConstruct<ForeignLayerDisplayItem>(
-        *client, DisplayItem::ForeignLayerFirst, std::move(layer), location, size);
+        *client, DisplayItem::kForeignLayerFirst, std::move(layer), location, size);
     m_dummyClients.append(std::move(client));
     return *this;
 }

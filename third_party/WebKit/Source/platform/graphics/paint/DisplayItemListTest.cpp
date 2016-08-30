@@ -48,7 +48,7 @@ TEST_F(DisplayItemListTest, AppendVisualRect_Simple)
 {
     IntRect drawingBounds(5, 6, 7, 8);
     m_list.allocateAndConstruct<DrawingDisplayItem>(
-        m_client, DisplayItem::Type::DocumentBackground, createRectPicture(drawingBounds), true);
+        m_client, DisplayItem::Type::kDocumentBackground, createRectPicture(drawingBounds), true);
     m_list.appendVisualRect(drawingBounds);
 
     EXPECT_EQ(static_cast<size_t>(1), m_list.size());
@@ -69,7 +69,7 @@ TEST_F(DisplayItemListTest, AppendVisualRect_BlockContainingDrawing)
 
     IntRect drawingBounds(5, 6, 1, 1);
     m_list.allocateAndConstruct<DrawingDisplayItem>(
-        m_client, DisplayItem::Type::DocumentBackground, createRectPicture(drawingBounds), true);
+        m_client, DisplayItem::Type::kDocumentBackground, createRectPicture(drawingBounds), true);
     m_list.appendVisualRect(drawingBounds);
 
     m_list.allocateAndConstruct<EndSubsequenceDisplayItem>(m_client);

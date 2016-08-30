@@ -840,7 +840,7 @@ void PaintLayerCompositor::paintContents(const GraphicsLayer* graphicsLayer, Gra
     if (!scrollbar && graphicsLayer != layerForScrollCorner())
         return;
 
-    if (DrawingRecorder::useCachedDrawingIfPossible(context, *graphicsLayer, DisplayItem::ScrollbarCompositedScrollbar))
+    if (DrawingRecorder::useCachedDrawingIfPossible(context, *graphicsLayer, DisplayItem::kScrollbarCompositedScrollbar))
         return;
 
     FloatRect layerBounds(FloatPoint(), graphicsLayer->size());
@@ -854,7 +854,7 @@ void PaintLayerCompositor::paintContents(const GraphicsLayer* graphicsLayer, Gra
     // Replay the painted scrollbar content with the GraphicsLayer backing as the DisplayItemClient
     // in order for the resulting DrawingDisplayItem to produce the correct visualRect (i.e., the
     // bounds of the involved GraphicsLayer).
-    DrawingRecorder drawingRecorder(context, *graphicsLayer, DisplayItem::ScrollbarCompositedScrollbar, layerBounds);
+    DrawingRecorder drawingRecorder(context, *graphicsLayer, DisplayItem::kScrollbarCompositedScrollbar, layerBounds);
     pictureBuilder.endRecording()->playback(context.canvas());
 }
 

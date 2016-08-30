@@ -15,7 +15,7 @@ namespace blink {
 class PLATFORM_EXPORT BeginClipPathDisplayItem final : public PairedBeginDisplayItem {
 public:
     BeginClipPathDisplayItem(const DisplayItemClient& client, const Path& clipPath)
-        : PairedBeginDisplayItem(client, BeginClipPath, sizeof(*this))
+        : PairedBeginDisplayItem(client, kBeginClipPath, sizeof(*this))
         , m_clipPath(clipPath.getSkPath()) { }
 
     void replay(GraphicsContext&) const override;
@@ -40,14 +40,14 @@ private:
 class PLATFORM_EXPORT EndClipPathDisplayItem final : public PairedEndDisplayItem {
 public:
     EndClipPathDisplayItem(const DisplayItemClient& client)
-        : PairedEndDisplayItem(client, EndClipPath, sizeof(*this)) { }
+        : PairedEndDisplayItem(client, kEndClipPath, sizeof(*this)) { }
 
     void replay(GraphicsContext&) const override;
     void appendToWebDisplayItemList(const IntRect&, WebDisplayItemList*) const override;
 
 private:
 #if ENABLE(ASSERT)
-    bool isEndAndPairedWith(DisplayItem::Type otherType) const final { return otherType == BeginClipPath; }
+    bool isEndAndPairedWith(DisplayItem::Type otherType) const final { return otherType == kBeginClipPath; }
 #endif
 };
 

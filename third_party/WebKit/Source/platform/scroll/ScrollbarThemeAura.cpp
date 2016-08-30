@@ -223,10 +223,10 @@ void ScrollbarThemeAura::paintTickmarks(GraphicsContext& context, const Scrollba
     if (!tickmarks.size())
         return;
 
-    if (DrawingRecorder::useCachedDrawingIfPossible(context, scrollbar, DisplayItem::ScrollbarTickmarks))
+    if (DrawingRecorder::useCachedDrawingIfPossible(context, scrollbar, DisplayItem::kScrollbarTickmarks))
         return;
 
-    DrawingRecorder recorder(context, scrollbar, DisplayItem::ScrollbarTickmarks, rect);
+    DrawingRecorder recorder(context, scrollbar, DisplayItem::kScrollbarTickmarks, rect);
     GraphicsContextStateSaver stateSaver(context);
     context.setShouldAntialias(false);
 
@@ -289,10 +289,10 @@ void ScrollbarThemeAura::paintButton(GraphicsContext& gc, const Scrollbar& scrol
 
 void ScrollbarThemeAura::paintThumb(GraphicsContext& gc, const Scrollbar& scrollbar, const IntRect& rect)
 {
-    if (DrawingRecorder::useCachedDrawingIfPossible(gc, scrollbar, DisplayItem::ScrollbarThumb))
+    if (DrawingRecorder::useCachedDrawingIfPossible(gc, scrollbar, DisplayItem::kScrollbarThumb))
         return;
 
-    DrawingRecorder recorder(gc, scrollbar, DisplayItem::ScrollbarThumb, rect);
+    DrawingRecorder recorder(gc, scrollbar, DisplayItem::kScrollbarThumb, rect);
 
     WebThemeEngine::State state;
     WebCanvas* canvas = gc.canvas();

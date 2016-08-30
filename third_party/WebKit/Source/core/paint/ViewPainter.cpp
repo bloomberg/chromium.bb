@@ -49,7 +49,7 @@ void ViewPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo)
     //    culling and pre-blending optimization when possible.
 
     GraphicsContext& context = paintInfo.context;
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, m_layoutView, DisplayItem::DocumentBackground))
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, m_layoutView, DisplayItem::kDocumentBackground))
         return;
 
     // The background fill rect is the size of the LayoutView's main GraphicsLayer.
@@ -63,7 +63,7 @@ void ViewPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo)
     Color rootBackgroundColor = m_layoutView.style()->visitedDependentColor(CSSPropertyBackgroundColor);
     const LayoutObject* rootObject = document.documentElement() ? document.documentElement()->layoutObject() : nullptr;
 
-    LayoutObjectDrawingRecorder recorder(context, m_layoutView, DisplayItem::DocumentBackground, backgroundRect);
+    LayoutObjectDrawingRecorder recorder(context, m_layoutView, DisplayItem::kDocumentBackground, backgroundRect);
 
     // Special handling for print economy mode.
     bool forceBackgroundToWhite = BoxPainter::shouldForceWhiteBackgroundForPrintEconomy(m_layoutView.styleRef(), document);

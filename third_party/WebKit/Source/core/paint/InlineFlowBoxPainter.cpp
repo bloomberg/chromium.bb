@@ -188,10 +188,10 @@ void InlineFlowBoxPainter::paintBoxDecorationBackground(const PaintInfo& paintIn
     if (!shouldPaintBoxDecorationBackground)
         return;
 
-    if (DrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_inlineFlowBox, DisplayItem::BoxDecorationBackground))
+    if (DrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_inlineFlowBox, DisplayItem::kBoxDecorationBackground))
         return;
 
-    DrawingRecorder recorder(paintInfo.context, m_inlineFlowBox, DisplayItem::BoxDecorationBackground, pixelSnappedIntRect(cullRect));
+    DrawingRecorder recorder(paintInfo.context, m_inlineFlowBox, DisplayItem::kBoxDecorationBackground, pixelSnappedIntRect(cullRect));
 
     LayoutRect frameRect = frameRectClampedToLineTopAndBottomIfNeeded();
 

@@ -115,10 +115,10 @@ void BoxPainter::paintBoxDecorationBackgroundWithRect(const PaintInfo& paintInfo
     }
 
     const DisplayItemClient& displayItemClient = paintingOverflowContents ? static_cast<const DisplayItemClient&>(*m_layoutBox.layer()->compositedLayerMapping()->scrollingContentsLayer()) : m_layoutBox;
-    if (DrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, displayItemClient, DisplayItem::BoxDecorationBackground))
+    if (DrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, displayItemClient, DisplayItem::kBoxDecorationBackground))
         return;
 
-    DrawingRecorder recorder(paintInfo.context, displayItemClient, DisplayItem::BoxDecorationBackground, FloatRect(boundsForDrawingRecorder(paintInfo, paintOffset)));
+    DrawingRecorder recorder(paintInfo.context, displayItemClient, DisplayItem::kBoxDecorationBackground, FloatRect(boundsForDrawingRecorder(paintInfo, paintOffset)));
     BoxDecorationData boxDecorationData(m_layoutBox);
     GraphicsContextStateSaver stateSaver(paintInfo.context, false);
 

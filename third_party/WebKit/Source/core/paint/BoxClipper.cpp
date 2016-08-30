@@ -18,7 +18,7 @@ namespace blink {
 BoxClipper::BoxClipper(const LayoutBox& box, const PaintInfo& paintInfo, const LayoutPoint& accumulatedOffset, ContentsClipBehavior contentsClipBehavior)
     : m_box(box)
     , m_paintInfo(paintInfo)
-    , m_clipType(DisplayItem::UninitializedType)
+    , m_clipType(DisplayItem::kUninitializedType)
 {
     ASSERT(m_paintInfo.phase != PaintPhaseSelfBlockBackgroundOnly && m_paintInfo.phase != PaintPhaseSelfOutlineOnly);
 
@@ -74,7 +74,7 @@ BoxClipper::BoxClipper(const LayoutBox& box, const PaintInfo& paintInfo, const L
 
 BoxClipper::~BoxClipper()
 {
-    if (m_clipType == DisplayItem::UninitializedType)
+    if (m_clipType == DisplayItem::kUninitializedType)
         return;
 
     DCHECK(m_box.hasControlClip() || ((m_box.hasOverflowClip() || m_box.style()->containsPaint()) && !(m_box.hasLayer() && m_box.layer()->isSelfPaintingLayer())));

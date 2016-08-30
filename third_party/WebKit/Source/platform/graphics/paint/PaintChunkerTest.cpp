@@ -46,12 +46,12 @@ public:
 
 class NormalTestDisplayItem : public TestDisplayItem {
 public:
-    NormalTestDisplayItem() : TestDisplayItem(DisplayItem::DrawingFirst) { }
+    NormalTestDisplayItem() : TestDisplayItem(DisplayItem::kDrawingFirst) { }
 };
 
 class TestDisplayItemRequiringSeparateChunk : public TestDisplayItem {
 public:
-    TestDisplayItemRequiringSeparateChunk() : TestDisplayItem(DisplayItem::ForeignLayerPlugin) { }
+    TestDisplayItemRequiringSeparateChunk() : TestDisplayItem(DisplayItem::kForeignLayerPlugin) { }
 };
 
 TEST_F(PaintChunkerTest, Empty)
@@ -254,7 +254,7 @@ TEST_F(PaintChunkerTest, CreatesSeparateChunksWhenRequested)
 TEST_F(PaintChunkerTest, ChunkIds)
 {
     PaintChunker chunker;
-    TestDisplayItem i1(DisplayItem::DrawingFirst);
+    TestDisplayItem i1(DisplayItem::kDrawingFirst);
     DisplayItem::Id id1 = i1.getId();
     TestDisplayItemRequiringSeparateChunk i2;
     DisplayItem::Id id2 = i2.getId();
@@ -286,7 +286,7 @@ TEST_F(PaintChunkerTest, ChunkIds)
 TEST_F(PaintChunkerTest, ChunkIdsSkippingCache)
 {
     PaintChunker chunker;
-    TestDisplayItem i1(DisplayItem::DrawingFirst);
+    TestDisplayItem i1(DisplayItem::kDrawingFirst);
     i1.setSkippedCache();
     DisplayItem::Id id1 = i1.getId();
     TestDisplayItemRequiringSeparateChunk i2;

@@ -92,7 +92,7 @@ FloatRect drawAndGetCullRect(PaintController& controller, const LayoutObject& la
     {
         // Draw some things which will produce a non-null picture.
         GraphicsContext context(controller);
-        LayoutObjectDrawingRecorder recorder(context, layoutObject, DisplayItem::BoxDecorationBackground, bounds);
+        LayoutObjectDrawingRecorder recorder(context, layoutObject, DisplayItem::kBoxDecorationBackground, bounds);
         context.drawRect(enclosedIntRect(FloatRect(bounds)));
     }
     controller.commitNewDisplayItems();

@@ -39,7 +39,7 @@ void CompositingRecorder::endCompositing(GraphicsContext& graphicsContext, const
     PaintController& paintController = graphicsContext.getPaintController();
     const DisplayItem* lastDisplayItem = paintController.lastDisplayItem(0);
     const DisplayItem* secondToLastDisplayItem = paintController.lastDisplayItem(1);
-    if (lastDisplayItem && secondToLastDisplayItem && lastDisplayItem->drawsContent() && secondToLastDisplayItem->getType() == DisplayItem::BeginCompositing) {
+    if (lastDisplayItem && secondToLastDisplayItem && lastDisplayItem->drawsContent() && secondToLastDisplayItem->getType() == DisplayItem::kBeginCompositing) {
         FloatRect cullRect(((DrawingDisplayItem*)lastDisplayItem)->picture()->cullRect());
         const DisplayItemClient& displayItemClient = lastDisplayItem->client();
         DisplayItem::Type displayItemType = lastDisplayItem->getType();

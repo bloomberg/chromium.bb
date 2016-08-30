@@ -47,7 +47,7 @@ void VideoPainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& 
         if (WebLayer* layer = m_layoutVideo.mediaElement()->platformLayer()) {
             IntRect pixelSnappedRect = pixelSnappedIntRect(contentRect);
             recordForeignLayer(
-                context, m_layoutVideo, DisplayItem::ForeignLayerVideo, layer,
+                context, m_layoutVideo, DisplayItem::kForeignLayerVideo, layer,
                 pixelSnappedRect.location(), pixelSnappedRect.size());
             return;
         }

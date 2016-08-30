@@ -78,7 +78,7 @@ void BlockPainter::paintOverflowControlsIfNeeded(const PaintInfo& paintInfo, con
         if (!m_layoutBlock.layer()->isSelfPaintingLayer()) {
             LayoutRect clipRect = m_layoutBlock.borderBoxRect();
             clipRect.moveBy(paintOffset);
-            clipRecorder.emplace(paintInfo.context, m_layoutBlock, DisplayItem::ClipScrollbarsToBoxBounds, pixelSnappedIntRect(clipRect));
+            clipRecorder.emplace(paintInfo.context, m_layoutBlock, DisplayItem::kClipScrollbarsToBoxBounds, pixelSnappedIntRect(clipRect));
         }
         ScrollableAreaPainter(*m_layoutBlock.layer()->getScrollableArea()).paintOverflowControls(paintInfo.context, roundedIntPoint(paintOffset), paintInfo.cullRect(), false /* paintingOverlayControls */);
     }

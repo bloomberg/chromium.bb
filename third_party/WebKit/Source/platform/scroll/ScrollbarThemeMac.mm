@@ -187,10 +187,10 @@ void ScrollbarThemeMac::paintTickmarks(GraphicsContext& context, const Scrollbar
     if (!tickmarks.size())
         return;
 
-    if (DrawingRecorder::useCachedDrawingIfPossible(context, scrollbar, DisplayItem::ScrollbarTickmarks))
+    if (DrawingRecorder::useCachedDrawingIfPossible(context, scrollbar, DisplayItem::kScrollbarTickmarks))
         return;
 
-    DrawingRecorder recorder(context, scrollbar, DisplayItem::ScrollbarTickmarks, rect);
+    DrawingRecorder recorder(context, scrollbar, DisplayItem::kScrollbarTickmarks, rect);
 
     // Inset a bit.
     IntRect tickmarkTrackRect = rect;
@@ -292,10 +292,10 @@ ScrollbarPainter ScrollbarThemeMac::painterForScrollbar(const ScrollbarThemeClie
 }
 
 void ScrollbarThemeMac::paintTrackBackground(GraphicsContext& context, const Scrollbar& scrollbar, const IntRect& rect) {
-    if (DrawingRecorder::useCachedDrawingIfPossible(context, scrollbar, DisplayItem::ScrollbarTrackBackground))
+    if (DrawingRecorder::useCachedDrawingIfPossible(context, scrollbar, DisplayItem::kScrollbarTrackBackground))
         return;
 
-    DrawingRecorder recorder(context, scrollbar, DisplayItem::ScrollbarTrackBackground, rect);
+    DrawingRecorder recorder(context, scrollbar, DisplayItem::kScrollbarTrackBackground, rect);
 
     GraphicsContextStateSaver stateSaver(context);
     context.translate(rect.x(), rect.y());
@@ -310,13 +310,13 @@ void ScrollbarThemeMac::paintTrackBackground(GraphicsContext& context, const Scr
 }
 
 void ScrollbarThemeMac::paintThumb(GraphicsContext& context, const Scrollbar& scrollbar, const IntRect& rect) {
-    if (DrawingRecorder::useCachedDrawingIfPossible(context, scrollbar, DisplayItem::ScrollbarThumb))
+    if (DrawingRecorder::useCachedDrawingIfPossible(context, scrollbar, DisplayItem::kScrollbarThumb))
         return;
 
     // Expand dirty rect to allow for scroll thumb anti-aliasing in minimum thumb size case.
     IntRect dirtyRect = IntRect(rect);
     dirtyRect.inflate(1);
-    DrawingRecorder recorder(context, scrollbar, DisplayItem::ScrollbarThumb, dirtyRect);
+    DrawingRecorder recorder(context, scrollbar, DisplayItem::kScrollbarThumb, dirtyRect);
 
     GraphicsContextStateSaver stateSaver(context);
     context.translate(rect.x(), rect.y());

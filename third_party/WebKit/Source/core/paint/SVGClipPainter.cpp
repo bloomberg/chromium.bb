@@ -106,7 +106,7 @@ void SVGClipPainter::finishEffect(const LayoutObject& target, GraphicsContext& c
 bool SVGClipPainter::drawClipAsMask(GraphicsContext& context, const LayoutObject& layoutObject, const FloatRect& targetBoundingBox,
     const FloatRect& targetPaintInvalidationRect, const AffineTransform& localTransform, const FloatPoint& layerPositionOffset)
 {
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, layoutObject, DisplayItem::SVGClip))
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, layoutObject, DisplayItem::kSVGClip))
         return true;
 
     SkPictureBuilder maskPictureBuilder(targetPaintInvalidationRect, nullptr, &context);
@@ -131,14 +131,14 @@ bool SVGClipPainter::drawClipAsMask(GraphicsContext& context, const LayoutObject
 
             TransformRecorder contentTransformRecorder(maskContext, layoutObject, contentTransform);
             RefPtr<const SkPicture> clipContentPicture = m_clip.createContentPicture();
-            maskContext.getPaintController().createAndAppend<DrawingDisplayItem>(layoutObject, DisplayItem::SVGClip, clipContentPicture.get());
+            maskContext.getPaintController().createAndAppend<DrawingDisplayItem>(layoutObject, DisplayItem::kSVGClip, clipContentPicture.get());
         }
 
         if (clipPathClipper)
             SVGClipPainter(*clipPathClipper).finishEffect(m_clip, maskContext, clipPathClipperState);
     }
 
-    LayoutObjectDrawingRecorder drawingRecorder(context, layoutObject, DisplayItem::SVGClip, targetPaintInvalidationRect);
+    LayoutObjectDrawingRecorder drawingRecorder(context, layoutObject, DisplayItem::kSVGClip, targetPaintInvalidationRect);
     RefPtr<SkPicture> maskPicture = maskPictureBuilder.endRecording();
     context.drawPicture(maskPicture.get());
     return true;

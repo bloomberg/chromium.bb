@@ -31,7 +31,7 @@ void HTMLCanvasPainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPo
         if (WebLayer* layer = canvas->renderingContext()->platformLayer()) {
             IntRect pixelSnappedRect = pixelSnappedIntRect(contentRect);
             recordForeignLayer(
-                context, m_layoutHTMLCanvas, DisplayItem::ForeignLayerCanvas,
+                context, m_layoutHTMLCanvas, DisplayItem::kForeignLayerCanvas,
                 layer, pixelSnappedRect.location(), pixelSnappedRect.size());
             return;
         }

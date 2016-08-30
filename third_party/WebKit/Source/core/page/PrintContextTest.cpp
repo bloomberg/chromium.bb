@@ -99,7 +99,7 @@ protected:
         context.setPrinting(true);
         document().view()->paintContents(context, GlobalPaintPrinting, pageRect);
         {
-            DrawingRecorder recorder(context, *document().layoutView(), DisplayItem::PrintedContentDestinationLocations, pageRect);
+            DrawingRecorder recorder(context, *document().layoutView(), DisplayItem::kPrintedContentDestinationLocations, pageRect);
             printContext().outputLinkedDestinations(context, pageRect);
         }
         pictureBuilder.endRecording()->playback(&canvas);

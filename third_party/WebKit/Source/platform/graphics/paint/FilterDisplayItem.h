@@ -19,7 +19,7 @@ namespace blink {
 class PLATFORM_EXPORT BeginFilterDisplayItem final : public PairedBeginDisplayItem {
 public:
     BeginFilterDisplayItem(const DisplayItemClient& client, sk_sp<SkImageFilter> imageFilter, const FloatRect& bounds, const FloatPoint& origin, CompositorFilterOperations filterOperations)
-        : PairedBeginDisplayItem(client, BeginFilter, sizeof(*this))
+        : PairedBeginDisplayItem(client, kBeginFilter, sizeof(*this))
         , m_imageFilter(std::move(imageFilter))
         , m_compositorFilterOperations(std::move(filterOperations))
         , m_bounds(bounds)
@@ -53,14 +53,14 @@ private:
 class PLATFORM_EXPORT EndFilterDisplayItem final : public PairedEndDisplayItem {
 public:
     EndFilterDisplayItem(const DisplayItemClient& client)
-        : PairedEndDisplayItem(client, EndFilter, sizeof(*this)) { }
+        : PairedEndDisplayItem(client, kEndFilter, sizeof(*this)) { }
 
     void replay(GraphicsContext&) const override;
     void appendToWebDisplayItemList(const IntRect&, WebDisplayItemList*) const override;
 
 private:
 #if ENABLE(ASSERT)
-    bool isEndAndPairedWith(DisplayItem::Type otherType) const final { return otherType == BeginFilter; }
+    bool isEndAndPairedWith(DisplayItem::Type otherType) const final { return otherType == kBeginFilter; }
 #endif
 };
 

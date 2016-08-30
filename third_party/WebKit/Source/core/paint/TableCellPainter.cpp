@@ -75,7 +75,7 @@ void TableCellPainter::paintCollapsedBorders(const PaintInfo& paintInfo, const L
     const CollapsedBorderValue& topBorderValue = collapsedTopBorder(styleForCellFlow, *values);
     const CollapsedBorderValue& bottomBorderValue = collapsedBottomBorder(styleForCellFlow, *values);
 
-    int displayItemType = DisplayItem::TableCollapsedBorderBase;
+    int displayItemType = DisplayItem::kTableCollapsedBorderBase;
     if (topBorderValue.shouldPaint(currentBorderValue))
         displayItemType |= DisplayItem::TableCollapsedBorderTop;
     if (bottomBorderValue.shouldPaint(currentBorderValue))
@@ -84,7 +84,7 @@ void TableCellPainter::paintCollapsedBorders(const PaintInfo& paintInfo, const L
         displayItemType |= DisplayItem::TableCollapsedBorderLeft;
     if (rightBorderValue.shouldPaint(currentBorderValue))
         displayItemType |= DisplayItem::TableCollapsedBorderRight;
-    if (displayItemType == DisplayItem::TableCollapsedBorderBase)
+    if (displayItemType == DisplayItem::kTableCollapsedBorderBase)
         return;
 
     int topWidth = topBorderValue.width();
@@ -180,13 +180,13 @@ void TableCellPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, 
     if (!m_layoutTableCell.styleRef().hasBackground() && !m_layoutTableCell.styleRef().boxShadow() && !needsToPaintBorder)
         return;
 
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutTableCell, DisplayItem::BoxDecorationBackground))
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutTableCell, DisplayItem::kBoxDecorationBackground))
         return;
 
     LayoutRect visualOverflowRect = m_layoutTableCell.visualOverflowRect();
     visualOverflowRect.moveBy(paintOffset);
     // TODO(chrishtr): the pixel-snapping here is likely incorrect.
-    LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutTableCell, DisplayItem::BoxDecorationBackground, pixelSnappedIntRect(visualOverflowRect));
+    LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutTableCell, DisplayItem::kBoxDecorationBackground, pixelSnappedIntRect(visualOverflowRect));
 
     LayoutRect paintRect = paintRectNotIncludingVisualOverflow(paintOffset);
 

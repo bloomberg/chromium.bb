@@ -15,7 +15,7 @@ RoundedInnerRectClipper::RoundedInnerRectClipper(const LayoutObject& layoutObjec
     : m_layoutObject(layoutObject)
     , m_paintInfo(paintInfo)
     , m_usePaintController(behavior == ApplyToDisplayList)
-    , m_clipType(m_usePaintController ? m_paintInfo.displayItemTypeForClipping() : DisplayItem::ClipBoxPaintPhaseFirst)
+    , m_clipType(m_usePaintController ? m_paintInfo.displayItemTypeForClipping() : DisplayItem::kClipBoxPaintPhaseFirst)
 {
     Vector<FloatRoundedRect> roundedRectClips;
     if (clipRect.isRenderable()) {

@@ -32,16 +32,16 @@ TEST_F(TableCellPainterTest, Background)
     paint(&interestRect);
 
     EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 2,
-        TestDisplayItem(layoutView, DisplayItem::DocumentBackground),
-        TestDisplayItem(cell1, DisplayItem::TableCellBackgroundFromRow));
+        TestDisplayItem(layoutView, DisplayItem::kDocumentBackground),
+        TestDisplayItem(cell1, DisplayItem::kTableCellBackgroundFromRow));
 
     document().view()->updateAllLifecyclePhasesExceptPaint();
     interestRect = IntRect(0, 300, 200, 1000);
     paint(&interestRect);
 
     EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 2,
-        TestDisplayItem(layoutView, DisplayItem::DocumentBackground),
-        TestDisplayItem(cell2, DisplayItem::TableCellBackgroundFromRow));
+        TestDisplayItem(layoutView, DisplayItem::kDocumentBackground),
+        TestDisplayItem(cell2, DisplayItem::kTableCellBackgroundFromRow));
 }
 
 TEST_F(TableCellPainterTest, BackgroundWithCellSpacing)
@@ -69,9 +69,9 @@ TEST_F(TableCellPainterTest, BackgroundWithCellSpacing)
     paint(&interestRect);
 
     EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 3,
-        TestDisplayItem(layoutView, DisplayItem::DocumentBackground),
-        TestDisplayItem(cell1, DisplayItem::TableCellBackgroundFromRow),
-        TestDisplayItem(cell1, DisplayItem::BoxDecorationBackground));
+        TestDisplayItem(layoutView, DisplayItem::kDocumentBackground),
+        TestDisplayItem(cell1, DisplayItem::kTableCellBackgroundFromRow),
+        TestDisplayItem(cell1, DisplayItem::kBoxDecorationBackground));
 
     document().view()->updateAllLifecyclePhasesExceptPaint();
     // Intersects the spacing only.
@@ -79,7 +79,7 @@ TEST_F(TableCellPainterTest, BackgroundWithCellSpacing)
     paint(&interestRect);
 
     EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 1,
-        TestDisplayItem(layoutView, DisplayItem::DocumentBackground));
+        TestDisplayItem(layoutView, DisplayItem::kDocumentBackground));
 
     document().view()->updateAllLifecyclePhasesExceptPaint();
     // Intersects cell2 only.
@@ -87,9 +87,9 @@ TEST_F(TableCellPainterTest, BackgroundWithCellSpacing)
     paint(&interestRect);
 
     EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 3,
-        TestDisplayItem(layoutView, DisplayItem::DocumentBackground),
-        TestDisplayItem(cell2, DisplayItem::TableCellBackgroundFromRow),
-        TestDisplayItem(cell2, DisplayItem::BoxDecorationBackground));
+        TestDisplayItem(layoutView, DisplayItem::kDocumentBackground),
+        TestDisplayItem(cell2, DisplayItem::kTableCellBackgroundFromRow),
+        TestDisplayItem(cell2, DisplayItem::kBoxDecorationBackground));
 }
 
 TEST_F(TableCellPainterTest, BackgroundInSelfPaintingRow)
@@ -118,13 +118,13 @@ TEST_F(TableCellPainterTest, BackgroundInSelfPaintingRow)
     paint(&interestRect);
 
     EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 7,
-        TestDisplayItem(layoutView, DisplayItem::DocumentBackground),
-        TestDisplayItem(htmlLayer, DisplayItem::Subsequence),
-        TestDisplayItem(row, DisplayItem::BeginCompositing),
-        TestDisplayItem(cell1, DisplayItem::TableCellBackgroundFromRow),
-        TestDisplayItem(cell1, DisplayItem::BoxDecorationBackground),
-        TestDisplayItem(row, DisplayItem::EndCompositing),
-        TestDisplayItem(htmlLayer, DisplayItem::EndSubsequence));
+        TestDisplayItem(layoutView, DisplayItem::kDocumentBackground),
+        TestDisplayItem(htmlLayer, DisplayItem::kSubsequence),
+        TestDisplayItem(row, DisplayItem::kBeginCompositing),
+        TestDisplayItem(cell1, DisplayItem::kTableCellBackgroundFromRow),
+        TestDisplayItem(cell1, DisplayItem::kBoxDecorationBackground),
+        TestDisplayItem(row, DisplayItem::kEndCompositing),
+        TestDisplayItem(htmlLayer, DisplayItem::kEndSubsequence));
 
     document().view()->updateAllLifecyclePhasesExceptPaint();
     // Intersects the spacing only.
@@ -132,9 +132,9 @@ TEST_F(TableCellPainterTest, BackgroundInSelfPaintingRow)
     paint(&interestRect);
 
     EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 3,
-        TestDisplayItem(layoutView, DisplayItem::DocumentBackground),
-        TestDisplayItem(htmlLayer, DisplayItem::Subsequence),
-        TestDisplayItem(htmlLayer, DisplayItem::EndSubsequence));
+        TestDisplayItem(layoutView, DisplayItem::kDocumentBackground),
+        TestDisplayItem(htmlLayer, DisplayItem::kSubsequence),
+        TestDisplayItem(htmlLayer, DisplayItem::kEndSubsequence));
 
     document().view()->updateAllLifecyclePhasesExceptPaint();
     // Intersects cell2 only.
@@ -142,13 +142,13 @@ TEST_F(TableCellPainterTest, BackgroundInSelfPaintingRow)
     paint(&interestRect);
 
     EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 7,
-        TestDisplayItem(layoutView, DisplayItem::DocumentBackground),
-        TestDisplayItem(htmlLayer, DisplayItem::Subsequence),
-        TestDisplayItem(row, DisplayItem::BeginCompositing),
-        TestDisplayItem(cell2, DisplayItem::TableCellBackgroundFromRow),
-        TestDisplayItem(cell2, DisplayItem::BoxDecorationBackground),
-        TestDisplayItem(row, DisplayItem::EndCompositing),
-        TestDisplayItem(htmlLayer, DisplayItem::EndSubsequence));
+        TestDisplayItem(layoutView, DisplayItem::kDocumentBackground),
+        TestDisplayItem(htmlLayer, DisplayItem::kSubsequence),
+        TestDisplayItem(row, DisplayItem::kBeginCompositing),
+        TestDisplayItem(cell2, DisplayItem::kTableCellBackgroundFromRow),
+        TestDisplayItem(cell2, DisplayItem::kBoxDecorationBackground),
+        TestDisplayItem(row, DisplayItem::kEndCompositing),
+        TestDisplayItem(htmlLayer, DisplayItem::kEndSubsequence));
 }
 
 TEST_F(TableCellPainterTest, CollapsedBorderAndOverflow)
@@ -174,9 +174,9 @@ TEST_F(TableCellPainterTest, CollapsedBorderAndOverflow)
 
     // We should paint all display items of cell.
     EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 4,
-        TestDisplayItem(layoutView, DisplayItem::DocumentBackground),
-        TestDisplayItem(cell, DisplayItem::BoxDecorationBackground),
-        TestDisplayItem(cell, DisplayItem::TableCollapsedBorderLast),
+        TestDisplayItem(layoutView, DisplayItem::kDocumentBackground),
+        TestDisplayItem(cell, DisplayItem::kBoxDecorationBackground),
+        TestDisplayItem(cell, DisplayItem::kTableCollapsedBorderLast),
         TestDisplayItem(cell, DisplayItem::paintPhaseToDrawingType(PaintPhaseSelfOutlineOnly)));
 }
 

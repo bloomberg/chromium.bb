@@ -91,7 +91,7 @@ void WebFont::drawText(WebCanvas* canvas, const WebTextRun& run,
     GraphicsContext& context = pictureBuilder.context();
 
     {
-        DrawingRecorder drawingRecorder(context, pictureBuilder, DisplayItem::WebFont, intRect);
+        DrawingRecorder drawingRecorder(context, pictureBuilder, DisplayItem::kWebFont, intRect);
         context.save();
         context.setFillColor(color);
         context.clip(textClipRect);

@@ -133,15 +133,15 @@ void WebPluginContainerImpl::paint(GraphicsContext& context, const CullRect& cul
         // With Slimming Paint v2, composited plugins should have their layers
         // inserted rather than invoking WebPlugin::paint.
         recordForeignLayer(
-            context, *m_element->layoutObject(), DisplayItem::ForeignLayerPlugin,
+            context, *m_element->layoutObject(), DisplayItem::kForeignLayerPlugin,
             m_webLayer, location(), size());
         return;
     }
 
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, *m_element->layoutObject(), DisplayItem::Type::WebPlugin))
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, *m_element->layoutObject(), DisplayItem::Type::kWebPlugin))
         return;
 
-    LayoutObjectDrawingRecorder drawingRecorder(context, *m_element->layoutObject(), DisplayItem::Type::WebPlugin, cullRect.m_rect);
+    LayoutObjectDrawingRecorder drawingRecorder(context, *m_element->layoutObject(), DisplayItem::Type::kWebPlugin, cullRect.m_rect);
     context.save();
 
     DCHECK(parent()->isFrameView());
@@ -351,10 +351,10 @@ int WebPluginContainerImpl::printBegin(const WebPrintParams& printParams) const
 
 void WebPluginContainerImpl::printPage(int pageNumber, GraphicsContext& gc, const IntRect& printRect)
 {
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(gc, *m_element->layoutObject(), DisplayItem::Type::WebPlugin))
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(gc, *m_element->layoutObject(), DisplayItem::Type::kWebPlugin))
         return;
 
-    LayoutObjectDrawingRecorder drawingRecorder(gc, *m_element->layoutObject(), DisplayItem::Type::WebPlugin, printRect);
+    LayoutObjectDrawingRecorder drawingRecorder(gc, *m_element->layoutObject(), DisplayItem::Type::kWebPlugin, printRect);
     gc.save();
     WebCanvas* canvas = gc.canvas();
     m_webPlugin->printPage(pageNumber, canvas);

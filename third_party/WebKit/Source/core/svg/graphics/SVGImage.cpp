@@ -279,7 +279,7 @@ void SVGImage::drawPatternForContainer(GraphicsContext& context, const FloatSize
 
     SkPictureBuilder patternPicture(spacedTile, nullptr, &context);
     {
-        DrawingRecorder patternPictureRecorder(patternPicture.context(), patternPicture, DisplayItem::Type::SVGImage, spacedTile);
+        DrawingRecorder patternPictureRecorder(patternPicture.context(), patternPicture, DisplayItem::Type::kSVGImage, spacedTile);
         // When generating an expanded tile, make sure we don't draw into the spacing area.
         if (tile != spacedTile)
             patternPicture.context().clip(tile);
@@ -361,7 +361,7 @@ void SVGImage::drawInternal(SkCanvas* canvas, const SkPaint& paint, const FloatR
 
     SkPictureBuilder imagePicture(dstRect);
     {
-        ClipRecorder clipRecorder(imagePicture.context(), imagePicture, DisplayItem::ClipNodeImage, enclosingIntRect(dstRect));
+        ClipRecorder clipRecorder(imagePicture.context(), imagePicture, DisplayItem::kClipNodeImage, enclosingIntRect(dstRect));
 
         // We can only draw the entire frame, clipped to the rect we want. So compute where the top left
         // of the image would be if we were drawing without clipping, and translate accordingly.

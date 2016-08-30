@@ -126,11 +126,11 @@ void SVGFilterPainter::finishEffect(const LayoutObject& object, SVGFilterRecordi
     }
 
     GraphicsContext& context = recordingContext.paintingContext();
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, object, DisplayItem::SVGFilter))
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, object, DisplayItem::kSVGFilter))
         return;
 
     // TODO(chrishtr): stop using an infinite rect, and instead bound the filter.
-    LayoutObjectDrawingRecorder recorder(context, object, DisplayItem::SVGFilter, LayoutRect::infiniteIntRect());
+    LayoutObjectDrawingRecorder recorder(context, object, DisplayItem::kSVGFilter, LayoutRect::infiniteIntRect());
     if (filterData && filterData->m_state == FilterData::ReadyToPaint)
         paintFilteredContent(context, filterData);
 }
