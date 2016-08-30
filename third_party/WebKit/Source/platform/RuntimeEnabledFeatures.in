@@ -232,6 +232,7 @@ WebGLImageChromium
 WebUSB status=experimental, origin_trial_feature_name=WebUSB
 WebVR
 WebVTTRegions status=experimental
+V8BasedStructuredClone
 V8IdleTasks
 VisibilityChangeOnUnload status=experimental
 XSLT status=stable
