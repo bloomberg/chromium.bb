@@ -28,8 +28,10 @@ public:
     static void {{attribute.name}}AttributeSetterCustom(v8::Local<v8::Value>, const v8::PropertyCallbackInfo<void>&);
     {% endif %}
     {% endfor %}
-    {# Custom internal fields #}
+    {% if unscopeables or has_conditional_attributes_on_prototype or
+          methods | conditionally_exposed(is_partial) %}
     static void preparePrototypeAndInterfaceObject(v8::Local<v8::Context>, const DOMWrapperWorld&, v8::Local<v8::Object>, v8::Local<v8::Function>, v8::Local<v8::FunctionTemplate>);
+    {% endif %}
     {% for origin_trial_feature in origin_trial_features %}{{newline}}
     static void install{{origin_trial_feature.name}}(ScriptState*, v8::Local<v8::Object> instance);
     {% if not origin_trial_feature.needs_instance %}

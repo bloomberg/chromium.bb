@@ -59,7 +59,6 @@ typedef void (*TraceWrappersFunction)(WrapperVisitor*, ScriptWrappable*);
 typedef ActiveScriptWrappable* (*ToActiveScriptWrappableFunction)(v8::Local<v8::Object>);
 typedef void (*ResolveWrapperReachabilityFunction)(v8::Isolate*, ScriptWrappable*, const v8::Persistent<v8::Object>&);
 typedef void (*PreparePrototypeAndInterfaceObjectFunction)(v8::Local<v8::Context>, const DOMWrapperWorld&, v8::Local<v8::Object>, v8::Local<v8::Function>, v8::Local<v8::FunctionTemplate>);
-typedef void (*InstallConditionallyEnabledPropertiesFunction)(v8::Local<v8::Object>, v8::Isolate*);
 
 inline void setObjectGroup(v8::Isolate* isolate, ScriptWrappable* scriptWrappable, const v8::Persistent<v8::Object>& wrapper)
 {
@@ -159,12 +158,6 @@ struct WrapperTypeInfo {
             preparePrototypeAndInterfaceObjectFunction(context, world, prototypeObject, interfaceObject, interfaceTemplate);
     }
 
-    void installConditionallyEnabledProperties(v8::Local<v8::Object> prototypeObject, v8::Isolate* isolate) const
-    {
-        if (installConditionallyEnabledPropertiesFunction)
-            installConditionallyEnabledPropertiesFunction(prototypeObject, isolate);
-    }
-
     bool isActiveScriptWrappable() const
     {
         return activeScriptWrappableInheritance == InheritFromActiveScriptWrappable;
@@ -189,7 +182,6 @@ struct WrapperTypeInfo {
     const TraceWrappersFunction traceWrappersFunction;
     const ResolveWrapperReachabilityFunction visitDOMWrapperFunction;
     PreparePrototypeAndInterfaceObjectFunction preparePrototypeAndInterfaceObjectFunction;
-    const InstallConditionallyEnabledPropertiesFunction installConditionallyEnabledPropertiesFunction;
     const char* const interfaceName;
     const WrapperTypeInfo* parentClass;
     const unsigned wrapperTypePrototype : 1; // WrapperTypePrototype

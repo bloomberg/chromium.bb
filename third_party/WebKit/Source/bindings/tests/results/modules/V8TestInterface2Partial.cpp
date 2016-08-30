@@ -90,17 +90,12 @@ void V8TestInterface2Partial::installV8TestInterface2Template(v8::Isolate* isola
     }
 }
 
-void V8TestInterface2Partial::preparePrototypeAndInterfaceObject(v8::Local<v8::Context> context, const DOMWrapperWorld& world, v8::Local<v8::Object> prototypeObject, v8::Local<v8::Function> interfaceObject, v8::Local<v8::FunctionTemplate> interfaceTemplate)
-{
-    V8TestInterface2::preparePrototypeAndInterfaceObject(context, world, prototypeObject, interfaceObject, interfaceTemplate);
-}
-
 void V8TestInterface2Partial::initialize()
 {
     // Should be invoked from ModulesInitializer.
     V8TestInterface2::updateWrapperTypeInfo(
         &V8TestInterface2Partial::installV8TestInterface2Template,
-        &V8TestInterface2Partial::preparePrototypeAndInterfaceObject);
+        nullptr);
 }
 
 } // namespace blink

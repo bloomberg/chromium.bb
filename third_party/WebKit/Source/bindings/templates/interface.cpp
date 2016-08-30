@@ -1,5 +1,13 @@
 {% extends 'interface_base.cpp' %}
 
+{% set has_prepare_prototype_and_interface_object =
+    unscopeables or has_conditional_attributes_on_prototype or
+    methods | conditionally_exposed(is_partial) %}
+{% set prepare_prototype_and_interface_object_func =
+    '%s::preparePrototypeAndInterfaceObject' % v8_class
+    if has_prepare_prototype_and_interface_object
+    else 'nullptr' %}
+
 
 {##############################################################################}
 {% block indexed_property_getter %}
@@ -485,7 +493,7 @@ static void {{cpp_class}}OriginSafeMethodSetterCallback(v8::Local<v8::Name> name
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo {{v8_class}}Constructor::wrapperTypeInfo = { gin::kEmbedderBlink, {{v8_class}}Constructor::domTemplate, {{v8_class}}::trace, {{v8_class}}::traceWrappers, 0, {{v8_class}}::preparePrototypeAndInterfaceObject,{% if has_conditional_attributes_on_instance %} {{v8_class}}::installConditionallyEnabledProperties{% else %} nullptr{% endif %}, "{{interface_name}}", 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::{{wrapper_class_id}}, WrapperTypeInfo::{{active_scriptwrappable_inheritance}}, WrapperTypeInfo::{{event_target_inheritance}}, WrapperTypeInfo::{{lifetime}} };
+const WrapperTypeInfo {{v8_class}}Constructor::wrapperTypeInfo = { gin::kEmbedderBlink, {{v8_class}}Constructor::domTemplate, {{v8_class}}::trace, {{v8_class}}::traceWrappers, 0, {{prepare_prototype_and_interface_object_func}}, "{{interface_name}}", 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::{{wrapper_class_id}}, WrapperTypeInfo::{{active_scriptwrappable_inheritance}}, WrapperTypeInfo::{{event_target_inheritance}}, WrapperTypeInfo::{{lifetime}} };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
 #endif
@@ -851,22 +859,9 @@ v8::Local<v8::Object> {{v8_class}}::findInstanceInPrototypeChain(v8::Local<v8::V
 
 
 {##############################################################################}
-{% block install_conditional_attributes %}
-{% from 'attributes.cpp' import attribute_configuration with context %}
-{% if has_conditional_attributes_on_instance %}
-void {{v8_class}}::installConditionallyEnabledProperties(v8::Local<v8::Object> instanceObject, v8::Isolate* isolate)
-{
-#error TODO(yukishiino): Rename this function to prepareInstanceObject (c.f. preparePrototypeAndInterfaceObject) and implement this function if necessary.  http://crbug.com/503508
-}
-
-{% endif %}
-{% endblock %}
-
-
-{##############################################################################}
 {% block prepare_prototype_and_interface_object %}
 {% from 'methods.cpp' import install_conditionally_enabled_methods with context %}
-{% if unscopeables or has_conditional_attributes_on_prototype or methods | conditionally_exposed(is_partial) %}
+{% if has_prepare_prototype_and_interface_object %}
 void {{v8_class}}::preparePrototypeAndInterfaceObject(v8::Local<v8::Context> context, const DOMWrapperWorld& world, v8::Local<v8::Object> prototypeObject, v8::Local<v8::Function> interfaceObject, v8::Local<v8::FunctionTemplate> interfaceTemplate)
 {
     v8::Isolate* isolate = context->GetIsolate();

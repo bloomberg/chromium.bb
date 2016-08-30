@@ -22,7 +22,6 @@ class V8TestInterface2Partial {
     STATIC_ONLY(V8TestInterface2Partial);
 public:
     static void initialize();
-    static void preparePrototypeAndInterfaceObject(v8::Local<v8::Context>, const DOMWrapperWorld&, v8::Local<v8::Object>, v8::Local<v8::Function>, v8::Local<v8::FunctionTemplate>);
 private:
     static void installV8TestInterface2Template(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::FunctionTemplate> interfaceTemplate);
 };

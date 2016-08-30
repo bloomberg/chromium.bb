@@ -563,15 +563,10 @@ def interface_context(interface):
     })
 
     # Conditionally enabled members
-    has_conditional_attributes_on_instance = any(
-        (attribute['exposed_test'] or attribute['secure_context_test']) and attribute['on_instance']
-        for attribute in attributes)
     has_conditional_attributes_on_prototype = any(
         (attribute['exposed_test'] or attribute['secure_context_test']) and attribute['on_prototype']
         for attribute in attributes)
     context.update({
-        'has_conditional_attributes_on_instance':
-            has_conditional_attributes_on_instance,
         'has_conditional_attributes_on_prototype':
             has_conditional_attributes_on_prototype,
     })
