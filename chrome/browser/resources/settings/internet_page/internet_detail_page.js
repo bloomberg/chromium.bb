@@ -15,7 +15,8 @@
 Polymer({
   is: 'settings-internet-detail-page',
 
-  behaviors: [CrPolicyNetworkBehavior, settings.RouteObserverBehavior],
+  behaviors:
+      [CrPolicyNetworkBehavior, settings.RouteObserverBehavior, I18nBehavior],
 
   properties: {
     /** The network GUID to display details for. */
@@ -250,9 +251,7 @@ Polymer({
    * @private
    */
   getStateText_: function() {
-    // TODO(stevenjb): Localize.
-    return (this.networkProperties && this.networkProperties.ConnectionState) ||
-        '';
+    return this.i18n('Onc' + this.networkProperties.ConnectionState);
   },
 
   /**

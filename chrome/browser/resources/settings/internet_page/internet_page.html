@@ -1,9 +1,9 @@
-<link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/network/cr_onc_types.html">
-<link rel="import" href="/route.html">
+<link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
+<link rel="import" href="/route.html">
 <link rel="import" href="/settings_page/settings_animated_pages.html">
 <link rel="import" href="/settings_page/settings_subpage.html">
 <link rel="import" href="/settings_shared_css.html">
@@ -14,14 +14,15 @@
 <dom-module id="settings-internet-page">
   <template>
     <style include="settings-shared">
-     iron-icon {
-       -webkit-margin-end: 12px;
-       height: 24px;
-       width: 24px;
-     }
-     div.add-no-icon {
-       margin-left: 36px
-     }
+      div.add-no-icon {
+        margin-left: 36px
+      }
+
+      iron-icon {
+        -webkit-margin-end: 12px;
+        height: 24px;
+        width: 24px;
+      }
     </style>
     <settings-animated-pages id="pages" section="internet">
       <neon-animatable route-path="default">
@@ -34,7 +35,7 @@
             on-tap="onExpandAddConnectionsTap_">
           <div class="start layout horizontal center">
             <iron-icon icon="cr:add"></iron-icon>
-            <div>Add connection</div>
+            <div>$i18n{internetAddConnection}</div>
           </div>
           <cr-expand-button
               id="expandAddConnections" expanded="{{addConnectionExpanded}}">
@@ -43,11 +44,11 @@
         <template is="dom-if" if="[[addConnectionExpanded]]">
           <div actionable class="settings-box continuation center"
               on-tap="onAddWiFiTap_">
-            <div class="start add-no-icon">Add Wi-Fi...</div>
+            <div class="start add-no-icon">$i18n{internetAddWiFi}</div>
           </div>
           <div actionable class="settings-box continuation center"
               on-tap="onAddVPNTap_">
-            <div class="start add-no-icon">Add OpenVPN / L2TP...</div>
+            <div class="start add-no-icon">$i18n{internetAddVPN}</div>
           </div>
         </template>
       </neon-animatable>

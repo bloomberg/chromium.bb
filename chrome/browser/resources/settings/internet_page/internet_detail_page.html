@@ -1,15 +1,16 @@
-<link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/network/cr_network_icon.html">
 <link rel="import" href="chrome://resources/cr_elements/network/cr_onc_types.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_network_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_network_indicator.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="/route.html">
 <link rel="import" href="internet_shared_css.html">
 <link rel="import" href="network_apnlist.html">
@@ -22,8 +23,8 @@
 <dom-module id="settings-internet-detail-page">
   <template>
     <style include="internet-shared">
-      iron-collapse {
-        margin: 10px;
+      :host {
+        padding-bottom: 40px;
       }
 
       cr-network-icon {
@@ -34,6 +35,10 @@
 
       cr-policy-network-indicator {
         -webkit-margin-start: 10px;
+      }
+
+      iron-collapse {
+        margin: 10px;
       }
 
       .subtitle {
@@ -81,42 +86,42 @@
         <div id="buttonDiv" class="layout horizontal center">
           <paper-button class="secondary-button" on-tap="onForgetTap_"
               hidden$="[[!showForget_(networkProperties)]]">
-            Forget
+            $i18n{networkButtonForget}
           </paper-button>
           <paper-button class="secondary-button" on-tap="onViewAccountTap_"
               hidden$="[[!showViewAccount_(networkProperties)]]">
-            View Account
+            $i18n{networkButtonViewAccount}
           </paper-button>
           <paper-button class="secondary-button" on-tap="onActivateTap_"
               hidden$="[[!showActivate_(networkProperties)]]">
-            Activate
+            $i18n{networkButtonActivate}
           </paper-button>
           <paper-button class="secondary-button" on-tap="onConfigureTap_"
               hidden$="[[!showConfigure_(networkProperties)]]">
-            Configure
+            $i18n{networkButtonConfigure}
           </paper-button>
           <paper-button class="primary-button" on-tap="onConnectTap_"
               hidden$="[[!showConnect_(networkProperties)]]"
               disabled="[[!enableConnect_(networkProperties, defaultNetwork)]]">
-            Connect
+            $i18n{networkButtonConnect}
           </paper-button>
           <paper-button class="primary-button" on-tap="onDisconnectTap_"
               hidden$="[[!showDisconnect_(networkProperties)]]">
-            Disconnect
+            $i18n{networkButtonDisconnect}
           </paper-button>
         </div>
       </div>
       <!-- Shared. -->
       <div class="settings-box embedded"
           hidden$="[[!showShared_(networkProperties)]]">
-        This network is shared with other users.
+        $i18n{networkShared}
       </div>
       <!-- Prefer this network. -->
       <div class="settings-box embedded"
           hidden$="[[!showPreferNetwork_(networkProperties)]]">
         <paper-checkbox checked="{{preferNetwork}}"
             disabled="[[isNetworkPolicyEnforced(networkProperties.Priority)]]">
-          Prefer this network
+          $i18n{networkPrefer}
         </paper-checkbox>
         <cr-policy-network-indicator property="[[networkProperties.Priority]]">
         </cr-policy-network-indicator>
@@ -125,7 +130,7 @@
       <div class="settings-box embedded"
           hidden$="[[!showAutoConnect_(networkProperties)]]">
         <paper-checkbox checked="{{autoConnect}}">
-          Automatically connect to this network
+          $i18n{networkAutoConnect}
         </paper-checkbox>
         <cr-policy-network-indicator
             property="[[getManagedAutoConnect_(networkProperties)]]">
@@ -143,7 +148,7 @@
 
     <!-- IP Address. -->
     <div class="settings-box two-line single-column" hidden$="[[!IPAddress]]">
-      <div>IP Address</div>
+      <div>$i18n{networkIPAddress}</div>
       <div class="secondary">[[IPAddress]]</div>
     </div>
 
@@ -156,7 +161,7 @@
     <!-- Advanced toggle. -->
     <div class="settings-box" actionable on-tap="toggleAdvancedExpanded_"
         hidden$="[[!hasAdvancedOrDeviceFields_(networkProperties)]]">
-      <div class="start">Advanced</div>
+      <div class="start">$i18n{networkSectionAdvanced}</div>
       <cr-expand-button id="expandButton" expanded="{{advancedExpanded}}">
       </cr-expand-button>
     </div>
@@ -182,7 +187,7 @@
         <div class="layout vertical"
             hidden$="[[!hasNetworkSection_(networkProperties)]]">
 
-          <div class="subtitle">Network</div>
+          <div class="subtitle">$i18n{networkSectionNetwork}</div>
           <!-- APN -->
           <network-apnlist editable on-apn-change="onNetworkPropertyChange_"
               hidden$="[[!isType_(NetworkType.CELLULAR, networkProperties)]]"
@@ -204,7 +209,7 @@
 
         <!-- Proxy -->
         <div hidden$="[[!isRememberedOrConnected_(networkProperties)]]">
-          <div class="subtitle">Proxy</div>
+          <div class="subtitle">$i18n{networkSectionProxy}</div>
           <network-proxy editable on-proxy-change="onProxyChange_"
               network-properties="[[networkProperties]]">
           </network-proxy>

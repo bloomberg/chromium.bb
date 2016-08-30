@@ -863,7 +863,7 @@
   </if>
 
   <if expr="chromeos">
-    <!-- Internet Page -->
+    <!-- Strings specific to the Settings Internet Page -->
     <message name="IDS_SETTINGS_INTERNET" desc="Name of the settings page which displays internet preferences.">
       Internet connection
     </message>
@@ -873,17 +873,153 @@
     <message name="IDS_SETTINGS_INTERNET_KNOWN_NETWORKS" desc="Name of the settings page which displays the list of known networks.">
       Known Networks
     </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_CONNECTING" desc="Settings > Internet, text in network summary when the primary network is connecting.">
-      Connecting to <ph name="NAME">$1<ex>GoogleGuest</ex></ph>
+    <message name="IDS_SETTINGS_INTERNET_ADD_CONNECTION" desc="Settings > Internet > Add connection expanding section label.">
+      Add connection
     </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_DISABLED" desc="Settings > Internet, text in network summary when the network type is connected">
-      Disabled
+    <message name="IDS_SETTINGS_INTERNET_ADD_WIFI" desc="Settings > Internet > Add Wi-Fi label.">
+      Add Wi-Fi...
     </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_NOT_CONNECTED" desc="Settings > Internet, text in network summary when there is no network for the type.">
-      No network
+    <message name="IDS_SETTINGS_INTERNET_ADD_VPN" desc="Settings > Internet > Add VPN label.">
+      Add OpenVPN / L2TP...
     </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_LIST_ITEM_CONNECTED" desc="Settings > Internet, text to show in a network list item that is connected.">
-      connected
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SECTION_ACCESS_POINT" desc="Settings > Internet > Network details: Access Point section label.">
+      Access Point
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SECTION_ADVANCED" desc="Settings > Internet > Network details: Advanced section label.">
+      Advanced
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SECTION_NAMESERVERS" desc="Settings > Internet > Network details: Nameservers section label.">
+      Nameservers
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SECTION_NETWORK" desc="Settings > Internet > Network details: Network section label.">
+      Network
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SECTION_PROXY" desc="Settings > Internet > Network details: Proxy section label.">
+      Proxy
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SECTION_WPAD" desc="Settings > Internet > Network details: Web Proxy Auto Discovery (WPAD) section label.">
+      Web Proxy Auto Discovery URL:
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SHARED" desc="Settings > Internet > Netwok details: Text to show when a network is shared.">
+      This network is shared with other users.
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_ENFORCED" desc="Settings > Internet > Netwok details: Text to show when a network proxy is policy enforced.">
+      This proxy is enforced by your administrator.
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_USE_SAME" desc="Settings > Internet > Netwok details: Label for checbox indicating that a network proxy uses the same value for all protocols.">
+      Use the same proxy for all protocols
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_EXCEPTION_LIST" desc="Settings > Internet > Netwok details: Label for list of network proxy exceptions.">
+      Do not use the proxy settings for these hosts and domains:
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_ADD_EXCEPTION" desc="Settings > Internet > Netwok details: Label for button to add a network proxy exception.">
+      Add exception
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_CONNECTION_TYPE" desc="Settings > Internet > Netwok details: Label for proxy connection type dropdown.">
+      Connection type
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_AUTO_CONFIG" desc="Settings > Internet > Netwok details: Label for proxy autoconfiguration URL input.">
+      Autoconfiguration URL:
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_PROXY" desc="Settings > Internet > Netwok details: Label for all proxys.">
+      Proxy
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_HTTP_PROXY" desc="Settings > Internet > Netwok details: Label for HTTP proxy.">
+      HTTP Proxy
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_SHTTP_PROXY" desc="Settings > Internet > Netwok details: Label for SHTTP proxy.">
+      Secure HTTP Proxy
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_FTP_PROXY" desc="Settings > Internet > Netwok details: Label for FTP proxy.">
+      FTP Proxy
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_SOCKS_HOST" desc="Settings > Internet > Netwok details: Label for SOCKS host proxy.">
+      SOCKS Host
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_PORT" desc="Settings > Internet > Netwok details: Label for proxy port input.">
+      Port
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_CHANGE_PIN" desc="Settings > Internet > Netwok details > Lock/unlock SIM card: Label for buton to change the PIN.">
+      Change PIN
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_CARD_MISSING" desc="Settings > Internet > Netwok details > Lock/unlock SIM card: Message when SIM card is missing.">
+      Missing SIM card
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_CARD_LOCKED" desc="Settings > Internet > Netwok details > Lock/unlock SIM card: Message when SIM card is locked.">
+      SIM card is locked
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCK_ENABLE" desc="Settings > Internet > Netwok details > Lock/unlock SIM card: Label for checkbox to enable SIM card locking.">
+      Enable SIM card locking (require PIN to use mobile data)
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_BUTTON_CHANGE" desc="Settings > Internet > Netwok details > Lock/unlock SIM card: Label for dialog button to change a PIN.">
+      Change
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_BUTTON_ENTER" desc="Settings > Internet > Netwok details > Lock/unlock SIM card: Label for dialog button to enter a PIN.">
+      Enter
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_BUTTON_UNLOCK" desc="Settings > Internet > Netwok details > Lock/unlock SIM card: Label for button to unlock the SIM card.">
+      Unlock
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ENTER_PIN_TITLE" desc="Settings > Internet > Netwok details > Lock/unlock SIM card: Title for enter PIN dialog.">
+      Enter SIM PIN
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_CHANGE_PIN_TITLE" desc="Settings > Internet > Netwok details > Lock/unlock SIM card: Title for change PIN dialog.">
+      Change SIM PIN
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCKED_TITLE" desc="Settings > Internet > Netwok details > Lock/unlock SIM card: Title for SIM locked dialog.">
+      SIM Card is locked
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCKED_WARNING" desc="Settings > Internet > Netwok details > Lock/unlock SIM card: Warning for SIM locked dialog when PUK is required.">
+      Your SIM card will be permanently disabled if you cannot enter
+      the correct PIN Unblocking Key.
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ENTER_PIN" desc="Settings > Internet > Netwok details > Lock/unlock SIM card: Label for entering a PIN.">
+      Enter PIN
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ENTER_OLD_PIN" desc="Settings > Internet > Netwok details > Lock/unlock SIM card: Label for entering an old (current) PIN.">
+      Enter old PIN
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ENTER_NEW_PIN" desc="Settings > Internet > Netwok details > Lock/unlock SIM card: Label for entering a new PIN.">
+      Enter new PIN
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_RE_ENTER_NEW_PIN" desc="Settings > Internet > Netwok details > Lock/unlock SIM card: Label for re-entering a new PIN.">
+      Re-enter new PIN
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ENTER_PUK" desc="Settings > Internet > Netwok details > Lock/unlock SIM card: Label for entering a PUK.">
+      Enter PIN Unblocking Key
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_PREFER" desc="Settings > Internet > Netwok details: Label for the checkbox determining whether a network is preferred over other networks.">
+      Prefer this network
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_AUTO_CONNECT" desc="Settings > Internet > Netwok details: Label for the checkbox determining whether to automatically connect to the network.">
+      Automatically connect to this network
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_IP_CONFIG_AUTO" desc="Settings > Internet > Netwok details: Label for the checkbox determining whether to automatically configure the network IP config.">
+      Configure IP address automatically
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_IP_ADDRESS" desc="Settings > Internet > Netwok details: Label for the network IP Address.">
+      IP Address
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_BUTTON_FORGET" desc="Settings > Internet > Netwok details: The label for the button to forget a network (remove from the list of known networks).">
+      Forget
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_BUTTON_VIEW_ACCOUNT" desc="Settings > Internet > Netwok details: The label for the button to view the account details for a Cellular network.">
+      View Account
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_BUTTON_ACTIVATE" desc="Settings > Internet > Netwok details: The label for the button to activate a Cellular network.">
+      Activate
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_BUTTON_CONFIGURE" desc="Settings > Internet > Netwok details: The label for the button to configure a network (change its settings).">
+      Configure
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_BUTTON_CONNECT" desc="Settings > Internet > Netwok details: The label for the button to connect to a network.">
+      Connect
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_BUTTON_DISCONNECT" desc="Settings > Internet > Netwok details: The label for the button to disconnect from a network.">
+      Disconnect
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_BUTTON_SAVE_APN" desc="Settings > Internet > Netwok details: The label for the button to save an APN configuration.">
+      Save
     </message>
     <message name="IDS_SETTINGS_NETWORK_TYPE_ETHERNET" desc="The ethernet network type.">
       Ethernet
@@ -903,9 +1039,6 @@
     <message name="IDS_SETTINGS_NETWORK_TYPE_VPN" desc="The vpn network type.">
       VPN
     </message>
-    <message name="IDS_SETTINGS_THIRD_PARTY_VPN_NAME_TEMPLATE" desc="Template for constructing the name of a VPN network that is handled by a third-party VPN provider from the provider name and the network name.">
-      <ph name="PROVIDER_NAME">$1<ex>OpenVPN</ex></ph>: <ph name="NETWORK_NAME">$2<ex>Work Network</ex></ph>
-    </message>
     <message name="IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_BUTTON" desc="Text for button that opens the known networks subpage.">
       Known networks
     </message>
@@ -920,6 +1053,155 @@
     </message>
     <message name="IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_ALL" desc="Title for list of all other (non preferred) networks.">
       All networks
+    </message>
+
+    <!-- Strings used in <cr-network-list>, used in Settings and OOBE -->
+    <message name="IDS_NETWORK_LIST_DISABLED" desc="Settings > Internet, text in network summary when the network type is connected">
+      Disabled
+    </message>
+    <message name="IDS_NETWORK_LIST_NOT_CONNECTED" desc="Settings > Internet, text in network summary when there is no network for the type.">
+      No network
+    </message>
+    <message name="IDS_NETWORK_LIST_CONNECTED" desc="Settings > Internet, text to show in a network list item that is connected.">
+      connected
+    </message>
+    <message name="IDS_NETWORK_LIST_CONNECTING" desc="Settings > Internet, text in network summary when the primary network is connecting.">
+      Connecting to <ph name="NAME">$1<ex>GoogleGuest</ex></ph>
+    </message>
+    <message name="IDS_NETWORK_LIST_THIRD_PARTY_VPN_NAME_TEMPLATE" desc="Template for constructing the name of a VPN network that is handled by a third-party VPN provider from the provider name and the network name.">
+      <ph name="PROVIDER_NAME">$1<ex>OpenVPN</ex></ph>: <ph name="NETWORK_NAME">$2<ex>Work Network</ex></ph>
+    </message>
+
+     <!-- Strings translating ONC (Open Network Configuration) properties -->
+     <!-- and translatable values. See onc_spec.html for more information. -->
+    <message name="IDS_ONC_IPV4_ADDRESS" desc="ONC Property label for ipv4-IPAddress">
+      IP address
+    </message>
+    <message name="IDS_ONC_IPV4_GATEWAY" desc="ONC Property label for ipv4-Gateway">
+      Gateway
+    </message>
+    <message name="IDS_ONC_IPV4_ROUTING_PREFIX" desc="ONC Property label for ipv4-RoutingPrefix">
+      Routing prefix
+    </message>
+    <message name="IDS_ONC_IPV6_ADDRESS" desc="ONC Property label for ipv6-Address">
+      IPv6 address
+    </message>
+    <message name="IDS_ONC_CELLULAR_ACTIVATION_STATE" desc="ONC Property label for Cellular.ActivationState">
+      Activation status
+    </message>
+    <message name="IDS_ONC_CELLULAR_ACTIVATION_STATE_ACTIVATED" desc="ONC Property value when Cellular.ActivationState = Activated">
+      Activated
+    </message>
+    <message name="IDS_ONC_CELLULAR_ACTIVATION_STATE_ACTIVATING" desc="ONC Property value when Cellular.ActivationState = Activating">
+      Activating
+    </message>
+    <message name="IDS_ONC_CELLULAR_ACTIVATION_STATE_NOT_ACTIVATED" desc="ONC Property value when Cellular.ActivationStat = NotActivated">
+      Not activated
+    </message>
+    <message name="IDS_ONC_CELLULAR_ACTIVATION_STATE_PARTIALLY_ACTIVATED" desc="ONC Property value when Cellular.ActivationState = PartiallyActivated">
+      Partially activated
+    </message>
+    <message name="IDS_ONC_CELLULAR_APN_ACCESS_POINT_NAME" desc="ONC Property label for APN-AccessPointName">
+      Access point name
+    </message>
+    <message name="IDS_ONC_CELLULAR_APN_ACCESS_POINT_NAME_NONE" desc="ONC Property label for APN-AccessPointName = none (or empty)">
+      None
+    </message>
+    <message name="IDS_ONC_CELLULAR_APN_USERNAME" desc="ONC Property label for APN-Username">
+      Username
+    </message>
+    <message name="IDS_ONC_CELLULAR_APN_PASSWORD" desc="ONC Property label for APN-Password">
+      Password
+    </message>
+    <message name="IDS_ONC_CELLULAR_CARRIER" desc="ONC Property label for Cellular.Carrier">
+      Carrier
+    </message>
+    <message name="IDS_ONC_CELLULAR_FAMILY" desc="ONC Property label for Cellular.Family">
+      Family
+    </message>
+    <message name="IDS_ONC_CELLULAR_FIRMWARE_REVISION" desc="ONC Property label for Cellular.FirmwareRevision">
+      Firmware revision
+    </message>
+    <message name="IDS_ONC_CELLULAR_HARDWARE_REVISION" desc="ONC Property label for Cellular.HardwareRevision">
+      Hardware revision
+    </message>
+    <message name="IDS_ONC_CELLULAR_HOME_PROVIDER_CODE" desc="ONC Property label for Cellular.HomeProvider.Code">
+      Home provider code
+    </message>
+    <message name="IDS_ONC_CELLULAR_HOME_PROVIDER_COUNTRY" desc="ONC Property label for Cellular.HomeProvider.Country">
+      Home provider country
+    </message>
+    <message name="IDS_ONC_CELLULAR_HOME_PROVIDER_NAME" desc="ONC Property label for Cellular.HomeProvider.Name">
+      Home provider name
+    </message>
+    <message name="IDS_ONC_CELLULAR_MANUFACTURER" desc="ONC Property label for Cellular.Manufacturer">
+      Manufacturer
+    </message>
+    <message name="IDS_ONC_CELLULAR_MODEL_ID" desc="ONC Property label for Cellular.ModelID">
+      Model ID
+    </message>
+    <message name="IDS_ONC_CELLULAR_NETWORK_TECHNOLOGY" desc="ONC Property label for Cellular.NetworkTechnology">
+      Technology
+    </message>
+    <message name="IDS_ONC_CELLULAR_PRL_VERSION" desc="ONC Property label for Cellular.PRLVersion">
+      PRL Version
+    </message>
+    <message name="IDS_ONC_CELLULAR_ROAMING_STATE" desc="ONC Property label for Cellular.RoamingState">
+      Roaming status
+    </message>
+    <message name="IDS_ONC_CELLULAR_ROAMING_STATE_HOME" desc="ONC Property value when OncCellular.RoamingState = Home">
+      Home network, not roaming
+    </message>
+    <message name="IDS_ONC_CELLULAR_ROAMING_STATE_ROAMING" desc="ONC Property value when OncCellular.RoamingState = Roaming">
+      Roaming
+    </message>
+    <message name="IDS_ONC_CELLULAR_SERVING_OPERATOR_CODE" desc="ONC Property label for Cellular.ServingOperator.Code">
+      Operator code
+    </message>
+    <message name="IDS_ONC_CELLULAR_SERVING_OPERATOR_NAME" desc="ONC Property label for Cellular.ServingOperator.Name">
+      Operator
+    </message>
+    <message name="IDS_ONC_CONNECTED" desc="Settings > Internet, text in network summary when a network is connected.">
+      Connected
+    </message>
+    <message name="IDS_ONC_CONNECTING" desc="Settings > Internet, text in network summary when a network is connecting.">
+      Connecting
+    </message>
+    <message name="IDS_ONC_NOT_CONNECTED" desc="Settings > Internet, text in network summary when a network is not connecting or connected.">
+      Not Connected
+    </message>
+    <message name="IDS_ONC_MAC_ADDRESS" desc="ONC Property label for MacAddress">
+      MAC address
+    </message>
+    <message name="IDS_ONC_RESTRICTED_CONNECTIVITY" desc="ONC Property label for RestrictedConnectivity">
+      Restricted IP
+    </message>
+    <message name="IDS_ONC_VPN_HOST" desc="ONC Property label for VPN.Host">
+      Host
+    </message>
+    <message name="IDS_ONC_VPN_L2TP_USERNAME" desc="ONC Property label for VPN.L2TP.Username">
+      Username
+    </message>
+    <message name="IDS_ONC_VPN_OPEN_VPN_USERNAME" desc="ONC Property label for VPN.OpenVPN.Username">
+      Username
+    </message>
+    <message name="IDS_ONC_VPN_THIRD_PARTY_VPN_PROVIDER_NAME" desc="ONC Property label for VPN.ThirdPartyVPN.ProviderName">
+      Provider name
+    </message>
+    <message name="IDS_ONC_VPN_TYPE" desc="ONC Property label for VPN.Type">
+      Provider type
+    </message>
+    <message name="IDS_ONC_WIFI_FREQUENCY" desc="ONC Property label for WiFi.Frequency">
+      Frequency
+    </message>
+    <message name="IDS_ONC_WIFI_SECURITY" desc="ONC Property label for WiFi.Security">
+      Security
+    </message>
+    <message name="IDS_ONC_WIFI_SIGNAL_STRENGTH" desc="ONC Property label for WiFi.SignalStrength">
+      Signal strength
+    </message>
+    <message name="IDS_ONC_WIMAX_EAP_IDENTITY" desc="ONC Property label for WiMAX.EAP.Identity">
+      Identity
     </message>
   </if>
 

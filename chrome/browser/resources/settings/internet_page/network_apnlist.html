@@ -1,7 +1,7 @@
+<link rel="import" href="chrome://resources/cr_elements/network/cr_onc_types.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-dropdown-menu/paper-dropdown-menu-light.html">
-<link rel="import" href="chrome://resources/cr_elements/network/cr_onc_types.html">
 <link rel="import" href="internet_shared_css.html">
 <link rel="import" href="network_property_list.html">
 
@@ -10,7 +10,7 @@
     <style include="internet-shared">
     </style>
     <div class="settings-box">
-      <div class="start">Access Point</div> 
+      <div class="start">$i18n{networkSectionAccessPoint}</div>
       <paper-dropdown-menu-light vertical-align="auto" no-label-float>
         <paper-listbox id="selectApn"
             class="dropdown-content" on-iron-activate="onSelectApnChange_"
@@ -29,9 +29,11 @@
         hidden$="[[!isOtherSelected_(networkProperties, selectedApn)]]">
       <network-property-list on-property-change="onOtherApnChange_"
           fields="[[otherApnFields_]]" property-dict="[[otherApn]]"
-          edit-field-types="[[otherApnEditTypes_]]">
+          edit-field-types="[[otherApnEditTypes_]]" prefix="Cellular.APN.">
       </network-property-list>
-      <paper-button on-tap="onSaveOtherTap_">Save</paper-button>
+      <paper-button on-tap="onSaveOtherTap_">
+        ${networkButtonSaveApn}
+      </paper-button>
     </div>
   </template>
   <script src="network_apnlist.js"></script>

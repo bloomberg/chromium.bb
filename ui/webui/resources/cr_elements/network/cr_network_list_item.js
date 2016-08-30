@@ -132,9 +132,9 @@ Polymer({
     if (state == CrOnc.ConnectionState.CONNECTED)
       return name;
     if (state == CrOnc.ConnectionState.CONNECTING)
-      return this.i18n('networkConnecting', name);
+      return this.i18n('networkListItemConnecting', name);
     if (state == CrOnc.ConnectionState.NOT_CONNECTED)
-      return this.i18n('networkNotConnected');
+      return this.i18n('networkListItemNotConnected');
     // TODO(stevenjb): Audit state translations and remove test.
     if (this.i18nExists(state))
       return this.i18n(state);
