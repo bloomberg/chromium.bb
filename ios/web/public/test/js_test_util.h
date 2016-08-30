@@ -26,6 +26,11 @@ id ExecuteJavaScript(CRWJSInjectionManager* manager, NSString* script);
 id ExecuteJavaScript(CRWJSInjectionReceiver* receiver, NSString* script);
 
 // Executes JavaScript on |web_view| and returns the result as an id.
+// |error| can be null and will be updated only if script execution fails.
+id ExecuteJavaScript(WKWebView* web_view, NSString* script, NSError** error);
+
+// Executes JavaScript on |web_view| and returns the result as an id.
+// Fails if there was an error during script execution.
 id ExecuteJavaScript(WKWebView* web_view, NSString* script);
 
 }  // namespace web

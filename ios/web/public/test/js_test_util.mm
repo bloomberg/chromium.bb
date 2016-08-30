@@ -37,12 +37,17 @@ id ExecuteJavaScript(CRWJSInjectionReceiver* receiver, NSString* script) {
 }
 
 id ExecuteJavaScript(WKWebView* web_view, NSString* script) {
+  return ExecuteJavaScript(web_view, script, nullptr);
+}
+
+id ExecuteJavaScript(WKWebView* web_view, NSString* script, NSError** error) {
   __block base::scoped_nsobject<id> result;
   __block bool completed = false;
   [web_view evaluateJavaScript:script
-             completionHandler:^(id evaluation_result, NSError* error) {
-               DCHECK(!error);
-               result.reset([evaluation_result copy]);
+             completionHandler:^(id script_result, NSError* script_error) {
+               result.reset([script_result copy]);
+               if (error)
+                 *error = [[script_error copy] autorelease];
                completed = true;
              }];
   base::test::ios::WaitUntilCondition(^{

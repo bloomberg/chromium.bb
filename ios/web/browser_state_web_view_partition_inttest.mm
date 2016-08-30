@@ -7,15 +7,16 @@
 #include <memory>
 #include <string>
 
+#include "base/mac/foundation_util.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/ios/wait_util.h"
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/test/http_server.h"
+#import "ios/web/public/test/js_test_util.h"
 #include "ios/web/public/test/response_providers/string_response_provider.h"
 #import "ios/web/public/web_view_creation_util.h"
 #import "ios/web/test/web_int_test.h"
-#import "ios/web/web_state/ui/web_view_js_utils.h"
 #import "net/base/mac/url_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
@@ -65,33 +66,19 @@ class BrowserStateWebViewPartitionTest : public web::WebIntTest {
     web::WebIntTest::TearDown();
   }
 
-  // Runs the given JavaScript on |web_view| and returns the result as a string.
-  NSString* EvaluateJavaScript(WKWebView* web_view,
-                               NSString* js) {
-    __block base::scoped_nsobject<NSString> result;
-    __block bool block_was_called = false;
-    web::EvaluateJavaScript(web_view, js, ^(NSString* js_result, NSError*) {
-      result.reset([js_result copy]);
-      block_was_called = true;
-    });
-    base::test::ios::WaitUntilCondition(^bool {
-      return block_was_called;
-    });
-    return [[result copy] autorelease];
-  }
-
   // Sets a persistent cookie with key, value on |web_view|.
   void SetCookie(NSString* key, NSString* value, WKWebView* web_view) {
     NSString* set_cookie = [NSString
         stringWithFormat:@"document.cookie='%@=%@;"
                          @"Expires=Tue, 05-May-9999 02:18:23 GMT; Path=/'",
                          key, value];
-    EvaluateJavaScript(web_view, set_cookie);
+    web::ExecuteJavaScript(web_view, set_cookie);
   }
 
   // Returns a csv list of all cookies from |web_view|.
   NSString* GetCookies(WKWebView* web_view) {
-    return EvaluateJavaScript(web_view, @"document.cookie");
+    id result = web::ExecuteJavaScript(web_view, @"document.cookie");
+    return base::mac::ObjCCastStrict<NSString>(result);
   }
 
   // Sets a localstorage key, value pair on |web_view|.
@@ -100,14 +87,15 @@ class BrowserStateWebViewPartitionTest : public web::WebIntTest {
                            WKWebView* web_view) {
     NSString* set_local_storage_item = [NSString
         stringWithFormat:@"localStorage.setItem('%@', '%@')", key, value];
-    EvaluateJavaScript(web_view, set_local_storage_item);
+    NSError* unused_error = nil;
+    web::ExecuteJavaScript(web_view, set_local_storage_item, &unused_error);
   }
 
   // Returns the localstorage value associated with |key| from |web_view|.
-  NSString* GetLocalStorageItem(NSString* key, WKWebView* web_view) {
+  id GetLocalStorageItem(NSString* key, WKWebView* web_view) {
     NSString* get_local_storage_value =
         [NSString stringWithFormat:@"localStorage.getItem('%@');", key];
-    return EvaluateJavaScript(web_view, get_local_storage_value);
+    return web::ExecuteJavaScript(web_view, get_local_storage_value);
   }
 
   // Loads a test web page (that contains a small string) in |web_view| and
@@ -181,7 +169,7 @@ TEST_F(BrowserStateWebViewPartitionTest, LocalStorage) {
   LoadTestWebPage(web_view_2);
 
   // Test that LocalStorage has not leaked over to |web_view_2|.
-  EXPECT_NSEQ(@"", GetLocalStorageItem(@"someKey1", web_view_2));
+  EXPECT_NSEQ([NSNull null], GetLocalStorageItem(@"someKey1", web_view_2));
 
   SetLocalStorageItem(@"someKey2", @"someValue2", web_view_2);
   // Due to platform limitation, it's not possible to actually set localStorage
@@ -191,5 +179,5 @@ TEST_F(BrowserStateWebViewPartitionTest, LocalStorage) {
   // http://stackoverflow.com/questions/14555347/html5-localstorage-error-with-safari-quota-exceeded-err-dom-exception-22-an
   // for more details.
   // Test that LocalStorage has not leaked over to |web_view_1|.
-  EXPECT_NSEQ(@"", GetLocalStorageItem(@"someKey2", web_view_1));
+  EXPECT_NSEQ([NSNull null], GetLocalStorageItem(@"someKey2", web_view_1));
 }
