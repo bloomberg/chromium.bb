@@ -26,8 +26,8 @@
 #ifndef ArrayValue_h
 #define ArrayValue_h
 
-#include "bindings/core/v8/ExceptionState.h"
 #include "core/CoreExport.h"
+#include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 #include <v8.h>
 
@@ -35,16 +35,16 @@ namespace blink {
 
 class Dictionary;
 
-class CORE_EXPORT ArrayValue {
+class CORE_EXPORT ArrayValue final {
+    STACK_ALLOCATED();
 public:
-    ArrayValue() : m_isolate(0) { }
-    explicit ArrayValue(const v8::Local<v8::Array>& array, v8::Isolate* isolate)
+    ArrayValue() : m_isolate(nullptr) { }
+    ArrayValue(const v8::Local<v8::Array>& array, v8::Isolate* isolate)
         : m_array(array)
         , m_isolate(isolate)
     {
-        ASSERT(m_isolate);
+        DCHECK(m_isolate);
     }
-    ~ArrayValue() { }
 
     ArrayValue& operator=(const ArrayValue&);
 
@@ -54,15 +54,8 @@ public:
     bool get(size_t index, Dictionary&) const;
 
 private:
-    // This object can only be used safely when stack allocated because of v8::Local.
-    static void* operator new(size_t);
-    static void* operator new[](size_t);
-    static void operator delete(void *);
-
     v8::Local<v8::Array> m_array;
     v8::Isolate* m_isolate;
-    // FIXME: ArrayValue constructor should take an exception state.
-    mutable NonThrowableExceptionState m_exceptionState;
 };
 
 } // namespace blink

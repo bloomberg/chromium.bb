@@ -27,16 +27,21 @@ public:
 
     void timingFunctionRoundTrips(const String& string, ExceptionState& exceptionState)
     {
+        ASSERT_FALSE(exceptionState.hadException());
         RefPtr<TimingFunction> timingFunction = parseTimingFunction(string, exceptionState);
+        EXPECT_FALSE(exceptionState.hadException());
         EXPECT_NE(nullptr, timingFunction);
         EXPECT_EQ(string, timingFunction->toString());
+        exceptionState.clearException();
     }
 
     void timingFunctionThrows(const String& string, ExceptionState& exceptionState)
     {
+        ASSERT_FALSE(exceptionState.hadException());
         RefPtr<TimingFunction> timingFunction = parseTimingFunction(string, exceptionState);
         EXPECT_TRUE(exceptionState.hadException());
         EXPECT_EQ(V8TypeError, exceptionState.code());
+        exceptionState.clearException();
     }
 
 
@@ -55,7 +60,6 @@ protected:
 
     std::unique_ptr<DummyPageHolder> pageHolder;
     Persistent<Document> document;
-    TrackExceptionState exceptionState;
 };
 
 TEST_F(AnimationAnimationInputHelpersTest, ParseKeyframePropertyAttributes)
@@ -81,6 +85,7 @@ TEST_F(AnimationAnimationInputHelpersTest, ParseKeyframePropertyAttributes)
 
 TEST_F(AnimationAnimationInputHelpersTest, ParseAnimationTimingFunction)
 {
+    TrackExceptionState exceptionState;
     timingFunctionThrows("", exceptionState);
     timingFunctionThrows("initial", exceptionState);
     timingFunctionThrows("inherit", exceptionState);

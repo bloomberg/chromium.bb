@@ -38,18 +38,19 @@ protected:
 
     std::unique_ptr<DummyPageHolder> pageHolder;
     Persistent<Element> element;
-    TrackExceptionState exceptionState;
 };
 
 class AnimationKeyframeEffectV8Test : public KeyframeEffectTest {
 protected:
     template<typename T>
-    static KeyframeEffect* createAnimation(Element* element, Vector<Dictionary> keyframeDictionaryVector, T timingInput, ExceptionState& exceptionState)
+    static KeyframeEffect* createAnimation(Element* element, Vector<Dictionary> keyframeDictionaryVector, T timingInput)
     {
+        NonThrowableExceptionState exceptionState;
         return KeyframeEffect::create(nullptr, element, DictionarySequenceOrDictionary::fromDictionarySequence(keyframeDictionaryVector), timingInput, exceptionState);
     }
-    static KeyframeEffect* createAnimation(Element* element, Vector<Dictionary> keyframeDictionaryVector, ExceptionState& exceptionState)
+    static KeyframeEffect* createAnimation(Element* element, Vector<Dictionary> keyframeDictionaryVector)
     {
+        NonThrowableExceptionState exceptionState;
         return KeyframeEffect::create(nullptr, element, DictionarySequenceOrDictionary::fromDictionarySequence(keyframeDictionaryVector), exceptionState);
     }
 };
@@ -68,8 +69,8 @@ TEST_F(AnimationKeyframeEffectV8Test, CanCreateAnAnimation)
     setV8ObjectPropertyAsString(scope.isolate(), keyframe2, "offset", "1");
     setV8ObjectPropertyAsString(scope.isolate(), keyframe2, "easing", "cubic-bezier(1, 1, 0.3, 0.3)");
 
-    jsKeyframes.append(Dictionary(keyframe1, scope.isolate(), exceptionState));
-    jsKeyframes.append(Dictionary(keyframe2, scope.isolate(), exceptionState));
+    jsKeyframes.append(Dictionary(scope.isolate(), keyframe1));
+    jsKeyframes.append(Dictionary(scope.isolate(), keyframe2));
 
     String value1;
     ASSERT_TRUE(DictionaryHelper::get(jsKeyframes[0], "width", value1));
@@ -79,7 +80,7 @@ TEST_F(AnimationKeyframeEffectV8Test, CanCreateAnAnimation)
     ASSERT_TRUE(DictionaryHelper::get(jsKeyframes[1], "width", value2));
     ASSERT_EQ("0px", value2);
 
-    KeyframeEffect* animation = createAnimation(element.get(), jsKeyframes, 0, exceptionState);
+    KeyframeEffect* animation = createAnimation(element.get(), jsKeyframes, 0);
 
     Element* target = animation->target();
     EXPECT_EQ(*element.get(), *target);
@@ -104,7 +105,7 @@ TEST_F(AnimationKeyframeEffectV8Test, CanSetDuration)
     Vector<Dictionary, 0> jsKeyframes;
     double duration = 2000;
 
-    KeyframeEffect* animation = createAnimation(element.get(), jsKeyframes, duration, exceptionState);
+    KeyframeEffect* animation = createAnimation(element.get(), jsKeyframes, duration);
 
     EXPECT_EQ(duration / 1000, animation->specifiedTiming().iterationDuration);
 }
@@ -112,7 +113,7 @@ TEST_F(AnimationKeyframeEffectV8Test, CanSetDuration)
 TEST_F(AnimationKeyframeEffectV8Test, CanOmitSpecifiedDuration)
 {
     Vector<Dictionary, 0> jsKeyframes;
-    KeyframeEffect* animation = createAnimation(element.get(), jsKeyframes, exceptionState);
+    KeyframeEffect* animation = createAnimation(element.get(), jsKeyframes);
     EXPECT_TRUE(std::isnan(animation->specifiedTiming().iterationDuration));
 }
 
@@ -130,9 +131,11 @@ TEST_F(AnimationKeyframeEffectV8Test, SpecifiedGetters)
     setV8ObjectPropertyAsString(scope.isolate(), timingInput, "direction", "reverse");
     setV8ObjectPropertyAsString(scope.isolate(), timingInput, "easing", "step-start");
     KeyframeEffectOptions timingInputDictionary;
+    TrackExceptionState exceptionState;
     V8KeyframeEffectOptions::toImpl(scope.isolate(), timingInput, timingInputDictionary, exceptionState);
+    EXPECT_FALSE(exceptionState.hadException());
 
-    KeyframeEffect* animation = createAnimation(element.get(), jsKeyframes, timingInputDictionary, exceptionState);
+    KeyframeEffect* animation = createAnimation(element.get(), jsKeyframes, timingInputDictionary);
 
     AnimationEffectTiming* specified = animation->timing();
     EXPECT_EQ(2, specified->delay());
@@ -152,9 +155,11 @@ TEST_F(AnimationKeyframeEffectV8Test, SpecifiedDurationGetter)
     v8::Local<v8::Object> timingInputWithDuration = v8::Object::New(scope.isolate());
     setV8ObjectPropertyAsNumber(scope.isolate(), timingInputWithDuration, "duration", 2.5);
     KeyframeEffectOptions timingInputDictionaryWithDuration;
+    TrackExceptionState exceptionState;
     V8KeyframeEffectOptions::toImpl(scope.isolate(), timingInputWithDuration, timingInputDictionaryWithDuration, exceptionState);
+    EXPECT_FALSE(exceptionState.hadException());
 
-    KeyframeEffect* animationWithDuration = createAnimation(element.get(), jsKeyframes, timingInputDictionaryWithDuration, exceptionState);
+    KeyframeEffect* animationWithDuration = createAnimation(element.get(), jsKeyframes, timingInputDictionaryWithDuration);
 
     AnimationEffectTiming* specifiedWithDuration = animationWithDuration->timing();
     UnrestrictedDoubleOrString duration;
@@ -167,8 +172,9 @@ TEST_F(AnimationKeyframeEffectV8Test, SpecifiedDurationGetter)
     v8::Local<v8::Object> timingInputNoDuration = v8::Object::New(scope.isolate());
     KeyframeEffectOptions timingInputDictionaryNoDuration;
     V8KeyframeEffectOptions::toImpl(scope.isolate(), timingInputNoDuration, timingInputDictionaryNoDuration, exceptionState);
+    EXPECT_FALSE(exceptionState.hadException());
 
-    KeyframeEffect* animationNoDuration = createAnimation(element.get(), jsKeyframes, timingInputDictionaryNoDuration, exceptionState);
+    KeyframeEffect* animationNoDuration = createAnimation(element.get(), jsKeyframes, timingInputDictionaryNoDuration);
 
     AnimationEffectTiming* specifiedNoDuration = animationNoDuration->timing();
     UnrestrictedDoubleOrString duration2;
@@ -184,8 +190,10 @@ TEST_F(AnimationKeyframeEffectV8Test, SpecifiedSetters)
     Vector<Dictionary, 0> jsKeyframes;
     v8::Local<v8::Object> timingInput = v8::Object::New(scope.isolate());
     KeyframeEffectOptions timingInputDictionary;
+    TrackExceptionState exceptionState;
     V8KeyframeEffectOptions::toImpl(scope.isolate(), timingInput, timingInputDictionary, exceptionState);
-    KeyframeEffect* animation = createAnimation(element.get(), jsKeyframes, timingInputDictionary, exceptionState);
+    EXPECT_FALSE(exceptionState.hadException());
+    KeyframeEffect* animation = createAnimation(element.get(), jsKeyframes, timingInputDictionary);
 
     AnimationEffectTiming* specified = animation->timing();
 
@@ -231,8 +239,10 @@ TEST_F(AnimationKeyframeEffectV8Test, SetSpecifiedDuration)
     Vector<Dictionary, 0> jsKeyframes;
     v8::Local<v8::Object> timingInput = v8::Object::New(scope.isolate());
     KeyframeEffectOptions timingInputDictionary;
+    TrackExceptionState exceptionState;
     V8KeyframeEffectOptions::toImpl(scope.isolate(), timingInput, timingInputDictionary, exceptionState);
-    KeyframeEffect* animation = createAnimation(element.get(), jsKeyframes, timingInputDictionary, exceptionState);
+    EXPECT_FALSE(exceptionState.hadException());
+    KeyframeEffect* animation = createAnimation(element.get(), jsKeyframes, timingInputDictionary);
 
     AnimationEffectTiming* specified = animation->timing();
 

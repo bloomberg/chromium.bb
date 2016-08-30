@@ -28,7 +28,6 @@
 
 #include "bindings/core/v8/DictionaryIterator.h"
 #include "bindings/core/v8/ExceptionMessages.h"
-#include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/Nullable.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8Binding.h"
@@ -43,6 +42,7 @@
 
 namespace blink {
 
+class ExceptionState;
 class ExecutionContext;
 
 // Dictionary class provides ways to retrieve property values as C++ objects
@@ -51,9 +51,16 @@ class ExecutionContext;
 class CORE_EXPORT Dictionary final {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
-    Dictionary();
-    Dictionary(const v8::Local<v8::Value>& options, v8::Isolate*, ExceptionState&);
-    ~Dictionary();
+    Dictionary()
+        : m_isolate(nullptr) { }
+    Dictionary(v8::Isolate* isolate, const v8::Local<v8::Value>& options)
+        : m_options(options)
+        , m_isolate(isolate)
+    {
+        DCHECK(m_isolate);
+    }
+    Dictionary(const v8::Local<v8::Value>& options, v8::Isolate* isolate, ExceptionState&) // DEPRECATED
+        : Dictionary(isolate, options) { }
 
     Dictionary& operator=(const Dictionary&);
 
@@ -86,14 +93,13 @@ private:
 
     v8::Local<v8::Value> m_options;
     v8::Isolate* m_isolate;
-    ExceptionState* m_exceptionState;
 };
 
 template<>
 struct NativeValueTraits<Dictionary> {
-    static inline Dictionary nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState)
+    static inline Dictionary nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState&)
     {
-        return Dictionary(value, isolate, exceptionState);
+        return Dictionary(isolate, value);
     }
 };
 

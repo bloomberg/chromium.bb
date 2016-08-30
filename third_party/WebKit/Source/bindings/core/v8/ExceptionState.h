@@ -31,7 +31,6 @@
 #ifndef ExceptionState_h
 #define ExceptionState_h
 
-#include "bindings/core/v8/OnStackObjectChecker.h"
 #include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/V8ThrowException.h"
@@ -51,8 +50,8 @@ class ScriptState;
 // with an option to cancel it.  An exception message may be auto-generated.
 // You can convert an exception to a reject promise.
 class CORE_EXPORT ExceptionState {
+    STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(ExceptionState);
-    USING_FAST_MALLOC(ExceptionState);
 public:
     enum ContextType {
         ConstructionContext,
@@ -131,10 +130,6 @@ public:
     const char* propertyName() const { return m_propertyName; }
     const char* interfaceName() const { return m_interfaceName; }
 
-#if ENABLE(ASSERT)
-    OnStackObjectChecker& getOnStackObjectChecker() { return m_onStackObjectChecker; }
-#endif
-
 protected:
     // An ExceptionCode for the case that an exception is rethrown.  In that
     // case, we cannot determine an exception code.
@@ -153,9 +148,6 @@ private:
     // The exception is empty when it was thrown through TrackExceptionState.
     ScopedPersistent<v8::Value> m_exception;
     v8::Isolate* m_isolate;
-#if ENABLE(ASSERT)
-    OnStackObjectChecker m_onStackObjectChecker;
-#endif
 };
 
 // NonThrowableExceptionState never allow call sites to throw an exception.

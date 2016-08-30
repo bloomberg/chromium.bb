@@ -88,7 +88,6 @@ protected:
     Persistent<Document> document;
     Persistent<AnimationTimeline> timeline;
     Persistent<Animation> animation;
-    TrackExceptionState exceptionState;
     std::unique_ptr<DummyPageHolder> pageHolder;
 };
 
@@ -250,6 +249,7 @@ TEST_F(AnimationAnimationTest, SetStartTimeOnLimitedAnimation)
 
 TEST_F(AnimationAnimationTest, StartTimePauseFinish)
 {
+    NonThrowableExceptionState exceptionState;
     animation->pause();
     EXPECT_EQ(Animation::Pending, animation->playStateInternal());
     EXPECT_TRUE(std::isnan(animation->startTime()));
@@ -260,6 +260,7 @@ TEST_F(AnimationAnimationTest, StartTimePauseFinish)
 
 TEST_F(AnimationAnimationTest, FinishWhenPaused)
 {
+    NonThrowableExceptionState exceptionState;
     animation->pause();
     EXPECT_EQ(Animation::Pending, animation->playStateInternal());
     simulateFrame(10);
@@ -270,6 +271,7 @@ TEST_F(AnimationAnimationTest, FinishWhenPaused)
 
 TEST_F(AnimationAnimationTest, StartTimeFinishPause)
 {
+    NonThrowableExceptionState exceptionState;
     animation->finish(exceptionState);
     EXPECT_EQ(-30 * 1000, animation->startTime());
     animation->pause();
@@ -425,6 +427,7 @@ TEST_F(AnimationAnimationTest, ReverseBeyondLimit)
 
 TEST_F(AnimationAnimationTest, Finish)
 {
+    NonThrowableExceptionState exceptionState;
     animation->finish(exceptionState);
     EXPECT_EQ(30, animation->currentTimeInternal());
     EXPECT_EQ(Animation::Finished, animation->playStateInternal());
@@ -433,12 +436,11 @@ TEST_F(AnimationAnimationTest, Finish)
     animation->finish(exceptionState);
     EXPECT_EQ(0, animation->currentTimeInternal());
     EXPECT_EQ(Animation::Finished, animation->playStateInternal());
-
-    EXPECT_FALSE(exceptionState.hadException());
 }
 
 TEST_F(AnimationAnimationTest, FinishAfterEffectEnd)
 {
+    NonThrowableExceptionState exceptionState;
     animation->setCurrentTime(40 * 1000);
     animation->finish(exceptionState);
     EXPECT_EQ(40, animation->currentTimeInternal());
@@ -446,6 +448,7 @@ TEST_F(AnimationAnimationTest, FinishAfterEffectEnd)
 
 TEST_F(AnimationAnimationTest, FinishBeforeStart)
 {
+    NonThrowableExceptionState exceptionState;
     animation->setCurrentTimeInternal(-10);
     animation->setPlaybackRate(-1);
     animation->finish(exceptionState);
@@ -454,10 +457,12 @@ TEST_F(AnimationAnimationTest, FinishBeforeStart)
 
 TEST_F(AnimationAnimationTest, FinishDoesNothingWithPlaybackRateZero)
 {
+    TrackExceptionState exceptionState;
     animation->setCurrentTimeInternal(10);
     animation->setPlaybackRate(0);
     animation->finish(exceptionState);
     EXPECT_EQ(10, animation->currentTimeInternal());
+    EXPECT_TRUE(exceptionState.hadException());
 }
 
 TEST_F(AnimationAnimationTest, FinishRaisesException)
@@ -468,6 +473,7 @@ TEST_F(AnimationAnimationTest, FinishRaisesException)
     animation->setEffect(KeyframeEffect::create(0, nullptr, timing));
     animation->setCurrentTimeInternal(10);
 
+    TrackExceptionState exceptionState;
     animation->finish(exceptionState);
     EXPECT_EQ(10, animation->currentTimeInternal());
     EXPECT_TRUE(exceptionState.hadException());
@@ -801,6 +807,7 @@ TEST_F(AnimationAnimationTest, ReverseAfterCancel)
 
 TEST_F(AnimationAnimationTest, FinishAfterCancel)
 {
+    NonThrowableExceptionState exceptionState;
     animation->cancel();
     EXPECT_EQ(Animation::Idle, animation->playStateInternal());
     EXPECT_TRUE(std::isnan(animation->currentTime()));

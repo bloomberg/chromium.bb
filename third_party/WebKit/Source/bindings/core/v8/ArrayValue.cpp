@@ -39,7 +39,7 @@ ArrayValue& ArrayValue::operator=(const ArrayValue& other)
 
 bool ArrayValue::isUndefinedOrNull() const
 {
-    return m_array.IsEmpty() || blink::isUndefinedOrNull(m_array);
+    return blink::isUndefinedOrNull(m_array);
 }
 
 bool ArrayValue::length(size_t& length) const
@@ -59,13 +59,13 @@ bool ArrayValue::get(size_t index, Dictionary& value) const
     if (index >= m_array->Length())
         return false;
 
-    ASSERT(m_isolate);
-    ASSERT(m_isolate == v8::Isolate::GetCurrent());
+    DCHECK(m_isolate);
+    DCHECK_EQ(m_isolate, v8::Isolate::GetCurrent());
     v8::Local<v8::Value> indexedValue;
     if (!m_array->Get(m_isolate->GetCurrentContext(), index).ToLocal(&indexedValue) || !indexedValue->IsObject())
         return false;
 
-    value = Dictionary(indexedValue, m_isolate, m_exceptionState);
+    value = Dictionary(m_isolate, indexedValue);
     return true;
 }
 

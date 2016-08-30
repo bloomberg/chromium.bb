@@ -27,7 +27,6 @@
 
 #include "bindings/core/v8/ArrayValue.h"
 #include "bindings/core/v8/ExceptionMessages.h"
-#include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/V8ArrayBufferView.h"
 #include "bindings/core/v8/V8Binding.h"
@@ -43,51 +42,10 @@
 
 namespace blink {
 
-static ExceptionState& emptyExceptionState()
-{
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(WTF::ThreadSpecific<NonThrowableExceptionState>, exceptionState, new ThreadSpecific<NonThrowableExceptionState>);
-    return *exceptionState;
-}
-
-Dictionary::Dictionary()
-    : m_isolate(0)
-    , m_exceptionState(&emptyExceptionState())
-{
-}
-
-Dictionary::Dictionary(const v8::Local<v8::Value>& options, v8::Isolate* isolate, ExceptionState& exceptionState)
-    : m_options(options)
-    , m_isolate(isolate)
-    , m_exceptionState(&exceptionState)
-{
-    ASSERT(m_isolate);
-    ASSERT(m_exceptionState);
-#if ENABLE(ASSERT)
-    m_exceptionState->getOnStackObjectChecker().add(this);
-#endif
-}
-
-Dictionary::~Dictionary()
-{
-#if ENABLE(ASSERT)
-    if (m_exceptionState)
-        m_exceptionState->getOnStackObjectChecker().remove(this);
-#endif
-}
-
 Dictionary& Dictionary::operator=(const Dictionary& optionsObject)
 {
     m_options = optionsObject.m_options;
     m_isolate = optionsObject.m_isolate;
-#if ENABLE(ASSERT)
-    if (m_exceptionState)
-        m_exceptionState->getOnStackObjectChecker().remove(this);
-#endif
-    m_exceptionState = optionsObject.m_exceptionState;
-#if ENABLE(ASSERT)
-    if (m_exceptionState)
-        m_exceptionState->getOnStackObjectChecker().add(this);
-#endif
     return *this;
 }
 
@@ -109,9 +67,8 @@ bool Dictionary::hasProperty(const String& key) const
     if (!toObject(object))
         return false;
 
-    ASSERT(m_isolate);
-    ASSERT(m_isolate == v8::Isolate::GetCurrent());
-    ASSERT(m_exceptionState);
+    DCHECK(m_isolate);
+    DCHECK_EQ(m_isolate, v8::Isolate::GetCurrent());
     v8::Local<v8::String> v8Key = v8String(m_isolate, key);
     return v8CallBoolean(object->Has(v8Context(), v8Key));
 }
@@ -152,7 +109,7 @@ bool Dictionary::get(const String& key, Dictionary& value) const
     if (v8Value->IsObject()) {
         ASSERT(m_isolate);
         ASSERT(m_isolate == v8::Isolate::GetCurrent());
-        value = Dictionary(v8Value, m_isolate, *m_exceptionState);
+        value = Dictionary(m_isolate, v8Value);
     }
 
     return true;
@@ -164,9 +121,8 @@ bool Dictionary::getInternal(const v8::Local<v8::Value>& key, v8::Local<v8::Valu
     if (!toObject(object))
         return false;
 
-    ASSERT(m_isolate);
-    ASSERT(m_isolate == v8::Isolate::GetCurrent());
-    ASSERT(m_exceptionState);
+    DCHECK(m_isolate);
+    DCHECK_EQ(m_isolate, v8::Isolate::GetCurrent());
     if (!v8CallBoolean(object->Has(v8Context(), key)))
         return false;
     return object->Get(v8Context(), key).ToLocal(&result);

@@ -54,8 +54,6 @@
             'Microtask.h',
             'NativeValueTraits.h',
             'Nullable.h',
-            'OnStackObjectChecker.cpp',
-            'OnStackObjectChecker.h',
             'PrivateScriptRunner.cpp',
             'PrivateScriptRunner.h',
             'RejectedPromises.cpp',
