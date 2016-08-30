@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_WIN_ENUMERATE_MODULES_MODEL_H_
 #define CHROME_BROWSER_WIN_ENUMERATE_MODULES_MODEL_H_
 
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
-#include "base/memory/singleton.h"
+#include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
 #include "content/public/browser/browser_thread.h"
@@ -24,9 +24,10 @@ class FilePath;
 class ListValue;
 }
 
-// A helper class that implements the enumerate module functionality on the File
-// thread.
-class ModuleEnumerator : public base::RefCountedThreadSafe<ModuleEnumerator> {
+// A helper class that implements the enumerate module functionality on the FILE
+// thread. Not to be used directly.
+// TODO(chrisha): Move this to a separate .h and .cc.
+class ModuleEnumerator {
  public:
   // What type of module we are dealing with. Loaded modules are modules we
   // detect as loaded in the process at the time of scanning. The others are
@@ -115,17 +116,6 @@ class ModuleEnumerator : public base::RefCountedThreadSafe<ModuleEnumerator> {
   // A vector typedef of all modules enumerated.
   typedef std::vector<Module> ModulesVector;
 
-  // A structure we populate with the blacklist entries.
-  struct BlacklistEntry {
-    const char* filename;
-    const char* location;
-    const char* desc_or_signer;
-    const char* version_from;  // Version where conflict started.
-    const char* version_to;    // First version that works.
-    OperatingSystem os;  // Bitmask, representing what OS this entry applies to.
-    RecommendedAction help_tip;
-  };
-
   // A static function that normalizes the module information in the |module|
   // struct. Module information needs to be normalized before comparing against
   // the blacklist. This is because the same module can be described in many
@@ -135,39 +125,26 @@ class ModuleEnumerator : public base::RefCountedThreadSafe<ModuleEnumerator> {
   // against the blacklist.
   static void NormalizeModule(Module* module);
 
-  // A static function that checks whether |module| has been |blacklisted|.
-  static ModuleStatus Match(const Module& module,
-                            const BlacklistEntry& blacklisted);
-
+  // Constructs a ModuleEnumerator that will notify the provided |observer| once
+  // enumeration is complete. |observer| must outlive the ModuleEnumerator.
   explicit ModuleEnumerator(EnumerateModulesModel* observer);
 
+  ~ModuleEnumerator();
+
   // Start scanning the loaded module list (if a scan is not already in
-  // progress). This function does not block while reading the module list
-  // (unless we are in limited_mode, see below), and will notify when done
-  // through the MODULE_LIST_ENUMERATED notification.
-  // The process will also send MODULE_INCOMPATIBILITY_BADGE_CHANGE to let
-  // observers know when it is time to update the wrench menu badge.
-  // When in |limited_mode|, this function will not leverage the File thread
-  // to run asynchronously and will therefore block until scanning is done
-  // (and will also not send out any notifications).
-  void ScanNow(ModulesVector* list, bool limited_mode);
+  // progress). This function does not block while reading the module list and
+  // will notify when done by calling the DoneScanning method of |observer_|.
+  void ScanNow(ModulesVector* list);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(EnumerateModulesTest, CollapsePath);
 
-  friend class base::RefCountedThreadSafe<ModuleEnumerator>;
-  ~ModuleEnumerator();
-
-  // The (currently) hard coded blacklist of known bad modules.
-  static const BlacklistEntry kModuleBlacklist[];
-
-  // This function does the actual file scanning work on the FILE thread (or
-  // block the main thread when in limited_mode). It enumerates all loaded
-  // modules in the process and other modules of interest, such as the
-  // registered Winsock LSP modules and stores them in |enumerated_modules_|.
-  // It then normalizes the module info and matches them against a blacklist
-  // of known bad modules. Finally, it calls ReportBack to let the observer
-  // know we are done.
+  // This function does the actual file scanning work on the FILE thread. It
+  // enumerates all loaded modules in the process and other modules of interest,
+  // such as the registered Winsock LSP modules and stores them in
+  // |enumerated_modules_|. It then normalizes the module info and matches them
+  // against a blacklist of known bad modules. Finally, notifies the observer
+  // that the enumeration is complete by invoking DoneScanning.
   void ScanImpl();
 
   // Enumerate all modules loaded into the Chrome process.
@@ -205,21 +182,18 @@ class ModuleEnumerator : public base::RefCountedThreadSafe<ModuleEnumerator> {
   // based on the |path_mapping_| vector.
   void CollapsePath(Module* module);
 
-  // Takes each module in the |enumerated_modules_| vector and matches it
-  // against a fixed blacklist of bad and suspected bad modules.
-  void MatchAgainstBlacklist();
-
-  // This function executes on the UI thread when the scanning and matching
-  // process is done. It notifies the observer.
-  void ReportBack();
-
   // Given a filename, returns the Subject (who signed it) retrieved from
   // the digital signature (Authenticode).
   base::string16 GetSubjectNameFromDigitalSignature(
       const base::FilePath& filename);
 
+  // Reports (via UMA) a handful of high-level metrics regarding third party
+  // modules in this process. Called by ScanImpl after modules have been
+  // enumerated and processed.
+  void ReportThirdPartyMetrics();
+
   // The typedef for the vector that maps a regular file path to %env_var%.
-  typedef std::vector< std::pair<base::string16, base::string16> > PathMapping;
+  typedef std::vector<std::pair<base::string16, base::string16>> PathMapping;
 
   // The vector of paths to %env_var%, used to account for differences in
   // where people keep there files, c:\windows vs. d:\windows, etc.
@@ -229,14 +203,8 @@ class ModuleEnumerator : public base::RefCountedThreadSafe<ModuleEnumerator> {
   // interest).
   ModulesVector* enumerated_modules_;
 
-  // The observer, who needs to be notified when we are done.
+  // The observer, which needs to be notified when the scan is complete.
   EnumerateModulesModel* observer_;
-
-  // See limited_mode below.
-  bool limited_mode_;
-
-  // The thread that we need to call back on to report that we are done.
-  content::BrowserThread::ID callback_thread_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ModuleEnumerator);
 };
@@ -251,9 +219,12 @@ class ModuleEnumerator : public base::RefCountedThreadSafe<ModuleEnumerator> {
 // Then wait to get notified through MODULE_LIST_ENUMERATED when the list is
 // ready.
 //
-// This class can be used on the UI thread as it asynchronously offloads the
-// file work over to the FILE thread and reports back to the caller with a
-// notification.
+// The member functions of this class may only be used from the UI thread. The
+// bulk of the work is actually performed on the FILE thread.
+//
+// TODO(chrisha): If this logic is ever extended to other platforms, then make
+// this file generic for all platforms, and remove the precompiler logic in
+// app_menu_icon_controller.*.
 class EnumerateModulesModel {
  public:
   // UMA histogram constants.
@@ -264,7 +235,30 @@ class EnumerateModulesModel {
     ACTION_BOUNDARY, // Must be the last value.
   };
 
+  // Observer class used to determine when a scan has completed and when any
+  // associated UI elements have been dismissed.
+  class Observer {
+   public:
+    // Invoked when EnumerateModulesModel has completed a scan of modules.
+    virtual void OnScanCompleted() {}
+
+    // Invoked when a user has acknowledged incompatible modules found in a
+    // module scan.
+    virtual void OnConflictsAcknowledged() {}
+
+   protected:
+    virtual ~Observer() = default;
+  };
+
+  // Returns the singleton instance of this class.
   static EnumerateModulesModel* GetInstance();
+
+  // Adds an |observer| to the enumerator. Callbacks will occur on the UI
+  // thread.
+  void AddObserver(Observer* observer);
+
+  // Removes an |observer| from the enumerator.
+  void RemoveObserver(Observer* observer);
 
   // Returns true if we should show the conflict notification. The conflict
   // notification is only shown once during the lifetime of the process.
@@ -275,90 +269,70 @@ class EnumerateModulesModel {
 
   // Returns the number of suspected bad modules found in the last scan.
   // Returns 0 if no scan has taken place yet.
-  int suspected_bad_modules_detected() const {
-    return suspected_bad_modules_detected_;
-  }
+  int suspected_bad_modules_detected() const;
 
   // Returns the number of confirmed bad modules found in the last scan.
   // Returns 0 if no scan has taken place yet.
-  int confirmed_bad_modules_detected() const {
-    return confirmed_bad_modules_detected_;
-  }
+  int confirmed_bad_modules_detected() const;
 
   // Returns how many modules to notify the user about.
-  int modules_to_notify_about() const {
-    return modules_to_notify_about_;
-  }
-
-  // Set to true when we the scanning process can not rely on certain Chrome
-  // services to exists.
-  void set_limited_mode(bool limited_mode) {
-    limited_mode_ = limited_mode;
-  }
+  int modules_to_notify_about() const;
 
   // Checks to see if a scanning task should be started and sets one off, if so.
   void MaybePostScanningTask();
 
-  // Asynchronously start the scan for the loaded module list, except when in
-  // limited_mode (in which case it blocks).
+  // Asynchronously start the scan for the loaded module list.
   void ScanNow();
 
   // Gets the whole module list as a ListValue.
-  base::ListValue* GetModuleList() const;
+  base::ListValue* GetModuleList();
 
-  // Gets the Help Center URL for the first *notable* conflict module that we've
-  // elected to notify the user about.
-  GURL GetFirstNotableConflict();
+  // Returns the site to which the user should be taken when the conflict bubble
+  // or app menu item is clicked. For now this is simply chrome://conflicts,
+  // which contains detailed information about conflicts. Returns an empty URL
+  // if there are no conficts. May only be called on UI thread.
+  GURL GetConflictUrl();
 
  private:
-  friend struct base::DefaultSingletonTraits<EnumerateModulesModel>;
   friend class ModuleEnumerator;
 
+  // Private to enforce singleton nature of this class.
   EnumerateModulesModel();
-  virtual ~EnumerateModulesModel();
+  ~EnumerateModulesModel();
 
-  // Called on the UI thread when the helper class is done scanning.
+  // Called on the UI thread when the helper class is done scanning. The
+  // ModuleEnumerator that calls this must not do any work after causing this
+  // function to be called, as the EnumerateModulesModel may delete the
+  // ModuleEnumerator.
   void DoneScanning();
 
-  // Constructs a Help Center article URL for help with a particular module.
-  // The module must have the SEE_LINK attribute for |recommended_action| set,
-  // otherwise this returns a blank string.
-  GURL ConstructHelpCenterUrl(const ModuleEnumerator::Module& module) const;
-
   // The vector containing all the modules enumerated. Will be normalized and
-  // any bad modules will be marked.
+  // any bad modules will be marked. Written to on the FILE thread by the
+  // |module_enumerator_|, read from on the UI thread by this class.
   ModuleEnumerator::ModulesVector enumerated_modules_;
 
-  // The object responsible for enumerating the modules on the File thread.
-  scoped_refptr<ModuleEnumerator> module_enumerator_;
+  // The object responsible for enumerating the modules on the FILE thread.
+  // Only used from the UI thread. This ends up internally doing its work on the
+  // FILE thread.
+  std::unique_ptr<ModuleEnumerator> module_enumerator_;
 
-  // When this singleton object is constructed we go and fire off this timer to
-  // start scanning for modules after a certain amount of time has passed.
-  base::OneShotTimer check_modules_timer_;
-
-  // While normally |false|, this mode can be set to indicate that the scanning
-  // process should not rely on certain services normally available to Chrome,
-  // such as the resource bundle and the notification system, not to mention
-  // having multiple threads. This mode is useful during diagnostics, which
-  // runs without firing up all necessary Chrome services first.
-  bool limited_mode_;
-
-  // True if we are currently scanning for modules.
-  bool scanning_;
-
-  // Whether the conflict notification has been acknowledged by the user.
+  // Whether the conflict notification has been acknowledged by the user. Only
+  // modified on the UI thread.
   bool conflict_notification_acknowledged_;
 
   // The number of confirmed bad modules (not including suspected bad ones)
-  // found during last scan.
+  // found during last scan. Only modified on the UI thread.
   int confirmed_bad_modules_detected_;
 
   // The number of bad modules the user needs to be aggressively notified about.
+  // Only modified on the UI thread.
   int modules_to_notify_about_;
 
   // The number of suspected bad modules (not including confirmed bad ones)
-  // found during last scan.
+  // found during last scan. Only modified on the UI thread.
   int suspected_bad_modules_detected_;
+
+  base::ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(EnumerateModulesModel);
 };

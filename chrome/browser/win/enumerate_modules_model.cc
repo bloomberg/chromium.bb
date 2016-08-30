@@ -4,22 +4,26 @@
 
 #include "chrome/browser/win/enumerate_modules_model.h"
 
-#include <Tlhelp32.h>
+#include <softpub.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <tlhelp32.h>
+#include <wincrypt.h>
 #include <wintrust.h>
+#include <mscat.h>  // NOLINT: This must be after wincrypt and wintrust.
 
 #include <algorithm>
-#include <memory>
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/debug/leak_annotations.h"
 #include "base/environment.h"
 #include "base/file_version_info.h"
 #include "base/files/file_path.h"
 #include "base/i18n/case_conversion.h"
 #include "base/macros.h"
 #include "base/metrics/histogram.h"
+#include "base/scoped_generic.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -29,33 +33,17 @@
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/net/service_providers_win.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/grit/generated_resources.h"
-#include "content/public/browser/notification_service.h"
 #include "crypto/sha2.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
 
-// The period of time (in milliseconds) to wait until checking to see if any
-// incompatible modules exist.
-static const int kModuleCheckDelayMs = 45 * 1000;
-
 // The path to the Shell Extension key in the Windows registry.
 static const wchar_t kRegPath[] =
     L"Software\\Microsoft\\Windows\\CurrentVersion\\Shell Extensions\\Approved";
-
-// Short-hand for things on the blacklist you should simply get rid of.
-static const ModuleEnumerator::RecommendedAction kUninstallLink =
-    static_cast<ModuleEnumerator::RecommendedAction>(
-        ModuleEnumerator::UNINSTALL | ModuleEnumerator::SEE_LINK);
-
-// Short-hand for things on the blacklist we are investigating and have info.
-static const ModuleEnumerator::RecommendedAction kInvestigatingLink =
-    static_cast<ModuleEnumerator::RecommendedAction>(
-        ModuleEnumerator::INVESTIGATING | ModuleEnumerator::SEE_LINK);
 
 // A sort method that sorts by bad modules first, then by full name (including
 // path).
@@ -71,10 +59,6 @@ static bool ModuleSort(const ModuleEnumerator::Module& a,
 }
 
 namespace {
-
-// Used to protect the LoadedModuleVector which is accessed
-// from both the UI thread and the FILE thread.
-base::Lock* lock = NULL;
 
 // A struct to help de-duping modules before adding them to the enumerated
 // modules vector.
@@ -104,6 +88,217 @@ bool ConvertToLongPath(const base::string16& short_path,
   }
 
   return false;
+}
+
+// Helper for scoped tracking an HCERTSTORE.
+struct ScopedHCERTSTORETraits {
+  static HCERTSTORE InvalidValue() { return nullptr; }
+  static void Free(HCERTSTORE store) {
+    ::CertCloseStore(store, 0);
+  }
+};
+using ScopedHCERTSTORE =
+    base::ScopedGeneric<HCERTSTORE, ScopedHCERTSTORETraits>;
+
+// Helper for scoped tracking an HCRYPTMSG.
+struct ScopedHCRYPTMSGTraits {
+  static HCRYPTMSG InvalidValue() { return nullptr; }
+  static void Free(HCRYPTMSG message) {
+    ::CryptMsgClose(message);
+  }
+};
+using ScopedHCRYPTMSG =
+    base::ScopedGeneric<HCRYPTMSG, ScopedHCRYPTMSGTraits>;
+
+// Returns the "Subject" field from the digital signature in the provided
+// binary, if any is present. Returns an empty string on failure.
+base::string16 GetSubjectNameInFile(const base::FilePath& filename) {
+  ScopedHCERTSTORE store;
+  ScopedHCRYPTMSG message;
+
+  // Find the crypto message for this filename.
+  {
+    HCERTSTORE temp_store = nullptr;
+    HCRYPTMSG temp_message = nullptr;
+    bool result = !!CryptQueryObject(CERT_QUERY_OBJECT_FILE,
+      filename.value().c_str(),
+      CERT_QUERY_CONTENT_FLAG_PKCS7_SIGNED_EMBED,
+      CERT_QUERY_FORMAT_FLAG_BINARY,
+      0,
+      nullptr,
+      nullptr,
+      nullptr,
+      &temp_store,
+      &temp_message,
+      nullptr);
+    store.reset(temp_store);
+    message.reset(temp_message);
+    if (!result)
+      return base::string16();
+  }
+
+  // Determine the size of the signer info data.
+  DWORD signer_info_size = 0;
+  bool result = !!CryptMsgGetParam(message.get(),
+    CMSG_SIGNER_INFO_PARAM,
+    0,
+    nullptr,
+    &signer_info_size);
+  if (!result)
+    return base::string16();
+
+  // Allocate enough space to hold the signer info.
+  std::unique_ptr<BYTE[]> signer_info_buffer(new BYTE[signer_info_size]);
+  CMSG_SIGNER_INFO* signer_info =
+      reinterpret_cast<CMSG_SIGNER_INFO*>(signer_info_buffer.get());
+
+  // Obtain the signer info.
+  result = !!CryptMsgGetParam(message.get(),
+    CMSG_SIGNER_INFO_PARAM,
+    0,
+    signer_info,
+    &signer_info_size);
+  if (!result)
+    return base::string16();
+
+  // Search for the signer certificate.
+  CERT_INFO CertInfo = {0};
+  PCCERT_CONTEXT cert_context = nullptr;
+  CertInfo.Issuer = signer_info->Issuer;
+  CertInfo.SerialNumber = signer_info->SerialNumber;
+
+  cert_context = CertFindCertificateInStore(
+    store.get(),
+    X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
+    0,
+    CERT_FIND_SUBJECT_CERT,
+    &CertInfo,
+    nullptr);
+  if (!cert_context)
+    return base::string16();
+
+  // Determine the size of the Subject name.
+  DWORD subject_name_size = CertGetNameString(
+    cert_context, CERT_NAME_SIMPLE_DISPLAY_TYPE, 0, nullptr, nullptr, 0);
+  if (!subject_name_size)
+    return base::string16();
+
+  base::string16 subject_name;
+  subject_name.resize(subject_name_size);
+
+  // Get subject name.
+  if (!(CertGetNameString(cert_context,
+    CERT_NAME_SIMPLE_DISPLAY_TYPE,
+    0,
+    nullptr,
+    const_cast<LPWSTR>(subject_name.c_str()),
+    subject_name_size))) {
+    return base::string16();
+  }
+
+  return subject_name;
+}
+
+// Helper for scoped tracking a catalog admin context.
+struct CryptCATContextScopedTraits {
+  static PVOID InvalidValue() { return nullptr; }
+  static void Free(PVOID context) {
+    CryptCATAdminReleaseContext(context, 0);
+  }
+};
+using ScopedCryptCATContext =
+    base::ScopedGeneric<PVOID, CryptCATContextScopedTraits>;
+
+// Helper for scoped tracking of a catalog context. A catalog context is only
+// valid with an associated admin context, so this is effectively a std::pair.
+// A custom operator!= is required in order for a null |catalog_context| but
+// non-null |context| to compare equal to the InvalidValue exposed by the
+// traits class.
+class CryptCATCatalogContext {
+ public:
+  CryptCATCatalogContext(PVOID context, PVOID catalog_context)
+      : context_(context), catalog_context_(catalog_context) {}
+
+  bool operator!=(const CryptCATCatalogContext& rhs) const {
+    return catalog_context_ != rhs.catalog_context_;
+  }
+
+  PVOID context() const { return context_; }
+  PVOID catalog_context() const { return catalog_context_; }
+
+ private:
+  PVOID context_;
+  PVOID catalog_context_;
+};
+
+struct CryptCATCatalogContextScopedTraits {
+  static CryptCATCatalogContext InvalidValue() {
+    return CryptCATCatalogContext(nullptr, nullptr);
+  }
+  static void Free(const CryptCATCatalogContext& c) {
+    CryptCATAdminReleaseCatalogContext(
+        c.context(), c.catalog_context(), 0);
+  }
+};
+using ScopedCryptCATCatalogContext = base::ScopedGeneric<
+    CryptCATCatalogContext, CryptCATCatalogContextScopedTraits>;
+
+// Returns the "Subject" field associated with the certificate that signs
+// the catalog in which the given file is found, if any. Returns an empty string
+// on failure.
+base::string16 GetSubjectNameInCatalog(const base::FilePath& filename) {
+  // Get a crypt context for signature verification.
+  ScopedCryptCATContext context;
+  {
+    PVOID raw_context = nullptr;
+    if (!CryptCATAdminAcquireContext(&raw_context, nullptr, 0))
+      return base::string16();
+    context.reset(raw_context);
+  }
+
+  // Open the file of interest.
+  base::win::ScopedHandle file_handle(CreateFileW(
+    filename.value().c_str(), GENERIC_READ,
+    FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+    nullptr, OPEN_EXISTING, 0, nullptr));
+  if (!file_handle.IsValid())
+    return base::string16();
+
+  // Get the size we need for our hash.
+  DWORD hash_size = 0;
+  CryptCATAdminCalcHashFromFileHandle(
+      file_handle.Get(), &hash_size, nullptr, 0);
+  if (hash_size == 0)
+    return base::string16();
+
+  // Calculate the hash. If this fails then bail.
+  std::vector<BYTE> buffer(hash_size);
+  if (!CryptCATAdminCalcHashFromFileHandle(file_handle.Get(), &hash_size,
+          buffer.data(), 0)) {
+    return base::string16();
+  }
+
+  // Get catalog for our context.
+  ScopedCryptCATCatalogContext catalog_context(CryptCATCatalogContext(
+      context.get(),
+      CryptCATAdminEnumCatalogFromHash(context.get(), buffer.data(), hash_size,
+                                       0, nullptr)));
+  if (!catalog_context.is_valid())
+    return base::string16();
+
+  // Get the catalog info. This includes the path to the catalog itself, which
+  // contains the signature of interest.
+  CATALOG_INFO catalog_info = {};
+  catalog_info.cbStruct = sizeof(catalog_info);
+  if (!CryptCATCatalogInfoFromContext(
+      catalog_context.get().catalog_context(), &catalog_info, 0)) {
+    return base::string16();
+  }
+
+  // Attempt to get the "Subject" field from the signature of the catalog file
+  // itself.
+  base::FilePath catalog_path(catalog_info.wszCatalogFile);
+  return GetSubjectNameInFile(catalog_path);
 }
 
 }  // namespace
@@ -138,225 +333,6 @@ ModuleEnumerator::Module::Module(ModuleType type,
 ModuleEnumerator::Module::~Module() {
 }
 
-// The browser process module blacklist. This lists modules that are known
-// to cause compatibility issues within the browser process. When adding to this
-// list, make sure that all paths are lower-case, in long pathname form, end
-// with a slash and use environments variables (or just look at one of the
-// comments below and keep it consistent with that). When adding an entry with
-// an environment variable not currently used in the list below, make sure to
-// update the list in PreparePathMappings. Filename, Description/Signer, and
-// Location must be entered as hashes (see GenerateHash). Filename is mandatory.
-// Entries without any Description, Signer info, or Location will never be
-// marked as confirmed bad (only as suspicious).
-const ModuleEnumerator::BlacklistEntry ModuleEnumerator::kModuleBlacklist[] = {
-  // NOTE: Please keep this list sorted by dll name, then location.
-
-  // Version 3.2.1.6 seems to be implicated in most cases (and 3.2.2.2 in some).
-  // There is a more recent version available for download.
-  // accelerator.dll, "%programfiles%\\speedbit video accelerator\\".
-  { "7ba9402f", "c9132d48", "", "", "", ALL, kInvestigatingLink },
-
-  // apiqq0.dll, "%temp%\\".
-  { "26134911", "59145acf", "", "", "", ALL, kUninstallLink },
-
-  // arking0.dll, "%systemroot%\\system32\\".
-  { "f5d8f549", "23d01d5b", "", "", "", ALL, kUninstallLink },
-
-  // arking1.dll, "%systemroot%\\system32\\".
-  { "c60ca062", "23d01d5b", "", "", "", ALL, kUninstallLink },
-
-  // aswjsflt.dll, "%ProgramFiles%\\avast software\\avast\\", "AVAST Software".
-  // NOTE: The digital signature of the DLL is double null terminated.
-  // Avast Antivirus prior to version 8.0 would kill the Chrome child process
-  // when blocked from running.
-  { "2ea5422a", "6b3a1b00", "a7db0e0c", "", "8.0", XP,
-    static_cast<RecommendedAction>(UPDATE | SEE_LINK | NOTIFY_USER) },
-
-  // aswjsflt.dll, "%ProgramFiles%\\alwil software\\avast5\\", "AVAST Software".
-  // NOTE: The digital signature of the DLL is double null terminated.
-  // Avast Antivirus prior to version 8.0 would kill the Chrome child process
-  // when blocked from running.
-  { "2ea5422a", "d8686924", "a7db0e0c", "", "8.0", XP,
-    static_cast<RecommendedAction>(UPDATE | SEE_LINK | NOTIFY_USER) },
-
-  // Said to belong to Killer NIC from BigFoot Networks (not verified). Versions
-  // 6.0.0.7 and 6.0.0.10 implicated.
-  // bfllr.dll, "%systemroot%\\system32\\".
-  { "6bb57633", "23d01d5b", "", "", "", ALL, kInvestigatingLink },
-
-  // clickpotatolitesahook.dll, "". Different version each report.
-  { "0396e037.dll", "", "", "", "", ALL, kUninstallLink },
-
-  // cvasds0.dll, "%temp%\\".
-  { "5ce0037c", "59145acf", "", "", "", ALL, kUninstallLink },
-
-  // cwalsp.dll, "%systemroot%\\system32\\".
-  { "e579a039", "23d01d5b", "", "", "", ALL, kUninstallLink },
-
-  // datamngr.dll (1), "%programfiles%\\searchqu toolbar\\datamngr\\".
-  { "7add320b", "470a3da3", "", "", "", ALL, kUninstallLink },
-
-  // datamngr.dll (2), "%programfiles%\\windows searchqu toolbar\\".
-  { "7add320b", "7a3c8be3", "", "", "", ALL, kUninstallLink },
-
-  // dsoqq0.dll, "%temp%\\".
-  { "1c4df325", "59145acf", "", "", "", ALL, kUninstallLink },
-
-  // flt.dll, "%programfiles%\\tueagles\\".
-  { "6d01f4a1", "7935e9c2", "", "", "", ALL, kUninstallLink },
-
-  // This looks like a malware edition of a Brazilian Bank plugin, sometimes
-  // referred to as Malware.Banc.A.
-  // gbieh.dll, "%programfiles%\\gbplugin\\".
-  { "4cb4f2e3", "88e4a3b1", "", "", "", ALL, kUninstallLink },
-
-  // hblitesahook.dll. Each report has different version number in location.
-  { "5d10b363", "", "", "", "", ALL, kUninstallLink },
-
-  // icf.dll, "%systemroot%\\system32\\".
-  { "303825ed", "23d01d5b", "", "", "", ALL, INVESTIGATING },
-
-  // idmmbc.dll (IDM), "%systemroot%\\system32\\". See: http://crbug.com/26892/.
-  { "b8dce5c3", "23d01d5b", "", "", "6.03", ALL,
-      static_cast<RecommendedAction>(UPDATE | DISABLE) },
-
-  // imon.dll (NOD32), "%systemroot%\\system32\\". See: http://crbug.com/21715.
-  { "8f42f22e", "23d01d5b", "", "", "4.0", ALL,
-      static_cast<RecommendedAction>(UPDATE | DISABLE) },
-
-  // is3lsp.dll, "%commonprogramfiles%\\is3\\anti-spyware\\".
-  { "7ffbdce9", "bc5673f2", "", "", "", ALL,
-      static_cast<RecommendedAction>(UPDATE | DISABLE | SEE_LINK) },
-
-  // jsi.dll, "%programfiles%\\profilecraze\\".
-  { "f9555eea", "e3548061", "", "", "", ALL, kUninstallLink },
-
-  // kernel.dll, "%programfiles%\\contentwatch\\internet protection\\modules\\".
-  { "ead2768e", "4e61ce60", "", "", "", ALL, INVESTIGATING },
-
-  // mgking0.dll, "%systemroot%\\system32\\".
-  { "d0893e38", "23d01d5b", "", "", "", ALL, kUninstallLink },
-
-  // mgking0.dll, "%temp%\\".
-  { "d0893e38", "59145acf", "", "", "", ALL, kUninstallLink },
-
-  // mgking1.dll, "%systemroot%\\system32\\".
-  { "3e837222", "23d01d5b", "", "", "", ALL, kUninstallLink },
-
-  // mgking1.dll, "%temp%\\".
-  { "3e837222", "59145acf", "", "", "", ALL, kUninstallLink },
-
-  // mstcipha.ime, "%systemroot%\\system32\\".
-  { "5523579e", "23d01d5b", "", "", "", ALL, INVESTIGATING },
-
-  // mwtsp.dll, "%systemroot%\\system32\\".
-  { "9830bff6", "23d01d5b", "", "", "", ALL, kUninstallLink },
-
-  // nodqq0.dll, "%temp%\\".
-  { "b86ce04d", "59145acf", "", "", "", ALL, kUninstallLink },
-
-  // nProtect GameGuard Anti-cheat system. Every report has a different
-  // location, since it is installed into and run from a game folder. Various
-  // versions implicated.
-  // npggnt.des, no fixed location.
-  { "f2c8790d", "", "", "", "", ALL, kInvestigatingLink },
-
-  // nvlsp.dll,
-  // "%programfiles%\\nvidia corporation\\networkaccessmanager\\bin32\\".
-  { "37f907e2", "3ad0ff23", "", "", "", ALL, INVESTIGATING },
-
-  // post0.dll, "%systemroot%\\system32\\".
-  { "7405c0c8", "23d01d5b", "", "", "", ALL, kUninstallLink },
-
-  // questbrwsearch.dll, "%programfiles%\\questbrwsearch\\".
-  { "0953ed09", "f0d5eeda", "", "", "", ALL, kUninstallLink },
-
-  // questscan.dll, "%programfiles%\\questscan\\".
-  { "f4f3391e", "119d20f7", "", "", "", ALL, kUninstallLink },
-
-  // radhslib.dll (Naomi web filter), "%programfiles%\\rnamfler\\".
-  // See http://crbug.com/12517.
-  { "7edcd250", "0733dc3e", "", "", "", ALL, INVESTIGATING },
-
-  // rlls.dll, "%programfiles%\\relevantknowledge\\".
-  { "a1ed94a7", "ea9d6b36", "", "", "", ALL, kUninstallLink },
-
-  // rooksdol.dll, "%programfiles%\\trusteer\\rapport\\bin\\".
-  { "802aefef", "06120e13", "", "", "3.5.1008.40", ALL, UPDATE },
-
-  // scanquery.dll, "%programfiles%\\scanquery\\".
-  { "0b52d2ae", "a4cc88b1", "", "", "", ALL, kUninstallLink },
-
-  // sdata.dll, "%programdata%\\srtserv\\".
-  { "1936d5cc", "223c44be", "", "", "", ALL, kUninstallLink },
-
-  // searchtree.dll,
-  // "%programfiles%\\contentwatch\\internet protection\\modules\\".
-  { "f6915a31", "4e61ce60", "", "", "", ALL, INVESTIGATING },
-
-  // sgprxy.dll, "%commonprogramfiles%\\is3\\anti-spyware\\".
-  { "005965ea", "bc5673f2", "", "", "", ALL, INVESTIGATING },
-
-  // snxhk.dll, "%ProgramFiles%\\avast software\\avast\\", "AVAST Software".
-  // NOTE: The digital signature of the DLL is double null terminated.
-  // Avast Antivirus prior to version 8.0 would kill the Chrome child process
-  // when blocked from running.
-  { "46c16aa8", "6b3a1b00", "a7db0e0c", "", "8.0", XP,
-    static_cast<RecommendedAction>(UPDATE | SEE_LINK | NOTIFY_USER) },
-
-  // snxhk.dll, "%ProgramFiles%\\alwil software\\avast5\\", "AVAST Software".
-  // NOTE: The digital signature of the DLL is double null terminated.
-  // Avast Antivirus prior to version 8.0 would kill the Chrome child process
-  // when blocked from running.
-  { "46c16aa8", "d8686924", "a7db0e0c", "", "8.0", XP,
-    static_cast<RecommendedAction>(UPDATE | SEE_LINK | NOTIFY_USER) },
-
-  // sprotector.dll, "". Different location each report.
-  { "24555d74", "", "", "", "", ALL, kUninstallLink },
-
-  // swi_filter_0001.dll (Sophos Web Intelligence),
-  // "%programfiles%\\sophos\\sophos anti-virus\\web intelligence\\".
-  // A small random sample all showed version 1.0.5.0.
-  { "61112d7b", "25fb120f", "", "", "", ALL, kInvestigatingLink },
-
-  // twking0.dll, "%systemroot%\\system32\\".
-  { "0355549b", "23d01d5b", "", "", "", ALL, kUninstallLink },
-
-  // twking1.dll, "%systemroot%\\system32\\".
-  { "02e44508", "23d01d5b", "", "", "", ALL, kUninstallLink },
-
-  // vksaver.dll, "%systemroot%\\system32\\".
-  { "c4a784d5", "23d01d5b", "", "", "", ALL, kUninstallLink },
-
-  // vlsp.dll (Venturi Firewall?), "%systemroot%\\system32\\".
-  { "2e4eb93d", "23d01d5b", "", "", "", ALL, INVESTIGATING },
-
-  // vmn3_1dn.dll, "%appdata%\\roaming\\vmndtxtb\\".
-  { "bba2037d", "9ab68585", "", "", "", ALL, kUninstallLink },
-
-  // webanalyzer.dll,
-  // "%programfiles%\\contentwatch\\internet protection\\modules\\".
-  { "c70b697d", "4e61ce60", "", "", "", ALL, INVESTIGATING },
-
-  // wowst0.dll, "%systemroot%\\system32\\".
-  { "38ad9963", "23d01d5b", "", "", "", ALL, kUninstallLink },
-
-  // wxbase28u_vc_cw.dll, "%systemroot%\\system32\\".
-  { "e967210d", "23d01d5b", "", "", "", ALL, kUninstallLink },
-};
-
-// Generates an 8 digit hash from the input given.
-static void GenerateHash(const std::string& input, std::string* output) {
-  if (input.empty()) {
-    *output = "";
-    return;
-  }
-
-  uint8_t hash[4];
-  crypto::SHA256HashString(input, hash, sizeof(hash));
-  *output = base::ToLowerASCII(base::HexEncode(hash, sizeof(hash)));
-}
-
 // -----------------------------------------------------------------------------
 
 // static
@@ -387,100 +363,23 @@ void ModuleEnumerator::NormalizeModule(Module* module) {
   module->normalized = true;
 }
 
-// static
-ModuleEnumerator::ModuleStatus ModuleEnumerator::Match(
-    const ModuleEnumerator::Module& module,
-    const ModuleEnumerator::BlacklistEntry& blacklisted) {
-  // All modules must be normalized before matching against blacklist.
-  DCHECK(module.normalized);
-  // Filename is mandatory and version should not contain spaces.
-  DCHECK(strlen(blacklisted.filename) > 0);
-  DCHECK(!strstr(blacklisted.version_from, " "));
-  DCHECK(!strstr(blacklisted.version_to, " "));
-
-  base::win::Version version = base::win::GetVersion();
-  switch (version) {
-     case base::win::VERSION_XP:
-      if (!(blacklisted.os & XP)) return NOT_MATCHED;
-      break;
-    default:
-      break;
-  }
-
-  std::string filename_hash, location_hash;
-  GenerateHash(base::WideToUTF8(module.name), &filename_hash);
-  GenerateHash(base::WideToUTF8(module.location), &location_hash);
-
-  // Filenames are mandatory. Location is mandatory if given.
-  if (filename_hash == blacklisted.filename &&
-          (std::string(blacklisted.location).empty() ||
-          location_hash == blacklisted.location)) {
-    // We have a name match against the blacklist (and possibly location match
-    // also), so check version.
-    Version module_version(base::UTF16ToASCII(module.version));
-    Version version_min(blacklisted.version_from);
-    Version version_max(blacklisted.version_to);
-    bool version_ok = !version_min.IsValid() && !version_max.IsValid();
-    if (!version_ok) {
-      bool too_low = version_min.IsValid() &&
-          (!module_version.IsValid() ||
-          module_version.CompareTo(version_min) < 0);
-      bool too_high = version_max.IsValid() &&
-          (!module_version.IsValid() ||
-          module_version.CompareTo(version_max) >= 0);
-      version_ok = !too_low && !too_high;
-    }
-
-    if (version_ok) {
-      // At this point, the names match and there is no version specified
-      // or the versions also match.
-
-      std::string desc_or_signer(blacklisted.desc_or_signer);
-      std::string signer_hash, description_hash;
-      GenerateHash(base::WideToUTF8(module.digital_signer), &signer_hash);
-      GenerateHash(base::WideToUTF8(module.description), &description_hash);
-
-      // If signatures match (or both are empty), then we have a winner.
-      if (signer_hash == desc_or_signer)
-        return CONFIRMED_BAD;
-
-      // If descriptions match (or both are empty) and the locations match, then
-      // we also have a confirmed match.
-      if (description_hash == desc_or_signer &&
-          !location_hash.empty() && location_hash == blacklisted.location)
-        return CONFIRMED_BAD;
-
-      // We are not sure, but it is likely bad.
-      return SUSPECTED_BAD;
-    }
-  }
-
-  return NOT_MATCHED;
-}
-
 ModuleEnumerator::ModuleEnumerator(EnumerateModulesModel* observer)
-    : enumerated_modules_(NULL),
-      observer_(observer),
-      limited_mode_(false),
-      callback_thread_id_(BrowserThread::ID_COUNT) {
-}
-
-void ModuleEnumerator::ScanNow(ModulesVector* list, bool limited_mode) {
-  enumerated_modules_ = list;
-
-  limited_mode_ = limited_mode;
-
-  if (!limited_mode_) {
-    CHECK(BrowserThread::GetCurrentThreadIdentifier(&callback_thread_id_));
-    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                            base::Bind(&ModuleEnumerator::ScanImpl, this));
-  } else {
-    // Run it synchronously.
-    ScanImpl();
-  }
+    : enumerated_modules_(nullptr),
+      observer_(observer) {
 }
 
 ModuleEnumerator::~ModuleEnumerator() {
+}
+
+void ModuleEnumerator::ScanNow(ModulesVector* list) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  enumerated_modules_ = list;
+
+  // This object can't be reaped until it has finished scanning, so its safe
+  // to post a raw pointer to another thread.
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                          base::Bind(&ModuleEnumerator::ScanImpl,
+                                     base::Unretained(this)));
 }
 
 void ModuleEnumerator::ScanImpl() {
@@ -511,22 +410,22 @@ void ModuleEnumerator::ScanImpl() {
   UMA_HISTOGRAM_TIMES("Conflicts.EnumerateWinsockModules",
                       checkpoint2 - checkpoint);
 
-  MatchAgainstBlacklist();
+  // TODO(chrisha): Annotate any modules that are suspicious/bad.
+
+  ReportThirdPartyMetrics();
 
   std::sort(enumerated_modules_->begin(),
             enumerated_modules_->end(), ModuleSort);
 
-  if (!limited_mode_) {
-    // Send a reply back on the UI thread.
-    BrowserThread::PostTask(callback_thread_id_, FROM_HERE,
-                            base::Bind(&ModuleEnumerator::ReportBack, this));
-  } else {
-    // We are on the main thread already.
-    ReportBack();
-  }
-
   UMA_HISTOGRAM_TIMES("Conflicts.EnumerationTotalTime",
                       base::TimeTicks::Now() - start_time);
+
+  // Send a reply back on the UI thread. The |observer_| outlives this
+  // enumerator, so posting a raw pointer is safe. This is done last as
+  // DoneScanning will then reap this ModuleEnumerator.
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(&EnumerateModulesModel::DoneScanning,
+                                     base::Unretained(observer_)));
 }
 
 void ModuleEnumerator::EnumerateLoadedModules() {
@@ -703,144 +602,73 @@ void ModuleEnumerator::CollapsePath(Module* entry) {
   }
 }
 
-void ModuleEnumerator::MatchAgainstBlacklist() {
-  for (size_t m = 0; m < enumerated_modules_->size(); ++m) {
-    // Match this module against the blacklist.
-    Module* module = &(*enumerated_modules_)[m];
-    module->status = GOOD;  // We change this below potentially.
-    for (size_t i = 0; i < arraysize(kModuleBlacklist); ++i) {
-      #if !defined(NDEBUG)
-        // This saves time when constructing the blacklist.
-        std::string hashes(kModuleBlacklist[i].filename);
-        std::string hash1, hash2, hash3;
-        GenerateHash(kModuleBlacklist[i].filename, &hash1);
-        hashes += " - " + hash1;
-        GenerateHash(kModuleBlacklist[i].location, &hash2);
-        hashes += " - " + hash2;
-        GenerateHash(kModuleBlacklist[i].desc_or_signer, &hash3);
-        hashes += " - " + hash3;
-      #endif
-
-      ModuleStatus status = Match(*module, kModuleBlacklist[i]);
-      if (status != NOT_MATCHED) {
-        // We have a match against the blacklist. Mark it as such.
-        module->status = status;
-        module->recommended_action = kModuleBlacklist[i].help_tip;
-        break;
-      }
-    }
-
-    // Modules loaded from these locations are frequently malicious
-    // and notorious for changing frequently so they are not good candidates
-    // for blacklisting individually. Mark them as suspicious if we haven't
-    // classified them as bad yet.
-    if (module->status == NOT_MATCHED || module->status == GOOD) {
-      if (base::StartsWith(module->location, L"%temp%",
-                           base::CompareCase::INSENSITIVE_ASCII) ||
-          base::StartsWith(module->location, L"%tmp%",
-                           base::CompareCase::INSENSITIVE_ASCII)) {
-        module->status = SUSPECTED_BAD;
-      }
-    }
-  }
-}
-
-void ModuleEnumerator::ReportBack() {
-  if (!limited_mode_)
-    DCHECK_CURRENTLY_ON(callback_thread_id_);
-  observer_->DoneScanning();
-}
-
 base::string16 ModuleEnumerator::GetSubjectNameFromDigitalSignature(
     const base::FilePath& filename) {
-  HCERTSTORE store = NULL;
-  HCRYPTMSG message = NULL;
+  // Try using the signature directly present in the file first.
+  base::string16 subject_name = GetSubjectNameInFile(filename);
+  if (!subject_name.empty())
+    return subject_name;
 
-  // Find the crypto message for this filename.
-  bool result = !!CryptQueryObject(CERT_QUERY_OBJECT_FILE,
-                                   filename.value().c_str(),
-                                   CERT_QUERY_CONTENT_FLAG_PKCS7_SIGNED_EMBED,
-                                   CERT_QUERY_FORMAT_FLAG_BINARY,
-                                   0,
-                                   NULL,
-                                   NULL,
-                                   NULL,
-                                   &store,
-                                   &message,
-                                   NULL);
-  if (!result)
-    return base::string16();
+  // If that fails then look in the signed catalogs.
+  return GetSubjectNameInCatalog(filename);
+}
 
-  // Determine the size of the signer info data.
-  DWORD signer_info_size = 0;
-  result = !!CryptMsgGetParam(message,
-                              CMSG_SIGNER_INFO_PARAM,
-                              0,
-                              NULL,
-                              &signer_info_size);
-  if (!result)
-    return base::string16();
+void ModuleEnumerator::ReportThirdPartyMetrics() {
+  static const wchar_t kMicrosoft[] = L"Microsoft ";
 
-  // Allocate enough space to hold the signer info.
-  std::unique_ptr<BYTE[]> signer_info_buffer(new BYTE[signer_info_size]);
-  CMSG_SIGNER_INFO* signer_info =
-      reinterpret_cast<CMSG_SIGNER_INFO*>(signer_info_buffer.get());
+  size_t signed_modules = 0;
+  size_t microsoft_modules = 0;
+  for (const auto& module : *enumerated_modules_) {
+    if (!module.digital_signer.empty()) {
+      ++signed_modules;
 
-  // Obtain the signer info.
-  result = !!CryptMsgGetParam(message,
-                              CMSG_SIGNER_INFO_PARAM,
-                              0,
-                              signer_info,
-                              &signer_info_size);
-  if (!result)
-    return base::string16();
-
-  // Search for the signer certificate.
-  CERT_INFO CertInfo = {0};
-  PCCERT_CONTEXT cert_context = NULL;
-  CertInfo.Issuer = signer_info->Issuer;
-  CertInfo.SerialNumber = signer_info->SerialNumber;
-
-  cert_context = CertFindCertificateInStore(
-      store,
-      X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
-      0,
-      CERT_FIND_SUBJECT_CERT,
-      &CertInfo,
-      NULL);
-  if (!cert_context)
-    return base::string16();
-
-  // Determine the size of the Subject name.
-  DWORD subject_name_size = CertGetNameString(
-      cert_context, CERT_NAME_SIMPLE_DISPLAY_TYPE, 0, NULL, NULL, 0);
-  if (!subject_name_size)
-    return base::string16();
-
-  base::string16 subject_name;
-  subject_name.resize(subject_name_size);
-
-  // Get subject name.
-  if (!(CertGetNameString(cert_context,
-                          CERT_NAME_SIMPLE_DISPLAY_TYPE,
-                          0,
-                          NULL,
-                          const_cast<LPWSTR>(subject_name.c_str()),
-                          subject_name_size))) {
-    return base::string16();
+      // Check if the signer name begins with "Microsoft ". Signatures are
+      // typically "Microsoft Corporation" or "Microsoft Windows", but others
+      // may exist.
+      if (module.digital_signer.compare(0, arraysize(kMicrosoft) - 1,
+                                        kMicrosoft) == 0) {
+        ++microsoft_modules;
+      }
+    }
   }
 
-  return subject_name;
+  // Report back some metrics regarding third party modules.
+  UMA_HISTOGRAM_CUSTOM_COUNTS("ThirdPartyModules.Modules.Signed",
+                              signed_modules, 1, 500, 50);
+  UMA_HISTOGRAM_CUSTOM_COUNTS("ThirdPartyModules.Modules.Signed.Microsoft",
+                              microsoft_modules, 1, 500, 50);
+  UMA_HISTOGRAM_CUSTOM_COUNTS("ThirdPartyModules.Modules.Total",
+                              enumerated_modules_->size(), 1, 500, 50);
 }
 
 //  ----------------------------------------------------------------------------
 
 // static
 EnumerateModulesModel* EnumerateModulesModel::GetInstance() {
-  return base::Singleton<EnumerateModulesModel>::get();
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  static EnumerateModulesModel* model = nullptr;
+  if (!model) {
+    model = new EnumerateModulesModel();
+    ANNOTATE_LEAKING_OBJECT_PTR(model);
+  }
+  return model;
+}
+
+void EnumerateModulesModel::AddObserver(Observer* observer) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  observers_.AddObserver(observer);
+}
+
+// Removes an |observer| from the enumerator. May only be called from the UI
+// thread and callbacks will also occur on the UI thread.
+void EnumerateModulesModel::RemoveObserver(Observer* observer) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  observers_.RemoveObserver(observer);
 }
 
 bool EnumerateModulesModel::ShouldShowConflictWarning() const {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   // If the user has acknowledged the conflict notification, then we don't need
   // to show it again (because the scanning only happens once per the lifetime
   // of the process). If we were to run the scanning more than once, then we'd
@@ -852,40 +680,66 @@ bool EnumerateModulesModel::ShouldShowConflictWarning() const {
 }
 
 void EnumerateModulesModel::AcknowledgeConflictNotification() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   if (!conflict_notification_acknowledged_) {
     conflict_notification_acknowledged_ = true;
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_MODULE_INCOMPATIBILITY_ICON_CHANGE,
-        content::Source<EnumerateModulesModel>(this),
-        content::NotificationService::NoDetails());
+    FOR_EACH_OBSERVER(Observer, observers_, OnConflictsAcknowledged());
+  }
+}
+
+int EnumerateModulesModel::suspected_bad_modules_detected() const {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return suspected_bad_modules_detected_;
+}
+
+// Returns the number of confirmed bad modules found in the last scan.
+// Returns 0 if no scan has taken place yet.
+int EnumerateModulesModel::confirmed_bad_modules_detected() const {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return confirmed_bad_modules_detected_;
+}
+
+// Returns how many modules to notify the user about.
+int EnumerateModulesModel::modules_to_notify_about() const {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return modules_to_notify_about_;
+}
+
+void EnumerateModulesModel::MaybePostScanningTask() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  static bool done = false;
+  if (!done) {
+    BrowserThread::PostAfterStartupTask(
+        FROM_HERE,
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
+        base::Bind(&EnumerateModulesModel::ScanNow, base::Unretained(this)));
+    done = true;
   }
 }
 
 void EnumerateModulesModel::ScanNow() {
-  if (scanning_)
-    return;  // A scan is already in progress.
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  lock->Acquire();  // Balanced in DoneScanning();
+  // If a module enumerator exists then a scan is already underway.
+  if (module_enumerator_)
+    return;
 
-  scanning_ = true;
-
-  // Instruct the ModuleEnumerator class to load this on the File thread.
-  // ScanNow does not block.
-  if (!module_enumerator_.get())
-    module_enumerator_ = new ModuleEnumerator(this);
-  module_enumerator_->ScanNow(&enumerated_modules_, limited_mode_);
+  // ScanNow does not block, rather it simply schedules a task.
+  module_enumerator_.reset(new ModuleEnumerator(this));
+  module_enumerator_->ScanNow(&enumerated_modules_);
 }
 
-base::ListValue* EnumerateModulesModel::GetModuleList() const {
-  if (scanning_)
-    return NULL;
+base::ListValue* EnumerateModulesModel::GetModuleList() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  lock->Acquire();
+  // If a |module_enumerator_| is still around then scanning has not yet
+  // completed, and it is unsafe to read from |enumerated_modules_|.
+  if (module_enumerator_.get())
+    return nullptr;
 
-  if (enumerated_modules_.empty()) {
-    lock->Release();
-    return NULL;
-  }
+  if (enumerated_modules_.empty())
+    return nullptr;
 
   base::ListValue* list = new base::ListValue();
 
@@ -906,10 +760,8 @@ base::ListValue* EnumerateModulesModel::GetModuleList() const {
       }
       // Must be one of the above type.
       DCHECK(!type_string.empty());
-      if (!limited_mode_) {
-        type_string += L" -- ";
-        type_string += l10n_util::GetStringUTF16(IDS_CONFLICTS_NOT_LOADED_YET);
-      }
+      type_string += L" -- ";
+      type_string += l10n_util::GetStringUTF16(IDS_CONFLICTS_NOT_LOADED_YET);
     }
     data->SetString("type_description", type_string);
     data->SetInteger("status", module->status);
@@ -920,106 +772,72 @@ base::ListValue* EnumerateModulesModel::GetModuleList() const {
     data->SetString("version", module->version);
     data->SetString("digital_signer", module->digital_signer);
 
-    if (!limited_mode_) {
-      // Figure out the possible resolution help string.
-      base::string16 actions;
-      base::string16 separator = L" " +
-          l10n_util::GetStringUTF16(
-              IDS_CONFLICTS_CHECK_POSSIBLE_ACTION_SEPARATOR) +
-          L" ";
+    // Figure out the possible resolution help string.
+    base::string16 actions;
+    base::string16 separator = L" " +
+        l10n_util::GetStringUTF16(
+            IDS_CONFLICTS_CHECK_POSSIBLE_ACTION_SEPARATOR) +
+        L" ";
 
-      if (module->recommended_action & ModuleEnumerator::INVESTIGATING) {
+    if (module->recommended_action & ModuleEnumerator::INVESTIGATING) {
+      actions = l10n_util::GetStringUTF16(
+          IDS_CONFLICTS_CHECK_INVESTIGATING);
+    } else {
+      if (module->recommended_action & ModuleEnumerator::UNINSTALL) {
         actions = l10n_util::GetStringUTF16(
-            IDS_CONFLICTS_CHECK_INVESTIGATING);
-      } else {
-        if (module->recommended_action & ModuleEnumerator::UNINSTALL) {
-          if (!actions.empty())
-            actions += separator;
-          actions = l10n_util::GetStringUTF16(
-              IDS_CONFLICTS_CHECK_POSSIBLE_ACTION_UNINSTALL);
-        }
-        if (module->recommended_action & ModuleEnumerator::UPDATE) {
-          if (!actions.empty())
-            actions += separator;
-          actions += l10n_util::GetStringUTF16(
-              IDS_CONFLICTS_CHECK_POSSIBLE_ACTION_UPDATE);
-        }
-        if (module->recommended_action & ModuleEnumerator::DISABLE) {
-          if (!actions.empty())
-            actions += separator;
-          actions += l10n_util::GetStringUTF16(
-              IDS_CONFLICTS_CHECK_POSSIBLE_ACTION_DISABLE);
-        }
+            IDS_CONFLICTS_CHECK_POSSIBLE_ACTION_UNINSTALL);
       }
-      base::string16 possible_resolution;
-      if (!actions.empty()) {
-        possible_resolution =
-            l10n_util::GetStringUTF16(IDS_CONFLICTS_CHECK_POSSIBLE_ACTIONS) +
-            L" " + actions;
+      if (module->recommended_action & ModuleEnumerator::UPDATE) {
+        if (!actions.empty())
+          actions += separator;
+        actions += l10n_util::GetStringUTF16(
+            IDS_CONFLICTS_CHECK_POSSIBLE_ACTION_UPDATE);
       }
-      data->SetString("possibleResolution", possible_resolution);
-      data->SetString("help_url",
-                      ConstructHelpCenterUrl(*module).spec().c_str());
+      if (module->recommended_action & ModuleEnumerator::DISABLE) {
+        if (!actions.empty())
+          actions += separator;
+        actions += l10n_util::GetStringUTF16(
+            IDS_CONFLICTS_CHECK_POSSIBLE_ACTION_DISABLE);
+      }
     }
+    base::string16 possible_resolution;
+    if (!actions.empty()) {
+      possible_resolution =
+          l10n_util::GetStringUTF16(IDS_CONFLICTS_CHECK_POSSIBLE_ACTIONS) +
+          L" " + actions;
+    }
+    data->SetString("possibleResolution", possible_resolution);
+    // TODO(chrisha): Set help_url when we have a meaningful place for users
+    // to land.
 
     list->Append(data);
   }
 
-  lock->Release();
   return list;
 }
 
-GURL EnumerateModulesModel::GetFirstNotableConflict() {
-  lock->Acquire();
-  GURL url;
-
-  if (enumerated_modules_.empty()) {
-    lock->Release();
-    return GURL();
-  }
-
-  for (ModuleEnumerator::ModulesVector::const_iterator module =
-           enumerated_modules_.begin();
-       module != enumerated_modules_.end(); ++module) {
-    if (!(module->recommended_action & ModuleEnumerator::NOTIFY_USER))
-      continue;
-
-    url = ConstructHelpCenterUrl(*module);
-    DCHECK(url.is_valid());
-    break;
-  }
-
-  lock->Release();
-  return url;
+GURL EnumerateModulesModel::GetConflictUrl() {
+  // For now, simply bring up the chrome://conflicts page, which has detailed
+  // information about each module.
+  if (ShouldShowConflictWarning())
+    return GURL(L"chrome://conflicts");
+  return GURL();
 }
 
 EnumerateModulesModel::EnumerateModulesModel()
-    : limited_mode_(false),
-      scanning_(false),
-      conflict_notification_acknowledged_(false),
+    : conflict_notification_acknowledged_(false),
       confirmed_bad_modules_detected_(0),
       modules_to_notify_about_(0),
       suspected_bad_modules_detected_(0) {
-  lock = new base::Lock();
 }
 
 EnumerateModulesModel::~EnumerateModulesModel() {
-  delete lock;
-}
-
-void EnumerateModulesModel::MaybePostScanningTask() {
-  static bool done = false;
-  if (!done) {
-    done = true;
-    if (base::win::GetVersion() == base::win::VERSION_XP) {
-      check_modules_timer_.Start(FROM_HERE,
-          base::TimeDelta::FromMilliseconds(kModuleCheckDelayMs),
-          this, &EnumerateModulesModel::ScanNow);
-    }
-  }
 }
 
 void EnumerateModulesModel::DoneScanning() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(module_enumerator_.get());
+
   confirmed_bad_modules_detected_ = 0;
   suspected_bad_modules_detected_ = 0;
   modules_to_notify_about_ = 0;
@@ -1037,40 +855,13 @@ void EnumerateModulesModel::DoneScanning() {
     }
   }
 
-  scanning_ = false;
-  lock->Release();
+  module_enumerator_.reset();
 
   UMA_HISTOGRAM_COUNTS_100("Conflicts.SuspectedBadModules",
                            suspected_bad_modules_detected_);
   UMA_HISTOGRAM_COUNTS_100("Conflicts.ConfirmedBadModules",
                            confirmed_bad_modules_detected_);
 
-  // Notifications are not available in limited mode.
-  if (limited_mode_)
-    return;
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_MODULE_LIST_ENUMERATED,
-      content::Source<EnumerateModulesModel>(this),
-      content::NotificationService::NoDetails());
-}
-
-GURL EnumerateModulesModel::ConstructHelpCenterUrl(
-    const ModuleEnumerator::Module& module) const {
-  if (!(module.recommended_action & ModuleEnumerator::SEE_LINK) &&
-      !(module.recommended_action & ModuleEnumerator::NOTIFY_USER))
-    return GURL();
-
-  // Construct the needed hashes.
-  std::string filename, location, description, signer;
-  GenerateHash(base::WideToUTF8(module.name), &filename);
-  GenerateHash(base::WideToUTF8(module.location), &location);
-  GenerateHash(base::WideToUTF8(module.description), &description);
-  GenerateHash(base::WideToUTF8(module.digital_signer), &signer);
-
-  base::string16 url =
-      l10n_util::GetStringFUTF16(IDS_HELP_CENTER_VIEW_CONFLICTS,
-          base::ASCIIToUTF16(filename), base::ASCIIToUTF16(location),
-          base::ASCIIToUTF16(description), base::ASCIIToUTF16(signer));
-  return GURL(base::UTF16ToUTF8(url));
+  // Forward the callback to any registered observers.
+  FOR_EACH_OBSERVER(Observer, observers_, OnScanCompleted());
 }

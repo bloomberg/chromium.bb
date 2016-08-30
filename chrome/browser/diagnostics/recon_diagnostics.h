@@ -15,14 +15,6 @@ enum OutcomeCodes {
   // OperatingSystemTest
   DIAG_RECON_PRE_WINDOW_XP_SP2,
 
-  // ConflictingDllsTest
-  DIAG_RECON_DICTIONARY_LOOKUP_FAILED,
-  DIAG_RECON_NO_STATUS_FIELD,
-  DIAG_RECON_NO_NAME_FIELD,
-  DIAG_RECON_NO_LOCATION_FIELD,
-  DIAG_RECON_CONFLICTING_MODULES,
-  DIAG_RECON_NOT_IMPLEMENTED,
-
   // InstallTypeTest
   DIAG_RECON_INSTALL_PATH_PROVIDER,
 
@@ -52,7 +44,6 @@ enum OutcomeCodes {
 };
 
 DiagnosticsTest* MakeBookMarksTest();
-DiagnosticsTest* MakeConflictingDllsTest();
 DiagnosticsTest* MakeDictonaryDirTest();
 DiagnosticsTest* MakeDiskSpaceTest();
 DiagnosticsTest* MakeInstallTypeTest();

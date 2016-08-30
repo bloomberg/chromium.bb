@@ -9,7 +9,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/layout_constants.h"
-#include "chrome/browser/win/enumerate_modules_model.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -44,6 +43,7 @@ ConflictingModuleView::ConflictingModuleView(views::View* anchor_view,
                                              const GURL& help_center_url)
     : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
       browser_(browser),
+      observer_(this),
       help_center_url_(help_center_url) {
   set_close_on_deactivate(false);
 
@@ -51,8 +51,7 @@ ConflictingModuleView::ConflictingModuleView(views::View* anchor_view,
   set_anchor_view_insets(gfx::Insets(
       GetLayoutConstant(LOCATION_BAR_BUBBLE_ANCHOR_VERTICAL_INSET), 0));
 
-  registrar_.Add(this, chrome::NOTIFICATION_MODULE_INCOMPATIBILITY_ICON_CHANGE,
-                 content::NotificationService::AllSources());
+  observer_.Add(EnumerateModulesModel::GetInstance());
 }
 
 // static
@@ -62,8 +61,8 @@ void ConflictingModuleView::MaybeShow(Browser* browser,
   if (done_checking)
     return;  // Only show the bubble once per launch.
 
-  EnumerateModulesModel* model = EnumerateModulesModel::GetInstance();
-  GURL url = model->GetFirstNotableConflict();
+  auto* model = EnumerateModulesModel::GetInstance();
+  GURL url = model->GetConflictUrl();
   if (!url.is_valid()) {
     done_checking = true;
     return;
@@ -163,11 +162,7 @@ void ConflictingModuleView::GetAccessibleState(
   state->role = ui::AX_ROLE_ALERT_DIALOG;
 }
 
-void ConflictingModuleView::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_MODULE_INCOMPATIBILITY_ICON_CHANGE, type);
+void ConflictingModuleView::OnConflictsAcknowledged() {
   EnumerateModulesModel* model = EnumerateModulesModel::GetInstance();
   if (!model->ShouldShowConflictWarning())
     GetWidget()->Close();

@@ -61621,6 +61621,31 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ThirdPartyModules.Modules.Signed" units="modules">
+  <owner>chrisha@chromium.org</owner>
+  <summary>
+    The total number of signed modules loaded (or potentially loaded) into the
+    browser process. Measured shortly after startup. Windows only.
+  </summary>
+</histogram>
+
+<histogram name="ThirdPartyModules.Modules.Signed.Microsoft" units="modules">
+  <owner>chrisha@chromium.org</owner>
+  <summary>
+    The total number of modules loaded (or potentially loaded) into the browser
+    process that are signed by Microsoft. Measured shortly after startup.
+    Windows only.
+  </summary>
+</histogram>
+
+<histogram name="ThirdPartyModules.Modules.Total" units="modules">
+  <owner>chrisha@chromium.org</owner>
+  <summary>
+    The total number of modules loaded (or potentially loaded) into the browser
+    process. Measured shortly after startup. Windows only.
+  </summary>
+</histogram>
+
 <histogram name="ThreadWatcher.ResponseTime" units="ms">
   <owner>rtenneti@chromium.org</owner>
   <summary>

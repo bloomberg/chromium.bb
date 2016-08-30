@@ -12,11 +12,19 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 
+#if defined(OS_WIN)
+#include "chrome/browser/win/enumerate_modules_model.h"
+#endif
+
 class Profile;
 
 // AppMenuIconController encapsulates the logic for badging the app menu icon
 // as a result of various events - such as available updates, errors, etc.
-class AppMenuIconController : public content::NotificationObserver {
+class AppMenuIconController :
+#if defined(OS_WIN)
+    public EnumerateModulesModel::Observer,
+#endif
+    public content::NotificationObserver {
  public:
   enum class IconType {
     NONE,
@@ -55,6 +63,12 @@ class AppMenuIconController : public content::NotificationObserver {
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
+
+#if defined(OS_WIN)
+  // EnumerateModulesModel:
+  void OnScanCompleted() override;
+  void OnConflictsAcknowledged() override;
+#endif
 
   Profile* profile_;
   Delegate* delegate_;

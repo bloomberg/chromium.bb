@@ -52,62 +52,6 @@ const int64_t kOneMegabyte = 1024 * kOneKilobyte;
 class InstallTypeTest;
 InstallTypeTest* g_install_type = 0;
 
-// Check if any conflicting DLLs are loaded.
-class ConflictingDllsTest : public DiagnosticsTest {
- public:
-  ConflictingDllsTest()
-      : DiagnosticsTest(DIAGNOSTICS_CONFLICTING_DLLS_TEST) {}
-
-  bool ExecuteImpl(DiagnosticsModel::Observer* observer) override {
-#if defined(OS_WIN)
-    EnumerateModulesModel* model = EnumerateModulesModel::GetInstance();
-    model->set_limited_mode(true);
-    model->ScanNow();
-    std::unique_ptr<base::ListValue> list(model->GetModuleList());
-    if (!model->confirmed_bad_modules_detected() &&
-        !model->suspected_bad_modules_detected()) {
-      RecordSuccess("No conflicting modules found");
-      return true;
-    }
-
-    std::string failures = "Possibly conflicting modules:";
-    base::DictionaryValue* dictionary;
-    for (size_t i = 0; i < list->GetSize(); ++i) {
-      if (!list->GetDictionary(i, &dictionary))
-        RecordFailure(DIAG_RECON_DICTIONARY_LOOKUP_FAILED,
-                      "Dictionary lookup failed");
-      int status;
-      std::string location;
-      std::string name;
-      if (!dictionary->GetInteger("status", &status))
-        RecordFailure(DIAG_RECON_NO_STATUS_FIELD, "No 'status' field found");
-      if (status < ModuleEnumerator::SUSPECTED_BAD)
-        continue;
-
-      if (!dictionary->GetString("location", &location)) {
-        RecordFailure(DIAG_RECON_NO_LOCATION_FIELD,
-                      "No 'location' field found");
-        return true;
-      }
-      if (!dictionary->GetString("name", &name)) {
-        RecordFailure(DIAG_RECON_NO_NAME_FIELD, "No 'name' field found");
-        return true;
-      }
-
-      failures += "\n" + location + name;
-    }
-    RecordFailure(DIAG_RECON_CONFLICTING_MODULES, failures);
-    return true;
-#else
-    RecordFailure(DIAG_RECON_NOT_IMPLEMENTED, "Not implemented");
-    return true;
-#endif  // defined(OS_WIN)
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ConflictingDllsTest);
-};
-
 // Check that the disk space in the volume where the user data directory
 // normally lives is not dangerously low.
 class DiskSpaceTest : public DiagnosticsTest {
@@ -385,8 +329,6 @@ class VersionTest : public DiagnosticsTest {
 };
 
 }  // namespace
-
-DiagnosticsTest* MakeConflictingDllsTest() { return new ConflictingDllsTest(); }
 
 DiagnosticsTest* MakeDiskSpaceTest() { return new DiskSpaceTest(); }
 

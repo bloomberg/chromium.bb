@@ -12,6 +12,7 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/scoped_observer.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -77,11 +78,11 @@ content::WebUIDataSource* CreateConflictsUIHTMLSource() {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-// The handler for JavaScript messages for the about:flags page.
+// The handler for JavaScript messages for the about:conflicts page.
 class ConflictsDOMHandler : public WebUIMessageHandler,
-                            public content::NotificationObserver {
+                            public EnumerateModulesModel::Observer {
  public:
-  ConflictsDOMHandler() {}
+  ConflictsDOMHandler();
   ~ConflictsDOMHandler() override {}
 
   // WebUIMessageHandler implementation.
@@ -93,14 +94,18 @@ class ConflictsDOMHandler : public WebUIMessageHandler,
  private:
   void SendModuleList();
 
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  // EnumerateModulesModel::Observer implementation.
+  void OnScanCompleted() override;
 
-  content::NotificationRegistrar registrar_;
+  ScopedObserver<EnumerateModulesModel,
+                 EnumerateModulesModel::Observer> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ConflictsDOMHandler);
 };
+
+ConflictsDOMHandler::ConflictsDOMHandler()
+    : observer_(this) {
+}
 
 void ConflictsDOMHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("requestModuleList",
@@ -109,14 +114,20 @@ void ConflictsDOMHandler::RegisterMessages() {
 }
 
 void ConflictsDOMHandler::HandleRequestModuleList(const base::ListValue* args) {
-  // This request is handled asynchronously. See Observe for when we reply back.
-  registrar_.Add(this, chrome::NOTIFICATION_MODULE_LIST_ENUMERATED,
-                 content::NotificationService::AllSources());
-  EnumerateModulesModel::GetInstance()->ScanNow();
+  // The request is handled asynchronously, and will callback via
+  // OnScanCompleted on completion.
+  auto* model = EnumerateModulesModel::GetInstance();
+
+  // The JS shouldn't be abusive and call 'requestModuleList' twice, but it's
+  // easy enough to defend against this.
+  if (!observer_.IsObserving(model)) {
+    observer_.Add(model);
+    model->ScanNow();
+  }
 }
 
 void ConflictsDOMHandler::SendModuleList() {
-  EnumerateModulesModel* loaded_modules = EnumerateModulesModel::GetInstance();
+  auto* loaded_modules = EnumerateModulesModel::GetInstance();
   base::ListValue* list = loaded_modules->GetModuleList();
   base::DictionaryValue results;
   results.Set("moduleList", list);
@@ -141,13 +152,9 @@ void ConflictsDOMHandler::SendModuleList() {
   web_ui()->CallJavascriptFunctionUnsafe("returnModuleList", results);
 }
 
-void ConflictsDOMHandler::Observe(int type,
-                                  const content::NotificationSource& source,
-                                  const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_MODULE_LIST_ENUMERATED, type);
-
+void ConflictsDOMHandler::OnScanCompleted() {
   SendModuleList();
-  registrar_.RemoveAll();
+  observer_.Remove(EnumerateModulesModel::GetInstance());
 }
 
 }  // namespace

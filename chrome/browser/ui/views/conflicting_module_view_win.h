@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_UI_VIEWS_CONFLICTING_MODULE_VIEW_WIN_H_
 
 #include "base/macros.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "base/scoped_observer.h"
+#include "chrome/browser/win/enumerate_modules_model.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "url/gurl.h"
 
@@ -16,7 +16,7 @@ class Browser;
 // This is the class that implements the UI for the bubble showing that there
 // is a 3rd party module loaded that conflicts with Chrome.
 class ConflictingModuleView : public views::BubbleDialogDelegateView,
-                              public content::NotificationObserver {
+                              public EnumerateModulesModel::Observer {
  public:
   ConflictingModuleView(views::View* anchor_view,
                         Browser* browser,
@@ -40,15 +40,13 @@ class ConflictingModuleView : public views::BubbleDialogDelegateView,
   // views::View implementation.
   void GetAccessibleState(ui::AXViewState* state) override;
 
-  // content::NotificationObserver implementation.
-  void Observe(
-      int type,
-      const content::NotificationSource& source,
-      const content::NotificationDetails& details) override;
+  // EnumerateModulesModel::Observer:
+  void OnConflictsAcknowledged() override;
 
   Browser* browser_;
 
-  content::NotificationRegistrar registrar_;
+  ScopedObserver<EnumerateModulesModel,
+                 EnumerateModulesModel::Observer> observer_;
 
   // The link to the help center for this conflict.
   GURL help_center_url_;

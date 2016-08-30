@@ -66,9 +66,7 @@ bool ShouldShowUpgradeRecommended() {
 // Returns true if we should show the warning for incompatible software.
 bool ShouldShowIncompatibilityWarning() {
 #if defined(OS_WIN)
-  EnumerateModulesModel* loaded_modules = EnumerateModulesModel::GetInstance();
-  loaded_modules->MaybePostScanningTask();
-  return loaded_modules->ShouldShowConflictWarning();
+  return EnumerateModulesModel::GetInstance()->ShouldShowConflictWarning();
 #else
   return false;
 #endif
@@ -88,12 +86,17 @@ AppMenuIconController::AppMenuIconController(Profile* profile,
                  content::Source<Profile>(profile_));
 
 #if defined(OS_WIN)
-  registrar_.Add(this, chrome::NOTIFICATION_MODULE_INCOMPATIBILITY_ICON_CHANGE,
-                 content::NotificationService::AllSources());
+  auto* modules = EnumerateModulesModel::GetInstance();
+  modules->AddObserver(this);
+  modules->MaybePostScanningTask();
 #endif
 }
 
-AppMenuIconController::~AppMenuIconController() {}
+AppMenuIconController::~AppMenuIconController() {
+#if defined(OS_WIN)
+  EnumerateModulesModel::GetInstance()->RemoveObserver(this);
+#endif
+}
 
 void AppMenuIconController::UpdateDelegate() {
   if (ShouldShowUpgradeRecommended()) {
@@ -123,6 +126,17 @@ void AppMenuIconController::UpdateDelegate() {
   delegate_->UpdateSeverity(IconType::NONE,
                             AppMenuIconPainter::SEVERITY_NONE, true);
 }
+
+#if defined(OS_WIN)
+void AppMenuIconController::OnScanCompleted() {
+  UpdateDelegate();
+}
+
+void AppMenuIconController::OnConflictsAcknowledged() {
+  UpdateDelegate();
+}
+#endif
+
 void AppMenuIconController::Observe(
     int type,
     const content::NotificationSource& source,

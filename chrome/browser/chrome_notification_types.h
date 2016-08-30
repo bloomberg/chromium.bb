@@ -294,16 +294,6 @@ enum NotificationType {
   // No details are expected.
   NOTIFICATION_OUTDATED_INSTALL_NO_AU,
 
-  // Software incompatibility notifications ----------------------------------
-
-  // Sent when Chrome has finished compiling the list of loaded modules (and
-  // other modules of interest). No details are expected.
-  NOTIFICATION_MODULE_LIST_ENUMERATED,
-
-  // Sent when Chrome is done scanning the module list and when the user has
-  // acknowledged the module incompatibility. No details are expected.
-  NOTIFICATION_MODULE_INCOMPATIBILITY_ICON_CHANGE,
-
   // Content Settings --------------------------------------------------------
 
   // Sent when the collect cookies dialog is shown. The source is a

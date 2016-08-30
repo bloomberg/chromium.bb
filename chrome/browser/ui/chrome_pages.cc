@@ -189,13 +189,11 @@ void ShowExtensions(Browser* browser,
 void ShowConflicts(Browser* browser) {
 #if defined(OS_WIN)
   EnumerateModulesModel* model = EnumerateModulesModel::GetInstance();
-  if (model->modules_to_notify_about() > 0) {
-    GURL help_center_url = model->GetFirstNotableConflict();
-    if (help_center_url.is_valid()) {
-      ShowSingletonTab(browser, help_center_url);
-      model->AcknowledgeConflictNotification();
-      return;
-    }
+  GURL conflict_url = model->GetConflictUrl();
+  if (conflict_url.is_valid()) {
+    ShowSingletonTab(browser, conflict_url);
+    model->AcknowledgeConflictNotification();
+    return;
   }
 #endif
 

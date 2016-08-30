@@ -25,7 +25,7 @@ namespace diagnostics {
 // This is the count of diagnostic tests on each platform.  This should
 // only be used by testing code.
 #if defined(OS_WIN)
-const int DiagnosticsModel::kDiagnosticsTestCount = 18;
+const int DiagnosticsModel::kDiagnosticsTestCount = 17;
 #elif defined(OS_MACOSX)
 const int DiagnosticsModel::kDiagnosticsTestCount = 14;
 #elif defined(OS_POSIX)
@@ -151,7 +151,6 @@ class DiagnosticsModelWin : public DiagnosticsModelImpl {
  public:
   DiagnosticsModelWin() {
     tests_.push_back(MakeOperatingSystemTest());
-    tests_.push_back(MakeConflictingDllsTest());
     tests_.push_back(MakeInstallTypeTest());
     tests_.push_back(MakeVersionTest());
     tests_.push_back(MakeUserDirTest());

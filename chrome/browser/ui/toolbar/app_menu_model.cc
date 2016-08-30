@@ -683,24 +683,14 @@ bool AppMenuModel::IsCommandIdVisible(int command_id) const {
     case kEmptyMenuItemCommand:
       return false;  // Always hidden (see CreateActionToolbarOverflowMenu).
 #endif
-#if defined(OS_WIN)
-    case IDC_VIEW_INCOMPATIBILITIES: {
-      EnumerateModulesModel* loaded_modules =
-          EnumerateModulesModel::GetInstance();
-      if (loaded_modules->confirmed_bad_modules_detected() <= 0)
-        return false;
-      // We'll leave the app menu adornment on until the user clicks the link.
-      if (loaded_modules->modules_to_notify_about() <= 0)
-        loaded_modules->AcknowledgeConflictNotification();
-      return true;
-    }
-    case IDC_PIN_TO_START_SCREEN:
-      return false;
-#else
     case IDC_VIEW_INCOMPATIBILITIES:
-    case IDC_PIN_TO_START_SCREEN:
+#if defined(OS_WIN)
+      return EnumerateModulesModel::GetInstance()->ShouldShowConflictWarning();
+#else
       return false;
 #endif
+    case IDC_PIN_TO_START_SCREEN:
+      return false;
     case IDC_UPGRADE_DIALOG:
       return browser_defaults::kShowUpgradeMenuItem &&
           UpgradeDetector::GetInstance()->notify_upgrade();
