@@ -60,8 +60,7 @@
   inspector-protocol/page/frameStartedLoading.html [ Failure ]
   inspector-protocol/runtime/runtime-execution-contexts-events.html [ Crash Timeout ]
 
-# https://crbug.com/576272: PlzNavigate: Navigation Timing API support
-  http/tests/misc/timer-vs-loading.html [ Crash ]
+# https://crbug.com/641912: PlzNavigate: Resource Timing API support
   http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_redirects.html [ Failure ]
   http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_redirect_chain_allow_timing.html [ Timeout ]
   http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_redirect_chain.html [ Timeout ]
@@ -135,6 +134,7 @@
   http/tests/loading/pdf-commit-load-callbacks.html [ Crash ]
   http/tests/loading/promote-img-in-viewport-priority.html [ Failure ]
   http/tests/loading/redirect-methods.html [ Crash Failure ]
+  http/tests/misc/timer-vs-loading.html [ Crash ]
   http/tests/navigation/forward-to-fragment-fires-onload.html [ Timeout ]
   http/tests/navigation/response204.html [ Timeout ]
 
