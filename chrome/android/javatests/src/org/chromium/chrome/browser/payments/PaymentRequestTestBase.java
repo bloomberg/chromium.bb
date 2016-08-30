@@ -380,6 +380,18 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
         });
     }
 
+    /** Returns the selected spinner value in the editor UI for credit cards. */
+    protected String getSpinnerSelectionTextInCardEditor(final int dropdownIndex)
+             throws ExecutionException {
+        return ThreadUtils.runOnUiThreadBlocking(new Callable<String>() {
+            @Override
+            public String call() {
+                return mUI.getCardEditorView().getDropdownFieldsForTest().get(dropdownIndex)
+                        .getSelectedItem().toString();
+            }
+        });
+    }
+
     /** Selects the spinner value in the editor UI for credit cards. */
     protected void setSpinnerSelectionsInCardEditorAndWait(final int[] selections,
             CallbackHelper helper) throws InterruptedException, TimeoutException {

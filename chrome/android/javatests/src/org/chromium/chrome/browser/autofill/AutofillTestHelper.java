@@ -35,11 +35,12 @@ public class AutofillTestHelper {
         });
     }
 
-    List<AutofillProfile> getProfilesToSuggest() throws ExecutionException {
+    List<AutofillProfile> getProfilesToSuggest(final boolean includeName) throws
+            ExecutionException {
         return ThreadUtils.runOnUiThreadBlocking(new Callable<List<AutofillProfile>>() {
             @Override
             public List<AutofillProfile> call() {
-                return PersonalDataManager.getInstance().getProfilesToSuggest();
+                return PersonalDataManager.getInstance().getProfilesToSuggest(includeName);
             }
         });
     }
@@ -54,7 +55,7 @@ public class AutofillTestHelper {
     }
 
     int getNumberOfProfilesToSuggest() throws ExecutionException {
-        return getProfilesToSuggest().size();
+        return getProfilesToSuggest(false).size();
     }
 
     int getNumberOfProfilesForSettings() throws ExecutionException {

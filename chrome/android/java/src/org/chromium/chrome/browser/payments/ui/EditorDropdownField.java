@@ -61,7 +61,7 @@ class EditorDropdownField implements Validatable {
         }
 
         ArrayAdapter<DropdownKeyValue> adapter = new ArrayAdapter<DropdownKeyValue>(
-                context, android.R.layout.simple_spinner_item, dropdownKeyValues);
+                context, R.layout.multiline_spinner_item, dropdownKeyValues);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
         mDropdown = (Spinner) mLayout.findViewById(R.id.spinner);

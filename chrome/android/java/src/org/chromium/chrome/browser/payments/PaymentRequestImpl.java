@@ -243,7 +243,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
         List<AutofillProfile> profiles = null;
         if (requestShipping || requestPayerPhone || requestPayerEmail) {
-            profiles = PersonalDataManager.getInstance().getProfilesToSuggest();
+            profiles = PersonalDataManager.getInstance().getProfilesToSuggest(
+                    false /* includeName */);
         }
 
         if (requestShipping) {

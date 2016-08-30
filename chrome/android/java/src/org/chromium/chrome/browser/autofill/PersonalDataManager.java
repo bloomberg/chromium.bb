@@ -518,6 +518,8 @@ public class PersonalDataManager {
     /**
      * Gets the profiles to show in the settings page. Returns all the profiles without any
      * processing.
+     *
+     * @return The list of profiles to show in the settings.
      */
     public List<AutofillProfile> getProfilesForSettings() {
         ThreadUtils.assertOnUiThread();
@@ -529,10 +531,15 @@ public class PersonalDataManager {
     /**
      * Gets the profiles to suggest when filling a form or completing a transaction. The profiles
      * will have been processed to be more relevant to the user.
+     *
+     * @param includeName Whether to include the name in the profile's label.
+     * @return The list of profiles to suggest to the user.
      */
-    public List<AutofillProfile> getProfilesToSuggest() {
+    public List<AutofillProfile> getProfilesToSuggest(boolean includeName) {
         ThreadUtils.assertOnUiThread();
-        return getProfilesWithLabels(nativeGetProfileLabelsToSuggest(mPersonalDataManagerAndroid),
+        return getProfilesWithLabels(
+                nativeGetProfileLabelsToSuggest(
+                        mPersonalDataManagerAndroid, includeName),
                 nativeGetProfileGUIDsToSuggest(mPersonalDataManagerAndroid));
     }
 
@@ -751,7 +758,8 @@ public class PersonalDataManager {
     private native String[] nativeGetProfileGUIDsToSuggest(long nativePersonalDataManagerAndroid);
     private native String[] nativeGetProfileLabelsForSettings(
             long nativePersonalDataManagerAndroid);
-    private native String[] nativeGetProfileLabelsToSuggest(long nativePersonalDataManagerAndroid);
+    private native String[] nativeGetProfileLabelsToSuggest(long nativePersonalDataManagerAndroid,
+            boolean includeName);
     private native AutofillProfile nativeGetProfileByGUID(long nativePersonalDataManagerAndroid,
             String guid);
     private native String nativeSetProfile(long nativePersonalDataManagerAndroid,
