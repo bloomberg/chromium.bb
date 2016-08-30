@@ -321,7 +321,8 @@ void LayoutView::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, Transf
         return;
 
     if (mode & TraverseDocumentBoundaries) {
-        if (LayoutPart* parentDocLayoutObject = frame()->ownerLayoutObject()) {
+        LayoutPartItem parentDocLayoutItem = frame()->ownerLayoutItem();
+        if (!parentDocLayoutItem.isNull()) {
             if (!(mode & InputIsInFrameCoordinates)) {
                 transformState.move(-frame()->view()->scrollOffset());
             } else {
@@ -329,9 +330,9 @@ void LayoutView::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, Transf
                 mode &= ~InputIsInFrameCoordinates;
             }
 
-            transformState.move(parentDocLayoutObject->contentBoxOffset());
+            transformState.move(parentDocLayoutItem.contentBoxOffset());
 
-            parentDocLayoutObject->mapLocalToAncestor(ancestor, transformState, mode);
+            parentDocLayoutItem.mapLocalToAncestor(ancestor, transformState, mode);
         }
     }
 }

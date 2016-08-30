@@ -72,6 +72,16 @@ public:
         return toBox()->overflowClipRect(location, behavior);
     }
 
+    LayoutSize contentBoxOffset() const
+    {
+        return toBox()->contentBoxOffset();
+    }
+
+    void mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState& state, MapCoordinatesFlags flags = ApplyContainerFlip) const
+    {
+        toBox()->mapLocalToAncestor(ancestor, state, flags);
+    }
+
 private:
     LayoutBox* toBox()
     {
