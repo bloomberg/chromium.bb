@@ -625,10 +625,9 @@ def compare_build_artifacts(first_dir, second_dir, target_platform,
     for u in unexpected_equals:
       print('  %s' % u)
 
-  if unexpected_diffs:
-    diffs_to_investigate = set(unexpected_diffs).difference(
-        set(missing_files))
-    compare_deps(first_dir, second_dir, diffs_to_investigate)
+  all_diffs = expected_diffs + unexpected_diffs
+  diffs_to_investigate = sorted(set(all_diffs).difference(missing_files))
+  compare_deps(first_dir, second_dir, diffs_to_investigate)
 
   return int(bool(unexpected_diffs))
 
