@@ -184,17 +184,22 @@ IN_PROC_BROWSER_TEST_F(SpellingMenuObserverTest,
   EXPECT_FALSE(item.hidden);
 
   menu()->GetMenuItem(2, &item);
+  EXPECT_EQ(-1, item.command_id);
+  EXPECT_FALSE(item.enabled);
+  EXPECT_FALSE(item.hidden);
+
+  menu()->GetMenuItem(3, &item);
   EXPECT_EQ(IDC_SPELLCHECK_ADD_TO_DICTIONARY, item.command_id);
   EXPECT_TRUE(item.enabled);
   EXPECT_FALSE(item.hidden);
 
-  menu()->GetMenuItem(3, &item);
+  menu()->GetMenuItem(4, &item);
   EXPECT_EQ(IDC_CONTENT_CONTEXT_SPELLING_TOGGLE, item.command_id);
   EXPECT_TRUE(item.enabled);
   EXPECT_TRUE(item.checked);
   EXPECT_FALSE(item.hidden);
 
-  menu()->GetMenuItem(4, &item);
+  menu()->GetMenuItem(5, &item);
   EXPECT_EQ(-1, item.command_id);
   EXPECT_FALSE(item.enabled);
   EXPECT_FALSE(item.hidden);

@@ -159,6 +159,7 @@ void SpellingMenuObserver::InitMenu(const content::ContextMenuParams& params) {
         SpellcheckServiceFactory::GetForContext(browser_context);
     if (spellcheck_service && spellcheck_service->GetMetrics())
       spellcheck_service->GetMetrics()->RecordSuggestionStats(1);
+    proxy_->AddSeparator();
   }
 
   // If word is misspelled, give option for "Add to dictionary" and, if
