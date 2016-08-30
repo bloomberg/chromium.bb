@@ -137,7 +137,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 343
+#   For your editing convenience: highest ID currently used: 344
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -997,6 +997,23 @@
           'desc': '''Overrides policies on Debug builds of the remote access host.
 
           The value is parsed as a JSON dictionary of policy name to policy value mappings.''',
+        },
+        {
+          'name': 'RemoteAccessHostAllowUiAccessForRemoteAssistance',
+          'type': 'main',
+          'schema': { 'type': 'boolean' },
+          'supported_on': ['chrome.win:55-'],
+          'features': {
+            'dynamic_refresh': False,
+            'per_profile': False,
+          },
+          'example_value': True,
+          'id': 344,
+          'caption': '''Allow remote users to interact with elevated windows in remote assistance sessions''',
+          'tags': ['system-security'],
+          'desc': '''If this setting is enabled, the remote assistance host will be run in a process with <ph name="UIACCESS_PERMISSION_NAME">uiAccess</ph> permissions.  This will allow remote users to interact with elevated windows on the local user's desktop.
+
+          If this setting is disabled or not configured, the remote assistance host will run in the user's context and remote users cannot interact with elevated windows on the desktop.''',
         },
       ],
     },

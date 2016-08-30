@@ -195,6 +195,8 @@ PolicyWatcher::PolicyWatcher(
   default_values_->SetBoolean(key::kRemoteAccessHostAllowRelayedConnection,
                               true);
   default_values_->SetString(key::kRemoteAccessHostUdpPortRange, "");
+  default_values_->SetBoolean(
+      key::kRemoteAccessHostAllowUiAccessForRemoteAssistance, false);
 }
 
 PolicyWatcher::~PolicyWatcher() {

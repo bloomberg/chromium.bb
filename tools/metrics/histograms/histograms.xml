@@ -75897,8 +75897,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="290" label="Report hardware status"/>
   <int value="291" label="Report information about active kiosk sessions"/>
   <int value="292" label="Frequency of device status report uploads"/>
-  <int value="293" label="Send monitoring heartbeats to the management server"/>
-  <int value="294" label="Frequency of monitoring heartbeats"/>
+  <int value="293"
+      label="Send network packets to the management server to monitor online
+             status"/>
+  <int value="294" label="Frequency of monitoring network packets"/>
   <int value="295" label="Captive portal authentication ignores proxy"/>
   <int value="296" label="Set Apps and Extensions cache size (in bytes)"/>
   <int value="297" label="Enable domain name autocomplete during user sign in"/>
@@ -75951,17 +75953,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="333" label="Enables cast"/>
   <int value="334" label="Whether DHE cipher suites in TLS are enabled"/>
   <int value="335"
-      label="Disable Certificate Transparency enforcement for these sites"/>
+      label="Disable Certificate Transparency enforcement for a list of URLs"/>
   <int value="336"
       label="Configure the list of installed apps on the login screen"/>
   <int value="337" label="Enable Android Backup Service"/>
-  <int value="338"
-      label="Enable generated content suggestions on the New Tab page"/>
-  <int value="339" label="Restrict the UDP port range used by WebRTC"/>
-  <int value="340" label="Enable SHA-1 certificates from local trust anchors"/>
+  <int value="338" label="Show content suggestions on the New Tab page"/>
+  <int value="339"
+      label="Restrict the range of local UDP ports used by WebRTC"/>
+  <int value="340"
+      label="Whether SHA-1 signed certificates issued by local trust anchors
+             are allowed"/>
   <int value="341" label="Set an external source of URL restrictions"/>
-  <int value="342" label="Enable component updates"/>
-  <int value="343" label="Mount external storage only in read-only mode"/>
+  <int value="342" label="Enables component updates in Google Chrome."/>
+  <int value="343" label="Treat external storage devices as read-only."/>
+  <int value="344"
+      label="Allow remote users to interact with elevated windows in remote
+             assistance sessions"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">
