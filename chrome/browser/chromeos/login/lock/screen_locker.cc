@@ -10,8 +10,8 @@
 #include "ash/common/ash_switches.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
-#include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/shell.h"
+#include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
@@ -491,9 +491,8 @@ ScreenLocker::~ScreenLocker() {
     authenticator_->SetConsumer(NULL);
   ClearErrors();
 
-  VLOG(1) << "Moving desktop background to unlocked container";
-  ash::Shell::GetInstance()->
-      desktop_background_controller()->MoveDesktopToUnlockedContainer();
+  VLOG(1) << "Moving wallpaper to unlocked container";
+  ash::Shell::GetInstance()->wallpaper_controller()->MoveToUnlockedContainer();
 
   screen_locker_ = NULL;
   bool state = false;
@@ -523,9 +522,8 @@ void ScreenLocker::ScreenLockReady() {
           << delta.InSecondsF() << " second(s)";
   UMA_HISTOGRAM_TIMES("ScreenLocker.ScreenLockTime", delta);
 
-  VLOG(1) << "Moving desktop background to locked container";
-  ash::Shell::GetInstance()->
-      desktop_background_controller()->MoveDesktopToLockedContainer();
+  VLOG(1) << "Moving wallpaper to locked container";
+  ash::Shell::GetInstance()->wallpaper_controller()->MoveToLockedContainer();
 
   bool state = true;
   VLOG(1) << "Emitting SCREEN_LOCK_STATE_CHANGED with state=" << state;

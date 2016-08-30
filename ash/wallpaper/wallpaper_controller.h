@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_DESKTOP_BACKGROUND_DESKTOP_BACKGROUND_CONTROLLER_H_
-#define ASH_DESKTOP_BACKGROUND_DESKTOP_BACKGROUND_CONTROLLER_H_
+#ifndef ASH_WALLPAPER_WALLPAPER_CONTROLLER_H_
+#define ASH_WALLPAPER_WALLPAPER_CONTROLLER_H_
 
 #include <memory>
 
@@ -25,24 +25,23 @@ class WallpaperResizer;
 
 namespace ash {
 
-class DesktopBackgroundControllerObserver;
+class WallpaperControllerObserver;
 
-// Updates the desktop background wallpaper.
-class ASH_EXPORT DesktopBackgroundController : public WmDisplayObserver,
-                                               public ShellObserver {
+// Controls the desktop background wallpaper.
+class ASH_EXPORT WallpaperController : public WmDisplayObserver,
+                                       public ShellObserver {
  public:
-  enum BackgroundMode { BACKGROUND_NONE, BACKGROUND_IMAGE };
+  enum WallpaperMode { WALLPAPER_NONE, WALLPAPER_IMAGE };
 
-  explicit DesktopBackgroundController(
-      base::SequencedWorkerPool* blocking_pool);
-  ~DesktopBackgroundController() override;
+  explicit WallpaperController(base::SequencedWorkerPool* blocking_pool);
+  ~WallpaperController() override;
 
   // Add/Remove observers.
-  void AddObserver(DesktopBackgroundControllerObserver* observer);
-  void RemoveObserver(DesktopBackgroundControllerObserver* observer);
+  void AddObserver(WallpaperControllerObserver* observer);
+  void RemoveObserver(WallpaperControllerObserver* observer);
 
-  // Provides current image on the background, or empty gfx::ImageSkia if there
-  // is no image, e.g. background is none.
+  // Provides current image on the wallpaper, or empty gfx::ImageSkia if there
+  // is no image, e.g. wallpaper is none.
   gfx::ImageSkia GetWallpaper() const;
 
   wallpaper::WallpaperLayout GetWallpaperLayout() const;
@@ -62,13 +61,13 @@ class ASH_EXPORT DesktopBackgroundController : public WmDisplayObserver,
   // crashes. An example test is SystemGestureEventFilterTest.ThreeFingerSwipe.
   void CreateEmptyWallpaper();
 
-  // Move all desktop widgets to locked container.
-  // Returns true if the desktop moved.
-  bool MoveDesktopToLockedContainer();
+  // Move all wallpaper widgets to the locked container.
+  // Returns true if the wallpaper moved.
+  bool MoveToLockedContainer();
 
-  // Move all desktop widgets to unlocked container.
-  // Returns true if the desktop moved.
-  bool MoveDesktopToUnlockedContainer();
+  // Move all wallpaper widgets to unlocked container.
+  // Returns true if the wallpaper moved.
+  bool MoveToUnlockedContainer();
 
   // WmDisplayObserver:
   void OnDisplayConfigurationChanged() override;
@@ -94,18 +93,18 @@ class ASH_EXPORT DesktopBackgroundController : public WmDisplayObserver,
   }
 
  private:
-  // Creates a DesktopBackgroundWidgetController for |root_window|.
+  // Creates a WallpaperWidgetController for |root_window|.
   void InstallDesktopController(WmWindow* root_window);
 
-  // Creates a DesktopBackgroundWidgetController for all root windows.
+  // Creates a WallpaperWidgetController for all root windows.
   void InstallDesktopControllerForAllWindows();
 
-  // Moves all desktop components from one container to other across all root
-  // windows. Returns true if a desktop moved.
-  bool ReparentBackgroundWidgets(int src_container, int dst_container);
+  // Moves the wallpaper to the specified container across all root windows.
+  // Returns true if a wallpaper moved.
+  bool ReparentWallpaper(int container);
 
-  // Returns id for background container for unlocked and locked states.
-  int GetBackgroundContainerId(bool locked);
+  // Returns the wallpaper container id for unlocked and locked states.
+  int GetWallpaperContainerId(bool locked);
 
   // Reload the wallpaper. |clear_cache| specifies whether to clear the
   // wallpaper cahce or not.
@@ -113,9 +112,9 @@ class ASH_EXPORT DesktopBackgroundController : public WmDisplayObserver,
 
   bool locked_;
 
-  BackgroundMode desktop_background_mode_;
+  WallpaperMode wallpaper_mode_;
 
-  base::ObserverList<DesktopBackgroundControllerObserver> observers_;
+  base::ObserverList<WallpaperControllerObserver> observers_;
 
   std::unique_ptr<wallpaper::WallpaperResizer> current_wallpaper_;
 
@@ -127,9 +126,9 @@ class ASH_EXPORT DesktopBackgroundController : public WmDisplayObserver,
 
   base::SequencedWorkerPool* blocking_pool_;
 
-  DISALLOW_COPY_AND_ASSIGN(DesktopBackgroundController);
+  DISALLOW_COPY_AND_ASSIGN(WallpaperController);
 };
 
 }  // namespace ash
 
-#endif  // ASH_DESKTOP_BACKGROUND_DESKTOP_BACKGROUND_CONTROLLER_H_
+#endif  // ASH_WALLPAPER_WALLPAPER_CONTROLLER_H_

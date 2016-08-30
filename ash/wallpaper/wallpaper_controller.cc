@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/desktop_background/desktop_background_controller.h"
+#include "ash/wallpaper/wallpaper_controller.h"
 
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/display/display_info.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "ash/common/wm_shell.h"
-#include "ash/desktop_background/desktop_background_controller_observer.h"
-#include "ash/desktop_background/desktop_background_view.h"
-#include "ash/desktop_background/desktop_background_widget_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
+#include "ash/wallpaper/wallpaper_controller_observer.h"
+#include "ash/wallpaper/wallpaper_view.h"
+#include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -30,47 +30,44 @@ const int kWallpaperReloadDelayMs = 100;
 
 }  // namespace
 
-DesktopBackgroundController::DesktopBackgroundController(
+WallpaperController::WallpaperController(
     base::SequencedWorkerPool* blocking_pool)
     : locked_(false),
-      desktop_background_mode_(BACKGROUND_NONE),
+      wallpaper_mode_(WALLPAPER_NONE),
       wallpaper_reload_delay_(kWallpaperReloadDelayMs),
       blocking_pool_(blocking_pool) {
   WmShell::Get()->AddDisplayObserver(this);
   WmShell::Get()->AddShellObserver(this);
 }
 
-DesktopBackgroundController::~DesktopBackgroundController() {
+WallpaperController::~WallpaperController() {
   WmShell::Get()->RemoveDisplayObserver(this);
   WmShell::Get()->RemoveShellObserver(this);
 }
 
-gfx::ImageSkia DesktopBackgroundController::GetWallpaper() const {
+gfx::ImageSkia WallpaperController::GetWallpaper() const {
   if (current_wallpaper_)
     return current_wallpaper_->image();
   return gfx::ImageSkia();
 }
 
-void DesktopBackgroundController::AddObserver(
-    DesktopBackgroundControllerObserver* observer) {
+void WallpaperController::AddObserver(WallpaperControllerObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void DesktopBackgroundController::RemoveObserver(
-    DesktopBackgroundControllerObserver* observer) {
+void WallpaperController::RemoveObserver(
+    WallpaperControllerObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-wallpaper::WallpaperLayout DesktopBackgroundController::GetWallpaperLayout()
-    const {
+wallpaper::WallpaperLayout WallpaperController::GetWallpaperLayout() const {
   if (current_wallpaper_)
     return current_wallpaper_->layout();
   return wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED;
 }
 
-bool DesktopBackgroundController::SetWallpaperImage(
-    const gfx::ImageSkia& image,
-    wallpaper::WallpaperLayout layout) {
+bool WallpaperController::SetWallpaperImage(const gfx::ImageSkia& image,
+                                            wallpaper::WallpaperLayout layout) {
   VLOG(1) << "SetWallpaper: image_id="
           << wallpaper::WallpaperResizer::GetImageId(image)
           << " layout=" << layout;
@@ -84,59 +81,57 @@ bool DesktopBackgroundController::SetWallpaperImage(
       image, GetMaxDisplaySizeInNative(), layout, blocking_pool_));
   current_wallpaper_->StartResize();
 
-  FOR_EACH_OBSERVER(DesktopBackgroundControllerObserver, observers_,
+  FOR_EACH_OBSERVER(WallpaperControllerObserver, observers_,
                     OnWallpaperDataChanged());
-  desktop_background_mode_ = BACKGROUND_IMAGE;
+  wallpaper_mode_ = WALLPAPER_IMAGE;
   InstallDesktopControllerForAllWindows();
   return true;
 }
 
-void DesktopBackgroundController::CreateEmptyWallpaper() {
+void WallpaperController::CreateEmptyWallpaper() {
   current_wallpaper_.reset();
-  desktop_background_mode_ = BACKGROUND_IMAGE;
+  wallpaper_mode_ = WALLPAPER_IMAGE;
   InstallDesktopControllerForAllWindows();
 }
 
-bool DesktopBackgroundController::MoveDesktopToLockedContainer() {
+bool WallpaperController::MoveToLockedContainer() {
   if (locked_)
     return false;
   locked_ = true;
-  return ReparentBackgroundWidgets(GetBackgroundContainerId(false),
-                                   GetBackgroundContainerId(true));
+  return ReparentWallpaper(GetWallpaperContainerId(true));
 }
 
-bool DesktopBackgroundController::MoveDesktopToUnlockedContainer() {
+bool WallpaperController::MoveToUnlockedContainer() {
   if (!locked_)
     return false;
   locked_ = false;
-  return ReparentBackgroundWidgets(GetBackgroundContainerId(true),
-                                   GetBackgroundContainerId(false));
+  return ReparentWallpaper(GetWallpaperContainerId(false));
 }
 
-void DesktopBackgroundController::OnDisplayConfigurationChanged() {
+void WallpaperController::OnDisplayConfigurationChanged() {
   gfx::Size max_display_size = GetMaxDisplaySizeInNative();
   if (current_max_display_size_ != max_display_size) {
     current_max_display_size_ = max_display_size;
-    if (desktop_background_mode_ == BACKGROUND_IMAGE && current_wallpaper_) {
+    if (wallpaper_mode_ == WALLPAPER_IMAGE && current_wallpaper_) {
       timer_.Stop();
       timer_.Start(FROM_HERE,
                    base::TimeDelta::FromMilliseconds(wallpaper_reload_delay_),
-                   base::Bind(&DesktopBackgroundController::UpdateWallpaper,
+                   base::Bind(&WallpaperController::UpdateWallpaper,
                               base::Unretained(this), false /* clear cache */));
     }
   }
 }
 
-void DesktopBackgroundController::OnRootWindowAdded(WmWindow* root_window) {
-  // The background hasn't been set yet.
-  if (desktop_background_mode_ == BACKGROUND_NONE)
+void WallpaperController::OnRootWindowAdded(WmWindow* root_window) {
+  // The wallpaper hasn't been set yet.
+  if (wallpaper_mode_ == WALLPAPER_NONE)
     return;
 
   // Handle resolution change for "built-in" images.
   gfx::Size max_display_size = GetMaxDisplaySizeInNative();
   if (current_max_display_size_ != max_display_size) {
     current_max_display_size_ = max_display_size;
-    if (desktop_background_mode_ == BACKGROUND_IMAGE && current_wallpaper_)
+    if (wallpaper_mode_ == WALLPAPER_IMAGE && current_wallpaper_)
       UpdateWallpaper(true /* clear cache */);
   }
 
@@ -144,7 +139,7 @@ void DesktopBackgroundController::OnRootWindowAdded(WmWindow* root_window) {
 }
 
 // static
-gfx::Size DesktopBackgroundController::GetMaxDisplaySizeInNative() {
+gfx::Size WallpaperController::GetMaxDisplaySizeInNative() {
   // Return an empty size for test environments where the screen is null.
   if (!display::Screen::GetScreen())
     return gfx::Size();
@@ -169,7 +164,7 @@ gfx::Size DesktopBackgroundController::GetMaxDisplaySizeInNative() {
   return max;
 }
 
-bool DesktopBackgroundController::WallpaperIsAlreadyLoaded(
+bool WallpaperController::WallpaperIsAlreadyLoaded(
     const gfx::ImageSkia& image,
     bool compare_layouts,
     wallpaper::WallpaperLayout layout) const {
@@ -184,73 +179,69 @@ bool DesktopBackgroundController::WallpaperIsAlreadyLoaded(
          current_wallpaper_->original_image_id();
 }
 
-void DesktopBackgroundController::InstallDesktopController(
-    WmWindow* root_window) {
-  DesktopBackgroundWidgetController* component = nullptr;
-  int container_id = GetBackgroundContainerId(locked_);
+void WallpaperController::InstallDesktopController(WmWindow* root_window) {
+  WallpaperWidgetController* component = nullptr;
+  int container_id = GetWallpaperContainerId(locked_);
 
-  switch (desktop_background_mode_) {
-    case BACKGROUND_IMAGE: {
-      component = new DesktopBackgroundWidgetController(
-          CreateDesktopBackground(root_window, container_id));
+  switch (wallpaper_mode_) {
+    case WALLPAPER_IMAGE: {
+      component = new WallpaperWidgetController(
+          CreateWallpaper(root_window, container_id));
       break;
     }
-    case BACKGROUND_NONE:
+    case WALLPAPER_NONE:
       NOTREACHED();
       return;
   }
 
   aura::Window* aura_root_window = WmWindowAura::GetAuraWindow(root_window);
   RootWindowController* controller = GetRootWindowController(aura_root_window);
-  controller->SetAnimatingWallpaperController(
-      new AnimatingDesktopController(component));
+  controller->SetAnimatingWallpaperWidgetController(
+      new AnimatingWallpaperWidgetController(component));
   component->StartAnimating(controller);
 }
 
-void DesktopBackgroundController::InstallDesktopControllerForAllWindows() {
+void WallpaperController::InstallDesktopControllerForAllWindows() {
   for (WmWindow* root : WmShell::Get()->GetAllRootWindows())
     InstallDesktopController(root);
   current_max_display_size_ = GetMaxDisplaySizeInNative();
 }
 
-bool DesktopBackgroundController::ReparentBackgroundWidgets(int src_container,
-                                                            int dst_container) {
+bool WallpaperController::ReparentWallpaper(int container) {
   bool moved = false;
   for (auto* root_window_controller : Shell::GetAllRootWindowControllers()) {
-    // In the steady state (no animation playing) the background widget
+    // In the steady state (no animation playing) the wallpaper widget
     // controller exists in the RootWindowController.
-    DesktopBackgroundWidgetController* desktop_controller =
-        root_window_controller->wallpaper_controller();
-    if (desktop_controller) {
-      moved |=
-          desktop_controller->Reparent(root_window_controller->GetRootWindow(),
-                                       src_container, dst_container);
+    WallpaperWidgetController* wallpaper_widget_controller =
+        root_window_controller->wallpaper_widget_controller();
+    if (wallpaper_widget_controller) {
+      moved |= wallpaper_widget_controller->Reparent(
+          root_window_controller->GetRootWindow(), container);
     }
-    // During desktop show animations the controller lives in
-    // AnimatingDesktopController owned by RootWindowController.
-    // NOTE: If a wallpaper load happens during a desktop show animation there
-    // can temporarily be two desktop background widgets.  We must reparent
-    // both of them - one above and one here.
-    DesktopBackgroundWidgetController* animating_controller =
-        root_window_controller->animating_wallpaper_controller()
-            ? root_window_controller->animating_wallpaper_controller()
+    // During wallpaper show animations the controller lives in
+    // AnimatingWallpaperWidgetController owned by RootWindowController.
+    // NOTE: If an image load happens during a wallpaper show animation there
+    // can temporarily be two wallpaper widgets. We must reparent both of them,
+    // one above and one here.
+    WallpaperWidgetController* animating_controller =
+        root_window_controller->animating_wallpaper_widget_controller()
+            ? root_window_controller->animating_wallpaper_widget_controller()
                   ->GetController(false)
             : nullptr;
     if (animating_controller) {
       moved |= animating_controller->Reparent(
-          root_window_controller->GetRootWindow(), src_container,
-          dst_container);
+          root_window_controller->GetRootWindow(), container);
     }
   }
   return moved;
 }
 
-int DesktopBackgroundController::GetBackgroundContainerId(bool locked) {
-  return locked ? kShellWindowId_LockScreenBackgroundContainer
-                : kShellWindowId_DesktopBackgroundContainer;
+int WallpaperController::GetWallpaperContainerId(bool locked) {
+  return locked ? kShellWindowId_LockScreenWallpaperContainer
+                : kShellWindowId_WallpaperContainer;
 }
 
-void DesktopBackgroundController::UpdateWallpaper(bool clear_cache) {
+void WallpaperController::UpdateWallpaper(bool clear_cache) {
   current_wallpaper_.reset();
   WmShell::Get()->wallpaper_delegate()->UpdateWallpaper(clear_cache);
 }

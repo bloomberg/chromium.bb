@@ -5,9 +5,9 @@
 #include <memory>
 #include <vector>
 
-#include "ash/desktop_background/desktop_background_controller.h"
-#include "ash/desktop_background/desktop_background_controller_observer.h"
 #include "ash/shell.h"
+#include "ash/wallpaper/wallpaper_controller.h"
+#include "ash/wallpaper/wallpaper_controller_observer.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
@@ -2332,7 +2332,7 @@ IN_PROC_BROWSER_TEST_F(KioskEnterpriseTest, PrivateStore) {
 // Specialized test fixture for testing kiosk mode on the
 // hidden WebUI initialization flow for slow hardware.
 class KioskHiddenWebUITest : public KioskTest,
-                             public ash::DesktopBackgroundControllerObserver {
+                             public ash::WallpaperControllerObserver {
  public:
   KioskHiddenWebUITest() : wallpaper_loaded_(false) {}
 
@@ -2346,13 +2346,11 @@ class KioskHiddenWebUITest : public KioskTest,
     LoginDisplayHostImpl::DisableRestrictiveProxyCheckForTest();
 
     KioskTest::SetUpOnMainThread();
-    ash::Shell::GetInstance()->desktop_background_controller()
-        ->AddObserver(this);
+    ash::Shell::GetInstance()->wallpaper_controller()->AddObserver(this);
   }
 
   void TearDownOnMainThread() override {
-    ash::Shell::GetInstance()->desktop_background_controller()
-        ->RemoveObserver(this);
+    ash::Shell::GetInstance()->wallpaper_controller()->RemoveObserver(this);
     KioskTest::TearDownOnMainThread();
   }
 
@@ -2365,7 +2363,7 @@ class KioskHiddenWebUITest : public KioskTest,
 
   bool wallpaper_loaded() const { return wallpaper_loaded_; }
 
-  // ash::DesktopBackgroundControllerObserver overrides:
+  // ash::WallpaperControllerObserver overrides:
   void OnWallpaperDataChanged() override {
     wallpaper_loaded_ = true;
     if (runner_.get())

@@ -38,7 +38,6 @@
 #include "ash/common/wm/workspace/workspace_layout_manager.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "ash/desktop_background/desktop_background_widget_controller.h"
 #include "ash/display/display_manager.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/host/ash_window_tree_host.h"
@@ -48,12 +47,13 @@
 #include "ash/touch/touch_hud_debug.h"
 #include "ash/touch/touch_hud_projection.h"
 #include "ash/touch/touch_observer_hud.h"
+#include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wm/lock_layout_manager.h"
 #include "ash/wm/panels/attached_panel_window_targeter.h"
 #include "ash/wm/panels/panel_window_event_handler.h"
 #include "ash/wm/stacking_controller.h"
-#include "ash/wm/system_background_controller.h"
 #include "ash/wm/system_modal_container_layout_manager.h"
+#include "ash/wm/system_wallpaper_controller.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
@@ -99,7 +99,7 @@ namespace {
 // Duration for the animation that hides the boot splash screen, in
 // milliseconds.  This should be short enough in relation to
 // wm/window_animation.cc's brightness/grayscale fade animation that the login
-// background image animation isn't hidden by the splash screen animation.
+// wallpaper image animation isn't hidden by the splash screen animation.
 const int kBootSplashScreenHideDurationMs = 500;
 #endif
 
@@ -163,7 +163,7 @@ void ReparentAllWindows(aura::Window* src, aura::Window* dst) {
   };
   const int kExtraContainerIdsToMoveInUnifiedMode[] = {
       kShellWindowId_LockScreenContainer,
-      kShellWindowId_LockScreenBackgroundContainer,
+      kShellWindowId_LockScreenWallpaperContainer,
   };
   std::vector<int> container_ids(
       kContainerIdsToMove,
@@ -331,16 +331,16 @@ const aura::Window* RootWindowController::GetRootWindow() const {
   return GetHost()->window();
 }
 
-void RootWindowController::SetWallpaperController(
-    DesktopBackgroundWidgetController* controller) {
-  wallpaper_controller_.reset(controller);
+void RootWindowController::SetWallpaperWidgetController(
+    WallpaperWidgetController* controller) {
+  wallpaper_widget_controller_.reset(controller);
 }
 
-void RootWindowController::SetAnimatingWallpaperController(
-    AnimatingDesktopController* controller) {
-  if (animating_wallpaper_controller_.get())
-    animating_wallpaper_controller_->StopAnimating();
-  animating_wallpaper_controller_.reset(controller);
+void RootWindowController::SetAnimatingWallpaperWidgetController(
+    AnimatingWallpaperWidgetController* controller) {
+  if (animating_wallpaper_widget_controller_.get())
+    animating_wallpaper_widget_controller_->StopAnimating();
+  animating_wallpaper_widget_controller_.reset(controller);
 }
 
 void RootWindowController::Shutdown() {
@@ -352,10 +352,10 @@ void RootWindowController::Shutdown() {
   }
 #endif
 
-  if (animating_wallpaper_controller_.get())
-    animating_wallpaper_controller_->StopAnimating();
-  wallpaper_controller_.reset();
-  animating_wallpaper_controller_.reset();
+  if (animating_wallpaper_widget_controller_.get())
+    animating_wallpaper_widget_controller_->StopAnimating();
+  wallpaper_widget_controller_.reset();
+  animating_wallpaper_widget_controller_.reset();
   aura::Window* root_window = GetRootWindow();
   WmWindow* root_shutting_down = WmWindowAura::Get(root_window);
   WmShell* shell = WmShell::Get();
@@ -380,7 +380,7 @@ void RootWindowController::Shutdown() {
       display::Display::kInvalidDisplayID;
   ash_host_->PrepareForShutdown();
 
-  system_background_.reset();
+  system_wallpaper_.reset();
   aura::client::SetScreenPositionClient(root_window, NULL);
 }
 
@@ -507,13 +507,13 @@ void RootWindowController::UpdateAfterLoginStatusChange(LoginStatus status) {
     shelf_widget_->status_area_widget()->UpdateAfterLoginStatusChange(status);
 }
 
-void RootWindowController::HandleInitialDesktopBackgroundAnimationStarted() {
+void RootWindowController::HandleInitialWallpaperAnimationStarted() {
 #if defined(OS_CHROMEOS)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAshAnimateFromBootSplashScreen) &&
       boot_splash_screen_.get()) {
-    // Make the splash screen fade out so it doesn't obscure the desktop
-    // wallpaper's brightness/grayscale animation.
+    // Make the splash screen fade out so it doesn't obscure the wallpaper's
+    // brightness/grayscale animation.
     boot_splash_screen_->StartHideAnimation(
         base::TimeDelta::FromMilliseconds(kBootSplashScreenHideDurationMs));
   }
@@ -522,7 +522,7 @@ void RootWindowController::HandleInitialDesktopBackgroundAnimationStarted() {
 
 void RootWindowController::OnWallpaperAnimationFinished(views::Widget* widget) {
   // Make sure the wallpaper is visible.
-  system_background_->SetColor(SK_ColorBLACK);
+  system_wallpaper_->SetColor(SK_ColorBLACK);
 #if defined(OS_CHROMEOS)
   boot_splash_screen_.reset();
 #endif
@@ -531,15 +531,12 @@ void RootWindowController::OnWallpaperAnimationFinished(views::Widget* widget) {
   // Only removes old component when wallpaper animation finished. If we
   // remove the old one before the new wallpaper is done fading in there will
   // be a white flash during the animation.
-  if (animating_wallpaper_controller()) {
-    DesktopBackgroundWidgetController* controller =
-        animating_wallpaper_controller()->GetController(true);
-    // |desktop_widget_| should be the same animating widget we try to move
-    // to |kDesktopController|. Otherwise, we may close |desktop_widget_|
-    // before move it to |kDesktopController|.
+  if (animating_wallpaper_widget_controller()) {
+    WallpaperWidgetController* controller =
+        animating_wallpaper_widget_controller()->GetController(true);
     DCHECK_EQ(controller->widget(), widget);
-    // Release the old controller and close its background widget.
-    SetWallpaperController(controller);
+    // Release the old controller and close its wallpaper widget.
+    SetWallpaperWidgetController(controller);
   }
 }
 
@@ -573,9 +570,9 @@ void RootWindowController::CloseChildWindows() {
   if (shelf_widget_)
     shelf_widget_->Shutdown();
 
-  // Close background widget first as it depends on tooltip.
-  wallpaper_controller_.reset();
-  animating_wallpaper_controller_.reset();
+  // Close wallpaper widget first as it depends on tooltip.
+  wallpaper_widget_controller_.reset();
+  animating_wallpaper_widget_controller_.reset();
 
   workspace_controller_.reset();
   aura::client::SetTooltipClient(root_window, NULL);
@@ -648,16 +645,16 @@ void RootWindowController::ShowContextMenu(const gfx::Point& location_in_screen,
       menu_model_.get(),
       base::Bind(&RootWindowController::OnMenuClosed, base::Unretained(this))));
 
-  // Background controller may not be set yet if user clicked on status are
+  // Wallpaper controller may not be set yet if user clicked on status are
   // before initial animation completion. See crbug.com/222218
-  if (!wallpaper_controller_.get())
+  if (!wallpaper_widget_controller_.get())
     return;
 
   menu_runner_.reset(new views::MenuRunner(
       menu_model_adapter_->CreateMenu(),
       views::MenuRunner::CONTEXT_MENU | views::MenuRunner::ASYNC));
   ignore_result(
-      menu_runner_->RunMenuAt(wallpaper_controller_->widget(), NULL,
+      menu_runner_->RunMenuAt(wallpaper_widget_controller_->widget(), nullptr,
                               gfx::Rect(location_in_screen, gfx::Size()),
                               views::MENU_ANCHOR_TOPLEFT, source_type));
 }
@@ -759,7 +756,7 @@ void RootWindowController::Init(RootWindowType root_window_type,
 
   root_window_controller_common_->CreateContainers();
 
-  CreateSystemBackground(first_run_after_boot);
+  CreateSystemWallpaper(first_run_after_boot);
 
   InitLayoutManagers();
   InitTouchHuds();
@@ -848,9 +845,9 @@ void RootWindowController::InitLayoutManagers() {
     mouse_event_target_.reset(new aura::Window(new EmptyWindowDelegate));
     mouse_event_target_->Init(ui::LAYER_NOT_DRAWN);
 
-    aura::Window* lock_background_container =
-        GetContainer(kShellWindowId_LockScreenBackgroundContainer);
-    lock_background_container->AddChild(mouse_event_target_.get());
+    aura::Window* lock_wallpaper_container =
+        GetContainer(kShellWindowId_LockScreenWallpaperContainer);
+    lock_wallpaper_container->AddChild(mouse_event_target_.get());
     mouse_event_target_->Show();
   }
 
@@ -892,19 +889,18 @@ void RootWindowController::InitTouchHuds() {
     EnableTouchHudProjection();
 }
 
-void RootWindowController::CreateSystemBackground(
-    bool is_first_run_after_boot) {
+void RootWindowController::CreateSystemWallpaper(bool is_first_run_after_boot) {
   SkColor color = SK_ColorBLACK;
 #if defined(OS_CHROMEOS)
   if (is_first_run_after_boot)
     color = kChromeOsBootColor;
 #endif
-  system_background_.reset(
-      new SystemBackgroundController(GetRootWindow(), color));
+  system_wallpaper_.reset(
+      new SystemWallpaperController(GetRootWindow(), color));
 
 #if defined(OS_CHROMEOS)
   // Make a copy of the system's boot splash screen so we can composite it
-  // onscreen until the desktop background is ready.
+  // onscreen until the wallpaper is ready.
   if (is_first_run_after_boot &&
       (base::CommandLine::ForCurrentProcess()->HasSwitch(
            switches::kAshCopyHostBackgroundAtBoot) ||

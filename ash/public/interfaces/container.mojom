@@ -10,7 +10,7 @@ module ash.mojom;
 // that other apps may need to parent windows to.
 enum Container {
   // TODO: remove everything but LOGIN_WINDOWS, http://crbug.com/616859.
-  USER_BACKGROUND,
+  WALLPAPER,
   USER_PRIVATE_SHELF,
   LOGIN_WINDOWS,
   // Status area widget and message center notification popups.

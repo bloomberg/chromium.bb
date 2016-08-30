@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/desktop_background/desktop_background_widget_controller.h"
+#include "ash/wallpaper/wallpaper_widget_controller.h"
 
 #include "ash/ash_export.h"
 #include "ash/common/wallpaper/wallpaper_delegate.h"
@@ -22,31 +22,31 @@ class ShowWallpaperAnimationObserver : public ui::ImplicitAnimationObserver,
                                        public views::WidgetObserver {
  public:
   ShowWallpaperAnimationObserver(RootWindowController* root_window_controller,
-                                 views::Widget* desktop_widget,
+                                 views::Widget* wallpaper_widget,
                                  bool is_initial_animation)
       : root_window_controller_(root_window_controller),
-        desktop_widget_(desktop_widget),
+        wallpaper_widget_(wallpaper_widget),
         is_initial_animation_(is_initial_animation) {
-    DCHECK(desktop_widget_);
-    desktop_widget_->AddObserver(this);
+    DCHECK(wallpaper_widget_);
+    wallpaper_widget_->AddObserver(this);
   }
 
   ~ShowWallpaperAnimationObserver() override {
     StopObservingImplicitAnimations();
-    if (desktop_widget_)
-      desktop_widget_->RemoveObserver(this);
+    if (wallpaper_widget_)
+      wallpaper_widget_->RemoveObserver(this);
   }
 
  private:
   // Overridden from ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsScheduled() override {
     if (is_initial_animation_) {
-      root_window_controller_->HandleInitialDesktopBackgroundAnimationStarted();
+      root_window_controller_->HandleInitialWallpaperAnimationStarted();
     }
   }
 
   void OnImplicitAnimationsCompleted() override {
-    root_window_controller_->OnWallpaperAnimationFinished(desktop_widget_);
+    root_window_controller_->OnWallpaperAnimationFinished(wallpaper_widget_);
     delete this;
   }
 
@@ -54,7 +54,7 @@ class ShowWallpaperAnimationObserver : public ui::ImplicitAnimationObserver,
   void OnWidgetDestroying(views::Widget* widget) override { delete this; }
 
   RootWindowController* root_window_controller_;
-  views::Widget* desktop_widget_;
+  views::Widget* wallpaper_widget_;
 
   // Is this object observing the initial brightness/grayscale animation?
   const bool is_initial_animation_;
@@ -64,8 +64,7 @@ class ShowWallpaperAnimationObserver : public ui::ImplicitAnimationObserver,
 
 }  // namespace
 
-DesktopBackgroundWidgetController::DesktopBackgroundWidgetController(
-    views::Widget* widget)
+WallpaperWidgetController::WallpaperWidgetController(views::Widget* widget)
     : widget_(widget),
       widget_parent_(WmLookup::Get()->GetWindowForWidget(widget)->GetParent()) {
   DCHECK(widget_);
@@ -73,7 +72,7 @@ DesktopBackgroundWidgetController::DesktopBackgroundWidgetController(
   widget_parent_->AddObserver(this);
 }
 
-DesktopBackgroundWidgetController::~DesktopBackgroundWidgetController() {
+WallpaperWidgetController::~WallpaperWidgetController() {
   if (widget_) {
     views::Widget* widget = widget_;
     RemoveObservers();
@@ -81,23 +80,21 @@ DesktopBackgroundWidgetController::~DesktopBackgroundWidgetController() {
   }
 }
 
-void DesktopBackgroundWidgetController::OnWidgetDestroying(
-    views::Widget* widget) {
+void WallpaperWidgetController::OnWidgetDestroying(views::Widget* widget) {
   RemoveObservers();
 }
 
-void DesktopBackgroundWidgetController::SetBounds(const gfx::Rect& bounds) {
+void WallpaperWidgetController::SetBounds(const gfx::Rect& bounds) {
   if (widget_)
     widget_->SetBounds(bounds);
 }
 
-bool DesktopBackgroundWidgetController::Reparent(aura::Window* root_window,
-                                                 int src_container,
-                                                 int dest_container) {
+bool WallpaperWidgetController::Reparent(aura::Window* root_window,
+                                         int container) {
   if (widget_) {
     widget_parent_->RemoveObserver(this);
-    views::Widget::ReparentNativeView(
-        widget_->GetNativeView(), root_window->GetChildById(dest_container));
+    views::Widget::ReparentNativeView(widget_->GetNativeView(),
+                                      root_window->GetChildById(container));
     widget_parent_ = WmLookup::Get()->GetWindowForWidget(widget_)->GetParent();
     widget_parent_->AddObserver(this);
     return true;
@@ -106,20 +103,20 @@ bool DesktopBackgroundWidgetController::Reparent(aura::Window* root_window,
   return false;
 }
 
-void DesktopBackgroundWidgetController::RemoveObservers() {
+void WallpaperWidgetController::RemoveObservers() {
   widget_parent_->RemoveObserver(this);
   widget_->RemoveObserver(this);
   widget_ = nullptr;
 }
 
-void DesktopBackgroundWidgetController::OnWindowBoundsChanged(
+void WallpaperWidgetController::OnWindowBoundsChanged(
     WmWindow* window,
     const gfx::Rect& old_bounds,
     const gfx::Rect& new_bounds) {
   SetBounds(new_bounds);
 }
 
-void DesktopBackgroundWidgetController::StartAnimating(
+void WallpaperWidgetController::StartAnimating(
     RootWindowController* root_window_controller) {
   if (widget_) {
     ui::ScopedLayerAnimationSettings settings(
@@ -135,21 +132,20 @@ void DesktopBackgroundWidgetController::StartAnimating(
   }
 }
 
-AnimatingDesktopController::AnimatingDesktopController(
-    DesktopBackgroundWidgetController* component) {
-  controller_.reset(component);
-}
+AnimatingWallpaperWidgetController::AnimatingWallpaperWidgetController(
+    WallpaperWidgetController* controller)
+    : controller_(controller) {}
 
-AnimatingDesktopController::~AnimatingDesktopController() {}
+AnimatingWallpaperWidgetController::~AnimatingWallpaperWidgetController() {}
 
-void AnimatingDesktopController::StopAnimating() {
+void AnimatingWallpaperWidgetController::StopAnimating() {
   if (controller_) {
     ui::Layer* layer = controller_->widget()->GetNativeView()->layer();
     layer->GetAnimator()->StopAnimating();
   }
 }
 
-DesktopBackgroundWidgetController* AnimatingDesktopController::GetController(
+WallpaperWidgetController* AnimatingWallpaperWidgetController::GetController(
     bool pass_ownership) {
   if (pass_ownership)
     return controller_.release();

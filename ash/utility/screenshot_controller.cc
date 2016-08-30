@@ -387,8 +387,8 @@ void ScreenshotController::UpdateSelectedWindow(ui::LocatedEvent* event) {
     selected = selected->parent();
   }
 
-  if (selected->parent()->id() == kShellWindowId_DesktopBackgroundContainer ||
-      selected->parent()->id() == kShellWindowId_LockScreenBackgroundContainer)
+  if (selected->parent()->id() == kShellWindowId_WallpaperContainer ||
+      selected->parent()->id() == kShellWindowId_LockScreenWallpaperContainer)
     selected = nullptr;
 
   SetSelectedWindow(selected);

@@ -234,8 +234,8 @@ GestureActionType TouchUMA::FindGestureActionType(
 
   std::string name = window ? window->name() : std::string();
 
-  const char kDesktopBackgroundView[] = "DesktopBackgroundView";
-  if (name == kDesktopBackgroundView) {
+  const char kWallpaperView[] = "WallpaperView";
+  if (name == kWallpaperView) {
     if (event.type() == ui::ET_GESTURE_SCROLL_BEGIN)
       return GESTURE_DESKTOP_SCROLL;
     if (event.type() == ui::ET_GESTURE_PINCH_BEGIN)

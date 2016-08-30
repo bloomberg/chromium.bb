@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/desktop_background/desktop_background_view.h"
+#include "ash/wallpaper/wallpaper_view.h"
 
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/display/display_info.h"
@@ -11,10 +11,10 @@
 #include "ash/common/wm/overview/window_selector_controller.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
-#include "ash/desktop_background/desktop_background_controller.h"
-#include "ash/desktop_background/desktop_background_widget_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
+#include "ash/wallpaper/wallpaper_controller.h"
+#include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
@@ -42,7 +42,7 @@ class LayerControlView : public views::View {
   void Layout() override {
     WmWindow* window = WmLookup::Get()->GetWindowForWidget(GetWidget());
     // Keep |this| at the bottom since there may be other windows on top of the
-    // background view such as an overview mode shield.
+    // wallpaper view such as an overview mode shield.
     window->GetParent()->StackChildAtBottom(window);
     display::Display display = window->GetDisplayNearestWindow();
     DisplayInfo info = WmShell::Get()->GetDisplayInfo(display.id());
@@ -101,34 +101,33 @@ class PreEventDispatchHandler : public ui::EventHandler {
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopBackgroundView, public:
+// WallpaperView, public:
 
-DesktopBackgroundView::DesktopBackgroundView()
+WallpaperView::WallpaperView()
     : pre_dispatch_handler_(new PreEventDispatchHandler()) {
   set_context_menu_controller(this);
   AddPreTargetHandler(pre_dispatch_handler_.get());
 }
 
-DesktopBackgroundView::~DesktopBackgroundView() {
+WallpaperView::~WallpaperView() {
   RemovePreTargetHandler(pre_dispatch_handler_.get());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopBackgroundView, views::View overrides:
+// WallpaperView, views::View overrides:
 
-void DesktopBackgroundView::OnPaint(gfx::Canvas* canvas) {
-  // Scale the image while maintaining the aspect ratio, cropping as
-  // necessary to fill the background. Ideally the image should be larger
-  // than the largest display supported, if not we will scale and center it if
-  // the layout is wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED.
-  DesktopBackgroundController* controller =
-      Shell::GetInstance()->desktop_background_controller();
+void WallpaperView::OnPaint(gfx::Canvas* canvas) {
+  // Scale the image while maintaining the aspect ratio, cropping as necessary
+  // to fill the wallpaper. Ideally the image should be larger than the largest
+  // display supported, if not we will scale and center it if the layout is
+  // wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED.
+  WallpaperController* controller =
+      Shell::GetInstance()->wallpaper_controller();
   gfx::ImageSkia wallpaper = controller->GetWallpaper();
   wallpaper::WallpaperLayout layout = controller->GetWallpaperLayout();
 
-  // Wallpapers with png format could be partially transparent.
-  // Fill the canvas with black background to make it opaque
-  // before painting wallpaper
+  // Wallpapers with png format could be partially transparent. Fill the canvas
+  // with black to make it opaque before painting the wallpaper.
   canvas->FillRect(GetLocalBounds(), SK_ColorBLACK);
 
   if (wallpaper.isNull())
@@ -178,38 +177,35 @@ void DesktopBackgroundView::OnPaint(gfx::Canvas* canvas) {
   }
 }
 
-bool DesktopBackgroundView::OnMousePressed(const ui::MouseEvent& event) {
+bool WallpaperView::OnMousePressed(const ui::MouseEvent& event) {
   return true;
 }
 
-void DesktopBackgroundView::ShowContextMenuForView(
-    views::View* source,
-    const gfx::Point& point,
-    ui::MenuSourceType source_type) {
+void WallpaperView::ShowContextMenuForView(views::View* source,
+                                           const gfx::Point& point,
+                                           ui::MenuSourceType source_type) {
   WmShell::Get()->ShowContextMenu(point, source_type);
 }
 
-views::Widget* CreateDesktopBackground(WmWindow* root_window,
-                                       int container_id) {
+views::Widget* CreateWallpaper(WmWindow* root_window, int container_id) {
   aura::Window* aura_root_window = WmWindowAura::GetAuraWindow(root_window);
-  DesktopBackgroundController* controller =
-      Shell::GetInstance()->desktop_background_controller();
+  WallpaperController* controller =
+      Shell::GetInstance()->wallpaper_controller();
   WallpaperDelegate* wallpaper_delegate = WmShell::Get()->wallpaper_delegate();
 
-  views::Widget* desktop_widget = new views::Widget;
+  views::Widget* wallpaper_widget = new views::Widget;
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  params.name = "DesktopBackgroundView";
+  params.name = "WallpaperView";
   if (controller->GetWallpaper().isNull())
     params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.parent = aura_root_window->GetChildById(container_id);
-  desktop_widget->Init(params);
-  desktop_widget->SetContentsView(
-      new LayerControlView(new DesktopBackgroundView()));
+  wallpaper_widget->Init(params);
+  wallpaper_widget->SetContentsView(new LayerControlView(new WallpaperView()));
   int animation_type = wallpaper_delegate->GetAnimationType();
-  WmWindow* desktop_window =
-      WmLookup::Get()->GetWindowForWidget(desktop_widget);
-  desktop_window->SetVisibilityAnimationType(animation_type);
+  WmWindow* wallpaper_window =
+      WmLookup::Get()->GetWindowForWidget(wallpaper_widget);
+  wallpaper_window->SetVisibilityAnimationType(animation_type);
 
   RootWindowController* root_window_controller =
       GetRootWindowController(aura_root_window);
@@ -220,21 +216,21 @@ views::Widget* CreateDesktopBackground(WmWindow* root_window,
   // 3. From an empty background, chrome transit to a logged in user session.
   // 4. From an empty background, guest user logged in.
   if (wallpaper_delegate->ShouldShowInitialAnimation() ||
-      root_window_controller->animating_wallpaper_controller() ||
+      root_window_controller->animating_wallpaper_widget_controller() ||
       WmShell::Get()->GetSessionStateDelegate()->NumberOfLoggedInUsers()) {
-    desktop_window->SetVisibilityAnimationTransition(::wm::ANIMATE_SHOW);
+    wallpaper_window->SetVisibilityAnimationTransition(::wm::ANIMATE_SHOW);
     int duration_override = wallpaper_delegate->GetAnimationDurationOverride();
     if (duration_override) {
-      desktop_window->SetVisibilityAnimationDuration(
+      wallpaper_window->SetVisibilityAnimationDuration(
           base::TimeDelta::FromMilliseconds(duration_override));
     }
   } else {
     // Disable animation if transition to login screen from an empty background.
-    desktop_window->SetVisibilityAnimationTransition(::wm::ANIMATE_NONE);
+    wallpaper_window->SetVisibilityAnimationTransition(::wm::ANIMATE_NONE);
   }
 
-  desktop_widget->SetBounds(params.parent->bounds());
-  return desktop_widget;
+  wallpaper_widget->SetBounds(params.parent->bounds());
+  return wallpaper_widget;
 }
 
 }  // namespace ash

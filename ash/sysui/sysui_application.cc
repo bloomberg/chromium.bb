@@ -68,8 +68,8 @@ const char kResourceFile200[] = "ash_test_resources_200_percent.pak";
 bool GetContainerForWidget(const views::Widget::InitParams& params,
                            ash::mojom::Container* container) {
   switch (params.parent->id()) {
-    case kShellWindowId_DesktopBackgroundContainer:
-      *container = ash::mojom::Container::USER_BACKGROUND;
+    case kShellWindowId_WallpaperContainer:
+      *container = ash::mojom::Container::WALLPAPER;
       return true;
 
     case kShellWindowId_ShelfContainer:

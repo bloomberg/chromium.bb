@@ -1977,14 +1977,14 @@ TEST_P(WindowSelectorTest, CancelOverviewOnMouseClick) {
   EXPECT_FALSE(IsSelecting());
 
   // Point and bounds selected so that they don't intersect. This causes
-  // events located at the point to be passed to DesktopBackgroundController,
+  // events located at the point to be passed to WallpaperController,
   // and not the window.
   gfx::Point point_in_background_page(0, 0);
   gfx::Rect bounds(10, 10, 100, 100);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   ui::test::EventGenerator& generator = GetEventGenerator();
   // Move mouse to point in the background page. Sending an event here will pass
-  // it to the DesktopBackgroundController in both regular and overview mode.
+  // it to the WallpaperController in both regular and overview mode.
   generator.MoveMouseTo(point_in_background_page);
 
   // Clicking on the background page while not in overview should not toggle
@@ -2007,7 +2007,7 @@ TEST_P(WindowSelectorTest, CancelOverviewOnTap) {
   EXPECT_FALSE(IsSelecting());
 
   // Point and bounds selected so that they don't intersect. This causes
-  // events located at the point to be passed to DesktopBackgroundController,
+  // events located at the point to be passed to WallpaperController,
   // and not the window.
   gfx::Point point_in_background_page(0, 0);
   gfx::Rect bounds(10, 10, 100, 100);

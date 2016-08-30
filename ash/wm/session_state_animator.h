@@ -68,18 +68,18 @@ class ASH_EXPORT SessionStateAnimator {
 
   // Specific containers or groups of containers that can be animated.
   enum Container {
-    DESKTOP_BACKGROUND = 1 << 0,
+    WALLPAPER = 1 << 0,
     LAUNCHER = 1 << 1,
 
-    // All user session related containers including system background but
-    // not including desktop background (wallpaper).
+    // All user session related containers including the system wallpaper but
+    // not including the user's wallpaper.
     NON_LOCK_SCREEN_CONTAINERS = 1 << 2,
 
     // Desktop wallpaper is moved to this layer when screen is locked.
     // This layer is excluded from lock animation so that wallpaper stays as is,
     // user session windows are hidden and lock UI is shown on top of it.
     // This layer is included in shutdown animation.
-    LOCK_SCREEN_BACKGROUND = 1 << 3,
+    LOCK_SCREEN_WALLPAPER = 1 << 3,
 
     // Lock screen and lock screen modal containers.
     LOCK_SCREEN_CONTAINERS = 1 << 4,
@@ -204,14 +204,14 @@ class ASH_EXPORT SessionStateAnimator {
   // for more details.
   virtual AnimationSequence* BeginAnimationSequence(base::Closure callback) = 0;
 
-  // Retruns true if the background is hidden.
-  virtual bool IsBackgroundHidden() const = 0;
+  // Retruns true if the wallpaper is hidden.
+  virtual bool IsWallpaperHidden() const = 0;
 
-  // Shows the background immediately.
-  virtual void ShowBackground() = 0;
+  // Shows the wallpaper immediately.
+  virtual void ShowWallpaper() = 0;
 
-  // Hides the background immediately.
-  virtual void HideBackground() = 0;
+  // Hides the wallpaper immediately.
+  virtual void HideWallpaper() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SessionStateAnimator);

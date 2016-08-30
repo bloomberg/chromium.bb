@@ -36,8 +36,8 @@ const int kShellWindowId_LockScreenRelatedContainersContainer = 2;
 // This container is not visible.
 const int kShellWindowId_UnparentedControlContainer = 3;
 
-// The desktop background window.
-const int kShellWindowId_DesktopBackgroundContainer = 4;
+// The wallpaper (desktop background) window.
+const int kShellWindowId_WallpaperContainer = 4;
 
 // The virtual keyboard container.
 // NOTE: this is lazily created.
@@ -67,8 +67,8 @@ const int kShellWindowId_AppListContainer = 12;
 // The container for user-specific modal windows.
 const int kShellWindowId_SystemModalContainer = 13;
 
-// The container for the lock screen background.
-const int kShellWindowId_LockScreenBackgroundContainer = 14;
+// The container for the lock screen wallpaper (lock screen background).
+const int kShellWindowId_LockScreenWallpaperContainer = 14;
 
 // The container for the lock screen.
 const int kShellWindowId_LockScreenContainer = 15;

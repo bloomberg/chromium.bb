@@ -34,7 +34,7 @@ using RootWindowLayoutManagerTest = test::AshTestBase;
 
 TEST_F(RootWindowLayoutManagerTest, DeleteChildDuringResize) {
   aura::Window* parent = Shell::GetPrimaryRootWindow()->GetChildById(
-      kShellWindowId_DesktopBackgroundContainer);
+      kShellWindowId_WallpaperContainer);
   aura::Window* w1 = aura::test::CreateTestWindowWithId(1, parent);
   aura::Window* w2 = aura::test::CreateTestWindowWithId(2, parent);
   WindowDeleter deleter(w1);

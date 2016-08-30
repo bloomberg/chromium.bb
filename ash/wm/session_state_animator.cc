@@ -17,13 +17,13 @@
 namespace ash {
 
 const int SessionStateAnimator::kAllLockScreenContainersMask =
-    SessionStateAnimator::LOCK_SCREEN_BACKGROUND |
+    SessionStateAnimator::LOCK_SCREEN_WALLPAPER |
     SessionStateAnimator::LOCK_SCREEN_CONTAINERS |
     SessionStateAnimator::LOCK_SCREEN_RELATED_CONTAINERS;
 
 const int SessionStateAnimator::kAllNonRootContainersMask =
     SessionStateAnimator::kAllLockScreenContainersMask |
-    SessionStateAnimator::DESKTOP_BACKGROUND | SessionStateAnimator::LAUNCHER |
+    SessionStateAnimator::WALLPAPER | SessionStateAnimator::LAUNCHER |
     SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS;
 
 SessionStateAnimator::AnimationSequence::AnimationSequence(

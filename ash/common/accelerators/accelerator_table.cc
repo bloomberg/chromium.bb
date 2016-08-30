@@ -274,7 +274,7 @@ const AcceleratorData kDebugAcceleratorData[] = {
      DEBUG_TOGGLE_ROOT_WINDOW_FULL_SCREEN},
     {true, ui::VKEY_W, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, CYCLE_BACKWARD_MRU},
     {true, ui::VKEY_B, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
-     DEBUG_TOGGLE_DESKTOP_BACKGROUND_MODE},
+     DEBUG_TOGGLE_WALLPAPER_MODE},
     {true, ui::VKEY_F, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
      TOGGLE_FULLSCREEN},
     {true, ui::VKEY_L, kDebugModifier, DEBUG_PRINT_LAYER_HIERARCHY},

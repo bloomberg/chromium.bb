@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/desktop_background/desktop_background_controller.h"
+#include "ash/wallpaper/wallpaper_controller.h"
 
 #include <cmath>
 #include <cstdlib>
 
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm_shell.h"
-#include "ash/desktop_background/desktop_background_view.h"
-#include "ash/desktop_background/desktop_background_widget_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_wallpaper_delegate.h"
+#include "ash/wallpaper/wallpaper_view.h"
+#include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -35,9 +35,9 @@ namespace ash {
 namespace {
 
 // Containers IDs used for tests.
-const int kDesktopBackgroundId = ash::kShellWindowId_DesktopBackgroundContainer;
-const int kLockScreenBackgroundId =
-    ash::kShellWindowId_LockScreenBackgroundContainer;
+const int kWallpaperId = ash::kShellWindowId_WallpaperContainer;
+const int kLockScreenWallpaperId =
+    ash::kShellWindowId_LockScreenWallpaperContainer;
 
 // Returns number of child windows in a shell window container.
 int ChildCountForContainer(int container_id) {
@@ -101,11 +101,11 @@ void RunAllBlockingPoolTasksUntilIdle(base::SequencedWorkerPool* pool) {
 
 }  // namespace
 
-class DesktopBackgroundControllerTest : public test::AshTestBase {
+class WallpaperControllerTest : public test::AshTestBase {
  public:
-  DesktopBackgroundControllerTest()
-      : controller_(NULL), wallpaper_delegate_(NULL) {}
-  ~DesktopBackgroundControllerTest() override {}
+  WallpaperControllerTest()
+      : controller_(nullptr), wallpaper_delegate_(nullptr) {}
+  ~WallpaperControllerTest() override {}
 
   void SetUp() override {
     test::AshTestBase::SetUp();
@@ -113,21 +113,21 @@ class DesktopBackgroundControllerTest : public test::AshTestBase {
     // control wallpaper creation and animation in our tests.
     RootWindowController* root_window_controller =
         Shell::GetPrimaryRootWindowController();
-    root_window_controller->SetWallpaperController(NULL);
-    root_window_controller->SetAnimatingWallpaperController(NULL);
-    controller_ = Shell::GetInstance()->desktop_background_controller();
+    root_window_controller->SetWallpaperWidgetController(nullptr);
+    root_window_controller->SetAnimatingWallpaperWidgetController(nullptr);
+    controller_ = Shell::GetInstance()->wallpaper_controller();
     wallpaper_delegate_ = static_cast<test::TestWallpaperDelegate*>(
         WmShell::Get()->wallpaper_delegate());
     controller_->set_wallpaper_reload_delay_for_test(0);
   }
 
-  DesktopBackgroundView* desktop_background_view() {
-    DesktopBackgroundWidgetController* controller =
+  WallpaperView* wallpaper_view() {
+    WallpaperWidgetController* controller =
         Shell::GetPrimaryRootWindowController()
-            ->animating_wallpaper_controller()
+            ->animating_wallpaper_widget_controller()
             ->GetController(false);
     EXPECT_TRUE(controller);
-    return static_cast<DesktopBackgroundView*>(
+    return static_cast<WallpaperView*>(
         controller->widget()->GetContentsView()->child_at(0));
   }
 
@@ -147,7 +147,7 @@ class DesktopBackgroundControllerTest : public test::AshTestBase {
 
   // Helper function that tests the wallpaper is always fitted to the native
   // display resolution when the layout is WALLPAPER_LAYOUT_CENTER.
-  void WallpaperFitToNativeResolution(DesktopBackgroundView* view,
+  void WallpaperFitToNativeResolution(WallpaperView* view,
                                       float device_scale_factor,
                                       int image_width,
                                       int image_height,
@@ -176,144 +176,135 @@ class DesktopBackgroundControllerTest : public test::AshTestBase {
     }
   }
 
-  // Runs kAnimatingDesktopController's animation to completion.
+  // Runs AnimatingWallpaperWidgetController's animation to completion.
   // TODO(bshe): Don't require tests to run animations; it's slow.
   void RunDesktopControllerAnimation() {
-    DesktopBackgroundWidgetController* controller =
+    WallpaperWidgetController* controller =
         Shell::GetPrimaryRootWindowController()
-            ->animating_wallpaper_controller()
+            ->animating_wallpaper_widget_controller()
             ->GetController(false);
     EXPECT_TRUE(controller);
     ASSERT_NO_FATAL_FAILURE(RunAnimationForWidget(controller->widget()));
   }
 
-  DesktopBackgroundController* controller_;  // Not owned.
+  WallpaperController* controller_;  // Not owned.
 
   test::TestWallpaperDelegate* wallpaper_delegate_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(DesktopBackgroundControllerTest);
+  DISALLOW_COPY_AND_ASSIGN(WallpaperControllerTest);
 };
 
-TEST_F(DesktopBackgroundControllerTest, BasicReparenting) {
-  DesktopBackgroundController* controller =
-      Shell::GetInstance()->desktop_background_controller();
+TEST_F(WallpaperControllerTest, BasicReparenting) {
+  WallpaperController* controller =
+      Shell::GetInstance()->wallpaper_controller();
   controller->CreateEmptyWallpaper();
 
-  // Wallpaper view/window exists in the desktop background container and
-  // nothing is in the lock screen background container.
-  EXPECT_EQ(1, ChildCountForContainer(kDesktopBackgroundId));
-  EXPECT_EQ(0, ChildCountForContainer(kLockScreenBackgroundId));
+  // Wallpaper view/window exists in the wallpaper container and nothing is in
+  // the lock screen wallpaper container.
+  EXPECT_EQ(1, ChildCountForContainer(kWallpaperId));
+  EXPECT_EQ(0, ChildCountForContainer(kLockScreenWallpaperId));
 
-  // Moving background to lock container should succeed the first time but
+  // Moving wallpaper to lock container should succeed the first time but
   // subsequent calls should do nothing.
-  EXPECT_TRUE(controller->MoveDesktopToLockedContainer());
-  EXPECT_FALSE(controller->MoveDesktopToLockedContainer());
+  EXPECT_TRUE(controller->MoveToLockedContainer());
+  EXPECT_FALSE(controller->MoveToLockedContainer());
 
   // One window is moved from desktop to lock container.
-  EXPECT_EQ(0, ChildCountForContainer(kDesktopBackgroundId));
-  EXPECT_EQ(1, ChildCountForContainer(kLockScreenBackgroundId));
+  EXPECT_EQ(0, ChildCountForContainer(kWallpaperId));
+  EXPECT_EQ(1, ChildCountForContainer(kLockScreenWallpaperId));
 
-  // Moving background to desktop container should succeed the first time.
-  EXPECT_TRUE(controller->MoveDesktopToUnlockedContainer());
-  EXPECT_FALSE(controller->MoveDesktopToUnlockedContainer());
+  // Moving wallpaper to desktop container should succeed the first time.
+  EXPECT_TRUE(controller->MoveToUnlockedContainer());
+  EXPECT_FALSE(controller->MoveToUnlockedContainer());
 
   // One window is moved from lock to desktop container.
-  EXPECT_EQ(1, ChildCountForContainer(kDesktopBackgroundId));
-  EXPECT_EQ(0, ChildCountForContainer(kLockScreenBackgroundId));
+  EXPECT_EQ(1, ChildCountForContainer(kWallpaperId));
+  EXPECT_EQ(0, ChildCountForContainer(kLockScreenWallpaperId));
 }
 
-TEST_F(DesktopBackgroundControllerTest, ControllerOwnership) {
+TEST_F(WallpaperControllerTest, ControllerOwnership) {
   // We cannot short-circuit animations for this test.
   ui::ScopedAnimationDurationScaleMode test_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
-  // Create wallpaper and background view.
-  DesktopBackgroundController* controller =
-      Shell::GetInstance()->desktop_background_controller();
+  // Create the wallpaper and its view.
+  WallpaperController* controller =
+      Shell::GetInstance()->wallpaper_controller();
   controller->CreateEmptyWallpaper();
 
-  // The new wallpaper is ready to start animating. kAnimatingDesktopController
-  // holds the widget controller instance. kDesktopController will get it later.
+  // The new wallpaper is ready to animate.
   RootWindowController* root_window_controller =
       Shell::GetPrimaryRootWindowController();
-  EXPECT_TRUE(
-      root_window_controller->animating_wallpaper_controller()->GetController(
-          false));
+  EXPECT_TRUE(root_window_controller->animating_wallpaper_widget_controller()
+                  ->GetController(false));
+  EXPECT_FALSE(root_window_controller->wallpaper_widget_controller());
 
-  // kDesktopController will receive the widget controller when the animation
-  // is done.
-  EXPECT_FALSE(root_window_controller->wallpaper_controller());
-
-  // Force the widget's layer animation to play to completion.
+  // Force the animation to play to completion.
   RunDesktopControllerAnimation();
-
-  // Ownership has moved from kAnimatingDesktopController to kDesktopController.
-  EXPECT_FALSE(
-      root_window_controller->animating_wallpaper_controller()->GetController(
-          false));
-  EXPECT_TRUE(root_window_controller->wallpaper_controller());
+  EXPECT_FALSE(root_window_controller->animating_wallpaper_widget_controller()
+                   ->GetController(false));
+  EXPECT_TRUE(root_window_controller->wallpaper_widget_controller());
 }
 
 // Test for crbug.com/149043 "Unlock screen, no launcher appears". Ensure we
-// move all desktop views if there are more than one.
-TEST_F(DesktopBackgroundControllerTest, BackgroundMovementDuringUnlock) {
+// move all wallpaper views if there are more than one.
+TEST_F(WallpaperControllerTest, WallpaperMovementDuringUnlock) {
   // We cannot short-circuit animations for this test.
   ui::ScopedAnimationDurationScaleMode test_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
   // Reset wallpaper state, see ControllerOwnership above.
-  DesktopBackgroundController* controller =
-      Shell::GetInstance()->desktop_background_controller();
+  WallpaperController* controller =
+      Shell::GetInstance()->wallpaper_controller();
   controller->CreateEmptyWallpaper();
 
   // Run wallpaper show animation to completion.
   RunDesktopControllerAnimation();
 
-  // User locks the screen, which moves the background forward.
-  controller->MoveDesktopToLockedContainer();
+  // User locks the screen, which moves the wallpaper forward.
+  controller->MoveToLockedContainer();
 
-  // Suspend/resume cycle causes wallpaper to refresh, loading a new desktop
-  // background that will animate in on top of the old one.
+  // Suspend/resume cycle causes wallpaper to refresh, loading a new wallpaper
+  // that will animate in on top of the old one.
   controller->CreateEmptyWallpaper();
 
-  // In this state we have two desktop background views stored in different
-  // properties. Both are in the lock screen background container.
+  // In this state we have two wallpaper views stored in different properties.
+  // Both are in the lock screen wallpaper container.
   RootWindowController* root_window_controller =
       Shell::GetPrimaryRootWindowController();
-  EXPECT_TRUE(
-      root_window_controller->animating_wallpaper_controller()->GetController(
-          false));
-  EXPECT_TRUE(root_window_controller->wallpaper_controller());
-  EXPECT_EQ(0, ChildCountForContainer(kDesktopBackgroundId));
-  EXPECT_EQ(2, ChildCountForContainer(kLockScreenBackgroundId));
+  EXPECT_TRUE(root_window_controller->animating_wallpaper_widget_controller()
+                  ->GetController(false));
+  EXPECT_TRUE(root_window_controller->wallpaper_widget_controller());
+  EXPECT_EQ(0, ChildCountForContainer(kWallpaperId));
+  EXPECT_EQ(2, ChildCountForContainer(kLockScreenWallpaperId));
 
   // Before the wallpaper's animation completes, user unlocks the screen, which
-  // moves the desktop to the back.
-  controller->MoveDesktopToUnlockedContainer();
+  // moves the wallpaper to the back.
+  controller->MoveToUnlockedContainer();
 
-  // Ensure both desktop backgrounds have moved.
-  EXPECT_EQ(2, ChildCountForContainer(kDesktopBackgroundId));
-  EXPECT_EQ(0, ChildCountForContainer(kLockScreenBackgroundId));
+  // Ensure both wallpapers have moved.
+  EXPECT_EQ(2, ChildCountForContainer(kWallpaperId));
+  EXPECT_EQ(0, ChildCountForContainer(kLockScreenWallpaperId));
 
-  // Finish the new desktop background animation.
+  // Finish the new wallpaper animation.
   RunDesktopControllerAnimation();
 
-  // Now there is one desktop background, in the back.
-  EXPECT_EQ(1, ChildCountForContainer(kDesktopBackgroundId));
-  EXPECT_EQ(0, ChildCountForContainer(kLockScreenBackgroundId));
+  // Now there is one wallpaper, in the back.
+  EXPECT_EQ(1, ChildCountForContainer(kWallpaperId));
+  EXPECT_EQ(0, ChildCountForContainer(kLockScreenWallpaperId));
 }
 
 // Test for crbug.com/156542. Animating wallpaper should immediately finish
 // animation and replace current wallpaper before next animation starts.
-TEST_F(DesktopBackgroundControllerTest, ChangeWallpaperQuick) {
+TEST_F(WallpaperControllerTest, ChangeWallpaperQuick) {
   // We cannot short-circuit animations for this test.
   ui::ScopedAnimationDurationScaleMode test_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
   // Reset wallpaper state, see ControllerOwnership above.
-  DesktopBackgroundController* controller =
-      Shell::GetInstance()->desktop_background_controller();
+  WallpaperController* controller =
+      Shell::GetInstance()->wallpaper_controller();
   controller->CreateEmptyWallpaper();
 
   // Run wallpaper show animation to completion.
@@ -324,40 +315,39 @@ TEST_F(DesktopBackgroundControllerTest, ChangeWallpaperQuick) {
 
   RootWindowController* root_window_controller =
       Shell::GetPrimaryRootWindowController();
-  DesktopBackgroundWidgetController* animating_controller =
-      root_window_controller->animating_wallpaper_controller()->GetController(
-          false);
+  WallpaperWidgetController* animating_controller =
+      root_window_controller->animating_wallpaper_widget_controller()
+          ->GetController(false);
   EXPECT_TRUE(animating_controller);
-  EXPECT_TRUE(root_window_controller->wallpaper_controller());
+  EXPECT_TRUE(root_window_controller->wallpaper_widget_controller());
 
   // Change to another wallpaper before animation finished.
   controller->CreateEmptyWallpaper();
 
-  // The animating controller should immediately move to desktop controller.
+  // The animating controller should immediately move to wallpaper controller.
   EXPECT_EQ(animating_controller,
-            root_window_controller->wallpaper_controller());
+            root_window_controller->wallpaper_widget_controller());
 
   // Cache the new animating controller.
   animating_controller =
-      root_window_controller->animating_wallpaper_controller()->GetController(
-          false);
+      root_window_controller->animating_wallpaper_widget_controller()
+          ->GetController(false);
 
   // Run wallpaper show animation to completion.
   ASSERT_NO_FATAL_FAILURE(RunAnimationForWidget(
-      root_window_controller->animating_wallpaper_controller()
+      root_window_controller->animating_wallpaper_widget_controller()
           ->GetController(false)
           ->widget()));
 
-  EXPECT_TRUE(root_window_controller->wallpaper_controller());
-  EXPECT_FALSE(
-      root_window_controller->animating_wallpaper_controller()->GetController(
-          false));
-  // The desktop controller should be the last created animating controller.
+  EXPECT_TRUE(root_window_controller->wallpaper_widget_controller());
+  EXPECT_FALSE(root_window_controller->animating_wallpaper_widget_controller()
+                   ->GetController(false));
+  // The wallpaper controller should be the last created animating controller.
   EXPECT_EQ(animating_controller,
-            root_window_controller->wallpaper_controller());
+            root_window_controller->wallpaper_widget_controller());
 }
 
-TEST_F(DesktopBackgroundControllerTest, ResizeCustomWallpaper) {
+TEST_F(WallpaperControllerTest, ResizeCustomWallpaper) {
   if (!SupportsMultipleDisplays())
     return;
 
@@ -388,50 +378,44 @@ TEST_F(DesktopBackgroundControllerTest, ResizeCustomWallpaper) {
 #else
 #define MAYBE_GetMaxDisplaySize GetMaxDisplaySize
 #endif
-TEST_F(DesktopBackgroundControllerTest, MAYBE_GetMaxDisplaySize) {
+TEST_F(WallpaperControllerTest, MAYBE_GetMaxDisplaySize) {
   // Device scale factor shouldn't affect the native size.
   UpdateDisplay("1000x300*2");
-  EXPECT_EQ(
-      "1000x300",
-      DesktopBackgroundController::GetMaxDisplaySizeInNative().ToString());
+  EXPECT_EQ("1000x300",
+            WallpaperController::GetMaxDisplaySizeInNative().ToString());
 
   // Rotated display should return the rotated size.
   UpdateDisplay("1000x300*2/r");
-  EXPECT_EQ(
-      "300x1000",
-      DesktopBackgroundController::GetMaxDisplaySizeInNative().ToString());
+  EXPECT_EQ("300x1000",
+            WallpaperController::GetMaxDisplaySizeInNative().ToString());
 
   // UI Scaling shouldn't affect the native size.
   UpdateDisplay("1000x300*2@1.5");
-  EXPECT_EQ(
-      "1000x300",
-      DesktopBackgroundController::GetMaxDisplaySizeInNative().ToString());
+  EXPECT_EQ("1000x300",
+            WallpaperController::GetMaxDisplaySizeInNative().ToString());
 
   if (!SupportsMultipleDisplays())
     return;
 
   // First display has maximum size.
   UpdateDisplay("400x300,100x100");
-  EXPECT_EQ(
-      "400x300",
-      DesktopBackgroundController::GetMaxDisplaySizeInNative().ToString());
+  EXPECT_EQ("400x300",
+            WallpaperController::GetMaxDisplaySizeInNative().ToString());
 
   // Second display has maximum size.
   UpdateDisplay("400x300,500x600");
-  EXPECT_EQ(
-      "500x600",
-      DesktopBackgroundController::GetMaxDisplaySizeInNative().ToString());
+  EXPECT_EQ("500x600",
+            WallpaperController::GetMaxDisplaySizeInNative().ToString());
 
   // Maximum width and height belongs to different displays.
   UpdateDisplay("400x300,100x500");
-  EXPECT_EQ(
-      "400x500",
-      DesktopBackgroundController::GetMaxDisplaySizeInNative().ToString());
+  EXPECT_EQ("400x500",
+            WallpaperController::GetMaxDisplaySizeInNative().ToString());
 }
 
 // Test that the wallpaper is always fitted to the native display resolution
 // when the layout is WALLPAPER_LAYOUT_CENTER to prevent blurry images.
-TEST_F(DesktopBackgroundControllerTest, DontScaleWallpaperWithCenterLayout) {
+TEST_F(WallpaperControllerTest, DontScaleWallpaperWithCenterLayout) {
   // We cannot short-circuit animations for this test.
   ui::ScopedAnimationDurationScaleMode test_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
@@ -451,14 +435,14 @@ TEST_F(DesktopBackgroundControllerTest, DontScaleWallpaperWithCenterLayout) {
     SCOPED_TRACE(base::StringPrintf("1200x600*2 high resolution"));
     controller_->SetWallpaperImage(image_high_res, WALLPAPER_LAYOUT_CENTER);
     WallpaperFitToNativeResolution(
-        desktop_background_view(), high_dsf, high_resolution.width(),
+        wallpaper_view(), high_dsf, high_resolution.width(),
         high_resolution.height(), kCustomWallpaperColor);
   }
   {
     SCOPED_TRACE(base::StringPrintf("1200x600*2 low resolution"));
     controller_->SetWallpaperImage(image_low_res, WALLPAPER_LAYOUT_CENTER);
     WallpaperFitToNativeResolution(
-        desktop_background_view(), high_dsf, low_resolution.width(),
+        wallpaper_view(), high_dsf, low_resolution.width(),
         low_resolution.height(), kCustomWallpaperColor);
   }
 
@@ -467,14 +451,14 @@ TEST_F(DesktopBackgroundControllerTest, DontScaleWallpaperWithCenterLayout) {
     SCOPED_TRACE(base::StringPrintf("1200x600 high resolution"));
     controller_->SetWallpaperImage(image_high_res, WALLPAPER_LAYOUT_CENTER);
     WallpaperFitToNativeResolution(
-        desktop_background_view(), low_dsf, high_resolution.width(),
+        wallpaper_view(), low_dsf, high_resolution.width(),
         high_resolution.height(), kCustomWallpaperColor);
   }
   {
     SCOPED_TRACE(base::StringPrintf("1200x600 low resolution"));
     controller_->SetWallpaperImage(image_low_res, WALLPAPER_LAYOUT_CENTER);
     WallpaperFitToNativeResolution(
-        desktop_background_view(), low_dsf, low_resolution.width(),
+        wallpaper_view(), low_dsf, low_resolution.width(),
         low_resolution.height(), kCustomWallpaperColor);
   }
 
@@ -483,14 +467,14 @@ TEST_F(DesktopBackgroundControllerTest, DontScaleWallpaperWithCenterLayout) {
     SCOPED_TRACE(base::StringPrintf("1200x600/u@1.5 high resolution"));
     controller_->SetWallpaperImage(image_high_res, WALLPAPER_LAYOUT_CENTER);
     WallpaperFitToNativeResolution(
-        desktop_background_view(), low_dsf, high_resolution.width(),
+        wallpaper_view(), low_dsf, high_resolution.width(),
         high_resolution.height(), kCustomWallpaperColor);
   }
   {
     SCOPED_TRACE(base::StringPrintf("1200x600/u@1.5 low resolution"));
     controller_->SetWallpaperImage(image_low_res, WALLPAPER_LAYOUT_CENTER);
     WallpaperFitToNativeResolution(
-        desktop_background_view(), low_dsf, low_resolution.width(),
+        wallpaper_view(), low_dsf, low_resolution.width(),
         low_resolution.height(), kCustomWallpaperColor);
   }
 }

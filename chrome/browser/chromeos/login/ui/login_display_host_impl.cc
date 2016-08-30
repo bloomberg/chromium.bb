@@ -10,9 +10,9 @@
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "ash/common/wm_shell.h"
-#include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/public/interfaces/container.mojom.h"
 #include "ash/shell.h"
+#include "ash/wallpaper/wallpaper_controller.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
@@ -264,8 +264,8 @@ const int LoginDisplayHostImpl::kShowLoginWebUIid = 0x1111;
 ////////////////////////////////////////////////////////////////////////////////
 // LoginDisplayHostImpl, public
 
-LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
-    : background_bounds_(background_bounds),
+LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& wallpaper_bounds)
+    : wallpaper_bounds_(wallpaper_bounds),
       shutting_down_(false),
       oobe_progress_bar_visible_(false),
       session_starting_(false),
@@ -453,7 +453,7 @@ LoginDisplayHostImpl::~LoginDisplayHostImpl() {
 LoginDisplay* LoginDisplayHostImpl::CreateLoginDisplay(
     LoginDisplay::Delegate* delegate) {
   webui_login_display_ = new WebUILoginDisplay(delegate);
-  webui_login_display_->set_background_bounds(background_bounds());
+  webui_login_display_->set_background_bounds(wallpaper_bounds());
   return webui_login_display_;
 }
 
@@ -471,14 +471,14 @@ void LoginDisplayHostImpl::BeforeSessionStart() {
 
 void LoginDisplayHostImpl::Finalize() {
   DVLOG(1) << "Session starting";
-  // When adding another user into the session, we defer the background
-  // wallpaper's animation in order to prevent the flashing of the previous
-  // user's windows. See crbug.com/541864.
+  // When adding another user into the session, we defer the wallpaper's
+  // animation in order to prevent the flashing of the previous user's windows.
+  // See crbug.com/541864.
   if (ash::Shell::HasInstance() &&
       finalize_animation_type_ != ANIMATION_ADD_USER) {
     ash::Shell::GetInstance()
-        ->desktop_background_controller()
-        ->MoveDesktopToUnlockedContainer();
+        ->wallpaper_controller()
+        ->MoveToUnlockedContainer();
   }
   if (wizard_controller_.get())
     wizard_controller_->OnSessionStart();
@@ -603,9 +603,7 @@ void LoginDisplayHostImpl::StartUserAdding(
         ash::kShellWindowId_LockScreenContainersContainer);
     lock_container->layer()->SetOpacity(1.0);
 
-    ash::Shell::GetInstance()
-        ->desktop_background_controller()
-        ->MoveDesktopToLockedContainer();
+    ash::Shell::GetInstance()->wallpaper_controller()->MoveToLockedContainer();
   } else {
     NOTIMPLEMENTED();
   }
@@ -846,11 +844,11 @@ void LoginDisplayHostImpl::Observe(
   } else if (type == chrome::NOTIFICATION_LOGIN_USER_CHANGED &&
              user_manager::UserManager::Get()->IsCurrentUserNew()) {
     if (!chrome::IsRunningInMash()) {
-      // For new user, move desktop to locker container so that windows created
+      // For new user, move wallpaper to lock container so that windows created
       // during the user image picker step are below it.
       ash::Shell::GetInstance()
-          ->desktop_background_controller()
-          ->MoveDesktopToLockedContainer();
+          ->wallpaper_controller()
+          ->MoveToLockedContainer();
     } else {
       NOTIMPLEMENTED();
     }
@@ -1014,8 +1012,8 @@ void LoginDisplayHostImpl::ShutdownDisplayHost(bool post_quit_task) {
       finalize_animation_type_ == ANIMATION_ADD_USER) {
     if (!chrome::IsRunningInMash()) {
       ash::Shell::GetInstance()
-          ->desktop_background_controller()
-          ->MoveDesktopToUnlockedContainer();
+          ->wallpaper_controller()
+          ->MoveToUnlockedContainer();
     } else {
       NOTIMPLEMENTED();
     }
@@ -1028,11 +1026,11 @@ void LoginDisplayHostImpl::ScheduleWorkspaceAnimation() {
     return;
   }
   if (ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
-                               ash::kShellWindowId_DesktopBackgroundContainer)
+                               ash::kShellWindowId_WallpaperContainer)
           ->children()
           .empty()) {
-    // If there is no background window, don't perform any animation on the
-    // default and background layer because there is nothing behind it.
+    // If there is no wallpaper window, don't perform any animation on the
+    // default and wallpaper layer because there is nothing behind it.
     return;
   }
 
@@ -1129,7 +1127,7 @@ void LoginDisplayHostImpl::InitLoginWindowAndView() {
 
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  params.bounds = background_bounds();
+  params.bounds = wallpaper_bounds();
   params.show_state = ui::SHOW_STATE_FULLSCREEN;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   // The ash::Shell containers are not available in Mash

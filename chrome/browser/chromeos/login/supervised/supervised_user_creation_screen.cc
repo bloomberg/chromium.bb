@@ -6,8 +6,8 @@
 
 #include "ash/common/shelf/shelf.h"
 #include "ash/common/shelf/wm_shelf.h"
-#include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/shell.h"
+#include "ash/wallpaper/wallpaper_controller.h"
 #include "base/rand_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/camera_detector.h"
@@ -372,10 +372,9 @@ void SupervisedUserCreationScreen::OnManagerFullyAuthenticated(
       ->NotifySupervisedUserCreationStarted();
   manager_signin_in_progress_ = false;
   DCHECK(controller_.get());
-  // For manager user, move desktop to locked container so that windows created
-  // during the user image picker step are below it.
-  ash::Shell::GetInstance()->
-      desktop_background_controller()->MoveDesktopToLockedContainer();
+  // For manager user, move wallpaper to locked container so that windows
+  // created during the user image picker step are below it.
+  ash::Shell::GetInstance()->wallpaper_controller()->MoveToLockedContainer();
   ash::Shelf::ForPrimaryDisplay()->wm_shelf()->SetAlignment(
       ash::ShelfAlignment::SHELF_ALIGNMENT_BOTTOM_LOCKED);
 

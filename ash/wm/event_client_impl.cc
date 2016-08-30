@@ -29,16 +29,16 @@ bool EventClientImpl::CanProcessEventsWithinSubtree(
 
   const aura::Window* lock_screen_containers = Shell::GetContainer(
       root_window, kShellWindowId_LockScreenContainersContainer);
-  const aura::Window* lock_background_containers = Shell::GetContainer(
-      root_window, kShellWindowId_LockScreenBackgroundContainer);
+  const aura::Window* lock_wallpaper_containers = Shell::GetContainer(
+      root_window, kShellWindowId_LockScreenWallpaperContainer);
   const aura::Window* lock_screen_related_containers = Shell::GetContainer(
       root_window, kShellWindowId_LockScreenRelatedContainersContainer);
   bool can_process_events =
       (window->Contains(lock_screen_containers) &&
-       window->Contains(lock_background_containers) &&
+       window->Contains(lock_wallpaper_containers) &&
        window->Contains(lock_screen_related_containers)) ||
       lock_screen_containers->Contains(window) ||
-      lock_background_containers->Contains(window) ||
+      lock_wallpaper_containers->Contains(window) ||
       lock_screen_related_containers->Contains(window);
   if (keyboard::IsKeyboardEnabled()) {
     const aura::Window* virtual_keyboard_container = Shell::GetContainer(

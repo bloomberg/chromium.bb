@@ -20,12 +20,12 @@ bool AcceleratorControllerDelegateMus::HandlesAction(AcceleratorAction action) {
   // mus, then they should be removed from AcceleratorAction.
   // http://crbug.com/612331.
   switch (action) {
-    case DEBUG_TOGGLE_DESKTOP_BACKGROUND_MODE:
     case DEBUG_TOGGLE_DEVICE_SCALE_FACTOR:
     case DEBUG_TOGGLE_ROOT_WINDOW_FULL_SCREEN:
     case DEBUG_TOGGLE_SHOW_DEBUG_BORDERS:
     case DEBUG_TOGGLE_SHOW_FPS_COUNTER:
     case DEBUG_TOGGLE_SHOW_PAINT_RECTS:
+    case DEBUG_TOGGLE_WALLPAPER_MODE:
     case FOCUS_SHELF:
     case LAUNCH_APP_0:
     case LAUNCH_APP_1:

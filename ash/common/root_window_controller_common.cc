@@ -37,15 +37,13 @@ void RootWindowControllerCommon::CreateContainers() {
   // on those containers. These are direct children of the root window; all of
   // the other containers are their children.
 
-  // The desktop background container is not part of the lock animation, so it
-  // is not included in those animate groups.
-  // When screen is locked desktop background is moved to lock screen background
-  // container (moved back on unlock). We want to make sure that there's an
-  // opaque layer occluding the non-lock-screen layers.
-  WmWindow* desktop_background_container =
-      CreateContainer(kShellWindowId_DesktopBackgroundContainer,
-                      "DesktopBackgroundContainer", root_);
-  desktop_background_container->SetChildWindowVisibilityChangesAnimated();
+  // The wallpaper container is not part of the lock animation, so it is not
+  // included in those animate groups. When the screen is locked, the wallpaper
+  // is moved to the lock screen wallpaper container (and moved back on unlock).
+  // Ensure that there's an opaque layer occluding the non-lock-screen layers.
+  WmWindow* wallpaper_container = CreateContainer(
+      kShellWindowId_WallpaperContainer, "WallpaperContainer", root_);
+  wallpaper_container->SetChildWindowVisibilityChangesAnimated();
 
   WmWindow* non_lock_screen_containers =
       CreateContainer(kShellWindowId_NonLockScreenContainersContainer,
@@ -54,10 +52,10 @@ void RootWindowControllerCommon::CreateContainers() {
   // texture may become visible when the screen is scaled. crbug.com/368591.
   non_lock_screen_containers->SetMasksToBounds(true);
 
-  WmWindow* lock_background_containers =
-      CreateContainer(kShellWindowId_LockScreenBackgroundContainer,
-                      "LockScreenBackgroundContainer", root_);
-  lock_background_containers->SetChildWindowVisibilityChangesAnimated();
+  WmWindow* lock_wallpaper_containers =
+      CreateContainer(kShellWindowId_LockScreenWallpaperContainer,
+                      "LockScreenWallpaperContainer", root_);
+  lock_wallpaper_containers->SetChildWindowVisibilityChangesAnimated();
 
   WmWindow* lock_screen_containers =
       CreateContainer(kShellWindowId_LockScreenContainersContainer,

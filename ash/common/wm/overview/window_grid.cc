@@ -352,12 +352,12 @@ views::Widget* CreateBackgroundWidget(WmWindow* root_window,
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.accept_events = false;
   widget->set_focus_on_creation(false);
-  // Parenting in kShellWindowId_DesktopBackgroundContainer allows proper
-  // layering of the shield and selection widgets. Since that container is
-  // created with USE_LOCAL_COORDINATES BoundsInScreenBehavior local bounds in
-  // |root_window_| need to be provided.
+  // Parenting in kShellWindowId_WallpaperContainer allows proper layering of
+  // the shield and selection widgets. Since that container is created with
+  // USE_LOCAL_COORDINATES BoundsInScreenBehavior local bounds in |root_window_|
+  // need to be provided.
   root_window->GetRootWindowController()->ConfigureWidgetInitParamsForContainer(
-      widget, kShellWindowId_DesktopBackgroundContainer, &params);
+      widget, kShellWindowId_WallpaperContainer, &params);
   widget->Init(params);
   WmWindow* widget_window = WmLookup::Get()->GetWindowForWidget(widget);
   // Disable the "bounce in" animation when showing the window.

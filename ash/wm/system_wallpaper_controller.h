@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_SYSTEM_BACKGROUND_CONTROLLER_H_
-#define ASH_WM_SYSTEM_BACKGROUND_CONTROLLER_H_
+#ifndef ASH_WM_SYSTEM_WALLPAPER_CONTROLLER_H_
+#define ASH_WM_SYSTEM_WALLPAPER_CONTROLLER_H_
 
 #include <memory>
 #include <string>
@@ -19,16 +19,16 @@ class Layer;
 
 namespace ash {
 
-// SystemBackgroundController manages a ui::Layer that's stacked at the bottom
+// SystemWallpaperController manages a ui::Layer that's stacked at the bottom
 // of an aura::RootWindow's children.  It exists solely to obscure portions of
 // the root layer that aren't covered by any other layers (e.g. before the
-// desktop background image is loaded at startup, or when we scale down all of
-// the other layers as part of a power-button or window-management animation).
+// wallpaper image is loaded at startup, or when we scale down all of the other
+// layers as part of a power-button or window-management animation).
 // It should never be transformed or restacked.
-class SystemBackgroundController : public aura::WindowObserver {
+class SystemWallpaperController : public aura::WindowObserver {
  public:
-  SystemBackgroundController(aura::Window* root_window, SkColor color);
-  ~SystemBackgroundController() override;
+  SystemWallpaperController(aura::Window* root_window, SkColor color);
+  ~SystemWallpaperController() override;
 
   void SetColor(SkColor color);
 
@@ -44,9 +44,9 @@ class SystemBackgroundController : public aura::WindowObserver {
 
   std::unique_ptr<ui::Layer> layer_;
 
-  DISALLOW_COPY_AND_ASSIGN(SystemBackgroundController);
+  DISALLOW_COPY_AND_ASSIGN(SystemWallpaperController);
 };
 
 }  // namespace ash
 
-#endif  // ASH_WM_SYSTEM_BACKGROUND_CONTROLLER_H_
+#endif  // ASH_WM_SYSTEM_WALLPAPER_CONTROLLER_H_

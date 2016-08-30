@@ -51,8 +51,7 @@ class ScopedCaptureClient;
 namespace ash {
 class AshWindowTreeHost;
 class AlwaysOnTopController;
-class AnimatingDesktopController;
-class DesktopBackgroundWidgetController;
+class AnimatingWallpaperWidgetController;
 class DockedWindowLayoutManager;
 enum class LoginStatus;
 class PanelLayoutManager;
@@ -62,11 +61,12 @@ class ShelfLayoutManager;
 class ShelfWidget;
 class StackingController;
 class StatusAreaWidget;
-class SystemBackgroundController;
 class SystemModalContainerLayoutManager;
 class SystemTray;
+class SystemWallpaperController;
 class TouchHudDebug;
 class TouchHudProjection;
+class WallpaperWidgetController;
 class WmShelfAura;
 class WmWindow;
 class WorkspaceController;
@@ -141,14 +141,15 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
     touch_hud_projection_ = hud;
   }
 
-  DesktopBackgroundWidgetController* wallpaper_controller() {
-    return wallpaper_controller_.get();
+  WallpaperWidgetController* wallpaper_widget_controller() {
+    return wallpaper_widget_controller_.get();
   }
-  void SetWallpaperController(DesktopBackgroundWidgetController* controller);
-  AnimatingDesktopController* animating_wallpaper_controller() {
-    return animating_wallpaper_controller_.get();
+  void SetWallpaperWidgetController(WallpaperWidgetController* controller);
+  AnimatingWallpaperWidgetController* animating_wallpaper_widget_controller() {
+    return animating_wallpaper_widget_controller_.get();
   }
-  void SetAnimatingWallpaperController(AnimatingDesktopController* controller);
+  void SetAnimatingWallpaperWidgetController(
+      AnimatingWallpaperWidgetController* controller);
 
   // Access the shelf layout manager associated with this root
   // window controller, NULL if no such shelf exists.
@@ -196,14 +197,14 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   void UpdateAfterLoginStatusChange(LoginStatus status);
 
   // Called when the brightness/grayscale animation from white to the login
-  // desktop background image has started.  Starts |boot_splash_screen_|'s
-  // hiding animation (if the screen is non-NULL).
-  void HandleInitialDesktopBackgroundAnimationStarted();
+  // wallpaper image has started.  Starts |boot_splash_screen_|'s hiding
+  // animation (if the screen is non-NULL).
+  void HandleInitialWallpaperAnimationStarted();
 
-  // Called when the wallpaper ainmation is finished. Updates |background_|
-  // to be black and drops |boot_splash_screen_| and moves the wallpaper
-  // controller into the root window controller. |widget| holds the wallpaper
-  // image, or NULL if the background is a solid color.
+  // Called when the wallpaper animation is finished. Updates
+  // |system_wallpaper_| to be black and drops |boot_splash_screen_| and moves
+  // the wallpaper controller into the root window controller. |widget| holds
+  // the wallpaper image, or NULL if the wallpaper is a solid color.
   void OnWallpaperAnimationFinished(views::Widget* widget);
 
   // Deletes associated objects and clears the state, but doesn't delete
@@ -252,9 +253,9 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
 
   void InitLayoutManagers();
 
-  // Initializes |system_background_| and possibly also |boot_splash_screen_|.
-  // |is_first_run_after_boot| determines the background's initial color.
-  void CreateSystemBackground(bool is_first_run_after_boot);
+  // Initializes |system_wallpaper_| and possibly also |boot_splash_screen_|.
+  // |is_first_run_after_boot| determines the wallpaper's initial color.
+  void CreateSystemWallpaper(bool is_first_run_after_boot);
 
   // Enables projection touch HUD.
   void EnableTouchHudProjection();
@@ -289,7 +290,7 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   // An invisible/empty window used as a event target for
   // |MouseCursorEventFilter| before a user logs in.
   // (crbug.com/266987)
-  // Its container is |LockScreenBackgroundContainer| and
+  // Its container is |LockScreenWallpaperContainer| and
   // this must be deleted before the container is deleted.
   std::unique_ptr<aura::Window> mouse_event_target_;
 
@@ -299,7 +300,7 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   // Manages layout of panels. Owned by PanelContainer.
   PanelLayoutManager* panel_layout_manager_;
 
-  std::unique_ptr<SystemBackgroundController> system_background_;
+  std::unique_ptr<SystemWallpaperController> system_wallpaper_;
 
 #if defined(OS_CHROMEOS)
   std::unique_ptr<BootSplashScreen> boot_splash_screen_;
@@ -319,8 +320,9 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   // Handles double clicks on the panel window header.
   std::unique_ptr<ui::EventHandler> panel_container_handler_;
 
-  std::unique_ptr<DesktopBackgroundWidgetController> wallpaper_controller_;
-  std::unique_ptr<AnimatingDesktopController> animating_wallpaper_controller_;
+  std::unique_ptr<WallpaperWidgetController> wallpaper_widget_controller_;
+  std::unique_ptr<AnimatingWallpaperWidgetController>
+      animating_wallpaper_widget_controller_;
   std::unique_ptr<::wm::ScopedCaptureClient> capture_client_;
 
   // Manages the context menu.

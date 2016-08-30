@@ -19,10 +19,10 @@ void DummyCallback() {}
 
 const SessionStateAnimator::Container
     TestSessionStateAnimator::kAllContainers[] = {
-        SessionStateAnimator::DESKTOP_BACKGROUND,
+        SessionStateAnimator::WALLPAPER,
         SessionStateAnimator::LAUNCHER,
         SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
-        SessionStateAnimator::LOCK_SCREEN_BACKGROUND,
+        SessionStateAnimator::LOCK_SCREEN_WALLPAPER,
         SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
         SessionStateAnimator::LOCK_SCREEN_RELATED_CONTAINERS,
         SessionStateAnimator::ROOT_CONTAINER};
@@ -98,7 +98,7 @@ TestSessionStateAnimator::ActiveAnimation::ActiveAnimation(
 TestSessionStateAnimator::ActiveAnimation::~ActiveAnimation() {}
 
 TestSessionStateAnimator::TestSessionStateAnimator()
-    : last_animation_epoch_(0), is_background_hidden_(false) {}
+    : last_animation_epoch_(0), is_wallpaper_hidden_(false) {}
 
 TestSessionStateAnimator::~TestSessionStateAnimator() {
   CompleteAllAnimations(false);
@@ -225,16 +225,16 @@ TestSessionStateAnimator::BeginAnimationSequence(base::Closure callback) {
   return new AnimationSequence(callback, this);
 }
 
-bool TestSessionStateAnimator::IsBackgroundHidden() const {
-  return is_background_hidden_;
+bool TestSessionStateAnimator::IsWallpaperHidden() const {
+  return is_wallpaper_hidden_;
 }
 
-void TestSessionStateAnimator::ShowBackground() {
-  is_background_hidden_ = false;
+void TestSessionStateAnimator::ShowWallpaper() {
+  is_wallpaper_hidden_ = false;
 }
 
-void TestSessionStateAnimator::HideBackground() {
-  is_background_hidden_ = true;
+void TestSessionStateAnimator::HideWallpaper() {
+  is_wallpaper_hidden_ = true;
 }
 
 void TestSessionStateAnimator::StartAnimationInSequence(

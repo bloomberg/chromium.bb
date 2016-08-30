@@ -231,27 +231,27 @@ class LockStateControllerTest : public AshTestBase {
         SessionStateAnimator::ANIMATION_UNDO_GRAYSCALE_BRIGHTNESS));
   }
 
-  void ExpectBackgroundIsShowing() {
-    SCOPED_TRACE("Failure in ExpectBackgroundIsShowing");
+  void ExpectWallpaperIsShowing() {
+    SCOPED_TRACE("Failure in ExpectWallpaperIsShowing");
     EXPECT_LT(0u, test_animator_->GetAnimationCount());
     EXPECT_TRUE(test_animator_->AreContainersAnimated(
-        SessionStateAnimator::DESKTOP_BACKGROUND,
+        SessionStateAnimator::WALLPAPER,
         SessionStateAnimator::ANIMATION_FADE_IN));
   }
 
-  void ExpectBackgroundIsHiding() {
-    SCOPED_TRACE("Failure in ExpectBackgroundIsHiding");
+  void ExpectWallpaperIsHiding() {
+    SCOPED_TRACE("Failure in ExpectWallpaperIsHiding");
     EXPECT_LT(0u, test_animator_->GetAnimationCount());
     EXPECT_TRUE(test_animator_->AreContainersAnimated(
-        SessionStateAnimator::DESKTOP_BACKGROUND,
+        SessionStateAnimator::WALLPAPER,
         SessionStateAnimator::ANIMATION_FADE_OUT));
   }
 
-  void ExpectRestoringBackgroundVisibility() {
-    SCOPED_TRACE("Failure in ExpectRestoringBackgroundVisibility");
+  void ExpectRestoringWallpaperVisibility() {
+    SCOPED_TRACE("Failure in ExpectRestoringWallpaperVisibility");
     EXPECT_LT(0u, test_animator_->GetAnimationCount());
     EXPECT_TRUE(test_animator_->AreContainersAnimated(
-        SessionStateAnimator::DESKTOP_BACKGROUND,
+        SessionStateAnimator::WALLPAPER,
         SessionStateAnimator::ANIMATION_FADE_IN));
   }
 
@@ -267,7 +267,7 @@ class LockStateControllerTest : public AshTestBase {
     EXPECT_TRUE(WmShell::Get()->GetSessionStateDelegate()->IsScreenLocked());
   }
 
-  void HideBackground() { test_animator_->HideBackground(); }
+  void HideWallpaper() { test_animator_->HideWallpaper(); }
 
   void PressPowerButton() {
     power_button_controller_->OnPowerButtonEvent(true, base::TimeTicks::Now());
@@ -925,16 +925,16 @@ TEST_F(LockStateControllerTest, HonorPowerButtonInDockedMode) {
   ReleasePowerButton();
 }
 
-// Test that hidden background appears and revers correctly on lock/cancel.
-TEST_F(LockStateControllerTest, TestHiddenBackgroundLockCancel) {
+// Test that hidden wallpaper appears and revers correctly on lock/cancel.
+TEST_F(LockStateControllerTest, TestHiddenWallpaperLockCancel) {
   Initialize(false, LoginStatus::USER);
-  HideBackground();
+  HideWallpaper();
 
   ExpectUnlockedState();
   PressPowerButton();
 
   ExpectPreLockAnimationStarted();
-  ExpectBackgroundIsShowing();
+  ExpectWallpaperIsShowing();
 
   // Forward only half way through.
   AdvancePartially(SessionStateAnimator::ANIMATION_SPEED_UNDOABLE, 0.5f);
@@ -942,23 +942,23 @@ TEST_F(LockStateControllerTest, TestHiddenBackgroundLockCancel) {
   // Release the button before the lock timer fires.
   ReleasePowerButton();
   ExpectPreLockAnimationCancel();
-  ExpectBackgroundIsHiding();
+  ExpectWallpaperIsHiding();
 
   Advance(SessionStateAnimator::ANIMATION_SPEED_UNDO_MOVE_WINDOWS);
 
   // When the CancelPrelockAnimation sequence finishes it queues up a
-  // restore background visibility sequence when the background is hidden.
-  ExpectRestoringBackgroundVisibility();
+  // restore wallpaper visibility sequence when the wallpaper is hidden.
+  ExpectRestoringWallpaperVisibility();
 
   Advance(SessionStateAnimator::ANIMATION_SPEED_IMMEDIATE);
 
   ExpectUnlockedState();
 }
 
-// Test that hidden background appears and revers correctly on lock/unlock.
-TEST_F(LockStateControllerTest, TestHiddenBackgroundLockUnlock) {
+// Test that hidden wallpaper appears and revers correctly on lock/unlock.
+TEST_F(LockStateControllerTest, TestHiddenWallpaperLockUnlock) {
   Initialize(false, LoginStatus::USER);
-  HideBackground();
+  HideWallpaper();
 
   ExpectUnlockedState();
 
@@ -967,7 +967,7 @@ TEST_F(LockStateControllerTest, TestHiddenBackgroundLockUnlock) {
   PressPowerButton();
 
   ExpectPreLockAnimationStarted();
-  ExpectBackgroundIsShowing();
+  ExpectWallpaperIsShowing();
 
   Advance(SessionStateAnimator::ANIMATION_SPEED_UNDOABLE);
 
@@ -992,13 +992,13 @@ TEST_F(LockStateControllerTest, TestHiddenBackgroundLockUnlock) {
   SystemUnlocks();
 
   ExpectUnlockAfterUIDestroyedAnimationStarted();
-  ExpectBackgroundIsHiding();
+  ExpectWallpaperIsHiding();
 
   Advance(SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS);
 
   // When the StartUnlockAnimationAfterUIDestroyed sequence finishes it queues
-  // up a restore background visibility sequence when the background is hidden.
-  ExpectRestoringBackgroundVisibility();
+  // up a restore wallpaper visibility sequence when the wallpaper is hidden.
+  ExpectRestoringWallpaperVisibility();
 
   Advance(SessionStateAnimator::ANIMATION_SPEED_IMMEDIATE);
 

@@ -31,7 +31,6 @@
 #include "ash/common/wm/wm_event.h"
 #include "ash/common/wm_shell.h"
 #include "ash/debug.h"
-#include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/host/ash_window_tree_host.h"
@@ -44,6 +43,7 @@
 #include "ash/shell.h"
 #include "ash/touch/touch_hud_debug.h"
 #include "ash/utility/screenshot_controller.h"
+#include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wm/power_button_controller.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
@@ -287,26 +287,26 @@ gfx::ImageSkia CreateWallpaperImage(SkColor fill, SkColor rect) {
   return gfx::ImageSkia(canvas.ExtractImageRep());
 }
 
-void HandleToggleDesktopBackgroundMode() {
+void HandleToggleWallpaperMode() {
   static int index = 0;
-  DesktopBackgroundController* desktop_background_controller =
-      Shell::GetInstance()->desktop_background_controller();
+  WallpaperController* wallpaper_controller =
+      Shell::GetInstance()->wallpaper_controller();
   switch (++index % 4) {
     case 0:
       ash::WmShell::Get()->wallpaper_delegate()->InitializeWallpaper();
       break;
     case 1:
-      desktop_background_controller->SetWallpaperImage(
+      wallpaper_controller->SetWallpaperImage(
           CreateWallpaperImage(SK_ColorRED, SK_ColorBLUE),
           wallpaper::WALLPAPER_LAYOUT_STRETCH);
       break;
     case 2:
-      desktop_background_controller->SetWallpaperImage(
+      wallpaper_controller->SetWallpaperImage(
           CreateWallpaperImage(SK_ColorBLUE, SK_ColorGREEN),
           wallpaper::WALLPAPER_LAYOUT_CENTER);
       break;
     case 3:
-      desktop_background_controller->SetWallpaperImage(
+      wallpaper_controller->SetWallpaperImage(
           CreateWallpaperImage(SK_ColorGREEN, SK_ColorRED),
           wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED);
       break;
@@ -364,12 +364,12 @@ bool AcceleratorControllerDelegateAura::HandlesAction(
   // NOTE: When adding a new accelerator that only depends on //ash/common code,
   // add it to accelerator_controller.cc instead. See class comment.
   switch (action) {
-    case DEBUG_TOGGLE_DESKTOP_BACKGROUND_MODE:
     case DEBUG_TOGGLE_DEVICE_SCALE_FACTOR:
     case DEBUG_TOGGLE_ROOT_WINDOW_FULL_SCREEN:
     case DEBUG_TOGGLE_SHOW_DEBUG_BORDERS:
     case DEBUG_TOGGLE_SHOW_FPS_COUNTER:
     case DEBUG_TOGGLE_SHOW_PAINT_RECTS:
+    case DEBUG_TOGGLE_WALLPAPER_MODE:
     case FOCUS_SHELF:
     case LAUNCH_APP_0:
     case LAUNCH_APP_1:
@@ -422,7 +422,7 @@ bool AcceleratorControllerDelegateAura::CanPerformAction(
     const ui::Accelerator& accelerator,
     const ui::Accelerator& previous_accelerator) {
   switch (action) {
-    case DEBUG_TOGGLE_DESKTOP_BACKGROUND_MODE:
+    case DEBUG_TOGGLE_WALLPAPER_MODE:
     case DEBUG_TOGGLE_DEVICE_SCALE_FACTOR:
     case DEBUG_TOGGLE_ROOT_WINDOW_FULL_SCREEN:
     case DEBUG_TOGGLE_SHOW_DEBUG_BORDERS:
@@ -493,8 +493,8 @@ void AcceleratorControllerDelegateAura::PerformAction(
     AcceleratorAction action,
     const ui::Accelerator& accelerator) {
   switch (action) {
-    case DEBUG_TOGGLE_DESKTOP_BACKGROUND_MODE:
-      HandleToggleDesktopBackgroundMode();
+    case DEBUG_TOGGLE_WALLPAPER_MODE:
+      HandleToggleWallpaperMode();
       break;
     case DEBUG_TOGGLE_DEVICE_SCALE_FACTOR:
       Shell::GetInstance()->display_manager()->ToggleDisplayScaleFactor();

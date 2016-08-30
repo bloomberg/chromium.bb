@@ -78,11 +78,9 @@ class AcceleratorControllerDelegateAura;
 class AshNativeCursorManager;
 class AutoclickController;
 class BluetoothNotificationController;
-class DesktopBackgroundController;
 class DisplayChangeObserver;
 class DisplayColorManager;
 class DisplayConfigurationController;
-class WindowTreeHostManager;
 class DisplayErrorObserver;
 class DisplayManager;
 class DragDropController;
@@ -130,8 +128,10 @@ class TouchObserverHUD;
 class VirtualKeyboardController;
 class VideoActivityNotifier;
 class VideoDetector;
+class WallpaperController;
 class WebNotificationTray;
 class WindowPositioner;
+class WindowTreeHostManager;
 class WmShellAura;
 class WmWindow;
 
@@ -204,8 +204,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
       int container_id,
       aura::Window* priority_root);
 
-  // Shows the context menu for the background and launcher at
-  // |location_in_screen| (in screen coordinates).
+  // Shows the context menu for the wallpaper and shelf at the screen location.
   void ShowContextMenu(const gfx::Point& location_in_screen,
                        ui::MenuSourceType source_type);
 
@@ -275,8 +274,8 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
     return tooltip_controller_.get();
   }
   OverlayEventFilter* overlay_filter() { return overlay_filter_.get(); }
-  DesktopBackgroundController* desktop_background_controller() {
-    return desktop_background_controller_.get();
+  WallpaperController* wallpaper_controller() {
+    return wallpaper_controller_.get();
   }
   LinkHandlerModelFactory* link_handler_model_factory() {
     return link_handler_model_factory_;
@@ -500,7 +499,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   std::unique_ptr<::wm::VisibilityController> visibility_controller_;
   std::unique_ptr<::wm::WindowModalityController> window_modality_controller_;
   std::unique_ptr<views::corewm::TooltipController> tooltip_controller_;
-  std::unique_ptr<DesktopBackgroundController> desktop_background_controller_;
+  std::unique_ptr<WallpaperController> wallpaper_controller_;
   LinkHandlerModelFactory* link_handler_model_factory_;
   std::unique_ptr<PowerButtonController> power_button_controller_;
   std::unique_ptr<LockStateController> lock_state_controller_;

@@ -38,8 +38,6 @@
 #include "ash/common/wm/root_window_finder.h"
 #include "ash/common/wm/window_positioner.h"
 #include "ash/common/wm_shell.h"
-#include "ash/desktop_background/desktop_background_controller.h"
-#include "ash/desktop_background/desktop_background_view.h"
 #include "ash/display/cursor_window_controller.h"
 #include "ash/display/display_configuration_controller.h"
 #include "ash/display/display_manager.h"
@@ -57,6 +55,8 @@
 #include "ash/root_window_controller.h"
 #include "ash/shell_init_params.h"
 #include "ash/utility/screenshot_controller.h"
+#include "ash/wallpaper/wallpaper_controller.h"
+#include "ash/wallpaper/wallpaper_view.h"
 #include "ash/wm/ash_focus_rules.h"
 #include "ash/wm/ash_native_cursor_manager.h"
 #include "ash/wm/event_client_impl.h"
@@ -637,7 +637,7 @@ Shell::~Shell() {
 #if defined(OS_CHROMEOS)
   resolution_notification_controller_.reset();
 #endif
-  desktop_background_controller_.reset();
+  wallpaper_controller_.reset();
   screenshot_controller_.reset();
   mouse_cursor_filter_.reset();
   modality_filter_.reset();
@@ -899,8 +899,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   event_client_.reset(new EventClientImpl);
 
   // This controller needs to be set before SetupManagedWindowMode.
-  desktop_background_controller_.reset(
-      new DesktopBackgroundController(blocking_pool_));
+  wallpaper_controller_.reset(new WallpaperController(blocking_pool_));
 
   session_state_delegate_.reset(
       wm_shell_->delegate()->CreateSessionStateDelegate());

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_DESKTOP_BACKGROUND_DESKTOP_BACKGROUND_VIEW_H_
-#define ASH_DESKTOP_BACKGROUND_DESKTOP_BACKGROUND_VIEW_H_
+#ifndef ASH_WALLPAPER_WALLPAPER_VIEW_H_
+#define ASH_WALLPAPER_WALLPAPER_VIEW_H_
 
 #include <memory>
 
@@ -15,14 +15,13 @@ namespace ash {
 class PreEventDispatchHandler;
 class WmWindow;
 
-class DesktopBackgroundView : public views::View,
-                              public views::ContextMenuController {
+class WallpaperView : public views::View, public views::ContextMenuController {
  public:
-  DesktopBackgroundView();
-  ~DesktopBackgroundView() override;
+  WallpaperView();
+  ~WallpaperView() override;
 
  private:
-  friend class DesktopBackgroundControllerTest;
+  friend class WallpaperControllerTest;
 
   // Overridden from views::View:
   void OnPaint(gfx::Canvas* canvas) override;
@@ -34,11 +33,11 @@ class DesktopBackgroundView : public views::View,
                               ui::MenuSourceType source_type) override;
   std::unique_ptr<PreEventDispatchHandler> pre_dispatch_handler_;
 
-  DISALLOW_COPY_AND_ASSIGN(DesktopBackgroundView);
+  DISALLOW_COPY_AND_ASSIGN(WallpaperView);
 };
 
-views::Widget* CreateDesktopBackground(WmWindow* root_window, int container_id);
+views::Widget* CreateWallpaper(WmWindow* root_window, int container_id);
 
 }  // namespace ash
 
-#endif  // ASH_DESKTOP_BACKGROUND_DESKTOP_BACKGROUND_VIEW_H_
+#endif  // ASH_WALLPAPER_WALLPAPER_VIEW_H_

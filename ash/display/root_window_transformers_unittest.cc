@@ -34,7 +34,7 @@
 namespace ash {
 namespace {
 
-const char kDesktopBackgroundView[] = "DesktopBackgroundView";
+const char kWallpaperView[] = "WallpaperView";
 
 class TestEventHandler : public ui::EventHandler {
  public:
@@ -59,9 +59,9 @@ class TestEventHandler : public ui::EventHandler {
 
   void OnTouchEvent(ui::TouchEvent* event) override {
     aura::Window* target = static_cast<aura::Window*>(event->target());
-    // Only record when the target is the background which covers
-    // entire root window.
-    if (target->name() != kDesktopBackgroundView)
+    // Only record when the target is the wallpaper, which covers the entire
+    // root window.
+    if (target->name() != kWallpaperView)
       return;
     touch_radius_x_ = event->pointer_details().radius_x;
     touch_radius_y_ = event->pointer_details().radius_y;
@@ -70,9 +70,9 @@ class TestEventHandler : public ui::EventHandler {
 
   void OnScrollEvent(ui::ScrollEvent* event) override {
     aura::Window* target = static_cast<aura::Window*>(event->target());
-    // Only record when the target is the background which covers
-    // entire root window.
-    if (target->name() != kDesktopBackgroundView)
+    // Only record when the target is the wallpaper, which covers the entire
+    // root window.
+    if (target->name() != kWallpaperView)
       return;
 
     if (event->type() == ui::ET_SCROLL) {

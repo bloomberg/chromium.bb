@@ -39,10 +39,10 @@ TEST_F(SessionStateAnimatiorImplContainersTest, ContainersHaveIdTest) {
 
   containers.clear();
 
-  SessionStateAnimatorImpl::GetContainers(
-      SessionStateAnimator::DESKTOP_BACKGROUND, &containers);
-  EXPECT_TRUE(ContainersHaveWindowWithId(
-      containers, kShellWindowId_DesktopBackgroundContainer));
+  SessionStateAnimatorImpl::GetContainers(SessionStateAnimator::WALLPAPER,
+                                          &containers);
+  EXPECT_TRUE(ContainersHaveWindowWithId(containers,
+                                         kShellWindowId_WallpaperContainer));
 
   containers.clear();
 
@@ -63,9 +63,9 @@ TEST_F(SessionStateAnimatiorImplContainersTest, ContainersHaveIdTest) {
 
   // Check for lock screen containers.
   SessionStateAnimatorImpl::GetContainers(
-      SessionStateAnimator::LOCK_SCREEN_BACKGROUND, &containers);
+      SessionStateAnimator::LOCK_SCREEN_WALLPAPER, &containers);
   EXPECT_TRUE(ContainersHaveWindowWithId(
-      containers, kShellWindowId_LockScreenBackgroundContainer));
+      containers, kShellWindowId_LockScreenWallpaperContainer));
 
   containers.clear();
 

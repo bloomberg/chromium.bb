@@ -14,12 +14,12 @@
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm_shell.h"
-#include "ash/desktop_background/desktop_background_widget_controller.h"
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/drag_drop/drag_drop_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shell_test_api.h"
+#include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wm/window_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -57,8 +57,8 @@ aura::Window* GetAlwaysOnTopContainer() {
 // Expect ALL the containers!
 void ExpectAllContainers() {
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
-  EXPECT_TRUE(Shell::GetContainer(root_window,
-                                  kShellWindowId_DesktopBackgroundContainer));
+  EXPECT_TRUE(
+      Shell::GetContainer(root_window, kShellWindowId_WallpaperContainer));
   EXPECT_TRUE(
       Shell::GetContainer(root_window, kShellWindowId_DefaultContainer));
   EXPECT_TRUE(
@@ -67,8 +67,8 @@ void ExpectAllContainers() {
   EXPECT_TRUE(Shell::GetContainer(root_window, kShellWindowId_ShelfContainer));
   EXPECT_TRUE(
       Shell::GetContainer(root_window, kShellWindowId_SystemModalContainer));
-  EXPECT_TRUE(Shell::GetContainer(
-      root_window, kShellWindowId_LockScreenBackgroundContainer));
+  EXPECT_TRUE(Shell::GetContainer(root_window,
+                                  kShellWindowId_LockScreenWallpaperContainer));
   EXPECT_TRUE(
       Shell::GetContainer(root_window, kShellWindowId_LockScreenContainer));
   EXPECT_TRUE(Shell::GetContainer(root_window,
@@ -346,8 +346,9 @@ TEST_F(ShellTest, LockScreenClosesActiveMenu) {
   std::unique_ptr<ui::SimpleMenuModel> menu_model(
       new ui::SimpleMenuModel(&menu_delegate));
   menu_model->AddItem(0, base::ASCIIToUTF16("Menu item"));
-  views::Widget* widget =
-      Shell::GetPrimaryRootWindowController()->wallpaper_controller()->widget();
+  views::Widget* widget = Shell::GetPrimaryRootWindowController()
+                              ->wallpaper_widget_controller()
+                              ->widget();
   std::unique_ptr<views::MenuRunner> menu_runner(
       new views::MenuRunner(menu_model.get(), views::MenuRunner::CONTEXT_MENU));
 
@@ -377,14 +378,14 @@ TEST_F(ShellTest, ManagedWindowModeBasics) {
   EXPECT_EQ(0, shelf_widget->GetWindowBoundsInScreen().x());
   EXPECT_EQ(Shell::GetPrimaryRootWindow()->GetHost()->GetBounds().height(),
             shelf_widget->GetWindowBoundsInScreen().bottom());
-  // We have a desktop background but not a bare layer.
+  // We have a wallpaper but not a bare layer.
   // TODO (antrim): enable once we find out why it fails component build.
-  //  DesktopBackgroundWidgetController* background =
+  //  WallpaperWidgetController* wallpaper =
   //      Shell::GetPrimaryRootWindow()->
   //          GetProperty(kWindowDesktopComponent);
-  //  EXPECT_TRUE(background);
-  //  EXPECT_TRUE(background->widget());
-  //  EXPECT_FALSE(background->layer());
+  //  EXPECT_TRUE(wallpaper);
+  //  EXPECT_TRUE(wallpaper->widget());
+  //  EXPECT_FALSE(wallpaper->layer());
 
   // Create a normal window.  It is not maximized.
   views::Widget::InitParams widget_params(

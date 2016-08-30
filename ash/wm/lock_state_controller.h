@@ -210,7 +210,7 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
   friend class test::LockStateControllerTest;
 
   struct UnlockedStateProperties {
-    bool background_is_hidden;
+    bool wallpaper_is_hidden;
   };
 
   // Reverts the pre-lock animation, reports the error.
@@ -262,13 +262,13 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
   void StoreUnlockedProperties();
   void RestoreUnlockedProperties();
 
-  // Fades in background layer with |speed| if it was hidden in unlocked state.
-  void AnimateBackgroundAppearanceIfNecessary(
+  // Fades in wallpaper layer with |speed| if it was hidden in unlocked state.
+  void AnimateWallpaperAppearanceIfNecessary(
       ash::SessionStateAnimator::AnimationSpeed speed,
       SessionStateAnimator::AnimationSequence* animation_sequence);
 
-  // Fades out background layer with |speed| if it was hidden in unlocked state.
-  void AnimateBackgroundHidingIfNecessary(
+  // Fades out wallpaper layer with |speed| if it was hidden in unlocked state.
+  void AnimateWallpaperHidingIfNecessary(
       ash::SessionStateAnimator::AnimationSpeed speed,
       SessionStateAnimator::AnimationSequence* animation_sequence);
 

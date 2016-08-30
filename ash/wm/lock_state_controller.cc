@@ -364,7 +364,7 @@ void LockStateController::StartImmediatePreLockAnimation(
   animator_->StartAnimation(SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
                             SessionStateAnimator::ANIMATION_HIDE_IMMEDIATELY,
                             SessionStateAnimator::ANIMATION_SPEED_IMMEDIATE);
-  AnimateBackgroundAppearanceIfNecessary(
+  AnimateWallpaperAppearanceIfNecessary(
       SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS, animation_sequence);
 
   animation_sequence->EndSequence();
@@ -395,7 +395,7 @@ void LockStateController::StartCancellablePreLockAnimation() {
   animator_->StartAnimation(SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
                             SessionStateAnimator::ANIMATION_HIDE_IMMEDIATELY,
                             SessionStateAnimator::ANIMATION_SPEED_IMMEDIATE);
-  AnimateBackgroundAppearanceIfNecessary(
+  AnimateWallpaperAppearanceIfNecessary(
       SessionStateAnimator::ANIMATION_SPEED_UNDOABLE, animation_sequence);
 
   DispatchCancelMode();
@@ -419,7 +419,7 @@ void LockStateController::CancelPreLockAnimation() {
   animation_sequence->StartAnimation(
       SessionStateAnimator::LAUNCHER, SessionStateAnimator::ANIMATION_FADE_IN,
       SessionStateAnimator::ANIMATION_SPEED_UNDO_MOVE_WINDOWS);
-  AnimateBackgroundHidingIfNecessary(
+  AnimateWallpaperHidingIfNecessary(
       SessionStateAnimator::ANIMATION_SPEED_UNDO_MOVE_WINDOWS,
       animation_sequence);
 
@@ -465,7 +465,7 @@ void LockStateController::StartUnlockAnimationAfterUIDestroyed() {
   animation_sequence->StartAnimation(
       SessionStateAnimator::LAUNCHER, SessionStateAnimator::ANIMATION_FADE_IN,
       SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS);
-  AnimateBackgroundHidingIfNecessary(
+  AnimateWallpaperHidingIfNecessary(
       SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS, animation_sequence);
   animation_sequence->EndSequence();
 }
@@ -539,48 +539,45 @@ void LockStateController::UnlockAnimationAfterUIDestroyedFinished() {
 void LockStateController::StoreUnlockedProperties() {
   if (!unlocked_properties_) {
     unlocked_properties_.reset(new UnlockedStateProperties());
-    unlocked_properties_->background_is_hidden =
-        animator_->IsBackgroundHidden();
+    unlocked_properties_->wallpaper_is_hidden = animator_->IsWallpaperHidden();
   }
-  if (unlocked_properties_->background_is_hidden) {
-    // Hide background so that it can be animated later.
-    animator_->StartAnimation(SessionStateAnimator::DESKTOP_BACKGROUND,
+  if (unlocked_properties_->wallpaper_is_hidden) {
+    // Hide wallpaper so that it can be animated later.
+    animator_->StartAnimation(SessionStateAnimator::WALLPAPER,
                               SessionStateAnimator::ANIMATION_HIDE_IMMEDIATELY,
                               SessionStateAnimator::ANIMATION_SPEED_IMMEDIATE);
-    animator_->ShowBackground();
+    animator_->ShowWallpaper();
   }
 }
 
 void LockStateController::RestoreUnlockedProperties() {
   if (!unlocked_properties_)
     return;
-  if (unlocked_properties_->background_is_hidden) {
-    animator_->HideBackground();
-    // Restore background visibility.
-    animator_->StartAnimation(SessionStateAnimator::DESKTOP_BACKGROUND,
+  if (unlocked_properties_->wallpaper_is_hidden) {
+    animator_->HideWallpaper();
+    // Restore wallpaper visibility.
+    animator_->StartAnimation(SessionStateAnimator::WALLPAPER,
                               SessionStateAnimator::ANIMATION_FADE_IN,
                               SessionStateAnimator::ANIMATION_SPEED_IMMEDIATE);
   }
   unlocked_properties_.reset();
 }
 
-void LockStateController::AnimateBackgroundAppearanceIfNecessary(
+void LockStateController::AnimateWallpaperAppearanceIfNecessary(
     SessionStateAnimator::AnimationSpeed speed,
     SessionStateAnimator::AnimationSequence* animation_sequence) {
-  if (unlocked_properties_.get() &&
-      unlocked_properties_->background_is_hidden) {
-    animation_sequence->StartAnimation(SessionStateAnimator::DESKTOP_BACKGROUND,
+  if (unlocked_properties_.get() && unlocked_properties_->wallpaper_is_hidden) {
+    animation_sequence->StartAnimation(SessionStateAnimator::WALLPAPER,
                                        SessionStateAnimator::ANIMATION_FADE_IN,
                                        speed);
   }
 }
 
-void LockStateController::AnimateBackgroundHidingIfNecessary(
+void LockStateController::AnimateWallpaperHidingIfNecessary(
     SessionStateAnimator::AnimationSpeed speed,
     SessionStateAnimator::AnimationSequence* animation_sequence) {
-  if (unlocked_properties_.get() &&
-      unlocked_properties_->background_is_hidden) {
-    animation_sequence->StartAnimation(SessionStateAnimator::DESKTOP_BACKGROUND,
+  if (unlocked_properties_.get() && unlocked_properties_->wallpaper_is_hidden) {
+    animation_sequence->StartAnimation(SessionStateAnimator::WALLPAPER,
                                        SessionStateAnimator::ANIMATION_FADE_OUT,
                                        speed);
   }

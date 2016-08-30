@@ -72,9 +72,9 @@ class TestSessionStateAnimator : public SessionStateAnimator {
                                   AnimationSpeed speed,
                                   base::Closure callback) override;
   AnimationSequence* BeginAnimationSequence(base::Closure callback) override;
-  bool IsBackgroundHidden() const override;
-  void ShowBackground() override;
-  void HideBackground() override;
+  bool IsWallpaperHidden() const override;
+  void ShowWallpaper() override;
+  void HideWallpaper() override;
 
  private:
   class AnimationSequence;
@@ -151,8 +151,8 @@ class TestSessionStateAnimator : public SessionStateAnimator {
   // sequence.
   int last_animation_epoch_;
 
-  // Tracks whether the background is hidden or not.
-  bool is_background_hidden_;
+  // Tracks whether the wallpaper is hidden or not.
+  bool is_wallpaper_hidden_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSessionStateAnimator);
 };

@@ -51,7 +51,7 @@ class WebUILoginDisplay;
 class WebUILoginView;
 
 // An implementation class for OOBE/login WebUI screen host.
-// It encapsulates controllers, background integration and flow.
+// It encapsulates controllers, wallpaper integration and flow.
 class LoginDisplayHostImpl : public LoginDisplayHost,
                              public content::NotificationObserver,
                              public content::WebContentsObserver,
@@ -63,7 +63,7 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
                              public views::WidgetRemovalsObserver,
                              public chrome::MultiUserWindowManager::Observer {
  public:
-  explicit LoginDisplayHostImpl(const gfx::Rect& background_bounds);
+  explicit LoginDisplayHostImpl(const gfx::Rect& wallpaper_bounds);
   ~LoginDisplayHostImpl() override;
 
   // LoginDisplayHost implementation:
@@ -97,7 +97,7 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   // Called when the first browser window is created, but before it's shown.
   void OnBrowserCreated();
 
-  const gfx::Rect& background_bounds() const { return background_bounds_; }
+  const gfx::Rect& wallpaper_bounds() const { return wallpaper_bounds_; }
 
   // Trace id for ShowLoginWebUI event (since there exists at most one login
   // WebUI at a time).
@@ -200,8 +200,8 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   // Called when login-prompt-visible signal is caught.
   void OnLoginPromptVisible();
 
-  // Used to calculate position of the screens and background.
-  gfx::Rect background_bounds_;
+  // Used to calculate position of the screens and wallpaper.
+  gfx::Rect wallpaper_bounds_;
 
   content::NotificationRegistrar registrar_;
 

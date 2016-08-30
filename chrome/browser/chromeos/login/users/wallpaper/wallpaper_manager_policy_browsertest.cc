@@ -8,9 +8,9 @@
 #include <string>
 #include <vector>
 
-#include "ash/desktop_background/desktop_background_controller.h"
-#include "ash/desktop_background/desktop_background_controller_observer.h"
 #include "ash/shell.h"
+#include "ash/wallpaper/wallpaper_controller.h"
+#include "ash/wallpaper/wallpaper_controller_observer.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
@@ -112,11 +112,10 @@ SkColor ComputeAverageColor(const SkBitmap& bitmap) {
                         (b + pixel_number / 2) / pixel_number);
 }
 
-// Obtain background image and return its average ARGB color.
-SkColor GetAverageBackgroundColor() {
+// Obtain wallpaper image and return its average ARGB color.
+SkColor GetAverageWallpaperColor() {
   const gfx::ImageSkia image =
-      ash::Shell::GetInstance()->desktop_background_controller()->
-      GetWallpaper();
+      ash::Shell::GetInstance()->wallpaper_controller()->GetWallpaper();
 
   const gfx::ImageSkiaRep& representation = image.GetRepresentation(1.);
   if (representation.is_null()) {
@@ -136,9 +135,8 @@ void SetSystemSalt() {
 
 }  // namespace
 
-class WallpaperManagerPolicyTest
-    : public LoginManagerTest,
-      public ash::DesktopBackgroundControllerObserver {
+class WallpaperManagerPolicyTest : public LoginManagerTest,
+                                   public ash::WallpaperControllerObserver {
  protected:
   WallpaperManagerPolicyTest()
       : LoginManagerTest(true),
@@ -201,8 +199,7 @@ class WallpaperManagerPolicyTest
 
   void SetUpOnMainThread() override {
     LoginManagerTest::SetUpOnMainThread();
-    ash::Shell::GetInstance()->
-        desktop_background_controller()->AddObserver(this);
+    ash::Shell::GetInstance()->wallpaper_controller()->AddObserver(this);
 
     // Set up policy signing.
     user_policy_builders_[0] = GetUserPolicyBuilder(testUsers_[0]);
@@ -210,12 +207,11 @@ class WallpaperManagerPolicyTest
   }
 
   void TearDownOnMainThread() override {
-    ash::Shell::GetInstance()->
-        desktop_background_controller()->RemoveObserver(this);
+    ash::Shell::GetInstance()->wallpaper_controller()->RemoveObserver(this);
     LoginManagerTest::TearDownOnMainThread();
   }
 
-  // ash::DesktopBackgroundControllerObserver:
+  // ash::WallpaperControllerObserver:
   void OnWallpaperDataChanged() override {
     ++wallpaper_change_count_;
     if (run_loop_)
@@ -310,7 +306,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, SetResetClear) {
   // First user: Wait until default wallpaper has been loaded (happens
   // automatically) and store color to recognize it later.
   RunUntilWallpaperChangeCount(1);
-  const SkColor original_background_color = GetAverageBackgroundColor();
+  const SkColor original_wallpaper_color = GetAverageWallpaperColor();
 
   // Second user: Set wallpaper policy to blue image.  This should not result in
   // a wallpaper change, which is checked at the very end of this test.
@@ -321,14 +317,14 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, SetResetClear) {
   RunUntilWallpaperChangeCount(2);
   GetUserWallpaperInfo(0, &info);
   ASSERT_EQ(user_manager::User::POLICY, info.type);
-  ASSERT_EQ(kRedImageColor, GetAverageBackgroundColor());
+  ASSERT_EQ(kRedImageColor, GetAverageWallpaperColor());
 
   // First user: Set wallpaper policy to green image and verify average color.
   InjectPolicy(0, kGreenImageFileName);
   RunUntilWallpaperChangeCount(3);
   GetUserWallpaperInfo(0, &info);
   ASSERT_EQ(user_manager::User::POLICY, info.type);
-  ASSERT_EQ(kGreenImageColor, GetAverageBackgroundColor());
+  ASSERT_EQ(kGreenImageColor, GetAverageWallpaperColor());
 
   // First user: Clear wallpaper policy and verify that the default wallpaper is
   // set again.
@@ -336,7 +332,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, SetResetClear) {
   RunUntilWallpaperChangeCount(4);
   GetUserWallpaperInfo(0, &info);
   ASSERT_EQ(user_manager::User::DEFAULT, info.type);
-  ASSERT_EQ(original_background_color, GetAverageBackgroundColor());
+  ASSERT_EQ(original_wallpaper_color, GetAverageWallpaperColor());
 
   // Check wallpaper change count to ensure that setting the second user's
   // wallpaper didn't have any effect.
@@ -362,7 +358,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest,
 
   // Run until wallpaper has changed.
   RunUntilWallpaperChangeCount(2);
-  ASSERT_EQ(kRedImageColor, GetAverageBackgroundColor());
+  ASSERT_EQ(kRedImageColor, GetAverageWallpaperColor());
 }
 
 IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest,
@@ -377,7 +373,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest,
 
   // Run until wallpaper has changed.
   RunUntilWallpaperChangeCount(2);
-  ASSERT_EQ(kGreenImageColor, GetAverageBackgroundColor());
+  ASSERT_EQ(kGreenImageColor, GetAverageWallpaperColor());
 }
 
 // Disabled due to flakiness: http://crbug.com/385648.
@@ -385,14 +381,14 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest,
                        DISABLED_WallpaperOnLoginScreen) {
   // Wait for active pod's wallpaper to be loaded.
   RunUntilWallpaperChangeCount(1);
-  ASSERT_EQ(kGreenImageColor, GetAverageBackgroundColor());
+  ASSERT_EQ(kGreenImageColor, GetAverageWallpaperColor());
 
   // Select the second pod (belonging to user 1).
   ASSERT_TRUE(content::ExecuteScript(
       LoginDisplayHost::default_host()->GetOobeUI()->web_ui()->GetWebContents(),
       "document.getElementsByClassName('pod')[1].focus();"));
   RunUntilWallpaperChangeCount(2);
-  ASSERT_EQ(kRedImageColor, GetAverageBackgroundColor());
+  ASSERT_EQ(kRedImageColor, GetAverageWallpaperColor());
 }
 
 IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, PRE_PRE_PersistOverLogout) {
@@ -413,7 +409,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, PRE_PersistOverLogout) {
 
   // Run until wallpaper has changed.
   RunUntilWallpaperChangeCount(2);
-  ASSERT_EQ(kRedImageColor, GetAverageBackgroundColor());
+  ASSERT_EQ(kRedImageColor, GetAverageWallpaperColor());
 }
 
 IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, PersistOverLogout) {
@@ -421,7 +417,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, PersistOverLogout) {
 
   // Wait until wallpaper has been loaded.
   RunUntilWallpaperChangeCount(1);
-  ASSERT_EQ(kRedImageColor, GetAverageBackgroundColor());
+  ASSERT_EQ(kRedImageColor, GetAverageWallpaperColor());
 }
 
 }  // namespace chromeos
