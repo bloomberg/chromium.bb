@@ -43,10 +43,8 @@ TEST(BlinkInputEventsConvertersTest, KeyEvent) {
 TEST(BlinkInputEventsConvertersTest, WheelEvent) {
   const int kDeltaX = 14;
   const int kDeltaY = -3;
-  ui::MouseWheelEvent ui_event(
-      ui::MouseEvent(ui::ET_MOUSEWHEEL, gfx::Point(), gfx::Point(),
-                     base::TimeTicks(), 0, 0),
-      kDeltaX, kDeltaY);
+  ui::MouseWheelEvent ui_event(gfx::Vector2d(kDeltaX, kDeltaY), gfx::Point(),
+                               gfx::Point(), base::TimeTicks(), 0, 0);
   ui::PointerEvent pointer_event(ui_event);
   const std::unique_ptr<blink::WebInputEvent> web_event(
       TypeConverter<std::unique_ptr<blink::WebInputEvent>, ui::Event>::Convert(

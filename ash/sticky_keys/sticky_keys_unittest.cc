@@ -161,9 +161,16 @@ class StickyKeysTest : public test::AshTestBase {
   // Creates a synthesized MouseEvent that is not backed by a native event.
   ui::MouseEvent* GenerateSynthesizedMouseEventAt(ui::EventType event_type,
                                                   const gfx::Point& location) {
-    ui::MouseEvent* event = new ui::MouseEvent(
-        event_type, location, location, ui::EventTimeForNow(),
-        ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
+    ui::MouseEvent* event;
+    if (event_type == ui::ET_MOUSEWHEEL) {
+      event = new ui::MouseWheelEvent(
+          gfx::Vector2d(), location, location, ui::EventTimeForNow(),
+          ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
+    } else {
+      event = new ui::MouseEvent(
+          event_type, location, location, ui::EventTimeForNow(),
+          ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
+    }
     ui::Event::DispatcherApi dispatcher(event);
     dispatcher.set_target(target_);
     return event;

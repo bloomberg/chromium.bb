@@ -66,14 +66,13 @@ void SyntheticGestureTargetAura::DispatchWebTouchEventToPlatform(
 void SyntheticGestureTargetAura::DispatchWebMouseWheelEventToPlatform(
       const blink::WebMouseWheelEvent& web_wheel,
       const ui::LatencyInfo&) {
-  ui::MouseEvent mouse_event(ui::ET_MOUSEWHEEL, gfx::Point(), gfx::Point(),
-                             ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
+  ui::MouseWheelEvent wheel_event(
+      gfx::Vector2d(web_wheel.deltaX, web_wheel.deltaY), gfx::Point(),
+      gfx::Point(), ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
   gfx::PointF location(web_wheel.x * device_scale_factor_,
                        web_wheel.y * device_scale_factor_);
-  mouse_event.set_location_f(location);
-  mouse_event.set_root_location_f(location);
-  ui::MouseWheelEvent wheel_event(
-      mouse_event, web_wheel.deltaX, web_wheel.deltaY);
+  wheel_event.set_location_f(location);
+  wheel_event.set_root_location_f(location);
 
   aura::Window* window = GetWindow();
   wheel_event.ConvertLocationToTarget(window, window->GetRootWindow());

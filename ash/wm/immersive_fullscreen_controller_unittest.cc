@@ -339,13 +339,7 @@ TEST_F(ImmersiveFullscreenControllerTest, RevealedLock) {
 }
 
 // Test mouse event processing for top-of-screen reveal triggering.
-// TODO: ASan failure happens on ChromeOS (https://crbug.com/641828).
-#if defined(OS_CHROMEOS)
-#define MAYBE_OnMouseEvent DISABLED_OnMouseEvent
-#else
-#define MAYBE_OnMouseEvent OnMouseEvent
-#endif
-TEST_F(ImmersiveFullscreenControllerTest, MAYBE_OnMouseEvent) {
+TEST_F(ImmersiveFullscreenControllerTest, OnMouseEvent) {
   // Set up initial state.
   SetEnabled(true);
   ASSERT_TRUE(controller()->IsEnabled());
@@ -360,8 +354,8 @@ TEST_F(ImmersiveFullscreenControllerTest, MAYBE_OnMouseEvent) {
                           top_container_bounds_in_screen.y());
 
   // Mouse wheel event does nothing.
-  ui::MouseEvent wheel(ui::ET_MOUSEWHEEL, top_edge_pos, top_edge_pos,
-                       ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
+  ui::MouseWheelEvent wheel(gfx::Vector2d(), top_edge_pos, top_edge_pos,
+                            ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
   event_generator.Dispatch(&wheel);
   EXPECT_FALSE(top_edge_hover_timer_running());
 

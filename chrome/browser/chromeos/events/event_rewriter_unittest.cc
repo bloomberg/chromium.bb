@@ -2421,10 +2421,10 @@ TEST_F(EventRewriterAshTest, MouseWheelEventDispatchImpl) {
                                ui::DomKey::CONTROL);
   PopEvents(&events);
   gfx::Point location(0, 0);
-  ui::MouseEvent mev(ui::ET_MOUSEWHEEL, location, location,
-                     ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
-                     ui::EF_LEFT_MOUSE_BUTTON);
-  ui::MouseWheelEvent positive(mev, 0, ui::MouseWheelEvent::kWheelDelta);
+  ui::MouseWheelEvent positive(
+      gfx::Vector2d(0, ui::MouseWheelEvent::kWheelDelta), location, location,
+      ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
+      ui::EF_LEFT_MOUSE_BUTTON);
   ui::EventDispatchDetails details = Send(&positive);
   ASSERT_FALSE(details.dispatcher_destroyed);
   PopEvents(&events);
@@ -2440,7 +2440,10 @@ TEST_F(EventRewriterAshTest, MouseWheelEventDispatchImpl) {
   SendActivateStickyKeyPattern(ui::VKEY_CONTROL, ui::DomCode::CONTROL_LEFT,
                                ui::DomKey::CONTROL);
   PopEvents(&events);
-  ui::MouseWheelEvent negative(mev, 0, -ui::MouseWheelEvent::kWheelDelta);
+  ui::MouseWheelEvent negative(
+      gfx::Vector2d(0, -ui::MouseWheelEvent::kWheelDelta), location, location,
+      ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
+      ui::EF_LEFT_MOUSE_BUTTON);
   details = Send(&negative);
   ASSERT_FALSE(details.dispatcher_destroyed);
   PopEvents(&events);
@@ -2464,10 +2467,10 @@ TEST_F(EventRewriterAshTest, MouseWheelEventModifiersRewritten) {
   // expect that it will be rewritten to ALT_DOWN.
   ScopedVector<ui::Event> events;
   gfx::Point location(0, 0);
-  ui::MouseEvent mev(
-      ui::ET_MOUSEWHEEL, location, location, ui::EventTimeForNow(),
-      ui::EF_LEFT_MOUSE_BUTTON | ui::EF_CONTROL_DOWN, ui::EF_LEFT_MOUSE_BUTTON);
-  ui::MouseWheelEvent positive(mev, 0, ui::MouseWheelEvent::kWheelDelta);
+  ui::MouseWheelEvent positive(
+      gfx::Vector2d(0, ui::MouseWheelEvent::kWheelDelta), location, location,
+      ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON | ui::EF_CONTROL_DOWN,
+      ui::EF_LEFT_MOUSE_BUTTON);
   ui::EventDispatchDetails details = Send(&positive);
   ASSERT_FALSE(details.dispatcher_destroyed);
   PopEvents(&events);

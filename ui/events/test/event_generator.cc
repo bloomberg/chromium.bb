@@ -166,9 +166,8 @@ void EventGenerator::ReleaseRightButton() {
 
 void EventGenerator::MoveMouseWheel(int delta_x, int delta_y) {
   gfx::Point location = GetLocationInCurrentRoot();
-  ui::MouseEvent mouseev(ui::ET_MOUSEWHEEL, location, location,
-                         ui::EventTimeForNow(), flags_, 0);
-  ui::MouseWheelEvent wheelev(mouseev, delta_x, delta_y);
+  ui::MouseWheelEvent wheelev(gfx::Vector2d(delta_x, delta_y), location,
+                              location, ui::EventTimeForNow(), flags_, 0);
   Dispatch(&wheelev);
 }
 

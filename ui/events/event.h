@@ -485,6 +485,7 @@ class EVENTS_EXPORT MouseEvent : public LocatedEvent {
   }
 
   // Used for synthetic events in testing, gesture recognizer and Ozone
+  // Note: Use the ctor for MouseWheelEvent if type is ET_MOUSEWHEEL.
   MouseEvent(EventType type,
              const gfx::Point& location,
              const gfx::Point& root_location,
