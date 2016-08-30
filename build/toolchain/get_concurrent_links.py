@@ -42,7 +42,7 @@ def _GetTotalMemoryInBytes():
           return float(match.group(1)) * 2**10
   elif sys.platform == 'darwin':
     try:
-      avail_bytes = int(subprocess.check_output(['sysctl', '-n', 'hw.memsize']))
+      return int(subprocess.check_output(['sysctl', '-n', 'hw.memsize']))
     except Exception:
       return 0
   # TODO(scottmg): Implement this for other platforms.
