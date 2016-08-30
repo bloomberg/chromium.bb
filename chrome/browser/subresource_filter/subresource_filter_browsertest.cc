@@ -8,10 +8,12 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/subresource_filter/core/browser/ruleset_distributor.h"
@@ -23,6 +25,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace subresource_filter {
@@ -93,6 +96,14 @@ class SubresourceFilterBrowserTest : public InProcessBrowserTest {
     scoped_feature_toggle_.reset(new ScopedSubresourceFilterFeatureToggle(
         base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled,
         kActivationScopeAllSites));
+    base::FilePath test_data_dir;
+    PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
+    embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
+    ASSERT_TRUE(embedded_test_server()->Start());
+  }
+
+  GURL GetTestUrl(const std::string& path) {
+    return embedded_test_server()->base_url().Resolve(path);
   }
 
   content::WebContents* web_contents() {
@@ -143,10 +154,7 @@ class SubresourceFilterBrowserTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, MainFrameActivation) {
-  const GURL url(ui_test_utils::GetTestUrl(
-      base::FilePath(FILE_PATH_LITERAL("subresource_filter")),
-      base::FilePath(FILE_PATH_LITERAL("frame_with_included_script.html"))));
-
+  GURL url(GetTestUrl("subresource_filter/frame_with_included_script.html"));
   ASSERT_NO_FATAL_FAILURE(SetRulesetToDisallowURLsWithPathSuffix(
       "suffix-that-does-not-match-anything"));
   ui_test_utils::NavigateToURL(browser(), url);
@@ -164,10 +172,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, MainFrameActivation) {
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, SubFrameActivation) {
-  const GURL url(ui_test_utils::GetTestUrl(
-      base::FilePath().AppendASCII("subresource_filter"),
-      base::FilePath().AppendASCII("frame_set.html")));
-
+  GURL url(GetTestUrl("subresource_filter/frame_set.html"));
   ASSERT_NO_FATAL_FAILURE(
       SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
   ui_test_utils::NavigateToURL(browser(), url);
@@ -187,10 +192,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
                        MainFrameActivationOnStartup) {
-  const GURL url(ui_test_utils::GetTestUrl(
-      base::FilePath(FILE_PATH_LITERAL("subresource_filter")),
-      base::FilePath(FILE_PATH_LITERAL("frame_with_included_script.html"))));
-
+  GURL url(GetTestUrl("subresource_filter/frame_with_included_script.html"));
   // Verify that the ruleset persisted in the previous session is used for this
   // page load right after start-up.
   ui_test_utils::NavigateToURL(browser(), url);

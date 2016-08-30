@@ -23,6 +23,7 @@ namespace {
 const char kExampleUrlWithParams[] = "https://example.com/soceng?q=engsoc";
 const char kTestUrl[] = "https://test.com";
 const char kExampleUrl[] = "https://example.com";
+const char kExampleLoginUrl[] = "https://example.com/login";
 
 struct ActivationListTestData {
   bool should_add;
@@ -175,26 +176,49 @@ class ContentSubresourceFilterDriverFactoryTest
         false /* is_iframe_srcdoc */);
     factory()->DidCommitProvisionalLoadForFrame(
         subframe_rfh(), url, ui::PageTransition::PAGE_TRANSITION_AUTO_SUBFRAME);
-    ::testing::Mock::VerifyAndClearExpectations(driver());
+    ::testing::Mock::VerifyAndClearExpectations(subframe_driver());
     ::testing::Mock::VerifyAndClearExpectations(client());
   }
 
   void NavigateToUrlAndExpectActivationAndPrompt(
       const GURL& url,
       bool should_activate,
+      bool should_prompt,
       ActivationState expected_activation_state) {
     EXPECT_CALL(*driver(), ActivateForProvisionalLoad(::testing::_))
         .Times(should_activate);
-    EXPECT_CALL(*client(),
-                ToggleNotificationVisibility(expected_activation_state ==
-                                             ActivationState::ENABLED));
-    content::WebContentsTester::For(web_contents())->NavigateAndCommit(url);
-    EXPECT_EQ(expected_activation_state, factory()->activation_state());
+    EXPECT_CALL(*client(), ToggleNotificationVisibility(should_prompt));
+    content::WebContentsTester::For(web_contents())->StartNavigation(url);
+    factory()->ReadyToCommitMainFrameNavigation(main_rfh(), url);
+    content::RenderFrameHostTester::For(main_rfh())
+        ->SimulateNavigationCommit(url);
+
     ::testing::Mock::VerifyAndClearExpectations(driver());
     ::testing::Mock::VerifyAndClearExpectations(client());
 
-    NavigateToUrlAndExpectActivationAndPromptSubFrame(GURL(kExampleUrl),
+    NavigateToUrlAndExpectActivationAndPromptSubFrame(GURL(kExampleLoginUrl),
                                                       should_activate);
+  }
+
+  void SpecialCaseNavSeq(bool should_activate,
+                         bool should_prompt,
+                         ActivationState state) {
+    // This test-case examinse the nevigation woth following sequence of event:
+    //   DidStartProvisional(main, "example.com")
+    //   ReadyToCommitMainFrameNavigation(“example.com”)
+    //   DidCommitProvisional(main, "example.com")
+    //   DidStartProvisional(sub, "example.com/login")
+    //   DidCommitProvisional(sub, "example.com/login")
+    //   DidCommitProvisional(main, "example.com#ref")
+
+    NavigateToUrlAndExpectActivationAndPrompt(
+        GURL(kExampleUrl), should_activate, should_prompt, state);
+    EXPECT_CALL(*driver(), ActivateForProvisionalLoad(::testing::_)).Times(0);
+    EXPECT_CALL(*client(), ToggleNotificationVisibility(should_prompt));
+    content::RenderFrameHostTester::For(main_rfh())
+        ->SimulateNavigationCommit(GURL(kExampleUrl));
+    ::testing::Mock::VerifyAndClearExpectations(driver());
+    ::testing::Mock::VerifyAndClearExpectations(client());
   }
 
  private:
@@ -364,13 +388,13 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest,
       base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateDryRun,
       kActivationScopeAllSites,
       kActivationListSocialEngineeringAdsInterstitial);
-  NavigateToUrlAndExpectActivationAndPrompt(GURL(kExampleUrlWithParams),
-                                            true /* should_activate */,
-                                            ActivationState::DRYRUN);
+  NavigateToUrlAndExpectActivationAndPrompt(
+      GURL(kExampleUrlWithParams), true /* should_activate */,
+      false /* should_prompt */, ActivationState::DRYRUN);
   factory()->AddHostOfURLToWhitelistSet(GURL(kExampleUrlWithParams));
-  NavigateToUrlAndExpectActivationAndPrompt(GURL(kExampleUrlWithParams),
-                                            false /* should_activate */,
-                                            ActivationState::DISABLED);
+  NavigateToUrlAndExpectActivationAndPrompt(
+      GURL(kExampleUrlWithParams), false /* should_activate */,
+      false /* should_prompt */, ActivationState::DISABLED);
 }
 
 TEST_F(ContentSubresourceFilterDriverFactoryTest,
@@ -380,13 +404,47 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest,
       base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled,
       kActivationScopeAllSites,
       kActivationListSocialEngineeringAdsInterstitial);
-  NavigateToUrlAndExpectActivationAndPrompt(GURL(kExampleUrlWithParams),
-                                            true /* should_activate */,
-                                            ActivationState::ENABLED);
+  NavigateToUrlAndExpectActivationAndPrompt(
+      GURL(kExampleUrlWithParams), true /* should_activate */,
+      true /* should_prompt */, ActivationState::ENABLED);
   factory()->AddHostOfURLToWhitelistSet(GURL(kExampleUrlWithParams));
-  NavigateToUrlAndExpectActivationAndPrompt(GURL(kExampleUrlWithParams),
-                                            false /* should_activate */,
-                                            ActivationState::DISABLED);
+  NavigateToUrlAndExpectActivationAndPrompt(
+      GURL(kExampleUrlWithParams), false /* should_activate */,
+      false /* should_prompt */, ActivationState::DISABLED);
+}
+
+TEST_F(ContentSubresourceFilterDriverFactoryTest,
+       DidStartProvisionalLoadScopeActivationListSitesStateEnabled) {
+  base::FieldTrialList field_trial_list(nullptr);
+  testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
+      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled,
+      kActivationScopeActivationList,
+      kActivationListSocialEngineeringAdsInterstitial);
+  BlacklistURLWithRedirects(GURL(kExampleUrlWithParams), std::vector<GURL>());
+  NavigateToUrlAndExpectActivationAndPrompt(
+      GURL(kExampleUrlWithParams), true /* should_activate */,
+      true /* should_prompt */, ActivationState::ENABLED);
+  factory()->AddHostOfURLToWhitelistSet(GURL(kExampleUrlWithParams));
+  NavigateToUrlAndExpectActivationAndPrompt(
+      GURL(kExampleUrlWithParams), false /* should_activate */,
+      false /* should_prompt */, ActivationState::DISABLED);
+}
+
+TEST_F(ContentSubresourceFilterDriverFactoryTest,
+       DidStartProvisionalLoadScopeActivationListSitesStateDryRun) {
+  base::FieldTrialList field_trial_list(nullptr);
+  testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
+      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateDryRun,
+      kActivationScopeActivationList,
+      kActivationListSocialEngineeringAdsInterstitial);
+  BlacklistURLWithRedirects(GURL(kExampleUrlWithParams), std::vector<GURL>());
+  NavigateToUrlAndExpectActivationAndPrompt(
+      GURL(kExampleUrlWithParams), true /* should_activate */,
+      false /* should_prompt */, ActivationState::DRYRUN);
+  factory()->AddHostOfURLToWhitelistSet(GURL(kExampleUrlWithParams));
+  NavigateToUrlAndExpectActivationAndPrompt(
+      GURL(kExampleUrlWithParams), false /* should_activate */,
+      false /* should_prompt */, ActivationState::DISABLED);
 }
 
 TEST_F(ContentSubresourceFilterDriverFactoryTest,
@@ -395,9 +453,9 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest,
   testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
       base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateDryRun,
       kActivationScopeNoSites, kActivationListSocialEngineeringAdsInterstitial);
-  NavigateToUrlAndExpectActivationAndPrompt(GURL(kExampleUrlWithParams),
-                                            false /* should_activate */,
-                                            ActivationState::DISABLED);
+  NavigateToUrlAndExpectActivationAndPrompt(
+      GURL(kExampleUrlWithParams), false /* should_activate */,
+      false /* should_prompt */, ActivationState::DISABLED);
 }
 
 TEST_F(ContentSubresourceFilterDriverFactoryTest,
@@ -407,9 +465,41 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest,
       base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateDisabled,
       kActivationScopeActivationList,
       kActivationListSocialEngineeringAdsInterstitial);
-  NavigateToUrlAndExpectActivationAndPrompt(GURL(kExampleUrlWithParams),
-                                            false /* should_activate */,
-                                            ActivationState::DISABLED);
+  NavigateToUrlAndExpectActivationAndPrompt(
+      GURL(kExampleUrlWithParams), false /* should_activate */,
+      false /* should_prompt */, ActivationState::DISABLED);
+}
+
+TEST_F(ContentSubresourceFilterDriverFactoryTest,
+       SpecialCaseNavigationAllSitesDryRun) {
+  base::FieldTrialList field_trial_list(nullptr);
+  testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
+      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateDryRun,
+      kActivationScopeAllSites);
+  SpecialCaseNavSeq(true /* should_activate */, false /* should_prompt */,
+                    ActivationState::DRYRUN);
+}
+
+TEST_F(ContentSubresourceFilterDriverFactoryTest,
+       SpecialCaseNavigationAllSitesEnabled) {
+  base::FieldTrialList field_trial_list(nullptr);
+  testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
+      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled,
+      kActivationScopeAllSites);
+  SpecialCaseNavSeq(true /* should_activate */, true /* should_prompt */,
+                    ActivationState::ENABLED);
+}
+
+TEST_F(ContentSubresourceFilterDriverFactoryTest,
+       SpecialCaseNavigationActivationListEnabled) {
+  base::FieldTrialList field_trial_list(nullptr);
+  testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
+      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled,
+      kActivationScopeActivationList,
+      kActivationListSocialEngineeringAdsInterstitial);
+  BlacklistURLWithRedirects(GURL(kExampleUrlWithParams), std::vector<GURL>());
+  SpecialCaseNavSeq(true /* should_activate */, true /* should_prompt */,
+                    ActivationState::ENABLED);
 }
 
 INSTANTIATE_TEST_CASE_P(NoSonEngHit,

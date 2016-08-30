@@ -135,6 +135,14 @@ class ContentSubresourceFilterDriverFactory
   // Checks pre-conditions and sets UI visibility accordingly.
   void PromptUserIfNeeded(content::RenderFrameHost* render_frame_host);
 
+  // Checks base on the value of |urr| and current activation scope if
+  // activation signal should be sent.
+  bool ShouldActivateForMainFrameURL(const GURL& url) const;
+  void ActivateForFrameHostIfNeeded(content::RenderFrameHost* render_frame_host,
+                                    const GURL& url);
+
+  void set_activation_state(const ActivationState& new_activation_state);
+
   static const char kWebContentsUserDataKey[];
 
   FrameHostToOwnedDriverMap frame_drivers_;
