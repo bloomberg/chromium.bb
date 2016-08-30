@@ -124,7 +124,7 @@ class CONTENT_EXPORT FindRequestManager : public WebContentsObserver {
   void SendFindIPC(const FindRequest& request, RenderFrameHost* rfh);
 
   // Sends the find results (as they currently are) to the WebContents.
-  void NotifyFindReply(int request_id, bool final_update) const;
+  void NotifyFindReply(int request_id, bool final_update);
 
   // Returns the initial frame in search order. This will be either the first
   // frame, if searching forward, or the last frame, if searching backward.
@@ -158,7 +158,12 @@ class CONTENT_EXPORT FindRequestManager : public WebContentsObserver {
 
   // Called when all pending find replies have been received for the find
   // request with ID |request_id|. The final update was received from |rfh|.
-  void FinalUpdate(int request_id, RenderFrameHost* rfh);
+  //
+  // Note that this is the final update for this particular find request, but
+  // not necessarily for all issued requests. If there are still pending replies
+  // expected for a previous find request, then the outgoing find reply issued
+  // from this function will not be marked final.
+  void FinalUpdateReceived(int request_id, RenderFrameHost* rfh);
 
 #if defined(OS_ANDROID)
   // Called when a nearest find result reply is no longer pending for a frame.
@@ -252,10 +257,15 @@ class CONTENT_EXPORT FindRequestManager : public WebContentsObserver {
   // The current find request.
   FindRequest current_request_;
 
-  // The set of frames that are still expected to reply to a pending find
-  // request. Frames are removed from |pending_replies_| when their reply with
-  // |final_update| set to true is received.
-  std::unordered_set<RenderFrameHost*> pending_replies_;
+  // The set of frames that are still expected to reply to a pending initial
+  // find request. Frames are removed from |pending_initial_replies_| when their
+  // reply to the initial find request is received with |final_update| set to
+  // true.
+  std::unordered_set<RenderFrameHost*> pending_initial_replies_;
+
+  // The frame (if any) that is still expected to reply to the last pending
+  // "find next" request.
+  RenderFrameHost* pending_find_next_reply_;
 
   // Indicates whether an update to the active match ordinal is expected. Once
   // set, |pending_active_match_ordinal_| will not reset until an update to the
@@ -288,6 +298,10 @@ class CONTENT_EXPORT FindRequestManager : public WebContentsObserver {
   // Find requests are queued here when previous requests need to be handled
   // before these ones can be properly routed.
   std::queue<FindRequest> find_request_queue_;
+
+  // Keeps track of the find request ID of the last find reply reported via
+  // NotifyFindReply().
+  int last_reported_id_;
 };
 
 }  // namespace content
