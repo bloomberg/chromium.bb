@@ -475,6 +475,50 @@ function test()
             checkMapping(0, 9, "example.js", 0, 9, mapping);
             checkReverseMapping(0, 0, "example.js", 0, mapping);
             next();
+        },
+
+        function testNameIndexes(next)
+        {
+            /*
+               ------------------------------------------------------------------------------------
+               chrome_issue_611738.clj:
+               (ns devtools-sample.chrome-issue-611738)
+
+               (defmacro m []
+                 `(let [generated# "value2"]))
+               ------------------------------------------------------------------------------------
+               chrome_issue_611738.cljs:
+               (ns devtools-sample.chrome-issue-611738
+               (:require-macros [devtools-sample.chrome-issue-611738 :refer [m]]))
+
+               (let [name1 "value1"]
+                 (m))
+               ------------------------------------------------------------------------------------
+               chrome_issue_611738.js:
+               // Compiled by ClojureScript 1.9.89 {}
+               goog.provide('devtools_sample.chrome_issue_611738');
+               goog.require('cljs.core');
+               var name1_31466 = "value1";
+               var generated31465_31467 = "value2";
+
+               //# sourceMappingURL=chrome_issue_611738.js.map
+               ------------------------------------------------------------------------------------
+               chrome_issue_611738.js.map:
+               {"version":3,"file":"\/Users\/darwin\/code\/cljs-devtools-sample\/resources\/public\/_compiled\/demo\/devtools_sample\/chrome_issue_611738.js","sources":["chrome_issue_611738.cljs"],"lineCount":7,"mappings":";AAAA;;AAGA,kBAAA,dAAMA;AAAN,AACE,IAAAC,uBAAA;AAAA,AAAA","names":["name1","generated31465"]}
+               ------------------------------------------------------------------------------------
+             */
+
+            var mappingPayload = {
+                "sources": ["chrome_issue_611738.cljs"],
+                "mappings": ";AAAA;;AAGA,kBAAA,dAAMA;AAAN,AACE,IAAAC,uBAAA;AAAA,AAAA",
+                "names": ["name1", "generated31465"]
+            };
+            var mapping = new WebInspector.TextSourceMap("chrome_issue_611738.js", "chrome_issue_611738.js.map", mappingPayload);
+            mapping.mappings().forEach(function(entry) {
+                const name = entry.name ? "'" + entry.name + "'" : "[no name assigned]";
+                InspectorTest.addResult(entry.lineNumber + ":" + entry.columnNumber + " > " + name);
+            });
+            next();
         }
     ]);
 };

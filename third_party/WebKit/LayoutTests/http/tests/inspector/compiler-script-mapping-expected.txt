@@ -153,3 +153,15 @@ example.js === example.js [sm]
 9 === 9
 source line 0 has no mappings.
 
+Running: testNameIndexes
+1:0 > [no name assigned]
+3:0 > [no name assigned]
+3:18 > [no name assigned]
+3:4 > 'name1'
+4:0 > [no name assigned]
+4:0 > [no name assigned]
+4:4 > 'generated31465'
+4:27 > [no name assigned]
+5:0 > [no name assigned]
+5:0 > [no name assigned]
+
