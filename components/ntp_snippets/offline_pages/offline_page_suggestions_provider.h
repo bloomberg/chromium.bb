@@ -47,6 +47,8 @@ class OfflinePageSuggestionsProvider
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
  private:
+  friend class OfflinePageSuggestionsProviderTest;
+
   // ContentSuggestionsProvider implementation.
   CategoryStatus GetCategoryStatus(Category category) override;
   CategoryInfo GetCategoryInfo(Category category) override;

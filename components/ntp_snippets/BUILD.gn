@@ -113,6 +113,7 @@ source_set("unit_tests") {
     "ntp_snippets_status_service_unittest.cc",
     "ntp_snippets_test_utils.cc",
     "ntp_snippets_test_utils.h",
+    "offline_pages/offline_page_suggestions_provider_unittest.cc",
     "physical_web_pages/physical_web_page_suggestions_provider_unittest.cc",
     "request_throttler_unittest.cc",
   ]
@@ -123,6 +124,8 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/image_fetcher",
     "//components/leveldb_proto:test_support",
+    "//components/offline_pages",
+    "//components/offline_pages:test_support",
     "//components/signin/core/browser:test_support",
     "//components/signin/core/common",
     "//components/strings",
