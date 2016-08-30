@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
-import("//content/renderer/renderer.gni")
 
 # See //content/BUILD.gn for how this works.
 group("renderer") {
@@ -27,9 +26,46 @@ target(link_target_type, "renderer_sources") {
   # External code should depend on via ":renderer" above.
   visibility = [ "//content/*" ]
 
-  sources = rebase_path(content_renderer_gypi_values.public_renderer_sources,
-                        ".",
-                        "//content")
+  sources = [
+    "android_content_detection_prefixes.cc",
+    "android_content_detection_prefixes.h",
+    "browser_plugin_delegate.cc",
+    "browser_plugin_delegate.h",
+    "chrome_object_extensions_utils.cc",
+    "chrome_object_extensions_utils.h",
+    "content_renderer_client.cc",
+    "content_renderer_client.h",
+    "context_menu_client.h",
+    "document_state.cc",
+    "document_state.h",
+    "media_stream_audio_renderer.h",
+    "media_stream_audio_sink.cc",
+    "media_stream_audio_sink.h",
+    "media_stream_sink.h",
+    "media_stream_video_renderer.h",
+    "navigation_state.cc",
+    "navigation_state.h",
+    "pepper_plugin_instance.h",
+    "platform_event_observer.h",
+    "render_accessibility.h",
+    "render_frame.h",
+    "render_frame_observer.cc",
+    "render_frame_observer.h",
+    "render_frame_observer_tracker.h",
+    "render_thread.cc",
+    "render_thread.h",
+    "render_thread_observer.cc",
+    "render_thread_observer.h",
+    "render_view.h",
+    "render_view_observer.cc",
+    "render_view_observer.h",
+    "render_view_observer_tracker.h",
+    "render_view_visitor.h",
+    "renderer_ppapi_host.h",
+    "resource_fetcher.h",
+    "video_encode_accelerator.cc",
+    "video_encode_accelerator.h",
+  ]
 
   configs += [ "//content:content_implementation" ]
 
@@ -59,10 +95,14 @@ target(link_target_type, "renderer_sources") {
   ]
 
   if (enable_webrtc) {
-    sources +=
-        rebase_path(content_renderer_gypi_values.public_renderer_webrtc_sources,
-                    ".",
-                    "//content")
+    sources += [
+      "media_stream_renderer_factory.h",
+      "media_stream_utils.cc",
+      "media_stream_utils.h",
+      "media_stream_video_sink.cc",
+      "media_stream_video_sink.h",
+      "webrtc_log_message_delegate.h",
+    ]
     deps += [
       "//content/public/common:feature_h264_with_openh264_ffmpeg",
       "//content/public/common:features",
@@ -71,9 +111,6 @@ target(link_target_type, "renderer_sources") {
   }
 
   if (enable_plugins) {
-    sources +=
-        rebase_path(content_renderer_gypi_values.public_renderer_plugin_sources,
-                    ".",
-                    "//content")
+    sources += [ "plugin_instance_throttler.h" ]
   }
 }
