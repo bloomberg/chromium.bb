@@ -105,7 +105,8 @@ def RunEngine(output_linux_directory, token_file_path, device):
       ' --vmodule="blimp*=1"']
   p = subprocess.Popen(run_engine_cmd, shell=True,
                        stdout=subprocess.PIPE,
-                       stderr=subprocess.STDOUT)
+                       stderr=subprocess.STDOUT,
+                       preexec_fn=os.setsid)
 
   for line in iter(p.stdout.readline, ''):
     sys.stdout.write(line)
