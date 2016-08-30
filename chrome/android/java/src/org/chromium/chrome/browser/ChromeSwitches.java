@@ -216,12 +216,6 @@ public abstract class ChromeSwitches {
     public static final String ENABLE_WEBAPK = "enable-webapk";
 
     /**
-     * Enables theme colors in the tab switcher.
-     */
-    public static final String ENABLE_TAB_SWITCHER_THEME_COLORS =
-            "enable-tab-switcher-theme-colors";
-
-    /**
      * Forces the WebAPK runtime dex to be extracted each time that Chrome is started.
      */
     public static final String ALWAYS_EXTRACT_WEBAPK_RUNTIME_DEX_ON_STARTUP =

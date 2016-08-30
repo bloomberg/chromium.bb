@@ -251,14 +251,6 @@ public class FeatureUtilities {
     }
 
     /**
-     * @return True if theme colors in the tab switcher are enabled.
-     */
-    public static boolean areTabSwitcherThemeColorsEnabled() {
-        return CommandLine.getInstance().hasSwitch(
-                ChromeSwitches.ENABLE_TAB_SWITCHER_THEME_COLORS);
-    }
-
-    /**
      * @return True if tab model merging for Android N+ is enabled.
      */
     public static boolean isTabModelMergingEnabled() {

@@ -288,7 +288,6 @@ extern const char kEnableAppLink[];
 extern const char kEnableContextualSearch[];
 extern const char kEnableHostedMode[];
 extern const char kEnableHungRendererInfoBar[];
-extern const char kEnableTabSwitcherThemeColors[];
 extern const char kEnableVrShell[];
 extern const char kEnableWebApk[];
 extern const char kForceShowUpdateMenuBadge[];

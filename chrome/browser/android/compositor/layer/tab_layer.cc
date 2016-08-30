@@ -4,8 +4,6 @@
 
 #include "chrome/browser/android/compositor/layer/tab_layer.h"
 
-#include "base/base_switches.h"
-#include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/ptr_util.h"
 #include "cc/layers/layer.h"
@@ -19,7 +17,6 @@
 #include "chrome/browser/android/compositor/layer/toolbar_layer.h"
 #include "chrome/browser/android/compositor/layer_title_cache.h"
 #include "chrome/browser/android/compositor/tab_content_manager.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/android/compositor.h"
 #include "ui/android/resources/resource_manager.h"
 #include "ui/base/l10n/l10n_util_android.h"
@@ -482,17 +479,10 @@ void TabLayer::SetProperties(int id,
     front_border_->SetOpacity(border_alpha);
     front_border_->SetNearestNeighbor(toolbar_visible);
 
-    int tab_switcher_color = default_theme_color;
-
-    // Colorize the tab decoration if enabled.
-    if (tab_switcher_themes_enabled_) {
-        tab_switcher_color = toolbar_background_color;
-    }
-
     if (toolbar_background_color != toolbar_background_color_) {
       toolbar_background_color_ = toolbar_background_color;
       front_border_->SetFilters(
-          *createSolidColorFilter(tab_switcher_color).get());
+          *createSolidColorFilter(toolbar_background_color).get());
     }
   }
 
@@ -663,7 +653,6 @@ TabLayer::TabLayer(bool incognito,
     : incognito_(incognito),
       toolbar_background_color_(0),
       close_button_color_(0),
-      tab_switcher_themes_enabled_(false),
       resource_manager_(resource_manager),
       layer_title_cache_(layer_title_cache),
       layer_(cc::Layer::Create()),
@@ -701,10 +690,6 @@ TabLayer::TabLayer(bool incognito,
   back_logo_->SetIsDrawable(true);
 
   front_border_->SetFillCenter(false);
-
-  tab_switcher_themes_enabled_ =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableTabSwitcherThemeColors);
 }
 
 TabLayer::~TabLayer() {

@@ -1043,9 +1043,6 @@ const char kEnableHostedMode[] = "enable-hosted-mode";
 // unresponsive web content.
 const char kEnableHungRendererInfoBar[] = "enable-hung-renderer-infobar";
 
-// Enable theme colors in the tab switcher.
-const char kEnableTabSwitcherThemeColors[] = "enable-tab-switcher-theme-colors";
-
 // Enable VR UI if supported.
 const char kEnableVrShell[] = "enable-vr-shell";
 

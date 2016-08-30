@@ -17,7 +17,6 @@ import org.chromium.chrome.browser.compositor.layouts.Layout.Orientation;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.util.ColorUtils;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.resources.ResourceManager;
 
 /**
@@ -62,14 +61,8 @@ public class TabListSceneLayer extends SceneLayer {
                     ? ApiCompatibilityUtils.getColor(res, R.color.incognito_primary_color)
                     : ApiCompatibilityUtils.getColor(res, R.color.default_primary_color);
 
-            int closeButtonColor = ColorUtils.getThemedAssetColor(defaultThemeColor,
-                    t.isIncognito());
-
-            // If theme colors are enabled in the tab switcher, use them to color the assets.
-            if (FeatureUtilities.areTabSwitcherThemeColorsEnabled()) {
-                closeButtonColor = ColorUtils.getThemedAssetColor(t.getToolbarBackgroundColor(),
+            int closeButtonColor = ColorUtils.getThemedAssetColor(t.getToolbarBackgroundColor(),
                         t.isIncognito());
-            }
 
             int borderColorResource =
                     t.isIncognito() ? R.color.tab_back_incognito : R.color.tab_back;
