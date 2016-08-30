@@ -410,9 +410,9 @@ class Certificate(object):
     section.set_property('authorityInfoAccess', '@issuer_info')
 
 
-def data_to_pem(block_header, block_data):
-  return '-----BEGIN %s-----\n%s\n-----END %s-----\n' % (block_header,
-          base64.b64encode(block_data), block_header)
+def text_data_to_pem(block_header, text_data):
+  return '%s\n-----BEGIN %s-----\n%s\n-----END %s-----\n' % (text_data,
+          block_header, base64.b64encode(text_data), block_header)
 
 
 class TrustAnchor(object):
@@ -436,7 +436,7 @@ class TrustAnchor(object):
 
 
 def write_test_file(description, chain, trust_anchor, utc_time, verify_result,
-                    out_pem=None):
+                    errors, out_pem=None):
   """Writes a test file that contains all the inputs necessary to run a
   verification on a certificate chain"""
 
@@ -448,10 +448,13 @@ def write_test_file(description, chain, trust_anchor, utc_time, verify_result,
     test_data += '\n' + cert.get_cert_pem()
 
   test_data += '\n' + trust_anchor.get_pem()
-  test_data += '\n' + data_to_pem('TIME', utc_time)
+  test_data += '\n' + text_data_to_pem('TIME', utc_time)
 
   verify_result_string = 'SUCCESS' if verify_result else 'FAIL'
-  test_data += '\n' + data_to_pem('VERIFY_RESULT', verify_result_string)
+  test_data += '\n' + text_data_to_pem('VERIFY_RESULT', verify_result_string)
+
+  if errors is not None:
+    test_data += '\n' + text_data_to_pem('ERRORS', '\n'.join(errors))
 
   write_string_to_file(test_data, out_pem if out_pem else g_out_pem)
 

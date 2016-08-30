@@ -31,5 +31,6 @@ trusted = common.TrustAnchor(root, constrained=False)
 # just a delivery mechanism for the name + SPKI.
 time = common.MARCH_2_2015_UTC
 verify_result = True
+errors = None
 
-common.write_test_file(__doc__, chain, trusted, time, verify_result)
+common.write_test_file(__doc__, chain, trusted, time, verify_result, errors)

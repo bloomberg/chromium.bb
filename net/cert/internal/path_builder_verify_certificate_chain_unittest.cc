@@ -18,7 +18,8 @@ class PathBuilderDelegate {
   static void Verify(const ParsedCertificateList& chain,
                      const scoped_refptr<TrustAnchor>& trust_anchor,
                      const der::GeneralizedTime& time,
-                     bool expected_result) {
+                     bool expected_result,
+                     const std::string& expected_errors) {
     SimpleSignaturePolicy signature_policy(1024);
     ASSERT_FALSE(chain.empty());
 

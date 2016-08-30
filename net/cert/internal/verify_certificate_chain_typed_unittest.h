@@ -25,11 +25,13 @@ class VerifyCertificateChainTest : public ::testing::Test {
     scoped_refptr<TrustAnchor> trust_anchor;
     der::GeneralizedTime time;
     bool expected_result;
+    std::string expected_errors;
 
     ReadVerifyCertChainTestFromFile(file_name, &chain, &trust_anchor, &time,
-                                    &expected_result);
+                                    &expected_result, &expected_errors);
 
-    TestDelegate::Verify(chain, trust_anchor, time, expected_result);
+    TestDelegate::Verify(chain, trust_anchor, time, expected_result,
+                         expected_errors);
   }
 };
 
@@ -184,8 +186,8 @@ TYPED_TEST_P(VerifyCertificateChainSingleRootTest, KeyRolloverNewChain) {
   this->RunTest("key-rollover-newchain.pem");
 }
 
-TYPED_TEST_P(VerifyCertificateChainSingleRootTest, UnknownRoot) {
-  this->RunTest("unknown-root.pem");
+TYPED_TEST_P(VerifyCertificateChainSingleRootTest, IncorrectTrustAnchor) {
+  this->RunTest("incorrect-trust-anchor.pem");
 }
 
 TYPED_TEST_P(VerifyCertificateChainSingleRootTest,
@@ -254,7 +256,7 @@ REGISTER_TYPED_TEST_CASE_P(VerifyCertificateChainSingleRootTest,
                            KeyRolloverRolloverChain,
                            KeyRolloverLongRolloverChain,
                            KeyRolloverNewChain,
-                           UnknownRoot,
+                           IncorrectTrustAnchor,
                            UnconstrainedRootLacksBasicConstraints,
                            ConstrainedRootLacksBasicConstraints,
                            UnconstrainedRootBasicConstraintsCaFalse,

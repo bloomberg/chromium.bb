@@ -695,10 +695,12 @@ CompletionStatus CertPathBuilder::DoGetNextPathComplete() {
     return CompletionStatus::SYNC;
   }
 
+  //  TODO(crbug.com/634443): Expose CertErrors on ResultPath.
+  CertErrors errors;
   bool verify_result =
       next_path_.trust_anchor.get() &&
       VerifyCertificateChain(next_path_.certs, next_path_.trust_anchor.get(),
-                             signature_policy_, time_);
+                             signature_policy_, time_, &errors);
   DVLOG(1) << "CertPathBuilder VerifyCertificateChain result = "
            << verify_result;
   AddResultPath(next_path_, verify_result);

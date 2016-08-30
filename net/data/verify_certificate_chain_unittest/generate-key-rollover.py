@@ -79,14 +79,14 @@ newtrusted = common.TrustAnchor(newroot, constrained=False)
 
 time = common.DEFAULT_TIME
 verify_result = True
+errors = None
 
 common.write_test_file(__doc__, oldchain, oldtrusted, time, verify_result,
-                       out_pem="key-rollover-oldchain.pem")
+                       errors, out_pem="key-rollover-oldchain.pem")
 common.write_test_file(__doc__, rolloverchain, oldtrusted, time, verify_result,
-                       out_pem="key-rollover-rolloverchain.pem")
+                       errors, out_pem="key-rollover-rolloverchain.pem")
 common.write_test_file(__doc__, longrolloverchain, oldtrusted, time,
-                       verify_result,
+                       verify_result, errors,
                        out_pem="key-rollover-longrolloverchain.pem")
 common.write_test_file(__doc__, newchain, newtrusted, time, verify_result,
-                       out_pem="key-rollover-newchain.pem")
-
+                       errors, out_pem="key-rollover-newchain.pem")

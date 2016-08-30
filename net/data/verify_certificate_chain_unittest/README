@@ -63,3 +63,9 @@ This PEM block describes the expected result from verifying the path.
 
  - There must be exactly one such PEM block
  - Its contents are a string with value of either "SUCCESS" or "FAIL"
+
+ERRORS:
+
+This PEM block is a newline separated list of errors that are expected to occur
+when validating this path. The error string should correspond with a
+CertErrorType.

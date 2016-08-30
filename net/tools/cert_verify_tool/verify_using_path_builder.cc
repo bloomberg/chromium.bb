@@ -197,6 +197,7 @@ bool VerifyUsingPathBuilder(
     DVLOG(1) << "async completed.";
   }
 
+  // TODO(crbug.com/634443): Display the full error information.
   std::cout << "CertPathBuilder best result: "
             << net::ErrorToShortString(result.error()) << "\n";
 
