@@ -639,6 +639,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest, CrashSubframe);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
                            RenderViewHostIsNotReusedAfterDelayedSwapOutACK);
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
+                           LoadEventForwardingWhilePendingDeletion);
 
   // IPC Message handlers.
   void OnAddMessageToConsole(int32_t level,

@@ -7922,4 +7922,81 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SessionHistoryReplication) {
   EXPECT_EQ(child2_last_url, child2->current_url());
 }
 
+// A BrowserMessageFilter that drops FrameHostMsg_OnDispatchLoad messages.
+class DispatchLoadMessageFilter : public BrowserMessageFilter {
+ public:
+  DispatchLoadMessageFilter() : BrowserMessageFilter(FrameMsgStart) {}
+
+ protected:
+  ~DispatchLoadMessageFilter() override {}
+
+ private:
+  // BrowserMessageFilter:
+  bool OnMessageReceived(const IPC::Message& message) override {
+    return message.type() == FrameHostMsg_DispatchLoad::ID;
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(DispatchLoadMessageFilter);
+};
+
+// Test that the renderer isn't killed when a frame generates a load event just
+// after becoming pending deletion.  See https://crbug.com/636513.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       LoadEventForwardingWhilePendingDeletion) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(a)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  FrameTreeNode* child = root->child_at(0);
+
+  // Open a popup in the b.com process for later use.
+  GURL popup_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  Shell* popup_shell = OpenPopup(root, popup_url, "foo");
+  EXPECT_TRUE(popup_shell);
+
+  // Install a filter to drop DispatchLoad messages from b.com.
+  scoped_refptr<DispatchLoadMessageFilter> filter =
+      new DispatchLoadMessageFilter();
+  RenderProcessHost* b_process =
+      popup_shell->web_contents()->GetMainFrame()->GetProcess();
+  b_process->AddFilter(filter.get());
+
+  // Navigate subframe to b.com.  Wait for commit but not full load.
+  GURL b_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  {
+    TestFrameNavigationObserver commit_observer(child);
+    EXPECT_TRUE(
+        ExecuteScript(child, "location.href = '" + b_url.spec() + "';"));
+    commit_observer.WaitForCommit();
+  }
+  RenderFrameHostImpl* child_rfh = child->current_frame_host();
+  child_rfh->DisableSwapOutTimerForTesting();
+
+  // At this point, the subframe should have a proxy in its parent's
+  // SiteInstance, a.com.
+  EXPECT_TRUE(child->render_manager()->GetProxyToParent());
+
+  // Now, go back to a.com in the subframe and wait for commit.
+  {
+    TestFrameNavigationObserver commit_observer(child);
+    web_contents()->GetController().GoBack();
+    commit_observer.WaitForCommit();
+  }
+
+  // At this point, the subframe's old RFH for b.com should be pending
+  // deletion, and the subframe's proxy in a.com should've been cleared.
+  EXPECT_FALSE(child_rfh->is_active());
+  EXPECT_FALSE(child->render_manager()->GetProxyToParent());
+
+  // Simulate that the load event is dispatched from |child_rfh| just after
+  // it's become pending deletion.
+  child_rfh->OnDispatchLoad();
+
+  // In the bug, OnDispatchLoad killed the b.com renderer.  Ensure that this is
+  // not the case. Note that the process kill doesn't happen immediately, so
+  // IsRenderFrameLive() can't be checked here (yet).  Instead, check that
+  // JavaScript can still execute in b.com using the popup.
+  EXPECT_TRUE(ExecuteScript(popup_shell->web_contents(), "true"));
+}
+
 }  // namespace content
