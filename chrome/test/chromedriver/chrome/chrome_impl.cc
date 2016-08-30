@@ -103,6 +103,7 @@ void ChromeImpl::UpdateWebViews(const WebViewsInfo& views_info) {
           client->AddListener(*listener);
           // OnConnected will fire when DevToolsClient connects later.
         }
+        CHECK(!page_load_strategy_.empty());
         web_views_.push_back(make_linked_ptr(new WebViewImpl(
             view.id, devtools_http_client_->browser_info(), std::move(client),
             devtools_http_client_->device_metrics(), page_load_strategy_)));
@@ -149,6 +150,7 @@ bool ChromeImpl::HasTouchScreen() const {
 }
 
 std::string ChromeImpl::page_load_strategy() const {
+  CHECK(!page_load_strategy_.empty());
   return page_load_strategy_;
 }
 
@@ -172,7 +174,6 @@ ChromeImpl::ChromeImpl(
     : quit_(false),
       devtools_http_client_(std::move(http_client)),
       devtools_websocket_client_(std::move(websocket_client)),
-      page_load_strategy_(PageLoadStrategy::kNormal),
       port_reservation_(std::move(port_reservation)) {
   devtools_event_listeners_.swap(devtools_event_listeners);
 }

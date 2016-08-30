@@ -206,11 +206,12 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
   if (status.IsError())
     return status;
 
+  session->chrome->set_page_load_strategy(capabilities.page_load_strategy);
+
   status = session->chrome->GetWebViewIdForFirstTab(&session->window);
   if (status.IsError())
     return status;
 
-  session->chrome->set_page_load_strategy(capabilities.page_load_strategy);
   session->detach = capabilities.detach;
   session->force_devtools_screenshot = capabilities.force_devtools_screenshot;
   session->capabilities = CreateCapabilities(session->chrome.get());
