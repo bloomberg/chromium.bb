@@ -8,10 +8,7 @@ The git-cl tool is responsible for communicating with Rietveld, Gerrit,
 and Buildbucket to manage changelists and try jobs associated with them.
 """
 
-import logging
 import time
-
-_log = logging.getLogger(__name__)
 
 
 class GitCL(object):
@@ -37,7 +34,7 @@ class GitCL(object):
         # TODO(qyearsley): Add a time-out to avoid infinite looping.
         while True:
             time.sleep(poll_delay_seconds)
-            _log.info('Waiting for results.')
+            print 'Waiting for results.'
             out = self.run(['try-results'])
             results = self.parse_try_job_results(out)
             if results.get('Started') or results.get('Scheduled'):
