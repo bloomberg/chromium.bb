@@ -35,7 +35,7 @@
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/transform_util.h"
-#include "ui/gfx/vector_icons.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"

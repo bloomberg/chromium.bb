@@ -19,7 +19,7 @@
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/vector_icon_types.h"
-#include "ui/gfx/vector_icons.h"
+#include "ui/gfx/vector_icons_public.h"
 
 namespace gfx {
 

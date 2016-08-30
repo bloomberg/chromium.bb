@@ -8,7 +8,7 @@
 #include "build/build_config.h"
 
 #if defined(USE_AURA) || (!defined(OS_IOS) && !defined(OS_ANDROID))
-#include "ui/gfx/vector_icons.h"
+#include "ui/gfx/vector_icons/vector_icons.h"
 #else
 // Define this type so non-views platforms will compile.
 namespace gfx {

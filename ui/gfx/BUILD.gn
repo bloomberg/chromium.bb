@@ -21,15 +21,6 @@ source_set("gfx_export") {
   ]
 }
 
-vector_icons_sources_gypi =
-    exec_script("//build/gypi_to_gn.py",
-                [ rebase_path("vector_icons_sources.gypi") ],
-                "scope",
-                [ "vector_icons_sources.gypi" ])
-
-vector_icons_cc_file = "$target_gen_dir/vector_icons.cc"
-vector_icons_h_file = "$target_gen_dir/vector_icons.h"
-
 component("gfx") {
   sources = [
     "android/device_display_info.cc",
@@ -349,10 +340,8 @@ component("gfx") {
       "paint_vector_icon.h",
       "vector_icon_types.h",
       "vector_icons_public.h",
-      vector_icons_cc_file,
-      vector_icons_h_file,
     ]
-    deps += [ ":aggregate_vector_icons" ]
+    deps += [ "//ui/gfx/vector_icons" ]
   }
 
   # Windows.
@@ -420,29 +409,6 @@ component("gfx") {
     configs += [ "//build/config/linux/pangocairo" ]
   }
 }
-
-# GYP version: ui/gfx/gfx.gyp:aggregate_vector_icons
-action("aggregate_vector_icons") {
-  script = "vector_icons/aggregate_vector_icons.py"
-
-  inputs = vector_icons_sources_gypi.common
-
-  outputs = [
-    vector_icons_cc_file,
-    vector_icons_h_file,
-  ]
-
-  response_file_contents = rebase_path(inputs, root_build_dir)
-
-  args = [
-    "--working_directory=" + rebase_path("vector_icons/"),
-    "--file_list={{response_file_name}}",
-    "--output_cc=" + rebase_path(vector_icons_cc_file, root_build_dir),
-    "--output_h=" + rebase_path(vector_icons_h_file, root_build_dir),
-  ]
-}
-
-# Looking for gfx_geometry? It's //ui/gfx/geometry:geometry
 
 # Depend on this to use native_widget_types.h without pulling in all of gfx.
 source_set("native_widget_types") {
