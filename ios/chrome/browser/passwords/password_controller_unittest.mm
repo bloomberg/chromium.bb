@@ -707,7 +707,7 @@ static NSString* kHtmlWithMultiplePasswordForms =
      "<input id='un0' type='text' name='u0'>"
      "<input id='pw0' type='password' name='p0'>"
      "</form>"
-     "<form action='action?query=yes#reference'>"
+     "<form action='?query=yes#reference'>"
      "<input id='un1' type='text' name='u1'>"
      "<input id='pw1' type='password' name='p1'>"
      "</form>"
