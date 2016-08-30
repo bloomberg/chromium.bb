@@ -6,6 +6,7 @@
 #define COMPONENTS_MEMORY_COORDINATOR_BROWSER_MEMORY_COORDINATOR_H_
 
 #include "base/memory/memory_pressure_listener.h"
+#include "base/memory/singleton.h"
 #include "components/memory_coordinator/common/client_registry.h"
 #include "components/memory_coordinator/common/memory_coordinator_export.h"
 #include "components/memory_coordinator/public/interfaces/memory_coordinator.mojom.h"
@@ -20,8 +21,9 @@ class MemoryCoordinatorHandleImpl;
 // and child processes based on its best knowledge of the memory usage.
 class MEMORY_COORDINATOR_EXPORT MemoryCoordinator : public ClientRegistry {
  public:
-  MemoryCoordinator();
   ~MemoryCoordinator() override;
+
+  static MemoryCoordinator* GetInstance();
 
   void CreateHandle(int render_process_id,
                     mojom::MemoryCoordinatorHandleRequest request);
@@ -30,6 +32,10 @@ class MEMORY_COORDINATOR_EXPORT MemoryCoordinator : public ClientRegistry {
   size_t NumChildrenForTesting();
 
  private:
+  friend struct base::DefaultSingletonTraits<MemoryCoordinator>;
+
+  MemoryCoordinator();
+
   void OnConnectionError(int render_process_id);
 
   // Called when MemoryPressureListener detects memory pressure.

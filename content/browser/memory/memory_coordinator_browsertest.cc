@@ -21,7 +21,7 @@ class MemoryCoordinatorTest : public ContentBrowserTest {
 
  protected:
   memory_coordinator::MemoryCoordinator* memory_coordinator() {
-    return BrowserMainLoop::GetInstance()->memory_coordinator();
+    return memory_coordinator::MemoryCoordinator::GetInstance();
   }
 
   DISALLOW_COPY_AND_ASSIGN(MemoryCoordinatorTest);

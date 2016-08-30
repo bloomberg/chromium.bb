@@ -4,6 +4,8 @@
 
 #include "components/memory_coordinator/browser/memory_coordinator.h"
 
+#include "components/memory_coordinator/common/memory_coordinator_features.h"
+
 namespace memory_coordinator {
 
 // The implementation of MemoryCoordinatorHandle. See memory_coordinator.mojom
@@ -30,6 +32,14 @@ class MemoryCoordinatorHandleImpl : public mojom::MemoryCoordinatorHandle {
 
   DISALLOW_COPY_AND_ASSIGN(MemoryCoordinatorHandleImpl);
 };
+
+// static
+MemoryCoordinator* MemoryCoordinator::GetInstance() {
+  if (!IsEnabled())
+    return nullptr;
+  return base::Singleton<MemoryCoordinator,
+                         base::LeakySingletonTraits<MemoryCoordinator>>::get();
+}
 
 MemoryCoordinator::MemoryCoordinator()
     : pressure_listener_(

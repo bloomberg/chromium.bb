@@ -9,6 +9,8 @@
 
 namespace memory_coordinator {
 
+using MemoryState = mojom::MemoryState;
+
 // This is an interface for components which can respond to memory status
 // changes.
 class MemoryCoordinatorClient {
@@ -16,7 +18,7 @@ class MemoryCoordinatorClient {
   virtual ~MemoryCoordinatorClient() {}
 
   // Called when memory state has changed.
-  virtual void OnMemoryStateChange(mojom::MemoryState state) = 0;
+  virtual void OnMemoryStateChange(MemoryState state) = 0;
 };
 
 }  // namespace memory_coordinator

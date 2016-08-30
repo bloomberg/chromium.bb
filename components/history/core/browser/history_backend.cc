@@ -39,6 +39,7 @@
 #include "components/history/core/browser/page_usage_data.h"
 #include "components/history/core/browser/typed_url_syncable_service.h"
 #include "components/history/core/browser/url_utils.h"
+#include "components/memory_coordinator/browser/memory_coordinator.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "sql/error_delegate_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -234,6 +235,11 @@ HistoryBackend::~HistoryBackend() {
         FROM_HERE, backend_destroy_task_);
   }
 
+  if (memory_coordinator::MemoryCoordinator::GetInstance()) {
+    memory_coordinator::MemoryCoordinator::GetInstance()->UnregisterClient(
+        this);
+  }
+
 #if defined(OS_ANDROID)
   if (backend_client_ && !history_dir_.empty())
     backend_client_->OnHistoryBackendDestroyed(this, history_dir_);
@@ -252,8 +258,12 @@ void HistoryBackend::Init(
     InitImpl(history_database_params);
   delegate_->DBLoaded();
   typed_url_syncable_service_.reset(new TypedUrlSyncableService(this));
-  memory_pressure_listener_.reset(new base::MemoryPressureListener(
-      base::Bind(&HistoryBackend::OnMemoryPressure, base::Unretained(this))));
+  if (memory_coordinator::MemoryCoordinator::GetInstance()) {
+    memory_coordinator::MemoryCoordinator::GetInstance()->RegisterClient(this);
+  } else {
+    memory_pressure_listener_.reset(new base::MemoryPressureListener(
+        base::Bind(&HistoryBackend::OnMemoryPressure, base::Unretained(this))));
+  }
 }
 
 void HistoryBackend::SetOnBackendDestroyTask(base::MessageLoop* message_loop,
@@ -737,15 +747,19 @@ void HistoryBackend::InitImpl(
   LOCAL_HISTOGRAM_TIMES("History.InitTime", TimeTicks::Now() - beginning_time);
 }
 
+void HistoryBackend::TrimMemory(bool trim_aggressively) {
+  if (db_)
+    db_->TrimMemory(trim_aggressively);
+  if (thumbnail_db_)
+    thumbnail_db_->TrimMemory(trim_aggressively);
+}
+
 void HistoryBackend::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
   bool trim_aggressively =
       memory_pressure_level ==
       base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL;
-  if (db_)
-    db_->TrimMemory(trim_aggressively);
-  if (thumbnail_db_)
-    thumbnail_db_->TrimMemory(trim_aggressively);
+  TrimMemory(trim_aggressively);
 }
 
 void HistoryBackend::CloseAllDatabases() {
@@ -903,6 +917,12 @@ void HistoryBackend::AddPagesWithDetails(const URLRows& urls,
 
 bool HistoryBackend::IsExpiredVisitTime(const base::Time& time) {
   return time < expirer_.GetCurrentExpirationTime();
+}
+
+void HistoryBackend::OnMemoryStateChange(
+    memory_coordinator::MemoryState state) {
+  bool trim_aggressively = state == memory_coordinator::MemoryState::SUSPENDED;
+  TrimMemory(trim_aggressively);
 }
 
 void HistoryBackend::SetPageTitle(const GURL& url,

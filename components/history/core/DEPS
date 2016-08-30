@@ -3,5 +3,6 @@ include_rules = [
   "-components/history/content",
   "-content",
 
+  "+components/memory_coordinator",
   "+components/url_formatter",
 ]

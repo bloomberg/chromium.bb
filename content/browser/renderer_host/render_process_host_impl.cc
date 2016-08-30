@@ -458,7 +458,7 @@ class SessionStorageHolder : public base::SupportsUserData::Data {
 void CreateMemoryCoordinatorHandle(
     int render_process_id,
     memory_coordinator::mojom::MemoryCoordinatorHandleRequest request) {
-  BrowserMainLoop::GetInstance()->memory_coordinator()->CreateHandle(
+  memory_coordinator::MemoryCoordinator::GetInstance()->CreateHandle(
       render_process_id, std::move(request));
 }
 

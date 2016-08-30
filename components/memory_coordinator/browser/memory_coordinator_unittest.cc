@@ -7,6 +7,7 @@
 #include "base/memory/memory_pressure_monitor.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "components/memory_coordinator/common/memory_coordinator_features.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -47,16 +48,20 @@ public:
 class MemoryCoordinatorTest : public testing::Test {
  public:
   MemoryCoordinatorTest()
-      : message_loop_(new base::MessageLoop),
-        coordinator_(new MemoryCoordinator) {}
+      : message_loop_(new base::MessageLoop) {}
+
+  void SetUp() override {
+    memory_coordinator::EnableForTesting();
+  }
 
   MockMemoryPressureMonitor& monitor() { return monitor_; }
-  MemoryCoordinator& coordinator() { return *coordinator_.get(); }
+  MemoryCoordinator& coordinator() {
+    return *MemoryCoordinator::GetInstance();
+  }
 
  private:
   std::unique_ptr<base::MessageLoop> message_loop_;
   MockMemoryPressureMonitor monitor_;
-  std::unique_ptr<MemoryCoordinator> coordinator_;
 };
 
 TEST_F(MemoryCoordinatorTest, ReceivePressureLevels) {
