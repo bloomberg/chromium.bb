@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "cc/quads/surface_draw_quad.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "cc/surfaces/surface_manager.h"
@@ -188,13 +189,47 @@ void RenderWidgetHostInputEventRouter::RouteGestureEvent(
   };
 }
 
+namespace {
+
+unsigned CountChangedTouchPoints(const blink::WebTouchEvent& event) {
+  unsigned changed_count = 0;
+
+  blink::WebTouchPoint::State required_state =
+      blink::WebTouchPoint::StateUndefined;
+  switch (event.type) {
+    case blink::WebInputEvent::TouchStart:
+      required_state = blink::WebTouchPoint::StatePressed;
+      break;
+    case blink::WebInputEvent::TouchEnd:
+      required_state = blink::WebTouchPoint::StateReleased;
+      break;
+    case blink::WebInputEvent::TouchCancel:
+      required_state = blink::WebTouchPoint::StateCancelled;
+      break;
+    default:
+      // We'll only ever call this method for TouchStart, TouchEnd
+      // and TounchCancel events, so mark the rest as not-reached.
+      NOTREACHED();
+    }
+  for (unsigned i = 0; i < event.touchesLength; ++i) {
+    if (event.touches[i].state == required_state)
+      ++changed_count;
+  }
+
+  DCHECK(event.type == blink::WebInputEvent::TouchCancel || changed_count == 1);
+  return changed_count;
+}
+
+}  // namespace
+
 void RenderWidgetHostInputEventRouter::RouteTouchEvent(
     RenderWidgetHostViewBase* root_view,
     blink::WebTouchEvent* event,
     const ui::LatencyInfo& latency) {
   switch (event->type) {
     case blink::WebInputEvent::TouchStart: {
-      if (!active_touches_) {
+      active_touches_ += CountChangedTouchPoints(*event);
+      if (active_touches_ == 1) {
         // Since this is the first touch, it defines the target for the rest
         // of this sequence.
         DCHECK(!touch_target_.target);
@@ -212,17 +247,16 @@ void RenderWidgetHostInputEventRouter::RouteTouchEvent(
         touch_target_.delta = transformed_point - original_point;
         touchscreen_gesture_target_queue_.push_back(touch_target_);
 
-        if (!touch_target_.target) {
+        if (!touch_target_.target)
           return;
-        } else if (touch_target_.target ==
-                   bubbling_gesture_scroll_target_.target) {
+
+        if (touch_target_.target == bubbling_gesture_scroll_target_.target) {
           SendGestureScrollEnd(bubbling_gesture_scroll_target_.target,
                                blink::WebGestureEvent());
           CancelScrollBubbling(bubbling_gesture_scroll_target_.target);
         }
       }
 
-      ++active_touches_;
       if (touch_target_.target) {
         TransformEventTouchPositions(event, touch_target_.delta);
         touch_target_.target->ProcessTouchEvent(*event, latency);
@@ -237,13 +271,13 @@ void RenderWidgetHostInputEventRouter::RouteTouchEvent(
       break;
     case blink::WebInputEvent::TouchEnd:
     case blink::WebInputEvent::TouchCancel:
-      if (!touch_target_.target)
-        break;
-
       DCHECK(active_touches_);
+      active_touches_ -= CountChangedTouchPoints(*event);
+      if (!touch_target_.target)
+        return;
+
       TransformEventTouchPositions(event, touch_target_.delta);
       touch_target_.target->ProcessTouchEvent(*event, latency);
-      --active_touches_;
       if (!active_touches_)
         touch_target_.target = nullptr;
       break;
@@ -441,7 +475,12 @@ void RenderWidgetHostInputEventRouter::RouteTouchscreenGestureEvent(
   // GestureTapDown is sent to the previous target, in case it is still in a
   // fling.
   if (event->type == blink::WebInputEvent::GestureTapDown) {
-    if (touchscreen_gesture_target_queue_.empty()) {
+    bool no_target = touchscreen_gesture_target_queue_.empty();
+    // This UMA metric is temporary, and will be removed once it has fulfilled
+    // it's purpose, namely telling us when the incidents of empty
+    // gesture-queues has dropped to zero. https://crbug.com/642008
+    UMA_HISTOGRAM_BOOLEAN("Event.FrameEventRouting.NoGestureTarget", no_target);
+    if (no_target) {
       LOG(ERROR) << "Gesture sequence start detected with no target available.";
       // Ignore this gesture sequence as no target is available.
       // TODO(wjmaclean): this only happens on Windows, and should not happen.

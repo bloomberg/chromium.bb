@@ -12823,6 +12823,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Event.FrameEventRouting.NoGestureTarget">
+  <owner>wjmaclean@chromium.org</owner>
+  <summary>
+    Record whether we unexpectedly encounter an empty gesture queue while
+    routing gesture events to frames' renderers: true =&gt; empty queue, false
+    =&gt; non-empty queue.
+  </summary>
+</histogram>
+
 <histogram name="Event.Frequency.Renderer.FlingAnimate" units="hertz">
   <owner>rbyers@chromium.org</owner>
   <summary>
