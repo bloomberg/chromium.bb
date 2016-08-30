@@ -84,7 +84,8 @@ class TestGeolocationAPIURLFetcherCallback {
       net::URLRequestStatus::Status status) {
     EXPECT_EQ(provider_->requests_.size(), 1U);
 
-    SimpleGeolocationRequest* geolocation_request = provider_->requests_[0];
+    SimpleGeolocationRequest* geolocation_request =
+        provider_->requests_[0].get();
 
     const base::TimeDelta base_retry_interval =
         base::TimeDelta::FromMilliseconds(kRequestRetryIntervalMilliSeconds);

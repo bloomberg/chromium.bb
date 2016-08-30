@@ -8,6 +8,7 @@
 #include <iterator>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "chromeos/geolocation/geoposition.h"
 #include "chromeos/network/geolocation_handler.h"
 #include "chromeos/network/network_handler.h"
@@ -54,7 +55,7 @@ void SimpleGeolocationProvider::RequestGeolocation(
   SimpleGeolocationRequest* request(new SimpleGeolocationRequest(
       url_context_getter_.get(), url_, timeout,
       send_wifi_access_points ? GetAccessPointData() : nullptr));
-  requests_.push_back(request);
+  requests_.push_back(base::WrapUnique(request));
 
   // SimpleGeolocationProvider owns all requests. It is safe to pass unretained
   // "this" because destruction of SimpleGeolocationProvider cancels all
@@ -82,8 +83,12 @@ void SimpleGeolocationProvider::OnGeolocationResponse(
 
   callback.Run(geoposition, server_error, elapsed);
 
-  ScopedVector<SimpleGeolocationRequest>::iterator position =
-      std::find(requests_.begin(), requests_.end(), request);
+  std::vector<std::unique_ptr<SimpleGeolocationRequest>>::iterator position =
+      std::find_if(
+          requests_.begin(), requests_.end(),
+          [request](const std::unique_ptr<SimpleGeolocationRequest>& req) {
+            return req.get() == request;
+          });
   DCHECK(position != requests_.end());
   if (position != requests_.end()) {
     std::swap(*position, *requests_.rbegin());
