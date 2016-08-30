@@ -206,5 +206,15 @@
       this.$.addressSharedMenu.closeMenu();
       this.$.creditCardSharedMenu.closeMenu();
     },
+
+    /**
+     * Returns true if the list exists and has items.
+     * @param {Array<Object>} list
+     * @return {boolean}
+     * @private
+     */
+    hasSome_: function(list) {
+      return !!(list && list.length);
+    },
   });
 })();

@@ -180,6 +180,19 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'CreditCardTests', function() {
 
   suite('AutofillSection', function() {
     test('verifyCreditCardCount', function() {
+      var section = self.createAutofillSection_([], []);
+      assertTrue(!!section);
+
+      var creditCardList = section.$.creditCardList;
+      assertTrue(!!creditCardList);
+      // +1 for the template element.
+      assertEquals(1, creditCardList.children.length);
+
+      assertFalse(section.$.noCreditCardsLabel.hidden);
+      assertTrue(section.$.creditCardsHeading.hidden);
+    });
+
+    test('verifyCreditCardCount', function() {
       var creditCards = [
         FakeDataMaker.creditCardEntry(),
         FakeDataMaker.creditCardEntry(),
@@ -196,6 +209,9 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'CreditCardTests', function() {
       assertTrue(!!creditCardList);
       // +1 for the template element.
       assertEquals(creditCards.length + 1, creditCardList.children.length);
+
+      assertTrue(section.$.noCreditCardsLabel.hidden);
+      assertFalse(section.$.creditCardsHeading.hidden);
     });
 
     test('verifyCreditCardFields', function() {
@@ -320,6 +336,18 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'AddressTests', function() {
   var self = this;
 
   suite('AutofillSection', function() {
+    test('verifyNoAddresses', function() {
+      var section = self.createAutofillSection_([], []);
+      assertTrue(!!section);
+
+      var addressList = section.$.addressList;
+      assertTrue(!!addressList);
+      // 1 for the template element.
+      assertEquals(1, addressList.children.length);
+
+      assertFalse(section.$.noAddressesLabel.hidden);
+    });
+
     test('verifyAddressCount', function() {
       var addresses = [
         FakeDataMaker.addressEntry(),
@@ -336,6 +364,8 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'AddressTests', function() {
       assertTrue(!!addressList);
       // +1 for the template element.
       assertEquals(addresses.length + 1, addressList.children.length);
+
+      assertTrue(section.$.noAddressesLabel.hidden);
     });
 
     test('verifyAddressFields', function() {

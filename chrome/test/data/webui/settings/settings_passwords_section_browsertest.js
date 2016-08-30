@@ -183,6 +183,19 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
   var self = this;
 
   suite('PasswordsSection', function() {
+    test('verifyNoSavedPasswords', function() {
+      assertEquals(self.browsePreload, document.location.href);
+
+      var passwordsSection = self.createPasswordsSection_([], []);
+
+      self.validatePasswordList(
+          self.getIronListChildren_(passwordsSection.$.passwordList),
+          []);
+
+      assertFalse(passwordsSection.$.noPasswordsLabel.hidden);
+      assertTrue(passwordsSection.$.savedPasswordsHeading.hidden);
+    });
+
     test('verifySavedPasswordLength', function() {
       assertEquals(self.browsePreload, document.location.href);
 
@@ -204,6 +217,9 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       self.validatePasswordList(
           self.getIronListChildren_(passwordsSection.$.passwordList),
           passwordList);
+
+      assertTrue(passwordsSection.$.noPasswordsLabel.hidden);
+      assertFalse(passwordsSection.$.savedPasswordsHeading.hidden);
     });
 
     // Test verifies that removing a password will update the elements.
@@ -332,6 +348,16 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
           expectedExceptionList);
     });
 
+    test('verifyNoPasswordExceptions', function() {
+      var passwordsSection = self.createPasswordsSection_([], []);
+
+      self.validateExceptionList_(
+          self.getDomRepeatChildren_(passwordsSection.$.passwordExceptionsList),
+          []);
+
+      assertFalse(passwordsSection.$.noExceptionsLabel.hidden);
+    });
+
     test('verifyPasswordExceptions', function() {
       var exceptionList = [
         FakeDataMaker.exceptionEntry('docs.google.com'),
@@ -347,6 +373,8 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       self.validateExceptionList_(
           self.getDomRepeatChildren_(passwordsSection.$.passwordExceptionsList),
           exceptionList);
+
+      assertTrue(passwordsSection.$.noExceptionsLabel.hidden);
     });
 
     // Test verifies that removing an exception will update the elements.

@@ -823,6 +823,10 @@ void AddPasswordsAndFormsStrings(content::WebUIDataSource* html_source) {
       {"editPasswordWebsiteLabel", IDS_SETTINGS_PASSWORDS_WEBSITE},
       {"editPasswordUsernameLabel", IDS_SETTINGS_PASSWORDS_USERNAME},
       {"editPasswordPasswordLabel", IDS_SETTINGS_PASSWORDS_PASSWORD},
+      {"noAddressesFound", IDS_SETTINGS_ADDRESS_NONE},
+      {"noCreditCardsFound", IDS_SETTINGS_CREDIT_CARD_NONE},
+      {"noPasswordsFound", IDS_SETTINGS_PASSWORDS_NONE},
+      {"noExceptionsFound", IDS_SETTINGS_PASSWORDS_EXCEPTIONS_NONE},
   };
 
   html_source->AddString(

@@ -55,6 +55,10 @@
           </div>
         </template>
       </div>
+      <div id="noAddressesLabel" class="list-item"
+          hidden$="[[hasSome_(addresses)]]">
+        $i18n{noAddressesFound}
+      </div>
       <div class="list-item list-button">
         <a is="action-link" on-tap="onAddAddressTap_">$i18n{addAddress}</a>
       </div>
@@ -74,7 +78,8 @@
       <h2>$i18n{creditCards}</h2>
     </div>
     <div class="list-frame">
-      <div class="list-item column-header">
+      <div id="creditCardsHeading" class="list-item column-header"
+          hidden$="[[!hasSome_(creditCards)]]">
         <div class="type-column">$i18n{creditCardType}</div>
         <div class="expiration-column">$i18n{creditCardExpiration}</div>
       </div>
@@ -102,6 +107,10 @@
             </div>
           </div>
         </template>
+      </div>
+      <div id="noCreditCardsLabel" class="list-item"
+          hidden$="[[hasSome_(creditCards)]]">
+        $i18n{noCreditCardsFound}
       </div>
       <div class="list-item list-button">
         <a is="action-link" on-tap="onAddCreditCardTap_">
