@@ -797,12 +797,7 @@ bool parseAesDerivedKeyParams(const Dictionary& raw, std::unique_ptr<WebCryptoAl
     return true;
 }
 
-// FIXME: once the spec has been updated, check that the implementation is
-// still correct and update this comment. http://crbug.com/399095
-//
-// The WebCrypto spec hasn't been updated yet to define HKDF
-// (https://www.w3.org/Bugs/Public/show_bug.cgi?id=27425). The assumed
-// parameters are:
+// Defined by the WebCrypto spec as:
 //
 //    dictionary HkdfParams : Algorithm {
 //      required HashAlgorithmIdentifier hash;
