@@ -157,7 +157,7 @@ source_set("unit_tests") {
     defines = []
 
     if (use_glib) {
-      sources += [ "os_crypt_util_linux_unittest.cc" ]
+      sources += [ "key_storage_libsecret_unittest.cc" ]
       deps += [ "//third_party/libsecret" ]
       defines += [ "USE_LIBSECRET" ]
     }
