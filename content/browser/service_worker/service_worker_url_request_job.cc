@@ -9,7 +9,6 @@
 
 #include <limits>
 #include <map>
-#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -758,15 +757,9 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
   if (response.stream_url.is_valid()) {
     DCHECK(response.blob_uuid.empty());
     SetResponseBodyType(STREAM);
+    SetResponse(response);
     streaming_version_ = version;
     streaming_version_->AddStreamingURLRequestJob(this);
-    response_url_ = response.url;
-    service_worker_response_type_ = response.response_type;
-    cors_exposed_header_names_ = response.cors_exposed_header_names;
-    response_time_ = response.response_time;
-    CreateResponseHeader(
-        response.status_code, response.status_text, response.headers);
-    load_timing_info_.receive_headers_end = base::TimeTicks::Now();
     StreamContext* stream_context =
         GetStreamContextForResourceContext(resource_context_);
     stream_ =
@@ -799,19 +792,26 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
     blob_request_->Start();
   }
 
-  response_url_ = response.url;
-  service_worker_response_type_ = response.response_type;
-  response_time_ = response.response_time;
-  response_is_in_cache_storage_ = response.is_in_cache_storage;
-  response_cache_storage_cache_name_ = response.cache_storage_cache_name;
-  cors_exposed_header_names_ = response.cors_exposed_header_names;
-  CreateResponseHeader(
-      response.status_code, response.status_text, response.headers);
-  load_timing_info_.receive_headers_end = base::TimeTicks::Now();
+  SetResponse(response);
+
   if (!blob_request_) {
     RecordResult(ServiceWorkerMetrics::REQUEST_JOB_HEADERS_ONLY_RESPONSE);
     CommitResponseHeader();
   }
+}
+
+void ServiceWorkerURLRequestJob::SetResponse(
+    const ServiceWorkerResponse& response) {
+  response_url_ = response.url;
+  service_worker_response_type_ = response.response_type;
+  cors_exposed_header_names_ = response.cors_exposed_header_names;
+  response_time_ = response.response_time;
+  CreateResponseHeader(response.status_code, response.status_text,
+                       response.headers);
+  load_timing_info_.receive_headers_end = base::TimeTicks::Now();
+
+  response_is_in_cache_storage_ = response.is_in_cache_storage;
+  response_cache_storage_cache_name_ = response.cache_storage_cache_name;
 }
 
 void ServiceWorkerURLRequestJob::CreateResponseHeader(

@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -195,6 +196,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
       ServiceWorkerFetchEventResult fetch_result,
       const ServiceWorkerResponse& response,
       const scoped_refptr<ServiceWorkerVersion>& version);
+  void SetResponse(const ServiceWorkerResponse& response);
 
   // Populates |http_response_headers_|.
   void CreateResponseHeader(int status_code,
