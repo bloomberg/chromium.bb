@@ -843,7 +843,10 @@ class TextureLayerMailboxIsActivatedDuringCommit : public LayerTreeTest {
   scoped_refptr<TextureLayer> layer_;
 };
 
+// Flaky on windows. https://crbug.com/641613
+#if !defined(OS_WIN)
 SINGLE_AND_MULTI_THREAD_TEST_F(TextureLayerMailboxIsActivatedDuringCommit);
+#endif
 
 class TextureLayerImplWithMailboxTest : public TextureLayerTest {
  protected:
