@@ -7,9 +7,9 @@ package org.chromium.android_webview.permission;
 import android.webkit.GeolocationPermissions;
 
 import org.chromium.android_webview.AwContents;
+import org.chromium.android_webview.CleanupReference;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
-import org.chromium.content.common.CleanupReference;
 
 import java.lang.ref.WeakReference;
 

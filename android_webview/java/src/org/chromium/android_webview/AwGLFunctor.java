@@ -10,7 +10,6 @@ import android.view.ViewGroup;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.content.common.CleanupReference;
 
 /**
  * Manages state associated with the Android render thread and the draw functor

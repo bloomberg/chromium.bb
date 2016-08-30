@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.common;
+package org.chromium.android_webview;
 
 import android.os.Handler;
 import android.os.Looper;
@@ -31,7 +31,7 @@ import java.util.Set;
  * not be a visible difference in practice.
  */
 public class CleanupReference extends WeakReference<Object> {
-    private static final String TAG = "cr.CleanupReference";
+    private static final String TAG = "CleanupReference";
 
     private static final boolean DEBUG = false;  // Always check in as false!
 
