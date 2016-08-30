@@ -19,7 +19,8 @@
 #include "components/url_formatter/elide_url.h"
 #include "components/url_formatter/url_formatter.h"
 #include "third_party/skia/include/core/SkPaint.h"
-#include "third_party/skia/include/core/SkRRect.h"
+#include "third_party/skia/include/core/SkPath.h"
+#include "third_party/skia/include/pathops/SkPathOps.h"
 #include "ui/base/theme_provider.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -135,7 +136,10 @@ class StatusBubbleViews::StatusView : public views::View {
   };
 
   StatusView(views::Widget* popup,
-             const ui::ThemeProvider* theme_provider);
+             const gfx::Size& popup_size_,
+             SkColor bubble_color,
+             SkColor bubble_text_color,
+             bool has_client_edge);
   ~StatusView() override;
 
   // Set the bubble text to a certain value, hides the bubble if text is
@@ -163,6 +167,8 @@ class StatusBubbleViews::StatusView : public views::View {
   // Depending on the state of the bubble this will either hide the popup or
   // not.
   void OnAnimationEnded();
+
+  void SetWidth(int new_width);
 
  private:
   class InitialTimer;
@@ -193,22 +199,30 @@ class StatusBubbleViews::StatusView : public views::View {
   // The currently-displayed text.
   base::string16 text_;
 
-  // Holds the theme provider of the frame that created us.
-  const ui::ThemeProvider* theme_provider_;
+  gfx::Size popup_size_;
+
+  const SkColor bubble_color_;
+  const SkColor bubble_text_color_;
+  const bool has_client_edge_;
 
   base::WeakPtrFactory<StatusBubbleViews::StatusView> timer_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusView);
 };
 
-StatusBubbleViews::StatusView::StatusView(
-    views::Widget* popup,
-    const ui::ThemeProvider* theme_provider)
+StatusBubbleViews::StatusView::StatusView(views::Widget* popup,
+                                          const gfx::Size& popup_size,
+                                          SkColor bubble_color,
+                                          SkColor bubble_text_color,
+                                          bool has_client_edge)
     : state_(BUBBLE_HIDDEN),
       style_(STYLE_STANDARD),
       animation_(new StatusViewAnimation(this, 0, 0)),
       popup_(popup),
-      theme_provider_(theme_provider),
+      popup_size_(popup_size),
+      bubble_color_(bubble_color),
+      bubble_text_color_(bubble_text_color),
+      has_client_edge_(has_client_edge),
       timer_factory_(this) {}
 
 StatusBubbleViews::StatusView::~StatusView() {
@@ -361,19 +375,18 @@ void StatusBubbleViews::StatusView::OnAnimationEnded() {
   }
 }
 
+void StatusBubbleViews::StatusView::SetWidth(int new_width) {
+  popup_size_.set_width(new_width);
+}
+
 const char* StatusBubbleViews::StatusView::GetClassName() const {
   return "StatusBubbleViews::StatusView";
 }
 
 void StatusBubbleViews::StatusView::OnPaint(gfx::Canvas* canvas) {
-  SkPaint paint;
-  paint.setStyle(SkPaint::kFill_Style);
-  paint.setAntiAlias(true);
-  SkColor toolbar_color = theme_provider_->GetColor(
-      ThemeProperties::COLOR_TOOLBAR);
-  paint.setColor(toolbar_color);
-
-  gfx::Rect popup_bounds = popup_->GetWindowBoundsInScreen();
+  canvas->Save();
+  float scale = canvas->UndoDeviceScaleFactor();
+  const float radius = kBubbleCornerRadius * scale;
 
   SkScalar rad[8] = {};
 
@@ -386,12 +399,12 @@ void StatusBubbleViews::StatusView::OnPaint(gfx::Canvas* canvas) {
       // The text is RtL or the bubble is on the right side (but not both).
 
       // Top Left corner.
-      rad[0] = kBubbleCornerRadius;
-      rad[1] = kBubbleCornerRadius;
+      rad[0] = radius;
+      rad[1] = radius;
     } else {
       // Top Right corner.
-      rad[2] = kBubbleCornerRadius;
-      rad[3] = kBubbleCornerRadius;
+      rad[2] = radius;
+      rad[3] = radius;
     }
   }
 
@@ -399,54 +412,87 @@ void StatusBubbleViews::StatusView::OnPaint(gfx::Canvas* canvas) {
   // position (sticking upward).
   if (style_ != STYLE_STANDARD && style_ != STYLE_STANDARD_RIGHT) {
     // Bottom Right Corner.
-    rad[4] = kBubbleCornerRadius;
-    rad[5] = kBubbleCornerRadius;
+    rad[4] = radius;
+    rad[5] = radius;
 
     // Bottom Left Corner.
-    rad[6] = kBubbleCornerRadius;
-    rad[7] = kBubbleCornerRadius;
+    rad[6] = radius;
+    rad[7] = radius;
   }
 
-  // Draw the bubble's shadow.
-  int width = popup_bounds.width();
-  int height = popup_bounds.height();
-  gfx::Rect rect(gfx::Rect(popup_bounds.size()));
-  SkPaint shadow_paint;
-  shadow_paint.setAntiAlias(true);
-  shadow_paint.setColor(kShadowColor);
+  // Snap to pixels to avoid shadow blurriness.
+  const int width = std::round(popup_size_.width() * scale);
+  const int height = std::round(popup_size_.height() * scale);
 
-  SkRRect rrect;
-  rrect.setRectRadii(RectToSkRect(rect), (const SkVector*)rad);
-  canvas->sk_canvas()->drawRRect(rrect, shadow_paint);
+  // This needs to be pixel-aligned too. Floor is perferred here because a more
+  // conservative value prevents the bottom edge from occasionally leaving a gap
+  // where the web content is visible.
+  const int shadow_thickness_pixels = std::floor(kShadowThickness * scale);
 
-  const int shadow_size = 2 * kShadowThickness;
-  // Draw the bubble.
-  rect.SetRect(SkIntToScalar(kShadowThickness), SkIntToScalar(kShadowThickness),
-               SkIntToScalar(width - shadow_size),
-               SkIntToScalar(height - shadow_size));
-  rrect.setRectRadii(RectToSkRect(rect), (const SkVector*)rad);
-  canvas->sk_canvas()->drawRRect(rrect, paint);
+  if (!has_client_edge_) {
+    // When there's no client edge the shadow will overlap the window frame.
+    // Clip it off when the bubble is docked. Otherwise when the bubble is
+    // floating preserve the full shadow so the bubble looks complete.
+    const int clip_left =
+        style_ == STYLE_STANDARD ? shadow_thickness_pixels : 0;
+    const int clip_right =
+        style_ == STYLE_STANDARD_RIGHT ? shadow_thickness_pixels : 0;
+    const int clip_bottom =
+        clip_left || clip_right ? shadow_thickness_pixels : 0;
+    gfx::Rect clip_rect(clip_left, 0, width - clip_right, height - clip_bottom);
+    canvas->ClipRect(clip_rect);
+  }
+
+  gfx::RectF bubble_rect(width, height);
+  // Reposition() moves the bubble down and to the left in order to overlap the
+  // client edge (or window frame when there's no client edge) by 1 DIP. We want
+  // a 1 pixel shadow on the innermost pixel of that overlap. So we inset the
+  // bubble bounds by 1 DIP minus 1 pixel. Failing to do this results in drawing
+  // further and further outside the window as the scale increases.
+  const int inset = shadow_thickness_pixels - 1;
+  bubble_rect.Inset(style_ == STYLE_STANDARD_RIGHT ? 0 : inset, 0,
+                    style_ == STYLE_STANDARD_RIGHT ? inset : 0, inset);
+  // Align to pixel centers now that the layout is correct.
+  bubble_rect.Inset(0.5, 0.5);
+
+  SkPath path;
+  path.addRoundRect(gfx::RectFToSkRect(bubble_rect), rad);
+
+  SkPaint paint;
+  paint.setStyle(SkPaint::kStroke_Style);
+  paint.setStrokeWidth(1);
+  paint.setAntiAlias(true);
+
+  SkPath stroke_path;
+  paint.getFillPath(path, &stroke_path);
+
+  // Get the fill path by subtracting the shadow so they align neatly.
+  SkPath fill_path;
+  Op(path, stroke_path, kDifference_SkPathOp, &fill_path);
+  paint.setStyle(SkPaint::kFill_Style);
+  paint.setColor(bubble_color_);
+  canvas->sk_canvas()->drawPath(fill_path, paint);
+
+  paint.setColor(kShadowColor);
+  canvas->sk_canvas()->drawPath(stroke_path, paint);
+
+  canvas->Restore();
 
   // Compute text bounds.
-  const gfx::FontList font_list;
-  int text_width =
-      std::min(gfx::GetStringWidth(text_, font_list),
-               width - shadow_size - kTextPositionX - kTextHorizPadding);
-  int text_height = height - shadow_size;
-  gfx::Rect text_bounds(kShadowThickness + kTextPositionX,
-                        kShadowThickness,
-                        std::max(0, text_width),
-                        std::max(0, text_height));
+  gfx::Rect text_rect(kTextPositionX, 0,
+                      popup_size_.width() - kTextHorizPadding,
+                      popup_size_.height());
+  text_rect.Inset(kShadowThickness, kShadowThickness);
   // Make sure the text is aligned to the right on RTL UIs.
-  text_bounds.set_x(GetMirroredXForRect(text_bounds));
+  text_rect.set_x(GetMirroredXForRect(text_rect));
 
   // Text color is the foreground tab text color at 60% alpha.
-  SkColor text_color = color_utils::AlphaBlend(
-      theme_provider_->GetColor(ThemeProperties::COLOR_TAB_TEXT), toolbar_color,
-      0x99);
+  SkColor blended_text_color =
+      color_utils::AlphaBlend(bubble_text_color_, bubble_color_, 0x99);
   canvas->DrawStringRect(
-      text_, font_list,
-      color_utils::GetReadableColor(text_color, toolbar_color), text_bounds);
+      text_, gfx::FontList(),
+      color_utils::GetReadableColor(blended_text_color, bubble_color_),
+      text_rect);
 }
 
 
@@ -504,9 +550,6 @@ class StatusBubbleViews::StatusViewExpander : public gfx::LinearAnimation,
   void StartExpansion(const base::string16& expanded_text,
                       int current_width,
                       int expansion_end);
-
-  // Set width of fully expanded bubble.
-  void SetExpandedWidth(int expanded_width);
 
  private:
   // Animation functions.
@@ -569,13 +612,15 @@ void StatusBubbleViews::StatusViewExpander::SetBubbleWidth(int width) {
 
 const int StatusBubbleViews::kShadowThickness = 1;
 
-StatusBubbleViews::StatusBubbleViews(views::View* base_view)
+StatusBubbleViews::StatusBubbleViews(views::View* base_view,
+                                     bool has_client_edge)
     : contains_mouse_(false),
       offset_(0),
       base_view_(base_view),
       view_(NULL),
       download_shelf_is_visible_(false),
       is_expanded_(false),
+      has_client_edge_(has_client_edge),
       expand_timer_factory_(this) {
   expand_view_.reset();
 }
@@ -590,8 +635,14 @@ void StatusBubbleViews::Init() {
   if (!popup_.get()) {
     popup_.reset(new views::Widget);
     views::Widget* frame = base_view_->GetWidget();
-    if (!view_)
-      view_ = new StatusView(popup_.get(), frame->GetThemeProvider());
+    if (!view_) {
+      const ui::ThemeProvider* theme_provider = frame->GetThemeProvider();
+      view_ = new StatusView(
+          popup_.get(), size_,
+          theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR),
+          theme_provider->GetColor(ThemeProperties::COLOR_TAB_TEXT),
+          has_client_edge_);
+    }
     if (!expand_view_.get())
       expand_view_.reset(new StatusViewExpander(this, view_));
 
@@ -626,8 +677,8 @@ void StatusBubbleViews::Init() {
 }
 
 void StatusBubbleViews::Reposition() {
-  // In restored mode, the client area has a client edge between it and the
-  // frame.
+  // Overlap the client edge that's shown in restored mode, or when there is no
+  // client edge this makes the bubble snug with the corner of the window.
   int overlap = kShadowThickness;
   int height = GetPreferredSize().height();
   int base_view_height = base_view()->bounds().height();
@@ -642,6 +693,7 @@ void StatusBubbleViews::RepositionPopup() {
     // popup window's position is consistent with the base_view_'s window.
     views::View::ConvertPointToScreen(base_view_, &top_left);
 
+    view_->SetWidth(size_.width());
     popup_->SetBounds(gfx::Rect(top_left.x() + position_.x(),
                                 top_left.y() + position_.y(),
                                 size_.width(), size_.height()));
@@ -706,9 +758,8 @@ void StatusBubbleViews::SetURL(const GURL& url) {
   }
 
   // Set Elided Text corresponding to the GURL object.
-  gfx::Rect popup_bounds = popup_->GetWindowBoundsInScreen();
-  int text_width = static_cast<int>(popup_bounds.width() -
-      (kShadowThickness * 2) - kTextPositionX - kTextHorizPadding - 1);
+  int text_width = static_cast<int>(size_.width() - (kShadowThickness * 2) -
+                                    kTextPositionX - kTextHorizPadding - 1);
   url_text_ =
       url_formatter::ElideUrl(url, gfx::FontList(), text_width);
 
@@ -872,7 +923,6 @@ bool StatusBubbleViews::IsFrameMaximized() {
 void StatusBubbleViews::ExpandBubble() {
   // Elide URL to maximum possible size, then check actual length (it may
   // still be too long to fit) before expanding bubble.
-  gfx::Rect popup_bounds = popup_->GetWindowBoundsInScreen();
   int max_status_bubble_width = GetMaxStatusBubbleWidth();
   const gfx::FontList font_list;
   url_text_ = url_formatter::ElideUrl(url_, font_list, max_status_bubble_width);
@@ -883,8 +933,7 @@ void StatusBubbleViews::ExpandBubble() {
                             kTextHorizPadding + 1,
                         max_status_bubble_width));
   is_expanded_ = true;
-  expand_view_->StartExpansion(url_text_, popup_bounds.width(),
-                               expanded_bubble_width);
+  expand_view_->StartExpansion(url_text_, size_.width(), expanded_bubble_width);
 }
 
 int StatusBubbleViews::GetStandardStatusBubbleWidth() {

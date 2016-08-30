@@ -202,6 +202,10 @@ class BrowserView : public BrowserWindow,
   // not incognito or a guest session.
   bool IsRegularOrGuestSession() const;
 
+  // Returns whether or not a client edge (the border around the web content)
+  // should be laid out and drawn.
+  bool HasClientEdge() const;
+
   // Provides the containing frame with the accelerator for the specified
   // command id. This can be used to provide menu item shortcut hints etc.
   // Returns true if an accelerator was found for the specified |cmd_id|, false

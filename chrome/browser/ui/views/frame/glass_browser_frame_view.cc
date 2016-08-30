@@ -338,7 +338,7 @@ bool GlassBrowserFrameView::DoesIntersectRect(const views::View* target,
 
 int GlassBrowserFrameView::ClientBorderThickness(bool restored) const {
   // The frame ends abruptly at the 1 pixel window border drawn by Windows 10.
-  if (base::win::GetVersion() >= base::win::VERSION_WIN10)
+  if (!browser_view()->HasClientEdge())
     return 0;
 
   if ((frame()->IsMaximized() || frame()->IsFullscreen()) && !restored)
