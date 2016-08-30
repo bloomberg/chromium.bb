@@ -14,9 +14,9 @@
 #include "platform/scheduler/base/task_queue_impl.h"
 #include "platform/scheduler/base/task_queue_manager_delegate.h"
 #include "platform/scheduler/base/task_queue_selector.h"
-#include "platform/scheduler/base/task_time_tracker.h"
 #include "platform/scheduler/base/work_queue.h"
 #include "platform/scheduler/base/work_queue_sets.h"
+#include "public/platform/scheduler/base/task_time_observer.h"
 
 namespace blink {
 namespace scheduler {
@@ -34,6 +34,10 @@ void RecordImmediateTaskQueueingDuration(tracked_objects::Duration duration) {
       "RendererScheduler.TaskQueueManager.ImmediateTaskQueueingDuration",
       base::TimeDelta::FromMilliseconds(duration.InMilliseconds()));
 }
+
+double MonotonicTimeInSeconds(base::TimeTicks timeTicks) {
+  return (timeTicks - base::TimeTicks()).InSecondsF();
+}
 }
 
 TaskQueueManager::TaskQueueManager(
@@ -46,7 +50,6 @@ TaskQueueManager::TaskQueueManager(
       task_was_run_on_quiescence_monitored_queue_(false),
       work_batch_size_(1),
       task_count_(0),
-      task_time_tracker_(nullptr),
       tracing_category_(tracing_category),
       disabled_by_default_tracing_category_(
           disabled_by_default_tracing_category),
@@ -197,7 +200,7 @@ void TaskQueueManager::DoWork(base::TimeTicks run_time, bool from_main_thread) {
   LazyNow lazy_now(real_time_domain()->CreateLazyNow());
   base::TimeTicks task_start_time;
 
-  if (!delegate_->IsNested() && task_time_tracker_)
+  if (!delegate_->IsNested() && task_time_observers_.might_have_observers())
     task_start_time = lazy_now.Now();
 
   // Pass false and nullptr to UpdateWorkQueues here to prevent waking up a
@@ -228,10 +231,12 @@ void TaskQueueManager::DoWork(base::TimeTicks run_time, bool from_main_thread) {
     }
 
     lazy_now = real_time_domain()->CreateLazyNow();
-    if (!delegate_->IsNested() && task_time_tracker_) {
+    if (!delegate_->IsNested() && task_start_time != base::TimeTicks()) {
       // Only report top level task durations.
       base::TimeTicks task_end_time = lazy_now.Now();
-      task_time_tracker_->ReportTaskTime(task_start_time, task_end_time);
+      FOR_EACH_OBSERVER(TaskTimeObserver, task_time_observers_,
+                        ReportTaskTime(MonotonicTimeInSeconds(task_start_time),
+                                       MonotonicTimeInSeconds(task_end_time)));
       task_start_time = task_end_time;
     }
 
@@ -372,6 +377,17 @@ void TaskQueueManager::RemoveTaskObserver(
     base::MessageLoop::TaskObserver* task_observer) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   task_observers_.RemoveObserver(task_observer);
+}
+
+void TaskQueueManager::AddTaskTimeObserver(TaskTimeObserver* task_time_observer) {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  task_time_observers_.AddObserver(task_time_observer);
+}
+
+void TaskQueueManager::RemoveTaskTimeObserver(
+    TaskTimeObserver* task_time_observer) {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  task_time_observers_.RemoveObserver(task_time_observer);
 }
 
 bool TaskQueueManager::GetAndClearSystemIsQuiescentBit() {

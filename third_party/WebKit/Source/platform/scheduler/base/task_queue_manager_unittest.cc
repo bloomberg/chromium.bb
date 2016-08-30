@@ -24,7 +24,7 @@
 #include "platform/scheduler/base/task_queue_manager_delegate_for_test.h"
 #include "platform/scheduler/base/task_queue_selector.h"
 #include "platform/scheduler/base/test_count_uses_time_source.h"
-#include "platform/scheduler/base/test_task_time_tracker.h"
+#include "platform/scheduler/base/test_task_time_observer.h"
 #include "platform/scheduler/base/test_time_source.h"
 #include "platform/scheduler/base/virtual_time_domain.h"
 #include "platform/scheduler/base/work_queue.h"
@@ -78,7 +78,6 @@ class TaskQueueManagerTest : public testing::Test {
     manager_ = base::MakeUnique<TaskQueueManager>(
         main_task_runner_, "test.scheduler", "test.scheduler",
         "test.scheduler.debug");
-    manager_->SetTaskTimeTracker(&test_task_time_tracker_);
 
     for (size_t i = 0; i < num_queues; i++)
       runners_.push_back(manager_->NewTaskQueue(TaskQueue::Spec("test_queue")));
@@ -100,7 +99,6 @@ class TaskQueueManagerTest : public testing::Test {
         MessageLoopTaskRunner::Create(
             base::WrapUnique(new TestTimeSource(now_src_.get()))),
         "test.scheduler", "test.scheduler", "test.scheduler.debug");
-    manager_->SetTaskTimeTracker(&test_task_time_tracker_);
 
     for (size_t i = 0; i < num_queues; i++)
       runners_.push_back(manager_->NewTaskQueue(TaskQueue::Spec("test_queue")));
@@ -112,7 +110,7 @@ class TaskQueueManagerTest : public testing::Test {
   scoped_refptr<cc::OrderedSimpleTaskRunner> test_task_runner_;
   std::unique_ptr<TaskQueueManager> manager_;
   std::vector<scoped_refptr<internal::TaskQueueImpl>> runners_;
-  TestTaskTimeTracker test_task_time_tracker_;
+  TestTaskTimeObserver test_task_time_observer_;
 };
 
 void PostFromNestedRunloop(base::MessageLoop* message_loop,
@@ -144,7 +142,7 @@ TEST_F(TaskQueueManagerTest,
           base::WrapUnique(test_count_uses_time_source)),
       "test.scheduler", "test.scheduler", "test.scheduler.debug");
   manager_->SetWorkBatchSize(6);
-  manager_->SetTaskTimeTracker(&test_task_time_tracker_);
+  manager_->AddTaskTimeObserver(&test_task_time_observer_);
 
   for (size_t i = 0; i < 3; i++)
     runners_.push_back(manager_->NewTaskQueue(TaskQueue::Spec("test_queue")));
@@ -175,7 +173,7 @@ TEST_F(TaskQueueManagerTest, NowNotCalledForNestedTasks) {
       MessageLoopTaskRunner::Create(
           base::WrapUnique(test_count_uses_time_source)),
       "test.scheduler", "test.scheduler", "test.scheduler.debug");
-  manager_->SetTaskTimeTracker(&test_task_time_tracker_);
+  manager_->AddTaskTimeObserver(&test_task_time_observer_);
 
   runners_.push_back(manager_->NewTaskQueue(TaskQueue::Spec("test_queue")));
 

@@ -117,6 +117,18 @@ void SchedulerHelper::RemoveTaskObserver(
     task_queue_manager_->RemoveTaskObserver(task_observer);
 }
 
+void SchedulerHelper::AddTaskTimeObserver(
+    TaskTimeObserver* task_time_observer) {
+  if (task_queue_manager_)
+    task_queue_manager_->AddTaskTimeObserver(task_time_observer);
+}
+
+void SchedulerHelper::RemoveTaskTimeObserver(
+    TaskTimeObserver* task_time_observer) {
+  if (task_queue_manager_)
+    task_queue_manager_->RemoveTaskTimeObserver(task_time_observer);
+}
+
 void SchedulerHelper::SetObserver(Observer* observer) {
   CheckOnValidThread();
   observer_ = observer;

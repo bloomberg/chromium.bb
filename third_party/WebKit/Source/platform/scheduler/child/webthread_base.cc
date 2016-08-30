@@ -63,6 +63,14 @@ void WebThreadBase::removeTaskObserver(TaskObserver* observer) {
   task_observer_map_.erase(iter);
 }
 
+void WebThreadBase::addTaskTimeObserver(TaskTimeObserver* task_time_observer) {
+  AddTaskTimeObserverInternal(task_time_observer);
+}
+
+void WebThreadBase::removeTaskTimeObserver(TaskTimeObserver* task_time_observer) {
+  RemoveTaskTimeObserverInternal(task_time_observer);
+}
+
 void WebThreadBase::AddTaskObserverInternal(
     base::MessageLoop::TaskObserver* observer) {
   base::MessageLoop::current()->AddTaskObserver(observer);

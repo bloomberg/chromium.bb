@@ -38,7 +38,7 @@ class LazyNow;
 class RealTimeDomain;
 class TimeDomain;
 class TaskQueueManagerDelegate;
-class TaskTimeTracker;
+class TaskTimeObserver;
 
 // The task queue manager provides N task queues and a selector interface for
 // choosing which task queue to service next. Each task queue consists of two
@@ -83,17 +83,12 @@ class BLINK_PLATFORM_EXPORT TaskQueueManager
   // tasks posted to the main loop. The batch size is 1 by default.
   void SetWorkBatchSize(int work_batch_size);
 
-  // When given a non-null TaskTimeTracker, the TaskQueueManager calls its
-  // ReportTaskTime method for every top level task. The task_time_tracker must
-  // outlive this object, or be removed via SetTaskTimeTracker(nullptr).
-  void SetTaskTimeTracker(TaskTimeTracker* task_time_tracker) {
-    task_time_tracker_ = task_time_tracker;
-  }
-
   // These functions can only be called on the same thread that the task queue
   // manager executes its tasks on.
   void AddTaskObserver(base::MessageLoop::TaskObserver* task_observer);
   void RemoveTaskObserver(base::MessageLoop::TaskObserver* task_observer);
+  void AddTaskTimeObserver(TaskTimeObserver* task_time_observer);
+  void RemoveTaskTimeObserver(TaskTimeObserver* task_time_observer);
 
   // Returns true if any task from a monitored task queue was was run since the
   // last call to GetAndClearSystemIsQuiescentBit.
@@ -248,7 +243,7 @@ class BLINK_PLATFORM_EXPORT TaskQueueManager
 
   base::ObserverList<base::MessageLoop::TaskObserver> task_observers_;
 
-  TaskTimeTracker* task_time_tracker_;  // NOT OWNED
+  base::ObserverList<TaskTimeObserver> task_time_observers_;
 
   const char* tracing_category_;
   const char* disabled_by_default_tracing_category_;

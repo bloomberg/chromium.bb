@@ -26,6 +26,18 @@ void InspectorWebPerfAgent::didExecuteScript()
 {
 }
 
+void InspectorWebPerfAgent::willProcessTask()
+{
+}
+
+void InspectorWebPerfAgent::didProcessTask()
+{
+}
+
+void InspectorWebPerfAgent::ReportTaskTime(double startTime, double endTime)
+{
+}
+
 DEFINE_TRACE(InspectorWebPerfAgent)
 {
     visitor->trace(m_inspectedFrames);

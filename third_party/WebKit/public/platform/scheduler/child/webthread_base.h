@@ -16,6 +16,7 @@
 namespace blink {
 namespace scheduler {
 class SingleThreadIdleTaskRunner;
+class TaskTimeObserver;
 
 class BLINK_PLATFORM_EXPORT WebThreadBase : public WebThread {
  public:
@@ -32,6 +33,9 @@ class BLINK_PLATFORM_EXPORT WebThreadBase : public WebThread {
 
   void addTaskObserver(TaskObserver* observer) override;
   void removeTaskObserver(TaskObserver* observer) override;
+
+  void addTaskTimeObserver(TaskTimeObserver* task_time_observer) override;
+  void removeTaskTimeObserver(TaskTimeObserver* task_time_observer) override;
 
   // Returns the base::Bind-compatible task runner for posting tasks to this
   // thread. Can be called from any thread.
@@ -50,6 +54,9 @@ class BLINK_PLATFORM_EXPORT WebThreadBase : public WebThread {
       base::MessageLoop::TaskObserver* observer);
   virtual void RemoveTaskObserverInternal(
       base::MessageLoop::TaskObserver* observer);
+
+  virtual void AddTaskTimeObserverInternal(TaskTimeObserver*) {}
+  virtual void RemoveTaskTimeObserverInternal(TaskTimeObserver*) {}
 
   static void RunWebThreadIdleTask(
       std::unique_ptr<WebThread::IdleTask> idle_task,

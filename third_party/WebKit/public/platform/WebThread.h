@@ -26,9 +26,14 @@
 #define WebThread_h
 
 #include "WebCommon.h"
+
 #include <stdint.h>
 
 namespace blink {
+namespace scheduler {
+class TaskTimeObserver;
+}
+
 class WebScheduler;
 class WebTaskRunner;
 
@@ -63,8 +68,18 @@ public:
     virtual bool isCurrentThread() const = 0;
     virtual PlatformThreadId threadId() const { return 0; }
 
+    // TaskObserver is an object that receives task notifications from the MessageLoop
+    // NOTE: TaskObserver implementation should be extremely fast!
+    // This API is performance sensitive. Use only if you have a compelling reason.
     virtual void addTaskObserver(TaskObserver*) { }
     virtual void removeTaskObserver(TaskObserver*) { }
+
+    // TaskTimeObserver is an object that receives notifications for
+    // CPU time spent in each top-level MessageLoop task.
+    // NOTE: TaskTimeObserver implementation should be extremely fast!
+    // This API is performance sensitive. Use only if you have a compelling reason.
+    virtual void addTaskTimeObserver(scheduler::TaskTimeObserver*) {}
+    virtual void removeTaskTimeObserver(scheduler::TaskTimeObserver*) {}
 
     // Returns the scheduler associated with the thread.
     virtual WebScheduler* scheduler() const = 0;

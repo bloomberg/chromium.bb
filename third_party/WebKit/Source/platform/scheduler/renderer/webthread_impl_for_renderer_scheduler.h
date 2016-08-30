@@ -39,6 +39,9 @@ class BLINK_PLATFORM_EXPORT WebThreadImplForRendererScheduler
   void RemoveTaskObserverInternal(
       base::MessageLoop::TaskObserver* observer) override;
 
+  void AddTaskTimeObserverInternal(TaskTimeObserver*) override;
+  void RemoveTaskTimeObserverInternal(TaskTimeObserver*) override;
+
   std::unique_ptr<WebSchedulerImpl> web_scheduler_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner_;

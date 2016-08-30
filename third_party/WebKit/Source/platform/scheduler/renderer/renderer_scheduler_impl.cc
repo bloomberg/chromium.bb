@@ -53,6 +53,11 @@ void ReportBackgroundRendererTaskLoad(base::TimeTicks time, double load) {
                  "RendererScheduler.BackgroundRendererLoad", load_percentage);
 }
 
+base::TimeTicks MonotonicTimeInSecondsToTimeTicks(
+    double monotonicTimeInSeconds) {
+  return base::TimeTicks() + base::TimeDelta::FromSecondsD(
+      monotonicTimeInSeconds);
+}
 }  // namespace
 
 RendererSchedulerImpl::RendererSchedulerImpl(
@@ -99,7 +104,7 @@ RendererSchedulerImpl::RendererSchedulerImpl(
       this);
 
   helper_.SetObserver(this);
-  helper_.SetTaskTimeTracker(this);
+  helper_.AddTaskTimeObserver(this);
 }
 
 RendererSchedulerImpl::~RendererSchedulerImpl() {
@@ -118,6 +123,8 @@ RendererSchedulerImpl::~RendererSchedulerImpl() {
 
   if (virtual_time_domain_)
     UnregisterTimeDomain(virtual_time_domain_.get());
+
+  helper_.RemoveTaskTimeObserver(this);
 
   // Ensure the renderer scheduler was shut down explicitly, because otherwise
   // we could end up having stale pointers to the Blink heap which has been
@@ -1454,26 +1461,33 @@ void RendererSchedulerImpl::OnTriedToExecuteBlockedTask(
   }
 }
 
-void RendererSchedulerImpl::ReportTaskTime(base::TimeTicks start_time,
-                                           base::TimeTicks end_time) {
-  MainThreadOnly().queueing_time_estimator.OnToplevelTaskCompleted(start_time,
-                                                                   end_time);
-  MainThreadOnly().long_task_tracker.RecordLongTask(
-      start_time, end_time - start_time);
+void RendererSchedulerImpl::ReportTaskTime(double start_time, double end_time) {
+  base::TimeTicks start_time_ticks =
+      MonotonicTimeInSecondsToTimeTicks(start_time);
+  base::TimeTicks end_time_ticks = MonotonicTimeInSecondsToTimeTicks(end_time);
+
+  MainThreadOnly().queueing_time_estimator.OnToplevelTaskCompleted(
+      start_time_ticks, end_time_ticks);
   // We want to measure thread time here, but for efficiency reasons
   // we stick with wall time.
   MainThreadOnly().foreground_main_thread_load_tracker.RecordTaskTime(
-      start_time, end_time);
+      start_time_ticks, end_time_ticks);
   MainThreadOnly().background_main_thread_load_tracker.RecordTaskTime(
-      start_time, end_time);
+      start_time_ticks, end_time_ticks);
   // TODO(altimin): Per-page metrics should also be considered.
   UMA_HISTOGRAM_CUSTOM_COUNTS("RendererScheduler.TaskTime",
-                              (end_time - start_time).InMicroseconds(), 1,
+                              (end_time_ticks - start_time_ticks).InMicroseconds(), 1,
                               1000000, 50);
 }
 
-LongTaskTracker::LongTaskTiming RendererSchedulerImpl::GetLongTaskTiming() {
-  return MainThreadOnly().long_task_tracker.GetLongTaskTiming();
+void RendererSchedulerImpl::AddTaskTimeObserver(
+    TaskTimeObserver* task_time_observer) {
+  helper_.AddTaskTimeObserver(task_time_observer);
+}
+
+void RendererSchedulerImpl::RemoveTaskTimeObserver(
+    TaskTimeObserver* task_time_observer) {
+  helper_.RemoveTaskTimeObserver(task_time_observer);
 }
 
 void RendererSchedulerImpl::OnQueueingTimeForWindowEstimated(

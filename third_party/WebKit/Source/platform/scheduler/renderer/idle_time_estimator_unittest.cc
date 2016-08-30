@@ -8,7 +8,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "cc/test/ordered_simple_task_runner.h"
 #include "platform/scheduler/base/task_queue_manager.h"
-#include "platform/scheduler/base/test_task_time_tracker.h"
+#include "platform/scheduler/base/test_task_time_observer.h"
 #include "platform/scheduler/base/test_time_source.h"
 #include "platform/scheduler/child/scheduler_tqm_delegate_for_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -94,7 +94,7 @@ class IdleTimeEstimatorTest : public testing::Test {
   scoped_refptr<TaskQueue> compositor_task_runner_;
   std::unique_ptr<IdleTimeEstimatorForTest> estimator_;
   const base::TimeDelta frame_length_;
-  TestTaskTimeTracker test_task_time_tracker_;
+  TestTaskTimeObserver test_task_time_observer_;
 };
 
 TEST_F(IdleTimeEstimatorTest, InitialTimeEstimateWithNoData) {

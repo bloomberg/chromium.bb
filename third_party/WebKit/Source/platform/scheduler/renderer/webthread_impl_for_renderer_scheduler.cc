@@ -56,5 +56,15 @@ void WebThreadImplForRendererScheduler::RemoveTaskObserverInternal(
   scheduler_->RemoveTaskObserver(observer);
 }
 
+void WebThreadImplForRendererScheduler::AddTaskTimeObserverInternal(
+    TaskTimeObserver* task_time_observer) {
+  scheduler_->AddTaskTimeObserver(task_time_observer);
+}
+
+void WebThreadImplForRendererScheduler::RemoveTaskTimeObserverInternal(
+    TaskTimeObserver* task_time_observer) {
+  scheduler_->RemoveTaskTimeObserver(task_time_observer);
+}
+
 }  // namespace scheduler
 }  // namespace blink

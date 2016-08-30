@@ -7,6 +7,8 @@
 
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
+#include "public/platform/WebThread.h"
+#include "public/platform/scheduler/base/task_time_observer.h"
 
 namespace blink {
 
@@ -15,15 +17,25 @@ class LocalFrame;
 class InspectedFrames;
 
 // Inspector Agent for Web Performance APIs
-class CORE_EXPORT InspectorWebPerfAgent final : public GarbageCollectedFinalized<InspectorWebPerfAgent> {
+class CORE_EXPORT InspectorWebPerfAgent final
+    : public GarbageCollectedFinalized<InspectorWebPerfAgent>
+    , public WebThread::TaskObserver
+    , public scheduler::TaskTimeObserver {
     WTF_MAKE_NONCOPYABLE(InspectorWebPerfAgent);
 public:
-    InspectorWebPerfAgent(InspectedFrames*);
+    explicit InspectorWebPerfAgent(InspectedFrames*);
     ~InspectorWebPerfAgent();
     DECLARE_VIRTUAL_TRACE();
 
     void willExecuteScript(ExecutionContext*);
     void didExecuteScript();
+
+    // WebThread::TaskObserver implementation.
+    void willProcessTask() override;
+    void didProcessTask() override;
+
+    // scheduler::TaskTimeObserver implementation
+    void ReportTaskTime(double startTime, double endTime) override;
 
 private:
     Member<InspectedFrames> m_inspectedFrames;

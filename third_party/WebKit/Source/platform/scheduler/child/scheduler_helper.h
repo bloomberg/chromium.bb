@@ -58,10 +58,8 @@ class BLINK_PLATFORM_EXPORT SchedulerHelper
   void AddTaskObserver(base::MessageLoop::TaskObserver* task_observer);
   void RemoveTaskObserver(base::MessageLoop::TaskObserver* task_observer);
 
-  void SetTaskTimeTracker(TaskTimeTracker* task_time_tracker) {
-    if (task_queue_manager_)
-      task_queue_manager_->SetTaskTimeTracker(task_time_tracker);
-  }
+  void AddTaskTimeObserver(TaskTimeObserver* task_time_observer);
+  void RemoveTaskTimeObserver(TaskTimeObserver* task_time_observer);
 
   // Shuts down the scheduler by dropping any remaining pending work in the work
   // queues. After this call any work posted to the task runners will be
