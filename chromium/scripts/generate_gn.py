@@ -239,29 +239,10 @@ def GetSourceFileSet(object_to_sources, object_files):
     source_set.add(object_to_sources[name])
   return source_set
 
-
-class SourceListCondition(object):
-  """A SourceListCondition represents a combination of architecture, target, and
-  platform where a specific list of sources should be used. Attributes are setup
-  using the enum values to facilitate easy iteration over attributes for
-  condition reduction."""
-
-  def __init__(self, architecture, target, platform):
-    """Creates a SourceListCondition
-    Args:
-      architecture: a system architecture (e.g. arm or x64)
-      target: target ffmpeg branding type (e.g. Chromium or Chrome)
-      platform: system platform (e.g. win or linux)
-
-      For all args, '*' is also a valid value indicating that there is no
-      restriction on the given attribute for this condition.
-    """
-    setattr(self, Attr.ARCHITECTURE, architecture)
-    setattr(self, Attr.TARGET, target)
-    setattr(self, Attr.PLATFORM, platform)
-
-  def __repr__(self):
-    return '{%s, %s, %s}' % (self.PLATFORM, self.ARCHITECTURE, self.TARGET)
+SourceListCondition = collections.namedtuple('SourceListCondition',
+                                             [Attr.ARCHITECTURE,
+                                              Attr.TARGET,
+                                              Attr.PLATFORM])
 
 
 class SourceSet(object):
@@ -286,6 +267,9 @@ class SourceSet(object):
   def __eq__(self, other):
     return (self.sources == other.sources and
             self.conditions == other.conditions)
+
+  def __hash__(self):
+    return hash((frozenset(self.sources), frozenset(self.conditions)))
 
   def Intersect(self, other):
     """Return a new SourceSet containing the set of source files common to both
@@ -443,7 +427,7 @@ def CreatePairwiseDisjointSets(sets):
 def GetAllMatchingConditions(conditions, condition_to_match):
   """ Given a set of conditions, find those that match the condition_to_match.
   Matches are found when all attributes of the condition have the same value as
-  the condition_to_match, or value is accepted for wild-card attributes within
+  the condition_to_match, or value is accepted for wildcard attributes within
   condition_to_match.
   """
 
@@ -454,7 +438,7 @@ def GetAllMatchingConditions(conditions, condition_to_match):
     return getattr(condition_to_match, attribute) == '*'
   attributes_to_check = [a for a in Attr if not accepts_all_values(a)]
 
-  # If all attributes allow wild-card, all conditions are considered matching
+  # If all attributes allow wildcard, all conditions are considered matching
   if not attributes_to_check:
     return conditions
 
@@ -471,41 +455,35 @@ def GetAllMatchingConditions(conditions, condition_to_match):
 
   return found_matches
 
-
-def GetAttributeValueRange(attribute, condition):
-  """Return the range of values for the given attribute, considering
-  the values of other attributes in the given condition."""
-
-  values_range = copy.copy(SUPPORT_MATRIX[attribute])
+def GetAttributeValuesRange(attribute, condition):
+  """ Get the range of values for the given attribute considering the values
+      of all attributes in the given condition."""
+  if getattr(condition, attribute) == '*':
+    values = copy.copy(SUPPORT_MATRIX[attribute])
+  else:
+    values = set([getattr(condition, attribute)])
 
   # Filter out impossible values given condition platform. This is admittedly
   # fragile to changes in our supported platforms. Fortunately, these platforms
   # don't change often. Refactor if we run into trouble.
   platform = condition.PLATFORM
   if attribute == Attr.TARGET and platform != '*' and platform != 'linux':
-    values_range.difference_update(['ChromiumOS', 'ChromeOS'])
+    values.difference_update(['ChromiumOS', 'ChromeOS'])
   if attribute == Attr.ARCHITECTURE and platform == 'win':
-    values_range.intersection_update(['ia32', 'x64'])
+    values.intersection_update(['ia32', 'x64'])
   if attribute == Attr.ARCHITECTURE and platform == 'mac':
-    values_range.intersection_update(['x64'])
+    values.intersection_update(['x64'])
 
-  return values_range
+  return values
 
-
-def DoConditionsSpanValuesRange(conditions, attribute, values_range):
-  """Return True if all of the attribute values in values_range are observed
-  in one or more of the given conditions."""
-
-  # Copy set so we can safely modify
-  values_range = copy.copy(values_range)
-
-  for condition in conditions:
-    attribute_value = getattr(condition, attribute)
-    if attribute_value in values_range:
-      values_range.remove(attribute_value)
-
-  return len(values_range) == 0
-
+def GenerateConditionExpansion(condition):
+  """Expand wildcard in condition into all possible matching conditions."""
+  architectures = GetAttributeValuesRange(Attr.ARCHITECTURE, condition)
+  targets = GetAttributeValuesRange(Attr.TARGET, condition)
+  platforms = GetAttributeValuesRange(Attr.PLATFORM, condition)
+  return set(SourceListCondition(arch, target, plat)
+                for (arch, target, plat)
+                in itertools.product(architectures, targets, platforms))
 
 def ReduceConditionalLogic(source_set):
   """Reduces the conditions for the given SourceSet.
@@ -518,44 +496,50 @@ def ReduceConditionalLogic(source_set):
   There is room for further reduction (e.g. Quine-McCluskey), not implemented
   at this time."""
 
-  removed_conditions = set()
+  ConditionReduction = collections.namedtuple('ConditionReduction',
+                                              'condition, matches')
   reduced_conditions = set()
 
   for condition in source_set.conditions:
-    # Skip already reduced conditions.
-    if (condition in removed_conditions):
-      continue
-
-    # Copy condition to avoid altering original value. This is important later
-    # when we check whether conditions matching our wild-card span the full
-    # range of values for a given attribute. We deepcopy because the condition
-    # contains an internal dictionary which we should not clobber.
-    condition = copy.deepcopy(condition)
-    did_condition_reduce = False
+    condition_dict = condition._asdict()
 
     for attribute in Attr:
-      # Set attribute value to wild-card and find matching attributes.
-      original_attribute_value = getattr(condition, attribute)
-      setattr(condition, attribute, '*')
+      # Set attribute value to wildcard and find matching attributes.
+      original_attribute_value = condition_dict[attribute]
+      condition_dict[attribute] = '*'
+      new_condition = SourceListCondition(**condition_dict)
 
-      matches = GetAllMatchingConditions(source_set.conditions, condition)
-
-      # Check to see if matches span all possible values for given attribute
-      values_range = GetAttributeValueRange(attribute, condition)
-      if DoConditionsSpanValuesRange(matches, attribute, values_range):
-        # Note conditions matches to add/remove when done iterating. We leave
-        # the wild-card set for this attribute since it did reduce.
-        did_condition_reduce = True
-        removed_conditions.update(matches)
+      # Conditions with wildcards can replace existing conditions iff the
+      # source set contains conditions covering all possible expansions
+      # of the wildcarded values.
+      matches = GetAllMatchingConditions(source_set.conditions, new_condition)
+      if matches == GenerateConditionExpansion(new_condition):
+        reduced_conditions.add(ConditionReduction(new_condition,
+                                                  frozenset(matches)))
       else:
-        setattr(condition, attribute, original_attribute_value)
+        # This wildcard won't work, restore the original value.
+        condition_dict[attribute] = original_attribute_value
 
-    if did_condition_reduce:
-      reduced_conditions.add(condition)
+  # Finally, find the most efficient reductions. Do a pairwise comparison of all
+  # reductions to de-dup and remove those that are covered by more inclusive
+  # conditions.
+  did_work = True
+  while did_work:
+    did_work = False
+    for reduction_pair in itertools.combinations(reduced_conditions, 2):
+      if reduction_pair[0].matches.issubset(reduction_pair[1].matches):
+        reduced_conditions.remove(reduction_pair[0])
+        did_work = True
+        break
+      elif reduction_pair[1].matches.issubset(reduction_pair[0].matches):
+        reduced_conditions.remove(reduction_pair[1])
+        did_work = True
+        break
 
-  # Update conditions, replacing verbose statements with reduced form.
-  source_set.conditions.difference_update(removed_conditions)
-  source_set.conditions.update(reduced_conditions)
+  # Apply the reductions to the source_set.
+  for reduction in reduced_conditions:
+    source_set.conditions.difference_update(reduction.matches)
+    source_set.conditions.add(reduction.condition)
 
 
 def ParseOptions():
@@ -621,8 +605,8 @@ IGNORED_INCLUDE_FILES = [
     os.path.join('libavutil', 'ffversion.h'),
 
     # Current configure values are set such that we don't include these (because
-    # of various defines) and we also don't generate them at all, so we will fail
-    # to find these because they don't exist in our repository.
+    # of various defines) and we also don't generate them at all, so we will
+    # fail to find these because they don't exist in our repository.
     os.path.join('libavcodec', 'aacps_tables.h'),
     os.path.join('libavcodec', 'aacps_fixed_tables.h'),
     os.path.join('libavcodec', 'aacsbr_tables.h'),
@@ -886,12 +870,8 @@ def main():
 
   sets = CreatePairwiseDisjointSets(sets)
 
-  # TODO(chcunningham): Logic reduction is not working right; it's incorrectly
-  # treating reducing a few x86 only files to be unconditionally included.  See
-  # http://crbug.com/535788 for details.
-  #
-  # for source_set in sets:
-  #   ReduceConditionalLogic(source_set)
+  for source_set in sets:
+    ReduceConditionalLogic(source_set)
 
   if not sets:
     exit('ERROR: failed to find any source sets. ' +

@@ -197,11 +197,26 @@ class SourceSetUnittest(unittest.TestCase):
     self.assertEqual(string.find(stanza, bad_condition), -1)
 
   def assertEqualSets(self, expected, actual):
-    # Do pairwise checks for easier debugging.
-    for a in actual:
-      self.assertTrue(a in expected, msg='Unexpected set: %s' % a)
-    for e in expected:
-      self.assertTrue(e in actual, msg='Did not find expected set: %s' % e)
+    def SetToString(source_set):
+      sources = [str(e) for e in source_set.sources]
+      conditions = [str(e) for e in source_set.conditions]
+      sources_str = ','.join(sources)
+      conditions_str = '\n\t'.join(conditions)
+      return '  sources:%s\n  cs:\t%s' % (sources_str, conditions_str)
+
+    missing_elements = expected.difference(actual)
+    extra_elements = actual.difference(expected)
+    msg = ''
+    if len(missing_elements):
+      msg += 'Missing expected elements:\n'
+      for e in missing_elements:
+        msg += SetToString(e) + '\n'
+    if len(extra_elements):
+      msg += 'Found extra elements:\n'
+      for e in extra_elements:
+        msg += SetToString(e) + '\n'
+
+    self.assertTrue(expected == actual, msg = msg)
 
   def testCreatePairwiseDisjointSets_Pair(self):
     a = SourceSet(set(['common', 'intel']),
@@ -209,17 +224,17 @@ class SourceSetUnittest(unittest.TestCase):
     b = SourceSet(set(['common', 'intel', 'chrome']),
                   set([SourceListCondition('ia32', 'Chrome', 'win')]))
 
-    expected = []
-    expected.append(
+    expected = set()
+    expected.add(
         SourceSet(set(['common', 'intel']),
                   set([SourceListCondition('ia32', 'Chromium', 'win'),
                        SourceListCondition('ia32', 'Chrome', 'win')])))
-    expected.append(
+    expected.add(
         SourceSet(set(['chrome']),
                   set([SourceListCondition('ia32', 'Chrome', 'win')])))
 
-    sets = gg.CreatePairwiseDisjointSets([a, b])
-    self.assertEqualSets(expected, sets)
+    source_sets = gg.CreatePairwiseDisjointSets([a, b])
+    self.assertEqualSets(expected, set(source_sets))
 
   def testCreatePairwiseDisjointSets_Triplet(self):
     a = SourceSet(set(['common', 'intel']),
@@ -229,25 +244,25 @@ class SourceSetUnittest(unittest.TestCase):
     c = SourceSet(set(['common', 'arm']),
                   set([SourceListCondition('arm', 'Chromium', 'win')]))
 
-    expected = []
-    expected.append(
+    expected = set()
+    expected.add(
         SourceSet(set(['common']),
                   set([SourceListCondition('ia32', 'Chromium', 'win'),
                        SourceListCondition('x64', 'Chrome', 'win'),
                        SourceListCondition('arm', 'Chromium', 'win')])))
-    expected.append(
+    expected.add(
         SourceSet(set(['intel']),
                   set([SourceListCondition('ia32', 'Chromium', 'win'),
                        SourceListCondition('x64', 'Chrome', 'win')])))
-    expected.append(
+    expected.add(
         SourceSet(set(['chrome']),
                   set([SourceListCondition('x64', 'Chrome', 'win')])))
-    expected.append(
+    expected.add(
         SourceSet(set(['arm']),
                   set([SourceListCondition('arm', 'Chromium', 'win')])))
 
-    sets = gg.CreatePairwiseDisjointSets([a, b, c])
-    self.assertEqualSets(expected, sets)
+    source_sets = gg.CreatePairwiseDisjointSets([a, b, c])
+    self.assertEqualSets(expected, set(source_sets))
 
   def testCreatePairwiseDisjointSets_Multiple(self):
     a = SourceSet(set(['common', 'intel']),
@@ -263,30 +278,30 @@ class SourceSetUnittest(unittest.TestCase):
     f = SourceSet(set(['common', 'arm-neon', 'chrome', 'chromeos']),
                   set([SourceListCondition('arm-neon', 'ChromeOS', 'linux')]))
 
-    expected = []
-    expected.append(SourceSet(set(['common']), set([
+    expected = set()
+    expected.add(SourceSet(set(['common']), set([
         SourceListCondition('ia32', 'Chromium', 'linux'),
         SourceListCondition('ia32', 'Chrome', 'linux'),
         SourceListCondition('x64', 'Chromium', 'linux'),
         SourceListCondition('x64', 'Chrome', 'linux'),
         SourceListCondition('arm', 'Chromium', 'linux'),
         SourceListCondition('arm-neon', 'ChromeOS', 'linux')])))
-    expected.append(SourceSet(set(['intel']), set([
+    expected.add(SourceSet(set(['intel']), set([
         SourceListCondition('ia32', 'Chromium', 'linux'),
         SourceListCondition('ia32', 'Chrome', 'linux'),
         SourceListCondition('x64', 'Chromium', 'linux'),
         SourceListCondition('x64', 'Chrome', 'linux')])))
-    expected.append(SourceSet(set(['arm']), set([
+    expected.add(SourceSet(set(['arm']), set([
         SourceListCondition('arm', 'Chromium', 'linux')])))
-    expected.append(SourceSet(set(['chrome']), set([
+    expected.add(SourceSet(set(['chrome']), set([
         SourceListCondition('ia32', 'Chrome', 'linux'),
         SourceListCondition('x64', 'Chrome', 'linux'),
         SourceListCondition('arm-neon', 'ChromeOS', 'linux')])))
-    expected.append(SourceSet(set(['arm-neon', 'chromeos']), set([
+    expected.add(SourceSet(set(['arm-neon', 'chromeos']), set([
         SourceListCondition('arm-neon', 'ChromeOS', 'linux')])))
 
-    sets = gg.CreatePairwiseDisjointSets([a, b, c, d, e, f])
-    self.assertEqualSets(expected, sets)
+    source_sets = gg.CreatePairwiseDisjointSets([a, b, c, d, e, f])
+    self.assertEqualSets(expected, set(source_sets))
 
   def testReduceConditions(self):
     # Set conditions span all of the supported architectures for linux.
@@ -296,10 +311,11 @@ class SourceSetUnittest(unittest.TestCase):
                        SourceListCondition('arm', 'Chromium', 'linux'),
                        SourceListCondition('arm64', 'Chromium', 'linux'),
                        SourceListCondition('arm-neon', 'Chromium', 'linux'),
-                       SourceListCondition('mipsel', 'Chromium', 'linux')]))
+                       SourceListCondition('mipsel', 'Chromium', 'linux'),
+                       SourceListCondition('mips64el', 'Chromium', 'linux')]))
     gg.ReduceConditionalLogic(a)
 
-    # Conditions should reduce to a single condition with wild-card for
+    # Conditions should reduce to a single condition with wild-card for arch.
     expected = set([SourceListCondition('*', 'Chromium', 'linux')])
     self.assertEqualSets(expected, a.conditions)
 
@@ -332,6 +348,16 @@ class SourceSetUnittest(unittest.TestCase):
     gg.ReduceConditionalLogic(c)
     expected = set([SourceListCondition('x64', 'Chromium', '*')])
     self.assertEqualSets(expected, c.conditions)
+
+    # Spans all architectures for Chromium, but also all targets for ia32 & win.
+    d = SourceSet(set(['foo.c']),
+                  set([SourceListCondition('x64', 'Chromium', 'win'),
+                       SourceListCondition('ia32', 'Chromium', 'win'),
+                       SourceListCondition('ia32', 'Chrome', 'win')]))
+    gg.ReduceConditionalLogic(d)
+    expected = set([SourceListCondition('*', 'Chromium', 'win'),
+                    SourceListCondition('ia32', '*', 'win')])
+    self.assertEqualSets(expected, d.conditions)
 
   def testReduceConditions_fullSpan(self):
     # Build SourceSet with conditions spanning every combination of attributes.
