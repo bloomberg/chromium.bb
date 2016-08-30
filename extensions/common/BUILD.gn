@@ -6,7 +6,6 @@ import("//build/config/features.gni")
 import("//extensions/extensions.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
-# GYP version: extensions/extensions.gyp:extensions_common_constants
 source_set("common_constants") {
   sources =
       rebase_path(extensions_gypi_values.extensions_common_constants_sources,
@@ -55,6 +54,8 @@ if (enable_extensions) {
     ]
 
     deps = [
+      "//base",
+
       # TODO(benwells): figure out what to do with the api target and
       # api resources compiled into the chrome resource bundle.
       # http://crbug.com/162530
@@ -89,5 +90,68 @@ if (enable_extensions) {
                       "//extensions")
       sources += nacl_sources
     }
+  }
+
+  source_set("unit_tests") {
+    testonly = true
+    sources = [
+      "api/declarative/declarative_manifest_unittest.cc",
+      "api/printer_provider/usb_printer_manifest_unittest.cc",
+      "api/sockets/sockets_manifest_permission_unittest.cc",
+      "csp_validator_unittest.cc",
+      "event_filter_unittest.cc",
+      "extension_l10n_util_unittest.cc",
+      "extension_messages_unittest.cc",
+      "extension_resource_unittest.cc",
+      "extension_set_unittest.cc",
+      "features/base_feature_provider_unittest.cc",
+      "features/complex_feature_unittest.cc",
+      "features/simple_feature_unittest.cc",
+      "file_util_unittest.cc",
+      "image_util_unittest.cc",
+      "manifest_handler_unittest.cc",
+      "manifest_handlers/content_capabilities_manifest_unittest.cc",
+      "manifest_handlers/default_locale_manifest_unittest.cc",
+      "manifest_handlers/externally_connectable_unittest.cc",
+      "manifest_handlers/file_handler_manifest_unittest.cc",
+      "manifest_handlers/icons_handler_unittest.cc",
+      "manifest_handlers/incognito_manifest_unittest.cc",
+      "manifest_handlers/kiosk_mode_info_unittest.cc",
+      "manifest_handlers/oauth2_manifest_unittest.cc",
+      "manifest_handlers/shared_module_manifest_unittest.cc",
+      "message_bundle_unittest.cc",
+      "one_shot_event_unittest.cc",
+      "permissions/api_permission_set_unittest.cc",
+      "permissions/manifest_permission_set_unittest.cc",
+      "permissions/socket_permission_unittest.cc",
+      "permissions/usb_device_permission_unittest.cc",
+      "stack_frame_unittest.cc",
+      "update_manifest_unittest.cc",
+      "url_pattern_set_unittest.cc",
+      "url_pattern_unittest.cc",
+      "user_script_unittest.cc",
+      "value_builder_unittest.cc",
+    ]
+
+    deps = [
+      ":common",
+      "//base",
+      "//base:i18n",
+      "//base/test:test_support",
+      "//components/crx_file",
+      "//device/usb",
+      "//extensions:extensions_resources",
+
+      # TODO(brettw) these tests should not be including headers from browser.
+      "//extensions:test_support",
+      "//extensions/browser",
+      "//extensions/strings",
+      "//ipc",
+      "//testing/gmock",
+      "//testing/gtest",
+      "//ui/base",
+      "//ui/gfx",
+      "//url",
+    ]
   }
 }  # enable_extensions

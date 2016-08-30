@@ -47,6 +47,14 @@ check_targets = [
   "//device/*",
 
   #"//extensions/*",  # Lots of errors.
+  "//extensions:extensions_unittests",
+  "//extensions/browser:browser_tests",
+  "//extensions/browser:unit_tests",
+  "//extensions/common:unit_tests",
+  "//extensions/renderer:unit_tests",
+  "//extensions/shell:browser_tests",
+  "//extensions/shell:unit_tests",
+  "//extensions/utility:unit_tests",
   "//gin/*",
   "//google_apis/*",
   "//google_update/*",

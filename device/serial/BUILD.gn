@@ -91,7 +91,7 @@ static_library("test_support") {
     "test_serial_io_handler.h",
   ]
 
-  deps = [
+  public_deps = [
     ":serial",
   ]
 }

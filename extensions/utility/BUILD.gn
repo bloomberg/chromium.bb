@@ -23,3 +23,20 @@ source_set("utility") {
     "//skia",
   ]
 }
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "unpacker_unittest.cc",
+  ]
+  deps = [
+    ":utility",
+    "//base",
+    "//extensions:test_support",
+    "//extensions/common",
+    "//extensions/strings",
+    "//testing/gtest",
+    "//third_party/zlib:zip",
+    "//ui/base",
+  ]
+}

@@ -12,7 +12,7 @@
 #include "extensions/shell/test/shell_apitest.h"
 
 #if defined(USE_AURA)
-#include "ui/aura/window.h"
+#include "ui/aura/window.h"  // nogncheck
 #endif
 
 namespace extensions {

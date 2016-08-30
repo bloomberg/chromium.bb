@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
+import("//build/config/ui.gni")
 import("//extensions/shell/app_shell.gni")
 
 # Technically, this directory should not depend on files from src/chrome, but
@@ -215,6 +216,58 @@ if (is_mac) {
     ]
     deps = [
       ":app_shell_lib",
+    ]
+  }
+}
+
+source_set("browser_tests") {
+  testonly = true
+  sources = [
+    "browser/geolocation/geolocation_apitest.cc",
+    "browser/shell_browsertest.cc",
+    "test/shell_apitest.cc",
+    "test/shell_apitest.h",
+    "test/shell_test.cc",
+    "test/shell_test.h",
+    "test/shell_test_launcher_delegate.cc",
+    "test/shell_test_launcher_delegate.h",
+    "test/shell_tests_main.cc",
+  ]
+
+  defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
+
+  deps = [
+    ":app_shell_lib",
+    "//base",
+    "//base/test:test_support",
+    "//components/version_info",
+    "//content/shell:content_shell_lib",
+    "//content/test:test_support",
+    "//extensions:test_support",
+    "//extensions/browser",
+    "//extensions/common",
+  ]
+
+  if (use_aura) {
+    deps += [ "//ui/aura" ]
+  }
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = []
+
+  deps = [
+    ":app_shell_lib",
+    "//base",
+    "//base/test:test_support",
+    "//extensions/browser",
+  ]
+
+  if (is_chromeos) {
+    deps += [
+      "//chromeos:test_support",
+      "//components/keyed_service/content",
     ]
   }
 }

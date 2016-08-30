@@ -46,3 +46,55 @@ source_set("renderer") {
     ]
   }
 }
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "activity_log_converter_strategy_unittest.cc",
+    "api/mojo_private/mojo_private_unittest.cc",
+    "api/serial/data_receiver_unittest.cc",
+    "api/serial/data_sender_unittest.cc",
+    "api/serial/serial_api_unittest.cc",
+    "api_test_base.cc",
+    "api_test_base.h",
+    "api_test_base_unittest.cc",
+    "event_unittest.cc",
+    "gc_callback_unittest.cc",
+    "json_schema_unittest.cc",
+    "messaging_utils_unittest.cc",
+    "module_system_test.cc",
+    "module_system_test.h",
+    "module_system_unittest.cc",
+    "mojo/keep_alive_client_unittest.cc",
+    "mojo/stash_client_unittest.cc",
+    "safe_builtins_unittest.cc",
+    "scoped_web_frame.cc",
+    "scoped_web_frame.h",
+    "script_context_set_unittest.cc",
+    "script_context_unittest.cc",
+    "utils_unittest.cc",
+  ]
+
+  deps = [
+    ":renderer",
+    "//base",
+    "//device/serial:test_support",
+    "//extensions:extensions_renderer_resources",
+
+    # TODO(brettw) these tests should not be including headers from browser.
+    "//extensions/browser",
+    "//extensions/common",
+    "//gin",
+    "//mojo/edk/js",
+    "//testing/gtest",
+    "//third_party/WebKit/public:blink",
+    "//ui/base",
+  ]
+
+  if (enable_wifi_display && proprietary_codecs) {
+    sources += [
+      "api/display_source/wifi_display/wifi_display_elementary_stream_descriptor_unittest.cc",
+      "api/display_source/wifi_display/wifi_display_media_packetizer_unittest.cc",
+    ]
+  }
+}
