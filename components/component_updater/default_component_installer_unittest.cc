@@ -76,7 +76,7 @@ class FakeInstallerTraits : public ComponentInstallerTraits {
   }
 
   bool SupportsGroupPolicyEnabledComponentUpdates() const override {
-    return false;
+    return true;
   }
 
   bool RequiresNetworkEncryption() const override { return true; }
@@ -229,6 +229,7 @@ TEST_F(DefaultComponentInstallerTest, RegisterComponent) {
   EXPECT_STREQ("fake name", component.name.c_str());
   EXPECT_EQ(expected_attrs, component.installer_attributes);
   EXPECT_TRUE(component.requires_network_encryption);
+  EXPECT_TRUE(component.supports_group_policy_enable_component_updates);
 }
 
 }  // namespace component_updater

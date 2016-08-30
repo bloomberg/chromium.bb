@@ -335,6 +335,9 @@ void DefaultComponentInstaller::FinishRegistration(
   crx.requires_network_encryption =
       installer_traits_->RequiresNetworkEncryption();
   crx.handled_mime_types = installer_traits_->GetMimeTypes();
+  crx.supports_group_policy_enable_component_updates =
+      installer_traits_->SupportsGroupPolicyEnabledComponentUpdates();
+
   if (!cus->RegisterComponent(crx)) {
     LOG(ERROR) << "Component registration failed for "
                << installer_traits_->GetName();
