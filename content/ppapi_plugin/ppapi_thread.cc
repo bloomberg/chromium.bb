@@ -145,7 +145,6 @@ void PpapiThread::Shutdown() {
   if (plugin_entry_points_.shutdown_module)
     plugin_entry_points_.shutdown_module();
   blink_platform_impl_->Shutdown();
-  blink::Platform::shutdown();
 }
 
 bool PpapiThread::Send(IPC::Message* msg) {

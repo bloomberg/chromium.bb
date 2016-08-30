@@ -57,9 +57,6 @@ UtilityThreadImpl::~UtilityThreadImpl() {
 
 void UtilityThreadImpl::Shutdown() {
   ChildThreadImpl::Shutdown();
-
-  if (blink_platform_impl_)
-    blink::Platform::shutdown();
 }
 
 void UtilityThreadImpl::ReleaseProcessIfNeeded() {
