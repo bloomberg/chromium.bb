@@ -178,6 +178,8 @@ ScopedJavaLocalRef<jobject> OfflinePageDownloadBridge::GetItemByGuid(
     const JavaParamRef<jstring>& j_guid) {
   std::string guid = ConvertJavaStringToUTF8(env, j_guid);
   const DownloadUIItem* item = download_ui_adapter_->GetItem(guid);
+  if (item == nullptr)
+    return ScopedJavaLocalRef<jobject>();
   return ToJavaOfflinePageDownloadItem(env, *item);
 }
 
