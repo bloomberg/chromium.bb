@@ -23,6 +23,7 @@ DesktopMediaSourceViewStyle::DesktopMediaSourceViewStyle(
 DesktopMediaSourceViewStyle::DesktopMediaSourceViewStyle(
     int columns,
     const gfx::Size& item_size,
+    const gfx::Rect& icon_rect,
     const gfx::Rect& label_rect,
     gfx::HorizontalAlignment text_alignment,
     const gfx::Rect& image_rect,
@@ -30,6 +31,7 @@ DesktopMediaSourceViewStyle::DesktopMediaSourceViewStyle(
     int focus_rectangle_inset)
     : columns(columns),
       item_size(item_size),
+      icon_rect(icon_rect),
       label_rect(label_rect),
       text_alignment(text_alignment),
       image_rect(image_rect),
@@ -43,11 +45,14 @@ DesktopMediaSourceView::DesktopMediaSourceView(
     : parent_(parent),
       source_id_(source_id),
       style_(style),
+      icon_view_(new views::ImageView()),
       image_view_(new views::ImageView()),
       label_(new views::Label()),
       selected_(false) {
+  AddChildView(icon_view_);
   AddChildView(image_view_);
   AddChildView(label_);
+  icon_view_->set_interactive(false);
   image_view_->set_interactive(false);
   SetFocusBehavior(FocusBehavior::ALWAYS);
   SetStyle(style_);
@@ -64,6 +69,10 @@ void DesktopMediaSourceView::SetName(const base::string16& name) {
 
 void DesktopMediaSourceView::SetThumbnail(const gfx::ImageSkia& thumbnail) {
   image_view_->SetImage(thumbnail);
+}
+
+void DesktopMediaSourceView::SetIcon(const gfx::ImageSkia& icon) {
+  icon_view_->SetImage(icon);
 }
 
 void DesktopMediaSourceView::SetSelected(bool selected) {
@@ -127,6 +136,8 @@ void DesktopMediaSourceView::SetStyle(DesktopMediaSourceViewStyle style) {
     image_view_->SetBorder(views::Border::CreateSolidBorder(
         style_.selection_border_thickness, border_color));
   }
+  icon_view_->SetBoundsRect(style_.icon_rect);
+  icon_view_->SetImageSize(style_.icon_rect.size());
   label_->SetBoundsRect(style_.label_rect);
   label_->SetHorizontalAlignment(style_.text_alignment);
 }

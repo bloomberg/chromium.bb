@@ -7,11 +7,17 @@
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/media/desktop_media_list.h"
+#include "chrome/browser/media/window_icon_util.h"
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_picker_views.h"
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_source_view.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/grit/extensions_browser_resources.h"
+#include "grit/theme_resources.h"
 #include "ui/accessibility/ax_view_state.h"
+#include "ui/aura/window.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/views/focus/focus_manager.h"
 
 using content::DesktopMediaID;
@@ -20,6 +26,25 @@ namespace {
 
 const int kDesktopMediaSourceViewGroupId = 1;
 
+#if defined(USE_ASH)
+// Here we are going to display default app icon for app windows without an
+// icon, and display product logo for chrome browser windows.
+gfx::ImageSkia LoadDefaultIcon(aura::Window* window) {
+  BrowserView* browser_view =
+      BrowserView::GetBrowserViewForNativeWindow(window);
+  Browser* browser = browser_view ? browser_view->browser() : nullptr;
+
+  // Apps could be launched in a view other than BrowserView, so we count those
+  // windows without Browser association as apps.
+  // Technically dev tool is actually a special app, but we would like to
+  // display product logo for it, because intuitively it is internal to browser.
+  bool is_app = !browser || (browser->is_app() && !browser->is_devtools());
+  int idr = is_app ? IDR_APP_DEFAULT_ICON : IDR_PRODUCT_LOGO_32;
+
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  return *rb.GetImageSkiaNamed(idr);
+}
+#endif
 }  // namespace
 
 DesktopMediaListView::DesktopMediaListView(
@@ -151,6 +176,19 @@ void DesktopMediaListView::OnSourceAdded(DesktopMediaList* list, int index) {
 
   source_view->SetName(source.name);
   source_view->SetGroup(kDesktopMediaSourceViewGroupId);
+  if (source.id.type == DesktopMediaID::TYPE_WINDOW) {
+    gfx::ImageSkia icon_image = GetWindowIcon(source.id);
+#if defined(USE_ASH)
+    // Empty icons are used to represent default icon for aura windows. By
+    // detecting this, we load the default icon from resource.
+    if (icon_image.isNull()) {
+      aura::Window* window = DesktopMediaID::GetAuraWindowById(source.id);
+      if (window)
+        icon_image = LoadDefaultIcon(window);
+    }
+#endif
+    source_view->SetIcon(icon_image);
+  }
   AddChildViewAt(source_view, index);
 
   if ((child_count() - 1) % active_style_->columns == 0)

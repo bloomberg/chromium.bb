@@ -83,6 +83,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
     const DesktopMediaSourceViewStyle kSingleScreenStyle(
         1,                                       // columns
         gfx::Size(360, 280),                     // item_size
+        gfx::Rect(),                             // icon_rect
         gfx::Rect(),                             // label_rect
         gfx::HorizontalAlignment::ALIGN_CENTER,  // text_alignment
         gfx::Rect(20, 20, 320, 240),             // image_rect
@@ -92,6 +93,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
     const DesktopMediaSourceViewStyle kGenericScreenStyle(
         2,                                       // columns
         gfx::Size(270, 220),                     // item_size
+        gfx::Rect(),                             // icon_rect
         gfx::Rect(15, 165, 240, 40),             // label_rect
         gfx::HorizontalAlignment::ALIGN_CENTER,  // text_alignment
         gfx::Rect(15, 15, 240, 150),             // image_rect
@@ -122,13 +124,14 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
     source_types_.push_back(DesktopMediaID::TYPE_WINDOW);
 
     const DesktopMediaSourceViewStyle kWindowStyle(
-        3,                                       // columns
-        gfx::Size(180, 160),                     // item_size
-        gfx::Rect(10, 110, 160, 40),             // label_rect
-        gfx::HorizontalAlignment::ALIGN_CENTER,  // text_alignment
-        gfx::Rect(8, 8, 164, 104),               // image_rect
-        2,                                       // selection_border_thickness
-        5);                                      // focus_rectangle_inset
+        3,                                     // columns
+        gfx::Size(180, 160),                   // item_size
+        gfx::Rect(10, 120, 20, 20),            // icon_rect
+        gfx::Rect(32, 110, 138, 40),           // label_rect
+        gfx::HorizontalAlignment::ALIGN_LEFT,  // text_alignment
+        gfx::Rect(8, 8, 164, 104),             // image_rect
+        2,                                     // selection_border_thickness
+        5);                                    // focus_rectangle_inset
 
     views::ScrollView* window_scroll_view =
         views::ScrollView::CreateScrollViewWithBorder();
@@ -154,6 +157,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
     const DesktopMediaSourceViewStyle kTabStyle(
         1,                                     // columns
         gfx::Size(600, 30),                    // item_size
+        gfx::Rect(),                           // icon_rect
         gfx::Rect(46, 0, 490, 30),             // label_rect
         gfx::HorizontalAlignment::ALIGN_LEFT,  // text_alignment
         gfx::Rect(10, 2, 26, 26),              // image_rect

@@ -7,6 +7,7 @@
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
 
+#include "ui/gfx/x/x11_error_tracker.h"
 #include "ui/gfx/x/x11_types.h"
 
 gfx::ImageSkia GetWindowIcon(content::DesktopMediaID id) {
@@ -20,10 +21,20 @@ gfx::ImageSkia GetWindowIcon(content::DesktopMediaID id) {
   unsigned long size;
   long* data;
 
+  // The |error_tracker| essentially provides an empty X error handler for
+  // the call of XGetWindowProperty. The motivation is to guard against crash
+  // for any reason that XGetWindowProperty fails. For example, at the time that
+  // XGetWindowProperty is called, the window handler (a.k.a |id.id|) may
+  // already be invalid due to the fact that the end user has closed the
+  // corresponding window, etc.
+  std::unique_ptr<gfx::X11ErrorTracker> error_tracker(
+      new gfx::X11ErrorTracker());
   int status = XGetWindowProperty(display, id.id, property, 0L, ~0L, False,
                                   AnyPropertyType, &actual_type, &actual_format,
                                   &size, &bytes_after,
                                   reinterpret_cast<unsigned char**>(&data));
+  error_tracker.reset();
+
   if (status != Success) {
     return gfx::ImageSkia();
   }

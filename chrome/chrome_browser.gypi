@@ -1134,6 +1134,7 @@
       'browser/download/notification/download_notification_manager.h',
       'browser/media/protected_media_identifier_permission_context.cc',
       'browser/media/protected_media_identifier_permission_context.h',
+      'browser/media/window_icon_util_chromeos.cc',
       'browser/metrics/chromeos_metrics_provider.cc',
       'browser/metrics/chromeos_metrics_provider.h',
       'browser/metrics/perf/cpu_identity.cc',
