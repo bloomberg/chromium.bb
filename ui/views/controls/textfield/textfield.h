@@ -150,7 +150,7 @@ class VIEWS_EXPORT Textfield : public View,
   void set_placeholder_text(const base::string16& text) {
     placeholder_text_ = text;
   }
-  virtual base::string16 GetPlaceholderText() const;
+  base::string16 GetPlaceholderText() const;
 
   SkColor placeholder_text_color() const { return placeholder_text_color_; }
   void set_placeholder_text_color(SkColor color) {
