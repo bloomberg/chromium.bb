@@ -17,7 +17,8 @@ int64_t SharedSampler::GetSupportedFlags() const { return 0; }
 
 void SharedSampler::RegisterCallbacks(
     base::ProcessId process_id,
-    const OnIdleWakeupsCallback& on_idle_wakeups) {}
+    const OnIdleWakeupsCallback& on_idle_wakeups,
+    const OnPhysicalMemoryCallback& on_physical_memory) {}
 
 void SharedSampler::UnregisterCallbacks(base::ProcessId process_id) {}
 

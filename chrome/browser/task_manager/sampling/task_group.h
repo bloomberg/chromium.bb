@@ -107,6 +107,7 @@ class TaskGroup {
 
   void OnCpuRefreshDone(double cpu_usage);
 
+  void OnPhysicalMemoryUsageRefreshDone(int64_t physical_bytes);
   void OnMemoryUsageRefreshDone(MemoryUsageStats memory_usage);
 
   void OnIdleWakeupsRefreshDone(int idle_wakeups_per_second);

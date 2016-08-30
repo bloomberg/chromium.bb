@@ -113,6 +113,8 @@ TaskGroup::TaskGroup(
 
   shared_sampler_->RegisterCallbacks(
       process_id_, base::Bind(&TaskGroup::OnIdleWakeupsRefreshDone,
+                              weak_ptr_factory_.GetWeakPtr()),
+                   base::Bind(&TaskGroup::OnPhysicalMemoryUsageRefreshDone,
                               weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -251,11 +253,26 @@ void TaskGroup::OnCpuRefreshDone(double cpu_usage) {
   OnBackgroundRefreshTypeFinished(REFRESH_TYPE_CPU);
 }
 
+void TaskGroup::OnPhysicalMemoryUsageRefreshDone(int64_t physical_bytes) {
+#if defined(OS_WIN)
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  memory_usage_.physical_bytes = physical_bytes;
+  OnBackgroundRefreshTypeFinished(REFRESH_TYPE_PHYSICAL_MEMORY);
+#endif  // OS_WIN
+}
+
 void TaskGroup::OnMemoryUsageRefreshDone(MemoryUsageStats memory_usage) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+#if defined(OS_WIN)
+  memory_usage_.private_bytes = memory_usage.private_bytes;
+  memory_usage_.shared_bytes = memory_usage.shared_bytes;
+  OnBackgroundRefreshTypeFinished(REFRESH_TYPE_MEMORY_DETAILS);
+#else
   memory_usage_ = memory_usage;
   OnBackgroundRefreshTypeFinished(REFRESH_TYPE_MEMORY);
+#endif // OS_WIN
 }
 
 void TaskGroup::OnIdleWakeupsRefreshDone(int idle_wakeups_per_second) {

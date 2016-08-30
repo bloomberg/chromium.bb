@@ -636,13 +636,14 @@ void TaskManagerTableModel::UpdateRefreshTypes(int column_id, bool visibility) {
       break;
 
     case IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN:
+      type = REFRESH_TYPE_PHYSICAL_MEMORY;
+      break;
+
     case IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN:
     case IDS_TASK_MANAGER_SHARED_MEM_COLUMN:
     case IDS_TASK_MANAGER_SWAPPED_MEM_COLUMN:
-      type = REFRESH_TYPE_MEMORY;
+      type = REFRESH_TYPE_MEMORY_DETAILS;
       if (table_view_delegate_->IsColumnVisible(
-              IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN) ||
-          table_view_delegate_->IsColumnVisible(
               IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN) ||
           table_view_delegate_->IsColumnVisible(
               IDS_TASK_MANAGER_SHARED_MEM_COLUMN) ||

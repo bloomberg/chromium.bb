@@ -40,13 +40,15 @@ class SharedSampler : public base::RefCountedThreadSafe<SharedSampler> {
   // when the refresh is done on the worker thread.
   // These callbacks are passed via RegisterCallbacks.
   using OnIdleWakeupsCallback = base::Callback<void(int)>;
+  using OnPhysicalMemoryCallback = base::Callback<void(int64_t)>;
 
   // Returns a combination of refresh flags supported by the shared sampler.
   int64_t GetSupportedFlags() const;
 
   // Registers task group specific callbacks.
   void RegisterCallbacks(base::ProcessId process_id,
-                         const OnIdleWakeupsCallback& on_idle_wakeups);
+                         const OnIdleWakeupsCallback& on_idle_wakeups,
+                         const OnPhysicalMemoryCallback& on_physical_memory);
 
   // Unregisters task group specific callbacks.
   void UnregisterCallbacks(base::ProcessId process_id);
@@ -68,6 +70,7 @@ class SharedSampler : public base::RefCountedThreadSafe<SharedSampler> {
     ~Callbacks();
 
     OnIdleWakeupsCallback on_idle_wakeups;
+    OnPhysicalMemoryCallback on_physical_memory;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Callbacks);
@@ -79,6 +82,7 @@ class SharedSampler : public base::RefCountedThreadSafe<SharedSampler> {
   struct RefreshResult {
     base::ProcessId process_id;
     int idle_wakeups_per_second;
+    int64_t physical_bytes;
   };
 
   typedef std::vector<RefreshResult> RefreshResults;

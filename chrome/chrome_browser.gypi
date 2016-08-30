@@ -692,8 +692,6 @@
       'browser/win/jumplist.h',
       'browser/win/jumplist_updater.cc',
       'browser/win/jumplist_updater.h',
-      'browser/win/private_working_set_snapshot.cc',
-      'browser/win/private_working_set_snapshot.h',
       'browser/win/settings_app_monitor.cc',
       'browser/win/settings_app_monitor.h',
     ],

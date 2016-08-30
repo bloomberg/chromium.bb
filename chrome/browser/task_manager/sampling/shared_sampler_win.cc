@@ -219,6 +219,7 @@ struct ProcessData {
   ProcessData() = default;
   ProcessData(ProcessData&&) = default;
 
+  int64_t physical_bytes;
   std::vector<ThreadData> threads;
 
  private:
@@ -312,7 +313,7 @@ SharedSampler::SharedSampler(
 SharedSampler::~SharedSampler() {}
 
 int64_t SharedSampler::GetSupportedFlags() const {
-  return REFRESH_TYPE_IDLE_WAKEUPS;
+  return REFRESH_TYPE_IDLE_WAKEUPS | REFRESH_TYPE_PHYSICAL_MEMORY;
 }
 
 SharedSampler::Callbacks::Callbacks() {}
@@ -321,11 +322,13 @@ SharedSampler::Callbacks::~Callbacks() {}
 
 SharedSampler::Callbacks::Callbacks(Callbacks&& other) {
   on_idle_wakeups = std::move(other.on_idle_wakeups);
+  on_physical_memory = std::move(other.on_physical_memory);
 }
 
 void SharedSampler::RegisterCallbacks(
     base::ProcessId process_id,
-    const OnIdleWakeupsCallback& on_idle_wakeups) {
+    const OnIdleWakeupsCallback& on_idle_wakeups,
+    const OnPhysicalMemoryCallback& on_physical_memory) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (process_id == 0)
@@ -333,6 +336,7 @@ void SharedSampler::RegisterCallbacks(
 
   Callbacks callbacks;
   callbacks.on_idle_wakeups = on_idle_wakeups;
+  callbacks.on_physical_memory = on_physical_memory;
   bool result = callbacks_map_.insert(
       std::make_pair(process_id, std::move(callbacks))).second;
   DCHECK(result);
@@ -477,6 +481,9 @@ std::unique_ptr<ProcessDataSnapshot> SharedSampler::CaptureSnapshot() {
         // recent snapshot.
         ProcessData process_data;
 
+        process_data.physical_bytes =
+            static_cast<int64_t>(pi->WorkingSetPrivateSize);
+
         // Iterate over threads and store each thread's ID and number of context
         // switches.
         for (ULONG thread_index = 0; thread_index < pi->NumberOfThreads;
@@ -553,6 +560,7 @@ void SharedSampler::MakeResultsFromTwoSnapshots(
     result.process_id = process_id;
     result.idle_wakeups_per_second =
         static_cast<int>(round(idle_wakeups_delta / time_delta));
+    result.physical_bytes = process.physical_bytes;
     results->push_back(result);
   }
 }
@@ -565,6 +573,7 @@ void SharedSampler::MakeResultsFromSnapshot(const ProcessDataSnapshot& snapshot,
     // Use 0 for Idle Wakeups / sec in this case. This is consistent with
     // ProcessMetrics::CalculateIdleWakeupsPerSecond implementation.
     result.idle_wakeups_per_second = 0;
+    result.physical_bytes = pair.second.physical_bytes;
     results->push_back(result);
   }
 }
@@ -581,6 +590,7 @@ void SharedSampler::OnRefreshDone(
     // A sentinel value of -1 is used when the result isn't available.
     // Task manager will use this to display 'N/A'.
     int idle_wakeups_per_second = -1;
+    int64_t physical_bytes = -1;
 
     // Match refresh result by |process_id|.
     // This relies on refresh results being ordered by Process ID.
@@ -594,6 +604,7 @@ void SharedSampler::OnRefreshDone(
       if (result.process_id == process_id) {
         // Data matched in |refresh_results|.
         idle_wakeups_per_second = result.idle_wakeups_per_second;
+        physical_bytes = result.physical_bytes;
         ++result_index;
         break;
       }
@@ -606,7 +617,14 @@ void SharedSampler::OnRefreshDone(
 
     if (TaskManagerObserver::IsResourceRefreshEnabled(REFRESH_TYPE_IDLE_WAKEUPS,
                                                       refresh_flags_)) {
+      DCHECK(callback_entry.second.on_idle_wakeups);
       callback_entry.second.on_idle_wakeups.Run(idle_wakeups_per_second);
+    }
+
+    if (TaskManagerObserver::IsResourceRefreshEnabled(
+        REFRESH_TYPE_PHYSICAL_MEMORY, refresh_flags_)) {
+      DCHECK(callback_entry.second.on_physical_memory);
+      callback_entry.second.on_physical_memory.Run(physical_bytes);
     }
   }
 

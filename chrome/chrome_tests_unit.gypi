@@ -300,7 +300,6 @@
       'browser/update_client/chrome_update_query_params_delegate_unittest.cc',
       'browser/win/chrome_elf_init_unittest.cc',
       'browser/win/enumerate_modules_model_unittest.cc',
-      'browser/win/private_working_set_snapshot_unittest.cc',
       'common/chrome_content_client_unittest.cc',
       'common/chrome_paths_unittest.cc',
       'common/component_flash_hint_file_linux_unittest.cc',
@@ -733,6 +732,7 @@
     'chrome_unit_tests_task_manager_sources': [
       'browser/task_manager/providers/browser_process_task_unittest.cc',
       'browser/task_manager/providers/child_process_task_unittest.cc',
+      'browser/task_manager/sampling/shared_sampler_unittest_win.cc',
       'browser/task_manager/sampling/task_manager_impl_unittest.cc',
       'browser/task_manager/task_manager_observer_unittest.cc',
       'browser/task_manager/test_task_manager.cc',
