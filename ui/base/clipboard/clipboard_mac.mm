@@ -324,12 +324,17 @@ SkBitmap ClipboardMac::ReadImage(ClipboardType type, NSPasteboard* pb) const {
   } @catch (id exception) {
   }
 
-  SkBitmap bitmap;
   if (image.get()) {
-    bitmap = skia::NSImageToSkBitmapWithColorSpace(
-        image.get(), /*is_opaque=*/ false, base::mac::GetSystemColorSpace());
+    if ([[image representations] count] == 1u) {
+      NSImageRep* rep = [[image representations] objectAtIndex:0];
+      return skia::NSImageRepToSkBitmapWithColorSpace(
+          rep, NSMakeSize([rep pixelsWide], [rep pixelsHigh]),
+          /*is_opaque=*/false, base::mac::GetSystemColorSpace());
+    }
+    return skia::NSImageToSkBitmapWithColorSpace(
+        image.get(), /*is_opaque=*/false, base::mac::GetSystemColorSpace());
   }
-  return bitmap;
+  return SkBitmap();
 }
 
 SkBitmap ClipboardMac::ReadImage(ClipboardType type) const {

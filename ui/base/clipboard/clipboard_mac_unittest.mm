@@ -58,8 +58,8 @@ TEST_F(ClipboardMacTest, ReadImageRetina) {
 
   SkBitmap bitmap = clipboard_mac->ReadImage(ui::CLIPBOARD_TYPE_COPY_PASTE,
                                              pasteboard->get());
-  EXPECT_EQ(width, bitmap.width());
-  EXPECT_EQ(height, bitmap.height());
+  EXPECT_EQ(2 * width, bitmap.width());
+  EXPECT_EQ(2 * height, bitmap.height());
 }
 
 TEST_F(ClipboardMacTest, ReadImageNonRetina) {
