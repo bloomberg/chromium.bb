@@ -3930,7 +3930,10 @@ bind_subcompositor(struct wl_client *client,
 				       compositor, NULL);
 }
 
-/** Set a DPMS mode on all of the compositor's outputs
+/** Apply a DPMS mode to the compositor's outputs.
+ *
+ * Outputs may skip setting the DPMS state if they are being used to
+ * display an surface that is requesting idle behaviors be inhibited.
  *
  * \param compositor The compositor instance
  * \param state The DPMS state the outputs will be set to
