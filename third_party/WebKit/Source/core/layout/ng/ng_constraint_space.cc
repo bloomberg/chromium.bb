@@ -8,6 +8,19 @@
 
 namespace blink {
 
+static inline NGLogicalSize LogicalSizeForWritingMode(
+    NGWritingMode writing_mode,
+    NGPhysicalConstraintSpace* physical_space) {
+  return writing_mode == HorizontalTopBottom
+             ? NGLogicalSize(physical_space->ContainerSize().width,
+                             physical_space->ContainerSize().height)
+             : NGLogicalSize(physical_space->ContainerSize().height,
+                             physical_space->ContainerSize().width);
+}
+
+// TODO: This should set the size of the NGPhysicalConstraintSpace. Or we could
+// remove it requiring that a NGConstraintSpace is created from a
+// NGPhysicalConstraintSpace.
 NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
                                      NGLogicalSize container_size)
     : physical_space_(new NGPhysicalConstraintSpace()),
@@ -15,19 +28,21 @@ NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
   SetContainerSize(container_size);
 }
 
+NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
+                                     NGPhysicalConstraintSpace* physical_space)
+    : physical_space_(physical_space), writing_mode_(writing_mode) {
+  SetContainerSize(LogicalSizeForWritingMode(writing_mode, physical_space));
+}
+
 NGConstraintSpace::NGConstraintSpace(const NGConstraintSpace& other,
                                      NGLogicalSize container_size)
-    : physical_space_(new NGPhysicalConstraintSpace(*other.physical_space_)),
+    : physical_space_(*other.physical_space_),
       writing_mode_(other.writing_mode_) {
   SetContainerSize(container_size);
 }
 
 NGLogicalSize NGConstraintSpace::ContainerSize() const {
-  return writing_mode_ == HorizontalTopBottom
-             ? NGLogicalSize(physical_space_->container_size_.width,
-                             physical_space_->container_size_.height)
-             : NGLogicalSize(physical_space_->container_size_.height,
-                             physical_space_->container_size_.width);
+  return LogicalSizeForWritingMode(WritingMode(), physical_space_);
 }
 
 bool NGConstraintSpace::InlineTriggersScrollbar() const {

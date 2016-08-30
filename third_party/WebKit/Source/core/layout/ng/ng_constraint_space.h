@@ -27,14 +27,25 @@ class CORE_EXPORT NGConstraintSpace
   // Constructs a constraint space with a new backing NGPhysicalConstraintSpace.
   NGConstraintSpace(NGWritingMode writing_mode, NGLogicalSize container_size);
 
+  // Constructs a constraint space based on an existing backing
+  // NGPhysicalConstraintSpace.
+  NGConstraintSpace(NGWritingMode writing_mode, NGPhysicalConstraintSpace*);
+
   // Constructs a constraint space with a different NGWritingMode.
   NGConstraintSpace(NGWritingMode writing_mode,
                     const NGConstraintSpace* constraint_space)
-      : physical_space_(constraint_space->physical_space_),
+      : physical_space_(constraint_space->PhysicalSpace()),
         writing_mode_(writing_mode) {}
 
+  // TODO: This should either be removed or also take an offset (if we merge
+  // this with NGDerivedConstraintSpace).
   NGConstraintSpace(const NGConstraintSpace& other,
                     NGLogicalSize container_size);
+
+  NGPhysicalConstraintSpace* PhysicalSpace() const { return physical_space_; }
+  NGWritingMode WritingMode() const {
+    return static_cast<NGWritingMode>(writing_mode_);
+  }
 
   // Size of the container. Used for the following three cases:
   // 1) Percentage resolution.

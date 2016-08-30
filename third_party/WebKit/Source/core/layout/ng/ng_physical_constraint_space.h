@@ -41,7 +41,10 @@ class CORE_EXPORT NGPhysicalConstraintSpace final
     : public GarbageCollected<NGPhysicalConstraintSpace> {
  public:
   NGPhysicalConstraintSpace();
+  NGPhysicalConstraintSpace(NGPhysicalSize);
   NGPhysicalConstraintSpace(const NGPhysicalConstraintSpace&);
+
+  NGPhysicalSize ContainerSize() const { return container_size_; }
 
   void AddExclusion(const NGExclusion, unsigned options = 0);
   DoublyLinkedList<const NGExclusion> Exclusions(unsigned options = 0) const;
