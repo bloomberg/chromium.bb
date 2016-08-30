@@ -174,8 +174,8 @@ class POLICY_EXPORT ExternalPolicyDataFetcherBackend
 
   // Map that owns the net::URLFetchers for all currently running jobs and maps
   // from these to the corresponding Job.
-  typedef std::map<net::URLFetcher*, ExternalPolicyDataFetcher::Job*> JobMap;
-  JobMap job_map_;
+  struct FetcherAndJob;
+  std::map<const net::URLFetcher*, FetcherAndJob> job_map_;
 
   base::WeakPtrFactory<ExternalPolicyDataFetcherBackend> weak_factory_;
 
