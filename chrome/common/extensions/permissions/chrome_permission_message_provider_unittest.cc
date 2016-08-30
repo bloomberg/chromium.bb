@@ -16,7 +16,6 @@
 #include "extensions/common/permissions/settings_override_permission.h"
 #include "extensions/common/permissions/usb_device_permission.h"
 #include "extensions/common/url_pattern_set.h"
-#include "extensions/strings/grit/extensions_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 

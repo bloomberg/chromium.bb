@@ -24,7 +24,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/path.h"
-#include "ui/resources/grit/ui_resources.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/resources/grit/views_resources.h"
 #include "ui/views/view_targeter.h"

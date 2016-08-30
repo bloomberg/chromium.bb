@@ -7,7 +7,6 @@
 #include "ash/common/ash_layout_constants.h"
 #include "ash/common/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/common/frame/header_painter_util.h"
-#include "ash/resources/grit/ash_resources.h"
 #include "base/logging.h"  // DCHECK
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"

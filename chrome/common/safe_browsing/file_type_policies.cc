@@ -9,7 +9,6 @@
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_util.h"
 #include "chrome/grit/browser_resources.h"
-#include "chrome/grit/generated_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace safe_browsing {

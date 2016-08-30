@@ -25,7 +25,6 @@
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/google/core/browser/google_util.h"
 #include "net/base/url_util.h"

@@ -16,7 +16,6 @@
 #include "chrome/browser/ssl/bad_clock_blocking_page.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/grit/browser_resources.h"
 #include "components/grit/components_resources.h"
 #include "components/security_interstitials/core/ssl_error_ui.h"
 #include "content/public/browser/interstitial_page_delegate.h"

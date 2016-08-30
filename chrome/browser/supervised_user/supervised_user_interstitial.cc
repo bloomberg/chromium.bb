@@ -20,7 +20,6 @@
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_delegate.h"

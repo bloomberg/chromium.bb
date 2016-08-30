@@ -120,7 +120,6 @@
 #include "chrome/common/profiling.h"
 #include "chrome/common/variations/variations_util.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/grit/platform_locale_settings.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/device_event_log/device_event_log.h"
@@ -173,7 +172,6 @@
 #include "ui/base/layout.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/strings/grit/app_locale_settings.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/metrics/thread_watcher_android.h"

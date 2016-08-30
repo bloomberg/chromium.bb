@@ -16,7 +16,6 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/grit/locale_settings.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"

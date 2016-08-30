@@ -14,8 +14,6 @@
 #include "chrome/browser/interstitials/chrome_controller_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/grit/browser_resources.h"
-#include "chrome/grit/generated_resources.h"
 #include "components/grit/components_resources.h"
 #include "components/prefs/pref_service.h"
 #include "components/security_interstitials/core/common_string_util.h"

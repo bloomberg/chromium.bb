@@ -33,7 +33,6 @@
 #include "chrome/browser/ui/crypto_module_password_dialog_nss.h"
 #include "chrome/browser/ui/webui/certificate_viewer_webui.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/crypto_module.h"
