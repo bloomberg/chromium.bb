@@ -8,6 +8,7 @@ import("//build/config/compiler/compiler.gni")
 import("//build/config/nacl/config.gni")
 import("//build/toolchain/cc_wrapper.gni")
 import("//build/toolchain/toolchain.gni")
+import("//build_overrides/build.gni")
 
 if (current_cpu == "arm" || current_cpu == "arm64") {
   import("//build/config/arm.gni")
@@ -38,7 +39,8 @@ declare_args() {
   # only two architectures that are currently checked in). Turn this off when
   # you are using a custom toolchain and need to control -B in cflags.
   linux_use_bundled_binutils =
-      is_linux && (current_cpu == "x64" || current_cpu == "x86")
+      linux_use_bundled_binutils_override && is_linux &&
+      (current_cpu == "x64" || current_cpu == "x86")
   binutils_path = rebase_path("//third_party/binutils/Linux_x64/Release/bin",
                               root_build_dir)
 
