@@ -19,6 +19,7 @@
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
+#include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,10 +31,11 @@ namespace {
 
 class MockAutofillManager : public AutofillManager {
  public:
-  MockAutofillManager(TestAutofillDriver* driver, TestAutofillClient* client)
-      // Force to use the constructor designated for unit test, but we don't
-      // really need personal_data in this test so we pass a NULL pointer.
-      : AutofillManager(driver, client, NULL) {}
+  MockAutofillManager(TestAutofillDriver* driver,
+                      TestAutofillClient* client,
+                      PersonalDataManager* pdm)
+      // Force to use the constructor designated for unit test.
+      : AutofillManager(driver, client, pdm) {}
   virtual ~MockAutofillManager() {}
 
   MOCK_METHOD5(FillCreditCardForm,
@@ -55,7 +57,8 @@ class AutofillAssistantTest : public testing::Test {
       : message_loop_(),
         autofill_client_(),
         autofill_driver_(),
-        autofill_manager_(&autofill_driver_, &autofill_client_),
+        pdm_(),
+        autofill_manager_(&autofill_driver_, &autofill_client_, &pdm_),
         autofill_assistant_(&autofill_manager_) {}
 
   void EnableAutofillCreditCardAssist() {
@@ -101,6 +104,7 @@ class AutofillAssistantTest : public testing::Test {
   base::MessageLoop message_loop_;
   TestAutofillClient autofill_client_;
   testing::NiceMock<TestAutofillDriver> autofill_driver_;
+  TestPersonalDataManager pdm_;
   MockAutofillManager autofill_manager_;
   AutofillAssistant autofill_assistant_;
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -151,7 +155,28 @@ TEST_F(AutofillAssistantTest, CanShowCreditCardAssist_FeatureOn_NotSecure) {
   EXPECT_TRUE(autofill_assistant_.CanShowCreditCardAssist(form_structures));
 }
 
-TEST_F(AutofillAssistantTest, ShowAssistForCreditCard_ValidCard) {
+TEST_F(AutofillAssistantTest, ShowAssistForCreditCard_ValidCard_CancelCvc) {
+  EnableAutofillCreditCardAssist();
+  std::unique_ptr<FormStructure> form_structure = CreateValidCreditCardForm();
+
+  // Will extract the credit card form data.
+  std::vector<FormStructure*> form_structures{form_structure.get()};
+  EXPECT_TRUE(autofill_assistant_.CanShowCreditCardAssist(form_structures));
+
+  // Create a valid card for the assist.
+  CreditCard card;
+  test::SetCreditCardInfo(&card, "John Doe", "4111111111111111", "05", "2999");
+
+  // FillCreditCardForm should not be called if the user cancelled the CVC.
+  EXPECT_CALL(autofill_manager_, FillCreditCardForm(_, _, _, _, _)).Times(0);
+
+  autofill_assistant_.ShowAssistForCreditCard(card);
+  static_cast<CardUnmaskDelegate*>(
+      autofill_manager_.GetOrCreateFullCardRequest())
+      ->OnUnmaskPromptClosed();
+}
+
+TEST_F(AutofillAssistantTest, ShowAssistForCreditCard_ValidCard_SubmitCvc) {
   EnableAutofillCreditCardAssist();
   std::unique_ptr<FormStructure> form_structure = CreateValidCreditCardForm();
 
@@ -168,9 +193,15 @@ TEST_F(AutofillAssistantTest, ShowAssistForCreditCard_ValidCard) {
   EXPECT_CALL(
       autofill_manager_,
       FillCreditCardForm(kNoQueryId, _, _, CreditCardMatches(card.guid()),
-                         /* empty cvc */ base::string16()));
+                         base::ASCIIToUTF16("123")));
 
   autofill_assistant_.ShowAssistForCreditCard(card);
+
+  CardUnmaskDelegate::UnmaskResponse unmask_response;
+  unmask_response.cvc = base::ASCIIToUTF16("123");
+  static_cast<CardUnmaskDelegate*>(
+      autofill_manager_.GetOrCreateFullCardRequest())
+      ->OnUnmaskResponse(unmask_response);
 }
 
 }  // namespace autofill

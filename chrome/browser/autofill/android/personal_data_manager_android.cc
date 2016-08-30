@@ -248,28 +248,28 @@ class FullCardRequester : public payments::FullCardRequest::Delegate,
     jdelegate_.Reset(env, jdelegate);
 
     if (!card_) {
-      OnFullCardError();
+      OnFullCardRequestFailed();
       return;
     }
 
     content::WebContents* contents =
         content::WebContents::FromJavaWebContents(jweb_contents);
     if (!contents) {
-      OnFullCardError();
+      OnFullCardRequestFailed();
       return;
     }
 
     ContentAutofillDriverFactory* factory =
         ContentAutofillDriverFactory::FromWebContents(contents);
     if (!factory) {
-      OnFullCardError();
+      OnFullCardRequestFailed();
       return;
     }
 
     ContentAutofillDriver* driver =
         factory->DriverForFrame(contents->GetMainFrame());
     if (!driver) {
-      OnFullCardError();
+      OnFullCardRequestFailed();
       return;
     }
 
@@ -281,8 +281,8 @@ class FullCardRequester : public payments::FullCardRequest::Delegate,
   virtual ~FullCardRequester() {}
 
   // payments::FullCardRequest::Delegate:
-  void OnFullCardDetails(const CreditCard& card,
-                         const base::string16& cvc) override {
+  void OnFullCardRequestSucceeded(const CreditCard& card,
+                                  const base::string16& cvc) override {
     JNIEnv* env = base::android::AttachCurrentThread();
     Java_FullCardRequestDelegate_onFullCardDetails(
         env, jdelegate_, CreateJavaCreditCardFromNative(env, card),
@@ -291,7 +291,7 @@ class FullCardRequester : public payments::FullCardRequest::Delegate,
   }
 
   // payments::FullCardRequest::Delegate:
-  void OnFullCardError() override {
+  void OnFullCardRequestFailed() override {
     JNIEnv* env = base::android::AttachCurrentThread();
     Java_FullCardRequestDelegate_onFullCardError(env, jdelegate_);
     delete this;
@@ -461,7 +461,6 @@ ScopedJavaLocalRef<jstring> PersonalDataManagerAndroid::SetCreditCard(
   return ConvertUTF8ToJavaString(env, card.guid());
 }
 
-
 void PersonalDataManagerAndroid::UpdateServerCardBillingAddress(
     JNIEnv* env,
     const JavaParamRef<jobject>& unused_obj,
@@ -621,7 +620,7 @@ jint PersonalDataManagerAndroid::GetCreditCardUseCountForTesting(
 jlong PersonalDataManagerAndroid::GetCreditCardUseDateForTesting(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& unused_obj,
-    const base::android::JavaParamRef<jstring>& jguid){
+    const base::android::JavaParamRef<jstring>& jguid) {
   CreditCard* card = personal_data_manager_->GetCreditCardByGUID(
       ConvertJavaStringToUTF8(env, jguid));
   return card->use_date().ToTimeT();

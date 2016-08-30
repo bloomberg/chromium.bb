@@ -992,15 +992,15 @@ void AutofillManager::OnDidUploadCard(
   // TODO(jdonnelly): Log duration.
 }
 
-void AutofillManager::OnFullCardDetails(const CreditCard& card,
-                                        const base::string16& cvc) {
+void AutofillManager::OnFullCardRequestSucceeded(const CreditCard& card,
+                                                 const base::string16& cvc) {
   credit_card_form_event_logger_->OnDidFillSuggestion(masked_card_);
   FillCreditCardForm(unmasking_query_id_, unmasking_form_, unmasking_field_,
                      card, cvc);
   masked_card_ = CreditCard();
 }
 
-void AutofillManager::OnFullCardError() {
+void AutofillManager::OnFullCardRequestFailed() {
   driver_->RendererShouldClearPreviewedForm();
 }
 

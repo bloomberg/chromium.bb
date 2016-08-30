@@ -41,7 +41,7 @@ void FullCardRequest::GetFullCard(const CreditCard& card,
   // already set, then immediately reject the new request through the method
   // parameter |delegate|.
   if (delegate_) {
-    delegate->OnFullCardError();
+    delegate->OnFullCardRequestFailed();
     return;
   }
 
@@ -83,7 +83,7 @@ void FullCardRequest::OnUnmaskResponse(const UnmaskResponse& response) {
 
   if (!should_unmask_card_) {
     if (delegate_)
-      delegate_->OnFullCardDetails(request_->card, response.cvc);
+      delegate_->OnFullCardRequestSucceeded(request_->card, response.cvc);
     Reset();
     autofill_client_->OnUnmaskVerificationResult(AutofillClient::SUCCESS);
     return;
@@ -98,7 +98,7 @@ void FullCardRequest::OnUnmaskResponse(const UnmaskResponse& response) {
 
 void FullCardRequest::OnUnmaskPromptClosed() {
   if (delegate_)
-    delegate_->OnFullCardError();
+    delegate_->OnFullCardRequestFailed();
 
   Reset();
 }
@@ -126,7 +126,7 @@ void FullCardRequest::OnDidGetRealPan(AutofillClient::PaymentsRpcResult result,
     // Intentional fall through.
     case AutofillClient::NETWORK_ERROR: {
       if (delegate_)
-        delegate_->OnFullCardError();
+        delegate_->OnFullCardRequestFailed();
       Reset();
       break;
     }
@@ -141,8 +141,8 @@ void FullCardRequest::OnDidGetRealPan(AutofillClient::PaymentsRpcResult result,
         personal_data_manager_->UpdateServerCreditCard(request_->card);
 
       if (delegate_)
-        delegate_->OnFullCardDetails(request_->card,
-                                     request_->user_response.cvc);
+        delegate_->OnFullCardRequestSucceeded(request_->card,
+                                              request_->user_response.cvc);
       Reset();
       break;
     }

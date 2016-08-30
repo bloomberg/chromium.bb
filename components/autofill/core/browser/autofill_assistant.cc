@@ -27,8 +27,7 @@ void AutofillAssistant::Reset() {
 
 bool AutofillAssistant::CanShowCreditCardAssist(
     const std::vector<FormStructure*>& form_structures) {
-  if (form_structures.empty() ||
-      credit_card_form_data_ != nullptr ||
+  if (form_structures.empty() || credit_card_form_data_ != nullptr ||
       !IsAutofillCreditCardAssistEnabled() ||
       !autofill_manager_->client()->IsContextSecure(
           form_structures.front()->source_url())) {
@@ -52,10 +51,18 @@ void AutofillAssistant::ShowAssistForCreditCard(const CreditCard& card) {
 }
 
 void AutofillAssistant::OnUserDidAcceptCreditCardFill(const CreditCard& card) {
-  // TODO(crbug.com/630656): Trigger CVC dialog flow for card filling.
+  autofill_manager_->GetOrCreateFullCardRequest()->GetFullCard(
+      card, AutofillClient::UNMASK_FOR_AUTOFILL,
+      weak_ptr_factory_.GetWeakPtr());
+}
+
+void AutofillAssistant::OnFullCardRequestSucceeded(const CreditCard& card,
+                                                   const base::string16& cvc) {
   autofill_manager_->FillCreditCardForm(kNoQueryId, *credit_card_form_data_,
                                         credit_card_form_data_->fields[0], card,
-                                        base::string16());
+                                        cvc);
 }
+
+void AutofillAssistant::OnFullCardRequestFailed() {}
 
 }  // namespace autofill

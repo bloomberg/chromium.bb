@@ -287,9 +287,9 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   void OnDidUploadCard(AutofillClient::PaymentsRpcResult result) override;
 
   // FullCardRequest::Delegate:
-  void OnFullCardDetails(const CreditCard& card,
-                         const base::string16& cvc) override;
-  void OnFullCardError() override;
+  void OnFullCardRequestSucceeded(const CreditCard& card,
+                                  const base::string16& cvc) override;
+  void OnFullCardRequestFailed() override;
 
   // Sets |user_did_accept_upload_prompt_| and calls UploadCard if the risk data
   // is available.

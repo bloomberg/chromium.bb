@@ -29,9 +29,9 @@ class FullCardRequest : public CardUnmaskDelegate {
   // The interface for receiving the full card details.
   class Delegate {
    public:
-    virtual void OnFullCardDetails(const CreditCard& card,
-                                   const base::string16& cvc) = 0;
-    virtual void OnFullCardError() = 0;
+    virtual void OnFullCardRequestSucceeded(const CreditCard& card,
+                                            const base::string16& cvc) = 0;
+    virtual void OnFullCardRequestFailed() = 0;
   };
 
   // The parameters should outlive the FullCardRequest.
@@ -41,8 +41,9 @@ class FullCardRequest : public CardUnmaskDelegate {
   ~FullCardRequest();
 
   // Retrieves the pan and cvc for |card| and invokes
-  // Delegate::OnFullCardDetails() or Delegate::OnFullCardError(). Only one
-  // request should be active at a time.
+  // Delegate::OnFullCardRequestSucceeded() or
+  // Delegate::OnFullCardRequestFailed(). Only one request should be active at a
+  // time.
   //
   // If the card is local, has a non-empty GUID, and the user has updated its
   // expiration date, then this function will write the new information to

@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/autofill/core/browser/payments/full_card_request.h"
 #include "components/autofill/core/common/form_data.h"
 
 namespace autofill {
@@ -20,7 +21,7 @@ class FormStructure;
 
 // This class encompasses the triggering rules and the logic for the autofill
 // assisted filling mechanisms.
-class AutofillAssistant {
+class AutofillAssistant : public payments::FullCardRequest::Delegate {
  public:
   explicit AutofillAssistant(AutofillManager* autofill_manager);
   ~AutofillAssistant();
@@ -41,6 +42,11 @@ class AutofillAssistant {
  private:
   // Called by the infobar delegate when the user accepts the infobar.
   void OnUserDidAcceptCreditCardFill(const CreditCard& card);
+
+  // payments::FullCardRequest::Delegate:
+  void OnFullCardRequestSucceeded(const CreditCard& card,
+                                  const base::string16& cvc) override;
+  void OnFullCardRequestFailed() override;
 
   // Holds the FormData to be filled with a credit card.
   std::unique_ptr<FormData> credit_card_form_data_;
