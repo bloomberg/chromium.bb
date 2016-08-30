@@ -53,7 +53,7 @@ function addIceCandidateSuccess4()
 
 function unexpectedCallback()
 {
-    calledCallbacks.push('unexpected');
+    assert_unreached('Unexpected callback');
 }
 
 function expectedTypeError(error)
