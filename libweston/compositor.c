@@ -485,8 +485,6 @@ weston_surface_create(struct weston_compositor *compositor)
 
 	wl_list_init(&surface->pointer_constraints);
 
-	surface->inhibit_idling = false;
-
 	return surface;
 }
 
@@ -2322,42 +2320,15 @@ weston_output_schedule_repaint_reset(struct weston_output *output)
 	TL_POINT("core_repaint_exit_loop", TLP_OUTPUT(output), TLP_END);
 }
 
-/** Retrieves a mask of outputs that should inhibit screensaving
- *
- * \param compositor The compositor instance.
- * \return An output mask indicating the ids of all inhibiting outputs
- *
- *  Checks for surfaces whose clients have requested that they
- *  disable the screenserver and display powersaving.  Note
- *  the output ids for these surfaces.
- */
-WL_EXPORT uint32_t
-weston_compositor_inhibited_outputs(struct weston_compositor *compositor)
-{
-	struct weston_view *view;
-	uint32_t inhibited_outputs_mask = 0;
-
-	wl_list_for_each(view, &compositor->view_list, link) {
-		/* Does the view's surface inhibit this output? */
-		if (!view->surface->inhibit_idling)
-			continue;
-
-		inhibited_outputs_mask |= view->output_mask;
-	}
-	return inhibited_outputs_mask;
-}
-
 static int
 output_repaint_timer_handler(void *data)
 {
 	struct weston_output *output = data;
 	struct weston_compositor *compositor = output->compositor;
-	uint32_t inhibited_outputs_mask = weston_compositor_inhibited_outputs(compositor);
 
 	if (output->repaint_needed &&
+	    compositor->state != WESTON_COMPOSITOR_SLEEPING &&
 	    compositor->state != WESTON_COMPOSITOR_OFFSCREEN &&
-	    (compositor->state != WESTON_COMPOSITOR_SLEEPING
-	     || inhibited_outputs_mask & (1 << output->id)) &&
 	    weston_output_repaint(output) == 0)
 		return 0;
 
@@ -2479,15 +2450,9 @@ weston_output_schedule_repaint(struct weston_output *output)
 {
 	struct weston_compositor *compositor = output->compositor;
 	struct wl_event_loop *loop;
-	uint32_t inhibited_outputs_mask = weston_compositor_inhibited_outputs(compositor);
 
-	/* If we're offscreen, or if we're sleeping and the monitor
-	 * isn't currently being inhibited by an active surface, then
-	 * skip repainting.
-	 */
-	if (compositor->state == WESTON_COMPOSITOR_OFFSCREEN ||
-	    (compositor->state == WESTON_COMPOSITOR_SLEEPING &&
-	     !(inhibited_outputs_mask & (1 << output->id))))
+	if (compositor->state == WESTON_COMPOSITOR_SLEEPING ||
+	    compositor->state == WESTON_COMPOSITOR_OFFSCREEN)
 		return;
 
 	if (!output->repaint_needed)
@@ -3937,19 +3902,10 @@ weston_compositor_dpms(struct weston_compositor *compositor,
 		       enum dpms_enum state)
 {
         struct weston_output *output;
-	uint32_t inhibited_outputs_mask = weston_compositor_inhibited_outputs(compositor);
 
-	wl_list_for_each(output, &compositor->output_list, link) {
-		if (!output->set_dpms)
-			continue;
-
-		/* If output is idle-inhibited, don't toggle to any DPMS state except ON. */
-		if (state != WESTON_DPMS_ON &&
-		    inhibited_outputs_mask & (1 << output->id))
-			continue;
-
-		output->set_dpms(output, state);
-	}
+        wl_list_for_each(output, &compositor->output_list, link)
+		if (output->set_dpms)
+			output->set_dpms(output, state);
 }
 
 /** Restores the compositor to active status
