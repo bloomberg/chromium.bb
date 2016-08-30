@@ -57,7 +57,7 @@ CSSHexAlphaColor status=experimental
 CSSContainment status=stable
 CSSFontDisplay status=experimental
 CSSFontSizeAdjust status=experimental
-CSSGridLayout status=experimental
+CSSGridLayout status=experimental, settable_from_internals=True
 CSSHyphens status=experimental
 CSSInBodyDoesNotBlockPaint status=experimental
 CSSIndependentTransformProperties status=experimental
