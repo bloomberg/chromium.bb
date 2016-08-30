@@ -1657,6 +1657,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   switch (notify_result_) {
     case ProcessSingleton::PROCESS_NONE:
       // No process already running, fall through to starting a new one.
+      g_browser_process->platform_part()->PlatformSpecificCommandLineProcessing(
+          *base::CommandLine::ForCurrentProcess());
       break;
 
     case ProcessSingleton::PROCESS_NOTIFIED:

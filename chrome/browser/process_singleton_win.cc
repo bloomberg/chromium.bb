@@ -22,8 +22,6 @@
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/browser/win/chrome_process_finder.h"
@@ -283,16 +281,23 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
 
 ProcessSingleton::NotifyResult
 ProcessSingleton::NotifyOtherProcessOrCreate() {
-  ProcessSingleton::NotifyResult result = PROCESS_NONE;
-  if (!Create()) {
-    result = NotifyOtherProcess();
-    if (result == PROCESS_NONE)
-      result = PROFILE_IN_USE;
-  } else {
-    g_browser_process->platform_part()->PlatformSpecificCommandLineProcessing(
-        *base::CommandLine::ForCurrentProcess());
+  for (int i = 0; i < 2; ++i) {
+    if (Create()) {
+      return PROCESS_NONE;  // This is the single browser process.
+    }
+    ProcessSingleton::NotifyResult result = NotifyOtherProcess();
+    if (result == PROCESS_NOTIFIED || result == LOCK_ERROR) {
+      // The single browser process was notified, the user chose not to
+      // terminate a hung browser, or the lock file could not be created.
+      // Nothing more to do.
+      return result;
+    }
+    DCHECK_EQ(PROCESS_NONE, result);
+    // The process could not be notified for some reason, or it was hung and
+    // terminated. Retry once if this is the first time; otherwise, fall through
+    // to report that the process must exit because the profile is in use.
   }
-  return result;
+  return PROFILE_IN_USE;
 }
 
 // Look for a Chrome instance that uses the same profile directory. If there

@@ -264,13 +264,16 @@ TEST_F(ProcessSingletonTest, KillsHungBrowserWithNoWindows) {
   // user interaction.
   ProcessSingleton::NotifyResult notify_result =
       test_singleton()->NotifyOtherProcessOrCreate();
-  ASSERT_EQ(ProcessSingleton::PROFILE_IN_USE, notify_result);
+
+  // The hung process was killed and the notification is equivalent to
+  // a non existent process.
+  ASSERT_EQ(ProcessSingleton::PROCESS_NONE, notify_result);
 
   // The should-kill callback should not have been called, as the "browser" does
   // not have visible window.
   EXPECT_FALSE(should_kill_called());
 
-  // Verify that the hung browser has beem terminated with the
+  // Verify that the hung browser has been terminated with the
   // RESULT_CODE_HUNG exit code.
   int exit_code = 0;
   EXPECT_TRUE(
@@ -304,13 +307,16 @@ TEST_F(ProcessSingletonTest, KillWithUserPermission) {
   // before killing the hung process.
   ProcessSingleton::NotifyResult notify_result =
       test_singleton()->NotifyOtherProcessOrCreate();
-  ASSERT_EQ(ProcessSingleton::PROFILE_IN_USE, notify_result);
+
+  // The hung process was killed and the notification is equivalent to
+  // a non existent process.
+  ASSERT_EQ(ProcessSingleton::PROCESS_NONE, notify_result);
 
   // The should-kill callback should have been called, as the "browser" has a
   // visible window.
   EXPECT_TRUE(should_kill_called());
 
-  // Verify that the hung browser has beem terminated with the
+  // Verify that the hung browser has been terminated with the
   // RESULT_CODE_HUNG exit code.
   int exit_code = 0;
   EXPECT_TRUE(
