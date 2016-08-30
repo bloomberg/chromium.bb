@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build_overrides/build.gni")
 import("//build/config/android/config.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 
@@ -648,10 +649,15 @@ if (enable_java_templates) {
       if (!defined(deps)) {
         deps = []
       }
+
+      if (!defined(lint_suppressions_file)) {
+        lint_suppressions_file = "//build/android/lint/suppressions.xml"
+      }
+
       _cache_dir = "$root_build_dir/android_lint_cache"
       _result_path = "$target_gen_dir/$target_name/result.xml"
       _config_path = "$target_gen_dir/$target_name/config.xml"
-      _suppressions_file = "//build/android/lint/suppressions.xml"
+      _suppressions_file = lint_suppressions_file
       _platform_xml_path =
           "${android_sdk_root}/platform-tools/api/api-versions.xml"
       _rebased_lint_android_sdk_root =
