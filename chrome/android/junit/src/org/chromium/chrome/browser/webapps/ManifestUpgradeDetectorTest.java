@@ -5,8 +5,6 @@
 package org.chromium.chrome.browser.webapps;
 
 import android.content.Context;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageInfo;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -93,9 +91,9 @@ public class ManifestUpgradeDetectorTest {
     private static class TestManifestUpgradeDetector extends ManifestUpgradeDetector {
         private Data mFetchedData;
 
-        public TestManifestUpgradeDetector(Tab tab, WebappInfo info, Data fetchedData,
-                ManifestUpgradeDetector.Callback callback) {
-            super(tab, info, callback);
+        public TestManifestUpgradeDetector(Tab tab, WebappInfo info, Bundle metadata,
+                Data fetchedData, ManifestUpgradeDetector.Callback callback) {
+            super(tab, info, metadata, callback);
             mFetchedData = fetchedData;
         }
 
@@ -152,29 +150,22 @@ public class ManifestUpgradeDetectorTest {
      */
     private TestManifestUpgradeDetector createDetector(Data oldData, Data fetchedData,
             TestCallback callback) {
-        setMetaData(
+        Bundle metadata = createBundleWithMetadata(
                 WEBAPK_MANIFEST_URL, oldData.startUrl, oldData.iconUrl, oldData.iconMurmur2Hash);
         WebappInfo webappInfo = WebappInfo.create("", oldData.startUrl, oldData.scopeUrl, null,
                 oldData.name, oldData.shortName, oldData.displayMode, oldData.orientation, 0,
                 oldData.themeColor, oldData.backgroundColor, false, WEBAPK_PACKAGE_NAME);
-        return new TestManifestUpgradeDetector(null, webappInfo, fetchedData, callback);
+        return new TestManifestUpgradeDetector(null, webappInfo, metadata, fetchedData, callback);
     }
 
-    private void setMetaData(
+    private Bundle createBundleWithMetadata(
             String manifestUrl, String startUrl, String iconUrl, long iconMurmur2Hash) {
         Bundle bundle = new Bundle();
         bundle.putString(WebApkMetaDataKeys.WEB_MANIFEST_URL, manifestUrl);
         bundle.putString(WebApkMetaDataKeys.START_URL, startUrl);
         bundle.putString(WebApkMetaDataKeys.ICON_URL, iconUrl);
         bundle.putString(WebApkMetaDataKeys.ICON_MURMUR2_HASH, iconMurmur2Hash + "L");
-
-        ApplicationInfo appInfo = new ApplicationInfo();
-        appInfo.metaData = bundle;
-
-        PackageInfo packageInfo = new PackageInfo();
-        packageInfo.packageName = WEBAPK_PACKAGE_NAME;
-        packageInfo.applicationInfo = appInfo;
-        mPackageManager.addPackage(packageInfo);
+        return bundle;
     }
 
     @Test

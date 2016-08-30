@@ -4,16 +4,14 @@
 
 package org.chromium.chrome.browser.webapps;
 
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.text.TextUtils;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 
 /**
@@ -79,7 +77,7 @@ public class ManifestUpgradeDetector implements ManifestUpgradeDetectorFetcher.C
      * Returns 0 if the value cannot be parsed.
      */
     private static long getLongFromBundle(Bundle bundle, String key) {
-        String value = bundle.getString(key);
+        String value = IntentUtils.safeGetString(bundle, key);
         if (value == null || !value.endsWith("L")) {
             return 0;
         }
@@ -90,11 +88,20 @@ public class ManifestUpgradeDetector implements ManifestUpgradeDetectorFetcher.C
         return 0;
     }
 
-    public ManifestUpgradeDetector(Tab tab, WebappInfo info, Callback callback) {
+    /**
+     * Creates an instance of {@link ManifestUpgradeDetector}.
+     *
+     * @param tab WebAPK's tab.
+     * @param webappInfo Parameters used for generating the WebAPK. Extracted from WebAPK's Android
+     *                   manifest.
+     * @param metadata Metadata from WebAPK's Android Manifest.
+     * @param callback Called once it has been determined whether the WebAPK needs to be upgraded.
+     */
+    public ManifestUpgradeDetector(Tab tab, WebappInfo info, Bundle metadata, Callback callback) {
         mTab = tab;
         mWebappInfo = info;
         mCallback = callback;
-        getMetaDataFromAndroidManifest();
+        parseMetaData(metadata);
     }
 
     public String getManifestUrl() {
@@ -124,19 +131,11 @@ public class ManifestUpgradeDetector implements ManifestUpgradeDetectorFetcher.C
         return new ManifestUpgradeDetectorFetcher(tab, scopeUrl, manifestUrl);
     }
 
-    private void getMetaDataFromAndroidManifest() {
-        try {
-            ApplicationInfo appInfo =
-                    ContextUtils.getApplicationContext().getPackageManager().getApplicationInfo(
-                            mWebappInfo.webApkPackageName(), PackageManager.GET_META_DATA);
-            Bundle metaData = appInfo.metaData;
-            mManifestUrl = metaData.getString(WebApkMetaDataKeys.WEB_MANIFEST_URL);
-            mStartUrl = metaData.getString(WebApkMetaDataKeys.START_URL);
-            mIconUrl = metaData.getString(WebApkMetaDataKeys.ICON_URL);
-            mIconMurmur2Hash = getLongFromBundle(metaData, WebApkMetaDataKeys.ICON_MURMUR2_HASH);
-        } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
-        }
+    private void parseMetaData(Bundle metadata) {
+        mManifestUrl = IntentUtils.safeGetString(metadata, WebApkMetaDataKeys.WEB_MANIFEST_URL);
+        mStartUrl = IntentUtils.safeGetString(metadata, WebApkMetaDataKeys.START_URL);
+        mIconUrl = IntentUtils.safeGetString(metadata, WebApkMetaDataKeys.ICON_URL);
+        mIconMurmur2Hash = getLongFromBundle(metadata, WebApkMetaDataKeys.ICON_MURMUR2_HASH);
     }
 
     /**

@@ -8,6 +8,7 @@ package org.chromium.webapk.lib.common;
  * <meta-data> keys for WebAPK Android Manifest.
  */
 public final class WebApkMetaDataKeys {
+    public static final String SHELL_APK_VERSION = "org.chromium.webapk.shell_apk.shellApkVersion";
     public static final String RUNTIME_HOST = "org.chromium.webapk.shell_apk.runtimeHost";
     public static final String START_URL = "org.chromium.webapk.shell_apk.startUrl";
     public static final String NAME = "org.chromium.webapk.shell_apk.name";
