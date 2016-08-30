@@ -15,10 +15,16 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "media/base/media_export.h"
 #include "media/base/ranges.h"
 #include "media/base/video_codecs.h"
 #include "media/filters/h264_bit_reader.h"
+
+namespace gfx {
+class Rect;
+class Size;
+}
 
 namespace media {
 
@@ -166,6 +172,12 @@ struct MEDIA_EXPORT H264SPS {
   bool low_delay_hrd_flag;
 
   int chroma_array_type;
+
+  // Helpers to compute frequently-used values. These methods return
+  // base::nullopt if they encounter integer overflow. They do not verify that
+  // the results are in-spec for the given profile or level.
+  base::Optional<gfx::Size> GetCodedSize() const;
+  base::Optional<gfx::Rect> GetVisibleRect() const;
 };
 
 struct MEDIA_EXPORT H264PPS {

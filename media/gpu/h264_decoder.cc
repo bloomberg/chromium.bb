@@ -10,6 +10,7 @@
 #include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/optional.h"
 #include "base/stl_util.h"
 #include "media/gpu/h264_decoder.h"
 
@@ -1086,26 +1087,22 @@ bool H264Decoder::ProcessSPS(int sps_id, bool* need_new_buffers) {
     return false;
   }
 
-  // Calculate picture height/width in macroblocks and pixels
-  // (spec 7.4.2.1.1, 7.4.3).
-  int width_mb = sps->pic_width_in_mbs_minus1 + 1;
-  int height_mb = (2 - sps->frame_mbs_only_flag) *
-                  (sps->pic_height_in_map_units_minus1 + 1);
-
-  if (width_mb > std::numeric_limits<int>::max() / 16 ||
-      height_mb > std::numeric_limits<int>::max() / 16) {
-    DVLOG(1) << "Picture size is too big: width_mb=" << width_mb
-             << " height_mb=" << height_mb;
-    return false;
-  }
-
-  gfx::Size new_pic_size(16 * width_mb, 16 * height_mb);
+  gfx::Size new_pic_size = sps->GetCodedSize().value_or(gfx::Size());
   if (new_pic_size.IsEmpty()) {
-    DVLOG(1) << "Invalid picture size: " << new_pic_size.ToString();
+    DVLOG(1) << "Invalid picture size";
     return false;
   }
 
-  if (!pic_size_.IsEmpty() && new_pic_size == pic_size_) {
+  int width_mb = new_pic_size.width() / 16;
+  int height_mb = new_pic_size.height() / 16;
+
+  // Verify that the values are not too large before multiplying.
+  if (std::numeric_limits<int>::max() / width_mb < height_mb) {
+    DVLOG(1) << "Picture size is too big: " << new_pic_size.ToString();
+    return false;
+  }
+
+  if (new_pic_size == pic_size_) {
     // Already have surfaces and this SPS keeps the same resolution,
     // no need to request a new set.
     return true;

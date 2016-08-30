@@ -857,6 +857,7 @@ fuzzer_test("media_h264_parser_fuzzer") {
   deps = [
     ":media",
     "//base",
+    "//ui/gfx/geometry",
   ]
 }
 

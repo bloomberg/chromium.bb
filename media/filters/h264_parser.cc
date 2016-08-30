@@ -11,6 +11,8 @@
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "media/base/decrypt_config.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace media {
 
@@ -40,6 +42,83 @@ H264NALU::H264NALU() {
 
 H264SPS::H264SPS() {
   memset(this, 0, sizeof(*this));
+}
+
+// Based on T-REC-H.264 7.4.2.1.1, "Sequence parameter set data semantics",
+// available from http://www.itu.int/rec/T-REC-H.264.
+base::Optional<gfx::Size> H264SPS::GetCodedSize() const {
+  // Interlaced frames are twice the height of each field.
+  const int mb_unit = 16;
+  int map_unit = frame_mbs_only_flag ? 16 : 32;
+
+  // Verify that the values are not too large before multiplying them.
+  // TODO(sandersd): These limits could be much smaller. The currently-largest
+  // specified limit (excluding SVC, multiview, etc., which I didn't bother to
+  // read) is 543 macroblocks (section A.3.1).
+  int max_mb_minus1 = std::numeric_limits<int>::max() / mb_unit - 1;
+  int max_map_units_minus1 = std::numeric_limits<int>::max() / map_unit - 1;
+  if (pic_width_in_mbs_minus1 > max_mb_minus1 ||
+      pic_height_in_map_units_minus1 > max_map_units_minus1) {
+    DVLOG(1) << "Coded size is too large.";
+    return base::nullopt;
+  }
+
+  return gfx::Size(mb_unit * (pic_width_in_mbs_minus1 + 1),
+                   map_unit * (pic_height_in_map_units_minus1 + 1));
+}
+
+// Also based on section 7.4.2.1.1.
+base::Optional<gfx::Rect> H264SPS::GetVisibleRect() const {
+  base::Optional<gfx::Size> coded_size = GetCodedSize();
+  if (!coded_size)
+    return base::nullopt;
+
+  if (!frame_cropping_flag)
+    return gfx::Rect(coded_size.value());
+
+  int crop_unit_x;
+  int crop_unit_y;
+  if (chroma_array_type == 0) {
+    crop_unit_x = 1;
+    crop_unit_y = frame_mbs_only_flag ? 1 : 2;
+  } else {
+    // Section 6.2.
+    // |chroma_format_idc| may be:
+    //   1 => 4:2:0
+    //   2 => 4:2:2
+    //   3 => 4:4:4
+    // Everything else has |chroma_array_type| == 0.
+    int sub_width_c = chroma_format_idc > 2 ? 1 : 2;
+    int sub_height_c = chroma_format_idc > 1 ? 1 : 2;
+    crop_unit_x = sub_width_c;
+    crop_unit_y = sub_height_c * (frame_mbs_only_flag ? 1 : 2);
+  }
+
+  // Verify that the values are not too large before multiplying.
+  if (coded_size->width() / crop_unit_x < frame_crop_left_offset ||
+      coded_size->width() / crop_unit_x < frame_crop_right_offset ||
+      coded_size->height() / crop_unit_y < frame_crop_top_offset ||
+      coded_size->height() / crop_unit_y < frame_crop_bottom_offset) {
+    DVLOG(1) << "Frame cropping exceeds coded size.";
+    return base::nullopt;
+  }
+  int crop_left = crop_unit_x * frame_crop_left_offset;
+  int crop_right = crop_unit_x * frame_crop_right_offset;
+  int crop_top = crop_unit_y * frame_crop_top_offset;
+  int crop_bottom = crop_unit_y * frame_crop_bottom_offset;
+
+  // Verify that the values are sane. Note that some decoders also require that
+  // crops are smaller than a macroblock and/or that crops must be adjacent to
+  // at least one corner of the coded frame.
+  if (coded_size->width() - crop_left <= crop_right ||
+      coded_size->height() - crop_top <= crop_bottom) {
+    DVLOG(1) << "Frame cropping excludes entire frame.";
+    return base::nullopt;
+  }
+
+  return gfx::Rect(crop_left, crop_top,
+                   coded_size->width() - crop_left - crop_right,
+                   coded_size->height() - crop_top - crop_bottom);
 }
 
 H264PPS::H264PPS() {

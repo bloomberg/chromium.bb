@@ -5,7 +5,12 @@
 #include <stddef.h>
 
 #include "base/numerics/safe_conversions.h"
+#include "base/optional.h"
 #include "media/filters/h264_parser.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
+
+static volatile size_t volatile_sink;
 
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
@@ -34,6 +39,17 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
       case media::H264NALU::kSPS: {
         int id;
         res = parser.ParseSPS(&id);
+        if (res != media::H264Parser::kOk)
+          break;
+        const media::H264SPS* sps = parser.GetSPS(id);
+        if (!sps)
+          break;
+        // Also test the SPS helper methods. We make sure that the results are
+        // used so that the calls are not optimized away.
+        base::Optional<gfx::Size> coded_size = sps->GetCodedSize();
+        volatile_sink = coded_size.value_or(gfx::Size()).ToString().length();
+        base::Optional<gfx::Rect> visible_rect = sps->GetVisibleRect();
+        volatile_sink = visible_rect.value_or(gfx::Rect()).ToString().length();
         break;
       }
 
