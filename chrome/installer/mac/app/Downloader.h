@@ -9,23 +9,17 @@
 
 @class Downloader;
 @protocol DownloaderDelegate
-- (void)didDownloadData:(double)downloadProgressPercentage;
-- (void)downloader:(Downloader*)download
-    onDownloadSuccess:(NSURL*)diskImagePath;
-- (void)downloader:(Downloader*)download
-    onDownloadFailureWithError:(NSError*)error;
+- (void)downloader:(Downloader*)download percentProgress:(double)percentage;
+- (void)downloader:(Downloader*)download onSuccess:(NSURL*)diskImageURL;
+- (void)downloader:(Downloader*)download onFailure:(NSError*)error;
 @end
 
 @interface Downloader : NSObject<NSURLSessionDownloadDelegate>
 
 @property(nonatomic, assign) id<DownloaderDelegate> delegate;
 
-// Takes an NSData with a response XML from Omaha and writes the latest
-// version of chrome to the user's download directory.
-- (void)downloadChromeImageToDownloadsDirectory:(NSURL*)chromeImageURL;
-
-// Returns a path to a user's home download folder.
-+ (NSString*)getChromeDownloadFilePath;
+// Downloads Chrome from |chromeImageURL| to the local hard drive.
+- (void)downloadChromeImageFrom:(NSURL*)chromeImageURL;
 
 @end
 

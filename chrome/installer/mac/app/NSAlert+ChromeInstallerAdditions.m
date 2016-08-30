@@ -8,7 +8,7 @@
 // In the one-button scenario, the button would be just "Quit." In the
 // two-button scenario, the first button would allow the user to "Retry" and
 // the second button would provide the "Quit" option.
-- (NSModalResponse)quitButton {
+- (NSModalResponse)quitResponse {
   return ([[self buttons] count] == 1) ? NSAlertFirstButtonReturn
                                        : NSAlertSecondButtonReturn;
 }

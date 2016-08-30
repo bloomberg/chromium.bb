@@ -21,8 +21,6 @@
   [parser setDelegate:omahaParser];
   if (![parser parse]) {
     *error = [parser parserError];
-    // TODO: pass up error object to indicate error occurred so
-    // InstallerWindowController can create custom user error message.
     return nil;
   }
 
@@ -34,6 +32,9 @@
   }
 
   if ([completeDownloadURLs count] < 1) {
+    // TODO: currently whatever error is passed in doesn't matter... we should
+    // make it so that the type of error informs what the installer will do
+    // about the error
     *error = [NSError errorWithDomain:@"ChromeErrorDomain" code:1 userInfo:nil];
     return nil;
   }

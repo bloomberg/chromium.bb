@@ -8,6 +8,8 @@
 #import <Foundation/Foundation.h>
 
 @interface NSError (ChromeInstallerAdditions)
+// Creates a custom error object to be used as the popup alert that the user
+// will be shown.
 + (NSError*)errorForAlerts:(NSString*)message
            withDescription:(NSString*)description
              isRecoverable:(BOOL)recoverable;

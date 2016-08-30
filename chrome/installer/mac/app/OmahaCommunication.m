@@ -7,6 +7,7 @@
 #import "OmahaXMLRequest.h"
 #import "OmahaXMLParser.h"
 
+// TODO: turn this string to a command-line flag
 static NSString* const omahaURLPath =
     @"https://tools.google.com/service/update2";
 
@@ -35,7 +36,7 @@ static NSString* const omahaURLPath =
 }
 
 - (void)fetchDownloadURLs {
-  // TODO: turn this string to a command-line flag
+  // Forming the request
   NSURL* requestURL = [NSURL URLWithString:omahaURLPath];
   NSMutableURLRequest* request =
       [NSMutableURLRequest requestWithURL:requestURL];
@@ -44,6 +45,7 @@ static NSString* const omahaURLPath =
       [[requestXMLBody_ XMLString] dataUsingEncoding:NSUTF8StringEncoding];
   request.HTTPBody = requestBody;
   request.HTTPMethod = @"POST";
+  // Sending the request
   [[[NSURLSession sharedSession]
       dataTaskWithRequest:request
         completionHandler:^(NSData* data, NSURLResponse* response,
@@ -56,9 +58,9 @@ static NSString* const omahaURLPath =
           // parsing error, as the user only needs to know there was a problem
           // talking with the Google Update server.
           if (error) {
-            [delegate_ onOmahaFailureWithError:error];
+            [delegate_ omahaCommunication:self onFailure:error];
           } else {
-            [delegate_ onOmahaSuccessWithURLs:completeURLs];
+            [delegate_ omahaCommunication:self onSuccess:completeURLs];
           }
         }] resume];
 }

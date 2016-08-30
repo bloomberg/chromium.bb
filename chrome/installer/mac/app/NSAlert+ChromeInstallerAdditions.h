@@ -9,7 +9,9 @@
 
 typedef NSInteger NSModalResponse;
 @interface NSAlert (ChromeInstallerAdditions)
-- (NSModalResponse)quitButton;
+// Allows the caller to determine whether to determine the app's quit button was
+// pressed or not.
+- (NSModalResponse)quitResponse;
 @end
 
 #endif  // CHROME_INSTALLER_MAC_APP_NSALERT_CHROMEINSTALLERADDITIONS_H_

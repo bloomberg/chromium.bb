@@ -7,9 +7,12 @@
 
 #import <Foundation/Foundation.h>
 
+@class OmahaCommunication;
 @protocol OmahaCommunicationDelegate
-- (void)onOmahaSuccessWithURLs:(NSArray*)URLs;
-- (void)onOmahaFailureWithError:(NSError*)error;
+- (void)omahaCommunication:(OmahaCommunication*)messenger
+                 onSuccess:(NSArray*)URLs;
+- (void)omahaCommunication:(OmahaCommunication*)messenger
+                 onFailure:(NSError*)error;
 @end
 
 @interface OmahaCommunication : NSObject<NSURLSessionDataDelegate>

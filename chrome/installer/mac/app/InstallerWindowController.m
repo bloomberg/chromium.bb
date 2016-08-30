@@ -120,7 +120,13 @@
 }
 
 - (void)updateDownloadProgress:(double)progressPercent {
-  progressBar_.doubleValue = progressPercent;
+  if (progressPercent > 0.0) {
+    progressBar_.doubleValue = progressPercent;
+  } else {
+    progressBar_.doubleValue = 0.0;
+    progressBar_.indeterminate = YES;
+    [progressBar_ startAnimation:nil];
+  }
 }
 
 - (void)enableLaunchButton {

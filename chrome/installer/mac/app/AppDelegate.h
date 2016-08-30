@@ -7,9 +7,6 @@
 
 #import <AppKit/AppKit.h>
 
-#import "Downloader.h"
-#import "OmahaCommunication.h"
-
 @interface AppDelegate : NSObject<NSApplicationDelegate>
 @end
 

@@ -9,8 +9,9 @@
 
 @interface OmahaXMLParser : NSObject
 
-// Parses an XML document and extracts all the URLs found as well as the
-// filename. Adds each URL into the array chromeIncompleteDownloadURLs_.
+// Parses an XML document and extracts the URLs and name of the Chrome DMG from
+// Omaha, then returns an array with all the URLs concatenated with the
+// filename.
 + (NSArray*)parseXML:(NSData*)omahaResponseXML error:(NSError**)error;
 
 @end

@@ -4,10 +4,15 @@
 
 #import "AppDelegate.h"
 
+#include <Security/Security.h>
+
+#import "Downloader.h"
 #import "InstallerWindowController.h"
 #import "NSError+ChromeInstallerAdditions.h"
 #import "NSAlert+ChromeInstallerAdditions.h"
 #import "AuthorizedInstall.h"
+#import "OmahaCommunication.h"
+#import "Unpacker.h"
 
 @interface NSAlert ()
 - (void)beginSheetModalForWindow:(NSWindow*)sheetWindow
@@ -15,11 +20,16 @@
                    (void (^__nullable)(NSModalResponse returnCode))handler;
 @end
 
-@interface AppDelegate ()<OmahaCommunicationDelegate, DownloaderDelegate> {
+@interface AppDelegate ()<NSWindowDelegate,
+                          OmahaCommunicationDelegate,
+                          DownloaderDelegate,
+                          UnpackDelegate> {
   InstallerWindowController* installerWindowController_;
   AuthorizedInstall* authorizedInstall_;
+  BOOL preventTermination_;
 }
 @property(strong) NSWindow* window;
+- (void)exit;
 @end
 
 @implementation AppDelegate
@@ -28,6 +38,7 @@
 // Sets up the main window and begins the downloading process.
 - (void)applicationDidFinishLaunching:(NSNotification*)aNotification {
   // TODO: fix UI not loading until after asking for authorization.
+  window_.delegate = self;
   installerWindowController_ =
       [[InstallerWindowController alloc] initWithWindow:window_];
   authorizedInstall_ = [[AuthorizedInstall alloc] init];
@@ -41,58 +52,32 @@
 - (void)applicationWillTerminate:(NSNotification*)aNotification {
 }
 
-- (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication*)sender {
+- (NSApplicationTerminateReply)applicationShouldTerminate:
+    (NSApplication*)sender {
+  return preventTermination_ ? NSTerminateCancel : NSTerminateNow;
+}
+
+// This function effectively takes the place of
+// applicationShouldTerminateAfterLastWindowClosed: to make sure that the
+// application does correctly terminate after closing the installer, but does
+// not terminate when we call orderOut: to hide the installer during its
+// tear-down steps.
+- (BOOL)windowShouldClose:(id)sender {
+  [self exit];
   return YES;
+}
+
+- (void)exit {
+  preventTermination_ = NO;
+  [NSApp terminate:nil];
 }
 
 - (void)startDownload {
   [installerWindowController_ updateStatusDescription:@"Initializing..."];
+
   OmahaCommunication* omahaMessenger = [[OmahaCommunication alloc] init];
   omahaMessenger.delegate = self;
-
   [omahaMessenger fetchDownloadURLs];
-}
-
-- (void)onOmahaSuccessWithURLs:(NSArray*)URLs {
-  [installerWindowController_ updateStatusDescription:@"Downloading..."];
-  Downloader* download = [[Downloader alloc] init];
-  download.delegate = self;
-  [download downloadChromeImageToDownloadsDirectory:[URLs firstObject]];
-}
-
-- (void)onOmahaFailureWithError:(NSError*)error {
-  NSError* networkError =
-      [NSError errorForAlerts:@"Network Error"
-              withDescription:@"Could not connect to Chrome server."
-                isRecoverable:YES];
-  [self displayError:networkError];
-}
-
-// Bridge method from Downloader to InstallerWindowController. Allows Downloader
-// to update the progressbar without having direct access to any UI obejcts.
-- (void)didDownloadData:(double)downloadProgressPercentage {
-  [installerWindowController_
-      updateDownloadProgress:(double)downloadProgressPercentage];
-}
-
-- (void)downloader:(Downloader*)download
-    onDownloadSuccess:(NSURL*)diskImagePath {
-  [installerWindowController_ updateStatusDescription:@"Done."];
-  [installerWindowController_ enableLaunchButton];
-  // TODO: Add unpacking step here and pass the path to the app bundle inside
-  // the mounted disk image path to startInstall. Currently passing hardcoded
-  // path to preunpacked app bundle.
-  //[authorizedInstall_
-  //    startInstall:@"$HOME/Downloads/Google Chrome.app"];
-}
-
-- (void)downloader:(Downloader*)download
-    onDownloadFailureWithError:(NSError*)error {
-  NSError* downloadError =
-      [NSError errorForAlerts:@"Download Failure"
-              withDescription:@"Unable to download Google Chrome."
-                isRecoverable:NO];
-  [self displayError:downloadError];
 }
 
 - (void)onLoadInstallationToolFailure {
@@ -104,15 +89,146 @@
   [self displayError:loadToolError];
 }
 
+- (void)omahaCommunication:(OmahaCommunication*)messenger
+                 onSuccess:(NSArray*)URLs {
+  [installerWindowController_ updateStatusDescription:@"Downloading..."];
+
+  Downloader* download = [[Downloader alloc] init];
+  download.delegate = self;
+  [download downloadChromeImageFrom:[URLs firstObject]];
+}
+
+- (void)omahaCommunication:(OmahaCommunication*)messenger
+                 onFailure:(NSError*)error {
+  NSError* networkError =
+      [NSError errorForAlerts:@"Network Error"
+              withDescription:@"Could not connect to Chrome server."
+                isRecoverable:YES];
+  [self displayError:networkError];
+}
+
+// Bridge method from Downloader to InstallerWindowController. Allows Downloader
+// to update the progressbar without having direct access to any UI obejcts.
+- (void)downloader:(Downloader*)download percentProgress:(double)percentage {
+  [installerWindowController_ updateDownloadProgress:(double)percentage];
+}
+
+- (void)downloader:(Downloader*)download onSuccess:(NSURL*)diskImageURL {
+  [installerWindowController_ updateStatusDescription:@"Installing..."];
+  [installerWindowController_ enableLaunchButton];
+  // TODO: Add unpacking step here and pass the path to the app bundle inside
+  // the mounted disk image path to startInstall. Currently passing hardcoded
+  // path to preunpacked app bundle.
+  //[authorizedInstall_
+  //    startInstall:@"$HOME/Downloads/Google Chrome.app"];
+
+  Unpacker* unpacker = [[Unpacker alloc] init];
+  unpacker.delegate = self;
+  [unpacker mountDMGFromURL:diskImageURL];
+}
+
+- (void)downloader:(Downloader*)download onFailure:(NSError*)error {
+  NSError* downloadError =
+      [NSError errorForAlerts:@"Download Failure"
+              withDescription:@"Unable to download Google Chrome."
+                isRecoverable:NO];
+  [self displayError:downloadError];
+}
+
+- (void)unpacker:(Unpacker*)unpacker onMountSuccess:(NSString*)tempAppPath {
+  SecStaticCodeRef diskStaticCode;
+  SecRequirementRef diskRequirement;
+  // TODO: flush out error handling more
+  OSStatus oserror;
+  oserror = SecStaticCodeCreateWithPath(
+      (__bridge CFURLRef)[NSURL fileURLWithPath:tempAppPath isDirectory:NO],
+      kSecCSDefaultFlags, &diskStaticCode);
+  if (oserror != errSecSuccess)
+    NSLog(@"code %d", oserror);
+  // TODO: add in a more specific code sign requirement
+  oserror =
+      SecRequirementCreateWithString((CFStringRef) @"anchor apple generic",
+                                     kSecCSDefaultFlags, &diskRequirement);
+  if (oserror != errSecSuccess)
+    NSLog(@"requirement %d", oserror);
+  oserror = SecStaticCodeCheckValidity(diskStaticCode, kSecCSDefaultFlags,
+                                       diskRequirement);
+  if (oserror != errSecSuccess)
+    NSLog(@"static code %d", oserror);
+
+  // Calling this function will change the progress bar into an indeterminate
+  // one. We won't need to update the progress bar any more after this point.
+  [installerWindowController_ updateDownloadProgress:-1.0];
+  // By disabling closing the window or quitting, we can tell the user that
+  // closing the application at this point is not a good idea.
+  window_.styleMask &= ~NSClosableWindowMask;
+  preventTermination_ = YES;
+
+  // TODO: move the below code into AuthorizedInstall
+  NSString* chromeInApplicationsFolder = @"/Applications/Google Chromo.app";
+
+  NSError* error = nil;
+  if ([[NSFileManager defaultManager]
+          fileExistsAtPath:chromeInApplicationsFolder]) {
+    [[NSFileManager defaultManager] moveItemAtPath:chromeInApplicationsFolder
+                                            toPath:tempAppPath
+                                             error:nil];
+  }
+  if (![[NSFileManager defaultManager] moveItemAtPath:tempAppPath
+                                               toPath:chromeInApplicationsFolder
+                                                error:&error]) {
+    NSLog(@"%@", error);
+  }
+  // TODO: move the above code into AuthorizedInstall
+
+  [[NSWorkspace sharedWorkspace]
+      launchApplicationAtURL:[NSURL fileURLWithPath:chromeInApplicationsFolder
+                                        isDirectory:NO]
+                     options:NSWorkspaceLaunchDefault
+               configuration:@{}
+                       error:&error];
+  if (error) {
+    NSLog(@"Chrome failed to launch: %@", error);
+  }
+
+  // Begin teardown stuff!
+  dispatch_async(dispatch_get_main_queue(), ^{
+    [window_ orderOut:nil];
+  });
+
+  [unpacker unmountDMG];
+}
+
+- (void)unpacker:(Unpacker*)unpacker onMountFailure:(NSError*)error {
+  NSError* extractError =
+      [NSError errorForAlerts:@"Install Failure"
+              withDescription:@"Unable to add Google Chrome to Applications."
+                isRecoverable:NO];
+  [self displayError:extractError];
+}
+
+- (void)unpacker:(Unpacker*)unpacker onUnmountSuccess:(NSString*)mountpath {
+  NSLog(@"we're done here!");
+  [self exit];
+}
+
+- (void)unpacker:(Unpacker*)unpacker onUnmountFailure:(NSError*)error {
+  NSLog(@"error unmounting");
+  // NOTE: since we are not deleting the temporary folder if the unmount fails,
+  // we'll just leave it up to the computer to delete the temporary folder on
+  // its own time, and to unmount the disk during a restart at some point. There
+  // is no other work to be done in the mean time.
+  [self exit];
+}
+
 // Displays an alert on the main window using the contents of the passed in
 // error.
 - (void)displayError:(NSError*)error {
   NSAlert* alertForUser = [NSAlert alertWithError:error];
-
   dispatch_async(dispatch_get_main_queue(), ^{
     [alertForUser beginSheetModalForWindow:window_
                          completionHandler:^(NSModalResponse returnCode) {
-                           if (returnCode != [alertForUser quitButton]) {
+                           if (returnCode != [alertForUser quitResponse]) {
                              [self startDownload];
                            } else {
                              [NSApp terminate:nil];
