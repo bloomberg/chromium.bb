@@ -211,6 +211,8 @@
     '<(libvpx_source)/vp9/encoder/arm/neon/vp9_dct_neon.c',
     '<(libvpx_source)/vp9/encoder/arm/neon/vp9_error_neon.c',
     '<(libvpx_source)/vp9/encoder/arm/neon/vp9_quantize_neon.c',
+    '<(libvpx_source)/vp9/encoder/vp9_alt_ref_aq.c',
+    '<(libvpx_source)/vp9/encoder/vp9_alt_ref_aq.h',
     '<(libvpx_source)/vp9/encoder/vp9_aq_360.c',
     '<(libvpx_source)/vp9/encoder/vp9_aq_360.h',
     '<(libvpx_source)/vp9/encoder/vp9_aq_complexity.c',

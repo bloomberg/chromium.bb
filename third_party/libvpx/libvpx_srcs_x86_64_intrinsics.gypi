@@ -37,7 +37,6 @@
         '<(libvpx_source)/vp9/encoder/x86/vp9_quantize_sse2.c',
         '<(libvpx_source)/vpx_dsp/x86/avg_intrin_sse2.c',
         '<(libvpx_source)/vpx_dsp/x86/fwd_txfm_sse2.c',
-        '<(libvpx_source)/vpx_dsp/x86/halfpix_variance_sse2.c',
         '<(libvpx_source)/vpx_dsp/x86/inv_txfm_sse2.c',
         '<(libvpx_source)/vpx_dsp/x86/loopfilter_sse2.c',
         '<(libvpx_source)/vpx_dsp/x86/quantize_sse2.c',
