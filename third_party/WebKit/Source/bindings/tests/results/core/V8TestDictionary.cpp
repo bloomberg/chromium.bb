@@ -548,7 +548,7 @@ v8::Local<v8::Value> TestDictionary::toV8Impl(v8::Local<v8::Object> creationCont
 {
     v8::Local<v8::Object> v8Object = v8::Object::New(isolate);
     if (!toV8TestDictionary(*this, v8Object, creationContext, isolate))
-        return v8::Local<v8::Value>();
+        return v8::Undefined(isolate);
     return v8Object;
 }
 

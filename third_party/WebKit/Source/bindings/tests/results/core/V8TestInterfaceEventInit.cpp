@@ -50,7 +50,7 @@ v8::Local<v8::Value> TestInterfaceEventInit::toV8Impl(v8::Local<v8::Object> crea
 {
     v8::Local<v8::Object> v8Object = v8::Object::New(isolate);
     if (!toV8TestInterfaceEventInit(*this, v8Object, creationContext, isolate))
-        return v8::Local<v8::Value>();
+        return v8::Undefined(isolate);
     return v8Object;
 }
 
