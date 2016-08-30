@@ -9,8 +9,8 @@
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/chromeos/ime_menu/ime_list_view.h"
-#include "ash/common/system/tray/fixed_sized_image_view.h"
 #include "ash/common/system/tray/fixed_sized_scroll_view.h"
+#include "ash/common/system/tray/hover_highlight_view.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/tray/tray_constants.h"
@@ -78,84 +78,29 @@ TrayPopupHeaderButton* CreateImeMenuButton(views::ButtonListener* listener,
   return button;
 }
 
-// The IME menu settings view when there's only one button on the menu. It shows
-// the setting gear left-aligned with label.
-class ImeSettingButtonView : public ActionableView {
- public:
-  ImeSettingButtonView() {
-    SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
-                                          kTrayPopupPaddingHorizontal, 0,
-                                          kTrayPopupPaddingBetweenItems));
-
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    views::ImageView* icon =
-        new FixedSizedImageView(0, GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT));
-    icon->SetImage(rb.GetImageNamed(IDR_AURA_UBER_TRAY_SETTINGS).ToImageSkia());
-    AddChildView(icon);
-
-    base::string16 text =
-        rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_INPUT_SETTINGS);
-    views::Label* label = new views::Label(text);
-    AddChildView(label);
-    SetAccessibleName(text);
-  }
-
-  ~ImeSettingButtonView() override {}
-
-  // ActionableView.
-  bool PerformAction(const ui::Event& event) override {
-    ShowIMESettings();
-    return true;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ImeSettingButtonView);
-};
-
-class ImeButtonsView : public views::View, public views::ButtonListener {
+// The view that contains buttons shown on the bottom of IME menu.
+class ImeButtonsView : public views::View,
+                       public views::ButtonListener,
+                       public ViewClickListener {
  public:
   ImeButtonsView(bool show_emoji_button,
                  bool show_voice_button,
                  bool show_handwriting_button,
                  bool show_settings_button) {
-    set_background(
-        views::Background::CreateSolidBackground(kHeaderBackgroundColor));
     SetBorder(
         views::Border::CreateSolidSidedBorder(1, 0, 0, 0, kBorderDarkColor));
 
-    auto* box_layout = new views::BoxLayout(
-        views::BoxLayout::kHorizontal, kTrayImeBottomRowPadding,
-        kTrayImeBottomRowPadding, kTrayImeBottomRowPaddingBetweenItems);
-    box_layout->SetDefaultFlex(1);
-    SetLayoutManager(box_layout);
-
-    if (show_emoji_button) {
-      // TODO(azurewei): Creates the proper button with icons.
+    // If there's only one settings button, the bottom should be a label with
+    // normal background. Otherwise, show button icons with header background.
+    if (show_settings_button && !show_emoji_button && !show_voice_button &&
+        !show_handwriting_button) {
+      ShowOneSettingButton();
+    } else {
+      ShowButtons(show_emoji_button, show_voice_button, show_handwriting_button,
+                  show_settings_button);
     }
-
-    if (show_voice_button) {
-      // TODO(azurewei): Creates the proper button with icons.
-    }
-
-    if (show_handwriting_button) {
-      // TODO(azurewei): Creates the proper button with icons.
-    }
-
-    if (show_settings_button) {
-      // If there's only one button, we show the gear icon with text. Otherwise,
-      // just show the icon.
-      if (!show_emoji_button && !show_voice_button &&
-          !show_handwriting_button) {
-        settings_button_with_text_ = new ImeSettingButtonView();
-        AddChildView(settings_button_with_text_);
-      } else {
-        settings_button_ = CreateImeMenuButton(
-            this, IDR_AURA_UBER_TRAY_SETTINGS, IDR_AURA_UBER_TRAY_SETTINGS,
-            IDR_AURA_UBER_TRAY_SETTINGS, IDR_AURA_UBER_TRAY_SETTINGS,
-            IDS_ASH_STATUS_TRAY_SETTINGS, IDS_ASH_STATUS_TRAY_SETTINGS, 0);
-        AddChildView(settings_button_);
-      }
-    }
+    // TODO(azurewei): Add logic of switching between the two states when the
+    // menu is shown.
   }
 
   ~ImeButtonsView() override {}
@@ -182,12 +127,67 @@ class ImeButtonsView : public views::View, public views::ButtonListener {
     }
   }
 
+  // ViewClickListener:
+  void OnViewClicked(views::View* sender) override {
+    if (one_settings_button_view_ && sender == one_settings_button_view_) {
+      ShowIMESettings();
+    }
+  }
+
  private:
+  // Shows the UI of one settings button.
+  void ShowOneSettingButton() {
+    auto* box_layout =
+        new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
+    box_layout->SetDefaultFlex(1);
+    SetLayoutManager(box_layout);
+    one_settings_button_view_ = new HoverHighlightView(this);
+    one_settings_button_view_->AddLabel(
+        ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
+            IDS_ASH_STATUS_TRAY_IME_SETTINGS),
+        gfx::ALIGN_LEFT, false /* highlight */);
+    AddChildView(one_settings_button_view_);
+  }
+
+  // Shows the UI of more than one buttons.
+  void ShowButtons(bool show_emoji_button,
+                   bool show_voice_button,
+                   bool show_handwriting_button,
+                   bool show_settings_button) {
+    set_background(
+        views::Background::CreateSolidBackground(kHeaderBackgroundColor));
+    auto* box_layout = new views::BoxLayout(
+        views::BoxLayout::kHorizontal, kTrayImeBottomRowPadding,
+        kTrayImeBottomRowPadding, kTrayImeBottomRowPaddingBetweenItems);
+    box_layout->SetDefaultFlex(1);
+    SetLayoutManager(box_layout);
+
+    if (show_emoji_button) {
+      // TODO(azurewei): Creates the proper button with icons.
+    }
+
+    if (show_voice_button) {
+      // TODO(azurewei): Creates the proper button with icons.
+    }
+
+    if (show_handwriting_button) {
+      // TODO(azurewei): Creates the proper button with icons.
+    }
+
+    if (show_settings_button) {
+      settings_button_ = CreateImeMenuButton(
+          this, IDR_AURA_UBER_TRAY_SETTINGS, IDR_AURA_UBER_TRAY_SETTINGS,
+          IDR_AURA_UBER_TRAY_SETTINGS, IDR_AURA_UBER_TRAY_SETTINGS,
+          IDS_ASH_STATUS_TRAY_SETTINGS, IDS_ASH_STATUS_TRAY_SETTINGS, 0);
+      AddChildView(settings_button_);
+    }
+  }
+
   TrayPopupHeaderButton* emoji_button_;
   TrayPopupHeaderButton* voice_button_;
   TrayPopupHeaderButton* handwriting_button_;
   TrayPopupHeaderButton* settings_button_;
-  ImeSettingButtonView* settings_button_with_text_;
+  HoverHighlightView* one_settings_button_view_;
 
   DISALLOW_COPY_AND_ASSIGN(ImeButtonsView);
 };

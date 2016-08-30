@@ -242,9 +242,6 @@
     Set wallpaper...
   </message>
 
-  <message name="IDS_ASH_STATUS_TRAY_INPUT_SETTINGS" desc="The label used for the language and input settings for IME menu tray.">
-    Language and input settings
-  </message>
   <message name="IDS_ASH_STATUS_TRAY_SETTINGS" desc="The label used for the settings item in the status tray.">
     Settings
   </message>
