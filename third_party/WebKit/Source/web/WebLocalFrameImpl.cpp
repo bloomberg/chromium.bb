@@ -1068,6 +1068,13 @@ void WebLocalFrameImpl::requestTextChecking(const WebElement& webElement)
 {
     if (webElement.isNull())
         return;
+
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
+    // see http://crbug.com/590369 for more details.
+    frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
+    DocumentLifecycle::DisallowTransitionScope(frame()->document()->lifecycle());
+
     frame()->spellChecker().requestTextChecking(*webElement.constUnwrap<Element>());
 }
 

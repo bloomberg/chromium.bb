@@ -171,6 +171,14 @@ void SpellChecker::didBeginEditing(Element* element)
     if (!isSpellCheckingEnabled())
         return;
 
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    // In the long term we should use idle time spell checker to prevent
+    // synchronous layout caused by spell checking (see crbug.com/517298).
+    frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
+    DocumentLifecycle::DisallowTransitionScope(frame().document()->lifecycle());
+
     bool isTextField = false;
     HTMLTextFormControlElement* enclosingHTMLTextFormControlElement = 0;
     if (!isHTMLTextFormControlElement(*element))
@@ -315,6 +323,14 @@ void SpellChecker::clearMisspellingsAndBadGrammarForMovingParagraphs(const Visib
 
 void SpellChecker::markMisspellingsAndBadGrammarForMovingParagraphs(const VisibleSelection& movingSelection)
 {
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    // In the long term we should use idle time spell checker to prevent
+    // synchronous layout caused by spell checking (see crbug.com/517298).
+    frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
+    DocumentLifecycle::DisallowTransitionScope(frame().document()->lifecycle());
+
     markMisspellingsAndBadGrammar(movingSelection);
 }
 
@@ -487,6 +503,10 @@ void SpellChecker::markAndReplaceFor(SpellCheckRequest* request, const Vector<Te
         return;
     }
 
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
+    // see http://crbug.com/590369 for more details.
+    frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
     TextCheckingParagraph paragraph(request->checkingRange(), request->checkingRange());
 
     // Expand the range to encompass entire paragraphs, since text checking needs that much context.
@@ -496,23 +516,19 @@ void SpellChecker::markAndReplaceFor(SpellCheckRequest* request, const Vector<Te
     bool restoreSelectionAfterChange = false;
     bool adjustSelectionForParagraphBoundaries = false;
 
-    if (frame().selection().isCaret()) {
-        // Attempt to save the caret position so we can restore it later if needed
-        Position caretPosition = frame().selection().end();
-        selectionOffset = paragraph.offsetTo(caretPosition);
-        restoreSelectionAfterChange = true;
-        if (selectionOffset > 0 && (static_cast<unsigned>(selectionOffset) > paragraph.text().length() || paragraph.textCharAt(selectionOffset - 1) == newlineCharacter))
-            adjustSelectionForParagraphBoundaries = true;
-        if (selectionOffset > 0 && static_cast<unsigned>(selectionOffset) <= paragraph.text().length() && isAmbiguousBoundaryCharacter(paragraph.textCharAt(selectionOffset - 1)))
-            ambiguousBoundaryOffset = selectionOffset - 1;
-    }
-
-    // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
-    // see http://crbug.com/590369 for more details.
-    frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
-
     {
         DocumentLifecycle::DisallowTransitionScope(frame().document()->lifecycle());
+
+        if (frame().selection().isCaret()) {
+            // Attempt to save the caret position so we can restore it later if needed
+            Position caretPosition = frame().selection().end();
+            selectionOffset = paragraph.offsetTo(caretPosition);
+            restoreSelectionAfterChange = true;
+            if (selectionOffset > 0 && (static_cast<unsigned>(selectionOffset) > paragraph.text().length() || paragraph.textCharAt(selectionOffset - 1) == newlineCharacter))
+                adjustSelectionForParagraphBoundaries = true;
+            if (selectionOffset > 0 && static_cast<unsigned>(selectionOffset) <= paragraph.text().length() && isAmbiguousBoundaryCharacter(paragraph.textCharAt(selectionOffset - 1)))
+                ambiguousBoundaryOffset = selectionOffset - 1;
+        }
 
         for (unsigned i = 0; i < results.size(); i++) {
             int spellingRangeEndOffset = paragraph.checkingEnd();
@@ -689,7 +705,13 @@ static bool shouldCheckOldSelection(const VisibleSelection& oldSelection)
         return false;
     if (isSelectionInTextArea(oldSelection))
         return true;
+
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    // In the long term we should use idle time spell checker to prevent
+    // synchronous layout caused by spell checking (see crbug.com/517298).
     oldSelection.start().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
     return oldSelection.isContentEditable();
 }
 
@@ -710,6 +732,8 @@ void SpellChecker::respondToChangedSelection(const VisibleSelection& oldSelectio
         return;
     if (!shouldCheckOldSelection(oldSelection))
         return;
+
+    DocumentLifecycle::DisallowTransitionScope(frame().document()->lifecycle());
 
     VisibleSelection newAdjacentWords;
     const VisibleSelection newSelection = frame().selection().selection();
@@ -756,6 +780,14 @@ void SpellChecker::spellCheckAfterBlur()
         // textFieldDidEndEditing() and textFieldDidBeginEditing() handle this.
         return;
     }
+
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    // In the long term we should use idle time spell checker to prevent
+    // synchronous layout caused by spell checking (see crbug.com/517298).
+    frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
+    DocumentLifecycle::DisallowTransitionScope(frame().document()->lifecycle());
 
     VisibleSelection empty;
     spellCheckOldSelection(frame().selection().selection(), empty);
