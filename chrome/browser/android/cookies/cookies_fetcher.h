@@ -27,18 +27,15 @@ class CookiesFetcher {
 
   ~CookiesFetcher();
 
-  // Called by the Java object when it is getting GC'd.
-  void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
-
-  // Callback used after the cookie jar populate the cookie list for us.
-  void OnCookiesFetchFinished(const net::CookieList& cookies);
-
   // Fetches all cookies from the cookie jar.
   void PersistCookies(JNIEnv* env,
                       const base::android::JavaParamRef<jobject>& obj);
 
  private:
   void PersistCookiesInternal(net::URLRequestContextGetter* getter);
+
+  // Callback used after the cookie jar populate the cookie list for us.
+  void OnCookiesFetchFinished(const net::CookieList& cookies);
 
   base::android::ScopedJavaGlobalRef<jobject> jobject_;
 

@@ -24,10 +24,6 @@ CookiesFetcher::CookiesFetcher(JNIEnv* env, jobject obj, Profile* profile) {
 CookiesFetcher::~CookiesFetcher() {
 }
 
-void CookiesFetcher::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
-  delete this;
-}
-
 void CookiesFetcher::PersistCookies(JNIEnv* env,
                                     const JavaParamRef<jobject>& obj) {
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
@@ -62,12 +58,12 @@ void CookiesFetcher::PersistCookiesInternal(
   // Nullable sometimes according to docs. There is no work need to be done
   // but we can consider calling the Java callback with empty output.
   if (!store) {
-    jobject_.Reset();
+    delete this;
     return;
   }
 
-  store->GetAllCookiesAsync(base::Bind(
-      &CookiesFetcher::OnCookiesFetchFinished, base::Unretained(this)));
+  store->GetAllCookiesAsync(
+      base::Bind(&CookiesFetcher::OnCookiesFetchFinished, base::Owned(this)));
 }
 
 void CookiesFetcher::OnCookiesFetchFinished(const net::CookieList& cookies) {
@@ -94,9 +90,6 @@ void CookiesFetcher::OnCookiesFetchFinished(const net::CookieList& cookies) {
   }
 
   Java_CookiesFetcher_onCookieFetchFinished(env, jobject_, joa);
-
-  // Give up the reference.
-  jobject_.Reset();
 }
 
 static void RestoreToCookieJarInternal(net::URLRequestContextGetter* getter,
