@@ -6,9 +6,9 @@
 #define CONTENT_BROWSER_ACCESSIBILITY_AX_TREE_ID_REGISTRY_H_
 
 #include <map>
+#include <utility>
 
 #include "base/macros.h"
-#include "base/stl_util.h"
 
 namespace base {
 template <typename T>
@@ -20,9 +20,9 @@ namespace content {
 // A class which generates a unique id given a process id and frame routing id.
 class AXTreeIDRegistry {
  public:
-  typedef std::pair<int, int> FrameID;
+  using FrameID = std::pair<int, int>;
 
-  typedef int AXTreeID;
+  using AXTreeID = int;
 
   static const AXTreeID kNoAXTreeID;
 

@@ -13,7 +13,6 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "components/sync/api/attachments/attachment_id.h"
 #include "components/sync/base/immutable.h"

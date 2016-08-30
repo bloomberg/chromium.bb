@@ -9,11 +9,11 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/stl_util.h"
 #include "cc/base/cc_export.h"
 
 namespace cc {

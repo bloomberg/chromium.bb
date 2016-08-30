@@ -8,12 +8,12 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop.h"
-#include "base/stl_util.h"
 #include "extensions/browser/updater/request_queue.h"
 
 namespace extensions {

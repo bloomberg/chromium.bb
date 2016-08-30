@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
-#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"

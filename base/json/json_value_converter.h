@@ -15,7 +15,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
-#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
@@ -200,7 +199,7 @@ class ValueFieldConverter : public ValueConverter<FieldType> {
  public:
   typedef bool(*ConvertFunc)(const base::Value* value, FieldType* field);
 
-  ValueFieldConverter(ConvertFunc convert_func)
+  explicit ValueFieldConverter(ConvertFunc convert_func)
       : convert_func_(convert_func) {}
 
   bool Convert(const base::Value& value, FieldType* field) const override {
@@ -218,7 +217,7 @@ class CustomFieldConverter : public ValueConverter<FieldType> {
  public:
   typedef bool(*ConvertFunc)(const StringPiece& value, FieldType* field);
 
-  CustomFieldConverter(ConvertFunc convert_func)
+  explicit CustomFieldConverter(ConvertFunc convert_func)
       : convert_func_(convert_func) {}
 
   bool Convert(const base::Value& value, FieldType* field) const override {
@@ -322,7 +321,7 @@ class RepeatedCustomValueConverter
  public:
   typedef bool(*ConvertFunc)(const base::Value* value, NestedType* field);
 
-  RepeatedCustomValueConverter(ConvertFunc convert_func)
+  explicit RepeatedCustomValueConverter(ConvertFunc convert_func)
       : convert_func_(convert_func) {}
 
   bool Convert(const base::Value& value,
@@ -491,7 +490,7 @@ class JSONValueConverter {
     if (!value.GetAsDictionary(&dictionary_value))
       return false;
 
-    for(size_t i = 0; i < fields_.size(); ++i) {
+    for (size_t i = 0; i < fields_.size(); ++i) {
       const internal::FieldConverterBase<StructType>* field_converter =
           fields_[i];
       const base::Value* field = NULL;

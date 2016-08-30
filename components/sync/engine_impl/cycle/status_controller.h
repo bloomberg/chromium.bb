@@ -22,7 +22,6 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "components/sync/engine/cycle/model_neutral_state.h"
 #include "components/sync/engine/model_safe_worker.h"

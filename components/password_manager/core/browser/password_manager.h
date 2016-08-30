@@ -13,7 +13,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "components/autofill/core/common/password_form.h"

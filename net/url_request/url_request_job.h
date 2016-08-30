@@ -13,7 +13,6 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/power_monitor/power_observer.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_states.h"
