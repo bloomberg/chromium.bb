@@ -26,6 +26,11 @@ public:
     // The scheduler may throttle tasks associated with pages that are not visible.
     virtual void setPageVisible(bool) { }
 
+    // Set whether this frame is cross origin w.r.t. the top level frame. Cross
+    // origin frames may use a different scheduling policy from same origin
+    // frames.
+    virtual void setCrossOrigin(bool) {}
+
     // Returns the WebTaskRunner for loading tasks.
     // WebFrameScheduler owns the returned WebTaskRunner.
     virtual WebTaskRunner* loadingTaskRunner() { return nullptr; }

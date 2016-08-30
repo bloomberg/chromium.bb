@@ -4257,6 +4257,8 @@ void FrameView::updateThrottlingStatus()
         if (parentFrame->isLocalFrame() && toLocalFrame(parentFrame)->view() && toLocalFrame(parentFrame)->view()->canThrottleRendering())
             m_subtreeThrottled = true;
     }
+    m_frame->frameScheduler()->setFrameVisible(!m_hiddenForThrottling);
+    m_frame->frameScheduler()->setCrossOrigin(m_crossOriginForThrottling);
 }
 
 void FrameView::notifyRenderThrottlingObserversForTesting()

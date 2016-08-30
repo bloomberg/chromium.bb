@@ -132,6 +132,10 @@ const base::Feature kSpeculativeLaunchServiceWorker{
 const base::Feature kStaleWhileRevalidate{"StaleWhileRevalidate2",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Throttle Blink timers in out-of-view cross origin frames.
+const base::Feature kTimerThrottlingForHiddenFrames{
+    "TimerThrottlingForHiddenFrames", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables token binding
 // (https://www.ietf.org/id/draft-ietf-tokbind-protocol-04.txt).
 const base::Feature kTokenBinding{"token-binding",

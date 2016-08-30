@@ -41,6 +41,7 @@ CONTENT_EXPORT extern const base::Feature kRenderingPipelineThrottling;
 CONTENT_EXPORT extern const base::Feature kScrollAnchoring;
 CONTENT_EXPORT extern const base::Feature kSpeculativeLaunchServiceWorker;
 CONTENT_EXPORT extern const base::Feature kStaleWhileRevalidate;
+CONTENT_EXPORT extern const base::Feature kTimerThrottlingForHiddenFrames;
 CONTENT_EXPORT extern const base::Feature kTokenBinding;
 CONTENT_EXPORT extern const base::Feature kTouchpadAndWheelScrollLatching;
 CONTENT_EXPORT extern const base::Feature kWeakMemoryCache;

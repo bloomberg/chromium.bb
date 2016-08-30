@@ -11,6 +11,7 @@
 #include "platform/scheduler/renderer/auto_advancing_virtual_time_domain.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 #include "platform/scheduler/renderer/web_view_scheduler_impl.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/BlameContext.h"
 #include "public/platform/WebString.h"
 
@@ -25,7 +26,8 @@ WebFrameSchedulerImpl::WebFrameSchedulerImpl(
       parent_web_view_scheduler_(parent_web_view_scheduler),
       blame_context_(blame_context),
       frame_visible_(true),
-      page_visible_(true) {}
+      page_visible_(true),
+      cross_origin_(false) {}
 
 WebFrameSchedulerImpl::~WebFrameSchedulerImpl() {
   if (loading_task_queue_) {
@@ -52,8 +54,21 @@ void WebFrameSchedulerImpl::DetachFromWebViewScheduler() {
 }
 
 void WebFrameSchedulerImpl::setFrameVisible(bool frame_visible) {
+  DCHECK(parent_web_view_scheduler_);
+  if (frame_visible_ == frame_visible)
+    return;
+  bool was_throttled = ShouldThrottleTimers();
   frame_visible_ = frame_visible;
-  // TODO(alexclarke): Do something with this flag.
+  UpdateTimerThrottling(was_throttled);
+}
+
+void WebFrameSchedulerImpl::setCrossOrigin(bool cross_origin) {
+  DCHECK(parent_web_view_scheduler_);
+  if (cross_origin_ == cross_origin)
+    return;
+  bool was_throttled = ShouldThrottleTimers();
+  cross_origin_ = cross_origin;
+  UpdateTimerThrottling(was_throttled);
 }
 
 blink::WebTaskRunner* WebFrameSchedulerImpl::loadingTaskRunner() {
@@ -73,7 +88,7 @@ blink::WebTaskRunner* WebFrameSchedulerImpl::timerTaskRunner() {
     timer_task_queue_ =
         renderer_scheduler_->NewTimerTaskRunner("frame_timer_tq");
     timer_task_queue_->SetBlameContext(blame_context_);
-    if (!page_visible_) {
+    if (ShouldThrottleTimers()) {
       renderer_scheduler_->throttling_helper()->IncreaseThrottleRefCount(
           timer_task_queue_.get());
     }
@@ -120,17 +135,27 @@ void WebFrameSchedulerImpl::setPageVisible(bool page_visible) {
   DCHECK(parent_web_view_scheduler_);
   if (page_visible_ == page_visible)
     return;
-
+  bool was_throttled = ShouldThrottleTimers();
   page_visible_ = page_visible;
+  UpdateTimerThrottling(was_throttled);
+}
 
-  if (!timer_web_task_runner_)
+bool WebFrameSchedulerImpl::ShouldThrottleTimers() const {
+  if (!page_visible_)
+    return true;
+  return RuntimeEnabledFeatures::timerThrottlingForHiddenFramesEnabled() &&
+         !frame_visible_ && cross_origin_;
+}
+
+void WebFrameSchedulerImpl::UpdateTimerThrottling(bool was_throttled) {
+  bool should_throttle = ShouldThrottleTimers();
+  if (was_throttled == should_throttle || !timer_web_task_runner_)
     return;
-
-  if (page_visible_) {
-    renderer_scheduler_->throttling_helper()->DecreaseThrottleRefCount(
+  if (should_throttle) {
+    renderer_scheduler_->throttling_helper()->IncreaseThrottleRefCount(
         timer_task_queue_.get());
   } else {
-    renderer_scheduler_->throttling_helper()->IncreaseThrottleRefCount(
+    renderer_scheduler_->throttling_helper()->DecreaseThrottleRefCount(
         timer_task_queue_.get());
   }
 }

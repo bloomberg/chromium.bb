@@ -263,6 +263,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   WebRuntimeFeatures::enableRenderingPipelineThrottling(
     base::FeatureList::IsEnabled(features::kRenderingPipelineThrottling));
 
+  WebRuntimeFeatures::enableTimerThrottlingForHiddenFrames(
+      base::FeatureList::IsEnabled(features::kTimerThrottlingForHiddenFrames));
+
   if (base::FeatureList::IsEnabled(
           features::kSendBeaconThrowForBlobWithNonSimpleType))
     WebRuntimeFeatures::enableSendBeaconThrowForBlobWithNonSimpleType(true);

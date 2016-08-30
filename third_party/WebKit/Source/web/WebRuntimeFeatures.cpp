@@ -380,6 +380,11 @@ void WebRuntimeFeatures::enableTimerThrottlingForBackgroundTabs(bool enable)
     RuntimeEnabledFeatures::setTimerThrottlingForBackgroundTabsEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableTimerThrottlingForHiddenFrames(bool enable)
+{
+    RuntimeEnabledFeatures::setTimerThrottlingForHiddenFramesEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableSendBeaconThrowForBlobWithNonSimpleType(bool enable)
 {
     RuntimeEnabledFeatures::setSendBeaconThrowForBlobWithNonSimpleTypeEnabled(enable);

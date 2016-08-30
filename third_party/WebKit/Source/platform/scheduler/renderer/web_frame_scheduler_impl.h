@@ -41,6 +41,7 @@ class BLINK_PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
   // WebFrameScheduler implementation:
   void setFrameVisible(bool frame_visible) override;
   void setPageVisible(bool page_visible) override;
+  void setCrossOrigin(bool cross_origin) override;
   WebTaskRunner* loadingTaskRunner() override;
   WebTaskRunner* timerTaskRunner() override;
   WebTaskRunner* unthrottledTaskRunner() override;
@@ -54,6 +55,8 @@ class BLINK_PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
 
   void DetachFromWebViewScheduler();
   void ApplyPolicyToTimerQueue();
+  bool ShouldThrottleTimers() const;
+  void UpdateTimerThrottling(bool was_throttled);
 
   scoped_refptr<TaskQueue> loading_task_queue_;
   scoped_refptr<TaskQueue> timer_task_queue_;
@@ -67,6 +70,7 @@ class BLINK_PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
   TaskQueue::PumpPolicy virtual_time_pump_policy_;
   bool frame_visible_;
   bool page_visible_;
+  bool cross_origin_;
 
   DISALLOW_COPY_AND_ASSIGN(WebFrameSchedulerImpl);
 };
