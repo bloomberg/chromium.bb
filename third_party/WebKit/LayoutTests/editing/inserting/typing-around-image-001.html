@@ -1,46 +1,35 @@
-<html> 
-<head>
-
-<style>
-.editing { 
-    border: 2px solid red; 
-    padding: 12px; 
-    font-size: 24px; 
-}
-</style>
-<script src=../editing.js language="JavaScript" type="text/JavaScript" ></script>
-
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
+test(() => assert_selection(
+    [
+        '<div contenteditable>',
+            '|<img src="../resources/abe.png">',
+            '<img src="../resources/abe.png">',
+            ' <img src="../resources/abe.png">',
+        '</div>',
+    ].join(''),
+    selection => {
+        selection.document.execCommand('insertText', false, 'a');
+        selection.modify('move', 'forward', 'character');
+        selection.document.execCommand('insertText', false, 'bcd');
+        selection.modify('move', 'forward', 'character');
+        selection.document.execCommand('insertText', false, 'efg');
+        selection.modify('move', 'forward', 'character');
+        selection.document.execCommand('insertText', false, 'hij');
+        selection.modify('move', 'forward', 'character');
+        selection.document.execCommand('insertText', false, 'klm');
 
-function moveNSpacesAndType(n) {
-    for (i = 0; i < n; i++) {
-        moveSelectionForwardByCharacterCommand();
-    }
-    for (i = 0; i < 3; i++) {
-        typeCharacterCommand();
-    }
-}
-
-function editingTest() {
-    typeCharacterCommand();
-    moveNSpacesAndType(1);
-    moveNSpacesAndType(1);
-    moveNSpacesAndType(1);
-    moveNSpacesAndType(1);
-}
-
+    },
+    [
+        '<div contenteditable>',
+            'a<img src="../resources/abe.png">',
+            'bcd<img src="../resources/abe.png">',
+            'efg\u{00A0}hij<img src="../resources/abe.png">',
+            'klm|',
+        '</div>',
+    ].join('')),
+    'insertText around image');
 </script>
-
-<title>Editing Test</title> 
-</head> 
-<body>
-<div contenteditable id="root" class="editing">
-<span id="test"><img src="../resources/abe.png"><img src="../resources/abe.png"> <img src="../resources/abe.png"></span>
-</div>
-
-<script>
-runEditingTest();
-</script>
-
-</body>
-</html>
