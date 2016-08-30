@@ -572,6 +572,8 @@ void LayoutBox::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignmen
         // Don't scroll to reveal an overflow layer that is restricted by the -webkit-line-clamp property.
         // This will prevent us from revealing text hidden by the slider in Safari RSS.
         newRect = getScrollableArea()->scrollIntoView(rect, alignX, alignY, scrollType);
+        if (newRect.isEmpty())
+            return;
     } else if (!parentBox && canBeProgramaticallyScrolled()) {
         if (FrameView* frameView = this->frameView()) {
             HTMLFrameOwnerElement* ownerElement = document().localOwner();

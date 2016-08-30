@@ -1414,13 +1414,13 @@ LayoutRect PaintLayerScrollableArea::scrollIntoView(const LayoutRect& rect, cons
 
     DoublePoint clampedScrollPosition = clampScrollPosition(scrollPositionDouble() + roundedIntSize(r.location()));
     if (clampedScrollPosition == scrollPositionDouble())
-        return rect;
+        return LayoutRect(box().localToAbsoluteQuad(FloatQuad(FloatRect(intersection(layerBounds, localExposeRect))), UseTransforms).boundingBox());
 
     DoubleSize oldScrollOffset = adjustedScrollOffset();
     scrollToPosition(clampedScrollPosition, ScrollOffsetUnclamped, ScrollBehaviorInstant, scrollType);
     DoubleSize scrollOffsetDifference = adjustedScrollOffset() - oldScrollOffset;
     localExposeRect.move(-LayoutSize(scrollOffsetDifference));
-    return LayoutRect(box().localToAbsoluteQuad(FloatQuad(FloatRect(localExposeRect)), UseTransforms).boundingBox());
+    return LayoutRect(box().localToAbsoluteQuad(FloatQuad(FloatRect(intersection(layerBounds, localExposeRect))), UseTransforms).boundingBox());
 }
 
 void PaintLayerScrollableArea::updateScrollableAreaSet(bool hasOverflow)

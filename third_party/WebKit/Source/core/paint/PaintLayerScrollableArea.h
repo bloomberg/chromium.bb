@@ -367,6 +367,8 @@ public:
 
     bool hitTestResizerInFragments(const PaintLayerFragments&, const HitTestLocation&) const;
 
+    // Returns the new position, after scrolling, of the given rect in absolute
+    // coordinates, clipped by the parent's client rect.
     LayoutRect scrollIntoView(const LayoutRect&, const ScrollAlignment& alignX, const ScrollAlignment& alignY, ScrollType = ProgrammaticScroll) override;
 
     // Returns true if scrollable area is in the FrameView's collection of scrollable areas. This can
