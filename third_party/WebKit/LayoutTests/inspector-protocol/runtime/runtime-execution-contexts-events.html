@@ -9,6 +9,7 @@ function createFrame()
     frame.src = "../resources/blank.html";
     frame.id = "iframe";
     document.body.appendChild(frame);
+    return new Promise((resolve) => frame.onload = resolve);
 }
 
 function createCraftedFrame()
@@ -39,7 +40,8 @@ function test()
     {
         InspectorTest.log("Page context was created");
         InspectorTest.log("Create new frame");
-        InspectorTest.evaluate("createFrame()");
+        InspectorTest.sendCommandPromise("Runtime.evaluate", {expression: "createFrame()", awaitPromise: true})
+            .then(() => navigateFrame());
     }
 
     var frameExecutionContextId = 0;
@@ -48,6 +50,10 @@ function test()
     {
         InspectorTest.log("Frame context was created");
         frameExecutionContextId = executionContextId;
+    }
+
+    function navigateFrame()
+    {
         InspectorTest.log("Navigate frame");
         InspectorTest.evaluate("window.frames[0].location = \"resources/runtime-events-iframe.html\"");
     }
