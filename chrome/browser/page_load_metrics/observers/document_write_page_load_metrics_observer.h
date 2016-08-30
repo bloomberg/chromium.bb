@@ -73,6 +73,10 @@ class DocumentWritePageLoadMetricsObserver
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info);
 
+  void LogDocumentWriteBlockFirstMeaningfulPaint(
+      const page_load_metrics::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& info);
+
   bool doc_write_block_reload_observed_;
 
   DISALLOW_COPY_AND_ASSIGN(DocumentWritePageLoadMetricsObserver);
