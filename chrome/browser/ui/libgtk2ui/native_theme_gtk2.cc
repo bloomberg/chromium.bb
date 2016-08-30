@@ -19,6 +19,8 @@
 #include "ui/gfx/path.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/native_theme/common_theme.h"
+#include "ui/native_theme/native_theme_aura.h"
+#include "ui/native_theme/native_theme_dark_aura.h"
 
 namespace libgtk2ui {
 
@@ -455,11 +457,17 @@ SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
           0x80);
 
     // Alert icons
-    // These aren't yet used in any GTK NativeTheme context, so they don't have
-    // definitions.
+    // Just fall back to the same colors as Aura.
     case kColorId_AlertSeverityLow:
     case kColorId_AlertSeverityMedium:
-    case kColorId_AlertSeverityHigh:
+    case kColorId_AlertSeverityHigh: {
+      ui::NativeTheme* fallback_theme =
+          color_utils::IsDark(GetTextColor(GetEntry(), NORMAL))
+              ? ui::NativeThemeAura::instance()
+              : ui::NativeThemeDarkAura::instance();
+      return fallback_theme->GetSystemColor(color_id);
+    }
+
     case kColorId_NumColors:
       NOTREACHED();
       break;
