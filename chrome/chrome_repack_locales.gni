@@ -6,7 +6,6 @@ import("//build/config/chrome_build.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//tools/grit/repack.gni")
-import("//tools/grit/grit_rule.gni")
 
 # Arguments:
 #

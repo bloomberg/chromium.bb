@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/android/config.gni")
 import("//build/config/clang/clang.gni")
 import("//build/config/nacl/config.gni")
 import("//build/config/sanitizers/sanitizers.gni")
@@ -9,7 +10,6 @@ import("//build/config/v8_target_cpu.gni")
 import("//build/toolchain/cc_wrapper.gni")
 import("//build/toolchain/goma.gni")
 import("//build/toolchain/toolchain.gni")
-import("//tools/grit/grit_rule.gni")
 
 # This template defines a toolchain for something that works like gcc
 # (including clang).
