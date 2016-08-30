@@ -39,9 +39,6 @@
   "net/base/net_resources.grd": {
     "includes": [4000],
   },
-  "ash/mus/resources/ash_mus_resources.grd": {
-    "structures": [4400],
-  },
   "ui/resources/ui_unscaled_resources.grd": {
     "includes": [4500],
   },
@@ -142,20 +139,6 @@
   "chrome/test/data/webui_test_resources.grd": {
     "includes": [22630],
     "structures": [22640],
-  },
-  "cloud_print/virtual_driver/win/install/virtual_driver_setup_resources.grd": {
-    "messages": [22650],
-    "includes": [22700],
-  },
-  "cloud_print/service/win/service_resources.grd": {
-    "messages": [22750],
-    "includes": [22850],
-    "structures": [22900],
-  },
-  "cloud_print/gcp20/prototype/gcp20_device.grd": {
-    "messages": [22950],
-    "includes": [22980],
-    "structures": [22990],
   },
   "chrome/browser/resources/quota_internals_resources.grd": {
     "includes": [22950],
