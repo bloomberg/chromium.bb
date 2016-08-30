@@ -10,6 +10,7 @@ Polymer({
   is: 'settings-people-page',
 
   behaviors: [
+    settings.RouteObserverBehavior,
     I18nBehavior,
     WebUIListenerBehavior,
 <if expr="chromeos">
@@ -139,6 +140,14 @@ Polymer({
 </if>
   },
 
+  /** @protected */
+  currentRouteChanged: function() {
+    if (settings.getCurrentRoute() == settings.Route.SIGN_OUT)
+      this.$.disconnectDialog.showModal();
+    else if (this.$.disconnectDialog.open)
+      this.$.disconnectDialog.close();
+  },
+
 <if expr="chromeos">
   /** @private */
   getPasswordState_: function(hasPin, enableScreenLock) {
@@ -216,8 +225,14 @@ Polymer({
   },
 
   /** @private */
+  onDisconnectClosed_: function() {
+    if (settings.getCurrentRoute() == settings.Route.SIGN_OUT)
+      settings.navigateToPreviousRoute();
+  },
+
+  /** @private */
   onDisconnectTap_: function() {
-    this.$.disconnectDialog.showModal();
+    settings.navigateTo(settings.Route.SIGN_OUT);
   },
 
   /** @private */

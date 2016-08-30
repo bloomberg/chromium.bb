@@ -164,12 +164,21 @@ cr.define('settings_people_page', function() {
           var disconnectConfirm = peoplePage.$.disconnectConfirm;
           assertTrue(!!disconnectConfirm);
           assertFalse(disconnectConfirm.hidden);
+
+          // Wait for exit of dialog route.
+          var dialogExitPromise = new Promise(function(resolve) {
+            window.addEventListener('popstate', function callback() {
+              window.removeEventListener('popstate', callback);
+              resolve();
+            });
+          });
+
           MockInteractions.tap(disconnectConfirm);
 
+          return dialogExitPromise;
+        }).then(function() {
           return browserProxy.whenCalled('signOut');
         }).then(function(deleteProfile) {
-          Polymer.dom.flush();
-
           assertFalse(deleteProfile);
 
           cr.webUIListenerCallback('sync-status-changed', {
@@ -228,7 +237,7 @@ cr.define('settings_people_page', function() {
           var customizeSync = peoplePage.$$('#customize-sync');
           assertTrue(!!customizeSync);
           assertTrue(customizeSync.hasAttribute('actionable'));
-        }).then(function() {
+
           cr.webUIListenerCallback('sync-status-changed', {
             managed: true,
             signedIn: true,
