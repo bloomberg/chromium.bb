@@ -372,12 +372,6 @@ class EditableProfilePhoto : public views::LabelButton {
       SetSize(GetPreferredSize());
     }
 
-    // Calculate the circular mask that will be used to display the photo.
-    circular_mask_.addCircle(
-        SkIntToScalar(icon_image_side() / 2),
-        SkIntToScalar(icon_image_side() / 2) + badge_spacing(),
-        SkIntToScalar(icon_image_side() / 2));
-
     if (switches::IsMaterialDesignUserMenu() || !is_editing_allowed) {
       SetEnabled(false);
       return;
@@ -400,19 +394,17 @@ class EditableProfilePhoto : public views::LabelButton {
     AddChildView(photo_overlay_);
   }
 
-  void OnPaint(gfx::Canvas* canvas) override {
-    canvas->Save();
-    // Display the profile picture as a circle.
-    canvas->ClipPath(circular_mask_, true);
-    views::LabelButton::OnPaint(canvas);
-    canvas->Restore();
-  }
-
   void PaintChildren(const ui::PaintContext& context) override {
     {
       // Display any children (the "change photo" overlay) as a circle.
       ui::ClipRecorder clip_recorder(context);
-      clip_recorder.ClipPathWithAntiAliasing(circular_mask_);
+      gfx::Rect clip_bounds = image()->GetMirroredBounds();
+      gfx::Path clip_mask;
+      clip_mask.addCircle(
+          clip_bounds.x() + clip_bounds.width() / 2,
+          clip_bounds.y() + clip_bounds.height() / 2,
+          clip_bounds.width() / 2);
+      clip_recorder.ClipPathWithAntiAliasing(clip_mask);
       View::PaintChildren(context);
     }
 
@@ -424,10 +416,11 @@ class EditableProfilePhoto : public views::LabelButton {
       int badge_offset =
           icon_image_side() + badge_spacing() - GetProfileBadgeSize();
       gfx::Vector2d badge_offset_vector = gfx::Vector2d(
-          badge_offset,
+          GetMirroredXWithWidthInView(badge_offset, GetProfileBadgeSize()),
           badge_offset + (switches::IsMaterialDesignUserMenu()
                               ? views::kRelatedControlSmallVerticalSpacing
                               : 0));
+
       gfx::Point center_point = bounds.CenterPoint() + badge_offset_vector;
 
       // Paint the circular background.
@@ -503,7 +496,6 @@ class EditableProfilePhoto : public views::LabelButton {
   }
 
   bool interactive_;
-  gfx::Path circular_mask_;
 
   // Image that is shown when hovering over the image button. Can be NULL if
   // the photo isn't allowed to be edited (e.g. for guest profiles).
