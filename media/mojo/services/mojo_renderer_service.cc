@@ -7,9 +7,11 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "media/base/audio_renderer_sink.h"
 #include "media/base/media_keys.h"
 #include "media/base/media_url_demuxer.h"
 #include "media/base/renderer.h"
+#include "media/base/video_renderer_sink.h"
 #include "media/mojo/services/demuxer_stream_provider_shim.h"
 #include "media/mojo/services/mojo_cdm_service_context.h"
 
@@ -20,11 +22,15 @@ const int kTimeUpdateIntervalMs = 50;
 
 MojoRendererService::MojoRendererService(
     base::WeakPtr<MojoCdmServiceContext> mojo_cdm_service_context,
+    scoped_refptr<AudioRendererSink> audio_sink,
+    std::unique_ptr<VideoRendererSink> video_sink,
     std::unique_ptr<media::Renderer> renderer,
     mojo::InterfaceRequest<mojom::Renderer> request)
     : binding_(this, std::move(request)),
       mojo_cdm_service_context_(mojo_cdm_service_context),
       state_(STATE_UNINITIALIZED),
+      audio_sink_(std::move(audio_sink)),
+      video_sink_(std::move(video_sink)),
       renderer_(std::move(renderer)),
       weak_factory_(this) {
   DVLOG(1) << __FUNCTION__;

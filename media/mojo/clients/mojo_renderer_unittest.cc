@@ -9,11 +9,13 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/platform_thread.h"
+#include "media/base/audio_renderer_sink.h"
 #include "media/base/cdm_config.h"
 #include "media/base/cdm_context.h"
 #include "media/base/gmock_callback_support.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
+#include "media/base/video_renderer_sink.h"
 #include "media/cdm/default_cdm_factory.h"
 #include "media/mojo/clients/mojo_renderer.h"
 #include "media/mojo/common/media_type_converters.h"
@@ -51,8 +53,8 @@ class MojoRendererTest : public ::testing::Test {
     mojom::RendererPtr remote_renderer;
 
     mojo_renderer_service_ = new MojoRendererService(
-        mojo_cdm_service_context_.GetWeakPtr(), std::move(mock_renderer),
-        mojo::GetProxy(&remote_renderer));
+        mojo_cdm_service_context_.GetWeakPtr(), nullptr, nullptr,
+        std::move(mock_renderer), mojo::GetProxy(&remote_renderer));
 
     mojo_renderer_.reset(
         new MojoRenderer(message_loop_.task_runner(),

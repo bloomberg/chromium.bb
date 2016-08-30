@@ -19,7 +19,9 @@
 #endif  // defined(ENABLE_MOJO_VIDEO_DECODER)
 
 #if defined(ENABLE_MOJO_RENDERER)
+#include "media/base/audio_renderer_sink.h"
 #include "media/base/renderer_factory.h"
+#include "media/base/video_renderer_sink.h"
 #include "media/mojo/services/mojo_renderer_service.h"
 #endif  // defined(ENABLE_MOJO_RENDERER)
 
@@ -82,19 +84,26 @@ void ServiceFactoryImpl::CreateRenderer(
     const mojo::String& audio_device_id,
     mojo::InterfaceRequest<mojom::Renderer> request) {
 #if defined(ENABLE_MOJO_RENDERER)
-  // The created object is owned by the pipe.
-  // The audio and video sinks are owned by the client.
+  RendererFactory* renderer_factory = GetRendererFactory();
+  if (!renderer_factory)
+    return;
+
   scoped_refptr<base::SingleThreadTaskRunner> task_runner(
       base::ThreadTaskRunnerHandle::Get());
-
-  std::unique_ptr<Renderer> renderer = mojo_media_client_->CreateRenderer(
-      task_runner, media_log_, audio_device_id);
+  auto audio_sink =
+      mojo_media_client_->CreateAudioRendererSink(audio_device_id);
+  auto video_sink = mojo_media_client_->CreateVideoRendererSink(task_runner);
+  auto renderer = renderer_factory->CreateRenderer(
+      task_runner, task_runner, audio_sink.get(), video_sink.get(),
+      RequestSurfaceCB());
   if (!renderer) {
     LOG(ERROR) << "Renderer creation failed.";
     return;
   }
 
+  // The created object is owned by the pipe.
   new MojoRendererService(cdm_service_context_.GetWeakPtr(),
+                          std::move(audio_sink), std::move(video_sink),
                           std::move(renderer), std::move(request));
 #endif  // defined(ENABLE_MOJO_RENDERER)
 }
@@ -111,6 +120,16 @@ void ServiceFactoryImpl::CreateCdm(
                      std::move(request));
 #endif  // defined(ENABLE_MOJO_CDM)
 }
+
+#if defined(ENABLE_MOJO_RENDERER)
+RendererFactory* ServiceFactoryImpl::GetRendererFactory() {
+  if (!renderer_factory_) {
+    renderer_factory_ = mojo_media_client_->CreateRendererFactory(media_log_);
+    LOG_IF(ERROR, !renderer_factory_) << "RendererFactory not available.";
+  }
+  return renderer_factory_.get();
+}
+#endif  // defined(ENABLE_MOJO_RENDERER)
 
 #if defined(ENABLE_MOJO_CDM)
 CdmFactory* ServiceFactoryImpl::GetCdmFactory() {

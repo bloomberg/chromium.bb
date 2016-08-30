@@ -6,10 +6,12 @@
 
 #include "base/single_thread_task_runner.h"
 #include "media/base/audio_decoder.h"
+#include "media/base/audio_renderer_sink.h"
 #include "media/base/cdm_factory.h"
 #include "media/base/media_log.h"
-#include "media/base/renderer.h"
+#include "media/base/renderer_factory.h"
 #include "media/base/video_decoder.h"
+#include "media/base/video_renderer_sink.h"
 
 namespace media {
 
@@ -31,10 +33,18 @@ std::unique_ptr<VideoDecoder> MojoMediaClient::CreateVideoDecoder(
   return nullptr;
 }
 
-std::unique_ptr<Renderer> MojoMediaClient::CreateRenderer(
-    scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
-    scoped_refptr<MediaLog> media_log,
+scoped_refptr<AudioRendererSink> MojoMediaClient::CreateAudioRendererSink(
     const std::string& audio_device_id) {
+  return nullptr;
+}
+
+std::unique_ptr<VideoRendererSink> MojoMediaClient::CreateVideoRendererSink(
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
+  return nullptr;
+}
+
+std::unique_ptr<RendererFactory> MojoMediaClient::CreateRendererFactory(
+    const scoped_refptr<MediaLog>& media_log) {
   return nullptr;
 }
 

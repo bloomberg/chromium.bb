@@ -24,10 +24,12 @@
 
 namespace media {
 
+class AudioRendererSink;
 class DemuxerStreamProviderShim;
 class MediaKeys;
 class MojoCdmServiceContext;
 class Renderer;
+class VideoRendererSink;
 
 // A mojom::Renderer implementation that use a media::Renderer to render
 // media streams.
@@ -39,6 +41,8 @@ class MEDIA_MOJO_EXPORT MojoRendererService
   // encrypted media. If null, encrypted media is not supported.
   MojoRendererService(
       base::WeakPtr<MojoCdmServiceContext> mojo_cdm_service_context,
+      scoped_refptr<AudioRendererSink> audio_sink,
+      std::unique_ptr<VideoRendererSink> video_sink,
       std::unique_ptr<media::Renderer> renderer,
       mojo::InterfaceRequest<mojom::Renderer> request);
   ~MojoRendererService() final;
@@ -114,8 +118,14 @@ class MEDIA_MOJO_EXPORT MojoRendererService
   // destructed while the |renderer_| is still using it.
   scoped_refptr<MediaKeys> cdm_;
 
+  // Audio and Video sinks.
+  // May be null if underlying |renderer_| does not use them.
+  scoped_refptr<AudioRendererSink> audio_sink_;
+  std::unique_ptr<VideoRendererSink> video_sink_;
+
   // Note: Destroy |renderer_| first to avoid access violation into other
-  // members, e.g. |stream_provider_| and |cdm_|.
+  // members, e.g. |stream_provider_|, |cdm_|, |audio_sink_|, and
+  // |video_sink_|.
   // Must use "media::" because "Renderer" is ambiguous.
   std::unique_ptr<media::Renderer> renderer_;
 

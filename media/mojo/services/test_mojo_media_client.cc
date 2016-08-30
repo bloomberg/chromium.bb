@@ -51,52 +51,23 @@ void TestMojoMediaClient::WillQuit() {
   base::RunLoop().RunUntilIdle();
 }
 
-std::unique_ptr<Renderer> TestMojoMediaClient::CreateRenderer(
-    scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
-    scoped_refptr<MediaLog> media_log,
-    const std::string& audio_device_id) {
-  DVLOG(1) << __FUNCTION__;
-  AudioRendererSink* audio_renderer_sink = GetAudioRendererSink();
-  VideoRendererSink* video_renderer_sink =
-      GetVideoRendererSink(media_task_runner);
-
-  RendererFactory* renderer_factory = GetRendererFactory(std::move(media_log));
-  if (!renderer_factory)
-    return nullptr;
-
-  return renderer_factory->CreateRenderer(
-      media_task_runner, media_task_runner, audio_renderer_sink,
-      video_renderer_sink, RequestSurfaceCB());
+scoped_refptr<AudioRendererSink> TestMojoMediaClient::CreateAudioRendererSink(
+    const std::string& /* audio_device_id */) {
+  return new AudioOutputStreamSink();
 }
 
-RendererFactory* TestMojoMediaClient::GetRendererFactory(
-    scoped_refptr<MediaLog> media_log) {
-  DVLOG(1) << __FUNCTION__;
-  if (!renderer_factory_) {
-    renderer_factory_ = base::MakeUnique<DefaultRendererFactory>(
-        std::move(media_log), nullptr,
-        DefaultRendererFactory::GetGpuFactoriesCB());
-  }
-
-  return renderer_factory_.get();
-}
-
-AudioRendererSink* TestMojoMediaClient::GetAudioRendererSink() {
-  if (!audio_renderer_sink_)
-    audio_renderer_sink_ = new AudioOutputStreamSink();
-
-  return audio_renderer_sink_.get();
-}
-
-VideoRendererSink* TestMojoMediaClient::GetVideoRendererSink(
+std::unique_ptr<VideoRendererSink> TestMojoMediaClient::CreateVideoRendererSink(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
-  if (!video_renderer_sink_) {
-    video_renderer_sink_ = base::MakeUnique<NullVideoSink>(
-        false, base::TimeDelta::FromSecondsD(1.0 / 60),
-        NullVideoSink::NewFrameCB(), task_runner);
-  }
+  return base::MakeUnique<NullVideoSink>(
+      false, base::TimeDelta::FromSecondsD(1.0 / 60),
+      NullVideoSink::NewFrameCB(), task_runner);
+}
 
-  return video_renderer_sink_.get();
+std::unique_ptr<RendererFactory> TestMojoMediaClient::CreateRendererFactory(
+    const scoped_refptr<MediaLog>& media_log) {
+  return base::MakeUnique<DefaultRendererFactory>(
+      std::move(media_log), nullptr,
+      DefaultRendererFactory::GetGpuFactoriesCB());
 }
 
 std::unique_ptr<CdmFactory> TestMojoMediaClient::CreateCdmFactory(
