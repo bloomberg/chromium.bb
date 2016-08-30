@@ -429,6 +429,18 @@
                   'filebrowse'
     },
     'filesapp': {
+      'filepath': 'chrome/browser/chromeos/drive|' \
+                  'chrome/browser/chromeos/extensions/file_manager|' \
+                  'chrome/browser/chromeos/extensions/file_system_provider|' \
+                  'chrome/browser/chromeos/file_manager|' \
+                  'chrome/browser/chromeos/file_system_provider|' \
+                  'chrome/browser/drive|' \
+                  'chrome/test/data/extensions/api_test/file_system_provider|' \
+                  'components/drive|' \
+                  'google_apis/drive|' \
+                  'ui/file_manager'
+    },
+    'filesapp_ui': {
       'filepath': 'ui/file_manager'
     },
     'ftp': {
@@ -1733,7 +1745,10 @@
                 'nhiroki@chromium.org',
                 'tzik@chromium.org'],
     'filebrowse': ['rginda+watch@chromium.org'],
-    'filesapp': ['mtomasz+watch@chromium.org'],
+    'filesapp': ['fukino+watch@chromium.org',
+                 'oka+watch@chromium.org',
+                 'yamaguchi+watch@chromium.org'],
+    'filesapp_ui': ['mtomasz+watch@chromium.org'],
     'ftp': ['phajdan.jr@chromium.org'],
     'gcm': ['johnme+watch@chromium.org',
             'peter@chromium.org',
