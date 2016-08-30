@@ -35,7 +35,6 @@ class MetricsReportingHandlerTest : public testing::Test {
  public:
   MetricsReportingHandlerTest() {
     // Local state must be set up before |handler_|.
-    TestingBrowserProcess::CreateInstance();
     local_state_.reset(new ScopedTestingLocalState(
         TestingBrowserProcess::GetGlobal()));
 
