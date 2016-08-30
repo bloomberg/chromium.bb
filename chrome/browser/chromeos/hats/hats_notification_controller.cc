@@ -180,7 +180,12 @@ std::string HatsNotificationController::id() const {
 }
 
 // message_center::NotificationDelegate override:
-void HatsNotificationController::ButtonClick(int button_index) {
+void HatsNotificationController::Click() {
+  ButtonClick(0 /* unused */);
+}
+
+// message_center::NotificationDelegate override:
+void HatsNotificationController::ButtonClick(int /* button_index */) {
   UpdateLastInteractionTime();
 
   // The dialog deletes itslef on close.

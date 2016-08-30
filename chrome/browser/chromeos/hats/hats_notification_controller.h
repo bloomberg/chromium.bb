@@ -64,6 +64,7 @@ class HatsNotificationController : public NotificationDelegate,
   void Initialize(bool is_new_device);
   void ButtonClick(int button_index) override;
   void Close(bool by_user) override;
+  void Click() override;
   std::string id() const override;
 
   void OnImageFetched(const std::string& id, const gfx::Image& image);
