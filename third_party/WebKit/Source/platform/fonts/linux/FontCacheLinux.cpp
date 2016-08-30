@@ -37,9 +37,9 @@ namespace blink {
 FontCache::FontCache()
     : m_purgePreventCount(0)
 {
-    if (s_fontManager) {
-        adopted(s_fontManager);
-        m_fontManager = s_fontManager;
+    if (s_staticFontManager) {
+        adopted(s_staticFontManager);
+        m_fontManager = s_staticFontManager;
     } else {
         m_fontManager = nullptr;
     }

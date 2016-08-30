@@ -76,7 +76,7 @@ typedef HashMap<FallbackListCompositeKey, std::unique_ptr<ShapeCache>, FallbackL
 static FontPlatformDataCache* gFontPlatformDataCache = nullptr;
 static FallbackListShaperCache* gFallbackListShaperCache = nullptr;
 
-SkFontMgr* FontCache::s_fontManager = nullptr;
+SkFontMgr* FontCache::s_staticFontManager = nullptr;
 
 #if OS(WIN)
 bool FontCache::s_antialiasedTextEnabled = false;
@@ -187,10 +187,10 @@ FontVerticalDataCache& fontVerticalDataCacheInstance()
 
 void FontCache::setFontManager(const RefPtr<SkFontMgr>& fontManager)
 {
-    ASSERT(!s_fontManager);
-    s_fontManager = fontManager.get();
+    DCHECK(!s_staticFontManager);
+    s_staticFontManager = fontManager.get();
     // Explicitly AddRef since we're going to hold on to the object for the life of the program.
-    s_fontManager->ref();
+    s_staticFontManager->ref();
 }
 
 PassRefPtr<OpenTypeVerticalData> FontCache::getVerticalData(const FontFileKey& key, const FontPlatformData& platformData)

@@ -190,7 +190,7 @@ private:
 
     RefPtr<SkFontMgr> m_fontManager;
 
-    static SkFontMgr* s_fontManager;
+    static SkFontMgr* s_staticFontManager;
 
 #if OS(WIN)
     static bool s_antialiasedTextEnabled;
