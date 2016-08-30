@@ -204,6 +204,9 @@ int drv_bo_from_format(struct bo *bo, uint32_t width, uint32_t height,
 		bo->offsets[0] = 0;
 	}
 
+	bo->total_size = bo->offsets[bo->num_planes - 1] +
+			 bo->sizes[bo->num_planes - 1];
+
 	return 0;
 }
 
@@ -230,7 +233,7 @@ int drv_dumb_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 
 	bo->handles[0].u32 = create_dumb.handle;
 	bo->offsets[0] = 0;
-	bo->sizes[0] = create_dumb.size;
+	bo->total_size = bo->sizes[0] = create_dumb.size;
 	bo->strides[0] = create_dumb.pitch;
 
 	return 0;
@@ -297,7 +300,7 @@ void *drv_dumb_bo_map(struct bo *bo)
 		return MAP_FAILED;
 	}
 
-	return mmap(0, bo->sizes[0], PROT_READ | PROT_WRITE, MAP_SHARED,
+	return mmap(0, bo->total_size, PROT_READ | PROT_WRITE, MAP_SHARED,
 		    bo->drv->fd, map_dumb.offset);
 }
 

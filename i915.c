@@ -147,10 +147,8 @@ static int i915_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 	if (!i915_verify_dimensions(drv, bo->strides[0], height))
 		return EINVAL;
 
-
 	memset(&gem_create, 0, sizeof(gem_create));
-	gem_create.size = bo->offsets[bo->num_planes - 1] +
-			  bo->sizes[bo->num_planes - 1];
+	gem_create.size = bo->total_size;
 
 	ret = drmIoctl(drv->fd, DRM_IOCTL_I915_GEM_CREATE, &gem_create);
 	if (ret) {
@@ -201,7 +199,7 @@ static void *i915_bo_map(struct bo *bo)
 		return MAP_FAILED;
 	}
 
-	return mmap(0, bo->sizes[0], PROT_READ | PROT_WRITE, MAP_SHARED,
+	return mmap(0, bo->total_size, PROT_READ | PROT_WRITE, MAP_SHARED,
 		    bo->drv->fd, gem_map.offset);
 }
 

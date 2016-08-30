@@ -114,7 +114,7 @@ static int tegra_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 
 	bo->handles[0].u32 = gem_create.handle;
 	bo->offsets[0] = 0;
-	bo->sizes[0] = size;
+	bo->total_size = bo->sizes[0] = size;
 	bo->strides[0] = stride;
 
 	if (kind != NV_MEM_KIND_PITCH) {
@@ -156,7 +156,7 @@ static void *tegra_bo_map(struct bo *bo)
 		return MAP_FAILED;
 	}
 
-	return mmap(0, bo->sizes[0], PROT_READ | PROT_WRITE, MAP_SHARED,
+	return mmap(0, bo->total_size, PROT_READ | PROT_WRITE, MAP_SHARED,
 		    bo->drv->fd, gem_map.offset);
 }
 

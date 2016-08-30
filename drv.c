@@ -264,7 +264,7 @@ drv_bo_unmap(struct bo *bo)
 	assert(drv_num_buffers_per_bo(bo) == 1);
 
 	if (bo->map_data && bo->map_data != MAP_FAILED)
-		ret = munmap(bo->map_data, bo->sizes[0]);
+		ret = munmap(bo->map_data, bo->total_size);
 
 	bo->map_data = NULL;
 
