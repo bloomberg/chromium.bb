@@ -65,6 +65,8 @@ class InspectUI : public content::WebUIController,
   void UpdateDiscoverUsbDevicesEnabled();
   void UpdatePortForwardingEnabled();
   void UpdatePortForwardingConfig();
+  void UpdateTCPDiscoveryEnabled();
+  void UpdateTCPDiscoveryConfig();
 
   void SetPortForwardingDefaults();
 

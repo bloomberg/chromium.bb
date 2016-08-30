@@ -272,21 +272,24 @@ img {
 }
 
 #device-settings {
-  align-items: center;
   border-bottom: 1px solid #eee;
-  display: flex;
   padding: 5px 0;
 }
 
-#device-settings button {
-  margin-left: 15px;
+.settings-bar {
+  padding: 5px 0 5px 0;
 }
 
-#port-forwarding-config::backdrop {
+.settings-bar label {
+  display: inline-block;
+  width: 30ex;
+}
+
+dialog.config::backdrop {
   background-color: rgba(255, 255, 255, 0.75);
 }
 
-#port-forwarding-config {
+dialog.config {
   background: white;
   border: 0;
   border-radius: 3px;
@@ -314,17 +317,17 @@ img {
   background-image: url(chrome://theme/IDR_CLOSE_DIALOG_H);
 }
 
-#port-forwarding-config > .close-button {
+dialog.config > .close-button {
   position: absolute;
   right: 7px;
   top: 7px;
 }
 
-#port-forwarding-config-title {
+dialog.config > .title {
   font-size: 130%;
 }
 
-#port-forwarding-config-list {
+dialog.config > .list {
   border: 1px solid #eee;
   height: 180px;
   margin-bottom: 10px;
@@ -332,21 +335,21 @@ img {
   overflow-x: hidden;
 }
 
-.port-forwarding-pair {
+.config-list-row {
   -webkit-flex-direction: row;
   display: -webkit-flex;
 }
 
-.port-forwarding-pair:hover {
+.config-list-row:hover {
   background-color: #eee;
 }
 
-.port-forwarding-pair.selected,
-.port-forwarding-pair.selected:hover {
+.config-list-row.selected,
+.config-list-row.selected:hover {
   background-color: #ccc;
 }
 
-.port-forwarding-pair input {
+.config-list-row input {
   border: 1px solid transparent;
   line-height: 20px;
   margin: 4px;
@@ -354,47 +357,56 @@ img {
   padding: 0 3px;
 }
 
-.port-forwarding-pair.fresh:not(.selected) input {
+.config-list-row.fresh:not(.selected) input {
   border-color: #eee;
 }
 
-.port-forwarding-pair input.port {
+.config-list-row input.port {
   width: 4em;
 }
 
-.port-forwarding-pair input.location {
+.config-list-row input.location {
   -webkit-flex: 1;
+  width: 100%;
 }
 
-.port-forwarding-pair:not(.empty) input.invalid {
+.config-list-row:not(.empty) input.invalid {
   background-color: rgb(255, 200, 200);
 }
 
-.port-forwarding-pair .close-button {
+.config-list-row .close-button {
   margin: 8px 8px;
 }
 
-.port-forwarding-pair.fresh .close-button,
-.port-forwarding-pair:not(.selected):not(:hover) .close-button:not(:hover) {
+.config-list-row.fresh .close-button,
+.config-list-row:not(.selected):not(:hover) .close-button:not(:hover) {
   background-image: none;
   pointer-events: none;
 }
 
-.port-forwarding-pair:not(.selected) .close-button:not(:hover) {
+.config-list-row:not(.selected) .close-button:not(:hover) {
   opacity: 0.5;
 }
 
-#port-forwarding-message {
+dialog.config > .message {
   margin-bottom: 12px;
   width: 20em;
 }
 
-#port-forwarding-config-buttons {
+.config-buttons {
   align-items: center;
   display: flex;
 }
 
-#port-forwarding-config-buttons > label {
+dialog.port-forwarding .target-discovery {
+  display: none;
+}
+
+dialog.target-discovery .port-forwarding {
+  display: none;
+}
+
+.config-buttons > label {
   flex-grow: 1
 }
 

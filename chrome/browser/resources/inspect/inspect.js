@@ -74,8 +74,6 @@ function onHashChange() {
  * @return {boolean} True if successful.
  */
 function selectTab(id) {
-  closePortForwardingConfig();
-
   var tabContents = document.querySelectorAll('#content > div');
   var tabHeaders = $('navigation').querySelectorAll('.tab-header');
   var found = false;
@@ -174,7 +172,7 @@ function populateRemoteTargets(devices) {
   if (!devices)
     return;
 
-  if ($('port-forwarding-config').open) {
+  if ($('config-dialog').open) {
     window.holdDevices = devices;
     return;
   }
@@ -599,121 +597,183 @@ function addActionLink(row, text, handler, opt_disabled) {
   row.querySelector('.actions').appendChild(link);
 }
 
-
 function initSettings() {
-  $('discover-usb-devices-enable').addEventListener('change',
-                                                    enableDiscoverUsbDevices);
+  checkboxSendsCommand('discover-usb-devices-enable',
+                       'set-discover-usb-devices-enabled');
+  checkboxSendsCommand('port-forwarding-enable', 'set-port-forwarding-enabled');
+  checkboxSendsCommand('discover-tcp-devices-enable',
+                       'set-discover-tcp-targets-enabled');
 
-  $('port-forwarding-enable').addEventListener('change', enablePortForwarding);
   $('port-forwarding-config-open').addEventListener(
       'click', openPortForwardingConfig);
-  $('port-forwarding-config-close').addEventListener(
-      'click', closePortForwardingConfig);
-  $('port-forwarding-config-done').addEventListener(
-      'click', commitPortForwardingConfig.bind(null, true));
+  $('tcp-discovery-config-open').addEventListener(
+      'click', openTargetsConfig);
+  $('config-dialog-close').addEventListener('click', function() {
+    $('config-dialog').commit(true);
+  });
 }
 
-function enableDiscoverUsbDevices(event) {
-  sendCommand('set-discover-usb-devices-enabled', event.target.checked);
+function checkboxHandler(command, event) {
+  sendCommand(command, event.target.checked);
 }
 
-function enablePortForwarding(event) {
-  sendCommand('set-port-forwarding-enabled', event.target.checked);
+function checkboxSendsCommand(id, command) {
+  $(id).addEventListener('change', checkboxHandler.bind(null, command));
 }
 
 function handleKey(event) {
   switch (event.keyCode) {
     case 13:  // Enter
+      var dialog = $('config-dialog');
       if (event.target.nodeName == 'INPUT') {
         var line = event.target.parentNode;
         if (!line.classList.contains('fresh') ||
             line.classList.contains('empty')) {
-          commitPortForwardingConfig(true);
+          dialog.commit(true);
         } else {
           commitFreshLineIfValid(true /* select new line */);
-          commitPortForwardingConfig(false);
+          dialog.commit(false);
         }
       } else {
-        commitPortForwardingConfig(true);
+        dialog.commit(true);
       }
       break;
   }
 }
 
-function openPortForwardingConfig() {
-  loadPortForwardingConfig(window.portForwardingConfig);
-
-  $('port-forwarding-config').showModal();
-  document.addEventListener('keyup', handleKey);
-  $('port-forwarding-config').onclose = function() {
-    commitPortForwardingConfig(true);
-  };
-
-  var freshPort = document.querySelector('.fresh .port');
-  if (freshPort)
-    freshPort.focus();
-  else
-    $('port-forwarding-config-done').focus();
+function commitDialog(commitHandler, shouldClose) {
+  var element = $('config-dialog');
+  if (element.open && shouldClose) {
+    element.onclose = null;
+    element.close();
+    document.removeEventListener('keyup', handleKey);
+    if (window.holdDevices) {
+      populateRemoteTargets(window.holdDevices);
+      delete window.holdDevices;
+    }
+  }
+  commitFreshLineIfValid();
+  commitHandler();
 }
 
-function closePortForwardingConfig() {
-  if (!$('port-forwarding-config').open)
+function openConfigDialog(dialogClass, commitHandler, lineFactory, data) {
+  var dialog = $('config-dialog');
+  if (dialog.open)
     return;
 
-  $('port-forwarding-config').onclose = null;
-  $('port-forwarding-config').close();
-  document.removeEventListener('keyup', handleKey);
+  dialog.className = dialogClass;
+  dialog.classList.add('config');
 
-  if (window.holdDevices) {
-    populateRemoteTargets(window.holdDevices);
-    delete window.holdDevices;
-  }
-}
+  document.addEventListener('keyup', handleKey);
+  dialog.commit = commitDialog.bind(null, commitHandler);
+  dialog.onclose = commitDialog.bind(null, commitHandler, true);
+  $('button-done').onclick = dialog.onclose;
 
-function loadPortForwardingConfig(config) {
-  var list = $('port-forwarding-config-list');
+  var list = $('config-dialog').querySelector('.list');
   list.textContent = '';
-  for (var port in config)
-    list.appendChild(createConfigLine(port, config[port]));
-  list.appendChild(createEmptyConfigLine());
+
+  list.createRow = appendRow.bind(null, list, lineFactory);
+  for (var key in data)
+    list.createRow(key, data[key]);
+  list.createRow(null, null);
+
+  dialog.showModal();
+  var defaultFocus = dialog.querySelector('.fresh .preselected');
+  if (defaultFocus)
+    defaultFocus.focus();
+  else
+    doneButton.focus();
+
 }
 
-function commitPortForwardingConfig(closeConfig) {
-  if (closeConfig)
-    closePortForwardingConfig();
+function openPortForwardingConfig() {
+  function createPortForwardingConfigLine(port, location) {
+    var line = document.createElement('div');
+    line.className = 'port-forwarding-pair config-list-row';
 
-  commitFreshLineIfValid();
-  var lines = document.querySelectorAll('.port-forwarding-pair');
-  var config = {};
+    var portInput = createConfigField(port, 'port preselected',
+                                      'Port', validatePort);
+    line.appendChild(portInput);
+
+    var locationInput = createConfigField(
+        location, 'location', 'IP address and port', validateLocation);
+    locationInput.classList.add('primary');
+    line.appendChild(locationInput);
+    return line;
+  }
+
+  function commitPortForwardingConfig() {
+    var config = {};
+    filterList(['.port', '.location'], function(port, location) {
+      config[port] = location;
+    });
+    sendCommand('set-port-forwarding-config', config);
+  }
+
+  openConfigDialog('port-forwarding',
+             commitPortForwardingConfig,
+             createPortForwardingConfigLine,
+             window.portForwardingConfig);
+}
+
+function openTargetsConfig() {
+  function createTargetDiscoveryConfigLine(index, targetDiscovery) {
+    var line = document.createElement('div');
+    line.className = 'target-discovery-line config-list-row';
+
+    var locationInput = createConfigField(
+        targetDiscovery, 'location preselected', 'IP address and port',
+        validateLocation);
+    locationInput.classList.add('primary');
+    line.appendChild(locationInput);
+    return line;
+  }
+
+  function commitTargetDiscoveryConfig() {
+    var entries = [];
+    filterList(['.location'], function(location) {
+      entries.push(location);
+    });
+    sendCommand('set-tcp-discovery-config', entries);
+  }
+
+  openConfigDialog('target-discovery',
+             commitTargetDiscoveryConfig,
+             createTargetDiscoveryConfigLine,
+             window.targetDiscoveryConfig);
+}
+
+function filterList(fieldSelectors, callback) {
+  var lines = $('config-dialog').querySelectorAll('.config-list-row');
   for (var i = 0; i != lines.length; i++) {
     var line = lines[i];
-    var portInput = line.querySelector('.port');
-    var locationInput = line.querySelector('.location');
-
-    var port = portInput.classList.contains('invalid') ?
-               portInput.lastValidValue :
-               portInput.value;
-
-    var location = locationInput.classList.contains('invalid') ?
-                   locationInput.lastValidValue :
-                   locationInput.value;
-
-    if (port && location)
-      config[port] = location;
+    var values = [];
+    for (var selector of fieldSelectors) {
+      var input = line.querySelector(selector);
+      var value = input.classList.contains('invalid') ?
+                  input.lastValidValue :
+                  input.value;
+      if (!value)
+        break;
+      values.push(value);
+    }
+    if (values.length == fieldSelectors.length)
+      callback.apply(null, values);
   }
-  sendCommand('set-port-forwarding-config', config);
+}
+
+function updateCheckbox(id, enabled) {
+  var checkbox = $(id);
+  checkbox.checked = !!enabled;
+  checkbox.disabled = false;
 }
 
 function updateDiscoverUsbDevicesEnabled(enabled) {
-  var checkbox = $('discover-usb-devices-enable');
-  checkbox.checked = !!enabled;
-  checkbox.disabled = false;
+  updateCheckbox('discover-usb-devices-enable', enabled);
 }
 
 function updatePortForwardingEnabled(enabled) {
-  var checkbox = $('port-forwarding-enable');
-  checkbox.checked = !!enabled;
-  checkbox.disabled = false;
+  updateCheckbox('port-forwarding-enable', enabled);
 }
 
 function updatePortForwardingConfig(config) {
@@ -721,17 +781,18 @@ function updatePortForwardingConfig(config) {
   $('port-forwarding-config-open').disabled = !config;
 }
 
-function createConfigLine(port, location) {
-  var line = document.createElement('div');
-  line.className = 'port-forwarding-pair';
+function updateTCPDiscoveryEnabled(enabled) {
+  updateCheckbox('discover-tcp-devices-enable', enabled);
+}
 
-  var portInput = createConfigField(port, 'port', 'Port', validatePort);
-  line.appendChild(portInput);
+function updateTCPDiscoveryConfig(config) {
+  window.targetDiscoveryConfig = config;
+  $('tcp-discovery-config-open').disabled = !config;
+}
 
-  var locationInput = createConfigField(
-      location, 'location', 'IP address and port', validateLocation);
-  line.appendChild(locationInput);
-  locationInput.addEventListener('keydown', function(e) {
+function appendRow(list, lineFactory, key, value) {
+  var line = lineFactory(key, value);
+  line.lastElementChild.addEventListener('keydown', function(e) {
     if (e.key == 'Tab' &&
         !e.ctrlKey && !e.altKey && !e.shiftKey && !e.metaKey &&
         line.classList.contains('fresh') &&
@@ -745,19 +806,23 @@ function createConfigLine(port, location) {
   var lineDelete = document.createElement('div');
   lineDelete.className = 'close-button';
   lineDelete.addEventListener('click', function() {
-    var newSelection = line.nextElementSibling;
+    var newSelection = line.nextElementSibling || line.previousElementSibling;
+    selectLine(newSelection, true);
     line.parentNode.removeChild(line);
-    selectLine(newSelection);
-    commitPortForwardingConfig(false);
+    $('config-dialog').commit(false);
   });
   line.appendChild(lineDelete);
 
-  line.addEventListener('click', selectLine.bind(null, line));
-  line.addEventListener('focus', selectLine.bind(null, line));
-
+  line.addEventListener(
+      'click', selectLine.bind(null, line, true));
+  line.addEventListener(
+      'focus', selectLine.bind(null, line, true));
   checkEmptyLine(line);
 
-  return line;
+  if (!key && !value)
+    line.classList.add('fresh');
+
+  return list.appendChild(line);
 }
 
 function validatePort(input) {
@@ -786,19 +851,13 @@ function validateLocation(input) {
   return port <= 65535;
 }
 
-function createEmptyConfigLine() {
-  var line = createConfigLine('', '');
-  line.classList.add('fresh');
-  return line;
-}
-
 function createConfigField(value, className, hint, validate) {
   var input = document.createElement('input');
   input.className = className;
   input.type = 'text';
   input.placeholder = hint;
-  input.value = value;
-  input.lastValidValue = value;
+  input.value = value || '';
+  input.lastValidValue = value || '';
 
   function checkInput() {
     if (validate(input))
@@ -836,30 +895,31 @@ function checkEmptyLine(line) {
     line.classList.remove('empty');
 }
 
-function selectLine(line) {
+function selectLine(line, opt_focusInput) {
   if (line.classList.contains('selected'))
     return;
-  unselectLine();
+  var selected =
+      line.parentElement && line.parentElement.querySelector('.selected');
+  if (selected)
+    selected.classList.remove('selected');
   line.classList.add('selected');
-}
-
-function unselectLine() {
-  var line = document.querySelector('.port-forwarding-pair.selected');
-  if (!line)
-    return;
-  line.classList.remove('selected');
-  commitFreshLineIfValid();
+  if (opt_focusInput) {
+    var el = line.querySelector('.preselected');
+    if (el) {
+      line.firstChild.select();
+      line.firstChild.focus();
+    }
+  }
 }
 
 function commitFreshLineIfValid(opt_selectNew) {
-  var line = document.querySelector('.port-forwarding-pair.fresh');
+  var line = $('config-dialog').querySelector('.config-list-row.fresh');
   if (line.querySelector('.invalid'))
     return false;
   line.classList.remove('fresh');
-  var freshLine = createEmptyConfigLine();
-  line.parentNode.appendChild(freshLine);
+  var freshLine = line.parentElement.createRow();
   if (opt_selectNew)
-    freshLine.querySelector('.port').focus();
+    freshLine.querySelector('.preselected').focus();
   return true;
 }
 

@@ -24,14 +24,23 @@ found in the LICENSE file.
     <div id="devices">
       <div class="content-header">Devices</div>
       <div id="device-settings">
-        <input id="discover-usb-devices-enable" type="checkbox" disabled/>
-        <label for="discover-usb-devices-enable"
-            title="Enable Remote Debugging of Chrome for Android over raw USB
-                   interface (no need to install / run Android Debug Bridge).">
-          Discover USB devices
-        </label>
-        <button id="port-forwarding-config-open" disabled>
-          Port forwarding...</button>
+        <div class="settings-bar">
+          <label title="Enable Remote Debugging of Chrome for Android over raw USB
+                        interface (no need to install / run Android Debug Bridge).">
+            <input id="discover-usb-devices-enable" type="checkbox" disabled>
+            Discover USB devices
+          </label>
+          <button id="port-forwarding-config-open" disabled>
+              Port forwarding...</button>
+        </div>
+        <div class="settings-bar">
+          <label title="Enable Remote Debugging over network.">
+            <input id="discover-tcp-devices-enable" type="checkbox" disabled>
+            Discover network targets
+          </label>
+          <button id="tcp-discovery-config-open">
+            Configure...</button>
+        </div>
       </div>
       <div id="devices-help" hidden="true">No devices detected. Please read the
         <a href="https://developers.google.com/chrome-developer-tools/docs/remote-debugging">
@@ -69,22 +78,26 @@ found in the LICENSE file.
     </div>
   </div>
 </div>
-<dialog id="port-forwarding-config">
-  <div id="port-forwarding-config-close" class="close-button"></div>
-  <div id="port-forwarding-config-title">Port forwarding settings</div>
-  <div id="port-forwarding-config-list">
+<dialog id="config-dialog" class="config">
+  <div id="config-dialog-close" class="close-button"></div>
+  <div id="port-forwarding-config-title" class="title port-forwarding">Port forwarding settings</div>
+  <div id="target-discovery-config-title" class="title target-discovery">Target discovery settings</div>
+  <div id="config-list" class="list">
   </div>
-  <div id="port-forwarding-message">
+  <div id="port-forwarding-message" class="message port-forwarding">
       Define the listening port on your device that maps to a port accessible
       from your development machine.
       <a href="https://developer.chrome.com/devtools/docs/remote-debugging#reverse-port-forwarding"
          target="_blank">Learn more</a>
   </div>
-  <div id="port-forwarding-config-buttons">
-    <label>
+  <div id="targets-message" class="message target-discovery">
+      Specify hosts and ports of the target discovery servers.
+  </div>
+  <div class="config-buttons">
+    <label class="port-forwarding">
       <input id="port-forwarding-enable" type="checkbox" disabled>Enable port forwarding
     </label>
-    <button id="port-forwarding-config-done">Done</button>
+    <button id="button-done">Done</button>
   </div>
 </dialog>
 </body>
