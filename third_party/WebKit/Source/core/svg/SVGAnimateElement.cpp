@@ -182,12 +182,6 @@ void SVGAnimateElement::resetAnimatedType()
         return;
     if (shouldApply == ApplyXMLAnimation || shouldApply == ApplyXMLandCSSAnimation) {
         // SVG DOM animVal animation code-path.
-        SVGElementInstances animatedElements = findElementInstances(targetElement);
-        ASSERT(!animatedElements.isEmpty());
-
-        for (SVGElement* element : animatedElements)
-            addReferenceTo(element);
-
         m_animatedProperty = m_animator.createAnimatedValue();
         targetElement->setAnimatedAttribute(attributeName, m_animatedProperty);
         return;
