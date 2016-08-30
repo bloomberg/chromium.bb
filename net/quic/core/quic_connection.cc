@@ -1665,6 +1665,18 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
   }
   if (packet->transmission_type == NOT_RETRANSMISSION) {
     time_of_last_sent_new_packet_ = packet_send_time;
+    if (!FLAGS_quic_better_last_send_for_timeout) {
+      if (IsRetransmittable(*packet) == HAS_RETRANSMITTABLE_DATA &&
+          last_send_for_timeout_ <= time_of_last_received_packet_) {
+        last_send_for_timeout_ = packet_send_time;
+      }
+    }
+  }
+  if (FLAGS_quic_better_last_send_for_timeout) {
+    // Only adjust the last sent time (for the purpose of tracking the idle
+    // timeout) if this is the first retransmittable packet sent after a
+    // packet is received. If it were updated on every sent packet, then
+    // sending into a black hole might never timeout.
     if (IsRetransmittable(*packet) == HAS_RETRANSMITTABLE_DATA &&
         last_send_for_timeout_ <= time_of_last_received_packet_) {
       last_send_for_timeout_ = packet_send_time;
@@ -2207,6 +2219,10 @@ void QuicConnection::CheckForTimeout() {
 void QuicConnection::SetTimeoutAlarm() {
   QuicTime time_of_last_packet =
       max(time_of_last_received_packet_, time_of_last_sent_new_packet_);
+  if (FLAGS_quic_better_last_send_for_timeout) {
+    time_of_last_packet =
+        max(time_of_last_received_packet_, last_send_for_timeout_);
+  }
 
   QuicTime deadline = time_of_last_packet + idle_network_timeout_;
   if (!handshake_timeout_.IsInfinite()) {

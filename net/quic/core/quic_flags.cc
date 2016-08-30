@@ -160,3 +160,8 @@ bool FLAGS_quic_do_not_send_ack_on_emsgsize = true;
 
 // If true, postpone multipath flag validation to ProcessValidatedPacket.
 bool FLAGS_quic_postpone_multipath_flag_validation = true;
+
+// If true, set a QUIC connection's last_sent_for_timeout_ to the send time of
+// the first packet sent after receiving a packet, even if the sent packet is
+// a retransmission
+bool FLAGS_quic_better_last_send_for_timeout = true;

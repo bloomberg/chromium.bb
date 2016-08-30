@@ -50,5 +50,6 @@ NET_EXPORT_PRIVATE extern bool FLAGS_quic_enforce_mtu_limit;
 NET_EXPORT_PRIVATE extern bool FLAGS_graceful_emsgsize_on_mtu_probe;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_do_not_send_ack_on_emsgsize;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_postpone_multipath_flag_validation;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_better_last_send_for_timeout;
 
 #endif  // NET_QUIC_QUIC_FLAGS_H_
