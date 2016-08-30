@@ -1282,7 +1282,7 @@ void LayoutObject::dirtyLinesFromChangedChild(LayoutObject*, MarkingBehavior)
 void LayoutObject::showTreeForThis() const
 {
     if (node())
-        node()->showTreeForThis();
+        ::showTree(node());
 }
 
 void LayoutObject::showLayoutTreeForThis() const

@@ -570,12 +570,13 @@ public:
     String debugName() const;
 
 #ifndef NDEBUG
+    String toString() const;
     void showNode(const char* prefix = "") const;
-    void showTreeForThis() const;
-    void showTreeForThisInFlatTree() const;
+    String toTreeStringForThis() const;
+    String toFlatTreeStringForThis() const;
     void printNodePathTo(std::ostream&) const;
-    void showTreeAndMark(const Node* markedNode1, const char* markedLabel1, const Node* markedNode2 = nullptr, const char* markedLabel2 = nullptr) const;
-    void showTreeAndMarkInFlatTree(const Node* markedNode1, const char* markedLabel1, const Node* markedNode2 = nullptr, const char* markedLabel2 = nullptr) const;
+    String toMarkedTreeString(const Node* markedNode1, const char* markedLabel1, const Node* markedNode2 = nullptr, const char* markedLabel2 = nullptr) const;
+    String toMarkedFlatTreeString(const Node* markedNode1, const char* markedLabel1, const Node* markedNode2 = nullptr, const char* markedLabel2 = nullptr) const;
     void showTreeForThisAcrossFrame() const;
 #endif
 

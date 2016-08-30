@@ -807,7 +807,8 @@ template <typename Strategy>
 void VisibleSelectionTemplate<Strategy>::showTreeForThis() const
 {
     if (start().anchorNode()) {
-        start().anchorNode()->showTreeAndMark(start().anchorNode(), "S", end().anchorNode(), "E");
+        // TODO(tkent): Replace WTFLogAlways with something else.
+        WTFLogAlways("%s", start().anchorNode()->toMarkedTreeString(start().anchorNode(), "S", end().anchorNode(), "E").utf8().data());
         fputs("start: ", stderr);
         start().showAnchorTypeAndOffset();
         fputs("end: ", stderr);

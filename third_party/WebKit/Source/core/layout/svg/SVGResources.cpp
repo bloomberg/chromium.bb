@@ -636,7 +636,7 @@ void SVGResources::dump(const LayoutObject* object)
 
     fprintf(stderr, "-> this=%p, SVGResources(layoutObject=%p, node=%p)\n", this, object, object->node());
     fprintf(stderr, " | DOM Tree:\n");
-    object->node()->showTreeForThis();
+    fprintf(stderr, "%s", object->node()->toTreeStringForThis().utf8().data());
 
     fprintf(stderr, "\n | List of resources:\n");
     if (m_clipperFilterMaskerData) {

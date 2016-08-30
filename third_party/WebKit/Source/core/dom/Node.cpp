@@ -1536,6 +1536,15 @@ std::ostream& operator<<(std::ostream& ostream, const Node* node)
 
 #ifndef NDEBUG
 
+String Node::toString() const
+{
+    // TODO(tkent): We implemented toString() with operator<<.  We should
+    // implement operator<< with toString() instead.
+    std::stringstream stream;
+    stream << *this;
+    return String(stream.str().c_str());
+}
+
 void Node::showNode(const char* prefix) const
 {
     std::stringstream stream;
@@ -1546,14 +1555,14 @@ void Node::showNode(const char* prefix) const
     WTFLogAlways("%s", stream.str().c_str());
 }
 
-void Node::showTreeForThis() const
+String Node::toTreeStringForThis() const
 {
-    showTreeAndMark(this, "*");
+    return toMarkedTreeString(this, "*");
 }
 
-void Node::showTreeForThisInFlatTree() const
+String Node::toFlatTreeStringForThis() const
 {
-    showTreeAndMarkInFlatTree(this, "*");
+    return toMarkedFlatTreeString(this, "*");
 }
 
 void Node::printNodePathTo(std::ostream& stream) const
@@ -1609,7 +1618,7 @@ void Node::printNodePathTo(std::ostream& stream) const
     }
 }
 
-static void traverseTreeAndMark(const String& baseIndent, const Node* rootNode, const Node* markedNode1, const char* markedLabel1, const Node* markedNode2, const char* markedLabel2)
+static void appendMarkedTree(const String& baseIndent, const Node* rootNode, const Node* markedNode1, const char* markedLabel1, const Node* markedNode2, const char* markedLabel2, StringBuilder& builder)
 {
     for (const Node& node : NodeTraversal::inclusiveDescendantsOf(*rootNode)) {
         StringBuilder indent;
@@ -1620,31 +1629,33 @@ static void traverseTreeAndMark(const String& baseIndent, const Node* rootNode, 
         indent.append(baseIndent);
         for (const Node* tmpNode = &node; tmpNode && tmpNode != rootNode; tmpNode = tmpNode->parentOrShadowHostNode())
             indent.append('\t');
-        node.showNode(indent.toString().utf8().data());
+        builder.append(indent);
+        builder.append(node.toString());
+        builder.append("\n");
         indent.append('\t');
 
         if (node.isElementNode()) {
             const Element& element = toElement(node);
             if (Element* pseudo = element.pseudoElement(PseudoIdBefore))
-                traverseTreeAndMark(indent.toString(), pseudo, markedNode1, markedLabel1, markedNode2, markedLabel2);
+                appendMarkedTree(indent.toString(), pseudo, markedNode1, markedLabel1, markedNode2, markedLabel2, builder);
             if (Element* pseudo = element.pseudoElement(PseudoIdAfter))
-                traverseTreeAndMark(indent.toString(), pseudo, markedNode1, markedLabel1, markedNode2, markedLabel2);
+                appendMarkedTree(indent.toString(), pseudo, markedNode1, markedLabel1, markedNode2, markedLabel2, builder);
             if (Element* pseudo = element.pseudoElement(PseudoIdFirstLetter))
-                traverseTreeAndMark(indent.toString(), pseudo, markedNode1, markedLabel1, markedNode2, markedLabel2);
+                appendMarkedTree(indent.toString(), pseudo, markedNode1, markedLabel1, markedNode2, markedLabel2, builder);
             if (Element* pseudo = element.pseudoElement(PseudoIdBackdrop))
-                traverseTreeAndMark(indent.toString(), pseudo, markedNode1, markedLabel1, markedNode2, markedLabel2);
+                appendMarkedTree(indent.toString(), pseudo, markedNode1, markedLabel1, markedNode2, markedLabel2, builder);
         }
 
         if (node.isShadowRoot()) {
             if (ShadowRoot* youngerShadowRoot = toShadowRoot(node).youngerShadowRoot())
-                traverseTreeAndMark(indent.toString(), youngerShadowRoot, markedNode1, markedLabel1, markedNode2, markedLabel2);
+                appendMarkedTree(indent.toString(), youngerShadowRoot, markedNode1, markedLabel1, markedNode2, markedLabel2, builder);
         } else if (ShadowRoot* oldestShadowRoot = oldestShadowRootFor(&node)) {
-            traverseTreeAndMark(indent.toString(), oldestShadowRoot, markedNode1, markedLabel1, markedNode2, markedLabel2);
+            appendMarkedTree(indent.toString(), oldestShadowRoot, markedNode1, markedLabel1, markedNode2, markedLabel2, builder);
         }
     }
 }
 
-static void traverseTreeAndMarkInFlatTree(const String& baseIndent, const Node* rootNode, const Node* markedNode1, const char* markedLabel1, const Node* markedNode2, const char* markedLabel2)
+static void appendMarkedFlatTree(const String& baseIndent, const Node* rootNode, const Node* markedNode1, const char* markedLabel1, const Node* markedNode2, const char* markedLabel2, StringBuilder& builder)
 {
     for (const Node* node = rootNode; node; node = FlatTreeTraversal::nextSibling(*node)) {
         StringBuilder indent;
@@ -1653,16 +1664,17 @@ static void traverseTreeAndMarkInFlatTree(const String& baseIndent, const Node* 
         if (node == markedNode2)
             indent.append(markedLabel2);
         indent.append(baseIndent);
-        node->showNode(indent.toString().utf8().data());
+        builder.append(indent);
+        builder.append(node->toString());
+        builder.append("\n");
         indent.append('\t');
 
-        Node* child = FlatTreeTraversal::firstChild(*node);
-        if (child)
-            traverseTreeAndMarkInFlatTree(indent.toString(), child, markedNode1, markedLabel1, markedNode2, markedLabel2);
+        if (Node* child = FlatTreeTraversal::firstChild(*node))
+            appendMarkedFlatTree(indent.toString(), child, markedNode1, markedLabel1, markedNode2, markedLabel2, builder);
     }
 }
 
-void Node::showTreeAndMark(const Node* markedNode1, const char* markedLabel1, const Node* markedNode2, const char* markedLabel2) const
+String Node::toMarkedTreeString(const Node* markedNode1, const char* markedLabel1, const Node* markedNode2, const char* markedLabel2) const
 {
     const Node* rootNode;
     const Node* node = this;
@@ -1670,11 +1682,13 @@ void Node::showTreeAndMark(const Node* markedNode1, const char* markedLabel1, co
         node = node->parentOrShadowHostNode();
     rootNode = node;
 
+    StringBuilder builder;
     String startingIndent;
-    traverseTreeAndMark(startingIndent, rootNode, markedNode1, markedLabel1, markedNode2, markedLabel2);
+    appendMarkedTree(startingIndent, rootNode, markedNode1, markedLabel1, markedNode2, markedLabel2, builder);
+    return builder.toString();
 }
 
-void Node::showTreeAndMarkInFlatTree(const Node* markedNode1, const char* markedLabel1, const Node* markedNode2, const char* markedLabel2) const
+String Node::toMarkedFlatTreeString(const Node* markedNode1, const char* markedLabel1, const Node* markedNode2, const char* markedLabel2) const
 {
     const Node* rootNode;
     const Node* node = this;
@@ -1682,8 +1696,10 @@ void Node::showTreeAndMarkInFlatTree(const Node* markedNode1, const char* marked
         node = node->parentOrShadowHostNode();
     rootNode = node;
 
+    StringBuilder builder;
     String startingIndent;
-    traverseTreeAndMarkInFlatTree(startingIndent, rootNode, markedNode1, markedLabel1, markedNode2, markedLabel2);
+    appendMarkedFlatTree(startingIndent, rootNode, markedNode1, markedLabel1, markedNode2, markedLabel2, builder);
+    return builder.toString();
 }
 
 static ContainerNode* parentOrShadowHostOrFrameOwner(const Node* node)
@@ -2387,10 +2403,8 @@ void showNode(const blink::Node* node)
 
 void showTree(const blink::Node* node)
 {
-    if (node)
-        node->showTreeForThis();
-    else
-        fprintf(stderr, "Cannot showTree for (nil)\n");
+    // TODO(tkent): Replace WTFLogAlways with something else.
+    WTFLogAlways("%s", node ? node->toTreeStringForThis().utf8().data() : "Cannot showTree for <null>");
 }
 
 void showNodePath(const blink::Node* node)

@@ -630,7 +630,8 @@ void PositionTemplate<Strategy>::showTreeForThis() const
 {
     if (!anchorNode())
         return;
-    anchorNode()->showTreeForThis();
+    // TODO(tkent): Replace WTFLogAlways with something else.
+    WTFLogAlways("%s", anchorNode()->toTreeStringForThis().utf8().data());
     showAnchorTypeAndOffset();
 }
 
@@ -639,7 +640,8 @@ void PositionTemplate<Strategy>::showTreeForThisInFlatTree() const
 {
     if (!anchorNode())
         return;
-    anchorNode()->showTreeForThisInFlatTree();
+    // TODO(tkent): Replace WTFLogAlways with something else.
+    WTFLogAlways("%s", anchorNode()->toFlatTreeStringForThis().utf8().data());
     showAnchorTypeAndOffset();
 }
 
