@@ -202,6 +202,12 @@ cr.define('cr.ui.login', function() {
     forceKeyboardFlow_: false,
 
     /**
+     * Whether the virtual keyboard is displayed.
+     * @type {boolean}
+     */
+    virtualKeyboardShown: false,
+
+    /**
      * Type of UI.
      * @type {string}
      */
@@ -252,6 +258,11 @@ cr.define('cr.ui.login', function() {
 
     set headerHidden(hidden) {
       $('login-header-bar').hidden = hidden;
+    },
+
+    set pinHidden(hidden) {
+      this.virtualKeyboardShown = hidden;
+      $('pod-row').setPinHidden(hidden);
     },
 
     /**

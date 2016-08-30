@@ -180,18 +180,35 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
         // We want bubble's arrow to point to the first letter of input.
         /** @const */ var BUBBLE_OFFSET = 7;
         /** @const */ var BUBBLE_PADDING = 4;
-        $('bubble').showContentForElement(activatedPod.mainInput,
-                                          cr.ui.Bubble.Attachment.BOTTOM,
-                                          error,
-                                          BUBBLE_OFFSET, BUBBLE_PADDING);
+
+        // We want the bubble to point to where the input is after it is done
+        // tranisitioning.
+        var showBottomCallback = function() {
+          activatedPod.removeEventListener("webkitTransitionEnd",
+              showBottomCallback);
+          $('bubble').showContentForElement(activatedPod.mainInput,
+                                            cr.ui.Bubble.Attachment.BOTTOM,
+                                            error,
+                                            BUBBLE_OFFSET, BUBBLE_PADDING);
+        };
+        activatedPod.addEventListener("webkitTransitionEnd",
+            showBottomCallback);
+        ensureTransitionEndEvent(activatedPod);
+
         // Move error bubble up if it overlaps the shelf.
         var maxHeight =
             cr.ui.LoginUITools.getMaxHeightBeforeShelfOverlapping($('bubble'));
         if (maxHeight < $('bubble').offsetHeight) {
-          $('bubble').showContentForElement(activatedPod.mainInput,
-                                            cr.ui.Bubble.Attachment.TOP,
-                                            error,
-                                            BUBBLE_OFFSET, BUBBLE_PADDING);
+          var showTopCallback = function() {
+            activatedPod.removeEventListener("webkitTransitionEnd",
+                showTopCallback);
+            $('bubble').showContentForElement(activatedPod.mainInput,
+                                              cr.ui.Bubble.Attachment.TOP,
+                                              error,
+                                              BUBBLE_OFFSET, BUBBLE_PADDING);
+          };
+          activatedPod.addEventListener("webkitTransitionEnd", showTopCallback);
+          ensureTransitionEndEvent(activatedPod);
         }
       }
     },
@@ -355,11 +372,11 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
     },
 
     /**
-     * Hides the PIN keyboard if it's active.
+     * Removes the PIN keyboard so the user can no longer enter a PIN.
      * @param {!user} user The user who can no longer enter a PIN.
      */
     disablePinKeyboardForUser: function(user) {
-      $('pod-row').setPinVisibility(user, false);
+      $('pod-row').removePinKeyboard(user);
     },
 
     /**

@@ -164,25 +164,6 @@ html[dir=rtl] .main-pane {
   width: 160px;
 }
 
-.pod.focused:not(.multiprofiles-policy-applied) .auth-container {
-  background-color: white;
-  position: absolute;
-  top: 160px;
-  width: 160px;
-}
-
-.auth-container.pin-disabled {
-  opacity: 1;
-  transition: opacity 200ms ease-in-out 180ms;
-  visibility: visible;
-}
-
-.auth-container.pin-enabled {
-  opacity: 0;
-  transition: none;
-  visibility: hidden;
-}
-
 .name-container {
   transition: transform 180ms,
               opacity 180ms ease-in-out 180ms,

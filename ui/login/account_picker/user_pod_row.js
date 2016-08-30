@@ -716,6 +716,8 @@ cr.define('login', function() {
       if (this.pinKeyboard) {
         this.pinKeyboard.addEventListener('submit',
             this.handlePinSubmitted_.bind(this));
+        this.pinKeyboard.addEventListener('pin-change',
+            this.handlePinChanged_.bind(this));
       }
 
       this.actionBoxAreaElement.addEventListener('mousedown',
@@ -753,6 +755,8 @@ cr.define('login', function() {
           this.parentNode.handleKeyDown.bind(this.parentNode));
       this.passwordElement.addEventListener('keypress',
           this.handlePasswordKeyPress_.bind(this));
+      this.passwordElement.addEventListener('input',
+          this.handleInputChanged_.bind(this));
 
       this.imageElement.addEventListener('load',
           this.parentNode.handlePodImageLoad.bind(this.parentNode, this));
@@ -872,6 +876,10 @@ cr.define('login', function() {
      */
     get passwordLabelElement() {
       return this.querySelector('.password-label');
+    },
+
+    get pinContainer() {
+      return this.querySelector('.pin-container');
     },
 
     /**
@@ -1105,14 +1113,20 @@ cr.define('login', function() {
     },
 
     setPinVisibility: function(visible) {
+      if (this.isPinShown() == visible)
+        return;
+
+      // Do not show pin if virtual keyboard is there.
+      if (visible && Oobe.getInstance().virtualKeyboardShown)
+        return;
+
       var elements = this.getElementsByClassName('pin-tag');
       for (var i = 0; i < elements.length; ++i)
         this.updatePinClass_(elements[i], visible);
       this.updatePinClass_(this, visible);
 
       // Set the focus to the input element after showing/hiding pin keyboard.
-      if (this.pinKeyboard && visible)
-        this.pinKeyboard.focus();
+      this.mainInput.focus();
     },
 
     isPinShown: function() {
@@ -1154,8 +1168,6 @@ cr.define('login', function() {
      */
     get mainInput() {
       if (this.isAuthTypePassword) {
-        if (this.isPinShown() && this.pinKeyboard.inputElement)
-          return this.pinKeyboard.inputElement;
         return this.passwordElement;
       } else if (this.isAuthTypeOnlineSignIn) {
         return this;
@@ -1809,6 +1821,15 @@ cr.define('login', function() {
     handlePinSubmitted_: function(e) {
       if (this.parentNode.isFocused(this))
         this.parentNode.setActivatedPod(this);
+    },
+
+    handlePinChanged_: function(e) {
+      this.passwordElement.value = e.detail.pin;
+    },
+
+    handleInputChanged_: function(e) {
+      if (this.pinKeyboard)
+        this.pinKeyboard.value = this.passwordElement.value;
     },
 
     /**
@@ -2611,19 +2632,30 @@ cr.define('login', function() {
     },
 
     /**
-     * Toggles pod PIN keyboard visiblity.
+     * Function that hides the pin keyboard. Meant to be called when the virtual
+     * keyboard is enabled and being toggled.
+     * @param {boolean} hidden
+     */
+    setPinHidden: function(hidden) {
+      this.setFocusedPodPinVisibility(!hidden);
+    },
+
+    /**
+     * Remove the pin keyboard from the pod with the given |username|.
      * @param {!user} username
      * @param {boolean} visible
      */
-    setPinVisibility: function(username, visible) {
+    removePinKeyboard: function(username) {
       var pod = this.getPodWithUsername_(username);
       if (!pod) {
-        console.warn('Attempt to change pin visibility to ' + visible +
-            ' for missing pod');
+        console.warn('Attempt to remove pin keyboard of missing pod.');
         return;
       }
-
-      pod.setPinVisibility(visible);
+      // Remove the child, so that the virtual keyboard cannot bring it up
+      // again after three tries.
+      if (pod.pinContainer)
+        pod.removeChild(pod.pinContainer);
+      pod.setPinVisibility(false);
     },
 
     /**
@@ -2941,7 +2973,11 @@ cr.define('login', function() {
       if (layout.columns != this.columns || layout.rows != this.rows)
         this.placePods_();
 
-      this.scrollFocusedPodIntoView();
+      // Wrap this in a set timeout so the function is called after the pod is
+      // finished transitioning so that we work with the final pod dimensions.
+      setTimeout(function(podrow) {
+        podrow.scrollFocusedPodIntoView();
+      }, 200, this);
     },
 
     /**

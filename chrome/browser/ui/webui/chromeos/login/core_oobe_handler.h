@@ -118,6 +118,7 @@ class CoreOobeHandler : public BaseScreenHandler,
   void ClearErrors() override;
   void ReloadContent(const base::DictionaryValue& dictionary) override;
   void ShowControlBar(bool show) override;
+  void ShowPinKeyboard(bool show) override;
   void SetClientAreaSize(int width, int height) override;
   void ShowDeviceResetScreen() override;
   void ShowEnableDebuggingScreen() override;

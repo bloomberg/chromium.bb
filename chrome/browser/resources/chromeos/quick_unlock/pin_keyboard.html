@@ -131,6 +131,10 @@
         direction: rtl;
       }
 
+      #pin-input[is-invisible] {
+        visiblity: hidden;
+      }
+
       :host(:not([enable-submit-button])) #pin-input {
         left: 0;
         text-align: center;
@@ -160,29 +164,25 @@
       }
     </style>
 
-    <div id="root">
+    <div id="root" on-keypress="onKeyPress_" on-keydown="onKeyDown_">
       <div id="container-constrained-width">
-        <div class="row">
+        <div class="row first-row">
           <input id="pin-input" type="[[getInputType_(enablePassword)]]"
                  is-input-rtl$="[[isInputRtl_(value)]]"
                  has-content$="[[hasInput_(value)]]"
                  placeholder="[[getInputPlaceholder_(enablePassword)]]"
                  value="{{value::input}}"
-                 on-keydown="onInputKeyDown_">
+                 on-keydown="onInputKeyDown_"
+                 is-invisible$=[[hideInput]]>
           </input>
-          <paper-icon-button icon="pin-keyboard:arrow-forward"
-                             class="digit-button submit-button"
-                             disabled="[[!hasInput_(value)]]"
-                             hidden="[[!enableSubmitButton]]"
-                             on-tap="firePinSubmitEvent_">
-          </paper-icon-button>
         </div>
         <hr>
-        <div class="row keyboard top-row">
+        <div class="row keyboard">
           <paper-button class="digit-button" on-tap="onNumberTap_" value="1">
             <inner-text>$i18n{pinKeyboard1}</inner-text>
           </paper-button>
-          <paper-button class="digit-button" on-tap="onNumberTap_" value="2">
+          <paper-button class="digit-button center-button" on-tap="onNumberTap_"
+                        value="2">
             <inner-text>$i18n{pinKeyboard2}</inner-text>
           </paper-button>
           <paper-button class="digit-button" on-tap="onNumberTap_" value="3">
@@ -193,7 +193,8 @@
           <paper-button class="digit-button" on-tap="onNumberTap_" value="4">
             <inner-text>$i18n{pinKeyboard4}</inner-text>
           </paper-button>
-          <paper-button class="digit-button" on-tap="onNumberTap_" value="5">
+          <paper-button class="digit-button center-button" on-tap="onNumberTap_"
+                        value="5">
             <inner-text>$i18n{pinKeyboard5}</inner-text>
           </paper-button>
           <paper-button class="digit-button" on-tap="onNumberTap_" value="6">
@@ -204,7 +205,8 @@
           <paper-button class="digit-button" on-tap="onNumberTap_" value="7">
             <inner-text>$i18n{pinKeyboard7}</inner-text>
           </paper-button>
-          <paper-button class="digit-button" on-tap="onNumberTap_" value="8">
+          <paper-button class="digit-button center-button" on-tap="onNumberTap_"
+                        value="8">
             <inner-text>$i18n{pinKeyboard8}</inner-text>
           </paper-button>
           <paper-button class="digit-button" on-tap="onNumberTap_" value="9">

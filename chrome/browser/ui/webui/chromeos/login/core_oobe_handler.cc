@@ -278,6 +278,10 @@ void CoreOobeHandler::ShowControlBar(bool show) {
   CallJSOrDefer("showControlBar", show);
 }
 
+void CoreOobeHandler::ShowPinKeyboard(bool show) {
+  CallJSOrDefer("showPinKeyboard", show);
+}
+
 void CoreOobeHandler::SetClientAreaSize(int width, int height) {
   CallJSOrDefer("setClientAreaSize", width, height);
 }
@@ -449,6 +453,7 @@ void CoreOobeHandler::UpdateKeyboardState() {
   if (keyboard_controller) {
     gfx::Rect bounds = keyboard_controller->current_keyboard_bounds();
     ShowControlBar(bounds.IsEmpty());
+    ShowPinKeyboard(bounds.IsEmpty());
   }
 }
 

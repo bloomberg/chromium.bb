@@ -40,6 +40,7 @@ class CoreOobeActor {
   virtual void ClearErrors() = 0;
   virtual void ReloadContent(const base::DictionaryValue& dictionary) = 0;
   virtual void ShowControlBar(bool show) = 0;
+  virtual void ShowPinKeyboard(bool show) = 0;
   virtual void SetClientAreaSize(int width, int height) = 0;
   virtual void ShowDeviceResetScreen() = 0;
   virtual void ShowEnableDebuggingScreen() = 0;

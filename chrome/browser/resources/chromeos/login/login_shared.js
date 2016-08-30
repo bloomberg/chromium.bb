@@ -394,6 +394,13 @@ cr.define('cr.ui', function() {
   };
 
   /**
+   * Shows/hides pin keyboard on the lock screen.
+   */
+  Oobe.showPinKeyboard = function(show) {
+    Oobe.getInstance().pinHidden = !show;
+  };
+
+  /**
    * Sets the current size of the client area (display size).
    * @param {number} width client area width
    * @param {number} height client area height

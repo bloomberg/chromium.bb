@@ -373,12 +373,16 @@ void WebUIScreenLocker::OnKeyboardBoundsChanging(
     const gfx::Rect& new_bounds) {
   if (new_bounds.IsEmpty()) {
     // Keyboard has been hidden.
-    if (GetOobeUI())
+    if (GetOobeUI()) {
       GetOobeUI()->GetCoreOobeActor()->ShowControlBar(true);
+      GetOobeUI()->GetCoreOobeActor()->ShowPinKeyboard(true);
+    }
   } else {
     // Keyboard has been shown.
-    if (GetOobeUI())
+    if (GetOobeUI()) {
       GetOobeUI()->GetCoreOobeActor()->ShowControlBar(false);
+      GetOobeUI()->GetCoreOobeActor()->ShowPinKeyboard(false);
+    }
   }
 }
 

@@ -40,9 +40,9 @@ Polymer({
     },
 
     /**
-     * Whether or not the keyboard's submit button should be shown.
+     * Whether or not the keyboard's input should be shown.
      */
-    enableSubmitButton: {
+    hideInput: {
       type: Boolean,
       value: false
     },
@@ -77,13 +77,6 @@ Polymer({
   onNumberTap_: function(event, detail) {
     var numberValue = event.target.getAttribute('value');
     this.value += numberValue;
-
-    // If a number button is clicked, we do not want to switch focus to the
-    // button, therefore we transfer focus back to the input, but if a number
-    // button is tabbed into, it should keep focus, so users can use tab and
-    // spacebar/return to enter their PIN.
-    if (!event.target.receivedFocusFromKeyboard)
-      this.focus();
   },
 
   /** Fires a submit event with the current PIN value. */
@@ -102,7 +95,8 @@ Polymer({
       this.fire('pin-change', { pin: value });
   },
 
-  /** Called when the user wants to erase the last character of the entered
+  /**
+   * Called when the user wants to erase the last character of the entered
    *  PIN value.
    */
   onPinClear_: function() {
@@ -124,6 +118,41 @@ Polymer({
       event.preventDefault();
       return;
     }
+  },
+
+  /**
+   * Keypress does not handle backspace but handles the char codes nicely, so we
+   * have a seperate event to process the backspaces.
+   * @param {Event} event Keypress Event object.
+   * @private
+   */
+  onKeyDown_: function(event) {
+    // Backspace pressed.
+    if (event.keyCode == 8) {
+      this.onPinClear_();
+      event.preventDefault();
+      return;
+    }
+  },
+
+  /**
+   * Called when a key press event is fired while the number button is focused.
+   * Ideally we would want to pass focus back to the input element, but the we
+   * cannot or the virtual keyboard will keep poping up.
+   * @param {Event} event Keypress Event object.
+   * @private
+   */
+  onKeyPress_: function(event) {
+    var code = event.keyCode;
+
+    // Enter pressed.
+    if (code == 13) {
+      this.firePinSubmitEvent_();
+      event.preventDefault();
+      return;
+    }
+
+    this.value += String.fromCharCode(code);
   },
 
   /**
