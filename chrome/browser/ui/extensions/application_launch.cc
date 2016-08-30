@@ -324,8 +324,7 @@ WebContents* OpenEnabledApplication(const AppLaunchParams& params) {
     // Record the launch time in the site engagement service. A recent bookmark
     // app launch will provide an engagement boost to the origin.
     SiteEngagementService* service = SiteEngagementService::Get(params.profile);
-    if (service)
-      service->SetLastShortcutLaunchTime(url);
+    service->SetLastShortcutLaunchTime(url);
   }
 
   // Record v1 app launch. Platform app launch is recorded when dispatching

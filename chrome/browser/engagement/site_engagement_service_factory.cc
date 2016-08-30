@@ -7,6 +7,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
@@ -40,4 +41,9 @@ bool SiteEngagementServiceFactory::ServiceIsNULLWhileTesting() const {
 KeyedService* SiteEngagementServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new SiteEngagementService(static_cast<Profile*>(profile));
+}
+
+content::BrowserContext* SiteEngagementServiceFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  return chrome::GetBrowserContextOwnInstanceInIncognito(context);
 }

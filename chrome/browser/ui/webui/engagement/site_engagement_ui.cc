@@ -76,11 +76,6 @@ class SiteEngagementUIHandlerImpl : public mojom::SiteEngagementUIHandler {
 
 SiteEngagementUI::SiteEngagementUI(content::WebUI* web_ui)
     : MojoWebUIController<mojom::SiteEngagementUIHandler>(web_ui) {
-  // Incognito profiles will not have a site engagement service.
-  Profile* profile = Profile::FromWebUI(web_ui);
-  if (!SiteEngagementService::Get(profile))
-    return;
-
   // Set up the chrome://site-engagement/ source.
   std::unique_ptr<content::WebUIDataSource> source(
       content::WebUIDataSource::Create(chrome::kChromeUISiteEngagementHost));
@@ -90,7 +85,7 @@ SiteEngagementUI::SiteEngagementUI(content::WebUI* web_ui)
       IDR_SITE_ENGAGEMENT_MOJO_JS);
   source->AddResourcePath("url/mojo/url.mojom", IDR_URL_MOJO_JS);
   source->SetDefaultResource(IDR_SITE_ENGAGEMENT_HTML);
-    content::WebUIDataSource::Add(profile, source.release());
+  content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source.release());
 }
 
 SiteEngagementUI::~SiteEngagementUI() {}

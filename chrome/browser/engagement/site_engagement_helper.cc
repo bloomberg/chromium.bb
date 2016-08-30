@@ -174,14 +174,13 @@ void SiteEngagementService::Helper::RecordUserInput(
     SiteEngagementMetrics::EngagementType type) {
   TRACE_EVENT0("SiteEngagement", "RecordUserInput");
   content::WebContents* contents = web_contents();
-  // Service is null in incognito.
-  if (contents && service_)
+  if (contents)
     service_->HandleUserInput(contents, type);
 }
 
 void SiteEngagementService::Helper::RecordMediaPlaying(bool is_hidden) {
   content::WebContents* contents = web_contents();
-  if (contents && service_)
+  if (contents)
     service_->HandleMediaPlaying(contents, is_hidden);
 }
 
@@ -214,8 +213,7 @@ void SiteEngagementService::Helper::DidFinishNavigation(
   if (prerender::PrerenderContents::FromWebContents(web_contents()) != nullptr)
     return;
 
-  if (service_)
-    service_->HandleNavigation(web_contents(), handle->GetPageTransition());
+  service_->HandleNavigation(web_contents(), handle->GetPageTransition());
 
   input_tracker_.Start(
       base::TimeDelta::FromSeconds(g_seconds_delay_after_navigation));

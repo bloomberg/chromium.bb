@@ -18,7 +18,7 @@ namespace base {
 class Clock;
 }
 
-class HostContentSettingsMap;
+class Profile;
 
 class SiteEngagementScore {
  public:
@@ -114,7 +114,7 @@ class SiteEngagementScore {
   // SiteEngagementScore.
   SiteEngagementScore(base::Clock* clock,
                       const GURL& origin,
-                      HostContentSettingsMap* settings_map);
+                      Profile* profile);
   SiteEngagementScore(SiteEngagementScore&& other);
   ~SiteEngagementScore();
 
@@ -218,8 +218,8 @@ class SiteEngagementScore {
   // The origin this score represents.
   GURL origin_;
 
-  // The settings map to write this score to when Commit() is called.
-  HostContentSettingsMap* settings_map_;
+  // The profile to write this score to when Commit() is called.
+  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(SiteEngagementScore);
 };

@@ -56,8 +56,7 @@ static void RecordLaunch(JNIEnv* env,
     // launched from a shortcut receive a boost to their engagement.
     SiteEngagementService* service = SiteEngagementService::Get(
         Profile::FromBrowserContext(web_contents->GetBrowserContext()));
-    if (service)
-      service->SetLastShortcutLaunchTime(url);
+    service->SetLastShortcutLaunchTime(url);
   }
 
   std::string rappor_metric_source;

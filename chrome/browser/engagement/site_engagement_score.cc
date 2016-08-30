@@ -11,7 +11,9 @@
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/engagement/site_engagement_metrics.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/variations/variations_associated_data.h"
 
@@ -34,14 +36,27 @@ bool DoublesConsideredDifferent(double value1, double value2, double delta) {
 }
 
 std::unique_ptr<base::DictionaryValue> GetScoreDictForOrigin(
-    HostContentSettingsMap* settings,
+    Profile* profile,
     const GURL& origin_url) {
+  HostContentSettingsMap* settings =
+      HostContentSettingsMapFactory::GetForProfile(profile);
+  HostContentSettingsMap* fallback_settings =
+      profile->IsOffTheRecord() ? HostContentSettingsMapFactory::GetForProfile(
+                                      profile->GetOriginalProfile())
+                                : nullptr;
+
   if (!settings)
     return std::unique_ptr<base::DictionaryValue>();
 
   std::unique_ptr<base::Value> value = settings->GetWebsiteSetting(
       origin_url, origin_url, CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT,
       std::string(), NULL);
+  if (!value.get() && fallback_settings) {
+    value = fallback_settings->GetWebsiteSetting(
+        origin_url, origin_url, CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT,
+        std::string(), NULL);
+  }
+
   if (!value.get())
     return base::WrapUnique(new base::DictionaryValue());
 
@@ -179,10 +194,10 @@ void SiteEngagementScore::UpdateFromVariations(const char* param_name) {
 
 SiteEngagementScore::SiteEngagementScore(base::Clock* clock,
                                          const GURL& origin,
-                                         HostContentSettingsMap* settings_map)
-    : SiteEngagementScore(clock, GetScoreDictForOrigin(settings_map, origin)) {
+                                         Profile* profile)
+    : SiteEngagementScore(clock, GetScoreDictForOrigin(profile, origin)) {
   origin_ = origin;
-  settings_map_ = settings_map;
+  profile_ = profile;
 }
 
 SiteEngagementScore::SiteEngagementScore(SiteEngagementScore&& other) = default;
@@ -237,9 +252,10 @@ void SiteEngagementScore::Commit() {
   if (!UpdateScoreDict(score_dict_.get()))
     return;
 
-  settings_map_->SetWebsiteSettingDefaultScope(
-      origin_, GURL(), CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, std::string(),
-      std::move(score_dict_));
+  HostContentSettingsMapFactory::GetForProfile(profile_)
+      ->SetWebsiteSettingDefaultScope(origin_, GURL(),
+                                      CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT,
+                                      std::string(), std::move(score_dict_));
 }
 
 bool SiteEngagementScore::MaxPointsPerDayAdded() const {

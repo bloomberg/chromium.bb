@@ -332,36 +332,39 @@ void SiteEngagementService::CleanupEngagementScores(
 
 void SiteEngagementService::RecordMetrics() {
   base::Time now = clock_->Now();
-  if (last_metrics_time_.is_null() ||
-      (now - last_metrics_time_).InMinutes() >= kMetricsIntervalInMinutes) {
-    last_metrics_time_ = now;
-    std::map<GURL, double> score_map = GetScoreMap();
-
-    int origins_with_max_engagement = OriginsWithMaxEngagement(score_map);
-    int total_origins = score_map.size();
-    int percent_origins_with_max_engagement =
-        (total_origins == 0
-             ? 0
-             : (origins_with_max_engagement * 100) / total_origins);
-
-    double total_engagement = GetTotalEngagementPoints();
-    double mean_engagement =
-        (total_origins == 0 ? 0 : total_engagement / total_origins);
-
-    SiteEngagementMetrics::RecordTotalOriginsEngaged(total_origins);
-    SiteEngagementMetrics::RecordTotalSiteEngagement(total_engagement);
-    SiteEngagementMetrics::RecordMeanEngagement(mean_engagement);
-    SiteEngagementMetrics::RecordMedianEngagement(
-        GetMedianEngagement(score_map));
-    SiteEngagementMetrics::RecordEngagementScores(score_map);
-
-    SiteEngagementMetrics::RecordOriginsWithMaxDailyEngagement(
-        OriginsWithMaxDailyEngagement());
-    SiteEngagementMetrics::RecordOriginsWithMaxEngagement(
-        origins_with_max_engagement);
-    SiteEngagementMetrics::RecordPercentOriginsWithMaxEngagement(
-        percent_origins_with_max_engagement);
+  if (profile_->IsOffTheRecord() ||
+      (!last_metrics_time_.is_null() &&
+       (now - last_metrics_time_).InMinutes() < kMetricsIntervalInMinutes)) {
+    return;
   }
+
+  last_metrics_time_ = now;
+  std::map<GURL, double> score_map = GetScoreMap();
+
+  int origins_with_max_engagement = OriginsWithMaxEngagement(score_map);
+  int total_origins = score_map.size();
+  int percent_origins_with_max_engagement =
+      (total_origins == 0
+           ? 0
+           : (origins_with_max_engagement * 100) / total_origins);
+
+  double total_engagement = GetTotalEngagementPoints();
+  double mean_engagement =
+      (total_origins == 0 ? 0 : total_engagement / total_origins);
+
+  SiteEngagementMetrics::RecordTotalOriginsEngaged(total_origins);
+  SiteEngagementMetrics::RecordTotalSiteEngagement(total_engagement);
+  SiteEngagementMetrics::RecordMeanEngagement(mean_engagement);
+  SiteEngagementMetrics::RecordMedianEngagement(
+      GetMedianEngagement(score_map));
+  SiteEngagementMetrics::RecordEngagementScores(score_map);
+
+  SiteEngagementMetrics::RecordOriginsWithMaxDailyEngagement(
+      OriginsWithMaxDailyEngagement());
+  SiteEngagementMetrics::RecordOriginsWithMaxEngagement(
+      origins_with_max_engagement);
+  SiteEngagementMetrics::RecordPercentOriginsWithMaxEngagement(
+      percent_origins_with_max_engagement);
 }
 
 base::Time SiteEngagementService::GetLastEngagementTime() const {
@@ -483,9 +486,7 @@ void SiteEngagementService::OnURLsDeleted(
 
 SiteEngagementScore SiteEngagementService::CreateEngagementScore(
     const GURL& origin) const {
-  return SiteEngagementScore(
-      clock_.get(), origin,
-      HostContentSettingsMapFactory::GetForProfile(profile_));
+  return SiteEngagementScore(clock_.get(), origin, profile_);
 }
 
 int SiteEngagementService::OriginsWithMaxDailyEngagement() const {

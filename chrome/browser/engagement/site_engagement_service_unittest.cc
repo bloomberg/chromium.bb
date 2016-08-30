@@ -1470,3 +1470,39 @@ TEST_F(SiteEngagementServiceTest, LastEngagementTime) {
   EXPECT_EQ(later_in_day, last_engagement_time);
   EXPECT_EQ(later_in_day, service->GetLastEngagementTime());
 }
+
+TEST_F(SiteEngagementServiceTest, IncognitoEngagementService) {
+  SiteEngagementService* service = SiteEngagementService::Get(profile());
+  ASSERT_TRUE(service);
+
+  GURL url1("http://www.google.com/");
+  GURL url2("https://www.google.com/");
+  GURL url3("https://drive.google.com/");
+  GURL url4("https://maps.google.com/");
+
+  service->AddPoints(url1, 1);
+  service->AddPoints(url2, 2);
+
+  SiteEngagementService* incognito_service =
+      SiteEngagementService::Get(profile()->GetOffTheRecordProfile());
+  EXPECT_EQ(1, incognito_service->GetScore(url1));
+  EXPECT_EQ(2, incognito_service->GetScore(url2));
+  EXPECT_EQ(0, incognito_service->GetScore(url3));
+
+  incognito_service->AddPoints(url3, 1);
+  EXPECT_EQ(1, incognito_service->GetScore(url3));
+  EXPECT_EQ(0, service->GetScore(url3));
+
+  incognito_service->AddPoints(url2, 1);
+  EXPECT_EQ(3, incognito_service->GetScore(url2));
+  EXPECT_EQ(2, service->GetScore(url2));
+
+  service->AddPoints(url3, 2);
+  EXPECT_EQ(1, incognito_service->GetScore(url3));
+  EXPECT_EQ(2, service->GetScore(url3));
+
+  EXPECT_EQ(0, incognito_service->GetScore(url4));
+  service->AddPoints(url4, 2);
+  EXPECT_EQ(2, incognito_service->GetScore(url4));
+  EXPECT_EQ(2, service->GetScore(url4));
+}
