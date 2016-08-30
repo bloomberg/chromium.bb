@@ -159,20 +159,30 @@ public class BookmarksTest extends SyncTestBase {
         SyncTestUtil.triggerSync();
         waitForClientBookmarkCount(2);
 
-        // The folder comes first because new entities are inserted at index 0.
-        final Bookmark folder = getClientBookmarks().get(0);
-        Bookmark bookmark = getClientBookmarks().get(1);
-        assertTrue(folder.isFolder());
-        assertFalse(bookmark.isFolder());
+        // We should have exactly two (2) bookmark items: one a folder and the
+        // other a bookmark. We need to figure out which is which because the
+        // order is not being explicitly set on creation.
+        //
+        // See http://crbug/642128 - Explicitly set order on bookmark creation
+        // and verify the order here.
+        List<Bookmark> clientBookmarks = getClientBookmarks();
+        assertEquals(2, clientBookmarks.size());
+        Bookmark item0 = clientBookmarks.get(0);
+        Bookmark item1 = clientBookmarks.get(1);
+        assertTrue(item0.isFolder() != item1.isFolder());
+        final int bookmarkIndex = item0.isFolder() ? 1 : 0;
+        final Bookmark folder = item0.isFolder() ? item0 : item1;
+        final Bookmark bookmark = item0.isFolder() ? item1 : item0;
 
-        // Move on server, sync, and verify the move locally.
+        // On the server, move the bookmark into the folder then sync, and
+        // verify the move locally.
         mFakeServerHelper.modifyBookmarkEntity(bookmark.id, TITLE, URL, folder.id);
         SyncTestUtil.triggerSync();
         pollInstrumentationThread(new ClientBookmarksCriteria() {
             @Override
             public boolean isSatisfied(List<Bookmark> bookmarks) {
                 // The "s" is prepended because the server adds one to the parentId.
-                return bookmarks.get(1).parentId.equals("s" + folder.id);
+                return bookmarks.get(bookmarkIndex).parentId.equals("s" + folder.id);
             }
         });
     }
