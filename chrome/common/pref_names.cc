@@ -219,6 +219,7 @@ const char kAcceptLanguages[] = "intl.accept_languages";
 // The value to use for showing locale-dependent encoding list for different
 // locale, it's initialized from the corresponding string resource that is
 // stored in non-translatable part of the resource bundle.
+// Deprecated 8/2016.
 const char kStaticEncodings[] = "intl.static_encodings";
 
 // If these change, the corresponding enums in the extension API
@@ -917,6 +918,7 @@ const char kShowHomeButton[] = "browser.show_home_button";
 
 // A string value which saves short list of recently user selected encodings
 // separated with comma punctuation mark.
+// Deprecated 8/2016.
 const char kRecentlySelectedEncoding[] = "profile.recently_selected_encodings";
 
 // Clear Browsing Data dialog preferences.

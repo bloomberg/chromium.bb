@@ -1085,12 +1085,6 @@ are declared in build/common.gypi.
           <message name="IDS_ZOOM_MINUS2" desc="The text label of the Make Text Smaller menu item in the merged menu">
             &#8722;
           </message>
-          <message name="IDS_ENCODING_MENU" desc="The text label of the Encoding submenu">
-            &amp;Encoding
-          </message>
-          <message name="IDS_ENCODING_AUTO_DETECT" desc="The text label of the Auto Detect submenu">
-            Auto detect
-          </message>
         </if>
         <if expr="use_titlecase">
           <message name="IDS_NEW_TAB" desc="In Title Case: The text label of a menu item for opening a new tab">
@@ -1155,12 +1149,6 @@ are declared in build/common.gypi.
           </message>
           <message name="IDS_ZOOM_MINUS2" desc="The text label of the Make Text Smaller menu item in the merged menu">
             &#8722;
-          </message>
-          <message name="IDS_ENCODING_MENU" desc="In Title Case: The text label of the Encoding submenu">
-            &amp;Encoding
-          </message>
-          <message name="IDS_ENCODING_AUTO_DETECT" desc="In Title Case: The text label of the Auto Detect submenu">
-            Auto Detect
           </message>
         </if>
       </if>
@@ -9644,25 +9632,25 @@ I don't think this site should be blocked!
         </message>
 
         <!-- Font settings -->
-        <message name="IDS_FONT_LANGUAGE_SETTING_FONT_TAB_TITLE" desc="Title that appears in the Fonts and Encoding subpage">
-          Fonts and encoding
+        <message name="IDS_FONT_LANGUAGE_SETTING_FONT_TAB_TITLE" desc="Title that appears in the Fonts subpage">
+          Fonts
         </message>
-        <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_STANDARD_LABEL" desc="Label of the Standard font section of the Fonts and Encoding subpage">
+        <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_STANDARD_LABEL" desc="Label of the Standard font section of the Fonts subpage">
           Standard font
         </message>
-        <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_SERIF_LABEL" desc="Label of the Serif font section of the Fonts and Encoding subpage">
+        <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_SERIF_LABEL" desc="Label of the Serif font section of the Fonts subpage">
           Serif font
         </message>
-        <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_SANS_SERIF_LABEL" desc="Label of the Sans-serif font section of the Fonts and Encoding subpage">
+        <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_SANS_SERIF_LABEL" desc="Label of the Sans-serif font section of the Fonts subpage">
           Sans-serif font
         </message>
-        <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_FIXED_WIDTH_LABEL" desc="Label of the Fixed-width font section of the Fonts and Encoding subpage">
+        <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_FIXED_WIDTH_LABEL" desc="Label of the Fixed-width font section of the Fonts subpage">
           Fixed-width font
         </message>
-        <message name="IDS_FONT_LANGUAGE_SETTING_MINIMUM_FONT_SIZE_TITLE" desc="Label of the Minimum font size section of the Fonts and Encoding subpage">
+        <message name="IDS_FONT_LANGUAGE_SETTING_MINIMUM_FONT_SIZE_TITLE" desc="Label of the Minimum font size section of the Fonts subpage">
           Minimum font size
         </message>
-        <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SUB_DIALOG_ENCODING_TITLE" desc="Label of the Encoding section of the Fonts and Encoding subpage">
+        <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SUB_DIALOG_TITLE" desc="Label of the Encoding section of the Fonts subpage">
           Encoding
         </message>
         <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SIZE_TINY" desc="Label for the 'Tiny' side of the font size range selector">
@@ -9674,7 +9662,7 @@ I don't think this site should be blocked!
         <message name="IDS_FONT_LANGUAGE_SETTING_LOREM_IPSUM" desc="Sample text of 'Lorem ipsum' used to show the selected font/size">
           Lorem ipsum dolor sit amet, consectetur adipiscing elit.
         </message>
-        <message name="IDS_FONT_LANGUAGE_SETTING_PLACEHOLDER" desc="Placeholder string for the Fonts and Encodings select menus">
+        <message name="IDS_FONT_LANGUAGE_SETTING_PLACEHOLDER" desc="Placeholder string for the Fonts select menus">
           Loading...
         </message>
         <message name="IDS_FONT_LANGUAGE_SETTING_ADVANCED_FONT_SETTINGS_INSTALL"

@@ -603,10 +603,6 @@ void PrefsTabHelper::RegisterProfilePrefs(
       prefs::kWebKitUsesUniversalDetector,
       l10n_util::GetStringUTF8(IDS_USES_UNIVERSAL_DETECTOR) == "true",
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterStringPref(
-      prefs::kStaticEncodings,
-      l10n_util::GetStringUTF8(IDS_STATIC_ENCODING_LIST));
-  registry->RegisterStringPref(prefs::kRecentlySelectedEncoding, std::string());
 }
 
 // static

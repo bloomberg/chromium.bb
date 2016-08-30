@@ -207,11 +207,6 @@
         8
       </message>
 
-      <!-- Locale-dependent static encodings string -->
-      <message name="IDS_STATIC_ENCODING_LIST" use_name_for_id="true">
-        windows-1252
-      </message>
-
       <!-- The URL for the the Welcome to Chrome page shown on first run. -->
       <message name="IDS_WELCOME_PAGE_URL" translateable="false">
         http://tools.google.com/chrome/intl/[GRITLANGCODE]/welcome.html

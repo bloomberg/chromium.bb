@@ -85,54 +85,12 @@
 #define IDC_VIEW_SOURCE                 35002
 #define IDC_PRINT                       35003
 #define IDC_SAVE_PAGE                   35004
-#define IDC_ENCODING_MENU               35005
 #define IDC_EMAIL_PAGE_LOCATION         35006
 #define IDC_BASIC_PRINT                 35007
 #define IDC_SAVE_CREDIT_CARD_FOR_PAGE   35008
 #define IDC_TRANSLATE_PAGE              35009
 #define IDC_MANAGE_PASSWORDS_FOR_PAGE   35010
 #define IDC_ROUTE_MEDIA                 35011
-
-// When adding a new encoding to this list, be sure to append it to the
-// EncodingMenuController::kValidEncodingIds array in
-// encoding_menu_controller.cc.
-#define IDC_ENCODING_AUTO_DETECT        35500
-#define IDC_ENCODING_UTF8               35501
-#define IDC_ENCODING_UTF16LE            35502
-#define IDC_ENCODING_WINDOWS1252        35503
-#define IDC_ENCODING_GBK                35504
-#define IDC_ENCODING_GB18030            35505
-#define IDC_ENCODING_BIG5               35506
-#define IDC_ENCODING_KOREAN             35507
-#define IDC_ENCODING_SHIFTJIS           35508
-#define IDC_ENCODING_ISO2022JP          35509
-#define IDC_ENCODING_EUCJP              35510
-#define IDC_ENCODING_THAI               35511
-#define IDC_ENCODING_ISO885915          35512
-#define IDC_ENCODING_MACINTOSH          35513
-#define IDC_ENCODING_ISO88592           35514
-#define IDC_ENCODING_WINDOWS1250        35515
-#define IDC_ENCODING_ISO88595           35516
-#define IDC_ENCODING_WINDOWS1251        35517
-#define IDC_ENCODING_KOI8R              35518
-#define IDC_ENCODING_KOI8U              35519
-#define IDC_ENCODING_ISO88597           35520
-#define IDC_ENCODING_WINDOWS1253        35521
-#define IDC_ENCODING_ISO88594           35522
-#define IDC_ENCODING_ISO885913          35523
-#define IDC_ENCODING_WINDOWS1257        35524
-#define IDC_ENCODING_ISO88593           35525
-#define IDC_ENCODING_ISO885910          35526
-#define IDC_ENCODING_ISO885914          35527
-#define IDC_ENCODING_ISO885916          35528
-#define IDC_ENCODING_WINDOWS1254        35529
-#define IDC_ENCODING_ISO88596           35530
-#define IDC_ENCODING_WINDOWS1256        35531
-#define IDC_ENCODING_ISO88598           35532
-#define IDC_ENCODING_WINDOWS1255        35533
-#define IDC_ENCODING_WINDOWS1258        35534
-#define IDC_ENCODING_ISO88598I          35535
-#define IDC_ENCODING_IBM866             35536
 
 // Clipboard commands
 #define IDC_CUT                         36000

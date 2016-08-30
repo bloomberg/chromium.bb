@@ -363,10 +363,6 @@ CA
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="631"/>
-                            <menuItem title="^IDS_ENCODING_MENU" tag="35005" id="465">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <menu key="submenu" title="^IDS_ENCODING_MENU" id="466"/>
-                            </menuItem>
                             <menuItem title="^IDS_DEVELOPER_MENU_MAC" id="501">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <menu key="submenu" title="^IDS_DEVELOPER_MENU_MAC" id="502">

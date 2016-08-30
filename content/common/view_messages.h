@@ -626,13 +626,6 @@ IPC_MESSAGE_ROUTED2(ViewMsg_SetZoomLevelForLoadingURL,
                     GURL /* url */,
                     double /* zoom_level */)
 
-// Change encoding of page in the renderer.
-IPC_MESSAGE_ROUTED1(ViewMsg_SetPageEncoding,
-                    std::string /*new encoding name*/)
-
-// Reset encoding of page in the renderer back to default.
-IPC_MESSAGE_ROUTED0(ViewMsg_ResetPageEncodingToDefault)
-
 // Used to tell a render view whether it should expose various bindings
 // that allow JS content extended privileges.  See BindingsPolicy for valid
 // flag values.

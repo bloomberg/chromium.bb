@@ -64,7 +64,6 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_bridge.h"
 #import "chrome/browser/ui/cocoa/confirm_quit.h"
 #import "chrome/browser/ui/cocoa/confirm_quit_panel_controller.h"
-#import "chrome/browser/ui/cocoa/encoding_menu_controller_delegate_mac.h"
 #include "chrome/browser/ui/cocoa/handoff_active_url_observer_bridge.h"
 #import "chrome/browser/ui/cocoa/history_menu_bridge.h"
 #include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
@@ -745,16 +744,6 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer {
 
   // Dynamically update shortcuts for "Close Window" and "Close Tab" menu items.
   [[closeTabMenuItem_ menu] setDelegate:self];
-
-  // Build up the encoding menu, the order of the items differs based on the
-  // current locale (see http://crbug.com/7647 for details).
-  // We need a valid g_browser_process to get the profile which is why we can't
-  // call this from awakeFromNib.
-  NSMenu* viewMenu = [[[NSApp mainMenu] itemWithTag:IDC_VIEW_MENU] submenu];
-  NSMenuItem* encodingMenuItem = [viewMenu itemWithTag:IDC_ENCODING_MENU];
-  NSMenu* encodingMenu = [encodingMenuItem submenu];
-  EncodingMenuControllerDelegate::BuildEncodingMenu([self lastProfile],
-                                                    encodingMenu);
 
   // Instantiate the ProfileAttributesStorage observer so that we can get
   // notified when a profile is deleted.

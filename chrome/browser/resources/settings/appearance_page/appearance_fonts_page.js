@@ -51,9 +51,6 @@
       browserProxy_: Object,
 
       /** @private {!DropdownMenuOptionList} */
-      encodingOptions_: Object,
-
-      /** @private {!DropdownMenuOptionList} */
       fontOptions_: Object,
 
       /**
@@ -124,7 +121,7 @@
     },
 
     /**
-     * @param {!FontsData} response A list of fonts, encodings and the advanced
+     * @param {!FontsData} response A list of fonts and the advanced
      *     font settings extension URL.
      * @private
      */
@@ -137,15 +134,6 @@
         });
       }
       this.fontOptions_ = fontMenuOptions;
-
-      var encodingMenuOptions = [];
-      for (i = 0; i < response.encodingList.length; ++i) {
-        encodingMenuOptions.push({
-          value: response.encodingList[i][0],
-          name: response.encodingList[i][1]
-        });
-      }
-      this.encodingOptions_ = encodingMenuOptions;
       this.advancedExtensionUrl_ = response.extensionUrl;
     },
 

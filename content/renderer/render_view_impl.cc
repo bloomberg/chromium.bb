@@ -1308,9 +1308,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_Zoom, OnZoom)
     IPC_MESSAGE_HANDLER(ViewMsg_SetZoomLevelForLoadingURL,
                         OnSetZoomLevelForLoadingURL)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetPageEncoding, OnSetPageEncoding)
-    IPC_MESSAGE_HANDLER(ViewMsg_ResetPageEncodingToDefault,
-                        OnResetPageEncodingToDefault)
     IPC_MESSAGE_HANDLER(DragMsg_TargetDragEnter, OnDragTargetDragEnter)
     IPC_MESSAGE_HANDLER(DragMsg_TargetDragOver, OnDragTargetDragOver)
     IPC_MESSAGE_HANDLER(DragMsg_TargetDragLeave, OnDragTargetDragLeave)
@@ -2291,15 +2288,6 @@ void RenderViewImpl::OnSetZoomLevel(
   }
   webview()->hidePopups();
   SetZoomLevel(zoom_level);
-}
-
-void RenderViewImpl::OnSetPageEncoding(const std::string& encoding_name) {
-  webview()->setPageEncoding(WebString::fromUTF8(encoding_name));
-}
-
-void RenderViewImpl::OnResetPageEncodingToDefault() {
-  WebString no_encoding;
-  webview()->setPageEncoding(no_encoding);
 }
 
 void RenderViewImpl::OnAllowBindings(int enabled_bindings_flags) {

@@ -572,17 +572,6 @@ class WebContents : public PageNavigator,
   // Returns true if this WebContents will notify about disconnection.
   virtual bool WillNotifyDisconnection() const = 0;
 
-  // Override the encoding and reload the page by sending down
-  // ViewMsg_SetPageEncoding to the renderer. |UpdateEncoding| is kinda
-  // the opposite of this, by which 'browser' is notified of
-  // the encoding of the current tab from 'renderer' (determined by
-  // auto-detect, http header, meta, bom detection, etc).
-  virtual void SetOverrideEncoding(const std::string& encoding) = 0;
-
-  // Remove any user-defined override encoding and reload by sending down
-  // ViewMsg_ResetPageEncodingToDefault to the renderer.
-  virtual void ResetOverrideEncoding() = 0;
-
   // Returns the settings which get passed to the renderer.
   virtual content::RendererPreferences* GetMutableRendererPrefs() = 0;
 

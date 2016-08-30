@@ -9,7 +9,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "chrome/browser/character_encoding.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -182,37 +181,6 @@ INSTANTIATE_TEST_CASE_P(EncodingAliases,
                         BrowserEncodingTest,
                         testing::ValuesIn(kEncodingTestDatas));
 
-// Marked as flaky: see  http://crbug.com/44668
-IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, DISABLED_TestOverrideEncoding) {
-  const char* const kTestFileName = "gb18030_with_iso88591_meta.html";
-  const char* const kExpectedFileName =
-      "expected_gb18030_saved_from_iso88591_meta.html";
-  const char* const kOverrideTestDir = "user_override";
-
-  base::FilePath test_dir_path =
-      base::FilePath(kTestDir).AppendASCII(kOverrideTestDir);
-  test_dir_path = test_dir_path.AppendASCII(kTestFileName);
-  GURL url =
-      net::URLRequestMockHTTPJob::GetMockUrl(test_dir_path.MaybeAsASCII());
-  ui_test_utils::NavigateToURL(browser(), url);
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_EQ("windows-1252", web_contents->GetEncoding());
-
-  // Override the encoding to "gb18030".
-  const std::string selected_encoding =
-      CharacterEncoding::GetCanonicalEncodingNameByAliasName("gb18030");
-  content::TestNavigationObserver navigation_observer(web_contents);
-  web_contents->SetOverrideEncoding(selected_encoding);
-  navigation_observer.Wait();
-  EXPECT_EQ("gb18030", web_contents->GetEncoding());
-
-  base::FilePath expected_filename =
-      base::FilePath().AppendASCII(kOverrideTestDir).AppendASCII(
-          kExpectedFileName);
-  SaveAndCompare(kTestFileName, expected_filename);
-}
-
 // The following encodings are excluded from the auto-detection test because
 // it's a known issue that the current encoding detector does not detect them:
 // ISO-8859-4
@@ -306,9 +274,9 @@ IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, DISABLED_TestEncodingAutoDetect) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   for (size_t i = 0; i < arraysize(kTestDatas); ++i) {
-    // Disable auto detect if it is on.
+    // Enable auto detect.
     browser()->profile()->GetPrefs()->SetBoolean(
-        prefs::kWebKitUsesUniversalDetector, false);
+        prefs::kWebKitUsesUniversalDetector, true);
 
     base::FilePath test_file_path(test_dir_path);
     test_file_path = test_file_path.AppendASCII(kTestDatas[i].test_file_name);
@@ -316,19 +284,7 @@ IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, DISABLED_TestEncodingAutoDetect) {
         net::URLRequestMockHTTPJob::GetMockUrl(test_file_path.MaybeAsASCII());
     ui_test_utils::NavigateToURL(browser(), url);
 
-    // Get the encoding used for the page, it must be the default charset we
-    // just set.
-    EXPECT_EQ("ISO-8859-4", web_contents->GetEncoding());
-
-    // Enable the encoding auto detection.
-    browser()->profile()->GetPrefs()->SetBoolean(
-        prefs::kWebKitUsesUniversalDetector, true);
-
-    content::TestNavigationObserver observer(web_contents);
-    chrome::Reload(browser(), CURRENT_TAB);
-    observer.Wait();
-
-    // Re-get the encoding of page. It should return the real encoding now.
+    // Get the encoding of page. It should return the real encoding now.
     EXPECT_EQ(kTestDatas[i].expected_encoding, web_contents->GetEncoding());
 
     // Dump the page, the content of dump page should be equal with our expect

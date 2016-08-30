@@ -359,8 +359,6 @@ class CONTENT_EXPORT WebContentsImpl
                      const base::Callback<void(int64_t)>& callback) override;
   const std::string& GetContentsMimeType() const override;
   bool WillNotifyDisconnection() const override;
-  void SetOverrideEncoding(const std::string& encoding) override;
-  void ResetOverrideEncoding() override;
   RendererPreferences* GetMutableRendererPrefs() override;
   void Close() override;
   void SystemDragEnded() override;

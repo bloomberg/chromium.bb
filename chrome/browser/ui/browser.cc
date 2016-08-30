@@ -38,7 +38,6 @@
 #include "chrome/browser/banners/app_banner_manager_desktop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
-#include "chrome/browser/character_encoding.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
@@ -415,11 +414,6 @@ Browser::Browser(const CreateParams& params)
       base::Bind(&Browser::UpdateBookmarkBarState, base::Unretained(this),
                  BOOKMARK_BAR_STATE_CHANGE_PREF_CHANGE));
 
-  // NOTE: These prefs all need to be explicitly destroyed in the destructor
-  // or you'll get a nasty surprise when you run the incognito tests.
-  encoding_auto_detect_.Init(prefs::kWebKitUsesUniversalDetector,
-                             profile_->GetPrefs());
-
   if (search::IsInstantExtendedAPIEnabled() && is_type_tabbed())
     instant_controller_.reset(new BrowserInstantController(this));
 
@@ -495,8 +489,6 @@ Browser::~Browser() {
     tab_restore_service->BrowserClosed(live_tab_context());
 
   profile_pref_registrar_.RemoveAll();
-
-  encoding_auto_detect_.Destroy();
 
   // Destroy BrowserExtensionWindowController before the incognito profile
   // is destroyed to make sure the chrome.windows.onRemoved event is sent.
@@ -826,38 +818,6 @@ bool Browser::SupportsWindowFeature(WindowFeature feature) const {
 
 bool Browser::CanSupportWindowFeature(WindowFeature feature) const {
   return SupportsWindowFeatureImpl(feature, false);
-}
-
-void Browser::ToggleEncodingAutoDetect() {
-  content::RecordAction(UserMetricsAction("AutoDetectChange"));
-  encoding_auto_detect_.SetValue(!encoding_auto_detect_.GetValue());
-  // If "auto detect" is turned on, then any current override encoding
-  // is cleared. This also implicitly performs a reload.
-  // OTOH, if "auto detect" is turned off, we don't change the currently
-  // active encoding.
-  if (encoding_auto_detect_.GetValue()) {
-    WebContents* contents = tab_strip_model_->GetActiveWebContents();
-    if (contents)
-      contents->ResetOverrideEncoding();
-  }
-}
-
-void Browser::OverrideEncoding(int encoding_id) {
-  content::RecordAction(UserMetricsAction("OverrideEncoding"));
-  const std::string selected_encoding =
-      CharacterEncoding::GetCanonicalEncodingNameByCommandId(encoding_id);
-  WebContents* contents = tab_strip_model_->GetActiveWebContents();
-  if (!selected_encoding.empty() && contents)
-     contents->SetOverrideEncoding(selected_encoding);
-  // Update the list of recently selected encodings.
-  std::string new_selected_encoding_list;
-  if (CharacterEncoding::UpdateRecentlySelectedEncoding(
-        profile_->GetPrefs()->GetString(prefs::kRecentlySelectedEncoding),
-        encoding_id,
-        &new_selected_encoding_list)) {
-    profile_->GetPrefs()->SetString(prefs::kRecentlySelectedEncoding,
-                                    new_selected_encoding_list);
-  }
 }
 
 void Browser::OpenFile() {

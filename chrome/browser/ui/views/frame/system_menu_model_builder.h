@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/views/frame/system_menu_model_delegate.h"
 
 class Browser;
-class EncodingMenuModel;
 class ZoomMenuModel;
 
 namespace ui {
@@ -50,7 +49,6 @@ class SystemMenuModelBuilder {
   SystemMenuModelDelegate menu_delegate_;
   std::unique_ptr<ui::MenuModel> menu_model_;
   std::unique_ptr<ZoomMenuModel> zoom_menu_contents_;
-  std::unique_ptr<EncodingMenuModel> encoding_menu_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemMenuModelBuilder);
 };

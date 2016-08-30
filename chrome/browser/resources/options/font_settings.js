@@ -10,7 +10,7 @@ cr.define('options', function() {
 
   /**
    * FontSettings class
-   * Encapsulated handling of the 'Fonts and Encoding' page.
+   * Encapsulated handling of the 'Fonts' page.
    * @class
    */
   function FontSettings() {
@@ -50,8 +50,7 @@ cr.define('options', function() {
 
       var placeholder = loadTimeData.getString('fontSettingsPlaceholder');
       var elements = [$('standard-font-family'), $('serif-font-family'),
-                      $('sans-serif-font-family'), $('fixed-font-family'),
-                      $('font-encoding')];
+                      $('sans-serif-font-family'), $('fixed-font-family')];
       elements.forEach(function(el) {
         el.appendChild(new Option(placeholder));
         el.setDisabled('noFontsAvailable', true);
@@ -197,7 +196,7 @@ cr.define('options', function() {
   };
 
   // Chrome callbacks
-  FontSettings.setFontsData = function(fonts, encodings, selectedValues) {
+  FontSettings.setFontsData = function(fonts, selectedValues) {
     FontSettings.getInstance().populateSelect_($('standard-font-family'), fonts,
                                                selectedValues[0]);
     FontSettings.getInstance().populateSelect_($('serif-font-family'), fonts,
@@ -206,8 +205,6 @@ cr.define('options', function() {
                                                fonts, selectedValues[2]);
     FontSettings.getInstance().populateSelect_($('fixed-font-family'), fonts,
                                                selectedValues[3]);
-    FontSettings.getInstance().populateSelect_($('font-encoding'), encodings,
-                                               selectedValues[4]);
   };
 
   FontSettings.setUpStandardFontSample = function(font, size) {
@@ -253,4 +250,3 @@ cr.define('options', function() {
     FontSettings: FontSettings
   };
 });
-

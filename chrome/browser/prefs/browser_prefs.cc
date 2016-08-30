@@ -642,6 +642,8 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
   registry->RegisterBooleanPref(kNetworkPredictionEnabled, true);
   registry->RegisterBooleanPref(kDisableSpdy, false);
+  registry->RegisterStringPref(prefs::kStaticEncodings, std::string());
+  registry->RegisterStringPref(prefs::kRecentlySelectedEncoding, std::string());
 }
 
 void RegisterUserProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
@@ -742,6 +744,10 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   DeleteWebRTCIdentityStoreDB(profile);
   profile_prefs->ClearPref(kNetworkPredictionEnabled);
   profile_prefs->ClearPref(kDisableSpdy);
+
+  // Added 8/2016.
+  profile_prefs->ClearPref(prefs::kStaticEncodings);
+  profile_prefs->ClearPref(prefs::kRecentlySelectedEncoding);
 }
 
 }  // namespace chrome

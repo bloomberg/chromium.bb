@@ -36,7 +36,6 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/prefs/pref_change_registrar.h"
-#include "components/prefs/pref_member.h"
 #include "components/sessions/core/session_id.h"
 #include "components/toolbar/toolbar_model.h"
 #include "components/translate/content/browser/content_translate_driver.h"
@@ -387,11 +386,6 @@ class Browser : public TabStripModelObserver,
   // Returns true if the Browser can support the specified feature. See comment
   // in |SupportsWindowFeature| for details on this.
   bool CanSupportWindowFeature(WindowFeature feature) const;
-
-  // TODO(port): port these, and re-merge the two function declaration lists.
-  // Page-related commands.
-  void ToggleEncodingAutoDetect();
-  void OverrideEncoding(int encoding_id);
 
   // Show various bits of UI
   void OpenFile();
@@ -964,9 +958,6 @@ class Browser : public TabStripModelObserver,
 
   // Dialog box used for opening and saving files.
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
-
-  // Keep track of the encoding auto detect pref.
-  BooleanPrefMember encoding_auto_detect_;
 
   // Helper which implements the ContentSettingBubbleModel interface.
   std::unique_ptr<BrowserContentSettingBubbleModelDelegate>

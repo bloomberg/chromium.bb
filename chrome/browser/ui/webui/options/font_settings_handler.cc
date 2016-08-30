@@ -19,7 +19,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/character_encoding.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -90,8 +89,8 @@ void FontSettingsHandler::GetLocalizedValues(
       IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_FIXED_WIDTH_LABEL },
     { "fontSettingsMinimumSize",
       IDS_FONT_LANGUAGE_SETTING_MINIMUM_FONT_SIZE_TITLE },
-    { "fontSettingsEncoding",
-      IDS_FONT_LANGUAGE_SETTING_FONT_SUB_DIALOG_ENCODING_TITLE },
+    { "fontSettings",
+      IDS_FONT_LANGUAGE_SETTING_FONT_SUB_DIALOG_TITLE },
     { "fontSettingsSizeTiny",
       IDS_FONT_LANGUAGE_SETTING_FONT_SIZE_TINY },
     { "fontSettingsSizeHuge",
@@ -138,8 +137,6 @@ void FontSettingsHandler::RegisterMessages() {
   FontSettingsUtilities::ValidateSavedFonts(pref_service);
 
   // Register for preferences that we need to observe manually.
-  font_encoding_.Init(prefs::kDefaultCharset, pref_service);
-
   standard_font_.Init(prefs::kWebKitStandardFontFamily,
                       pref_service,
                       base::Bind(&FontSettingsHandler::SetUpStandardFontSample,
@@ -212,36 +209,6 @@ void FontSettingsHandler::FontsListHasLoaded(
     font->AppendString(has_rtl_chars ? "rtl" : "ltr");
   }
 
-  base::ListValue encoding_list;
-  const std::vector<CharacterEncoding::EncodingInfo>* encodings;
-  PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
-  encodings = CharacterEncoding::GetCurrentDisplayEncodings(
-      g_browser_process->GetApplicationLocale(),
-      pref_service->GetString(prefs::kStaticEncodings),
-      pref_service->GetString(prefs::kRecentlySelectedEncoding));
-  DCHECK(encodings);
-  DCHECK(!encodings->empty());
-
-  std::vector<CharacterEncoding::EncodingInfo>::const_iterator it;
-  for (it = encodings->begin(); it != encodings->end(); ++it) {
-    std::unique_ptr<base::ListValue> option(new base::ListValue());
-    if (it->encoding_id) {
-      int cmd_id = it->encoding_id;
-      std::string encoding =
-      CharacterEncoding::GetCanonicalEncodingNameByCommandId(cmd_id);
-      base::string16 name = it->encoding_display_name;
-      bool has_rtl_chars = base::i18n::StringContainsStrongRTLChars(name);
-      option->AppendString(encoding);
-      option->AppendString(name);
-      option->AppendString(has_rtl_chars ? "rtl" : "ltr");
-    } else {
-      // Add empty name/value to indicate a separator item.
-      option->AppendString(std::string());
-      option->AppendString(std::string());
-    }
-    encoding_list.Append(std::move(option));
-  }
-
   base::ListValue selected_values;
   selected_values.AppendString(
       MaybeGetLocalizedFontName(standard_font_.GetValue()));
@@ -251,10 +218,9 @@ void FontSettingsHandler::FontsListHasLoaded(
       MaybeGetLocalizedFontName(sans_serif_font_.GetValue()));
   selected_values.AppendString(
       MaybeGetLocalizedFontName(fixed_font_.GetValue()));
-  selected_values.AppendString(font_encoding_.GetValue());
 
   web_ui()->CallJavascriptFunctionUnsafe(
-      "FontSettings.setFontsData", *list.get(), encoding_list, selected_values);
+      "FontSettings.setFontsData", *list.get(), selected_values);
 }
 
 void FontSettingsHandler::SetUpStandardFontSample() {

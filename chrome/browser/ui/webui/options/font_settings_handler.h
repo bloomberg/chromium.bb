@@ -74,7 +74,6 @@ class FontSettingsHandler : public OptionsPageUIHandler,
   StringPrefMember serif_font_;
   StringPrefMember sans_serif_font_;
   StringPrefMember fixed_font_;
-  StringPrefMember font_encoding_;
   IntegerPrefMember default_font_size_;
   IntegerPrefMember default_fixed_font_size_;
   IntegerPrefMember minimum_font_size_;

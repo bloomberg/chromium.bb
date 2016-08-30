@@ -37,7 +37,6 @@
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/bookmark_sub_menu_model.h"
-#include "chrome/browser/ui/toolbar/encoding_menu_controller.h"
 #include "chrome/browser/ui/toolbar/recent_tabs_sub_menu_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/upgrade_detector.h"
@@ -108,70 +107,6 @@ base::string16 GetUpgradeDialogMenuItemName() {
 }
 
 }  // namespace
-
-////////////////////////////////////////////////////////////////////////////////
-// EncodingMenuModel
-
-EncodingMenuModel::EncodingMenuModel(Browser* browser)
-    : ui::SimpleMenuModel(this),
-      browser_(browser) {
-  Build();
-}
-
-EncodingMenuModel::~EncodingMenuModel() {
-}
-
-void EncodingMenuModel::Build() {
-  EncodingMenuController::EncodingMenuItemList encoding_menu_items;
-  EncodingMenuController encoding_menu_controller;
-  encoding_menu_controller.GetEncodingMenuItems(browser_->profile(),
-                                                &encoding_menu_items);
-
-  int group_id = 0;
-  EncodingMenuController::EncodingMenuItemList::iterator it =
-      encoding_menu_items.begin();
-  for (; it != encoding_menu_items.end(); ++it) {
-    int id = it->first;
-    base::string16& label = it->second;
-    if (id == 0) {
-      AddSeparator(ui::NORMAL_SEPARATOR);
-    } else {
-      if (id == IDC_ENCODING_AUTO_DETECT) {
-        AddCheckItem(id, label);
-      } else {
-        // Use the id of the first radio command as the id of the group.
-        if (group_id <= 0)
-          group_id = id;
-        AddRadioItem(id, label, group_id);
-      }
-    }
-  }
-}
-
-bool EncodingMenuModel::IsCommandIdChecked(int command_id) const {
-  WebContents* current_tab =
-      browser_->tab_strip_model()->GetActiveWebContents();
-  if (!current_tab)
-    return false;
-  EncodingMenuController controller;
-  return controller.IsItemChecked(browser_->profile(),
-                                  current_tab->GetEncoding(), command_id);
-}
-
-bool EncodingMenuModel::IsCommandIdEnabled(int command_id) const {
-  bool enabled = chrome::IsCommandEnabled(browser_, command_id);
-  // Special handling for the contents of the Encoding submenu. On Mac OS,
-  // instead of enabling/disabling the top-level menu item, the submenu's
-  // contents get disabled, per Apple's HIG.
-#if defined(OS_MACOSX)
-  enabled &= chrome::IsCommandEnabled(browser_, IDC_ENCODING_MENU);
-#endif
-  return enabled;
-}
-
-void EncodingMenuModel::ExecuteCommand(int command_id, int event_flags) {
-  chrome::ExecuteCommand(browser_, command_id);
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // ZoomMenuModel
@@ -268,10 +203,6 @@ void ToolsMenuModel::Build(Browser* browser) {
 #if defined(OS_CHROMEOS)
   AddItemWithStringId(IDC_TAKE_SCREENSHOT, IDS_TAKE_SCREENSHOT);
 #endif
-  encoding_menu_model_.reset(new EncodingMenuModel(browser));
-  AddSubMenuWithStringId(IDC_ENCODING_MENU, IDS_ENCODING_MENU,
-                         encoding_menu_model_.get());
-
   AddSeparator(ui::NORMAL_SEPARATOR);
   AddItemWithStringId(IDC_DEV_TOOLS, IDS_DEV_TOOLS);
 

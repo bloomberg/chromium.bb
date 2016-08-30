@@ -137,37 +137,8 @@ void FontHandler::FontListHasLoaded(std::string callback_id,
     font->AppendString(has_rtl_chars ? "rtl" : "ltr");
   }
 
-  // Character encoding list.
-  const std::vector<CharacterEncoding::EncodingInfo>* encodings;
-  PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
-  encodings = CharacterEncoding::GetCurrentDisplayEncodings(
-      g_browser_process->GetApplicationLocale(),
-      pref_service->GetString(prefs::kStaticEncodings),
-      pref_service->GetString(prefs::kRecentlySelectedEncoding));
-  DCHECK(!encodings->empty());
-
-  std::unique_ptr<base::ListValue> encoding_list(new base::ListValue());
-  for (const auto& it : *encodings) {
-    std::unique_ptr<base::ListValue> option(new base::ListValue());
-    if (it.encoding_id) {
-      option->AppendString(
-          CharacterEncoding::GetCanonicalEncodingNameByCommandId(
-            it.encoding_id));
-      option->AppendString(it.encoding_display_name);
-      option->AppendString(
-          base::i18n::StringContainsStrongRTLChars(it.encoding_display_name)
-          ? "rtl"
-          : "ltr");
-    } else {
-      // Add empty value to indicate a separator item.
-      option->AppendString(std::string());
-    }
-    encoding_list->Append(std::move(option));
-  }
-
   base::DictionaryValue response;
   response.Set("fontList", std::move(list));
-  response.Set("encodingList", std::move(encoding_list));
 
   GURL extension_url(extension_urls::GetWebstoreItemDetailURLPrefix());
   response.SetString(

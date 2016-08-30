@@ -115,10 +115,6 @@ void SystemMenuModelBuilder::BuildSystemMenuForAppOrPopupWindow(
   zoom_menu_contents_.reset(new ZoomMenuModel(&menu_delegate_));
   model->AddSubMenuWithStringId(IDC_ZOOM_MENU, IDS_ZOOM_MENU,
                                 zoom_menu_contents_.get());
-  encoding_menu_contents_.reset(new EncodingMenuModel(browser()));
-  model->AddSubMenuWithStringId(IDC_ENCODING_MENU,
-                                IDS_ENCODING_MENU,
-                                encoding_menu_contents_.get());
   if (browser()->is_app() && chrome::CanOpenTaskManager()) {
     model->AddSeparator(ui::NORMAL_SEPARATOR);
     model->AddItemWithStringId(IDC_TASK_MANAGER, IDS_TASK_MANAGER);

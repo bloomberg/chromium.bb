@@ -198,8 +198,8 @@
   <message name="IDS_SETTINGS_OPEN_WALLPAPER_APP" desc="Sub-label about opening the wallpaper app.">
     Open the wallpaper app
   </message>
-  <message name="IDS_SETTINGS_CHOOSE_FONTS_AND_ENCODING" desc="Sub-label about choosing font styles and text encoding.">
-    Choose font types and encoding
+  <message name="IDS_SETTINGS_CHOOSE_FONTS" desc="Sub-label about choosing font styles.">
+    Choose font types
   </message>
 
   <!-- Common -->
@@ -1720,8 +1720,8 @@
   <message name="IDS_SETTINGS_CUSTOMIZE_FONTS" desc="Label for the customize fonts button in settings.">
     Customize fonts
   </message>
-  <message name="IDS_SETTINGS_FONTS_AND_ENCODING" desc="Title for the customize fonts page in settings.">
-    Fonts and encoding
+  <message name="IDS_SETTINGS_FONTS" desc="Title for the customize fonts page in settings.">
+    Fonts
   </message>
   <message name="IDS_SETTINGS_STANDARD_FONT_LABEL" desc="Label for the standard font dropdown menu in settings.">
     Standard font

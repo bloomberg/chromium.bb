@@ -1339,7 +1339,7 @@ bool ChromeContentBrowserClient::ShouldAssignSiteForURL(const GURL& url) {
 
 std::string ChromeContentBrowserClient::GetCanonicalEncodingNameByAliasName(
     const std::string& alias_name) {
-  return CharacterEncoding::GetCanonicalEncodingNameByAliasName(alias_name);
+  return ::GetCanonicalEncodingNameByAliasName(alias_name);
 }
 
 namespace {
@@ -2412,8 +2412,7 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
   web_prefs->password_echo_enabled = browser_defaults::kPasswordEchoEnabled;
 #endif
 
-  web_prefs->uses_universal_detector =
-      prefs->GetBoolean(prefs::kWebKitUsesUniversalDetector);
+  web_prefs->uses_universal_detector = true;  // autodetection is always on.
   web_prefs->text_areas_are_resizable =
       prefs->GetBoolean(prefs::kWebKitTextAreasAreResizable);
   web_prefs->hyperlink_auditing_enabled =
@@ -2432,8 +2431,7 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
 #endif
 
   // Make sure we will set the default_encoding with canonical encoding name.
-  web_prefs->default_encoding =
-      CharacterEncoding::GetCanonicalEncodingNameByAliasName(
+  web_prefs->default_encoding = GetCanonicalEncodingNameByAliasName(
           web_prefs->default_encoding);
   if (web_prefs->default_encoding.empty()) {
     prefs->ClearPref(prefs::kDefaultCharset);

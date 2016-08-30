@@ -2918,16 +2918,6 @@ bool WebContentsImpl::WillNotifyDisconnection() const {
   return notify_disconnection_;
 }
 
-void WebContentsImpl::SetOverrideEncoding(const std::string& encoding) {
-  SetEncoding(encoding);
-  Send(new ViewMsg_SetPageEncoding(GetRoutingID(), encoding));
-}
-
-void WebContentsImpl::ResetOverrideEncoding() {
-  canonical_encoding_.clear();
-  Send(new ViewMsg_ResetPageEncodingToDefault(GetRoutingID()));
-}
-
 RendererPreferences* WebContentsImpl::GetMutableRendererPrefs() {
   return &renderer_preferences_;
 }
