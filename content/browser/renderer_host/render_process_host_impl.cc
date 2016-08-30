@@ -428,19 +428,29 @@ const char kSessionStorageHolderKey[] = "kSessionStorageHolderKey";
 
 class SessionStorageHolder : public base::SupportsUserData::Data {
  public:
-  SessionStorageHolder() {}
-  ~SessionStorageHolder() override {}
+  SessionStorageHolder()
+      : session_storage_namespaces_awaiting_close_(
+            new std::map<int, SessionStorageNamespaceMap>) {
+  }
+
+  ~SessionStorageHolder() override {
+    // Its important to delete the map on the IO thread to avoid deleting
+    // the underlying namespaces prior to processing ipcs referring to them.
+    BrowserThread::DeleteSoon(
+        BrowserThread::IO, FROM_HERE,
+        session_storage_namespaces_awaiting_close_.release());
+  }
 
   void Hold(const SessionStorageNamespaceMap& sessions, int view_route_id) {
-    session_storage_namespaces_awaiting_close_[view_route_id] = sessions;
+    (*session_storage_namespaces_awaiting_close_)[view_route_id] = sessions;
   }
 
   void Release(int old_route_id) {
-    session_storage_namespaces_awaiting_close_.erase(old_route_id);
+    session_storage_namespaces_awaiting_close_->erase(old_route_id);
   }
 
  private:
-  std::map<int, SessionStorageNamespaceMap>
+  std::unique_ptr<std::map<int, SessionStorageNamespaceMap>>
       session_storage_namespaces_awaiting_close_;
   DISALLOW_COPY_AND_ASSIGN(SessionStorageHolder);
 };
@@ -2015,87 +2025,92 @@ void RenderProcessHostImpl::Cleanup() {
     survive_for_worker_start_time_ = base::TimeTicks::Now();
   }
 
+  // Until there are no other owners of this object, we can't delete ourselves.
+  if (!listeners_.IsEmpty() || worker_ref_count_ != 0)
+    return;
+
 #if defined(ENABLE_WEBRTC)
   if (is_initialized_)
     ClearWebRtcLogMessageCallback();
 #endif
 
-  // When there are no other owners of this object, we can delete ourselves.
-  if (listeners_.IsEmpty() && worker_ref_count_ == 0) {
-    if (!survive_for_worker_start_time_.is_null()) {
-      UMA_HISTOGRAM_LONG_TIMES(
-          "SharedWorker.RendererSurviveForWorkerTime",
-          base::TimeTicks::Now() - survive_for_worker_start_time_);
-    }
+  if (!survive_for_worker_start_time_.is_null()) {
+    UMA_HISTOGRAM_LONG_TIMES(
+        "SharedWorker.RendererSurviveForWorkerTime",
+        base::TimeTicks::Now() - survive_for_worker_start_time_);
+  }
 
-    if (max_worker_count_ > 0) {
-      // Record the max number of workers (SharedWorker or ServiceWorker)
-      // that are simultaneously hosted in this renderer process.
-      UMA_HISTOGRAM_COUNTS("Render.Workers.MaxWorkerCountInRendererProcess",
-                           max_worker_count_);
-    }
+  if (max_worker_count_ > 0) {
+    // Record the max number of workers (SharedWorker or ServiceWorker)
+    // that are simultaneously hosted in this renderer process.
+    UMA_HISTOGRAM_COUNTS("Render.Workers.MaxWorkerCountInRendererProcess",
+                          max_worker_count_);
+  }
 
-    // We cannot clean up twice; if this fails, there is an issue with our
-    // control flow.
-    DCHECK(!deleting_soon_);
+  // We cannot clean up twice; if this fails, there is an issue with our
+  // control flow.
+  DCHECK(!deleting_soon_);
 
-    DCHECK_EQ(0, pending_views_);
+  DCHECK_EQ(0, pending_views_);
 
-    // If |channel_| is still valid, the process associated with this
-    // RenderProcessHost is still alive. Notify all observers that the process
-    // has exited cleanly, even though it will be destroyed a bit later.
-    // Observers shouldn't rely on this process anymore.
-    if (channel_.get()) {
-      FOR_EACH_OBSERVER(
-          RenderProcessHostObserver, observers_,
-          RenderProcessExited(this, base::TERMINATION_STATUS_NORMAL_TERMINATION,
-                              0));
-    }
-    FOR_EACH_OBSERVER(RenderProcessHostObserver, observers_,
-                      RenderProcessHostDestroyed(this));
-    NotificationService::current()->Notify(
-        NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-        Source<RenderProcessHost>(this), NotificationService::NoDetails());
+  // If |channel_| is still valid, the process associated with this
+  // RenderProcessHost is still alive. Notify all observers that the process
+  // has exited cleanly, even though it will be destroyed a bit later.
+  // Observers shouldn't rely on this process anymore.
+  if (channel_.get()) {
+    FOR_EACH_OBSERVER(
+        RenderProcessHostObserver, observers_,
+        RenderProcessExited(this, base::TERMINATION_STATUS_NORMAL_TERMINATION,
+                            0));
+  }
+  FOR_EACH_OBSERVER(RenderProcessHostObserver, observers_,
+                    RenderProcessHostDestroyed(this));
+  NotificationService::current()->Notify(
+      NOTIFICATION_RENDERER_PROCESS_TERMINATED,
+      Source<RenderProcessHost>(this), NotificationService::NoDetails());
 
-    if (connection_filter_id_ !=
-          MojoShellConnection::kInvalidConnectionFilterId) {
-      MojoShellConnection* mojo_shell_connection =
-          BrowserContext::GetMojoShellConnectionFor(browser_context_);
-      connection_filter_controller_->DisableFilter();
-      mojo_shell_connection->RemoveConnectionFilter(connection_filter_id_);
-      connection_filter_id_ = MojoShellConnection::kInvalidConnectionFilterId;
-    }
+  if (connection_filter_id_ !=
+        MojoShellConnection::kInvalidConnectionFilterId) {
+    MojoShellConnection* mojo_shell_connection =
+        BrowserContext::GetMojoShellConnectionFor(browser_context_);
+    connection_filter_controller_->DisableFilter();
+    mojo_shell_connection->RemoveConnectionFilter(connection_filter_id_);
+    connection_filter_id_ = MojoShellConnection::kInvalidConnectionFilterId;
+  }
 
 #ifndef NDEBUG
-    is_self_deleted_ = true;
+  is_self_deleted_ = true;
 #endif
-    base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
-    deleting_soon_ = true;
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
+  deleting_soon_ = true;
 
 #if USE_ATTACHMENT_BROKER
-    IPC::AttachmentBroker::GetGlobal()->DeregisterCommunicationChannel(
-        channel_.get());
+  IPC::AttachmentBroker::GetGlobal()->DeregisterCommunicationChannel(
+      channel_.get());
 #endif
 
-    // It's important not to wait for the DeleteTask to delete the channel
-    // proxy. Kill it off now. That way, in case the profile is going away, the
-    // rest of the objects attached to this RenderProcessHost start going
-    // away first, since deleting the channel proxy will post a
-    // OnChannelClosed() to IPC::ChannelProxy::Context on the IO thread.
-    channel_.reset();
+  // It's important not to wait for the DeleteTask to delete the channel
+  // proxy. Kill it off now. That way, in case the profile is going away, the
+  // rest of the objects attached to this RenderProcessHost start going
+  // away first, since deleting the channel proxy will post a
+  // OnChannelClosed() to IPC::ChannelProxy::Context on the IO thread.
+  channel_.reset();
 
-    // The following members should be cleared in ProcessDied() as well!
-    message_port_message_filter_ = NULL;
+  // The following members should be cleared in ProcessDied() as well!
+  message_port_message_filter_ = NULL;
 
-    RemoveUserData(kSessionStorageHolderKey);
+  // Its important to remove the kSessionStorageHolder after the channel
+  // has been reset to avoid deleting the underlying namespaces prior
+  // to processing ipcs referring to them.
+  DCHECK(!channel_);
+  RemoveUserData(kSessionStorageHolderKey);
 
-    // Remove ourself from the list of renderer processes so that we can't be
-    // reused in between now and when the Delete task runs.
-    UnregisterHost(GetID());
+  // Remove ourself from the list of renderer processes so that we can't be
+  // reused in between now and when the Delete task runs.
+  UnregisterHost(GetID());
 
-    instance_weak_factory_.reset(
-        new base::WeakPtrFactory<RenderProcessHostImpl>(this));
-  }
+  instance_weak_factory_.reset(
+      new base::WeakPtrFactory<RenderProcessHostImpl>(this));
 }
 
 void RenderProcessHostImpl::AddPendingView() {
@@ -2595,6 +2610,8 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
   within_process_died_observer_ = false;
 
   message_port_message_filter_ = NULL;
+
+  DCHECK(!channel_);
   RemoveUserData(kSessionStorageHolderKey);
 
   IDMap<IPC::Listener>::iterator iter(&listeners_);
