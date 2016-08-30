@@ -104,6 +104,24 @@ You can specify custom `max_len` value to be used by ClusterFuzz. For more
 information check out [Maximum Testcase Length] section of the [Efficient Fuzzer
 Guide].
 
+## Disable noisy error message logging
+
+If the code that you are a fuzzing generates error messages when encountering
+incorrect or invalid data then you need to silence those errors in the fuzzer.
+
+If the target uses the Chromium logging APIs, the best way to do that is to
+override the environment used for logging in your fuzzer:
+
+```cpp
+struct Environment {
+  Environment() {
+    logging::SetMinLogLevel(logging::LOG_FATAL);
+  }
+};
+
+Environment* env = new Environment();
+```
+
 ## Submitting Fuzzer to ClusterFuzz
 
 ClusterFuzz builds and executes all `fuzzer_test` targets in the source tree.
