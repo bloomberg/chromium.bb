@@ -69,6 +69,7 @@ public:
     // PassRefPtr temporaries, and we don't have a need to use real const
     // PassRefPtrs anyway.
     PassRefPtr(const PassRefPtr& o) : m_ptr(o.leakRef()) {}
+    PassRefPtr(PassRefPtr&& o) : m_ptr(o.leakRef()) {}
     template <typename U> PassRefPtr(const PassRefPtr<U>& o, EnsurePtrConvertibleArgDecl(U, T)) : m_ptr(o.leakRef()) {}
 
     ALWAYS_INLINE ~PassRefPtr() { derefIfNotNull(m_ptr); }

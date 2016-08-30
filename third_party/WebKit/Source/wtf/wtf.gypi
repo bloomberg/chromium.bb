@@ -216,6 +216,7 @@
             'MakeCancellableTest.cpp',
             'MathExtrasTest.cpp',
             'OptionalTest.cpp',
+            'PassRefPtrTest.cpp',
             'RefPtrTest.cpp',
             'SaturatedArithmeticTest.cpp',
             'StringExtrasTest.cpp',
