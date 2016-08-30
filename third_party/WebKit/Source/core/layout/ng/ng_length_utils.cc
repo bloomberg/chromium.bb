@@ -14,6 +14,7 @@ namespace blink {
 // - Handle border-box correctly
 // - positioned and/or replaced calculations
 // - Handle margins for fill-available and width: auto
+// - Take scrollbars into account
 
 LayoutUnit resolveInlineLength(const NGConstraintSpace& constraintSpace,
                                const Length& length,
@@ -25,7 +26,7 @@ LayoutUnit resolveInlineLength(const NGConstraintSpace& constraintSpace,
   if (type == LengthResolveType::MinSize && length.isAuto())
     return LayoutUnit();
 
-  if (type == LengthResolveType::MarginSize && length.isAuto())
+  if (type == LengthResolveType::MarginBorderPaddingSize && length.isAuto())
     return LayoutUnit();
 
   return valueForLength(length, constraintSpace.ContainerSize().inline_size);
@@ -36,7 +37,7 @@ LayoutUnit resolveBlockLength(const NGConstraintSpace& constraintSpace,
                               LayoutUnit contentSize,
                               LengthResolveType type) {
   DCHECK(!length.isMaxSizeNone());
-  DCHECK(type != LengthResolveType::MarginSize);
+  DCHECK(type != LengthResolveType::MarginBorderPaddingSize);
 
   if (type == LengthResolveType::MinSize && length.isAuto())
     return LayoutUnit();
@@ -120,15 +121,48 @@ NGBoxStrut computeMargins(const NGConstraintSpace& constraintSpace,
   // Margins always get computed relative to the inline size:
   // https://www.w3.org/TR/CSS2/box.html#value-def-margin-width
   NGBoxStrut margins;
-  margins.inline_start = resolveInlineLength(
-      constraintSpace, style.marginStart(), LengthResolveType::MarginSize);
-  margins.inline_end = resolveInlineLength(constraintSpace, style.marginEnd(),
-                                           LengthResolveType::MarginSize);
-  margins.block_start = resolveInlineLength(
-      constraintSpace, style.marginBefore(), LengthResolveType::MarginSize);
-  margins.block_end = resolveInlineLength(constraintSpace, style.marginAfter(),
-                                          LengthResolveType::MarginSize);
+  margins.inline_start =
+      resolveInlineLength(constraintSpace, style.marginStart(),
+                          LengthResolveType::MarginBorderPaddingSize);
+  margins.inline_end =
+      resolveInlineLength(constraintSpace, style.marginEnd(),
+                          LengthResolveType::MarginBorderPaddingSize);
+  margins.block_start =
+      resolveInlineLength(constraintSpace, style.marginBefore(),
+                          LengthResolveType::MarginBorderPaddingSize);
+  margins.block_end =
+      resolveInlineLength(constraintSpace, style.marginAfter(),
+                          LengthResolveType::MarginBorderPaddingSize);
   return margins;
+}
+
+NGBoxStrut computeBorders(const ComputedStyle& style) {
+  NGBoxStrut borders;
+  borders.inline_start = LayoutUnit(style.borderStartWidth());
+  borders.inline_end = LayoutUnit(style.borderEndWidth());
+  borders.block_start = LayoutUnit(style.borderBeforeWidth());
+  borders.block_end = LayoutUnit(style.borderAfterWidth());
+  return borders;
+}
+
+NGBoxStrut computePadding(const NGConstraintSpace& constraintSpace,
+                          const ComputedStyle& style) {
+  // Padding always gets computed relative to the inline size:
+  // https://www.w3.org/TR/CSS2/box.html#value-def-padding-width
+  NGBoxStrut padding;
+  padding.inline_start =
+      resolveInlineLength(constraintSpace, style.paddingStart(),
+                          LengthResolveType::MarginBorderPaddingSize);
+  padding.inline_end =
+      resolveInlineLength(constraintSpace, style.paddingEnd(),
+                          LengthResolveType::MarginBorderPaddingSize);
+  padding.block_start =
+      resolveInlineLength(constraintSpace, style.paddingBefore(),
+                          LengthResolveType::MarginBorderPaddingSize);
+  padding.block_end =
+      resolveInlineLength(constraintSpace, style.paddingAfter(),
+                          LengthResolveType::MarginBorderPaddingSize);
+  return padding;
 }
 
 }  // namespace blink

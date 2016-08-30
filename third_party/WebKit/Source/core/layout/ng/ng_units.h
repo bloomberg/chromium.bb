@@ -61,6 +61,22 @@ struct NGBoxStrut {
 
   LayoutUnit InlineSum() const { return inline_start + inline_end; }
   LayoutUnit BlockSum() const { return block_start + block_end; }
+
+  // The following two operators exist primarily to have an easy way to access
+  // the sum of border and padding.
+  NGBoxStrut& operator+=(const NGBoxStrut& other) {
+    inline_start += other.inline_start;
+    inline_end += other.inline_end;
+    block_start += other.block_start;
+    block_end += other.block_end;
+    return *this;
+  }
+
+  NGBoxStrut operator+(const NGBoxStrut& other) {
+    NGBoxStrut result(*this);
+    result += other;
+    return result;
+  }
 };
 
 }  // namespace blink

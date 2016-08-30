@@ -193,5 +193,41 @@ TEST_F(NGLengthUtilsTest, testMargins) {
   EXPECT_EQ(LayoutUnit(22), margins.inline_start);
 }
 
+TEST_F(NGLengthUtilsTest, testBorders) {
+  style_->setBorderTopWidth(1);
+  style_->setBorderRightWidth(2);
+  style_->setBorderBottomWidth(3);
+  style_->setBorderLeftWidth(4);
+  style_->setBorderTopStyle(BorderStyleSolid);
+  style_->setBorderRightStyle(BorderStyleSolid);
+  style_->setBorderBottomStyle(BorderStyleSolid);
+  style_->setBorderLeftStyle(BorderStyleSolid);
+  style_->setWritingMode(LeftToRightWritingMode);
+
+  NGBoxStrut borders = computeBorders(*style_);
+
+  EXPECT_EQ(LayoutUnit(4), borders.block_start);
+  EXPECT_EQ(LayoutUnit(3), borders.inline_end);
+  EXPECT_EQ(LayoutUnit(2), borders.block_end);
+  EXPECT_EQ(LayoutUnit(1), borders.inline_start);
+}
+
+TEST_F(NGLengthUtilsTest, testPadding) {
+  style_->setPaddingTop(Length(10, Percent));
+  style_->setPaddingRight(Length(52, Fixed));
+  style_->setPaddingBottom(Length(Auto));
+  style_->setPaddingLeft(Length(11, Percent));
+  style_->setWritingMode(RightToLeftWritingMode);
+
+  NGConstraintSpace* constraintSpace(ConstructConstraintSpace(200, 300));
+
+  NGBoxStrut padding = computePadding(*constraintSpace, *style_);
+
+  EXPECT_EQ(LayoutUnit(52), padding.block_start);
+  EXPECT_EQ(LayoutUnit(), padding.inline_end);
+  EXPECT_EQ(LayoutUnit(22), padding.block_end);
+  EXPECT_EQ(LayoutUnit(20), padding.inline_start);
+}
+
 }  // namespace
 }  // namespace blink

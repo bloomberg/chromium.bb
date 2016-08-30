@@ -14,7 +14,12 @@ class Length;
 class NGConstraintSpace;
 struct NGBoxStrut;
 
-enum class LengthResolveType { MinSize, MaxSize, ContentSize, MarginSize };
+enum class LengthResolveType {
+  MinSize,
+  MaxSize,
+  ContentSize,
+  MarginBorderPaddingSize
+};
 
 #define NGSizeIndefinite LayoutUnit(-1)
 
@@ -45,6 +50,11 @@ CORE_EXPORT LayoutUnit computeBlockSizeForFragment(const NGConstraintSpace&,
                                                    LayoutUnit contentSize);
 
 CORE_EXPORT NGBoxStrut computeMargins(const NGConstraintSpace&,
+                                      const ComputedStyle&);
+
+CORE_EXPORT NGBoxStrut computeBorders(const ComputedStyle&);
+
+CORE_EXPORT NGBoxStrut computePadding(const NGConstraintSpace&,
                                       const ComputedStyle&);
 
 }  // namespace blink
