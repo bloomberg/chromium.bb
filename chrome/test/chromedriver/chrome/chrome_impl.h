@@ -25,6 +25,7 @@ class Status;
 class WebView;
 class WebViewImpl;
 struct WebViewInfo;
+class WebViewsInfo;
 
 class ChromeImpl : public Chrome {
  public:
@@ -34,6 +35,7 @@ class ChromeImpl : public Chrome {
   Status GetAsDesktop(ChromeDesktopImpl** desktop) override;
   const BrowserInfo* GetBrowserInfo() const override;
   bool HasCrashedWebView() override;
+  Status GetWebViewIdForFirstTab(std::string* web_view_id) override;
   Status GetWebViewIds(std::list<std::string>* web_view_ids) override;
   Status GetWebViewById(const std::string& id, WebView** web_view) override;
   Status CloseWebView(const std::string& id) override;
@@ -59,6 +61,8 @@ class ChromeImpl : public Chrome {
  private:
   std::string page_load_strategy_;
   typedef std::list<linked_ptr<WebViewImpl> > WebViewList;
+
+  void UpdateWebViews(const WebViewsInfo& views_info);
 
   // Web views in this list are in the same order as they are opened.
   WebViewList web_views_;

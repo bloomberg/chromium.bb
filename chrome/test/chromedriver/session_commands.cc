@@ -206,16 +206,11 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
   if (status.IsError())
     return status;
 
+  status = session->chrome->GetWebViewIdForFirstTab(&session->window);
+  if (status.IsError())
+    return status;
+
   session->chrome->set_page_load_strategy(capabilities.page_load_strategy);
-
-  std::list<std::string> web_view_ids;
-  status = session->chrome->GetWebViewIds(&web_view_ids);
-  if (status.IsError() || web_view_ids.empty()) {
-    return status.IsError() ? status :
-        Status(kUnknownError, "unable to discover open window in chrome");
-  }
-
-  session->window = web_view_ids.front();
   session->detach = capabilities.detach;
   session->force_devtools_screenshot = capabilities.force_devtools_screenshot;
   session->capabilities = CreateCapabilities(session->chrome.get());

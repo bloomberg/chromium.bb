@@ -37,12 +37,38 @@ bool ChromeImpl::HasCrashedWebView() {
   return false;
 }
 
+Status ChromeImpl::GetWebViewIdForFirstTab(std::string* web_view_id) {
+  WebViewsInfo views_info;
+  Status status = devtools_http_client_->GetWebViewsInfo(&views_info);
+  if (status.IsError())
+    return status;
+  UpdateWebViews(views_info);
+  for (size_t i = 0; i < views_info.GetSize(); ++i) {
+    const WebViewInfo& view = views_info.Get(i);
+    if (view.type == WebViewInfo::kPage) {
+      *web_view_id = view.id;
+      return Status(kOk);
+    }
+  }
+  return Status(kUnknownError, "unable to discover open window in chrome");
+}
+
 Status ChromeImpl::GetWebViewIds(std::list<std::string>* web_view_ids) {
   WebViewsInfo views_info;
   Status status = devtools_http_client_->GetWebViewsInfo(&views_info);
   if (status.IsError())
     return status;
+  UpdateWebViews(views_info);
+  std::list<std::string> web_view_ids_tmp;
+  for (WebViewList::const_iterator web_view_iter = web_views_.begin();
+       web_view_iter != web_views_.end(); ++web_view_iter) {
+    web_view_ids_tmp.push_back((*web_view_iter)->GetId());
+  }
+  web_view_ids->swap(web_view_ids_tmp);
+  return Status(kOk);
+}
 
+void ChromeImpl::UpdateWebViews(const WebViewsInfo& views_info) {
   // Check if some web views are closed (or in the case of background pages,
   // become inactive).
   WebViewList::iterator it = web_views_.begin();
@@ -83,14 +109,6 @@ Status ChromeImpl::GetWebViewIds(std::list<std::string>* web_view_ids) {
       }
     }
   }
-
-  std::list<std::string> web_view_ids_tmp;
-  for (WebViewList::const_iterator web_view_iter = web_views_.begin();
-       web_view_iter != web_views_.end(); ++web_view_iter) {
-    web_view_ids_tmp.push_back((*web_view_iter)->GetId());
-  }
-  web_view_ids->swap(web_view_ids_tmp);
-  return Status(kOk);
 }
 
 Status ChromeImpl::GetWebViewById(const std::string& id, WebView** web_view) {
