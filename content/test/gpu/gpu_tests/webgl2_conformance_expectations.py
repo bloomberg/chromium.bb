@@ -77,8 +77,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'amd'], bug=614178)
     self.Fail('deqp/functional/gles3/shadertexturefunction/texture.html',
         ['win', 'amd'], bug=483282)
-    self.Fail('deqp/functional/gles3/shadertexturefunction/texturesize.html',
-        ['win', 'amd'], bug=483282)
 
     # Failing on old R5 230 configuration.
     self.Fail('deqp/functional/gles3/shadertexturefunction/' +
@@ -156,8 +154,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'intel'], bug=483282)
     self.Fail('deqp/functional/gles3/shadertexturefunction/' +
         'texelfetchoffset.html',
-        ['win', 'intel'], bug=483282)
-    self.Fail('deqp/functional/gles3/shadertexturefunction/texturesize.html',
         ['win', 'intel'], bug=483282)
     self.Fail('deqp/functional/gles3/uniformbuffers/*.html',
         ['win', 'intel'], bug=483282)
