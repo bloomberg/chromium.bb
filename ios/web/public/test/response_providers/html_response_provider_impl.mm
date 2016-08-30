@@ -61,6 +61,13 @@ HtmlResponseProviderImpl::HtmlResponseProviderImpl(
           web::ResponseProvider::GetDefaultResponseHeaders())) {}
 
 HtmlResponseProviderImpl::HtmlResponseProviderImpl(
+    const std::map<GURL, std::string>& responses,
+    const std::string& cookie)
+    : responses_(BuildResponseMap(
+          responses,
+          web::ResponseProvider::GetDefaultResponseHeaders(cookie))) {}
+
+HtmlResponseProviderImpl::HtmlResponseProviderImpl(
     const std::map<GURL, HtmlResponseProviderImpl::Response>& responses)
     : responses_(responses) {}
 

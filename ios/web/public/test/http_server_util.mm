@@ -17,6 +17,12 @@ void SetUpSimpleHttpServer(const std::map<GURL, std::string>& responses) {
   SetUpHttpServer(base::MakeUnique<HtmlResponseProvider>(responses));
 }
 
+void SetUpSimpleHttpServerWithSetCookie(
+    const std::map<GURL, std::string>& responses,
+    const std::string& cookie) {
+  SetUpHttpServer(base::MakeUnique<HtmlResponseProvider>(responses, cookie));
+}
+
 void SetUpFileBasedHttpServer() {
   base::FilePath path;
   PathService::Get(base::DIR_MODULE, &path);

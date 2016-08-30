@@ -19,6 +19,13 @@ namespace test {
 // HtmlResponseProvider will use the |responses| map to resolve URLs.
 void SetUpSimpleHttpServer(const std::map<GURL, std::string>& responses);
 
+// Sets up a web::test::HttpServer with a simple HtmlResponseProvider. The
+// HtmlResponseProvider will use the |responses| map to resolve URLs and include
+// Set-Cookie:|cookie| in the header.
+void SetUpSimpleHttpServerWithSetCookie(
+    const std::map<GURL, std::string>& responses,
+    const std::string& cookie);
+
 // Sets up a web::test::HttpServer with a FileBasedResponseProvider. The
 // server will try to resolve URLs as file paths relative to the application
 // bundle path. web::test::MakeUrl should be used to rewrite URLs before doing

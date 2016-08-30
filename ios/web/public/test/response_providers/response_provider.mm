@@ -51,6 +51,14 @@ ResponseProvider::GetDefaultResponseHeaders() {
 
 // static
 scoped_refptr<net::HttpResponseHeaders>
+ResponseProvider::GetDefaultResponseHeaders(const std::string& cookie) {
+  scoped_refptr<net::HttpResponseHeaders> result = GetDefaultResponseHeaders();
+  result->AddCookie(cookie);
+  return result;
+}
+
+// static
+scoped_refptr<net::HttpResponseHeaders>
 ResponseProvider::GetRedirectResponseHeaders(
     const std::string& destination,
     const net::HttpStatusCode& http_status) {

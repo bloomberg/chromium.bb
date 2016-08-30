@@ -53,6 +53,10 @@ class ResponseProvider {
   // Gets default response headers with a text/html content type and a 200
   // response code.
   static scoped_refptr<net::HttpResponseHeaders> GetDefaultResponseHeaders();
+  // Gets default response headers with a text/html content type and a 200
+  // response code.
+  static scoped_refptr<net::HttpResponseHeaders> GetDefaultResponseHeaders(
+      const std::string& cookie);
   // Gets configurable response headers with a provided content type and a
   // 200 response code.
   static scoped_refptr<net::HttpResponseHeaders> GetResponseHeaders(
