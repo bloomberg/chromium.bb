@@ -38,11 +38,6 @@ class ImageBurnerClient;
 class IntrospectableClient;
 class LorgnetteManagerClient;
 class ModemMessagingClient;
-class NfcAdapterClient;
-class NfcDeviceClient;
-class NfcManagerClient;
-class NfcRecordClient;
-class NfcTagClient;
 class PermissionBrokerClient;
 class PowerManagerClient;
 class SMSClient;
@@ -117,11 +112,6 @@ class CHROMEOS_EXPORT DBusThreadManager {
   IntrospectableClient* GetIntrospectableClient();
   LorgnetteManagerClient* GetLorgnetteManagerClient();
   ModemMessagingClient* GetModemMessagingClient();
-  NfcAdapterClient* GetNfcAdapterClient();
-  NfcDeviceClient* GetNfcDeviceClient();
-  NfcManagerClient* GetNfcManagerClient();
-  NfcRecordClient* GetNfcRecordClient();
-  NfcTagClient* GetNfcTagClient();
   PermissionBrokerClient* GetPermissionBrokerClient();
   PowerManagerClient* GetPowerManagerClient();
   SessionManagerClient* GetSessionManagerClient();
@@ -195,11 +185,6 @@ class CHROMEOS_EXPORT DBusThreadManagerSetter {
   void SetImageBurnerClient(std::unique_ptr<ImageBurnerClient> client);
   void SetIntrospectableClient(std::unique_ptr<IntrospectableClient> client);
   void SetModemMessagingClient(std::unique_ptr<ModemMessagingClient> client);
-  void SetNfcAdapterClient(std::unique_ptr<NfcAdapterClient> client);
-  void SetNfcDeviceClient(std::unique_ptr<NfcDeviceClient> client);
-  void SetNfcManagerClient(std::unique_ptr<NfcManagerClient> client);
-  void SetNfcRecordClient(std::unique_ptr<NfcRecordClient> client);
-  void SetNfcTagClient(std::unique_ptr<NfcTagClient> client);
   void SetPermissionBrokerClient(
       std::unique_ptr<PermissionBrokerClient> client);
   void SetPowerManagerClient(std::unique_ptr<PowerManagerClient> client);

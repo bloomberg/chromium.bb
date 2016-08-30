@@ -24,11 +24,6 @@ class ImageBurnerClient;
 class IntrospectableClient;
 class LorgnetteManagerClient;
 class ModemMessagingClient;
-class NfcAdapterClient;
-class NfcDeviceClient;
-class NfcManagerClient;
-class NfcRecordClient;
-class NfcTagClient;
 class PermissionBrokerClient;
 class PowerManagerClient;
 class SMSClient;
@@ -65,14 +60,13 @@ class CHROMEOS_EXPORT DBusClientBundle {
     IMAGE_BURNER = 1 << 9,
     INTROSPECTABLE = 1 << 10,
     MODEM_MESSAGING = 1 << 11,
-    NFC = 1 << 12,
-    PERMISSION_BROKER = 1 << 13,
-    POWER_MANAGER = 1 << 14,
-    SESSION_MANAGER = 1 << 15,
-    SMS = 1 << 16,
-    SYSTEM_CLOCK = 1 << 17,
-    UPDATE_ENGINE = 1 << 18,
-    ARC_OBB_MOUNTER = 1 << 19,
+    PERMISSION_BROKER = 1 << 12,
+    POWER_MANAGER = 1 << 13,
+    SESSION_MANAGER = 1 << 14,
+    SMS = 1 << 15,
+    SYSTEM_CLOCK = 1 << 16,
+    UPDATE_ENGINE = 1 << 17,
+    ARC_OBB_MOUNTER = 1 << 18,
   };
 
   explicit DBusClientBundle(DBusClientTypeMask unstub_client_mask);
@@ -159,26 +153,6 @@ class CHROMEOS_EXPORT DBusClientBundle {
     return modem_messaging_client_.get();
   }
 
-  NfcManagerClient* nfc_manager_client() {
-    return nfc_manager_client_.get();
-  }
-
-  NfcAdapterClient* nfc_adapter_client() {
-    return nfc_adapter_client_.get();
-  }
-
-  NfcDeviceClient* nfc_device_client() {
-    return nfc_device_client_.get();
-  }
-
-  NfcTagClient* nfc_tag_client() {
-    return nfc_tag_client_.get();
-  }
-
-  NfcRecordClient* nfc_record_client() {
-    return nfc_record_client_.get();
-  }
-
   PermissionBrokerClient* permission_broker_client() {
     return permission_broker_client_.get();
   }
@@ -228,13 +202,6 @@ class CHROMEOS_EXPORT DBusClientBundle {
   std::unique_ptr<ImageBurnerClient> image_burner_client_;
   std::unique_ptr<IntrospectableClient> introspectable_client_;
   std::unique_ptr<ModemMessagingClient> modem_messaging_client_;
-  // The declaration order for NFC client objects is important. See
-  // DBusThreadManager::InitializeClients for the dependencies.
-  std::unique_ptr<NfcManagerClient> nfc_manager_client_;
-  std::unique_ptr<NfcAdapterClient> nfc_adapter_client_;
-  std::unique_ptr<NfcDeviceClient> nfc_device_client_;
-  std::unique_ptr<NfcTagClient> nfc_tag_client_;
-  std::unique_ptr<NfcRecordClient> nfc_record_client_;
   std::unique_ptr<PermissionBrokerClient> permission_broker_client_;
   std::unique_ptr<SystemClockClient> system_clock_client_;
   std::unique_ptr<PowerManagerClient> power_manager_client_;

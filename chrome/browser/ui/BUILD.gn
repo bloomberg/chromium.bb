@@ -168,7 +168,6 @@ split_static_library("ui") {
     "//content/public/common",
     "//crypto",
     "//device/core",
-    "//device/nfc",
     "//device/usb",
     "//media",
     "//net:net_with_v8",

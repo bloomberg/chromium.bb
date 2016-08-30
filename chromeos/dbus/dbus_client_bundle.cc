@@ -28,11 +28,6 @@
 #include "chromeos/dbus/fake_introspectable_client.h"
 #include "chromeos/dbus/fake_lorgnette_manager_client.h"
 #include "chromeos/dbus/fake_modem_messaging_client.h"
-#include "chromeos/dbus/fake_nfc_adapter_client.h"
-#include "chromeos/dbus/fake_nfc_device_client.h"
-#include "chromeos/dbus/fake_nfc_manager_client.h"
-#include "chromeos/dbus/fake_nfc_record_client.h"
-#include "chromeos/dbus/fake_nfc_tag_client.h"
 #include "chromeos/dbus/fake_permission_broker_client.h"
 #include "chromeos/dbus/fake_shill_device_client.h"
 #include "chromeos/dbus/fake_shill_ipconfig_client.h"
@@ -47,11 +42,6 @@
 #include "chromeos/dbus/introspectable_client.h"
 #include "chromeos/dbus/lorgnette_manager_client.h"
 #include "chromeos/dbus/modem_messaging_client.h"
-#include "chromeos/dbus/nfc_adapter_client.h"
-#include "chromeos/dbus/nfc_device_client.h"
-#include "chromeos/dbus/nfc_manager_client.h"
-#include "chromeos/dbus/nfc_record_client.h"
-#include "chromeos/dbus/nfc_tag_client.h"
 #include "chromeos/dbus/permission_broker_client.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/dbus/power_policy_controller.h"
@@ -87,7 +77,6 @@ const struct {
     { "image_burner",  DBusClientBundle::IMAGE_BURNER },
     { "introspectable",  DBusClientBundle::INTROSPECTABLE },
     { "modem_messaging",  DBusClientBundle::MODEM_MESSAGING },
-    { "nfc",  DBusClientBundle::NFC },
     { "permission_broker",  DBusClientBundle::PERMISSION_BROKER },
     { "power_manager",  DBusClientBundle::POWER_MANAGER },
     { "session_manager",  DBusClientBundle::SESSION_MANAGER },
@@ -188,24 +177,6 @@ DBusClientBundle::DBusClientBundle(DBusClientTypeMask unstub_client_mask)
     modem_messaging_client_.reset(ModemMessagingClient::Create());
   else
     modem_messaging_client_.reset(new FakeModemMessagingClient);
-
-  // Create the NFC clients in the correct order based on their dependencies.
-  if (!IsUsingStub(NFC)) {
-    nfc_manager_client_.reset(NfcManagerClient::Create());
-    nfc_adapter_client_.reset(
-        NfcAdapterClient::Create(nfc_manager_client_.get()));
-    nfc_device_client_.reset(
-        NfcDeviceClient::Create(nfc_adapter_client_.get()));
-    nfc_tag_client_.reset(NfcTagClient::Create(nfc_adapter_client_.get()));
-    nfc_record_client_.reset(NfcRecordClient::Create(nfc_device_client_.get(),
-                                                     nfc_tag_client_.get()));
-  } else {
-    nfc_manager_client_.reset(new FakeNfcManagerClient);
-    nfc_adapter_client_.reset(new FakeNfcAdapterClient);
-    nfc_device_client_.reset(new FakeNfcDeviceClient);
-    nfc_tag_client_.reset(new FakeNfcTagClient);
-    nfc_record_client_.reset(new FakeNfcRecordClient);
-  }
 
   if (!IsUsingStub(PERMISSION_BROKER))
     permission_broker_client_.reset(PermissionBrokerClient::Create());

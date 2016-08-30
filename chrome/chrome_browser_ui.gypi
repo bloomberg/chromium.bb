@@ -279,8 +279,6 @@
       'browser/ui/webui/chromeos/mobile_setup_ui.h',
       'browser/ui/webui/chromeos/network_ui.cc',
       'browser/ui/webui/chromeos/network_ui.h',
-      'browser/ui/webui/chromeos/nfc_debug_ui.cc',
-      'browser/ui/webui/chromeos/nfc_debug_ui.h',
       'browser/ui/webui/chromeos/power_ui.cc',
       'browser/ui/webui/chromeos/power_ui.h',
       'browser/ui/webui/chromeos/proxy_settings_ui.cc',
@@ -2984,7 +2982,6 @@
           'dependencies': [
             'browser_chromeos',
             '../components/components.gyp:proximity_auth_webui',
-            '../device/nfc/nfc.gyp:device_nfc',
             '../ui/base/ime/ui_base_ime.gyp:ui_base_ime',
             '../ui/chromeos/ui_chromeos.gyp:ui_chromeos',
             '../ui/chromeos/ui_chromeos.gyp:ui_chromeos_resources',

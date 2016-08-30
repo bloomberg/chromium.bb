@@ -23,11 +23,6 @@
 #include "chromeos/dbus/introspectable_client.h"
 #include "chromeos/dbus/lorgnette_manager_client.h"
 #include "chromeos/dbus/modem_messaging_client.h"
-#include "chromeos/dbus/nfc_adapter_client.h"
-#include "chromeos/dbus/nfc_device_client.h"
-#include "chromeos/dbus/nfc_manager_client.h"
-#include "chromeos/dbus/nfc_record_client.h"
-#include "chromeos/dbus/nfc_tag_client.h"
 #include "chromeos/dbus/permission_broker_client.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -178,26 +173,6 @@ ModemMessagingClient* DBusThreadManager::GetModemMessagingClient() {
   return client_bundle_->modem_messaging_client();
 }
 
-NfcAdapterClient* DBusThreadManager::GetNfcAdapterClient() {
-  return client_bundle_->nfc_adapter_client();
-}
-
-NfcDeviceClient* DBusThreadManager::GetNfcDeviceClient() {
-  return client_bundle_->nfc_device_client();
-}
-
-NfcManagerClient* DBusThreadManager::GetNfcManagerClient() {
-  return client_bundle_->nfc_manager_client();
-}
-
-NfcRecordClient* DBusThreadManager::GetNfcRecordClient() {
-  return client_bundle_->nfc_record_client();
-}
-
-NfcTagClient* DBusThreadManager::GetNfcTagClient() {
-  return client_bundle_->nfc_tag_client();
-}
-
 PermissionBrokerClient* DBusThreadManager::GetPermissionBrokerClient() {
   return client_bundle_->permission_broker_client();
 }
@@ -246,15 +221,6 @@ void DBusThreadManager::InitializeClients() {
   GetSMSClient()->Init(GetSystemBus());
   GetSystemClockClient()->Init(GetSystemBus());
   GetUpdateEngineClient()->Init(GetSystemBus());
-
-  // Initialize the NFC clients in the correct order. The order of
-  // initialization matters due to dependencies that exist between the
-  // client objects.
-  GetNfcManagerClient()->Init(GetSystemBus());
-  GetNfcAdapterClient()->Init(GetSystemBus());
-  GetNfcDeviceClient()->Init(GetSystemBus());
-  GetNfcTagClient()->Init(GetSystemBus());
-  GetNfcRecordClient()->Init(GetSystemBus());
 
   // This must be called after the list of clients so they've each had a
   // chance to register with their object g_dbus_thread_managers.
@@ -461,35 +427,6 @@ void DBusThreadManagerSetter::SetModemMessagingClient(
     std::unique_ptr<ModemMessagingClient> client) {
   DBusThreadManager::Get()->client_bundle_->modem_messaging_client_ =
       std::move(client);
-}
-
-void DBusThreadManagerSetter::SetNfcAdapterClient(
-    std::unique_ptr<NfcAdapterClient> client) {
-  DBusThreadManager::Get()->client_bundle_->nfc_adapter_client_ =
-      std::move(client);
-}
-
-void DBusThreadManagerSetter::SetNfcDeviceClient(
-    std::unique_ptr<NfcDeviceClient> client) {
-  DBusThreadManager::Get()->client_bundle_->nfc_device_client_ =
-      std::move(client);
-}
-
-void DBusThreadManagerSetter::SetNfcManagerClient(
-    std::unique_ptr<NfcManagerClient> client) {
-  DBusThreadManager::Get()->client_bundle_->nfc_manager_client_ =
-      std::move(client);
-}
-
-void DBusThreadManagerSetter::SetNfcRecordClient(
-    std::unique_ptr<NfcRecordClient> client) {
-  DBusThreadManager::Get()->client_bundle_->nfc_record_client_ =
-      std::move(client);
-}
-
-void DBusThreadManagerSetter::SetNfcTagClient(
-    std::unique_ptr<NfcTagClient> client) {
-  DBusThreadManager::Get()->client_bundle_->nfc_tag_client_ = std::move(client);
 }
 
 void DBusThreadManagerSetter::SetPermissionBrokerClient(

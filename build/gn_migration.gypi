@@ -453,7 +453,6 @@
             #"//content/test:test_support",
             #"//device/battery",
             #"//device/bluetooth",
-            #"//device/nfc",
             #"//device/usb",
             #"//device/vibration",
             #"//media/blink",

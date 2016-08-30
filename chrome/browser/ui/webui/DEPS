@@ -7,7 +7,6 @@ include_rules = [
   "+components/sync/base/weak_handle.h",
   "+components/sync/js",
   "+device/bluetooth",
-  "+device/nfc",
 
   # Generated files
   "+js2webui/chrome/test/data",

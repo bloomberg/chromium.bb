@@ -60,8 +60,6 @@ test("device_unittests") {
     "bluetooth/test/test_bluetooth_local_gatt_service_delegate.cc",
     "bluetooth/test/test_bluetooth_local_gatt_service_delegate.h",
     "gamepad/gamepad_provider_unittest.cc",
-    "nfc/nfc_chromeos_unittest.cc",
-    "nfc/nfc_ndef_record_unittest.cc",
     "test/run_all_unittests.cc",
   ]
 
@@ -74,7 +72,6 @@ test("device_unittests") {
     "//device/gamepad",
     "//device/gamepad:test_helpers",
     "//device/geolocation:unittests",
-    "//device/nfc",
     "//device/power_save_blocker",
     "//mojo/common",
     "//mojo/edk/system",
