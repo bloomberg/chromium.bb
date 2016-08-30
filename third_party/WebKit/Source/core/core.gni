@@ -60,4 +60,3 @@ generated_core_testing_dictionary_files =
 generated_webcore_testing_idl_files =
     get_path_info(_gypi.generated_webcore_testing_idl_files, "abspath")
 webcore_testing_files = get_path_info(_gypi.webcore_testing_files, "abspath")
-core_unittest_files = get_path_info(_gypi.core_unittest_files, "abspath")

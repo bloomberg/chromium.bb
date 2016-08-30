@@ -93,10 +93,27 @@ target(modules_target_type, "modules") {
 
 # GYP version: WebKit/Source/modules/modules.gyp:modules_testing
 source_set("modules_testing") {
-  sources = modules_testing_files
-  sources += [
+  sources = [
     "$bindings_modules_v8_output_dir/V8InternalsPartial.cpp",
     "$bindings_modules_v8_output_dir/V8InternalsPartial.h",
+    "accessibility/testing/InternalsAccessibility.cpp",
+    "accessibility/testing/InternalsAccessibility.h",
+    "navigatorcontentutils/testing/InternalsNavigatorContentUtils.cpp",
+    "navigatorcontentutils/testing/InternalsNavigatorContentUtils.h",
+    "navigatorcontentutils/testing/NavigatorContentUtilsClientMock.cpp",
+    "navigatorcontentutils/testing/NavigatorContentUtilsClientMock.h",
+    "peerconnection/testing/InternalsRTCCertificate.cpp",
+    "peerconnection/testing/InternalsRTCCertificate.h",
+    "serviceworkers/testing/InternalsServiceWorker.cpp",
+    "serviceworkers/testing/InternalsServiceWorker.h",
+    "speech/testing/InternalsSpeechSynthesis.cpp",
+    "speech/testing/InternalsSpeechSynthesis.h",
+    "speech/testing/PlatformSpeechSynthesizerMock.cpp",
+    "speech/testing/PlatformSpeechSynthesizerMock.h",
+    "vibration/testing/InternalsVibration.cpp",
+    "vibration/testing/InternalsVibration.h",
+    "webaudio/testing/InternalsWebAudio.cpp",
+    "webaudio/testing/InternalsWebAudio.h",
   ]
 
   configs += [
@@ -134,5 +151,87 @@ group("make_modules_generated") {
     ":module_names",
     "//third_party/WebKit/Source/bindings/modules:bindings_modules_generated",
     "//third_party/WebKit/Source/core:core_event_interfaces",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "accessibility/AXObjectTest.cpp",
+    "cachestorage/CacheTest.cpp",
+    "canvas/HTMLCanvasElementModuleTest.cpp",
+    "canvas2d/CanvasRenderingContext2DAPITest.cpp",
+    "canvas2d/CanvasRenderingContext2DTest.cpp",
+    "canvas2d/CanvasRenderingContext2DUsageTrackingTest.cpp",
+    "compositorworker/AnimationWorkletThreadTest.cpp",
+    "compositorworker/CompositorWorkerThreadTest.cpp",
+    "credentialmanager/PasswordCredentialTest.cpp",
+    "csspaint/PaintRenderingContext2DTest.cpp",
+    "csspaint/PaintWorkletTest.cpp",
+    "fetch/BodyStreamBufferTest.cpp",
+    "fetch/BytesConsumerForDataConsumerHandleTest.cpp",
+    "fetch/CompositeDataConsumerHandleTest.cpp",
+    "fetch/DataConsumerHandleTestUtil.cpp",
+    "fetch/DataConsumerHandleTestUtil.h",
+    "fetch/DataConsumerHandleUtilTest.cpp",
+    "fetch/DataConsumerTeeTest.cpp",
+    "fetch/FetchBlobDataConsumerHandleTest.cpp",
+    "fetch/FetchDataLoaderTest.cpp",
+    "fetch/FetchFormDataConsumerHandleTest.cpp",
+    "fetch/FetchResponseDataTest.cpp",
+    "fetch/ReadableStreamDataConsumerHandleTest.cpp",
+    "fetch/RequestTest.cpp",
+    "fetch/ResponseTest.cpp",
+    "filesystem/DOMFileSystemBaseTest.cpp",
+    "indexeddb/IDBKeyPathTest.cpp",
+    "indexeddb/IDBRequestTest.cpp",
+    "indexeddb/IDBTransactionTest.cpp",
+    "indexeddb/MockWebIDBDatabase.cpp",
+    "indexeddb/MockWebIDBDatabase.h",
+    "mediasession/MediaSessionTest.cpp",
+    "mediastream/MediaConstraintsTest.cpp",
+    "notifications/NotificationDataTest.cpp",
+    "notifications/NotificationResourcesLoaderTest.cpp",
+    "payments/AbortTest.cpp",
+    "payments/CompleteTest.cpp",
+    "payments/OnPaymentResponseTest.cpp",
+    "payments/PaymentAddressTest.cpp",
+    "payments/PaymentRequestDetailsTest.cpp",
+    "payments/PaymentRequestTest.cpp",
+    "payments/PaymentRequestUpdateEventTest.cpp",
+    "payments/PaymentResponseTest.cpp",
+    "payments/PaymentTestHelper.cpp",
+    "payments/PaymentTestHelper.h",
+    "payments/PaymentsValidatorsTest.cpp",
+    "peerconnection/RTCDataChannelTest.cpp",
+    "presentation/PresentationAvailabilityTest.cpp",
+    "push_messaging/PushManagerTest.cpp",
+    "push_messaging/PushMessageDataTest.cpp",
+    "serviceworkers/ServiceWorkerContainerTest.cpp",
+    "webaudio/AudioBasicProcessorHandlerTest.cpp",
+    "webaudio/ConvolverNodeTest.cpp",
+    "webaudio/DynamicsCompressorNodeTest.cpp",
+    "webaudio/ScriptProcessorNodeTest.cpp",
+    "webaudio/StereoPannerNodeTest.cpp",
+    "webdatabase/QuotaTrackerTest.cpp",
+    "websockets/DOMWebSocketTest.cpp",
+    "websockets/DocumentWebSocketChannelTest.cpp",
+  ]
+
+  configs += [
+    "//third_party/WebKit/Source:config",
+    "//third_party/WebKit/Source:inside_blink",
+  ]
+
+  deps = [
+    ":modules",
+    ":modules_testing",
+    "//skia",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/WebKit/Source/core",
+    "//third_party/WebKit/Source/wtf",
+    "//v8",
   ]
 }
