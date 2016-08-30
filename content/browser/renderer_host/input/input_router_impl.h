@@ -230,9 +230,6 @@ class CONTENT_EXPORT InputRouterImpl
   typedef std::deque<NativeWebKeyboardEventWithLatencyInfo> KeyQueue;
   KeyQueue key_queue_;
 
-  // The time when an input event was sent to the client.
-  base::TimeTicks input_event_start_time_;
-
   // The source of the ack within the scope of |ProcessInputEventAck()|.
   // Defaults to ACK_SOURCE_NONE.
   AckSource current_ack_source_;

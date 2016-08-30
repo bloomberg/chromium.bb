@@ -432,10 +432,8 @@ bool InputRouterImpl::OfferToRenderer(const WebInputEvent& input_event,
     // Ack messages for ignored ack event types should never be sent by the
     // renderer. Consequently, such event types should not affect event time
     // or in-flight event count metrics.
-    if (dispatch_type == InputEventDispatchType::DISPATCH_TYPE_BLOCKING) {
-      input_event_start_time_ = TimeTicks::Now();
+    if (dispatch_type == InputEventDispatchType::DISPATCH_TYPE_BLOCKING)
       client_->IncrementInFlightEventCount();
-    }
     return true;
   }
   return false;
@@ -443,9 +441,6 @@ bool InputRouterImpl::OfferToRenderer(const WebInputEvent& input_event,
 
 void InputRouterImpl::OnInputEventAck(const InputEventAck& ack) {
   client_->DecrementInFlightEventCount();
-  // Log the time delta for processing an input event.
-  TimeDelta delta = TimeTicks::Now() - input_event_start_time_;
-  UMA_HISTOGRAM_TIMES("MPArch.IIR_InputEventDelta", delta);
 
   if (ack.overscroll) {
     DCHECK(ack.type == WebInputEvent::MouseWheel ||

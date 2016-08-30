@@ -25530,6 +25530,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="MPArch.IIR_InputEventDelta" units="ms">
+  <obsolete>
+    Deprecated 08/2016 due to lack of use (Histogram Eraser).
+  </obsolete>
   <owner>rvargas@chromium.org</owner>
   <summary>
     The time spent waiting for the renderer to acknowledge an input event.
