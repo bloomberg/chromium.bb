@@ -2442,7 +2442,7 @@ WebTextInputInfo WebViewImpl::textInputInfo()
     // see http://crbug.com/590369 for more details.
     focused->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
-    DocumentLifecycle::DisallowTransitionScope(focused->document()->lifecycle());
+    DocumentLifecycle::DisallowTransitionScope disallowTransition(focused->document()->lifecycle());
 
     // Emits an object replacement character for each replaced element so that
     // it is exposed to IME and thus could be deleted by IME on android.

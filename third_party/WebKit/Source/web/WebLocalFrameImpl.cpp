@@ -1073,7 +1073,7 @@ void WebLocalFrameImpl::requestTextChecking(const WebElement& webElement)
     // see http://crbug.com/590369 for more details.
     frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
-    DocumentLifecycle::DisallowTransitionScope(frame()->document()->lifecycle());
+    DocumentLifecycle::DisallowTransitionScope disallowTransition(frame()->document()->lifecycle());
 
     frame()->spellChecker().requestTextChecking(*webElement.constUnwrap<Element>());
 }
@@ -1157,7 +1157,7 @@ void WebLocalFrameImpl::selectRange(const WebRange& webRange)
     // see http://crbug.com/590369 for more details.
     frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
-    DocumentLifecycle::DisallowTransitionScope(frame()->document()->lifecycle());
+    DocumentLifecycle::DisallowTransitionScope disallowTransition(frame()->document()->lifecycle());
 
     frame()->selection().setSelectedRange(webRange.createEphemeralRange(frame()), VP_DEFAULT_AFFINITY, SelectionDirectionalMode::NonDirectional, NotUserTriggered);
 }
@@ -1168,7 +1168,7 @@ WebString WebLocalFrameImpl::rangeAsText(const WebRange& webRange)
     // see http://crbug.com/590369 for more details.
     frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
-    DocumentLifecycle::DisallowTransitionScope(frame()->document()->lifecycle());
+    DocumentLifecycle::DisallowTransitionScope disallowTransition(frame()->document()->lifecycle());
 
     return plainText(webRange.createEphemeralRange(frame()), TextIteratorEmitsObjectReplacementCharacter);
 }

@@ -588,7 +588,7 @@ void CompositeEditCommand::replaceTextInNodePreservingMarkers(Text* node, unsign
     // Re-adding markers requires a clean tree.
     document().updateStyleAndLayout();
 
-    DocumentLifecycle::DisallowTransitionScope(document().lifecycle());
+    DocumentLifecycle::DisallowTransitionScope disallowTransition(document().lifecycle());
     Position startPosition(node, offset);
     Position endPosition(node, offset + replacementText.length());
     DCHECK_EQ(types.size(), descriptions.size());

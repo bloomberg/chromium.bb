@@ -177,7 +177,7 @@ void SpellChecker::didBeginEditing(Element* element)
     // synchronous layout caused by spell checking (see crbug.com/517298).
     frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
-    DocumentLifecycle::DisallowTransitionScope(frame().document()->lifecycle());
+    DocumentLifecycle::DisallowTransitionScope disallowTransition(frame().document()->lifecycle());
 
     bool isTextField = false;
     HTMLTextFormControlElement* enclosingHTMLTextFormControlElement = 0;
@@ -212,7 +212,7 @@ void SpellChecker::ignoreSpelling()
 
 void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
 {
-    DocumentLifecycle::DisallowTransitionScope(frame().document()->lifecycle());
+    DocumentLifecycle::DisallowTransitionScope disallowTransition(frame().document()->lifecycle());
 
     // The basic approach is to search in two phases - from the selection end to the end of the doc, and
     // then we wrap and search from the doc start to (approximately) where we started.
@@ -329,7 +329,7 @@ void SpellChecker::markMisspellingsAndBadGrammarForMovingParagraphs(const Visibl
     // synchronous layout caused by spell checking (see crbug.com/517298).
     frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
-    DocumentLifecycle::DisallowTransitionScope(frame().document()->lifecycle());
+    DocumentLifecycle::DisallowTransitionScope disallowTransition(frame().document()->lifecycle());
 
     markMisspellingsAndBadGrammar(movingSelection);
 }
@@ -517,7 +517,7 @@ void SpellChecker::markAndReplaceFor(SpellCheckRequest* request, const Vector<Te
     bool adjustSelectionForParagraphBoundaries = false;
 
     {
-        DocumentLifecycle::DisallowTransitionScope(frame().document()->lifecycle());
+        DocumentLifecycle::DisallowTransitionScope disallowTransition(frame().document()->lifecycle());
 
         if (frame().selection().isCaret()) {
             // Attempt to save the caret position so we can restore it later if needed
@@ -733,7 +733,13 @@ void SpellChecker::respondToChangedSelection(const VisibleSelection& oldSelectio
     if (!shouldCheckOldSelection(oldSelection))
         return;
 
-    DocumentLifecycle::DisallowTransitionScope(frame().document()->lifecycle());
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    // In the long term we should use idle time spell checker to prevent
+    // synchronous layout caused by spell checking (see crbug.com/517298).
+    frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
+    DocumentLifecycle::DisallowTransitionScope disallowTransition(frame().document()->lifecycle());
 
     VisibleSelection newAdjacentWords;
     const VisibleSelection newSelection = frame().selection().selection();
@@ -741,7 +747,6 @@ void SpellChecker::respondToChangedSelection(const VisibleSelection& oldSelectio
         const Position newStart = newSelection.start();
         newAdjacentWords.setWithoutValidation(HTMLTextFormControlElement::startOfWord(newStart), HTMLTextFormControlElement::endOfWord(newStart));
     } else {
-        frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
         const bool caretBrowsing = frame().settings() && frame().settings()->caretBrowsingEnabled();
         if (newSelection.isContentEditable() || caretBrowsing) {
             const VisiblePosition newStart(newSelection.visibleStart());
@@ -787,7 +792,7 @@ void SpellChecker::spellCheckAfterBlur()
     // synchronous layout caused by spell checking (see crbug.com/517298).
     frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
-    DocumentLifecycle::DisallowTransitionScope(frame().document()->lifecycle());
+    DocumentLifecycle::DisallowTransitionScope disallowTransition(frame().document()->lifecycle());
 
     VisibleSelection empty;
     spellCheckOldSelection(frame().selection().selection(), empty);
