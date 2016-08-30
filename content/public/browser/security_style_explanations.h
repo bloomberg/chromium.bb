@@ -29,14 +29,28 @@ struct SecurityStyleExplanations {
   CONTENT_EXPORT SecurityStyleExplanations();
   CONTENT_EXPORT ~SecurityStyleExplanations();
 
-  // True if the page ran insecure content such as scripts.
-  bool ran_insecure_content;
-  // True if the page displayed insecure content such as images.
-  bool displayed_insecure_content;
+  // True if the page was loaded over HTTPS and ran mixed (HTTP) content
+  // such as scripts.
+  bool ran_mixed_content;
+  // True if the page was loaded over HTTPS and displayed mixed (HTTP)
+  // content such as images.
+  bool displayed_mixed_content;
+  // True if the page was loaded over HTTPS without certificate errors,
+  // but ran subresources, such as scripts, that were loaded over HTTPS
+  // with certificate errors.
+  bool ran_content_with_cert_errors;
+  // True if the page was loaded over HTTPS without certificate errors,
+  // but displayed subresources, such as images, that were loaded over HTTPS
+  // with certificate errors.
+  bool displayed_content_with_cert_errors;
 
   // The SecurityStyle assigned to a page that runs or displays insecure
-  // content, respectively. These values are used to convey the effect
-  // that mixed content has on the overall SecurityStyle of the page;
+  // content, respectively. Insecure content can be either HTTP
+  // subresources loaded on an HTTPS page (mixed content), or HTTPS
+  // subresources loaded with certificate errors on an HTTPS page.
+  //
+  // These values are used to convey the effect
+  // that insecure content has on the overall SecurityStyle of the page;
   // for example, a |displayed_insecure_content_style| value of
   // SECURITY_STYLE_UNAUTHENTICATED indicates that the page's overall
   // SecurityStyle will be downgraded to UNAUTHENTICATED as a result of

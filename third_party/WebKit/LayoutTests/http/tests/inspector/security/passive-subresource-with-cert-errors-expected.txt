@@ -1,0 +1,15 @@
+Tests addition of explanation when a passive subresource was loaded with certificate errors.
+
+<DIV class=security-explanation security-explanation-neutral >
+    <DIV class=security-property security-property-neutral >
+    </DIV>
+    <DIV class=security-explanation-text >
+        <DIV class=security-explanation-title >
+Content with certificate errors
+        </DIV>
+        <DIV >
+This site includes resources that were loaded with certificate errors.
+        </DIV>
+    </DIV>
+</DIV>
+

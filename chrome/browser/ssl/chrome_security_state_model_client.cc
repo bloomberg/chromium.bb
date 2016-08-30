@@ -225,18 +225,43 @@ content::SecurityStyle ChromeSecurityStateModelClient::GetSecurityStyle(
             security_info.cert_id));
   }
 
-  security_style_explanations->ran_insecure_content =
+  // Record the presence of mixed content (HTTP subresources on an HTTPS
+  // page).
+  security_style_explanations->ran_mixed_content =
       security_info.mixed_content_status ==
           SecurityStateModel::CONTENT_STATUS_RAN ||
       security_info.mixed_content_status ==
           SecurityStateModel::CONTENT_STATUS_DISPLAYED_AND_RAN;
-  security_style_explanations->displayed_insecure_content =
+  security_style_explanations->displayed_mixed_content =
       security_info.mixed_content_status ==
           SecurityStateModel::CONTENT_STATUS_DISPLAYED ||
       security_info.mixed_content_status ==
           SecurityStateModel::CONTENT_STATUS_DISPLAYED_AND_RAN;
 
-  if (net::IsCertStatusError(security_info.cert_status)) {
+  bool is_cert_status_error = net::IsCertStatusError(security_info.cert_status);
+  bool is_cert_status_minor_error =
+      net::IsCertStatusMinorError(security_info.cert_status);
+
+  // If the main resource was loaded no certificate errors or only minor
+  // certificate errors, then record the presence of subresources with
+  // certificate errors. Subresource certificate errors aren't recorded
+  // when the main resource was loaded with major certificate errors
+  // because, in the common case, these subresource certificate errors
+  // would be duplicative with the main resource's error.
+  if (!is_cert_status_error || is_cert_status_minor_error) {
+    security_style_explanations->ran_content_with_cert_errors =
+        security_info.content_with_cert_errors_status ==
+            SecurityStateModel::CONTENT_STATUS_RAN ||
+        security_info.content_with_cert_errors_status ==
+            SecurityStateModel::CONTENT_STATUS_DISPLAYED_AND_RAN;
+    security_style_explanations->displayed_content_with_cert_errors =
+        security_info.content_with_cert_errors_status ==
+            SecurityStateModel::CONTENT_STATUS_DISPLAYED ||
+        security_info.content_with_cert_errors_status ==
+            SecurityStateModel::CONTENT_STATUS_DISPLAYED_AND_RAN;
+  }
+
+  if (is_cert_status_error) {
     base::string16 error_string = base::UTF8ToUTF16(net::ErrorToString(
         net::MapCertStatusToNetError(security_info.cert_status)));
 
@@ -246,11 +271,12 @@ content::SecurityStyle ChromeSecurityStateModelClient::GetSecurityStyle(
             IDS_CERTIFICATE_CHAIN_ERROR_DESCRIPTION_FORMAT, error_string),
         security_info.cert_id);
 
-    if (net::IsCertStatusMinorError(security_info.cert_status))
+    if (is_cert_status_minor_error) {
       security_style_explanations->unauthenticated_explanations.push_back(
           explanation);
-    else
+    } else {
       security_style_explanations->broken_explanations.push_back(explanation);
+    }
   } else {
     // If the certificate does not have errors and is not using
     // deprecated SHA1, then add an explanation that the certificate is

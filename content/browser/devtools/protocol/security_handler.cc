@@ -108,12 +108,15 @@ void SecurityHandler::SecurityStyleChanged(
   AddExplanations(kSecurityStateInfo,
                   security_style_explanations.info_explanations, &explanations);
 
-  scoped_refptr<MixedContentStatus> mixed_content_status =
-      MixedContentStatus::Create()
-          ->set_ran_insecure_content(
-              security_style_explanations.ran_insecure_content)
-          ->set_displayed_insecure_content(
-              security_style_explanations.displayed_insecure_content)
+  scoped_refptr<InsecureContentStatus> insecure_content_status =
+      InsecureContentStatus::Create()
+          ->set_ran_mixed_content(security_style_explanations.ran_mixed_content)
+          ->set_displayed_mixed_content(
+              security_style_explanations.displayed_mixed_content)
+          ->set_ran_content_with_cert_errors(
+              security_style_explanations.ran_content_with_cert_errors)
+          ->set_displayed_content_with_cert_errors(
+              security_style_explanations.displayed_content_with_cert_errors)
           ->set_ran_insecure_content_style(SecurityStyleToProtocolSecurityState(
               security_style_explanations.ran_insecure_content_style))
           ->set_displayed_insecure_content_style(
@@ -126,7 +129,7 @@ void SecurityHandler::SecurityStyleChanged(
           ->set_security_state(security_state)
           ->set_scheme_is_cryptographic(
               security_style_explanations.scheme_is_cryptographic)
-          ->set_mixed_content_status(mixed_content_status)
+          ->set_insecure_content_status(insecure_content_status)
           ->set_explanations(explanations));
 }
 
