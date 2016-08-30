@@ -227,6 +227,7 @@ void HTMLImageElement::setBestFitURLAndDPRFromImageCandidate(const ImageCandidat
 {
     m_bestFitImageURL = candidate.url();
     float candidateDensity = candidate.density();
+    float oldImageDevicePixelRatio = m_imageDevicePixelRatio;
     if (candidateDensity >= 0)
         m_imageDevicePixelRatio = 1.0 / candidateDensity;
 
@@ -237,8 +238,12 @@ void HTMLImageElement::setBestFitURLAndDPRFromImageCandidate(const ImageCandidat
     } else if (!candidate.srcOrigin()) {
         UseCounter::count(document(), UseCounter::SrcsetXDescriptor);
     }
-    if (layoutObject() && layoutObject()->isImage())
+    if (layoutObject() && layoutObject()->isImage()) {
         LayoutImageItem(toLayoutImage(layoutObject())).setImageDevicePixelRatio(m_imageDevicePixelRatio);
+
+        if (oldImageDevicePixelRatio != m_imageDevicePixelRatio)
+            toLayoutImage(layoutObject())->intrinsicSizeChanged();
+    }
 
     if (intrinsicSizingViewportDependant) {
         if (!m_listener)
