@@ -26,22 +26,20 @@ std::unique_ptr<base::ListValue> CopyBinaryValueToIntegerList(
 
 }  // namespace
 
-bool IdltestSendArrayBufferFunction::RunSync() {
+ExtensionFunction::ResponseAction IdltestSendArrayBufferFunction::Run() {
   BinaryValue* input = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_ != NULL && args_->GetBinary(0, &input));
-  SetResult(CopyBinaryValueToIntegerList(input));
-  return true;
+  return RespondNow(OneArgument(CopyBinaryValueToIntegerList(input)));
 }
 
-bool IdltestSendArrayBufferViewFunction::RunSync() {
+ExtensionFunction::ResponseAction IdltestSendArrayBufferViewFunction::Run() {
   BinaryValue* input = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_ != NULL && args_->GetBinary(0, &input));
-  SetResult(CopyBinaryValueToIntegerList(input));
-  return true;
+  return RespondNow(OneArgument(CopyBinaryValueToIntegerList(input)));
 }
 
-bool IdltestGetArrayBufferFunction::RunSync() {
+ExtensionFunction::ResponseAction IdltestGetArrayBufferFunction::Run() {
   std::string hello = "hello world";
-  SetResult(BinaryValue::CreateWithCopiedBuffer(hello.c_str(), hello.size()));
-  return true;
+  return RespondNow(OneArgument(
+      BinaryValue::CreateWithCopiedBuffer(hello.c_str(), hello.size())));
 }

@@ -7,32 +7,32 @@
 
 #include "extensions/browser/extension_function.h"
 
-class IdltestSendArrayBufferFunction : public SyncExtensionFunction {
+class IdltestSendArrayBufferFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("idltest.sendArrayBuffer", IDLTEST_SENDARRAYBUFFER)
 
  protected:
   ~IdltestSendArrayBufferFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
-class IdltestSendArrayBufferViewFunction : public SyncExtensionFunction {
+class IdltestSendArrayBufferViewFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("idltest.sendArrayBufferView",
                              IDLTEST_SENDARRAYBUFFERVIEW)
 
  protected:
   ~IdltestSendArrayBufferViewFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
-class IdltestGetArrayBufferFunction : public SyncExtensionFunction {
+class IdltestGetArrayBufferFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("idltest.getArrayBuffer", IDLTEST_GETARRAYBUFFER)
 
  protected:
   ~IdltestGetArrayBufferFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_IDLTEST_IDLTEST_API_H_

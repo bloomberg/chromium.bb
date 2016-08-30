@@ -11,23 +11,29 @@
 
 namespace extensions {
 
-class SystemDisplayFunction : public SyncExtensionFunction {
+class SystemDisplayFunction : public UIThreadExtensionFunction {
  public:
   static const char kCrosOnlyError[];
   static const char kKioskOnlyError[];
 
  protected:
   ~SystemDisplayFunction() override {}
-  bool CheckValidExtension();
+  bool PreRunValidation(std::string* error) override;
+
+  // Returns true if this function should be restricted to kiosk-mode apps and
+  // webui. The default is true.
+  virtual bool ShouldRestrictToKioskAndWebUI();
 };
 
-class SystemDisplayGetInfoFunction : public SystemDisplayFunction {
+// This function inherits from UIThreadExtensionFunction because, unlike the
+// rest of this API, it's available on all platforms.
+class SystemDisplayGetInfoFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("system.display.getInfo", SYSTEM_DISPLAY_GETINFO);
 
  protected:
   ~SystemDisplayGetInfoFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class SystemDisplayGetDisplayLayoutFunction : public SystemDisplayFunction {
@@ -37,7 +43,8 @@ class SystemDisplayGetDisplayLayoutFunction : public SystemDisplayFunction {
 
  protected:
   ~SystemDisplayGetDisplayLayoutFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
+  bool ShouldRestrictToKioskAndWebUI() override;
 };
 
 class SystemDisplaySetDisplayPropertiesFunction : public SystemDisplayFunction {
@@ -47,7 +54,7 @@ class SystemDisplaySetDisplayPropertiesFunction : public SystemDisplayFunction {
 
  protected:
   ~SystemDisplaySetDisplayPropertiesFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class SystemDisplaySetDisplayLayoutFunction : public SystemDisplayFunction {
@@ -57,7 +64,7 @@ class SystemDisplaySetDisplayLayoutFunction : public SystemDisplayFunction {
 
  protected:
   ~SystemDisplaySetDisplayLayoutFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class SystemDisplayEnableUnifiedDesktopFunction : public SystemDisplayFunction {
@@ -67,7 +74,7 @@ class SystemDisplayEnableUnifiedDesktopFunction : public SystemDisplayFunction {
 
  protected:
   ~SystemDisplayEnableUnifiedDesktopFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class SystemDisplayOverscanCalibrationStartFunction
@@ -78,7 +85,7 @@ class SystemDisplayOverscanCalibrationStartFunction
 
  protected:
   ~SystemDisplayOverscanCalibrationStartFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class SystemDisplayOverscanCalibrationAdjustFunction
@@ -89,7 +96,7 @@ class SystemDisplayOverscanCalibrationAdjustFunction
 
  protected:
   ~SystemDisplayOverscanCalibrationAdjustFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class SystemDisplayOverscanCalibrationResetFunction
@@ -100,7 +107,7 @@ class SystemDisplayOverscanCalibrationResetFunction
 
  protected:
   ~SystemDisplayOverscanCalibrationResetFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class SystemDisplayOverscanCalibrationCompleteFunction
@@ -111,7 +118,7 @@ class SystemDisplayOverscanCalibrationCompleteFunction
 
  protected:
   ~SystemDisplayOverscanCalibrationCompleteFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 }  // namespace extensions

@@ -38,27 +38,29 @@ namespace WaitForRoundTrip = api::test::WaitForRoundTrip;
 
 TestExtensionFunction::~TestExtensionFunction() {}
 
-bool TestExtensionFunction::RunSync() {
+bool TestExtensionFunction::PreRunValidation(std::string* error) {
+  if (!UIThreadExtensionFunction::PreRunValidation(error))
+    return false;
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType)) {
-    error_ = kNotTestProcessError;
+    *error = kNotTestProcessError;
     return false;
   }
-  return RunSafe();
+  return true;
 }
 
 TestNotifyPassFunction::~TestNotifyPassFunction() {}
 
-bool TestNotifyPassFunction::RunSafe() {
+ExtensionFunction::ResponseAction TestNotifyPassFunction::Run() {
   content::NotificationService::current()->Notify(
       extensions::NOTIFICATION_EXTENSION_TEST_PASSED,
       content::Source<content::BrowserContext>(dispatcher()->browser_context()),
       content::NotificationService::NoDetails());
-  return true;
+  return RespondNow(NoArguments());
 }
 
 TestNotifyFailFunction::~TestNotifyFailFunction() {}
 
-bool TestNotifyFailFunction::RunSafe() {
+ExtensionFunction::ResponseAction TestNotifyFailFunction::Run() {
   std::unique_ptr<NotifyFail::Params> params(
       NotifyFail::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -66,16 +68,16 @@ bool TestNotifyFailFunction::RunSafe() {
       extensions::NOTIFICATION_EXTENSION_TEST_FAILED,
       content::Source<content::BrowserContext>(dispatcher()->browser_context()),
       content::Details<std::string>(&params->message));
-  return true;
+  return RespondNow(NoArguments());
 }
 
 TestLogFunction::~TestLogFunction() {}
 
-bool TestLogFunction::RunSafe() {
+ExtensionFunction::ResponseAction TestLogFunction::Run() {
   std::unique_ptr<Log::Params> params(Log::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   VLOG(1) << params->message;
-  return true;
+  return RespondNow(NoArguments());
 }
 
 TestSendMessageFunction::TestSendMessageFunction() : waiting_(false) {}
@@ -139,25 +141,21 @@ TestGetConfigFunction::TestConfigState::GetInstance() {
 
 TestGetConfigFunction::~TestGetConfigFunction() {}
 
-bool TestGetConfigFunction::RunSafe() {
+ExtensionFunction::ResponseAction TestGetConfigFunction::Run() {
   TestConfigState* test_config_state = TestConfigState::GetInstance();
-
-  if (!test_config_state->config_state()) {
-    error_ = kNoTestConfigDataError;
-    return false;
-  }
-
-  SetResult(test_config_state->config_state()->CreateDeepCopy());
-  return true;
+  if (!test_config_state->config_state())
+    return RespondNow(Error(kNoTestConfigDataError));
+  return RespondNow(
+      OneArgument(test_config_state->config_state()->CreateDeepCopy()));
 }
 
 TestWaitForRoundTripFunction::~TestWaitForRoundTripFunction() {}
 
-bool TestWaitForRoundTripFunction::RunSafe() {
+ExtensionFunction::ResponseAction TestWaitForRoundTripFunction::Run() {
   std::unique_ptr<WaitForRoundTrip::Params> params(
       WaitForRoundTrip::Params::Create(*args_));
-  SetResult(base::MakeUnique<base::StringValue>(params->message));
-  return true;
+  return RespondNow(
+      OneArgument(base::MakeUnique<base::StringValue>(params->message)));
 }
 
 }  // namespace extensions

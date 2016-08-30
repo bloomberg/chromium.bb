@@ -17,163 +17,125 @@
 
 namespace extensions {
 
-namespace system_display = api::system_display;
+namespace display = api::system_display;
 
 const char SystemDisplayFunction::kCrosOnlyError[] =
     "Function available only on ChromeOS.";
 const char SystemDisplayFunction::kKioskOnlyError[] =
     "Only kiosk enabled extensions are allowed to use this function.";
 
-bool SystemDisplayFunction::CheckValidExtension() {
-  if (!extension())
+bool SystemDisplayFunction::PreRunValidation(std::string* error) {
+  if (!UIThreadExtensionFunction::PreRunValidation(error))
+    return false;
+
+#if !defined(OS_CHROMEOS)
+  *error = kCrosOnlyError;
+  return false;
+#else
+  if (!ShouldRestrictToKioskAndWebUI())
     return true;
-#if defined(OS_CHROMEOS)
+
+  if (source_context_type() == Feature::WEBUI_CONTEXT)
+    return true;
   if (KioskModeInfo::IsKioskEnabled(extension()))
     return true;
-#endif
-  SetError(kKioskOnlyError);
+  *error = kKioskOnlyError;
   return false;
+#endif
 }
 
-bool SystemDisplayGetInfoFunction::RunSync() {
+bool SystemDisplayFunction::ShouldRestrictToKioskAndWebUI() {
+  return true;
+}
+
+ExtensionFunction::ResponseAction SystemDisplayGetInfoFunction::Run() {
   DisplayInfoProvider::DisplayUnitInfoList all_displays_info =
       DisplayInfoProvider::Get()->GetAllDisplaysInfo();
-  results_ = system_display::GetInfo::Results::Create(all_displays_info);
-  return true;
+  return RespondNow(
+      ArgumentList(display::GetInfo::Results::Create(all_displays_info)));
 }
 
-bool SystemDisplayGetDisplayLayoutFunction::RunSync() {
-#if !defined(OS_CHROMEOS)
-  SetError(kCrosOnlyError);
-  return false;
-#else
+ExtensionFunction::ResponseAction SystemDisplayGetDisplayLayoutFunction::Run() {
   DisplayInfoProvider::DisplayLayoutList display_layout =
       DisplayInfoProvider::Get()->GetDisplayLayout();
-  results_ = system_display::GetDisplayLayout::Results::Create(display_layout);
-  return true;
-#endif
+  return RespondNow(
+      ArgumentList(display::GetDisplayLayout::Results::Create(display_layout)));
 }
 
-bool SystemDisplaySetDisplayPropertiesFunction::RunSync() {
-#if !defined(OS_CHROMEOS)
-  SetError(kCrosOnlyError);
+bool SystemDisplayGetDisplayLayoutFunction::ShouldRestrictToKioskAndWebUI() {
   return false;
-#else
-  if (!CheckValidExtension())
-    return false;
+}
+
+ExtensionFunction::ResponseAction
+SystemDisplaySetDisplayPropertiesFunction::Run() {
   std::string error;
-  std::unique_ptr<system_display::SetDisplayProperties::Params> params(
-      system_display::SetDisplayProperties::Params::Create(*args_));
+  std::unique_ptr<display::SetDisplayProperties::Params> params(
+      display::SetDisplayProperties::Params::Create(*args_));
   bool result =
       DisplayInfoProvider::Get()->SetInfo(params->id, params->info, &error);
   if (!result)
-    SetError(error);
-  return result;
-#endif
+    return RespondNow(Error(error));
+  return RespondNow(NoArguments());
 }
 
-bool SystemDisplaySetDisplayLayoutFunction::RunSync() {
-#if !defined(OS_CHROMEOS)
-  SetError(kCrosOnlyError);
-  return false;
-#else
-  if (!CheckValidExtension())
-    return false;
-  std::unique_ptr<system_display::SetDisplayLayout::Params> params(
-      system_display::SetDisplayLayout::Params::Create(*args_));
-  if (!DisplayInfoProvider::Get()->SetDisplayLayout(params->layouts)) {
-    SetError("Unable to set display layout");
-    return false;
-  }
-  return true;
-#endif
+ExtensionFunction::ResponseAction SystemDisplaySetDisplayLayoutFunction::Run() {
+  std::unique_ptr<display::SetDisplayLayout::Params> params(
+      display::SetDisplayLayout::Params::Create(*args_));
+  if (!DisplayInfoProvider::Get()->SetDisplayLayout(params->layouts))
+    return RespondNow(Error("Unable to set display layout"));
+  return RespondNow(NoArguments());
 }
 
-bool SystemDisplayEnableUnifiedDesktopFunction::RunSync() {
-#if !defined(OS_CHROMEOS)
-  SetError(kCrosOnlyError);
-  return false;
-#else
-  if (!CheckValidExtension())
-    return false;
-  std::unique_ptr<system_display::EnableUnifiedDesktop::Params> params(
-      system_display::EnableUnifiedDesktop::Params::Create(*args_));
+ExtensionFunction::ResponseAction
+SystemDisplayEnableUnifiedDesktopFunction::Run() {
+  std::unique_ptr<display::EnableUnifiedDesktop::Params> params(
+      display::EnableUnifiedDesktop::Params::Create(*args_));
   DisplayInfoProvider::Get()->EnableUnifiedDesktop(params->enabled);
-  return true;
-#endif
+  return RespondNow(NoArguments());
 }
 
-bool SystemDisplayOverscanCalibrationStartFunction::RunSync() {
-#if !defined(OS_CHROMEOS)
-  SetError(kCrosOnlyError);
-  return false;
-#else
-  if (!CheckValidExtension())
-    return false;
-  std::unique_ptr<system_display::OverscanCalibrationStart::Params> params(
-      system_display::OverscanCalibrationStart::Params::Create(*args_));
-  if (!DisplayInfoProvider::Get()->OverscanCalibrationStart(params->id)) {
-    SetError("Invalid display ID: " + params->id);
-    return false;
-  }
-  return true;
-#endif
+ExtensionFunction::ResponseAction
+SystemDisplayOverscanCalibrationStartFunction::Run() {
+  std::unique_ptr<display::OverscanCalibrationStart::Params> params(
+      display::OverscanCalibrationStart::Params::Create(*args_));
+  if (!DisplayInfoProvider::Get()->OverscanCalibrationStart(params->id))
+    return RespondNow(Error("Invalid display ID: " + params->id));
+  return RespondNow(NoArguments());
 }
 
-bool SystemDisplayOverscanCalibrationAdjustFunction::RunSync() {
-#if !defined(OS_CHROMEOS)
-  SetError(kCrosOnlyError);
-  return false;
-#else
-  if (!CheckValidExtension())
-    return false;
-  std::unique_ptr<system_display::OverscanCalibrationAdjust::Params> params(
-      system_display::OverscanCalibrationAdjust::Params::Create(*args_));
-  if (!params) {
-    SetError("Invalid parameters");
-    return false;
-  }
+ExtensionFunction::ResponseAction
+SystemDisplayOverscanCalibrationAdjustFunction::Run() {
+  std::unique_ptr<display::OverscanCalibrationAdjust::Params> params(
+      display::OverscanCalibrationAdjust::Params::Create(*args_));
+  if (!params)
+    return RespondNow(Error("Invalid parameters"));
   if (!DisplayInfoProvider::Get()->OverscanCalibrationAdjust(params->id,
                                                              params->delta)) {
-    SetError("Calibration not started for display ID: " + params->id);
-    return false;
+    return RespondNow(
+        Error("Calibration not started for display ID: " + params->id));
   }
-  return true;
-#endif
+  return RespondNow(NoArguments());
 }
 
-bool SystemDisplayOverscanCalibrationResetFunction::RunSync() {
-#if !defined(OS_CHROMEOS)
-  SetError(kCrosOnlyError);
-  return false;
-#else
-  if (!CheckValidExtension())
-    return false;
-  std::unique_ptr<system_display::OverscanCalibrationReset::Params> params(
-      system_display::OverscanCalibrationReset::Params::Create(*args_));
-  if (!DisplayInfoProvider::Get()->OverscanCalibrationReset(params->id)) {
-    SetError("Calibration not started for display ID: " + params->id);
-    return false;
-  }
-  return true;
-#endif
+ExtensionFunction::ResponseAction
+SystemDisplayOverscanCalibrationResetFunction::Run() {
+  std::unique_ptr<display::OverscanCalibrationReset::Params> params(
+      display::OverscanCalibrationReset::Params::Create(*args_));
+  if (!DisplayInfoProvider::Get()->OverscanCalibrationReset(params->id))
+    return RespondNow(
+        Error("Calibration not started for display ID: " + params->id));
+  return RespondNow(NoArguments());
 }
 
-bool SystemDisplayOverscanCalibrationCompleteFunction::RunSync() {
-#if !defined(OS_CHROMEOS)
-  SetError(kCrosOnlyError);
-  return false;
-#else
-  if (!CheckValidExtension())
-    return false;
-  std::unique_ptr<system_display::OverscanCalibrationComplete::Params> params(
-      system_display::OverscanCalibrationComplete::Params::Create(*args_));
+ExtensionFunction::ResponseAction
+SystemDisplayOverscanCalibrationCompleteFunction::Run() {
+  std::unique_ptr<display::OverscanCalibrationComplete::Params> params(
+      display::OverscanCalibrationComplete::Params::Create(*args_));
   if (!DisplayInfoProvider::Get()->OverscanCalibrationComplete(params->id)) {
-    SetError("Calibration not started for display ID: " + params->id);
-    return false;
+    return RespondNow(
+        Error("Calibration not started for display ID: " + params->id));
   }
-  return true;
-#endif
+  return RespondNow(NoArguments());
 }
 
 }  // namespace extensions
