@@ -53,8 +53,10 @@ void StartOnServerThread(const base::FilePath& test_files_root,
       directory.Append("quic_test.example.com.crt"),
       directory.Append("quic_test.example.com.key.pkcs8"),
       directory.Append("quic_test.example.com.key.sct")));
-  g_quic_server = new net::QuicSimpleServer(std::move(proof_source), config,
-                                            net::AllSupportedVersions());
+  g_quic_server =
+      new net::QuicSimpleServer(std::move(proof_source), config,
+                                net::QuicCryptoServerConfig::ConfigOptions(),
+                                net::AllSupportedVersions());
 
   // Start listening.
   int rv = g_quic_server->Listen(

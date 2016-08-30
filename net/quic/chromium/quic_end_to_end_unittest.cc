@@ -37,9 +37,8 @@
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
 #include "net/tools/quic/quic_in_memory_cache.h"
-#include "net/tools/quic/quic_server.h"
+#include "net/tools/quic/quic_simple_server.h"
 #include "net/tools/quic/test_tools/quic_in_memory_cache_peer.h"
-#include "net/tools/quic/test_tools/server_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -50,7 +49,6 @@ namespace net {
 
 using test::IsOk;
 using test::QuicInMemoryCachePeer;
-using test::ServerThread;
 
 namespace test {
 
@@ -161,7 +159,7 @@ class QuicEndToEndTest : public ::testing::TestWithParam<TestParams> {
     // Use a mapped host resolver so that request for test.example.com (port 80)
     // reach the server running on localhost.
     std::string map_rule = "MAP test.example.com test.example.com:" +
-                           base::IntToString(server_thread_->GetPort());
+                           base::IntToString(server_->server_address().port());
     EXPECT_TRUE(host_resolver_.AddRuleFromString(map_rule));
 
     // To simplify the test, and avoid the race with the HTTP request, we force
@@ -172,10 +170,7 @@ class QuicEndToEndTest : public ::testing::TestWithParam<TestParams> {
     transaction_factory_.reset(new TestTransactionFactory(params_));
   }
 
-  void TearDown() override {
-    StopServer();
-    QuicInMemoryCachePeer::ResetForTests();
-  }
+  void TearDown() override { QuicInMemoryCachePeer::ResetForTests(); }
 
   // Starts the QUIC server listening on a random port.
   void StartServer() {
@@ -185,27 +180,13 @@ class QuicEndToEndTest : public ::testing::TestWithParam<TestParams> {
     server_config_.SetInitialSessionFlowControlWindowToSend(
         kInitialSessionFlowControlWindowForTest);
     server_config_options_.token_binding_enabled = true;
-    QuicServer* server =
-        new QuicServer(CryptoTestUtils::ProofSourceForTesting(), server_config_,
-                       server_config_options_, AllSupportedVersions());
-    server_thread_.reset(new ServerThread(server, server_address_,
-                                          strike_register_no_startup_period_));
-    server_thread_->Initialize();
-    server_address_ =
-        IPEndPoint(server_address_.address(), server_thread_->GetPort());
-    server_thread_->Start();
+    server_.reset(new QuicSimpleServer(CryptoTestUtils::ProofSourceForTesting(),
+                                       server_config_, server_config_options_,
+                                       AllSupportedVersions()));
+    server_->Listen(server_address_);
+    server_address_ = server_->server_address();
+    server_->StartReading();
     server_started_ = true;
-  }
-
-  // Stops the QUIC server.
-  void StopServer() {
-    if (!server_started_) {
-      return;
-    }
-    if (server_thread_.get()) {
-      server_thread_->Quit();
-      server_thread_->Join();
-    }
   }
 
   // Adds an entry to the cache used by the QUIC server to serve
@@ -269,7 +250,7 @@ class QuicEndToEndTest : public ::testing::TestWithParam<TestParams> {
   HttpRequestInfo request_;
   std::string request_body_;
   std::unique_ptr<UploadDataStream> upload_data_stream_;
-  std::unique_ptr<ServerThread> server_thread_;
+  std::unique_ptr<QuicSimpleServer> server_;
   IPEndPoint server_address_;
   std::string server_hostname_;
   QuicConfig server_config_;
