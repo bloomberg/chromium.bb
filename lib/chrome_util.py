@@ -174,7 +174,7 @@ class Copier(object):
       return
 
     osutils.SafeMakedirs(os.path.dirname(dest), mode=self.dir_mode)
-    is_bin = path.exe or src.endswith('.mojo')
+    is_bin = path.exe or src.endswith('.library')
     if is_bin and self.strip_bin and path.strip and os.path.getsize(src) > 0:
       strip_flags = (['--strip-unneeded'] if self.strip_flags is None else
                      self.strip_flags)
