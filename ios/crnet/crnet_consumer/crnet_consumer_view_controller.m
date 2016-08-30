@@ -4,7 +4,7 @@
 
 #import "crnet_consumer_view_controller.h"
 
-#import "CrNet.h"
+#import "ios/crnet/CrNet.h"
 
 @implementation CrNetConsumerViewController {
   UIWebView* _webView;

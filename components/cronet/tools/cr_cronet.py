@@ -88,7 +88,7 @@ def main():
   else:
     target_os = 'android'
     test_target = 'cronet_test_instrumentation_apk'
-    gn_args = 'use_errorprone_java_compiler=true '
+    gn_args = 'use_errorprone_java_compiler=true arm_use_neon=false '
     gn_extra = ''
     out_dir_suffix = ''
 
@@ -99,7 +99,7 @@ def main():
   gn_args += 'target_os="' + target_os + '" enable_websockets=false '+ \
       'disable_file_support=true disable_ftp_support=true '+ \
       'use_platform_icu_alternatives=true '+ \
-      'disable_brotli_filter=true is_component_build=false arm_use_neon=false'
+      'disable_brotli_filter=true is_component_build=false'
 
   extra_options = ' '.join(extra_options_list)
   if options.gn:

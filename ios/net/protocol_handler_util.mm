@@ -7,8 +7,6 @@
 #include <string>
 
 #include "base/base64.h"
-#include "base/i18n/encoding_detection.h"
-#include "base/i18n/icu_string_conversions.h"
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
@@ -23,6 +21,11 @@
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
 #include "url/url_features.h"
+
+#if !BUILDFLAG(USE_PLATFORM_ICU_ALTERNATIVES)
+#include "base/i18n/encoding_detection.h"  // nogncheck
+#include "base/i18n/icu_string_conversions.h"  // nogncheck
+#endif  // !BUILDFLAG(USE_PLATFORM_ICU_ALTERNATIVES)
 
 namespace {
 

@@ -15,7 +15,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
-#include "base/i18n/icu_util.h"
 #include "base/json/json_writer.h"
 #include "base/mac/bind_objc_block.h"
 #include "base/mac/bundle_locations.h"
@@ -64,6 +63,10 @@
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "url/url_features.h"
 #include "url/url_util.h"
+
+#if !BUILDFLAG(USE_PLATFORM_ICU_ALTERNATIVES)
+#include "base/i18n/icu_util.h"  // nogncheck
+#endif
 
 namespace {
 

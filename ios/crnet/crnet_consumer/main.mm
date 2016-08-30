@@ -5,8 +5,6 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-#import "CrNet.h"
-
 #import "crnet_consumer_app_delegate.h"
 
 int main(int argc, char *argv[]) {

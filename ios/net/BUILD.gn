@@ -4,11 +4,11 @@
 
 import("//ios/build/config.gni")
 import("//testing/test.gni")
+import("//url/features.gni")
 
 source_set("net") {
   deps = [
     "//base",
-    "//base:i18n",
     "//net",
     "//url:url_features",
   ]
@@ -55,6 +55,10 @@ source_set("net") {
     "url_scheme_util.h",
     "url_scheme_util.mm",
   ]
+
+  if (!use_platform_icu_alternatives) {
+    deps += [ "//base:i18n" ]
+  }
 }
 
 test("ios_net_unittests") {

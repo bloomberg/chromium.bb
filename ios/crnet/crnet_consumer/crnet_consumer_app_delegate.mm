@@ -4,7 +4,7 @@
 
 #import "crnet_consumer_app_delegate.h"
 
-#import "CrNet.h"
+#import "ios/crnet/CrNet.h"
 #include "base/format_macros.h"
 #import "crnet_consumer_view_controller.h"
 

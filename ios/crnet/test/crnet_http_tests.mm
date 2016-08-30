@@ -5,7 +5,7 @@
 #import <Foundation/Foundation.h>
 #include <stdint.h>
 
-#import "CrNet.h"
+#import "ios/crnet/CrNet.h"
 
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
