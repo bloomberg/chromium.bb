@@ -152,6 +152,12 @@ void CompositingInputsUpdater::updateRecursive(PaintLayer* layer, UpdateType upd
                 const PaintLayer* parentLayerOnClippingContainerChain = findParentLayerOnClippingContainerChain(layer);
                 const bool parentHasClipRelatedProperty = parentLayerOnClippingContainerChain->layoutObject()->hasClipRelatedProperty();
                 properties.clippingContainer = parentHasClipRelatedProperty ? parentLayerOnClippingContainerChain->layoutObject() : parentLayerOnClippingContainerChain->clippingContainer();
+
+                if (layer->layoutObject()->isOutOfFlowPositioned() && !layer->subtreeIsInvisible()) {
+                    const PaintLayer* clippingLayer = properties.clippingContainer ? properties.clippingContainer->enclosingLayer() : layer->compositor()->rootLayer();
+                    if (hasClippedStackingAncestor(layer, clippingLayer))
+                        rareProperties.clipParent = clippingLayer;
+                }
             }
 
             if (info.lastScrollingAncestor) {
@@ -161,12 +167,6 @@ void CompositingInputsUpdater::updateRecursive(PaintLayer* layer, UpdateType upd
                 rareProperties.ancestorScrollingLayer = parentLayerOnContainingBlockChain->ancestorScrollingLayer();
                 if (parentLayerOnContainingBlockChain->scrollsOverflow())
                     rareProperties.ancestorScrollingLayer = parentLayerOnContainingBlockChain;
-
-                if (layer->layoutObject()->isOutOfFlowPositioned() && !layer->subtreeIsInvisible()) {
-                    const PaintLayer* clippingLayer = properties.clippingContainer ? properties.clippingContainer->enclosingLayer() : layer->compositor()->rootLayer();
-                    if (hasClippedStackingAncestor(layer, clippingLayer))
-                        rareProperties.clipParent = clippingLayer;
-                }
 
                 if (layer->stackingNode()->isStacked()
                     && rareProperties.ancestorScrollingLayer
