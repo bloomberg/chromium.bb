@@ -18,11 +18,15 @@ class ScrollStateCallback;
 class ViewportScrollCallback;
 
 // The RootScrollerController used to manage the root scroller for the top
-// level Document on a page. In addition to the regular RootScroller duties
+// level Document on a page. In addition to the regular RootScroller duties,
 // such as keeping track of which Element is set as root scroller and which is
-// the effective root scroller, this class is also responsible for setting the
-// ViewportApplyScroll on the one Element on a page that should apply viewport
-// scrolling actions.
+// the effective root scroller, this class is also manages the "global" root
+// scroller. That is, given all the iframes on a page and their individual root
+// scrollers, this class will determine which ultimate Element should be used
+// as the root scroller and ensures that Element is used to scroll top controls
+// and provide overscroll effects.
+// TODO(bokan): This class is currently OOPIF unaware. It should be broken into
+// a standalone class and placed on a Page level object. crbug.com/505516
 class CORE_EXPORT TopDocumentRootScrollerController
     : public RootScrollerController {
 public:
@@ -38,33 +42,42 @@ public:
     // FrameView so that we can initialize the viewport scroll callback.
     void didAttachDocument() override;
 
-    // Returns true if the given ScrollStateCallback is the ViewportScrollCallback managed
-    // by this class.
+    // Returns true if the given ScrollStateCallback is the
+    // ViewportScrollCallback managed by this class.
     // TODO(bokan): Temporarily needed to allow ScrollCustomization to
     // differentiate between real custom callback and the built-in viewport
     // apply scroll. crbug.com/623079.
     bool isViewportScrollCallback(
         const ScrollStateCallback*) const override;
 
+    // Returns the GraphicsLayer for the global root scroller.
+    GraphicsLayer* rootScrollerLayer() override;
+
 protected:
     TopDocumentRootScrollerController(Document&);
 
-    // Ensures the effective root scroller is currently valid and replaces it
-    // with the default if not.
-    void updateEffectiveRootScroller() override;
+    // Called when the root scroller of descendant frames changes.
+    void globalRootScrollerMayHaveChanged() override;
 
 private:
-    // Ensures that the element that should be used as the root scroller on the
-    // page has the m_viewportApplyScroll callback set on it.
-    void setViewportApplyScrollOnRootScroller();
+    // Calculates the Element that should be the globalRootScroller. On a
+    // simple page, this will simply the root frame's effectiveRootScroller but
+    // if the root scroller is set to an iframe, this will then descend into
+    // the iframe to find its effective root scroller.
+    Element* findGlobalRootScrollerElement();
+
+    // Should be called to recalculate the global root scroller and ensure all
+    // appropriate state changes are made if it changes.
+    void updateGlobalRootScroller();
 
     // The apply-scroll callback that moves top controls and produces
     // overscroll effects. This class makes sure this callback is set on the
     // appropriate root scroller element.
     Member<ViewportScrollCallback> m_viewportApplyScroll;
 
-    // Tracks which element currently has the m_viewportApplyScroll set to it.
-    WeakMember<Element> m_currentViewportApplyScrollHost;
+    // The page level root scroller. i.e. The actual element for which scrolling
+    // should move top controls and produce overscroll glow.
+    WeakMember<Element> m_globalRootScroller;
 };
 
 } // namespace blink

@@ -8,6 +8,7 @@
 #include "core/dom/Element.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
+#include "core/html/HTMLFrameOwnerElement.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/scrolling/OverscrollController.h"
 #include "core/page/scrolling/ViewportScrollCallback.h"
@@ -31,37 +32,57 @@ TopDocumentRootScrollerController::TopDocumentRootScrollerController(
 DEFINE_TRACE(TopDocumentRootScrollerController)
 {
     visitor->trace(m_viewportApplyScroll);
-    visitor->trace(m_currentViewportApplyScrollHost);
+    visitor->trace(m_globalRootScroller);
     RootScrollerController::trace(visitor);
 }
 
-void TopDocumentRootScrollerController::updateEffectiveRootScroller()
+void TopDocumentRootScrollerController::globalRootScrollerMayHaveChanged()
 {
-    RootScrollerController::updateEffectiveRootScroller();
-    setViewportApplyScrollOnRootScroller();
+    updateGlobalRootScroller();
 }
 
-void TopDocumentRootScrollerController::setViewportApplyScrollOnRootScroller()
+Element* TopDocumentRootScrollerController::findGlobalRootScrollerElement()
 {
-    if (!m_viewportApplyScroll || !effectiveRootScroller())
+    Element* element = effectiveRootScroller();
+
+    while (element && element->isFrameOwnerElement()) {
+        HTMLFrameOwnerElement* frameOwner = toHTMLFrameOwnerElement(element);
+        DCHECK(frameOwner);
+
+        Document* iframeDocument = frameOwner->contentDocument();
+        if (!iframeDocument)
+            return element;
+
+        DCHECK(iframeDocument->rootScrollerController());
+        element =
+            iframeDocument->rootScrollerController()->effectiveRootScroller();
+    }
+
+    return element;
+}
+
+void TopDocumentRootScrollerController::updateGlobalRootScroller()
+{
+    Element* target = findGlobalRootScrollerElement();
+
+    if (!m_viewportApplyScroll || !target)
         return;
 
     ScrollableArea* targetScroller =
-        scrollableAreaFor(*effectiveRootScroller());
+        scrollableAreaFor(*target);
 
     if (!targetScroller)
         return;
 
-    if (m_currentViewportApplyScrollHost)
-        m_currentViewportApplyScrollHost->removeApplyScroll();
+    if (m_globalRootScroller)
+        m_globalRootScroller->removeApplyScroll();
 
     // Use disable-native-scroll since the ViewportScrollCallback needs to
     // apply scroll actions both before (TopControls) and after (overscroll)
     // scrolling the element so it will apply scroll to the element itself.
-    effectiveRootScroller()->setApplyScroll(
-        m_viewportApplyScroll, "disable-native-scroll");
+    target->setApplyScroll(m_viewportApplyScroll, "disable-native-scroll");
 
-    m_currentViewportApplyScrollHost = effectiveRootScroller();
+    m_globalRootScroller = target;
 
     // Ideally, scroll customization would pass the current element to scroll to
     // the apply scroll callback but this doesn't happen today so we set it
@@ -96,7 +117,7 @@ void TopDocumentRootScrollerController::didAttachDocument()
         &frameHost->overscrollController(),
         *rootFrameViewport);
 
-    updateEffectiveRootScroller();
+    updateGlobalRootScroller();
 }
 
 bool TopDocumentRootScrollerController::isViewportScrollCallback(
@@ -106,6 +127,25 @@ bool TopDocumentRootScrollerController::isViewportScrollCallback(
         return false;
 
     return callback == m_viewportApplyScroll.get();
+}
+
+GraphicsLayer* TopDocumentRootScrollerController::rootScrollerLayer()
+{
+    if (!m_globalRootScroller)
+        return nullptr;
+
+    ScrollableArea* area = scrollableAreaFor(*m_globalRootScroller);
+
+    if (!area)
+        return nullptr;
+
+    GraphicsLayer* graphicsLayer = area->layerForScrolling();
+
+    // TODO(bokan): We should assert graphicsLayer here and
+    // RootScrollerController should do whatever needs to happen to ensure
+    // the root scroller gets composited.
+
+    return graphicsLayer;
 }
 
 } // namespace blink

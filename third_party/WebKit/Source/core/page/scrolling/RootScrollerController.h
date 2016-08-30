@@ -27,6 +27,9 @@ class ScrollStateCallback;
 // scroller this will be nullptr. The "effective" root scroller is the current
 // element we're using internally to apply viewport scrolling actions.  The
 // effective root scroller will only be null during document initialization.
+// Both these elements are from this controller's associated Document. The final
+// "global" root scroller, the one whose scrolling hides top controls, may be in
+// a different frame.
 //
 // If the currently set m_rootScroller is a valid element to become the root
 // scroller, it will be promoted to the effective root scroller. If it is not
@@ -77,10 +80,10 @@ public:
 
     // Returns the GraphicsLayer for the current effective root scroller
     // element.
-    GraphicsLayer* rootScrollerLayer();
+    virtual GraphicsLayer* rootScrollerLayer();
 
-    // Returns true if the given ScrollStateCallback is the ViewportScrollCallback managed
-    // by this class.
+    // Returns true if the given ScrollStateCallback is the
+    // ViewportScrollCallback managed by this class.
     // TODO(bokan): Temporarily needed to allow ScrollCustomization to
     // differentiate between real custom callback and the built-in viewport
     // apply scroll. crbug.com/623079.
@@ -89,9 +92,9 @@ public:
 protected:
     RootScrollerController(Document&);
 
-    // Ensures the effective root scroller is currently valid and replaces it
-    // with the default if not.
-    virtual void updateEffectiveRootScroller();
+    // Called when the root scroller of any descendant frames changes. This
+    // will only ever be called on the top document's RootScrollerController.
+    virtual void globalRootScrollerMayHaveChanged();
 
     // Returns the ScrollableArea to use to scroll the given Element.
     ScrollableArea* scrollableAreaFor(const Element&) const;
@@ -101,6 +104,10 @@ protected:
 
 private:
 
+    // Ensures the effective root scroller is currently valid and replaces it
+    // with the default if not.
+    void recomputeEffectiveRootScroller();
+
     // Determines whether the given element meets the criteria to become the
     // effective root scroller.
     bool isValidRootScroller(const Element&) const;
@@ -109,17 +116,15 @@ private:
     // m_rootScroller isn't valid to be a root scroller.
     Element* defaultEffectiveRootScroller();
 
-    // The Element that was set from script as rootScroller. Depending on its
-    // validity to be the root scroller (e.g. a display: none element isn't a
-    // valid root scroller), this may not actually be the Element being used as
-    // the root scroller.
+    // The Element that was set from script as rootScroller for this Document.
+    // Depending on its validity to be the root scroller (e.g. a display: none
+    // element isn't a valid root scroller), this may not actually be the
+    // Element being used as the root scroller.
     WeakMember<Element> m_rootScroller;
 
-    // The element currently being used as the root scroller. If
-    // m_viewportApplyScroll has been set, this element is guaranteed to have it
-    // set as its applyScroll callback. This can be nullptr during
-    // initialization and will not be set until m_viewportApplyScroll is
-    // provided.
+    // The element currently being used as the root scroller in this Document.
+    // If the m_rootScroller is valid this will point to it. Otherwise, it'll
+    // use a default Element.
     WeakMember<Element> m_effectiveRootScroller;
 };
 

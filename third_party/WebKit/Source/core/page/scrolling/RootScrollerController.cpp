@@ -65,7 +65,7 @@ DEFINE_TRACE(RootScrollerController)
 void RootScrollerController::set(Element* newRootScroller)
 {
     m_rootScroller = newRootScroller;
-    updateEffectiveRootScroller();
+    recomputeEffectiveRootScroller();
 }
 
 Element* RootScrollerController::get() const
@@ -80,10 +80,14 @@ Element* RootScrollerController::effectiveRootScroller() const
 
 void RootScrollerController::didUpdateLayout()
 {
-    updateEffectiveRootScroller();
+    recomputeEffectiveRootScroller();
 }
 
-void RootScrollerController::updateEffectiveRootScroller()
+void RootScrollerController::globalRootScrollerMayHaveChanged()
+{
+}
+
+void RootScrollerController::recomputeEffectiveRootScroller()
 {
     bool rootScrollerValid =
         m_rootScroller && isValidRootScroller(*m_rootScroller);
@@ -96,6 +100,9 @@ void RootScrollerController::updateEffectiveRootScroller()
         return;
 
     m_effectiveRootScroller = newEffectiveRootScroller;
+
+    m_document->topDocument().rootScrollerController()
+        ->globalRootScrollerMayHaveChanged();
 }
 
 ScrollableArea* RootScrollerController::scrollableAreaFor(
@@ -141,21 +148,8 @@ void RootScrollerController::didAttachDocument()
 
 GraphicsLayer* RootScrollerController::rootScrollerLayer()
 {
-    if (!m_effectiveRootScroller)
-        return nullptr;
-
-    ScrollableArea* area = scrollableAreaFor(*m_effectiveRootScroller);
-
-    if (!area)
-        return nullptr;
-
-    GraphicsLayer* graphicsLayer = area->layerForScrolling();
-
-    // TODO(bokan): We should assert graphicsLayer here and
-    // RootScrollerController should do whatever needs to happen to ensure
-    // the root scroller gets composited.
-
-    return graphicsLayer;
+    NOTREACHED();
+    return nullptr;
 }
 
 bool RootScrollerController::isViewportScrollCallback(
