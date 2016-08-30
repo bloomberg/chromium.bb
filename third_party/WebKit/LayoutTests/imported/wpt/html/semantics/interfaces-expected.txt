@@ -1,4 +1,4 @@
-CONSOLE WARNING: line 18: The <keygen> element is deprecated and will be removed in M56, around January 2017. See https://www.chromestatus.com/features/5716060992962560 for more details.
+CONSOLE WARNING: line 19: The <keygen> element is deprecated and will be removed in M56, around January 2017. See https://www.chromestatus.com/features/5716060992962560 for more details.
 This is a testharness.js-based test.
 PASS Interfaces for a 
 PASS Interfaces for A 
@@ -293,6 +293,7 @@ PASS Interfaces for wbr
 PASS Interfaces for WBR 
 PASS Interfaces for xmp 
 PASS Interfaces for XMP 
-FAIL Interfaces for Ã¥-bar Failed to execute 'createElementNS' on 'Document': The qualified name provided ('Ã¥-bar') contains the invalid character '¥'.
+FAIL Interfaces for å-bar assert_equals: Element å-bar should have HTMLUnknownElement as its primary interface. expected "[object HTMLUnknownElement]" but got "[object HTMLElement]"
+FAIL Interfaces for Å-BAR assert_equals: Element Å-BAR should have HTMLUnknownElement as its primary interface. expected "[object HTMLUnknownElement]" but got "[object HTMLElement]"
 Harness: the test ran to completion.
 
