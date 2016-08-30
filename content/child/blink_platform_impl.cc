@@ -639,25 +639,26 @@ const DataResource kDataResources[] = {
     {"html.css", IDR_UASTYLE_HTML_CSS, ui::SCALE_FACTOR_NONE},
     {"quirks.css", IDR_UASTYLE_QUIRKS_CSS, ui::SCALE_FACTOR_NONE},
     {"view-source.css", IDR_UASTYLE_VIEW_SOURCE_CSS, ui::SCALE_FACTOR_NONE},
-#if defined(OS_ANDROID)
+    // Not limited to Android since it's used for mobile layouts in inspector.
     {"themeChromiumAndroid.css",
      IDR_UASTYLE_THEME_CHROMIUM_ANDROID_CSS,
      ui::SCALE_FACTOR_NONE},
+    // Not limited to Android since it's used for mobile layouts in inspector.
     {"fullscreenAndroid.css",
       IDR_UASTYLE_FULLSCREEN_ANDROID_CSS,
       ui::SCALE_FACTOR_NONE},
+    // Not limited to Android since it's used for mobile layouts in inspector.
     {"mediaControlsAndroid.css",
      IDR_UASTYLE_MEDIA_CONTROLS_ANDROID_CSS,
      ui::SCALE_FACTOR_NONE},
+    // Not limited to Android since it's used for mobile layouts in inspector.
     {"mediaControlsAndroidNew.css",
      IDR_UASTYLE_MEDIA_CONTROLS_ANDROID_NEW_CSS,
      ui::SCALE_FACTOR_NONE},
-#endif
-#if !defined(OS_WIN)
+    // Not limited to Linux since it's used for mobile layouts in inspector.
     {"themeChromiumLinux.css",
      IDR_UASTYLE_THEME_CHROMIUM_LINUX_CSS,
      ui::SCALE_FACTOR_NONE},
-#endif
     {"themeInputMultipleFields.css",
      IDR_UASTYLE_THEME_INPUT_MULTIPLE_FIELDS_CSS,
      ui::SCALE_FACTOR_NONE},
