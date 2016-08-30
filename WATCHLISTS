@@ -37,6 +37,9 @@
                   'chrome/browser/android/shortcut_.*|'\
                   'chrome/browser/android/webapps/',
     },
+    'android_crash_reporting': {
+      'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/crash/'
+    },
     'android_crazy_linker': {
       'filepath': 'third_party/android_crazy_linker/'
     },
@@ -61,6 +64,13 @@
     },
     'android_tab': {
       'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/Tab'
+    },
+    'android_uma_settings': {
+      'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/preferences/privacy/UsageAndCrashReportsPreferenceFragment.java|'\
+                  'chrome/android/java/src/org/chromium/chrome/browser/preferences/privacy/PrivacyPreferencesManager.java|'\
+                  'chrome/android/java/src/org/chromium/chrome/browser/preferences/privacy/PrivacyPreferences.java|'\
+                  'chrome/android/java/src/org/chromium/chrome/browser/preferences/privacy/CrashDumpUploadPreference.java|'\
+                  'chrome/android/java/src/org/chromium/chrome/browser/metrics/UmaSessionStats.java',
     },
     'android_webview': {
       'filepath': 'android_webview/',
@@ -306,13 +316,6 @@
     },
     'clang_update': {
       'filepath': 'tools/clang/scripts/update.py'
-    },
-    'clank_uma_settings': {
-      'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/preferences/privacy/UsageAndCrashReportsPreferenceFragment.java|'\
-                  'chrome/android/java/src/org/chromium/chrome/browser/preferences/privacy/PrivacyPreferencesManager.java|'\
-                  'chrome/android/java/src/org/chromium/chrome/browser/preferences/privacy/PrivacyPreferences.java|'\
-                  'chrome/android/java/src/org/chromium/chrome/browser/preferences/privacy/CrashDumpUploadPreference.java|'\
-                  'chrome/android/java/src/org/chromium/chrome/browser/metrics/UmaSessionStats.java',
     },
     'clipboard': {
       'filepath': 'clipboard|dnd|drag|drop',
@@ -584,6 +587,7 @@
     },
     'metrics': {
       'filepath': 'base/metrics/'\
+                  '|chrome/android/java/src/org/chromium/chrome/browser/metrics/'\
                   '|chrome/browser/metrics/'\
                   '|chrome/browser/chromeos/external_metrics'\
                   '|chrome/browser/extensions/api/metrics_private/'\
@@ -1380,6 +1384,7 @@
                       'yuzo+watch@chromium.org'],
     'activity_log': ['felt@chromium.org'],
     'add_to_homescreen': ['dominickn+watch@chromium.org'],
+    'android_crash_reporting': ['asvitkine+watch@chromium.org'],
     'android_crazy_linker': ['johnmaguire+watch@google.com'],
     'android_infobars': ['dfalcantara+watch@chromium.org'],
     'android_infra': ['jbudorick+watch@chromium.org',
@@ -1390,6 +1395,8 @@
                       'mlamouri+watch-media@chromium.org'],
     'android_tab': ['avayvod+watch@chromium.org',
                     'dtrainor@chromium.org'],
+    'android_uma_settings': ['asvitkine+watch@chromium.org',
+                             'gayane+watch@chromium.org'],
     'android_webview': ['android-webview-reviews@chromium.org'],
     'app_list': ['mgiuca@chromium.org',
                  'tfarina@chromium.org'],
@@ -1691,7 +1698,6 @@
                      'ukai+watch@chromium.org',
                      'vmpstr+watch@chromium.org',
                      'yunlian@chromium.org'],
-    'clank_uma_settings': ['gayane+watch@chromium.org'],
     'clipboard': ['dcheng@chromium.org'],
     'closure': ['dbeam+watch-closure@chromium.org',
                 'jlklein+watch-closure@chromium.org',
