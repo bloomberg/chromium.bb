@@ -25,11 +25,13 @@
 const char kClearKeyKeySystem[] = "org.w3.clearkey";
 
 // Supported media types.
-const char kWebMAudioOnly[] = "audio/webm; codecs=\"vorbis\"";
+const char kWebMVorbisAudioOnly[] = "audio/webm; codecs=\"vorbis\"";
 #if !defined(DISABLE_ENCRYPTED_MEDIA_PLAYBACK_TESTS)
-const char kWebMVideoOnly[] = "video/webm; codecs=\"vp8\"";
+const char kWebMOpusAudioOnly[] = "audio/webm; codecs=\"opus\"";
+const char kWebMVP8VideoOnly[] = "video/webm; codecs=\"vp8\"";
+const char kWebMOpusAudioVP9Video[] = "video/webm; codecs=\"opus, vp9\"";
 #endif
-const char kWebMAudioVideo[] = "video/webm; codecs=\"vorbis, vp8\"";
+const char kWebMVorbisAudioVP8Video[] = "video/webm; codecs=\"vorbis, vp8\"";
 
 // EME-specific test results and errors.
 const char kEmeKeyError[] = "KEYERROR";
@@ -80,8 +82,9 @@ class EncryptedMediaTest : public content::MediaBrowserTest,
 
   void TestFrameSizeChange() {
     RunEncryptedMediaTest("encrypted_frame_size_change.html",
-                          "frame_size_change-av_enc-v.webm", kWebMAudioVideo,
-                          CurrentKeySystem(), CurrentSourceType(), kEnded);
+                          "frame_size_change-av_enc-v.webm",
+                          kWebMVorbisAudioVP8Video, CurrentKeySystem(),
+                          CurrentSourceType(), kEnded);
   }
 
   void TestConfigChange() {
@@ -153,23 +156,23 @@ INSTANTIATE_TEST_CASE_P(MSE_ClearKey, EncryptedMediaTest,
 
 #if !defined(DISABLE_ENCRYPTED_MEDIA_PLAYBACK_TESTS)
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_WebM) {
-  TestSimplePlayback("bear-a_enc-a.webm", kWebMAudioOnly);
+  TestSimplePlayback("bear-a_enc-a.webm", kWebMVorbisAudioOnly);
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioClearVideo_WebM) {
-  TestSimplePlayback("bear-320x240-av_enc-a.webm", kWebMAudioVideo);
+  TestSimplePlayback("bear-320x240-av_enc-a.webm", kWebMVorbisAudioVP8Video);
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoAudio_WebM) {
-  TestSimplePlayback("bear-320x240-av_enc-av.webm", kWebMAudioVideo);
+  TestSimplePlayback("bear-320x240-av_enc-av.webm", kWebMVorbisAudioVP8Video);
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_WebM) {
-  TestSimplePlayback("bear-320x240-v_enc-v.webm", kWebMVideoOnly);
+  TestSimplePlayback("bear-320x240-v_enc-v.webm", kWebMVP8VideoOnly);
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoClearAudio_WebM) {
-  TestSimplePlayback("bear-320x240-av_enc-v.webm", kWebMAudioVideo);
+  TestSimplePlayback("bear-320x240-av_enc-v.webm", kWebMVorbisAudioVP8Video);
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_WebM_Opus) {
@@ -177,7 +180,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_WebM_Opus) {
   if (!media::PlatformHasOpusSupport())
     return;
 #endif
-  TestSimplePlayback("bear-320x240-opus-a_enc-a.webm", kWebMAudioOnly);
+  TestSimplePlayback("bear-320x240-opus-a_enc-a.webm", kWebMOpusAudioOnly);
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoAudio_WebM_Opus) {
@@ -185,7 +188,8 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoAudio_WebM_Opus) {
   if (!media::PlatformHasOpusSupport())
     return;
 #endif
-  TestSimplePlayback("bear-320x240-opus-av_enc-av.webm", kWebMAudioVideo);
+  TestSimplePlayback("bear-320x240-opus-av_enc-av.webm",
+                     kWebMOpusAudioVP9Video);
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoClearAudio_WebM_Opus) {
@@ -193,7 +197,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoClearAudio_WebM_Opus) {
   if (!media::PlatformHasOpusSupport())
     return;
 #endif
-  TestSimplePlayback("bear-320x240-opus-av_enc-v.webm", kWebMAudioVideo);
+  TestSimplePlayback("bear-320x240-opus-av_enc-v.webm", kWebMOpusAudioVP9Video);
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, ConfigChangeVideo) {
@@ -206,11 +210,8 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, FrameSizeChangeVideo) {
 #endif  // !defined(DISABLE_ENCRYPTED_MEDIA_PLAYBACK_TESTS)
 
 IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, UnknownKeySystemThrowsException) {
-  RunEncryptedMediaTest(kDefaultEmePlayer,
-                        "bear-a_enc-a.webm",
-                        kWebMAudioOnly,
-                        "com.example.foo",
-                        MSE,
+  RunEncryptedMediaTest(kDefaultEmePlayer, "bear-a_enc-a.webm",
+                        kWebMVorbisAudioOnly, "com.example.foo", MSE,
                         kEmeNotSupportedError);
 }
 
