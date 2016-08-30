@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <memory>
 #include <utility>
 
@@ -25,6 +26,7 @@
 #include "chrome/browser/plugins/plugins_field_trial.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_otr_state.h"
+#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "components/component_updater/component_updater_service.h"
@@ -404,6 +406,15 @@ bool PluginInfoMessageFilter::Context::FindEnabledPlugin(
   std::vector<std::string> mime_types;
   PluginService::GetInstance()->GetPluginInfoArray(
       url, mime_type, allow_wildcard, &matching_plugins, &mime_types);
+#if defined(GOOGLE_CHROME_BUILD)
+  base::FilePath not_present =
+      base::FilePath::FromUTF8Unsafe(ChromeContentClient::kNotPresent);
+  matching_plugins.erase(
+      std::remove_if(
+          matching_plugins.begin(), matching_plugins.end(),
+          [&](const WebPluginInfo& info) { return info.path == not_present; }),
+      matching_plugins.end());
+#endif  // defined(GOOGLE_CHROME_BUILD)
   if (matching_plugins.empty()) {
     *status = ChromeViewHostMsg_GetPluginInfo_Status::kNotFound;
     return false;

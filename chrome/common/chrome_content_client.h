@@ -6,6 +6,7 @@
 #define CHROME_COMMON_CHROME_CONTENT_CLIENT_H_
 
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -26,6 +27,9 @@ std::string GetUserAgent();
 
 class ChromeContentClient : public content::ContentClient {
  public:
+#if defined(GOOGLE_CHROME_BUILD)
+  static const char kNotPresent[];
+#endif
   static const char kPDFPluginName[];
   static const char kPDFPluginPath[];
   static const char kRemotingViewerPluginPath[];

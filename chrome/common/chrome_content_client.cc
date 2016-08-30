@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <map>
 #include <memory>
 #include <tuple>
 
@@ -551,8 +552,20 @@ void ChromeContentClient::AddPepperPlugins(
   // This function will return only the most recent version of the flash plugin.
   content::PepperPluginInfo* max_flash =
       FindMostRecentPlugin(flash_versions.get());
-  if (max_flash)
+  if (max_flash) {
     plugins->push_back(*max_flash);
+  } else {
+#if defined(GOOGLE_CHROME_BUILD) && defined(FLAPPER_AVAILABLE)
+    // Add a fake Flash plugin even though it doesn't actually exist - if a
+    // web page requests it, it will be component-updated on-demand. There is
+    // nothing that guarantees the component update will give us the
+    // FLAPPER_VERSION_STRING version of Flash, but using this version seems
+    // better than any other hardcoded alternative.
+    plugins->push_back(CreatePepperFlashInfo(
+        base::FilePath::FromUTF8Unsafe(ChromeContentClient::kNotPresent),
+        FLAPPER_VERSION_STRING, false, false, true));
+#endif  // defined(GOOGLE_CHROME_BUILD) && defined(FLAPPER_AVAILABLE)
+  }
 #endif  // defined(ENABLE_PLUGINS)
 }
 
