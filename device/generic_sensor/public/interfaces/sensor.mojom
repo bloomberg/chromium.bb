@@ -35,6 +35,10 @@ struct SensorConfiguration {
 
 // Interface for controlling the Sensor.
 interface Sensor {
+
+  // Requests sensor to provide its default configuration.
+  GetDefaultConfiguration() => (SensorConfiguration configuration);
+
   // Requests sensor to start reading sensor data with specified
   // SensorConfiguration.
   // Sensor holds the list of added configurations and it always polls

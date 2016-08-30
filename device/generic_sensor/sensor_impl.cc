@@ -32,6 +32,11 @@ void SensorImpl::AddConfiguration(
   callback.Run(sensor_->StartListening(this, configuration));
 }
 
+void SensorImpl::GetDefaultConfiguration(
+    const GetDefaultConfigurationCallback& callback) {
+  callback.Run(sensor_->GetDefaultConfiguration());
+}
+
 void SensorImpl::RemoveConfiguration(
     const PlatformSensorConfiguration& configuration,
     const RemoveConfigurationCallback& callback) {

@@ -36,6 +36,7 @@ class PlatformSensor : public base::RefCountedThreadSafe<PlatformSensor> {
   };
 
   virtual mojom::ReportingMode GetReportingMode() = 0;
+  virtual PlatformSensorConfiguration GetDefaultConfiguration() = 0;
 
   mojom::SensorType GetType() const;
 
