@@ -7,7 +7,7 @@ import("//tools/grit/grit_rule.gni")
 grit("webui_test_resources") {
   source = "webui_test_resources.grd"
   outputs = [
-    "chrome/test/data/grit/webui_test_resources.h",
+    "test/data/grit/webui_test_resources.h",
     "webui_test_resources.pak",
   ]
   output_dir = "$root_gen_dir/chrome"
