@@ -379,6 +379,9 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   // Returns the BrowserAccessibilityDelegate from |GetRootManager|, above.
   BrowserAccessibilityDelegate* GetDelegateFromRootManager();
 
+  // Returns whether this is the top document.
+  bool IsRootTree();
+
   // Get a snapshot of the current tree as an AXTreeUpdate.
   ui::AXTreeUpdate SnapshotAXTreeForTesting();
 

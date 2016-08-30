@@ -1561,6 +1561,10 @@ gfx::Point RenderWidgetHostViewMac::AccessibilityOriginInScreen(
   return gfx::Point(originInScreen.x, originInScreen.y);
 }
 
+NSView* RenderWidgetHostViewMac::AccessibilityGetAcceleratedWidget() {
+  return cocoa_view_;
+}
+
 void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   if (active) {
     if (GetTextInputType() == ui::TEXT_INPUT_TYPE_PASSWORD)

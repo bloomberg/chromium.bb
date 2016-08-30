@@ -191,7 +191,14 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
       mac_notification = NSAccessibilityLayoutCompleteNotification;
       break;
     case ui::AX_EVENT_LOAD_COMPLETE:
-      mac_notification = NSAccessibilityLoadCompleteNotification;
+      // This notification should only be fired on the top document.
+      // Iframes should use |AX_EVENT_LAYOUT_COMPLETE| to signify that they have
+      // finished loading.
+      if (IsRootTree()) {
+        mac_notification = NSAccessibilityLoadCompleteNotification;
+      } else {
+        mac_notification = NSAccessibilityLayoutCompleteNotification;
+      }
       break;
     case ui::AX_EVENT_INVALID_STATUS_CHANGED:
       mac_notification = NSAccessibilityInvalidStatusChangedNotification;
