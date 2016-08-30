@@ -2300,17 +2300,17 @@ To obtain new licenses, connect to the internet and play your downloaded content
       </message>
       <message name="IDS_ACCESSIBILITY_SELECTED_ITEMS" desc="Content description for a number indicating how many items are selected. [ICU Syntax]">
         {NUM_SELECTED, plural,
-          =1 {1 item selected},
+          =1 {1 item selected}
           other {# items selected}}
       </message>
       <message name="IDS_ACCESSIBILITY_SHARE_SELECTED_ITEMS" desc="Content description for the button to share selected items. [ICU Syntax]">
         {NUM_SELECTED, plural,
-          =1 {Share 1 selected item},
+          =1 {Share 1 selected item}
           other {Share # selected items}}
       </message>
       <message name="IDS_ACCESSIBILITY_REMOVE_SELECTED_ITEMS" desc="Content description for the button to remove selected items. [ICU Syntax]">
         {NUM_SELECTED, plural,
-          =1 {Remove 1 selected item},
+          =1 {Remove 1 selected item}
           other {Remove # selected items}}
       </message>
 
