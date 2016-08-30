@@ -626,70 +626,68 @@ bool GetExecutableVersionDetails(const std::wstring& exe_path,
 void GetChromeChannelName(bool is_per_user_install,
                           bool add_modifier,
                           std::wstring* channel_name) {
-  channel_name->clear();
-  // TODO(ananta)
-  // http://crbug.com/604923
-  // Unify this with the chrome/installer/util/channel_info.h/.cc.
+  // See GoogleChromeSxSDistribution::GetChromeChannel.
   if (IsSxSChrome(GetCurrentProcessExePath().c_str())) {
-    *channel_name = L"canary";
+    channel_name->assign(kChromeChannelCanary);
+    return;
+  }
+
+  // InitChannelInfo in google_update_settings.cc only reports a failure in the
+  // case of multi-install Chrome where the binaries' ClientState key exists,
+  // but that the "ap" value therein cannot be read due to some reason *other*
+  // than it not being present. This should be exceedingly rare. For
+  // simplicity's sake, use an empty |value| in case of any error whatsoever
+  // here.
+  std::wstring value;
+  bool is_multi_install = IsMultiInstall(!is_per_user_install);
+  if (is_multi_install) {
+    std::wstring full_key_path(kRegPathClientState);
+    full_key_path.append(1, L'\\');
+    full_key_path.append(kAppGuidGoogleBinaries);
+    nt::QueryRegValueSZ(is_per_user_install ? nt::HKCU : nt::HKLM,
+                        full_key_path.c_str(), kRegApField, &value);
   } else {
-    std::wstring value;
-    bool channel_available = false;
-    bool is_multi_install = IsMultiInstall(!is_per_user_install);
-    if (is_multi_install) {
-      std::wstring full_key_path(kRegPathClientState);
-      full_key_path.append(1, L'\\');
-      full_key_path.append(kAppGuidGoogleBinaries);
-      channel_available =
-          nt::QueryRegValueSZ(is_per_user_install ? nt::HKCU : nt::HKLM,
-                              full_key_path.c_str(), kRegApField, &value);
-    } else {
-      std::wstring full_key_path(kRegPathClientState);
-      full_key_path.append(1, L'\\');
-      full_key_path.append(kAppGuidGoogleChrome);
-      channel_available =
-          nt::QueryRegValueSZ(is_per_user_install ? nt::HKCU : nt::HKLM,
-                              full_key_path.c_str(), kRegApField, &value);
-    }
-    if (channel_available) {
-      static const wchar_t kChromeChannelBetaPattern[] = L"1?1-*";
-      static const wchar_t kChromeChannelBetaX64Pattern[] = L"*x64-beta*";
-      static const wchar_t kChromeChannelDevPattern[] = L"2?0-d*";
-      static const wchar_t kChromeChannelDevX64Pattern[] = L"*x64-dev*";
+    std::wstring full_key_path(kRegPathClientState);
+    full_key_path.append(1, L'\\');
+    full_key_path.append(kAppGuidGoogleChrome);
+    nt::QueryRegValueSZ(is_per_user_install ? nt::HKCU : nt::HKLM,
+                        full_key_path.c_str(), kRegApField, &value);
+  }
 
-      std::transform(value.begin(), value.end(), value.begin(), ::tolower);
+  static constexpr wchar_t kChromeChannelBetaPattern[] = L"1?1-*";
+  static constexpr wchar_t kChromeChannelBetaX64Pattern[] = L"*x64-beta*";
+  static constexpr wchar_t kChromeChannelDevPattern[] = L"2?0-d*";
+  static constexpr wchar_t kChromeChannelDevX64Pattern[] = L"*x64-dev*";
 
-      // Empty channel names or those containing "stable" should be reported as
-      // an empty string. Exceptions being if |add_modifier| is true and this
-      // is a multi install. In that case we report the channel name as "-m".
-      if (value.empty() ||
-          (value.find(kChromeChannelStableExplicit) != std::wstring::npos)) {
-        if (add_modifier && is_multi_install)
-          channel_name->append(L"-m");
-        return;
-      }
+  std::transform(value.begin(), value.end(), value.begin(), ::tolower);
 
-      if (MatchPattern(value, kChromeChannelDevPattern) ||
-          MatchPattern(value, kChromeChannelDevX64Pattern)) {
-        channel_name->assign(kChromeChannelDev);
-      }
+  // Empty channel names or those containing "stable" should be reported as
+  // an empty string (with the optional modifier).
+  if (value.empty() ||
+      (value.find(kChromeChannelStableExplicit) != std::wstring::npos)) {
+    channel_name->clear();
+  } else if (MatchPattern(value, kChromeChannelDevPattern) ||
+             MatchPattern(value, kChromeChannelDevX64Pattern)) {
+    channel_name->assign(kChromeChannelDev);
+  } else if (MatchPattern(value, kChromeChannelBetaPattern) ||
+             MatchPattern(value, kChromeChannelBetaX64Pattern)) {
+    channel_name->assign(kChromeChannelBeta);
+  } else {
+    // Report values with garbage as stable since they will match the stable
+    // rules in the update configs. ChannelInfo::GetChannelName painstakingly
+    // strips off known modifiers (e.g., "-multi-full") to see if the empty
+    // string remains, returning channel "unknown" if not. This differs here in
+    // that some clients will tag crashes as "stable" rather than "unknown" via
+    // this codepath, but it is an accurate reflection of which update channel
+    // the client is on according to the server-side rules.
+    channel_name->clear();
+  }
 
-      if (MatchPattern(value, kChromeChannelBetaPattern) ||
-          MatchPattern(value, kChromeChannelBetaX64Pattern)) {
-        channel_name->assign(kChromeChannelBeta);
-      }
-
-      if (add_modifier && is_multi_install)
-        channel_name->append(L"-m");
-
-      // If we fail to find any matching pattern in the channel name then we
-      // default to empty which means stable. Not sure if this is ok.
-      // TODO(ananta)
-      // http://crbug.com/604923
-      // Check if this is ok.
-    } else {
-      *channel_name = kChromeChannelUnknown;
-    }
+  // Tag the channel name if this is a multi-install.
+  if (add_modifier && is_multi_install) {
+    if (!channel_name->empty())
+      channel_name->push_back(L'-');
+    channel_name->push_back(L'm');
   }
 }
 
