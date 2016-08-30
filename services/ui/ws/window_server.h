@@ -220,7 +220,7 @@ class WindowServer : public ServerWindowDelegate,
   gfx::Rect GetCurrentMoveLoopRevertBounds();
   bool in_move_loop() const { return !!current_move_loop_; }
 
-  void OnFirstDisplayReady();
+  void OnDisplayReady(Display* display, bool is_first);
   void OnNoMoreDisplays();
   WindowManagerState* GetWindowManagerStateForUser(const UserId& user_id);
 
@@ -366,6 +366,7 @@ class WindowServer : public ServerWindowDelegate,
   uint32_t next_wm_change_id_;
 
   std::unique_ptr<GpuServiceProxy> gpu_proxy_;
+  scoped_refptr<gpu::GpuChannelHost> gpu_channel_;
   base::Callback<void(ServerWindow*)> window_paint_callback_;
 
   UserActivityMonitorMap activity_monitor_map_;

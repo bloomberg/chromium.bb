@@ -484,8 +484,11 @@ gfx::Rect WindowServer::GetCurrentMoveLoopRevertBounds() {
   return gfx::Rect();
 }
 
-void WindowServer::OnFirstDisplayReady() {
-  delegate_->OnFirstDisplayReady();
+void WindowServer::OnDisplayReady(Display* display, bool is_first) {
+  if (gpu_channel_)
+    display->platform_display()->OnGpuChannelEstablished(gpu_channel_);
+  if (is_first)
+    delegate_->OnFirstDisplayReady();
 }
 
 void WindowServer::OnNoMoreDisplays() {
@@ -768,9 +771,10 @@ void WindowServer::OnTransientWindowRemoved(ServerWindow* window,
 
 void WindowServer::OnGpuChannelEstablished(
     scoped_refptr<gpu::GpuChannelHost> gpu_channel) {
+  gpu_channel_ = std::move(gpu_channel);
   const std::set<Display*>& displays = display_manager()->displays();
   for (auto* display : displays)
-    display->platform_display()->OnGpuChannelEstablished(gpu_channel);
+    display->platform_display()->OnGpuChannelEstablished(gpu_channel_);
 }
 
 void WindowServer::OnActiveUserIdChanged(const UserId& previously_active_id,

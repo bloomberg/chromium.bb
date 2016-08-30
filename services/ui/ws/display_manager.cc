@@ -139,7 +139,7 @@ void DisplayManager::OnDisplayAcceleratedWidgetAvailable(Display* display) {
   displays_.insert(display);
   pending_displays_.erase(display);
   if (is_first_display)
-    window_server_->OnFirstDisplayReady();
+    window_server_->OnDisplayReady(display, is_first_display);
 }
 
 void DisplayManager::OnActiveUserIdChanged(const UserId& previously_active_id,
