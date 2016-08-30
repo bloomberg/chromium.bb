@@ -136,14 +136,14 @@ PaintLayer::PaintLayer(LayoutBoxModelObject* layoutObject)
     : m_hasSelfPaintingLayerDescendant(false)
     , m_hasSelfPaintingLayerDescendantDirty(false)
     , m_isRootLayer(layoutObject->isLayoutView())
-    , m_visibleContentStatusDirty(true)
+    , m_isVisibleContentDirty(true)
     , m_hasVisibleContent(false)
-    , m_visibleDescendantStatusDirty(false)
+    , m_isVisibleDescendantDirty(false)
     , m_hasVisibleDescendant(false)
 #if ENABLE(ASSERT)
     , m_needsPositionUpdate(true)
 #endif
-    , m_3DTransformedDescendantStatusDirty(true)
+    , m_is3DTransformedDescendantDirty(true)
     , m_has3DTransformedDescendant(false)
     , m_containsDirtyOverlayScrollbars(false)
     , m_needsAncestorDependentCompositingInputsUpdate(true)
@@ -176,7 +176,7 @@ PaintLayer::PaintLayer(LayoutBoxModelObject* layoutObject)
     m_isSelfPaintingLayer = shouldBeSelfPaintingLayer();
 
     if (!layoutObject->slowFirstChild() && layoutObject->style()) {
-        m_visibleContentStatusDirty = false;
+        m_isVisibleContentDirty = false;
         m_hasVisibleContent = layoutObject->style()->visibility() == EVisibility::Visible;
     }
 
@@ -601,7 +601,7 @@ void PaintLayer::mapRectToPaintInvalidationBacking(const LayoutObject& layoutObj
 void PaintLayer::dirtyVisibleContentStatus()
 {
     compositor()->setNeedsUpdateDescendantDependentFlags();
-    m_visibleContentStatusDirty = true;
+    m_isVisibleContentDirty = true;
     if (parent())
         parent()->dirtyAncestorChainVisibleDescendantStatus();
     // Non-self-painting layers paint into their ancestor layer, and count as part of the "visible contents" of the parent, so we need to dirty it.
@@ -611,7 +611,7 @@ void PaintLayer::dirtyVisibleContentStatus()
 
 void PaintLayer::potentiallyDirtyVisibleContentStatus(EVisibility visibility)
 {
-    if (m_visibleContentStatusDirty)
+    if (m_isVisibleContentDirty)
         return;
     if (hasVisibleContent() == (visibility == EVisibility::Visible))
         return;
@@ -623,9 +623,9 @@ void PaintLayer::dirtyAncestorChainVisibleDescendantStatus()
     compositor()->setNeedsUpdateDescendantDependentFlags();
 
     for (PaintLayer* layer = this; layer; layer = layer->parent()) {
-        if (layer->m_visibleDescendantStatusDirty)
+        if (layer->m_isVisibleDescendantDirty)
             break;
-        layer->m_visibleDescendantStatusDirty = true;
+        layer->m_isVisibleDescendantDirty = true;
     }
 }
 
@@ -657,7 +657,7 @@ void PaintLayer::updateScrollingStateAfterCompositingChange()
 
 void PaintLayer::updateDescendantDependentFlags()
 {
-    if (m_visibleDescendantStatusDirty) {
+    if (m_isVisibleDescendantDirty) {
         m_hasVisibleDescendant = false;
 
         for (PaintLayer* child = firstChild(); child; child = child->nextSibling()) {
@@ -669,10 +669,10 @@ void PaintLayer::updateDescendantDependentFlags()
             }
         }
 
-        m_visibleDescendantStatusDirty = false;
+        m_isVisibleDescendantDirty = false;
     }
 
-    if (m_visibleContentStatusDirty) {
+    if (m_isVisibleContentDirty) {
         bool previouslyHasVisibleContent = m_hasVisibleContent;
         if (layoutObject()->style()->visibility() == EVisibility::Visible) {
             m_hasVisibleContent = true;
@@ -701,7 +701,7 @@ void PaintLayer::updateDescendantDependentFlags()
                 }
             }
         }
-        m_visibleContentStatusDirty = false;
+        m_isVisibleContentDirty = false;
 
         if (hasVisibleContent() != previouslyHasVisibleContent) {
             setNeedsCompositingInputsUpdate();
@@ -720,12 +720,12 @@ void PaintLayer::dirty3DTransformedDescendantStatus()
     if (!stackingNode)
         return;
 
-    stackingNode->layer()->m_3DTransformedDescendantStatusDirty = true;
+    stackingNode->layer()->m_is3DTransformedDescendantDirty = true;
 
     // This propagates up through preserve-3d hierarchies to the enclosing flattening layer.
     // Note that preserves3D() creates stacking context, so we can just run up the stacking containers.
     while (stackingNode && stackingNode->layer()->preserves3D()) {
-        stackingNode->layer()->m_3DTransformedDescendantStatusDirty = true;
+        stackingNode->layer()->m_is3DTransformedDescendantDirty = true;
         stackingNode = stackingNode->ancestorStackingContextNode();
     }
 }
@@ -733,7 +733,7 @@ void PaintLayer::dirty3DTransformedDescendantStatus()
 // Return true if this layer or any preserve-3d descendants have 3d.
 bool PaintLayer::update3DTransformedDescendantStatus()
 {
-    if (m_3DTransformedDescendantStatusDirty) {
+    if (m_is3DTransformedDescendantDirty) {
         m_has3DTransformedDescendant = false;
 
         m_stackingNode->updateZOrderLists();
@@ -744,7 +744,7 @@ bool PaintLayer::update3DTransformedDescendantStatus()
         while (PaintLayerStackingNode* node = iterator.next())
             m_has3DTransformedDescendant |= node->layer()->update3DTransformedDescendantStatus();
 
-        m_3DTransformedDescendantStatusDirty = false;
+        m_is3DTransformedDescendantDirty = false;
     }
 
     // If we live in a 3d hierarchy, then the layer at the root of that hierarchy needs

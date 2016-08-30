@@ -1588,7 +1588,7 @@ void WebGLRenderingContextBase::bindTexture(ScriptState* scriptState, GLenum tar
             drawingBuffer()->setTexture2DBinding(objectOrZero(texture));
         if (scriptState) {
             hiddenValueName = V8HiddenValue::webgl2DTextures(scriptState->isolate());
-            persistentCache = &m_2DTextureWrappers;
+            persistentCache = &m_wrappersOf2DTextures;
         }
     } else if (target == GL_TEXTURE_CUBE_MAP) {
         m_textureUnits[m_activeTextureUnit].m_textureCubeMapBinding = texture;
@@ -1600,13 +1600,13 @@ void WebGLRenderingContextBase::bindTexture(ScriptState* scriptState, GLenum tar
         m_textureUnits[m_activeTextureUnit].m_texture2DArrayBinding = texture;
         if (scriptState) {
             hiddenValueName = V8HiddenValue::webgl2DArrayTextures(scriptState->isolate());
-            persistentCache = &m_2DArrayTextureWrappers;
+            persistentCache = &m_wrappersOf2DArrayTextures;
         }
     } else if (isWebGL2OrHigher() && target == GL_TEXTURE_3D) {
         m_textureUnits[m_activeTextureUnit].m_texture3DBinding = texture;
         if (scriptState) {
             hiddenValueName = V8HiddenValue::webgl3DTextures(scriptState->isolate());
-            persistentCache = &m_3DTextureWrappers;
+            persistentCache = &m_wrappersOf3DTextures;
         }
     } else {
         synthesizeGLError(GL_INVALID_ENUM, "bindTexture", "invalid target");

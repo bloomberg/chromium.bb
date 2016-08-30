@@ -139,7 +139,7 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
     , m_contentsLayer(0)
     , m_contentsLayerId(0)
     , m_scrollableArea(nullptr)
-    , m_3dRenderingContext(0)
+    , m_renderingContext3d(0)
 {
 #if ENABLE(ASSERT)
     if (m_client)
@@ -519,7 +519,7 @@ void GraphicsLayer::setupContentsLayer(WebLayer* contentsLayer)
     WebLayer* borderWebLayer = m_contentsClippingMaskLayer ? m_contentsClippingMaskLayer->platformLayer() : 0;
     m_contentsLayer->setMaskLayer(borderWebLayer);
 
-    m_contentsLayer->setRenderingContext(m_3dRenderingContext);
+    m_contentsLayer->setRenderingContext(m_renderingContext3d);
 }
 
 void GraphicsLayer::clearContentsLayerIfUnregistered()
@@ -728,11 +728,11 @@ std::unique_ptr<JSONObject> GraphicsLayer::layerTreeAsJSONInternal(LayerTreeFlag
     if (!m_shouldFlattenTransform)
         json->setBoolean("shouldFlattenTransform", m_shouldFlattenTransform);
 
-    if (m_3dRenderingContext) {
-        RenderingContextMap::const_iterator it = renderingContextMap.find(m_3dRenderingContext);
+    if (m_renderingContext3d) {
+        RenderingContextMap::const_iterator it = renderingContextMap.find(m_renderingContext3d);
         int contextId = renderingContextMap.size() + 1;
         if (it == renderingContextMap.end())
-            renderingContextMap.set(m_3dRenderingContext, contextId);
+            renderingContextMap.set(m_renderingContext3d, contextId);
         else
             contextId = it->value;
 
@@ -949,14 +949,14 @@ void GraphicsLayer::setShouldFlattenTransform(bool shouldFlatten)
 
 void GraphicsLayer::setRenderingContext(int context)
 {
-    if (m_3dRenderingContext == context)
+    if (m_renderingContext3d == context)
         return;
 
-    m_3dRenderingContext = context;
+    m_renderingContext3d = context;
     m_layer->layer()->setRenderingContext(context);
 
     if (m_contentsLayer)
-        m_contentsLayer->setRenderingContext(m_3dRenderingContext);
+        m_contentsLayer->setRenderingContext(m_renderingContext3d);
 }
 
 void GraphicsLayer::setMasksToBounds(bool masksToBounds)

@@ -293,11 +293,11 @@ public:
 
     bool subtreeIsInvisible() const { return !hasVisibleContent() && !hasVisibleDescendant(); }
 
-    // FIXME: hasVisibleContent() should call updateDescendantDependentFlags() if m_visibleContentStatusDirty.
-    bool hasVisibleContent() const { ASSERT(!m_visibleContentStatusDirty); return m_hasVisibleContent; }
+    // FIXME: hasVisibleContent() should call updateDescendantDependentFlags() if m_isVisibleContentDirty.
+    bool hasVisibleContent() const { DCHECK(!m_isVisibleContentDirty); return m_hasVisibleContent; }
 
-    // FIXME: hasVisibleDescendant() should call updateDescendantDependentFlags() if m_visibleDescendantStatusDirty.
-    bool hasVisibleDescendant() const { ASSERT(!m_visibleDescendantStatusDirty); return m_hasVisibleDescendant; }
+    // FIXME: hasVisibleDescendant() should call updateDescendantDependentFlags() if m_isVisibleDescendantDirty.
+    bool hasVisibleDescendant() const { DCHECK(!m_isVisibleDescendantDirty); return m_hasVisibleDescendant; }
 
     void dirtyVisibleContentStatus();
     void potentiallyDirtyVisibleContentStatus(EVisibility);
@@ -707,7 +707,7 @@ public:
     void dirty3DTransformedDescendantStatus();
     // Both updates the status, and returns true if descendants of this have 3d.
     bool update3DTransformedDescendantStatus();
-    bool has3DTransformedDescendant() const { DCHECK(!m_3DTransformedDescendantStatusDirty); return m_has3DTransformedDescendant; }
+    bool has3DTransformedDescendant() const { DCHECK(!m_is3DTransformedDescendantDirty); return m_has3DTransformedDescendant; }
 
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
     void endShouldKeepAliveAllClientsRecursive();
@@ -813,16 +813,16 @@ private:
 
     const unsigned m_isRootLayer : 1;
 
-    unsigned m_visibleContentStatusDirty : 1;
+    unsigned m_isVisibleContentDirty : 1;
     unsigned m_hasVisibleContent : 1;
-    unsigned m_visibleDescendantStatusDirty : 1;
+    unsigned m_isVisibleDescendantDirty : 1;
     unsigned m_hasVisibleDescendant : 1;
 
 #if ENABLE(ASSERT)
     unsigned m_needsPositionUpdate : 1;
 #endif
 
-    unsigned m_3DTransformedDescendantStatusDirty : 1;
+    unsigned m_is3DTransformedDescendantDirty : 1;
     // Set on a stacking context layer that has 3D descendants anywhere
     // in a preserves3D hierarchy. Hint to do 3D-aware hit testing.
     unsigned m_has3DTransformedDescendant : 1;

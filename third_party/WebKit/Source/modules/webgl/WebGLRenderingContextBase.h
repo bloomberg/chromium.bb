@@ -1058,9 +1058,9 @@ protected:
     // latched into the context's state, or which are implicitly
     // linked together (like programs and their attached shaders), are
     // not garbage collected before they should be.
-    ScopedPersistent<v8::Array> m_2DTextureWrappers;
-    ScopedPersistent<v8::Array> m_2DArrayTextureWrappers;
-    ScopedPersistent<v8::Array> m_3DTextureWrappers;
+    ScopedPersistent<v8::Array> m_wrappersOf2DTextures;
+    ScopedPersistent<v8::Array> m_wrappersOf2DArrayTextures;
+    ScopedPersistent<v8::Array> m_wrappersOf3DTextures;
     ScopedPersistent<v8::Array> m_cubeMapTextureWrappers;
     ScopedPersistent<v8::Array> m_extensionWrappers;
 

@@ -369,7 +369,7 @@ private:
 
     WeakPersistent<ScrollableArea> m_scrollableArea;
     GraphicsLayerDebugInfo m_debugInfo;
-    int m_3dRenderingContext;
+    int m_renderingContext3d;
 
     std::unique_ptr<PaintController> m_paintController;
 
