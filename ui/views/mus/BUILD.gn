@@ -9,10 +9,6 @@ import("//services/shell/public/service_manifest.gni")
 import("//testing/test.gni")
 import("//tools/grit/repack.gni")
 
-gypi = exec_script("//build/gypi_to_gn.py",
-                   [ rebase_path("../views.gyp") ],
-                   "scope",
-                   [ "../views.gyp" ])
 component("mus") {
   output_name = "ui_views_mus_lib"
 
@@ -151,8 +147,6 @@ static_library("test_support") {
 test("views_mus_unittests") {
   testonly = true
 
-  configs += [ "//build/config:precompiled_headers" ]
-
   sources = [
     "display_list_unittest.cc",
     "native_widget_mus_unittest.cc",
@@ -162,23 +156,7 @@ test("views_mus_unittests") {
     "screen_mus_unittest.cc",
   ]
 
-  sources += rebase_path(gypi.views_unittests_sources, ".", "//ui/views")
-  sources += rebase_path(gypi.views_unittests_aura_sources, ".", "//ui/views")
-
-  sources -= [
-    # Mus has its own runner.
-    "../run_all_unittests_main.cc",
-
-    # EventGenerator doesn't work well with IME in mus.
-    # crbug.com/615033 crbug.com/548407
-    "../controls/textfield/textfield_unittest.cc",
-
-    # Tooltips. crbug.com/599558
-    "../corewm/tooltip_controller_unittest.cc",
-
-    # Some of the tests need drag-drop support. crbug.com/614037
-    "../touchui/touch_selection_controller_impl_unittest.cc",
-  ]
+  configs += [ "//build/config:precompiled_headers" ]
 
   deps = [
     ":mus",
@@ -213,6 +191,7 @@ test("views_mus_unittests") {
     "//ui/touch_selection",
     "//ui/views",
     "//ui/views:test_support_internal",
+    "//ui/views:views_unittests_sources",
     "//ui/wm",
     "//url",
   ]
@@ -252,8 +231,6 @@ test("views_mus_unittests") {
 # like capture.
 test("views_mus_interactive_ui_tests") {
   testonly = true
-
-  configs += [ "//build/config:precompiled_headers" ]
 
   sources = [
     "../widget/widget_interactive_uitest.cc",
