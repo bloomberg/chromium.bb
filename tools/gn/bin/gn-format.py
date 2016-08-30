@@ -27,18 +27,19 @@ def main():
   buf = vim.current.buffer
   text = '\n'.join(buf)
 
+  is_win = sys.platform.startswith('win32')
   # Avoid flashing an ugly cmd prompt on Windows when invoking gn.
   startupinfo = None
-  if sys.platform.startswith('win32'):
+  if is_win:
     startupinfo = subprocess.STARTUPINFO()
     startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
     startupinfo.wShowWindow = subprocess.SW_HIDE
 
-  # Call formatter.
+  # Call formatter. Needs shell=True on Windows due to gn.bat in depot_tools.
   p = subprocess.Popen([binary, 'format', '--stdin'],
                        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                        stdin=subprocess.PIPE, startupinfo=startupinfo,
-                       shell=True, universal_newlines=True)
+                       shell=is_win, universal_newlines=True)
   stdout, stderr = p.communicate(input=text)
   if p.returncode != 0:
     print 'Formatting failed, please report to gn-dev@chromium.org.'
