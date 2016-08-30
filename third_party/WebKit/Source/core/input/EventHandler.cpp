@@ -2041,6 +2041,10 @@ WebInputEventResult EventHandler::sendContextMenuEvent(const PlatformMouseEvent&
     LayoutPoint positionInContents = v->rootFrameToContents(event.position());
     HitTestRequest request(HitTestRequest::Active);
     MouseEventWithHitTestResults mev = m_frame->document()->prepareMouseEvent(request, positionInContents, event);
+    // Since |Document::prepareMouseEvent()| modifies layout tree for setting
+    // hover element, we need to update layout tree for requirement of
+    // |SelectionController::sendContextMenuEvent()|.
+    m_frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
     selectionController().sendContextMenuEvent(mev, positionInContents);
 
