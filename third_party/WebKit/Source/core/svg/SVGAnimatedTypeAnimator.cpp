@@ -143,50 +143,30 @@ SVGPropertyBase* SVGAnimatedTypeAnimator::createPropertyForAnimation(const Strin
     return nullptr;
 }
 
-SVGPropertyBase* SVGAnimatedTypeAnimator::constructFromString(const String& value)
+SVGPropertyBase* SVGAnimatedTypeAnimator::createAnimatedValueFromString(const String& value)
 {
     return createPropertyForAnimation(value);
 }
 
 void SVGAnimatedTypeAnimator::calculateFromAndToValues(Member<SVGPropertyBase>& from, Member<SVGPropertyBase>& to, const String& fromString, const String& toString)
 {
-    from = constructFromString(fromString);
-    to = constructFromString(toString);
+    from = createAnimatedValueFromString(fromString);
+    to = createAnimatedValueFromString(toString);
 }
 
 void SVGAnimatedTypeAnimator::calculateFromAndByValues(Member<SVGPropertyBase>& from, Member<SVGPropertyBase>& to, const String& fromString, const String& byString)
 {
-    from = constructFromString(fromString);
-    to = constructFromString(byString);
+    from = createAnimatedValueFromString(fromString);
+    to = createAnimatedValueFromString(byString);
     to->add(from, m_contextElement);
 }
 
-SVGPropertyBase* SVGAnimatedTypeAnimator::resetAnimation()
+SVGPropertyBase* SVGAnimatedTypeAnimator::createAnimatedValue()
 {
     DCHECK(isAnimatingSVGDom());
-    DCHECK(m_contextElement);
     SVGPropertyBase* animatedValue = m_animatedProperty->createAnimatedValue();
     DCHECK_EQ(animatedValue->type(), m_type);
-    m_contextElement->setAnimatedAttribute(m_animatedProperty->attributeName(), animatedValue);
     return animatedValue;
-}
-
-SVGPropertyBase* SVGAnimatedTypeAnimator::startAnimValAnimation()
-{
-    return resetAnimation();
-}
-
-void SVGAnimatedTypeAnimator::stopAnimValAnimation()
-{
-    if (!isAnimatingSVGDom())
-        return;
-    DCHECK(m_contextElement);
-    m_contextElement->clearAnimatedAttribute(m_animatedProperty->attributeName());
-}
-
-SVGPropertyBase* SVGAnimatedTypeAnimator::resetAnimValToBaseVal()
-{
-    return resetAnimation();
 }
 
 class ParsePropertyFromString {

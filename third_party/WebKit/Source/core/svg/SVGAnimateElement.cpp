@@ -122,7 +122,7 @@ bool SVGAnimateElement::calculateToAtEndOfDurationValue(const String& toAtEndOfD
 {
     if (toAtEndOfDurationString.isEmpty())
         return false;
-    m_toAtEndOfDurationProperty = m_animator.constructFromString(toAtEndOfDurationString);
+    m_toAtEndOfDurationProperty = m_animator.createAnimatedValueFromString(toAtEndOfDurationString);
     return true;
 }
 
@@ -188,11 +188,8 @@ void SVGAnimateElement::resetAnimatedType()
         for (SVGElement* element : animatedElements)
             addReferenceTo(element);
 
-        if (!m_animatedProperty)
-            m_animatedProperty = m_animator.startAnimValAnimation();
-        else
-            m_animatedProperty = m_animator.resetAnimValToBaseVal();
-
+        m_animatedProperty = m_animator.createAnimatedValue();
+        targetElement->setAnimatedAttribute(attributeName, m_animatedProperty);
         return;
     }
     DCHECK_EQ(shouldApply, ApplyCSSAnimation);
@@ -202,7 +199,7 @@ void SVGAnimateElement::resetAnimatedType()
     DCHECK(isTargetAttributeCSSProperty(targetElement, attributeName));
     computeCSSPropertyValue(targetElement, cssPropertyID(attributeName.localName()), baseValue);
 
-    m_animatedProperty = m_animator.constructFromString(baseValue);
+    m_animatedProperty = m_animator.createAnimatedValueFromString(baseValue);
 }
 
 void SVGAnimateElement::clearAnimatedType()
@@ -232,7 +229,7 @@ void SVGAnimateElement::clearAnimatedType()
     }
     if (shouldApply == ApplyXMLandCSSAnimation || m_animator.isAnimatingSVGDom()) {
         // SVG DOM animVal animation code-path.
-        m_animator.stopAnimValAnimation();
+        targetElement->clearAnimatedAttribute(attributeName());
         if (shouldApply != DontApplyAnimation)
             targetElement->invalidateAnimatedAttribute(attributeName());
     }
