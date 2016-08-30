@@ -48,6 +48,10 @@
   return [[self parentWindow] hasDarkTheme];
 }
 
+- (BOOL)inIncognitoModeWithSystemTheme {
+  return [[self parentWindow] inIncognitoModeWithSystemTheme];
+}
+
 @end
 
 @implementation TabWindowController
