@@ -22,7 +22,7 @@
 
 namespace features {
 const base::Feature kDesktopCoreProfileGLOnMac{
-    "DesktopCoreProfileGLOnMac", base::FEATURE_DISABLED_BY_DEFAULT};
+    "DesktopCoreProfileGLOnMac", base::FEATURE_ENABLED_BY_DEFAULT};
 }
 
 namespace gl {
