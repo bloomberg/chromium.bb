@@ -712,25 +712,6 @@ gfx::Point RenderFrameHostImpl::AccessibilityOriginInScreen(
   return gfx::Point();
 }
 
-gfx::Rect RenderFrameHostImpl::AccessibilityTransformToRootCoordSpace(
-    const gfx::Rect& bounds) {
-  RenderWidgetHostViewBase* view =
-      static_cast<RenderWidgetHostViewBase*>(GetView());
-  gfx::Point p1 = view->TransformPointToRootCoordSpace(bounds.origin());
-  gfx::Point p2 = view->TransformPointToRootCoordSpace(bounds.top_right());
-  gfx::Point p3 = view->TransformPointToRootCoordSpace(bounds.bottom_right());
-  gfx::Point p4 = view->TransformPointToRootCoordSpace(bounds.bottom_left());
-  gfx::QuadF transformed_quad = gfx::QuadF(
-      gfx::PointF(p1), gfx::PointF(p2), gfx::PointF(p3), gfx::PointF(p4));
-  gfx::RectF new_bounds = transformed_quad.BoundingBox();
-  return gfx::Rect(new_bounds.x(), new_bounds.y(),
-                   new_bounds.width(), new_bounds.height());
-}
-
-SiteInstance* RenderFrameHostImpl::AccessibilityGetSiteInstance() {
-  return GetSiteInstance();
-}
-
 void RenderFrameHostImpl::AccessibilityHitTest(const gfx::Point& point) {
   Send(new AccessibilityMsg_HitTest(routing_id_, point));
 }

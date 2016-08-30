@@ -39,8 +39,6 @@ class BrowserAccessibilityManagerAuraLinux;
 class BrowserAccessibilityManagerMac;
 #endif
 
-class SiteInstance;
-
 // For testing.
 CONTENT_EXPORT ui::AXTreeUpdate MakeAXTreeUpdate(
     const ui::AXNodeData& node,
@@ -85,9 +83,6 @@ class CONTENT_EXPORT BrowserAccessibilityDelegate {
   virtual gfx::Rect AccessibilityGetViewBounds() const = 0;
   virtual gfx::Point AccessibilityOriginInScreen(
       const gfx::Rect& bounds) const = 0;
-  virtual gfx::Rect AccessibilityTransformToRootCoordSpace(
-      const gfx::Rect& bounds) = 0;
-  virtual SiteInstance* AccessibilityGetSiteInstance() = 0;
   virtual void AccessibilityHitTest(
       const gfx::Point& point) = 0;
   virtual void AccessibilitySetAccessibilityFocus(int acc_obj_id) = 0;
