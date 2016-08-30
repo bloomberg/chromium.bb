@@ -56,17 +56,6 @@ SkFilterQuality CalculateUploadScaleFilterQuality(const DrawImage& draw_image) {
   return std::min(kMedium_SkFilterQuality, draw_image.filter_quality());
 }
 
-SkImage::DeferredTextureImageUsageParams ParamsFromDrawImage(
-    const DrawImage& draw_image,
-    int upload_scale_mip_level) {
-  SkImage::DeferredTextureImageUsageParams params;
-  params.fMatrix = draw_image.matrix();
-  params.fQuality = draw_image.filter_quality();
-  params.fPreScaleMipLevel = upload_scale_mip_level;
-
-  return params;
-}
-
 // Calculate the mip level to upload-scale the image to before uploading. We use
 // mip levels rather than exact scales to increase re-use of scaled images.
 int CalculateUploadScaleMipLevel(const DrawImage& draw_image) {
@@ -943,8 +932,9 @@ void GpuImageDecodeController::DecodeImageIfNecessary(
         backing_memory =
             base::DiscardableMemoryAllocator::GetInstance()
                 ->AllocateLockedDiscardableMemory(image_data->size);
-        auto params =
-            ParamsFromDrawImage(draw_image, image_data->upload_scale_mip_level);
+        auto params = SkImage::DeferredTextureImageUsageParams(
+            draw_image.matrix(), draw_image.filter_quality(),
+            image_data->upload_scale_mip_level);
         if (!draw_image.image()->getDeferredTextureImageData(
                 *context_threadsafe_proxy_.get(), &params, 1,
                 backing_memory->data())) {
@@ -1031,8 +1021,8 @@ GpuImageDecodeController::CreateImageData(const DrawImage& draw_image) {
 
   DecodedDataMode mode;
   int upload_scale_mip_level = CalculateUploadScaleMipLevel(draw_image);
-  SkImage::DeferredTextureImageUsageParams params =
-      ParamsFromDrawImage(draw_image, upload_scale_mip_level);
+  auto params = SkImage::DeferredTextureImageUsageParams(
+      draw_image.matrix(), draw_image.filter_quality(), upload_scale_mip_level);
   size_t data_size = draw_image.image()->getDeferredTextureImageData(
       *context_threadsafe_proxy_.get(), &params, 1, nullptr);
 
