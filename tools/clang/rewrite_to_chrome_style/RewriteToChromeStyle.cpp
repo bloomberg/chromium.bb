@@ -66,6 +66,21 @@ AST_MATCHER_P(clang::FunctionTemplateDecl,
   return InnerMatcher.matches(*Node.getTemplatedDecl(), Finder, Builder);
 }
 
+// If |InnerMatcher| matches |top|, then the returned matcher will match:
+// - |top::function|
+// - |top::Class::method|
+// - |top::internal::Class::method|
+AST_MATCHER_P(
+    clang::NestedNameSpecifier,
+    hasTopLevelPrefix,
+    clang::ast_matchers::internal::Matcher<clang::NestedNameSpecifier>,
+    InnerMatcher) {
+  const clang::NestedNameSpecifier* NodeToMatch = &Node;
+  while (NodeToMatch->getPrefix())
+    NodeToMatch = NodeToMatch->getPrefix();
+  return InnerMatcher.matches(*NodeToMatch, Finder, Builder);
+}
+
 // This will narrow CXXCtorInitializers down for both FieldDecls and
 // IndirectFieldDecls (ie. anonymous unions and such). In both cases
 // getAnyMember() will return a FieldDecl which we can match against.
@@ -591,10 +606,30 @@ int main(int argc, const char* argv[]) {
   MatchFinder match_finder;
   std::set<Replacement> replacements;
 
-  auto in_blink_namespace =
-      decl(hasAncestor(namespaceDecl(anyOf(hasName("blink"), hasName("WTF")),
-                                     hasParent(translationUnitDecl()))),
-           unless(isExpansionInFileMatching(kGeneratedFileRegex)));
+  // Blink namespace matchers ========
+  auto blink_namespace_decl =
+      namespaceDecl(anyOf(hasName("blink"), hasName("WTF")),
+                    hasParent(translationUnitDecl()));
+
+  // Given top-level compilation unit:
+  //   namespace WTF {
+  //     void foo() {}
+  //   }
+  // matches |foo|.
+  auto decl_under_blink_namespace = decl(hasAncestor(blink_namespace_decl));
+
+  // Given top-level compilation unit:
+  //   void WTF::function() {}
+  //   void WTF::Class::method() {}
+  // matches |WTF::function| and |WTF::Class::method| decls.
+  auto decl_has_qualifier_to_blink_namespace =
+      declaratorDecl(has(nestedNameSpecifier(
+          hasTopLevelPrefix(specifiesNamespace(blink_namespace_decl)))));
+
+  auto in_blink_namespace = decl(
+      anyOf(decl_under_blink_namespace, decl_has_qualifier_to_blink_namespace,
+            hasAncestor(decl_has_qualifier_to_blink_namespace)),
+      unless(isExpansionInFileMatching(kGeneratedFileRegex)));
 
   // Field, variable, and enum declarations ========
   // Given

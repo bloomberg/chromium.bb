@@ -206,3 +206,25 @@ void F2() {
   WTF::StructInWTF w;
   w.Function();
 }
+
+namespace blink {
+
+class ClassDeclaredInsideBlink {
+ public:
+  static void MethodDefinedOutsideBlink();
+};
+
+namespace internal {
+
+class InternalClass {
+ public:
+  static void Method();
+};
+
+}  // namespace internal
+
+}  // namespace blink
+
+// https://crbug.com/640688 - need to rewrite method name below.
+void blink::ClassDeclaredInsideBlink::MethodDefinedOutsideBlink() {}
+void blink::internal::InternalClass::Method() {}

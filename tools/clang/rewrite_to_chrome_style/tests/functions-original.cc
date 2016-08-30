@@ -36,7 +36,14 @@ void F() {
   int (*functionPointer)(int, int) = &testFunctionThatTakesTwoInts;
 }
 
+void bug640688(int);  // Declaration within blink namespace.
+
 }  // namespace blink
+
+// Definition outside of blink namespace.
+void blink::bug640688(int myParam) {
+  char myVariable = 'c';
+}
 
 using blink::testFunctionThatTakesTwoInts;
 
