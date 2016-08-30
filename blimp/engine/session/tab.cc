@@ -75,11 +75,19 @@ void Tab::LoadUrl(const GURL& url) {
 }
 
 void Tab::GoBack() {
+  if (!web_contents_->GetController().CanGoBack()) {
+    DLOG(ERROR) << "Ignoring back in tab " << tab_id_;
+    return;
+  }
   DVLOG(1) << "Back in tab " << tab_id_;
   web_contents_->GetController().GoBack();
 }
 
 void Tab::GoForward() {
+  if (!web_contents_->GetController().CanGoForward()) {
+    DLOG(ERROR) << "Ignoring forward in tab " << tab_id_;
+    return;
+  }
   DVLOG(1) << "Forward in tab " << tab_id_;
   web_contents_->GetController().GoForward();
 }

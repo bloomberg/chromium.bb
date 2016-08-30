@@ -28,6 +28,10 @@ namespace blimp {
 namespace {
 
 const int kDummyTabId = 0;
+const char kPage1Path[] = "/page1.html";
+const char kPage2Path[] = "/page2.html";
+const char kPage1Title[] = "page1";
+const char kPage2Title[] = "page2";
 
 // Uses a headless client session to test a full engine.
 class EngineBrowserTest : public BlimpBrowserTest {
@@ -110,26 +114,68 @@ class EngineBrowserTest : public BlimpBrowserTest {
 IN_PROC_BROWSER_TEST_F(EngineBrowserTest, LoadUrl) {
   EXPECT_CALL(client_rw_feature_delegate_, OnRenderWidgetCreated(1));
   ExpectPageLoad();
-  NavigateToLocalUrl("/page1.html");
+  NavigateToLocalUrl(kPage1Path);
   RunAndVerify();
-  EXPECT_EQ("page1", last_page_title_);
+  EXPECT_EQ(kPage1Title, last_page_title_);
 }
 
-IN_PROC_BROWSER_TEST_F(EngineBrowserTest, GoBack) {
+IN_PROC_BROWSER_TEST_F(EngineBrowserTest, Reload) {
   ExpectPageLoad();
-  NavigateToLocalUrl("/page1.html");
+  NavigateToLocalUrl(kPage1Path);
   RunAndVerify();
-  EXPECT_EQ("page1", last_page_title_);
+  EXPECT_EQ(kPage1Title, last_page_title_);
 
   ExpectPageLoad();
-  NavigateToLocalUrl("/page2.html");
+  client_session_->GetNavigationFeature()->Reload(kDummyTabId);
   RunAndVerify();
-  EXPECT_EQ("page2", last_page_title_);
+  EXPECT_EQ(kPage1Title, last_page_title_);
+}
+
+IN_PROC_BROWSER_TEST_F(EngineBrowserTest, GoBackAndGoForward) {
+  ExpectPageLoad();
+  NavigateToLocalUrl(kPage1Path);
+  RunAndVerify();
+  EXPECT_EQ(kPage1Title, last_page_title_);
+
+  ExpectPageLoad();
+  NavigateToLocalUrl(kPage2Path);
+  RunAndVerify();
+  EXPECT_EQ(kPage2Title, last_page_title_);
 
   ExpectPageLoad();
   client_session_->GetNavigationFeature()->GoBack(kDummyTabId);
   RunAndVerify();
-  EXPECT_EQ("page1", last_page_title_);
+  EXPECT_EQ(kPage1Title, last_page_title_);
+
+  ExpectPageLoad();
+  client_session_->GetNavigationFeature()->GoForward(kDummyTabId);
+  RunAndVerify();
+  EXPECT_EQ(kPage2Title, last_page_title_);
+}
+
+IN_PROC_BROWSER_TEST_F(EngineBrowserTest, InvalidGoBack) {
+  // Try an invalid GoBack before loading a page, and assert that the page still
+  // loads correctly.
+  ExpectPageLoad();
+  client_session_->GetNavigationFeature()->GoBack(kDummyTabId);
+  NavigateToLocalUrl(kPage1Path);
+  RunAndVerify();
+  EXPECT_EQ(kPage1Title, last_page_title_);
+}
+
+IN_PROC_BROWSER_TEST_F(EngineBrowserTest, InvalidGoForward) {
+  ExpectPageLoad();
+  NavigateToLocalUrl(kPage1Path);
+  RunAndVerify();
+  EXPECT_EQ(kPage1Title, last_page_title_);
+
+  // Try an invalid GoForward before loading a different page, and
+  // assert that the page still loads correctly.
+  ExpectPageLoad();
+  client_session_->GetNavigationFeature()->GoForward(kDummyTabId);
+  NavigateToLocalUrl(kPage2Path);
+  RunAndVerify();
+  EXPECT_EQ(kPage2Title, last_page_title_);
 }
 
 }  // namespace
