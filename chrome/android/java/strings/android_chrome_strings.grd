@@ -2337,7 +2337,7 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
 
       <!-- Custom tabs -->
       <message name="IDS_READ_IT_LATER" desc="Text describing an option for the user to save the tab to Chrome and read it in the future.">
-        Read it later in Chrome
+        Keep tab in Chrome
       </message>
       <message name="IDS_TAB_SENT_TO_BACKGROUND" desc="A message to show that the tab has been sent to the background Chrome.">
         Your tab is now in the background.
