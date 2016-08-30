@@ -1,9 +1,8 @@
-#<skip -- crbug.com/421341>
 AXWebArea AXRoleDescription='HTML content'
 ++AXMenu AXRoleDescription='menu'
-++++AXMenuItem AXRoleDescription='menu item' AXTitle='Menu item 1'
+++++AXMenuItem AXRoleDescription='menu item' AXTitle='Menu item 1' AXValue='0'
 ++++++AXStaticText AXRoleDescription='text' AXValue='Menu item 1'
-++++AXMenuItem AXRoleDescription='menu item' AXTitle='Menu item 2'
+++++AXMenuItem AXRoleDescription='menu item' AXTitle='Menu item 2' AXValue='1'
 ++++++AXStaticText AXRoleDescription='text' AXValue='Menu item 2'
-++++AXMenuItem AXRoleDescription='menu item' AXTitle='Menu item 3'
+++++AXMenuItem AXRoleDescription='menu item' AXTitle='Menu item 3' AXValue='0'
 ++++++AXStaticText AXRoleDescription='text' AXValue='Menu item 3'

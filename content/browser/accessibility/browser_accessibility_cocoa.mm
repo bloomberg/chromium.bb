@@ -1803,7 +1803,9 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
     return [NSNumber numberWithInt:value];
 
   } else if ([role isEqualToString:NSAccessibilityCheckBoxRole] ||
-             [role isEqualToString:NSAccessibilityRadioButtonRole]) {
+             [role isEqualToString:NSAccessibilityRadioButtonRole] ||
+             [self internalRole] == ui::AX_ROLE_MENU_ITEM_CHECK_BOX ||
+             [self internalRole] == ui::AX_ROLE_MENU_ITEM_RADIO) {
     int value = 0;
     value = GetState(
         browserAccessibility_, ui::AX_STATE_CHECKED) ? 1 : 0;
