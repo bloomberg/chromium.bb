@@ -23471,6 +23471,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.UnderflowCount">
+  <owner>dalecurtis@chromium.org</owner>
+  <summary>
+    The number of times a src= playback has underflowed; i.e. ran out of data.
+  </summary>
+</histogram>
+
+<histogram name="Media.UnderflowDuration" units="ms">
+  <owner>dalecurtis@chromium.org</owner>
+  <summary>
+    The amount of time taken to leave the underflow state; i.e. resume playback.
+  </summary>
+</histogram>
+
 <histogram name="Media.URLScheme" enum="URLSchemeForHistogram">
   <owner>scherkus@chromium.org</owner>
   <summary>

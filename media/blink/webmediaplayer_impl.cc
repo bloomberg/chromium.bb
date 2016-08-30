@@ -226,7 +226,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       overlay_surface_id_(SurfaceManager::kNoSurfaceID),
       suppress_destruction_errors_(false),
       can_suspend_state_(CanSuspendState::UNKNOWN),
-      is_encrypted_(false) {
+      is_encrypted_(false),
+      underflow_count_(0) {
   DCHECK(!adjust_allocated_memory_cb_.is_null());
   DCHECK(renderer_factory_);
   DCHECK(client_);
@@ -1099,6 +1100,14 @@ void WebMediaPlayerImpl::OnBufferingStateChange(BufferingState state) {
     // Once we have enough, start reporting the total memory usage. We'll also
     // report once playback starts.
     ReportMemoryUsage();
+
+    // Report the amount of time it took to leave the underflow state. Don't
+    // bother to report this for MSE playbacks since it's out of our control.
+    if (underflow_timer_ && data_source_) {
+      UMA_HISTOGRAM_TIMES("Media.UnderflowDuration",
+                          underflow_timer_->Elapsed());
+      underflow_timer_.reset();
+    }
   } else {
     // Buffering has underflowed.
     DCHECK_EQ(state, BUFFERING_HAVE_NOTHING);
@@ -1106,6 +1115,13 @@ void WebMediaPlayerImpl::OnBufferingStateChange(BufferingState state) {
     // HAVE_CURRENT_DATA.
     DCHECK_GT(highest_ready_state_, WebMediaPlayer::ReadyStateHaveCurrentData);
     SetReadyState(WebMediaPlayer::ReadyStateHaveCurrentData);
+
+    // Report the number of times we've entered the underflow state. Only report
+    // for src= playback since for MSE it's out of our control.
+    if (data_source_) {
+      UMA_HISTOGRAM_COUNTS_100("Media.UnderflowCount", ++underflow_count_);
+      underflow_timer_.reset(new base::ElapsedTimer());
+    }
   }
 
   UpdatePlayState();
