@@ -100,7 +100,7 @@ class CheckCallAndFilterTestCase(GclientUtilBase):
         order.append('killed')
         cv.notify()
       if kill_raises:
-        raise OSError('somethign went wrong')
+        raise OSError('something went wrong')
 
     kid = self.ProcessIdMock('')
     kid.stdout.read = kid_stdout_read

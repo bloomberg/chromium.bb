@@ -466,13 +466,15 @@ class _KillTimer(object):
   # TODO(tandrii): we really want to make use of subprocess42 here, and not
   # re-invent the wheel, but it's too much work :(
 
-  def __init__(self, timeout, child):
+  def __init__(self, timeout, child, child_info):
     self._timeout = timeout
     self._child = child
+    self._child_info = child_info
 
     self._cv = threading.Condition()
     # All items below are protected by condition above.
     self._kill_at = None
+    self._killing_attempted = False
     self._working = True
     self._thread = None
 
@@ -482,6 +484,10 @@ class _KillTimer(object):
       self._thread = threading.Thread(name='_KillTimer', target=self._work)
       self._thread.daemon = True
       self._thread.start()
+
+  @property
+  def killing_attempted(self):
+    return self._killing_attempted
 
   def poke(self):
     if not self._timeout:
@@ -506,8 +512,9 @@ class _KillTimer(object):
           self._cv.wait(timeout=left)
           continue
         try:
-          logging.warn('killing child %s because of no output for %fs',
-                       self._child, self._timeout)
+          logging.warn('killing child %s %s because of no output for %fs',
+                       self._child.pid, self._child_info, self._timeout)
+          self._killing_attempted = True
           self._child.kill()
         except OSError:
           logging.exception('failed to kill child %s', self._child)
@@ -528,9 +535,8 @@ def CheckCallAndFilter(args, stdout=None, filter_fn=None,
     retry: If the process exits non-zero, sleep for a brief interval and try
            again, up to RETRY_MAX times.
     kill_timeout: (float) if given, number of seconds after which process would
-           be killed if there is no output. Must not be used with shell=True as
-           only shell process would be killed, but not processes spawned by
-           shell.
+           be killed. Must not be used with shell=True as only shell process
+           would be killed, but not processes spawned by shell.
 
   stderr is always redirected to stdout.
   """
@@ -543,6 +549,8 @@ def CheckCallAndFilter(args, stdout=None, filter_fn=None,
 
   sleep_interval = RETRY_INITIAL_SLEEP
   run_cwd = kwargs.get('cwd', os.getcwd())
+  debug_kid_info = "'%s' in %s" % (' '.join('"%s"' % x for x in args), run_cwd)
+
   for _ in xrange(RETRY_MAX + 1):
     kid = subprocess2.Popen(
         args, bufsize=0, stdout=subprocess2.PIPE, stderr=subprocess2.STDOUT,
@@ -558,14 +566,13 @@ def CheckCallAndFilter(args, stdout=None, filter_fn=None,
     # normally buffering is done for each line, but if svn requests input, no
     # end-of-line character is output after the prompt and it would not show up.
     try:
-      timeout_killer = _KillTimer(kill_timeout, kid)
+      timeout_killer = _KillTimer(kill_timeout, kid, debug_kid_info)
       in_byte = kid.stdout.read(1)
       if in_byte:
         if call_filter_on_first_line:
           filter_fn(None)
         in_line = ''
         while in_byte:
-          timeout_killer.poke()
           output.write(in_byte)
           if print_stdout:
             stdout.write(in_byte)
@@ -594,8 +601,12 @@ def CheckCallAndFilter(args, stdout=None, filter_fn=None,
       return output.getvalue()
     if not retry:
       break
-    print ("WARNING: subprocess '%s' in %s failed; will retry after a short "
-           'nap...' % (' '.join('"%s"' % x for x in args), run_cwd))
+    print ("WARNING: subprocess %s failed; will retry after a short nap..." %
+           debug_kid_info)
+    if timeout_killer.killing_attempted:
+      print('The subprocess above was likely killed because it looked hung. '
+            'Output thus far:\n> %s' %
+            ('\n> '.join(output.getvalue().splitlines())))
     time.sleep(sleep_interval)
     sleep_interval *= 2
   raise subprocess2.CalledProcessError(
