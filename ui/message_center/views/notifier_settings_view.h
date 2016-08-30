@@ -22,6 +22,7 @@
 namespace views {
 class Label;
 class MenuButton;
+class MenuModelAdapter;
 class MenuRunner;
 }
 
@@ -111,6 +112,9 @@ class MESSAGE_CENTER_EXPORT NotifierSettingsView
                            const gfx::Point& point,
                            const ui::Event* event) override;
 
+  // Callback for views::MenuModelAdapter.
+  void OnMenuClosed();
+
   views::ImageButton* title_arrow_;
   views::Label* title_label_;
   views::MenuButton* notifier_group_selector_;
@@ -118,6 +122,7 @@ class MESSAGE_CENTER_EXPORT NotifierSettingsView
   NotifierSettingsProvider* provider_;
   std::set<NotifierButton*> buttons_;
   std::unique_ptr<NotifierGroupMenuModel> notifier_group_menu_model_;
+  std::unique_ptr<views::MenuModelAdapter> notifier_group_menu_model_adapter_;
   std::unique_ptr<views::MenuRunner> notifier_group_menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(NotifierSettingsView);

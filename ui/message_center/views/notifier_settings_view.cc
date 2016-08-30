@@ -36,6 +36,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/link_listener.h"
+#include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
@@ -683,20 +684,28 @@ void NotifierSettingsView::OnMenuButtonClicked(views::MenuButton* source,
                                                const gfx::Point& point,
                                                const ui::Event* event) {
   notifier_group_menu_model_.reset(new NotifierGroupMenuModel(provider_));
+  notifier_group_menu_model_adapter_.reset(new views::MenuModelAdapter(
+      notifier_group_menu_model_.get(),
+      base::Bind(&NotifierSettingsView::OnMenuClosed, base::Unretained(this))));
+
   notifier_group_menu_runner_.reset(new views::MenuRunner(
-      notifier_group_menu_model_.get(), views::MenuRunner::CONTEXT_MENU));
+      notifier_group_menu_model_adapter_->CreateMenu(),
+      views::MenuRunner::CONTEXT_MENU | views::MenuRunner::ASYNC));
   gfx::Rect menu_anchor = source->GetBoundsInScreen();
   menu_anchor.Inset(
       gfx::Insets(0, kMenuWhitespaceOffset, 0, kMenuWhitespaceOffset));
-  if (views::MenuRunner::MENU_DELETED ==
-      notifier_group_menu_runner_->RunMenuAt(GetWidget(),
-                                             notifier_group_selector_,
-                                             menu_anchor,
-                                             views::MENU_ANCHOR_BUBBLE_ABOVE,
-                                             ui::MENU_SOURCE_MOUSE))
-    return;
+  notifier_group_menu_runner_->RunMenuAt(
+      GetWidget(), notifier_group_selector_, menu_anchor,
+      views::MENU_ANCHOR_BUBBLE_ABOVE, ui::MENU_SOURCE_MOUSE);
+}
+
+void NotifierSettingsView::OnMenuClosed() {
   MessageCenterView* center_view = static_cast<MessageCenterView*>(parent());
   center_view->OnSettingsChanged();
+
+  notifier_group_menu_runner_.reset();
+  notifier_group_menu_model_adapter_.reset();
+  notifier_group_menu_model_.reset();
 }
 
 }  // namespace message_center
