@@ -37,9 +37,11 @@ Still reading?
   <issue id="ContentDescription" severity="Error">
     <ignore regexp="blimp/client/app/android/java/res/layout/blimp_main.xml" />
     <ignore regexp="chrome/android/java/res/layout/download_content.xml" />
+    <ignore regexp="chromecast/internal" />
   </issue>
   <issue id="DefaultLocale">
     <ignore regexp="clank" />
+    <ignore regexp="com/android/tv" />
     <ignore regexp="org/chromium/chrome/browser/payments/PaymentRequestMetricsTest.class" />
     <ignore regexp="org/chromium/chrome/browser/preferences/website/UsbChooserPreferences" />
     <ignore regexp="org/chromium/chrome/browser/preferences/website/UsbDevicePreferences" />
@@ -60,12 +62,14 @@ Still reading?
     <ignore regexp="chrome/android/java/src/org/chromium/chrome/browser/compositor/overlays/strip/StripLayoutHelper.java" />
     <ignore regexp="chrome/android/java/src/org/chromium/chrome/browser/gsa/GSAServiceClient.java" />
     <ignore regexp="chrome/android/java/src/org/chromium/chrome/browser/tab/Tab.java" />
+    <ignore regexp="chromecast/internal" />
     <ignore regexp="remoting/android/java/src/org/chromium/chromoting/TapGestureDetector.java" />
   </issue>
   <issue id="HardcodedDebugMode" severity="Fatal">
     <ignore path="AndroidManifest.xml" />
   </issue>
   <issue id="HardcodedText" severity="Error">
+    <ignore regexp="chromecast/internal" />
     <ignore regexp="remoting/android/host/res/layout/main.xml" />
   </issue>
   <issue id="IconColors" severity="Error">
@@ -79,6 +83,7 @@ Still reading?
     <!-- crbug.com/457918 is tracking missing assets -->
     <ignore regexp="chrome/android/java/res/drawable-xxhdpi" />
     <ignore regexp="chrome/android/java/res/drawable-xxxhdpi" />
+    <ignore regexp="chromecast/internal" />
     <ignore regexp="components/web_contents_delegate_android/android/java/res/drawable-xxhdpi" />
     <ignore regexp="components/web_contents_delegate_android/android/java/res/drawable-xxxhdpi" />
     <ignore regexp="content/public/android/java/res/drawable-xxhdpi" />
@@ -89,9 +94,20 @@ Still reading?
     <ignore regexp=": data_reduction_illustration.png, google_icon_sprite.png, physical_web_logo.png, physical_web_logo_anim1.png, physical_web_logo_anim2.png$" />
   </issue>
   <issue id="IconDipSize">
+    <ignore regexp="chromecast/internal" />
     <ignore regexp="google_icon_sprite.png.*" />
   </issue>
+  <issue id="IconDuplicates" severity="Error">
+    <ignore regexp="chromecast/internal" />
+  </issue>
+  <issue id="IconDuplicatesConfig" severity="Error">
+    <ignore regexp="chromecast/internal" />
+  </issue>
+  <issue id="IconLauncherShape" severity="Error">
+    <ignore regexp="chromecast/internal" />
+  </issue>
   <issue id="IconLocation">
+    <ignore regexp="chromecast/internal" />
     <!-- It is OK for content_shell_apk to have missing assets. -->
     <ignore regexp="content/shell/android/java/res/" />
     <!-- TODO(lambroslambrou) remove this once crbug.com/502030 is fixed. -->
@@ -104,6 +120,7 @@ Still reading?
     <ignore regexp="android_webview/apk/java/res" />
     <ignore regexp="android_webview/tools/system_webview_shell/apk/res" />
     <ignore regexp="chrome/android/webapk/shell_apk/res" />
+    <ignore regexp="chromecast/internal" />
     <ignore regexp="tools/android/push_apps_to_background/res" />
   </issue>
   <issue id="ImpliedQuantity" severity="Error">
@@ -144,6 +161,7 @@ Still reading?
   <issue id="MissingTranslation">
     <ignore regexp="blimp/client/app/android/java/res/values/arrays.xml" />
     <!-- http://crbug.com/450548 -->
+    <ignore regexp="chromecast/internal" />
     <ignore regexp="restriction_values.xml.*" />
   </issue>
   <issue id="MissingVersion">
@@ -153,8 +171,12 @@ Still reading?
     <ignore regexp="Attribute `paddingStart` referenced here can result in a crash on some specific devices older than API 17" />
     <ignore regexp="chrome/android/java/res/values-v17/styles.xml" />
     <ignore regexp="chrome/android/java/res/drawable/downloads_big.xml" />
+    <ignore regexp="chromecast/internal" />
+    <ignore regexp="com/android/tv" />
     <ignore regexp="com/android/webview/chromium/WebViewChromiumFactoryProvider.class" />
     <ignore regexp="com/chrome/cloud/experimental/airspeed/BenchmarksTest.class" />
+    <ignore regexp="com/google/android/apps/cast" />
+    <ignore regexp="com/google/android/apps/mediashell" />
     <ignore regexp="org/chromium/base/AnimationFrameTimeHistogram.*Recorder.class" />
     <ignore regexp="org/chromium/base/JavaHandlerThread.class" />
     <ignore regexp="org/chromium/base/SysUtils.class" />
@@ -187,6 +209,9 @@ Still reading?
   </issue>
   <issue id="SetJavaScriptEnabled" severity="ignore" />
   <issue id="SignatureOrSystemPermissions" severity="ignore" />
+  <issue id="SpUsage" severity="Error">
+    <ignore regexp="chromecast/internal" />
+  </issue>
   <issue id="StringFormatCount" severity="Error">
     <ignore regexp="gen/chrome/android/chrome_strings_grd.resources.zip/values-pl/android_chrome_strings.xml" />
   </issue>
@@ -196,6 +221,9 @@ Still reading?
     <ignore regexp="gen/chrome/android/chrome_strings_grd.resources.zip/values-pl/android_chrome_strings.xml" />
     <ignore regexp="gen/chrome/android/chrome_strings_grd.resources.zip/values-sv/android_chrome_strings.xml" />
     <ignore regexp="gen/chrome/android/chrome_strings_grd.resources.zip/values-tl/android_chrome_strings.xml" />
+  </issue>
+  <issue id="TextFields" severity="Error">
+    <ignore regexp="chromecast/internal" />
   </issue>
   <issue id="TypographyDashes" severity="Error">
     <ignore regexp="chrome/app/policy/android/values-v21/restriction_values.xml" />
@@ -237,6 +265,7 @@ Still reading?
     <ignore regexp="chrome/android/java/res/values/ids.xml" />
     <ignore regexp="chrome/android/webapk/shell_apk/res/layout/main.xml" />
     <ignore regexp="chromecast/browser/android/apk/res/values/strings.xml" />
+    <ignore regexp="chromecast/internal" />
     <ignore regexp="clank" />
     <ignore regexp="gen/android_webview/locale_paks.resources.zip/values/locale-paks.xml" />
     <ignore regexp="gen/android_webview/strings_grd.resources.zip/values/android_webview_strings.xml" />
@@ -250,11 +279,13 @@ Still reading?
   </issue>
   <issue id="UseCompoundDrawables">
     <ignore regexp="chrome/android/java/res/layout/download_content.xml" />
+    <ignore regexp="chromecast/internal" />
   </issue>
   <issue id="UselessParent">
     <ignore regexp="android_webview/tools/system_webview_shell/apk/res/layout/activity_webview_browser.xml" />
     <ignore regexp="tools/android/kerberos/SpnegoAuthenticator/res/layout/activity_account_authenticator.xml" />
     <ignore regexp="chrome/android/java/res/layout/data_reduction_promo_screen.xml" />
+    <ignore regexp="chromecast/internal" />
   </issue>
   <issue id="UsesMinSdkAttributes" severity="Error">
     <ignore regexp="AndroidManifest.xml" />
