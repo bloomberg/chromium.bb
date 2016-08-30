@@ -178,6 +178,18 @@ bool CertificateSelector::CanShow(content::WebContents* web_contents) {
 void CertificateSelector::Show() {
   constrained_window::ShowWebModalDialogViews(this, web_contents_);
 
+  // TODO(isandrk): A certificate that was previously provided by *both* the
+  // platform and an extension will get incorrectly filtered out if the
+  // extension stops providing it (both instances will be filtered out), hence
+  // the |certificates_| array will be empty. Displaying a dialog with an empty
+  // list won't make much sense for the user, and also there are some CHECKs in
+  // the code that will fail when the list is empty and that's why an early exit
+  // is performed here. See crbug.com/641440 for more details.
+  if (certificates_.empty()) {
+    GetWidget()->Close();
+    return;
+  }
+
   // Select the first row automatically.  This must be done after the dialog has
   // been created.
   table_->Select(0);
