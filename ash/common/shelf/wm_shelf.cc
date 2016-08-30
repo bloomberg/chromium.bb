@@ -47,6 +47,8 @@ void WmShelf::SetShelfLayoutManager(ShelfLayoutManager* manager) {
   DCHECK(manager);
   shelf_layout_manager_ = manager;
   shelf_layout_manager_->AddObserver(this);
+  DCHECK(manager->shelf_widget());
+  shelf_widget_ = manager->shelf_widget();
 }
 
 WmWindow* WmShelf::GetWindow() {
@@ -248,10 +250,6 @@ ShelfLockingManager* WmShelf::GetShelfLockingManagerForTesting() {
 
 ShelfView* WmShelf::GetShelfViewForTesting() {
   return shelf_->shelf_view_for_testing();
-}
-
-ShelfWidget* WmShelf::GetShelfWidgetForTesting() {
-  return shelf_layout_manager_->shelf_widget();
 }
 
 WmShelf::WmShelf() {}

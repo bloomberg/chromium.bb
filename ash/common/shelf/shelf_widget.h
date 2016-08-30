@@ -16,7 +16,12 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 
+namespace app_list {
+class ApplicationDragAndDropHost;
+}
+
 namespace ash {
+class AppListButton;
 class FocusCycler;
 class Shelf;
 class ShelfLayoutManager;
@@ -95,6 +100,12 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
 
   // See WmShelf::GetScreenBoundsOfItemIconForWindow().
   gfx::Rect GetScreenBoundsOfItemIconForWindow(WmWindow* window);
+
+  // Returns the button that opens the app launcher.
+  AppListButton* GetAppListButton() const;
+
+  // Returns the ApplicationDragAndDropHost for this shelf.
+  app_list::ApplicationDragAndDropHost* GetDragAndDropHostForAppList();
 
   // Overridden from views::WidgetObserver:
   void OnWidgetActivationChanged(views::Widget* widget, bool active) override;

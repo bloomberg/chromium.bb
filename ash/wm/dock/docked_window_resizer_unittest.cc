@@ -1371,8 +1371,8 @@ TEST_P(DockedWindowResizerTest, DragToShelf) {
   EXPECT_EQ(DOCKED_ALIGNMENT_NONE, docked_alignment(manager));
 
   // Drag down almost to shelf. A panel will snap, a regular window won't.
-  ShelfWidget* shelf = GetPrimaryShelf()->GetShelfWidgetForTesting();
-  const int shelf_y = shelf->GetWindowBoundsInScreen().y();
+  const int shelf_y =
+      GetPrimaryShelf()->shelf_widget()->GetWindowBoundsInScreen().y();
   const int kDistanceFromShelf = 10;
   ASSERT_NO_FATAL_FAILURE(DragStart(w1.get()));
   DragMove(0, -kDistanceFromShelf + shelf_y - w1->bounds().bottom());

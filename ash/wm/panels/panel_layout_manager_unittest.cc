@@ -159,8 +159,7 @@ class PanelLayoutManagerTest : public test::AshTestBase {
     gfx::Rect window_bounds = panel->GetBoundsInScreen();
     ASSERT_LT(icon_bounds.width(), window_bounds.width());
     ASSERT_LT(icon_bounds.height(), window_bounds.height());
-    gfx::Rect shelf_bounds =
-        shelf->GetShelfWidgetForTesting()->GetWindowBoundsInScreen();
+    gfx::Rect shelf_bounds = shelf->shelf_widget()->GetWindowBoundsInScreen();
     const ShelfAlignment alignment = shelf->alignment();
 
     if (IsHorizontal(alignment)) {

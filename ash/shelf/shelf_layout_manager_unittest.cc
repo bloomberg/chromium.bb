@@ -65,7 +65,7 @@ void StepWidgetLayerAnimatorToEnd(views::Widget* widget) {
 }
 
 ShelfWidget* GetShelfWidget() {
-  return test::AshTestBase::GetPrimaryShelf()->GetShelfWidgetForTesting();
+  return test::AshTestBase::GetPrimaryShelf()->shelf_widget();
 }
 
 ShelfLayoutManager* GetShelfLayoutManager() {
@@ -1780,7 +1780,7 @@ TEST_F(ShelfLayoutManagerTest, BubbleEnlargesShelfMouseHitArea) {
   WmShelf* shelf = GetPrimaryShelf();
   ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
   StatusAreaWidget* status_area_widget =
-      shelf->GetShelfWidgetForTesting()->status_area_widget();
+      shelf->shelf_widget()->status_area_widget();
   SystemTray* tray = GetPrimarySystemTray();
 
   // Create a visible window so auto-hide behavior is enforced.

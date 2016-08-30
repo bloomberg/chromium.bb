@@ -521,6 +521,15 @@ gfx::Rect ShelfWidget::GetScreenBoundsOfItemIconForWindow(WmWindow* window) {
                    bounds.height());
 }
 
+AppListButton* ShelfWidget::GetAppListButton() const {
+  return shelf_view_->GetAppListButton();
+}
+
+app_list::ApplicationDragAndDropHost*
+ShelfWidget::GetDragAndDropHostForAppList() {
+  return shelf_view_;
+}
+
 void ShelfWidget::OnWidgetActivationChanged(views::Widget* widget,
                                             bool active) {
   activating_as_fallback_ = false;

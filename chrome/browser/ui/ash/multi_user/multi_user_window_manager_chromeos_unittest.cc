@@ -5,7 +5,6 @@
 #include <stddef.h>
 
 #include "ash/aura/wm_window_aura.h"
-#include "ash/common/shelf/shelf.h"
 #include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_window_ids.h"
@@ -1021,7 +1020,7 @@ TEST_F(MultiUserWindowManagerChromeOSTest, AnimationSteps) {
   WmShelf* shelf = GetPrimaryShelf();
   EXPECT_NE(SHELF_AUTO_HIDE_ALWAYS_HIDDEN, shelf->auto_hide_behavior());
   EXPECT_EQ(1.0f, window(0)->layer()->GetTargetOpacity());
-  ShelfWidget* shelf_widget = shelf->GetShelfWidgetForTesting();
+  ShelfWidget* shelf_widget = shelf->shelf_widget();
   EXPECT_FALSE(shelf_widget->IsShelfHiddenBehindBlackBar());
 
   // Start the animation and see that the old window is becoming invisible, the
@@ -1307,7 +1306,7 @@ TEST_F(MultiUserWindowManagerChromeOSTest, TestBlackBarCover) {
   multi_user_window_manager()->SetAnimationSpeedForTest(
       chrome::MultiUserWindowManagerChromeOS::ANIMATION_SPEED_FAST);
   EXPECT_NE(SHELF_AUTO_HIDE_ALWAYS_HIDDEN, shelf->auto_hide_behavior());
-  ShelfWidget* shelf_widget = shelf->GetShelfWidgetForTesting();
+  ShelfWidget* shelf_widget = shelf->shelf_widget();
   EXPECT_FALSE(shelf_widget->IsShelfHiddenBehindBlackBar());
 
   // First test that with no maximized window we show/hide the shelf.

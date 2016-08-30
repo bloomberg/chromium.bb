@@ -49,6 +49,8 @@ class ASH_EXPORT WmShelf : public ShelfLayoutManagerObserver {
     return shelf_layout_manager_;
   }
 
+  ShelfWidget* shelf_widget() { return shelf_widget_; }
+
   // Returns the window showing the shelf.
   WmWindow* GetWindow();
 
@@ -133,7 +135,6 @@ class ASH_EXPORT WmShelf : public ShelfLayoutManagerObserver {
   void SetVirtualKeyboardBoundsForTesting(const gfx::Rect& bounds);
   ShelfLockingManager* GetShelfLockingManagerForTesting();
   ShelfView* GetShelfViewForTesting();
-  ShelfWidget* GetShelfWidgetForTesting();
 
  protected:
   WmShelf();
@@ -154,6 +155,9 @@ class ASH_EXPORT WmShelf : public ShelfLayoutManagerObserver {
   // Layout manager for the shelf container window. Instances are constructed by
   // ShelfWidget and lifetimes are managed by the container windows themselves.
   ShelfLayoutManager* shelf_layout_manager_ = nullptr;
+
+  // TODO(jamescook): Move ShelfWidget ownership here.
+  ShelfWidget* shelf_widget_ = nullptr;
 
   ShelfAlignment alignment_ = SHELF_ALIGNMENT_BOTTOM_LOCKED;
 

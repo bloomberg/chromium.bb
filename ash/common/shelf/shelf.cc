@@ -5,7 +5,6 @@
 #include "ash/common/shelf/shelf.h"
 
 #include "ash/common/shelf/shelf_delegate.h"
-#include "ash/common/shelf/shelf_view.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
@@ -36,14 +35,6 @@ Shelf* Shelf::ForPrimaryDisplay() {
 // static
 Shelf* Shelf::ForWindow(WmWindow* window) {
   return window->GetRootWindowController()->GetShelf()->shelf();
-}
-
-AppListButton* Shelf::GetAppListButton() const {
-  return shelf_view_->GetAppListButton();
-}
-
-app_list::ApplicationDragAndDropHost* Shelf::GetDragAndDropHostForAppList() {
-  return shelf_view_;
 }
 
 }  // namespace ash

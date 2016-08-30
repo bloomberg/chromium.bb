@@ -371,7 +371,7 @@ TEST_F(ShellTest, ManagedWindowModeBasics) {
   // We start with the usual window containers.
   ExpectAllContainers();
   // Shelf is visible.
-  ShelfWidget* shelf_widget = GetPrimaryShelf()->GetShelfWidgetForTesting();
+  ShelfWidget* shelf_widget = GetPrimaryShelf()->shelf_widget();
   EXPECT_TRUE(shelf_widget->IsVisible());
   // Shelf is at bottom-left of screen.
   EXPECT_EQ(0, shelf_widget->GetWindowBoundsInScreen().x());

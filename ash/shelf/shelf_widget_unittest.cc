@@ -33,7 +33,7 @@ namespace ash {
 namespace {
 
 ShelfWidget* GetShelfWidget() {
-  return test::AshTestBase::GetPrimaryShelf()->GetShelfWidgetForTesting();
+  return test::AshTestBase::GetPrimaryShelf()->shelf_widget();
 }
 
 ShelfLayoutManager* GetShelfLayoutManager() {

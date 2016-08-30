@@ -9,16 +9,11 @@
 #include "ash/common/shelf/shelf_widget.h"
 #include "base/macros.h"
 
-namespace app_list {
-class ApplicationDragAndDropHost;
-}
-
 namespace gfx {
 class Rect;
 }
 
 namespace ash {
-class AppListButton;
 class ShelfView;
 class WmShelf;
 
@@ -48,17 +43,12 @@ class ASH_EXPORT Shelf {
   // TODO(jamescook): Remove this.
   WmShelf* wm_shelf() { return wm_shelf_; }
 
-  AppListButton* GetAppListButton() const;
-
   ShelfWidget* shelf_widget() { return shelf_widget_; }
 
   // TODO(msw): ShelfLayoutManager should not be accessed externally.
   ShelfLayoutManager* shelf_layout_manager() {
     return shelf_widget_->shelf_layout_manager();
   }
-
-  // Returns ApplicationDragAndDropHost for this shelf.
-  app_list::ApplicationDragAndDropHost* GetDragAndDropHostForAppList();
 
   ShelfView* shelf_view_for_testing() { return shelf_view_; }
 

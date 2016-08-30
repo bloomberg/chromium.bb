@@ -7,7 +7,6 @@
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/ash_switches.h"
 #include "ash/common/shelf/app_list_button.h"
-#include "ash/common/shelf/shelf.h"
 #include "ash/common/shelf/shelf_layout_manager.h"
 #include "ash/common/shelf/shelf_types.h"
 #include "ash/common/shelf/wm_shelf.h"
@@ -44,7 +43,7 @@ const int kMinimalAnchorPositionOffset = 57;
 // Gets arrow location based on shelf alignment.
 views::BubbleBorder::Arrow GetBubbleArrow(aura::Window* window) {
   DCHECK(Shell::HasInstance());
-  WmShelf* shelf = Shelf::ForWindow(WmWindowAura::Get(window))->wm_shelf();
+  WmShelf* shelf = WmShelf::ForWindow(WmWindowAura::Get(window));
   switch (shelf->alignment()) {
     case SHELF_ALIGNMENT_BOTTOM:
     case SHELF_ALIGNMENT_BOTTOM_LOCKED:
@@ -64,8 +63,7 @@ gfx::Vector2d GetAnchorPositionOffsetToShelf(const gfx::Rect& button_bounds,
                                              views::Widget* widget) {
   DCHECK(Shell::HasInstance());
   ShelfAlignment shelf_alignment =
-      Shelf::ForWindow(WmLookup::Get()->GetWindowForWidget(widget))
-          ->wm_shelf()
+      WmShelf::ForWindow(WmLookup::Get()->GetWindowForWidget(widget))
           ->alignment();
   gfx::Point anchor(button_bounds.CenterPoint());
   switch (shelf_alignment) {
@@ -168,8 +166,8 @@ void AppListPresenterDelegate::Init(app_list::AppListView* view,
                                   ->GetRootWindowForDisplayId(display_id);
   aura::Window* container = GetRootWindowController(root_window)
                                 ->GetContainer(kShellWindowId_AppListContainer);
-  Shelf* shelf = Shelf::ForWindow(WmWindowAura::Get(container));
-  AppListButton* applist_button = shelf->GetAppListButton();
+  WmShelf* shelf = WmShelf::ForWindow(WmWindowAura::Get(container));
+  AppListButton* applist_button = shelf->shelf_widget()->GetAppListButton();
   is_centered_ = view->ShouldCenterWindow();
   bool is_fullscreen = IsFullscreenAppListEnabled() &&
                        WmShell::Get()
@@ -214,14 +212,17 @@ void AppListPresenterDelegate::Init(app_list::AppListView* view,
   // By setting us as DnD recipient, the app list knows that we can
   // handle items.
   view->SetDragAndDropHostOfCurrentAppList(
-      shelf->GetDragAndDropHostForAppList());
+      shelf->shelf_widget()->GetDragAndDropHostForAppList());
 }
 
 void AppListPresenterDelegate::OnShown(int64_t display_id) {
   is_visible_ = true;
   // Update applist button status when app list visibility is changed.
   WmWindow* root_window = WmShell::Get()->GetRootWindowForDisplayId(display_id);
-  Shelf::ForWindow(root_window)->GetAppListButton()->OnAppListShown();
+  WmShelf::ForWindow(root_window)
+      ->shelf_widget()
+      ->GetAppListButton()
+      ->OnAppListShown();
 }
 
 void AppListPresenterDelegate::OnDismissed() {
@@ -232,12 +233,12 @@ void AppListPresenterDelegate::OnDismissed() {
 
   // App list needs to know the new shelf layout in order to calculate its
   // UI layout when AppListView visibility changes.
-  Shelf* shelf =
-      Shelf::ForWindow(WmLookup::Get()->GetWindowForWidget(view_->GetWidget()));
-  shelf->shelf_layout_manager()->UpdateAutoHideState();
+  WmShelf* shelf = WmShelf::ForWindow(
+      WmLookup::Get()->GetWindowForWidget(view_->GetWidget()));
+  shelf->UpdateAutoHideState();
 
   // Update applist button status when app list visibility is changed.
-  shelf->GetAppListButton()->OnAppListDismissed();
+  shelf->shelf_widget()->GetAppListButton()->OnAppListDismissed();
 }
 
 void AppListPresenterDelegate::UpdateBounds() {
@@ -258,10 +259,10 @@ gfx::Vector2d AppListPresenterDelegate::GetVisibilityAnimationOffset(
 
   // App list needs to know the new shelf layout in order to calculate its
   // UI layout when AppListView visibility changes.
-  Shelf* shelf = Shelf::ForWindow(WmWindowAura::Get(root_window));
-  shelf->shelf_layout_manager()->UpdateAutoHideState();
+  WmShelf* shelf = WmShelf::ForWindow(WmWindowAura::Get(root_window));
+  shelf->UpdateAutoHideState();
 
-  switch (shelf->wm_shelf()->alignment()) {
+  switch (shelf->alignment()) {
     case SHELF_ALIGNMENT_BOTTOM:
     case SHELF_ALIGNMENT_BOTTOM_LOCKED:
       return gfx::Vector2d(0, kAnimationOffset);
