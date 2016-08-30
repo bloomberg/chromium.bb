@@ -889,9 +889,11 @@ void Browser::UpdateDownloadShelfVisibility(bool visible) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void Browser::UpdateUIForNavigationInTab(WebContents* contents,
-                                         ui::PageTransition transition,
-                                         bool user_initiated) {
+void Browser::UpdateUIForNavigationInTab(
+    WebContents* contents,
+    ui::PageTransition transition,
+    chrome::NavigateParams::WindowAction action,
+    bool user_initiated) {
   tab_strip_model_->TabNavigating(contents, transition);
 
   bool contents_is_selected =
@@ -914,8 +916,10 @@ void Browser::UpdateUIForNavigationInTab(WebContents* contents,
   // navigating away from the new tab page.
   ScheduleUIUpdate(contents, content::INVALIDATE_TYPE_URL);
 
-  if (contents_is_selected)
+  if (contents_is_selected &&
+      (window()->IsActive() || action == chrome::NavigateParams::SHOW_WINDOW)) {
     contents->SetInitialFocus();
+  }
 }
 
 void Browser::ShowModalSigninWindow(profiles::BubbleViewMode mode,

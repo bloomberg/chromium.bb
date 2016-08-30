@@ -554,9 +554,9 @@ void Navigate(NavigateParams* params) {
   if (params->source_contents == params->target_contents ||
       (swapped_in_prerender && params->disposition == CURRENT_TAB)) {
     // The navigation occurred in the source tab.
-    params->browser->UpdateUIForNavigationInTab(params->target_contents,
-                                                params->transition,
-                                                user_initiated);
+    params->browser->UpdateUIForNavigationInTab(
+        params->target_contents, params->transition, params->window_action,
+        user_initiated);
   } else if (singleton_index == -1) {
     // If some non-default value is set for the index, we should tell the
     // TabStripModel to respect it.

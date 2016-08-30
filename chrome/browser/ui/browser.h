@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper_delegate.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/chrome_bubble_manager.h"
 #include "chrome/browser/ui/chrome_web_modal_dialog_manager_delegate.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
@@ -403,6 +404,7 @@ class Browser : public TabStripModelObserver,
   // this Browser. Updates the UI for the start of this navigation.
   void UpdateUIForNavigationInTab(content::WebContents* contents,
                                   ui::PageTransition transition,
+                                  chrome::NavigateParams::WindowAction action,
                                   bool user_initiated);
 
   // Shows the signin flow for |mode| in a tab-modal dialog.
