@@ -45,6 +45,7 @@ fuzzer_test("edid_parser_fuzzer") {
   ]
   deps = [
     ":util",
+    "//base",
     "//ui/gfx/geometry",
   ]
   seed_corpus = "fuzz_corpus"

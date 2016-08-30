@@ -10,6 +10,14 @@
 #include "ui/display/util/edid_parser.h"
 #include "ui/gfx/geometry/size.h"
 
+struct Environment {
+  Environment() {
+    logging::SetMinLogLevel(logging::LOG_FATAL);
+  }
+};
+
+Environment* env = new Environment();
+
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   std::vector<uint8_t> edid;
