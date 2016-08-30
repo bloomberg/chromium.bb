@@ -190,6 +190,9 @@ class PasswordManagerClient {
   // Returns a LogManager instance.
   virtual const LogManager* GetLogManager() const;
 
+  // Record that we saw a password field on this page.
+  virtual void AnnotateNavigationEntry(bool has_password_field);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerClient);
 };

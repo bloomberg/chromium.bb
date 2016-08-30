@@ -4,6 +4,7 @@
 
 #include "components/sessions/content/content_serialized_navigation_builder.h"
 
+#include "components/sessions/content/content_record_password_state.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
 #include "components/sessions/core/serialized_navigation_entry_test_helper.h"
 #include "content/public/browser/favicon_status.h"
@@ -35,6 +36,8 @@ std::unique_ptr<content::NavigationEntry> MakeNavigationEntryForTest() {
   navigation_entry->SetTimestamp(test_data::kTimestamp);
   navigation_entry->SetExtraData(kSearchTermsKey,
                                  test_data::kSearchTerms);
+  SetPasswordStateInNavigation(test_data::kPasswordState,
+                               navigation_entry.get());
   navigation_entry->GetFavicon().valid = true;
   navigation_entry->GetFavicon().url = test_data::kFaviconURL;
   navigation_entry->SetHttpStatusCode(test_data::kHttpStatusCode);
@@ -81,6 +84,7 @@ TEST(ContentSerializedNavigationBuilderTest, FromNavigationEntry) {
   EXPECT_EQ(test_data::kRedirectURL0, navigation.redirect_chain()[0]);
   EXPECT_EQ(test_data::kRedirectURL1, navigation.redirect_chain()[1]);
   EXPECT_EQ(test_data::kVirtualURL, navigation.redirect_chain()[2]);
+  EXPECT_EQ(test_data::kPasswordState, navigation.password_state());
 }
 
 // Create a NavigationEntry, then create another one by converting to
@@ -127,6 +131,18 @@ TEST(ContentSerializedNavigationBuilderTest, ToNavigationEntry) {
             new_navigation_entry->GetRedirectChain()[1]);
   EXPECT_EQ(test_data::kVirtualURL,
             new_navigation_entry->GetRedirectChain()[2]);
+}
+
+TEST(ContentSerializedNavigationBuilderTest, SetPasswordState) {
+  std::unique_ptr<content::NavigationEntry> entry(
+      content::NavigationEntry::Create());
+
+  EXPECT_EQ(SerializedNavigationEntry::PASSWORD_STATE_UNKNOWN,
+            GetPasswordStateFromNavigation(*entry));
+  SetPasswordStateInNavigation(SerializedNavigationEntry::NO_PASSWORD_FIELD,
+                               entry.get());
+  EXPECT_EQ(SerializedNavigationEntry::NO_PASSWORD_FIELD,
+            GetPasswordStateFromNavigation(*entry));
 }
 
 }  // namespace sessions

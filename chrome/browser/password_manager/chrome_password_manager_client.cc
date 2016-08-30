@@ -47,6 +47,7 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/password_manager/sync/browser/password_sync_util.h"
 #include "components/prefs/pref_service.h"
+#include "components/sessions/content/content_record_password_state.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/navigation_entry.h"
@@ -68,6 +69,7 @@
 
 using password_manager::ContentPasswordManagerDriverFactory;
 using password_manager::PasswordManagerInternalsService;
+using sessions::SerializedNavigationEntry;
 
 // Shorten the name to spare line breaks. The code provides enough context
 // already.
@@ -570,6 +572,25 @@ const GURL& ChromePasswordManagerClient::GetLastCommittedEntryURL() const {
     return GURL::EmptyGURL();
 
   return entry->GetURL();
+}
+
+void ChromePasswordManagerClient::AnnotateNavigationEntry(
+    bool has_password_field) {
+  content::NavigationEntry* entry =
+      web_contents()->GetController().GetLastCommittedEntry();
+  if (!entry)
+    return;
+
+  SerializedNavigationEntry::PasswordState old_state =
+      sessions::GetPasswordStateFromNavigation(*entry);
+
+  SerializedNavigationEntry::PasswordState new_state =
+      (has_password_field ? SerializedNavigationEntry::HAS_PASSWORD_FIELD
+                          : SerializedNavigationEntry::NO_PASSWORD_FIELD);
+
+  if (new_state > old_state) {
+    SetPasswordStateInNavigation(new_state, entry);
+  }
 }
 
 const password_manager::CredentialsFilter*

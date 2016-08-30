@@ -148,6 +148,14 @@ message TabNavigation {
   // Correct referrer policy. Valid enums are defined in
   // third_party/WebKit/public/platform/WebReferrerPolicy.h.
   optional int32 correct_referrer_policy = 25 [default = 1];
+
+  enum PasswordState {
+    PASSWORD_STATE_UNKNOWN = 0;
+    NO_PASSWORD_FIELD = 1;
+    HAS_PASSWORD_FIELD = 2;
+  }
+  // Whether the Password Manager saw a password field on the page.
+  optional PasswordState password_state = 26;
 }
 
 // Navigation information for a single redirection within a single navigation.

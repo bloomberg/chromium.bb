@@ -207,6 +207,7 @@ std::unique_ptr<base::DictionaryValue> TabNavigationToValue(
   SET_REP(navigation_redirect, NavigationRedirectToValue);
   SET_STR(last_navigation_redirect_url);
   SET_INT32(correct_referrer_policy);
+  SET_ENUM(password_state, GetPasswordStateString);
   return value;
 }
 

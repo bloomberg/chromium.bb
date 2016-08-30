@@ -18,6 +18,8 @@ if (!is_ios) {
       "content/content_live_tab.h",
       "content/content_platform_specific_tab_data.cc",
       "content/content_platform_specific_tab_data.h",
+      "content/content_record_password_state.cc",
+      "content/content_record_password_state.h",
       "content/content_serialized_navigation_builder.cc",
       "content/content_serialized_navigation_builder.h",
       "content/content_serialized_navigation_driver.cc",

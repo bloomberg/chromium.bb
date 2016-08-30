@@ -72,6 +72,7 @@ const char* SingletonDebugEventTypeString(
     sync_pb::SyncEnums::SingletonDebugEventType type);
 
 const char* GetBlockedStateString(sync_pb::TabNavigation::BlockedState state);
+const char* GetPasswordStateString(sync_pb::TabNavigation::PasswordState state);
 
 }  // namespace syncer
 

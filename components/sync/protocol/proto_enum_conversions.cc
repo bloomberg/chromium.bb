@@ -324,6 +324,19 @@ const char* GetBlockedStateString(sync_pb::TabNavigation::BlockedState state) {
   return "";
 }
 
+const char* GetPasswordStateString(
+    sync_pb::TabNavigation::PasswordState state) {
+  ASSERT_ENUM_BOUNDS(sync_pb::TabNavigation, PasswordState,
+                     PASSWORD_STATE_UNKNOWN, HAS_PASSWORD_FIELD);
+  switch (state) {
+    ENUM_CASE(sync_pb::TabNavigation, PASSWORD_STATE_UNKNOWN);
+    ENUM_CASE(sync_pb::TabNavigation, NO_PASSWORD_FIELD);
+    ENUM_CASE(sync_pb::TabNavigation, HAS_PASSWORD_FIELD);
+  }
+  NOTREACHED();
+  return "";
+}
+
 #undef ASSERT_ENUM_BOUNDS
 #undef ENUM_CASE
 

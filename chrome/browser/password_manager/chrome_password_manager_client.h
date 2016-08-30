@@ -89,6 +89,7 @@ class ChromePasswordManagerClient
   const GURL& GetMainFrameURL() const override;
   bool IsUpdatePasswordUIEnabled() const override;
   const GURL& GetLastCommittedEntryURL() const override;
+  void AnnotateNavigationEntry(bool has_password_field) override;
   const password_manager::CredentialsFilter* GetStoreResultFilter()
       const override;
   const password_manager::LogManager* GetLogManager() const override;

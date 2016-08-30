@@ -106,6 +106,8 @@
             'sessions/content/content_live_tab.h',
             'sessions/content/content_platform_specific_tab_data.cc',
             'sessions/content/content_platform_specific_tab_data.h',
+            'sessions/content/content_record_password_state.cc',
+            'sessions/content/content_record_password_state.h',
             'sessions/content/content_serialized_navigation_builder.cc',
             'sessions/content/content_serialized_navigation_builder.h',
             'sessions/content/content_serialized_navigation_driver.cc',

@@ -4,6 +4,7 @@
 
 #include "components/sessions/content/content_serialized_navigation_builder.h"
 
+#include "components/sessions/content/content_record_password_state.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/favicon_status.h"
@@ -39,6 +40,7 @@ ContentSerializedNavigationBuilder::FromNavigationEntry(
     navigation.favicon_url_ = entry.GetFavicon().url;
   navigation.http_status_code_ = entry.GetHttpStatusCode();
   navigation.redirect_chain_ = entry.GetRedirectChain();
+  navigation.password_state_ = GetPasswordStateFromNavigation(entry);
 
   return navigation;
 }

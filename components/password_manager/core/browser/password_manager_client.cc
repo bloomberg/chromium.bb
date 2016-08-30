@@ -72,4 +72,6 @@ const LogManager* PasswordManagerClient::GetLogManager() const {
   return nullptr;
 }
 
+void PasswordManagerClient::AnnotateNavigationEntry(bool has_password_field) {}
+
 }  // namespace password_manager

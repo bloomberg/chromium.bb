@@ -48,6 +48,14 @@ class SESSIONS_EXPORT SerializedNavigationEntry {
     STATE_BLOCKED = 2,
   };
 
+  // These must match the proto.  They are in priority order such that if a
+  // higher value is seen, it should overwrite a lower value.
+  enum PasswordState {
+    PASSWORD_STATE_UNKNOWN = 0,
+    NO_PASSWORD_FIELD = 1,
+    HAS_PASSWORD_FIELD = 2,
+  };
+
   // Creates an invalid (index < 0) SerializedNavigationEntry.
   SerializedNavigationEntry();
   SerializedNavigationEntry(const SerializedNavigationEntry& other);
@@ -96,11 +104,17 @@ class SESSIONS_EXPORT SerializedNavigationEntry {
   bool is_overriding_user_agent() const { return is_overriding_user_agent_; }
   base::Time timestamp() const { return timestamp_; }
 
-  BlockedState blocked_state() { return blocked_state_; }
+  BlockedState blocked_state() const { return blocked_state_; }
   void set_blocked_state(BlockedState blocked_state) {
     blocked_state_ = blocked_state;
   }
-  std::set<std::string> content_pack_categories() {
+
+  PasswordState password_state() const { return password_state_; }
+  void set_password_state(PasswordState password_state) {
+    password_state_ = password_state;
+  }
+
+  std::set<std::string> content_pack_categories() const {
     return content_pack_categories_;
   }
   void set_content_pack_categories(
@@ -140,6 +154,7 @@ class SESSIONS_EXPORT SerializedNavigationEntry {
 
   // Additional information.
   BlockedState blocked_state_;
+  PasswordState password_state_;
   std::set<std::string> content_pack_categories_;
 };
 

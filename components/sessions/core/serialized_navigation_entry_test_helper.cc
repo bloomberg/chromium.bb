@@ -39,6 +39,8 @@ const GURL kRedirectURL0 = GURL("http://go/redirect0");
 const GURL kRedirectURL1 = GURL("http://go/redirect1");
 const GURL kOtherURL = GURL("http://other.com");
 const int kPageID = 10;
+const SerializedNavigationEntry::PasswordState kPasswordState =
+    SerializedNavigationEntry::HAS_PASSWORD_FIELD;
 
 }  // namespace test_data
 
@@ -94,6 +96,7 @@ SerializedNavigationEntryTestHelper::CreateNavigationForTest() {
   navigation.search_terms_ = test_data::kSearchTerms;
   navigation.favicon_url_ = test_data::kFaviconURL;
   navigation.http_status_code_ = test_data::kHttpStatusCode;
+  navigation.password_state_ = test_data::kPasswordState;
 
   navigation.redirect_chain_.push_back(test_data::kRedirectURL0);
   navigation.redirect_chain_.push_back(test_data::kRedirectURL1);

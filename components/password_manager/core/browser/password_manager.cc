@@ -475,6 +475,9 @@ void PasswordManager::CreatePendingLoginManagers(
     logger->LogMessage(Logger::STRING_CREATE_LOGIN_MANAGERS_METHOD);
   }
 
+  // Record whether or not this top-level URL has at least one password field.
+  client_->AnnotateNavigationEntry(!forms.empty());
+
   if (!client_->IsFillingEnabledForCurrentPage())
     return;
 
