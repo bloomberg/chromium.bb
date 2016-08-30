@@ -17,9 +17,9 @@
 #include "tools/gn/parse_tree.h"
 
 class Parser;
-typedef std::unique_ptr<ParseNode> (Parser::*PrefixFunc)(Token token);
+typedef std::unique_ptr<ParseNode> (Parser::*PrefixFunc)(const Token& token);
 typedef std::unique_ptr<ParseNode> (
-    Parser::*InfixFunc)(std::unique_ptr<ParseNode> left, Token token);
+    Parser::*InfixFunc)(std::unique_ptr<ParseNode> left, const Token& token);
 
 extern const char kGrammar_Help[];
 
@@ -58,29 +58,29 @@ class Parser {
   std::unique_ptr<ParseNode> ParseExpression(int precedence);
 
   // |PrefixFunc|s used in parsing expressions.
-  std::unique_ptr<ParseNode> Block(Token token);
-  std::unique_ptr<ParseNode> Literal(Token token);
-  std::unique_ptr<ParseNode> Name(Token token);
-  std::unique_ptr<ParseNode> Group(Token token);
-  std::unique_ptr<ParseNode> Not(Token token);
-  std::unique_ptr<ParseNode> List(Token token);
-  std::unique_ptr<ParseNode> BlockComment(Token token);
+  std::unique_ptr<ParseNode> Block(const Token& token);
+  std::unique_ptr<ParseNode> Literal(const Token& token);
+  std::unique_ptr<ParseNode> Name(const Token& token);
+  std::unique_ptr<ParseNode> Group(const Token& token);
+  std::unique_ptr<ParseNode> Not(const Token& token);
+  std::unique_ptr<ParseNode> List(const Token& token);
+  std::unique_ptr<ParseNode> BlockComment(const Token& token);
 
   // |InfixFunc|s used in parsing expressions.
   std::unique_ptr<ParseNode> BinaryOperator(std::unique_ptr<ParseNode> left,
-                                            Token token);
+                                            const Token& token);
   std::unique_ptr<ParseNode> IdentifierOrCall(std::unique_ptr<ParseNode> left,
-                                              Token token);
+                                              const Token& token);
   std::unique_ptr<ParseNode> Assignment(std::unique_ptr<ParseNode> left,
-                                        Token token);
+                                        const Token& token);
   std::unique_ptr<ParseNode> Subscript(std::unique_ptr<ParseNode> left,
-                                       Token token);
+                                       const Token& token);
   std::unique_ptr<ParseNode> DotOperator(std::unique_ptr<ParseNode> left,
-                                         Token token);
+                                         const Token& token);
 
   // Helper to parse a comma separated list, optionally allowing trailing
   // commas (allowed in [] lists, not in function calls).
-  std::unique_ptr<ListNode> ParseList(Token start_token,
+  std::unique_ptr<ListNode> ParseList(const Token& start_token,
                                       Token::Type stop_before,
                                       bool allow_trailing_comma);
 
@@ -88,7 +88,7 @@ class Parser {
   std::unique_ptr<ParseNode> ParseStatement();
   // Expects to be passed the token corresponding to the '{' and that the
   // current token is the one following the '{'.
-  std::unique_ptr<BlockNode> ParseBlock(Token being_brace,
+  std::unique_ptr<BlockNode> ParseBlock(const Token& begin_brace,
                                         BlockNode::ResultMode result_mode);
   std::unique_ptr<ParseNode> ParseCondition();
 
@@ -105,11 +105,11 @@ class Parser {
 
   bool LookAhead(Token::Type type);
   bool Match(Token::Type type);
-  Token Consume(Token::Type type, const char* error_message);
-  Token Consume(Token::Type* types,
-                size_t num_types,
-                const char* error_message);
-  Token Consume();
+  const Token& Consume(Token::Type type, const char* error_message);
+  const Token& Consume(Token::Type* types,
+                       size_t num_types,
+                       const char* error_message);
+  const Token& Consume();
 
   // Call this only if !at_end().
   const Token& cur_token() const { return tokens_[cur_]; }
@@ -128,6 +128,7 @@ class Parser {
 
   static ParserHelper expressions_[Token::NUM_TYPES];
 
+  Token invalid_token_;
   Err* err_;
 
   // Current index into the tokens.
