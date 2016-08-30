@@ -59,10 +59,10 @@ static KeyframeEffect* updateInfiniteKeyframeEffect(const KeyframeEffect& keyfra
 static Animation* createOrUpdateAnimation(Animation* animation, Element& element, CSSPropertyID propertyId, PassRefPtr<AnimatableValue> newValue)
 {
     if (!animation) {
-        KeyframeEffect* keyframeEffect = createInfiniteKeyFrameEffect(element, propertyId, newValue);
+        KeyframeEffect* keyframeEffect = createInfiniteKeyFrameEffect(element, propertyId, std::move(newValue));
         return element.document().timeline().play(keyframeEffect);
     }
-    KeyframeEffect* keyframeEffect = updateInfiniteKeyframeEffect(*toKeyframeEffect(animation->effect()), propertyId, newValue);
+    KeyframeEffect* keyframeEffect = updateInfiniteKeyframeEffect(*toKeyframeEffect(animation->effect()), propertyId, std::move(newValue));
     animation->setEffect(keyframeEffect);
     return animation;
 }

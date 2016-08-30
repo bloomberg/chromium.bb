@@ -34,7 +34,7 @@ public:
     public:
         static PassRefPtr<PropertySpecificKeyframe> create(double offset, PassRefPtr<TimingFunction> easing, PassRefPtr<AnimatableValue> value, EffectModel::CompositeOperation composite)
         {
-            return adoptRef(new PropertySpecificKeyframe(offset, easing, value, composite));
+            return adoptRef(new PropertySpecificKeyframe(offset, std::move(easing), std::move(value), composite));
         }
 
         AnimatableValue* value() const { return m_value.get(); }
@@ -45,7 +45,7 @@ public:
 
     private:
         PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, PassRefPtr<AnimatableValue> value, EffectModel::CompositeOperation composite)
-            : Keyframe::PropertySpecificKeyframe(offset, easing, composite)
+            : Keyframe::PropertySpecificKeyframe(offset, std::move(easing), composite)
             , m_value(value)
         { }
 

@@ -52,7 +52,7 @@ public:
         PassRefPtr<AnimatableColor> color,
         const String& uri, const String& visitedLinkURI)
     {
-        return adoptRef(new AnimatableSVGPaint(type, visitedLinkType, color, uri, visitedLinkURI));
+        return adoptRef(new AnimatableSVGPaint(type, visitedLinkType, std::move(color), uri, visitedLinkURI));
     }
     SVGPaintType paintType() const { return m_type; }
     SVGPaintType visitedLinkPaintType() const { return m_visitedLinkType; }

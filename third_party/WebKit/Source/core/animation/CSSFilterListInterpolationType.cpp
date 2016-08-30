@@ -20,7 +20,7 @@ class UnderlyingFilterListChecker : public InterpolationType::ConversionChecker 
 public:
     static std::unique_ptr<UnderlyingFilterListChecker> create(PassRefPtr<NonInterpolableList> nonInterpolableList)
     {
-        return wrapUnique(new UnderlyingFilterListChecker(nonInterpolableList));
+        return wrapUnique(new UnderlyingFilterListChecker(std::move(nonInterpolableList)));
     }
 
     bool isValid(const InterpolationEnvironment&, const InterpolationValue& underlying) const final

@@ -95,7 +95,7 @@ bool StringKeyframe::CSSPropertySpecificKeyframe::populateAnimatableValue(CSSPro
 
 PassRefPtr<Keyframe::PropertySpecificKeyframe> StringKeyframe::CSSPropertySpecificKeyframe::neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const
 {
-    return create(offset, easing, nullptr, EffectModel::CompositeAdd);
+    return create(offset, std::move(easing), nullptr, EffectModel::CompositeAdd);
 }
 
 PassRefPtr<Keyframe::PropertySpecificKeyframe> StringKeyframe::CSSPropertySpecificKeyframe::cloneWithOffset(double offset) const
@@ -112,7 +112,7 @@ PassRefPtr<Keyframe::PropertySpecificKeyframe> SVGPropertySpecificKeyframe::clon
 
 PassRefPtr<Keyframe::PropertySpecificKeyframe> SVGPropertySpecificKeyframe::neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const
 {
-    return create(offset, easing, String(), EffectModel::CompositeAdd);
+    return create(offset, std::move(easing), String(), EffectModel::CompositeAdd);
 }
 
 } // namespace blink

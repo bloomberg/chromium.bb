@@ -18,7 +18,7 @@ class TypedInterpolationValue {
 public:
     static std::unique_ptr<TypedInterpolationValue> create(const InterpolationType& type, std::unique_ptr<InterpolableValue> interpolableValue, PassRefPtr<NonInterpolableValue> nonInterpolableValue = nullptr)
     {
-        return wrapUnique(new TypedInterpolationValue(type, std::move(interpolableValue), nonInterpolableValue));
+        return wrapUnique(new TypedInterpolationValue(type, std::move(interpolableValue), std::move(nonInterpolableValue)));
     }
 
     std::unique_ptr<TypedInterpolationValue> clone() const
@@ -37,7 +37,7 @@ public:
 private:
     TypedInterpolationValue(const InterpolationType& type, std::unique_ptr<InterpolableValue> interpolableValue, PassRefPtr<NonInterpolableValue> nonInterpolableValue)
         : m_type(type)
-        , m_value(std::move(interpolableValue), nonInterpolableValue)
+        , m_value(std::move(interpolableValue), std::move(nonInterpolableValue))
     {
         DCHECK(m_value.interpolableValue);
     }

@@ -24,7 +24,7 @@ public:
         PassRefPtr<PropertySpecificKeyframe> startKeyframe,
         PassRefPtr<PropertySpecificKeyframe> endKeyframe)
     {
-        return adoptRef(new InvalidatableInterpolation(property, interpolationTypes, startKeyframe, endKeyframe));
+        return adoptRef(new InvalidatableInterpolation(property, interpolationTypes, std::move(startKeyframe), std::move(endKeyframe)));
     }
 
     PropertyHandle getProperty() const final { return m_property; }

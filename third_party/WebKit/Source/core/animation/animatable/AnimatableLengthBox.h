@@ -40,7 +40,7 @@ public:
     ~AnimatableLengthBox() override { }
     static PassRefPtr<AnimatableLengthBox> create(PassRefPtr<AnimatableValue> left, PassRefPtr<AnimatableValue> right, PassRefPtr<AnimatableValue> top, PassRefPtr<AnimatableValue> bottom)
     {
-        return adoptRef(new AnimatableLengthBox(left, right, top, bottom));
+        return adoptRef(new AnimatableLengthBox(std::move(left), std::move(right), std::move(top), std::move(bottom)));
     }
     const AnimatableValue* left() const { return m_left.get(); }
     const AnimatableValue* right() const { return m_right.get(); }

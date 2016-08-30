@@ -49,10 +49,10 @@ public:
     {
         switch (property) {
         case CSSPropertyShapeOutside:
-            style.setShapeOutside(ShapeValue::createShapeValue(shape, BoxMissing));
+            style.setShapeOutside(ShapeValue::createShapeValue(std::move(shape), BoxMissing));
             break;
         case CSSPropertyWebkitClipPath:
-            style.setClipPath(ShapeClipPathOperation::create(shape));
+            style.setClipPath(ShapeClipPathOperation::create(std::move(shape)));
             break;
         default:
             NOTREACHED();

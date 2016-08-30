@@ -40,7 +40,7 @@ public:
 
     static std::unique_ptr<PairwisePrimitiveInterpolation> create(const InterpolationType& type, std::unique_ptr<InterpolableValue> start, std::unique_ptr<InterpolableValue> end, PassRefPtr<NonInterpolableValue> nonInterpolableValue)
     {
-        return wrapUnique(new PairwisePrimitiveInterpolation(type, std::move(start), std::move(end), nonInterpolableValue));
+        return wrapUnique(new PairwisePrimitiveInterpolation(type, std::move(start), std::move(end), std::move(nonInterpolableValue)));
     }
 
     const InterpolationType& type() const { return m_type; }

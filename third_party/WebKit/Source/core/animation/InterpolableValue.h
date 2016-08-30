@@ -161,7 +161,7 @@ class InterpolableAnimatableValue : public InterpolableValue {
 public:
     static std::unique_ptr<InterpolableAnimatableValue> create(PassRefPtr<AnimatableValue> value)
     {
-        return wrapUnique(new InterpolableAnimatableValue(value));
+        return wrapUnique(new InterpolableAnimatableValue(std::move(value)));
     }
 
     bool isAnimatableValue() const final { return true; }

@@ -39,7 +39,7 @@ class CSSTextIndentNonInterpolableValue : public NonInterpolableValue {
 public:
     static PassRefPtr<CSSTextIndentNonInterpolableValue> create(PassRefPtr<NonInterpolableValue> lengthNonInterpolableValue, const IndentMode& mode)
     {
-        return adoptRef(new CSSTextIndentNonInterpolableValue(lengthNonInterpolableValue, mode));
+        return adoptRef(new CSSTextIndentNonInterpolableValue(std::move(lengthNonInterpolableValue), mode));
     }
 
     const NonInterpolableValue* lengthNonInterpolableValue() const { return m_lengthNonInterpolableValue.get(); }

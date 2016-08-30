@@ -41,7 +41,7 @@ public:
     ~AnimatableShadow() override { }
     static PassRefPtr<AnimatableShadow> create(PassRefPtr<ShadowList> shadowList, const Color& currentColor)
     {
-        return adoptRef(new AnimatableShadow(shadowList, currentColor));
+        return adoptRef(new AnimatableShadow(std::move(shadowList), currentColor));
     }
     ShadowList* getShadowList() const { return m_shadowList.get(); }
 

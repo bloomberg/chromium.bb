@@ -16,7 +16,7 @@ public:
     ~AnimatablePath() override { }
     static PassRefPtr<AnimatablePath> create(PassRefPtr<StylePath> path)
     {
-        return adoptRef(new AnimatablePath(path));
+        return adoptRef(new AnimatablePath(std::move(path)));
     }
 
     StylePath* path() const { return m_path.get(); }

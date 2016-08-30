@@ -40,7 +40,7 @@ public:
     ~AnimatableLengthBoxAndBool() override { }
     static PassRefPtr<AnimatableLengthBoxAndBool> create(PassRefPtr<AnimatableValue> box, bool flag)
     {
-        return adoptRef(new AnimatableLengthBoxAndBool(box, flag));
+        return adoptRef(new AnimatableLengthBoxAndBool(std::move(box), flag));
     }
     const AnimatableValue* box() const { return m_box.get(); }
     bool flag() const { return m_flag; }

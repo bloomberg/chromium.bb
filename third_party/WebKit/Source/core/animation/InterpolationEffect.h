@@ -35,7 +35,7 @@ public:
 
     void addInterpolation(PassRefPtr<Interpolation> interpolation, PassRefPtr<TimingFunction> easing, double start, double end, double applyFrom, double applyTo)
     {
-        m_interpolations.append(InterpolationRecord(interpolation, easing, start, end, applyFrom, applyTo));
+        m_interpolations.append(InterpolationRecord(std::move(interpolation), std::move(easing), start, end, applyFrom, applyTo));
     }
 
     void addInterpolationsFromKeyframes(PropertyHandle, const Keyframe::PropertySpecificKeyframe& keyframeA, const Keyframe::PropertySpecificKeyframe& keyframeB, double applyFrom, double applyTo);

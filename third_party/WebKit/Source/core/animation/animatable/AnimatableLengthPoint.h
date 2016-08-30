@@ -40,7 +40,7 @@ public:
     ~AnimatableLengthPoint() override { }
     static PassRefPtr<AnimatableLengthPoint> create(PassRefPtr<AnimatableValue> x, PassRefPtr<AnimatableValue> y)
     {
-        return adoptRef(new AnimatableLengthPoint(x, y));
+        return adoptRef(new AnimatableLengthPoint(std::move(x), std::move(y)));
     }
     const AnimatableValue* x() const { return m_x.get(); }
     const AnimatableValue* y() const { return m_y.get(); }

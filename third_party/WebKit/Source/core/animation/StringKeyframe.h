@@ -52,7 +52,7 @@ public:
     public:
         static PassRefPtr<CSSPropertySpecificKeyframe> create(double offset, PassRefPtr<TimingFunction> easing, const CSSValue* value, EffectModel::CompositeOperation composite)
         {
-            return adoptRef(new CSSPropertySpecificKeyframe(offset, easing, value, composite));
+            return adoptRef(new CSSPropertySpecificKeyframe(offset, std::move(easing), value, composite));
         }
 
         const CSSValue* value() const { return m_value.get(); }
@@ -66,7 +66,7 @@ public:
 
     private:
         CSSPropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, const CSSValue* value, EffectModel::CompositeOperation composite)
-            : Keyframe::PropertySpecificKeyframe(offset, easing, composite)
+            : Keyframe::PropertySpecificKeyframe(offset, std::move(easing), composite)
             , m_value(const_cast<CSSValue*>(value))
         { }
 
@@ -84,7 +84,7 @@ public:
     public:
         static PassRefPtr<SVGPropertySpecificKeyframe> create(double offset, PassRefPtr<TimingFunction> easing, const String& value, EffectModel::CompositeOperation composite)
         {
-            return adoptRef(new SVGPropertySpecificKeyframe(offset, easing, value, composite));
+            return adoptRef(new SVGPropertySpecificKeyframe(offset, std::move(easing), value, composite));
         }
 
         const String& value() const { return m_value; }
@@ -98,7 +98,7 @@ public:
 
     private:
         SVGPropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, const String& value, EffectModel::CompositeOperation composite)
-            : Keyframe::PropertySpecificKeyframe(offset, easing, composite)
+            : Keyframe::PropertySpecificKeyframe(offset, std::move(easing), composite)
             , m_value(value)
         { }
 

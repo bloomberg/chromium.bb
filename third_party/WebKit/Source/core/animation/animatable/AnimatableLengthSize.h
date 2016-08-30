@@ -40,7 +40,7 @@ public:
     ~AnimatableLengthSize() override { }
     static PassRefPtr<AnimatableLengthSize> create(PassRefPtr<AnimatableValue> width, PassRefPtr<AnimatableValue> height)
     {
-        return adoptRef(new AnimatableLengthSize(width, height));
+        return adoptRef(new AnimatableLengthSize(std::move(width), std::move(height)));
     }
     const AnimatableValue* width() const { return m_width.get(); }
     const AnimatableValue* height() const { return m_height.get(); }

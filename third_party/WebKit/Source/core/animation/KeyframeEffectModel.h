@@ -160,12 +160,12 @@ public:
     using KeyframeVector = Vector<RefPtr<Keyframe>>;
     static KeyframeEffectModel<Keyframe>* create(const KeyframeVector& keyframes, PassRefPtr<TimingFunction> defaultKeyframeEasing = nullptr)
     {
-        return new KeyframeEffectModel(keyframes, defaultKeyframeEasing);
+        return new KeyframeEffectModel(keyframes, std::move(defaultKeyframeEasing));
     }
 
 private:
     KeyframeEffectModel(const KeyframeVector& keyframes, PassRefPtr<TimingFunction> defaultKeyframeEasing)
-        : KeyframeEffectModelBase(defaultKeyframeEasing)
+        : KeyframeEffectModelBase(std::move(defaultKeyframeEasing))
     {
         m_keyframes.appendVector(keyframes);
     }

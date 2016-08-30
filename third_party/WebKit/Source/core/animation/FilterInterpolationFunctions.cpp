@@ -20,7 +20,7 @@ class FilterNonInterpolableValue : public NonInterpolableValue {
 public:
     static PassRefPtr<FilterNonInterpolableValue> create(FilterOperation::OperationType type, PassRefPtr<NonInterpolableValue> typeNonInterpolableValue)
     {
-        return adoptRef(new FilterNonInterpolableValue(type, typeNonInterpolableValue));
+        return adoptRef(new FilterNonInterpolableValue(type, std::move(typeNonInterpolableValue)));
     }
 
     FilterOperation::OperationType type() const { return m_type; }

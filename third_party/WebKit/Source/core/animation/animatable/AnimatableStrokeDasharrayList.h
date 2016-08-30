@@ -43,7 +43,7 @@ public:
 
     static PassRefPtr<AnimatableStrokeDasharrayList> create(PassRefPtr<SVGDashArray> lengths, float zoom)
     {
-        return adoptRef(new AnimatableStrokeDasharrayList(lengths, zoom));
+        return adoptRef(new AnimatableStrokeDasharrayList(std::move(lengths), zoom));
     }
 
     PassRefPtr<SVGDashArray> toSVGDashArray(float zoom) const;

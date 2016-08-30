@@ -40,7 +40,7 @@ public:
     ~AnimatableLengthPoint3D() override { }
     static PassRefPtr<AnimatableLengthPoint3D> create(PassRefPtr<AnimatableValue> x, PassRefPtr<AnimatableValue> y, PassRefPtr<AnimatableValue> z)
     {
-        return adoptRef(new AnimatableLengthPoint3D(x, y, z));
+        return adoptRef(new AnimatableLengthPoint3D(std::move(x), std::move(y), std::move(z)));
     }
     const AnimatableValue* x() const { return m_x.get(); }
     const AnimatableValue* y() const { return m_y.get(); }

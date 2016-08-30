@@ -286,7 +286,7 @@ bool KeyframeEffectModelBase::PropertySpecificKeyframeGroup::addSyntheticKeyfram
     bool addedSyntheticKeyframe = false;
 
     if (m_keyframes.first()->offset() != 0.0) {
-        m_keyframes.insert(0, m_keyframes.first()->neutralKeyframe(0, zeroOffsetEasing));
+        m_keyframes.insert(0, m_keyframes.first()->neutralKeyframe(0, std::move(zeroOffsetEasing)));
         addedSyntheticKeyframe = true;
     }
     if (m_keyframes.last()->offset() != 1.0) {

@@ -21,7 +21,7 @@ public:
 
     static std::unique_ptr<ParentTranslateChecker> create(PassRefPtr<TranslateTransformOperation> parentTranslate)
     {
-        return wrapUnique(new ParentTranslateChecker(parentTranslate));
+        return wrapUnique(new ParentTranslateChecker(std::move(parentTranslate)));
     }
 
     bool isValid(const InterpolationEnvironment& environment, const InterpolationValue& underlying) const final

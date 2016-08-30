@@ -45,7 +45,7 @@ class ParentShadowListChecker : public InterpolationType::ConversionChecker {
 public:
     static std::unique_ptr<ParentShadowListChecker> create(CSSPropertyID property, PassRefPtr<ShadowList> shadowList)
     {
-        return wrapUnique(new ParentShadowListChecker(property, shadowList));
+        return wrapUnique(new ParentShadowListChecker(property, std::move(shadowList)));
     }
 
 private:

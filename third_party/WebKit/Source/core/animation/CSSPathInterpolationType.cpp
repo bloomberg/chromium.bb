@@ -42,7 +42,7 @@ class ParentPathChecker : public InterpolationType::ConversionChecker {
 public:
     static std::unique_ptr<ParentPathChecker> create(PassRefPtr<StylePath> stylePath)
     {
-        return wrapUnique(new ParentPathChecker(stylePath));
+        return wrapUnique(new ParentPathChecker(std::move(stylePath)));
     }
 
 private:
