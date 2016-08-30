@@ -4,7 +4,8 @@
 
 package org.chromium.chrome.browser.fullscreen;
 
-import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
+// (http://crbug/642336)
+// import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
 
 import android.graphics.Rect;
 import android.graphics.Region;
@@ -18,8 +19,9 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.Restriction;
+//  (http://crbug/642336) import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
@@ -284,9 +286,12 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
         waitForNoBrowserTopControlsOffset();
     }
 
+    /*
     @LargeTest
     @Feature({"Fullscreen"})
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    */
+    @DisabledTest(message = "crbug.com/642336")
     public void testPrerenderedPageSupportsManualHiding() throws InterruptedException {
         startMainActivityOnBlankPage();
         disableBrowserOverrides();
