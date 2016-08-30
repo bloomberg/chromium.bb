@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
+#include "media/base/audio_latency.h"
 #include "media/base/output_device_info.h"
 
 namespace media {
@@ -47,6 +48,10 @@ class CONTENT_EXPORT AudioDeviceFactory {
     kSourceWebAudioExact,
     kSourceLast = kSourceWebAudioExact  // Only used for validation of format.
   };
+
+  // Maps the source type to the audio latency it requires.
+  static media::AudioLatency::LatencyType GetSourceLatencyType(
+      SourceType source);
 
   // Creates a sink for AudioRendererMixer.
   // |render_frame_id| refers to the RenderFrame containing the entity

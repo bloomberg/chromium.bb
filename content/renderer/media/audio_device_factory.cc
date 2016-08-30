@@ -16,7 +16,6 @@
 #include "content/renderer/render_thread_impl.h"
 #include "media/audio/audio_input_device.h"
 #include "media/audio/audio_output_device.h"
-#include "media/base/audio_latency.h"
 #include "media/base/audio_renderer_mixer_input.h"
 #include "media/base/media_switches.h"
 #include "url/origin.h"
@@ -36,26 +35,6 @@ const int64_t kMaxAuthorizationTimeoutMs = 1000;
 #else
 const int64_t kMaxAuthorizationTimeoutMs = 0;  // No timeout.
 #endif  // defined(OS_WIN)
-
-media::AudioLatency::LatencyType GetSourceLatencyType(
-    AudioDeviceFactory::SourceType source) {
-  switch (source) {
-    case AudioDeviceFactory::kSourceWebAudioInteractive:
-      return media::AudioLatency::LATENCY_INTERACTIVE;
-    case AudioDeviceFactory::kSourceNone:
-    case AudioDeviceFactory::kSourceWebRtc:
-    case AudioDeviceFactory::kSourceNonRtcAudioTrack:
-    case AudioDeviceFactory::kSourceWebAudioBalanced:
-      return media::AudioLatency::LATENCY_RTC;
-    case AudioDeviceFactory::kSourceMediaElement:
-    case AudioDeviceFactory::kSourceWebAudioPlayback:
-      return media::AudioLatency::LATENCY_PLAYBACK;
-    case AudioDeviceFactory::kSourceWebAudioExact:
-      return media::AudioLatency::LATENCY_EXACT_MS;
-  }
-  NOTREACHED();
-  return media::AudioLatency::LATENCY_INTERACTIVE;
-}
 
 scoped_refptr<media::AudioOutputDevice> NewOutputDevice(
     int render_frame_id,
@@ -94,10 +73,30 @@ scoped_refptr<media::SwitchableAudioRendererSink> NewMixableSink(
   return scoped_refptr<media::AudioRendererMixerInput>(
       render_thread->GetAudioRendererMixerManager()->CreateInput(
           render_frame_id, session_id, device_id, security_origin,
-          GetSourceLatencyType(source_type)));
+          AudioDeviceFactory::GetSourceLatencyType(source_type)));
 }
 
 }  // namespace
+
+media::AudioLatency::LatencyType AudioDeviceFactory::GetSourceLatencyType(
+    AudioDeviceFactory::SourceType source) {
+  switch (source) {
+    case AudioDeviceFactory::kSourceWebAudioInteractive:
+      return media::AudioLatency::LATENCY_INTERACTIVE;
+    case AudioDeviceFactory::kSourceNone:
+    case AudioDeviceFactory::kSourceWebRtc:
+    case AudioDeviceFactory::kSourceNonRtcAudioTrack:
+    case AudioDeviceFactory::kSourceWebAudioBalanced:
+      return media::AudioLatency::LATENCY_RTC;
+    case AudioDeviceFactory::kSourceMediaElement:
+    case AudioDeviceFactory::kSourceWebAudioPlayback:
+      return media::AudioLatency::LATENCY_PLAYBACK;
+    case AudioDeviceFactory::kSourceWebAudioExact:
+      return media::AudioLatency::LATENCY_EXACT_MS;
+  }
+  NOTREACHED();
+  return media::AudioLatency::LATENCY_INTERACTIVE;
+}
 
 scoped_refptr<media::AudioRendererSink>
 AudioDeviceFactory::NewAudioRendererMixerSink(

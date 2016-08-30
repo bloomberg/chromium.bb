@@ -788,6 +788,8 @@ component("shared_memory_support") {
   sources = [
     "base/audio_bus.cc",
     "base/audio_bus.h",
+    "base/audio_latency.cc",
+    "base/audio_latency.h",
     "base/audio_parameters.cc",
     "base/audio_parameters.h",
     "base/audio_point.cc",

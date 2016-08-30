@@ -13,6 +13,8 @@
 IPC_ENUM_TRAITS_MAX_VALUE(media::AudioParameters::Format,
                           media::AudioParameters::AUDIO_FORMAT_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(media::ChannelLayout, media::CHANNEL_LAYOUT_MAX)
+IPC_ENUM_TRAITS_MAX_VALUE(media::AudioLatency::LatencyType,
+                          media::AudioLatency::LATENCY_COUNT)
 IPC_ENUM_TRAITS_MAX_VALUE(media::VideoPixelFormat, media::PIXEL_FORMAT_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(media::VideoPixelStorage, media::PIXEL_STORAGE_MAX)
 

@@ -54,8 +54,6 @@ target(link_target_type, "base") {
     "audio_fifo.h",
     "audio_hash.cc",
     "audio_hash.h",
-    "audio_latency.cc",
-    "audio_latency.h",
     "audio_pull_fifo.cc",
     "audio_pull_fifo.h",
     "audio_push_fifo.cc",

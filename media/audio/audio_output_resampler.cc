@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
@@ -132,6 +133,56 @@ static void RecordFallbackStats(const AudioParameters& output_params) {
     UMA_HISTOGRAM_COUNTS(
         "Media.FallbackHardwareAudioSamplesPerSecondUnexpected",
         output_params.sample_rate());
+  }
+}
+
+// Record UMA statistics for input/output rebuffering.
+static void RecordRebufferingStats(const AudioParameters& input_params,
+                                   const AudioParameters& output_params) {
+  const int input_buffer_size = input_params.frames_per_buffer();
+  const int output_buffer_size = output_params.frames_per_buffer();
+  DCHECK_NE(0, input_buffer_size);
+  DCHECK_NE(0, output_buffer_size);
+
+  // Buffer size mismatch; see Media.Audio.Render.BrowserCallbackRegularity
+  // histogram for explanation.
+  int value = 0;
+  if (input_buffer_size >= output_buffer_size) {
+    // 0 if input size is a multiple of output size; otherwise -1.
+    value = (input_buffer_size % output_buffer_size) ? -1 : 0;
+  } else {
+    value = (output_buffer_size / input_buffer_size - 1) * 2;
+    if (output_buffer_size % input_buffer_size) {
+      // One more callback is issued periodically.
+      value += 1;
+    }
+  }
+
+  const int value_cap = (4096 / 128 - 1) * 2 + 1;
+  if (value > value_cap)
+    value = value_cap;
+
+  switch (input_params.latency_tag()) {
+    case AudioLatency::LATENCY_EXACT_MS:
+      UMA_HISTOGRAM_SPARSE_SLOWLY(
+          "Media.Audio.Render.BrowserCallbackRegularity.LatencyExactMs", value);
+      return;
+    case AudioLatency::LATENCY_INTERACTIVE:
+      UMA_HISTOGRAM_SPARSE_SLOWLY(
+          "Media.Audio.Render.BrowserCallbackRegularity.LatencyInteractive",
+          value);
+      return;
+    case AudioLatency::LATENCY_RTC:
+      UMA_HISTOGRAM_SPARSE_SLOWLY(
+          "Media.Audio.Render.BrowserCallbackRegularity.LatencyRtc", value);
+      return;
+    case AudioLatency::LATENCY_PLAYBACK:
+      UMA_HISTOGRAM_SPARSE_SLOWLY(
+          "Media.Audio.Render.BrowserCallbackRegularity.LatencyPlayback",
+          value);
+      return;
+    default:
+      DVLOG(1) << "Latency tag is not set";
   }
 }
 
@@ -354,7 +405,9 @@ OnMoreDataConverter::OnMoreDataConverter(const AudioParameters& input_params,
       audio_converter_(input_params, output_params, false),
       error_occurred_(false),
       input_buffer_size_(input_params.frames_per_buffer()),
-      output_buffer_size_(output_params.frames_per_buffer()) {}
+      output_buffer_size_(output_params.frames_per_buffer()) {
+  RecordRebufferingStats(input_params, output_params);
+}
 
 OnMoreDataConverter::~OnMoreDataConverter() {
   // Ensure Stop() has been called so we don't end up with an AudioOutputStream

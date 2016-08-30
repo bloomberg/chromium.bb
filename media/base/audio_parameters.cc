@@ -16,7 +16,8 @@ AudioParameters::AudioParameters(Format format,
                                  ChannelLayout channel_layout,
                                  int sample_rate,
                                  int bits_per_sample,
-                                 int frames_per_buffer) {
+                                 int frames_per_buffer)
+    : latency_tag_(AudioLatency::LATENCY_COUNT) {
   Reset(format, channel_layout, sample_rate, bits_per_sample,
         frames_per_buffer);
 }

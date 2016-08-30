@@ -72,9 +72,13 @@ media::AudioParameters GetMixerOutputParams(
 
   // Force to 16-bit output for now since we know that works everywhere;
   // ChromeOS does not support other bit depths.
-  return media::AudioParameters(input_params.format(),
+  media::AudioParameters params(input_params.format(),
                                 input_params.channel_layout(),
                                 output_sample_rate, 16, output_buffer_size);
+
+  // Specify the latency info to be passed to the browser side.
+  params.set_latency_tag(latency);
+  return params;
 }
 
 void LogMixerUmaHistogram(media::AudioLatency::LatencyType latency, int value) {

@@ -22079,6 +22079,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.Audio.Render.BrowserCallbackRegularity">
+  <owner>olka@chromium.org</owner>
+  <summary>
+    Reflects how regularly browser issues audio requests to renderer. Depends on
+    how well the system buffer size the browser side renders audio at and the
+    buffer size it requests from renderer are aligned.  When zero, it means
+    renderer buffer size is a multiple of system buffer size, and render calls
+    from browser to renderer are issued evenly. When -1, it means the renderer
+    buffer size is larger than system buffer size, but is not an exact multiple
+    of it; in this case browser periodically skips a call to renderer. When
+    positive, floor(value/2) reflects the number of extra consecutive render
+    requests issued by browser to renderer each time to fulfill the system audio
+    render request; if (value/2) is not integer, then plus one more extra call
+    is issued periodically.   The metric is recorded on the edge between browser
+    and renderer. On Mac the system buffer size may vary dynamically, the metric
+    does not capture that: only the buffer size mismatch introduced by audio
+    output device configuration is captured.
+  </summary>
+</histogram>
+
 <histogram name="Media.Audio.Render.FramesRequested" units="frames">
   <owner>tommi@chromium.org</owner>
   <summary>
@@ -98399,6 +98419,14 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="NoErrorsNotDefault"/>
   <affected-histogram name="DefaultBrowser.AsyncSetAsDefault.Duration"/>
   <affected-histogram name="DefaultBrowser.SetDefaultAsyncDuration"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="AudioLatency" separator=".">
+  <suffix name="LatencyExactMs" label="Exact latency in milliseconds"/>
+  <suffix name="LatencyInteractive" label="Interactive latency"/>
+  <suffix name="LatencyRtc" label="RTC latency"/>
+  <suffix name="LatencyPlayback" label="Playback latency"/>
+  <affected-histogram name="Media.Audio.Render.BrowserCallbackRegularity"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="AutofillDataAvailability" separator=".">

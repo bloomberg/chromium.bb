@@ -76,7 +76,13 @@ void RendererWebAudioDeviceImpl::start() {
       AudioDeviceFactory::kSourceWebAudioInteractive,
       render_frame ? render_frame->GetRoutingID() : MSG_ROUTING_NONE,
       session_id_, std::string(), security_origin_);
-  sink_->Initialize(params_, this);
+
+  // Specify the latency info to be passed to the browser side.
+  media::AudioParameters sink_params(params_);
+  sink_params.set_latency_tag(AudioDeviceFactory::GetSourceLatencyType(
+      AudioDeviceFactory::kSourceWebAudioInteractive));
+
+  sink_->Initialize(sink_params, this);
   // TODO(miu): Remove this temporary instrumentation to root-cause a memory
   // use-after-free issue. http://crbug.com/619463
   {

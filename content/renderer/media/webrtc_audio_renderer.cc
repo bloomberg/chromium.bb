@@ -664,6 +664,9 @@ void WebRtcAudioRenderer::PrepareSink() {
     sink_params_ = new_sink_params;
   }
 
+  // Specify the latency info to be passed to the browser side.
+  new_sink_params.set_latency_tag(AudioDeviceFactory::GetSourceLatencyType(
+      AudioDeviceFactory::AudioDeviceFactory::kSourceWebRtc));
   sink_->Initialize(new_sink_params, this);
 }
 

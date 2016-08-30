@@ -318,6 +318,11 @@ void TrackAudioRenderer::MaybeStartSink() {
            << source_params_.AsHumanReadableString() << "}, hardware_params_={"
            << hardware_params.AsHumanReadableString() << "}, sink parameters={"
            << sink_params.AsHumanReadableString() << '}';
+
+  // Specify the latency info to be passed to the browser side.
+  sink_params.set_latency_tag(AudioDeviceFactory::GetSourceLatencyType(
+      AudioDeviceFactory::kSourceNonRtcAudioTrack));
+
   sink_->Initialize(sink_params, this);
   sink_->Start();
   sink_->SetVolume(volume_);
