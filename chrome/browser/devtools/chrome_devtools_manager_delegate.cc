@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
+#include "components/guest_view/browser/guest_view_base.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -23,7 +24,7 @@
 
 char ChromeDevToolsManagerDelegate::kTypeApp[] = "app";
 char ChromeDevToolsManagerDelegate::kTypeBackgroundPage[] = "background_page";
-
+char ChromeDevToolsManagerDelegate::kTypeWebView[] = "webview";
 
 ChromeDevToolsManagerDelegate::ChromeDevToolsManagerDelegate()
     : network_protocol_handler_(new DevToolsNetworkProtocolHandler()) {
@@ -61,6 +62,14 @@ std::string ChromeDevToolsManagerDelegate::GetTargetType(
     content::RenderFrameHost* host) {
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(host);
+
+  guest_view::GuestViewBase* guest =
+      guest_view::GuestViewBase::FromWebContents(web_contents);
+  content::WebContents* guest_contents =
+      guest ? guest->embedder_web_contents() : nullptr;
+  if (guest_contents)
+    return kTypeWebView;
+
   for (TabContentsIterator it; !it.done(); it.Next()) {
     if (*it == web_contents)
       return content::DevToolsAgentHost::kTypePage;

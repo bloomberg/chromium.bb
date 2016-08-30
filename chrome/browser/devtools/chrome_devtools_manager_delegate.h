@@ -17,6 +17,7 @@ class ChromeDevToolsManagerDelegate : public content::DevToolsManagerDelegate {
  public:
   static char kTypeApp[];
   static char kTypeBackgroundPage[];
+  static char kTypeWebView[];
 
   ChromeDevToolsManagerDelegate();
   ~ChromeDevToolsManagerDelegate() override;
