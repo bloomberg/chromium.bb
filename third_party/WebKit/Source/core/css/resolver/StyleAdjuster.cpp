@@ -173,7 +173,7 @@ void StyleAdjuster::adjustStyleForAlignment(ComputedStyle& style, const Computed
         style.setAlignSelf(parentStyle.alignItems());
 }
 
-static void adjustStyleForHTMLElement(ComputedStyle& style, const ComputedStyle& parentStyle, HTMLElement& element)
+static void adjustStyleForHTMLElement(ComputedStyle& style, HTMLElement& element)
 {
     // <div> and <span> are the most common elements on the web, we skip all the work for them.
     if (isHTMLDivElement(element) || isHTMLSpanElement(element))
@@ -333,7 +333,7 @@ void StyleAdjuster::adjustComputedStyle(ComputedStyle& style, const ComputedStyl
 {
     if (style.display() != NONE) {
         if (element && element->isHTMLElement())
-            adjustStyleForHTMLElement(style, parentStyle, toHTMLElement(*element));
+            adjustStyleForHTMLElement(style, toHTMLElement(*element));
 
         // Per the spec, position 'static' and 'relative' in the top layer compute to 'absolute'.
         if (isInTopLayer(element, style) && (style.position() == StaticPosition || style.position() == RelativePosition))
