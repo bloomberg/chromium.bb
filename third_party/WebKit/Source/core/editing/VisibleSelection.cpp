@@ -806,14 +806,12 @@ void VisibleSelectionTemplate<Strategy>::debugPosition(const char* message) cons
 template <typename Strategy>
 void VisibleSelectionTemplate<Strategy>::showTreeForThis() const
 {
-    if (start().anchorNode()) {
-        // TODO(tkent): Replace WTFLogAlways with something else.
-        WTFLogAlways("%s", start().anchorNode()->toMarkedTreeString(start().anchorNode(), "S", end().anchorNode(), "E").utf8().data());
-        fputs("start: ", stderr);
-        start().showAnchorTypeAndOffset();
-        fputs("end: ", stderr);
-        end().showAnchorTypeAndOffset();
-    }
+    if (!start().anchorNode())
+        return;
+    LOG(INFO) << "\n"
+        << start().anchorNode()->toMarkedTreeString(start().anchorNode(), "S", end().anchorNode(), "E").utf8().data()
+        << "start: " << start().toAnchorTypeAndOffsetString().utf8().data() << "\n"
+        << "end: " << end().toAnchorTypeAndOffsetString().utf8().data();
 }
 
 #endif

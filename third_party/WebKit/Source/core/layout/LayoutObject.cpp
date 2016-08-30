@@ -1318,7 +1318,7 @@ void LayoutObject::showLayoutObject(StringBuilder& stringBuilder) const
         while (stringBuilder.length() < showTreeCharacterOffset)
             stringBuilder.append(' ');
         stringBuilder.append('\t');
-        node()->showNode(stringBuilder.toString().utf8().data());
+        WTFLogAlways("%s%s", stringBuilder.toString().utf8().data(), node()->toString().utf8().data());
     } else {
         WTFLogAlways("%s", stringBuilder.toString().utf8().data());
     }

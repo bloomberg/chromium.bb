@@ -620,7 +620,7 @@ DEFINE_TRACE(HTMLElementStack)
 void HTMLElementStack::show()
 {
     for (ElementRecord* record = m_top.get(); record; record = record->next())
-        record->element()->showNode();
+        LOG(INFO) << *record->element();
 }
 
 #endif

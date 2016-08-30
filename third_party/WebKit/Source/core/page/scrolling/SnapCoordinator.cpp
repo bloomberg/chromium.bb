@@ -157,11 +157,10 @@ void SnapCoordinator::showSnapAreaMap()
 
 void SnapCoordinator::showSnapAreasFor(const LayoutBox* container)
 {
-    const char* prefix = "    ";
-    container->node()->showNode();
+    LOG(INFO) << *container->node();
     if (SnapAreaSet* snapAreas = container->snapAreas()) {
         for (auto& snapArea : *snapAreas) {
-            snapArea->node()->showNode(prefix);
+            LOG(INFO) << "    " << *snapArea->node();
         }
     }
 }

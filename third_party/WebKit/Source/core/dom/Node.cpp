@@ -1500,7 +1500,6 @@ static void dumpAttributeDesc(const Node& node, const QualifiedName& name, std::
     ostream << ' ' << name.toString().utf8().data() << '=' << value;
 }
 
-// |std::ostream| version of |Node::showNode|
 std::ostream& operator<<(std::ostream& ostream, const Node& node)
 {
     if (node.getNodeType() == Node::kProcessingInstructionNode)
@@ -1543,16 +1542,6 @@ String Node::toString() const
     std::stringstream stream;
     stream << *this;
     return String(stream.str().c_str());
-}
-
-void Node::showNode(const char* prefix) const
-{
-    std::stringstream stream;
-    if (prefix)
-        stream << prefix;
-    stream << *this << "\n";
-    // TODO(tkent): Replace WTFLogAlways with something else.
-    WTFLogAlways("%s", stream.str().c_str());
 }
 
 String Node::toTreeStringForThis() const
@@ -1735,8 +1724,7 @@ void Node::showTreeForThisAcrossFrame() const
         rootNode = parentOrShadowHostOrFrameOwner(rootNode);
     std::stringstream stream;
     printSubTreeAcrossFrame(rootNode, this, "", stream);
-    // TODO(tkent): Replace WTFLogAlways with something else.
-    WTFLogAlways("%s", stream.str().c_str());
+    LOG(INFO) << "\n" << stream.str();
 }
 
 #endif
@@ -2396,27 +2384,28 @@ v8::Local<v8::Object> Node::associateWithWrapper(v8::Isolate* isolate, const Wra
 void showNode(const blink::Node* node)
 {
     if (node)
-        node->showNode("");
+        LOG(INFO) << *node;
     else
-        fprintf(stderr, "Cannot showNode for (nil)\n");
+        LOG(INFO) << "Cannot showNode for <null>";
 }
 
 void showTree(const blink::Node* node)
 {
-    // TODO(tkent): Replace WTFLogAlways with something else.
-    WTFLogAlways("%s", node ? node->toTreeStringForThis().utf8().data() : "Cannot showTree for <null>");
+    if (node)
+        LOG(INFO) << "\n" << node->toTreeStringForThis().utf8().data();
+    else
+        LOG(INFO) << "Cannot showTree for <null>";
 }
 
 void showNodePath(const blink::Node* node)
 {
-    std::stringstream stream;
-    if (node)
+    if (node) {
+        std::stringstream stream;
         node->printNodePathTo(stream);
-    else
-        stream << "Cannot showNodePath for <null>";
-    stream << "\n";
-    // TODO(tkent): Replace WTFLogAlways with something else.
-    WTFLogAlways("%s", stream.str().c_str());
+        LOG(INFO) << stream.str();
+    } else {
+        LOG(INFO) << "Cannot showNodePath for <null>";
+    }
 }
 
 #endif

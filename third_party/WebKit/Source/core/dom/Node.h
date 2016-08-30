@@ -571,7 +571,6 @@ public:
 
 #ifndef NDEBUG
     String toString() const;
-    void showNode(const char* prefix = "") const;
     String toTreeStringForThis() const;
     String toFlatTreeStringForThis() const;
     void printNodePathTo(std::ostream&) const;

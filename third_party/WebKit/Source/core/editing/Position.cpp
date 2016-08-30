@@ -603,26 +603,29 @@ Position toPositionInDOMTree(const PositionInFlatTree& position)
 #ifndef NDEBUG
 
 template <typename Strategy>
-void PositionTemplate<Strategy>::showAnchorTypeAndOffset() const
+String PositionTemplate<Strategy>::toAnchorTypeAndOffsetString() const
 {
+    StringBuilder builder;
     switch (anchorType()) {
     case PositionAnchorType::OffsetInAnchor:
-        fputs("offset", stderr);
+        builder.append("offset");
         break;
     case PositionAnchorType::BeforeChildren:
-        fputs("beforeChildren", stderr);
+        builder.append("beforeChildren");
         break;
     case PositionAnchorType::AfterChildren:
-        fputs("afterChildren", stderr);
+        builder.append("afterChildren");
         break;
     case PositionAnchorType::BeforeAnchor:
-        fputs("before", stderr);
+        builder.append("before");
         break;
     case PositionAnchorType::AfterAnchor:
-        fputs("after", stderr);
+        builder.append("after");
         break;
     }
-    fprintf(stderr, ", offset:%d\n", m_offset);
+    builder.append(", offset:");
+    builder.append(m_offset);
+    return builder.toString();
 }
 
 template <typename Strategy>
@@ -630,9 +633,9 @@ void PositionTemplate<Strategy>::showTreeForThis() const
 {
     if (!anchorNode())
         return;
-    // TODO(tkent): Replace WTFLogAlways with something else.
-    WTFLogAlways("%s", anchorNode()->toTreeStringForThis().utf8().data());
-    showAnchorTypeAndOffset();
+    LOG(INFO) << "\n"
+        << anchorNode()->toTreeStringForThis().utf8().data()
+        << toAnchorTypeAndOffsetString().utf8().data();
 }
 
 template <typename Strategy>
@@ -640,9 +643,9 @@ void PositionTemplate<Strategy>::showTreeForThisInFlatTree() const
 {
     if (!anchorNode())
         return;
-    // TODO(tkent): Replace WTFLogAlways with something else.
-    WTFLogAlways("%s", anchorNode()->toFlatTreeStringForThis().utf8().data());
-    showAnchorTypeAndOffset();
+    LOG(INFO) << "\n"
+        << anchorNode()->toFlatTreeStringForThis().utf8().data()
+        << toAnchorTypeAndOffsetString().utf8().data();
 }
 
 #endif
