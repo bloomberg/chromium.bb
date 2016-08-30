@@ -106,7 +106,7 @@ bool SyncBackendHostMock::IsNigoriEnabled() const {
 }
 
 syncer::PassphraseType SyncBackendHostMock::GetPassphraseType() const {
-  return syncer::IMPLICIT_PASSPHRASE;
+  return syncer::PassphraseType::IMPLICIT_PASSPHRASE;
 }
 
 base::Time SyncBackendHostMock::GetExplicitPassphraseTime() const {

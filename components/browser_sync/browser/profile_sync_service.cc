@@ -1731,8 +1731,9 @@ syncer::ModelTypeSet ProfileSyncService::GetRegisteredDataTypes() const {
 
 bool ProfileSyncService::IsUsingSecondaryPassphrase() const {
   syncer::PassphraseType passphrase_type = GetPassphraseType();
-  return passphrase_type == syncer::FROZEN_IMPLICIT_PASSPHRASE ||
-         passphrase_type == syncer::CUSTOM_PASSPHRASE;
+  return passphrase_type ==
+             syncer::PassphraseType::FROZEN_IMPLICIT_PASSPHRASE ||
+         passphrase_type == syncer::PassphraseType::CUSTOM_PASSPHRASE;
 }
 
 std::string ProfileSyncService::GetCustomPassphraseKey() const {

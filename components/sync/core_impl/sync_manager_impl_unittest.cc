@@ -1154,16 +1154,16 @@ class SyncManagerTest : public testing::Test,
   void SetImplicitPassphraseAndCheck(const std::string& passphrase) {
     sync_manager_.GetEncryptionHandler()->SetEncryptionPassphrase(passphrase,
                                                                   false);
-    EXPECT_EQ(IMPLICIT_PASSPHRASE,
+    EXPECT_EQ(PassphraseType::IMPLICIT_PASSPHRASE,
               sync_manager_.GetEncryptionHandler()->GetPassphraseType());
   }
 
   void SetCustomPassphraseAndCheck(const std::string& passphrase) {
     EXPECT_CALL(encryption_observer_,
-                OnPassphraseTypeChanged(CUSTOM_PASSPHRASE, _));
+                OnPassphraseTypeChanged(PassphraseType::CUSTOM_PASSPHRASE, _));
     sync_manager_.GetEncryptionHandler()->SetEncryptionPassphrase(passphrase,
                                                                   true);
-    EXPECT_EQ(CUSTOM_PASSPHRASE,
+    EXPECT_EQ(PassphraseType::CUSTOM_PASSPHRASE,
               sync_manager_.GetEncryptionHandler()->GetPassphraseType());
   }
 
@@ -1497,7 +1497,7 @@ TEST_F(SyncManagerTest, SupplyPendingGAIAPass) {
               OnBootstrapTokenUpdated(_, PASSPHRASE_BOOTSTRAP_TOKEN));
   ExpectPassphraseAcceptance();
   sync_manager_.GetEncryptionHandler()->SetDecryptionPassphrase("passphrase2");
-  EXPECT_EQ(IMPLICIT_PASSPHRASE,
+  EXPECT_EQ(PassphraseType::IMPLICIT_PASSPHRASE,
             sync_manager_.GetEncryptionHandler()->GetPassphraseType());
   EXPECT_FALSE(IsEncryptEverythingEnabledForTest());
   {
@@ -1615,7 +1615,7 @@ TEST_F(SyncManagerTest, SupplyPendingExplicitPass) {
   }
   EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
   EXPECT_CALL(encryption_observer_,
-              OnPassphraseTypeChanged(CUSTOM_PASSPHRASE, _));
+              OnPassphraseTypeChanged(PassphraseType::CUSTOM_PASSPHRASE, _));
   EXPECT_CALL(encryption_observer_, OnPassphraseRequired(_, _));
   EXPECT_CALL(encryption_observer_, OnEncryptedTypesChanged(_, false));
   sync_manager_.GetEncryptionHandler()->Init();
@@ -1623,7 +1623,7 @@ TEST_F(SyncManagerTest, SupplyPendingExplicitPass) {
               OnBootstrapTokenUpdated(_, PASSPHRASE_BOOTSTRAP_TOKEN));
   ExpectPassphraseAcceptance();
   sync_manager_.GetEncryptionHandler()->SetDecryptionPassphrase("explicit");
-  EXPECT_EQ(CUSTOM_PASSPHRASE,
+  EXPECT_EQ(PassphraseType::CUSTOM_PASSPHRASE,
             sync_manager_.GetEncryptionHandler()->GetPassphraseType());
   EXPECT_FALSE(IsEncryptEverythingEnabledForTest());
   {

@@ -97,29 +97,29 @@ PassphraseType ProtoPassphraseTypeToEnum(
     sync_pb::NigoriSpecifics::PassphraseType type) {
   switch (type) {
     case sync_pb::NigoriSpecifics::IMPLICIT_PASSPHRASE:
-      return IMPLICIT_PASSPHRASE;
+      return PassphraseType::IMPLICIT_PASSPHRASE;
     case sync_pb::NigoriSpecifics::KEYSTORE_PASSPHRASE:
-      return KEYSTORE_PASSPHRASE;
+      return PassphraseType::KEYSTORE_PASSPHRASE;
     case sync_pb::NigoriSpecifics::CUSTOM_PASSPHRASE:
-      return CUSTOM_PASSPHRASE;
+      return PassphraseType::CUSTOM_PASSPHRASE;
     case sync_pb::NigoriSpecifics::FROZEN_IMPLICIT_PASSPHRASE:
-      return FROZEN_IMPLICIT_PASSPHRASE;
+      return PassphraseType::FROZEN_IMPLICIT_PASSPHRASE;
     default:
       NOTREACHED();
-      return IMPLICIT_PASSPHRASE;
+      return PassphraseType::IMPLICIT_PASSPHRASE;
   }
 }
 
 sync_pb::NigoriSpecifics::PassphraseType EnumPassphraseTypeToProto(
     PassphraseType type) {
   switch (type) {
-    case IMPLICIT_PASSPHRASE:
+    case PassphraseType::IMPLICIT_PASSPHRASE:
       return sync_pb::NigoriSpecifics::IMPLICIT_PASSPHRASE;
-    case KEYSTORE_PASSPHRASE:
+    case PassphraseType::KEYSTORE_PASSPHRASE:
       return sync_pb::NigoriSpecifics::KEYSTORE_PASSPHRASE;
-    case CUSTOM_PASSPHRASE:
+    case PassphraseType::CUSTOM_PASSPHRASE:
       return sync_pb::NigoriSpecifics::CUSTOM_PASSPHRASE;
-    case FROZEN_IMPLICIT_PASSPHRASE:
+    case PassphraseType::FROZEN_IMPLICIT_PASSPHRASE:
       return sync_pb::NigoriSpecifics::FROZEN_IMPLICIT_PASSPHRASE;
     default:
       NOTREACHED();
@@ -128,7 +128,8 @@ sync_pb::NigoriSpecifics::PassphraseType EnumPassphraseTypeToProto(
 }
 
 bool IsExplicitPassphrase(PassphraseType type) {
-  return type == CUSTOM_PASSPHRASE || type == FROZEN_IMPLICIT_PASSPHRASE;
+  return type == PassphraseType::CUSTOM_PASSPHRASE ||
+         type == PassphraseType::FROZEN_IMPLICIT_PASSPHRASE;
 }
 
 // Keystore Bootstrap Token helper methods.
@@ -211,7 +212,7 @@ SyncEncryptionHandlerImpl::SyncEncryptionHandlerImpl(
     : user_share_(user_share),
       vault_unsafe_(encryptor, SensitiveTypes()),
       encrypt_everything_(false),
-      passphrase_type_(IMPLICIT_PASSPHRASE),
+      passphrase_type_(PassphraseType::IMPLICIT_PASSPHRASE),
       nigori_overwrite_count_(0),
       weak_ptr_factory_(this) {
   // Restore the cryptographer's previous keys. Note that we don't add the
@@ -250,8 +251,9 @@ void SyncEncryptionHandlerImpl::Init() {
     WriteEncryptionStateToNigori(&trans);
   }
 
-  UMA_HISTOGRAM_ENUMERATION("Sync.PassphraseType", GetPassphraseType(),
-                            PASSPHRASE_TYPE_SIZE);
+  UMA_HISTOGRAM_ENUMERATION(
+      "Sync.PassphraseType", static_cast<unsigned>(GetPassphraseType()),
+      static_cast<unsigned>(PassphraseType::PASSPHRASE_TYPE_SIZE));
 
   bool has_pending_keys =
       UnlockVault(trans.GetWrappedTrans()).cryptographer.has_pending_keys();
@@ -264,7 +266,8 @@ void SyncEncryptionHandlerImpl::Init() {
     // keystore.
     UMA_HISTOGRAM_ENUMERATION("Sync.NigoriMigrationState", MIGRATED,
                               MIGRATION_STATE_SIZE);
-    if (has_pending_keys && passphrase_type_ == KEYSTORE_PASSPHRASE) {
+    if (has_pending_keys &&
+        passphrase_type_ == PassphraseType::KEYSTORE_PASSPHRASE) {
       // If this is happening, it means the keystore decryptor is either
       // undecryptable with the available keystore keys or does not match the
       // nigori keybag's encryption key. Otherwise we're simply missing the
@@ -389,7 +392,7 @@ void SyncEncryptionHandlerImpl::SetEncryptionPassphrase(
         // one (2) when there are no pending keys.
         if (is_explicit) {
           DVLOG(1) << "Setting explicit passphrase for encryption.";
-          passphrase_type_ = CUSTOM_PASSPHRASE;
+          passphrase_type_ = PassphraseType::CUSTOM_PASSPHRASE;
           custom_passphrase_time_ = base::Time::Now();
           FOR_EACH_OBSERVER(SyncEncryptionHandler::Observer, observers_,
                             OnPassphraseTypeChanged(
@@ -879,9 +882,9 @@ bool SyncEncryptionHandlerImpl::ApplyNigoriUpdateImpl(
     // but we let it through here as well in case future versions do add support
     // for this transition.
     if (passphrase_type_ != nigori_passphrase_type &&
-        nigori_passphrase_type != IMPLICIT_PASSPHRASE &&
-        (passphrase_type_ == IMPLICIT_PASSPHRASE ||
-         nigori_passphrase_type == CUSTOM_PASSPHRASE)) {
+        nigori_passphrase_type != PassphraseType::IMPLICIT_PASSPHRASE &&
+        (passphrase_type_ == PassphraseType::IMPLICIT_PASSPHRASE ||
+         nigori_passphrase_type == PassphraseType::CUSTOM_PASSPHRASE)) {
       DVLOG(1) << "Changing passphrase state from "
                << PassphraseTypeToString(passphrase_type_) << " to "
                << PassphraseTypeToString(nigori_passphrase_type);
@@ -890,7 +893,8 @@ bool SyncEncryptionHandlerImpl::ApplyNigoriUpdateImpl(
                         OnPassphraseTypeChanged(passphrase_type_,
                                                 GetExplicitPassphraseTime()));
     }
-    if (passphrase_type_ == KEYSTORE_PASSPHRASE && encrypt_everything_) {
+    if (passphrase_type_ == PassphraseType::KEYSTORE_PASSPHRASE &&
+        encrypt_everything_) {
       // This is the case where another client that didn't support keystore
       // encryption attempted to enable full encryption. We detect it
       // and switch the passphrase type to frozen implicit passphrase instead
@@ -899,7 +903,7 @@ bool SyncEncryptionHandlerImpl::ApplyNigoriUpdateImpl(
       // type, we will trigger a rewrite and subsequently a re-migration.
       DVLOG(1) << "Changing passphrase state to FROZEN_IMPLICIT_PASSPHRASE "
                << "due to full encryption.";
-      passphrase_type_ = FROZEN_IMPLICIT_PASSPHRASE;
+      passphrase_type_ = PassphraseType::FROZEN_IMPLICIT_PASSPHRASE;
       FOR_EACH_OBSERVER(SyncEncryptionHandler::Observer, observers_,
                         OnPassphraseTypeChanged(passphrase_type_,
                                                 GetExplicitPassphraseTime()));
@@ -907,8 +911,9 @@ bool SyncEncryptionHandlerImpl::ApplyNigoriUpdateImpl(
   } else {
     // It's possible that while we're waiting for migration a client that does
     // not have keystore encryption enabled switches to a custom passphrase.
-    if (nigori.keybag_is_frozen() && passphrase_type_ != CUSTOM_PASSPHRASE) {
-      passphrase_type_ = CUSTOM_PASSPHRASE;
+    if (nigori.keybag_is_frozen() &&
+        passphrase_type_ != PassphraseType::CUSTOM_PASSPHRASE) {
+      passphrase_type_ = PassphraseType::CUSTOM_PASSPHRASE;
       FOR_EACH_OBSERVER(SyncEncryptionHandler::Observer, observers_,
                         OnPassphraseTypeChanged(passphrase_type_,
                                                 GetExplicitPassphraseTime()));
@@ -978,8 +983,8 @@ bool SyncEncryptionHandlerImpl::ApplyNigoriUpdateImpl(
   // state.
   bool passphrase_type_matches = true;
   if (!is_nigori_migrated) {
-    DCHECK(passphrase_type_ == CUSTOM_PASSPHRASE ||
-           passphrase_type_ == IMPLICIT_PASSPHRASE);
+    DCHECK(passphrase_type_ == PassphraseType::CUSTOM_PASSPHRASE ||
+           passphrase_type_ == PassphraseType::IMPLICIT_PASSPHRASE);
     passphrase_type_matches =
         nigori.keybag_is_frozen() == IsExplicitPassphrase(passphrase_type_);
   } else {
@@ -1100,7 +1105,7 @@ void SyncEncryptionHandlerImpl::SetCustomPassphrase(
   DCHECK(IsNigoriMigratedToKeystore(nigori_node->GetNigoriSpecifics()));
   KeyParams key_params = {"localhost", "dummy", passphrase};
 
-  if (passphrase_type_ != KEYSTORE_PASSPHRASE) {
+  if (passphrase_type_ != PassphraseType::KEYSTORE_PASSPHRASE) {
     DVLOG(1) << "Failing to set a custom passphrase because one has already "
              << "been set.";
     FinishSetPassphrase(false, std::string(), trans, nigori_node);
@@ -1128,7 +1133,7 @@ void SyncEncryptionHandlerImpl::SetCustomPassphrase(
 
   DVLOG(1) << "Setting custom passphrase.";
   cryptographer->GetBootstrapToken(&bootstrap_token);
-  passphrase_type_ = CUSTOM_PASSPHRASE;
+  passphrase_type_ = PassphraseType::CUSTOM_PASSPHRASE;
   custom_passphrase_time_ = base::Time::Now();
   FOR_EACH_OBSERVER(
       SyncEncryptionHandler::Observer, observers_,
@@ -1311,13 +1316,14 @@ bool SyncEncryptionHandlerImpl::ShouldTriggerMigration(
     // implicit passphrase but does have full encryption, re-migrate.
     // Note that this is to defend against other clients without keystore
     // encryption enabled transitioning to states that are no longer valid.
-    if (passphrase_type_ != KEYSTORE_PASSPHRASE &&
+    if (passphrase_type_ != PassphraseType::KEYSTORE_PASSPHRASE &&
         nigori.passphrase_type() ==
             sync_pb::NigoriSpecifics::KEYSTORE_PASSPHRASE) {
       return true;
     } else if (IsExplicitPassphrase(passphrase_type_) && !encrypt_everything_) {
       return true;
-    } else if (passphrase_type_ == KEYSTORE_PASSPHRASE && encrypt_everything_) {
+    } else if (passphrase_type_ == PassphraseType::KEYSTORE_PASSPHRASE &&
+               encrypt_everything_) {
       return true;
     } else if (cryptographer.is_ready() &&
                !cryptographer.CanDecryptUsingDefaultKey(
@@ -1370,7 +1376,7 @@ bool SyncEncryptionHandlerImpl::AttemptToMigrateNigoriToKeystore(
   if (encrypt_everything_ && !IsExplicitPassphrase(passphrase_type_)) {
     DVLOG(1) << "Switching to frozen implicit passphrase due to already having "
              << "full encryption.";
-    new_passphrase_type = FROZEN_IMPLICIT_PASSPHRASE;
+    new_passphrase_type = PassphraseType::FROZEN_IMPLICIT_PASSPHRASE;
     migrated_nigori.clear_keystore_decryptor_token();
   } else if (IsExplicitPassphrase(passphrase_type_)) {
     DVLOG_IF(1, !encrypt_everything_) << "Enabling encrypt everything due to "
@@ -1379,7 +1385,7 @@ bool SyncEncryptionHandlerImpl::AttemptToMigrateNigoriToKeystore(
     migrated_nigori.clear_keystore_decryptor_token();
   } else {
     DCHECK(!encrypt_everything_);
-    new_passphrase_type = KEYSTORE_PASSPHRASE;
+    new_passphrase_type = PassphraseType::KEYSTORE_PASSPHRASE;
     DVLOG(1) << "Switching to keystore passphrase state.";
   }
   migrated_nigori.set_encrypt_everything(new_encrypt_everything);
@@ -1390,7 +1396,7 @@ bool SyncEncryptionHandlerImpl::AttemptToMigrateNigoriToKeystore(
   if (!keystore_key_.empty()) {
     KeyParams key_params = {"localhost", "dummy", keystore_key_};
     if ((old_keystore_keys_.size() > 0 &&
-         new_passphrase_type == KEYSTORE_PASSPHRASE) ||
+         new_passphrase_type == PassphraseType::KEYSTORE_PASSPHRASE) ||
         !cryptographer->is_initialized()) {
       // Either at least one key rotation has been performed, so we no longer
       // care about backwards compatibility, or we're generating keystore-based
@@ -1436,7 +1442,7 @@ bool SyncEncryptionHandlerImpl::AttemptToMigrateNigoriToKeystore(
       cryptographer->AddNonDefaultKey(key_params);
     }
   }
-  if (new_passphrase_type == KEYSTORE_PASSPHRASE &&
+  if (new_passphrase_type == PassphraseType::KEYSTORE_PASSPHRASE &&
       !GetKeystoreDecryptor(
           *cryptographer, keystore_key_,
           migrated_nigori.mutable_keystore_decryptor_token())) {
@@ -1484,13 +1490,13 @@ bool SyncEncryptionHandlerImpl::AttemptToMigrateNigoriToKeystore(
   nigori_node->SetNigoriSpecifics(migrated_nigori);
 
   if (new_encrypt_everything &&
-      (new_passphrase_type == FROZEN_IMPLICIT_PASSPHRASE ||
-       new_passphrase_type == CUSTOM_PASSPHRASE)) {
+      (new_passphrase_type == PassphraseType::FROZEN_IMPLICIT_PASSPHRASE ||
+       new_passphrase_type == PassphraseType::CUSTOM_PASSPHRASE)) {
     NotifyObserversOfLocalCustomPassphrase(trans);
   }
 
   switch (new_passphrase_type) {
-    case KEYSTORE_PASSPHRASE:
+    case PassphraseType::KEYSTORE_PASSPHRASE:
       if (old_keystore_keys_.size() > 0) {
         UMA_HISTOGRAM_ENUMERATION("Sync.AttemptNigoriMigration",
                                   MIGRATION_SUCCESS_KEYSTORE_NONDEFAULT,
@@ -1501,12 +1507,12 @@ bool SyncEncryptionHandlerImpl::AttemptToMigrateNigoriToKeystore(
                                   MIGRATION_RESULT_SIZE);
       }
       break;
-    case FROZEN_IMPLICIT_PASSPHRASE:
+    case PassphraseType::FROZEN_IMPLICIT_PASSPHRASE:
       UMA_HISTOGRAM_ENUMERATION("Sync.AttemptNigoriMigration",
                                 MIGRATION_SUCCESS_FROZEN_IMPLICIT,
                                 MIGRATION_RESULT_SIZE);
       break;
-    case CUSTOM_PASSPHRASE:
+    case PassphraseType::CUSTOM_PASSPHRASE:
       UMA_HISTOGRAM_ENUMERATION("Sync.AttemptNigoriMigration",
                                 MIGRATION_SUCCESS_CUSTOM,
                                 MIGRATION_RESULT_SIZE);
@@ -1638,9 +1644,9 @@ bool SyncEncryptionHandlerImpl::DecryptPendingKeysWithKeystoreKey(
 }
 
 base::Time SyncEncryptionHandlerImpl::GetExplicitPassphraseTime() const {
-  if (passphrase_type_ == FROZEN_IMPLICIT_PASSPHRASE)
+  if (passphrase_type_ == PassphraseType::FROZEN_IMPLICIT_PASSPHRASE)
     return migration_time();
-  else if (passphrase_type_ == CUSTOM_PASSPHRASE)
+  else if (passphrase_type_ == PassphraseType::CUSTOM_PASSPHRASE)
     return custom_passphrase_time();
   return base::Time();
 }

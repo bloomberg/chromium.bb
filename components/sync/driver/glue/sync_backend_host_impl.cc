@@ -59,7 +59,7 @@ SyncBackendHostImpl::SyncBackendHostImpl(
       initialized_(false),
       sync_prefs_(sync_prefs),
       frontend_(NULL),
-      cached_passphrase_type_(syncer::IMPLICIT_PASSPHRASE),
+      cached_passphrase_type_(syncer::PassphraseType::IMPLICIT_PASSPHRASE),
       invalidator_(invalidator),
       invalidation_handler_registered_(false),
       weak_ptr_factory_(this) {
@@ -177,8 +177,9 @@ void SyncBackendHostImpl::SetEncryptionPassphrase(const std::string& passphrase,
 
   // SetEncryptionPassphrase should never be called if we are currently
   // encrypted with an explicit passphrase.
-  DCHECK(cached_passphrase_type_ == syncer::KEYSTORE_PASSPHRASE ||
-         cached_passphrase_type_ == syncer::IMPLICIT_PASSPHRASE);
+  DCHECK(
+      cached_passphrase_type_ == syncer::PassphraseType::KEYSTORE_PASSPHRASE ||
+      cached_passphrase_type_ == syncer::PassphraseType::IMPLICIT_PASSPHRASE);
 
   // Post an encryption task on the syncer thread.
   registrar_->sync_thread()->task_runner()->PostTask(

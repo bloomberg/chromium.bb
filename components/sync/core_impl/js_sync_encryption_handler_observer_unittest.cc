@@ -149,14 +149,15 @@ TEST_F(JsSyncEncryptionHandlerObserverTest, OnPassphraseTypeChanged) {
   InSequence dummy;
 
   base::DictionaryValue passphrase_type_details;
-  passphrase_type_details.SetString("passphraseType", "IMPLICIT_PASSPHRASE");
+  passphrase_type_details.SetString("passphraseType",
+                                    "PassphraseType::IMPLICIT_PASSPHRASE");
   passphrase_type_details.SetInteger("explicitPassphraseTime", 10);
   EXPECT_CALL(mock_js_event_handler_,
               HandleJsEvent("onPassphraseTypeChanged",
                             HasDetailsAsDictionary(passphrase_type_details)));
 
   js_sync_encryption_handler_observer_.OnPassphraseTypeChanged(
-      IMPLICIT_PASSPHRASE, ProtoTimeToTime(10));
+      PassphraseType::IMPLICIT_PASSPHRASE, ProtoTimeToTime(10));
   PumpLoop();
 }
 
