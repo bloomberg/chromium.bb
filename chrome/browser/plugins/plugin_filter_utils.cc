@@ -8,6 +8,7 @@
 #include "base/values.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/common/webplugininfo.h"
+#include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
 #if !defined(DISABLE_NACL)
 #include "components/nacl/common/nacl_constants.h"
@@ -32,7 +33,8 @@ bool ShouldUseJavaScriptSettingForPlugin(const content::WebPluginInfo& plugin) {
 #if defined(WIDEVINE_CDM_AVAILABLE) && defined(ENABLE_PEPPER_CDMS)
   // Treat CDM invocations like JavaScript.
   if (plugin.name == base::ASCIIToUTF16(kWidevineCdmDisplayName)) {
-    DCHECK_EQ(WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS, plugin.type);
+    DCHECK_EQ(content::WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS,
+              plugin.type);
     return true;
   }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE) && defined(ENABLE_PEPPER_CDMS)
