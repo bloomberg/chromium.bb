@@ -6,11 +6,6 @@ import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/sysroot.gni")
 
-gypi_values = exec_script("//build/gypi_to_gn.py",
-                          [ rebase_path("../chrome_utility.gypi") ],
-                          "scope",
-                          [ "../chrome_utility.gypi" ])
-
 # Provides a way for the utility library to push ldflags to dependents.
 config("utility_ldflags") {
   if (is_mac && safe_browsing_mode == 1) {
@@ -19,7 +14,26 @@ config("utility_ldflags") {
 }
 
 static_library("utility") {
-  sources = rebase_path(gypi_values.chrome_utility_sources, ".", "..")
+  sources = [
+    "chrome_content_utility_client.cc",
+    "chrome_content_utility_client.h",
+    "chrome_content_utility_ipc_whitelist.cc",
+    "chrome_content_utility_ipc_whitelist.h",
+    "cloud_print/bitmap_image.cc",
+    "cloud_print/bitmap_image.h",
+    "cloud_print/pwg_encoder.cc",
+    "cloud_print/pwg_encoder.h",
+    "image_decoder_impl.cc",
+    "image_decoder_impl.h",
+    "ipc_shell_handler_win.cc",
+    "ipc_shell_handler_win.h",
+    "printing_handler.cc",
+    "printing_handler.h",
+    "shell_handler_impl_win.cc",
+    "shell_handler_impl_win.h",
+    "utility_message_handler.h",
+  ]
+
   defines = []
   configs += [
     "//build/config:precompiled_headers",
@@ -51,26 +65,71 @@ static_library("utility") {
   ]
 
   if (!is_android) {
+    sources += [
+      "importer/bookmark_html_reader.cc",
+      "importer/bookmark_html_reader.h",
+      "importer/bookmarks_file_importer.cc",
+      "importer/bookmarks_file_importer.h",
+      "importer/edge_database_reader_win.cc",
+      "importer/edge_database_reader_win.h",
+      "importer/edge_importer_win.cc",
+      "importer/edge_importer_win.h",
+      "importer/external_process_importer_bridge.cc",
+      "importer/external_process_importer_bridge.h",
+      "importer/favicon_reencode.cc",
+      "importer/favicon_reencode.h",
+      "importer/firefox_importer.cc",
+      "importer/firefox_importer.h",
+      "importer/ie_importer_win.cc",
+      "importer/ie_importer_win.h",
+      "importer/importer.cc",
+      "importer/importer.h",
+      "importer/importer_creator.cc",
+      "importer/importer_creator.h",
+      "importer/nss_decryptor.cc",
+      "importer/nss_decryptor.h",
+      "importer/nss_decryptor_mac.h",
+      "importer/nss_decryptor_mac.mm",
+      "importer/nss_decryptor_win.cc",
+      "importer/nss_decryptor_win.h",
+      "importer/safari_importer.h",
+      "importer/safari_importer.mm",
+      "profile_import_handler.cc",
+      "profile_import_handler.h",
+    ]
     deps += [
       "//chrome/common:mojo_bindings",
       "//net:net_utility_services",
     ]
-    sources +=
-        rebase_path(gypi_values.chrome_utility_importer_sources, ".", "..")
   }
 
   if (enable_extensions) {
+    sources += [
+      "extensions/extensions_handler.cc",
+      "extensions/extensions_handler.h",
+      "image_writer/disk_unmounter_mac.cc",
+      "image_writer/disk_unmounter_mac.h",
+      "image_writer/error_messages.cc",
+      "image_writer/error_messages.h",
+      "image_writer/image_writer.cc",
+      "image_writer/image_writer.h",
+      "image_writer/image_writer_handler.cc",
+      "image_writer/image_writer_handler.h",
+      "image_writer/image_writer_mac.cc",
+      "image_writer/image_writer_win.cc",
+      "media_galleries/ipc_data_source.cc",
+      "media_galleries/ipc_data_source.h",
+      "media_galleries/itunes_pref_parser_win.cc",
+      "media_galleries/itunes_pref_parser_win.h",
+      "media_galleries/media_metadata_parser.cc",
+      "media_galleries/media_metadata_parser.h",
+    ]
     deps += [
       "//chrome/common/extensions/api",
       "//extensions/utility",
     ]
 
     public_deps += [ "//chrome/common/extensions/api" ]
-
-    sources +=
-        rebase_path(gypi_values.chrome_utility_extensions_sources, ".", "..")
-    sources +=
-        rebase_path(gypi_values.chrome_utility_shared_media_sources, ".", "..")
 
     # Prevent wininet from loading in the renderer. http://crbug.com/460679
     if (is_win) {
@@ -82,10 +141,18 @@ static_library("utility") {
     }
 
     if (is_win || is_mac) {
-      sources +=
-          rebase_path(gypi_values.chrome_utility_win_mac_media_gallery_sources,
-                      ".",
-                      "..")
+      sources += [
+        "media_galleries/iapps_xml_utils.cc",
+        "media_galleries/iapps_xml_utils.h",
+        "media_galleries/itunes_library_parser.cc",
+        "media_galleries/itunes_library_parser.h",
+        "media_galleries/picasa_album_table_reader.cc",
+        "media_galleries/picasa_album_table_reader.h",
+        "media_galleries/picasa_albums_indexer.cc",
+        "media_galleries/picasa_albums_indexer.h",
+        "media_galleries/pmp_column_reader.cc",
+        "media_galleries/pmp_column_reader.h",
+      ]
       deps += [ "//components/wifi" ]
     } else {
       sources += [ "image_writer/image_writer_stub.cc" ]
@@ -113,8 +180,19 @@ static_library("utility") {
   }
 
   if (safe_browsing_mode == 1) {
-    sources +=
-        rebase_path(gypi_values.chrome_utility_safe_browsing_sources, ".", "..")
+    sources += [
+      "safe_browsing/mac/convert_big_endian.h",
+      "safe_browsing/mac/dmg_analyzer.cc",
+      "safe_browsing/mac/dmg_analyzer.h",
+      "safe_browsing/mac/dmg_iterator.cc",
+      "safe_browsing/mac/dmg_iterator.h",
+      "safe_browsing/mac/hfs.cc",
+      "safe_browsing/mac/hfs.h",
+      "safe_browsing/mac/read_stream.cc",
+      "safe_browsing/mac/read_stream.h",
+      "safe_browsing/mac/udif.cc",
+      "safe_browsing/mac/udif.h",
+    ]
     deps += [ "//third_party/zlib" ]
   }
 }
