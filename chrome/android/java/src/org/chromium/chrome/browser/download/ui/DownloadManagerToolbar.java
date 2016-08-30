@@ -34,7 +34,7 @@ public class DownloadManagerToolbar extends SelectionToolbar<DownloadHistoryItem
     public void initialize(SelectionDelegate<DownloadHistoryItemWrapper> delegate, int titleResId,
             @Nullable DrawerLayout drawerLayout, int normalGroupResId, int selectedGroupResId) {
         if (DeviceFormFactor.isTablet(getContext())) {
-            getMenu().findItem(R.id.close_menu_id).setVisible(false);
+            getMenu().removeItem(R.id.close_menu_id);
         }
 
         super.initialize(delegate, titleResId, drawerLayout, normalGroupResId, selectedGroupResId);
