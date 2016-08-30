@@ -205,9 +205,7 @@ public class NewTabPage
         private static final String NTP_OFFLINE_PAGES_FEATURE_NAME = "NTPOfflinePages";
 
         private boolean isNtpOfflinePagesEnabled() {
-            // TODO(treib): Figure out correct offline feature to check.
-            return OfflinePageBridge.isOfflinePagesEnabled()
-                    && ChromeFeatureList.isEnabled(NTP_OFFLINE_PAGES_FEATURE_NAME);
+            return ChromeFeatureList.isEnabled(NTP_OFFLINE_PAGES_FEATURE_NAME);
         }
 
         @Override
