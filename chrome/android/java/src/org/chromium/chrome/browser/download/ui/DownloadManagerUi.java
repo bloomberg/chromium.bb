@@ -148,15 +148,14 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
 
         mMainView = (ViewGroup) LayoutInflater.from(activity).inflate(R.layout.download_main, null);
 
-        mHistoryAdapter = new DownloadHistoryAdapter(isOffTheRecord, parentComponent);
-        mHistoryAdapter.initialize(mBackendProvider);
-        addObserver(mHistoryAdapter);
-        mHistoryAdapter.registerAdapterDataObserver(mAdapterObserver);
-
         mEmptyView = mMainView.findViewById(R.id.empty_view);
-
         mLoadingView = (LoadingView) mMainView.findViewById(R.id.loading_view);
         mLoadingView.showLoadingUI();
+
+        mHistoryAdapter = new DownloadHistoryAdapter(isOffTheRecord, parentComponent);
+        mHistoryAdapter.registerAdapterDataObserver(mAdapterObserver);
+        mHistoryAdapter.initialize(mBackendProvider);
+        addObserver(mHistoryAdapter);
 
         mSpaceDisplay = new SpaceDisplay(mMainView, mHistoryAdapter);
         mHistoryAdapter.registerAdapterDataObserver(mSpaceDisplay);
