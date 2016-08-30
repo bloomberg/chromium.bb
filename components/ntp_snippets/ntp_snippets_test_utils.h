@@ -19,10 +19,10 @@ class TestSigninClient;
 namespace ntp_snippets {
 namespace test {
 
-class MockSyncService : public sync_driver::FakeSyncService {
+class FakeSyncService : public sync_driver::FakeSyncService {
  public:
-  MockSyncService();
-  ~MockSyncService() override;
+  FakeSyncService();
+  ~FakeSyncService() override;
 
   bool CanSyncStart() const override;
   bool IsSyncActive() const override;
@@ -37,18 +37,16 @@ class MockSyncService : public sync_driver::FakeSyncService {
   syncer::ModelTypeSet active_data_types_;
 };
 
-// Common base for snippet tests, handles initializing mocks for sync and
-// signin. |SetUp()| should be called if a subclass overrides it.
-class NTPSnippetsTestBase : public testing::Test {
+// Common utilities for snippet tests, handles initializing fakes for sync and
+// signin.
+class NTPSnippetsTestUtils {
  public:
-  void SetUp() override;
+  NTPSnippetsTestUtils();
+  ~NTPSnippetsTestUtils();
 
- protected:
-  NTPSnippetsTestBase();
-  ~NTPSnippetsTestBase() override;
   void ResetSigninManager();
 
-  MockSyncService* mock_sync_service() { return mock_sync_service_.get(); }
+  FakeSyncService* fake_sync_service() { return fake_sync_service_.get(); }
   FakeSigninManagerBase* fake_signin_manager() {
     return fake_signin_manager_.get();
   }
@@ -56,7 +54,7 @@ class NTPSnippetsTestBase : public testing::Test {
 
  private:
   std::unique_ptr<FakeSigninManagerBase> fake_signin_manager_;
-  std::unique_ptr<MockSyncService> mock_sync_service_;
+  std::unique_ptr<FakeSyncService> fake_sync_service_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
   std::unique_ptr<TestSigninClient> signin_client_;
   std::unique_ptr<AccountTrackerService> account_tracker_;

@@ -21,48 +21,48 @@ using testing::Return;
 
 namespace ntp_snippets {
 
-class NTPSnippetsStatusServiceTest : public test::NTPSnippetsTestBase {
+class NTPSnippetsStatusServiceTest : public ::testing::Test {
  public:
   NTPSnippetsStatusServiceTest() {
-    NTPSnippetsStatusService::RegisterProfilePrefs(pref_service()->registry());
+    NTPSnippetsStatusService::RegisterProfilePrefs(
+        utils_.pref_service()->registry());
   }
 
-  void SetUp() override {
-    test::NTPSnippetsTestBase::SetUp();
-
-    service_.reset(
-        new NTPSnippetsStatusService(fake_signin_manager(), pref_service()));
+  std::unique_ptr<NTPSnippetsStatusService> MakeService() {
+    return base::MakeUnique<NTPSnippetsStatusService>(
+        utils_.fake_signin_manager(), utils_.pref_service());
   }
 
  protected:
-  NTPSnippetsStatusService* service() { return service_.get(); }
-
- private:
-  std::unique_ptr<NTPSnippetsStatusService> service_;
+  test::NTPSnippetsTestUtils utils_;
 };
 
 TEST_F(NTPSnippetsStatusServiceTest, SigninStateCompatibility) {
+  auto service = MakeService();
+
   // The default test setup is signed out.
-  EXPECT_EQ(DisabledReason::SIGNED_OUT, service()->GetDisabledReasonFromDeps());
+  EXPECT_EQ(DisabledReason::SIGNED_OUT, service->GetDisabledReasonFromDeps());
 
   // Once signed in, we should be in a compatible state.
-  fake_signin_manager()->SignIn("foo@bar.com");
-  EXPECT_EQ(DisabledReason::NONE, service()->GetDisabledReasonFromDeps());
+  utils_.fake_signin_manager()->SignIn("foo@bar.com");
+  EXPECT_EQ(DisabledReason::NONE, service->GetDisabledReasonFromDeps());
 }
 
 TEST_F(NTPSnippetsStatusServiceTest, DisabledViaPref) {
+  auto service = MakeService();
+
   // The default test setup is signed out.
-  ASSERT_EQ(DisabledReason::SIGNED_OUT, service()->GetDisabledReasonFromDeps());
+  ASSERT_EQ(DisabledReason::SIGNED_OUT, service->GetDisabledReasonFromDeps());
 
   // Once the enabled pref is set to false, we should be disabled.
-  pref_service()->SetBoolean(prefs::kEnableSnippets, false);
+  utils_.pref_service()->SetBoolean(prefs::kEnableSnippets, false);
   EXPECT_EQ(DisabledReason::EXPLICITLY_DISABLED,
-            service()->GetDisabledReasonFromDeps());
+            service->GetDisabledReasonFromDeps());
 
   // The other dependencies shouldn't matter anymore.
-  fake_signin_manager()->SignIn("foo@bar.com");
+  utils_.fake_signin_manager()->SignIn("foo@bar.com");
   EXPECT_EQ(DisabledReason::EXPLICITLY_DISABLED,
-            service()->GetDisabledReasonFromDeps());
+            service->GetDisabledReasonFromDeps());
 }
 
 }  // namespace ntp_snippets

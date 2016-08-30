@@ -17,36 +17,36 @@
 namespace ntp_snippets {
 namespace test {
 
-MockSyncService::MockSyncService()
+FakeSyncService::FakeSyncService()
     : can_sync_start_(true),
       is_sync_active_(true),
       configuration_done_(true),
       is_encrypt_everything_enabled_(false),
       active_data_types_(syncer::HISTORY_DELETE_DIRECTIVES) {}
 
-MockSyncService::~MockSyncService() {}
+FakeSyncService::~FakeSyncService() {}
 
-bool MockSyncService::CanSyncStart() const {
+bool FakeSyncService::CanSyncStart() const {
   return can_sync_start_;
 }
 
-bool MockSyncService::IsSyncActive() const {
+bool FakeSyncService::IsSyncActive() const {
   return is_sync_active_;
 }
 
-bool MockSyncService::ConfigurationDone() const {
+bool FakeSyncService::ConfigurationDone() const {
   return configuration_done_;
 }
 
-bool MockSyncService::IsEncryptEverythingEnabled() const {
+bool FakeSyncService::IsEncryptEverythingEnabled() const {
   return is_encrypt_everything_enabled_;
 }
 
-syncer::ModelTypeSet MockSyncService::GetActiveDataTypes() const {
+syncer::ModelTypeSet FakeSyncService::GetActiveDataTypes() const {
   return active_data_types_;
 }
 
-NTPSnippetsTestBase::NTPSnippetsTestBase()
+NTPSnippetsTestUtils::NTPSnippetsTestUtils()
     : pref_service_(new TestingPrefServiceSimple()) {
   pref_service_->registry()->RegisterStringPref(prefs::kGoogleServicesAccountId,
                                                 std::string());
@@ -54,18 +54,15 @@ NTPSnippetsTestBase::NTPSnippetsTestBase()
       prefs::kGoogleServicesLastAccountId, std::string());
   pref_service_->registry()->RegisterStringPref(
       prefs::kGoogleServicesLastUsername, std::string());
-}
-
-NTPSnippetsTestBase::~NTPSnippetsTestBase() {}
-
-void NTPSnippetsTestBase::SetUp() {
   signin_client_.reset(new TestSigninClient(pref_service_.get()));
   account_tracker_.reset(new AccountTrackerService());
-  mock_sync_service_.reset(new MockSyncService());
+  fake_sync_service_.reset(new FakeSyncService());
   ResetSigninManager();
 }
 
-void NTPSnippetsTestBase::ResetSigninManager() {
+NTPSnippetsTestUtils::~NTPSnippetsTestUtils() = default;
+
+void NTPSnippetsTestUtils::ResetSigninManager() {
   fake_signin_manager_.reset(
       new FakeSigninManagerBase(signin_client_.get(), account_tracker_.get()));
 }
