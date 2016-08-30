@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_DESKTOP_CAPTURE_DESKTOP_MEDIA_LIST_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_DESKTOP_CAPTURE_DESKTOP_MEDIA_LIST_VIEW_H_
 
+#include <memory>
+
 #include "chrome/browser/media/desktop_media_list_observer.h"
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_source_view.h"
 #include "content/public/browser/desktop_media_id.h"
@@ -58,14 +60,17 @@ class DesktopMediaListView : public views::View,
   // Change the source style of this list on the fly.
   void SetStyle(DesktopMediaSourceViewStyle* style);
 
-  DesktopMediaPickerDialogView* parent_;
+  // Helper for child_at().
+  DesktopMediaSourceView* GetChild(int index);
+
+  DesktopMediaPickerDialogView* const parent_;
   std::unique_ptr<DesktopMediaList> media_list_;
 
   DesktopMediaSourceViewStyle single_style_;
   DesktopMediaSourceViewStyle generic_style_;
   DesktopMediaSourceViewStyle* active_style_;
 
-  base::string16 accessible_name_;
+  const base::string16 accessible_name_;
 
   base::WeakPtrFactory<DesktopMediaListView> weak_factory_;
 

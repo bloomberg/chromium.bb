@@ -4,6 +4,10 @@
 
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_list_view.h"
 
+#include <algorithm>
+#include <string>
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/media/desktop_media_list.h"
@@ -45,6 +49,7 @@ gfx::ImageSkia LoadDefaultIcon(aura::Window* window) {
   return *rb.GetImageSkiaNamed(idr);
 }
 #endif
+
 }  // namespace
 
 DesktopMediaListView::DesktopMediaListView(
@@ -82,8 +87,7 @@ void DesktopMediaListView::OnDoubleClick() {
 
 DesktopMediaSourceView* DesktopMediaListView::GetSelection() {
   for (int i = 0; i < child_count(); ++i) {
-    DesktopMediaSourceView* source_view =
-        static_cast<DesktopMediaSourceView*>(child_at(i));
+    DesktopMediaSourceView* source_view = GetChild(i);
     DCHECK_EQ(source_view->GetClassName(),
               DesktopMediaSourceView::kDesktopMediaSourceViewClassName);
     if (source_view->is_selected())
@@ -135,33 +139,27 @@ bool DesktopMediaListView::OnKeyPressed(const ui::KeyEvent& event) {
       return false;
   }
 
-  if (position_increment != 0) {
-    DesktopMediaSourceView* selected = GetSelection();
-    DesktopMediaSourceView* new_selected = nullptr;
+  if (position_increment == 0)
+    return false;
 
-    if (selected) {
-      int index = GetIndexOf(selected);
-      int new_index = index + position_increment;
-      if (new_index >= child_count())
-        new_index = child_count() - 1;
-      else if (new_index < 0)
-        new_index = 0;
-      if (index != new_index) {
-        new_selected =
-            static_cast<DesktopMediaSourceView*>(child_at(new_index));
-      }
-    } else if (has_children()) {
-      new_selected = static_cast<DesktopMediaSourceView*>(child_at(0));
+  DesktopMediaSourceView* selected = GetSelection();
+  DesktopMediaSourceView* new_selected = nullptr;
+
+  if (selected) {
+    int index = GetIndexOf(selected);
+    int new_index = index + position_increment;
+    new_index = std::min(new_index, child_count() - 1);
+    new_index = std::max(new_index, 0);
+    if (index != new_index) {
+      new_selected = GetChild(new_index);
     }
-
-    if (new_selected) {
-      GetFocusManager()->SetFocusedView(new_selected);
-    }
-
-    return true;
+  } else if (has_children()) {
+    new_selected = GetChild(0);
   }
 
-  return false;
+  if (new_selected)
+    GetFocusManager()->SetFocusedView(new_selected);
+  return true;
 }
 
 void DesktopMediaListView::OnSourceAdded(DesktopMediaList* list, int index) {
@@ -215,8 +213,7 @@ void DesktopMediaListView::OnSourceAdded(DesktopMediaList* list, int index) {
 }
 
 void DesktopMediaListView::OnSourceRemoved(DesktopMediaList* list, int index) {
-  DesktopMediaSourceView* view =
-      static_cast<DesktopMediaSourceView*>(child_at(index));
+  DesktopMediaSourceView* view = GetChild(index);
   DCHECK(view);
   DCHECK_EQ(view->GetClassName(),
             DesktopMediaSourceView::kDesktopMediaSourceViewClassName);
@@ -241,25 +238,21 @@ void DesktopMediaListView::OnSourceRemoved(DesktopMediaList* list, int index) {
 void DesktopMediaListView::OnSourceMoved(DesktopMediaList* list,
                                          int old_index,
                                          int new_index) {
-  DesktopMediaSourceView* view =
-      static_cast<DesktopMediaSourceView*>(child_at(old_index));
-  ReorderChildView(view, new_index);
+  ReorderChildView(GetChild(old_index), new_index);
   PreferredSizeChanged();
 }
 
 void DesktopMediaListView::OnSourceNameChanged(DesktopMediaList* list,
                                                int index) {
   const DesktopMediaList::Source& source = media_list_->GetSource(index);
-  DesktopMediaSourceView* source_view =
-      static_cast<DesktopMediaSourceView*>(child_at(index));
+  DesktopMediaSourceView* source_view = GetChild(index);
   source_view->SetName(source.name);
 }
 
 void DesktopMediaListView::OnSourceThumbnailChanged(DesktopMediaList* list,
                                                     int index) {
   const DesktopMediaList::Source& source = media_list_->GetSource(index);
-  DesktopMediaSourceView* source_view =
-      static_cast<DesktopMediaSourceView*>(child_at(index));
+  DesktopMediaSourceView* source_view = GetChild(index);
   source_view->SetThumbnail(source.thumbnail);
 }
 
@@ -275,10 +268,12 @@ void DesktopMediaListView::SetStyle(DesktopMediaSourceViewStyle* style) {
       style->image_rect.height() - 2 * style->selection_border_thickness));
 
   for (int i = 0; i < child_count(); i++) {
-    DesktopMediaSourceView* source_view =
-        static_cast<DesktopMediaSourceView*>(child_at(i));
-    source_view->SetStyle(*active_style_);
+    GetChild(i)->SetStyle(*active_style_);
   }
+}
+
+DesktopMediaSourceView* DesktopMediaListView::GetChild(int index) {
+  return static_cast<DesktopMediaSourceView*>(child_at(index));
 }
 
 void DesktopMediaListView::GetAccessibleState(ui::AXViewState* state) {
