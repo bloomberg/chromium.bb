@@ -618,9 +618,8 @@ enum {
 	WESTON_COMPOSITOR_ACTIVE,	/* normal rendering and events */
 	WESTON_COMPOSITOR_IDLE,		/* shell->unlock called on activity */
 	WESTON_COMPOSITOR_OFFSCREEN,	/* no rendering, no frame events */
-	WESTON_COMPOSITOR_SLEEPING	/* same as offscreen, but also
-					 * attempt to set dpms to off where
-					 * applicable */
+	WESTON_COMPOSITOR_SLEEPING	/* same as offscreen, but also set dpms
+                                         * to off */
 };
 
 struct weston_layer_entry {
@@ -1159,7 +1158,8 @@ struct weston_surface {
 
 	/*
 	 * Indicates the surface prefers no screenblanking, screensaving,
-	 * or other automatic obscurement to kick in.
+	 * or other automatic obscurement to kick in while the surface is
+	 * considered "active" by the shell.
 	 */
 	bool inhibit_idling;
 

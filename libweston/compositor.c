@@ -51,8 +51,6 @@
 #include <time.h>
 #include <errno.h>
 
-#include <idle-inhibit-unstable-v1-server-protocol.h>
-
 #include "timeline.h"
 
 #include "compositor.h"
@@ -4725,88 +4723,6 @@ compositor_bind(struct wl_client *client,
 				       compositor, NULL);
 }
 
-struct weston_idle_inhibitor {
-	struct weston_surface *surface;
-};
-
-static void
-destroy_idle_inhibitor(struct wl_resource *resource)
-{
-	struct weston_idle_inhibitor *inhibitor = wl_resource_get_user_data(resource);
-
-	inhibitor->surface = NULL;
-	free(inhibitor);
-}
-
-static void
-idle_inhibitor_destroy(struct wl_client *client, struct wl_resource *resource)
-{
-	struct weston_idle_inhibitor *inhibitor = wl_resource_get_user_data(resource);
-
-	assert(inhibitor);
-
-	inhibitor->surface->inhibit_idling = false;
-}
-
-static const struct zwp_idle_inhibitor_v1_interface idle_inhibitor_interface = {
-	idle_inhibitor_destroy
-};
-
-static void
-idle_inhibit_manager_destroy(struct wl_client *client, struct wl_resource *resource)
-{
-}
-
-static void
-idle_inhibit_manager_create_inhibitor(struct wl_client *client, struct wl_resource *resource,
-				      uint32_t id, struct wl_resource *surface_resource)
-{
-	struct weston_surface *surface = wl_resource_get_user_data(surface_resource);
-	struct weston_idle_inhibitor *inhibitor;
-	struct wl_resource *cr;
-
-	cr = wl_resource_create(client, &zwp_idle_inhibitor_v1_interface,
-				wl_resource_get_version(resource), id);
-	if (cr == NULL) {
-		wl_client_post_no_memory(client);
-		return;
-	}
-
-	inhibitor = zalloc(sizeof *inhibitor);
-	if (inhibitor == NULL) {
-		wl_client_post_no_memory(client);
-		return;
-	}
-
-	inhibitor->surface = surface;
-	inhibitor->surface->inhibit_idling = true;
-
-	wl_resource_set_implementation(cr, &idle_inhibitor_interface,
-				       inhibitor, destroy_idle_inhibitor);
-}
-
-static const struct zwp_idle_inhibit_manager_v1_interface idle_inhibit_manager_interface = {
-	idle_inhibit_manager_destroy,
-	idle_inhibit_manager_create_inhibitor
-};
-
-static void
-bind_idle_inhibit_manager(struct wl_client *client,
-			  void *data, uint32_t version, uint32_t id)
-{
-	struct wl_resource *resource;
-
-	resource = wl_resource_create(client, &zwp_idle_inhibit_manager_v1_interface,
-				      version, id);
-	if (resource == NULL) {
-		wl_client_post_no_memory(client);
-		return;
-	}
-
-	wl_resource_set_implementation(resource, &idle_inhibit_manager_interface,
-				       NULL, NULL);
-}
-
 WL_EXPORT int
 weston_environment_get_fd(const char *env)
 {
@@ -4900,10 +4816,6 @@ weston_compositor_create(struct wl_display *display, void *user_data)
 		goto fail;
 
 	if (weston_input_init(ec) != 0)
-		goto fail;
-
-	if (!wl_global_create(ec->wl_display, &zwp_idle_inhibit_manager_v1_interface, 1,
-			      ec, bind_idle_inhibit_manager))
 		goto fail;
 
 	wl_list_init(&ec->view_list);
