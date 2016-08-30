@@ -27,13 +27,13 @@ class BaseRunLoop implements RunLoop {
     @Override
     public void run() {
         assert mRunLoopID != 0 : "The run loop cannot run once closed";
-        nativeRun(mRunLoopID);
+        nativeRun();
     }
 
     @Override
     public void runUntilIdle() {
         assert mRunLoopID != 0 : "The run loop cannot run once closed";
-        nativeRunUntilIdle(mRunLoopID);
+        nativeRunUntilIdle();
     }
 
     @Override
@@ -66,8 +66,8 @@ class BaseRunLoop implements RunLoop {
     }
 
     private native long nativeCreateBaseRunLoop();
-    private native void nativeRun(long runLoopID);
-    private native void nativeRunUntilIdle(long runLoopID);
+    private native void nativeRun();
+    private native void nativeRunUntilIdle();
     private native void nativeQuit(long runLoopID);
     private native void nativePostDelayedTask(long runLoopID, Runnable runnable, long delay);
     private native void nativeDeleteMessageLoop(long runLoopID);

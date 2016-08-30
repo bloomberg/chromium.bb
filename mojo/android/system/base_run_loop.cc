@@ -10,7 +10,10 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "jni/BaseRunLoop_jni.h"
 
 using base::android::JavaParamRef;
@@ -25,15 +28,13 @@ static jlong CreateBaseRunLoop(JNIEnv* env,
 }
 
 static void Run(JNIEnv* env,
-                const JavaParamRef<jobject>& jcaller,
-                jlong runLoopID) {
-  reinterpret_cast<base::MessageLoop*>(runLoopID)->Run();
+                const JavaParamRef<jobject>& jcaller) {
+  base::RunLoop().Run();
 }
 
 static void RunUntilIdle(JNIEnv* env,
-                         const JavaParamRef<jobject>& jcaller,
-                         jlong runLoopID) {
-  reinterpret_cast<base::MessageLoop*>(runLoopID)->RunUntilIdle();
+                         const JavaParamRef<jobject>& jcaller) {
+  base::RunLoop().RunUntilIdle();
 }
 
 static void Quit(JNIEnv* env,
@@ -58,9 +59,10 @@ static void PostDelayedTask(JNIEnv* env,
   // use it across threads. |RunJavaRunnable| will acquire a new JNIEnv before
   // running the Runnable.
   runnable_ref.Reset(env, runnable);
-  reinterpret_cast<base::MessageLoop*>(runLoopID)->PostDelayedTask(
-      FROM_HERE, base::Bind(&RunJavaRunnable, runnable_ref),
-      base::TimeDelta::FromMicroseconds(delay));
+  reinterpret_cast<base::MessageLoop*>(runLoopID)
+      ->task_runner()
+      ->PostDelayedTask(FROM_HERE, base::Bind(&RunJavaRunnable, runnable_ref),
+                        base::TimeDelta::FromMicroseconds(delay));
 }
 
 static void DeleteMessageLoop(JNIEnv* env,
