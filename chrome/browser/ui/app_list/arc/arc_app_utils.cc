@@ -32,16 +32,19 @@ constexpr int kMinVersion = 0;
 constexpr int kCanHandleResolutionMinVersion = 1;
 constexpr int kSendBroadcastMinVersion = 1;
 constexpr int kUninstallPackageMinVersion = 2;
+constexpr int kTaskSupportMinVersion = 3;
 constexpr int kShowPackageInfoMinVersion = 5;
 constexpr int kRemoveIconMinVersion = 9;
 constexpr int kShowPackageInfoOnPageMinVersion = 10;
 
 // Service name strings.
 constexpr char kCanHandleResolutionStr[] = "get resolution capability";
+constexpr char kCloseTaskStr[] = "close task";
 constexpr char kLaunchAppStr[] = "launch app";
+constexpr char kRemoveIconStr[] = "remove icon";
+constexpr char kSetActiveTaskStr[] = "set active task";
 constexpr char kShowPackageInfoStr[] = "show package info";
 constexpr char kUninstallPackageStr[] = "uninstall package";
-constexpr char kRemoveIconStr[] = "remove icon";
 
 // Helper function which returns the AppInstance. Create related logs when error
 // happens.
@@ -231,6 +234,22 @@ bool LaunchApp(content::BrowserContext* context,
 
   return (new LaunchAppWithoutSize(context, app_id, landscape_layout))
       ->LaunchAndRelease();
+}
+
+void SetTaskActive(int task_id) {
+  arc::mojom::AppInstance* app_instance =
+      GetAppInstance(kTaskSupportMinVersion, kSetActiveTaskStr);
+  if (!app_instance)
+    return;
+  app_instance->SetTaskActive(task_id);
+}
+
+void CloseTask(int task_id) {
+  arc::mojom::AppInstance* app_instance =
+      GetAppInstance(kTaskSupportMinVersion, kCloseTaskStr);
+  if (!app_instance)
+    return;
+  app_instance->CloseTask(task_id);
 }
 
 void ShowTalkBackSettings() {

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_ASH_LAUNCHER_ARC_APP_WINDOW_LAUNCHER_ITEM_CONTROLLER_H_
 
 #include <string>
+#include <unordered_set>
 
 #include "base/macros.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
@@ -22,10 +23,17 @@ class ArcAppWindowLauncherItemController
 
   // LauncherItemController overrides:
   base::string16 GetTitle() override;
+  ash::ShelfItemDelegate::PerformedAction ItemSelected(
+      const ui::Event& event) override;
   ash::ShelfMenuModel* CreateApplicationMenu(int event_flags) override;
   ChromeLauncherAppMenuItems GetApplicationList(int event_flags) override;
 
+  void AddTaskId(int task_id);
+  void RemoveTaskId(int task_id);
+
  private:
+  std::unordered_set<int> task_ids_;
+
   DISALLOW_COPY_AND_ASSIGN(ArcAppWindowLauncherItemController);
 };
 

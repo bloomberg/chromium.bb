@@ -85,10 +85,9 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
 
  private:
   class AppWindow;
-  struct TaskInfo;
 
   using TaskIdToAppWindow = std::map<int, std::unique_ptr<AppWindow>>;
-  using TaskIdToTaskInfoMap = std::map<int, std::unique_ptr<TaskInfo>>;
+  using TaskIdToShelfAppIdMap = std::map<int, std::string>;
   using AppControllerMap =
       std::map<std::string, ArcAppWindowLauncherItemController*>;
 
@@ -96,7 +95,7 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
   void StopObserving(Profile* profile);
 
   void RegisterApp(AppWindow* app_window);
-  void UnregisterApp(AppWindow* app_window);
+  void UnregisterApp(AppWindow* app_window, bool close_controller);
 
   AppWindow* GetAppWindowForTask(int task_id);
 
@@ -112,7 +111,7 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
   ash::ShelfDelegate* shelf_delegate_;
   int active_task_id_ = -1;
   TaskIdToAppWindow task_id_to_app_window_;
-  TaskIdToTaskInfoMap task_id_to_task_info_;
+  TaskIdToShelfAppIdMap task_id_to_shelf_app_id_;
   AppControllerMap app_controller_map_;
   std::vector<aura::Window*> observed_windows_;
   Profile* observed_profile_ = nullptr;

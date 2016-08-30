@@ -161,21 +161,9 @@ class ArcAppWindowLauncherController::AppWindow : public ui::BaseWindow {
 
   void Hide() override { NOTREACHED(); }
 
-  void Close() override {
-    arc::mojom::AppInstance* app_instance = GetAppInstance();
-    if (!app_instance)
-      return;
-    app_instance->CloseTask(task_id_);
-  }
+  void Close() override { arc::CloseTask(task_id_); }
 
-  void Activate() override {
-    arc::mojom::AppInstance* app_instance = GetAppInstance();
-    if (!app_instance)
-      return;
-    app_instance->SetTaskActive(task_id_);
-    if (widget_)
-      widget_->Activate();
-  }
+  void Activate() override { arc::SetTaskActive(task_id_); }
 
   void Deactivate() override { NOTREACHED(); }
 
@@ -213,23 +201,6 @@ class ArcAppWindowLauncherController::AppWindow : public ui::BaseWindow {
   }
 
  private:
-  arc::mojom::AppInstance* GetAppInstance() {
-    arc::ArcBridgeService* bridge_service = arc::ArcBridgeService::Get();
-    arc::mojom::AppInstance* app_instance =
-        bridge_service ? bridge_service->app()->instance() : nullptr;
-    if (!app_instance) {
-      VLOG(2) << "Arc Bridge is not available.";
-      return nullptr;
-    }
-
-    if (bridge_service->app()->version() < 3) {
-      VLOG(2) << "Arc Bridge has old version for apps."
-              << bridge_service->app()->version();
-      return nullptr;
-    }
-    return app_instance;
-  }
-
   int task_id_;
   ash::ShelfID shelf_id_ = 0;
   std::string app_id_;
@@ -245,15 +216,6 @@ class ArcAppWindowLauncherController::AppWindow : public ui::BaseWindow {
   bool has_requested_orientation_lock_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AppWindow);
-};
-
-struct ArcAppWindowLauncherController::TaskInfo {
-  TaskInfo(const std::string& package_name, const std::string& activity_name)
-      : package_name(package_name), activity_name(activity_name) {}
-  ~TaskInfo() {}
-
-  std::string package_name;
-  std::string activity_name;
 };
 
 ArcAppWindowLauncherController::ArcAppWindowLauncherController(
@@ -298,7 +260,7 @@ void ArcAppWindowLauncherController::ActiveUserChanged(
             .GetUserEmail()) {
       RegisterApp(app_window);
     } else {
-      UnregisterApp(app_window);
+      UnregisterApp(app_window, true);
     }
   }
 }
@@ -331,11 +293,17 @@ void ArcAppWindowLauncherController::OnWindowDestroying(aura::Window* window) {
   observed_windows_.erase(it);
   window->RemoveObserver(this);
 
-  for (auto& it : task_id_to_app_window_) {
-    if (it.second->GetNativeWindow() == window) {
-      OnTaskDestroyed(it.second->task_id());
-      break;
-    }
+  auto it_app_window =
+      std::find_if(task_id_to_app_window_.begin(), task_id_to_app_window_.end(),
+                   [window](const TaskIdToAppWindow::value_type& pair) {
+                     return pair.second->GetNativeWindow() == window;
+                   });
+  if (it_app_window != task_id_to_app_window_.end()) {
+    // Note, window may be recreated in some cases, so do not close controller
+    // on window destroying. Controller will be closed onTaskDestroyed event
+    // which is generated when actual task is destroyed.
+    UnregisterApp(it_app_window->second.get(), false);
+    task_id_to_app_window_.erase(it_app_window);
   }
 }
 
@@ -373,14 +341,11 @@ void ArcAppWindowLauncherController::MayAttachContollerToWindow(
     return;
 
   // Create controller if we have task info.
-  TaskIdToTaskInfoMap::iterator it = task_id_to_task_info_.find(task_id);
-  if (it == task_id_to_task_info_.end())
+  TaskIdToShelfAppIdMap::iterator it = task_id_to_shelf_app_id_.find(task_id);
+  if (it == task_id_to_shelf_app_id_.end())
     return;
 
-  const TaskInfo& task_info = *it->second;
-  const std::string app_id =
-      GetShelfAppIdFromArcAppId(ArcAppListPrefs::GetAppId(
-          task_info.package_name, task_info.activity_name));
+  const std::string& app_id = it->second;
 
   std::unique_ptr<AppWindow> app_window(new AppWindow(task_id, app_id, this));
   app_window->set_widget(views::Widget::GetWidgetForNativeWindow(window));
@@ -396,9 +361,6 @@ void ArcAppWindowLauncherController::MayAttachContollerToWindow(
     SetOrientationLockForAppWindow(app_window.get());
   }
   task_id_to_app_window_[task_id] = std::move(app_window);
-
-  // TaskInfo is no longer needed. Discard it.
-  task_id_to_task_info_.erase(task_id);
 }
 
 void ArcAppWindowLauncherController::OnAppReadyChanged(
@@ -434,25 +396,39 @@ void ArcAppWindowLauncherController::OnTaskCreated(
     const std::string& package_name,
     const std::string& activity_name) {
   DCHECK(!GetAppWindowForTask(task_id));
-  std::unique_ptr<TaskInfo> task_info(
-      new TaskInfo(package_name, activity_name));
-  task_id_to_task_info_[task_id] = std::move(task_info);
+  task_id_to_shelf_app_id_[task_id] = GetShelfAppIdFromArcAppId(
+      ArcAppListPrefs::GetAppId(package_name, activity_name));
 
   for (auto* window : observed_windows_)
     MayAttachContollerToWindow(window);
 }
 
 void ArcAppWindowLauncherController::OnTaskDestroyed(int task_id) {
-  task_id_to_task_info_.erase(task_id);
+  auto it = task_id_to_app_window_.find(task_id);
+  if (it != task_id_to_app_window_.end()) {
+    AppWindow* app_window = it->second.get();
+    UnregisterApp(app_window, true);
+    task_id_to_app_window_.erase(it);
+  }
 
-  TaskIdToAppWindow::iterator it = task_id_to_app_window_.find(task_id);
-  if (it == task_id_to_app_window_.end())
+  // Check if we may close controller now, at this point we can safely remove
+  // controllers without window.
+  auto it_app_id = task_id_to_shelf_app_id_.find(task_id);
+  if (it_app_id == task_id_to_shelf_app_id_.end())
     return;
 
-  AppWindow* app_window = it->second.get();
-  UnregisterApp(app_window);
+  const std::string& app_id = it_app_id->second;
+  AppControllerMap::iterator it_controller = app_controller_map_.find(app_id);
+  if (it_controller != app_controller_map_.end()) {
+    ArcAppWindowLauncherItemController* controller = it_controller->second;
+    controller->RemoveTaskId(task_id);
+    if (!controller->window_count()) {
+      owner()->CloseLauncherItem(controller->shelf_id());
+      app_controller_map_.erase(it_controller);
+    }
+  }
 
-  task_id_to_app_window_.erase(it);
+  task_id_to_shelf_app_id_.erase(it_app_id);
 }
 
 void ArcAppWindowLauncherController::OnTaskSetActive(int32_t task_id) {
@@ -587,12 +563,14 @@ void ArcAppWindowLauncherController::RegisterApp(AppWindow* app_window) {
     app_controller_map_[app_id] = controller;
   }
   controller->AddWindow(app_window);
+  controller->AddTaskId(app_window->task_id());
   owner()->SetItemStatus(shelf_id, ash::STATUS_RUNNING);
   app_window->SetController(controller);
   app_window->set_shelf_id(shelf_id);
 }
 
-void ArcAppWindowLauncherController::UnregisterApp(AppWindow* app_window) {
+void ArcAppWindowLauncherController::UnregisterApp(AppWindow* app_window,
+                                                   bool close_controller) {
   const std::string app_id = app_window->app_id();
   DCHECK(!app_id.empty());
   AppControllerMap::iterator it = app_controller_map_.find(app_id);
@@ -600,7 +578,7 @@ void ArcAppWindowLauncherController::UnregisterApp(AppWindow* app_window) {
 
   ArcAppWindowLauncherItemController* controller = it->second;
   controller->RemoveWindow(app_window);
-  if (!controller->window_count()) {
+  if (close_controller && !controller->window_count()) {
     ash::ShelfID shelf_id = app_window->shelf_id();
     owner()->CloseLauncherItem(shelf_id);
     app_controller_map_.erase(it);

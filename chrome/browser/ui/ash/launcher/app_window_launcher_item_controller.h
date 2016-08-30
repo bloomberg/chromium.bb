@@ -52,7 +52,7 @@ class AppWindowLauncherItemController : public LauncherItemController,
       ash::LaunchSource source) override;
   ChromeLauncherAppMenuItems GetApplicationList(int event_flags) override;
   ash::ShelfItemDelegate::PerformedAction ItemSelected(
-      const ui::Event& eent) override;
+      const ui::Event& event) override;
   base::string16 GetTitle() override;
   bool IsDraggable() override;
   bool CanPin() const override;

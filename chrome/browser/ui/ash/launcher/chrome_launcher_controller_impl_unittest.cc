@@ -1886,9 +1886,37 @@ TEST_F(ChromeLauncherControllerImplTest, ArcRaceCreateClose) {
   EXPECT_NE(0, launcher_controller_->GetShelfIDForAppID(arc_app_id2));
   arc_window->Close();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(0, launcher_controller_->GetShelfIDForAppID(arc_app_id2));
+  // Closing window does not close shelf item. It is closed on task destroy.
+  EXPECT_NE(0, launcher_controller_->GetShelfIDForAppID(arc_app_id2));
   arc_test_.app_instance()->SendTaskDestroyed(2);
   EXPECT_EQ(0, launcher_controller_->GetShelfIDForAppID(arc_app_id2));
+}
+
+TEST_F(ChromeLauncherControllerImplTest, ArcWindowRecreation) {
+  arc_test_.SetUp(profile());
+  InitLauncherController();
+
+  const std::string arc_app_id = ArcAppTest::GetAppId(arc_test_.fake_apps()[0]);
+  SendListOfArcApps();
+
+  std::string window_app_id("org.chromium.arc.1");
+  views::Widget* arc_window = CreateArcWindow(window_app_id);
+  ASSERT_TRUE(arc_window);
+  arc_test_.app_instance()->SendTaskCreated(1, arc_test_.fake_apps()[0]);
+  const ash::ShelfID shelf_id =
+      launcher_controller_->GetShelfIDForAppID(arc_app_id);
+  EXPECT_NE(0, shelf_id);
+
+  for (int i = 0; i < 3; ++i) {
+    arc_window->Close();
+    base::RunLoop().RunUntilIdle();
+    EXPECT_EQ(shelf_id, launcher_controller_->GetShelfIDForAppID(arc_app_id));
+
+    arc_window = CreateArcWindow(window_app_id);
+    ASSERT_TRUE(arc_window);
+    base::RunLoop().RunUntilIdle();
+    EXPECT_EQ(shelf_id, launcher_controller_->GetShelfIDForAppID(arc_app_id));
+  }
 }
 
 // Validate that Arc app is pinned correctly and pin is removed automatically

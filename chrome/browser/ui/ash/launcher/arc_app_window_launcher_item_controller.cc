@@ -7,6 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_v2app.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
@@ -23,6 +24,28 @@ ArcAppWindowLauncherItemController::ArcAppWindowLauncherItemController(
                                       controller) {}
 
 ArcAppWindowLauncherItemController::~ArcAppWindowLauncherItemController() {}
+
+void ArcAppWindowLauncherItemController::AddTaskId(int task_id) {
+  task_ids_.insert(task_id);
+}
+
+void ArcAppWindowLauncherItemController::RemoveTaskId(int task_id) {
+  task_ids_.erase(task_id);
+}
+
+ash::ShelfItemDelegate::PerformedAction
+ArcAppWindowLauncherItemController::ItemSelected(const ui::Event& event) {
+  if (window_count()) {
+    return AppWindowLauncherItemController::ItemSelected(event);
+  } else {
+    if (task_ids_.empty()) {
+      NOTREACHED();
+      return kNoAction;
+    }
+    arc::SetTaskActive(*task_ids_.begin());
+    return kNewWindowCreated;
+  }
+}
 
 base::string16 ArcAppWindowLauncherItemController::GetTitle() {
   ArcAppListPrefs* arc_prefs =
