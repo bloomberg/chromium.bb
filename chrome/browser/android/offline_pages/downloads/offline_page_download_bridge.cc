@@ -252,7 +252,7 @@ void OfflinePageDownloadBridge::StartDownload(
   bridge.NotifyDownloadProgress(item);
 
   offline_page_model->SavePage(
-      url, client_id, 0ul, std::move(archiver),
+      url, client_id, 0l, std::move(archiver),
       base::Bind(&OfflinePageDownloadBridge::SavePageCallback, item));
 }
 

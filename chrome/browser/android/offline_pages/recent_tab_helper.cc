@@ -184,7 +184,7 @@ void RecentTabHelper::ContinueSnapshotAfterPurge(
     return;
   }
 
-  page_model_->SavePage(snapshot_url_, client_id(), 0ul,
+  page_model_->SavePage(snapshot_url_, client_id(), 0l,
                         delegate_->CreatePageArchiver(web_contents()),
                         base::Bind(&RecentTabHelper::SavePageCallback,
                                    weak_ptr_factory_.GetWeakPtr()));

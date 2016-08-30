@@ -296,7 +296,7 @@ void OfflinePageModelImpl::SavePage(
   }
 
   // If we already have an offline id, use it.  If not, generate one.
-  if (proposed_offline_id == 0ul)
+  if (proposed_offline_id == 0l)
     proposed_offline_id = GenerateOfflineId();
 
   archiver->CreateArchive(
