@@ -91907,6 +91907,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="CONNECTING_SOCKET"/>
   <int value="1" label="SETTING_RECEIVE_BUFFER"/>
   <int value="2" label="SETTING_SEND_BUFFER"/>
+  <int value="3" label="SETTING_DO_NOT_FRAGMENT"/>
 </enum>
 
 <enum name="QuicSessionLocations" type="int">
