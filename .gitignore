@@ -70,7 +70,6 @@ weston-scaler
 weston-simple-dmabuf-intel
 weston-simple-dmabuf-v4l
 weston-simple-egl
-weston-simple-idle
 weston-simple-shm
 weston-simple-touch
 weston-simple-damage
