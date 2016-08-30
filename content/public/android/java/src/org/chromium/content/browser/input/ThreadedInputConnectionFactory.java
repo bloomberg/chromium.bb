@@ -36,6 +36,7 @@ public class ThreadedInputConnectionFactory implements ChromiumBaseInputConnecti
     private ThreadedInputConnectionProxyView mProxyView;
     private ThreadedInputConnection mThreadedInputConnection;
     private CheckInvalidator mCheckInvalidator;
+    private boolean mReentrantTriggering;
 
     // A small class that can be updated to invalidate the check when there is an external event
     // such as window focus loss or view focus loss.
@@ -105,6 +106,14 @@ public class ThreadedInputConnectionFactory implements ChromiumBaseInputConnecti
             int selectionEnd, EditorInfo outAttrs) {
         ImeUtils.checkOnUiThread();
 
+        // Compute outAttrs early in case we early out to prevent reentrancy. (crbug.com/636197)
+        // TODO(changwan): move this up to ImeAdapter once ReplicaInputConnection is deprecated.
+        ImeUtils.computeEditorInfo(
+                inputType, inputFlags, selectionStart, selectionEnd, outAttrs);
+        if (DEBUG_LOGS) {
+            Log.w(TAG, "initializeAndGet. outAttr: " + ImeUtils.getEditorInfoDebugString(outAttrs));
+        }
+
         // IMM can internally ignore subsequent activation requests, e.g., by checking
         // mServedConnecting.
         if (mCheckInvalidator != null) mCheckInvalidator.invalidate();
@@ -118,14 +127,17 @@ public class ThreadedInputConnectionFactory implements ChromiumBaseInputConnecti
         if (mThreadedInputConnection == null) {
             if (DEBUG_LOGS) Log.w(TAG, "Creating ThreadedInputConnection...");
             mThreadedInputConnection = new ThreadedInputConnection(view, imeAdapter, mHandler);
+        } else {
+            mThreadedInputConnection.resetOnUiThread();
         }
-        mThreadedInputConnection.initializeOutAttrsOnUiThread(inputType, inputFlags,
-                selectionStart, selectionEnd, outAttrs);
         return mThreadedInputConnection;
     }
 
     private void triggerDelayedOnCreateInputConnection(final View view) {
         if (DEBUG_LOGS) Log.w(TAG, "triggerDelayedOnCreateInputConnection");
+        // Prevent infinite loop when View methods trigger onCreateInputConnection
+        // on some OEM phones. (crbug.com/636197)
+        if (mReentrantTriggering) return;
 
         // We need to check this before creating invalidator.
         if (!view.hasFocus() || !view.hasWindowFocus()) return;
@@ -135,8 +147,10 @@ public class ThreadedInputConnectionFactory implements ChromiumBaseInputConnecti
         if (mProxyView == null) {
             mProxyView = createProxyView(mHandler, view);
         }
+        mReentrantTriggering = true;
         // This does not affect view focus of the real views.
         mProxyView.requestFocus();
+        mReentrantTriggering = false;
 
         view.getHandler().post(new Runnable() {
             @Override

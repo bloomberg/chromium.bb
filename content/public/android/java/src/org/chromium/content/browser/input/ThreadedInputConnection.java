@@ -13,7 +13,6 @@ import android.view.View;
 import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.CompletionInfo;
 import android.view.inputmethod.CorrectionInfo;
-import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.ExtractedText;
 import android.view.inputmethod.ExtractedTextRequest;
 import android.view.inputmethod.InputConnection;
@@ -106,15 +105,10 @@ public class ThreadedInputConnection extends BaseInputConnection
         mHandler = handler;
     }
 
-    void initializeOutAttrsOnUiThread(int inputType, int inputFlags, int selectionStart,
-            int selectionEnd, EditorInfo outAttrs) {
+    void resetOnUiThread() {
         ImeUtils.checkOnUiThread();
         mNumNestedBatchEdits = 0;
         mPendingAccent = 0;
-        ImeUtils.computeEditorInfo(inputType, inputFlags, selectionStart, selectionEnd, outAttrs);
-        if (DEBUG_LOGS) {
-            Log.w(TAG, "initializeOutAttrs: " + ImeUtils.getEditorInfoDebugString(outAttrs));
-        }
     }
 
     @Override
