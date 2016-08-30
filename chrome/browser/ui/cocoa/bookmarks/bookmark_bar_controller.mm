@@ -269,14 +269,14 @@ CGFloat BookmarkLeftMargin() {
   if (!ui::MaterialDesignController::IsModeMaterial()) {
     return 2.0;
   }
-  return 12.0;
+  return 8.0;
 }
 
 CGFloat BookmarkRightMargin() {
   if (!ui::MaterialDesignController::IsModeMaterial()) {
     return 2.0;
   }
-  return 12.0;
+  return 8.0;
 }
 
 }  // namespace bookmarks
