@@ -65,7 +65,7 @@ static void doubleAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v
     ExceptionState exceptionState(ExceptionState::SetterContext, "doubleAttribute", "TestInterfaceOriginTrialEnabled", holder, info.GetIsolate());
     TestInterfaceOriginTrialEnabled* impl = V8TestInterfaceOriginTrialEnabled::toImpl(holder);
     double cppValue = toRestrictedDouble(info.GetIsolate(), v8Value, exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException())
         return;
     impl->setDoubleAttribute(cppValue);
 }
@@ -94,7 +94,7 @@ static void conditionalLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value
     ExceptionState exceptionState(ExceptionState::SetterContext, "conditionalLongAttribute", "TestInterfaceOriginTrialEnabled", holder, info.GetIsolate());
     TestInterfaceOriginTrialEnabled* impl = V8TestInterfaceOriginTrialEnabled::toImpl(holder);
     int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException())
         return;
     impl->setConditionalLongAttribute(cppValue);
 }
@@ -156,7 +156,6 @@ static void voidMethodDoubleArgFloatArgMethod(const v8::FunctionCallbackInfo<v8:
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDoubleArgFloatArg", "TestInterfaceOriginTrialEnabled", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 2)) {
         setMinimumArityTypeError(exceptionState, 2, info.Length());
-        exceptionState.throwIfNeeded();
         return;
     }
     TestInterfaceOriginTrialEnabled* impl = V8TestInterfaceOriginTrialEnabled::toImpl(info.Holder());
@@ -164,10 +163,10 @@ static void voidMethodDoubleArgFloatArgMethod(const v8::FunctionCallbackInfo<v8:
     float floatArg;
     {
         doubleArg = toRestrictedDouble(info.GetIsolate(), info[0], exceptionState);
-        if (exceptionState.throwIfNeeded())
+        if (exceptionState.hadException())
             return;
         floatArg = toRestrictedFloat(info.GetIsolate(), info[1], exceptionState);
-        if (exceptionState.throwIfNeeded())
+        if (exceptionState.hadException())
             return;
     }
     impl->voidMethodDoubleArgFloatArg(doubleArg, floatArg);
@@ -191,7 +190,7 @@ static void voidMethodPartialOverload2Method(const v8::FunctionCallbackInfo<v8::
     double doubleArg;
     {
         doubleArg = toRestrictedDouble(info.GetIsolate(), info[0], exceptionState);
-        if (exceptionState.throwIfNeeded())
+        if (exceptionState.hadException())
             return;
     }
     impl->voidMethodPartialOverload(doubleArg);
@@ -217,7 +216,6 @@ static void voidMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::V
         break;
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
-    exceptionState.throwIfNeeded();
     return;
 }
 

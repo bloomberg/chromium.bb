@@ -284,7 +284,6 @@ static void failedAccessCheckCallbackInMainThread(v8::Local<v8::Object> host, v8
     // FIXME: We should modify V8 to pass in more contextual information (context, property, and object).
     ExceptionState exceptionState(ExceptionState::UnknownContext, 0, 0, isolate->GetCurrentContext()->Global(), isolate);
     exceptionState.throwSecurityError(targetWindow->sanitizedCrossDomainAccessErrorMessage(currentDOMWindow(isolate)), targetWindow->crossDomainAccessErrorMessage(currentDOMWindow(isolate)));
-    exceptionState.throwIfNeeded();
 }
 
 static bool codeGenerationCheckCallbackInMainThread(v8::Local<v8::Context> context)

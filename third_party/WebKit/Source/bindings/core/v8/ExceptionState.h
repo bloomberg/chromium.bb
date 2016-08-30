@@ -47,6 +47,9 @@ typedef int ExceptionCode;
 class ScriptPromiseResolver;
 class ScriptState;
 
+// ExceptionState is a scope-like class and provides a way to throw an exception
+// with an option to cancel it.  An exception message may be auto-generated.
+// You can convert an exception to a reject promise.
 class CORE_EXPORT ExceptionState {
     WTF_MAKE_NONCOPYABLE(ExceptionState);
     USING_FAST_MALLOC(ExceptionState);
@@ -95,24 +98,28 @@ public:
     ExceptionState(ContextType context, const char* interfaceName, const v8::Local<v8::Object>& creationContext, v8::Isolate* isolate) // DEPRECATED
         : ExceptionState(isolate, context, interfaceName) { }
 
-    virtual void throwDOMException(const ExceptionCode&, const String& message);
-    virtual void throwTypeError(const String& message);
-    virtual void throwSecurityError(const String& sanitizedMessage, const String& unsanitizedMessage = String());
-    virtual void throwRangeError(const String& message);
+    ~ExceptionState()
+    {
+        if (!m_exception.isEmpty()) {
+            V8ThrowException::throwException(m_isolate, m_exception.newLocal(m_isolate));
+        }
+    }
 
-    bool hadException() const { return !m_exception.isEmpty() || m_code; }
+    virtual void throwDOMException(const ExceptionCode&, const String& message);
+    virtual void throwRangeError(const String& message);
+    virtual void throwSecurityError(const String& sanitizedMessage, const String& unsanitizedMessage = String());
+    virtual void throwTypeError(const String& message);
+    virtual void rethrowV8Exception(v8::Local<v8::Value>);
+
+    bool hadException() const { return m_code; }
     void clearException();
 
     ExceptionCode code() const { return m_code; }
     const String& message() const { return m_message; }
-    v8::Local<v8::Value> getException() { DCHECK(!m_exception.isEmpty()); return m_exception.newLocal(m_isolate); }
-
-    bool throwIfNeeded()
+    v8::Local<v8::Value> getException()
     {
-        if (!hadException())
-            return false;
-        throwException();
-        return true;
+        DCHECK(!m_exception.isEmpty());
+        return m_exception.newLocal(m_isolate);
     }
 
     // This method clears out the exception which |this| has.
@@ -121,35 +128,29 @@ public:
     // This method clears out the exception which |this| has.
     void reject(ScriptPromiseResolver*);
 
-    ContextType context() const { return m_context; }
     const char* propertyName() const { return m_propertyName; }
     const char* interfaceName() const { return m_interfaceName; }
-
-    void rethrowV8Exception(v8::Local<v8::Value> value)
-    {
-        setException(value);
-    }
-
-    // Might return nullptr.
-    v8::Isolate* isolate() const { return m_isolate; }
 
 #if ENABLE(ASSERT)
     OnStackObjectChecker& getOnStackObjectChecker() { return m_onStackObjectChecker; }
 #endif
 
 protected:
+    // An ExceptionCode for the case that an exception is rethrown.  In that
+    // case, we cannot determine an exception code.
+    static const int kRethrownException = UnknownError;
+
+    void setException(ExceptionCode, const String&, v8::Local<v8::Value>);
+
+private:
+    String addExceptionContext(const String&) const;
+
     ExceptionCode m_code;
     ContextType m_context;
     String m_message;
     const char* m_propertyName;
     const char* m_interfaceName;
-
-private:
-    void setException(v8::Local<v8::Value>);
-    void throwException();
-
-    String addExceptionContext(const String&) const;
-
+    // The exception is empty when it was thrown through TrackExceptionState.
     ScopedPersistent<v8::Value> m_exception;
     v8::Isolate* m_isolate;
 #if ENABLE(ASSERT)
@@ -157,26 +158,40 @@ private:
 #endif
 };
 
-// Used if exceptions can/should not be directly thrown.
+// NonThrowableExceptionState never allow call sites to throw an exception.
+// Should be used if an exception must not be thrown.
 class CORE_EXPORT NonThrowableExceptionState final : public ExceptionState {
-    WTF_MAKE_NONCOPYABLE(NonThrowableExceptionState);
 public:
-    NonThrowableExceptionState(): ExceptionState(ExceptionState::UnknownContext, 0, 0, v8::Local<v8::Object>(), v8::Isolate::GetCurrent()) { }
+    NonThrowableExceptionState()
+        : ExceptionState(nullptr, ExceptionState::UnknownContext, nullptr, nullptr) { }
+
     void throwDOMException(const ExceptionCode&, const String& message) override;
     void throwTypeError(const String& message = String()) override;
     void throwSecurityError(const String& sanitizedMessage, const String& unsanitizedMessage = String()) override;
     void throwRangeError(const String& message) override;
+    void rethrowV8Exception(v8::Local<v8::Value>) override;
 };
 
-// Used if any exceptions thrown are ignorable.
+// TrackExceptionState never actually throws an exception, but just records
+// whether a call site tried to throw an exception or not.  Should be used
+// if any exceptions must be ignored.
 class CORE_EXPORT TrackExceptionState final : public ExceptionState {
-    WTF_MAKE_NONCOPYABLE(TrackExceptionState);
 public:
-    TrackExceptionState(): ExceptionState(ExceptionState::UnknownContext, 0, 0, v8::Local<v8::Object>(), v8::Isolate::GetCurrent()) { }
+    TrackExceptionState()
+        : ExceptionState(nullptr, ExceptionState::UnknownContext, nullptr, nullptr) { }
+    ~TrackExceptionState()
+    {
+        // Prevent the base class throw an exception.
+        if (hadException()) {
+            clearException();
+        }
+    }
+
     void throwDOMException(const ExceptionCode&, const String& message) override;
     void throwTypeError(const String& message = String()) override;
     void throwSecurityError(const String& sanitizedMessage, const String& unsanitizedMessage = String()) override;
     void throwRangeError(const String& message) override;
+    void rethrowV8Exception(v8::Local<v8::Value>) override;
 };
 
 } // namespace blink

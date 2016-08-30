@@ -116,7 +116,6 @@ void V8WrapperInstantiationScope::securityCheck(v8::Isolate* isolate, v8::Local<
             return;
 
         CHECK_EQ(SecurityError, exceptionState.code());
-        exceptionState.throwIfNeeded();
         return;
     }
     const DOMWrapperWorld& currentWorld = DOMWrapperWorld::world(m_context);
@@ -125,7 +124,6 @@ void V8WrapperInstantiationScope::securityCheck(v8::Isolate* isolate, v8::Local<
     ExceptionState exceptionState(ExceptionState::ConstructionContext, nullptr, contextForWrapper->Global(), isolate);
     if (currentWorld.isMainWorld() && !BindingSecurity::shouldAllowAccessToFrame(currentDOMWindow(isolate), frame, exceptionState)) {
         CHECK_EQ(SecurityError, exceptionState.code());
-        exceptionState.throwIfNeeded();
         return;
     }
 }
@@ -138,7 +136,6 @@ void V8WrapperInstantiationScope::convertException()
     LocalDOMWindow* callingWindow = currentDOMWindow(isolate);
     DOMWindow* targetWindow = toDOMWindow(m_context);
     exceptionState.throwSecurityError(targetWindow->sanitizedCrossDomainAccessErrorMessage(callingWindow), targetWindow->crossDomainAccessErrorMessage(callingWindow));
-    exceptionState.throwIfNeeded();
 }
 
 } // namespace blink

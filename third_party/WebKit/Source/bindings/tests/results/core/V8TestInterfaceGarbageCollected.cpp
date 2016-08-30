@@ -71,7 +71,6 @@ static void attr1AttributeSetter(v8::Local<v8::Value> v8Value, const v8::Functio
     TestInterfaceGarbageCollected* cppValue = V8TestInterfaceGarbageCollected::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     if (!cppValue) {
         exceptionState.throwTypeError("The provided value is not of type 'TestInterfaceGarbageCollected'.");
-        exceptionState.throwIfNeeded();
         return;
     }
     impl->setAttr1(cppValue);
@@ -113,7 +112,6 @@ static void keysMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
     Iterator* result = impl->keysForBinding(scriptState, exceptionState);
     if (exceptionState.hadException()) {
-        exceptionState.throwIfNeeded();
         return;
     }
     v8SetReturnValue(info, result);
@@ -131,7 +129,6 @@ static void valuesMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
     Iterator* result = impl->valuesForBinding(scriptState, exceptionState);
     if (exceptionState.hadException()) {
-        exceptionState.throwIfNeeded();
         return;
     }
     v8SetReturnValue(info, result);
@@ -149,7 +146,6 @@ static void entriesMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
     Iterator* result = impl->entriesForBinding(scriptState, exceptionState);
     if (exceptionState.hadException()) {
-        exceptionState.throwIfNeeded();
         return;
     }
     v8SetReturnValue(info, result);
@@ -165,7 +161,6 @@ static void forEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "forEach", "TestInterfaceGarbageCollected", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
         setMinimumArityTypeError(exceptionState, 1, info.Length());
-        exceptionState.throwIfNeeded();
         return;
     }
     TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(info.Holder());
@@ -174,7 +169,6 @@ static void forEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     {
         if (!info[0]->IsFunction()) {
             exceptionState.throwTypeError("The callback provided as parameter 1 is not a function.");
-            exceptionState.throwIfNeeded();
             return;
         }
         callback = ScriptValue(ScriptState::current(info.GetIsolate()), info[0]);
@@ -183,7 +177,6 @@ static void forEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
     impl->forEachForBinding(scriptState, ScriptValue(scriptState, info.Holder()), callback, thisArg, exceptionState);
     if (exceptionState.hadException()) {
-        exceptionState.throwIfNeeded();
         return;
     }
 }
@@ -198,7 +191,6 @@ static void hasMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "has", "TestInterfaceGarbageCollected", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
         setMinimumArityTypeError(exceptionState, 1, info.Length());
-        exceptionState.throwIfNeeded();
         return;
     }
     TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(info.Holder());
@@ -211,7 +203,6 @@ static void hasMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
     bool result = impl->hasForBinding(scriptState, value, exceptionState);
     if (exceptionState.hadException()) {
-        exceptionState.throwIfNeeded();
         return;
     }
     v8SetReturnValueBool(info, result);
@@ -227,7 +218,6 @@ static void addMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "add", "TestInterfaceGarbageCollected", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
         setMinimumArityTypeError(exceptionState, 1, info.Length());
-        exceptionState.throwIfNeeded();
         return;
     }
     TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(info.Holder());
@@ -240,7 +230,6 @@ static void addMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
     TestInterfaceGarbageCollected* result = impl->addForBinding(scriptState, value, exceptionState);
     if (exceptionState.hadException()) {
-        exceptionState.throwIfNeeded();
         return;
     }
     v8SetReturnValue(info, result);
@@ -258,7 +247,6 @@ static void clearMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
     impl->clearForBinding(scriptState, exceptionState);
     if (exceptionState.hadException()) {
-        exceptionState.throwIfNeeded();
         return;
     }
 }
@@ -273,7 +261,6 @@ static void deleteMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "delete", "TestInterfaceGarbageCollected", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
         setMinimumArityTypeError(exceptionState, 1, info.Length());
-        exceptionState.throwIfNeeded();
         return;
     }
     TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(info.Holder());
@@ -286,7 +273,6 @@ static void deleteMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
     bool result = impl->deleteForBinding(scriptState, value, exceptionState);
     if (exceptionState.hadException()) {
-        exceptionState.throwIfNeeded();
         return;
     }
     v8SetReturnValueBool(info, result);
@@ -304,7 +290,6 @@ static void iteratorMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
     Iterator* result = impl->iterator(scriptState, exceptionState);
     if (exceptionState.hadException()) {
-        exceptionState.throwIfNeeded();
         return;
     }
     v8SetReturnValue(info, result);

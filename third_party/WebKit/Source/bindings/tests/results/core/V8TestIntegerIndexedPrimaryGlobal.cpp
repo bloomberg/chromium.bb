@@ -66,7 +66,7 @@ static void lengthAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Functi
     ExceptionState exceptionState(ExceptionState::SetterContext, "length", "TestIntegerIndexedPrimaryGlobal", holder, info.GetIsolate());
     TestIntegerIndexedPrimaryGlobal* impl = V8TestIntegerIndexedPrimaryGlobal::toImpl(holder);
     int cppValue = toInt8(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException())
         return;
     impl->setLength(cppValue);
 }

@@ -108,7 +108,7 @@ void V8MessageEvent::initMessageEventMethodCustom(const v8::FunctionCallbackInfo
     if (!isUndefinedOrNull(info[portArrayIndex])) {
         portArray = new MessagePortArray;
         *portArray = toMemberNativeArray<MessagePort>(info[portArrayIndex], portArrayIndex + 1, info.GetIsolate(), exceptionState);
-        if (exceptionState.throwIfNeeded())
+        if (exceptionState.hadException())
             return;
     }
     event->initMessageEvent(typeArg, canBubbleArg, cancelableArg, ScriptValue(ScriptState::current(info.GetIsolate()), dataArg), originArg, lastEventIdArg, sourceArg, portArray);

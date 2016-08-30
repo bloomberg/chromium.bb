@@ -70,11 +70,10 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
     {
         if (!isUndefinedOrNull(info[0]) && !info[0]->IsObject()) {
             exceptionState.throwTypeError("parameter 1 ('dictionaryArg') is not an object.");
-            exceptionState.throwIfNeeded();
             return;
         }
         dictionaryArg = Dictionary(info[0], info.GetIsolate(), exceptionState);
-        if (exceptionState.throwIfNeeded())
+        if (exceptionState.hadException())
             return;
     }
     TestInterfaceConstructor2* impl = TestInterfaceConstructor2::create(dictionaryArg);
@@ -89,7 +88,7 @@ static void constructor3(const v8::FunctionCallbackInfo<v8::Value>& info)
     Vector<Vector<String>> stringSequenceSequenceArg;
     {
         stringSequenceSequenceArg = toImplArray<Vector<Vector<String>>>(info[0], 1, info.GetIsolate(), exceptionState);
-        if (exceptionState.throwIfNeeded())
+        if (exceptionState.hadException())
             return;
     }
     TestInterfaceConstructor2* impl = TestInterfaceConstructor2::create(stringSequenceSequenceArg);
@@ -117,11 +116,10 @@ static void constructor4(const v8::FunctionCallbackInfo<v8::Value>& info)
         testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
         if (!testInterfaceEmptyArg) {
             exceptionState.throwTypeError("parameter 1 is not of type 'TestInterfaceEmpty'.");
-            exceptionState.throwIfNeeded();
             return;
         }
         longArg = toInt32(info.GetIsolate(), info[1], NormalConversion, exceptionState);
-        if (exceptionState.throwIfNeeded())
+        if (exceptionState.hadException())
             return;
         defaultUndefinedOptionalStringArg = info[2];
         if (!defaultUndefinedOptionalStringArg.prepare())
@@ -135,11 +133,10 @@ static void constructor4(const v8::FunctionCallbackInfo<v8::Value>& info)
         }
         if (!isUndefinedOrNull(info[4]) && !info[4]->IsObject()) {
             exceptionState.throwTypeError("parameter 5 ('defaultUndefinedOptionalDictionaryArg') is not an object.");
-            exceptionState.throwIfNeeded();
             return;
         }
         defaultUndefinedOptionalDictionaryArg = Dictionary(info[4], info.GetIsolate(), exceptionState);
-        if (exceptionState.throwIfNeeded())
+        if (exceptionState.hadException())
             return;
         if (UNLIKELY(numArgsPassed <= 5)) {
             TestInterfaceConstructor2* impl = TestInterfaceConstructor2::create(testInterfaceEmptyArg, longArg, defaultUndefinedOptionalStringArg, defaultNullStringOptionalStringArg, defaultUndefinedOptionalDictionaryArg);
@@ -208,11 +205,9 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         break;
     default:
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
-        exceptionState.throwIfNeeded();
         return;
     }
     exceptionState.throwTypeError("No matching constructor signature.");
-    exceptionState.throwIfNeeded();
 }
 
 } // namespace TestInterfaceConstructor2V8Internal

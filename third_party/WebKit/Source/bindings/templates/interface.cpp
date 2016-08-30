@@ -22,7 +22,7 @@ static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo
     {% endif %}
     {{getter.cpp_type}} result = impl->{{getter_name}}({{getter_arguments | join(', ')}});
     {% if getter.is_raises_exception %}
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException())
         return;
     {% endif %}
     if ({{getter.is_null_expression}})
@@ -68,7 +68,6 @@ static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> v8Value, 
        TypeError), per http://www.w3.org/TR/WebIDL/#es-interface #}
     if (!propertyValue{% if setter.is_nullable %} && !isUndefinedOrNull(v8Value){% endif %}) {
         exceptionState.throwTypeError("The provided value is not of type '{{setter.idl_type}}'.");
-        exceptionState.throwIfNeeded();
         return;
     }
     {% endif %}
@@ -83,7 +82,7 @@ static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> v8Value, 
     {% endif %}
     bool result = impl->{{setter_name}}({{setter_arguments | join(', ')}});
     {% if setter.is_raises_exception %}
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException())
         return;
     {% endif %}
     if (!result)
@@ -136,7 +135,7 @@ static void indexedPropertyDeleter(uint32_t index, const v8::PropertyCallbackInf
     {% endif %}
     DeleteResult result = impl->{{deleter_name}}({{deleter_arguments | join(', ')}});
     {% if deleter.is_raises_exception %}
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException())
         return;
     {% endif %}
     if (result != DeleteUnknownProperty)
@@ -190,7 +189,7 @@ static void namedPropertyGetter(v8::Local<v8::Name> name, const v8::PropertyCall
     {{getter.cpp_type}} result = {{getter.cpp_value}};
     {% endif %}
     {% if getter.is_raises_exception %}
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException())
         return;
     {% endif %}
     if ({{getter.is_null_expression}})
@@ -244,7 +243,6 @@ static void namedPropertySetter(v8::Local<v8::Name> name, v8::Local<v8::Value> v
        TypeError), per http://www.w3.org/TR/WebIDL/#es-interface #}
     if (!propertyValue{% if setter.is_nullable %} && !isUndefinedOrNull(v8Value){% endif %}) {
         exceptionState.throwTypeError("The provided value is not of type '{{setter.idl_type}}'.");
-        exceptionState.throwIfNeeded();
         return;
     }
     {% endif %}
@@ -261,7 +259,7 @@ static void namedPropertySetter(v8::Local<v8::Name> name, v8::Local<v8::Value> v
     {% endif %}
     bool result = impl->{{setter_name}}({{setter_arguments | join(', ')}});
     {% if setter.is_raises_exception %}
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException())
         return;
     {% endif %}
     if (!result)
@@ -314,7 +312,7 @@ static void namedPropertyQuery(v8::Local<v8::Name> name, const v8::PropertyCallb
     {% set getter_arguments = ['scriptState'] + getter_arguments %}
     {% endif %}
     bool result = impl->namedPropertyQuery({{getter_arguments | join(', ')}});
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException())
         return;
     if (!result)
         return;
@@ -369,7 +367,7 @@ static void namedPropertyDeleter(v8::Local<v8::Name> name, const v8::PropertyCal
     {% endif %}
     DeleteResult result = impl->{{deleter_name}}({{deleter_arguments | join(', ')}});
     {% if deleter.is_raises_exception %}
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException())
         return;
     {% endif %}
     if (result != DeleteUnknownProperty)
@@ -412,7 +410,7 @@ static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& i
     Vector<String> names;
     ExceptionState exceptionState(ExceptionState::EnumerationContext, "{{interface_name}}", info.Holder(), info.GetIsolate());
     impl->namedPropertyEnumerator(names, exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException())
         return;
     v8::Local<v8::Array> v8names = v8::Array::New(info.GetIsolate(), names.size());
     for (size_t i = 0; i < names.size(); ++i) {
@@ -457,7 +455,6 @@ static void {{cpp_class}}OriginSafeMethodSetter(v8::Local<v8::Name> name, v8::Lo
     v8::String::Utf8Value attributeName(name);
     ExceptionState exceptionState(ExceptionState::SetterContext, *attributeName, "{{interface_name}}", info.Holder(), info.GetIsolate());
     if (!BindingSecurity::shouldAllowAccessTo(currentDOMWindow(info.GetIsolate()), impl, exceptionState)) {
-        exceptionState.throwIfNeeded();
         return;
     }
 
@@ -541,18 +538,15 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         {% if constructor_overloads.valid_arities %}
         if (info.Length() >= {{constructor_overloads.length}}) {
             setArityTypeError(exceptionState, "{{constructor_overloads.valid_arities}}", info.Length());
-            exceptionState.throwIfNeeded();
             return;
         }
         {% endif %}
         {# Otherwise just report "not enough arguments" #}
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments({{constructor_overloads.length}}, info.Length()));
-        exceptionState.throwIfNeeded();
         return;
     }
     {# No match, throw error #}
     exceptionState.throwTypeError("No matching constructor signature.");
-    exceptionState.throwIfNeeded();
 }
 
 {% endif %}

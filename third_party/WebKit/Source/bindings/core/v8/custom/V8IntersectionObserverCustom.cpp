@@ -36,12 +36,12 @@ void V8IntersectionObserver::constructorCustom(const v8::FunctionCallbackInfo<v8
     IntersectionObserverInit intersectionObserverInit;
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "Intersection", info.Holder(), info.GetIsolate());
     V8IntersectionObserverInit::toImpl(info.GetIsolate(), info[1], intersectionObserverInit, exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException())
         return;
 
     IntersectionObserverCallback* callback = new V8IntersectionObserverCallback(v8::Local<v8::Function>::Cast(info[0]), wrapper, ScriptState::current(info.GetIsolate()));
     IntersectionObserver* observer = IntersectionObserver::create(intersectionObserverInit, *callback, exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException())
         return;
     ASSERT(observer);
     v8SetReturnValue(info, V8DOMWrapper::associateObjectWithWrapper(info.GetIsolate(), observer, &wrapperTypeInfo, wrapper));

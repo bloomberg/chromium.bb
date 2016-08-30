@@ -626,10 +626,7 @@ def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variabl
     if idl_type.is_string_type or idl_type.v8_conversion_needs_exception_state:
         # Types for which conversion can fail and that need error handling.
 
-        if use_exception_state:
-            check_expression = 'exceptionState.hadException()'
-        else:
-            check_expression = 'exceptionState.throwIfNeeded()'
+        check_expression = 'exceptionState.hadException()'
 
         if idl_type.is_dictionary or idl_type.is_union_type:
             set_expression = cpp_value

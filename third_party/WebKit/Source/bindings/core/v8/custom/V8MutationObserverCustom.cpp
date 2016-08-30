@@ -46,14 +46,12 @@ void V8MutationObserver::constructorCustom(const v8::FunctionCallbackInfo<v8::Va
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "MutationObserver", info.Holder(), info.GetIsolate());
     if (info.Length() < 1) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
-        exceptionState.throwIfNeeded();
         return;
     }
 
     v8::Local<v8::Value> arg = info[0];
     if (!arg->IsFunction()) {
         exceptionState.throwTypeError("Callback argument must be a function");
-        exceptionState.throwIfNeeded();
         return;
     }
 

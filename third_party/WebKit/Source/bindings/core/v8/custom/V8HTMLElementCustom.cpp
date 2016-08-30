@@ -69,7 +69,6 @@ void V8HTMLElement::constructorCustom(
             exceptionState.throwDOMException(
                 InvalidStateError,
                 "this instance is already constructed");
-            exceptionState.throwIfNeeded();
             return;
         }
     }

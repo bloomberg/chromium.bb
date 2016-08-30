@@ -87,7 +87,6 @@ static void V8TestInterfaceNamedConstructorConstructorCallback(const v8::Functio
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceNamedConstructor", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
         setMinimumArityTypeError(exceptionState, 1, info.Length());
-        exceptionState.throwIfNeeded();
         return;
     }
     V8StringResource<> stringArg;
@@ -107,10 +106,10 @@ static void V8TestInterfaceNamedConstructorConstructorCallback(const v8::Functio
         if (!stringArg.prepare())
             return;
         defaultUndefinedOptionalBooleanArg = toBoolean(info.GetIsolate(), info[1], exceptionState);
-        if (exceptionState.throwIfNeeded())
+        if (exceptionState.hadException())
             return;
         defaultUndefinedOptionalLongArg = toInt32(info.GetIsolate(), info[2], NormalConversion, exceptionState);
-        if (exceptionState.throwIfNeeded())
+        if (exceptionState.hadException())
             return;
         defaultUndefinedOptionalStringArg = info[3];
         if (!defaultUndefinedOptionalStringArg.prepare())
@@ -126,7 +125,6 @@ static void V8TestInterfaceNamedConstructorConstructorCallback(const v8::Functio
             Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
             TestInterfaceNamedConstructor* impl = TestInterfaceNamedConstructor::createForJSConstructor(document, stringArg, defaultUndefinedOptionalBooleanArg, defaultUndefinedOptionalLongArg, defaultUndefinedOptionalStringArg, defaultNullStringOptionalstringArg, exceptionState);
             if (exceptionState.hadException()) {
-                exceptionState.throwIfNeeded();
                 return;
             }
             v8::Local<v8::Object> wrapper = info.Holder();
@@ -141,7 +139,6 @@ static void V8TestInterfaceNamedConstructorConstructorCallback(const v8::Functio
     Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
     TestInterfaceNamedConstructor* impl = TestInterfaceNamedConstructor::createForJSConstructor(document, stringArg, defaultUndefinedOptionalBooleanArg, defaultUndefinedOptionalLongArg, defaultUndefinedOptionalStringArg, defaultNullStringOptionalstringArg, optionalStringArg, exceptionState);
     if (exceptionState.hadException()) {
-        exceptionState.throwIfNeeded();
         return;
     }
     v8::Local<v8::Object> wrapper = info.Holder();

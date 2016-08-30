@@ -77,7 +77,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
     {% endif %}
     {# Checks #}
     {% if attribute.is_getter_raises_exception %}
-    if (UNLIKELY(exceptionState.throwIfNeeded()))
+    if (UNLIKELY(exceptionState.hadException()))
         return;
     {% endif %}
     {# Security checks #}
@@ -85,7 +85,6 @@ const v8::FunctionCallbackInfo<v8::Value>& info
     {% if attribute.is_check_security_for_receiver %}
     if (!BindingSecurity::shouldAllowAccessTo(currentDOMWindow(info.GetIsolate()), impl, exceptionState)) {
         v8SetReturnValueNull(info);
-        exceptionState.throwIfNeeded();
         return;
     }
     {% endif %}
@@ -93,7 +92,6 @@ const v8::FunctionCallbackInfo<v8::Value>& info
     {% if attribute.is_check_security_for_return_value %}
     if (!BindingSecurity::shouldAllowAccessTo(currentDOMWindow(info.GetIsolate()), {{attribute.cpp_value}}, exceptionState)) {
         v8SetReturnValueNull(info);
-        exceptionState.throwIfNeeded();
         return;
     }
     {% endif %}
@@ -279,7 +277,6 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
     {% if attribute.is_check_security_for_receiver %}
     if (!BindingSecurity::shouldAllowAccessTo(currentDOMWindow(info.GetIsolate()), impl, exceptionState)) {
         v8SetReturnValue(info, v8Value);
-        exceptionState.throwIfNeeded();
         return;
     }
     {% endif %}
@@ -304,7 +301,6 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
        TypeError), per http://www.w3.org/TR/WebIDL/#es-interface #}
     if (!cppValue{% if attribute.is_nullable %} && !isUndefinedOrNull(v8Value){% endif %}) {
         exceptionState.throwTypeError("The provided value is not of type '{{attribute.idl_type}}'.");
-        exceptionState.throwIfNeeded();
         return;
     }
     {% elif attribute.enum_values %}
@@ -316,6 +312,11 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
     {{declare_enum_validation_variable(attribute.enum_values) | indent}}
     if (!isValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), "{{attribute.enum_type}}", exceptionState)) {
         currentExecutionContext(info.GetIsolate())->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, exceptionState.message()));
+        // http://heycam.github.io/webidl/#idl-enums
+        // Assignment of an invalid string value to an attribute is ignored,
+        // while passing such a value as an operation argument results in
+        // an exception being thrown.
+        exceptionState.clearException();
         return;
     }
     {% endif %}
@@ -342,9 +343,6 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
     {{attribute.cpp_setter}};
     {% endif %}
     {# Post-set #}
-    {% if attribute.is_setter_raises_exception %}
-    exceptionState.throwIfNeeded();
-    {% endif %}
     {% if attribute.cached_attribute_validation_method %}
     V8HiddenValue::deleteHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), "{{attribute.name}}")); // Invalidate the cached value.
     {% endif %}

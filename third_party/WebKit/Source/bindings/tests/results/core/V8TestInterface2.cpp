@@ -59,19 +59,17 @@ static void itemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "item", "TestInterface2", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
         setMinimumArityTypeError(exceptionState, 1, info.Length());
-        exceptionState.throwIfNeeded();
         return;
     }
     TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
     unsigned index;
     {
         index = toUInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.throwIfNeeded())
+        if (exceptionState.hadException())
             return;
     }
     TestInterfaceEmpty* result = impl->item(index, exceptionState);
     if (exceptionState.hadException()) {
-        exceptionState.throwIfNeeded();
         return;
     }
     v8SetReturnValue(info, result);
@@ -87,7 +85,6 @@ static void setItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "setItem", "TestInterface2", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 2)) {
         setMinimumArityTypeError(exceptionState, 2, info.Length());
-        exceptionState.throwIfNeeded();
         return;
     }
     TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
@@ -95,18 +92,16 @@ static void setItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     TestInterfaceEmpty* value;
     {
         index = toUInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.throwIfNeeded())
+        if (exceptionState.hadException())
             return;
         value = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[1]);
         if (!value) {
             exceptionState.throwTypeError("parameter 2 is not of type 'TestInterfaceEmpty'.");
-            exceptionState.throwIfNeeded();
             return;
         }
     }
     TestInterfaceEmpty* result = impl->setItem(index, value, exceptionState);
     if (exceptionState.hadException()) {
-        exceptionState.throwIfNeeded();
         return;
     }
     v8SetReturnValue(info, result);
@@ -122,19 +117,17 @@ static void deleteItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "deleteItem", "TestInterface2", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
         setMinimumArityTypeError(exceptionState, 1, info.Length());
-        exceptionState.throwIfNeeded();
         return;
     }
     TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
     unsigned index;
     {
         index = toUInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.throwIfNeeded())
+        if (exceptionState.hadException())
             return;
     }
     bool result = impl->deleteItem(index, exceptionState);
     if (exceptionState.hadException()) {
-        exceptionState.throwIfNeeded();
         return;
     }
     v8SetReturnValueBool(info, result);
@@ -150,7 +143,6 @@ static void namedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "namedItem", "TestInterface2", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
         setMinimumArityTypeError(exceptionState, 1, info.Length());
-        exceptionState.throwIfNeeded();
         return;
     }
     TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
@@ -162,7 +154,6 @@ static void namedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     }
     TestInterfaceEmpty* result = impl->namedItem(name, exceptionState);
     if (exceptionState.hadException()) {
-        exceptionState.throwIfNeeded();
         return;
     }
     v8SetReturnValue(info, result);
@@ -178,7 +169,6 @@ static void setNamedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "setNamedItem", "TestInterface2", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 2)) {
         setMinimumArityTypeError(exceptionState, 2, info.Length());
-        exceptionState.throwIfNeeded();
         return;
     }
     TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
@@ -191,13 +181,11 @@ static void setNamedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
         value = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[1]);
         if (!value && !isUndefinedOrNull(info[1])) {
             exceptionState.throwTypeError("parameter 2 is not of type 'TestInterfaceEmpty'.");
-            exceptionState.throwIfNeeded();
             return;
         }
     }
     TestInterfaceEmpty* result = impl->setNamedItem(name, value, exceptionState);
     if (exceptionState.hadException()) {
-        exceptionState.throwIfNeeded();
         return;
     }
     v8SetReturnValue(info, result);
@@ -213,7 +201,6 @@ static void deleteNamedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& inf
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "deleteNamedItem", "TestInterface2", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
         setMinimumArityTypeError(exceptionState, 1, info.Length());
-        exceptionState.throwIfNeeded();
         return;
     }
     TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
@@ -225,7 +212,6 @@ static void deleteNamedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& inf
     }
     bool result = impl->deleteNamedItem(name, exceptionState);
     if (exceptionState.hadException()) {
-        exceptionState.throwIfNeeded();
         return;
     }
     v8SetReturnValueBool(info, result);
@@ -254,7 +240,6 @@ static void keysMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
     Iterator* result = impl->keysForBinding(scriptState, exceptionState);
     if (exceptionState.hadException()) {
-        exceptionState.throwIfNeeded();
         return;
     }
     v8SetReturnValue(info, result);
@@ -272,7 +257,6 @@ static void valuesMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
     Iterator* result = impl->valuesForBinding(scriptState, exceptionState);
     if (exceptionState.hadException()) {
-        exceptionState.throwIfNeeded();
         return;
     }
     v8SetReturnValue(info, result);
@@ -290,7 +274,6 @@ static void entriesMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
     Iterator* result = impl->entriesForBinding(scriptState, exceptionState);
     if (exceptionState.hadException()) {
-        exceptionState.throwIfNeeded();
         return;
     }
     v8SetReturnValue(info, result);
@@ -306,7 +289,6 @@ static void forEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "forEach", "TestInterface2", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
         setMinimumArityTypeError(exceptionState, 1, info.Length());
-        exceptionState.throwIfNeeded();
         return;
     }
     TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
@@ -315,7 +297,6 @@ static void forEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     {
         if (!info[0]->IsFunction()) {
             exceptionState.throwTypeError("The callback provided as parameter 1 is not a function.");
-            exceptionState.throwIfNeeded();
             return;
         }
         callback = ScriptValue(ScriptState::current(info.GetIsolate()), info[0]);
@@ -324,7 +305,6 @@ static void forEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
     impl->forEachForBinding(scriptState, ScriptValue(scriptState, info.Holder()), callback, thisArg, exceptionState);
     if (exceptionState.hadException()) {
-        exceptionState.throwIfNeeded();
         return;
     }
 }
@@ -339,7 +319,6 @@ static void hasMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "has", "TestInterface2", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
         setMinimumArityTypeError(exceptionState, 1, info.Length());
-        exceptionState.throwIfNeeded();
         return;
     }
     TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
@@ -348,14 +327,12 @@ static void hasMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
         value = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
         if (!value) {
             exceptionState.throwTypeError("parameter 1 is not of type 'TestInterfaceEmpty'.");
-            exceptionState.throwIfNeeded();
             return;
         }
     }
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
     bool result = impl->hasForBinding(scriptState, value, exceptionState);
     if (exceptionState.hadException()) {
-        exceptionState.throwIfNeeded();
         return;
     }
     v8SetReturnValueBool(info, result);
@@ -384,7 +361,6 @@ static void iteratorMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
     Iterator* result = impl->iterator(scriptState, exceptionState);
     if (exceptionState.hadException()) {
-        exceptionState.throwIfNeeded();
         return;
     }
     v8SetReturnValue(info, result);
@@ -408,7 +384,7 @@ static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo
     TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
     ExceptionState exceptionState(ExceptionState::IndexedGetterContext, "TestInterface2", info.Holder(), info.GetIsolate());
     TestInterfaceEmpty* result = impl->item(index, exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException())
         return;
     if (!result)
         return;
@@ -427,11 +403,10 @@ static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> v8Value, 
     ExceptionState exceptionState(ExceptionState::IndexedSetterContext, "TestInterface2", info.Holder(), info.GetIsolate());
     if (!propertyValue) {
         exceptionState.throwTypeError("The provided value is not of type 'TestInterfaceEmpty'.");
-        exceptionState.throwIfNeeded();
         return;
     }
     bool result = impl->setItem(index, propertyValue, exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException())
         return;
     if (!result)
         return;
@@ -448,7 +423,7 @@ static void indexedPropertyDeleter(uint32_t index, const v8::PropertyCallbackInf
     TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
     ExceptionState exceptionState(ExceptionState::IndexedDeletionContext, "TestInterface2", info.Holder(), info.GetIsolate());
     DeleteResult result = impl->deleteItem(index, exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException())
         return;
     if (result != DeleteUnknownProperty)
         return v8SetReturnValueBool(info, result == DeleteSuccess);
@@ -467,7 +442,7 @@ static void namedPropertyGetter(v8::Local<v8::Name> name, const v8::PropertyCall
     v8::String::Utf8Value namedProperty(nameString);
     ExceptionState exceptionState(ExceptionState::GetterContext, *namedProperty, "TestInterface2", info.Holder(), info.GetIsolate());
     TestInterfaceEmpty* result = impl->namedItem(propertyName, exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException())
         return;
     if (!result)
         return;
@@ -493,11 +468,10 @@ static void namedPropertySetter(v8::Local<v8::Name> name, v8::Local<v8::Value> v
     TestInterfaceEmpty* propertyValue = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     if (!propertyValue && !isUndefinedOrNull(v8Value)) {
         exceptionState.throwTypeError("The provided value is not of type 'TestInterfaceEmpty'.");
-        exceptionState.throwIfNeeded();
         return;
     }
     bool result = impl->setNamedItem(propertyName, propertyValue, exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException())
         return;
     if (!result)
         return;
@@ -518,7 +492,7 @@ static void namedPropertyQuery(v8::Local<v8::Name> name, const v8::PropertyCallb
     v8::String::Utf8Value namedProperty(name);
     ExceptionState exceptionState(ExceptionState::GetterContext, *namedProperty, "TestInterface2", info.Holder(), info.GetIsolate());
     bool result = impl->namedPropertyQuery(propertyName, exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException())
         return;
     if (!result)
         return;
@@ -539,7 +513,7 @@ static void namedPropertyDeleter(v8::Local<v8::Name> name, const v8::PropertyCal
     v8::String::Utf8Value namedProperty(name);
     ExceptionState exceptionState(ExceptionState::DeletionContext, *namedProperty, "TestInterface2", info.Holder(), info.GetIsolate());
     DeleteResult result = impl->deleteNamedItem(propertyName, exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException())
         return;
     if (result != DeleteUnknownProperty)
         return v8SetReturnValueBool(info, result == DeleteSuccess);
@@ -558,7 +532,7 @@ static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& i
     Vector<String> names;
     ExceptionState exceptionState(ExceptionState::EnumerationContext, "TestInterface2", info.Holder(), info.GetIsolate());
     impl->namedPropertyEnumerator(names, exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException())
         return;
     v8::Local<v8::Array> v8names = v8::Array::New(info.GetIsolate(), names.size());
     for (size_t i = 0; i < names.size(); ++i) {

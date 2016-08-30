@@ -107,7 +107,6 @@ CompositorProxy* CompositorProxy::create(ExecutionContext* context, Element* ele
 {
     if (!context->isDocument()) {
         exceptionState.throwTypeError(ExceptionMessages::failedToConstruct("CompositorProxy", "Can only be created from the main context."));
-        exceptionState.throwIfNeeded();
         return nullptr;
     }
 

@@ -267,7 +267,6 @@ void rethrowExceptionInPrivateScript(v8::Isolate* isolate, v8::TryCatch& block, 
         ScriptState::Scope scope(scriptStateInUserScript);
         ExceptionState exceptionState(errorContext, propertyName, interfaceName, context->Global(), scriptStateInUserScript->isolate());
         exceptionState.throwDOMException(exceptionCode, messageString);
-        exceptionState.throwIfNeeded();
         return;
     }
 
@@ -279,7 +278,6 @@ void rethrowExceptionInPrivateScript(v8::Isolate* isolate, v8::TryCatch& block, 
         ScriptState::Scope scope(scriptStateInUserScript);
         ExceptionState exceptionState(errorContext, propertyName, interfaceName, scriptStateInUserScript->context()->Global(), scriptStateInUserScript->isolate());
         exceptionState.throwDOMException(V8RangeError, messageString);
-        exceptionState.throwIfNeeded();
         return;
     }
 

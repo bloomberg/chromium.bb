@@ -61,7 +61,6 @@ void V8CustomEvent::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>&
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "CustomEvent", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
         setMinimumArityTypeError(exceptionState, 1, info.Length());
-        exceptionState.throwIfNeeded();
         return;
     }
 
@@ -73,11 +72,10 @@ void V8CustomEvent::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>&
     if (!isUndefinedOrNull(info[1])) {
         if (!info[1]->IsObject()) {
             exceptionState.throwTypeError("parameter 2 ('eventInitDict') is not an object.");
-            exceptionState.throwIfNeeded();
             return;
         }
         V8CustomEventInit::toImpl(info.GetIsolate(), info[1], eventInitDict, exceptionState);
-        if (exceptionState.throwIfNeeded())
+        if (exceptionState.hadException())
             return;
     }
 

@@ -67,7 +67,6 @@ static void secureContextAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
     bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     if (!cppValue) {
         exceptionState.throwTypeError("The provided value is not of type 'bool'.");
-        exceptionState.throwIfNeeded();
         return;
     }
     impl->setSecureContextAttribute(cppValue);
@@ -99,7 +98,6 @@ static void secureContextRuntimeEnabledAttributeAttributeSetter(v8::Local<v8::Va
     bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     if (!cppValue) {
         exceptionState.throwTypeError("The provided value is not of type 'bool'.");
-        exceptionState.throwIfNeeded();
         return;
     }
     impl->setSecureContextRuntimeEnabledAttribute(cppValue);
@@ -131,7 +129,6 @@ static void secureContextWindowExposedAttributeAttributeSetter(v8::Local<v8::Val
     bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     if (!cppValue) {
         exceptionState.throwTypeError("The provided value is not of type 'bool'.");
-        exceptionState.throwIfNeeded();
         return;
     }
     impl->setSecureContextWindowExposedAttribute(cppValue);
@@ -163,7 +160,6 @@ static void secureContextWorkerExposedAttributeAttributeSetter(v8::Local<v8::Val
     bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     if (!cppValue) {
         exceptionState.throwTypeError("The provided value is not of type 'bool'.");
-        exceptionState.throwIfNeeded();
         return;
     }
     impl->setSecureContextWorkerExposedAttribute(cppValue);
@@ -195,7 +191,6 @@ static void secureContextWindowExposedRuntimeEnabledAttributeAttributeSetter(v8:
     bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     if (!cppValue) {
         exceptionState.throwTypeError("The provided value is not of type 'bool'.");
-        exceptionState.throwIfNeeded();
         return;
     }
     impl->setSecureContextWindowExposedRuntimeEnabledAttribute(cppValue);
@@ -227,7 +222,6 @@ static void secureContextWorkerExposedRuntimeEnabledAttributeAttributeSetter(v8:
     bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     if (!cppValue) {
         exceptionState.throwTypeError("The provided value is not of type 'bool'.");
-        exceptionState.throwIfNeeded();
         return;
     }
     impl->setSecureContextWorkerExposedRuntimeEnabledAttribute(cppValue);

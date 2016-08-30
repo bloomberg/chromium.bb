@@ -631,10 +631,12 @@ bool XMLHttpRequest::initSend(ExceptionState& exceptionState)
         return false;
     }
 
-    if (!m_async && exceptionState.isolate() && v8::MicrotasksScope::IsRunningMicrotasks(exceptionState.isolate())) {
-        UseCounter::count(getExecutionContext(), UseCounter::During_Microtask_SyncXHR);
+    if (!m_async) {
+        v8::Isolate* isolate = v8::Isolate::GetCurrent();
+        if (isolate && v8::MicrotasksScope::IsRunningMicrotasks(isolate)) {
+            UseCounter::count(getExecutionContext(), UseCounter::During_Microtask_SyncXHR);
+        }
     }
-
 
     m_error = false;
     return true;

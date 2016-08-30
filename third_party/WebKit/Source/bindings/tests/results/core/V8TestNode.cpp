@@ -96,7 +96,6 @@ static void hrefThrowsAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Fu
     if (!cppValue.prepare())
         return;
     impl->setHrefThrows(cppValue, exceptionState);
-    exceptionState.throwIfNeeded();
 }
 
 static void hrefThrowsAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -152,7 +151,7 @@ static void hrefByteStringAttributeSetter(v8::Local<v8::Value> v8Value, const v8
     ExceptionState exceptionState(ExceptionState::SetterContext, "hrefByteString", "TestNode", holder, info.GetIsolate());
     TestNode* impl = V8TestNode::toImpl(holder);
     V8StringResource<> cppValue = toByteString(info.GetIsolate(), v8Value, exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException())
         return;
     impl->setHrefByteString(cppValue);
 }

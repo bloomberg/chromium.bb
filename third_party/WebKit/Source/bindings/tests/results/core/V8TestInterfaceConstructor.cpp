@@ -60,7 +60,6 @@ static void constructor1(const v8::FunctionCallbackInfo<v8::Value>& info)
     Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
     TestInterfaceConstructor* impl = TestInterfaceConstructor::create(scriptState, executionContext, document, exceptionState);
     if (exceptionState.hadException()) {
-        exceptionState.throwIfNeeded();
         return;
     }
     v8::Local<v8::Object> wrapper = info.Holder();
@@ -82,7 +81,7 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
     TestInterfaceEmpty* optionalTestInterfaceEmptyArg;
     {
         doubleArg = toRestrictedDouble(info.GetIsolate(), info[0], exceptionState);
-        if (exceptionState.throwIfNeeded())
+        if (exceptionState.hadException())
             return;
         stringArg = info[1];
         if (!stringArg.prepare())
@@ -90,38 +89,34 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
         testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[2]);
         if (!testInterfaceEmptyArg) {
             exceptionState.throwTypeError("parameter 3 is not of type 'TestInterfaceEmpty'.");
-            exceptionState.throwIfNeeded();
             return;
         }
         if (!isUndefinedOrNull(info[3]) && !info[3]->IsObject()) {
             exceptionState.throwTypeError("parameter 4 ('dictionaryArg') is not an object.");
-            exceptionState.throwIfNeeded();
             return;
         }
         dictionaryArg = Dictionary(info[3], info.GetIsolate(), exceptionState);
-        if (exceptionState.throwIfNeeded())
+        if (exceptionState.hadException())
             return;
         sequenceStringArg = toImplArray<Vector<String>>(info[4], 5, info.GetIsolate(), exceptionState);
-        if (exceptionState.throwIfNeeded())
+        if (exceptionState.hadException())
             return;
         sequenceDictionaryArg = toImplArray<Vector<Dictionary>>(info[5], 6, info.GetIsolate(), exceptionState);
-        if (exceptionState.throwIfNeeded())
+        if (exceptionState.hadException())
             return;
         sequenceLongOrTestDictionaryArg = toImplArray<HeapVector<LongOrTestDictionary>>(info[6], 7, info.GetIsolate(), exceptionState);
-        if (exceptionState.throwIfNeeded())
+        if (exceptionState.hadException())
             return;
         if (!isUndefinedOrNull(info[7]) && !info[7]->IsObject()) {
             exceptionState.throwTypeError("parameter 8 ('optionalDictionaryArg') is not an object.");
-            exceptionState.throwIfNeeded();
             return;
         }
         optionalDictionaryArg = Dictionary(info[7], info.GetIsolate(), exceptionState);
-        if (exceptionState.throwIfNeeded())
+        if (exceptionState.hadException())
             return;
         optionalTestInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[8]);
         if (!optionalTestInterfaceEmptyArg) {
             exceptionState.throwTypeError("parameter 9 is not of type 'TestInterfaceEmpty'.");
-            exceptionState.throwIfNeeded();
             return;
         }
     }
@@ -130,7 +125,6 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
     Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
     TestInterfaceConstructor* impl = TestInterfaceConstructor::create(scriptState, executionContext, document, doubleArg, stringArg, testInterfaceEmptyArg, dictionaryArg, sequenceStringArg, sequenceDictionaryArg, sequenceLongOrTestDictionaryArg, optionalDictionaryArg, optionalTestInterfaceEmptyArg, exceptionState);
     if (exceptionState.hadException()) {
-        exceptionState.throwIfNeeded();
         return;
     }
     v8::Local<v8::Object> wrapper = info.Holder();
@@ -159,7 +153,6 @@ static void constructor3(const v8::FunctionCallbackInfo<v8::Value>& info)
             Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
             TestInterfaceConstructor* impl = TestInterfaceConstructor::create(scriptState, executionContext, document, arg, exceptionState);
             if (exceptionState.hadException()) {
-                exceptionState.throwIfNeeded();
                 return;
             }
             v8::Local<v8::Object> wrapper = info.Holder();
@@ -176,7 +169,6 @@ static void constructor3(const v8::FunctionCallbackInfo<v8::Value>& info)
     Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
     TestInterfaceConstructor* impl = TestInterfaceConstructor::create(scriptState, executionContext, document, arg, optArg, exceptionState);
     if (exceptionState.hadException()) {
-        exceptionState.throwIfNeeded();
         return;
     }
     v8::Local<v8::Object> wrapper = info.Holder();
@@ -206,7 +198,6 @@ static void constructor4(const v8::FunctionCallbackInfo<v8::Value>& info)
     Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
     TestInterfaceConstructor* impl = TestInterfaceConstructor::create(scriptState, executionContext, document, arg, arg2, arg3, exceptionState);
     if (exceptionState.hadException()) {
-        exceptionState.throwIfNeeded();
         return;
     }
     v8::Local<v8::Object> wrapper = info.Holder();
@@ -263,15 +254,12 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
     default:
         if (info.Length() >= 0) {
             setArityTypeError(exceptionState, "[0, 1, 2, 3, 7, 8, 9]", info.Length());
-            exceptionState.throwIfNeeded();
             return;
         }
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(0, info.Length()));
-        exceptionState.throwIfNeeded();
         return;
     }
     exceptionState.throwTypeError("No matching constructor signature.");
-    exceptionState.throwIfNeeded();
 }
 
 } // namespace TestInterfaceConstructorV8Internal
@@ -301,7 +289,6 @@ static void V8TestInterfaceConstructorConstructorCallback(const v8::FunctionCall
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceConstructor", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
         setMinimumArityTypeError(exceptionState, 1, info.Length());
-        exceptionState.throwIfNeeded();
         return;
     }
     V8StringResource<> arg;
@@ -322,7 +309,6 @@ static void V8TestInterfaceConstructorConstructorCallback(const v8::FunctionCall
             Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
             TestInterfaceConstructor* impl = TestInterfaceConstructor::createForJSConstructor(scriptState, executionContext, document, arg, exceptionState);
             if (exceptionState.hadException()) {
-                exceptionState.throwIfNeeded();
                 return;
             }
             v8::Local<v8::Object> wrapper = info.Holder();
@@ -339,7 +325,6 @@ static void V8TestInterfaceConstructorConstructorCallback(const v8::FunctionCall
     Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
     TestInterfaceConstructor* impl = TestInterfaceConstructor::createForJSConstructor(scriptState, executionContext, document, arg, optArg, exceptionState);
     if (exceptionState.hadException()) {
-        exceptionState.throwIfNeeded();
         return;
     }
     v8::Local<v8::Object> wrapper = info.Holder();

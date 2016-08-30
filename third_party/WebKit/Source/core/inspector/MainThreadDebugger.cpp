@@ -345,7 +345,7 @@ void MainThreadDebugger::querySelectorCallback(const v8::FunctionCallbackInfo<v8
         return;
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "$", "CommandLineAPI", info.Holder(), info.GetIsolate());
     Element* element = toContainerNode(node)->querySelector(AtomicString(selector), exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException())
         return;
     if (element)
         info.GetReturnValue().Set(toV8(element, info.Holder(), info.GetIsolate()));
@@ -366,7 +366,7 @@ void MainThreadDebugger::querySelectorAllCallback(const v8::FunctionCallbackInfo
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "$$", "CommandLineAPI", info.Holder(), info.GetIsolate());
     // toV8(elementList) doesn't work here, since we need a proper Array instance, not NodeList.
     StaticElementList* elementList = toContainerNode(node)->querySelectorAll(AtomicString(selector), exceptionState);
-    if (exceptionState.throwIfNeeded() || !elementList)
+    if (exceptionState.hadException() || !elementList)
         return;
     v8::Isolate* isolate = info.GetIsolate();
     v8::Local<v8::Context> context = isolate->GetCurrentContext();
@@ -392,7 +392,7 @@ void MainThreadDebugger::xpathSelectorCallback(const v8::FunctionCallbackInfo<v8
 
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "$x", "CommandLineAPI", info.Holder(), info.GetIsolate());
     XPathResult* result = XPathEvaluator::create()->evaluate(selector, node, nullptr, XPathResult::kAnyType, ScriptValue(), exceptionState);
-    if (exceptionState.throwIfNeeded() || !result)
+    if (exceptionState.hadException() || !result)
         return;
     if (result->resultType() == XPathResult::kNumberType) {
         info.GetReturnValue().Set(toV8(result->numberValue(exceptionState), info.Holder(), info.GetIsolate()));
@@ -406,14 +406,13 @@ void MainThreadDebugger::xpathSelectorCallback(const v8::FunctionCallbackInfo<v8
         v8::Local<v8::Array> nodes = v8::Array::New(isolate);
         size_t index = 0;
         while (Node* node = result->iterateNext(exceptionState)) {
-            if (exceptionState.throwIfNeeded())
+            if (exceptionState.hadException())
                 return;
             if (!createDataPropertyInArray(context, nodes, index++, toV8(node, info.Holder(), info.GetIsolate())).FromMaybe(false))
                 return;
         }
         info.GetReturnValue().Set(nodes);
     }
-    exceptionState.throwIfNeeded();
 }
 
 } // namespace blink

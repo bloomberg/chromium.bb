@@ -33,17 +33,11 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     // didn't work in this case.
     if (const DOMWindow* window = impl->toDOMWindow()) {
         if (!BindingSecurity::shouldAllowAccessTo(currentDOMWindow(info.GetIsolate()), window, exceptionState)) {
-            {% if not method.returns_promise %}
-            exceptionState.throwIfNeeded();
-            {% endif %}
             return;
         }
     }
     {% else %}{# interface_name == 'EventTarget' #}
     if (!BindingSecurity::shouldAllowAccessTo(currentDOMWindow(info.GetIsolate()), impl, exceptionState)) {
-        {% if not method.returns_promise %}
-        exceptionState.throwIfNeeded();
-        {% endif %}
         return;
     }
     {% endif %}{# interface_name == 'EventTarget' #}
@@ -51,9 +45,6 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     {% if method.is_check_security_for_return_value %}
     if (!BindingSecurity::shouldAllowAccessTo(currentDOMWindow(info.GetIsolate()), {{method.cpp_value}}, exceptionState)) {
         v8SetReturnValueNull(info);
-        {% if not method.returns_promise %}
-        exceptionState.throwIfNeeded();
-        {% endif %}
         return;
     }
     {% endif %}
@@ -208,9 +199,6 @@ if (!{{argument.name}}{% if argument.is_nullable %} && !isUndefinedOrNull(info[{
 {# Invalid enum values: http://www.w3.org/TR/WebIDL/#idl-enums #}
 {{declare_enum_validation_variable(argument.enum_values)}}
 if (!isValidEnum({{argument.name}}, validValues, WTF_ARRAY_LENGTH(validValues), "{{argument.enum_type}}", exceptionState)) {
-    {% if not method.returns_promise %}
-    exceptionState.throwIfNeeded();
-    {% endif %}
     return;
 }
 {% elif argument.idl_type == 'Promise' %}
@@ -324,10 +312,9 @@ ExceptionMessages::failedToExecute("{{method.name}}", "{{interface_name}}", {{er
 
 {######################################}
 {% macro propagate_error_with_exception_state(method_or_overloads) %}
-{% if method_or_overloads.returns_promise_all %}
+{% if method_or_overloads.returns_promise_all or
+      method_or_overloads.returns_promise %}
 v8SetReturnValue(info, exceptionState.reject(ScriptState::current(info.GetIsolate())).v8Value());
-{% elif not method_or_overloads.returns_promise %}
-exceptionState.throwIfNeeded();
 {% endif %}
 return;
 {%- endmacro %}
@@ -472,24 +459,21 @@ void postMessageImpl(const char* interfaceName, {{cpp_class}}* instance, const v
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "postMessage", interfaceName, info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
         setMinimumArityTypeError(exceptionState, 1, info.Length());
-        exceptionState.throwIfNeeded();
         return;
     }
     Transferables transferables;
     if (info.Length() > 1) {
         const int transferablesArgIndex = 1;
         if (!SerializedScriptValue::extractTransferables(info.GetIsolate(), info[transferablesArgIndex], transferablesArgIndex, transferables, exceptionState)) {
-            exceptionState.throwIfNeeded();
             return;
         }
     }
     RefPtr<SerializedScriptValue> message = SerializedScriptValue::serialize(info.GetIsolate(), info[0], &transferables, nullptr, exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException())
         return;
     // FIXME: Only pass context/exceptionState if instance really requires it.
     ExecutionContext* context = currentExecutionContext(info.GetIsolate());
     instance->postMessage(context, message.release(), transferables.messagePorts, exceptionState);
-    exceptionState.throwIfNeeded();
 }
 {% endmacro %}
 

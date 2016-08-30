@@ -26,7 +26,6 @@ void V8ServiceWorkerMessageEventInternal::constructorCustom(const v8::FunctionCa
     ExceptionState exceptionState(ExceptionState::ConstructionContext, V8TypeOf<EventType>::Type::wrapperTypeInfo.interfaceName, info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
         setMinimumArityTypeError(exceptionState, 1, info.Length());
-        exceptionState.throwIfNeeded();
         return;
     }
 
@@ -38,11 +37,10 @@ void V8ServiceWorkerMessageEventInternal::constructorCustom(const v8::FunctionCa
     if (!isUndefinedOrNull(info[1])) {
         if (!info[1]->IsObject()) {
             exceptionState.throwTypeError("parameter 2 ('eventInitDict') is not an object.");
-            exceptionState.throwIfNeeded();
             return;
         }
         V8TypeOf<DictType>::Type::toImpl(info.GetIsolate(), info[1], eventInitDict, exceptionState);
-        if (exceptionState.throwIfNeeded())
+        if (exceptionState.hadException())
             return;
     }
 

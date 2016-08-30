@@ -35,12 +35,12 @@ void V8IDBObserver::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>&
     IDBObserverInit idbObserverInit;
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "IDBObserver", info.Holder(), info.GetIsolate());
     V8IDBObserverInit::toImpl(info.GetIsolate(), info[1], idbObserverInit, exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException())
         return;
 
     IDBObserverCallback* callback = new V8IDBObserverCallback(v8::Local<v8::Function>::Cast(info[0]), wrapper, ScriptState::current(info.GetIsolate()));
     IDBObserver* observer = IDBObserver::create(*callback, idbObserverInit);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException())
         return;
     DCHECK(observer);
     v8SetReturnValue(info, V8DOMWrapper::associateObjectWithWrapper(info.GetIsolate(), observer, &wrapperTypeInfo, wrapper));

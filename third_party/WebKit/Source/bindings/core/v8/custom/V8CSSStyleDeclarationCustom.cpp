@@ -220,9 +220,6 @@ void V8CSSStyleDeclaration::namedPropertySetterCustom(v8::Local<v8::Name> name, 
     // TODO(leviw): This API doesn't support custom properties.
     impl->setPropertyInternal(unresolvedProperty, String(), propertyValue, false, exceptionState);
 
-    if (exceptionState.throwIfNeeded())
-        return;
-
     v8SetReturnValue(info, value);
 }
 

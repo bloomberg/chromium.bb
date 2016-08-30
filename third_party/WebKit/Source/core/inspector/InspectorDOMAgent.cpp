@@ -130,8 +130,7 @@ bool parseQuad(std::unique_ptr<protocol::Array<double>> quadArray, FloatQuad* qu
 v8::Local<v8::Value> nodeV8Value(v8::Local<v8::Context> context, Node* node)
 {
     v8::Isolate* isolate = context->GetIsolate();
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "nodeV8Value", "InjectedScriptHost", context->Global(), isolate);
-    if (!node || !BindingSecurity::shouldAllowAccessTo(currentDOMWindow(isolate), node, exceptionState))
+    if (!node || !BindingSecurity::shouldAllowAccessTo(currentDOMWindow(isolate), node, BindingSecurity::ErrorReportOption::DoNotReport))
         return v8::Null(isolate);
     return toV8(node, context->Global(), isolate);
 }

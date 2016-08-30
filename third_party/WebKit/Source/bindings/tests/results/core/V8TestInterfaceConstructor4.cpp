@@ -70,7 +70,7 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
     V8StringResource<> usvStringArg;
     {
         usvStringArg = toUSVString(info.GetIsolate(), info[0], exceptionState);
-        if (exceptionState.throwIfNeeded())
+        if (exceptionState.hadException())
             return;
     }
     TestInterfaceConstructor4* impl = TestInterfaceConstructor4::create(usvStringArg);
@@ -95,11 +95,9 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         break;
     default:
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
-        exceptionState.throwIfNeeded();
         return;
     }
     exceptionState.throwTypeError("No matching constructor signature.");
-    exceptionState.throwIfNeeded();
 }
 
 } // namespace TestInterfaceConstructor4V8Internal

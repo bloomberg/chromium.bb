@@ -96,7 +96,6 @@ static void testInterfaceAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
     TestInterfaceImplementation* cppValue = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     if (!cppValue) {
         exceptionState.throwTypeError("The provided value is not of type 'TestInterface'.");
-        exceptionState.throwIfNeeded();
         return;
     }
     impl->setTestInterfaceAttribute(cppValue);
@@ -127,7 +126,7 @@ static void doubleAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v
     ExceptionState exceptionState(ExceptionState::SetterContext, "doubleAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     double cppValue = toRestrictedDouble(info.GetIsolate(), v8Value, exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException())
         return;
     impl->setDoubleAttribute(cppValue);
 }
@@ -156,7 +155,7 @@ static void floatAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8
     ExceptionState exceptionState(ExceptionState::SetterContext, "floatAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     float cppValue = toRestrictedFloat(info.GetIsolate(), v8Value, exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException())
         return;
     impl->setFloatAttribute(cppValue);
 }
@@ -185,7 +184,7 @@ static void unrestrictedDoubleAttributeAttributeSetter(v8::Local<v8::Value> v8Va
     ExceptionState exceptionState(ExceptionState::SetterContext, "unrestrictedDoubleAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     double cppValue = toDouble(info.GetIsolate(), v8Value, exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException())
         return;
     impl->setUnrestrictedDoubleAttribute(cppValue);
 }
@@ -214,7 +213,7 @@ static void unrestrictedFloatAttributeAttributeSetter(v8::Local<v8::Value> v8Val
     ExceptionState exceptionState(ExceptionState::SetterContext, "unrestrictedFloatAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     float cppValue = toFloat(info.GetIsolate(), v8Value, exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException())
         return;
     impl->setUnrestrictedFloatAttribute(cppValue);
 }
@@ -253,6 +252,11 @@ static void testEnumAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const
     };
     if (!isValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), "TestEnum", exceptionState)) {
         currentExecutionContext(info.GetIsolate())->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, exceptionState.message()));
+        // http://heycam.github.io/webidl/#idl-enums
+        // Assignment of an invalid string value to an attribute is ignored,
+        // while passing such a value as an operation argument results in
+        // an exception being thrown.
+        exceptionState.clearException();
         return;
     }
     impl->setTestEnumAttribute(cppValue);
@@ -285,7 +289,7 @@ static void stringOrDoubleAttributeAttributeSetter(v8::Local<v8::Value> v8Value,
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     StringOrDouble cppValue;
     V8StringOrDouble::toImpl(info.GetIsolate(), v8Value, cppValue, UnionTypeConversionMode::NotNullable, exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException())
         return;
     impl->setStringOrDoubleAttribute(cppValue);
 }
@@ -314,7 +318,7 @@ static void conditionalLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value
     ExceptionState exceptionState(ExceptionState::SetterContext, "conditionalLongAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException())
         return;
     impl->setConditionalLongAttribute(cppValue);
 }
@@ -378,7 +382,6 @@ static void staticReturnDOMWrapperAttributeAttributeSetter(v8::Local<v8::Value> 
     TestInterfaceImplementation* cppValue = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     if (!cppValue) {
         exceptionState.throwTypeError("The provided value is not of type 'TestInterface'.");
-        exceptionState.throwIfNeeded();
         return;
     }
     TestInterfaceImplementation::setStaticReturnDOMWrapperAttribute(cppValue);
@@ -469,7 +472,7 @@ static void alwaysExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
     ExceptionState exceptionState(ExceptionState::SetterContext, "alwaysExposedAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException())
         return;
     impl->setAlwaysExposedAttribute(cppValue);
 }
@@ -498,7 +501,7 @@ static void workerExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
     ExceptionState exceptionState(ExceptionState::SetterContext, "workerExposedAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException())
         return;
     impl->setWorkerExposedAttribute(cppValue);
 }
@@ -527,7 +530,7 @@ static void windowExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
     ExceptionState exceptionState(ExceptionState::SetterContext, "windowExposedAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException())
         return;
     impl->setWindowExposedAttribute(cppValue);
 }
@@ -588,7 +591,6 @@ static void secureContextAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
     bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     if (!cppValue) {
         exceptionState.throwTypeError("The provided value is not of type 'bool'.");
-        exceptionState.throwIfNeeded();
         return;
     }
     impl->setSecureContextAttribute(cppValue);
@@ -620,7 +622,6 @@ static void secureContextRuntimeEnabledAttributeAttributeSetter(v8::Local<v8::Va
     bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     if (!cppValue) {
         exceptionState.throwTypeError("The provided value is not of type 'bool'.");
-        exceptionState.throwIfNeeded();
         return;
     }
     impl->setSecureContextRuntimeEnabledAttribute(cppValue);
@@ -652,7 +653,6 @@ static void secureContextWindowExposedAttributeAttributeSetter(v8::Local<v8::Val
     bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     if (!cppValue) {
         exceptionState.throwTypeError("The provided value is not of type 'bool'.");
-        exceptionState.throwIfNeeded();
         return;
     }
     impl->setSecureContextWindowExposedAttribute(cppValue);
@@ -684,7 +684,6 @@ static void secureContextWorkerExposedAttributeAttributeSetter(v8::Local<v8::Val
     bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     if (!cppValue) {
         exceptionState.throwTypeError("The provided value is not of type 'bool'.");
-        exceptionState.throwIfNeeded();
         return;
     }
     impl->setSecureContextWorkerExposedAttribute(cppValue);
@@ -716,7 +715,6 @@ static void secureContextWindowExposedRuntimeEnabledAttributeAttributeSetter(v8:
     bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     if (!cppValue) {
         exceptionState.throwTypeError("The provided value is not of type 'bool'.");
-        exceptionState.throwIfNeeded();
         return;
     }
     impl->setSecureContextWindowExposedRuntimeEnabledAttribute(cppValue);
@@ -748,7 +746,6 @@ static void secureContextWorkerExposedRuntimeEnabledAttributeAttributeSetter(v8:
     bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     if (!cppValue) {
         exceptionState.throwTypeError("The provided value is not of type 'bool'.");
-        exceptionState.throwIfNeeded();
         return;
     }
     impl->setSecureContextWorkerExposedRuntimeEnabledAttribute(cppValue);
@@ -854,7 +851,6 @@ static void implementsNodeAttributeAttributeSetter(v8::Local<v8::Value> v8Value,
     Node* cppValue = V8Node::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     if (!cppValue) {
         exceptionState.throwTypeError("The provided value is not of type 'Node'.");
-        exceptionState.throwIfNeeded();
         return;
     }
     impl->setImplementsNodeAttribute(cppValue);
@@ -913,7 +909,6 @@ static void implementsRuntimeEnabledNodeAttributeAttributeSetter(v8::Local<v8::V
     Node* cppValue = V8Node::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     if (!cppValue) {
         exceptionState.throwTypeError("The provided value is not of type 'Node'.");
-        exceptionState.throwIfNeeded();
         return;
     }
     impl->setImplementsRuntimeEnabledNodeAttribute(cppValue);
@@ -1047,7 +1042,7 @@ static void partialLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, co
     ExceptionState exceptionState(ExceptionState::SetterContext, "partialLongAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException())
         return;
     TestInterfacePartial::setPartialLongAttribute(*impl, cppValue);
 }
@@ -1073,7 +1068,7 @@ static void partialStaticLongAttributeAttributeSetter(v8::Local<v8::Value> v8Val
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "partialStaticLongAttribute", "TestInterface", holder, info.GetIsolate());
     int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException())
         return;
     TestInterfacePartial::setPartialStaticLongAttribute(cppValue);
 }
@@ -1103,7 +1098,7 @@ static void partialCallWithExecutionContextLongAttributeAttributeSetter(v8::Loca
     ExceptionState exceptionState(ExceptionState::SetterContext, "partialCallWithExecutionContextLongAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException())
         return;
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
     TestInterfacePartial::setPartialCallWithExecutionContextLongAttribute(executionContext, *impl, cppValue);
@@ -1141,6 +1136,11 @@ static void partialPartialEnumTypeAttributeAttributeSetter(v8::Local<v8::Value> 
     };
     if (!isValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), "PartialEnumType", exceptionState)) {
         currentExecutionContext(info.GetIsolate())->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, exceptionState.message()));
+        // http://heycam.github.io/webidl/#idl-enums
+        // Assignment of an invalid string value to an attribute is ignored,
+        // while passing such a value as an operation argument results in
+        // an exception being thrown.
+        exceptionState.clearException();
         return;
     }
     TestInterfacePartial::setPartialPartialEnumTypeAttribute(*impl, cppValue);
@@ -1201,7 +1201,7 @@ static void partial2LongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
     ExceptionState exceptionState(ExceptionState::SetterContext, "partial2LongAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException())
         return;
     TestInterfacePartial2Implementation::setPartial2LongAttribute(*impl, cppValue);
 }
@@ -1227,7 +1227,7 @@ static void partial2StaticLongAttributeAttributeSetter(v8::Local<v8::Value> v8Va
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "partial2StaticLongAttribute", "TestInterface", holder, info.GetIsolate());
     int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException())
         return;
     TestInterfacePartial2Implementation::setPartial2StaticLongAttribute(cppValue);
 }
@@ -1258,7 +1258,6 @@ static void partial2SecureContextAttributeAttributeSetter(v8::Local<v8::Value> v
     bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     if (!cppValue) {
         exceptionState.throwTypeError("The provided value is not of type 'bool'.");
-        exceptionState.throwIfNeeded();
         return;
     }
     TestInterfacePartial2Implementation::setPartial2SecureContextAttribute(*impl, cppValue);
@@ -1290,7 +1289,6 @@ static void partialSecureContextAttributeAttributeSetter(v8::Local<v8::Value> v8
     bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     if (!cppValue) {
         exceptionState.throwTypeError("The provided value is not of type 'bool'.");
-        exceptionState.throwIfNeeded();
         return;
     }
     TestInterfacePartialSecureContext::setPartialSecureContextAttribute(*impl, cppValue);
@@ -1322,7 +1320,6 @@ static void partialSecureContextRuntimeEnabledAttributeAttributeSetter(v8::Local
     bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     if (!cppValue) {
         exceptionState.throwTypeError("The provided value is not of type 'bool'.");
-        exceptionState.throwIfNeeded();
         return;
     }
     TestInterfacePartialSecureContext::setPartialSecureContextRuntimeEnabledAttribute(*impl, cppValue);
@@ -1354,7 +1351,6 @@ static void partialSecureContextWindowExposedAttributeAttributeSetter(v8::Local<
     bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     if (!cppValue) {
         exceptionState.throwTypeError("The provided value is not of type 'bool'.");
-        exceptionState.throwIfNeeded();
         return;
     }
     TestInterfacePartialSecureContext::setPartialSecureContextWindowExposedAttribute(*impl, cppValue);
@@ -1386,7 +1382,6 @@ static void partialSecureContextWorkerExposedAttributeAttributeSetter(v8::Local<
     bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     if (!cppValue) {
         exceptionState.throwTypeError("The provided value is not of type 'bool'.");
-        exceptionState.throwIfNeeded();
         return;
     }
     TestInterfacePartialSecureContext::setPartialSecureContextWorkerExposedAttribute(*impl, cppValue);
@@ -1418,7 +1413,6 @@ static void partialSecureContextWindowExposedRuntimeEnabledAttributeAttributeSet
     bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     if (!cppValue) {
         exceptionState.throwTypeError("The provided value is not of type 'bool'.");
-        exceptionState.throwIfNeeded();
         return;
     }
     TestInterfacePartialSecureContext::setPartialSecureContextWindowExposedRuntimeEnabledAttribute(*impl, cppValue);
@@ -1450,7 +1444,6 @@ static void partialSecureContextWorkerExposedRuntimeEnabledAttributeAttributeSet
     bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
     if (!cppValue) {
         exceptionState.throwTypeError("The provided value is not of type 'bool'.");
-        exceptionState.throwIfNeeded();
         return;
     }
     TestInterfacePartialSecureContext::setPartialSecureContextWorkerExposedRuntimeEnabledAttribute(*impl, cppValue);
@@ -1490,7 +1483,6 @@ static void voidMethodDoubleArgFloatArgMethod(const v8::FunctionCallbackInfo<v8:
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDoubleArgFloatArg", "TestInterface", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 2)) {
         setMinimumArityTypeError(exceptionState, 2, info.Length());
-        exceptionState.throwIfNeeded();
         return;
     }
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
@@ -1498,10 +1490,10 @@ static void voidMethodDoubleArgFloatArgMethod(const v8::FunctionCallbackInfo<v8:
     float floatArg;
     {
         doubleArg = toRestrictedDouble(info.GetIsolate(), info[0], exceptionState);
-        if (exceptionState.throwIfNeeded())
+        if (exceptionState.hadException())
             return;
         floatArg = toRestrictedFloat(info.GetIsolate(), info[1], exceptionState);
-        if (exceptionState.throwIfNeeded())
+        if (exceptionState.hadException())
             return;
     }
     impl->voidMethodDoubleArgFloatArg(doubleArg, floatArg);
@@ -1517,7 +1509,6 @@ static void voidMethodUnrestrictedDoubleArgUnrestrictedFloatArgMethod(const v8::
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodUnrestrictedDoubleArgUnrestrictedFloatArg", "TestInterface", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 2)) {
         setMinimumArityTypeError(exceptionState, 2, info.Length());
-        exceptionState.throwIfNeeded();
         return;
     }
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
@@ -1525,10 +1516,10 @@ static void voidMethodUnrestrictedDoubleArgUnrestrictedFloatArgMethod(const v8::
     float unrestrictedFloatArg;
     {
         unrestrictedDoubleArg = toDouble(info.GetIsolate(), info[0], exceptionState);
-        if (exceptionState.throwIfNeeded())
+        if (exceptionState.hadException())
             return;
         unrestrictedFloatArg = toFloat(info.GetIsolate(), info[1], exceptionState);
-        if (exceptionState.throwIfNeeded())
+        if (exceptionState.hadException())
             return;
     }
     impl->voidMethodUnrestrictedDoubleArgUnrestrictedFloatArg(unrestrictedDoubleArg, unrestrictedFloatArg);
@@ -1544,7 +1535,6 @@ static void voidMethodTestEnumArgMethod(const v8::FunctionCallbackInfo<v8::Value
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodTestEnumArg", "TestInterface", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
         setMinimumArityTypeError(exceptionState, 1, info.Length());
-        exceptionState.throwIfNeeded();
         return;
     }
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
@@ -1560,7 +1550,6 @@ static void voidMethodTestEnumArgMethod(const v8::FunctionCallbackInfo<v8::Value
             "EnumValue3",
         };
         if (!isValidEnum(testEnumArg, validValues, WTF_ARRAY_LENGTH(validValues), "TestEnum", exceptionState)) {
-            exceptionState.throwIfNeeded();
             return;
         }
     }
@@ -1685,7 +1674,7 @@ static void overloadMethodWithExposedAndRuntimeEnabledFlag1Method(const v8::Func
     int longArg;
     {
         longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.throwIfNeeded())
+        if (exceptionState.hadException())
             return;
     }
     impl->overloadMethodWithExposedAndRuntimeEnabledFlag(longArg);
@@ -1748,11 +1737,9 @@ static void overloadMethodWithExposedAndRuntimeEnabledFlagMethod(const v8::Funct
     }
     if (info.Length() < 1) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
-        exceptionState.throwIfNeeded();
         return;
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
-    exceptionState.throwIfNeeded();
     return;
 }
 
@@ -1796,7 +1783,7 @@ static void voidMethodPartialOverload2Method(const v8::FunctionCallbackInfo<v8::
     double doubleArg;
     {
         doubleArg = toRestrictedDouble(info.GetIsolate(), info[0], exceptionState);
-        if (exceptionState.throwIfNeeded())
+        if (exceptionState.hadException())
             return;
     }
     impl->voidMethodPartialOverload(doubleArg);
@@ -1933,7 +1920,6 @@ static void implementsComplexMethodMethod(const v8::FunctionCallbackInfo<v8::Val
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "implementsComplexMethod", "TestInterface", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 2)) {
         setMinimumArityTypeError(exceptionState, 2, info.Length());
-        exceptionState.throwIfNeeded();
         return;
     }
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
@@ -1946,14 +1932,12 @@ static void implementsComplexMethodMethod(const v8::FunctionCallbackInfo<v8::Val
         testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[1]);
         if (!testInterfaceEmptyArg) {
             exceptionState.throwTypeError("parameter 2 is not of type 'TestInterfaceEmpty'.");
-            exceptionState.throwIfNeeded();
             return;
         }
     }
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
     TestInterfaceEmpty* result = impl->implementsComplexMethod(executionContext, strArg, testInterfaceEmptyArg, exceptionState);
     if (exceptionState.hadException()) {
-        exceptionState.throwIfNeeded();
         return;
     }
     v8SetReturnValue(info, result);
@@ -2037,14 +2021,13 @@ static void partialVoidMethodLongArgMethod(const v8::FunctionCallbackInfo<v8::Va
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "partialVoidMethodLongArg", "TestInterface", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
         setMinimumArityTypeError(exceptionState, 1, info.Length());
-        exceptionState.throwIfNeeded();
         return;
     }
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
     int longArg;
     {
         longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.throwIfNeeded())
+        if (exceptionState.hadException())
             return;
     }
     TestInterfacePartial::partialVoidMethodLongArg(*impl, longArg);
@@ -2062,7 +2045,6 @@ static void partialCallWithExecutionContextRaisesExceptionVoidMethodMethod(const
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
     TestInterfacePartial::partialCallWithExecutionContextRaisesExceptionVoidMethod(executionContext, *impl, exceptionState);
     if (exceptionState.hadException()) {
-        exceptionState.throwIfNeeded();
         return;
     }
 }
@@ -2100,14 +2082,13 @@ static void shortMethodWithShortArgumentImplementedInPrivateScriptMethod(const v
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "shortMethodWithShortArgumentImplementedInPrivateScript", "TestInterface", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
         setMinimumArityTypeError(exceptionState, 1, info.Length());
-        exceptionState.throwIfNeeded();
         return;
     }
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
     int value;
     {
         value = toInt16(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-        if (exceptionState.throwIfNeeded())
+        if (exceptionState.hadException())
             return;
     }
     int result = 0;
@@ -2360,7 +2341,6 @@ static void toJSONMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
     ScriptValue result = impl->toJSONForBinding(scriptState, exceptionState);
     if (exceptionState.hadException()) {
-        exceptionState.throwIfNeeded();
         return;
     }
     v8SetReturnValue(info, result.v8Value());
@@ -2389,7 +2369,6 @@ static void iteratorMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
     Iterator* result = impl->iterator(scriptState, exceptionState);
     if (exceptionState.hadException()) {
-        exceptionState.throwIfNeeded();
         return;
     }
     v8SetReturnValue(info, result);
@@ -2492,7 +2471,7 @@ static void namedPropertyQuery(v8::Local<v8::Name> name, const v8::PropertyCallb
     v8::String::Utf8Value namedProperty(name);
     ExceptionState exceptionState(ExceptionState::GetterContext, *namedProperty, "TestInterface", info.Holder(), info.GetIsolate());
     bool result = impl->namedPropertyQuery(propertyName, exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException())
         return;
     if (!result)
         return;
@@ -2528,7 +2507,7 @@ static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& i
     Vector<String> names;
     ExceptionState exceptionState(ExceptionState::EnumerationContext, "TestInterface", info.Holder(), info.GetIsolate());
     impl->namedPropertyEnumerator(names, exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException())
         return;
     v8::Local<v8::Array> v8names = v8::Array::New(info.GetIsolate(), names.size());
     for (size_t i = 0; i < names.size(); ++i) {
@@ -2995,7 +2974,7 @@ bool V8TestInterface::PrivateScript::shortMethodWithShortArgumentImplementedInPr
     if (v8Value.IsEmpty())
         return false;
     int cppValue = toInt16(scriptState->isolate(), v8Value, NormalConversion, exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException())
         return false;
     *result = cppValue;
     RELEASE_ASSERT(!exceptionState.hadException());

@@ -120,10 +120,10 @@ void V8DevToolsHost::showContextMenuAtPointMethodCustom(const v8::FunctionCallba
     v8::Isolate* isolate = info.GetIsolate();
 
     float x = toRestrictedFloat(isolate, info[0], exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException())
         return;
     float y = toRestrictedFloat(isolate, info[1], exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException())
         return;
 
     v8::Local<v8::Value> array = v8::Local<v8::Value>::Cast(info[2]);
@@ -155,4 +155,3 @@ void V8DevToolsHost::showContextMenuAtPointMethodCustom(const v8::FunctionCallba
 }
 
 } // namespace blink
-

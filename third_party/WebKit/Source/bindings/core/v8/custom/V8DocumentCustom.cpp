@@ -87,8 +87,6 @@ void V8Document::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& inf
 
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "open", "Document", info.Holder(), info.GetIsolate());
     document->open(enteredDOMWindow(info.GetIsolate())->document(), exceptionState);
-    if (exceptionState.throwIfNeeded())
-        return;
 
     v8SetReturnValue(info, info.Holder());
 }

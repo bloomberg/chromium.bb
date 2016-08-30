@@ -54,8 +54,6 @@ void V8XMLHttpRequest::responseTextAttributeGetterCustom(const v8::FunctionCallb
     XMLHttpRequest* xmlHttpRequest = V8XMLHttpRequest::toImpl(info.Holder());
     ExceptionState exceptionState(ExceptionState::GetterContext, "responseText", "XMLHttpRequest", info.Holder(), info.GetIsolate());
     ScriptString text = xmlHttpRequest->responseText(exceptionState);
-    if (exceptionState.throwIfNeeded())
-        return;
     if (text.isEmpty()) {
         v8SetReturnValueString(info, emptyString(), info.GetIsolate());
         return;
@@ -98,8 +96,6 @@ void V8XMLHttpRequest::responseAttributeGetterCustom(const v8::FunctionCallbackI
         {
             ExceptionState exceptionState(ExceptionState::GetterContext, "response", "XMLHttpRequest", info.Holder(), info.GetIsolate());
             Document* document = xmlHttpRequest->responseXML(exceptionState);
-            if (exceptionState.throwIfNeeded())
-                return;
             v8SetReturnValueFast(info, document, xmlHttpRequest);
             return;
         }

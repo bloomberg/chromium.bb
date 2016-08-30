@@ -47,7 +47,7 @@ static void partial4LongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
     ExceptionState exceptionState(ExceptionState::SetterContext, "partial4LongAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException())
         return;
     TestInterfacePartial4::setPartial4LongAttribute(*impl, cppValue);
 }
@@ -73,7 +73,7 @@ static void partial4StaticLongAttributeAttributeSetter(v8::Local<v8::Value> v8Va
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "partial4StaticLongAttribute", "TestInterface", holder, info.GetIsolate());
     int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException())
         return;
     TestInterfacePartial4::setPartial4StaticLongAttribute(cppValue);
 }
@@ -112,7 +112,6 @@ static void voidMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::V
         break;
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
-    exceptionState.throwIfNeeded();
     return;
 }
 
@@ -143,7 +142,6 @@ static void staticVoidMethodPartialOverloadMethod(const v8::FunctionCallbackInfo
         break;
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
-    exceptionState.throwIfNeeded();
     return;
 }
 
@@ -266,7 +264,6 @@ static void partial2VoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& 
         break;
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
-    exceptionState.throwIfNeeded();
     return;
 }
 
@@ -275,7 +272,6 @@ static void partialVoidTestEnumModulesArgMethodMethod(const v8::FunctionCallback
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "partialVoidTestEnumModulesArgMethod", "TestInterface", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
         setMinimumArityTypeError(exceptionState, 1, info.Length());
-        exceptionState.throwIfNeeded();
         return;
     }
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
@@ -289,7 +285,6 @@ static void partialVoidTestEnumModulesArgMethodMethod(const v8::FunctionCallback
             "EnumModulesValue2",
         };
         if (!isValidEnum(arg, validValues, WTF_ARRAY_LENGTH(validValues), "TestEnumModules", exceptionState)) {
-            exceptionState.throwIfNeeded();
             return;
         }
     }
@@ -328,7 +323,6 @@ static void partial2StaticVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Va
         break;
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
-    exceptionState.throwIfNeeded();
     return;
 }
 
