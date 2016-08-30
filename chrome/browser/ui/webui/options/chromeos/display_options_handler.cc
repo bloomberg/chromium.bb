@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/display/display_configuration_controller.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/resolution_notification_controller.h"
@@ -26,7 +27,6 @@
 #include "chromeos/chromeos_switches.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
-#include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_layout.h"

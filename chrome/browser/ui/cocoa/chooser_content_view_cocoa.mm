@@ -12,11 +12,11 @@
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_button.h"
 #include "chrome/browser/ui/cocoa/spinner_view.h"
 #include "chrome/grit/generated_resources.h"
-#include "grit/ui_resources.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #import "ui/base/cocoa/controls/hyperlink_button_cell.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/resources/grit/ui_resources.h"
 
 namespace {
 

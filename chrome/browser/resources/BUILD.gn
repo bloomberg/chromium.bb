@@ -7,6 +7,7 @@ import("//tools/grit/grit_rule.gni")
 
 grit("net_internals_resources") {
   source = "net_internals_resources.grd"
+  use_qualified_include = true
   defines = chrome_grit_defines
   outputs = [
     "grit/net_internals_resources.h",
@@ -17,6 +18,7 @@ grit("net_internals_resources") {
 
 grit("invalidations_resources") {
   source = "invalidations_resources.grd"
+  use_qualified_include = true
   defines = chrome_grit_defines
   outputs = [
     "grit/invalidations_resources.h",
@@ -27,6 +29,7 @@ grit("invalidations_resources") {
 
 grit("password_manager_internals_resources") {
   source = "password_manager_internals_resources.grd"
+  use_qualified_include = true
   defines = chrome_grit_defines
   outputs = [
     "grit/password_manager_internals_resources.h",
@@ -37,6 +40,8 @@ grit("password_manager_internals_resources") {
 
 grit("policy_resources") {
   source = "md_policy/policy_resources.grd"
+
+  # TODO(thestig): use_qualified_include = true
   outputs = [
     "grit/policy_resources.h",
     "grit/policy_resources_map.cc",
@@ -48,6 +53,7 @@ grit("policy_resources") {
 
 grit("translate_internals_resources") {
   source = "translate_internals_resources.grd"
+  use_qualified_include = true
   defines = chrome_grit_defines
   outputs = [
     "grit/translate_internals_resources.h",
@@ -69,6 +75,8 @@ copy("extension_resource_demo") {
 if (!is_ios) {
   grit("component_extension_resources") {
     source = "component_extension_resources.grd"
+
+    # TODO(thestig): use_qualified_include = true
     defines = chrome_grit_defines
     outputs = [
       "grit/component_extension_resources.h",
@@ -81,6 +89,8 @@ if (!is_ios) {
 
   grit("settings_resources") {
     source = "settings/settings_resources.grd"
+
+    # TODO(thestig): use_qualified_include = true
     defines = chrome_grit_defines
     outputs = [
       "grit/settings_resources.h",
@@ -93,6 +103,7 @@ if (!is_ios) {
 
   grit("options_resources") {
     source = "options_resources.grd"
+    use_qualified_include = true
     defines = chrome_grit_defines
     outputs = [
       "grit/options_resources.h",
@@ -103,6 +114,7 @@ if (!is_ios) {
 
   grit("options_test_resources") {
     source = "options_test_resources.grd"
+    use_qualified_include = true
     defines = chrome_grit_defines
     outputs = [
       "grit/options_test_resources.h",
@@ -113,6 +125,7 @@ if (!is_ios) {
 
   grit("quota_internals_resources") {
     source = "quota_internals_resources.grd"
+    use_qualified_include = true
     defines = chrome_grit_defines
     outputs = [
       "grit/quota_internals_resources.h",
@@ -123,6 +136,7 @@ if (!is_ios) {
 
   grit("sync_file_system_internals_resources") {
     source = "sync_file_system_internals_resources.grd"
+    use_qualified_include = true
     defines = chrome_grit_defines
     outputs = [
       "grit/sync_file_system_internals_resources.h",

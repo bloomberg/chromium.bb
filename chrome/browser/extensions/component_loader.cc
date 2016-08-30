@@ -44,24 +44,21 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/common/system/chromeos/devicetype_utils.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
+#include "chromeos/chromeos_switches.h"
 #include "components/chrome_apps/grit/chrome_apps_resources.h"
 #include "components/user_manager/user_manager.h"
-#include "grit/keyboard_resources.h"
+#include "content/public/browser/site_instance.h"
+#include "content/public/browser/storage_partition.h"
+#include "extensions/browser/extensions_browser_client.h"
+#include "storage/browser/fileapi/file_system_context.h"
 #include "ui/file_manager/grit/file_manager_resources.h"
+#include "ui/keyboard/grit/keyboard_resources.h"
 #include "ui/keyboard/keyboard_util.h"
 #endif
 
 #if defined(GOOGLE_CHROME_BUILD)
 #include "chrome/browser/defaults.h"
-#endif
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
-#include "chromeos/chromeos_switches.h"
-#include "content/public/browser/site_instance.h"
-#include "content/public/browser/storage_partition.h"
-#include "extensions/browser/extensions_browser_client.h"
-#include "storage/browser/fileapi/file_system_context.h"
 #endif
 
 using content::BrowserThread;

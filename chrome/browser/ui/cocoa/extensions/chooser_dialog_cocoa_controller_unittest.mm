@@ -17,12 +17,12 @@
 #import "chrome/browser/ui/cocoa/extensions/chooser_dialog_cocoa.h"
 #include "chrome/browser/ui/cocoa/spinner_view.h"
 #include "chrome/grit/generated_resources.h"
-#include "grit/ui_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/resources/grit/ui_resources.h"
 
 namespace {
 

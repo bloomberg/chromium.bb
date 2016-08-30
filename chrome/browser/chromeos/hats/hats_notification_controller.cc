@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/hats/hats_notification_controller.h"
 
+#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/system/system_notifier.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
@@ -23,7 +24,6 @@
 #include "components/image_fetcher/image_fetcher_impl.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
-#include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia_rep.h"

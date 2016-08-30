@@ -40,7 +40,6 @@ include_rules = [
   "+components/version_info",
   "+components/visitedlink/renderer",
   "+components/web_cache/renderer",
-  "+content/app/resources/grit",
   "+content/app/strings/grit",
   "+content/public/child",
   "+content/public/common",

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_notification_controller.h"
 
+#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/system/system_notifier.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -19,7 +20,6 @@
 #include "chrome/grit/theme_resources.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/notification_service.h"
-#include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/strings/grit/ui_strings.h"

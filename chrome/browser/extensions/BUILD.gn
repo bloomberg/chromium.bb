@@ -824,6 +824,7 @@ static_library("extensions") {
     "//chrome:strings",
     "//chrome/app:command_ids",
     "//chrome/app/resources:platform_locale_settings",
+    "//chrome/app/theme:chrome_unscaled_resources",
     "//chrome/app/theme:theme_resources",
     "//chrome/browser/devtools",
     "//chrome/browser/media/router",

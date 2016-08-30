@@ -17,7 +17,6 @@
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
-#include "grit/ui_resources.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_utils.h"
 #include "third_party/skia/include/core/SkBitmap.h"

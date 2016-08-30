@@ -3,5 +3,4 @@ include_rules = [
  "+components/constrained_window",
  "+services/ui/public/cpp",
  "+components/user_manager",
- "+content/app/resources/grit/content_resources.h",
 ]

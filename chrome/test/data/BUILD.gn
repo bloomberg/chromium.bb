@@ -6,6 +6,7 @@ import("//tools/grit/grit_rule.gni")
 
 grit("webui_test_resources") {
   source = "webui_test_resources.grd"
+  use_qualified_include = true
   outputs = [
     "test/data/grit/webui_test_resources.h",
     "webui_test_resources.pak",

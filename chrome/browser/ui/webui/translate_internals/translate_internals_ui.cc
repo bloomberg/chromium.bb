@@ -15,10 +15,10 @@
 #include "chrome/browser/ui/webui/translate_internals/translate_internals_handler.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/translate_internals_resources.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "grit/translate_internals_resources.h"
 #include "third_party/cld/cld_version.h"
 #include "ui/base/l10n/l10n_util.h"
 

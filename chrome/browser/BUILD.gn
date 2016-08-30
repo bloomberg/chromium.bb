@@ -982,6 +982,7 @@ proto_library("resource_prefetch_predictor_proto") {
 # (generate_browser_resources action)
 grit("resources") {
   source = "browser_resources.grd"
+  use_qualified_include = true
   defines = chrome_grit_defines
   output_dir = "$root_gen_dir/chrome"
   outputs = [

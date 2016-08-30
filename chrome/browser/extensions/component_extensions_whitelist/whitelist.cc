@@ -20,8 +20,8 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/input_method/component_extension_ime_manager_impl.h"
 #include "components/chrome_apps/grit/chrome_apps_resources.h"
-#include "grit/keyboard_resources.h"
 #include "ui/file_manager/grit/file_manager_resources.h"
+#include "ui/keyboard/grit/keyboard_resources.h"
 #endif
 
 namespace extensions {

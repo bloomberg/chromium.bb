@@ -6,10 +6,10 @@
 
 #include "base/numerics/safe_conversions.h"
 #include "chrome/grit/generated_resources.h"
-#include "grit/ui_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/resources/grit/ui_resources.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/table/table_view.h"

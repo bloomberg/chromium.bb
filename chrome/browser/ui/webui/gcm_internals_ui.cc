@@ -19,11 +19,11 @@
 #include "components/gcm_driver/gcm_internals_constants.h"
 #include "components/gcm_driver/gcm_internals_helper.h"
 #include "components/gcm_driver/gcm_profile_service.h"
+#include "components/grit/components_resources.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
-#include "grit/components_resources.h"
 
 namespace {
 

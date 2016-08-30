@@ -28,7 +28,6 @@ include_rules = [
   "+google/cacheinvalidation",  # Sync invalidation API protobuf files.
   "+google_apis",
   "+google_update",
-  "+grit",  # TODO(thestig) Remove. For generated headers
   "+installer_util_strings",  # For generated headers
   "+jni",
   "+media/audio", # For media audio hang monitor.

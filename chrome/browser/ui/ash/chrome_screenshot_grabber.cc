@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/system/system_notifier.h"
 #include "ash/shell.h"
 #include "base/base64.h"
@@ -35,7 +36,6 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/user_metrics.h"
-#include "grit/ash_strings.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/l10n/l10n_util.h"

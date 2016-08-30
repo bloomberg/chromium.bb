@@ -14,6 +14,7 @@ gypi_values = exec_script("//build/gypi_to_gn.py",
 # (generate_renderer_resources action)
 grit("resources") {
   source = "resources/renderer_resources.grd"
+  use_qualified_include = true
   output_dir = "$root_gen_dir/chrome"
   output_name = "renderer_resources"
   outputs = [

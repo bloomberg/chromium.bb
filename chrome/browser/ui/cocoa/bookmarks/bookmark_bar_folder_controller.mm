@@ -24,12 +24,12 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node_data.h"
 #import "components/bookmarks/managed/managed_bookmark_service.h"
-#include "grit/ui_resources.h"
 #include "ui/base/clipboard/clipboard_util_mac.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
+#include "ui/resources/grit/ui_resources.h"
 
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;

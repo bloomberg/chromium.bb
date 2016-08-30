@@ -117,7 +117,6 @@
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/translate/core/browser/language_state.h"
-#include "content/app/resources/grit/content_resources.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"

@@ -10,6 +10,7 @@
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/shelf/wm_shelf.h"
+#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "ash/common/wm_shell.h"
 #include "build/build_config.h"
@@ -25,7 +26,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/common/context_menu_params.h"
-#include "grit/ash_strings.h"
 
 namespace {
 

@@ -28,7 +28,6 @@
 #include "components/translate/core/browser/translate_ui_delegate.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/common/referrer.h"
-#include "grit/ui_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/cocoa/controls/hyperlink_text_view.h"
@@ -36,6 +35,7 @@
 #import "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
+#include "ui/resources/grit/ui_resources.h"
 
 // TODO(hajimehoshi): This class is almost same as that of views. Refactor them.
 class TranslateDenialComboboxModel : public ui::ComboboxModel {

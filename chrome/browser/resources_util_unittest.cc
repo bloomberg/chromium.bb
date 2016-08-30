@@ -14,7 +14,7 @@
 #include "ui/resources/grit/ui_resources.h"
 
 #if defined(OS_CHROMEOS)
-#include "grit/ui_chromeos_resources.h"
+#include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
 #endif
 
 TEST(ResourcesUtil, SpotCheckIds) {

@@ -9,9 +9,9 @@
 #include "base/path_service.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_paths.h"
-#include "grit/chrome_unscaled_resources.h"
-#include "grit/component_extension_resources_map.h"
-#include "grit/theme_resources.h"
+#include "chrome/grit/chrome_unscaled_resources.h"
+#include "chrome/grit/component_extension_resources_map.h"
+#include "chrome/grit/theme_resources.h"
 
 #if defined(OS_CHROMEOS)
 #include "components/chrome_apps/chrome_apps_resource_util.h"
