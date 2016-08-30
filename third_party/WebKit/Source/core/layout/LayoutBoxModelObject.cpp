@@ -492,6 +492,11 @@ void LayoutBoxModelObject::updateFromStyle()
     setHorizontalWritingMode(styleToUse.isHorizontalWritingMode());
 }
 
+static inline bool isOutOfFlowPositionedWithImplicitHeight(const LayoutBoxModelObject* child)
+{
+    return child->isOutOfFlowPositioned() && !child->style()->logicalTop().isAuto() && !child->style()->logicalBottom().isAuto();
+}
+
 LayoutBlock* LayoutBoxModelObject::containingBlockForAutoHeightDetection(Length logicalHeight) const
 {
     // For percentage heights: The percentage is calculated with respect to the height of the generated box's
@@ -519,7 +524,7 @@ LayoutBlock* LayoutBoxModelObject::containingBlockForAutoHeightDetection(Length 
     if (cb->isLayoutView())
         return nullptr;
 
-    if (cb->isOutOfFlowPositioned() && !cb->style()->logicalTop().isAuto() && !cb->style()->logicalBottom().isAuto())
+    if (isOutOfFlowPositionedWithImplicitHeight(cb))
         return nullptr;
 
     return cb;
@@ -543,7 +548,7 @@ bool LayoutBoxModelObject::hasAutoHeightOrContainingBlockWithAutoHeight(bool che
         if (!checkingContainingBlock && thisBox->hasOverrideContainingBlockLogicalHeight())
             return false;
     }
-    if (logicalHeightLength.isAuto())
+    if (logicalHeightLength.isAuto() && !isOutOfFlowPositionedWithImplicitHeight(this))
         return true;
 
     if (document().inQuirksMode())
