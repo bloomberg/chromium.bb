@@ -14,7 +14,7 @@ function foo(array) {
         testPassed("Got 100 ouches.");
     else
         testFailed("Did not get 100 ouches. Got " + ouches + " instead.");
-    if (testRunner)
+    if (window.testRunner)
         testRunner.notifyDone();
 }
 

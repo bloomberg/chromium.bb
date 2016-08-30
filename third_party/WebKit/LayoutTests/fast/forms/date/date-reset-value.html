@@ -6,13 +6,13 @@
 <input type="date" value="2012-10-09" id="date2">
 </form>
 <script>
-if (testRunner)
+if (window.testRunner)
     testRunner.waitUntilDone();
 window.onload = function() {
     date1.value = "1999-12-31";
     date2.value = "1999-12-31";
     form1.reset();
-    if (testRunner)
+    if (window.testRunner)
         testRunner.notifyDone();
 };
 </script>

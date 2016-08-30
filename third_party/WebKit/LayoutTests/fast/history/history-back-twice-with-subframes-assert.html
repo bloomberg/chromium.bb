@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <script>
-if (testRunner) {
+if (window.testRunner) {
     testRunner.dumpAsText();
     testRunner.waitUntilDone();
 }
@@ -24,7 +24,7 @@ function runTest() {
             return;
         }
         
-        if (testRunner)
+        if (window.testRunner)
             testRunner.notifyDone();
     }
 

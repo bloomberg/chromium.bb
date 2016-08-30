@@ -2,7 +2,7 @@
   <head>
     <script>
       window.onload = function() {
-        if (testRunner) {
+        if (window.testRunner) {
           testRunner.dumpAsText();
           testRunner.waitUntilDone();
         }
@@ -25,7 +25,7 @@
           var oSuccessMessage = document.createElement("p");
           oSuccessMessage.innerHTML = "If this string appears, and the renderer hasn't crashed, then the bug is fixed.";
           document.body.appendChild(oSuccessMessage);
-          if (testRunner)
+          if (window.testRunner)
             testRunner.notifyDone();
         });
       };

@@ -68,7 +68,7 @@ p {
 
     document.body.offsetTop;
     var image = new Image();
-    image.addEventListener("error", function() { if (testRunner) testRunner.notifyDone(); });
+    image.addEventListener("error", function() { if (window.testRunner) testRunner.notifyDone(); });
     image.src = "resources/MakibaFont13.ttf";
 </script>
 </body>

@@ -16,7 +16,7 @@
     onload = function() {
         var doomSpan = document.getElementById("doomSpan");
         doomSpan.style.opacity=1;
-        if (testRunner)
+        if (window.testRunner)
             doomSpan.addEventListener('webkitTransitionEnd', function() { testRunner.notifyDone(); });
     }
   </script>

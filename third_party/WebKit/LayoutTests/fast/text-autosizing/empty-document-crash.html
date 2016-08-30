@@ -21,7 +21,7 @@ Test for crbug.com/348458: this test passes if it does not crash.
   document.body.innerHTML += "<iframe src='data:text/html,<body><script>document.removeChild(document.body.parentElement)</s" + "cript>'></body></iframe>";
   var forceLayout = document.getElementsByTagName('iframe')[0].offsetWidth;
   document.write("PASS");
-  if (testRunner)
+  if (window.testRunner)
     testRunner.dumpAsText();
 </script>
 

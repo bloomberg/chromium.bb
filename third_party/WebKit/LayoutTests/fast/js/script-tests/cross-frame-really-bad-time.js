@@ -41,7 +41,7 @@ function done() {
     else
         testFailed("Did not get 5 ouches. Got " + ouches + " + instead.");
     
-    if (testRunner)
+    if (window.testRunner)
         testRunner.notifyDone();
 }
 

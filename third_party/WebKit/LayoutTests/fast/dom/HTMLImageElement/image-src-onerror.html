@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <script>
-    if (testRunner) {
+    if (window.testRunner) {
         testRunner.dumpAsText();
         testRunner.waitUntilDone();
     }
     window.onload = function() {
         setTimeout(function() {
-            if (testRunner)
+            if (window.testRunner)
                 testRunner.notifyDone();
         }, 500);
     };

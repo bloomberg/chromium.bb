@@ -6,7 +6,7 @@
        logResult("Entered full screen.", false);
        endTest();
     });
-    if (testRunner)
+    if (window.testRunner)
         testRunner.setPopupBlockingEnabled(true);
     waitForEventAndEnd(document, 'webkitfullscreenerror');
     document.documentElement.webkitRequestFullScreen();

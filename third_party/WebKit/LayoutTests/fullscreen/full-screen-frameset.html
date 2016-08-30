@@ -12,7 +12,7 @@ function runTest() {
     waitForEvent(frame.contentDocument, 'webkitfullscreenchange', function() { 
             consoleWrite("FAIL - entered full screen!");
             endTest(); 
-            if (testRunner)
+            if (window.testRunner)
                 testRunner.notifyDone();     
     });
 
@@ -21,7 +21,7 @@ function runTest() {
         setTimeout(function() { 
             consoleWrite("SUCCEED - did not enter full screen!"); 
             endTest();
-            if (testRunner)
+            if (window.testRunner)
                 testRunner.notifyDone();     
         }, 50);
 

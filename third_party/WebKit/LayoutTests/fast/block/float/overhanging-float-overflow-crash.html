@@ -16,6 +16,6 @@ div {
     // Test for https://crbug.com/604331: this test passes if it does not crash.
     document.documentElement.appendChild(document.createTextNode('PASS'));
 
-    if (testRunner)
+    if (window.testRunner)
         testRunner.dumpAsText();
 </script>

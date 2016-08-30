@@ -17,7 +17,7 @@ if (window.testRunner)
 window.onload = function() {
   runAfterLayoutAndPaint(function() {
     changeToUSOU();
-    if (testRunner)
+    if (window.testRunner)
       runAfterLayoutAndPaint(function() { testRunner.notifyDone(); });
   });
 };

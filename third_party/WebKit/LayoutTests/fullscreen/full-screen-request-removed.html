@@ -12,7 +12,7 @@ function runTest() {
         consoleWrite("SUCCEED - did not enter full screen!");
     });
 
-    if (testRunner)
+    if (window.testRunner)
         testRunner.setPopupBlockingEnabled(true);
 
     var div = document.createElement('div');
