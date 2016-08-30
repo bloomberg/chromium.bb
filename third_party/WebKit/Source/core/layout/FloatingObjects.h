@@ -91,7 +91,7 @@ public:
 
 private:
     explicit FloatingObject(LayoutBox*);
-    FloatingObject(LayoutBox*, Type, const LayoutRect&, bool shouldPaint, bool isDescendant, bool isLowestNonOverhangingFloatInChild, bool performingUnsafeClone = false);
+    FloatingObject(LayoutBox*, Type, const LayoutRect&, bool shouldPaint, bool isDescendant, bool isLowestNonOverhangingFloatInChild);
 
     bool shouldPaintForCompositedLayoutPart();
 
