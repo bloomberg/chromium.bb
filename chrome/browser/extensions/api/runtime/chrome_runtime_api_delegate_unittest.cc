@@ -64,7 +64,7 @@ class TestEventRouter : public EventRouter {
 
 std::unique_ptr<KeyedService> TestEventRouterFactoryFunction(
     content::BrowserContext* context) {
-  return base::WrapUnique(new TestEventRouter(context));
+  return base::MakeUnique<TestEventRouter>(context);
 }
 
 // This class lets us intercept extension update checks and respond as if

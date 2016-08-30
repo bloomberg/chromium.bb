@@ -133,8 +133,8 @@ bool DesktopCaptureChooseDesktopMediaFunctionBase::Execute(
     // Create a screens list.
     if (show_screens) {
 #if defined(USE_ASH)
-      screen_list = base::WrapUnique(
-          new DesktopMediaListAsh(DesktopMediaListAsh::SCREENS));
+      screen_list =
+          base::MakeUnique<DesktopMediaListAsh>(DesktopMediaListAsh::SCREENS);
 #endif
       if (!screen_list) {
         webrtc::DesktopCaptureOptions options =
@@ -143,16 +143,16 @@ bool DesktopCaptureChooseDesktopMediaFunctionBase::Execute(
         std::unique_ptr<webrtc::ScreenCapturer> screen_capturer(
             webrtc::ScreenCapturer::Create(options));
 
-        screen_list = base::WrapUnique(
-            new NativeDesktopMediaList(std::move(screen_capturer), nullptr));
+        screen_list = base::MakeUnique<NativeDesktopMediaList>(
+            std::move(screen_capturer), nullptr);
       }
     }
 
     // Create a windows list.
     if (show_windows) {
 #if defined(USE_ASH)
-      window_list = base::WrapUnique(
-          new DesktopMediaListAsh(DesktopMediaListAsh::WINDOWS));
+      window_list =
+          base::MakeUnique<DesktopMediaListAsh>(DesktopMediaListAsh::WINDOWS);
 #endif
       if (!window_list) {
         webrtc::DesktopCaptureOptions options =
@@ -161,13 +161,13 @@ bool DesktopCaptureChooseDesktopMediaFunctionBase::Execute(
         std::unique_ptr<webrtc::WindowCapturer> window_capturer(
             webrtc::WindowCapturer::Create(options));
 
-        window_list = base::WrapUnique(
-            new NativeDesktopMediaList(nullptr, std::move(window_capturer)));
+        window_list = base::MakeUnique<NativeDesktopMediaList>(
+            nullptr, std::move(window_capturer));
       }
     }
 
     if (show_tabs)
-      tab_list = base::WrapUnique(new TabDesktopMediaList());
+      tab_list = base::MakeUnique<TabDesktopMediaList>();
 
     DCHECK(screen_list || window_list || tab_list);
 

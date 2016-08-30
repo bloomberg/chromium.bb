@@ -43,7 +43,7 @@ class FakeEventRouter : public extensions::EventRouter {
 // FakeEventRouter factory function
 std::unique_ptr<KeyedService> FakeEventRouterFactoryFunction(
     content::BrowserContext* context) {
-  return base::WrapUnique(new FakeEventRouter(static_cast<Profile*>(context)));
+  return base::MakeUnique<FakeEventRouter>(static_cast<Profile*>(context));
 }
 
 namespace {

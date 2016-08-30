@@ -48,9 +48,9 @@ std::unique_ptr<KeyedService>
 ExtensionGarbageCollectorFactory::BuildInstanceFor(
     content::BrowserContext* context) {
 #if defined(OS_CHROMEOS)
-  return base::WrapUnique(new ExtensionGarbageCollectorChromeOS(context));
+  return base::MakeUnique<ExtensionGarbageCollectorChromeOS>(context);
 #else
-  return base::WrapUnique(new ExtensionGarbageCollector(context));
+  return base::MakeUnique<ExtensionGarbageCollector>(context);
 #endif
 }
 

@@ -21,7 +21,7 @@ namespace extensions {
 
 std::unique_ptr<KeyedService> ApiResourceManagerTestFactory(
     content::BrowserContext* context) {
-  return base::WrapUnique(new ApiResourceManager<Socket>(context));
+  return base::MakeUnique<ApiResourceManager<Socket>>(context);
 }
 
 class SocketUnitTest : public ExtensionApiUnittest {

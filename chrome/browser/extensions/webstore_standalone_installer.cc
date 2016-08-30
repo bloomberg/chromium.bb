@@ -165,7 +165,7 @@ void WebstoreStandaloneInstaller::OnManifestParsed() {
 
 std::unique_ptr<ExtensionInstallPrompt>
 WebstoreStandaloneInstaller::CreateInstallUI() {
-  return base::WrapUnique(new ExtensionInstallPrompt(GetWebContents()));
+  return base::MakeUnique<ExtensionInstallPrompt>(GetWebContents());
 }
 
 std::unique_ptr<WebstoreInstaller::Approval>

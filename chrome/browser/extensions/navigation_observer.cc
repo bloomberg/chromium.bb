@@ -87,7 +87,7 @@ void NavigationObserver::PromptToEnableExtensionIfNecessary(
         base::Bind(&NavigationObserver::OnInstallPromptDone,
                    weak_factory_.GetWeakPtr()),
         extension, nullptr,
-        base::WrapUnique(new ExtensionInstallPrompt::Prompt(type)),
+        base::MakeUnique<ExtensionInstallPrompt::Prompt>(type),
         ExtensionInstallPrompt::GetDefaultShowDialogCallback());
   }
 }

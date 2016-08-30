@@ -98,5 +98,5 @@ ExtensionResourceProtocolHandler::MaybeCreateJob(
 
 std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>
 CreateExtensionResourceProtocolHandler() {
-  return base::WrapUnique(new ExtensionResourceProtocolHandler());
+  return base::MakeUnique<ExtensionResourceProtocolHandler>();
 }

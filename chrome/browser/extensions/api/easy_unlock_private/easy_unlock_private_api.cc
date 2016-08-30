@@ -1051,7 +1051,7 @@ EasyUnlockPrivateSetAutoPairingResultFunction::Run() {
 EasyUnlockPrivateFindSetupConnectionFunction::
     EasyUnlockPrivateFindSetupConnectionFunction()
     : bluetooth_throttler_(new proximity_auth::BluetoothThrottlerImpl(
-          base::WrapUnique(new base::DefaultTickClock()))) {}
+          base::MakeUnique<base::DefaultTickClock>())) {}
 
 EasyUnlockPrivateFindSetupConnectionFunction::
     ~EasyUnlockPrivateFindSetupConnectionFunction() {

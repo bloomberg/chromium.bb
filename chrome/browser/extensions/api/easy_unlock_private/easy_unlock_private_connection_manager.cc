@@ -98,7 +98,7 @@ bool EasyUnlockPrivateConnectionManager::SendMessage(
     const std::string& payload) {
   Connection* connection = GetConnection(extension->id(), connection_id);
   if (connection && connection->IsConnected()) {
-    connection->SendMessage(base::WrapUnique(new WireMessage(payload)));
+    connection->SendMessage(base::MakeUnique<WireMessage>(payload));
     return true;
   }
   return false;
@@ -163,7 +163,7 @@ void EasyUnlockPrivateConnectionManager::DispatchConnectionEvent(
     std::unique_ptr<base::ListValue> args_copy(args->DeepCopy());
     int connection_index = 0;
     args_copy->Set(connection_index,
-                   base::WrapUnique(new base::FundamentalValue(connection_id)));
+                   base::MakeUnique<base::FundamentalValue>(connection_id));
     std::unique_ptr<Event> event(
         new Event(histogram_value, event_name, std::move(args_copy)));
     EventRouter::Get(browser_context_)

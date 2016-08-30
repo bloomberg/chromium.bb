@@ -190,8 +190,8 @@ void BookmarkManagerPrivateEventRouter::DispatchEvent(
     const std::string& event_name,
     std::unique_ptr<base::ListValue> event_args) {
   EventRouter::Get(browser_context_)
-      ->BroadcastEvent(base::WrapUnique(
-          new Event(histogram_value, event_name, std::move(event_args))));
+      ->BroadcastEvent(base::MakeUnique<Event>(histogram_value, event_name,
+                                               std::move(event_args)));
 }
 
 void BookmarkManagerPrivateEventRouter::BookmarkModelChanged() {}

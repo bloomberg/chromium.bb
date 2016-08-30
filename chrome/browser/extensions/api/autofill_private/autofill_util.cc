@@ -62,8 +62,8 @@ std::unique_ptr<std::vector<std::string>> GetValueList(
 std::unique_ptr<std::string> GetStringFromProfile(
     const autofill::AutofillProfile& profile,
     const autofill::ServerFieldType& type) {
-  return base::WrapUnique(
-      new std::string(base::UTF16ToUTF8(profile.GetRawInfo(type))));
+  return base::MakeUnique<std::string>(
+      base::UTF16ToUTF8(profile.GetRawInfo(type)));
 }
 
 autofill_private::AddressEntry ProfileToAddressEntry(

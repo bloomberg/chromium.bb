@@ -109,8 +109,8 @@ class DownloadsApiUnitTest : public ExtensionApiUnittest {
 std::unique_ptr<KeyedService>
 DownloadsApiUnitTest::TestingDownloadServiceFactory(
     content::BrowserContext* browser_context) {
-  return base::WrapUnique(
-      new TestDownloadService(Profile::FromBrowserContext(browser_context)));
+  return base::MakeUnique<TestDownloadService>(
+      Profile::FromBrowserContext(browser_context));
 }
 
 // Tests that Number/double properties in query are parsed correctly.

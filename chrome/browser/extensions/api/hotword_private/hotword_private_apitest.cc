@@ -104,8 +104,7 @@ class MockHotwordService : public HotwordService {
   }
 
   static std::unique_ptr<KeyedService> Build(content::BrowserContext* profile) {
-    return base::WrapUnique(
-        new MockHotwordService(static_cast<Profile*>(profile)));
+    return base::MakeUnique<MockHotwordService>(static_cast<Profile*>(profile));
   }
 
   LaunchMode GetHotwordAudioVerificationLaunchMode() override {

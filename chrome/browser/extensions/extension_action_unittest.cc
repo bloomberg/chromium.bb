@@ -18,7 +18,7 @@ namespace {
 std::unique_ptr<ExtensionAction> CreateAction(ActionInfo::Type type,
                                               const ActionInfo& action_info) {
   scoped_refptr<const Extension> extension = test_util::CreateEmptyExtension();
-  return base::WrapUnique(new ExtensionAction(*extension, type, action_info));
+  return base::MakeUnique<ExtensionAction>(*extension, type, action_info);
 }
 
 }  // namespace

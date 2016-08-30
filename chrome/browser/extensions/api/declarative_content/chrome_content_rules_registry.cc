@@ -180,9 +180,8 @@ ChromeContentRulesRegistry::CreateRule(
 
   // Note: |api_rule| may contain tags, but these are ignored.
 
-  return base::WrapUnique(new ContentRule(extension, std::move(conditions),
-                                          std::move(actions),
-                                          *api_rule.priority));
+  return base::MakeUnique<ContentRule>(extension, std::move(conditions),
+                                       std::move(actions), *api_rule.priority);
 }
 
 bool ChromeContentRulesRegistry::ManagingRulesForBrowserContext(

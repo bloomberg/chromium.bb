@@ -357,8 +357,9 @@ void ExtensionActionRunner::ShowBlockedActionBubble(
           FROM_HERE,
           base::Bind(callback, *default_bubble_close_action_for_testing_));
     } else {
-      toolbar_actions_bar->ShowToolbarActionBubble(base::WrapUnique(
-          new BlockedActionBubbleDelegate(callback, extension->id())));
+      toolbar_actions_bar->ShowToolbarActionBubble(
+          base::MakeUnique<BlockedActionBubbleDelegate>(callback,
+                                                        extension->id()));
     }
   }
 }

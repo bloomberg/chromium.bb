@@ -517,8 +517,8 @@ std::unique_ptr<KeyedService> FakeEventRouterFactoryFunction(
     content::BrowserContext* profile) {
   std::unique_ptr<extensions::TestExtensionPrefs> extension_prefs(
       new extensions::TestExtensionPrefs(base::ThreadTaskRunnerHandle::Get()));
-  return base::WrapUnique(new FakeEventRouter(static_cast<Profile*>(profile),
-                                              std::move(extension_prefs)));
+  return base::MakeUnique<FakeEventRouter>(static_cast<Profile*>(profile),
+                                           std::move(extension_prefs));
 }
 
 TEST_F(EasyUnlockPrivateApiTest, AutoPairing) {

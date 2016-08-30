@@ -50,7 +50,7 @@ DialRegistry::~DialRegistry() {
 
 std::unique_ptr<DialService> DialRegistry::CreateDialService() {
   DCHECK(g_browser_process->net_log());
-  return base::WrapUnique(new DialServiceImpl(g_browser_process->net_log()));
+  return base::MakeUnique<DialServiceImpl>(g_browser_process->net_log());
 }
 
 void DialRegistry::ClearDialService() {

@@ -24,8 +24,8 @@ WebstoreStartupInstaller::~WebstoreStartupInstaller() {}
 std::unique_ptr<ExtensionInstallPrompt::Prompt>
 WebstoreStartupInstaller::CreateInstallPrompt() const {
   if (show_prompt_) {
-    return base::WrapUnique(new ExtensionInstallPrompt::Prompt(
-        ExtensionInstallPrompt::INSTALL_PROMPT));
+    return base::MakeUnique<ExtensionInstallPrompt::Prompt>(
+        ExtensionInstallPrompt::INSTALL_PROMPT);
   }
   return NULL;
 }

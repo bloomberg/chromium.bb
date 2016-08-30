@@ -146,8 +146,8 @@ std::unique_ptr<const PermissionSet> UnpackPermissionSet(
     }
   }
 
-  return base::WrapUnique(
-      new PermissionSet(apis, manifest_permissions, origins, URLPatternSet()));
+  return base::MakeUnique<PermissionSet>(apis, manifest_permissions, origins,
+                                         URLPatternSet());
 }
 
 }  // namespace permissions_api_helpers

@@ -73,18 +73,18 @@ class MockedMDnsAPI : public MDnsAPI {
 
 std::unique_ptr<KeyedService> MockedMDnsAPITestingFactoryFunction(
     content::BrowserContext* context) {
-  return base::WrapUnique(new MockedMDnsAPI(context));
+  return base::MakeUnique<MockedMDnsAPI>(context);
 }
 
 std::unique_ptr<KeyedService> MDnsAPITestingFactoryFunction(
     content::BrowserContext* context) {
-  return base::WrapUnique(new MDnsAPI(context));
+  return base::MakeUnique<MDnsAPI>(context);
 }
 
 std::unique_ptr<KeyedService> BuildEventRouter(
     content::BrowserContext* context) {
-  return base::WrapUnique(
-      new extensions::EventRouter(context, ExtensionPrefs::Get(context)));
+  return base::MakeUnique<extensions::EventRouter>(
+      context, ExtensionPrefs::Get(context));
 }
 
 // For ExtensionService interface when it requires a path that is not used.
@@ -129,8 +129,8 @@ class MockEventRouter : public EventRouter {
 
 std::unique_ptr<KeyedService> MockEventRouterFactoryFunction(
     content::BrowserContext* context) {
-  return base::WrapUnique(
-      new MockEventRouter(context, ExtensionPrefs::Get(context)));
+  return base::MakeUnique<MockEventRouter>(context,
+                                           ExtensionPrefs::Get(context));
 }
 
 class EventServiceListSizeMatcher

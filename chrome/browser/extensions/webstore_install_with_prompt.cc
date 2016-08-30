@@ -57,16 +57,15 @@ const GURL& WebstoreInstallWithPrompt::GetRequestorURL() const {
 
 std::unique_ptr<ExtensionInstallPrompt::Prompt>
 WebstoreInstallWithPrompt::CreateInstallPrompt() const {
-  return base::WrapUnique(new ExtensionInstallPrompt::Prompt(
-      ExtensionInstallPrompt::INSTALL_PROMPT));
+  return base::MakeUnique<ExtensionInstallPrompt::Prompt>(
+      ExtensionInstallPrompt::INSTALL_PROMPT);
 }
 
 std::unique_ptr<ExtensionInstallPrompt>
 WebstoreInstallWithPrompt::CreateInstallUI() {
   // Create an ExtensionInstallPrompt. If the parent window is NULL, the dialog
   // will be placed in the middle of the screen.
-  return base::WrapUnique(
-      new ExtensionInstallPrompt(profile(), parent_window_));
+  return base::MakeUnique<ExtensionInstallPrompt>(profile(), parent_window_);
 }
 
 bool WebstoreInstallWithPrompt::ShouldShowPostInstallUI() const {

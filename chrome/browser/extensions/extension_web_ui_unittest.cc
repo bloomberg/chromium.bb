@@ -32,7 +32,7 @@ namespace {
 
 std::unique_ptr<KeyedService> BuildOverrideRegistrar(
     content::BrowserContext* context) {
-  return base::WrapUnique(new ExtensionWebUIOverrideRegistrar(context));
+  return base::MakeUnique<ExtensionWebUIOverrideRegistrar>(context);
 }
 
 }  // namespace

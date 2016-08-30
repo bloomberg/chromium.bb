@@ -23,13 +23,13 @@ namespace api {
 
 static std::unique_ptr<KeyedService> ApiResourceManagerTestFactory(
     content::BrowserContext* context) {
-  return base::WrapUnique(new ApiResourceManager<ResumableTCPSocket>(context));
+  return base::MakeUnique<ApiResourceManager<ResumableTCPSocket>>(context);
 }
 
 static std::unique_ptr<KeyedService> ApiResourceManagerTestServerFactory(
     content::BrowserContext* context) {
-  return base::WrapUnique(
-      new ApiResourceManager<ResumableTCPServerSocket>(context));
+  return base::MakeUnique<ApiResourceManager<ResumableTCPServerSocket>>(
+      context);
 }
 
 class SocketsTcpServerUnitTest : public ExtensionApiUnittest {

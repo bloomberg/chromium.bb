@@ -107,7 +107,7 @@ ExtensionDisabledDialogDelegate::ExtensionDisabledDialogDelegate(
       base::Bind(&ExtensionDisabledDialogDelegate::InstallPromptDone,
                  base::Unretained(this)),
       extension_, nullptr,
-      base::WrapUnique(new ExtensionInstallPrompt::Prompt(type)),
+      base::MakeUnique<ExtensionInstallPrompt::Prompt>(type),
       ExtensionInstallPrompt::GetDefaultShowDialogCallback());
 }
 

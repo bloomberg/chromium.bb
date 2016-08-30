@@ -378,14 +378,14 @@ TEST_F(FullStreamUIPolicyTest, LogAndFetchActions) {
                                                 base::Time::Now(),
                                                 Action::ACTION_API_CALL,
                                                 "tabs.testMethod");
-  action_api->set_args(base::WrapUnique(new base::ListValue()));
+  action_api->set_args(base::MakeUnique<base::ListValue>());
   policy->ProcessAction(action_api);
 
   scoped_refptr<Action> action_dom = new Action(extension->id(),
                                                 base::Time::Now(),
                                                 Action::ACTION_DOM_ACCESS,
                                                 "document.write");
-  action_dom->set_args(base::WrapUnique(new base::ListValue()));
+  action_dom->set_args(base::MakeUnique<base::ListValue>());
   action_dom->set_page_url(gurl);
   policy->ProcessAction(action_dom);
 
@@ -417,14 +417,14 @@ TEST_F(FullStreamUIPolicyTest, LogAndFetchFilteredActions) {
                                                 base::Time::Now(),
                                                 Action::ACTION_API_CALL,
                                                 "tabs.testMethod");
-  action_api->set_args(base::WrapUnique(new base::ListValue()));
+  action_api->set_args(base::MakeUnique<base::ListValue>());
   policy->ProcessAction(action_api);
 
   scoped_refptr<Action> action_dom = new Action(extension->id(),
                                                 base::Time::Now(),
                                                 Action::ACTION_DOM_ACCESS,
                                                 "document.write");
-  action_dom->set_args(base::WrapUnique(new base::ListValue()));
+  action_dom->set_args(base::MakeUnique<base::ListValue>());
   action_dom->set_page_url(gurl);
   policy->ProcessAction(action_dom);
 
@@ -858,14 +858,14 @@ TEST_F(FullStreamUIPolicyTest, DeleteDatabase) {
                                                 base::Time::Now(),
                                                 Action::ACTION_API_CALL,
                                                 "tabs.testMethod");
-  action_api->set_args(base::WrapUnique(new base::ListValue()));
+  action_api->set_args(base::MakeUnique<base::ListValue>());
   policy->ProcessAction(action_api);
 
   scoped_refptr<Action> action_dom = new Action(extension->id(),
                                                 base::Time::Now(),
                                                 Action::ACTION_DOM_ACCESS,
                                                 "document.write");
-  action_dom->set_args(base::WrapUnique(new base::ListValue()));
+  action_dom->set_args(base::MakeUnique<base::ListValue>());
   action_dom->set_page_url(gurl);
   policy->ProcessAction(action_dom);
 

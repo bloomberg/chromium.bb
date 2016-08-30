@@ -67,9 +67,9 @@ class MenuBuilder {
   ~MenuBuilder() {}
 
   std::unique_ptr<ExtensionContextMenuModel> BuildMenu() {
-    return base::WrapUnique(new ExtensionContextMenuModel(
+    return base::MakeUnique<ExtensionContextMenuModel>(
         extension_.get(), browser_, ExtensionContextMenuModel::VISIBLE,
-        nullptr));
+        nullptr);
   }
 
   void AddContextItem(MenuItem::Context context) {

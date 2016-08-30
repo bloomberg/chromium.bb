@@ -194,8 +194,7 @@ std::unique_ptr<KeyedService> ExtensionSessionsTest::BuildProfileSyncService(
   Profile* profile = static_cast<Profile*>(context);
   ProfileSyncServiceMock* sync_service =
       new ProfileSyncServiceMock(CreateProfileSyncServiceParamsForTest(
-          base::WrapUnique(new browser_sync::ChromeSyncClient(profile)),
-          profile));
+          base::MakeUnique<browser_sync::ChromeSyncClient>(profile), profile));
   static_cast<browser_sync::ChromeSyncClient*>(sync_service->GetSyncClient())
       ->SetSyncApiComponentFactoryForTesting(std::move(factory));
   return base::WrapUnique(sync_service);

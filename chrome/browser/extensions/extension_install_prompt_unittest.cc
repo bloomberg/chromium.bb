@@ -120,8 +120,8 @@ TEST_F(ExtensionInstallPromptUnitTest, PromptShowsPermissionWarnings) {
   base::RunLoop run_loop;
   prompt.ShowDialog(
       ExtensionInstallPrompt::DoneCallback(), extension.get(), nullptr,
-      base::WrapUnique(new ExtensionInstallPrompt::Prompt(
-          ExtensionInstallPrompt::PERMISSIONS_PROMPT)),
+      base::MakeUnique<ExtensionInstallPrompt::Prompt>(
+          ExtensionInstallPrompt::PERMISSIONS_PROMPT),
       std::move(permission_set),
       base::Bind(&VerifyPromptPermissionsCallback, run_loop.QuitClosure(),
                  1u,    // |regular_permissions_count|.

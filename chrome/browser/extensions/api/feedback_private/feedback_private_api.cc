@@ -122,8 +122,8 @@ void FeedbackPrivateAPI::RequestFeedbackForFlow(
   if (browser_context_ && EventRouter::Get(browser_context_)) {
     FeedbackInfo info;
     info.description = description_template;
-    info.category_tag = base::WrapUnique(new std::string(category_tag));
-    info.page_url = base::WrapUnique(new std::string(page_url.spec()));
+    info.category_tag = base::MakeUnique<std::string>(category_tag);
+    info.page_url = base::MakeUnique<std::string>(page_url.spec());
     info.system_information.reset(new SystemInformationList);
     // The manager is only available if tracing is enabled.
     if (TracingManager* manager = TracingManager::Get()) {

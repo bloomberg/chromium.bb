@@ -521,15 +521,15 @@ void ExtensionWebRequestTest::FireURLRequestWithData(
                                          true /* overwrite */);
   }
   std::vector<std::unique_ptr<net::UploadElementReader>> element_readers;
-  element_readers.push_back(base::WrapUnique(
-      new net::UploadBytesElementReader(&(bytes_1[0]), bytes_1.size())));
-  element_readers.push_back(base::WrapUnique(new net::UploadFileElementReader(
+  element_readers.push_back(base::MakeUnique<net::UploadBytesElementReader>(
+      &(bytes_1[0]), bytes_1.size()));
+  element_readers.push_back(base::MakeUnique<net::UploadFileElementReader>(
       base::ThreadTaskRunnerHandle::Get().get(), base::FilePath(), 0, 0,
-      base::Time())));
-  element_readers.push_back(base::WrapUnique(
-      new net::UploadBytesElementReader(&(bytes_2[0]), bytes_2.size())));
-  request->set_upload(base::WrapUnique(
-      new net::ElementsUploadDataStream(std::move(element_readers), 0)));
+      base::Time()));
+  element_readers.push_back(base::MakeUnique<net::UploadBytesElementReader>(
+      &(bytes_2[0]), bytes_2.size()));
+  request->set_upload(base::MakeUnique<net::ElementsUploadDataStream>(
+      std::move(element_readers), 0));
   ipc_sender_.PushTask(base::Bind(&base::DoNothing));
   request->Start();
 }

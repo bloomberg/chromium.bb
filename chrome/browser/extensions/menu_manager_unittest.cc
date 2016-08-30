@@ -484,7 +484,7 @@ class MockEventRouter : public EventRouter {
 // MockEventRouter factory function
 std::unique_ptr<KeyedService> MockEventRouterFactoryFunction(
     content::BrowserContext* context) {
-  return base::WrapUnique(new MockEventRouter(static_cast<Profile*>(context)));
+  return base::MakeUnique<MockEventRouter>(static_cast<Profile*>(context));
 }
 
 }  // namespace

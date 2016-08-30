@@ -308,7 +308,7 @@ ExtensionCache* ChromeExtensionsBrowserClient::GetExtensionCache() {
   if (!extension_cache_.get()) {
 #if defined(OS_CHROMEOS)
     extension_cache_.reset(new ExtensionCacheImpl(
-        base::WrapUnique(new ChromeOSExtensionCacheDelegate())));
+        base::MakeUnique<ChromeOSExtensionCacheDelegate>()));
 #else
     extension_cache_.reset(new NullExtensionCache());
 #endif
@@ -400,15 +400,15 @@ ChromeExtensionsBrowserClient::CreateUpdateClient(
 std::unique_ptr<ExtensionApiFrameIdMapHelper>
 ChromeExtensionsBrowserClient::CreateExtensionApiFrameIdMapHelper(
     ExtensionApiFrameIdMap* map) {
-  return base::WrapUnique(new ChromeExtensionApiFrameIdMapHelper(map));
+  return base::MakeUnique<ChromeExtensionApiFrameIdMapHelper>(map);
 }
 
 std::unique_ptr<content::BluetoothChooser>
 ChromeExtensionsBrowserClient::CreateBluetoothChooser(
     content::RenderFrameHost* frame,
     const content::BluetoothChooser::EventHandler& event_handler) {
-  return base::WrapUnique(
-      new ChromeExtensionBluetoothChooser(frame, event_handler));
+  return base::MakeUnique<ChromeExtensionBluetoothChooser>(frame,
+                                                           event_handler);
 }
 
 bool ChromeExtensionsBrowserClient::IsActivityLoggingEnabled(

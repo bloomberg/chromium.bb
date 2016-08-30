@@ -185,8 +185,8 @@ std::unique_ptr<ExtensionInstallPrompt> MockPromptProxy::CreatePrompt() {
 
 std::unique_ptr<MockPromptProxy> CreateMockPromptProxyForBrowser(
     Browser* browser) {
-  return base::WrapUnique(
-      new MockPromptProxy(browser->tab_strip_model()->GetActiveWebContents()));
+  return base::MakeUnique<MockPromptProxy>(
+      browser->tab_strip_model()->GetActiveWebContents());
 }
 
 class ManagementPolicyMock : public extensions::ManagementPolicy::Provider {

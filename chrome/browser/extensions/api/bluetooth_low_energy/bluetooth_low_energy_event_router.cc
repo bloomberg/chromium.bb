@@ -113,7 +113,7 @@ void PopulateCharacteristic(
   out->uuid = characteristic->GetUUID().canonical_value();
   out->instance_id.reset(new std::string(characteristic->GetIdentifier()));
 
-  out->service = base::WrapUnique(new apibtle::Service());
+  out->service = base::MakeUnique<apibtle::Service>();
   PopulateService(characteristic->GetService(), out->service.get());
   PopulateCharacteristicProperties(characteristic->GetProperties(),
                                    &out->properties);
@@ -132,7 +132,7 @@ void PopulateDescriptor(const BluetoothRemoteGattDescriptor* descriptor,
   out->uuid = descriptor->GetUUID().canonical_value();
   out->instance_id.reset(new std::string(descriptor->GetIdentifier()));
 
-  out->characteristic = base::WrapUnique(new apibtle::Characteristic());
+  out->characteristic = base::MakeUnique<apibtle::Characteristic>();
   PopulateCharacteristic(descriptor->GetCharacteristic(),
                          out->characteristic.get());
 
@@ -1120,9 +1120,9 @@ void BluetoothLowEnergyEventRouter::OnCharacteristicReadRequest(
 
   const std::string& extension_id = service_id_to_extension_id_.at(service_id);
   apibtle::Request request;
-  request.request_id =
-      StoreSentRequest(extension_id, base::WrapUnique(new AttributeValueRequest(
-                                         value_callback, error_callback)));
+  request.request_id = StoreSentRequest(
+      extension_id,
+      base::MakeUnique<AttributeValueRequest>(value_callback, error_callback));
   PopulateDevice(device, &request);
   DispatchEventToExtension(
       extension_id, events::BLUETOOTH_LOW_ENERGY_ON_CHARACTERISTIC_READ_REQUEST,
@@ -1151,9 +1151,9 @@ void BluetoothLowEnergyEventRouter::OnCharacteristicWriteRequest(
   apibtle::Request request;
   request.request_id = StoreSentRequest(
       extension_id,
-      base::WrapUnique(new AttributeValueRequest(callback, error_callback)));
+      base::MakeUnique<AttributeValueRequest>(callback, error_callback));
   request.value =
-      base::WrapUnique(new std::vector<char>(value.begin(), value.end()));
+      base::MakeUnique<std::vector<char>>(value.begin(), value.end());
   PopulateDevice(device, &request);
   DispatchEventToExtension(
       extension_id,
@@ -1181,9 +1181,9 @@ void BluetoothLowEnergyEventRouter::OnDescriptorReadRequest(
   const std::string& extension_id = service_id_to_extension_id_.at(service_id);
 
   apibtle::Request request;
-  request.request_id =
-      StoreSentRequest(extension_id, base::WrapUnique(new AttributeValueRequest(
-                                         value_callback, error_callback)));
+  request.request_id = StoreSentRequest(
+      extension_id,
+      base::MakeUnique<AttributeValueRequest>(value_callback, error_callback));
   PopulateDevice(device, &request);
   DispatchEventToExtension(
       extension_id,
@@ -1214,9 +1214,9 @@ void BluetoothLowEnergyEventRouter::OnDescriptorWriteRequest(
   apibtle::Request request;
   request.request_id = StoreSentRequest(
       extension_id,
-      base::WrapUnique(new AttributeValueRequest(callback, error_callback)));
+      base::MakeUnique<AttributeValueRequest>(callback, error_callback));
   request.value =
-      base::WrapUnique(new std::vector<char>(value.begin(), value.end()));
+      base::MakeUnique<std::vector<char>>(value.begin(), value.end());
   PopulateDevice(device, &request);
   DispatchEventToExtension(
       extension_id,

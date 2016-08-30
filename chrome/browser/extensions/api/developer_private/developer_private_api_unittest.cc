@@ -45,13 +45,12 @@ namespace extensions {
 namespace {
 
 std::unique_ptr<KeyedService> BuildAPI(content::BrowserContext* context) {
-  return base::WrapUnique(new DeveloperPrivateAPI(context));
+  return base::MakeUnique<DeveloperPrivateAPI>(context);
 }
 
 std::unique_ptr<KeyedService> BuildEventRouter(
     content::BrowserContext* profile) {
-  return base::WrapUnique(
-      new EventRouter(profile, ExtensionPrefs::Get(profile)));
+  return base::MakeUnique<EventRouter>(profile, ExtensionPrefs::Get(profile));
 }
 
 bool HasAllUrlsPermission(const Extension* extension,

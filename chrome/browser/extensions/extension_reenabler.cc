@@ -97,7 +97,7 @@ ExtensionReenabler::ExtensionReenabler(
         base::Bind(&ExtensionReenabler::OnInstallPromptDone,
                    weak_factory_.GetWeakPtr()),
         extension.get(), nullptr,
-        base::WrapUnique(new ExtensionInstallPrompt::Prompt(type)),
+        base::MakeUnique<ExtensionInstallPrompt::Prompt>(type),
         show_dialog_callback_);
   }
 }
@@ -173,7 +173,7 @@ void ExtensionReenabler::OnWebstoreResponseParseSuccess(
         base::Bind(&ExtensionReenabler::OnInstallPromptDone,
                    weak_factory_.GetWeakPtr()),
         extension_.get(), nullptr,
-        base::WrapUnique(new ExtensionInstallPrompt::Prompt(type)),
+        base::MakeUnique<ExtensionInstallPrompt::Prompt>(type),
         show_dialog_callback_);
   }
 }

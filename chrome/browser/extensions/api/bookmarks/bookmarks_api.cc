@@ -263,8 +263,8 @@ void BookmarkEventRouter::DispatchEvent(
     std::unique_ptr<base::ListValue> event_args) {
   EventRouter* event_router = EventRouter::Get(browser_context_);
   if (event_router) {
-    event_router->BroadcastEvent(base::WrapUnique(new extensions::Event(
-        histogram_value, event_name, std::move(event_args))));
+    event_router->BroadcastEvent(base::MakeUnique<extensions::Event>(
+        histogram_value, event_name, std::move(event_args)));
   }
 }
 

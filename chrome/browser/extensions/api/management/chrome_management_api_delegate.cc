@@ -61,7 +61,7 @@ class ManagementSetEnabledFunctionInstallPromptDelegate
                        OnInstallPromptDone,
                    weak_factory_.GetWeakPtr()),
         extension, nullptr,
-        base::WrapUnique(new ExtensionInstallPrompt::Prompt(type)),
+        base::MakeUnique<ExtensionInstallPrompt::Prompt>(type),
         ExtensionInstallPrompt::GetDefaultShowDialogCallback());
   }
   ~ManagementSetEnabledFunctionInstallPromptDelegate() override {}
@@ -226,7 +226,7 @@ ChromeManagementAPIDelegate::SetEnabledFunctionDelegate(
 
 std::unique_ptr<extensions::RequirementsChecker>
 ChromeManagementAPIDelegate::CreateRequirementsChecker() const {
-  return base::WrapUnique(new extensions::ChromeRequirementsChecker());
+  return base::MakeUnique<extensions::ChromeRequirementsChecker>();
 }
 
 std::unique_ptr<extensions::UninstallDialogDelegate>

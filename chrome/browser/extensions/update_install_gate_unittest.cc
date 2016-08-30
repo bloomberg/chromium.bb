@@ -43,7 +43,7 @@ const char kNonPersistentExtensionId[] = "cccccccccccccccccccccccccccccccc";
 
 std::unique_ptr<KeyedService> BuildEventRouter(
     content::BrowserContext* profile) {
-  return base::WrapUnique(new extensions::EventRouter(profile, nullptr));
+  return base::MakeUnique<extensions::EventRouter>(profile, nullptr);
 }
 
 scoped_refptr<Extension> CreateApp(const std::string& extension_id,

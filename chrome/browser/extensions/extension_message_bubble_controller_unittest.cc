@@ -55,16 +55,15 @@ const char kId3[] = "ioibbbfddncmmabjmpokikkeiofalaek";
 
 std::unique_ptr<KeyedService> BuildOverrideRegistrar(
     content::BrowserContext* context) {
-  return base::WrapUnique(
-      new extensions::ExtensionWebUIOverrideRegistrar(context));
+  return base::MakeUnique<extensions::ExtensionWebUIOverrideRegistrar>(context);
 }
 
 // Creates a new ToolbarActionsModel for the given |context|.
 std::unique_ptr<KeyedService> BuildToolbarModel(
     content::BrowserContext* context) {
-  return base::WrapUnique(
-      new ToolbarActionsModel(Profile::FromBrowserContext(context),
-                              extensions::ExtensionPrefs::Get(context)));
+  return base::MakeUnique<ToolbarActionsModel>(
+      Profile::FromBrowserContext(context),
+      extensions::ExtensionPrefs::Get(context));
 }
 
 }  // namespace

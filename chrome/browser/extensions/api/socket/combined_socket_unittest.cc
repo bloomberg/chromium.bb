@@ -24,14 +24,14 @@ std::unique_ptr<T> CreateTestSocket(
 template <>
 std::unique_ptr<TCPSocket> CreateTestSocket(
     std::unique_ptr<MockTCPClientSocket> stream) {
-  return base::WrapUnique(
-      new TCPSocket(std::move(stream), "fake id", true /* is_connected */));
+  return base::MakeUnique<TCPSocket>(std::move(stream), "fake id",
+                                     true /* is_connected */);
 }
 
 template <>
 std::unique_ptr<TLSSocket> CreateTestSocket(
     std::unique_ptr<MockTCPClientSocket> stream) {
-  return base::WrapUnique(new TLSSocket(std::move(stream), "fake id"));
+  return base::MakeUnique<TLSSocket>(std::move(stream), "fake id");
 }
 
 class CombinedSocketTest : public testing::Test {

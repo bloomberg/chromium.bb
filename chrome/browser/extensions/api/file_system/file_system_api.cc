@@ -319,10 +319,10 @@ void DispatchVolumeListChangeEvent(Profile* profile) {
       continue;
     event_router->DispatchEventToExtension(
         extension->id(),
-        base::WrapUnique(new Event(
+        base::MakeUnique<Event>(
             events::FILE_SYSTEM_ON_VOLUME_LIST_CHANGED,
             api::file_system::OnVolumeListChanged::kEventName,
-            api::file_system::OnVolumeListChanged::Create(event_args))));
+            api::file_system::OnVolumeListChanged::Create(event_args)));
   }
 }
 

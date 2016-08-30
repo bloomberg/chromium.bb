@@ -155,8 +155,8 @@ class ProfileSyncServiceMockForExtensionTests:
 
 std::unique_ptr<KeyedService> CreateProfileSyncServiceMock(
     content::BrowserContext* context) {
-  return base::WrapUnique(new ProfileSyncServiceMockForExtensionTests(
-      Profile::FromBrowserContext(context)));
+  return base::MakeUnique<ProfileSyncServiceMockForExtensionTests>(
+      Profile::FromBrowserContext(context));
 }
 
 class ExtensionSignedInDevicesTest : public ExtensionApiUnittest {

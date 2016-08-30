@@ -22,8 +22,8 @@ NetworkingPrivateUIDelegateFactoryImpl::
 std::unique_ptr<NetworkingPrivateDelegate::UIDelegate>
 NetworkingPrivateUIDelegateFactoryImpl::CreateDelegate() {
 #if defined(OS_CHROMEOS)
-  return base::WrapUnique(
-      new chromeos::extensions::NetworkingPrivateUIDelegateChromeOS());
+  return base::MakeUnique<
+      chromeos::extensions::NetworkingPrivateUIDelegateChromeOS>();
 #else
   return nullptr;
 #endif

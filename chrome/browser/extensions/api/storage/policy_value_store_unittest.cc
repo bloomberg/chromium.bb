@@ -51,8 +51,8 @@ class MutablePolicyValueStore : public PolicyValueStore {
       : PolicyValueStore(
             kTestExtensionId,
             make_scoped_refptr(new SettingsObserverList()),
-            base::WrapUnique(
-                new LeveldbValueStore(kDatabaseUMAClientName, path))) {}
+            base::MakeUnique<LeveldbValueStore>(kDatabaseUMAClientName, path)) {
+  }
   ~MutablePolicyValueStore() override {}
 
   WriteResult Set(WriteOptions options,
@@ -103,8 +103,8 @@ class PolicyValueStoreTest : public testing::Test {
     observers_->AddObserver(&observer_);
     store_.reset(new PolicyValueStore(
         kTestExtensionId, observers_,
-        base::WrapUnique(new LeveldbValueStore(kDatabaseUMAClientName,
-                                               scoped_temp_dir_.path()))));
+        base::MakeUnique<LeveldbValueStore>(kDatabaseUMAClientName,
+                                            scoped_temp_dir_.path())));
   }
 
   void TearDown() override {
@@ -129,7 +129,7 @@ TEST_F(PolicyValueStoreTest, DontProvideRecommendedPolicies) {
                expected.CreateDeepCopy(), nullptr);
   policies.Set("may", policy::POLICY_LEVEL_RECOMMENDED,
                policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-               base::WrapUnique(new base::FundamentalValue(456)), nullptr);
+               base::MakeUnique<base::FundamentalValue>(456), nullptr);
   store_->SetCurrentPolicy(policies);
   ValueStore::ReadResult result = store_->Get();
   ASSERT_TRUE(result->status().ok());

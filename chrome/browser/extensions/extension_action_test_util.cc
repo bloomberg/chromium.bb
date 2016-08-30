@@ -81,9 +81,9 @@ size_t GetPageActionCount(content::WebContents* web_contents,
 // Creates a new ToolbarActionsModel for the given |context|.
 std::unique_ptr<KeyedService> BuildToolbarModel(
     content::BrowserContext* context) {
-  return base::WrapUnique(
-      new ToolbarActionsModel(Profile::FromBrowserContext(context),
-                              extensions::ExtensionPrefs::Get(context)));
+  return base::MakeUnique<ToolbarActionsModel>(
+      Profile::FromBrowserContext(context),
+      extensions::ExtensionPrefs::Get(context));
 }
 
 // Creates a new ToolbarActionsModel for the given profile, optionally

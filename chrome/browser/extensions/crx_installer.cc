@@ -915,10 +915,10 @@ void CrxInstaller::ConfirmReEnable() {
     ExtensionInstallPrompt::PromptType type =
         ExtensionInstallPrompt::GetReEnablePromptTypeForExtension(
             service->profile(), extension());
-    client_->ShowDialog(
-        base::Bind(&CrxInstaller::OnInstallPromptDone, this), extension(),
-        nullptr, base::WrapUnique(new ExtensionInstallPrompt::Prompt(type)),
-        ExtensionInstallPrompt::GetDefaultShowDialogCallback());
+    client_->ShowDialog(base::Bind(&CrxInstaller::OnInstallPromptDone, this),
+                        extension(), nullptr,
+                        base::MakeUnique<ExtensionInstallPrompt::Prompt>(type),
+                        ExtensionInstallPrompt::GetDefaultShowDialogCallback());
   }
 }
 

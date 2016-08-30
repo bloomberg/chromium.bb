@@ -133,8 +133,7 @@ void HotwordPrivateEventService::OnMicrophoneStateChanged(bool enabled) {
 void HotwordPrivateEventService::SignalEvent(
     events::HistogramValue histogram_value,
     const std::string& event_name) {
-  SignalEvent(histogram_value, event_name,
-              base::WrapUnique(new base::ListValue()));
+  SignalEvent(histogram_value, event_name, base::MakeUnique<base::ListValue>());
 }
 
 void HotwordPrivateEventService::SignalEvent(

@@ -163,7 +163,7 @@ void TabsEventRouter::RegisterForTabNotifications(WebContents* contents) {
 
   int tab_id = ExtensionTabUtil::GetTabId(contents);
   DCHECK(tab_entries_.find(tab_id) == tab_entries_.end());
-  tab_entries_[tab_id] = base::WrapUnique(new TabEntry(this, contents));
+  tab_entries_[tab_id] = base::MakeUnique<TabEntry>(this, contents);
 }
 
 void TabsEventRouter::UnregisterForTabNotifications(WebContents* contents) {

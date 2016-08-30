@@ -98,13 +98,13 @@ ChromeExtensionsAPIClient::CreateExtensionOptionsGuestDelegate(
 std::unique_ptr<guest_view::GuestViewManagerDelegate>
 ChromeExtensionsAPIClient::CreateGuestViewManagerDelegate(
     content::BrowserContext* context) const {
-  return base::WrapUnique(new ChromeGuestViewManagerDelegate(context));
+  return base::MakeUnique<ChromeGuestViewManagerDelegate>(context);
 }
 
 std::unique_ptr<MimeHandlerViewGuestDelegate>
 ChromeExtensionsAPIClient::CreateMimeHandlerViewGuestDelegate(
     MimeHandlerViewGuest* guest) const {
-  return base::WrapUnique(new ChromeMimeHandlerViewGuestDelegate());
+  return base::MakeUnique<ChromeMimeHandlerViewGuestDelegate>();
 }
 
 WebViewGuestDelegate* ChromeExtensionsAPIClient::CreateWebViewGuestDelegate(
@@ -120,7 +120,7 @@ WebViewPermissionHelperDelegate* ChromeExtensionsAPIClient::
 
 std::unique_ptr<WebRequestEventRouterDelegate>
 ChromeExtensionsAPIClient::CreateWebRequestEventRouterDelegate() const {
-  return base::WrapUnique(new ChromeExtensionWebRequestEventRouterDelegate());
+  return base::MakeUnique<ChromeExtensionWebRequestEventRouterDelegate>();
 }
 
 scoped_refptr<ContentRulesRegistry>
@@ -138,13 +138,13 @@ ChromeExtensionsAPIClient::CreateContentRulesRegistry(
 std::unique_ptr<DevicePermissionsPrompt>
 ChromeExtensionsAPIClient::CreateDevicePermissionsPrompt(
     content::WebContents* web_contents) const {
-  return base::WrapUnique(new ChromeDevicePermissionsPrompt(web_contents));
+  return base::MakeUnique<ChromeDevicePermissionsPrompt>(web_contents);
 }
 
 std::unique_ptr<VirtualKeyboardDelegate>
 ChromeExtensionsAPIClient::CreateVirtualKeyboardDelegate() const {
 #if defined(OS_CHROMEOS)
-  return base::WrapUnique(new ChromeVirtualKeyboardDelegate());
+  return base::MakeUnique<ChromeVirtualKeyboardDelegate>();
 #else
   return nullptr;
 #endif

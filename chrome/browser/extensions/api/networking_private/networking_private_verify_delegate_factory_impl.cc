@@ -21,7 +21,7 @@ NetworkingPrivateVerifyDelegateFactoryImpl::
 std::unique_ptr<NetworkingPrivateDelegate::VerifyDelegate>
 NetworkingPrivateVerifyDelegateFactoryImpl::CreateDelegate() {
 #if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_MACOSX)
-  return base::WrapUnique(new CryptoVerifyImpl());
+  return base::MakeUnique<CryptoVerifyImpl>();
 #else
   return nullptr;
 #endif

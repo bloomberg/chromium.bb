@@ -209,7 +209,7 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
         worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(
             worker_pool->GetSequenceToken(),
             base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
-    return base::WrapUnique(new gcm::GCMProfileService(
+    return base::MakeUnique<gcm::GCMProfileService>(
         profile->GetPrefs(), profile->GetPath(), profile->GetRequestContext(),
         chrome::GetChannel(),
         gcm::GetProductCategoryForSubtypes(profile->GetPrefs()),
@@ -219,7 +219,7 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
             LoginUIServiceFactory::GetShowLoginPopupCallbackForProfile(
                 profile))),
         base::WrapUnique(new gcm::FakeGCMClientFactory(ui_thread, io_thread)),
-        ui_thread, io_thread, blocking_task_runner));
+        ui_thread, io_thread, blocking_task_runner);
   }
 
   ExtensionGCMAppHandlerTest()

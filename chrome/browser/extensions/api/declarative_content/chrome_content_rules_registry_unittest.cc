@@ -57,7 +57,7 @@ class TestPredicateEvaluator : public ContentPredicateEvaluator {
       const base::Value& value,
       std::string* error) override {
     RequestEvaluationIfSpecified();
-    return base::WrapUnique(new TestPredicate(this));
+    return base::MakeUnique<TestPredicate>(this);
   }
 
   void TrackPredicates(

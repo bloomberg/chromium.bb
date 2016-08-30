@@ -252,9 +252,9 @@ void WindowsEventRouter::OnActiveWindowChanged(
   if (!HasEventListener(windows::OnFocusChanged::kEventName))
     return;
 
-  std::unique_ptr<Event> event(new Event(
+  std::unique_ptr<Event> event = base::MakeUnique<Event>(
       events::WINDOWS_ON_FOCUS_CHANGED, windows::OnFocusChanged::kEventName,
-      base::WrapUnique(new base::ListValue())));
+      base::MakeUnique<base::ListValue>());
   event->will_dispatch_callback =
       base::Bind(&WillDispatchWindowFocusedEvent, window_controller);
   EventRouter::Get(profile_)->BroadcastEvent(std::move(event));
@@ -264,8 +264,8 @@ void WindowsEventRouter::DispatchEvent(events::HistogramValue histogram_value,
                                        const std::string& event_name,
                                        WindowController* window_controller,
                                        std::unique_ptr<base::ListValue> args) {
-  std::unique_ptr<Event> event(
-      new Event(histogram_value, event_name, std::move(args)));
+  std::unique_ptr<Event> event =
+      base::MakeUnique<Event>(histogram_value, event_name, std::move(args));
   event->restrict_to_browser_context = window_controller->profile();
   event->will_dispatch_callback =
       base::Bind(&WillDispatchWindowEvent, window_controller);
@@ -278,7 +278,7 @@ bool WindowsEventRouter::HasEventListener(const std::string& event_name) {
 
 void WindowsEventRouter::AddAppWindow(extensions::AppWindow* app_window) {
   std::unique_ptr<AppWindowController> controller(new AppWindowController(
-      app_window, base::WrapUnique(new AppBaseWindow(app_window)), profile_));
+      app_window, base::MakeUnique<AppBaseWindow>(app_window), profile_));
   app_windows_[app_window->session_id().id()] = std::move(controller);
 }
 
