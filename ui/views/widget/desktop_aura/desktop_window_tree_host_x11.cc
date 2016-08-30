@@ -572,13 +572,6 @@ void DesktopWindowTreeHostX11::ShowWindowWithState(
       break;
   }
 
-  // Makes the window activated by default if the state is not INACTIVE or
-  // MINIMIZED.
-  if (show_state != ui::SHOW_STATE_INACTIVE &&
-      show_state != ui::SHOW_STATE_MINIMIZED) {
-    Activate();
-  }
-
   native_widget_delegate_->AsWidget()->SetInitialFocus(show_state);
 }
 
