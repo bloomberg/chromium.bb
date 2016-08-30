@@ -208,7 +208,8 @@ class SyncBackendHost : public sync_driver::BackendDataTypeConfigurer {
   virtual void GetAllNodesForTypes(
       syncer::ModelTypeSet types,
       base::Callback<void(const std::vector<syncer::ModelType>&,
-                          ScopedVector<base::ListValue>)> type) = 0;
+                          std::vector<std::unique_ptr<base::ListValue>>)>
+          type) = 0;
 
   // Enables the sending of directory type debug counters.  Also, for every
   // time it is called, it makes an explicit request that updates to an update

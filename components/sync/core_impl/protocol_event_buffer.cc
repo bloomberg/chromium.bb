@@ -12,26 +12,22 @@ namespace syncer {
 
 const size_t ProtocolEventBuffer::kBufferSize = 6;
 
-ProtocolEventBuffer::ProtocolEventBuffer() : buffer_deleter_(&buffer_) {}
+ProtocolEventBuffer::ProtocolEventBuffer() {}
 
 ProtocolEventBuffer::~ProtocolEventBuffer() {}
 
 void ProtocolEventBuffer::RecordProtocolEvent(const ProtocolEvent& event) {
-  buffer_.push_back(event.Clone().release());
-  if (buffer_.size() > kBufferSize) {
-    ProtocolEvent* to_delete = buffer_.front();
+  buffer_.push_back(event.Clone());
+  if (buffer_.size() > kBufferSize)
     buffer_.pop_front();
-    delete to_delete;
-  }
 }
 
-ScopedVector<ProtocolEvent> ProtocolEventBuffer::GetBufferedProtocolEvents()
-    const {
-  ScopedVector<ProtocolEvent> ret;
-  for (std::deque<ProtocolEvent*>::const_iterator it = buffer_.begin();
-       it != buffer_.end(); ++it) {
-    ret.push_back((*it)->Clone());
-  }
+std::vector<std::unique_ptr<ProtocolEvent>>
+ProtocolEventBuffer::GetBufferedProtocolEvents() const {
+  std::vector<std::unique_ptr<ProtocolEvent>> ret;
+  for (auto& event : buffer_)
+    ret.push_back(event->Clone());
+
   return ret;
 }
 

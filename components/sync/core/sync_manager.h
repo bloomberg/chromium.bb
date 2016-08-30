@@ -14,7 +14,6 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "base/task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "components/sync/base/invalidation_interface.h"
@@ -374,7 +373,8 @@ class SyncManager {
   virtual void RefreshTypes(ModelTypeSet types) = 0;
 
   // Returns any buffered protocol events.  Does not clear the buffer.
-  virtual ScopedVector<syncer::ProtocolEvent> GetBufferedProtocolEvents() = 0;
+  virtual std::vector<std::unique_ptr<ProtocolEvent>>
+  GetBufferedProtocolEvents() = 0;
 
   // Functions to manage registrations of DebugInfoObservers.
   virtual void RegisterDirectoryTypeDebugInfoObserver(

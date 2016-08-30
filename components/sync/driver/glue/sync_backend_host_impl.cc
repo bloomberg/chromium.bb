@@ -522,7 +522,8 @@ void SyncBackendHostImpl::DisableDirectoryTypeDebugInfoForwarding() {
 void SyncBackendHostImpl::GetAllNodesForTypes(
     syncer::ModelTypeSet types,
     base::Callback<void(const std::vector<syncer::ModelType>&,
-                        ScopedVector<base::ListValue>)> callback) {
+                        std::vector<std::unique_ptr<base::ListValue>>)>
+        callback) {
   DCHECK(initialized());
   registrar_->sync_thread()->task_runner()->PostTask(
       FROM_HERE, base::Bind(&SyncBackendHostCore::GetAllNodesForTypes, core_,
@@ -781,11 +782,10 @@ void SyncBackendHostImpl::HandleConnectionStatusChangeOnFrontendLoop(
 }
 
 void SyncBackendHostImpl::HandleProtocolEventOnFrontendLoop(
-    syncer::ProtocolEvent* event) {
-  std::unique_ptr<syncer::ProtocolEvent> scoped_event(event);
+    std::unique_ptr<syncer::ProtocolEvent> event) {
   if (!frontend_)
     return;
-  frontend_->OnProtocolEvent(*scoped_event);
+  frontend_->OnProtocolEvent(*event);
 }
 
 void SyncBackendHostImpl::HandleDirectoryCommitCountersUpdatedOnFrontendLoop(

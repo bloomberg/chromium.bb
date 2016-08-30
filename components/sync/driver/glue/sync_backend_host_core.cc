@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/invalidation/public/invalidation_util.h"
@@ -329,12 +330,11 @@ void SyncBackendHostCore::OnMigrationRequested(syncer::ModelTypeSet types) {
 }
 
 void SyncBackendHostCore::OnProtocolEvent(const syncer::ProtocolEvent& event) {
-  // TODO(rlarocque): Find a way to pass event_clone as a scoped_ptr.
   if (forward_protocol_events_) {
     std::unique_ptr<syncer::ProtocolEvent> event_clone(event.Clone());
     host_.Call(FROM_HERE,
                &SyncBackendHostImpl::HandleProtocolEventOnFrontendLoop,
-               event_clone.release());
+               base::Passed(std::move(event_clone)));
   }
 }
 
@@ -616,16 +616,14 @@ void SyncBackendHostCore::SendBufferedProtocolEventsAndEnableForwarding() {
   if (sync_manager_) {
     // Grab our own copy of the buffered events.
     // The buffer is not modified by this operation.
-    std::vector<syncer::ProtocolEvent*> buffered_events;
-    sync_manager_->GetBufferedProtocolEvents().release(&buffered_events);
+    std::vector<std::unique_ptr<syncer::ProtocolEvent>> buffered_events =
+        sync_manager_->GetBufferedProtocolEvents();
 
     // Send them all over the fence to the host.
-    for (std::vector<syncer::ProtocolEvent*>::iterator it =
-             buffered_events.begin();
-         it != buffered_events.end(); ++it) {
-      // TODO(rlarocque): Make it explicit that host_ takes ownership.
+    for (auto& event : buffered_events) {
       host_.Call(FROM_HERE,
-                 &SyncBackendHostImpl::HandleProtocolEventOnFrontendLoop, *it);
+                 &SyncBackendHostImpl::HandleProtocolEventOnFrontendLoop,
+                 base::Passed(std::move(event)));
     }
   }
 }
@@ -668,9 +666,10 @@ void SyncBackendHostCore::GetAllNodesForTypes(
     syncer::ModelTypeSet types,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     base::Callback<void(const std::vector<syncer::ModelType>& type,
-                        ScopedVector<base::ListValue>)> callback) {
+                        std::vector<std::unique_ptr<base::ListValue>>)>
+        callback) {
   std::vector<syncer::ModelType> types_vector;
-  ScopedVector<base::ListValue> node_lists;
+  std::vector<std::unique_ptr<base::ListValue>> node_lists;
 
   syncer::ModelSafeRoutingInfo routes;
   registrar_->GetModelSafeRoutingInfo(&routes);
@@ -679,10 +678,9 @@ void SyncBackendHostCore::GetAllNodesForTypes(
   for (syncer::ModelTypeSet::Iterator it = types.First(); it.Good(); it.Inc()) {
     types_vector.push_back(it.Get());
     if (!enabled_types.Has(it.Get())) {
-      node_lists.push_back(new base::ListValue());
+      node_lists.push_back(base::MakeUnique<base::ListValue>());
     } else {
-      node_lists.push_back(
-          sync_manager_->GetAllNodesForType(it.Get()).release());
+      node_lists.push_back(sync_manager_->GetAllNodesForType(it.Get()));
     }
   }
 

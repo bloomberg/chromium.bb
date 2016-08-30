@@ -20,6 +20,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
 #include "base/profiler/scoped_tracker.h"
@@ -2201,7 +2202,7 @@ class GetAllNodesRequestHelper
 
   void OnReceivedNodesForTypes(
       const std::vector<syncer::ModelType>& types,
-      ScopedVector<base::ListValue> scoped_node_lists);
+      std::vector<std::unique_ptr<base::ListValue>> scoped_node_lists);
 
  private:
   friend class base::RefCountedThreadSafe<GetAllNodesRequestHelper>;
@@ -2232,25 +2233,21 @@ GetAllNodesRequestHelper::~GetAllNodesRequestHelper() {
 //
 // The nodes for several types can be returned at the same time by specifying
 // their types in the |types| array, and putting their results at the
-// correspnding indices in the |scoped_node_lists|.
+// corresponding indices in the |node_lists|.
 void GetAllNodesRequestHelper::OnReceivedNodesForTypes(
     const std::vector<syncer::ModelType>& types,
-    ScopedVector<base::ListValue> scoped_node_lists) {
-  DCHECK_EQ(types.size(), scoped_node_lists.size());
-
-  // Take unsafe ownership of the node list.
-  std::vector<base::ListValue*> node_lists;
-  scoped_node_lists.release(&node_lists);
+    std::vector<std::unique_ptr<base::ListValue>> node_lists) {
+  DCHECK_EQ(types.size(), node_lists.size());
 
   for (size_t i = 0; i < node_lists.size() && i < types.size(); ++i) {
     const ModelType type = types[i];
-    base::ListValue* node_list = node_lists[i];
+    std::unique_ptr<base::Value> node_list = std::move(node_lists[i]);
 
     // Add these results to our list.
     std::unique_ptr<base::DictionaryValue> type_dict(
         new base::DictionaryValue());
     type_dict->SetString("type", ModelTypeToString(type));
-    type_dict->Set("nodes", node_list);
+    type_dict->Set("nodes", std::move(node_list));
     result_accumulator_->Append(std::move(type_dict));
 
     // Remember that this part of the request is satisfied.
@@ -2275,11 +2272,11 @@ void ProfileSyncService::GetAllNodes(
 
   if (!backend_initialized_) {
     // If there's no backend available to fulfill the request, handle it here.
-    ScopedVector<base::ListValue> empty_results;
+    std::vector<std::unique_ptr<base::ListValue>> empty_results;
     std::vector<ModelType> type_vector;
     for (ModelTypeSet::Iterator it = all_types.First(); it.Good(); it.Inc()) {
       type_vector.push_back(it.Get());
-      empty_results.push_back(new base::ListValue());
+      empty_results.push_back(base::MakeUnique<base::ListValue>());
     }
     helper->OnReceivedNodesForTypes(type_vector, std::move(empty_results));
   } else {

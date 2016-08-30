@@ -221,9 +221,9 @@ SyncEncryptionHandler* FakeSyncManager::GetEncryptionHandler() {
   return fake_encryption_handler_.get();
 }
 
-ScopedVector<syncer::ProtocolEvent>
+std::vector<std::unique_ptr<ProtocolEvent>>
 FakeSyncManager::GetBufferedProtocolEvents() {
-  return ScopedVector<syncer::ProtocolEvent>();
+  return std::vector<std::unique_ptr<ProtocolEvent>>();
 }
 
 std::unique_ptr<base::ListValue> FakeSyncManager::GetAllNodesForType(

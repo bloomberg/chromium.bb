@@ -976,7 +976,7 @@ SyncEncryptionHandler* SyncManagerImpl::GetEncryptionHandler() {
   return sync_encryption_handler_.get();
 }
 
-ScopedVector<syncer::ProtocolEvent>
+std::vector<std::unique_ptr<ProtocolEvent>>
 SyncManagerImpl::GetBufferedProtocolEvents() {
   return protocol_event_buffer_.GetBufferedProtocolEvents();
 }

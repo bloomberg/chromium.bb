@@ -104,7 +104,8 @@ class FakeSyncManager : public SyncManager {
   bool ReceivedExperiment(Experiments* experiments) override;
   bool HasUnsyncedItems() override;
   SyncEncryptionHandler* GetEncryptionHandler() override;
-  ScopedVector<syncer::ProtocolEvent> GetBufferedProtocolEvents() override;
+  std::vector<std::unique_ptr<ProtocolEvent>> GetBufferedProtocolEvents()
+      override;
   std::unique_ptr<base::ListValue> GetAllNodesForType(
       syncer::ModelType type) override;
   void RefreshTypes(ModelTypeSet types) override;

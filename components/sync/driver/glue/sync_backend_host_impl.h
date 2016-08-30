@@ -143,7 +143,8 @@ class SyncBackendHostImpl : public SyncBackendHost,
   void GetAllNodesForTypes(
       syncer::ModelTypeSet types,
       base::Callback<void(const std::vector<syncer::ModelType>&,
-                          ScopedVector<base::ListValue>)> type) override;
+                          std::vector<std::unique_ptr<base::ListValue>>)> type)
+      override;
   base::MessageLoop* GetSyncLoopForTesting() override;
   void RefreshTypesForTest(syncer::ModelTypeSet types) override;
   void ClearServerData(
@@ -200,7 +201,8 @@ class SyncBackendHostImpl : public SyncBackendHost,
   // Forwards a ProtocolEvent to the frontend.  Will not be called unless a
   // call to SetForwardProtocolEvents() explicitly requested that we start
   // forwarding these events.
-  void HandleProtocolEventOnFrontendLoop(syncer::ProtocolEvent* event);
+  void HandleProtocolEventOnFrontendLoop(
+      std::unique_ptr<syncer::ProtocolEvent> event);
 
   // Forwards a directory commit counter update to the frontend loop.  Will not
   // be called unless a call to EnableDirectoryTypeDebugInfoForwarding()

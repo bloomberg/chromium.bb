@@ -8,9 +8,10 @@
 #include <stddef.h>
 
 #include <deque>
+#include <memory>
+#include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 
 namespace syncer {
 
@@ -29,12 +30,11 @@ class ProtocolEventBuffer {
   // Records an event.  May cause the oldest event to be dropped.
   void RecordProtocolEvent(const ProtocolEvent& event);
 
-  // Returns the buffered contents.  Will not clear the buffer.
-  ScopedVector<ProtocolEvent> GetBufferedProtocolEvents() const;
+  // Returns copies of the buffered contents.  Will not clear the buffer.
+  std::vector<std::unique_ptr<ProtocolEvent>> GetBufferedProtocolEvents() const;
 
  private:
-  std::deque<ProtocolEvent*> buffer_;
-  base::STLElementDeleter<std::deque<ProtocolEvent*>> buffer_deleter_;
+  std::deque<std::unique_ptr<ProtocolEvent>> buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(ProtocolEventBuffer);
 };

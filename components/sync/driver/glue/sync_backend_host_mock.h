@@ -112,7 +112,8 @@ class SyncBackendHostMock : public SyncBackendHost {
   void GetAllNodesForTypes(
       syncer::ModelTypeSet types,
       base::Callback<void(const std::vector<syncer::ModelType>& type,
-                          ScopedVector<base::ListValue>)> callback) override;
+                          std::vector<std::unique_ptr<base::ListValue>>)>
+          callback) override;
 
   base::MessageLoop* GetSyncLoopForTesting() override;
 

@@ -9,7 +9,6 @@
 
 #include <memory>
 
-#include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "components/sync/engine/events/poll_get_updates_request_event.h"
 #include "components/sync/engine/events/protocol_event.h"
@@ -52,7 +51,7 @@ TEST_F(ProtocolEventBufferTest, AddThenReturnEvents) {
   buffer_.RecordProtocolEvent(*e1);
   buffer_.RecordProtocolEvent(*e2);
 
-  ScopedVector<ProtocolEvent> buffered_events(
+  std::vector<std::unique_ptr<ProtocolEvent>> buffered_events(
       buffer_.GetBufferedProtocolEvents());
 
   ASSERT_EQ(2U, buffered_events.size());
@@ -66,7 +65,7 @@ TEST_F(ProtocolEventBufferTest, AddThenOverflowThenReturnEvents) {
     buffer_.RecordProtocolEvent(*e);
   }
 
-  ScopedVector<ProtocolEvent> buffered_events(
+  std::vector<std::unique_ptr<ProtocolEvent>> buffered_events(
       buffer_.GetBufferedProtocolEvents());
   ASSERT_EQ(ProtocolEventBuffer::kBufferSize, buffered_events.size());
 

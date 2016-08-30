@@ -247,7 +247,8 @@ class SyncBackendHostCore
       syncer::ModelTypeSet types,
       scoped_refptr<base::SequencedTaskRunner> task_runner,
       base::Callback<void(const std::vector<syncer::ModelType>& type,
-                          ScopedVector<base::ListValue>)> callback);
+                          std::vector<std::unique_ptr<base::ListValue>>)>
+          callback);
 
   // Tell the sync manager to persist its state by writing to disk.
   // Called on the sync thread, both by a timer and, on Android, when the
