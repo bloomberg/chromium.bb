@@ -226,8 +226,10 @@ bool AudioBufferSourceHandler::renderFromBuffer(AudioBus* bus, unsigned destinat
 
     // If we're looping and the offset (virtualReadIndex) is past the end of the loop, wrap back to
     // the beginning of the loop. For other cases, nothing needs to be done.
-    if (loop() && m_virtualReadIndex >= virtualEndFrame)
+    if (loop() && m_virtualReadIndex >= virtualEndFrame) {
         m_virtualReadIndex = (m_loopStart < 0) ? 0 : (m_loopStart * buffer()->sampleRate());
+        m_virtualReadIndex = std::min(m_virtualReadIndex, static_cast<double>(bufferLength - 1));
+    }
 
     double computedPlaybackRate = computePlaybackRate();
 
@@ -260,6 +262,9 @@ bool AudioBufferSourceHandler::renderFromBuffer(AudioBus* bus, unsigned destinat
             int framesToEnd = endFrame - readIndex;
             int framesThisTime = std::min(framesToProcess, framesToEnd);
             framesThisTime = std::max(0, framesThisTime);
+
+            DCHECK_LE(writeIndex + framesThisTime, destinationLength);
+            DCHECK_LE(readIndex + framesThisTime, bufferLength);
 
             for (unsigned i = 0; i < numberOfChannels; ++i)
                 memcpy(destinationChannels[i] + writeIndex, sourceChannels[i] + readIndex, sizeof(float) * framesThisTime);
