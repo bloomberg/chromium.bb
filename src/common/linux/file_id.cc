@@ -45,9 +45,8 @@
 #include "common/linux/elfutils.h"
 #include "common/linux/linux_libc_support.h"
 #include "common/linux/memory_mapped_file.h"
+#include "common/using_std_string.h"
 #include "third_party/lss/linux_syscall_support.h"
-
-using std::string;
 
 namespace google_breakpad {
 
