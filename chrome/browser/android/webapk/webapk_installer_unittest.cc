@@ -100,15 +100,17 @@ class WebApkInstallerRunner {
   }
 
   void RunUpdateWebApk() {
-    const int webapk_version = 1;
+    const std::string kIconMurmur2Hash = "0";
+    const int kWebApkVersion = 1;
 
     WebApkInstaller* installer = CreateWebApkInstaller();
 
     installer->UpdateAsyncWithURLRequestContextGetter(
         url_request_context_getter_.get(),
         base::Bind(&WebApkInstallerRunner::OnCompleted, base::Unretained(this)),
+        kIconMurmur2Hash,
         kDownloadedWebApkPackageName,
-        webapk_version);
+        kWebApkVersion);
 
     Run();
   }

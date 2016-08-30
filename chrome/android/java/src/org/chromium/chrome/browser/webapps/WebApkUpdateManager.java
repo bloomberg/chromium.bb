@@ -97,9 +97,10 @@ public class WebApkUpdateManager implements ManifestUpgradeDetector.Callback {
     }
 
     @Override
-    public void onUpgradeNeededCheckFinished(boolean needsUpgrade, WebappInfo newInfo) {
+    public void onUpgradeNeededCheckFinished(boolean needsUpgrade,
+            ManifestUpgradeDetector.FetchedManifestData data) {
         if (needsUpgrade || mForceUpgrade) {
-            updateAsync(newInfo);
+            updateAsync(data);
         }
         if (mUpgradeDetector != null) {
             mUpgradeDetector.destroy();
@@ -109,14 +110,13 @@ public class WebApkUpdateManager implements ManifestUpgradeDetector.Callback {
 
     /**
      * Sends request to WebAPK Server to update WebAPK.
-     * @param webappInfo The new fetched Web Manifest data of the WebAPK.
      */
-    public void updateAsync(WebappInfo webappInfo) {
-        nativeUpdateAsync(webappInfo.uri().toString(), webappInfo.scopeUri().toString(),
-                webappInfo.name(), webappInfo.shortName(), "", webappInfo.icon(),
-                webappInfo.displayMode(), webappInfo.orientation(), webappInfo.themeColor(),
-                webappInfo.backgroundColor(), mUpgradeDetector.getManifestUrl(),
-                webappInfo.webApkPackageName(), mVersionCode);
+    public void updateAsync(ManifestUpgradeDetector.FetchedManifestData data) {
+        String packageName = mUpgradeDetector.getWebApkPackageName();
+        nativeUpdateAsync(data.startUrl, data.scopeUrl, data.name, data.shortName, data.iconUrl,
+                Long.toString(data.iconMurmur2Hash), data.icon, data.displayMode, data.orientation,
+                data.themeColor, data.backgroundColor, mUpgradeDetector.getManifestUrl(),
+                packageName, mVersionCode);
     }
 
     public void destroy() {
@@ -175,7 +175,7 @@ public class WebApkUpdateManager implements ManifestUpgradeDetector.Callback {
     }
 
     private static native void nativeUpdateAsync(String startUrl, String scope, String name,
-            String shortName, String iconUrl, Bitmap icon, int displayMode, int orientation,
-            long themeColor, long backgroundColor, String manifestUrl, String webApkPackage,
-            int webApkVersion);
+            String shortName, String iconUrl, String iconMurmur2Hash, Bitmap icon, int displayMode,
+            int orientation, long themeColor, long backgroundColor, String manifestUrl,
+            String webApkPackage, int webApkVersion);
 }

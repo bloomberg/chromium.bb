@@ -161,11 +161,6 @@ void WebApkInstaller::InstallAsyncWithURLRequestContextGetter(
   finish_callback_ = finish_callback;
   task_type_ = INSTALL;
 
-  if (!shortcut_info_.icon_url.is_valid()) {
-    OnFailure();
-    return;
-  }
-
   // We need to take the hash of the bitmap at the icon URL prior to any
   // transformations being applied to the bitmap (such as encoding/decoding
   // the bitmap). The icon hash is used to determine whether the icon that
@@ -184,30 +179,33 @@ void WebApkInstaller::SetTimeoutMs(int timeout_ms) {
 
 void WebApkInstaller::UpdateAsync(content::BrowserContext* browser_context,
                                   const FinishCallback& finish_callback,
+                                  const std::string& icon_murmur2_hash,
                                   const std::string& webapk_package,
                                   int webapk_version) {
   UpdateAsyncWithURLRequestContextGetter(
       Profile::FromBrowserContext(browser_context)->GetRequestContext(),
-      finish_callback, webapk_package, webapk_version);
+      finish_callback, icon_murmur2_hash, webapk_package, webapk_version);
 }
 
 void WebApkInstaller::UpdateAsyncWithURLRequestContextGetter(
     net::URLRequestContextGetter* request_context_getter,
     const FinishCallback& finish_callback,
+    const std::string& icon_murmur2_hash,
     const std::string& webapk_package,
     int webapk_version) {
   request_context_getter_ = request_context_getter;
   finish_callback_ = finish_callback;
+  shortcut_icon_murmur2_hash_ = icon_murmur2_hash;
   webapk_package_ = webapk_package;
   webapk_version_ = webapk_version;
   task_type_ = UPDATE;
 
-  if (!shortcut_info_.icon_url.is_valid()) {
-    OnFailure();
-    return;
-  }
-
-  DownloadAppIconAndComputeMurmur2Hash();
+  base::PostTaskAndReplyWithResult(
+      GetBackgroundTaskRunner().get(), FROM_HERE,
+      base::Bind(&BuildWebApkProtoInBackground, shortcut_info_,
+                  shortcut_icon_, shortcut_icon_murmur2_hash_),
+      base::Bind(&WebApkInstaller::SendUpdateWebApkRequest,
+                  weak_ptr_factory_.GetWeakPtr()));
 }
 
 bool WebApkInstaller::StartInstallingDownloadedWebApk(
@@ -254,6 +252,12 @@ void WebApkInstaller::OnURLFetchComplete(const net::URLFetcher* source) {
 }
 
 void WebApkInstaller::DownloadAppIconAndComputeMurmur2Hash() {
+  // Safeguard. WebApkIconHasher crashes if asked to fetch an invalid URL.
+  if (!shortcut_info_.icon_url.is_valid()) {
+    OnFailure();
+    return;
+  }
+
   timer_.Start(
       FROM_HERE, base::TimeDelta::FromMilliseconds(download_timeout_ms_),
       base::Bind(&WebApkInstaller::OnTimeout, weak_ptr_factory_.GetWeakPtr()));
@@ -278,21 +282,12 @@ void WebApkInstaller::OnGotIconMurmur2Hash(
     return;
   }
 
-  if (task_type_ == INSTALL) {
-    base::PostTaskAndReplyWithResult(
-        GetBackgroundTaskRunner().get(), FROM_HERE,
-        base::Bind(&BuildWebApkProtoInBackground, shortcut_info_,
-                   shortcut_icon_, shortcut_icon_murmur2_hash_),
-        base::Bind(&WebApkInstaller::SendCreateWebApkRequest,
-                   weak_ptr_factory_.GetWeakPtr()));
-  } else if (task_type_ == UPDATE) {
-    base::PostTaskAndReplyWithResult(
-        GetBackgroundTaskRunner().get(), FROM_HERE,
-        base::Bind(&BuildWebApkProtoInBackground, shortcut_info_,
-                   shortcut_icon_, shortcut_icon_murmur2_hash_),
-        base::Bind(&WebApkInstaller::SendUpdateWebApkRequest,
-                   weak_ptr_factory_.GetWeakPtr()));
-  }
+  base::PostTaskAndReplyWithResult(
+      GetBackgroundTaskRunner().get(), FROM_HERE,
+      base::Bind(&BuildWebApkProtoInBackground, shortcut_info_,
+                  shortcut_icon_, shortcut_icon_murmur2_hash_),
+      base::Bind(&WebApkInstaller::SendCreateWebApkRequest,
+                  weak_ptr_factory_.GetWeakPtr()));
 }
 
 void WebApkInstaller::SendCreateWebApkRequest(

@@ -64,6 +64,7 @@ class WebApkInstaller : public net::URLFetcherDelegate {
   // after the request to install the WebAPK is sent to the Google Play server.
   void UpdateAsync(content::BrowserContext* browser_context,
                    const FinishCallback& callback,
+                   const std::string& icon_murmur2_hash,
                    const std::string& webapk_package,
                    int webapk_version);
 
@@ -71,6 +72,7 @@ class WebApkInstaller : public net::URLFetcherDelegate {
   void UpdateAsyncWithURLRequestContextGetter(
       net::URLRequestContextGetter* request_context_getter,
       const FinishCallback& callback,
+      const std::string& icon_murmur2_hash,
       const std::string& webapk_package,
       int webapk_version);
 

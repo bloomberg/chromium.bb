@@ -22,10 +22,8 @@ public class ManifestUpgradeDetector implements ManifestUpgradeDetectorFetcher.C
     /**
      * Called when the process of checking Web Manifest update is complete.
      */
-    interface Callback {
-        // TODO(hanxi): crbug.com/639000. Pass the icon url and icon murmur2 hash to the caller.
-        // Change the interface by using {@link FetchedManifestData} instead of {@link WebappInfo}.
-        public void onUpgradeNeededCheckFinished(boolean isUpgraded, WebappInfo newInfo);
+    public interface Callback {
+        public void onUpgradeNeededCheckFinished(boolean isUpgraded, FetchedManifestData data);
     }
 
     private static final String TAG = "cr_UpgradeDetector";
@@ -33,7 +31,7 @@ public class ManifestUpgradeDetector implements ManifestUpgradeDetectorFetcher.C
     /**
      * Fetched Web Manifest data.
      */
-    private static class FetchedManifestData {
+    public static class FetchedManifestData {
         public String startUrl;
         public String scopeUrl;
         public String name;
@@ -108,6 +106,10 @@ public class ManifestUpgradeDetector implements ManifestUpgradeDetectorFetcher.C
         return mManifestUrl;
     }
 
+    public String getWebApkPackageName() {
+        return mWebappInfo.webApkPackageName();
+    }
+
     /**
      * Starts fetching the web manifest resources.
      */
@@ -175,17 +177,10 @@ public class ManifestUpgradeDetector implements ManifestUpgradeDetectorFetcher.C
         fetchedData.themeColor = themeColor;
         fetchedData.backgroundColor = backgroundColor;
 
-        // TODO(hanxi): crbug.com/627824. Validate whether the new WebappInfo is
+        // TODO(hanxi): crbug.com/627824. Validate whether the new fetched data is
         // WebAPK-compatible.
         boolean upgradeRequired = requireUpgrade(fetchedData);
-        WebappInfo newInfo = null;
-        if (upgradeRequired) {
-            newInfo = WebappInfo.create(mWebappInfo.id(), startUrl, scopeUrl,
-                    "", name, shortName, displayMode, orientation,
-                    mWebappInfo.source(), themeColor, backgroundColor,
-                    mWebappInfo.isIconGenerated(), mWebappInfo.webApkPackageName());
-        }
-        mCallback.onUpgradeNeededCheckFinished(upgradeRequired, newInfo);
+        mCallback.onUpgradeNeededCheckFinished(upgradeRequired, fetchedData);
     }
 
     /**

@@ -50,6 +50,7 @@ static void UpdateAsync(JNIEnv* env,
                         const JavaParamRef<jstring>& java_name,
                         const JavaParamRef<jstring>& java_short_name,
                         const JavaParamRef<jstring>& java_icon_url,
+                        const JavaParamRef<jstring>& java_icon_murmur2_hash,
                         const JavaParamRef<jobject>& java_icon_bitmap,
                         jint java_display_mode,
                         jint java_orientation,
@@ -86,6 +87,9 @@ static void UpdateAsync(JNIEnv* env,
   SkBitmap icon_bitmap = gfx::CreateSkBitmapFromJavaBitmap(java_bitmap_lock);
   icon_bitmap.setImmutable();
 
+  std::string icon_murmur2_hash;
+  ConvertJavaStringToUTF8(env, java_icon_murmur2_hash, &icon_murmur2_hash);
+
   std::string webapk_package;
   ConvertJavaStringToUTF8(env, java_webapk_package, &webapk_package);
 
@@ -93,5 +97,5 @@ static void UpdateAsync(JNIEnv* env,
   installer->UpdateAsync(
       profile,
       base::Bind(&WebApkUpdateManager::OnBuiltWebApk, webapk_package),
-      webapk_package, java_webapk_version);
+      icon_murmur2_hash, webapk_package, java_webapk_version);
 }
