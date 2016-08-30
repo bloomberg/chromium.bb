@@ -26,7 +26,7 @@ bool fillsViewport(const Element& element)
 
     LayoutObject* layoutObject = element.layoutObject();
 
-    // TODO(bokan): Broken for OOPIF.
+    // TODO(bokan): Broken for OOPIF. crbug.com/642378.
     Document& topDocument = element.document().topDocument();
 
     Vector<FloatQuad> quads;
@@ -158,6 +158,13 @@ bool RootScrollerController::isViewportScrollCallback(
     // TopDocumentRootScrollerController must override this method to actually
     // do the comparison.
     DCHECK(!m_document->isInMainFrame());
+
+    // If we don't have a local owner we must be in a remote iframe.
+    // RootScrollerController doesn't yet work in OOPIF and in any case we have
+    // no way to get at the ViewportScrollCallback so just return false.
+    // TODO(bokan): Make document.rootScroller work in OOPIF. crbug.com/642378.
+    if (!m_document->localOwner())
+        return false;
 
     RootScrollerController* topDocumentController =
         m_document->topDocument().rootScrollerController();

@@ -26,7 +26,7 @@ class ViewportScrollCallback;
 // as the root scroller and ensures that Element is used to scroll top controls
 // and provide overscroll effects.
 // TODO(bokan): This class is currently OOPIF unaware. It should be broken into
-// a standalone class and placed on a Page level object. crbug.com/505516
+// a standalone class and placed on a Page level object. crbug.com/642378.
 class CORE_EXPORT TopDocumentRootScrollerController
     : public RootScrollerController {
 public:
