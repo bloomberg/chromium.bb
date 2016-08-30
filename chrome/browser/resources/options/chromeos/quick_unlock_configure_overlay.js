@@ -27,6 +27,9 @@ cr.define('options', function() {
     /** @override */
     initializePage: function() {
       Page.prototype.initializePage.call(this);
+      $('screen-lock-done').onclick = function() {
+        QuickUnlockConfigureOverlay.dismiss();
+      };
     },
 
     /** @override */
@@ -39,7 +42,8 @@ cr.define('options', function() {
       settings.navigateTo(settings.Route.LOCK_SCREEN);
       var lockScreen = document.querySelector('settings-lock-screen');
 
-      var checkbox = lockScreen.root.querySelector('settings-checkbox');
+      var checkbox =
+          lockScreen.root.querySelector('div.settings-box.single-column');
       checkbox.hidden = true;
 
       var passwordPrompt = lockScreen.root.
