@@ -39,15 +39,15 @@ class ScriptsSmokeTest(unittest.TestCase):
     self.assertIn('No benchmark named "foo"', stdout)
     self.assertNotEquals(return_code, 0)
 
-  # crbug.com/483212
-  @benchmark.Disabled('chromeos')
+  @benchmark.Disabled('chromeos')  # crbug.com/483212
+  @benchmark.Disabled('android')   # crbug.com/641934
   def testRunBenchmarkListListsOutBenchmarks(self):
     return_code, stdout = self.RunPerfScript('run_benchmark list')
     self.assertEquals(return_code, 0, stdout)
     self.assertIn('Pass --browser to list benchmarks', stdout)
     self.assertIn('dummy_benchmark.stable_benchmark_1', stdout)
 
-  @benchmark.Enabled('android')
+  @benchmark.Disabled('all')  # crbug.com/641934
   def testRunBenchmarkListListsOutBenchmarksOnAndroid(self):
     return_code, stdout = self.RunPerfScript(
         'run_benchmark list --device=android --browser=android-chromium')
