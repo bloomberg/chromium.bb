@@ -64,10 +64,10 @@ bool ShouldShowDefaultBrowserPrompt(Profile* profile) {
   const std::string disable_version_string =
       g_browser_process->local_state()->GetString(
           prefs::kBrowserSuppressDefaultBrowserPrompt);
-  const Version disable_version(disable_version_string);
+  const base::Version disable_version(disable_version_string);
   DCHECK(disable_version_string.empty() || disable_version.IsValid());
   if (disable_version.IsValid() &&
-      disable_version == Version(version_info::GetVersionNumber())) {
+      disable_version == base::Version(version_info::GetVersionNumber())) {
     return false;
   }
 
