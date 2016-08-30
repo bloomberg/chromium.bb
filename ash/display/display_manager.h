@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/common/display/display_info.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -21,6 +20,7 @@
 #include "base/memory/weak_ptr.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_layout.h"
+#include "ui/display/manager/managed_display_info.h"
 
 #if defined(OS_CHROMEOS)
 #include "ui/display/chromeos/display_configurator.h"
@@ -48,7 +48,7 @@ class AcceleratorControllerTest;
 class MouseWarpController;
 class ScreenAsh;
 
-typedef std::vector<DisplayInfo> DisplayInfoList;
+using DisplayInfoList = std::vector<display::ManagedDisplayInfo>;
 
 namespace test {
 class AshTestBase;
@@ -168,8 +168,9 @@ class ASH_EXPORT DisplayManager
   // ui-scale change, and device scale factor change. Returns true if it changes
   // the display resolution so that the caller needs to show a notification in
   // case the new resolution actually doesn't work.
-  bool SetDisplayMode(int64_t display_id,
-                      const scoped_refptr<ManagedDisplayMode>& display_mode);
+  bool SetDisplayMode(
+      int64_t display_id,
+      const scoped_refptr<display::ManagedDisplayMode>& display_mode);
 
   // Register per display properties. |overscan_insets| is NULL if
   // the display has no custom overscan insets.
@@ -198,12 +199,12 @@ class ASH_EXPORT DisplayManager
   }
 
   // Returns the display mode of |display_id| which is currently used.
-  scoped_refptr<ManagedDisplayMode> GetActiveModeForDisplayId(
+  scoped_refptr<display::ManagedDisplayMode> GetActiveModeForDisplayId(
       int64_t display_id) const;
 
   // Returns the display's selected mode. This returns false and doesn't
   // set |mode_out| if the display mode is in default.
-  scoped_refptr<ManagedDisplayMode> GetSelectedModeForDisplayId(
+  scoped_refptr<display::ManagedDisplayMode> GetSelectedModeForDisplayId(
       int64_t display_id) const;
 
   // Tells if the virtual resolution feature is enabled.
@@ -222,10 +223,11 @@ class ASH_EXPORT DisplayManager
   // configurations is passed as a vector of Display object, which
   // contains each display's new infomration.
   void OnNativeDisplaysChanged(
-      const std::vector<DisplayInfo>& display_info_list);
+      const std::vector<display::ManagedDisplayInfo>& display_info_list);
 
   // Updates the internal display data and notifies observers about the changes.
-  void UpdateDisplaysWith(const std::vector<DisplayInfo>& display_info_list);
+  void UpdateDisplaysWith(
+      const std::vector<display::ManagedDisplayInfo>& display_info_list);
 
   // Updates current displays using current |display_info_|.
   void UpdateDisplays();
@@ -280,7 +282,7 @@ class ASH_EXPORT DisplayManager
   const display::Display GetMirroringDisplayById(int64_t id) const;
 
   // Retuns the display info associated with |display_id|.
-  const DisplayInfo& GetDisplayInfo(int64_t display_id) const;
+  const display::ManagedDisplayInfo& GetDisplayInfo(int64_t display_id) const;
 
   // Returns the human-readable name for the display |id|.
   std::string GetDisplayNameForId(int64_t id);
@@ -354,8 +356,6 @@ class ASH_EXPORT DisplayManager
   friend class test::DisplayManagerTestApi;
   friend class test::SystemGestureEventFilterTest;
 
-  typedef std::vector<DisplayInfo> DisplayInfoList;
-
   bool software_mirroring_enabled() const {
     return multi_display_mode_ == MIRRORING;
   };
@@ -374,20 +374,26 @@ class ASH_EXPORT DisplayManager
   // mirroring is in use.
   void AddMirrorDisplayInfoIfAny(DisplayInfoList* display_info_list);
 
-  // Inserts and update the DisplayInfo according to the overscan
-  // state. Note that The DisplayInfo stored in the |internal_display_info_|
+  // Inserts and update the display::ManagedDisplayInfo according to the
+  // overscan
+  // state. Note that The display::ManagedDisplayInfo stored in the
+  // |internal_display_info_|
   // can be different from |new_info| (due to overscan state), so
-  // you must use |GetDisplayInfo| to get the correct DisplayInfo for
+  // you must use |GetDisplayInfo| to get the correct
+  // display::ManagedDisplayInfo for
   // a display.
-  void InsertAndUpdateDisplayInfo(const DisplayInfo& new_info);
+  void InsertAndUpdateDisplayInfo(const display::ManagedDisplayInfo& new_info);
 
   // Called when the display info is updated through InsertAndUpdateDisplayInfo.
-  void OnDisplayInfoUpdated(const DisplayInfo& display_info);
+  void OnDisplayInfoUpdated(const display::ManagedDisplayInfo& display_info);
 
-  // Creates a display object from the DisplayInfo for |display_id|.
+  // Creates a display object from the display::ManagedDisplayInfo for
+  // |display_id|.
   display::Display CreateDisplayFromDisplayInfoById(int64_t display_id);
 
-  // Creates a display object from the DisplayInfo for |display_id| for
+  // Creates a display object from the display::ManagedDisplayInfo for
+  // |display_id|
+  // for
   // mirroring. The size of the display will be scaled using |scale|
   // with the offset using |origin|.
   display::Display CreateMirroringDisplayFromDisplayInfoById(
@@ -439,10 +445,10 @@ class ASH_EXPORT DisplayManager
   bool force_bounds_changed_;
 
   // The mapping from the display ID to its internal data.
-  std::map<int64_t, DisplayInfo> display_info_;
+  std::map<int64_t, display::ManagedDisplayInfo> display_info_;
 
   // Selected display modes for displays. Key is the displays' ID.
-  std::map<int64_t, scoped_refptr<ManagedDisplayMode>> display_modes_;
+  std::map<int64_t, scoped_refptr<display::ManagedDisplayMode>> display_modes_;
 
   // When set to true, the host window's resize event updates
   // the display's size. This is set to true when running on

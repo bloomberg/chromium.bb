@@ -12,9 +12,13 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/common/display/display_info.h"
 #include "base/memory/ref_counted.h"
 #include "ui/display/manager/display_layout.h"
+#include "ui/display/manager/managed_display_info.h"
+
+namespace display {
+class ManagedDisplayInfo;
+}
 
 namespace gfx {
 class Point;
@@ -22,48 +26,49 @@ class Rect;
 class Size;
 }
 
+namespace ui {}
+
 namespace ash {
 class AshWindowTreeHost;
 class ManagedDisplayMode;
-class DisplayInfo;
 
 // Creates the display mode list for internal display
 // based on |native_mode|.
-ASH_EXPORT DisplayInfo::ManagedDisplayModeList
+ASH_EXPORT display::ManagedDisplayInfo::ManagedDisplayModeList
 CreateInternalManagedDisplayModeList(
-    const scoped_refptr<ManagedDisplayMode>& native_mode);
+    const scoped_refptr<display::ManagedDisplayMode>& native_mode);
 
 // Creates the display mode list for unified display
 // based on |native_mode| and |scales|.
-ASH_EXPORT DisplayInfo::ManagedDisplayModeList
+ASH_EXPORT display::ManagedDisplayInfo::ManagedDisplayModeList
 CreateUnifiedManagedDisplayModeList(
-    const scoped_refptr<ManagedDisplayMode>& native_mode,
+    const scoped_refptr<display::ManagedDisplayMode>& native_mode,
     const std::set<std::pair<float, float>>& dsf_scale_list);
 
 // Gets the display mode for |resolution|. Returns false if no display
 // mode matches the resolution, or the display is an internal display.
-ASH_EXPORT scoped_refptr<ManagedDisplayMode> GetDisplayModeForResolution(
-    const DisplayInfo& info,
-    const gfx::Size& resolution);
+ASH_EXPORT scoped_refptr<display::ManagedDisplayMode>
+GetDisplayModeForResolution(const display::ManagedDisplayInfo& info,
+                            const gfx::Size& resolution);
 
 // Gets the display mode for the next valid UI scale. Returns false
 // if the display is not an internal display.
-ASH_EXPORT scoped_refptr<ManagedDisplayMode> GetDisplayModeForNextUIScale(
-    const DisplayInfo& info,
-    bool up);
+ASH_EXPORT scoped_refptr<display::ManagedDisplayMode>
+GetDisplayModeForNextUIScale(const display::ManagedDisplayInfo& info, bool up);
 
 // Gets the display mode for the next valid resolution. Returns false
 // if the display is an internal display.
-ASH_EXPORT scoped_refptr<ManagedDisplayMode> GetDisplayModeForNextResolution(
-    const DisplayInfo& info,
-    bool up);
+ASH_EXPORT scoped_refptr<display::ManagedDisplayMode>
+GetDisplayModeForNextResolution(const display::ManagedDisplayInfo& info,
+                                bool up);
 
 // Sets the UI scale for the |display_id|. Returns false if the
 // display_id is not an internal display.
 ASH_EXPORT bool SetDisplayUIScale(int64_t display_id, float scale);
 
 // Tests if the |info| has display mode that matches |ui_scale|.
-bool HasDisplayModeForUIScale(const DisplayInfo& info, float ui_scale);
+bool HasDisplayModeForUIScale(const display::ManagedDisplayInfo& info,
+                              float ui_scale);
 
 // Computes the bounds that defines the bounds between two displays.
 // Returns false if two displays do not intersect.

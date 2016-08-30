@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "ash/common/ash_switches.h"
-#include "ash/common/display/display_info.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/content/shell_content_state.h"
@@ -29,6 +28,7 @@
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
+#include "ui/display/manager/managed_display_info.h"
 #include "ui/message_center/message_center.h"
 #include "ui/views/test/webview_test_helper.h"
 #include "ui/views/view.h"
@@ -42,8 +42,9 @@ namespace {
 const float kDegreesToRadians = 3.1415926f / 180.0f;
 const float kMeanGravity = -9.8066f;
 
-DisplayInfo CreateDisplayInfo(int64_t id, const gfx::Rect& bounds) {
-  DisplayInfo info(id, "dummy", false);
+display::ManagedDisplayInfo CreateDisplayInfo(int64_t id,
+                                              const gfx::Rect& bounds) {
+  display::ManagedDisplayInfo info(id, "dummy", false);
   info.SetBounds(bounds);
   return info;
 }
@@ -623,21 +624,21 @@ TEST_F(ScreenOrientationControllerTest, RotateInactiveDisplay) {
   const int64_t kExternalDisplayId = 10;
   const display::Display::Rotation kNewRotation = display::Display::ROTATE_180;
 
-  const DisplayInfo internal_display_info =
+  const display::ManagedDisplayInfo internal_display_info =
       CreateDisplayInfo(kInternalDisplayId, gfx::Rect(0, 0, 500, 500));
-  const DisplayInfo external_display_info =
+  const display::ManagedDisplayInfo external_display_info =
       CreateDisplayInfo(kExternalDisplayId, gfx::Rect(1, 1, 500, 500));
 
-  std::vector<DisplayInfo> display_info_list_two_active;
+  std::vector<display::ManagedDisplayInfo> display_info_list_two_active;
   display_info_list_two_active.push_back(internal_display_info);
   display_info_list_two_active.push_back(external_display_info);
 
-  std::vector<DisplayInfo> display_info_list_one_active;
+  std::vector<display::ManagedDisplayInfo> display_info_list_one_active;
   display_info_list_one_active.push_back(external_display_info);
 
-  // The DisplayInfo list with two active displays needs to be added first so
-  // that the DisplayManager can track the |internal_display_info| as inactive
-  // instead of non-existent.
+  // The display::ManagedDisplayInfo list with two active displays needs to be
+  // added first so that the DisplayManager can track the
+  // |internal_display_info| as inactive instead of non-existent.
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   display_manager->UpdateDisplaysWith(display_info_list_two_active);
   display_manager->UpdateDisplaysWith(display_info_list_one_active);

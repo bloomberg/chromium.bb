@@ -15,11 +15,12 @@ namespace ash {
 
 namespace {
 
-using DisplayInfoList = std::vector<DisplayInfo*>;
+using DisplayInfoList = std::vector<display::ManagedDisplayInfo*>;
 using DeviceList = std::vector<const ui::TouchscreenDevice*>;
 
 // Helper method to associate |display| and |device|.
-void Associate(DisplayInfo* display, const ui::TouchscreenDevice* device) {
+void Associate(display::ManagedDisplayInfo* display,
+               const ui::TouchscreenDevice* device) {
   display->AddInputDevice(device->id);
   display->set_touch_support(display::Display::TOUCH_SUPPORT_AVAILABLE);
 }
@@ -40,7 +41,7 @@ bool IsDeviceConnectedViaUsb(const base::FilePath& path) {
 
 // Returns the UDL association score between |display| and |device|. A score <=
 // 0 means that there is no association.
-int GetUdlAssociationScore(DisplayInfo* display,
+int GetUdlAssociationScore(display::ManagedDisplayInfo* display,
                            const ui::TouchscreenDevice* device) {
   // If the devices are not both connected via USB, then there cannot be a UDL
   // association score.
@@ -66,8 +67,9 @@ int GetUdlAssociationScore(DisplayInfo* display,
 
 // Tries to find a UDL device that best matches |display|. Returns nullptr
 // if one is not found.
-const ui::TouchscreenDevice* GuessBestUdlDevice(DisplayInfo* display,
-                                                const DeviceList& devices) {
+const ui::TouchscreenDevice* GuessBestUdlDevice(
+    display::ManagedDisplayInfo* display,
+    const DeviceList& devices) {
   int best_score = 0;
   const ui::TouchscreenDevice* best_device = nullptr;
 
@@ -88,7 +90,7 @@ void AssociateUdlDevices(DisplayInfoList* displays, DeviceList* devices) {
 
   DisplayInfoList::iterator display_it = displays->begin();
   while (display_it != displays->end()) {
-    DisplayInfo* display = *display_it;
+    display::ManagedDisplayInfo* display = *display_it;
     const ui::TouchscreenDevice* device = GuessBestUdlDevice(display, *devices);
 
     if (device) {
@@ -108,7 +110,7 @@ void AssociateUdlDevices(DisplayInfoList* displays, DeviceList* devices) {
 }
 
 // Returns true if |display| is internal.
-bool IsInternalDisplay(DisplayInfo* display) {
+bool IsInternalDisplay(display::ManagedDisplayInfo* display) {
   return display::Display::IsInternalDisplayId(display->id());
 }
 
@@ -130,7 +132,7 @@ void AssociateInternalDevices(DisplayInfoList* displays, DeviceList* devices) {
   //   associated with an external device.
 
   // Capture the internal display reference as we remove it from |displays|.
-  DisplayInfo* internal_display = nullptr;
+  display::ManagedDisplayInfo* internal_display = nullptr;
   DisplayInfoList::iterator display_it =
       std::find_if(displays->begin(), displays->end(), &IsInternalDisplay);
   if (display_it != displays->end()) {
@@ -175,7 +177,7 @@ void AssociateSameSizeDevices(DisplayInfoList* displays, DeviceList* devices) {
 
   DisplayInfoList::iterator display_it = displays->begin();
   while (display_it != displays->end()) {
-    DisplayInfo* display = *display_it;
+    display::ManagedDisplayInfo* display = *display_it;
     const gfx::Size native_size = display->GetNativeModeSize();
 
     // Try to find an input device with roughly the same size as the display.
@@ -219,7 +221,7 @@ void AssociateToSingleDisplay(DisplayInfoList* displays, DeviceList* devices) {
   if (displays->size() != 1 || devices->size() == 0)
     return;
 
-  DisplayInfo* display = *displays->begin();
+  display::ManagedDisplayInfo* display = *displays->begin();
   for (const ui::TouchscreenDevice* device : *devices) {
     VLOG(2) << "=> Matched device " << device->name << " to display "
             << display->name();
@@ -233,7 +235,7 @@ void AssociateToSingleDisplay(DisplayInfoList* displays, DeviceList* devices) {
 }  // namespace
 
 void AssociateTouchscreens(
-    std::vector<DisplayInfo>* all_displays,
+    std::vector<display::ManagedDisplayInfo>* all_displays,
     const std::vector<ui::TouchscreenDevice>& all_devices) {
   // |displays| and |devices| contain pointers directly to the values stored
   // inside of |all_displays| and |all_devices|. When a display or input device
@@ -241,7 +243,7 @@ void AssociateTouchscreens(
 
   // Construct our initial set of display/devices that we will process.
   DisplayInfoList displays;
-  for (DisplayInfo& display : *all_displays) {
+  for (display::ManagedDisplayInfo& display : *all_displays) {
     display.ClearInputDevices();
 
     if (display.GetNativeModeSize().IsEmpty()) {
@@ -257,7 +259,7 @@ void AssociateTouchscreens(
   for (const ui::TouchscreenDevice& device : all_devices)
     devices.push_back(&device);
 
-  for (const DisplayInfo* display : displays) {
+  for (const display::ManagedDisplayInfo* display : displays) {
     VLOG(2) << "Received display " << display->name()
             << " (size: " << display->GetNativeModeSize().ToString()
             << ", sys_path: " << display->sys_path().LossyDisplayName() << ")";
@@ -273,7 +275,7 @@ void AssociateTouchscreens(
   AssociateSameSizeDevices(&displays, &devices);
   AssociateToSingleDisplay(&displays, &devices);
 
-  for (const DisplayInfo* display : displays)
+  for (const display::ManagedDisplayInfo* display : displays)
     LOG(WARNING) << "Unmatched display " << display->name();
   for (const ui::TouchscreenDevice* device : devices)
     LOG(WARNING) << "Unmatched device " << device->name;

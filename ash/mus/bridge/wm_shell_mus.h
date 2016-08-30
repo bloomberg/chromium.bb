@@ -68,7 +68,8 @@ class WmShellMus : public WmShell, public ui::WindowTreeClientObserver {
   WmWindow* GetCaptureWindow() override;
   WmWindow* GetPrimaryRootWindow() override;
   WmWindow* GetRootWindowForDisplayId(int64_t display_id) override;
-  const DisplayInfo& GetDisplayInfo(int64_t display_id) const override;
+  const display::ManagedDisplayInfo& GetDisplayInfo(
+      int64_t display_id) const override;
   bool IsActiveDisplayId(int64_t display_id) const override;
   display::Display GetFirstDisplay() const override;
   bool IsInUnifiedMode() const override;

@@ -121,9 +121,9 @@ bool GetFloat(const base::DictionaryValue* dict,
   return false;
 }
 
-scoped_refptr<ash::ManagedDisplayMode> ConvertValueToManagedDisplayMode(
+scoped_refptr<display::ManagedDisplayMode> ConvertValueToManagedDisplayMode(
     const base::DictionaryValue* dict) {
-  scoped_refptr<ash::ManagedDisplayMode> mode;
+  scoped_refptr<display::ManagedDisplayMode> mode;
 
   gfx::Size size;
   size.set_width(GetIntOrDouble(dict, "originalWidth"));
@@ -149,15 +149,15 @@ scoped_refptr<ash::ManagedDisplayMode> ConvertValueToManagedDisplayMode(
   }
 
   // Used to select the actual mode.
-  mode = new ash::ManagedDisplayMode(size, refresh_rate, false /* interlaced */,
-                                     false /* native */, ui_scale,
-                                     device_scale_factor);
+  mode = new display::ManagedDisplayMode(
+      size, refresh_rate, false /* interlaced */, false /* native */, ui_scale,
+      device_scale_factor);
   return mode;
 }
 
 base::DictionaryValue* ConvertDisplayModeToValue(
     int64_t display_id,
-    const scoped_refptr<ash::ManagedDisplayMode>& mode) {
+    const scoped_refptr<display::ManagedDisplayMode>& mode) {
   bool is_internal = display::Display::HasInternalDisplay() &&
                      display::Display::InternalDisplayId() == display_id;
   base::DictionaryValue* result = new base::DictionaryValue();
@@ -319,7 +319,7 @@ void DisplayOptionsHandler::SendAllDisplayInfo() {
   int64_t primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
   std::unique_ptr<base::ListValue> js_displays(new base::ListValue);
   for (const display::Display& display : displays) {
-    const ash::DisplayInfo& display_info =
+    const display::ManagedDisplayInfo& display_info =
         display_manager->GetDisplayInfo(display.id());
     base::DictionaryValue* js_display = new base::DictionaryValue();
     js_display->SetString("id", base::Int64ToString(display.id()));
@@ -333,7 +333,7 @@ void DisplayOptionsHandler::SendAllDisplayInfo() {
     js_display->SetInteger("rotation", display.RotationAsDegree());
 
     base::ListValue* js_resolutions = new base::ListValue();
-    for (const scoped_refptr<ash::ManagedDisplayMode>& display_mode :
+    for (const scoped_refptr<display::ManagedDisplayMode>& display_mode :
          display_info.display_modes()) {
       js_resolutions->Append(
           ConvertDisplayModeToValue(display.id(), display_mode));
@@ -478,7 +478,7 @@ void DisplayOptionsHandler::HandleSetDisplayMode(const base::ListValue* args) {
     return;
   }
 
-  scoped_refptr<ash::ManagedDisplayMode> mode =
+  scoped_refptr<display::ManagedDisplayMode> mode =
       ConvertValueToManagedDisplayMode(mode_data);
   if (!mode)
     return;
@@ -486,7 +486,7 @@ void DisplayOptionsHandler::HandleSetDisplayMode(const base::ListValue* args) {
   content::RecordAction(
       base::UserMetricsAction("Options_DisplaySetResolution"));
   ash::DisplayManager* display_manager = GetDisplayManager();
-  scoped_refptr<ash::ManagedDisplayMode> current_mode =
+  scoped_refptr<display::ManagedDisplayMode> current_mode =
       display_manager->GetActiveModeForDisplayId(display_id);
   if (!display_manager->SetDisplayMode(display_id, mode)) {
     LOG(ERROR) << "Unable to set display mode for: " << display_id

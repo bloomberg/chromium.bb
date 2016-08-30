@@ -4,11 +4,11 @@
 
 #include "ash/display/display_change_observer_chromeos.h"
 
-#include "ash/common/display/display_info.h"
 #include "base/memory/ptr_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/chromeos/display_configurator.h"
 #include "ui/display/chromeos/test/test_display_snapshot.h"
+#include "ui/display/manager/managed_display_info.h"
 #include "ui/display/types/display_mode.h"
 
 using ui::DisplayConfigurator;
@@ -57,7 +57,7 @@ TEST_F(DisplayChangeObserverTest, GetExternalManagedDisplayModeList) {
   ui::TestDisplaySnapshot display_snapshot;
   display_snapshot.set_modes(std::move(modes));
 
-  DisplayInfo::ManagedDisplayModeList display_modes =
+  display::ManagedDisplayInfo::ManagedDisplayModeList display_modes =
       DisplayChangeObserver::GetExternalManagedDisplayModeList(
           display_snapshot);
   ASSERT_EQ(6u, display_modes.size());
@@ -112,10 +112,10 @@ TEST_F(DisplayChangeObserverTest, GetInternalManagedDisplayModeList) {
   display_snapshot.set_native_mode(modes[0].get());
   display_snapshot.set_modes(std::move(modes));
 
-  DisplayInfo info(1, "", false);
+  display::ManagedDisplayInfo info(1, "", false);
   info.SetBounds(gfx::Rect(0, 0, 1366, 768));
 
-  DisplayInfo::ManagedDisplayModeList display_modes =
+  display::ManagedDisplayInfo::ManagedDisplayModeList display_modes =
       DisplayChangeObserver::GetInternalManagedDisplayModeList(
           info, display_snapshot);
   ASSERT_EQ(5u, display_modes.size());
@@ -159,11 +159,11 @@ TEST_F(DisplayChangeObserverTest, GetInternalHiDPIManagedDisplayModeList) {
   display_snapshot.set_native_mode(modes[0].get());
   display_snapshot.set_modes(std::move(modes));
 
-  DisplayInfo info(1, "", false);
+  display::ManagedDisplayInfo info(1, "", false);
   info.SetBounds(gfx::Rect(0, 0, 2560, 1700));
   info.set_device_scale_factor(2.0f);
 
-  DisplayInfo::ManagedDisplayModeList display_modes =
+  display::ManagedDisplayInfo::ManagedDisplayModeList display_modes =
       DisplayChangeObserver::GetInternalManagedDisplayModeList(
           info, display_snapshot);
   ASSERT_EQ(8u, display_modes.size());
@@ -218,11 +218,11 @@ TEST_F(DisplayChangeObserverTest, GetInternalManagedDisplayModeList1_25) {
   display_snapshot.set_native_mode(modes[0].get());
   display_snapshot.set_modes(std::move(modes));
 
-  DisplayInfo info(1, "", false);
+  display::ManagedDisplayInfo info(1, "", false);
   info.SetBounds(gfx::Rect(0, 0, 1920, 1080));
   info.set_device_scale_factor(1.25);
 
-  DisplayInfo::ManagedDisplayModeList display_modes =
+  display::ManagedDisplayInfo::ManagedDisplayModeList display_modes =
       DisplayChangeObserver::GetInternalManagedDisplayModeList(
           info, display_snapshot);
   ASSERT_EQ(5u, display_modes.size());
@@ -295,10 +295,10 @@ TEST_F(DisplayChangeObserverTest, GetExternalManagedDisplayModeList4K) {
   display_snapshot.set_native_mode(modes[0].get());
   display_snapshot.set_modes(std::move(modes));
 
-  DisplayInfo::ManagedDisplayModeList display_modes =
+  display::ManagedDisplayInfo::ManagedDisplayModeList display_modes =
       DisplayChangeObserver::GetExternalManagedDisplayModeList(
           display_snapshot);
-  DisplayInfo info(1, "", false);
+  display::ManagedDisplayInfo info(1, "", false);
   info.SetManagedDisplayModes(display_modes);  // Sort as external display.
   display_modes = info.display_modes();
 
@@ -406,7 +406,7 @@ TEST_F(DisplayChangeObserverTest,
   display_snapshot.set_native_mode(modes[0].get());
   display_snapshot.set_modes(std::move(modes));
 
-  DisplayInfo::ManagedDisplayModeList display_modes =
+  display::ManagedDisplayInfo::ManagedDisplayModeList display_modes =
       DisplayChangeObserver::GetExternalManagedDisplayModeList(
           display_snapshot);
   ASSERT_EQ(2u, display_modes.size());

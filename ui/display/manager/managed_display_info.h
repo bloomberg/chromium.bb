@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_COMMON_DISPLAY_DISPLAY_INFO_H_
-#define ASH_COMMON_DISPLAY_DISPLAY_INFO_H_
+#ifndef UI_DISPLAY_MANAGER_MANAGED_DISPLAY_INFO_H_
+#define UI_DISPLAY_MANAGER_MANAGED_DISPLAY_INFO_H_
 
 #include <stdint.h>
 
@@ -11,18 +11,18 @@
 #include <string>
 #include <vector>
 
-#include "ash/ash_export.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "ui/display/display.h"
+#include "ui/display/display_export.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 
-namespace ash {
+namespace display {
 
 // A class that represents the display's mode info.
-class ASH_EXPORT ManagedDisplayMode
+class DISPLAY_EXPORT ManagedDisplayMode
     : public base::RefCounted<ManagedDisplayMode> {
  public:
   ManagedDisplayMode();
@@ -70,15 +70,16 @@ class ASH_EXPORT ManagedDisplayMode
   DISALLOW_COPY_AND_ASSIGN(ManagedDisplayMode);
 };
 
-// DisplayInfo contains metadata for each display. This is used to
+// ManagedDisplayInfo contains metadata for each display. This is used to
 // create |display::Display| as well as to maintain extra infomation
 // to manage displays in ash environment.
 // This class is intentionally made copiable.
-class ASH_EXPORT DisplayInfo {
+class DISPLAY_EXPORT ManagedDisplayInfo {
  public:
   using ManagedDisplayModeList = std::vector<scoped_refptr<ManagedDisplayMode>>;
 
-  // Creates a DisplayInfo from string spec. 100+200-1440x800 creates display
+  // Creates a ManagedDisplayInfo from string spec. 100+200-1440x800 creates
+  // display
   // whose size is 1440x800 at the location (100, 200) in host coordinates.
   // The format is
   //
@@ -113,20 +114,21 @@ class ASH_EXPORT DisplayInfo {
   // "200x100#300x200|200x100%59.0|100x100%60"
   //      200x100 window at 0,0 origin, with 3 possible resolutions,
   //      300x200, 200x100 at 59 Hz, and 100x100 at 60 Hz.
-  static DisplayInfo CreateFromSpec(const std::string& spec);
+  static ManagedDisplayInfo CreateFromSpec(const std::string& spec);
 
-  // Creates a DisplayInfo from string spec using given |id|.
-  static DisplayInfo CreateFromSpecWithID(const std::string& spec, int64_t id);
+  // Creates a ManagedDisplayInfo from string spec using given |id|.
+  static ManagedDisplayInfo CreateFromSpecWithID(const std::string& spec,
+                                                 int64_t id);
 
   // When this is set to true on the device whose internal display has
   // 1.25 dsf, Chrome uses 1.0f as a default scale factor, and uses
   // dsf 1.25 when UI scaling is set to 0.8f.
   static void SetUse125DSFForUIScalingForTest(bool enable);
 
-  DisplayInfo();
-  DisplayInfo(int64_t id, const std::string& name, bool has_overscan);
-  DisplayInfo(const DisplayInfo& other);
-  ~DisplayInfo();
+  ManagedDisplayInfo();
+  ManagedDisplayInfo(int64_t id, const std::string& name, bool has_overscan);
+  ManagedDisplayInfo(const ManagedDisplayInfo& other);
+  ~ManagedDisplayInfo();
 
   int64_t id() const { return id_; }
 
@@ -216,7 +218,7 @@ class ASH_EXPORT DisplayInfo {
   // Copy the display info except for fields that can be modified by a
   // user (|rotation_| and |configured_ui_scale_|). |rotation_| and
   // |configured_ui_scale_| are copied when the |another_info| isn't native one.
-  void Copy(const DisplayInfo& another_info);
+  void Copy(const ManagedDisplayInfo& another_info);
 
   // Update the |bounds_in_native_| and |size_in_pixel_| using
   // given |bounds_in_native|.
@@ -279,11 +281,13 @@ class ASH_EXPORT DisplayInfo {
     maximum_cursor_size_ = size;
   }
 
-  // Returns a string representation of the DisplayInfo, excluding display
+  // Returns a string representation of the ManagedDisplayInfo, excluding
+  // display
   // modes.
   std::string ToString() const;
 
-  // Returns a string representation of the DisplayInfo, including display
+  // Returns a string representation of the ManagedDisplayInfo, including
+  // display
   // modes.
   std::string ToFullString() const;
 
@@ -357,8 +361,8 @@ class ASH_EXPORT DisplayInfo {
 
 // Resets the synthesized display id for testing. This
 // is necessary to avoid overflowing the output index.
-ASH_EXPORT void ResetDisplayIdForTest();
+void DISPLAY_EXPORT ResetDisplayIdForTest();
 
-}  // namespace ash
+}  // namespace display
 
-#endif  //  ASH_COMMON_DISPLAY_DISPLAY_INFO_H_
+#endif  //  UI_DISPLAY_MANAGER_MANAGED_DISPLAY_INFO_H_

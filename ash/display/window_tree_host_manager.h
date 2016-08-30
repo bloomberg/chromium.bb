@@ -44,7 +44,6 @@ namespace ash {
 class AshWindowTreeHost;
 struct AshWindowTreeHostInitParams;
 class CursorWindowController;
-class DisplayInfo;
 class DisplayManager;
 class FocusActivationStore;
 class InputMethodEventHandler;

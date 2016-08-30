@@ -75,35 +75,38 @@ void UpdateInternalDisplayId(
 }  // namespace
 
 // static
-DisplayInfo::ManagedDisplayModeList
+display::ManagedDisplayInfo::ManagedDisplayModeList
 DisplayChangeObserver::GetInternalManagedDisplayModeList(
-    const DisplayInfo& display_info,
+    const display::ManagedDisplayInfo& display_info,
     const ui::DisplaySnapshot& output) {
   const ui::DisplayMode* ui_native_mode = output.native_mode();
-  scoped_refptr<ManagedDisplayMode> native_mode = new ManagedDisplayMode(
-      ui_native_mode->size(), ui_native_mode->refresh_rate(),
-      ui_native_mode->is_interlaced(), true, 1.0,
-      display_info.device_scale_factor());
+  scoped_refptr<display::ManagedDisplayMode> native_mode =
+      new display::ManagedDisplayMode(ui_native_mode->size(),
+                                      ui_native_mode->refresh_rate(),
+                                      ui_native_mode->is_interlaced(), true,
+                                      1.0, display_info.device_scale_factor());
 
   return CreateInternalManagedDisplayModeList(native_mode);
 }
 
 // static
-DisplayInfo::ManagedDisplayModeList
+display::ManagedDisplayInfo::ManagedDisplayModeList
 DisplayChangeObserver::GetExternalManagedDisplayModeList(
     const ui::DisplaySnapshot& output) {
   using DisplayModeMap =
-      std::map<std::pair<int, int>, scoped_refptr<ManagedDisplayMode>>;
+      std::map<std::pair<int, int>, scoped_refptr<display::ManagedDisplayMode>>;
   DisplayModeMap display_mode_map;
 
-  scoped_refptr<ManagedDisplayMode> native_mode = new ManagedDisplayMode();
+  scoped_refptr<display::ManagedDisplayMode> native_mode =
+      new display::ManagedDisplayMode();
   for (const auto& mode_info : output.modes()) {
     const std::pair<int, int> size(mode_info->size().width(),
                                    mode_info->size().height());
-    scoped_refptr<ManagedDisplayMode> display_mode = new ManagedDisplayMode(
-        mode_info->size(), mode_info->refresh_rate(),
-        mode_info->is_interlaced(), output.native_mode() == mode_info.get(),
-        1.0, 1.0);
+    scoped_refptr<display::ManagedDisplayMode> display_mode =
+        new display::ManagedDisplayMode(
+            mode_info->size(), mode_info->refresh_rate(),
+            mode_info->is_interlaced(), output.native_mode() == mode_info.get(),
+            1.0, 1.0);
     if (display_mode->native())
       native_mode = display_mode;
 
@@ -117,7 +120,7 @@ DisplayChangeObserver::GetExternalManagedDisplayModeList(
       display_mode_it->second = std::move(display_mode);
   }
 
-  DisplayInfo::ManagedDisplayModeList display_mode_list;
+  display::ManagedDisplayInfo::ManagedDisplayModeList display_mode_list;
   for (const auto& display_mode_pair : display_mode_map)
     display_mode_list.push_back(std::move(display_mode_pair.second));
 
@@ -135,10 +138,11 @@ DisplayChangeObserver::GetExternalManagedDisplayModeList(
 
   if (native_mode->size().width() >= kMinimumWidthFor4K) {
     for (size_t i = 0; i < arraysize(kAdditionalDeviceScaleFactorsFor4k); ++i) {
-      scoped_refptr<ManagedDisplayMode> mode = new ManagedDisplayMode(
-          native_mode->size(), native_mode->refresh_rate(),
-          native_mode->is_interlaced(), false /* native */,
-          native_mode->ui_scale(), kAdditionalDeviceScaleFactorsFor4k[i]);
+      scoped_refptr<display::ManagedDisplayMode> mode =
+          new display::ManagedDisplayMode(
+              native_mode->size(), native_mode->refresh_rate(),
+              native_mode->is_interlaced(), false /* native */,
+              native_mode->ui_scale(), kAdditionalDeviceScaleFactorsFor4k[i]);
       display_mode_list.push_back(mode);
     }
   }
@@ -177,7 +181,7 @@ ui::MultipleDisplayState DisplayChangeObserver::GetStateForDisplayIds(
 
 bool DisplayChangeObserver::GetResolutionForDisplayId(int64_t display_id,
                                                       gfx::Size* size) const {
-  scoped_refptr<ManagedDisplayMode> mode =
+  scoped_refptr<display::ManagedDisplayMode> mode =
       Shell::GetInstance()->display_manager()->GetSelectedModeForDisplayId(
           display_id);
   if (!mode)
@@ -190,7 +194,7 @@ void DisplayChangeObserver::OnDisplayModeChanged(
     const ui::DisplayConfigurator::DisplayStateList& display_states) {
   UpdateInternalDisplayId(display_states);
 
-  std::vector<DisplayInfo> displays;
+  std::vector<display::ManagedDisplayInfo> displays;
   std::set<int64_t> ids;
   for (const ui::DisplaySnapshot* state : display_states) {
     const ui::DisplayMode* mode_info = state->current_mode();
@@ -207,7 +211,7 @@ void DisplayChangeObserver::OnDisplayModeChanged(
       if (dpi)
         device_scale_factor = FindDeviceScaleFactor(dpi);
     } else {
-      scoped_refptr<ManagedDisplayMode> mode =
+      scoped_refptr<display::ManagedDisplayMode> mode =
           Shell::GetInstance()->display_manager()->GetSelectedModeForDisplayId(
               state->display_id());
       if (mode) {
@@ -249,8 +253,8 @@ void DisplayChangeObserver::OnDisplayModeChanged(
     int64_t id = state->display_id();
     ids.insert(id);
 
-    displays.push_back(DisplayInfo(id, name, has_overscan));
-    DisplayInfo& new_info = displays.back();
+    displays.push_back(display::ManagedDisplayInfo(id, name, has_overscan));
+    display::ManagedDisplayInfo& new_info = displays.back();
     new_info.set_sys_path(state->sys_path());
     new_info.set_device_scale_factor(device_scale_factor);
     new_info.SetBounds(display_bounds);
@@ -260,7 +264,7 @@ void DisplayChangeObserver::OnDisplayModeChanged(
     if (dpi)
       new_info.set_device_dpi(dpi);
 
-    DisplayInfo::ManagedDisplayModeList display_modes =
+    display::ManagedDisplayInfo::ManagedDisplayModeList display_modes =
         (state->type() == ui::DISPLAY_CONNECTION_TYPE_INTERNAL)
             ? GetInternalManagedDisplayModeList(new_info, *state)
             : GetExternalManagedDisplayModeList(*state);

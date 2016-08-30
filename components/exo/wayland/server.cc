@@ -27,7 +27,6 @@
 #include <string>
 #include <utility>
 
-#include "ash/common/display/display_info.h"
 #include "ash/common/shell_observer.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/shell.h"
@@ -67,6 +66,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/compositor/compositor_vsync_manager.h"
 #include "ui/display/display_observer.h"
+#include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/gfx/buffer_format_util.h"
@@ -1074,7 +1074,7 @@ class WaylandPrimaryDisplayObserver : public display::DisplayObserver {
     display::Display display =
         display::Screen::GetScreen()->GetPrimaryDisplay();
 
-    const ash::DisplayInfo& info =
+    const display::ManagedDisplayInfo& info =
         WMHelper::GetInstance()->GetDisplayInfo(display.id());
 
     const float kInchInMm = 25.4f;

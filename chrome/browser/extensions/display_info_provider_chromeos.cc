@@ -317,7 +317,7 @@ bool ValidateParamsForDisplay(const system_display::DisplayProperties& info,
 
   // Set the display mode.
   if (info.display_mode) {
-    scoped_refptr<ash::ManagedDisplayMode> current_mode =
+    scoped_refptr<display::ManagedDisplayMode> current_mode =
         display_manager->GetActiveModeForDisplayId(id);
     // Copy properties not set in the UI from the current mode.
     gfx::Size size(info.display_mode->width_in_native_pixels,
@@ -325,10 +325,11 @@ bool ValidateParamsForDisplay(const system_display::DisplayProperties& info,
 
     // NB: info.display_mode is neither an ash::DisplayMode or a
     // ui::DisplayMode.
-    scoped_refptr<ash::ManagedDisplayMode> new_mode(new ash::ManagedDisplayMode(
-        size, current_mode->refresh_rate(), current_mode->is_interlaced(),
-        info.display_mode->is_native, info.display_mode->ui_scale,
-        info.display_mode->device_scale_factor));
+    scoped_refptr<display::ManagedDisplayMode> new_mode(
+        new display::ManagedDisplayMode(
+            size, current_mode->refresh_rate(), current_mode->is_interlaced(),
+            info.display_mode->is_native, info.display_mode->ui_scale,
+            info.display_mode->device_scale_factor));
 
     if (new_mode->IsEquivalent(current_mode)) {
       *error = "Display mode matches current mode.";
@@ -354,8 +355,8 @@ bool ValidateParamsForDisplay(const system_display::DisplayProperties& info,
 
 system_display::DisplayMode GetDisplayMode(
     ash::DisplayManager* display_manager,
-    const ash::DisplayInfo& display_info,
-    const scoped_refptr<ash::ManagedDisplayMode>& display_mode) {
+    const display::ManagedDisplayInfo& display_info,
+    const scoped_refptr<display::ManagedDisplayMode>& display_mode) {
   system_display::DisplayMode result;
 
   bool is_internal = display::Display::HasInternalDisplay() &&
@@ -501,7 +502,7 @@ void DisplayInfoProviderChromeOS::UpdateDisplayUnitInfoForPlatform(
         base::Int64ToString(display_manager->mirroring_display_id());
   }
 
-  const ash::DisplayInfo& display_info =
+  const display::ManagedDisplayInfo& display_info =
       display_manager->GetDisplayInfo(display.id());
   const float device_dpi = display_info.device_dpi();
   unit->dpi_x = device_dpi * display.size().width() /
@@ -516,7 +517,7 @@ void DisplayInfoProviderChromeOS::UpdateDisplayUnitInfoForPlatform(
   unit->overscan.right = overscan_insets.right();
   unit->overscan.bottom = overscan_insets.bottom();
 
-  for (const scoped_refptr<ash::ManagedDisplayMode>& display_mode :
+  for (const scoped_refptr<display::ManagedDisplayMode>& display_mode :
        display_info.display_modes()) {
     unit->modes.push_back(
         GetDisplayMode(display_manager, display_info, display_mode));

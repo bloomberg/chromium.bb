@@ -70,7 +70,7 @@ base::string16 GetDisplaySize(int64_t display_id) {
 // Returns 1-line information for the specified display, like
 // "InternalDisplay: 1280x750"
 base::string16 GetDisplayInfoLine(int64_t display_id) {
-  const DisplayInfo& display_info =
+  const display::ManagedDisplayInfo& display_info =
       GetDisplayManager()->GetDisplayInfo(display_id);
   if (GetDisplayManager()->mirroring_display_id() == display_id)
     return GetDisplayName(display_id);
@@ -222,7 +222,7 @@ class DisplayView : public ActionableView {
     // The external display name may have an annotation of "(width x height)" in
     // case that the display is rotated or its resolution is changed.
     base::string16 name = GetDisplayName(external_id);
-    const DisplayInfo& display_info =
+    const display::ManagedDisplayInfo& display_info =
         display_manager->GetDisplayInfo(external_id);
     if (display_info.GetActiveRotation() != display::Display::ROTATE_0 ||
         display_info.configured_ui_scale() != 1.0f ||
@@ -283,7 +283,7 @@ class DisplayView : public ActionableView {
   bool ShouldShowFirstDisplayInfo() const {
     const int64_t first_display_id = GetDisplayManager()->first_display_id();
 
-    const DisplayInfo& display_info =
+    const display::ManagedDisplayInfo& display_info =
         GetDisplayManager()->GetDisplayInfo(first_display_id);
     return (display_info.GetActiveRotation() != display::Display::ROTATE_0 &&
             (display_info.active_rotation_source() !=

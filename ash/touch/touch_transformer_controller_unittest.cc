@@ -13,17 +13,17 @@ namespace ash {
 
 namespace {
 
-DisplayInfo CreateDisplayInfo(int64_t id,
-                              unsigned int touch_device_id,
-                              const gfx::Rect& bounds) {
-  DisplayInfo info(id, std::string(), false);
+display::ManagedDisplayInfo CreateDisplayInfo(int64_t id,
+                                              unsigned int touch_device_id,
+                                              const gfx::Rect& bounds) {
+  display::ManagedDisplayInfo info(id, std::string(), false);
   info.SetBounds(bounds);
   info.AddInputDevice(touch_device_id);
 
   // Create a default mode.
-  DisplayInfo::ManagedDisplayModeList default_modes(
+  display::ManagedDisplayInfo::ManagedDisplayModeList default_modes(
       1, make_scoped_refptr(
-             new ManagedDisplayMode(bounds.size(), 60, false, true)));
+             new display::ManagedDisplayMode(bounds.size(), 60, false, true)));
   info.SetManagedDisplayModes(default_modes);
 
   return info;
@@ -43,19 +43,19 @@ TEST_F(TouchTransformerControllerTest, MirrorModeLetterboxing) {
   // The internal display has native resolution of 2560x1700, and in
   // mirror mode it is configured as 1920x1200. This is in letterboxing
   // mode.
-  DisplayInfo internal_display_info =
+  display::ManagedDisplayInfo internal_display_info =
       CreateDisplayInfo(1, 10u, gfx::Rect(0, 0, 1920, 1200));
   internal_display_info.set_is_aspect_preserving_scaling(true);
 
-  DisplayInfo::ManagedDisplayModeList internal_modes;
+  display::ManagedDisplayInfo::ManagedDisplayModeList internal_modes;
 
   internal_modes.push_back(make_scoped_refptr(
-      new ManagedDisplayMode(gfx::Size(2560, 1700), 60, false, true)));
-  internal_modes.push_back(make_scoped_refptr(
-      new ManagedDisplayMode(gfx::Size(1920, 1200), 60, false, false)));
+      new display::ManagedDisplayMode(gfx::Size(2560, 1700), 60, false, true)));
+  internal_modes.push_back(make_scoped_refptr(new display::ManagedDisplayMode(
+      gfx::Size(1920, 1200), 60, false, false)));
   internal_display_info.SetManagedDisplayModes(internal_modes);
 
-  DisplayInfo external_display_info =
+  display::ManagedDisplayInfo external_display_info =
       CreateDisplayInfo(2, 11u, gfx::Rect(0, 0, 1920, 1200));
 
   gfx::Size fb_size(1920, 1200);
@@ -116,17 +116,17 @@ TEST_F(TouchTransformerControllerTest, MirrorModePillarboxing) {
   // The internal display has native resolution of 1366x768, and in
   // mirror mode it is configured as 1024x768. This is in pillarboxing
   // mode.
-  DisplayInfo internal_display_info =
+  display::ManagedDisplayInfo internal_display_info =
       CreateDisplayInfo(1, 10, gfx::Rect(0, 0, 1024, 768));
   internal_display_info.set_is_aspect_preserving_scaling(true);
-  DisplayInfo::ManagedDisplayModeList internal_modes;
+  display::ManagedDisplayInfo::ManagedDisplayModeList internal_modes;
   internal_modes.push_back(make_scoped_refptr(
-      new ManagedDisplayMode(gfx::Size(1366, 768), 60, false, true)));
+      new display::ManagedDisplayMode(gfx::Size(1366, 768), 60, false, true)));
   internal_modes.push_back(make_scoped_refptr(
-      new ManagedDisplayMode(gfx::Size(1024, 768), 60, false, false)));
+      new display::ManagedDisplayMode(gfx::Size(1024, 768), 60, false, false)));
   internal_display_info.SetManagedDisplayModes(internal_modes);
 
-  DisplayInfo external_display_info =
+  display::ManagedDisplayInfo external_display_info =
       CreateDisplayInfo(2, 11, gfx::Rect(0, 0, 1024, 768));
 
   gfx::Size fb_size(1024, 768);
@@ -191,18 +191,18 @@ TEST_F(TouchTransformerControllerTest, SoftwareMirrorMode) {
   // The total frame buffer is 1920x1990,
   // where 1990 = 850 + 60 (hidden gap) + 1080 and the second monitor is
   // translated to point (0, 950) in the framebuffer.
-  DisplayInfo display1_info =
+  display::ManagedDisplayInfo display1_info =
       CreateDisplayInfo(1, 10u, gfx::Rect(0, 0, 1280, 850));
-  DisplayInfo::ManagedDisplayModeList display1_modes;
+  display::ManagedDisplayInfo::ManagedDisplayModeList display1_modes;
   display1_modes.push_back(make_scoped_refptr(
-      new ManagedDisplayMode(gfx::Size(1280, 850), 60, false, true)));
+      new display::ManagedDisplayMode(gfx::Size(1280, 850), 60, false, true)));
   display1_info.SetManagedDisplayModes(display1_modes);
 
-  DisplayInfo display2_info =
+  display::ManagedDisplayInfo display2_info =
       CreateDisplayInfo(2, 11u, gfx::Rect(0, 950, 1920, 1080));
-  DisplayInfo::ManagedDisplayModeList display2_modes;
+  display::ManagedDisplayInfo::ManagedDisplayModeList display2_modes;
   display2_modes.push_back(make_scoped_refptr(
-      new ManagedDisplayMode(gfx::Size(1920, 1080), 60, false, true)));
+      new display::ManagedDisplayMode(gfx::Size(1920, 1080), 60, false, true)));
   display2_info.SetManagedDisplayModes(display2_modes);
 
   gfx::Size fb_size(1920, 1990);
@@ -274,8 +274,9 @@ TEST_F(TouchTransformerControllerTest, ExtendedMode) {
   // where 2428 = 768 + 60 (hidden gap) + 1600
   // and the second monitor is translated to Point (0, 828) in the
   // framebuffer.
-  DisplayInfo display1 = CreateDisplayInfo(1, 5u, gfx::Rect(0, 0, 1366, 768));
-  DisplayInfo display2 =
+  display::ManagedDisplayInfo display1 =
+      CreateDisplayInfo(1, 5u, gfx::Rect(0, 0, 1366, 768));
+  display::ManagedDisplayInfo display2 =
       CreateDisplayInfo(2, 6u, gfx::Rect(0, 828, 2560, 1600));
   gfx::Size fb_size(2560, 2428);
 
@@ -343,7 +344,8 @@ TEST_F(TouchTransformerControllerTest, ExtendedMode) {
 }
 
 TEST_F(TouchTransformerControllerTest, TouchRadiusScale) {
-  DisplayInfo display = CreateDisplayInfo(1, 5u, gfx::Rect(0, 0, 2560, 1600));
+  display::ManagedDisplayInfo display =
+      CreateDisplayInfo(1, 5u, gfx::Rect(0, 0, 2560, 1600));
   ui::TouchscreenDevice touch_device =
       CreateTouchscreenDevice(5, gfx::Size(1001, 1001));
 

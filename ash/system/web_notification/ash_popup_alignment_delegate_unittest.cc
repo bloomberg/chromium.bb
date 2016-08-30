@@ -224,7 +224,7 @@ TEST_F(AshPopupAlignmentDelegateTest, DockedMode) {
   UpdateDisplay("600x600,800x800");
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
 
-  std::vector<DisplayInfo> new_info;
+  std::vector<display::ManagedDisplayInfo> new_info;
   new_info.push_back(
       display_manager->GetDisplayInfo(display_manager->GetDisplayAt(1u).id()));
   display_manager->OnNativeDisplaysChanged(new_info);

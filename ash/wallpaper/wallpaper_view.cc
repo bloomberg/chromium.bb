@@ -5,7 +5,6 @@
 #include "ash/wallpaper/wallpaper_view.h"
 
 #include "ash/aura/wm_window_aura.h"
-#include "ash/common/display/display_info.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "ash/common/wm/overview/window_selector_controller.h"
@@ -16,6 +15,7 @@
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ui/display/display.h"
+#include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
@@ -45,7 +45,8 @@ class LayerControlView : public views::View {
     // wallpaper view such as an overview mode shield.
     window->GetParent()->StackChildAtBottom(window);
     display::Display display = window->GetDisplayNearestWindow();
-    DisplayInfo info = WmShell::Get()->GetDisplayInfo(display.id());
+    display::ManagedDisplayInfo info =
+        WmShell::Get()->GetDisplayInfo(display.id());
     float ui_scale = info.GetEffectiveUIScale();
     gfx::Size rounded_size =
         gfx::ScaleToFlooredSize(display.size(), 1.f / ui_scale);

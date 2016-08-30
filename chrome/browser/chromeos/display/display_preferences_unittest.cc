@@ -378,9 +378,10 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   EXPECT_FALSE(property->GetInteger("width", &width));
   EXPECT_FALSE(property->GetInteger("height", &height));
 
-  scoped_refptr<ash::ManagedDisplayMode> mode(new ash::ManagedDisplayMode(
-      gfx::Size(300, 200), 60.0f, false, true, 1.0 /* ui_scale */,
-      1.25f /* device_scale_factor */));
+  scoped_refptr<display::ManagedDisplayMode> mode(
+      new display::ManagedDisplayMode(gfx::Size(300, 200), 60.0f, false, true,
+                                      1.0 /* ui_scale */,
+                                      1.25f /* device_scale_factor */));
   display_manager->SetDisplayMode(id2, mode);
 
   window_tree_host_manager->SetPrimaryDisplayId(id2);
@@ -529,10 +530,10 @@ TEST_F(DisplayPreferencesTest, PreventStore) {
   // display preferences should not stored meanwhile.
   ash::Shell* shell = ash::Shell::GetInstance();
 
-  scoped_refptr<ash::ManagedDisplayMode> old_mode(
-      new ash::ManagedDisplayMode(gfx::Size(400, 300)));
-  scoped_refptr<ash::ManagedDisplayMode> new_mode(
-      new ash::ManagedDisplayMode(gfx::Size(500, 400)));
+  scoped_refptr<display::ManagedDisplayMode> old_mode(
+      new display::ManagedDisplayMode(gfx::Size(400, 300)));
+  scoped_refptr<display::ManagedDisplayMode> new_mode(
+      new display::ManagedDisplayMode(gfx::Size(500, 400)));
   if (shell->display_manager()->SetDisplayMode(id, new_mode)) {
     shell->resolution_notification_controller()->PrepareNotification(
         id, old_mode, new_mode, base::Closure());
@@ -558,8 +559,8 @@ TEST_F(DisplayPreferencesTest, PreventStore) {
   // Once the notification is removed, the specified resolution will be stored
   // by SetDisplayMode.
   ash::Shell::GetInstance()->display_manager()->SetDisplayMode(
-      id, make_scoped_refptr(new ash::ManagedDisplayMode(gfx::Size(300, 200),
-                                                         60.0f, false, true)));
+      id, make_scoped_refptr(new display::ManagedDisplayMode(
+              gfx::Size(300, 200), 60.0f, false, true)));
   UpdateDisplay("300x200#500x400|400x300|300x200");
 
   property = nullptr;
@@ -705,10 +706,11 @@ TEST_F(DisplayPreferencesTest, DontStoreInGuestMode) {
   EXPECT_EQ("178x176", primary_display.bounds().size().ToString());
   EXPECT_EQ(display::Display::ROTATE_90, primary_display.rotation());
 
-  const ash::DisplayInfo& info1 = display_manager->GetDisplayInfo(id1);
+  const display::ManagedDisplayInfo& info1 =
+      display_manager->GetDisplayInfo(id1);
   EXPECT_EQ(1.25f, info1.configured_ui_scale());
 
-  const ash::DisplayInfo& info_primary =
+  const display::ManagedDisplayInfo& info_primary =
       display_manager->GetDisplayInfo(new_primary);
   EXPECT_EQ(display::Display::ROTATE_90, info_primary.GetActiveRotation());
   EXPECT_EQ(1.0f, info_primary.configured_ui_scale());

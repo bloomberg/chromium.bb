@@ -5,7 +5,6 @@
 #include "ash/display/screen_orientation_controller_chromeos.h"
 
 #include "ash/common/ash_switches.h"
-#include "ash/common/display/display_info.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
@@ -18,6 +17,7 @@
 #include "chromeos/accelerometer/accelerometer_types.h"
 #include "ui/chromeos/accelerometer/accelerometer_util.h"
 #include "ui/display/display.h"
+#include "ui/display/manager/managed_display_info.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace ash {
@@ -39,7 +39,7 @@ blink::WebScreenOrientationLockType GetDisplayNaturalOrientation() {
   if (!display::Display::HasInternalDisplay())
     return blink::WebScreenOrientationLockLandscape;
 
-  DisplayInfo info =
+  display::ManagedDisplayInfo info =
       WmShell::Get()->GetDisplayInfo(display::Display::InternalDisplayId());
   gfx::Size size = info.size_in_pixel();
   switch (info.GetActiveRotation()) {

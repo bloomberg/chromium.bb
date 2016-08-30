@@ -6,7 +6,6 @@
 
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/ash_switches.h"
-#include "ash/common/display/display_info.h"
 #include "ash/common/shelf/shelf_button.h"
 #include "ash/common/shelf/shelf_layout_manager.h"
 #include "ash/common/shelf/shelf_model.h"
@@ -40,6 +39,7 @@
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/display/manager/managed_display_info.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/widget/widget.h"
@@ -52,8 +52,9 @@ std::string ToDisplayName(int64_t id) {
   return "x-" + base::Int64ToString(id);
 }
 
-DisplayInfo CreateDisplayInfo(int64_t id, const gfx::Rect& bounds) {
-  DisplayInfo info(id, ToDisplayName(id), false);
+display::ManagedDisplayInfo CreateDisplayInfo(int64_t id,
+                                              const gfx::Rect& bounds) {
+  display::ManagedDisplayInfo info(id, ToDisplayName(id), false);
   info.SetBounds(bounds);
   return info;
 }
@@ -311,16 +312,16 @@ TEST_P(PanelLayoutManagerTextDirectionTest, AddOnePanel) {
 // Tests for crashes during undocking.
 // See https://crbug.com/632755
 TEST_F(PanelLayoutManagerTest, UndockTest) {
-  std::vector<DisplayInfo> info_list;
+  std::vector<display::ManagedDisplayInfo> info_list;
 
   const int64_t internal_display_id =
       test::DisplayManagerTestApi().SetFirstDisplayAsInternalDisplay();
 
   // Create the primary display info.
-  DisplayInfo internal_display =
+  display::ManagedDisplayInfo internal_display =
       CreateDisplayInfo(internal_display_id, gfx::Rect(0, 0, 1280, 720));
   // Create the secondary external display info. This will be docked display.
-  DisplayInfo external_display_info =
+  display::ManagedDisplayInfo external_display_info =
       CreateDisplayInfo(2, gfx::Rect(0, 0, 1920, 1080));
 
   info_list.push_back(external_display_info);
@@ -341,13 +342,13 @@ TEST_F(PanelLayoutManagerTest, UndockTest) {
 // Tests for any crash during docking and then undocking.
 // See https://crbug.com/632755
 TEST_F(PanelLayoutManagerTest, DockUndockTest) {
-  std::vector<DisplayInfo> info_list;
+  std::vector<display::ManagedDisplayInfo> info_list;
 
   const int64_t internal_display_id =
       test::DisplayManagerTestApi().SetFirstDisplayAsInternalDisplay();
 
   // Create the primary display info.
-  DisplayInfo internal_display =
+  display::ManagedDisplayInfo internal_display =
       CreateDisplayInfo(internal_display_id, gfx::Rect(0, 0, 1280, 720));
 
   info_list.push_back(internal_display);
@@ -358,7 +359,7 @@ TEST_F(PanelLayoutManagerTest, DockUndockTest) {
       CreatePanelWindow(gfx::Rect(600, 200, 50, 50)));
 
   // Create the secondary external display info. This will be docked display.
-  DisplayInfo external_display_info =
+  display::ManagedDisplayInfo external_display_info =
       CreateDisplayInfo(2, gfx::Rect(0, 0, 1920, 1080));
 
   info_list.push_back(external_display_info);

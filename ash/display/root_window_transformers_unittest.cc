@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "ash/common/display/display_info.h"
 #include "ash/common/shelf/shelf.h"
 #include "ash/common/shelf/shelf_widget.h"
 #include "ash/display/display_manager.h"
@@ -25,6 +24,7 @@
 #include "ui/aura/window_tracker.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_layout.h"
+#include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/test/event_generator.h"
@@ -123,10 +123,11 @@ std::unique_ptr<RootWindowTransformer>
 CreateCurrentRootWindowTransformerForMirroring() {
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   DCHECK(display_manager->IsInMirrorMode());
-  const DisplayInfo& mirror_display_info =
+  const display::ManagedDisplayInfo& mirror_display_info =
       display_manager->GetDisplayInfo(display_manager->mirroring_display_id());
-  const DisplayInfo& source_display_info = display_manager->GetDisplayInfo(
-      display::Screen::GetScreen()->GetPrimaryDisplay().id());
+  const display::ManagedDisplayInfo& source_display_info =
+      display_manager->GetDisplayInfo(
+          display::Screen::GetScreen()->GetPrimaryDisplay().id());
   return std::unique_ptr<RootWindowTransformer>(
       CreateRootWindowTransformerForMirroredDisplay(source_display_info,
                                                     mirror_display_info));

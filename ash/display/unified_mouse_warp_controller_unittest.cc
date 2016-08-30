@@ -39,7 +39,8 @@ class UnifiedMouseWarpControllerTest : public test::AshTestBase {
       gfx::Point* point_in_unified_host) {
     DisplayManager* display_manager = Shell::GetInstance()->display_manager();
     for (auto display : display_manager->software_mirroring_display_list()) {
-      DisplayInfo info = display_manager->GetDisplayInfo(display.id());
+      display::ManagedDisplayInfo info =
+          display_manager->GetDisplayInfo(display.id());
       if (info.bounds_in_native().Contains(point_in_native)) {
         *display_id = info.id();
         *point_in_unified_host = point_in_native;

@@ -45,7 +45,7 @@ ui::TouchscreenDevice FindTouchscreenById(int id) {
 // resolution. We compute the scale as
 // sqrt of (display_area / touchscreen_area)
 double TouchTransformerController::GetTouchResolutionScale(
-    const DisplayInfo& touch_display,
+    const display::ManagedDisplayInfo& touch_display,
     const ui::TouchscreenDevice& touch_device) const {
   if (touch_device.id == ui::InputDevice::kInvalidId ||
       touch_device.size.IsEmpty() ||
@@ -64,8 +64,8 @@ double TouchTransformerController::GetTouchResolutionScale(
 }
 
 gfx::Transform TouchTransformerController::GetTouchTransform(
-    const DisplayInfo& display,
-    const DisplayInfo& touch_display,
+    const display::ManagedDisplayInfo& display,
+    const display::ManagedDisplayInfo& touch_display,
     const ui::TouchscreenDevice& touchscreen,
     const gfx::Size& framebuffer_size) const {
   auto current_size = gfx::SizeF(display.bounds_in_native().size());
@@ -125,7 +125,7 @@ TouchTransformerController::~TouchTransformerController() {
 }
 
 void TouchTransformerController::UpdateTouchRadius(
-    const DisplayInfo& display) const {
+    const display::ManagedDisplayInfo& display) const {
   ui::DeviceDataManager* device_manager = ui::DeviceDataManager::GetInstance();
   for (const auto& device_id : display.input_devices()) {
     device_manager->UpdateTouchRadiusScale(
@@ -136,8 +136,8 @@ void TouchTransformerController::UpdateTouchRadius(
 
 void TouchTransformerController::UpdateTouchTransform(
     int64_t target_display_id,
-    const DisplayInfo& touch_display,
-    const DisplayInfo& target_display) const {
+    const display::ManagedDisplayInfo& touch_display,
+    const display::ManagedDisplayInfo& target_display) const {
   ui::DeviceDataManager* device_manager = ui::DeviceDataManager::GetInstance();
   gfx::Size fb_size =
       Shell::GetInstance()->display_configurator()->framebuffer_size();
@@ -153,14 +153,14 @@ void TouchTransformerController::UpdateTouchTransformer() const {
   ui::DeviceDataManager* device_manager = ui::DeviceDataManager::GetInstance();
   device_manager->ClearTouchDeviceAssociations();
 
-  // Display IDs and DisplayInfo for mirror or extended mode.
+  // Display IDs and display::ManagedDisplayInfo for mirror or extended mode.
   int64_t display1_id = display::Display::kInvalidDisplayID;
   int64_t display2_id = display::Display::kInvalidDisplayID;
-  DisplayInfo display1;
-  DisplayInfo display2;
-  // Display ID and DisplayInfo for single display mode.
+  display::ManagedDisplayInfo display1;
+  display::ManagedDisplayInfo display2;
+  // Display ID and display::ManagedDisplayInfo for single display mode.
   int64_t single_display_id = display::Display::kInvalidDisplayID;
-  DisplayInfo single_display;
+  display::ManagedDisplayInfo single_display;
 
   WindowTreeHostManager* window_tree_host_manager =
       Shell::GetInstance()->window_tree_host_manager();
@@ -192,7 +192,7 @@ void TouchTransformerController::UpdateTouchTransformer() const {
       // In extended but software mirroring mode, there is a WindowTreeHost for
       // each display, but all touches are forwarded to the primary root
       // window's WindowTreeHost.
-      DisplayInfo target_display =
+      display::ManagedDisplayInfo target_display =
           primary_display_id == display1_id ? display1 : display2;
       UpdateTouchTransform(target_display.id(), display1, target_display);
       UpdateTouchTransform(target_display.id(), display2, target_display);

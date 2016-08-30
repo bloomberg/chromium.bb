@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "ash/common/display/display_info.h"
 #include "ash/common/new_window_delegate.h"
 #include "ash/common/system/system_notifier.h"
 #include "ash/common/wm_shell.h"
@@ -20,6 +19,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/display/display.h"
+#include "ui/display/manager/managed_display_info.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -70,7 +70,7 @@ const float kUIScalesFor1280[] = {0.5f, 0.625f, 0.8f, 1.0f, 1.125f};
 const float kUIScalesFor1366[] = {0.5f, 0.6f, 0.75f, 1.0f, 1.125f};
 
 std::vector<float> GetScalesForDisplay(
-    const scoped_refptr<ManagedDisplayMode>& native_mode) {
+    const scoped_refptr<display::ManagedDisplayMode>& native_mode) {
 #define ASSIGN_ARRAY(v, a) v.assign(a, a + arraysize(a))
 
   std::vector<float> ret;
@@ -101,7 +101,8 @@ std::vector<float> GetScalesForDisplay(
 struct ScaleComparator {
   explicit ScaleComparator(float s) : scale(s) {}
 
-  bool operator()(const scoped_refptr<ManagedDisplayMode>& mode) const {
+  bool operator()(
+      const scoped_refptr<display::ManagedDisplayMode>& mode) const {
     const float kEpsilon = 0.0001f;
     return std::abs(scale - mode->ui_scale()) < kEpsilon;
   }
@@ -114,22 +115,23 @@ void ConvertPointFromScreenToNative(aura::WindowTreeHost* host,
   host->ConvertPointToNativeScreen(point);
 }
 
-scoped_refptr<ManagedDisplayMode> GetDisplayModeForUIScale(
-    const DisplayInfo& info,
+scoped_refptr<display::ManagedDisplayMode> GetDisplayModeForUIScale(
+    const display::ManagedDisplayInfo& info,
     float ui_scale) {
-  const DisplayInfo::ManagedDisplayModeList& modes = info.display_modes();
-  auto iter =
-      std::find_if(modes.begin(), modes.end(),
-                   [ui_scale](const scoped_refptr<ManagedDisplayMode>& mode) {
-                     return mode->ui_scale() == ui_scale;
-                   });
+  const display::ManagedDisplayInfo::ManagedDisplayModeList& modes =
+      info.display_modes();
+  auto iter = std::find_if(
+      modes.begin(), modes.end(),
+      [ui_scale](const scoped_refptr<display::ManagedDisplayMode>& mode) {
+        return mode->ui_scale() == ui_scale;
+      });
   if (iter == modes.end())
-    return scoped_refptr<ManagedDisplayMode>();
+    return scoped_refptr<display::ManagedDisplayMode>();
   return *iter;
 }
 
-scoped_refptr<ManagedDisplayMode> FindNextMode(
-    const DisplayInfo::ManagedDisplayModeList& modes,
+scoped_refptr<display::ManagedDisplayMode> FindNextMode(
+    const display::ManagedDisplayInfo::ManagedDisplayModeList& modes,
     size_t index,
     bool up) {
   DCHECK_LT(index, modes.size());
@@ -143,99 +145,108 @@ scoped_refptr<ManagedDisplayMode> FindNextMode(
 
 }  // namespace
 
-DisplayInfo::ManagedDisplayModeList CreateInternalManagedDisplayModeList(
-    const scoped_refptr<ManagedDisplayMode>& native_mode) {
-  DisplayInfo::ManagedDisplayModeList display_mode_list;
+display::ManagedDisplayInfo::ManagedDisplayModeList
+CreateInternalManagedDisplayModeList(
+    const scoped_refptr<display::ManagedDisplayMode>& native_mode) {
+  display::ManagedDisplayInfo::ManagedDisplayModeList display_mode_list;
 
   float native_ui_scale = (native_mode->device_scale_factor() == 1.25f)
                               ? 1.0f
                               : native_mode->device_scale_factor();
   for (float ui_scale : GetScalesForDisplay(native_mode)) {
-    scoped_refptr<ManagedDisplayMode> mode(new ManagedDisplayMode(
-        native_mode->size(), native_mode->refresh_rate(),
-        native_mode->is_interlaced(), ui_scale == native_ui_scale, ui_scale,
-        native_mode->device_scale_factor()));
+    scoped_refptr<display::ManagedDisplayMode> mode(
+        new display::ManagedDisplayMode(
+            native_mode->size(), native_mode->refresh_rate(),
+            native_mode->is_interlaced(), ui_scale == native_ui_scale, ui_scale,
+            native_mode->device_scale_factor()));
     display_mode_list.push_back(mode);
   }
   return display_mode_list;
 }
 
-DisplayInfo::ManagedDisplayModeList CreateUnifiedManagedDisplayModeList(
-    const scoped_refptr<ManagedDisplayMode>& native_mode,
+display::ManagedDisplayInfo::ManagedDisplayModeList
+CreateUnifiedManagedDisplayModeList(
+    const scoped_refptr<display::ManagedDisplayMode>& native_mode,
     const std::set<std::pair<float, float>>& dsf_scale_list) {
-  DisplayInfo::ManagedDisplayModeList display_mode_list;
+  display::ManagedDisplayInfo::ManagedDisplayModeList display_mode_list;
 
   for (auto& pair : dsf_scale_list) {
     gfx::SizeF scaled_size(native_mode->size());
     scaled_size.Scale(pair.second);
-    scoped_refptr<ManagedDisplayMode> mode(new ManagedDisplayMode(
-        gfx::ToFlooredSize(scaled_size), native_mode->refresh_rate(),
-        native_mode->is_interlaced(), false /* native */,
-        native_mode->ui_scale(), pair.first /* device_scale_factor */));
+    scoped_refptr<display::ManagedDisplayMode> mode(
+        new display::ManagedDisplayMode(
+            gfx::ToFlooredSize(scaled_size), native_mode->refresh_rate(),
+            native_mode->is_interlaced(), false /* native */,
+            native_mode->ui_scale(), pair.first /* device_scale_factor */));
     display_mode_list.push_back(mode);
   }
   // Sort the mode by the size in DIP.
   std::sort(display_mode_list.begin(), display_mode_list.end(),
-            [](const scoped_refptr<ManagedDisplayMode>& a,
-               const scoped_refptr<ManagedDisplayMode>& b) {
+            [](const scoped_refptr<display::ManagedDisplayMode>& a,
+               const scoped_refptr<display::ManagedDisplayMode>& b) {
               return a->GetSizeInDIP(false).GetArea() <
                      b->GetSizeInDIP(false).GetArea();
             });
   return display_mode_list;
 }
 
-scoped_refptr<ManagedDisplayMode> GetDisplayModeForResolution(
-    const DisplayInfo& info,
+scoped_refptr<display::ManagedDisplayMode> GetDisplayModeForResolution(
+    const display::ManagedDisplayInfo& info,
     const gfx::Size& resolution) {
   if (display::Display::IsInternalDisplayId(info.id()))
-    return scoped_refptr<ManagedDisplayMode>();
+    return scoped_refptr<display::ManagedDisplayMode>();
 
-  const DisplayInfo::ManagedDisplayModeList& modes = info.display_modes();
+  const display::ManagedDisplayInfo::ManagedDisplayModeList& modes =
+      info.display_modes();
   DCHECK_NE(0u, modes.size());
-  scoped_refptr<ManagedDisplayMode> target_mode;
-  DisplayInfo::ManagedDisplayModeList::const_iterator iter =
-      std::find_if(modes.begin(), modes.end(),
-                   [resolution](const scoped_refptr<ManagedDisplayMode>& mode) {
-                     return mode->size() == resolution;
-                   });
+  scoped_refptr<display::ManagedDisplayMode> target_mode;
+  display::ManagedDisplayInfo::ManagedDisplayModeList::const_iterator iter =
+      std::find_if(
+          modes.begin(), modes.end(),
+          [resolution](const scoped_refptr<display::ManagedDisplayMode>& mode) {
+            return mode->size() == resolution;
+          });
   if (iter == modes.end()) {
     LOG(WARNING) << "Unsupported resolution was requested:"
                  << resolution.ToString();
-    return scoped_refptr<ManagedDisplayMode>();
+    return scoped_refptr<display::ManagedDisplayMode>();
   }
   return *iter;
 }
 
-scoped_refptr<ManagedDisplayMode> GetDisplayModeForNextUIScale(
-    const DisplayInfo& info,
+scoped_refptr<display::ManagedDisplayMode> GetDisplayModeForNextUIScale(
+    const display::ManagedDisplayInfo& info,
     bool up) {
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   if (!display_manager->IsActiveDisplayId(info.id()) ||
       !display::Display::IsInternalDisplayId(info.id())) {
-    return scoped_refptr<ManagedDisplayMode>();
+    return scoped_refptr<display::ManagedDisplayMode>();
   }
-  const DisplayInfo::ManagedDisplayModeList& modes = info.display_modes();
+  const display::ManagedDisplayInfo::ManagedDisplayModeList& modes =
+      info.display_modes();
   ScaleComparator comparator(info.configured_ui_scale());
   auto iter = std::find_if(modes.begin(), modes.end(), comparator);
   return FindNextMode(modes, iter - modes.begin(), up);
 }
 
-scoped_refptr<ManagedDisplayMode> GetDisplayModeForNextResolution(
-    const DisplayInfo& info,
+scoped_refptr<display::ManagedDisplayMode> GetDisplayModeForNextResolution(
+    const display::ManagedDisplayInfo& info,
     bool up) {
   if (display::Display::IsInternalDisplayId(info.id()))
-    return scoped_refptr<ManagedDisplayMode>();
+    return scoped_refptr<display::ManagedDisplayMode>();
 
-  const DisplayInfo::ManagedDisplayModeList& modes = info.display_modes();
-  scoped_refptr<ManagedDisplayMode> tmp = new ManagedDisplayMode(
-      info.size_in_pixel(), 0.0, false, false, 1.0, info.device_scale_factor());
+  const display::ManagedDisplayInfo::ManagedDisplayModeList& modes =
+      info.display_modes();
+  scoped_refptr<display::ManagedDisplayMode> tmp =
+      new display::ManagedDisplayMode(info.size_in_pixel(), 0.0, false, false,
+                                      1.0, info.device_scale_factor());
   gfx::Size resolution = tmp->GetSizeInDIP(false);
 
-  auto iter =
-      std::find_if(modes.begin(), modes.end(),
-                   [resolution](const scoped_refptr<ManagedDisplayMode>& mode) {
-                     return mode->GetSizeInDIP(false) == resolution;
-                   });
+  auto iter = std::find_if(
+      modes.begin(), modes.end(),
+      [resolution](const scoped_refptr<display::ManagedDisplayMode>& mode) {
+        return mode->GetSizeInDIP(false) == resolution;
+      });
   return FindNextMode(modes, iter - modes.begin(), up);
 }
 
@@ -245,18 +256,20 @@ bool SetDisplayUIScale(int64_t id, float ui_scale) {
       !display::Display::IsInternalDisplayId(id)) {
     return false;
   }
-  const DisplayInfo& info = display_manager->GetDisplayInfo(id);
+  const display::ManagedDisplayInfo& info = display_manager->GetDisplayInfo(id);
 
-  scoped_refptr<ManagedDisplayMode> mode =
+  scoped_refptr<display::ManagedDisplayMode> mode =
       GetDisplayModeForUIScale(info, ui_scale);
   if (!mode)
     return false;
   return display_manager->SetDisplayMode(id, mode);
 }
 
-bool HasDisplayModeForUIScale(const DisplayInfo& info, float ui_scale) {
+bool HasDisplayModeForUIScale(const display::ManagedDisplayInfo& info,
+                              float ui_scale) {
   ScaleComparator comparator(ui_scale);
-  const DisplayInfo::ManagedDisplayModeList& modes = info.display_modes();
+  const display::ManagedDisplayInfo::ManagedDisplayModeList& modes =
+      info.display_modes();
   return std::find_if(modes.begin(), modes.end(), comparator) != modes.end();
 }
 

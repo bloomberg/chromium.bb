@@ -6,7 +6,6 @@
 
 #include "ash/accelerators/accelerator_controller_delegate_aura.h"
 #include "ash/common/ash_switches.h"
-#include "ash/common/display/display_info.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/test/material_design_controller_test_api.h"
 #include "ash/common/wm_shell.h"
@@ -31,6 +30,7 @@
 #include "ui/base/test/material_design_controller_test_api.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/test/context_factories_for_test.h"
+#include "ui/display/manager/managed_display_info.h"
 #include "ui/message_center/message_center.h"
 #include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/cursor_manager.h"
@@ -73,7 +73,7 @@ AshTestHelper::~AshTestHelper() {}
 
 void AshTestHelper::SetUp(bool start_session,
                           MaterialDesignController::Mode material_mode) {
-  ResetDisplayIdForTest();
+  display::ResetDisplayIdForTest();
   views_delegate_.reset(new AshTestViewsDelegate);
 
   // Disable animations during tests.

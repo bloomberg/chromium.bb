@@ -8,7 +8,6 @@
 
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/ash_switches.h"
-#include "ash/common/display/display_info.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/shelf.h"
 #include "ash/common/shelf/shelf_widget.h"
@@ -37,6 +36,7 @@
 #include "ui/display/display_observer.h"
 #include "ui/display/manager/display_layout.h"
 #include "ui/display/manager/display_layout_store.h"
+#include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/test/event_generator.h"
@@ -554,17 +554,19 @@ TEST_P(WindowTreeHostManagerTest, SecondaryDisplayLayout) {
 
 namespace {
 
-DisplayInfo CreateDisplayInfo(int64_t id,
-                              int y,
-                              display::Display::Rotation rotation) {
-  DisplayInfo info(id, "", false);
+display::ManagedDisplayInfo
+CreateDisplayInfo(int64_t id, int y, display::Display::Rotation rotation) {
+  display::ManagedDisplayInfo info(id, "", false);
   info.SetBounds(gfx::Rect(0, y, 500, 500));
   info.SetRotation(rotation, display::Display::ROTATION_SOURCE_ACTIVE);
   return info;
 }
 
-DisplayInfo CreateMirroredDisplayInfo(int64_t id, float device_scale_factor) {
-  DisplayInfo info = CreateDisplayInfo(id, 0, display::Display::ROTATE_0);
+display::ManagedDisplayInfo CreateMirroredDisplayInfo(
+    int64_t id,
+    float device_scale_factor) {
+  display::ManagedDisplayInfo info =
+      CreateDisplayInfo(id, 0, display::Display::ROTATE_0);
   info.set_device_scale_factor(device_scale_factor);
   return info;
 }
@@ -582,10 +584,12 @@ TEST_P(WindowTreeHostManagerTest, MirrorToDockedWithFullscreen) {
   // Docked mode.
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
 
-  const DisplayInfo internal_display_info = CreateMirroredDisplayInfo(1, 2.0f);
-  const DisplayInfo external_display_info = CreateMirroredDisplayInfo(2, 1.0f);
+  const display::ManagedDisplayInfo internal_display_info =
+      CreateMirroredDisplayInfo(1, 2.0f);
+  const display::ManagedDisplayInfo external_display_info =
+      CreateMirroredDisplayInfo(2, 1.0f);
 
-  std::vector<DisplayInfo> display_info_list;
+  std::vector<display::ManagedDisplayInfo> display_info_list;
   // Mirror.
   display_info_list.push_back(internal_display_info);
   display_info_list.push_back(external_display_info);
@@ -894,7 +898,7 @@ TEST_P(WindowTreeHostManagerTest, SwapPrimaryById) {
 
   // Adding 2nd display with the same ID.  The 2nd display should become primary
   // since secondary id is still stored as desirable_primary_id.
-  std::vector<DisplayInfo> display_info_list;
+  std::vector<display::ManagedDisplayInfo> display_info_list;
   display_info_list.push_back(
       display_manager->GetDisplayInfo(primary_display.id()));
   display_info_list.push_back(
@@ -915,14 +919,14 @@ TEST_P(WindowTreeHostManagerTest, SwapPrimaryById) {
   // Deleting 2nd display and adding 2nd display with a different ID.  The 2nd
   // display shouldn't become primary.
   UpdateDisplay("200x200");
-  DisplayInfo third_display_info(secondary_display.id() + 1, std::string(),
-                                 false);
+  display::ManagedDisplayInfo third_display_info(secondary_display.id() + 1,
+                                                 std::string(), false);
   third_display_info.SetBounds(secondary_display.bounds());
   ASSERT_NE(primary_display.id(), third_display_info.id());
 
-  const DisplayInfo& primary_display_info =
+  const display::ManagedDisplayInfo& primary_display_info =
       display_manager->GetDisplayInfo(primary_display.id());
-  std::vector<DisplayInfo> display_info_list2;
+  std::vector<display::ManagedDisplayInfo> display_info_list2;
   display_info_list2.push_back(primary_display_info);
   display_info_list2.push_back(third_display_info);
   display_manager->OnNativeDisplaysChanged(display_info_list2);
@@ -1219,12 +1223,12 @@ TEST_P(WindowTreeHostManagerTest, DockToSingle) {
 
   const int64_t internal_id = 1;
 
-  const DisplayInfo internal_display_info =
+  const display::ManagedDisplayInfo internal_display_info =
       CreateDisplayInfo(internal_id, 0, display::Display::ROTATE_0);
-  const DisplayInfo external_display_info =
+  const display::ManagedDisplayInfo external_display_info =
       CreateDisplayInfo(2, 1, display::Display::ROTATE_90);
 
-  std::vector<DisplayInfo> display_info_list;
+  std::vector<display::ManagedDisplayInfo> display_info_list;
   // Extended
   display_info_list.push_back(internal_display_info);
   display_info_list.push_back(external_display_info);
@@ -1262,12 +1266,12 @@ TEST_P(WindowTreeHostManagerTest, ReplaceSwappedPrimary) {
     return;
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
 
-  const DisplayInfo first_display_info =
+  const display::ManagedDisplayInfo first_display_info =
       CreateDisplayInfo(10, 0, display::Display::ROTATE_0);
-  const DisplayInfo second_display_info =
+  const display::ManagedDisplayInfo second_display_info =
       CreateDisplayInfo(11, 1, display::Display::ROTATE_0);
 
-  std::vector<DisplayInfo> display_info_list;
+  std::vector<display::ManagedDisplayInfo> display_info_list;
   // Extended
   display_info_list.push_back(first_display_info);
   display_info_list.push_back(second_display_info);
@@ -1278,9 +1282,9 @@ TEST_P(WindowTreeHostManagerTest, ReplaceSwappedPrimary) {
   EXPECT_EQ(11, display::Screen::GetScreen()->GetPrimaryDisplay().id());
 
   display_info_list.clear();
-  const DisplayInfo new_first_display_info =
+  const display::ManagedDisplayInfo new_first_display_info =
       CreateDisplayInfo(20, 0, display::Display::ROTATE_0);
-  const DisplayInfo new_second_display_info =
+  const display::ManagedDisplayInfo new_second_display_info =
       CreateDisplayInfo(21, 1, display::Display::ROTATE_0);
   display_info_list.push_back(new_first_display_info);
   display_info_list.push_back(new_second_display_info);
@@ -1326,13 +1330,13 @@ TEST_P(WindowTreeHostManagerTest, ReplacePrimary) {
     return;
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
 
-  DisplayInfo first_display_info =
+  display::ManagedDisplayInfo first_display_info =
       CreateDisplayInfo(10, 0, display::Display::ROTATE_0);
   first_display_info.SetBounds(gfx::Rect(0, 0, 400, 400));
-  const DisplayInfo second_display_info =
+  const display::ManagedDisplayInfo second_display_info =
       CreateDisplayInfo(11, 500, display::Display::ROTATE_0);
 
-  std::vector<DisplayInfo> display_info_list;
+  std::vector<display::ManagedDisplayInfo> display_info_list;
   // Extended
   display_info_list.push_back(first_display_info);
   display_info_list.push_back(second_display_info);
@@ -1344,7 +1348,7 @@ TEST_P(WindowTreeHostManagerTest, ReplacePrimary) {
   primary_root->AddObserver(&test_observer);
 
   display_info_list.clear();
-  const DisplayInfo new_first_display_info =
+  const display::ManagedDisplayInfo new_first_display_info =
       CreateDisplayInfo(new_display_id, 0, display::Display::ROTATE_0);
 
   display_info_list.push_back(new_first_display_info);

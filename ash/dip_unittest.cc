@@ -60,7 +60,7 @@ TEST_P(DIPTest, WorkArea) {
   display::Screen* screen = display::Screen::GetScreen();
 
   const display::Display display_2x = screen->GetDisplayNearestWindow(root);
-  const DisplayInfo display_info_2x =
+  const display::ManagedDisplayInfo display_info_2x =
       Shell::GetInstance()->display_manager()->GetDisplayInfo(display_2x.id());
 
   // The |bounds_in_pixel()| should report bounds in pixel coordinate.

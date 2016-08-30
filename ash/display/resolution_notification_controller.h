@@ -52,8 +52,8 @@ class ASH_EXPORT ResolutionNotificationController
   // DisplayManager::SetDisplayMode().
   void PrepareNotification(
       int64_t display_id,
-      const scoped_refptr<ManagedDisplayMode>& old_resolution,
-      const scoped_refptr<ManagedDisplayMode>& new_resolution,
+      const scoped_refptr<display::ManagedDisplayMode>& old_resolution,
+      const scoped_refptr<display::ManagedDisplayMode>& new_resolution,
       const base::Closure& accept_callback);
 
   // Returns true if the notification is visible or scheduled to be visible and

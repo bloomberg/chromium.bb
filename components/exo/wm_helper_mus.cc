@@ -4,11 +4,11 @@
 
 #include "components/exo/wm_helper_mus.h"
 
-#include "ash/common/display/display_info.h"
 #include "services/ui/public/cpp/window_tree_client.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
+#include "ui/display/manager/managed_display_info.h"
 #include "ui/views/mus/native_widget_mus.h"
 #include "ui/views/mus/window_manager_connection.h"
 #include "ui/views/widget/widget.h"
@@ -44,9 +44,10 @@ WMHelperMus::~WMHelperMus() {
 ////////////////////////////////////////////////////////////////////////////////
 // WMHelperMus, private:
 
-const ash::DisplayInfo WMHelperMus::GetDisplayInfo(int64_t display_id) const {
+const display::ManagedDisplayInfo WMHelperMus::GetDisplayInfo(
+    int64_t display_id) const {
   // TODO(penghuang): Return real display info when it is supported in mus.
-  return ash::DisplayInfo(display_id, "", false);
+  return display::ManagedDisplayInfo(display_id, "", false);
 }
 
 aura::Window* WMHelperMus::GetContainer(int container_id) {

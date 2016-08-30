@@ -26,8 +26,10 @@
 namespace ash {
 
 namespace {
-DisplayInfo CreateDisplayInfo(int64_t id, const gfx::Rect& bounds) {
-  DisplayInfo info(id, base::StringPrintf("x-%d", static_cast<int>(id)), false);
+display::ManagedDisplayInfo CreateDisplayInfo(int64_t id,
+                                              const gfx::Rect& bounds) {
+  display::ManagedDisplayInfo info(
+      id, base::StringPrintf("x-%d", static_cast<int>(id)), false);
   info.SetBounds(bounds);
   return info;
 }
@@ -257,11 +259,11 @@ TEST_F(MirrorWindowControllerTest, MAYBE_DockMode) {
   const int64_t internal_id = 1;
   const int64_t external_id = 2;
 
-  const DisplayInfo internal_display_info =
+  const display::ManagedDisplayInfo internal_display_info =
       CreateDisplayInfo(internal_id, gfx::Rect(0, 0, 500, 500));
-  const DisplayInfo external_display_info =
+  const display::ManagedDisplayInfo external_display_info =
       CreateDisplayInfo(external_id, gfx::Rect(1, 1, 100, 100));
-  std::vector<DisplayInfo> display_info_list;
+  std::vector<display::ManagedDisplayInfo> display_info_list;
 
   display_manager->SetMultiDisplayMode(DisplayManager::MIRRORING);
 

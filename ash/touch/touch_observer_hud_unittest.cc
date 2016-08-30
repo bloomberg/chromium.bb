@@ -176,8 +176,10 @@ class TouchHudTestBase : public test::AshTestBase {
     return GetRootWindowController(root);
   }
 
-  DisplayInfo CreateDisplayInfo(int64_t id, const gfx::Rect& bounds) {
-    DisplayInfo info(id, base::StringPrintf("x-%" PRId64, id), false);
+  display::ManagedDisplayInfo CreateDisplayInfo(int64_t id,
+                                                const gfx::Rect& bounds) {
+    display::ManagedDisplayInfo info(id, base::StringPrintf("x-%" PRId64, id),
+                                     false);
     info.SetBounds(bounds);
     return info;
   }
@@ -193,11 +195,11 @@ class TouchHudTestBase : public test::AshTestBase {
   int64_t internal_display_id_;
   int64_t external_display_id_;
   int64_t mirrored_display_id_;
-  DisplayInfo internal_display_info_;
-  DisplayInfo external_display_info_;
-  DisplayInfo mirrored_display_info_;
+  display::ManagedDisplayInfo internal_display_info_;
+  display::ManagedDisplayInfo external_display_info_;
+  display::ManagedDisplayInfo mirrored_display_info_;
 
-  std::vector<DisplayInfo> display_info_list_;
+  std::vector<display::ManagedDisplayInfo> display_info_list_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchHudTestBase);
 };

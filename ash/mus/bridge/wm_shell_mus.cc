@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "ash/common/accelerators/accelerator_controller.h"
-#include "ash/common/display/display_info.h"
 #include "ash/common/keyboard/keyboard_ui.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_delegate.h"
@@ -37,6 +36,7 @@
 #include "services/ui/common/util.h"
 #include "services/ui/public/cpp/window.h"
 #include "services/ui/public/cpp/window_tree_client.h"
+#include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
 #include "ui/views/mus/pointer_watcher_event_router.h"
 
@@ -226,10 +226,11 @@ WmWindow* WmShellMus::GetRootWindowForDisplayId(int64_t display_id) {
   return GetRootWindowControllerWithDisplayId(display_id)->GetWindow();
 }
 
-const DisplayInfo& WmShellMus::GetDisplayInfo(int64_t display_id) const {
+const display::ManagedDisplayInfo& WmShellMus::GetDisplayInfo(
+    int64_t display_id) const {
   // TODO(mash): implement http://crbug.com/622480.
   NOTIMPLEMENTED();
-  static DisplayInfo fake_info;
+  static display::ManagedDisplayInfo fake_info;
   return fake_info;
 }
 

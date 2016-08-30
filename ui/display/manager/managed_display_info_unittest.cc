@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/common/display/display_info.h"
+#include "ui/display/manager/managed_display_info.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace ash {
+namespace display {
 namespace {
 
 std::string GetModeSizeInDIP(const gfx::Size& size,
@@ -24,7 +24,8 @@ std::string GetModeSizeInDIP(const gfx::Size& size,
 typedef testing::Test DisplayInfoTest;
 
 TEST_F(DisplayInfoTest, CreateFromSpec) {
-  DisplayInfo info = DisplayInfo::CreateFromSpecWithID("200x100", 10);
+  ManagedDisplayInfo info =
+      ManagedDisplayInfo::CreateFromSpecWithID("200x100", 10);
   EXPECT_EQ(10, info.id());
   EXPECT_EQ("0,0 200x100", info.bounds_in_native().ToString());
   EXPECT_EQ("200x100", info.size_in_pixel().ToString());
@@ -32,31 +33,31 @@ TEST_F(DisplayInfoTest, CreateFromSpec) {
   EXPECT_EQ("0,0,0,0", info.overscan_insets_in_dip().ToString());
   EXPECT_EQ(1.0f, info.configured_ui_scale());
 
-  info = DisplayInfo::CreateFromSpecWithID("10+20-300x400*2/o", 10);
+  info = ManagedDisplayInfo::CreateFromSpecWithID("10+20-300x400*2/o", 10);
   EXPECT_EQ("10,20 300x400", info.bounds_in_native().ToString());
   EXPECT_EQ("288x380", info.size_in_pixel().ToString());
   EXPECT_EQ(display::Display::ROTATE_0, info.GetActiveRotation());
   EXPECT_EQ("5,3,5,3", info.overscan_insets_in_dip().ToString());
 
-  info = DisplayInfo::CreateFromSpecWithID("10+20-300x400*2/ob", 10);
+  info = ManagedDisplayInfo::CreateFromSpecWithID("10+20-300x400*2/ob", 10);
   EXPECT_EQ("10,20 300x400", info.bounds_in_native().ToString());
   EXPECT_EQ("288x380", info.size_in_pixel().ToString());
   EXPECT_EQ(display::Display::ROTATE_0, info.GetActiveRotation());
   EXPECT_EQ("5,3,5,3", info.overscan_insets_in_dip().ToString());
 
-  info = DisplayInfo::CreateFromSpecWithID("10+20-300x400*2/or", 10);
+  info = ManagedDisplayInfo::CreateFromSpecWithID("10+20-300x400*2/or", 10);
   EXPECT_EQ("10,20 300x400", info.bounds_in_native().ToString());
   EXPECT_EQ("380x288", info.size_in_pixel().ToString());
   EXPECT_EQ(display::Display::ROTATE_90, info.GetActiveRotation());
   // TODO(oshima): This should be rotated too. Fix this.
   EXPECT_EQ("5,3,5,3", info.overscan_insets_in_dip().ToString());
 
-  info = DisplayInfo::CreateFromSpecWithID("10+20-300x400*2/l@1.5", 10);
+  info = ManagedDisplayInfo::CreateFromSpecWithID("10+20-300x400*2/l@1.5", 10);
   EXPECT_EQ("10,20 300x400", info.bounds_in_native().ToString());
   EXPECT_EQ(display::Display::ROTATE_270, info.GetActiveRotation());
   EXPECT_EQ(1.5f, info.configured_ui_scale());
 
-  info = DisplayInfo::CreateFromSpecWithID(
+  info = ManagedDisplayInfo::CreateFromSpecWithID(
       "200x200#300x200|200x200%59.9|100x100%60|150x100*2|150x150*1.25%30", 10);
 
   EXPECT_EQ("0,0 200x200", info.bounds_in_native().ToString());
@@ -125,7 +126,8 @@ TEST_F(DisplayInfoTest, ManagedDisplayModeGetSizeForExternal4K) {
 }
 
 TEST_F(DisplayInfoTest, InputDevicesTest) {
-  DisplayInfo info = DisplayInfo::CreateFromSpecWithID("200x100", 10);
+  ManagedDisplayInfo info =
+      ManagedDisplayInfo::CreateFromSpecWithID("200x100", 10);
 
   EXPECT_EQ(0u, info.input_devices().size());
 
@@ -137,11 +139,12 @@ TEST_F(DisplayInfoTest, InputDevicesTest) {
   EXPECT_EQ(10, info.input_devices()[0]);
   EXPECT_EQ(11, info.input_devices()[1]);
 
-  DisplayInfo copy_info = DisplayInfo::CreateFromSpecWithID("200x100", 10);
+  ManagedDisplayInfo copy_info =
+      ManagedDisplayInfo::CreateFromSpecWithID("200x100", 10);
   copy_info.Copy(info);
   EXPECT_EQ(2u, copy_info.input_devices().size());
   copy_info.ClearInputDevices();
   EXPECT_EQ(0u, copy_info.input_devices().size());
 }
 
-}  // namespace ash
+}  // namespace display

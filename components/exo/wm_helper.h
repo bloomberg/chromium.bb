@@ -9,12 +9,12 @@
 #include "base/observer_list.h"
 #include "ui/base/cursor/cursor.h"
 
-namespace ash {
-class DisplayInfo;
-}
-
 namespace aura {
 class Window;
+}
+
+namespace display {
+class ManagedDisplayInfo;
 }
 
 namespace ui {
@@ -76,7 +76,8 @@ class WMHelper {
   void AddMaximizeModeObserver(MaximizeModeObserver* observer);
   void RemoveMaximizeModeObserver(MaximizeModeObserver* observer);
 
-  virtual const ash::DisplayInfo GetDisplayInfo(int64_t display_id) const = 0;
+  virtual const display::ManagedDisplayInfo GetDisplayInfo(
+      int64_t display_id) const = 0;
   virtual aura::Window* GetContainer(int container_id) = 0;
   virtual aura::Window* GetActiveWindow() const = 0;
   virtual aura::Window* GetFocusedWindow() const = 0;

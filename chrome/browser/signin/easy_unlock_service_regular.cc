@@ -55,7 +55,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "apps/app_lifetime_monitor_factory.h"
-#include "ash/common/display/display_info.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "base/linux_util.h"
@@ -65,6 +64,7 @@
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "components/user_manager/user_manager.h"
+#include "ui/display/manager/managed_display_info.h"
 #endif
 
 namespace {
@@ -629,7 +629,7 @@ cryptauth::GcmDeviceInfo EasyUnlockServiceRegular::GetGcmDeviceInfo() {
       ash::Shell::GetInstance()->display_manager();
   int64_t primary_display_id =
       display_manager->GetPrimaryDisplayCandidate().id();
-  ash::DisplayInfo display_info =
+  display::ManagedDisplayInfo display_info =
       display_manager->GetDisplayInfo(primary_display_id);
   gfx::Rect bounds = display_info.bounds_in_native();
 

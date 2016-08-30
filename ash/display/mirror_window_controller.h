@@ -30,6 +30,7 @@ class ScreenPositionClient;
 
 namespace display {
 class Display;
+class ManagedDisplayInfo;
 }
 
 namespace ui {
@@ -38,7 +39,6 @@ class Reflector;
 
 namespace ash {
 class AshWindowTreeHost;
-class DisplayInfo;
 class RootWindowTransformer;
 
 namespace test {
@@ -55,7 +55,8 @@ class ASH_EXPORT MirrorWindowController : public aura::WindowTreeHostObserver {
 
   // Updates the root window's bounds using |display_info|.
   // Creates the new root window if one doesn't exist.
-  void UpdateWindow(const std::vector<DisplayInfo>& display_info);
+  void UpdateWindow(
+      const std::vector<display::ManagedDisplayInfo>& display_info);
 
   // Same as above, but using existing display info
   // for the mirrored display.

@@ -8,7 +8,6 @@
 
 #include <limits>
 
-#include "ash/common/display/display_info.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/window_tree_host_manager.h"
@@ -20,6 +19,7 @@
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/paint_recorder.h"
+#include "ui/display/manager/managed_display_info.h"
 #include "ui/gfx/canvas.h"
 
 namespace chromeos {
@@ -82,7 +82,7 @@ OverscanCalibrator::OverscanCalibrator(const display::Display& target_display,
   ash::Shell::GetInstance()->window_tree_host_manager()->SetOverscanInsets(
       display_.id(), gfx::Insets());
 
-  ash::DisplayInfo info =
+  display::ManagedDisplayInfo info =
       ash::Shell::GetInstance()->display_manager()->GetDisplayInfo(
           display_.id());
 

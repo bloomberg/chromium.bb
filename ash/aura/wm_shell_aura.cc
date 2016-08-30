@@ -108,7 +108,8 @@ WmWindow* WmShellAura::GetRootWindowForDisplayId(int64_t display_id) {
                                ->GetRootWindowForDisplayId(display_id));
 }
 
-const DisplayInfo& WmShellAura::GetDisplayInfo(int64_t display_id) const {
+const display::ManagedDisplayInfo& WmShellAura::GetDisplayInfo(
+    int64_t display_id) const {
   return Shell::GetInstance()->display_manager()->GetDisplayInfo(display_id);
 }
 

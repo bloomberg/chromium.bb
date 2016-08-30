@@ -63,14 +63,17 @@ class ResolutionNotificationControllerTest : public ash::test::AshTestBase {
       const gfx::Size& actual_new_resolution) {
     DisplayManager* display_manager = Shell::GetInstance()->display_manager();
 
-    const DisplayInfo& info = display_manager->GetDisplayInfo(display.id());
-    scoped_refptr<ManagedDisplayMode> old_mode(
-        new ManagedDisplayMode(info.size_in_pixel(), 60 /* refresh_rate */,
-                               false /* interlaced */, false /* native */));
-    scoped_refptr<ManagedDisplayMode> new_mode(new ManagedDisplayMode(
-        new_resolution, old_mode->refresh_rate(), old_mode->is_interlaced(),
-        old_mode->native(), old_mode->ui_scale(),
-        old_mode->device_scale_factor()));
+    const display::ManagedDisplayInfo& info =
+        display_manager->GetDisplayInfo(display.id());
+    scoped_refptr<display::ManagedDisplayMode> old_mode(
+        new display::ManagedDisplayMode(
+            info.size_in_pixel(), 60 /* refresh_rate */, false /* interlaced */,
+            false /* native */));
+    scoped_refptr<display::ManagedDisplayMode> new_mode(
+        new display::ManagedDisplayMode(
+            new_resolution, old_mode->refresh_rate(), old_mode->is_interlaced(),
+            old_mode->native(), old_mode->ui_scale(),
+            old_mode->device_scale_factor()));
 
     if (display_manager->SetDisplayMode(display.id(), new_mode)) {
       controller()->PrepareNotification(
@@ -81,10 +84,10 @@ class ResolutionNotificationControllerTest : public ash::test::AshTestBase {
 
     // OnConfigurationChanged event won't be emitted in the test environment,
     // so invoke UpdateDisplay() to emit that event explicitly.
-    std::vector<DisplayInfo> info_list;
+    std::vector<display::ManagedDisplayInfo> info_list;
     for (size_t i = 0; i < display_manager->GetNumDisplays(); ++i) {
       int64_t id = display_manager->GetDisplayAt(i).id();
-      DisplayInfo info = display_manager->GetDisplayInfo(id);
+      display::ManagedDisplayInfo info = display_manager->GetDisplayInfo(id);
       if (display.id() == id) {
         gfx::Rect bounds = info.bounds_in_native();
         bounds.set_size(actual_new_resolution);
@@ -173,7 +176,7 @@ TEST_F(ResolutionNotificationControllerTest, Basic) {
   EXPECT_FALSE(controller()->DoesNotificationTimeout());
   EXPECT_EQ(ExpectedNotificationMessage(id2, gfx::Size(200, 200)),
             GetNotificationMessage());
-  scoped_refptr<ManagedDisplayMode> mode =
+  scoped_refptr<display::ManagedDisplayMode> mode =
       display_manager->GetSelectedModeForDisplayId(id2);
   EXPECT_TRUE(!!mode);
   EXPECT_EQ("200x200", mode->size().ToString());
@@ -206,7 +209,7 @@ TEST_F(ResolutionNotificationControllerTest, ClickMeansAccept) {
                                 gfx::Size(200, 200));
   EXPECT_TRUE(IsNotificationVisible());
   EXPECT_FALSE(controller()->DoesNotificationTimeout());
-  scoped_refptr<ManagedDisplayMode> mode =
+  scoped_refptr<display::ManagedDisplayMode> mode =
       display_manager->GetSelectedModeForDisplayId(id2);
   EXPECT_TRUE(!!mode);
   EXPECT_EQ("200x200", mode->size().ToString());
@@ -243,7 +246,7 @@ TEST_F(ResolutionNotificationControllerTest, AcceptButton) {
   EXPECT_FALSE(IsNotificationVisible());
   EXPECT_EQ(1, accept_count());
 
-  scoped_refptr<ManagedDisplayMode> mode =
+  scoped_refptr<display::ManagedDisplayMode> mode =
       display_manager->GetSelectedModeForDisplayId(display.id());
   EXPECT_TRUE(!!mode);
 
@@ -282,7 +285,7 @@ TEST_F(ResolutionNotificationControllerTest, Close) {
                                 gfx::Size(200, 200));
   EXPECT_TRUE(IsNotificationVisible());
   EXPECT_FALSE(controller()->DoesNotificationTimeout());
-  scoped_refptr<ManagedDisplayMode> mode =
+  scoped_refptr<display::ManagedDisplayMode> mode =
       display_manager->GetSelectedModeForDisplayId(id2);
   EXPECT_TRUE(!!mode);
   EXPECT_EQ("200x200", mode->size().ToString());
@@ -315,7 +318,7 @@ TEST_F(ResolutionNotificationControllerTest, Timeout) {
   EXPECT_EQ(0, accept_count());
   ash::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
-  scoped_refptr<ManagedDisplayMode> mode =
+  scoped_refptr<display::ManagedDisplayMode> mode =
       display_manager->GetSelectedModeForDisplayId(display.id());
   EXPECT_TRUE(!!mode);
   EXPECT_EQ("300x300", mode->size().ToString());
@@ -341,7 +344,7 @@ TEST_F(ResolutionNotificationControllerTest, DisplayDisconnected) {
   RunAllPendingInMessageLoop();
   EXPECT_FALSE(IsNotificationVisible());
   EXPECT_EQ(0, accept_count());
-  scoped_refptr<ManagedDisplayMode> mode =
+  scoped_refptr<display::ManagedDisplayMode> mode =
       display_manager->GetSelectedModeForDisplayId(id2);
   EXPECT_TRUE(!!mode);
   gfx::Size resolution;
@@ -364,7 +367,7 @@ TEST_F(ResolutionNotificationControllerTest, MultipleResolutionChange) {
                                 gfx::Size(200, 200));
   EXPECT_TRUE(IsNotificationVisible());
   EXPECT_FALSE(controller()->DoesNotificationTimeout());
-  scoped_refptr<ManagedDisplayMode> mode =
+  scoped_refptr<display::ManagedDisplayMode> mode =
       display_manager->GetSelectedModeForDisplayId(id2);
   EXPECT_TRUE(!!mode);
   EXPECT_EQ("200x200", mode->size().ToString());
@@ -414,7 +417,7 @@ TEST_F(ResolutionNotificationControllerTest, Fallback) {
   EXPECT_EQ(ExpectedFallbackNotificationMessage(id2, gfx::Size(220, 220),
                                                 gfx::Size(200, 200)),
             GetNotificationMessage());
-  scoped_refptr<ManagedDisplayMode> mode =
+  scoped_refptr<display::ManagedDisplayMode> mode =
       display_manager->GetSelectedModeForDisplayId(id2);
   EXPECT_TRUE(!!mode);
   EXPECT_EQ("200x200", mode->size().ToString());

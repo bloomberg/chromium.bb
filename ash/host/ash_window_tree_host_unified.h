@@ -16,7 +16,6 @@ class Reflector;
 }
 
 namespace ash {
-class DisplayInfo;
 
 // A WTH used for unified desktop mode. This creates an offscreen
 // compositor whose texture will be copied into each displays'

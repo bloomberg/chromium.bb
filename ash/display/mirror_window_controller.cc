@@ -14,7 +14,6 @@
 #undef RootWindow
 #endif
 
-#include "ash/common/display/display_info.h"
 #include "ash/display/cursor_window_controller.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/root_window_transformers.h"
@@ -35,6 +34,7 @@
 #include "ui/base/layout.h"
 #include "ui/compositor/reflector.h"
 #include "ui/display/manager/display_layout.h"
+#include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/native_widget_types.h"
@@ -158,17 +158,17 @@ MirrorWindowController::~MirrorWindowController() {
 }
 
 void MirrorWindowController::UpdateWindow(
-    const std::vector<DisplayInfo>& display_info_list) {
+    const std::vector<display::ManagedDisplayInfo>& display_info_list) {
   static int mirror_host_count = 0;
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   const display::Display& primary =
       display::Screen::GetScreen()->GetPrimaryDisplay();
-  const DisplayInfo& source_display_info =
+  const display::ManagedDisplayInfo& source_display_info =
       display_manager->GetDisplayInfo(primary.id());
 
   multi_display_mode_ = GetCurrentMultiDisplayMode();
 
-  for (const DisplayInfo& display_info : display_info_list) {
+  for (const display::ManagedDisplayInfo& display_info : display_info_list) {
     std::unique_ptr<RootWindowTransformer> transformer;
     if (display_manager->IsInMirrorMode()) {
       transformer.reset(CreateRootWindowTransformerForMirroredDisplay(
@@ -257,7 +257,7 @@ void MirrorWindowController::UpdateWindow(
     for (MirroringHostInfoMap::iterator iter = mirroring_host_info_map_.begin();
          iter != mirroring_host_info_map_.end();) {
       if (std::find_if(display_info_list.begin(), display_info_list.end(),
-                       [iter](const DisplayInfo& info) {
+                       [iter](const display::ManagedDisplayInfo& info) {
                          return info.id() == iter->first;
                        }) == display_info_list.end()) {
         CloseAndDeleteHost(iter->second, true);
@@ -273,7 +273,7 @@ void MirrorWindowController::UpdateWindow() {
   if (mirroring_host_info_map_.empty())
     return;
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  std::vector<DisplayInfo> display_info_list;
+  std::vector<display::ManagedDisplayInfo> display_info_list;
   for (auto& pair : mirroring_host_info_map_)
     display_info_list.push_back(display_manager->GetDisplayInfo(pair.first));
   UpdateWindow(display_info_list);

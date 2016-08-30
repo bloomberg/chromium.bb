@@ -25,7 +25,8 @@ class WMHelperAsh : public WMHelper,
   ~WMHelperAsh() override;
 
   // Overriden from WMHelper:
-  const ash::DisplayInfo GetDisplayInfo(int64_t display_id) const override;
+  const display::ManagedDisplayInfo GetDisplayInfo(
+      int64_t display_id) const override;
   aura::Window* GetContainer(int container_id) override;
   aura::Window* GetActiveWindow() const override;
   aura::Window* GetFocusedWindow() const override;

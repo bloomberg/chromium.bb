@@ -253,7 +253,7 @@ void StoreCurrentDisplayProperties() {
   for (size_t i = 0; i < num; ++i) {
     const display::Display& display = display_manager->GetDisplayAt(i);
     int64_t id = display.id();
-    ash::DisplayInfo info = display_manager->GetDisplayInfo(id);
+    display::ManagedDisplayInfo info = display_manager->GetDisplayInfo(id);
 
     std::unique_ptr<base::DictionaryValue> property_value(
         new base::DictionaryValue());
@@ -267,7 +267,7 @@ void StoreCurrentDisplayProperties() {
     property_value->SetInteger(
         "ui-scale", static_cast<int>(info.configured_ui_scale() * 1000));
 
-    scoped_refptr<ash::ManagedDisplayMode> mode =
+    scoped_refptr<display::ManagedDisplayMode> mode =
         display_manager->GetSelectedModeForDisplayId(id);
     if (!display.IsInternal() && mode && !mode->native()) {
       property_value->SetInteger("width", mode->size().width());

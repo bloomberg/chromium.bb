@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "ash/common/display/display_info.h"
 #include "ash/common/system/system_notifier.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
@@ -17,6 +16,7 @@
 #include "ui/base/l10n/time_format.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/display/display.h"
+#include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
@@ -93,24 +93,25 @@ const char ResolutionNotificationController::kNotificationId[] =
     "chrome://settings/display/resolution";
 
 struct ResolutionNotificationController::ResolutionChangeInfo {
-  ResolutionChangeInfo(int64_t display_id,
-                       const scoped_refptr<ManagedDisplayMode>& old_resolution,
-                       const scoped_refptr<ManagedDisplayMode>& new_resolution,
-                       const base::Closure& accept_callback);
+  ResolutionChangeInfo(
+      int64_t display_id,
+      const scoped_refptr<display::ManagedDisplayMode>& old_resolution,
+      const scoped_refptr<display::ManagedDisplayMode>& new_resolution,
+      const base::Closure& accept_callback);
   ~ResolutionChangeInfo();
 
   // The id of the display where the resolution change happens.
   int64_t display_id;
 
   // The resolution before the change.
-  scoped_refptr<ManagedDisplayMode> old_resolution;
+  scoped_refptr<display::ManagedDisplayMode> old_resolution;
 
   // The requested resolution. Note that this may be different from
   // |current_resolution| which is the actual resolution set.
-  scoped_refptr<ManagedDisplayMode> new_resolution;
+  scoped_refptr<display::ManagedDisplayMode> new_resolution;
 
   // The actual resolution after the change.
-  scoped_refptr<ManagedDisplayMode> current_resolution;
+  scoped_refptr<display::ManagedDisplayMode> current_resolution;
 
   // The callback when accept is chosen.
   base::Closure accept_callback;
@@ -129,8 +130,8 @@ struct ResolutionNotificationController::ResolutionChangeInfo {
 
 ResolutionNotificationController::ResolutionChangeInfo::ResolutionChangeInfo(
     int64_t display_id,
-    const scoped_refptr<ManagedDisplayMode>& old_resolution,
-    const scoped_refptr<ManagedDisplayMode>& new_resolution,
+    const scoped_refptr<display::ManagedDisplayMode>& old_resolution,
+    const scoped_refptr<display::ManagedDisplayMode>& new_resolution,
     const base::Closure& accept_callback)
     : display_id(display_id),
       old_resolution(old_resolution),
@@ -163,8 +164,8 @@ ResolutionNotificationController::~ResolutionNotificationController() {
 
 void ResolutionNotificationController::PrepareNotification(
     int64_t display_id,
-    const scoped_refptr<ManagedDisplayMode>& old_resolution,
-    const scoped_refptr<ManagedDisplayMode>& new_resolution,
+    const scoped_refptr<display::ManagedDisplayMode>& old_resolution,
+    const scoped_refptr<display::ManagedDisplayMode>& new_resolution,
     const base::Closure& accept_callback) {
   DCHECK(old_resolution);
   DCHECK(new_resolution);
@@ -173,7 +174,7 @@ void ResolutionNotificationController::PrepareNotification(
   // If multiple resolution changes are invoked for the same display,
   // the original resolution for the first resolution change has to be used
   // instead of the specified |old_resolution|.
-  scoped_refptr<ManagedDisplayMode> original_resolution;
+  scoped_refptr<display::ManagedDisplayMode> original_resolution;
   if (change_info_ && change_info_->display_id == display_id) {
     DCHECK(change_info_->new_resolution->size() == old_resolution->size());
     original_resolution = change_info_->old_resolution;
@@ -276,7 +277,7 @@ void ResolutionNotificationController::RevertResolutionChange() {
   if (!change_info_)
     return;
   int64_t display_id = change_info_->display_id;
-  scoped_refptr<ManagedDisplayMode> old_resolution =
+  scoped_refptr<display::ManagedDisplayMode> old_resolution =
       change_info_->old_resolution;
   change_info_.reset();
   Shell::GetInstance()->display_manager()->SetDisplayMode(display_id,

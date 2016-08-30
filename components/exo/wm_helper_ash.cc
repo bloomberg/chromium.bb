@@ -38,7 +38,8 @@ WMHelperAsh::~WMHelperAsh() {
 ////////////////////////////////////////////////////////////////////////////////
 // WMHelperAsh, private:
 
-const ash::DisplayInfo WMHelperAsh::GetDisplayInfo(int64_t display_id) const {
+const display::ManagedDisplayInfo WMHelperAsh::GetDisplayInfo(
+    int64_t display_id) const {
   return ash::Shell::GetInstance()->display_manager()->GetDisplayInfo(
       display_id);
 }

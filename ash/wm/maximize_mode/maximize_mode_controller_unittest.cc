@@ -497,7 +497,7 @@ TEST_F(MaximizeModeControllerTest, NoMaximizeModeWithDisabledInternalDisplay) {
   EXPECT_TRUE(AreEventsBlocked());
 
   // Deactivate internal display to simulate Docked Mode.
-  std::vector<DisplayInfo> secondary_only;
+  std::vector<display::ManagedDisplayInfo> secondary_only;
   secondary_only.push_back(
       display_manager->GetDisplayInfo(display_manager->GetDisplayAt(1).id()));
   display_manager->OnNativeDisplaysChanged(secondary_only);

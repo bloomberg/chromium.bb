@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/common/display/display_info.h"
+#include "ui/display/manager/managed_display_info.h"
 #include "ui/events/devices/touchscreen_device.h"
 
 namespace ash {
@@ -16,7 +16,7 @@ namespace ash {
 // Given a list of displays and a list of touchscreens, associate them. The
 // information in |displays| will be updated to reflect the mapping.
 ASH_EXPORT void AssociateTouchscreens(
-    std::vector<DisplayInfo>* displays,
+    std::vector<display::ManagedDisplayInfo>* displays,
     const std::vector<ui::TouchscreenDevice>& touchscreens);
 
 }  // namespace ash

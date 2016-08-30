@@ -10,11 +10,11 @@
 #include <map>
 
 #include "ash/ash_export.h"
-#include "ash/common/display/display_info.h"
 #include "ash/common/system/tray/system_tray_item.h"
 #include "ash/common/wm_display_observer.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "ui/display/manager/managed_display_info.h"
 #include "ui/views/view.h"
 
 namespace ash {
@@ -32,7 +32,7 @@ class ASH_EXPORT TrayDisplay : public SystemTrayItem, public WmDisplayObserver {
  private:
   friend class TrayDisplayTest;
 
-  typedef std::map<int64_t, DisplayInfo> DisplayInfoMap;
+  using DisplayInfoMap = std::map<int64_t, display::ManagedDisplayInfo>;
 
   static const char kNotificationId[];
 

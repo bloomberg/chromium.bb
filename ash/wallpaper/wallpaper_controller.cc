@@ -5,7 +5,6 @@
 #include "ash/wallpaper/wallpaper_controller.h"
 
 #include "ash/aura/wm_window_aura.h"
-#include "ash/common/display/display_info.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "ash/common/wm_shell.h"
@@ -19,6 +18,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/wallpaper/wallpaper_resizer.h"
 #include "ui/aura/window.h"
+#include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"
 
@@ -149,7 +149,8 @@ gfx::Size WallpaperController::GetMaxDisplaySizeInNative() {
 
   gfx::Size max;
   for (const auto& display : display::Screen::GetScreen()->GetAllDisplays()) {
-    // Use the native size, not DisplayInfo::size_in_pixel or Display::size.
+    // Use the native size, not ManagedDisplayInfo::size_in_pixel or
+    // Display::size.
     // TODO(msw): Avoid using Display::size here; see http://crbug.com/613657.
     gfx::Size size = display.size();
     if (shell)

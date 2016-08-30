@@ -20,6 +20,7 @@
 
 namespace display {
 class Display;
+class ManagedDisplayInfo;
 }
 
 namespace gfx {
@@ -36,7 +37,6 @@ namespace ash {
 class AcceleratorController;
 class AccessibilityDelegate;
 class BrightnessControlDelegate;
-class DisplayInfo;
 class FocusCycler;
 class ImmersiveContextAsh;
 class ImmersiveFullscreenController;
@@ -176,7 +176,8 @@ class ASH_EXPORT WmShell {
 
   // Retuns the display info associated with |display_id|.
   // TODO(mash): Remove when DisplayManager has been moved. crbug.com/622480
-  virtual const DisplayInfo& GetDisplayInfo(int64_t display_id) const = 0;
+  virtual const display::ManagedDisplayInfo& GetDisplayInfo(
+      int64_t display_id) const = 0;
 
   // Matches that of DisplayManager::IsActiveDisplayId().
   // TODO(mash): Remove when DisplayManager has been moved. crbug.com/622480

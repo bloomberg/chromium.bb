@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "ash/common/ash_constants.h"
-#include "ash/common/display/display_info.h"
 #include "ash/common/system/audio/tray_audio_delegate.h"
 #include "ash/common/system/audio/volume_view.h"
 #include "ash/common/system/tray/actionable_view.h"
@@ -26,6 +25,7 @@
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/display/display.h"
+#include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
@@ -142,7 +142,7 @@ void TrayAudio::ChangeInternalSpeakerChannelMode() {
   system::TrayAudioDelegate::AudioChannelMode channel_mode =
       system::TrayAudioDelegate::NORMAL;
   if (display::Display::HasInternalDisplay()) {
-    const DisplayInfo& display_info =
+    const display::ManagedDisplayInfo& display_info =
         WmShell::Get()->GetDisplayInfo(display::Display::InternalDisplayId());
     if (display_info.GetActiveRotation() == display::Display::ROTATE_180)
       channel_mode = system::TrayAudioDelegate::LEFT_RIGHT_SWAPPED;
