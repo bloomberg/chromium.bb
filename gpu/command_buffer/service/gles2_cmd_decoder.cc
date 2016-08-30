@@ -13177,8 +13177,20 @@ void GLES2DecoderImpl::DoCopyTexSubImage2D(
   GLint dy = copyY - y;
   GLint destX = xoffset + dx;
   GLint destY = yoffset + dy;
-  if (destX != 0 || destY != 0 || copyWidth != size.width() ||
-      copyHeight != size.height()) {
+  // It's only legal to skip clearing the level of the target texture
+  // if the entire level is being redefined.
+  GLsizei level_width = 0;
+  GLsizei level_height = 0;
+  GLsizei level_depth = 0;
+  bool have_level = texture->GetLevelSize(
+      target, level, &level_width, &level_height, &level_depth);
+  // Validated above.
+  DCHECK(have_level);
+  if (destX == 0 && destY == 0 &&
+      copyWidth == level_width && copyHeight == level_height) {
+    // Write all pixels in below.
+    texture_manager()->SetLevelCleared(texture_ref, target, level, true);
+  } else {
     gfx::Rect cleared_rect;
     if (TextureManager::CombineAdjacentRects(
             texture->GetLevelClearedRect(target, level),
@@ -13195,9 +13207,6 @@ void GLES2DecoderImpl::DoCopyTexSubImage2D(
         return;
       }
     }
-  } else {
-    // Write all pixels in below.
-    texture_manager()->SetLevelCleared(texture_ref, target, level, true);
   }
 
   if (copyHeight > 0 && copyWidth > 0) {
