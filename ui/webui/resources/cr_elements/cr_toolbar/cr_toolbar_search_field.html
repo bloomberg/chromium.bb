@@ -123,7 +123,7 @@
         on-keydown="onSearchTermKeydown" no-label-float>
       <label id="prompt" for="searchInput">[[label]]</label>
       <input is="iron-input" id="searchInput" type="search"
-          on-blur="onInputBlur_" incremental></input>
+          on-blur="onInputBlur_" incremental autofocus></input>
     </paper-input-container>
     <paper-icon-button icon="cr:cancel" id="clearSearch"
         title="[[clearLabel]]" hidden$="[[!hasSearchText_]]"

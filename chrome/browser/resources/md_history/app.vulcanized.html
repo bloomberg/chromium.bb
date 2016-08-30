@@ -2362,7 +2362,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </paper-icon-button>
     <paper-input-container id="searchTerm" on-search="onSearchTermSearch" on-keydown="onSearchTermKeydown" no-label-float="">
       <label id="prompt" for="searchInput">[[label]]</label>
-      <input is="iron-input" id="searchInput" type="search" on-blur="onInputBlur_" incremental="">
+      <input is="iron-input" id="searchInput" type="search" on-blur="onInputBlur_" incremental="" autofocus="">
     </paper-input-container>
     <paper-icon-button icon="cr:cancel" id="clearSearch" title="[[clearLabel]]" hidden$="[[!hasSearchText_]]" on-tap="hideSearch_">
     </paper-icon-button>
