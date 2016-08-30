@@ -232,9 +232,6 @@ config("compiler") {
   # -----------------------------------
   if (is_posix && !(is_mac || is_ios)) {
     if (enable_profiling) {
-      # Explicitly ask for frame pointers. Otherwise they are omitted when
-      # any optimization level is used (and Android debug builds use -Os).
-      cflags += [ "-fno-omit-frame-pointer" ]
       if (!is_debug) {
         cflags += [ "-g" ]
 
@@ -1259,13 +1256,6 @@ if (is_win) {
   common_optimize_on_ldflags = []
 
   if (is_android) {
-    # We don't omit frame pointers on arm64 since they are required
-    # to correctly unwind stackframes which contain system library
-    # function frames (crbug.com/391706).
-    if (!using_sanitizer && !enable_profiling && current_cpu != "arm64") {
-      common_optimize_on_cflags += [ "-fomit-frame-pointer" ]
-    }
-
     # TODO(jdduke) Re-enable on mips after resolving linking
     # issues with libc++ (crbug.com/456380).
     if (current_cpu != "mipsel" && current_cpu != "mips64el") {
@@ -1320,6 +1310,18 @@ if (is_win) {
 }
 
 config("default_stack_frames") {
+  if (is_posix && !(is_mac || is_ios)) {
+    if (using_sanitizer || enable_profiling || is_debug ||
+        current_cpu == "arm64") {
+      # Explicitly ask for frame pointers, otherwise:
+      # * Stacks may be missing for sanitizer and profiling builds.
+      # * Debug tcmalloc can crash (crbug.com/636489).
+      # * Stacks may be missing for arm64 crash dumps (crbug.com/391706).
+      cflags = [ "-fno-omit-frame-pointer" ]
+    } else if (is_android) {
+      cflags = [ "-fomit-frame-pointer" ]
+    }
+  }
 }
 
 # Default "optimization on" config.
@@ -1380,13 +1382,6 @@ config("no_optimize") {
       "-fdata-sections",
       "-ffunction-sections",
     ]
-
-    # We don't omit frame pointers on arm64 since they are required
-    # to correctly unwind stackframes which contain system library
-    # function frames (crbug.com/391706).
-    if (!using_sanitizer && !enable_profiling && current_cpu != "arm64") {
-      cflags += [ "-fomit-frame-pointer" ]
-    }
 
     # Don't use gc-sections since it can cause links to succeed when they
     # actually shouldn't. http://crbug.com/159847
