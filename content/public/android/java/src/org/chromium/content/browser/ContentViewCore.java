@@ -27,7 +27,6 @@ import android.os.SystemClock;
 import android.provider.Browser;
 import android.text.TextUtils;
 import android.util.Pair;
-import android.util.TypedValue;
 import android.view.ActionMode;
 import android.view.DragEvent;
 import android.view.HapticFeedbackConstants;
@@ -420,10 +419,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
     // sequence, so this will also be true for the duration of a pinch gesture.
     private boolean mTouchScrollInProgress;
 
-    // Multiplier that determines how many (device) pixels to scroll per mouse
-    // wheel tick. Defaults to the preferred list item height.
-    private float mWheelScrollFactorInPixels;
-
     // The outstanding fling start events that hasn't got fling end yet. It may be > 1 because
     // onNativeFlingStopped() is called asynchronously.
     private int mPotentiallyActiveFlingCount;
@@ -485,13 +480,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
         mContext = context;
         mRenderCoordinates = new RenderCoordinates();
         mJoystickScrollProvider = new JoystickScrollProvider(this);
-        float deviceScaleFactor = getContext().getResources().getDisplayMetrics().density;
-        String forceScaleFactor = CommandLine.getInstance().getSwitchValue(
-                ContentSwitches.FORCE_DEVICE_SCALE_FACTOR);
-        if (forceScaleFactor != null) {
-            deviceScaleFactor = Float.valueOf(forceScaleFactor);
-        }
-        mRenderCoordinates.setDeviceScaleFactor(deviceScaleFactor);
         mAccessibilityManager = (AccessibilityManager)
                 getContext().getSystemService(Context.ACCESSIBILITY_SERVICE);
         mSystemCaptioningBridge = CaptioningBridgeFactory.getSystemCaptioningBridge(mContext);
@@ -630,6 +618,15 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
     }
 
     /**
+     * Returns the context used to obtain display density (ratio of physical pixels to DIP).
+     */
+    private Context getDisplayContext(WindowAndroid window) {
+        Context displayContext = null;
+        if (window != null) displayContext = window.getContext().get();
+        return displayContext != null ? displayContext : mContext;
+    }
+
+    /**
      *
      * @param viewDelegate Delegate to add/remove anchor views.
      * @param internalDispatcher Handles dispatching all hidden or super methods to the
@@ -660,7 +657,10 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
         mWebContents = nativeGetWebContentsAndroid(mNativeContentViewCore);
 
         setContainerViewInternals(internalDispatcher);
+
         mRenderCoordinates.reset();
+        mRenderCoordinates.setDeviceScaleFactor(getDisplayContext(windowAndroid));
+
         initPopupZoomer(mContext);
         mImeAdapter = createImeAdapter();
         attachImeAdapter();
@@ -681,6 +681,8 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
         // Clean up cached popups that may have been created with an old activity.
         mSelectPopup = null;
         mPastePopupMenu = null;
+
+        mRenderCoordinates.setDeviceScaleFactor(getDisplayContext(windowAndroid));
 
         for (WindowAndroidChangedObserver observer : mWindowAndroidChangedObservers) {
             observer.onWindowAndroidChanged(windowAndroid);
@@ -1614,7 +1616,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
                             event.getX(), event.getY(),
                             event.getAxisValue(MotionEvent.AXIS_HSCROLL),
                             event.getAxisValue(MotionEvent.AXIS_VSCROLL),
-                            getWheelScrollFactorInPixels());
+                            mRenderCoordinates.getWheelScrollFactor());
 
                     mContainerView.removeCallbacks(mFakeMouseMoveRunnable);
                     // Send a delayed onMouseMove event so that we end
@@ -3206,23 +3208,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
         mPotentiallyActiveFlingCount = 0;
         if (touchScrollInProgress) updateGestureStateListener(GestureEventType.SCROLL_END);
         if (potentiallyActiveFlingCount > 0) updateGestureStateListener(GestureEventType.FLING_END);
-    }
-
-    private float getWheelScrollFactorInPixels() {
-        if (mWheelScrollFactorInPixels == 0) {
-            TypedValue outValue = new TypedValue();
-            // This is the same attribute used by Android Views to scale wheel
-            // event motion into scroll deltas.
-            if (mContext.getTheme().resolveAttribute(
-                        android.R.attr.listPreferredItemHeight, outValue, true)) {
-                mWheelScrollFactorInPixels =
-                        outValue.getDimension(mContext.getResources().getDisplayMetrics());
-            } else {
-                // If attribute retrieval fails, just use a sensible default.
-                mWheelScrollFactorInPixels = 64 * mRenderCoordinates.getDeviceScaleFactor();
-            }
-        }
-        return mWheelScrollFactorInPixels;
     }
 
     ContentVideoViewEmbedder getContentVideoViewEmbedder() {
