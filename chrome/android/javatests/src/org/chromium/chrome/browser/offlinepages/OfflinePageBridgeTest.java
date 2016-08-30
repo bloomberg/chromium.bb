@@ -409,7 +409,7 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mOfflinePageBridge.savePageLaterForDownload(url, namespace);
+                mOfflinePageBridge.savePageLater(url, namespace, true /* userRequested */);
             }
         });
     }

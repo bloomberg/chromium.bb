@@ -412,8 +412,10 @@ public class OfflinePageBridge {
      *
      * @param url The given URL to save for later.
      * @param namespace The namespace for the offline page to be saved later.
+     * @param userRequested Whether this request should be prioritized because the user explicitly
+     *                      requested it.
      */
-    public void savePageLaterForDownload(final String url, final String namespace) {
+    public void savePageLater(final String url, final String namespace, boolean userRequested) {
         ClientId clientId = ClientId.createGuidClientIdForNamespace(namespace);
         savePageLater(url, clientId, true /* userRequested */);
     }

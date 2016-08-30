@@ -409,8 +409,8 @@ public class NewTabPage
         }
 
         private void saveUrlForOffline(String url) {
-            OfflinePageBridge bridge = OfflinePageBridge.getForProfile(mProfile);
-            bridge.savePageLaterForDownload(url, "ntp_suggestions");
+            OfflinePageBridge.getForProfile(mProfile)
+                    .savePageLater(url, "ntp_suggestions", true /* userRequested */);
         }
 
         @Override
