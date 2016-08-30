@@ -634,7 +634,7 @@ bool EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
     bool firedListener = false;
 
     while (i < size) {
-        RegisteredEventListener& registeredListener = entry[i];
+        RegisteredEventListener registeredListener = entry[i];
 
         // Move the iterator past this event listener. This must match
         // the handling of the FiringEventIterator::iterator in
@@ -646,6 +646,13 @@ bool EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
         if (event->eventPhase() == Event::kBubblingPhase && registeredListener.capture())
             continue;
 
+        EventListener* listener = registeredListener.listener();
+        // The listener will be retained by Member<EventListener> in the registeredListener,
+        // i and size are updated with the firing event iterator
+        // in case the listener is removed from the listener vector below.
+        if (registeredListener.once())
+            removeEventListener(event->type(), listener, registeredListener.capture());
+
         // If stopImmediatePropagation has been called, we just break out immediately, without
         // handling any more events on this target.
         if (event->immediatePropagationStopped())
@@ -655,8 +662,6 @@ bool EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
         bool passiveForced = registeredListener.passiveForcedForDocumentTarget();
 
         InspectorInstrumentation::NativeBreakpoint nativeBreakpoint(context, this, event);
-
-        EventListener* listener = registeredListener.listener();
 
         // To match Mozilla, the AT_TARGET phase fires both capturing and bubbling
         // event listeners, even though that violates some versions of the DOM spec.

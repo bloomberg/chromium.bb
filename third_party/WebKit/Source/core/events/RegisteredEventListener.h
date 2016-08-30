@@ -36,6 +36,7 @@ public:
     RegisteredEventListener()
         : m_useCapture(false)
         , m_passive(false)
+        , m_once(false)
         , m_blockedEventWarningEmitted(false)
         , m_passiveForcedForDocumentTarget(false)
     {
@@ -45,6 +46,7 @@ public:
         : m_listener(listener)
         , m_useCapture(options.capture())
         , m_passive(options.passive())
+        , m_once(options.once())
         , m_blockedEventWarningEmitted(false)
         , m_passiveForcedForDocumentTarget(options.passiveForcedForDocumentTarget())
     {
@@ -61,6 +63,7 @@ public:
         result.setCapture(m_useCapture);
         result.setPassive(m_passive);
         result.setPassiveForcedForDocumentTarget(m_passiveForcedForDocumentTarget);
+        result.setOnce(m_once);
         return result;
     }
 
@@ -77,6 +80,11 @@ public:
     bool passive() const
     {
         return m_passive;
+    }
+
+    bool once() const
+    {
+        return m_once;
     }
 
     bool capture() const
@@ -119,6 +127,7 @@ private:
     Member<EventListener> m_listener;
     unsigned m_useCapture : 1;
     unsigned m_passive : 1;
+    unsigned m_once : 1;
     unsigned m_blockedEventWarningEmitted : 1;
     unsigned m_passiveForcedForDocumentTarget : 1;
 };

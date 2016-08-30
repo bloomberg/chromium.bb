@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-FAIL Once listener should be invoked only once assert_equals: Once handler shouldn't be invoked again expected false but got true
-FAIL Once listener should be invoked only once even if the event is nested assert_equals: Once handler should only be invoked once expected 1 but got 2
-FAIL Once listener should be added / removed like normal listeners assert_equals: The handler was added as a once listener expected 0 but got 1
-Harness: the test ran to completion.
-
