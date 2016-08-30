@@ -250,10 +250,9 @@ std::wstring GetChromeInstallRegistryPath() {
 
 bool GetCollectStatsConsentImpl(const std::wstring& exe_path) {
   bool enabled = true;
-  bool controlled_by_policy = ReportingIsEnforcedByPolicy(&enabled);
 
-  if (controlled_by_policy && !enabled)
-    return false;
+  if (ReportingIsEnforcedByPolicy(&enabled))
+    return enabled;
 
   bool system_install = IsSystemInstall(exe_path.c_str());
   std::wstring app_guid;
