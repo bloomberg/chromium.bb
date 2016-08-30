@@ -51,6 +51,8 @@ void MediaUrlDemuxer::Seek(base::TimeDelta time,
 
 void MediaUrlDemuxer::Stop() {}
 
+void MediaUrlDemuxer::AbortPendingReads() {}
+
 base::TimeDelta MediaUrlDemuxer::GetStartTime() const {
   // TODO(tguilbert): Investigate if we need to fetch information from the
   // MediaPlayerRender in order to return a sensible value here.

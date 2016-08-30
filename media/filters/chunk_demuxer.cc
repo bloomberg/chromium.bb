@@ -510,6 +510,18 @@ int64_t ChunkDemuxer::GetMemoryUsage() const {
          (video_ ? video_->GetBufferedSize() : 0);
 }
 
+void ChunkDemuxer::AbortPendingReads() {
+  base::AutoLock auto_lock(lock_);
+  DCHECK(state_ == INITIALIZED || state_ == ENDED || state_ == SHUTDOWN ||
+         state_ == PARSE_ERROR)
+      << state_;
+
+  if (state_ == SHUTDOWN || state_ == PARSE_ERROR)
+    return;
+
+  AbortPendingReads_Locked();
+}
+
 void ChunkDemuxer::StartWaitingForSeek(TimeDelta seek_time) {
   DVLOG(1) << "StartWaitingForSeek()";
   base::AutoLock auto_lock(lock_);
@@ -520,7 +532,7 @@ void ChunkDemuxer::StartWaitingForSeek(TimeDelta seek_time) {
   if (state_ == SHUTDOWN || state_ == PARSE_ERROR)
     return;
 
-  AbortPendingReads();
+  AbortPendingReads_Locked();
   SeekAllSources(seek_time);
 
   // Cancel state set in CancelPendingSeek() since we want to
@@ -536,7 +548,7 @@ void ChunkDemuxer::CancelPendingSeek(TimeDelta seek_time) {
   if (cancel_next_seek_)
     return;
 
-  AbortPendingReads();
+  AbortPendingReads_Locked();
   SeekAllSources(seek_time);
 
   if (seek_cb_.is_null()) {
@@ -1238,7 +1250,7 @@ void ChunkDemuxer::StartReturningData() {
   }
 }
 
-void ChunkDemuxer::AbortPendingReads() {
+void ChunkDemuxer::AbortPendingReads_Locked() {
   for (MediaSourceStateMap::iterator itr = source_state_map_.begin();
        itr != source_state_map_.end(); ++itr) {
     itr->second->AbortReads();

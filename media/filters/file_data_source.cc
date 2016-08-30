@@ -29,8 +29,9 @@ bool FileDataSource::Initialize(const base::FilePath& file_path) {
   return file_.Initialize(file_path);
 }
 
-void FileDataSource::Stop() {
-}
+void FileDataSource::Stop() {}
+
+void FileDataSource::Abort() {}
 
 void FileDataSource::Read(int64_t position,
                           int size,

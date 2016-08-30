@@ -43,6 +43,8 @@ void MemoryDataSource::Stop() {
   is_stopped_ = true;
 }
 
+void MemoryDataSource::Abort() {}
+
 bool MemoryDataSource::GetSize(int64_t* size_out) {
   *size_out = size_;
   return true;

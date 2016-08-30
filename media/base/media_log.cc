@@ -174,7 +174,7 @@ std::string MediaLog::GetLastErrorMessage() {
 }
 
 void MediaLog::RecordRapporWithSecurityOrigin(const std::string& metric) {
-  NOTIMPLEMENTED() << "Default MediaLog doesn't support rappor reporting.";
+  DVLOG(1) << "Default MediaLog doesn't support rappor reporting.";
 }
 
 std::unique_ptr<MediaLogEvent> MediaLog::CreateEvent(MediaLogEvent::Type type) {

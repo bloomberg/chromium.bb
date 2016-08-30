@@ -47,6 +47,7 @@ class MEDIA_EXPORT MediaUrlDemuxer : public Demuxer {
   void CancelPendingSeek(base::TimeDelta seek_time) override;
   void Seek(base::TimeDelta time, const PipelineStatusCB& status_cb) override;
   void Stop() override;
+  void AbortPendingReads() override;
   base::TimeDelta GetStartTime() const override;
   base::Time GetTimelineOffset() const override;
   int64_t GetMemoryUsage() const override;

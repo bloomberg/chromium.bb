@@ -29,6 +29,7 @@ class MEDIA_EXPORT FileDataSource : public DataSource {
 
   // Implementation of DataSource.
   void Stop() override;
+  void Abort() override;
   void Read(int64_t position,
             int size,
             uint8_t* data,

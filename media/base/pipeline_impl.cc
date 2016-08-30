@@ -311,6 +311,9 @@ void PipelineImpl::RendererWrapper::Seek(base::TimeDelta time) {
   DCHECK(!pending_callbacks_);
   SerialRunner::Queue bound_fns;
 
+  // Abort any reads the renderer may be blocked on.
+  demuxer_->AbortPendingReads();
+
   // Pause.
   if (text_renderer_) {
     bound_fns.Push(base::Bind(&TextRenderer::Pause,
@@ -352,14 +355,16 @@ void PipelineImpl::RendererWrapper::Suspend() {
 
   SetState(kSuspending);
 
-  // Freeze playback and record the media time before flushing. (Flushing clears
-  // the value.)
+  // Freeze playback and record the media time before destroying the renderer.
   shared_state_.renderer->SetPlaybackRate(0.0);
   {
     base::AutoLock auto_lock(shared_state_lock_);
     shared_state_.suspend_timestamp = shared_state_.renderer->GetMediaTime();
     DCHECK(shared_state_.suspend_timestamp != kNoTimestamp);
   }
+
+  // Abort any reads the renderer may be blocked on.
+  demuxer_->AbortPendingReads();
 
   // Queue the asynchronous actions required to stop playback.
   SerialRunner::Queue fns;
@@ -369,14 +374,7 @@ void PipelineImpl::RendererWrapper::Suspend() {
                         base::Unretained(text_renderer_.get())));
   }
 
-  fns.Push(base::Bind(&Renderer::Flush,
-                      base::Unretained(shared_state_.renderer.get())));
-
-  if (text_renderer_) {
-    fns.Push(base::Bind(&TextRenderer::Flush,
-                        base::Unretained(text_renderer_.get())));
-  }
-
+  // No need to flush the renderer since it's going to be destroyed.
   pending_callbacks_ = SerialRunner::Run(
       fns, base::Bind(&RendererWrapper::CompleteSuspend, weak_this_));
 }

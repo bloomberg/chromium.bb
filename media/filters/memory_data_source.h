@@ -27,6 +27,7 @@ class MEDIA_EXPORT MemoryDataSource : public DataSource {
             uint8_t* data,
             const DataSource::ReadCB& read_cb) final;
   void Stop() final;
+  void Abort() final;
   bool GetSize(int64_t* size_out) final;
   bool IsStreaming() final;
   void SetBitrate(int bitrate) final;

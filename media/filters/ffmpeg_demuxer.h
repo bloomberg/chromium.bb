@@ -86,6 +86,9 @@ class FFmpegDemuxerStream : public DemuxerStream {
   // Empties the queues and ignores any additional calls to Read().
   void Stop();
 
+  // Aborts any pending reads.
+  void Abort();
+
   base::TimeDelta duration() const { return duration_; }
 
   // Enables fixes for files with negative timestamps.  Normally all timestamps
@@ -211,6 +214,7 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   void Initialize(DemuxerHost* host,
                   const PipelineStatusCB& status_cb,
                   bool enable_text_tracks) override;
+  void AbortPendingReads() override;
   void Stop() override;
   void StartWaitingForSeek(base::TimeDelta seek_time) override;
   void CancelPendingSeek(base::TimeDelta seek_time) override;
@@ -250,7 +254,7 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   void OnFindStreamInfoDone(const PipelineStatusCB& status_cb, int result);
 
   // FFmpeg callbacks during seeking.
-  void OnSeekFrameDone(const PipelineStatusCB& cb, int result);
+  void OnSeekFrameDone(int result);
 
   // FFmpeg callbacks during reading + helper method to initiate reads.
   void ReadFrameIfNeeded();
@@ -294,7 +298,7 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
 
   // Tracks if there's an outstanding av_seek_frame() operation. Used to discard
   // results of pre-seek av_read_frame() operations.
-  bool pending_seek_;
+  PipelineStatusCB pending_seek_cb_;
 
   // |streams_| mirrors the AVStream array in AVFormatContext. It contains
   // FFmpegDemuxerStreams encapsluating AVStream objects at the same index.

@@ -612,11 +612,11 @@ TEST_F(MultibufferDataSourceTest, Http_AbortWhileReading) {
   ReadAt(kFileSize);
 
   // Abort!!!
-  EXPECT_CALL(*this, ReadCallback(media::DataSource::kReadError));
+  EXPECT_CALL(*this, ReadCallback(media::DataSource::kAborted));
   data_source_->Abort();
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_FALSE(loading());
+  EXPECT_TRUE(loading());
   Stop();
 }
 
@@ -627,11 +627,11 @@ TEST_F(MultibufferDataSourceTest, File_AbortWhileReading) {
   ReadAt(kFileSize);
 
   // Abort!!!
-  EXPECT_CALL(*this, ReadCallback(media::DataSource::kReadError));
+  EXPECT_CALL(*this, ReadCallback(media::DataSource::kAborted));
   data_source_->Abort();
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_FALSE(loading());
+  EXPECT_TRUE(loading());
   Stop();
 }
 

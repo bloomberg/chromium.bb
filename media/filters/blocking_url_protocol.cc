@@ -62,6 +62,9 @@ int BlockingUrlProtocol::Read(int size, uint8_t* data) {
     return AVERROR(EIO);
   }
 
+  if (last_read_bytes_ == DataSource::kAborted)
+    return AVERROR(EIO);
+
   read_position_ += last_read_bytes_;
   return last_read_bytes_;
 }

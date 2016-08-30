@@ -88,6 +88,10 @@ class MEDIA_EXPORT Demuxer : public DemuxerStreamProvider {
                           const PipelineStatusCB& status_cb,
                           bool enable_text_tracks) = 0;
 
+  // Aborts any pending read operations that the demuxer is involved with; any
+  // read aborted will be aborted with a status of kAborted.
+  virtual void AbortPendingReads() = 0;
+
   // Indicates that a new Seek() call is on its way. Implementations may abort
   // pending reads and future Read() calls may return kAborted until Seek() is
   // executed. |seek_time| is the presentation timestamp of the new Seek() call.

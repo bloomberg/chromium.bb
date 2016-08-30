@@ -253,6 +253,10 @@ std::unique_ptr<FFmpegDemuxerStream> FFmpegDemuxerStream::Create(
       demuxer, stream, std::move(audio_config), std::move(video_config)));
 }
 
+static void UnmarkEndOfStream(AVFormatContext* format_context) {
+  format_context->pb->eof_reached = 0;
+}
+
 //
 // FFmpegDemuxerStream
 //
@@ -593,6 +597,11 @@ void FFmpegDemuxerStream::FlushBuffers() {
   last_packet_duration_ = kNoTimestamp;
 }
 
+void FFmpegDemuxerStream::Abort() {
+  if (!read_cb_.is_null())
+    base::ResetAndReturn(&read_cb_).Run(DemuxerStream::kAborted, nullptr);
+}
+
 void FFmpegDemuxerStream::Stop() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   buffer_queue_.Clear();
@@ -821,7 +830,6 @@ FFmpegDemuxer::FFmpegDemuxer(
       task_runner_(task_runner),
       blocking_thread_("FFmpegDemuxer"),
       pending_read_(false),
-      pending_seek_(false),
       data_source_(data_source),
       media_log_(media_log),
       bitrate_(0),
@@ -880,6 +888,36 @@ void FFmpegDemuxer::Initialize(DemuxerHost* host,
                  status_cb));
 }
 
+void FFmpegDemuxer::AbortPendingReads() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  // This should only be called after the demuxer has been initialized.
+  DCHECK(blocking_thread_.IsRunning());
+  DCHECK_GT(streams_.size(), 0u);
+
+  // Abort all outstanding reads.
+  for (auto* stream : streams_) {
+    if (stream)
+      stream->Abort();
+  }
+
+  // It's important to invalidate read/seek completion callbacks to avoid any
+  // errors that occur because of the data source abort.
+  weak_factory_.InvalidateWeakPtrs();
+  data_source_->Abort();
+
+  // Aborting the read may cause EOF to be marked, undo this.
+  blocking_thread_.task_runner()->PostTask(
+      FROM_HERE, base::Bind(&UnmarkEndOfStream, glue_->format_context()));
+  pending_read_ = false;
+
+  // TODO(dalecurtis): We probably should report PIPELINE_ERROR_ABORT here
+  // instead to avoid any preroll work that may be started upon return, but
+  // currently the PipelineImpl does not know how to handle this.
+  if (!pending_seek_cb_.is_null())
+    base::ResetAndReturn(&pending_seek_cb_).Run(PIPELINE_OK);
+}
+
 void FFmpegDemuxer::Stop() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
@@ -910,15 +948,19 @@ void FFmpegDemuxer::Stop() {
 
 void FFmpegDemuxer::StartWaitingForSeek(base::TimeDelta seek_time) {}
 
-void FFmpegDemuxer::CancelPendingSeek(base::TimeDelta seek_time) {}
+void FFmpegDemuxer::CancelPendingSeek(base::TimeDelta seek_time) {
+  if (task_runner_->BelongsToCurrentThread()) {
+    AbortPendingReads();
+  } else {
+    task_runner_->PostTask(FROM_HERE,
+                           base::Bind(&FFmpegDemuxer::AbortPendingReads,
+                                      weak_factory_.GetWeakPtr()));
+  }
+}
 
 void FFmpegDemuxer::Seek(base::TimeDelta time, const PipelineStatusCB& cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  CHECK(!pending_seek_);
-
-  // TODO(scherkus): Inspect |pending_read_| and cancel IO via |blocking_url_|,
-  // otherwise we can end up waiting for a pre-seek read to complete even though
-  // we know we're going to drop it on the floor.
+  CHECK(pending_seek_cb_.is_null());
 
   // FFmpeg requires seeks to be adjusted according to the lowest starting time.
   // Since EnqueuePacket() rebased negative timestamps by the start time, we
@@ -955,18 +997,14 @@ void FFmpegDemuxer::Seek(base::TimeDelta time, const PipelineStatusCB& cb) {
   const AVStream* seeking_stream = demux_stream->av_stream();
   DCHECK(seeking_stream);
 
-  pending_seek_ = true;
+  pending_seek_cb_ = cb;
   base::PostTaskAndReplyWithResult(
-      blocking_thread_.task_runner().get(),
-      FROM_HERE,
-      base::Bind(&av_seek_frame,
-                 glue_->format_context(),
-                 seeking_stream->index,
+      blocking_thread_.task_runner().get(), FROM_HERE,
+      base::Bind(&av_seek_frame, glue_->format_context(), seeking_stream->index,
                  ConvertToTimeBase(seeking_stream->time_base, seek_time),
                  // Always seek to a timestamp <= to the desired timestamp.
                  AVSEEK_FLAG_BACKWARD),
-      base::Bind(
-          &FFmpegDemuxer::OnSeekFrameDone, weak_factory_.GetWeakPtr(), cb));
+      base::Bind(&FFmpegDemuxer::OnSeekFrameDone, weak_factory_.GetWeakPtr()));
 }
 
 base::Time FFmpegDemuxer::GetTimelineOffset() const {
@@ -1506,14 +1544,13 @@ FFmpegDemuxerStream* FFmpegDemuxer::FindPreferredStreamForSeeking(
                                            GetStream(DemuxerStream::AUDIO));
 }
 
-void FFmpegDemuxer::OnSeekFrameDone(const PipelineStatusCB& cb, int result) {
+void FFmpegDemuxer::OnSeekFrameDone(int result) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  CHECK(pending_seek_);
-  pending_seek_ = false;
+  CHECK(!pending_seek_cb_.is_null());
 
   if (!blocking_thread_.IsRunning()) {
     MEDIA_LOG(ERROR, media_log_) << GetDisplayName() << ": bad state";
-    cb.Run(PIPELINE_ERROR_ABORT);
+    base::ResetAndReturn(&pending_seek_cb_).Run(PIPELINE_ERROR_ABORT);
     return;
   }
 
@@ -1535,7 +1572,7 @@ void FFmpegDemuxer::OnSeekFrameDone(const PipelineStatusCB& cb, int result) {
   ReadFrameIfNeeded();
 
   // Notify we're finished seeking.
-  cb.Run(PIPELINE_OK);
+  base::ResetAndReturn(&pending_seek_cb_).Run(PIPELINE_OK);
 }
 
 void FFmpegDemuxer::OnEnabledAudioTracksChanged(
@@ -1575,7 +1612,7 @@ void FFmpegDemuxer::ReadFrameIfNeeded() {
 
   // Make sure we have work to do before reading.
   if (!blocking_thread_.IsRunning() || !StreamsHaveAvailableCapacity() ||
-      pending_read_ || pending_seek_) {
+      pending_read_ || !pending_seek_cb_.is_null()) {
     return;
   }
 
@@ -1600,16 +1637,15 @@ void FFmpegDemuxer::OnReadFrameDone(ScopedAVPacket packet, int result) {
   DCHECK(pending_read_);
   pending_read_ = false;
 
-  if (!blocking_thread_.IsRunning() || pending_seek_) {
+  if (!blocking_thread_.IsRunning() || !pending_seek_cb_.is_null())
     return;
-  }
 
   // Consider the stream as ended if:
   // - either underlying ffmpeg returned an error
   // - or FFMpegDemuxer reached the maximum allowed memory usage.
   if (result < 0 || IsMaxMemoryUsageReached()) {
-    LOG(ERROR) << __func__ << " result=" << result
-               << " IsMaxMemoryUsageReached=" << IsMaxMemoryUsageReached();
+    DVLOG(1) << __func__ << " result=" << result
+             << " IsMaxMemoryUsageReached=" << IsMaxMemoryUsageReached();
     // Update the duration based on the highest elapsed time across all streams
     // if it was previously unknown.
     if (!duration_known_) {

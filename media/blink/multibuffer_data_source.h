@@ -97,13 +97,6 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource : public DataSource {
   // Returns true if the media resource passed a CORS access control check.
   bool DidPassCORSAccessCheck() const;
 
-  // Cancels initialization, any pending loaders, and any pending read calls
-  // from the demuxer. The caller is expected to release its reference to this
-  // object and never call it again.
-  //
-  // Method called on the render thread.
-  void Abort();
-
   // Notifies changes in playback state for controlling media buffering
   // behavior.
   void MediaPlaybackRateChanged(double playback_rate);
@@ -127,6 +120,7 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource : public DataSource {
   // DataSource implementation.
   // Called from demuxer thread.
   void Stop() override;
+  void Abort() override;
 
   void Read(int64_t position,
             int size,

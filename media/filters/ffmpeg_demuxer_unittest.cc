@@ -141,17 +141,20 @@ class FFmpegDemuxerTest : public testing::Test {
   struct ReadExpectation {
     ReadExpectation(size_t size,
                     int64_t timestamp_us,
-                    const base::TimeDelta& discard_front_padding,
-                    bool is_key_frame)
+                    base::TimeDelta discard_front_padding,
+                    bool is_key_frame,
+                    DemuxerStream::Status status)
         : size(size),
           timestamp_us(timestamp_us),
           discard_front_padding(discard_front_padding),
-          is_key_frame(is_key_frame) {}
+          is_key_frame(is_key_frame),
+          status(status) {}
 
     size_t size;
     int64_t timestamp_us;
     base::TimeDelta discard_front_padding;
     bool is_key_frame;
+    DemuxerStream::Status status;
   };
 
   // Verifies that |buffer| has a specific |size| and |timestamp|.
@@ -165,29 +168,30 @@ class FFmpegDemuxerTest : public testing::Test {
     location.Write(true, false, &location_str);
     location_str += "\n";
     SCOPED_TRACE(location_str);
-    EXPECT_EQ(status, DemuxerStream::kOk);
-    EXPECT_TRUE(buffer.get() != NULL);
-    EXPECT_EQ(read_expectation.size, buffer->data_size());
-    EXPECT_EQ(read_expectation.timestamp_us,
-              buffer->timestamp().InMicroseconds());
-    EXPECT_EQ(read_expectation.discard_front_padding,
-              buffer->discard_padding().first);
-    EXPECT_EQ(read_expectation.is_key_frame, buffer->is_key_frame());
+    EXPECT_EQ(read_expectation.status, status);
+    if (status == DemuxerStream::kOk) {
+      EXPECT_TRUE(buffer);
+      EXPECT_EQ(read_expectation.size, buffer->data_size());
+      EXPECT_EQ(read_expectation.timestamp_us,
+                buffer->timestamp().InMicroseconds());
+      EXPECT_EQ(read_expectation.discard_front_padding,
+                buffer->discard_padding().first);
+      EXPECT_EQ(read_expectation.is_key_frame, buffer->is_key_frame());
+    }
     DCHECK_EQ(&message_loop_, base::MessageLoop::current());
     OnReadDoneCalled(read_expectation.size, read_expectation.timestamp_us);
     message_loop_.task_runner()->PostTask(
         FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
   }
 
-  DemuxerStream::ReadCB NewReadCB(const tracked_objects::Location& location,
-                                  int size,
-                                  int64_t timestamp_us,
-                                  bool is_key_frame) {
-    return NewReadCBWithCheckedDiscard(location,
-                                       size,
-                                       timestamp_us,
-                                       base::TimeDelta(),
-                                       is_key_frame);
+  DemuxerStream::ReadCB NewReadCB(
+      const tracked_objects::Location& location,
+      int size,
+      int64_t timestamp_us,
+      bool is_key_frame,
+      DemuxerStream::Status status = DemuxerStream::kOk) {
+    return NewReadCBWithCheckedDiscard(location, size, timestamp_us,
+                                       base::TimeDelta(), is_key_frame, status);
   }
 
   DemuxerStream::ReadCB NewReadCBWithCheckedDiscard(
@@ -195,13 +199,12 @@ class FFmpegDemuxerTest : public testing::Test {
       int size,
       int64_t timestamp_us,
       base::TimeDelta discard_front_padding,
-      bool is_key_frame) {
+      bool is_key_frame,
+      DemuxerStream::Status status = DemuxerStream::kOk) {
     EXPECT_CALL(*this, OnReadDoneCalled(size, timestamp_us));
 
-    struct ReadExpectation read_expectation(size,
-                                            timestamp_us,
-                                            discard_front_padding,
-                                            is_key_frame);
+    struct ReadExpectation read_expectation(
+        size, timestamp_us, discard_front_padding, is_key_frame, status);
 
     return base::Bind(&FFmpegDemuxerTest::OnReadDone,
                       base::Unretained(this),
@@ -416,6 +419,28 @@ TEST_F(FFmpegDemuxerTest, Initialize_Encrypted) {
 
   CreateDemuxer("bear-320x240-av_enc-av.webm");
   InitializeDemuxer();
+}
+
+TEST_F(FFmpegDemuxerTest, AbortPendingReads) {
+  // We test that on a successful audio packet read.
+  CreateDemuxer("bear-320x240.webm");
+  InitializeDemuxer();
+
+  // Attempt a read from the audio stream and run the message loop until done.
+  DemuxerStream* audio = demuxer_->GetStream(DemuxerStream::AUDIO);
+
+  // Depending on where in the reading process ffmpeg is, an error may cause the
+  // stream to be marked as EOF.  Simulate this here to ensure it is properly
+  // cleared by the AbortPendingReads() call.
+  format_context()->pb->eof_reached = 1;
+  audio->Read(NewReadCB(FROM_HERE, 29, 0, true, DemuxerStream::kAborted));
+  demuxer_->AbortPendingReads();
+  base::RunLoop().Run();
+
+  // Ensure blocking thread has completed outstanding work.
+  demuxer_->Stop();
+  EXPECT_EQ(format_context()->pb->eof_reached, 0);
+  demuxer_.reset();
 }
 
 TEST_F(FFmpegDemuxerTest, Read_Audio) {
@@ -846,6 +871,29 @@ TEST_F(FFmpegDemuxerTest, Seek) {
   // Video read #2.
   video->Read(NewReadCB(FROM_HERE, 1906, 834000, false));
   base::RunLoop().Run();
+}
+
+TEST_F(FFmpegDemuxerTest, CancelledSeek) {
+  CreateDemuxer("bear-320x240.webm");
+  InitializeDemuxer();
+
+  // Get our streams.
+  DemuxerStream* video = demuxer_->GetStream(DemuxerStream::VIDEO);
+  DemuxerStream* audio = demuxer_->GetStream(DemuxerStream::AUDIO);
+  ASSERT_TRUE(video);
+  ASSERT_TRUE(audio);
+
+  // Read a video packet and release it.
+  video->Read(NewReadCB(FROM_HERE, 22084, 0, true));
+  base::RunLoop().Run();
+
+  // Issue a simple forward seek, which should discard queued packets.
+  WaitableMessageLoopEvent event;
+  demuxer_->Seek(base::TimeDelta::FromMicroseconds(1000000),
+                 event.GetPipelineStatusCB());
+  // FFmpegDemuxer does not care what the previous seek time was when canceling.
+  demuxer_->CancelPendingSeek(base::TimeDelta::FromSeconds(12345));
+  event.RunAndWaitForStatus(PIPELINE_OK);
 }
 
 TEST_F(FFmpegDemuxerTest, SeekText) {

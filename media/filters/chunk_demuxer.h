@@ -201,6 +201,7 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   DemuxerStream* GetStream(DemuxerStream::Type type) override;
   base::TimeDelta GetStartTime() const override;
   int64_t GetMemoryUsage() const override;
+  void AbortPendingReads() override;
 
   // ChunkDemuxer reads are abortable. StartWaitingForSeek() and
   // CancelPendingSeek() always abort pending and future reads until the
@@ -373,8 +374,7 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // Start returning data on all DemuxerStreams.
   void StartReturningData();
 
-  // Aborts pending reads on all DemuxerStreams.
-  void AbortPendingReads();
+  void AbortPendingReads_Locked();
 
   // Completes any pending reads if it is possible to do so.
   void CompletePendingReadsIfPossible();

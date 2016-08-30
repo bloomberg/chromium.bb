@@ -264,16 +264,6 @@ bool MultibufferDataSource::DidPassCORSAccessCheck() const {
   return true;
 }
 
-void MultibufferDataSource::Abort() {
-  DCHECK(render_task_runner_->BelongsToCurrentThread());
-  {
-    base::AutoLock auto_lock(lock_);
-    StopInternal_Locked();
-  }
-  StopLoader();
-  frame_ = NULL;
-}
-
 void MultibufferDataSource::MediaPlaybackRateChanged(double playback_rate) {
   DCHECK(render_task_runner_->BelongsToCurrentThread());
   DCHECK(reader_.get());
@@ -306,6 +296,17 @@ void MultibufferDataSource::Stop() {
   render_task_runner_->PostTask(FROM_HERE,
                                 base::Bind(&MultibufferDataSource::StopLoader,
                                            weak_factory_.GetWeakPtr()));
+}
+
+void MultibufferDataSource::Abort() {
+  base::AutoLock auto_lock(lock_);
+  DCHECK(init_cb_.is_null());
+  if (read_op_)
+    ReadOperation::Run(std::move(read_op_), kAborted);
+
+  // Abort does not call StopLoader() since it is typically called prior to a
+  // seek or suspend. Let the loader logic make the decision about whether a new
+  // loader is necessary upon the seek or resume.
 }
 
 void MultibufferDataSource::SetBitrate(int bitrate) {
@@ -381,9 +382,8 @@ void MultibufferDataSource::ReadTask() {
 
   base::AutoLock auto_lock(lock_);
   int bytes_read = 0;
-  if (stop_signal_received_)
+  if (stop_signal_received_ || !read_op_)
     return;
-  DCHECK(read_op_);
   DCHECK(read_op_->size());
 
   if (!reader_) {
