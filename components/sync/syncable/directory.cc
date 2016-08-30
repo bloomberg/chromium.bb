@@ -13,6 +13,7 @@
 
 #include "base/base64.h"
 #include "base/guid.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -102,10 +103,7 @@ Directory::Kernel::Kernel(
   DCHECK(transaction_observer.IsInitialized());
 }
 
-Directory::Kernel::~Kernel() {
-  base::STLDeleteContainerPairSecondPointers(metahandles_map.begin(),
-                                             metahandles_map.end());
-}
+Directory::Kernel::~Kernel() {}
 
 Directory::Directory(
     DirectoryBackingStore* store,
@@ -143,9 +141,9 @@ DirOpenResult Directory::Open(
 void Directory::InitializeIndices(MetahandlesMap* handles_map) {
   ScopedKernelLock lock(this);
   kernel_->metahandles_map.swap(*handles_map);
-  for (MetahandlesMap::const_iterator it = kernel_->metahandles_map.begin();
+  for (auto it = kernel_->metahandles_map.begin();
        it != kernel_->metahandles_map.end(); ++it) {
-    EntryKernel* entry = it->second;
+    EntryKernel* entry = it->second.get();
     if (ParentChildIndex::ShouldInclude(entry))
       kernel_->parent_child_index.Insert(entry);
     const int64_t metahandle = entry->ref(META_HANDLE);
@@ -184,10 +182,6 @@ DirOpenResult Directory::OpenImpl(
   // Temporary indices before kernel_ initialized in case Load fails. We 0(1)
   // swap these later.
   Directory::MetahandlesMap tmp_handles_map;
-
-  // Avoids mem leaks on failure.  Harmlessly deletes the empty hash map after
-  // the swap in the success case.
-  base::STLValueDeleter<MetahandlesMap> deleter(&tmp_handles_map);
 
   JournalIndex delete_journals;
   MetahandleSet metahandles_to_purge;
@@ -287,7 +281,7 @@ EntryKernel* Directory::GetEntryByHandle(const ScopedKernelLock& lock,
   MetahandlesMap::iterator found = kernel_->metahandles_map.find(metahandle);
   if (found != kernel_->metahandles_map.end()) {
     // Found it in memory.  Easy.
-    return found->second;
+    return found->second.get();
   }
   return NULL;
 }
@@ -367,7 +361,8 @@ bool Directory::InsertEntry(const ScopedKernelLock& lock,
   static const char error[] = "Entry already in memory index.";
 
   if (!SyncAssert(kernel_->metahandles_map
-                      .insert(std::make_pair(entry->ref(META_HANDLE), entry))
+                      .insert(std::make_pair(entry->ref(META_HANDLE),
+                                             base::WrapUnique(entry)))
                       .second,
                   FROM_HERE, error, trans)) {
     return false;
@@ -599,10 +594,12 @@ bool Directory::VacuumAfterSaveChanges(const SaveChangesSnapshot& snapshot) {
     MetahandlesMap::iterator found =
         kernel_->metahandles_map.find((*i)->ref(META_HANDLE));
     EntryKernel* entry =
-        (found == kernel_->metahandles_map.end() ? NULL : found->second);
+        (found == kernel_->metahandles_map.end() ? NULL : found->second.get());
     if (entry && SafeToPurgeFromMemory(&trans, entry)) {
       // We now drop deleted metahandles that are up to date on both the client
       // and the server.
+      std::unique_ptr<EntryKernel> unique_entry = std::move(found->second);
+
       size_t num_erased = 0;
       num_erased = kernel_->metahandles_map.erase(entry->ref(META_HANDLE));
       DCHECK_EQ(1u, num_erased);
@@ -623,8 +620,6 @@ bool Directory::VacuumAfterSaveChanges(const SaveChangesSnapshot& snapshot) {
         return false;
       RemoveFromAttachmentIndex(lock, entry->ref(META_HANDLE),
                                 entry->ref(ATTACHMENT_METADATA));
-
-      delete entry;
     }
     if (trans.unrecoverable_error_set())
       return false;
@@ -698,8 +693,11 @@ void Directory::DeleteEntry(const ScopedKernelLock& lock,
 
   kernel_->metahandles_to_purge.insert(handle);
 
+  std::unique_ptr<EntryKernel> entry_ptr =
+      std::move(kernel_->metahandles_map[handle]);
+
   size_t num_erased = 0;
-  num_erased = kernel_->metahandles_map.erase(entry->ref(META_HANDLE));
+  num_erased = kernel_->metahandles_map.erase(handle);
   DCHECK_EQ(1u, num_erased);
   num_erased = kernel_->ids_map.erase(entry->ref(ID).value());
   DCHECK_EQ(1u, num_erased);
@@ -721,9 +719,7 @@ void Directory::DeleteEntry(const ScopedKernelLock& lock,
   RemoveFromAttachmentIndex(lock, handle, entry->ref(ATTACHMENT_METADATA));
 
   if (save_to_journal) {
-    entries_to_journal->insert(entry);
-  } else {
-    delete entry;
+    entries_to_journal->insert(entry_ptr.release());
   }
 }
 
@@ -759,7 +755,7 @@ bool Directory::PurgeEntriesWithTypeIn(ModelTypeSet disabled_types,
 
       for (MetahandlesMap::iterator it = kernel_->metahandles_map.begin();
            it != kernel_->metahandles_map.end();) {
-        EntryKernel* entry = it->second;
+        EntryKernel* entry = it->second.get();
         const sync_pb::EntitySpecifics& local_specifics = entry->ref(SPECIFICS);
         const sync_pb::EntitySpecifics& server_specifics =
             entry->ref(SERVER_SPECIFICS);
@@ -1088,7 +1084,7 @@ void Directory::GetMetaHandlesOfType(const ScopedKernelLock& lock,
   result->clear();
   for (MetahandlesMap::iterator it = kernel_->metahandles_map.begin();
        it != kernel_->metahandles_map.end(); ++it) {
-    EntryKernel* entry = it->second;
+    EntryKernel* entry = it->second.get();
     const ModelType entry_type =
         GetModelTypeFromSpecifics(entry->ref(SPECIFICS));
     if (entry_type == type)
@@ -1104,7 +1100,7 @@ void Directory::CollectMetaHandleCounts(
 
   for (MetahandlesMap::iterator it = kernel_->metahandles_map.begin();
        it != kernel_->metahandles_map.end(); ++it) {
-    EntryKernel* entry = it->second;
+    EntryKernel* entry = it->second.get();
     const ModelType type = GetModelTypeFromSpecifics(entry->ref(SPECIFICS));
     (*num_entries_by_type)[type]++;
     if (entry->ref(IS_DEL))
@@ -1124,7 +1120,7 @@ std::unique_ptr<base::ListValue> Directory::GetNodeDetailsForType(
       continue;
     }
 
-    EntryKernel* kernel = it->second;
+    EntryKernel* kernel = it->second.get();
     std::unique_ptr<base::DictionaryValue> node(
         kernel->ToValue(GetCryptographer(trans)));
 

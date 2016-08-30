@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <deque>
+#include <memory>
 #include <set>
 #include <string>
 #include <unordered_map>
@@ -62,7 +63,8 @@ class Directory {
  public:
   typedef std::vector<int64_t> Metahandles;
 
-  typedef std::unordered_map<int64_t, EntryKernel*> MetahandlesMap;
+  typedef std::unordered_map<int64_t, std::unique_ptr<EntryKernel>>
+      MetahandlesMap;
   typedef std::unordered_map<std::string, EntryKernel*> IdsMap;
   typedef std::unordered_map<std::string, EntryKernel*> TagsMap;
   typedef std::string AttachmentIdUniqueId;
@@ -169,9 +171,9 @@ class Directory {
     mutable base::Lock mutex;
 
     // Entries indexed by metahandle.  This container is considered to be the
-    // owner of all EntryKernels, which may be referened by the other
+    // owner of all EntryKernels, which may be referenced by the other
     // containers.  If you remove an EntryKernel from this map, you probably
-    // want to remove it from all other containers and delete it, too.
+    // want to remove it from all other containers.
     MetahandlesMap metahandles_map;
 
     // Entries indexed by id

@@ -6,11 +6,12 @@
 
 #include <stdint.h>
 
+#include <set>
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
-#include "base/stl_util.h"
 #include "components/sync/base/model_type_test_util.h"
 #include "components/sync/engine_impl/cycle/debug_info_getter.h"
 #include "components/sync/engine_impl/cycle/mock_debug_info_getter.h"
@@ -39,9 +40,7 @@ std::unique_ptr<InvalidationInterface> BuildInvalidation(
 // A test fixture for tests exercising download updates functions.
 class GetUpdatesProcessorTest : public ::testing::Test {
  protected:
-  GetUpdatesProcessorTest()
-      : kTestStartTime(base::TimeTicks::Now()),
-        update_handler_deleter_(&update_handler_map_) {}
+  GetUpdatesProcessorTest() : kTestStartTime(base::TimeTicks::Now()) {}
 
   void SetUp() override {
     AddUpdateHandler(AUTOFILL);
@@ -80,16 +79,19 @@ class GetUpdatesProcessorTest : public ::testing::Test {
   MockUpdateHandler* AddUpdateHandler(ModelType type) {
     enabled_types_.Put(type);
 
-    MockUpdateHandler* handler = new MockUpdateHandler(type);
-    update_handler_map_.insert(std::make_pair(type, handler));
+    std::unique_ptr<MockUpdateHandler> handler =
+        base::MakeUnique<MockUpdateHandler>(type);
+    MockUpdateHandler* handler_ptr = handler.get();
 
-    return handler;
+    update_handler_map_.insert(std::make_pair(type, handler_ptr));
+    update_handlers_.insert(std::move(handler));
+    return handler_ptr;
   }
 
  private:
   ModelTypeSet enabled_types_;
+  std::set<std::unique_ptr<MockUpdateHandler>> update_handlers_;
   UpdateHandlerMap update_handler_map_;
-  base::STLValueDeleter<UpdateHandlerMap> update_handler_deleter_;
   std::unique_ptr<GetUpdatesProcessor> get_updates_processor_;
 
   DISALLOW_COPY_AND_ASSIGN(GetUpdatesProcessorTest);

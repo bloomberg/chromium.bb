@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -24,20 +25,18 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 DownloadNotificationManager::DownloadNotificationManager(Profile* profile)
-    : main_profile_(profile),
-      items_deleter_(&manager_for_profile_) {
-}
+    : main_profile_(profile) {}
 
 DownloadNotificationManager::~DownloadNotificationManager() {
 }
 
 void DownloadNotificationManager::OnAllDownloadsRemoving(Profile* profile) {
-  DownloadNotificationManagerForProfile* manager_for_profile =
-      manager_for_profile_[profile];
+  std::unique_ptr<DownloadNotificationManagerForProfile> manager_for_profile =
+      std::move(manager_for_profile_[profile]);
   manager_for_profile_.erase(profile);
 
-  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE,
-                                                  manager_for_profile);
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
+      FROM_HERE, manager_for_profile.release());
 }
 
 void DownloadNotificationManager::OnNewDownloadReady(
@@ -46,7 +45,7 @@ void DownloadNotificationManager::OnNewDownloadReady(
 
   if (manager_for_profile_.find(profile) == manager_for_profile_.end()) {
     manager_for_profile_[profile] =
-        new DownloadNotificationManagerForProfile(profile, this);
+        base::MakeUnique<DownloadNotificationManagerForProfile>(profile, this);
   }
 
   manager_for_profile_[profile]->OnNewDownloadReady(download);
@@ -54,7 +53,7 @@ void DownloadNotificationManager::OnNewDownloadReady(
 
 DownloadNotificationManagerForProfile*
 DownloadNotificationManager::GetForProfile(Profile* profile) const {
-  return manager_for_profile_.at(profile);
+  return manager_for_profile_.at(profile).get();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -66,9 +65,7 @@ DownloadNotificationManagerForProfile::DownloadNotificationManagerForProfile(
     DownloadNotificationManager* parent_manager)
     : profile_(profile),
       parent_manager_(parent_manager),
-      message_center_(g_browser_process->message_center()),
-      items_deleter_(&items_) {
-}
+      message_center_(g_browser_process->message_center()) {}
 
 DownloadNotificationManagerForProfile::
     ~DownloadNotificationManagerForProfile() {
@@ -93,7 +90,7 @@ void DownloadNotificationManagerForProfile::OnDownloadRemoved(
     content::DownloadItem* download) {
   DCHECK(items_.find(download) != items_.end());
 
-  DownloadItemNotification* item = items_[download];
+  std::unique_ptr<DownloadItemNotification> item = std::move(items_[download]);
   items_.erase(download);
 
   download->RemoveObserver(this);
@@ -103,7 +100,7 @@ void DownloadNotificationManagerForProfile::OnDownloadRemoved(
 
   // This removing might be initiated from DownloadNotificationItem, so delaying
   // deleting for item to do remaining cleanups.
-  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, item);
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, item.release());
 
   if (items_.size() == 0 && parent_manager_)
     parent_manager_->OnAllDownloadsRemoving(profile_);
@@ -112,14 +109,14 @@ void DownloadNotificationManagerForProfile::OnDownloadRemoved(
 void DownloadNotificationManagerForProfile::OnDownloadDestroyed(
     content::DownloadItem* download) {
   // Do nothing. Cleanup is done in OnDownloadRemoved().
-  DownloadItemNotification* item = items_[download];
+  std::unique_ptr<DownloadItemNotification> item = std::move(items_[download]);
   items_.erase(download);
 
   item->OnDownloadRemoved(download);
 
   // This removing might be initiated from DownloadNotificationItem, so delaying
   // deleting for item to do remaining cleanups.
-  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, item);
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, item.release());
 
   if (items_.size() == 0 && parent_manager_)
     parent_manager_->OnAllDownloadsRemoving(profile_);
@@ -134,13 +131,12 @@ void DownloadNotificationManagerForProfile::OnNewDownloadReady(
 
   for (auto& item : items_) {
     content::DownloadItem* download_item = item.first;
-    DownloadItemNotification* download_notification = item.second;
+    DownloadItemNotification* download_notification = item.second.get();
     if (download_item->GetState() == content::DownloadItem::IN_PROGRESS)
       download_notification->DisablePopup();
   }
 
-  DownloadItemNotification* item = new DownloadItemNotification(download, this);
-  items_.insert(std::make_pair(download, item));
+  items_[download] = base::MakeUnique<DownloadItemNotification>(download, this);
 }
 
 void DownloadNotificationManagerForProfile::OverrideMessageCenterForTest(

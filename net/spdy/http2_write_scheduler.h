@@ -22,7 +22,7 @@
 #include "base/containers/linked_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/stl_util.h"
+#include "base/memory/ptr_util.h"
 #include "net/spdy/spdy_bug_tracker.h"
 #include "net/spdy/spdy_protocol.h"
 #include "net/spdy/write_scheduler.h"
@@ -81,7 +81,6 @@ class Http2PriorityWriteScheduler : public WriteScheduler<StreamIdType> {
 
   struct StreamInfo;
   using StreamInfoVector = std::vector<StreamInfo*>;
-  using StreamInfoMap = std::unordered_map<StreamIdType, StreamInfo*>;
 
   struct StreamInfo : public base::LinkNode<StreamInfo> {
     // ID for this stream.
@@ -167,8 +166,8 @@ class Http2PriorityWriteScheduler : public WriteScheduler<StreamIdType> {
   // Pointee owned by all_stream_infos_.
   StreamInfo* root_stream_info_;
   // Maps from stream IDs to StreamInfo objects.
-  StreamInfoMap all_stream_infos_;
-  base::STLValueDeleter<StreamInfoMap> all_stream_infos_deleter_;
+  std::unordered_map<StreamIdType, std::unique_ptr<StreamInfo>>
+      all_stream_infos_;
   // Queue containing all ready streams, ordered with streams of higher
   // priority before streams of lower priority, and, among streams of equal
   // priority, streams with lower ordinal before those with higher
@@ -188,15 +187,15 @@ class Http2PriorityWriteScheduler : public WriteScheduler<StreamIdType> {
 };
 
 template <typename StreamIdType>
-Http2PriorityWriteScheduler<StreamIdType>::Http2PriorityWriteScheduler()
-    : all_stream_infos_deleter_(&all_stream_infos_) {
-  root_stream_info_ = new StreamInfo();
-  root_stream_info_->id = kHttp2RootStreamId;
-  root_stream_info_->weight = kHttp2DefaultStreamWeight;
-  root_stream_info_->parent = nullptr;
-  root_stream_info_->priority = 1.0;
-  root_stream_info_->ready = false;
-  all_stream_infos_[kHttp2RootStreamId] = root_stream_info_;
+Http2PriorityWriteScheduler<StreamIdType>::Http2PriorityWriteScheduler() {
+  std::unique_ptr<StreamInfo> root_stream_info = base::MakeUnique<StreamInfo>();
+  root_stream_info_ = root_stream_info.get();
+  root_stream_info->id = kHttp2RootStreamId;
+  root_stream_info->weight = kHttp2DefaultStreamWeight;
+  root_stream_info->parent = nullptr;
+  root_stream_info->priority = 1.0;
+  root_stream_info->ready = false;
+  all_stream_infos_[kHttp2RootStreamId] = std::move(root_stream_info);
 }
 
 template <typename StreamIdType>
@@ -229,26 +228,27 @@ void Http2PriorityWriteScheduler<StreamIdType>::RegisterStream(
     parent = root_stream_info_;
   }
 
-  StreamInfo* new_stream_info = new StreamInfo;
-  new_stream_info->id = stream_id;
-  new_stream_info->weight = precedence.weight();
-  new_stream_info->parent = parent;
-  all_stream_infos_[stream_id] = new_stream_info;
+  std::unique_ptr<StreamInfo> new_stream_info = base::MakeUnique<StreamInfo>();
+  StreamInfo* new_stream_info_ptr = new_stream_info.get();
+  new_stream_info_ptr->id = stream_id;
+  new_stream_info_ptr->weight = precedence.weight();
+  new_stream_info_ptr->parent = parent;
+  all_stream_infos_[stream_id] = std::move(new_stream_info);
   if (precedence.is_exclusive()) {
     // Move the parent's current children below the new stream.
     using std::swap;
-    swap(new_stream_info->children, parent->children);
-    new_stream_info->total_child_weights = parent->total_child_weights;
+    swap(new_stream_info_ptr->children, parent->children);
+    new_stream_info_ptr->total_child_weights = parent->total_child_weights;
     // Update each child's parent.
-    for (StreamInfo* child : new_stream_info->children) {
-      child->parent = new_stream_info;
+    for (StreamInfo* child : new_stream_info_ptr->children) {
+      child->parent = new_stream_info_ptr;
     }
     // Clear parent's old child data.
     DCHECK(parent->children.empty());
     parent->total_child_weights = 0;
   }
   // Add new stream to parent.
-  parent->children.push_back(new_stream_info);
+  parent->children.push_back(new_stream_info_ptr);
   parent->total_child_weights += precedence.weight();
 
   // Update all priorities under parent, since addition of a stream affects
@@ -256,7 +256,7 @@ void Http2PriorityWriteScheduler<StreamIdType>::RegisterStream(
   UpdatePrioritiesUnder(parent);
 
   // Stream starts with ready == false, so no need to schedule it yet.
-  DCHECK(!new_stream_info->ready);
+  DCHECK(!new_stream_info_ptr->ready);
 }
 
 template <typename StreamIdType>
@@ -267,7 +267,7 @@ void Http2PriorityWriteScheduler<StreamIdType>::UnregisterStream(
     return;
   }
   // Remove the stream from table.
-  typename StreamInfoMap::iterator it = all_stream_infos_.find(stream_id);
+  auto it = all_stream_infos_.find(stream_id);
   if (it == all_stream_infos_.end()) {
     SPDY_BUG << "Stream " << stream_id << " not registered";
     return;
@@ -575,15 +575,15 @@ template <typename StreamIdType>
 const typename Http2PriorityWriteScheduler<StreamIdType>::StreamInfo*
 Http2PriorityWriteScheduler<StreamIdType>::FindStream(
     StreamIdType stream_id) const {
-  typename StreamInfoMap::const_iterator it = all_stream_infos_.find(stream_id);
-  return it == all_stream_infos_.end() ? nullptr : it->second;
+  auto it = all_stream_infos_.find(stream_id);
+  return it == all_stream_infos_.end() ? nullptr : it->second.get();
 }
 
 template <typename StreamIdType>
 typename Http2PriorityWriteScheduler<StreamIdType>::StreamInfo*
 Http2PriorityWriteScheduler<StreamIdType>::FindStream(StreamIdType stream_id) {
-  typename StreamInfoMap::iterator it = all_stream_infos_.find(stream_id);
-  return it == all_stream_infos_.end() ? nullptr : it->second;
+  auto it = all_stream_infos_.find(stream_id);
+  return it == all_stream_infos_.end() ? nullptr : it->second.get();
 }
 
 template <typename StreamIdType>
@@ -687,7 +687,7 @@ bool Http2PriorityWriteScheduler<StreamIdType>::ValidateInvariantsForTests()
     ++total_streams;
     ++streams_visited;
     StreamIdType stream_id = kv.first;
-    const StreamInfo& stream_info = *kv.second;
+    const StreamInfo& stream_info = *kv.second.get();
 
     // Verify each StreamInfo mapped under the proper stream ID.
     if (stream_id != stream_info.id) {

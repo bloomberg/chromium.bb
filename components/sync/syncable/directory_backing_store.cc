@@ -681,7 +681,7 @@ bool DirectoryBackingStore::LoadEntries(Directory::MetahandlesMap* handles_map,
         model_type = kernel->GetServerModelType();
       }
       ++model_type_entry_count[model_type];
-      (*handles_map)[handle] = kernel.release();
+      (*handles_map)[handle] = std::move(kernel);
     }
   }
 
@@ -1651,17 +1651,15 @@ bool DirectoryBackingStore::VerifyReferenceIntegrity(
   IdsSet ids_set;
   bool is_ok = true;
 
-  for (Directory::MetahandlesMap::const_iterator it = handles_map->begin();
-       it != handles_map->end(); ++it) {
-    EntryKernel* entry = it->second;
+  for (auto it = handles_map->begin(); it != handles_map->end(); ++it) {
+    EntryKernel* entry = it->second.get();
     bool is_duplicate_id = !(ids_set.insert(entry->ref(ID).value()).second);
     is_ok = is_ok && !is_duplicate_id;
   }
 
   IdsSet::iterator end = ids_set.end();
-  for (Directory::MetahandlesMap::const_iterator it = handles_map->begin();
-       it != handles_map->end(); ++it) {
-    EntryKernel* entry = it->second;
+  for (auto it = handles_map->begin(); it != handles_map->end(); ++it) {
+    EntryKernel* entry = it->second.get();
     if (!entry->ref(PARENT_ID).IsNull()) {
       bool parent_exists = (ids_set.find(entry->ref(PARENT_ID).value()) != end);
       if (!parent_exists) {

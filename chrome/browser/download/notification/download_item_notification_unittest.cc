@@ -163,7 +163,7 @@ class DownloadItemNotificationTest : public testing::Test {
   void CreateDownloadItemNotification() {
     download_notification_manager_->OnNewDownloadReady(download_item_.get());
     download_item_notification_ =
-        download_notification_manager_->items_[download_item_.get()];
+        download_notification_manager_->items_[download_item_.get()].get();
     message_center_->AddVisibleNotification(
         download_item_notification_->notification_.get());
   }

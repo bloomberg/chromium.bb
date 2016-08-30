@@ -155,18 +155,6 @@ class STLElementDeleter {
   T* container_;
 };
 
-// Given a pointer to an STL container this class will delete all the value
-// pointers when it goes out of scope.
-template<class T>
-class STLValueDeleter {
- public:
-  STLValueDeleter<T>(T* container) : container_(container) {}
-  ~STLValueDeleter<T>() { STLDeleteValues(container_); }
-
- private:
-  T* container_;
-};
-
 // Test to see if a set, map, hash_set or hash_map contains a particular key.
 // Returns true if the key is in the collection.
 template <typename Collection, typename Key>
