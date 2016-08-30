@@ -763,6 +763,39 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestBrokenHTTPSWithActiveInsecureContent) {
                                  AuthState::RAN_INSECURE_CONTENT);
 }
 
+// Tests that the WebContents's flag for displaying content with cert
+// errors get cleared upon navigation.
+IN_PROC_BROWSER_TEST_F(SSLUITest,
+                       DisplayedContentWithCertErrorsClearedOnNavigation) {
+  ASSERT_TRUE(https_server_.Start());
+  ASSERT_TRUE(https_server_expired_.Start());
+
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(tab);
+
+  // Navigate to a page with a certificate error and click through the
+  // interstitial.
+  ui_test_utils::NavigateToURL(
+      browser(),
+      https_server_expired_.GetURL("/ssl/page_with_subresource.html"));
+  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
+                                 AuthState::SHOWING_INTERSTITIAL);
+  ProceedThroughInterstitial(tab);
+
+  NavigationEntry* entry = tab->GetController().GetVisibleEntry();
+  ASSERT_TRUE(entry);
+  EXPECT_TRUE(entry->GetSSL().content_status &
+              content::SSLStatus::DISPLAYED_CONTENT_WITH_CERT_ERRORS);
+
+  // Navigate away to a different page, and check that the flag gets cleared.
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_.GetURL("/ssl/google.html"));
+  entry = tab->GetController().GetVisibleEntry();
+  ASSERT_TRUE(entry);
+  EXPECT_FALSE(entry->GetSSL().content_status &
+               content::SSLStatus::DISPLAYED_CONTENT_WITH_CERT_ERRORS);
+}
+
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestBrokenHTTPSMetricsReporting_Proceed) {
   ASSERT_TRUE(https_server_expired_.Start());
   ASSERT_NO_FATAL_FAILURE(SetUpMockReporter());

@@ -3389,6 +3389,7 @@ void WebContentsImpl::DidNavigateMainFramePostCommit(
     // Once the main frame is navigated, we're no longer considered to have
     // displayed insecure content.
     displayed_insecure_content_ = false;
+    displayed_content_with_cert_errors_ = false;
     SSLManager::NotifySSLInternalStateChanged(
         GetController().GetBrowserContext());
   }
