@@ -52,7 +52,7 @@ WorkspaceController::~WorkspaceController() {
 }
 
 wm::WorkspaceWindowState WorkspaceController::GetWindowState() const {
-  if (!viewport_->GetRootWindowController()->HasShelf())
+  if (!viewport_ || !viewport_->GetRootWindowController()->HasShelf())
     return wm::WORKSPACE_WINDOW_STATE_DEFAULT;
 
   const WmWindow* fullscreen = wm::GetWindowForFullscreenMode(viewport_);
@@ -73,7 +73,7 @@ wm::WorkspaceWindowState WorkspaceController::GetWindowState() const {
     for (WmWindow* window : container->GetChildren()) {
       wm::WindowState* window_state = window->GetWindowState();
       if (window_state->ignored_by_shelf() ||
-          !window->GetLayer()->GetTargetVisibility()) {
+          (window->GetLayer() && !window->GetLayer()->GetTargetVisibility())) {
         continue;
       }
       if (window_state->IsMaximized())

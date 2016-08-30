@@ -20,7 +20,6 @@ class Connector;
 namespace ash {
 
 class AlwaysOnTopController;
-class RootWindowControllerCommon;
 class WorkspaceLayoutManager;
 
 namespace mus {
@@ -84,8 +83,6 @@ class RootWindowController {
   int window_count_ = 0;
 
   display::Display display_;
-
-  std::unique_ptr<RootWindowControllerCommon> root_window_controller_common_;
 
   std::unique_ptr<WmRootWindowControllerMus> wm_root_window_controller_;
   std::unique_ptr<WmShelfMus> wm_shelf_;

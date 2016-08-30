@@ -9,7 +9,6 @@
 #include "ash/common/shell_observer.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "base/macros.h"
-#include "base/observer_list.h"
 #include "ui/display/display_observer.h"
 
 namespace aura {
@@ -37,10 +36,6 @@ class ASH_EXPORT WmRootWindowControllerAura : public WmRootWindowController,
   // WmRootWindowController:
   bool HasShelf() override;
   WmShell* GetShell() override;
-  wm::WorkspaceWindowState GetWorkspaceWindowState() override;
-  void SetMaximizeBackdropDelegate(
-      std::unique_ptr<WorkspaceLayoutManagerBackdropDelegate> delegate)
-      override;
   AlwaysOnTopController* GetAlwaysOnTopController() override;
   WmShelf* GetShelf() override;
   WmWindow* GetWindow() override;
@@ -50,8 +45,6 @@ class ASH_EXPORT WmRootWindowControllerAura : public WmRootWindowController,
       views::Widget::InitParams* init_params) override;
   WmWindow* FindEventTarget(const gfx::Point& location_in_screen) override;
   gfx::Point GetLastMouseLocationInRoot() override;
-  void AddObserver(WmRootWindowControllerObserver* observer) override;
-  void RemoveObserver(WmRootWindowControllerObserver* observer) override;
 
   // ShellObserver:
   void OnShelfAlignmentChanged(WmWindow* root_window) override;
@@ -63,8 +56,9 @@ class ASH_EXPORT WmRootWindowControllerAura : public WmRootWindowController,
                                uint32_t metrics) override;
 
  private:
+  friend class RootWindowController;
+
   RootWindowController* root_window_controller_;
-  base::ObserverList<WmRootWindowControllerObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(WmRootWindowControllerAura);
 };

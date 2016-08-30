@@ -9,8 +9,6 @@
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/shelf/shelf.h"
 #include "ash/common/shelf/shelf_widget.h"
-#include "ash/common/wm/workspace/workspace_layout_manager_backdrop_delegate.h"
-#include "ash/common/wm/workspace_controller.h"
 #include "ash/common/wm_root_window_controller_observer.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/root_window_controller.h"
@@ -34,7 +32,9 @@ DEFINE_OWNED_WINDOW_PROPERTY_KEY(ash::WmRootWindowControllerAura,
 
 WmRootWindowControllerAura::WmRootWindowControllerAura(
     RootWindowController* root_window_controller)
-    : root_window_controller_(root_window_controller) {
+    : WmRootWindowController(
+          WmWindowAura::Get(root_window_controller->GetRootWindow())),
+      root_window_controller_(root_window_controller) {
   root_window_controller_->GetRootWindow()->SetProperty(
       kWmRootWindowControllerKey, this);
   WmShell::Get()->AddShellObserver(this);
@@ -73,18 +73,6 @@ bool WmRootWindowControllerAura::HasShelf() {
 
 WmShell* WmRootWindowControllerAura::GetShell() {
   return WmShell::Get();
-}
-
-wm::WorkspaceWindowState WmRootWindowControllerAura::GetWorkspaceWindowState() {
-  if (!root_window_controller_->workspace_controller())
-    return wm::WORKSPACE_WINDOW_STATE_DEFAULT;
-  return root_window_controller_->workspace_controller()->GetWindowState();
-}
-
-void WmRootWindowControllerAura::SetMaximizeBackdropDelegate(
-    std::unique_ptr<WorkspaceLayoutManagerBackdropDelegate> delegate) {
-  root_window_controller_->workspace_controller()->SetMaximizeBackdropDelegate(
-      std::move(delegate));
 }
 
 AlwaysOnTopController* WmRootWindowControllerAura::GetAlwaysOnTopController() {
@@ -127,23 +115,13 @@ gfx::Point WmRootWindowControllerAura::GetLastMouseLocationInRoot() {
       ->GetLastMouseLocationInRoot();
 }
 
-void WmRootWindowControllerAura::AddObserver(
-    WmRootWindowControllerObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void WmRootWindowControllerAura::RemoveObserver(
-    WmRootWindowControllerObserver* observer) {
-  observers_.RemoveObserver(observer);
-}
-
 void WmRootWindowControllerAura::OnShelfAlignmentChanged(
     WmWindow* root_window) {
   if (WmWindowAura::GetAuraWindow(root_window) !=
       root_window_controller_->GetRootWindow())
     return;
 
-  FOR_EACH_OBSERVER(WmRootWindowControllerObserver, observers_,
+  FOR_EACH_OBSERVER(WmRootWindowControllerObserver, *observers(),
                     OnShelfAlignmentChanged());
 }
 
@@ -156,7 +134,7 @@ void WmRootWindowControllerAura::OnDisplayRemoved(
 void WmRootWindowControllerAura::OnDisplayMetricsChanged(
     const display::Display& display,
     uint32_t metrics) {
-  FOR_EACH_OBSERVER(WmRootWindowControllerObserver, observers_,
+  FOR_EACH_OBSERVER(WmRootWindowControllerObserver, *observers(),
                     OnWorkAreaChanged());
 }
 

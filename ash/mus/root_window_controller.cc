@@ -13,7 +13,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/common/root_window_controller_common.h"
 #include "ash/common/shelf/shelf_layout_manager.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/always_on_top_controller.h"
@@ -55,21 +54,19 @@ RootWindowController::RootWindowController(WindowManager* window_manager,
     : window_manager_(window_manager),
       root_(root),
       window_count_(0),
-      display_(display) {
-  wm_root_window_controller_.reset(
-      new WmRootWindowControllerMus(window_manager_->shell(), this));
-
-  root_window_controller_common_.reset(
-      new RootWindowControllerCommon(WmWindowMus::Get(root_)));
-  root_window_controller_common_->CreateContainers();
-  root_window_controller_common_->CreateLayoutManagers();
+      display_(display),
+      wm_root_window_controller_(
+          base::MakeUnique<WmRootWindowControllerMus>(window_manager_->shell(),
+                                                      this)) {
+  wm_root_window_controller_->CreateContainers();
+  wm_root_window_controller_->CreateLayoutManagers();
   CreateLayoutManagers();
 
   disconnected_app_handler_.reset(new DisconnectedAppHandler(root));
 
   // Force a layout of the root, and its children, RootWindowLayout handles
   // both.
-  root_window_controller_common_->root_window_layout()->OnWindowResized();
+  wm_root_window_controller_->root_window_layout_manager()->OnWindowResized();
 
   for (size_t i = 0; i < kNumActivatableShellWindowIds; ++i) {
     window_manager_->window_manager_client()->AddActivationParent(
@@ -83,7 +80,7 @@ RootWindowController::RootWindowController(WindowManager* window_manager,
 }
 
 RootWindowController::~RootWindowController() {
-  root_window_controller_common_->DeleteWorkspaceController();
+  wm_root_window_controller_->DeleteWorkspaceController();
 }
 
 shell::Connector* RootWindowController::GetConnector() {

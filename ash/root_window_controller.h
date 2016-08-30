@@ -55,7 +55,6 @@ class AnimatingWallpaperWidgetController;
 class DockedWindowLayoutManager;
 enum class LoginStatus;
 class PanelLayoutManager;
-class RootWindowControllerCommon;
 class Shelf;
 class ShelfLayoutManager;
 class ShelfWidget;
@@ -67,6 +66,7 @@ class SystemWallpaperController;
 class TouchHudDebug;
 class TouchHudProjection;
 class WallpaperWidgetController;
+class WmRootWindowControllerAura;
 class WmShelfAura;
 class WmWindow;
 class WorkspaceController;
@@ -270,7 +270,8 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
 
   std::unique_ptr<AshWindowTreeHost> ash_host_;
 
-  std::unique_ptr<RootWindowControllerCommon> root_window_controller_common_;
+  // Owned by the root window.
+  WmRootWindowControllerAura* wm_root_window_controller_ = nullptr;
 
   std::unique_ptr<StackingController> stacking_controller_;
 

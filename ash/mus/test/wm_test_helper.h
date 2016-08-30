@@ -38,7 +38,7 @@ class WmTestHelper {
   void Init();
 
   WindowManagerApplication* window_manager_app() {
-    return &window_manager_app_;
+    return window_manager_app_.get();
   }
 
   WmTestScreen* screen() { return screen_; }
@@ -46,7 +46,7 @@ class WmTestHelper {
  private:
   std::unique_ptr<base::MessageLoop> message_loop_;
   ui::TestWindowTreeClientSetup window_tree_client_setup_;
-  WindowManagerApplication window_manager_app_;
+  std::unique_ptr<WindowManagerApplication> window_manager_app_;
   WmTestScreen* screen_ = nullptr;  // Owned by |window_manager_app_|.
 
   DISALLOW_COPY_AND_ASSIGN(WmTestHelper);

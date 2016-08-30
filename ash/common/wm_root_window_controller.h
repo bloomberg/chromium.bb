@@ -7,6 +7,8 @@
 
 #include "ash/ash_export.h"
 #include "ash/common/wm/workspace/workspace_types.h"
+#include "base/macros.h"
+#include "base/observer_list.h"
 #include "ui/views/widget/widget.h"
 
 namespace gfx {
@@ -20,23 +22,34 @@ class WmShelf;
 class WmShell;
 class WmRootWindowControllerObserver;
 class WmWindow;
-class WorkspaceLayoutManagerBackdropDelegate;
+class WorkspaceController;
+
+namespace wm {
+class RootWindowLayoutManager;
+}
 
 // Provides state associated with a root of a window hierarchy.
 class ASH_EXPORT WmRootWindowController {
  public:
-  virtual ~WmRootWindowController() {}
+  explicit WmRootWindowController(WmWindow* window);
+  virtual ~WmRootWindowController();
+
+  wm::RootWindowLayoutManager* root_window_layout_manager() {
+    return root_window_layout_manager_;
+  }
+
+  WorkspaceController* workspace_controller() {
+    return workspace_controller_.get();
+  }
+
+  wm::WorkspaceWindowState GetWorkspaceWindowState();
+
+  void AddObserver(WmRootWindowControllerObserver* observer);
+  void RemoveObserver(WmRootWindowControllerObserver* observer);
 
   virtual bool HasShelf() = 0;
 
   virtual WmShell* GetShell() = 0;
-
-  virtual wm::WorkspaceWindowState GetWorkspaceWindowState() = 0;
-
-  // TODO: remove when WorkspaceController moved to common:
-  // http://crbug.com/624173.
-  virtual void SetMaximizeBackdropDelegate(
-      std::unique_ptr<WorkspaceLayoutManagerBackdropDelegate> delegate) = 0;
 
   virtual AlwaysOnTopController* GetAlwaysOnTopController() = 0;
 
@@ -63,8 +76,29 @@ class ASH_EXPORT WmRootWindowController {
   // coordinates. This may return a point outside the root window's bounds.
   virtual gfx::Point GetLastMouseLocationInRoot() = 0;
 
-  virtual void AddObserver(WmRootWindowControllerObserver* observer) = 0;
-  virtual void RemoveObserver(WmRootWindowControllerObserver* observer) = 0;
+ protected:
+  // Creates the containers (WmWindows) used by the shell.
+  void CreateContainers();
+
+  // Creates the LayoutManagers for the windows created by CreateContainers().
+  void CreateLayoutManagers();
+
+  void DeleteWorkspaceController();
+
+  base::ObserverList<WmRootWindowControllerObserver>* observers() {
+    return &observers_;
+  }
+
+ private:
+  WmWindow* root_;
+
+  wm::RootWindowLayoutManager* root_window_layout_manager_;
+
+  std::unique_ptr<WorkspaceController> workspace_controller_;
+
+  base::ObserverList<WmRootWindowControllerObserver> observers_;
+
+  DISALLOW_COPY_AND_ASSIGN(WmRootWindowController);
 };
 
 }  // namespace ash

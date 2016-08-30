@@ -14,6 +14,7 @@
 #include "ash/common/wm/overview/window_selector_controller.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
+#include "ash/common/wm/workspace_controller.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
@@ -319,8 +320,9 @@ void MaximizeModeWindowManager::EnableBackdropBehindTopWindowOnEachDisplay(
     WmRootWindowController* controller = root->GetRootWindowController();
     WmWindow* default_container =
         root->GetChildByShellWindowId(kShellWindowId_DefaultContainer);
-    controller->SetMaximizeBackdropDelegate(base::WrapUnique(
-        enable ? new WorkspaceBackdropDelegate(default_container) : nullptr));
+    controller->workspace_controller()->SetMaximizeBackdropDelegate(
+        enable ? base::MakeUnique<WorkspaceBackdropDelegate>(default_container)
+               : nullptr);
   }
 }
 

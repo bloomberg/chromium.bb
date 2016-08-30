@@ -25,7 +25,9 @@ namespace mus {
 WmTestHelper::WmTestHelper() {}
 
 WmTestHelper::~WmTestHelper() {
-  window_manager_app_.window_manager_.reset();
+  // Needs to be destroyed before material design.
+  window_manager_app_.reset();
+
   ash::test::MaterialDesignControllerTestAPI::Uninitialize();
   ui::test::MaterialDesignControllerTestAPI::Uninitialize();
 }
@@ -34,10 +36,12 @@ void WmTestHelper::Init() {
   ui::MaterialDesignController::Initialize();
   ash::MaterialDesignController::Initialize();
 
+  window_manager_app_ = base::MakeUnique<WindowManagerApplication>();
+
   message_loop_.reset(new base::MessageLoopForUI());
-  window_manager_app_.window_manager_.reset(new WindowManager(nullptr));
+  window_manager_app_->window_manager_.reset(new WindowManager(nullptr));
   screen_ = new WmTestScreen;
-  window_manager_app_.window_manager_->screen_.reset(screen_);
+  window_manager_app_->window_manager_->screen_.reset(screen_);
 
   // Need an id other than kInvalidDisplayID so the Display is considered valid.
   display::Display display(1);
@@ -49,10 +53,10 @@ void WmTestHelper::Init() {
                             display_bounds.height() - 20);
   display.set_work_area(work_area);
   window_tree_client_setup_.InitForWindowManager(
-      window_manager_app_.window_manager_.get(),
-      window_manager_app_.window_manager_.get(), display);
+      window_manager_app_->window_manager_.get(),
+      window_manager_app_->window_manager_.get(), display);
 
-  window_manager_app_.InitWindowManager(
+  window_manager_app_->InitWindowManager(
       window_tree_client_setup_.window_tree_client());
 
   screen_->display_list()->AddDisplay(display,

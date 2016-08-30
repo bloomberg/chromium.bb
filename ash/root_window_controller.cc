@@ -8,13 +8,13 @@
 #include <vector>
 
 #include "ash/aura/aura_layout_manager_adapter.h"
+#include "ash/aura/wm_root_window_controller_aura.h"
 #include "ash/aura/wm_shelf_aura.h"
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/ash_constants.h"
 #include "ash/common/ash_switches.h"
 #include "ash/common/focus_cycler.h"
 #include "ash/common/login_status.h"
-#include "ash/common/root_window_controller_common.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf.h"
 #include "ash/common/shelf/shelf_delegate.h"
@@ -332,7 +332,7 @@ const aura::Window* RootWindowController::GetRootWindow() const {
 }
 
 WorkspaceController* RootWindowController::workspace_controller() {
-  return root_window_controller_common_->workspace_controller();
+  return wm_root_window_controller_->workspace_controller();
 }
 
 void RootWindowController::SetWallpaperWidgetController(
@@ -577,7 +577,7 @@ void RootWindowController::CloseChildWindows() {
   wallpaper_widget_controller_.reset();
   animating_wallpaper_widget_controller_.reset();
 
-  root_window_controller_common_->DeleteWorkspaceController();
+  wm_root_window_controller_->DeleteWorkspaceController();
   aura::client::SetTooltipClient(root_window, NULL);
 
   // Explicitly destroy top level windows. We do this as during part of
@@ -621,7 +621,7 @@ void RootWindowController::CloseChildWindows() {
 
 void RootWindowController::MoveWindowsTo(aura::Window* dst) {
   // Clear the workspace controller, so it doesn't incorrectly update the shelf.
-  root_window_controller_common_->DeleteWorkspaceController();
+  wm_root_window_controller_->DeleteWorkspaceController();
   ReparentAllWindows(GetRootWindow(), dst);
 }
 
@@ -742,9 +742,10 @@ RootWindowController::RootWindowController(AshWindowTreeHost* ash_host)
       touch_hud_debug_(NULL),
       touch_hud_projection_(NULL) {
   aura::Window* root_window = GetRootWindow();
-  root_window_controller_common_.reset(
-      new RootWindowControllerCommon(WmWindowAura::Get(root_window)));
   GetRootWindowSettings(root_window)->controller = this;
+
+  // Has to happen after this is set as |controller| of RootWindowSettings.
+  wm_root_window_controller_ = WmRootWindowControllerAura::Get(root_window);
 
   stacking_controller_.reset(new StackingController);
   aura::client::SetWindowTreeClient(root_window, stacking_controller_.get());
@@ -757,7 +758,7 @@ void RootWindowController::Init(RootWindowType root_window_type,
   Shell* shell = Shell::GetInstance();
   shell->InitRootWindow(root_window);
 
-  root_window_controller_common_->CreateContainers();
+  wm_root_window_controller_->CreateContainers();
 
   CreateSystemWallpaper(first_run_after_boot);
 
@@ -772,7 +773,7 @@ void RootWindowController::Init(RootWindowType root_window_type,
 
   WmShell::Get()->AddShellObserver(this);
 
-  root_window_controller_common_->root_window_layout()->OnWindowResized();
+  wm_root_window_controller_->root_window_layout_manager()->OnWindowResized();
   if (root_window_type == PRIMARY) {
     shell->InitKeyboard();
   } else {
@@ -795,7 +796,7 @@ void RootWindowController::Init(RootWindowType root_window_type,
 }
 
 void RootWindowController::InitLayoutManagers() {
-  root_window_controller_common_->CreateLayoutManagers();
+  wm_root_window_controller_->CreateLayoutManagers();
 
   aura::Window* root_window = GetRootWindow();
 

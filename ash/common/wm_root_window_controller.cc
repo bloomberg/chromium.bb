@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/common/root_window_controller_common.h"
+#include "ash/common/wm_root_window_controller.h"
 
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/root_window_layout_manager.h"
@@ -28,12 +28,27 @@ WmWindow* CreateContainer(int window_id, const char* name, WmWindow* parent) {
 
 }  // namespace
 
-RootWindowControllerCommon::RootWindowControllerCommon(WmWindow* root)
-    : root_(root), root_window_layout_(nullptr) {}
+WmRootWindowController::WmRootWindowController(WmWindow* root)
+    : root_(root), root_window_layout_manager_(nullptr) {}
 
-RootWindowControllerCommon::~RootWindowControllerCommon() {}
+WmRootWindowController::~WmRootWindowController() {}
 
-void RootWindowControllerCommon::CreateContainers() {
+wm::WorkspaceWindowState WmRootWindowController::GetWorkspaceWindowState() {
+  return workspace_controller_ ? workspace_controller()->GetWindowState()
+                               : wm::WORKSPACE_WINDOW_STATE_DEFAULT;
+}
+
+void WmRootWindowController::AddObserver(
+    WmRootWindowControllerObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void WmRootWindowController::RemoveObserver(
+    WmRootWindowControllerObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+void WmRootWindowController::CreateContainers() {
   // These containers are just used by PowerButtonController to animate groups
   // of containers simultaneously without messing up the current transformations
   // on those containers. These are direct children of the root window; all of
@@ -211,16 +226,16 @@ void RootWindowControllerCommon::CreateContainers() {
                   "PowerButtonAnimationContainer", root_);
 }
 
-void RootWindowControllerCommon::CreateLayoutManagers() {
-  root_window_layout_ = new wm::RootWindowLayoutManager(root_);
-  root_->SetLayoutManager(base::WrapUnique(root_window_layout_));
+void WmRootWindowController::CreateLayoutManagers() {
+  root_window_layout_manager_ = new wm::RootWindowLayoutManager(root_);
+  root_->SetLayoutManager(base::WrapUnique(root_window_layout_manager_));
 
   WmWindow* default_container =
       root_->GetChildByShellWindowId(kShellWindowId_DefaultContainer);
   workspace_controller_.reset(new WorkspaceController(default_container));
 }
 
-void RootWindowControllerCommon::DeleteWorkspaceController() {
+void WmRootWindowController::DeleteWorkspaceController() {
   workspace_controller_.reset();
 }
 
