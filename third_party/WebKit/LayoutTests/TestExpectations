@@ -1222,7 +1222,6 @@ crbug.com/621892 css3/filters/effect-brightness-hw.html [ Pass Failure ]
 crbug.com/621892 css3/filters/effect-hue-rotate-hw.html [ Pass Failure ]
 crbug.com/621892 css3/filters/effect-saturate-hw.html [ Pass Failure ]
 crbug.com/621892 css3/filters/effect-sepia-hw.html [ Pass Failure ]
-crbug.com/633834 http/tests/security/link-crossorigin-stylesheet-no-cors.html [ Failure Pass ]
 crbug.com/622672 [ Mac ] virtual/threaded/fast/scroll-behavior/overflow-interrupted-scroll.html [ Pass Failure ]
 
 crbug.com/624430 [ Win10 ] fast/text/font-features/caps-casemapping.html [ Failure ]

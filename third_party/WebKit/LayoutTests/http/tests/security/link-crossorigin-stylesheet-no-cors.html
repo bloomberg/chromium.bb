@@ -2,7 +2,16 @@
 <html>
 <head>
 <script src="/js-test-resources/js-test.js"></script>
-<script>window.testCount = 8;</script>
+<script>
+window.testCount = 8;
+
+// Don't log console messages as the order of CORS error messages is not
+// stable. It's ok to ignore them since we're checking whether the elements
+// got loaded or errored.
+if (window.testRunner) {
+    testRunner.setDumpConsoleMessages(false);
+}
+</script>
 <script src="resources/link-crossorigin-common.js"></script>
 </head>
 <body>
