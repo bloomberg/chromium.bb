@@ -14,6 +14,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
@@ -138,7 +139,9 @@ class V4GetHashProtocolManager : public net::URLFetcherDelegate,
 
  private:
   // Map of GetHash requests to parameters which created it.
-  typedef base::hash_map<const net::URLFetcher*, FullHashCallback> HashRequests;
+  using HashRequests = base::hash_map<
+      const net::URLFetcher*,
+      std::pair<std::unique_ptr<net::URLFetcher>, FullHashCallback>>;
 
   // The factory that controls the creation of V4GetHashProtocolManager.
   // This is used by tests.

@@ -8,6 +8,7 @@
 
 #include "base/base64url.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/timer/timer.h"
 #include "net/base/load_flags.h"
@@ -119,10 +120,6 @@ V4GetHashProtocolManager::V4GetHashProtocolManager(
       clock_(new base::DefaultClock()) {}
 
 V4GetHashProtocolManager::~V4GetHashProtocolManager() {
-  // Delete in-progress SafeBrowsing requests.
-  STLDeleteContainerPairFirstPointers(hash_requests_.begin(),
-                                      hash_requests_.end());
-  hash_requests_.clear();
 }
 
 // static
@@ -323,12 +320,11 @@ void V4GetHashProtocolManager::GetFullHashes(
   net::HttpRequestHeaders headers;
   GetHashUrlAndHeaders(req_base64, &gethash_url, &headers);
 
-  net::URLFetcher* fetcher =
-      net::URLFetcher::Create(url_fetcher_id_++, gethash_url,
-                              net::URLFetcher::GET, this)
-          .release();
+  std::unique_ptr<net::URLFetcher> owned_fetcher = net::URLFetcher::Create(
+      url_fetcher_id_++, gethash_url, net::URLFetcher::GET, this);
+  net::URLFetcher* fetcher = owned_fetcher.get();
   fetcher->SetExtraRequestHeaders(headers.ToString());
-  hash_requests_[fetcher] = callback;
+  hash_requests_[fetcher] = std::make_pair(std::move(owned_fetcher), callback);
 
   fetcher->SetLoadFlags(net::LOAD_DISABLE_CACHE);
   fetcher->SetRequestContext(request_context_getter_.get());
@@ -357,16 +353,12 @@ void V4GetHashProtocolManager::OnURLFetchComplete(
   HashRequests::iterator it = hash_requests_.find(source);
   DCHECK(it != hash_requests_.end()) << "Request not found";
 
-  // FindFullHashes response.
-  // Reset the scoped pointer so the fetcher gets destroyed properly.
-  std::unique_ptr<const net::URLFetcher> fetcher(it->first);
-
   int response_code = source->GetResponseCode();
   net::URLRequestStatus status = source->GetStatus();
   V4ProtocolManagerUtil::RecordHttpResponseOrErrorCode(
       kUmaV4HashResponseMetricName, status, response_code);
 
-  const FullHashCallback& callback = it->second;
+  const FullHashCallback& callback = it->second.second;
   std::vector<SBFullHashResult> full_hashes;
   base::Time negative_cache_expire;
   if (status.is_success() && response_code == net::HTTP_OK) {
