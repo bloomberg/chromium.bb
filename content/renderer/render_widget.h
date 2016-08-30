@@ -184,6 +184,9 @@ class CONTENT_EXPORT RenderWidget
   // IPC::Sender
   bool Send(IPC::Message* msg) override;
 
+  // Requests a BeginMainFrame callback from the compositor.
+  void SetNeedsMainFrame();
+
   // RenderWidgetCompositorDelegate
   void ApplyViewportDeltas(const gfx::Vector2dF& inner_delta,
                            const gfx::Vector2dF& outer_delta,

@@ -695,6 +695,13 @@ void RenderWidget::OnSetFocus(bool enable) {
                     RenderWidgetSetFocus(enable));
 }
 
+void RenderWidget::SetNeedsMainFrame() {
+  RenderWidgetCompositor* rwc = compositor();
+  if (!rwc)
+    return;
+  rwc->setNeedsBeginFrame();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetCompositorDelegate
 
@@ -710,6 +717,13 @@ void RenderWidget::ApplyViewportDeltas(
 }
 
 void RenderWidget::BeginMainFrame(double frame_time_sec) {
+  RenderThreadImpl* render_thread = RenderThreadImpl::current();
+  // render_thread may be NULL in tests.
+  InputHandlerManager* input_handler_manager =
+      render_thread ? render_thread->input_handler_manager() : NULL;
+  if (input_handler_manager)
+    input_handler_manager->ProcessRafAlignedInputOnMainThread(routing_id_);
+
   webwidget_->beginFrame(frame_time_sec);
 }
 

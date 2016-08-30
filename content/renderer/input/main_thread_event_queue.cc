@@ -4,17 +4,43 @@
 
 #include "content/renderer/input/main_thread_event_queue.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "content/common/input/event_with_latency_info.h"
 #include "content/common/input_messages.h"
 
 namespace content {
+
+namespace {
+
+// The maximum number of post-coalesced events processed per rAF task. 10 was
+// chosen because it really should never be hit yet prevents an infinite loop if
+// the compositor keeps delivering events faster than the main thread can
+// process them.
+const size_t kMaxEventsPerRafTask = 10;
+
+const size_t kTenSeconds = 10 * 1000 * 1000;
+
+bool isContinuousEvent(const std::unique_ptr<EventWithDispatchType>& event) {
+  switch (event->event().type) {
+    case blink::WebInputEvent::MouseMove:
+    case blink::WebInputEvent::TouchMove:
+    case blink::WebInputEvent::MouseWheel:
+      return true;
+    default:
+      return false;
+  }
+}
+
+}  // namespace
 
 EventWithDispatchType::EventWithDispatchType(
     ui::ScopedWebInputEvent event,
     const ui::LatencyInfo& latency,
     InputEventDispatchType dispatch_type)
     : ScopedWebInputEventWithLatencyInfo(std::move(event), latency),
-      dispatch_type_(dispatch_type) {}
+      dispatch_type_(dispatch_type),
+      creation_timestamp_(base::TimeTicks::Now()),
+      last_coalesced_timestamp_(creation_timestamp_) {}
 
 EventWithDispatchType::~EventWithDispatchType() {}
 
@@ -25,15 +51,16 @@ bool EventWithDispatchType::CanCoalesceWith(
 }
 
 void EventWithDispatchType::CoalesceWith(const EventWithDispatchType& other) {
-  // If we are blocking and are coalescing touch, make sure to keep
-  // the touch ids that need to be acked.
-  if (dispatch_type_ == DISPATCH_TYPE_BLOCKING) {
-    // We should only have blocking touch events that need coalescing.
-    eventsToAck_.push_back(
-        ui::WebInputEventTraits::GetUniqueTouchEventId(other.event()));
-  }
+  coalesced_event_ids_.push_back(
+      ui::WebInputEventTraits::GetUniqueTouchEventId(other.event()));
   ScopedWebInputEventWithLatencyInfo::CoalesceWith(other);
+  last_coalesced_timestamp_ = base::TimeTicks::Now();
 }
+
+MainThreadEventQueue::SharedState::SharedState()
+    : sent_main_frame_request_(false) {}
+
+MainThreadEventQueue::SharedState::~SharedState() {}
 
 MainThreadEventQueue::MainThreadEventQueue(
     int routing_id,
@@ -46,6 +73,8 @@ MainThreadEventQueue::MainThreadEventQueue(
       last_touch_start_forced_nonblocking_due_to_fling_(false),
       enable_fling_passive_listener_flag_(base::FeatureList::IsEnabled(
           features::kPassiveEventListenersDueToFling)),
+      handle_raf_aligned_input_(
+          base::FeatureList::IsEnabled(features::kRafAlignedInputEvents)),
       main_task_runner_(main_task_runner),
       renderer_scheduler_(renderer_scheduler) {}
 
@@ -110,16 +139,33 @@ bool MainThreadEventQueue::HandleEvent(
   return non_blocking;
 }
 
-void MainThreadEventQueue::PopEventOnMainThread() {
-  {
-    base::AutoLock lock(event_queue_lock_);
-    if (!events_.empty())
-      in_flight_event_ = events_.Pop();
-  }
-
+void MainThreadEventQueue::DispatchInFlightEvent() {
   if (in_flight_event_) {
+    // Report the coalesced count only for continuous events; otherwise
+    // the zero value would be dominated by non-continuous events.
+    base::TimeTicks now = base::TimeTicks::Now();
+    if (isContinuousEvent(in_flight_event_)) {
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Event.MainThreadEventQueue.Continuous.QueueingTime",
+          (now - in_flight_event_->creationTimestamp()).InMicroseconds(), 1,
+          kTenSeconds, 50);
+
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Event.MainThreadEventQueue.Continuous.FreshnessTime",
+          (now - in_flight_event_->lastCoalescedTimestamp()).InMicroseconds(),
+          1, kTenSeconds, 50);
+
+      UMA_HISTOGRAM_COUNTS_1000("Event.MainThreadEventQueue.CoalescedCount",
+                                in_flight_event_->coalescedEventIds().size());
+    } else {
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Event.MainThreadEventQueue.NonContinuous.QueueingTime",
+          (now - in_flight_event_->creationTimestamp()).InMicroseconds(), 1,
+          kTenSeconds, 50);
+    }
+
     InputEventDispatchType dispatch_type = in_flight_event_->dispatchType();
-    if (!in_flight_event_->eventsToAck().empty() &&
+    if (!in_flight_event_->coalescedEventIds().empty() &&
         dispatch_type == DISPATCH_TYPE_BLOCKING) {
       dispatch_type = DISPATCH_TYPE_BLOCKING_NOTIFY_MAIN;
     }
@@ -132,11 +178,40 @@ void MainThreadEventQueue::PopEventOnMainThread() {
   in_flight_event_.reset();
 }
 
+void MainThreadEventQueue::PossiblyScheduleMainFrame() {
+  if (!handle_raf_aligned_input_)
+    return;
+  bool needs_main_frame = false;
+  {
+    base::AutoLock lock(shared_state_lock_);
+    if (!shared_state_.sent_main_frame_request_ &&
+        !shared_state_.events_.empty() &&
+        isContinuousEvent(shared_state_.events_.front())) {
+      needs_main_frame = !shared_state_.sent_main_frame_request_;
+      shared_state_.sent_main_frame_request_ = false;
+    }
+  }
+  if (needs_main_frame)
+    client_->NeedsMainFrame(routing_id_);
+}
+
+void MainThreadEventQueue::DispatchSingleEvent() {
+  {
+    base::AutoLock lock(shared_state_lock_);
+    if (shared_state_.events_.empty())
+      return;
+
+    in_flight_event_ = shared_state_.events_.Pop();
+  }
+  DispatchInFlightEvent();
+  PossiblyScheduleMainFrame();
+}
+
 void MainThreadEventQueue::EventHandled(blink::WebInputEvent::Type type,
                                         InputEventAckState ack_result) {
-  if (in_flight_event_) {
-    // Send acks for blocking touch events.
-    for (const auto id : in_flight_event_->eventsToAck()) {
+  if (in_flight_event_ &&
+      in_flight_event_->dispatchType() == DISPATCH_TYPE_BLOCKING) {
+    for (const auto id : in_flight_event_->coalescedEventIds()) {
       client_->SendInputEventAck(routing_id_, type, ack_result, id);
       if (renderer_scheduler_) {
         renderer_scheduler_->DidHandleInputEventOnMainThread(
@@ -146,23 +221,68 @@ void MainThreadEventQueue::EventHandled(blink::WebInputEvent::Type type,
   }
 }
 
+void MainThreadEventQueue::DispatchRafAlignedInput() {
+  if (!handle_raf_aligned_input_)
+    return;
+
+  {
+    base::AutoLock lock(shared_state_lock_);
+    shared_state_.sent_main_frame_request_ = false;
+  }
+
+  for (size_t i = 0; i < kMaxEventsPerRafTask; ++i) {
+    {
+      base::AutoLock lock(shared_state_lock_);
+      if (shared_state_.events_.empty())
+        break;
+
+      if (!isContinuousEvent(shared_state_.events_.front()))
+        break;
+      in_flight_event_ = shared_state_.events_.Pop();
+    }
+    DispatchInFlightEvent();
+  }
+  PossiblyScheduleMainFrame();
+}
+
 void MainThreadEventQueue::SendEventNotificationToMainThread() {
   main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&MainThreadEventQueue::PopEventOnMainThread,
-                            this));
+      FROM_HERE, base::Bind(&MainThreadEventQueue::DispatchSingleEvent, this));
 }
 
 void MainThreadEventQueue::QueueEvent(
     std::unique_ptr<EventWithDispatchType> event) {
-  bool send_notification = false;
+  bool is_continuous = isContinuousEvent(event);
+  size_t send_notification_count = 0;
+  bool needs_main_frame = false;
   {
-    base::AutoLock lock(event_queue_lock_);
-    size_t size_before = events_.size();
-    events_.Queue(std::move(event));
-    send_notification = events_.size() != size_before;
+    base::AutoLock lock(shared_state_lock_);
+    size_t size_before = shared_state_.events_.size();
+    shared_state_.events_.Queue(std::move(event));
+    size_t size_after = shared_state_.events_.size();
+    if (size_before != size_after) {
+      if (!handle_raf_aligned_input_) {
+        send_notification_count = 1;
+      } else if (!is_continuous) {
+        send_notification_count = 1;
+        // If we had just enqueued a non-rAF input event we will send a series
+        // of normal post messages to ensure they are all handled right away.
+        for (size_t pos = size_after - 1; pos >= 1; --pos) {
+          if (isContinuousEvent(shared_state_.events_.at(pos - 1)))
+            send_notification_count++;
+          else
+            break;
+        }
+      } else {
+        needs_main_frame = !shared_state_.sent_main_frame_request_;
+        shared_state_.sent_main_frame_request_ = true;
+      }
+    }
   }
-  if (send_notification)
+  for (size_t i = 0; i < send_notification_count; ++i)
     SendEventNotificationToMainThread();
+  if (needs_main_frame)
+    client_->NeedsMainFrame(routing_id_);
 }
 
 }  // namespace content

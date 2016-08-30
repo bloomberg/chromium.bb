@@ -56,12 +56,11 @@ InputHandlerManager::InputHandlerManager(
       synchronous_handler_proxy_client_(sync_handler_client),
       renderer_scheduler_(renderer_scheduler) {
   DCHECK(client_);
-  client_->SetBoundHandler(base::Bind(&InputHandlerManager::HandleInputEvent,
-                                      base::Unretained(this)));
+  client_->SetInputHandlerManager(this);
 }
 
 InputHandlerManager::~InputHandlerManager() {
-  client_->SetBoundHandler(InputHandlerManagerClient::Handler());
+  client_->SetInputHandlerManager(nullptr);
 }
 
 void InputHandlerManager::AddInputHandler(
@@ -193,6 +192,10 @@ void InputHandlerManager::NotifyInputEventHandledOnMainThread(
   client_->NotifyInputEventHandled(routing_id, type, ack_result);
 }
 
+void InputHandlerManager::ProcessRafAlignedInputOnMainThread(int routing_id) {
+  client_->ProcessRafAlignedInput(routing_id);
+}
+
 InputEventAckState InputHandlerManager::HandleInputEvent(
     int routing_id,
     const WebInputEvent* input_event,
@@ -246,6 +249,14 @@ void InputHandlerManager::DidStopFlinging(int routing_id) {
 
 void InputHandlerManager::DidAnimateForInput() {
   renderer_scheduler_->DidAnimateForInputOnCompositorThread();
+}
+
+void InputHandlerManager::NeedsMainFrame(int routing_id) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  auto it = input_handlers_.find(routing_id);
+  if (it == input_handlers_.end())
+    return;
+  it->second->NeedsMainFrame();
 }
 
 }  // namespace content

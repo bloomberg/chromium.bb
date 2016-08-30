@@ -122,7 +122,8 @@ class TestInputHandlerManagerClient
   ~TestInputHandlerManagerClient() override{};
 
   // content::InputHandlerManagerClient:
-  void SetBoundHandler(const Handler& handler) override {}
+  void SetInputHandlerManager(
+      content::InputHandlerManager* input_handler_manager) override {}
   void RegisterRoutingID(int routing_id) override {}
   void UnregisterRoutingID(int routing_id) override {}
   void DidOverscroll(int routing_id,
@@ -133,6 +134,7 @@ class TestInputHandlerManagerClient
       int routing_id,
       blink::WebInputEvent::Type type,
       content::InputEventAckState ack_result) override {}
+  void ProcessRafAlignedInput(int routing_id) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestInputHandlerManagerClient);

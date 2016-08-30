@@ -13478,6 +13478,44 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Time to request a timestamp from the X server.</summary>
 </histogram>
 
+<histogram name="Event.MainThreadEventQueue.CoalescedCount" units="events">
+  <owner>dtapuska@chromium.org</owner>
+  <summary>
+    Number of continuous events (touchmove, mousemove, mousewheel) coalesced
+    inside the main thread event queue per event. This field is recorded just
+    before the event is processed on the main thread.
+  </summary>
+</histogram>
+
+<histogram name="Event.MainThreadEventQueue.Continuous.FreshnessTime"
+    units="microseconds">
+  <owner>dtapuska@chromium.org</owner>
+  <summary>
+    Time between when a continuous event (touchmove, mousemove, mousewheel) was
+    placed into the queue (or coalesced with another event) and when it was
+    processed on the main thread.
+  </summary>
+</histogram>
+
+<histogram name="Event.MainThreadEventQueue.Continuous.QueueingTime"
+    units="microseconds">
+  <owner>dtapuska@chromium.org</owner>
+  <summary>
+    Time between when a continuous event (touchmove, mousemove, mousewheel) was
+    placed into the queue and when it was processed on the main thread.
+  </summary>
+</histogram>
+
+<histogram name="Event.MainThreadEventQueue.NonContinuous.QueueingTime"
+    units="microseconds">
+  <owner>dtapuska@chromium.org</owner>
+  <summary>
+    Time between when a non-continuous event (not touchmove, mousemove,
+    mousewheel) was placed into the queue and when it was processed on the main
+    thread.
+  </summary>
+</histogram>
+
 <histogram name="Event.PassiveForcedEventDispatchCancelled"
     enum="PassiveForcedListenerResultType">
   <owner>dtapuska@chromium.org</owner>

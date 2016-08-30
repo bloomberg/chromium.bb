@@ -33,6 +33,12 @@ InputHandlerWrapper::InputHandlerWrapper(
 InputHandlerWrapper::~InputHandlerWrapper() {
 }
 
+void InputHandlerWrapper::NeedsMainFrame() {
+  main_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&RenderViewImpl::SetNeedsMainFrame, render_view_impl_));
+}
+
 void InputHandlerWrapper::TransferActiveWheelFlingAnimation(
     const blink::WebActiveWheelFlingParameters& params) {
   main_task_runner_->PostTask(

@@ -16,7 +16,9 @@
 #include "base/trace_event/trace_event.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/renderer/input/input_handler_manager.h"
 #include "content/renderer/render_thread_impl.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
@@ -53,6 +55,7 @@ InputEventFilter::InputEventFilter(
       main_listener_(main_listener),
       sender_(NULL),
       target_task_runner_(target_task_runner),
+      input_handler_manager_(NULL),
       current_overscroll_params_(NULL),
       renderer_scheduler_(NULL) {
   DCHECK(target_task_runner_.get());
@@ -62,9 +65,10 @@ InputEventFilter::InputEventFilter(
       render_thread_impl ? render_thread_impl->GetRendererScheduler() : nullptr;
 }
 
-void InputEventFilter::SetBoundHandler(const Handler& handler) {
+void InputEventFilter::SetInputHandlerManager(
+    InputHandlerManager* input_handler_manager) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  handler_ = handler;
+  input_handler_manager_ = input_handler_manager;
 }
 
 void InputEventFilter::SetIsFlingingInMainThreadEventQueue(int routing_id,
@@ -125,6 +129,20 @@ void InputEventFilter::NotifyInputEventHandled(int routing_id,
   queue->EventHandled(type, ack_result);
 }
 
+void InputEventFilter::ProcessRafAlignedInput(int routing_id) {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  scoped_refptr<MainThreadEventQueue> queue;
+  {
+    base::AutoLock locked(routes_lock_);
+    RouteQueueMap::iterator iter = route_queues_.find(routing_id);
+    if (iter == route_queues_.end() || !iter->second)
+      return;
+    queue = iter->second;
+  }
+
+  queue->DispatchRafAlignedInput();
+}
+
 void InputEventFilter::OnFilterAdded(IPC::Sender* sender) {
   io_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   sender_ = sender;
@@ -170,7 +188,7 @@ InputEventFilter::~InputEventFilter() {
 }
 
 void InputEventFilter::ForwardToHandler(const IPC::Message& message) {
-  DCHECK(!handler_.is_null());
+  DCHECK(input_handler_manager_);
   DCHECK(target_task_runner_->BelongsToCurrentThread());
   TRACE_EVENT1("input", "InputEventFilter::ForwardToHandler",
                "message_type", GetInputMessageTypeName(message));
@@ -205,8 +223,8 @@ void InputEventFilter::ForwardToHandler(const IPC::Message& message) {
       auto_reset_current_overscroll_params(
           &current_overscroll_params_, send_ack ? &overscroll_params : NULL);
 
-  InputEventAckState ack_state =
-      handler_.Run(routing_id, event.get(), &latency_info);
+  InputEventAckState ack_state = input_handler_manager_->HandleInputEvent(
+      routing_id, event.get(), &latency_info);
 
   uint32_t unique_touch_event_id =
       ui::WebInputEventTraits::GetUniqueTouchEventId(*event);
@@ -267,6 +285,17 @@ void InputEventFilter::SendInputEventAck(int routing_id,
   InputEventAck ack(type, ack_result, touch_event_id);
   SendMessage(std::unique_ptr<IPC::Message>(
       new InputHostMsg_HandleInputEvent_ACK(routing_id, ack)));
+}
+
+void InputEventFilter::NeedsMainFrame(int routing_id) {
+  if (target_task_runner_->BelongsToCurrentThread()) {
+    input_handler_manager_->NeedsMainFrame(routing_id);
+    return;
+  }
+
+  target_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&InputEventFilter::NeedsMainFrame, this, routing_id));
 }
 
 }  // namespace content

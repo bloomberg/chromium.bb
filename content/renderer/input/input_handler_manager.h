@@ -41,7 +41,6 @@ namespace content {
 class InputHandlerWrapper;
 class SynchronousInputHandlerProxyClient;
 class InputHandlerManagerClient;
-struct DidOverscrollParams;
 
 // InputHandlerManager class manages InputHandlerProxy instances for
 // the WebViews in this renderer.
@@ -75,6 +74,7 @@ class CONTENT_EXPORT InputHandlerManager {
   void NotifyInputEventHandledOnMainThread(int routing_id,
                                            blink::WebInputEvent::Type,
                                            InputEventAckState);
+  void ProcessRafAlignedInputOnMainThread(int routing_id);
 
   // Callback only from the compositor's thread.
   void RemoveInputHandler(int routing_id);
@@ -94,6 +94,9 @@ class CONTENT_EXPORT InputHandlerManager {
 
   // Called from the compositor's thread.
   void DidAnimateForInput();
+
+  // Called from the compositor's thread.
+  void NeedsMainFrame(int routing_id);
 
  private:
   // Called from the compositor's thread.

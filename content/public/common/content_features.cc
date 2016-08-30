@@ -105,6 +105,10 @@ const base::Feature kPassiveEventListenersDueToFling{
 const base::Feature kPointerEvents{"PointerEvent",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
+// RAF aligned input events support.
+const base::Feature kRafAlignedInputEvents{"RafAlignedInput",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If Pepper 3D Image Chromium is allowed, this feature controls whether it is
 // enabled.
 const base::Feature kPepper3DImageChromium{"Pepper3DImageChromium",

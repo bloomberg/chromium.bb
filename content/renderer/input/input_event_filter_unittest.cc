@@ -18,6 +18,7 @@
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/input/input_event_filter.h"
+#include "content/renderer/input/input_handler_manager.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_test_sink.h"
 #include "ipc/message_filter.h"
@@ -34,15 +35,16 @@ namespace {
 
 const int kTestRoutingID = 13;
 
-class InputEventRecorder {
+class InputEventRecorder : public content::InputHandlerManager {
  public:
-  InputEventRecorder()
-      : filter_(NULL),
+  InputEventRecorder(InputEventFilter* filter)
+      : InputHandlerManager(nullptr, filter, nullptr, nullptr),
         handle_events_(false),
         send_to_widget_(false),
         passive_(false) {}
 
-  void set_filter(InputEventFilter* filter) { filter_ = filter; }
+  ~InputEventRecorder() override {}
+
   void set_handle_events(bool value) { handle_events_ = value; }
   void set_send_to_widget(bool value) { send_to_widget_ = value; }
   void set_passive(bool value) { passive_ = value; }
@@ -60,7 +62,7 @@ class InputEventRecorder {
 
   InputEventAckState HandleInputEvent(int routing_id,
                                       const WebInputEvent* event,
-                                      ui::LatencyInfo* latency_info) {
+                                      ui::LatencyInfo* latency_info) override {
     DCHECK_EQ(kTestRoutingID, routing_id);
     records_.push_back(Record(event));
     if (handle_events_) {
@@ -84,7 +86,6 @@ class InputEventRecorder {
     std::vector<char> event_data;
   };
 
-  InputEventFilter* filter_;
   bool handle_events_;
   bool send_to_widget_;
   bool passive_;
@@ -145,11 +146,8 @@ class InputEventFilterTest : public testing::Test {
         base::Bind(base::IgnoreResult(&IPCMessageRecorder::OnMessageReceived),
                    base::Unretained(&message_recorder_)),
         base::ThreadTaskRunnerHandle::Get(), message_loop_.task_runner());
-    filter_->SetBoundHandler(base::Bind(&InputEventRecorder::HandleInputEvent,
-                                        base::Unretained(&event_recorder_)));
-
-    event_recorder_.set_filter(filter_.get());
-
+    event_recorder_ = base::MakeUnique<InputEventRecorder>(filter_.get());
+    filter_->SetInputHandlerManager(event_recorder_.get());
     filter_->OnFilterAdded(&ipc_sink_);
   }
 
@@ -162,10 +160,10 @@ class InputEventFilterTest : public testing::Test {
   // Used to record IPCs forwarded by the filter to the main thread.
   IPCMessageRecorder message_recorder_;
 
-  // Used to record WebInputEvents delivered to the handler.
-  InputEventRecorder event_recorder_;
-
   scoped_refptr<InputEventFilter> filter_;
+
+  // Used to record WebInputEvents delivered to the handler.
+  std::unique_ptr<InputEventRecorder> event_recorder_;
 };
 
 TEST_F(InputEventFilterTest, Basic) {
@@ -177,14 +175,14 @@ TEST_F(InputEventFilterTest, Basic) {
 
   AddEventsToFilter(filter_.get(), kEvents, arraysize(kEvents));
   EXPECT_EQ(0U, ipc_sink_.message_count());
-  EXPECT_EQ(0U, event_recorder_.record_count());
+  EXPECT_EQ(0U, event_recorder_->record_count());
   EXPECT_EQ(0U, message_recorder_.message_count());
 
   filter_->RegisterRoutingID(kTestRoutingID);
 
   AddEventsToFilter(filter_.get(), kEvents, arraysize(kEvents));
   ASSERT_EQ(arraysize(kEvents), ipc_sink_.message_count());
-  ASSERT_EQ(arraysize(kEvents), event_recorder_.record_count());
+  ASSERT_EQ(arraysize(kEvents), event_recorder_->record_count());
   EXPECT_EQ(0U, message_recorder_.message_count());
 
   for (size_t i = 0; i < arraysize(kEvents); ++i) {
@@ -200,18 +198,18 @@ TEST_F(InputEventFilterTest, Basic) {
     EXPECT_EQ(kEvents[i].type, event_type);
     EXPECT_EQ(ack_result, INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
 
-    const WebInputEvent* event = event_recorder_.record_at(i);
+    const WebInputEvent* event = event_recorder_->record_at(i);
     ASSERT_TRUE(event);
 
     EXPECT_EQ(kEvents[i].size, event->size);
     EXPECT_TRUE(memcmp(&kEvents[i], event, event->size) == 0);
   }
 
-  event_recorder_.set_send_to_widget(true);
+  event_recorder_->set_send_to_widget(true);
 
   AddEventsToFilter(filter_.get(), kEvents, arraysize(kEvents));
   EXPECT_EQ(arraysize(kEvents), ipc_sink_.message_count());
-  EXPECT_EQ(2 * arraysize(kEvents), event_recorder_.record_count());
+  EXPECT_EQ(2 * arraysize(kEvents), event_recorder_->record_count());
   EXPECT_EQ(1u, message_recorder_.message_count());
 
   {
@@ -229,14 +227,14 @@ TEST_F(InputEventFilterTest, Basic) {
   // Now reset everything, and test that DidHandleInputEvent is called.
 
   ipc_sink_.ClearMessages();
-  event_recorder_.Clear();
+  event_recorder_->Clear();
   message_recorder_.Clear();
 
-  event_recorder_.set_handle_events(true);
+  event_recorder_->set_handle_events(true);
 
   AddEventsToFilter(filter_.get(), kEvents, arraysize(kEvents));
   EXPECT_EQ(arraysize(kEvents), ipc_sink_.message_count());
-  EXPECT_EQ(arraysize(kEvents), event_recorder_.record_count());
+  EXPECT_EQ(arraysize(kEvents), event_recorder_->record_count());
   EXPECT_EQ(0U, message_recorder_.message_count());
 
   for (size_t i = 0; i < arraysize(kEvents); ++i) {
@@ -257,8 +255,7 @@ TEST_F(InputEventFilterTest, Basic) {
 
 TEST_F(InputEventFilterTest, PreserveRelativeOrder) {
   filter_->RegisterRoutingID(kTestRoutingID);
-  event_recorder_.set_send_to_widget(true);
-
+  event_recorder_->set_send_to_widget(true);
 
   WebMouseEvent mouse_down =
       SyntheticWebMouseEventBuilder::Build(WebMouseEvent::MouseDown);
@@ -320,11 +317,11 @@ TEST_F(InputEventFilterTest, NonBlockingWheel) {
   };
 
   filter_->RegisterRoutingID(kTestRoutingID);
-  event_recorder_.set_send_to_widget(true);
-  event_recorder_.set_passive(true);
+  event_recorder_->set_send_to_widget(true);
+  event_recorder_->set_passive(true);
 
   AddEventsToFilter(filter_.get(), kEvents, arraysize(kEvents));
-  EXPECT_EQ(arraysize(kEvents), event_recorder_.record_count());
+  EXPECT_EQ(arraysize(kEvents), event_recorder_->record_count());
   ASSERT_EQ(4u, ipc_sink_.message_count());
 
   // All events are handled, one is coalesced.
@@ -381,11 +378,11 @@ TEST_F(InputEventFilterTest, NonBlockingTouch) {
   kEvents[3].MovePoint(0, 35, 35);
 
   filter_->RegisterRoutingID(kTestRoutingID);
-  event_recorder_.set_send_to_widget(true);
-  event_recorder_.set_passive(true);
+  event_recorder_->set_send_to_widget(true);
+  event_recorder_->set_passive(true);
 
   AddEventsToFilter(filter_.get(), kEvents, arraysize(kEvents));
-  EXPECT_EQ(arraysize(kEvents), event_recorder_.record_count());
+  EXPECT_EQ(arraysize(kEvents), event_recorder_->record_count());
   ASSERT_EQ(4u, ipc_sink_.message_count());
 
   // All events are handled and one set was coalesced.
@@ -438,16 +435,16 @@ TEST_F(InputEventFilterTest, IntermingledNonBlockingTouch) {
   kBlockingEvents[0].PressPoint(10, 10);
 
   filter_->RegisterRoutingID(kTestRoutingID);
-  event_recorder_.set_send_to_widget(true);
-  event_recorder_.set_passive(true);
+  event_recorder_->set_send_to_widget(true);
+  event_recorder_->set_passive(true);
   AddEventsToFilter(filter_.get(), kEvents, arraysize(kEvents));
-  EXPECT_EQ(arraysize(kEvents), event_recorder_.record_count());
+  EXPECT_EQ(arraysize(kEvents), event_recorder_->record_count());
 
-  event_recorder_.set_passive(false);
+  event_recorder_->set_passive(false);
   AddEventsToFilter(filter_.get(), kBlockingEvents, arraysize(kBlockingEvents));
   EXPECT_EQ(arraysize(kEvents) + arraysize(kBlockingEvents),
-            event_recorder_.record_count());
-  ASSERT_EQ(3u, event_recorder_.record_count());
+            event_recorder_->record_count());
+  ASSERT_EQ(3u, event_recorder_->record_count());
   EXPECT_EQ(3u, message_recorder_.message_count());
 
   {

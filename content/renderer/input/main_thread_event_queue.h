@@ -30,17 +30,25 @@ class EventWithDispatchType : public ScopedWebInputEventWithLatencyInfo {
       WARN_UNUSED_RESULT;
   void CoalesceWith(const EventWithDispatchType& other);
 
-  const std::deque<uint32_t>& eventsToAck() const { return eventsToAck_; }
+  const std::deque<uint32_t>& coalescedEventIds() const {
+    return coalesced_event_ids_;
+  }
   InputEventDispatchType dispatchType() const { return dispatch_type_; }
+  base::TimeTicks creationTimestamp() const { return creation_timestamp_; }
+  base::TimeTicks lastCoalescedTimestamp() const {
+    return last_coalesced_timestamp_;
+  }
 
  private:
   InputEventDispatchType dispatch_type_;
 
-  // |eventsToAck_| contains the unique touch event id to be acked. If
-  // the events are TouchEvents the value will be 0. More importantly for
+  // |coalesced_event_ids_| contains the unique touch event ids to be acked. If
+  // the events are not TouchEvents the values will be 0. More importantly for
   // those cases the deque ends up containing how many additional ACKs
   // need to be sent.
-  std::deque<uint32_t> eventsToAck_;
+  std::deque<uint32_t> coalesced_event_ids_;
+  base::TimeTicks creation_timestamp_;
+  base::TimeTicks last_coalesced_timestamp_;
 };
 
 class CONTENT_EXPORT MainThreadEventQueueClient {
@@ -58,6 +66,7 @@ class CONTENT_EXPORT MainThreadEventQueueClient {
                                  blink::WebInputEvent::Type type,
                                  InputEventAckState ack_result,
                                  uint32_t touch_event_id) = 0;
+  virtual void NeedsMainFrame(int routing_id) = 0;
 };
 
 // MainThreadEventQueue implements a queue for events that need to be
@@ -111,6 +120,7 @@ class CONTENT_EXPORT MainThreadEventQueue
                    const ui::LatencyInfo& latency,
                    InputEventDispatchType dispatch_type,
                    InputEventAckState ack_result);
+  void DispatchRafAlignedInput();
 
   // Call once the main thread has handled an outstanding |type| event
   // in flight.
@@ -124,7 +134,10 @@ class CONTENT_EXPORT MainThreadEventQueue
   ~MainThreadEventQueue();
   void QueueEvent(std::unique_ptr<EventWithDispatchType> event);
   void SendEventNotificationToMainThread();
-  void PopEventOnMainThread();
+  void DispatchSingleEvent();
+  void DispatchInFlightEvent();
+  void PossiblyScheduleMainFrame();
+
   void SendEventToMainThread(const blink::WebInputEvent* event,
                              const ui::LatencyInfo& latency,
                              InputEventDispatchType original_dispatch_type);
@@ -132,13 +145,25 @@ class CONTENT_EXPORT MainThreadEventQueue
   friend class MainThreadEventQueueTest;
   int routing_id_;
   MainThreadEventQueueClient* client_;
-  WebInputEventQueue<EventWithDispatchType> events_;
   std::unique_ptr<EventWithDispatchType> in_flight_event_;
   bool is_flinging_;
   bool last_touch_start_forced_nonblocking_due_to_fling_;
   bool enable_fling_passive_listener_flag_;
+  bool handle_raf_aligned_input_;
 
-  base::Lock event_queue_lock_;
+  // Contains data to be shared between main thread and compositor thread.
+  struct SharedState {
+    SharedState();
+    ~SharedState();
+
+    WebInputEventQueue<EventWithDispatchType> events_;
+    bool sent_main_frame_request_;
+  };
+
+  // Lock used to serialize |shared_state_|.
+  base::Lock shared_state_lock_;
+  SharedState shared_state_;
+
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   blink::scheduler::RendererScheduler* renderer_scheduler_;
 

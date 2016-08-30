@@ -36,6 +36,8 @@ class InputHandlerWrapper : public ui::InputHandlerProxyClient {
     return &input_handler_proxy_;
   }
 
+  void NeedsMainFrame();
+
   // InputHandlerProxyClient implementation.
   void WillShutdown() override;
   void TransferActiveWheelFlingAnimation(

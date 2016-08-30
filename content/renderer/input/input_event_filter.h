@@ -36,8 +36,9 @@ class Sender;
 // and have them be delivered to a target thread.  Input events are filtered
 // based on routing_id (see AddRoute and RemoveRoute).
 //
-// The user of this class provides an instance of InputEventFilter::Handler,
-// which will be passed WebInputEvents on the target thread.
+// The user of this class provides an instance of InputHandlerManager via
+// |SetInputHandlerManager|. The InputHandlerManager's |HandleInputEvent|
+// will be called on the target thread to process the WebInputEvents.
 //
 
 namespace content {
@@ -61,7 +62,7 @@ class CONTENT_EXPORT InputEventFilter : public InputHandlerManagerClient,
   // is left to the eventual handler to deliver the corresponding
   // InputHostMsg_HandleInputEvent_ACK.
   //
-  void SetBoundHandler(const Handler& handler) override;
+  void SetInputHandlerManager(InputHandlerManager*) override;
   void RegisterRoutingID(int routing_id) override;
   void UnregisterRoutingID(int routing_id) override;
   void DidOverscroll(int routing_id,
@@ -71,6 +72,7 @@ class CONTENT_EXPORT InputEventFilter : public InputHandlerManagerClient,
   void NotifyInputEventHandled(int routing_id,
                                blink::WebInputEvent::Type type,
                                InputEventAckState ack_result) override;
+  void ProcessRafAlignedInput(int routing_id) override;
 
   // IPC::MessageFilter methods:
   void OnFilterAdded(IPC::Sender* sender) override;
@@ -91,6 +93,8 @@ class CONTENT_EXPORT InputEventFilter : public InputHandlerManagerClient,
                          InputEventAckState ack_result,
                          uint32_t touch_event_id) override;
 
+  void NeedsMainFrame(int routing_id) override;
+
  private:
   ~InputEventFilter() override;
 
@@ -106,9 +110,10 @@ class CONTENT_EXPORT InputEventFilter : public InputHandlerManagerClient,
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   IPC::Sender* sender_;
 
-  // The handler_ only gets Run on the thread corresponding to target_loop_.
+  // The |input_handler_manager_| should outlive this class and
+  // should only be called back on the |target_task_runner_|.
   scoped_refptr<base::SingleThreadTaskRunner> target_task_runner_;
-  Handler handler_;
+  InputHandlerManager* input_handler_manager_;
 
   // Protects access to routes_.
   base::Lock routes_lock_;

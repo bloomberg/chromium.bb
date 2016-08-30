@@ -36,6 +36,9 @@ class WebInputEventQueue {
     queue_.emplace_back(std::move(event));
   }
 
+  const std::unique_ptr<T>& front() const { return queue_.front(); }
+  const std::unique_ptr<T>& at(size_t pos) const { return queue_.at(pos); }
+
   std::unique_ptr<T> Pop() {
     std::unique_ptr<T> result;
     if (!queue_.empty()) {
