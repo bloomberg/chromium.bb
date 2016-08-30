@@ -298,6 +298,25 @@ int main(int argc, char* argv[]) {
           }
         }
       }
+
+      const mkvparser::Projection* const projection =
+          pVideoTrack->GetProjection();
+      if (projection) {
+        printf("\t\tVideo Projection:\n");
+        if (projection->type != mkvparser::Projection::kTypeNotPresent)
+          printf("\t\t\tProjectionType: %d\n",
+                 static_cast<int>(projection->type));
+        if (projection->private_data) {
+          printf("\t\t\tProjectionPrivate: %u bytes\n",
+                 static_cast<unsigned int>(projection->private_data_length));
+        }
+        if (projection->pose_yaw != mkvparser::Projection::kValueNotPresent)
+          printf("\t\t\tProjectionPoseYaw: %f\n", projection->pose_yaw);
+        if (projection->pose_pitch != mkvparser::Projection::kValueNotPresent)
+          printf("\t\t\tProjectionPosePitch: %f\n", projection->pose_pitch);
+        if (projection->pose_roll != mkvparser::Projection::kValueNotPresent)
+          printf("\t\t\tProjectionPosePitch: %f\n", projection->pose_roll);
+      }
     }
 
     if (trackType == mkvparser::Track::kAudio) {
