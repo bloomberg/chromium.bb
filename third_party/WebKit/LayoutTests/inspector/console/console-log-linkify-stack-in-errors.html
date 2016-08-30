@@ -33,6 +33,17 @@ function domError()
 
 domError();
 
+function logError()
+{
+    try {
+        throw new Error("some error");
+    } catch (e) {
+        console.log(e);
+    }
+}
+
+logError();
+
 console.log("Error message without stacks http://www.chromium.org/");
 
 console.log("Error valid stack #2\n    at http://www.chromium.org/boo.js:40:70\n    at foo(http://www.chromium.org/foo.js:10:50)");

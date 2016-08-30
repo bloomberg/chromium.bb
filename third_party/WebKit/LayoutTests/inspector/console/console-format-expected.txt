@@ -122,22 +122,24 @@ console-format.html:7 test named "test"
 console-format.html:8 ["test named "test""]
 globals[3]
 "test named "test""
-console-format.html:7 Error(…)
+console-format.html:7 Error
 console-format.html:8 [Error
 ]
 globals[4]
-Error(…)
-console-format.html:7 Error: my error message(…)
+Error
+console-format.html:7 Error: my error message
 console-format.html:8 [Error: my error message
 ]
 globals[5]
-Error: my error message(…)
-console-format.html:7 Error: my multiline(…)
+Error: my error message
+console-format.html:7 Error: my multiline
+error message
 console-format.html:8 [Error: my multiline
 error message
 ]
 globals[6]
-Error: my multiline(…)
+Error: my multiline
+error message
 console-format.html:7 
     <p id="p">Tests that console logging dumps proper messages.</p>
 console-format.html:8 [p#p]

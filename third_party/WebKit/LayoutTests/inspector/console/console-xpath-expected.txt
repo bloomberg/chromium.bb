@@ -14,6 +14,7 @@ false
 1
 href="http://chromium.org"
 href="http://chromium.org"
-VM:1 Uncaught DOMException: Failed to execute '$x' on 'CommandLineAPI': The string './a@href' is not a valid XPath expression.(…)(anonymous function) @ VM:1
+VM:1 Uncaught DOMException: Failed to execute '$x' on 'CommandLineAPI': The string './a@href' is not a valid XPath expression.
+    at <anonymous>:1:1(anonymous function) @ VM:1
 VM:1 complete
 

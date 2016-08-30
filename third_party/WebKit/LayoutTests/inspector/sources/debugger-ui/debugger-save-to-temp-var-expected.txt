@@ -25,5 +25,5 @@ temp14
 temp15
 func() {}
 temp16
-Error: errr(…)
+Error: errr
 

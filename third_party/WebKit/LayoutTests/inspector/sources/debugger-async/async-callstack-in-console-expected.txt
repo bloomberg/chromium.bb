@@ -15,7 +15,8 @@ timeout1 @ async-callstack-in-console.html:17
 setTimeout (async)
 testFunction @ async-callstack-in-console.html:12
 
-    async-callstack-in-console.html:24 Uncaught Error: foo(…)
+    async-callstack-in-console.html:24 Uncaught Error: foo
+    at timeout2 (async-callstack-in-console.html:24)
         
 timeout2 @ async-callstack-in-console.html:24
 setTimeout (async)

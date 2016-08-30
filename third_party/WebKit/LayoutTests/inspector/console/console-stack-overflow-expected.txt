@@ -1,5 +1,15 @@
 CONSOLE ERROR: line 6: Uncaught RangeError: Maximum call stack size exceeded
 Tests that when stack overflow exception happens when inspector is open the stack trace is correctly shown in console.
 
-console-stack-overflow.html:6 Uncaught RangeError: Maximum call stack size exceeded(…)overflow @ console-stack-overflow.html:6overflow @ console-stack-overflow.html:8overflow @ console-stack-overflow.html:8overflow @ console-stack-overflow.html:8overflow @ console-stack-overflow.html:8overflow @ console-stack-overflow.html:8overflow @ console-stack-overflow.html:8overflow @ console-stack-overflow.html:8overflow @ console-stack-overflow.html:8overflow @ console-stack-overflow.html:8overflow @ console-stack-overflow.html:8overflow @ console-stack-overflow.html:8overflow @ console-stack-overflow.html:8overflow @ console-stack-overflow.html:8overflow @ console-stack-overflow.html:8overflow @ console-stack-overflow.html:8overflow @ console-stack-overflow.html:8overflow @ console-stack-overflow.html:8overflow @ console-stack-overflow.html:8overflow @ console-stack-overflow.html:8overflow @ console-stack-overflow.html:8overflow @ console-stack-overflow.html:8overflow @ console-stack-overflow.html:8overflow @ console
+console-stack-overflow.html:6 Uncaught RangeError: Maximum call stack size exceeded
+    at overflow (console-stack-overflow.html:6)
+    at overflow (console-stack-overflow.html:8)
+    at overflow (console-stack-overflow.html:8)
+    at overflow (console-stack-overflow.html:8)
+    at overflow (console-stack-overflow.html:8)
+    at overflow (console-stack-overflow.html:8)
+    at overflow (console-stack-overflow.html:8)
+    at overflow (console-stack-overflow.html:8)
+    at overflow (console-stack-overflow.html:8)
+    at overflow (console-stack-overflow.html:8)overflow @ console-stack-overflow.html:6overflow @ console-stack-overflow.html:8overflow @ console-stack-overflow.html:8overflow @ console-stack-overflow.html:8overflow @ console-stack-overflow.html:8overflow @ console-stack-overflow.html:8overflow @ console-stack-overflow.html:8overflow @ console-stack-overflow.html:8overflow @ console-stack-overflow.html:8overflow @ console-stack-overflow.html:8overflow @ console-stack-overflow.html:8overflow @ console-st
 
