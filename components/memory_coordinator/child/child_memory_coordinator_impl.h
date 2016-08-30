@@ -31,8 +31,11 @@ class MEMORY_COORDINATOR_EXPORT ChildMemoryCoordinatorImpl
     : public ClientRegistry,
       NON_EXPORTED_BASE(public mojom::ChildMemoryCoordinator) {
  public:
-  explicit ChildMemoryCoordinatorImpl(mojom::MemoryCoordinatorHandlePtr parent,
-                                      ChildMemoryCoordinatorDelegate* delegate);
+  // Returns the instance of ChildMemoryCoordinatorImpl. Could be nullptr.
+  static ChildMemoryCoordinatorImpl* GetInstance();
+
+  ChildMemoryCoordinatorImpl(mojom::MemoryCoordinatorHandlePtr parent,
+                             ChildMemoryCoordinatorDelegate* delegate);
   ~ChildMemoryCoordinatorImpl() override;
 
   // mojom::ChildMemoryCoordinator implementations:
