@@ -86,7 +86,7 @@ class SearchBoxViewTest : public views::test::WidgetTest,
 
   void KeyPress(ui::KeyboardCode key_code) {
     ui::KeyEvent event(ui::ET_KEY_PRESSED, key_code, ui::EF_NONE);
-    view_->search_box()->OnKeyPressed(event);
+    view_->search_box()->OnKeyEvent(&event);
     // Emulates the input method.
     if (::isalnum(static_cast<int>(key_code))) {
       base::char16 character = ::tolower(static_cast<int>(key_code));

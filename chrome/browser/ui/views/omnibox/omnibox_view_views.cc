@@ -642,13 +642,6 @@ void OmniboxViewViews::EmphasizeURLComponents() {
   }
 }
 
-bool OmniboxViewViews::OnKeyReleased(const ui::KeyEvent& event) {
-  // The omnibox contents may change while the control key is pressed.
-  if (event.key_code() == ui::VKEY_CONTROL)
-    model()->OnControlKeyChanged(false);
-  return views::Textfield::OnKeyReleased(event);
-}
-
 bool OmniboxViewViews::IsItemForCommandIdDynamic(int command_id) const {
   return command_id == IDS_PASTE_AND_GO;
 }
@@ -705,71 +698,6 @@ void OmniboxViewViews::OnMouseReleased(const ui::MouseEvent& event) {
     SelectAll(true);
   }
   select_all_on_mouse_release_ = false;
-}
-
-bool OmniboxViewViews::OnKeyPressed(const ui::KeyEvent& event) {
-  // Skip processing of [Alt]+<num-pad digit> Unicode alt key codes.
-  // Otherwise, if num-lock is off, the events are handled as [Up], [Down], etc.
-  if (event.IsUnicodeKeyCode())
-    return views::Textfield::OnKeyPressed(event);
-
-  const bool shift = event.IsShiftDown();
-  const bool control = event.IsControlDown();
-  const bool alt = event.IsAltDown() || event.IsAltGrDown();
-  switch (event.key_code()) {
-    case ui::VKEY_RETURN:
-      model()->AcceptInput(alt ? NEW_FOREGROUND_TAB : CURRENT_TAB, false);
-      return true;
-    case ui::VKEY_ESCAPE:
-      return model()->OnEscapeKeyPressed();
-    case ui::VKEY_CONTROL:
-      model()->OnControlKeyChanged(true);
-      break;
-    case ui::VKEY_DELETE:
-      if (shift && model()->popup_model()->IsOpen())
-        model()->popup_model()->TryDeletingCurrentItem();
-      break;
-    case ui::VKEY_UP:
-      if (IsTextEditCommandEnabled(ui::TextEditCommand::MOVE_UP)) {
-        ExecuteTextEditCommand(ui::TextEditCommand::MOVE_UP);
-        return true;
-      }
-      break;
-    case ui::VKEY_DOWN:
-      if (IsTextEditCommandEnabled(ui::TextEditCommand::MOVE_DOWN)) {
-        ExecuteTextEditCommand(ui::TextEditCommand::MOVE_DOWN);
-        return true;
-      }
-      break;
-    case ui::VKEY_PRIOR:
-      if (control || alt || shift)
-        return false;
-      model()->OnUpOrDownKeyPressed(-1 * model()->result().size());
-      return true;
-    case ui::VKEY_NEXT:
-      if (control || alt || shift)
-        return false;
-      model()->OnUpOrDownKeyPressed(model()->result().size());
-      return true;
-    case ui::VKEY_V:
-      if (control && !alt &&
-          IsTextEditCommandEnabled(ui::TextEditCommand::PASTE)) {
-        ExecuteTextEditCommand(ui::TextEditCommand::PASTE);
-        return true;
-      }
-      break;
-    case ui::VKEY_INSERT:
-      if (shift && !control &&
-          IsTextEditCommandEnabled(ui::TextEditCommand::PASTE)) {
-        ExecuteTextEditCommand(ui::TextEditCommand::PASTE);
-        return true;
-      }
-      break;
-    default:
-      break;
-  }
-
-  return views::Textfield::OnKeyPressed(event) || HandleEarlyTabActions(event);
 }
 
 void OmniboxViewViews::OnGestureEvent(ui::GestureEvent* event) {
@@ -955,39 +883,105 @@ void OmniboxViewViews::ContentsChanged(views::Textfield* sender,
 
 bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
                                       const ui::KeyEvent& event) {
-  if (event.type() != ui::ET_KEY_PRESSED)
+  if (event.type() == ui::ET_KEY_RELEASED) {
+    // The omnibox contents may change while the control key is pressed.
+    if (event.key_code() == ui::VKEY_CONTROL)
+      model()->OnControlKeyChanged(false);
+
     return false;
+  }
 
   delete_at_end_pressed_ = false;
 
-  if (event.key_code() == ui::VKEY_BACK) {
-    // No extra handling is needed in keyword search mode, if there is a
-    // non-empty selection, or if the cursor is not leading the text.
-    if (model()->is_keyword_hint() || model()->keyword().empty() ||
-        HasSelection() || GetCursorPosition() != 0)
-      return false;
-    model()->ClearKeyword();
-    return true;
+  // Skip processing of [Alt]+<num-pad digit> Unicode alt key codes.
+  // Otherwise, if num-lock is off, the events are handled as [Up], [Down], etc.
+  if (event.IsUnicodeKeyCode())
+    return false;
+
+  const bool shift = event.IsShiftDown();
+  const bool control = event.IsControlDown();
+  const bool alt = event.IsAltDown() || event.IsAltGrDown();
+  switch (event.key_code()) {
+    case ui::VKEY_RETURN:
+      model()->AcceptInput(alt ? NEW_FOREGROUND_TAB : CURRENT_TAB, false);
+      return true;
+    case ui::VKEY_ESCAPE:
+      return model()->OnEscapeKeyPressed();
+    case ui::VKEY_CONTROL:
+      model()->OnControlKeyChanged(true);
+      break;
+    case ui::VKEY_DELETE:
+      if (shift && model()->popup_model()->IsOpen())
+        model()->popup_model()->TryDeletingCurrentItem();
+
+      delete_at_end_pressed_ = (!event.IsAltDown() && !HasSelection() &&
+                                GetCursorPosition() == text().length());
+      break;
+    case ui::VKEY_UP:
+      if (IsTextEditCommandEnabled(ui::TextEditCommand::MOVE_UP)) {
+        ExecuteTextEditCommand(ui::TextEditCommand::MOVE_UP);
+        return true;
+      }
+      break;
+    case ui::VKEY_DOWN:
+      if (IsTextEditCommandEnabled(ui::TextEditCommand::MOVE_DOWN)) {
+        ExecuteTextEditCommand(ui::TextEditCommand::MOVE_DOWN);
+        return true;
+      }
+      break;
+    case ui::VKEY_PRIOR:
+      if (control || alt || shift)
+        return false;
+      model()->OnUpOrDownKeyPressed(-1 * model()->result().size());
+      return true;
+    case ui::VKEY_NEXT:
+      if (control || alt || shift)
+        return false;
+      model()->OnUpOrDownKeyPressed(model()->result().size());
+      return true;
+    case ui::VKEY_V:
+      if (control && !alt &&
+          IsTextEditCommandEnabled(ui::TextEditCommand::PASTE)) {
+        ExecuteTextEditCommand(ui::TextEditCommand::PASTE);
+        return true;
+      }
+      break;
+    case ui::VKEY_INSERT:
+      if (shift && !control &&
+          IsTextEditCommandEnabled(ui::TextEditCommand::PASTE)) {
+        ExecuteTextEditCommand(ui::TextEditCommand::PASTE);
+        return true;
+      }
+      break;
+    case ui::VKEY_BACK:
+      // No extra handling is needed in keyword search mode, if there is a
+      // non-empty selection, or if the cursor is not leading the text.
+      if (model()->is_keyword_hint() || model()->keyword().empty() ||
+          HasSelection() || GetCursorPosition() != 0)
+        return false;
+      model()->ClearKeyword();
+      return true;
+
+    // Handle the right-arrow key for LTR text and the left-arrow key for RTL
+    // text if there is gray text that needs to be committed.
+    case ui::VKEY_RIGHT:
+      if (GetCursorPosition() == text().length() &&
+          GetTextDirection() == base::i18n::LEFT_TO_RIGHT) {
+        return model()->CommitSuggestedText();
+      }
+      break;
+    case ui::VKEY_LEFT:
+      if (GetCursorPosition() == text().length() &&
+          GetTextDirection() == base::i18n::RIGHT_TO_LEFT) {
+        return model()->CommitSuggestedText();
+      }
+      break;
+
+    default:
+      break;
   }
 
-  if (event.key_code() == ui::VKEY_DELETE && !event.IsAltDown()) {
-    delete_at_end_pressed_ =
-        (!HasSelection() && GetCursorPosition() == text().length());
-  }
-
-  // Handle the right-arrow key for LTR text and the left-arrow key for RTL text
-  // if there is gray text that needs to be committed.
-  if (GetCursorPosition() == text().length()) {
-    base::i18n::TextDirection direction = GetTextDirection();
-    if ((direction == base::i18n::LEFT_TO_RIGHT &&
-         event.key_code() == ui::VKEY_RIGHT) ||
-        (direction == base::i18n::RIGHT_TO_LEFT &&
-         event.key_code() == ui::VKEY_LEFT)) {
-      return model()->CommitSuggestedText();
-    }
-  }
-
-  return false;
+  return HandleEarlyTabActions(event);
 }
 
 void OmniboxViewViews::OnBeforeUserAction(views::Textfield* sender) {

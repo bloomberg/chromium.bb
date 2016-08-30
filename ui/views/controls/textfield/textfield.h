@@ -212,8 +212,6 @@ class VIEWS_EXPORT Textfield : public View,
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
-  bool OnKeyPressed(const ui::KeyEvent& event) override;
-  bool OnKeyReleased(const ui::KeyEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   bool CanHandleAccelerators() const override;
@@ -322,6 +320,13 @@ class VIEWS_EXPORT Textfield : public View,
 
  private:
   friend class TextfieldTestApi;
+
+  // View overrides:
+  // Declared final since overriding by subclasses would interfere with the
+  // accounting related to the scheduled text edit command. Subclasses should
+  // use TextfieldController::HandleKeyEvent, to intercept the key event.
+  bool OnKeyPressed(const ui::KeyEvent& event) final;
+  bool OnKeyReleased(const ui::KeyEvent& event) final;
 
   // Handles a request to change the value of this text field from software
   // using an accessibility API (typically automation software, screen readers

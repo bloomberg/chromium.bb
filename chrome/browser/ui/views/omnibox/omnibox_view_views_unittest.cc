@@ -15,8 +15,10 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/ime/text_edit_commands.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
+#include "ui/views/controls/textfield/textfield_test_api.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
@@ -92,6 +94,10 @@ class OmniboxViewViewsTest : public testing::Test {
     return omnibox_view();
   }
 
+  ui::TextEditCommand scheduled_text_edit_command() const {
+    return test_api_->scheduled_text_edit_command();
+  }
+
  private:
   // testing::Test:
   void SetUp() override {
@@ -101,6 +107,7 @@ class OmniboxViewViewsTest : public testing::Test {
 #endif
     omnibox_view_.reset(new TestingOmniboxViewViews(
         &omnibox_edit_controller_, &profile_, &command_updater_));
+    test_api_.reset(new views::TextfieldTestApi(omnibox_view_.get()));
     omnibox_view_->Init();
   }
 
@@ -116,6 +123,9 @@ class OmniboxViewViewsTest : public testing::Test {
   CommandUpdater command_updater_;
   TestingOmniboxEditController omnibox_edit_controller_;
   std::unique_ptr<TestingOmniboxViewViews> omnibox_view_;
+  std::unique_ptr<views::TextfieldTestApi> test_api_;
+
+  DISALLOW_COPY_AND_ASSIGN(OmniboxViewViewsTest);
 };
 
 // Checks that a single change of the text in the omnibox invokes
@@ -136,7 +146,21 @@ TEST_F(OmniboxViewViewsTest, UpdatePopupCall) {
       2, base::ASCIIToUTF16("ab"), gfx::Range(2));
 
   ui::KeyEvent pressed(ui::ET_KEY_PRESSED, ui::VKEY_BACK, 0);
-  omnibox_textfield()->OnKeyPressed(pressed);
+  omnibox_textfield()->OnKeyEvent(&pressed);
   omnibox_view()->CheckUpdatePopupCallInfo(
       3, base::ASCIIToUTF16("a"), gfx::Range(1));
+}
+
+// Test that the scheduled text edit command is cleared when Textfield receives
+// a key press event. This ensures that the scheduled text edit command property
+// is always in the correct state. Test for http://crbug.com/613948.
+TEST_F(OmniboxViewViewsTest, ScheduledTextEditCommand) {
+  omnibox_textfield()->SetTextEditCommandForNextKeyEvent(
+      ui::TextEditCommand::MOVE_UP);
+  EXPECT_EQ(ui::TextEditCommand::MOVE_UP, scheduled_text_edit_command());
+
+  ui::KeyEvent up_pressed(ui::ET_KEY_PRESSED, ui::VKEY_UP, 0);
+  omnibox_textfield()->OnKeyEvent(&up_pressed);
+  EXPECT_EQ(ui::TextEditCommand::INVALID_COMMAND,
+            scheduled_text_edit_command());
 }

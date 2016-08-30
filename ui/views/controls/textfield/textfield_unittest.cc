@@ -266,29 +266,6 @@ class TestTextfield : public views::Textfield {
        key_received_(false),
        weak_ptr_factory_(this) {}
 
-  bool OnKeyPressed(const ui::KeyEvent& e) override {
-    key_received_ = true;
-
-    // Since OnKeyPressed() might destroy |this|, get a weak pointer and
-    // verify it isn't null before writing the bool value to key_handled_.
-    base::WeakPtr<TestTextfield> textfield(weak_ptr_factory_.GetWeakPtr());
-    bool key = views::Textfield::OnKeyPressed(e);
-
-    if (!textfield)
-      return key;
-
-    key_handled_ = key;
-
-    return key_handled_;
-  }
-
-  bool OnKeyReleased(const ui::KeyEvent& e) override {
-    key_received_ = true;
-    key_handled_ = views::Textfield::OnKeyReleased(e);
-    EXPECT_FALSE(key_handled_);  // Textfield doesn't override OnKeyReleased.
-    return key_handled_;
-  }
-
   // ui::TextInputClient overrides:
   void InsertChar(const ui::KeyEvent& e) override {
     views::Textfield::InsertChar(e);
@@ -305,6 +282,25 @@ class TestTextfield : public views::Textfield {
   void clear() { key_received_ = key_handled_ = false; }
 
  private:
+  // views::View override:
+  void OnKeyEvent(ui::KeyEvent* event) override {
+    key_received_ = true;
+
+    // Since Textfield::OnKeyPressed() might destroy |this|, get a weak pointer
+    // and verify it isn't null before writing the bool value to key_handled_.
+    base::WeakPtr<TestTextfield> textfield(weak_ptr_factory_.GetWeakPtr());
+    views::View::OnKeyEvent(event);
+
+    if (!textfield)
+      return;
+
+    key_handled_ = event->handled();
+
+    // Currently, Textfield::OnKeyReleased always returns false.
+    if (event->type() == ui::ET_KEY_RELEASED)
+      EXPECT_FALSE(key_handled_);
+  }
+
   bool key_handled_;
   bool key_received_;
 

@@ -37,6 +37,10 @@ class TextfieldTestApi {
     return textfield_->touch_selection_controller_.get();
   }
 
+  ui::TextEditCommand scheduled_text_edit_command() const {
+    return textfield_->scheduled_text_edit_command_;
+  }
+
  private:
   Textfield* textfield_;
 
