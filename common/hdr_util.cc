@@ -32,9 +32,9 @@ bool MasteringMetadataValuePresent(double value) {
 bool CopyMasteringMetadata(const mkvparser::MasteringMetadata& parser_mm,
                            mkvmuxer::MasteringMetadata* muxer_mm) {
   if (MasteringMetadataValuePresent(parser_mm.luminance_max))
-    muxer_mm->luminance_max = parser_mm.luminance_max;
+    muxer_mm->set_luminance_max(parser_mm.luminance_max);
   if (MasteringMetadataValuePresent(parser_mm.luminance_min))
-    muxer_mm->luminance_min = parser_mm.luminance_min;
+    muxer_mm->set_luminance_min(parser_mm.luminance_min);
 
   PrimaryChromaticityPtr r_ptr(NULL);
   PrimaryChromaticityPtr g_ptr(NULL);
@@ -76,34 +76,37 @@ bool CopyColour(const mkvparser::Colour& parser_colour,
     return false;
 
   if (ColourValuePresent(parser_colour.matrix_coefficients))
-    muxer_colour->matrix_coefficients = parser_colour.matrix_coefficients;
+    muxer_colour->set_matrix_coefficients(parser_colour.matrix_coefficients);
   if (ColourValuePresent(parser_colour.bits_per_channel))
-    muxer_colour->bits_per_channel = parser_colour.bits_per_channel;
-  if (ColourValuePresent(parser_colour.chroma_subsampling_horz))
-    muxer_colour->chroma_subsampling_horz =
-        parser_colour.chroma_subsampling_horz;
-  if (ColourValuePresent(parser_colour.chroma_subsampling_vert))
-    muxer_colour->chroma_subsampling_vert =
-        parser_colour.chroma_subsampling_vert;
+    muxer_colour->set_bits_per_channel(parser_colour.bits_per_channel);
+  if (ColourValuePresent(parser_colour.chroma_subsampling_horz)) {
+    muxer_colour->set_chroma_subsampling_horz(
+        parser_colour.chroma_subsampling_horz);
+  }
+  if (ColourValuePresent(parser_colour.chroma_subsampling_vert)) {
+    muxer_colour->set_chroma_subsampling_vert(
+        parser_colour.chroma_subsampling_vert);
+  }
   if (ColourValuePresent(parser_colour.cb_subsampling_horz))
-    muxer_colour->cb_subsampling_horz = parser_colour.cb_subsampling_horz;
+    muxer_colour->set_cb_subsampling_horz(parser_colour.cb_subsampling_horz);
   if (ColourValuePresent(parser_colour.cb_subsampling_vert))
-    muxer_colour->cb_subsampling_vert = parser_colour.cb_subsampling_vert;
+    muxer_colour->set_cb_subsampling_vert(parser_colour.cb_subsampling_vert);
   if (ColourValuePresent(parser_colour.chroma_siting_horz))
-    muxer_colour->chroma_siting_horz = parser_colour.chroma_siting_horz;
+    muxer_colour->set_chroma_siting_horz(parser_colour.chroma_siting_horz);
   if (ColourValuePresent(parser_colour.chroma_siting_vert))
-    muxer_colour->chroma_siting_vert = parser_colour.chroma_siting_vert;
+    muxer_colour->set_chroma_siting_vert(parser_colour.chroma_siting_vert);
   if (ColourValuePresent(parser_colour.range))
-    muxer_colour->range = parser_colour.range;
-  if (ColourValuePresent(parser_colour.transfer_characteristics))
-    muxer_colour->transfer_characteristics =
-        parser_colour.transfer_characteristics;
+    muxer_colour->set_range(parser_colour.range);
+  if (ColourValuePresent(parser_colour.transfer_characteristics)) {
+    muxer_colour->set_transfer_characteristics(
+        parser_colour.transfer_characteristics);
+  }
   if (ColourValuePresent(parser_colour.primaries))
-    muxer_colour->primaries = parser_colour.primaries;
+    muxer_colour->set_primaries(parser_colour.primaries);
   if (ColourValuePresent(parser_colour.max_cll))
-    muxer_colour->max_cll = parser_colour.max_cll;
+    muxer_colour->set_max_cll(parser_colour.max_cll);
   if (ColourValuePresent(parser_colour.max_fall))
-    muxer_colour->max_fall = parser_colour.max_fall;
+    muxer_colour->set_max_fall(parser_colour.max_fall);
 
   if (parser_colour.mastering_metadata) {
     mkvmuxer::MasteringMetadata muxer_mm;

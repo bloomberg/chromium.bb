@@ -68,7 +68,7 @@ bool CopyChromaticity(const PrimaryChromaticity* src,
   if (!dst)
     return false;
 
-  dst->reset(new (std::nothrow) PrimaryChromaticity(src->x, src->y));
+  dst->reset(new (std::nothrow) PrimaryChromaticity(src->x(), src->y()));
   if (!dst->get())
     return false;
 
@@ -950,14 +950,15 @@ void Track::set_name(const char* name) {
 //
 // Colour and its child elements
 
-uint64_t PrimaryChromaticity::PrimaryChromaticityPayloadSize(
+uint64_t PrimaryChromaticity::PrimaryChromaticitySize(
     libwebm::MkvId x_id, libwebm::MkvId y_id) const {
-  return EbmlElementSize(x_id, x) + EbmlElementSize(y_id, y);
+  return EbmlElementSize(x_id, x_) + EbmlElementSize(y_id, y_);
 }
 
 bool PrimaryChromaticity::Write(IMkvWriter* writer, libwebm::MkvId x_id,
                                 libwebm::MkvId y_id) const {
-  return WriteEbmlElement(writer, x_id, x) && WriteEbmlElement(writer, y_id, y);
+  return WriteEbmlElement(writer, x_id, x_) &&
+         WriteEbmlElement(writer, y_id, y_);
 }
 
 uint64_t MasteringMetadata::MasteringMetadataSize() const {
@@ -978,12 +979,12 @@ bool MasteringMetadata::Write(IMkvWriter* writer) const {
 
   if (!WriteEbmlMasterElement(writer, libwebm::kMkvMasteringMetadata, size))
     return false;
-  if (luminance_max != kValueNotPresent &&
-      !WriteEbmlElement(writer, libwebm::kMkvLuminanceMax, luminance_max)) {
+  if (luminance_max_ != kValueNotPresent &&
+      !WriteEbmlElement(writer, libwebm::kMkvLuminanceMax, luminance_max_)) {
     return false;
   }
-  if (luminance_min != kValueNotPresent &&
-      !WriteEbmlElement(writer, libwebm::kMkvLuminanceMin, luminance_min)) {
+  if (luminance_min_ != kValueNotPresent &&
+      !WriteEbmlElement(writer, libwebm::kMkvLuminanceMin, luminance_min_)) {
     return false;
   }
   if (r_ &&
@@ -1044,25 +1045,25 @@ bool MasteringMetadata::SetChromaticity(
 uint64_t MasteringMetadata::PayloadSize() const {
   uint64_t size = 0;
 
-  if (luminance_max != kValueNotPresent)
-    size += EbmlElementSize(libwebm::kMkvLuminanceMax, luminance_max);
-  if (luminance_min != kValueNotPresent)
-    size += EbmlElementSize(libwebm::kMkvLuminanceMin, luminance_min);
+  if (luminance_max_ != kValueNotPresent)
+    size += EbmlElementSize(libwebm::kMkvLuminanceMax, luminance_max_);
+  if (luminance_min_ != kValueNotPresent)
+    size += EbmlElementSize(libwebm::kMkvLuminanceMin, luminance_min_);
 
   if (r_) {
-    size += r_->PrimaryChromaticityPayloadSize(
-        libwebm::kMkvPrimaryRChromaticityX, libwebm::kMkvPrimaryRChromaticityY);
+    size += r_->PrimaryChromaticitySize(libwebm::kMkvPrimaryRChromaticityX,
+                                        libwebm::kMkvPrimaryRChromaticityY);
   }
   if (g_) {
-    size += g_->PrimaryChromaticityPayloadSize(
-        libwebm::kMkvPrimaryGChromaticityX, libwebm::kMkvPrimaryGChromaticityY);
+    size += g_->PrimaryChromaticitySize(libwebm::kMkvPrimaryGChromaticityX,
+                                        libwebm::kMkvPrimaryGChromaticityY);
   }
   if (b_) {
-    size += b_->PrimaryChromaticityPayloadSize(
-        libwebm::kMkvPrimaryBChromaticityX, libwebm::kMkvPrimaryBChromaticityY);
+    size += b_->PrimaryChromaticitySize(libwebm::kMkvPrimaryBChromaticityX,
+                                        libwebm::kMkvPrimaryBChromaticityY);
   }
   if (white_point_) {
-    size += white_point_->PrimaryChromaticityPayloadSize(
+    size += white_point_->PrimaryChromaticitySize(
         libwebm::kMkvWhitePointChromaticityX,
         libwebm::kMkvWhitePointChromaticityY);
   }
@@ -1089,70 +1090,70 @@ bool Colour::Write(IMkvWriter* writer) const {
   if (!WriteEbmlMasterElement(writer, libwebm::kMkvColour, size))
     return false;
 
-  if (matrix_coefficients != kValueNotPresent &&
+  if (matrix_coefficients_ != kValueNotPresent &&
       !WriteEbmlElement(writer, libwebm::kMkvMatrixCoefficients,
-                        static_cast<uint64>(matrix_coefficients))) {
+                        static_cast<uint64>(matrix_coefficients_))) {
     return false;
   }
-  if (bits_per_channel != kValueNotPresent &&
+  if (bits_per_channel_ != kValueNotPresent &&
       !WriteEbmlElement(writer, libwebm::kMkvBitsPerChannel,
-                        static_cast<uint64>(bits_per_channel))) {
+                        static_cast<uint64>(bits_per_channel_))) {
     return false;
   }
-  if (chroma_subsampling_horz != kValueNotPresent &&
+  if (chroma_subsampling_horz_ != kValueNotPresent &&
       !WriteEbmlElement(writer, libwebm::kMkvChromaSubsamplingHorz,
-                        static_cast<uint64>(chroma_subsampling_horz))) {
+                        static_cast<uint64>(chroma_subsampling_horz_))) {
     return false;
   }
-  if (chroma_subsampling_vert != kValueNotPresent &&
+  if (chroma_subsampling_vert_ != kValueNotPresent &&
       !WriteEbmlElement(writer, libwebm::kMkvChromaSubsamplingVert,
-                        static_cast<uint64>(chroma_subsampling_vert))) {
+                        static_cast<uint64>(chroma_subsampling_vert_))) {
     return false;
   }
 
-  if (cb_subsampling_horz != kValueNotPresent &&
+  if (cb_subsampling_horz_ != kValueNotPresent &&
       !WriteEbmlElement(writer, libwebm::kMkvCbSubsamplingHorz,
-                        static_cast<uint64>(cb_subsampling_horz))) {
+                        static_cast<uint64>(cb_subsampling_horz_))) {
     return false;
   }
-  if (cb_subsampling_vert != kValueNotPresent &&
+  if (cb_subsampling_vert_ != kValueNotPresent &&
       !WriteEbmlElement(writer, libwebm::kMkvCbSubsamplingVert,
-                        static_cast<uint64>(cb_subsampling_vert))) {
+                        static_cast<uint64>(cb_subsampling_vert_))) {
     return false;
   }
-  if (chroma_siting_horz != kValueNotPresent &&
+  if (chroma_siting_horz_ != kValueNotPresent &&
       !WriteEbmlElement(writer, libwebm::kMkvChromaSitingHorz,
-                        static_cast<uint64>(chroma_siting_horz))) {
+                        static_cast<uint64>(chroma_siting_horz_))) {
     return false;
   }
-  if (chroma_siting_vert != kValueNotPresent &&
+  if (chroma_siting_vert_ != kValueNotPresent &&
       !WriteEbmlElement(writer, libwebm::kMkvChromaSitingVert,
-                        static_cast<uint64>(chroma_siting_vert))) {
+                        static_cast<uint64>(chroma_siting_vert_))) {
     return false;
   }
-  if (range != kValueNotPresent &&
+  if (range_ != kValueNotPresent &&
       !WriteEbmlElement(writer, libwebm::kMkvRange,
-                        static_cast<uint64>(range))) {
+                        static_cast<uint64>(range_))) {
     return false;
   }
-  if (transfer_characteristics != kValueNotPresent &&
+  if (transfer_characteristics_ != kValueNotPresent &&
       !WriteEbmlElement(writer, libwebm::kMkvTransferCharacteristics,
-                        static_cast<uint64>(transfer_characteristics))) {
+                        static_cast<uint64>(transfer_characteristics_))) {
     return false;
   }
-  if (primaries != kValueNotPresent &&
+  if (primaries_ != kValueNotPresent &&
       !WriteEbmlElement(writer, libwebm::kMkvPrimaries,
-                        static_cast<uint64>(primaries))) {
+                        static_cast<uint64>(primaries_))) {
     return false;
   }
-  if (max_cll != kValueNotPresent &&
+  if (max_cll_ != kValueNotPresent &&
       !WriteEbmlElement(writer, libwebm::kMkvMaxCLL,
-                        static_cast<uint64>(max_cll))) {
+                        static_cast<uint64>(max_cll_))) {
     return false;
   }
-  if (max_fall != kValueNotPresent &&
+  if (max_fall_ != kValueNotPresent &&
       !WriteEbmlElement(writer, libwebm::kMkvMaxFALL,
-                        static_cast<uint64>(max_fall))) {
+                        static_cast<uint64>(max_fall_))) {
     return false;
   }
 
@@ -1167,8 +1168,8 @@ bool Colour::SetMasteringMetadata(const MasteringMetadata& mastering_metadata) {
   if (!mm_ptr.get())
     return false;
 
-  mm_ptr->luminance_max = mastering_metadata.luminance_max;
-  mm_ptr->luminance_min = mastering_metadata.luminance_min;
+  mm_ptr->set_luminance_max(mastering_metadata.luminance_max());
+  mm_ptr->set_luminance_min(mastering_metadata.luminance_min());
 
   if (!mm_ptr->SetChromaticity(mastering_metadata.r(), mastering_metadata.g(),
                                mastering_metadata.b(),
@@ -1184,43 +1185,56 @@ bool Colour::SetMasteringMetadata(const MasteringMetadata& mastering_metadata) {
 uint64_t Colour::PayloadSize() const {
   uint64_t size = 0;
 
-  if (matrix_coefficients != kValueNotPresent)
+  if (matrix_coefficients_ != kValueNotPresent) {
     size += EbmlElementSize(libwebm::kMkvMatrixCoefficients,
-                            static_cast<uint64>(matrix_coefficients));
-  if (bits_per_channel != kValueNotPresent)
+                            static_cast<uint64>(matrix_coefficients_));
+  }
+  if (bits_per_channel_ != kValueNotPresent) {
     size += EbmlElementSize(libwebm::kMkvBitsPerChannel,
-                            static_cast<uint64>(bits_per_channel));
-  if (chroma_subsampling_horz != kValueNotPresent)
+                            static_cast<uint64>(bits_per_channel_));
+  }
+  if (chroma_subsampling_horz_ != kValueNotPresent) {
     size += EbmlElementSize(libwebm::kMkvChromaSubsamplingHorz,
-                            static_cast<uint64>(chroma_subsampling_horz));
-  if (chroma_subsampling_vert != kValueNotPresent)
+                            static_cast<uint64>(chroma_subsampling_horz_));
+  }
+  if (chroma_subsampling_vert_ != kValueNotPresent) {
     size += EbmlElementSize(libwebm::kMkvChromaSubsamplingVert,
-                            static_cast<uint64>(chroma_subsampling_vert));
-  if (cb_subsampling_horz != kValueNotPresent)
+                            static_cast<uint64>(chroma_subsampling_vert_));
+  }
+  if (cb_subsampling_horz_ != kValueNotPresent) {
     size += EbmlElementSize(libwebm::kMkvCbSubsamplingHorz,
-                            static_cast<uint64>(cb_subsampling_horz));
-  if (cb_subsampling_vert != kValueNotPresent)
+                            static_cast<uint64>(cb_subsampling_horz_));
+  }
+  if (cb_subsampling_vert_ != kValueNotPresent) {
     size += EbmlElementSize(libwebm::kMkvCbSubsamplingVert,
-                            static_cast<uint64>(cb_subsampling_vert));
-  if (chroma_siting_horz != kValueNotPresent)
+                            static_cast<uint64>(cb_subsampling_vert_));
+  }
+  if (chroma_siting_horz_ != kValueNotPresent) {
     size += EbmlElementSize(libwebm::kMkvChromaSitingHorz,
-                            static_cast<uint64>(chroma_siting_horz));
-  if (chroma_siting_vert != kValueNotPresent)
+                            static_cast<uint64>(chroma_siting_horz_));
+  }
+  if (chroma_siting_vert_ != kValueNotPresent) {
     size += EbmlElementSize(libwebm::kMkvChromaSitingVert,
-                            static_cast<uint64>(chroma_siting_vert));
-  if (range != kValueNotPresent)
-    size += EbmlElementSize(libwebm::kMkvRange, static_cast<uint64>(range));
-  if (transfer_characteristics != kValueNotPresent)
+                            static_cast<uint64>(chroma_siting_vert_));
+  }
+  if (range_ != kValueNotPresent) {
+    size += EbmlElementSize(libwebm::kMkvRange, static_cast<uint64>(range_));
+  }
+  if (transfer_characteristics_ != kValueNotPresent) {
     size += EbmlElementSize(libwebm::kMkvTransferCharacteristics,
-                            static_cast<uint64>(transfer_characteristics));
-  if (primaries != kValueNotPresent)
+                            static_cast<uint64>(transfer_characteristics_));
+  }
+  if (primaries_ != kValueNotPresent) {
+    size += EbmlElementSize(libwebm::kMkvPrimaries,
+                            static_cast<uint64>(primaries_));
+  }
+  if (max_cll_ != kValueNotPresent) {
+    size += EbmlElementSize(libwebm::kMkvMaxCLL, static_cast<uint64>(max_cll_));
+  }
+  if (max_fall_ != kValueNotPresent) {
     size +=
-        EbmlElementSize(libwebm::kMkvPrimaries, static_cast<uint64>(primaries));
-  if (max_cll != kValueNotPresent)
-    size += EbmlElementSize(libwebm::kMkvMaxCLL, static_cast<uint64>(max_cll));
-  if (max_fall != kValueNotPresent)
-    size +=
-        EbmlElementSize(libwebm::kMkvMaxFALL, static_cast<uint64>(max_fall));
+        EbmlElementSize(libwebm::kMkvMaxFALL, static_cast<uint64>(max_fall_));
+  }
 
   if (mastering_metadata_)
     size += mastering_metadata_->MasteringMetadataSize();
@@ -1265,7 +1279,8 @@ bool Projection::Write(IMkvWriter* writer) const {
   if (!WriteEbmlElement(writer, libwebm::kMkvProjectionPoseYaw, pose_yaw_))
     return false;
 
-  if (!WriteEbmlElement(writer, libwebm::kMkvProjectionPosePitch, pose_pitch_)) {
+  if (!WriteEbmlElement(writer, libwebm::kMkvProjectionPosePitch,
+                        pose_pitch_)) {
     return false;
   }
 
@@ -1457,19 +1472,19 @@ bool VideoTrack::SetColour(const Colour& colour) {
       return false;
   }
 
-  colour_ptr->matrix_coefficients = colour.matrix_coefficients;
-  colour_ptr->bits_per_channel = colour.bits_per_channel;
-  colour_ptr->chroma_subsampling_horz = colour.chroma_subsampling_horz;
-  colour_ptr->chroma_subsampling_vert = colour.chroma_subsampling_vert;
-  colour_ptr->cb_subsampling_horz = colour.cb_subsampling_horz;
-  colour_ptr->cb_subsampling_vert = colour.cb_subsampling_vert;
-  colour_ptr->chroma_siting_horz = colour.chroma_siting_horz;
-  colour_ptr->chroma_siting_vert = colour.chroma_siting_vert;
-  colour_ptr->range = colour.range;
-  colour_ptr->transfer_characteristics = colour.transfer_characteristics;
-  colour_ptr->primaries = colour.primaries;
-  colour_ptr->max_cll = colour.max_cll;
-  colour_ptr->max_fall = colour.max_fall;
+  colour_ptr->set_matrix_coefficients(colour.matrix_coefficients());
+  colour_ptr->set_bits_per_channel(colour.bits_per_channel());
+  colour_ptr->set_chroma_subsampling_horz(colour.chroma_subsampling_horz());
+  colour_ptr->set_chroma_subsampling_vert(colour.chroma_subsampling_vert());
+  colour_ptr->set_cb_subsampling_horz(colour.cb_subsampling_horz());
+  colour_ptr->set_cb_subsampling_vert(colour.cb_subsampling_vert());
+  colour_ptr->set_chroma_siting_horz(colour.chroma_siting_horz());
+  colour_ptr->set_chroma_siting_vert(colour.chroma_siting_vert());
+  colour_ptr->set_range(colour.range());
+  colour_ptr->set_transfer_characteristics(colour.transfer_characteristics());
+  colour_ptr->set_primaries(colour.primaries());
+  colour_ptr->set_max_cll(colour.max_cll());
+  colour_ptr->set_max_fall(colour.max_fall());
   delete colour_;
   colour_ = colour_ptr.release();
   return true;

@@ -354,17 +354,27 @@ class ContentEncoding {
 
 ///////////////////////////////////////////////////////////////
 // Colour element.
-struct PrimaryChromaticity {
-  PrimaryChromaticity(float x_val, float y_val) : x(x_val), y(y_val) {}
-  PrimaryChromaticity() : x(0), y(0) {}
+class PrimaryChromaticity {
+ public:
+  PrimaryChromaticity(float x_val, float y_val) : x_(x_val), y_(y_val) {}
+  PrimaryChromaticity() : x_(0), y_(0) {}
   ~PrimaryChromaticity() {}
-  uint64_t PrimaryChromaticityPayloadSize(libwebm::MkvId x_id,
-                                          libwebm::MkvId y_id) const;
+
+  // Returns sum of |x_id| and |y_id| element id sizes and payload sizes.
+  uint64_t PrimaryChromaticitySize(libwebm::MkvId x_id,
+                                   libwebm::MkvId y_id) const;
+
   bool Write(IMkvWriter* writer, libwebm::MkvId x_id,
              libwebm::MkvId y_id) const;
 
-  float x;
-  float y;
+  float x() const { return x_; }
+  void set_x(float new_x) { x_ = new_x; }
+  float y() const { return y_; }
+  void set_y(float new_y) { y_ = new_y; }
+
+ private:
+  float x_;
+  float y_;
 };
 
 class MasteringMetadata {
@@ -372,8 +382,8 @@ class MasteringMetadata {
   static const float kValueNotPresent;
 
   MasteringMetadata()
-      : luminance_max(kValueNotPresent),
-        luminance_min(kValueNotPresent),
+      : luminance_max_(kValueNotPresent),
+        luminance_min_(kValueNotPresent),
         r_(NULL),
         g_(NULL),
         b_(NULL),
@@ -399,13 +409,21 @@ class MasteringMetadata {
   const PrimaryChromaticity* b() const { return b_; }
   const PrimaryChromaticity* white_point() const { return white_point_; }
 
-  float luminance_max;
-  float luminance_min;
+  float luminance_max() const { return luminance_max_; }
+  void set_luminance_max(float luminance_max) {
+    luminance_max_ = luminance_max;
+  }
+  float luminance_min() const { return luminance_min_; }
+  void set_luminance_min(float luminance_min) {
+    luminance_min_ = luminance_min;
+  }
 
  private:
   // Returns size of MasteringMetadata child elements.
   uint64_t PayloadSize() const;
 
+  float luminance_max_;
+  float luminance_min_;
   PrimaryChromaticity* r_;
   PrimaryChromaticity* g_;
   PrimaryChromaticity* b_;
@@ -416,19 +434,19 @@ class Colour {
  public:
   static const uint64_t kValueNotPresent;
   Colour()
-      : matrix_coefficients(kValueNotPresent),
-        bits_per_channel(kValueNotPresent),
-        chroma_subsampling_horz(kValueNotPresent),
-        chroma_subsampling_vert(kValueNotPresent),
-        cb_subsampling_horz(kValueNotPresent),
-        cb_subsampling_vert(kValueNotPresent),
-        chroma_siting_horz(kValueNotPresent),
-        chroma_siting_vert(kValueNotPresent),
-        range(kValueNotPresent),
-        transfer_characteristics(kValueNotPresent),
-        primaries(kValueNotPresent),
-        max_cll(kValueNotPresent),
-        max_fall(kValueNotPresent),
+      : matrix_coefficients_(kValueNotPresent),
+        bits_per_channel_(kValueNotPresent),
+        chroma_subsampling_horz_(kValueNotPresent),
+        chroma_subsampling_vert_(kValueNotPresent),
+        cb_subsampling_horz_(kValueNotPresent),
+        cb_subsampling_vert_(kValueNotPresent),
+        chroma_siting_horz_(kValueNotPresent),
+        chroma_siting_vert_(kValueNotPresent),
+        range_(kValueNotPresent),
+        transfer_characteristics_(kValueNotPresent),
+        primaries_(kValueNotPresent),
+        max_cll_(kValueNotPresent),
+        max_fall_(kValueNotPresent),
         mastering_metadata_(NULL) {}
   ~Colour() { delete mastering_metadata_; }
 
@@ -443,23 +461,70 @@ class Colour {
     return mastering_metadata_;
   }
 
-  uint64_t matrix_coefficients;
-  uint64_t bits_per_channel;
-  uint64_t chroma_subsampling_horz;
-  uint64_t chroma_subsampling_vert;
-  uint64_t cb_subsampling_horz;
-  uint64_t cb_subsampling_vert;
-  uint64_t chroma_siting_horz;
-  uint64_t chroma_siting_vert;
-  uint64_t range;
-  uint64_t transfer_characteristics;
-  uint64_t primaries;
-  uint64_t max_cll;
-  uint64_t max_fall;
+  uint64_t matrix_coefficients() const { return matrix_coefficients_; }
+  void set_matrix_coefficients(uint64_t matrix_coefficients) {
+    matrix_coefficients_ = matrix_coefficients;
+  }
+  uint64_t bits_per_channel() const { return bits_per_channel_; }
+  void set_bits_per_channel(uint64_t bits_per_channel) {
+    bits_per_channel_ = bits_per_channel;
+  }
+  uint64_t chroma_subsampling_horz() const { return chroma_subsampling_horz_; }
+  void set_chroma_subsampling_horz(uint64_t chroma_subsampling_horz) {
+    chroma_subsampling_horz_ = chroma_subsampling_horz;
+  }
+  uint64_t chroma_subsampling_vert() const { return chroma_subsampling_vert_; }
+  void set_chroma_subsampling_vert(uint64_t chroma_subsampling_vert) {
+    chroma_subsampling_vert_ = chroma_subsampling_vert;
+  }
+  uint64_t cb_subsampling_horz() const { return cb_subsampling_horz_; }
+  void set_cb_subsampling_horz(uint64_t cb_subsampling_horz) {
+    cb_subsampling_horz_ = cb_subsampling_horz;
+  }
+  uint64_t cb_subsampling_vert() const { return cb_subsampling_vert_; }
+  void set_cb_subsampling_vert(uint64_t cb_subsampling_vert) {
+    cb_subsampling_vert_ = cb_subsampling_vert;
+  }
+  uint64_t chroma_siting_horz() const { return chroma_siting_horz_; }
+  void set_chroma_siting_horz(uint64_t chroma_siting_horz) {
+    chroma_siting_horz_ = chroma_siting_horz;
+  }
+  uint64_t chroma_siting_vert() const { return chroma_siting_vert_; }
+  void set_chroma_siting_vert(uint64_t chroma_siting_vert) {
+    chroma_siting_vert_ = chroma_siting_vert;
+  }
+  uint64_t range() const { return range_; }
+  void set_range(uint64_t range) { range_ = range; }
+  uint64_t transfer_characteristics() const {
+    return transfer_characteristics_;
+  }
+  void set_transfer_characteristics(uint64_t transfer_characteristics) {
+    transfer_characteristics_ = transfer_characteristics;
+  }
+  uint64_t primaries() const { return primaries_; }
+  void set_primaries(uint64_t primaries) { primaries_ = primaries; }
+  uint64_t max_cll() const { return max_cll_; }
+  void set_max_cll(uint64_t max_cll) { max_cll_ = max_cll; }
+  uint64_t max_fall() const { return max_fall_; }
+  void set_max_fall(uint64_t max_fall) { max_fall_ = max_fall; }
 
  private:
   // Returns size of Colour child elements.
   uint64_t PayloadSize() const;
+
+  uint64_t matrix_coefficients_;
+  uint64_t bits_per_channel_;
+  uint64_t chroma_subsampling_horz_;
+  uint64_t chroma_subsampling_vert_;
+  uint64_t cb_subsampling_horz_;
+  uint64_t cb_subsampling_vert_;
+  uint64_t chroma_siting_horz_;
+  uint64_t chroma_siting_vert_;
+  uint64_t range_;
+  uint64_t transfer_characteristics_;
+  uint64_t primaries_;
+  uint64_t max_cll_;
+  uint64_t max_fall_;
 
   MasteringMetadata* mastering_metadata_;
 };
