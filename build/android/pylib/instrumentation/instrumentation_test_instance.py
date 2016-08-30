@@ -406,6 +406,10 @@ class InstrumentationTestInstance(test_instance.TestInstance):
             constants.GetOutDirectory(), constants.SDK_BUILD_APKS_DIR,
             '%s.apk' % args.apk_under_test)
 
+      # TODO(jbudorick): Move the realpath up to the argument parser once
+      # APK-by-name is no longer supported.
+      apk_under_test_path = os.path.realpath(apk_under_test_path)
+
       if not os.path.exists(apk_under_test_path):
         error_func('Unable to find APK under test: %s' % apk_under_test_path)
 
@@ -413,12 +417,22 @@ class InstrumentationTestInstance(test_instance.TestInstance):
 
     if args.test_apk.endswith('.apk'):
       self._suite = os.path.splitext(os.path.basename(args.test_apk))[0]
+      test_apk_path = args.test_apk
       self._test_apk = apk_helper.ToHelper(args.test_apk)
     else:
       self._suite = args.test_apk
-      self._test_apk = apk_helper.ToHelper(os.path.join(
+      test_apk_path = os.path.join(
           constants.GetOutDirectory(), constants.SDK_BUILD_APKS_DIR,
-          '%s.apk' % args.test_apk))
+          '%s.apk' % args.test_apk)
+
+    # TODO(jbudorick): Move the realpath up to the argument parser once
+    # APK-by-name is no longer supported.
+    test_apk_path = os.path.realpath(test_apk_path)
+
+    if not os.path.exists(test_apk_path):
+      error_func('Unable to find test APK: %s' % test_apk_path)
+
+    self._test_apk = apk_helper.ToHelper(test_apk_path)
 
     self._apk_under_test_incremental_install_script = (
         args.apk_under_test_incremental_install_script)

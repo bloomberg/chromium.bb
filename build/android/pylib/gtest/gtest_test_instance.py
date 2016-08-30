@@ -263,7 +263,8 @@ class GtestTestInstance(test_instance.TestInstance):
       self._isolated_abs_path = os.path.join(
           constants.GetOutDirectory(), '%s.isolated' % self._suite)
     else:
-      logging.warning('No isolate file provided. No data deps will be pushed.')
+      logging.warning('%s isolate file provided. No data deps will be pushed.',
+                      'Empty' if args.isolate_file_path else 'No')
       self._isolate_delegate = None
 
     if args.app_data_files:

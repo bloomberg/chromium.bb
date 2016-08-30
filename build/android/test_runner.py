@@ -95,21 +95,21 @@ def AddCommonOptions(parser):
   group.add_argument('-e', '--environment', default='local',
                      choices=constants.VALID_ENVIRONMENTS,
                      help='Test environment to run in (default: %(default)s).')
-  group.add_argument('--adb-path', type=os.path.abspath,
+  group.add_argument('--adb-path', type=os.path.realpath,
                      help=('Specify the absolute path of the adb binary that '
                            'should be used.'))
   group.add_argument('--json-results-file', '--test-launcher-summary-output',
-                     dest='json_results_file',
+                     dest='json_results_file', type=os.path.realpath,
                      help='If set, will dump results in JSON form '
                           'to specified file.')
 
   logcat_output_group = group.add_mutually_exclusive_group()
   logcat_output_group.add_argument(
-      '--logcat-output-dir',
+      '--logcat-output-dir', type=os.path.realpath,
       help='If set, will dump logcats recorded during test run to directory. '
            'File names will be the device ids with timestamps.')
   logcat_output_group.add_argument(
-      '--logcat-output-file',
+      '--logcat-output-file', type=os.path.realpath,
       help='If set, will merge logcats recorded during test run and dump them '
            'to the specified file.')
 
@@ -215,7 +215,8 @@ def AddDeviceOptions(parser):
   group.add_argument('-d', '--device', dest='test_device',
                      help=('Target device for the test suite '
                            'to run on.'))
-  group.add_argument('--blacklist-file', help='Device blacklist file.')
+  group.add_argument('--blacklist-file', type=os.path.realpath,
+                     help='Device blacklist file.')
   group.add_argument('--enable-device-cache', action='store_true',
                      help='Cache device state to disk between runs')
   group.add_argument('--enable-concurrent-adb', action='store_true',
@@ -225,7 +226,7 @@ def AddDeviceOptions(parser):
                      help='Do not wipe app data between tests. Use this to '
                      'speed up local development and never on bots '
                      '(increases flakiness)')
-  group.add_argument('--target-devices-file',
+  group.add_argument('--target-devices-file', type=os.path.realpath,
                      help='Path to file with json list of device serials to '
                           'run tests on. When not specified, all available '
                           'devices are used.')
@@ -238,10 +239,11 @@ def AddGTestOptions(parser):
   group.add_argument('-s', '--suite', dest='suite_name',
                      nargs='+', metavar='SUITE_NAME', required=True,
                      help='Executable name of the test suite to run.')
-  group.add_argument('--executable-dist-dir',
+  group.add_argument('--executable-dist-dir', type=os.path.realpath,
                      help="Path to executable's dist directory for native"
                           " (non-apk) tests.")
   group.add_argument('--test-apk-incremental-install-script',
+                     type=os.path.realpath,
                      help='Path to install script for the test apk.')
   group.add_argument('--gtest_also_run_disabled_tests',
                      '--gtest-also-run-disabled-tests',
@@ -257,6 +259,7 @@ def AddGTestOptions(parser):
   group.add_argument('--isolate_file_path',
                      '--isolate-file-path',
                      dest='isolate_file_path',
+                     type=os.path.realpath,
                      help='.isolate file path to override the default '
                           'path')
   group.add_argument('--app-data-file', action='append', dest='app_data_files',
@@ -288,6 +291,7 @@ def AddGTestOptions(parser):
                             dest='test_filter',
                             help='googletest-style filter string.')
   filter_group.add_argument('--gtest-filter-file', dest='test_filter_file',
+                            type=os.path.realpath,
                             help='Path to file that contains googletest-style '
                                   'filter strings. (Lines will be joined with '
                                   '":" to create a single filter string.)')
@@ -330,7 +334,7 @@ def AddJavaTestOptions(argument_group):
       help=('Comma-separated list of annotations. Exclude tests with these '
             'annotations.'))
   argument_group.add_argument(
-      '--screenshot-directory', dest='screenshot_dir',
+      '--screenshot-directory', dest='screenshot_dir', type=os.path.realpath,
       help='Capture screenshots of test failures')
   argument_group.add_argument(
       '--save-perf-json', action='store_true',
@@ -383,6 +387,8 @@ def AddInstrumentationTestOptions(parser):
   group.add_argument('-w', '--wait_debugger', dest='wait_for_debugger',
                      action='store_true',
                      help='Wait for debugger.')
+  # TODO(jbudorick): Remove support for name-style APK specification once
+  # bots are no longer doing it.
   group.add_argument('--apk-under-test',
                      help='Path or name of the apk under test.')
   group.add_argument('--apk-under-test-incremental-install-script',
@@ -392,23 +398,27 @@ def AddInstrumentationTestOptions(parser):
                           '(name is without the .apk extension; '
                           'e.g. "ContentShellTest").')
   group.add_argument('--test-apk-incremental-install-script',
+                     type=os.path.realpath,
                      help='Path to install script for the --test-apk.')
   group.add_argument('--additional-apk', action='append',
                      dest='additional_apks', default=[],
+                     type=os.path.realpath,
                      help='Additional apk that must be installed on '
                           'the device when the tests are run')
-  group.add_argument('--coverage-dir',
+  group.add_argument('--coverage-dir', type=os.path.realpath,
                      help=('Directory in which to place all generated '
                            'EMMA coverage files.'))
-  group.add_argument('--device-flags', dest='device_flags', default='',
+  group.add_argument('--device-flags', dest='device_flags',
+                     type=os.path.realpath,
                      help='The relative filepath to a file containing '
                           'command-line flags to set on the device')
-  group.add_argument('--device-flags-file', default='',
+  group.add_argument('--device-flags-file', type=os.path.realpath,
                      help='The relative filepath to a file containing '
                           'command-line flags to set on the device')
   group.add_argument('--isolate_file_path',
                      '--isolate-file-path',
                      dest='isolate_file_path',
+                     type=os.path.realpath,
                      help='.isolate file path to override the default '
                           'path')
   group.add_argument('--delete-stale-data', dest='delete_stale_data',
@@ -454,7 +464,7 @@ def AddJUnitTestOptions(parser):
       '--sdk-version', dest='sdk_version', type=int,
       help='The Android SDK version.')
   group.add_argument(
-      '--coverage-dir', dest='coverage_dir',
+      '--coverage-dir', dest='coverage_dir', type=os.path.realpath,
       help='Directory to store coverage info.')
   AddCommonOptions(parser)
 
@@ -558,7 +568,7 @@ def AddPerfTestOptions(parser):
       help='The name of a previously executed perf step to print.')
 
   group.add_argument(
-      '--output-json-list',
+      '--output-json-list', type=os.path.realpath,
       help='Write a simple list of names from --steps into the given file.')
   group.add_argument(
       '--collect-chartjson-data',
@@ -567,19 +577,20 @@ def AddPerfTestOptions(parser):
   group.add_argument(
       '--output-chartjson-data',
       default='',
+      type=os.path.realpath,
       help='Write out chartjson into the given file.')
   # TODO(rnephew): Remove this when everything moves to new option in platform
   # mode.
   group.add_argument(
-      '--get-output-dir-archive', metavar='FILENAME',
+      '--get-output-dir-archive', metavar='FILENAME', type=os.path.realpath,
       help='Write the cached output directory archived by a step into the'
       ' given ZIP file.')
   group.add_argument(
-      '--output-dir-archive-path', metavar='FILENAME',
+      '--output-dir-archive-path', metavar='FILENAME', type=os.path.realpath,
       help='Write the cached output directory archived by a step into the'
       ' given ZIP file.')
   group.add_argument(
-      '--flaky-steps',
+      '--flaky-steps', type=os.path.realpath,
       help=('A JSON file containing steps that are flaky '
             'and will have its exit code ignored.'))
   group.add_argument(
