@@ -120,57 +120,43 @@ BASE_EXPORT int MacOSXMinorVersion();
 // "AtMost" variants to those that check for a specific version, unless you
 // know for sure that you need to check for a specific version.
 
-#define _DEFINE_IS_OS_FUNCS(V, ID)                \
-  inline bool IsOS10_##V() {                      \
-    return MAC_OS_X_VERSION_MIN_REQUIRED <= ID && \
-           internal::MacOSXMinorVersion() == V;   \
-  }                                               \
-  inline bool IsAtLeastOS10_##V() {               \
-    return MAC_OS_X_VERSION_MIN_REQUIRED >= ID || \
-           internal::MacOSXMinorVersion() >= V;   \
-  }                                               \
-  inline bool IsAtMostOS10_##V() {                \
-    return MAC_OS_X_VERSION_MIN_REQUIRED <= ID && \
-           internal::MacOSXMinorVersion() <= V;   \
+#define DEFINE_IS_OS_FUNCS(V, TEST_DEPLOYMENT_TARGET) \
+  inline bool IsOS10_##V() {                          \
+    TEST_DEPLOYMENT_TARGET(>, V, false)               \
+    return internal::MacOSXMinorVersion() == V;       \
+  }                                                   \
+  inline bool IsAtLeastOS10_##V() {                   \
+    TEST_DEPLOYMENT_TARGET(>=, V, true)               \
+    return internal::MacOSXMinorVersion() >= V;       \
+  }                                                   \
+  inline bool IsAtMostOS10_##V() {                    \
+    TEST_DEPLOYMENT_TARGET(>, V, false)               \
+    return internal::MacOSXMinorVersion() <= V;       \
   }
 
-// Apple adopted this format in 10.10: 10.11.0 becomes 101100
-#define OS_X_VERSION_ID(V) 10##V##00
-#define DEFINE_IS_OS_FUNCS(V) _DEFINE_IS_OS_FUNCS(V, OS_X_VERSION_ID(V))
+#define TEST_DEPLOYMENT_TARGET(OP, V, RET)                      \
+  if (MAC_OS_X_VERSION_MIN_REQUIRED OP MAC_OS_X_VERSION_10_##V) \
+    return RET;
+#define IGNORE_DEPLOYMENT_TARGET(OP, V, RET)
 
-// Sanity check that our computed IDs match the SDK
-#define STR(S) _STR(S)
-#define _STR(S) #S
-#define ASSERT_OS_ID_CONSTANT(V)                                              \
-  static_assert(OS_X_VERSION_ID(V) == MAC_OS_X_VERSION_10_##V,                \
-                "ID for macOS 10." #V                                         \
-                " (" STR(OS_X_VERSION_ID(V)) ") doesn't match the SDK (" STR( \
-                    MAC_OS_X_VERSION_10_##V) ").");
+DEFINE_IS_OS_FUNCS(9, TEST_DEPLOYMENT_TARGET)
+DEFINE_IS_OS_FUNCS(10, TEST_DEPLOYMENT_TARGET)
 
-// 10.9 uses an old format.
-// TODO(sdy): Ditch, most callers are better served by !IsAtLeastOS10_10().
-_DEFINE_IS_OS_FUNCS(9, MAC_OS_X_VERSION_10_9)
-
-DEFINE_IS_OS_FUNCS(10)
-ASSERT_OS_ID_CONSTANT(10)
-
-DEFINE_IS_OS_FUNCS(11)
 #ifdef MAC_OS_X_VERSION_10_11
-ASSERT_OS_ID_CONSTANT(11)
+DEFINE_IS_OS_FUNCS(11, TEST_DEPLOYMENT_TARGET)
+#else
+DEFINE_IS_OS_FUNCS(11, IGNORE_DEPLOYMENT_TARGET)
 #endif
 
-DEFINE_IS_OS_FUNCS(12)
 #ifdef MAC_OS_X_VERSION_10_12
-ASSERT_OS_ID_CONSTANT(12)
+DEFINE_IS_OS_FUNCS(12, TEST_DEPLOYMENT_TARGET)
+#else
+DEFINE_IS_OS_FUNCS(12, IGNORE_DEPLOYMENT_TARGET)
 #endif
 
-#undef ASSERT_OS_ID_CONSTANT
-#undef _STR
-#undef STR
-
+#undef IGNORE_DEPLOYMENT_TARGET
+#undef TEST_DEPLOYMENT_TARGET
 #undef DEFINE_IS_OS_FUNCS
-#undef MAC_OS_X_VERISON_ID
-#undef _DEFINE_IS_OS_FUNCS
 
 // This should be infrequently used. It only makes sense to use this to avoid
 // codepaths that are very likely to break on future (unreleased, untested,
