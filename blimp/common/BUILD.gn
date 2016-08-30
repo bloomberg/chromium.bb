@@ -14,8 +14,6 @@ component("common") {
     "blob_cache/id_util.h",
     "blob_cache/in_memory_blob_cache.cc",
     "blob_cache/in_memory_blob_cache.h",
-    "compositor/blimp_task_graph_runner.cc",
-    "compositor/blimp_task_graph_runner.h",
     "compositor/reference_tracker.cc",
     "compositor/reference_tracker.h",
     "create_blimp_message.cc",

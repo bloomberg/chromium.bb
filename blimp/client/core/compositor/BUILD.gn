@@ -8,6 +8,8 @@ source_set("compositor") {
   sources = [
     "blimp_client_picture_cache.cc",
     "blimp_client_picture_cache.h",
+    "blimp_compositor_dependencies.cc",
+    "blimp_compositor_dependencies.h",
     "blimp_image_decoder.cc",
     "blimp_image_decoder.h",
     "blimp_output_surface.h",
@@ -20,7 +22,9 @@ source_set("compositor") {
   ]
 
   deps = [
+    "//blimp/client/public:public_headers",
     "//blimp/net",
+    "//gpu/command_buffer/client",
     "//third_party/libwebp",
   ]
 

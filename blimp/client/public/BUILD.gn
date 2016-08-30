@@ -32,6 +32,7 @@ source_set("public_headers") {
   sources = [
     "blimp_client_context.h",
     "blimp_client_context_delegate.h",
+    "compositor/compositor_dependencies.h",
     "contents/blimp_contents.h",
     "contents/blimp_contents_observer.cc",
     "contents/blimp_contents_observer.h",

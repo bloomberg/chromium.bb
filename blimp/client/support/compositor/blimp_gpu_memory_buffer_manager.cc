@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <blimp/client/feature/compositor/blimp_gpu_memory_buffer_manager.h>
+#include "blimp/client/support/compositor/blimp_gpu_memory_buffer_manager.h"
+
 #include <GLES2/gl2.h>
 #include <stddef.h>
 #include <stdint.h>

@@ -9,7 +9,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/macros.h"
-#include "blimp/client/app/android/blimp_compositor_manager_android.h"
+#include "blimp/client/feature/compositor/blimp_compositor_manager.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
@@ -18,6 +18,8 @@ class Size;
 
 namespace blimp {
 namespace client {
+class BlimpCompositorDependencies;
+class BlimpCompositorManager;
 class BrowserCompositor;
 class RenderWidgetFeature;
 
@@ -100,9 +102,9 @@ class BlimpView {
 
   const float device_scale_factor_;
 
+  std::unique_ptr<BlimpCompositorDependencies> compositor_dependencies_;
+  std::unique_ptr<BlimpCompositorManager> compositor_manager_;
   std::unique_ptr<BrowserCompositor> compositor_;
-
-  std::unique_ptr<BlimpCompositorManagerAndroid> compositor_manager_;
 
   // The format of the current surface owned by |compositor_|.  See
   // android.graphics.PixelFormat.java.

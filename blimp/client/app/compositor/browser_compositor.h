@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/callback.h"
+#include "base/memory/weak_ptr.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
 #include "ui/gfx/geometry/size.h"
@@ -22,20 +23,14 @@ class SurfaceManager;
 
 namespace blimp {
 namespace client {
-class BlimpGpuMemoryBufferManager;
+class CompositorDependencies;
 
 // The parent compositor that embeds the content from the BlimpCompositor for
 // the current page.
 class BrowserCompositor : public cc::LayerTreeHostClient,
                           public cc::LayerTreeHostSingleThreadClient {
  public:
-  // TODO(dtrainor): Move these to the CompositorDeps and share them with the
-  // BlimpCompositor.
-  static cc::SurfaceManager* GetSurfaceManager();
-  static BlimpGpuMemoryBufferManager* GetGpuMemoryBufferManager();
-  static uint32_t AllocateSurfaceClientId();
-
-  BrowserCompositor();
+  explicit BrowserCompositor(CompositorDependencies* compositor_dependencies);
   ~BrowserCompositor() override;
 
   // Sets the layer with the content from the renderer compositor.
@@ -81,6 +76,8 @@ class BrowserCompositor : public cc::LayerTreeHostClient,
   void DidAbortSwapBuffers() override {}
 
   void HandlePendingOutputSurfaceRequest();
+
+  CompositorDependencies* compositor_dependencies_;
 
   std::unique_ptr<cc::SurfaceIdAllocator> surface_id_allocator_;
   gfx::AcceleratedWidget widget_;

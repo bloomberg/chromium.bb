@@ -29,23 +29,24 @@ namespace proto {
 class CompositorMessage;
 class InitializeImpl;
 }  // namespace proto
+
+class ContextProvider;
 class Layer;
 class LayerTreeHost;
+class LayerTreeSettings;
 class Surface;
+class SurfaceFactory;
 class SurfaceId;
 class SurfaceIdAllocator;
-class SurfaceFactory;
-class SurfaceManager;
 }  // namespace cc
-
-namespace gpu {
-class GpuMemoryBufferManager;
-}  // namespace gpu
 
 namespace blimp {
 class BlimpMessage;
 
 namespace client {
+
+class BlimpCompositorDependencies;
+class CompositorDependencies;
 
 // The BlimpCompositorClient provides the BlimpCompositor with the necessary
 // dependencies for cc::LayerTreeHost owned by this compositor and for
@@ -53,15 +54,6 @@ namespace client {
 // render widget of this compositor on the engine.
 class BlimpCompositorClient {
  public:
-  // These methods should provide the dependencies for cc::LayerTreeHost for
-  // this compositor.
-  virtual cc::LayerTreeSettings* GetLayerTreeSettings() = 0;
-  virtual scoped_refptr<base::SingleThreadTaskRunner>
-  GetCompositorTaskRunner() = 0;
-  virtual cc::TaskGraphRunner* GetTaskGraphRunner() = 0;
-  virtual gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() = 0;
-  virtual cc::ImageSerializationProcessor* GetImageSerializationProcessor() = 0;
-
   // Should send web gesture events which could not be handled locally by the
   // compositor to the engine.
   virtual void SendWebGestureEvent(
@@ -94,8 +86,7 @@ class BlimpCompositor : public cc::LayerTreeHostClient,
                         public cc::SurfaceFactoryClient {
  public:
   BlimpCompositor(const int render_widget_id,
-                  cc::SurfaceManager* surface_manager,
-                  uint32_t surface_client_id,
+                  BlimpCompositorDependencies* compositor_dependencies,
                   BlimpCompositorClient* client);
 
   ~BlimpCompositor() override;
@@ -111,6 +102,12 @@ class BlimpCompositor : public cc::LayerTreeHostClient,
   // virtual for testing.
   virtual void OnCompositorMessageReceived(
       std::unique_ptr<cc::proto::CompositorMessage> message);
+
+  // Called when the a ContextProvider has been created by the
+  // CompositorDependencies class.  If |host_| is waiting on an OutputSurface
+  // this will build one for it.
+  void OnContextProviderCreated(
+      const scoped_refptr<cc::ContextProvider>& provider);
 
   scoped_refptr<cc::Layer> layer() const { return layer_; }
 
@@ -131,8 +128,8 @@ class BlimpCompositor : public cc::LayerTreeHostClient,
                            float page_scale,
                            float top_controls_delta) override {}
   void RequestNewOutputSurface() override;
+  void DidInitializeOutputSurface() override;
   // TODO(khushalsagar): Need to handle context initialization failures.
-  void DidInitializeOutputSurface() override {}
   void DidFailToInitializeOutputSurface() override {}
   void WillCommit() override {}
   void DidCommit() override {}
@@ -158,6 +155,9 @@ class BlimpCompositor : public cc::LayerTreeHostClient,
   void ReturnResources(const cc::ReturnedResourceArray& resources) override;
   void SetBeginFrameSource(cc::BeginFrameSource* begin_frame_source) override {}
 
+  // Helper method to get the embedder dependencies.
+  CompositorDependencies* GetEmbedderDeps();
+
   // TODO(khushalsagar): Move all of this to the |DocumentView| or another
   // platform specific class. So we use the DelegatedFrameHostAndroid like the
   // RenderWidgetHostViewAndroid.
@@ -177,6 +177,8 @@ class BlimpCompositor : public cc::LayerTreeHostClient,
 
   BlimpCompositorClient* client_;
 
+  BlimpCompositorDependencies* compositor_dependencies_;
+
   std::unique_ptr<cc::LayerTreeHost> host_;
 
   // Whether or not |host_| should be visible.  This is stored in case |host_|
@@ -188,16 +190,17 @@ class BlimpCompositor : public cc::LayerTreeHostClient,
   std::unique_ptr<cc::SurfaceFactory> surface_factory_;
   base::WeakPtr<BlimpOutputSurface> output_surface_;
 
+  // Whether or not |host_| has asked for an output surface.
+  bool output_surface_request_pending_;
+
   // Data for the current frame.
   cc::SurfaceId surface_id_;
   gfx::Size current_surface_size_;
 
-  scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
   base::ThreadChecker thread_checker_;
 
   // Surfaces related stuff and layer which holds the delegated content from the
   // compositor.
-  cc::SurfaceManager* surface_manager_;
   std::unique_ptr<cc::SurfaceIdAllocator> surface_id_allocator_;
   scoped_refptr<cc::Layer> layer_;
 
@@ -212,7 +215,7 @@ class BlimpCompositor : public cc::LayerTreeHostClient,
   // widget.
   std::unique_ptr<BlimpInputManager> input_manager_;
 
-  base::WeakPtrFactory<BlimpCompositor> weak_factory_;
+  base::WeakPtrFactory<BlimpCompositor> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpCompositor);
 };

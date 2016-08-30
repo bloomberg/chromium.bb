@@ -5,7 +5,9 @@
 #include "blimp/client/feature/compositor/blimp_compositor_manager.h"
 
 #include "base/memory/ptr_util.h"
-#include "blimp/client/feature/compositor/blimp_gpu_memory_buffer_manager.h"
+#include "blimp/client/core/compositor/blimp_compositor_dependencies.h"
+#include "blimp/client/core/compositor/blob_image_serialization_processor.h"
+#include "blimp/client/feature/compositor/mock_compositor_dependencies.h"
 #include "cc/proto/compositor_message.pb.h"
 #include "cc/surfaces/surface_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -34,15 +36,12 @@ class MockRenderWidgetFeature : public RenderWidgetFeature {
 };
 
 class MockBlimpCompositor : public BlimpCompositor {
- public :
-  explicit MockBlimpCompositor(const int render_widget_id,
-                               cc::SurfaceManager* surface_manager,
-                               int surface_client_id,
-                               BlimpCompositorClient* client)
-      : BlimpCompositor(render_widget_id,
-                        surface_manager,
-                        surface_client_id,
-                        client) {}
+ public:
+  explicit MockBlimpCompositor(
+      const int render_widget_id,
+      BlimpCompositorDependencies* compositor_dependencies,
+      BlimpCompositorClient* client)
+      : BlimpCompositor(render_widget_id, compositor_dependencies, client) {}
 
   MOCK_METHOD1(SetVisible, void(bool));
   MOCK_METHOD1(OnTouchEvent, bool(const ui::MotionEvent& motion_event));
@@ -59,23 +58,18 @@ class BlimpCompositorManagerForTesting : public BlimpCompositorManager {
  public:
   explicit BlimpCompositorManagerForTesting(
       RenderWidgetFeature* render_widget_feature,
-      cc::SurfaceManager* surface_manager,
-      BlimpGpuMemoryBufferManager* gpu_memory_buffer_manager,
-      SurfaceIdAllocationCallback callback)
-      : BlimpCompositorManager(render_widget_feature,
-                               surface_manager,
-                               gpu_memory_buffer_manager,
-                               callback) {}
+      BlimpCompositorDependencies* compositor_dependencies)
+      : BlimpCompositorManager(render_widget_feature, compositor_dependencies) {
+  }
 
   using BlimpCompositorManager::GetCompositor;
 
   std::unique_ptr<BlimpCompositor> CreateBlimpCompositor(
       int render_widget_id,
-      cc::SurfaceManager* surface_manager,
-      uint32_t surface_client_id,
+      BlimpCompositorDependencies* compositor_dependencies,
       BlimpCompositorClient* client) override {
     return base::MakeUnique<MockBlimpCompositor>(
-        render_widget_id, surface_manager, surface_client_id, client);
+        render_widget_id, compositor_dependencies, client);
   }
 };
 
@@ -85,22 +79,19 @@ class BlimpCompositorManagerTest : public testing::Test {
     EXPECT_CALL(render_widget_feature_, SetDelegate(_, _)).Times(1);
     EXPECT_CALL(render_widget_feature_, RemoveDelegate(_)).Times(1);
 
-    surface_manager_ = base::MakeUnique<cc::SurfaceManager>();
-    compositor_manager_.reset(new BlimpCompositorManagerForTesting(
-        &render_widget_feature_, surface_manager_.get(),
-        &gpu_memory_buffer_manager_,
-        base::Bind(&BlimpCompositorManagerTest::AllocateId,
-                   base::Unretained(this))));
+    compositor_dependencies_ = base::MakeUnique<BlimpCompositorDependencies>(
+        base::MakeUnique<MockCompositorDependencies>());
+
+    compositor_manager_ = base::MakeUnique<BlimpCompositorManagerForTesting>(
+        &render_widget_feature_, compositor_dependencies_.get());
   }
 
   void TearDown() override {
     mock_compositor1_ = nullptr;
     mock_compositor2_ = nullptr;
     compositor_manager_.reset();
-    surface_manager_.reset();
+    compositor_dependencies_.reset();
   }
-
-  uint32_t AllocateId() { return ++id_; }
 
   void SetUpCompositors() {
     delegate()->OnRenderWidgetCreated(1);
@@ -124,10 +115,9 @@ class BlimpCompositorManagerTest : public testing::Test {
         (compositor_manager_.get());
   }
 
-  uint32_t id_ = 1;
+  std::unique_ptr<BlimpCompositorDependencies> compositor_dependencies_;
   std::unique_ptr<BlimpCompositorManagerForTesting> compositor_manager_;
-  std::unique_ptr<cc::SurfaceManager> surface_manager_;
-  BlimpGpuMemoryBufferManager gpu_memory_buffer_manager_;
+  BlobImageSerializationProcessor blob_image_serialization_processor_;
   MockRenderWidgetFeature render_widget_feature_;
   MockBlimpCompositor* mock_compositor1_;
   MockBlimpCompositor* mock_compositor2_;

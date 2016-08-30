@@ -21,6 +21,7 @@ class PlatformWindow;
 namespace blimp {
 namespace client {
 
+class BlimpCompositorDependencies;
 class BlimpCompositorManager;
 class BrowserCompositor;
 class RenderWidgetFeature;
@@ -58,9 +59,9 @@ class BlimpDisplayManager : public ui::PlatformWindowDelegate {
   BlimpDisplayManagerDelegate* delegate_;
   TabControlFeature* tab_control_feature_;
 
+  std::unique_ptr<BlimpCompositorDependencies> compositor_dependencies_;
+  std::unique_ptr<BlimpCompositorManager> compositor_manager_;
   std::unique_ptr<BrowserCompositor> compositor_;
-
-  std::unique_ptr<BlimpCompositorManager> blimp_compositor_manager_;
   std::unique_ptr<ui::PlatformWindow> platform_window_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpDisplayManager);

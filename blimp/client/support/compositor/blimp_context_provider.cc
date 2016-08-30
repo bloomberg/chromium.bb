@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/client/feature/compositor/blimp_context_provider.h"
+#include "blimp/client/support/compositor/blimp_context_provider.h"
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -122,12 +122,6 @@ void BlimpContextProvider::OnLostContext() {
     lost_context_callback_.Run();
   if (gr_context_)
     gr_context_->OnLostContext();
-}
-
-uint32_t BlimpContextProvider::GetCopyTextureInternalFormat() {
-  // The attributes used to create the context in the constructor specify
-  // an alpha channel.
-  return GL_RGBA;
 }
 
 }  // namespace client

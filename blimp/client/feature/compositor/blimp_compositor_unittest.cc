@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <blimp/client/feature/compositor/blimp_gpu_memory_buffer_manager.h>
 #include "blimp/client/feature/compositor/blimp_compositor.h"
 
 #include "base/threading/thread_task_runner_handle.h"
+#include "blimp/client/core/compositor/blimp_compositor_dependencies.h"
 #include "blimp/client/core/compositor/blob_image_serialization_processor.h"
-#include "blimp/common/compositor/blimp_task_graph_runner.h"
+#include "blimp/client/feature/compositor/mock_compositor_dependencies.h"
 #include "cc/layers/layer.h"
 #include "cc/proto/compositor_message.pb.h"
 #include "cc/surfaces/surface_manager.h"
@@ -21,22 +21,8 @@ namespace client {
 
 class MockBlimpCompositorClient : public BlimpCompositorClient {
  public:
-  MockBlimpCompositorClient() : compositor_thread_("Compositor") {
-    compositor_thread_.Start();
-  }
-  ~MockBlimpCompositorClient() override { compositor_thread_.Stop(); }
-
-  cc::LayerTreeSettings* GetLayerTreeSettings() override { return &settings_; }
-  scoped_refptr<base::SingleThreadTaskRunner> GetCompositorTaskRunner() override
-      { return compositor_thread_.task_runner(); }
-  cc::TaskGraphRunner* GetTaskGraphRunner() override {
-    return &task_graph_runner_; }
-  gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override {
-    return &gpu_memory_buffer_manager_;
-  }
-  cc::ImageSerializationProcessor* GetImageSerializationProcessor() override {
-    return BlobImageSerializationProcessor::current();
-  }
+  MockBlimpCompositorClient() = default;
+  ~MockBlimpCompositorClient() override = default;
 
   void SendWebGestureEvent(
       int render_widget_id,
@@ -52,26 +38,17 @@ class MockBlimpCompositorClient : public BlimpCompositorClient {
   MOCK_METHOD1(MockableSendWebGestureEvent, void(int));
   MOCK_METHOD1(MockableSendCompositorMessage, void(int));
 
-  cc::LayerTreeSettings settings_;
-  base::Thread compositor_thread_;
-  BlimpTaskGraphRunner task_graph_runner_;
-  BlimpGpuMemoryBufferManager gpu_memory_buffer_manager_;
-  BlobImageSerializationProcessor serialization_processor_;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(MockBlimpCompositorClient);
 };
 
 class BlimpCompositorForTesting : public BlimpCompositor {
  public:
-  BlimpCompositorForTesting(int render_widget_id,
-                            cc::SurfaceManager* surface_manager,
-                            uint32_t surface_client_id,
-                            BlimpCompositorClient* client)
-      : BlimpCompositor(render_widget_id,
-                        surface_manager,
-                        surface_client_id,
-                        client) {}
+  BlimpCompositorForTesting(
+      int render_widget_id,
+      BlimpCompositorDependencies* compositor_dependencies,
+      BlimpCompositorClient* client)
+      : BlimpCompositor(render_widget_id, compositor_dependencies, client) {}
 
   void SendProto(const cc::proto::CompositorMessage& proto) {
     SendCompositorProto(proto);
@@ -89,15 +66,16 @@ class BlimpCompositorTest : public testing::Test {
   BlimpCompositorTest() : render_widget_id_(1), loop_(new base::MessageLoop) {}
 
   void SetUp() override {
-    surface_manager_ = base::MakeUnique<cc::SurfaceManager>();
-    compositor_.reset(new BlimpCompositorForTesting(
-        render_widget_id_, surface_manager_.get(), surface_client_id_++,
-        &compositor_client_));
+    compositor_dependencies_ = base::MakeUnique<BlimpCompositorDependencies>(
+        base::MakeUnique<MockCompositorDependencies>());
+
+    compositor_ = base::MakeUnique<BlimpCompositorForTesting>(
+        render_widget_id_, compositor_dependencies_.get(), &compositor_client_);
   }
 
   void TearDown() override {
     compositor_.reset();
-    surface_manager_.reset();
+    compositor_dependencies_.reset();
   }
 
   ~BlimpCompositorTest() override {}
@@ -126,11 +104,11 @@ class BlimpCompositorTest : public testing::Test {
   }
 
   int render_widget_id_;
-  std::unique_ptr<cc::SurfaceManager> surface_manager_;
-  uint32_t surface_client_id_ = 1;
   std::unique_ptr<base::MessageLoop> loop_;
   MockBlimpCompositorClient compositor_client_;
+  std::unique_ptr<BlimpCompositorDependencies> compositor_dependencies_;
   std::unique_ptr<BlimpCompositorForTesting> compositor_;
+  BlobImageSerializationProcessor blob_image_serialization_processor_;
 };
 
 TEST_F(BlimpCompositorTest, ToggleVisibilityWithHost) {

@@ -14,13 +14,8 @@
 #include "cc/layers/layer.h"
 #include "cc/trees/layer_tree_settings.h"
 
-namespace cc {
-class SurfaceManager;
-}  // namespace cc
-
 namespace blimp {
 namespace client {
-class BlimpGpuMemoryBufferManager;
 
 // The BlimpCompositorManager manages multiple BlimpCompositor instances, each
 // mapped to a render widget on the engine. The compositor corresponding to
@@ -32,14 +27,9 @@ class BlimpCompositorManager
     : public RenderWidgetFeature::RenderWidgetFeatureDelegate,
       public BlimpCompositorClient {
  public:
-  using SurfaceIdAllocationCallback = base::Callback<uint32_t()>;
-
   explicit BlimpCompositorManager(
       RenderWidgetFeature* render_widget_feature,
-      cc::SurfaceManager* surface_manager,
-      BlimpGpuMemoryBufferManager* gpu_memory_buffer_manager,
-      SurfaceIdAllocationCallback callback);
-
+      BlimpCompositorDependencies* compositor_dependencies);
   ~BlimpCompositorManager() override;
 
   void SetVisible(bool visible);
@@ -49,16 +39,10 @@ class BlimpCompositorManager
   scoped_refptr<cc::Layer> layer() const { return layer_; }
 
  protected:
-  // Populates the cc::LayerTreeSettings used by the cc::LayerTreeHost of the
-  // BlimpCompositors created by this manager. Can be overridden to provide
-  // custom settings parameters.
-  virtual void GenerateLayerTreeSettings(cc::LayerTreeSettings* settings);
-
   // virtual for testing.
   virtual std::unique_ptr<BlimpCompositor> CreateBlimpCompositor(
       int render_widget_id,
-      cc::SurfaceManager* surface_manager,
-      uint32_t surface_client_id,
+      BlimpCompositorDependencies* compositor_dependencies,
       BlimpCompositorClient* client);
 
   // Returns the compositor for the |render_widget_id|. Will return nullptr if
@@ -76,12 +60,6 @@ class BlimpCompositorManager
       std::unique_ptr<cc::proto::CompositorMessage> message) override;
 
   // BlimpCompositorClient implementation.
-  cc::LayerTreeSettings* GetLayerTreeSettings() override;
-  scoped_refptr<base::SingleThreadTaskRunner>
-  GetCompositorTaskRunner() override;
-  cc::TaskGraphRunner* GetTaskGraphRunner() override;
-  gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
-  cc::ImageSerializationProcessor* GetImageSerializationProcessor() override;
   void SendWebGestureEvent(
       int render_widget_id,
       const blink::WebGestureEvent& gesture_event) override;
@@ -94,18 +72,13 @@ class BlimpCompositorManager
   // BlimpCompositorManager instance.
   RenderWidgetFeature* render_widget_feature_;
 
-  cc::SurfaceManager* surface_manager_;
-  BlimpGpuMemoryBufferManager* gpu_memory_buffer_manager_;
-  SurfaceIdAllocationCallback surface_id_allocation_callback_;
-
   bool visible_;
-  std::unique_ptr<cc::LayerTreeSettings> settings_;
 
   // The layer which holds the content from the active compositor.
   scoped_refptr<cc::Layer> layer_;
 
   // A map of render_widget_ids to the BlimpCompositor instance.
-  typedef std::map<int, std::unique_ptr<BlimpCompositor>> CompositorMap;
+  using CompositorMap = std::map<int, std::unique_ptr<BlimpCompositor>>;
   CompositorMap compositors_;
 
   // The |active_compositor_| represents the compositor from the CompositorMap
@@ -113,9 +86,7 @@ class BlimpCompositorManager
   // render widget currently initialized on the engine.
   BlimpCompositor* active_compositor_;
 
-  // Lazily created thread that will run the compositor rendering tasks and will
-  // be shared by all compositor instances.
-  std::unique_ptr<base::Thread> compositor_thread_;
+  BlimpCompositorDependencies* compositor_dependencies_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpCompositorManager);
 };

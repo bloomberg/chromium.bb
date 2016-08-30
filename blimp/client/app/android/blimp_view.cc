@@ -6,8 +6,12 @@
 
 #include <android/native_window_jni.h>
 
+#include "base/memory/ptr_util.h"
 #include "blimp/client/app/android/blimp_client_session_android.h"
 #include "blimp/client/app/compositor/browser_compositor.h"
+#include "blimp/client/core/compositor/blimp_compositor_dependencies.h"
+#include "blimp/client/feature/compositor/blimp_compositor_manager.h"
+#include "blimp/client/support/compositor/compositor_dependencies_impl.h"
 #include "jni/BlimpView_jni.h"
 #include "ui/events/android/motion_event_android.h"
 #include "ui/gfx/geometry/size.h"
@@ -50,23 +54,32 @@ BlimpView::BlimpView(JNIEnv* env,
                      float dp_to_px,
                      RenderWidgetFeature* render_widget_feature)
     : device_scale_factor_(dp_to_px),
-      compositor_(base::MakeUnique<BrowserCompositor>()),
       current_surface_format_(0),
       window_(gfx::kNullAcceleratedWidget),
       weak_ptr_factory_(this) {
-  compositor_manager_ = BlimpCompositorManagerAndroid::Create(
-      real_size, size, render_widget_feature,
-      BrowserCompositor::GetSurfaceManager(),
-      BrowserCompositor::GetGpuMemoryBufferManager(),
-      base::Bind(&BrowserCompositor::AllocateSurfaceClientId));
+  compositor_dependencies_ = base::MakeUnique<BlimpCompositorDependencies>(
+      base::MakeUnique<CompositorDependenciesImpl>());
+
+  compositor_ = base::MakeUnique<BrowserCompositor>(
+      compositor_dependencies_->GetEmbedderDependencies());
   compositor_->set_did_complete_swap_buffers_callback(base::Bind(
       &BlimpView::OnSwapBuffersCompleted, weak_ptr_factory_.GetWeakPtr()));
+
+  compositor_manager_ = base::MakeUnique<BlimpCompositorManager>(
+      render_widget_feature, compositor_dependencies_.get());
   compositor_->SetContentLayer(compositor_manager_->layer());
+
   java_obj_.Reset(env, jobj);
 }
 
 BlimpView::~BlimpView() {
   SetSurface(nullptr);
+
+  // Destroy the BrowserCompositor and the BlimpCompositorManager before the
+  // BlimpCompositorDependencies.
+  compositor_.reset();
+  compositor_manager_.reset();
+  compositor_dependencies_.reset();
 }
 
 void BlimpView::Destroy(JNIEnv* env, const JavaParamRef<jobject>& jobj) {

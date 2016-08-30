@@ -4,10 +4,11 @@
 
 #include "blimp/client/app/compositor/browser_compositor.h"
 
+#include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "blimp/client/feature/compositor/blimp_context_provider.h"
-#include "blimp/client/feature/compositor/blimp_gpu_memory_buffer_manager.h"
+#include "blimp/client/public/compositor/compositor_dependencies.h"
+#include "blimp/client/support/compositor/blimp_context_provider.h"
 #include "cc/animation/animation_host.h"
 #include "cc/layers/layer.h"
 #include "cc/output/compositor_frame.h"
@@ -19,6 +20,7 @@
 #include "cc/surfaces/surface_manager.h"
 #include "cc/trees/layer_tree_host.h"
 #include "gpu/command_buffer/client/context_support.h"
+#include "gpu/command_buffer/client/gles2_lib.h"
 
 namespace blimp {
 namespace client {
@@ -51,8 +53,9 @@ class DisplayOutputSurface : public cc::OutputSurface {
   }
 
   uint32_t GetFramebufferCopyTextureFormat() override {
-    auto* gl = static_cast<BlimpContextProvider*>(context_provider());
-    return gl->GetCopyTextureInternalFormat();
+    // We assume we have an alpha channel from the BlimpContextProvider, so use
+    // GL_RGBA here.
+    return GL_RGBA;
   }
 
  private:
@@ -62,44 +65,23 @@ class DisplayOutputSurface : public cc::OutputSurface {
 base::LazyInstance<SimpleTaskGraphRunner> g_task_graph_runner =
     LAZY_INSTANCE_INITIALIZER;
 
-base::LazyInstance<cc::SurfaceManager> g_surface_manager =
-    LAZY_INSTANCE_INITIALIZER;
-
-base::LazyInstance<BlimpGpuMemoryBufferManager> g_gpu_memory_buffer_manager =
-    LAZY_INSTANCE_INITIALIZER;
-
-uint32_t g_surface_id = 0;
-
 }  // namespace
 
-// static
-cc::SurfaceManager* BrowserCompositor::GetSurfaceManager() {
-  return g_surface_manager.Pointer();
-}
-
-// static
-BlimpGpuMemoryBufferManager* BrowserCompositor::GetGpuMemoryBufferManager() {
-  return g_gpu_memory_buffer_manager.Pointer();
-}
-
-// static
-uint32_t BrowserCompositor::AllocateSurfaceClientId() {
-  return ++g_surface_id;
-}
-
-BrowserCompositor::BrowserCompositor()
-    : surface_id_allocator_(base::MakeUnique<cc::SurfaceIdAllocator>(
-          BrowserCompositor::AllocateSurfaceClientId())),
+BrowserCompositor::BrowserCompositor(
+    CompositorDependencies* compositor_dependencies)
+    : compositor_dependencies_(compositor_dependencies),
+      surface_id_allocator_(base::MakeUnique<cc::SurfaceIdAllocator>(
+          compositor_dependencies->AllocateSurfaceId())),
       widget_(gfx::kNullAcceleratedWidget),
       output_surface_request_pending_(false),
       root_layer_(cc::Layer::Create()) {
-  BrowserCompositor::GetSurfaceManager()->RegisterSurfaceClientId(
+  compositor_dependencies_->GetSurfaceManager()->RegisterSurfaceClientId(
       surface_id_allocator_->client_id());
 
   cc::LayerTreeHost::InitParams params;
   params.client = this;
   params.gpu_memory_buffer_manager =
-      BrowserCompositor::GetGpuMemoryBufferManager();
+      compositor_dependencies_->GetGpuMemoryBufferManager();
   params.task_graph_runner = g_task_graph_runner.Pointer();
   cc::LayerTreeSettings settings;
   params.settings = &settings;
@@ -113,7 +95,7 @@ BrowserCompositor::BrowserCompositor()
 }
 
 BrowserCompositor::~BrowserCompositor() {
-  BrowserCompositor::GetSurfaceManager()->InvalidateSurfaceClientId(
+  compositor_dependencies_->GetSurfaceManager()->InvalidateSurfaceClientId(
       surface_id_allocator_->client_id());
 }
 
@@ -151,8 +133,9 @@ void BrowserCompositor::SetAcceleratedWidget(gfx::AcceleratedWidget widget) {
   if (widget != gfx::kNullAcceleratedWidget) {
     widget_ = widget;
     host_->SetVisible(true);
-    if (output_surface_request_pending_)
+    if (output_surface_request_pending_) {
       HandlePendingOutputSurfaceRequest();
+    }
   }
 }
 
@@ -186,9 +169,11 @@ void BrowserCompositor::HandlePendingOutputSurfaceRequest() {
 
   DCHECK_NE(gfx::kNullAcceleratedWidget, widget_);
 
+  gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager =
+      compositor_dependencies_->GetGpuMemoryBufferManager();
+
   scoped_refptr<cc::ContextProvider> context_provider =
-      BlimpContextProvider::Create(
-          widget_, BrowserCompositor::GetGpuMemoryBufferManager());
+      BlimpContextProvider::Create(widget_, gpu_memory_buffer_manager);
 
   std::unique_ptr<cc::OutputSurface> display_output_surface =
       base::MakeUnique<DisplayOutputSurface>(context_provider);
@@ -202,8 +187,7 @@ void BrowserCompositor::HandlePendingOutputSurfaceRequest() {
       display_output_surface->capabilities().max_frames_pending));
 
   display_ = base::MakeUnique<cc::Display>(
-      nullptr /*shared_bitmap_manager*/,
-      BrowserCompositor::GetGpuMemoryBufferManager(),
+      nullptr /*shared_bitmap_manager*/, gpu_memory_buffer_manager,
       host_->settings().renderer_settings, std::move(begin_frame_source),
       std::move(display_output_surface), std::move(scheduler),
       base::MakeUnique<cc::TextureMailboxDeleter>(task_runner));
@@ -213,8 +197,9 @@ void BrowserCompositor::HandlePendingOutputSurfaceRequest() {
   // The Browser compositor and display share the same context provider.
   std::unique_ptr<cc::OutputSurface> delegated_output_surface =
       base::MakeUnique<cc::SurfaceDisplayOutputSurface>(
-          BrowserCompositor::GetSurfaceManager(), surface_id_allocator_.get(),
-          display_.get(), context_provider, nullptr);
+          compositor_dependencies_->GetSurfaceManager(),
+          surface_id_allocator_.get(), display_.get(), context_provider,
+          nullptr);
 
   host_->SetOutputSurface(std::move(delegated_output_surface));
 }

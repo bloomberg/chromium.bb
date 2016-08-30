@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/client/feature/compositor/blimp_layer_tree_settings.h"
+#include "blimp/client/support/compositor/blimp_layer_tree_settings.h"
 
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -93,11 +93,11 @@ void PopulateCommonLayerTreeSettings(cc::LayerTreeSettings* settings) {
   settings->scrollbar_fade_resize_delay_ms = 500;
   settings->scrollbar_fade_duration_ms = 300;
 
-  // When pinching in, only show the pinch-viewport overlay scrollbars if the
-  // page scale is at least some threshold away from the minimum. i.e. don't
-  // show the pinch scrollbars when at minimum scale.
-  // TODO(dtrainor): Update this since https://crrev.com/1267603004 landed.
-  // settings->scrollbar_show_scale_threshold = 1.05f;
+// When pinching in, only show the pinch-viewport overlay scrollbars if the
+// page scale is at least some threshold away from the minimum. i.e. don't
+// show the pinch scrollbars when at minimum scale.
+// TODO(dtrainor): Update this since https://crrev.com/1267603004 landed.
+// settings->scrollbar_show_scale_threshold = 1.05f;
 #endif
 
   // Set the GpuMemoryPolicy.
@@ -152,9 +152,9 @@ void PopulateCommonLayerTreeSettings(cc::LayerTreeSettings* settings) {
     memory_policy.bytes_limit_when_visible =
         memory_policy.bytes_limit_when_visible * 1024 * 1024;
     // Clamp the observed value to a specific range on Android.
-    memory_policy.bytes_limit_when_visible = std::max(
-        memory_policy.bytes_limit_when_visible,
-        static_cast<size_t>(8 * 1024 * 1024));
+    memory_policy.bytes_limit_when_visible =
+        std::max(memory_policy.bytes_limit_when_visible,
+                 static_cast<size_t>(8 * 1024 * 1024));
     memory_policy.bytes_limit_when_visible =
         std::min(memory_policy.bytes_limit_when_visible,
                  static_cast<size_t>(256 * 1024 * 1024));
