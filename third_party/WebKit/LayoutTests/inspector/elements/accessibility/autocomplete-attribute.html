@@ -1,0 +1,82 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<script src="accessibility-pane-test.js"></script>
+<script>
+
+function test()
+{
+    WebInspector.viewManager.showView("accessibility.view")
+        .then(() => InspectorTest.selectNodeAndWaitForAccessibility("inspected"))
+        .then(runTests);
+
+    function getPromptForAttribute(attribute)
+    {
+        var treeElement = InspectorTest.findARIAAttributeTreeElement(attribute);
+        treeElement._startEditing();
+        return treeElement._prompt;
+    }
+
+    function runTests()
+    {
+        InspectorTest.runTestSuite([
+            function testCheckedEmptyValue(next)
+            {
+                var prompt = getPromptForAttribute("aria-checked");
+                testAgainstGolden(prompt, "", ["true", "false", "mixed"], next);
+            },
+
+            function testCheckedFirstCharacter(next)
+            {
+                var prompt = getPromptForAttribute("aria-checked");
+                testAgainstGolden(prompt, "t", ["true"], next);
+            },
+
+            function testRoleFirstCharacter(next)
+            {
+                var prompt = getPromptForAttribute("role");
+                testAgainstGolden(prompt, "b", ["banner", "button"], next);
+            }
+       ]);
+    }
+
+    function testAgainstGolden(prompt, inputText, golden, callback)
+    {
+        var proxyElement = document.createElement("div");
+        document.body.appendChild(proxyElement);
+        proxyElement.style = "webkit-user-select: text; -webkit-user-modify: read-write-plaintext-only";
+        proxyElement.textContent = inputText;
+        var selectionRange = document.createRange();
+        var textNode = proxyElement.childNodes[0];
+        if (textNode) {
+            selectionRange.setStart(textNode, inputText.length);
+            selectionRange.setEnd(textNode, inputText.length);
+        } else {
+            selectionRange.selectNodeContents(proxyElement);
+        }
+        var range = selectionRange.startContainer.rangeOfWord(selectionRange.startOffset, prompt._completionStopCharacters, proxyElement, "backward");
+        prompt._buildPropertyCompletions(proxyElement, range, true, completions);
+
+        function completions(result, index)
+        {
+            var i;
+            for (i = 0; i < golden.length; ++i) {
+                if (result.indexOf(golden[i]) === -1)
+                    InspectorTest.addResult("NOT FOUND: " + golden[i]);
+            }
+            proxyElement.remove();
+            callback();
+        }
+    }
+}
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that autocompletions are computed correctly when editing the ARIA pane.
+</p>
+<span id="inspected" aria-checked="true" role="checkbox"></span>
+</body>
+</html>
