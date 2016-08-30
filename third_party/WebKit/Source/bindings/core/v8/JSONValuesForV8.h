@@ -6,7 +6,7 @@
 #define JSONValuesForV8_h
 
 #include "core/CoreExport.h"
-#include "platform/JSONValues.h"
+#include "platform/json/JSONValues.h"
 #include "wtf/text/WTFString.h"
 #include <v8.h>
 

@@ -8,7 +8,7 @@
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/api/LayoutAPIShim.h"
-#include "platform/JSONValues.h"
+#include "platform/json/JSONValues.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

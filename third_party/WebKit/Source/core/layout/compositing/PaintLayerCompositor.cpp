@@ -56,7 +56,6 @@
 #include "core/paint/ObjectPaintInvalidator.h"
 #include "core/paint/TransformRecorder.h"
 #include "platform/Histogram.h"
-#include "platform/JSONValues.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/TraceEvent.h"
@@ -68,6 +67,7 @@
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/graphics/paint/SkPictureBuilder.h"
 #include "platform/graphics/paint/TransformDisplayItem.h"
+#include "platform/json/JSONValues.h"
 
 namespace blink {
 

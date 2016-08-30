@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/JSONParser.h"
+#include "platform/json/JSONParser.h"
 
-#include "platform/JSONValues.h"
+#include "platform/json/JSONValues.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/text/StringBuilder.h"
 

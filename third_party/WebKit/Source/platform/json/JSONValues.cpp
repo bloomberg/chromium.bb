@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/JSONValues.h"
+#include "platform/json/JSONValues.h"
 
 #include "platform/Decimal.h"
 #include "wtf/MathExtras.h"

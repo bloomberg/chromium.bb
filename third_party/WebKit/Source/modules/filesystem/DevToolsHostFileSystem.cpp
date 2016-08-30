@@ -9,7 +9,7 @@
 #include "core/inspector/DevToolsHost.h"
 #include "core/page/Page.h"
 #include "modules/filesystem/DOMFileSystem.h"
-#include "platform/JSONValues.h"
+#include "platform/json/JSONValues.h"
 
 namespace blink {
 

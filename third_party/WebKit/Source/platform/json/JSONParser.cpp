@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/JSONParser.h"
+#include "platform/json/JSONParser.h"
 
 #include "platform/Decimal.h"
-#include "platform/JSONValues.h"
+#include "platform/json/JSONValues.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/StringToNumber.h"
 

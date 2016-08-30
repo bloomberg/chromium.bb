@@ -31,9 +31,9 @@
 #ifndef PictureSnapshot_h
 #define PictureSnapshot_h
 
-#include "platform/JSONValues.h"
 #include "platform/PlatformExport.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/json/JSONValues.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "wtf/RefCounted.h"

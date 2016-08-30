@@ -31,8 +31,8 @@
 #ifndef LoggingCanvas_h
 #define LoggingCanvas_h
 
-#include "platform/JSONValues.h"
 #include "platform/graphics/InterceptingCanvas.h"
+#include "platform/json/JSONValues.h"
 #include <memory>
 
 namespace blink {

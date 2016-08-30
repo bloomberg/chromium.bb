@@ -5,7 +5,7 @@
 #include "core/paint/ObjectPaintInvalidator.h"
 
 #include "core/layout/LayoutTestHelper.h"
-#include "platform/JSONValues.h"
+#include "platform/json/JSONValues.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

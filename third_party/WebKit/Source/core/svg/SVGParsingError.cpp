@@ -5,7 +5,7 @@
 #include "core/svg/SVGParsingError.h"
 
 #include "core/dom/QualifiedName.h"
-#include "platform/JSONValues.h"
+#include "platform/json/JSONValues.h"
 #include "wtf/text/CharacterNames.h"
 #include "wtf/text/StringBuilder.h"
 
