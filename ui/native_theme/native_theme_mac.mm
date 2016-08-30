@@ -139,10 +139,15 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
       return SK_ColorWHITE;
 
     case kColorId_FocusedBorderColor:
+      return ui::MaterialDesignController::IsSecondaryUiMaterial()
+                ? GetAuraColor(color_id, this)
+                : NSSystemColorToSkColor([NSColor keyboardFocusIndicatorColor]);
     case kColorId_FocusedMenuButtonBorderColor:
       return NSSystemColorToSkColor([NSColor keyboardFocusIndicatorColor]);
     case kColorId_UnfocusedBorderColor:
-      return NSSystemColorToSkColor([NSColor controlColor]);
+      return ui::MaterialDesignController::IsSecondaryUiMaterial()
+                ? GetAuraColor(color_id, this)
+                : NSSystemColorToSkColor([NSColor controlColor]);
 
     // Buttons and labels.
     case kColorId_ButtonBackgroundColor:
@@ -155,7 +160,9 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
     case kColorId_LabelEnabledColor:
       return NSSystemColorToSkColor([NSColor controlTextColor]);
     case kColorId_CallToActionColor:
-      return NSSystemColorToSkColor([NSColor controlTextColor]);
+      return ui::MaterialDesignController::IsSecondaryUiMaterial()
+                ? GetAuraColor(color_id, this)
+                : NSSystemColorToSkColor([NSColor controlTextColor]);
     case kColorId_ButtonDisabledColor:
     case kColorId_LabelDisabledColor:
       return NSSystemColorToSkColor([NSColor disabledControlTextColor]);
