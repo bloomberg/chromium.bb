@@ -41,7 +41,7 @@ TEST_F(NativeThemeMacTest, SystemColorSpotChecks) {
   const SkColor kWindowColorYosemite = SkColorSetARGB(255, 236, 236, 236);
   SkColor dialogColor =
       native_theme->GetSystemColor(NativeTheme::kColorId_WindowBackground);
-  if (base::mac::IsOSYosemiteOrLater())
+  if (base::mac::IsAtLeastOS10_10())
     EXPECT_EQ(dialogColor, kWindowColorYosemite);
   else
     EXPECT_EQ(dialogColor, kWindowColorCatsMavericks);

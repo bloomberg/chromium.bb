@@ -61,7 +61,7 @@ NSString* kSelectionDirection = @"Chromium.kSelectionDirection";
   // Work around it by reinstalling the tracking area after window resize.
   // This AppKit bug is fixed on Yosemite, so we only apply this workaround on
   // 10.9.
-  if (base::mac::IsOSMavericks()) {
+  if (base::mac::IsOS10_9()) {
     [self disableTracking];
     [self enableTracking];
   }

@@ -1642,7 +1642,7 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer {
 #pragma mark - Handoff Manager
 
 - (BOOL)shouldUseHandoff {
-  return base::mac::IsOSYosemiteOrLater();
+  return base::mac::IsAtLeastOS10_10();
 }
 
 - (void)passURLToHandoffManager:(const GURL&)handoffURL {

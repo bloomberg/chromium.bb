@@ -116,7 +116,7 @@ RendererMainPlatformDelegate::~RendererMainPlatformDelegate() {
 // running a renderer needs to also be reflected in chrome_main.cc for
 // --single-process support.
 void RendererMainPlatformDelegate::PlatformInitialize() {
-  if (base::mac::IsOSYosemiteOrLater()) {
+  if (base::mac::IsAtLeastOS10_10()) {
     // This is needed by the NSAnimations run for the scrollbars. If we switch
     // from native scrollers to drawing them in some other way, this warmup can
     // be removed <http://crbug.com/306348>.

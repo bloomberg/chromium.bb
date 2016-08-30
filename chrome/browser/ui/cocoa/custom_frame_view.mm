@@ -50,7 +50,7 @@
 
   // In Yosemite, the fullscreen button replaces the zoom button. We no longer
   // need to swizzle out this AppKit private method.
-  if (!base::mac::IsOSMavericks())
+  if (!base::mac::IsOS10_9())
     return;
 
   base::mac::ScopedNSAutoreleasePool pool;

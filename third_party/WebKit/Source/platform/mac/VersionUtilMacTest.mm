@@ -29,24 +29,24 @@
 TEST(VersionUtilMac, AppKitVersions)
 {
     if (floor(NSAppKitVersionNumber) == NSAppKitVersionNumber10_9) {
-        EXPECT_TRUE(blink::IsOSMavericks());
-        EXPECT_FALSE(blink::IsOSYosemite());
-        EXPECT_FALSE(blink::IsOSElCapitan());
+        EXPECT_TRUE(blink::IsOS10_9());
+        EXPECT_FALSE(blink::IsOS10_10());
+        EXPECT_FALSE(blink::IsOS10_11());
         return;
     }
 
     if (floor(NSAppKitVersionNumber) <= NSAppKitVersionNumber10_10Max &&
         floor(NSAppKitVersionNumber) >=  NSAppKitVersionNumber10_10) {
-        EXPECT_FALSE(blink::IsOSMavericks());
-        EXPECT_TRUE(blink::IsOSYosemite());
-        EXPECT_FALSE(blink::IsOSElCapitan());
+        EXPECT_FALSE(blink::IsOS10_9());
+        EXPECT_TRUE(blink::IsOS10_10());
+        EXPECT_FALSE(blink::IsOS10_11());
         return;
     }
 
     if (floor(NSAppKitVersionNumber) == NSAppKitVersionNumber10_11Max) {
-        EXPECT_FALSE(blink::IsOSMavericks());
-        EXPECT_FALSE(blink::IsOSYosemite());
-        EXPECT_TRUE(blink::IsOSElCapitan());
+        EXPECT_FALSE(blink::IsOS10_9());
+        EXPECT_FALSE(blink::IsOS10_10());
+        EXPECT_TRUE(blink::IsOS10_11());
         return;
     }
 }

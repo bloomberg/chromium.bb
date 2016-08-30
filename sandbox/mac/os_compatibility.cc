@@ -181,7 +181,7 @@ class OSCompatibility_10_10 : public OSCompatibility {
 
 // static
 std::unique_ptr<OSCompatibility> OSCompatibility::CreateForPlatform() {
-  if (base::mac::IsOSMavericks())
+  if (base::mac::IsOS10_9())
     return base::WrapUnique(new OSCompatibility_10_7());
   else
     return base::WrapUnique(new OSCompatibility_10_10());

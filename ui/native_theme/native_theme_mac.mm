@@ -188,8 +188,8 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
     case kColorId_MenuBackgroundColor:
       return kMenuPopupBackgroundColor;
     case kColorId_MenuSeparatorColor:
-      return base::mac::IsOSMavericks() ? kMenuSeparatorColorMavericks
-                                        : kMenuSeparatorColor;
+      return base::mac::IsOS10_9() ? kMenuSeparatorColorMavericks
+                                   : kMenuSeparatorColor;
     case kColorId_MenuBorderColor:
       return kMenuBorderColor;
 
@@ -250,7 +250,7 @@ void NativeThemeMac::PaintMenuPopupBackground(
     const MenuBackgroundExtraParams& menu_background) const {
   SkPaint paint;
   paint.setAntiAlias(true);
-  if (base::mac::IsOSMavericks())
+  if (base::mac::IsOS10_9())
     paint.setColor(kMenuPopupBackgroundColorMavericks);
   else
     paint.setColor(kMenuPopupBackgroundColor);

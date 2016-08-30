@@ -241,7 +241,7 @@ void InitCrashReporter(const std::string& process_type) {
   // Temporarily run Breakpad in-process on 10.10 and later because APIs that
   // it depends on got broken (http://crbug.com/386208).
   // This can catch crashes in the browser process only.
-  if (is_browser && base::mac::IsOSYosemiteOrLater()) {
+  if (is_browser && base::mac::IsAtLeastOS10_10()) {
     [breakpad_config setObject:[NSNumber numberWithBool:YES]
                         forKey:@BREAKPAD_IN_PROCESS];
   }

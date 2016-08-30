@@ -256,7 +256,7 @@ bool LayoutThemeMac::needsHackForTextControlWithFontFamily(const AtomicString& f
 {
     // This hack is only applied on OSX 10.9.
     // https://code.google.com/p/chromium/issues/detail?id=515989#c8
-    return IsOSMavericks() && family == "BlinkMacSystemFont";
+    return IsOS10_9() && family == "BlinkMacSystemFont";
 }
 
 static RGBA32 convertNSColorToColor(NSColor *color)
@@ -478,7 +478,7 @@ bool LayoutThemeMac::isControlStyled(const ComputedStyle& style) const
             return true;
         // NSPopUpButtonCell on macOS 10.9 doesn't support
         // NSUserInterfaceLayoutDirectionRightToLeft.
-        if (IsOSMavericks() && style.direction() == RTL)
+        if (IsOS10_9() && style.direction() == RTL)
             return true;
     }
     // Some other cells don't work well when scaled.

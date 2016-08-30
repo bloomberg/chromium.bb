@@ -213,7 +213,7 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
       NSAccessibilityPostNotification(ToBrowserAccessibilityCocoa(focus),
                                       mac_notification);
 
-      if (base::mac::IsOSElCapitanOrLater()) {
+      if (base::mac::IsAtLeastOS10_11()) {
         // |NSAccessibilityPostNotificationWithUserInfo| should be used on OS X
         // 10.11 or later to notify Voiceover about text selection changes. This
         // API has been present on versions of OS X since 10.7 but doesn't
@@ -238,7 +238,7 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
       break;
     case ui::AX_EVENT_VALUE_CHANGED:
       mac_notification = NSAccessibilityValueChangedNotification;
-      if (base::mac::IsOSElCapitanOrLater() && text_edits_.size()) {
+      if (base::mac::IsAtLeastOS10_11() && text_edits_.size()) {
         // It seems that we don't need to distinguish between deleted and
         // inserted text for now.
         base::string16 deleted_text;

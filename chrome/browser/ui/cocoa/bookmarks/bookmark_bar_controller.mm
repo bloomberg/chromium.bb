@@ -468,7 +468,7 @@ CGFloat BookmarkRightMargin() {
   if (bridge_) {
     // When running on 10.10, expect both -awakeFromNib and -viewDidLoad to be
     // called, but only initialize once.
-    DCHECK(base::mac::IsOSYosemiteOrLater());
+    DCHECK(base::mac::IsAtLeastOS10_10());
     return;
   }
 

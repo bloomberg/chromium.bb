@@ -29,7 +29,7 @@ namespace {
 // 10.10.
 base::ScopedCFTypeRef<CTFontRef> CopyFontWithSymbolicTraits(CTFontRef font,
                                                             int sym_traits) {
-  if (base::mac::IsOSElCapitanOrLater()) {
+  if (base::mac::IsAtLeastOS10_11()) {
     return base::ScopedCFTypeRef<CTFontRef>(CTFontCreateCopyWithSymbolicTraits(
         font, 0, nullptr, sym_traits, sym_traits));
   }

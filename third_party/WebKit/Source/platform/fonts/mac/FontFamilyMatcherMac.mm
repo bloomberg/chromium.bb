@@ -138,7 +138,7 @@ NSFont* MatchNSFontFamily(NSString* desiredFamily, NSFontTraitMask desiredTraits
         // so force layout tests to use "Lucida Grande". Once the 10.10 SDK
         // switch is made, this should be changed to return .LucidaGrandeUI and
         // the Layout Expectations should be updated. http://crbug.com/515836.
-        if (LayoutTestSupport::isRunningLayoutTest() && IsOSMavericks()) {
+        if (LayoutTestSupport::isRunningLayoutTest() && IsOS10_9()) {
             if (desiredWeight >= blink::FontWeightBold)
                 return [NSFont fontWithName:@"Lucida Grande Bold" size:size];
             else
@@ -146,7 +146,7 @@ NSFont* MatchNSFontFamily(NSString* desiredFamily, NSFontTraitMask desiredTraits
         }
 
         NSFont* font = nil;
-        if (IsOSMavericks()) {
+        if (IsOS10_9()) {
             // On older OSX versions, only bold and regular are available.
             if (desiredWeight >= blink::FontWeightBold)
                 font = [NSFont boldSystemFontOfSize:size];

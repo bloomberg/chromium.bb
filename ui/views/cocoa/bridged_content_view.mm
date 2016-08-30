@@ -345,7 +345,7 @@ ui::KeyEvent GetCharacterEventFromNSEvent(NSEvent* event) {
 
 - (void)updateWindowMask {
   DCHECK(![self inLiveResize]);
-  DCHECK(base::mac::IsOSMavericks());
+  DCHECK(base::mac::IsOS10_9());
   DCHECK(hostedView_);
 
   views::Widget* widget = hostedView_->GetWidget();
@@ -606,7 +606,7 @@ ui::KeyEvent GetCharacterEventFromNSEvent(NSEvent* event) {
   // We prevent updating the window mask and clipping the border around the
   // view, during a live resize. Hence update the window mask and redraw the
   // view after resize has completed.
-  if (base::mac::IsOSMavericks()) {
+  if (base::mac::IsOS10_9()) {
     [self updateWindowMask];
     [self setNeedsDisplay:YES];
   }
@@ -633,7 +633,7 @@ ui::KeyEvent GetCharacterEventFromNSEvent(NSEvent* event) {
   // crbug.com/543671.
   if (windowMask_ && ![self inLiveResize] &&
       !IsRectInsidePath(dirtyRect, windowMask_)) {
-    DCHECK(base::mac::IsOSMavericks());
+    DCHECK(base::mac::IsOS10_9());
     gfx::ScopedNSGraphicsContextSaveGState state;
 
     // The outer rectangular path corresponding to the window.

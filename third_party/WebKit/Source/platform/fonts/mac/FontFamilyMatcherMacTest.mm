@@ -23,7 +23,7 @@ void TestSystemFontContainsString(FontWeight desiredWeight, NSString* substring)
 
 TEST(FontFamilyMatcherMacTest, YosemiteFontWeights)
 {
-    if (!IsOSYosemite())
+    if (!IsOS10_10())
         return;
 
     TestSystemFontContainsString(FontWeight100, @"-UltraLight");

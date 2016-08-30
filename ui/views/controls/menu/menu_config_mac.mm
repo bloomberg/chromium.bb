@@ -31,9 +31,8 @@ void MenuConfig::Init() {
   separator_height = 13;
   separator_upper_height = 7;
   separator_lower_height = 6;
-  separator_thickness = base::mac::IsOSMavericks()
-                            ? kMenuSeparatorHeightMavericks
-                            : kMenuSeparatorHeight;
+  separator_thickness = base::mac::IsOS10_9() ? kMenuSeparatorHeightMavericks
+                                              : kMenuSeparatorHeight;
   align_arrow_and_shortcut = true;
   icons_in_label = true;
   check_selected_combobox_item = true;

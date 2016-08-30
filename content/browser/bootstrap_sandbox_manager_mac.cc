@@ -80,7 +80,7 @@ void BootstrapSandboxManager::RegisterRendererPolicy() {
 
   // Allow access to launchservicesd on 10.10+ otherwise the renderer will crash
   // attempting to get its ASN. http://crbug.com/533537
-  if (base::mac::IsOSYosemiteOrLater()) {
+  if (base::mac::IsAtLeastOS10_10()) {
     policy.rules["com.apple.coreservices.launchservicesd"] =
         sandbox::Rule(sandbox::POLICY_ALLOW);
   }

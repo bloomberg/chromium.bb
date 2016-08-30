@@ -51,7 +51,7 @@ void SysInfo::OperatingSystemVersionNumbers(int32_t* major_version,
     // cases in 10.9, rely on ::Gestalt(..). Since this code is only needed for
     // 10.9.0 and 10.9.1 and uses the recommended replacement thereafter,
     // suppress the warning for this fallback case.
-    DCHECK(base::mac::IsOSMavericks());
+    DCHECK(base::mac::IsOS10_9());
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
     Gestalt(gestaltSystemVersionMajor,

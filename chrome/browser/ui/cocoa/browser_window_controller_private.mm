@@ -680,7 +680,7 @@ willPositionSheet:(NSWindow*)sheet
   // full-screen mode. We do not want either to show. Search for the window that
   // contains the views, and hide it. There is no need to ever unhide the view.
   // http://crbug.com/380235
-  if (base::mac::IsOSYosemiteOrLater()) {
+  if (base::mac::IsAtLeastOS10_10()) {
     for (NSWindow* window in [[NSApplication sharedApplication] windows]) {
       if ([window
               isKindOfClass:NSClassFromString(@"NSToolbarFullScreenWindow")]) {
@@ -1116,7 +1116,7 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 + (BOOL)systemSettingsRequireMavericksAppKitFullscreenHack {
-  if (!base::mac::IsOSMavericks())
+  if (!base::mac::IsOS10_9())
     return NO;
   return [NSScreen respondsToSelector:@selector(screensHaveSeparateSpaces)] &&
          [NSScreen screensHaveSeparateSpaces];
@@ -1135,7 +1135,7 @@ willPositionSheet:(NSWindow*)sheet
 
 - (BOOL)shouldUseCustomAppKitFullscreenTransition:(BOOL)enterFullScreen {
   // Disable the custom exit animation in OSX 10.9: http://crbug.com/526327#c3.
-  if (base::mac::IsOSMavericks() && !enterFullScreen)
+  if (base::mac::IsOS10_9() && !enterFullScreen)
     return NO;
 
   NSView* root = [[self.window contentView] superview];

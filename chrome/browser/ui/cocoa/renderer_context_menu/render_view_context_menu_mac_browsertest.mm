@@ -98,6 +98,6 @@ IN_PROC_BROWSER_TEST_F(RenderViewContextMenuMacBrowserTest, ServicesFiltering) {
   // Confirm that Services items were removed from the contextual menu. This
   // check was failing on the 10.10 bot, for some reason. Most-important is
   // making sure it continues to work as OS X evolves.
-  if (base::mac::IsOSElCapitanOrLater())
+  if (base::mac::IsAtLeastOS10_11())
     EXPECT_LT(0LU, [filteredItems_ count]);
 }

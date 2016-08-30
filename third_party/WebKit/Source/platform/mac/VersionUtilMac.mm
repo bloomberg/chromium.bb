@@ -48,37 +48,12 @@ int MacOSXMinorVersionInternal()
     return darwinMajorVersion - 4;
 }
 
+} // namespace
+
 // Returns the running system's Mac OS X minor version. This is the |y| value
 // in 10.y or 10.y.z.
-int MacOSXMinorVersion()
+int blink::internal::MacOSXMinorVersion()
 {
     static int minorVersion = MacOSXMinorVersionInternal();
     return minorVersion;
 }
-
-enum {
-    MAVERICKS_MINOR_VERSION = 9,
-    YOSEMITE_MINOR_VERSION = 10,
-    EL_CAPITAN_MINOR_VERSION = 11,
-};
-
-} // namespace
-
-namespace blink {
-
-bool IsOSMavericks()
-{
-    return MacOSXMinorVersion() == MAVERICKS_MINOR_VERSION;
-}
-
-bool IsOSYosemite()
-{
-    return MacOSXMinorVersion() == YOSEMITE_MINOR_VERSION;
-}
-
-bool IsOSElCapitan()
-{
-    return MacOSXMinorVersion() == EL_CAPITAN_MINOR_VERSION;
-}
-
-} // namespace blink

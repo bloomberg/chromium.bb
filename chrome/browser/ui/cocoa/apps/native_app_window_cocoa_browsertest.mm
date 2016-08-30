@@ -556,7 +556,7 @@ void TestControls(AppWindow* app_window) {
   // fullscreen action. The above check that collectionBehavior does not include
   // NSWindowCollectionBehaviorFullScreenPrimary is sufficient to determine that
   // the window can't be fullscreened.
-  if (base::mac::IsOSMavericks()) {
+  if (base::mac::IsOS10_9()) {
     EXPECT_EQ(can_fullscreen,
               [[ns_window standardWindowButton:NSWindowZoomButton] isEnabled]);
   }
@@ -636,7 +636,7 @@ NSBitmapImageRep* ScreenshotNSWindow(NSWindow* window) {
   // NOTE: This doesn't work with Views, but the regular test does, so use that.
   bool mac_views = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableMacViewsNativeAppWindows);
-  if (base::mac::IsOSMavericks() && !mac_views) {
+  if (base::mac::IsOS10_9() && !mac_views) {
     // -[NSView setNeedsDisplay:YES] doesn't synchronously display the view, it
     // gets drawn by another event in the queue, so let that run first.
     content::RunAllPendingInMessageLoop();

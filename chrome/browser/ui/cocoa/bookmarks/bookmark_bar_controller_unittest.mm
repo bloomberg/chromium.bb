@@ -1640,10 +1640,10 @@ TEST_F(BookmarkBarControllerTest, DISABLED_LastBookmarkResizeBehavior) {
         153.0, 143.0, 142.0 };
   CGFloat* view_widths = NULL;
   bool is_mode_material = ui::MaterialDesignController::IsModeMaterial();
-  if (base::mac::IsOSElCapitan()) {
+  if (base::mac::IsOS10_11()) {
     view_widths = is_mode_material ? material_view_widths_el_capitan
                                    : view_widths_el_capitan;
-  } else if (base::mac::IsOSYosemite()) {
+  } else if (base::mac::IsOS10_10()) {
     view_widths = is_mode_material ? material_view_widths_yosemite
                                    : view_widths_yosemite;
   } else {

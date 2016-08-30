@@ -58,7 +58,7 @@
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   // Handoff is only available on OSX 10.10+.
-  DCHECK(base::mac::IsOSYosemiteOrLater());
+  DCHECK(base::mac::IsAtLeastOS10_10());
 #endif
 
   _activeURL = url;

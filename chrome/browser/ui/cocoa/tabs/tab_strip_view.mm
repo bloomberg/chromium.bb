@@ -374,7 +374,7 @@
   // NSVisualEffectView is only used in Material Design, and only available on
   // OS X 10.10 and higher.
   if (!ui::MaterialDesignController::IsModeMaterial() ||
-      !base::mac::IsOSYosemiteOrLater()) {
+      !base::mac::IsAtLeastOS10_10()) {
     return nil;
   }
 

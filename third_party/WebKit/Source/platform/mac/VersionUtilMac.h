@@ -7,16 +7,26 @@
 
 #include "platform/PlatformExport.h"
 
+#include <AvailabilityMacros.h>
+
 namespace blink {
 
-// Mavericks is Mac OS X 10.9, Darwin 13.
-PLATFORM_EXPORT bool IsOSMavericks();
+namespace internal {
 
-// Yosemite is Mac OS X 10.10, Darwin 14.
-PLATFORM_EXPORT bool IsOSYosemite();
+PLATFORM_EXPORT int MacOSXMinorVersion();
 
-// El Capitan is Mac OS X 10.11, Darwin 15.
-PLATFORM_EXPORT bool IsOSElCapitan();
+template <int V, int ID>
+constexpr bool IsOS()
+{
+    return MAC_OS_X_VERSION_MIN_REQUIRED <= ID && MacOSXMinorVersion() == V;
+}
+
+} // namespace internal
+
+const auto IsOS10_9 = internal::IsOS<9, 1090>;
+const auto IsOS10_10 = internal::IsOS<10, 101000>;
+const auto IsOS10_11 = internal::IsOS<11, 101100>;
+const auto IsOS10_12 = internal::IsOS<12, 101200>;
 
 } // namespace blink
 

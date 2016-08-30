@@ -782,7 +782,7 @@ void BridgedNativeWidget::OnSizeChanged() {
   // We don't update the window mask during a live resize, instead it is done
   // after the resize is completed in viewDidEndLiveResize: in
   // BridgedContentView.
-  if (base::mac::IsOSMavericks() && ![window_ inLiveResize])
+  if (base::mac::IsOS10_9() && ![window_ inLiveResize])
     [bridged_view_ updateWindowMask];
 }
 
@@ -979,7 +979,7 @@ void BridgedNativeWidget::CreateLayer(ui::LayerType layer_type,
     // to generate a window shadow from the composited CALayer. To get around
     // this, let the window background remain opaque and clip the window
     // boundary in drawRect method of BridgedContentView. See crbug.com/543671.
-    if (base::mac::IsOSYosemiteOrLater())
+    if (base::mac::IsAtLeastOS10_10())
       [window_ setBackgroundColor:[NSColor clearColor]];
   }
 
@@ -1270,7 +1270,7 @@ void BridgedNativeWidget::AddCompositorSuperview() {
   if (widget_type_ == Widget::InitParams::TYPE_MENU) {
     // Giving the canvas opacity messes up subpixel font rendering, so use a
     // solid background, but make the CALayer transparent.
-    if (base::mac::IsOSYosemiteOrLater()) {
+    if (base::mac::IsAtLeastOS10_10()) {
       [background_layer setOpacity:kYosemiteMenuOpacity];
       CGSSetWindowBackgroundBlurRadius(
           _CGSDefaultConnection(), [window_ windowNumber], kYosemiteMenuBlur);

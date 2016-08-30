@@ -239,7 +239,7 @@ class FrameAndStyleLock {
 }
 
 - (void)startCustomFullScreenAnimationWithDuration:(NSTimeInterval)duration {
-  CGFloat durationFraction = base::mac::IsOSYosemite()
+  CGFloat durationFraction = base::mac::IsOS10_10()
                                  ? kAnimationDurationFractionYosemite
                                  : kAnimationDurationFraction;
   CGFloat animationDuration = duration * durationFraction;

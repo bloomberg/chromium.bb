@@ -68,7 +68,7 @@ base::WeakPtr<BluetoothAdapterMac> BluetoothAdapterMac::CreateAdapterForTest(
 // static
 BluetoothUUID BluetoothAdapterMac::BluetoothUUIDWithCBUUID(CBUUID* uuid) {
   // UUIDString only available OS X >= 10.10.
-  DCHECK(base::mac::IsOSYosemiteOrLater());
+  DCHECK(base::mac::IsAtLeastOS10_10());
   std::string uuid_c_string = base::SysNSStringToUTF8([uuid UUIDString]);
   return device::BluetoothUUID(uuid_c_string);
 }
@@ -241,7 +241,7 @@ void BluetoothAdapterMac::DeviceConnected(IOBluetoothDevice* device) {
 
 // static
 bool BluetoothAdapterMac::IsLowEnergyAvailable() {
-  return base::mac::IsOSYosemiteOrLater();
+  return base::mac::IsAtLeastOS10_10();
 }
 
 void BluetoothAdapterMac::RemovePairingDelegateInternal(

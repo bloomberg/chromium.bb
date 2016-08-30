@@ -448,69 +448,14 @@ int MacOSXMinorVersionInternal() {
   return mac_os_x_minor_version;
 }
 
-// Returns the running system's Mac OS X minor version. This is the |y| value
-// in 10.y or 10.y.z.
+}  // namespace
+
+namespace internal {
 int MacOSXMinorVersion() {
   static int mac_os_x_minor_version = MacOSXMinorVersionInternal();
   return mac_os_x_minor_version;
 }
-
-enum {
-  MAVERICKS_MINOR_VERSION = 9,
-  YOSEMITE_MINOR_VERSION = 10,
-  EL_CAPITAN_MINOR_VERSION = 11,
-  SIERRA_MINOR_VERSION = 12,
-};
-
-}  // namespace
-
-#if !defined(BASE_MAC_MAC_UTIL_H_INLINED_GT_10_9)
-bool IsOSMavericks() {
-  return MacOSXMinorVersion() == MAVERICKS_MINOR_VERSION;
-}
-#endif
-
-#if !defined(BASE_MAC_MAC_UTIL_H_INLINED_GT_10_10)
-bool IsOSYosemite() {
-  return MacOSXMinorVersion() == YOSEMITE_MINOR_VERSION;
-}
-#endif
-
-#if !defined(BASE_MAC_MAC_UTIL_H_INLINED_GE_10_10)
-bool IsOSYosemiteOrLater() {
-  return MacOSXMinorVersion() >= YOSEMITE_MINOR_VERSION;
-}
-#endif
-
-#if !defined(BASE_MAC_MAC_UTIL_H_INLINED_GT_10_11)
-bool IsOSElCapitan() {
-  return MacOSXMinorVersion() == EL_CAPITAN_MINOR_VERSION;
-}
-#endif
-
-#if !defined(BASE_MAC_MAC_UTIL_H_INLINED_GE_10_11)
-bool IsOSElCapitanOrLater() {
-  return MacOSXMinorVersion() >= EL_CAPITAN_MINOR_VERSION;
-}
-#endif
-
-#if !defined(BASE_MAC_MAC_UTIL_H_INLINED_GT_10_12)
-bool IsOSSierra() {
-  return MacOSXMinorVersion() == SIERRA_MINOR_VERSION;
-}
-#endif
-
-#if !defined(BASE_MAC_MAC_UTIL_H_INLINED_GE_10_12)
-bool IsOSSierraOrLater() {
-  return MacOSXMinorVersion() >= SIERRA_MINOR_VERSION;
-}
-#endif
-
-#if !defined(BASE_MAC_MAC_UTIL_H_INLINED_GT_10_12)
-bool IsOSLaterThanSierra_DontCallThis() {
-  return MacOSXMinorVersion() > SIERRA_MINOR_VERSION;
-}
-#endif
+}  // namespace internal
 
 std::string GetModelIdentifier() {
   std::string return_string;

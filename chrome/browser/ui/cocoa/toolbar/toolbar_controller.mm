@@ -297,7 +297,7 @@ class NotificationBridge : public AppMenuIconController::Delegate {
   // When linking and running on 10.10+, both -awakeFromNib and -viewDidLoad may
   // be called, don't initialize twice.
   if (locationBarView_) {
-    DCHECK(base::mac::IsOSYosemiteOrLater());
+    DCHECK(base::mac::IsAtLeastOS10_10());
     return;
   }
 

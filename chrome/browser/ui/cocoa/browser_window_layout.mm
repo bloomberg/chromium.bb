@@ -61,7 +61,7 @@ const CGFloat kLocationBarRightOffset = 35;
 
 - (instancetype)init {
   if ((self = [super init])) {
-    parameters_.isOSYosemiteOrLater = base::mac::IsOSYosemiteOrLater();
+    parameters_.isOSYosemiteOrLater = base::mac::IsAtLeastOS10_10();
   }
   return self;
 }

@@ -5,7 +5,6 @@
 #ifndef BASE_MAC_MAC_UTIL_H_
 #define BASE_MAC_MAC_UTIL_H_
 
-#include <AvailabilityMacros.h>
 #include <Carbon/Carbon.h>
 #include <stdint.h>
 #include <string>
@@ -108,85 +107,77 @@ BASE_EXPORT bool WasLaunchedAsHiddenLoginItem();
 // an error, or true otherwise.
 BASE_EXPORT bool RemoveQuarantineAttribute(const FilePath& file_path);
 
+namespace internal {
+
+// Returns the system's Mac OS X minor version. This is the |y| value
+// in 10.y or 10.y.z.
+BASE_EXPORT int MacOSXMinorVersion();
+
+}  // namespace internal
+
 // Run-time OS version checks. Use these instead of
-// base::SysInfo::OperatingSystemVersionNumbers. Prefer the "OrEarlier" and
-// "OrLater" variants to those that check for a specific version, unless you
+// base::SysInfo::OperatingSystemVersionNumbers. Prefer the "AtLeast" and
+// "AtMost" variants to those that check for a specific version, unless you
 // know for sure that you need to check for a specific version.
 
-// Mavericks is OS X 10.9, Darwin 13.
-BASE_EXPORT bool IsOSMavericks();
+#define _DEFINE_IS_OS_FUNCS(V, ID)                \
+  inline bool IsOS10_##V() {                      \
+    return MAC_OS_X_VERSION_MIN_REQUIRED <= ID && \
+           internal::MacOSXMinorVersion() == V;   \
+  }                                               \
+  inline bool IsAtLeastOS10_##V() {               \
+    return MAC_OS_X_VERSION_MIN_REQUIRED >= ID || \
+           internal::MacOSXMinorVersion() >= V;   \
+  }                                               \
+  inline bool IsAtMostOS10_##V() {                \
+    return MAC_OS_X_VERSION_MIN_REQUIRED <= ID && \
+           internal::MacOSXMinorVersion() <= V;   \
+  }
 
-// Yosemite is OS X 10.10, Darwin 14.
-BASE_EXPORT bool IsOSYosemite();
-BASE_EXPORT bool IsOSYosemiteOrEarlier();
-BASE_EXPORT bool IsOSYosemiteOrLater();
+// Apple adopted this format in 10.10: 10.11.0 becomes 101100
+#define OS_X_VERSION_ID(V) 10##V##00
+#define DEFINE_IS_OS_FUNCS(V) _DEFINE_IS_OS_FUNCS(V, OS_X_VERSION_ID(V))
 
-// El Capitan is OS X 10.11, Darwin 15.
-BASE_EXPORT bool IsOSElCapitan();
-BASE_EXPORT bool IsOSElCapitanOrEarlier();
-BASE_EXPORT bool IsOSElCapitanOrLater();
+// Sanity check that our computed IDs match the SDK
+#define STR(S) _STR(S)
+#define _STR(S) #S
+#define ASSERT_OS_ID_CONSTANT(V)                                              \
+  static_assert(OS_X_VERSION_ID(V) == MAC_OS_X_VERSION_10_##V,                \
+                "ID for macOS 10." #V                                         \
+                " (" STR(OS_X_VERSION_ID(V)) ") doesn't match the SDK (" STR( \
+                    MAC_OS_X_VERSION_10_##V) ").");
 
-// Sierra is macOS 10.12, Darwin 16.
-BASE_EXPORT bool IsOSSierra();
-BASE_EXPORT bool IsOSSierraOrLater();
+// 10.9 uses an old format.
+// TODO(sdy): Ditch, most callers are better served by !IsAtLeastOS10_10().
+_DEFINE_IS_OS_FUNCS(9, MAC_OS_X_VERSION_10_9)
+
+DEFINE_IS_OS_FUNCS(10)
+ASSERT_OS_ID_CONSTANT(10)
+
+DEFINE_IS_OS_FUNCS(11)
+#ifdef MAC_OS_X_VERSION_10_11
+ASSERT_OS_ID_CONSTANT(11)
+#endif
+
+DEFINE_IS_OS_FUNCS(12)
+#ifdef MAC_OS_X_VERSION_10_12
+ASSERT_OS_ID_CONSTANT(12)
+#endif
+
+#undef ASSERT_OS_ID_CONSTANT
+#undef _STR
+#undef STR
+
+#undef DEFINE_IS_OS_FUNCS
+#undef MAC_OS_X_VERISON_ID
+#undef _DEFINE_IS_OS_FUNCS
 
 // This should be infrequently used. It only makes sense to use this to avoid
 // codepaths that are very likely to break on future (unreleased, untested,
 // unborn) OS releases, or to log when the OS is newer than any known version.
-BASE_EXPORT bool IsOSLaterThanSierra_DontCallThis();
-
-// Inline functions that are redundant due to version ranges being mutually-
-// exclusive.
-inline bool IsOSYosemiteOrEarlier() { return !IsOSElCapitanOrLater(); }
-inline bool IsOSElCapitanOrEarlier() { return !IsOSSierraOrLater(); }
-
-// When the deployment target is set, the code produced cannot run on earlier
-// OS releases. That enables some of the IsOS* family to be implemented as
-// constant-value inline functions. The MAC_OS_X_VERSION_MIN_REQUIRED macro
-// contains the value of the deployment target.
-
-#if defined(MAC_OS_X_VERSION_10_9) && \
-    MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_9
-#define BASE_MAC_MAC_UTIL_H_INLINED_GT_10_9
-inline bool IsOSMavericks() { return false; }
-#endif
-
-#if defined(MAC_OS_X_VERSION_10_10) && \
-    MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_10
-#define BASE_MAC_MAC_UTIL_H_INLINED_GE_10_10
-inline bool IsOSYosemiteOrLater() { return true; }
-#endif
-
-#if defined(MAC_OS_X_VERSION_10_10) && \
-    MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_10
-#define BASE_MAC_MAC_UTIL_H_INLINED_GT_10_10
-inline bool IsOSYosemite() { return false; }
-#endif
-
-#if defined(MAC_OS_X_VERSION_10_11) && \
-    MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_11
-#define BASE_MAC_MAC_UTIL_H_INLINED_GE_10_11
-inline bool IsOSElCapitanOrLater() { return true; }
-#endif
-
-#if defined(MAC_OS_X_VERSION_10_11) && \
-    MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_11
-#define BASE_MAC_MAC_UTIL_H_INLINED_GT_10_11
-inline bool IsOSElCapitan() { return false; }
-#endif
-
-#if defined(MAC_OS_X_VERSION_10_12) && \
-    MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_12
-#define BASE_MAC_MAC_UTIL_H_INLINED_GE_10_12
-inline bool IsOSSierraOrLater() { return true; }
-#endif
-
-#if defined(MAC_OS_X_VERSION_10_12) && \
-    MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_12
-#define BASE_MAC_MAC_UTIL_H_INLINED_GT_10_12
-inline bool IsOSSierra() { return false; }
-inline bool IsOSLaterThanSierra_DontCallThis() { return true; }
-#endif
+inline bool IsOSLaterThan10_12_DontCallThis() {
+  return !IsAtMostOS10_12();
+}
 
 // Retrieve the system's model identifier string from the IOKit registry:
 // for example, "MacPro4,1", "MacBookPro6,1". Returns empty string upon

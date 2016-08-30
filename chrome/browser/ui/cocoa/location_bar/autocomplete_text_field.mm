@@ -52,7 +52,7 @@ const CGFloat kAnimationDuration = 0.2;
   // Also, because NSPressureConfiguration is not in the original 10.10 SDK,
   // use NSClassFromString() to instantiate it (otherwise there's a
   // linker error).
-  if (base::mac::IsOSYosemiteOrLater() &&
+  if (base::mac::IsAtLeastOS10_10() &&
       [self respondsToSelector:@selector(setPressureConfiguration:)]) {
     NSPressureConfiguration* pressureConfiguration =
         [[[NSClassFromString(@"NSPressureConfiguration") alloc]

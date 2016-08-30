@@ -54,7 +54,7 @@ bool LaunchdInterceptionServer::Initialize(mach_port_t server_receive_right) {
   }
   sandbox_send_port_.reset(sandbox_port_.get());
 
-  if (base::mac::IsOSYosemiteOrLater()) {
+  if (base::mac::IsAtLeastOS10_10()) {
     message_server_.reset(new XPCMessageServer(this, server_receive_right));
     xpc_launchd_ = true;
   } else {
