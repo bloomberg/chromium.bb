@@ -1,6 +1,7 @@
 # Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+# pylint: disable=line-too-long
 from infra_libs.event_mon.checkouts import get_revinfo, parse_revinfo
 
 from infra_libs.event_mon.config import add_argparse_options
@@ -24,5 +25,6 @@ from infra_libs.event_mon.protos.chrome_infra_log_pb2 import ServiceEvent
 from infra_libs.event_mon.protos.chrome_infra_log_pb2 import InfraEventSource
 from infra_libs.event_mon.protos.chrome_infra_log_pb2 import CodeVersion
 from infra_libs.event_mon.protos.chrome_infra_log_pb2 import CQEvent
+from infra_libs.event_mon.protos.chrome_infra_log_pb2 import MachineProviderEvent
 
 from infra_libs.event_mon.protos.log_request_lite_pb2 import LogRequestLite

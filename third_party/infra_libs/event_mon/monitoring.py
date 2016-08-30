@@ -273,7 +273,8 @@ def get_build_event(event_type,
                     goma_crash_report_id=None,
                     patch_url=None,
                     bbucket_id=None,
-                    category=None):
+                    category=None,
+                    head_revision_git_hash=None):
   """Compute a ChromeInfraEvent filled with a BuildEvent.
 
   Arguments are identical to those in send_build_event(), please refer
@@ -352,6 +353,9 @@ def get_build_event(event_type,
       'cq_experimental': BuildEvent.CATEGORY_CQ_EXPERIMENTAL,
       'git_cl_try': BuildEvent.CATEGORY_GIT_CL_TRY,
     }.get(category.lower(), BuildEvent.CATEGORY_UNKNOWN)
+
+  if head_revision_git_hash:
+    event.build_event.head_revision.git_hash = head_revision_git_hash
     
 
   if event.build_event.step_name:
@@ -449,7 +453,8 @@ def send_build_event(event_type,
                      goma_crash_report_id=None,
                      patch_url=None,
                      bbucket_id=None,
-                     category=None):
+                     category=None,
+                     head_revision_git_hash=None):
   """Send a ChromeInfraEvent filled with a BuildEvent
 
   Args:
@@ -479,6 +484,7 @@ def send_build_event(event_type,
     patch_url (string): URL of the patch that triggered build
     bbucket_id (long): Buildbucket ID of the build.
     category (string): Build category, e.g. cq or git_cl_try.
+    head_revision_git_hash (string): Revision fetched from the Git repository.
 
   Returns:
     success (bool): False if some error happened.
@@ -500,7 +506,8 @@ def send_build_event(event_type,
                          goma_crash_report_id=goma_crash_report_id,
                          patch_url=patch_url,
                          bbucket_id=bbucket_id,
-                         category=category).send()
+                         category=category,
+                         head_revision_git_hash=head_revision_git_hash).send()
 
 
 def send_events(events):

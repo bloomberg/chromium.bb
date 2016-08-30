@@ -25,9 +25,9 @@ class BaseApplication(object):
 
   Minimal example::
 
-    import infra_libs
+    from infra_libs import app
 
-    class MyApplication(infra_libs.BaseApplication):
+    class MyApplication(app.BaseApplication):
       def main(self, opts):
         # Do stuff.
 
