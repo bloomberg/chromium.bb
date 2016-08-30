@@ -38,36 +38,43 @@ should be able to be added at any place in this file.
 <action name="AboutFlags_StartupTick" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_background-webapps">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_click-to-play">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_cloud-print">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_cloud-print-proxy">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_confirm-to-quit">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_conflicting-modules-check">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_data-reduction-proxy-lo-fi@1">
@@ -78,6 +85,7 @@ should be able to be added at any place in this file.
     chrome://flags. The action is emitted once per startup when the flag is
     active.
   </description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_data-reduction-proxy-lo-fi@2">
@@ -88,6 +96,7 @@ should be able to be added at any place in this file.
     cellular connection via chrome://flags. The action is emitted once per
     startup when the flag is active.
   </description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_data-reduction-proxy-lo-fi@3">
@@ -98,6 +107,7 @@ should be able to be added at any place in this file.
     chrome://flags. The action is emitted once per startup when the flag is
     active.
   </description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_data-reduction-proxy-lo-fi@4">
@@ -108,16 +118,19 @@ should be able to be added at any place in this file.
     slow connections via chrome://flags. The action is emitted once per startup
     when the flag is active.
   </description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_disable-chrome-to-mobile">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_disable-outdated-plugins">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_disable-pnacl">
@@ -129,6 +142,7 @@ should be able to be added at any place in this file.
 <action name="AboutFlags_disable-print-preview">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_disable-smooth-scrolling">
@@ -142,16 +156,19 @@ should be able to be added at any place in this file.
 <action name="AboutFlags_disable-views-rect-based-targeting">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_disable-website-settings">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_dns-server">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_document-passive-event-listeners">
@@ -159,16 +176,19 @@ should be able to be added at any place in this file.
   <description>
     User enabled the PassiveDocumentEventListeners via chrome://flags.
   </description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_downloads-new-ui">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_enable-chrome-to-mobile">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_enable-experimental-web-platform-features">
@@ -177,21 +197,25 @@ should be able to be added at any place in this file.
     User flag to enable web APIs marked as status=experimental
     RuntimeEnabledFeatures.
   </description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_enable-nacl">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_enable-nacl-debug">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_enable-nacl-exception-handling">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_enable-native-cups">
@@ -199,11 +223,13 @@ should be able to be added at any place in this file.
   <description>
     Records if native cups printing is enabled in chrome://flags
   </description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_enable-pnacl">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_enable-pointer-events">
@@ -211,11 +237,13 @@ should be able to be added at any place in this file.
   <description>
     User enabled the &quot;PointerEvent&quot; blink feature via chrome://flags.
   </description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_enable-smooth-scrolling">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_enable-web-bluetooth">
@@ -223,11 +251,13 @@ should be able to be added at any place in this file.
   <owner>ortuno@chromium.org</owner>
   <owner>scheib@chromium.org</owner>
   <description>User enabled Web Bluetooth via chrome://flags.</description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_enable-website-settings">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_enable-wifi-credential-sync">
@@ -235,46 +265,55 @@ should be able to be added at any place in this file.
   <description>
     User enabled WiFi credential sync via chrome://flags.
   </description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_experimental-location-features">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_expose-for-tabs">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_extension-apis">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_focus-existing-tab-on-open">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_gpu-canvas-2d">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_indexeddb-use-leveldb">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_instant-autocomplete-immediately">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_instant-type">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_mark-non-secure-as">
@@ -284,31 +323,37 @@ should be able to be added at any place in this file.
     This flag lets users opt into or out of marking HTTP as Dubious or as
     Non-Secure. The action is emitted once per startup when the flag is active.
   </description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_match-preview">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_my-special-feature">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_nacl-debug-mask">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_nacl-gdb">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_nacl-gdb-script">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_new-audio-rendering-mixing-strategy">
@@ -317,11 +362,13 @@ should be able to be added at any place in this file.
   <description>
     User enabled flag to control new audio rendering mixing strategy.
   </description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_page-prerender">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_passive-event-listeners-due-to-fling">
@@ -329,6 +376,7 @@ should be able to be added at any place in this file.
   <description>
     User enabled the PassiveEventListenersDueToFling via chrome://flags.
   </description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_passive-listener-default">
@@ -337,26 +385,31 @@ should be able to be added at any place in this file.
     User enabled flag to adjust the default value of 'passive' field in
     AddEventListenerOptions dictionary when a javascript event handler is added.
   </description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_prerender-from-omnibox">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_print-preview">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_remoting">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_save-page-as-mhtml">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_smooth-scrolling">
@@ -364,36 +417,43 @@ should be able to be added at any place in this file.
   <description>
     User flag to disable smooth scroll animations on wheel and keyboard input.
   </description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_snap-start">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_tabbed-options">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_verbatim-instant">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_vertical-tabs">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_views-use-rect-based-targeting">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="AboutFlags_xss-auditor">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="Accel_Accessible_Focus_Next">
@@ -14181,6 +14241,7 @@ should be able to be added at any place in this file.
 <action name="StartupTick" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated in favor of AboutFlags.Seen histogram.</obsolete>
 </action>
 
 <action name="StatusArea_Accessability_DetailedView">

@@ -20809,6 +20809,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Application languages used for UI.</summary>
 </histogram>
 
+<histogram name="Launch.FlagsAtStartup" enum="LoginCustomFlags">
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Logs which Chrome flags from about:flags were active on start up.
+  </summary>
+</histogram>
+
 <histogram name="Launch.HomeScreen" enum="LaunchFromHomeScreen">
   <owner>dfalcantara@chromium.org</owner>
   <summary>

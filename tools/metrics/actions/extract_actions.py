@@ -91,7 +91,6 @@ KNOWN_COMPUTED_USERS = (
   'extension_metrics_module.cc', # extensions hook for user metrics
   'language_options_handler_common.cc', # languages and input methods in CrOS
   'cros_language_options_handler.cc', # languages and input methods in CrOS
-  'about_flags.cc', # do not generate a warning; see AddAboutFlagsActions()
   'external_metrics.cc',  # see AddChromeOSActions()
   'core_options_handler.cc',  # see AddWebUIActions()
   'browser_render_process_host.cc',  # see AddRendererActions()
@@ -196,20 +195,6 @@ def AddComputedActions(actions):
     actions.add('LanguageOptions_UiLanguageChange_%s' % language_code)
     actions.add('LanguageOptions_SpellCheckLanguageChange_%s' % language_code)
 
-def AddWebKitEditorActions(actions):
-  """Add editor actions from editor_client_impl.cc.
-
-  Arguments:
-    actions: set of actions to add to.
-  """
-  action_re = re.compile(r'''\{ [\w']+, +\w+, +"(.*)" +\},''')
-
-  editor_file = os.path.join(REPOSITORY_ROOT, 'webkit', 'api', 'src',
-                             'EditorClientImpl.cc')
-  for line in open(editor_file):
-    match = action_re.search(line)
-    if match:  # Plain call to RecordAction
-      actions.add(match.group(1))
 
 def AddPDFPluginActions(actions):
   """Add actions that are sent by the PDF plugin.
@@ -234,25 +219,6 @@ def AddPDFPluginActions(actions):
   actions.add('PDF_Unsupported_Shared_Review')
   actions.add('PDF_Unsupported_Sound')
   actions.add('PDF_Unsupported_XFA')
-
-def AddAboutFlagsActions(actions):
-  """This parses the experimental feature flags for UMA actions.
-
-  Arguments:
-    actions: set of actions to add to.
-  """
-  about_flags = os.path.join(REPOSITORY_ROOT, 'chrome', 'browser',
-                             'about_flags.cc')
-  flag_name_re = re.compile(r'\s*"([0-9a-zA-Z\-_]+)",\s*// FLAGS:RECORD_UMA')
-  for line in open(about_flags):
-    match = flag_name_re.search(line)
-    if match:
-      actions.add("AboutFlags_" + match.group(1))
-    # If the line contains the marker but was not matched by the regex, put up
-    # an error if the line is not a comment.
-    elif 'FLAGS:RECORD_UMA' in line and line[0:2] != '//':
-      print >>sys.stderr, 'WARNING: This line is marked for recording ' + \
-          'about:flags metrics, but is not in the proper format:\n' + line
 
 def AddBookmarkManagerActions(actions):
   """Add actions that are used by BookmarkManager.
@@ -754,9 +720,6 @@ def UpdateXml(original_xml):
   actions, actions_dict, comment_nodes = ParseActionFile(original_xml)
 
   AddComputedActions(actions)
-  # TODO(fmantek): bring back webkit editor actions.
-  # AddWebKitEditorActions(actions)
-  AddAboutFlagsActions(actions)
   AddWebUIActions(actions)
 
   AddLiteralActions(actions)

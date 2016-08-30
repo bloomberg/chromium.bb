@@ -720,7 +720,8 @@ bool UserSessionManager::RestartToApplyPerSessionFlagsIfNeed(
 
   LogCustomSwitches(command_line_difference);
 
-  about_flags::ReportCustomFlags("Login.CustomFlags", command_line_difference);
+  about_flags::ReportAboutFlagsHistogram("Login.CustomFlags",
+                                         command_line_difference);
 
   base::CommandLine::StringVector flags;
   // argv[0] is the program name |base::CommandLine::NO_PROGRAM|.

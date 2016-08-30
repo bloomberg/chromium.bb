@@ -645,29 +645,8 @@ const FeatureEntry::Choice kSSLVersionMaxChoices[] = {
 
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
-// The first line of the entry is the internal name. If you'd like to gather
-// statistics about the usage of your flag, you should append a marker comment
-// to the end of the feature name, like so:
-//   "my-special-feature",  // FLAGS:RECORD_UMA
+// The first line of the entry is the internal name.
 //
-// After doing that, run
-//   tools/metrics/actions/extract_actions.py
-// to add the metric to actions.xml (which will enable UMA to record your
-// feature flag), then update the <owner>s and <description> sections. Make sure
-// to include the actions.xml file when you upload your code for review!
-//
-// After your feature has shipped under a flag, you can locate the metrics under
-// the action name AboutFlags_internal-action-name. Actions are recorded once
-// per startup, so you should divide this number by AboutFlags_StartupTick to
-// get a sense of usage. Note that this will not be the same as number of users
-// with a given feature enabled because users can quit and relaunch the
-// application multiple times over a given time interval. The dashboard also
-// shows you how many (metrics reporting) users have enabled the flag over the
-// last seven days. However, note that this is not the same as the number of
-// users who have the flag enabled, since enabling the flag happens once,
-// whereas running with the flag enabled happens until the user flips the flag
-// again.
-
 // To add a new entry, add to the end of kFeatureEntries. There are two
 // distinct types of entries:
 // . SINGLE_VALUE: entry is either on or off. Use the SINGLE_VALUE_TYPE
@@ -678,9 +657,13 @@ const FeatureEntry::Choice kSSLVersionMaxChoices[] = {
 //   array of choices.
 // See the documentation of FeatureEntry for details on the fields.
 //
-// Command-line switches must have entries in enum "LoginCustomFlags" in
-// histograms.xml. See note in histograms.xml and don't forget to run
-// AboutFlagsHistogramTest unit test to calculate and verify checksum.
+// Usage of about:flags is logged on startup via the "Launch.FlagsAtStartup"
+// UMA histogram. This histogram shows the number of startups with a given flag
+// enabled. If you'd like to see user counts instead, make sure to switch to
+// to "count users" view on the dashboard. When adding new entries, the enum
+// "LoginCustomFlags" must be updated in histograms.xml. See note in
+// histograms.xml and don't forget to run AboutFlagsHistogramTest unit test
+// to calculate and verify checksum.
 //
 // When adding a new choice, add it to the end of the list.
 const FeatureEntry kFeatureEntries[] = {
@@ -728,22 +711,20 @@ const FeatureEntry kFeatureEntries[] = {
 #endif
   // Native client is compiled out when DISABLE_NACL is defined.
 #if !defined(DISABLE_NACL)
-    {"enable-nacl",  // FLAGS:RECORD_UMA
-     IDS_FLAGS_NACL_NAME, IDS_FLAGS_NACL_DESCRIPTION, kOsAll,
+    {"enable-nacl", IDS_FLAGS_NACL_NAME, IDS_FLAGS_NACL_DESCRIPTION, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableNaCl)},
-    {"enable-nacl-debug",  // FLAGS:RECORD_UMA
-     IDS_FLAGS_NACL_DEBUG_NAME, IDS_FLAGS_NACL_DEBUG_DESCRIPTION, kOsDesktop,
+    {"enable-nacl-debug", IDS_FLAGS_NACL_DEBUG_NAME,
+     IDS_FLAGS_NACL_DEBUG_DESCRIPTION, kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kEnableNaClDebug)},
     {"force-pnacl-subzero", IDS_FLAGS_PNACL_SUBZERO_NAME,
      IDS_FLAGS_PNACL_SUBZERO_DESCRIPTION, kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kForcePNaClSubzero)},
-    {"nacl-debug-mask",  // FLAGS:RECORD_UMA
-     IDS_FLAGS_NACL_DEBUG_MASK_NAME, IDS_FLAGS_NACL_DEBUG_MASK_DESCRIPTION,
-     kOsDesktop, MULTI_VALUE_TYPE(kNaClDebugMaskChoices)},
+    {"nacl-debug-mask", IDS_FLAGS_NACL_DEBUG_MASK_NAME,
+     IDS_FLAGS_NACL_DEBUG_MASK_DESCRIPTION, kOsDesktop,
+     MULTI_VALUE_TYPE(kNaClDebugMaskChoices)},
 #endif
 #if defined(ENABLE_EXTENSIONS)
-    {"extension-apis",  // FLAGS:RECORD_UMA
-     IDS_FLAGS_EXPERIMENTAL_EXTENSION_APIS_NAME,
+    {"extension-apis", IDS_FLAGS_EXPERIMENTAL_EXTENSION_APIS_NAME,
      IDS_FLAGS_EXPERIMENTAL_EXTENSION_APIS_DESCRIPTION, kOsDesktop,
      SINGLE_VALUE_TYPE(extensions::switches::kEnableExperimentalExtensionApis)},
     {"extensions-on-chrome-urls", IDS_FLAGS_EXTENSIONS_ON_CHROME_URLS_NAME,
@@ -775,8 +756,8 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ENABLE_AUTOFILL_CREDIT_CARD_SIGNIN_PROMO_NAME,
      IDS_FLAGS_ENABLE_AUTOFILL_CREDIT_CARD_SIGNIN_PROMO_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(autofill::kAutofillCreditCardSigninPromo)},
-    {"smooth-scrolling",  // FLAGS:RECORD_UMA
-     IDS_FLAGS_SMOOTH_SCROLLING_NAME, IDS_FLAGS_SMOOTH_SCROLLING_DESCRIPTION,
+    {"smooth-scrolling", IDS_FLAGS_SMOOTH_SCROLLING_NAME,
+     IDS_FLAGS_SMOOTH_SCROLLING_DESCRIPTION,
      // Mac has a separate implementation with its own setting to disable.
      kOsLinux | kOsCrOS | kOsWin | kOsAndroid,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableSmoothScrolling,
@@ -791,8 +772,7 @@ const FeatureEntry kFeatureEntries[] = {
                                switches::kDisableOverlayScrollbar)},
 #endif
     {// See http://crbug.com/120416 for how to remove this flag.
-     "save-page-as-mhtml",  // FLAGS:RECORD_UMA
-     IDS_FLAGS_SAVE_PAGE_AS_MHTML_NAME,
+     "save-page-as-mhtml", IDS_FLAGS_SAVE_PAGE_AS_MHTML_NAME,
      IDS_FLAGS_SAVE_PAGE_AS_MHTML_DESCRIPTION, kOsMac | kOsWin | kOsLinux,
      SINGLE_VALUE_TYPE(switches::kSavePageAsMHTML)},
     {"mhtml-generator-option", IDS_FLAGS_MHTML_GENERATOR_OPTION_NAME,
@@ -831,12 +811,12 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_GPU_RASTERIZATION_MSAA_SAMPLE_COUNT_NAME,
      IDS_FLAGS_GPU_RASTERIZATION_MSAA_SAMPLE_COUNT_DESCRIPTION, kOsAll,
      MULTI_VALUE_TYPE(kGpuRasterizationMSAASampleCountChoices)},
-    {"enable-experimental-web-platform-features",  // FLAGS:RECORD_UMA
+    {"enable-experimental-web-platform-features",
      IDS_FLAGS_EXPERIMENTAL_WEB_PLATFORM_FEATURES_NAME,
      IDS_FLAGS_EXPERIMENTAL_WEB_PLATFORM_FEATURES_DESCRIPTION, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableExperimentalWebPlatformFeatures)},
-    {"enable-web-bluetooth",  // FLAGS:RECORD_UMA
-     IDS_FLAGS_WEB_BLUETOOTH_NAME, IDS_FLAGS_WEB_BLUETOOTH_DESCRIPTION,
+    {"enable-web-bluetooth", IDS_FLAGS_WEB_BLUETOOTH_NAME,
+     IDS_FLAGS_WEB_BLUETOOTH_DESCRIPTION,
      kOsCrOS | kOsMac | kOsAndroid | kOsLinux,
      SINGLE_VALUE_TYPE(switches::kEnableWebBluetooth)},
 #if defined(ENABLE_EXTENSIONS)
@@ -1346,7 +1326,7 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(switches::kEnableNativeNotifications)},
 #endif
 #if defined(TOOLKIT_VIEWS)
-    {"disable-views-rect-based-targeting",  // FLAGS:RECORD_UMA
+    {"disable-views-rect-based-targeting",
      IDS_FLAGS_VIEWS_RECT_BASED_TARGETING_NAME,
      IDS_FLAGS_VIEWS_RECT_BASED_TARGETING_DESCRIPTION,
      kOsCrOS | kOsWin | kOsLinux,
@@ -1525,8 +1505,7 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_TOUCH_HOVER_DESCRIPTION, kOsAndroid,
      SINGLE_VALUE_TYPE("enable-touch-hover")},
 #if defined(OS_CHROMEOS)
-    {"enable-wifi-credential-sync",  // FLAGS:RECORD_UMA
-     IDS_FLAGS_WIFI_CREDENTIAL_SYNC_NAME,
+    {"enable-wifi-credential-sync", IDS_FLAGS_WIFI_CREDENTIAL_SYNC_NAME,
      IDS_FLAGS_WIFI_CREDENTIAL_SYNC_DESCRIPTION, kOsCrOS,
      SINGLE_VALUE_TYPE(switches::kEnableWifiCredentialSync)},
     {"enable-potentially-annoying-security-features",
@@ -1534,8 +1513,8 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_EXPERIMENTAL_SECURITY_FEATURES_DESCRIPTION, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnablePotentiallyAnnoyingSecurityFeatures)},
 #endif
-    {"mark-non-secure-as",  // FLAGS:RECORD_UMA
-     IDS_MARK_NON_SECURE_AS_NAME, IDS_MARK_NON_SECURE_AS_DESCRIPTION, kOsAll,
+    {"mark-non-secure-as", IDS_MARK_NON_SECURE_AS_NAME,
+     IDS_MARK_NON_SECURE_AS_DESCRIPTION, kOsAll,
      MULTI_VALUE_TYPE(kMarkNonSecureAsChoices)},
     {"enable-site-per-process", IDS_FLAGS_SITE_PER_PROCESS_NAME,
      IDS_FLAGS_SITE_PER_PROCESS_DESCRIPTION, kOsAll,
@@ -1720,8 +1699,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"background-loader-for-downloads",
      IDS_FLAGS_BACKGROUND_LOADER_FOR_DOWNLOADS_NAME,
      IDS_FLAGS_BACKGROUND_LOADER_FOR_DOWNLOADS_DESCRIPTION, kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         offline_pages::kBackgroundLoaderForDownloadsFeature)},
+     FEATURE_VALUE_TYPE(offline_pages::kBackgroundLoaderForDownloadsFeature)},
 #endif  // defined(OS_ANDROID)
     {"disallow-doc-written-script-loads",
      IDS_FLAGS_DISALLOW_DOC_WRITTEN_SCRIPTS_UI_NAME,
@@ -1973,8 +1951,7 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_DISABLE_SYSTEM_TIMEZONE_AUTOMATIC_DETECTION_DESCRIPTION, kOsCrOS,
      SINGLE_VALUE_TYPE(
          chromeos::switches::kDisableSystemTimezoneAutomaticDetectionPolicy)},
-    {"enable-native-cups",  // FLAGS:RECORD_UMA
-     IDS_FLAGS_ENABLE_NATIVE_CUPS_NAME,
+    {"enable-native-cups", IDS_FLAGS_ENABLE_NATIVE_CUPS_NAME,
      IDS_FLAGS_ENABLE_NATIVE_CUPS_DESCRIPTION, kOsCrOS,
      SINGLE_VALUE_TYPE(switches::kEnableNativeCups)},
     {"enable-files-details-panel", IDS_FLAGS_ENABLE_FILES_DETAILS_PANEL_NAME,
@@ -2006,19 +1983,17 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ENABLE_AUTOPLAY_MUTED_VIDEOS_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kAutoplayMutedVideos)},
 #endif
-    {"enable-pointer-events",  // FLAGS:RECORD_UMA
-     IDS_FLAGS_EXPERIMENTAL_POINTER_EVENT_NAME,
+    {"enable-pointer-events", IDS_FLAGS_EXPERIMENTAL_POINTER_EVENT_NAME,
      IDS_FLAGS_EXPERIMENTAL_POINTER_EVENT_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(features::kPointerEvents)},
-    {"passive-listener-default",  // FLAGS:RECORD_UMA
-     IDS_FLAGS_PASSIVE_EVENT_LISTENER_DEFAULT_NAME,
+    {"passive-listener-default", IDS_FLAGS_PASSIVE_EVENT_LISTENER_DEFAULT_NAME,
      IDS_FLAGS_PASSIVE_EVENT_LISTENER_DEFAULT_DESCRIPTION, kOsAll,
      MULTI_VALUE_TYPE(kPassiveListenersChoices)},
-    {"document-passive-event-listeners",  // FLAGS:RECORD_UMA
+    {"document-passive-event-listeners",
      IDS_FLAGS_PASSIVE_DOCUMENT_EVENT_LISTENERS_NAME,
      IDS_FLAGS_PASSIVE_DOCUMENT_EVENT_LISTENERS_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(features::kPassiveDocumentEventListeners)},
-    {"passive-event-listeners-due-to-fling",  // FLAGS:RECORD_UMA
+    {"passive-event-listeners-due-to-fling",
      IDS_FLAGS_PASSIVE_EVENT_LISTENERS_DUE_TO_FLING_NAME,
      IDS_FLAGS_PASSIVE_EVENT_LISTENERS_DUE_TO_FLING_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(features::kPassiveEventListenersDueToFling)},
@@ -2050,7 +2025,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"fill-on-account-select", IDS_FILL_ON_ACCOUNT_SELECT_NAME,
      IDS_FILL_ON_ACCOUNT_SELECT_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(password_manager::features::kFillOnAccountSelect)},
-    {"new-audio-rendering-mixing-strategy",  // FLAGS:RECORD_UMA
+    {"new-audio-rendering-mixing-strategy",
      IDS_NEW_AUDIO_RENDERING_MIXING_STRATEGY_NAME,
      IDS_NEW_AUDIO_RENDERING_MIXING_STRATEGY_DESCRIPTION,
      kOsWin | kOsMac | kOsLinux | kOsAndroid,
@@ -2210,16 +2185,7 @@ void ResetAllFlags(flags_ui::FlagsStorage* flags_storage) {
 
 void RecordUMAStatistics(flags_ui::FlagsStorage* flags_storage) {
   std::set<std::string> flags = flags_storage->GetFlags();
-  for (const std::string& flag : flags) {
-    std::string action("AboutFlags_");
-    action += flag;
-    content::RecordComputedAction(action);
-  }
-  // Since flag metrics are recorded every startup, add a tick so that the
-  // stats can be made meaningful.
-  if (flags.size())
-    content::RecordAction(base::UserMetricsAction("AboutFlags_StartupTick"));
-  content::RecordAction(base::UserMetricsAction("StartupTick"));
+  ReportAboutFlagsHistogram("Launch.FlagsAtStartup", flags);
 }
 
 base::HistogramBase::Sample GetSwitchUMAId(const std::string& switch_name) {
@@ -2227,9 +2193,9 @@ base::HistogramBase::Sample GetSwitchUMAId(const std::string& switch_name) {
       base::HashMetricName(switch_name));
 }
 
-void ReportCustomFlags(const std::string& uma_histogram_hame,
-                       const std::set<std::string>& command_line_difference) {
-  for (const std::string& flag : command_line_difference) {
+void ReportAboutFlagsHistogram(const std::string& uma_histogram_name,
+                               const std::set<std::string>& flags) {
+  for (const std::string& flag : flags) {
     int uma_id = about_flags::testing::kBadSwitchFormatHistogramId;
     if (base::StartsWith(flag, "--", base::CompareCase::SENSITIVE)) {
       // Skip '--' before switch name.
@@ -2242,15 +2208,15 @@ void ReportCustomFlags(const std::string& uma_histogram_hame,
 
       uma_id = GetSwitchUMAId(switch_name);
     } else {
-      NOTREACHED() << "ReportCustomFlags(): flag '" << flag
+      NOTREACHED() << "ReportAboutFlagsHistogram(): flag '" << flag
                    << "' has incorrect format.";
     }
-    DVLOG(1) << "ReportCustomFlags(): histogram='" << uma_histogram_hame
+    DVLOG(1) << "ReportAboutFlagsHistogram(): histogram='" << uma_histogram_name
              << "' '" << flag << "', uma_id=" << uma_id;
 
     // Sparse histogram macro does not cache the histogram, so it's safe
     // to use macro with non-static histogram name here.
-    UMA_HISTOGRAM_SPARSE_SLOWLY(uma_histogram_hame, uma_id);
+    UMA_HISTOGRAM_SPARSE_SLOWLY(uma_histogram_name, uma_id);
   }
 }
 

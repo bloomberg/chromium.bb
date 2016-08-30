@@ -87,12 +87,11 @@ void RecordUMAStatistics(flags_ui::FlagsStorage* flags_storage);
 // Returns the UMA id for the specified switch name.
 base::HistogramBase::Sample GetSwitchUMAId(const std::string& switch_name);
 
-// Sends stats (as UMA histogram) about command_line_difference.
-// This is used on ChromeOS to report flags that lead to browser restart.
-// |command_line_difference| is the result of
-// AreSwitchesIdenticalToCurrentCommandLine().
-void ReportCustomFlags(const std::string& uma_histogram_hame,
-                       const std::set<std::string>& command_line_difference);
+// Sends stats (as UMA histogram) about a set of command line |flags| in
+// a histogram, with an enum value for each flag in |flags|, based on the
+// hash of the flag name.
+void ReportAboutFlagsHistogram(const std::string& uma_histogram_name,
+                               const std::set<std::string>& flags);
 
 namespace testing {
 

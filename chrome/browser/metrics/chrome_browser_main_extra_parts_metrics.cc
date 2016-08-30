@@ -319,9 +319,9 @@ void ChromeBrowserMainExtraPartsMetrics::PreProfileInit() {
 }
 
 void ChromeBrowserMainExtraPartsMetrics::PreBrowserStart() {
-  flags_ui::PrefServiceFlagsStorage flags_storage_(
+  flags_ui::PrefServiceFlagsStorage flags_storage(
       g_browser_process->local_state());
-  about_flags::RecordUMAStatistics(&flags_storage_);
+  about_flags::RecordUMAStatistics(&flags_storage);
 }
 
 void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
