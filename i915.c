@@ -75,26 +75,26 @@ static void i915_align_dimensions(struct driver *drv, uint32_t tiling_mode,
 	struct i915_device *i915_drv = (struct i915_device *)drv->priv;
 	uint32_t width_alignment = 4, height_alignment = 4;
 
-	switch(tiling_mode) {
-		default:
-		case I915_TILING_NONE:
-			width_alignment = 64 / bpp;
-			break;
+	switch (tiling_mode) {
+	default:
+	case I915_TILING_NONE:
+		width_alignment = 64 / bpp;
+		break;
 
-		case I915_TILING_X:
+	case I915_TILING_X:
+		width_alignment = 512 / bpp;
+		height_alignment = 8;
+		break;
+
+	case I915_TILING_Y:
+		if (i915_drv->gen == 3) {
 			width_alignment = 512 / bpp;
 			height_alignment = 8;
-			break;
-
-		case I915_TILING_Y:
-			if (i915_drv->gen == 3) {
-				width_alignment = 512 / bpp;
-				height_alignment = 8;
-			} else  {
-				width_alignment = 128 / bpp;
-				height_alignment = 32;
-			}
-			break;
+		} else  {
+			width_alignment = 128 / bpp;
+			height_alignment = 32;
+		}
+		break;
 	}
 
 	if (i915_drv->gen > 3) {
@@ -222,13 +222,13 @@ static void *i915_bo_map(struct bo *bo)
 drv_format_t i915_resolve_format(drv_format_t format)
 {
 	switch (format) {
-		case DRV_FORMAT_FLEX_IMPLEMENTATION_DEFINED:
-			/*HACK: See b/28671744 */
-			return DRV_FORMAT_XBGR8888;
-		case DRV_FORMAT_FLEX_YCbCr_420_888:
-			return DRV_FORMAT_YVU420;
-		default:
-			return format;
+	case DRV_FORMAT_FLEX_IMPLEMENTATION_DEFINED:
+		/*HACK: See b/28671744 */
+		return DRV_FORMAT_XBGR8888;
+	case DRV_FORMAT_FLEX_YCbCr_420_888:
+		return DRV_FORMAT_YVU420;
+	default:
+		return format;
 	}
 }
 

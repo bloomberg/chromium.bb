@@ -97,13 +97,13 @@ static void *rockchip_bo_map(struct bo *bo)
 drv_format_t rockchip_resolve_format(drv_format_t format)
 {
 	switch (format) {
-		case DRV_FORMAT_FLEX_IMPLEMENTATION_DEFINED:
-			/*HACK: See b/28671744 */
-			return DRV_FORMAT_XBGR8888;
-		case DRV_FORMAT_FLEX_YCbCr_420_888:
-			return DRV_FORMAT_NV12;
-		default:
-			return format;
+	case DRV_FORMAT_FLEX_IMPLEMENTATION_DEFINED:
+		/*HACK: See b/28671744 */
+		return DRV_FORMAT_XBGR8888;
+	case DRV_FORMAT_FLEX_YCbCr_420_888:
+		return DRV_FORMAT_NV12;
+	default:
+		return format;
 	}
 }
 
