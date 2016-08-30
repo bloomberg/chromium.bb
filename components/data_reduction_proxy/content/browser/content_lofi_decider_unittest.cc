@@ -207,7 +207,8 @@ TEST_F(ContentLoFiDeciderTest, LoFiFlags) {
         switches::kDataReductionProxyLoFi,
         switches::kDataReductionProxyLoFiValueAlwaysOn);
     if (tests[i].is_main_frame)
-      request->SetLoadFlags(request->load_flags() | net::LOAD_MAIN_FRAME);
+      request->SetLoadFlags(request->load_flags() |
+                            net::LOAD_MAIN_FRAME_DEPRECATED);
     headers.Clear();
     NotifyBeforeSendHeaders(&headers, request.get(), true);
     VerifyLoFiHeader(tests[i].is_using_lofi && !tests[i].is_using_previews &&
@@ -284,7 +285,8 @@ TEST_F(ContentLoFiDeciderTest, LoFiEnabledFieldTrial) {
     std::unique_ptr<net::URLRequest> request =
         CreateRequest(tests[i].is_using_lofi);
     if (tests[i].is_main_frame)
-      request->SetLoadFlags(request->load_flags() | net::LOAD_MAIN_FRAME);
+      request->SetLoadFlags(request->load_flags() |
+                            net::LOAD_MAIN_FRAME_DEPRECATED);
     net::HttpRequestHeaders headers;
     NotifyBeforeSendHeaders(&headers, request.get(), true);
     VerifyLoFiHeader(tests[i].is_using_lofi && !tests[i].is_main_frame,
@@ -310,7 +312,8 @@ TEST_F(ContentLoFiDeciderTest, LoFiControlFieldTrial) {
     std::unique_ptr<net::URLRequest> request =
         CreateRequest(tests[i].is_using_lofi);
     if (tests[i].is_main_frame)
-      request->SetLoadFlags(request->load_flags() | net::LOAD_MAIN_FRAME);
+      request->SetLoadFlags(request->load_flags() |
+                            net::LOAD_MAIN_FRAME_DEPRECATED);
     net::HttpRequestHeaders headers;
     NotifyBeforeSendHeaders(&headers, request.get(), true);
     VerifyLoFiHeader(false, headers);
@@ -337,7 +340,8 @@ TEST_F(ContentLoFiDeciderTest, LoFiPreviewFieldTrial) {
     std::unique_ptr<net::URLRequest> request =
         CreateRequest(tests[i].is_using_lofi);
     if (tests[i].is_main_frame)
-      request->SetLoadFlags(request->load_flags() | net::LOAD_MAIN_FRAME);
+      request->SetLoadFlags(request->load_flags() |
+                            net::LOAD_MAIN_FRAME_DEPRECATED);
     net::HttpRequestHeaders headers;
     NotifyBeforeSendHeaders(&headers, request.get(), true);
     VerifyLoFiHeader(false, headers);
@@ -391,7 +395,8 @@ TEST_F(ContentLoFiDeciderTest, AutoLoFi) {
     std::unique_ptr<net::URLRequest> request =
         CreateRequest(tests[i].network_prohibitively_slow);
     if (tests[i].is_main_frame)
-      request->SetLoadFlags(request->load_flags() | net::LOAD_MAIN_FRAME);
+      request->SetLoadFlags(request->load_flags() |
+                            net::LOAD_MAIN_FRAME_DEPRECATED);
     net::HttpRequestHeaders headers;
     NotifyBeforeSendHeaders(&headers, request.get(), true);
 
@@ -446,7 +451,8 @@ TEST_F(ContentLoFiDeciderTest, SlowConnectionsFlag) {
     std::unique_ptr<net::URLRequest> request =
         CreateRequest(tests[i].network_prohibitively_slow);
     if (tests[i].is_main_frame)
-      request->SetLoadFlags(request->load_flags() | net::LOAD_MAIN_FRAME);
+      request->SetLoadFlags(request->load_flags() |
+                            net::LOAD_MAIN_FRAME_DEPRECATED);
     net::HttpRequestHeaders headers;
     NotifyBeforeSendHeaders(&headers, request.get(), true);
 

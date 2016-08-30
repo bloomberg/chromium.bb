@@ -647,7 +647,8 @@ void LoginHandler::LoginDialogCallback(const GURL& request_url,
 
 LoginHandler* CreateLoginPrompt(net::AuthChallengeInfo* auth_info,
                                 net::URLRequest* request) {
-  bool is_main_frame = (request->load_flags() & net::LOAD_MAIN_FRAME) != 0;
+  bool is_main_frame =
+      (request->load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED) != 0;
   LoginHandler* handler = LoginHandler::Create(auth_info, request);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,

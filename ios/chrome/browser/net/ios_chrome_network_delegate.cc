@@ -56,7 +56,7 @@ void RecordNetworkErrorHistograms(const net::URLRequest* request) {
     UMA_HISTOGRAM_SPARSE_SLOWLY("Net.HttpRequestCompletionErrorCodes",
                                 std::abs(request->status().error()));
 
-    if (request->load_flags() & net::LOAD_MAIN_FRAME) {
+    if (request->load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED) {
       UMA_HISTOGRAM_SPARSE_SLOWLY(
           "Net.HttpRequestCompletionErrorCodes.MainFrame",
           std::abs(request->status().error()));

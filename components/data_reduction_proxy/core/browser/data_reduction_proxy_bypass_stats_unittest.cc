@@ -486,7 +486,7 @@ TEST_F(DataReductionProxyBypassStatsTest, SuccessfulRequestCompletion) {
     }
     if (test.is_main_frame) {
       fake_request->SetLoadFlags(fake_request->load_flags() |
-                                 net::LOAD_MAIN_FRAME);
+                                 net::LOAD_MAIN_FRAME_DEPRECATED);
     }
 
     if (test.net_error != net::OK)

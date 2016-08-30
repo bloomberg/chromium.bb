@@ -65,7 +65,7 @@ bool NonErrorResponse(int status_code) {
 
 void RecordNoStoreHeaderHistogram(int load_flags,
                                   const HttpResponseInfo* response) {
-  if (load_flags & LOAD_MAIN_FRAME) {
+  if (load_flags & LOAD_MAIN_FRAME_DEPRECATED) {
     UMA_HISTOGRAM_BOOLEAN(
         "Net.MainFrameNoStore",
         response->headers->HasHeaderValue("cache-control", "no-store"));
@@ -2821,7 +2821,8 @@ void HttpCache::Transaction::RecordHistograms() {
     // Record the cache pattern by resource type. The type is inferred by
     // response header mime type, which could be incorrect, so this is just an
     // estimate.
-    if (mime_type == "text/html" && (request_->load_flags & LOAD_MAIN_FRAME)) {
+    if (mime_type == "text/html" &&
+        (request_->load_flags & LOAD_MAIN_FRAME_DEPRECATED)) {
       UMA_HISTOGRAM_ENUMERATION("HttpCache.Pattern.MainFrameHTML",
                                 cache_entry_status_,
                                 CacheEntryStatus::ENTRY_MAX);

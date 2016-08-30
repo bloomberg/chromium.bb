@@ -122,7 +122,8 @@ void AsyncRevalidationManager::BeginAsyncRevalidation(
 
   new_request->SetExtraRequestHeaders(headers);
 
-  // Remove LOAD_SUPPORT_ASYNC_REVALIDATION and LOAD_MAIN_FRAME flags.
+  // Remove LOAD_SUPPORT_ASYNC_REVALIDATION and LOAD_MAIN_FRAME_DEPRECATED
+  // flags.
   // Also remove things which shouldn't have been there to begin with,
   // and unrecognised flags.
   int load_flags =

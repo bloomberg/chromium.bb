@@ -395,7 +395,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
 
       std::unique_ptr<net::URLRequest> fake_request(FetchURLRequest(
           GURL("http://www.google.com/"), nullptr, std::string(), 0));
-      fake_request->SetLoadFlags(net::LOAD_MAIN_FRAME);
+      fake_request->SetLoadFlags(net::LOAD_MAIN_FRAME_DEPRECATED);
       lofi_decider()->SetIsUsingLoFiMode(
           config()->ShouldEnableLoFiMode(*fake_request.get()));
       network_delegate()->NotifyBeforeSendHeaders(fake_request.get(),
@@ -452,7 +452,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
       net::ProxyRetryInfoMap proxy_retry_info;
       std::unique_ptr<net::URLRequest> fake_request(FetchURLRequest(
           GURL("http://www.google.com/"), nullptr, std::string(), 0));
-      fake_request->SetLoadFlags(net::LOAD_MAIN_FRAME);
+      fake_request->SetLoadFlags(net::LOAD_MAIN_FRAME_DEPRECATED);
       lofi_decider()->SetIsUsingLoFiMode(false);
       network_delegate()->NotifyBeforeSendHeaders(fake_request.get(),
                                                   data_reduction_proxy_info,
@@ -487,7 +487,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
       net::ProxyRetryInfoMap proxy_retry_info;
       std::unique_ptr<net::URLRequest> fake_request(FetchURLRequest(
           GURL("http://www.google.com/"), nullptr, std::string(), 0));
-      fake_request->SetLoadFlags(net::LOAD_MAIN_FRAME);
+      fake_request->SetLoadFlags(net::LOAD_MAIN_FRAME_DEPRECATED);
       lofi_decider()->SetIsUsingLoFiMode(
           config()->ShouldEnableLoFiMode(*fake_request.get()));
       network_delegate()->NotifyBeforeSendHeaders(fake_request.get(),
@@ -548,7 +548,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RequestDataConfigurations) {
 
     std::unique_ptr<net::URLRequest> request = context()->CreateRequest(
         GURL("http://www.google.com/"), net::RequestPriority::IDLE, nullptr);
-    request->SetLoadFlags(test.main_frame ? net::LOAD_MAIN_FRAME : 0);
+    request->SetLoadFlags(test.main_frame ? net::LOAD_MAIN_FRAME_DEPRECATED
+                                          : 0);
     lofi_decider()->SetIsUsingLoFiMode(test.lofi_on);
     io_data()->request_options()->SetSecureSession("fake-session");
     network_delegate()->NotifyBeforeSendHeaders(
@@ -660,7 +661,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest, NetHistograms) {
   std::unique_ptr<net::URLRequest> fake_request(
       FetchURLRequest(GURL("http://www.google.com/"), nullptr, response_headers,
                       kResponseContentLength));
-  fake_request->SetLoadFlags(fake_request->load_flags() | net::LOAD_MAIN_FRAME);
+  fake_request->SetLoadFlags(fake_request->load_flags() |
+                             net::LOAD_MAIN_FRAME_DEPRECATED);
 
   base::TimeDelta freshness_lifetime =
       fake_request->response_info().headers->GetFreshnessLifetimes(
@@ -737,7 +739,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, NetHistograms) {
     fake_request = (FetchURLRequest(GURL("http://www.example.com/"), nullptr,
                                     response_headers, kResponseContentLength));
     fake_request->SetLoadFlags(fake_request->load_flags() |
-                               net::LOAD_MAIN_FRAME);
+                               net::LOAD_MAIN_FRAME_DEPRECATED);
 
     // Histograms are accumulative, so get the sum of all the tests so far.
     int expected_count = 0;

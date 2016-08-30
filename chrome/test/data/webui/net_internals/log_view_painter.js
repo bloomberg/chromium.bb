@@ -217,7 +217,8 @@ function painterTestURLRequest() {
   var testCase = {};
   testCase.tickOffset = '1337911098446';
   testCase.logCreationTime = 1338864634013;
-  testCase.loadFlags = LoadFlag.MAIN_FRAME | LoadFlag.MAYBE_USER_GESTURE |
+  testCase.loadFlags = LoadFlag.MAIN_FRAME_DEPRECATED |
+                       LoadFlag.MAYBE_USER_GESTURE |
                        LoadFlag.VERIFY_EV_CERT;
 
   testCase.logEntries = [
@@ -765,7 +766,7 @@ function painterTestURLRequest() {
 't=1338864633238 [st= 14]    URL_REQUEST_START_JOB  [dt=8]\n' +
 '                            --> load_flags = ' +
     testCase.loadFlags.toString() +
-    ' (MAIN_FRAME | MAYBE_USER_GESTURE ' +
+    ' (MAIN_FRAME_DEPRECATED | MAYBE_USER_GESTURE ' +
     '| VERIFY_EV_CERT)\n' +
 '                            --> method = "GET"\n' +
 '                            --> priority = 4\n' +
@@ -773,7 +774,7 @@ function painterTestURLRequest() {
 't=1338864633248 [st= 24]   +URL_REQUEST_START_JOB  [dt=279]\n' +
 '                            --> load_flags = ' +
     testCase.loadFlags.toString() +
-    ' (MAIN_FRAME | MAYBE_USER_GESTURE ' +
+    ' (MAIN_FRAME_DEPRECATED | MAYBE_USER_GESTURE ' +
     '| VERIFY_EV_CERT)\n' +
 '                            --> method = "GET"\n' +
 '                            --> priority = 4\n' +
@@ -925,7 +926,8 @@ function painterTestURLRequestIncompleteFromLoadedLogSingleEvent() {
 function painterTestNetError() {
   var testCase = {};
   testCase.tickOffset = '1337911098446';
-  testCase.loadFlags = LoadFlag.MAIN_FRAME | LoadFlag.MAYBE_USER_GESTURE |
+  testCase.loadFlags = LoadFlag.MAIN_FRAME_DEPRECATED |
+                       LoadFlag.MAYBE_USER_GESTURE |
                        LoadFlag.VERIFY_EV_CERT;
 
   testCase.logEntries = [
@@ -1101,7 +1103,7 @@ function painterTestNetError() {
 't=1338864773901 [st=  7]    URL_REQUEST_START_JOB  [dt=5]\n' +
 '                            --> load_flags = ' +
         testCase.loadFlags.toString() +
-        ' (MAIN_FRAME | MAYBE_USER_GESTURE ' +
+        ' (MAIN_FRAME_DEPRECATED | MAYBE_USER_GESTURE ' +
         '| VERIFY_EV_CERT)\n' +
 '                            --> method = "GET"\n' +
 '                            --> priority = 4\n' +
@@ -1109,7 +1111,7 @@ function painterTestNetError() {
 't=1338864773906 [st= 12]   +URL_REQUEST_START_JOB  [dt=245]\n' +
 '                            --> load_flags = ' +
         testCase.loadFlags.toString() +
-        ' (MAIN_FRAME | MAYBE_USER_GESTURE ' +
+        ' (MAIN_FRAME_DEPRECATED | MAYBE_USER_GESTURE ' +
         '| VERIFY_EV_CERT)\n' +
 '                            --> method = "GET"\n' +
 '                            --> priority = 4\n' +
@@ -2088,7 +2090,8 @@ function painterTestSSLVersionFallback() {
 function painterTestInProgressURLRequest() {
   var testCase = {};
   testCase.tickOffset = '1337911098446';
-  testCase.loadFlags = LoadFlag.MAIN_FRAME | LoadFlag.MAYBE_USER_GESTURE |
+  testCase.loadFlags = LoadFlag.MAIN_FRAME_DEPRECATED |
+                       LoadFlag.MAYBE_USER_GESTURE |
                        LoadFlag.VERIFY_EV_CERT;
 
   testCase.logEntries = [
@@ -2140,7 +2143,7 @@ function painterTestInProgressURLRequest() {
 't=1338864773994 [st=  0] +REQUEST_ALIVE  [dt=375]\n' +
 '                          --> load_flags = ' +
     testCase.loadFlags.toString() +
-    ' (MAIN_FRAME | MAYBE_USER_GESTURE ' +
+    ' (MAIN_FRAME_DEPRECATED | MAYBE_USER_GESTURE ' +
     '| VERIFY_EV_CERT)\n' +
 '                          --> load_state = ' + LoadState.READING_RESPONSE +
     ' (READING_RESPONSE)\n' +

@@ -2065,7 +2065,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
   int load_flags = info.begin_params.load_flags;
   load_flags |= net::LOAD_VERIFY_EV_CERT;
   if (info.is_main_frame)
-    load_flags |= net::LOAD_MAIN_FRAME;
+    load_flags |= net::LOAD_MAIN_FRAME_DEPRECATED;
 
   // TODO(davidben): BuildLoadFlagsForRequest includes logic for
   // CanSendCookiesForOrigin and CanReadRawCookies. Is this needed here?
@@ -2565,7 +2565,7 @@ int ResourceDispatcherHostImpl::BuildLoadFlagsForRequest(
   // be reused to load a main frame.
   load_flags |= net::LOAD_VERIFY_EV_CERT;
   if (request_data.resource_type == RESOURCE_TYPE_MAIN_FRAME) {
-    load_flags |= net::LOAD_MAIN_FRAME;
+    load_flags |= net::LOAD_MAIN_FRAME_DEPRECATED;
   } else if (request_data.resource_type == RESOURCE_TYPE_PREFETCH) {
     load_flags |= net::LOAD_PREFETCH;
   }

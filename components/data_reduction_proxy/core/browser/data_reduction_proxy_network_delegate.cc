@@ -224,7 +224,7 @@ void DataReductionProxyNetworkDelegate::OnBeforeURLRequestInternal(
 
   // |data_reduction_proxy_io_data_| can be NULL for Webview.
   if (data_reduction_proxy_io_data_ &&
-      (request->load_flags() & net::LOAD_MAIN_FRAME)) {
+      (request->load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED)) {
     data_reduction_proxy_io_data_->SetLoFiModeActiveOnMainFrame(false);
   }
 }
@@ -266,7 +266,7 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
     data->set_session_key(
         data_reduction_proxy_request_options_->GetSecureSession());
     data->set_original_request_url(request->original_url());
-    if ((request->load_flags() & net::LOAD_MAIN_FRAME) &&
+    if ((request->load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED) &&
         request->context()->network_quality_estimator()) {
       data->set_effective_connection_type(request->context()
                                               ->network_quality_estimator()
@@ -280,7 +280,7 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
     const bool is_using_lofi_mode =
         lofi_decider->MaybeAddLoFiDirectiveToHeaders(*request, headers);
 
-    if ((request->load_flags() & net::LOAD_MAIN_FRAME)) {
+    if ((request->load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED)) {
       data_reduction_proxy_io_data_->SetLoFiModeActiveOnMainFrame(
           is_using_lofi_mode);
     }

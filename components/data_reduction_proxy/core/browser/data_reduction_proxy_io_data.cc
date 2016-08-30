@@ -287,7 +287,7 @@ void DataReductionProxyIOData::SetDataReductionProxyConfiguration(
 
 bool DataReductionProxyIOData::ShouldEnableLoFiMode(
     const net::URLRequest& request) {
-  DCHECK((request.load_flags() & net::LOAD_MAIN_FRAME) != 0);
+  DCHECK((request.load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED) != 0);
   if (!config_ || (config_->IsBypassedByDataReductionProxyLocalRules(
                       request, configurator_->GetProxyConfig()))) {
     return false;

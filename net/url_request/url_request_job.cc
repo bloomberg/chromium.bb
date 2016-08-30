@@ -630,7 +630,7 @@ void URLRequestJob::NotifyDone(const URLRequestStatus &status) {
     int response_code = GetResponseCode();
     if (400 <= response_code && response_code <= 599) {
       bool page_has_content = (postfilter_bytes_read_ != 0);
-      if (request_->load_flags() & net::LOAD_MAIN_FRAME) {
+      if (request_->load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED) {
         UMA_HISTOGRAM_BOOLEAN("Net.ErrorResponseHasContentMainFrame",
                               page_has_content);
       } else {

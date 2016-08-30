@@ -857,7 +857,7 @@ bool DataReductionProxyConfig::IsEffectiveConnectionTypeSlowerThanThreshold(
 bool DataReductionProxyConfig::ShouldEnableLoFiMode(
     const net::URLRequest& request) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK((request.load_flags() & net::LOAD_MAIN_FRAME) != 0);
+  DCHECK((request.load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED) != 0);
   DCHECK(!request.url().SchemeIsCryptographic());
 
   net::NetworkQualityEstimator* network_quality_estimator;

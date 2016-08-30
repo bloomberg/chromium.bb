@@ -1191,7 +1191,7 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
   }
 
   // Like Net.HttpResponseCode, but only for MAIN_FRAME loads.
-  if (request_->load_flags & LOAD_MAIN_FRAME) {
+  if (request_->load_flags & LOAD_MAIN_FRAME_DEPRECATED) {
     const int response_code = response_.headers->response_code();
     UMA_HISTOGRAM_ENUMERATION(
         "Net.HttpResponseCode_Nxx_MainFrame", response_code/100, 10);
