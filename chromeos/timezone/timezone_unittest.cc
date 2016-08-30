@@ -98,7 +98,7 @@ class TestTimeZoneAPIURLFetcherCallback {
       net::URLRequestStatus::Status status) {
     EXPECT_EQ(provider_->requests_.size(), 1U);
 
-    TimeZoneRequest* timezone_request = provider_->requests_[0];
+    TimeZoneRequest* timezone_request = provider_->requests_[0].get();
 
     const base::TimeDelta base_retry_interval =
         base::TimeDelta::FromMilliseconds(kRequestRetryIntervalMilliSeconds);

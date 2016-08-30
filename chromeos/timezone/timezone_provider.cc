@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "chromeos/geolocation/geoposition.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -31,7 +32,7 @@ void TimeZoneProvider::RequestTimezone(
     TimeZoneRequest::TimeZoneResponseCallback callback) {
   TimeZoneRequest* request(new TimeZoneRequest(
       url_context_getter_.get(), url_, position,timeout));
-  requests_.push_back(request);
+  requests_.push_back(base::WrapUnique(request));
 
   // TimeZoneProvider owns all requests. It is safe to pass unretained "this"
   // because destruction of TimeZoneProvider cancels all requests.
@@ -48,8 +49,11 @@ void TimeZoneProvider::OnTimezoneResponse(
     TimeZoneRequest::TimeZoneResponseCallback callback,
     std::unique_ptr<TimeZoneResponseData> timezone,
     bool server_error) {
-  ScopedVector<TimeZoneRequest>::iterator position =
-      std::find(requests_.begin(), requests_.end(), request);
+  std::vector<std::unique_ptr<TimeZoneRequest>>::iterator position =
+      std::find_if(requests_.begin(), requests_.end(),
+                   [request](const std::unique_ptr<TimeZoneRequest>& req) {
+                     return req.get() == request;
+                   });
   DCHECK(position != requests_.end());
   if (position != requests_.end()) {
     std::swap(*position, *requests_.rbegin());

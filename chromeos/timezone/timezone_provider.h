@@ -6,10 +6,10 @@
 #define CHROMEOS_TIMEZONE_TIMEZONE_PROVIDER_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -53,7 +53,7 @@ class CHROMEOS_EXPORT TimeZoneProvider {
 
   // Requests in progress.
   // TimeZoneProvider owns all requests, so this vector is deleted on destroy.
-  ScopedVector<TimeZoneRequest> requests_;
+  std::vector<std::unique_ptr<TimeZoneRequest>> requests_;
 
   // Creation and destruction should happen on the same thread.
   base::ThreadChecker thread_checker_;
