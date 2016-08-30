@@ -1702,6 +1702,11 @@ int indexForVisiblePosition(const VisiblePosition& visiblePosition, ContainerNod
     else
         scope = document.documentElement();
 
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    document.updateStyleAndLayoutIgnorePendingStylesheets();
+
+    // TODO(xiaochengh): We should use EphemeralRange here.
     Range* range = Range::create(document, Position::firstPositionInNode(scope), p.parentAnchoredEquivalent());
 
     return TextIterator::rangeLength(range->startPosition(), range->endPosition(), true);

@@ -1299,6 +1299,9 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
             bool startInParagraph = comparePositions(visibleStart, startOfParagraphToMove) >= 0;
             bool endInParagraph = comparePositions(visibleEnd, endOfParagraphToMove) <= 0;
 
+            // TextIterator::rangeLength requires clean layout.
+            document().updateStyleAndLayoutIgnorePendingStylesheets();
+
             startIndex = 0;
             if (startInParagraph)
                 startIndex = TextIterator::rangeLength(startOfParagraphToMove.toParentAnchoredPosition(), visibleStart.toParentAnchoredPosition(), true);
