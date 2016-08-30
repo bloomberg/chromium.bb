@@ -24,7 +24,7 @@ public class RecentlyClosedBridge {
         /**
          * This method will be called every time the list of recently closed tabs is updated.
          *
-         * It's a good place to call {@link RecentlyClosedBridge#getRecentlyClosedTabs()} to get the
+         * It's a good place to call {@link RecentlyClosedBridge#getRecentlyClosedTabs} to get the
          * updated list of tabs.
          */
         @CalledByNative("RecentlyClosedCallback")

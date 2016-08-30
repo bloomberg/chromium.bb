@@ -55,8 +55,6 @@ public class NewTabPageUma {
     private static final int RAPPOR_ACTION_NAVIGATED_USING_OMNIBOX = 0;
     // User navigated to a page using one of the suggested tiles.
     public static final int RAPPOR_ACTION_VISITED_SUGGESTED_TILE = 1;
-    // The number of possible actions pertinent to Rappor
-    private static final int RAPPOR_NUM_ACTIONS = 2;
 
     // Regular NTP impression (usually when a new tab is opened)
     public static final int NTP_IMPRESSION_REGULAR = 0;
