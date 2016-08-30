@@ -80124,6 +80124,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1536" label="PointerOverOutFired"/>
   <int value="1537" label="PointerEnterLeaveFiredWhileCaptured"/>
   <int value="1538" label="PointerOverOutFiredWhileCaptured"/>
+  <int value="1539" label="DraggableAttribute"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

@@ -264,6 +264,7 @@ void HTMLElement::collectStyleForPresentationAttribute(const QualifiedName& name
     } else if (name == hiddenAttr) {
         addPropertyToPresentationAttributeStyle(style, CSSPropertyDisplay, CSSValueNone);
     } else if (name == draggableAttr) {
+        UseCounter::count(document(), UseCounter::DraggableAttribute);
         if (equalIgnoringCase(value, "true")) {
             addPropertyToPresentationAttributeStyle(style, CSSPropertyWebkitUserDrag, CSSValueElement);
             addPropertyToPresentationAttributeStyle(style, CSSPropertyUserSelect, CSSValueNone);
