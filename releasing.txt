@@ -9,8 +9,8 @@ To make a release of Weston and/or Wayland, follow these steps.
       dependencies are correct, and that wayland-protocols has had a
       release with any needed protocol updates.
 
-  2.  Update the first three lines of configure.ac to the intended
-      version.
+  2.  Update the first stanza of configure.ac to the intended versions
+      for weston and libweston.
 
       For Weston's x.y.0 releases, if libweston_major_version is greater than
       weston_major_version, bump the Weston version numbers (major, minor,
