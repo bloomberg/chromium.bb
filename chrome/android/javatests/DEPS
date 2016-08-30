@@ -1,6 +1,6 @@
 include_rules = [
   "+components/bookmarks/common/android/java/src/org/chromium/components/bookmarks",
-  "+components/dom_distiller/android/java/src/org/chromium/components/dom_distiller/core",
+  "+components/dom_distiller/core/android/java/src/org/chromium/components/dom_distiller/core",
   "+components/gcm_driver/android/java/src/org/chromium/components/gcm_driver",
   "+components/location/android/java",
   "+components/navigation_interception",

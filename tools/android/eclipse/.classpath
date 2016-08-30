@@ -231,8 +231,8 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="lib" path="out/Debug/lib.java/chrome/android/chrome_java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/chrome/android/document_tab_model_info_proto_java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/components/bookmarks/common/android/bookmarks_java.jar"/>
-    <classpathentry kind="lib" path="out/Debug/lib.java/components/dom_distiller/android/dom_distiller_content_java.jar"/>
-    <classpathentry kind="lib" path="out/Debug/lib.java/components/dom_distiller/android/dom_distiller_core_java.jar"/>
+    <classpathentry kind="lib" path="out/Debug/lib.java/components/dom_distiller/content/browser/android/dom_distiller_content_java.jar"/>
+    <classpathentry kind="lib" path="out/Debug/lib.java/components/dom_distiller/core/android/dom_distiller_core_java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/components/external_video_surface/java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/components/gcm_driver/android/gcm_driver_java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/components/gcm_driver/instance_id/android/instance_id_driver_java.jar"/>

@@ -153,7 +153,8 @@
 #include "chrome/browser/ui/android/toolbar/toolbar_model_android.h"
 #include "chrome/browser/ui/android/usb_chooser_dialog_android.h"
 #include "chrome/browser/ui/android/website_settings_popup_android.h"
-#include "components/dom_distiller/android/component_jni_registrar.h"
+#include "components/dom_distiller/content/browser/android/content_jni_registrar.h"
+#include "components/dom_distiller/core/android/core_jni_registrar.h"
 #include "components/gcm_driver/android/component_jni_registrar.h"
 #include "components/gcm_driver/instance_id/android/component_jni_registrar.h"
 #include "components/invalidation/impl/android/component_jni_registrar.h"
@@ -180,7 +181,9 @@ namespace android {
 static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     // Register JNI for components we depend on.
     {"AppMenuDragHelper", RegisterAppMenuDragHelper},
-    {"DomDistiller", dom_distiller::android::RegisterDomDistiller},
+    {"DomDistillerContent",
+     dom_distiller::content::android::RegisterDomDistiller},
+    {"DomDistillerCore", dom_distiller::core::android::RegisterDomDistiller},
     {"ChromeDownloadDelegate", RegisterChromeDownloadDelegate},
     {"GCMDriver", gcm::android::RegisterGCMDriverJni},
     {"InstanceID", instance_id::android::RegisterInstanceIDJni},

@@ -1,8 +1,8 @@
 include_rules = [
   "+blimp/client/public/android/java/src/org/chromium/blimp_public",
   "+components/bookmarks/common/android/java/src/org/chromium/components/bookmarks",
-  "+components/dom_distiller/android/java/src/org/chromium/components/dom_distiller/content",
-  "+components/dom_distiller/android/java/src/org/chromium/components/dom_distiller/core",
+  "+components/dom_distiller/content/browser/android/java/src/org/chromium/components/dom_distiller/content",
+  "+components/dom_distiller/core/android/java/src/org/chromium/components/dom_distiller/core",
   "+components/gcm_driver/android/java/src/org/chromium/components/gcm_driver",
   "+components/location/android/java",
   "+components/navigation_interception",

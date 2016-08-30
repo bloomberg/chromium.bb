@@ -1,4 +1,4 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
+# Copyright 2016 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -20,16 +20,6 @@ android_library("dom_distiller_core_java") {
   ]
 }
 
-# GYP: //components/dom_distiller.gypi:dom_distiller_java
-android_library("dom_distiller_content_java") {
-  deps = [
-    ":dom_distiller_core_java",
-    "//base:base_java",
-    "//content/public/android:content_java",
-  ]
-  java_files = [ "java/src/org/chromium/components/dom_distiller/content/DistillablePageUtils.java" ]
-}
-
 # GYP: //components/dom_distiller.gypi:dom_distiller_core_font_family_java
 java_cpp_template("dom_distiller_core_font_family_javagen") {
   package_name = "org/chromium/components/dom_distiller/core"
@@ -37,7 +27,7 @@ java_cpp_template("dom_distiller_core_font_family_javagen") {
     "java/src/org/chromium/components/dom_distiller/core/FontFamily.template",
   ]
   inputs = [
-    "../core/font_family_list.h",
+    "../font_family_list.h",
   ]
 }
 
@@ -48,13 +38,6 @@ java_cpp_template("dom_distiller_core_theme_javagen") {
     "java/src/org/chromium/components/dom_distiller/core/Theme.template",
   ]
   inputs = [
-    "../core/theme_list.h",
+    "../theme_list.h",
   ]
-}
-
-generate_jni("jni_headers") {
-  sources = [
-    "java/src/org/chromium/components/dom_distiller/content/DistillablePageUtils.java",
-  ]
-  jni_package = "dom_distiller_content"
 }
