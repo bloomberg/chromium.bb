@@ -64,10 +64,11 @@ def AddCommonOptions(parser):
       help=('If set, run test suites under out/Release. '
             'Default is env var BUILDTYPE or Debug.'))
 
+  # TODO(jbudorick): Remove --build-directory once no bots use it.
   group.add_argument('--build-directory', dest='build_directory',
-                     help=('Path to the directory in which build files are'
-                           ' located (should not include build type)'))
+                     help='DEPRECATED')
   group.add_argument('--output-directory', dest='output_directory',
+                     type=os.path.realpath,
                      help=('Path to the directory in which build files are'
                            ' located (must include build type). This will take'
                            ' precedence over --debug, --release and'
