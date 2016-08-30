@@ -427,6 +427,14 @@ void InputHandlerProxy::RecordMainThreadScrollingReasons(
        ++i) {
     unsigned val = 1 << i;
     if (reasons & val) {
+      if (val == cc::MainThreadScrollingReason::kAnimatingScrollOnMainThread) {
+        // We only want to record "animating scroll on main thread" reason if
+        // it's the only reason. If it's not the only reason, the "real" reason
+        // for scrolling on main is something else, and we only want to pay
+        // attention to that reason.
+        if (reasons & ~val)
+          continue;
+      }
       if (device == blink::WebGestureDeviceTouchscreen) {
         UMA_HISTOGRAM_ENUMERATION(
             kGestureHistogramName, i + 1,

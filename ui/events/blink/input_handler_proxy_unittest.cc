@@ -2785,6 +2785,20 @@ TEST_P(InputHandlerProxyTest, MainThreadScrollingMouseWheelHistograms) {
   EXPECT_THAT(
       histogram_tester().GetAllSamples("Renderer4.MainThreadWheelScrollReason"),
       testing::ElementsAre(base::Bucket(1, 1), base::Bucket(3, 1),
+                           base::Bucket(5, 1)));
+
+  // We only want to record "animating scroll on main thread" reason if it's the
+  // only reason. If it's not the only reason, the "real" reason for scrolling
+  // on main is something else, and we only want to pay attention to that
+  // reason. So we should only include this reason in the histogram when its on
+  // its own.
+  input_handler_->RecordMainThreadScrollingReasonsForTest(
+      blink::WebGestureDeviceTouchpad,
+      cc::MainThreadScrollingReason::kAnimatingScrollOnMainThread);
+
+  EXPECT_THAT(
+      histogram_tester().GetAllSamples("Renderer4.MainThreadWheelScrollReason"),
+      testing::ElementsAre(base::Bucket(1, 1), base::Bucket(3, 1),
                            base::Bucket(5, 1), base::Bucket(14, 1)));
 }
 
