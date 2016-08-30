@@ -119,7 +119,7 @@
       <output filename="java/res/values-uk/components_locale_settings.xml" lang="uk" type="android" context="android_java" />
       <output filename="java/res/values-vi/components_locale_settings.xml" lang="vi" type="android" context="android_java" />
       <output filename="java/res/values-zh-rCN/components_locale_settings.xml" lang="zh-CN" type="android" context="android_java" />
-      <output filename="java/res/values-zh/components_locale_settings.xml" lang="zh-TW" type="android" context="android_java" />
+      <output filename="java/res/values-zh-rTW/components_locale_settings.xml" lang="zh-TW" type="android" context="android_java" />
     </if>
 
   </outputs>
