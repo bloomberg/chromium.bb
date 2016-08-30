@@ -77,7 +77,7 @@
 /*  Define this to provide font subsetter for font subsetting when generating
     PDF documents.
  */
-#define SK_SFNTLY_SUBSETTER "sample/chromium/font_subsetter.h"
+#define SK_PDF_USE_SFNTLY
 
 /*  To write debug messages to a console, skia will call SkDebugf(...) following
     printf conventions (e.g. const char* format, ...). If you want to redirect
