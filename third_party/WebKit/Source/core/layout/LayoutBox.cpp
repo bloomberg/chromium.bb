@@ -2815,11 +2815,9 @@ bool LayoutBox::skipContainingBlockForPercentHeightCalculation(const LayoutBox* 
 
 LayoutUnit LayoutBox::computePercentageLogicalHeight(const Length& height) const
 {
-    LayoutUnit availableHeight(-1);
-
-    bool skippedAutoHeightContainingBlock = false;
     LayoutBlock* cb = containingBlock();
     const LayoutBox* containingBlockChild = this;
+    bool skippedAutoHeightContainingBlock = false;
     LayoutUnit rootMarginBorderPaddingHeight;
     while (!cb->isLayoutView() && skipContainingBlockForPercentHeightCalculation(cb)) {
         if (cb->isBody() || cb->isDocumentElement())
@@ -2830,31 +2828,12 @@ LayoutUnit LayoutBox::computePercentageLogicalHeight(const Length& height) const
     }
     cb->addPercentHeightDescendant(const_cast<LayoutBox*>(this));
 
-    const ComputedStyle& cbstyle = cb->styleRef();
-
-    // A positioned element that specified both top/bottom or that specifies height should be treated as though it has a height
-    // explicitly specified that can be used for any percentage computations.
-    bool isOutOfFlowPositionedWithSpecifiedHeight = cb->isOutOfFlowPositioned() && (!cbstyle.logicalHeight().isAuto() || (!cbstyle.logicalTop().isAuto() && !cbstyle.logicalBottom().isAuto()));
-
-    bool includeBorderPadding = isTable();
-
-    LayoutUnit stretchedFlexHeight(-1);
-    if (cb->isFlexItem())
-        stretchedFlexHeight = toLayoutFlexibleBox(cb->parent())->childLogicalHeightForPercentageResolution(*cb);
-
+    LayoutUnit availableHeight;
     if (isHorizontalWritingMode() != cb->isHorizontalWritingMode()) {
         availableHeight = containingBlockChild->containingBlockLogicalWidthForContent();
-    } else if (stretchedFlexHeight != LayoutUnit(-1)) {
-        availableHeight = stretchedFlexHeight;
-    } else if (hasOverrideContainingBlockLogicalHeight() && !isOutOfFlowPositionedWithSpecifiedHeight) {
+    } else if (hasOverrideContainingBlockLogicalHeight()) {
         availableHeight = overrideContainingBlockContentLogicalHeight();
-    } else if (cb->isGridItem() && cb->hasOverrideLogicalContentHeight()) {
-        availableHeight = cb->overrideLogicalContentHeight();
-    } else if (cbstyle.logicalHeight().isFixed()) {
-        LayoutUnit contentBoxHeight = cb->adjustContentBoxLogicalHeightForBoxSizing(cbstyle.logicalHeight().value());
-        availableHeight = cb->constrainContentBoxLogicalHeightByMinMax(
-            contentBoxHeight - cb->scrollbarLogicalHeight(), LayoutUnit(-1)).clampNegativeToZero();
-    } else if (cb->isTableCell()) {
+    } else if (!cb->styleRef().logicalHeight().isFixed() && cb->isTableCell()) {
         if (!skippedAutoHeightContainingBlock) {
             // Table cells violate what the CSS spec says to do with heights. Basically we
             // don't care if the cell specified a height or not. We just always make ourselves
@@ -2873,28 +2852,9 @@ LayoutUnit LayoutBox::computePercentageLogicalHeight(const Length& height) const
                 return LayoutUnit(-1);
             }
             availableHeight = cb->overrideLogicalContentHeight();
-            includeBorderPadding = true;
         }
-    } else if (cbstyle.logicalHeight().hasPercent() && !isOutOfFlowPositionedWithSpecifiedHeight) {
-        // We need to recur and compute the percentage height for our containing block.
-        LayoutUnit heightWithScrollbar = cb->computePercentageLogicalHeight(cbstyle.logicalHeight());
-        if (heightWithScrollbar != -1) {
-            LayoutUnit contentBoxHeightWithScrollbar = cb->adjustContentBoxLogicalHeightForBoxSizing(heightWithScrollbar);
-            // We need to adjust for min/max height because this method does not
-            // handle the min/max of the current block, its caller does. So the
-            // return value from the recursive call will not have been adjusted
-            // yet.
-            LayoutUnit contentBoxHeight = cb->constrainContentBoxLogicalHeightByMinMax(contentBoxHeightWithScrollbar - cb->scrollbarLogicalHeight(), LayoutUnit(-1));
-            availableHeight = std::max(LayoutUnit(), contentBoxHeight);
-        }
-    } else if (isOutOfFlowPositionedWithSpecifiedHeight) {
-        // Don't allow this to affect the block' size() member variable, since this
-        // can get called while the block is still laying out its kids.
-        LogicalExtentComputedValues computedValues;
-        cb->computeLogicalHeight(cb->logicalHeight(), LayoutUnit(), computedValues);
-        availableHeight = computedValues.m_extent - cb->borderAndPaddingLogicalHeight() - cb->scrollbarLogicalHeight();
-    } else if (cb->isLayoutView()) {
-        availableHeight = view()->viewLogicalHeightForPercentages();
+    } else {
+        availableHeight = cb->availableLogicalHeightForPercentageComputation();
     }
 
     if (availableHeight == -1)
@@ -2906,6 +2866,9 @@ LayoutUnit LayoutBox::computePercentageLogicalHeight(const Length& height) const
         availableHeight += cb->paddingLogicalHeight();
 
     LayoutUnit result = valueForLength(height, availableHeight);
+    bool includeBorderPadding = isTable()
+        || (cb->isTableCell() && !cb->styleRef().logicalHeight().isFixed() && !skippedAutoHeightContainingBlock && cb->hasOverrideLogicalContentHeight());
+
     if (includeBorderPadding) {
         // TODO(rhogan) crbug.com/467378: Doing this for content inside tables cells is wrong, it should fill
         // whatever height the cell makes available.
@@ -3016,6 +2979,8 @@ LayoutUnit LayoutBox::computeReplacedLogicalHeightUsing(SizeType sizeType, const
     case Percent:
     case Calculated:
     {
+        // TODO(rego): Check if we can somehow reuse LayoutBox::computePercentageLogicalHeight() and/or
+        // LayoutBlock::availableLogicalHeightForPercentageComputation() (see http://crbug.com/635655).
         LayoutObject* cb = isOutOfFlowPositioned() ? container() : containingBlock();
         while (cb->isAnonymous())
             cb = cb->containingBlock();

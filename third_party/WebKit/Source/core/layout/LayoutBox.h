@@ -203,7 +203,6 @@ public:
 
     // Use this with caution! No type checking is done!
     LayoutBox* firstChildBox() const;
-    LayoutBox* firstInFlowChildBox() const;
     LayoutBox* lastChildBox() const;
 
     int pixelSnappedWidth() const { return m_frameRect.pixelSnappedWidth(); }
@@ -1029,6 +1028,7 @@ protected:
     static void computeInlineStaticDistance(Length& logicalLeft, Length& logicalRight, const LayoutBox* child, const LayoutBoxModelObject* containerBlock, LayoutUnit containerLogicalWidth);
     static void computeLogicalLeftPositionedOffset(LayoutUnit& logicalLeftPos, const LayoutBox* child, LayoutUnit logicalWidthValue, const LayoutBoxModelObject* containerBlock, LayoutUnit containerLogicalWidth);
     static void computeLogicalTopPositionedOffset(LayoutUnit& logicalTopPos, const LayoutBox* child, LayoutUnit logicalHeightValue, const LayoutBoxModelObject* containerBlock, LayoutUnit containerLogicalHeight);
+    bool skipContainingBlockForPercentHeightCalculation(const LayoutBox* containingBlock) const;
 
 private:
     void updateShapeOutsideInfoAfterStyleChange(const ComputedStyle&, const ComputedStyle* oldStyle);
@@ -1041,7 +1041,6 @@ private:
     LayoutUnit shrinkToFitLogicalWidth(LayoutUnit availableLogicalWidth, LayoutUnit bordersPlusPadding) const;
 
     bool stretchesToViewportInQuirksMode() const;
-    bool skipContainingBlockForPercentHeightCalculation(const LayoutBox* containingBlock) const;
 
     virtual void computePositionedLogicalHeight(LogicalExtentComputedValues&) const;
     void computePositionedLogicalWidthUsing(SizeType, Length logicalWidth, const LayoutBoxModelObject* containerBlock, TextDirection containerDirection,
@@ -1174,14 +1173,6 @@ inline LayoutBox* LayoutBox::parentBox() const
 inline LayoutBox* LayoutBox::firstChildBox() const
 {
     return toLayoutBox(slowFirstChild());
-}
-
-inline LayoutBox* LayoutBox::firstInFlowChildBox() const
-{
-    LayoutBox* child = firstChildBox();
-    while (child && child->isOutOfFlowPositioned())
-        child = child->nextSiblingBox();
-    return child;
 }
 
 inline LayoutBox* LayoutBox::lastChildBox() const

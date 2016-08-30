@@ -226,6 +226,9 @@ public:
     void checkPositionedObjectsNeedLayout();
 #endif
 
+    LayoutUnit availableLogicalHeightForPercentageComputation() const;
+    bool hasDefiniteLogicalHeight() const;
+
 protected:
     bool recalcNormalFlowChildOverflowIfNeeded(LayoutObject*);
     bool recalcPositionedDescendantsOverflowAfterStyleChange();

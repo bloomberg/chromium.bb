@@ -532,6 +532,7 @@ LayoutBlock* LayoutBoxModelObject::containingBlockForAutoHeightDetection(Length 
 
 bool LayoutBoxModelObject::hasAutoHeightOrContainingBlockWithAutoHeight(bool checkingContainingBlock) const
 {
+    // TODO(rego): Check if we can somehow reuse LayoutBlock::availableLogicalHeightForPercentageComputation() (see http://crbug.com/635655).
     const LayoutBox* thisBox = isBox() ? toLayoutBox(this) : nullptr;
     Length logicalHeightLength = style()->logicalHeight();
     LayoutBlock* cb = containingBlockForAutoHeightDetection(logicalHeightLength);

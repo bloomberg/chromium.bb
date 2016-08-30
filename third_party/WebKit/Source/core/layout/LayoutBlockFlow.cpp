@@ -248,10 +248,8 @@ void LayoutBlockFlow::checkForPaginationLogicalHeightChange(LayoutUnit& pageLogi
         // don't know the actual height of the content yet, only call that method when height is
         // definite, or we might fool ourselves into believing that columns have a definite height
         // when they in fact don't.
-        // To check if we've a definite height we verify that percentage height is resolvable
-        // on the first in-flow child.
         LayoutUnit columnHeight;
-        if (!firstInFlowChildBox() || firstInFlowChildBox()->percentageLogicalHeightIsResolvable() || isLayoutView()) {
+        if (hasDefiniteLogicalHeight() || isLayoutView()) {
             LogicalExtentComputedValues computedValues;
             computeLogicalHeight(LayoutUnit(), logicalTop(), computedValues);
             columnHeight = computedValues.m_extent - borderAndPaddingLogicalHeight() - scrollbarLogicalHeight();

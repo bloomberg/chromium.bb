@@ -1877,4 +1877,59 @@ void LayoutBlock::checkPositionedObjectsNeedLayout()
 
 #endif
 
+LayoutUnit LayoutBlock::availableLogicalHeightForPercentageComputation() const
+{
+    LayoutUnit availableHeight(-1);
+
+    // For anonymous blocks that are skipped during percentage height calculation, we consider them to have an indefinite height.
+    if (skipContainingBlockForPercentHeightCalculation(this))
+        return availableHeight;
+
+    const ComputedStyle& style = styleRef();
+
+    // A positioned element that specified both top/bottom or that specifies height should be treated as though it has a height
+    // explicitly specified that can be used for any percentage computations.
+    bool isOutOfFlowPositionedWithSpecifiedHeight = isOutOfFlowPositioned() && (!style.logicalHeight().isAuto() || (!style.logicalTop().isAuto() && !style.logicalBottom().isAuto()));
+
+    LayoutUnit stretchedFlexHeight(-1);
+    if (isFlexItem())
+        stretchedFlexHeight = toLayoutFlexibleBox(parent())->childLogicalHeightForPercentageResolution(*this);
+
+    if (stretchedFlexHeight != LayoutUnit(-1)) {
+        availableHeight = stretchedFlexHeight;
+    } else if (isGridItem() && hasOverrideLogicalContentHeight()) {
+        availableHeight = overrideLogicalContentHeight();
+    } else if (style.logicalHeight().isFixed()) {
+        LayoutUnit contentBoxHeight = adjustContentBoxLogicalHeightForBoxSizing(style.logicalHeight().value());
+        availableHeight = constrainContentBoxLogicalHeightByMinMax(
+            contentBoxHeight - scrollbarLogicalHeight(), LayoutUnit(-1)).clampNegativeToZero();
+    } else if (style.logicalHeight().hasPercent() && !isOutOfFlowPositionedWithSpecifiedHeight) {
+        LayoutUnit heightWithScrollbar = computePercentageLogicalHeight(style.logicalHeight());
+        if (heightWithScrollbar != -1) {
+            LayoutUnit contentBoxHeightWithScrollbar = adjustContentBoxLogicalHeightForBoxSizing(heightWithScrollbar);
+            // We need to adjust for min/max height because this method does not
+            // handle the min/max of the current block, its caller does. So the
+            // return value from the recursive call will not have been adjusted
+            // yet.
+            LayoutUnit contentBoxHeight = constrainContentBoxLogicalHeightByMinMax(contentBoxHeightWithScrollbar - scrollbarLogicalHeight(), LayoutUnit(-1));
+            availableHeight = std::max(LayoutUnit(), contentBoxHeight);
+        }
+    } else if (isOutOfFlowPositionedWithSpecifiedHeight) {
+        // Don't allow this to affect the block' size() member variable, since this
+        // can get called while the block is still laying out its kids.
+        LogicalExtentComputedValues computedValues;
+        computeLogicalHeight(logicalHeight(), LayoutUnit(), computedValues);
+        availableHeight = computedValues.m_extent - borderAndPaddingLogicalHeight() - scrollbarLogicalHeight();
+    } else if (isLayoutView()) {
+        availableHeight = view()->viewLogicalHeightForPercentages();
+    }
+
+    return availableHeight;
+}
+
+bool LayoutBlock::hasDefiniteLogicalHeight() const
+{
+    return availableLogicalHeightForPercentageComputation() != LayoutUnit(-1);
+}
+
 } // namespace blink
