@@ -648,6 +648,24 @@ TEST_F(ParserTest, CanParseColour) {
   EXPECT_FLOAT_EQ(40.0, mm->luminance_max);
 }
 
+TEST_F(ParserTest, CanParseProjection) {
+  ASSERT_TRUE(CreateAndLoadSegment("projection.webm"));
+  const unsigned int kTracksCount = 1;
+  EXPECT_EQ(kTracksCount, segment_->GetTracks()->GetTracksCount());
+  const VideoTrack* const video_track = static_cast<const VideoTrack*>(
+      segment_->GetTracks()->GetTrackByIndex(0));
+
+  const mkvparser::Projection* const projection = video_track->GetProjection();
+  ASSERT_TRUE(projection != nullptr);
+  EXPECT_EQ(mkvparser::Projection::kRectangular, projection->type);
+  EXPECT_FLOAT_EQ(1, projection->pose_yaw);
+  EXPECT_FLOAT_EQ(2, projection->pose_pitch);
+  EXPECT_FLOAT_EQ(3, projection->pose_roll);
+  EXPECT_EQ(1u, projection->private_data_length);
+  ASSERT_TRUE(projection->private_data != nullptr);
+  EXPECT_EQ(4u, projection->private_data[0]);
+}
+
 TEST_F(ParserTest, Vp9CodecLevelTest) {
   const int kCodecPrivateLength = 3;
   const uint8_t good_codec_private_level[kCodecPrivateLength] = {2, 1, 11};
