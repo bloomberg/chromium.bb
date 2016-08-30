@@ -606,6 +606,48 @@ TEST_F(ParserTest, StereoModeParsedCorrectly) {
   EXPECT_EQ(144, video_track->GetDisplayHeight());
 }
 
+TEST_F(ParserTest, CanParseColour) {
+  ASSERT_TRUE(CreateAndLoadSegment("colour.webm"));
+  const unsigned int kTracksCount = 1;
+  EXPECT_EQ(kTracksCount, segment_->GetTracks()->GetTracksCount());
+  const VideoTrack* const video_track = dynamic_cast<const VideoTrack*>(
+      segment_->GetTracks()->GetTrackByIndex(0));
+
+  const mkvparser::Colour* const colour = video_track->GetColour();
+  ASSERT_TRUE(colour != nullptr);
+  EXPECT_EQ(0u, colour->matrix_coefficients);
+  EXPECT_EQ(1u, colour->bits_per_channel);
+  EXPECT_EQ(2u, colour->chroma_subsampling_horz);
+  EXPECT_EQ(3u, colour->chroma_subsampling_vert);
+  EXPECT_EQ(4u, colour->cb_subsampling_horz);
+  EXPECT_EQ(5u, colour->cb_subsampling_vert);
+  EXPECT_EQ(6u, colour->chroma_siting_horz);
+  EXPECT_EQ(7u, colour->chroma_siting_vert);
+  EXPECT_EQ(8u, colour->range);
+  EXPECT_EQ(9u, colour->transfer_characteristics);
+  EXPECT_EQ(10u, colour->primaries);
+  EXPECT_EQ(11u, colour->max_cll);
+  EXPECT_EQ(12u, colour->max_fall);
+
+  const mkvparser::MasteringMetadata* const mm =
+      video_track->GetColour()->mastering_metadata;
+  ASSERT_TRUE(mm != nullptr);
+  ASSERT_TRUE(mm->r != nullptr);
+  ASSERT_TRUE(mm->g != nullptr);
+  ASSERT_TRUE(mm->b != nullptr);
+  ASSERT_TRUE(mm->white_point != nullptr);
+  EXPECT_FLOAT_EQ(.1, mm->r->x);
+  EXPECT_FLOAT_EQ(.2, mm->r->y);
+  EXPECT_FLOAT_EQ(.1, mm->g->x);
+  EXPECT_FLOAT_EQ(.2, mm->g->y);
+  EXPECT_FLOAT_EQ(.1, mm->b->x);
+  EXPECT_FLOAT_EQ(.2, mm->b->y);
+  EXPECT_FLOAT_EQ(.1, mm->white_point->x);
+  EXPECT_FLOAT_EQ(.2, mm->white_point->y);
+  EXPECT_FLOAT_EQ(30.0, mm->luminance_min);
+  EXPECT_FLOAT_EQ(40.0, mm->luminance_max);
+}
+
 TEST_F(ParserTest, Vp9CodecLevelTest) {
   const int kCodecPrivateLength = 3;
   const uint8_t good_codec_private_level[kCodecPrivateLength] = {2, 1, 11};
