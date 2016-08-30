@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/guid.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -52,6 +53,8 @@ const char kLoadFileError[] = "Failed to load file: \"*\". ";
 const char kViewInstanceIdError[] = "view_instance_id is missing.";
 const char kDuplicatedContentScriptNamesError[] =
     "The given content script name already exists.";
+
+const char kGeneratedScriptFilePrefix[] = "generated_script_file:";
 
 uint32_t MaskForKey(const char* key) {
   if (strcmp(key, kAppCacheKey) == 0)
@@ -109,9 +112,11 @@ void ParseScriptFiles(const GURL& owner_base_url,
   }
   // code:
   if (items.code) {
+    GURL url = owner_base_url.Resolve(base::StringPrintf(
+        "%s%s", kGeneratedScriptFilePrefix, base::GenerateGUID().c_str()));
     std::unique_ptr<extensions::UserScript::File> file(
         new extensions::UserScript::File(base::FilePath(), base::FilePath(),
-                                         GURL()));
+                                         url));
     file->set_content(*items.code);
     list->push_back(std::move(file));
   }

@@ -1410,6 +1410,13 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestAddContentScriptWithCode) {
              NEEDS_TEST_SERVER);
 }
 
+IN_PROC_BROWSER_TEST_P(
+    WebViewTest,
+    Shim_TestAddMultipleContentScriptsWithCodeAndCheckGeneratedScriptUrl) {
+  TestHelper("testAddMultipleContentScriptsWithCodeAndCheckGeneratedScriptUrl",
+             "web_view/shim", NEEDS_TEST_SERVER);
+}
+
 IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestExecuteScriptFail) {
   TestHelper("testExecuteScriptFail", "web_view/shim", NEEDS_TEST_SERVER);
 }
