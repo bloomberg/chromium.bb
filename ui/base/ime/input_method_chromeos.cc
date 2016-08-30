@@ -457,6 +457,11 @@ void InputMethodChromeOS::CommitText(const std::string& text) {
   if (utf16_text.empty())
     return;
 
+  if (!CanComposeInline()) {
+    // Hides the candidate window for preedit text.
+    UpdateCompositionText(CompositionText(), 0, false);
+  }
+
   // Append the text to the buffer, because commit signal might be fired
   // multiple times when processing a key event.
   result_text_.append(utf16_text);

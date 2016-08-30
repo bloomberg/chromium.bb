@@ -96,6 +96,8 @@ void CandidateWindowControllerImpl::SetCursorBounds(
 
 void CandidateWindowControllerImpl::FocusStateChanged(bool is_focused) {
   mode_indicator_controller_->FocusStateChanged(is_focused);
+  if (candidate_window_view_)
+    candidate_window_view_->HidePreeditText();
 }
 
 void CandidateWindowControllerImpl::UpdateLookupTable(
