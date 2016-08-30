@@ -391,7 +391,7 @@ int GpuMain(const MainFunctionParams& parameters) {
 
   child_thread->StopWatchdog();
 
-  return 0;
+  return dead_on_arrival ? 2 : 0;
 }
 
 namespace {
