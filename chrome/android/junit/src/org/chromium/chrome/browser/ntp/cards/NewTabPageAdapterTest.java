@@ -471,6 +471,38 @@ public class NewTabPageAdapterTest {
     }
 
     /**
+     * Tests that the UI handles dynamically added (server-side) categories correctly.
+     */
+    @Test
+    @Feature({"Ntp"})
+    public void testDynamicCategories() {
+        List<SnippetArticle> articles = createDummySuggestions(3);
+        mSource.setStatusForCategory(KnownCategories.ARTICLES, CategoryStatus.AVAILABLE);
+        mSource.setSuggestionsForCategory(KnownCategories.ARTICLES, articles);
+        assertItemsFor(section(3));
+
+        int dynamicCategory1 = 1010;
+        List<SnippetArticle> dynamics1 = createDummySuggestions(5);
+        mSource.setInfoForCategory(
+                dynamicCategory1, new SuggestionsCategoryInfo("Dynamic 1",
+                                          ContentSuggestionsCardLayout.MINIMAL_CARD, true, false));
+        mSource.setStatusForCategory(dynamicCategory1, CategoryStatus.AVAILABLE);
+        mSource.setSuggestionsForCategory(dynamicCategory1, dynamics1);
+        mAdapter = new NewTabPageAdapter(null, null, mSource, null); // Reload
+        assertItemsFor(section(3), sectionWithMoreButton(5));
+
+        int dynamicCategory2 = 1011;
+        List<SnippetArticle> dynamics2 = createDummySuggestions(11);
+        mSource.setInfoForCategory(
+                dynamicCategory2, new SuggestionsCategoryInfo("Dynamic 2",
+                                          ContentSuggestionsCardLayout.MINIMAL_CARD, false, false));
+        mSource.setStatusForCategory(dynamicCategory2, CategoryStatus.AVAILABLE);
+        mSource.setSuggestionsForCategory(dynamicCategory2, dynamics2);
+        mAdapter = new NewTabPageAdapter(null, null, mSource, null); // Reload
+        assertItemsFor(section(3), sectionWithMoreButton(5), section(11));
+    }
+
+    /**
      * Tests that the order of the categories is kept.
      */
     @Test

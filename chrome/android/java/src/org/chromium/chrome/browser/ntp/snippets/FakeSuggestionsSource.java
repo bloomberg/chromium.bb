@@ -16,13 +16,13 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * A fake Suggestions source for use in unit and instrumentation tests.
  */
 public class FakeSuggestionsSource implements SuggestionsSource {
     private SuggestionsSource.Observer mObserver;
+    private final List<Integer> mCategories = new ArrayList<>();
     private final Map<Integer, List<SnippetArticle>> mSuggestions = new HashMap<>();
     private final Map<Integer, Integer> mCategoryStatus = new LinkedHashMap<>();
     private final Map<Integer, SuggestionsCategoryInfo> mCategoryInfo = new HashMap<>();
@@ -34,6 +34,11 @@ public class FakeSuggestionsSource implements SuggestionsSource {
     public void setStatusForCategory(@CategoryInt int category,
             @CategoryStatusEnum int status) {
         mCategoryStatus.put(category, status);
+        if (status == CategoryStatus.NOT_PROVIDED) {
+            mCategories.remove(Integer.valueOf(category));
+        } else if (!mCategories.contains(category)) {
+            mCategories.add(category);
+        }
         if (mObserver != null) mObserver.onCategoryStatusChanged(category, status);
     }
 
@@ -82,6 +87,7 @@ public class FakeSuggestionsSource implements SuggestionsSource {
         mSuggestions.remove(category);
         mCategoryStatus.remove(category);
         mCategoryInfo.remove(category);
+        mCategories.remove(Integer.valueOf(category));
     }
 
     @Override
@@ -110,10 +116,9 @@ public class FakeSuggestionsSource implements SuggestionsSource {
 
     @Override
     public int[] getCategories() {
-        Set<Integer> ids = mCategoryStatus.keySet();
-        int[] result = new int[ids.size()];
+        int[] result = new int[mCategories.size()];
         int index = 0;
-        for (int id : ids) result[index++] = id;
+        for (int id : mCategories) result[index++] = id;
         return result;
     }
 
