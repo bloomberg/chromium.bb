@@ -32,6 +32,9 @@ class UserScriptSet {
  public:
   class Observer {
    public:
+    // Called when the set of user scripts is updated. |changed_hosts| contains
+    // the hosts whose scripts have been altered. Note that *all* script objects
+    // are invalidated, even if they aren't in |changed_hosts|.
     virtual void OnUserScriptsUpdated(const std::set<HostID>& changed_hosts,
                                       const UserScriptList& scripts) = 0;
   };

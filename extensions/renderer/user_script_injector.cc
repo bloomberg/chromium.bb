@@ -104,21 +104,22 @@ UserScriptInjector::~UserScriptInjector() {
 void UserScriptInjector::OnUserScriptsUpdated(
     const std::set<HostID>& changed_hosts,
     const UserScriptList& scripts) {
+  // When user scripts are updated, all the old script pointers are invalidated.
+  script_ = nullptr;
   // If the host causing this injection changed, then this injection
   // will be removed, and there's no guarantee the backing script still exists.
-  if (changed_hosts.count(host_id_) > 0) {
-    script_ = nullptr;
+  if (changed_hosts.count(host_id_) > 0)
     return;
-  }
 
   for (const std::unique_ptr<UserScript>& script : scripts) {
-    // We need to compare to |script_id_| (and not to script_->id()) because the
-    // old |script_| may be deleted by now.
     if (script->id() == script_id_) {
       script_ = script.get();
       break;
     }
   }
+  // If |host_id_| wasn't in |changed_hosts|, then the script for this injection
+  // should be guaranteed to exist.
+  DCHECK(script_);
 }
 
 UserScript::InjectionType UserScriptInjector::script_type() const {
