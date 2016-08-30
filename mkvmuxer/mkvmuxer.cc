@@ -1530,7 +1530,6 @@ uint64_t VideoTrack::VideoPayloadSize() const {
                             static_cast<float>(frame_rate_));
   if (colour_)
     size += colour_->ColourSize();
-
   if (projection_)
     size += projection_->ProjectionSize();
 
