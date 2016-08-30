@@ -46,6 +46,7 @@ namespace content {
 
 class ResourceContext;
 class ResourceRequestBodyImpl;
+class ServiceWorkerBlobReader;
 class ServiceWorkerContextCore;
 class ServiceWorkerFetchDispatcher;
 class ServiceWorkerProviderHost;
@@ -54,7 +55,6 @@ class Stream;
 
 class CONTENT_EXPORT ServiceWorkerURLRequestJob
     : public net::URLRequestJob,
-      public net::URLRequest::Delegate,
       public StreamReadObserver,
       public StreamRegisterObserver {
  public:
@@ -135,27 +135,18 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
   void SetExtraRequestHeaders(const net::HttpRequestHeaders& headers) override;
   int ReadRawData(net::IOBuffer* buf, int buf_size) override;
 
-  // net::URLRequest::Delegate overrides that read the blob from the
-  // ServiceWorkerFetchResponse.
-  void OnReceivedRedirect(net::URLRequest* request,
-                          const net::RedirectInfo& redirect_info,
-                          bool* defer_redirect) override;
-  void OnAuthRequired(net::URLRequest* request,
-                      net::AuthChallengeInfo* auth_info) override;
-  void OnCertificateRequested(
-      net::URLRequest* request,
-      net::SSLCertRequestInfo* cert_request_info) override;
-  void OnSSLCertificateError(net::URLRequest* request,
-                             const net::SSLInfo& ssl_info,
-                             bool fatal) override;
-  void OnResponseStarted(net::URLRequest* request) override;
-  void OnReadCompleted(net::URLRequest* request, int bytes_read) override;
-
   // StreamObserver override:
   void OnDataAvailable(Stream* stream) override;
 
   // StreamRegisterObserver override:
   void OnStreamRegistered(Stream* stream) override;
+
+  //----------------------------------------------------------------------------
+  // The following are intended for use by ServiceWorkerBlobReader.
+  void OnResponseStarted();
+  void OnReadRawDataComplete(int bytes_read);
+  void RecordResult(ServiceWorkerMetrics::URLRequestJobResult result);
+  //----------------------------------------------------------------------------
 
   base::WeakPtr<ServiceWorkerURLRequestJob> GetWeakPtr();
 
@@ -226,7 +217,6 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
   // For UMA.
   void SetResponseBodyType(ResponseBodyType type);
   bool ShouldRecordResult();
-  void RecordResult(ServiceWorkerMetrics::URLRequestJobResult result);
   void RecordStatusZeroResponseError(
       blink::WebServiceWorkerResponseError error);
 
@@ -275,7 +265,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
   std::string client_id_;
   base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
   const ResourceContext* resource_context_;
-  std::unique_ptr<net::URLRequest> blob_request_;
+  std::unique_ptr<ServiceWorkerBlobReader> blob_reader_;
   scoped_refptr<Stream> stream_;
   GURL waiting_stream_url_;
   scoped_refptr<net::IOBuffer> stream_pending_buffer_;

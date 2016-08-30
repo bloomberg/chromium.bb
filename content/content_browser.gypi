@@ -1351,6 +1351,8 @@
       'browser/service_worker/foreign_fetch_request_handler.h',
       'browser/service_worker/link_header_support.cc',
       'browser/service_worker/link_header_support.h',
+      'browser/service_worker/service_worker_blob_reader.cc',
+      'browser/service_worker/service_worker_blob_reader.h',
       'browser/service_worker/service_worker_cache_writer.cc',
       'browser/service_worker/service_worker_cache_writer.h',
       'browser/service_worker/service_worker_client_utils.cc',

@@ -22,6 +22,7 @@
 #include "base/time/time.h"
 #include "content/browser/resource_context_impl.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
+#include "content/browser/service_worker/service_worker_blob_reader.h"
 #include "content/browser/service_worker/service_worker_fetch_dispatcher.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_response_info.h"
@@ -44,7 +45,6 @@
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_storage_context.h"
-#include "storage/browser/blob/blob_url_request_job_factory.h"
 #include "ui/base/page_transition_types.h"
 
 namespace content {
@@ -280,7 +280,7 @@ void ServiceWorkerURLRequestJob::Kill() {
   net::URLRequestJob::Kill();
   ClearStream();
   fetch_dispatcher_.reset();
-  blob_request_.reset();
+  blob_reader_.reset();
   weak_factory_.InvalidateWeakPtrs();
 }
 
@@ -340,9 +340,8 @@ int ServiceWorkerURLRequestJob::ReadRawData(net::IOBuffer* buf, int buf_size) {
   DCHECK_GE(buf_size, 0);
   DCHECK(waiting_stream_url_.is_empty());
 
-  int bytes_read = 0;
-
   if (stream_.get()) {
+    int bytes_read = 0;
     switch (stream_->ReadRawData(buf, buf_size, &bytes_read)) {
       case Stream::STREAM_HAS_DATA:
         DCHECK_GT(bytes_read, 0);
@@ -364,65 +363,38 @@ int ServiceWorkerURLRequestJob::ReadRawData(net::IOBuffer* buf, int buf_size) {
     return net::ERR_FAILED;
   }
 
-  if (!blob_request_)
-    return 0;
-  blob_request_->Read(buf, buf_size, &bytes_read);
-  net::URLRequestStatus status = blob_request_->status();
-  if (status.status() != net::URLRequestStatus::SUCCESS)
-    return status.error();
-  if (bytes_read == 0)
-    RecordResult(ServiceWorkerMetrics::REQUEST_JOB_BLOB_RESPONSE);
-  return bytes_read;
+  if (blob_reader_)
+    return blob_reader_->ReadRawData(buf, buf_size);
+
+  return 0;
 }
 
-// TODO(falken): Refactor Blob and Stream specific handling to separate classes.
-// Overrides for Blob reading -------------------------------------------------
-
-void ServiceWorkerURLRequestJob::OnReceivedRedirect(
-    net::URLRequest* request,
-    const net::RedirectInfo& redirect_info,
-    bool* defer_redirect) {
-  NOTREACHED();
-}
-
-void ServiceWorkerURLRequestJob::OnAuthRequired(
-    net::URLRequest* request,
-    net::AuthChallengeInfo* auth_info) {
-  NOTREACHED();
-}
-
-void ServiceWorkerURLRequestJob::OnCertificateRequested(
-    net::URLRequest* request,
-    net::SSLCertRequestInfo* cert_request_info) {
-  NOTREACHED();
-}
-
-void ServiceWorkerURLRequestJob::OnSSLCertificateError(
-    net::URLRequest* request,
-    const net::SSLInfo& ssl_info,
-    bool fatal) {
-  NOTREACHED();
-}
-
-void ServiceWorkerURLRequestJob::OnResponseStarted(net::URLRequest* request) {
-  // TODO(falken): Add Content-Length, Content-Type if they were not provided in
-  // the ServiceWorkerResponse.
+void ServiceWorkerURLRequestJob::OnResponseStarted() {
   if (response_time_.is_null())
     response_time_ = base::Time::Now();
   CommitResponseHeader();
 }
 
-void ServiceWorkerURLRequestJob::OnReadCompleted(net::URLRequest* request,
-                                                 int bytes_read) {
-  if (!request->status().is_success()) {
-    RecordResult(ServiceWorkerMetrics::REQUEST_JOB_ERROR_BLOB_READ);
-  } else if (bytes_read == 0) {
-    RecordResult(ServiceWorkerMetrics::REQUEST_JOB_BLOB_RESPONSE);
-  }
-  net::URLRequestStatus status = request->status();
-  ReadRawDataComplete(status.is_success() ? bytes_read : status.error());
+void ServiceWorkerURLRequestJob::OnReadRawDataComplete(int bytes_read) {
+  ReadRawDataComplete(bytes_read);
 }
 
+void ServiceWorkerURLRequestJob::RecordResult(
+    ServiceWorkerMetrics::URLRequestJobResult result) {
+  // It violates style guidelines to handle a NOTREACHED() failure but if there
+  // is a bug don't let it corrupt UMA results by double-counting.
+  if (!ShouldRecordResult()) {
+    NOTREACHED();
+    return;
+  }
+  did_record_result_ = true;
+  ServiceWorkerMetrics::RecordURLRequestJobResult(IsMainResourceLoad(), result);
+  if (request()) {
+    request()->net_log().AddEvent(RequestJobResultToNetEventType(result));
+  }
+}
+
+// TODO(falken): Refactor Stream specific handling to a separate class.
 // Overrides for Stream reading -----------------------------------------------
 
 void ServiceWorkerURLRequestJob::OnDataAvailable(Stream* stream) {
@@ -787,14 +759,12 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
       DeliverErrorResponse();
       return;
     }
-    blob_request_ = storage::BlobProtocolHandler::CreateBlobRequest(
-        std::move(blob_data_handle), request()->context(), this);
-    blob_request_->Start();
+    blob_reader_.reset(new ServiceWorkerBlobReader(this));
+    blob_reader_->Start(std::move(blob_data_handle), request()->context());
   }
 
   SetResponse(response);
-
-  if (!blob_request_) {
+  if (!blob_reader_) {
     RecordResult(ServiceWorkerMetrics::REQUEST_JOB_HEADERS_ONLY_RESPONSE);
     CommitResponseHeader();
   }
@@ -842,7 +812,7 @@ void ServiceWorkerURLRequestJob::CommitResponseHeader() {
   http_response_info_->headers.swap(http_response_headers_);
   http_response_info_->vary_data = net::HttpVaryData();
   http_response_info_->metadata =
-      blob_request_ ? blob_request_->response_info().metadata : nullptr;
+      blob_reader_ ? blob_reader_->response_metadata() : nullptr;
   NotifyHeadersComplete();
 }
 
@@ -906,20 +876,6 @@ void ServiceWorkerURLRequestJob::SetResponseBodyType(ResponseBodyType type) {
 bool ServiceWorkerURLRequestJob::ShouldRecordResult() {
   return !did_record_result_ && is_started_ &&
          response_type_ == FORWARD_TO_SERVICE_WORKER;
-}
-
-void ServiceWorkerURLRequestJob::RecordResult(
-    ServiceWorkerMetrics::URLRequestJobResult result) {
-  // It violates style guidelines to handle a NOTREACHED() failure but if there
-  // is a bug don't let it corrupt UMA results by double-counting.
-  if (!ShouldRecordResult()) {
-    NOTREACHED();
-    return;
-  }
-  did_record_result_ = true;
-  ServiceWorkerMetrics::RecordURLRequestJobResult(IsMainResourceLoad(), result);
-  if (request())
-    request()->net_log().AddEvent(RequestJobResultToNetEventType(result));
 }
 
 void ServiceWorkerURLRequestJob::RecordStatusZeroResponseError(
