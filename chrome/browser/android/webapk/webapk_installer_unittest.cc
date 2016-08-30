@@ -66,6 +66,7 @@ class TestWebApkInstaller : public WebApkInstaller {
       JNIEnv* env,
       const base::android::ScopedJavaLocalRef<jstring>& file_path,
       const base::android::ScopedJavaLocalRef<jstring>& package_name) override {
+    PostTaskToRunSuccessCallback();
     return true;
   }
 
@@ -73,7 +74,14 @@ class TestWebApkInstaller : public WebApkInstaller {
       JNIEnv* env,
       const base::android::ScopedJavaLocalRef<jstring>& file_path,
       const base::android::ScopedJavaLocalRef<jstring>& package_name) override {
+    PostTaskToRunSuccessCallback();
     return true;
+  }
+
+  void PostTaskToRunSuccessCallback() {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(&TestWebApkInstaller::OnSuccess, base::Unretained(this)));
   }
 
  private:
@@ -134,7 +142,7 @@ class WebApkInstallerRunner {
   bool success() { return success_; }
 
  private:
-  void OnCompleted(bool success) {
+  void OnCompleted(bool success, const std::string& webapk_package) {
     success_ = success;
     on_completed_callback_.Run();
   }

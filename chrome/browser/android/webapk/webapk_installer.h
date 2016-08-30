@@ -34,14 +34,15 @@ class WebApk;
 class WebApkIconHasher;
 
 // Talks to Chrome WebAPK server and Google Play to generate a WebAPK on the
-// server, download it, and install it.
+// server, download it, and install it. The native WebApkInstaller owns the
+// Java WebApkInstaller counterpart.
 class WebApkInstaller : public net::URLFetcherDelegate {
  public:
-  // Called when either a request for creating/updating a WebAPK has been sent
-  // to Google Play or the create/update process fails.
+  // Called when the creation/updating of a WebAPK is finished or failed.
   // Parameters:
-  // - whether the request succeeds.
-  using FinishCallback = base::Callback<void(bool)>;
+  // - whether the process succeeds.
+  // - the package name of the WebAPK.
+  using FinishCallback = base::Callback<void(bool, const std::string&)>;
 
   WebApkInstaller(const ShortcutInfo& shortcut_info,
                   const SkBitmap& shorcut_icon);
@@ -52,12 +53,12 @@ class WebApkInstaller : public net::URLFetcherDelegate {
   // Google Play to install the downloaded WebAPK. Calls |callback| after the
   // request to install the WebAPK is sent to Google Play.
   void InstallAsync(content::BrowserContext* browser_context,
-                    const FinishCallback& callback);
+                    const FinishCallback& finish_callback);
 
   // Same as InstallAsync() but uses the passed in |request_context_getter|.
   void InstallAsyncWithURLRequestContextGetter(
       net::URLRequestContextGetter* request_context_getter,
-      const FinishCallback& callback);
+      const FinishCallback& finish_callback);
 
   // Talks to the Chrome WebAPK server to update a WebAPK on the server and to
   // the Google Play server to install the downloaded WebAPK. Calls |callback|
@@ -79,6 +80,14 @@ class WebApkInstaller : public net::URLFetcherDelegate {
   // Sets the timeout for the server requests.
   void SetTimeoutMs(int timeout_ms);
 
+  // Called once the installation is complete or failed.
+  void OnInstallFinished(JNIEnv* env,
+                         const base::android::JavaParamRef<jobject>& obj,
+                         jboolean success);
+
+  // Registers JNI hooks.
+  static bool Register(JNIEnv* env);
+
  protected:
   // Starts installation of the downloaded WebAPK. Returns whether the install
   // could be started. The installation may still fail if true is returned.
@@ -98,12 +107,18 @@ class WebApkInstaller : public net::URLFetcherDelegate {
       const base::android::ScopedJavaLocalRef<jstring>& java_file_path,
       const base::android::ScopedJavaLocalRef<jstring>& java_package_name);
 
+  // Called when the request to install the WebAPK is sent to Google Play.
+  void OnSuccess();
+
  private:
   enum TaskType {
     UNDEFINED,
     INSTALL,
     UPDATE,
   };
+
+  // Create the Java object.
+  void CreateJavaRef();
 
   // net::URLFetcherDelegate:
   void OnURLFetchComplete(const net::URLFetcher* source) override;
@@ -139,27 +154,20 @@ class WebApkInstaller : public net::URLFetcherDelegate {
   // Called once the WebAPK has been downloaded. Makes the downloaded WebAPK
   // world readable and installs the WebAPK if the download was successful.
   // |file_path| is the file path that the WebAPK was downloaded to.
-  // |package_name| is the package name that the WebAPK should be installed at.
   void OnWebApkDownloaded(const base::FilePath& file_path,
-                          const std::string& package_name,
                           FileDownloader::Result result);
 
   // Called once the downloaded WebAPK has been made world readable. Installs
   // the WebAPK.
   // |file_path| is the file path that the WebAPK was downloaded to.
-  // |package_name| is the package name that the WebAPK should be installed at.
   // |change_permission_success| is whether the WebAPK could be made world
   // readable.
   void OnWebApkMadeWorldReadable(const base::FilePath& file_path,
-                                 const std::string& package_name,
                                  bool change_permission_success);
 
   // Called when the request to the WebAPK server times out or when the WebAPK
   // download times out.
   void OnTimeout();
-
-  // Called when the request to install the WebAPK is sent to Google Play.
-  void OnSuccess();
 
   // Called if a WebAPK could not be created. WebApkInstaller only tracks the
   // WebAPK creation and the WebAPK download. It does not track the
@@ -213,6 +221,9 @@ class WebApkInstaller : public net::URLFetcherDelegate {
 
   // Indicates whether the installer is for installing or updating a WebAPK.
   TaskType task_type_;
+
+  // Points to the Java Object.
+  base::android::ScopedJavaGlobalRef<jobject> java_ref_;
 
   // Used to get |weak_ptr_|.
   base::WeakPtrFactory<WebApkInstaller> weak_ptr_factory_;

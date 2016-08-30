@@ -187,13 +187,14 @@ void AppBannerManagerAndroid::ShowBanner() {
 
   infobars::InfoBar* infobar = nullptr;
   if (native_app_data_.is_null()) {
+    bool is_webapk = ChromeWebApkHost::AreWebApkEnabled();
     std::unique_ptr<AppBannerInfoBarDelegateAndroid> delegate(
         new AppBannerInfoBarDelegateAndroid(
             GetWeakPtr(), app_title_, manifest_url_, manifest_, icon_url_,
-            std::move(icon_), event_request_id()));
+            std::move(icon_), event_request_id(), is_webapk));
 
-    infobar = new AppBannerInfoBarAndroid(std::move(delegate),
-                                          manifest_.start_url);
+    infobar = new AppBannerInfoBarAndroid(
+        std::move(delegate), manifest_.start_url, is_webapk);
     if (infobar) {
       RecordDidShowBanner("AppBanner.WebApp.Shown");
       TrackDisplayEvent(DISPLAY_EVENT_WEB_APP_BANNER_CREATED);

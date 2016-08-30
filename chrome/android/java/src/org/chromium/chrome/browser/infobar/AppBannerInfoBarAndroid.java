@@ -42,6 +42,9 @@ public class AppBannerInfoBarAndroid extends ConfirmInfoBar implements View.OnCl
     // Data for web app installs.
     private final String mAppUrl;
 
+    // Indicates whether the infobar is for installing a WebAPK.
+    private boolean mIsWebApk;
+
     // Banner for native apps.
     private AppBannerInfoBarAndroid(String appTitle, Bitmap iconBitmap, AppData data) {
         super(0, iconBitmap, appTitle, null, data.installButtonText(), null);
@@ -52,11 +55,13 @@ public class AppBannerInfoBarAndroid extends ConfirmInfoBar implements View.OnCl
     }
 
     // Banner for web apps.
-    private AppBannerInfoBarAndroid(String appTitle, Bitmap iconBitmap, String url) {
+    private AppBannerInfoBarAndroid(String appTitle, Bitmap iconBitmap, String url,
+            boolean isWebApk) {
         super(0, iconBitmap, appTitle, null, getAddToHomescreenText(), null);
         mAppTitle = appTitle;
         mAppData = null;
         mAppUrl = url;
+        mIsWebApk = isWebApk;
         mInstallState = INSTALL_STATE_NOT_INSTALLED;
     }
 
@@ -76,8 +81,7 @@ public class AppBannerInfoBarAndroid extends ConfirmInfoBar implements View.OnCl
         if (mAppData != null) {
             // Native app.
             layout.getPrimaryButton().setButtonColor(ApiCompatibilityUtils.getColor(
-                    getContext().getResources(),
-                    R.color.app_banner_install_button_bg));
+                    context.getResources(), R.color.app_banner_install_button_bg));
             mMessageLayout.addRatingBar(mAppData.rating());
             mMessageLayout.setContentDescription(context.getString(
                     R.string.app_banner_view_native_app_accessibility, mAppTitle,
@@ -136,20 +140,27 @@ public class AppBannerInfoBarAndroid extends ConfirmInfoBar implements View.OnCl
     }
 
     private void updateButton() {
-        if (mButton == null || mAppData == null) return;
+        if (mButton == null || (mAppData == null && !mIsWebApk)) return;
 
         String text;
         String accessibilityText = null;
         boolean enabled = true;
+        Context context = getContext();
         if (mInstallState == INSTALL_STATE_NOT_INSTALLED) {
+            if (mIsWebApk) {
+                // If the installation of the WebAPK fails, the banner will disappear and
+                // a failure toast will be shown.
+                return;
+            }
             text = mAppData.installButtonText();
-            accessibilityText = getContext().getString(
+            accessibilityText = context.getString(
                     R.string.app_banner_view_native_app_install_accessibility, text);
         } else if (mInstallState == INSTALL_STATE_INSTALLING) {
-            text = getContext().getString(R.string.app_banner_installing);
+            text = mIsWebApk ? context.getString(R.string.app_banner_installing_webapk)
+                    : context.getString(R.string.app_banner_installing);
             enabled = false;
         } else {
-            text = getContext().getString(R.string.app_banner_open);
+            text = context.getString(R.string.app_banner_open);
         }
 
         mButton.setText(text);
@@ -173,7 +184,8 @@ public class AppBannerInfoBarAndroid extends ConfirmInfoBar implements View.OnCl
     }
 
     @CalledByNative
-    private static InfoBar createWebAppInfoBar(String appTitle, Bitmap iconBitmap, String url) {
-        return new AppBannerInfoBarAndroid(appTitle, iconBitmap, url);
+    private static InfoBar createWebAppInfoBar(String appTitle, Bitmap iconBitmap, String url,
+            boolean isWebApk) {
+        return new AppBannerInfoBarAndroid(appTitle, iconBitmap, url, isWebApk);
     }
 }

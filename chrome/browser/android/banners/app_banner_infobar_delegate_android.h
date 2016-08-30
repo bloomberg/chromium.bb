@@ -38,7 +38,8 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
       const content::Manifest& manifest,
       const GURL& icon_url,
       std::unique_ptr<SkBitmap> icon,
-      int event_request_id);
+      int event_request_id,
+      bool is_webapk);
 
   // Delegate for promoting an Android app.
   AppBannerInfoBarDelegateAndroid(
@@ -68,8 +69,12 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
 
  private:
   void CreateJavaDelegate();
+  bool AcceptNativeApp(content::WebContents* web_contents);
+  bool AcceptWebApp(content::WebContents* web_contents);
+  bool AcceptWebApk(content::WebContents* web_contents);
   void SendBannerAccepted(content::WebContents* web_contents,
                           const std::string& platform);
+  void OnWebApkInstallFinished(bool success, const std::string& webapk_package);
 
   // ConfirmInfoBarDelegate:
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
@@ -98,6 +103,11 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
   std::string referrer_;
   int event_request_id_;
   bool has_user_interaction_;
+
+  std::string webapk_package_name_;
+  bool is_webapk_;
+
+  base::WeakPtrFactory<AppBannerInfoBarDelegateAndroid> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppBannerInfoBarDelegateAndroid);
 };  // AppBannerInfoBarDelegateAndroid

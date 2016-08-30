@@ -73,10 +73,6 @@ void ShortcutHelper::AddToLauncherWithSkBitmap(
     const base::Closure& splash_image_callback) {
   if (info.display == blink::WebDisplayModeStandalone ||
       info.display == blink::WebDisplayModeFullscreen) {
-    if (ChromeWebApkHost::AreWebApkEnabled()) {
-      InstallWebApkWithSkBitmap(browser_context, info, icon_bitmap);
-      return;
-    }
     AddWebappWithSkBitmap(info, webapp_id, icon_bitmap, splash_image_callback);
     return;
   }
@@ -87,11 +83,11 @@ void ShortcutHelper::AddToLauncherWithSkBitmap(
 void ShortcutHelper::InstallWebApkWithSkBitmap(
     content::BrowserContext* browser_context,
     const ShortcutInfo& info,
-    const SkBitmap& icon_bitmap) {
+    const SkBitmap& icon_bitmap,
+    const WebApkInstaller::FinishCallback& callback) {
   // WebApkInstaller destroys itself when it is done.
   WebApkInstaller* installer = new WebApkInstaller(info, icon_bitmap);
-  installer->InstallAsync(browser_context,
-                          base::Bind(&ShortcutHelper::OnBuiltWebApk));
+  installer->InstallAsync(browser_context, callback);
 }
 
 // static
@@ -148,16 +144,6 @@ void ShortcutHelper::AddShortcutWithSkBitmap(
 
   Java_ShortcutHelper_addShortcut(env, java_url, java_user_title, java_bitmap,
                                   info.source);
-}
-
-void ShortcutHelper::OnBuiltWebApk(bool success) {
-  if (success) {
-    DVLOG(1) << "Sent request to install WebAPK. Seems to have worked.";
-  } else {
-    LOG(ERROR) << "WebAPK install failed.";
-  }
-  // TODO(pkotwicz): Figure out what to do when installing WebAPK fails.
-  // (crbug.com/626950)
 }
 
 int ShortcutHelper::GetIdealHomescreenIconSizeInDp() {

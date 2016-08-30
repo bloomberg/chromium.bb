@@ -21,7 +21,7 @@ class WebApkUpdateManager {
   // |success| indicates whether the request was issued to the server. A "true"
   // value of |success| does not guarantee that the WebAPK will be successfully
   // updated.
-  static void OnBuiltWebApk(const std::string& webapk_package, bool success);
+  static void OnBuiltWebApk(bool success, const std::string& webapk_package);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebApkUpdateManager);

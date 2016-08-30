@@ -25,8 +25,8 @@ bool WebApkUpdateManager::Register(JNIEnv* env) {
 }
 
 // static
-void WebApkUpdateManager::OnBuiltWebApk(const std::string& webapk_package,
-                                        bool success) {
+void WebApkUpdateManager::OnBuiltWebApk(bool success,
+                                        const std::string& webapk_package) {
   JNIEnv* env = base::android::AttachCurrentThread();
 
   if (success) {
@@ -96,6 +96,6 @@ static void UpdateAsync(JNIEnv* env,
   WebApkInstaller* installer = new WebApkInstaller(info, icon_bitmap);
   installer->UpdateAsync(
       profile,
-      base::Bind(&WebApkUpdateManager::OnBuiltWebApk, webapk_package),
+      base::Bind(&WebApkUpdateManager::OnBuiltWebApk),
       icon_murmur2_hash, webapk_package, java_webapk_version);
 }

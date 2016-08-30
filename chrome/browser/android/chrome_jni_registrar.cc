@@ -96,6 +96,7 @@
 #include "chrome/browser/android/warmup_manager.h"
 #include "chrome/browser/android/web_contents_factory.h"
 #include "chrome/browser/android/webapk/manifest_upgrade_detector_fetcher.h"
+#include "chrome/browser/android/webapk/webapk_installer.h"
 #include "chrome/browser/android/webapk/webapk_update_manager.h"
 #include "chrome/browser/android/webapps/add_to_homescreen_dialog_helper.h"
 #include "chrome/browser/android/webapps/webapp_registry.h"
@@ -367,6 +368,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"VrShell", vr_shell::RegisterVrShell},
 #endif
     {"WarmupManager", RegisterWarmupManager},
+    {"WebApkInstaller", WebApkInstaller::Register},
     {"WebApkUpdateManager", WebApkUpdateManager::Register},
     {"WebappRegistry", WebappRegistry::RegisterWebappRegistry},
     {"WebContentsFactory", RegisterWebContentsFactory},
