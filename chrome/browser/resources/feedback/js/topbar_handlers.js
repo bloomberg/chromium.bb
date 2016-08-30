@@ -6,6 +6,13 @@
  * Setup handlers for the minimize and close topbar buttons.
  */
 function initializeHandlers() {
+  // If this dialog is using system window controls, these elements aren't
+  // needed at all.
+  if (window.feedbackInfo.useSystemWindowFrame) {
+    $('minimize-button').hidden = true;
+    $('close-button').hidden = true;
+    return;
+  }
   $('minimize-button').addEventListener('click', function(e) {
     e.preventDefault();
     chrome.app.window.current().minimize();

@@ -130,6 +130,11 @@ void FeedbackPrivateAPI::RequestFeedbackForFlow(
       info.trace_id.reset(new int(manager->RequestTrace()));
     }
     info.flow = flow;
+#if defined(OS_MACOSX)
+    info.use_system_window_frame = true;
+#else
+    info.use_system_window_frame = false;
+#endif
 
     std::unique_ptr<base::ListValue> args =
         feedback_private::OnFeedbackRequested::Create(info);

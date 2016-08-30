@@ -71,6 +71,9 @@ namespace feedbackPrivate {
     // Used internally to store the blob uuid after parameter customization.
     DOMString? attachedFileBlobUuid;
     DOMString? screenshotBlobUuid;
+
+    // Whether to use the system-provided window frame or custom frame controls.
+    boolean useSystemWindowFrame;
   };
 
   // Status of the sending of a feedback report.
