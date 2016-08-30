@@ -1,0 +1,8 @@
+This directory contains client libraries for communication with Chrome OS
+system service daemons over D-Bus.
+
+Older clients that have been removed:
+
+  * Amplifier (amplifier_client.cc)
+  * Audio DSP (audio_dsp_client.cc)
+  * Wi-Fi AP manager (ap_manager_client.cc)

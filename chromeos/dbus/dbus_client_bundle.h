@@ -13,7 +13,6 @@
 
 namespace chromeos {
 
-class ApManagerClient;
 class ArcObbMounterClient;
 class CrasAudioClient;
 class CrosDisksClient;
@@ -75,8 +74,7 @@ class CHROMEOS_EXPORT DBusClientBundle {
     SYSTEM_CLOCK = 1 << 17,
     UPDATE_ENGINE = 1 << 18,
     PEER_DAEMON = 1 << 19,
-    AP_MANAGER = 1 << 20,
-    ARC_OBB_MOUNTER = 1 << 21,
+    ARC_OBB_MOUNTER = 1 << 20,
   };
 
   explicit DBusClientBundle(DBusClientTypeMask unstub_client_mask);
@@ -94,8 +92,6 @@ class CHROMEOS_EXPORT DBusClientBundle {
   // Parses command line param values for dbus subsystem that should be
   // un-stubbed.
   static DBusClientTypeMask ParseUnstubList(const std::string& unstub_list);
-
-  ApManagerClient* ap_manager_client() { return ap_manager_client_.get(); }
 
   ArcObbMounterClient* arc_obb_mounter_client() {
     return arc_obb_mounter_client_.get();
@@ -220,7 +216,6 @@ class CHROMEOS_EXPORT DBusClientBundle {
   // are defined within DBusClientType enum.
   DBusClientTypeMask unstub_client_mask_;
 
-  std::unique_ptr<ApManagerClient> ap_manager_client_;
   std::unique_ptr<ArcObbMounterClient> arc_obb_mounter_client_;
   std::unique_ptr<CrasAudioClient> cras_audio_client_;
   std::unique_ptr<CrosDisksClient> cros_disks_client_;

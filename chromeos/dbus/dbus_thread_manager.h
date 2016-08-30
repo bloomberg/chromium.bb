@@ -26,7 +26,6 @@ class ObjectPath;
 namespace chromeos {
 
 // Style Note: Clients are sorted by names.
-class ApManagerClient;
 class ArcObbMounterClient;
 class CrasAudioClient;
 class CrosDisksClient;
@@ -108,7 +107,6 @@ class CHROMEOS_EXPORT DBusThreadManager {
 
   // All returned objects are owned by DBusThreadManager.  Do not use these
   // pointers after DBusThreadManager has been shut down.
-  ApManagerClient* GetApManagerClient();
   ArcObbMounterClient* GetArcObbMounterClient();
   CrasAudioClient* GetCrasAudioClient();
   CrosDisksClient* GetCrosDisksClient();
