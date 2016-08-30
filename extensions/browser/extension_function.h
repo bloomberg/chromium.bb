@@ -195,10 +195,9 @@ class ExtensionFunction
   // Callers must call Execute() on the return ResponseAction at some point,
   // exactly once.
   //
-  // SyncExtensionFunction and AsyncExtensionFunction implement this in terms
-  // of SyncExtensionFunction::RunSync and AsyncExtensionFunction::RunAsync,
-  // but this is deprecated. ExtensionFunction implementations are encouraged
-  // to just implement Run.
+  // AsyncExtensionFunctions implement this in terms of
+  // AsyncExtensionFunction::RunAsync, but this is deprecated.
+  // ExtensionFunction implementations are encouraged to just implement Run.
   virtual ResponseAction Run() WARN_UNUSED_RESULT = 0;
 
   // Gets whether quota should be applied to this individual function
@@ -660,38 +659,6 @@ class AsyncExtensionFunction : public UIThreadExtensionFunction {
   ResponseAction Run() final;
 
   DISALLOW_COPY_AND_ASSIGN(AsyncExtensionFunction);
-};
-
-// A SyncExtensionFunction is an ExtensionFunction that runs synchronously
-// *relative to the browser's UI thread*. Note that this has nothing to do with
-// running synchronously relative to the extension process. From the extension
-// process's point of view, the function is still asynchronous.
-//
-// This kind of function is convenient for implementing simple APIs that just
-// need to interact with things on the browser UI thread.
-class SyncExtensionFunction : public UIThreadExtensionFunction {
- public:
-  SyncExtensionFunction();
-
- protected:
-  ~SyncExtensionFunction() override;
-
-  // Deprecated: Override UIThreadExtensionFunction and implement Run() instead.
-  //
-  // SyncExtensionFunctions implement this method. Return true to respond
-  // immediately with success, false to respond immediately with an error.
-  virtual bool RunSync() = 0;
-
-  // ValidationFailure override to match RunSync().
-  static bool ValidationFailure(SyncExtensionFunction* function);
-
- private:
-  // If you're hitting a compile error here due to "final" - great! You're
-  // doing the right thing, you just need to extend UIThreadExtensionFunction
-  // instead of SyncExtensionFunction.
-  ResponseAction Run() final;
-
-  DISALLOW_COPY_AND_ASSIGN(SyncExtensionFunction);
 };
 
 #endif  // EXTENSIONS_BROWSER_EXTENSION_FUNCTION_H_

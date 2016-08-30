@@ -620,19 +620,3 @@ bool AsyncExtensionFunction::ValidationFailure(
     AsyncExtensionFunction* function) {
   return false;
 }
-
-SyncExtensionFunction::SyncExtensionFunction() {
-}
-
-SyncExtensionFunction::~SyncExtensionFunction() {
-}
-
-ExtensionFunction::ResponseAction SyncExtensionFunction::Run() {
-  return RespondNow(RunSync() ? ArgumentList(std::move(results_))
-                              : Error(error_));
-}
-
-// static
-bool SyncExtensionFunction::ValidationFailure(SyncExtensionFunction* function) {
-  return false;
-}
