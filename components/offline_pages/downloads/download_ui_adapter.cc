@@ -210,6 +210,7 @@ void DownloadUIAdapter::OnDeletePagesDone(DeletePageResult result) {
   // TODO(dimich): Consider adding UMA to record user actions.
 }
 
+// static
 bool DownloadUIAdapter::IsVisibleInUI(const ClientId& client_id) {
   const std::string& name_space = client_id.name_space;
   return (name_space == kAsyncNamespace || name_space == kDownloadNamespace) &&

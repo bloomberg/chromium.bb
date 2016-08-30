@@ -228,4 +228,18 @@ TEST_F(DownloadNotifyingObserverTest, OnCompletedFailure) {
   EXPECT_EQ(kTestCreationTime, notifier()->download_item()->start_time);
 }
 
+TEST_F(DownloadNotifyingObserverTest, NamespacesNotVisibleInUI) {
+  std::vector<std::string> name_spaces = {
+      kBookmarkNamespace, kLastNNamespace, kCCTNamespace,
+      kNTPSuggestionsNamespace, kDefaultNamespace};
+
+  for (auto name_space : name_spaces) {
+    ClientId invisible_client_id(name_space, kTestGuid);
+    SavePageRequest request(kTestOfflineId, GURL(kTestUrl), invisible_client_id,
+                            kTestCreationTime, kTestUserRequested);
+    observer()->OnAdded(request);
+    EXPECT_EQ(LastNotificationType::NONE, notifier()->last_notification_type());
+  }
+}
+
 }  // namespace offline_pages

@@ -6,6 +6,7 @@
 
 #include "components/offline_pages/background/request_coordinator.h"
 #include "components/offline_pages/background/save_page_request.h"
+#include "components/offline_pages/downloads/download_ui_adapter.h"
 #include "components/offline_pages/downloads/offline_page_download_notifier.h"
 
 namespace offline_pages {
@@ -42,11 +43,15 @@ void DownloadNotifyingObserver::CreateAndStartObserving(
 
 void DownloadNotifyingObserver::OnAdded(const SavePageRequest& request) {
   DCHECK(notifier_.get());
+  if (!DownloadUIAdapter::IsVisibleInUI(request.client_id()))
+    return;
   notifier_->NotifyDownloadProgress(DownloadUIItem(request));
 }
 
 void DownloadNotifyingObserver::OnChanged(const SavePageRequest& request) {
   DCHECK(notifier_.get());
+  if (!DownloadUIAdapter::IsVisibleInUI(request.client_id()))
+    return;
   if (request.request_state() == SavePageRequest::RequestState::PAUSED)
     notifier_->NotifyDownloadPaused(DownloadUIItem(request));
   else
@@ -57,6 +62,8 @@ void DownloadNotifyingObserver::OnCompleted(
     const SavePageRequest& request,
     RequestCoordinator::SavePageStatus status) {
   DCHECK(notifier_.get());
+  if (!DownloadUIAdapter::IsVisibleInUI(request.client_id()))
+    return;
   if (status == RequestCoordinator::SavePageStatus::SUCCESS)
     notifier_->NotifyDownloadSuccessful(DownloadUIItem(request));
   else if (status == RequestCoordinator::SavePageStatus::REMOVED)

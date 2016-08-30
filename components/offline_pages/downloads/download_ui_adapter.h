@@ -56,6 +56,10 @@ class DownloadUIAdapter : public OfflinePageModel::Observer,
   static DownloadUIAdapter* FromOfflinePageModel(
       OfflinePageModel* offline_page_model);
 
+  // Checks a client ID for proper namespace and ID format to be shown in the
+  // Downloads Home UI.
+  static bool IsVisibleInUI(const ClientId& page);
+
   // This adapter is potentially shared by UI elements, each of which adds
   // itself as an observer.
   // When the last observer si removed, cached list of items is destroyed and
@@ -110,8 +114,6 @@ class DownloadUIAdapter : public OfflinePageModel::Observer,
   void NotifyItemsLoaded(Observer* observer);
   void OnOfflinePagesChanged(const MultipleOfflinePageItemResult& pages);
   void OnDeletePagesDone(DeletePageResult result);
-
-  bool IsVisibleInUI(const ClientId& page);
 
   // Always valid, this class is a member of the model.
   OfflinePageModel* model_;
