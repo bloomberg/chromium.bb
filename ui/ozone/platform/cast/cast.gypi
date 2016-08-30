@@ -42,8 +42,6 @@
         'client_native_pixmap_factory_cast.h',
         'gl_surface_cast.cc',
         'gl_surface_cast.h',
-        'gpu_platform_support_cast.cc',
-        'gpu_platform_support_cast.h',
         'overlay_manager_cast.cc',
         'overlay_manager_cast.h',
         'ozone_platform_cast.cc',

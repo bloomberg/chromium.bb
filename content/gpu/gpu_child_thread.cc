@@ -46,7 +46,6 @@
 #include "url/gurl.h"
 
 #if defined(USE_OZONE)
-#include "ui/ozone/public/gpu_platform_support.h"
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
@@ -130,9 +129,8 @@ ChildThreadImpl::Options GetOptions(
       new GpuMemoryBufferMessageFilter(gpu_memory_buffer_factory));
 
 #if defined(USE_OZONE)
-  IPC::MessageFilter* message_filter = ui::OzonePlatform::GetInstance()
-                                           ->GetGpuPlatformSupport()
-                                           ->GetMessageFilter();
+  IPC::MessageFilter* message_filter =
+      ui::OzonePlatform::GetInstance()->GetGpuMessageFilter();
   if (message_filter)
     builder.AddStartupFilter(message_filter);
 #endif
@@ -250,17 +248,7 @@ bool GpuChildThread::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
-  if (handled)
-    return true;
-
-#if defined(USE_OZONE)
-  if (ui::OzonePlatform::GetInstance()
-          ->GetGpuPlatformSupport()
-          ->OnMessageReceived(msg))
-    return true;
-#endif
-
-  return false;
+  return handled;
 }
 
 bool GpuChildThread::OnMessageReceived(const IPC::Message& msg) {
@@ -381,12 +369,6 @@ void GpuChildThread::OnInitialize(const gpu::GpuPreferences& gpu_preferences) {
                             sync_point_manager, gpu_memory_buffer_factory_));
 
   media_service_.reset(new media::MediaService(gpu_channel_manager_.get()));
-
-#if defined(USE_OZONE)
-  ui::OzonePlatform::GetInstance()
-      ->GetGpuPlatformSupport()
-      ->OnChannelEstablished(this);
-#endif
 
   // Only set once per process instance.
   service_factory_.reset(new GpuServiceFactory);

@@ -48,8 +48,6 @@
         'public/client_native_pixmap.h',
         'public/cursor_factory_ozone.cc',
         'public/cursor_factory_ozone.h',
-        'public/gpu_platform_support.cc',
-        'public/gpu_platform_support.h',
         'public/gpu_platform_support_host.cc',
         'public/gpu_platform_support_host.h',
         'public/input_controller.cc',

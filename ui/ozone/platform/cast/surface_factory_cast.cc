@@ -95,6 +95,9 @@ SurfaceFactoryCast::SurfaceFactoryCast(
       previous_frame_overlay_count_(0) {}
 
 SurfaceFactoryCast::~SurfaceFactoryCast() {
+  // eglTerminate must be called first on display before releasing resources
+  // and shutting down hardware
+  TerminateDisplay();
   ShutdownHardware();
 }
 

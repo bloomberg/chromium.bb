@@ -18,7 +18,6 @@
 #include "ui/ozone/platform/headless/headless_window.h"
 #include "ui/ozone/platform/headless/headless_window_manager.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
-#include "ui/ozone/public/gpu_platform_support.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/ozone_platform.h"
@@ -61,9 +60,6 @@ class OzonePlatformHeadless : public OzonePlatform {
   InputController* GetInputController() override {
     return input_controller_.get();
   }
-  GpuPlatformSupport* GetGpuPlatformSupport() override {
-    return gpu_platform_support_.get();
-  }
   GpuPlatformSupportHost* GetGpuPlatformSupportHost() override {
     return gpu_platform_support_host_.get();
   }
@@ -100,7 +96,6 @@ class OzonePlatformHeadless : public OzonePlatform {
   void InitializeGPU() override {
     if (!surface_factory_)
       surface_factory_.reset(new HeadlessSurfaceFactory());
-    gpu_platform_support_.reset(CreateStubGpuPlatformSupport());
   }
 
  private:
@@ -109,7 +104,6 @@ class OzonePlatformHeadless : public OzonePlatform {
   std::unique_ptr<PlatformEventSource> platform_event_source_;
   std::unique_ptr<CursorFactoryOzone> cursor_factory_ozone_;
   std::unique_ptr<InputController> input_controller_;
-  std::unique_ptr<GpuPlatformSupport> gpu_platform_support_;
   std::unique_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
   std::unique_ptr<OverlayManagerOzone> overlay_manager_;
   base::FilePath file_path_;

@@ -17,7 +17,6 @@
 #include "ui/ozone/platform/x11/native_display_delegate_ozone_x11.h"
 #include "ui/ozone/platform/x11/x11_cursor_factory_ozone.h"
 #include "ui/ozone/platform/x11/x11_surface_factory.h"
-#include "ui/ozone/public/gpu_platform_support.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/ozone_platform.h"
@@ -70,10 +69,6 @@ class OzonePlatformX11 : public OzonePlatform {
     return input_controller_.get();
   }
 
-  GpuPlatformSupport* GetGpuPlatformSupport() override {
-    return gpu_platform_support_.get();
-  }
-
   GpuPlatformSupportHost* GetGpuPlatformSupportHost() override {
     return gpu_platform_support_host_.get();
   }
@@ -105,7 +100,6 @@ class OzonePlatformX11 : public OzonePlatform {
 
   void InitializeGPU() override {
     surface_factory_ozone_.reset(new X11SurfaceFactory());
-    gpu_platform_support_.reset(CreateStubGpuPlatformSupport());
   }
 
  private:
@@ -119,7 +113,6 @@ class OzonePlatformX11 : public OzonePlatform {
 
   // Objects in the GPU process.
   std::unique_ptr<X11SurfaceFactory> surface_factory_ozone_;
-  std::unique_ptr<GpuPlatformSupport> gpu_platform_support_;
 
   DISALLOW_COPY_AND_ASSIGN(OzonePlatformX11);
 };

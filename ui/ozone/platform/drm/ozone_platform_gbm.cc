@@ -28,7 +28,6 @@
 #include "ui/ozone/platform/drm/gpu/drm_device_generator.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_manager.h"
 #include "ui/ozone/platform/drm/gpu/drm_gpu_display_manager.h"
-#include "ui/ozone/platform/drm/gpu/drm_gpu_platform_support.h"
 #include "ui/ozone/platform/drm/gpu/drm_thread_message_proxy.h"
 #include "ui/ozone/platform/drm/gpu/drm_thread_proxy.h"
 #include "ui/ozone/platform/drm/gpu/gbm_surface_factory.h"
@@ -44,7 +43,6 @@
 #include "ui/ozone/platform/drm/host/drm_window_host_manager.h"
 #include "ui/ozone/platform/drm/mus_thread_proxy.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
-#include "ui/ozone/public/gpu_platform_support.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/ozone_switches.h"
@@ -100,8 +98,8 @@ class OzonePlatformGbm
   InputController* GetInputController() override {
     return event_factory_ozone_->input_controller();
   }
-  GpuPlatformSupport* GetGpuPlatformSupport() override {
-    return gpu_platform_support_.get();
+  IPC::MessageFilter* GetGpuMessageFilter() override {
+    return gpu_message_filter_.get();
   }
   GpuPlatformSupportHost* GetGpuPlatformSupportHost() override {
     return gpu_platform_support_host_.get();
@@ -224,7 +222,7 @@ class OzonePlatformGbm
       scoped_refptr<DrmThreadMessageProxy> message_proxy(
           new DrmThreadMessageProxy());
       itmp = message_proxy.get();
-      gpu_platform_support_.reset(new DrmGpuPlatformSupport(message_proxy));
+      gpu_message_filter_ = std::move(message_proxy);
     }
 
     // NOTE: Can't start the thread here since this is called before sandbox
@@ -247,7 +245,7 @@ class OzonePlatformGbm
   std::unique_ptr<DrmThreadProxy> drm_thread_;
   std::unique_ptr<GlApiLoader> gl_api_loader_;
   std::unique_ptr<GbmSurfaceFactory> surface_factory_;
-  std::unique_ptr<DrmGpuPlatformSupport> gpu_platform_support_;
+  scoped_refptr<IPC::MessageFilter> gpu_message_filter_;
 
   // Objects in the Browser process.
   std::unique_ptr<DeviceManager> device_manager_;
