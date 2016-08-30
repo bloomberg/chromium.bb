@@ -21,57 +21,34 @@
 static int rockchip_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 			      uint32_t format, uint32_t flags)
 {
-	size_t plane;
-
-	switch (format) {
-		case DRV_FORMAT_NV12:
-			width = ALIGN(width, 4);
-			height = ALIGN(height, 4);
-			bo->strides[0] = bo->strides[1] = width;
-			bo->sizes[0] = height * bo->strides[0];
-			bo->sizes[1] = height * bo->strides[1] / 2;
-			bo->offsets[0] = 0;
-			bo->offsets[1] = height * bo->strides[0];
-			break;
-		case DRV_FORMAT_XRGB8888:
-		case DRV_FORMAT_XBGR8888:
-		case DRV_FORMAT_ARGB8888:
-		case DRV_FORMAT_ABGR8888:
-			bo->strides[0] = drv_stride_from_format(format, width, 0);
-			bo->sizes[0] = height * bo->strides[0];
-			bo->offsets[0] = 0;
-			break;
-		default:
-			fprintf(stderr, "drv: rockchip: unsupported format %4.4s\n",
-				(char*)&format);
-			assert(0);
-			return -EINVAL;
-	}
-
 	int ret;
-	size_t size = 0;
-
-	for (plane = 0; plane < bo->num_planes; plane++)
-		size += bo->sizes[plane];
-
+	size_t plane;
 	struct drm_rockchip_gem_create gem_create;
 
+	if (format == DRV_FORMAT_NV12) {
+		width = ALIGN(width, 4);
+		height = ALIGN(height, 4);
+	}
+
+	drv_bo_from_format(bo, width, height, format);
+
 	memset(&gem_create, 0, sizeof(gem_create));
-	gem_create.size = size;
+	gem_create.size = bo->offsets[bo->num_planes - 1] +
+			  bo->sizes[bo->num_planes - 1];
 
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_ROCKCHIP_GEM_CREATE,
 			   &gem_create);
 
 	if (ret) {
 		fprintf(stderr, "drv: DRM_IOCTL_ROCKCHIP_GEM_CREATE failed "
-				"(size=%zu)\n", size);
-	}
-	else {
-		for (plane = 0; plane < bo->num_planes; plane++)
-			bo->handles[plane].u32 = gem_create.handle;
+				"(size=%llu)\n", gem_create.size);
+		return ret;
 	}
 
-	return ret;
+	for (plane = 0; plane < bo->num_planes; plane++)
+		bo->handles[plane].u32 = gem_create.handle;
+
+	return 0;
 }
 
 static void *rockchip_bo_map(struct bo *bo)
@@ -94,7 +71,7 @@ static void *rockchip_bo_map(struct bo *bo)
 		    bo->drv->fd, gem_map.offset);
 }
 
-drv_format_t rockchip_resolve_format(drv_format_t format)
+static drv_format_t rockchip_resolve_format(drv_format_t format)
 {
 	switch (format) {
 	case DRV_FORMAT_FLEX_IMPLEMENTATION_DEFINED:
@@ -143,6 +120,8 @@ const struct backend backend_rockchip =
 				      DRV_BO_USE_SW_WRITE_RARELY},
 		{DRV_FORMAT_NV12,     DRV_BO_USE_SCANOUT | DRV_BO_USE_LINEAR |
 				      DRV_BO_USE_SW_READ_OFTEN | DRV_BO_USE_SW_WRITE_OFTEN},
+		{DRV_FORMAT_YVU420,   DRV_BO_USE_LINEAR | DRV_BO_USE_SW_READ_OFTEN |
+				      DRV_BO_USE_SW_WRITE_OFTEN},
 	}
 };
 

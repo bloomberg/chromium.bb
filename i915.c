@@ -127,7 +127,7 @@ static int i915_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 	struct drm_i915_gem_create gem_create;
 	struct drm_i915_gem_set_tiling gem_set_tiling;
 	uint32_t tiling_mode = I915_TILING_NONE;
-	size_t size, plane;
+	size_t plane;
 	int ret;
 
 	if (flags & (DRV_BO_USE_CURSOR | DRV_BO_USE_LINEAR |
@@ -142,34 +142,20 @@ static int i915_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 
 	i915_align_dimensions(drv, tiling_mode, &width, &height, bpp);
 
-	switch (format) {
-		case DRV_FORMAT_YVU420:
-			bo->strides[0] = drv_stride_from_format(format, width, 0);
-			bo->strides[1] = bo->strides[2] = drv_stride_from_format(format, width, 1);
-			bo->sizes[0] = height * bo->strides[0];
-			bo->sizes[1] = bo->sizes[2] = (height / 2) * bo->strides[1];
-			bo->offsets[0] = 0;
-			bo->offsets[1] = bo->sizes[0];
-			bo->offsets[2] = bo->offsets[1] + bo->sizes[1];
-			break;
-		default:
-			bo->strides[0] = drv_stride_from_format(format, width, 0);
-			bo->sizes[0] = height * bo->strides[0];
-			bo->offsets[0] = 0;
-	}
+	drv_bo_from_format(bo, width, height, format);
 
 	if (!i915_verify_dimensions(drv, bo->strides[0], height))
 		return EINVAL;
 
-	size = bo->offsets[bo->num_planes - 1] + bo->sizes[bo->num_planes - 1];
 
 	memset(&gem_create, 0, sizeof(gem_create));
-	gem_create.size = size;
+	gem_create.size = bo->offsets[bo->num_planes - 1] +
+			  bo->sizes[bo->num_planes - 1];
 
 	ret = drmIoctl(drv->fd, DRM_IOCTL_I915_GEM_CREATE, &gem_create);
 	if (ret) {
 		fprintf(stderr, "drv: DRM_IOCTL_I915_GEM_CREATE failed "
-				"(size=%zu)\n", size);
+				"(size=%llu)\n", gem_create.size);
 		return ret;
 	}
 
@@ -219,7 +205,7 @@ static void *i915_bo_map(struct bo *bo)
 		    bo->drv->fd, gem_map.offset);
 }
 
-drv_format_t i915_resolve_format(drv_format_t format)
+static drv_format_t i915_resolve_format(drv_format_t format)
 {
 	switch (format) {
 	case DRV_FORMAT_FLEX_IMPLEMENTATION_DEFINED:

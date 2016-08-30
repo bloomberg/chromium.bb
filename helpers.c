@@ -170,6 +170,43 @@ int drv_stride_from_format(uint32_t format, uint32_t width, size_t plane)
 	return stride;
 }
 
+/*
+ * This function fills in the buffer object given driver aligned dimensions
+ * and a format.  This function assumes there is just one kernel buffer per
+ * buffer object.
+ */
+int drv_bo_from_format(struct bo *bo, uint32_t width, uint32_t height,
+		       drv_format_t format)
+{
+
+	switch (format) {
+	case DRV_FORMAT_YVU420:
+		bo->strides[0] = drv_stride_from_format(format, width, 0);
+		bo->strides[1] = drv_stride_from_format(format, width, 1);
+		bo->strides[2] = drv_stride_from_format(format, width, 2);
+		bo->sizes[0] = height * bo->strides[0];
+		bo->sizes[1] = bo->sizes[2] = (height / 2) * bo->strides[1];
+		bo->offsets[0] = 0;
+		bo->offsets[1] = bo->sizes[0];
+		bo->offsets[2] = bo->offsets[1] + bo->sizes[1];
+		break;
+	case DRV_FORMAT_NV12:
+		bo->strides[0] = drv_stride_from_format(format, width, 0);
+		bo->strides[1] = drv_stride_from_format(format, width, 1);
+		bo->sizes[0] = height * bo->strides[0];
+		bo->sizes[1] = height * bo->strides[1] / 2;
+		bo->offsets[0] = 0;
+		bo->offsets[1] = height * bo->strides[0];
+		break;
+	default:
+		bo->strides[0] = drv_stride_from_format(format, width, 0);
+		bo->sizes[0] = height * bo->strides[0];
+		bo->offsets[0] = 0;
+	}
+
+	return 0;
+}
+
 int drv_dumb_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 		       uint32_t format, uint32_t flags)
 {
