@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_GPU_GPU_WATCHDOG_THREAD_H_
-#define CONTENT_GPU_GPU_WATCHDOG_THREAD_H_
+#ifndef GPU_IPC_SERVICE_GPU_WATCHDOG_THREAD_H_
+#define GPU_IPC_SERVICE_GPU_WATCHDOG_THREAD_H_
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -13,7 +13,7 @@
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "gpu/ipc/service/gpu_watchdog.h"
+#include "gpu/gpu_export.h"
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(USE_X11)
@@ -24,25 +24,24 @@ extern "C" {
 #include <sys/poll.h>
 #include "ui/base/x/x11_util.h"  // nogncheck
 #include "ui/gfx/x/x11_types.h"  // nogncheck
-#endif
+#endif                           // defined(USE_X11)
 
-namespace content {
+namespace gpu {
 
 // A thread that intermitently sends tasks to a group of watched message loops
 // and deliberately crashes if one of them does not respond after a timeout.
-class GpuWatchdogThread : public base::Thread,
-                          public gpu::GpuWatchdog,
-                          public base::PowerObserver,
-                          public base::RefCountedThreadSafe<GpuWatchdogThread> {
+class GPU_EXPORT GpuWatchdogThread
+    : public base::Thread,
+      public base::PowerObserver,
+      public base::RefCountedThreadSafe<GpuWatchdogThread> {
  public:
-  explicit GpuWatchdogThread(int timeout);
+  static scoped_refptr<GpuWatchdogThread> Create();
 
   // Accessible on watched thread but only modified by watchdog thread.
   bool armed() const { return armed_; }
   void PostAcknowledge();
 
-  // Implement gpu::GpuWatchdog.
-  void CheckArmed() override;
+  void CheckArmed();
 
   // Must be called after a PowerMonitor has been created. Can be called from
   // any thread.
@@ -70,6 +69,7 @@ class GpuWatchdogThread : public base::Thread,
     GpuWatchdogThread* watchdog_;
   };
 
+  GpuWatchdogThread();
   ~GpuWatchdogThread() override;
 
   void OnAcknowledge();
@@ -144,6 +144,6 @@ class GpuWatchdogThread : public base::Thread,
   DISALLOW_COPY_AND_ASSIGN(GpuWatchdogThread);
 };
 
-}  // namespace content
+}  // namespace gpu
 
-#endif  // CONTENT_GPU_GPU_WATCHDOG_THREAD_H_
+#endif  // GPU_IPC_SERVICE_GPU_WATCHDOG_THREAD_H_

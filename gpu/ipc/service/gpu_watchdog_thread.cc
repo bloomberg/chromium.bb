@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/gpu/gpu_watchdog_thread.h"
+#include "gpu/ipc/service/gpu_watchdog_thread.h"
 
 #include <errno.h>
 #include <stdint.h>
@@ -20,26 +20,36 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
-#include "content/public/common/content_switches.h"
-#include "content/public/common/result_codes.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
 #endif
 
-namespace content {
+namespace gpu {
 namespace {
+
+#if defined(CYGPROFILE_INSTRUMENTATION)
+const int kGpuTimeout = 30000;
+#elif defined(OS_WIN)
+// Use a slightly longer timeout on Windows due to prevalence of slow and
+// infected machines.
+const int kGpuTimeout = 15000;
+#else
+const int kGpuTimeout = 10000;
+#endif
+
 #if defined(USE_X11)
-const base::FilePath::CharType
-    kTtyFilePath[] = FILE_PATH_LITERAL("/sys/class/tty/tty0/active");
+const base::FilePath::CharType kTtyFilePath[] =
+    FILE_PATH_LITERAL("/sys/class/tty/tty0/active");
 const unsigned char text[20] = "check";
 #endif
+
 }  // namespace
 
-GpuWatchdogThread::GpuWatchdogThread(int timeout)
+GpuWatchdogThread::GpuWatchdogThread()
     : base::Thread("Watchdog"),
       watched_message_loop_(base::MessageLoop::current()),
-      timeout_(base::TimeDelta::FromMilliseconds(timeout)),
+      timeout_(base::TimeDelta::FromMilliseconds(kGpuTimeout)),
       armed_(false),
       task_observer_(this),
       use_thread_cpu_time_(true),
@@ -56,19 +66,13 @@ GpuWatchdogThread::GpuWatchdogThread(int timeout)
       host_tty_(-1),
 #endif
       weak_factory_(this) {
-  DCHECK(timeout >= 0);
-
 #if defined(OS_WIN)
   // GetCurrentThread returns a pseudo-handle that cannot be used by one thread
   // to identify another. DuplicateHandle creates a "real" handle that can be
   // used for this purpose.
-  BOOL result = DuplicateHandle(GetCurrentProcess(),
-                                GetCurrentThread(),
-                                GetCurrentProcess(),
-                                &watched_thread_handle_,
-                                THREAD_QUERY_INFORMATION,
-                                FALSE,
-                                0);
+  BOOL result = DuplicateHandle(GetCurrentProcess(), GetCurrentThread(),
+                                GetCurrentProcess(), &watched_thread_handle_,
+                                THREAD_QUERY_INFORMATION, FALSE, 0);
   DCHECK(result);
 #endif
 
@@ -77,6 +81,15 @@ GpuWatchdogThread::GpuWatchdogThread(int timeout)
   SetupXServer();
 #endif
   watched_message_loop_->AddTaskObserver(&task_observer_);
+}
+
+// static
+scoped_refptr<GpuWatchdogThread> GpuWatchdogThread::Create() {
+  scoped_refptr<GpuWatchdogThread> watchdog_thread = new GpuWatchdogThread();
+  base::Thread::Options options;
+  options.timer_slack = base::TIMER_SLACK_MAXIMUM;
+  watchdog_thread->StartWithOptions(options);
+  return watchdog_thread;
 }
 
 void GpuWatchdogThread::PostAcknowledge() {
@@ -105,11 +118,9 @@ void GpuWatchdogThread::CleanUp() {
 
 GpuWatchdogThread::GpuWatchdogTaskObserver::GpuWatchdogTaskObserver(
     GpuWatchdogThread* watchdog)
-    : watchdog_(watchdog) {
-}
+    : watchdog_(watchdog) {}
 
-GpuWatchdogThread::GpuWatchdogTaskObserver::~GpuWatchdogTaskObserver() {
-}
+GpuWatchdogThread::GpuWatchdogTaskObserver::~GpuWatchdogTaskObserver() {}
 
 void GpuWatchdogThread::GpuWatchdogTaskObserver::WillProcessTask(
     const base::PendingTask& pending_task) {
@@ -117,8 +128,7 @@ void GpuWatchdogThread::GpuWatchdogTaskObserver::WillProcessTask(
 }
 
 void GpuWatchdogThread::GpuWatchdogTaskObserver::DidProcessTask(
-    const base::PendingTask& pending_task) {
-}
+    const base::PendingTask& pending_task) {}
 
 GpuWatchdogThread::~GpuWatchdogThread() {
   // Verify that the thread was explicitly stopped. If the thread is stopped
@@ -321,7 +331,7 @@ void GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang() {
 #if defined(USE_X11)
   // Don't crash if we're not on the TTY of our host X11 server.
   int active_tty = GetActiveTTY();
-  if(host_tty_ != -1 && active_tty != -1 && host_tty_ != active_tty) {
+  if (host_tty_ != -1 && active_tty != -1 && host_tty_ != active_tty) {
     return;
   }
 #endif
@@ -469,4 +479,4 @@ int GpuWatchdogThread::GetActiveTTY() const {
 }
 #endif
 
-}  // namespace content
+}  // namespace gpu

@@ -20,7 +20,6 @@
 #include "content/common/gpu_host_messages.h"
 #include "content/common/mojo/constants.h"
 #include "content/gpu/gpu_service_factory.h"
-#include "content/gpu/gpu_watchdog_thread.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/mojo_shell_connection.h"
@@ -32,6 +31,7 @@
 #include "gpu/config/gpu_util.h"
 #include "gpu/ipc/common/memory_stats.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
+#include "gpu/ipc/service/gpu_watchdog_thread.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "media/gpu/ipc/service/gpu_jpeg_decode_accelerator.h"
@@ -143,7 +143,7 @@ ChildThreadImpl::Options GetOptions(
 }  // namespace
 
 GpuChildThread::GpuChildThread(
-    GpuWatchdogThread* watchdog_thread,
+    gpu::GpuWatchdogThread* watchdog_thread,
     bool dead_on_arrival,
     const gpu::GPUInfo& gpu_info,
     const DeferredMessages& deferred_messages,

@@ -23,8 +23,6 @@
     'gpu/gpu_process.h',
     'gpu/gpu_service_factory.cc',
     'gpu/gpu_service_factory.h',
-    'gpu/gpu_watchdog_thread.cc',
-    'gpu/gpu_watchdog_thread.h',
     'gpu/in_process_gpu_thread.cc',
     'gpu/in_process_gpu_thread.h',
     'public/gpu/content_gpu_client.cc',

@@ -49,7 +49,7 @@ class SyncPointManager;
 class GpuChannelManager;
 class GpuChannelMessageFilter;
 class GpuChannelMessageQueue;
-class GpuWatchdog;
+class GpuWatchdogThread;
 
 // Encapsulates an IPC channel between the GPU process and one renderer
 // process. On the renderer side there's a corresponding GpuChannelHost.
@@ -60,7 +60,7 @@ class GPU_EXPORT GpuChannel
   // Takes ownership of the renderer process handle.
   GpuChannel(GpuChannelManager* gpu_channel_manager,
              SyncPointManager* sync_point_manager,
-             GpuWatchdog* watchdog,
+             GpuWatchdogThread* watchdog,
              gl::GLShareGroup* share_group,
              gles2::MailboxManager* mailbox_manager,
              PreemptionFlag* preempting_flag,
@@ -86,7 +86,7 @@ class GPU_EXPORT GpuChannel
 
   SyncPointManager* sync_point_manager() const { return sync_point_manager_; }
 
-  GpuWatchdog* watchdog() const { return watchdog_; }
+  GpuWatchdogThread* watchdog() const { return watchdog_; }
 
   const scoped_refptr<gles2::MailboxManager>& mailbox_manager() const {
     return mailbox_manager_;
@@ -264,7 +264,7 @@ class GPU_EXPORT GpuChannel
 
   scoped_refptr<gles2::MailboxManager> mailbox_manager_;
 
-  GpuWatchdog* const watchdog_;
+  GpuWatchdogThread* const watchdog_;
 
   // Map of stream id to appropriate message queue.
   base::hash_map<int32_t, scoped_refptr<GpuChannelMessageQueue>> streams_;

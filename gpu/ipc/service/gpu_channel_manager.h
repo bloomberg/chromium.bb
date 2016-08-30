@@ -56,7 +56,7 @@ namespace gpu {
 class GpuChannel;
 class GpuChannelManagerDelegate;
 class GpuMemoryBufferFactory;
-class GpuWatchdog;
+class GpuWatchdogThread;
 
 // A GpuChannelManager is a thread responsible for issuing rendering commands
 // managing the lifetimes of GPU channels and forwarding IPC requests from the
@@ -65,7 +65,7 @@ class GPU_EXPORT GpuChannelManager {
  public:
   GpuChannelManager(const GpuPreferences& gpu_preferences,
                     GpuChannelManagerDelegate* delegate,
-                    GpuWatchdog* watchdog,
+                    GpuWatchdogThread* watchdog,
                     base::SingleThreadTaskRunner* task_runner,
                     base::SingleThreadTaskRunner* io_task_runner,
                     base::WaitableEvent* shutdown_event,
@@ -174,7 +174,7 @@ class GPU_EXPORT GpuChannelManager {
 
   GpuChannelManagerDelegate* const delegate_;
 
-  GpuWatchdog* watchdog_;
+  GpuWatchdogThread* watchdog_;
 
   base::WaitableEvent* shutdown_event_;
 

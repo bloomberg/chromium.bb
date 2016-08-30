@@ -32,6 +32,7 @@
 
 namespace gpu {
 class GpuMemoryBufferFactory;
+class GpuWatchdogThread;
 class SyncPointManager;
 }
 
@@ -45,7 +46,6 @@ class TargetServices;
 
 namespace content {
 class GpuServiceFactory;
-class GpuWatchdogThread;
 struct EstablishChannelParams;
 
 // The main thread of the GPU child process. There will only ever be one of
@@ -58,7 +58,7 @@ class GpuChildThread : public ChildThreadImpl,
  public:
   typedef std::queue<IPC::Message*> DeferredMessages;
 
-  GpuChildThread(GpuWatchdogThread* gpu_watchdog_thread,
+  GpuChildThread(gpu::GpuWatchdogThread* gpu_watchdog_thread,
                  bool dead_on_arrival,
                  const gpu::GPUInfo& gpu_info,
                  const DeferredMessages& deferred_messages,
@@ -138,7 +138,7 @@ class GpuChildThread : public ChildThreadImpl,
   // OnInitialize message, in which case we just declare ourselves DOA.
   bool dead_on_arrival_;
   base::Time process_start_time_;
-  scoped_refptr<GpuWatchdogThread> watchdog_thread_;
+  scoped_refptr<gpu::GpuWatchdogThread> watchdog_thread_;
 
 #if defined(OS_WIN)
   // Windows specific client sandbox interface.

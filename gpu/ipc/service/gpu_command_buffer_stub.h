@@ -53,7 +53,7 @@ struct GpuCommandBufferMsg_SwapBuffersCompleted_Params;
 namespace gpu {
 
 class GpuChannel;
-class GpuWatchdog;
+class GpuWatchdogThread;
 struct WaitForCommandState;
 
 class GPU_EXPORT GpuCommandBufferStub

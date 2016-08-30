@@ -17,6 +17,7 @@
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "gpu/ipc/common/memory_stats.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
+#include "gpu/ipc/service/gpu_watchdog_thread.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "media/gpu/ipc/service/gpu_jpeg_decode_accelerator.h"
@@ -184,10 +185,9 @@ void GpuServiceInternal::InitializeOnGpuThread(base::WaitableEvent* event) {
   // Defer creation of the render thread. This is to prevent it from handling
   // IPC messages before the sandbox has been enabled and all other necessary
   // initialization has succeeded.
-  // TODO(penghuang): implement a watchdog.
-  gpu::GpuWatchdog* watchdog = nullptr;
+  watchdog_thread_ = gpu::GpuWatchdogThread::Create();
   gpu_channel_manager_.reset(new gpu::GpuChannelManager(
-      gpu_preferences_, this, watchdog,
+      gpu_preferences_, this, watchdog_thread_.get(),
       base::ThreadTaskRunnerHandle::Get().get(), io_thread_.task_runner().get(),
       &shutdown_event_, owned_sync_point_manager_.get(),
       gpu_memory_buffer_factory_.get()));

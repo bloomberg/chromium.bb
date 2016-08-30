@@ -30,6 +30,7 @@ struct DefaultSingletonTraits;
 namespace gpu {
 class GpuChannelHost;
 class GpuMemoryBufferFactory;
+class GpuWatchdogThread;
 class SyncPointManager;
 }
 
@@ -136,6 +137,8 @@ class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
 
   // The thread that handles IO events for GpuService.
   base::Thread io_thread_;
+
+  scoped_refptr<gpu::GpuWatchdogThread> watchdog_thread_;
 
   std::unique_ptr<gpu::SyncPointManager> owned_sync_point_manager_;
 

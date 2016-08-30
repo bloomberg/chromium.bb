@@ -577,7 +577,7 @@ bool GpuChannelMessageFilter::MessageErrorHandler(const IPC::Message& message,
 
 GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
                        SyncPointManager* sync_point_manager,
-                       GpuWatchdog* watchdog,
+                       GpuWatchdogThread* watchdog,
                        gl::GLShareGroup* share_group,
                        gles2::MailboxManager* mailbox,
                        PreemptionFlag* preempting_flag,

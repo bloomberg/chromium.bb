@@ -26,7 +26,6 @@
 #include "content/common/sandbox_linux/sandbox_linux.h"
 #include "content/gpu/gpu_child_thread.h"
 #include "content/gpu/gpu_process.h"
-#include "content/gpu/gpu_watchdog_thread.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
@@ -37,6 +36,7 @@
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "gpu/ipc/service/gpu_config.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
+#include "gpu/ipc/service/gpu_watchdog_thread.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
@@ -86,16 +86,6 @@
 #include <sanitizer/coverage_interface.h>
 #endif
 
-#if defined(CYGPROFILE_INSTRUMENTATION)
-const int kGpuTimeout = 30000;
-#elif defined(OS_WIN)
-// Use a slightly longer timeout on Windows due to prevalence of slow and
-// infected machines.
-const int kGpuTimeout = 15000;
-#else
-const int kGpuTimeout = 10000;
-#endif
-
 namespace content {
 
 namespace {
@@ -112,7 +102,7 @@ bool CollectGraphicsInfo(gpu::GPUInfo& gpu_info);
 #if !defined(OS_CHROMEOS)
 bool CanAccessNvidiaDeviceFile();
 #endif
-bool StartSandboxLinux(const gpu::GPUInfo&, GpuWatchdogThread*);
+bool StartSandboxLinux(const gpu::GPUInfo&, gpu::GpuWatchdogThread*);
 #elif defined(OS_WIN)
 bool StartSandboxWindows(const sandbox::SandboxInterfaceInfo*);
 #endif
@@ -235,16 +225,12 @@ int GpuMain(const MainFunctionParams& parameters) {
   delayed_watchdog_enable = true;
 #endif
 
-  scoped_refptr<GpuWatchdogThread> watchdog_thread;
+  scoped_refptr<gpu::GpuWatchdogThread> watchdog_thread;
 
   // Start the GPU watchdog only after anything that is expected to be time
   // consuming has completed, otherwise the process is liable to be aborted.
-  if (enable_watchdog && !delayed_watchdog_enable) {
-    watchdog_thread = new GpuWatchdogThread(kGpuTimeout);
-    base::Thread::Options options;
-    options.timer_slack = base::TIMER_SLACK_MAXIMUM;
-    watchdog_thread->StartWithOptions(options);
-  }
+  if (enable_watchdog && !delayed_watchdog_enable)
+    watchdog_thread = gpu::GpuWatchdogThread::Create();
 
   // Initializes StatisticsRecorder which tracks UMA histograms.
   base::StatisticsRecorder::Initialize();
@@ -346,13 +332,8 @@ int GpuMain(const MainFunctionParams& parameters) {
       base::TimeTicks::Now() - before_initialize_one_off;
   UMA_HISTOGRAM_MEDIUM_TIMES("GPU.InitializeOneOffMediumTime",
                              initialize_one_off_time);
-
-  if (enable_watchdog && delayed_watchdog_enable) {
-    watchdog_thread = new GpuWatchdogThread(kGpuTimeout);
-    base::Thread::Options options;
-    options.timer_slack = base::TIMER_SLACK_MAXIMUM;
-    watchdog_thread->StartWithOptions(options);
-  }
+  if (enable_watchdog && delayed_watchdog_enable)
+    watchdog_thread = gpu::GpuWatchdogThread::Create();
 
   // OSMesa is expected to run very slowly, so disable the watchdog in that
   // case.
@@ -519,7 +500,7 @@ bool CanAccessNvidiaDeviceFile() {
 #endif
 
 bool StartSandboxLinux(const gpu::GPUInfo& gpu_info,
-                       GpuWatchdogThread* watchdog_thread) {
+                       gpu::GpuWatchdogThread* watchdog_thread) {
   TRACE_EVENT0("gpu,startup", "Initialize sandbox");
 
   bool res = false;
