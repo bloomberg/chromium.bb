@@ -4,12 +4,13 @@
 
 #include "components/domain_reliability/dispatcher.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
-#include "base/stl_util.h"
 #include "base/timer/timer.h"
 #include "components/domain_reliability/util.h"
 
@@ -45,10 +46,7 @@ DomainReliabilityDispatcher::Task::~Task() {}
 DomainReliabilityDispatcher::DomainReliabilityDispatcher(MockableTime* time)
     : time_(time) {}
 
-DomainReliabilityDispatcher::~DomainReliabilityDispatcher() {
-  // TODO(juliatuttle): STLElementDeleter?
-  base::STLDeleteElements(&tasks_);
-}
+DomainReliabilityDispatcher::~DomainReliabilityDispatcher() {}
 
 void DomainReliabilityDispatcher::ScheduleTask(
     const base::Closure& closure,
@@ -58,8 +56,10 @@ void DomainReliabilityDispatcher::ScheduleTask(
   // Would be DCHECK_LE, but you can't << a TimeDelta.
   DCHECK(min_delay <= max_delay);
 
-  Task* task = new Task(closure, time_->CreateTimer(), min_delay, max_delay);
-  tasks_.insert(task);
+  std::unique_ptr<Task> owned_task = base::MakeUnique<Task>(
+      closure, time_->CreateTimer(), min_delay, max_delay);
+  Task* task = owned_task.get();
+  tasks_.insert(std::move(owned_task));
   if (max_delay.InMicroseconds() < 0)
     RunAndDeleteTask(task);
   else if (min_delay.InMicroseconds() < 0)
@@ -113,8 +113,14 @@ void DomainReliabilityDispatcher::RunAndDeleteTask(Task* task) {
   task->closure.Run();
   if (task->eligible)
     eligible_tasks_.erase(task);
-  tasks_.erase(task);
-  delete task;
+
+  auto it = std::find_if(tasks_.begin(), tasks_.end(),
+                         [task](const std::unique_ptr<Task>& task_ptr) {
+                           return task_ptr.get() == task;
+                         });
+
+  DCHECK(it != tasks_.end());
+  tasks_.erase(it);
 }
 
 }  // namespace domain_reliability

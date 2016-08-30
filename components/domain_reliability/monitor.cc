@@ -171,10 +171,10 @@ void DomainReliabilityMonitor::AddBakedInConfigs() {
     context_manager_.AddContextForConfig(std::move(config));
   }
 
-  std::vector<DomainReliabilityConfig*> google_configs;
+  std::vector<std::unique_ptr<DomainReliabilityConfig>> google_configs;
   GetAllGoogleConfigs(&google_configs);
-  for (auto* google_config : google_configs)
-    context_manager_.AddContextForConfig(base::WrapUnique(google_config));
+  for (auto& google_config : google_configs)
+    context_manager_.AddContextForConfig(std::move(google_config));
 }
 
 void DomainReliabilityMonitor::SetDiscardUploads(bool discard_uploads) {

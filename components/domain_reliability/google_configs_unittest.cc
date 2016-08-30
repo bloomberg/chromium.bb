@@ -4,28 +4,26 @@
 
 #include "components/domain_reliability/google_configs.h"
 
-#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace domain_reliability {
 
 namespace {
 
-typedef std::vector<DomainReliabilityConfig*> ConfigPointerVector;
+using ConfigPointerVector =
+    std::vector<std::unique_ptr<DomainReliabilityConfig>>;
 
 TEST(DomainReliabilityGoogleConfigsTest, Enumerate) {
   ConfigPointerVector configs;
-  base::STLElementDeleter<ConfigPointerVector> configs_deleter(&configs);
 
   GetAllGoogleConfigs(&configs);
 }
 
 TEST(DomainReliabilityGoogleConfigsTest, ConfigsAreValid) {
   ConfigPointerVector configs;
-  base::STLElementDeleter<ConfigPointerVector> configs_deleter(&configs);
 
   GetAllGoogleConfigs(&configs);
-  for (auto* config : configs)
+  for (auto& config : configs)
     EXPECT_TRUE(config->IsValid());
 }
 

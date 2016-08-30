@@ -83,9 +83,6 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityContext {
   static const size_t kMaxQueuedBeacons;
 
  private:
-  // Deque of beacons owned by this context. (Deleted after uploading.)
-  typedef std::deque<DomainReliabilityBeacon*> BeaconDeque;
-
   void ScheduleUpload(base::TimeDelta min_delay, base::TimeDelta max_delay);
   void StartUpload();
   void OnUploadComplete(const DomainReliabilityUploader::UploadResult& result);
@@ -117,7 +114,7 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityContext {
   DomainReliabilityDispatcher* dispatcher_;
   DomainReliabilityUploader* uploader_;
 
-  BeaconDeque beacons_;
+  std::deque<std::unique_ptr<DomainReliabilityBeacon>> beacons_;
   size_t uploading_beacons_size_;
   base::TimeTicks upload_time_;
   base::TimeTicks last_upload_time_;

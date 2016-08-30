@@ -269,10 +269,9 @@ TEST_F(DomainReliabilityMonitorTest, AddBakedInConfigs) {
     ++num_baked_in_configs;
 
   // Also count the Google configs stored in abbreviated form.
-  std::vector<DomainReliabilityConfig*> google_configs;
+  std::vector<std::unique_ptr<DomainReliabilityConfig>> google_configs;
   GetAllGoogleConfigs(&google_configs);
   size_t num_google_configs = google_configs.size();
-  base::STLDeleteElements(&google_configs);
 
   // The monitor should have contexts for all of the baked-in configs.
   EXPECT_EQ(num_baked_in_configs + num_google_configs,

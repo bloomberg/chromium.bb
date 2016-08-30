@@ -565,13 +565,13 @@ static std::unique_ptr<DomainReliabilityConfig> CreateGoogleConfig(
 
 // static
 void GetAllGoogleConfigs(
-    std::vector<DomainReliabilityConfig*>* configs_out) {
+    std::vector<std::unique_ptr<DomainReliabilityConfig>>* configs_out) {
   configs_out->clear();
 
   for (auto& params : kGoogleConfigs) {
-    configs_out->push_back(CreateGoogleConfig(params, false).release());
+    configs_out->push_back(CreateGoogleConfig(params, false));
     if (params.duplicate_for_www)
-      configs_out->push_back(CreateGoogleConfig(params, true).release());
+      configs_out->push_back(CreateGoogleConfig(params, true));
   }
 }
 

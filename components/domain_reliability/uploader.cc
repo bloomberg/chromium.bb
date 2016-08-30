@@ -4,10 +4,11 @@
 
 #include "components/domain_reliability/uploader.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/metrics/sparse_histogram.h"
-#include "base/stl_util.h"
 #include "base/supports_user_data.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/domain_reliability/util.h"
@@ -60,11 +61,7 @@ class DomainReliabilityUploaderImpl
         url_request_context_getter_(url_request_context_getter),
         discard_uploads_(true) {}
 
-  ~DomainReliabilityUploaderImpl() override {
-    // Delete any in-flight URLFetchers.
-    base::STLDeleteContainerPairFirstPointers(upload_callbacks_.begin(),
-                                              upload_callbacks_.end());
-  }
+  ~DomainReliabilityUploaderImpl() override {}
 
   // DomainReliabilityUploader implementation:
   void UploadReport(
@@ -83,9 +80,9 @@ class DomainReliabilityUploaderImpl
       return;
     }
 
-    net::URLFetcher* fetcher =
-        net::URLFetcher::Create(0, upload_url, net::URLFetcher::POST, this)
-            .release();
+    std::unique_ptr<net::URLFetcher> owned_fetcher =
+        net::URLFetcher::Create(0, upload_url, net::URLFetcher::POST, this);
+    net::URLFetcher* fetcher = owned_fetcher.get();
     data_use_measurement::DataUseUserData::AttachToFetcher(
         fetcher, data_use_measurement::DataUseUserData::DOMAIN_RELIABILITY);
     fetcher->SetRequestContext(url_request_context_getter_.get());
@@ -98,7 +95,7 @@ class DomainReliabilityUploaderImpl
         UploadUserData::CreateCreateDataCallback(max_upload_depth + 1));
     fetcher->Start();
 
-    upload_callbacks_[fetcher] = callback;
+    upload_callbacks_[fetcher] = {std::move(owned_fetcher), callback};
   }
 
   void set_discard_uploads(bool discard_uploads) override {
@@ -110,7 +107,7 @@ class DomainReliabilityUploaderImpl
   void OnURLFetchComplete(const net::URLFetcher* fetcher) override {
     DCHECK(fetcher);
 
-    UploadCallbackMap::iterator callback_it = upload_callbacks_.find(fetcher);
+    auto callback_it = upload_callbacks_.find(fetcher);
     DCHECK(callback_it != upload_callbacks_.end());
 
     int net_error = GetNetErrorFromURLRequestStatus(fetcher->GetStatus());
@@ -142,19 +139,19 @@ class DomainReliabilityUploaderImpl
                                        http_response_code,
                                        retry_after,
                                        &result);
-    callback_it->second.Run(result);
+    callback_it->second.second.Run(result);
 
-    delete callback_it->first;
     upload_callbacks_.erase(callback_it);
   }
 
  private:
   using DomainReliabilityUploader::UploadCallback;
-  typedef std::map<const net::URLFetcher*, UploadCallback> UploadCallbackMap;
 
   MockableTime* time_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
-  UploadCallbackMap upload_callbacks_;
+  std::map<const net::URLFetcher*,
+           std::pair<std::unique_ptr<net::URLFetcher>, UploadCallback>>
+      upload_callbacks_;
   bool discard_uploads_;
 };
 

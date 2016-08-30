@@ -13,7 +13,7 @@
 namespace domain_reliability {
 
 void DOMAIN_RELIABILITY_EXPORT GetAllGoogleConfigs(
-    std::vector<DomainReliabilityConfig*>* configs_out);
+    std::vector<std::unique_ptr<DomainReliabilityConfig>>* configs_out);
 
 }  // namespace domain_reliability
 

@@ -97,7 +97,7 @@ void DomainReliabilityContext::OnBeacon(
   // one layer of recursion, to avoid infinite report loops.
   if (beacon->upload_depth <= kMaxUploadDepthToSchedule)
     scheduler_.OnBeaconAdded();
-  beacons_.push_back(beacon.release());
+  beacons_.push_back(std::move(beacon));
   bool should_evict = beacons_.size() > kMaxQueuedBeacons;
   if (should_evict)
     RemoveOldestBeacon();
@@ -106,7 +106,6 @@ void DomainReliabilityContext::OnBeacon(
 }
 
 void DomainReliabilityContext::ClearBeacons() {
-  base::STLDeleteElements(&beacons_);
   beacons_.clear();
   uploading_beacons_size_ = 0;
 }
@@ -127,7 +126,9 @@ void DomainReliabilityContext::GetQueuedBeaconsForTesting(
     std::vector<const DomainReliabilityBeacon*>* beacons_out) const {
   DCHECK(this);
   DCHECK(beacons_out);
-  beacons_out->assign(beacons_.begin(), beacons_.end());
+  beacons_out->clear();
+  for (const auto& beacon : beacons_)
+    beacons_out->push_back(beacon.get());
 }
 
 void DomainReliabilityContext::ScheduleUpload(
@@ -204,7 +205,7 @@ std::unique_ptr<const Value> DomainReliabilityContext::CreateReport(
   int max_upload_depth = 0;
 
   std::unique_ptr<ListValue> beacons_value(new ListValue());
-  for (const auto* beacon : beacons_) {
+  for (const auto& beacon : beacons_) {
     beacons_value->Append(beacon->ToValue(upload_time,
                                           *last_network_change_time_,
                                           collector_url,
@@ -230,7 +231,6 @@ void DomainReliabilityContext::MarkUpload() {
 void DomainReliabilityContext::CommitUpload() {
   auto begin = beacons_.begin();
   auto end = begin + uploading_beacons_size_;
-  base::STLDeleteContainerPointers(begin, end);
   beacons_.erase(begin, end);
   DCHECK_NE(0u, uploading_beacons_size_);
   uploading_beacons_size_ = 0;
@@ -247,7 +247,6 @@ void DomainReliabilityContext::RemoveOldestBeacon() {
   VLOG(1) << "Beacon queue for " << config().origin << " full; "
           << "removing oldest beacon";
 
-  delete beacons_.front();
   beacons_.pop_front();
 
   // If that just removed a beacon counted in uploading_beacons_size_, decrement

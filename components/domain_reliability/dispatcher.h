@@ -5,9 +5,11 @@
 #ifndef COMPONENTS_DOMAIN_RELIABILITY_DISPATCHER_H_
 #define COMPONENTS_DOMAIN_RELIABILITY_DISPATCHER_H_
 
+#include <memory>
 #include <set>
 
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "components/domain_reliability/domain_reliability_export.h"
 
@@ -54,8 +56,10 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityDispatcher {
   void RunAndDeleteTask(Task* task);
 
   MockableTime* time_;
-  std::set<Task*> tasks_;
+  std::set<std::unique_ptr<Task>> tasks_;
   std::set<Task*> eligible_tasks_;
+
+  DISALLOW_COPY_AND_ASSIGN(DomainReliabilityDispatcher);
 };
 
 }  // namespace domain_reliability
