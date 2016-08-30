@@ -110,8 +110,8 @@ public class ExternalDataUseObserver {
 
     /**
      * @return the google variation id.
+     * TODO(rajendrant): This function is unused, and should be removed.
      */
-    @CalledByNative
     protected int getGoogleVariationID() {
         return 0;
     }

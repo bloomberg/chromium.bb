@@ -12,6 +12,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/data_usage/data_use_tab_model.h"
 #include "chrome/browser/android/data_usage/external_data_use_observer.h"
@@ -36,6 +37,20 @@ const std::string GetControlAppPackageName() {
       chrome::android::ExternalDataUseObserver::
           kExternalDataUseObserverFieldTrial,
       "control_app_package_name");
+}
+
+// Returns the google variation ID from the field trial.
+variations::VariationID GetGoogleVariationID() {
+  variations::VariationID variation_id;
+  std::string variation_value = variations::GetVariationParamValue(
+      chrome::android::ExternalDataUseObserver::
+          kExternalDataUseObserverFieldTrial,
+      "variation_id");
+  if (!variation_value.empty() &&
+      base::StringToInt(variation_value, &variation_id)) {
+    return variation_id;
+  }
+  return variations::EMPTY_ID;
 }
 
 }  // namespace
@@ -195,18 +210,20 @@ void ExternalDataUseObserverBridge::ShouldRegisterAsDataUseObserver(
       base::Bind(&ExternalDataUseObserver::ShouldRegisterAsDataUseObserver,
                  external_data_use_observer_, should_register));
 
-  // Set or clear the variation id for the enabled group.
-  JNIEnv* env = base::android::AttachCurrentThread();
-  variations::AssociateGoogleVariationID(
-      variations::GOOGLE_WEB_PROPERTIES, kSyntheticFieldTrial,
-      kSyntheticFieldTrialEnabledGroup,
-      should_register ? Java_ExternalDataUseObserver_getGoogleVariationID(
-                            env, j_external_data_use_observer_.obj())
-                      : variations::EMPTY_ID);
-  ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
-      kSyntheticFieldTrial, should_register
-                                ? kSyntheticFieldTrialEnabledGroup
-                                : kSyntheticFieldTrialDisabledGroup);
+  variations::VariationID variation_id = GetGoogleVariationID();
+  if (variation_id != variations::EMPTY_ID) {
+    // Set variation id for the enabled group if |should_register| is true.
+    // Otherwise clear the variation id for the enabled group by setting to
+    // EMPTY_ID.
+    variations::AssociateGoogleVariationID(
+        variations::GOOGLE_WEB_PROPERTIES, kSyntheticFieldTrial,
+        kSyntheticFieldTrialEnabledGroup,
+        should_register ? variation_id : variations::EMPTY_ID);
+    ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
+        kSyntheticFieldTrial, should_register
+                                  ? kSyntheticFieldTrialEnabledGroup
+                                  : kSyntheticFieldTrialDisabledGroup);
+  }
 }
 
 bool RegisterExternalDataUseObserver(JNIEnv* env) {
