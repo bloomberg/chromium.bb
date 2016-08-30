@@ -5324,46 +5324,4 @@ TEST_F(NavigationControllerTest, StaleNavigationsResurrected) {
   EXPECT_EQ(url_b, controller.GetEntryAtIndex(2)->GetURL());
 }
 
-// Test that if a renderer provides bogus security info (that fails to
-// deserialize properly) when reporting a navigation, the renderer gets
-// killed.
-TEST_F(NavigationControllerTest, RendererNavigateBogusSecurityInfo) {
-  GURL url("http://foo.test");
-  controller().LoadURL(url, Referrer(), ui::PAGE_TRANSITION_TYPED,
-                       std::string());
-  FrameHostMsg_DidCommitProvisionalLoad_Params params;
-  params.page_id = 0;
-  params.nav_entry_id = 0;
-  params.did_create_new_entry = true;
-  params.url = url;
-  params.transition = ui::PAGE_TRANSITION_LINK;
-  params.should_update_history = true;
-  params.gesture = NavigationGestureUser;
-  params.method = "GET";
-  params.page_state = PageState::CreateFromURL(url);
-  params.was_within_same_page = false;
-  params.security_info = "bogus security info!";
-
-  LoadCommittedDetailsObserver observer(contents());
-  EXPECT_EQ(0, main_test_rfh()->GetProcess()->bad_msg_count());
-  main_test_rfh()->PrepareForCommit();
-  main_test_rfh()->SendNavigateWithParams(&params);
-
-  SSLStatus default_ssl_status;
-  EXPECT_EQ(default_ssl_status.security_style,
-            observer.details().ssl_status.security_style);
-  EXPECT_EQ(default_ssl_status.cert_id, observer.details().ssl_status.cert_id);
-  EXPECT_EQ(default_ssl_status.cert_status,
-            observer.details().ssl_status.cert_status);
-  EXPECT_EQ(default_ssl_status.security_bits,
-            observer.details().ssl_status.security_bits);
-  EXPECT_EQ(default_ssl_status.connection_status,
-            observer.details().ssl_status.connection_status);
-  EXPECT_EQ(default_ssl_status.content_status,
-            observer.details().ssl_status.content_status);
-  EXPECT_EQ(default_ssl_status.sct_statuses,
-            observer.details().ssl_status.sct_statuses);
-  EXPECT_EQ(1, main_test_rfh()->GetProcess()->bad_msg_count());
-}
-
 }  // namespace content

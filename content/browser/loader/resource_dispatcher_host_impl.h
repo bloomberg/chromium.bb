@@ -617,8 +617,8 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // completes, the stored certificate has to be updated to reflect the
   // new renderer process.
   void UpdateResponseCertificateForTransfer(ResourceResponse* response,
-                                            const net::SSLInfo& ssl_info,
-                                            int child_id);
+                                            net::URLRequest* request,
+                                            ResourceRequestInfoImpl* info);
 
   CertStore* GetCertStore();
 

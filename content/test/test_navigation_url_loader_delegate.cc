@@ -57,6 +57,7 @@ void TestNavigationURLLoaderDelegate::OnRequestRedirected(
 void TestNavigationURLLoaderDelegate::OnResponseStarted(
     const scoped_refptr<ResourceResponse>& response,
     std::unique_ptr<StreamHandle> body,
+    const SSLStatus& ssl_status,
     std::unique_ptr<NavigationData> navigation_data) {
   response_ = response;
   body_ = std::move(body);

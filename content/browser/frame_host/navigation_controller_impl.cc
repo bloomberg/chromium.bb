@@ -923,15 +923,6 @@ bool NavigationControllerImpl::RendererDidNavigate(
   details->is_main_frame = !rfh->GetParent();
   details->http_status_code = params.http_status_code;
 
-  // Deserialize the security info and kill the renderer if
-  // deserialization fails. The navigation will continue with default
-  // SSLStatus values.
-  if (!DeserializeSecurityInfo(params.security_info, &details->ssl_status)) {
-    bad_message::ReceivedBadMessage(
-        rfh->GetProcess(),
-        bad_message::WC_RENDERER_DID_NAVIGATE_BAD_SECURITY_INFO);
-  }
-
   NotifyNavigationEntryCommitted(details);
 
   // Update the nav_entry_id for each RenderFrameHost in the tree, so that each
@@ -1107,6 +1098,7 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
     new_entry = pending_entry_->Clone();
 
     update_virtual_url = new_entry->update_virtual_url_with_url();
+    new_entry->GetSSL() = handle->ssl_status();
   }
 
   // For non-in-page commits with no matching pending entry, create a new entry.
@@ -1127,6 +1119,7 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
     // to show chrome://bookmarks/#1 when the bookmarks webui extension changes
     // the URL.
     update_virtual_url = needs_update;
+    new_entry->GetSSL() = handle->ssl_status();
   }
 
   // Don't use the page type from the pending entry. Some interstitial page

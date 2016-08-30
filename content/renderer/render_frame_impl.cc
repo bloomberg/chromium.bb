@@ -4581,7 +4581,6 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
   if (extra_data)
     params.was_fetched_via_proxy = extra_data->was_fetched_via_proxy();
   params.was_within_same_page = navigation_state->WasWithinSamePage();
-  params.security_info = response.securityInfo();
 
   // Set the origin of the frame.  This will be replicated to the corresponding
   // RenderFrameProxies in other processes.

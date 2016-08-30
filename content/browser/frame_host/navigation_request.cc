@@ -290,6 +290,7 @@ void NavigationRequest::OnRequestRedirected(
 void NavigationRequest::OnResponseStarted(
     const scoped_refptr<ResourceResponse>& response,
     std::unique_ptr<StreamHandle> body,
+    const SSLStatus& ssl_status,
     std::unique_ptr<NavigationData> navigation_data) {
   DCHECK(state_ == STARTED);
   state_ = RESPONSE_STARTED;
@@ -336,7 +337,7 @@ void NavigationRequest::OnResponseStarted(
 
   // Check if the navigation should be allowed to proceed.
   navigation_handle_->WillProcessResponse(
-      render_frame_host, response->head.headers.get(),
+      render_frame_host, response->head.headers.get(), ssl_status,
       base::Bind(&NavigationRequest::OnWillProcessResponseChecksComplete,
                  base::Unretained(this)));
 }

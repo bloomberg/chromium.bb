@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "content/browser/loader/navigation_url_loader_impl_core.h"
 #include "content/browser/loader/netlog_observer.h"
+#include "content/browser/loader/resource_loader.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/resource_context_impl.h"
 #include "content/browser/streams/stream.h"
@@ -18,6 +19,7 @@
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/common/resource_response.h"
+#include "content/public/common/ssl_status.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request.h"
 
@@ -26,10 +28,12 @@ namespace content {
 NavigationResourceHandler::NavigationResourceHandler(
     net::URLRequest* request,
     NavigationURLLoaderImplCore* core,
-    ResourceDispatcherHostDelegate* resource_dispatcher_host_delegate)
+    ResourceDispatcherHostDelegate* resource_dispatcher_host_delegate,
+    CertStore* cert_store)
     : ResourceHandler(request),
       core_(core),
-      resource_dispatcher_host_delegate_(resource_dispatcher_host_delegate) {
+      resource_dispatcher_host_delegate_(resource_dispatcher_host_delegate),
+      cert_store_(cert_store) {
   core_->set_resource_handler(this);
   writer_.set_immediate_mode(true);
 }
@@ -110,8 +114,15 @@ bool NavigationResourceHandler::OnResponseStarted(ResourceResponse* response,
       cloned_data = navigation_data->Clone();
   }
 
+  SSLStatus ssl_status;
+  if (request()->ssl_info().cert.get()) {
+    ResourceLoader::GetSSLStatusForRequest(
+        request()->url(), request()->ssl_info(), info->GetChildID(),
+        cert_store_, &ssl_status);
+  }
+
   core_->NotifyResponseStarted(response, writer_.stream()->CreateHandle(),
-                               std::move(cloned_data));
+                               ssl_status, std::move(cloned_data));
   *defer = true;
 
   return true;

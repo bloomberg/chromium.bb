@@ -80,10 +80,11 @@ void NavigationURLLoaderImpl::NotifyRequestRedirected(
 void NavigationURLLoaderImpl::NotifyResponseStarted(
     const scoped_refptr<ResourceResponse>& response,
     std::unique_ptr<StreamHandle> body,
+    const SSLStatus& ssl_status,
     std::unique_ptr<NavigationData> navigation_data) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  delegate_->OnResponseStarted(response, std::move(body),
+  delegate_->OnResponseStarted(response, std::move(body), ssl_status,
                                std::move(navigation_data));
 }
 

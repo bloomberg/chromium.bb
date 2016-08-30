@@ -163,6 +163,7 @@ specific_include_rules = {
     "+content/browser/child_process_security_policy_impl.h",
     "+content/browser/download/save_types.h",
     "+content/browser/frame_host/frame_tree.h",
+    "+content/browser/frame_host/navigation_handle_impl.h",
     "+content/browser/frame_host/navigation_request_info.h",
     "+content/browser/frame_host/navigator.h",
     "+content/browser/loader/cross_site_resource_handler.h",

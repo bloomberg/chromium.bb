@@ -19,6 +19,7 @@
 #include "content/public/browser/navigation_data.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/common/request_context_type.h"
+#include "content/public/common/ssl_status.h"
 #include "url/gurl.h"
 
 struct FrameHostMsg_DidCommitProvisionalLoad_Params;
@@ -201,6 +202,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   void WillProcessResponse(
       RenderFrameHostImpl* render_frame_host,
       scoped_refptr<net::HttpResponseHeaders> response_headers,
+      const SSLStatus& ssl_status,
       const ThrottleChecksFinishedCallback& callback);
 
   // Returns the FrameTreeNode this navigation is happening in.
@@ -218,12 +220,19 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       bool same_page,
       RenderFrameHostImpl* render_frame_host);
 
+  // This is only used for the non-PlzNavigate case, as it's the one that has
+  // cross-site requests being transferred to new processes. When that occurs,
+  // the SSL certificate ID has to be updated.
+  void UpdateSSLCertId(int new_cert_id);
+
   // Called during commit. Takes ownership of the embedder's NavigationData
   // instance. This NavigationData may have been cloned prior to being added
   // here.
   void set_navigation_data(std::unique_ptr<NavigationData> navigation_data) {
     navigation_data_ = std::move(navigation_data);
   }
+
+  SSLStatus ssl_status() { return ssl_status_; }
 
  private:
   friend class NavigationHandleImplTest;
@@ -318,6 +327,8 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   // Embedder data tied to this navigation.
   std::unique_ptr<NavigationData> navigation_data_;
+
+  SSLStatus ssl_status_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationHandleImpl);
 };

@@ -145,15 +145,6 @@ SSLManager::~SSLManager() {
 
 void SSLManager::DidCommitProvisionalLoad(const LoadCommittedDetails& details) {
   NavigationEntryImpl* entry = controller_->GetLastCommittedEntry();
-
-  if (details.is_main_frame) {
-    if (entry) {
-      // We may not have an entry if this is a navigation to an initial blank
-      // page. Add the new data we have.
-      entry->GetSSL() = details.ssl_status;
-    }
-  }
-
   policy()->UpdateEntry(entry, controller_->delegate()->GetWebContents());
   // Always notify the WebContents that the SSL state changed when a
   // load is committed, in case the active navigation entry has changed.

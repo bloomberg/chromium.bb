@@ -177,6 +177,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   void OnResponseStarted(
       const scoped_refptr<ResourceResponse>& response,
       std::unique_ptr<StreamHandle> body,
+      const SSLStatus& ssl_status,
       std::unique_ptr<NavigationData> navigation_data) override;
   void OnRequestFailed(bool has_stale_copy_in_cache, int net_error) override;
   void OnRequestStarted(base::TimeTicks timestamp) override;

@@ -26,6 +26,7 @@ class CertStore;
 class ResourceDispatcherHostLoginDelegate;
 class ResourceLoaderDelegate;
 class ResourceRequestInfoImpl;
+struct SSLStatus;
 
 // This class is responsible for driving the URLRequest (i.e., calling Start,
 // Read, and servicing events).  It has a ResourceHandler, which is typically a
@@ -35,6 +36,12 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
                                       public SSLClientAuthHandler::Delegate,
                                       public ResourceController {
  public:
+  static void GetSSLStatusForRequest(const GURL& url,
+                                     const net::SSLInfo& ssl_info,
+                                     int child_id,
+                                     CertStore* cert_store,
+                                     SSLStatus* ssl_status);
+
   ResourceLoader(std::unique_ptr<net::URLRequest> request,
                  std::unique_ptr<ResourceHandler> handler,
                  CertStore* cert_store,

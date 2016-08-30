@@ -24,6 +24,7 @@ class NavigationData;
 class ServiceWorkerContextWrapper;
 class StreamHandle;
 struct ResourceResponse;
+struct SSLStatus;
 
 class NavigationURLLoaderImpl : public NavigationURLLoader {
  public:
@@ -49,6 +50,7 @@ class NavigationURLLoaderImpl : public NavigationURLLoader {
   // Notifies the delegate that the response has started.
   void NotifyResponseStarted(const scoped_refptr<ResourceResponse>& response,
                              std::unique_ptr<StreamHandle> body,
+                             const SSLStatus& ssl_status,
                              std::unique_ptr<NavigationData> navigation_data);
 
   // Notifies the delegate the request failed to return a response.

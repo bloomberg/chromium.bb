@@ -10,7 +10,7 @@
 #include "content/browser/loader/stream_writer.h"
 
 namespace content {
-
+class CertStore;
 class NavigationURLLoaderImplCore;
 class ResourceDispatcherHostDelegate;
 
@@ -20,7 +20,8 @@ class NavigationResourceHandler : public ResourceHandler {
   NavigationResourceHandler(
       net::URLRequest* request,
       NavigationURLLoaderImplCore* core,
-      ResourceDispatcherHostDelegate* resource_dispatcher_host_delegate);
+      ResourceDispatcherHostDelegate* resource_dispatcher_host_delegate,
+      CertStore* cert_store);
   ~NavigationResourceHandler() override;
 
   // Called by the loader the cancel the request.
@@ -56,6 +57,7 @@ class NavigationResourceHandler : public ResourceHandler {
   NavigationURLLoaderImplCore* core_;
   StreamWriter writer_;
   ResourceDispatcherHostDelegate* resource_dispatcher_host_delegate_;
+  CertStore* cert_store_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationResourceHandler);
 };

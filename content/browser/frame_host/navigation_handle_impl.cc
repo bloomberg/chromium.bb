@@ -308,7 +308,7 @@ NavigationHandleImpl::CallWillProcessResponseForTesting(
     content::RenderFrameHost* render_frame_host) {
   NavigationThrottle::ThrottleCheckResult result = NavigationThrottle::DEFER;
   WillProcessResponse(static_cast<RenderFrameHostImpl*>(render_frame_host),
-                      scoped_refptr<net::HttpResponseHeaders>(),
+                      scoped_refptr<net::HttpResponseHeaders>(), SSLStatus(),
                       base::Bind(&UpdateThrottleCheckResult, &result));
 
   // Reset the callback to ensure it will not be called later.
@@ -389,11 +389,13 @@ void NavigationHandleImpl::WillRedirectRequest(
 void NavigationHandleImpl::WillProcessResponse(
     RenderFrameHostImpl* render_frame_host,
     scoped_refptr<net::HttpResponseHeaders> response_headers,
+    const SSLStatus& ssl_status,
     const ThrottleChecksFinishedCallback& callback) {
   DCHECK(!render_frame_host_ || render_frame_host_ == render_frame_host);
   render_frame_host_ = render_frame_host;
   response_headers_ = response_headers;
   state_ = WILL_PROCESS_RESPONSE;
+  ssl_status_ = ssl_status;
   complete_callback_ = callback;
 
   // Notify each throttle of the response.
@@ -435,6 +437,11 @@ void NavigationHandleImpl::DidCommitNavigation(
   is_same_page_ = same_page;
 
   state_ = net_error_code_ == net::OK ? DID_COMMIT : DID_COMMIT_ERROR_PAGE;
+}
+
+void NavigationHandleImpl::UpdateSSLCertId(int new_cert_id) {
+  DCHECK(ssl_status_.cert_id) << "Must have set an SSL certificate already.";
+  ssl_status_.cert_id = new_cert_id;
 }
 
 NavigationThrottle::ThrottleCheckResult

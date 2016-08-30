@@ -40,6 +40,7 @@
 #include "content/browser/cert_store_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/frame_tree.h"
+#include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/loader/async_resource_handler.h"
@@ -417,6 +418,21 @@ void NotifyForEachFrameFromUI(
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(&NotifyForRouteSetOnIO, frame_callback,
                                      base::Passed(std::move(routing_ids))));
+}
+
+void UpdateSSLStatus(int render_process_id,
+                     int render_frame_host_id,
+                     const GURL& url,
+                     int new_cert_id) {
+  RenderFrameHostImpl* render_frame_host =
+      RenderFrameHostImpl::FromID(render_process_id, render_frame_host_id);
+  if (!render_frame_host)
+    return;
+
+  NavigationHandleImpl* navigation_handle =
+      render_frame_host->navigation_handle();
+  if (navigation_handle && navigation_handle->GetURL() == url)
+    navigation_handle->UpdateSSLCertId(new_cert_id);
 }
 
 }  // namespace
@@ -1135,8 +1151,8 @@ void ResourceDispatcherHostImpl::UpdateRequestForTransfer(
   // updated to be associated with the new process.
   if (loader->transferring_response()) {
     UpdateResponseCertificateForTransfer(loader->transferring_response(),
-                                         loader->request()->ssl_info(),
-                                         child_id);
+                                         loader->request(),
+                                         info);
   }
 
   // Update maps that used the old IDs, if necessary.  Some transfers in tests
@@ -1642,7 +1658,7 @@ ResourceDispatcherHostImpl::AddStandardHandlers(
   // thread is handled by the NavigationURLloader.
   if (!IsBrowserSideNavigationEnabled() && IsResourceTypeFrame(resource_type)) {
     throttles.push_back(new NavigationResourceThrottle(
-        request, delegate(), fetch_request_context_type));
+        request, delegate_, GetCertStore(), fetch_request_context_type));
   }
 
   if (delegate_) {
@@ -2172,7 +2188,8 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
   // TODO(davidben): Attach AppCacheInterceptor.
 
   std::unique_ptr<ResourceHandler> handler(
-      new NavigationResourceHandler(new_request.get(), loader, delegate()));
+      new NavigationResourceHandler(new_request.get(), loader, delegate(),
+                                    GetCertStore()));
 
   // TODO(davidben): Pass in the appropriate appcache_service. Also fix the
   // dependency on child_id/route_id. Those are used by the ResourceScheduler;
@@ -2578,8 +2595,9 @@ int ResourceDispatcherHostImpl::BuildLoadFlagsForRequest(
 
 void ResourceDispatcherHostImpl::UpdateResponseCertificateForTransfer(
     ResourceResponse* response,
-    const net::SSLInfo& ssl_info,
-    int child_id) {
+    net::URLRequest* request,
+    ResourceRequestInfoImpl* info) {
+  const net::SSLInfo& ssl_info = request->ssl_info();
   if (!ssl_info.cert)
     return;
   SSLStatus ssl;
@@ -2592,8 +2610,22 @@ void ResourceDispatcherHostImpl::UpdateResponseCertificateForTransfer(
   bool deserialized =
       DeserializeSecurityInfo(response->head.security_info, &ssl);
   DCHECK(deserialized);
-  ssl.cert_id = GetCertStore()->StoreCert(ssl_info.cert.get(), child_id);
+  ssl.cert_id = GetCertStore()->StoreCert(ssl_info.cert.get(),
+                                          info->GetChildID());
   response->head.security_info = SerializeSecurityInfo(ssl);
+
+  if (info->GetResourceType() == RESOURCE_TYPE_MAIN_FRAME) {
+    int render_process_id, render_frame_id;
+    if (info->GetAssociatedRenderFrame(&render_process_id, &render_frame_id)) {
+      BrowserThread::PostTask(BrowserThread::UI,
+                              FROM_HERE,
+                              base::Bind(UpdateSSLStatus,
+                                         render_process_id,
+                                         render_frame_id,
+                                         request->url(),
+                                         ssl.cert_id));
+    }
+  }
 }
 
 CertStore* ResourceDispatcherHostImpl::GetCertStore() {

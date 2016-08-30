@@ -52,19 +52,6 @@ using base::TimeTicks;
 namespace content {
 namespace {
 
-void GetSSLStatusForRequest(const GURL& url,
-                            const net::SSLInfo& ssl_info,
-                            int child_id,
-                            CertStore* cert_store,
-                            SSLStatus* ssl_status) {
-  DCHECK(ssl_info.cert);
-  int cert_id = cert_store->StoreCert(ssl_info.cert.get(), child_id);
-
-  *ssl_status = SSLStatus(SSLPolicy::GetSecurityStyleForResource(
-                              url, cert_id, ssl_info.cert_status),
-                          cert_id, ssl_info);
-}
-
 void PopulateResourceResponse(ResourceRequestInfoImpl* info,
                               net::URLRequest* request,
                               CertStore* cert_store,
@@ -114,8 +101,9 @@ void PopulateResourceResponse(ResourceRequestInfoImpl* info,
 
   if (request->ssl_info().cert.get()) {
     SSLStatus ssl_status;
-    GetSSLStatusForRequest(request->url(), request->ssl_info(),
-                           info->GetChildID(), cert_store, &ssl_status);
+    ResourceLoader::GetSSLStatusForRequest(
+        request->url(), request->ssl_info(), info->GetChildID(),
+        cert_store, &ssl_status);
     response->head.security_info = SerializeSecurityInfo(ssl_status);
     response->head.has_major_certificate_errors =
         net::IsCertStatusError(ssl_status.cert_status) &&
@@ -137,6 +125,19 @@ void PopulateResourceResponse(ResourceRequestInfoImpl* info,
 }
 
 }  // namespace
+
+void ResourceLoader::GetSSLStatusForRequest(const GURL& url,
+                                            const net::SSLInfo& ssl_info,
+                                            int child_id,
+                                            CertStore* cert_store,
+                                            SSLStatus* ssl_status) {
+  DCHECK(ssl_info.cert);
+  int cert_id = cert_store->StoreCert(ssl_info.cert.get(), child_id);
+
+  *ssl_status = SSLStatus(SSLPolicy::GetSecurityStyleForResource(
+                              url, cert_id, ssl_info.cert_status),
+                          cert_id, ssl_info);
+}
 
 ResourceLoader::ResourceLoader(std::unique_ptr<net::URLRequest> request,
                                std::unique_ptr<ResourceHandler> handler,

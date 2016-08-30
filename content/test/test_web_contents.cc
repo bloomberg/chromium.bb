@@ -135,7 +135,6 @@ void TestWebContents::TestDidNavigateWithReferrer(
   params.searchable_form_url = GURL();
   params.searchable_form_encoding = std::string();
   params.did_create_new_entry = did_create_new_entry;
-  params.security_info = std::string();
   params.gesture = NavigationGestureUser;
   params.was_within_same_page = false;
   params.method = "GET";

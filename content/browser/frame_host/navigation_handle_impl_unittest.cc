@@ -6,6 +6,7 @@
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/common/request_context_type.h"
+#include "content/public/common/ssl_status.h"
 #include "content/test/test_render_frame_host.h"
 
 namespace content {
@@ -141,7 +142,7 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
     // the NavigationHandleImplTest.
     test_handle_->WillProcessResponse(
         main_test_rfh(),
-        scoped_refptr<net::HttpResponseHeaders>(),
+        scoped_refptr<net::HttpResponseHeaders>(), SSLStatus(),
         base::Bind(&NavigationHandleImplTest::UpdateThrottleCheckResult,
                    base::Unretained(this)));
   }

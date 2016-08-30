@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/loader/resource_loader.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_data.h"
@@ -21,6 +22,7 @@
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/referrer.h"
+#include "content/public/common/ssl_status.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
@@ -111,6 +113,7 @@ void WillProcessResponseOnUIThread(
     int render_process_id,
     int render_frame_host_id,
     scoped_refptr<net::HttpResponseHeaders> headers,
+    const SSLStatus& ssl_status,
     std::unique_ptr<NavigationData> navigation_data) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderFrameHostImpl* render_frame_host =
@@ -131,7 +134,7 @@ void WillProcessResponseOnUIThread(
     navigation_handle->set_navigation_data(std::move(navigation_data));
 
   navigation_handle->WillProcessResponse(
-      render_frame_host, headers,
+      render_frame_host, headers, ssl_status,
       base::Bind(&SendCheckResultToIOThread, callback));
 }
 
@@ -140,9 +143,11 @@ void WillProcessResponseOnUIThread(
 NavigationResourceThrottle::NavigationResourceThrottle(
     net::URLRequest* request,
     ResourceDispatcherHostDelegate* resource_dispatcher_host_delegate,
+    CertStore* cert_store,
     RequestContextType request_context_type)
     : request_(request),
       resource_dispatcher_host_delegate_(resource_dispatcher_host_delegate),
+      cert_store_(cert_store),
       request_context_type_(request_context_type),
       weak_ptr_factory_(this) {}
 
@@ -253,10 +258,17 @@ void NavigationResourceThrottle::WillProcessResponse(bool* defer) {
       base::Bind(&NavigationResourceThrottle::OnUIChecksPerformed,
                  weak_ptr_factory_.GetWeakPtr());
 
+  SSLStatus ssl_status;
+  if (request_->ssl_info().cert.get()) {
+    ResourceLoader::GetSSLStatusForRequest(
+        request_->url(), request_->ssl_info(), info->GetChildID(),
+        cert_store_, &ssl_status);
+  }
+
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&WillProcessResponseOnUIThread, callback, render_process_id,
-                 render_frame_id, response_headers,
+                 render_frame_id, response_headers, ssl_status,
                  base::Passed(&cloned_data)));
   *defer = true;
 }

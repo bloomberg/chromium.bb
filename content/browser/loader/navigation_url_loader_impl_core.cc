@@ -17,6 +17,7 @@
 #include "content/public/browser/navigation_data.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/common/resource_response.h"
+#include "content/public/common/ssl_status.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/redirect_info.h"
 
@@ -110,6 +111,7 @@ void NavigationURLLoaderImplCore::NotifyRequestRedirected(
 void NavigationURLLoaderImplCore::NotifyResponseStarted(
     ResourceResponse* response,
     std::unique_ptr<StreamHandle> body,
+    const SSLStatus& ssl_status,
     std::unique_ptr<NavigationData> navigation_data) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   TRACE_EVENT_ASYNC_END0("navigation", "Navigation redirectDelay", this);
@@ -128,7 +130,7 @@ void NavigationURLLoaderImplCore::NotifyResponseStarted(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&NavigationURLLoaderImpl::NotifyResponseStarted, loader_,
-                 response->DeepCopy(), base::Passed(&body),
+                 response->DeepCopy(), base::Passed(&body), ssl_status,
                  base::Passed(&navigation_data)));
 }
 

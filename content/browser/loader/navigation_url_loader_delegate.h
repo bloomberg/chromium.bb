@@ -20,6 +20,7 @@ namespace content {
 class NavigationData;
 class StreamHandle;
 struct ResourceResponse;
+struct SSLStatus;
 
 // PlzNavigate: The delegate interface to NavigationURLLoader.
 class CONTENT_EXPORT NavigationURLLoaderDelegate {
@@ -36,6 +37,7 @@ class CONTENT_EXPORT NavigationURLLoaderDelegate {
   virtual void OnResponseStarted(
       const scoped_refptr<ResourceResponse>& response,
       std::unique_ptr<StreamHandle> body_stream,
+      const SSLStatus& ssl_status,
       std::unique_ptr<NavigationData> navigation_data) = 0;
 
   // Called if the request fails before receving a response. |net_error| is a
