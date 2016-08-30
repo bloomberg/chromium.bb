@@ -13,6 +13,7 @@ import android.media.ThumbnailUtils;
 import android.os.StrictMode;
 import android.os.SystemClock;
 import android.support.v4.text.BidiFormatter;
+import android.support.v4.view.ViewCompat;
 import android.text.format.DateUtils;
 import android.view.ContextMenu;
 import android.view.Menu;
@@ -192,6 +193,13 @@ public class SnippetArticleViewHolder extends CardViewHolder
 
     @Override
     public boolean onMenuItemClick(MenuItem item) {
+        // If the user clicks a snippet then immediately long presses they will create a context
+        // menu while the snippet's URL loads in the background. This means that when they press
+        // an item on context menu the NTP will not actually be open. We add this check here to
+        // prevent taking any action if the user has already left the NTP. https://crbug.com/640468.
+        // TODO(peconn): Instead, close the context menu when a snippet is clicked.
+        if (!ViewCompat.isAttachedToWindow(itemView)) return true;
+
         // The UMA is used to compare how the user views the article linked from a snippet.
         switch (item.getItemId()) {
             case ID_OPEN_IN_NEW_WINDOW:
