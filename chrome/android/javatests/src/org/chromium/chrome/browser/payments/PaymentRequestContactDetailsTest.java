@@ -9,6 +9,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -41,6 +42,7 @@ public class PaymentRequestContactDetailsTest extends PaymentRequestTestBase {
 
     /** Provide the existing valid phone number and email address to the merchant. */
     @MediumTest
+    @Feature({"Payments"})
     public void testPay() throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyToPay);
         clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
@@ -51,6 +53,7 @@ public class PaymentRequestContactDetailsTest extends PaymentRequestTestBase {
 
     /** Attempt to add invalid phone number and email address and cancel the transaction. */
     @MediumTest
+    @Feature({"Payments"})
     public void testAddInvalidContactAndCancel()
             throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyToPay);
@@ -65,6 +68,7 @@ public class PaymentRequestContactDetailsTest extends PaymentRequestTestBase {
 
     /** Add new phone number and email address and provide that to the merchant. */
     @MediumTest
+    @Feature({"Payments"})
     public void testAddContactAndPay()
             throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyToPay);
@@ -81,6 +85,7 @@ public class PaymentRequestContactDetailsTest extends PaymentRequestTestBase {
 
     /** Quickly pressing on "add contact info" and then [X] should not crash. */
     @MediumTest
+    @Feature({"Payments"})
     public void testQuickAddContactAndCloseShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyToPay);
@@ -105,6 +110,7 @@ public class PaymentRequestContactDetailsTest extends PaymentRequestTestBase {
 
     /** Quickly pressing on [X] and then "add contact info" should not crash. */
     @MediumTest
+    @Feature({"Payments"})
     public void testQuickCloseAndAddContactShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyToPay);
@@ -127,6 +133,7 @@ public class PaymentRequestContactDetailsTest extends PaymentRequestTestBase {
 
     /** Quickly pressing on "add contact info" and then "cancel" should not crash. */
     @MediumTest
+    @Feature({"Payments"})
     public void testQuickAddContactAndCancelShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyToPay);
@@ -151,6 +158,7 @@ public class PaymentRequestContactDetailsTest extends PaymentRequestTestBase {
 
     /** Quickly pressing on "cancel" and then "add contact info" should not crash. */
     @MediumTest
+    @Feature({"Payments"})
     public void testQuickCancelAndAddContactShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyToPay);
@@ -177,6 +185,7 @@ public class PaymentRequestContactDetailsTest extends PaymentRequestTestBase {
      * histogram.
      */
     @MediumTest
+    @Feature({"Payments"})
     public void testRequestedInformationMetric() throws InterruptedException, ExecutionException,
             TimeoutException {
         // Start the Payment Request.

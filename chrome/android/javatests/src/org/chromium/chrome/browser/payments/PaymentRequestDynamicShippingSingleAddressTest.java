@@ -8,6 +8,7 @@ import android.content.DialogInterface;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
@@ -43,6 +44,7 @@ public class PaymentRequestDynamicShippingSingleAddressTest extends PaymentReque
 
     /** The shipping address should not be selected in UI by default. */
     @MediumTest
+    @Feature({"Payments"})
     public void testAddressNotSelected()
             throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyForInput);
@@ -51,6 +53,7 @@ public class PaymentRequestDynamicShippingSingleAddressTest extends PaymentReque
 
     /** Expand the shipping address section, select an address, and click "Pay." */
     @MediumTest
+    @Feature({"Payments"})
     public void testSelectValidAddressAndPay()
             throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyForInput);
@@ -66,6 +69,7 @@ public class PaymentRequestDynamicShippingSingleAddressTest extends PaymentReque
 
     /** Attempt to add an invalid address and cancel the transaction. */
     @MediumTest
+    @Feature({"Payments"})
     public void testAddInvalidAddressAndCancel()
             throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyForInput);
@@ -83,6 +87,7 @@ public class PaymentRequestDynamicShippingSingleAddressTest extends PaymentReque
      * @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE) // crbug.com/626289
      */
     @FlakyTest(message = "crbug.com/626289")
+    @Feature({"Payments"})
     public void testAddAddressAndPay()
             throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyForInput);
@@ -100,6 +105,7 @@ public class PaymentRequestDynamicShippingSingleAddressTest extends PaymentReque
 
     /** Quickly pressing "add address" and then [X] should not crash. */
     @MediumTest
+    @Feature({"Payments"})
     public void testQuickAddAddressAndCloseShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyForInput);
@@ -124,6 +130,7 @@ public class PaymentRequestDynamicShippingSingleAddressTest extends PaymentReque
 
     /** Quickly pressing [X] and then "add address" should not crash. */
     @MediumTest
+    @Feature({"Payments"})
     public void testQuickCloseAndAddAddressShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyForInput);
@@ -146,6 +153,7 @@ public class PaymentRequestDynamicShippingSingleAddressTest extends PaymentReque
 
     /** Quickly pressing "add address" and then "cancel" should not crash. */
     @MediumTest
+    @Feature({"Payments"})
     public void testQuickAddAddressAndCancelShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyForInput);
@@ -170,6 +178,7 @@ public class PaymentRequestDynamicShippingSingleAddressTest extends PaymentReque
 
     /** Quickly pressing on "cancel" and then "add address" should not crash. */
     @MediumTest
+    @Feature({"Payments"})
     public void testQuickCancelAndAddAddressShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyForInput);

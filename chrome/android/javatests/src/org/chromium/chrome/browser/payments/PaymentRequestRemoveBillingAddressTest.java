@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.payments;
 import android.content.DialogInterface;
 import android.test.suitebuilder.annotation.MediumTest;
 
+import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -48,6 +49,7 @@ public class PaymentRequestRemoveBillingAddressTest extends PaymentRequestTestBa
      * editor that requires selecting a new billing address.
      */
     @MediumTest
+    @Feature({"Payments"})
     public void testPayWithCard()
             throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyForInput);

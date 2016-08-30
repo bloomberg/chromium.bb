@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.payments;
 import android.content.DialogInterface;
 import android.test.suitebuilder.annotation.MediumTest;
 
+import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -45,6 +46,7 @@ public class PaymentRequestPaymentAppAndCardsTest extends PaymentRequestTestBase
      * responds quickly.
      */
     @MediumTest
+    @Feature({"Payments"})
     public void testNoInstrumentsInFastBobPay() throws InterruptedException, ExecutionException,
             TimeoutException {
         runTest(NO_INSTRUMENTS, IMMEDIATE_RESPONSE);
@@ -55,6 +57,7 @@ public class PaymentRequestPaymentAppAndCardsTest extends PaymentRequestTestBase
      * responds slowly.
      */
     @MediumTest
+    @Feature({"Payments"})
     public void testNoInstrumentsInSlowBobPay() throws InterruptedException, ExecutionException,
             TimeoutException {
         runTest(NO_INSTRUMENTS, DELAYED_RESPONSE);
@@ -65,6 +68,7 @@ public class PaymentRequestPaymentAppAndCardsTest extends PaymentRequestTestBase
      * quickly.
      */
     @MediumTest
+    @Feature({"Payments"})
     public void testHaveInstrumentsInFastBobPay() throws InterruptedException, ExecutionException,
             TimeoutException {
         runTest(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
@@ -75,6 +79,7 @@ public class PaymentRequestPaymentAppAndCardsTest extends PaymentRequestTestBase
      * slowly.
      */
     @MediumTest
+    @Feature({"Payments"})
     public void testHaveInstrumentsInSlowBobPay() throws InterruptedException, ExecutionException,
             TimeoutException {
         runTest(HAVE_INSTRUMENTS, DELAYED_RESPONSE);

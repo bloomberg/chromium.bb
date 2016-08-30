@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.payments;
 
 import android.test.suitebuilder.annotation.MediumTest;
 
+import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -37,6 +38,7 @@ public class PaymentRequestAbortTest extends PaymentRequestTestBase {
 
     /** If the user has not clicked "Pay" yet, then merchant's abort will succeed. */
     @MediumTest
+    @Feature({"Payments"})
     public void testAbortBeforePayClicked() throws InterruptedException, ExecutionException,
             TimeoutException {
         triggerUIAndWait(mReadyToPay);
@@ -46,6 +48,7 @@ public class PaymentRequestAbortTest extends PaymentRequestTestBase {
 
     /** If the user has already clicked the "Pay" button, then merchant won't be able to abort. */
     @MediumTest
+    @Feature({"Payments"})
     public void testAbortWhileUnmaskingCard() throws InterruptedException, ExecutionException,
             TimeoutException {
         triggerUIAndWait(mReadyToPay);

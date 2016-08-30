@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.payments;
 
 import android.test.suitebuilder.annotation.MediumTest;
 
+import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -78,6 +79,7 @@ public class PaymentRequestDynamicShippingMultipleAddressesTest extends PaymentR
      * suggested first.
      */
     @MediumTest
+    @Feature({"Payments"})
     public void testShippingAddressSuggestionOrdering()
             throws InterruptedException, ExecutionException, TimeoutException {
         // Create a bunch of profiles, some complete, some incomplete.  Values are set so that the
@@ -102,6 +104,7 @@ public class PaymentRequestDynamicShippingMultipleAddressesTest extends PaymentR
      * to show an error.
      */
     @MediumTest
+    @Feature({"Payments"})
     public void testShippingAddresNotAcceptedByMerchant()
             throws InterruptedException, ExecutionException, TimeoutException {
         // Add a profile that is not accepted by the website.

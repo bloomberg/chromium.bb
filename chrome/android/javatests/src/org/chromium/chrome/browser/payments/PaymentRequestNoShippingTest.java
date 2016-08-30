@@ -9,6 +9,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
@@ -44,6 +45,7 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
 
     /** Click [X] to cancel payment. */
     @MediumTest
+    @Feature({"Payments"})
     public void testCloseDialog() throws InterruptedException, ExecutionException,
             TimeoutException {
         triggerUIAndWait(mReadyForInput);
@@ -53,6 +55,7 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
 
     /** Click [EDIT] to expand the dialog, then click [X] to cancel payment. */
     @MediumTest
+    @Feature({"Payments"})
     public void testEditAndCloseDialog() throws InterruptedException, ExecutionException,
             TimeoutException {
         triggerUIAndWait(mReadyForInput);
@@ -63,6 +66,7 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
 
     /** Click [EDIT] to expand the dialog, then click [CANCEL] to cancel payment. */
     @MediumTest
+    @Feature({"Payments"})
     public void testEditAndCancelDialog() throws InterruptedException, ExecutionException,
             TimeoutException {
         triggerUIAndWait(mReadyForInput);
@@ -73,6 +77,7 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
 
     /** Click [PAY] and dismiss the card unmask dialog. */
     @MediumTest
+    @Feature({"Payments"})
     public void testPay() throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyToPay);
         clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
@@ -84,6 +89,7 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
 
     /** Click [PAY], type in "123" into the CVC dialog, then submit the payment. */
     @MediumTest
+    @Feature({"Payments"})
     public void testCancelUnmaskAndRetry()
             throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyToPay);
@@ -101,6 +107,7 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
      * @MediumTest
      */
     @FlakyTest(message = "crbug.com/626289")
+    @Feature({"Payments"})
     public void testAddInvalidCardNumberAndCancel()
             throws InterruptedException, ExecutionException, TimeoutException {
         fillNewCardForm("123", "Bob", DECEMBER, NEXT_YEAR, FIRST_BILLING_ADDRESS);
@@ -125,6 +132,7 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
      * @MediumTest
      */
     @FlakyTest(message = "crbug.com/626289")
+    @Feature({"Payments"})
     public void testAddEmptyNameOnCardAndCancel()
             throws InterruptedException, ExecutionException, TimeoutException {
         fillNewCardForm("5454-5454-5454-5454", "", DECEMBER, NEXT_YEAR, FIRST_BILLING_ADDRESS);
@@ -136,6 +144,7 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
 
     /** Save a new card on disk and pay. */
     @MediumTest
+    @Feature({"Payments"})
     public void testSaveNewCardAndPay()
             throws InterruptedException, ExecutionException, TimeoutException {
         fillNewCardForm("5454-5454-5454-5454", "Bob", DECEMBER, NEXT_YEAR, FIRST_BILLING_ADDRESS);
@@ -148,6 +157,7 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
 
     /** Use a temporary credit card to complete payment. */
     @MediumTest
+    @Feature({"Payments"})
     public void testAddTemporaryCardAndPay()
             throws InterruptedException, ExecutionException, TimeoutException {
         fillNewCardForm("5454-5454-5454-5454", "Bob", DECEMBER, NEXT_YEAR, FIRST_BILLING_ADDRESS);
@@ -164,6 +174,7 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
 
     /** Add a new card together with a new billing address and pay. */
     @MediumTest
+    @Feature({"Payments"})
     public void testSaveNewCardAndNewBillingAddressAndPay()
             throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyToPay);
@@ -193,6 +204,7 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
 
     /** Quickly pressing on "add card" and then [X] should not crash. */
     @MediumTest
+    @Feature({"Payments"})
     public void testQuickAddCardAndCloseShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyToPay);
@@ -217,6 +229,7 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
 
     /** Quickly pressing on [X] and then "add card" should not crash. */
     @MediumTest
+    @Feature({"Payments"})
     public void testQuickCloseAndAddCardShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyToPay);
@@ -239,6 +252,7 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
 
     /** Quickly pressing on "add card" and then "cancel" should not crash. */
     @MediumTest
+    @Feature({"Payments"})
     public void testQuickAddCardAndCancelShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyToPay);
@@ -263,6 +277,7 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
 
     /** Quickly pressing on "cancel" and then "add card" should not crash. */
     @MediumTest
+    @Feature({"Payments"})
     public void testQuickCancelAndAddCardShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyToPay);
@@ -288,6 +303,7 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
      * "pay" should not crash.
      */
     @MediumTest
+    @Feature({"Payments"})
     public void testQuickDismissAndPayShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyToPay);
@@ -311,6 +327,7 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
      * [X] should not crash.
      */
     @MediumTest
+    @Feature({"Payments"})
     public void testQuickDismissAndCloseShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyToPay);
@@ -334,6 +351,7 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
      * example) should not crash.
      */
     @MediumTest
+    @Feature({"Payments"})
     public void testQuickCloseAndDismissShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyToPay);
@@ -358,6 +376,7 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
      * histogram.
      */
     @MediumTest
+    @Feature({"Payments"})
     public void testRequestedInformationMetric() throws InterruptedException, ExecutionException,
             TimeoutException {
         // Start the Payment Request.

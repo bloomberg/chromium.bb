@@ -8,6 +8,7 @@ import android.content.DialogInterface;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -40,6 +41,7 @@ public class PaymentRequestEmailTest extends PaymentRequestTestBase {
 
     /** Provide the existing valid email address to the merchant. */
     @MediumTest
+    @Feature({"Payments"})
     public void testPay() throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyToPay);
         clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
@@ -50,6 +52,7 @@ public class PaymentRequestEmailTest extends PaymentRequestTestBase {
 
     /** Attempt to add an invalid email address and cancel the transaction. */
     @MediumTest
+    @Feature({"Payments"})
     public void testAddInvalidEmailAndCancel()
             throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyToPay);
@@ -64,6 +67,7 @@ public class PaymentRequestEmailTest extends PaymentRequestTestBase {
 
     /** Add a new email address and provide that to the merchant. */
     @MediumTest
+    @Feature({"Payments"})
     public void testAddEmailAndPay()
             throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyToPay);
@@ -82,6 +86,7 @@ public class PaymentRequestEmailTest extends PaymentRequestTestBase {
      * the appropriate metric being logged in the PaymentRequest.RequestedInformation histogram.
      */
     @MediumTest
+    @Feature({"Payments"})
     public void testRequestedInformationMetric() throws InterruptedException, ExecutionException,
             TimeoutException {
         // Start the Payment Request.

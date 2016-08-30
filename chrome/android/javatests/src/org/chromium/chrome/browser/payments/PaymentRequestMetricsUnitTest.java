@@ -28,7 +28,7 @@ public class PaymentRequestMetricsUnitTest extends NativeLibraryTestBase {
      * depending on the information requested by the merchant.
      */
     @SmallTest
-    @Feature({"Payment Request"})
+    @Feature({"Payments"})
     public void testRequestedInformationMetrics() {
         // No information requested.
         assertEquals(0, RecordHistogram.getHistogramValueCountForTesting(

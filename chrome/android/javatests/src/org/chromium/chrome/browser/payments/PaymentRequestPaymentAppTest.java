@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.payments;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 
 import java.util.concurrent.ExecutionException;
@@ -26,6 +27,7 @@ public class PaymentRequestPaymentAppTest extends PaymentRequestTestBase {
 
     /** If no payment methods are supported, reject the show() promise. */
     @MediumTest
+    @Feature({"Payments"})
     public void testNoSupportedPaymentMethods() throws InterruptedException, ExecutionException,
             TimeoutException {
         triggerUIAndWait(mShowFailed);
@@ -38,6 +40,7 @@ public class PaymentRequestPaymentAppTest extends PaymentRequestTestBase {
      * Chrome immediately.
      */
     @MediumTest
+    @Feature({"Payments"})
     public void testNoInstrumentsInFastBobPay() throws InterruptedException, ExecutionException,
             TimeoutException {
         installPaymentApp(NO_INSTRUMENTS, IMMEDIATE_RESPONSE);
@@ -51,6 +54,7 @@ public class PaymentRequestPaymentAppTest extends PaymentRequestTestBase {
      * Chrome after a slight delay.
      */
     @MediumTest
+    @Feature({"Payments"})
     public void testNoInstrumentsInSlowBobPay() throws InterruptedException, ExecutionException,
             TimeoutException {
         installPaymentApp(NO_INSTRUMENTS, DELAYED_RESPONSE);
@@ -64,6 +68,7 @@ public class PaymentRequestPaymentAppTest extends PaymentRequestTestBase {
      * crash.
      */
     @MediumTest
+    @Feature({"Payments"})
     public void testPaymentWithInstrumentsAppResponseAfterDismissShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {
         final TestPay app = installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
@@ -82,6 +87,7 @@ public class PaymentRequestPaymentAppTest extends PaymentRequestTestBase {
      * If the payment app responds with no instruments after the UI has been dismissed, don't crash.
      */
     @MediumTest
+    @Feature({"Payments"})
     public void testPaymentAppNoInstrumentsResponseAfterDismissShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {
         final TestPay app = installPaymentApp(NO_INSTRUMENTS, IMMEDIATE_RESPONSE);
@@ -101,6 +107,7 @@ public class PaymentRequestPaymentAppTest extends PaymentRequestTestBase {
      * responds to Chrome immediately.
      */
     @MediumTest
+    @Feature({"Payments"})
     public void testPayViaFastBobPay() throws InterruptedException, ExecutionException,
             TimeoutException {
         installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
@@ -114,6 +121,7 @@ public class PaymentRequestPaymentAppTest extends PaymentRequestTestBase {
      * responds to Chrome after a slight delay.
      */
     @MediumTest
+    @Feature({"Payments"})
     public void testPayViaSlowBobPay() throws InterruptedException, ExecutionException,
             TimeoutException {
         installPaymentApp(HAVE_INSTRUMENTS, DELAYED_RESPONSE);
