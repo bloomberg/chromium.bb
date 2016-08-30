@@ -254,9 +254,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
       "FontCacheScaling",
       base::FeatureList::IsEnabled(features::kFontCacheScaling));
 
-  if (!base::FeatureList::IsEnabled(features::kPaintOptimizations))
-    WebRuntimeFeatures::enableFeatureFromString("PaintOptimizations", false);
-
   if (base::FeatureList::IsEnabled(features::kParseHTMLOnMainThread))
     WebRuntimeFeatures::enableFeatureFromString("ParseHTMLOnMainThread", true);
 

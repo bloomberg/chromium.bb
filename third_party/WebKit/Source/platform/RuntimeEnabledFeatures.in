@@ -151,7 +151,6 @@ ForceOverlayFullscreenVideo
 OverlayScrollbars
 HideScrollbars settable_from_internals=True
 PagePopup status=stable
-PaintOptimizations status=stable
 PassiveDocumentEventListeners status=experimental
 PassiveEventListenersDueToFling status=experimental
 PassPaintVisualRectToCompositor

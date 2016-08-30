@@ -116,9 +116,6 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContentsAndReflectio
 
 static bool shouldCreateSubsequence(const PaintLayer& paintLayer, GraphicsContext& context, const PaintLayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags)
 {
-    if (!RuntimeEnabledFeatures::paintOptimizationsEnabled())
-        return false;
-
     // Caching is not needed during printing.
     if (context.printing())
         return false;
@@ -694,12 +691,12 @@ void PaintLayerPainter::paintForegroundForFragments(const PaintLayerFragments& l
     if (selectionOnly) {
         paintForegroundForFragmentsWithPhase(PaintPhaseSelection, layerFragments, context, localPaintingInfo, paintFlags, clipState);
     } else {
-        if (!RuntimeEnabledFeatures::paintOptimizationsEnabled() || m_paintLayer.needsPaintPhaseDescendantBlockBackgrounds())
+        if (m_paintLayer.needsPaintPhaseDescendantBlockBackgrounds())
             paintForegroundForFragmentsWithPhase(PaintPhaseDescendantBlockBackgroundsOnly, layerFragments, context, localPaintingInfo, paintFlags, clipState);
-        if (!RuntimeEnabledFeatures::paintOptimizationsEnabled() || m_paintLayer.needsPaintPhaseFloat())
+        if (m_paintLayer.needsPaintPhaseFloat())
             paintForegroundForFragmentsWithPhase(PaintPhaseFloat, layerFragments, context, localPaintingInfo, paintFlags, clipState);
         paintForegroundForFragmentsWithPhase(PaintPhaseForeground, layerFragments, context, localPaintingInfo, paintFlags, clipState);
-        if (!RuntimeEnabledFeatures::paintOptimizationsEnabled() || m_paintLayer.needsPaintPhaseDescendantOutlines())
+        if (m_paintLayer.needsPaintPhaseDescendantOutlines())
             paintForegroundForFragmentsWithPhase(PaintPhaseDescendantOutlinesOnly, layerFragments, context, localPaintingInfo, paintFlags, clipState);
     }
 }

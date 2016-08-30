@@ -88,10 +88,6 @@ const base::Feature kOptimizeLoadingIPCForSmallResources{
 const base::Feature kOriginTrials{"OriginTrials",
                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Paint optimizations including subsequence caching and empty phase skipping.
-const base::Feature kPaintOptimizations{"PaintOptimizations",
-                                        base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Whether the lookahead parser in Blink runs on the main thread.
 const base::Feature kParseHTMLOnMainThread{"ParseHTMLOnMainThread",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
