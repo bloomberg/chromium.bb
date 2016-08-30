@@ -43,7 +43,6 @@ class NfcDeviceClient;
 class NfcManagerClient;
 class NfcRecordClient;
 class NfcTagClient;
-class PeerDaemonManagerClient;
 class PermissionBrokerClient;
 class PowerManagerClient;
 class SMSClient;
@@ -123,7 +122,6 @@ class CHROMEOS_EXPORT DBusThreadManager {
   NfcManagerClient* GetNfcManagerClient();
   NfcRecordClient* GetNfcRecordClient();
   NfcTagClient* GetNfcTagClient();
-  PeerDaemonManagerClient* GetPeerDaemonManagerClient();
   PermissionBrokerClient* GetPermissionBrokerClient();
   PowerManagerClient* GetPowerManagerClient();
   SessionManagerClient* GetSessionManagerClient();
@@ -202,8 +200,6 @@ class CHROMEOS_EXPORT DBusThreadManagerSetter {
   void SetNfcManagerClient(std::unique_ptr<NfcManagerClient> client);
   void SetNfcRecordClient(std::unique_ptr<NfcRecordClient> client);
   void SetNfcTagClient(std::unique_ptr<NfcTagClient> client);
-  void SetPeerDaemonManagerClient(
-      std::unique_ptr<PeerDaemonManagerClient> client);
   void SetPermissionBrokerClient(
       std::unique_ptr<PermissionBrokerClient> client);
   void SetPowerManagerClient(std::unique_ptr<PowerManagerClient> client);

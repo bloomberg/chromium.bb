@@ -29,7 +29,6 @@ class NfcDeviceClient;
 class NfcManagerClient;
 class NfcRecordClient;
 class NfcTagClient;
-class PeerDaemonManagerClient;
 class PermissionBrokerClient;
 class PowerManagerClient;
 class SMSClient;
@@ -73,8 +72,7 @@ class CHROMEOS_EXPORT DBusClientBundle {
     SMS = 1 << 16,
     SYSTEM_CLOCK = 1 << 17,
     UPDATE_ENGINE = 1 << 18,
-    PEER_DAEMON = 1 << 19,
-    ARC_OBB_MOUNTER = 1 << 20,
+    ARC_OBB_MOUNTER = 1 << 19,
   };
 
   explicit DBusClientBundle(DBusClientTypeMask unstub_client_mask);
@@ -181,10 +179,6 @@ class CHROMEOS_EXPORT DBusClientBundle {
     return nfc_record_client_.get();
   }
 
-  PeerDaemonManagerClient* peer_daemon_manager_client() {
-    return peer_daemon_manager_client_.get();
-  }
-
   PermissionBrokerClient* permission_broker_client() {
     return permission_broker_client_.get();
   }
@@ -223,7 +217,6 @@ class CHROMEOS_EXPORT DBusClientBundle {
   std::unique_ptr<DebugDaemonClient> debug_daemon_client_;
   std::unique_ptr<EasyUnlockClient> easy_unlock_client_;
   std::unique_ptr<LorgnetteManagerClient> lorgnette_manager_client_;
-  std::unique_ptr<PeerDaemonManagerClient> peer_daemon_manager_client_;
   std::unique_ptr<ShillDeviceClient> shill_device_client_;
   std::unique_ptr<ShillIPConfigClient> shill_ipconfig_client_;
   std::unique_ptr<ShillManagerClient> shill_manager_client_;
