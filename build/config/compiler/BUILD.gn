@@ -1503,14 +1503,8 @@ config("default_optimization") {
 config("symbols") {
   if (is_win) {
     import("//build/toolchain/goma.gni")
-    if (use_goma) {
-      # Disable symbols during goma compilation because otherwise the redundant
-      # debug information (repeated in every .obj file) makes linker memory
-      # consumption and link times unsustainable (crbug.com/630074).
-      cflags = []
-    } else {
-      cflags = [ "/Zi" ]  # Produce PDB file, no edit and continue.
-    }
+    cflags = [ "/Zi" ]  # Produce PDB file, no edit and continue.
+
     if (is_win_fastlink && visual_studio_version != "2013") {
       # Tell VS 2015+ to create a PDB that references debug
       # information in .obj and .lib files instead of copying
