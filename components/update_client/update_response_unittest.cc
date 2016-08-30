@@ -99,7 +99,7 @@ const char* kMissingAppId =
     "<response protocol='3.0'>"
     " <app>"
     "  <updatecheck codebase='http://example.com/extension_1.2.3.4.crx'"
-    "               version='1.2.3.4' />"
+    "               version='1.2.3.4'/>"
     " </app>"
     "</response>";
 
@@ -108,7 +108,7 @@ const char* kInvalidCodebase =
     "<response protocol='3.0'>"
     " <app appid='12345' status='ok'>"
     "  <updatecheck codebase='example.com/extension_1.2.3.4.crx'"
-    "               version='1.2.3.4' />"
+    "               version='1.2.3.4'/>"
     " </app>"
     "</response>";
 
@@ -116,7 +116,7 @@ const char* kMissingVersion =
     "<?xml version='1.0'?>"
     "<response protocol='3.0'>"
     " <app appid='12345' status='ok'>"
-    "  <updatecheck codebase='http://example.com/extension_1.2.3.4.crx' />"
+    "  <updatecheck codebase='http://example.com/extension_1.2.3.4.crx'/>"
     " </app>"
     "</response>";
 
@@ -175,7 +175,7 @@ const char* kSimilarTagnames =
 const char* kWithDaystart =
     "<?xml version='1.0' encoding='UTF-8'?>"
     "<response protocol='3.0'>"
-    " <daystart elapsed_seconds='456' />"
+    " <daystart elapsed_seconds='456'/>"
     " <app appid='12345'>"
     "   <updatecheck status='ok'>"
     "     <urls>"
@@ -195,7 +195,7 @@ const char* kNoUpdate =
     "<?xml version='1.0' encoding='UTF-8'?>"
     "<response protocol='3.0'>"
     " <app appid='12345'>"
-    "  <updatecheck status='noupdate' />"
+    "  <updatecheck status='noupdate'/>"
     " </app>"
     "</response>";
 

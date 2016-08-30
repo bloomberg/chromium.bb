@@ -1091,8 +1091,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
                                         0ecde26c262bad942b112990'
                            fp='22'
                            hashdiff_sha256='73c6e2d4f783fc4ca5481e89e0b8bfce7aec
-                                            8ead3686290c94792658ec06f2f2'
-                           />
+                                            8ead3686290c94792658ec06f2f2'/>
                 </packages>
               </manifest>
             </updatecheck>
@@ -1569,8 +1568,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
                                         0ecde26c262bad942b112990'
                            fp='22'
                            hashdiff_sha256='73c6e2d4f783fc4ca5481e89e0b8bfce7aec
-                                            8ead3686290c94792658ec06f2f2'
-                           />
+                                            8ead3686290c94792658ec06f2f2'/>
                 </packages>
               </manifest>
             </updatecheck>

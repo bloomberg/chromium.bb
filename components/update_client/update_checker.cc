@@ -64,9 +64,9 @@ bool IsEncryptionRequired(const std::vector<CrxUpdateItem*>& items) {
 // An app element looks like this:
 //    <app appid="hnimpnehoodheedghdeeijklkeaacbdc"
 //         version="0.1.2.3" installsource="ondemand">
-//      <updatecheck />
+//      <updatecheck/>
 //      <packages>
-//        <package fp="abcd" />
+//        <package fp="abcd"/>
 //      </packages>
 //    </app>
 std::string BuildUpdateCheckRequest(const Configurator& config,
@@ -109,7 +109,7 @@ std::string BuildUpdateCheckRequest(const Configurator& config,
     }
     base::StringAppendF(&app, "/>");
 
-    base::StringAppendF(&app, "<ping rd=\"%d\" ping_freshness=\"%s\" />",
+    base::StringAppendF(&app, "<ping rd=\"%d\" ping_freshness=\"%s\"/>",
                         metadata->GetDateLastRollCall(item->id),
                         metadata->GetPingFreshness(item->id).c_str());
     if (!item->component.fingerprint.empty()) {

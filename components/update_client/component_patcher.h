@@ -16,7 +16,7 @@
 //                prodversionmin="2.0.143.0"
 //                codebasediff="http://example.com/diff_1.2.3.4.crx"
 //                hashdiff="123" sizediff="101"
-//                fp="1.123" />
+//                fp="1.123"/>
 // The component updater will attempt a differential update if it is available
 // and allowed to, and fall back to a full update if it fails.
 //
