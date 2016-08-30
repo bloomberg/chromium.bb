@@ -11,7 +11,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task_runner_util.h"
 #include "content/renderer/media/webrtc/webrtc_video_frame_adapter.h"
@@ -91,11 +90,6 @@ RTCVideoDecoder::~RTCVideoDecoder() {
   DestroyVDA();
 
   // Delete all shared memories.
-  base::STLDeleteElements(&available_shm_segments_);
-  base::STLDeleteValues(&bitstream_buffers_in_decoder_);
-  base::STLDeleteContainerPairFirstPointers(decode_buffers_.begin(),
-                                            decode_buffers_.end());
-  decode_buffers_.clear();
   ClearPendingBuffers();
 }
 
@@ -493,8 +487,7 @@ void RTCVideoDecoder::NotifyEndOfBitstreamBuffer(int32_t id) {
   DVLOG(3) << "NotifyEndOfBitstreamBuffer. id=" << id;
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
 
-  std::map<int32_t, base::SharedMemory*>::iterator it =
-      bitstream_buffers_in_decoder_.find(id);
+  auto it = bitstream_buffers_in_decoder_.find(id);
   if (it == bitstream_buffers_in_decoder_.end()) {
     NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
     NOTREACHED() << "Missing bitstream buffer: " << id;
@@ -503,7 +496,7 @@ void RTCVideoDecoder::NotifyEndOfBitstreamBuffer(int32_t id) {
 
   {
     base::AutoLock auto_lock(lock_);
-    PutSHM_Locked(std::unique_ptr<base::SharedMemory>(it->second));
+    PutSHM_Locked(std::move(it->second));
   }
   bitstream_buffers_in_decoder_.erase(it);
 
@@ -562,7 +555,7 @@ void RTCVideoDecoder::RequestBufferDecode() {
       // Do not request decode if VDA is resetting.
       if (decode_buffers_.empty() || state_ == RESETTING)
         return;
-      shm_buffer.reset(decode_buffers_.front().first);
+      shm_buffer = std::move(decode_buffers_.front().first);
       buffer_data = decode_buffers_.front().second;
       decode_buffers_.pop_front();
       // Drop the buffers before Release is called.
@@ -577,9 +570,10 @@ void RTCVideoDecoder::RequestBufferDecode() {
     media::BitstreamBuffer bitstream_buffer(
         buffer_data.bitstream_buffer_id, shm_buffer->handle(), buffer_data.size,
         0, base::TimeDelta::FromInternalValue(buffer_data.timestamp));
-    const bool inserted =
-        bitstream_buffers_in_decoder_.insert(
-            std::make_pair(bitstream_buffer.id(), shm_buffer.release())).second;
+    const bool inserted = bitstream_buffers_in_decoder_
+                              .insert(std::make_pair(bitstream_buffer.id(),
+                                                     std::move(shm_buffer)))
+                              .second;
     DCHECK(inserted) << "bitstream_buffer_id " << bitstream_buffer.id()
                      << " existed already in bitstream_buffers_in_decoder_";
     RecordBufferData(buffer_data);
@@ -612,11 +606,9 @@ void RTCVideoDecoder::SaveToDecodeBuffers_Locked(
     std::unique_ptr<base::SharedMemory> shm_buffer,
     const BufferData& buffer_data) {
   memcpy(shm_buffer->memory(), input_image._buffer, input_image._length);
-  std::pair<base::SharedMemory*, BufferData> buffer_pair =
-      std::make_pair(shm_buffer.release(), buffer_data);
 
   // Store the buffer and the metadata to the queue.
-  decode_buffers_.push_back(buffer_pair);
+  decode_buffers_.emplace_back(std::move(shm_buffer), buffer_data);
 }
 
 bool RTCVideoDecoder::SaveToPendingBuffers_Locked(
@@ -785,8 +777,8 @@ void RTCVideoDecoder::DestroyVDA() {
   base::AutoLock auto_lock(lock_);
 
   // Put the buffers back in case we restart the decoder.
-  for (const auto& buffer : bitstream_buffers_in_decoder_)
-    PutSHM_Locked(std::unique_ptr<base::SharedMemory>(buffer.second));
+  for (auto& buffer : bitstream_buffers_in_decoder_)
+    PutSHM_Locked(std::move(buffer.second));
   bitstream_buffers_in_decoder_.clear();
 
   state_ = UNINITIALIZED;
@@ -797,7 +789,8 @@ std::unique_ptr<base::SharedMemory> RTCVideoDecoder::GetSHM_Locked(
   // Reuse a SHM if possible.
   if (!available_shm_segments_.empty() &&
       available_shm_segments_.back()->mapped_size() >= min_size) {
-    std::unique_ptr<base::SharedMemory> buffer(available_shm_segments_.back());
+    std::unique_ptr<base::SharedMemory> buffer =
+        std::move(available_shm_segments_.back());
     available_shm_segments_.pop_back();
     return buffer;
   }
@@ -812,7 +805,7 @@ std::unique_ptr<base::SharedMemory> RTCVideoDecoder::GetSHM_Locked(
   }
 
   if (num_shm_buffers_ != 0) {
-    base::STLDeleteElements(&available_shm_segments_);
+    available_shm_segments_.clear();
     num_shm_buffers_ = 0;
   }
 
@@ -829,7 +822,7 @@ std::unique_ptr<base::SharedMemory> RTCVideoDecoder::GetSHM_Locked(
 void RTCVideoDecoder::PutSHM_Locked(
     std::unique_ptr<base::SharedMemory> shm_buffer) {
   lock_.AssertAcquired();
-  available_shm_segments_.push_back(shm_buffer.release());
+  available_shm_segments_.push_back(std::move(shm_buffer));
 }
 
 void RTCVideoDecoder::CreateSHM(size_t count, size_t size) {
