@@ -2448,6 +2448,7 @@ void RenderViewImpl::OnSetRendererPrefs(
   renderer_preferences_ = renderer_prefs;
 
   UpdateFontRenderingFromRendererPrefs();
+  UpdateThemePrefs();
   blink::setCaretBlinkInterval(renderer_prefs.caret_blink_interval);
 
 #if defined(USE_DEFAULT_RENDER_THEME)

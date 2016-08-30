@@ -700,6 +700,13 @@ class CONTENT_EXPORT RenderViewImpl
     navigation_gesture_ = gesture;
   }
 
+// Platform specific theme preferences if any are updated here.
+#if defined(OS_WIN)
+  void UpdateThemePrefs();
+#else
+  void UpdateThemePrefs() {}
+#endif
+
   void UpdateWebViewWithDeviceScaleFactor();
 
   // ---------------------------------------------------------------------------

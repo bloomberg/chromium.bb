@@ -67,7 +67,6 @@ const SkColor kTrackColor = SkColorSetRGB(0xF1, 0xF1, 0xF1);
 
 }  // namespace
 
-#if !defined(OS_WIN)
 // static
 NativeTheme* NativeTheme::GetInstanceForWeb() {
   return NativeThemeAura::instance();
@@ -78,7 +77,6 @@ NativeThemeAura* NativeThemeAura::instance() {
   CR_DEFINE_STATIC_LOCAL(NativeThemeAura, s_native_theme, ());
   return &s_native_theme;
 }
-#endif
 
 NativeThemeAura::NativeThemeAura() {
   // We don't draw scrollbar buttons.

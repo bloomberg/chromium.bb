@@ -389,6 +389,7 @@ component("views") {
     "//ui/accessibility",
     "//ui/display",
     "//ui/native_theme",
+    "//ui/native_theme:native_theme_browser",
     "//ui/resources",
     "//ui/strings",
     "//ui/views/resources",

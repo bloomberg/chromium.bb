@@ -199,6 +199,7 @@ split_static_library("ui") {
     "//ui/gfx/geometry",
     "//ui/message_center",
     "//ui/native_theme",
+    "//ui/native_theme:native_theme_browser",
     "//ui/resources",
     "//ui/shell_dialogs",
     "//ui/snapshot",
