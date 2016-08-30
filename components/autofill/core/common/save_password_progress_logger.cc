@@ -122,6 +122,13 @@ void SavePasswordProgressLogger::LogMessage(
   LogValue(STRING_MESSAGE, StringValue(GetStringFromID(message)));
 }
 
+// static
+std::string SavePasswordProgressLogger::ScrubURL(const GURL& url) {
+  if (url.is_valid())
+    return url.GetWithEmptyPath().spec();
+  return std::string();
+}
+
 void SavePasswordProgressLogger::LogValue(StringID label, const Value& log) {
   std::string log_string;
   bool conversion_to_string_successful = base::JSONWriter::WriteWithOptions(
@@ -141,13 +148,6 @@ std::string SavePasswordProgressLogger::ScrubElementID(std::string element_id) {
   std::replace_if(element_id.begin(), element_id.end(), IsUnwantedInElementID,
                   ' ');
   return element_id;
-}
-
-// Static
-std::string SavePasswordProgressLogger::ScrubURL(const GURL& url) {
-  if (url.is_valid())
-    return url.GetWithEmptyPath().spec();
-  return std::string();
 }
 
 // Note 1: Caching the ID->string map in an array would be probably faster, but

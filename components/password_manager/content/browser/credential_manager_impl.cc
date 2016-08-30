@@ -14,7 +14,9 @@
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/password_manager/core/browser/affiliated_match_helper.h"
+#include "components/password_manager/core/browser/credential_manager_logger.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
+#include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -51,6 +53,12 @@ void CredentialManagerImpl::BindRequest(
 void CredentialManagerImpl::Store(const CredentialInfo& credential,
                                   const StoreCallback& callback) {
   DCHECK_NE(CredentialType::CREDENTIAL_TYPE_EMPTY, credential.type);
+
+  if (password_manager_util::IsLoggingActive(client_)) {
+    CredentialManagerLogger(client_->GetLogManager())
+        .LogStoreCredential(web_contents()->GetLastCommittedURL(),
+                            credential.type);
+  }
 
   // Send acknowledge response back.
   callback.Run();
@@ -104,6 +112,10 @@ void CredentialManagerImpl::OnProvisionalSaveComplete() {
 
 void CredentialManagerImpl::RequireUserMediation(
     const RequireUserMediationCallback& callback) {
+  if (password_manager_util::IsLoggingActive(client_)) {
+    CredentialManagerLogger(client_->GetLogManager())
+        .LogRequireUserMediation(web_contents()->GetLastCommittedURL());
+  }
   PasswordStore* store = GetPasswordStore();
   if (!store || !IsUpdatingCredentialAllowed()) {
     callback.Run();
@@ -150,6 +162,11 @@ void CredentialManagerImpl::Get(bool zero_click_only,
                                 const std::vector<GURL>& federations,
                                 const GetCallback& callback) {
   PasswordStore* store = GetPasswordStore();
+  if (password_manager_util::IsLoggingActive(client_)) {
+    CredentialManagerLogger(client_->GetLogManager())
+        .LogRequestCredential(web_contents()->GetLastCommittedURL(),
+                              zero_click_only, federations);
+  }
   if (pending_request_ || !store) {
     // Callback error.
     callback.Run(pending_request_
@@ -225,6 +242,10 @@ void CredentialManagerImpl::SendCredential(
   DCHECK(pending_request_);
   DCHECK(send_callback.Equals(pending_request_->send_callback()));
 
+  if (password_manager_util::IsLoggingActive(client_)) {
+    CredentialManagerLogger(client_->GetLogManager())
+        .LogSendCredential(web_contents()->GetLastCommittedURL(), info.type);
+  }
   send_callback.Run(info);
   pending_request_.reset();
 }

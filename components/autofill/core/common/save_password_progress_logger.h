@@ -165,6 +165,10 @@ class SavePasswordProgressLogger {
   void LogNumber(StringID label, size_t unsigned_number);
   void LogMessage(StringID message);
 
+  // Removes privacy sensitive parts of |url| (currently all but host and
+  // scheme).
+  static std::string ScrubURL(const GURL& url);
+
  protected:
   // Sends |log| immediately for display.
   virtual void SendLog(const std::string& log) = 0;
@@ -184,10 +188,6 @@ class SavePasswordProgressLogger {
 
   // Translates the StringID values into the corresponding strings.
   static std::string GetStringFromID(SavePasswordProgressLogger::StringID id);
-
-  // Removes privacy sensitive parts of |url| (currently all but host and
-  // scheme).
-  static std::string ScrubURL(const GURL& url);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SavePasswordProgressLogger);

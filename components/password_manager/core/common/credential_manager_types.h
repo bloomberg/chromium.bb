@@ -33,6 +33,7 @@ enum class CredentialType {
   CREDENTIAL_TYPE_LAST = CREDENTIAL_TYPE_FEDERATED
 };
 
+std::string CredentialTypeToString(CredentialType value);
 std::ostream& operator<<(std::ostream& os, CredentialType value);
 
 struct CredentialInfo {
