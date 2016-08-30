@@ -625,7 +625,6 @@ class CONTENT_EXPORT RenderViewImpl
   void OnSetWebUIProperty(const std::string& name, const std::string& value);
   void OnSetZoomLevelForLoadingURL(const GURL& url, double zoom_level);
   void OnSuppressDialogsUntilSwapOut();
-  void OnThemeChanged();
   void OnUpdateTargetURLAck();
   void OnUpdateWebPreferences(const WebPreferences& prefs);
   void OnSetPageScale(float page_scale_factor);

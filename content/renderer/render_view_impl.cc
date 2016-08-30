@@ -182,12 +182,6 @@
 #include "content/renderer/android/phone_number_detector.h"
 #include "ui/gfx/geometry/rect_f.h"
 
-#elif defined(OS_WIN)
-// TODO(port): these files are currently Windows only because they concern:
-//   * theming
-#include "ui/native_theme/native_theme_win.h"
-#elif defined(USE_X11)
-#include "ui/native_theme/native_theme.h"
 #elif defined(OS_MACOSX)
 #include "skia/ext/skia_utils_mac.h"
 #endif
@@ -1331,7 +1325,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_EnumerateDirectoryResponse,
                         OnEnumerateDirectoryResponse)
     IPC_MESSAGE_HANDLER(ViewMsg_ClosePage, OnClosePage)
-    IPC_MESSAGE_HANDLER(ViewMsg_ThemeChanged, OnThemeChanged)
     IPC_MESSAGE_HANDLER(ViewMsg_MoveOrResizeStarted, OnMoveOrResizeStarted)
     IPC_MESSAGE_HANDLER(ViewMsg_ClearFocusedElement, OnClearFocusedElement)
     IPC_MESSAGE_HANDLER(ViewMsg_SetBackgroundOpaque, OnSetBackgroundOpaque)
@@ -2513,19 +2506,6 @@ void RenderViewImpl::OnClose() {
   if (closing_)
     RenderThread::Get()->Send(new ViewHostMsg_Close_ACK(GetRoutingID()));
   RenderWidget::OnClose();
-}
-
-void RenderViewImpl::OnThemeChanged() {
-#if defined(USE_AURA)
-  // Aura doesn't care if we switch themes.
-#elif defined(OS_WIN)
-  ui::NativeThemeWin::instance()->CloseHandles();
-  if (webview())
-    webview()->themeChanged();
-#else  // defined(OS_WIN)
-  // TODO(port): we don't support theming on non-Windows platforms yet
-  NOTIMPLEMENTED();
-#endif
 }
 
 void RenderViewImpl::OnMoveOrResizeStarted() {
