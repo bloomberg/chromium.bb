@@ -173,9 +173,16 @@ class IdlCallbackFunction(TypedObject):
     def __init__(self, idl_name, node):
         children = node.GetChildren()
         num_children = len(children)
-        if num_children != 2:
-            raise ValueError('Expected 2 children, got %s' % num_children)
-        type_node, arguments_node = children
+        if num_children < 2 or num_children > 3:
+            raise ValueError('Expected 2 or 3 children, got %s' % num_children)
+        type_node = children[0]
+        arguments_node = children[1]
+        if num_children == 3:
+            ext_attributes_node = children[2]
+            self.extended_attributes = (
+                ext_attributes_node_to_extended_attributes(idl_name, ext_attributes_node))
+        else:
+            self.extended_attributes = {}
         arguments_node_class = arguments_node.GetClass()
         if arguments_node_class != 'Arguments':
             raise ValueError('Expected Arguments node, got %s' % arguments_node_class)
