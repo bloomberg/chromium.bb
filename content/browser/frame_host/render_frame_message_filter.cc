@@ -452,6 +452,7 @@ void RenderFrameMessageFilter::GetCookies(int render_frame_id,
 
 void RenderFrameMessageFilter::OnGetPlugins(
     bool refresh,
+    const url::Origin& main_frame_origin,
     IPC::Message* reply_msg) {
   // Don't refresh if the specified threshold has not been passed.  Note that
   // this check is performed before off-loading to the file thread.  The reason
@@ -470,12 +471,14 @@ void RenderFrameMessageFilter::OnGetPlugins(
     }
   }
 
-  PluginServiceImpl::GetInstance()->GetPlugins(base::Bind(
-      &RenderFrameMessageFilter::GetPluginsCallback, this, reply_msg));
+  PluginServiceImpl::GetInstance()->GetPlugins(
+      base::Bind(&RenderFrameMessageFilter::GetPluginsCallback, this, reply_msg,
+                 main_frame_origin));
 }
 
 void RenderFrameMessageFilter::GetPluginsCallback(
     IPC::Message* reply_msg,
+    const url::Origin& main_frame_origin,
     const std::vector<WebPluginInfo>& all_plugins) {
   // Filter the plugin list.
   PluginServiceFilter* filter = PluginServiceImpl::GetInstance()->GetFilter();
@@ -483,15 +486,16 @@ void RenderFrameMessageFilter::GetPluginsCallback(
 
   int child_process_id = -1;
   int routing_id = MSG_ROUTING_NONE;
+  GURL policy_url =
+      main_frame_origin.unique() ? GURL() : GURL(main_frame_origin.Serialize());
   // In this loop, copy the WebPluginInfo (and do not use a reference) because
   // the filter might mutate it.
   for (WebPluginInfo plugin : all_plugins) {
-    if (!filter || filter->IsPluginAvailable(child_process_id,
-                                             routing_id,
-                                             resource_context_,
-                                             GURL(),
-                                             GURL(),
-                                             &plugin)) {
+    // TODO(crbug.com/621724): Pass an url::Origin instead of a GURL.
+    if (!filter ||
+        filter->IsPluginAvailable(child_process_id, routing_id,
+                                  resource_context_, policy_url, policy_url,
+                                  &plugin)) {
       plugins.push_back(plugin);
     }
   }

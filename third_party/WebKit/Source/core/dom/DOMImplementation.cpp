@@ -225,9 +225,17 @@ Document* DOMImplementation::createDocument(const String& type, const DocumentIn
     if (type == "application/xhtml+xml")
         return XMLDocument::createXHTML(init);
 
-    PluginData* pluginData = 0;
-    if (init.frame() && init.frame()->page() && init.frame()->loader().allowPlugins(NotAboutToInstantiatePlugin))
-        pluginData = init.frame()->pluginData();
+    PluginData* pluginData = nullptr;
+    if (init.frame() && init.frame()->page() && init.frame()->loader().allowPlugins(NotAboutToInstantiatePlugin)) {
+        // If the document is being created for the main frame, init.frame()->tree().top()->securityContext() returns nullptr.
+        // For that reason, the origin must be retrieved directly from init.url().
+        if (init.frame()->isMainFrame()) {
+            RefPtr<SecurityOrigin> origin = SecurityOrigin::create(init.url());
+            pluginData = init.frame()->page()->pluginData(origin.get());
+        } else {
+            pluginData = init.frame()->page()->pluginData(init.frame()->tree().top()->securityContext()->getSecurityOrigin());
+        }
+    }
 
     // PDF is one image type for which a plugin can override built-in support.
     // We do not want QuickTime to take over all image types, obviously.

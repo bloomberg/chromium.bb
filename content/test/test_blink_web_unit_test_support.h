@@ -76,6 +76,7 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
   blink::WebThread* currentThread() override;
 
   void getPluginList(bool refresh,
+                     const blink::WebSecurityOrigin& mainFrameOrigin,
                      blink::WebPluginListBuilder* builder) override;
 
  private:

@@ -1227,10 +1227,12 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_PepperStartsPlayback,
 IPC_MESSAGE_ROUTED1(FrameHostMsg_PepperStopsPlayback,
                     int32_t /* pp_instance */)
 
-// Used to get the list of plugins
-IPC_SYNC_MESSAGE_CONTROL1_1(FrameHostMsg_GetPlugins,
-    bool /* refresh*/,
-    std::vector<content::WebPluginInfo> /* plugins */)
+// Used to get the list of plugins. |main_frame_origin| is used to handle
+// exceptions for plugin content settings.
+IPC_SYNC_MESSAGE_CONTROL2_1(FrameHostMsg_GetPlugins,
+                            bool /* refresh*/,
+                            url::Origin /* main_frame_origin */,
+                            std::vector<content::WebPluginInfo> /* plugins */)
 
 // Return information about a plugin for the given URL and MIME
 // type. If there is no matching plugin, |found| is false.

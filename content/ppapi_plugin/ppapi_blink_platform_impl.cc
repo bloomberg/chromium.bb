@@ -215,6 +215,7 @@ blink::WebURLLoader* PpapiBlinkPlatformImpl::createURLLoader() {
 
 void PpapiBlinkPlatformImpl::getPluginList(
     bool refresh,
+    const blink::WebSecurityOrigin& mainFrameOrigin,
     blink::WebPluginListBuilder* builder) {
   NOTREACHED();
 }

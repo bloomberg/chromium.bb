@@ -286,7 +286,9 @@ blink::WebThread* TestBlinkWebUnitTestSupport::currentThread() {
 }
 
 void TestBlinkWebUnitTestSupport::getPluginList(
-    bool refresh, blink::WebPluginListBuilder* builder) {
+    bool refresh,
+    const blink::WebSecurityOrigin& mainFrameOrigin,
+    blink::WebPluginListBuilder* builder) {
   builder->addPlugin("pdf", "pdf", "pdf-files");
   builder->addMediaTypeToLastPlugin("application/pdf", "pdf");
 }

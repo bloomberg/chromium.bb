@@ -120,8 +120,11 @@ class CONTENT_EXPORT RenderFrameMessageFilter
 
 
 #if defined(ENABLE_PLUGINS)
-  void OnGetPlugins(bool refresh, IPC::Message* reply_msg);
+  void OnGetPlugins(bool refresh,
+                    const url::Origin& main_frame_origin,
+                    IPC::Message* reply_msg);
   void GetPluginsCallback(IPC::Message* reply_msg,
+                          const url::Origin& main_frame_origin,
                           const std::vector<WebPluginInfo>& plugins);
   void OnGetPluginInfo(int render_frame_id,
                        const GURL& url,

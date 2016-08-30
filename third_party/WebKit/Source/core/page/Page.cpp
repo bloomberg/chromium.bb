@@ -229,10 +229,7 @@ void Page::setNeedsRecalcStyleInAllFrames()
 
 void Page::refreshPlugins()
 {
-    if (allPages().isEmpty())
-        return;
-
-    PluginData::refresh();
+    PluginData::refreshBrowserSidePluginCache();
 
     for (const Page* page : allPages()) {
         // Clear out the page's plugin data.
@@ -241,10 +238,10 @@ void Page::refreshPlugins()
     }
 }
 
-PluginData* Page::pluginData() const
+PluginData* Page::pluginData(SecurityOrigin* mainFrameOrigin) const
 {
-    if (!m_pluginData)
-        m_pluginData = PluginData::create(this);
+    if (!m_pluginData || !mainFrameOrigin->isSameSchemeHostPort(m_pluginData->origin()))
+        m_pluginData = PluginData::create(mainFrameOrigin);
     return m_pluginData.get();
 }
 

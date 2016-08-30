@@ -835,7 +835,7 @@ PluginData* LocalFrame::pluginData() const
 {
     if (!loader().allowPlugins(NotAboutToInstantiatePlugin))
         return nullptr;
-    return page()->pluginData();
+    return page()->pluginData(tree().top()->securityContext()->getSecurityOrigin());
 }
 
 DEFINE_WEAK_IDENTIFIER_MAP(LocalFrame);

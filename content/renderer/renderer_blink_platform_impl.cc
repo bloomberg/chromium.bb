@@ -799,12 +799,14 @@ blink::WebMIDIAccessor* RendererBlinkPlatformImpl::createMIDIAccessor(
 
 void RendererBlinkPlatformImpl::getPluginList(
     bool refresh,
+    const blink::WebSecurityOrigin& mainFrameOrigin,
     blink::WebPluginListBuilder* builder) {
 #if defined(ENABLE_PLUGINS)
   std::vector<WebPluginInfo> plugins;
   if (!plugin_refresh_allowed_)
     refresh = false;
-  RenderThread::Get()->Send(new FrameHostMsg_GetPlugins(refresh, &plugins));
+  RenderThread::Get()->Send(
+      new FrameHostMsg_GetPlugins(refresh, mainFrameOrigin, &plugins));
   for (const WebPluginInfo& plugin : plugins) {
     builder->addPlugin(
         plugin.name, plugin.desc,

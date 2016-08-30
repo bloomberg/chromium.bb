@@ -129,6 +129,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       const blink::WebURL& url,
       const blink::WebURL& top_origin) override;
   void getPluginList(bool refresh,
+                     const blink::WebSecurityOrigin& mainFrameOrigin,
                      blink::WebPluginListBuilder* builder) override;
   blink::WebPublicSuffixList* publicSuffixList() override;
   blink::WebScrollbarBehavior* scrollbarBehavior() override;

@@ -328,9 +328,9 @@ public:
     // Plugins -------------------------------------------------------------
 
     // If refresh is true, then cached information should not be used to
-    // satisfy this call.
-    virtual void getPluginList(bool refresh, WebPluginListBuilder*) { }
-
+    // satisfy this call. mainFrameOrigin is used by the browser process to
+    // filter plugins from the plugin list based on content settings.
+    virtual void getPluginList(bool refresh, const WebSecurityOrigin& mainFrameOrigin, WebPluginListBuilder*) {}
 
     // Public Suffix List --------------------------------------------------
 

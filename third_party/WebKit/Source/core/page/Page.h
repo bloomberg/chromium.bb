@@ -118,7 +118,7 @@ public:
     ViewportDescription viewportDescription() const;
 
     static void refreshPlugins();
-    PluginData* pluginData() const;
+    PluginData* pluginData(SecurityOrigin* mainFrameOrigin) const;
 
     EditorClient& editorClient() const { return *m_editorClient; }
     SpellCheckerClient& spellCheckerClient() const { return *m_spellCheckerClient; }
