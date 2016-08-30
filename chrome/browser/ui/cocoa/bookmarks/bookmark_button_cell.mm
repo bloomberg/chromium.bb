@@ -40,11 +40,18 @@ const int kDefaultFontSize = 12;
 };  // namespace
 
 @interface OffTheSideButtonCell : BookmarkButtonCell
+
+- (NSString*)accessibilityTitle;
+
 @end
 @implementation OffTheSideButtonCell
 
 - (BOOL)isOffTheSideButtonCell {
   return YES;
+}
+
+- (NSString*)accessibilityTitle {
+  return l10n_util::GetNSString(IDS_ACCNAME_BOOKMARKS_CHEVRON);
 }
 
 @end
