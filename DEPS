@@ -1001,6 +1001,28 @@ hooks = [
                'src/build/android/download_doclava.py',
     ],
   },
+  {
+    "name": "wasm_fuzzer",
+    "pattern": ".",
+    "action": [ "download_from_google_storage",
+                "--no_resume",
+                "--no_auth",
+                "-u",
+                "--bucket", "v8-wasm-fuzzer",
+                "-s", "src/v8/test/fuzzer/wasm.tar.gz.sha1",
+    ],
+  },
+  {
+    "name": "wasm_asmjs_fuzzer",
+    "pattern": ".",
+    "action": [ "download_from_google_storage",
+                "--no_resume",
+                "--no_auth",
+                "-u",
+                "--bucket", "v8-wasm-asmjs-fuzzer",
+                "-s", "src/v8/test/fuzzer/wasm_asmjs.tar.gz.sha1",
+    ],
+  },
 ]
 
 # ANGLE manages DEPS that it also owns the build files for, such as dEQP.

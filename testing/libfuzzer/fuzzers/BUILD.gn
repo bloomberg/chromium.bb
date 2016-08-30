@@ -240,12 +240,23 @@ fuzzer_test("v8_regexp_parser_fuzzer") {
   libfuzzer_options = [ "max_len=1024" ]
 }
 
+fuzzer_test("v8_wasm_code_fuzzer") {
+  sources = []
+  deps = [
+    "//v8:wasm_code_fuzzer",
+  ]
+  dict = "dicts/v8_wasm.dict"
+  seed_corpus = "//v8/test/fuzzer/wasm_code/"
+  libfuzzer_options = [ "max_len=500" ]
+}
+
 fuzzer_test("v8_wasm_fuzzer") {
   sources = []
   deps = [
     "//v8:wasm_fuzzer",
   ]
   dict = "dicts/v8_wasm.dict"
+  seed_corpus = "//v8/test/fuzzer/wasm/"
   libfuzzer_options = [ "max_len=500" ]
 }
 
@@ -254,6 +265,9 @@ fuzzer_test("v8_wasm_asmjs_fuzzer") {
   deps = [
     "//v8:wasm_asmjs_fuzzer",
   ]
+  dict = "dicts/v8_wasm.dict"
+  seed_corpus = "//v8/test/fuzzer/wasm_asmjs/"
+  libfuzzer_options = [ "max_len=500" ]
 }
 
 fuzzer_test("third_party_re2_fuzzer") {
