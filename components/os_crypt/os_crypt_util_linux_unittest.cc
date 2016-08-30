@@ -16,6 +16,21 @@ namespace {
 // because we don't use anything else from it.
 using MockSecretValue = std::string;
 
+const SecretSchema kKeystoreSchemaV1 = {
+    "chrome_libsecret_os_crypt_password",
+    SECRET_SCHEMA_NONE,
+    {
+        {nullptr, SECRET_SCHEMA_ATTRIBUTE_STRING},
+    }};
+
+const SecretSchema kKeystoreSchemaV2 = {
+    "chrome_libsecret_os_crypt_password_v2",
+    SECRET_SCHEMA_DONT_MATCH_NAME,
+    {
+        {"application", SECRET_SCHEMA_ATTRIBUTE_STRING},
+        {nullptr, SECRET_SCHEMA_ATTRIBUTE_STRING},
+    }};
+
 // Replaces some of LibsecretLoader's methods with mocked ones.
 class MockLibsecretLoader : public LibsecretLoader {
  public:
@@ -28,6 +43,10 @@ class MockLibsecretLoader : public LibsecretLoader {
 
   // Releases memory and restores LibsecretLoader to an uninitialized state.
   static void TearDown();
+
+  // Set whether there is an old password that needs to be migrated from the
+  // deprecated schema. Null means no such password. See crbug.com/639298
+  static void SetDeprecatedOSCryptPassword(const char* value);
 
  private:
   // These methods are used to redirect calls through LibsecretLoader
@@ -57,11 +76,18 @@ class MockLibsecretLoader : public LibsecretLoader {
                                                 GCancellable* cancellable,
                                                 GError** error);
 
-  // MockLibsecretLoader owns this object.
+  static gboolean mock_secret_password_clear_sync(const SecretSchema* schema,
+                                                  GCancellable* cancellable,
+                                                  GError** error,
+                                                  ...);
+
+  // MockLibsecretLoader owns these objects.
   static MockSecretValue* stored_password_mock_ptr_;
+  static MockSecretValue* deprecated_password_mock_ptr_;
 };
 
 MockSecretValue* MockLibsecretLoader::stored_password_mock_ptr_ = nullptr;
+MockSecretValue* MockLibsecretLoader::deprecated_password_mock_ptr_ = nullptr;
 
 const gchar* MockLibsecretLoader::mock_secret_value_get_text(
     MockSecretValue* value) {
@@ -77,6 +103,7 @@ gboolean MockLibsecretLoader::mock_secret_password_store_sync(
     GCancellable* cancellable,
     GError** error,
     ...) {
+  EXPECT_STREQ(kKeystoreSchemaV2.name, schema->name);
   delete stored_password_mock_ptr_;
   stored_password_mock_ptr_ = new MockSecretValue(password);
   return true;
@@ -89,7 +116,17 @@ MockSecretValue* MockLibsecretLoader::mock_secret_service_lookup_sync(
     GHashTable* attributes,
     GCancellable* cancellable,
     GError** error) {
-  return stored_password_mock_ptr_;
+  bool is_known_schema = strcmp(schema->name, kKeystoreSchemaV2.name) == 0 ||
+                         strcmp(schema->name, kKeystoreSchemaV1.name) == 0;
+  EXPECT_TRUE(is_known_schema);
+
+  if (strcmp(schema->name, kKeystoreSchemaV2.name) == 0)
+    return stored_password_mock_ptr_;
+  else if (strcmp(schema->name, kKeystoreSchemaV1.name) == 0)
+    return deprecated_password_mock_ptr_;
+
+  NOTREACHED();
+  return nullptr;
 }
 
 // static
@@ -108,8 +145,20 @@ GList* MockLibsecretLoader::mock_secret_service_search_sync(
 }
 
 // static
+gboolean MockLibsecretLoader::mock_secret_password_clear_sync(
+    const SecretSchema* schema,
+    GCancellable* cancellable,
+    GError** error,
+    ...) {
+  EXPECT_STREQ(kKeystoreSchemaV1.name, schema->name);
+  delete deprecated_password_mock_ptr_;
+  deprecated_password_mock_ptr_ = nullptr;
+  return true;
+}
+
+// static
 bool MockLibsecretLoader::ResetForOSCrypt() {
-  // 4 methods used by KeyStorageLibsecret::GetKey()
+  // 4 methods used by KeyStorageLibsecret
   secret_password_store_sync =
       &MockLibsecretLoader::mock_secret_password_store_sync;
   secret_value_get_text = (decltype(&::secret_value_get_text)) &
@@ -118,6 +167,9 @@ bool MockLibsecretLoader::ResetForOSCrypt() {
   secret_service_lookup_sync =
       (decltype(&::secret_service_lookup_sync)) &
       MockLibsecretLoader::mock_secret_service_lookup_sync;
+  // Used by Migrate()
+  secret_password_clear_sync =
+      &MockLibsecretLoader::mock_secret_password_clear_sync;
   // 1 method used by LibsecretLoader::EnsureLibsecretLoaded()
   secret_service_search_sync =
       &MockLibsecretLoader::mock_secret_service_search_sync;
@@ -133,6 +185,12 @@ bool MockLibsecretLoader::ResetForOSCrypt() {
 void MockLibsecretLoader::SetOSCryptPassword(const char* value) {
   delete stored_password_mock_ptr_;
   stored_password_mock_ptr_ = new MockSecretValue(value);
+}
+
+// static
+void MockLibsecretLoader::SetDeprecatedOSCryptPassword(const char* value) {
+  delete deprecated_password_mock_ptr_;
+  deprecated_password_mock_ptr_ = new MockSecretValue(value);
 }
 
 // static
@@ -172,6 +230,14 @@ TEST_F(LibsecretTest, LibsecretCreatesRandomised) {
   MockLibsecretLoader::ResetForOSCrypt();
   std::string password_new = libsecret.GetKey();
   EXPECT_NE(password, password_new);
+}
+
+TEST_F(LibsecretTest, LibsecretMigratesFromSchemaV1ToV2) {
+  KeyStorageLibsecret libsecret;
+  MockLibsecretLoader::ResetForOSCrypt();
+  MockLibsecretLoader::SetDeprecatedOSCryptPassword("swallow");
+  std::string password = libsecret.GetKey();
+  EXPECT_EQ("swallow", password);
 }
 
 }  // namespace
