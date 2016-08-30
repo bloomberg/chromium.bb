@@ -42,8 +42,6 @@ class TestContextSupport : public gpu::ContextSupport {
   uint64_t ShareGroupTracingGUID() const override;
   void SetErrorMessageCallback(
       const base::Callback<void(const char*, int32_t)>& callback) override;
-  void SetClientVisible(int client_id, bool is_visible) override;
-  bool AnyClientsVisible() const override;
 
   void CallAllSyncPointCallbacks();
 
@@ -66,7 +64,6 @@ class TestContextSupport : public gpu::ContextSupport {
   std::vector<base::Closure> sync_point_callbacks_;
   ScheduleOverlayPlaneCallback schedule_overlay_plane_callback_;
   bool out_of_order_callbacks_;
-  std::set<int> visible_clients_;
 
   base::WeakPtrFactory<TestContextSupport> weak_ptr_factory_;
 

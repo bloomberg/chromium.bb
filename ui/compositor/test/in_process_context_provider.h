@@ -52,9 +52,9 @@ class InProcessContextProvider : public cc::ContextProvider {
   gpu::gles2::GLES2Interface* ContextGL() override;
   gpu::ContextSupport* ContextSupport() override;
   class GrContext* GrContext() override;
+  cc::ContextCacheController* CacheController() override;
   void InvalidateGrContext(uint32_t state) override;
   base::Lock* GetLock() override;
-  void DeleteCachedResources() override;
   void SetLostContextCallback(
       const LostContextCallback& lost_context_callback) override;
 
@@ -77,6 +77,7 @@ class InProcessContextProvider : public cc::ContextProvider {
 
   std::unique_ptr<gpu::GLInProcessContext> context_;
   std::unique_ptr<skia_bindings::GrContextForGLES2Interface> gr_context_;
+  std::unique_ptr<cc::ContextCacheController> cache_controller_;
 
   gpu::gles2::ContextCreationAttribHelper attribs_;
   InProcessContextProvider* shared_context_;

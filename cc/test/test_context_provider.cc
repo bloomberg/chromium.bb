@@ -14,6 +14,7 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "cc/output/context_cache_controller.h"
 #include "cc/test/test_gles2_interface.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "third_party/skia/include/gpu/GrContext.h"
@@ -83,6 +84,7 @@ TestContextProvider::TestContextProvider(
   context_thread_checker_.DetachFromThread();
   context_gl_->set_test_context(context3d_.get());
   context3d_->set_test_support(support_.get());
+  cache_controller_.reset(new ContextCacheController(support_.get()));
 }
 
 TestContextProvider::~TestContextProvider() {
@@ -143,11 +145,18 @@ class GrContext* TestContextProvider::GrContext() {
       kOpenGL_GrBackend,
       reinterpret_cast<GrBackendContext>(gl_interface.get())));
 
+  cache_controller_->SetGrContext(gr_context_.get());
+
   // If GlContext is already lost, also abandon the new GrContext.
   if (ContextGL()->GetGraphicsResetStatusKHR() != GL_NO_ERROR)
     gr_context_->abandonContext();
 
   return gr_context_.get();
+}
+
+ContextCacheController* TestContextProvider::CacheController() {
+  DCHECK(context_thread_checker_.CalledOnValidThread());
+  return cache_controller_.get();
 }
 
 void TestContextProvider::InvalidateGrContext(uint32_t state) {
@@ -160,9 +169,6 @@ void TestContextProvider::InvalidateGrContext(uint32_t state) {
 
 base::Lock* TestContextProvider::GetLock() {
   return &context_lock_;
-}
-
-void TestContextProvider::DeleteCachedResources() {
 }
 
 void TestContextProvider::OnLostContext() {

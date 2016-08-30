@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "base/logging.h"
+#include "cc/output/context_cache_controller.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "services/ui/public/cpp/gles2_context.h"
 
@@ -18,6 +19,10 @@ ContextProvider::ContextProvider(
 
 bool ContextProvider::BindToCurrentThread() {
   context_ = GLES2Context::CreateOffscreenContext(gpu_channel_host_);
+  if (context_) {
+    cache_controller_.reset(
+        new cc::ContextCacheController(context_->context_support()));
+  }
   return !!context_;
 }
 
@@ -33,6 +38,10 @@ gpu::ContextSupport* ContextProvider::ContextSupport() {
 
 class GrContext* ContextProvider::GrContext() {
   return NULL;
+}
+
+cc::ContextCacheController* ContextProvider::CacheController() {
+  return cache_controller_.get();
 }
 
 void ContextProvider::InvalidateGrContext(uint32_t state) {}

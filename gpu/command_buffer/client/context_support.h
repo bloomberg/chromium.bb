@@ -56,10 +56,6 @@ class ContextSupport {
   virtual void SetErrorMessageCallback(
       const base::Callback<void(const char*, int32_t)>& callback) = 0;
 
-  // Called when a client of the context has changed visibility.
-  virtual void SetClientVisible(int client_id, bool is_visible) = 0;
-  virtual bool AnyClientsVisible() const = 0;
-
  protected:
   ContextSupport() {}
   virtual ~ContextSupport() {}

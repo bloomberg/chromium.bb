@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "cc/base/cc_export.h"
 #include "cc/output/color_lut_cache.h"
+#include "cc/output/context_cache_controller.h"
 #include "cc/output/direct_renderer.h"
 #include "cc/output/gl_renderer_draw_cache.h"
 #include "cc/output/program_binding.h"
@@ -490,6 +491,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
 
   gpu::gles2::GLES2Interface* gl_;
   gpu::ContextSupport* context_support_;
+  std::unique_ptr<ContextCacheController::ScopedVisibility> context_visibility_;
 
   TextureMailboxDeleter* texture_mailbox_deleter_;
 

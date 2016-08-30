@@ -5861,20 +5861,6 @@ void GLES2Implementation::SetErrorMessageCallback(
   error_message_callback_ = callback;
 }
 
-void GLES2Implementation::SetClientVisible(int client_id, bool is_visible) {
-  if (is_visible) {
-    visible_clients_.insert(client_id);
-  } else {
-    auto found = visible_clients_.find(client_id);
-    if (found != visible_clients_.end())
-      visible_clients_.erase(found);
-  }
-}
-
-bool GLES2Implementation::AnyClientsVisible() const {
-  return !visible_clients_.empty();
-}
-
 void GLES2Implementation::SetLostContextCallback(
     const base::Closure& callback) {
   lost_context_callback_ = callback;

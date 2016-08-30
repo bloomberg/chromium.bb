@@ -26,6 +26,7 @@ namespace gles2 { class GLES2Interface; }
 }
 
 namespace cc {
+class ContextCacheController;
 struct ManagedMemoryPolicy;
 
 class ContextProvider : public base::RefCountedThreadSafe<ContextProvider> {
@@ -68,6 +69,7 @@ class ContextProvider : public base::RefCountedThreadSafe<ContextProvider> {
   virtual gpu::gles2::GLES2Interface* ContextGL() = 0;
   virtual gpu::ContextSupport* ContextSupport() = 0;
   virtual class GrContext* GrContext() = 0;
+  virtual ContextCacheController* CacheController() = 0;
 
   // Invalidates the cached OpenGL state in GrContext.
   // See skia GrContext::resetContext for details.
@@ -75,9 +77,6 @@ class ContextProvider : public base::RefCountedThreadSafe<ContextProvider> {
 
   // Returns the capabilities of the currently bound 3d context.
   virtual gpu::Capabilities ContextCapabilities() = 0;
-
-  // Delete all cached gpu resources.
-  virtual void DeleteCachedResources() = 0;
 
   // Sets a callback to be called when the context is lost. This should be
   // called from the same thread that the context is bound to. To avoid races,

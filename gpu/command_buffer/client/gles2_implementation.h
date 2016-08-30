@@ -199,8 +199,6 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   uint64_t ShareGroupTracingGUID() const override;
   void SetErrorMessageCallback(
       const base::Callback<void(const char*, int32_t)>& callback) override;
-  void SetClientVisible(int client_id, bool is_visible) override;
-  bool AnyClientsVisible() const override;
 
   // TODO(danakj): Move to ContextSupport once ContextProvider doesn't need to
   // intercept it.
@@ -822,9 +820,6 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   // Flag to indicate whether the implementation can retain resources, or
   // whether it should aggressively free them.
   bool aggressively_free_resources_;
-
-  // The set of IDs of all visible clients.
-  std::set<int> visible_clients_;
 
   // Result of last GetString(GL_EXTENSIONS), used to keep
   // GetString(GL_EXTENSIONS), GetStringi(GL_EXTENSIONS, index) and

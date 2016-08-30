@@ -52,9 +52,9 @@ class SurfacesContextProvider : public cc::ContextProvider,
   gpu::gles2::GLES2Interface* ContextGL() override;
   gpu::ContextSupport* ContextSupport() override;
   class GrContext* GrContext() override;
+  cc::ContextCacheController* CacheController() override;
   void InvalidateGrContext(uint32_t state) override;
   gpu::Capabilities ContextCapabilities() override;
-  void DeleteCachedResources() override {}
   void SetLostContextCallback(
       const LostContextCallback& lost_context_callback) override;
   base::Lock* GetLock() override;
@@ -81,6 +81,7 @@ class SurfacesContextProvider : public cc::ContextProvider,
   std::unique_ptr<gpu::gles2::GLES2CmdHelper> gles2_helper_;
   std::unique_ptr<gpu::TransferBuffer> transfer_buffer_;
   std::unique_ptr<gpu::gles2::GLES2Implementation> implementation_;
+  std::unique_ptr<cc::ContextCacheController> cache_controller_;
 
   gpu::Capabilities capabilities_;
   LostContextCallback lost_context_callback_;

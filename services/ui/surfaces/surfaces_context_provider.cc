@@ -12,6 +12,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "cc/output/context_cache_controller.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
@@ -92,6 +93,8 @@ bool SurfacesContextProvider::BindToCurrentThread() {
       gles2_helper_.get(), NULL, transfer_buffer_.get(),
       bind_generates_resource, lose_context_when_out_of_memory,
       support_client_side_arrays, gpu_control));
+  cache_controller_.reset(
+      new cc::ContextCacheController(implementation_.get()));
   return implementation_->Initialize(
       default_limits.start_transfer_buffer_size,
       default_limits.min_transfer_buffer_size,
@@ -110,6 +113,10 @@ gpu::ContextSupport* SurfacesContextProvider::ContextSupport() {
 
 class GrContext* SurfacesContextProvider::GrContext() {
   return NULL;
+}
+
+cc::ContextCacheController* SurfacesContextProvider::CacheController() {
+  return cache_controller_.get();
 }
 
 void SurfacesContextProvider::InvalidateGrContext(uint32_t state) {}

@@ -157,35 +157,6 @@ void RecordCompositorSlowScrollMetric(InputHandler::ScrollInputType type,
   }
 }
 
-// Calls SetClientVisible on the provided |context_provider| and handles
-// additional cache cleanup.
-void UpdateVisibilityForContextProvider(int client_id,
-                                        ContextProvider* context_provider,
-                                        bool is_visible) {
-  if (!context_provider)
-    return;
-  gpu::ContextSupport* context_support = context_provider->ContextSupport();
-
-  context_support->SetClientVisible(client_id, is_visible);
-  bool aggressively_free_resources = !context_support->AnyClientsVisible();
-  if (aggressively_free_resources) {
-    context_provider->DeleteCachedResources();
-  }
-  context_support->SetAggressivelyFreeResources(aggressively_free_resources);
-}
-
-// Same as UpdateVisibilityForContextProvider, except that the
-// |context_provider| is locked before being used.
-void LockAndUpdateVisibilityForContextProvider(
-    int client_id,
-    ContextProvider* context_provider,
-    bool is_visible) {
-  if (!context_provider)
-    return;
-  ContextProvider::ScopedContextLock hold(context_provider);
-  UpdateVisibilityForContextProvider(client_id, context_provider, is_visible);
-}
-
 }  // namespace
 
 DEFINE_SCOPED_UMA_HISTOGRAM_TIMER(PendingTreeDurationHistogramTimer,
@@ -1296,20 +1267,14 @@ void LayerTreeHostImpl::UpdateTileManagerMemoryPolicy(
     // are visible. Notify the worker context here. We handle becoming
     // invisible in NotifyAllTileTasksComplete to avoid interrupting running
     // work.
-    if (output_surface_) {
-      LockAndUpdateVisibilityForContextProvider(
-          id_, output_surface_->worker_context_provider(),
-          true /* is_visible */);
-    }
+    SetWorkerContextVisibility(true);
 
     // If |global_tile_state_.hard_memory_limit_in_bytes| is greater than 0, we
     // allow the image decode controller to retain resources. We handle the
     // equal to 0 case in NotifyAllTileTasksComplete to avoid interrupting
     // running work.
-    if (image_decode_controller_) {
-      image_decode_controller_->SetShouldAggressivelyFreeResources(
-          false /* aggressively_free_resources */);
-    }
+    if (image_decode_controller_)
+      image_decode_controller_->SetShouldAggressivelyFreeResources(false);
   }
 
   DCHECK(resource_pool_);
@@ -1386,15 +1351,9 @@ void LayerTreeHostImpl::NotifyAllTileTasksCompleted() {
     // context of visibility change. This ensures that the imaged decode
     // controller has released all Skia refs at the time Skia's cleanup
     // executes (within worker context's cleanup).
-    if (image_decode_controller_) {
-      image_decode_controller_->SetShouldAggressivelyFreeResources(
-          true /* aggressively_free_resources */);
-    }
-    if (output_surface_) {
-      LockAndUpdateVisibilityForContextProvider(
-          id_, output_surface_->worker_context_provider(),
-          false /* is_visible */);
-    }
+    if (image_decode_controller_)
+      image_decode_controller_->SetShouldAggressivelyFreeResources(true);
+    SetWorkerContextVisibility(false);
   }
 }
 
@@ -2126,10 +2085,7 @@ void LayerTreeHostImpl::SetVisible(bool visible) {
   }
 
   // Update visibility for the compositor context provider.
-  if (output_surface_) {
-    UpdateVisibilityForContextProvider(id_, output_surface_->context_provider(),
-                                       visible);
-  }
+  SetCompositorContextVisibility(visible);
 }
 
 void LayerTreeHostImpl::SetNeedsOneBeginImplFrame() {
@@ -2346,6 +2302,15 @@ void LayerTreeHostImpl::ReleaseOutputSurface() {
   CleanUpTileManagerAndUIResources();
   resource_provider_ = nullptr;
 
+  // Release any context visibility before we destroy the OutputSurface.
+  if (visible_)
+    SetCompositorContextVisibility(false);
+  // Worker context visibility is based on both LTHI visibility as well as
+  // memory policy, so we directly check |worker_context_visibility_| here,
+  // rather than just relying on |visibility_|.
+  if (worker_context_visibility_)
+    SetWorkerContextVisibility(false);
+
   // Detach from the old output surface and reset |output_surface_| pointer
   // as this surface is going to be destroyed independent of if binding the
   // new output surface succeeds or not.
@@ -2378,6 +2343,12 @@ bool LayerTreeHostImpl::InitializeRenderer(OutputSurface* output_surface) {
       output_surface_->capabilities().delegated_sync_points_required,
       settings_.renderer_settings.use_gpu_memory_buffer_resources,
       settings_.renderer_settings.buffer_to_texture_target_map);
+
+  // Make sure the main context visibility is restored. Worker context
+  // visibility will be set via the memory policy update in
+  // CreateTileManagerResources below.
+  if (visible_)
+    SetCompositorContextVisibility(true);
 
   // Since the new context may be capable of MSAA, update status here. We don't
   // need to check the return value since we are recreating all resources
@@ -4192,6 +4163,49 @@ bool LayerTreeHostImpl::CommitToActiveTree() const {
   // In single threaded mode we skip the pending tree and commit directly to the
   // active tree.
   return !task_runner_provider_->HasImplThread();
+}
+
+void LayerTreeHostImpl::SetCompositorContextVisibility(bool is_visible) {
+  if (!output_surface_)
+    return;
+
+  auto* compositor_context = output_surface_->context_provider();
+  if (!compositor_context)
+    return;
+
+  DCHECK_NE(is_visible, !!compositor_context_visibility_);
+
+  if (is_visible) {
+    compositor_context_visibility_ =
+        compositor_context->CacheController()->ClientBecameVisible();
+  } else {
+    compositor_context->CacheController()->ClientBecameNotVisible(
+        std::move(compositor_context_visibility_));
+  }
+}
+
+void LayerTreeHostImpl::SetWorkerContextVisibility(bool is_visible) {
+  if (!output_surface_)
+    return;
+
+  auto* worker_context = output_surface_->worker_context_provider();
+  if (!worker_context)
+    return;
+
+  // TODO(ericrk): This check is here because worker context visibility is a
+  // bit less controlled, being settable both by memory policy changes as well
+  // as direct visibility changes. We should simplify this. crbug.com/642154
+  if (is_visible == !!worker_context_visibility_)
+    return;
+
+  ContextProvider::ScopedContextLock hold(worker_context);
+  if (is_visible) {
+    worker_context_visibility_ =
+        worker_context->CacheController()->ClientBecameVisible();
+  } else {
+    worker_context->CacheController()->ClientBecameNotVisible(
+        std::move(worker_context_visibility_));
+  }
 }
 
 }  // namespace cc

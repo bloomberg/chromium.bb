@@ -34,10 +34,10 @@ class ContextProvider : public cc::ContextProvider {
   gpu::gles2::GLES2Interface* ContextGL() override;
   gpu::ContextSupport* ContextSupport() override;
   class GrContext* GrContext() override;
+  cc::ContextCacheController* CacheController() override;
   void InvalidateGrContext(uint32_t state) override;
   base::Lock* GetLock() override;
   gpu::Capabilities ContextCapabilities() override;
-  void DeleteCachedResources() override {}
   void SetLostContextCallback(
       const LostContextCallback& lost_context_callback) override {}
 
@@ -47,6 +47,7 @@ class ContextProvider : public cc::ContextProvider {
 
  private:
   std::unique_ptr<GLES2Context> context_;
+  std::unique_ptr<cc::ContextCacheController> cache_controller_;
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_host_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextProvider);

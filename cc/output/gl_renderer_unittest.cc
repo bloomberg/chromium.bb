@@ -2081,33 +2081,19 @@ TEST_F(GLRendererPartialSwapTest, NoPartialSwap) {
 
 class GLRendererWithMockContextTest : public ::testing::Test {
  protected:
-  class MockContextProvider : public TestContextProvider {
-   public:
-    explicit MockContextProvider(std::unique_ptr<TestContextSupport> support)
-        : TestContextProvider(std::move(support),
-                              base::MakeUnique<TestGLES2Interface>(),
-                              TestWebGraphicsContext3D::Create()) {}
-
-    MOCK_METHOD0(DeleteCachedResources, void());
-
-   private:
-    ~MockContextProvider() = default;
-  };
-
   class MockContextSupport : public TestContextSupport {
    public:
     MockContextSupport() {}
     MOCK_METHOD1(SetAggressivelyFreeResources,
                  void(bool aggressively_free_resources));
-    MOCK_METHOD2(SetClientVisible, void(int client_id, bool is_visible));
-    MOCK_CONST_METHOD0(AnyClientsVisible, bool());
   };
 
   void SetUp() override {
     auto context_support = base::MakeUnique<MockContextSupport>();
     context_support_ptr_ = context_support.get();
-    context_provider_ = new MockContextProvider(std::move(context_support));
-    output_surface_ = FakeOutputSurface::Create3d(context_provider_);
+    auto context_provider = TestContextProvider::Create(
+        TestWebGraphicsContext3D::Create(), std::move(context_support));
+    output_surface_ = FakeOutputSurface::Create3d(std::move(context_provider));
     output_surface_->BindToClient(&output_surface_client_);
     resource_provider_ =
         FakeResourceProvider::Create(output_surface_.get(), nullptr);
@@ -2120,7 +2106,6 @@ class GLRendererWithMockContextTest : public ::testing::Test {
   RendererSettings settings_;
   FakeOutputSurfaceClient output_surface_client_;
   MockContextSupport* context_support_ptr_;
-  scoped_refptr<MockContextProvider> context_provider_;
   std::unique_ptr<OutputSurface> output_surface_;
   std::unique_ptr<ResourceProvider> resource_provider_;
   std::unique_ptr<GLRenderer> renderer_;
@@ -2128,20 +2113,10 @@ class GLRendererWithMockContextTest : public ::testing::Test {
 
 TEST_F(GLRendererWithMockContextTest,
        ContextPurgedWhenRendererBecomesInvisible) {
-  // Ensure our expectations run in order.
-  ::testing::InSequence s;
-
-  EXPECT_CALL(*context_support_ptr_, SetClientVisible(0, true));
-  EXPECT_CALL(*context_support_ptr_, AnyClientsVisible())
-      .WillOnce(Return(true));
   EXPECT_CALL(*context_support_ptr_, SetAggressivelyFreeResources(false));
   renderer_->SetVisible(true);
   Mock::VerifyAndClearExpectations(context_support_ptr_);
 
-  EXPECT_CALL(*context_support_ptr_, SetClientVisible(0, false));
-  EXPECT_CALL(*context_support_ptr_, AnyClientsVisible())
-      .WillOnce(Return(false));
-  EXPECT_CALL(*context_provider_, DeleteCachedResources());
   EXPECT_CALL(*context_support_ptr_, SetAggressivelyFreeResources(true));
   renderer_->SetVisible(false);
   Mock::VerifyAndClearExpectations(context_support_ptr_);

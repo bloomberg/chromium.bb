@@ -15,6 +15,7 @@
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "cc/output/context_cache_controller.h"
 #include "cc/output/managed_memory_policy.h"
 #include "content/common/gpu/client/command_buffer_metrics.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
@@ -225,6 +226,8 @@ bool ContextProviderCommandBuffer::BindToCurrentThread() {
                  // callback.
                  base::Unretained(this)));
 
+  cache_controller_.reset(new cc::ContextCacheController(gles2_impl_.get()));
+
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableGpuClientTracing)) {
     // This wraps the real GLES2Implementation and we should always use this
@@ -274,6 +277,7 @@ class GrContext* ContextProviderCommandBuffer::GrContext() {
     return gr_context_->get();
 
   gr_context_.reset(new skia_bindings::GrContextForGLES2Interface(ContextGL()));
+  cache_controller_->SetGrContext(gr_context_->get());
 
   // If GlContext is already lost, also abandon the new GrContext.
   if (gr_context_->get() &&
@@ -281,6 +285,11 @@ class GrContext* ContextProviderCommandBuffer::GrContext() {
     gr_context_->get()->abandonContext();
 
   return gr_context_->get();
+}
+
+cc::ContextCacheController* ContextProviderCommandBuffer::CacheController() {
+  DCHECK(context_thread_checker_.CalledOnValidThread());
+  return cache_controller_.get();
 }
 
 void ContextProviderCommandBuffer::InvalidateGrContext(uint32_t state) {
@@ -307,13 +316,6 @@ gpu::Capabilities ContextProviderCommandBuffer::ContextCapabilities() {
   DCHECK(context_thread_checker_.CalledOnValidThread());
   // Skips past the trace_impl_ as it doesn't have capabilities.
   return gles2_impl_->capabilities();
-}
-
-void ContextProviderCommandBuffer::DeleteCachedResources() {
-  DCHECK(context_thread_checker_.CalledOnValidThread());
-
-  if (gr_context_)
-    gr_context_->FreeGpuResources();
 }
 
 void ContextProviderCommandBuffer::OnLostContext() {

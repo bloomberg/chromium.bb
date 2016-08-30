@@ -9,6 +9,7 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "cc/output/context_cache_controller.h"
 #include "cc/resources/platform_color.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gl_in_process_context.h"
@@ -59,7 +60,9 @@ TestInProcessContextProvider::TestInProcessContextProvider(
     : context_(CreateTestInProcessContext(
           &gpu_memory_buffer_manager_,
           &image_factory_,
-          (shared_context ? shared_context->context_.get() : nullptr))) {}
+          (shared_context ? shared_context->context_.get() : nullptr))),
+      cache_controller_(
+          new ContextCacheController(context_->GetImplementation())) {}
 
 TestInProcessContextProvider::~TestInProcessContextProvider() {
 }
@@ -81,7 +84,12 @@ class GrContext* TestInProcessContextProvider::GrContext() {
     return gr_context_->get();
 
   gr_context_.reset(new skia_bindings::GrContextForGLES2Interface(ContextGL()));
+  cache_controller_->SetGrContext(gr_context_->get());
   return gr_context_->get();
+}
+
+ContextCacheController* TestInProcessContextProvider::CacheController() {
+  return cache_controller_.get();
 }
 
 void TestInProcessContextProvider::InvalidateGrContext(uint32_t state) {
@@ -107,11 +115,6 @@ gpu::Capabilities TestInProcessContextProvider::ContextCapabilities() {
       break;
   }
   return capabilities;
-}
-
-void TestInProcessContextProvider::DeleteCachedResources() {
-  if (gr_context_)
-    gr_context_->FreeGpuResources();
 }
 
 void TestInProcessContextProvider::SetLostContextCallback(

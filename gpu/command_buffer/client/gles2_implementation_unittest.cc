@@ -4607,21 +4607,6 @@ TEST_F(GLES2ImplementationManualInitTest, FailInitOnTransferBufferFail) {
   EXPECT_FALSE(Initialize(init_options));
 }
 
-TEST_F(GLES2ImplementationTest, ClientVisibility) {
-  EXPECT_FALSE(gl_->AnyClientsVisible());
-  gl_->SetClientVisible(0, true);
-  EXPECT_TRUE(gl_->AnyClientsVisible());
-  gl_->SetClientVisible(0, false);
-  EXPECT_FALSE(gl_->AnyClientsVisible());
-  gl_->SetClientVisible(0, true);
-  gl_->SetClientVisible(1, true);
-  EXPECT_TRUE(gl_->AnyClientsVisible());
-  gl_->SetClientVisible(0, false);
-  EXPECT_TRUE(gl_->AnyClientsVisible());
-  gl_->SetClientVisible(1, false);
-  EXPECT_FALSE(gl_->AnyClientsVisible());
-}
-
 #include "base/macros.h"
 #include "gpu/command_buffer/client/gles2_implementation_unittest_autogen.h"
 

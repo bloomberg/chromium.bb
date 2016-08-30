@@ -91,18 +91,4 @@ uint64_t TestContextSupport::ShareGroupTracingGUID() const {
 void TestContextSupport::SetErrorMessageCallback(
     const base::Callback<void(const char*, int32_t)>& callback) {}
 
-void TestContextSupport::SetClientVisible(int client_id, bool is_visible) {
-  if (is_visible) {
-    visible_clients_.insert(client_id);
-  } else {
-    auto found = visible_clients_.find(client_id);
-    if (found != visible_clients_.end())
-      visible_clients_.erase(found);
-  }
-}
-
-bool TestContextSupport::AnyClientsVisible() const {
-  return !visible_clients_.empty();
-}
-
 }  // namespace cc

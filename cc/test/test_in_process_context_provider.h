@@ -41,10 +41,10 @@ class TestInProcessContextProvider : public ContextProvider {
   gpu::gles2::GLES2Interface* ContextGL() override;
   gpu::ContextSupport* ContextSupport() override;
   class GrContext* GrContext() override;
+  ContextCacheController* CacheController() override;
   void InvalidateGrContext(uint32_t state) override;
   base::Lock* GetLock() override;
   gpu::Capabilities ContextCapabilities() override;
-  void DeleteCachedResources() override;
   void SetLostContextCallback(
       const LostContextCallback& lost_context_callback) override;
 
@@ -57,6 +57,7 @@ class TestInProcessContextProvider : public ContextProvider {
   TestImageFactory image_factory_;
   std::unique_ptr<gpu::GLInProcessContext> context_;
   std::unique_ptr<skia_bindings::GrContextForGLES2Interface> gr_context_;
+  std::unique_ptr<ContextCacheController> cache_controller_;
   base::Lock context_lock_;
 };
 

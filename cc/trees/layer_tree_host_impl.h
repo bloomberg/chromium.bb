@@ -27,6 +27,7 @@
 #include "cc/layers/layer_collections.h"
 #include "cc/layers/render_pass_sink.h"
 #include "cc/output/begin_frame_args.h"
+#include "cc/output/context_cache_controller.h"
 #include "cc/output/delegating_renderer.h"
 #include "cc/output/managed_memory_policy.h"
 #include "cc/output/output_surface_client.h"
@@ -713,6 +714,9 @@ class CC_EXPORT LayerTreeHostImpl
   bool ScrollAnimationUpdateTarget(ScrollNode* scroll_node,
                                    const gfx::Vector2dF& scroll_delta);
 
+  void SetCompositorContextVisibility(bool is_visible);
+  void SetWorkerContextVisibility(bool is_visible);
+
   using UIResourceMap = std::unordered_map<UIResourceId, UIResourceData>;
   UIResourceMap ui_resource_map_;
 
@@ -722,6 +726,14 @@ class CC_EXPORT LayerTreeHostImpl
   std::set<UIResourceId> evicted_ui_resources_;
 
   OutputSurface* output_surface_;
+
+  // The following scoped variables must not outlive the |output_surface_|.
+  // These should be transfered to ContextCacheController's
+  // ClientBecameNotVisible() before the output surface is destroyed.
+  std::unique_ptr<ContextCacheController::ScopedVisibility>
+      compositor_context_visibility_;
+  std::unique_ptr<ContextCacheController::ScopedVisibility>
+      worker_context_visibility_;
 
   std::unique_ptr<ResourceProvider> resource_provider_;
   bool need_update_gpu_rasterization_status_;

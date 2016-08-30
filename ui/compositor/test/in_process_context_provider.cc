@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
+#include "cc/output/context_cache_controller.h"
 #include "cc/output/managed_memory_policy.h"
 #include "gpu/command_buffer/client/gl_in_process_context.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
@@ -93,6 +94,9 @@ bool InProcessContextProvider::BindToCurrentThread() {
 
     if (!context_)
       return false;
+
+    cache_controller_.reset(
+        new cc::ContextCacheController(context_->GetImplementation()));
   }
 
   std::string unique_context_name =
@@ -131,8 +135,14 @@ class GrContext* InProcessContextProvider::GrContext() {
     return gr_context_->get();
 
   gr_context_.reset(new skia_bindings::GrContextForGLES2Interface(ContextGL()));
+  cache_controller_->SetGrContext(gr_context_->get());
 
   return gr_context_->get();
+}
+
+cc::ContextCacheController* InProcessContextProvider::CacheController() {
+  DCHECK(context_thread_checker_.CalledOnValidThread());
+  return cache_controller_.get();
 }
 
 void InProcessContextProvider::InvalidateGrContext(uint32_t state) {
@@ -144,13 +154,6 @@ void InProcessContextProvider::InvalidateGrContext(uint32_t state) {
 
 base::Lock* InProcessContextProvider::GetLock() {
   return &context_lock_;
-}
-
-void InProcessContextProvider::DeleteCachedResources() {
-  DCHECK(context_thread_checker_.CalledOnValidThread());
-
-  if (gr_context_)
-    gr_context_->FreeGpuResources();
 }
 
 void InProcessContextProvider::SetLostContextCallback(

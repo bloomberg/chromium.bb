@@ -10,6 +10,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
 #include "cc/debug/lap_timer.h"
+#include "cc/output/context_cache_controller.h"
 #include "cc/output/context_provider.h"
 #include "cc/raster/bitmap_raster_buffer_provider.h"
 #include "cc/raster/gpu_raster_buffer_provider.h"
@@ -80,7 +81,8 @@ class PerfGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
 
 class PerfContextProvider : public ContextProvider {
  public:
-  PerfContextProvider() : context_gl_(new PerfGLES2Interface) {}
+  PerfContextProvider()
+      : context_gl_(new PerfGLES2Interface), cache_controller_(&support_) {}
 
   bool BindToCurrentThread() override { return true; }
   gpu::Capabilities ContextCapabilities() override {
@@ -99,14 +101,17 @@ class PerfContextProvider : public ContextProvider {
     gr_context_ = sk_sp<class GrContext>(GrContext::Create(
         kOpenGL_GrBackend,
         reinterpret_cast<GrBackendContext>(null_interface.get())));
+    cache_controller_.SetGrContext(gr_context_.get());
     return gr_context_.get();
+  }
+  ContextCacheController* CacheController() override {
+    return &cache_controller_;
   }
   void InvalidateGrContext(uint32_t state) override {
     if (gr_context_)
       gr_context_.get()->resetContext(state);
   }
   base::Lock* GetLock() override { return &context_lock_; }
-  void DeleteCachedResources() override {}
   void SetLostContextCallback(const LostContextCallback& cb) override {}
 
  private:
@@ -115,6 +120,7 @@ class PerfContextProvider : public ContextProvider {
   std::unique_ptr<PerfGLES2Interface> context_gl_;
   sk_sp<class GrContext> gr_context_;
   TestContextSupport support_;
+  ContextCacheController cache_controller_;
   base::Lock context_lock_;
 };
 
