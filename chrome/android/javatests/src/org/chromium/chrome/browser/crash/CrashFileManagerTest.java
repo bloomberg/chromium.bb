@@ -174,4 +174,20 @@ public class CrashFileManagerTest extends CrashTestCase {
         assertEquals("f.tryN.dmp.try1",
                 CrashFileManager.filenameWithIncrementedAttemptNumber("f.tryN.dmp"));
     }
+
+    @SmallTest
+    @Feature({"Android-AppBase"})
+    public void testMarkUploadSuccess() {
+        CrashFileManager.markUploadSuccess(mDmpFile1);
+        assertFalse(mDmpFile1.exists());
+        assertTrue(new File(mCrashDir, "123_abc.up0").exists());
+    }
+
+    @SmallTest
+    @Feature({"Android-AppBase"})
+    public void testMarkUploadSkipped() {
+        CrashFileManager.markUploadSkipped(mDmpFile1);
+        assertFalse(mDmpFile1.exists());
+        assertTrue(new File(mCrashDir, "123_abc.skipped0").exists());
+    }
 }

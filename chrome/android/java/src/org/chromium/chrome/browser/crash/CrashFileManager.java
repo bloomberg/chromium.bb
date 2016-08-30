@@ -43,6 +43,8 @@ public class CrashFileManager {
 
     private static final String UPLOADED_MINIDUMP_SUFFIX = ".up";
 
+    private static final String UPLOAD_SKIPPED_MINIDUMP_SUFFIX = ".skipped";
+
     private static final String UPLOAD_ATTEMPT_DELIMITER = ".try";
 
     @VisibleForTesting
@@ -126,10 +128,42 @@ public class CrashFileManager {
         return 0;
     }
 
-    public static boolean tryMarkAsUploaded(File mFileToUpload) {
-        return mFileToUpload.renameTo(
-                new File(mFileToUpload.getPath().replaceAll(
-                        "\\.dmp", UPLOADED_MINIDUMP_SUFFIX)));
+    /**
+     * Marks a crash dump file as successfully uploaded, by renaming the file.
+     *
+     * Does not immediately delete the file, for testing reasons. However, if renaming fails,
+     * attempts to delete the file immediately.
+     */
+    public static void markUploadSuccess(File crashDumpFile) {
+        CrashFileManager.renameCrashDumpFollowingUpload(crashDumpFile, UPLOADED_MINIDUMP_SUFFIX);
+    }
+
+    /**
+     * Marks a crash dump file's upload being skipped. An upload might be skipped due to lack of
+     * user consent, or due to this client being excluded from the sample of clients reporting
+     * crashes.
+     *
+     * Renames the file rather than deleting it, so that the user can manually upload the file later
+     * (via chrome://crashes). However, if renaming fails, attempts to delete the file immediately.
+     */
+    public static void markUploadSkipped(File crashDumpFile) {
+        CrashFileManager.renameCrashDumpFollowingUpload(
+                crashDumpFile, UPLOAD_SKIPPED_MINIDUMP_SUFFIX);
+    }
+
+    /**
+     * Renames a crash dump file. However, if renaming fails, attempts to delete the file
+     * immediately.
+     */
+    private static void renameCrashDumpFollowingUpload(File crashDumpFile, String suffix) {
+        boolean renamed = crashDumpFile.renameTo(
+                new File(crashDumpFile.getPath().replaceAll("\\.dmp", suffix)));
+        if (!renamed) {
+            Log.w(TAG, "Failed to rename " + crashDumpFile);
+            if (!crashDumpFile.delete()) {
+                Log.w(TAG, "Failed to delete " + crashDumpFile);
+            }
+        }
     }
 
     private final File mCacheDir;

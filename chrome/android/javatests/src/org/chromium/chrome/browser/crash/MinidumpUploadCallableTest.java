@@ -241,7 +241,11 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
                 new MockMinidumpUploadCallable(httpURLConnectionFactory, testPermManager);
         assertEquals(MinidumpUploadCallable.UPLOAD_USER_DISABLED,
                 minidumpUploadCallable.call().intValue());
-        assertTrue(mExpectedFileAfterUpload.exists());
+
+        File expectedSkippedFileAfterUpload =
+                new File(mCrashDir, mTestUpload.getName().replaceFirst("\\.dmp", ".skipped"));
+        assertTrue(expectedSkippedFileAfterUpload.exists());
+        assertFalse(mExpectedFileAfterUpload.exists());
     }
 
     @SmallTest
@@ -289,7 +293,11 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
                 new MockMinidumpUploadCallable(httpURLConnectionFactory, testPermManager);
         assertEquals(MinidumpUploadCallable.UPLOAD_DISABLED_BY_SAMPLING,
                 minidumpUploadCallable.call().intValue());
-        assertTrue(mExpectedFileAfterUpload.exists());
+
+        File expectedSkippedFileAfterUpload =
+                new File(mCrashDir, mTestUpload.getName().replaceFirst("\\.dmp", ".skipped"));
+        assertTrue(expectedSkippedFileAfterUpload.exists());
+        assertFalse(mExpectedFileAfterUpload.exists());
     }
 
     @SmallTest
