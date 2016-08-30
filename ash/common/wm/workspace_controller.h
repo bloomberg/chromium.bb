@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_WORKSPACE_CONTROLLER_H_
-#define ASH_WM_WORKSPACE_CONTROLLER_H_
+#ifndef ASH_COMMON_WM_WORKSPACE_CONTROLLER_H_
+#define ASH_COMMON_WM_WORKSPACE_CONTROLLER_H_
 
 #include <memory>
 
 #include "ash/ash_export.h"
 #include "ash/common/wm/workspace/workspace_types.h"
+#include "ash/common/wm_window_observer.h"
 #include "base/macros.h"
 
 namespace ash {
@@ -20,10 +21,10 @@ class WorkspaceLayoutManagerBackdropDelegate;
 
 // WorkspaceController acts as a central place that ties together all the
 // various workspace pieces.
-class ASH_EXPORT WorkspaceController {
+class ASH_EXPORT WorkspaceController : public WmWindowObserver {
  public:
   explicit WorkspaceController(WmWindow* viewport);
-  virtual ~WorkspaceController();
+  ~WorkspaceController() override;
 
   // Returns the current window state.
   wm::WorkspaceWindowState GetWindowState() const;
@@ -41,6 +42,9 @@ class ASH_EXPORT WorkspaceController {
  private:
   friend class WorkspaceControllerTestHelper;
 
+  // WmWindowObserver:
+  void OnWindowDestroying(WmWindow* window) override;
+
   WmWindow* viewport_;
   std::unique_ptr<WorkspaceEventHandler> event_handler_;
 
@@ -52,4 +56,4 @@ class ASH_EXPORT WorkspaceController {
 
 }  // namespace ash
 
-#endif  // ASH_WM_WORKSPACE_CONTROLLER_H_
+#endif  // ASH_COMMON_WM_WORKSPACE_CONTROLLER_H_

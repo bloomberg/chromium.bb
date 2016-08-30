@@ -6,6 +6,8 @@
 
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/root_window_layout_manager.h"
+#include "ash/common/wm/workspace/workspace_layout_manager.h"
+#include "ash/common/wm/workspace_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "base/memory/ptr_util.h"
@@ -212,6 +214,14 @@ void RootWindowControllerCommon::CreateContainers() {
 void RootWindowControllerCommon::CreateLayoutManagers() {
   root_window_layout_ = new wm::RootWindowLayoutManager(root_);
   root_->SetLayoutManager(base::WrapUnique(root_window_layout_));
+
+  WmWindow* default_container =
+      root_->GetChildByShellWindowId(kShellWindowId_DefaultContainer);
+  workspace_controller_.reset(new WorkspaceController(default_container));
+}
+
+void RootWindowControllerCommon::DeleteWorkspaceController() {
+  workspace_controller_.reset();
 }
 
 }  // namespace ash

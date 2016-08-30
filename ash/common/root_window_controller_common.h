@@ -5,12 +5,15 @@
 #ifndef ASH_COMMON_ROOT_WINDOW_CONTROLLER_COMMON_H_
 #define ASH_COMMON_ROOT_WINDOW_CONTROLLER_COMMON_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "base/macros.h"
 
 namespace ash {
 
 class WmWindow;
+class WorkspaceController;
 
 namespace wm {
 class RootWindowLayoutManager;
@@ -30,14 +33,22 @@ class ASH_EXPORT RootWindowControllerCommon {
   // Creates the LayoutManagers for the windows created by CreateContainers().
   void CreateLayoutManagers();
 
+  void DeleteWorkspaceController();
+
   wm::RootWindowLayoutManager* root_window_layout() {
     return root_window_layout_;
+  }
+
+  WorkspaceController* workspace_controller() {
+    return workspace_controller_.get();
   }
 
  private:
   WmWindow* root_;
 
   wm::RootWindowLayoutManager* root_window_layout_;
+
+  std::unique_ptr<WorkspaceController> workspace_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindowControllerCommon);
 };

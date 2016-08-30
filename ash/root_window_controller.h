@@ -111,9 +111,7 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   aura::Window* GetRootWindow();
   const aura::Window* GetRootWindow() const;
 
-  WorkspaceController* workspace_controller() {
-    return workspace_controller_.get();
-  }
+  WorkspaceController* workspace_controller();
 
   AlwaysOnTopController* always_on_top_controller() {
     return always_on_top_controller_.get();
@@ -309,7 +307,6 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   std::unique_ptr<AshTouchExplorationManager> touch_exploration_manager_;
 #endif
 
-  std::unique_ptr<WorkspaceController> workspace_controller_;
   std::unique_ptr<AlwaysOnTopController> always_on_top_controller_;
 
   // Heads-up displays for touch events. These HUDs are not owned by the root

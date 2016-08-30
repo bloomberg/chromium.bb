@@ -526,6 +526,8 @@
       'common/wm/workspace/workspace_types.h',
       'common/wm/workspace/workspace_window_resizer.cc',
       'common/wm/workspace/workspace_window_resizer.h',
+      'common/wm/workspace_controller.cc',
+      'common/wm/workspace_controller.h',
       'common/wm_activation_observer.h',
       'common/wm_display_observer.h',
       'common/wm_layout_manager.h',
@@ -807,8 +809,6 @@
       'wm/window_util.h',
       'wm/workspace/workspace_event_handler_aura.cc',
       'wm/workspace/workspace_event_handler_aura.h',
-      'wm/workspace_controller.cc',
-      'wm/workspace_controller.h',
     ],
     'ash_with_content_sources': [
       'content/ash_with_content_export.h',

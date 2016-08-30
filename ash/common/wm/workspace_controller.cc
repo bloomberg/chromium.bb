@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/workspace_controller.h"
+#include "ash/common/wm/workspace_controller.h"
 
 #include <utility>
 
@@ -19,14 +19,8 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "base/memory/ptr_util.h"
-#include "ui/aura/client/aura_constants.h"
-#include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
-#include "ui/wm/core/visibility_controller.h"
-#include "ui/wm/core/window_animations.h"
-#include "ui/wm/public/activation_client.h"
 
 namespace ash {
 namespace {
@@ -44,11 +38,16 @@ WorkspaceController::WorkspaceController(WmWindow* viewport)
     : viewport_(viewport),
       event_handler_(WmShell::Get()->CreateWorkspaceEventHandler(viewport)),
       layout_manager_(new WorkspaceLayoutManager(viewport)) {
+  viewport_->AddObserver(this);
   viewport_->SetVisibilityAnimationTransition(::wm::ANIMATE_NONE);
   viewport_->SetLayoutManager(base::WrapUnique(layout_manager_));
 }
 
 WorkspaceController::~WorkspaceController() {
+  if (!viewport_)
+    return;
+
+  viewport_->RemoveObserver(this);
   viewport_->SetLayoutManager(nullptr);
 }
 
@@ -122,6 +121,14 @@ void WorkspaceController::DoInitialAnimation() {
 void WorkspaceController::SetMaximizeBackdropDelegate(
     std::unique_ptr<WorkspaceLayoutManagerBackdropDelegate> delegate) {
   layout_manager_->SetMaximizeBackdropDelegate(std::move(delegate));
+}
+
+void WorkspaceController::OnWindowDestroying(WmWindow* window) {
+  DCHECK_EQ(window, viewport_);
+  viewport_->RemoveObserver(this);
+  viewport_ = nullptr;
+  // Destroy |event_handler_| too as it depends upon |window|.
+  event_handler_.reset();
 }
 
 }  // namespace ash

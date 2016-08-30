@@ -82,7 +82,9 @@ RootWindowController::RootWindowController(WindowManager* window_manager,
       new AlwaysOnTopController(always_on_top_container));
 }
 
-RootWindowController::~RootWindowController() {}
+RootWindowController::~RootWindowController() {
+  root_window_controller_common_->DeleteWorkspaceController();
+}
 
 shell::Connector* RootWindowController::GetConnector() {
   return window_manager_->connector();

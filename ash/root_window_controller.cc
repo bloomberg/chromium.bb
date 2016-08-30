@@ -36,6 +36,7 @@
 #include "ash/common/wm/switchable_windows.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/workspace/workspace_layout_manager.h"
+#include "ash/common/wm/workspace_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/display/display_manager.h"
@@ -57,7 +58,6 @@
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm/workspace_controller.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -331,6 +331,10 @@ const aura::Window* RootWindowController::GetRootWindow() const {
   return GetHost()->window();
 }
 
+WorkspaceController* RootWindowController::workspace_controller() {
+  return root_window_controller_common_->workspace_controller();
+}
+
 void RootWindowController::SetWallpaperWidgetController(
     WallpaperWidgetController* controller) {
   wallpaper_widget_controller_.reset(controller);
@@ -373,7 +377,6 @@ void RootWindowController::Shutdown() {
 
   CloseChildWindows();
   GetRootWindowSettings(root_window)->controller = NULL;
-  workspace_controller_.reset();
   // Forget with the display ID so that display lookup
   // ends up with invalid display.
   GetRootWindowSettings(root_window)->display_id =
@@ -574,7 +577,7 @@ void RootWindowController::CloseChildWindows() {
   wallpaper_widget_controller_.reset();
   animating_wallpaper_widget_controller_.reset();
 
-  workspace_controller_.reset();
+  root_window_controller_common_->DeleteWorkspaceController();
   aura::client::SetTooltipClient(root_window, NULL);
 
   // Explicitly destroy top level windows. We do this as during part of
@@ -618,7 +621,7 @@ void RootWindowController::CloseChildWindows() {
 
 void RootWindowController::MoveWindowsTo(aura::Window* dst) {
   // Clear the workspace controller, so it doesn't incorrectly update the shelf.
-  workspace_controller_.reset();
+  root_window_controller_common_->DeleteWorkspaceController();
   ReparentAllWindows(GetRootWindow(), dst);
 }
 
@@ -678,7 +681,7 @@ void RootWindowController::ActivateKeyboard(
   keyboard_controller->AddObserver(shelf_widget()->shelf_layout_manager());
   keyboard_controller->AddObserver(panel_layout_manager_);
   keyboard_controller->AddObserver(docked_layout_manager_);
-  keyboard_controller->AddObserver(workspace_controller_->layout_manager());
+  keyboard_controller->AddObserver(workspace_controller()->layout_manager());
   keyboard_controller->AddObserver(
       always_on_top_controller_->GetLayoutManager());
   WmShell::Get()->NotifyVirtualKeyboardActivated(true);
@@ -708,7 +711,7 @@ void RootWindowController::DeactivateKeyboard(
     keyboard_controller->RemoveObserver(panel_layout_manager_);
     keyboard_controller->RemoveObserver(docked_layout_manager_);
     keyboard_controller->RemoveObserver(
-        workspace_controller_->layout_manager());
+        workspace_controller()->layout_manager());
     keyboard_controller->RemoveObserver(
         always_on_top_controller_->GetLayoutManager());
     WmShell::Get()->NotifyVirtualKeyboardActivated(false);
@@ -812,10 +815,6 @@ void RootWindowController::InitLayoutManagers() {
   DCHECK(lock_modal_container);
   lock_modal_container->SetLayoutManager(
       new SystemModalContainerLayoutManager(lock_modal_container));
-
-  WmWindow* default_container =
-      WmWindowAura::Get(GetContainer(kShellWindowId_DefaultContainer));
-  workspace_controller_.reset(new WorkspaceController(default_container));
 
   WmWindow* always_on_top_container =
       WmWindowAura::Get(GetContainer(kShellWindowId_AlwaysOnTopContainer));
