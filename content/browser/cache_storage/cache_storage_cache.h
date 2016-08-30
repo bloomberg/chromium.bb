@@ -209,20 +209,17 @@ class CONTENT_EXPORT CacheStorageCache {
                   const CacheStorageCacheQueryParams& options,
                   QueryCacheType query_type,
                   const QueryCacheResultsCallback& callback);
-  void QueryCacheDidOpenEntry(
+  void QueryCacheDidOpenFastPath(
       std::unique_ptr<QueryCacheResults> query_cache_results,
-      std::unique_ptr<disk_cache::Entry*> entry,
       int rv);
-  void QueryCacheDidOpenAllEntries(
+  void QueryCacheOpenNextEntry(
+      std::unique_ptr<QueryCacheResults> query_cache_results);
+  void QueryCacheFilterEntry(
       std::unique_ptr<QueryCacheResults> query_cache_results,
-      std::unique_ptr<OpenAllEntriesContext> entries_context,
-      CacheStorageError error);
-  void QueryCacheProcessNextEntry(
-      std::unique_ptr<QueryCacheResults> query_cache_results,
-      const Entries::iterator& iter);
+      int rv);
   void QueryCacheDidReadMetadata(
       std::unique_ptr<QueryCacheResults> query_cache_results,
-      const Entries::iterator& iter,
+      disk_cache::ScopedEntryPtr entry,
       std::unique_ptr<CacheMetadata> metadata);
 
   // Match callbacks
