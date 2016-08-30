@@ -82,6 +82,7 @@ public class DownloadNotificationService extends Service {
     private Context mContext;
     private int mNextNotificationId;
     private int mNumAutoResumptionAttemptLeft;
+    private boolean mStopPostingProgressNotifications;
 
    /**
      * Class for clients to access.
@@ -94,6 +95,7 @@ public class DownloadNotificationService extends Service {
 
     @Override
     public void onTaskRemoved(Intent rootIntent) {
+        mStopPostingProgressNotifications = true;
         // This funcion is called when Chrome is swiped away from the recent apps
         // drawer. So it doesn't catch all scenarios that chrome can get killed.
         // This will only help Android 4.4.2.
@@ -102,6 +104,7 @@ public class DownloadNotificationService extends Service {
 
     @Override
     public void onCreate() {
+        mStopPostingProgressNotifications = false;
         mContext = getApplicationContext();
         mNotificationManager = (NotificationManager) mContext.getSystemService(
                 Context.NOTIFICATION_SERVICE);
@@ -206,6 +209,7 @@ public class DownloadNotificationService extends Service {
     public void notifyDownloadProgress(String downloadGuid, String fileName, int percentage,
             long timeRemainingInMillis, long startTime, boolean isOffTheRecord,
             boolean canDownloadWhileMetered, boolean isOfflinePage) {
+        if (mStopPostingProgressNotifications) return;
         boolean indeterminate = percentage == INVALID_DOWNLOAD_PERCENTAGE;
         NotificationCompat.Builder builder = buildNotification(
                 android.R.drawable.stat_sys_download, fileName, null);
