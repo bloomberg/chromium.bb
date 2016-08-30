@@ -56,11 +56,6 @@
   _injectObject.reset();
 }
 
-- (void)evaluate:(NSString*)script
-    stringResultHandler:(web::JavaScriptCompletion)completionHandler {
-  [_receiver evaluateJavaScript:script stringResultHandler:completionHandler];
-}
-
 - (void)executeJavaScript:(NSString*)script
         completionHandler:(web::JavaScriptResultBlock)completionHandler {
   [_receiver executeJavaScript:script completionHandler:completionHandler];

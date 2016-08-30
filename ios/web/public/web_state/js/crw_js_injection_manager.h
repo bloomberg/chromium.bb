@@ -25,12 +25,6 @@
 // missing. It also injects the dependencies' JavaScript if they are missing.
 - (void)inject;
 
-// Evaluate the provided JavaScript asynchronously calling completionHandler
-// after execution. The |completionHandler| can be nil.
-// DEPRECATED. TODO(crbug.com/595761): Remove this API.
-- (void)evaluate:(NSString*)script
-    stringResultHandler:(web::JavaScriptCompletion)completionHandler;
-
 // Executes the supplied JavaScript asynchronously. Calls |completionHandler|
 // with results of the execution (which may be nil) or an NSError if there is an
 // error. The |completionHandler| can be nil.

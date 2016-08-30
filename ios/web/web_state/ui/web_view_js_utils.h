@@ -30,13 +30,6 @@ enum JSEvaluationErrorCode {
 // Converts result of WKWebView script evaluation to base::Value.
 std::unique_ptr<base::Value> ValueResultFromWKResult(id result);
 
-// Evaluates JavaScript on WKWebView. Provides evaluation result as a string.
-// If the web view cannot evaluate JS at the moment, |completion_handler| is
-// called with an NSError.
-void EvaluateJavaScript(WKWebView* web_view,
-                        NSString* script,
-                        JavaScriptCompletion completion_handler);
-
 // Executes JavaScript on WKWebView. If the web view cannot execute JS at the
 // moment, |completion_handler| is called with an NSError.
 void ExecuteJavaScript(WKWebView* web_view,

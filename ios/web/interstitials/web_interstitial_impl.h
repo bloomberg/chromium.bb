@@ -22,13 +22,6 @@ class WebInterstitialImpl;
 class WebStateImpl;
 
 // May be implemented in tests to run JavaScript on interstitials. This function
-// has access to private EvaluateJavaScript method to be used for testing.
-// DEPRECATED. TODO(crbug.com/595761): Remove this function.
-void EvaluateScriptForTesting(WebInterstitialImpl*,
-                              NSString*,
-                              JavaScriptCompletion);
-
-// May be implemented in tests to run JavaScript on interstitials. This function
 // has access to private ExecuteJavaScript method to be used for testing.
 void ExecuteScriptForTesting(WebInterstitialImpl*,
                              NSString*,
@@ -74,13 +67,6 @@ class WebInterstitialImpl : public WebInterstitial, public WebStateObserver {
   // Convenience method for getting the WebStateImpl.
   WebStateImpl* GetWebStateImpl() const;
 
-  // Evaluates the given |script| on interstitial's web view if there is one.
-  // Calls |completionHandler| with results of the evaluation.
-  // The |completionHandler| can be nil. Must be used only for testing.
-  // DEPRECATED. TODO(crbug.com/595761): Remove this method.
-  virtual void EvaluateJavaScript(NSString* script,
-                                  JavaScriptCompletion completionHandler) = 0;
-
   // Executes the given |script| on interstitial's web view if there is one.
   // Calls |completionHandler| with results of the evaluation.
   // The |completionHandler| can be nil. Must be used only for testing.
@@ -100,11 +86,6 @@ class WebInterstitialImpl : public WebInterstitial, public WebStateObserver {
   // Whether or not either Proceed() or DontProceed() has been called.
   bool action_taken_;
 
-  // Must be implemented only for testing purposes.
-  // DEPRECATED. TODO(crbug.com/595761): Remove this function.
-  friend void web::EvaluateScriptForTesting(WebInterstitialImpl*,
-                                            NSString*,
-                                            JavaScriptCompletion);
   // Must be implemented only for testing purposes.
   friend void web::ExecuteScriptForTesting(WebInterstitialImpl*,
                                            NSString*,

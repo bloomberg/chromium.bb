@@ -39,8 +39,6 @@ class HtmlWebInterstitialImpl : public WebInterstitialImpl {
   // WebInterstitialImpl implementation:
   void PrepareForDisplay() override;
   WebInterstitialDelegate* GetDelegate() const override;
-  void EvaluateJavaScript(NSString* script,
-                          JavaScriptCompletion completionHandler) override;
   void ExecuteJavaScript(NSString* script,
                          JavaScriptResultBlock completion_handler) override;
 

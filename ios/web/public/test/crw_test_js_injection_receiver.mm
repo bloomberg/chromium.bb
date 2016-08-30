@@ -30,11 +30,6 @@
   return self;
 }
 
-- (void)evaluateJavaScript:(NSString*)script
-       stringResultHandler:(web::JavaScriptCompletion)handler {
-  web::EvaluateJavaScript(_webView, script, handler);
-}
-
 - (void)executeJavaScript:(NSString*)script
         completionHandler:(web::JavaScriptResultBlock)completionHandler {
   web::ExecuteJavaScript(_webView, script, completionHandler);

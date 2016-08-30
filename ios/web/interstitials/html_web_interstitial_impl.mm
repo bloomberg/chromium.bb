@@ -129,12 +129,6 @@ WebInterstitialDelegate* HtmlWebInterstitialImpl::GetDelegate() const {
   return delegate_.get();
 }
 
-void HtmlWebInterstitialImpl::EvaluateJavaScript(
-    NSString* script,
-    JavaScriptCompletion completionHandler) {
-  web::EvaluateJavaScript(web_view_, script, completionHandler);
-}
-
 void HtmlWebInterstitialImpl::ExecuteJavaScript(
     NSString* script,
     JavaScriptResultBlock completion_handler) {

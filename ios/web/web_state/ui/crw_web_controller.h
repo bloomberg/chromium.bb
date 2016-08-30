@@ -207,9 +207,6 @@ class WebStateImpl;
 // Executes |script| in the web view, registering user interaction.
 - (void)executeUserJavaScript:(NSString*)script
             completionHandler:(web::JavaScriptResultBlock)completion;
-// Evaluates the user-entered |script| in the web view.
-// DEPRECATED. TODO(crbug.com/595761): Remove this API.
-- (void)evaluateUserJavaScript:(NSString*)script;
 
 // Dismisses the soft keyboard.
 - (void)dismissKeyboard;

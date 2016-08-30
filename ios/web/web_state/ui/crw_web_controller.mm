@@ -2485,12 +2485,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 #pragma mark -
 #pragma mark CRWJSInjectionEvaluator Methods
 
-- (void)evaluateJavaScript:(NSString*)script
-       stringResultHandler:(web::JavaScriptCompletion)handler {
-  NSString* safeScript = [self scriptByAddingWindowIDCheckForScript:script];
-  web::EvaluateJavaScript(_webView, safeScript, handler);
-}
-
 - (void)executeJavaScript:(NSString*)script
         completionHandler:(web::JavaScriptResultBlock)completionHandler {
   NSString* safeScript = [self scriptByAddingWindowIDCheckForScript:script];
@@ -2518,11 +2512,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
             completionHandler:(web::JavaScriptResultBlock)completion {
   [self setUserInteractionRegistered:YES];
   [self executeJavaScript:script completionHandler:completion];
-}
-
-// DEPRECATED. TODO(crbug.com/595761): Remove this API.
-- (void)evaluateUserJavaScript:(NSString*)script {
-  [self executeUserJavaScript:script completionHandler:nil];
 }
 
 - (BOOL)respondToMessage:(base::DictionaryValue*)message

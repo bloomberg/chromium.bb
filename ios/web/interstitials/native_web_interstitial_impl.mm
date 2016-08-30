@@ -57,12 +57,6 @@ WebInterstitialDelegate* NativeWebInterstitialImpl::GetDelegate() const {
   return delegate_.get();
 }
 
-void NativeWebInterstitialImpl::EvaluateJavaScript(
-    NSString* script,
-    JavaScriptCompletion completionHandler) {
-  NOTREACHED() << "JavaScript cannot be evaluated on native interstitials.";
-}
-
 void NativeWebInterstitialImpl::ExecuteJavaScript(
     NSString* script,
     JavaScriptResultBlock completion_handler) {
