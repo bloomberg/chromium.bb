@@ -103,7 +103,7 @@ void Pointer::SetCursor(Surface* surface, const gfx::Point& hotspot) {
       surface_->window()->Show();
 
     // Show widget now that cursor has been defined.
-    if (!widget_->IsVisible())
+    if (!widget_->IsVisible() && !is_direct_input_)
       widget_->Show();
   }
 
@@ -251,8 +251,11 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
       break;
   }
 
+  if ((event->flags() & ui::EF_IS_SYNTHESIZED) == 0)
+    is_direct_input_ = (event->flags() & ui::EF_DIRECT_INPUT) != 0;
+
   // Update cursor widget to reflect current focus and pointer location.
-  if (focus_) {
+  if (focus_ && !is_direct_input_) {
     if (!widget_)
       CreatePointerWidget();
 
@@ -265,6 +268,8 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
     }
 
     UpdateCursorScale();
+    if (!widget_->IsVisible())
+      widget_->Show();
   } else {
     if (widget_ && widget_->IsVisible())
       widget_->Hide();

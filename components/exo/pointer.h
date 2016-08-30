@@ -107,6 +107,9 @@ class Pointer : public ui::EventHandler,
   // The current pointer force.
   float force_;
 
+  // True if the pointer is controlled via direct input.
+  bool is_direct_input_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(Pointer);
 };
 
