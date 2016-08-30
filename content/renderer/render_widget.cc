@@ -211,6 +211,12 @@ content::RenderWidgetInputHandlerDelegate* GetRenderWidgetInputHandlerDelegate(
   return widget;
 }
 
+content::RenderWidget::CreateRenderWidgetFunction g_create_render_widget =
+    nullptr;
+
+content::RenderWidget::RenderWidgetInitializedCallback
+    g_render_widget_initialized = nullptr;
+
 }  // namespace
 
 namespace content {
@@ -286,6 +292,15 @@ RenderWidget::~RenderWidget() {
 }
 
 // static
+void RenderWidget::InstallCreateHook(
+    CreateRenderWidgetFunction create_render_widget,
+    RenderWidgetInitializedCallback render_widget_initialized) {
+  CHECK(!g_create_render_widget && !g_render_widget_initialized);
+  g_create_render_widget = create_render_widget;
+  g_render_widget_initialized = render_widget_initialized;
+}
+
+// static
 RenderWidget* RenderWidget::Create(int32_t opener_id,
                                    CompositorDependencies* compositor_deps,
                                    blink::WebPopupType popup_type,
@@ -317,8 +332,11 @@ RenderWidget* RenderWidget::CreateForFrame(
     return view->GetWidget();
   }
   scoped_refptr<RenderWidget> widget(
-      new RenderWidget(compositor_deps, blink::WebPopupTypeNone, screen_info,
-                       false, hidden, false));
+      g_create_render_widget
+          ? g_create_render_widget(compositor_deps, blink::WebPopupTypeNone,
+                                   screen_info, false, hidden, false)
+          : new RenderWidget(compositor_deps, blink::WebPopupTypeNone,
+                             screen_info, false, hidden, false));
   widget->SetRoutingID(routing_id);
   widget->for_oopif_ = true;
   // DoInit increments the reference count on |widget|, keeping it alive after
@@ -326,6 +344,8 @@ RenderWidget* RenderWidget::CreateForFrame(
   if (widget->DoInit(MSG_ROUTING_NONE,
                      RenderWidget::CreateWebFrameWidget(widget.get(), frame),
                      nullptr)) {
+    if (g_render_widget_initialized)
+      g_render_widget_initialized(widget.get());
     return widget.get();
   }
   return nullptr;

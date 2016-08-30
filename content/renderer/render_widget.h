@@ -130,6 +130,20 @@ class CONTENT_EXPORT RenderWidget
                                       CompositorDependencies* compositor_deps,
                                       blink::WebLocalFrame* frame);
 
+  // Used by content_layouttest_support to hook into the creation of
+  // RenderWidgets.
+  using CreateRenderWidgetFunction =
+      RenderWidget* (*)(CompositorDependencies*,
+                        blink::WebPopupType,
+                        const blink::WebScreenInfo&,
+                        bool,
+                        bool,
+                        bool);
+  using RenderWidgetInitializedCallback = void (*)(RenderWidget*);
+  static void InstallCreateHook(
+      CreateRenderWidgetFunction create_render_widget,
+      RenderWidgetInitializedCallback render_widget_initialized_callback);
+
   // Closes a RenderWidget that was created by |CreateForFrame|.
   // TODO(avi): De-virtualize this once RenderViewImpl has-a RenderWidget.
   // https://crbug.com/545684

@@ -1,0 +1,114 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef COMPONENTS_TEST_RUNNER_WEB_WIDGET_TEST_PROXY_H_
+#define COMPONENTS_TEST_RUNNER_WEB_WIDGET_TEST_PROXY_H_
+
+#include <memory>
+
+#include "base/logging.h"
+#include "base/macros.h"
+#include "components/test_runner/test_runner_export.h"
+#include "components/test_runner/web_widget_test_client.h"
+#include "third_party/WebKit/public/web/WebWidgetClient.h"
+
+namespace blink {
+class WebString;
+class WebWidget;
+}
+
+namespace test_runner {
+
+class TEST_RUNNER_EXPORT WebWidgetTestProxyBase {
+ public:
+  blink::WebWidget* web_widget() { return web_widget_; }
+  void set_web_widget(blink::WebWidget* widget) {
+    DCHECK(widget);
+    DCHECK(!web_widget_);
+    web_widget_ = widget;
+  }
+
+  void set_widget_test_client(
+      std::unique_ptr<WebWidgetTestClient> widget_test_client) {
+    DCHECK(widget_test_client);
+    DCHECK(!widget_test_client_);
+    widget_test_client_ = std::move(widget_test_client);
+  }
+
+ protected:
+  WebWidgetTestProxyBase();
+  ~WebWidgetTestProxyBase();
+
+  blink::WebWidgetClient* widget_test_client() {
+    return widget_test_client_.get();
+  }
+
+ private:
+  blink::WebWidget* web_widget_;
+  std::unique_ptr<WebWidgetTestClient> widget_test_client_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebWidgetTestProxyBase);
+};
+
+// WebWidgetTestProxy is used during LayoutTests and always instantiated, at
+// time of writing with Base=RenderWidget. It does not directly inherit from it
+// for layering purposes.
+// The intent of that class is to wrap RenderWidget for tests purposes in
+// order to reduce the amount of test specific code in the production code.
+// WebWidgetTestProxy is only doing the glue between RenderWidget and
+// WebWidgetTestProxyBase, that means that there is no logic living in this
+// class except deciding which base class should be called (could be both).
+//
+// Examples of usage:
+//  * when a fooClient has a mock implementation, WebWidgetTestProxy can
+//    override the fooClient() call and have WebWidgetTestProxyBase return the
+//    mock implementation.
+//  * when a value needs to be overridden by LayoutTests, WebWidgetTestProxy can
+//    override RenderViewImpl's getter and call a getter from
+//    WebWidgetTestProxyBase instead. In addition, WebWidgetTestProxyBase will
+//    have a public setter that could be called from the TestRunner.
+template <class Base, typename... Args>
+class WebWidgetTestProxy : public Base, public WebWidgetTestProxyBase {
+ public:
+  explicit WebWidgetTestProxy(Args... args) : Base(args...) {}
+
+  // WebWidgetClient implementation.
+  blink::WebScreenInfo screenInfo() override {
+    blink::WebScreenInfo info = Base::screenInfo();
+    blink::WebScreenInfo test_info = widget_test_client()->screenInfo();
+    if (test_info.orientationType != blink::WebScreenOrientationUndefined) {
+      info.orientationType = test_info.orientationType;
+      info.orientationAngle = test_info.orientationAngle;
+    }
+    return info;
+  }
+  void scheduleAnimation() override {
+    Base::scheduleAnimation();
+    widget_test_client()->scheduleAnimation();
+  }
+  bool requestPointerLock() override {
+    return widget_test_client()->requestPointerLock();
+  }
+  void requestPointerUnlock() override {
+    widget_test_client()->requestPointerUnlock();
+  }
+  bool isPointerLocked() override {
+    return widget_test_client()->isPointerLocked();
+  }
+  void setToolTipText(const blink::WebString& text,
+                      blink::WebTextDirection hint) override {
+    Base::setToolTipText(text, hint);
+    widget_test_client()->setToolTipText(text, hint);
+  }
+  void resetInputMethod() override { widget_test_client()->resetInputMethod(); }
+
+ private:
+  virtual ~WebWidgetTestProxy() {}
+
+  DISALLOW_COPY_AND_ASSIGN(WebWidgetTestProxy);
+};
+
+}  // namespace test_runner
+
+#endif  // COMPONENTS_TEST_RUNNER_WEB_WIDGET_TEST_PROXY_H_

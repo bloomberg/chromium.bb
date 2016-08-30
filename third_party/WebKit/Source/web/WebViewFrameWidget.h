@@ -7,12 +7,12 @@
 
 #include "platform/heap/Handle.h"
 #include "web/WebFrameWidgetBase.h"
+#include "web/WebLocalFrameImpl.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
 
-class WebLocalFrameImpl;
 class WebViewImpl;
 class WebWidgetClient;
 
@@ -92,6 +92,7 @@ public:
     bool isTransparent() const override;
     void setIsTransparent(bool) override;
     void setBaseBackgroundColor(WebColor) override;
+    WebLocalFrameImpl* localRoot() override;
 
     // WebFrameWidgetBase overrides:
     bool forSubframe() const override { return false; }
