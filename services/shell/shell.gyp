@@ -146,7 +146,6 @@
           '<(DEPTH)/sandbox/sandbox.gyp:sandbox',
           '<(DEPTH)/sandbox/sandbox.gyp:sandbox_services',
           '<(DEPTH)/sandbox/sandbox.gyp:seccomp_bpf',
-          '<(DEPTH)/sandbox/sandbox.gyp:seccomp_bpf_helpers',
         ],
       }],
       ['OS=="mac"', {

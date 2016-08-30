@@ -61,7 +61,6 @@ source_set("child_process_base") {
       "//sandbox/linux:sandbox",
       "//sandbox/linux:sandbox_services",
       "//sandbox/linux:seccomp_bpf",
-      "//sandbox/linux:seccomp_bpf_helpers",
     ]
   }
 

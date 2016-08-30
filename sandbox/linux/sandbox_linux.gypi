@@ -54,7 +54,6 @@
         [ 'use_seccomp_bpf==1', {
           'dependencies': [
             'seccomp_bpf',
-            'seccomp_bpf_helpers',
           ],
         }],
       ],
@@ -141,6 +140,14 @@
         'bpf_dsl/syscall_set.cc',
         'bpf_dsl/syscall_set.h',
         'bpf_dsl/trap_registry.h',
+        'seccomp-bpf-helpers/baseline_policy.cc',
+        'seccomp-bpf-helpers/baseline_policy.h',
+        'seccomp-bpf-helpers/sigsys_handlers.cc',
+        'seccomp-bpf-helpers/sigsys_handlers.h',
+        'seccomp-bpf-helpers/syscall_parameters_restrictions.cc',
+        'seccomp-bpf-helpers/syscall_parameters_restrictions.h',
+        'seccomp-bpf-helpers/syscall_sets.cc',
+        'seccomp-bpf-helpers/syscall_sets.h',
         'seccomp-bpf/die.cc',
         'seccomp-bpf/die.h',
         'seccomp-bpf/sandbox_bpf.cc',
@@ -162,31 +169,6 @@
         # Disable LTO due to compiler bug
         # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=57703
         '../../build/android/disable_gcc_lto.gypi',
-      ],
-      'include_dirs': [
-        '../..',
-      ],
-    },
-    {
-      'target_name': 'seccomp_bpf_helpers',
-      'type': '<(component)',
-      'sources': [
-        'seccomp-bpf-helpers/baseline_policy.cc',
-        'seccomp-bpf-helpers/baseline_policy.h',
-        'seccomp-bpf-helpers/sigsys_handlers.cc',
-        'seccomp-bpf-helpers/sigsys_handlers.h',
-        'seccomp-bpf-helpers/syscall_parameters_restrictions.cc',
-        'seccomp-bpf-helpers/syscall_parameters_restrictions.h',
-        'seccomp-bpf-helpers/syscall_sets.cc',
-        'seccomp-bpf-helpers/syscall_sets.h',
-      ],
-      'dependencies': [
-        '../base/base.gyp:base',
-        'sandbox_services',
-        'seccomp_bpf',
-      ],
-      'defines': [
-        'SANDBOX_IMPLEMENTATION',
       ],
       'include_dirs': [
         '../..',
