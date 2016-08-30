@@ -10,6 +10,7 @@
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/api/LayoutAPIShim.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/paint/PaintInvalidator.h"
@@ -186,7 +187,7 @@ void PaintInvalidationState::updateForCurrentObject(const PaintInvalidationState
         return;
 
     if (m_currentObject.isLayoutView()) {
-        DCHECK(&parentState.m_currentObject == toLayoutView(m_currentObject).frame()->ownerLayoutObject());
+        DCHECK(&parentState.m_currentObject == LayoutAPIShim::layoutObjectFrom(toLayoutView(m_currentObject).frame()->ownerLayoutItem()));
         m_paintOffset += toLayoutBox(parentState.m_currentObject).contentBoxOffset();
         // a LayoutView paints with a defined size but a pixel-rounded offset.
         m_paintOffset = LayoutSize(roundedIntSize(m_paintOffset));
