@@ -99,7 +99,7 @@ SVGViewSpec* SVGSVGElement::currentView()
 {
     if (!m_viewSpec)
         m_viewSpec = SVGViewSpec::create(this);
-    return m_viewSpec.get();
+    return m_viewSpec;
 }
 
 float SVGSVGElement::currentScale() const
@@ -161,8 +161,9 @@ bool SVGSVGElement::zoomAndPanEnabled() const
 {
     const SVGZoomAndPan* currentViewSpec = this;
     if (m_useCurrentView)
-        currentViewSpec = m_viewSpec.get();
-    return currentViewSpec && currentViewSpec->zoomAndPan() == SVGZoomAndPanMagnify;
+        currentViewSpec = m_viewSpec;
+    DCHECK(currentViewSpec);
+    return currentViewSpec->zoomAndPan() == SVGZoomAndPanMagnify;
 }
 
 void SVGSVGElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
@@ -568,8 +569,10 @@ bool SVGSVGElement::selfHasRelativeLengths() const
 
 FloatRect SVGSVGElement::currentViewBoxRect() const
 {
-    if (m_useCurrentView)
-        return m_viewSpec ? m_viewSpec->viewBox()->currentValue()->value() : FloatRect();
+    if (m_useCurrentView) {
+        DCHECK(m_viewSpec);
+        return m_viewSpec->viewBox()->currentValue()->value();
+    }
 
     FloatRect useViewBox = viewBox()->currentValue()->value();
     if (!useViewBox.isEmpty())
@@ -628,8 +631,9 @@ float SVGSVGElement::intrinsicHeight() const
 
 AffineTransform SVGSVGElement::viewBoxToViewTransform(float viewWidth, float viewHeight) const
 {
-    if (!m_useCurrentView || !m_viewSpec)
+    if (!m_useCurrentView)
         return SVGFitToViewBox::viewBoxToViewTransform(currentViewBoxRect(), preserveAspectRatio()->currentValue(), viewWidth, viewHeight);
+    DCHECK(m_viewSpec);
 
     AffineTransform ctm = SVGFitToViewBox::viewBoxToViewTransform(currentViewBoxRect(), m_viewSpec->preserveAspectRatio()->currentValue(), viewWidth, viewHeight);
     SVGTransformList* transformList = m_viewSpec->transform();
@@ -645,41 +649,39 @@ AffineTransform SVGSVGElement::viewBoxToViewTransform(float viewWidth, float vie
 
 void SVGSVGElement::setupInitialView(const String& fragmentIdentifier, Element* anchorNode)
 {
-    LayoutObject* layoutObject = this->layoutObject();
-    SVGViewSpec* view = m_viewSpec.get();
-    if (view)
-        view->reset();
+    if (m_viewSpec)
+        m_viewSpec->reset();
 
-    bool hadUseCurrentView = m_useCurrentView;
+    // If we previously had a view, we need to layout again, regardless of the
+    // state after setting.
+    bool needsViewUpdate = m_useCurrentView;
     m_useCurrentView = false;
 
     if (fragmentIdentifier.startsWith("svgView(")) {
-        if (!view)
-            view = currentView(); // Create the SVGViewSpec.
+        SVGViewSpec* view = currentView(); // Ensure the SVGViewSpec has been created.
 
         view->inheritViewAttributesFromElement(this);
 
         if (view->parseViewSpec(fragmentIdentifier)) {
             UseCounter::count(document(), UseCounter::SVGSVGElementFragmentSVGView);
             m_useCurrentView = true;
+            needsViewUpdate = true;
         } else {
             view->reset();
         }
-
-        if (layoutObject && (hadUseCurrentView || m_useCurrentView))
-            markForLayoutAndParentResourceInvalidation(layoutObject);
-        return;
-    }
-
-    // Spec: If the SVG fragment identifier addresses a 'view' element within an SVG document (e.g., MyDrawing.svg#MyView
-    // or MyDrawing.svg#xpointer(id('MyView'))) then the closest ancestor 'svg' element is displayed in the viewport.
-    // Any view specification attributes included on the given 'view' element override the corresponding view specification
-    // attributes on the closest ancestor 'svg' element.
-    // TODO(ed): The spec text above is a bit unclear.
-    // Should the transform from outermost svg to nested svg be applied to "display"
-    // the inner svg in the viewport, then let the view element override the inner
-    // svg's view specification attributes. Should it fill/override the outer viewport?
-    if (isSVGViewElement(anchorNode)) {
+    } else if (isSVGViewElement(anchorNode)) {
+        // Spec: If the SVG fragment identifier addresses a 'view' element
+        // within an SVG document (e.g., MyDrawing.svg#MyView or
+        // MyDrawing.svg#xpointer(id('MyView'))) then the closest ancestor
+        // 'svg' element is displayed in the viewport.  Any view specification
+        // attributes included on the given 'view' element override the
+        // corresponding view specification attributes on the closest ancestor
+        // 'svg' element.
+        // TODO(ed): The spec text above is a bit unclear.
+        // Should the transform from outermost svg to nested svg be applied to
+        // "display" the inner svg in the viewport, then let the view element
+        // override the inner svg's view specification attributes. Should it
+        // fill/override the outer viewport?
         SVGViewElement& viewElement = toSVGViewElement(*anchorNode);
 
         if (SVGSVGElement* svg = viewElement.ownerSVGElement()) {
@@ -692,10 +694,12 @@ void SVGSVGElement::setupInitialView(const String& fragmentIdentifier, Element* 
         }
     }
 
-    // If we previously had a view and didn't get a new one, we need to
-    // layout again.
-    if (layoutObject && hadUseCurrentView)
+    LayoutObject* layoutObject = this->layoutObject();
+    if (layoutObject && needsViewUpdate)
         markForLayoutAndParentResourceInvalidation(layoutObject);
+
+    // If m_useCurrentView is true we should have a view-spec.
+    DCHECK(!m_useCurrentView || m_viewSpec);
 
     // FIXME: We need to decide which <svg> to focus on, and zoom to it.
     // FIXME: We need to actually "highlight" the viewTarget(s).
@@ -708,6 +712,7 @@ void SVGSVGElement::inheritViewAttributes(SVGViewElement* viewElement)
     UseCounter::count(document(), UseCounter::SVGSVGElementFragmentSVGViewElement);
     view->inheritViewAttributesFromElement(this);
     view->inheritViewAttributesFromElement(viewElement);
+    DCHECK(!m_useCurrentView || m_viewSpec);
 }
 
 void SVGSVGElement::finishParsingChildren()
