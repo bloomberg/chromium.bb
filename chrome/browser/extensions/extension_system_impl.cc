@@ -262,25 +262,6 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   content::URLDataSource::Add(profile_, new ExtensionIconSource(profile_));
 
   quota_service_.reset(new QuotaService);
-
-  if (extensions_enabled) {
-    // Load any extensions specified with --load-extension.
-    // TODO(yoz): Seems like this should move into ExtensionService::Init.
-    // But maybe it's no longer important.
-    if (command_line->HasSwitch(switches::kLoadExtension)) {
-      base::CommandLine::StringType path_list =
-          command_line->GetSwitchValueNative(switches::kLoadExtension);
-      base::StringTokenizerT<base::CommandLine::StringType,
-                             base::CommandLine::StringType::const_iterator>
-          t(path_list, FILE_PATH_LITERAL(","));
-      while (t.GetNext()) {
-        std::string extension_id;
-        UnpackedInstaller::Create(extension_service_.get())
-            ->LoadFromCommandLine(base::FilePath(t.token()), &extension_id,
-                                  false /* only_allow_apps */);
-      }
-    }
-  }
 }
 
 void ExtensionSystemImpl::Shared::Shutdown() {

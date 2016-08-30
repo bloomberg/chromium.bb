@@ -458,6 +458,9 @@ class ExtensionService
   }
 
  private:
+  // Loads extensions specified via a command line flag/switch.
+  void LoadExtensionsFromCommandLineFlag(const char* switch_name);
+
   // Reloads the specified extension, sending the onLaunched() event to it if it
   // currently has any window showing. |be_noisy| determines whether noisy
   // failures are allowed for unpacked extension installs.
@@ -594,6 +597,8 @@ class ExtensionService
       const base::FilePath& install_dir,
       const base::FilePath& extension_path);
 
+  const base::CommandLine* command_line_ = nullptr;
+
   // The normal profile associated with this ExtensionService.
   Profile* profile_ = nullptr;
 
@@ -616,6 +621,10 @@ class ExtensionService
   //
   // These extensions should appear in registry_.
   extensions::ExtensionSet greylist_;
+
+  // Set of whitelisted enabled extensions loaded from the
+  // --disable-extensions-except command line flag.
+  std::set<std::string> disable_flag_exempted_extensions_;
 
   // The list of extension installs delayed for various reasons.  The reason
   // for delayed install is stored in ExtensionPrefs. These are not part of

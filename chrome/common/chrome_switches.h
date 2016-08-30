@@ -14,6 +14,10 @@
 // installer where dependencies should be limited. Instead, have files
 // directly include your switch file.
 
+namespace base {
+class CommandLine;
+};
+
 namespace switches {
 
 // -----------------------------------------------------------------------------
@@ -74,6 +78,7 @@ extern const char kDisableDefaultApps[];
 extern const char kDisableDeviceDiscoveryNotifications[];
 extern const char kDisableDomainReliability[];
 extern const char kDisableExtensions[];
+extern const char kDisableExtensionsExcept[];
 extern const char kDisableExtensionsFileAccessCheck[];
 extern const char kDisableExtensionsHttpThrottling[];
 extern const char kDisableFieldTrialTestingConfig[];
@@ -384,6 +389,7 @@ extern const char kEnableInputImeAPI[];
 #endif
 
 bool AboutInSettingsEnabled();
+bool ExtensionsDisabled(const base::CommandLine& command_line);
 bool MdFeedbackEnabled();
 bool MdPolicyPageEnabled();
 bool PdfMaterialUIEnabled();

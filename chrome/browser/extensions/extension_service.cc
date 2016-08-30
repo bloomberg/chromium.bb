@@ -15,6 +15,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_tokenizer.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -300,6 +301,7 @@ ExtensionService::ExtensionService(Profile* profile,
                                    bool extensions_enabled,
                                    extensions::OneShotEvent* ready)
     : extensions::Blacklist::Observer(blacklist),
+      command_line_(command_line),
       profile_(profile),
       system_(extensions::ExtensionSystem::Get(profile)),
       extension_prefs_(extension_prefs),
@@ -427,7 +429,9 @@ void ExtensionService::Init() {
   // LoadAllExtensions() calls OnLoadedInstalledExtensions().
   component_loader_->LoadAll();
   extensions::InstalledLoader(this).LoadAllExtensions();
-
+  LoadExtensionsFromCommandLineFlag(switches::kDisableExtensionsExcept);
+  if (extensions_enabled_)
+    LoadExtensionsFromCommandLineFlag(switches::kLoadExtension);
   EnabledReloadableExtensions();
   MaybeFinishShutdownDelayed();
   SetReadyAndNotifyListeners();
@@ -594,6 +598,26 @@ bool ExtensionService::UpdateExtension(const extensions::CRXFileInfo& file,
     *out_crx_installer = installer.get();
 
   return true;
+}
+
+void ExtensionService::LoadExtensionsFromCommandLineFlag(
+    const char* switch_name) {
+  if (command_line_->HasSwitch(switch_name)) {
+    base::CommandLine::StringType path_list =
+        command_line_->GetSwitchValueNative(switch_name);
+    base::StringTokenizerT<base::CommandLine::StringType,
+                           base::CommandLine::StringType::const_iterator>
+        t(path_list, FILE_PATH_LITERAL(","));
+    while (t.GetNext()) {
+      std::string extension_id;
+      extensions::UnpackedInstaller::Create(this)->LoadFromCommandLine(
+          base::FilePath(t.token()), &extension_id, false /*only-allow-apps*/);
+      // Extension id is added to whitelist after its extension is loaded
+      // because code is executed asynchronously.
+      if (switch_name == switches::kDisableExtensionsExcept)
+        disable_flag_exempted_extensions_.insert(extension_id);
+    }
+  }
 }
 
 void ExtensionService::ReloadExtensionImpl(
@@ -1422,10 +1446,10 @@ void ExtensionService::AddExtension(const Extension* extension) {
   // TODO(jstritar): We may be able to get rid of this branch by overriding the
   // default extension state to DISABLED when the --disable-extensions flag
   // is set (http://crbug.com/29067).
-  if (!extensions_enabled() &&
-      !extension->is_theme() &&
+  if (!extensions_enabled() && !extension->is_theme() &&
       extension->location() != Manifest::COMPONENT &&
-      !Manifest::IsExternalLocation(extension->location())) {
+      !Manifest::IsExternalLocation(extension->location()) &&
+      disable_flag_exempted_extensions_.count(extension->id()) == 0) {
     return;
   }
 

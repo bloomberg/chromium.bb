@@ -16,6 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/shared_user_script_master.h"
@@ -42,6 +43,7 @@
 #include "net/base/filename_util.h"
 
 using extensions::FeatureSwitch;
+using extensions::ExtensionRegistry;
 
 // This file contains high-level startup tests for the extensions system. We've
 // had many silly bugs where command line flags did not get propagated correctly
@@ -63,8 +65,7 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
       command_line->AppendSwitchASCII(
           switches::kForceFieldTrials,
           base::StringPrintf(
-              "%s/%s/",
-              chrome_prefs::internals::kSettingsEnforcementTrialName,
+              "%s/%s/", chrome_prefs::internals::kSettingsEnforcementTrialName,
               chrome_prefs::internals::kSettingsEnforcementGroupNoEnforcement));
 #if defined(OFFICIAL_BUILD) && defined(OS_WIN)
       // In Windows official builds, it is not possible to disable settings
@@ -72,11 +73,9 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
       unauthenticated_load_allowed_ = false;
 #endif
     } else {
-      base::FilePath::StringType paths =
-          base::JoinString(load_extensions_,
-                           base::FilePath::StringType(1, ','));
-      command_line->AppendSwitchNative(switches::kLoadExtension,
-                                       paths);
+      base::FilePath::StringType paths = base::JoinString(
+          load_extensions_, base::FilePath::StringType(1, ','));
+      command_line->AppendSwitchNative(switches::kLoadExtension, paths);
       command_line->AppendSwitch(switches::kDisableExtensionsFileAccessCheck);
     }
   }
@@ -98,8 +97,8 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
 
       base::CopyFile(src_dir.Append(chrome::kPreferencesFilename),
                      preferences_file_);
-      base::CopyDirectory(src_dir.AppendASCII("Extensions"),
-                          profile_dir, true);  // recursive
+      base::CopyDirectory(src_dir.AppendASCII("Extensions"), profile_dir,
+                          true);  // recursive
     }
     return true;
   }
@@ -141,16 +140,17 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
     ASSERT_EQ(static_cast<uint32_t>(num_expected_extensions),
               static_cast<uint32_t>(found_extensions));
 
-    ExtensionService* service = extensions::ExtensionSystem::Get(
-                                    browser()->profile())->extension_service();
+    ExtensionService* service =
+        extensions::ExtensionSystem::Get(browser()->profile())
+            ->extension_service();
     ASSERT_EQ(expect_extensions_enabled, service->extensions_enabled());
 
     content::WindowedNotificationObserver user_scripts_observer(
         extensions::NOTIFICATION_USER_SCRIPTS_UPDATED,
         content::NotificationService::AllSources());
     extensions::SharedUserScriptMaster* master =
-        extensions::ExtensionSystem::Get(browser()->profile())->
-            shared_user_script_master();
+        extensions::ExtensionSystem::Get(browser()->profile())
+            ->shared_user_script_master();
     if (!master->scripts_ready())
       user_scripts_observer.Wait();
     ASSERT_TRUE(master->scripts_ready());
@@ -165,8 +165,8 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
     // Load a page affected by the content script and test to see the effect.
     base::FilePath test_file;
     PathService::Get(chrome::DIR_TEST_DATA, &test_file);
-    test_file = test_file.AppendASCII("extensions")
-                         .AppendASCII("test_file.html");
+    test_file =
+        test_file.AppendASCII("extensions").AppendASCII("test_file.html");
 
     ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(test_file));
 
@@ -237,8 +237,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionsStartupTest, DISABLED_NoFileAccess) {
     content::WindowedNotificationObserver user_scripts_observer(
         extensions::NOTIFICATION_USER_SCRIPTS_UPDATED,
         content::NotificationService::AllSources());
-    extensions::util::SetAllowFileAccess(
-        extension_list[i]->id(), browser()->profile(), false);
+    extensions::util::SetAllowFileAccess(extension_list[i]->id(),
+                                         browser()->profile(), false);
     user_scripts_observer.Wait();
   }
 
@@ -253,12 +253,11 @@ class ExtensionsLoadTest : public ExtensionStartupTestBase {
   ExtensionsLoadTest() {
     base::FilePath one_extension_path;
     PathService::Get(chrome::DIR_TEST_DATA, &one_extension_path);
-    one_extension_path = one_extension_path
-        .AppendASCII("extensions")
-        .AppendASCII("good")
-        .AppendASCII("Extensions")
-        .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
-        .AppendASCII("1.0.0.0");
+    one_extension_path = one_extension_path.AppendASCII("extensions")
+                             .AppendASCII("good")
+                             .AppendASCII("Extensions")
+                             .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
+                             .AppendASCII("1.0.0.0");
     load_extensions_.push_back(one_extension_path.value());
   }
 };
@@ -276,33 +275,29 @@ class ExtensionsLoadMultipleTest : public ExtensionStartupTestBase {
   ExtensionsLoadMultipleTest() {
     base::FilePath one_extension_path;
     PathService::Get(chrome::DIR_TEST_DATA, &one_extension_path);
-    one_extension_path = one_extension_path
-        .AppendASCII("extensions")
-        .AppendASCII("good")
-        .AppendASCII("Extensions")
-        .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
-        .AppendASCII("1.0.0.0");
+    one_extension_path = one_extension_path.AppendASCII("extensions")
+                             .AppendASCII("good")
+                             .AppendASCII("Extensions")
+                             .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
+                             .AppendASCII("1.0.0.0");
     load_extensions_.push_back(one_extension_path.value());
 
     base::FilePath second_extension_path;
     PathService::Get(chrome::DIR_TEST_DATA, &second_extension_path);
-    second_extension_path = second_extension_path
-        .AppendASCII("extensions")
-        .AppendASCII("app");
+    second_extension_path =
+        second_extension_path.AppendASCII("extensions").AppendASCII("app");
     load_extensions_.push_back(second_extension_path.value());
 
     base::FilePath third_extension_path;
     PathService::Get(chrome::DIR_TEST_DATA, &third_extension_path);
-    third_extension_path = third_extension_path
-        .AppendASCII("extensions")
-        .AppendASCII("app1");
+    third_extension_path =
+        third_extension_path.AppendASCII("extensions").AppendASCII("app1");
     load_extensions_.push_back(third_extension_path.value());
 
     base::FilePath fourth_extension_path;
     PathService::Get(chrome::DIR_TEST_DATA, &fourth_extension_path);
-    fourth_extension_path = fourth_extension_path
-        .AppendASCII("extensions")
-        .AppendASCII("app2");
+    fourth_extension_path =
+        fourth_extension_path.AppendASCII("extensions").AppendASCII("app2");
     load_extensions_.push_back(fourth_extension_path.value());
   }
 };
@@ -310,4 +305,51 @@ class ExtensionsLoadMultipleTest : public ExtensionStartupTestBase {
 IN_PROC_BROWSER_TEST_F(ExtensionsLoadMultipleTest, Test) {
   WaitForServicesToStart(4, true);
   TestInjection(true, true);
+}
+
+class DisableExtensionsExceptBrowserTest : public ExtensionBrowserTest {
+ public:
+  DisableExtensionsExceptBrowserTest() {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override;
+
+  ExtensionRegistry* GetExtensionRegistry() {
+    return ExtensionRegistry::Get(browser()->profile());
+  }
+};
+
+void DisableExtensionsExceptBrowserTest::SetUpCommandLine(
+    base::CommandLine* command_line) {
+  ExtensionBrowserTest::SetUpCommandLine(command_line);
+  base::FilePath fp1(test_data_dir_.AppendASCII("app_dot_com_app/"));
+  base::FilePath fp2(test_data_dir_.AppendASCII("app/"));
+
+  command_line->AppendSwitchASCII(
+      switches::kDisableExtensionsExcept,
+      fp1.AsUTF8Unsafe() + "," + fp2.AsUTF8Unsafe());
+}
+
+// Tests disabling all extensions except those listed
+// (--disable-extensions-except).
+IN_PROC_BROWSER_TEST_F(DisableExtensionsExceptBrowserTest,
+                       DisableExtensionsExceptFlag) {
+  EXPECT_FALSE(extension_service()->extensions_enabled());
+
+  // Checks that the extensions loaded with the --disable-extensions-except flag
+  // are enabled.
+  bool is_app_dot_com_extension_enabled = false;
+  bool is_app_test_extension_enabled = false;
+  for (const scoped_refptr<const extensions::Extension>& extension :
+       GetExtensionRegistry()->enabled_extensions()) {
+    if (extension->name() == "App Dot Com: The App") {
+      is_app_dot_com_extension_enabled = true;
+    } else if (extension->name() == "App Test") {
+      is_app_test_extension_enabled = true;
+    } else {
+      EXPECT_TRUE(
+          extensions::Manifest::IsComponentLocation(extension->location()));
+    }
+  }
+  EXPECT_TRUE(is_app_dot_com_extension_enabled);
+  EXPECT_TRUE(is_app_test_extension_enabled);
 }

@@ -86,8 +86,8 @@ bool ChromeExtensionsBrowserClient::AreExtensionsDisabled(
     const base::CommandLine& command_line,
     content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
-  return command_line.HasSwitch(switches::kDisableExtensions) ||
-      profile->GetPrefs()->GetBoolean(prefs::kDisableExtensions);
+  return switches::ExtensionsDisabled(command_line) ||
+         profile->GetPrefs()->GetBoolean(prefs::kDisableExtensions);
 }
 
 bool ChromeExtensionsBrowserClient::IsValidContext(

@@ -221,6 +221,9 @@ const char kDisableDomainReliability[]      = "disable-domain-reliability";
 // Disable extensions.
 const char kDisableExtensions[]             = "disable-extensions";
 
+// Disable extensions except those specified in a comma-separated list.
+const char kDisableExtensionsExcept[] = "disable-extensions-except";
+
 // Disable checking for user opt-in for extensions that want to inject script
 // into file URLs (ie, always allow it). This is used during automated testing.
 const char kDisableExtensionsFileAccessCheck[] =
@@ -1286,6 +1289,11 @@ bool AboutInSettingsEnabled() {
   return SettingsWindowEnabled() &&
          !base::CommandLine::ForCurrentProcess()->HasSwitch(
              ::switches::kDisableAboutInSettings);
+}
+
+bool ExtensionsDisabled(const base::CommandLine& command_line) {
+  return command_line.HasSwitch(switches::kDisableExtensions) ||
+         command_line.HasSwitch(switches::kDisableExtensionsExcept);
 }
 
 bool MdFeedbackEnabled() {
