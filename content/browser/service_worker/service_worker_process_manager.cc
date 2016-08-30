@@ -64,7 +64,10 @@ ServiceWorkerProcessManager::~ServiceWorkerProcessManager() {
   DCHECK(IsShutdown())
       << "Call Shutdown() before destroying |this|, so that racing method "
       << "invocations don't use a destroyed BrowserContext.";
-  DCHECK(instance_info_.empty());
+  // TODO(horo): Remove after collecting crash data.
+  // Temporary checks to verify that ServiceWorkerProcessManager doesn't prevent
+  // render process hosts from shutting down: crbug.com/639193
+  CHECK(instance_info_.empty());
 }
 
 void ServiceWorkerProcessManager::Shutdown() {
