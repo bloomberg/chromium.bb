@@ -2279,7 +2279,6 @@ fade_out_done(struct weston_view_animation *animation, void *data)
 	}
 }
 
-/** Re-queue the fade animation to be evaluated if client had been inhibiting */
 struct shell_surface *
 get_shell_surface(struct weston_surface *surface)
 {
@@ -2294,26 +2293,6 @@ get_shell_surface(struct weston_surface *surface)
 /*
  * libweston-desktop
  */
-
-static void
-desktop_surface_drop_idle_inhibitor(struct weston_desktop_surface *desktop_surface,
-				    void *shell)
-{
-	struct shell_surface *shsurf =
-		weston_desktop_surface_get_user_data(desktop_surface);
-	struct weston_surface *surface =
-		weston_desktop_surface_get_surface(desktop_surface);
-	struct weston_compositor *compositor =
-		shsurf->shell->compositor;
-
-	if (compositor->state == WESTON_COMPOSITOR_IDLE
-	     || compositor->state == WESTON_COMPOSITOR_OFFSCREEN
-	     || compositor->state == WESTON_COMPOSITOR_SLEEPING)
-	{
-		surface->inhibit_idling = false;
-		shell_fade(shsurf->shell, FADE_OUT);
-	}
-}
 
 static void
 desktop_surface_added(struct weston_desktop_surface *desktop_surface,
@@ -2378,9 +2357,6 @@ desktop_surface_removed(struct weston_desktop_surface *desktop_surface,
 
 	if (!shsurf)
 		return;
-
-	if (surface->inhibit_idling)
-		desktop_surface_drop_idle_inhibitor(desktop_surface, shell);
 
 	wl_signal_emit(&shsurf->destroy_signal, shsurf);
 
@@ -2798,7 +2774,6 @@ static const struct weston_desktop_api shell_desktop_api = {
 	.struct_size = sizeof(struct weston_desktop_api),
 	.surface_added = desktop_surface_added,
 	.surface_removed = desktop_surface_removed,
-	.surface_drop_idle_inhibitor = desktop_surface_drop_idle_inhibitor,
 	.committed = desktop_surface_committed,
 	.move = desktop_surface_move,
 	.resize = desktop_surface_resize,
@@ -3848,7 +3823,6 @@ shell_fade(struct desktop_shell *shell, enum fade_type type)
 {
 	float tint;
 	struct shell_output *shell_output;
-	uint32_t inhibit_mask = weston_compositor_inhibited_outputs(shell->compositor);
 
 	switch (type) {
 	case FADE_IN:
@@ -3863,9 +3837,6 @@ shell_fade(struct desktop_shell *shell, enum fade_type type)
 
 	/* Create a separate fade surface for each output */
 	wl_list_for_each(shell_output, &shell->output_list, link) {
-		if (inhibit_mask & (1 << shell_output->output->id))
-			continue;
-
 		shell_output->fade.type = type;
 
 		if (shell_output->fade.view == NULL) {
@@ -3961,16 +3932,11 @@ shell_fade_init(struct desktop_shell *shell)
 		return;
 
 	wl_list_for_each(shell_output, &shell->output_list, link) {
-		uint32_t inhibit_mask = weston_compositor_inhibited_outputs(shell->compositor);
-
 		if (shell_output->fade.view != NULL) {
 			weston_log("%s: warning: fade surface already exists\n",
 				   __func__);
 			continue;
 		}
-
-		if (inhibit_mask & (1 << shell_output->output->id))
-			continue;
 
 		shell_output->fade.view = shell_fade_create_surface_for_output(shell, shell_output);
 		if (!shell_output->fade.view)
