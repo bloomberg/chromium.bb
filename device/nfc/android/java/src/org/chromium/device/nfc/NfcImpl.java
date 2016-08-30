@@ -362,11 +362,12 @@ public class NfcImpl implements Nfc {
      * Disables reader mode.
      * @see android.nfc.NfcAdapter#disableReaderMode
      */
+    @TargetApi(Build.VERSION_CODES.KITKAT)
     private void disableReaderMode() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) return;
 
         mReaderCallbackHandler = null;
-        if (mActivity != null) {
+        if (mActivity != null && !mActivity.isDestroyed()) {
             mNfcAdapter.disableReaderMode(mActivity);
         }
     }

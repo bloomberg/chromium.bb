@@ -76,6 +76,7 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="device/battery/android/java/src"/>
     <classpathentry kind="src" path="device/bluetooth/android/java/src"/>
     <classpathentry kind="src" path="device/gamepad/android/java/src"/>
+    <classpathentry kind="src" path="device/nfc/android/java/src"/>
     <classpathentry kind="src" path="device/usb/android/java/src"/>
     <classpathentry kind="src" path="device/vibration/android/java/src"/>
     <classpathentry kind="src" path="media/base/android/java/src"/>
@@ -250,6 +251,7 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="lib" path="out/Debug/lib.java/device/battery/android/battery_monitor_android.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/device/battery/mojo_bindings_java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/device/bluetooth/java.jar"/>
+    <classpathentry kind="lib" path="out/Debug/lib.java/device/nfc/mojo_bindings_java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/device/vibration/android/vibration_manager_android.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/device/vibration/mojo_bindings_java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/media/base/android/media_java.jar"/>
