@@ -116,6 +116,9 @@ class PolicyTemplateGenerator:
     policy['caption'] = self._ImportMessage(policy['caption'])
     if 'label' in policy:
       policy['label'] = self._ImportMessage(policy['label'])
+    if 'arc_support' in policy:
+      policy['arc_support'] = self._ImportMessage(policy['arc_support'])
+
 
     if policy['type'] == 'group':
       self._ProcessPolicyList(policy['policies'])

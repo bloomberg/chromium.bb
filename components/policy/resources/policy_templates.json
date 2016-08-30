@@ -1035,6 +1035,7 @@
       If this setting is enabled or not configured, users can print.
 
       If this setting is disabled, users cannot print from <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. Printing is disabled in the wrench menu, extensions, JavaScript applications, etc. It is still possible to print from plugins that bypass <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> while printing. For example, certain Flash applications have the print option in their context menu, which is not covered by this policy.''',
+      'arc_support': 'This policy has no effect on Android apps.',
     },
     {
       'name': 'CloudPrintProxyEnabled',
@@ -1117,6 +1118,7 @@
       If you enable this setting, Safety Mode on YouTube is always active.
 
       If you disable this setting or do not set a value, Safety Mode on YouTube is not enforced.''',
+      'arc_support': 'This policy has no effect on the Android YouTube app. If you want to enforce Safety Mode on YouTube, you should disallow installation of the Android YouTube app.',
     },
     {
       'name': 'SafeBrowsingEnabled',
@@ -1205,6 +1207,7 @@
           it in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. If this
           policy is unset, password saving is allowed (but can be turned off by
           the user).''',
+          'arc_support': 'This policy has no effect on Android apps.',
         },
         {
           'name': 'PasswordManagerAllowShowPasswords',
@@ -1373,7 +1376,10 @@
 
       If you enable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
-      If this policy is left not set Google Sync will be available for the user to choose whether to use it or not.''',
+      If this policy is left not set Google Sync will be available for the user to choose whether to use it or not.
+
+      To fully disable Google Sync, it is recommended that you disable the Google Sync service in the Google Admin console.''',
+      'arc_support': 'Disabling Google Sync will cause Android Backup and Restore to not function properly.',
     },
     {
       'name': 'SigninAllowed',
@@ -1529,6 +1535,7 @@
 
       If this policy is left not set the default download directory will be used and the user will be able to change it.''',
       'label': '''Set download directory''',
+      'arc_support': 'This policy has no effect on Android apps. Android apps always use the default downloads directory and cannot access any files downloaded by <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> into a non-default downloads directory.',
     },
     {
       'name': 'ClearSiteDataOnExit',
@@ -1575,7 +1582,7 @@
       'name': 'Proxy',
       'type': 'group',
       'caption': '''Proxy server''',
-      'desc': '''Allows you to specify the proxy server used by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing proxy settings. ARC-apps will be able to use this proxy server too.
+      'desc': '''Allows you to specify the proxy server used by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing proxy settings.
 
       If you choose to never use a proxy server and always connect directly, all other options are ignored.
 
@@ -1642,7 +1649,7 @@
           'id': 21,
           'caption': '''Choose how to specify proxy server settings''',
           'tags': [],
-          'desc': '''Allows you to specify the proxy server used by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing proxy settings. ARC-apps will be able to use this proxy server too.
+          'desc': '''Allows you to specify the proxy server used by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing proxy settings.
 
           If you choose to never use a proxy server and always connect directly, all other options are ignored.
 
@@ -1660,6 +1667,15 @@
           If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and ARC-apps ignore all proxy-related options specified from the command line.
 
           Leaving this policy not set will allow the users to choose the proxy settings on their own.''',
+          'arc_support': '''You cannot force Android apps to use a proxy. A subset of proxy settings is made available to Android apps, which they may voluntarily choose to honor:
+
+          If you choose "never use a proxy server," Android apps are informed that no proxy is configured.
+
+          If you choose "use system proxy settings" or "fixed server proxy," Android apps are provided with the http proxy server address and port.
+
+          If you choose "auto detect proxy server," the script URL "http://wpad/wpad.dat" is provided to Android apps. No other part of the proxy auto-detection protocol is used.
+
+          If you choose ".pac proxy script," the script URL is provided to Android apps.''',
         },
         {
           'name': 'ProxyServerMode',
@@ -1707,7 +1723,7 @@
           'tags': [],
           'desc': '''This policy is deprecated, use ProxyMode instead.
 
-          Allows you to specify the proxy server used by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing proxy settings. ARC-apps will be able to use this proxy server too.
+          Allows you to specify the proxy server used by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing proxy settings.
 
           If you choose to never use a proxy server and always connect directly, all other options are ignored.
 
@@ -1721,6 +1737,7 @@
           If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> ignores all proxy-related options specified from the command line.
 
           Leaving this policy not set will allow the users to choose the proxy settings on their own.''',
+          'arc_support': 'You cannot force Android apps to use a proxy. A subset of proxy settings is made available to Android apps, which they may voluntarily choose to honor. See the <ph name="PROXY_MODE_POLICY">ProxyMode</ph> policy for more details.',
         },
         {
           'name': 'ProxyServer',
@@ -1748,6 +1765,7 @@
 
           For more options and detailed examples, visit:
           <ph name="PROXY_HELP_URL">https://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett<ex>https://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>.''',
+          'arc_support': 'You cannot force Android apps to use a proxy. A subset of proxy settings is made available to Android apps, which they may voluntarily choose to honor. See the <ph name="PROXY_MODE_POLICY">ProxyMode</ph> policy for more details.',
         },
         {
           'name': 'ProxyPacUrl',
@@ -1775,6 +1793,7 @@
 
           For detailed examples, visit:
           <ph name="PROXY_HELP_URL">https://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett<ex>https://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>.''',
+          'arc_support': 'You cannot force Android apps to use a proxy. A subset of proxy settings is made available to Android apps, which they may voluntarily choose to honor. See the <ph name="PROXY_MODE_POLICY">ProxyMode</ph> policy for more details.',
         },
         {
           'name': 'ProxyBypassList',
@@ -1794,7 +1813,7 @@
           'id': 25,
           'caption': '''Proxy bypass rules''',
           'tags': [],
-          'desc': '''<ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will bypass any proxy for the list of hosts given here. ARC-apps will be able to use this list as a bypass rules list.
+          'desc': '''<ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will bypass any proxy for the list of hosts given here.
 
           This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.
 
@@ -1803,6 +1822,7 @@
           For more detailed examples, visit:
           <ph name="PROXY_HELP_URL">https://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett<ex>https://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>.''',
           'label': '''Comma-separated list of proxy bypass rules''',
+          'arc_support': 'You cannot force Android apps to use a proxy. A subset of proxy settings is made available to Android apps, which they may voluntarily choose to honor. See the <ph name="PROXY_MODE_POLICY">ProxyMode</ph> policy for more details.',
         },
       ],
     },
@@ -1841,6 +1861,7 @@
       'desc': '''Configures the proxy settings for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. These proxy settings will be available for ARC-apps too.
 
       This policy isn't ready for usage yet, please don't use it.''',
+      'arc_support': 'Only a subset of proxy configuration options are made available to Android apps. Android apps may voluntarily choose to use the proxy. You cannot force them to use a proxy.',
     },
     {
       'name': 'HTTPAuthentication',
@@ -2113,6 +2134,7 @@
           automatically and the user can uninstall any app or extension in <ph
           name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
           'label': '''Extension/App IDs and update URLs to be silently installed''',
+          'arc_support': 'Android apps can be force-installed from the Google Admin console using Google Play. They do not use this policy.',
         },
         {
           'name': 'ExtensionInstallSources',
@@ -2352,9 +2374,8 @@
 
       If you enable this setting, the Developer Tools can not be accessed and web-site elements can not be inspected anymore. Any keyboard shortcuts and any menu or context menu entries to open the Developer Tools or the JavaScript Console will be disabled.
 
-      Setting this option to disabled or leaving it not set will allow the use to use the Developer Tools and the JavaScript console.
-
-      For <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices capable of running Android apps, this policy also controls access to Android Developer Options. If you set this policy to true, users cannot access Developer Options. If you set this policy to false or leave it unset, users can access Developer Options by tapping seven times on the build number in the Android settings app.''',
+      Setting this option to disabled or leaving it not set will allow the use to use the Developer Tools and the JavaScript console.''',
+      'arc_support': 'This policy also controls access to Android Developer Options. If you set this policy to true, users cannot access Developer Options. If you set this policy to false or leave it unset, users can access Developer Options by tapping seven times on the build number in the Android settings app.',
     },
     {
       'name': 'RestoreOnStartupGroup',
@@ -3077,9 +3098,8 @@
           'tags': ['website-sharing'],
           'desc': '''Allows you to set whether websites are allowed to track the users' physical location. Tracking the users' physical location can be allowed by default, denied by default or the user can be asked every time a website requests the physical location.
 
-          If this policy is set to 'BlockGeolocation', location sharing is disallowed for ARC apps.
-
           If this policy is left not set, 'AskGeolocation' will be used and the user will be able to change it.''',
+          'arc_support': 'If this policy is set to <ph name="BLOCK_GEOLOCATION_SETTING">BlockGeolocation</ph>, Android apps cannot access location information. If you set this policy to any other value or leave it unset, the user is asked to consent when an Android app wants to access location information.',
         },
         {
           'name': 'DefaultMediaStreamSetting',
@@ -3502,6 +3522,7 @@
           'desc': '''Allows you to register a list of protocol handlers. This can only be a recommended policy. The property |protocol| should be set to the scheme such as 'mailto' and the property |url| should be set to the URL pattern of the application that handles the scheme. The pattern can include a '%s', which if present will be replaced by the handled URL.
 
           The protocol handlers registered by policy are merged with the ones registered by the user and both are available for use. The user can override the protocol handlers installed by policy by installing a new default handler, but cannot remove a protocol handler registered by policy.''',
+          'arc_support': 'The protocol handlers set via this policy are not used when handling Android intents.',
         },
         {
           'name': 'PopupsBlockedForUrls',
@@ -3936,6 +3957,7 @@
       If the setting is changed while the user is signed into a multiprofile session, all users in the session will be checked against their corresponding settings. The session will be closed if any one of the users is no longer allowed to be in the session.
 
       If the policy is left not set, the default value 'MultiProfileUserBehaviorMustBePrimary' applies for enterprise-managed users and 'MultiProfileUserBehaviorUnrestricted' will be used for non-managed users.''',
+      'arc_support': 'When multiple users are logged in, only the primary user can use Android apps.',
     },
     {
       'name': 'InstantEnabled',
@@ -4356,6 +4378,7 @@
       Note that it is not recommended to block internal 'chrome://*' URLs since this may lead to unexpected errors.
 
       If this policy is not set no URL will be blacklisted in the browser.''',
+      'arc_support': 'Android apps may voluntarily choose to honor this list. You cannot force them to honor it.',
     },
     {
       'name': 'URLWhitelist',
@@ -4390,6 +4413,7 @@
       This policy is limited to 1000 entries; subsequent entries will be ignored.
 
       If this policy is not set there will be no exceptions to the blacklist from the 'URLBlacklist' policy.''',
+      'arc_support': 'Android apps may voluntarily choose to honor this list. You cannot force them to honor it.',
     },
     {
       'name': 'OpenNetworkConfiguration',
@@ -4405,6 +4429,7 @@
       'caption': '''User-level network configuration''',
       'tags': ['full-admin-access'],
       'desc': '''Allows pushing network configuration to be applied per-user to a <ph name="PRODUCT_OS_NAME">$2<ex>Chromium OS</ex></ph> device. The network configuration is a JSON-formatted string as defined by the Open Network Configuration format described at <ph name="ONC_SPEC_URL">https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration</ph>''',
+      'arc_support': 'Android apps can use the network configurations and CA certificates set via this policy, but do not have access to some configuration options.',
     },
     {
       'name': 'DeviceOpenNetworkConfiguration',
@@ -4420,6 +4445,7 @@
       'caption': '''Device-level network configuration''',
       'tags': ['full-admin-access'],
       'desc': '''Allows pushing network configuration to be applied for all users of a <ph name="PRODUCT_OS_NAME">$2<ex>Chromium OS</ex></ph> device. The network configuration is a JSON-formatted string as defined by the Open Network Configuration format described at <ph name="ONC_SPEC_URL">https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration</ph>''',
+      'arc_support': 'Android apps can use the network configurations and CA certificates set via this policy, but do not have access to some configuration options.',
     },
     {
       'name': 'CloudPrintSubmitEnabled',
@@ -4579,6 +4605,7 @@
       Printers connected to <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> are considered <ph name="PRINTER_TYPE_CLOUD">"cloud"</ph>, the rest of the printers are classified as <ph name="PRINTER_TYPE_LOCAL">"local"</ph>.
       Omitting a field means all values match, for example, not specifying connectivity will cause Print Preview to initiate the discovery of all kinds of printers, local and cloud.
       Regular expression patterns must follow the JavaScript RegExp syntax and matches are case sensistive.''',
+      'arc_support': 'This policy has no effect on Android apps.',
     },
     {
       'name': 'DisableSSLRecordSplitting',
@@ -4753,6 +4780,7 @@
       'desc': '''Report OS and firmware version of enrolled devices.
 
       If this setting is not set or set to True, enrolled devices will report the OS and firmware version periodically. If this setting is set to False, version info will not be reported.''',
+      'arc_support': 'This policy has no effect on the logging done by Android.',
     },
     {
       'name': 'ReportDeviceActivityTimes',
@@ -4770,6 +4798,7 @@
       'desc': '''Report device activity times.
 
       If this setting is not set or set to True, enrolled devices will report time periods when a user is active on the device. If this setting is set to False, device activity times will not be recorded or reported.''',
+      'arc_support': 'This policy has no effect on the logging done by Android.',
     },
     {
       'name': 'ReportDeviceBootMode',
@@ -4787,6 +4816,7 @@
       'desc': '''Report the state of the device's dev switch at boot.
 
       If the policy is set to false, the state of the dev switch will not be reported.''',
+      'arc_support': 'This policy has no effect on the logging done by Android.',
     },
     {
       'name': 'ReportDeviceLocation',
@@ -4805,6 +4835,7 @@
       'desc': '''Report the geographic location of the device.
 
       If the policy is not set, or set to false, the location will not be reported.''',
+      'arc_support': 'This policy has no effect on the logging done by Android.',
     },
     {
       'name': 'ReportDeviceNetworkInterfaces',
@@ -4822,6 +4853,7 @@
       'desc': '''Report list of network interfaces with their types and hardware addresses to the server.
 
       If the policy is set to false, the interface list will not be reported.''',
+      'arc_support': 'This policy has no effect on the logging done by Android.',
     },
     {
       'name': 'ReportDeviceUsers',
@@ -4839,6 +4871,7 @@
       'desc': '''Report list of device users that have recently logged in.
 
       If the policy is set to false, the users will not be reported.''',
+      'arc_support': 'This policy has no effect on the logging done by Android.',
     },
     {
       'name': 'ReportDeviceHardwareStatus',
@@ -4857,6 +4890,7 @@
 
       If the policy is set to false, the statistics will not be reported.
       If set to true or left unset, statistics will be reported.''',
+      'arc_support': 'This policy has no effect on the logging done by Android.',
     },
     {
       'name': 'ReportDeviceSessionStatus',
@@ -4877,6 +4911,7 @@
       If the policy is set to false, the session information will not be
       reported. If set to true or left unset, session information will be
       reported.''',
+      'arc_support': 'This policy has no effect on the logging done by Android.',
     },
     {
       'name': 'ReportUploadFrequency',
@@ -4895,6 +4930,7 @@
 
       If this policy is unset, the default frequency is 3 hours. The minimum
       allowed frequency is 60 seconds.''',
+      'arc_support': 'This policy has no effect on the logging done by Android.',
     },
     {
       'name': 'HeartbeatEnabled',
@@ -4914,6 +4950,7 @@
 
       If this policy is set to true, monitoring network packets (so-called <ph name="HEARTBEATS_TERM">heartbeats</ph>) will be sent.
       If set to false or unset, no packets will be sent.''',
+      'arc_support': 'This policy has no effect on the logging done by Android.',
     },
     {
       'name': 'HeartbeatFrequency',
@@ -4933,6 +4970,7 @@
       If this policy is unset, the default frequency is 3 minutes. The minimum
       frequency is 30 seconds and the maximum frequency is 24 hours - values
       outside of this range will be clamped to this range.''',
+      'arc_support': 'This policy has no effect on the logging done by Android.',
     },
     {
       'name': 'LogUploadEnabled',
@@ -4952,6 +4990,7 @@
 
       If this policy is set to true, system logs will be sent. If set
       to false or unset, then no system logs will be sent.''',
+      'arc_support': 'This policy has no effect on the logging done by Android.',
     },
     {
       'name': 'DeviceUserWhitelist',
@@ -4972,6 +5011,7 @@
       'desc': '''Defines the list of users that are allowed to login to the device. Entries are of the form <ph name="USER_WHITELIST_ENTRY_FORMAT">user@domain</ph>, such as <ph name="USER_WHITELIST_ENTRY_EXAMPLE">madmax@managedchrome.com</ph>. To allow arbitrary users on a domain, use entries of the form <ph name="USER_WHITELIST_ENTRY_WILDCARD">*@domain</ph>.
 
       If this policy is not configured, there are no restrictions on which users are allowed to sign in. Note that creating new users still requires the <ph name="DEVICEALLOWNEWUSERS_POLICY_NAME">DeviceAllowNewUsers</ph> policy to be configured appropriately.''',
+      'arc_support': 'This policy controls who may start a <ph name="PRODUCT_OS_NAME">$2<ex>Chromium OS</ex></ph> session. It does not prevent users from signing in to additional Google accounts within Android. If you want to prevent this, configure the Android-specific <ph name="CLOUDDPC_ACCOUNT_MANAGEMENT_POLICY">accountTypesWithManagementDisabled</ph> policy as part of <ph name="ARC_POLICY">ArcPolicy</ph>.',
     },
     {
       'name': 'DeviceAllowNewUsers',
@@ -4989,6 +5029,7 @@
       'desc': '''Controls whether <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> allows new user accounts to be created. If this policy is set to false, users that do not have an account already will not be able to login.
 
       If this policy is set to true or not configured, new user accounts will be allowed to be created provided that <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME">DeviceUserWhitelist</ph> does not prevent the user from logging in.''',
+      'arc_support': 'This policy controls whether new users can be added to <ph name="PRODUCT_OS_NAME">$2<ex>Chromium OS</ex></ph>. It does not prevent users from signing in to additional Google accounts within Android. If you want to prevent this, configure the Android-specific <ph name="CLOUDDPC_ACCOUNT_MANAGEMENT_POLICY">accountTypesWithManagementDisabled</ph> policy as part of <ph name="ARC_POLICY">ArcPolicy</ph>.',
     },
     {
       'name': 'DeviceGuestModeEnabled',
@@ -5051,6 +5092,7 @@
       'caption': '''Enable metrics reporting''',
       'tags': ['admin-sharing'],
       'desc': '''Controls whether usage metrics are reported back to Google. If set to true, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will report usage metrics. If not configured or set to false, metrics reporting will be disabled.''',
+      'arc_support': 'This policy also controls Android usage and diagnostic data collection.',
     },
     {
       'name': 'ChromeOsReleaseChannel',
@@ -5460,7 +5502,8 @@
 
       If this policy is set to True, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will prevent the device from booting into developer mode. The system will refuse to boot and show an error screen when the developer switch is turned on.
 
-      If this policy is unset or set to False, developer mode will remain available for the device.'''
+      If this policy is unset or set to False, developer mode will remain available for the device.''',
+      'arc_support': 'This policy controls <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> developer mode only. If you want to prevent access to Android Developer Options, you need to set the <ph name="DEVELOPER_TOOLS_POLICY">DeveloperToolsDisabled</ph> policy.',
     },
     {
       'name': 'BackgroundModeEnabled',
@@ -5506,6 +5549,7 @@
           'desc': '''Disables Google Drive syncing in the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> Files app when set to True. In that case, no data is uploaded to Google Drive.
 
           If not set or set to False, then users will be able to transfer files to Google Drive.''',
+          'arc_support': 'This policy does not prevent the user from using the Android Google Drive app. If you want to prevent access to Google Drive, you should disallow installation of the Android Google Drive app as well.',
         },
         {
           'name': 'DriveDisabledOverCellular',
@@ -5523,6 +5567,7 @@
           'desc': '''Disables Google Drive syncing in the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> Files app when using a cellular connection when set to True. In that case, data is only synced to Google Drive when connected via WiFi or Ethernet.
 
           If not set or set to False, then users will be able to transfer files to Google Drive via cellular connections.''',
+          'arc_support': 'This policy has no effect on the Android Google Drive app. If you want to prevent use of Google Drive over cellular connections, you should disallow installation of the Android Google Drive app.',
         },
       ],
     },
@@ -5698,9 +5743,9 @@
 
       When this policy is disabled, the user will never be prompted and audio
       capture only be available to URLs configured in AudioCaptureAllowedUrls.
-      For ARC apps, the microphone is permanently muted.
 
       This policy affects all types of audio inputs and not only the built-in microphone.''',
+      'arc_support': 'For Android apps, this policy affects the microphone only. When this policy is set to true, the microphone is muted for all Android apps, with no exceptions.',
     },
     {
       'name': 'AudioCaptureAllowedUrls',
@@ -5742,15 +5787,12 @@
       If enabled or not configured (default), the user will be prompted for
       video capture access except for URLs configured in the
       VideoCaptureAllowedUrls list which will be granted access without prompting.
-      ARC apps will be able to access the camera if they have been given
-      permission.
 
       When this policy is disabled, the user will never be prompted and video
       capture only be available to URLs configured in VideoCaptureAllowedUrls.
-      ARC apps will not be able to access the camera.
 
-      Outside of ARC-apps, this policy affects all types of video inputs and
-      not only the built-in camera.''',
+      This policy affects all types of video inputs and not only the built-in camera.''',
+      'arc_support': 'For Android apps, this policy affects the built-in camera only. When this policy is set to true, the camera is disabled for all Android apps, with no exceptions.',
     },
     {
       'name': 'VideoCaptureAllowedUrls',
@@ -5790,7 +5832,6 @@
       'desc': '''Disables taking screenshots.
 
       If enabled screenshots cannot be taken using keyboard shortcuts or extension APIs.
-      Additionally, screen capture is disabled for ARC apps.
 
       If disabled or not specified, taking screenshots is allowed.'''
     },
@@ -6009,6 +6050,7 @@
       If this policy is set to false, neither the user nor any apps or extensions can enter fullscreen mode.
 
       On all platforms except <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>, kiosk mode is unavailable when fullscreen mode is disabled.''',
+      'arc_support': 'This policy has no effect on the Android apps. They will be able to enter fullscreen mode even if this policy is set to <ph name="FALSE">False</ph>.',
     },
     {
       'name': 'PowerManagement',
@@ -6508,6 +6550,7 @@
           If this policy is set to True or is unset, the user is not considered to be idle while video is playing. This prevents the idle delay, screen dim delay, screen off delay and screen lock delay from being reached and the corresponding actions from being taken.
 
           If this policy is set to False, video activity does not prevent the user from being considered idle.''',
+          'arc_support': 'Video playing in Android apps is not taken into consideration, even if this policy is set to <ph name="TRUE">True</ph>.',
         },
         {
           'name': 'PresentationIdleDelayScale',
@@ -7799,6 +7842,7 @@
       When this policy is set to false or unset, cookies set by the IdP are transferred to the user's profile during their first login on a device only.
 
       This policy affects users whose domain matches the device's enrollment domain only. For all other users, cookies set by the IdP are transferred to the user's profile during their first login on the device only.''',
+      'arc_support': 'Cookies transferred to the user\'s profile are not accessible to Android apps.',
     },
     {
       'name': 'EasyUnlockAllowed',
@@ -8123,6 +8167,7 @@
       'tags': [],
       'desc': '''<ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> caches Apps and Extensions for installation by multiple users of a single device to avoid re-downloading them for each user.
       If this policy is not configured or the value is lower than 1 MB, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will use the default cache size.''',
+      'arc_support': 'The cache is not used for Android apps. If multiple users install the same Android app, it will be downloaded anew for each user.',
     },
     {
       'name': 'DeviceLoginScreenDomainAutoComplete',
@@ -8228,6 +8273,7 @@
       By default an extension cannot use a key designated for corporate usage, which is equivalent to setting allowCorporateKeyUsage to false for that extension.
 
       Only if allowCorporateKeyUsage is set to true for an extension, it can use any platform key marked for corporate usage to sign arbitrary data. This permission should only be granted if the extension is trusted to secure access to the key against attackers.''',
+      'arc_support': 'Android apps cannot get access to corporate keys. This policy has no effect on them.',
     },
     {
       'name': 'WelcomePageOnOSUpgradeEnabled',
@@ -8400,6 +8446,7 @@
       If the policy is set to true, the value of required_platform_version manifest key of the auto launched with zero delay kiosk app is used as auto update target version prefix.
 
       If the policy is not configured or set to false, the required_platform_version manifest key is ignored and auto update proceeds as normal.''',
+      'arc_support': 'If the kiosk app is an Android app, it will have no control over the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version, even if this policy is set to <ph name="TRUE">True</ph>.',
     },
     {
       'name': 'LoginAuthenticationBehavior',
@@ -8948,6 +8995,10 @@
     'doc_description': {
       'desc': '''Caption text of the 'description text' in the summary chart of a policy in the generated documentation''',
       'text': '''Description:'''
+    },
+    'doc_arc_support': {
+      'desc': '''Caption text of the field in the generated documentation that describes how a policy affects Android applications on Chrome OS''',
+      'text': '''Note for <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices supporting Android apps:'''
     },
     'doc_example_value': {
       'desc': '''Caption text of the field 'example value' in the summary chart of a policy in the generated documentation''',

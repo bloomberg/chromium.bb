@@ -538,6 +538,9 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
     self._AddFeatures(dd, policy)
     dd = self._AddPolicyAttribute(dl, 'description')
     self._AddDescription(dd, policy)
+    if 'arc_support' in policy:
+      dd = self._AddPolicyAttribute(dl, 'arc_support')
+      self._AddParagraphs(dd, policy['arc_support'])
     if (self.IsPolicySupportedOnPlatform(policy, 'win') or
         self.IsPolicySupportedOnPlatform(policy, 'linux') or
         self.IsPolicySupportedOnPlatform(policy, 'android') or

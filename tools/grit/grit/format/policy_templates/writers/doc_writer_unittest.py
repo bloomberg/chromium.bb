@@ -48,6 +48,7 @@ class DocWriterUnittest(writer_unittest_common.WriterUnittestCommon):
       'doc_complex_policies_on_windows': {'text': '_test_complex_policies_win'},
       'doc_data_type': {'text': '_test_data_type'},
       'doc_description': {'text': '_test_description'},
+      'doc_arc_support': {'text': '_test_arc_support'},
       'doc_description_column_title': {
         'text': '_test_description_column_title'
       },
@@ -434,7 +435,8 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
         'until_version': '',
       }],
       'features': {'dynamic_refresh': False},
-      'example_value': False
+      'example_value': False,
+      'arc_support': 'TestArcSupportNote'
     }
     self.writer.messages['doc_since_version'] = {'text': '...$6...'}
     self.writer._AddPolicyDetails(self.doc_root, policy)
@@ -463,9 +465,51 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
       '<dt style="style_dt;">_test_supported_features</dt>'
         '<dd>_test_feature_dynamic_refresh: _test_not_supported</dd>'
       '<dt style="style_dt;">_test_description</dt><dd><p>TestPolicyDesc</p></dd>'
+      '<dt style="style_dt;">_test_arc_support</dt>'
+        '<dd><p>TestArcSupportNote</p></dd>'
       '<dt style="style_dt;">_test_example_value</dt>'
         '<dd>0x00000000 (Windows), false (Linux),'
         ' false (Android), &lt;false /&gt; (Mac)</dd>'
+      '</dl></root>')
+
+  def testAddPolicyDetailsNoArcSupport(self):
+    # Test that the entire Android-on-Chrome-OS sub-section is left out when
+    # 'arc_support' is not specified.
+    policy = {
+      'type': 'main',
+      'name': 'TestPolicyName',
+      'caption': 'TestPolicyCaption',
+      'desc': 'TestPolicyDesc',
+      'supported_on': [{
+        'product': 'chrome',
+        'platforms': ['linux'],
+        'since_version': '8',
+        'until_version': '',
+      }],
+      'features': {'dynamic_refresh': False},
+      'example_value': False
+    }
+    self.writer.messages['doc_since_version'] = {'text': '...$6...'}
+    self.writer._AddPolicyDetails(self.doc_root, policy)
+    self.assertEquals(
+      self.doc_root.toxml(),
+      '<root><dl>'
+      '<dt style="style_dt;">_test_data_type</dt>'
+        '<dd>Boolean</dd>'
+      '<dt style="style_dt;">_test_mac_linux_pref_name</dt>'
+        '<dd style="style_.monospace;">TestPolicyName</dd>'
+      '<dt style="style_dt;">_test_supported_on</dt>'
+      '<dd>'
+        '<ul style="style_ul;">'
+          '<li>Chrome (Linux) ...8...</li>'
+        '</ul>'
+      '</dd>'
+      '<dt style="style_dt;">_test_supported_features</dt>'
+        '<dd>_test_feature_dynamic_refresh: _test_not_supported</dd>'
+      '<dt style="style_dt;">_test_description</dt>'
+        '<dd><p>TestPolicyDesc</p></dd>'
+      '<dt style="style_dt;">_test_example_value</dt>'
+        '<dd>false (Linux)</dd>'
       '</dl></root>')
 
   def testAddDictPolicyDetails(self):

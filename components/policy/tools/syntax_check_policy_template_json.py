@@ -185,7 +185,7 @@ class PolicyTemplateChecker(object):
                      'supported_on', 'label', 'policies', 'items',
                      'example_value', 'features', 'deprecated', 'future',
                      'id', 'schema', 'max_size', 'tags',
-                     'default_for_enterprise_users'):
+                     'default_for_enterprise_users', 'arc_support'):
         self.warning_count += 1
         print ('In policy %s: Warning: Unknown key: %s' %
                (policy.get('name'), key))
@@ -216,6 +216,9 @@ class PolicyTemplateChecker(object):
 
     # If 'future' is present, it must be a bool.
     self._CheckContains(policy, 'future', bool, True)
+
+    # If 'arc_support' is present, it must be a string.
+    self._CheckContains(policy, 'arc_support', str, True)
 
     if policy_type == 'group':
       # Groups must not be nested.

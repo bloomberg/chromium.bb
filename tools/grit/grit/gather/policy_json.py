@@ -18,7 +18,7 @@ from xml.parsers.expat import ExpatError
 
 class PolicyJson(skeleton_gatherer.SkeletonGatherer):
   '''Collects and translates the following strings from policy_templates.json:
-    - captions,descriptions and labels of policies
+    - captions, descriptions, labels and Android app support details of policies
     - captions of enumeration items
     - misc strings from the 'messages' section
      Translatable strings may have untranslateable placeholders with the same
@@ -145,6 +145,7 @@ class PolicyJson(skeleton_gatherer.SkeletonGatherer):
       'desc': 'Description',
       'caption': 'Caption',
       'label': 'Label',
+      'arc_support': 'Information about the effect on Android apps'
     }
     if item_type == 'policy':
       return '%s of the policy named %s' % (key_map[key], item['name'])
@@ -170,7 +171,7 @@ class PolicyJson(skeleton_gatherer.SkeletonGatherer):
       depth: The level of indentation.
     '''
     self._AddIndentedNontranslateableChunk(depth, "'%s': " % key)
-    if key in ('desc', 'caption', 'label'):
+    if key in ('desc', 'caption', 'label', 'arc_support'):
       self._AddNontranslateableChunk("'''")
       self._ParseMessage(
           item[key],
