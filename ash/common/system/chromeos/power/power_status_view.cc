@@ -9,7 +9,7 @@
 #include "ash/common/system/chromeos/power/tray_power.h"
 #include "ash/common/system/tray/fixed_sized_image_view.h"
 #include "ash/common/system/tray/tray_constants.h"
-#include "base/i18n/message_formatter.h"
+#include "base/i18n/number_formatting.h"
 #include "base/i18n/time_formatting.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ash_strings.h"
@@ -98,9 +98,7 @@ void PowerStatusView::UpdateText() {
     battery_time_status =
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_BATTERY_FULL);
   } else {
-    battery_percentage = base::i18n::MessageFormatter::FormatWithNumberedArgs(
-        base::ASCIIToUTF16("{0,number,percent}"),
-        static_cast<double>(status.GetRoundedBatteryPercent()) / 100.0);
+    battery_percentage = base::FormatPercent(status.GetRoundedBatteryPercent());
     if (status.IsUsbChargerConnected()) {
       battery_time_status = l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_BATTERY_CHARGING_UNRELIABLE);
