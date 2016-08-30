@@ -379,6 +379,8 @@ source_set("test_support") {
     "public/test/navigation_test_util.mm",
     "public/test/response_providers/data_response_provider.h",
     "public/test/response_providers/data_response_provider.mm",
+    "public/test/response_providers/delayed_response_provider.h",
+    "public/test/response_providers/delayed_response_provider.mm",
     "public/test/response_providers/error_page_response_provider.h",
     "public/test/response_providers/error_page_response_provider.mm",
     "public/test/response_providers/file_based_response_provider.h",
