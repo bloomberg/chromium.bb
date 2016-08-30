@@ -134,7 +134,7 @@ static gfx::Rect ComputeGlobalNodeBounds(TreeCache* cache, ui::AXNode* node) {
     if (!container || container == node)
       break;
 
-    gfx::RectF container_bounds = ComputeLocalNodeBounds(cache, container);
+    gfx::RectF container_bounds = container->data().location;
     bounds.Offset(container_bounds.x(), container_bounds.y());
 
     int scroll_x = 0;
