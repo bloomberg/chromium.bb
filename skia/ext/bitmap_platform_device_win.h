@@ -19,7 +19,8 @@ class ScopedPlatformPaint;
 // format that Skia supports and can then use this to draw ClearType into, etc.
 // This pixel data is provided to the bitmap that the device contains so that it
 // can be shared.
-class SK_API BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice {
+class SK_API BitmapPlatformDevice : public SkBitmapDevice,
+                                    public PlatformDevice {
  public:
   // Factory function. is_opaque should be set if the caller knows the bitmap
   // will be completely opaque and allows some optimizations.

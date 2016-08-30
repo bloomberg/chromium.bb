@@ -112,19 +112,6 @@ static inline SkCanvas* TryCreateBitmapCanvas(int width,
 // alignment reasons we may wish to increase that.
 SK_API size_t PlatformCanvasStrideForWidth(unsigned width);
 
-// Returns the SkBaseDevice pointer of the topmost rect with a non-empty
-// clip. In practice, this is usually either the top layer or nothing, since
-// we usually set the clip to new layers when we make them.
-//
-// This may return NULL, so callers need to check.
-//
-// This is different than SkCanvas' getDevice, because that returns the
-// bottommost device.
-//
-// Danger: the resulting device should not be saved. It will be invalidated
-// by the next call to save() or restore().
-SK_API SkBaseDevice* GetTopDevice(const SkCanvas& canvas);
-
 // Copies pixels from the SkCanvas into an SkBitmap, fetching pixels from
 // GPU memory if necessary.
 //

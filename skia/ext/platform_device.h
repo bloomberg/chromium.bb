@@ -29,13 +29,12 @@ class ScopedPlatformPaint;
 // All calls to PlatformDevice::* should be routed through these 
 // helper functions.
 
-// Bind a PlatformDevice instance, |platform_device| to |device|.  Subsequent
-// calls to the functions exported below will forward the request to the
-// corresponding method on the bound PlatformDevice instance.    If no
-// PlatformDevice has been bound to the SkBaseDevice passed, then the 
-// routines are NOPS.
-SK_API void SetPlatformDevice(SkBaseDevice* device,
-                              PlatformDevice* platform_device);
+// DEPRECATED
+// Bind a PlatformDevice instance, |platform_device|, to |device|.
+SK_API void SetPlatformDevice(SkBaseDevice* device, PlatformDevice* platform_device);
+
+// DEPRECATED
+// Retrieve the previous argument to SetPlatformDevice().
 SK_API PlatformDevice* GetPlatformDevice(SkBaseDevice* device);
 
 // A SkBitmapDevice is basically a wrapper around SkBitmap that provides a 

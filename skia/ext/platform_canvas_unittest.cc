@@ -90,7 +90,7 @@ bool VerifyRoundedRect(const SkCanvas& canvas,
                        int y,
                        int w,
                        int h) {
-  SkBaseDevice* device = skia::GetTopDevice(canvas);
+  SkBaseDevice* device = canvas.getTopDevice(true);
   const SkBitmap& bitmap = device->accessBitmap(false);
   SkAutoLockPixels lock(bitmap);
 
