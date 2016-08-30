@@ -5,39 +5,35 @@
 <script src="media-file.js"></script>
 <audio></audio>
 <script>
-// TODO(srirama.m): Modify the test to record events and check for order
-// at the end of test. See autoplay-with-preload-none.html for help.
 async_test(function(t) {
     var loop = true;
     var audio = document.querySelector("audio");
     audio.src = findMediaFile("audio", "content/silence");
 
-    audio.onloadedmetadata = t.step_func(function() {
-        audio.onplaying = t.step_func(mediaPlaying);
-
-        audio.onpause = t.step_func(function() {
-            assert_true(audio.paused);
-        });
-
-        audio.onended = t.step_func(function() {
-            assert_true(audio.ended, true);
-
-            if (!loop) {
-                t.done();
-                return;
-            }
-
-            loop = false;
-            audio.onplaying = t.step_func(mediaPlaying);
-            audio.play();
-        });
-
+    var watcher = new EventWatcher(t, audio, ["loadedmetadata", "playing", "pause", "ended"]);
+    watcher.wait_for("loadedmetadata").then(t.step_func(function() {
         audio.play();
-    });
-
-    function mediaPlaying() {
-        audio.onplaying = null;
+        return watcher.wait_for("playing");
+    })).then(t.step_func(function() {
         audio.currentTime = audio.duration - 0.2;
-    }
+        return watcher.wait_for("playing");
+    })).then(t.step_func(function() {
+        return watcher.wait_for("pause");
+    })).then(t.step_func(function() {
+        assert_true(audio.paused);
+        return watcher.wait_for("ended");
+    })).then(t.step_func(function() {
+        assert_true(audio.ended);
+        audio.play();
+        return watcher.wait_for("playing");
+    })).then(t.step_func(function() {
+        audio.currentTime = audio.duration - 0.2;
+        return watcher.wait_for("playing");
+    })).then(t.step_func(function() {
+        return watcher.wait_for("pause");
+    })).then(t.step_func(function() {
+        assert_true(audio.paused);
+        return watcher.wait_for("ended");
+    })).then(t.step_func_done());
 });
 </script>
