@@ -51,8 +51,17 @@ PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(const FontDescrip
 // static
 AtomicString FontCache::getGenericFamilyNameForScript(const AtomicString& familyName, const FontDescription& fontDescription)
 {
+    // If monospace, do not apply CJK hack to find i18n fonts, because
+    // i18n fonts are likely not monospace. Monospace is mostly used
+    // for code, but when i18n characters appear in monospace, system
+    // fallback can still render the characters.
+    if (familyName == FontFamilyNames::webkit_monospace)
+        return familyName;
+
     // This is a hack to use the preferred font for CJK scripts.
-    // FIXME: Use new Skia API once Android system supports per-family and per-script fallback fonts.
+    // TODO(kojii): This logic disregards either generic family name
+    // or locale. We need an API that honors both to find appropriate
+    // fonts. crbug.com/642340
     UChar32 examplerChar;
     switch (fontDescription.script()) {
     case USCRIPT_SIMPLIFIED_HAN:

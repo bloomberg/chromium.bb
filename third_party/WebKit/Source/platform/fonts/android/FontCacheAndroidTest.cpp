@@ -26,4 +26,27 @@ TEST(FontCacheAndroid, fallbackFontForCharacter)
     EXPECT_TRUE(fontData);
 }
 
+TEST(FontCacheAndroid, genericFamilyNameForScript)
+{
+    FontDescription english;
+    english.setLocale(LayoutLocale::get("en"));
+    FontDescription chinese;
+    chinese.setLocale(LayoutLocale::get("zh"));
+
+    if (FontFamilyNames::webkit_standard.isEmpty())
+        FontFamilyNames::init();
+
+    // For non-CJK, getGenericFamilyNameForScript should return the given familyName.
+    EXPECT_EQ(FontFamilyNames::webkit_standard, FontCache::getGenericFamilyNameForScript(
+        FontFamilyNames::webkit_standard, english));
+    EXPECT_EQ(FontFamilyNames::webkit_monospace, FontCache::getGenericFamilyNameForScript(
+        FontFamilyNames::webkit_monospace, english));
+
+    // For CJK, getGenericFamilyNameForScript should return CJK fonts except monospace.
+    EXPECT_NE(FontFamilyNames::webkit_standard, FontCache::getGenericFamilyNameForScript(
+        FontFamilyNames::webkit_standard, chinese));
+    EXPECT_EQ(FontFamilyNames::webkit_monospace, FontCache::getGenericFamilyNameForScript(
+        FontFamilyNames::webkit_monospace, chinese));
+}
+
 } // namespace blink
