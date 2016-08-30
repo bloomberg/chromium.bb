@@ -499,10 +499,7 @@ SMILTime SMILTimeContainer::updateAnimations(double elapsed, bool seekToTime)
     }
     m_scheduledAnimations.removeAll(invalidKeys);
 
-    std::sort(animationsToApply.begin(), animationsToApply.end(), PriorityCompare(elapsed));
-
-    unsigned animationsToApplySize = animationsToApply.size();
-    if (!animationsToApplySize) {
+    if (animationsToApply.isEmpty()) {
 #if ENABLE(ASSERT)
         m_preventScheduledAnimationsChanges = false;
 #endif
@@ -511,26 +508,27 @@ SMILTime SMILTimeContainer::updateAnimations(double elapsed, bool seekToTime)
 
     UseCounter::count(&document(), UseCounter::SVGSMILAnimationAppliedEffect);
 
+    std::sort(animationsToApply.begin(), animationsToApply.end(), PriorityCompare(elapsed));
+
     // Apply results to target elements.
-    for (unsigned i = 0; i < animationsToApplySize; ++i)
-        animationsToApply[i]->applyResultsToTarget();
+    for (const auto& timedElement : animationsToApply)
+        timedElement->applyResultsToTarget();
 
 #if ENABLE(ASSERT)
     m_preventScheduledAnimationsChanges = false;
 #endif
 
-    for (unsigned i = 0; i < animationsToApplySize; ++i) {
-        if (animationsToApply[i]->isConnected() && animationsToApply[i]->isSVGDiscardElement()) {
-            SVGSMILElement* animDiscard = animationsToApply[i];
-            SVGElement* targetElement = animDiscard->targetElement();
+    for (const auto& timedElement : animationsToApply) {
+        if (timedElement->isConnected() && timedElement->isSVGDiscardElement()) {
+            SVGElement* targetElement = timedElement->targetElement();
             if (targetElement && targetElement->isConnected()) {
                 targetElement->remove(IGNORE_EXCEPTION);
-                ASSERT(!targetElement->isConnected());
+                DCHECK(!targetElement->isConnected());
             }
 
-            if (animDiscard->isConnected()) {
-                animDiscard->remove(IGNORE_EXCEPTION);
-                ASSERT(!animDiscard->isConnected());
+            if (timedElement->isConnected()) {
+                timedElement->remove(IGNORE_EXCEPTION);
+                DCHECK(!timedElement->isConnected());
             }
         }
     }
