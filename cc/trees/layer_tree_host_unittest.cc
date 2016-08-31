@@ -576,20 +576,13 @@ class LayerTreeHostCacheBehaviorOnOutputSurfaceRecreated
  public:
   void WillBeginImplFrameOnThread(LayerTreeHostImpl* host_impl,
                                   const BeginFrameArgs& args) override {
+    // This code is run once, to trigger recreation of our OutputSurface.
+    if (has_recreated_)
+      return;
+
     // Ensure that our initialization expectations have completed.
     Mock::VerifyAndClearExpectations(mock_main_context_support_);
     Mock::VerifyAndClearExpectations(mock_worker_context_support_);
-
-    if (has_recreated_) {
-      // Destruction exptectations.
-      EXPECT_CALL(*mock_worker_context_support_,
-                  SetAggressivelyFreeResources(true));
-      EXPECT_CALL(*mock_main_context_support_,
-                  SetAggressivelyFreeResources(true));
-      EndTest();
-      return;
-    }
-    has_recreated_ = true;
 
     // Output surface lost expectations.
     EXPECT_CALL(*mock_worker_context_support_,
@@ -597,6 +590,24 @@ class LayerTreeHostCacheBehaviorOnOutputSurfaceRecreated
     EXPECT_CALL(*mock_main_context_support_,
                 SetAggressivelyFreeResources(true));
     host_impl->DidLoseOutputSurface();
+    has_recreated_ = true;
+  }
+
+  void DidInitializeOutputSurface() override {
+    // This is run after we have recreated our OutputSurface.
+    if (!has_recreated_)
+      return;
+
+    // Ensure that our initialization expectations have completed.
+    Mock::VerifyAndClearExpectations(mock_main_context_support_);
+    Mock::VerifyAndClearExpectations(mock_worker_context_support_);
+
+    // Destruction exptectations.
+    EXPECT_CALL(*mock_worker_context_support_,
+                SetAggressivelyFreeResources(true));
+    EXPECT_CALL(*mock_main_context_support_,
+                SetAggressivelyFreeResources(true));
+    EndTest();
   }
 
  private:
