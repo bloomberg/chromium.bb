@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_CHROME_EXTENSION_FUNCTION_H_
 #define CHROME_BROWSER_EXTENSIONS_CHROME_EXTENSION_FUNCTION_H_
 
+#include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "extensions/browser/extension_function.h"
 
 class Browser;
@@ -59,6 +60,9 @@ class ChromeUIThreadExtensionFunction : public UIThreadExtensionFunction {
 
  protected:
   ~ChromeUIThreadExtensionFunction() override;
+
+ private:
+  ChromeExtensionFunctionDetails chrome_details_;
 };
 
 // A chrome specific analog to AsyncExtensionFunction. This has access to a

@@ -56,14 +56,14 @@ Browser* ChromeExtensionFunctionDetails::GetCurrentBrowser() const {
   // |include_incognito|. Look only for browsers on the active desktop as it is
   // preferable to pretend no browser is open then to return a browser on
   // another desktop.
-  if (function_->render_frame_host()) {
-    Profile* profile = Profile::FromBrowserContext(
-        function_->render_frame_host()->GetProcess()->GetBrowserContext());
-    Browser* browser =
-        chrome::FindAnyBrowser(profile, function_->include_incognito());
-    if (browser)
-      return browser;
-  }
+  content::WebContents* web_contents = function_->GetSenderWebContents();
+  Profile* profile = Profile::FromBrowserContext(
+      web_contents ? web_contents->GetBrowserContext()
+                   : function_->browser_context());
+  Browser* browser =
+      chrome::FindAnyBrowser(profile, function_->include_incognito());
+  if (browser)
+    return browser;
 
   // NOTE(rafaelw): This can return NULL in some circumstances. In particular,
   // a background_page onload chrome.tabs api call can make it into here
@@ -91,9 +91,12 @@ ChromeExtensionFunctionDetails::GetExtensionWindowController() const {
 
 content::WebContents*
 ChromeExtensionFunctionDetails::GetAssociatedWebContents() {
-  content::WebContents* web_contents = function_->GetAssociatedWebContents();
-  if (web_contents)
-    return web_contents;
+  if (function_->dispatcher()) {
+    content::WebContents* web_contents =
+        function_->dispatcher()->GetAssociatedWebContents();
+    if (web_contents)
+      return web_contents;
+  }
 
   Browser* browser = GetCurrentBrowser();
   if (!browser)
