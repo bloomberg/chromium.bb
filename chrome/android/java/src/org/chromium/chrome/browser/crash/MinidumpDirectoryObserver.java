@@ -24,8 +24,6 @@ public class MinidumpDirectoryObserver extends FileObserver {
     private static final String TAG = "MinidumpDirObserver";
     private static Context sContext = ContextUtils.getApplicationContext();
 
-    public static final String MINIDUMP_EXPERIMENT_NAME = "MinidumpDirectoryObserver";
-
     public MinidumpDirectoryObserver() {
         // The file observer detects MOVED_TO for child processes.
         super(new File(PathUtils.getCacheDirectory(sContext),

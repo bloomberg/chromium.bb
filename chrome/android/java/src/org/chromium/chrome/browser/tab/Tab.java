@@ -13,7 +13,6 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -38,7 +37,6 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.blimp_public.contents.BlimpContents;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -60,8 +58,6 @@ import org.chromium.chrome.browser.blimp.BlimpClientContextFactory;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchTabHelper;
-import org.chromium.chrome.browser.crash.MinidumpDirectoryObserver;
-import org.chromium.chrome.browser.crash.MinidumpUploadService;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.download.ChromeDownloadDelegate;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
@@ -94,7 +90,6 @@ import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
-import org.chromium.components.variations.VariationsAssociatedData;
 import org.chromium.content.browser.ActivityContentVideoViewEmbedder;
 import org.chromium.content.browser.ChildProcessLauncher;
 import org.chromium.content.browser.ContentVideoViewEmbedder;
@@ -2831,29 +2826,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         mIsBeingRestored = false;
 
         if (mTabUma != null) mTabUma.onRendererCrashed();
-
-        if (!TextUtils.equals("true", VariationsAssociatedData.getVariationParamValue(
-                MinidumpDirectoryObserver.MINIDUMP_EXPERIMENT_NAME, "Enabled"))) {
-            try {
-                // Update the most recent minidump file with the logcat. Doing this asynchronously
-                // adds a race condition in the case of multiple simultaneously renderer crashses
-                // but because the data will be the same for all of them it is innocuous. We can
-                // attempt to do this regardless of whether it was a foreground tab in the event
-                // that it's a real crash and not just android killing the tab.
-                Context context = getApplicationContext();
-                Intent intent = MinidumpUploadService.createFindAndUploadLastCrashIntent(context);
-                context.startService(intent);
-                RecordUserAction.record("MobileBreakpadUploadAttempt");
-            } catch (SecurityException e) {
-                // For KitKat and below, there was a framework bug which cause us to not be able to
-                // find our own crash uploading service. Ignore a SecurityException here on older
-                // OS versions since the crash will eventually get uploaded on next start.
-                // crbug/542533
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    throw e;
-                }
-            }
-        }
     }
 
     /**

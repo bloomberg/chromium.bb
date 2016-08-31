@@ -206,14 +206,6 @@
             "group_name": "Enabled"
         }
     ],
-    "MinidumpDirectoryObserver": [
-        {
-            "group_name": "ObserverExperimentGroup",
-            "params": {
-                "Enabled": "true"
-            }
-        }
-    ],
     "ModerateBindingOnBackgroundTabCreation": [
         {
             "group_name": "Enabled"

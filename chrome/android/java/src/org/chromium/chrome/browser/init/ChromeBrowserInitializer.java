@@ -12,7 +12,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Process;
 import android.os.StrictMode;
-import android.text.TextUtils;
 
 import com.squareup.leakcanary.LeakCanary;
 
@@ -42,7 +41,6 @@ import org.chromium.chrome.browser.services.GoogleServicesManager;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelImpl;
 import org.chromium.chrome.browser.webapps.ActivityAssigner;
 import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
-import org.chromium.components.variations.VariationsAssociatedData;
 import org.chromium.content.app.ContentApplication;
 import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content.browser.ChildProcessCreationParams;
@@ -397,23 +395,19 @@ public class ChromeBrowserInitializer {
         mNativeInitializationComplete = true;
         ContentUriUtils.setFileProviderUtil(new FileProviderHelper());
 
-        if (TextUtils.equals("true", VariationsAssociatedData.getVariationParamValue(
-                MinidumpDirectoryObserver.MINIDUMP_EXPERIMENT_NAME, "Enabled"))) {
+        // Start the file observer to watch the minidump directory.
+        new AsyncTask<Void, Void, MinidumpDirectoryObserver>() {
+            @Override
+            protected MinidumpDirectoryObserver doInBackground(Void... params) {
+                return new MinidumpDirectoryObserver();
+            }
 
-            // Start the file observer to watch the minidump directory.
-            new AsyncTask<Void, Void, MinidumpDirectoryObserver>() {
-                @Override
-                protected MinidumpDirectoryObserver doInBackground(Void... params) {
-                    return new MinidumpDirectoryObserver();
-                }
-
-                @Override
-                protected void onPostExecute(MinidumpDirectoryObserver minidumpDirectoryObserver) {
-                    mMinidumpDirectoryObserver = minidumpDirectoryObserver;
-                    mMinidumpDirectoryObserver.startWatching();
-                }
-            }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-        }
+            @Override
+            protected void onPostExecute(MinidumpDirectoryObserver minidumpDirectoryObserver) {
+                mMinidumpDirectoryObserver = minidumpDirectoryObserver;
+                mMinidumpDirectoryObserver.startWatching();
+            }
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     private void waitForDebuggerIfNeeded() {
