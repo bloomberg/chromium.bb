@@ -19,7 +19,6 @@ class ChromeStylePluginTest(plugin_testing.ClangPluginTest):
   """Test harness for the Chrome style plugin."""
 
   def AdjustClangArguments(self, clang_cmd):
-    self.AddPluginArg(clang_cmd, 'follow-macro-expansion')
     clang_cmd.extend([
         # Skip code generation
         '-fsyntax-only',
