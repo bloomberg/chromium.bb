@@ -51,6 +51,8 @@
 // Finally, it also checks that using the EVP_PKEY generated with
 // GetOpenSSLPrivateKeyWrapper() works correctly.
 
+using base::android::JavaRef;
+
 namespace net {
 namespace android {
 
@@ -355,7 +357,7 @@ bool CompareSignatureWithOpenSSL(const base::StringPiece& message,
 // same key content.
 // |message| is a message.
 // |result| will receive the result.
-void DoKeySigning(jobject android_key,
+void DoKeySigning(const JavaRef<jobject>& android_key,
                   EVP_PKEY* openssl_key,
                   const base::StringPiece& message,
                   std::string* result) {
@@ -413,7 +415,7 @@ TEST(AndroidKeyStore, GetRSAKeyModulus) {
 
   // Retrieve the corresponding modulus through JNI
   std::vector<uint8_t> modulus_java;
-  ASSERT_TRUE(GetRSAKeyModulus(key_java.obj(), &modulus_java));
+  ASSERT_TRUE(GetRSAKeyModulus(key_java, &modulus_java));
 
   // Create an OpenSSL BIGNUM from it.
   crypto::ScopedBIGNUM bn(
@@ -434,8 +436,7 @@ TEST(AndroidKeyStore,GetPrivateKeyTypeRSA) {
 
   ScopedJava rsa_key = GetRSATestKeyJava();
   ASSERT_FALSE(rsa_key.is_null());
-  EXPECT_EQ(PRIVATE_KEY_TYPE_RSA,
-            GetPrivateKeyType(rsa_key.obj()));
+  EXPECT_EQ(PRIVATE_KEY_TYPE_RSA, GetPrivateKeyType(rsa_key));
 }
 
 TEST(AndroidKeyStore,SignWithPrivateKeyRSA) {
@@ -454,7 +455,7 @@ TEST(AndroidKeyStore,SignWithPrivateKeyRSA) {
   ASSERT_EQ(36U, message.size());
 
   std::string signature;
-  DoKeySigning(rsa_key.obj(), openssl_key.get(), message, &signature);
+  DoKeySigning(rsa_key, openssl_key.get(), message, &signature);
   ASSERT_TRUE(
       CompareSignatureWithOpenSSL(message, signature, openssl_key.get()));
   // All good.
@@ -466,8 +467,7 @@ TEST(AndroidKeyStore,SignWithWrapperKeyRSA) {
   ScopedJava rsa_key = GetRSATestKeyJava();
   ASSERT_FALSE(rsa_key.is_null());
 
-  crypto::ScopedEVP_PKEY wrapper_key(
-      GetOpenSSLPrivateKeyWrapper(rsa_key.obj()));
+  crypto::ScopedEVP_PKEY wrapper_key(GetOpenSSLPrivateKeyWrapper(rsa_key));
   ASSERT_TRUE(wrapper_key.get() != NULL);
 
   crypto::ScopedEVP_PKEY openssl_key(ImportPrivateKeyFile(kTestRsaKeyFile));
@@ -496,8 +496,7 @@ TEST(AndroidKeyStore,GetPrivateKeyTypeECDSA) {
 
   ScopedJava ecdsa_key = GetECDSATestKeyJava();
   ASSERT_FALSE(ecdsa_key.is_null());
-  EXPECT_EQ(PRIVATE_KEY_TYPE_ECDSA,
-            GetPrivateKeyType(ecdsa_key.obj()));
+  EXPECT_EQ(PRIVATE_KEY_TYPE_ECDSA, GetPrivateKeyType(ecdsa_key));
 }
 
 TEST(AndroidKeyStore,SignWithPrivateKeyECDSA) {
@@ -509,7 +508,7 @@ TEST(AndroidKeyStore,SignWithPrivateKeyECDSA) {
 
   std::string message = kTestEcdsaHash;
   std::string signature;
-  DoKeySigning(ecdsa_key.obj(), openssl_key.get(), message, &signature);
+  DoKeySigning(ecdsa_key, openssl_key.get(), message, &signature);
   ASSERT_TRUE(VerifyTestECDSASignature(message, signature));
 }
 
@@ -519,8 +518,7 @@ TEST(AndroidKeyStore, SignWithWrapperKeyECDSA) {
   ScopedJava ecdsa_key = GetECDSATestKeyJava();
   ASSERT_FALSE(ecdsa_key.is_null());
 
-  crypto::ScopedEVP_PKEY wrapper_key(
-      GetOpenSSLPrivateKeyWrapper(ecdsa_key.obj()));
+  crypto::ScopedEVP_PKEY wrapper_key(GetOpenSSLPrivateKeyWrapper(ecdsa_key));
   ASSERT_TRUE(wrapper_key.get());
 
   crypto::ScopedEVP_PKEY openssl_key(ImportPrivateKeyFile(kTestEcdsaKeyFile));

@@ -239,7 +239,7 @@ void AwContentsClientBridge::ProvideClientCertificateResponse(
 
   // Create an EVP_PKEY wrapper for the private key JNI reference.
   crypto::ScopedEVP_PKEY private_key(
-      net::android::GetOpenSSLPrivateKeyWrapper(private_key_ref.obj()));
+      net::android::GetOpenSSLPrivateKeyWrapper(private_key_ref));
   if (!private_key.get()) {
     LOG(ERROR) << "Could not create OpenSSL wrapper for private key";
     return;

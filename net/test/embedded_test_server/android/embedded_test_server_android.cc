@@ -13,11 +13,14 @@
 #include "net/test/jni/EmbeddedTestServerImpl_jni.h"
 
 using base::android::JavaParamRef;
+using base::android::JavaRef;
 
 namespace net {
 namespace test_server {
 
-EmbeddedTestServerAndroid::EmbeddedTestServerAndroid(JNIEnv* env, jobject jobj)
+EmbeddedTestServerAndroid::EmbeddedTestServerAndroid(
+    JNIEnv* env,
+    const JavaRef<jobject>& jobj)
     : weak_java_server_(env, jobj), test_server_() {
   Java_EmbeddedTestServerImpl_setNativePtr(env, jobj,
                                            reinterpret_cast<intptr_t>(this));

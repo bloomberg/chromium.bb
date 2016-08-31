@@ -47,8 +47,9 @@ enum PrivateKeyType {
 // |modulus| will receive the modulus bytes on success.
 // Returns true on success, or false on failure (e.g. if the key
 // is not RSA).
-NET_EXPORT bool GetRSAKeyModulus(jobject private_key,
-                                 std::vector<uint8_t>* modulus);
+NET_EXPORT bool GetRSAKeyModulus(
+    const base::android::JavaRef<jobject>& private_key,
+    std::vector<uint8_t>* modulus);
 
 // Returns the order parameter of a given ECPrivateKey platform object,
 // as a series of bytes, in big-endian representation. This can be used
@@ -57,7 +58,8 @@ NET_EXPORT bool GetRSAKeyModulus(jobject private_key,
 // |order| will receive the result bytes on success.
 // Returns true on success, or false on failure (e.g. if the key is
 // not EC).
-bool GetECKeyOrder(jobject private_key, std::vector<uint8_t>* order);
+bool GetECKeyOrder(const base::android::JavaRef<jobject>& private_key,
+                   std::vector<uint8_t>* order);
 
 // Compute the signature of a given message, which is actually a hash,
 // using a private key. For more details, please read the comments for the
@@ -68,15 +70,17 @@ bool GetECKeyOrder(jobject private_key, std::vector<uint8_t>* order);
 // |signature| will receive the signature on success.
 // Returns true on success, false on failure.
 //
-NET_EXPORT bool RawSignDigestWithPrivateKey(jobject private_key,
-                                            const base::StringPiece& digest,
-                                            std::vector<uint8_t>* signature);
+NET_EXPORT bool RawSignDigestWithPrivateKey(
+    const base::android::JavaRef<jobject>& private_key,
+    const base::StringPiece& digest,
+    std::vector<uint8_t>* signature);
 
 // Return the PrivateKeyType of a given private key.
 // |private_key| is a JNI reference for the private key.
 // Returns a PrivateKeyType, while will be CLIENT_CERT_INVALID_TYPE
 // on error.
-NET_EXPORT PrivateKeyType GetPrivateKeyType(jobject private_key);
+NET_EXPORT PrivateKeyType
+GetPrivateKeyType(const base::android::JavaRef<jobject>& private_key);
 
 // Returns a handle to the system AndroidEVP_PKEY object used to back a given
 // private_key object. This must *only* be used for RSA private keys on Android
@@ -91,7 +95,8 @@ NET_EXPORT PrivateKeyType GetPrivateKeyType(jobject private_key);
 //       anything about OpenSSL, it just type-casts a system pointer that
 //       is passed as an int through JNI. As such, it never increments
 //       the returned key's reference count.
-AndroidEVP_PKEY* GetOpenSSLSystemHandleForPrivateKey(jobject private_key);
+AndroidEVP_PKEY* GetOpenSSLSystemHandleForPrivateKey(
+    const base::android::JavaRef<jobject>& private_key);
 
 // Returns a JNI reference to the OpenSSLEngine object which is used to back a
 // given private_key object. This must *only* be used for RSA private keys on
@@ -99,7 +104,7 @@ AndroidEVP_PKEY* GetOpenSSLSystemHandleForPrivateKey(jobject private_key);
 // image contains a vanilla implementation of the Java API frameworks based on
 // Harmony + OpenSSL.
 base::android::ScopedJavaLocalRef<jobject> GetOpenSSLEngineForPrivateKey(
-    jobject private_key);
+    const base::android::JavaRef<jobject>& private_key);
 
 }  // namespace android
 }  // namespace net

@@ -20,7 +20,8 @@ namespace test_server {
 // The C++ side of the Java EmbeddedTestServer.
 class EmbeddedTestServerAndroid {
  public:
-  EmbeddedTestServerAndroid(JNIEnv* env, jobject obj);
+  EmbeddedTestServerAndroid(JNIEnv* env,
+                            const base::android::JavaRef<jobject>& obj);
   ~EmbeddedTestServerAndroid();
 
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);

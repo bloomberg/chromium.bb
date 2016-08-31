@@ -8,6 +8,7 @@
 #include <jni.h>
 #include <openssl/evp.h>
 
+#include "base/android/scoped_java_ref.h"
 #include "crypto/scoped_openssl_types.h"
 #include "net/base/net_export.h"
 
@@ -41,7 +42,7 @@ namespace android {
 //   during the OpenSSL handshake. Anything else will result in undefined
 //   behaviour.
 NET_EXPORT crypto::ScopedEVP_PKEY GetOpenSSLPrivateKeyWrapper(
-    jobject private_key);
+    const base::android::JavaRef<jobject>& private_key);
 
 }  // namespace android
 }  // namespace net

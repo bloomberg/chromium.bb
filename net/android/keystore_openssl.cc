@@ -58,6 +58,7 @@
 // methods are called. This is done by storing it in a |KeyExData| structure
 // that's referenced by the key using |EX_DATA|.
 
+using base::android::JavaRef;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 
@@ -229,8 +230,7 @@ int RsaMethodSignRaw(RSA* rsa,
   std::vector<uint8_t> result;
   // For RSA keys, this function behaves as RSA_private_encrypt with
   // PKCS#1 padding.
-  if (!RawSignDigestWithPrivateKey(ex_data->private_key.obj(), from_piece,
-                                   &result)) {
+  if (!RawSignDigestWithPrivateKey(ex_data->private_key, from_piece, &result)) {
     LOG(WARNING) << "Could not sign message in RsaMethodSignRaw!";
     OPENSSL_PUT_ERROR(RSA, ERR_R_INTERNAL_ERROR);
     return 0;
@@ -317,7 +317,7 @@ const RSA_METHOD android_rsa_method = {
 // that is owned by and destroyed with the EVP_PKEY. I.e. caller can
 // free |private_key| after the call.
 crypto::ScopedEVP_PKEY CreateRsaPkeyWrapper(
-    jobject private_key,
+    const JavaRef<jobject>& private_key,
     AndroidRSA* legacy_rsa,
     const crypto::OpenSSLErrStackTracer& tracer) {
   crypto::ScopedRSA rsa(RSA_new_method(global_boringssl_engine.Get().engine()));
@@ -329,7 +329,7 @@ crypto::ScopedEVP_PKEY CreateRsaPkeyWrapper(
   }
 
   std::unique_ptr<KeyExData> ex_data(new KeyExData);
-  ex_data->private_key.Reset(nullptr, private_key);
+  ex_data->private_key.Reset(private_key);
   if (ex_data->private_key.is_null()) {
     LOG(ERROR) << "Could not create global JNI reference";
     return nullptr;
@@ -360,7 +360,7 @@ class KeystoreEngineWorkaround {
  public:
   KeystoreEngineWorkaround() {}
 
-  void LeakEngine(jobject private_key) {
+  void LeakEngine(const JavaRef<jobject>& private_key) {
     if (!engine_.is_null())
       return;
     ScopedJavaLocalRef<jobject> engine =
@@ -376,7 +376,7 @@ class KeystoreEngineWorkaround {
   ScopedJavaGlobalRef<jobject> engine_;
 };
 
-void LeakEngine(jobject private_key) {
+void LeakEngine(const JavaRef<jobject>& private_key) {
   static base::LazyInstance<KeystoreEngineWorkaround>::Leaky s_instance =
       LAZY_INSTANCE_INITIALIZER;
   s_instance.Get().LeakEngine(private_key);
@@ -384,7 +384,7 @@ void LeakEngine(jobject private_key) {
 
 // Creates an EVP_PKEY wrapper corresponding to the RSA key
 // |private_key|. Returns nullptr on failure.
-crypto::ScopedEVP_PKEY GetRsaPkeyWrapper(jobject private_key) {
+crypto::ScopedEVP_PKEY GetRsaPkeyWrapper(const JavaRef<jobject>& private_key) {
   const int kAndroid42ApiLevel = 17;
   crypto::OpenSSLErrStackTracer tracer(FROM_HERE);
 
@@ -423,10 +423,10 @@ crypto::ScopedEVP_PKEY GetRsaPkeyWrapper(jobject private_key) {
 // Note that for now, only signing through ECDSA_sign() is really supported.
 // all other method pointers are either stubs returning errors, or no-ops.
 
-jobject EcKeyGetKey(const EC_KEY* ec_key) {
+const JavaRef<jobject>& EcKeyGetKey(const EC_KEY* ec_key) {
   KeyExData* ex_data = reinterpret_cast<KeyExData*>(EC_KEY_get_ex_data(
       ec_key, global_boringssl_engine.Get().ec_key_ex_index()));
-  return ex_data->private_key.obj();
+  return ex_data->private_key;
 }
 
 size_t EcdsaMethodGroupOrderSize(const EC_KEY* ec_key) {
@@ -441,8 +441,8 @@ int EcdsaMethodSign(const uint8_t* digest,
                     unsigned int* sig_len,
                     EC_KEY* ec_key) {
   // Retrieve private key JNI reference.
-  jobject private_key = EcKeyGetKey(ec_key);
-  if (!private_key) {
+  const JavaRef<jobject>& private_key = EcKeyGetKey(ec_key);
+  if (private_key.is_null()) {
     LOG(WARNING) << "Null JNI reference passed to EcdsaMethodSign!";
     return 0;
   }
@@ -485,7 +485,8 @@ int EcdsaMethodVerify(const uint8_t* digest,
 // On success, this creates a global JNI reference to the object that
 // is owned by and destroyed with the EVP_PKEY. I.e. the caller shall
 // always free |private_key| after the call.
-crypto::ScopedEVP_PKEY GetEcdsaPkeyWrapper(jobject private_key) {
+crypto::ScopedEVP_PKEY GetEcdsaPkeyWrapper(
+    const JavaRef<jobject>& private_key) {
   crypto::OpenSSLErrStackTracer tracer(FROM_HERE);
   crypto::ScopedEC_KEY ec_key(
       EC_KEY_new_method(global_boringssl_engine.Get().engine()));
@@ -497,7 +498,7 @@ crypto::ScopedEVP_PKEY GetEcdsaPkeyWrapper(jobject private_key) {
   }
 
   std::unique_ptr<KeyExData> ex_data(new KeyExData);
-  ex_data->private_key.Reset(nullptr, private_key);
+  ex_data->private_key.Reset(private_key);
   if (ex_data->private_key.is_null()) {
     LOG(ERROR) << "Can't create global JNI reference";
     return nullptr;
@@ -531,7 +532,8 @@ const ECDSA_METHOD android_ecdsa_method = {
 
 }  // namespace
 
-crypto::ScopedEVP_PKEY GetOpenSSLPrivateKeyWrapper(jobject private_key) {
+crypto::ScopedEVP_PKEY GetOpenSSLPrivateKeyWrapper(
+    const JavaRef<jobject>& private_key) {
   // Create sub key type, depending on private key's algorithm type.
   PrivateKeyType key_type = GetPrivateKeyType(private_key);
   switch (key_type) {

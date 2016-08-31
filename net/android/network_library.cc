@@ -47,8 +47,8 @@ void VerifyX509CertChain(const std::vector<std::string>& cert_chain,
       Java_AndroidNetworkLibrary_verifyServerCertificates(
           env, chain_byte_array, auth_string, host_string);
 
-  ExtractCertVerifyResult(result.obj(),
-                          status, is_issued_by_known_root, verified_chain);
+  ExtractCertVerifyResult(result, status, is_issued_by_known_root,
+                          verified_chain);
 }
 
 void AddTestRootCertificate(const uint8_t* cert, size_t len) {

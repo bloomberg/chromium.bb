@@ -10,12 +10,13 @@
 
 using base::android::AttachCurrentThread;
 using base::android::JavaArrayOfByteArrayToStringVector;
+using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 
 namespace net {
 namespace android {
 
-void ExtractCertVerifyResult(jobject result,
+void ExtractCertVerifyResult(const JavaRef<jobject>& result,
                              CertVerifyStatusAndroid* status,
                              bool* is_issued_by_known_root,
                              std::vector<std::string>* verified_chain) {
