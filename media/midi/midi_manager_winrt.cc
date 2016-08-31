@@ -118,6 +118,18 @@ HRESULT GetPointerToBufferData(IBuffer* buffer, uint8_t** out) {
   return S_OK;
 }
 
+// Checks if given DeviceInformation represent a Microsoft GS Wavetable Synth
+// instance.
+bool IsMicrosoftSynthesizer(IDeviceInformation* info) {
+  auto midi_synthesizer_statics =
+      WrlStaticsFactory<IMidiSynthesizerStatics,
+                        RuntimeClass_Windows_Devices_Midi_MidiSynthesizer>();
+  boolean result = FALSE;
+  HRESULT hr = midi_synthesizer_statics->IsSynthesizer(info, &result);
+  VLOG_IF(1, FAILED(hr)) << "IsSynthesizer failed: " << PrintHr(hr);
+  return result != FALSE;
+}
+
 // Tokens with value = 0 are considered invalid (as in <wrl/event.h>).
 const int64_t kInvalidTokenValue = 0;
 
@@ -189,6 +201,11 @@ class MidiManagerWinrt::MidiPortManager {
         WRL::Callback<ITypedEventHandler<DeviceWatcher*, DeviceInformation*>>(
             [weak_ptr, task_runner](IDeviceWatcher* watcher,
                                     IDeviceInformation* info) {
+              // Disable Microsoft GS Wavetable Synth due to security reasons.
+              // http://crbug.com/499279
+              if (IsMicrosoftSynthesizer(info))
+                return S_OK;
+
               std::string dev_id = GetIdString(info),
                           dev_name = GetNameString(info);
 
@@ -356,9 +373,6 @@ class MidiManagerWinrt::MidiPortManager {
     DCHECK(thread_checker_.CalledOnValidThread());
     CHECK(is_initialized_);
 
-    // TODO(shaochuan): Disable Microsoft GS Wavetable Synth due to security
-    // reasons. http://crbug.com/499279
-
     port_names_[dev_id] = dev_name;
 
     WRL::Wrappers::HString dev_id_hstring;
@@ -423,6 +437,8 @@ class MidiManagerWinrt::MidiPortManager {
     DCHECK(thread_checker_.CalledOnValidThread());
     CHECK(is_initialized_);
 
+    // Note: in case Microsoft GS Wavetable Synth triggers this event for some
+    // reason, it will be ignored here with log emitted.
     MidiPort<InterfaceType>* port = GetPortByDeviceId(dev_id);
     if (!port) {
       VLOG(1) << "Removing non-existent port " << dev_id;
