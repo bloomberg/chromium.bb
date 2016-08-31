@@ -11,6 +11,7 @@
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
@@ -97,8 +98,12 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
   void OnStoreLoaded(CloudPolicyStore* store) override;
   void OnStoreError(CloudPolicyStore* store) override;
 
+  // Allows testing code to set a signing service tailored to its needs.
+  void SetSigningServiceForTesting(
+      std::unique_ptr<policy::SigningService> signing_service);
+
  private:
-  // Signing class implemting the policy::SigningService interface to
+  // Signing class implementing the policy::SigningService interface to
   // sign data using the enrollment certificate's TPM-bound key.
   class TpmEnrollmentKeySigningService : public policy::SigningService {
    public:
@@ -148,7 +153,7 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
   ServerBackedStateKeysBroker::Subscription state_keys_update_subscription_;
 
   // Our signing service.
-  TpmEnrollmentKeySigningService signing_service_;
+  std::unique_ptr<SigningService> signing_service_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceCloudPolicyInitializer);
 };

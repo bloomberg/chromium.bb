@@ -111,7 +111,7 @@ class CloudPolicyClientTest : public testing::Test {
 
     em::CertificateBasedDeviceRegisterRequest* cert_based_register_request =
         cert_based_registration_request_.mutable_cert_based_register_request();
-    fake_signing_service_.SignRegistrationData(&data,
+    fake_signing_service_.SignDataSynchronously(data.SerializeAsString(),
         cert_based_register_request->mutable_signed_request());
 
     em::PolicyFetchRequest* policy_fetch_request =

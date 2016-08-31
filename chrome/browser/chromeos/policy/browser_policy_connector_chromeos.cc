@@ -65,7 +65,7 @@ namespace policy {
 namespace {
 
 // Install attributes for tests.
-EnterpriseInstallAttributes* g_testing_install_attributes = NULL;
+EnterpriseInstallAttributes* g_testing_install_attributes = nullptr;
 
 // Helper that returns a new SequencedTaskRunner backed by the blocking pool.
 // Each SequencedTaskRunner returned is independent from the others.
@@ -79,12 +79,12 @@ scoped_refptr<base::SequencedTaskRunner> GetBackgroundTaskRunner() {
 }  // namespace
 
 BrowserPolicyConnectorChromeOS::BrowserPolicyConnectorChromeOS()
-    : device_cloud_policy_manager_(NULL),
-      global_user_cloud_policy_provider_(NULL),
+    : device_cloud_policy_manager_(nullptr),
+      global_user_cloud_policy_provider_(nullptr),
       weak_ptr_factory_(this) {
   if (g_testing_install_attributes) {
     install_attributes_.reset(g_testing_install_attributes);
-    g_testing_install_attributes = NULL;
+    g_testing_install_attributes = nullptr;
   }
 
   // SystemSaltGetter or DBusThreadManager may be uninitialized on unit tests.
@@ -271,7 +271,7 @@ void BrowserPolicyConnectorChromeOS::SetInstallAttributesForTesting(
 void BrowserPolicyConnectorChromeOS::RemoveInstallAttributesForTesting() {
   if (g_testing_install_attributes) {
     delete g_testing_install_attributes;
-    g_testing_install_attributes = NULL;
+    g_testing_install_attributes = nullptr;
   }
 }
 

@@ -19,22 +19,17 @@ FakeSigningService::FakeSigningService() {}
 
 FakeSigningService::~FakeSigningService() {}
 
-void FakeSigningService::SignRegistrationData(
-      const em::CertificateBasedDeviceRegistrationData* registration_data,
-      em::SignedData* signed_data) {
-    DoSignData(registration_data->SerializeAsString(), signed_data);
-  }
-
 void FakeSigningService::SignData(const std::string& data,
                                   const SigningCallback& callback) {
   em::SignedData signed_data;
-  if (success_)
-    DoSignData(data, &signed_data);
+  if (success_) {
+    SignDataSynchronously(data, &signed_data);
+  }
   callback.Run(success_, signed_data);
 }
 
-void FakeSigningService::DoSignData(const std::string& data,
-                                    em::SignedData* signed_data) {
+void FakeSigningService::SignDataSynchronously(const std::string& data,
+    em::SignedData* signed_data) {
   signed_data->set_data(data + kSignedDataNonce);
   signed_data->set_signature(kSignature);
   signed_data->set_extra_data_bytes(sizeof(kSignedDataNonce) - 1);
@@ -49,4 +44,3 @@ MockSigningService::MockSigningService() {}
 MockSigningService::~MockSigningService() {}
 
 } // namespace policy
-

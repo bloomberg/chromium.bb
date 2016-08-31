@@ -73,7 +73,13 @@ DeviceCloudPolicyInitializer::DeviceCloudPolicyInitializer(
       device_store_(device_store),
       manager_(manager),
       attestation_flow_(std::move(attestation_flow)),
-      signing_service_(async_method_caller) {}
+      signing_service_(base::MakeUnique<TpmEnrollmentKeySigningService>(
+          async_method_caller)) {}
+
+void DeviceCloudPolicyInitializer::SetSigningServiceForTesting(
+    std::unique_ptr<policy::SigningService> signing_service) {
+  signing_service_ = std::move(signing_service);
+}
 
 DeviceCloudPolicyInitializer::~DeviceCloudPolicyInitializer() {
   DCHECK(!is_initialized_);
@@ -257,7 +263,7 @@ std::unique_ptr<CloudPolicyClient> DeviceCloudPolicyInitializer::CreateClient(
       DeviceCloudPolicyManagerChromeOS::GetMachineID(),
       DeviceCloudPolicyManagerChromeOS::GetMachineModel(),
       kPolicyVerificationKeyHash, device_management_service,
-      g_browser_process->system_request_context(), &signing_service_);
+      g_browser_process->system_request_context(), signing_service_.get());
 }
 
 void DeviceCloudPolicyInitializer::TryToCreateClient() {
