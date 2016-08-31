@@ -17,6 +17,7 @@ import org.chromium.chromoting.jni.GlDisplay;
  */
 public class GlDesktopView extends DesktopView implements SurfaceHolder.Callback {
     private final GlDisplay mDisplay;
+    private final InputFeedbackRadiusMapper mInputFeedbackMapper;
 
     private Object mOnHostSizeChangedListenerKey;
     private Object mOnCanvasRenderedListenerKey;
@@ -28,14 +29,15 @@ public class GlDesktopView extends DesktopView implements SurfaceHolder.Callback
         Preconditions.notNull(display);
         mDisplay = display;
 
-        mScaleFactor = 0;
+        mInputFeedbackMapper = new InputFeedbackRadiusMapper(this);
 
         getHolder().addCallback(this);
     }
 
     @Override
     public void showInputFeedback(InputFeedbackType feedbackToShow, PointF pos) {
-        float diameter = getFeedbackRadius(feedbackToShow, mScaleFactor) * 2.0f;
+        float diameter =
+                mInputFeedbackMapper.getFeedbackRadius(feedbackToShow, mScaleFactor) * 2.0f;
         if (diameter <= 0.0f) {
             return;
         }

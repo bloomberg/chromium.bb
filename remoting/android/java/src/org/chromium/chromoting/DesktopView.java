@@ -48,10 +48,6 @@ public abstract class DesktopView extends SurfaceView {
      */
     protected final Event.Raisable<Void> mOnCanvasRendered = new Event.Raisable<>();
 
-    private final int mTinyFeedbackPixelRadius;
-    private final int mSmallFeedbackPixelRadius;
-    private final int mLargeFeedbackPixelRadius;
-
     /** The parent Desktop activity. */
     private final Desktop mDesktop;
 
@@ -64,18 +60,6 @@ public abstract class DesktopView extends SurfaceView {
         mDesktop = desktop;
         mInputHandler = new TouchInputHandler(this, desktop);
         mInputHandler.init(desktop, new InputEventSender(client));
-
-        // Give this view keyboard focus, allowing us to customize the soft keyboard's settings.
-        setFocusableInTouchMode(true);
-
-        mTinyFeedbackPixelRadius =
-                getResources().getDimensionPixelSize(R.dimen.feedback_animation_radius_tiny);
-
-        mSmallFeedbackPixelRadius =
-                getResources().getDimensionPixelSize(R.dimen.feedback_animation_radius_small);
-
-        mLargeFeedbackPixelRadius =
-                getResources().getDimensionPixelSize(R.dimen.feedback_animation_radius_large);
     }
 
     // TODO(yuweih): move showActionBar and showKeyboard out of this abstract class.
@@ -136,30 +120,6 @@ public abstract class DesktopView extends SurfaceView {
         TouchEventParameter parameter = new TouchEventParameter(event);
         mOnTouch.raise(parameter);
         return parameter.handled;
-    }
-
-    /**
-     * Returns the radius of the given feedback type.
-     * 0.0f will be returned if no feedback should be shown.
-     */
-    protected final float getFeedbackRadius(InputFeedbackType feedbackToShow, float scaleFactor) {
-        switch (feedbackToShow) {
-            case NONE:
-                return 0.0f;
-            case SHORT_TOUCH_ANIMATION:
-                return mSmallFeedbackPixelRadius / scaleFactor;
-            case LONG_TOUCH_ANIMATION:
-                return mLargeFeedbackPixelRadius / scaleFactor;
-            case LONG_TRACKPAD_ANIMATION:
-                // The size of the longpress trackpad animation is supposed to be close to the size
-                // of the cursor so it doesn't need to be normalized and should be scaled with the
-                // canvas.
-                return mTinyFeedbackPixelRadius;
-            default:
-                // Unreachable, but required by Google Java style and findbugs.
-                assert false : "Unreached";
-                return 0.0f;
-        }
     }
 
     /** Triggers a brief animation to indicate the existence and location of an input event. */
