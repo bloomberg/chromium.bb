@@ -23,22 +23,45 @@ ENV = os.environ.copy()
 ENV.pop('PYTHONUNBUFFERED', None)
 
 
-SCRIPT = (
+SCRIPT_OUT = (
   'import signal, sys, time;\n'
   'l = [];\n'
   'def handler(signum, _):\n'
   '  l.append(signum);\n'
-  '  print(\'got signal %%d\' %% signum);\n'
+  '  sys.stdout.write(\'got signal %%d\\n\' %% signum);\n'
   '  sys.stdout.flush();\n'
   'signal.signal(%s, handler);\n'
-  'print(\'hi\');\n'
+  'sys.stdout.write(\'hi\\n\');\n'
   'sys.stdout.flush();\n'
   'while not l:\n'
   '  try:\n'
   '    time.sleep(0.01);\n'
   '  except IOError:\n'
-  '    print(\'ioerror\');\n'
-  'print(\'bye\')') % (
+  '    sys.stdout.write(\'ioerror\\n\');\n'
+  '    sys.stdout.flush();\n'
+  'sys.stdout.write(\'bye\\n\');\n'
+  'sys.stdout.flush();\n') % (
+    'signal.SIGBREAK' if sys.platform == 'win32' else 'signal.SIGTERM')
+
+
+SCRIPT_ERR = (
+  'import signal, sys, time;\n'
+  'l = [];\n'
+  'def handler(signum, _):\n'
+  '  l.append(signum);\n'
+  '  sys.stderr.write(\'got signal %%d\\n\' %% signum);\n'
+  '  sys.stderr.flush();\n'
+  'signal.signal(%s, handler);\n'
+  'sys.stderr.write(\'hi\\n\');\n'
+  'sys.stderr.flush();\n'
+  'while not l:\n'
+  '  try:\n'
+  '    time.sleep(0.01);\n'
+  '  except IOError:\n'
+  '    sys.stderr.write(\'ioerror\\n\');\n'
+  '    sys.stderr.flush();\n'
+  'sys.stderr.write(\'bye\\n\');\n'
+  'sys.stderr.flush();\n') % (
     'signal.SIGBREAK' if sys.platform == 'win32' else 'signal.SIGTERM')
 
 
@@ -216,7 +239,7 @@ class Subprocess42Test(unittest.TestCase):
       finally:
         duration = proc.duration()
       expected_duration = 0.0001 if not timeout or timeout == 60 else timeout
-      self.assertTrue(duration > expected_duration, (i, expected_duration))
+      self.assertTrue(duration >= expected_duration, (i, expected_duration))
       self.assertEqual(
           (i, stdout, stderr, code),
           (i,
@@ -241,7 +264,7 @@ class Subprocess42Test(unittest.TestCase):
         code = proc.wait()
       finally:
         duration = proc.duration()
-      self.assertTrue(duration > expected_duration, (i, expected_duration))
+      self.assertTrue(duration >= expected_duration, (i, expected_duration))
       self.assertEqual(
           (i, stdout, stderr, code),
           (i,) + expected)
@@ -268,7 +291,7 @@ class Subprocess42Test(unittest.TestCase):
       self.assertEqual(None, e.stderr)
       self.assertTrue(proc.kill())
       proc.wait()
-      self.assertLess(0.5, proc.duration())
+      self.assertLessEqual(0.5, proc.duration())
 
   def test_communicate_input_stdout_timeout(self):
     cmd = [
@@ -285,7 +308,7 @@ class Subprocess42Test(unittest.TestCase):
       self.assertEqual(None, e.stderr)
       self.assertTrue(proc.kill())
       proc.wait()
-      self.assertLess(0.5, proc.duration())
+      self.assertLessEqual(0.5, proc.duration())
 
   def test_communicate_timeout_no_pipe(self):
     # In this case, it's effectively a wait() call.
@@ -299,7 +322,7 @@ class Subprocess42Test(unittest.TestCase):
       self.assertEqual(None, e.stderr)
       self.assertTrue(proc.kill())
       proc.wait()
-      self.assertLess(0.5, proc.duration())
+      self.assertLessEqual(0.5, proc.duration())
 
   def test_call(self):
     cmd = [sys.executable, '-u', '-c', 'import sys; sys.exit(0)']
@@ -476,22 +499,6 @@ class Subprocess42Test(unittest.TestCase):
             continue
           raise
 
-  def _test_recv_common(self, proc, is_err):
-    actual = ''
-    while True:
-      if is_err:
-        data = proc.recv_err()
-      else:
-        data = proc.recv_out()
-      if not data:
-        break
-      self.assertTrue(data)
-      actual += data
-
-    self.assertEqual('A\nB\n', actual)
-    proc.wait()
-    self.assertEqual(0, proc.returncode)
-
   def test_yield_any_no_timeout(self):
     for duration in (0.05, 0.1, 0.5, 2):
       try:
@@ -600,22 +607,44 @@ class Subprocess42Test(unittest.TestCase):
     # be 0.
     self.assertLessEqual(0, proc.duration())
 
-  def test_detached(self):
-    is_win = (sys.platform == 'win32')
-    cmd = [sys.executable, '-c', SCRIPT]
-    # TODO(maruel): Make universal_newlines=True work and not hang.
-    proc = subprocess42.Popen(cmd, detached=True, stdout=subprocess42.PIPE)
-    try:
-      if is_win:
-        # There's something extremely weird happening on the Swarming bots in
-        # the sense that they return 'hi\n' on Windows, while running the script
-        # locally on Windows results in 'hi\r\n'. Author raises fist.
-        self.assertIn(proc.recv_out(), ('hi\r\n', 'hi\n'))
+  def _wait_for_hi(self, proc, err):
+    actual = ''
+    while True:
+      if err:
+        data = proc.recv_err(timeout=5)
       else:
-        self.assertEqual('hi\n', proc.recv_out())
+        data = proc.recv_out(timeout=5)
+      if not data:
+        self.fail('%r' % actual)
+      self.assertTrue(data)
+      actual += data
+      if actual in ('hi\n', 'hi\r\n'):
+        break
 
+  def _proc(self, err, **kwargs):
+    # Do not use the -u flag here, we want to test when it is buffered by
+    # default. See reference above about PYTHONUNBUFFERED.
+    # That's why the two scripts uses .flush(). Sadly, the flush() call is
+    # needed on Windows even for sys.stderr (!)
+    cmd = [sys.executable, '-c', SCRIPT_ERR if err else SCRIPT_OUT]
+    # TODO(maruel): Make universal_newlines=True work and not hang.
+    if err:
+      kwargs['stderr'] = subprocess42.PIPE
+    else:
+      kwargs['stdout'] = subprocess42.PIPE
+    return subprocess42.Popen(cmd, **kwargs)
+
+  def test_detached(self):
+    self._test_detached(False)
+    self._test_detached(True)
+
+  def _test_detached(self, err):
+    is_win = (sys.platform == 'win32')
+    key = 'stderr' if err else 'stdout'
+    proc = self._proc(err, detached=True)
+    try:
+      self._wait_for_hi(proc, err)
       proc.terminate()
-
       if is_win:
         # What happens on Windows is that the process is immediately killed
         # after handling SIGBREAK.
@@ -624,42 +653,37 @@ class Subprocess42Test(unittest.TestCase):
         self.assertIn(
             proc.recv_any(),
             (
-              ('stdout', 'got signal 21\r\nioerror\r\nbye\r\n'),
-              ('stdout', 'got signal 21\nioerror\nbye\n'),
-              ('stdout', 'got signal 21\r\nbye\r\n'),
-              ('stdout', 'got signal 21\nbye\n'),
+              (key, 'got signal 21\r\nioerror\r\nbye\r\n'),
+              (key, 'got signal 21\nioerror\nbye\n'),
+              (key, 'got signal 21\r\nbye\r\n'),
+              (key, 'got signal 21\nbye\n'),
             ))
       else:
         self.assertEqual(0, proc.wait())
-        self.assertEqual(('stdout', 'got signal 15\nbye\n'), proc.recv_any())
+        self.assertEqual((key, 'got signal 15\nbye\n'), proc.recv_any())
     finally:
       # In case the test fails.
       proc.kill()
       proc.wait()
 
   def test_attached(self):
+    self._test_attached(False)
+    self._test_attached(True)
+
+  def _test_attached(self, err):
     is_win = (sys.platform == 'win32')
-    cmd = [sys.executable, '-c', SCRIPT]
-    # TODO(maruel): Make universal_newlines=True work and not hang.
-    proc = subprocess42.Popen(cmd, detached=False, stdout=subprocess42.PIPE)
+    key = 'stderr' if err else 'stdout'
+    proc = self._proc(err, detached=False)
     try:
-      if is_win:
-        # There's something extremely weird happening on the Swarming bots in
-        # the sense that they return 'hi\n' on Windows, while running the script
-        # locally on Windows results in 'hi\r\n'. Author raises fist.
-        self.assertIn(proc.recv_out(), ('hi\r\n', 'hi\n'))
-      else:
-        self.assertEqual('hi\n', proc.recv_out())
-
+      self._wait_for_hi(proc, err)
       proc.terminate()
-
       if is_win:
         # If attached, it's hard killed.
         self.assertEqual(1, proc.wait())
         self.assertEqual((None, None), proc.recv_any())
       else:
         self.assertEqual(0, proc.wait())
-        self.assertEqual(('stdout', 'got signal 15\nbye\n'), proc.recv_any())
+        self.assertEqual((key, 'got signal 15\nbye\n'), proc.recv_any())
     finally:
       # In case the test fails.
       proc.kill()
