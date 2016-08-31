@@ -17,11 +17,6 @@ class ApplicationCacheErrorEvent final : public Event {
 public:
     ~ApplicationCacheErrorEvent() override;
 
-    static ApplicationCacheErrorEvent* create()
-    {
-        return new ApplicationCacheErrorEvent;
-    }
-
     static ApplicationCacheErrorEvent* create(WebApplicationCacheHost::ErrorReason reason, const String& url, int status, const String& message)
     {
         return new ApplicationCacheErrorEvent(reason, url, status, message);
@@ -42,7 +37,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    ApplicationCacheErrorEvent();
     ApplicationCacheErrorEvent(WebApplicationCacheHost::ErrorReason, const String& url, int status, const String& message);
     ApplicationCacheErrorEvent(const AtomicString& eventType, const ApplicationCacheErrorEventInit& initializer);
 

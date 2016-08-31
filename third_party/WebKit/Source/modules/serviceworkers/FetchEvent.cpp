@@ -12,11 +12,6 @@
 
 namespace blink {
 
-FetchEvent* FetchEvent::create()
-{
-    return new FetchEvent();
-}
-
 FetchEvent* FetchEvent::create(ScriptState* scriptState, const AtomicString& type, const FetchEventInit& initializer)
 {
     return new FetchEvent(scriptState, type, initializer, nullptr, nullptr);
@@ -52,11 +47,6 @@ void FetchEvent::respondWith(ScriptState* scriptState, ScriptPromise scriptPromi
 const AtomicString& FetchEvent::interfaceName() const
 {
     return EventNames::FetchEvent;
-}
-
-FetchEvent::FetchEvent()
-    : m_isReload(false)
-{
 }
 
 FetchEvent::FetchEvent(ScriptState* scriptState, const AtomicString& type, const FetchEventInit& initializer, RespondWithObserver* respondWithObserver, WaitUntilObserver* waitUntilObserver)

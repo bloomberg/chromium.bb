@@ -17,10 +17,6 @@ namespace blink {
 class MODULES_EXPORT SyncEvent final : public ExtendableEvent {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static SyncEvent* create()
-    {
-        return new SyncEvent;
-    }
     static SyncEvent* create(const AtomicString& type, const String& tag, bool lastChance, WaitUntilObserver* observer)
     {
         return new SyncEvent(type, tag, lastChance, observer);
@@ -40,7 +36,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    SyncEvent();
     SyncEvent(const AtomicString& type, const String&, bool, WaitUntilObserver*);
     SyncEvent(const AtomicString& type, const SyncEventInit&);
 

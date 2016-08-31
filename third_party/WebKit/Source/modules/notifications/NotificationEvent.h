@@ -18,10 +18,6 @@ class NotificationEventInit;
 class MODULES_EXPORT NotificationEvent final : public ExtendableEvent {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static NotificationEvent* create()
-    {
-        return new NotificationEvent;
-    }
     static NotificationEvent* create(const AtomicString& type, const NotificationEventInit& initializer)
     {
         return new NotificationEvent(type, initializer);
@@ -41,7 +37,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    NotificationEvent();
     NotificationEvent(const AtomicString& type, const NotificationEventInit&);
     NotificationEvent(const AtomicString& type, const NotificationEventInit&, WaitUntilObserver*);
 

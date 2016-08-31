@@ -28,19 +28,9 @@
 
 namespace blink {
 
-MediaStreamTrackEvent* MediaStreamTrackEvent::create()
-{
-    return new MediaStreamTrackEvent;
-}
-
 MediaStreamTrackEvent* MediaStreamTrackEvent::create(const AtomicString& type, bool canBubble, bool cancelable, MediaStreamTrack* track)
 {
     return new MediaStreamTrackEvent(type, canBubble, cancelable, track);
-}
-
-
-MediaStreamTrackEvent::MediaStreamTrackEvent()
-{
 }
 
 MediaStreamTrackEvent::MediaStreamTrackEvent(const AtomicString& type, bool canBubble, bool cancelable, MediaStreamTrack* track)

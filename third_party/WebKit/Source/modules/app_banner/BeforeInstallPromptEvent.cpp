@@ -14,10 +14,6 @@
 
 namespace blink {
 
-BeforeInstallPromptEvent::BeforeInstallPromptEvent()
-{
-}
-
 BeforeInstallPromptEvent::BeforeInstallPromptEvent(const AtomicString& name, ExecutionContext* executionContext, const Vector<String>& platforms, int requestId, WebAppBannerClient* client)
     : Event(name, false, true)
     , m_platforms(platforms)

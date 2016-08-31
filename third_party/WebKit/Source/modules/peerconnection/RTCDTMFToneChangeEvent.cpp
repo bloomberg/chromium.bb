@@ -27,11 +27,6 @@
 
 namespace blink {
 
-RTCDTMFToneChangeEvent* RTCDTMFToneChangeEvent::create()
-{
-    return new RTCDTMFToneChangeEvent;
-}
-
 RTCDTMFToneChangeEvent* RTCDTMFToneChangeEvent::create(const String& tone)
 {
     return new RTCDTMFToneChangeEvent(tone);
@@ -41,10 +36,6 @@ RTCDTMFToneChangeEvent* RTCDTMFToneChangeEvent::create(const AtomicString& type,
 {
     DCHECK(type == EventTypeNames::tonechange);
     return new RTCDTMFToneChangeEvent(initializer);
-}
-
-RTCDTMFToneChangeEvent::RTCDTMFToneChangeEvent()
-{
 }
 
 RTCDTMFToneChangeEvent::RTCDTMFToneChangeEvent(const String& tone)
@@ -80,4 +71,3 @@ DEFINE_TRACE(RTCDTMFToneChangeEvent)
 }
 
 } // namespace blink
-

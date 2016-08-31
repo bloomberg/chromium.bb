@@ -43,11 +43,6 @@ namespace blink {
 class FontFaceSetLoadEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static FontFaceSetLoadEvent* create()
-    {
-        return new FontFaceSetLoadEvent();
-    }
-
     static FontFaceSetLoadEvent* create(const AtomicString& type, const FontFaceSetLoadEventInit& initializer)
     {
         return new FontFaceSetLoadEvent(type, initializer);
@@ -67,7 +62,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    FontFaceSetLoadEvent();
     FontFaceSetLoadEvent(const AtomicString&, const FontFaceArray&);
     FontFaceSetLoadEvent(const AtomicString&, const FontFaceSetLoadEventInit&);
 

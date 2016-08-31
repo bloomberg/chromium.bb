@@ -28,18 +28,9 @@
 
 namespace blink {
 
-RTCIceCandidateEvent* RTCIceCandidateEvent::create()
-{
-    return new RTCIceCandidateEvent;
-}
-
 RTCIceCandidateEvent* RTCIceCandidateEvent::create(bool canBubble, bool cancelable, RTCIceCandidate* candidate)
 {
     return new RTCIceCandidateEvent(canBubble, cancelable, candidate);
-}
-
-RTCIceCandidateEvent::RTCIceCandidateEvent()
-{
 }
 
 RTCIceCandidateEvent::RTCIceCandidateEvent(bool canBubble, bool cancelable, RTCIceCandidate* candidate)
@@ -69,4 +60,3 @@ DEFINE_TRACE(RTCIceCandidateEvent)
 }
 
 } // namespace blink
-

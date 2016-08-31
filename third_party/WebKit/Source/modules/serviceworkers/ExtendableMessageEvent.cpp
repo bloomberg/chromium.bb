@@ -6,11 +6,6 @@
 
 namespace blink {
 
-ExtendableMessageEvent* ExtendableMessageEvent::create()
-{
-    return new ExtendableMessageEvent;
-}
-
 ExtendableMessageEvent* ExtendableMessageEvent::create(const AtomicString& type, const ExtendableMessageEventInit& initializer)
 {
     return new ExtendableMessageEvent(type, initializer);
@@ -84,10 +79,6 @@ DEFINE_TRACE(ExtendableMessageEvent)
     visitor->trace(m_sourceAsMessagePort);
     visitor->trace(m_ports);
     ExtendableEvent::trace(visitor);
-}
-
-ExtendableMessageEvent::ExtendableMessageEvent()
-{
 }
 
 ExtendableMessageEvent::ExtendableMessageEvent(const AtomicString& type, const ExtendableMessageEventInit& initializer)

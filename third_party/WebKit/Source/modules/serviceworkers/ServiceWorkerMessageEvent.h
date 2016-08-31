@@ -16,11 +16,6 @@ namespace blink {
 class MODULES_EXPORT ServiceWorkerMessageEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static ServiceWorkerMessageEvent* create()
-    {
-        return new ServiceWorkerMessageEvent;
-    }
-
     static ServiceWorkerMessageEvent* create(const AtomicString& type, const ServiceWorkerMessageEventInit& initializer)
     {
         return new ServiceWorkerMessageEvent(type, initializer);
@@ -46,7 +41,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    ServiceWorkerMessageEvent();
     ServiceWorkerMessageEvent(const AtomicString& type, const ServiceWorkerMessageEventInit& initializer);
     ServiceWorkerMessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, ServiceWorker* source, MessagePortArray* ports);
 

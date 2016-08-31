@@ -20,11 +20,6 @@ class PresentationConnectionCloseEvent final : public Event {
 public:
     ~PresentationConnectionCloseEvent() override = default;
 
-    static PresentationConnectionCloseEvent* create()
-    {
-        return new PresentationConnectionCloseEvent;
-    }
-
     static PresentationConnectionCloseEvent* create(const AtomicString& eventType, const String& reason, const String& message)
     {
         return new PresentationConnectionCloseEvent(eventType, reason, message);
@@ -43,7 +38,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    PresentationConnectionCloseEvent() = default;
     PresentationConnectionCloseEvent(const AtomicString& eventType, const String& reason, const String& message);
     PresentationConnectionCloseEvent(const AtomicString& eventType, const PresentationConnectionCloseEventInit& initializer);
 

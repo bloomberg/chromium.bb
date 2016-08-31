@@ -37,7 +37,6 @@ class RTCDTMFToneChangeEvent final : public Event {
 public:
     ~RTCDTMFToneChangeEvent() override;
 
-    static RTCDTMFToneChangeEvent* create();
     static RTCDTMFToneChangeEvent* create(const String& tone);
     static RTCDTMFToneChangeEvent* create(const AtomicString& type, const RTCDTMFToneChangeEventInit& initializer);
 
@@ -48,7 +47,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    RTCDTMFToneChangeEvent();
     explicit RTCDTMFToneChangeEvent(const String& tone);
     explicit RTCDTMFToneChangeEvent(const RTCDTMFToneChangeEventInit&);
 

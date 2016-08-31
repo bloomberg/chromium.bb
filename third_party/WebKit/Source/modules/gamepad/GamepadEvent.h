@@ -14,10 +14,6 @@ namespace blink {
 class GamepadEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static GamepadEvent* create()
-    {
-        return new GamepadEvent;
-    }
     static GamepadEvent* create(const AtomicString& type, bool canBubble, bool cancelable, Gamepad* gamepad)
     {
         return new GamepadEvent(type, canBubble, cancelable, gamepad);
@@ -35,7 +31,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    GamepadEvent();
     GamepadEvent(const AtomicString& type, bool canBubble, bool cancelable, Gamepad*);
     GamepadEvent(const AtomicString&, const GamepadEventInit&);
 

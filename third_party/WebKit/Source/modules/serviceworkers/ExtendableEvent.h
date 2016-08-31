@@ -43,7 +43,6 @@ class WaitUntilObserver;
 class MODULES_EXPORT ExtendableEvent : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static ExtendableEvent* create();
     static ExtendableEvent* create(const AtomicString& type, const ExtendableEventInit&);
     static ExtendableEvent* create(const AtomicString& type, const ExtendableEventInit&, WaitUntilObserver*);
 
@@ -55,7 +54,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 protected:
-    ExtendableEvent();
     ExtendableEvent(const AtomicString& type, const ExtendableEventInit&);
     ExtendableEvent(const AtomicString& type, const ExtendableEventInit&, WaitUntilObserver*);
 

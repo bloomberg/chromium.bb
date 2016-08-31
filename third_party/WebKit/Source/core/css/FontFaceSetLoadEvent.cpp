@@ -32,10 +32,6 @@
 
 namespace blink {
 
-FontFaceSetLoadEvent::FontFaceSetLoadEvent()
-{
-}
-
 FontFaceSetLoadEvent::FontFaceSetLoadEvent(const AtomicString& type, const FontFaceArray& fontfaces)
     : Event(type, false, false)
     , m_fontfaces(fontfaces)

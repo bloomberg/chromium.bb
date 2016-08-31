@@ -21,10 +21,6 @@ class PresentationConnectionAvailableEvent final : public Event {
 public:
     ~PresentationConnectionAvailableEvent() override;
 
-    static PresentationConnectionAvailableEvent* create()
-    {
-        return new PresentationConnectionAvailableEvent;
-    }
     static PresentationConnectionAvailableEvent* create(const AtomicString& eventType, PresentationConnection* connection)
     {
         return new PresentationConnectionAvailableEvent(eventType, connection);
@@ -41,7 +37,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    PresentationConnectionAvailableEvent();
     PresentationConnectionAvailableEvent(const AtomicString& eventType, PresentationConnection*);
     PresentationConnectionAvailableEvent(const AtomicString& eventType, const PresentationConnectionAvailableEventInit& initializer);
 

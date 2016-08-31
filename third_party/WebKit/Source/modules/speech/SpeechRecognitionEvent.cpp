@@ -27,11 +27,6 @@
 
 namespace blink {
 
-SpeechRecognitionEvent* SpeechRecognitionEvent::create()
-{
-    return new SpeechRecognitionEvent;
-}
-
 SpeechRecognitionEvent* SpeechRecognitionEvent::create(const AtomicString& eventName, const SpeechRecognitionEventInit& initializer)
 {
     return new SpeechRecognitionEvent(eventName, initializer);
@@ -56,11 +51,6 @@ SpeechRecognitionEvent* SpeechRecognitionEvent::createNoMatch(SpeechRecognitionR
 const AtomicString& SpeechRecognitionEvent::interfaceName() const
 {
     return EventNames::SpeechRecognitionEvent;
-}
-
-SpeechRecognitionEvent::SpeechRecognitionEvent()
-    : m_resultIndex(0)
-{
 }
 
 SpeechRecognitionEvent::SpeechRecognitionEvent(const AtomicString& eventName, const SpeechRecognitionEventInit& initializer)

@@ -8,10 +8,6 @@
 
 namespace blink {
 
-PushEvent::PushEvent()
-{
-}
-
 PushEvent::PushEvent(const AtomicString& type, PushMessageData* data, WaitUntilObserver* observer)
     : ExtendableEvent(type, ExtendableEventInit(), observer)
     , m_data(data)

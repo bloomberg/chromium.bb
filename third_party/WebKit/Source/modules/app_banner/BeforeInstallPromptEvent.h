@@ -24,12 +24,6 @@ class BeforeInstallPromptEvent final : public Event {
 public:
     ~BeforeInstallPromptEvent() override;
 
-    // For EventModules.cpp
-    static BeforeInstallPromptEvent* create()
-    {
-        return new BeforeInstallPromptEvent();
-    }
-
     static BeforeInstallPromptEvent* create(const AtomicString& name, ExecutionContext* executionContext, const Vector<String>& platforms, int requestId, WebAppBannerClient* client)
     {
         return new BeforeInstallPromptEvent(name, executionContext, platforms, requestId, client);
@@ -50,7 +44,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    BeforeInstallPromptEvent();
     BeforeInstallPromptEvent(const AtomicString& name, ExecutionContext*, const Vector<String>& platforms, int requestId, WebAppBannerClient*);
     BeforeInstallPromptEvent(const AtomicString& name, const BeforeInstallPromptEventInit&);
 

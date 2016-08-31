@@ -28,10 +28,6 @@
 
 namespace blink {
 
-ResourceProgressEvent::ResourceProgressEvent()
-{
-}
-
 ResourceProgressEvent::ResourceProgressEvent(const AtomicString& type, bool lengthComputable, unsigned long long loaded, unsigned long long total, const String& url)
     : ProgressEvent(type, lengthComputable, loaded, total)
     , m_url(url)

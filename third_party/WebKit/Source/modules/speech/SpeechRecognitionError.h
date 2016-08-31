@@ -51,7 +51,6 @@ public:
     };
 
     static SpeechRecognitionError* create(ErrorCode, const String&);
-    static SpeechRecognitionError* create();
     static SpeechRecognitionError* create(const AtomicString&, const SpeechRecognitionErrorInit&);
 
     const String& error() { return m_error; }

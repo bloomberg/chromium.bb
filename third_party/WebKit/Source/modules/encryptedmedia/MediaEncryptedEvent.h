@@ -36,11 +36,6 @@ class MediaEncryptedEvent final : public Event {
 public:
     ~MediaEncryptedEvent() override;
 
-    static MediaEncryptedEvent* create()
-    {
-        return new MediaEncryptedEvent;
-    }
-
     static MediaEncryptedEvent* create(const AtomicString& type, const MediaEncryptedEventInit& initializer)
     {
         return new MediaEncryptedEvent(type, initializer);
@@ -54,7 +49,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    MediaEncryptedEvent();
     MediaEncryptedEvent(const AtomicString& type, const MediaEncryptedEventInit& initializer);
 
     String m_initDataType;

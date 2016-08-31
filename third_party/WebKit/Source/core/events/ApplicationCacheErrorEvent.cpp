@@ -39,10 +39,6 @@ static const String& errorReasonToString(WebApplicationCacheHost::ErrorReason re
     return emptyString();
 }
 
-ApplicationCacheErrorEvent::ApplicationCacheErrorEvent()
-{
-}
-
 ApplicationCacheErrorEvent::ApplicationCacheErrorEvent(WebApplicationCacheHost::ErrorReason reason, const String& url, int status, const String& message)
     : Event(EventTypeNames::error, false, false)
     , m_reason(errorReasonToString(reason))

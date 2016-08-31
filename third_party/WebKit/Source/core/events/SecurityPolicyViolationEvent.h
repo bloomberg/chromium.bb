@@ -33,11 +33,6 @@ namespace blink {
 class SecurityPolicyViolationEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static SecurityPolicyViolationEvent* create()
-    {
-        return new SecurityPolicyViolationEvent();
-    }
-
     static SecurityPolicyViolationEvent* create(const AtomicString& type, const SecurityPolicyViolationEventInit& initializer)
     {
         return new SecurityPolicyViolationEvent(type, initializer);
@@ -59,8 +54,6 @@ public:
     DEFINE_INLINE_VIRTUAL_TRACE() { Event::trace(visitor); }
 
 private:
-    SecurityPolicyViolationEvent() { }
-
     SecurityPolicyViolationEvent(const AtomicString& type, const SecurityPolicyViolationEventInit& initializer)
         : Event(type, initializer)
         , m_lineNumber(0)

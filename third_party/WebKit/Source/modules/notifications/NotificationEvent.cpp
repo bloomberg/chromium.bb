@@ -9,11 +9,6 @@
 
 namespace blink {
 
-NotificationEvent::NotificationEvent()
-    : m_action(emptyString())
-{
-}
-
 NotificationEvent::NotificationEvent(const AtomicString& type, const NotificationEventInit& initializer)
     : ExtendableEvent(type, initializer)
     , m_action(initializer.action())

@@ -33,10 +33,6 @@ class ClipboardEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
     ~ClipboardEvent() override;
-    static ClipboardEvent* create()
-    {
-        return new ClipboardEvent();
-    }
 
     static ClipboardEvent* create(const AtomicString& type, bool canBubble, bool cancelable, DataTransfer* dataTransfer)
     {
@@ -48,7 +44,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    ClipboardEvent();
     ClipboardEvent(const AtomicString& type, bool canBubble, bool cancelable, DataTransfer* clipboardData);
 
     const AtomicString& interfaceName() const override;

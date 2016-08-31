@@ -9,10 +9,6 @@
 
 namespace blink {
 
-PromiseRejectionEvent::PromiseRejectionEvent()
-{
-}
-
 PromiseRejectionEvent::PromiseRejectionEvent(ScriptState* state, const AtomicString& type, const PromiseRejectionEventInit& initializer)
     : Event(type, initializer)
     , m_scriptState(state)

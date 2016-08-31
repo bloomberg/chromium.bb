@@ -26,11 +26,6 @@
 
 namespace blink {
 
-MediaStreamEvent* MediaStreamEvent::create()
-{
-    return new MediaStreamEvent;
-}
-
 MediaStreamEvent* MediaStreamEvent::create(const AtomicString& type, bool canBubble, bool cancelable, MediaStream* stream)
 {
     return new MediaStreamEvent(type, canBubble, cancelable, stream);
@@ -39,10 +34,6 @@ MediaStreamEvent* MediaStreamEvent::create(const AtomicString& type, bool canBub
 MediaStreamEvent* MediaStreamEvent::create(const AtomicString& type, const MediaStreamEventInit& initializer)
 {
     return new MediaStreamEvent(type, initializer);
-}
-
-MediaStreamEvent::MediaStreamEvent()
-{
 }
 
 MediaStreamEvent::MediaStreamEvent(const AtomicString& type, bool canBubble, bool cancelable, MediaStream* stream)
@@ -85,4 +76,3 @@ DEFINE_TRACE(MediaStreamEvent)
 }
 
 } // namespace blink
-

@@ -36,7 +36,6 @@ class RTCIceCandidateEvent final : public Event {
 public:
     ~RTCIceCandidateEvent() override;
 
-    static RTCIceCandidateEvent* create();
     static RTCIceCandidateEvent* create(bool canBubble, bool cancelable, RTCIceCandidate*);
 
     RTCIceCandidate* candidate() const;
@@ -46,7 +45,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    RTCIceCandidateEvent();
     RTCIceCandidateEvent(bool canBubble, bool cancelable, RTCIceCandidate*);
 
     Member<RTCIceCandidate> m_candidate;

@@ -20,7 +20,6 @@ class MODULES_EXPORT BlobEvent final : public Event {
 public:
     ~BlobEvent() override {}
 
-    static BlobEvent* create();
     static BlobEvent* create(const AtomicString& type, const BlobEventInit& initializer);
     static BlobEvent* create(const AtomicString& type, Blob*);
 
@@ -32,7 +31,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    BlobEvent() {}
     BlobEvent(const AtomicString& type, const BlobEventInit& initializer);
     BlobEvent(const AtomicString& type, Blob*);
 

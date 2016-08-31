@@ -27,7 +27,6 @@ class RespondWithObserver;
 class MODULES_EXPORT FetchEvent final : public ExtendableEvent {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static FetchEvent* create();
     static FetchEvent* create(ScriptState*, const AtomicString& type, const FetchEventInit&);
     static FetchEvent* create(ScriptState*, const AtomicString& type, const FetchEventInit&, RespondWithObserver*, WaitUntilObserver*);
 
@@ -42,7 +41,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 protected:
-    FetchEvent();
     FetchEvent(ScriptState*, const AtomicString& type, const FetchEventInit&, RespondWithObserver*, WaitUntilObserver*);
 
 private:

@@ -6,10 +6,6 @@
 
 namespace blink {
 
-SyncEvent::SyncEvent()
-{
-}
-
 SyncEvent::SyncEvent(const AtomicString& type, const String& tag, bool lastChance, WaitUntilObserver* observer)
     : ExtendableEvent(type, ExtendableEventInit(), observer)
     , m_tag(tag)

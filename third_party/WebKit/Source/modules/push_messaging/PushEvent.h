@@ -20,10 +20,6 @@ class PushEventInit;
 class MODULES_EXPORT PushEvent final : public ExtendableEvent {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PushEvent* create()
-    {
-        return new PushEvent;
-    }
     static PushEvent* create(const AtomicString& type, PushMessageData* data, WaitUntilObserver* observer)
     {
         return new PushEvent(type, data, observer);
@@ -42,7 +38,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    PushEvent();
     PushEvent(const AtomicString& type, PushMessageData*, WaitUntilObserver*);
     PushEvent(const AtomicString& type, const PushEventInit&);
 

@@ -5,7 +5,6 @@ HTMLEvents ImplementedAs=Event
 KeyboardEvents ImplementedAs=KeyboardEvent
 MouseEvents ImplementedAs=MouseEvent
 MutationEvents ImplementedAs=MutationEvent
-OrientationEvent ImplementedAs=Event, RuntimeEnabled=OrientationEventEnabled
 SVGEvents ImplementedAs=Event
 UIEvents ImplementedAs=UIEvent
 WebKitTransitionEvent ImplementedAs=TransitionEvent

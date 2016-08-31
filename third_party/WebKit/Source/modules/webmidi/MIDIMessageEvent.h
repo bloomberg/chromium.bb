@@ -42,11 +42,6 @@ class ExecutionContext;
 class MIDIMessageEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static MIDIMessageEvent* create()
-    {
-        return new MIDIMessageEvent();
-    }
-
     static MIDIMessageEvent* create(double receivedTime, DOMUint8Array* data)
     {
         return new MIDIMessageEvent(receivedTime, data);
@@ -69,9 +64,6 @@ public:
     }
 
 private:
-    MIDIMessageEvent()
-        : m_receivedTime(0) { }
-
     MIDIMessageEvent(double receivedTime, DOMUint8Array* data)
         : Event(EventTypeNames::midimessage, true, false)
         , m_receivedTime(receivedTime)

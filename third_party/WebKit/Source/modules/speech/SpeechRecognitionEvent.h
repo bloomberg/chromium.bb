@@ -39,7 +39,6 @@ class Document;
 class SpeechRecognitionEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static SpeechRecognitionEvent* create();
     static SpeechRecognitionEvent* create(const AtomicString&, const SpeechRecognitionEventInit&);
     ~SpeechRecognitionEvent() override;
 
@@ -59,7 +58,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    SpeechRecognitionEvent();
     SpeechRecognitionEvent(const AtomicString&, const SpeechRecognitionEventInit&);
     SpeechRecognitionEvent(const AtomicString& eventName, unsigned long resultIndex, SpeechRecognitionResultList* results);
 

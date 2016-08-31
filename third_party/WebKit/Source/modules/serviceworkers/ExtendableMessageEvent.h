@@ -16,7 +16,6 @@ class MODULES_EXPORT ExtendableMessageEvent final : public ExtendableEvent {
     DEFINE_WRAPPERTYPEINFO();
 
 public:
-    static ExtendableMessageEvent* create();
     static ExtendableMessageEvent* create(const AtomicString& type, const ExtendableMessageEventInit& initializer);
     static ExtendableMessageEvent* create(const AtomicString& type, const ExtendableMessageEventInit& initializer, WaitUntilObserver*);
     static ExtendableMessageEvent* create(PassRefPtr<SerializedScriptValue> data, const String& origin, MessagePortArray* ports, WaitUntilObserver*);
@@ -36,7 +35,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    ExtendableMessageEvent();
     ExtendableMessageEvent(const AtomicString& type, const ExtendableMessageEventInit& initializer);
     ExtendableMessageEvent(const AtomicString& type, const ExtendableMessageEventInit& initializer, WaitUntilObserver*);
     ExtendableMessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, MessagePortArray* ports, WaitUntilObserver*);

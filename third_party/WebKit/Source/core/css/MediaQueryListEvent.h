@@ -14,11 +14,6 @@ namespace blink {
 class MediaQueryListEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static MediaQueryListEvent* create()
-    {
-        return new MediaQueryListEvent;
-    }
-
     static MediaQueryListEvent* create(MediaQueryList* list)
     {
         return new MediaQueryListEvent(list);
@@ -46,9 +41,6 @@ public:
     }
 
 private:
-    MediaQueryListEvent()
-        : m_matches(false) { }
-
     MediaQueryListEvent(const String& media, bool matches)
         : Event(EventTypeNames::change, false, false)
         , m_media(media)

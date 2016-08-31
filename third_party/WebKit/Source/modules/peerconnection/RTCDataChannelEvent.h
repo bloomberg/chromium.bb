@@ -36,7 +36,6 @@ class RTCDataChannelEvent final : public Event {
 public:
     ~RTCDataChannelEvent() override;
 
-    static RTCDataChannelEvent* create();
     static RTCDataChannelEvent* create(const AtomicString& type, bool canBubble, bool cancelable, RTCDataChannel*);
 
     RTCDataChannel* channel() const;
@@ -46,7 +45,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    RTCDataChannelEvent();
     RTCDataChannelEvent(const AtomicString& type, bool canBubble, bool cancelable, RTCDataChannel*);
 
     Member<RTCDataChannel> m_channel;

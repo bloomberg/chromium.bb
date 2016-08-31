@@ -29,10 +29,6 @@
 
 namespace blink {
 
-MediaEncryptedEvent::MediaEncryptedEvent()
-{
-}
-
 MediaEncryptedEvent::MediaEncryptedEvent(const AtomicString& type, const MediaEncryptedEventInit& initializer)
     : Event(type, initializer)
     , m_initDataType(initializer.initDataType())

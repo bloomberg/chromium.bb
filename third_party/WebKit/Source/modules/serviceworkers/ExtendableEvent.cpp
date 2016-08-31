@@ -35,11 +35,6 @@
 
 namespace blink {
 
-ExtendableEvent* ExtendableEvent::create()
-{
-    return new ExtendableEvent();
-}
-
 ExtendableEvent* ExtendableEvent::create(const AtomicString& type, const ExtendableEventInit& eventInit)
 {
     return new ExtendableEvent(type, eventInit);
@@ -58,10 +53,6 @@ void ExtendableEvent::waitUntil(ScriptState* scriptState, ScriptPromise scriptPr
 {
     if (m_observer)
         m_observer->waitUntil(scriptState, scriptPromise, exceptionState);
-}
-
-ExtendableEvent::ExtendableEvent()
-{
 }
 
 ExtendableEvent::ExtendableEvent(const AtomicString& type, const ExtendableEventInit& initializer)

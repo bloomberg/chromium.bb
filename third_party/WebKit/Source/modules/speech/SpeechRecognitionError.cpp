@@ -59,11 +59,6 @@ SpeechRecognitionError* SpeechRecognitionError::create(ErrorCode code, const Str
     return new SpeechRecognitionError(ErrorCodeToString(code), message);
 }
 
-SpeechRecognitionError* SpeechRecognitionError::create()
-{
-    return new SpeechRecognitionError(emptyString(), emptyString());
-}
-
 SpeechRecognitionError* SpeechRecognitionError::create(const AtomicString& eventName, const SpeechRecognitionErrorInit& initializer)
 {
     return new SpeechRecognitionError(eventName, initializer);

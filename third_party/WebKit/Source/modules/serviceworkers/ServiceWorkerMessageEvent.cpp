@@ -6,10 +6,6 @@
 
 namespace blink {
 
-ServiceWorkerMessageEvent::ServiceWorkerMessageEvent()
-{
-}
-
 ServiceWorkerMessageEvent::ServiceWorkerMessageEvent(const AtomicString& type, const ServiceWorkerMessageEventInit& initializer)
     : Event(type, initializer)
 {

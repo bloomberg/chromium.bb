@@ -20,10 +20,6 @@ class CORE_EXPORT PromiseRejectionEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
     USING_PRE_FINALIZER(PromiseRejectionEvent, dispose);
 public:
-    static PromiseRejectionEvent* create()
-    {
-        return new PromiseRejectionEvent;
-    }
     static PromiseRejectionEvent* create(ScriptState* state, const AtomicString& type, const PromiseRejectionEventInit& initializer)
     {
         return new PromiseRejectionEvent(state, type, initializer);
@@ -45,7 +41,6 @@ public:
     DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
 private:
-    PromiseRejectionEvent();
     PromiseRejectionEvent(ScriptState*, const AtomicString&, const PromiseRejectionEventInit&);
     ~PromiseRejectionEvent() override;
     void dispose();

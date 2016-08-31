@@ -12,10 +12,6 @@ PresentationConnectionAvailableEvent::~PresentationConnectionAvailableEvent()
 {
 }
 
-PresentationConnectionAvailableEvent::PresentationConnectionAvailableEvent()
-{
-}
-
 PresentationConnectionAvailableEvent::PresentationConnectionAvailableEvent(const AtomicString& eventType, PresentationConnection* connection)
     : Event(eventType, false /* canBubble */, false /* cancelable */)
     , m_connection(connection)

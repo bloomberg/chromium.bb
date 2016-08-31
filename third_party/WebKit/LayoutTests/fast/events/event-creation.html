@@ -173,23 +173,6 @@
 
     // The following are here for completeness, but won't until there is more widespread support for them.
 
-    // #if ENABLE(WEB_AUDIO)
-    // AudioProcessingEvent
-    // shouldBeTrue("document.createEvent('AudioProcessingEvent') instanceof window.AudioProcessingEvent");
-    // shouldBeTrue("document.createEvent('AudioProcessingEvent') instanceof window.Event");
-    // shouldBeTrue("document.createEvent('AudioProcessingEvent').constructor === window.AudioProcessingEvent");
-
-    // #if ENABLE(WEB_AUDIO)
-    // OfflineAudioCompletionEvent
-    // shouldBeTrue("document.createEvent('OfflineAudioCompletionEvent') instanceof window.OfflineAudioCompletionEvent");
-    // shouldBeTrue("document.createEvent('OfflineAudioCompletionEvent') instanceof window.Event");
-    // shouldBeTrue("document.createEvent('OfflineAudioCompletionEvent').constructor === window.OfflineAudioCompletionEvent");
-
-    // MediaStreamEvent
-    // shouldBeTrue("document.createEvent('MediaStreamEvent') instanceof window.MediaStreamEvent");
-    // shouldBeTrue("document.createEvent('MediaStreamEvent') instanceof window.Event");
-    // shouldBeTrue("document.createEvent('MediaStreamEvent').constructor === window.MediaStreamEvent");
-
     // #if ENABLE(WEBGL)
     // WebGLContextEvent
     // shouldBeTrue("document.createEvent('WebGLContextEvent') instanceof window.WebGLContextEvent");
@@ -210,10 +193,6 @@
     // shouldBeTrue("document.createEvent('DeviceOrientationEvent') instanceof window.DeviceOrientationEvent");
     // shouldBeTrue("document.createEvent('DeviceOrientationEvent') instanceof window.Event");
     // shouldBeTrue("document.createEvent('DeviceOrientationEvent').constructor === window.DeviceOrientationEvent");
-
-    // OrientationEvent (Event alternative)
-    // shouldBeTrue("document.createEvent('OrientationEvent') instanceof window.Event");
-    // shouldBeTrue("document.createEvent('OrientationEvent').constructor === window.Event");
 
     // We test both a hard coded set and the automated set below (using enumeration) to ensure that a constructor being removed
     // from the window is caught a regression.

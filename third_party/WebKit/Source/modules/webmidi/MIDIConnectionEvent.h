@@ -41,11 +41,6 @@ class MIDIConnectionEventInit;
 class MIDIConnectionEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static MIDIConnectionEvent* create()
-    {
-        return new MIDIConnectionEvent();
-    }
-
     static MIDIConnectionEvent* create(MIDIPort* port)
     {
         return new MIDIConnectionEvent(port);
@@ -63,9 +58,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    MIDIConnectionEvent()
-        : Event(EventTypeNames::statechange, false, false) { }
-
     MIDIConnectionEvent(MIDIPort* port)
         : Event(EventTypeNames::statechange, false, false)
         , m_port(port) { }

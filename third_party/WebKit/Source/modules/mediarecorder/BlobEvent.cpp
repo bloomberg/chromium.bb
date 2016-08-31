@@ -10,12 +10,6 @@
 namespace blink {
 
 // static
-BlobEvent* BlobEvent::create()
-{
-    return new BlobEvent;
-}
-
-// static
 BlobEvent* BlobEvent::create(const AtomicString& type, const BlobEventInit& initializer)
 {
     return new BlobEvent(type, initializer);

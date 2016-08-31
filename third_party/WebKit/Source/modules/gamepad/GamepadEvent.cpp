@@ -6,10 +6,6 @@
 
 namespace blink {
 
-GamepadEvent::GamepadEvent()
-{
-}
-
 GamepadEvent::GamepadEvent(const AtomicString& type, bool canBubble, bool cancelable, Gamepad* gamepad)
     : Event(type, canBubble, cancelable)
     , m_gamepad(gamepad)
