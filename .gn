@@ -242,7 +242,6 @@ exec_script_whitelist = [
   "//build/util/branding.gni",
   "//build/util/version.gni",
   "//chrome/android/BUILD.gn",
-  "//chrome/browser/BUILD.gn",
   "//chrome/browser/chromeos/BUILD.gn",
   "//chrome/browser/extensions/BUILD.gn",
   "//chrome/browser/resources/chromeos/chromevox/BUILD.gn",
