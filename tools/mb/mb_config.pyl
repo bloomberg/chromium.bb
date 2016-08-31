@@ -1230,7 +1230,7 @@
     ],
 
     'gn_debug_libfuzzer_asan': [
-      'gn', 'debug', 'libfuzzer', 'asan', 'chromeos_with_codecs', 'pdf_xfa',
+      'gn', 'debug', 'libfuzzer', 'asan', 'chromeos_codecs', 'pdf_xfa',
       'disable_nacl',
     ],
 
@@ -1311,7 +1311,7 @@
      ],
 
     'gn_release_afl_asan': [
-      'gn', 'release', 'afl', 'asan', 'chromeos_with_codecs', 'pdf_xfa',
+      'gn', 'release', 'afl', 'asan', 'chromeos_codecs', 'pdf_xfa',
       'disable_nacl',
     ],
 
@@ -1321,16 +1321,16 @@
     ],
 
     'gn_release_libfuzzer_asan': [
-      'gn', 'release', 'libfuzzer', 'asan', 'chromeos_with_codecs', 'pdf_xfa',
+      'gn', 'release', 'libfuzzer', 'asan', 'chromeos_codecs', 'pdf_xfa',
       'disable_nacl',
     ],
 
     'gn_release_libfuzzer_msan': [
-      'gn', 'release', 'libfuzzer', 'msan', 'chromeos_with_codecs', 'pdf_xfa',
+      'gn', 'release', 'libfuzzer', 'msan', 'chromeos_codecs', 'pdf_xfa',
       'disable_nacl',
     ],
     'gn_release_libfuzzer_ubsan': [
-      'gn', 'release', 'libfuzzer', 'ubsan_security', 'chromeos_with_codecs',
+      'gn', 'release', 'libfuzzer', 'ubsan_security', 'chromeos_codecs',
       'pdf_xfa', 'disable_nacl',
     ],
 
