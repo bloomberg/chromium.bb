@@ -254,6 +254,7 @@ class SyncApiTest : public testing::Test {
   UserShare* user_share();
   syncable::Directory* dir();
   SyncEncryptionHandler* encryption_handler();
+  PassphraseType GetPassphraseType(BaseTransaction* trans);
 
  private:
   base::MessageLoop message_loop_;
@@ -270,6 +271,10 @@ syncable::Directory* SyncApiTest::dir() {
 
 SyncEncryptionHandler* SyncApiTest::encryption_handler() {
   return test_user_share_.encryption_handler();
+}
+
+PassphraseType SyncApiTest::GetPassphraseType(BaseTransaction* trans) {
+  return dir()->GetNigoriHandler()->GetPassphraseType(trans->GetWrappedTrans());
 }
 
 bool SyncApiTest::ReloadDir() {
@@ -1126,6 +1131,16 @@ class SyncManagerTest : public testing::Test,
         trans->GetWrappedTrans());
   }
 
+  PassphraseType GetPassphraseType() {
+    ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    return GetPassphraseTypeWithTrans(&trans);
+  }
+
+  PassphraseType GetPassphraseTypeWithTrans(BaseTransaction* trans) {
+    return trans->GetDirectory()->GetNigoriHandler()->GetPassphraseType(
+        trans->GetWrappedTrans());
+  }
+
   void SimulateInvalidatorEnabledForTest(bool is_enabled) {
     DCHECK(sync_manager_.thread_checker_.CalledOnValidThread());
     sync_manager_.SetInvalidatorEnabled(is_enabled);
@@ -1154,8 +1169,7 @@ class SyncManagerTest : public testing::Test,
   void SetImplicitPassphraseAndCheck(const std::string& passphrase) {
     sync_manager_.GetEncryptionHandler()->SetEncryptionPassphrase(passphrase,
                                                                   false);
-    EXPECT_EQ(PassphraseType::IMPLICIT_PASSPHRASE,
-              sync_manager_.GetEncryptionHandler()->GetPassphraseType());
+    EXPECT_EQ(PassphraseType::IMPLICIT_PASSPHRASE, GetPassphraseType());
   }
 
   void SetCustomPassphraseAndCheck(const std::string& passphrase) {
@@ -1163,8 +1177,7 @@ class SyncManagerTest : public testing::Test,
                 OnPassphraseTypeChanged(PassphraseType::CUSTOM_PASSPHRASE, _));
     sync_manager_.GetEncryptionHandler()->SetEncryptionPassphrase(passphrase,
                                                                   true);
-    EXPECT_EQ(PassphraseType::CUSTOM_PASSPHRASE,
-              sync_manager_.GetEncryptionHandler()->GetPassphraseType());
+    EXPECT_EQ(PassphraseType::CUSTOM_PASSPHRASE, GetPassphraseType());
   }
 
   bool HasUnrecoverableError() {
@@ -1480,8 +1493,7 @@ TEST_F(SyncManagerTest, SupplyPendingGAIAPass) {
               OnBootstrapTokenUpdated(_, PASSPHRASE_BOOTSTRAP_TOKEN));
   ExpectPassphraseAcceptance();
   sync_manager_.GetEncryptionHandler()->SetDecryptionPassphrase("passphrase2");
-  EXPECT_EQ(PassphraseType::IMPLICIT_PASSPHRASE,
-            sync_manager_.GetEncryptionHandler()->GetPassphraseType());
+  EXPECT_EQ(PassphraseType::IMPLICIT_PASSPHRASE, GetPassphraseType());
   EXPECT_FALSE(IsEncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
@@ -1606,8 +1618,7 @@ TEST_F(SyncManagerTest, SupplyPendingExplicitPass) {
               OnBootstrapTokenUpdated(_, PASSPHRASE_BOOTSTRAP_TOKEN));
   ExpectPassphraseAcceptance();
   sync_manager_.GetEncryptionHandler()->SetDecryptionPassphrase("explicit");
-  EXPECT_EQ(PassphraseType::CUSTOM_PASSPHRASE,
-            sync_manager_.GetEncryptionHandler()->GetPassphraseType());
+  EXPECT_EQ(PassphraseType::CUSTOM_PASSPHRASE, GetPassphraseType());
   EXPECT_FALSE(IsEncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());

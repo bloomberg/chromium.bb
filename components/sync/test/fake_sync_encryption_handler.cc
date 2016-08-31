@@ -119,7 +119,8 @@ bool FakeSyncEncryptionHandler::IsEncryptEverythingEnabled() const {
   return encrypt_everything_;
 }
 
-PassphraseType FakeSyncEncryptionHandler::GetPassphraseType() const {
+PassphraseType FakeSyncEncryptionHandler::GetPassphraseType(
+    syncable::BaseTransaction* const trans) const {
   return passphrase_type_;
 }
 

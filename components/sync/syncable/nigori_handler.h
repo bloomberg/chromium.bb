@@ -21,6 +21,9 @@ class NigoriSpecifics;
 }
 
 namespace syncer {
+
+enum class PassphraseType;
+
 namespace syncable {
 
 class BaseTransaction;
@@ -55,6 +58,10 @@ class NigoriHandler {
 
   // Returns the set of currently encrypted types.
   virtual ModelTypeSet GetEncryptedTypes(
+      syncable::BaseTransaction* const trans) const = 0;
+
+  // Returns current value for the passphrase type.
+  virtual PassphraseType GetPassphraseType(
       syncable::BaseTransaction* const trans) const = 0;
 };
 

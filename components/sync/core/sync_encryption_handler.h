@@ -166,10 +166,6 @@ class SyncEncryptionHandler {
   // types are encrypted.
   virtual bool IsEncryptEverythingEnabled() const = 0;
 
-  // Returns the current state of the passphrase needed to decrypt the
-  // bag of encryption keys in the nigori node.
-  virtual PassphraseType GetPassphraseType() const = 0;
-
   // The set of types that are always encrypted.
   static ModelTypeSet SensitiveTypes();
 };

@@ -61,7 +61,6 @@ class SyncEncryptionHandlerImpl : public SyncEncryptionHandler,
   void SetDecryptionPassphrase(const std::string& passphrase) override;
   void EnableEncryptEverything() override;
   bool IsEncryptEverythingEnabled() const override;
-  PassphraseType GetPassphraseType() const override;
 
   // NigoriHandler implementation.
   // Note: all methods are invoked while the caller holds a transaction.
@@ -76,6 +75,8 @@ class SyncEncryptionHandlerImpl : public SyncEncryptionHandler,
       syncable::BaseTransaction* const trans) override;
   // Can be called from any thread.
   ModelTypeSet GetEncryptedTypes(
+      syncable::BaseTransaction* const trans) const override;
+  PassphraseType GetPassphraseType(
       syncable::BaseTransaction* const trans) const override;
 
   // Unsafe getters. Use only if sync is not up and running and there is no risk
@@ -127,13 +128,18 @@ class SyncEncryptionHandlerImpl : public SyncEncryptionHandler,
   // accessed via UnlockVault(..) and UnlockVaultMutable(..), which enforce
   // that a transaction is held.
   struct Vault {
-    Vault(Encryptor* encryptor, ModelTypeSet encrypted_types);
+    Vault(Encryptor* encryptor,
+          ModelTypeSet encrypted_types,
+          PassphraseType passphrase_type);
     ~Vault();
 
     // Sync's cryptographer. Used for encrypting and decrypting sync data.
     Cryptographer cryptographer;
     // The set of types that require encryption.
     ModelTypeSet encrypted_types;
+    // The current state of the passphrase required to decrypt the encryption
+    // keys stored in the nigori node.
+    PassphraseType passphrase_type;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Vault);
@@ -226,7 +232,8 @@ class SyncEncryptionHandlerImpl : public SyncEncryptionHandler,
   // Note: if the nigori node is migrated but has an invalid state, will return
   // true (e.g. node has KEYSTORE_PASSPHRASE, local is CUSTOM_PASSPHRASE).
   bool ShouldTriggerMigration(const sync_pb::NigoriSpecifics& nigori,
-                              const Cryptographer& cryptographer) const;
+                              const Cryptographer& cryptographer,
+                              PassphraseType passphrase_type) const;
 
   // Performs the actual migration of the |nigori_node| to support keystore
   // encryption iff ShouldTriggerMigration(..) returns true.
@@ -263,7 +270,7 @@ class SyncEncryptionHandlerImpl : public SyncEncryptionHandler,
 
   // If an explicit passphrase is in use, returns the time at which it was set
   // (if known). Else return base::Time().
-  base::Time GetExplicitPassphraseTime() const;
+  base::Time GetExplicitPassphraseTime(PassphraseType passphrase_type) const;
 
   // Notify observers when a custom passphrase is set by this device.
   void NotifyObserversOfLocalCustomPassphrase(WriteTransaction* trans);
@@ -284,9 +291,6 @@ class SyncEncryptionHandlerImpl : public SyncEncryptionHandler,
   // thread.
   // Whether all current and future types should be encrypted.
   bool encrypt_everything_;
-  // The current state of the passphrase required to decrypt the encryption
-  // keys stored in the nigori node.
-  PassphraseType passphrase_type_;
 
   // The current keystore key provided by the server.
   std::string keystore_key_;
