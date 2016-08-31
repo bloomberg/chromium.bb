@@ -1,15 +1,19 @@
 include_rules = [
-  "+content/public/test/web_contents_tester.h",
-  "+content/public/test/test_browser_thread_bundle.h",
-  "+content/public/test/test_browser_context.h",
+  # In general files in this directory should not depend upon content.
   "+mojo/edk",
   "+win8/viewer",
 ]
 
 specific_include_rules = {
+  # ash_test_environment_content is only compiled with content.
+  "ash_test_environment_content\.*": [
+    "+content/public/browser/browser_thread.h",
+    "+content/public/test/web_contents_tester.h",
+    "+content/public/test/test_browser_thread_bundle.h",
+    "+content/public/test/test_browser_context.h",
+  ],
   "ash_test_helper\.cc": [
     "+ash/host",
-    "+content/public/browser/browser_thread.h",
   ],
   "mirror_window_test_api\.cc": [
     "+ash/host"

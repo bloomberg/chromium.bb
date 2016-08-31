@@ -294,6 +294,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "ash_content_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "ash_unittests"
       },
       {

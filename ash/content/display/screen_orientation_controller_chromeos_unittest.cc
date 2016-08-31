@@ -14,6 +14,7 @@
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/ash_test_environment_content.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/content/test_shell_content_state.h"
 #include "ash/test/display_manager_test_api.h"
@@ -108,8 +109,10 @@ class ScreenOrientationControllerTest : public test::AshTestBase {
   ~ScreenOrientationControllerTest() override;
 
   content::ScreenOrientationDelegate* delegate() {
-    return ash_test_helper()
-        ->test_shell_content_state()
+    test::AshTestEnvironmentContent* test_environment_content =
+        static_cast<test::AshTestEnvironmentContent*>(
+            ash_test_helper()->ash_test_environment());
+    return test_environment_content->test_shell_content_state()
         ->screen_orientation_delegate();
   }
 

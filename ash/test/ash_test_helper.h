@@ -16,10 +16,6 @@ namespace aura {
 class Window;
 }  // namespace aura
 
-namespace base {
-class MessageLoopForUI;
-}  // namespace base
-
 namespace ui {
 class ScopedAnimationDurationScaleMode;
 }  // namespace ui
@@ -29,11 +25,10 @@ class ViewsDelegate;
 }
 
 namespace ash {
-class ShellContentState;
 namespace test {
 
+class AshTestEnvironment;
 class TestScreenshotDelegate;
-class TestShellContentState;
 class TestShellDelegate;
 class TestSessionStateDelegate;
 
@@ -41,7 +36,7 @@ class TestSessionStateDelegate;
 // root window and an ash::Shell instance with a test delegate.
 class AshTestHelper {
  public:
-  explicit AshTestHelper(base::MessageLoopForUI* message_loop);
+  explicit AshTestHelper(AshTestEnvironment* ash_test_environment);
   ~AshTestHelper();
 
   // Creates the ash::Shell and performs associated initialization.  Set
@@ -63,7 +58,6 @@ class AshTestHelper {
 
   static TestSessionStateDelegate* GetTestSessionStateDelegate();
 
-  base::MessageLoopForUI* message_loop() { return message_loop_; }
   TestShellDelegate* test_shell_delegate() { return test_shell_delegate_; }
   void set_test_shell_delegate(TestShellDelegate* test_shell_delegate) {
     test_shell_delegate_ = test_shell_delegate;
@@ -71,12 +65,8 @@ class AshTestHelper {
   TestScreenshotDelegate* test_screenshot_delegate() {
     return test_screenshot_delegate_;
   }
-  TestShellContentState* test_shell_content_state() {
-    return test_shell_content_state_;
-  }
-  void set_content_state(ShellContentState* content_state) {
-    content_state_ = content_state;
-  }
+
+  AshTestEnvironment* ash_test_environment() { return ash_test_environment_; }
 
   // True if the running environment supports multiple displays,
   // or false otherwise (e.g. win8 bot).
@@ -87,7 +77,7 @@ class AshTestHelper {
   static bool SupportsHostWindowResize();
 
  private:
-  base::MessageLoopForUI* message_loop_;    // Not owned.
+  AshTestEnvironment* ash_test_environment_;  // Not owned.
   TestShellDelegate* test_shell_delegate_;  // Owned by ash::Shell.
   std::unique_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
 
@@ -95,14 +85,6 @@ class AshTestHelper {
   TestScreenshotDelegate* test_screenshot_delegate_;
 
   std::unique_ptr<views::ViewsDelegate> views_delegate_;
-
-  // An implementation of ShellContentState supplied by the user prior to
-  // SetUp().
-  ShellContentState* content_state_;
-  // If |content_state_| is not set prior to SetUp(), this value will be
-  // set to an instance of TestShellContentState created by this class. If
-  // |content_state_| is non-null, this will be nullptr.
-  TestShellContentState* test_shell_content_state_;
 
 #if defined(OS_CHROMEOS)
   // Check if DBus Thread Manager was initialized here.

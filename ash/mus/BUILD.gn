@@ -199,7 +199,7 @@ source_set("unittests") {
     ":lib",
     ":resources",
     "//ash",
-    "//ash:test_support",
+    "//ash:test_support_without_content",
     "//ash/public/interfaces",
     "//base",
     "//base/test:test_config",
