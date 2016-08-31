@@ -1299,5 +1299,6 @@
         }
       ]
     }
-  ]
+  ],
+  "release_branch": false
 }
