@@ -5,7 +5,7 @@
 import("//build/config/ios/rules.gni")
 
 ios_app_bundle("crnet_consumer") {
-  info_plist = "crnet-consumer-info.plist"
+  info_plist = "crnet-consumer-Info.plist"
 
   deps = [
     "//base",
