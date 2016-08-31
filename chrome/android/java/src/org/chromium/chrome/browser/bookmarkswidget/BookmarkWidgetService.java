@@ -155,7 +155,6 @@ public class BookmarkWidgetService extends RemoteViewsService {
      *
      * This class must be used only on the UI thread.
      */
-    @UiThread
     private static class BookmarkLoader {
         private BookmarkLoaderCallback mCallback;
         private BookmarkFolder mFolder;
@@ -167,7 +166,8 @@ public class BookmarkWidgetService extends RemoteViewsService {
         private int mCornerRadius;
         private int mRemainingTaskCount;
 
-        BookmarkLoader(Context context, final BookmarkId folderId,
+        @UiThread
+        public void initialize(Context context, final BookmarkId folderId,
                 BookmarkLoaderCallback callback) {
             mCallback = callback;
 
@@ -193,6 +193,7 @@ public class BookmarkWidgetService extends RemoteViewsService {
             });
         }
 
+        @UiThread
         private void loadBookmarks(BookmarkId folderId) {
             mFolder = new BookmarkFolder();
 
@@ -229,6 +230,7 @@ public class BookmarkWidgetService extends RemoteViewsService {
             taskFinished();
         }
 
+        @UiThread
         private void loadFavicon(final Bookmark bookmark) {
             if (bookmark.isFolder) return;
 
@@ -250,6 +252,7 @@ public class BookmarkWidgetService extends RemoteViewsService {
             mLargeIconBridge.getLargeIconForUrl(bookmark.url, mMinIconSizeDp, callback);
         }
 
+        @UiThread
         private void taskFinished() {
             mRemainingTaskCount--;
             if (mRemainingTaskCount == 0) {
@@ -258,6 +261,7 @@ public class BookmarkWidgetService extends RemoteViewsService {
             }
         }
 
+        @UiThread
         private void destroy() {
             mBookmarkModel.destroy();
             mLargeIconBridge.destroy();
@@ -377,10 +381,13 @@ public class BookmarkWidgetService extends RemoteViewsService {
         @BinderThread
         private BookmarkFolder loadBookmarks(final BookmarkId folderId) {
             final LinkedBlockingQueue<BookmarkFolder> resultQueue = new LinkedBlockingQueue<>(1);
+            //A reference of BookmarkLoader is needed in binder thread to
+            //prevent it from being garbage collected.
+            final BookmarkLoader bookmarkLoader = new BookmarkLoader();
             ThreadUtils.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    new BookmarkLoader(mContext, folderId, new BookmarkLoaderCallback() {
+                    bookmarkLoader.initialize(mContext, folderId, new BookmarkLoaderCallback() {
                         @Override
                         public void onBookmarksLoaded(BookmarkFolder folder) {
                             resultQueue.add(folder);
@@ -423,7 +430,20 @@ public class BookmarkWidgetService extends RemoteViewsService {
         @BinderThread
         @Override
         public int getCount() {
-            if (mCurrentFolder == null) return 0;
+            //On some Sony devices, getCount() could be called before onDatasetChanged()
+            //returns. If it happens, refresh widget until the bookmarks are all loaded.
+            if (mCurrentFolder == null || !mPreferences.getString(PREF_CURRENT_FOLDER, "")
+                    .equals(mCurrentFolder.folder.id.toString())) {
+                ThreadUtils.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        refreshWidget();
+                    }
+                });
+            }
+            if (mCurrentFolder == null) {
+                return 0;
+            }
             return mCurrentFolder.children.size() + (mCurrentFolder.parent != null ? 1 : 0);
         }
 
