@@ -18,14 +18,11 @@
 namespace net {
 
 HttpBasicState::HttpBasicState(std::unique_ptr<ClientSocketHandle> connection,
-                               bool using_proxy,
-                               bool http_09_on_non_default_ports_enabled)
+                               bool using_proxy)
     : read_buf_(new GrowableIOBuffer()),
       connection_(std::move(connection)),
       using_proxy_(using_proxy),
-      http_09_on_non_default_ports_enabled_(
-          http_09_on_non_default_ports_enabled),
-      request_info_(nullptr) {}
+      request_info_(NULL) {}
 
 HttpBasicState::~HttpBasicState() {}
 
@@ -37,8 +34,6 @@ int HttpBasicState::Initialize(const HttpRequestInfo* request_info,
   request_info_ = request_info;
   parser_.reset(new HttpStreamParser(
       connection_.get(), request_info, read_buf_.get(), net_log));
-  parser_->set_http_09_on_non_default_ports_enabled(
-      http_09_on_non_default_ports_enabled_);
   return OK;
 }
 
