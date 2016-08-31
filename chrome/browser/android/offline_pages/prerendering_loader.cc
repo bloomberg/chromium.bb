@@ -157,17 +157,30 @@ void PrerenderingLoader::HandleLoadingStopped() {
   if (IsIdle())
     return;
 
-  if (adapter_->IsActive()) {
-    DVLOG(1) << "Load failed: " << adapter_->GetFinalStatus();
-    adapter_->DestroyActive();
-  }
   // Request status depends on whether we are still loading (failed) or
   // did load and then loading was stopped (cancel - from prerender stack).
   Offliner::RequestStatus request_status =
       IsLoaded() ? Offliner::RequestStatus::PRERENDERING_CANCELED
                  : Offliner::RequestStatus::PRERENDERING_FAILED;
-  // TODO(dougarnett): For failure, determine from final status if retry-able
-  // and report different failure statuses if retry-able or not.
+
+  if (adapter_->IsActive()) {
+    prerender::FinalStatus final_status = adapter_->GetFinalStatus();
+    DVLOG(1) << "Load failed: " << final_status;
+
+    // Loss of network connection can show up as unsupported scheme per
+    // a redirect to a special data URL is used to navigate to error page.
+    // We want to be able to retry these request so for now treat any
+    // unsupported scheme error as a cancel.
+    // TODO(dougarnett): Use new FinalStatus code if/when supported (642768).
+    // TODO(dougarnett): Create whitelist of final status codes that should
+    // not be considered failures (and define new RequestStatus code for them).
+    if (adapter_->GetFinalStatus() ==
+        prerender::FinalStatus::FINAL_STATUS_UNSUPPORTED_SCHEME) {
+      request_status = Offliner::RequestStatus::PRERENDERING_CANCELED;
+    }
+    adapter_->DestroyActive();
+  }
+
   snapshot_controller_.reset(nullptr);
   session_contents_.reset(nullptr);
   state_ = State::IDLE;

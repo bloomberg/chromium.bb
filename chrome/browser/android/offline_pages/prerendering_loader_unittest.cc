@@ -147,6 +147,7 @@ void PrerenderingLoaderTest::SetUp() {
   loader_.reset(new PrerenderingLoader(&profile_));
   test_adapter_ = new TestAdapter(loader_.get());
   loader_->SetAdapterForTesting(base::WrapUnique(test_adapter_));
+  callback_called_ = false;
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
@@ -245,6 +246,32 @@ TEST_F(PrerenderingLoaderTest, LoadPageLoadFailedNoContent) {
   EXPECT_TRUE(callback_called());
   // We did not provide any WebContents for the callback so expect did not load.
   EXPECT_EQ(Offliner::RequestStatus::PRERENDERING_FAILED,
+            callback_load_status());
+
+  // Stopped event causes no harm.
+  test_adapter()->GetObserver()->OnPrerenderStop();
+  PumpLoop();
+}
+
+TEST_F(PrerenderingLoaderTest, LoadPageLoadFailedUnsupportedScheme) {
+  test_adapter()->Configure(
+      nullptr /* web_contents */,
+      prerender::FinalStatus::FINAL_STATUS_UNSUPPORTED_SCHEME);
+  GURL gurl("http://testit.sea");
+  EXPECT_TRUE(loader()->IsIdle());
+  EXPECT_TRUE(loader()->LoadPage(
+      gurl,
+      base::Bind(&PrerenderingLoaderTest::OnLoadDone, base::Unretained(this))));
+  EXPECT_FALSE(loader()->IsIdle());
+  EXPECT_FALSE(loader()->IsLoaded());
+
+  test_adapter()->GetObserver()->OnPrerenderDomContentLoaded();
+  PumpLoop();
+  EXPECT_TRUE(loader()->IsIdle());
+  EXPECT_TRUE(callback_called());
+  // Unsupported Scheme final status currently considered a cancel rather
+  // than failure in case it is due to lost network connectivity.
+  EXPECT_EQ(Offliner::RequestStatus::PRERENDERING_CANCELED,
             callback_load_status());
 
   // Stopped event causes no harm.

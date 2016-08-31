@@ -16,6 +16,7 @@ class RequestNotifier {
   enum class SavePageStatus {
     SUCCESS,
     PRERENDER_FAILURE,
+    PRERENDER_CANCELED,
     FOREGROUND_CANCELED,
     SAVE_FAILED,
     EXPIRED,

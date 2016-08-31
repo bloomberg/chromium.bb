@@ -406,7 +406,8 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
   is_busy_ = false;
   active_request_.reset(nullptr);
 
-  if (status == Offliner::RequestStatus::FOREGROUND_CANCELED) {
+  if (status == Offliner::RequestStatus::FOREGROUND_CANCELED ||
+      status == Offliner::RequestStatus::PRERENDERING_CANCELED) {
     // Update the request for the canceled attempt.
     // TODO(dougarnett): See if we can conclusively identify other attempt
     // aborted cases to treat this way (eg, for Render Process Killed).
@@ -416,7 +417,11 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
                           base::Bind(&RequestCoordinator::UpdateRequestCallback,
                                      weak_ptr_factory_.GetWeakPtr(),
                                      updated_request.client_id()));
-    NotifyCompleted(updated_request, SavePageStatus::FOREGROUND_CANCELED);
+    SavePageStatus notify_status =
+        (status == Offliner::RequestStatus::FOREGROUND_CANCELED)
+            ? SavePageStatus::FOREGROUND_CANCELED
+            : SavePageStatus::PRERENDER_CANCELED;
+    NotifyCompleted(updated_request, notify_status);
 
   } else if (status == Offliner::RequestStatus::SAVED) {
     // Remove the request from the queue if it succeeded.
@@ -459,11 +464,11 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
     case Offliner::RequestStatus::SAVED:
     case Offliner::RequestStatus::SAVE_FAILED:
     case Offliner::RequestStatus::REQUEST_COORDINATOR_CANCELED:  // timeout
-    case Offliner::RequestStatus::PRERENDERING_CANCELED:
       // Consider processing another request in this service window.
       TryNextRequest();
       break;
     case Offliner::RequestStatus::FOREGROUND_CANCELED:
+    case Offliner::RequestStatus::PRERENDERING_CANCELED:
     case Offliner::RequestStatus::PRERENDERING_FAILED:
       // No further processing in this service window.
       break;

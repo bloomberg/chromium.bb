@@ -543,6 +543,45 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneForegroundCancel) {
   EXPECT_EQ(0L, found_request.completed_attempt_count());
 }
 
+TEST_F(RequestCoordinatorTest, OfflinerDonePrerenderingCancel) {
+  // Add a request to the queue, wait for callbacks to finish.
+  offline_pages::SavePageRequest request(kRequestId1, kUrl1, kClientId1,
+                                         base::Time::Now(), kUserRequested);
+  request.MarkAttemptStarted(base::Time::Now());
+  coordinator()->queue()->AddRequest(
+      request, base::Bind(&RequestCoordinatorTest::AddRequestDone,
+                          base::Unretained(this)));
+  PumpLoop();
+
+  // We need to give a callback to the request.
+  base::Callback<void(bool)> callback = base::Bind(
+      &RequestCoordinatorTest::EmptyCallbackFunction, base::Unretained(this));
+  coordinator()->SetProcessingCallbackForTest(callback);
+
+  // Set up device conditions for the test.
+  DeviceConditions device_conditions(false, 75,
+                                     net::NetworkChangeNotifier::CONNECTION_3G);
+  SetDeviceConditionsForTest(device_conditions);
+
+  // Call the OfflinerDoneCallback to simulate the request failed, wait
+  // for callbacks.
+  EnableOfflinerCallback(true);
+  SendOfflinerDoneCallback(request,
+                           Offliner::RequestStatus::PRERENDERING_CANCELED);
+  PumpLoop();
+
+  // Verify the request is not removed from the queue, and wait for callbacks.
+  coordinator()->queue()->GetRequests(base::Bind(
+      &RequestCoordinatorTest::GetRequestsDone, base::Unretained(this)));
+  PumpLoop();
+
+  // Request still in the queue.
+  EXPECT_EQ(1UL, last_requests().size());
+  // Verify prerendering cancel not counted as an attempt after all.
+  const SavePageRequest& found_request = last_requests().front();
+  EXPECT_EQ(0L, found_request.completed_attempt_count());
+}
+
 // This tests a StopProcessing call before we have actually started the
 // prerenderer.
 TEST_F(RequestCoordinatorTest, StartProcessingThenStopProcessingImmediately) {
