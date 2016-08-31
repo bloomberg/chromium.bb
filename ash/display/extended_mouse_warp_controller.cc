@@ -16,6 +16,7 @@
 #include "base/memory/ptr_util.h"
 #include "ui/aura/window.h"
 #include "ui/display/manager/display_layout.h"
+#include "ui/display/manager/display_manager_utilities.h"
 #include "ui/display/screen.h"
 #include "ui/events/event_utils.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -209,7 +210,7 @@ ExtendedMouseWarpController::CreateWarpRegion(const display::Display& a,
                          ? 0
                          : kMaximumSnapHeight;
 
-  if (!ComputeBoundary(a, b, &a_edge, &b_edge))
+  if (!display::ComputeBoundary(a, b, &a_edge, &b_edge))
     return nullptr;
 
   // Creates the snap window barrirer only when horizontally connected.

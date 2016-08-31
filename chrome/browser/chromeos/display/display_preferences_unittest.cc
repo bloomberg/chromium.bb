@@ -37,6 +37,7 @@
 #include "ui/display/chromeos/display_configurator.h"
 #include "ui/display/manager/display_layout_builder.h"
 #include "ui/display/manager/display_layout_store.h"
+#include "ui/display/manager/display_manager_utilities.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 #include "ui/message_center/message_center.h"
@@ -109,7 +110,7 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
       display::DisplayPlacement::Position position,
       int offset,
       int64_t primary_id) {
-    std::string name = ash::DisplayIdListToString(list);
+    std::string name = display::DisplayIdListToString(list);
     DictionaryPrefUpdate update(&local_state_, prefs::kSecondaryDisplays);
     display::DisplayLayout display_layout;
     display_layout.placement_list.emplace_back(position, offset);
@@ -131,7 +132,7 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
   void StoreDisplayPropertyForList(const display::DisplayIdList& list,
                                    std::string key,
                                    std::unique_ptr<base::Value> value) {
-    std::string name = ash::DisplayIdListToString(list);
+    std::string name = display::DisplayIdListToString(list);
 
     DictionaryPrefUpdate update(&local_state_, prefs::kSecondaryDisplays);
     base::DictionaryValue* pref_data = update.Get();
@@ -987,7 +988,7 @@ TEST_F(DisplayPreferencesTest, SaveUnifiedMode) {
       local_state()->GetDictionary(prefs::kSecondaryDisplays);
   const base::DictionaryValue* new_value = nullptr;
   EXPECT_TRUE(secondary_displays->GetDictionary(
-      ash::DisplayIdListToString(list), &new_value));
+      display::DisplayIdListToString(list), &new_value));
 
   display::DisplayLayout stored_layout;
   EXPECT_TRUE(ash::JsonToDisplayLayout(*new_value, &stored_layout));
@@ -1010,14 +1011,14 @@ TEST_F(DisplayPreferencesTest, SaveUnifiedMode) {
   // Mirror mode should remember if the default mode was unified.
   display_manager->SetMirrorMode(true);
   ASSERT_TRUE(secondary_displays->GetDictionary(
-      ash::DisplayIdListToString(list), &new_value));
+      display::DisplayIdListToString(list), &new_value));
   EXPECT_TRUE(ash::JsonToDisplayLayout(*new_value, &stored_layout));
   EXPECT_TRUE(stored_layout.default_unified);
   EXPECT_TRUE(stored_layout.mirrored);
 
   display_manager->SetMirrorMode(false);
   ASSERT_TRUE(secondary_displays->GetDictionary(
-      ash::DisplayIdListToString(list), &new_value));
+      display::DisplayIdListToString(list), &new_value));
   EXPECT_TRUE(ash::JsonToDisplayLayout(*new_value, &stored_layout));
   EXPECT_TRUE(stored_layout.default_unified);
   EXPECT_FALSE(stored_layout.mirrored);
@@ -1026,7 +1027,7 @@ TEST_F(DisplayPreferencesTest, SaveUnifiedMode) {
   display_manager->SetDefaultMultiDisplayModeForCurrentDisplays(
       ash::DisplayManager::EXTENDED);
   ASSERT_TRUE(secondary_displays->GetDictionary(
-      ash::DisplayIdListToString(list), &new_value));
+      display::DisplayIdListToString(list), &new_value));
   EXPECT_TRUE(ash::JsonToDisplayLayout(*new_value, &stored_layout));
   EXPECT_FALSE(stored_layout.default_unified);
   EXPECT_FALSE(stored_layout.mirrored);
@@ -1093,7 +1094,7 @@ TEST_F(DisplayPreferencesTest, SaveThreeDisplays) {
       local_state()->GetDictionary(prefs::kSecondaryDisplays);
   const base::DictionaryValue* new_value = nullptr;
   EXPECT_TRUE(secondary_displays->GetDictionary(
-      ash::DisplayIdListToString(list), &new_value));
+      display::DisplayIdListToString(list), &new_value));
 }
 
 TEST_F(DisplayPreferencesTest, RestoreThreeDisplays) {

@@ -9,7 +9,6 @@
 
 #include "ash/common/ash_switches.h"
 #include "ash/display/display_manager.h"
-#include "ash/display/display_util.h"
 #include "ash/display/extended_mouse_warp_controller.h"
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/display/unified_mouse_warp_controller.h"
@@ -21,6 +20,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_layout_builder.h"
+#include "ui/display/manager/display_manager_utilities.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/events/test/event_generator.h"
 
@@ -187,7 +187,7 @@ display::DisplayIdList CreateDisplayIdList2(int64_t id1, int64_t id2) {
   display::DisplayIdList list;
   list.push_back(id1);
   list.push_back(id2);
-  SortDisplayIdList(&list);
+  display::SortDisplayIdList(&list);
   return list;
 }
 
@@ -199,7 +199,7 @@ display::DisplayIdList CreateDisplayIdListN(size_t count, ...) {
     int64_t id = va_arg(args, int64_t);
     list.push_back(id);
   }
-  SortDisplayIdList(&list);
+  display::SortDisplayIdList(&list);
   return list;
 }
 

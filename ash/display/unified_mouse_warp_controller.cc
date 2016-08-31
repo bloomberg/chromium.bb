@@ -17,6 +17,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/layout.h"
 #include "ui/display/manager/display_layout.h"
+#include "ui/display/manager/display_manager_utilities.h"
 #include "ui/display/screen.h"
 #include "ui/events/event_utils.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -42,8 +43,8 @@ aura::WindowTreeHost* FindMirroringWindowTreeHostFromScreenPoint(
       Shell::GetInstance()
           ->display_manager()
           ->software_mirroring_display_list();
-  int index =
-      FindDisplayIndexContainingPoint(mirroring_display_list, point_in_screen);
+  int index = display::FindDisplayIndexContainingPoint(mirroring_display_list,
+                                                       point_in_screen);
   if (index < 0)
     return nullptr;
   return GetMirroringAshWindowTreeHostForDisplayId(
@@ -81,8 +82,8 @@ bool UnifiedMouseWarpController::WarpMouseCursor(ui::MouseEvent* event) {
           Shell::GetInstance()
               ->display_manager()
               ->software_mirroring_display_list();
-      int index = FindDisplayIndexContainingPoint(mirroring_display_list,
-                                                  point_in_unified_host);
+      int index = display::FindDisplayIndexContainingPoint(
+          mirroring_display_list, point_in_unified_host);
       if (index >= 0) {
         const display::Display& new_display = mirroring_display_list[index];
         if (current_cursor_display_id_ != new_display.id()) {
@@ -133,8 +134,9 @@ void UnifiedMouseWarpController::ComputeBounds() {
 
   const display::Display& first = display_list[0];
   const display::Display& second = display_list[1];
-  bool success = ComputeBoundary(first, second, &first_edge_bounds_in_native_,
-                                 &second_edge_bounds_in_native_);
+  bool success =
+      display::ComputeBoundary(first, second, &first_edge_bounds_in_native_,
+                               &second_edge_bounds_in_native_);
   DCHECK(success);
 
   first_edge_bounds_in_native_ =

@@ -342,6 +342,12 @@ class ASH_EXPORT DisplayManager
   // for this test scenario.
   void UpdateInternalManagedDisplayModeListForTest();
 
+  // Zoom the internal display.
+  bool ZoomInternalDisplay(bool up);
+
+  // Reset the internal display zoom.
+  void ResetInternalDisplayZoom();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ExtendedDesktopTest, ConvertPoint);
   FRIEND_TEST_ALL_PREFIXES(DisplayManagerTest, TestNativeDisplaysChanged);

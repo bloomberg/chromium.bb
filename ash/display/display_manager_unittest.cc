@@ -33,6 +33,7 @@
 #include "ui/display/display_observer.h"
 #include "ui/display/manager/display_layout_builder.h"
 #include "ui/display/manager/display_layout_store.h"
+#include "ui/display/manager/display_manager_utilities.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
 #include "ui/events/test/event_generator.h"
@@ -2141,17 +2142,9 @@ TEST_P(DisplayManagerTest, DockMode) {
   EXPECT_TRUE(display_manager()->IsActiveDisplayId(external_id));
   EXPECT_FALSE(display_manager()->IsActiveDisplayId(internal_id));
 
-  const display::ManagedDisplayInfo& info =
-      display_manager()->GetDisplayInfo(internal_id);
-
-  EXPECT_FALSE(!!GetDisplayModeForNextUIScale(info, true));
-  EXPECT_FALSE(!!GetDisplayModeForNextUIScale(info, false));
+  EXPECT_FALSE(display_manager()->ZoomInternalDisplay(true));
+  EXPECT_FALSE(display_manager()->ZoomInternalDisplay(false));
   EXPECT_FALSE(SetDisplayUIScale(internal_id, 1.0f));
-
-  display::ManagedDisplayInfo invalid_info;
-  EXPECT_FALSE(!!GetDisplayModeForNextUIScale(invalid_info, true));
-  EXPECT_FALSE(!!GetDisplayModeForNextUIScale(invalid_info, false));
-  EXPECT_FALSE(SetDisplayUIScale(display::Display::kInvalidDisplayID, 1.0f));
 }
 
 // Make sure that bad layout information is ignored and does not crash.
@@ -2343,7 +2336,7 @@ TEST_P(DisplayManagerTest, RejectInvalidLayoutData) {
   display::DisplayLayoutStore* layout_store = display_manager()->layout_store();
   int64_t id1 = 10001;
   int64_t id2 = 10002;
-  ASSERT_TRUE(CompareDisplayIds(id1, id2));
+  ASSERT_TRUE(display::CompareDisplayIds(id1, id2));
   display::DisplayLayoutBuilder good_builder(id1);
   good_builder.SetSecondaryPlacement(id2, display::DisplayPlacement::LEFT, 0);
   std::unique_ptr<display::DisplayLayout> good(good_builder.Build());

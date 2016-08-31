@@ -12,34 +12,9 @@
 #include "ui/display/display.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/manager/display_layout_store.h"
+#include "ui/display/manager/display_manager_utilities.h"
 
 namespace display {
-
-namespace {
-
-// TODO(kylechar): Move these to ui/display/chromeos/display_util.cc/h.
-bool CompareDisplayIds(int64_t id1, int64_t id2) {
-  DCHECK_NE(id1, id2);
-  // Output index is stored in the first 8 bits. See GetDisplayIdFromEDID
-  // in edid_parser.cc.
-  int index_1 = id1 & 0xFF;
-  int index_2 = id2 & 0xFF;
-  DCHECK_NE(index_1, index_2) << id1 << " and " << id2;
-  return Display::IsInternalDisplayId(id1) ||
-         (index_1 < index_2 && !Display::IsInternalDisplayId(id2));
-}
-
-std::string DisplayIdListToString(const DisplayIdList& list) {
-  std::stringstream s;
-  const char* sep = "";
-  for (int64_t id : list) {
-    s << sep << id;
-    sep = ",";
-  }
-  return s.str();
-}
-
-}  // namespace
 
 DisplayLayoutStore::DisplayLayoutStore()
     : default_display_placement_(display::DisplayPlacement::RIGHT, 0) {

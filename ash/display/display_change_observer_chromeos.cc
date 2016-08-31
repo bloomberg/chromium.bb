@@ -26,6 +26,7 @@
 #include "ui/display/display.h"
 #include "ui/display/manager/display_layout.h"
 #include "ui/display/manager/display_layout_store.h"
+#include "ui/display/manager/display_manager_utilities.h"
 #include "ui/display/types/display_mode.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/display/util/display_util.h"
@@ -86,7 +87,7 @@ DisplayChangeObserver::GetInternalManagedDisplayModeList(
                                       ui_native_mode->is_interlaced(), true,
                                       1.0, display_info.device_scale_factor());
 
-  return CreateInternalManagedDisplayModeList(native_mode);
+  return display::CreateInternalManagedDisplayModeList(native_mode);
 }
 
 // static
@@ -165,11 +166,11 @@ ui::MultipleDisplayState DisplayChangeObserver::GetStateForDisplayIds(
   UpdateInternalDisplayId(display_states);
   if (display_states.size() == 1)
     return ui::MULTIPLE_DISPLAY_STATE_SINGLE;
-  display::DisplayIdList list =
-      GenerateDisplayIdList(display_states.begin(), display_states.end(),
-                            [](const ui::DisplaySnapshot* display_state) {
-                              return display_state->display_id();
-                            });
+  display::DisplayIdList list = display::GenerateDisplayIdList(
+      display_states.begin(), display_states.end(),
+      [](const ui::DisplaySnapshot* display_state) {
+        return display_state->display_id();
+      });
 
   const display::DisplayLayout& layout = Shell::GetInstance()
                                              ->display_manager()

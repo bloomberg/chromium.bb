@@ -37,6 +37,7 @@
 #include "ui/display/display.h"
 #include "ui/display/display_observer.h"
 #include "ui/display/manager/display_layout_store.h"
+#include "ui/display/manager/display_manager_utilities.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/font_render_params.h"
@@ -69,14 +70,14 @@ const int kMinimumOverlapForInvalidOffset = 100;
 
 struct DisplaySortFunctor {
   bool operator()(const display::Display& a, const display::Display& b) {
-    return CompareDisplayIds(a.id(), b.id());
+    return display::CompareDisplayIds(a.id(), b.id());
   }
 };
 
 struct DisplayInfoSortFunctor {
   bool operator()(const display::ManagedDisplayInfo& a,
                   const display::ManagedDisplayInfo& b) {
-    return CompareDisplayIds(a.id(), b.id());
+    return display::CompareDisplayIds(a.id(), b.id());
   }
 };
 
@@ -104,7 +105,7 @@ void SetInternalManagedDisplayModeList(display::ManagedDisplayInfo* info) {
           false /* interlaced */, false /* native_mode */, 1.0 /* ui_scale */,
           info->device_scale_factor());
   info->SetManagedDisplayModes(
-      CreateInternalManagedDisplayModeList(native_mode));
+      display::CreateInternalManagedDisplayModeList(native_mode));
 }
 
 void MaybeInitInternalDisplay(display::ManagedDisplayInfo* info) {
@@ -227,7 +228,7 @@ const display::DisplayLayout& DisplayManager::GetCurrentDisplayLayout() const {
 
 display::DisplayIdList DisplayManager::GetCurrentDisplayIdList() const {
   if (IsInUnifiedMode()) {
-    return CreateDisplayIdList(software_mirroring_display_list_);
+    return display::CreateDisplayIdList(software_mirroring_display_list_);
   } else if (IsInMirrorMode()) {
     if (software_mirroring_enabled()) {
       CHECK_EQ(2u, num_connected_displays());
@@ -236,10 +237,10 @@ display::DisplayIdList DisplayManager::GetCurrentDisplayIdList() const {
       CHECK_EQ(1u, active_display_list_.size());
     }
     int64_t ids[] = {active_display_list_[0].id(), mirroring_display_id_};
-    return ash::GenerateDisplayIdList(std::begin(ids), std::end(ids));
+    return display::GenerateDisplayIdList(std::begin(ids), std::end(ids));
   } else {
     CHECK_LE(2u, active_display_list_.size());
-    return CreateDisplayIdList(active_display_list_);
+    return display::CreateDisplayIdList(active_display_list_);
   }
 }
 
@@ -284,8 +285,8 @@ const display::Display& DisplayManager::GetDisplayForId(int64_t id) const {
 
 const display::Display& DisplayManager::FindDisplayContainingPoint(
     const gfx::Point& point_in_screen) const {
-  int index =
-      FindDisplayIndexContainingPoint(active_display_list_, point_in_screen);
+  int index = display::FindDisplayIndexContainingPoint(active_display_list_,
+                                                       point_in_screen);
   return index < 0 ? GetInvalidDisplay() : active_display_list_[index];
 }
 
@@ -1096,6 +1097,42 @@ void DisplayManager::UpdateInternalManagedDisplayModeListForTest() {
   SetInternalManagedDisplayModeList(info);
 }
 
+bool DisplayManager::ZoomInternalDisplay(bool up) {
+  int64_t display_id =
+      IsInUnifiedMode() ? kUnifiedDisplayId : GetDisplayIdForUIScaling();
+  const display::ManagedDisplayInfo& display_info = GetDisplayInfo(display_id);
+
+  scoped_refptr<display::ManagedDisplayMode> mode;
+  if (IsInUnifiedMode()) {
+    mode = GetDisplayModeForNextResolution(display_info, up);
+  } else {
+    if (!IsActiveDisplayId(display_info.id()) ||
+        !display::Display::IsInternalDisplayId(display_info.id())) {
+      return false;
+    }
+    mode = GetDisplayModeForNextUIScale(display_info, up);
+  }
+
+  return mode ? SetDisplayMode(display_id, mode) : false;
+}
+
+void DisplayManager::ResetInternalDisplayZoom() {
+  if (IsInUnifiedMode()) {
+    const display::ManagedDisplayInfo& display_info =
+        GetDisplayInfo(DisplayManager::kUnifiedDisplayId);
+    const display::ManagedDisplayInfo::ManagedDisplayModeList& modes =
+        display_info.display_modes();
+    auto iter = std::find_if(
+        modes.begin(), modes.end(),
+        [](const scoped_refptr<display::ManagedDisplayMode>& mode) {
+          return mode->native();
+        });
+    SetDisplayMode(kUnifiedDisplayId, *iter);
+  } else {
+    SetDisplayUIScale(GetDisplayIdForUIScaling(), 1.0f);
+  }
+}
+
 void DisplayManager::CreateSoftwareMirroringDisplayInfo(
     DisplayInfoList* display_info_list) {
   // Use the internal display or 1st as the mirror source, then scale
@@ -1335,7 +1372,7 @@ void DisplayManager::UpdateNonPrimaryDisplayBoundsForLayout(
 
   const display::DisplayLayout& layout =
       layout_store_->GetRegisteredDisplayLayout(
-          CreateDisplayIdList(*display_list));
+          display::CreateDisplayIdList(*display_list));
 
   // Ignore if a user has a old format (should be extremely rare)
   // and this will be replaced with DCHECK.
