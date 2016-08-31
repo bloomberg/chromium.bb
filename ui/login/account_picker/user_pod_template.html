@@ -6,6 +6,18 @@
 
 <style is="custom-style" include="user-pod-template-shared-styles"></style>
 
+<iron-iconset-svg name="user-pod" size="24">
+  <svg>
+    <defs>
+      <!--
+      Inlined from Polymer's iron-icons to avoid importing everything.
+      See http://goo.gl/Y1OdAq for instructions on adding additional icons.
+      -->
+      <g id="arrow-forward"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></g>
+    </defs>
+  </svg>
+</iron-iconset-svg>
+
 <div id="user-pod-template" class="pod disabled" hidden>
   <div class="user-image-pane">
     <div class="user-image-container">
@@ -30,7 +42,7 @@
         <div class="learn-more"></div>
       </div>
     </div>
-    <div class="auth-container pin-tag">
+    <div class="auth-container">
       <!-- Password Authentication -->
       <div class="password-entry-container">
         <div class="password-container">
@@ -41,6 +53,9 @@
           <img class="capslock-hint"
                src="chrome://theme/IDR_LOGIN_PASSWORD_CAPS_LOCK" alt>
         </div>
+        <paper-icon-button class="submit-button" disabled
+                           icon="user-pod:arrow-forward">
+        </paper-icon-button>
       </div>
       <!-- User Click Authentication -->
       <div class="password-label"></div>

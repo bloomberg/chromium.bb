@@ -757,6 +757,8 @@ cr.define('login', function() {
           this.handlePasswordKeyPress_.bind(this));
       this.passwordElement.addEventListener('input',
           this.handleInputChanged_.bind(this));
+      this.submitButton.addEventListener('click',
+          this.handleSubmitButtonClick_.bind(this));
 
       this.imageElement.addEventListener('load',
           this.parentNode.handlePodImageLoad.bind(this.parentNode, this));
@@ -766,6 +768,16 @@ cr.define('login', function() {
       this.setAuthType(initialAuthType, null);
 
       this.userClickAuthAllowed_ = false;
+
+      // Lazy load the assets needed for the polymer submit button.
+      if (cr.isChromeOS && !cr.ui.login.ResourceLoader.alreadyLoadedAssets(
+              'custom-elements-user-pod')) {
+        cr.ui.login.ResourceLoader.registerAssets({
+            id: 'custom-elements-user-pod',
+            html: [{ url: 'custom_elements_user_pod.html' }]
+         });
+        cr.ui.login.ResourceLoader.loadAssetsOnIdle('custom-elements-user-pod');
+      }
     },
 
     /**
@@ -790,6 +802,14 @@ cr.define('login', function() {
         return;
       }
       this.customIconElement.cancelDelayedTooltipShow();
+    },
+
+    /**
+     * Handles a click event on submit button.
+     * @param {Event} e Click event.
+     */
+    handleSubmitButtonClick_: function(e) {
+      this.parentNode.setActivatedPod(this, e);
     },
 
     /**
@@ -867,6 +887,14 @@ cr.define('login', function() {
      */
     get passwordElement() {
       return this.querySelector('.password');
+    },
+
+    /**
+     * Gets submit button.
+     * @type {!HTMLInputElement}
+     */
+    get submitButton() {
+      return this.querySelector('.submit-button');
     },
 
     /**
@@ -1101,6 +1129,10 @@ cr.define('login', function() {
 
     isPinReady: function() {
       return this.pinKeyboard && this.pinKeyboard.offsetHeight > 0;
+    },
+
+    set showError(visible) {
+      this.submitButton.classList.toggle('error-shown', visible);
     },
 
     toggleTransitions: function(enable) {
@@ -1830,6 +1862,8 @@ cr.define('login', function() {
     handleInputChanged_: function(e) {
       if (this.pinKeyboard)
         this.pinKeyboard.value = this.passwordElement.value;
+      this.submitButton.disabled = this.passwordElement.value.length <= 0;
+      this.showError = false;
     },
 
     /**
@@ -2604,11 +2638,28 @@ cr.define('login', function() {
       userPod.initialize();
     },
 
+    /**
+     * Enables or disables transitions on the user pod.
+     * @param {boolean} enable
+     */
     togglePinTransitions: function(enable) {
       for (var i = 0; i < this.pods.length; ++i)
         this.pods[i].toggleTransitions(enable);
     },
 
+    /**
+     * Performs visual changes on the user pod if there is an error.
+     * @param {boolean} visible Whether to show or hide the display.
+     */
+    setFocusedPodErrorDisplay: function(visible) {
+      if (this.focusedPod_)
+        this.focusedPod_.showError = visible;
+    },
+
+    /**
+     * Shows or hides the pin keyboard for the current focused pod.
+     * @param {boolean} visible
+     */
     setFocusedPodPinVisibility: function(visible) {
       if (this.focusedPod_ && this.focusedPod_.user.showPin)
         this.focusedPod_.setPinVisibility(visible);
@@ -2975,9 +3026,17 @@ cr.define('login', function() {
 
       // Wrap this in a set timeout so the function is called after the pod is
       // finished transitioning so that we work with the final pod dimensions.
-      setTimeout(function(podrow) {
-        podrow.scrollFocusedPodIntoView();
-      }, 200, this);
+      // If there is no focused pod that may be transitioning when this function
+      // is called, we can call scrollFocusedPodIntoView() right away.
+      var timeOut = 0;
+      if (this.focusedPod_) {
+        var style = getComputedStyle(this.focusedPod_);
+        timeOut = parseFloat(style.transitionDuration) * 1000;
+      }
+
+      setTimeout(function() {
+        this.scrollFocusedPodIntoView();
+      }.bind(this), timeOut);
     },
 
     /**

@@ -161,7 +161,27 @@ html[dir=rtl] .main-pane {
   display: flex;
   position: absolute;
   top: 160px;
-  width: 160px;
+  width: 170px;
+}
+
+.auth-container .submit-button[disabled] {
+  color: #000;
+  opacity: 0.26;
+}
+
+.auth-container .submit-button {
+  box-sizing: border-box;
+  color: var(--google-blue-500);
+  height: 43px;
+  min-height: 43px;
+  min-width: 43px;
+  padding: 11.5px 10px;
+  position: relative;
+  width: 43px;
+}
+
+.auth-container .submit-button.error-shown {
+  color: #CD2A00;
 }
 
 .name-container {
@@ -229,13 +249,17 @@ html[dir=rtl] .main-pane {
 .capslock-on .capslock-hint-container {
   display: block;
   flex: none;
+  height: 43px;
+  position: relative;
+  width: 20px;
 }
 
 .capslock-hint {
   -webkit-margin-end: 6px;
   -webkit-margin-start: -2px;
+  margin: auto;
   position: relative;
-  top: 11px;
+  top: 15px;
 }
 
 .password-label,

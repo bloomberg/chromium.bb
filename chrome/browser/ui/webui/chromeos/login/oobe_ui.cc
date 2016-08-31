@@ -103,6 +103,7 @@ const char kOobeJSPath[] = "oobe.js";
 const char kKeyboardUtilsJSPath[] = "keyboard_utils.js";
 const char kCustomElementsHTMLPath[] = "custom_elements.html";
 const char kCustomElementsJSPath[] = "custom_elements.js";
+const char kCustomElementsUserPodHTMLPath[] = "custom_elements_user_pod.html";
 
 // Paths for deferred resource loading.
 const char kCustomElementsPinKeyboardHTMLPath[] =
@@ -138,6 +139,8 @@ content::WebUIDataSource* CreateOobeUIDataSource(
                             IDR_CUSTOM_ELEMENTS_PIN_KEYBOARD_HTML);
     source->AddResourcePath(kCustomElementsPinKeyboardJSPath,
                             IDR_CUSTOM_ELEMENTS_PIN_KEYBOARD_JS);
+    source->AddResourcePath(kCustomElementsUserPodHTMLPath,
+                            IDR_CUSTOM_ELEMENTS_USER_POD_HTML);
   } else {
     source->SetDefaultResource(IDR_LOGIN_HTML);
     source->AddResourcePath(kLoginJSPath, IDR_LOGIN_JS);
@@ -145,6 +148,8 @@ content::WebUIDataSource* CreateOobeUIDataSource(
                             IDR_CUSTOM_ELEMENTS_LOGIN_HTML);
     source->AddResourcePath(kCustomElementsJSPath,
                             IDR_CUSTOM_ELEMENTS_LOGIN_JS);
+    source->AddResourcePath(kCustomElementsUserPodHTMLPath,
+                            IDR_CUSTOM_ELEMENTS_USER_POD_HTML);
   }
   source->AddResourcePath(kKeyboardUtilsJSPath, IDR_KEYBOARD_UTILS_JS);
   source->OverrideContentSecurityPolicyChildSrc(

@@ -64,6 +64,7 @@
         <structure name="IDR_CUSTOM_ELEMENTS_OOBE_JS" file="resources\chromeos\login\custom_elements_oobe.js" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_CUSTOM_ELEMENTS_LOCK_HTML" file="resources\chromeos\login\custom_elements_lock.html" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_CUSTOM_ELEMENTS_LOCK_JS" file="resources\chromeos\login\custom_elements_lock.js" flattenhtml="true" type="chrome_html" />
+        <structure name="IDR_CUSTOM_ELEMENTS_USER_POD_HTML" file="resources\chromeos\login\custom_elements_user_pod.html" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_CUSTOM_ELEMENTS_LOGIN_HTML" file="resources\chromeos\login\custom_elements_login.html" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_CUSTOM_ELEMENTS_LOGIN_JS" file="resources\chromeos\login\custom_elements_login.js" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_CUSTOM_ELEMENTS_PIN_KEYBOARD_HTML" file="resources\chromeos\quick_unlock\pin_keyboard.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />

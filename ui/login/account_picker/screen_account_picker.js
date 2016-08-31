@@ -177,6 +177,8 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
           chrome.send('firstIncorrectPasswordAttempt',
               [activatedPod.user.emailAddress]);
         }
+        // Update the pod row display if incorrect password.
+        $('pod-row').setFocusedPodErrorDisplay(true);
         // We want bubble's arrow to point to the first letter of input.
         /** @const */ var BUBBLE_OFFSET = 7;
         /** @const */ var BUBBLE_PADDING = 4;
