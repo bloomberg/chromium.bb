@@ -2,7 +2,36 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chrome_build.gni")
+import("//third_party/WebKit/Source/config.gni")
+
 blink_core_output_dir = "$root_gen_dir/blink/core"
+
+# This file sets core_config_add and core_config_remove lists of configs to
+# modify the default lists of configs set in the build as appropriate for core
+# targets. This avoids duplicating logic across many targets.
+core_config_add = [
+  "//build/config/compiler:wexit_time_destructors",
+  "//third_party/WebKit/Source:config",
+  "//third_party/WebKit/Source:non_test_config",
+  "//third_party/WebKit/Source/core:config",
+]
+core_config_remove = []
+
+# Compute the optimization level. The GYP code sets "optimize: max" which sets
+# speed-over-size optimization for official builds on Windows only. The GN's
+# build optimize_max config applies this optimization on all platforms, so
+# compute how to modify the config list to duplicate the GYP behavior.
+# TODO revisit this behavior, as the Windows-specific part seems suspicious.
+if (is_win && is_official_build) {
+  core_config_remove += [ "//build/config/compiler:default_optimization" ]
+  core_config_add += [ "//build/config/compiler:optimize_max" ]
+}
+
+if (remove_webcore_debug_symbols) {
+  core_config_remove += [ "//build/config/compiler:default_symbols" ]
+  core_config_add += [ "//build/config/compiler:no_symbols" ]
+}
 
 # This file is the GN version of core.gypi. We rebase most paths to be absolute
 # so these lists can be used by BUILD files in different directories without

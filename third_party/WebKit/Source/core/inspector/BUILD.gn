@@ -31,84 +31,93 @@ action("instrumentation_sources") {
 
 # inspector protocol -----------------------------------------------------------
 
-action("protocol_sources") {
-  script = "../../platform/inspector_protocol/CodeGenerator.py"
-  deps = [
-    ":protocol_version",
-  ]
-  sources = inspector_protocol_sources
+inspector_protocol_generate("protocol_sources") {
+  out_dir = blink_core_output_dir
+
+  config_file = "inspector_protocol_config.json"
   inputs = [
     "browser_protocol.json",
     "../../platform/v8_inspector/js_protocol.json",
     "inspector_protocol_config.json",
   ]
+
+  # These are relative to blink_core_output_dir.
   outputs = [
-    "$blink_core_output_dir/inspector/protocol/Forward.h",
-    "$blink_core_output_dir/inspector/protocol/Protocol.cpp",
-    "$blink_core_output_dir/inspector/protocol/Protocol.h",
-    "$blink_core_output_dir/inspector/protocol/Accessibility.cpp",
-    "$blink_core_output_dir/inspector/protocol/Accessibility.h",
-    "$blink_core_output_dir/inspector/protocol/Animation.cpp",
-    "$blink_core_output_dir/inspector/protocol/Animation.h",
-    "$blink_core_output_dir/inspector/protocol/ApplicationCache.cpp",
-    "$blink_core_output_dir/inspector/protocol/ApplicationCache.h",
-    "$blink_core_output_dir/inspector/protocol/CacheStorage.cpp",
-    "$blink_core_output_dir/inspector/protocol/CacheStorage.h",
-    "$blink_core_output_dir/inspector/protocol/CSS.cpp",
-    "$blink_core_output_dir/inspector/protocol/CSS.h",
-    "$blink_core_output_dir/inspector/protocol/Database.cpp",
-    "$blink_core_output_dir/inspector/protocol/Database.h",
-    "$blink_core_output_dir/inspector/protocol/Debugger.h",
-    "$blink_core_output_dir/inspector/protocol/DeviceOrientation.cpp",
-    "$blink_core_output_dir/inspector/protocol/DeviceOrientation.h",
-    "$blink_core_output_dir/inspector/protocol/DOM.cpp",
-    "$blink_core_output_dir/inspector/protocol/DOMDebugger.cpp",
-    "$blink_core_output_dir/inspector/protocol/DOMDebugger.h",
-    "$blink_core_output_dir/inspector/protocol/DOM.h",
-    "$blink_core_output_dir/inspector/protocol/DOMStorage.cpp",
-    "$blink_core_output_dir/inspector/protocol/DOMStorage.h",
-    "$blink_core_output_dir/inspector/protocol/Emulation.cpp",
-    "$blink_core_output_dir/inspector/protocol/Emulation.h",
-    "$blink_core_output_dir/inspector/protocol/IndexedDB.cpp",
-    "$blink_core_output_dir/inspector/protocol/IndexedDB.h",
-    "$blink_core_output_dir/inspector/protocol/Input.cpp",
-    "$blink_core_output_dir/inspector/protocol/Input.h",
-    "$blink_core_output_dir/inspector/protocol/Inspector.cpp",
-    "$blink_core_output_dir/inspector/protocol/Inspector.h",
-    "$blink_core_output_dir/inspector/protocol/IO.cpp",
-    "$blink_core_output_dir/inspector/protocol/IO.h",
-    "$blink_core_output_dir/inspector/protocol/LayerTree.cpp",
-    "$blink_core_output_dir/inspector/protocol/LayerTree.h",
-    "$blink_core_output_dir/inspector/protocol/Log.cpp",
-    "$blink_core_output_dir/inspector/protocol/Log.h",
-    "$blink_core_output_dir/inspector/protocol/Memory.cpp",
-    "$blink_core_output_dir/inspector/protocol/Memory.h",
-    "$blink_core_output_dir/inspector/protocol/Network.cpp",
-    "$blink_core_output_dir/inspector/protocol/Network.h",
-    "$blink_core_output_dir/inspector/protocol/Page.cpp",
-    "$blink_core_output_dir/inspector/protocol/Page.h",
-    "$blink_core_output_dir/inspector/protocol/Rendering.cpp",
-    "$blink_core_output_dir/inspector/protocol/Rendering.h",
-    "$blink_core_output_dir/inspector/protocol/Runtime.h",
-    "$blink_core_output_dir/inspector/protocol/Security.cpp",
-    "$blink_core_output_dir/inspector/protocol/Security.h",
-    "$blink_core_output_dir/inspector/protocol/ServiceWorker.cpp",
-    "$blink_core_output_dir/inspector/protocol/ServiceWorker.h",
-    "$blink_core_output_dir/inspector/protocol/Storage.cpp",
-    "$blink_core_output_dir/inspector/protocol/Storage.h",
-    "$blink_core_output_dir/inspector/protocol/Tracing.cpp",
-    "$blink_core_output_dir/inspector/protocol/Tracing.h",
-    "$blink_core_output_dir/inspector/protocol/Worker.cpp",
-    "$blink_core_output_dir/inspector/protocol/Worker.h",
+    "inspector/protocol/Accessibility.cpp",
+    "inspector/protocol/Accessibility.h",
+    "inspector/protocol/Animation.cpp",
+    "inspector/protocol/Animation.h",
+    "inspector/protocol/ApplicationCache.cpp",
+    "inspector/protocol/ApplicationCache.h",
+    "inspector/protocol/CacheStorage.cpp",
+    "inspector/protocol/CacheStorage.h",
+    "inspector/protocol/CSS.cpp",
+    "inspector/protocol/CSS.h",
+    "inspector/protocol/Database.cpp",
+    "inspector/protocol/Database.h",
+    "inspector/protocol/Debugger.h",
+    "inspector/protocol/DeviceOrientation.cpp",
+    "inspector/protocol/DeviceOrientation.h",
+    "inspector/protocol/DOM.cpp",
+    "inspector/protocol/DOMDebugger.cpp",
+    "inspector/protocol/DOMDebugger.h",
+    "inspector/protocol/DOM.h",
+    "inspector/protocol/DOMStorage.cpp",
+    "inspector/protocol/DOMStorage.h",
+    "inspector/protocol/Emulation.cpp",
+    "inspector/protocol/Emulation.h",
+    "inspector/protocol/Forward.h",
+    "inspector/protocol/IndexedDB.cpp",
+    "inspector/protocol/IndexedDB.h",
+    "inspector/protocol/Input.cpp",
+    "inspector/protocol/Input.h",
+    "inspector/protocol/Inspector.cpp",
+    "inspector/protocol/Inspector.h",
+    "inspector/protocol/IO.cpp",
+    "inspector/protocol/IO.h",
+    "inspector/protocol/LayerTree.cpp",
+    "inspector/protocol/LayerTree.h",
+    "inspector/protocol/Log.cpp",
+    "inspector/protocol/Log.h",
+    "inspector/protocol/Memory.cpp",
+    "inspector/protocol/Memory.h",
+    "inspector/protocol/Network.cpp",
+    "inspector/protocol/Network.h",
+    "inspector/protocol/Page.cpp",
+    "inspector/protocol/Page.h",
+    "inspector/protocol/Protocol.cpp",
+    "inspector/protocol/Protocol.h",
+    "inspector/protocol/Rendering.cpp",
+    "inspector/protocol/Rendering.h",
+    "inspector/protocol/Runtime.h",
+    "inspector/protocol/Security.cpp",
+    "inspector/protocol/Security.h",
+    "inspector/protocol/ServiceWorker.cpp",
+    "inspector/protocol/ServiceWorker.h",
+    "inspector/protocol/Storage.cpp",
+    "inspector/protocol/Storage.h",
+    "inspector/protocol/Tracing.cpp",
+    "inspector/protocol/Tracing.h",
+    "inspector/protocol/Worker.cpp",
+    "inspector/protocol/Worker.h",
   ]
 
-  args = [
-    "--jinja_dir",
-    rebase_path("../../../../", root_build_dir),  # jinja is in chromium's third_party
-    "--output_base",
-    rebase_path(blink_core_output_dir, root_build_dir),
-    "--config",
-    rebase_path("inspector_protocol_config.json", root_build_dir),
+  deps = [
+    ":protocol_version",
+  ]
+}
+
+# Compiles the sources generated above.
+source_set("protocol") {
+  sources = get_target_outputs(":protocol_sources")
+
+  configs -= core_config_remove
+  configs +=
+      core_config_add + [ "//third_party/WebKit/Source/core:core_include_dirs" ]
+
+  deps = [
+    ":protocol_sources",
+    "//third_party/WebKit/Source/wtf",
   ]
 }
 

@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/chrome_build.gni")
 import("//build/config/chromecast_build.gni")
 import("//build/config/ui.gni")
 import("//build/split_static_library.gni")
@@ -21,30 +20,6 @@ visibility = [ "//third_party/WebKit/Source/*" ]
 
 rel_blink_core_gen_dir = rebase_path(blink_core_output_dir, root_build_dir)
 
-# Compute the optimization level. The GYP code sets "optimize: max" which sets
-# speed-over-size optimization for official builds on Windows only. The GN's
-# build optimize_max config applies this optimization on all platforms, so
-# compute how to modify the config list to duplicate the GYP behavior.
-if (is_debug || !is_win || !is_official_build) {
-  # NOP.
-  core_config_add = []
-  core_config_remove = []
-} else {
-  core_config_remove = [ "//build/config/compiler:default_optimization" ]
-  core_config_add = [ "//build/config/compiler:optimize_max" ]
-}
-
-# Core targets also get wexit time destructors.
-core_config_add += [
-  "//build/config/compiler:wexit_time_destructors",
-  "//third_party/WebKit/Source:non_test_config",
-]
-
-if (remove_webcore_debug_symbols) {
-  core_config_remove += [ "//build/config/compiler:default_symbols" ]
-  core_config_add += [ "//build/config/compiler:no_symbols" ]
-}
-
 # Config for code that builds as part of core.
 config("config") {
   defines = [ "BLINK_CORE_IMPLEMENTATION=1" ]
@@ -59,7 +34,6 @@ config("config") {
     defines += [ "BLINK_MEDIA_LOG=DVLOG(2)" ]
   }
 }
-core_config_add += [ ":config" ]
 
 config("core_include_dirs") {
   include_dirs = [
@@ -424,35 +398,6 @@ target(link_target_type, "core_generated") {
     "$blink_core_output_dir/InspectorOverridesInl.h",
     "$blink_core_output_dir/InstrumentingAgents.h",
 
-    # Additional .cpp files from the inspector:protocol_sources list.
-    "$blink_core_output_dir/inspector/protocol/Accessibility.cpp",
-    "$blink_core_output_dir/inspector/protocol/Animation.cpp",
-    "$blink_core_output_dir/inspector/protocol/ApplicationCache.cpp",
-    "$blink_core_output_dir/inspector/protocol/CSS.cpp",
-    "$blink_core_output_dir/inspector/protocol/CacheStorage.cpp",
-    "$blink_core_output_dir/inspector/protocol/DOM.cpp",
-    "$blink_core_output_dir/inspector/protocol/DOMDebugger.cpp",
-    "$blink_core_output_dir/inspector/protocol/DOMStorage.cpp",
-    "$blink_core_output_dir/inspector/protocol/Database.cpp",
-    "$blink_core_output_dir/inspector/protocol/DeviceOrientation.cpp",
-    "$blink_core_output_dir/inspector/protocol/Emulation.cpp",
-    "$blink_core_output_dir/inspector/protocol/IO.cpp",
-    "$blink_core_output_dir/inspector/protocol/IndexedDB.cpp",
-    "$blink_core_output_dir/inspector/protocol/Input.cpp",
-    "$blink_core_output_dir/inspector/protocol/Inspector.cpp",
-    "$blink_core_output_dir/inspector/protocol/LayerTree.cpp",
-    "$blink_core_output_dir/inspector/protocol/Log.cpp",
-    "$blink_core_output_dir/inspector/protocol/Memory.cpp",
-    "$blink_core_output_dir/inspector/protocol/Network.cpp",
-    "$blink_core_output_dir/inspector/protocol/Page.cpp",
-    "$blink_core_output_dir/inspector/protocol/Protocol.cpp",
-    "$blink_core_output_dir/inspector/protocol/Rendering.cpp",
-    "$blink_core_output_dir/inspector/protocol/Security.cpp",
-    "$blink_core_output_dir/inspector/protocol/ServiceWorker.cpp",
-    "$blink_core_output_dir/inspector/protocol/Storage.cpp",
-    "$blink_core_output_dir/inspector/protocol/Tracing.cpp",
-    "$blink_core_output_dir/inspector/protocol/Worker.cpp",
-
     # Additional .cpp files for SVG.
     "$blink_core_output_dir/SVGElementFactory.cpp",
 
@@ -482,7 +427,7 @@ target(link_target_type, "core_generated") {
     ":make_core_generated",
     ":prerequisites",
     "inspector:instrumentation_sources",
-    "inspector:protocol_sources",
+    "inspector:protocol",
     "//gin",
     "//skia",
     "//third_party/WebKit/Source/bindings/core/v8:bindings_core_v8_generated",

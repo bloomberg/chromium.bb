@@ -192,44 +192,39 @@ executable("character_data_generator") {
 
 # Inspector protocol
 
-action("inspector_protocol_sources") {
-  script = "inspector_protocol/CodeGenerator.py"
-  deps = [
-    ":inspector_protocol_compatibility",
-  ]
-  sources = inspector_protocol_sources
+inspector_protocol_generate("inspector_protocol_sources") {
+  out_dir = blink_platform_output_dir
+
+  config_file = "v8_inspector/inspector_protocol_config.json"
   inputs = [
     "v8_inspector/js_protocol.json",
     "v8_inspector/inspector_protocol_config.json",
   ]
+
+  # This are relative to blink_platform_output_dir.
   outputs = [
-    "$blink_platform_output_dir/v8_inspector/protocol/Forward.h",
-    "$blink_platform_output_dir/v8_inspector/protocol/Protocol.cpp",
-    "$blink_platform_output_dir/v8_inspector/protocol/Protocol.h",
-    "$blink_platform_output_dir/v8_inspector/protocol/Console.cpp",
-    "$blink_platform_output_dir/v8_inspector/protocol/Console.h",
-    "$blink_platform_output_dir/v8_inspector/protocol/Debugger.cpp",
-    "$blink_platform_output_dir/v8_inspector/protocol/Debugger.h",
-    "$blink_platform_output_dir/v8_inspector/protocol/HeapProfiler.cpp",
-    "$blink_platform_output_dir/v8_inspector/protocol/HeapProfiler.h",
-    "$blink_platform_output_dir/v8_inspector/protocol/Profiler.cpp",
-    "$blink_platform_output_dir/v8_inspector/protocol/Profiler.h",
-    "$blink_platform_output_dir/v8_inspector/protocol/Runtime.cpp",
-    "$blink_platform_output_dir/v8_inspector/protocol/Runtime.h",
-    "$blink_platform_output_dir/v8_inspector/protocol/Schema.cpp",
-    "$blink_platform_output_dir/v8_inspector/protocol/Schema.h",
-    "$blink_platform_output_dir/v8_inspector/public/protocol/Debugger.h",
-    "$blink_platform_output_dir/v8_inspector/public/protocol/Runtime.h",
-    "$blink_platform_output_dir/v8_inspector/public/protocol/Schema.h",
+    "v8_inspector/protocol/Forward.h",
+    "v8_inspector/protocol/Protocol.cpp",
+    "v8_inspector/protocol/Protocol.h",
+    "v8_inspector/protocol/Console.cpp",
+    "v8_inspector/protocol/Console.h",
+    "v8_inspector/protocol/Debugger.cpp",
+    "v8_inspector/protocol/Debugger.h",
+    "v8_inspector/protocol/HeapProfiler.cpp",
+    "v8_inspector/protocol/HeapProfiler.h",
+    "v8_inspector/protocol/Profiler.cpp",
+    "v8_inspector/protocol/Profiler.h",
+    "v8_inspector/protocol/Runtime.cpp",
+    "v8_inspector/protocol/Runtime.h",
+    "v8_inspector/protocol/Schema.cpp",
+    "v8_inspector/protocol/Schema.h",
+    "v8_inspector/public/protocol/Debugger.h",
+    "v8_inspector/public/protocol/Runtime.h",
+    "v8_inspector/public/protocol/Schema.h",
   ]
 
-  args = [
-    "--jinja_dir",
-    rebase_path("../../../", root_build_dir),  # jinja is in chromium's third_party
-    "--output_base",
-    rebase_path(blink_platform_output_dir, root_build_dir),
-    "--config",
-    rebase_path("v8_inspector/inspector_protocol_config.json", root_build_dir),
+  deps = [
+    ":inspector_protocol_compatibility",
   ]
 }
 
