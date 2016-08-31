@@ -158,8 +158,8 @@ public:
         : ExceptionState(nullptr, ExceptionState::UnknownContext, nullptr, nullptr) { }
 
     void throwDOMException(const ExceptionCode&, const String& message) override;
-    void throwTypeError(const String& message = String()) override;
-    void throwSecurityError(const String& sanitizedMessage, const String& unsanitizedMessage = String()) override;
+    void throwTypeError(const String& message) override;
+    void throwSecurityError(const String& sanitizedMessage, const String& unsanitizedMessage) override;
     void throwRangeError(const String& message) override;
     void rethrowV8Exception(v8::Local<v8::Value>) override;
 };
@@ -180,8 +180,8 @@ public:
     }
 
     void throwDOMException(const ExceptionCode&, const String& message) override;
-    void throwTypeError(const String& message = String()) override;
-    void throwSecurityError(const String& sanitizedMessage, const String& unsanitizedMessage = String()) override;
+    void throwTypeError(const String& message) override;
+    void throwSecurityError(const String& sanitizedMessage, const String& unsanitizedMessage) override;
     void throwRangeError(const String& message) override;
     void rethrowV8Exception(v8::Local<v8::Value>) override;
 };

@@ -35,22 +35,22 @@
 #include "core/CoreExport.h"
 #include "wtf/Assertions.h"
 #include "wtf/text/WTFString.h"
-#include <v8.h>
 
 namespace blink {
-
-class ExceptionState;
-
-typedef int ExceptionCode;
 
 class IgnorableExceptionState final : public ExceptionState {
     WTF_MAKE_NONCOPYABLE(IgnorableExceptionState);
 public:
-    IgnorableExceptionState(): ExceptionState(ExceptionState::UnknownContext, 0, 0, v8::Local<v8::Object>(), 0) { }
+    IgnorableExceptionState()
+        : ExceptionState(nullptr, ExceptionState::UnknownContext, nullptr, nullptr) { }
+
     ExceptionState& returnThis() { return *this; }
-    void throwDOMException(const ExceptionCode&, const String& message = String()) override { }
-    void throwTypeError(const String& message = String()) override { }
-    void throwSecurityError(const String& sanitizedMessage, const String& unsanitizedMessage = String()) override { }
+
+    void throwDOMException(const ExceptionCode&, const String& message) override { }
+    void throwRangeError(const String& message) override { };
+    void throwSecurityError(const String& sanitizedMessage, const String& unsanitizedMessage) override { }
+    void throwTypeError(const String& message) override { }
+    void rethrowV8Exception(v8::Local<v8::Value>) override { };
 };
 
 #define IGNORE_EXCEPTION (::blink::IgnorableExceptionState().returnThis())
@@ -61,14 +61,18 @@ class CORE_EXPORT NoExceptionStateAssertionChecker final : public ExceptionState
     WTF_MAKE_NONCOPYABLE(NoExceptionStateAssertionChecker);
 public:
     NoExceptionStateAssertionChecker(const char* file, int line);
+
     ExceptionState& returnThis() { return *this; }
-    void throwDOMException(const ExceptionCode&, const String& message = String()) override;
-    void throwTypeError(const String& message = String()) override;
-    void throwSecurityError(const String& sanitizedMessage, const String& unsanitizedMessage = String()) override;
+
+    void throwDOMException(const ExceptionCode&, const String& message) override;
+    void throwRangeError(const String& message) override;
+    void throwSecurityError(const String& sanitizedMessage, const String& unsanitizedMessage) override;
+    void throwTypeError(const String& message) override;
+    void rethrowV8Exception(v8::Local<v8::Value>) override;
 
 private:
     const char* m_file;
-    int m_line;
+    const int m_line;
 };
 
 #define ASSERT_NO_EXCEPTION (::blink::NoExceptionStateAssertionChecker(__FILE__, __LINE__).returnThis())
