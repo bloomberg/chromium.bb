@@ -69,6 +69,9 @@ class NATIVE_THEME_EXPORT NativeThemeMac : public NativeThemeBase {
                                         bool focus);
 
  private:
+  SkColor GetAuraColorWithSystemTint(NativeTheme::ColorId color_id,
+                                     const NativeTheme* base_theme) const;
+
   NativeThemeMac();
   ~NativeThemeMac() override;
 

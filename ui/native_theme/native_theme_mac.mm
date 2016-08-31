@@ -133,20 +133,20 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
       return NSSystemColorToSkColor([NSColor windowBackgroundColor]);
     case kColorId_DialogBackground:
       return ui::MaterialDesignController::IsSecondaryUiMaterial()
-                ? GetAuraColor(color_id, this)
+                ? GetAuraColorWithSystemTint(color_id, this)
                 : kDialogBackgroundColor;
     case kColorId_BubbleBackground:
       return SK_ColorWHITE;
 
     case kColorId_FocusedBorderColor:
       return ui::MaterialDesignController::IsSecondaryUiMaterial()
-                ? GetAuraColor(color_id, this)
+                ? GetAuraColorWithSystemTint(color_id, this)
                 : NSSystemColorToSkColor([NSColor keyboardFocusIndicatorColor]);
     case kColorId_FocusedMenuButtonBorderColor:
       return NSSystemColorToSkColor([NSColor keyboardFocusIndicatorColor]);
     case kColorId_UnfocusedBorderColor:
       return ui::MaterialDesignController::IsSecondaryUiMaterial()
-                ? GetAuraColor(color_id, this)
+                ? GetAuraColorWithSystemTint(color_id, this)
                 : NSSystemColorToSkColor([NSColor controlColor]);
 
     // Buttons and labels.
@@ -161,7 +161,7 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
       return NSSystemColorToSkColor([NSColor controlTextColor]);
     case kColorId_CallToActionColor:
       return ui::MaterialDesignController::IsSecondaryUiMaterial()
-                ? GetAuraColor(color_id, this)
+                ? GetAuraColorWithSystemTint(color_id, this)
                 : NSSystemColorToSkColor([NSColor controlTextColor]);
     case kColorId_ButtonDisabledColor:
     case kColorId_LabelDisabledColor:
@@ -425,6 +425,12 @@ void NativeThemeMac::PaintStyledGradientButton(SkCanvas* canvas,
   paint.setShader(nullptr);
   paint.setColor(kFocusRingColor);
   canvas->drawDRRect(outer_shape, shape, paint);
+}
+
+SkColor NativeThemeMac::GetAuraColorWithSystemTint(
+    NativeTheme::ColorId color_id,
+    const NativeTheme* base_theme) const {
+  return ApplySystemControlTint(GetAuraColor(color_id, base_theme));
 }
 
 NativeThemeMac::NativeThemeMac() {
