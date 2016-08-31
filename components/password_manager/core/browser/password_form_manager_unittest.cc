@@ -3016,4 +3016,54 @@ TEST_F(PasswordFormManagerTest, ReportProcessingUpdate) {
   EXPECT_EQ(1, tester.GetActionCount("PasswordManager_LoginFollowingAutofill"));
 }
 
+// For all combinations of PasswordForm schemes, test that ProcessMatches
+// filters out forms with schemes not matching the observed form.
+TEST_F(PasswordFormManagerTest, RemoveResultsWithWrongScheme_ObservingHTML) {
+  for (int correct = 0; correct <= PasswordForm::SCHEME_LAST; ++correct) {
+    for (int wrong = 0; wrong <= PasswordForm::SCHEME_LAST; ++wrong) {
+      if (correct == wrong)
+        continue;
+
+      const PasswordForm::Scheme kCorrectScheme =
+          static_cast<PasswordForm::Scheme>(correct);
+      const PasswordForm::Scheme kWrongScheme =
+          static_cast<PasswordForm::Scheme>(wrong);
+      SCOPED_TRACE(testing::Message() << "Correct scheme = " << kCorrectScheme
+                                      << ", wrong scheme = " << kWrongScheme);
+
+      PasswordForm observed = *observed_form();
+      observed.scheme = kCorrectScheme;
+      PasswordFormManager form_manager(
+          password_manager(), client(),
+          (kCorrectScheme == PasswordForm::SCHEME_HTML ? client()->driver()
+                                                       : nullptr),
+          observed, base::MakeUnique<NiceMock<MockFormSaver>>());
+
+      PasswordForm match = *saved_match();
+      match.scheme = kCorrectScheme;
+
+      PasswordForm non_match = match;
+      non_match.scheme = kWrongScheme;
+
+      // First try putting the correct scheme first in returned matches.
+      std::vector<const PasswordForm*> all_matches = {&match, &non_match};
+      static_cast<FormFetcher::Consumer*>(&form_manager)
+          ->ProcessMatches(all_matches, 0u);
+
+      EXPECT_EQ(1u, form_manager.best_matches().size());
+      EXPECT_EQ(kCorrectScheme,
+                form_manager.best_matches().begin()->second->scheme);
+
+      // Now try putting the correct scheme last in returned matches.
+      all_matches = {&non_match, &match};
+      static_cast<FormFetcher::Consumer*>(&form_manager)
+          ->ProcessMatches(all_matches, 0u);
+
+      EXPECT_EQ(1u, form_manager.best_matches().size());
+      EXPECT_EQ(kCorrectScheme,
+                form_manager.best_matches().begin()->second->scheme);
+    }
+  }
+}
+
 }  // namespace password_manager

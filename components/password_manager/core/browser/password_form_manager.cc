@@ -481,15 +481,24 @@ void PasswordFormManager::ProcessMatches(
   // Create a copy of |non_federated| which we can reorder and prune.
   std::vector<const PasswordForm*> all_matches(non_federated);
 
-  // The next step is to reorder |all_matches| into three consequent blocks:
+  // The next step is to reorder |all_matches| into four consequent blocks:
   // (A) relevant blacklist entries
   // (B) non-relevant blacklist entries
-  // (C) non-blacklisted matches
+  // (C) relevant non-blacklisted matches
+  // (D) non-relevant non-blacklisted matches
 
   auto begin_nonblacklisted =  // start of block (C)
       std::partition(
           all_matches.begin(), all_matches.end(),
           [](const PasswordForm* form) { return form->blacklisted_by_user; });
+
+  // Block (D) can be removed immediately.
+  const PasswordForm::Scheme observed_scheme = observed_form_.scheme;
+  all_matches.erase(std::remove_if(begin_nonblacklisted, all_matches.end(),
+                                   [observed_scheme](const PasswordForm* form) {
+                                     return form->scheme != observed_scheme;
+                                   }),
+                    all_matches.end());
 
   auto begin_nonrelevant =  // start of block (B)
       std::partition(
