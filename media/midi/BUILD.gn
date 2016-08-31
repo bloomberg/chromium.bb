@@ -6,6 +6,7 @@ import("//build/config/android/config.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//media/media_options.gni")
+import("//media/midi/midi_options.gni")
 import("//testing/test.gni")
 
 if (is_android) {
@@ -79,8 +80,6 @@ component("midi") {
     "midi_manager.h",
     "midi_manager_mac.cc",
     "midi_manager_mac.h",
-    "midi_manager_win.cc",
-    "midi_manager_win.h",
     "midi_message_queue.cc",
     "midi_message_queue.h",
     "midi_message_util.cc",
@@ -139,6 +138,23 @@ component("midi") {
 
   if (is_win) {
     deps += [ "//device/usb" ]
+
+    if (midi_use_winrt) {
+      sources += [
+        "midi_manager_winrt.cc",
+        "midi_manager_winrt.h",
+      ]
+
+      # TODO(crbug.com/642602): This adds runtime dependency to libraries that
+      # may not be available on Windows 7. Should eventually remove this and
+      # load functions dynamically (as in base::win::IsWindows10TabletMode).
+      libs += [ "runtimeobject.lib" ]
+    } else {
+      sources += [
+        "midi_manager_win.cc",
+        "midi_manager_win.h",
+      ]
+    }
   }
 
   if (use_alsa && use_udev) {
