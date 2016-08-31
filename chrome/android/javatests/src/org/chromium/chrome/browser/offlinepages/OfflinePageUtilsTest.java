@@ -11,7 +11,6 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.OfflinePageModelObserver;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.SavePageCallback;
@@ -244,7 +243,6 @@ public class OfflinePageUtilsTest extends ChromeActivityTestCaseBase<ChromeActiv
         return result;
     }
 
-    @DisabledTest(message = "Flaky, crbug.com/640319")
     @SmallTest
     public void testCopyToShareableLocation() throws Exception {
         // Save an offline page.
@@ -257,22 +255,20 @@ public class OfflinePageUtilsTest extends ChromeActivityTestCaseBase<ChromeActiv
 
         File offlinePageOriginal = new File(offlinePageFilePath);
 
-        // Clear the directory before perform file copying.
-        Context context = getActivity().getBaseContext();
-        OfflinePageUtils.clearSharedOfflineFiles(context);
+        // Clear the directory before copying the file.
+        clearSharedOfflineFilesAndWait();
 
-        File offlineCacheDir =
+        File offlineSharingDir =
                 OfflinePageUtils.getDirectoryForOfflineSharing(getActivity().getBaseContext());
+        assertTrue("Offline sharing directory should exist.", offlineSharingDir != null);
 
-        assertTrue("The shareable offline page file should not already exist.",
-                (offlineCacheDir != null));
-
-        File offlinePageShareable = new File(offlineCacheDir, offlinePageOriginal.getName());
-
+        File offlinePageShareable = new File(offlineSharingDir, offlinePageOriginal.getName());
         assertFalse("File with the same name should not exist.", offlinePageShareable.exists());
+
         assertTrue("Should be able to copy file to shareable location.",
                 OfflinePageUtils.copyToShareableLocation(
                         offlinePageOriginal, offlinePageShareable));
+
         assertEquals("File copy result incorrect", offlinePageOriginal.length(),
                 offlinePageShareable.length());
     }
@@ -290,12 +286,12 @@ public class OfflinePageUtilsTest extends ChromeActivityTestCaseBase<ChromeActiv
         File offlinePageOriginal = new File(offlinePageFilePath);
 
         final Context context = getActivity().getBaseContext();
-        final File offlineCacheDir = OfflinePageUtils.getDirectoryForOfflineSharing(context);
+        final File offlineSharingDir = OfflinePageUtils.getDirectoryForOfflineSharing(context);
 
         assertTrue("Should be able to create subdirectory in shareable directory.",
-                (offlineCacheDir != null));
+                (offlineSharingDir != null));
 
-        File offlinePageShareable = new File(offlineCacheDir, offlinePageOriginal.getName());
+        File offlinePageShareable = new File(offlineSharingDir, offlinePageOriginal.getName());
         if (!offlinePageShareable.exists()) {
             assertTrue("Should be able to copy file to shareable location.",
                     OfflinePageUtils.copyToShareableLocation(
@@ -303,19 +299,23 @@ public class OfflinePageUtilsTest extends ChromeActivityTestCaseBase<ChromeActiv
         }
 
         // Clear files.
+        clearSharedOfflineFilesAndWait();
+    }
+
+    private void clearSharedOfflineFilesAndWait() {
+        Context context = getActivity().getBaseContext();
+        final File offlineSharingDir = OfflinePageUtils.getDirectoryForOfflineSharing(context);
         OfflinePageUtils.clearSharedOfflineFiles(context);
         try {
             CriteriaHelper.pollInstrumentationThread(
                     new Criteria("Failed while waiting for file operation to complete.") {
                         @Override
                         public boolean isSatisfied() {
-                            return !offlineCacheDir.exists();
+                            return !offlineSharingDir.exists();
                         }
                     });
         } catch (InterruptedException e) {
             fail("Failed while waiting for file operation to complete." + e);
         }
-
-        assertFalse("Cache directory should be deleted.", offlineCacheDir.exists());
     }
 }
