@@ -458,10 +458,11 @@ function update_readme {
   # array entries.
   local vals=($(git --no-pager log -1 --format="%cd%n%H" \
     --date=format:"%A %B %d %Y"))
-  sed -E -i '' \
+  sed -E -i.bak \
     -e "s/^(Date:)[[:space:]]+.*$/\1 ${vals[0]}/" \
     -e "s/^(Commit:)[[:space:]]+[a-f0-9]{40}/\1 ${vals[1]}/" \
     ${BASE_DIR}/README.chromium
+  rm ${BASE_DIR}/README.chromium.bak
   cat <<EOF
 
 README.chromium updated with:
