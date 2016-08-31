@@ -600,11 +600,15 @@ COMMON_GTESTS = {
         'run_on_optional': True,
         # Run only on the Win7 and Linux Release NVIDIA 32- and 64-bit bots
         # (and trybots) for the time being, at least until more capacity is
-        # added.
+        # added. Also run on the AMD R7 240 bots.
         'build_configs': ['Release', 'Release_x64'],
         'swarming_dimension_sets': [
           {
             'gpu': '10de:104a',
+            'os': 'Windows-2008ServerR2-SP1'
+          },
+          {
+            'gpu': '1002:6613',
             'os': 'Windows-2008ServerR2-SP1'
           },
           {
@@ -628,6 +632,7 @@ COMMON_GTESTS = {
         # Run only on the Win7 and Linux Release NVIDIA 32-bit bots
         # (and trybots) for the time being, at least until more capacity is
         # added.
+        # TODO(jmadill): Run on the Win AMD R7 240 bots once they are swarmed.
         'build_configs': ['Release'],
         'swarming_dimension_sets': [
           {

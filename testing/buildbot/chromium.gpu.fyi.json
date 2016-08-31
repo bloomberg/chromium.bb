@@ -10165,6 +10165,20 @@
   "Win7 Release (AMD R7 240)": {
     "gtest_tests": [
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "1002:6613",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ],
+          "shards": 4
+        },
+        "test": "angle_deqp_gles2_tests",
+        "use_xvfb": false
+      },
+      {
         "args": [
           "--use-gpu-in-tests"
         ],
