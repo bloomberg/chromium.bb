@@ -1,81 +1,46 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html>
 <head>
-<script src="../../resources/js-test.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 </head>
 <body>
 <script>
-description("Tests RTCPeerConnection [add|remove]Stream.");
+var testRTC = async_test('Tests RTCPeerConnection [add|remove]Stream.');
 
-var stream = null;
-var stream2 = null;
 var pc = null;
+var options = {audio: true, video: true};
+var errorCallback = () => assert_unreached('Stream generation failed.');
 
-function error() {
-    testFailed('Stream generation failed.');
-    finishJSTest();
-}
+navigator.webkitGetUserMedia(options, (stream1) => {
+    navigator.webkitGetUserMedia(options, (stream2) => {
+        assert_false(stream1.id === stream2.id);
 
-function getUserMedia(dictionary, callback) {
-    try {
-        navigator.webkitGetUserMedia(dictionary, callback, error);
-    } catch (e) {
-        testFailed('webkitGetUserMedia threw exception :' + e);
-        finishJSTest();
-    }
-}
+        pc = new webkitRTCPeerConnection(null, null);
 
-function onErroneousNegotiationNeeded() {
-    testFailed('onErroneousNegotiationNeeded was called.');
-    finishJSTest();
-}
+        pc.onnegotiationneeded = (event) => {
+            assert_equals(pc.getStreamById(stream1.id), stream1);
+            assert_equals(pc.getStreamById(stream2.id), null);
 
-function onRemoveStream(event) {
-    testPassed('onRemoveStream was called.');
+            pc.onnegotiationneeded = () => {
+                assert_unreached('onErroneousNegotiationNeeded was called.');
+            };
 
-    shouldBe('pc.getLocalStreams().length', '0');
+            pc.addStream(stream1);
+            assert_equals(pc.getLocalStreams().length, 1);
+            pc.removeStream(stream2);
+            assert_equals(pc.getLocalStreams().length, 1);
 
-    finishJSTest();
-}
+            pc.onnegotiationneeded = (event) => {
+                assert_equals(pc.getLocalStreams().length, 0);
+                testRTC.done();
+            };
+            pc.removeStream(stream1);
+        };
 
-function onAddStream(event) {
-    testPassed('onAddStream was called.');
-
-    shouldBe('pc.getStreamById(stream.id)', 'stream');
-    shouldBe('pc.getStreamById(stream2.id)', 'null');
-
-    pc.onnegotiationneeded = onErroneousNegotiationNeeded;
-    pc.addStream(stream);
-    shouldBe('pc.getLocalStreams().length', '1');
-    pc.removeStream(stream2);
-    shouldBe('pc.getLocalStreams().length', '1');
-
-    pc.onnegotiationneeded = onRemoveStream;
-    pc.removeStream(stream);
-}
-
-function gotStream2(s) {
-    testPassed('Got another stream.');
-    stream2 = s;
-
-    shouldBeFalse("stream.id === stream2.id");
-
-    pc = new webkitRTCPeerConnection(null, null);
-    pc.onnegotiationneeded = onAddStream;
-    pc.addStream(stream);
-}
-
-function gotStream1(s) {
-    testPassed('Got a stream.');
-    stream = s;
-
-    getUserMedia({audio:true, video:true}, gotStream2);
-}
-
-getUserMedia({audio:true, video:true}, gotStream1);
-
-window.jsTestIsAsync = true;
-window.successfullyParsed = true;
+        pc.addStream(stream1);
+    }, errorCallback);
+}, errorCallback);
 </script>
 </body>
 </html>
