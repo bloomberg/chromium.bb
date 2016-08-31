@@ -252,7 +252,7 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
     {"appearancePageTitle", IDS_SETTINGS_APPEARANCE},
     {"exampleDotCom", IDS_SETTINGS_EXAMPLE_DOT_COM},
-    {"getThemes", IDS_SETTINGS_THEMES},
+    {"theme", IDS_SETTINGS_THEME},
     {"resetToDefaultTheme", IDS_SETTINGS_RESET_TO_DEFAULT_THEME},
     {"showHomeButton", IDS_SETTINGS_SHOW_HOME_BUTTON},
     {"showBookmarksBar", IDS_SETTINGS_SHOW_BOOKMARKS_BAR},

@@ -171,8 +171,8 @@
   <message name="IDS_SETTINGS_SET_WALLPAPER" desc="Name of the control which allows the user to set the wallpaper.">
     Wallpaper
   </message>
-  <message name="IDS_SETTINGS_THEMES" desc="Name of the control which allows the user to get themes for the browser.">
-    Themes
+  <message name="IDS_SETTINGS_THEME" desc="Name of the control which allows the user to get a theme for the browser.">
+    Theme
   </message>
   <message name="IDS_SETTINGS_RESET_TO_DEFAULT_THEME" desc="Name of the control which resets the browser theme back to the default theme.">
     Reset to default
