@@ -12,13 +12,8 @@ namespace base {
 class FilePath;
 }
 
-namespace startup_metric_utils {
-struct PreReadOptions;
-}
-
 // Pre-reads |file_path| to avoid touching the disk when the file is actually
-// used. Checks |pre_read_options| to determine how to pre-read the file.
-void PreReadFile(const base::FilePath& file_path,
-                 const startup_metric_utils::PreReadOptions& pre_read_options);
+// used.
+void PreReadFile(const base::FilePath& file_path);
 
 #endif  // CHROME_APP_FILE_PRE_READER_WIN_H_

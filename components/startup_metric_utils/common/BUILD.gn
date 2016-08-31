@@ -4,19 +4,6 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
-source_set("common") {
-  sources = [
-    "pre_read_field_trial_utils_win.cc",
-    "pre_read_field_trial_utils_win.h",
-  ]
-
-  deps = [
-    "//base",
-    "//components/variations",
-    "//ipc",
-  ]
-}
-
 mojom("interfaces") {
   sources = [
     "startup_metric.mojom",

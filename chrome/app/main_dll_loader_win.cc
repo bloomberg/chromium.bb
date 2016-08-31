@@ -42,7 +42,6 @@
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/module_util_win.h"
 #include "chrome/installer/util/util_constants.h"
-#include "components/startup_metric_utils/common/pre_read_field_trial_utils_win.h"
 #include "content/public/app/sandbox_helper_win.h"
 #include "content/public/common/content_switches.h"
 #include "sandbox/win/src/sandbox.h"
@@ -57,15 +56,7 @@ typedef void (*RelaunchChromeBrowserWithNewCommandLineIfNeededFunc)();
 // reference to the loaded module on success, or null on error.
 HMODULE LoadModuleWithDirectory(const base::FilePath& module) {
   ::SetCurrentDirectoryW(module.DirName().value().c_str());
-
-  const startup_metric_utils::PreReadOptions pre_read_options =
-      startup_metric_utils::GetPreReadOptions();
-
-  // If enabled by the PreRead field trial, pre-read the binary to avoid a lot
-  // of random IO.
-  if (pre_read_options.pre_read)
-    PreReadFile(module, pre_read_options);
-
+  PreReadFile(module);
   return ::LoadLibraryExW(module.value().c_str(), nullptr,
                           LOAD_WITH_ALTERED_SEARCH_PATH);
 }

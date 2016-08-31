@@ -30,6 +30,7 @@
 #include "base/path_service.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/run_loop.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -198,6 +199,7 @@
 
 #if defined(OS_WIN)
 #include "base/trace_event/trace_event_etw_export_win.h"
+#include "base/win/registry.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/chrome_browser_main_win.h"
@@ -205,7 +207,6 @@
 #include "chrome/browser/downgrade/user_data_downgrade.h"
 #include "chrome/browser/first_run/try_chrome_dialog_view.h"
 #include "chrome/browser/first_run/upgrade_util_win.h"
-#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/ui/network_profile_bubble.h"
 #include "chrome/browser/win/browser_util.h"
 #include "chrome/browser/win/chrome_select_file_dialog_factory.h"
@@ -213,7 +214,6 @@
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/shell_util.h"
-#include "components/startup_metric_utils/common/pre_read_field_trial_utils_win.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #endif  // defined(OS_WIN)
@@ -737,35 +737,6 @@ class ScopedMainMessageLoopRunEvent {
 
 namespace chrome_browser {
 
-#if defined(OS_WIN)
-// Helper function to setup the pre-read field trial. This function is defined
-// outside of the anonymous namespace to allow it to be friend with
-// ChromeMetricsServiceAccessor.
-void SetupPreReadFieldTrial() {
-  const base::string16 registry_path =
-      BrowserDistribution::GetDistribution()->GetRegistryPath();
-
-  // Register a synthetic field trial with the PreRead group used during the
-  // current startup. This must be done before the first metric log
-  // (metrics::MetricLog) is created. Otherwise, UMA metrics generated during
-  // startup won't be correctly annotated. The current function is always called
-  // before the first metric log is created, as part of
-  // ChromeBrowserMainParts::PreMainMessageLoopRun().
-  startup_metric_utils::RegisterPreReadSyntheticFieldTrial(
-      registry_path,
-      base::Bind(&ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial));
-
-  // Initialize the PreRead options for the current process.
-  startup_metric_utils::InitializePreReadOptions(registry_path);
-
-  // After startup is complete, update the PreRead group in the registry. The
-  // group written in the registry will be used for the next startup.
-  BrowserThread::PostAfterStartupTask(
-      FROM_HERE, content::BrowserThread::GetBlockingPool(),
-      base::Bind(&startup_metric_utils::UpdatePreReadOptions, registry_path));
-}
-#endif  // defined(OS_WIN)
-
 // This error message is not localized because we failed to load the
 // localization data files.
 #if defined(OS_WIN)
@@ -951,7 +922,14 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
 #endif
 
 #if defined(OS_WIN)
-  chrome_browser::SetupPreReadFieldTrial();
+  // Cleanup the PreRead field trial registry key.
+  // TODO(fdoray): Remove this when M56 hits stable.
+  const base::string16 pre_read_field_trial_registry_path =
+      BrowserDistribution::GetDistribution()->GetRegistryPath() +
+      L"\\PreReadFieldTrial";
+  base::win::RegKey(HKEY_CURRENT_USER,
+                    pre_read_field_trial_registry_path.c_str(), KEY_SET_VALUE)
+      .DeleteKey(L"");
 #endif  // defined(OS_WIN)
 }
 

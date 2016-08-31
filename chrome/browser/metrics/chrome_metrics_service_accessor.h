@@ -30,10 +30,6 @@ class ExternalDataUseObserverBridge;
 }
 }
 
-namespace chrome_browser {
-void SetupPreReadFieldTrial();
-}
-
 namespace component_updater {
 class ComponentUpdateService;
 }
@@ -87,7 +83,6 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class ArcSupportHost;
   friend class BrowserProcessImpl;
   friend void chrome::AttemptRestart();
-  friend void chrome_browser::SetupPreReadFieldTrial();
   friend class chrome::android::ExternalDataUseObserverBridge;
   friend class ChromeMetricsServicesManagerClient;
   friend class ChromeRenderMessageFilter;

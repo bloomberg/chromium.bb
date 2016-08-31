@@ -34,7 +34,6 @@
 #include "components/crash/content/app/crashpad.h"
 #include "components/crash/content/app/run_as_crashpad_handler_win.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
-#include "components/startup_metric_utils/common/pre_read_field_trial_utils_win.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 
@@ -213,9 +212,6 @@ int main() {
 
   const std::string process_type =
       command_line->GetSwitchValueASCII(switches::kProcessType);
-
-  startup_metric_utils::InitializePreReadOptions(
-      BrowserDistribution::GetDistribution()->GetRegistryPath());
 
   // Confirm that an explicit prefetch profile is used for all process types
   // except for the browser process. Any new process type will have to assign

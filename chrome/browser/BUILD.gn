@@ -1334,10 +1334,6 @@ split_static_library("browser") {
     "//components/ssl_errors",
     "//components/startup_metric_utils/browser:host",
     "//components/startup_metric_utils/browser:lib",
-
-    # TODO(fdoray): Remove this once the PreRead field trial has expired.
-    # crbug.com/577698
-    "//components/startup_metric_utils/common",
     "//components/storage_monitor",
     "//components/strings",
     "//components/subresource_filter/content/browser",
@@ -1891,7 +1887,6 @@ split_static_library("browser") {
       "//chrome_elf:dll_hash",
       "//components/browser_watcher",
       "//components/browser_watcher:browser_watcher_client",
-      "//components/startup_metric_utils/common",
       "//google_update",
       "//third_party/iaccessible2",
       "//third_party/isimpledom",
