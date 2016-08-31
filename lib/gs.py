@@ -314,7 +314,18 @@ class GSContext(object):
     if os.path.exists(flag):
       return False
     # Flag things now regardless of how the attempt below works out.
-    osutils.Touch(flag)
+    try:
+      osutils.Touch(flag)
+    except IOError as e:
+      # If the gsutil dir was cached previously as root, but now we're
+      # non-root, just flag it and return.
+      if e.errno == errno.EACCES:
+        logging.debug('Skipping gsutil crcmod compile due to permissions')
+        cros_build_lib.SudoRunCommand(['touch', flag],
+                                      debug_level=logging.DEBUG)
+        return False
+      else:
+        raise
 
     # See if the system includes one in which case we're done.
     try:
