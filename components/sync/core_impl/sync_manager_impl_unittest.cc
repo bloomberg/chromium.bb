@@ -221,6 +221,10 @@ int GetTotalNodeCount(UserShare* share, int64_t root) {
   return node.GetTotalNodeCount();
 }
 
+const char kUrl[] = "example.com";
+const char kPasswordValue[] = "secret";
+const char kClientTag[] = "tag";
+
 }  // namespace
 
 class SyncApiTest : public testing::Test {
@@ -517,10 +521,10 @@ TEST_F(SyncApiTest, WriteAndReadPassword) {
 
     WriteNode password_node(&trans);
     WriteNode::InitUniqueByCreationResult result =
-        password_node.InitUniqueByCreation(PASSWORDS, root_node, "foo");
+        password_node.InitUniqueByCreation(PASSWORDS, root_node, kClientTag);
     EXPECT_EQ(WriteNode::INIT_SUCCESS, result);
     sync_pb::PasswordSpecificsData data;
-    data.set_password_value("secret");
+    data.set_password_value(kPasswordValue);
     password_node.SetPasswordSpecifics(data);
   }
   {
@@ -528,10 +532,14 @@ TEST_F(SyncApiTest, WriteAndReadPassword) {
 
     ReadNode password_node(&trans);
     EXPECT_EQ(BaseNode::INIT_OK,
-              password_node.InitByClientTagLookup(PASSWORDS, "foo"));
+              password_node.InitByClientTagLookup(PASSWORDS, kClientTag));
     const sync_pb::PasswordSpecificsData& data =
         password_node.GetPasswordSpecifics();
-    EXPECT_EQ("secret", data.password_value());
+    EXPECT_EQ(kPasswordValue, data.password_value());
+    // Check that nothing has appeared in the unencrypted field.
+    EXPECT_FALSE(password_node.GetEntitySpecifics()
+                     .password()
+                     .has_unencrypted_metadata());
   }
 }
 
@@ -2043,24 +2051,27 @@ TEST_F(SyncManagerTest, UpdatePasswordSetPasswordSpecifics) {
 }
 
 // Passwords have their own handling for encryption. Verify setting a new
-// passphrase updates the data.
+// passphrase updates the data and clears the unencrypted metadta for passwords.
 TEST_F(SyncManagerTest, UpdatePasswordNewPassphrase) {
-  std::string client_tag = "title";
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
   sync_pb::EntitySpecifics entity_specifics;
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     Cryptographer* cryptographer = trans.GetCryptographer();
     sync_pb::PasswordSpecificsData data;
-    data.set_password_value("secret");
+    data.set_password_value(kPasswordValue);
+    entity_specifics.mutable_password()
+        ->mutable_unencrypted_metadata()
+        ->set_url(kUrl);
     cryptographer->Encrypt(
         data, entity_specifics.mutable_password()->mutable_encrypted());
   }
-  MakeServerNode(sync_manager_.GetUserShare(), PASSWORDS, client_tag,
-                 syncable::GenerateSyncableHash(PASSWORDS, client_tag),
+  EXPECT_TRUE(entity_specifics.password().has_unencrypted_metadata());
+  MakeServerNode(sync_manager_.GetUserShare(), PASSWORDS, kClientTag,
+                 syncable::GenerateSyncableHash(PASSWORDS, kClientTag),
                  entity_specifics);
   // New node shouldn't start off unsynced.
-  EXPECT_FALSE(ResetUnsyncedEntry(PASSWORDS, client_tag));
+  EXPECT_FALSE(ResetUnsyncedEntry(PASSWORDS, kClientTag));
 
   // Set a new passphrase. Should set is_unsynced.
   testing::Mock::VerifyAndClearExpectations(&encryption_observer_);
@@ -2068,7 +2079,21 @@ TEST_F(SyncManagerTest, UpdatePasswordNewPassphrase) {
               OnBootstrapTokenUpdated(_, PASSPHRASE_BOOTSTRAP_TOKEN));
   ExpectPassphraseAcceptance();
   SetCustomPassphraseAndCheck("new_passphrase");
-  EXPECT_TRUE(ResetUnsyncedEntry(PASSWORDS, client_tag));
+  {
+    ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    Cryptographer* cryptographer = trans.GetCryptographer();
+    EXPECT_TRUE(cryptographer->is_ready());
+    ReadNode password_node(&trans);
+    EXPECT_EQ(BaseNode::INIT_OK,
+              password_node.InitByClientTagLookup(PASSWORDS, kClientTag));
+    const sync_pb::PasswordSpecificsData& data =
+        password_node.GetPasswordSpecifics();
+    EXPECT_EQ(kPasswordValue, data.password_value());
+    EXPECT_FALSE(password_node.GetEntitySpecifics()
+                     .password()
+                     .has_unencrypted_metadata());
+  }
+  EXPECT_TRUE(ResetUnsyncedEntry(PASSWORDS, kClientTag));
 }
 
 // Passwords have their own handling for encryption. Verify it does not result

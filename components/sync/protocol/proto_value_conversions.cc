@@ -136,6 +136,13 @@ std::unique_ptr<base::DictionaryValue> EncryptedDataToValue(
   return value;
 }
 
+std::unique_ptr<base::DictionaryValue> PasswordSpecificsMetadataToValue(
+    const sync_pb::PasswordSpecificsMetadata& proto) {
+  std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
+  SET_STR(url);
+  return value;
+}
+
 std::unique_ptr<base::DictionaryValue> AppSettingsToValue(
     const sync_pb::AppNotificationSettings& proto) {
   std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
@@ -607,6 +614,7 @@ std::unique_ptr<base::DictionaryValue> PasswordSpecificsToValue(
     const sync_pb::PasswordSpecifics& proto) {
   std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   SET(encrypted, EncryptedDataToValue);
+  SET(unencrypted_metadata, PasswordSpecificsMetadataToValue);
   return value;
 }
 

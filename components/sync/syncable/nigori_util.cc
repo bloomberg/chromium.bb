@@ -13,6 +13,7 @@
 
 #include "base/json/json_writer.h"
 #include "components/sync/base/cryptographer.h"
+#include "components/sync/base/passphrase_type.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/entry.h"
 #include "components/sync/syncable/mutable_entry.h"
@@ -225,6 +226,14 @@ bool UpdateEntryWithEncryption(BaseTransaction* const trans,
       bookmark_specifics->set_title(kEncryptedString);
     }
   }
+
+  if (type == PASSWORDS &&
+      IsExplicitPassphrase(nigori_handler->GetPassphraseType(trans))) {
+    sync_pb::PasswordSpecifics* password_specifics =
+        generated_specifics.mutable_password();
+    password_specifics->clear_unencrypted_metadata();
+  }
+
   entry->PutSpecifics(generated_specifics);
   DVLOG(1) << "Overwriting specifics of type " << ModelTypeToString(type)
            << " and marking for syncing.";
