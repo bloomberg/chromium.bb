@@ -1124,17 +1124,6 @@
       ]
     },
     {
-      "name": "veyron_minnie-cheets",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": true,
-          "leader_board": false,
-          "board_group": "veyron"
-        }
-      ]
-    },
-    {
       "name": "veyron_pinky",
       "configs": [
         {

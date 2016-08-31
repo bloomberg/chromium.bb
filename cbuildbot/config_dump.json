@@ -25908,12 +25908,9 @@
     },
     "veyron_minnie-cheets-release": {
         "_template": "cheets-release",
-        "active_waterfall": "chromeos",
         "boards": [
             "veyron_minnie-cheets"
         ],
-        "buildslave_type": "gce_beefy",
-        "chrome_sdk_build_chrome": false,
         "vm_tests": [],
         "vm_tests_override": null
     },
