@@ -2489,6 +2489,7 @@ if (is_chromeos) {
       "//mash/session:manifest",
       "//mash/task_viewer:manifest",
       "//services/ui:manifest",
+      "//services/ui/ime/test_ime_driver:manifest",
     ]
     packaged_services = [
       "app_driver",
@@ -2496,6 +2497,7 @@ if (is_chromeos) {
       "mash_session",
       "quick_launch",
       "task_viewer",
+      "test_ime_driver",
       "touch_hud",
       "ui",
     ]

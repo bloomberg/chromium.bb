@@ -6,9 +6,10 @@ import("//services/shell/public/cpp/service.gni")
 import("//services/shell/public/service_manifest.gni")
 import("//testing/test.gni")
 
-service("test_ime_driver") {
+source_set("lib") {
   sources = [
-    "main.cc",
+    "test_ime_application.cc",
+    "test_ime_application.h",
     "test_ime_driver.cc",
     "test_ime_driver.h",
   ]
@@ -18,7 +19,20 @@ service("test_ime_driver") {
     "//services/shell/public/cpp",
     "//services/ui/public/cpp",
     "//services/ui/public/interfaces",
-    "//ui/gfx/geometry/mojo",
+  ]
+}
+
+service("test_ime_driver") {
+  sources = [
+    "main.cc",
+  ]
+
+  deps = [
+    ":lib",
+    "//base",
+    "//services/shell/public/cpp",
+    "//services/ui/public/cpp",
+    "//services/ui/public/interfaces",
   ]
 
   data_deps = [

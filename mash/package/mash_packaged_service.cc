@@ -11,6 +11,7 @@
 #include "mash/session/session.h"
 #include "mash/task_viewer/task_viewer.h"
 #include "services/shell/public/cpp/service_context.h"
+#include "services/ui/ime/test_ime_driver/test_ime_application.h"
 #include "services/ui/service.h"
 
 #if defined(OS_LINUX)
@@ -65,6 +66,8 @@ std::unique_ptr<shell::Service> MashPackagedService::CreateService(
     return base::WrapUnique(new mash::quick_launch::QuickLaunch);
   if (name == "mojo:task_viewer")
     return base::WrapUnique(new mash::task_viewer::TaskViewer);
+  if (name == "mojo:test_ime_driver")
+    return base::WrapUnique(new ui::test::TestIMEApplication);
 #if defined(OS_LINUX)
   if (name == "mojo:font_service")
     return base::WrapUnique(new font_service::FontServiceApp);

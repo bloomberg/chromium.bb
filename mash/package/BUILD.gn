@@ -19,6 +19,7 @@ source_set("package") {
     "//services/shell/public/cpp",
     "//services/shell/public/interfaces",
     "//services/ui:lib",
+    "//services/ui/ime/test_ime_driver:lib",
   ]
 
   if (is_linux && !is_android) {

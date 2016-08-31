@@ -22,12 +22,16 @@ class TestInputMethod : public mojom::InputMethod {
   void OnCaretBoundsChanged(const gfx::Rect& caret_bounds) override {}
   void ProcessKeyEvent(std::unique_ptr<Event> key_event) override {
     DCHECK(key_event->IsKeyEvent());
-    mojom::CompositionEventPtr composition_event =
-        mojom::CompositionEvent::New();
-    composition_event->type = mojom::CompositionEventType::INSERT_CHAR;
-    composition_event->key_event = std::move(key_event);
 
-    client_->OnCompositionEvent(std::move(composition_event));
+    if (key_event->AsKeyEvent()->is_char()) {
+      mojom::CompositionEventPtr composition_event =
+          mojom::CompositionEvent::New();
+      composition_event->type = mojom::CompositionEventType::INSERT_CHAR;
+      composition_event->key_event = std::move(key_event);
+      client_->OnCompositionEvent(std::move(composition_event));
+    } else {
+      client_->OnUnhandledEvent(std::move(key_event));
+    }
   };
   void CancelComposition() override {}
 
