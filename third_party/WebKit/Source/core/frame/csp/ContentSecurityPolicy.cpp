@@ -29,6 +29,7 @@
 #include "bindings/core/v8/SourceLocation.h"
 #include "core/dom/DOMStringList.h"
 #include "core/dom/Document.h"
+#include "core/dom/Element.h"
 #include "core/dom/SandboxFlags.h"
 #include "core/events/SecurityPolicyViolationEvent.h"
 #include "core/fetch/IntegrityMetadata.h"
@@ -60,6 +61,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebURLRequest.h"
+#include "wtf/NotFound.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/StringHasher.h"
 #include "wtf/text/ParsingUtilities.h"
@@ -133,6 +135,38 @@ bool ContentSecurityPolicy::isDirectiveName(const String& name)
         || equalIgnoringCase(name, UpgradeInsecureRequests)
         || equalIgnoringCase(name, TreatAsPublicAddress)
         || equalIgnoringCase(name, RequireSRIFor));
+}
+
+bool ContentSecurityPolicy::isNonceableElement(const Element* element)
+{
+    if (!element->fastHasAttribute(HTMLNames::nonceAttr))
+        return false;
+
+    bool nonceable = true;
+
+    // To prevent an attacker from hijacking an existing nonce via a dangling markup injection,
+    // we walk through the attributes of each nonced script element: if their names or values
+    // contain "<script" or "<style", we won't apply the nonce when loading script.
+    //
+    // See http://blog.innerht.ml/csp-2015/#danglingmarkupinjection for an example of the kind
+    // of attack this is aimed at mitigating.
+    DEFINE_STATIC_LOCAL(AtomicString, scriptString, ("<script"));
+    DEFINE_STATIC_LOCAL(AtomicString, styleString, ("<style"));
+    for (const Attribute& attr : element->attributes()) {
+        AtomicString name = attr.localName().lowerASCII();
+        AtomicString value = attr.value().lowerASCII();
+        if (name.find(scriptString) != WTF::kNotFound || name.find(styleString) != WTF::kNotFound
+            || value.find(scriptString) != WTF::kNotFound || value.find(styleString) != WTF::kNotFound) {
+            nonceable = false;
+            break;
+        }
+    }
+
+    UseCounter::count(element->document(), nonceable ? UseCounter::CleanScriptElementWithNonce : UseCounter::PotentiallyInjectedScriptElementWithNonce);
+
+    // This behavior is locked behind the experimental flag for the moment; if we
+    // decide to ship it, drop this check. https://crbug.com/639293
+    return !RuntimeEnabledFeatures::experimentalContentSecurityPolicyFeaturesEnabled() || nonceable;
 }
 
 static UseCounter::Feature getUseCounterType(ContentSecurityPolicyHeaderType type)

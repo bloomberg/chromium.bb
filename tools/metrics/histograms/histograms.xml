@@ -80275,6 +80275,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1537" label="PointerEnterLeaveFiredWhileCaptured"/>
   <int value="1538" label="PointerOverOutFiredWhileCaptured"/>
   <int value="1539" label="DraggableAttribute"/>
+  <int value="1540" label="CleanScriptElementWithNonce"/>
+  <int value="1541" label="PotentiallyInjectedScriptElementWithNonce"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

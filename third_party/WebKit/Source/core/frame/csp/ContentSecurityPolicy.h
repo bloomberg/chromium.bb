@@ -57,6 +57,7 @@ class ConsoleMessage;
 class CSPDirectiveList;
 class CSPSource;
 class Document;
+class Element;
 class FrameLoaderClient;
 class KURL;
 class ResourceRequest;
@@ -279,6 +280,8 @@ public:
     static bool shouldBypassMainWorld(const ExecutionContext*);
 
     static bool isDirectiveName(const String&);
+
+    static bool isNonceableElement(const Element*);
 
     Document* document() const;
 

@@ -302,7 +302,8 @@ bool ScriptLoader::fetchScript(const String& sourceUrl, FetchRequest::DeferOptio
         // Skip fetch-related CSP checks if dynamically injected script is whitelisted and this script is not parser-inserted.
         bool scriptPassesCSPDynamic = (!isParserInserted() && elementDocument->contentSecurityPolicy()->allowDynamic());
 
-        request.setContentSecurityPolicyNonce(m_element->fastGetAttribute(HTMLNames::nonceAttr));
+        if (ContentSecurityPolicy::isNonceableElement(m_element.get()))
+            request.setContentSecurityPolicyNonce(m_element->fastGetAttribute(HTMLNames::nonceAttr));
 
         if (scriptPassesCSPDynamic) {
             UseCounter::count(elementDocument->frame(), UseCounter::ScriptPassesCSPDynamic);
@@ -373,7 +374,8 @@ bool ScriptLoader::executeScript(const ScriptSourceCode& sourceCode)
         || csp->allowScriptWithHash(sourceCode.source(), ContentSecurityPolicy::InlineType::Block)
         || (!isParserInserted() && csp->allowDynamic());
 
-    if (!m_isExternalScript && (!shouldBypassMainWorldCSP && !csp->allowInlineScript(elementDocument->url(), m_element->fastGetAttribute(HTMLNames::nonceAttr), m_startLineNumber, sourceCode.source()))) {
+    AtomicString nonce = ContentSecurityPolicy::isNonceableElement(m_element.get()) ? m_element->fastGetAttribute(HTMLNames::nonceAttr) : AtomicString();
+    if (!m_isExternalScript && (!shouldBypassMainWorldCSP && !csp->allowInlineScript(elementDocument->url(), nonce, m_startLineNumber, sourceCode.source()))) {
         return false;
     }
 
