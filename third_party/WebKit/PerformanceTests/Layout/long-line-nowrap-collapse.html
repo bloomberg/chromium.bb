@@ -15,7 +15,7 @@
 function run() {
   var test = new LineLayoutPerfTest(container);
   test.spanCount = 0;
-  test.lineCount = 800;
+  test.lineCount = 10000;
   test.wordSeparator = '  '; // Make all word separators collapsible.
   test.run('Measures performance of "white-space: nowrap" with collapsible spaces.');
 }

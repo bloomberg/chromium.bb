@@ -427,8 +427,39 @@ void LayoutBlockFlow::setMarginsForRubyRun(BidiRun* run, LayoutRubyRun* layoutRu
     setMarginEndForChild(*layoutRubyRun, LayoutUnit(-endOverhang));
 }
 
+static inline size_t findWordMeasurement(LineLayoutText layoutText, int offset,
+    WordMeasurements& wordMeasurements, size_t lastIndex)
+{
+    // In LTR, lastIndex should match since the order of BidiRun (visual) and
+    // WordMeasurement (logical) are the same.
+    size_t size = wordMeasurements.size();
+    if (lastIndex < size) {
+        const WordMeasurement& wordMeasurement = wordMeasurements[lastIndex];
+        if (wordMeasurement.layoutText == layoutText && wordMeasurement.startOffset == offset)
+            return lastIndex;
+    }
+
+    // In RTL, scan the whole array because they are not the same.
+    for (size_t i = 0; i < size; ++i) {
+        const WordMeasurement& wordMeasurement = wordMeasurements[i];
+        if (wordMeasurement.layoutText != layoutText)
+            continue;
+        if (wordMeasurement.startOffset == offset)
+            return i;
+        if (wordMeasurement.startOffset > offset)
+            break;
+    }
+
+    // In RTL with space collpasing or in LTR/RTL mixed lines, there can be no
+    // matches because spaces are handled differently in BidiRun and
+    // WordMeasurement. This can cause slight performance hit and slight
+    // differences in glyph positions since we re-measure the whole run.
+    return size;
+}
+
 static inline void setLogicalWidthForTextRun(RootInlineBox* lineBox, BidiRun* run, LineLayoutText layoutText, LayoutUnit xPos, const LineInfo& lineInfo,
-    GlyphOverflowAndFallbackFontsMap& textBoxDataMap, VerticalPositionCache& verticalPositionCache, WordMeasurements& wordMeasurements)
+    GlyphOverflowAndFallbackFontsMap& textBoxDataMap, VerticalPositionCache& verticalPositionCache, WordMeasurements& wordMeasurements,
+    size_t& wordMeasurementsIndex)
 {
     HashSet<const SimpleFontData*> fallbackFonts;
     GlyphOverflow glyphOverflow;
@@ -454,12 +485,13 @@ static inline void setLogicalWidthForTextRun(RootInlineBox* lineBox, BidiRun* ru
 
     if (canUseCachedWordMeasurements) {
         int lastEndOffset = run->m_start;
-        for (size_t i = 0, size = wordMeasurements.size(); i < size && lastEndOffset < run->m_stop; ++i) {
+        size_t i = findWordMeasurement(layoutText, lastEndOffset, wordMeasurements, wordMeasurementsIndex);
+        for (size_t size = wordMeasurements.size(); i < size && lastEndOffset < run->m_stop; ++i) {
             const WordMeasurement& wordMeasurement = wordMeasurements[i];
             if (wordMeasurement.startOffset == wordMeasurement.endOffset)
                 continue;
             if (wordMeasurement.layoutText != layoutText || wordMeasurement.startOffset != lastEndOffset || wordMeasurement.endOffset > run->m_stop)
-                continue;
+                break;
 
             lastEndOffset = wordMeasurement.endOffset;
             if (kerningIsEnabled && lastEndOffset == run->m_stop) {
@@ -479,6 +511,7 @@ static inline void setLogicalWidthForTextRun(RootInlineBox* lineBox, BidiRun* ru
                     fallbackFonts.add(*it);
             }
         }
+        wordMeasurementsIndex = i;
         if (lastEndOffset != run->m_stop) {
             // If we don't have enough cached data, we'll measure the run again.
             canUseCachedWordMeasurements = false;
@@ -620,6 +653,7 @@ BidiRun* LayoutBlockFlow::computeInlineDirectionPositionsForSegment(RootInlineBo
     TextJustify textJustify = style()->getTextJustify();
 
     BidiRun* r = firstRun;
+    size_t wordMeasurementsIndex = 0;
     for (; r; r = r->next()) {
         if (!r->m_box || r->m_lineLayoutItem.isOutOfFlowPositioned() || r->m_box->isLineBreak()) {
             continue; // Positioned objects are only participating to figure out their
@@ -640,7 +674,7 @@ BidiRun* LayoutBlockFlow::computeInlineDirectionPositionsForSegment(RootInlineBo
                 needsWordSpacing = !isSpaceOrNewline(rt.characterAt(r->m_stop - 1));
             }
 
-            setLogicalWidthForTextRun(lineBox, r, rt, totalLogicalWidth, lineInfo, textBoxDataMap, verticalPositionCache, wordMeasurements);
+            setLogicalWidthForTextRun(lineBox, r, rt, totalLogicalWidth, lineInfo, textBoxDataMap, verticalPositionCache, wordMeasurements, wordMeasurementsIndex);
         } else {
             isAfterExpansion = false;
             if (!r->m_lineLayoutItem.isLayoutInline()) {
