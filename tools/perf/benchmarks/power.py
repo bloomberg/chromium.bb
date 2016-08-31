@@ -190,3 +190,14 @@ class PowerScrollingTrivialPage(perf_benchmark.PerfBenchmark):
   @classmethod
   def Name(cls):
     return 'power.trivial_pages'
+
+@benchmark.Enabled('mac')
+class PowerSteadyStatePages(perf_benchmark.PerfBenchmark):
+  """Measure power consumption for real web sites in steady state (no user
+  interactions)."""
+  test = power.QuiescentPower
+  page_set = page_sets.IdleAfterLoadingStories
+
+  @classmethod
+  def Name(cls):
+    return 'power.steady_state'
