@@ -15,7 +15,7 @@ have interfaces for both, e.g. `BluetoothAdapter` & `BluetoothDevice`.
 | Android  |   no    |     yes     |
 | ChromeOS |   yes   |     yes     |
 | Linux    |   yes   |     yes     |
-| Mac OSX  |   yes   |     yes     |
+| Mac      |   yes   |     yes     |
 | Windows  |   some  |    nearly   |
 
 ChromeOS and Linux are supported via BlueZ, see `*_bluez` files.
@@ -29,14 +29,14 @@ armansito@chromium.org, and rpaquay@chromium.org. They no longer contribute to
 chromium fulltime. They were responsible for support for ChromeOS Bluetooth
 features and the Chrome Apps APIs:
 
-* [bluetooth](https://developer.chrome.com/apps/bluetooth)
-* [bluetoothLowEnergy](https://developer.chrome.com/apps/bluetoothLowEnergy)
-* [bluetoothSocket](https://developer.chrome.com/apps/bluetoothSocket)
+* [chrome.bluetooth](https://developer.chrome.com/apps/bluetooth)
+* [chrome.bluetoothLowEnergy](https://developer.chrome.com/apps/bluetoothLowEnergy)
+* [chrome.bluetoothSocket](https://developer.chrome.com/apps/bluetoothSocket)
 
 Active development in 2015 & 2016 is focused on enabling GATT features for:
 
 * [Web Bluetooth](https://crbug.com/419413)
-* Perhipheral mode for ChromeOS.
+* Peripheral mode for ChromeOS.
 
 Known future work is tracked in the
 [Refactoring meta issue](https://crbug.com/580406).
