@@ -67,7 +67,7 @@ private:
         void fontLoaded(bool isInterventionTriggered, bool isLoadedFromNetwork);
         void longLimitExceeded(bool isInterventionTriggered);
         void recordFallbackTime(const FontResource*);
-        void recordRemoteFont(const FontResource*);
+        void recordRemoteFont(const FontResource*, bool isLoadedFromMemoryCache);
         bool hadBlankText() { return m_blankPaintTime; }
     private:
         void recordLoadTimeHistogram(const FontResource*, int duration);

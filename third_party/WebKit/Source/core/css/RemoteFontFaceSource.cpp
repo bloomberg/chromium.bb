@@ -116,7 +116,7 @@ bool RemoteFontFaceSource::isValid() const
 
 void RemoteFontFaceSource::notifyFinished(Resource*)
 {
-    m_histograms.recordRemoteFont(m_font.get());
+    m_histograms.recordRemoteFont(m_font.get(), m_isLoadedFromMemoryCache);
     m_histograms.fontLoaded(m_isInterventionTriggered, !m_isLoadedFromMemoryCache && !m_font->url().protocolIsData() && !m_font->response().wasCached());
 
     m_font->ensureCustomFontData();
@@ -260,16 +260,17 @@ void RemoteFontFaceSource::FontLoadHistograms::recordFallbackTime(const FontReso
     m_blankPaintTime = -1;
 }
 
-void RemoteFontFaceSource::FontLoadHistograms::recordRemoteFont(const FontResource* font)
+void RemoteFontFaceSource::FontLoadHistograms::recordRemoteFont(const FontResource* font, bool isLoadedFromMemoryCache)
 {
     if (m_loadStartTime > 0 && font && !font->isLoading()) {
         int duration = static_cast<int>(currentTimeMS() - m_loadStartTime);
         recordLoadTimeHistogram(font, duration);
         m_loadStartTime = -1;
 
-        enum { Miss, Hit, DataUrl, CacheHitEnumMax };
+        enum { Miss, DiskHit, DataUrl, MemoryHit, CacheHitEnumMax };
         int histogramValue = font->url().protocolIsData() ? DataUrl
-            : font->response().wasCached() ? Hit
+            : isLoadedFromMemoryCache ? MemoryHit
+            : font->response().wasCached() ? DiskHit
             : Miss;
         DEFINE_STATIC_LOCAL(EnumerationHistogram, cacheHitHistogram, ("WebFont.CacheHit", CacheHitEnumMax));
         cacheHitHistogram.count(histogramValue);

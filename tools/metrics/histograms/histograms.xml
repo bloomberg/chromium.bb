@@ -97818,8 +97818,9 @@ To add a new entry, add it with any value and run test to compute valid value.
 
 <enum name="WebFontCacheHit" type="int">
   <int value="0" label="Miss"/>
-  <int value="1" label="Hit"/>
+  <int value="1" label="Hit disk cache"/>
   <int value="2" label="Served from data URL"/>
+  <int value="3" label="Hit memory cache"/>
 </enum>
 
 <enum name="WebFontDiskCacheHit" type="int">
