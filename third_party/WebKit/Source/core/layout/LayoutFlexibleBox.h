@@ -59,6 +59,7 @@ public:
     void paintChildren(const PaintInfo&, const LayoutPoint&) const final;
 
     bool isHorizontalFlow() const;
+    virtual LayoutObject* layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope&) { return nullptr; }
 
     const OrderIterator& orderIterator() const { return m_orderIterator; }
 
@@ -162,7 +163,7 @@ private:
     void updateAutoMarginsInMainAxis(LayoutBox& child, LayoutUnit autoMarginOffset);
     bool hasAutoMarginsInCrossAxis(const LayoutBox& child) const;
     bool updateAutoMarginsInCrossAxis(LayoutBox& child, LayoutUnit availableAlignmentSpace);
-    void repositionLogicalHeightDependentFlexItems(Vector<LineContext>&);
+    void repositionLogicalHeightDependentFlexItems(Vector<LineContext>&, LayoutObject* childToExclude);
     LayoutUnit clientLogicalBottomAfterRepositioning();
 
     LayoutUnit availableAlignmentSpaceForChild(LayoutUnit lineCrossAxisExtent, const LayoutBox& child);
@@ -175,7 +176,7 @@ private:
     LayoutUnit adjustChildSizeForAspectRatioCrossAxisMinAndMax(const LayoutBox& child, LayoutUnit childSize);
     FlexItem constructFlexItem(LayoutBox& child, ChildLayoutType);
     // The hypothetical main size of an item is the flex base size clamped according to its min and max main size properties
-    bool computeNextFlexLine(OrderedFlexItemList& orderedChildren, LayoutUnit& sumFlexBaseSize, double& totalFlexGrow, double& totalFlexShrink, double& totalWeightedFlexShrink, LayoutUnit& sumHypotheticalMainSize, bool relayoutChildren);
+    bool computeNextFlexLine(OrderedFlexItemList& orderedChildren, LayoutUnit& sumFlexBaseSize, double& totalFlexGrow, double& totalFlexShrink, double& totalWeightedFlexShrink, LayoutUnit& sumHypotheticalMainSize, bool relayoutChildren, LayoutObject* childToExclude);
 
     void freezeInflexibleItems(FlexSign, OrderedFlexItemList& children, LayoutUnit& remainingFreeSpace, double& totalFlexGrow, double& totalFlexShrink, double& totalWeightedFlexShrink);
     bool resolveFlexibleLengths(FlexSign, OrderedFlexItemList&, LayoutUnit initialFreeSpace, LayoutUnit& remainingFreeSpace, double& totalFlexGrow, double& totalFlexShrink, double& totalWeightedFlexShrink);
@@ -188,7 +189,7 @@ private:
     void layoutAndPlaceChildren(LayoutUnit& crossAxisOffset, const OrderedFlexItemList&, LayoutUnit availableFreeSpace, bool relayoutChildren, SubtreeLayoutScope&, Vector<LineContext>&);
     void layoutColumnReverse(const OrderedFlexItemList&, LayoutUnit crossAxisOffset, LayoutUnit availableFreeSpace);
     void alignFlexLines(Vector<LineContext>&);
-    void alignChildren(const Vector<LineContext>&);
+    void alignChildren(const Vector<LineContext>&, LayoutObject* childToExclude);
     void applyStretchAlignmentToChild(LayoutBox& child, LayoutUnit lineCrossAxisExtent);
     void flipForRightToLeftColumn();
     void flipForWrapReverse(const Vector<LineContext>&, LayoutUnit crossAxisStartEdge);

@@ -309,6 +309,13 @@ LayoutGrid::~LayoutGrid()
 {
 }
 
+LayoutGrid* LayoutGrid::createAnonymous(Document* document)
+{
+    LayoutGrid* layoutGrid = new LayoutGrid(nullptr);
+    layoutGrid->setDocumentForAnonymous(document);
+    return layoutGrid;
+}
+
 void LayoutGrid::addChild(LayoutObject* newChild, LayoutObject* beforeChild)
 {
     LayoutBlock::addChild(newChild, beforeChild);
