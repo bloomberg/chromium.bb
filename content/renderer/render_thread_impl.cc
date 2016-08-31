@@ -287,8 +287,8 @@ class WebThreadForCompositor : public WebThreadImplForWorkerScheduler {
   // WebThreadImplForWorkerScheduler:
   std::unique_ptr<blink::scheduler::WorkerScheduler> CreateWorkerScheduler()
       override {
-    return base::WrapUnique(
-        new blink::scheduler::CompositorWorkerScheduler(thread()));
+    return base::MakeUnique<blink::scheduler::CompositorWorkerScheduler>(
+        thread());
   }
 
   DISALLOW_COPY_AND_ASSIGN(WebThreadForCompositor);
@@ -1576,8 +1576,8 @@ blink::scheduler::RendererScheduler* RenderThreadImpl::GetRendererScheduler() {
 
 std::unique_ptr<cc::BeginFrameSource>
 RenderThreadImpl::CreateExternalBeginFrameSource(int routing_id) {
-  return base::WrapUnique(new CompositorExternalBeginFrameSource(
-      compositor_message_filter_.get(), sync_message_filter(), routing_id));
+  return base::MakeUnique<CompositorExternalBeginFrameSource>(
+      compositor_message_filter_.get(), sync_message_filter(), routing_id);
 }
 
 cc::ImageSerializationProcessor*
@@ -1815,9 +1815,9 @@ RenderThreadImpl::CreateCompositorOutputSurface(
         cc::VulkanInProcessContextProvider::Create();
     if (vulkan_context_provider) {
       DCHECK(!layout_test_mode());
-      return base::WrapUnique(new CompositorOutputSurface(
+      return base::MakeUnique<CompositorOutputSurface>(
           routing_id, output_surface_id, std::move(vulkan_context_provider),
-          std::move(frame_swap_message_queue)));
+          std::move(frame_swap_message_queue));
     }
   }
 
@@ -1838,9 +1838,9 @@ RenderThreadImpl::CreateCompositorOutputSurface(
 
   if (use_software) {
     DCHECK(!layout_test_mode());
-    return base::WrapUnique(new CompositorOutputSurface(
+    return base::MakeUnique<CompositorOutputSurface>(
         routing_id, output_surface_id, nullptr, nullptr,
-        std::move(frame_swap_message_queue)));
+        std::move(frame_swap_message_queue));
   }
 
   scoped_refptr<ContextProviderCommandBuffer> worker_context_provider =
@@ -1890,16 +1890,16 @@ RenderThreadImpl::CreateCompositorOutputSurface(
 
 #if defined(OS_ANDROID)
   if (sync_compositor_message_filter_) {
-    return base::WrapUnique(new SynchronousCompositorOutputSurface(
+    return base::MakeUnique<SynchronousCompositorOutputSurface>(
         std::move(context_provider), std::move(worker_context_provider),
         routing_id, output_surface_id, sync_compositor_message_filter_.get(),
-        std::move(frame_swap_message_queue)));
+        std::move(frame_swap_message_queue));
   }
 #endif
 
-  return base::WrapUnique(new CompositorOutputSurface(
+  return base::MakeUnique<CompositorOutputSurface>(
       routing_id, output_surface_id, std::move(context_provider),
-      std::move(worker_context_provider), std::move(frame_swap_message_queue)));
+      std::move(worker_context_provider), std::move(frame_swap_message_queue));
 }
 
 std::unique_ptr<cc::SwapPromise>

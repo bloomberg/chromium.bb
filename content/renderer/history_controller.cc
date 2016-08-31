@@ -98,7 +98,7 @@ bool HistoryController::GoToEntry(
     if (!render_frame)
       continue;
     render_frame->SetPendingNavigationParams(
-        base::WrapUnique(new NavigationParams(*navigation_params_.get())));
+        base::MakeUnique<NavigationParams>(*navigation_params_.get()));
     WebURLRequest request = frame->toWebLocalFrame()->requestFromHistoryItem(
         item.second, cache_policy);
     frame->toWebLocalFrame()->load(
@@ -113,7 +113,7 @@ bool HistoryController::GoToEntry(
     if (!render_frame)
       continue;
     render_frame->SetPendingNavigationParams(
-        base::WrapUnique(new NavigationParams(*navigation_params_.get())));
+        base::MakeUnique<NavigationParams>(*navigation_params_.get()));
     WebURLRequest request = frame->toWebLocalFrame()->requestFromHistoryItem(
         item.second, cache_policy);
     frame->toWebLocalFrame()->load(
@@ -304,7 +304,7 @@ WebHistoryItem HistoryController::GetItemForNewChildFrame(
     RenderFrameImpl* frame) const {
   if (navigation_params_.get()) {
     frame->SetPendingNavigationParams(
-        base::WrapUnique(new NavigationParams(*navigation_params_.get())));
+        base::MakeUnique<NavigationParams>(*navigation_params_.get()));
   }
 
   if (!current_entry_)

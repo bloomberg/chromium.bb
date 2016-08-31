@@ -199,7 +199,7 @@ void FrameSwapMessageQueue::DrainMessages(
 
 std::unique_ptr<FrameSwapMessageQueue::SendMessageScope>
 FrameSwapMessageQueue::AcquireSendMessageScope() {
-  return base::WrapUnique(new SendMessageScopeImpl(&lock_));
+  return base::MakeUnique<SendMessageScopeImpl>(&lock_);
 }
 
 // static

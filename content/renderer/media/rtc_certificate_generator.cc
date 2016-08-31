@@ -89,11 +89,12 @@ class RTCCertificateGeneratorRequest
         rtc::RTCCertificateGenerator::GenerateCertificate(
             WebRTCKeyParamsToKeyParams(key_params), expires_ms);
 
-    main_thread_->PostTask(FROM_HERE, base::Bind(
-        &RTCCertificateGeneratorRequest::DoCallbackOnMainThread,
-        this,
-        base::Passed(std::move(observer)),
-        base::Passed(base::WrapUnique(new RTCCertificate(certificate)))));
+    main_thread_->PostTask(
+        FROM_HERE,
+        base::Bind(
+            &RTCCertificateGeneratorRequest::DoCallbackOnMainThread, this,
+            base::Passed(std::move(observer)),
+            base::Passed(base::MakeUnique<RTCCertificate>(certificate))));
   }
 
   void DoCallbackOnMainThread(

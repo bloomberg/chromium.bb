@@ -65,7 +65,7 @@ class FrameSwapMessageQueueTest : public testing::Test {
   }
 
   std::unique_ptr<IPC::Message> CloneMessage(const IPC::Message& other) {
-    return base::WrapUnique(new IPC::Message(other));
+    return base::MakeUnique<IPC::Message>(other);
   }
 
   void TestDidNotSwap(cc::SwapPromise::DidNotSwapReason reason);
@@ -264,24 +264,24 @@ class NotifiesDeletionMessage : public IPC::Message {
 
 TEST_F(FrameSwapMessageQueueTest, TestDeletesNextSwapMessage) {
   bool message_deleted = false;
-  QueueNextSwapMessage(base::WrapUnique(
-      new NotifiesDeletionMessage(&message_deleted, first_message_)));
+  QueueNextSwapMessage(base::MakeUnique<NotifiesDeletionMessage>(
+      &message_deleted, first_message_));
   queue_ = NULL;
   ASSERT_TRUE(message_deleted);
 }
 
 TEST_F(FrameSwapMessageQueueTest, TestDeletesVisualStateMessage) {
   bool message_deleted = false;
-  QueueVisualStateMessage(1, base::WrapUnique(new NotifiesDeletionMessage(
-                                 &message_deleted, first_message_)));
+  QueueVisualStateMessage(1, base::MakeUnique<NotifiesDeletionMessage>(
+                                 &message_deleted, first_message_));
   queue_ = NULL;
   ASSERT_TRUE(message_deleted);
 }
 
 TEST_F(FrameSwapMessageQueueTest, TestDeletesQueuedVisualStateMessage) {
   bool message_deleted = false;
-  QueueVisualStateMessage(1, base::WrapUnique(new NotifiesDeletionMessage(
-                                 &message_deleted, first_message_)));
+  QueueVisualStateMessage(1, base::MakeUnique<NotifiesDeletionMessage>(
+                                 &message_deleted, first_message_));
   queue_->DidActivate(1);
   queue_->DidSwap(1);
   queue_ = NULL;

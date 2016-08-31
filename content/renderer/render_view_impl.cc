@@ -792,14 +792,14 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
     main_render_frame_->Initialize();
 
 #if defined(OS_ANDROID)
-  content_detectors_.push_back(base::WrapUnique(new AddressDetector()));
+  content_detectors_.push_back(base::MakeUnique<AddressDetector>());
   const std::string& contry_iso =
       params.renderer_preferences.network_contry_iso;
   if (!contry_iso.empty()) {
     content_detectors_.push_back(
-        base::WrapUnique(new PhoneNumberDetector(contry_iso)));
+        base::MakeUnique<PhoneNumberDetector>(contry_iso));
   }
-  content_detectors_.push_back(base::WrapUnique(new EmailDetector()));
+  content_detectors_.push_back(base::MakeUnique<EmailDetector>());
 #endif
 
   // If this is a popup, we must wait for the CreatingNew_ACK message before

@@ -122,9 +122,9 @@ void PushMessagingDispatcher::OnSubscribeFromDocumentSuccess(
       subscription_callbacks_.Lookup(request_id);
   DCHECK(callbacks);
 
-  callbacks->onSuccess(base::WrapUnique(new blink::WebPushSubscription(
+  callbacks->onSuccess(base::MakeUnique<blink::WebPushSubscription>(
       endpoint, options.user_visible_only,
-      blink::WebString::fromLatin1(options.sender_info), p256dh, auth)));
+      blink::WebString::fromLatin1(options.sender_info), p256dh, auth));
 
   subscription_callbacks_.Remove(request_id);
 }

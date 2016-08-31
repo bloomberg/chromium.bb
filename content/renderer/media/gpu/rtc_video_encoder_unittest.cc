@@ -80,8 +80,8 @@ class RTCVideoEncoderTest
 
   void CreateEncoder(webrtc::VideoCodecType codec_type) {
     DVLOG(3) << __FUNCTION__;
-    rtc_encoder_ = base::WrapUnique(
-        new RTCVideoEncoder(codec_type, mock_gpu_factories_.get()));
+    rtc_encoder_ = base::MakeUnique<RTCVideoEncoder>(codec_type,
+                                                     mock_gpu_factories_.get());
   }
 
   // media::VideoEncodeAccelerator implementation.

@@ -110,7 +110,7 @@ void InputEventFilter::DidStartFlinging(int routing_id) {
 
 void InputEventFilter::DidStopFlinging(int routing_id) {
   SetIsFlingingInMainThreadEventQueue(routing_id, false);
-  SendMessage(base::WrapUnique(new InputHostMsg_DidStopFlinging(routing_id)));
+  SendMessage(base::MakeUnique<InputHostMsg_DidStopFlinging>(routing_id));
 }
 
 void InputEventFilter::NotifyInputEventHandled(int routing_id,

@@ -123,8 +123,7 @@ ContentRendererPepperHostFactory::CreateResourceHost(
     case PpapiHostMsg_Compositor_Create::ID: {
       if (!CanUseCompositorAPI(host_, instance))
         return nullptr;
-      return base::WrapUnique(
-          new PepperCompositorHost(host_, instance, resource));
+      return base::MakeUnique<PepperCompositorHost>(host_, instance, resource);
     }
     case PpapiHostMsg_FileRef_CreateForFileAPI::ID: {
       PP_Resource file_system;
@@ -134,8 +133,8 @@ ContentRendererPepperHostFactory::CreateResourceHost(
         NOTREACHED();
         return nullptr;
       }
-      return base::WrapUnique(new PepperFileRefRendererHost(
-          host_, instance, resource, file_system, internal_path));
+      return base::MakeUnique<PepperFileRefRendererHost>(
+          host_, instance, resource, file_system, internal_path);
     }
     case PpapiHostMsg_FileSystem_Create::ID: {
       PP_FileSystemType file_system_type;
@@ -144,8 +143,8 @@ ContentRendererPepperHostFactory::CreateResourceHost(
         NOTREACHED();
         return nullptr;
       }
-      return base::WrapUnique(new PepperFileSystemHost(
-          host_, instance, resource, file_system_type));
+      return base::MakeUnique<PepperFileSystemHost>(host_, instance, resource,
+                                                    file_system_type);
     }
     case PpapiHostMsg_Graphics2D_Create::ID: {
       PP_Size size;
@@ -174,32 +173,31 @@ ContentRendererPepperHostFactory::CreateResourceHost(
           host_, instance, resource, size, is_always_opaque, image_data));
     }
     case PpapiHostMsg_URLLoader_Create::ID:
-      return base::WrapUnique(
-          new PepperURLLoaderHost(host_, false, instance, resource));
+      return base::MakeUnique<PepperURLLoaderHost>(host_, false, instance,
+                                                   resource);
     case PpapiHostMsg_VideoDecoder_Create::ID:
-      return base::WrapUnique(
-          new PepperVideoDecoderHost(host_, instance, resource));
+      return base::MakeUnique<PepperVideoDecoderHost>(host_, instance,
+                                                      resource);
     case PpapiHostMsg_VideoEncoder_Create::ID:
-      return base::WrapUnique(
-          new PepperVideoEncoderHost(host_, instance, resource));
+      return base::MakeUnique<PepperVideoEncoderHost>(host_, instance,
+                                                      resource);
     case PpapiHostMsg_WebSocket_Create::ID:
-      return base::WrapUnique(
-          new PepperWebSocketHost(host_, instance, resource));
+      return base::MakeUnique<PepperWebSocketHost>(host_, instance, resource);
 #if defined(ENABLE_WEBRTC)
     case PpapiHostMsg_MediaStreamVideoTrack_Create::ID:
-      return base::WrapUnique(
-          new PepperMediaStreamVideoTrackHost(host_, instance, resource));
+      return base::MakeUnique<PepperMediaStreamVideoTrackHost>(host_, instance,
+                                                               resource);
     // These private MediaStream interfaces are exposed as if they were public
     // so they can be used by NaCl plugins. However, they are available only
     // for whitelisted apps.
     case PpapiHostMsg_VideoDestination_Create::ID:
       if (CanUseMediaStreamAPI(host_, instance))
-        return base::WrapUnique(
-            new PepperVideoDestinationHost(host_, instance, resource));
+        return base::MakeUnique<PepperVideoDestinationHost>(host_, instance,
+                                                            resource);
     case PpapiHostMsg_VideoSource_Create::ID:
       if (CanUseMediaStreamAPI(host_, instance))
-        return base::WrapUnique(
-            new PepperVideoSourceHost(host_, instance, resource));
+        return base::MakeUnique<PepperVideoSourceHost>(host_, instance,
+                                                       resource);
 #endif  // defined(ENABLE_WEBRTC)
   }
 
@@ -207,14 +205,14 @@ ContentRendererPepperHostFactory::CreateResourceHost(
   if (GetPermissions().HasPermission(ppapi::PERMISSION_DEV)) {
     switch (message.type()) {
       case PpapiHostMsg_AudioEncoder_Create::ID:
-        return base::WrapUnique(
-            new PepperAudioEncoderHost(host_, instance, resource));
+        return base::MakeUnique<PepperAudioEncoderHost>(host_, instance,
+                                                        resource);
       case PpapiHostMsg_AudioInput_Create::ID:
-        return base::WrapUnique(
-            new PepperAudioInputHost(host_, instance, resource));
+        return base::MakeUnique<PepperAudioInputHost>(host_, instance,
+                                                      resource);
       case PpapiHostMsg_FileChooser_Create::ID:
-        return base::WrapUnique(
-            new PepperFileChooserHost(host_, instance, resource));
+        return base::MakeUnique<PepperFileChooserHost>(host_, instance,
+                                                       resource);
       case PpapiHostMsg_VideoCapture_Create::ID: {
         std::unique_ptr<PepperVideoCaptureHost> host(
             new PepperVideoCaptureHost(host_, instance, resource));

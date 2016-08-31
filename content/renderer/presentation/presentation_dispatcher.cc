@@ -386,8 +386,8 @@ void PresentationDispatcher::OnSessionCreated(
 
   DCHECK(!session_info.is_null());
   presentation_service_->ListenForSessionMessages(session_info.Clone());
-  callback->onSuccess(base::WrapUnique(
-      new PresentationConnectionClient(std::move(session_info))));
+  callback->onSuccess(
+      base::MakeUnique<PresentationConnectionClient>(std::move(session_info)));
 }
 
 void PresentationDispatcher::OnConnectionStateChanged(
