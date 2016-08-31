@@ -456,8 +456,7 @@ std::unique_ptr<ComponentUpdateService> ComponentUpdateServiceFactory(
     const scoped_refptr<Configurator>& config) {
   DCHECK(config);
   auto update_client = update_client::UpdateClientFactory(config);
-  return base::WrapUnique(
-      new CrxUpdateService(config, std::move(update_client)));
+  return base::MakeUnique<CrxUpdateService>(config, std::move(update_client));
 }
 
 }  // namespace component_updater

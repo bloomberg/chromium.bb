@@ -21,8 +21,7 @@ CompositorOverlayCandidateValidatorAndroid::
 
 void CompositorOverlayCandidateValidatorAndroid::GetStrategies(
     cc::OverlayProcessor::StrategyList* strategies) {
-  strategies->push_back(
-      base::WrapUnique(new cc::OverlayStrategyUnderlay(this)));
+  strategies->push_back(base::MakeUnique<cc::OverlayStrategyUnderlay>(this));
 }
 
 void CompositorOverlayCandidateValidatorAndroid::CheckOverlaySupport(

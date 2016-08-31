@@ -228,7 +228,7 @@ VisitSegmentDatabase::QuerySegmentUsage(
   while (statement.Step()) {
     SegmentID segment_id = statement.ColumnInt64(0);
     if (segment_id != previous_segment_id) {
-      segments.push_back(base::WrapUnique(new PageUsageData(segment_id)));
+      segments.push_back(base::MakeUnique<PageUsageData>(segment_id));
       previous_segment_id = segment_id;
     }
 

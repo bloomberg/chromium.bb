@@ -22,7 +22,7 @@ void TypedUrlPageRevisitObserver::OnPageVisit(
     const PageVisitObserver::TransitionType transition) {
   if (history_) {
     history_->ScheduleDBTask(
-        base::WrapUnique(new TypedUrlPageRevisitTask(url, transition)),
+        base::MakeUnique<TypedUrlPageRevisitTask>(url, transition),
         &task_tracker_);
   }
 }

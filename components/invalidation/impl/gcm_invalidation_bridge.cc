@@ -176,8 +176,8 @@ GCMInvalidationBridge::~GCMInvalidationBridge() {
 std::unique_ptr<syncer::GCMNetworkChannelDelegate>
 GCMInvalidationBridge::CreateDelegate() {
   DCHECK(CalledOnValidThread());
-  return base::WrapUnique(new Core(weak_factory_.GetWeakPtr(),
-                                   base::ThreadTaskRunnerHandle::Get()));
+  return base::MakeUnique<Core>(weak_factory_.GetWeakPtr(),
+                                base::ThreadTaskRunnerHandle::Get());
 }
 
 void GCMInvalidationBridge::CoreInitializationDone(

@@ -93,8 +93,8 @@ class MockTranslateClient : public TranslateClient {
   PrefService* GetPrefs() { return prefs_; }
 
   std::unique_ptr<TranslatePrefs> GetTranslatePrefs() {
-    return base::WrapUnique(new TranslatePrefs(prefs_, kAcceptLanguages,
-                                               kLanguagePreferredLanguages));
+    return base::MakeUnique<TranslatePrefs>(prefs_, kAcceptLanguages,
+                                            kLanguagePreferredLanguages);
   }
   MOCK_METHOD0(GetTranslateAcceptLanguages, TranslateAcceptLanguages*());
   MOCK_CONST_METHOD0(GetInfobarIconID, int());

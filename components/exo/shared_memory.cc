@@ -84,14 +84,14 @@ std::unique_ptr<Buffer> SharedMemory::CreateBuffer(const gfx::Size& size,
   // buffers. Making the copy explicit allows the buffer to be reused earlier.
   bool use_zero_copy = false;
 
-  return base::WrapUnique(
-      new Buffer(std::move(gpu_memory_buffer), GL_TEXTURE_2D,
-                 // COMMANDS_ISSUED queries are sufficient for shared memory
-                 // buffers as binding to texture is implemented using a call to
-                 // glTexImage2D and the buffer can be reused as soon as that
-                 // command has been issued.
-                 GL_COMMANDS_ISSUED_CHROMIUM, use_zero_copy,
-                 false /* is_overlay_candidate */));
+  return base::MakeUnique<Buffer>(
+      std::move(gpu_memory_buffer), GL_TEXTURE_2D,
+      // COMMANDS_ISSUED queries are sufficient for shared memory
+      // buffers as binding to texture is implemented using a call to
+      // glTexImage2D and the buffer can be reused as soon as that
+      // command has been issued.
+      GL_COMMANDS_ISSUED_CHROMIUM, use_zero_copy,
+      false /* is_overlay_candidate */);
 }
 
 }  // namespace exo

@@ -369,7 +369,7 @@ void DefaultSearchPolicyHandler::EnsureListPrefExists(
   base::Value* value;
   base::ListValue* list_value;
   if (!prefs->GetValue(path, &value) || !value->GetAsList(&list_value))
-    prefs->SetValue(path, base::WrapUnique(new base::ListValue()));
+    prefs->SetValue(path, base::MakeUnique<base::ListValue>());
 }
 
 }  // namespace policy

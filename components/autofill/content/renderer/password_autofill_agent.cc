@@ -367,7 +367,7 @@ void UpdateFieldValueAndPropertiesMaskMap(
     it->second.second |= added_flags;
   } else {
     (*field_value_and_properties_map)[element] = std::make_pair(
-        value ? base::WrapUnique(new base::string16(*value)) : nullptr,
+        value ? base::MakeUnique<base::string16>(*value) : nullptr,
         added_flags);
   }
 }

@@ -112,13 +112,14 @@ ErrorReporter::ErrorReporter(
     net::URLRequestContext* request_context,
     const GURL& upload_url,
     net::ReportSender::CookiesPreference cookies_preference)
-    : ErrorReporter(upload_url,
-                    kServerPublicKey,
-                    kServerPublicKeyVersion,
-                    base::WrapUnique(new net::ReportSender(
-                        request_context,
-                        cookies_preference,
-                        base::Bind(RecordUMAOnFailure)))) {}
+    : ErrorReporter(
+          upload_url,
+          kServerPublicKey,
+          kServerPublicKeyVersion,
+          base::MakeUnique<net::ReportSender>(request_context,
+                                              cookies_preference,
+                                              base::Bind(RecordUMAOnFailure))) {
+}
 
 ErrorReporter::ErrorReporter(
     const GURL& upload_url,

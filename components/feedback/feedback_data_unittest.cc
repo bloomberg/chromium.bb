@@ -46,7 +46,7 @@ std::unique_ptr<KeyedService> CreateFeedbackUploaderService(
 }
 
 std::unique_ptr<std::string> MakeScoped(const char* str) {
-  return base::WrapUnique(new std::string(str));
+  return base::MakeUnique<std::string>(str);
 }
 
 }  // namespace

@@ -502,8 +502,8 @@ std::unique_ptr<VariationsService> VariationsService::Create(
 #endif
   result.reset(new VariationsService(
       std::move(client),
-      base::WrapUnique(new web_resource::ResourceRequestAllowedNotifier(
-          local_state, disable_network_switch)),
+      base::MakeUnique<web_resource::ResourceRequestAllowedNotifier>(
+          local_state, disable_network_switch),
       local_state, state_manager, ui_string_overrider));
   return result;
 }
@@ -514,8 +514,8 @@ std::unique_ptr<VariationsService> VariationsService::CreateForTesting(
     PrefService* local_state) {
   return base::WrapUnique(new VariationsService(
       std::move(client),
-      base::WrapUnique(new web_resource::ResourceRequestAllowedNotifier(
-          local_state, nullptr)),
+      base::MakeUnique<web_resource::ResourceRequestAllowedNotifier>(
+          local_state, nullptr),
       local_state, nullptr, UIStringOverrider()));
 }
 

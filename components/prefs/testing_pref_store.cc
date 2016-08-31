@@ -118,17 +118,17 @@ void TestingPrefStore::ReportValueChanged(const std::string& key,
 
 void TestingPrefStore::SetString(const std::string& key,
                                  const std::string& value) {
-  SetValue(key, base::WrapUnique(new base::StringValue(value)),
+  SetValue(key, base::MakeUnique<base::StringValue>(value),
            DEFAULT_PREF_WRITE_FLAGS);
 }
 
 void TestingPrefStore::SetInteger(const std::string& key, int value) {
-  SetValue(key, base::WrapUnique(new base::FundamentalValue(value)),
+  SetValue(key, base::MakeUnique<base::FundamentalValue>(value),
            DEFAULT_PREF_WRITE_FLAGS);
 }
 
 void TestingPrefStore::SetBoolean(const std::string& key, bool value) {
-  SetValue(key, base::WrapUnique(new base::FundamentalValue(value)),
+  SetValue(key, base::MakeUnique<base::FundamentalValue>(value),
            DEFAULT_PREF_WRITE_FLAGS);
 }
 

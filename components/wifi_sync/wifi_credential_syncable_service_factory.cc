@@ -96,9 +96,9 @@ WifiCredentialSyncableServiceFactory::BuildWifiConfigDelegateChromeOs(
   // ChromeBrowserMainPartsChromeos, and destroyed after all
   // KeyedService instances are destroyed.
   chromeos::NetworkHandler* network_handler = chromeos::NetworkHandler::Get();
-  return base::WrapUnique(new WifiConfigDelegateChromeOs(
+  return base::MakeUnique<WifiConfigDelegateChromeOs>(
       GetUserHash(context, !ignore_login_state_for_test_),
-      network_handler->managed_network_configuration_handler()));
+      network_handler->managed_network_configuration_handler());
 }
 #endif
 

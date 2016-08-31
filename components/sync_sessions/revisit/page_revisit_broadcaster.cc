@@ -54,7 +54,7 @@ PageRevisitBroadcaster::PageRevisitBroadcaster(
   bool shouldInstrument = group_name == "Enabled";
   if (shouldInstrument) {
     revisit_observers_.push_back(new sync_sessions::SessionsPageRevisitObserver(
-        base::WrapUnique(new SessionsSyncManagerWrapper(manager))));
+        base::MakeUnique<SessionsSyncManagerWrapper>(manager)));
 
     history::HistoryService* history = sessions_client_->GetHistoryService();
     if (history) {
@@ -65,8 +65,9 @@ PageRevisitBroadcaster::PageRevisitBroadcaster(
     bookmarks::BookmarkModel* bookmarks = sessions_client_->GetBookmarkModel();
     if (bookmarks) {
       revisit_observers_.push_back(
-          new sync_sessions::BookmarksPageRevisitObserver(base::WrapUnique(
-              new sync_sessions::BookmarksByUrlProviderImpl(bookmarks))));
+          new sync_sessions::BookmarksPageRevisitObserver(
+              base::MakeUnique<sync_sessions::BookmarksByUrlProviderImpl>(
+                  bookmarks)));
     }
   }
 }

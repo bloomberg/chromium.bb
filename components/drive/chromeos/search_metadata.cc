@@ -158,7 +158,7 @@ FileError MaybeAddEntryToResult(
   if (result_candidates->size() == at_most_num_matches)
     result_candidates->pop();
   result_candidates->push(
-      base::WrapUnique(new ResultCandidate(it->GetID(), entry, highlighted)));
+      base::MakeUnique<ResultCandidate>(it->GetID(), entry, highlighted));
   return FILE_ERROR_OK;
 }
 

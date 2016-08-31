@@ -84,7 +84,7 @@ void RapporService::Initialize(net::URLRequestContextGetter* request_context) {
   }
   DVLOG(1) << "RapporService reporting to " << server_url.spec();
   InitializeInternal(
-      base::WrapUnique(new LogUploader(server_url, kMimeType, request_context)),
+      base::MakeUnique<LogUploader>(server_url, kMimeType, request_context),
       internal::LoadCohort(pref_service_), internal::LoadSecret(pref_service_));
 }
 

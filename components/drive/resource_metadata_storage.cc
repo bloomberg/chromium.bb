@@ -826,7 +826,7 @@ ResourceMetadataStorage::GetIterator() {
 
   std::unique_ptr<leveldb::Iterator> it(
       resource_map_->NewIterator(leveldb::ReadOptions()));
-  return base::WrapUnique(new Iterator(std::move(it)));
+  return base::MakeUnique<Iterator>(std::move(it));
 }
 
 FileError ResourceMetadataStorage::GetChild(const std::string& parent_id,

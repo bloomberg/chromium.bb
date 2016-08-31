@@ -93,22 +93,22 @@ WebTestInterfaces::CreateAppBannerClient() {
 std::unique_ptr<WebFrameTestClient> WebTestInterfaces::CreateWebFrameTestClient(
     WebViewTestProxyBase* web_view_test_proxy_base,
     WebFrameTestProxyBase* web_frame_test_proxy_base) {
-  return base::WrapUnique(new WebFrameTestClient(
+  return base::MakeUnique<WebFrameTestClient>(
       interfaces_->GetTestRunner(), interfaces_->GetDelegate(),
-      web_view_test_proxy_base, web_frame_test_proxy_base));
+      web_view_test_proxy_base, web_frame_test_proxy_base);
 }
 
 std::unique_ptr<WebViewTestClient> WebTestInterfaces::CreateWebViewTestClient(
     WebViewTestProxyBase* web_view_test_proxy_base) {
-  return base::WrapUnique(new WebViewTestClient(interfaces_->GetTestRunner(),
-                                                web_view_test_proxy_base));
+  return base::MakeUnique<WebViewTestClient>(interfaces_->GetTestRunner(),
+                                             web_view_test_proxy_base);
 }
 
 std::unique_ptr<WebWidgetTestClient>
 WebTestInterfaces::CreateWebWidgetTestClient(
     WebWidgetTestProxyBase* web_widget_test_proxy_base) {
-  return base::WrapUnique(new WebWidgetTestClient(interfaces_->GetTestRunner(),
-                                                  web_widget_test_proxy_base));
+  return base::MakeUnique<WebWidgetTestClient>(interfaces_->GetTestRunner(),
+                                               web_widget_test_proxy_base);
 }
 
 std::vector<blink::WebView*> WebTestInterfaces::GetWindowList() {

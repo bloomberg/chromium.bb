@@ -548,8 +548,8 @@ CancelCallback FakeDriveService::GetFileResource(
   if (entry && entry->change_resource.file()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(callback, HTTP_SUCCESS,
-                              base::Passed(base::WrapUnique(new FileResource(
-                                  *entry->change_resource.file())))));
+                              base::Passed(base::MakeUnique<FileResource>(
+                                  *entry->change_resource.file()))));
     return CancelCallback();
   }
 
@@ -836,7 +836,7 @@ CancelCallback FakeDriveService::CopyResource(
   copied_entry->content_data = entry->content_data;
   copied_entry->share_url = entry->share_url;
   copied_entry->change_resource.set_file(
-      base::WrapUnique(new FileResource(*entry->change_resource.file())));
+      base::MakeUnique<FileResource>(*entry->change_resource.file()));
 
   ChangeResource* new_change = &copied_entry->change_resource;
   FileResource* new_file = new_change->mutable_file();
@@ -863,7 +863,7 @@ CancelCallback FakeDriveService::CopyResource(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(callback, HTTP_SUCCESS,
-                 base::Passed(base::WrapUnique(new FileResource(*new_file)))));
+                 base::Passed(base::MakeUnique<FileResource>(*new_file))));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&FakeDriveService::NotifyObservers,
@@ -932,7 +932,7 @@ CancelCallback FakeDriveService::UpdateResource(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(callback, HTTP_SUCCESS,
-                 base::Passed(base::WrapUnique(new FileResource(*file)))));
+                 base::Passed(base::MakeUnique<FileResource>(*file))));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&FakeDriveService::NotifyObservers,
@@ -1219,7 +1219,7 @@ CancelCallback FakeDriveService::ResumeUpload(
 
     completion_callback.Run(
         HTTP_CREATED,
-        base::WrapUnique(new FileResource(*new_entry->change_resource.file())));
+        base::MakeUnique<FileResource>(*new_entry->change_resource.file()));
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&FakeDriveService::NotifyObservers,
@@ -1246,8 +1246,7 @@ CancelCallback FakeDriveService::ResumeUpload(
   AddNewChangestamp(change);
   UpdateETag(file);
 
-  completion_callback.Run(HTTP_SUCCESS,
-                          base::WrapUnique(new FileResource(*file)));
+  completion_callback.Run(HTTP_SUCCESS, base::MakeUnique<FileResource>(*file));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&FakeDriveService::NotifyObservers,
@@ -1409,8 +1408,8 @@ void FakeDriveService::AddNewFileWithResourceId(
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(callback, HTTP_CREATED,
-                            base::Passed(base::WrapUnique(new FileResource(
-                                *new_entry->change_resource.file())))));
+                            base::Passed(base::MakeUnique<FileResource>(
+                                *new_entry->change_resource.file()))));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&FakeDriveService::NotifyObservers,
@@ -1453,8 +1452,8 @@ CancelCallback FakeDriveService::AddNewDirectoryWithResourceId(
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(callback, HTTP_CREATED,
-                            base::Passed(base::WrapUnique(new FileResource(
-                                *new_entry->change_resource.file())))));
+                            base::Passed(base::MakeUnique<FileResource>(
+                                *new_entry->change_resource.file()))));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&FakeDriveService::NotifyObservers,
@@ -1491,7 +1490,7 @@ void FakeDriveService::SetLastModifiedTime(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(callback, HTTP_SUCCESS,
-                 base::Passed(base::WrapUnique(new FileResource(*file)))));
+                 base::Passed(base::MakeUnique<FileResource>(*file))));
 }
 
 google_apis::DriveApiErrorCode FakeDriveService::SetUserPermission(
@@ -1719,8 +1718,7 @@ void FakeDriveService::GetChangeListInternal(
       entry_copied->set_file_id(entry.file_id());
       entry_copied->set_deleted(entry.is_deleted());
       if (entry.file()) {
-        entry_copied->set_file(
-            base::WrapUnique(new FileResource(*entry.file())));
+        entry_copied->set_file(base::MakeUnique<FileResource>(*entry.file()));
       }
       entry_copied->set_modification_date(entry.modification_date());
       entries.push_back(entry_copied.release());

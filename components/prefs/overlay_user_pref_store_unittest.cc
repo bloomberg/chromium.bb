@@ -49,22 +49,22 @@ TEST_F(OverlayUserPrefStoreTest, Observer) {
   overlay_->AddObserver(&obs);
 
   // Check that underlay first value is reported.
-  underlay_->SetValue(overlay_key, base::WrapUnique(new FundamentalValue(42)),
+  underlay_->SetValue(overlay_key, base::MakeUnique<FundamentalValue>(42),
                       WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   obs.VerifyAndResetChangedKey(overlay_key);
 
   // Check that underlay overwriting is reported.
-  underlay_->SetValue(overlay_key, base::WrapUnique(new FundamentalValue(43)),
+  underlay_->SetValue(overlay_key, base::MakeUnique<FundamentalValue>(43),
                       WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   obs.VerifyAndResetChangedKey(overlay_key);
 
   // Check that overwriting change in overlay is reported.
-  overlay_->SetValue(overlay_key, base::WrapUnique(new FundamentalValue(44)),
+  overlay_->SetValue(overlay_key, base::MakeUnique<FundamentalValue>(44),
                      WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   obs.VerifyAndResetChangedKey(overlay_key);
 
   // Check that hidden underlay change is not reported.
-  underlay_->SetValue(overlay_key, base::WrapUnique(new FundamentalValue(45)),
+  underlay_->SetValue(overlay_key, base::MakeUnique<FundamentalValue>(45),
                       WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   EXPECT_TRUE(obs.changed_keys.empty());
 
@@ -80,16 +80,16 @@ TEST_F(OverlayUserPrefStoreTest, Observer) {
 
   // Check respecting of silence.
   overlay_->SetValueSilently(overlay_key,
-                             base::WrapUnique(new FundamentalValue(46)),
+                             base::MakeUnique<FundamentalValue>(46),
                              WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   EXPECT_TRUE(obs.changed_keys.empty());
 
   overlay_->RemoveObserver(&obs);
 
   // Check successful unsubscription.
-  underlay_->SetValue(overlay_key, base::WrapUnique(new FundamentalValue(47)),
+  underlay_->SetValue(overlay_key, base::MakeUnique<FundamentalValue>(47),
                       WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
-  overlay_->SetValue(overlay_key, base::WrapUnique(new FundamentalValue(48)),
+  overlay_->SetValue(overlay_key, base::MakeUnique<FundamentalValue>(48),
                      WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   EXPECT_TRUE(obs.changed_keys.empty());
 }
@@ -99,7 +99,7 @@ TEST_F(OverlayUserPrefStoreTest, GetAndSet) {
   EXPECT_FALSE(overlay_->GetValue(overlay_key, &value));
   EXPECT_FALSE(underlay_->GetValue(overlay_key, &value));
 
-  underlay_->SetValue(overlay_key, base::WrapUnique(new FundamentalValue(42)),
+  underlay_->SetValue(overlay_key, base::MakeUnique<FundamentalValue>(42),
                       WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
 
   // Value shines through:
@@ -109,7 +109,7 @@ TEST_F(OverlayUserPrefStoreTest, GetAndSet) {
   EXPECT_TRUE(underlay_->GetValue(overlay_key, &value));
   EXPECT_TRUE(base::FundamentalValue(42).Equals(value));
 
-  overlay_->SetValue(overlay_key, base::WrapUnique(new FundamentalValue(43)),
+  overlay_->SetValue(overlay_key, base::MakeUnique<FundamentalValue>(43),
                      WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
 
   EXPECT_TRUE(overlay_->GetValue(overlay_key, &value));

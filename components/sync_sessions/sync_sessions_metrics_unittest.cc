@@ -65,7 +65,7 @@ class SyncSessionsMetricsTest : public ::testing::Test {
   void PushTab(size_t tabIndex, int windowIndex, Time timestamp) {
     // First add sessions/windows as necessary.
     while (tabIndex >= sessions_.size()) {
-      sessions_.push_back(base::WrapUnique(new SyncedSession()));
+      sessions_.push_back(base::MakeUnique<SyncedSession>());
     }
     if (sessions_[tabIndex]->windows.find(windowIndex) ==
         sessions_[tabIndex]->windows.end()) {

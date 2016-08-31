@@ -55,7 +55,7 @@ std::unique_ptr<SharedMemory> Display::CreateSharedMemory(
   if (!base::SharedMemory::IsHandleValid(handle))
     return nullptr;
 
-  return base::WrapUnique(new SharedMemory(handle));
+  return base::MakeUnique<SharedMemory>(handle);
 }
 
 #if defined(USE_OZONE)
@@ -96,10 +96,10 @@ std::unique_ptr<Buffer> Display::CreateLinuxDMABufBuffer(
       std::find(std::begin(kOverlayFormats), std::end(kOverlayFormats),
                 format) != std::end(kOverlayFormats);
 
-  return base::WrapUnique(new Buffer(
+  return base::MakeUnique<Buffer>(
       std::move(gpu_memory_buffer), GL_TEXTURE_EXTERNAL_OES,
       // COMMANDS_COMPLETED queries are required by native pixmaps.
-      GL_COMMANDS_COMPLETED_CHROMIUM, use_zero_copy, is_overlay_candidate));
+      GL_COMMANDS_COMPLETED_CHROMIUM, use_zero_copy, is_overlay_candidate);
 }
 #endif
 
@@ -112,9 +112,9 @@ std::unique_ptr<ShellSurface> Display::CreateShellSurface(Surface* surface) {
     return nullptr;
   }
 
-  return base::WrapUnique(
-      new ShellSurface(surface, nullptr, gfx::Rect(), true /* activatable */,
-                       ash::kShellWindowId_DefaultContainer));
+  return base::MakeUnique<ShellSurface>(surface, nullptr, gfx::Rect(),
+                                        true /* activatable */,
+                                        ash::kShellWindowId_DefaultContainer);
 }
 
 std::unique_ptr<ShellSurface> Display::CreatePopupShellSurface(
@@ -143,9 +143,9 @@ std::unique_ptr<ShellSurface> Display::CreatePopupShellSurface(
           ->window(),
       parent->GetWidget()->GetNativeWindow()->parent(), &initial_bounds);
 
-  return base::WrapUnique(
-      new ShellSurface(surface, parent, initial_bounds, false /* activatable */,
-                       ash::kShellWindowId_DefaultContainer));
+  return base::MakeUnique<ShellSurface>(surface, parent, initial_bounds,
+                                        false /* activatable */,
+                                        ash::kShellWindowId_DefaultContainer);
 }
 
 std::unique_ptr<ShellSurface> Display::CreateRemoteShellSurface(
@@ -159,8 +159,8 @@ std::unique_ptr<ShellSurface> Display::CreateRemoteShellSurface(
     return nullptr;
   }
 
-  return base::WrapUnique(new ShellSurface(surface, nullptr, gfx::Rect(1, 1),
-                                           true /* activatable */, container));
+  return base::MakeUnique<ShellSurface>(surface, nullptr, gfx::Rect(1, 1),
+                                        true /* activatable */, container);
 }
 
 std::unique_ptr<SubSurface> Display::CreateSubSurface(Surface* surface,
@@ -178,7 +178,7 @@ std::unique_ptr<SubSurface> Display::CreateSubSurface(Surface* surface,
     return nullptr;
   }
 
-  return base::WrapUnique(new SubSurface(surface, parent));
+  return base::MakeUnique<SubSurface>(surface, parent);
 }
 
 std::unique_ptr<NotificationSurface> Display::CreateNotificationSurface(

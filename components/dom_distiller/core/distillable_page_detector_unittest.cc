@@ -30,8 +30,8 @@ class Builder {
     }
     proto_.set_num_features(num_features);
     proto_.set_num_stumps(proto_.stump_size());
-    return base::WrapUnique(new DistillablePageDetector(
-        base::WrapUnique(new AdaBoostProto(proto_))));
+    return base::MakeUnique<DistillablePageDetector>(
+        base::WrapUnique(new AdaBoostProto(proto_)));
   }
 
  private:

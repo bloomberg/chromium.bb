@@ -39,7 +39,7 @@ class TestBookmarksByUrlProvider : public BookmarksByUrlProvider {
 
 void RunObserver(const std::vector<const bookmarks::BookmarkNode*>& nodes) {
   BookmarksPageRevisitObserver observer(
-      base::WrapUnique(new TestBookmarksByUrlProvider(nodes)));
+      base::MakeUnique<TestBookmarksByUrlProvider>(nodes));
   observer.OnPageVisit(kExampleGurl, PageVisitObserver::kTransitionPage);
 }
 

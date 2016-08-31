@@ -284,7 +284,7 @@ class DownloadOperation::DownloadParams {
   void OnCacheFileFound(const base::FilePath& cache_file_path) {
     if (!initialized_callback_.is_null()) {
       initialized_callback_.Run(FILE_ERROR_OK, cache_file_path,
-                                base::WrapUnique(new ResourceEntry(*entry_)));
+                                base::MakeUnique<ResourceEntry>(*entry_));
     }
     completion_callback_.Run(FILE_ERROR_OK, cache_file_path, std::move(entry_));
   }
@@ -297,7 +297,7 @@ class DownloadOperation::DownloadParams {
 
     DCHECK(entry_);
     initialized_callback_.Run(FILE_ERROR_OK, base::FilePath(),
-                              base::WrapUnique(new ResourceEntry(*entry_)));
+                              base::MakeUnique<ResourceEntry>(*entry_));
   }
 
   void OnError(FileError error) const {

@@ -529,7 +529,7 @@ TEST_F(BookmarkIndexTest, GetResultsSortedByTypedCount) {
 
   std::unique_ptr<BookmarkModel> model =
       TestBookmarkClient::CreateModelWithClient(
-          base::WrapUnique(new BookmarkClientMock(typed_count_map)));
+          base::MakeUnique<BookmarkClientMock>(typed_count_map));
 
   for (size_t i = 0; i < arraysize(data); ++i)
     // Populate the BookmarkIndex.

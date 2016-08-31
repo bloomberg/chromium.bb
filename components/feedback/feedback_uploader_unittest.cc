@@ -37,7 +37,7 @@ const base::TimeDelta kRetryDelayForTest =
 
 std::unique_ptr<KeyedService> CreateFeedbackUploaderService(
     content::BrowserContext* context) {
-  return base::WrapUnique(new feedback::FeedbackUploaderChrome(context));
+  return base::MakeUnique<feedback::FeedbackUploaderChrome>(context);
 }
 
 }  // namespace

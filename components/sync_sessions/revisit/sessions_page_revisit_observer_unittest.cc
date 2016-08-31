@@ -76,7 +76,7 @@ class SessionsPageRevisitObserverTest : public ::testing::Test {
     std::vector<const SyncedSession*> sessions;
     sessions.push_back(session);
     SessionsPageRevisitObserver observer(
-        base::WrapUnique(new TestForeignSessionsProvider(sessions, true)));
+        base::MakeUnique<TestForeignSessionsProvider>(sessions, true));
     CheckAndExpect(&observer, url, current_match, offset_match);
   }
 };
@@ -84,7 +84,7 @@ class SessionsPageRevisitObserverTest : public ::testing::Test {
 TEST_F(SessionsPageRevisitObserverTest, RunMatchersNoSessions) {
   std::vector<const SyncedSession*> sessions;
   SessionsPageRevisitObserver observer(
-      base::WrapUnique(new TestForeignSessionsProvider(sessions, true)));
+      base::MakeUnique<TestForeignSessionsProvider>(sessions, true));
   CheckAndExpect(&observer, GURL(kExampleUrl), false, false);
 }
 
@@ -139,7 +139,7 @@ TEST_F(SessionsPageRevisitObserverTest, RunMatchersFalseProvider) {
   std::vector<const SyncedSession*> sessions;
   sessions.push_back(session.get());
   SessionsPageRevisitObserver observer(
-      base::WrapUnique(new TestForeignSessionsProvider(sessions, false)));
+      base::MakeUnique<TestForeignSessionsProvider>(sessions, false));
   CheckAndExpect(&observer, GURL(kExampleUrl), false, false);
 }
 
@@ -189,7 +189,7 @@ TEST_F(SessionsPageRevisitObserverTest, RunMatchersMany) {
   sessions.push_back(session1.get());
   sessions.push_back(session2.get());
   SessionsPageRevisitObserver observer(
-      base::WrapUnique(new TestForeignSessionsProvider(sessions, true)));
+      base::MakeUnique<TestForeignSessionsProvider>(sessions, true));
 
   base::HistogramTester histogram_tester;
   CheckAndExpect(&observer, GURL(kExampleUrl), true, true);

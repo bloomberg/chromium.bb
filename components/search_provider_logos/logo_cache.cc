@@ -70,7 +70,7 @@ void LogoCache::UpdateCachedLogoMetadata(const LogoMetadata& metadata) {
   DCHECK(metadata_);
   DCHECK_EQ(metadata_->fingerprint, metadata.fingerprint);
 
-  UpdateMetadata(base::WrapUnique(new LogoMetadata(metadata)));
+  UpdateMetadata(base::MakeUnique<LogoMetadata>(metadata));
   WriteMetadata();
 }
 

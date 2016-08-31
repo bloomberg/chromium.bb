@@ -834,8 +834,8 @@ void ArcBluetoothBridge::StartLEScan() {
     return;
   }
   bluetooth_adapter_->StartDiscoverySessionWithFilter(
-      base::WrapUnique(
-          new BluetoothDiscoveryFilter(device::BLUETOOTH_TRANSPORT_LE)),
+      base::MakeUnique<BluetoothDiscoveryFilter>(
+          device::BLUETOOTH_TRANSPORT_LE),
       base::Bind(&ArcBluetoothBridge::OnDiscoveryStarted,
                  weak_factory_.GetWeakPtr()),
       base::Bind(&ArcBluetoothBridge::OnDiscoveryError,
@@ -964,8 +964,8 @@ void ArcBluetoothBridge::OnStartLEListenError(
 void ArcBluetoothBridge::StartLEListen(const StartLEListenCallback& callback) {
   DCHECK(CalledOnValidThread());
   std::unique_ptr<BluetoothAdvertisement::Data> adv_data =
-      base::WrapUnique(new BluetoothAdvertisement::Data(
-          BluetoothAdvertisement::ADVERTISEMENT_TYPE_BROADCAST));
+      base::MakeUnique<BluetoothAdvertisement::Data>(
+          BluetoothAdvertisement::ADVERTISEMENT_TYPE_BROADCAST);
   bluetooth_adapter_->RegisterAdvertisement(
       std::move(adv_data), base::Bind(&ArcBluetoothBridge::OnStartLEListenDone,
                                       weak_factory_.GetWeakPtr(), callback),

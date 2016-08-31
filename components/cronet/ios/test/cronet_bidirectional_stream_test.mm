@@ -176,7 +176,7 @@ class TestBidirectionalStreamCallback {
 
   void AddWriteData(const std::string& data) { AddWriteData(data, true); }
   void AddWriteData(const std::string& data, bool flush) {
-    write_data.push_back(base::WrapUnique(new WriteData(data, flush)));
+    write_data.push_back(base::MakeUnique<WriteData>(data, flush));
   }
 
   virtual void MaybeWriteNextData(cronet_bidirectional_stream* stream) {

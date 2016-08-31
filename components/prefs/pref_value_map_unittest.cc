@@ -17,10 +17,9 @@ TEST(PrefValueMapTest, SetValue) {
   EXPECT_FALSE(map.GetValue("key", &result));
   EXPECT_FALSE(result);
 
-  EXPECT_TRUE(map.SetValue("key", base::WrapUnique(new StringValue("test"))));
-  EXPECT_FALSE(map.SetValue("key", base::WrapUnique(new StringValue("test"))));
-  EXPECT_TRUE(
-      map.SetValue("key", base::WrapUnique(new StringValue("hi mom!"))));
+  EXPECT_TRUE(map.SetValue("key", base::MakeUnique<StringValue>("test")));
+  EXPECT_FALSE(map.SetValue("key", base::MakeUnique<StringValue>("test")));
+  EXPECT_TRUE(map.SetValue("key", base::MakeUnique<StringValue>("hi mom!")));
 
   EXPECT_TRUE(map.GetValue("key", &result));
   EXPECT_TRUE(StringValue("hi mom!").Equals(result));
@@ -28,7 +27,7 @@ TEST(PrefValueMapTest, SetValue) {
 
 TEST(PrefValueMapTest, GetAndSetIntegerValue) {
   PrefValueMap map;
-  ASSERT_TRUE(map.SetValue("key", base::WrapUnique(new FundamentalValue(5))));
+  ASSERT_TRUE(map.SetValue("key", base::MakeUnique<FundamentalValue>(5)));
 
   int int_value = 0;
   EXPECT_TRUE(map.GetInteger("key", &int_value));
@@ -41,7 +40,7 @@ TEST(PrefValueMapTest, GetAndSetIntegerValue) {
 
 TEST(PrefValueMapTest, SetDoubleValue) {
   PrefValueMap map;
-  ASSERT_TRUE(map.SetValue("key", base::WrapUnique(new FundamentalValue(5.5))));
+  ASSERT_TRUE(map.SetValue("key", base::MakeUnique<FundamentalValue>(5.5)));
 
   const Value* result = NULL;
   ASSERT_TRUE(map.GetValue("key", &result));
@@ -54,7 +53,7 @@ TEST(PrefValueMapTest, RemoveValue) {
   PrefValueMap map;
   EXPECT_FALSE(map.RemoveValue("key"));
 
-  EXPECT_TRUE(map.SetValue("key", base::WrapUnique(new StringValue("test"))));
+  EXPECT_TRUE(map.SetValue("key", base::MakeUnique<StringValue>("test")));
   EXPECT_TRUE(map.GetValue("key", NULL));
 
   EXPECT_TRUE(map.RemoveValue("key"));
@@ -65,7 +64,7 @@ TEST(PrefValueMapTest, RemoveValue) {
 
 TEST(PrefValueMapTest, Clear) {
   PrefValueMap map;
-  EXPECT_TRUE(map.SetValue("key", base::WrapUnique(new StringValue("test"))));
+  EXPECT_TRUE(map.SetValue("key", base::MakeUnique<StringValue>("test")));
   EXPECT_TRUE(map.GetValue("key", NULL));
 
   map.Clear();
@@ -75,12 +74,9 @@ TEST(PrefValueMapTest, Clear) {
 
 TEST(PrefValueMapTest, GetDifferingKeys) {
   PrefValueMap reference;
-  EXPECT_TRUE(
-      reference.SetValue("b", base::WrapUnique(new StringValue("test"))));
-  EXPECT_TRUE(
-      reference.SetValue("c", base::WrapUnique(new StringValue("test"))));
-  EXPECT_TRUE(
-      reference.SetValue("e", base::WrapUnique(new StringValue("test"))));
+  EXPECT_TRUE(reference.SetValue("b", base::MakeUnique<StringValue>("test")));
+  EXPECT_TRUE(reference.SetValue("c", base::MakeUnique<StringValue>("test")));
+  EXPECT_TRUE(reference.SetValue("e", base::MakeUnique<StringValue>("test")));
 
   PrefValueMap check;
   std::vector<std::string> differing_paths;
@@ -92,9 +88,9 @@ TEST(PrefValueMapTest, GetDifferingKeys) {
   expected_differing_paths.push_back("e");
   EXPECT_EQ(expected_differing_paths, differing_paths);
 
-  EXPECT_TRUE(check.SetValue("a", base::WrapUnique(new StringValue("test"))));
-  EXPECT_TRUE(check.SetValue("c", base::WrapUnique(new StringValue("test"))));
-  EXPECT_TRUE(check.SetValue("d", base::WrapUnique(new StringValue("test"))));
+  EXPECT_TRUE(check.SetValue("a", base::MakeUnique<StringValue>("test")));
+  EXPECT_TRUE(check.SetValue("c", base::MakeUnique<StringValue>("test")));
+  EXPECT_TRUE(check.SetValue("d", base::MakeUnique<StringValue>("test")));
 
   reference.GetDifferingKeys(&check, &differing_paths);
   expected_differing_paths.clear();
@@ -107,20 +103,14 @@ TEST(PrefValueMapTest, GetDifferingKeys) {
 
 TEST(PrefValueMapTest, SwapTwoMaps) {
   PrefValueMap first_map;
-  EXPECT_TRUE(
-      first_map.SetValue("a", base::WrapUnique(new StringValue("test"))));
-  EXPECT_TRUE(
-      first_map.SetValue("b", base::WrapUnique(new StringValue("test"))));
-  EXPECT_TRUE(
-      first_map.SetValue("c", base::WrapUnique(new StringValue("test"))));
+  EXPECT_TRUE(first_map.SetValue("a", base::MakeUnique<StringValue>("test")));
+  EXPECT_TRUE(first_map.SetValue("b", base::MakeUnique<StringValue>("test")));
+  EXPECT_TRUE(first_map.SetValue("c", base::MakeUnique<StringValue>("test")));
 
   PrefValueMap second_map;
-  EXPECT_TRUE(
-      second_map.SetValue("d", base::WrapUnique(new StringValue("test"))));
-  EXPECT_TRUE(
-      second_map.SetValue("e", base::WrapUnique(new StringValue("test"))));
-  EXPECT_TRUE(
-      second_map.SetValue("f", base::WrapUnique(new StringValue("test"))));
+  EXPECT_TRUE(second_map.SetValue("d", base::MakeUnique<StringValue>("test")));
+  EXPECT_TRUE(second_map.SetValue("e", base::MakeUnique<StringValue>("test")));
+  EXPECT_TRUE(second_map.SetValue("f", base::MakeUnique<StringValue>("test")));
 
   first_map.Swap(&second_map);
 

@@ -193,8 +193,8 @@ TEST_F(SSLErrorClassificationTest, GetClockState) {
   network_time::NetworkTimeTracker::RegisterPrefs(pref_service.registry());
   base::MessageLoop loop;
   network_time::NetworkTimeTracker network_time_tracker(
-      base::WrapUnique(new base::DefaultClock()),
-      base::WrapUnique(new base::DefaultTickClock()), &pref_service,
+      base::MakeUnique<base::DefaultClock>(),
+      base::MakeUnique<base::DefaultTickClock>(), &pref_service,
       new net::TestURLRequestContextGetter(
           base::ThreadTaskRunnerHandle::Get()));
 

@@ -84,8 +84,7 @@ void NTPSnippetsDatabase::SaveSnippets(const NTPSnippet::PtrVector& snippets) {
 }
 
 void NTPSnippetsDatabase::DeleteSnippet(const std::string& snippet_id) {
-  DeleteSnippetsImpl(
-      base::WrapUnique(new std::vector<std::string>(1, snippet_id)));
+  DeleteSnippetsImpl(base::MakeUnique<std::vector<std::string>>(1, snippet_id));
 }
 
 void NTPSnippetsDatabase::DeleteSnippets(
@@ -117,15 +116,13 @@ void NTPSnippetsDatabase::SaveImage(const std::string& snippet_id,
   entries_to_save->emplace_back(snippet_id, std::move(image_proto));
 
   image_database_->UpdateEntries(
-      std::move(entries_to_save),
-      base::WrapUnique(new std::vector<std::string>()),
+      std::move(entries_to_save), base::MakeUnique<std::vector<std::string>>(),
       base::Bind(&NTPSnippetsDatabase::OnImageDatabaseSaved,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
 void NTPSnippetsDatabase::DeleteImage(const std::string& snippet_id) {
-  DeleteImagesImpl(
-      base::WrapUnique(new std::vector<std::string>(1, snippet_id)));
+  DeleteImagesImpl(base::MakeUnique<std::vector<std::string>>(1, snippet_id));
 }
 
 void NTPSnippetsDatabase::OnDatabaseInited(bool success) {
@@ -259,8 +256,7 @@ void NTPSnippetsDatabase::DeleteSnippetsImpl(
     std::unique_ptr<std::vector<std::string>> keys_to_remove) {
   DCHECK(IsInitialized());
 
-  DeleteImagesImpl(
-      base::WrapUnique(new std::vector<std::string>(*keys_to_remove)));
+  DeleteImagesImpl(base::MakeUnique<std::vector<std::string>>(*keys_to_remove));
 
   std::unique_ptr<KeyEntryVector> entries_to_save(new KeyEntryVector());
   database_->UpdateEntries(std::move(entries_to_save),
@@ -283,8 +279,7 @@ void NTPSnippetsDatabase::DeleteImagesImpl(
   DCHECK(IsInitialized());
 
   image_database_->UpdateEntries(
-      base::WrapUnique(new ImageKeyEntryVector()),
-      std::move(keys_to_remove),
+      base::MakeUnique<ImageKeyEntryVector>(), std::move(keys_to_remove),
       base::Bind(&NTPSnippetsDatabase::OnImageDatabaseSaved,
                  weak_ptr_factory_.GetWeakPtr()));
 }

@@ -42,13 +42,11 @@ CompositorOverlayCandidateValidatorOzone::
 void CompositorOverlayCandidateValidatorOzone::GetStrategies(
     cc::OverlayProcessor::StrategyList* strategies) {
   if (single_fullscreen_) {
-    strategies->push_back(
-        base::WrapUnique(new cc::OverlayStrategyFullscreen()));
+    strategies->push_back(base::MakeUnique<cc::OverlayStrategyFullscreen>());
   } else {
     strategies->push_back(
-        base::WrapUnique(new cc::OverlayStrategySingleOnTop(this)));
-    strategies->push_back(
-        base::WrapUnique(new cc::OverlayStrategyUnderlay(this)));
+        base::MakeUnique<cc::OverlayStrategySingleOnTop>(this));
+    strategies->push_back(base::MakeUnique<cc::OverlayStrategyUnderlay>(this));
   }
 }
 

@@ -52,8 +52,7 @@ GuestViewManager* GuestViewMessageFilter::GetOrCreateGuestViewManager() {
   auto* manager = GuestViewManager::FromBrowserContext(browser_context_);
   if (!manager) {
     manager = GuestViewManager::CreateWithDelegate(
-        browser_context_, base::WrapUnique(
-                              new GuestViewManagerDelegate()));
+        browser_context_, base::MakeUnique<GuestViewManagerDelegate>());
   }
   return manager;
 }

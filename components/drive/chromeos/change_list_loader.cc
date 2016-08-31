@@ -181,8 +181,8 @@ std::unique_ptr<base::ScopedClosureRunner> LoaderController::GetLock() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   ++lock_count_;
-  return base::WrapUnique(new base::ScopedClosureRunner(
-      base::Bind(&LoaderController::Unlock, weak_ptr_factory_.GetWeakPtr())));
+  return base::MakeUnique<base::ScopedClosureRunner>(
+      base::Bind(&LoaderController::Unlock, weak_ptr_factory_.GetWeakPtr()));
 }
 
 void LoaderController::ScheduleRun(const base::Closure& task) {
@@ -283,8 +283,7 @@ void AboutResourceLoader::UpdateAboutResourceAfterGetAbout(
 
   for (size_t i = 0; i < callbacks.size(); ++i) {
     callbacks[i].Run(
-        status,
-        base::WrapUnique(new google_apis::AboutResource(*about_resource)));
+        status, base::MakeUnique<google_apis::AboutResource>(*about_resource));
   }
 }
 
@@ -512,8 +511,8 @@ void ChangeListLoader::LoadChangeListFromServer(int64_t start_changestamp) {
   change_feed_fetcher_->Run(
       base::Bind(&ChangeListLoader::LoadChangeListFromServerAfterLoadChangeList,
                  weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(base::WrapUnique(new google_apis::AboutResource(
-                     *about_resource_loader_->cached_about_resource()))),
+                 base::Passed(base::MakeUnique<google_apis::AboutResource>(
+                     *about_resource_loader_->cached_about_resource())),
                  is_delta_update));
 }
 

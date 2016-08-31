@@ -100,8 +100,8 @@ void ContentAutofillDriverFactory::RenderFrameCreated(
       frame_driver_map_.insert(std::make_pair(render_frame_host, nullptr));
   // This is called twice for the main frame.
   if (insertion_result.second) {  // This was the first time.
-    insertion_result.first->second = base::WrapUnique(new ContentAutofillDriver(
-        render_frame_host, client_, app_locale_, enable_download_manager_));
+    insertion_result.first->second = base::MakeUnique<ContentAutofillDriver>(
+        render_frame_host, client_, app_locale_, enable_download_manager_);
   }
 }
 

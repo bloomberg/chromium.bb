@@ -403,8 +403,8 @@ testing::AssertionResult SyncFaviconCacheTest::VerifyLocalCustomIcons(
 
 std::unique_ptr<syncer::SyncChangeProcessor>
 SyncFaviconCacheTest::CreateAndPassProcessor() {
-  return base::WrapUnique(
-      new syncer::SyncChangeProcessorWrapperForTest(sync_processor_.get()));
+  return base::MakeUnique<syncer::SyncChangeProcessorWrapperForTest>(
+      sync_processor_.get());
 }
 
 std::unique_ptr<syncer::SyncErrorFactory>

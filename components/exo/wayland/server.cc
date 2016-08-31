@@ -734,7 +734,7 @@ void linux_dmabuf_create_params(wl_client* client,
                                 wl_resource* resource,
                                 uint32_t id) {
   std::unique_ptr<LinuxBufferParams> linux_buffer_params =
-      base::WrapUnique(new LinuxBufferParams(GetUserDataAs<Display>(resource)));
+      base::MakeUnique<LinuxBufferParams>(GetUserDataAs<Display>(resource));
 
   wl_resource* linux_buffer_params_resource =
       wl_resource_create(client, &zwp_linux_buffer_params_v1_interface, 1, id);
@@ -1117,9 +1117,8 @@ void bind_output(wl_client* client, void* data, uint32_t version, uint32_t id) {
   wl_resource* resource = wl_resource_create(
       client, &wl_output_interface, std::min(version, output_version), id);
 
-  SetImplementation(
-      resource, nullptr,
-      base::WrapUnique(new WaylandPrimaryDisplayObserver(resource)));
+  SetImplementation(resource, nullptr,
+                    base::MakeUnique<WaylandPrimaryDisplayObserver>(resource));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1907,8 +1906,8 @@ void bind_remote_shell(wl_client* client,
                          std::min(version, remote_shell_version), id);
 
   SetImplementation(resource, &remote_shell_implementation,
-                    base::WrapUnique(new WaylandRemoteShell(
-                        static_cast<Display*>(data), resource)));
+                    base::MakeUnique<WaylandRemoteShell>(
+                        static_cast<Display*>(data), resource));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2457,9 +2456,9 @@ void seat_get_pointer(wl_client* client, wl_resource* resource, uint32_t id) {
   wl_resource* pointer_resource = wl_resource_create(
       client, &wl_pointer_interface, wl_resource_get_version(resource), id);
 
-  SetImplementation(pointer_resource, &pointer_implementation,
-                    base::WrapUnique(new Pointer(
-                        new WaylandPointerDelegate(pointer_resource))));
+  SetImplementation(
+      pointer_resource, &pointer_implementation,
+      base::MakeUnique<Pointer>(new WaylandPointerDelegate(pointer_resource)));
 }
 
 void seat_get_keyboard(wl_client* client, wl_resource* resource, uint32_t id) {
@@ -2469,8 +2468,8 @@ void seat_get_keyboard(wl_client* client, wl_resource* resource, uint32_t id) {
       wl_resource_create(client, &wl_keyboard_interface, version, id);
 
   SetImplementation(keyboard_resource, &keyboard_implementation,
-                    base::WrapUnique(new Keyboard(
-                        new WaylandKeyboardDelegate(keyboard_resource))));
+                    base::MakeUnique<Keyboard>(
+                        new WaylandKeyboardDelegate(keyboard_resource)));
 
   // TODO(reveman): Keep repeat info synchronized with chromium and the host OS.
   if (version >= WL_KEYBOARD_REPEAT_INFO_SINCE_VERSION)
@@ -2486,7 +2485,7 @@ void seat_get_touch(wl_client* client, wl_resource* resource, uint32_t id) {
 
   SetImplementation(
       touch_resource, &touch_implementation,
-      base::WrapUnique(new Touch(new WaylandTouchDelegate(touch_resource))));
+      base::MakeUnique<Touch>(new WaylandTouchDelegate(touch_resource)));
 }
 
 void seat_release(wl_client* client, wl_resource* resource) {
@@ -2631,7 +2630,7 @@ void viewporter_get_viewport(wl_client* client,
       client, &wp_viewport_interface, wl_resource_get_version(resource), id);
 
   SetImplementation(viewport_resource, &viewport_implementation,
-                    base::WrapUnique(new Viewport(surface)));
+                    base::MakeUnique<Viewport>(surface));
 }
 
 const struct wp_viewporter_interface viewporter_implementation = {
@@ -2720,7 +2719,7 @@ void secure_output_get_security(wl_client* client,
       wl_resource_create(client, &zwp_security_v1_interface, 1, id);
 
   SetImplementation(security_resource, &security_implementation,
-                    base::WrapUnique(new Security(surface)));
+                    base::MakeUnique<Security>(surface));
 }
 
 const struct zwp_secure_output_v1_interface secure_output_implementation = {
@@ -2837,7 +2836,7 @@ void alpha_compositing_get_blending(wl_client* client,
       wl_resource_create(client, &zwp_blending_v1_interface, 1, id);
 
   SetImplementation(blending_resource, &blending_implementation,
-                    base::WrapUnique(new Blending(surface)));
+                    base::MakeUnique<Blending>(surface));
 }
 
 const struct zwp_alpha_compositing_v1_interface
@@ -2922,8 +2921,8 @@ void gaming_input_get_gamepad(wl_client* client,
 
   SetImplementation(
       gamepad_resource, &gamepad_implementation,
-      base::WrapUnique(new Gamepad(new WaylandGamepadDelegate(gamepad_resource),
-                                   gaming_input_thread->task_runner().get())));
+      base::MakeUnique<Gamepad>(new WaylandGamepadDelegate(gamepad_resource),
+                                gaming_input_thread->task_runner().get()));
 }
 
 const struct zwp_gaming_input_v1_interface gaming_input_implementation = {
@@ -3007,9 +3006,9 @@ void stylus_get_pointer_stylus(wl_client* client,
   wl_resource* stylus_resource =
       wl_resource_create(client, &zwp_pointer_stylus_v1_interface, 1, id);
 
-  SetImplementation(stylus_resource, &pointer_stylus_implementation,
-                    base::WrapUnique(new WaylandPointerStylusDelegate(
-                        stylus_resource, pointer)));
+  SetImplementation(
+      stylus_resource, &pointer_stylus_implementation,
+      base::MakeUnique<WaylandPointerStylusDelegate>(stylus_resource, pointer));
 }
 
 const struct zwp_stylus_v1_interface stylus_implementation = {

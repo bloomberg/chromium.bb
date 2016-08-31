@@ -55,17 +55,16 @@ ArcServiceManager::ArcServiceManager(
         ArcBridgeBootstrap::Create()));
   }
 
-  AddService(base::WrapUnique(new ArcAudioBridge(arc_bridge_service())));
-  AddService(base::WrapUnique(new ArcBluetoothBridge(arc_bridge_service())));
-  AddService(base::WrapUnique(new ArcClipboardBridge(arc_bridge_service())));
-  AddService(
-      base::WrapUnique(new ArcCrashCollectorBridge(arc_bridge_service())));
-  AddService(base::WrapUnique(new ArcImeService(arc_bridge_service())));
-  AddService(base::WrapUnique(new ArcMetricsService(arc_bridge_service())));
-  AddService(base::WrapUnique(new ArcNetHostImpl(arc_bridge_service())));
-  AddService(base::WrapUnique(new ArcObbMounterBridge(arc_bridge_service())));
-  AddService(base::WrapUnique(new ArcPowerBridge(arc_bridge_service())));
-  AddService(base::WrapUnique(new ArcStorageManager(arc_bridge_service())));
+  AddService(base::MakeUnique<ArcAudioBridge>(arc_bridge_service()));
+  AddService(base::MakeUnique<ArcBluetoothBridge>(arc_bridge_service()));
+  AddService(base::MakeUnique<ArcClipboardBridge>(arc_bridge_service()));
+  AddService(base::MakeUnique<ArcCrashCollectorBridge>(arc_bridge_service()));
+  AddService(base::MakeUnique<ArcImeService>(arc_bridge_service()));
+  AddService(base::MakeUnique<ArcMetricsService>(arc_bridge_service()));
+  AddService(base::MakeUnique<ArcNetHostImpl>(arc_bridge_service()));
+  AddService(base::MakeUnique<ArcObbMounterBridge>(arc_bridge_service()));
+  AddService(base::MakeUnique<ArcPowerBridge>(arc_bridge_service()));
+  AddService(base::MakeUnique<ArcStorageManager>(arc_bridge_service()));
 }
 
 ArcServiceManager::~ArcServiceManager() {
@@ -99,8 +98,8 @@ void ArcServiceManager::OnPrimaryUserProfilePrepared(
     const AccountId& account_id,
     std::unique_ptr<BooleanPrefMember> arc_enabled_pref) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  AddService(base::WrapUnique(
-      new ArcNotificationManager(arc_bridge_service(), account_id)));
+  AddService(base::MakeUnique<ArcNotificationManager>(arc_bridge_service(),
+                                                      account_id));
 }
 
 void ArcServiceManager::Shutdown() {

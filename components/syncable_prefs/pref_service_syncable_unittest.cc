@@ -173,7 +173,7 @@ class PrefServiceSyncableTest : public testing::Test {
     test_processor_ = new TestSyncProcessorStub(output);
     syncer::SyncMergeResult r = pref_sync_service_->MergeDataAndStartSyncing(
         syncer::PREFERENCES, initial_data, base::WrapUnique(test_processor_),
-        base::WrapUnique(new syncer::SyncErrorFactoryMock()));
+        base::MakeUnique<syncer::SyncErrorFactoryMock>());
     EXPECT_FALSE(r.error().IsSet());
   }
 
@@ -314,7 +314,7 @@ TEST_F(PrefServiceSyncableTest, FailModelAssociation) {
   stub->FailNextProcessSyncChanges();
   syncer::SyncMergeResult r = pref_sync_service_->MergeDataAndStartSyncing(
       syncer::PREFERENCES, syncer::SyncDataList(), base::WrapUnique(stub),
-      base::WrapUnique(new syncer::SyncErrorFactoryMock()));
+      base::MakeUnique<syncer::SyncErrorFactoryMock>());
   EXPECT_TRUE(r.error().IsSet());
 }
 

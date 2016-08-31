@@ -50,8 +50,8 @@ class TokenWebDataBackend
   std::unique_ptr<WDTypedResult> GetAllTokens(WebDatabase* db) {
     std::map<std::string, std::string> map;
     TokenServiceTable::FromWebDatabase(db)->GetAllTokens(&map);
-    return base::WrapUnique(
-        new WDResult<std::map<std::string, std::string>>(TOKEN_RESULT, map));
+    return base::MakeUnique<WDResult<std::map<std::string, std::string>>>(
+        TOKEN_RESULT, map);
   }
 
  protected:

@@ -256,10 +256,10 @@ DomainReliabilityMonitor::CreateContextForConfig(
   DCHECK(config);
   DCHECK(config->IsValid());
 
-  return base::WrapUnique(new DomainReliabilityContext(
+  return base::MakeUnique<DomainReliabilityContext>(
       time_.get(), scheduler_params_, upload_reporter_string_,
       &last_network_change_time_, &dispatcher_, uploader_.get(),
-      std::move(config)));
+      std::move(config));
 }
 
 DomainReliabilityMonitor::RequestInfo::RequestInfo() {}

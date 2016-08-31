@@ -50,7 +50,7 @@ std::unique_ptr<base::DictionaryValue> WifiCredential::ToOncProperties() const {
   if (!WifiSecurityClassToOncSecurityString(security_class(), &onc_security)) {
     NOTREACHED() << "Failed to convert SecurityClass with value "
                  << security_class();
-    return base::WrapUnique(new base::DictionaryValue());
+    return base::MakeUnique<base::DictionaryValue>();
   }
 
   std::unique_ptr<base::DictionaryValue> onc_properties(

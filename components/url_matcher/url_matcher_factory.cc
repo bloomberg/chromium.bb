@@ -234,7 +234,7 @@ URLMatcherFactory::CreateURLMatcherScheme(const base::Value* value,
       return nullptr;
     }
   }
-  return base::WrapUnique(new URLMatcherSchemeFilter(schemas));
+  return base::MakeUnique<URLMatcherSchemeFilter>(schemas);
 }
 
 // static
@@ -268,7 +268,7 @@ std::unique_ptr<URLMatcherPortFilter> URLMatcherFactory::CreateURLMatcherPorts(
     }
   }
 
-  return base::WrapUnique(new URLMatcherPortFilter(ranges));
+  return base::MakeUnique<URLMatcherPortFilter>(ranges);
 }
 
 }  // namespace url_matcher

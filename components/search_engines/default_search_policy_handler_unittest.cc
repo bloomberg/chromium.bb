@@ -88,22 +88,22 @@ void DefaultSearchPolicyHandlerTest::
   encodings->AppendString("UTF-8");
   policy->Set(key::kDefaultSearchProviderEnabled, POLICY_LEVEL_MANDATORY,
               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-              base::WrapUnique(new base::FundamentalValue(true)), nullptr);
+              base::MakeUnique<base::FundamentalValue>(true), nullptr);
   policy->Set(key::kDefaultSearchProviderSearchURL, POLICY_LEVEL_MANDATORY,
               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-              base::WrapUnique(new base::StringValue(kSearchURL)), nullptr);
+              base::MakeUnique<base::StringValue>(kSearchURL), nullptr);
   policy->Set(key::kDefaultSearchProviderName, POLICY_LEVEL_MANDATORY,
               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-              base::WrapUnique(new base::StringValue(kName)), nullptr);
+              base::MakeUnique<base::StringValue>(kName), nullptr);
   policy->Set(key::kDefaultSearchProviderKeyword, POLICY_LEVEL_MANDATORY,
               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-              base::WrapUnique(new base::StringValue(kKeyword)), nullptr);
+              base::MakeUnique<base::StringValue>(kKeyword), nullptr);
   policy->Set(key::kDefaultSearchProviderSuggestURL, POLICY_LEVEL_MANDATORY,
               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-              base::WrapUnique(new base::StringValue(kSuggestURL)), nullptr);
+              base::MakeUnique<base::StringValue>(kSuggestURL), nullptr);
   policy->Set(key::kDefaultSearchProviderIconURL, POLICY_LEVEL_MANDATORY,
               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-              base::WrapUnique(new base::StringValue(kIconURL)), nullptr);
+              base::MakeUnique<base::StringValue>(kIconURL), nullptr);
   policy->Set(key::kDefaultSearchProviderEncodings, POLICY_LEVEL_MANDATORY,
               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
               base::WrapUnique(encodings), nullptr);
@@ -112,17 +112,16 @@ void DefaultSearchPolicyHandlerTest::
               default_alternate_urls_.CreateDeepCopy(), nullptr);
   policy->Set(key::kDefaultSearchProviderSearchTermsReplacementKey,
               POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-              base::WrapUnique(new base::StringValue(kReplacementKey)),
-              nullptr);
+              base::MakeUnique<base::StringValue>(kReplacementKey), nullptr);
   policy->Set(key::kDefaultSearchProviderImageURL, POLICY_LEVEL_MANDATORY,
               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-              base::WrapUnique(new base::StringValue(kImageURL)), nullptr);
+              base::MakeUnique<base::StringValue>(kImageURL), nullptr);
   policy->Set(key::kDefaultSearchProviderImageURLPostParams,
               POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-              base::WrapUnique(new base::StringValue(kImageParams)), nullptr);
+              base::MakeUnique<base::StringValue>(kImageParams), nullptr);
   policy->Set(key::kDefaultSearchProviderNewTabURL, POLICY_LEVEL_MANDATORY,
               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-              base::WrapUnique(new base::StringValue(kNewTabURL)), nullptr);
+              base::MakeUnique<base::StringValue>(kNewTabURL), nullptr);
 }
 
 // Checks that if the default search policy is missing, that no elements of the

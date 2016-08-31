@@ -456,10 +456,10 @@ void PrecacheFetcher::Start() {
   // Fetch the precache configuration settings from the server.
   DCHECK(pool_.IsEmpty()) << "All parallel requests should be available";
   VLOG(3) << "Fetching " << config_url;
-  pool_.Add(base::WrapUnique(new Fetcher(
+  pool_.Add(base::MakeUnique<Fetcher>(
       request_context_.get(), config_url, std::string(),
       base::Bind(&PrecacheFetcher::OnConfigFetchComplete, AsWeakPtr()),
-      false /* is_resource_request */, std::numeric_limits<int32_t>::max())));
+      false /* is_resource_request */, std::numeric_limits<int32_t>::max()));
 }
 
 void PrecacheFetcher::StartNextResourceFetch() {
@@ -471,10 +471,10 @@ void PrecacheFetcher::StartNextResourceFetch() {
                  unfinished_work_->config_settings().max_bytes_total() -
                      unfinished_work_->total_bytes());
     VLOG(3) << "Fetching " << resource.first << " " << resource.second;
-    pool_.Add(base::WrapUnique(new Fetcher(
+    pool_.Add(base::MakeUnique<Fetcher>(
         request_context_.get(), resource.first, resource.second,
         base::Bind(&PrecacheFetcher::OnResourceFetchComplete, AsWeakPtr()),
-        true /* is_resource_request */, max_bytes)));
+        true /* is_resource_request */, max_bytes));
 
     resources_to_fetch_.pop_front();
   }
@@ -487,11 +487,11 @@ void PrecacheFetcher::StartNextManifestFetch() {
   // We only fetch one manifest at a time to keep the size of
   // resources_to_fetch_ as small as possible.
   VLOG(3) << "Fetching " << top_hosts_to_fetch_.front().manifest_url;
-  pool_.Add(base::WrapUnique(new Fetcher(
+  pool_.Add(base::MakeUnique<Fetcher>(
       request_context_.get(), top_hosts_to_fetch_.front().manifest_url,
       top_hosts_to_fetch_.front().hostname,
       base::Bind(&PrecacheFetcher::OnManifestFetchComplete, AsWeakPtr()),
-      false /* is_resource_request */, std::numeric_limits<int32_t>::max())));
+      false /* is_resource_request */, std::numeric_limits<int32_t>::max()));
   top_hosts_to_fetch_.pop_front();
 }
 

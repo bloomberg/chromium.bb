@@ -325,8 +325,8 @@ FileMetricsProvider::AccessResult FileMetricsProvider::CheckAndMapMetricSource(
 
   // Create an allocator for the mapped file. Ownership passes to the allocator.
   source->allocator.reset(new base::PersistentHistogramAllocator(
-      base::WrapUnique(new base::FilePersistentMemoryAllocator(
-          std::move(mapped), 0, 0, base::StringPiece(), read_only))));
+      base::MakeUnique<base::FilePersistentMemoryAllocator>(
+          std::move(mapped), 0, 0, base::StringPiece(), read_only)));
 
   return ACCESS_RESULT_SUCCESS;
 }

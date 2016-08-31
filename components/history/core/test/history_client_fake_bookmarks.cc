@@ -184,7 +184,7 @@ void HistoryClientFakeBookmarks::NotifyProfileError(
 
 std::unique_ptr<HistoryBackendClient>
 HistoryClientFakeBookmarks::CreateBackendClient() {
-  return base::WrapUnique(new HistoryBackendClientFakeBookmarks(bookmarks_));
+  return base::MakeUnique<HistoryBackendClientFakeBookmarks>(bookmarks_);
 }
 
 }  // namespace history

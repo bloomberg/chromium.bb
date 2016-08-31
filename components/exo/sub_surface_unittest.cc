@@ -40,7 +40,7 @@ TEST_F(SubSurfaceTest, SetPosition) {
 
   // Create and commit a new sub-surface using the same surface.
   sub_surface.reset();
-  sub_surface = base::WrapUnique(new SubSurface(surface.get(), parent.get()));
+  sub_surface = base::MakeUnique<SubSurface>(surface.get(), parent.get());
   parent->Commit();
 
   // Initial position should be reset to origin.

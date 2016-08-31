@@ -169,7 +169,7 @@ void OnDemandTester::OnDemandComplete(int error) {
 std::unique_ptr<ComponentUpdateService> TestComponentUpdateServiceFactory(
     const scoped_refptr<Configurator>& config) {
   DCHECK(config);
-  return base::WrapUnique(new CrxUpdateService(config, new MockUpdateClient()));
+  return base::MakeUnique<CrxUpdateService>(config, new MockUpdateClient());
 }
 
 ComponentUpdaterTest::ComponentUpdaterTest()

@@ -239,8 +239,8 @@ std::unique_ptr<BufferQueue::AllocatedSurface> BufferQueue::GetNextSurface() {
   allocated_count_++;
   gl_->BindTexture(texture_target_, texture);
   gl_->BindTexImage2DCHROMIUM(texture_target_, id);
-  return base::WrapUnique(new AllocatedSurface(this, std::move(buffer), texture,
-                                               id, gfx::Rect(size_)));
+  return base::MakeUnique<AllocatedSurface>(this, std::move(buffer), texture,
+                                            id, gfx::Rect(size_));
 }
 
 BufferQueue::AllocatedSurface::AllocatedSurface(

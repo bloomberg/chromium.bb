@@ -171,7 +171,7 @@ class UnmaskCardRequest : public PaymentsRequest {
     request_dict.SetString("credit_card_id", request_details_.card.server_id());
     request_dict.Set("risk_data_encoded",
                      BuildRiskDictionary(request_details_.risk_data));
-    request_dict.Set("context", base::WrapUnique(new base::DictionaryValue()));
+    request_dict.Set("context", base::MakeUnique<base::DictionaryValue>());
 
     int value = 0;
     if (base::StringToInt(request_details_.user_response.exp_month, &value))
@@ -357,17 +357,16 @@ void PaymentsClient::Prepare() {
 
 void PaymentsClient::UnmaskCard(
     const PaymentsClient::UnmaskRequestDetails& request_details) {
-  IssueRequest(base::WrapUnique(new UnmaskCardRequest(request_details)), true);
+  IssueRequest(base::MakeUnique<UnmaskCardRequest>(request_details), true);
 }
 
 void PaymentsClient::GetUploadDetails(const std::string& app_locale) {
-  IssueRequest(base::WrapUnique(new GetUploadDetailsRequest(app_locale)),
-               false);
+  IssueRequest(base::MakeUnique<GetUploadDetailsRequest>(app_locale), false);
 }
 
 void PaymentsClient::UploadCard(
     const PaymentsClient::UploadRequestDetails& request_details) {
-  IssueRequest(base::WrapUnique(new UploadCardRequest(request_details)), true);
+  IssueRequest(base::MakeUnique<UploadCardRequest>(request_details), true);
 }
 
 void PaymentsClient::IssueRequest(std::unique_ptr<PaymentsRequest> request,

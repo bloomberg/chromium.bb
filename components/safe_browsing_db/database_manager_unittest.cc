@@ -132,7 +132,7 @@ class SafeBrowsingDatabaseManagerTest : public testing::Test {
  protected:
   void SetUp() override {
     V4GetHashProtocolManager::RegisterFactory(
-        base::WrapUnique(new TestV4GetHashProtocolManagerFactory()));
+        base::MakeUnique<TestV4GetHashProtocolManagerFactory>());
 
     db_manager_ = new TestSafeBrowsingDatabaseManager();
     db_manager_->StartOnIOThread(NULL, V4ProtocolConfig());

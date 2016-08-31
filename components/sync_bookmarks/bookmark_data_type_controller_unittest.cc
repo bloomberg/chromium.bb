@@ -89,8 +89,8 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test,
   };
 
   void CreateBookmarkModel(BookmarkLoadPolicy bookmark_load_policy) {
-    bookmark_model_.reset(new BookmarkModel(
-        base::WrapUnique(new bookmarks::TestBookmarkClient())));
+    bookmark_model_.reset(
+        new BookmarkModel(base::MakeUnique<bookmarks::TestBookmarkClient>()));
     if (bookmark_load_policy == LOAD_MODEL) {
       TestingPrefServiceSimple prefs;
       bookmark_model_->Load(&prefs, base::FilePath(),

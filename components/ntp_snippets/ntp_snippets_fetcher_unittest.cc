@@ -111,9 +111,9 @@ class FailingFakeURLFetcherFactory : public net::URLFetcherFactory {
   std::unique_ptr<net::URLFetcher> CreateURLFetcher(
       int id, const GURL& url, net::URLFetcher::RequestType request_type,
       net::URLFetcherDelegate* d) override {
-    return base::WrapUnique(new net::FakeURLFetcher(
+    return base::MakeUnique<net::FakeURLFetcher>(
         url, d, /*response_data=*/std::string(), net::HTTP_NOT_FOUND,
-        net::URLRequestStatus::FAILED));
+        net::URLRequestStatus::FAILED);
   }
 };
 

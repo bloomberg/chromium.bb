@@ -43,7 +43,7 @@ PrintTestContentRendererClient::~PrintTestContentRendererClient() {
 void PrintTestContentRendererClient::RenderViewCreated(
     content::RenderView* render_view) {
   new printing::PrintWebViewHelper(
-      render_view, base::WrapUnique(new PrintWebViewHelperDelegate()));
+      render_view, base::MakeUnique<PrintWebViewHelperDelegate>());
 }
 
 }  // namespace printing

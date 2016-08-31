@@ -46,7 +46,7 @@ void BookmarkExpandedStateTrackerTest::SetUp() {
   prefs_.registry()->RegisterListPref(prefs::kBookmarkEditorExpandedNodes,
                                       new base::ListValue);
   prefs_.registry()->RegisterListPref(prefs::kManagedBookmarks);
-  model_.reset(new BookmarkModel(base::WrapUnique(new TestBookmarkClient())));
+  model_.reset(new BookmarkModel(base::MakeUnique<TestBookmarkClient>()));
   model_->Load(&prefs_, base::FilePath(),
                base::ThreadTaskRunnerHandle::Get(),
                base::ThreadTaskRunnerHandle::Get());

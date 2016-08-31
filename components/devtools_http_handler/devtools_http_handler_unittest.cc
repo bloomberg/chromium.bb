@@ -77,7 +77,7 @@ class DummyServerSocketFactory
   std::unique_ptr<net::ServerSocket> CreateForHttpServer() override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&QuitFromHandlerThread, quit_closure_1_));
-    return base::WrapUnique(new DummyServerSocket());
+    return base::MakeUnique<DummyServerSocket>();
   }
 
   base::Closure quit_closure_1_;

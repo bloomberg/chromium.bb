@@ -45,14 +45,14 @@ void BrowsingDataCounter::Restart() {
   if (!pref_service_->GetBoolean(GetPrefName()))
     return;
 
-  callback_.Run(base::WrapUnique(new Result(this)));
+  callback_.Run(base::MakeUnique<Result>(this));
 
   Count();
 }
 
 void BrowsingDataCounter::ReportResult(ResultInt value) {
   DCHECK(initialized_);
-  callback_.Run(base::WrapUnique(new FinishedResult(this, value)));
+  callback_.Run(base::MakeUnique<FinishedResult>(this, value));
 }
 
 void BrowsingDataCounter::ReportResult(std::unique_ptr<Result> result) {

@@ -72,8 +72,9 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionPassing) {
   net::NetLog net_log;
   config.ConfigureURLRequestContextBuilder(&builder, &net_log, nullptr);
   // Set a ProxyConfigService to avoid DCHECK failure when building.
-  builder.set_proxy_config_service(base::WrapUnique(
-      new net::ProxyConfigServiceFixed(net::ProxyConfig::CreateDirect())));
+  builder.set_proxy_config_service(
+      base::MakeUnique<net::ProxyConfigServiceFixed>(
+          net::ProxyConfig::CreateDirect()));
   std::unique_ptr<net::URLRequestContext> context(builder.Build());
   const net::HttpNetworkSession::Params* params =
       context->GetNetworkSessionParams();
@@ -163,8 +164,9 @@ TEST(URLRequestContextConfigTest, SetQuicConnectionMigrationOptions) {
   net::NetLog net_log;
   config.ConfigureURLRequestContextBuilder(&builder, &net_log, nullptr);
   // Set a ProxyConfigService to avoid DCHECK failure when building.
-  builder.set_proxy_config_service(base::WrapUnique(
-      new net::ProxyConfigServiceFixed(net::ProxyConfig::CreateDirect())));
+  builder.set_proxy_config_service(
+      base::MakeUnique<net::ProxyConfigServiceFixed>(
+          net::ProxyConfig::CreateDirect()));
   std::unique_ptr<net::URLRequestContext> context(builder.Build());
   const net::HttpNetworkSession::Params* params =
       context->GetNetworkSessionParams();

@@ -639,7 +639,7 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
         new net::SdchOwner(context_->sdch_manager(), context_.get()));
     if (json_pref_store_) {
       sdch_owner_->EnablePersistentStorage(
-          base::WrapUnique(new SdchOwnerPrefStorage(json_pref_store_.get())));
+          base::MakeUnique<SdchOwnerPrefStorage>(json_pref_store_.get()));
     }
   }
 
@@ -996,9 +996,9 @@ static void AddQuicHint(JNIEnv* env,
   URLRequestContextConfig* config =
       reinterpret_cast<URLRequestContextConfig*>(jurl_request_context_config);
   config->quic_hints.push_back(
-      base::WrapUnique(new URLRequestContextConfig::QuicHint(
+      base::MakeUnique<URLRequestContextConfig::QuicHint>(
           base::android::ConvertJavaStringToUTF8(env, jhost), jport,
-          jalternate_port)));
+          jalternate_port));
 }
 
 // Add a public key pin to URLRequestContextConfig.

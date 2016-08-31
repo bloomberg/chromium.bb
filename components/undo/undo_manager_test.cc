@@ -88,7 +88,7 @@ void TestUndoService::Redo() {
 }
 
 void TestUndoService::TriggerOperation() {
-  undo_manager_.AddUndoOperation(base::WrapUnique(new TestUndoOperation(this)));
+  undo_manager_.AddUndoOperation(base::MakeUnique<TestUndoOperation>(this));
 }
 
 void TestUndoService::RecordUndoCall() {

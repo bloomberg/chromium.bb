@@ -358,9 +358,9 @@ void ContentSettingsRegistry::Register(
     return;
 
   DCHECK(!base::ContainsKey(content_settings_info_, type));
-  content_settings_info_[type] = base::WrapUnique(
-      new ContentSettingsInfo(website_settings_info, whitelisted_schemes,
-                              valid_settings, incognito_behavior));
+  content_settings_info_[type] = base::MakeUnique<ContentSettingsInfo>(
+      website_settings_info, whitelisted_schemes, valid_settings,
+      incognito_behavior);
 }
 
 }  // namespace content_settings

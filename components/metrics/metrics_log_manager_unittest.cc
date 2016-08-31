@@ -133,11 +133,11 @@ TEST(MetricsLogManagerTest, InterjectedLogPreservesType) {
   MetricsLogManager log_manager(&pref_service, 0);
   log_manager.LoadPersistedUnsentLogs();
 
-  log_manager.BeginLoggingWithLog(base::WrapUnique(new MetricsLog(
-      "id", 0, MetricsLog::ONGOING_LOG, &client, &pref_service)));
+  log_manager.BeginLoggingWithLog(base::MakeUnique<MetricsLog>(
+      "id", 0, MetricsLog::ONGOING_LOG, &client, &pref_service));
   log_manager.PauseCurrentLog();
-  log_manager.BeginLoggingWithLog(base::WrapUnique(new MetricsLog(
-      "id", 0, MetricsLog::INITIAL_STABILITY_LOG, &client, &pref_service)));
+  log_manager.BeginLoggingWithLog(base::MakeUnique<MetricsLog>(
+      "id", 0, MetricsLog::INITIAL_STABILITY_LOG, &client, &pref_service));
   log_manager.FinishCurrentLog();
   log_manager.ResumePausedLog();
   log_manager.StageNextLogForUpload();
@@ -173,11 +173,11 @@ TEST(MetricsLogManagerTest, StoreAndLoad) {
     log_manager.LoadPersistedUnsentLogs();
     EXPECT_TRUE(log_manager.has_unsent_logs());
 
-    log_manager.BeginLoggingWithLog(base::WrapUnique(new MetricsLog(
-        "id", 0, MetricsLog::INITIAL_STABILITY_LOG, &client, &pref_service)));
+    log_manager.BeginLoggingWithLog(base::MakeUnique<MetricsLog>(
+        "id", 0, MetricsLog::INITIAL_STABILITY_LOG, &client, &pref_service));
     log_manager.FinishCurrentLog();
-    log_manager.BeginLoggingWithLog(base::WrapUnique(new MetricsLog(
-        "id", 0, MetricsLog::ONGOING_LOG, &client, &pref_service)));
+    log_manager.BeginLoggingWithLog(base::MakeUnique<MetricsLog>(
+        "id", 0, MetricsLog::ONGOING_LOG, &client, &pref_service));
     log_manager.StageNextLogForUpload();
     log_manager.FinishCurrentLog();
 
@@ -234,8 +234,8 @@ TEST(MetricsLogManagerTest, StoreStagedLogTypes) {
     MetricsLogManager log_manager(&pref_service, 0);
     log_manager.LoadPersistedUnsentLogs();
 
-    log_manager.BeginLoggingWithLog(base::WrapUnique(new MetricsLog(
-        "id", 0, MetricsLog::ONGOING_LOG, &client, &pref_service)));
+    log_manager.BeginLoggingWithLog(base::MakeUnique<MetricsLog>(
+        "id", 0, MetricsLog::ONGOING_LOG, &client, &pref_service));
     log_manager.FinishCurrentLog();
     log_manager.StageNextLogForUpload();
     log_manager.PersistUnsentLogs();
@@ -249,8 +249,8 @@ TEST(MetricsLogManagerTest, StoreStagedLogTypes) {
     MetricsLogManager log_manager(&pref_service, 0);
     log_manager.LoadPersistedUnsentLogs();
 
-    log_manager.BeginLoggingWithLog(base::WrapUnique(new MetricsLog(
-        "id", 0, MetricsLog::INITIAL_STABILITY_LOG, &client, &pref_service)));
+    log_manager.BeginLoggingWithLog(base::MakeUnique<MetricsLog>(
+        "id", 0, MetricsLog::INITIAL_STABILITY_LOG, &client, &pref_service));
     log_manager.FinishCurrentLog();
     log_manager.StageNextLogForUpload();
     log_manager.PersistUnsentLogs();
@@ -267,11 +267,11 @@ TEST(MetricsLogManagerTest, LargeLogDiscarding) {
   MetricsLogManager log_manager(&pref_service, 1);
   log_manager.LoadPersistedUnsentLogs();
 
-  log_manager.BeginLoggingWithLog(base::WrapUnique(new MetricsLog(
-      "id", 0, MetricsLog::INITIAL_STABILITY_LOG, &client, &pref_service)));
+  log_manager.BeginLoggingWithLog(base::MakeUnique<MetricsLog>(
+      "id", 0, MetricsLog::INITIAL_STABILITY_LOG, &client, &pref_service));
   log_manager.FinishCurrentLog();
-  log_manager.BeginLoggingWithLog(base::WrapUnique(new MetricsLog(
-      "id", 0, MetricsLog::ONGOING_LOG, &client, &pref_service)));
+  log_manager.BeginLoggingWithLog(base::MakeUnique<MetricsLog>(
+      "id", 0, MetricsLog::ONGOING_LOG, &client, &pref_service));
   log_manager.FinishCurrentLog();
 
   // Only the ongoing log should be written out, due to the threshold.
@@ -289,11 +289,11 @@ TEST(MetricsLogManagerTest, DiscardOrder) {
     MetricsLogManager log_manager(&pref_service, 0);
     log_manager.LoadPersistedUnsentLogs();
 
-    log_manager.BeginLoggingWithLog(base::WrapUnique(new MetricsLog(
-        "id", 0, MetricsLog::INITIAL_STABILITY_LOG, &client, &pref_service)));
+    log_manager.BeginLoggingWithLog(base::MakeUnique<MetricsLog>(
+        "id", 0, MetricsLog::INITIAL_STABILITY_LOG, &client, &pref_service));
     log_manager.FinishCurrentLog();
-    log_manager.BeginLoggingWithLog(base::WrapUnique(new MetricsLog(
-        "id", 0, MetricsLog::ONGOING_LOG, &client, &pref_service)));
+    log_manager.BeginLoggingWithLog(base::MakeUnique<MetricsLog>(
+        "id", 0, MetricsLog::ONGOING_LOG, &client, &pref_service));
     log_manager.StageNextLogForUpload();
     log_manager.FinishCurrentLog();
     log_manager.DiscardStagedLog();

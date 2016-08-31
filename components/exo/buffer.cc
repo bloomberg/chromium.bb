@@ -439,9 +439,9 @@ std::unique_ptr<cc::SingleReleaseCallback> Buffer::ProduceTextureMailbox(
   // if one doesn't already exist. The contents of this buffer are copied to
   // |texture| using a call to CopyTexImage.
   if (!contents_texture_) {
-    contents_texture_ = base::WrapUnique(
-        new Texture(context_factory, context_provider.get(),
-                    gpu_memory_buffer_.get(), texture_target_, query_type_));
+    contents_texture_ = base::MakeUnique<Texture>(
+        context_factory, context_provider.get(), gpu_memory_buffer_.get(),
+        texture_target_, query_type_);
   }
 
   if (use_zero_copy_) {
@@ -466,7 +466,7 @@ std::unique_ptr<cc::SingleReleaseCallback> Buffer::ProduceTextureMailbox(
   // Create a mailbox texture that we copy the buffer contents to.
   if (!texture_) {
     texture_ =
-        base::WrapUnique(new Texture(context_factory, context_provider.get()));
+        base::MakeUnique<Texture>(context_factory, context_provider.get());
   }
 
   // Copy the contents of |contents_texture| to |texture| and produce a

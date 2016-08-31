@@ -153,7 +153,7 @@ void URLRequestContextAdapter::InitRequestContextOnNetworkThread() {
   net::URLRequestContextBuilder context_builder;
 
   context_builder.set_network_delegate(
-      base::WrapUnique(new BasicNetworkDelegate()));
+      base::MakeUnique<BasicNetworkDelegate>());
   context_builder.set_proxy_config_service(std::move(proxy_config_service_));
   config_->ConfigureURLRequestContextBuilder(&context_builder,
                                              g_net_log.Pointer(), nullptr);

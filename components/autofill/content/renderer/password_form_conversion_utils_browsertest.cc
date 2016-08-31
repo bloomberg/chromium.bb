@@ -187,8 +187,8 @@ class MAYBE_PasswordFormConversionUtilsTest : public content::RenderViewTest {
         input_element->setActivatedSubmit(true);
       if (with_user_input) {
         const base::string16 element_value = input_element->value();
-        user_input[control_elements[i]] = std::make_pair(
-            base::WrapUnique(new base::string16(element_value)), 0U);
+        user_input[control_elements[i]] =
+            std::make_pair(base::MakeUnique<base::string16>(element_value), 0U);
       }
     }
 

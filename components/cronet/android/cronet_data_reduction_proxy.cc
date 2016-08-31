@@ -126,8 +126,8 @@ void CronetDataReductionProxy::Init(bool enable,
       data_reduction_proxy_service(
           new data_reduction_proxy::DataReductionProxyService(
               settings_.get(), prefs_.get(), url_request_context_getter_.get(),
-              base::WrapUnique(new data_reduction_proxy::DataStore()),
-              task_runner_, task_runner_, task_runner_, base::TimeDelta()));
+              base::MakeUnique<data_reduction_proxy::DataStore>(), task_runner_,
+              task_runner_, task_runner_, base::TimeDelta()));
   io_data_->SetDataReductionProxyService(
       data_reduction_proxy_service->GetWeakPtr());
   settings_->InitDataReductionProxySettings(

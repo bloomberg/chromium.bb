@@ -1140,9 +1140,8 @@ void MetricsService::GetSyntheticFieldTrialsOlderThan(
 
 std::unique_ptr<MetricsLog> MetricsService::CreateLog(
     MetricsLog::LogType log_type) {
-  return base::WrapUnique(new MetricsLog(state_manager_->client_id(),
-                                         session_id_, log_type, client_,
-                                         local_state_));
+  return base::MakeUnique<MetricsLog>(state_manager_->client_id(), session_id_,
+                                      log_type, client_, local_state_);
 }
 
 void MetricsService::RecordCurrentEnvironment(MetricsLog* log) {

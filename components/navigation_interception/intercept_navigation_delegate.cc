@@ -88,8 +88,8 @@ InterceptNavigationDelegate* InterceptNavigationDelegate::Get(
 std::unique_ptr<content::NavigationThrottle>
 InterceptNavigationDelegate::CreateThrottleFor(
     content::NavigationHandle* handle) {
-  return base::WrapUnique(new InterceptNavigationThrottle(
-      handle, base::Bind(&CheckIfShouldIgnoreNavigationOnUIThread), false));
+  return base::MakeUnique<InterceptNavigationThrottle>(
+      handle, base::Bind(&CheckIfShouldIgnoreNavigationOnUIThread), false);
 }
 
 // static

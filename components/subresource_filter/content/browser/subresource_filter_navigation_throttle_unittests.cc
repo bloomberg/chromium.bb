@@ -71,7 +71,7 @@ class SubresourceFilterNavigationThrottleTest
   void SetUp() override {
     RenderViewHostTestHarness::SetUp();
     ContentSubresourceFilterDriverFactory::CreateForWebContents(
-        web_contents(), base::WrapUnique(new MockSubresourceFilterClient()));
+        web_contents(), base::MakeUnique<MockSubresourceFilterClient>());
 
     driver_ = new MockSubresourceFilterDriver(main_rfh());
     factory()->SetDriverForFrameHostForTesting(main_rfh(),

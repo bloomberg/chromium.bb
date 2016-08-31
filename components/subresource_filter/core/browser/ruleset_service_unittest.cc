@@ -151,8 +151,8 @@ class SubresourceFilteringRulesetServiceTest : public ::testing::Test {
   }
 
   std::unique_ptr<RulesetService> CreateRulesetService() {
-    return base::WrapUnique(
-        new RulesetService(&pref_service_, task_runner_, base_dir()));
+    return base::MakeUnique<RulesetService>(&pref_service_, task_runner_,
+                                            base_dir());
   }
 
   void ResetService(std::unique_ptr<RulesetService> new_service = nullptr) {

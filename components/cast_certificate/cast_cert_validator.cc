@@ -116,7 +116,7 @@ net::der::Input AudioOnlyPolicyOid() {
 //   * Hashes: All SHA hashes including SHA-1 (despite being known weak).
 //   * RSA keys must have a modulus at least 2048-bits long.
 std::unique_ptr<net::SignaturePolicy> CreateCastSignaturePolicy() {
-  return base::WrapUnique(new net::SimpleSignaturePolicy(2048));
+  return base::MakeUnique<net::SimpleSignaturePolicy>(2048);
 }
 
 class CertVerificationContextImpl : public CertVerificationContext {
@@ -352,8 +352,8 @@ std::unique_ptr<CertVerificationContext> CertVerificationContextImplForTest(
     const base::StringPiece& spki) {
   // Use a bogus CommonName, since this is just exposed for testing signature
   // verification by unittests.
-  return base::WrapUnique(
-      new CertVerificationContextImpl(net::der::Input(spki), "CommonName"));
+  return base::MakeUnique<CertVerificationContextImpl>(net::der::Input(spki),
+                                                       "CommonName");
 }
 
 }  // namespace cast_certificate

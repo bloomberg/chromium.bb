@@ -224,7 +224,7 @@ TEST_F(WifiConfigDelegateChromeOsTest,
   if (!create_configuration_error_callback().is_null()) {
     create_configuration_error_callback().Run(
         "Config.CreateConfiguration Failed",
-        base::WrapUnique(new base::DictionaryValue()));
+        base::MakeUnique<base::DictionaryValue>());
   }
 }
 

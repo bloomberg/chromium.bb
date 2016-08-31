@@ -95,10 +95,10 @@ PrefProvider::PrefProvider(PrefService* prefs, bool incognito)
   for (const WebsiteSettingsInfo* info : *website_settings) {
     content_settings_prefs_.insert(std::make_pair(
         info->type(),
-        base::WrapUnique(new ContentSettingsPref(
+        base::MakeUnique<ContentSettingsPref>(
             info->type(), prefs_, &pref_change_registrar_, info->pref_name(),
             is_incognito_,
-            base::Bind(&PrefProvider::Notify, base::Unretained(this))))));
+            base::Bind(&PrefProvider::Notify, base::Unretained(this)))));
   }
 
   if (!is_incognito_) {

@@ -59,7 +59,7 @@ void BlockUntilHistoryProcessesPendingRequests(
   base::RunLoop run_loop;
   base::CancelableTaskTracker tracker;
   history_service->ScheduleDBTask(
-      base::WrapUnique(new QuitTask(run_loop.QuitClosure())), &tracker);
+      base::MakeUnique<QuitTask>(run_loop.QuitClosure()), &tracker);
   run_loop.Run();
 
   // Spin the runloop again until idle.  The QuitTask above is destroyed via a

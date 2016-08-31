@@ -147,8 +147,8 @@ void HistoryCounter::MergeResults() {
   if (!local_counting_finished_ || !web_counting_finished_)
     return;
 
-  ReportResult(base::WrapUnique(
-      new HistoryResult(this, local_result_, has_synced_visits_)));
+  ReportResult(
+      base::MakeUnique<HistoryResult>(this, local_result_, has_synced_visits_));
 }
 
 HistoryCounter::HistoryResult::HistoryResult(const HistoryCounter* source,

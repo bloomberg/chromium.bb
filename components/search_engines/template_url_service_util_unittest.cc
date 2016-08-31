@@ -34,8 +34,8 @@ std::unique_ptr<TemplateURL> CreatePrepopulateTemplateURL(
     int prepopulate_id,
     const std::string& keyword,
     TemplateURLID id) {
-  return base::WrapUnique(new TemplateURL(
-      *CreatePrepopulateTemplateURLData(prepopulate_id, keyword, id)));
+  return base::MakeUnique<TemplateURL>(
+      *CreatePrepopulateTemplateURLData(prepopulate_id, keyword, id));
 }
 
 };  // namespace

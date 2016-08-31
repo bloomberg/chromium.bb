@@ -92,7 +92,7 @@ bool ConvertTimeSeconds(uint64_t seconds,
 // The required algorithms are:
 // RSASSA PKCS#1 v1.5 with SHA-256, using RSA keys 2048-bits or longer.
 std::unique_ptr<net::SignaturePolicy> CreateCastSignaturePolicy() {
-  return base::WrapUnique(new net::SimpleSignaturePolicy(2048));
+  return base::MakeUnique<net::SimpleSignaturePolicy>(2048);
 }
 
 // Verifies the CRL is signed by a trusted CRL authority at the time the CRL
@@ -338,7 +338,7 @@ std::unique_ptr<CastCRL> ParseAndVerifyCRL(const std::string& crl_proto,
       LOG(ERROR) << "CRL - Verification failed.";
       return nullptr;
     }
-    return base::WrapUnique(new CastCRLImpl(tbs_crl, overall_not_after));
+    return base::MakeUnique<CastCRLImpl>(tbs_crl, overall_not_after);
   }
   LOG(ERROR) << "No supported version of revocation data.";
   return nullptr;

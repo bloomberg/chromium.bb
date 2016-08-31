@@ -58,7 +58,7 @@ void TestSigninClient::LoadTokenDatabase() {
   scoped_refptr<WebDatabaseService> web_database =
       new WebDatabaseService(path, base::ThreadTaskRunnerHandle::Get(),
                              base::ThreadTaskRunnerHandle::Get());
-  web_database->AddTable(base::WrapUnique(new TokenServiceTable()));
+  web_database->AddTable(base::MakeUnique<TokenServiceTable>());
   web_database->LoadDatabase();
   database_ =
       new TokenWebData(web_database, base::ThreadTaskRunnerHandle::Get(),
