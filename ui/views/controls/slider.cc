@@ -242,7 +242,7 @@ void Slider::OnMouseReleased(const ui::MouseEvent& event) {
 }
 
 bool Slider::OnKeyPressed(const ui::KeyEvent& event) {
-  int new_value = value_;
+  float new_value = value_;
   if (event.key_code() == ui::VKEY_LEFT)
     new_value -= keyboard_increment_;
   else if (event.key_code() == ui::VKEY_RIGHT)

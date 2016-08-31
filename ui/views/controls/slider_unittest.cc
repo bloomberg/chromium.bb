@@ -16,6 +16,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
 #include "ui/events/gesture_event_details.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/test/slider_test_api.h"
 #include "ui/views/test/views_test_base.h"
@@ -300,6 +301,19 @@ TEST_F(HorizontalSliderTest, SliderValueForScrollGesture) {
     base::TimeDelta::FromMilliseconds(10),
     5 /* steps */);
   EXPECT_NEAR(0.75, slider()->value(), 0.03);
+}
+
+// Test the slider location by adjusting it using keyboard.
+TEST_F(HorizontalSliderTest, SliderValueForKeyboard) {
+  float value =0.5;
+  slider()->SetValue(value);
+  slider()->RequestFocus();
+  event_generator()->PressKey(ui::VKEY_RIGHT, 0);
+  EXPECT_GT(slider()->value(), value);
+
+  slider()->SetValue(value);
+  event_generator()->PressKey(ui::VKEY_LEFT, 0);
+  EXPECT_LT(slider()->value(), value);
 }
 
 // Verifies the correct SliderListener events are raised for a tap gesture.
