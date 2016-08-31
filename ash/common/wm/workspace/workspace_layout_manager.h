@@ -14,9 +14,9 @@
 #include "ash/common/wm/wm_types.h"
 #include "ash/common/wm_activation_observer.h"
 #include "ash/common/wm_layout_manager.h"
-#include "ash/common/wm_root_window_controller_observer.h"
 #include "ash/common/wm_window_observer.h"
 #include "base/macros.h"
+#include "ui/display/display_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 
@@ -35,7 +35,7 @@ class ASH_EXPORT WorkspaceLayoutManager
       public WmWindowObserver,
       public WmActivationObserver,
       public keyboard::KeyboardControllerObserver,
-      public WmRootWindowControllerObserver,
+      public display::DisplayObserver,
       public ShellObserver,
       public wm::WindowStateObserver {
  public:
@@ -57,9 +57,6 @@ class ASH_EXPORT WorkspaceLayoutManager
   void OnChildWindowVisibilityChanged(WmWindow* child, bool visibile) override;
   void SetChildBounds(WmWindow* child,
                       const gfx::Rect& requested_bounds) override;
-
-  // WmRootWindowControllerObserver overrides:
-  void OnWorkAreaChanged() override;
 
   // Overriden from WmWindowObserver:
   void OnWindowTreeChanged(
@@ -83,6 +80,10 @@ class ASH_EXPORT WorkspaceLayoutManager
   // WindowStateObserver overrides:
   void OnPostWindowStateTypeChange(wm::WindowState* window_state,
                                    wm::WindowStateType old_type) override;
+
+  // display::DisplayObserver overrides:
+  void OnDisplayMetricsChanged(const display::Display& display,
+                               uint32_t changed_metrics) override;
 
   // ShellObserver overrides:
   void OnFullscreenStateChanged(bool is_fullscreen,

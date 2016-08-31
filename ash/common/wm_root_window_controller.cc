@@ -38,16 +38,6 @@ wm::WorkspaceWindowState WmRootWindowController::GetWorkspaceWindowState() {
                                : wm::WORKSPACE_WINDOW_STATE_DEFAULT;
 }
 
-void WmRootWindowController::AddObserver(
-    WmRootWindowControllerObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void WmRootWindowController::RemoveObserver(
-    WmRootWindowControllerObserver* observer) {
-  observers_.RemoveObserver(observer);
-}
-
 void WmRootWindowController::CreateContainers() {
   // These containers are just used by PowerButtonController to animate groups
   // of containers simultaneously without messing up the current transformations

@@ -14,12 +14,12 @@
 #include "ash/common/wm/window_state_observer.h"
 #include "ash/common/wm/wm_snap_to_pixel_layout_manager.h"
 #include "ash/common/wm_activation_observer.h"
-#include "ash/common/wm_root_window_controller_observer.h"
 #include "ash/common/wm_window_observer.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
+#include "ui/display/display_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 
@@ -44,7 +44,7 @@ class WmShelf;
 // common functionality.
 class ASH_EXPORT DockedWindowLayoutManager
     : public wm::WmSnapToPixelLayoutManager,
-      public WmRootWindowControllerObserver,
+      public display::DisplayObserver,
       public WmWindowObserver,
       public WmActivationObserver,
       public ShellObserver,
@@ -135,9 +135,9 @@ class ASH_EXPORT DockedWindowLayoutManager
   void SetChildBounds(WmWindow* child,
                       const gfx::Rect& requested_bounds) override;
 
-  // WmRootWindowControllerObserver:
-  void OnWorkAreaChanged() override;
-  void OnShelfAlignmentChanged() override;
+  // display::DisplayObserver:
+  void OnDisplayMetricsChanged(const display::Display& display,
+                               uint32_t changed_metrics) override;
 
   // wm::WindowStateObserver:
   void OnPreWindowStateTypeChange(wm::WindowState* window_state,

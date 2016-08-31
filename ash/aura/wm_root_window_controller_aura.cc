@@ -8,7 +8,6 @@
 #include "ash/aura/wm_shell_aura.h"
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/shelf/shelf_widget.h"
-#include "ash/common/wm_root_window_controller_observer.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
@@ -16,7 +15,6 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_property.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/display/screen.h"
 #include "ui/events/event_targeter.h"
 #include "ui/events/event_utils.h"
 
@@ -36,14 +34,9 @@ WmRootWindowControllerAura::WmRootWindowControllerAura(
       root_window_controller_(root_window_controller) {
   root_window_controller_->GetRootWindow()->SetProperty(
       kWmRootWindowControllerKey, this);
-  WmShell::Get()->AddShellObserver(this);
-  display::Screen::GetScreen()->AddObserver(this);
 }
 
-WmRootWindowControllerAura::~WmRootWindowControllerAura() {
-  WmShell::Get()->RemoveShellObserver(this);
-  display::Screen::GetScreen()->RemoveObserver(this);
-}
+WmRootWindowControllerAura::~WmRootWindowControllerAura() {}
 
 // static
 const WmRootWindowControllerAura* WmRootWindowControllerAura::Get(
@@ -112,29 +105,6 @@ gfx::Point WmRootWindowControllerAura::GetLastMouseLocationInRoot() {
   return root_window_controller_->GetHost()
       ->dispatcher()
       ->GetLastMouseLocationInRoot();
-}
-
-void WmRootWindowControllerAura::OnShelfAlignmentChanged(
-    WmWindow* root_window) {
-  if (WmWindowAura::GetAuraWindow(root_window) !=
-      root_window_controller_->GetRootWindow())
-    return;
-
-  FOR_EACH_OBSERVER(WmRootWindowControllerObserver, *observers(),
-                    OnShelfAlignmentChanged());
-}
-
-void WmRootWindowControllerAura::OnDisplayAdded(
-    const display::Display& display) {}
-
-void WmRootWindowControllerAura::OnDisplayRemoved(
-    const display::Display& display) {}
-
-void WmRootWindowControllerAura::OnDisplayMetricsChanged(
-    const display::Display& display,
-    uint32_t metrics) {
-  FOR_EACH_OBSERVER(WmRootWindowControllerObserver, *observers(),
-                    OnWorkAreaChanged());
 }
 
 }  // namespace ash

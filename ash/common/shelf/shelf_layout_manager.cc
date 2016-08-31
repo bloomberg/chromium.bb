@@ -23,7 +23,6 @@
 #include "ash/common/wm/wm_screen_util.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_root_window_controller.h"
-#include "ash/common/wm_root_window_controller_observer.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "base/auto_reset.h"
@@ -106,42 +105,6 @@ class ShelfLayoutManager::UpdateShelfObserver
   DISALLOW_COPY_AND_ASSIGN(UpdateShelfObserver);
 };
 
-// ShelfLayoutManager::RootWindowControllerObserverImpl ------------------------
-
-// NOTE: Some other layout managers also observe for OnShelfAlignmentChanged()
-// via WmRootWindowControllerObserver instead of via ShellObserver. There are
-// implicit assumptions that these layout managers run in order. In order to
-// preserve the ordering, OnShelfAlignmentChanged() is implemented here in terms
-// of a WmRootWindowControllerObserver instead of a ShellObserver. This gives us
-// a sane ordering (or at least ordering as we've always had it in ash).
-class ShelfLayoutManager::RootWindowControllerObserverImpl
-    : public WmRootWindowControllerObserver {
- public:
-  explicit RootWindowControllerObserverImpl(
-      ShelfLayoutManager* shelf_layout_manager)
-      : shelf_layout_manager_(shelf_layout_manager),
-        root_window_controller_(
-            WmLookup::Get()
-                ->GetWindowForWidget(shelf_layout_manager->shelf_widget())
-                ->GetRootWindowController()) {
-    root_window_controller_->AddObserver(this);
-  }
-  ~RootWindowControllerObserverImpl() override {
-    root_window_controller_->RemoveObserver(this);
-  }
-
-  // WmRootWindowControllerObserver:
-  void OnShelfAlignmentChanged() override {
-    shelf_layout_manager_->LayoutShelf();
-  }
-
- private:
-  ShelfLayoutManager* shelf_layout_manager_;
-  WmRootWindowController* root_window_controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(RootWindowControllerObserverImpl);
-};
-
 // ShelfLayoutManager ----------------------------------------------------------
 
 ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf_widget,
@@ -156,9 +119,7 @@ ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf_widget,
       gesture_drag_auto_hide_state_(SHELF_AUTO_HIDE_SHOWN),
       update_shelf_observer_(NULL),
       chromevox_panel_height_(0),
-      duration_override_in_ms_(0),
-      root_window_controller_observer_(
-          new RootWindowControllerObserverImpl(this)) {
+      duration_override_in_ms_(0) {
   DCHECK(shelf_widget_);
   DCHECK(wm_shelf_);
   WmShell::Get()->AddShellObserver(this);

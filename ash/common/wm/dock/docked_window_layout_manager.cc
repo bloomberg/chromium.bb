@@ -29,6 +29,7 @@
 #include "ui/compositor/paint_recorder.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/views/background.h"
@@ -432,7 +433,7 @@ DockedWindowLayoutManager::DockedWindowLayoutManager(WmWindow* dock_container)
   DCHECK(dock_container);
   dock_container_->GetShell()->AddShellObserver(this);
   dock_container->GetShell()->AddActivationObserver(this);
-  root_window_controller_->AddObserver(this);
+  display::Screen::GetScreen()->AddObserver(this);
 }
 
 DockedWindowLayoutManager::~DockedWindowLayoutManager() {
@@ -460,7 +461,7 @@ void DockedWindowLayoutManager::Shutdown() {
   }
   dock_container_->GetShell()->RemoveActivationObserver(this);
   dock_container_->GetShell()->RemoveShellObserver(this);
-  root_window_controller_->RemoveObserver(this);
+  display::Screen::GetScreen()->RemoveObserver(this);
 }
 
 void DockedWindowLayoutManager::AddObserver(
@@ -770,30 +771,17 @@ void DockedWindowLayoutManager::SetChildBounds(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DockedWindowLayoutManager, WmRootWindowControllerObserver implementation:
+// DockedWindowLayoutManager, display::DisplayObserver implementation:
 
-void DockedWindowLayoutManager::OnWorkAreaChanged() {
+void DockedWindowLayoutManager::OnDisplayMetricsChanged(
+    const display::Display& display,
+    uint32_t changed_metrics) {
+  if (dock_container_->GetDisplayNearestWindow().id() != display.id())
+    return;
+
   Relayout();
   UpdateDockBounds(DockedWindowLayoutManagerObserver::DISPLAY_INSETS_CHANGED);
   MaybeMinimizeChildrenExcept(dragged_window_);
-}
-
-void DockedWindowLayoutManager::OnShelfAlignmentChanged() {
-  if (!shelf_ || alignment_ == DOCKED_ALIGNMENT_NONE)
-    return;
-
-  // Do not allow shelf and dock on the same side. Switch side that
-  // the dock is attached to and move all dock windows to that new side.
-  ShelfAlignment shelf_alignment = shelf_->GetAlignment();
-  if (alignment_ == DOCKED_ALIGNMENT_LEFT &&
-      shelf_alignment == SHELF_ALIGNMENT_LEFT) {
-    alignment_ = DOCKED_ALIGNMENT_RIGHT;
-  } else if (alignment_ == DOCKED_ALIGNMENT_RIGHT &&
-             shelf_alignment == SHELF_ALIGNMENT_RIGHT) {
-    alignment_ = DOCKED_ALIGNMENT_LEFT;
-  }
-  Relayout();
-  UpdateDockBounds(DockedWindowLayoutManagerObserver::SHELF_ALIGNMENT_CHANGED);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -892,6 +880,23 @@ void DockedWindowLayoutManager::OnWindowActivated(WmWindow* gained_active,
 // DockedWindowLayoutManager, ShellObserver implementation:
 
 void DockedWindowLayoutManager::OnShelfAlignmentChanged(WmWindow* root_window) {
+  if (!shelf_ || alignment_ == DOCKED_ALIGNMENT_NONE ||
+      root_window != shelf_->GetWindow()->GetRootWindow()) {
+    return;
+  }
+
+  // Do not allow shelf and dock on the same side. Switch side that
+  // the dock is attached to and move all dock windows to that new side.
+  ShelfAlignment shelf_alignment = shelf_->GetAlignment();
+  if (alignment_ == DOCKED_ALIGNMENT_LEFT &&
+      shelf_alignment == SHELF_ALIGNMENT_LEFT) {
+    alignment_ = DOCKED_ALIGNMENT_RIGHT;
+  } else if (alignment_ == DOCKED_ALIGNMENT_RIGHT &&
+             shelf_alignment == SHELF_ALIGNMENT_RIGHT) {
+    alignment_ = DOCKED_ALIGNMENT_LEFT;
+  }
+  Relayout();
+  UpdateDockBounds(DockedWindowLayoutManagerObserver::SHELF_ALIGNMENT_CHANGED);
 }
 
 void DockedWindowLayoutManager::OnFullscreenStateChanged(

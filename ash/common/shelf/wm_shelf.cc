@@ -81,8 +81,8 @@ void WmShelf::SetAlignment(ShelfAlignment alignment) {
   // The ShelfWidget notifies the ShelfView of the alignment change.
   shelf_layout_manager_->shelf_widget()->OnShelfAlignmentChanged();
   WmShell::Get()->shelf_delegate()->OnShelfAlignmentChanged(this);
+  shelf_layout_manager_->LayoutShelf();
   WmShell::Get()->NotifyShelfAlignmentChanged(GetWindow()->GetRootWindow());
-  // ShelfLayoutManager will resize the shelf.
 }
 
 bool WmShelf::IsHorizontalAlignment() const {

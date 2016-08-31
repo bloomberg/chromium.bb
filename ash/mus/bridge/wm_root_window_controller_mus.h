@@ -66,7 +66,6 @@ class WmRootWindowControllerMus : public WmRootWindowController {
 
   WmShellMus* shell_;
   RootWindowController* root_window_controller_;
-  base::ObserverList<WmRootWindowControllerObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(WmRootWindowControllerMus);
 };

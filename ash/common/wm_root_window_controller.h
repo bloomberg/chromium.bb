@@ -8,7 +8,6 @@
 #include "ash/ash_export.h"
 #include "ash/common/wm/workspace/workspace_types.h"
 #include "base/macros.h"
-#include "base/observer_list.h"
 #include "ui/views/widget/widget.h"
 
 namespace gfx {
@@ -20,7 +19,6 @@ namespace ash {
 class AlwaysOnTopController;
 class WmShelf;
 class WmShell;
-class WmRootWindowControllerObserver;
 class WmWindow;
 class WorkspaceController;
 
@@ -43,9 +41,6 @@ class ASH_EXPORT WmRootWindowController {
   }
 
   wm::WorkspaceWindowState GetWorkspaceWindowState();
-
-  void AddObserver(WmRootWindowControllerObserver* observer);
-  void RemoveObserver(WmRootWindowControllerObserver* observer);
 
   virtual bool HasShelf() = 0;
 
@@ -85,18 +80,12 @@ class ASH_EXPORT WmRootWindowController {
 
   void DeleteWorkspaceController();
 
-  base::ObserverList<WmRootWindowControllerObserver>* observers() {
-    return &observers_;
-  }
-
  private:
   WmWindow* root_;
 
   wm::RootWindowLayoutManager* root_window_layout_manager_;
 
   std::unique_ptr<WorkspaceController> workspace_controller_;
-
-  base::ObserverList<WmRootWindowControllerObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(WmRootWindowController);
 };

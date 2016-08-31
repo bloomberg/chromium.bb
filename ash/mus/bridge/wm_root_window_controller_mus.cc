@@ -4,7 +4,6 @@
 
 #include "ash/mus/bridge/wm_root_window_controller_mus.h"
 
-#include "ash/common/wm_root_window_controller_observer.h"
 #include "ash/mus/bridge/wm_shelf_mus.h"
 #include "ash/mus/bridge/wm_shell_mus.h"
 #include "ash/mus/bridge/wm_window_mus.h"

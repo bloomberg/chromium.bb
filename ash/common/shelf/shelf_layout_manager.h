@@ -186,7 +186,6 @@ class ASH_EXPORT ShelfLayoutManager
   void SetChromeVoxPanelHeight(int height);
 
  private:
-  class RootWindowControllerObserverImpl;
   class UpdateShelfObserver;
   friend class PanelLayoutManagerTest;
   friend class ShelfLayoutManagerTest;
@@ -371,9 +370,6 @@ class ASH_EXPORT ShelfLayoutManager
   // The flag to enforce invisible shelf (as in MD-experiemntal).
   // TODO(oshima): Remove this when MD immersive is launched.
   bool invisible_auto_hide_shelf_ = false;
-
-  std::unique_ptr<RootWindowControllerObserverImpl>
-      root_window_controller_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfLayoutManager);
 };

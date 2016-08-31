@@ -6,10 +6,8 @@
 #define ASH_AURA_WM_ROOT_CONTROLLER_AURA_H_
 
 #include "ash/ash_export.h"
-#include "ash/common/shell_observer.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "base/macros.h"
-#include "ui/display/display_observer.h"
 
 namespace aura {
 class Window;
@@ -19,9 +17,7 @@ namespace ash {
 
 class RootWindowController;
 
-class ASH_EXPORT WmRootWindowControllerAura : public WmRootWindowController,
-                                              public ShellObserver,
-                                              public display::DisplayObserver {
+class ASH_EXPORT WmRootWindowControllerAura : public WmRootWindowController {
  public:
   explicit WmRootWindowControllerAura(
       RootWindowController* root_window_controller);
@@ -45,15 +41,6 @@ class ASH_EXPORT WmRootWindowControllerAura : public WmRootWindowController,
       views::Widget::InitParams* init_params) override;
   WmWindow* FindEventTarget(const gfx::Point& location_in_screen) override;
   gfx::Point GetLastMouseLocationInRoot() override;
-
-  // ShellObserver:
-  void OnShelfAlignmentChanged(WmWindow* root_window) override;
-
-  // DisplayObserver:
-  void OnDisplayAdded(const display::Display& display) override;
-  void OnDisplayRemoved(const display::Display& display) override;
-  void OnDisplayMetricsChanged(const display::Display& display,
-                               uint32_t metrics) override;
 
  private:
   friend class RootWindowController;
