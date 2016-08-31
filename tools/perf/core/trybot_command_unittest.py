@@ -2,17 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 import argparse
-import logging
 import json
+import logging
+import os
 import StringIO
+import sys
 import unittest
 
-import mock
-
-from telemetry import benchmark
-from telemetry.testing import system_stub
-
 from core import trybot_command
+import mock
+from telemetry import benchmark
 
 
 class FakeProcess(object):
@@ -40,8 +39,6 @@ class TrybotCommandTest(unittest.TestCase):
     self._mock_subprocess = self._subprocess_patcher.start()
     self._urllib2_patcher = mock.patch('core.trybot_command.urllib2')
     self._urllib2_mock = self._urllib2_patcher.start()
-    self._stubs = system_stub.Override(trybot_command,
-                                       ['sys', 'open', 'os'])
     # Always set git command to 'git' to simplify testing across platforms.
     self._original_git_cmd = trybot_command._GIT_CMD
     trybot_command._GIT_CMD = 'git'
@@ -49,7 +46,6 @@ class TrybotCommandTest(unittest.TestCase):
   def tearDown(self):
     logging.getLogger().removeHandler(self.stream_handler)
     self.log_output.close()
-    self._stubs.Restore()
     self._subprocess_patcher.stop()
     self._urllib2_patcher.stop()
     # Reset the cached builders in trybot_command
@@ -58,7 +54,6 @@ class TrybotCommandTest(unittest.TestCase):
 
   def _ExpectProcesses(self, expected_args_list):
     counter = [-1]
-
     def side_effect(args, **kwargs):
       if not expected_args_list:
         self.fail(
@@ -74,14 +69,42 @@ class TrybotCommandTest(unittest.TestCase):
     self._mock_subprocess.Popen.side_effect = side_effect
 
   def _MockBuilderList(self):
-    ExcludedBots = trybot_command.EXCLUDED_BOTS
-    builders = [bot for bot in self._builder_list if bot not in ExcludedBots]
+    excluded_bots = trybot_command.EXCLUDED_BOTS
+    builders = [bot for bot in self._builder_list if bot not in excluded_bots]
     return builders
 
   def _MockTryserverJson(self, bots_dict):
     data = mock.Mock()
     data.read.return_value = json.dumps(bots_dict)
     self._urllib2_mock.urlopen.return_value = data
+
+  def _AssertTryBotExceptions(self, message, func, *args):
+    with self.assertRaises(trybot_command.TrybotError) as e:
+      func(*args)
+    self.assertIn(message, e.exception.message)
+
+  def _SetupTrybotCommand(self, try_json_dict, trybot):
+    self._MockTryserverJson(try_json_dict)
+    command = trybot_command.Trybot()
+    command._InitializeBuilderNames(trybot)
+    return command
+
+  def _GetConfigForTrybot(self, name, platform, extra_benchmark_args=None):
+    bot = '%s_perf_bisect' % name.replace('', '').replace('-', '_')
+    command = self._SetupTrybotCommand({bot: 'stuff'}, name)
+    options = argparse.Namespace(trybot=name, benchmark_name='sunspider')
+    extra_benchmark_args = extra_benchmark_args or []
+    arguments = [options.benchmark_name] + extra_benchmark_args
+    cfg = command._GetPerfConfig(platform, arguments)
+
+    return cfg, command
+
+  def _ExpectedGitTryTestArgs(self, test_name, browser, target_arch='ia32'):
+    return ('perf_try_config={'
+            '"repeat_count": "1", "command": "src/tools/perf/run_benchmark '
+            '--browser=%s %s --verbose", "max_time_minutes": "120", '
+            '"target_arch": "%s", "truncate_percent": "0"}' % (
+                browser, test_name, target_arch))
 
   def testFindAllBrowserTypesList(self):
     self._MockTryserverJson({
@@ -255,55 +278,72 @@ class TrybotCommandTest(unittest.TestCase):
         sorted(command._builder_names.get('linux')))
 
   def testNoGit(self):
-    self._MockTryserverJson({'android_nexus4_perf_bisect': 'stuff'})
-    command = trybot_command.Trybot()
-    command._InitializeBuilderNames('android-nexus4')
+    command = self._SetupTrybotCommand({'linux_perf_bisect': 'stuff'}, 'linux')
     self._ExpectProcesses((
-        (['git', 'rev-parse', '--abbrev-ref', 'HEAD'], (128, None, None)),
+        (['git', 'rev-parse', '--abbrev-ref', '--show-toplevel', 'HEAD'],
+         (128, None, None)),
     ))
-    options = argparse.Namespace(trybot='android', benchmark_name='dromaeo')
-    command.Run(options)
-    self.assertEquals(
-        'Must be in a git repository to send changes to trybots.\n',
-        self.log_output.getvalue())
+    self._AssertTryBotExceptions(
+        ('%s is not a git repository, must be in a git repository to send '
+         'changes to trybots.' % os.getcwd()),
+        command._GetRepoAndBranchName,
+        trybot_command.CHROMIUM_SRC_PATH
+    )
+
+  def testDettachedBranch(self):
+    command = self._SetupTrybotCommand({'linux_perf_bisect': 'stuff'}, 'linux')
+    self._ExpectProcesses((
+        (['git', 'rev-parse', '--abbrev-ref', '--show-toplevel', 'HEAD'],
+         (0, '/root/path_to/repo/src\nHEAD\n', None)),
+    ))
+    self._AssertTryBotExceptions(
+        'Not on a valid branch, looks like branch is dettached. [branch:HEAD]',
+        command._GetRepoAndBranchName,
+        trybot_command.CHROMIUM_SRC_PATH
+    )
 
   def testDirtyTree(self):
-    self._MockTryserverJson({'android_nexus4_perf_bisect': 'stuff'})
+    command = self._SetupTrybotCommand({'linux_perf_bisect': 'stuff'}, 'linux')
     self._ExpectProcesses((
-        (['git', 'rev-parse', '--abbrev-ref', 'HEAD'], (0, 'br', None)),
+        (['git', 'rev-parse', '--abbrev-ref', '--show-toplevel', 'HEAD'],
+         (0, '/root/path_to/repo/src\nbr\n', None)),
         (['git', 'update-index', '--refresh', '-q'], (0, None, None,)),
         (['git', 'diff-index', 'HEAD'], (0, 'dirty tree', None)),
     ))
-    options = argparse.Namespace(trybot='android-nexus4', benchmark_name='foo')
-    command = trybot_command.Trybot()
-    command.Run(options, [])
-    self.assertEquals(
-        'Cannot send a try job with a dirty tree. Commit locally first.\n',
-        self.log_output.getvalue())
+    self._AssertTryBotExceptions(
+        'Cannot send a try job with a dirty tree.',
+        command._GetRepoAndBranchName,
+        trybot_command.CHROMIUM_SRC_PATH
+    )
 
   def testNoLocalCommits(self):
-    self._MockTryserverJson({'android_nexus4_perf_bisect': 'stuff'})
-    command = trybot_command.Trybot()
-    command._InitializeBuilderNames('android-nexus4')
+    command = self._SetupTrybotCommand({'linux_perf_bisect': 'stuff'}, 'linux')
     self._ExpectProcesses((
-        (['git', 'rev-parse', '--abbrev-ref', 'HEAD'], (0, 'br', None)),
+        (['git', 'rev-parse', '--abbrev-ref', '--show-toplevel', 'HEAD'],
+         (0, '/root/path_to/repo/src\nbr\n', None)),
         (['git', 'update-index', '--refresh', '-q'], (0, None, None,)),
         (['git', 'diff-index', 'HEAD'], (0, '', None)),
-        (['git', 'log', 'origin/master..HEAD'], (0, '', None)),
-        (['git', 'rev-parse', '--abbrev-ref', 'HEAD'], (0, 'br', None)),
-        (['git', 'update-index', '--refresh', '-q'], (0, None, None,)),
-        (['git', 'diff-index', 'HEAD'], (0, '', None)),
-        (['git', 'log', 'origin/master..HEAD'], (0, '', None)),
+        (['git', 'footers', 'HEAD'], (0, 'CL footers', None)),
     ))
+    self._AssertTryBotExceptions(
+        'No local changes found in %s repository.' %
+        trybot_command.CHROMIUM_SRC_PATH,
+        command._GetRepoAndBranchName,
+        trybot_command.CHROMIUM_SRC_PATH
+    )
 
-    options = argparse.Namespace(trybot='android-nexus4', benchmark_name='foo')
-    command.Run(options)
+  def testGetRepoAndBranchName(self):
+    command = self._SetupTrybotCommand({'linux_perf_bisect': 'stuff'}, 'linux')
+    self._ExpectProcesses((
+        (['git', 'rev-parse', '--abbrev-ref', '--show-toplevel', 'HEAD'],
+         (0, '/root/path_to/repo/src\nbr\n', None)),
+        (['git', 'update-index', '--refresh', '-q'], (0, None, None,)),
+        (['git', 'diff-index', 'HEAD'], (0, '', None)),
+        (['git', 'footers', 'HEAD'], (0, '', None)),
+    ))
     self.assertEquals(
-        ('No local changes found in chromium or blink trees. '
-         'browser=android-nexus4 argument sends local changes to the '
-         'perf trybot(s): '
-         '[[\'android_nexus4_perf_bisect\']].\n'),
-        self.log_output.getvalue())
+        command._GetRepoAndBranchName(
+            trybot_command.CHROMIUM_SRC_PATH), ('src', 'br'))
 
   def testErrorOnBrowserArgSpecified(self):
     parser = trybot_command.Trybot.CreateParser()
@@ -313,131 +353,62 @@ class TrybotCommandTest(unittest.TestCase):
       trybot_command.Trybot.ProcessCommandLineArgs(
           parser, options, extra_args, None)
 
-  def testBranchCheckoutFails(self):
-    self._MockTryserverJson({'android_nexus4_perf_bisect': 'stuff'})
-    self._ExpectProcesses((
-        (['git', 'rev-parse', '--abbrev-ref', 'HEAD'], (0, 'br', None)),
-        (['git', 'update-index', '--refresh', '-q'], (0, None, None,)),
-        (['git', 'diff-index', 'HEAD'], (0, '', None)),
-        (['git', 'log', 'origin/master..HEAD'], (0, 'logs here', None)),
-        (['git', 'checkout', '-b', 'telemetry-tryjob'],
-         (1, None, 'fatal: A branch named \'telemetry-try\' already exists.')),
-    ))
-
-    command = trybot_command.Trybot()
-    options = argparse.Namespace(trybot='android-nexus4', benchmark_name='foo')
-    command.Run(options, [])
-    self.assertEquals(
-        ('Error creating branch telemetry-tryjob. '
-         'Please delete it if it exists.\n'
-         'fatal: A branch named \'telemetry-try\' already exists.\n'),
-        self.log_output.getvalue())
-
-  def _GetConfigForTrybot(self, name, platform, branch, cfg_filename,
-                          is_blink=False, extra_benchmark_args=None):
-    bot = '%s_perf_bisect' % name.replace('', '').replace('-', '_')
-    self._MockTryserverJson({bot: 'stuff'})
-    first_processes = ()
-    if is_blink:
-      first_processes = (
-          (['git', 'rev-parse', '--abbrev-ref', 'HEAD'], (0, 'br', None)),
-          (['git', 'update-index', '--refresh', '-q'], (0, None, None,)),
-          (['git', 'diff-index', 'HEAD'], (0, '', None)),
-          (['git', 'log', 'origin/master..HEAD'], (0, '', None))
-      )
-    self._ExpectProcesses(first_processes + (
-        (['git', 'rev-parse', '--abbrev-ref', 'HEAD'], (0, branch, None)),
-        (['git', 'update-index', '--refresh', '-q'], (0, None, None,)),
-        (['git', 'diff-index', 'HEAD'], (0, '', None)),
-        (['git', 'log', 'origin/master..HEAD'], (0, 'logs here', None)),
-        (['git', 'checkout', '-b', 'telemetry-tryjob'], (0, None, None)),
-        (['git', 'branch', '--set-upstream-to', 'origin/master'],
-         (0, None, None)),
-        (['git', 'commit', '-a', '-m', 'bisect config: %s' % platform],
-         (0, None, None)),
-        (['git', 'cl', 'upload', '-f', '--bypass-hooks', '-m',
-          'CL for perf tryjob on %s' % platform],
-         (0, 'stuff https://codereview.chromium.org/12345 stuff', None)),
-        (['git', 'cl', 'try', '-m', 'tryserver.chromium.perf', '-b', bot],
-         (0, None, None)),
-        (['git', 'checkout', branch], (0, None, None)),
-        (['git', 'branch', '-D', 'telemetry-tryjob'], (0, None, None))
-    ))
-    cfg = StringIO.StringIO()
-    self._stubs.open.files = {cfg_filename: cfg}
-
-    options = argparse.Namespace(trybot=name, benchmark_name='sunspider')
-    command = trybot_command.Trybot()
-    extra_benchmark_args = extra_benchmark_args or []
-    command.Run(options, extra_benchmark_args)
-    return cfg.getvalue()
-
   def testConfigAndroid(self):
-    config = self._GetConfigForTrybot(
-        'android-nexus4', 'android', 'somebranch',
-        'tools/run-perf-test.cfg')
+    config, _ = self._GetConfigForTrybot('android-nexus4', 'android')
     self.assertEquals(
-        ('config = {\n'
-         '  "command": "./tools/perf/run_benchmark '
-         '--browser=android-chromium sunspider --verbose",\n'
-         '  "max_time_minutes": "120",\n'
-         '  "repeat_count": "1",\n'
-         '  "target_arch": "ia32",\n'
-         '  "truncate_percent": "0"\n'
-         '}'), config)
+        {'command': ('src/tools/perf/run_benchmark '
+                     '--browser=android-chromium sunspider --verbose'),
+         'max_time_minutes': '120',
+         'repeat_count': '1',
+         'target_arch': 'ia32',
+         'truncate_percent': '0'
+        }, config)
 
   def testConfigMac(self):
-    config = self._GetConfigForTrybot(
-        'mac-10-9', 'mac', 'currentwork', 'tools/run-perf-test.cfg')
+    config, _ = self._GetConfigForTrybot('mac-10-9', 'mac')
     self.assertEquals(
-        ('config = {\n'
-         '  "command": "./tools/perf/run_benchmark '
-         '--browser=release sunspider --verbose",\n'
-         '  "max_time_minutes": "120",\n'
-         '  "repeat_count": "1",\n'
-         '  "target_arch": "ia32",\n'
-         '  "truncate_percent": "0"\n'
-         '}'), config)
+        {'command': ('src/tools/perf/run_benchmark '
+                     '--browser=release sunspider --verbose'),
+         'max_time_minutes': '120',
+         'repeat_count': '1',
+         'target_arch': 'ia32',
+         'truncate_percent': '0'
+        }, config)
 
   def testConfigWinX64(self):
-    config = self._GetConfigForTrybot(
-        'win-x64', 'win-x64', 'currentwork', 'tools/run-perf-test.cfg')
+    config, _ = self._GetConfigForTrybot('win-x64', 'win-x64')
+
     self.assertEquals(
-        ('config = {\n'
-         '  "command": "python tools\\\\perf\\\\run_benchmark '
-         '--browser=release_x64 sunspider --verbose",\n'
-         '  "max_time_minutes": "120",\n'
-         '  "repeat_count": "1",\n'
-         '  "target_arch": "x64",\n'
-         '  "truncate_percent": "0"\n'
-         '}'), config)
+        {'command': ('src/tools/perf/run_benchmark '
+                     '--browser=release_x64 sunspider --verbose'),
+         'max_time_minutes': '120',
+         'repeat_count': '1',
+         'target_arch': 'x64',
+         'truncate_percent': '0'
+        }, config)
 
   def testVerboseOptionIsNotAddedTwice(self):
-    config = self._GetConfigForTrybot(
-        'win-x64', 'win-x64', 'currentwork', 'tools/run-perf-test.cfg',
-        extra_benchmark_args=['-v'])
+    config, _ = self._GetConfigForTrybot(
+        'win-x64', 'win-x64', extra_benchmark_args=['-v'])
     self.assertEquals(
-        ('config = {\n'
-         '  "command": "python tools\\\\perf\\\\run_benchmark '
-         '--browser=release_x64 sunspider -v",\n'
-         '  "max_time_minutes": "120",\n'
-         '  "repeat_count": "1",\n'
-         '  "target_arch": "x64",\n'
-         '  "truncate_percent": "0"\n'
-         '}'), config)
+        {'command': ('src/tools/perf/run_benchmark '
+                     '--browser=release_x64 sunspider -v'),
+         'max_time_minutes': '120',
+         'repeat_count': '1',
+         'target_arch': 'x64',
+         'truncate_percent': '0'
+        }, config)
 
   def testConfigWinX64WithNoHyphen(self):
-    config = self._GetConfigForTrybot(
-        'winx64nvidia', 'win-x64', 'currentwork', 'tools/run-perf-test.cfg')
+    config, _ = self._GetConfigForTrybot('winx64nvidia', 'win-x64')
     self.assertEquals(
-        ('config = {\n'
-         '  "command": "python tools\\\\perf\\\\run_benchmark '
-         '--browser=release_x64 sunspider --verbose",\n'
-         '  "max_time_minutes": "120",\n'
-         '  "repeat_count": "1",\n'
-         '  "target_arch": "x64",\n'
-         '  "truncate_percent": "0"\n'
-         '}'), config)
+        {'command': ('src/tools/perf/run_benchmark '
+                     '--browser=release_x64 sunspider --verbose'),
+         'max_time_minutes': '120',
+         'repeat_count': '1',
+         'target_arch': 'x64',
+         'truncate_percent': '0'
+        }, config)
 
   def testUnsupportedTrybot(self):
     self.assertRaises(
@@ -447,188 +418,155 @@ class TrybotCommandTest(unittest.TestCase):
         {'win_perf_bisect': 'stuff'}
     )
 
-  def testConfigBlink(self):
-    config = self._GetConfigForTrybot(
-        'mac-10-9', 'mac', 'blinkbranch',
-        'Tools/run-perf-test.cfg', True)
-    self.assertEquals(
-        ('config = {\n'
-         '  "command": "./tools/perf/run_benchmark '
-         '--browser=release sunspider --verbose",\n'
-         '  "max_time_minutes": "120",\n'
-         '  "repeat_count": "1",\n'
-         '  "target_arch": "ia32",\n'
-         '  "truncate_percent": "0"\n'
-         '}'), config)
-
-  def testUpdateConfigGitCommitTrybotError(self):
-    self._MockTryserverJson({'android_nexus4_perf_bisect': 'stuff'})
-    command = trybot_command.Trybot()
-    command._InitializeBuilderNames('android-nexus4')
+  def testUploadPatchToRietveldGitCommandFailed(self):
+    command = self._SetupTrybotCommand({'linux_perf_bisect': 'stuff'}, 'linux')
+    options = argparse.Namespace(trybot='linux', benchmark_name='sunspider')
     self._ExpectProcesses((
-        (['git', 'commit', '-a', '-m', 'bisect config: android'],
-         (128, 'None', 'commit failed')),
         (['git', 'cl', 'upload', '-f', '--bypass-hooks', '-m',
-          'CL for perf tryjob on android'],
+          ('CL for src perf tryjob to run sunspider benchmark on linux '
+           'platform(s)')],
+         (128, None, None)),
+    ))
+    self._AssertTryBotExceptions(
+        'Could not upload to rietveld for src',
+        command._UploadPatchToRietveld,
+        'src',
+        options
+    )
+
+  def testUploadPatchToRietveldNoURLMatchFound(self):
+    command = self._SetupTrybotCommand({'linux_perf_bisect': 'stuff'}, 'linux')
+    options = argparse.Namespace(trybot='linux', benchmark_name='sunspider')
+    self._ExpectProcesses((
+        (['git', 'cl', 'upload', '-f', '--bypass-hooks', '-m',
+          ('CL for src perf tryjob to run sunspider benchmark on linux '
+           'platform(s)')],
+         (0, 'stuff https://dummy.chromium.org/12345 stuff', None)),
+    ))
+    self._AssertTryBotExceptions(
+        'Could not upload CL to rietveld for src!',
+        command._UploadPatchToRietveld,
+        'src',
+        options
+    )
+
+  def testUploadPatchToRietveldOnSuccess(self):
+    command = self._SetupTrybotCommand({'linux_perf_bisect': 'stuff'}, 'linux')
+    options = argparse.Namespace(trybot='linux', benchmark_name='sunspider')
+    self._ExpectProcesses((
+        (['git', 'cl', 'upload', '-f', '--bypass-hooks', '-m',
+          ('CL for src perf tryjob to run sunspider benchmark on linux '
+           'platform(s)')],
          (0, 'stuff https://codereview.chromium.org/12345 stuff', None)),
-        (['git', 'cl', 'try', '-m', 'tryserver.chromium.perf', '-b',
-          'android_nexus4_perf_bisect'], (0, None, None))))
-    cfg_filename = 'tools/run-perf-test.cfg'
-    cfg = StringIO.StringIO()
-    self._stubs.open.files = {cfg_filename: cfg}
-    self.assertRaises(
-        trybot_command.TrybotError, command._UpdateConfigAndRunTryjob,
-        'android', cfg_filename, [])
+    ))
+    self.assertEquals(command._UploadPatchToRietveld('src', options),
+                      'https://codereview.chromium.org/12345')
 
-  def testUpdateConfigGitUploadTrybotError(self):
-    self._MockTryserverJson({'android_nexus4_perf_bisect': 'stuff'})
-    command = trybot_command.Trybot()
-    command._InitializeBuilderNames('android-nexus4')
+  def testRunTryJobFailed(self):
+    test_args = self._ExpectedGitTryTestArgs('sunspider', 'release')
+    command = self._SetupTrybotCommand({'linux_perf_bisect': 'stuff'}, 'linux')
+    options = argparse.Namespace(trybot='linux', benchmark_name='sunspider')
+    arguments = [options.benchmark_name] + []
     self._ExpectProcesses((
-        (['git', 'commit', '-a', '-m', 'bisect config: android'],
-         (0, 'None', None)),
-        (['git', 'cl', 'upload', '-f', '--bypass-hooks', '-m',
-          'CL for perf tryjob on android'],
-         (128, None, 'error')),
-        (['git', 'cl', 'try', '-m', 'tryserver.chromium.perf', '-b',
-          'android_nexus4_perf_bisect'], (0, None, None))))
-    cfg_filename = 'tools/run-perf-test.cfg'
-    cfg = StringIO.StringIO()
-    self._stubs.open.files = {cfg_filename: cfg}
-    self.assertRaises(
-        trybot_command.TrybotError, command._UpdateConfigAndRunTryjob,
-        'android', cfg_filename, [])
+        (['git', 'cl', 'try', '-m', 'tryserver.chromium.perf',
+          '-p', test_args,
+          '-b',
+          'linux_perf_bisect'], (128, None, None)),))
+    self._AssertTryBotExceptions(
+        'Could not try CL for linux',
+        command._RunTryJob, 'linux', arguments)
 
-  def testUpdateConfigGitTryTrybotError(self):
-    self._MockTryserverJson({'android_nexus4_perf_bisect': 'stuff'})
-    command = trybot_command.Trybot()
-    command._InitializeBuilderNames('android-nexus4')
+  def testRunTryJobSuccess(self):
+    test_args = self._ExpectedGitTryTestArgs('sunspider', 'release')
+    command = self._SetupTrybotCommand({'linux_perf_bisect': 'stuff'}, 'linux')
+    options = argparse.Namespace(trybot='linux', benchmark_name='sunspider')
+    arguments = [options.benchmark_name] + []
     self._ExpectProcesses((
-        (['git', 'commit', '-a', '-m', 'bisect config: android'],
-         (0, 'None', None)),
+        (['git', 'cl', 'try', '-m', 'tryserver.chromium.perf',
+          '-p', test_args,
+          '-b',
+          'linux_perf_bisect'], (0, None, None)),))
+    command._RunTryJob('linux', arguments)
+    self.assertEquals('Perf Try job sent to rietveld for linux platform.',
+                      sys.stdout.getvalue().strip())
+
+  def testAttemptTryjobForCrRepo(self):
+    test_args = self._ExpectedGitTryTestArgs('sunspider', 'release')
+    command = self._SetupTrybotCommand({'linux_perf_bisect': 'stuff'}, 'linux')
+    options = argparse.Namespace(trybot='linux', benchmark_name='sunspider')
+
+    self._ExpectProcesses((
+        (['git', 'rev-parse', '--abbrev-ref', '--show-toplevel', 'HEAD'],
+         (0, '/root/path_to/repo/src\nbr\n', None)),
+        (['git', 'update-index', '--refresh', '-q'], (0, None, None,)),
+        (['git', 'diff-index', 'HEAD'], (0, '', None)),
+        (['git', 'footers', 'HEAD'], (0, '', None)),
         (['git', 'cl', 'upload', '-f', '--bypass-hooks', '-m',
-          'CL for perf tryjob on android'],
+          ('CL for src perf tryjob to run sunspider benchmark on linux '
+           'platform(s)')],
          (0, 'stuff https://codereview.chromium.org/12345 stuff', None)),
-        (['git', 'cl', 'try', '-m', 'tryserver.chromium.perf', '-b',
-          'android_nexus4_perf_bisect'], (128, None, None))))
-    cfg_filename = 'tools/run-perf-test.cfg'
-    cfg = StringIO.StringIO()
-    self._stubs.open.files = {cfg_filename: cfg}
-    self.assertRaises(
-        trybot_command.TrybotError, command._UpdateConfigAndRunTryjob,
-        'android', cfg_filename, [])
+        (['git', 'cl', 'try', '-m', 'tryserver.chromium.perf',
+          '-p', test_args, '-b', 'linux_perf_bisect'], (0, None, None))
+    ))
+    command._AttemptTryjob(trybot_command.CHROMIUM_SRC_PATH, options, [])
 
-  def testUpdateConfigSkipTryjob(self):
-    self._MockTryserverJson({'win_perf_bisect': 'stuff'})
-    command = trybot_command.Trybot()
-    command._InitializeBuilderNames('win-x64')
-    self._ExpectProcesses(())
-    cfg_filename = 'tools/run-perf-test.cfg'
-    cfg_data = ('''config = {
-  "command": "python tools\\\\perf\\\\run_benchmark --browser=release_x64'''
-''' --verbose",
-  "max_time_minutes": "120",
-  "repeat_count": "1",
-  "target_arch": "x64",
-  "truncate_percent": "0"
-}''')
-    self._stubs.open.files = {cfg_filename: cfg_data}
-    self.assertEquals((trybot_command.NO_CHANGES, ''),
-                      command._UpdateConfigAndRunTryjob(
-                          'win-x64', cfg_filename, []))
+    output = ('Uploaded try job to rietveld.\n'
+              'view progress here https://codereview.chromium.org/12345.\n'
+              '\tRepo Name: src\n'
+              '\tPath: %s\n'
+              '\tBranch: br\n'
+              'Perf Try job sent to rietveld for linux platform.') % (
+                  trybot_command.CHROMIUM_SRC_PATH)
+    self.assertEquals(output, sys.stdout.getvalue().strip())
 
-  def testUpdateConfigGitTry(self):
-    self._MockTryserverJson({'android_nexus4_perf_bisect': 'stuff'})
-    command = trybot_command.Trybot()
-    command._InitializeBuilderNames('android-nexus4')
+  def testAttemptTryjobAllForCrRepo(self):
+    default_config = self._ExpectedGitTryTestArgs('sunspider', 'release')
+    winx64_config = self._ExpectedGitTryTestArgs(
+        'sunspider', 'release_x64', 'x64')
+    android_config = self._ExpectedGitTryTestArgs(
+        'sunspider', 'android-chromium', 'ia32')
+
+    command = self._SetupTrybotCommand(
+        {'linux_perf_bisect': 'stuff',
+         'win_perf_bisect': 'stuff',
+         'winx64_perf_bisect': 'stuff',
+         'android_perf_bisect': 'stuff',
+         'mac_perf_bisect': 'stuff'}, 'all')
+    options = argparse.Namespace(trybot='all', benchmark_name='sunspider')
     self._ExpectProcesses((
-        (['git', 'commit', '-a', '-m', 'bisect config: android'],
-         (0, 'None', None)),
+        (['git', 'rev-parse', '--abbrev-ref', '--show-toplevel', 'HEAD'],
+         (0, '/root/path_to/repo/src\nbr\n', None)),
+        (['git', 'update-index', '--refresh', '-q'], (0, None, None,)),
+        (['git', 'diff-index', 'HEAD'], (0, '', None)),
+        (['git', 'footers', 'HEAD'], (0, '', None)),
         (['git', 'cl', 'upload', '-f', '--bypass-hooks', '-m',
-          'CL for perf tryjob on android'],
+          ('CL for src perf tryjob to run sunspider benchmark on all '
+           'platform(s)')],
          (0, 'stuff https://codereview.chromium.org/12345 stuff', None)),
-        (['git', 'cl', 'try', '-m', 'tryserver.chromium.perf', '-b',
-          'android_nexus4_perf_bisect'], (0, None, None))))
-    cfg_filename = 'tools/run-perf-test.cfg'
-    cfg = StringIO.StringIO()
-    self._stubs.open.files = {cfg_filename: cfg}
-    self.assertEquals((0, 'https://codereview.chromium.org/12345'),
-                      command._UpdateConfigAndRunTryjob(
-                          'android', cfg_filename, []))
-    cfg.seek(0)
-    config = '''config = {
-  "command": "./tools/perf/run_benchmark --browser=android-chromium --verbose",
-  "max_time_minutes": "120",
-  "repeat_count": "1",
-  "target_arch": "ia32",
-  "truncate_percent": "0"
-}'''
-    self.assertEquals(cfg.read(), config)
-
-  def testUpdateConfigGitTryAll(self):
-    self._MockTryserverJson({
-        'android_nexus4_perf_bisect': 'stuff',
-        'win_8_perf_bisect': 'stuff2'
-    })
-    command = trybot_command.Trybot()
-    command._InitializeBuilderNames('all')
-    self._ExpectProcesses((
-        (['git', 'rev-parse', '--abbrev-ref', 'HEAD'],
-         (0, 'CURRENT-BRANCH', None)),
-        (['git', 'update-index', '--refresh', '-q'],
-         (0, '', None)),
-        (['git', 'diff-index', 'HEAD'],
-         (0, '', None)),
-        (['git', 'log', 'origin/master..HEAD'],
-         (0, 'abcdef', None)),
-        (['git', 'checkout', '-b', 'telemetry-tryjob'],
-         (0, '', None)),
-        (['git', 'branch', '--set-upstream-to', 'origin/master'],
-         (0, '', None)),
-        (['git', 'commit', '-a', '-m', 'bisect config: win'],
-         (0, 'None', None)),
-        (['git', 'cl', 'upload', '-f', '--bypass-hooks', '-m',
-          'CL for perf tryjob on win'],
-         (0, 'stuff2 https://codereview.chromium.org/12345 stuff2', None)),
-        (['git', 'cl', 'try', '-m', 'tryserver.chromium.perf', '-b',
-          'win_8_perf_bisect'],
-         (0, None, None)),
-        (['git', 'commit', '-a', '-m', 'bisect config: android'],
-         (0, 'None', None)),
-        (['git', 'cl', 'upload', '-f', '--bypass-hooks', '-m',
-          'CL for perf tryjob on android'],
-         (0, 'stuff https://codereview.chromium.org/12345 stuff', None)),
-        (['git', 'cl', 'try', '-m', 'tryserver.chromium.perf', '-b',
-          'android_nexus4_perf_bisect'], (0, None, None)),
-        (['git', 'checkout', 'CURRENT-BRANCH'],
-         (0, '', None)),
-        (['git', 'branch', '-D', 'telemetry-tryjob'],
-         (0, '', None))))
-    cfg_filename = 'tools/run-perf-test.cfg'
-    cfg = StringIO.StringIO()
-    self._stubs.open.files = {cfg_filename: cfg}
-    self.assertEquals(0, command._AttemptTryjob(cfg_filename, []))
-    cfg.seek(0)
-
-    # The config contains both config for browser release & android-chromium,
-    # but that's because the stub testing does not reset the StringIO. In
-    # reality, the cfg_filename should be overwritten with the new data.
-    config = ('''config = {
-  "command": "python tools\\\\perf\\\\run_benchmark --browser=release '''
-  '''--verbose",
-  "max_time_minutes": "120",
-  "repeat_count": "1",
-  "target_arch": "ia32",
-  "truncate_percent": "0"
-}''''''config = {
-  "command": "./tools/perf/run_benchmark --browser=android-chromium --verbose",
-  "max_time_minutes": "120",
-  "repeat_count": "1",
-  "target_arch": "ia32",
-  "truncate_percent": "0"
-}''')
-    self.assertEquals(cfg.read(), config)
-
+        (['git', 'cl', 'try', '-m', 'tryserver.chromium.perf',
+          '-p', default_config, '-b', 'win_perf_bisect'], (0, None, None)),
+        (['git', 'cl', 'try', '-m', 'tryserver.chromium.perf',
+          '-p', android_config, '-b', 'android_perf_bisect'], (0, None, None)),
+        (['git', 'cl', 'try', '-m', 'tryserver.chromium.perf',
+          '-p', winx64_config, '-b', 'winx64_perf_bisect'], (0, None, None)),
+        (['git', 'cl', 'try', '-m', 'tryserver.chromium.perf',
+          '-p', default_config, '-b', 'mac_perf_bisect'], (0, None, None)),
+        (['git', 'cl', 'try', '-m', 'tryserver.chromium.perf',
+          '-p', default_config, '-b', 'linux_perf_bisect'], (0, None, None)),
+    ))
+    command._AttemptTryjob(trybot_command.CHROMIUM_SRC_PATH, options, [])
+    output = ('Uploaded try job to rietveld.\n'
+              'view progress here https://codereview.chromium.org/12345.\n'
+              '\tRepo Name: src\n'
+              '\tPath: %s\n'
+              '\tBranch: br\n'
+              'Perf Try job sent to rietveld for win platform.\n'
+              'Perf Try job sent to rietveld for android platform.\n'
+              'Perf Try job sent to rietveld for win-x64 platform.\n'
+              'Perf Try job sent to rietveld for mac platform.\n'
+              'Perf Try job sent to rietveld for linux platform.') % (
+                  trybot_command.CHROMIUM_SRC_PATH)
+    self.assertEquals(output, sys.stdout.getvalue().strip())
 
 
 class IsBenchmarkDisabledOnTrybotPlatformTest(unittest.TestCase):
