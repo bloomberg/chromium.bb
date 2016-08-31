@@ -936,7 +936,11 @@ test("browser_tests") {
       "$root_out_dir/resources/chromeos/",
     ]
 
-    data_deps += [ "//ui/keyboard:resources" ]
+    data_deps += [
+      # Needed for --run-in-mash, which triggers launching chrome.
+      "//chrome",
+      "//ui/keyboard:resources",
+    ]
 
     if (enable_nacl) {
       data_deps += [
@@ -1023,7 +1027,6 @@ test("browser_tests") {
 
     # Runtime dependencies
     data_deps += [
-      "//chrome",
       "//ppapi:ppapi_tests",
       "//ppapi:power_saver_test_plugin",
       "//remoting/webapp:browser_test_resources",
