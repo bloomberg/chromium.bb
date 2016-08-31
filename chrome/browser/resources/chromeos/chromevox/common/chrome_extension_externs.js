@@ -36,6 +36,7 @@ chrome.automation.EventType = {
   checkedStateChanged: '',
   childrenChanged: '',
   documentSelectionChanged: '',
+  expandedChanged: '',
   focus: '',
   hide: '',
   hover: '',

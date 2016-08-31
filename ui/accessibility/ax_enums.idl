@@ -8,7 +8,8 @@
 [camel_case_enum_to_string=true] namespace ui {
 
   // For new entries to the following three enums, also add to
-  // chrome/common/extensions/api/automation.idl.
+  // chrome/common/extensions/api/automation.idl. This is enforced
+  // by a PRESUBMIT check.
   //
   // Explanation of the comments next to these events:
   //
