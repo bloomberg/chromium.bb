@@ -340,6 +340,8 @@ source_set("earl_grey_test_support") {
   ]
 
   sources = [
+    "public/test/earl_grey/web_view_actions.h",
+    "public/test/earl_grey/web_view_actions.mm",
     "public/test/earl_grey/web_view_matchers.h",
     "public/test/earl_grey/web_view_matchers.mm",
     "public/test/web_view_interaction_test_util.h",

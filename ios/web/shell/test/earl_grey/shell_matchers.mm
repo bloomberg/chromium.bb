@@ -6,6 +6,7 @@
 
 #import "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
+#import "ios/testing/earl_grey/matchers.h"
 #include "ios/testing/earl_grey/wait_util.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
@@ -14,14 +15,18 @@
 
 namespace web {
 
-id<GREYMatcher> webViewContainingText(std::string text) {
+id<GREYMatcher> webViewContainingText(const std::string& text) {
   WebState* web_state = shell_test_util::GetCurrentWebState();
   return webViewContainingText(std::move(text), web_state);
 }
 
-id<GREYMatcher> webViewCssSelector(std::string selector) {
+id<GREYMatcher> webViewCssSelector(const std::string& selector) {
   WebState* web_state = shell_test_util::GetCurrentWebState();
   return webViewCssSelector(std::move(selector), web_state);
+}
+
+id<GREYMatcher> webView() {
+  return webViewInWebState(shell_test_util::GetCurrentWebState());
 }
 
 id<GREYMatcher> webViewScrollView() {

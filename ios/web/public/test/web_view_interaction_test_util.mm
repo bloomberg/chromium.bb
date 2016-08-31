@@ -4,9 +4,13 @@
 
 #import "ios/web/public/test/web_view_interaction_test_util.h"
 
-#import <Foundation/Foundation.h>
-
+#include "base/mac/bind_objc_block.h"
+#include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/test/ios/wait_util.h"
 #include "ios/testing/earl_grey/wait_util.h"
+#import "ios/web/public/web_state/crw_web_view_scroll_view_proxy.h"
+#import "ios/web/web_state/crw_web_view_proxy_impl.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #include "ios/web/web_state/web_state_impl.h"
 
@@ -20,6 +24,97 @@ enum ElementAction {
   ELEMENT_ACTION_FOCUS,
   ELEMENT_ACTION_SUBMIT
 };
+
+std::unique_ptr<base::Value> ExecuteJavaScript(web::WebState* web_state,
+                                               const std::string& script) {
+  __block std::unique_ptr<base::Value> result;
+  __block bool did_finish = false;
+  web_state->ExecuteJavaScript(base::UTF8ToUTF16(script),
+                               base::BindBlock(^(const base::Value* value) {
+                                 if (value)
+                                   result = value->CreateDeepCopy();
+                                 did_finish = true;
+                               }));
+
+  testing::WaitUntilCondition(testing::kWaitForJSCompletionTimeout, ^{
+    return did_finish;
+  });
+
+  // As result is marked __block, this return call does a copy and not a move
+  // (marking the variable as __block mean it is allocated in the block object
+  // and not the stack). Since the "return std::move()" pattern is discouraged
+  // use a local variable.
+  //
+  // Fixes the following compilation failure:
+  //   ../web_view_matchers.mm:ll:cc: error: call to implicitly-deleted copy
+  //       constructor of 'std::unique_ptr<base::Value>'
+  std::unique_ptr<base::Value> stack_result = std::move(result);
+  return stack_result;
+}
+
+CGRect GetBoundingRectOfElementWithId(web::WebState* web_state,
+                                      const std::string& element_id) {
+  std::string kGetBoundsScript =
+      "(function() {"
+      "  var element = document.getElementById('" +
+      element_id +
+      "');"
+      "  if (!element)"
+      "    return {'error': 'Element " +
+      element_id +
+      " not found'};"
+      "  var rect = element.getBoundingClientRect();"
+      "  var top = rect.top + document.body.scrollTop;"
+      "  var bottom = rect.bottom + document.body.scrollTop;"
+      "  var left = rect.left + document.body.scrollLeft;"
+      "  var right = rect.right + document.body.scrollLeft;"
+      "  return {"
+      "      'left': left,"
+      "      'top': top,"
+      "      'width': right - left,"
+      "      'height': bottom - top,"
+      "      'document_width' : document.documentElement.scrollWidth,"
+      "      'document_height' : document.documentElement.scrollHeight,"
+      "    };"
+      "})();";
+
+  base::DictionaryValue const* rect = nullptr;
+  bool found = false;
+  NSDate* deadline =
+      [NSDate dateWithTimeIntervalSinceNow:testing::kWaitForUIElementTimeout];
+  while (([[NSDate date] compare:deadline] != NSOrderedDescending) && !found) {
+    std::unique_ptr<base::Value> value =
+        ExecuteJavaScript(web_state, kGetBoundsScript);
+    base::DictionaryValue* dictionary = nullptr;
+    if (value && value->GetAsDictionary(&dictionary)) {
+      std::string error;
+      if (dictionary->GetString("error", &error)) {
+        DLOG(ERROR) << "Error getting rect: " << error << ", retrying..";
+      } else {
+        rect = dictionary->DeepCopy();
+        found = true;
+      }
+    }
+    base::test::ios::SpinRunLoopWithMaxDelay(
+        base::TimeDelta::FromSecondsD(testing::kSpinDelaySeconds));
+  }
+
+  if (!found)
+    return CGRectNull;
+
+  double left, top, width, height, document_width, document_height;
+  if (!(rect->GetDouble("left", &left) && rect->GetDouble("top", &top) &&
+        rect->GetDouble("width", &width) &&
+        rect->GetDouble("height", &height) &&
+        rect->GetDouble("document_width", &document_width) &&
+        rect->GetDouble("document_height", &document_height))) {
+    return CGRectNull;
+  }
+
+  CGFloat scale = [[web_state->GetWebViewProxy() scrollViewProxy] zoomScale];
+
+  return CGRectMake(left * scale, top * scale, width * scale, height * scale);
+}
 
 // Returns whether the Javascript action specified by |action| ran on
 // |element_id| in the passed |web_state|.

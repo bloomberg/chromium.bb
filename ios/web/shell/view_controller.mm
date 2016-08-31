@@ -313,7 +313,7 @@ using web::NavigationManager;
     };
     [[UIPasteboard generalPasteboard] setItems:@[ item ]];
   };
-  [alert addAction:[UIAlertAction actionWithTitle:@"Copy"
+  [alert addAction:[UIAlertAction actionWithTitle:@"Copy Link"
                                             style:UIAlertActionStyleDefault
                                           handler:handler]];
 

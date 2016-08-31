@@ -2,17 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <string>
+#ifndef IOS_WEB_SHELL_TEST_EARL_GREY_SHELL_MATCHERS_H_
+#define IOS_WEB_SHELL_TEST_EARL_GREY_SHELL_MATCHERS_H_
+
+#include <string>
 
 #import <EarlGrey/EarlGrey.h>
 
 namespace web {
 
 // Matcher for WKWebView containing |text|.
-id<GREYMatcher> webViewContainingText(std::string text);
+id<GREYMatcher> webViewContainingText(const std::string& text);
 
 // Matcher for WKWebView containing an html element which matches |selector|.
-id<GREYMatcher> webViewCssSelector(std::string selector);
+id<GREYMatcher> webViewCssSelector(const std::string& selector);
+
+// Matcher for the WKWebView.
+id<GREYMatcher> webView();
 
 // Matcher for WKWebView's scroll view.
 id<GREYMatcher> webViewScrollView();
@@ -30,3 +36,5 @@ id<GREYMatcher> forwardButton();
 id<GREYMatcher> addressField();
 
 }  // namespace web
+
+#endif  // IOS_WEB_SHELL_TEST_EARL_GREY_SHELL_MATCHERS_H_

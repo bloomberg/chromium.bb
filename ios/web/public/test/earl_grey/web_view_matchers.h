@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <string>
+#ifndef IOS_WEB_PUBLIC_TEST_EARL_GREY_WEB_VIEW_MATCHERS_H_
+#define IOS_WEB_PUBLIC_TEST_EARL_GREY_WEB_VIEW_MATCHERS_H_
+
+#include <string>
 
 #import <EarlGrey/EarlGrey.h>
 
@@ -29,3 +32,5 @@ id<GREYMatcher> webViewCssSelector(std::string selector, WebState* web_state);
 id<GREYMatcher> webViewScrollView(WebState* web_state);
 
 }  // namespace web
+
+#endif  // IOS_WEB_PUBLIC_TEST_EARL_GREY_WEB_VIEW_MATCHERS_H_
