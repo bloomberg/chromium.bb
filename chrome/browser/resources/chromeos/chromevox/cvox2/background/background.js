@@ -335,6 +335,9 @@ Background.prototype = {
     if (!this.inExcursion_ && newRange)
       this.savedRange_ = new cursors.Range(newRange.start, newRange.end);
 
+    if (newRange && !newRange.isValid())
+      return;
+
     this.currentRange_ = newRange;
     var oldMode = this.mode_;
     var newMode = this.getMode();
