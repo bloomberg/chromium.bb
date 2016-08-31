@@ -3713,8 +3713,6 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
     resources.HashFunction = NULL;
 
   int driver_bug_workarounds = 0;
-  if (workarounds().needs_glsl_built_in_function_emulation)
-    driver_bug_workarounds |= SH_EMULATE_BUILT_IN_FUNCTIONS;
   if (workarounds().init_gl_position_in_vertex_shader)
     driver_bug_workarounds |= SH_INIT_GL_POSITION;
   if (workarounds().unfold_short_circuit_as_ternary_operation)

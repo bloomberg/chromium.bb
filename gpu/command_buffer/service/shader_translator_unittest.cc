@@ -33,7 +33,7 @@ class ShaderTranslatorTest : public testing::Test {
 
     ASSERT_TRUE(vertex_translator_->Init(GL_VERTEX_SHADER, SH_GLES2_SPEC,
                                          &resources, shader_output_language_,
-                                         SH_EMULATE_BUILT_IN_FUNCTIONS,
+                                         static_cast<ShCompileOptions>(0),
                                          false));
     ASSERT_TRUE(fragment_translator_->Init(GL_FRAGMENT_SHADER, SH_GLES2_SPEC,
                                            &resources, shader_output_language_,
@@ -72,7 +72,8 @@ class ES3ShaderTranslatorTest : public testing::Test {
 
     ASSERT_TRUE(vertex_translator_->Init(GL_VERTEX_SHADER, SH_GLES3_SPEC,
                                          &resources, shader_output_language_,
-                                         SH_EMULATE_BUILT_IN_FUNCTIONS, false));
+                                         static_cast<ShCompileOptions>(0),
+                                         false));
     ASSERT_TRUE(fragment_translator_->Init(GL_FRAGMENT_SHADER, SH_GLES3_SPEC,
                                            &resources, shader_output_language_,
                                            static_cast<ShCompileOptions>(0),
@@ -427,16 +428,16 @@ TEST_F(ShaderTranslatorTest, OptionsString) {
 
   ASSERT_TRUE(translator_1->Init(GL_VERTEX_SHADER, SH_GLES2_SPEC, &resources,
                                  SH_GLSL_150_CORE_OUTPUT,
-                                 SH_EMULATE_BUILT_IN_FUNCTIONS,
+                                 static_cast<ShCompileOptions>(0),
                                  false));
   ASSERT_TRUE(translator_2->Init(GL_FRAGMENT_SHADER, SH_GLES2_SPEC, &resources,
                                  SH_GLSL_150_CORE_OUTPUT,
-                                 static_cast<ShCompileOptions>(0),
+                                 SH_INIT_OUTPUT_VARIABLES,
                                  false));
   resources.EXT_draw_buffers = 1;
   ASSERT_TRUE(translator_3->Init(GL_VERTEX_SHADER, SH_GLES2_SPEC, &resources,
                                  SH_GLSL_150_CORE_OUTPUT,
-                                 SH_EMULATE_BUILT_IN_FUNCTIONS,
+                                 static_cast<ShCompileOptions>(0),
                                  false));
 
   std::string options_1(
@@ -619,4 +620,3 @@ INSTANTIATE_TEST_CASE_P(OpenGLESContexts,
 
 }  // namespace gles2
 }  // namespace gpu
-

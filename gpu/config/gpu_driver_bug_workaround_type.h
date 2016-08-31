@@ -111,8 +111,6 @@
          max_vertex_uniform_vectors_256)                     \
   GPU_OP(MSAA_IS_SLOW,                                       \
          msaa_is_slow)                                       \
-  GPU_OP(NEEDS_GLSL_BUILT_IN_FUNCTION_EMULATION,             \
-         needs_glsl_built_in_function_emulation)             \
   GPU_OP(NEEDS_OFFSCREEN_BUFFER_WORKAROUND,                  \
          needs_offscreen_buffer_workaround)                  \
   GPU_OP(PACK_PARAMETERS_WORKAROUND_WITH_PACK_BUFFER,        \
