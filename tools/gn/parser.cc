@@ -462,7 +462,7 @@ std::unique_ptr<ParseNode> Parser::Block(const Token& token) {
 }
 
 std::unique_ptr<ParseNode> Parser::Literal(const Token& token) {
-  return base::WrapUnique(new LiteralNode(token));
+  return base::MakeUnique<LiteralNode>(token);
 }
 
 std::unique_ptr<ParseNode> Parser::Name(const Token& token) {
@@ -529,7 +529,7 @@ std::unique_ptr<ParseNode> Parser::IdentifierOrCall(
     const Token& token) {
   std::unique_ptr<ListNode> list(new ListNode);
   list->set_begin_token(token);
-  list->set_end(base::WrapUnique(new EndNode(token)));
+  list->set_end(base::MakeUnique<EndNode>(token));
   std::unique_ptr<BlockNode> block;
   bool has_arg = false;
   if (LookAhead(Token::LEFT_PAREN)) {
@@ -669,7 +669,7 @@ std::unique_ptr<ListNode> Parser::ParseList(const Token& start_token,
     *err_ = Err(cur_token(), "Trailing comma");
     return std::unique_ptr<ListNode>();
   }
-  list->set_end(base::WrapUnique(new EndNode(cur_token())));
+  list->set_end(base::MakeUnique<EndNode>(cur_token()));
   return list;
 }
 
@@ -728,7 +728,7 @@ std::unique_ptr<BlockNode> Parser::ParseBlock(
 
   for (;;) {
     if (LookAhead(Token::RIGHT_BRACE)) {
-      block->set_end(base::WrapUnique(new EndNode(Consume())));
+      block->set_end(base::MakeUnique<EndNode>(Consume()));
       break;
     }
 

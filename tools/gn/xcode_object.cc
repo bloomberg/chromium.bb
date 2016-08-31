@@ -317,7 +317,7 @@ PBXTarget::PBXTarget(const std::string& name,
       name_(name) {
   if (!shell_script.empty()) {
     build_phases_.push_back(
-        base::WrapUnique(new PBXShellScriptBuildPhase(name, shell_script)));
+        base::MakeUnique<PBXShellScriptBuildPhase>(name, shell_script));
   }
 }
 
@@ -475,8 +475,8 @@ PBXFileReference* PBXGroup::AddSourceFile(const std::string& source_path) {
   DCHECK(!source_path.empty());
   std::string::size_type sep = source_path.find("/");
   if (sep == std::string::npos) {
-    children_.push_back(base::WrapUnique(
-        new PBXFileReference(std::string(), source_path, std::string())));
+    children_.push_back(base::MakeUnique<PBXFileReference>(
+        std::string(), source_path, std::string()));
     return static_cast<PBXFileReference*>(children_.back().get());
   }
 
@@ -563,7 +563,7 @@ void PBXNativeTarget::AddFileForIndexing(
     const PBXFileReference* file_reference) {
   DCHECK(file_reference);
   source_build_phase_->AddBuildFile(
-      base::WrapUnique(new PBXBuildFile(file_reference, source_build_phase_)));
+      base::MakeUnique<PBXBuildFile>(file_reference, source_build_phase_));
 }
 
 PBXObjectClass PBXNativeTarget::Class() const {
@@ -596,11 +596,11 @@ PBXProject::PBXProject(const std::string& name,
   attributes_["BuildIndependentTargetsInParallel"] = "YES";
 
   main_group_.reset(new PBXGroup);
-  sources_ = static_cast<PBXGroup*>(main_group_->AddChild(
-      base::WrapUnique(new PBXGroup(source_path, "Source"))));
+  sources_ = static_cast<PBXGroup*>(
+      main_group_->AddChild(base::MakeUnique<PBXGroup>(source_path, "Source")));
   products_ = static_cast<PBXGroup*>(main_group_->AddChild(
-      base::WrapUnique(new PBXGroup(std::string(), "Product"))));
-  main_group_->AddChild(base::WrapUnique(new PBXGroup(std::string(), "Build")));
+      base::MakeUnique<PBXGroup>(std::string(), "Product")));
+  main_group_->AddChild(base::MakeUnique<PBXGroup>(std::string(), "Build"));
 
   configurations_.reset(new XCConfigurationList(config_name, attributes, this));
 }
@@ -620,13 +620,13 @@ void PBXProject::AddSourceFile(const std::string& source_path) {
     attributes["PRODUCT_NAME"] = name_;
 
     PBXFileReference* product_reference = static_cast<PBXFileReference*>(
-        products_->AddChild(base::WrapUnique(new PBXFileReference(
-            std::string(), name_, "compiled.mach-o.executable"))));
+        products_->AddChild(base::MakeUnique<PBXFileReference>(
+            std::string(), name_, "compiled.mach-o.executable")));
 
     const char product_type[] = "com.apple.product-type.tool";
-    targets_.push_back(base::WrapUnique(
-        new PBXNativeTarget(name_, std::string(), config_name_, attributes,
-                            product_type, name_, product_reference)));
+    targets_.push_back(base::MakeUnique<PBXNativeTarget>(
+        name_, std::string(), config_name_, attributes, product_type, name_,
+        product_reference));
     target_for_indexing_ = static_cast<PBXNativeTarget*>(targets_.back().get());
   }
 
@@ -641,8 +641,8 @@ void PBXProject::AddAggregateTarget(const std::string& name,
   attributes["CONFIGURATION_BUILD_DIR"] = ".";
   attributes["PRODUCT_NAME"] = name;
 
-  targets_.push_back(base::WrapUnique(
-      new PBXAggregateTarget(name, shell_script, config_name_, attributes)));
+  targets_.push_back(base::MakeUnique<PBXAggregateTarget>(
+      name, shell_script, config_name_, attributes));
 }
 
 void PBXProject::AddNativeTarget(const std::string& name,
@@ -651,10 +651,10 @@ void PBXProject::AddNativeTarget(const std::string& name,
                                  const std::string& output_type,
                                  const std::string& shell_script) {
   base::StringPiece ext = FindExtension(&output_name);
-  PBXFileReference* product =
-      static_cast<PBXFileReference*>(products_->AddChild(base::WrapUnique(
-          new PBXFileReference(std::string(), output_name,
-                               type.empty() ? GetSourceType(ext) : type))));
+  PBXFileReference* product = static_cast<PBXFileReference*>(
+      products_->AddChild(base::MakeUnique<PBXFileReference>(
+          std::string(), output_name,
+          type.empty() ? GetSourceType(ext) : type)));
 
   size_t ext_offset = FindExtensionOffset(output_name);
   std::string product_name = ext_offset != std::string::npos
@@ -666,9 +666,9 @@ void PBXProject::AddNativeTarget(const std::string& name,
   attributes["CONFIGURATION_BUILD_DIR"] = ".";
   attributes["PRODUCT_NAME"] = product_name;
 
-  targets_.push_back(base::WrapUnique(
-      new PBXNativeTarget(name, shell_script, config_name_, attributes,
-                          output_type, product_name, product)));
+  targets_.push_back(base::MakeUnique<PBXNativeTarget>(
+      name, shell_script, config_name_, attributes, output_type, product_name,
+      product));
 }
 
 void PBXProject::SetProjectDirPath(const std::string& project_dir_path) {
@@ -831,7 +831,7 @@ XCConfigurationList::XCConfigurationList(const std::string& name,
     : owner_reference_(owner_reference) {
   DCHECK(owner_reference_);
   configurations_.push_back(
-      base::WrapUnique(new XCBuildConfiguration(name, attributes)));
+      base::MakeUnique<XCBuildConfiguration>(name, attributes));
 }
 
 XCConfigurationList::~XCConfigurationList() {}

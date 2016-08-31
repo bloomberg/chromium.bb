@@ -459,7 +459,7 @@ int RunDesc(const std::vector<std::string>& args) {
 
   if (json) {
     // Convert all targets/configs to JSON, serialize and print them
-    auto res = base::WrapUnique(new base::DictionaryValue());
+    auto res = base::MakeUnique<base::DictionaryValue>();
     if (!target_matches.empty()) {
       for (const auto* target : target_matches) {
         res->Set(target->label().GetUserVisibleName(

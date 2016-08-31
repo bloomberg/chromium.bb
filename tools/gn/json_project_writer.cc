@@ -86,7 +86,7 @@ std::string RenderJSON(const BuildSettings* build_settings,
                        std::vector<const Target*>& all_targets) {
   Label default_toolchain_label;
 
-  auto targets = base::WrapUnique(new base::DictionaryValue());
+  auto targets = base::MakeUnique<base::DictionaryValue>();
   for (const auto* target : all_targets) {
     if (default_toolchain_label.is_null())
       default_toolchain_label = target->settings()->default_toolchain_label();
@@ -104,13 +104,13 @@ std::string RenderJSON(const BuildSettings* build_settings,
                  std::move(description));
   }
 
-  auto settings = base::WrapUnique(new base::DictionaryValue());
+  auto settings = base::MakeUnique<base::DictionaryValue>();
   settings->SetString("root_path", build_settings->root_path_utf8());
   settings->SetString("build_dir", build_settings->build_dir().value());
   settings->SetString("default_toolchain",
                       default_toolchain_label.GetUserVisibleName(false));
 
-  auto output = base::WrapUnique(new base::DictionaryValue());
+  auto output = base::MakeUnique<base::DictionaryValue>();
   output->Set("targets", std::move(targets));
   output->Set("build_settings", std::move(settings));
 
