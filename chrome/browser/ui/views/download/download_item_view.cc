@@ -987,20 +987,14 @@ void DownloadItemView::ShowContextMenuImpl(const gfx::Point& p,
     point.SetPoint(drop_down_x_left_, box_y_);
     size.SetSize(drop_down_x_right_ - drop_down_x_left_, box_height_);
   }
-  // Post a task to release the button.  When we call the Run method on the menu
-  // below, it runs an inner message loop that might cause us to be deleted.
-  // Posting a task with a WeakPtr lets us safely handle the button release.
-  base::ThreadTaskRunnerHandle::Get()->PostNonNestableTask(
-      FROM_HERE, base::Bind(&DownloadItemView::ReleaseDropDown,
-                            weak_ptr_factory_.GetWeakPtr()));
   views::View::ConvertPointToScreen(this, &point);
 
   if (!context_menu_.get())
     context_menu_.reset(new DownloadShelfContextMenuView(download()));
 
-  context_menu_->Run(GetWidget()->GetTopLevelWidget(),
-                     gfx::Rect(point, size), source_type);
-  // We could be deleted now.
+  context_menu_->Run(GetWidget()->GetTopLevelWidget(), gfx::Rect(point, size),
+                     source_type, base::Bind(&DownloadItemView::ReleaseDropDown,
+                                             weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DownloadItemView::HandlePressEvent(const ui::LocatedEvent& event,
