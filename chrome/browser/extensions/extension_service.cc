@@ -175,10 +175,9 @@ void ExtensionService::ClearProvidersForTesting() {
 }
 
 void ExtensionService::AddProviderForTesting(
-    ExternalProviderInterface* test_provider) {
+    std::unique_ptr<ExternalProviderInterface> test_provider) {
   CHECK(test_provider);
-  external_extension_providers_.push_back(
-      linked_ptr<ExternalProviderInterface>(test_provider));
+  external_extension_providers_.push_back(std::move(test_provider));
 }
 
 void ExtensionService::BlacklistExtensionForTest(

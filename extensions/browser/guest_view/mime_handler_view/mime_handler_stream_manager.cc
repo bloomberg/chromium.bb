@@ -116,11 +116,10 @@ void MimeHandlerStreamManager::AddStream(
     int render_process_id,
     int render_frame_id) {
   streams_by_extension_id_[stream->extension_id()].insert(view_id);
-  auto result = streams_.insert(
-      std::make_pair(view_id, make_linked_ptr(stream.release())));
+  auto result = streams_.insert(std::make_pair(view_id, std::move(stream)));
   DCHECK(result.second);
-  embedder_observers_[view_id] = make_linked_ptr(
-      new EmbedderObserver(this, render_process_id, render_frame_id, view_id));
+  embedder_observers_[view_id] = base::MakeUnique<EmbedderObserver>(
+      this, render_process_id, render_frame_id, view_id);
 }
 
 std::unique_ptr<StreamContainer> MimeHandlerStreamManager::ReleaseStream(

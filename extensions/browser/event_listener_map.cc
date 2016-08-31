@@ -105,10 +105,10 @@ bool EventListenerMap::AddListener(std::unique_ptr<EventListener> listener) {
     listeners_by_matcher_id_[id] = listener.get();
     filtered_events_.insert(listener->event_name());
   }
-  linked_ptr<EventListener> listener_ptr(listener.release());
-  listeners_[listener_ptr->event_name()].push_back(listener_ptr);
+  EventListener* listener_ptr = listener.get();
+  listeners_[listener->event_name()].push_back(std::move(listener));
 
-  delegate_->OnListenerAdded(listener_ptr.get());
+  delegate_->OnListenerAdded(listener_ptr);
 
   return true;
 }
@@ -189,10 +189,10 @@ void EventListenerMap::RemoveListenersForExtension(
     for (ListenerList::iterator it2 = it->second.begin();
          it2 != it->second.end();) {
       if ((*it2)->extension_id() == extension_id) {
-        linked_ptr<EventListener> listener(*it2);
-        CleanupListener(listener.get());
+        std::unique_ptr<EventListener> listener_removed = std::move(*it2);
+        CleanupListener(listener_removed.get());
         it2 = it->second.erase(it2);
-        delegate_->OnListenerRemoved(listener.get());
+        delegate_->OnListenerRemoved(listener_removed.get());
       } else {
         it2++;
       }
@@ -261,10 +261,10 @@ void EventListenerMap::RemoveListenersForProcess(
     for (ListenerList::iterator it2 = it->second.begin();
          it2 != it->second.end();) {
       if ((*it2)->process() == process) {
-        linked_ptr<EventListener> listener(*it2);
-        CleanupListener(it2->get());
+        std::unique_ptr<EventListener> listener_removed = std::move(*it2);
+        CleanupListener(listener_removed.get());
         it2 = it->second.erase(it2);
-        delegate_->OnListenerRemoved(listener.get());
+        delegate_->OnListenerRemoved(listener_removed.get());
       } else {
         it2++;
       }

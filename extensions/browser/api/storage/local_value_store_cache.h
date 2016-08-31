@@ -9,7 +9,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "extensions/browser/api/storage/settings_storage_quota_enforcer.h"
 #include "extensions/browser/api/storage/value_store_cache.h"
@@ -33,7 +32,7 @@ class LocalValueStoreCache : public ValueStoreCache {
   void DeleteStorageSoon(const std::string& extension_id) override;
 
  private:
-  typedef std::map<std::string, linked_ptr<ValueStore> > StorageMap;
+  using StorageMap = std::map<std::string, std::unique_ptr<ValueStore>>;
 
   ValueStore* GetStorage(const Extension* extension);
 

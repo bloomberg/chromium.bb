@@ -13,7 +13,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "extensions/browser/api/cast_channel/logger_util.h"
@@ -114,8 +113,8 @@ class Logger : public base::RefCounted<Logger> {
     LastErrors last_errors;
   };
 
-  typedef std::map<int, linked_ptr<AggregatedSocketEventLog> >
-      AggregatedSocketEventLogMap;
+  using AggregatedSocketEventLogMap =
+      std::map<int, std::unique_ptr<AggregatedSocketEventLog>>;
 
   // Returns a SocketEvent proto with common fields (EventType, timestamp)
   // populated.

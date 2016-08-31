@@ -1281,7 +1281,7 @@ ExtensionPrefs::GetInstalledExtensionsInfo() const {
     std::unique_ptr<ExtensionInfo> info =
         GetInstalledExtensionInfo(extension_id.key());
     if (info)
-      extensions_info->push_back(linked_ptr<ExtensionInfo>(info.release()));
+      extensions_info->push_back(std::move(info));
   }
 
   return extensions_info;
@@ -1304,7 +1304,7 @@ ExtensionPrefs::GetUninstalledExtensionsInfo() const {
     std::unique_ptr<ExtensionInfo> info =
         GetInstalledInfoHelper(extension_id.key(), ext);
     if (info)
-      extensions_info->push_back(linked_ptr<ExtensionInfo>(info.release()));
+      extensions_info->push_back(std::move(info));
   }
 
   return extensions_info;
@@ -1435,7 +1435,7 @@ ExtensionPrefs::GetAllDelayedInstallInfo() const {
     std::unique_ptr<ExtensionInfo> info =
         GetDelayedInstallInfo(extension_id.key());
     if (info)
-      extensions_info->push_back(linked_ptr<ExtensionInfo>(info.release()));
+      extensions_info->push_back(std::move(info));
   }
 
   return extensions_info;

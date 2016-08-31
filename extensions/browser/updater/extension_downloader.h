@@ -15,7 +15,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/version.h"
 #include "extensions/browser/updater/extension_downloader_delegate.h"
@@ -286,8 +285,8 @@ class ExtensionDownloader : public net::URLFetcherDelegate,
   // extensions grouped together in one batch to avoid running into the limits
   // on the length of http GET requests, so there might be multiple
   // ManifestFetchData* objects with the same base_url.
-  typedef std::map<std::pair<int, GURL>,
-                   std::vector<linked_ptr<ManifestFetchData>>> FetchMap;
+  using FetchMap = std::map<std::pair<int, GURL>,
+                            std::vector<std::unique_ptr<ManifestFetchData>>>;
   FetchMap fetches_preparing_;
 
   // Outstanding url fetch requests for manifests and updates.

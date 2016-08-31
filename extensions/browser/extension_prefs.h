@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -59,7 +58,7 @@ class URLPatternSet;
 //       maintains as the underlying extensions change.
 class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
  public:
-  typedef std::vector<linked_ptr<ExtensionInfo> > ExtensionsInfo;
+  using ExtensionsInfo = std::vector<std::unique_ptr<ExtensionInfo>>;
 
   // Vector containing identifiers for preferences.
   typedef std::set<std::string> PrefKeySet;

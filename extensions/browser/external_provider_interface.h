@@ -5,9 +5,9 @@
 #ifndef EXTENSIONS_BROWSER_EXTERNAL_PROVIDER_INTERFACE_H_
 #define EXTENSIONS_BROWSER_EXTERNAL_PROVIDER_INTERFACE_H_
 
+#include <memory>
 #include <vector>
 
-#include "base/memory/linked_ptr.h"
 #include "extensions/common/manifest.h"
 
 class GURL;
@@ -96,8 +96,8 @@ class ExternalProviderInterface {
   virtual bool IsReady() const = 0;
 };
 
-typedef std::vector<linked_ptr<ExternalProviderInterface> >
-    ProviderCollection;
+using ProviderCollection =
+    std::vector<std::unique_ptr<ExternalProviderInterface>>;
 
 }  // namespace extensions
 

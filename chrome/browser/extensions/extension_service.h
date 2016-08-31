@@ -429,9 +429,8 @@ class ExtensionService
   void ClearProvidersForTesting();
 
   // Adds an ExternalProviderInterface for the service to use during testing.
-  // Takes ownership of |test_provider|.
   void AddProviderForTesting(
-      extensions::ExternalProviderInterface* test_provider);
+      std::unique_ptr<extensions::ExternalProviderInterface> test_provider);
 
   // Simulate an extension being blacklisted for tests.
   void BlacklistExtensionForTest(const std::string& extension_id);

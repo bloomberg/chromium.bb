@@ -174,14 +174,12 @@ bool ImeObserver::ShouldForwardKeyEvent() const {
   // the key events, and therefore, all key events will be eaten.
   // This is for error-tolerance, and it means that onKeyEvent will never wake
   // up lazy background page.
-  const extensions::EventListenerMap::ListenerList& listener_list =
+  const extensions::EventListenerMap::ListenerList& listeners =
       extensions::EventRouter::Get(profile_)
           ->listeners()
           .GetEventListenersByName(input_ime::OnKeyEvent::kEventName);
-  for (extensions::EventListenerMap::ListenerList::const_iterator it =
-           listener_list.begin();
-       it != listener_list.end(); ++it) {
-    if ((*it)->extension_id() == extension_id_ && !(*it)->IsLazy())
+  for (const std::unique_ptr<extensions::EventListener>& listener : listeners) {
+    if (listener->extension_id() == extension_id_ && !listener->IsLazy())
       return true;
   }
   return false;

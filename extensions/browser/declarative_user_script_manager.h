@@ -8,7 +8,6 @@
 #include <map>
 
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/scoped_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/extension_registry_observer.h"
@@ -40,7 +39,7 @@ class DeclarativeUserScriptManager : public KeyedService,
 
  private:
   using UserScriptMasterMap =
-      std::map<HostID, linked_ptr<DeclarativeUserScriptMaster>>;
+      std::map<HostID, std::unique_ptr<DeclarativeUserScriptMaster>>;
 
   // ExtensionRegistryObserver:
   void OnExtensionUnloaded(content::BrowserContext* browser_context,

@@ -12,7 +12,6 @@
 #include <utility>
 
 #include "base/callback.h"
-#include "base/memory/linked_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "net/base/backoff_entry.h"
@@ -85,8 +84,8 @@ class RequestQueue {
   struct Request {
     Request(net::BackoffEntry* backoff_entry, T* request)
         : backoff_entry(backoff_entry), request(request) {}
-    linked_ptr<net::BackoffEntry> backoff_entry;
-    linked_ptr<T> request;
+    std::unique_ptr<net::BackoffEntry> backoff_entry;
+    std::unique_ptr<T> request;
   };
 
   // Compares the release time of two pending requests.

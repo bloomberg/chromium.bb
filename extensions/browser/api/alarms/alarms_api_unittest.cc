@@ -75,17 +75,17 @@ class ExtensionAlarmsTest : public ApiUnitTest {
 
   // Takes a JSON result from a function and converts it to a vector of
   // JsAlarms.
-  std::vector<linked_ptr<JsAlarm>> ToAlarmList(base::ListValue* value) {
-    std::vector<linked_ptr<JsAlarm>> list;
+  std::vector<std::unique_ptr<JsAlarm>> ToAlarmList(base::ListValue* value) {
+    std::vector<std::unique_ptr<JsAlarm>> list;
     for (size_t i = 0; i < value->GetSize(); ++i) {
-      linked_ptr<JsAlarm> alarm(new JsAlarm);
+      std::unique_ptr<JsAlarm> alarm(new JsAlarm());
       base::DictionaryValue* alarm_value;
       if (!value->GetDictionary(i, &alarm_value)) {
         ADD_FAILURE() << "Expected a list of Alarm objects.";
         return list;
       }
       EXPECT_TRUE(JsAlarm::Populate(*alarm_value, alarm.get()));
-      list.push_back(alarm);
+      list.push_back(std::move(alarm));
     }
     return list;
   }
@@ -366,7 +366,7 @@ TEST_F(ExtensionAlarmsTest, GetAll) {
   {
     std::unique_ptr<base::ListValue> result(
         RunFunctionAndReturnList(new AlarmsGetAllFunction(), "[]"));
-    std::vector<linked_ptr<JsAlarm>> alarms = ToAlarmList(result.get());
+    std::vector<std::unique_ptr<JsAlarm>> alarms = ToAlarmList(result.get());
     EXPECT_EQ(0u, alarms.size());
   }
 
@@ -376,7 +376,7 @@ TEST_F(ExtensionAlarmsTest, GetAll) {
   {
     std::unique_ptr<base::ListValue> result(
         RunFunctionAndReturnList(new AlarmsGetAllFunction(), "[null]"));
-    std::vector<linked_ptr<JsAlarm>> alarms = ToAlarmList(result.get());
+    std::vector<std::unique_ptr<JsAlarm>> alarms = ToAlarmList(result.get());
     EXPECT_EQ(2u, alarms.size());
 
     // Test the "7" alarm.

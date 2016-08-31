@@ -46,7 +46,7 @@ void BlobHolder::HoldBlobReference(std::unique_ptr<content::BlobHandle> blob) {
   DCHECK(!ContainsBlobHandle(blob.get()));
 
   std::string uuid = blob->GetUUID();
-  held_blobs_.insert(make_pair(uuid, make_linked_ptr(blob.release())));
+  held_blobs_.insert(make_pair(uuid, std::move(blob)));
 }
 
 BlobHolder::BlobHolder(content::RenderProcessHost* render_process_host)

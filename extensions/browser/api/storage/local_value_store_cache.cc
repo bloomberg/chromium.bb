@@ -81,12 +81,13 @@ ValueStore* LocalValueStoreCache::GetStorage(const Extension* extension) {
                           : ValueStoreFactory::ModelType::EXTENSION;
   std::unique_ptr<ValueStore> store = storage_factory_->CreateSettingsStore(
       settings_namespace::LOCAL, model_type, extension->id());
-  linked_ptr<SettingsStorageQuotaEnforcer> storage(
+  std::unique_ptr<SettingsStorageQuotaEnforcer> storage(
       new SettingsStorageQuotaEnforcer(quota_, std::move(store)));
   DCHECK(storage.get());
 
-  storage_map_[extension->id()] = storage;
-  return storage.get();
+  ValueStore* storage_ptr = storage.get();
+  storage_map_[extension->id()] = std::move(storage);
+  return storage_ptr;
 }
 
 }  // namespace extensions

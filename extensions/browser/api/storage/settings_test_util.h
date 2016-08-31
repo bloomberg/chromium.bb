@@ -10,7 +10,6 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/test/base/testing_profile.h"
 #include "extensions/browser/api/storage/settings_namespace.h"

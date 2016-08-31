@@ -1475,14 +1475,13 @@ void BluetoothLowEnergyEventRouter::DispatchEventToExtensionsWithPermission(
   // only once.
   BluetoothPermissionRequest request(uuid.value());
   std::set<std::string> handled_extensions;
-  const EventListenerMap::ListenerList listeners =
-      EventRouter::Get(browser_context_)->listeners().GetEventListenersByName(
-          event_name);
+  const EventListenerMap::ListenerList& listeners =
+      EventRouter::Get(browser_context_)
+          ->listeners()
+          .GetEventListenersByName(event_name);
 
-  for (EventListenerMap::ListenerList::const_iterator iter = listeners.begin();
-       iter != listeners.end();
-       ++iter) {
-    const std::string extension_id = (*iter)->extension_id();
+  for (const std::unique_ptr<EventListener>& listener : listeners) {
+    const std::string& extension_id = listener->extension_id();
     if (handled_extensions.find(extension_id) != handled_extensions.end())
       continue;
 

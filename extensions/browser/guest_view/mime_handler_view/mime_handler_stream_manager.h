@@ -9,7 +9,6 @@
 #include <set>
 #include <string>
 
-#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/scoped_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -52,7 +51,7 @@ class MimeHandlerStreamManager : public KeyedService,
 
   // Maps view id->StreamContainer to maintain their lifetime until they are
   // used or removed.
-  std::map<std::string, linked_ptr<StreamContainer>> streams_;
+  std::map<std::string, std::unique_ptr<StreamContainer>> streams_;
 
   // Maps extension id->view id for removing the associated streams when an
   // extension is unloaded.
@@ -60,7 +59,7 @@ class MimeHandlerStreamManager : public KeyedService,
 
   // Maps view id->EmbedderObserver for maintaining the lifetime of the
   // EmbedderObserver until it is removed.
-  std::map<std::string, linked_ptr<EmbedderObserver>> embedder_observers_;
+  std::map<std::string, std::unique_ptr<EmbedderObserver>> embedder_observers_;
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;

@@ -30,15 +30,12 @@ void ContentVerifierIOData::AddData(const std::string& extension_id,
                                     std::unique_ptr<ExtensionData> data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   CHECK(data->browser_image_paths.get());
-  data_map_[extension_id] = linked_ptr<ExtensionData>(data.release());
+  data_map_[extension_id] = std::move(data);
 }
 
 void ContentVerifierIOData::RemoveData(const std::string& extension_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  std::map<std::string, linked_ptr<ExtensionData> >::iterator found =
-      data_map_.find(extension_id);
-  if (found != data_map_.end())
-    data_map_.erase(found);
+  data_map_.erase(extension_id);
 }
 
 void ContentVerifierIOData::Clear() {
@@ -49,7 +46,7 @@ void ContentVerifierIOData::Clear() {
 const ContentVerifierIOData::ExtensionData* ContentVerifierIOData::GetData(
     const std::string& extension_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  std::map<std::string, linked_ptr<ExtensionData> >::iterator found =
+  std::map<std::string, std::unique_ptr<ExtensionData>>::iterator found =
       data_map_.find(extension_id);
   if (found != data_map_.end())
     return found->second.get();

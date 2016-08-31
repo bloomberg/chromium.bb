@@ -4,6 +4,7 @@
 
 #include "extensions/browser/declarative_user_script_manager.h"
 
+#include "base/memory/ptr_util.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/declarative_user_script_manager_factory.h"
 #include "extensions/browser/declarative_user_script_master.h"
@@ -42,10 +43,12 @@ DeclarativeUserScriptManager::GetDeclarativeUserScriptMasterByID(
 DeclarativeUserScriptMaster*
 DeclarativeUserScriptManager::CreateDeclarativeUserScriptMaster(
     const HostID& host_id) {
-  linked_ptr<DeclarativeUserScriptMaster> master(
-      new DeclarativeUserScriptMaster(browser_context_, host_id));
-  declarative_user_script_masters_[host_id] = master;
-  return master.get();
+  // Inserts a new DeclarativeUserScriptManager and returns a ptr to it.
+  return declarative_user_script_masters_
+      .insert(
+          std::make_pair(host_id, base::MakeUnique<DeclarativeUserScriptMaster>(
+                                      browser_context_, host_id)))
+      .first->second.get();
 }
 
 void DeclarativeUserScriptManager::OnExtensionUnloaded(

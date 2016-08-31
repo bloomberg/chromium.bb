@@ -10,7 +10,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/memory/linked_ptr.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
@@ -44,10 +43,8 @@ void AddEventListener(
     extensions::EventListenerMap::ListenerList* listener_list) {
   std::unique_ptr<base::DictionaryValue> filter(new base::DictionaryValue);
   filter->SetString(kEventFilterServiceTypeKey, service_type);
-  listener_list->push_back(make_linked_ptr(
-      EventListener::ForExtension(kEventFilterServiceTypeKey, extension_id,
-                                  nullptr, std::move(filter))
-          .release()));
+  listener_list->push_back(EventListener::ForExtension(
+      kEventFilterServiceTypeKey, extension_id, nullptr, std::move(filter)));
 }
 
 class NullDelegate : public EventListenerMap::Delegate {

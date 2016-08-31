@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/supports_user_data.h"
 
 namespace content {
@@ -37,8 +36,8 @@ class BlobHolder : public base::SupportsUserData::Data {
   void HoldBlobReference(std::unique_ptr<content::BlobHandle> blob);
 
  private:
-  typedef std::multimap<std::string, linked_ptr<content::BlobHandle> >
-      BlobHandleMultimap;
+  using BlobHandleMultimap =
+      std::multimap<std::string, std::unique_ptr<content::BlobHandle>>;
 
   explicit BlobHolder(content::RenderProcessHost* render_process_host);
 

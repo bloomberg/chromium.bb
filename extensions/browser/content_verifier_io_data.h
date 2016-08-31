@@ -11,7 +11,6 @@
 #include <string>
 
 #include "base/files/file_path.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/version.h"
 
@@ -46,7 +45,7 @@ class ContentVerifierIOData
   friend class base::RefCountedThreadSafe<ContentVerifierIOData>;
   virtual ~ContentVerifierIOData();
 
-  std::map<std::string, linked_ptr<ExtensionData> > data_map_;
+  std::map<std::string, std::unique_ptr<ExtensionData>> data_map_;
 };
 
 }  // namespace extensions

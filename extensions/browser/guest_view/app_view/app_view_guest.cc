@@ -53,7 +53,7 @@ struct ResponseInfo {
   ~ResponseInfo() {}
 };
 
-typedef std::map<int, linked_ptr<ResponseInfo> > PendingResponseMap;
+using PendingResponseMap = std::map<int, std::unique_ptr<ResponseInfo>>;
 static base::LazyInstance<PendingResponseMap> pending_response_map =
     LAZY_INSTANCE_INITIALIZER;
 
@@ -79,7 +79,7 @@ bool AppViewGuest::CompletePendingRequest(
     return false;
   }
 
-  linked_ptr<ResponseInfo> response_info = it->second;
+  ResponseInfo* response_info = it->second.get();
   if (!response_info->app_view_guest ||
       (response_info->guest_extension->id() != guest_extension_id)) {
     // The app is trying to communicate with an <appview> not assigned to it, or
@@ -191,12 +191,10 @@ void AppViewGuest::CreateWebContents(
     return;
   }
 
-  pending_response_map.Get().insert(
-      std::make_pair(guest_instance_id(),
-                     make_linked_ptr(new ResponseInfo(
-                                        guest_extension,
-                                        weak_ptr_factory_.GetWeakPtr(),
-                                        callback))));
+  pending_response_map.Get().insert(std::make_pair(
+      guest_instance_id(),
+      base::MakeUnique<ResponseInfo>(
+          guest_extension, weak_ptr_factory_.GetWeakPtr(), callback)));
 
   LazyBackgroundTaskQueue* queue =
       LazyBackgroundTaskQueue::Get(browser_context());

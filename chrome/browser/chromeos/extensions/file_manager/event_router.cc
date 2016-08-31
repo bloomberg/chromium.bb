@@ -342,7 +342,7 @@ class JobEventRouterImpl : public JobEventRouter {
 
     std::set<std::string> extension_ids;
 
-    for (const auto listener : listeners) {
+    for (const auto& listener : listeners) {
       extension_ids.insert(listener->extension_id());
     }
 

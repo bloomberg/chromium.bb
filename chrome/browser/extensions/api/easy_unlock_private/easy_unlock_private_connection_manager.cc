@@ -153,7 +153,7 @@ void EasyUnlockPrivateConnectionManager::DispatchConnectionEvent(
     events::HistogramValue histogram_value,
     const Connection* connection,
     std::unique_ptr<base::ListValue> args) {
-  const EventListenerMap::ListenerList listeners =
+  const EventListenerMap::ListenerList& listeners =
       EventRouter::Get(browser_context_)
           ->listeners()
           .GetEventListenersByName(event_name);

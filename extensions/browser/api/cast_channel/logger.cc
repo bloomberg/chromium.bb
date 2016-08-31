@@ -294,7 +294,7 @@ AggregatedSocketEvent& Logger::LogSocketEvent(int channel_id,
 
     it = aggregated_socket_events_
              .insert(std::make_pair(
-                 channel_id, make_linked_ptr(new AggregatedSocketEventLog)))
+                 channel_id, base::MakeUnique<AggregatedSocketEventLog>()))
              .first;
     it->second->aggregated_socket_event.set_id(channel_id);
   }

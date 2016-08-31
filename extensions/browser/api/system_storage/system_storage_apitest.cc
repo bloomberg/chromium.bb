@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/storage_monitor/storage_monitor.h"
@@ -110,14 +110,14 @@ IN_PROC_BROWSER_TEST_F(SystemStorageApiTest, Storage) {
   TestStorageInfoProvider* provider =
       new TestStorageInfoProvider(kTestingData, arraysize(kTestingData));
   extensions::StorageInfoProvider::InitializeForTesting(provider);
-  std::vector<linked_ptr<ExtensionTestMessageListener>> device_ids_listeners;
+  std::vector<std::unique_ptr<ExtensionTestMessageListener>>
+      device_ids_listeners;
   for (size_t i = 0; i < arraysize(kTestingData); ++i) {
-    linked_ptr<ExtensionTestMessageListener> listener(
-        new ExtensionTestMessageListener(
+    device_ids_listeners.push_back(
+        base::MakeUnique<ExtensionTestMessageListener>(
             StorageMonitor::GetInstance()->GetTransientIdForDeviceId(
                 kTestingData[i].device_id),
             false));
-    device_ids_listeners.push_back(listener);
   }
   ASSERT_TRUE(RunAppTest("system/storage")) << message_;
   for (size_t i = 0; i < device_ids_listeners.size(); ++i)

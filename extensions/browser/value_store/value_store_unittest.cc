@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/json/json_writer.h"
-#include "base/memory/linked_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 
 using content::BrowserThread;
@@ -88,12 +88,9 @@ testing::AssertionResult ChangesEq(
         " but was " << actual.size();
   }
 
-  std::map<std::string, linked_ptr<ValueStoreChange> > expected_as_map;
-  for (ValueStoreChangeList::const_iterator it = expected.begin();
-      it != expected.end(); ++it) {
-    expected_as_map[it->key()] =
-        linked_ptr<ValueStoreChange>(new ValueStoreChange(*it));
-  }
+  std::map<std::string, std::unique_ptr<ValueStoreChange>> expected_as_map;
+  for (const ValueStoreChange& change : expected)
+    expected_as_map[change.key()] = base::MakeUnique<ValueStoreChange>(change);
 
   std::set<std::string> keys_seen;
 

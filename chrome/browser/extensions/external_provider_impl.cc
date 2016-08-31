@@ -12,7 +12,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/memory/linked_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -530,15 +530,9 @@ void ExternalProviderImpl::CreateExternalProviders(
 
   // Policies are mandatory so they can't be skipped with command line flag.
   if (external_loader.get()) {
-    provider_list->push_back(
-        linked_ptr<ExternalProviderInterface>(
-            new ExternalProviderImpl(
-                service,
-                external_loader,
-                profile,
-                crx_location,
-                Manifest::EXTERNAL_POLICY_DOWNLOAD,
-                Extension::NO_FLAGS)));
+    provider_list->push_back(base::MakeUnique<ExternalProviderImpl>(
+        service, external_loader, profile, crx_location,
+        Manifest::EXTERNAL_POLICY_DOWNLOAD, Extension::NO_FLAGS));
   }
 
   // Load the KioskAppExternalProvider when running in kiosk mode.
@@ -565,8 +559,7 @@ void ExternalProviderImpl::CreateExternalProviders(
               location, Manifest::INVALID_LOCATION, Extension::NO_FLAGS));
       kiosk_app_provider->set_auto_acknowledge(true);
       kiosk_app_provider->set_install_immediately(true);
-      provider_list->push_back(
-          linked_ptr<ExternalProviderInterface>(kiosk_app_provider.release()));
+      provider_list->push_back(std::move(kiosk_app_provider));
     }
 
     // Kiosk secondary app external provider.
@@ -578,8 +571,7 @@ void ExternalProviderImpl::CreateExternalProviders(
               Manifest::EXTERNAL_PREF_DOWNLOAD, Extension::NO_FLAGS));
       secondary_kiosk_app_provider->set_auto_acknowledge(true);
       secondary_kiosk_app_provider->set_install_immediately(true);
-      provider_list->push_back(linked_ptr<ExternalProviderInterface>(
-          secondary_kiosk_app_provider.release()));
+      provider_list->push_back(std::move(secondary_kiosk_app_provider));
     }
 #endif
     return;
@@ -587,13 +579,9 @@ void ExternalProviderImpl::CreateExternalProviders(
 
   // Extensions provided by recommended policies.
   if (external_recommended_loader.get()) {
-    provider_list->push_back(linked_ptr<ExternalProviderInterface>(
-        new ExternalProviderImpl(service,
-                                 external_recommended_loader,
-                                 profile,
-                                 crx_location,
-                                 Manifest::EXTERNAL_PREF_DOWNLOAD,
-                                 Extension::NO_FLAGS)));
+    provider_list->push_back(base::MakeUnique<ExternalProviderImpl>(
+        service, external_recommended_loader, profile, crx_location,
+        Manifest::EXTERNAL_PREF_DOWNLOAD, Extension::NO_FLAGS));
   }
 
   // In tests don't install extensions from default external sources.
@@ -627,98 +615,66 @@ void ExternalProviderImpl::CreateExternalProviders(
         profile->IsNewProfile()
             ? ExternalPrefLoader::DELAY_LOAD_UNTIL_PRIORITY_SYNC
             : ExternalPrefLoader::NONE;
-    provider_list->push_back(
-        linked_ptr<ExternalProviderInterface>(new ExternalProviderImpl(
-            service, new ExternalPrefLoader(external_apps_path_id,
-                                            pref_load_flags, profile),
-            profile, Manifest::EXTERNAL_PREF, Manifest::EXTERNAL_PREF_DOWNLOAD,
-            bundled_extension_creation_flags)));
+    provider_list->push_back(base::MakeUnique<ExternalProviderImpl>(
+        service,
+        new ExternalPrefLoader(external_apps_path_id, pref_load_flags, profile),
+        profile, Manifest::EXTERNAL_PREF, Manifest::EXTERNAL_PREF_DOWNLOAD,
+        bundled_extension_creation_flags));
 
     // OEM default apps.
     int oem_extension_creation_flags =
         bundled_extension_creation_flags | Extension::WAS_INSTALLED_BY_OEM;
     chromeos::ServicesCustomizationDocument* customization =
         chromeos::ServicesCustomizationDocument::GetInstance();
-    provider_list->push_back(linked_ptr<ExternalProviderInterface>(
-        new ExternalProviderImpl(service,
-                                 customization->CreateExternalLoader(profile),
-                                 profile,
-                                 Manifest::EXTERNAL_PREF,
-                                 Manifest::EXTERNAL_PREF_DOWNLOAD,
-                                 oem_extension_creation_flags)));
+    provider_list->push_back(base::MakeUnique<ExternalProviderImpl>(
+        service, customization->CreateExternalLoader(profile), profile,
+        Manifest::EXTERNAL_PREF, Manifest::EXTERNAL_PREF_DOWNLOAD,
+        oem_extension_creation_flags));
   }
 #elif defined(OS_LINUX)
   if (!profile->IsLegacySupervised()) {
-    provider_list->push_back(
-        linked_ptr<ExternalProviderInterface>(
-            new ExternalProviderImpl(
-                service,
-                new ExternalPrefLoader(
-                    chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS,
-                    ExternalPrefLoader::NONE,
-                    NULL),
-                profile,
-                Manifest::EXTERNAL_PREF,
-                Manifest::EXTERNAL_PREF_DOWNLOAD,
-                bundled_extension_creation_flags)));
+    provider_list->push_back(base::MakeUnique<ExternalProviderImpl>(
+        service,
+        new ExternalPrefLoader(chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS,
+                               ExternalPrefLoader::NONE, nullptr),
+        profile, Manifest::EXTERNAL_PREF, Manifest::EXTERNAL_PREF_DOWNLOAD,
+        bundled_extension_creation_flags));
   }
 #endif
 
   if (!profile->IsLegacySupervised()) {
 #if defined(OS_WIN)
-    provider_list->push_back(
-        linked_ptr<ExternalProviderInterface>(
-            new ExternalProviderImpl(
-                service,
-                new ExternalRegistryLoader,
-                profile,
-                Manifest::EXTERNAL_REGISTRY,
-                Manifest::EXTERNAL_PREF_DOWNLOAD,
-                Extension::NO_FLAGS)));
+    provider_list->push_back(base::MakeUnique<ExternalProviderImpl>(
+        service, new ExternalRegistryLoader, profile,
+        Manifest::EXTERNAL_REGISTRY, Manifest::EXTERNAL_PREF_DOWNLOAD,
+        Extension::NO_FLAGS));
 #else
-    provider_list->push_back(
-        linked_ptr<ExternalProviderInterface>(
-            new ExternalProviderImpl(
-                service,
-                new ExternalPrefLoader(chrome::DIR_EXTERNAL_EXTENSIONS,
-                                       check_admin_permissions_on_mac,
-                                       NULL),
-                profile,
-                Manifest::EXTERNAL_PREF,
-                Manifest::EXTERNAL_PREF_DOWNLOAD,
-                bundled_extension_creation_flags)));
+    provider_list->push_back(base::MakeUnique<ExternalProviderImpl>(
+        service,
+        new ExternalPrefLoader(chrome::DIR_EXTERNAL_EXTENSIONS,
+                               check_admin_permissions_on_mac, nullptr),
+        profile, Manifest::EXTERNAL_PREF, Manifest::EXTERNAL_PREF_DOWNLOAD,
+        bundled_extension_creation_flags));
 
     // Define a per-user source of external extensions.
 #if defined(OS_MACOSX) || (defined(OS_LINUX) && defined(CHROMIUM_BUILD))
-    provider_list->push_back(
-        linked_ptr<ExternalProviderInterface>(
-            new ExternalProviderImpl(
-                service,
-                new ExternalPrefLoader(chrome::DIR_USER_EXTERNAL_EXTENSIONS,
-                                       ExternalPrefLoader::NONE,
-                                       NULL),
-                profile,
-                Manifest::EXTERNAL_PREF,
-                Manifest::EXTERNAL_PREF_DOWNLOAD,
-                Extension::NO_FLAGS)));
+    provider_list->push_back(base::MakeUnique<ExternalProviderImpl>(
+        service, new ExternalPrefLoader(chrome::DIR_USER_EXTERNAL_EXTENSIONS,
+                                        ExternalPrefLoader::NONE, nullptr),
+        profile, Manifest::EXTERNAL_PREF, Manifest::EXTERNAL_PREF_DOWNLOAD,
+        Extension::NO_FLAGS));
 #endif
 #endif
 
 #if !defined(OS_CHROMEOS)
     // The default apps are installed as INTERNAL but use the external
     // extension installer codeflow.
-    provider_list->push_back(
-        linked_ptr<ExternalProviderInterface>(
-            new default_apps::Provider(
-                profile,
-                service,
-                new ExternalPrefLoader(chrome::DIR_DEFAULT_APPS,
-                                       ExternalPrefLoader::NONE,
-                                       NULL),
-                Manifest::INTERNAL,
-                Manifest::INTERNAL,
-                Extension::FROM_WEBSTORE |
-                    Extension::WAS_INSTALLED_BY_DEFAULT)));
+    provider_list->push_back(base::MakeUnique<default_apps::Provider>(
+        profile, service,
+        new ExternalPrefLoader(chrome::DIR_DEFAULT_APPS,
+                               ExternalPrefLoader::NONE, nullptr),
+        Manifest::INTERNAL, Manifest::INTERNAL,
+        Extension::FROM_WEBSTORE | Extension::WAS_INSTALLED_BY_DEFAULT));
 #endif
 
     std::unique_ptr<ExternalProviderImpl> drive_migration_provider(
@@ -729,19 +685,13 @@ void ExternalProviderImpl::CreateExternalProviders(
             profile, Manifest::EXTERNAL_PREF, Manifest::EXTERNAL_PREF_DOWNLOAD,
             Extension::FROM_WEBSTORE | Extension::WAS_INSTALLED_BY_DEFAULT));
     drive_migration_provider->set_auto_acknowledge(true);
-    provider_list->push_back(linked_ptr<ExternalProviderInterface>(
-        drive_migration_provider.release()));
+    provider_list->push_back(std::move(drive_migration_provider));
   }
 
-  provider_list->push_back(
-    linked_ptr<ExternalProviderInterface>(
-      new ExternalProviderImpl(
-          service,
-          new ExternalComponentLoader(profile),
-          profile,
-          Manifest::INVALID_LOCATION,
-          Manifest::EXTERNAL_COMPONENT,
-          Extension::FROM_WEBSTORE | Extension::WAS_INSTALLED_BY_DEFAULT)));
+  provider_list->push_back(base::MakeUnique<ExternalProviderImpl>(
+      service, new ExternalComponentLoader(profile), profile,
+      Manifest::INVALID_LOCATION, Manifest::EXTERNAL_COMPONENT,
+      Extension::FROM_WEBSTORE | Extension::WAS_INSTALLED_BY_DEFAULT));
 }
 
 }  // namespace extensions

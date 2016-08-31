@@ -142,7 +142,7 @@ struct ProcessManager::BackgroundPageData {
   uint64_t close_sequence_id;
 
   // Keeps track of when this page was last suspended. Used for perf metrics.
-  linked_ptr<base::ElapsedTimer> since_suspended;
+  std::unique_ptr<base::ElapsedTimer> since_suspended;
 
   BackgroundPageData()
       : lazy_keepalive_count(0),
@@ -714,9 +714,8 @@ void ProcessManager::OnBackgroundHostCreated(ExtensionHost* host) {
   background_hosts_.insert(host);
 
   if (BackgroundInfo::HasLazyBackgroundPage(host->extension())) {
-    linked_ptr<base::ElapsedTimer> since_suspended(
-        background_page_data_[host->extension()->id()].
-            since_suspended.release());
+    std::unique_ptr<base::ElapsedTimer> since_suspended = std::move(
+        background_page_data_[host->extension()->id()].since_suspended);
     if (since_suspended.get()) {
       UMA_HISTOGRAM_LONG_TIMES("Extensions.EventPageIdleTime",
                                since_suspended->Elapsed());

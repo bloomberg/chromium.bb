@@ -9,7 +9,7 @@
 #include <memory>
 
 #include "base/containers/hash_tables.h"
-#include "base/memory/linked_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/scoped_observer.h"
 #include "base/threading/non_thread_safe.h"
@@ -110,6 +110,7 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
     data_->InititateCleanup();
   }
 
+  // TODO(lazyboy): Pass unique_ptr<T> instead of T*.
   // Takes ownership.
   int Add(T* api_resource) { return data_->Add(api_resource); }
 
@@ -180,18 +181,18 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
   // where resource lifetime is handled.
   class ApiResourceData : public base::RefCountedThreadSafe<ApiResourceData> {
    public:
-    typedef std::map<int, linked_ptr<T> > ApiResourceMap;
+    typedef std::map<int, std::unique_ptr<T>> ApiResourceMap;
     // Lookup map from extension id's to allocated resource id's.
     typedef std::map<std::string, base::hash_set<int> > ExtensionToResourceMap;
 
     ApiResourceData() : next_id_(1) {}
 
+    // TODO(lazyboy): Pass unique_ptr<T> instead of T*.
     int Add(T* api_resource) {
       DCHECK(ThreadingTraits::IsCalledOnValidThread());
       int id = GenerateId();
       if (id > 0) {
-        linked_ptr<T> resource_ptr(api_resource);
-        api_resource_map_[id] = resource_ptr;
+        api_resource_map_[id] = base::WrapUnique<T>(api_resource);
 
         const std::string& extension_id = api_resource->owner_extension_id();
         ExtensionToResourceMap::iterator it =
@@ -231,7 +232,7 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
       DCHECK(ThreadingTraits::IsCalledOnValidThread());
       T* old_resource = api_resource_map_[api_resource_id].get();
       if (old_resource && extension_id == old_resource->owner_extension_id()) {
-        api_resource_map_[api_resource_id] = linked_ptr<T>(api_resource);
+        api_resource_map_[api_resource_id] = base::WrapUnique<T>(api_resource);
         return true;
       }
       return false;
@@ -281,7 +282,7 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
     virtual ~ApiResourceData() {}
 
     T* GetOwnedResource(const std::string& extension_id, int api_resource_id) {
-      linked_ptr<T> ptr = api_resource_map_[api_resource_id];
+      const std::unique_ptr<T>& ptr = api_resource_map_[api_resource_id];
       T* resource = ptr.get();
       if (resource && extension_id == resource->owner_extension_id())
         return resource;
@@ -325,7 +326,7 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
         if (remove_all) {
           erase = true;
         } else {
-          linked_ptr<T> ptr = api_resource_map_[*it];
+          std::unique_ptr<T>& ptr = api_resource_map_[*it];
           T* resource = ptr.get();
           erase = (resource && !resource->IsPersistent());
         }

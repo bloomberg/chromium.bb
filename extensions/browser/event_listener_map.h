@@ -106,7 +106,7 @@ class EventListener {
 // listeners are interested in what events.
 class EventListenerMap {
  public:
-  typedef std::vector<linked_ptr<EventListener> > ListenerList;
+  using ListenerList = std::vector<std::unique_ptr<EventListener>>;
 
   class Delegate {
    public:

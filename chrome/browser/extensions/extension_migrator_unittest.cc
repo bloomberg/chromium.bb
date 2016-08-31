@@ -51,12 +51,9 @@ class ExtensionMigratorTest : public ExtensionServiceTestBase {
   }
 
   void AddMigratorProvider() {
-    service()->AddProviderForTesting(new ExternalProviderImpl(
-        service(),
-        new ExtensionMigrator(profile(), kOldId, kNewId),
-        profile(),
-        Manifest::EXTERNAL_PREF,
-        Manifest::EXTERNAL_PREF_DOWNLOAD,
+    service()->AddProviderForTesting(base::MakeUnique<ExternalProviderImpl>(
+        service(), new ExtensionMigrator(profile(), kOldId, kNewId), profile(),
+        Manifest::EXTERNAL_PREF, Manifest::EXTERNAL_PREF_DOWNLOAD,
         Extension::FROM_WEBSTORE | Extension::WAS_INSTALLED_BY_DEFAULT));
   }
 
