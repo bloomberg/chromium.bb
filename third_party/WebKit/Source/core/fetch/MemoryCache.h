@@ -139,8 +139,6 @@ public:
         size_t decodedSize;
         size_t encodedSize;
         size_t encodedSizeDuplicatedInDataURLs;
-        size_t purgeableSize;
-        size_t purgedSize;
 
         TypeStatistic()
             : count(0)
@@ -149,8 +147,6 @@ public:
             , decodedSize(0)
             , encodedSize(0)
             , encodedSizeDuplicatedInDataURLs(0)
-            , purgeableSize(0)
-            , purgedSize(0)
         {
         }
 

@@ -54,8 +54,6 @@ public:
         size_t size;
         size_t liveSize;
         size_t decodedSize;
-        size_t purgedSize;
-        size_t purgeableSize;
     };
 
     // A struct mirroring blink::MemoryCache::Statistics.
