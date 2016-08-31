@@ -75,8 +75,7 @@ public class CronetUrlTest extends CronetTestBase {
         File directory = new File(PathUtils.getDataDirectory(context));
         File file = File.createTempFile("cronet", "json", directory);
         HttpUrlRequestFactory factory = HttpUrlRequestFactory.createFactory(
-                context,
-                new UrlRequestContextConfig().setLibraryName("cronet_tests"));
+                context, new CronetEngine.Builder(null /*context*/).setLibraryName("cronet_tests"));
         // Start NetLog immediately after the request context is created to make
         // sure that the call won't crash the app even when the native request
         // context is not fully initialized. See crbug.com/470196.

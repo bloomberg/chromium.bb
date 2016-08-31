@@ -39,12 +39,12 @@ public class HttpUrlRequestFactoryTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testCreateFactory() throws Throwable {
-        HttpUrlRequestFactoryConfig config = new HttpUrlRequestFactoryConfig();
-        config.enableQuic(true);
-        config.addQuicHint("www.google.com", 443, 443);
-        config.addQuicHint("www.youtube.com", 443, 443);
-        config.setLibraryName("cronet_tests");
-        HttpUrlRequestFactory factory = HttpUrlRequestFactory.createFactory(getContext(), config);
+        CronetEngine.Builder builder = new CronetEngine.Builder(null /*context*/);
+        builder.enableQuic(true);
+        builder.addQuicHint("www.google.com", 443, 443);
+        builder.addQuicHint("www.youtube.com", 443, 443);
+        builder.setLibraryName("cronet_tests");
+        HttpUrlRequestFactory factory = HttpUrlRequestFactory.createFactory(getContext(), builder);
         assertNotNull("Factory should be created", factory);
         assertTrue("Factory should be Chromium/n.n.n.n@r but is "
                            + factory.getName(),
@@ -56,10 +56,10 @@ public class HttpUrlRequestFactoryTest extends CronetTestBase {
     @Feature({"Cronet"})
     @OnlyRunNativeCronet
     public void testCreateLegacyFactory() {
-        HttpUrlRequestFactoryConfig config = new HttpUrlRequestFactoryConfig();
-        config.enableLegacyMode(true);
+        CronetEngine.Builder builder = new CronetEngine.Builder(null /*context*/);
+        builder.enableLegacyMode(true);
 
-        HttpUrlRequestFactory factory = HttpUrlRequestFactory.createFactory(getContext(), config);
+        HttpUrlRequestFactory factory = HttpUrlRequestFactory.createFactory(getContext(), builder);
         assertNotNull("Factory should be created", factory);
         assertTrue("Factory should be HttpUrlConnection/n.n.n.n@r but is "
                            + factory.getName(),
@@ -79,10 +79,10 @@ public class HttpUrlRequestFactoryTest extends CronetTestBase {
     @Feature({"Cronet"})
     @OnlyRunNativeCronet
     public void testCreateLegacyFactoryUsingUrlRequestContextConfig() {
-        UrlRequestContextConfig config = new UrlRequestContextConfig();
-        config.enableLegacyMode(true);
+        CronetEngine.Builder builder = new CronetEngine.Builder(null /*context*/);
+        builder.enableLegacyMode(true);
 
-        HttpUrlRequestFactory factory = HttpUrlRequestFactory.createFactory(getContext(), config);
+        HttpUrlRequestFactory factory = HttpUrlRequestFactory.createFactory(getContext(), builder);
         assertNotNull("Factory should be created", factory);
         assertTrue("Factory should be HttpUrlConnection/n.n.n.n@r but is "
                            + factory.getName(),
@@ -101,10 +101,10 @@ public class HttpUrlRequestFactoryTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testQuicHintHost() {
-        HttpUrlRequestFactoryConfig config = new HttpUrlRequestFactoryConfig();
-        config.addQuicHint("www.google.com", 443, 443);
+        CronetEngine.Builder builder = new CronetEngine.Builder(null /*context*/);
+        builder.addQuicHint("www.google.com", 443, 443);
         try {
-            config.addQuicHint("https://www.google.com", 443, 443);
+            builder.addQuicHint("https://www.google.com", 443, 443);
         } catch (IllegalArgumentException e) {
             return;
         }
@@ -114,12 +114,12 @@ public class HttpUrlRequestFactoryTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testConfigUserAgent() throws Throwable {
-        HttpUrlRequestFactoryConfig config = new HttpUrlRequestFactoryConfig();
+        CronetEngine.Builder builder = new CronetEngine.Builder(null /*context*/);
         String userAgentName = "User-Agent";
         String userAgentValue = "User-Agent-Value";
-        config.setUserAgent(userAgentValue);
-        config.setLibraryName("cronet_tests");
-        HttpUrlRequestFactory factory = HttpUrlRequestFactory.createFactory(getContext(), config);
+        builder.setUserAgent(userAgentValue);
+        builder.setLibraryName("cronet_tests");
+        HttpUrlRequestFactory factory = HttpUrlRequestFactory.createFactory(getContext(), builder);
         assertTrue(NativeTestServer.startNativeTestServer(getContext()));
         String url = NativeTestServer.getEchoHeaderURL(userAgentName);
         TestHttpUrlRequestListener listener = new TestHttpUrlRequestListener();
@@ -135,12 +135,12 @@ public class HttpUrlRequestFactoryTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testConfigUserAgentLegacy() throws Throwable {
-        HttpUrlRequestFactoryConfig config = new HttpUrlRequestFactoryConfig();
+        CronetEngine.Builder builder = new CronetEngine.Builder(null /*context*/);
         String userAgentName = "User-Agent";
         String userAgentValue = "User-Agent-Value";
-        config.setUserAgent(userAgentValue);
-        config.enableLegacyMode(true);
-        HttpUrlRequestFactory factory = HttpUrlRequestFactory.createFactory(getContext(), config);
+        builder.setUserAgent(userAgentValue);
+        builder.enableLegacyMode(true);
+        HttpUrlRequestFactory factory = HttpUrlRequestFactory.createFactory(getContext(), builder);
         assertTrue("Factory should be HttpUrlConnection/n.n.n.n@r but is "
                            + factory.getName(),
                    Pattern.matches(
@@ -164,17 +164,17 @@ public class HttpUrlRequestFactoryTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testEnableHttpCache() {
-        HttpUrlRequestFactoryConfig config = new HttpUrlRequestFactoryConfig();
-        config.enableHttpCache(HttpUrlRequestFactoryConfig.HTTP_CACHE_DISABLED, 0);
-        config.enableHttpCache(HttpUrlRequestFactoryConfig.HTTP_CACHE_IN_MEMORY, 0);
+        CronetEngine.Builder builder = new CronetEngine.Builder(null /*context*/);
+        builder.enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISABLED, 0);
+        builder.enableHttpCache(CronetEngine.Builder.HTTP_CACHE_IN_MEMORY, 0);
         try {
-            config.enableHttpCache(HttpUrlRequestFactoryConfig.HTTP_CACHE_DISK, 0);
+            builder.enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK, 0);
             fail("IllegalArgumentException must be thrown");
         } catch (IllegalArgumentException e) {
             assertEquals("Storage path must be set", e.getMessage());
         }
         try {
-            config.enableHttpCache(HttpUrlRequestFactoryConfig.HTTP_CACHE_DISK_NO_HTTP, 0);
+            builder.enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK_NO_HTTP, 0);
             fail("IllegalArgumentException must be thrown");
         } catch (IllegalArgumentException e) {
             assertEquals("Storage path must be set", e.getMessage());
@@ -183,11 +183,11 @@ public class HttpUrlRequestFactoryTest extends CronetTestBase {
         // Create a new directory to hold the disk cache data.
         File dir = getContext().getDir("disk_cache_dir", Context.MODE_PRIVATE);
         String path = dir.getPath();
-        config.setStoragePath(path);
-        config.enableHttpCache(HttpUrlRequestFactoryConfig.HTTP_CACHE_DISK, 100);
-        config.enableHttpCache(HttpUrlRequestFactoryConfig.HTTP_CACHE_DISK_NO_HTTP, 100);
+        builder.setStoragePath(path);
+        builder.enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK, 100);
+        builder.enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK_NO_HTTP, 100);
         try {
-            config.enableHttpCache(HttpUrlRequestFactoryConfig.HTTP_CACHE_IN_MEMORY, 0);
+            builder.enableHttpCache(CronetEngine.Builder.HTTP_CACHE_IN_MEMORY, 0);
             fail("IllegalArgumentException must be thrown");
         } catch (IllegalArgumentException e) {
             assertEquals("Storage path must not be set", e.getMessage());
