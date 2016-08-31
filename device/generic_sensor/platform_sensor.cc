@@ -81,7 +81,13 @@ void PlatformSensor::RemoveClient(Client* client) {
 }
 
 void PlatformSensor::NotifySensorReadingChanged() {
-  FOR_EACH_OBSERVER(Client, clients_, OnSensorReadingChanged());
+  using ClientsList = decltype(clients_);
+  ClientsList::Iterator it(&clients_);
+  Client* client;
+  while ((client = it.GetNext()) != nullptr) {
+    if (!client->IsNotificationSuspended())
+      client->OnSensorReadingChanged();
+  }
 }
 
 void PlatformSensor::NotifySensorError() {
