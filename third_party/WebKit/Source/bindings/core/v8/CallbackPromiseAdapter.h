@@ -36,6 +36,7 @@
 #include "wtf/PtrUtil.h"
 #include "wtf/TypeTraits.h"
 #include <memory>
+#include <utility>
 
 namespace blink {
 
@@ -92,9 +93,7 @@ namespace blink {
 //
 // In order to implement the above exceptions, we have template classes below.
 // OnSuccess and OnError provide onSuccess and onError implementation, and there
-// are utility templates that provide
-//  - std::unique_ptr - WebPassOwnPtr translation ([Web]PassType[Impl], adopt, pass),
-//  - trivial WebType holder (TrivialWebTypeHolder).
+// are utility templates that provide the trivial WebType holder.
 
 namespace internal {
 
@@ -116,11 +115,6 @@ private:
     template <typename T> static CallbackPromiseAdapterTrivialWebTypeHolder<T> webTypeHolderMatcher(...);
     template <typename T> using WebTypeHolder = decltype(webTypeHolderMatcher<T>(nullptr));
 
-    template <typename T> static T& adopt(T& x) { return x; }
-    template <typename T> static std::unique_ptr<T> adopt(std::unique_ptr<T>& x) { return std::move(x); }
-    template <typename T> static T pass(T& x) { return x; }
-    template <typename T> static std::unique_ptr<T> pass(std::unique_ptr<T>& x) { return std::move(x); }
-
     template <typename S, typename T>
     class Base : public WebCallbacks<typename S::WebType, typename T::WebType> {
     public:
@@ -135,13 +129,12 @@ private:
     class OnSuccess : public Base<S, T> {
     public:
         explicit OnSuccess(ScriptPromiseResolver* resolver) : Base<S, T>(resolver) {}
-        void onSuccess(typename S::WebType r) override
+        void onSuccess(typename S::WebType result) override
         {
-            typename S::WebType result(adopt(r));
             ScriptPromiseResolver* resolver = this->resolver();
             if (!resolver->getExecutionContext() || resolver->getExecutionContext()->activeDOMObjectsAreStopped())
                 return;
-            resolver->resolve(S::take(resolver, pass(result)));
+            resolver->resolve(S::take(resolver, std::move(result)));
         }
     };
     template <typename T>
@@ -162,12 +155,11 @@ private:
         explicit OnError(ScriptPromiseResolver* resolver) : OnSuccess<S, T>(resolver) {}
         void onError(typename T::WebType e) override
         {
-            typename T::WebType result(adopt(e));
             ScriptPromiseResolver* resolver = this->resolver();
             if (!resolver->getExecutionContext() || resolver->getExecutionContext()->activeDOMObjectsAreStopped())
                 return;
             ScriptState::Scope scope(resolver->getScriptState());
-            resolver->reject(T::take(resolver, pass(result)));
+            resolver->reject(T::take(resolver, std::move(e)));
         }
     };
     template <typename S>
