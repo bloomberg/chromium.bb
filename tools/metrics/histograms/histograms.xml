@@ -103007,6 +103007,9 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="Clients.FromGoogleSearch"
       label="PageLoadMetrics that are a result of a navigation from a Google
              web search"/>
+  <suffix name="Clients.CssScanner"
+      label="Metrics from pages scanned by the preload scanner for @import
+             CSS rules"/>
   <suffix name="Clients.DataReductionProxy"
       label="PageLoadMetrics that are a result of a navigation through the
              data reduction proxy."/>
