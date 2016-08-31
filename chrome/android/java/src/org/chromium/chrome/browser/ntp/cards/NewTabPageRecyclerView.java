@@ -4,15 +4,21 @@
 
 package org.chromium.chrome.browser.ntp.cards;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Region;
+import android.support.v4.view.animation.FastOutLinearInInterpolator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.Interpolator;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 
@@ -20,6 +26,7 @@ import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.NewTabPageLayout;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeaderViewHolder;
+import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.util.ViewUtils;
 
 /**
@@ -28,6 +35,8 @@ import org.chromium.chrome.browser.util.ViewUtils;
  */
 public class NewTabPageRecyclerView extends RecyclerView {
     private static final String TAG = "NtpCards";
+    private static final Interpolator DISMISS_INTERPOLATOR = new FastOutLinearInInterpolator();
+    private static final int DISMISS_ANIMATION_TIME_MS = 300;
 
     private final GestureDetector mGestureDetector;
     private final LinearLayoutManager mLayoutManager;
@@ -393,5 +402,69 @@ public class NewTabPageRecyclerView extends RecyclerView {
     public boolean gatherTransparentRegion(Region region) {
         ViewUtils.gatherTransparentRegionsForOpaqueView(this, region);
         return true;
+    }
+
+    /**
+     * Animates the card being swiped to the right as if the user had dismissed it. Any changes to
+     * the animation here should be reflected also in
+     * {@link #updateViewStateForDismiss(float, ViewHolder)} and reset in
+     * {@link CardViewHolder#onBindViewHolder(NewTabPageItem)}.
+     * @param article The item to be dismissed.
+     */
+    public void dismissItemWithAnimation(SnippetArticle suggestion) {
+        // We need to recompute the position, as it might have changed.
+        final int position = getNewTabPageAdapter().getSuggestionPosition(suggestion.mId);
+        if (position == RecyclerView.NO_POSITION) {
+            // The item does not exist anymore, so ignore.
+            return;
+        }
+
+        final View itemView = mLayoutManager.findViewByPosition(position);
+        if (itemView == null) {
+            // The view is not visible anymore, skip the animation.
+            getNewTabPageAdapter().dismissItem(position);
+            return;
+        }
+
+        final ViewHolder viewHolder = getChildViewHolder(itemView);
+        if (!((NewTabPageViewHolder) viewHolder).isDismissable()) {
+            // The item is not dismissable (anymore), so ignore.
+            return;
+        }
+
+        AnimatorSet animation = new AnimatorSet();
+        animation.playTogether(ObjectAnimator.ofFloat(itemView, View.ALPHA, 0f),
+                ObjectAnimator.ofFloat(itemView, View.TRANSLATION_X, (float) itemView.getWidth()));
+
+        animation.setDuration(DISMISS_ANIMATION_TIME_MS);
+        animation.setInterpolator(DISMISS_INTERPOLATOR);
+        animation.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                NewTabPageRecyclerView.this.onItemDismissStarted(itemView);
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                getNewTabPageAdapter().dismissItem(position);
+                NewTabPageRecyclerView.this.onItemDismissFinished(itemView);
+            }
+        });
+        animation.start();
+    }
+
+    /**
+     * Update the view's state as it is being swiped away. Any changes to the animation here should
+     * be reflected also in {@link #dismissItemWithAnimation(SnippetArticle)} and reset in
+     * {@link CardViewHolder#onBindViewHolder(NewTabPageItem)}.
+     * @param dX The amount of horizontal displacement caused by user's action.
+     * @param viewHolder The view holder containing the view to be updated.
+     */
+    public void updateViewStateForDismiss(float dX, ViewHolder viewHolder) {
+        if (!((NewTabPageViewHolder) viewHolder).isDismissable()) return;
+
+        float input = Math.abs(dX) / viewHolder.itemView.getMeasuredWidth();
+        float alpha = 1 - DISMISS_INTERPOLATOR.getInterpolation(input);
+        viewHolder.itemView.setAlpha(alpha);
     }
 }

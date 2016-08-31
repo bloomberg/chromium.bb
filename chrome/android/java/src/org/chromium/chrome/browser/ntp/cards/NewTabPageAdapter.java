@@ -69,8 +69,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         @Override
         public void onSwiped(ViewHolder viewHolder, int direction) {
             mRecyclerView.onItemDismissStarted(viewHolder.itemView);
-
-            NewTabPageAdapter.this.dismissItem(viewHolder);
+            NewTabPageAdapter.this.dismissItem(viewHolder.getAdapterPosition());
         }
 
         @Override
@@ -108,7 +107,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
                 float dX, float dY, int actionState, boolean isCurrentlyActive) {
             assert viewHolder instanceof NewTabPageViewHolder;
 
-            ((NewTabPageViewHolder) viewHolder).updateViewStateForDismiss(dX);
+            mRecyclerView.updateViewStateForDismiss(dX, viewHolder);
 
             // The super implementation performs animation and elevation, but only the animation is
             // needed.
@@ -311,6 +310,18 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         return getGroupPositionOffset(mBottomSpacer);
     }
 
+    public int getSuggestionPosition(String suggestionId) {
+        List<NewTabPageItem> items = getItems();
+        for (int i = 0; i < items.size(); i++) {
+            NewTabPageItem item = items.get(i);
+            if (item instanceof SnippetArticle
+                    && ((SnippetArticle) item).mId.equals(suggestionId)) {
+                return i;
+            }
+        }
+        return RecyclerView.NO_POSITION;
+    }
+
     /** Start a request for new snippets. */
     public void reloadSnippets() {
         SnippetsBridge.fetchSnippets(/*forceRequest=*/true);
@@ -360,10 +371,8 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         mRecyclerView = (NewTabPageRecyclerView) recyclerView;
     }
 
-    public void dismissItem(ViewHolder itemViewHolder) {
-        int position = itemViewHolder.getAdapterPosition();
+    public void dismissItem(int position) {
         SnippetArticle suggestion = (SnippetArticle) getItems().get(position);
-
         mSuggestionsSource.getSuggestionVisited(suggestion, new Callback<Boolean>() {
             @Override
             public void onResult(Boolean result) {
@@ -373,9 +382,8 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
             }
         });
 
-        itemViewHolder.itemView.announceForAccessibility(
-                itemViewHolder.itemView.getResources().getString(
-                        R.string.ntp_accessibility_item_removed, suggestion.mTitle));
+        mRecyclerView.announceForAccessibility(mRecyclerView.getResources().getString(
+                R.string.ntp_accessibility_item_removed, suggestion.mTitle));
 
         mSuggestionsSource.dismissSuggestion(suggestion);
         SuggestionsSection section = (SuggestionsSection) getGroup(position);

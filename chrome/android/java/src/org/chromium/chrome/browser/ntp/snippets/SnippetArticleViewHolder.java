@@ -18,6 +18,7 @@ import android.text.format.DateUtils;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.View;
 import android.view.View.MeasureSpec;
 import android.widget.ImageView;
@@ -26,6 +27,7 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
@@ -51,8 +53,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * A class that represents the view for a single card snippet.
  */
-public class SnippetArticleViewHolder extends CardViewHolder
-        implements MenuItem.OnMenuItemClickListener, ImpressionTracker.Listener {
+public class SnippetArticleViewHolder extends CardViewHolder implements ImpressionTracker.Listener {
     private static final String PUBLISHER_FORMAT_STRING = "%s - %s";
     private static final int FADE_IN_ANIMATION_TIME_MS = 300;
     private static final int[] FAVICON_SERVICE_SUPPORTED_SIZES = {16, 24, 32, 48, 64};
@@ -84,6 +85,7 @@ public class SnippetArticleViewHolder extends CardViewHolder
     private final boolean mUseFaviconService;
     private final UiConfig mUiConfig;
 
+    @SuppressFBWarnings("URF_UNREAD_FIELD")
     private ImpressionTracker mImpressionTracker;
 
     /**
@@ -92,6 +94,61 @@ public class SnippetArticleViewHolder extends CardViewHolder
     public interface OnCreateContextMenuListener {
         /** Called when the context menu is created. */
         void onCreateContextMenu();
+    }
+
+    private static class ContextMenuItemClickListener implements OnMenuItemClickListener {
+        private final SnippetArticle mArticle;
+        private final NewTabPageManager mManager;
+        private final NewTabPageRecyclerView mRecyclerView;
+
+        public ContextMenuItemClickListener(SnippetArticle article,
+                NewTabPageManager newTabPageManager,
+                NewTabPageRecyclerView newTabPageRecyclerView) {
+            mArticle = article;
+            mManager = newTabPageManager;
+            mRecyclerView = newTabPageRecyclerView;
+        }
+
+        @Override
+        public boolean onMenuItemClick(MenuItem item) {
+            // If the user clicks a snippet then immediately long presses they will create a context
+            // menu while the snippet's URL loads in the background. This means that when they press
+            // an item on context menu the NTP will not actually be open. We add this check here to
+            // prevent taking any action if the user has already left the NTP.
+            // https://crbug.com/640468.
+            // TODO(peconn): Instead, close the context menu when a snippet is clicked.
+            if (!ViewCompat.isAttachedToWindow(mRecyclerView)) return true;
+
+            // The UMA is used to compare how the user views the article linked from a snippet.
+            switch (item.getItemId()) {
+                case ID_OPEN_IN_NEW_WINDOW:
+                    NewTabPageUma.recordOpenSnippetMethod(
+                            NewTabPageUma.OPEN_SNIPPET_METHODS_NEW_WINDOW);
+                    mManager.openSnippet(WindowOpenDisposition.NEW_WINDOW, mArticle);
+                    return true;
+                case ID_OPEN_IN_NEW_TAB:
+                    NewTabPageUma.recordOpenSnippetMethod(
+                            NewTabPageUma.OPEN_SNIPPET_METHODS_NEW_TAB);
+                    mManager.openSnippet(WindowOpenDisposition.NEW_FOREGROUND_TAB, mArticle);
+                    return true;
+                case ID_OPEN_IN_INCOGNITO_TAB:
+                    NewTabPageUma.recordOpenSnippetMethod(
+                            NewTabPageUma.OPEN_SNIPPET_METHODS_INCOGNITO);
+                    mManager.openSnippet(WindowOpenDisposition.OFF_THE_RECORD, mArticle);
+                    return true;
+                case ID_SAVE_FOR_OFFLINE:
+                    NewTabPageUma.recordOpenSnippetMethod(
+                            NewTabPageUma.OPEN_SNIPPET_METHODS_SAVE_FOR_OFFLINE);
+                    mManager.openSnippet(WindowOpenDisposition.SAVE_TO_DISK, mArticle);
+                    return true;
+                case ID_REMOVE:
+                    // UMA is recorded during dismissal.
+                    mRecyclerView.dismissItemWithAnimation(mArticle);
+                    return true;
+                default:
+                    return false;
+            }
+        }
     }
 
     /**
@@ -147,27 +204,31 @@ public class SnippetArticleViewHolder extends CardViewHolder
                 "NewTabPage.Snippets.CardLongPressed", mArticle.mPosition);
         mArticle.recordAgeAndScore("NewTabPage.Snippets.CardLongPressed");
 
+        OnMenuItemClickListener listener =
+                new ContextMenuItemClickListener(mArticle, mNewTabPageManager, getRecyclerView());
+
         // Create a context menu akin to the one shown for MostVisitedItems.
         if (mNewTabPageManager.isOpenInNewWindowEnabled()) {
-            addContextMenuItem(
-                    menu, ID_OPEN_IN_NEW_WINDOW, R.string.contextmenu_open_in_other_window);
+            addContextMenuItem(menu, ID_OPEN_IN_NEW_WINDOW,
+                    R.string.contextmenu_open_in_other_window, listener);
         }
 
-        addContextMenuItem(menu, ID_OPEN_IN_NEW_TAB, R.string.contextmenu_open_in_new_tab);
+        addContextMenuItem(
+                menu, ID_OPEN_IN_NEW_TAB, R.string.contextmenu_open_in_new_tab, listener);
 
         if (mNewTabPageManager.isOpenInIncognitoEnabled()) {
             addContextMenuItem(menu, ID_OPEN_IN_INCOGNITO_TAB,
-                    R.string.contextmenu_open_in_incognito_tab);
+                    R.string.contextmenu_open_in_incognito_tab, listener);
         }
 
         // TODO(peconn): Only show 'Save for Offline' for appropriate snippet types.
         if (SnippetsConfig.isSaveToOfflineEnabled()
                 && OfflinePageBridge.canSavePage(mArticle.mUrl)) {
-            addContextMenuItem(menu, ID_SAVE_FOR_OFFLINE,
-                    R.string.contextmenu_save_offline);
+            addContextMenuItem(
+                    menu, ID_SAVE_FOR_OFFLINE, R.string.contextmenu_save_offline, listener);
         }
 
-        addContextMenuItem(menu, ID_REMOVE, R.string.remove);
+        addContextMenuItem(menu, ID_REMOVE, R.string.remove, listener);
 
         // Disable touch events on the RecyclerView while the context menu is open. This is to
         // prevent the user long pressing to get the context menu then on the same press scrolling
@@ -187,49 +248,9 @@ public class SnippetArticleViewHolder extends CardViewHolder
     /**
      * Convenience method to reduce multi-line function call to single line.
      */
-    private void addContextMenuItem(ContextMenu menu, int id, int resourceId) {
-        menu.add(Menu.NONE, id, Menu.NONE, resourceId).setOnMenuItemClickListener(this);
-    }
-
-    @Override
-    public boolean onMenuItemClick(MenuItem item) {
-        // If the user clicks a snippet then immediately long presses they will create a context
-        // menu while the snippet's URL loads in the background. This means that when they press
-        // an item on context menu the NTP will not actually be open. We add this check here to
-        // prevent taking any action if the user has already left the NTP. https://crbug.com/640468.
-        // TODO(peconn): Instead, close the context menu when a snippet is clicked.
-        if (!ViewCompat.isAttachedToWindow(itemView)) return true;
-
-        // The UMA is used to compare how the user views the article linked from a snippet.
-        switch (item.getItemId()) {
-            case ID_OPEN_IN_NEW_WINDOW:
-                NewTabPageUma.recordOpenSnippetMethod(
-                        NewTabPageUma.OPEN_SNIPPET_METHODS_NEW_WINDOW);
-                mNewTabPageManager.openSnippet(WindowOpenDisposition.NEW_WINDOW, mArticle);
-                return true;
-            case ID_OPEN_IN_NEW_TAB:
-                NewTabPageUma.recordOpenSnippetMethod(
-                        NewTabPageUma.OPEN_SNIPPET_METHODS_NEW_TAB);
-                mNewTabPageManager.openSnippet(WindowOpenDisposition.NEW_FOREGROUND_TAB, mArticle);
-                return true;
-            case ID_OPEN_IN_INCOGNITO_TAB:
-                NewTabPageUma.recordOpenSnippetMethod(
-                        NewTabPageUma.OPEN_SNIPPET_METHODS_INCOGNITO);
-                mNewTabPageManager.openSnippet(WindowOpenDisposition.OFF_THE_RECORD, mArticle);
-                return true;
-            case ID_SAVE_FOR_OFFLINE:
-                NewTabPageUma.recordOpenSnippetMethod(
-                        NewTabPageUma.OPEN_SNIPPET_METHODS_SAVE_FOR_OFFLINE);
-                mNewTabPageManager.openSnippet(WindowOpenDisposition.SAVE_TO_DISK, mArticle);
-                return true;
-            case ID_REMOVE:
-                assert isDismissable() : "Context menu should not be shown for peeking card.";
-                // UMA is recorded during dismissal.
-                dismiss();
-                return true;
-            default:
-                return false;
-        }
+    private static void addContextMenuItem(
+            ContextMenu menu, int id, int resourceId, OnMenuItemClickListener listener) {
+        menu.add(Menu.NONE, id, Menu.NONE, resourceId).setOnMenuItemClickListener(listener);
     }
 
     /**

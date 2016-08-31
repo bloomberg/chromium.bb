@@ -4,12 +4,7 @@
 
 package org.chromium.chrome.browser.ntp.cards;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.animation.AnimatorSet;
-import android.animation.ObjectAnimator;
 import android.support.annotation.DrawableRes;
-import android.support.v4.view.animation.FastOutLinearInInterpolator;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.support.v7.widget.RecyclerView;
 import android.view.ContextMenu;
@@ -44,9 +39,7 @@ import org.chromium.chrome.browser.util.ViewUtils;
  * parent implementation to reset the private state when a card is recycled.
  */
 public class CardViewHolder extends NewTabPageViewHolder {
-    private static final Interpolator FADE_INTERPOLATOR = new FastOutLinearInInterpolator();
     private static final Interpolator TRANSITION_INTERPOLATOR = new FastOutSlowInInterpolator();
-    private static final int DISMISS_ANIMATION_TIME_MS = 300;
 
     /** Value used for max peeking card height and padding. */
     private final int mMaxPeekPadding;
@@ -192,15 +185,6 @@ public class CardViewHolder extends NewTabPageViewHolder {
         return mPeekingPercentage > 0f;
     }
 
-    @Override
-    public void updateViewStateForDismiss(float dX) {
-        // Any changes in the animation here should be reflected also in |dismiss|
-        // and reset in onBindViewHolder.
-        float input = Math.abs(dX) / itemView.getMeasuredWidth();
-        float alpha = 1 - FADE_INTERPOLATOR.getInterpolation(input);
-        itemView.setAlpha(alpha);
-    }
-
     /**
      * Override this to react when the card is tapped. This method will not be called if the card is
      * currently peeking.
@@ -248,40 +232,6 @@ public class CardViewHolder extends NewTabPageViewHolder {
         return LayoutInflater.from(parent.getContext()).inflate(resourceId, parent, false);
     }
 
-    /**
-     * Animates the card being swiped to the right as if the user had dismissed it. You must check
-     * {@link #isDismissable()} before calling.
-     */
-    protected void dismiss() {
-        assert isDismissable();
-
-        // In case the user pressed dismiss on the context menu after swiping to dismiss.
-        if (getAdapterPosition() == RecyclerView.NO_POSITION) return;
-
-        // Any changes in the animation here should be reflected also in |updateViewStateForDismiss|
-        // and reset in onBindViewHolder.
-        AnimatorSet animation = new AnimatorSet();
-        animation.playTogether(
-                ObjectAnimator.ofFloat(itemView, View.ALPHA, 0f),
-                ObjectAnimator.ofFloat(itemView, View.TRANSLATION_X, (float) itemView.getWidth()));
-
-        animation.setDuration(DISMISS_ANIMATION_TIME_MS);
-        animation.setInterpolator(FADE_INTERPOLATOR);
-        animation.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationStart(Animator animation) {
-                mRecyclerView.onItemDismissStarted(itemView);
-            }
-
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                ((NewTabPageAdapter) mRecyclerView.getAdapter()).dismissItem(CardViewHolder.this);
-                mRecyclerView.onItemDismissFinished(itemView);
-            }
-        });
-        animation.start();
-    }
-
     private static boolean isCard(@NewTabPageItem.ViewType int type) {
         switch (type) {
             case NewTabPageItem.VIEW_TYPE_SNIPPET:
@@ -306,5 +256,9 @@ public class CardViewHolder extends NewTabPageViewHolder {
         if (!hasCardAbove && hasCardBelow) return R.drawable.ntp_card_top;
         if (hasCardAbove && !hasCardBelow) return R.drawable.ntp_card_bottom;
         return R.drawable.ntp_card_single;
+    }
+
+    protected NewTabPageRecyclerView getRecyclerView() {
+        return mRecyclerView;
     }
 }
