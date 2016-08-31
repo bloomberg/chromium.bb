@@ -137,4 +137,22 @@
             '</div>',
         ].join('')),
         'Deleting when a selection starts in the middle of the last paragraph and extends to the end of that paragraph');
+
+    test(() => assert_selection(
+        [
+            '<div contenteditable>',
+                '<div>',
+                    'one<p>^two</p><p>thr|ee</p><p>four</p>',
+                '</div>',
+            '</div>',
+        ].join(''),
+        'delete',
+        [
+            '<div contenteditable>',
+                // TODO(yosin): We should revise "delete" command not have BR
+                // after "four".
+                'one<p>|ee</p><p>four<br></p>',
+            '</div>',
+        ].join('')),
+        'Deleting when a selection starts at the beginning of a paragraph preceded by a text element and extends into the middle of a following paragraph.');
 </script>
