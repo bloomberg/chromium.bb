@@ -26,8 +26,6 @@ enum NGFragmentationType {
   FragmentRegion
 };
 
-enum NGDirection { LeftToRight = 0, RightToLeft = 1 };
-
 class NGExclusion {
  public:
   NGExclusion();

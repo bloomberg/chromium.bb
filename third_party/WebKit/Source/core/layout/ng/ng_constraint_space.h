@@ -43,6 +43,7 @@ class CORE_EXPORT NGConstraintSpace
                     NGLogicalSize container_size);
 
   NGPhysicalConstraintSpace* PhysicalSpace() const { return physical_space_; }
+
   NGWritingMode WritingMode() const {
     return static_cast<NGWritingMode>(writing_mode_);
   }

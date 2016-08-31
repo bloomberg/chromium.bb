@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/ng/ng_fragment_base.h"
+#include "core/layout/ng/ng_physical_text_fragment.h"
 #include "core/layout/ng/ng_layout_input_text.h"
 #include "platform/LayoutUnit.h"
 #include "platform/heap/Handle.h"
@@ -16,23 +17,14 @@ namespace blink {
 
 class CORE_EXPORT NGTextFragment final : public NGFragmentBase {
  public:
-  NGTextFragment(NGLogicalSize size,
-                 NGLogicalSize overflow,
-                 NGWritingMode writingMode,
-                 NGDirection direction)
-      : NGFragmentBase(size, overflow, writingMode, direction, FragmentText) {}
+  NGTextFragment(NGWritingMode writing_mode,
+                 NGDirection direction,
+                 NGPhysicalTextFragment* physical_text_fragment)
+      : NGFragmentBase(writing_mode, direction, physical_text_fragment) {}
 
-  String text() const;
-
-  DEFINE_INLINE_TRACE_AFTER_DISPATCH() {
-    visitor->trace(text_list_);
-    NGFragmentBase::traceAfterDispatch(visitor);
+  String Text() const {
+    return toNGPhysicalTextFragment(physical_fragment_)->Text();
   }
-
- private:
-  Member<NGLayoutInputText> text_list_;
-  unsigned start_offset_;
-  unsigned end_offset_;
 };
 
 }  // namespace blink

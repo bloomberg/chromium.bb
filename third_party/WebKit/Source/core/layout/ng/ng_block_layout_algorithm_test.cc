@@ -5,7 +5,7 @@
 #include "core/layout/ng/ng_block_layout_algorithm.h"
 
 #include "core/layout/ng/ng_constraint_space.h"
-#include "core/layout/ng/ng_fragment.h"
+#include "core/layout/ng/ng_physical_fragment.h"
 #include "core/layout/ng/ng_length_utils.h"
 #include "core/style/ComputedStyle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,11 +28,11 @@ TEST_F(NGBlockLayoutAlgorithmTest, FixedSize) {
       HorizontalTopBottom, NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
 
   NGBlockLayoutAlgorithm algorithm(style_, nullptr);
-  NGFragment* frag;
+  NGPhysicalFragment* frag;
   while (!algorithm.Layout(space, &frag))
     ;
-  EXPECT_EQ(frag->InlineSize(), LayoutUnit(30));
-  EXPECT_EQ(frag->BlockSize(), LayoutUnit(40));
+  EXPECT_EQ(frag->Width(), LayoutUnit(30));
+  EXPECT_EQ(frag->Height(), LayoutUnit(40));
 }
 
 }  // namespace

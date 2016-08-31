@@ -12,7 +12,7 @@
 namespace blink {
 
 class NGConstraintSpace;
-class NGFragment;
+class NGPhysicalFragment;
 
 // Base class for all LayoutNG algorithms.
 class CORE_EXPORT NGLayoutAlgorithm
@@ -33,7 +33,7 @@ class CORE_EXPORT NGLayoutAlgorithm
   // returns true. The same constraint space has to be passed each time.
   // TODO(layout-ng): Should we have a StartLayout function to avoid passing
   // the same space for each Layout iteration?
-  virtual bool Layout(const NGConstraintSpace*, NGFragment**) = 0;
+  virtual bool Layout(const NGConstraintSpace*, NGPhysicalFragment**) = 0;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 };

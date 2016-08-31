@@ -8,6 +8,7 @@
 #include "core/layout/ng/layout_ng_block_flow.h"
 #include "core/layout/ng/ng_block_layout_algorithm.h"
 #include "core/layout/ng/ng_constraint_space.h"
+#include "core/layout/ng/ng_direction.h"
 #include "core/layout/ng/ng_fragment.h"
 #include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_writing_mode.h"
@@ -25,7 +26,6 @@ bool NGBox::Layout(const NGConstraintSpace* constraint_space,
   // We can either use the new layout code to do the layout and then copy the
   // resulting size to the LayoutObject, or use the old layout code and
   // synthesize a fragment.
-  NGFragment* fragment = nullptr;
   if (CanUseNewLayout()) {
     if (!algorithm_)
       algorithm_ = new NGBlockLayoutAlgorithm(Style(), FirstChild());
@@ -33,10 +33,21 @@ bool NGBox::Layout(const NGConstraintSpace* constraint_space,
     NGConstraintSpace* child_constraint_space = new NGConstraintSpace(
         FromPlatformWritingMode(Style()->getWritingMode()), constraint_space);
 
+    NGPhysicalFragment* fragment = nullptr;
     if (!algorithm_->Layout(child_constraint_space, &fragment))
       return false;
-    layout_box_->setLogicalWidth(fragment->InlineSize());
-    layout_box_->setLogicalHeight(fragment->BlockSize());
+    fragment_ = fragment;
+
+    layout_box_->setWidth(fragment_->Width());
+    layout_box_->setHeight(fragment_->Height());
+
+    // Ensure the position of the children are copied across to the
+    // LayoutObject tree.
+    for (NGBox* box = FirstChild(); box; box = box->NextSibling()) {
+      if (box->fragment_)
+        box->PositionUpdated();
+    }
+
     if (layout_box_->isLayoutBlock())
       toLayoutBlock(layout_box_)->layoutPositionedObjects(true);
     layout_box_->clearNeedsLayout();
@@ -55,14 +66,16 @@ bool NGBox::Layout(const NGConstraintSpace* constraint_space,
     LayoutRect overflow = layout_box_->layoutOverflowRect();
     // TODO(layout-ng): This does not handle writing modes correctly (for
     // overflow & the enums)
-    NGFragmentBuilder builder(NGFragmentBase::FragmentBox);
+    NGFragmentBuilder builder(NGPhysicalFragmentBase::FragmentBox);
     builder.SetInlineSize(layout_box_->logicalWidth())
         .SetBlockSize(layout_box_->logicalHeight())
         .SetInlineOverflow(overflow.width())
         .SetBlockOverflow(overflow.height());
-    fragment = builder.ToFragment();
+    fragment_ = builder.ToFragment();
   }
-  *out = fragment;
+  *out = new NGFragment(constraint_space->WritingMode(),
+                        FromPlatformDirection(Style()->direction()),
+                        fragment_.get());
   // Reset algorithm for future use
   algorithm_ = nullptr;
   return true;
@@ -82,9 +95,10 @@ NGBox* NGBox::FirstChild() const {
   return child ? new NGBox(child) : nullptr;
 }
 
-void NGBox::PositionUpdated(const NGFragment& fragment) {
-  layout_box_->setLogicalLeft(fragment.InlineOffset());
-  layout_box_->setLogicalTop(fragment.BlockOffset());
+void NGBox::PositionUpdated() {
+  DCHECK(fragment_);
+  layout_box_->setX(fragment_->LeftOffset());
+  layout_box_->setY(fragment_->TopOffset());
 }
 
 bool NGBox::CanUseNewLayout() {

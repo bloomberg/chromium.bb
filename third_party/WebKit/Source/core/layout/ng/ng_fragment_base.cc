@@ -3,37 +3,46 @@
 // found in the LICENSE file.
 
 #include "core/layout/ng/ng_fragment_base.h"
-#include "core/layout/ng/ng_fragment.h"
-#include "core/layout/ng/ng_text_fragment.h"
+
+#include "core/layout/ng/ng_physical_fragment_base.h"
 
 namespace blink {
 
-NGFragmentBase::NGFragmentBase(NGLogicalSize size,
-                               NGLogicalSize overflow,
-                               NGWritingMode writing_mode,
-                               NGDirection direction,
-                               NGFragmentType type)
-    : size_(size),
-      overflow_(overflow),
-      type_(type),
-      writing_mode_(writing_mode),
-      direction_(direction),
-      has_been_placed_(false) {}
+LayoutUnit NGFragmentBase::InlineSize() const {
+  return writing_mode_ == HorizontalTopBottom ? physical_fragment_->Width()
+                                              : physical_fragment_->Height();
+}
 
-void NGFragmentBase::SetOffset(LayoutUnit inline_offset,
-                               LayoutUnit block_offset) {
-  // setOffset should only be called once.
-  DCHECK(!has_been_placed_);
-  offset_.inline_offset = inline_offset;
-  offset_.block_offset = block_offset;
-  has_been_placed_ = true;
+LayoutUnit NGFragmentBase::BlockSize() const {
+  return writing_mode_ == HorizontalTopBottom ? physical_fragment_->Height()
+                                              : physical_fragment_->Width();
+}
+
+LayoutUnit NGFragmentBase::InlineOverflow() const {
+  return writing_mode_ == HorizontalTopBottom
+             ? physical_fragment_->WidthOverflow()
+             : physical_fragment_->HeightOverflow();
+}
+
+LayoutUnit NGFragmentBase::BlockOverflow() const {
+  return writing_mode_ == HorizontalTopBottom
+             ? physical_fragment_->HeightOverflow()
+             : physical_fragment_->WidthOverflow();
+}
+
+LayoutUnit NGFragmentBase::InlineOffset() const {
+  return writing_mode_ == HorizontalTopBottom ? physical_fragment_->LeftOffset()
+                                              : physical_fragment_->TopOffset();
+}
+
+LayoutUnit NGFragmentBase::BlockOffset() const {
+  return writing_mode_ == HorizontalTopBottom
+             ? physical_fragment_->TopOffset()
+             : physical_fragment_->LeftOffset();
 }
 
 DEFINE_TRACE(NGFragmentBase) {
-  if (Type() == FragmentText)
-    static_cast<NGTextFragment*>(this)->traceAfterDispatch(visitor);
-  else
-    static_cast<NGFragment*>(this)->traceAfterDispatch(visitor);
+  visitor->trace(physical_fragment_);
 }
 
 }  // namespace blink

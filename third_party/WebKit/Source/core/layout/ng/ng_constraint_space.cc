@@ -8,16 +8,6 @@
 
 namespace blink {
 
-static inline NGLogicalSize LogicalSizeForWritingMode(
-    NGWritingMode writing_mode,
-    NGPhysicalConstraintSpace* physical_space) {
-  return writing_mode == HorizontalTopBottom
-             ? NGLogicalSize(physical_space->ContainerSize().width,
-                             physical_space->ContainerSize().height)
-             : NGLogicalSize(physical_space->ContainerSize().height,
-                             physical_space->ContainerSize().width);
-}
-
 // TODO: This should set the size of the NGPhysicalConstraintSpace. Or we could
 // remove it requiring that a NGConstraintSpace is created from a
 // NGPhysicalConstraintSpace.
@@ -31,7 +21,6 @@ NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
 NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
                                      NGPhysicalConstraintSpace* physical_space)
     : physical_space_(physical_space), writing_mode_(writing_mode) {
-  SetContainerSize(LogicalSizeForWritingMode(writing_mode, physical_space));
 }
 
 NGConstraintSpace::NGConstraintSpace(const NGConstraintSpace& other,
@@ -42,7 +31,8 @@ NGConstraintSpace::NGConstraintSpace(const NGConstraintSpace& other,
 }
 
 NGLogicalSize NGConstraintSpace::ContainerSize() const {
-  return LogicalSizeForWritingMode(WritingMode(), physical_space_);
+  return physical_space_->container_size_.ConvertToLogical(
+      static_cast<NGWritingMode>(writing_mode_));
 }
 
 bool NGConstraintSpace::InlineTriggersScrollbar() const {
@@ -86,13 +76,8 @@ NGLayoutOpportunityIterator NGConstraintSpace::LayoutOpportunities(
 }
 
 void NGConstraintSpace::SetContainerSize(NGLogicalSize container_size) {
-  if (writing_mode_ == HorizontalTopBottom) {
-    physical_space_->container_size_.width = container_size.inline_size;
-    physical_space_->container_size_.height = container_size.block_size;
-  } else {
-    physical_space_->container_size_.width = container_size.block_size;
-    physical_space_->container_size_.height = container_size.inline_size;
-  }
+  physical_space_->container_size_ = container_size.ConvertToPhysical(
+      static_cast<NGWritingMode>(writing_mode_));
 }
 
 void NGConstraintSpace::SetOverflowTriggersScrollbar(bool inline_triggers,

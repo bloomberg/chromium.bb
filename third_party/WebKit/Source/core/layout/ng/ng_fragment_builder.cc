@@ -6,7 +6,8 @@
 
 namespace blink {
 
-NGFragmentBuilder::NGFragmentBuilder(NGFragmentBase::NGFragmentType type)
+NGFragmentBuilder::NGFragmentBuilder(
+    NGPhysicalFragmentBase::NGFragmentType type)
     : type_(type),
       writing_mode_(HorizontalTopBottom),
       direction_(LeftToRight) {}
@@ -42,19 +43,32 @@ NGFragmentBuilder& NGFragmentBuilder::SetBlockOverflow(LayoutUnit size) {
   return *this;
 }
 
-NGFragmentBuilder& NGFragmentBuilder::AddChild(const NGFragment* child) {
-  DCHECK_EQ(type_, NGFragmentBase::FragmentBox)
+NGFragmentBuilder& NGFragmentBuilder::AddChild(NGFragment* child,
+                                               NGLogicalOffset offset) {
+  DCHECK_EQ(type_, NGPhysicalFragmentBase::FragmentBox)
       << "Only box fragments can have children";
-  children_.append(child);
+  children_.append(child->PhysicalFragment());
+  offsets_.append(offset);
   return *this;
 }
 
-NGFragment* NGFragmentBuilder::ToFragment() {
+NGPhysicalFragment* NGFragmentBuilder::ToFragment() {
   // TODO(layout-ng): Support text fragments
-  DCHECK_EQ(type_, NGFragmentBase::FragmentBox);
-  NGFragment* fragment =
-      new NGFragment(size_, overflow_, writing_mode_, direction_, children_);
-  return fragment;
+  DCHECK_EQ(type_, NGPhysicalFragmentBase::FragmentBox);
+  DCHECK_EQ(offsets_.size(), children_.size());
+
+  NGPhysicalSize physical_size = size_.ConvertToPhysical(writing_mode_);
+  HeapVector<Member<const NGPhysicalFragmentBase>> children(children_.size());
+
+  for (size_t i = 0; i < children_.size(); ++i) {
+    NGPhysicalFragmentBase* child = children_[i].get();
+    child->SetOffset(offsets_[i].ConvertToPhysical(
+        writing_mode_, direction_, physical_size, child->Size()));
+    children.append(child);
+  }
+
+  return new NGPhysicalFragment(
+      physical_size, overflow_.ConvertToPhysical(writing_mode_), children);
 }
 
 }  // namespace blink

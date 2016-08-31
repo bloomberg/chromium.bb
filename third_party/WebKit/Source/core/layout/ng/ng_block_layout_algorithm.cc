@@ -9,6 +9,7 @@
 #include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_fragment.h"
 #include "core/layout/ng/ng_length_utils.h"
+#include "core/layout/ng/ng_units.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/LengthFunctions.h"
 
@@ -20,7 +21,7 @@ NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
     : style_(style), first_child_(first_child), state_(kStateInit) {}
 
 bool NGBlockLayoutAlgorithm::Layout(const NGConstraintSpace* constraint_space,
-                                    NGFragment** out) {
+                                    NGPhysicalFragment** out) {
   switch (state_) {
     case kStateInit: {
       LayoutUnit inline_size =
@@ -33,7 +34,7 @@ bool NGBlockLayoutAlgorithm::Layout(const NGConstraintSpace* constraint_space,
           *constraint_space, NGLogicalSize(inline_size, block_size));
       content_size_ = LayoutUnit();
 
-      builder_ = new NGFragmentBuilder(NGFragmentBase::FragmentBox);
+      builder_ = new NGFragmentBuilder(NGPhysicalFragmentBase::FragmentBox);
       builder_->SetInlineSize(inline_size).SetBlockSize(block_size);
       current_child_ = first_child_;
       state_ = kStateChildLayout;
@@ -47,14 +48,15 @@ bool NGBlockLayoutAlgorithm::Layout(const NGConstraintSpace* constraint_space,
         NGBoxStrut child_margins = computeMargins(
             *constraint_space_for_children_, *current_child_->Style());
         // TODO(layout-ng): Support auto margins
-        fragment->SetOffset(child_margins.inline_start,
-                            content_size_ + child_margins.block_start);
-        current_child_->PositionUpdated(*fragment);
+        builder_->AddChild(
+            fragment,
+            NGLogicalOffset(child_margins.inline_start,
+                            content_size_ + child_margins.block_start));
+
         content_size_ += fragment->BlockSize() + child_margins.BlockSum();
         max_inline_size_ =
             std::max(max_inline_size_,
                      fragment->InlineSize() + child_margins.InlineSum());
-        builder_->AddChild(fragment);
         current_child_ = current_child_->NextSibling();
         if (current_child_)
           return false;

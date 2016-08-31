@@ -16,6 +16,7 @@ class LayoutBox;
 class NGBlockLayoutAlgorithm;
 class NGConstraintSpace;
 class NGFragment;
+class NGPhysicalFragment;
 
 // Represents a node to be laid out.
 class CORE_EXPORT NGBox final : public GarbageCollected<NGBox> {
@@ -34,18 +35,21 @@ class CORE_EXPORT NGBox final : public GarbageCollected<NGBox> {
 
   NGBox* FirstChild() const;
 
+  DEFINE_INLINE_VIRTUAL_TRACE() {
+    visitor->trace(algorithm_);
+    visitor->trace(fragment_);
+  }
+
+ private:
   // This is necessary for interop between old and new trees -- after our parent
   // positions us, it calls this function so we can store the position on the
   // underlying LayoutBox.
-  void PositionUpdated(const NGFragment&);
-
-  DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(algorithm_); }
-
- private:
+  void PositionUpdated();
   bool CanUseNewLayout();
 
   LayoutBox* layout_box_;
   Member<NGBlockLayoutAlgorithm> algorithm_;
+  Member<NGPhysicalFragment> fragment_;
 };
 
 }  // namespace blink

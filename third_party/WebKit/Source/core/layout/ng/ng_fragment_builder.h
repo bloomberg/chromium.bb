@@ -11,9 +11,9 @@
 namespace blink {
 
 class CORE_EXPORT NGFragmentBuilder final
-    : public GarbageCollected<NGFragmentBuilder> {
+    : public GarbageCollectedFinalized<NGFragmentBuilder> {
  public:
-  NGFragmentBuilder(NGFragmentBase::NGFragmentType);
+  NGFragmentBuilder(NGPhysicalFragmentBase::NGFragmentType);
 
   NGFragmentBuilder& SetWritingMode(NGWritingMode);
   NGFragmentBuilder& SetDirection(NGDirection);
@@ -24,25 +24,26 @@ class CORE_EXPORT NGFragmentBuilder final
   NGFragmentBuilder& SetInlineOverflow(LayoutUnit);
   NGFragmentBuilder& SetBlockOverflow(LayoutUnit);
 
-  NGFragmentBuilder& AddChild(const NGFragment*);
+  NGFragmentBuilder& AddChild(NGFragment*, NGLogicalOffset);
 
   // Offsets are not supposed to be set during fragment construction, so we
   // do not provide a setter here.
 
   // Creates the fragment. Can only be called once.
-  NGFragment* ToFragment();
+  NGPhysicalFragment* ToFragment();
 
   DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(children_); }
 
  private:
-  NGFragmentBase::NGFragmentType type_;
+  NGPhysicalFragmentBase::NGFragmentType type_;
   NGWritingMode writing_mode_;
   NGDirection direction_;
 
   NGLogicalSize size_;
   NGLogicalSize overflow_;
 
-  HeapVector<Member<const NGFragmentBase>> children_;
+  HeapVector<Member<NGPhysicalFragmentBase>> children_;
+  Vector<NGLogicalOffset> offsets_;
 };
 
 }  // namespace blink

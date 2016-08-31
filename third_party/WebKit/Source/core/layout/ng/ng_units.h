@@ -5,11 +5,16 @@
 #ifndef NGUnits_h
 #define NGUnits_h
 
+#include "core/CoreExport.h"
+#include "core/layout/ng/ng_direction.h"
+#include "core/layout/ng/ng_writing_mode.h"
 #include "platform/LayoutUnit.h"
 
 namespace blink {
 
 class LayoutUnit;
+struct NGPhysicalOffset;
+struct NGPhysicalSize;
 
 struct NGLogicalSize {
   NGLogicalSize() {}
@@ -18,11 +23,39 @@ struct NGLogicalSize {
 
   LayoutUnit inline_size;
   LayoutUnit block_size;
+
+  NGPhysicalSize ConvertToPhysical(NGWritingMode mode) const;
 };
 
+// NGLogicalOffset is the position of a rect (typically a fragment) relative to
+// its parent rect in the logical coordinate system.
 struct NGLogicalOffset {
+  NGLogicalOffset() {}
+  NGLogicalOffset(LayoutUnit inline_offset, LayoutUnit block_offset)
+      : inline_offset(inline_offset), block_offset(block_offset) {}
+
   LayoutUnit inline_offset;
   LayoutUnit block_offset;
+
+  // Converts a logical offset to a physical offset. See:
+  // https://drafts.csswg.org/css-writing-modes-3/#logical-to-physical
+  // @param container_size the size of the rect (typically a fragment).
+  // @param inner_size the size of the inner rect (typically a child fragment).
+  CORE_EXPORT NGPhysicalOffset
+  ConvertToPhysical(NGWritingMode mode,
+                    NGDirection direction,
+                    NGPhysicalSize container_size,
+                    NGPhysicalSize inner_size) const;
+};
+
+// NGPhysicalOffset is the position of a rect (typically a fragment) relative to
+// its parent rect in the physical coordinate system.
+struct NGPhysicalOffset {
+  NGPhysicalOffset() {}
+  NGPhysicalOffset(LayoutUnit left, LayoutUnit top) : left(left), top(top) {}
+
+  LayoutUnit left;
+  LayoutUnit top;
 };
 
 struct NGPhysicalSize {
@@ -32,11 +65,15 @@ struct NGPhysicalSize {
 
   LayoutUnit width;
   LayoutUnit height;
+
+  NGLogicalSize ConvertToLogical(NGWritingMode mode) const;
 };
 
+// NGPhysicalLocation is the position of a rect (typically a fragment) relative
+// to the root document.
 struct NGPhysicalLocation {
-  LayoutUnit top;
   LayoutUnit left;
+  LayoutUnit top;
 };
 
 struct NGPhysicalRect {

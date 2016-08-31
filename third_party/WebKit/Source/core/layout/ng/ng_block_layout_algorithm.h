@@ -15,7 +15,7 @@ namespace blink {
 
 class ComputedStyle;
 class NGConstraintSpace;
-class NGFragment;
+class NGPhysicalFragment;
 
 // A class for general block layout (e.g. a <div> with no special style).
 // Lays out the children in sequence.
@@ -35,7 +35,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   // Returns true when done; when this function returns false, it has to be
   // called again. The out parameter will only be set when this function
   // returns true. The same constraint space has to be passed each time.
-  bool Layout(const NGConstraintSpace*, NGFragment**) override;
+  bool Layout(const NGConstraintSpace*, NGPhysicalFragment**) override;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
     NGLayoutAlgorithm::trace(visitor);
