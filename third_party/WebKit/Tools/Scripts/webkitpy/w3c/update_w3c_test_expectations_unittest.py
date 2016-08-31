@@ -199,24 +199,28 @@ class UpdateW3CTestExpectationsTest(unittest.TestCase):
         self.assertEqual(value, 'dont copy me\n\n# Tests added from W3C auto import bot\n[ ] but copy me')
 
     def test_is_js_test_true(self):
-        self.host.filesystem.files['/mock-checkout/foo/bar.html'] = '''
-        <script src="/resources/testharness.js"></script>'''
+        self.host.filesystem.files['/mock-checkout/third_party/WebKit/LayoutTests/foo/bar.html'] = (
+            '<script src="/resources/testharness.js"></script>')
         line_adder = W3CExpectationsLineAdder(self.host)
         self.assertTrue(line_adder.is_js_test('foo/bar.html'))
 
     def test_is_js_test_false(self):
-        self.host.filesystem.files['/mock-checkout/foo/bar.html'] = '''
-        <script src="ref-test.html"></script>'''
+        self.host.filesystem.files['/mock-checkout/third_party/WebKit/LayoutTests/foo/bar.html'] = (
+            '<script src="ref-test.html"></script>')
+        line_adder = W3CExpectationsLineAdder(self.host)
+        self.assertFalse(line_adder.is_js_test('foo/bar.html'))
+
+    def test_is_js_test_non_existent_file(self):
         line_adder = W3CExpectationsLineAdder(self.host)
         self.assertFalse(line_adder.is_js_test('foo/bar.html'))
 
     def test_get_test_to_rebaseline(self):
         self.host = MockHost()
-        self.host.filesystem.files['/mock-checkout/imported/fake/test/path.html'] = '''
-                <script src="/resources/testharness.js"></script>'''
+        self.host.filesystem.files['/mock-checkout/third_party/WebKit/LayoutTests/imported/fake/test/path.html'] = (
+            '<script src="/resources/testharness.js"></script>')
         line_adder = W3CExpectationsLineAdder(self.host)
-        tests = ['imported/fake/test/path.html']
-        test_dict = {'../../../imported/fake/test/path.html': self.mock_dict_two['imported/fake/test/path.html']}
+        tests = ['third_party/WebKit/LayoutTests/imported/fake/test/path.html']
+        test_dict = {'imported/fake/test/path.html': self.mock_dict_two['imported/fake/test/path.html']}
         tests_to_rebaseline, tests_results = line_adder.get_tests_to_rebaseline(tests, test_dict)
-        self.assertEqual(tests_to_rebaseline, ['../../../imported/fake/test/path.html'])
+        self.assertEqual(tests_to_rebaseline, ['imported/fake/test/path.html'])
         self.assertEqual(tests_results, test_dict)

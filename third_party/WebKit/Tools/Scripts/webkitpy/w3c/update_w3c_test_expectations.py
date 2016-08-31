@@ -293,8 +293,8 @@ class W3CExpectationsLineAdder(object):
             testharness.js tests that required new baselines to be downloaded
             from `webkit-patch rebaseline-from-try-jobs`.
         """
-        tests = self.host.executive.run_command(['git', 'diff', 'master', '--name-only']).splitlines()
-        tests_to_rebaseline, tests_results = self.get_tests_to_rebaseline(tests, tests_results)
+        modified_files = self.host.executive.run_command(['git', 'diff', 'master', '--name-only']).splitlines()
+        tests_to_rebaseline, tests_results = self.get_tests_to_rebaseline(modified_files, tests_results)
         if tests_to_rebaseline:
             webkit_patch = self.host.filesystem.join(
                 self.finder.chromium_base(), self.finder.webkit_base(), self.finder.path_to_script('webkit-patch'))
@@ -307,7 +307,7 @@ class W3CExpectationsLineAdder(object):
             ] + tests_to_rebaseline)
         return tests_results
 
-    def get_tests_to_rebaseline(self, tests, tests_results):
+    def get_tests_to_rebaseline(self, modified_files, tests_results):
         """Returns a list of tests to download new baselines for.
 
         Creates a list of tests to rebaseline depending on the tests' platform-
@@ -315,7 +315,9 @@ class W3CExpectationsLineAdder(object):
         due to a baseline mismatch (rather than crash or timeout).
 
         Args:
-            tests: A list of new imported tests.
+            modified_files: A list of paths to modified files (which should
+                be added, removed or modified files in the imported w3c
+                directory), relative to the Chromium checkout root.
             tests_results: A dictionary of failing tests results.
 
         Returns:
@@ -326,9 +328,9 @@ class W3CExpectationsLineAdder(object):
         tests_to_rebaseline = set()
         layout_tests_rel_path = self.host.filesystem.relpath(
             self.finder.layout_tests_dir(), self.finder.chromium_base())
-        for test in tests:
-            test_path = self.host.filesystem.relpath(test, layout_tests_rel_path)
-            if self.is_js_test(test) and tests_results.get(test_path):
+        for file_path in modified_files:
+            test_path = self.host.filesystem.relpath(file_path, layout_tests_rel_path)
+            if self.is_js_test(test_path) and tests_results.get(test_path):
                 for platform in tests_results[test_path].keys():
                     if tests_results[test_path][platform]['actual'] not in ['CRASH', 'TIMEOUT']:
                         del tests_results[test_path][platform]
@@ -336,6 +338,14 @@ class W3CExpectationsLineAdder(object):
         return list(tests_to_rebaseline), tests_results
 
     def is_js_test(self, test_path):
-        absolute_path = self.host.filesystem.join(self.finder.chromium_base(), test_path)
+        """Checks whether a given file is a testharness.js test.
+
+        Args:
+            test_path: A file path relative to the layout tests directory.
+                This might correspond to a deleted file or a non-test.
+        """
+        absolute_path = self.host.filesystem.join(self.finder.layout_tests_dir(), test_path)
         test_parser = TestParser(absolute_path, self.host)
+        if not test_parser.test_doc:
+            return False
         return test_parser.is_jstest()

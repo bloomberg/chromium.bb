@@ -201,7 +201,6 @@ CONTENT OF TEST
         test_path = '/some/madeup/path/'
         parser = TestParser(test_path + 'somefile.html', MockHost(), options)
         test_info = parser.analyze_test(test_contents=test_html)
-
         self.assertEqual(test_info, None, 'test should have been skipped')
 
     def test_analyze_non_html_file(self):
@@ -210,3 +209,9 @@ CONTENT OF TEST
         parser = TestParser(os.path.join(os.path.dirname(__file__), 'test_parser.py'), MockHost())
         test_info = parser.analyze_test()
         self.assertEqual(test_info, None, 'no tests should have been found in this file')
+
+    def test_parser_initialization_non_existent_file(self):
+        parser = TestParser('some/bogus/path.html', MockHost())
+        self.assertEqual(parser.filename, 'some/bogus/path.html')
+        self.assertIsNone(parser.test_doc)
+        self.assertIsNone(parser.ref_doc)
