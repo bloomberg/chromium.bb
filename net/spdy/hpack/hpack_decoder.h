@@ -38,7 +38,7 @@ class NET_EXPORT_PRIVATE HpackDecoder : public HpackDecoderInterface {
   HpackDecoder();
   ~HpackDecoder() override;
 
-  // Called upon sending a SETTINGS_HEADER_TABLE_SIZE value.
+  // Called upon acknowledgement of SETTINGS_HEADER_TABLE_SIZE.
   void ApplyHeaderTableSizeSetting(size_t size_setting) override;
 
   // If a SpdyHeadersHandlerInterface is provided, HpackDecoder will emit
