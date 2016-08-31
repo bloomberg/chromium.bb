@@ -22,6 +22,7 @@ testGridDefinitionsValues(document.getElementById("gridWithCalcComplexElement"),
 testGridDefinitionsValues(document.getElementById("gridWithCalcInsideMinMaxElement"), "80px", "300px");
 testGridDefinitionsValues(document.getElementById("gridWithCalcComplexInsideMinMaxElement"), "415px", "300px");
 testGridDefinitionsValues(document.getElementById("gridWithAutoInsideMinMaxElement"), "20px", "11px");
+testGridDefinitionsValues(document.getElementById("gridWithFitContentFunctionElement"), "7px", "11px");
 
 debug("");
 debug("Test getting wrong values for grid-template-columns and grid-template-rows through CSS (they should resolve to the default: 'none')");
@@ -47,6 +48,7 @@ testGridDefinitionsSetJSValues("auto", "auto", "0px", "0px");
 testGridDefinitionsSetJSValues("10vw", "25vh", "80px", "150px");
 testGridDefinitionsSetJSValues("min-content", "min-content", "0px", "0px");
 testGridDefinitionsSetJSValues("max-content", "max-content", "0px", "0px");
+testGridDefinitionsSetJSValues("fit-content(100px)", "fit-content(25%)", "0px", "0px");
 
 debug("");
 debug("Test getting and setting grid-template-columns and grid-template-rows to minmax() values through JS");
@@ -98,6 +100,13 @@ testGridDefinitionsSetBadJSValues("10px /", "15px /");
 // Flexible lengths are invalid on the min slot of minmax().
 testGridDefinitionsSetBadJSValues("minmax(0fr, 100px)", "minmax(.0fr, 200px)");
 testGridDefinitionsSetBadJSValues("minmax(1fr, 100px)", "minmax(2.5fr, 200px)");
+testGridDefinitionsSetBadJSValues("fit-content(-10em)", "fit-content(-2px)");
+testGridDefinitionsSetBadJSValues("fit-content(10px 2%)", "fit-content(5% 10em)");
+testGridDefinitionsSetBadJSValues("fit-content(max-content)", "fit-content(min-content)");
+testGridDefinitionsSetBadJSValues("fit-content(auto)", "fit-content(3fr)");
+testGridDefinitionsSetBadJSValues("fit-content(repeat(2, 100px))", "fit-content(repeat(auto-fit), 1%)");
+testGridDefinitionsSetBadJSValues("fit-content(fit-content(10px))", "fit-content(fit-content(30%))");
+testGridDefinitionsSetBadJSValues("fit-content([a] 100px)", "fit-content(30px [b c])");
 
 debug("");
 debug("Test setting grid-template-columns and grid-template-rows back to 'none' through JS");

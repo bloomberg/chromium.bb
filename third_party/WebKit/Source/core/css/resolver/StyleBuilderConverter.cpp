@@ -539,10 +539,15 @@ GridTrackSize StyleBuilderConverter::convertGridTrackSize(StyleResolverState& st
     if (value.isPrimitiveValue())
         return GridTrackSize(convertGridTrackBreadth(state, toCSSPrimitiveValue(value)));
 
-    const CSSFunctionValue& minmaxFunction = toCSSFunctionValue(value);
-    ASSERT_WITH_SECURITY_IMPLICATION(minmaxFunction.length() == 2);
-    GridLength minTrackBreadth(convertGridTrackBreadth(state, toCSSPrimitiveValue(minmaxFunction.item(0))));
-    GridLength maxTrackBreadth(convertGridTrackBreadth(state, toCSSPrimitiveValue(minmaxFunction.item(1))));
+    auto& function = toCSSFunctionValue(value);
+    if (function.functionType() == CSSValueFitContent) {
+        SECURITY_DCHECK(function.length() == 1);
+        return GridTrackSize(convertGridTrackBreadth(state, toCSSPrimitiveValue(function.item(0))), FitContentTrackSizing);
+    }
+
+    SECURITY_DCHECK(function.length() == 2);
+    GridLength minTrackBreadth(convertGridTrackBreadth(state, toCSSPrimitiveValue(function.item(0))));
+    GridLength maxTrackBreadth(convertGridTrackBreadth(state, toCSSPrimitiveValue(function.item(1))));
     return GridTrackSize(minTrackBreadth, maxTrackBreadth);
 }
 
