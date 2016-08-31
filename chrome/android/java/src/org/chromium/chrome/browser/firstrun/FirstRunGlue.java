@@ -19,10 +19,9 @@ public interface FirstRunGlue {
 
     /**
      * Sets the EULA/Terms of Services state as "ACCEPTED".
-     * @param appContext An application context.
      * @param allowCrashUpload True if the user allows to upload crash dumps and collect stats.
      */
-    void acceptTermsOfService(Context appContext, boolean allowCrashUpload);
+    void acceptTermsOfService(boolean allowCrashUpload);
 
     /**
      * @return Whether a given account name is the default (first) Android account name.

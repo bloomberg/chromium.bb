@@ -346,7 +346,7 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
     public void acceptTermsOfService(boolean allowCrashUpload) {
         // If default is true then it corresponds to opt-out and false corresponds to opt-in.
         UmaUtils.recordMetricsReportingDefaultOptIn(!DEFAULT_METRICS_AND_CRASH_REPORTING);
-        sGlue.acceptTermsOfService(getApplicationContext(), allowCrashUpload);
+        sGlue.acceptTermsOfService(allowCrashUpload);
         FirstRunStatus.setSkipWelcomePage(FirstRunActivity.this, true);
         flushPersistentData();
         stopProgressionIfNotAcceptedTermsOfService();

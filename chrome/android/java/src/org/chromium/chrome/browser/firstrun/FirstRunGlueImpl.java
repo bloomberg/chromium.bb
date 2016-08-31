@@ -26,7 +26,7 @@ public class FirstRunGlueImpl implements FirstRunGlue {
     }
 
     @Override
-    public void acceptTermsOfService(Context appContext, boolean allowCrashUpload) {
+    public void acceptTermsOfService(boolean allowCrashUpload) {
         UmaSessionStats.changeMetricsReportingConsent(allowCrashUpload);
         PrefServiceBridge.getInstance().setEulaAccepted();
     }

@@ -62,7 +62,7 @@ public class LightweightFirstRunActivity extends FirstRunActivity {
                 .setOnClickListener(new OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        sGlue.acceptTermsOfService(LightweightFirstRunActivity.this, false);
+                        sGlue.acceptTermsOfService(false);
                         completeFirstRunExperience();
                     }
                 });
