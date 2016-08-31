@@ -11,8 +11,8 @@
 #include "ash/common/focus_cycler.h"
 #include "ash/common/scoped_root_window_for_new_windows.h"
 #include "ash/common/session/session_state_delegate.h"
-#include "ash/common/shelf/shelf.h"
 #include "ash/common/shelf/shelf_widget.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_cycle_list.h"
 #include "ash/common/wm/window_state.h"
@@ -20,7 +20,6 @@
 #include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/shelf_test_api.h"
 #include "ash/test/shelf_view_test_api.h"
 #include "ash/test/test_shelf_delegate.h"
 #include "ash/test/test_shell_delegate.h"
@@ -82,7 +81,7 @@ class WindowCycleControllerTest : public test::AshTestBase {
     WindowCycleList::DisableInitialDelayForTesting();
 
     shelf_view_test_.reset(new test::ShelfViewTestAPI(
-        test::ShelfTestAPI(Shelf::ForPrimaryDisplay()).shelf_view()));
+        GetPrimaryShelf()->GetShelfViewForTesting()));
     shelf_view_test_->SetAnimationDuration(1);
   }
 

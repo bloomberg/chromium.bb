@@ -30,7 +30,6 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/overflow_bubble_view_test_api.h"
-#include "ash/test/shelf_test_api.h"
 #include "ash/test/shelf_view_test_api.h"
 #include "ash/test/test_shelf_delegate.h"
 #include "ash/test/test_shelf_item_delegate.h"
@@ -306,8 +305,7 @@ class ShelfViewTest : public AshTestBase {
   void SetUp() override {
     AshTestBase::SetUp();
     model_ = WmShell::Get()->shelf_model();
-    Shelf* shelf = Shelf::ForPrimaryDisplay();
-    shelf_view_ = ShelfTestAPI(shelf).shelf_view();
+    shelf_view_ = GetPrimaryShelf()->GetShelfViewForTesting();
 
     WebNotificationTray::DisableAnimationsForTest(true);
 
@@ -1686,10 +1684,10 @@ TEST_F(ShelfViewTest, CheckDragInsertBoundsWithMultiMonitor) {
     return;
 
   UpdateDisplay("800x600,800x600");
-  Shelf* secondary_shelf =
-      Shelf::ForWindow(WmShell::Get()->GetAllRootWindows()[1]);
+  WmShelf* secondary_shelf =
+      WmShelf::ForWindow(WmShell::Get()->GetAllRootWindows()[1]);
   ShelfView* shelf_view_for_secondary =
-      ShelfTestAPI(secondary_shelf).shelf_view();
+      secondary_shelf->GetShelfViewForTesting();
 
   // The bounds should be big enough for 4 buttons + overflow chevron.
   shelf_view_for_secondary->SetBounds(0, 0, 500, GetShelfConstant(SHELF_SIZE));

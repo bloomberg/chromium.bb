@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/ash/multi_user/user_switch_animator_chromeos.h"
 
 #include "ash/aura/wm_window_aura.h"
-#include "ash/common/shelf/shelf.h"
 #include "ash/common/shelf/shelf_layout_manager.h"
 #include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/shelf/wm_shelf.h"
@@ -234,7 +233,7 @@ void UserSwitchAnimatorChromeOS::TransitionUserShelf(
           new_account_id_.GetUserEmail());
     // Hide the black rectangle on top of each shelf again.
     for (ash::WmWindow* window : ash::WmShell::Get()->GetAllRootWindows()) {
-      ash::ShelfWidget* shelf = ash::Shelf::ForWindow(window)->shelf_widget();
+      ash::ShelfWidget* shelf = ash::WmShelf::ForWindow(window)->shelf_widget();
       shelf->HideShelfBehindBlackBar(false, duration_override);
     }
     // We kicked off the shelf animation above and the override can be
@@ -266,7 +265,8 @@ void UserSwitchAnimatorChromeOS::TransitionUserShelf(
     // CPU usage and therefore effect jank, we should avoid hiding the shelf if
     // the start and end location are the same and cover the shelf instead with
     // a black rectangle on top.
-    ash::Shelf* shelf = ash::Shelf::ForWindow(ash::WmWindowAura::Get(window));
+    ash::WmShelf* shelf =
+        ash::WmShelf::ForWindow(ash::WmWindowAura::Get(window));
     if (GetScreenCover(window) != NO_USER_COVERS_SCREEN &&
         (!chrome_launcher_controller ||
          !chrome_launcher_controller->ShelfBoundsChangesProbablyWithUser(
@@ -276,8 +276,7 @@ void UserSwitchAnimatorChromeOS::TransitionUserShelf(
       // This shelf change is only part of the animation and will be updated by
       // ChromeLauncherController::ActiveUserChanged() to the new users value.
       // Note that the user preference will not be changed.
-      shelf->wm_shelf()->SetAutoHideBehavior(
-          ash::SHELF_AUTO_HIDE_ALWAYS_HIDDEN);
+      shelf->SetAutoHideBehavior(ash::SHELF_AUTO_HIDE_ALWAYS_HIDDEN);
     }
   }
 }

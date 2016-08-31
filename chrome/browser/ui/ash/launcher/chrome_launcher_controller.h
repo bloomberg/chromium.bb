@@ -24,7 +24,7 @@ class GURL;
 class LauncherItemController;
 
 namespace ash {
-class Shelf;
+class WmShelf;
 }
 
 namespace content {
@@ -234,7 +234,7 @@ class ChromeLauncherController {
   // shelf cannot be performed here, this is only a probability used for
   // animation predictions.
   virtual bool ShelfBoundsChangesProbablyWithUser(
-      ash::Shelf* shelf,
+      ash::WmShelf* shelf,
       const AccountId& account_id) const = 0;
 
   // Called when the user profile is fully loaded and ready to switch to.

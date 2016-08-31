@@ -3,10 +3,9 @@
 // found in the LICENSE file.
 
 #include "ash/aura/wm_window_aura.h"
-#include "ash/common/shelf/shelf.h"
 #include "ash/common/shelf/shelf_view.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/shell.h"
-#include "ash/test/shelf_test_api.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -54,10 +53,9 @@ void CloseBrowser(Browser* browser) {
 }
 
 gfx::Rect GetChromeIconBoundsForRootWindow(aura::Window* root_window) {
-  ash::Shelf* shelf =
-      ash::Shelf::ForWindow(ash::WmWindowAura::Get(root_window));
   const ash::ShelfView* shelf_view =
-      ash::test::ShelfTestAPI(shelf).shelf_view();
+      ash::WmShelf::ForWindow(ash::WmWindowAura::Get(root_window))
+          ->GetShelfViewForTesting();
   const views::ViewModel* view_model = shelf_view->view_model_for_test();
 
   EXPECT_EQ(2, view_model->view_size());

@@ -19,7 +19,6 @@
 #include "ash/common/wm_shell.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
-#include "ash/test/shelf_test_api.h"
 #include "ash/test/shelf_view_test_api.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
@@ -262,7 +261,8 @@ class ShelfAppBrowserTest : public ExtensionBrowserTest {
   ~ShelfAppBrowserTest() override {}
 
   void RunTestOnMainThreadLoop() override {
-    shelf_ = ash::Shelf::ForPrimaryDisplay();
+    shelf_ =
+        ash::WmShelf::ForWindow(ash::WmShell::Get()->GetPrimaryRootWindow());
     model_ = ash::WmShell::Get()->shelf_model();
     controller_ = GetChromeLauncherControllerImpl();
     return ExtensionBrowserTest::RunTestOnMainThreadLoop();
@@ -365,10 +365,10 @@ class ShelfAppBrowserTest : public ExtensionBrowserTest {
     int index = model_->GetItemIndexForType(ash::TYPE_BROWSER_SHORTCUT);
     DCHECK_GE(index, 0);
     ash::ShelfItem item = model_->items()[index];
-    ash::Shelf* shelf =
-        ash::Shelf::ForWindow(ash::WmWindowAura::Get(CurrentContext()));
-    std::unique_ptr<LauncherContextMenu> menu(LauncherContextMenu::Create(
-        controller_, &item, ash::test::ShelfTestAPI(shelf).wm_shelf()));
+    ash::WmShelf* shelf =
+        ash::WmShelf::ForWindow(ash::WmWindowAura::Get(CurrentContext()));
+    std::unique_ptr<LauncherContextMenu> menu(
+        LauncherContextMenu::Create(controller_, &item, shelf));
     return menu;
   }
 
@@ -382,7 +382,7 @@ class ShelfAppBrowserTest : public ExtensionBrowserTest {
     return menu->GetIndexOfCommandId(command_id) != -1;
   }
 
-  ash::Shelf* shelf_;
+  ash::WmShelf* shelf_;
   ash::ShelfModel* model_;
   ChromeLauncherControllerImpl* controller_;
 
@@ -401,7 +401,6 @@ class ShelfAppBrowserTestNoDefaultBrowser : public ShelfAppBrowserTest {
   }
 
  private:
-
   DISALLOW_COPY_AND_ASSIGN(ShelfAppBrowserTestNoDefaultBrowser);
 };
 
@@ -1747,8 +1746,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_DragAndDrop) {
   // Get a number of interfaces we need.
   ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow(),
                                      gfx::Point());
-  ash::test::ShelfViewTestAPI test(
-      ash::test::ShelfTestAPI(shelf_).shelf_view());
+  ash::test::ShelfViewTestAPI test(shelf_->GetShelfViewForTesting());
   AppListService* service = AppListService::Get();
 
   // There should be two items in our launcher by this time.
@@ -1888,12 +1886,11 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestWithMultiMonitor,
   // Get a number of interfaces we need.
   DCHECK_EQ(ash::Shell::GetAllRootWindows().size(), 2U);
   aura::Window* secondary_root_window = ash::Shell::GetAllRootWindows()[1];
-  ash::Shelf* secondary_shelf =
-      ash::Shelf::ForWindow(ash::WmWindowAura::Get(secondary_root_window));
+  ash::WmShelf* secondary_shelf =
+      ash::WmShelf::ForWindow(ash::WmWindowAura::Get(secondary_root_window));
 
   ui::test::EventGenerator generator(secondary_root_window, gfx::Point());
-  ash::test::ShelfViewTestAPI test(
-      ash::test::ShelfTestAPI(secondary_shelf).shelf_view());
+  ash::test::ShelfViewTestAPI test(secondary_shelf->GetShelfViewForTesting());
   AppListService* service = AppListService::Get();
 
   // There should be two items in our shelf by this time.
@@ -1977,8 +1974,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestWithMultiMonitor,
 IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_DragOffShelf) {
   ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow(),
                                      gfx::Point());
-  ash::test::ShelfViewTestAPI test(
-      ash::test::ShelfTestAPI(shelf_).shelf_view());
+  ash::test::ShelfViewTestAPI test(shelf_->GetShelfViewForTesting());
   test.SetAnimationDuration(1);  // Speed up animations for test.
   // Create a known application and check that we have 3 items in the shelf.
   CreateShortcut("app1");
@@ -2080,8 +2076,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, ClickItem) {
   // Get a number of interfaces we need.
   ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow(),
                                      gfx::Point());
-  ash::test::ShelfViewTestAPI test(
-      ash::test::ShelfTestAPI(shelf_).shelf_view());
+  ash::test::ShelfViewTestAPI test(shelf_->GetShelfViewForTesting());
   AppListService* service = AppListService::Get();
   // There should be two items in our shelf by this time.
   EXPECT_EQ(2, model_->item_count());
@@ -2187,8 +2182,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, OverflowBubble) {
   // No overflow yet.
   EXPECT_FALSE(shelf_->shelf_widget()->IsShowingOverflowBubble());
 
-  ash::test::ShelfViewTestAPI test(
-      ash::test::ShelfTestAPI(shelf_).shelf_view());
+  ash::test::ShelfViewTestAPI test(shelf_->GetShelfViewForTesting());
 
   int items_added = 0;
   while (!test.IsOverflowButtonVisible()) {

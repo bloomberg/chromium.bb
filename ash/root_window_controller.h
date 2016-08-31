@@ -55,7 +55,6 @@ class AnimatingWallpaperWidgetController;
 class DockedWindowLayoutManager;
 enum class LoginStatus;
 class PanelLayoutManager;
-class Shelf;
 class ShelfLayoutManager;
 class ShelfWidget;
 class StackingController;
@@ -186,10 +185,6 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   // Creates the shelf for this root window and notifies observers.
   void CreateShelf();
 
-  // Returns the shelf controller for this root window.
-  // TODO(jamescook): Remove this and use WmRootWindowController::GetShelf().
-  Shelf* GetShelf() const;
-
   // Called when the login status changes after login (such as lock/unlock).
   // TODO(oshima): Investigate if we can merge this and |OnLoginStateChanged|.
   void UpdateAfterLoginStatusChange(LoginStatus status);
@@ -280,10 +275,8 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   // to it during construction of the shelf widget and status tray.
   std::unique_ptr<WmShelfAura> wm_shelf_aura_;
 
-  // Legacy shelf controller. Only present after shelf is created (post-login).
-  std::unique_ptr<Shelf> shelf_;
-
   // The shelf widget for this root window.
+  // TODO(jamescook): Move ownership to WmShelf.
   std::unique_ptr<ShelfWidget> shelf_widget_;
 
   // An invisible/empty window used as a event target for

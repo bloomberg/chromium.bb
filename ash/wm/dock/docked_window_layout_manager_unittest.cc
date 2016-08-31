@@ -5,7 +5,7 @@
 #include "ash/common/wm/dock/docked_window_layout_manager.h"
 
 #include "ash/aura/wm_window_aura.h"
-#include "ash/common/shelf/shelf.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/panels/panel_layout_manager.h"
 #include "ash/common/wm/window_resizer.h"
@@ -15,7 +15,6 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/display_manager_test_api.h"
-#include "ash/test/shelf_test_api.h"
 #include "ash/test/shelf_view_test_api.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_shelf_delegate.h"
@@ -47,7 +46,7 @@ class DockedWindowLayoutManagerTest
     ASSERT_TRUE(test::TestShelfDelegate::instance());
 
     shelf_view_test_.reset(new test::ShelfViewTestAPI(
-        test::ShelfTestAPI(Shelf::ForPrimaryDisplay()).shelf_view()));
+        GetPrimaryShelf()->GetShelfViewForTesting()));
     shelf_view_test_->SetAnimationDuration(1);
   }
 

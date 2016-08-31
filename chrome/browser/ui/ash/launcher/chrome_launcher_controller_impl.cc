@@ -10,8 +10,8 @@
 
 #include "ash/common/ash_switches.h"
 #include "ash/common/multi_profile_uma.h"
-#include "ash/common/shelf/shelf.h"
 #include "ash/common/shelf/shelf_model.h"
+#include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/wm_shell.h"
@@ -823,7 +823,7 @@ LauncherItemController* ChromeLauncherControllerImpl::GetLauncherItemController(
 }
 
 bool ChromeLauncherControllerImpl::ShelfBoundsChangesProbablyWithUser(
-    ash::Shelf* shelf,
+    ash::WmShelf* shelf,
     const AccountId& account_id) const {
   Profile* other_profile = multi_user_util::GetProfileFromAccountId(account_id);
   if (!other_profile || other_profile == profile_)
@@ -834,7 +834,7 @@ bool ChromeLauncherControllerImpl::ShelfBoundsChangesProbablyWithUser(
   // no window on desktop, multi user, ..) the shelf could be shown - or not.
   PrefService* prefs = profile_->GetPrefs();
   PrefService* other_prefs = other_profile->GetPrefs();
-  const int64_t display = GetDisplayIDForShelf(shelf->wm_shelf());
+  const int64_t display = GetDisplayIDForShelf(shelf);
   const bool currently_shown =
       ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER ==
       ash::launcher::GetShelfAutoHideBehaviorPref(prefs, display);
@@ -1311,11 +1311,13 @@ void ChromeLauncherControllerImpl::UpdateAppLaunchersFromPref() {
 
 void ChromeLauncherControllerImpl::SetShelfAutoHideBehaviorFromPrefs() {
   for (ash::WmWindow* window : ash::WmShell::Get()->GetAllRootWindows()) {
-    ash::Shelf* shelf = ash::Shelf::ForWindow(window);
-    if (shelf) {
-      shelf->wm_shelf()->SetAutoHideBehavior(
-          ash::launcher::GetShelfAutoHideBehaviorPref(
-              profile_->GetPrefs(), GetDisplayIDForShelf(shelf->wm_shelf())));
+    ash::WmShelf* shelf = ash::WmShelf::ForWindow(window);
+    // TODO(jamescook): This check should not be necessary, but otherwise this
+    // tries to set autohide state on a secondary display during login before
+    // the ShelfView is created, which is not allowed.
+    if (shelf->IsShelfInitialized()) {
+      shelf->SetAutoHideBehavior(ash::launcher::GetShelfAutoHideBehaviorPref(
+          profile_->GetPrefs(), GetDisplayIDForShelf(shelf)));
     }
   }
 }
@@ -1325,10 +1327,13 @@ void ChromeLauncherControllerImpl::SetShelfAlignmentFromPrefs() {
     return;
 
   for (ash::WmWindow* window : ash::WmShell::Get()->GetAllRootWindows()) {
-    ash::Shelf* shelf = ash::Shelf::ForWindow(window);
-    if (shelf) {
-      shelf->wm_shelf()->SetAlignment(ash::launcher::GetShelfAlignmentPref(
-          profile_->GetPrefs(), GetDisplayIDForShelf(shelf->wm_shelf())));
+    ash::WmShelf* shelf = ash::WmShelf::ForWindow(window);
+    // TODO(jamescook): This check should not be necessary, but otherwise this
+    // tries to set the alignment on a secondary display during login before the
+    // ShelfLockingManager and ShelfView are created, which is not allowed.
+    if (shelf->IsShelfInitialized()) {
+      shelf->SetAlignment(ash::launcher::GetShelfAlignmentPref(
+          profile_->GetPrefs(), GetDisplayIDForShelf(shelf)));
     }
   }
 }
@@ -1647,9 +1652,9 @@ void ChromeLauncherControllerImpl::OnDisplayConfigurationChanged() {
   // In BOTTOM_LOCKED state, ignore the call of SetShelfBehaviorsFromPrefs.
   // Because it might be called by some operations, like crbug.com/627040
   // rotating screen.
-  ash::Shelf* shelf = ash::Shelf::ForPrimaryDisplay();
-  if (!shelf ||
-      shelf->wm_shelf()->alignment() != ash::SHELF_ALIGNMENT_BOTTOM_LOCKED)
+  ash::WmShelf* shelf =
+      ash::WmShelf::ForWindow(ash::WmShell::Get()->GetPrimaryRootWindow());
+  if (shelf->alignment() != ash::SHELF_ALIGNMENT_BOTTOM_LOCKED)
     SetShelfBehaviorsFromPrefs();
 }
 

@@ -7,7 +7,6 @@
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_lookup.h"
-#include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/shared/immersive_fullscreen_controller.h"
@@ -41,7 +40,7 @@ void ImmersiveContextAsh::OnEnteringOrExitingImmersive(
   window_state->set_in_immersive_fullscreen(entering);
 
   for (WmWindow* root_window : WmShell::Get()->GetAllRootWindows())
-    root_window->GetRootWindowController()->GetShelf()->UpdateVisibilityState();
+    WmShelf::ForWindow(root_window)->UpdateVisibilityState();
 }
 
 gfx::Rect ImmersiveContextAsh::GetDisplayBoundsInScreen(views::Widget* widget) {

@@ -5,7 +5,6 @@
 #include "ash/wm/panels/attached_panel_window_targeter.h"
 
 #include "ash/aura/wm_window_aura.h"
-#include "ash/common/shelf/shelf.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/wm/panels/panel_layout_manager.h"
 #include "ash/common/wm_shell.h"

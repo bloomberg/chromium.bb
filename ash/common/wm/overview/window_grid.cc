@@ -845,9 +845,8 @@ void WindowGrid::InitShieldWidget() {
   // synonymous with a black shelf background. Update this code if that
   // assumption is no longer valid.
   const float initial_opacity =
-      (root_window_->GetRootWindowController()
-           ->GetShelf()
-           ->GetBackgroundType() == SHELF_BACKGROUND_MAXIMIZED)
+      (WmShelf::ForWindow(root_window_)->GetBackgroundType() ==
+       SHELF_BACKGROUND_MAXIMIZED)
           ? 1.f
           : 0.f;
   shield_widget_.reset(CreateBackgroundWidget(

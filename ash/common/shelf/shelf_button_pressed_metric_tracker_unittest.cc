@@ -9,7 +9,6 @@
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shelf_button_pressed_metric_tracker_test_api.h"
-#include "ash/test/shelf_test_api.h"
 #include "ash/test/shelf_view_test_api.h"
 #include "base/macros.h"
 #include "base/test/histogram_tester.h"

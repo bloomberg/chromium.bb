@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/login/supervised/supervised_user_creation_screen.h"
 
-#include "ash/common/shelf/shelf.h"
 #include "ash/common/shelf/wm_shelf.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "base/rand_util.h"
@@ -375,8 +375,8 @@ void SupervisedUserCreationScreen::OnManagerFullyAuthenticated(
   // For manager user, move wallpaper to locked container so that windows
   // created during the user image picker step are below it.
   ash::Shell::GetInstance()->wallpaper_controller()->MoveToLockedContainer();
-  ash::Shelf::ForPrimaryDisplay()->wm_shelf()->SetAlignment(
-      ash::ShelfAlignment::SHELF_ALIGNMENT_BOTTOM_LOCKED);
+  ash::WmShelf::ForWindow(ash::WmShell::Get()->GetPrimaryRootWindow())
+      ->SetAlignment(ash::ShelfAlignment::SHELF_ALIGNMENT_BOTTOM_LOCKED);
 
   controller_->SetManagerProfile(manager_profile);
   if (actor_)

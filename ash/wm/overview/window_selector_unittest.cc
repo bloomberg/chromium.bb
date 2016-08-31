@@ -10,8 +10,8 @@
 #include "ash/common/accessibility_types.h"
 #include "ash/common/ash_switches.h"
 #include "ash/common/material_design/material_design_controller.h"
-#include "ash/common/shelf/shelf.h"
 #include "ash/common/shelf/shelf_widget.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/test/material_design_controller_test_api.h"
@@ -34,7 +34,6 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/display_manager_test_api.h"
-#include "ash/test/shelf_test_api.h"
 #include "ash/test/shelf_view_test_api.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_shelf_delegate.h"
@@ -123,7 +122,7 @@ class WindowSelectorTest
     ASSERT_TRUE(test::TestShelfDelegate::instance());
 
     shelf_view_test_.reset(new test::ShelfViewTestAPI(
-        test::ShelfTestAPI(Shelf::ForPrimaryDisplay()).shelf_view()));
+        GetPrimaryShelf()->GetShelfViewForTesting()));
     shelf_view_test_->SetAnimationDuration(1);
     ScopedTransformOverviewWindow::SetImmediateCloseForTests();
   }

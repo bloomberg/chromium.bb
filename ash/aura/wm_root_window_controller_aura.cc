@@ -7,7 +7,6 @@
 #include "ash/aura/wm_shelf_aura.h"
 #include "ash/aura/wm_shell_aura.h"
 #include "ash/aura/wm_window_aura.h"
-#include "ash/common/shelf/shelf.h"
 #include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/wm_root_window_controller_observer.h"
 #include "ash/display/window_tree_host_manager.h"

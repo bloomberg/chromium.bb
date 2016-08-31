@@ -15,6 +15,7 @@
 #include "ash/common/multi_profile_uma.h"
 #include "ash/common/new_window_delegate.h"
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_delegate.h"
 #include "ash/common/system/brightness_control_delegate.h"
@@ -104,6 +105,23 @@ void HandleRotatePaneFocus(FocusCycler::Direction direction) {
     }
   }
   WmShell::Get()->focus_cycler()->RotateFocus(direction);
+}
+
+void HandleFocusShelf() {
+  base::RecordAction(UserMetricsAction("Accel_Focus_Shelf"));
+  // TODO(jamescook): Should this be GetRootWindowForNewWindows()?
+  WmShelf* shelf = WmShelf::ForWindow(WmShell::Get()->GetPrimaryRootWindow());
+  WmShell::Get()->focus_cycler()->FocusWidget(shelf->shelf_widget());
+}
+
+void HandleLaunchAppN(int n) {
+  base::RecordAction(UserMetricsAction("Accel_Launch_App"));
+  WmShelf::LaunchShelfItem(n);
+}
+
+void HandleLaunchLastApp() {
+  base::RecordAction(UserMetricsAction("Accel_Launch_Last_App"));
+  WmShelf::LaunchShelfItem(-1);
 }
 
 void HandleMediaNextTrack() {
@@ -302,11 +320,9 @@ void HandlePositionCenter() {
 void HandleShowImeMenuBubble() {
   base::RecordAction(UserMetricsAction("Accel_Show_Ime_Menu_Bubble"));
 
-  StatusAreaWidget* status_area_widget = ash::WmShell::Get()
-                                             ->GetPrimaryRootWindow()
-                                             ->GetRootWindowController()
-                                             ->GetShelf()
-                                             ->GetStatusAreaWidget();
+  StatusAreaWidget* status_area_widget =
+      WmShelf::ForWindow(WmShell::Get()->GetPrimaryRootWindow())
+          ->GetStatusAreaWidget();
   if (status_area_widget) {
     ImeMenuTray* ime_menu_tray = status_area_widget->ime_menu_tray();
     if (ime_menu_tray && ime_menu_tray->visible() &&
@@ -743,6 +759,16 @@ bool AcceleratorController::CanPerformAction(
     case EXIT:
     case FOCUS_NEXT_PANE:
     case FOCUS_PREVIOUS_PANE:
+    case FOCUS_SHELF:
+    case LAUNCH_APP_0:
+    case LAUNCH_APP_1:
+    case LAUNCH_APP_2:
+    case LAUNCH_APP_3:
+    case LAUNCH_APP_4:
+    case LAUNCH_APP_5:
+    case LAUNCH_APP_6:
+    case LAUNCH_APP_7:
+    case LAUNCH_LAST_APP:
     case MEDIA_NEXT_TRACK:
     case MEDIA_PLAY_PAUSE:
     case MEDIA_PREV_TRACK:
@@ -817,6 +843,36 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
       break;
     case FOCUS_PREVIOUS_PANE:
       HandleRotatePaneFocus(FocusCycler::BACKWARD);
+      break;
+    case FOCUS_SHELF:
+      HandleFocusShelf();
+      break;
+    case LAUNCH_APP_0:
+      HandleLaunchAppN(0);
+      break;
+    case LAUNCH_APP_1:
+      HandleLaunchAppN(1);
+      break;
+    case LAUNCH_APP_2:
+      HandleLaunchAppN(2);
+      break;
+    case LAUNCH_APP_3:
+      HandleLaunchAppN(3);
+      break;
+    case LAUNCH_APP_4:
+      HandleLaunchAppN(4);
+      break;
+    case LAUNCH_APP_5:
+      HandleLaunchAppN(5);
+      break;
+    case LAUNCH_APP_6:
+      HandleLaunchAppN(6);
+      break;
+    case LAUNCH_APP_7:
+      HandleLaunchAppN(7);
+      break;
+    case LAUNCH_LAST_APP:
+      HandleLaunchLastApp();
       break;
     case MEDIA_NEXT_TRACK:
       HandleMediaNextTrack();

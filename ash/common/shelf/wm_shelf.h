@@ -22,7 +22,6 @@ class GestureEvent;
 
 namespace ash {
 
-class Shelf;
 class ShelfLayoutManager;
 class ShelfLockingManager;
 class ShelfView;
@@ -40,16 +39,20 @@ class ASH_EXPORT WmShelf : public ShelfLayoutManagerObserver {
   // widget may not exist, or the shelf may not be visible.
   static WmShelf* ForWindow(WmWindow* window);
 
-  void SetShelf(Shelf* shelf);
-  void ClearShelf();
-  Shelf* shelf() const { return shelf_; }
-
+  // TODO(jamescook): Create the ShelfLayoutManager in this class.
   virtual void SetShelfLayoutManager(ShelfLayoutManager* manager);
   ShelfLayoutManager* shelf_layout_manager() const {
     return shelf_layout_manager_;
   }
 
   ShelfWidget* shelf_widget() { return shelf_widget_; }
+
+  // Creates the shelf view.
+  void InitializeShelf();
+  void ShutdownShelf();
+
+  // True after the ShelfView has been created (e.g. after login).
+  bool IsShelfInitialized() const;
 
   // Returns the window showing the shelf.
   WmWindow* GetWindow();
@@ -148,16 +151,16 @@ class ASH_EXPORT WmShelf : public ShelfLayoutManagerObserver {
                            BackgroundAnimatorChangeType change_type) override;
 
  private:
-  // Legacy shelf controller. Null before login and in secondary display init.
-  // Instance lifetimes are managed by ash::RootWindowController and WmShelfMus.
-  Shelf* shelf_ = nullptr;
-
   // Layout manager for the shelf container window. Instances are constructed by
   // ShelfWidget and lifetimes are managed by the container windows themselves.
   ShelfLayoutManager* shelf_layout_manager_ = nullptr;
 
   // TODO(jamescook): Move ShelfWidget ownership here.
   ShelfWidget* shelf_widget_ = nullptr;
+
+  // Internal implementation detail. Do not expose externally. Owned by views
+  // hierarchy. Null before login and in secondary display init.
+  ShelfView* shelf_view_ = nullptr;
 
   ShelfAlignment alignment_ = SHELF_ALIGNMENT_BOTTOM_LOCKED;
 

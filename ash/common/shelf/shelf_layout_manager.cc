@@ -240,7 +240,7 @@ void ShelfLayoutManager::UpdateVisibilityState() {
   WmWindow* shelf_window = WmLookup::Get()->GetWindowForWidget(shelf_widget_);
   WmRootWindowController* controller = shelf_window->GetRootWindowController();
   // Bail out early before the shelf is initialized or after it is destroyed.
-  if (!controller || !shelf_widget_->shelf() || in_shutdown_)
+  if (!controller || !wm_shelf_->IsShelfInitialized() || in_shutdown_)
     return;
   bool was_invisible_auto_hide_shelf = invisible_auto_hide_shelf_;
   // Always reset to be safe.
@@ -888,7 +888,7 @@ gfx::Rect ShelfLayoutManager::GetAutoHideShowShelfRegionInScreen() const {
 
 ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
     ShelfVisibilityState visibility_state) const {
-  if (visibility_state != SHELF_AUTO_HIDE || !shelf_widget_->shelf())
+  if (visibility_state != SHELF_AUTO_HIDE || !wm_shelf_->IsShelfInitialized())
     return SHELF_AUTO_HIDE_HIDDEN;
 
   const int64_t shelf_display_id = WmLookup::Get()

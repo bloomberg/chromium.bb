@@ -112,7 +112,6 @@ class ScreenshotController;
 class ScreenPinningController;
 class ScreenPositionController;
 class SessionStateDelegate;
-class Shelf;
 class ShellDelegate;
 struct ShellInitParams;
 class SlowAnimationEventFilter;

@@ -55,10 +55,7 @@ const int kToastMinimumWidth = 288;
 // Returns the work area bounds for the root window where new windows are added
 // (including new toasts).
 gfx::Rect GetUserWorkAreaBounds() {
-  return WmShell::Get()
-      ->GetRootWindowForNewWindows()
-      ->GetRootWindowController()
-      ->GetShelf()
+  return WmShelf::ForWindow(WmShell::Get()->GetRootWindowForNewWindows())
       ->GetUserWorkAreaBounds();
 }
 

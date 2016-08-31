@@ -23,7 +23,6 @@ class ApplicationDragAndDropHost;
 namespace ash {
 class AppListButton;
 class FocusCycler;
-class Shelf;
 class ShelfLayoutManager;
 class ShelfView;
 class StatusAreaWidget;
@@ -62,10 +61,6 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   // Causes shelf items to be slightly dimmed (e.g. when a window is maximized).
   void SetDimsShelf(bool dimming);
   bool GetDimsShelf() const;
-
-  // TODO(jamescook): Eliminate these.
-  Shelf* shelf() { return shelf_; }
-  void set_shelf(Shelf* shelf) { shelf_ = shelf; }
 
   ShelfLayoutManager* shelf_layout_manager() { return shelf_layout_manager_; }
   StatusAreaWidget* status_area_widget() const { return status_area_widget_; }
@@ -135,8 +130,6 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
 
   // Owned by the shelf container's window.
   ShelfLayoutManager* shelf_layout_manager_;
-  // Owned by the root window controller.
-  Shelf* shelf_;
   StatusAreaWidget* status_area_widget_;
 
   // |delegate_view_| is the contents view of this widget and is cleaned up

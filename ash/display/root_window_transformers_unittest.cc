@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "ash/common/shelf/shelf.h"
 #include "ash/common/shelf/shelf_widget.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/display_util.h"

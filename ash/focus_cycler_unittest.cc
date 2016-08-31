@@ -6,8 +6,8 @@
 
 #include <memory>
 
-#include "ash/common/shelf/shelf.h"
 #include "ash/common/shelf/shelf_widget.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/system/status_area_widget.h"
 #include "ash/common/system/status_area_widget_delegate.h"
 #include "ash/common/system/tray/system_tray.h"
@@ -67,8 +67,6 @@ class FocusCyclerTest : public AshTestBase {
     AshTestBase::SetUp();
 
     focus_cycler_.reset(new FocusCycler());
-
-    ASSERT_TRUE(Shelf::ForPrimaryDisplay());
   }
 
   void TearDown() override {
@@ -98,9 +96,7 @@ class FocusCyclerTest : public AshTestBase {
 
   FocusCycler* focus_cycler() { return focus_cycler_.get(); }
 
-  ShelfWidget* shelf_widget() {
-    return Shelf::ForPrimaryDisplay()->shelf_widget();
-  }
+  ShelfWidget* shelf_widget() { return GetPrimaryShelf()->shelf_widget(); }
 
   void InstallFocusCycleOnShelf() {
     // Add the shelf.

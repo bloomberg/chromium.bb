@@ -13,8 +13,8 @@
 #include "ash/aura/wm_window_aura.h"
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/common/session/session_state_delegate.h"
-#include "ash/common/shelf/shelf.h"
 #include "ash/common/shelf/shelf_layout_manager.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/wm_shell.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/root_window_controller.h"
@@ -1523,9 +1523,9 @@ void AccessibilityManager::OnChromeVoxPanelClosing() {
   chromevox_panel_widget_observer_.reset(nullptr);
   chromevox_panel_ = nullptr;
 
-  ash::Shelf* shelf =
-      ash::Shelf::ForWindow(ash::WmWindowAura::Get(root_window));
-  if (!shelf)
+  ash::WmShelf* shelf =
+      ash::WmShelf::ForWindow(ash::WmWindowAura::Get(root_window));
+  if (!shelf->IsShelfInitialized())
     return;
 
   ash::ShelfLayoutManager* shelf_layout_manager = shelf->shelf_layout_manager();

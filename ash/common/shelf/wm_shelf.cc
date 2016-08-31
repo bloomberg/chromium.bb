@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/common/shelf/shelf.h"
 #include "ash/common/shelf/shelf_delegate.h"
 #include "ash/common/shelf/shelf_item_delegate.h"
 #include "ash/common/shelf/shelf_layout_manager.h"
@@ -25,23 +24,6 @@ WmShelf* WmShelf::ForWindow(WmWindow* window) {
   return window->GetRootWindowController()->GetShelf();
 }
 
-void WmShelf::SetShelf(Shelf* shelf) {
-  DCHECK(!shelf_);
-  DCHECK(shelf);
-  shelf_ = shelf;
-  DCHECK(shelf_layout_manager_);
-  shelf_locking_manager_.reset(new ShelfLockingManager(this));
-  // When the shelf is created the alignment is unlocked. Chrome will update the
-  // alignment later from preferences.
-  alignment_ = SHELF_ALIGNMENT_BOTTOM;
-}
-
-void WmShelf::ClearShelf() {
-  DCHECK(shelf_);
-  shelf_locking_manager_.reset();
-  shelf_ = nullptr;
-}
-
 void WmShelf::SetShelfLayoutManager(ShelfLayoutManager* manager) {
   DCHECK(!shelf_layout_manager_);
   DCHECK(manager);
@@ -49,6 +31,30 @@ void WmShelf::SetShelfLayoutManager(ShelfLayoutManager* manager) {
   shelf_layout_manager_->AddObserver(this);
   DCHECK(manager->shelf_widget());
   shelf_widget_ = manager->shelf_widget();
+}
+
+void WmShelf::InitializeShelf() {
+  DCHECK(shelf_layout_manager_);
+  DCHECK(shelf_widget_);
+  DCHECK(!shelf_view_);
+  shelf_view_ = shelf_widget_->CreateShelfView();
+  shelf_locking_manager_.reset(new ShelfLockingManager(this));
+  // When the shelf is created the alignment is unlocked. Chrome will update the
+  // alignment later from preferences.
+  alignment_ = SHELF_ALIGNMENT_BOTTOM;
+  // NOTE: The delegate may access WmShelf.
+  WmShell::Get()->shelf_delegate()->OnShelfCreated(this);
+}
+
+void WmShelf::ShutdownShelf() {
+  DCHECK(shelf_view_);
+  shelf_locking_manager_.reset();
+  shelf_view_ = nullptr;
+  WmShell::Get()->shelf_delegate()->OnShelfDestroyed(this);
+}
+
+bool WmShelf::IsShelfInitialized() const {
+  return !!shelf_view_;
 }
 
 WmWindow* WmShelf::GetWindow() {
@@ -60,6 +66,7 @@ WmWindow* WmShelf::GetWindow() {
 
 void WmShelf::SetAlignment(ShelfAlignment alignment) {
   DCHECK(shelf_layout_manager_);
+  DCHECK(shelf_locking_manager_);
 
   if (alignment_ == alignment)
     return;
@@ -144,7 +151,7 @@ bool WmShelf::IsDimmed() const {
 }
 
 bool WmShelf::IsVisible() const {
-  return shelf_->shelf_widget()->IsShelfVisible();
+  return shelf_widget_->IsShelfVisible();
 }
 
 void WmShelf::UpdateVisibilityState() {
@@ -249,7 +256,7 @@ ShelfLockingManager* WmShelf::GetShelfLockingManagerForTesting() {
 }
 
 ShelfView* WmShelf::GetShelfViewForTesting() {
-  return shelf_->shelf_view_for_testing();
+  return shelf_view_;
 }
 
 WmShelf::WmShelf() {}

@@ -2,59 +2,39 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/common/shelf/shelf.h"
-
 #include <utility>
 
 #include "ash/common/shelf/shelf_button.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shelf/shelf_view.h"
 #include "ash/common/shelf/shelf_widget.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/shelf_test_api.h"
 #include "ash/test/shelf_view_test_api.h"
 #include "ash/test/test_shelf_item_delegate.h"
-#include "ash/wm/window_util.h"
-#include "ui/aura/window_event_dispatcher.h"
-#include "ui/views/view.h"
-#include "ui/views/widget/widget.h"
-
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#endif
 
 namespace ash {
 
 class ShelfTest : public test::AshTestBase {
  public:
-  ShelfTest() : shelf_(nullptr), shelf_view_(nullptr), shelf_model_(nullptr) {}
+  ShelfTest() : shelf_model_(nullptr) {}
 
   ~ShelfTest() override {}
 
   void SetUp() override {
     test::AshTestBase::SetUp();
 
-    shelf_ = Shelf::ForPrimaryDisplay();
-    ASSERT_TRUE(shelf_);
+    ShelfView* shelf_view = GetPrimaryShelf()->GetShelfViewForTesting();
+    shelf_model_ = shelf_view->model();
 
-    test::ShelfTestAPI test(shelf_);
-    shelf_view_ = test.shelf_view();
-    shelf_model_ = shelf_view_->model();
-
-    test_.reset(new test::ShelfViewTestAPI(shelf_view_));
+    test_.reset(new test::ShelfViewTestAPI(shelf_view));
   }
-
-  Shelf* shelf() { return shelf_; }
-
-  ShelfView* shelf_view() { return shelf_view_; }
 
   ShelfModel* shelf_model() { return shelf_model_; }
 
   test::ShelfViewTestAPI* test_api() { return test_.get(); }
 
  private:
-  Shelf* shelf_;
-  ShelfView* shelf_view_;
   ShelfModel* shelf_model_;
   std::unique_ptr<test::ShelfViewTestAPI> test_;
 
@@ -108,7 +88,7 @@ TEST_F(ShelfTest, CheckHoverAfterMenu) {
 }
 
 TEST_F(ShelfTest, ShowOverflowBubble) {
-  ShelfWidget* shelf_widget = shelf()->shelf_widget();
+  ShelfWidget* shelf_widget = GetPrimaryShelf()->shelf_widget();
   ShelfID first_item_id = shelf_model()->next_id();
 
   // Add platform app button until overflow.

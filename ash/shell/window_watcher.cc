@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "ash/common/shelf/shelf.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/shell_window_ids.h"

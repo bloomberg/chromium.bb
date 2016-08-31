@@ -7,8 +7,8 @@
 
 #include "ash/common/ash_switches.h"
 #include "ash/common/material_design/material_design_controller.h"
-#include "ash/common/shelf/shelf.h"
 #include "ash/common/shelf/shelf_widget.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_md_test_base.h"
@@ -76,7 +76,7 @@ TEST_P(DIPTest, WorkArea) {
 
   // Sanity check if the workarea's inset hight is same as
   // the shelf's height.
-  Shelf* shelf = Shelf::ForPrimaryDisplay();
+  WmShelf* shelf = GetPrimaryShelf();
   EXPECT_EQ(display_2x.bounds().InsetsFrom(work_area).height(),
             shelf->shelf_widget()->GetNativeView()->layer()->bounds().height());
 }

@@ -18,7 +18,6 @@
 #include "ash/shell.h"
 #include "ash/test/ash_md_test_base.h"
 #include "ash/test/ash_test_helper.h"
-#include "ash/test/shelf_test_api.h"
 #include "ash/test/shelf_view_test_api.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ash/wm/window_util.h"
@@ -182,29 +181,34 @@ TEST_P(ShelfWidgetTest, ShelfInitiallySizedAfterLogin) {
   SetUserLoggedIn(false);
   UpdateDisplay("300x200,400x300");
 
-  ShelfWidget* shelf_widget = nullptr;
-  Shell::RootWindowControllerList controllers(
-      Shell::GetAllRootWindowControllers());
-  for (Shell::RootWindowControllerList::const_iterator i = controllers.begin();
-       i != controllers.end(); ++i) {
-    if (!(*i)->shelf_widget()->shelf()) {
-      shelf_widget = (*i)->shelf_widget();
-      break;
-    }
-  }
-  ASSERT_TRUE(shelf_widget);
+  // Both displays have a shelf controller.
+  std::vector<WmWindow*> roots = WmShell::Get()->GetAllRootWindows();
+  WmShelf* shelf1 = WmShelf::ForWindow(roots[0]);
+  WmShelf* shelf2 = WmShelf::ForWindow(roots[1]);
+  ASSERT_TRUE(shelf1);
+  ASSERT_TRUE(shelf2);
+
+  // Both shelf controllers have a shelf widget.
+  ShelfWidget* shelf_widget1 = shelf1->shelf_widget();
+  ShelfWidget* shelf_widget2 = shelf2->shelf_widget();
+  ASSERT_TRUE(shelf_widget1);
+  ASSERT_TRUE(shelf_widget2);
 
   SetUserLoggedIn(true);
   Shell::GetInstance()->CreateShelf();
 
-  Shelf* shelf = shelf_widget->shelf();
-  ASSERT_TRUE(shelf);
+  // The shelf view and status area horizontally fill the shelf widget.
+  const int status_width1 =
+      shelf_widget1->status_area_widget()->GetWindowBoundsInScreen().width();
+  EXPECT_GT(status_width1, 0);
+  EXPECT_EQ(shelf_widget1->GetContentsView()->width(),
+            shelf1->GetShelfViewForTesting()->width() + status_width1);
 
-  const int status_width =
-      shelf_widget->status_area_widget()->GetWindowBoundsInScreen().width();
-  EXPECT_GT(status_width, 0);
-  EXPECT_EQ(status_width, shelf_widget->GetContentsView()->width() -
-                              test::ShelfTestAPI(shelf).shelf_view()->width());
+  const int status_width2 =
+      shelf_widget2->status_area_widget()->GetWindowBoundsInScreen().width();
+  EXPECT_GT(status_width2, 0);
+  EXPECT_EQ(shelf_widget2->GetContentsView()->width(),
+            shelf2->GetShelfViewForTesting()->width() + status_width2);
 }
 
 // Tests that the shelf lets mouse-events close to the edge fall through to the

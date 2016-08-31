@@ -26,16 +26,6 @@ bool AcceleratorControllerDelegateMus::HandlesAction(AcceleratorAction action) {
     case DEBUG_TOGGLE_SHOW_FPS_COUNTER:
     case DEBUG_TOGGLE_SHOW_PAINT_RECTS:
     case DEBUG_TOGGLE_WALLPAPER_MODE:
-    case FOCUS_SHELF:
-    case LAUNCH_APP_0:
-    case LAUNCH_APP_1:
-    case LAUNCH_APP_2:
-    case LAUNCH_APP_3:
-    case LAUNCH_APP_4:
-    case LAUNCH_APP_5:
-    case LAUNCH_APP_6:
-    case LAUNCH_APP_7:
-    case LAUNCH_LAST_APP:
     case MAGNIFY_SCREEN_ZOOM_IN:
     case MAGNIFY_SCREEN_ZOOM_OUT:
     case ROTATE_SCREEN:

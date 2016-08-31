@@ -13,10 +13,8 @@
 #include "ash/common/accelerators/debug_commands.h"
 #include "ash/common/accessibility_types.h"
 #include "ash/common/ash_switches.h"
-#include "ash/common/focus_cycler.h"
 #include "ash/common/gpu_support.h"
 #include "ash/common/session/session_state_delegate.h"
-#include "ash/common/shelf/shelf.h"
 #include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_delegate.h"
@@ -133,22 +131,6 @@ base::string16 GetNotificationText(int message_id,
   EnsureNoWordBreaks(&new_shortcut);
 
   return l10n_util::GetStringFUTF16(message_id, new_shortcut, old_shortcut);
-}
-
-void HandleFocusShelf() {
-  base::RecordAction(UserMetricsAction("Accel_Focus_Shelf"));
-  WmShell::Get()->focus_cycler()->FocusWidget(
-      Shelf::ForPrimaryDisplay()->shelf_widget());
-}
-
-void HandleLaunchAppN(int n) {
-  base::RecordAction(UserMetricsAction("Accel_Launch_App"));
-  WmShelf::LaunchShelfItem(n);
-}
-
-void HandleLaunchLastApp() {
-  base::RecordAction(UserMetricsAction("Accel_Launch_Last_App"));
-  WmShelf::LaunchShelfItem(-1);
 }
 
 bool CanHandleMagnifyScreen() {
@@ -370,16 +352,6 @@ bool AcceleratorControllerDelegateAura::HandlesAction(
     case DEBUG_TOGGLE_SHOW_FPS_COUNTER:
     case DEBUG_TOGGLE_SHOW_PAINT_RECTS:
     case DEBUG_TOGGLE_WALLPAPER_MODE:
-    case FOCUS_SHELF:
-    case LAUNCH_APP_0:
-    case LAUNCH_APP_1:
-    case LAUNCH_APP_2:
-    case LAUNCH_APP_3:
-    case LAUNCH_APP_4:
-    case LAUNCH_APP_5:
-    case LAUNCH_APP_6:
-    case LAUNCH_APP_7:
-    case LAUNCH_LAST_APP:
     case MAGNIFY_SCREEN_ZOOM_IN:
     case MAGNIFY_SCREEN_ZOOM_OUT:
     case ROTATE_SCREEN:
@@ -442,16 +414,6 @@ bool AcceleratorControllerDelegateAura::CanPerformAction(
       return CanHandleUnpin();
 
     // Following are always enabled:
-    case FOCUS_SHELF:
-    case LAUNCH_APP_0:
-    case LAUNCH_APP_1:
-    case LAUNCH_APP_2:
-    case LAUNCH_APP_3:
-    case LAUNCH_APP_4:
-    case LAUNCH_APP_5:
-    case LAUNCH_APP_6:
-    case LAUNCH_APP_7:
-    case LAUNCH_LAST_APP:
     case ROTATE_SCREEN:
     case ROTATE_WINDOW:
     case SHOW_SYSTEM_TRAY_BUBBLE:
@@ -510,36 +472,6 @@ void AcceleratorControllerDelegateAura::PerformAction(
       break;
     case DEBUG_TOGGLE_SHOW_PAINT_RECTS:
       debug::ToggleShowPaintRects();
-      break;
-    case FOCUS_SHELF:
-      HandleFocusShelf();
-      break;
-    case LAUNCH_APP_0:
-      HandleLaunchAppN(0);
-      break;
-    case LAUNCH_APP_1:
-      HandleLaunchAppN(1);
-      break;
-    case LAUNCH_APP_2:
-      HandleLaunchAppN(2);
-      break;
-    case LAUNCH_APP_3:
-      HandleLaunchAppN(3);
-      break;
-    case LAUNCH_APP_4:
-      HandleLaunchAppN(4);
-      break;
-    case LAUNCH_APP_5:
-      HandleLaunchAppN(5);
-      break;
-    case LAUNCH_APP_6:
-      HandleLaunchAppN(6);
-      break;
-    case LAUNCH_APP_7:
-      HandleLaunchAppN(7);
-      break;
-    case LAUNCH_LAST_APP:
-      HandleLaunchLastApp();
       break;
     case MAGNIFY_SCREEN_ZOOM_IN:
       HandleMagnifyScreen(1);

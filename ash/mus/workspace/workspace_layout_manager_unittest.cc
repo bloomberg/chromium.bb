@@ -303,7 +303,7 @@ class DontClobberRestoreBoundsWindowObserver : public aura::WindowObserver {
       window_ = nullptr;
 
       gfx::Rect shelf_bounds(
-          Shelf::ForPrimaryDisplay()->shelf_layout_manager()->GetIdealBounds());
+          GetPrimaryShelf()->shelf_layout_manager()->GetIdealBounds());
       const gfx::Rect& window_bounds(w->bounds());
       w->SetBounds(gfx::Rect(window_bounds.x(), shelf_bounds.y() - 1,
                              window_bounds.width(), window_bounds.height()));
@@ -733,9 +733,8 @@ TEST_F(WorkspaceLayoutManagerSoloTest, NotResizeWhenScreenIsLocked) {
   window->SetProperty(aura::client::kAlwaysOnTopKey, true);
   window->Show();
 
-  ShelfLayoutManager* shelf_layout_manager =
-      Shelf::ForWindow(window.get())->shelf_layout_manager();
-  shelf_layout_manager->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  WmShelf* shelf = GetPrimaryShelf();
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
 
   window->SetBounds(ScreenUtil::GetMaximizedWindowBoundsInParent(window.get()));
   gfx::Rect window_bounds = window->bounds();
@@ -745,12 +744,12 @@ TEST_F(WorkspaceLayoutManagerSoloTest, NotResizeWhenScreenIsLocked) {
 
   // The window size should not get touched while we are in lock screen.
   WmShell::Get()->GetSessionStateDelegate()->LockScreen();
-  shelf_layout_manager->UpdateVisibilityState();
+  shelf->UpdateVisibilityState();
   EXPECT_EQ(window_bounds.ToString(), window->bounds().ToString());
 
   // Coming out of the lock screen the window size should still remain.
   WmShell::Get()->GetSessionStateDelegate()->UnlockScreen();
-  shelf_layout_manager->UpdateVisibilityState();
+  shelf->UpdateVisibilityState();
   EXPECT_EQ(
       ScreenUtil::GetMaximizedWindowBoundsInParent(window.get()).ToString(),
       window_bounds.ToString());
@@ -937,7 +936,7 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, VerifyBackdropAndItsStacking) {
 // entire workspace area.
 TEST_F(WorkspaceLayoutManagerBackdropTest, ShelfVisibilityChangesBounds) {
   ShelfLayoutManager* shelf_layout_manager =
-      Shelf::ForPrimaryDisplay()->shelf_layout_manager();
+      GetPrimaryShelf()->shelf_layout_manager();
   ShowTopWindowBackdrop(true);
   RunAllPendingInMessageLoop();
 

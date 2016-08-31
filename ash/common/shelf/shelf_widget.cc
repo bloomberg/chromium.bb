@@ -291,7 +291,6 @@ ShelfWidget::ShelfWidget(WmWindow* shelf_container,
                          WmWindow* status_container,
                          WmShelf* wm_shelf)
     : wm_shelf_(wm_shelf),
-      shelf_(nullptr),
       delegate_view_(new DelegateView(wm_shelf, this)),
       shelf_view_(nullptr),
       background_animator_(SHELF_BACKGROUND_DEFAULT, wm_shelf_),
@@ -428,7 +427,6 @@ bool ShelfWidget::GetDimsShelf() const {
 }
 
 ShelfView* ShelfWidget::CreateShelfView() {
-  DCHECK(!shelf_);
   DCHECK(!shelf_view_);
 
   shelf_view_ =

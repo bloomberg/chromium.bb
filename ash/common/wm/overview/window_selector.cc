@@ -168,7 +168,7 @@ class RoundedContainerView : public views::View {
 // Triggers a shelf visibility update on all root window controllers.
 void UpdateShelfVisibility() {
   for (WmWindow* root : WmShell::Get()->GetAllRootWindows())
-    root->GetRootWindowController()->GetShelf()->UpdateVisibilityState();
+    WmShelf::ForWindow(root)->UpdateVisibilityState();
 }
 
 gfx::Rect GetTextFilterPosition(WmWindow* root_window) {

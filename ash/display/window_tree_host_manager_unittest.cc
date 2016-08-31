@@ -9,8 +9,8 @@
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/ash_switches.h"
 #include "ash/common/material_design/material_design_controller.h"
-#include "ash/common/shelf/shelf.h"
 #include "ash/common/shelf/shelf_widget.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
 #include "ash/common/wm/wm_screen_util.h"
@@ -818,7 +818,7 @@ TEST_P(WindowTreeHostManagerTest, SwapPrimaryById) {
       window_tree_host_manager->GetRootWindowForDisplayId(
           secondary_display.id());
   aura::Window* shelf_window =
-      Shelf::ForPrimaryDisplay()->shelf_widget()->GetNativeView();
+      GetPrimaryShelf()->shelf_widget()->GetNativeView();
   EXPECT_TRUE(primary_root->Contains(shelf_window));
   EXPECT_FALSE(secondary_root->Contains(shelf_window));
   EXPECT_NE(primary_root, secondary_root);

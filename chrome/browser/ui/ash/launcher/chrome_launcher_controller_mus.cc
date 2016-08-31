@@ -224,7 +224,7 @@ LauncherItemController* ChromeLauncherControllerMus::GetLauncherItemController(
 }
 
 bool ChromeLauncherControllerMus::ShelfBoundsChangesProbablyWithUser(
-    ash::Shelf* shelf,
+    ash::WmShelf* shelf,
     const AccountId& account_id) const {
   NOTIMPLEMENTED();
   return false;

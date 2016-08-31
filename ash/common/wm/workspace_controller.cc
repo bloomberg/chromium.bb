@@ -64,8 +64,7 @@ wm::WorkspaceWindowState WorkspaceController::GetWindowState() const {
   const int kWindowContainerIds[] = {
       kShellWindowId_DefaultContainer, kShellWindowId_DockedContainer,
   };
-  const gfx::Rect shelf_bounds(
-      viewport_->GetRootWindowController()->GetShelf()->GetIdealBounds());
+  const gfx::Rect shelf_bounds(WmShelf::ForWindow(viewport_)->GetIdealBounds());
   bool window_overlaps_launcher = false;
   for (size_t i = 0; i < arraysize(kWindowContainerIds); i++) {
     WmWindow* container = viewport_->GetRootWindow()->GetChildByShellWindowId(

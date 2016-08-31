@@ -37,7 +37,6 @@ class Widget;
 
 namespace ash {
 class PanelCalloutWidget;
-class Shelf;
 class ShelfLayoutManager;
 class WmShelf;
 

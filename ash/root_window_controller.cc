@@ -16,7 +16,6 @@
 #include "ash/common/focus_cycler.h"
 #include "ash/common/login_status.h"
 #include "ash/common/session/session_state_delegate.h"
-#include "ash/common/shelf/shelf.h"
 #include "ash/common/shelf/shelf_delegate.h"
 #include "ash/common/shelf/shelf_layout_manager.h"
 #include "ash/common/shelf/shelf_types.h"
@@ -464,24 +463,17 @@ const aura::Window* RootWindowController::GetContainer(int container_id) const {
 }
 
 void RootWindowController::ShowShelf() {
-  if (!shelf_)
+  if (!wm_shelf_aura_->IsShelfInitialized())
     return;
+  // TODO(jamescook): Move this into WmShelf.
   shelf_widget_->SetShelfVisibility(true);
   shelf_widget_->status_area_widget()->Show();
 }
 
 void RootWindowController::CreateShelf() {
-  if (shelf_)
+  if (wm_shelf_aura_->IsShelfInitialized())
     return;
-  ShelfView* shelf_view = shelf_widget_->CreateShelfView();
-
-  shelf_.reset(
-      new Shelf(wm_shelf_aura_.get(), shelf_view, shelf_widget_.get()));
-  shelf_widget_->set_shelf(shelf_.get());
-  // Must be initialized before the delegate is notified because the delegate
-  // may try to access the WmShelf.
-  wm_shelf_aura_->SetShelf(shelf_.get());
-  WmShell::Get()->shelf_delegate()->OnShelfCreated(wm_shelf_aura_.get());
+  wm_shelf_aura_->InitializeShelf();
 
   if (panel_layout_manager_)
     panel_layout_manager_->SetShelf(wm_shelf_aura_.get());
@@ -493,14 +485,12 @@ void RootWindowController::CreateShelf() {
   }
 
   // Notify shell observers that the shelf has been created.
+  // TODO(jamescook): Move this into WmShelf::InitializeShelf(). This will
+  // require changing AttachedPanelWidgetTargeter's access to WmShelf.
   WmShell::Get()->NotifyShelfCreatedForRootWindow(
       WmWindowAura::Get(GetRootWindow()));
 
   shelf_widget_->PostCreateShelf();
-}
-
-Shelf* RootWindowController::GetShelf() const {
-  return shelf_.get();
 }
 
 void RootWindowController::UpdateAfterLoginStatusChange(LoginStatus status) {
@@ -613,10 +603,9 @@ void RootWindowController::CloseChildWindows() {
 
   shelf_widget_.reset();
   // CloseChildWindows may be called twice during the shutdown of ash unittests.
-  // Avoid notifying WmShelf that the Shelf instance has been destroyed twice.
-  if (wm_shelf_aura_->shelf())
-    wm_shelf_aura_->ClearShelf();
-  shelf_.reset();
+  // Avoid notifying WmShelf that the shelf has been destroyed twice.
+  if (wm_shelf_aura_->IsShelfInitialized())
+    wm_shelf_aura_->ShutdownShelf();
 }
 
 void RootWindowController::MoveWindowsTo(aura::Window* dst) {

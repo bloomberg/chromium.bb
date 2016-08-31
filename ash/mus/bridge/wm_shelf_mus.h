@@ -10,7 +10,6 @@
 
 namespace ash {
 
-class Shelf;
 class ShelfWidget;
 class WmRootWindowController;
 
@@ -26,9 +25,6 @@ class WmShelfMus : public WmShelf {
   void WillDeleteShelfLayoutManager() override;
 
  private:
-  // Legacy shelf controller. Only present after shelf is created (post-login).
-  std::unique_ptr<Shelf> shelf_;
-
   // The shelf widget for this shelf.
   std::unique_ptr<ShelfWidget> shelf_widget_;
 

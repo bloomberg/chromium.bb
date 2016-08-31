@@ -27,7 +27,6 @@ namespace ash {
 class DockedBackgroundWidget;
 class DockedWindowLayoutManagerObserver;
 class DockedWindowResizerTest;
-class Shelf;
 class WmRootWindowController;
 class WmShelf;
 
