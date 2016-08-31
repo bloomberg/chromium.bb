@@ -180,7 +180,6 @@ ResizeObserver status=experimental
 // crbug.com/417782 tracks enabling this by default.
 RootLayerScrolling
 RTCPeerConnectionNewGetStats status=test
-SandboxBlocksModals status=stable
 ScriptedSpeech status=stable
 // Scrolls to compensate for layout movements (bit.ly/scroll-anchoring).
 ScrollAnchoring settable_from_internals=True

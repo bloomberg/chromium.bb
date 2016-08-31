@@ -61,7 +61,7 @@ SandboxFlags parseSandboxPolicy(const SpaceSplitString& policy, String& invalidT
             flags &= ~SandboxOrientationLock;
         } else if (equalIgnoringCase(sandboxToken, "allow-popups-to-escape-sandbox") && RuntimeEnabledFeatures::unsandboxedAuxiliaryEnabled()) {
             flags &= ~SandboxPropagatesToAuxiliaryBrowsingContexts;
-        } else if (equalIgnoringCase(sandboxToken, "allow-modals") && RuntimeEnabledFeatures::sandboxBlocksModalsEnabled()) {
+        } else if (equalIgnoringCase(sandboxToken, "allow-modals")) {
             flags &= ~SandboxModals;
         } else if (equalIgnoringCase(sandboxToken, "allow-presentation")) {
             flags &= ~SandboxPresentation;

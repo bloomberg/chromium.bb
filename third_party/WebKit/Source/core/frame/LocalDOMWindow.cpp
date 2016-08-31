@@ -732,10 +732,8 @@ void LocalDOMWindow::print(ScriptState* scriptState)
 
     if (document()->isSandboxed(SandboxModals)) {
         UseCounter::count(document(), UseCounter::DialogInSandboxedContext);
-        if (RuntimeEnabledFeatures::sandboxBlocksModalsEnabled()) {
-            frameConsole()->addMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Ignored call to 'print()'. The document is sandboxed, and the 'allow-modals' keyword is not set."));
-            return;
-        }
+        frameConsole()->addMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Ignored call to 'print()'. The document is sandboxed, and the 'allow-modals' keyword is not set."));
+        return;
     }
 
     if (scriptState && v8::MicrotasksScope::IsRunningMicrotasks(scriptState->isolate())) {
@@ -767,10 +765,8 @@ void LocalDOMWindow::alert(ScriptState* scriptState, const String& message)
 
     if (document()->isSandboxed(SandboxModals)) {
         UseCounter::count(document(), UseCounter::DialogInSandboxedContext);
-        if (RuntimeEnabledFeatures::sandboxBlocksModalsEnabled()) {
-            frameConsole()->addMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Ignored call to 'alert()'. The document is sandboxed, and the 'allow-modals' keyword is not set."));
-            return;
-        }
+        frameConsole()->addMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Ignored call to 'alert()'. The document is sandboxed, and the 'allow-modals' keyword is not set."));
+        return;
     }
 
     if (v8::MicrotasksScope::IsRunningMicrotasks(scriptState->isolate())) {
@@ -795,10 +791,8 @@ bool LocalDOMWindow::confirm(ScriptState* scriptState, const String& message)
 
     if (document()->isSandboxed(SandboxModals)) {
         UseCounter::count(document(), UseCounter::DialogInSandboxedContext);
-        if (RuntimeEnabledFeatures::sandboxBlocksModalsEnabled()) {
-            frameConsole()->addMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Ignored call to 'confirm()'. The document is sandboxed, and the 'allow-modals' keyword is not set."));
-            return false;
-        }
+        frameConsole()->addMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Ignored call to 'confirm()'. The document is sandboxed, and the 'allow-modals' keyword is not set."));
+        return false;
     }
 
     if (v8::MicrotasksScope::IsRunningMicrotasks(scriptState->isolate())) {
@@ -823,10 +817,8 @@ String LocalDOMWindow::prompt(ScriptState* scriptState, const String& message, c
 
     if (document()->isSandboxed(SandboxModals)) {
         UseCounter::count(document(), UseCounter::DialogInSandboxedContext);
-        if (RuntimeEnabledFeatures::sandboxBlocksModalsEnabled()) {
-            frameConsole()->addMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Ignored call to 'prompt()'. The document is sandboxed, and the 'allow-modals' keyword is not set."));
-            return String();
-        }
+        frameConsole()->addMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Ignored call to 'prompt()'. The document is sandboxed, and the 'allow-modals' keyword is not set."));
+        return String();
     }
 
     if (v8::MicrotasksScope::IsRunningMicrotasks(scriptState->isolate())) {
