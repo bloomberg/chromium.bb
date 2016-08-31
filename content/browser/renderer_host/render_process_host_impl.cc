@@ -1476,6 +1476,12 @@ static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
   GpuDataManagerImpl* gpu_data_manager = GpuDataManagerImpl::GetInstance();
   DCHECK(gpu_data_manager);
   gpu_data_manager->AppendRendererCommandLine(command_line);
+
+  // Slimming Paint v2 implies layer lists in the renderer.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableSlimmingPaintV2)) {
+    command_line->AppendSwitch(cc::switches::kEnableLayerLists);
+  }
 }
 
 void RenderProcessHostImpl::AppendRendererCommandLine(
