@@ -852,23 +852,6 @@ void SyncManagerImpl::SetJsEventHandler(
   js_sync_encryption_handler_observer_.SetJsEventHandler(event_handler);
 }
 
-std::unique_ptr<base::ListValue> SyncManagerImpl::GetAllNodesForType(
-    syncer::ModelType type) {
-  DirectoryTypeDebugInfoEmitterMap* emitter_map =
-      model_type_registry_->directory_type_debug_info_emitter_map();
-  DirectoryTypeDebugInfoEmitterMap::iterator it = emitter_map->find(type);
-
-  if (it == emitter_map->end()) {
-    // This can happen in some cases.  The UI thread makes requests of us
-    // when it doesn't really know which types are enabled or disabled.
-    DLOG(WARNING) << "Asked to return debug info for invalid type "
-                  << ModelTypeToString(type);
-    return std::unique_ptr<base::ListValue>(new base::ListValue());
-  }
-
-  return it->second->GetAllNodes();
-}
-
 void SyncManagerImpl::SetInvalidatorEnabled(bool invalidator_enabled) {
   DCHECK(thread_checker_.CalledOnValidThread());
 

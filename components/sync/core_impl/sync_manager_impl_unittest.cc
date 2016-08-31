@@ -1193,23 +1193,6 @@ class SyncManagerTest : public testing::Test,
   MockUnrecoverableErrorHandler mock_unrecoverable_error_handler_;
 };
 
-TEST_F(SyncManagerTest, GetAllNodesForTypeTest) {
-  ModelSafeRoutingInfo routing_info;
-  GetModelSafeRoutingInfo(&routing_info);
-  sync_manager_.StartSyncingNormally(routing_info, base::Time());
-
-  std::unique_ptr<base::ListValue> node_list(
-      sync_manager_.GetAllNodesForType(syncer::PREFERENCES));
-
-  // Should have one node: the type root node.
-  ASSERT_EQ(1U, node_list->GetSize());
-
-  const base::DictionaryValue* first_result;
-  ASSERT_TRUE(node_list->GetDictionary(0, &first_result));
-  EXPECT_TRUE(first_result->HasKey("ID"));
-  EXPECT_TRUE(first_result->HasKey("NON_UNIQUE_NAME"));
-}
-
 TEST_F(SyncManagerTest, RefreshEncryptionReady) {
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
   EXPECT_CALL(encryption_observer_, OnEncryptionComplete());

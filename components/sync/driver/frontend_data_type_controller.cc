@@ -21,8 +21,7 @@ FrontendDataTypeController::FrontendDataTypeController(
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
     const base::Closure& error_callback,
     sync_driver::SyncClient* sync_client)
-    : DirectoryDataTypeController(ui_thread, error_callback),
-      sync_client_(sync_client),
+    : DirectoryDataTypeController(ui_thread, error_callback, sync_client),
       state_(NOT_RUNNING) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(sync_client);
@@ -132,8 +131,8 @@ void FrontendDataTypeController::OnSingleDataTypeUnrecoverableError(
 
 FrontendDataTypeController::FrontendDataTypeController()
     : DirectoryDataTypeController(base::ThreadTaskRunnerHandle::Get(),
-                                  base::Closure()),
-      sync_client_(NULL),
+                                  base::Closure(),
+                                  nullptr),
       state_(NOT_RUNNING) {}
 
 FrontendDataTypeController::~FrontendDataTypeController() {

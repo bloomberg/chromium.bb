@@ -203,14 +203,6 @@ class SyncBackendHost : public sync_driver::BackendDataTypeConfigurer {
   // Disables protocol event forwarding.
   virtual void DisableProtocolEventForwarding() = 0;
 
-  // Returns a ListValue representing all nodes for the specified types through
-  // |callback| on this thread.
-  virtual void GetAllNodesForTypes(
-      syncer::ModelTypeSet types,
-      base::Callback<void(const std::vector<syncer::ModelType>&,
-                          std::vector<std::unique_ptr<base::ListValue>>)>
-          type) = 0;
-
   // Enables the sending of directory type debug counters.  Also, for every
   // time it is called, it makes an explicit request that updates to an update
   // for all counters be emitted.

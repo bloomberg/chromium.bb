@@ -520,17 +520,6 @@ void SyncBackendHostImpl::DisableDirectoryTypeDebugInfoForwarding() {
                  core_));
 }
 
-void SyncBackendHostImpl::GetAllNodesForTypes(
-    syncer::ModelTypeSet types,
-    base::Callback<void(const std::vector<syncer::ModelType>&,
-                        std::vector<std::unique_ptr<base::ListValue>>)>
-        callback) {
-  DCHECK(initialized());
-  registrar_->sync_thread()->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&SyncBackendHostCore::GetAllNodesForTypes, core_,
-                            types, frontend_task_runner_, callback));
-}
-
 void SyncBackendHostImpl::InitCore(
     std::unique_ptr<DoInitializeOptions> options) {
   registrar_->sync_thread()->task_runner()->PostTask(

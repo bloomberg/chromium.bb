@@ -43,6 +43,7 @@ class NonBlockingDataTypeController : public sync_driver::DataTypeController {
   // DataTypeController interface.
   bool ShouldLoadModelBeforeConfigure() const override;
   void LoadModels(const ModelLoadCallback& model_load_callback) override;
+  void GetAllNodes(const AllNodesCallback& callback) override;
 
   // Registers non-blocking data type with sync backend. In the process the
   // activation context is passed to ModelTypeRegistry, where ModelTypeWorker

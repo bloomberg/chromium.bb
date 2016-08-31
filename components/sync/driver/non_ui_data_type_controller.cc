@@ -28,8 +28,7 @@ NonUIDataTypeController::NonUIDataTypeController(
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
     const base::Closure& error_callback,
     SyncClient* sync_client)
-    : DirectoryDataTypeController(ui_thread, error_callback),
-      sync_client_(sync_client),
+    : DirectoryDataTypeController(ui_thread, error_callback, sync_client),
       state_(NOT_RUNNING),
       ui_thread_(ui_thread) {}
 
@@ -148,8 +147,8 @@ void NonUIDataTypeController::OnSingleDataTypeUnrecoverableError(
 
 NonUIDataTypeController::NonUIDataTypeController()
     : DirectoryDataTypeController(base::ThreadTaskRunnerHandle::Get(),
-                                  base::Closure()),
-      sync_client_(NULL) {}
+                                  base::Closure(),
+                                  nullptr) {}
 
 NonUIDataTypeController::~NonUIDataTypeController() {}
 

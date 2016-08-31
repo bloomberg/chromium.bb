@@ -26,8 +26,8 @@ namespace sync_driver {
 
 UIDataTypeController::UIDataTypeController()
     : DirectoryDataTypeController(base::ThreadTaskRunnerHandle::Get(),
-                                  base::Closure()),
-      sync_client_(NULL),
+                                  base::Closure(),
+                                  nullptr),
       state_(NOT_RUNNING),
       type_(syncer::UNSPECIFIED) {}
 
@@ -36,8 +36,7 @@ UIDataTypeController::UIDataTypeController(
     const base::Closure& error_callback,
     syncer::ModelType type,
     SyncClient* sync_client)
-    : DirectoryDataTypeController(ui_thread, error_callback),
-      sync_client_(sync_client),
+    : DirectoryDataTypeController(ui_thread, error_callback, sync_client),
       state_(NOT_RUNNING),
       type_(type),
       processor_factory_(new GenericChangeProcessorFactory()),

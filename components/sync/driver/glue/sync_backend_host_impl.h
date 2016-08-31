@@ -140,11 +140,6 @@ class SyncBackendHostImpl : public SyncBackendHost,
   void DisableProtocolEventForwarding() override;
   void EnableDirectoryTypeDebugInfoForwarding() override;
   void DisableDirectoryTypeDebugInfoForwarding() override;
-  void GetAllNodesForTypes(
-      syncer::ModelTypeSet types,
-      base::Callback<void(const std::vector<syncer::ModelType>&,
-                          std::vector<std::unique_ptr<base::ListValue>>)> type)
-      override;
   base::MessageLoop* GetSyncLoopForTesting() override;
   void RefreshTypesForTest(syncer::ModelTypeSet types) override;
   void ClearServerData(

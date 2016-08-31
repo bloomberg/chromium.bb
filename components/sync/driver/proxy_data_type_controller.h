@@ -34,6 +34,7 @@ class ProxyDataTypeController : public DataTypeController {
   State state() const override;
   void ActivateDataType(BackendDataTypeConfigurer* configurer) override;
   void DeactivateDataType(BackendDataTypeConfigurer* configurer) override;
+  void GetAllNodes(const AllNodesCallback& callback) override;
 
   // DataTypeErrorHandler interface.
   void OnSingleDataTypeUnrecoverableError(

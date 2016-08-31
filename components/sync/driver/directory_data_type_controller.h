@@ -7,7 +7,9 @@
 
 #include "components/sync/driver/data_type_controller.h"
 
+#include "components/sync/driver/sync_client.h"
 #include "components/sync/engine/model_safe_worker.h"
+#include "components/sync/syncable/directory.h"
 
 namespace sync_driver {
 class ChangeProcessor;
@@ -17,6 +19,7 @@ class DirectoryDataTypeController : public DataTypeController {
  public:
   // DataTypeController implementation.
   bool ShouldLoadModelBeforeConfigure() const override;
+  void GetAllNodes(const AllNodesCallback& callback) override;
 
   // Directory based data types don't need to register with backend.
   // ModelTypeRegistry will create all necessary objects in
@@ -37,6 +40,12 @@ class DirectoryDataTypeController : public DataTypeController {
   // See BackendDataTypeConfigurer::DeactivateDataType for more details.
   void DeactivateDataType(BackendDataTypeConfigurer* configurer) override;
 
+  // Returns a ListValue representing all nodes for a specified type by querying
+  // the directory.
+  static std::unique_ptr<base::ListValue> GetAllNodesForTypeFromDirectory(
+      syncer::ModelType type,
+      syncer::syncable::Directory* directory);
+
  protected:
   // The model safe group of this data type.  This should reflect the
   // thread that should be used to modify the data type's native
@@ -49,9 +58,12 @@ class DirectoryDataTypeController : public DataTypeController {
 
   DirectoryDataTypeController(
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
-      const base::Closure& error_callback);
+      const base::Closure& error_callback,
+      SyncClient* sync_client);
 
   ~DirectoryDataTypeController() override;
+
+  SyncClient* const sync_client_;
 };
 
 }  // namespace sync_driver

@@ -226,11 +226,6 @@ FakeSyncManager::GetBufferedProtocolEvents() {
   return std::vector<std::unique_ptr<ProtocolEvent>>();
 }
 
-std::unique_ptr<base::ListValue> FakeSyncManager::GetAllNodesForType(
-    syncer::ModelType type) {
-  return std::unique_ptr<base::ListValue>(new base::ListValue());
-}
-
 void FakeSyncManager::RefreshTypes(ModelTypeSet types) {
   last_refresh_request_types_ = types;
 }

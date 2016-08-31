@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "components/sync/api/model_type_change_processor.h"
 #include "components/sync/api/model_type_service.h"
@@ -76,6 +77,11 @@ void NonBlockingDataTypeController::LoadModels(
         syncer::SyncError(FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
                           "Failed to post model Start", type()));
   }
+}
+
+void NonBlockingDataTypeController::GetAllNodes(
+    const AllNodesCallback& callback) {
+  callback.Run(type(), base::WrapUnique(new base::ListValue()));
 }
 
 void NonBlockingDataTypeController::LoadModelsDone(

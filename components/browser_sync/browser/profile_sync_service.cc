@@ -63,6 +63,7 @@
 #include "components/sync/driver/backend_migrator.h"
 #include "components/sync/driver/change_processor.h"
 #include "components/sync/driver/data_type_controller.h"
+#include "components/sync/driver/directory_data_type_controller.h"
 #include "components/sync/driver/glue/chrome_report_unrecoverable_error.h"
 #include "components/sync/driver/glue/sync_backend_host.h"
 #include "components/sync/driver/glue/sync_backend_host_impl.h"
@@ -83,6 +84,7 @@
 #include "components/sync/js/js_event_details.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/syncable/directory.h"
+#include "components/sync/syncable/syncable_read_transaction.h"
 #include "components/sync_sessions/favicon_cache.h"
 #include "components/sync_sessions/session_data_type_controller.h"
 #include "components/sync_sessions/sessions_sync_manager.h"
@@ -2202,9 +2204,8 @@ class GetAllNodesRequestHelper
       syncer::ModelTypeSet requested_types,
       const base::Callback<void(std::unique_ptr<base::ListValue>)>& callback);
 
-  void OnReceivedNodesForTypes(
-      const std::vector<syncer::ModelType>& types,
-      std::vector<std::unique_ptr<base::ListValue>> scoped_node_lists);
+  void OnReceivedNodesForType(const syncer::ModelType type,
+                              std::unique_ptr<base::ListValue> node_list);
 
  private:
   friend class base::RefCountedThreadSafe<GetAllNodesRequestHelper>;
@@ -2231,30 +2232,19 @@ GetAllNodesRequestHelper::~GetAllNodesRequestHelper() {
   }
 }
 
-// Called when the set of nodes for a type or set of types has been returned.
-//
-// The nodes for several types can be returned at the same time by specifying
-// their types in the |types| array, and putting their results at the
-// corresponding indices in the |node_lists|.
-void GetAllNodesRequestHelper::OnReceivedNodesForTypes(
-    const std::vector<syncer::ModelType>& types,
-    std::vector<std::unique_ptr<base::ListValue>> node_lists) {
-  DCHECK_EQ(types.size(), node_lists.size());
+// Called when the set of nodes for a type has been returned.
+// Only return one type of nodes each time.
+void GetAllNodesRequestHelper::OnReceivedNodesForType(
+    const syncer::ModelType type,
+    std::unique_ptr<base::ListValue> node_list) {
+  // Add these results to our list.
+  std::unique_ptr<base::DictionaryValue> type_dict(new base::DictionaryValue());
+  type_dict->SetString("type", ModelTypeToString(type));
+  type_dict->Set("nodes", std::move(node_list));
+  result_accumulator_->Append(std::move(type_dict));
 
-  for (size_t i = 0; i < node_lists.size() && i < types.size(); ++i) {
-    const ModelType type = types[i];
-    std::unique_ptr<base::Value> node_list = std::move(node_lists[i]);
-
-    // Add these results to our list.
-    std::unique_ptr<base::DictionaryValue> type_dict(
-        new base::DictionaryValue());
-    type_dict->SetString("type", ModelTypeToString(type));
-    type_dict->Set("nodes", std::move(node_list));
-    result_accumulator_->Append(std::move(type_dict));
-
-    // Remember that this part of the request is satisfied.
-    awaiting_types_.Remove(type);
-  }
+  // Remember that this part of the request is satisfied.
+  awaiting_types_.Remove(type);
 
   if (awaiting_types_.Empty()) {
     callback_.Run(std::move(result_accumulator_));
@@ -2267,24 +2257,32 @@ void GetAllNodesRequestHelper::OnReceivedNodesForTypes(
 void ProfileSyncService::GetAllNodes(
     const base::Callback<void(std::unique_ptr<base::ListValue>)>& callback) {
   // TODO(stanisc): crbug.com/328606: Make this work for USS datatypes.
-  ModelTypeSet all_types = GetRegisteredDataTypes();
+  ModelTypeSet all_types = GetActiveDataTypes();
   all_types.PutAll(syncer::ControlTypes());
   scoped_refptr<GetAllNodesRequestHelper> helper =
       new GetAllNodesRequestHelper(all_types, callback);
 
   if (!backend_initialized_) {
     // If there's no backend available to fulfill the request, handle it here.
-    std::vector<std::unique_ptr<base::ListValue>> empty_results;
-    std::vector<ModelType> type_vector;
     for (ModelTypeSet::Iterator it = all_types.First(); it.Good(); it.Inc()) {
-      type_vector.push_back(it.Get());
-      empty_results.push_back(base::MakeUnique<base::ListValue>());
+      helper->OnReceivedNodesForType(it.Get(),
+                                     base::MakeUnique<base::ListValue>());
     }
-    helper->OnReceivedNodesForTypes(type_vector, std::move(empty_results));
-  } else {
-    backend_->GetAllNodesForTypes(
-        all_types,
-        base::Bind(&GetAllNodesRequestHelper::OnReceivedNodesForTypes, helper));
+    return;
+  }
+
+  for (ModelTypeSet::Iterator it = all_types.First(); it.Good(); it.Inc()) {
+    const auto& dtc_iter = data_type_controllers_.find(it.Get());
+    if (dtc_iter != data_type_controllers_.end()) {
+      dtc_iter->second->GetAllNodes(base::Bind(
+          &GetAllNodesRequestHelper::OnReceivedNodesForType, helper));
+    } else {
+      // Control Types
+      helper->OnReceivedNodesForType(
+          it.Get(), sync_driver::DirectoryDataTypeController::
+                        GetAllNodesForTypeFromDirectory(
+                            it.Get(), GetUserShare()->directory.get()));
+    }
   }
 }
 

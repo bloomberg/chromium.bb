@@ -137,12 +137,6 @@ void SyncBackendHostMock::EnableDirectoryTypeDebugInfoForwarding() {}
 
 void SyncBackendHostMock::DisableDirectoryTypeDebugInfoForwarding() {}
 
-void SyncBackendHostMock::GetAllNodesForTypes(
-    syncer::ModelTypeSet types,
-    base::Callback<void(const std::vector<syncer::ModelType>& type,
-                        std::vector<std::unique_ptr<base::ListValue>>)>
-        callback) {}
-
 void SyncBackendHostMock::set_fail_initial_download(bool should_fail) {
   fail_initial_download_ = should_fail;
 }

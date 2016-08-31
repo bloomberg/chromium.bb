@@ -4,6 +4,10 @@
 
 #include "components/sync/driver/proxy_data_type_controller.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/memory/ptr_util.h"
+#include "base/values.h"
 #include "components/sync/api/sync_merge_result.h"
 
 namespace sync_driver {
@@ -69,5 +73,9 @@ void ProxyDataTypeController::ActivateDataType(
 
 void ProxyDataTypeController::DeactivateDataType(
     BackendDataTypeConfigurer* configurer) {}
+
+void ProxyDataTypeController::GetAllNodes(const AllNodesCallback& callback) {
+  callback.Run(type(), base::WrapUnique(new base::ListValue()));
+}
 
 }  // namespace sync_driver

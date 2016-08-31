@@ -2129,6 +2129,20 @@ TEST_F(SyncableDirectoryTest, InitialSyncEndedForType) {
   EXPECT_TRUE(dir()->InitialSyncEndedForType(&trans, PREFERENCES));
 }
 
+TEST_F(SyncableDirectoryTest, TestGetNodeDetailsForType) {
+  CreateEntry(BOOKMARKS, "rtc");
+
+  ReadTransaction trans(FROM_HERE, dir().get());
+  std::unique_ptr<base::ListValue> nodes(
+      dir()->GetNodeDetailsForType(&trans, BOOKMARKS));
+  ASSERT_EQ(1U, nodes->GetSize());
+
+  const base::DictionaryValue* first_result;
+  ASSERT_TRUE(nodes->GetDictionary(0, &first_result));
+  EXPECT_TRUE(first_result->HasKey("ID"));
+  EXPECT_TRUE(first_result->HasKey("NON_UNIQUE_NAME"));
+}
+
 }  // namespace syncable
 
 }  // namespace syncer

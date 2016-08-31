@@ -101,8 +101,6 @@ class SyncManagerImpl
   SyncEncryptionHandler* GetEncryptionHandler() override;
   std::vector<std::unique_ptr<ProtocolEvent>> GetBufferedProtocolEvents()
       override;
-  std::unique_ptr<base::ListValue> GetAllNodesForType(
-      syncer::ModelType type) override;
   void RegisterDirectoryTypeDebugInfoObserver(
       syncer::TypeDebugInfoObserver* observer) override;
   void UnregisterDirectoryTypeDebugInfoObserver(

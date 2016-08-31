@@ -76,6 +76,10 @@ class DataTypeController
   typedef base::Callback<void(syncer::ModelType, syncer::SyncError)>
       ModelLoadCallback;
 
+  typedef base::Callback<void(const syncer::ModelType,
+                              std::unique_ptr<base::ListValue>)>
+      AllNodesCallback;
+
   typedef std::map<syncer::ModelType, scoped_refptr<DataTypeController>>
       TypeMap;
   typedef std::map<syncer::ModelType, DataTypeController::State> StateMap;
@@ -152,6 +156,11 @@ class DataTypeController
   // the type should be performed).
   // Returns true by default.
   virtual bool ReadyForStart() const;
+
+  // Returns a ListValue representing all nodes for this data type through
+  // |callback| on this thread.
+  // Used for populating nodes in Sync Node Browser of chrome://sync-internals.
+  virtual void GetAllNodes(const AllNodesCallback& callback) = 0;
 
  protected:
   friend class base::RefCountedDeleteOnMessageLoop<DataTypeController>;

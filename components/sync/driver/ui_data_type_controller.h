@@ -91,8 +91,6 @@ class UIDataTypeController : public DirectoryDataTypeController {
   // us know that it is safe to start associating.
   void OnModelLoaded();
 
-  SyncClient* const sync_client_;
-
   State state_;
 
   StartCallback start_callback_;

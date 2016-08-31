@@ -15,7 +15,8 @@ namespace sync_driver {
 
 FakeDataTypeController::FakeDataTypeController(ModelType type)
     : DirectoryDataTypeController(base::ThreadTaskRunnerHandle::Get(),
-                                  base::Closure()),
+                                  base::Closure(),
+                                  nullptr),
       state_(NOT_RUNNING),
       model_load_delayed_(false),
       type_(type),
