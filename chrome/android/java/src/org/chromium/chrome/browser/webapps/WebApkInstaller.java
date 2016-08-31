@@ -39,6 +39,9 @@ public class WebApkInstaller {
     /** Monitors installation progress. */
     private InstallerDelegate mInstallTask;
 
+    /** Indicates whether to install or update a WebAPK. */
+    private boolean mIsInstall;
+
     /** Weak pointer to the native WebApkInstaller. */
     private long mNativePointer;
 
@@ -71,12 +74,17 @@ public class WebApkInstaller {
                     "WebAPK install failed because installation from unknown sources is disabled.");
             return false;
         }
+        mIsInstall = true;
+        return installDownloadedWebApk(filePath, packageName);
+    }
+
+    private boolean installDownloadedWebApk(String filePath, String packageName) {
         mWebApkPackageName = packageName;
 
         // Start monitoring the installation.
         PackageManager packageManager = ContextUtils.getApplicationContext().getPackageManager();
         mInstallTask = new InstallerDelegate(Looper.getMainLooper(), packageManager,
-                createInstallerDelegateObserver(), packageName);
+                createInstallerDelegateObserver(), mWebApkPackageName);
         mInstallTask.start();
         // Start monitoring the application state changes.
         mListener = createApplicationStateListener();
@@ -110,11 +118,12 @@ public class WebApkInstaller {
         if (mNativePointer != 0) {
             nativeOnInstallFinished(mNativePointer, success);
         }
-        if (success) {
+        if (success && mIsInstall) {
             ShortcutHelper.addWebApkShortcut(ContextUtils.getApplicationContext(),
                     mWebApkPackageName);
         }
     }
+
     /**
      * Updates a WebAPK.
      * @param filePath File to update.
@@ -124,9 +133,8 @@ public class WebApkInstaller {
      */
     @CalledByNative
     private boolean updateAsyncFromNative(String filePath, String packageName) {
-        // TODO(hanxi): Calls back to C++ when the updating is complete or return a failure status
-        // if fails.
-        return false;
+        mIsInstall = false;
+        return installDownloadedWebApk(filePath, packageName);
     }
 
     /**
