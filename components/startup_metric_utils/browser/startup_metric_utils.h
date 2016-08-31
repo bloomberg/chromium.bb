@@ -5,11 +5,7 @@
 #ifndef COMPONENTS_STARTUP_METRIC_UTILS_BROWSER_STARTUP_METRIC_UTILS_H_
 #define COMPONENTS_STARTUP_METRIC_UTILS_BROWSER_STARTUP_METRIC_UTILS_H_
 
-#include <stdint.h>
-#include <string>
-
 #include "base/time/time.h"
-#include "build/build_config.h"
 
 class PrefRegistrySimple;
 class PrefService;
@@ -21,31 +17,6 @@ class PrefService;
 // between the two basis. See crbug.com/544131 for reasoning.
 
 namespace startup_metric_utils {
-
-// An enumeration of startup temperatures. This must be kept in sync with the
-// UMA StartupType enumeration defined in histograms.xml.
-enum StartupTemperature {
-  // The startup was a cold start: nearly all of the binaries and resources were
-  // brought into memory using hard faults.
-  COLD_STARTUP_TEMPERATURE = 0,
-  // The startup was a warm start: the binaries and resources were mostly
-  // already resident in memory and effectively no hard faults were observed.
-  WARM_STARTUP_TEMPERATURE = 1,
-  // The startup type couldn't quite be classified as warm or cold, but rather
-  // was somewhere in between.
-  LUKEWARM_STARTUP_TEMPERATURE = 2,
-  // This must be after all meaningful values. All new values should be added
-  // above this one.
-  STARTUP_TEMPERATURE_COUNT,
-  // Startup temperature wasn't yet determined.
-  UNDETERMINED_STARTUP_TEMPERATURE
-};
-
-#if defined(OS_WIN)
-// Gets the hard fault count of the current process through |hard_fault_count|.
-// Returns true on success.
-bool GetHardFaultCountForCurrentProcess(uint32_t* hard_fault_count);
-#endif  // defined(OS_WIN)
 
 // Registers startup related prefs in |registry|.
 void RegisterPrefs(PrefRegistrySimple* registry);
@@ -115,11 +86,6 @@ void RecordFirstWebContentsMainNavigationFinished(const base::TimeTicks& ticks);
 // RecordMainEntryPointTime. Returns a null TimeTicks if a value has not been
 // recorded yet. This method is expected to be called from the UI thread.
 base::TimeTicks MainEntryPointTicks();
-
-// Returns the startup type. This is only currently supported on the Windows
-// platform and will simply return UNCERTAIN_STARTUP_TYPE on other platforms.
-// This is only valid after a call to RecordBrowserMainMessageLoopStart().
-StartupTemperature GetStartupTemperature();
 
 }  // namespace startup_metric_utils
 

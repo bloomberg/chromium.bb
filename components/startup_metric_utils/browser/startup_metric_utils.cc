@@ -5,8 +5,10 @@
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
 
 #include <stddef.h>
+#include <stdint.h>
 
 #include <memory>
+#include <string>
 
 #include "base/containers/hash_tables.h"
 #include "base/environment.h"
@@ -28,7 +30,6 @@
 #if defined(OS_WIN)
 #include <winternl.h>
 #include "base/win/win_util.h"
-#include "base/win/windows_version.h"
 #endif
 
 namespace startup_metric_utils {
@@ -54,6 +55,25 @@ base::LazyInstance<base::TimeTicks>::Leaky g_renderer_main_entry_point_ticks =
 base::LazyInstance<base::Time>::Leaky g_browser_main_entry_point_time =
     LAZY_INSTANCE_INITIALIZER;
 
+// An enumeration of startup temperatures. This must be kept in sync with the
+// UMA StartupType enumeration defined in histograms.xml.
+enum StartupTemperature {
+  // The startup was a cold start: nearly all of the binaries and resources were
+  // brought into memory using hard faults.
+  COLD_STARTUP_TEMPERATURE = 0,
+  // The startup was a warm start: the binaries and resources were mostly
+  // already resident in memory and effectively no hard faults were observed.
+  WARM_STARTUP_TEMPERATURE = 1,
+  // The startup type couldn't quite be classified as warm or cold, but rather
+  // was somewhere in between.
+  LUKEWARM_STARTUP_TEMPERATURE = 2,
+  // This must be after all meaningful values. All new values should be added
+  // above this one.
+  STARTUP_TEMPERATURE_COUNT,
+  // Startup temperature wasn't yet determined.
+  UNDETERMINED_STARTUP_TEMPERATURE
+};
+
 StartupTemperature g_startup_temperature = UNDETERMINED_STARTUP_TEMPERATURE;
 
 constexpr int kUndeterminedStartupsWithCurrentVersion = 0;
@@ -70,11 +90,11 @@ int g_startups_with_current_version = kUndeterminedStartupsWithCurrentVersion;
 // Maximum number of hard faults tolerated for a startup to be classified as a
 // warm start. Set at roughly the 40th percentile of the HardFaultCount
 // histogram.
-const uint32_t WARM_START_HARD_FAULT_COUNT_THRESHOLD = 5;
+constexpr uint32_t kWarmStartHardFaultCountThreshold = 5;
 // Minimum number of hard faults expected for a startup to be classified as a
 // cold start. Set at roughly the 60th percentile of the HardFaultCount
 // histogram.
-const uint32_t COLD_START_HARD_FAULT_COUNT_THRESHOLD = 1200;
+constexpr uint32_t kColdStartHardFaultCountThreshold = 1200;
 
 // The struct used to return system process information via the NT internal
 // QuerySystemInformation call. This is partially documented at
@@ -105,6 +125,61 @@ struct SYSTEM_PROCESS_INFORMATION_EX {
 // The signature of the NtQuerySystemInformation function.
 typedef NTSTATUS (WINAPI *NtQuerySystemInformationPtr)(
     SYSTEM_INFORMATION_CLASS, PVOID, ULONG, PULONG);
+
+// Gets the hard fault count of the current process through |hard_fault_count|.
+// Returns true on success.
+bool GetHardFaultCountForCurrentProcess(uint32_t* hard_fault_count) {
+  DCHECK(hard_fault_count);
+
+  // Get the function pointer.
+  static const NtQuerySystemInformationPtr query_sys_info =
+      reinterpret_cast<NtQuerySystemInformationPtr>(::GetProcAddress(
+          GetModuleHandle(L"ntdll.dll"), "NtQuerySystemInformation"));
+  if (query_sys_info == nullptr)
+    return false;
+
+  // The output of this system call depends on the number of threads and
+  // processes on the entire system, and this can change between calls. Retry
+  // a small handful of times growing the buffer along the way.
+  // NOTE: The actual required size depends entirely on the number of processes
+  //       and threads running on the system. The initial guess suffices for
+  //       ~100s of processes and ~1000s of threads.
+  std::vector<uint8_t> buffer(32 * 1024);
+  for (size_t tries = 0; tries < 3; ++tries) {
+    ULONG return_length = 0;
+    const NTSTATUS status =
+        query_sys_info(SystemProcessInformation, buffer.data(),
+                       static_cast<ULONG>(buffer.size()), &return_length);
+    // Insufficient space in the buffer.
+    if (return_length > buffer.size()) {
+      buffer.resize(return_length);
+      continue;
+    }
+    if (NT_SUCCESS(status) && return_length <= buffer.size())
+      break;
+    return false;
+  }
+
+  // Look for the struct housing information for the current process.
+  const DWORD proc_id = ::GetCurrentProcessId();
+  size_t index = 0;
+  while (index < buffer.size()) {
+    DCHECK_LE(index + sizeof(SYSTEM_PROCESS_INFORMATION_EX), buffer.size());
+    SYSTEM_PROCESS_INFORMATION_EX* proc_info =
+        reinterpret_cast<SYSTEM_PROCESS_INFORMATION_EX*>(buffer.data() + index);
+    if (base::win::HandleToUint32(proc_info->UniqueProcessId) == proc_id) {
+      *hard_fault_count = proc_info->HardFaultCount;
+      return true;
+    }
+    // The list ends when NextEntryOffset is zero. This also prevents busy
+    // looping if the data is in fact invalid.
+    if (proc_info->NextEntryOffset <= 0)
+      return false;
+    index += proc_info->NextEntryOffset;
+  }
+
+  return false;
+}
 #endif  // defined(OS_WIN)
 
 #define UMA_HISTOGRAM_TIME_IN_MINUTES_MONTH_RANGE(name, sample) \
@@ -279,9 +354,9 @@ void RecordHardFaultHistogram() {
 
   // Determine the startup type based on the number of observed hard faults.
   DCHECK_EQ(UNDETERMINED_STARTUP_TEMPERATURE, g_startup_temperature);
-  if (hard_fault_count < WARM_START_HARD_FAULT_COUNT_THRESHOLD) {
+  if (hard_fault_count < kWarmStartHardFaultCountThreshold) {
     g_startup_temperature = WARM_STARTUP_TEMPERATURE;
-  } else if (hard_fault_count >= COLD_START_HARD_FAULT_COUNT_THRESHOLD) {
+  } else if (hard_fault_count >= kColdStartHardFaultCountThreshold) {
     g_startup_temperature = COLD_STARTUP_TEMPERATURE;
   } else {
     g_startup_temperature = LUKEWARM_STARTUP_TEMPERATURE;
@@ -487,64 +562,6 @@ void RecordSameVersionStartupCount(PrefService* pref_service) {
 }
 
 }  // namespace
-
-#if defined(OS_WIN)
-bool GetHardFaultCountForCurrentProcess(uint32_t* hard_fault_count) {
-  DCHECK(hard_fault_count);
-
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
-    return false;
-
-  // Get the function pointer.
-  static const NtQuerySystemInformationPtr query_sys_info =
-      reinterpret_cast<NtQuerySystemInformationPtr>(::GetProcAddress(
-          GetModuleHandle(L"ntdll.dll"), "NtQuerySystemInformation"));
-  if (query_sys_info == nullptr)
-    return false;
-
-  // The output of this system call depends on the number of threads and
-  // processes on the entire system, and this can change between calls. Retry
-  // a small handful of times growing the buffer along the way.
-  // NOTE: The actual required size depends entirely on the number of processes
-  //       and threads running on the system. The initial guess suffices for
-  //       ~100s of processes and ~1000s of threads.
-  std::vector<uint8_t> buffer(32 * 1024);
-  for (size_t tries = 0; tries < 3; ++tries) {
-    ULONG return_length = 0;
-    NTSTATUS status =
-        query_sys_info(SystemProcessInformation, buffer.data(),
-                       static_cast<ULONG>(buffer.size()), &return_length);
-    // Insufficient space in the buffer.
-    if (return_length > buffer.size()) {
-      buffer.resize(return_length);
-      continue;
-    }
-    if (NT_SUCCESS(status) && return_length <= buffer.size())
-      break;
-    return false;
-  }
-
-  // Look for the struct housing information for the current process.
-  DWORD proc_id = ::GetCurrentProcessId();
-  size_t index = 0;
-  while (index < buffer.size()) {
-    DCHECK_LE(index + sizeof(SYSTEM_PROCESS_INFORMATION_EX), buffer.size());
-    SYSTEM_PROCESS_INFORMATION_EX* proc_info =
-        reinterpret_cast<SYSTEM_PROCESS_INFORMATION_EX*>(buffer.data() + index);
-    if (base::win::HandleToUint32(proc_info->UniqueProcessId) == proc_id) {
-      *hard_fault_count = proc_info->HardFaultCount;
-      return true;
-    }
-    // The list ends when NextEntryOffset is zero. This also prevents busy
-    // looping if the data is in fact invalid.
-    if (proc_info->NextEntryOffset <= 0)
-      return false;
-    index += proc_info->NextEntryOffset;
-  }
-
-  return false;
-}
-#endif  // defined(OS_WIN)
 
 void RegisterPrefs(PrefRegistrySimple* registry) {
   DCHECK(registry);
@@ -769,10 +786,6 @@ void RecordFirstWebContentsMainNavigationFinished(
 
 base::TimeTicks MainEntryPointTicks() {
   return g_browser_main_entry_point_ticks.Get();
-}
-
-StartupTemperature GetStartupTemperature() {
-  return g_startup_temperature;
 }
 
 }  // namespace startup_metric_utils
