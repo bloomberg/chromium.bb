@@ -39,7 +39,6 @@ CSSImageValue::CSSImageValue(const AtomicString& rawValue, const KURL& url, Styl
     : CSSValue(ImageClass)
     , m_relativeURL(rawValue)
     , m_absoluteURL(url.getString())
-    , m_isCachePending(!image)
     , m_cachedImage(image)
 {
 }
@@ -48,7 +47,6 @@ CSSImageValue::CSSImageValue(const AtomicString& absoluteURL)
     : CSSValue(ImageClass)
     , m_relativeURL(absoluteURL)
     , m_absoluteURL(absoluteURL)
-    , m_isCachePending(true)
 {
 }
 
@@ -60,9 +58,7 @@ StyleImage* CSSImageValue::cacheImage(Document* document, CrossOriginAttributeVa
 {
     ASSERT(document);
 
-    if (m_isCachePending) {
-        m_isCachePending = false;
-
+    if (!m_cachedImage) {
         FetchRequest request(ResourceRequest(m_absoluteURL), m_initiatorName.isEmpty() ? FetchInitiatorTypeNames::css : m_initiatorName);
         request.mutableResourceRequest().setHTTPReferrer(SecurityPolicy::generateReferrer(m_referrer.referrerPolicy, request.url(), m_referrer.referrer));
 
@@ -80,7 +76,7 @@ StyleImage* CSSImageValue::cacheImage(Document* document, CrossOriginAttributeVa
 
 void CSSImageValue::restoreCachedResourceIfNeeded(Document& document) const
 {
-    if (m_isCachePending || !m_cachedImage || !document.fetcher() || m_absoluteURL.isNull())
+    if (!m_cachedImage || !document.fetcher() || m_absoluteURL.isNull())
         return;
     if (document.fetcher()->cachedResource(KURL(ParsedURLString, m_absoluteURL)))
         return;
@@ -133,7 +129,6 @@ void CSSImageValue::reResolveURL(const Document& document) const
     if (urlString == m_absoluteURL)
         return;
     m_absoluteURL = urlString;
-    m_isCachePending = true;
     m_cachedImage.clear();
 }
 

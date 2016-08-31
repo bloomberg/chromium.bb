@@ -54,7 +54,7 @@ public:
     }
     ~CSSImageValue();
 
-    bool isCachePending() const { return m_isCachePending; }
+    bool isCachePending() const { return !m_cachedImage; }
     StyleImage* cachedImage() const { ASSERT(!isCachePending()); return m_cachedImage.get(); }
     StyleImage* cacheImage(Document*, CrossOriginAttributeValue = CrossOriginAttributeNotSet);
 
@@ -93,7 +93,6 @@ private:
 
     // Cached image data.
     mutable AtomicString m_absoluteURL;
-    mutable bool m_isCachePending;
     mutable Member<StyleImage> m_cachedImage;
 };
 
