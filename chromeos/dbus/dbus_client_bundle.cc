@@ -25,7 +25,6 @@
 #include "chromeos/dbus/fake_easy_unlock_client.h"
 #include "chromeos/dbus/fake_gsm_sms_client.h"
 #include "chromeos/dbus/fake_image_burner_client.h"
-#include "chromeos/dbus/fake_introspectable_client.h"
 #include "chromeos/dbus/fake_lorgnette_manager_client.h"
 #include "chromeos/dbus/fake_modem_messaging_client.h"
 #include "chromeos/dbus/fake_permission_broker_client.h"
@@ -39,7 +38,6 @@
 #include "chromeos/dbus/fake_system_clock_client.h"
 #include "chromeos/dbus/gsm_sms_client.h"
 #include "chromeos/dbus/image_burner_client.h"
-#include "chromeos/dbus/introspectable_client.h"
 #include "chromeos/dbus/lorgnette_manager_client.h"
 #include "chromeos/dbus/modem_messaging_client.h"
 #include "chromeos/dbus/permission_broker_client.h"
@@ -75,7 +73,6 @@ const struct {
     { "shill",  DBusClientBundle::SHILL },
     { "gsm_sms",  DBusClientBundle::GSM_SMS },
     { "image_burner",  DBusClientBundle::IMAGE_BURNER },
-    { "introspectable",  DBusClientBundle::INTROSPECTABLE },
     { "modem_messaging",  DBusClientBundle::MODEM_MESSAGING },
     { "permission_broker",  DBusClientBundle::PERMISSION_BROKER },
     { "power_manager",  DBusClientBundle::POWER_MANAGER },
@@ -167,11 +164,6 @@ DBusClientBundle::DBusClientBundle(DBusClientTypeMask unstub_client_mask)
     image_burner_client_.reset(ImageBurnerClient::Create());
   else
     image_burner_client_.reset(new FakeImageBurnerClient);
-
-  if (!IsUsingStub(INTROSPECTABLE))
-    introspectable_client_.reset(IntrospectableClient::Create());
-  else
-    introspectable_client_.reset(new FakeIntrospectableClient);
 
   if (!IsUsingStub(MODEM_MESSAGING))
     modem_messaging_client_.reset(ModemMessagingClient::Create());

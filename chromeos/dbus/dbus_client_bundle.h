@@ -21,7 +21,6 @@ class DebugDaemonClient;
 class EasyUnlockClient;
 class GsmSMSClient;
 class ImageBurnerClient;
-class IntrospectableClient;
 class LorgnetteManagerClient;
 class ModemMessagingClient;
 class PermissionBrokerClient;
@@ -58,15 +57,14 @@ class CHROMEOS_EXPORT DBusClientBundle {
     SHILL = 1 << 7,
     GSM_SMS = 1 << 8,
     IMAGE_BURNER = 1 << 9,
-    INTROSPECTABLE = 1 << 10,
-    MODEM_MESSAGING = 1 << 11,
-    PERMISSION_BROKER = 1 << 12,
-    POWER_MANAGER = 1 << 13,
-    SESSION_MANAGER = 1 << 14,
-    SMS = 1 << 15,
-    SYSTEM_CLOCK = 1 << 16,
-    UPDATE_ENGINE = 1 << 17,
-    ARC_OBB_MOUNTER = 1 << 18,
+    MODEM_MESSAGING = 1 << 10,
+    PERMISSION_BROKER = 1 << 11,
+    POWER_MANAGER = 1 << 12,
+    SESSION_MANAGER = 1 << 13,
+    SMS = 1 << 14,
+    SYSTEM_CLOCK = 1 << 15,
+    UPDATE_ENGINE = 1 << 16,
+    ARC_OBB_MOUNTER = 1 << 17,
   };
 
   explicit DBusClientBundle(DBusClientTypeMask unstub_client_mask);
@@ -145,10 +143,6 @@ class CHROMEOS_EXPORT DBusClientBundle {
     return image_burner_client_.get();
   }
 
-  IntrospectableClient* introspectable_client() {
-    return introspectable_client_.get();
-  }
-
   ModemMessagingClient* modem_messaging_client() {
     return modem_messaging_client_.get();
   }
@@ -200,7 +194,6 @@ class CHROMEOS_EXPORT DBusClientBundle {
       shill_third_party_vpn_driver_client_;
   std::unique_ptr<GsmSMSClient> gsm_sms_client_;
   std::unique_ptr<ImageBurnerClient> image_burner_client_;
-  std::unique_ptr<IntrospectableClient> introspectable_client_;
   std::unique_ptr<ModemMessagingClient> modem_messaging_client_;
   std::unique_ptr<PermissionBrokerClient> permission_broker_client_;
   std::unique_ptr<SystemClockClient> system_clock_client_;

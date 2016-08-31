@@ -20,7 +20,6 @@
 #include "chromeos/dbus/easy_unlock_client.h"
 #include "chromeos/dbus/gsm_sms_client.h"
 #include "chromeos/dbus/image_burner_client.h"
-#include "chromeos/dbus/introspectable_client.h"
 #include "chromeos/dbus/lorgnette_manager_client.h"
 #include "chromeos/dbus/modem_messaging_client.h"
 #include "chromeos/dbus/permission_broker_client.h"
@@ -165,10 +164,6 @@ ImageBurnerClient* DBusThreadManager::GetImageBurnerClient() {
   return client_bundle_->image_burner_client();
 }
 
-IntrospectableClient* DBusThreadManager::GetIntrospectableClient() {
-  return client_bundle_->introspectable_client();
-}
-
 ModemMessagingClient* DBusThreadManager::GetModemMessagingClient() {
   return client_bundle_->modem_messaging_client();
 }
@@ -206,7 +201,6 @@ void DBusThreadManager::InitializeClients() {
   GetEasyUnlockClient()->Init(GetSystemBus());
   GetGsmSMSClient()->Init(GetSystemBus());
   GetImageBurnerClient()->Init(GetSystemBus());
-  GetIntrospectableClient()->Init(GetSystemBus());
   GetLorgnetteManagerClient()->Init(GetSystemBus());
   GetModemMessagingClient()->Init(GetSystemBus());
   GetPermissionBrokerClient()->Init(GetSystemBus());
@@ -414,12 +408,6 @@ void DBusThreadManagerSetter::SetGsmSMSClient(
 void DBusThreadManagerSetter::SetImageBurnerClient(
     std::unique_ptr<ImageBurnerClient> client) {
   DBusThreadManager::Get()->client_bundle_->image_burner_client_ =
-      std::move(client);
-}
-
-void DBusThreadManagerSetter::SetIntrospectableClient(
-    std::unique_ptr<IntrospectableClient> client) {
-  DBusThreadManager::Get()->client_bundle_->introspectable_client_ =
       std::move(client);
 }
 
