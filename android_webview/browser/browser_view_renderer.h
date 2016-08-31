@@ -129,6 +129,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
                      const gfx::Vector2dF& accumulated_overscroll,
                      const gfx::Vector2dF& latest_overscroll_delta,
                      const gfx::Vector2dF& current_fling_velocity) override;
+  ui::TouchHandleDrawable* CreateDrawable() override;
 
   // CompositorFrameProducer overrides
   void OnParentDrawConstraintsUpdated(

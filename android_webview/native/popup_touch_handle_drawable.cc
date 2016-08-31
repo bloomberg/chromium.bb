@@ -1,39 +1,25 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/android/popup_touch_handle_drawable.h"
+#include "android_webview/native/popup_touch_handle_drawable.h"
 
-#include "content/public/browser/android/content_view_core.h"
 #include "jni/PopupTouchHandleDrawable_jni.h"
 
+using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 
-namespace content {
+namespace android_webview {
 
-// static
-std::unique_ptr<PopupTouchHandleDrawable> PopupTouchHandleDrawable::Create(
-    ContentViewCore* content_view_core,
-    float dpi_scale) {
-  DCHECK(content_view_core);
-  base::android::ScopedJavaLocalRef<jobject> content_view_core_obj =
-      content_view_core->GetJavaObject();
-  if (content_view_core_obj.is_null())
-    return nullptr;
-  JNIEnv* env = base::android::AttachCurrentThread();
-  base::android::ScopedJavaLocalRef<jobject> drawable_obj(
-      Java_PopupTouchHandleDrawable_create(env, content_view_core_obj));
-  return std::unique_ptr<PopupTouchHandleDrawable>(
-      new PopupTouchHandleDrawable(env, drawable_obj.obj(), dpi_scale));
-}
-
-PopupTouchHandleDrawable::PopupTouchHandleDrawable(JNIEnv* env,
-                                                   jobject obj,
-                                                   float dpi_scale)
-    : java_ref_(env, obj), dpi_scale_(dpi_scale) {
+PopupTouchHandleDrawable::PopupTouchHandleDrawable(
+    JNIEnv* env,
+    jobject obj,
+    float dip_scale,
+    float horizontal_padding_ratio)
+    : java_ref_(env, obj)
+    , dip_scale_(dip_scale)
+    , drawable_horizontal_padding_ratio_(horizontal_padding_ratio) {
   DCHECK(!java_ref_.is_empty());
-  drawable_horizontal_padding_ratio_ =
-      Java_PopupTouchHandleDrawable_getHandleHorizontalPaddingRatio(env, obj);
 }
 
 PopupTouchHandleDrawable::~PopupTouchHandleDrawable() {
@@ -41,6 +27,10 @@ PopupTouchHandleDrawable::~PopupTouchHandleDrawable() {
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (!obj.is_null())
     Java_PopupTouchHandleDrawable_destroy(env, obj);
+}
+
+bool PopupTouchHandleDrawable::RegisterPopupTouchHandleDrawable(JNIEnv* env) {
+  return RegisterNativesImpl(env);
 }
 
 void PopupTouchHandleDrawable::SetEnabled(bool enabled) {
@@ -71,7 +61,7 @@ void PopupTouchHandleDrawable::SetOrigin(const gfx::PointF& origin) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (!obj.is_null()) {
-    const gfx::PointF origin_pix = gfx::ScalePoint(origin, dpi_scale_);
+    const gfx::PointF origin_pix = gfx::ScalePoint(origin, dip_scale_);
     Java_PopupTouchHandleDrawable_setOrigin(env, obj, origin_pix.x(),
                                             origin_pix.y());
   }
@@ -95,11 +85,22 @@ gfx::RectF PopupTouchHandleDrawable::GetVisibleBounds() const {
       Java_PopupTouchHandleDrawable_getPositionY(env, obj),
       Java_PopupTouchHandleDrawable_getVisibleWidth(env, obj),
       Java_PopupTouchHandleDrawable_getVisibleHeight(env, obj));
-  return gfx::ScaleRect(unscaled_rect, 1.f / dpi_scale_);
+  return gfx::ScaleRect(unscaled_rect, 1.f / dip_scale_);
 }
 
 float PopupTouchHandleDrawable::GetDrawableHorizontalPaddingRatio() const {
   return drawable_horizontal_padding_ratio_;
+}
+
+static jlong Init(JNIEnv* env,
+                  const JavaParamRef<jobject>& obj,
+                  const JavaParamRef<jobject>& content_view_core,
+                  const jfloat dip_scale,
+                  const jfloat horizontal_padding_ratio) {
+  DCHECK(content_view_core.obj());
+  return reinterpret_cast<intptr_t>(
+      new PopupTouchHandleDrawable(env, obj, dip_scale,
+          horizontal_padding_ratio));
 }
 
 }  // namespace content

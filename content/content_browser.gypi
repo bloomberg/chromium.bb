@@ -1626,8 +1626,6 @@
       'browser/android/load_url_params.h',
       'browser/android/overscroll_controller_android.cc',
       'browser/android/overscroll_controller_android.h',
-      'browser/android/popup_touch_handle_drawable.cc',
-      'browser/android/popup_touch_handle_drawable.h',
       'browser/android/synchronous_compositor_host.cc',
       'browser/android/synchronous_compositor_host.h',
       'browser/android/synchronous_compositor_observer.cc',

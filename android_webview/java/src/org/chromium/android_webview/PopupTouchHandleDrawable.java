@@ -1,8 +1,8 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser.input;
+package org.chromium.android_webview;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -17,12 +17,13 @@ import android.view.WindowManager;
 import android.view.animation.AnimationUtils;
 import android.widget.PopupWindow;
 
+import org.chromium.base.ObserverList;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.content.browser.ContainerViewObserver;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.PositionObserver;
 import org.chromium.content.browser.ViewPositionObserver;
+import org.chromium.content.browser.input.HandleViewResources;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.ui.touch_selection.TouchHandleOrientation;
 
@@ -36,14 +37,16 @@ import java.lang.reflect.Method;
  * hierarchy.
  *
  */
-@JNINamespace("content")
+@JNINamespace("android_webview")
 public class PopupTouchHandleDrawable extends View {
     private final PopupWindow mContainer;
     private final PositionObserver.Listener mParentPositionListener;
-    private final ContainerViewObserver mParentViewObserver;
     private ContentViewCore mContentViewCore;
     private PositionObserver mParentPositionObserver;
     private Drawable mDrawable;
+
+    // The native side of this object.
+    private final long mNativeDrawable;
 
     // The position of the handle relative to the parent view.
     private int mPositionX;
@@ -93,8 +96,15 @@ public class PopupTouchHandleDrawable extends View {
     private Runnable mInvalidationRunnable;
     private boolean mHasPendingInvalidate;
 
-    private PopupTouchHandleDrawable(ContentViewCore contentViewCore) {
+    // List of drawables used to inform them of the container view switching.
+    private final ObserverList<PopupTouchHandleDrawable> mDrawableObserverList;
+
+    private PopupTouchHandleDrawable(ObserverList<PopupTouchHandleDrawable> drawableObserverList,
+            ContentViewCore contentViewCore, double dipScale) {
         super(contentViewCore.getContainerView().getContext());
+        mDrawableObserverList = drawableObserverList;
+        mDrawableObserverList.addObserver(this);
+
         mContentViewCore = contentViewCore;
         mContainer = new PopupWindow(mContentViewCore.getWindowAndroid().getContext().get(),
                 null, android.R.attr.textSelectHandleWindowStyle);
@@ -120,18 +130,6 @@ public class PopupTouchHandleDrawable extends View {
             @Override
             public void onPositionChanged(int x, int y) {
                 updateParentPosition(x, y);
-            }
-        };
-        mParentViewObserver = new ContainerViewObserver() {
-            @Override
-            public void onContainerViewChanged(ViewGroup newContainerView) {
-                // If the parent View ever changes, the parent position observer
-                // must be updated accordingly.
-                mParentPositionObserver.clearListener();
-                mParentPositionObserver = new ViewPositionObserver(newContainerView);
-                if (mContainer.isShowing()) {
-                    mParentPositionObserver.addListener(mParentPositionListener);
-                }
             }
         };
         mGestureStateListener = new GestureStateListener() {
@@ -165,7 +163,18 @@ public class PopupTouchHandleDrawable extends View {
             }
         };
         mContentViewCore.addGestureStateListener(mGestureStateListener);
-        mContentViewCore.addContainerViewObserver(mParentViewObserver);
+        mNativeDrawable = nativeInit(contentViewCore, (float) dipScale,
+                HandleViewResources.getHandleHorizontalPaddingRatio());
+    }
+
+    public static PopupTouchHandleDrawable create(
+            ObserverList<PopupTouchHandleDrawable> drawableObserverList,
+            ContentViewCore contentViewCore, double dipScale) {
+        return new PopupTouchHandleDrawable(drawableObserverList, contentViewCore, dipScale);
+    }
+
+    public long getNativeDrawable() {
+        return mNativeDrawable;
     }
 
     private static void setWindowLayoutType(PopupWindow window, int layoutType) {
@@ -218,11 +227,6 @@ public class PopupTouchHandleDrawable extends View {
         final boolean handled = mContentViewCore.onTouchHandleEvent(offsetEvent);
         offsetEvent.recycle();
         return handled;
-    }
-
-    @CalledByNative
-    private static PopupTouchHandleDrawable create(ContentViewCore contentViewCore) {
-        return new PopupTouchHandleDrawable(contentViewCore);
     }
 
     @CalledByNative
@@ -433,10 +437,10 @@ public class PopupTouchHandleDrawable extends View {
 
     @CalledByNative
     private void destroy() {
+        mDrawableObserverList.removeObserver(this);
         if (mContentViewCore == null) return;
         hide();
         mContentViewCore.removeGestureStateListener(mGestureStateListener);
-        mContentViewCore.removeContainerViewObserver(mParentViewObserver);
         mContentViewCore = null;
     }
 
@@ -495,11 +499,6 @@ public class PopupTouchHandleDrawable extends View {
     }
 
     @CalledByNative
-    private float getHandleHorizontalPaddingRatio() {
-        return HandleViewResources.getHandleHorizontalPaddingRatio();
-    }
-
-    @CalledByNative
     private int getPositionY() {
         return mPositionY;
     }
@@ -515,4 +514,17 @@ public class PopupTouchHandleDrawable extends View {
         if (mDrawable == null) return 0;
         return mDrawable.getIntrinsicHeight();
     }
+
+    public void onContainerViewChanged(ViewGroup newContainerView) {
+        // If the parent View ever changes, the parent position observer
+        // must be updated accordingly.
+        mParentPositionObserver.clearListener();
+        mParentPositionObserver = new ViewPositionObserver(newContainerView);
+        if (mContainer.isShowing()) {
+            mParentPositionObserver.addListener(mParentPositionListener);
+        }
+    }
+
+    private native long nativeInit(ContentViewCore contentViewCore, float dipScale,
+            float horizontalPaddingRatio);
 }

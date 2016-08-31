@@ -52,6 +52,10 @@ RenderingTest::~RenderingTest() {
     window_->Detach();
 }
 
+ui::TouchHandleDrawable* RenderingTest::CreateDrawable() {
+  return nullptr;
+}
+
 void RenderingTest::SetUpTestHarness() {
   DCHECK(!browser_view_renderer_.get());
   DCHECK(!functor_.get());

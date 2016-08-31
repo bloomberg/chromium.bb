@@ -6,6 +6,7 @@ include_rules = [
   "+storage/common/quota",
   "+ui/gfx",
   "+ui/shell_dialogs",
+  "+ui/touch_selection/touch_handle.h",
 
   # Components that Android WebView depends on.
   "+components/autofill/content/browser",

@@ -75,6 +75,8 @@ class SynchronousCompositorHost : public SynchronousCompositor {
   int routing_id() const { return routing_id_; }
   void ProcessCommonParams(const SyncCompositorCommonRendererParams& params);
 
+  SynchronousCompositorClient* client() { return client_; }
+
  private:
   class ScopedSendZeroMemory;
   struct SharedMemoryWithSize;

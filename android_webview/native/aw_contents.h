@@ -280,6 +280,7 @@ class AwContents : public FindHelper::Listener,
                          float max_page_scale_factor) override;
   void DidOverscroll(const gfx::Vector2d& overscroll_delta,
                      const gfx::Vector2dF& overscroll_velocity) override;
+  ui::TouchHandleDrawable* CreateDrawable() override;
 
   void ClearCache(JNIEnv* env,
                   const base::android::JavaParamRef<jobject>& obj,

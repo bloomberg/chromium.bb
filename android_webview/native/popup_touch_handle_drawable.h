@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,17 +13,16 @@
 #include "base/android/jni_weak_ref.h"
 #include "base/macros.h"
 
-namespace content {
-
-class ContentViewCore;
+namespace android_webview {
 
 // Touch handle drawable backed by an Android PopupWindow.
 class PopupTouchHandleDrawable : public ui::TouchHandleDrawable {
  public:
-  static std::unique_ptr<PopupTouchHandleDrawable> Create(
-      ContentViewCore* content_view_core,
-      float dpi_scale);
+  PopupTouchHandleDrawable(JNIEnv* env, jobject obj, float dpi_scale,
+      float horizontal_padding_ratio);
   ~PopupTouchHandleDrawable() override;
+
+  static bool RegisterPopupTouchHandleDrawable(JNIEnv* env);
 
   // ui::TouchHandleDrawable implementation.
   void SetEnabled(bool enabled) override;
@@ -36,12 +35,11 @@ class PopupTouchHandleDrawable : public ui::TouchHandleDrawable {
   float GetDrawableHorizontalPaddingRatio() const override;
 
  private:
-  PopupTouchHandleDrawable(JNIEnv* env, jobject obj, float dpi_scale);
 
   JavaObjectWeakGlobalRef java_ref_;
 
-  const float dpi_scale_;
-  float drawable_horizontal_padding_ratio_;
+  const float dip_scale_;
+  const float drawable_horizontal_padding_ratio_;
 
   DISALLOW_COPY_AND_ASSIGN(PopupTouchHandleDrawable);
 };

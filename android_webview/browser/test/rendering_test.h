@@ -28,6 +28,10 @@ class SynchronousCompositor;
 class TestSynchronousCompositor;
 }
 
+namespace ui {
+class TouchHandleDrawable;
+}
+
 namespace android_webview {
 
 class BrowserViewRenderer;
@@ -53,6 +57,7 @@ class RenderingTest : public testing::Test,
                          float max_page_scale_factor) override {}
   void DidOverscroll(const gfx::Vector2d& overscroll_delta,
                      const gfx::Vector2dF& overscroll_velocity) override {}
+  ui::TouchHandleDrawable* CreateDrawable() override;
 
   // WindowHooks overrides.
   void WillOnDraw() override;

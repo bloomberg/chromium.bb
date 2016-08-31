@@ -109,6 +109,8 @@ source_set("native") {
     "permission/permission_request_handler_client.h",
     "permission/simple_permission_request.cc",
     "permission/simple_permission_request.h",
+    "popup_touch_handle_drawable.cc",
+    "popup_touch_handle_drawable.h",
     "state_serializer.cc",
     "state_serializer.h",
     "token_binding_manager_bridge.cc",
@@ -153,6 +155,7 @@ generate_jni("native_jni") {
     "../java/src/org/chromium/android_webview/AwWebResourceResponse.java",
     "../java/src/org/chromium/android_webview/InputStreamUtil.java",
     "../java/src/org/chromium/android_webview/JavaBrowserViewRendererHelper.java",
+    "../java/src/org/chromium/android_webview/PopupTouchHandleDrawable.java",
     "../java/src/org/chromium/android_webview/permission/AwPermissionRequest.java",
   ]
   jni_package = "android_webview"

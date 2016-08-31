@@ -1060,6 +1060,15 @@ void AwContents::DidOverscroll(const gfx::Vector2d& overscroll_delta,
                                 overscroll_velocity.y());
 }
 
+ui::TouchHandleDrawable* AwContents::CreateDrawable() {
+  JNIEnv* env = AttachCurrentThread();
+  const ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return nullptr;
+  return reinterpret_cast<ui::TouchHandleDrawable*>(
+      Java_AwContents_onCreateTouchHandle(env, obj));
+}
+
 void AwContents::SetDipScale(JNIEnv* env,
                              const JavaParamRef<jobject>& obj,
                              jfloat dip_scale) {

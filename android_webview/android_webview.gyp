@@ -381,6 +381,8 @@
         'browser/parent_compositor_draw_constraints.h',
         'browser/parent_output_surface.cc',
         'browser/parent_output_surface.h',
+        'browser/popup_touch_handle_drawable.cc',
+        'browser/popup_touch_handle_drawable.h',
         'browser/render_thread_manager.cc',
         'browser/render_thread_manager.h',
         'browser/renderer_host/aw_render_view_host_ext.cc',

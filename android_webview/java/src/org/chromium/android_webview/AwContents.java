@@ -47,6 +47,7 @@ import org.chromium.android_webview.permission.AwGeolocationCallback;
 import org.chromium.android_webview.permission.AwPermissionRequest;
 import org.chromium.base.LocaleUtils;
 import org.chromium.base.Log;
+import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
@@ -286,6 +287,9 @@ public class AwContents implements SmartClipProvider,
     // This can be accessed on any thread after construction. See AwContentsIoThreadClient.
     private final AwSettings mSettings;
     private final ScrollAccessibilityHelper mScrollAccessibilityHelper;
+
+    private final ObserverList<PopupTouchHandleDrawable> mTouchHandleDrawables =
+            new ObserverList<>();
 
     private boolean mIsPaused;
     private boolean mIsViewVisible;
@@ -924,6 +928,9 @@ public class AwContents implements SmartClipProvider,
             mAwPdfExporter.setContainerView(mContainerView);
         }
         mWebContentsDelegate.setContainerView(mContainerView);
+        for (PopupTouchHandleDrawable drawable: mTouchHandleDrawables) {
+            drawable.onContainerViewChanged(newContainerView);
+        }
         onContainerViewChanged();
     }
 
@@ -2671,6 +2678,13 @@ public class AwContents implements SmartClipProvider,
     private void onReceivedIcon(Bitmap bitmap) {
         mContentsClient.onReceivedIcon(bitmap);
         mFavicon = bitmap;
+    }
+
+    @CalledByNative
+    private long onCreateTouchHandle() {
+        PopupTouchHandleDrawable drawable =
+                PopupTouchHandleDrawable.create(mTouchHandleDrawables, mContentViewCore, mDIPScale);
+        return drawable.getNativeDrawable();
     }
 
     /** Callback for generateMHTML. */

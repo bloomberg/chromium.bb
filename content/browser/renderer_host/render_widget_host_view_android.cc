@@ -38,7 +38,6 @@
 #include "content/browser/android/composited_touch_handle_drawable.h"
 #include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/android/overscroll_controller_android.h"
-#include "content/browser/android/popup_touch_handle_drawable.h"
 #include "content/browser/android/synchronous_compositor_host.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
@@ -58,6 +57,7 @@
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/android/compositor.h"
+#include "content/public/browser/android/synchronous_compositor_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -1097,10 +1097,12 @@ void RenderWidgetHostViewAndroid::OnSelectionEvent(
 std::unique_ptr<ui::TouchHandleDrawable>
 RenderWidgetHostViewAndroid::CreateDrawable() {
   DCHECK(content_view_core_);
-  if (!using_browser_compositor_)
-    return PopupTouchHandleDrawable::Create(
-        content_view_core_, ui::GetScaleFactorForNativeView(GetNativeView()));
-
+  if (!using_browser_compositor_) {
+    if (!sync_compositor_)
+      return nullptr;
+    return std::unique_ptr<ui::TouchHandleDrawable>(
+        sync_compositor_->client()->CreateDrawable());
+  }
   return std::unique_ptr<
       ui::TouchHandleDrawable>(new CompositedTouchHandleDrawable(
       content_view_core_->GetViewAndroid()->GetLayer(),

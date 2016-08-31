@@ -700,6 +700,10 @@ void BrowserViewRenderer::DidOverscroll(
   client_->DidOverscroll(rounded_overscroll_delta, fling_velocity_pixels);
 }
 
+ui::TouchHandleDrawable* BrowserViewRenderer::CreateDrawable() {
+  return client_->CreateDrawable();
+}
+
 void BrowserViewRenderer::PostInvalidate(
     content::SynchronousCompositor* compositor) {
   TRACE_EVENT_INSTANT0("android_webview", "BrowserViewRenderer::PostInvalidate",

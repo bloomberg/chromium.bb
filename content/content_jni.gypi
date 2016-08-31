@@ -22,7 +22,6 @@
     'public/android/java/src/org/chromium/content/browser/input/HandleViewResources.java',
     'public/android/java/src/org/chromium/content/browser/input/ImeAdapter.java',
     'public/android/java/src/org/chromium/content/browser/input/DateTimeChooserAndroid.java',
-    'public/android/java/src/org/chromium/content/browser/input/PopupTouchHandleDrawable.java',
     'public/android/java/src/org/chromium/content/browser/InterstitialPageDelegateAndroid.java',
     'public/android/java/src/org/chromium/content/browser/MediaSessionDelegate.java',
     'public/android/java/src/org/chromium/content/browser/MediaResourceGetter.java',
