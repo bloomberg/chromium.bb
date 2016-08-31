@@ -385,27 +385,6 @@ void DocumentMarkerController::removeMarkers(Node* node, unsigned startOffset, i
         node->layoutObject()->setShouldDoFullPaintInvalidation();
 }
 
-DocumentMarker* DocumentMarkerController::markerContainingPoint(const LayoutPoint& point, DocumentMarker::MarkerType markerType)
-{
-    if (!possiblyHasMarkers(markerType))
-        return 0;
-    DCHECK(!(m_markers.isEmpty()));
-
-    // outer loop: process each node that contains any markers
-    for (auto& nodeMarkers : m_markers) {
-        const Node& node = *nodeMarkers.key;
-        // inner loop; process each marker in this node
-        Member<MarkerList>& markerList = (*nodeMarkers.value)[MarkerTypeToMarkerIndex(markerType)];
-        for (auto& marker : *markerList) {
-            updateMarkerRenderedRectIfNeeded(node, *marker);
-            if (marker->contains(point))
-                return marker;
-        }
-    }
-
-    return 0;
-}
-
 DocumentMarkerVector DocumentMarkerController::markersFor(Node* node, DocumentMarker::MarkerTypes markerTypes)
 {
     DocumentMarkerVector result;

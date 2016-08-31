@@ -85,7 +85,6 @@ public:
     bool setMarkersActive(Node*, unsigned startOffset, unsigned endOffset, bool);
     bool hasMarkers(Node* node) const { return m_markers.contains(node); }
 
-    DocumentMarker* markerContainingPoint(const LayoutPoint&, DocumentMarker::MarkerType);
     DocumentMarkerVector markersFor(Node*, DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());
     DocumentMarkerVector markersInRange(const EphemeralRange&, DocumentMarker::MarkerTypes);
     DocumentMarkerVector markers();
