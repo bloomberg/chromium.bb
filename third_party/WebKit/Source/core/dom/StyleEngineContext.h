@@ -9,12 +9,12 @@
 
 namespace blink {
 
-class StyleEngineContext {
+class CORE_EXPORT StyleEngineContext {
 public:
-    StyleEngineContext() : m_addedPendingSheetBeforeBody(false) {}
+    StyleEngineContext();
     ~StyleEngineContext() {}
     bool addedPendingSheetBeforeBody() const { return m_addedPendingSheetBeforeBody; }
-    void addingPendingSheet(const Document& document) { m_addedPendingSheetBeforeBody = m_addedPendingSheetBeforeBody || !document.body(); }
+    void addingPendingSheet(const Document&);
 private:
     bool m_addedPendingSheetBeforeBody : 1;
 };

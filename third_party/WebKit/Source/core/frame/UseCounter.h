@@ -1275,6 +1275,7 @@ public:
         DraggableAttribute = 1539,
         CleanScriptElementWithNonce = 1540,
         PotentiallyInjectedScriptElementWithNonce = 1541,
+        PendingStylesheetAddedAfterBodyStarted = 1542,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

@@ -2678,6 +2678,8 @@
             'dom/StyleElement.h',
             'dom/StyleEngine.cpp',
             'dom/StyleEngine.h',
+            'dom/StyleEngineContext.cpp',
+            'dom/StyleEngineContext.h',
             'dom/StyleSheetCandidate.cpp',
             'dom/StyleSheetCandidate.h',
             'dom/StyleSheetCollection.cpp',

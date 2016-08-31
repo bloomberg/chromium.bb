@@ -80322,6 +80322,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1539" label="DraggableAttribute"/>
   <int value="1540" label="CleanScriptElementWithNonce"/>
   <int value="1541" label="PotentiallyInjectedScriptElementWithNonce"/>
+  <int value="1542" label="PendingStylesheetAddedAfterBodyStarted"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">
