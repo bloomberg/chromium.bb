@@ -290,7 +290,7 @@ def generate_telemetry_test(tester_config, benchmark_name, browser):
   test_args = [
     benchmark_name,
     '-v',
-    '--upload_results',
+    '--upload-results',
     '--output-format=chartjson',
     '--browser=%s' % browser
   ]
