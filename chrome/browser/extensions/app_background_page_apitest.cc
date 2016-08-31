@@ -304,8 +304,7 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, ManifestBackgroundPage) {
   UnloadExtension(extension->id());
 }
 
-// TODO(crbug.com/642482) Disabled test for flakyness.
-IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, DISABLED_NoJsBackgroundPage) {
+IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, NoJsBackgroundPage) {
   // Keep the task manager up through this test to verify that a crash doesn't
   // happen when window.open creates a background page that switches
   // RenderViewHosts. See http://crbug.com/165138.
