@@ -1,26 +1,19 @@
-<body onload="runTest()">
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
-if (window.testRunner)
-     testRunner.dumpEditingCallbacks();
+    test(() => {
+        assert_not_equals(window.internals, undefined,
+            'This test requires window.internals to access clipboard');
+        assert_selection(
+            '<div contenteditable>|a b a</div>',
+            selection => {
+                selection.document.execCommand('findString', false, 'a b');
+                selection.document.execCommand('copy');
+                selection.document.execCommand('findString', false, 'a');
+                selection.document.execCommand('paste');
+            },
+            '<div contenteditable>a b a b|</div>');
+    }, 'simulate find and replace');
 </script>
-<p>This tests find and replace inside an editable iframe.  You should see 'A B A B' below. With bug 4462420, you would see 'A B B A'.</p>
-<iframe src="../resources/contenteditable-iframe-src.html"></iframe>
-
-<script>
-function runTest() {
-    document.body.offsetTop;
-
-    var frame = frames[0];
-    var sel = frame.getSelection();
-    var doc = frame.document;
-
-    sel.collapse(doc.body, 0);
-    doc.execCommand("InsertText", false, "A B A");
-    sel.collapse(doc.body, 0);
-    doc.execCommand("FindString", false, "A B");
-    doc.execCommand("Copy");
-    doc.execCommand("FindString", false, "A");
-    doc.execCommand("Paste");
-}
-</script>
-</body>
