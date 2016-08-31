@@ -13,9 +13,9 @@ namespace remoting {
 // to lower-case.
 std::string NormalizeJid(const std::string& jid);
 
-// Splits a JID into a bare JID and a resource suffix.  Either or both
-// of |full_jid| and |resource| may be null.  If |full_jid| is already
-// a bare JID, |resource| is set to the empty string.  Returns true of
+// Splits a JID into a bare JID and a resource suffix.  Either |full_jid|,
+// |resource|, or both may be null.  If |full_jid| is already
+// a bare JID, |resource| is set to the empty string.  Returns true if
 // |full_jid| has a resource, false if not.
 //
 // e.g. "user@domain/resource" -> "user@domain", "resource", true

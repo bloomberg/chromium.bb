@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "remoting/protocol/authenticator.h"
+#include "remoting/protocol/validating_authenticator.h"
 
 namespace remoting {
 
@@ -23,10 +24,11 @@ namespace protocol {
 // understands both the V2 and legacy V1 authentication mechanisms.
 class It2MeHostAuthenticatorFactory : public AuthenticatorFactory {
  public:
-  It2MeHostAuthenticatorFactory(const std::string& local_cert,
-                                scoped_refptr<RsaKeyPair> key_pair,
-                                const std::string& access_code,
-                                const std::string& required_client_domain);
+  It2MeHostAuthenticatorFactory(
+      const std::string& local_cert,
+      scoped_refptr<RsaKeyPair> key_pair,
+      const std::string& access_code,
+      const ValidatingAuthenticator::ValidationCallback& callback);
   ~It2MeHostAuthenticatorFactory() override;
 
   // AuthenticatorFactory interface.
@@ -38,7 +40,7 @@ class It2MeHostAuthenticatorFactory : public AuthenticatorFactory {
   std::string local_cert_;
   scoped_refptr<RsaKeyPair> key_pair_;
   std::string access_code_hash_;
-  std::string required_client_domain_;
+  ValidatingAuthenticator::ValidationCallback validation_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(It2MeHostAuthenticatorFactory);
 };

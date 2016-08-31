@@ -4,8 +4,9 @@
 
 #include "remoting/host/it2me/it2me_native_messaging_host.h"
 
-#include <stdint.h>
-
+#include <cstdint>
+#include <memory>
+#include <string>
 #include <utility>
 
 #include "base/compiler_specific.h"
@@ -81,7 +82,7 @@ class MockIt2MeHost : public It2MeHost {
                 const std::string& directory_bot_jid)
       : It2MeHost(std::move(context),
                   std::move(policy_watcher),
-                  nullptr,
+                  /*confirmation_dialog_factory=*/nullptr,
                   observer,
                   xmpp_server_config,
                   directory_bot_jid) {}
@@ -161,7 +162,8 @@ class MockIt2MeHostFactory : public It2MeHostFactory {
       base::WeakPtr<It2MeHost::Observer> observer,
       const XmppSignalStrategy::XmppServerConfig& xmpp_server_config,
       const std::string& directory_bot_jid) override {
-    return new MockIt2MeHost(std::move(context), nullptr, observer,
+    return new MockIt2MeHost(std::move(context),
+                             /*confirmation_dialog_factory=*/nullptr, observer,
                              xmpp_server_config, directory_bot_jid);
   }
 

@@ -14,6 +14,7 @@
 #include "remoting/host/host_status_observer.h"
 #include "remoting/host/it2me/it2me_confirmation_dialog.h"
 #include "remoting/host/it2me/it2me_confirmation_dialog_proxy.h"
+#include "remoting/protocol/validating_authenticator.h"
 #include "remoting/signaling/xmpp_signal_strategy.h"
 
 namespace base {
@@ -92,6 +93,16 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
     SetState(state, error_message);
   }
 
+  // Updates the current policies based on |policies|.  Runs |done_callback| on
+  // the calling thread once the policies have been updated.
+  void SetPolicyForTesting(std::unique_ptr<base::DictionaryValue> policies,
+                           const base::Closure& done_callback);
+
+  // Returns the callback used for validating the connection.  Do not run the
+  // returned callback after this object has been destroyed.
+  protocol::ValidatingAuthenticator::ValidationCallback
+  GetValidationCallbackForTesting();
+
  protected:
   friend class base::RefCountedThreadSafe<It2MeHost>;
 
@@ -141,6 +152,12 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
 
   void DisconnectOnNetworkThread();
 
+  // Uses details of the connection and current policies to determine if the
+  // connection should be accepted or rejected.
+  void ValidateConnectionDetails(
+      const std::string& remote_jid,
+      const protocol::ValidatingAuthenticator::ResultCallback& result_callback);
+
   // Caller supplied fields.
   std::unique_ptr<ChromotingHostContext> host_context_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
@@ -181,6 +198,10 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   // it can be executed after at least one successful policy read. This
   // variable contains the thunk if it is necessary.
   base::Closure pending_connect_;
+
+  // Called after the client machine initiates the connection process and
+  // determines whether to reject the connection or allow it to continue.
+  protocol::ValidatingAuthenticator::ValidationCallback validation_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(It2MeHost);
 };

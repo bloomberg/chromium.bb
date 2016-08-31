@@ -4,8 +4,9 @@
 
 #include "remoting/host/it2me/it2me_host.h"
 
-#include <stddef.h>
-
+#include <cstdint>
+#include <memory>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -37,6 +38,8 @@
 #include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/network_settings.h"
 #include "remoting/protocol/transport_context.h"
+#include "remoting/protocol/validating_authenticator.h"
+#include "remoting/signaling/jid_util.h"
 #include "remoting/signaling/server_log_entry.h"
 
 namespace remoting {
@@ -46,6 +49,10 @@ namespace {
 // This is used for tagging system event logs.
 const char kApplicationName[] = "chromoting";
 const int kMaxLoginAttempts = 5;
+
+using protocol::ValidatingAuthenticator;
+typedef ValidatingAuthenticator::Result ValidationResult;
+typedef ValidatingAuthenticator::ValidationCallback ValidationCallback;
 
 }  // namespace
 
@@ -68,6 +75,12 @@ It2MeHost::It2MeHost(
       nat_traversal_enabled_(false),
       policy_received_(false) {
   DCHECK(task_runner_->BelongsToCurrentThread());
+}
+
+It2MeHost::~It2MeHost() {
+  // Check that resources that need to be torn down on the UI thread are gone.
+  DCHECK(!desktop_environment_factory_.get());
+  DCHECK(!policy_watcher_.get());
 }
 
 void It2MeHost::Connect() {
@@ -323,6 +336,20 @@ void It2MeHost::OnClientDisconnected(const std::string& jid) {
   DisconnectOnNetworkThread();
 }
 
+void It2MeHost::SetPolicyForTesting(
+    std::unique_ptr<base::DictionaryValue> policies,
+    const base::Closure& done_callback) {
+  host_context_->network_task_runner()->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&It2MeHost::OnPolicyUpdate, this, base::Passed(&policies)),
+      done_callback);
+}
+
+ValidationCallback It2MeHost::GetValidationCallbackForTesting() {
+  return base::Bind(&It2MeHost::ValidateConnectionDetails,
+                    base::Unretained(this));
+}
+
 void It2MeHost::OnPolicyUpdate(
     std::unique_ptr<base::DictionaryValue> policies) {
   // The policy watcher runs on the |ui_task_runner|.
@@ -405,12 +432,6 @@ void It2MeHost::UpdateClientDomainPolicy(const std::string& client_domain) {
   required_client_domain_ = client_domain;
 }
 
-It2MeHost::~It2MeHost() {
-  // Check that resources that need to be torn down on the UI thread are gone.
-  DCHECK(!desktop_environment_factory_.get());
-  DCHECK(!policy_watcher_.get());
-}
-
 void It2MeHost::SetState(It2MeHostState state,
                          const std::string& error_message) {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
@@ -490,7 +511,8 @@ void It2MeHost::OnReceivedSupportID(
   std::unique_ptr<protocol::AuthenticatorFactory> factory(
       new protocol::It2MeHostAuthenticatorFactory(
           local_certificate, host_key_pair_, access_code_hash,
-          required_client_domain_));
+          base::Bind(&It2MeHost::ValidateConnectionDetails,
+                     base::Unretained(this))));
   host_->SetAuthenticatorFactory(std::move(factory));
 
   // Pass the Access Code to the script object before changing state.
@@ -499,6 +521,31 @@ void It2MeHost::OnReceivedSupportID(
                             observer_, access_code, lifetime));
 
   SetState(kReceivedAccessCode, "");
+}
+
+void It2MeHost::ValidateConnectionDetails(
+    const std::string& remote_jid,
+    const protocol::ValidatingAuthenticator::ResultCallback& result_callback) {
+  // Check the client domain policy.
+  if (!required_client_domain_.empty()) {
+    std::string client_username;
+    if (!SplitJidResource(remote_jid, &client_username, /*resource=*/nullptr)) {
+      LOG(ERROR) << "Rejecting incoming connection from " << remote_jid
+                 << ": Invalid JID.";
+      result_callback.Run(ValidationResult::ERROR_INVALID_ACCOUNT);
+      return;
+    }
+    if (!base::EndsWith(client_username,
+                        std::string("@") + required_client_domain_,
+                        base::CompareCase::INSENSITIVE_ASCII)) {
+      LOG(ERROR) << "Rejecting incoming connection from " << remote_jid
+                 << ": Domain mismatch.";
+      result_callback.Run(ValidationResult::ERROR_INVALID_ACCOUNT);
+      return;
+    }
+  }
+
+  result_callback.Run(ValidationResult::SUCCESS);
 }
 
 It2MeHostFactory::It2MeHostFactory() : policy_service_(nullptr) {
