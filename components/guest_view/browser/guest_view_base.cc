@@ -478,6 +478,8 @@ void GuestViewBase::Destroy() {
   StopTrackingEmbedderZoomLevel();
   owner_web_contents_ = nullptr;
 
+  element_instance_id_ = kInstanceIDNone;
+
   DCHECK(web_contents());
 
   // Give the derived class an opportunity to perform some cleanup.
