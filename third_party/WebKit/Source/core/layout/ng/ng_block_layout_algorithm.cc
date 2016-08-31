@@ -18,7 +18,9 @@ namespace blink {
 NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
     PassRefPtr<const ComputedStyle> style,
     NGBox* first_child)
-    : style_(style), first_child_(first_child), state_(kStateInit) {}
+    : style_(style), first_child_(first_child), state_(kStateInit) {
+  DCHECK(style_);
+}
 
 bool NGBlockLayoutAlgorithm::Layout(const NGConstraintSpace* constraint_space,
                                     NGPhysicalFragment** out) {

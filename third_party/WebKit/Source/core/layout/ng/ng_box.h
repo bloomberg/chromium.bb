@@ -19,9 +19,10 @@ class NGFragment;
 class NGPhysicalFragment;
 
 // Represents a node to be laid out.
-class CORE_EXPORT NGBox final : public GarbageCollected<NGBox> {
+class CORE_EXPORT NGBox final : public GarbageCollectedFinalized<NGBox> {
  public:
   explicit NGBox(LayoutObject*);
+  explicit NGBox(ComputedStyle*);
 
   // Returns true when done; when this function returns false, it has to be
   // called again. The out parameter will only be set when this function
@@ -35,9 +36,14 @@ class CORE_EXPORT NGBox final : public GarbageCollected<NGBox> {
 
   NGBox* FirstChild() const;
 
+  void SetNextSibling(NGBox*);
+  void SetFirstChild(NGBox*);
+
   DEFINE_INLINE_VIRTUAL_TRACE() {
     visitor->trace(algorithm_);
     visitor->trace(fragment_);
+    visitor->trace(next_sibling_);
+    visitor->trace(first_child_);
   }
 
  private:
@@ -45,9 +51,15 @@ class CORE_EXPORT NGBox final : public GarbageCollected<NGBox> {
   // positions us, it calls this function so we can store the position on the
   // underlying LayoutBox.
   void PositionUpdated();
+
   bool CanUseNewLayout();
 
+  // We can either wrap a layout_box_ or a style_/next_sibling_/first_child_
+  // combination.
   LayoutBox* layout_box_;
+  RefPtr<ComputedStyle> style_;
+  Member<NGBox> next_sibling_;
+  Member<NGBox> first_child_;
   Member<NGBlockLayoutAlgorithm> algorithm_;
   Member<NGPhysicalFragment> fragment_;
 };

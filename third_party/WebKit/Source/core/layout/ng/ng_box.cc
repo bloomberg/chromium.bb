@@ -21,6 +21,10 @@ NGBox::NGBox(LayoutObject* layout_object)
   DCHECK(layout_box_);
 }
 
+NGBox::NGBox(ComputedStyle* style) : style_(style) {
+  DCHECK(style_);
+}
+
 bool NGBox::Layout(const NGConstraintSpace* constraint_space,
                    NGFragment** out) {
   // We can either use the new layout code to do the layout and then copy the
@@ -38,20 +42,23 @@ bool NGBox::Layout(const NGConstraintSpace* constraint_space,
       return false;
     fragment_ = fragment;
 
-    layout_box_->setWidth(fragment_->Width());
-    layout_box_->setHeight(fragment_->Height());
+    if (layout_box_) {
+      layout_box_->setWidth(fragment_->Width());
+      layout_box_->setHeight(fragment_->Height());
 
-    // Ensure the position of the children are copied across to the
-    // LayoutObject tree.
-    for (NGBox* box = FirstChild(); box; box = box->NextSibling()) {
-      if (box->fragment_)
-        box->PositionUpdated();
+      // Ensure the position of the children are copied across to the
+      // LayoutObject tree.
+      for (NGBox* box = FirstChild(); box; box = box->NextSibling()) {
+        if (box->fragment_)
+          box->PositionUpdated();
+      }
+
+      if (layout_box_->isLayoutBlock())
+        toLayoutBlock(layout_box_)->layoutPositionedObjects(true);
+      layout_box_->clearNeedsLayout();
     }
-
-    if (layout_box_->isLayoutBlock())
-      toLayoutBlock(layout_box_)->layoutPositionedObjects(true);
-    layout_box_->clearNeedsLayout();
   } else {
+    DCHECK(layout_box_);
     // TODO(layout-ng): If fixedSize is true, set the override width/height too
     NGLogicalSize container_size = constraint_space->ContainerSize();
     layout_box_->setOverrideContainingBlockContentLogicalWidth(
@@ -82,23 +89,45 @@ bool NGBox::Layout(const NGConstraintSpace* constraint_space,
 }
 
 const ComputedStyle* NGBox::Style() const {
+  if (style_)
+    return style_.get();
+  DCHECK(layout_box_);
   return layout_box_->style();
 }
 
 NGBox* NGBox::NextSibling() const {
+  if (style_)
+    return next_sibling_;
+  DCHECK(layout_box_);
   LayoutObject* next_sibling = layout_box_->nextSibling();
   return next_sibling ? new NGBox(next_sibling) : nullptr;
 }
 
 NGBox* NGBox::FirstChild() const {
+  if (style_)
+    return first_child_;
+  DCHECK(layout_box_);
   LayoutObject* child = layout_box_->slowFirstChild();
   return child ? new NGBox(child) : nullptr;
 }
 
+void NGBox::SetNextSibling(NGBox* sibling) {
+  DCHECK(!layout_box_);
+  DCHECK(style_);
+  next_sibling_ = sibling;
+}
+
+void NGBox::SetFirstChild(NGBox* child) {
+  DCHECK(!layout_box_);
+  DCHECK(style_);
+  first_child_ = child;
+}
+
 void NGBox::PositionUpdated() {
-  DCHECK(fragment_);
-  layout_box_->setX(fragment_->LeftOffset());
-  layout_box_->setY(fragment_->TopOffset());
+  if (layout_box_) {
+    layout_box_->setX(fragment_->LeftOffset());
+    layout_box_->setY(fragment_->TopOffset());
+  }
 }
 
 bool NGBox::CanUseNewLayout() {

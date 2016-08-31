@@ -35,5 +35,48 @@ TEST_F(NGBlockLayoutAlgorithmTest, FixedSize) {
   EXPECT_EQ(frag->Height(), LayoutUnit(40));
 }
 
+// Verifies that two children are laid out with the correct size and position.
+TEST_F(NGBlockLayoutAlgorithmTest, LayoutBlockChildren) {
+  const int kWidth = 30;
+  const int kHeight1 = 20;
+  const int kHeight2 = 30;
+  const int kMarginTop = 5;
+  const int kMarginBottom = 20;
+  style_->setWidth(Length(kWidth, Fixed));
+
+  NGConstraintSpace* space = new NGConstraintSpace(
+      HorizontalTopBottom, NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
+
+  RefPtr<ComputedStyle> first_style = ComputedStyle::create();
+  first_style->setHeight(Length(kHeight1, Fixed));
+  NGBox* first_child = new NGBox(first_style.get());
+
+  RefPtr<ComputedStyle> second_style = ComputedStyle::create();
+  second_style->setHeight(Length(kHeight2, Fixed));
+  second_style->setMarginTop(Length(kMarginTop, Fixed));
+  second_style->setMarginBottom(Length(kMarginBottom, Fixed));
+  NGBox* second_child = new NGBox(second_style.get());
+
+  first_child->SetNextSibling(second_child);
+
+  NGBlockLayoutAlgorithm algorithm(style_, first_child);
+  NGPhysicalFragment* frag;
+  while (!algorithm.Layout(space, &frag))
+    ;
+  EXPECT_EQ(frag->Width(), LayoutUnit(kWidth));
+  EXPECT_EQ(frag->Height(),
+            LayoutUnit(kHeight1 + kHeight2 + kMarginTop + kMarginBottom));
+  EXPECT_EQ(frag->Type(), NGPhysicalFragmentBase::FragmentBox);
+  ASSERT_EQ(frag->Children().size(), 2UL);
+
+  const NGPhysicalFragmentBase* child = frag->Children()[0];
+  EXPECT_EQ(child->Height(), kHeight1);
+  EXPECT_EQ(child->TopOffset(), 0);
+
+  child = frag->Children()[1];
+  EXPECT_EQ(child->Height(), kHeight2);
+  EXPECT_EQ(child->TopOffset(), kHeight1 + kMarginTop);
+}
+
 }  // namespace
 }  // namespace blink
