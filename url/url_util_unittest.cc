@@ -374,4 +374,47 @@ TEST(URLUtilTest, TestNoRefComponent) {
   EXPECT_FALSE(resolved_parsed.ref.is_valid());
 }
 
+TEST(URLUtilTest, TestDomainIs) {
+  const struct {
+    const char* canonicalized_host;
+    const char* lower_ascii_domain;
+    bool expected_domain_is;
+  } kTestCases[] = {
+      {"google.com", "google.com", true},
+      {"www.google.com", "google.com", true},      // Subdomain is ignored.
+      {"www.google.com.cn", "google.com", false},  // Different TLD.
+      {"www.google.comm", "google.com", false},
+      {"www.iamnotgoogle.com", "google.com", false},  // Different hostname.
+      {"www.google.com", "Google.com", false},  // The input is not lower-cased.
+
+      // If the host ends with a dot, it matches domains with or without a dot.
+      {"www.google.com.", "google.com", true},
+      {"www.google.com.", "google.com.", true},
+      {"www.google.com.", ".com", true},
+      {"www.google.com.", ".com.", true},
+
+      // But, if the host doesn't end with a dot and the input domain does, then
+      // it's considered to not match.
+      {"www.google.com", "google.com.", false},
+
+      // If the host ends with two dots, it doesn't match.
+      {"www.google.com..", "google.com", false},
+
+      // Empty parameters.
+      {"www.google.com", "", false},
+      {"", "www.google.com", false},
+      {"", "", false},
+  };
+
+  for (const auto& test_case : kTestCases) {
+    SCOPED_TRACE(testing::Message() << "(host, domain): ("
+                                    << test_case.canonicalized_host << ", "
+                                    << test_case.lower_ascii_domain << ")");
+
+    EXPECT_EQ(
+        test_case.expected_domain_is,
+        DomainIs(test_case.canonicalized_host, test_case.lower_ascii_domain));
+  }
+}
+
 }  // namespace url
