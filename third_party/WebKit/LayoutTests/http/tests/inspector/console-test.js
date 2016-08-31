@@ -382,7 +382,7 @@ InspectorTest.waitUntilNthMessageReceivedPromise = function(count)
 
 InspectorTest.changeExecutionContext = function(namePrefix)
 {
-    var selector = WebInspector.ConsoleView.instance()._executionContextModel._selectElement;
+    var selector = WebInspector.ConsoleView.instance()._consoleContextSelector._selectElement;
     var option = selector.firstChild;
     while (option) {
         if (option.textContent && option.textContent.startsWith(namePrefix))
@@ -394,7 +394,7 @@ InspectorTest.changeExecutionContext = function(namePrefix)
         return;
     }
     option.selected = true;
-    WebInspector.ConsoleView.instance()._executionContextModel._executionContextChanged();
+    WebInspector.ConsoleView.instance()._consoleContextSelector._executionContextChanged();
 }
 
 InspectorTest.waitForConsoleMessages = function(expectedCount, callback)
