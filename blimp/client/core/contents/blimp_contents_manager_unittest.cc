@@ -82,6 +82,28 @@ TEST(BlimpContentsManagerUnittest, GetDestroyedBlimpContents) {
   EXPECT_EQ(nullptr, blimp_contents_manager.GetBlimpContents(id));
 }
 
+// TODO(mlliu): remove this test case (http://crbug.com/642558)
+TEST(BlimpContentsManagerUnittest, CreateTwoBlimpContentsDestroyAndCreate) {
+  base::MessageLoop loop;
+  MockTabControlFeature tab_control_feature;
+  BlimpContentsManager blimp_contents_manager(nullptr, nullptr,
+                                              &tab_control_feature);
+
+  EXPECT_CALL(tab_control_feature, CreateTab(_)).Times(2);
+  std::unique_ptr<BlimpContentsImpl> blimp_contents =
+      blimp_contents_manager.CreateBlimpContents();
+  EXPECT_NE(blimp_contents, nullptr);
+
+  std::unique_ptr<BlimpContentsImpl> second_blimp_contents =
+      blimp_contents_manager.CreateBlimpContents();
+  EXPECT_EQ(second_blimp_contents, nullptr);
+
+  blimp_contents.reset();
+  std::unique_ptr<BlimpContentsImpl> third_blimp_contents =
+      blimp_contents_manager.CreateBlimpContents();
+  EXPECT_NE(third_blimp_contents, nullptr);
+}
+
 }  // namespace
 }  // namespace client
 }  // namespace blimp

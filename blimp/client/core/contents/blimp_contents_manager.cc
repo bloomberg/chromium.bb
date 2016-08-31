@@ -56,6 +56,9 @@ BlimpContentsManager::BlimpContentsManager(
 BlimpContentsManager::~BlimpContentsManager() {}
 
 std::unique_ptr<BlimpContentsImpl> BlimpContentsManager::CreateBlimpContents() {
+  if (tab_exists_) return nullptr;
+  tab_exists_ = true;
+
   int id = CreateBlimpContentsId();
 
   std::unique_ptr<BlimpContentsImpl> new_contents =
@@ -100,6 +103,9 @@ void BlimpContentsManager::EraseObserverFromMap(int id) {
 }
 
 void BlimpContentsManager::OnContentsDestroyed(BlimpContents* contents) {
+  DCHECK(tab_exists_);
+  tab_exists_ = false;
+
   int id = static_cast<BlimpContentsImpl*>(contents)->id();
 
   // Notify the engine that we've destroyed the BlimpContents.

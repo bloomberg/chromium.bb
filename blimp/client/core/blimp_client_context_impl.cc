@@ -88,7 +88,8 @@ void BlimpClientContextImpl::SetDelegate(BlimpClientContextDelegate* delegate) {
 std::unique_ptr<BlimpContents> BlimpClientContextImpl::CreateBlimpContents() {
   std::unique_ptr<BlimpContents> blimp_contents =
       blimp_contents_manager_->CreateBlimpContents();
-  delegate_->AttachBlimpContentsHelpers(blimp_contents.get());
+  if (blimp_contents)
+    delegate_->AttachBlimpContentsHelpers(blimp_contents.get());
   return blimp_contents;
 }
 

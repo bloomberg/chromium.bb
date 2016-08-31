@@ -52,6 +52,8 @@ class BlimpClientContext : public KeyedService {
   virtual void SetDelegate(BlimpClientContextDelegate* delegate) = 0;
 
   // Creates a new BlimpContents.
+  // TODO(mlliu): Currently we want to have a single BlimpContents. If there is
+  // an existing contents, return nullptr (http://crbug.com/642558).
   virtual std::unique_ptr<BlimpContents> CreateBlimpContents() = 0;
 
   // Start authentication flow and connection to engine.

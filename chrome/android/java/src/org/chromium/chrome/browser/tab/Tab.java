@@ -1503,7 +1503,11 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
                 Profile profile = Profile.getLastUsedProfile();
                 if (mIncognito) profile = profile.getOffTheRecordProfile();
                 mBlimpContents = nativeInitBlimpContents(mNativeTabAndroid, profile);
-                getBlimpContents().addObserver(new TabBlimpContentsObserver(this));
+                if (mBlimpContents != null) {
+                    getBlimpContents().addObserver(new TabBlimpContentsObserver(this));
+                } else {
+                    mBlimp = false;
+                }
             }
 
             boolean creatingWebContents = webContents == null;

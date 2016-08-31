@@ -23,6 +23,8 @@ class BlimpContentsManager {
   ~BlimpContentsManager();
 
   // Builds a BlimpContentsImpl and notifies the engine.
+  // TODO(mlliu): Currently we want to have a single BlimpContents. If there is
+  // an existing contents, return nullptr (http://crbug.com/642558).
   std::unique_ptr<BlimpContentsImpl> CreateBlimpContents();
 
   // The caller can query the contents through its id.
@@ -54,6 +56,10 @@ class BlimpContentsManager {
   ImeFeature* ime_feature_;
   NavigationFeature* navigation_feature_;
   TabControlFeature* tab_control_feature_;
+
+  // TODO(mlliu): Currently we want to have a single BlimpContents. Remove this
+  // when it supports multiple tabs (http://crbug.com/642558).
+  bool tab_exists_ = false;
 
   base::WeakPtrFactory<BlimpContentsManager> weak_ptr_factory_;
 
