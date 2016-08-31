@@ -43,18 +43,21 @@ public interface TabPersistencePolicy {
     String getStateToBeMergedFileName();
 
     /**
-     * Performs any necessary migration required before accessing the tab information.
+     * Performs any necessary initialization required before accessing the tab information.  This
+     * can include cleanups or migrations that must occur before the tab state information can be
+     * read reliably.
      *
      * @param executor The executor that any asynchronous tasks should be run on.
-     * @return Whether any migration is necessary.
+     * @return Whether any blocking initialization is necessary.
      */
-    boolean performMigration(Executor executor);
+    boolean performInitialization(Executor executor);
 
     /**
-     * Waits for the task that migrates all state files to their new location to
-     * finish.
+     * Waits for the any pending initialization to finish.
+     *
+     * @see #performInitialization(Executor)
      */
-    void waitForMigrationToFinish();
+    void waitForInitializationToFinish();
 
     /**
      * @return Whether a merge is currently in progress.

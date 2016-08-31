@@ -58,7 +58,6 @@ import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.tabmodel.TabPersistencePolicy;
-import org.chromium.chrome.browser.tabmodel.TabbedModeTabPersistencePolicy;
 import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -264,11 +263,8 @@ public class CustomTabActivity extends ChromeActivity {
     @Override
     public void postInflationStartup() {
         super.postInflationStartup();
-        // TODO(tedchoc): Replace with an actual CCT implementation for the persistence policy.
-        //                Currently, this relies on checks for CUSTOM_TABS_SELECTOR_INDEX in the
-        //                main TabPersitentStore that ignores certain actions.
-        TabPersistencePolicy persistencePolicy = new TabbedModeTabPersistencePolicy(
-                this, TabModelSelectorImpl.CUSTOM_TABS_SELECTOR_INDEX);
+        TabPersistencePolicy persistencePolicy = new CustomTabTabPersistencePolicy(
+                getTaskId(), getSavedInstanceState() != null);
         setTabModelSelector(new TabModelSelectorImpl(
                 this, persistencePolicy, getWindowAndroid(), false));
 

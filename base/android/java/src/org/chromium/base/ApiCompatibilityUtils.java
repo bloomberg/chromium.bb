@@ -44,6 +44,17 @@ public class ApiCompatibilityUtils {
     }
 
     /**
+     * @see Long#compare(long, long)
+     */
+    public static int compareLong(long lhs, long rhs) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            return Long.compare(lhs, rhs);
+        } else {
+            return lhs < rhs ? -1 : (lhs == rhs ? 0 : 1);
+        }
+    }
+
+    /**
      * Returns true if view's layout direction is right-to-left.
      *
      * @param view the View whose layout is being considered

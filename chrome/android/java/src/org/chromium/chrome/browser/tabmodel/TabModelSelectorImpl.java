@@ -227,6 +227,17 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
         };
     }
 
+    /**
+     * Exposed to allow tests to initialize the selector with different tab models.
+     * @param normalModel The normal tab model.
+     * @param incognitoModel The incognito tab model.
+     */
+    @VisibleForTesting
+    public void initializeForTesting(TabModel normalModel, TabModel incognitoModel) {
+        initialize(isIncognitoSelected(), normalModel, incognitoModel);
+        mActiveState = true;
+    }
+
     @Override
     public void setCloseAllTabsDelegate(CloseAllTabsDelegate delegate) {
         mCloseAllTabsDelegate = delegate;
