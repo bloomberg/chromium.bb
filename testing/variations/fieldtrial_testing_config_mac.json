@@ -441,14 +441,6 @@
             "group_name": "aggressive"
         }
     ],
-    "VarationsServiceControl": [
-        {
-            "group_name": "Interval_30min",
-            "params": {
-                "fetch_period_min": "30"
-            }
-        }
-    ],
     "ViewsSimplifiedFullscreenUI": [
         {
             "enable_features": [

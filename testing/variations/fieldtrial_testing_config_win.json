@@ -501,14 +501,6 @@
             "group_name": "aggressive"
         }
     ],
-    "VarationsServiceControl": [
-        {
-            "group_name": "Interval_30min",
-            "params": {
-                "fetch_period_min": "30"
-            }
-        }
-    ],
     "WebFontsInterventionV2": [
         {
             "group_name": "Enabled-slow2g"
