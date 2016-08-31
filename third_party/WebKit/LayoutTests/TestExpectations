@@ -61,6 +61,9 @@ crbug.com/598051 svg/zoom/page/zoom-foreignObject.svg [ Skip ]
 
 crbug.com/601669 [ Win ] svg/as-image/svg-nested.html [ Crash Pass ]
 
+# Fails consistently on WebKit Mac10.10, WebKit Mac10.11 (retina) and mac10.10_blink_rel tryserver, but not on other Mac bots.
+crbug.com/614910 [ Mac ] virtual/gpu-rasterization/fast/images/pixel-crack-image-background-webkit-transform-scale.html [ Pass Failure ]
+
 crbug.com/619103 fast/repaint/background-resize-width.html [ Failure ]
 crbug.com/619103 fast/repaint/hover-invalidation-table.html [ Failure ]
 crbug.com/619103 fast/repaint/selected-replaced.html [ Failure ]
@@ -86,11 +89,6 @@ crbug.com/627782 [ Win ] svg/filters/filter-source-position.svg [ Pass Failure ]
 
 crbug.com/630615 [ Win7 ] fast/images/color-profile-background-image-space.html [ Skip ]
 
-crbug.com/638293 [ Linux ] virtual/gpu-rasterization/fast/images/color-profile-reflection.html [ Failure ]
-
-# Fails consistently on WebKit Mac10.10, WebKit Mac10.11 (retina) and mac10.10_blink_rel tryserver, but not on other Mac bots.
-crbug.com/614910 [ Mac ] virtual/gpu-rasterization/fast/images/pixel-crack-image-background-webkit-transform-scale.html [ Pass Failure ]
-
 crbug.com/630967 [ Linux Debug ] svg/parser/whitespace-length-invalid-1.html [ Skip ]
 crbug.com/630967 [ Linux Debug ] svg/parser/whitespace-length-invalid-2.html [ Skip ]
 crbug.com/630967 [ Linux Debug ] svg/parser/whitespace-angle.html [ Skip ]
@@ -106,6 +104,8 @@ crbug.com/636222 [ Mac10.10 ] fast/repaint/fixed-and-absolute-position-scrolled.
 crbug.com/636271 [ Mac ] fast/repaint/resize-iframe-text.html [ Pass Failure ]
 crbug.com/636271 [ Linux ] fast/repaint/resize-iframe-text.html [ Pass Failure ]
 crbug.com/636271 [ Win ] fast/repaint/resize-iframe-text.html [ Pass Failure ]
+
+crbug.com/638293 [ Linux ] virtual/gpu-rasterization/fast/images/color-profile-reflection.html [ Failure ]
 
 crbug.com/639147 svg/wicd/test-rightsizing-b.xhtml [ Failure Pass ]
 
