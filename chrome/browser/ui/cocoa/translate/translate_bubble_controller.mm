@@ -840,9 +840,9 @@ const CGFloat kContentWidth = kWindowWidth - 2 * kFramePadding;
 
 - (IBAction)handleLanguageSettingsLinkButtonPressed:(id)sender {
   GURL url = chrome::GetSettingsUrl(chrome::kLanguageOptionsSubPage);
-  webContents_->OpenURL(
-      content::OpenURLParams(url, content::Referrer(), NEW_FOREGROUND_TAB,
-                             ui::PAGE_TRANSITION_LINK, false));
+  webContents_->OpenURL(content::OpenURLParams(
+      url, content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui::PAGE_TRANSITION_LINK, false));
   translate::ReportUiAction(translate::SETTINGS_LINK_CLICKED);
   [self close];
 }

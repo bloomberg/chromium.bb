@@ -903,7 +903,9 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
   const bool alt = event.IsAltDown() || event.IsAltGrDown();
   switch (event.key_code()) {
     case ui::VKEY_RETURN:
-      model()->AcceptInput(alt ? NEW_FOREGROUND_TAB : CURRENT_TAB, false);
+      model()->AcceptInput(alt ? WindowOpenDisposition::NEW_FOREGROUND_TAB
+                               : WindowOpenDisposition::CURRENT_TAB,
+                           false);
       return true;
     case ui::VKEY_ESCAPE:
       return model()->OnEscapeKeyPressed();

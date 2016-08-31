@@ -106,14 +106,16 @@ BrowserInstantController::~BrowserInstantController() {
 bool BrowserInstantController::OpenInstant(WindowOpenDisposition disposition,
                                            const GURL& url) {
   // Unsupported dispositions.
-  if (disposition == NEW_BACKGROUND_TAB || disposition == NEW_WINDOW ||
-      disposition == NEW_FOREGROUND_TAB)
+  if (disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB ||
+      disposition == WindowOpenDisposition::NEW_WINDOW ||
+      disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB)
     return false;
 
   // The omnibox currently doesn't use other dispositions, so we don't attempt
   // to handle them. If you hit this DCHECK file a bug and I'll (sky) add
   // support for the new disposition.
-  DCHECK(disposition == CURRENT_TAB) << disposition;
+  DCHECK(disposition == WindowOpenDisposition::CURRENT_TAB)
+      << static_cast<int>(disposition);
 
   const base::string16& search_terms =
       search::ExtractSearchTermsFromURL(profile(), url);

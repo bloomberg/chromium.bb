@@ -373,7 +373,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, PackAndInstallExtension) {
           download_manager, kNumDownloadsExpected,
           content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_ACCEPT));
   LOG(ERROR) << "PackAndInstallExtension: Navigating to URL";
-  ui_test_utils::NavigateToURLWithDisposition(browser(), url, CURRENT_TAB,
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url, WindowOpenDisposition::CURRENT_TAB,
       ui_test_utils::BROWSER_TEST_NONE);
 
   EXPECT_TRUE(WaitForCrxInstallerDone());

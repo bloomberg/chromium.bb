@@ -1154,8 +1154,8 @@ class NotificationBridge : public AppMenuIconController::Delegate {
     browser_->window()->GetLocationBar()->GetOmniboxView()->SetUserText(
           OmniboxView::StripJavascriptSchemas(base::UTF8ToUTF16(url.spec())));
   }
-  OpenURLParams params(
-      url, Referrer(), CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false);
+  OpenURLParams params(url, Referrer(), WindowOpenDisposition::CURRENT_TAB,
+                       ui::PAGE_TRANSITION_TYPED, false);
   browser_->tab_strip_model()->GetActiveWebContents()->OpenURL(params);
 }
 
@@ -1172,8 +1172,8 @@ class NotificationBridge : public AppMenuIconController::Delegate {
       metrics::OmniboxEventProto::BLANK, &match, NULL);
   GURL url(match.destination_url);
 
-  OpenURLParams params(
-      url, Referrer(), CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false);
+  OpenURLParams params(url, Referrer(), WindowOpenDisposition::CURRENT_TAB,
+                       ui::PAGE_TRANSITION_TYPED, false);
   browser_->tab_strip_model()->GetActiveWebContents()->OpenURL(params);
 }
 

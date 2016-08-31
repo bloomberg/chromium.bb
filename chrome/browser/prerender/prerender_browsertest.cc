@@ -1182,7 +1182,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
   }
 
   void NavigateToDestURL() const {
-    NavigateToDestURLWithDisposition(CURRENT_TAB, true);
+    NavigateToDestURLWithDisposition(WindowOpenDisposition::CURRENT_TAB, true);
   }
 
   // Opens the url in a new tab, with no opener.
@@ -1196,7 +1196,8 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
   }
 
   void NavigateToURL(const std::string& dest_html_file) const {
-    NavigateToURLWithDisposition(dest_html_file, CURRENT_TAB, true);
+    NavigateToURLWithDisposition(dest_html_file,
+                                 WindowOpenDisposition::CURRENT_TAB, true);
   }
 
   void NavigateToURLWithDisposition(const std::string& dest_html_file,
@@ -1279,7 +1280,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
   // Navigates back through the history to the prerendered page.
   void GoBackToPrerender() {
     TestNavigationObserver back_nav_observer(GetActiveWebContents());
-    chrome::GoBack(current_browser(), CURRENT_TAB);
+    chrome::GoBack(current_browser(), WindowOpenDisposition::CURRENT_TAB);
     back_nav_observer.Wait();
     bool original_prerender_page = false;
     ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
@@ -1297,7 +1298,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     ASSERT_TRUE(tab);
     EXPECT_FALSE(tab->IsLoading());
     TestNavigationObserver back_nav_observer(tab);
-    chrome::GoBack(current_browser(), CURRENT_TAB);
+    chrome::GoBack(current_browser(), WindowOpenDisposition::CURRENT_TAB);
     back_nav_observer.Wait();
     bool js_result;
     ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
@@ -1627,7 +1628,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     // occur.
     // TODO(davidben): The only handles CURRENT_TAB navigations, which is the
     // only case tested or prerendered right now.
-    CHECK_EQ(CURRENT_TAB, params.disposition);
+    CHECK_EQ(WindowOpenDisposition::CURRENT_TAB, params.disposition);
     NavigationOrSwapObserver swap_observer(current_browser()->tab_strip_model(),
                                            GetActiveWebContents());
     WebContents* target_web_contents = current_browser()->OpenURL(params);
@@ -1755,7 +1756,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPagePending) {
   NavigationOrSwapObserver swap_observer(current_browser()->tab_strip_model(),
                                          GetActiveWebContents());
   ui_test_utils::NavigateToURLWithDisposition(
-      current_browser(), prerender_page_url, CURRENT_TAB,
+      current_browser(), prerender_page_url, WindowOpenDisposition::CURRENT_TAB,
       ui_test_utils::BROWSER_TEST_NONE);
   swap_observer.Wait();
 
@@ -1921,7 +1922,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNoCommitNoSwap) {
   prerender_start_loop.Run();
 
   // Navigate to the URL, but assume the contents won't be swapped in.
-  NavigateToDestURLWithDisposition(CURRENT_TAB, false);
+  NavigateToDestURLWithDisposition(WindowOpenDisposition::CURRENT_TAB, false);
 }
 
 // Checks that client redirects don't add alias URLs until after they commit.
@@ -1942,7 +1943,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNoCommitNoSwap2) {
   prerender_start_loop.Run();
 
   // Navigating to the second URL should not swap.
-  NavigateToURLWithDisposition(kNoCommitUrl, CURRENT_TAB, false);
+  NavigateToURLWithDisposition(kNoCommitUrl, WindowOpenDisposition::CURRENT_TAB,
+                               false);
 }
 
 // Checks that the prerendering of a page is canceled correctly when a
@@ -2135,9 +2137,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   NavigationOrSwapObserver swap_observer(
       current_browser()->tab_strip_model(),
       GetActiveWebContents(), 2);
-  current_browser()->OpenURL(OpenURLParams(
-      navigate_url, Referrer(), CURRENT_TAB,
-      ui::PAGE_TRANSITION_TYPED, false));
+  current_browser()->OpenURL(OpenURLParams(navigate_url, Referrer(),
+                                           WindowOpenDisposition::CURRENT_TAB,
+                                           ui::PAGE_TRANSITION_TYPED, false));
   swap_observer.Wait();
 
   EXPECT_TRUE(DidDisplayPass(GetActiveWebContents()));
@@ -2648,7 +2650,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   PrerenderTestURL("/prerender/no_prerender_page.html",
                    FINAL_STATUS_APP_TERMINATING, 1);
   NavigateToURLWithDisposition("/prerender/no_prerender_page.html#fragment",
-                               CURRENT_TAB, false);
+                               WindowOpenDisposition::CURRENT_TAB, false);
 }
 
 // Checks that we do not use a prerendered page when we prerender a fragment
@@ -2657,8 +2659,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        PrerenderFragmentNavigatePage) {
   PrerenderTestURL("/prerender/no_prerender_page.html#fragment",
                    FINAL_STATUS_APP_TERMINATING, 1);
-  NavigateToURLWithDisposition("/prerender/no_prerender_page.html", CURRENT_TAB,
-                               false);
+  NavigateToURLWithDisposition("/prerender/no_prerender_page.html",
+                               WindowOpenDisposition::CURRENT_TAB, false);
 }
 
 // Checks that we do not use a prerendered page when we prerender a fragment
@@ -2668,7 +2670,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   PrerenderTestURL("/prerender/no_prerender_page.html#other_fragment",
                    FINAL_STATUS_APP_TERMINATING, 1);
   NavigateToURLWithDisposition("/prerender/no_prerender_page.html#fragment",
-                               CURRENT_TAB, false);
+                               WindowOpenDisposition::CURRENT_TAB, false);
 }
 
 // Checks that we do not use a prerendered page when the page uses a client
@@ -2678,8 +2680,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   PrerenderTestURL(
       CreateClientRedirect("/prerender/no_prerender_page.html#fragment"),
       FINAL_STATUS_APP_TERMINATING, 2);
-  NavigateToURLWithDisposition("/prerender/no_prerender_page.html", CURRENT_TAB,
-                               false);
+  NavigateToURLWithDisposition("/prerender/no_prerender_page.html",
+                               WindowOpenDisposition::CURRENT_TAB, false);
 }
 
 // Checks that we do not use a prerendered page when the page uses a client
@@ -2689,7 +2691,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   PrerenderTestURL(CreateClientRedirect("/prerender/no_prerender_page.html"),
                    FINAL_STATUS_APP_TERMINATING, 2);
   NavigateToURLWithDisposition("/prerender/no_prerender_page.html#fragment",
-                               CURRENT_TAB, false);
+                               WindowOpenDisposition::CURRENT_TAB, false);
 }
 
 // Checks that we correctly use a prerendered page when the page uses JS to set
@@ -2833,7 +2835,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderTargetHasPopup) {
 
   // Switch back to the current tab and attempt to swap it in.
   current_browser()->tab_strip_model()->ActivateTabAt(0, true);
-  NavigateToDestURLWithDisposition(CURRENT_TAB, false);
+  NavigateToDestURLWithDisposition(WindowOpenDisposition::CURRENT_TAB, false);
 }
 
 class TestClientCertStore : public net::ClientCertStore {
@@ -3231,7 +3233,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   agent->AttachClient(&client);
   const char* url = "/prerender/prerender_page.html";
   PrerenderTestURL(url, FINAL_STATUS_DEVTOOLS_ATTACHED, 1);
-  NavigateToURLWithDisposition(url, CURRENT_TAB, false);
+  NavigateToURLWithDisposition(url, WindowOpenDisposition::CURRENT_TAB, false);
   agent->DetachClient(&client);
 }
 
@@ -3526,7 +3528,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderCapturedWebContents) {
                    FINAL_STATUS_PAGE_BEING_CAPTURED, 1);
   WebContents* web_contents = GetActiveWebContents();
   web_contents->IncrementCapturerCount(gfx::Size());
-  NavigateToDestURLWithDisposition(CURRENT_TAB, false);
+  NavigateToDestURLWithDisposition(WindowOpenDisposition::CURRENT_TAB, false);
   web_contents->DecrementCapturerCount();
 }
 
@@ -3609,7 +3611,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDeferredImage) {
   NavigationOrSwapObserver swap_observer(current_browser()->tab_strip_model(),
                                          GetActiveWebContents());
   ui_test_utils::NavigateToURLWithDisposition(
-      current_browser(), dest_url(), CURRENT_TAB,
+      current_browser(), dest_url(), WindowOpenDisposition::CURRENT_TAB,
       ui_test_utils::BROWSER_TEST_NONE);
   swap_observer.Wait();
 
@@ -3646,7 +3648,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   NavigationOrSwapObserver swap_observer(current_browser()->tab_strip_model(),
                                          GetActiveWebContents());
   ui_test_utils::NavigateToURLWithDisposition(
-      current_browser(), dest_url(), CURRENT_TAB,
+      current_browser(), dest_url(), WindowOpenDisposition::CURRENT_TAB,
       ui_test_utils::BROWSER_TEST_NONE);
   swap_observer.Wait();
 
@@ -3686,7 +3688,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderExtraHeadersNoSwap) {
   PrerenderTestURL("/prerender/prerender_page.html",
                    FINAL_STATUS_APP_TERMINATING, 1);
 
-  content::OpenURLParams params(dest_url(), Referrer(), CURRENT_TAB,
+  content::OpenURLParams params(dest_url(), Referrer(),
+                                WindowOpenDisposition::CURRENT_TAB,
                                 ui::PAGE_TRANSITION_TYPED, false);
   params.extra_headers = "X-Custom-Header: 42\r\n";
   NavigateToURLWithParams(params, false);
@@ -3700,7 +3703,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                    FINAL_STATUS_APP_TERMINATING, 1);
 
   std::string post_data = "DATA";
-  content::OpenURLParams params(dest_url(), Referrer(), CURRENT_TAB,
+  content::OpenURLParams params(dest_url(), Referrer(),
+                                WindowOpenDisposition::CURRENT_TAB,
                                 ui::PAGE_TRANSITION_TYPED, false);
   params.uses_post = true;
   params.post_data = content::ResourceRequestBody::CreateFromBytes(
@@ -3723,18 +3727,20 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPageNewTab) {
 
   // Open a new tab to navigate in.
   ui_test_utils::NavigateToURLWithDisposition(
-      current_browser(), GURL(url::kAboutBlankURL), NEW_FOREGROUND_TAB,
+      current_browser(), GURL(url::kAboutBlankURL),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
   // Now navigate in the new tab.
-  NavigateToDestURLWithDisposition(CURRENT_TAB, false);
+  NavigateToDestURLWithDisposition(WindowOpenDisposition::CURRENT_TAB, false);
 }
 
 // Checks that prerenders honor |should_replace_current_entry|.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderReplaceCurrentEntry) {
   PrerenderTestURL("/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
 
-  content::OpenURLParams params(dest_url(), Referrer(), CURRENT_TAB,
+  content::OpenURLParams params(dest_url(), Referrer(),
+                                WindowOpenDisposition::CURRENT_TAB,
                                 ui::PAGE_TRANSITION_TYPED, false);
   params.should_replace_current_entry = true;
   NavigateToURLWithParams(params, false);
@@ -3934,7 +3940,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderOmniboxBrowserTest,
   prerender->contents()->set_skip_final_checks(true);
 
   // Navigate to the URL entered.
-  omnibox_view->model()->AcceptInput(CURRENT_TAB, false);
+  omnibox_view->model()->AcceptInput(WindowOpenDisposition::CURRENT_TAB, false);
 
   // Prerender should be running, but abandoned.
   EXPECT_TRUE(

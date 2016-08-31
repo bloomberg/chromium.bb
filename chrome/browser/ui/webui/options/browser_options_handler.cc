@@ -1712,9 +1712,9 @@ void BrowserOptionsHandler::ShowCloudPrintDevicesPage(
     const base::ListValue* args) {
   content::RecordAction(UserMetricsAction("Options_CloudPrintDevicesPage"));
   // Navigate in current tab to devices page.
-  OpenURLParams params(
-      GURL(chrome::kChromeUIDevicesURL), Referrer(),
-      CURRENT_TAB, ui::PAGE_TRANSITION_LINK, false);
+  OpenURLParams params(GURL(chrome::kChromeUIDevicesURL), Referrer(),
+                       WindowOpenDisposition::CURRENT_TAB,
+                       ui::PAGE_TRANSITION_LINK, false);
   web_ui()->GetWebContents()->OpenURL(params);
 }
 

@@ -75,7 +75,7 @@ IN_PROC_BROWSER_TEST_F(RepostFormWarningTest, TestLoginAfterRepost) {
       content::Source<content::NavigationController>(&controller));
   browser()->OpenURL(content::OpenURLParams(
       embedded_test_server()->GetURL("/auth-basic"), content::Referrer(),
-      CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
+      WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
   observer.Wait();
 
   // Try to reload it again.
@@ -86,7 +86,7 @@ IN_PROC_BROWSER_TEST_F(RepostFormWarningTest, TestLoginAfterRepost) {
   // happen while the auth dialog is up.
   content::TestNavigationObserver navigation_observer(web_contents);
   browser()->OpenURL(content::OpenURLParams(
-      embedded_test_server()->GetURL("/bar"), content::Referrer(), CURRENT_TAB,
-      ui::PAGE_TRANSITION_TYPED, false));
+      embedded_test_server()->GetURL("/bar"), content::Referrer(),
+      WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
   navigation_observer.Wait();
 }

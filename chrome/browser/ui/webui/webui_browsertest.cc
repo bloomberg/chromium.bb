@@ -78,14 +78,14 @@ IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, InPageNavigationsAndReload) {
   ASSERT_TRUE(content::ExecuteScript(
       browser()->tab_strip_model()->GetActiveWebContents(),
       "window.history.pushState({}, '', 'foo.html')"));
-  chrome::GoBack(browser(), CURRENT_TAB);
+  chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
   content::WaitForLoadStop(
       browser()->tab_strip_model()->GetActiveWebContents());
 
   // Test handler should still have JavaScript allowed after in-page navigation.
   EXPECT_TRUE(test_handler->IsJavascriptAllowed());
 
-  chrome::Reload(browser(), CURRENT_TAB);
+  chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
   content::WaitForLoadStop(
       browser()->tab_strip_model()->GetActiveWebContents());
 

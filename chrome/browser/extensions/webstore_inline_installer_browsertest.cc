@@ -357,7 +357,8 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallerListenerTest, BothListenersTest) {
   int old_tab_index = browser()->tab_strip_model()->active_index();
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GenerateTestServerUrl(kAppDomain, "both_listeners.html"),
-      NEW_FOREGROUND_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   DCHECK_NE(old_tab_index, browser()->tab_strip_model()->active_index());
   browser()->tab_strip_model()->CloseWebContentsAt(old_tab_index,
                                                    TabStripModel::CLOSE_NONE);

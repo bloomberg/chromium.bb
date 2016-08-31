@@ -441,13 +441,14 @@ void PluginObserver::OnRemovePluginPlaceholderHost(int placeholder_id) {
 #endif  // defined(ENABLE_PLUGIN_INSTALLATION)
 
 void PluginObserver::OnOpenAboutPlugins() {
-  web_contents()->OpenURL(OpenURLParams(
-      GURL(chrome::kChromeUIPluginsURL),
-      content::Referrer::SanitizeForRequest(
-          GURL(chrome::kChromeUIPluginsURL),
-          content::Referrer(web_contents()->GetURL(),
-                            blink::WebReferrerPolicyDefault)),
-      NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_AUTO_BOOKMARK, false));
+  web_contents()->OpenURL(
+      OpenURLParams(GURL(chrome::kChromeUIPluginsURL),
+                    content::Referrer::SanitizeForRequest(
+                        GURL(chrome::kChromeUIPluginsURL),
+                        content::Referrer(web_contents()->GetURL(),
+                                          blink::WebReferrerPolicyDefault)),
+                    WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                    ui::PAGE_TRANSITION_AUTO_BOOKMARK, false));
 }
 
 void PluginObserver::OnCouldNotLoadPlugin(const base::FilePath& plugin_path) {

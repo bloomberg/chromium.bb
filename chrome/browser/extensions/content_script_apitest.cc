@@ -421,7 +421,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentScriptExtensionAPIs) {
   // listening for.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), extension->GetResourceURL("fire_event.html"),
-      NEW_FOREGROUND_TAB, ui_test_utils::BROWSER_TEST_NONE);
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_NONE);
   EXPECT_TRUE(catcher.GetNextResult());
 }
 
@@ -474,10 +475,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentScriptBlockingScript) {
 
   // Navigate! Both extensions will try to inject.
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(),
-      embedded_test_server()->GetURL("/empty.html"),
-      CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_NONE);
+      browser(), embedded_test_server()->GetURL("/empty.html"),
+      WindowOpenDisposition::CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);
 
   run_loop.Run();
   // Right now, the alert dialog is showing and blocking injection of anything
@@ -499,9 +498,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentScriptBlockingScriptTabClosed) {
   // We're going to close a tab in this test, so make a new one (to ensure
   // we don't close the browser).
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(),
-      embedded_test_server()->GetURL("/empty.html"),
-      NEW_FOREGROUND_TAB,
+      browser(), embedded_test_server()->GetURL("/empty.html"),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
   // Set up the same as the previous test case.
@@ -529,10 +527,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentScriptBlockingScriptTabClosed) {
 
   // Navitate!
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(),
-      embedded_test_server()->GetURL("/empty.html"),
-      CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_NONE);
+      browser(), embedded_test_server()->GetURL("/empty.html"),
+      WindowOpenDisposition::CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);
 
   // Now, instead of closing the dialog, just close the tab. Later scripts
   // should never get a chance to run (and we shouldn't crash).
@@ -566,10 +562,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
 
   // Navigate!
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(),
-      embedded_test_server()->GetURL("/empty.html"),
-      CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_NONE);
+      browser(), embedded_test_server()->GetURL("/empty.html"),
+      WindowOpenDisposition::CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);
 
   run_loop.Run();
 
@@ -612,7 +606,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
 
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), embedded_test_server()->GetURL("/empty.html"),
-      CURRENT_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      WindowOpenDisposition::CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(listener.was_satisfied());
 }

@@ -66,10 +66,10 @@ content::WebContents* OpenURLFromTabInternal(
   // window.
   chrome::NavigateParams new_tab_params(
       static_cast<Browser*>(NULL), params.url, params.transition);
-  if (params.disposition == NEW_BACKGROUND_TAB) {
-    new_tab_params.disposition = NEW_BACKGROUND_TAB;
+  if (params.disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB) {
+    new_tab_params.disposition = WindowOpenDisposition::NEW_BACKGROUND_TAB;
   } else {
-    new_tab_params.disposition = NEW_FOREGROUND_TAB;
+    new_tab_params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
     new_tab_params.window_action = chrome::NavigateParams::SHOW_WINDOW;
   }
 
@@ -244,8 +244,9 @@ void ChromeAppDelegate::AddNewContents(content::BrowserContext* context,
       Profile::FromBrowserContext(context));
   // Force all links to open in a new tab, even if they were trying to open a
   // new window.
-  disposition =
-      disposition == NEW_BACKGROUND_TAB ? disposition : NEW_FOREGROUND_TAB;
+  disposition = disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB
+                    ? disposition
+                    : WindowOpenDisposition::NEW_FOREGROUND_TAB;
   chrome::AddWebContents(displayer.browser(),
                          NULL,
                          new_contents,

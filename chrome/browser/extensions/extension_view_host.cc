@@ -148,13 +148,13 @@ WebContents* ExtensionViewHost::OpenURLFromTab(
     const OpenURLParams& params) {
   // Whitelist the dispositions we will allow to be opened.
   switch (params.disposition) {
-    case SINGLETON_TAB:
-    case NEW_FOREGROUND_TAB:
-    case NEW_BACKGROUND_TAB:
-    case NEW_POPUP:
-    case NEW_WINDOW:
-    case SAVE_TO_DISK:
-    case OFF_THE_RECORD: {
+    case WindowOpenDisposition::SINGLETON_TAB:
+    case WindowOpenDisposition::NEW_FOREGROUND_TAB:
+    case WindowOpenDisposition::NEW_BACKGROUND_TAB:
+    case WindowOpenDisposition::NEW_POPUP:
+    case WindowOpenDisposition::NEW_WINDOW:
+    case WindowOpenDisposition::SAVE_TO_DISK:
+    case WindowOpenDisposition::OFF_THE_RECORD: {
       // Only allow these from hosts that are bound to a browser (e.g. popups).
       // Otherwise they are not driven by a user gesture.
       Browser* browser = view_->GetBrowser();

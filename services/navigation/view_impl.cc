@@ -144,7 +144,8 @@ void ViewImpl::AddNewContents(content::WebContents* source,
   mojom::ViewPtr view;
   mojom::ViewRequest view_request = GetProxy(&view);
   client_->ViewCreated(std::move(view), GetProxy(&client),
-                       disposition == NEW_POPUP, initial_rect, user_gesture);
+                       disposition == WindowOpenDisposition::NEW_POPUP,
+                       initial_rect, user_gesture);
 
   const std::string new_user_id =
       content::BrowserContext::GetShellUserIdFor(

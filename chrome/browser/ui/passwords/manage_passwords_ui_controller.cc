@@ -327,7 +327,7 @@ void ManagePasswordsUIController::NavigateToExternalPasswordManager() {
       chrome::FindBrowserWithWebContents(web_contents()),
       GURL(password_manager::kPasswordManagerAccountDashboardURL),
       ui::PAGE_TRANSITION_LINK);
-  params.disposition = NEW_FOREGROUND_TAB;
+  params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   chrome::Navigate(&params);
 }
 
@@ -335,7 +335,7 @@ void ManagePasswordsUIController::NavigateToSmartLockHelpPage() {
   chrome::NavigateParams params(
       chrome::FindBrowserWithWebContents(web_contents()),
       GURL(chrome::kSmartLockHelpPage), ui::PAGE_TRANSITION_LINK);
-  params.disposition = NEW_FOREGROUND_TAB;
+  params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   chrome::Navigate(&params);
 }
 

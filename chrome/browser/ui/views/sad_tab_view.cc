@@ -206,10 +206,11 @@ SadTabView::~SadTabView() {}
 
 void SadTabView::LinkClicked(views::Link* source, int event_flags) {
   DCHECK(web_contents_);
-  OpenURLParams params(GURL(total_crashes_ > kCrashesBeforeFeedbackIsDisplayed ?
-                       chrome::kCrashReasonFeedbackDisplayedURL :
-                       chrome::kCrashReasonURL), content::Referrer(),
-                       CURRENT_TAB, ui::PAGE_TRANSITION_LINK, false);
+  OpenURLParams params(GURL(total_crashes_ > kCrashesBeforeFeedbackIsDisplayed
+                                ? chrome::kCrashReasonFeedbackDisplayedURL
+                                : chrome::kCrashReasonURL),
+                       content::Referrer(), WindowOpenDisposition::CURRENT_TAB,
+                       ui::PAGE_TRANSITION_LINK, false);
   web_contents_->OpenURL(params);
 }
 

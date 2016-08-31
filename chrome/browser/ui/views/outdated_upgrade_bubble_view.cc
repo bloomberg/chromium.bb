@@ -125,9 +125,10 @@ bool OutdatedUpgradeBubbleView::Accept() {
                                 kNumIgnoredBuckets);
     content::RecordAction(
         base::UserMetricsAction("OutdatedUpgradeBubble.Reinstall"));
-    navigator_->OpenURL(content::OpenURLParams(
-        GURL(kDownloadChromeUrl), content::Referrer(), NEW_FOREGROUND_TAB,
-        ui::PAGE_TRANSITION_LINK, false));
+    navigator_->OpenURL(
+        content::OpenURLParams(GURL(kDownloadChromeUrl), content::Referrer(),
+                               WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                               ui::PAGE_TRANSITION_LINK, false));
 #if defined(OS_WIN)
   } else {
     DCHECK(UpgradeDetector::GetInstance()->is_outdated_install_no_au());

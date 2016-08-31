@@ -1013,7 +1013,7 @@ void Browser::ActiveTabChanged(WebContents* old_contents,
   // TODO(georgesak): Validate the usefulness of this. And if needed then move
   // to TabManager.
   if (g_browser_process->GetTabManager()->IsTabDiscarded(new_contents))
-    chrome::Reload(this, CURRENT_TAB);
+    chrome::Reload(this, WindowOpenDisposition::CURRENT_TAB);
 
   // If we have any update pending, do it now.
   if (chrome_updater_factory_.HasWeakPtrs() && old_contents)
@@ -1368,10 +1368,10 @@ WebContents* Browser::OpenURLFromTab(WebContents* source,
     popup_blocker_helper = PopupBlockerTabHelper::FromWebContents(source);
 
   if (popup_blocker_helper) {
-    if ((params.disposition == NEW_POPUP ||
-         params.disposition == NEW_FOREGROUND_TAB ||
-         params.disposition == NEW_BACKGROUND_TAB ||
-         params.disposition == NEW_WINDOW) &&
+    if ((params.disposition == WindowOpenDisposition::NEW_POPUP ||
+         params.disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB ||
+         params.disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB ||
+         params.disposition == WindowOpenDisposition::NEW_WINDOW) &&
         !params.user_gesture &&
         !base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kDisablePopupBlocking)) {
@@ -1942,8 +1942,8 @@ void Browser::FileSelectedWithExtraInfo(const ui::SelectedFileInfo& file_info,
   if (url.is_empty())
     return;
 
-  OpenURL(OpenURLParams(
-      url, Referrer(), CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
+  OpenURL(OpenURLParams(url, Referrer(), WindowOpenDisposition::CURRENT_TAB,
+                        ui::PAGE_TRANSITION_TYPED, false));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

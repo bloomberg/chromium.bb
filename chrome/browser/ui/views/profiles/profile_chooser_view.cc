@@ -1101,8 +1101,8 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
         open_other_profile_indexes_map_.find(sender);
     if (profile_match != open_other_profile_indexes_map_.end()) {
       avatar_menu_->SwitchToProfile(
-          profile_match->second,
-          ui::DispositionFromEventFlags(event.flags()) == NEW_WINDOW,
+          profile_match->second, ui::DispositionFromEventFlags(event.flags()) ==
+                                     WindowOpenDisposition::NEW_WINDOW,
           ProfileMetrics::SWITCH_PROFILE_ICON);
     } else {
       // This was a profile accounts button.

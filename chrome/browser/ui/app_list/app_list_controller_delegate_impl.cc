@@ -115,7 +115,8 @@ void AppListControllerDelegateImpl::LaunchApp(
   AppListServiceImpl::RecordAppListAppLaunch();
 
   AppLaunchParams params = CreateAppLaunchParamsUserContainer(
-      profile, extension, NEW_FOREGROUND_TAB, extensions::SOURCE_APP_LAUNCHER);
+      profile, extension, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      extensions::SOURCE_APP_LAUNCHER);
 
   if (source != LAUNCH_FROM_UNKNOWN &&
       extension->id() == extensions::kWebStoreAppId) {

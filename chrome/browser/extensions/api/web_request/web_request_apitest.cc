@@ -542,7 +542,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   const std::string kHost = "example.com";
   GURL url = embedded_test_server()->GetURL(kHost, "/empty.html");
   chrome::NavigateParams params(browser(), url, ui::PAGE_TRANSITION_LINK);
-  params.disposition = NEW_FOREGROUND_TAB;
+  params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   ui_test_utils::NavigateToURL(&params);
 
   content::WebContents* web_contents =

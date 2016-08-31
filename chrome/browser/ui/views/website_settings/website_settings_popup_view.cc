@@ -809,7 +809,8 @@ void WebsiteSettingsPopupView::HandleLinkClickedAsync(views::Link* source) {
     // desktop we should link to that here, too.
     web_contents()->OpenURL(content::OpenURLParams(
         GURL(chrome::kChromeUIContentSettingsURL), content::Referrer(),
-        NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK, false));
+        WindowOpenDisposition::NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK,
+        false));
     presenter_->RecordWebsiteSettingsAction(
         WebsiteSettings::WEBSITE_SETTINGS_SITE_SETTINGS_OPENED);
   } else {

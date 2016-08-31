@@ -80,7 +80,8 @@ class HttpsEngagementPageLoadMetricsBrowserTest : public InProcessBrowserTest {
     base::TimeTicks start = base::TimeTicks::Now();
     ui_test_utils::NavigateToURL(browser(), url);
     ui_test_utils::NavigateToURLWithDisposition(
-        browser(), GURL(chrome::kChromeUIVersionURL), NEW_FOREGROUND_TAB,
+        browser(), GURL(chrome::kChromeUIVersionURL),
+        WindowOpenDisposition::NEW_FOREGROUND_TAB,
         ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
     base::TimeDelta upper_bound_delta = base::TimeTicks::Now() - start;
 
@@ -103,7 +104,7 @@ class HttpsEngagementPageLoadMetricsBrowserTest : public InProcessBrowserTest {
   void NavigateInBackgroundAndClose(GURL url) {
     ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIVersionURL));
     ui_test_utils::NavigateToURLWithDisposition(
-        browser(), url, NEW_BACKGROUND_TAB,
+        browser(), url, WindowOpenDisposition::NEW_BACKGROUND_TAB,
         ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
     // Make sure the correct tab is in the foreground.
@@ -124,7 +125,7 @@ class HttpsEngagementPageLoadMetricsBrowserTest : public InProcessBrowserTest {
   base::TimeDelta NavigateInBackgroundAndCloseInForegroundWithTiming(GURL url) {
     ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIVersionURL));
     ui_test_utils::NavigateToURLWithDisposition(
-        browser(), url, NEW_BACKGROUND_TAB,
+        browser(), url, WindowOpenDisposition::NEW_BACKGROUND_TAB,
         ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
     // Make sure the correct tab is in the foreground.

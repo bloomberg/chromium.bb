@@ -162,7 +162,7 @@ void OmniboxPopupViewMac::OnMatrixRowClicked(OmniboxPopupMatrix* matrix,
 
 void OmniboxPopupViewMac::OnMatrixRowMiddleClicked(OmniboxPopupMatrix* matrix,
                                                    size_t row) {
-  OpenURLForRow(row, NEW_BACKGROUND_TAB);
+  OpenURLForRow(row, WindowOpenDisposition::NEW_BACKGROUND_TAB);
 }
 
 const AutocompleteResult& OmniboxPopupViewMac::GetResult() const {

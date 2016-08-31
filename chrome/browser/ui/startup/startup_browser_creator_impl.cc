@@ -323,9 +323,9 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
     // specially here, otherwise it will be handled below.
     if (extension) {
       RecordCmdLineAppHistogram(extensions::Manifest::TYPE_PLATFORM_APP);
-      AppLaunchParams params(profile, extension,
-                             extensions::LAUNCH_CONTAINER_NONE, NEW_WINDOW,
-                             extensions::SOURCE_COMMAND_LINE);
+      AppLaunchParams params(
+          profile, extension, extensions::LAUNCH_CONTAINER_NONE,
+          WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_COMMAND_LINE);
       params.command_line = command_line_;
       params.current_directory = cur_dir_;
       ::OpenApplicationWithReenablePrompt(params);
@@ -426,7 +426,8 @@ bool StartupBrowserCreatorImpl::OpenApplicationTab(Profile* profile) {
 
   WebContents* app_tab = ::OpenApplication(
       AppLaunchParams(profile, extension, extensions::LAUNCH_CONTAINER_TAB,
-                      NEW_FOREGROUND_TAB, extensions::SOURCE_COMMAND_LINE));
+                      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                      extensions::SOURCE_COMMAND_LINE));
   return (app_tab != NULL);
 }
 
@@ -454,7 +455,8 @@ bool StartupBrowserCreatorImpl::OpenApplicationWindow(Profile* profile) {
 
     RecordCmdLineAppHistogram(extension->GetType());
 
-    AppLaunchParams params(profile, extension, launch_container, NEW_WINDOW,
+    AppLaunchParams params(profile, extension, launch_container,
+                           WindowOpenDisposition::NEW_WINDOW,
                            extensions::SOURCE_COMMAND_LINE);
     params.command_line = command_line_;
     params.current_directory = cur_dir_;
@@ -755,7 +757,8 @@ Browser* StartupBrowserCreatorImpl::OpenTabsInBrowser(Browser* browser,
 
     chrome::NavigateParams params(browser, tabs[i].url,
                                   ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
-    params.disposition = first_tab ? NEW_FOREGROUND_TAB : NEW_BACKGROUND_TAB;
+    params.disposition = first_tab ? WindowOpenDisposition::NEW_FOREGROUND_TAB
+                                   : WindowOpenDisposition::NEW_BACKGROUND_TAB;
     params.tabstrip_add_types = add_types;
 
 #if defined(ENABLE_RLZ)

@@ -228,9 +228,7 @@ void NetInternalsTest::MessageHandler::LoadPage(
   ASSERT_TRUE(list_value->GetString(0, &url));
   LOG(WARNING) << "url: [" << url << "]";
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(),
-      GURL(url),
-      NEW_BACKGROUND_TAB,
+      browser(), GURL(url), WindowOpenDisposition::NEW_BACKGROUND_TAB,
       ui_test_utils::BROWSER_TEST_NONE);
 }
 
@@ -241,9 +239,7 @@ void NetInternalsTest::MessageHandler::PrerenderPage(
   GURL loader_url =
       net_internals_test_->CreatePrerenderLoaderUrl(GURL(prerender_url));
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(),
-      GURL(loader_url),
-      NEW_BACKGROUND_TAB,
+      browser(), GURL(loader_url), WindowOpenDisposition::NEW_BACKGROUND_TAB,
       ui_test_utils::BROWSER_TEST_NONE);
 }
 

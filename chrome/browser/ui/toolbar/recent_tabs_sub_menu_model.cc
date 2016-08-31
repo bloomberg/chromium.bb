@@ -292,8 +292,10 @@ void RecentTabsSubMenuModel::ExecuteCommand(int command_id, int event_flags) {
 
   WindowOpenDisposition disposition =
       ui::DispositionFromEventFlags(event_flags);
-  if (disposition == CURRENT_TAB)  // Force to open a new foreground tab.
-    disposition = NEW_FOREGROUND_TAB;
+  if (disposition == WindowOpenDisposition::CURRENT_TAB) {
+    // Force to open a new foreground tab.
+    disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+  }
 
   sessions::TabRestoreService* service =
       TabRestoreServiceFactory::GetForProfile(browser_->profile());

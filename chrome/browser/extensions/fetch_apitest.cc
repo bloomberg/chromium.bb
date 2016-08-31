@@ -64,7 +64,7 @@ class ExtensionFetchTest : public ExtensionApiTest {
   // its WebContents.
   content::WebContents* CreateAndNavigateTab(const GURL& url) {
     chrome::NavigateParams params(browser(), url, ui::PAGE_TRANSITION_LINK);
-    params.disposition = NEW_FOREGROUND_TAB;
+    params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
     ui_test_utils::NavigateToURL(&params);
     return browser()->tab_strip_model()->GetActiveWebContents();
   }

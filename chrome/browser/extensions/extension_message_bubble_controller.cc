@@ -228,12 +228,10 @@ void ExtensionMessageBubbleController::OnLinkClicked() {
   // perform our cleanup here before opening the new tab.
   OnClose();
   if (!g_should_ignore_learn_more_for_testing) {
-    browser_->OpenURL(
-        content::OpenURLParams(delegate_->GetLearnMoreUrl(),
-                               content::Referrer(),
-                               NEW_FOREGROUND_TAB,
-                               ui::PAGE_TRANSITION_LINK,
-                               false));
+    browser_->OpenURL(content::OpenURLParams(
+        delegate_->GetLearnMoreUrl(), content::Referrer(),
+        WindowOpenDisposition::NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK,
+        false));
   }
   // Warning: |this| may be deleted here!
 }

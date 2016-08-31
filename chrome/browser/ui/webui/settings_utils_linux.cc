@@ -48,9 +48,9 @@ void ShowLinuxProxyConfigUrl(int render_process_id, int render_view_id) {
   const char* name = base::nix::GetDesktopEnvironmentName(env.get());
   if (name)
     LOG(ERROR) << "Could not find " << name << " network settings in $PATH";
-  OpenURLParams params(
-      GURL(kLinuxProxyConfigUrl), Referrer(), NEW_FOREGROUND_TAB,
-      ui::PAGE_TRANSITION_LINK, false);
+  OpenURLParams params(GURL(kLinuxProxyConfigUrl), Referrer(),
+                       WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                       ui::PAGE_TRANSITION_LINK, false);
 
   content::WebContents* web_contents =
       tab_util::GetWebContentsByID(render_process_id, render_view_id);

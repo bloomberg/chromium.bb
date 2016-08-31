@@ -65,10 +65,9 @@ NSString* kBookmarkButtonDragType = @"com.google.chrome.BookmarkButtonDrag";
   NSEvent* event = [NSApp currentEvent];
   WindowOpenDisposition disposition =
       ui::WindowOpenDispositionFromNSEvent(event);
-  if (([event type] != NSMouseEntered) &&
-      ([event type] != NSMouseMoved) &&
+  if (([event type] != NSMouseEntered) && ([event type] != NSMouseMoved) &&
       ([event type] != NSScrollWheel) &&
-      (disposition == NEW_BACKGROUND_TAB)) {
+      (disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB)) {
     [controller_ closeAllBookmarkFolders];
     [controller_ openAll:[sender bookmarkNode] disposition:disposition];
     return;

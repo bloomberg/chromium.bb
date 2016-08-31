@@ -178,7 +178,7 @@ class AutofillTest : public InProcessBrowserTest {
     GURL url = embedded_test_server()->GetURL("/autofill/" + filename);
     chrome::NavigateParams params(browser(), url,
                                   ui::PAGE_TRANSITION_LINK);
-    params.disposition = NEW_FOREGROUND_TAB;
+    params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
     ui_test_utils::NavigateToURL(&params);
 
     std::unique_ptr<WindowedPersonalDataManagerObserver> observer;

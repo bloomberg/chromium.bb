@@ -20,12 +20,13 @@ WindowOpenDisposition DispositionFromClick(bool middle_button,
 #else
   if (middle_button || ctrl_key)
 #endif
-    return shift_key ? NEW_FOREGROUND_TAB : NEW_BACKGROUND_TAB;
+    return shift_key ? WindowOpenDisposition::NEW_FOREGROUND_TAB
+                     : WindowOpenDisposition::NEW_BACKGROUND_TAB;
   if (shift_key)
-    return NEW_WINDOW;
+    return WindowOpenDisposition::NEW_WINDOW;
   if (alt_key)
-    return SAVE_TO_DISK;
-  return CURRENT_TAB;
+    return WindowOpenDisposition::SAVE_TO_DISK;
+  return WindowOpenDisposition::CURRENT_TAB;
 }
 
 WindowOpenDisposition DispositionFromEventFlags(int event_flags) {

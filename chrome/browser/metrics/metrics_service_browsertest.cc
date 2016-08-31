@@ -46,17 +46,13 @@ class MetricsServiceBrowserTest : public InProcessBrowserTest {
 
     base::FilePath page1_path = test_directory.AppendASCII("title2.html");
     ui_test_utils::NavigateToURLWithDisposition(
-        browser(),
-        net::FilePathToFileURL(page1_path),
-        NEW_FOREGROUND_TAB,
-        kBrowserTestFlags);
+        browser(), net::FilePathToFileURL(page1_path),
+        WindowOpenDisposition::NEW_FOREGROUND_TAB, kBrowserTestFlags);
 
     base::FilePath page2_path = test_directory.AppendASCII("iframe.html");
     ui_test_utils::NavigateToURLWithDisposition(
-        browser(),
-        net::FilePathToFileURL(page2_path),
-        NEW_FOREGROUND_TAB,
-        kBrowserTestFlags);
+        browser(), net::FilePathToFileURL(page2_path),
+        WindowOpenDisposition::NEW_FOREGROUND_TAB, kBrowserTestFlags);
   }
 };
 

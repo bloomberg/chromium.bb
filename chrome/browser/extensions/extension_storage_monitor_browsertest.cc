@@ -160,7 +160,8 @@ class ExtensionStorageMonitorTest : public ExtensionBrowserTest {
         GetNotificationId(extension->id()));
 
     OpenApplication(AppLaunchParams(profile(), extension, LAUNCH_CONTAINER_NONE,
-                                    NEW_WINDOW, extensions::SOURCE_TEST));
+                                    WindowOpenDisposition::NEW_WINDOW,
+                                    extensions::SOURCE_TEST));
     ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
 
     // Instruct the app to write |num_bytes| of data.

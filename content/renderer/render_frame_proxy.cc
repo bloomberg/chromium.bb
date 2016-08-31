@@ -449,7 +449,7 @@ void RenderFrameProxy::navigate(const blink::WebURLRequest& request,
       blink::WebStringToGURL(
           request.httpHeaderField(blink::WebString::fromUTF8("Referer"))),
       request.referrerPolicy());
-  params.disposition = CURRENT_TAB;
+  params.disposition = WindowOpenDisposition::CURRENT_TAB;
   params.should_replace_current_entry = should_replace_current_entry;
   params.user_gesture =
       blink::WebUserGestureIndicator::isProcessingUserGesture();

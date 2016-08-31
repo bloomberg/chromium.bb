@@ -465,9 +465,9 @@ void TranslateBubbleView::HandleLinkClicked(
     }
     case LINK_ID_LANGUAGE_SETTINGS: {
       GURL url = chrome::GetSettingsUrl(chrome::kLanguageOptionsSubPage);
-      web_contents()->OpenURL(
-          content::OpenURLParams(url, content::Referrer(), NEW_FOREGROUND_TAB,
-                                 ui::PAGE_TRANSITION_LINK, false));
+      web_contents()->OpenURL(content::OpenURLParams(
+          url, content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
+          ui::PAGE_TRANSITION_LINK, false));
       translate::ReportUiAction(translate::SETTINGS_LINK_CLICKED);
       break;
     }

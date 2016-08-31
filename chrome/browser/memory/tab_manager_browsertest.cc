@@ -59,7 +59,8 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
   OpenURLParams open1(GURL(chrome::kChromeUIAboutURL), content::Referrer(),
-                      CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false);
+                      WindowOpenDisposition::CURRENT_TAB,
+                      ui::PAGE_TRANSITION_TYPED, false);
   browser()->OpenURL(open1);
   load1.Wait();
 
@@ -67,7 +68,8 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
   OpenURLParams open2(GURL(chrome::kChromeUICreditsURL), content::Referrer(),
-                      NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_TYPED, false);
+                      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                      ui::PAGE_TRANSITION_TYPED, false);
   browser()->OpenURL(open2);
   load2.Wait();
 
@@ -75,7 +77,8 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
   OpenURLParams open3(GURL(chrome::kChromeUITermsURL), content::Referrer(),
-                      NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_TYPED, false);
+                      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                      ui::PAGE_TRANSITION_TYPED, false);
   browser()->OpenURL(open3);
   load3.Wait();
 
@@ -88,7 +91,8 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
   OpenURLParams open4(GURL(chrome::kChromeUIVersionURL), content::Referrer(),
-                      CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false);
+                      WindowOpenDisposition::CURRENT_TAB,
+                      ui::PAGE_TRANSITION_TYPED, false);
   browser()->OpenURL(open4);
   load4.Wait();
 
@@ -96,7 +100,8 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
   WindowedNotificationObserver load5(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
-  OpenURLParams open5(GURL("chrome://dns"), content::Referrer(), CURRENT_TAB,
+  OpenURLParams open5(GURL("chrome://dns"), content::Referrer(),
+                      WindowOpenDisposition::CURRENT_TAB,
                       ui::PAGE_TRANSITION_TYPED, false);
   browser()->OpenURL(open5);
   load5.Wait();
@@ -168,14 +173,14 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
   WindowedNotificationObserver back1(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
-  chrome::GoBack(browser(), CURRENT_TAB);
+  chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
   back1.Wait();
   EXPECT_TRUE(chrome::CanGoBack(browser()));
   EXPECT_TRUE(chrome::CanGoForward(browser()));
   WindowedNotificationObserver back2(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
-  chrome::GoBack(browser(), CURRENT_TAB);
+  chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
   back2.Wait();
   EXPECT_FALSE(chrome::CanGoBack(browser()));
   EXPECT_TRUE(chrome::CanGoForward(browser()));
@@ -198,7 +203,8 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, OomPressureListener) {
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
   OpenURLParams open1(GURL(chrome::kChromeUIAboutURL), content::Referrer(),
-                      CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false);
+                      WindowOpenDisposition::CURRENT_TAB,
+                      ui::PAGE_TRANSITION_TYPED, false);
   browser()->OpenURL(open1);
   load1.Wait();
 
@@ -206,7 +212,8 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, OomPressureListener) {
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
   OpenURLParams open2(GURL(chrome::kChromeUICreditsURL), content::Referrer(),
-                      NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_TYPED, false);
+                      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                      ui::PAGE_TRANSITION_TYPED, false);
   browser()->OpenURL(open2);
   load2.Wait();
   EXPECT_FALSE(tab_manager->recent_tab_discard());
@@ -249,7 +256,8 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, InvalidOrEmptyURL) {
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
   OpenURLParams open1(GURL(chrome::kChromeUIAboutURL), content::Referrer(),
-                      CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false);
+                      WindowOpenDisposition::CURRENT_TAB,
+                      ui::PAGE_TRANSITION_TYPED, false);
   browser()->OpenURL(open1);
   load1.Wait();
 
@@ -257,7 +265,8 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, InvalidOrEmptyURL) {
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
   OpenURLParams open2(GURL(chrome::kChromeUICreditsURL), content::Referrer(),
-                      NEW_BACKGROUND_TAB, ui::PAGE_TRANSITION_TYPED, false);
+                      WindowOpenDisposition::NEW_BACKGROUND_TAB,
+                      ui::PAGE_TRANSITION_TYPED, false);
   browser()->OpenURL(open2);
 
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
@@ -286,7 +295,7 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, ProtectPDFPages) {
 
   GURL url2(chrome::kChromeUIAboutURL);
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), url2, NEW_FOREGROUND_TAB,
+      browser(), url2, WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
   // No discarding should be possible as the only background tab is displaying a
@@ -315,7 +324,8 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, ProtectRecentlyUsedTabs) {
   // Open 2 tabs, the second one being in the background.
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIAboutURL));
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL(chrome::kChromeUIAboutURL), NEW_BACKGROUND_TAB,
+      browser(), GURL(chrome::kChromeUIAboutURL),
+      WindowOpenDisposition::NEW_BACKGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   EXPECT_EQ(2, tsm->count());
 
@@ -363,7 +373,8 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, ProtectVideoTabs) {
   // Open 2 tabs, the second one being in the background.
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIAboutURL));
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL(chrome::kChromeUIAboutURL), NEW_BACKGROUND_TAB,
+      browser(), GURL(chrome::kChromeUIAboutURL),
+      WindowOpenDisposition::NEW_BACKGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
   auto* tab = browser()->tab_strip_model()->GetWebContentsAt(1);
@@ -404,7 +415,8 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, AutoDiscardable) {
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
   OpenURLParams open1(GURL(chrome::kChromeUIAboutURL), content::Referrer(),
-                      CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false);
+                      WindowOpenDisposition::CURRENT_TAB,
+                      ui::PAGE_TRANSITION_TYPED, false);
   browser()->OpenURL(open1);
   load1.Wait();
 
@@ -412,7 +424,8 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, AutoDiscardable) {
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
   OpenURLParams open2(GURL(chrome::kChromeUICreditsURL), content::Referrer(),
-                      NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_TYPED, false);
+                      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                      ui::PAGE_TRANSITION_TYPED, false);
   browser()->OpenURL(open2);
   load2.Wait();
 

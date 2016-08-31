@@ -76,7 +76,7 @@ void ConfirmInfoBar::OnLinkClicked(JNIEnv* env,
   if (!owner())
       return; // We're closing; don't call anything, it might access the owner.
 
-  if (GetDelegate()->LinkClicked(NEW_FOREGROUND_TAB))
+  if (GetDelegate()->LinkClicked(WindowOpenDisposition::NEW_FOREGROUND_TAB))
     RemoveSelf();
 }
 

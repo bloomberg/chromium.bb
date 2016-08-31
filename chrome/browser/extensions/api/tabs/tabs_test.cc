@@ -1134,11 +1134,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWindowCreateTest, ValidateCreateWindowState) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DuplicateTab) {
-  content::OpenURLParams params(GURL(url::kAboutBlankURL),
-                                content::Referrer(),
-                                NEW_FOREGROUND_TAB,
-                                ui::PAGE_TRANSITION_LINK,
-                                false);
+  content::OpenURLParams params(GURL(url::kAboutBlankURL), content::Referrer(),
+                                WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                                ui::PAGE_TRANSITION_LINK, false);
   content::WebContents* web_contents = browser()->OpenURL(params);
   int tab_id = ExtensionTabUtil::GetTabId(web_contents);
   int window_id = ExtensionTabUtil::GetWindowIdOfTab(web_contents);
@@ -1178,11 +1176,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DuplicateTab) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DuplicateTabNoPermission) {
-  content::OpenURLParams params(GURL(url::kAboutBlankURL),
-                                content::Referrer(),
-                                NEW_FOREGROUND_TAB,
-                                ui::PAGE_TRANSITION_LINK,
-                                false);
+  content::OpenURLParams params(GURL(url::kAboutBlankURL), content::Referrer(),
+                                WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                                ui::PAGE_TRANSITION_LINK, false);
   content::WebContents* web_contents = browser()->OpenURL(params);
   int tab_id = ExtensionTabUtil::GetTabId(web_contents);
   int window_id = ExtensionTabUtil::GetWindowIdOfTab(web_contents);
@@ -1322,8 +1318,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DiscardedProperty) {
 
   // Create two aditional tabs.
   content::OpenURLParams params(GURL(url::kAboutBlankURL), content::Referrer(),
-                                NEW_BACKGROUND_TAB, ui::PAGE_TRANSITION_LINK,
-                                false);
+                                WindowOpenDisposition::NEW_BACKGROUND_TAB,
+                                ui::PAGE_TRANSITION_LINK, false);
   content::WebContents* web_contents_a = browser()->OpenURL(params);
   content::WebContents* web_contents_b = browser()->OpenURL(params);
 
@@ -1440,9 +1436,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DiscardedProperty) {
 
 // Tests chrome.tabs.discard(tabId).
 IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DiscardWithId) {
-  // Create an aditional tab.
+  // Create an additional tab.
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL(url::kAboutBlankURL), NEW_BACKGROUND_TAB,
+      browser(), GURL(url::kAboutBlankURL),
+      WindowOpenDisposition::NEW_BACKGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetWebContentsAt(1);
@@ -1480,9 +1477,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DiscardWithId) {
 
 // Tests chrome.tabs.discard(invalidId).
 IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DiscardWithInvalidId) {
-  // Create an aditional tab.
+  // Create an additional tab.
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL(url::kAboutBlankURL), NEW_BACKGROUND_TAB,
+      browser(), GURL(url::kAboutBlankURL),
+      WindowOpenDisposition::NEW_BACKGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
   // Set up the function with an extension.
@@ -1511,9 +1509,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DiscardWithInvalidId) {
 
 // Tests chrome.tabs.discard().
 IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DiscardWithoutId) {
-  // Create an aditional tab.
+  // Create an additional tab.
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL(url::kAboutBlankURL), NEW_BACKGROUND_TAB,
+      browser(), GURL(url::kAboutBlankURL),
+      WindowOpenDisposition::NEW_BACKGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetWebContentsAt(1);
@@ -1545,9 +1544,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DiscardWithoutId) {
 
 // Tests chrome.tabs.discard() without disabling protection time.
 IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DiscardNoTabProtection) {
-  // Create an aditional tab.
+  // Create an additional tab.
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL(url::kAboutBlankURL), NEW_BACKGROUND_TAB,
+      browser(), GURL(url::kAboutBlankURL),
+      WindowOpenDisposition::NEW_BACKGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
   // Make sure protection time isn't disabled.
@@ -1577,8 +1577,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DiscardNoTabProtection) {
 IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, AutoDiscardableProperty) {
   // Create two aditional tabs.
   content::OpenURLParams params(GURL(url::kAboutBlankURL), content::Referrer(),
-                                NEW_BACKGROUND_TAB, ui::PAGE_TRANSITION_LINK,
-                                false);
+                                WindowOpenDisposition::NEW_BACKGROUND_TAB,
+                                ui::PAGE_TRANSITION_LINK, false);
   content::WebContents* web_contents_a = browser()->OpenURL(params);
   content::WebContents* web_contents_b = browser()->OpenURL(params);
 
@@ -1868,9 +1868,7 @@ std::string ExtensionTabsZoomTest::RunSetZoomSettingsExpectError(
 content::WebContents* ExtensionTabsZoomTest::OpenUrlAndWaitForLoad(
     const GURL& url) {
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(),
-      url,
-      NEW_FOREGROUND_TAB,
+      browser(), url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   return  browser()->tab_strip_model()->GetActiveWebContents();
 }
@@ -1882,11 +1880,9 @@ double GetZoomLevel(const content::WebContents* web_contents) {
 }
 
 content::OpenURLParams GetOpenParams(const char* url) {
-  return content::OpenURLParams(GURL(url),
-                                content::Referrer(),
-                                NEW_FOREGROUND_TAB,
-                                ui::PAGE_TRANSITION_LINK,
-                                false);
+  return content::OpenURLParams(GURL(url), content::Referrer(),
+                                WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                                ui::PAGE_TRANSITION_LINK, false);
 }
 
 }  // namespace

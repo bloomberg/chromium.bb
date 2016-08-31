@@ -89,7 +89,7 @@ void EasyUnlockAppManagerImpl::LaunchSetup() {
 
   OpenApplication(AppLaunchParams(extension_service->profile(), extension,
                                   extensions::LAUNCH_CONTAINER_WINDOW,
-                                  NEW_WINDOW,
+                                  WindowOpenDisposition::NEW_WINDOW,
                                   extensions::SOURCE_CHROME_INTERNAL));
 }
 

@@ -3557,7 +3557,8 @@ void PDFiumEngine::Form_SetTextFieldFocus(FPDF_FORMFILLINFO* param,
 void PDFiumEngine::Form_DoURIAction(FPDF_FORMFILLINFO* param,
                                     FPDF_BYTESTRING uri) {
   PDFiumEngine* engine = static_cast<PDFiumEngine*>(param);
-  engine->client_->NavigateTo(std::string(uri), CURRENT_TAB);
+  engine->client_->NavigateTo(std::string(uri),
+                              WindowOpenDisposition::CURRENT_TAB);
 }
 
 void PDFiumEngine::Form_DoGoToAction(FPDF_FORMFILLINFO* param,

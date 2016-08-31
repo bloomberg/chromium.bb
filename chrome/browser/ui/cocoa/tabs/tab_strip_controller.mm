@@ -2018,7 +2018,7 @@ private:
     // Drop in a new tab to the left of tab |i|?
     if (point.x < (frame.origin.x + kLRProportion * frame.size.width)) {
       *index = i;
-      *disposition = NEW_FOREGROUND_TAB;
+      *disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
       return;
     }
 
@@ -2026,7 +2026,7 @@ private:
     if (point.x <= (frame.origin.x +
                        (1.0 - kLRProportion) * frame.size.width)) {
       *index = i;
-      *disposition = CURRENT_TAB;
+      *disposition = WindowOpenDisposition::CURRENT_TAB;
       return;
     }
 
@@ -2037,7 +2037,7 @@ private:
 
   // If we've made it here, we want to append a new tab to the end.
   *index = -1;
-  *disposition = NEW_FOREGROUND_TAB;
+  *disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
 }
 
 - (void)openURL:(GURL*)url inView:(NSView*)view at:(NSPoint)point {
@@ -2050,7 +2050,7 @@ private:
 
   // Either insert a new tab or open in a current tab.
   switch (disposition) {
-    case NEW_FOREGROUND_TAB: {
+    case WindowOpenDisposition::NEW_FOREGROUND_TAB: {
       content::RecordAction(UserMetricsAction("Tab_DropURLBetweenTabs"));
       chrome::NavigateParams params(browser_, *url,
                                     ui::PAGE_TRANSITION_TYPED);
@@ -2061,10 +2061,10 @@ private:
       chrome::Navigate(&params);
       break;
     }
-    case CURRENT_TAB: {
+    case WindowOpenDisposition::CURRENT_TAB: {
       content::RecordAction(UserMetricsAction("Tab_DropURLOnTab"));
-      OpenURLParams params(
-          *url, Referrer(), CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false);
+      OpenURLParams params(*url, Referrer(), WindowOpenDisposition::CURRENT_TAB,
+                           ui::PAGE_TRANSITION_TYPED, false);
       tabStripModel_->GetWebContentsAt(index)->OpenURL(params);
       tabStripModel_->ActivateTabAt(index, true);
       break;
@@ -2129,18 +2129,18 @@ private:
   NSPoint arrowPos = NSMakePoint(0, arrowBaseY);
   if (index == -1) {
     // Append a tab at the end.
-    DCHECK(disposition == NEW_FOREGROUND_TAB);
+    DCHECK(disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB);
     NSInteger lastIndex = [tabArray_ count] - 1;
     NSRect overRect = [[[tabArray_ objectAtIndex:lastIndex] view] frame];
     arrowPos.x = overRect.origin.x + overRect.size.width - kTabOverlap / 2.0;
   } else {
     NSRect overRect = [[[tabArray_ objectAtIndex:index] view] frame];
     switch (disposition) {
-      case NEW_FOREGROUND_TAB:
+      case WindowOpenDisposition::NEW_FOREGROUND_TAB:
         // Insert tab (to the left of the given tab).
         arrowPos.x = overRect.origin.x + kTabOverlap / 2.0;
         break;
-      case CURRENT_TAB:
+      case WindowOpenDisposition::CURRENT_TAB:
         // Overwrite the given tab.
         arrowPos.x = overRect.origin.x + overRect.size.width / 2.0;
         break;
@@ -2154,7 +2154,7 @@ private:
   [tabStripView_ setNeedsDisplay:YES];
 
   // Perform a delayed tab transition if hovering directly over a tab.
-  if (index != -1 && disposition == CURRENT_TAB) {
+  if (index != -1 && disposition == WindowOpenDisposition::CURRENT_TAB) {
     NSInteger modelIndex = [self modelIndexFromIndex:index];
     // Only start the transition if it has a valid model index (i.e. it's not
     // in the middle of closing).

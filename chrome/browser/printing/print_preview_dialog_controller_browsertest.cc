@@ -263,7 +263,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
   // Reload the initiator. Make sure reloading destroys the print preview
   // dialog.
   PrintPreviewDialogDestroyedObserver dialog_destroyed_observer(preview_dialog);
-  chrome::Reload(browser(), CURRENT_TAB);
+  chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
   content::WaitForLoadStop(
       browser()->tab_strip_model()->GetActiveWebContents());
   ASSERT_TRUE(dialog_destroyed_observer.dialog_destroyed());

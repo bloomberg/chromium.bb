@@ -232,10 +232,8 @@ bool SignInWithUI(Browser* browser,
   // we use NEW_FOREGROUND_TAB rather than the CURRENT_TAB used by default in
   // ui_test_utils::NavigateToURL().
   ui_test_utils::NavigateToURLWithDisposition(
-        browser,
-        signin_url,
-        NEW_FOREGROUND_TAB,
-        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      browser, signin_url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
   DVLOG(1) << "Wait for login UI to be ready.";
   WaitUntilUIReady(browser);

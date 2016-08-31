@@ -579,7 +579,8 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest,
 
   // Navigate, unblocking with new tab.
   GURL url = URLRequestMockHTTPJob::GetMockUrl("save_page/b.htm");
-  NavigateToURLWithDisposition(incognito, url, NEW_FOREGROUND_TAB,
+  NavigateToURLWithDisposition(incognito, url,
+                               WindowOpenDisposition::NEW_FOREGROUND_TAB,
                                ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
 
   // Save the page before completion.

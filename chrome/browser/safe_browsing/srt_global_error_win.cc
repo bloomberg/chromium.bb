@@ -246,9 +246,10 @@ void SRTGlobalError::FallbackToDownloadPage() {
 
   Browser* browser = chrome::FindLastActive();
   if (browser) {
-    browser->OpenURL(content::OpenURLParams(
-        GURL(kSRTDownloadURL), content::Referrer(), NEW_FOREGROUND_TAB,
-        ui::PAGE_TRANSITION_LINK, false));
+    browser->OpenURL(
+        content::OpenURLParams(GURL(kSRTDownloadURL), content::Referrer(),
+                               WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                               ui::PAGE_TRANSITION_LINK, false));
   }
 
   BrowserThread::PostBlockingPoolTask(

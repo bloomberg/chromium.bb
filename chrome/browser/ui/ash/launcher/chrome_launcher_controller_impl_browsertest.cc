@@ -873,7 +873,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, LaunchUnpinned) {
   TabStripModel* tab_strip = browser()->tab_strip_model();
   int tab_count = tab_strip->count();
   LoadAndLaunchExtension("app1", extensions::LAUNCH_CONTAINER_TAB,
-                         NEW_FOREGROUND_TAB);
+                         WindowOpenDisposition::NEW_FOREGROUND_TAB);
   EXPECT_EQ(++tab_count, tab_strip->count());
   ash::ShelfID shortcut_id = CreateShortcut("app1");
   EXPECT_EQ(ash::STATUS_ACTIVE, (*model_->ItemByID(shortcut_id)).status);
@@ -891,7 +891,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, LaunchInBackground) {
   TabStripModel* tab_strip = browser()->tab_strip_model();
   int tab_count = tab_strip->count();
   LoadAndLaunchExtension("app1", extensions::LAUNCH_CONTAINER_TAB,
-                         NEW_BACKGROUND_TAB);
+                         WindowOpenDisposition::NEW_BACKGROUND_TAB);
   EXPECT_EQ(++tab_count, tab_strip->count());
   controller_->LaunchApp(last_loaded_extension_id(),
                                                ash::LAUNCH_FROM_UNKNOWN,
@@ -935,13 +935,9 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, ActivateApp) {
   const Extension* extension =
       LoadExtension(test_data_dir_.AppendASCII("app1"));
 
-  controller_->ActivateApp(extension->id(),
-                                                 ash::LAUNCH_FROM_UNKNOWN,
-                                                 0);
+  controller_->ActivateApp(extension->id(), ash::LAUNCH_FROM_UNKNOWN, 0);
   EXPECT_EQ(++tab_count, tab_strip->count());
-  controller_->ActivateApp(extension->id(),
-                                                 ash::LAUNCH_FROM_UNKNOWN,
-                                                 0);
+  controller_->ActivateApp(extension->id(), ash::LAUNCH_FROM_UNKNOWN, 0);
   EXPECT_EQ(tab_count, tab_strip->count());
 }
 
@@ -952,13 +948,9 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, LaunchApp) {
   const Extension* extension =
       LoadExtension(test_data_dir_.AppendASCII("app1"));
 
-  controller_->LaunchApp(extension->id(),
-                                               ash::LAUNCH_FROM_UNKNOWN,
-                                               0);
+  controller_->LaunchApp(extension->id(), ash::LAUNCH_FROM_UNKNOWN, 0);
   EXPECT_EQ(++tab_count, tab_strip->count());
-  controller_->LaunchApp(extension->id(),
-                                               ash::LAUNCH_FROM_UNKNOWN,
-                                               0);
+  controller_->LaunchApp(extension->id(), ash::LAUNCH_FROM_UNKNOWN, 0);
   EXPECT_EQ(++tab_count, tab_strip->count());
 }
 
@@ -995,10 +987,8 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, MultipleApps) {
 
   // Open second tab for second app. This should activate it.
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(),
-      GURL("http://www.example.com/path3/foo.html"),
-      NEW_FOREGROUND_TAB,
-      0);
+      browser(), GURL("http://www.example.com/path3/foo.html"),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB, 0);
   EXPECT_EQ(++tab_count, tab_strip->count());
   EXPECT_EQ(ash::STATUS_RUNNING, (*model_->ItemByID(shortcut1)).status);
   EXPECT_EQ(ash::STATUS_ACTIVE, (*model_->ItemByID(shortcut2)).status);
@@ -1091,9 +1081,8 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, MultipleOwnedTabs) {
 
   // Create new tab owned by app.
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(),
-      GURL("http://www.example.com/path2/bar.html"),
-      NEW_FOREGROUND_TAB,
+      browser(), GURL("http://www.example.com/path2/bar.html"),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   EXPECT_EQ(++tab_count, tab_strip->count());
   // Confirm app is still active.
@@ -1101,10 +1090,8 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, MultipleOwnedTabs) {
 
   // Create new tab not owned by app.
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(),
-      GURL("http://www.example.com/path3/foo.html"),
-      NEW_FOREGROUND_TAB,
-      0);
+      browser(), GURL("http://www.example.com/path3/foo.html"),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB, 0);
   EXPECT_EQ(++tab_count, tab_strip->count());
   // No longer active.
   EXPECT_EQ(ash::STATUS_RUNNING, model_->ItemByID(shortcut_id)->status);
@@ -1128,9 +1115,8 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, RefocusFilter) {
       shortcut_id, GURL("http://www.example.com/path1/*"));
   // Create new tab owned by app.
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(),
-      GURL("http://www.example.com/path2/bar.html"),
-      NEW_FOREGROUND_TAB,
+      browser(), GURL("http://www.example.com/path2/bar.html"),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   EXPECT_EQ(++tab_count, tab_strip->count());
   // Confirm app is still active.
@@ -1138,10 +1124,8 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, RefocusFilter) {
 
   // Create new tab not owned by app.
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(),
-      GURL("http://www.example.com/path3/foo.html"),
-      NEW_FOREGROUND_TAB,
-      0);
+      browser(), GURL("http://www.example.com/path3/foo.html"),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB, 0);
   EXPECT_EQ(++tab_count, tab_strip->count());
   // No longer active.
   EXPECT_EQ(ash::STATUS_RUNNING, model_->ItemByID(shortcut_id)->status);
@@ -1162,9 +1146,8 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, RefocusFilterLaunch) {
 
   // Create new tab.
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(),
-      GURL("http://www.example2.com/path2/bar.html"),
-      NEW_FOREGROUND_TAB,
+      browser(), GURL("http://www.example2.com/path2/bar.html"),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   EXPECT_EQ(++tab_count, tab_strip->count());
   WebContents* first_tab = tab_strip->GetActiveWebContents();
@@ -1200,9 +1183,8 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, ActivationStateCheck) {
 
   // Create new tab which would be the running app.
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(),
-      GURL("http://www.example.com/path1/bar.html"),
-      NEW_FOREGROUND_TAB,
+      browser(), GURL("http://www.example.com/path1/bar.html"),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
   // There should never be two items active at the same time.
@@ -1236,9 +1218,8 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, AsyncActivationStateCheck) {
 
   // Create new tab which would be the running app.
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(),
-      GURL("http://www.example.com/path1/bar.html"),
-      NEW_FOREGROUND_TAB,
+      browser(), GURL("http://www.example.com/path1/bar.html"),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
   EXPECT_EQ(ash::STATUS_ACTIVE, model_->ItemByID(shortcut_id)->status);
@@ -1257,8 +1238,9 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, AsyncActivationStateCheck) {
 // before it was closed.
 IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, AppWindowRestoreBehaviorTest) {
   // Open an App, maximized its window, and close it.
-  const Extension* extension = LoadAndLaunchExtension(
-      "app1", extensions::LAUNCH_CONTAINER_WINDOW, NEW_WINDOW);
+  const Extension* extension =
+      LoadAndLaunchExtension("app1", extensions::LAUNCH_CONTAINER_WINDOW,
+                             WindowOpenDisposition::NEW_WINDOW);
   Browser* app_browser = FindBrowserForApp(extension->id());
   ASSERT_TRUE(app_browser);
   aura::Window* window = app_browser->window()->GetNativeWindow();
@@ -1268,8 +1250,9 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, AppWindowRestoreBehaviorTest) {
   CloseAppBrowserWindow(app_browser);
 
   // Reopen the App. It should start maximized. Un-maximize it and close it.
-  extension = LoadAndLaunchExtension(
-      "app1", extensions::LAUNCH_CONTAINER_WINDOW, NEW_WINDOW);
+  extension =
+      LoadAndLaunchExtension("app1", extensions::LAUNCH_CONTAINER_WINDOW,
+                             WindowOpenDisposition::NEW_WINDOW);
   app_browser = FindBrowserForApp(extension->id());
   ASSERT_TRUE(app_browser);
   window = app_browser->window()->GetNativeWindow();
@@ -1281,8 +1264,9 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, AppWindowRestoreBehaviorTest) {
   CloseAppBrowserWindow(app_browser);
 
   // Reopen the App. It should start un-maximized.
-  extension = LoadAndLaunchExtension(
-      "app1", extensions::LAUNCH_CONTAINER_WINDOW, NEW_WINDOW);
+  extension =
+      LoadAndLaunchExtension("app1", extensions::LAUNCH_CONTAINER_WINDOW,
+                             WindowOpenDisposition::NEW_WINDOW);
   app_browser = FindBrowserForApp(extension->id());
   ASSERT_TRUE(app_browser);
   window = app_browser->window()->GetNativeWindow();
@@ -1298,14 +1282,15 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestNoDefaultBrowser,
   EXPECT_EQ(0u, items);
   EXPECT_EQ(0u, running_browser);
 
-  LoadAndLaunchExtension(
-      "app1", extensions::LAUNCH_CONTAINER_WINDOW, NEW_WINDOW);
+  LoadAndLaunchExtension("app1", extensions::LAUNCH_CONTAINER_WINDOW,
+                         WindowOpenDisposition::NEW_WINDOW);
 
   // No new browser should get detected, even though one more is running.
   EXPECT_EQ(0u, NumberOfDetectedLauncherBrowsers(false));
   EXPECT_EQ(++running_browser, chrome::GetTotalBrowserCount());
 
-  LoadAndLaunchExtension("app1", extensions::LAUNCH_CONTAINER_TAB, NEW_WINDOW);
+  LoadAndLaunchExtension("app1", extensions::LAUNCH_CONTAINER_TAB,
+                         WindowOpenDisposition::NEW_WINDOW);
 
   // A new browser should get detected and one more should be running.
   EXPECT_EQ(NumberOfDetectedLauncherBrowsers(false), 1u);
@@ -1314,21 +1299,23 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestNoDefaultBrowser,
 
 // Checks the functionality to enumerate all browsers vs. all tabs.
 IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestNoDefaultBrowser,
-                       EnumerateALlBrowsersAndTabs) {
+                       EnumerateAllBrowsersAndTabs) {
   // Create at least one browser.
-  LoadAndLaunchExtension("app1", extensions::LAUNCH_CONTAINER_TAB, NEW_WINDOW);
+  LoadAndLaunchExtension("app1", extensions::LAUNCH_CONTAINER_TAB,
+                         WindowOpenDisposition::NEW_WINDOW);
   size_t browsers = NumberOfDetectedLauncherBrowsers(false);
   size_t tabs = NumberOfDetectedLauncherBrowsers(true);
 
   // Create a second browser.
-  LoadAndLaunchExtension("app1", extensions::LAUNCH_CONTAINER_TAB, NEW_WINDOW);
+  LoadAndLaunchExtension("app1", extensions::LAUNCH_CONTAINER_TAB,
+                         WindowOpenDisposition::NEW_WINDOW);
 
   EXPECT_EQ(++browsers, NumberOfDetectedLauncherBrowsers(false));
   EXPECT_EQ(++tabs, NumberOfDetectedLauncherBrowsers(true));
 
   // Create only a tab.
   LoadAndLaunchExtension("app1", extensions::LAUNCH_CONTAINER_TAB,
-                         NEW_FOREGROUND_TAB);
+                         WindowOpenDisposition::NEW_FOREGROUND_TAB);
 
   EXPECT_EQ(browsers, NumberOfDetectedLauncherBrowsers(false));
   EXPECT_EQ(++tabs, NumberOfDetectedLauncherBrowsers(true));
@@ -1348,18 +1335,15 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, AltNumberTabsTabbing) {
 
   // Create an application handled browser tab.
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(),
-      GURL(url),
-      NEW_FOREGROUND_TAB,
+      browser(), GURL(url), WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
   content::WebContents* content1 = tab_strip->GetActiveWebContents();
 
   // Create some other browser tab.
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(),
-      GURL("http://www.test.com"),
-      NEW_FOREGROUND_TAB,
+      browser(), GURL("http://www.test.com"),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   content::WebContents* content1a = tab_strip->GetActiveWebContents();
 
@@ -1375,9 +1359,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, AltNumberTabsTabbing) {
   EXPECT_EQ(content1, tab_strip->GetActiveWebContents());
 
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(),
-      GURL(url),
-      NEW_FOREGROUND_TAB,
+      browser(), GURL(url), WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   content::WebContents* content2 = tab_strip->GetActiveWebContents();
 
@@ -1676,7 +1658,8 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestNoDefaultBrowser,
   EXPECT_EQ(window1, ash::wm::GetActiveWindow());
 
   // Create anther app and make sure that none of our browsers is active.
-  LoadAndLaunchExtension("app1", extensions::LAUNCH_CONTAINER_TAB, NEW_WINDOW);
+  LoadAndLaunchExtension("app1", extensions::LAUNCH_CONTAINER_TAB,
+                         WindowOpenDisposition::NEW_WINDOW);
   EXPECT_NE(window1, ash::wm::GetActiveWindow());
   EXPECT_NE(window2, ash::wm::GetActiveWindow());
 
@@ -1701,9 +1684,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, ActivateAfterSessionRestore) {
       shortcut_id, GURL("http://www.example.com/path/*"));
   std::string url = "http://www.example.com/path/bla";
   ui_test_utils::NavigateToURLWithDisposition(
-      browser2,
-      GURL(url),
-      NEW_FOREGROUND_TAB,
+      browser2, GURL(url), WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
   // Remember the number of tabs for each browser.
@@ -2217,7 +2198,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, V1AppNavigation) {
   // Create a windowed application.
   AppLaunchParams params = CreateAppLaunchParamsUserContainer(
       profile(), GetExtensionForAppID(extensions::kWebStoreAppId, profile()),
-      NEW_FOREGROUND_TAB, extensions::SOURCE_TEST);
+      WindowOpenDisposition::NEW_FOREGROUND_TAB, extensions::SOURCE_TEST);
   params.container = extensions::LAUNCH_CONTAINER_WINDOW;
   OpenApplication(params);
   EXPECT_EQ(ash::STATUS_ACTIVE, model_->ItemByID(id)->status);
@@ -2302,7 +2283,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, TabbedHostedAndBookmarkApps) {
       browser(), extensions::AppLaunchInfo::GetLaunchWebURL(hosted_app));
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), extensions::AppLaunchInfo::GetLaunchWebURL(bookmark_app),
-      NEW_FOREGROUND_TAB, 0);
+      WindowOpenDisposition::NEW_FOREGROUND_TAB, 0);
 
   // The apps should now be running, with the last opened app active.
   EXPECT_EQ(ash::STATUS_RUNNING, model_->ItemByID(hosted_app_shelf_id)->status);
@@ -2353,7 +2334,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, WindowedHostedAndBookmarkApps) {
       browser(), extensions::AppLaunchInfo::GetLaunchWebURL(hosted_app));
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), extensions::AppLaunchInfo::GetLaunchWebURL(bookmark_app),
-      NEW_FOREGROUND_TAB, 0);
+      WindowOpenDisposition::NEW_FOREGROUND_TAB, 0);
 
   // The apps should still be closed.
   EXPECT_EQ(ash::STATUS_CLOSED, model_->ItemByID(hosted_app_shelf_id)->status);

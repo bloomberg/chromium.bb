@@ -366,7 +366,7 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
   chrome::NavigateParams p(browser(), GURL("http://www.google.com"),
                            ui::PAGE_TRANSITION_LINK);
   p.window_action = chrome::NavigateParams::SHOW_WINDOW;
-  p.disposition = SINGLETON_TAB;
+  p.disposition = WindowOpenDisposition::SINGLETON_TAB;
   chrome::Navigate(&p);
 
   // Press cancel button.

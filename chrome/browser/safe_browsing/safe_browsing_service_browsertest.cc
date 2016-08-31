@@ -1087,8 +1087,9 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest,
            &contents->GetController()));
   // Start a browser initiated top-level navigation to a site that does not
   // respond.
-  ui_test_utils::NavigateToURLWithDisposition(browser(), third_url, CURRENT_TAB,
-                                              ui_test_utils::BROWSER_TEST_NONE);
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), third_url, WindowOpenDisposition::CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_NONE);
 
   // While the top-level navigation is pending, run javascript
   // function in the page which loads the malware image.

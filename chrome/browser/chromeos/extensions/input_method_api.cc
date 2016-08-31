@@ -289,8 +289,8 @@ InputMethodPrivateOpenOptionsPageFunction::Run() {
     if (!options_page_url.is_empty()) {
       Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
       content::OpenURLParams url_params(options_page_url, content::Referrer(),
-                                        SINGLETON_TAB, ui::PAGE_TRANSITION_LINK,
-                                        false);
+                                        WindowOpenDisposition::SINGLETON_TAB,
+                                        ui::PAGE_TRANSITION_LINK, false);
       browser->OpenURL(url_params);
     }
   }

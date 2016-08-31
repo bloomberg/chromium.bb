@@ -1643,11 +1643,9 @@ void DownloadProtectionService::ShowDetailsForDownload(
       learn_more_url, "ctx",
       base::IntToString(static_cast<int>(item.GetDangerType())));
   navigator->OpenURL(
-      content::OpenURLParams(learn_more_url,
-                             content::Referrer(),
-                             NEW_FOREGROUND_TAB,
-                             ui::PAGE_TRANSITION_LINK,
-                             false));
+      content::OpenURLParams(learn_more_url, content::Referrer(),
+                             WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                             ui::PAGE_TRANSITION_LINK, false));
 }
 
 void DownloadProtectionService::SetDownloadPingToken(

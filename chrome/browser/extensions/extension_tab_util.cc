@@ -242,8 +242,9 @@ base::DictionaryValue* ExtensionTabUtil::OpenTab(
     add_types |= TabStripModel::ADD_PINNED;
   chrome::NavigateParams navigate_params(
       browser, url, ui::PAGE_TRANSITION_LINK);
-  navigate_params.disposition =
-      active ? NEW_FOREGROUND_TAB : NEW_BACKGROUND_TAB;
+  navigate_params.disposition = active
+                                    ? WindowOpenDisposition::NEW_FOREGROUND_TAB
+                                    : WindowOpenDisposition::NEW_BACKGROUND_TAB;
   navigate_params.tabstrip_index = index;
   navigate_params.tabstrip_add_types = add_types;
   chrome::Navigate(&navigate_params);
@@ -595,7 +596,7 @@ void ExtensionTabUtil::CreateTab(WebContents* web_contents,
   // among other things, whether the location bar gets displayed.
   // TODO(mpcomplete): This seems wrong. What if the extension content is hosted
   // in a tab?
-  if (disposition == NEW_POPUP)
+  if (disposition == WindowOpenDisposition::NEW_POPUP)
     params.extension_app_id = extension_id;
 
   params.disposition = disposition;

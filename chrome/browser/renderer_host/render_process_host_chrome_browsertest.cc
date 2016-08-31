@@ -106,7 +106,7 @@ class ChromeRenderProcessHostTest : public InProcessBrowserTest {
   // renderer.
   base::Process OpenBackgroundTab(const GURL& page) {
     ui_test_utils::NavigateToURLWithDisposition(
-        browser(), page, NEW_BACKGROUND_TAB,
+        browser(), page, WindowOpenDisposition::NEW_BACKGROUND_TAB,
         ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
     TabStripModel* tab_strip = browser()->tab_strip_model();
@@ -280,7 +280,7 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest, MAYBE_ProcessPerTab) {
   // Create another omnibox tab.  It should share the process with the other
   // WebUI.
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), omnibox, NEW_FOREGROUND_TAB,
+      browser(), omnibox, WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   tab_count++;
   EXPECT_EQ(tab_count, browser()->tab_strip_model()->count());
@@ -289,7 +289,7 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest, MAYBE_ProcessPerTab) {
   // Create another omnibox tab.  It should share the process with the other
   // WebUI.
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), omnibox, NEW_FOREGROUND_TAB,
+      browser(), omnibox, WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   tab_count++;
   EXPECT_EQ(tab_count, browser()->tab_strip_model()->count());
@@ -514,7 +514,7 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
 
   ui_test_utils::NavigateToURL(browser(), url);
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), url, NEW_BACKGROUND_TAB,
+      browser(), url, WindowOpenDisposition::NEW_BACKGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
   EXPECT_EQ(2, browser()->tab_strip_model()->count());

@@ -83,9 +83,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabUtilBrowserTest, OpenExtensionsOptionsPage) {
   // If the user navigates to the options page e.g. by typing in the url, it
   // should not override the currently-open tab.
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(),
-      options_url,
-      NEW_FOREGROUND_TAB,
+      browser(), options_url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   EXPECT_EQ(4, browser()->tab_strip_model()->count());
   EXPECT_EQ(options_url, GetActiveUrl(browser()));

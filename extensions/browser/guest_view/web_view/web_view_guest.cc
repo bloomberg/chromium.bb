@@ -103,19 +103,19 @@ uint32_t GetStoragePartitionRemovalMask(uint32_t web_view_removal_mask) {
 std::string WindowOpenDispositionToString(
   WindowOpenDisposition window_open_disposition) {
   switch (window_open_disposition) {
-    case IGNORE_ACTION:
+    case WindowOpenDisposition::IGNORE_ACTION:
       return "ignore";
-    case SAVE_TO_DISK:
+    case WindowOpenDisposition::SAVE_TO_DISK:
       return "save_to_disk";
-    case CURRENT_TAB:
+    case WindowOpenDisposition::CURRENT_TAB:
       return "current_tab";
-    case NEW_BACKGROUND_TAB:
+    case WindowOpenDisposition::NEW_BACKGROUND_TAB:
       return "new_background_tab";
-    case NEW_FOREGROUND_TAB:
+    case WindowOpenDisposition::NEW_FOREGROUND_TAB:
       return "new_foreground_tab";
-    case NEW_WINDOW:
+    case WindowOpenDisposition::NEW_WINDOW:
       return "new_window";
-    case NEW_POPUP:
+    case WindowOpenDisposition::NEW_POPUP:
       return "new_popup";
     default:
       NOTREACHED() << "Unknown Window Open Disposition";
@@ -1273,7 +1273,7 @@ WebContents* WebViewGuest::OpenURLFromTab(
   if (!params.is_renderer_initiated &&
       (!content::ChildProcessSecurityPolicy::GetInstance()->IsWebSafeScheme(
            params.url.scheme()) ||
-       params.disposition != CURRENT_TAB)) {
+       params.disposition != WindowOpenDisposition::CURRENT_TAB)) {
     if (!owner_web_contents()->GetDelegate())
       return nullptr;
     return owner_web_contents()->GetDelegate()->OpenURLFromTab(
@@ -1309,7 +1309,7 @@ WebContents* WebViewGuest::OpenURLFromTab(
   // to navigate to a URL that it is not allowed to navigate to, a 'loadabort'
   // event will fire in the embedder, and the guest will be navigated to
   // about:blank.
-  if (params.disposition == CURRENT_TAB) {
+  if (params.disposition == WindowOpenDisposition::CURRENT_TAB) {
     LoadURLWithParams(params.url, params.referrer, params.transition,
                       true /* force_navigation */);
     return web_contents();

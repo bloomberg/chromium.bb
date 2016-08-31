@@ -235,7 +235,7 @@ void ProfileSigninConfirmationDialogViews::StyledLabelLinkClicked(
       browser_,
       GURL("https://support.google.com/chromebook/answer/1331549"),
       ui::PAGE_TRANSITION_LINK);
-  params.disposition = NEW_POPUP;
+  params.disposition = WindowOpenDisposition::NEW_POPUP;
   params.window_action = chrome::NavigateParams::SHOW_WINDOW;
   chrome::Navigate(&params);
 }

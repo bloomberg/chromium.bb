@@ -373,7 +373,9 @@ WindowOpenDisposition ForceNewTabDispositionFromEventFlags(
     int event_flags) {
   WindowOpenDisposition disposition =
       ui::DispositionFromEventFlags(event_flags);
-  return disposition == CURRENT_TAB ? NEW_FOREGROUND_TAB : disposition;
+  return disposition == WindowOpenDisposition::CURRENT_TAB
+             ? WindowOpenDisposition::NEW_FOREGROUND_TAB
+             : disposition;
 }
 
 // Returns the preference of the profile represented by the |context|.
@@ -484,7 +486,7 @@ void OnProfileCreated(const GURL& link_url,
     Browser* browser = chrome::FindLastActiveWithProfile(profile);
     chrome::NavigateParams nav_params(browser, link_url,
                                       ui::PAGE_TRANSITION_LINK);
-    nav_params.disposition = NEW_FOREGROUND_TAB;
+    nav_params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
     nav_params.referrer = referrer;
     nav_params.window_action = chrome::NavigateParams::SHOW_WINDOW;
     chrome::Navigate(&nav_params);
@@ -1674,12 +1676,12 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
 
     case IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW:
-      OpenURL(params_.link_url, GetDocumentURL(params_), NEW_WINDOW,
-              ui::PAGE_TRANSITION_LINK);
+      OpenURL(params_.link_url, GetDocumentURL(params_),
+              WindowOpenDisposition::NEW_WINDOW, ui::PAGE_TRANSITION_LINK);
       break;
 
     case IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD:
-      OpenURL(params_.link_url, GURL(), OFF_THE_RECORD,
+      OpenURL(params_.link_url, GURL(), WindowOpenDisposition::OFF_THE_RECORD,
               ui::PAGE_TRANSITION_LINK);
       break;
 
@@ -1715,8 +1717,8 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
     case IDC_CONTENT_CONTEXT_OPEN_ORIGINAL_IMAGE_NEW_TAB:
       OpenURLWithExtraHeaders(
-          params_.src_url, GetDocumentURL(params_), NEW_BACKGROUND_TAB,
-          ui::PAGE_TRANSITION_LINK,
+          params_.src_url, GetDocumentURL(params_),
+          WindowOpenDisposition::NEW_BACKGROUND_TAB, ui::PAGE_TRANSITION_LINK,
           data_reduction_proxy::kDataReductionPassThroughHeader);
       break;
 
@@ -1726,9 +1728,8 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
     case IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB:
     case IDC_CONTENT_CONTEXT_OPENAVNEWTAB:
-      OpenURL(params_.src_url,
-              GetDocumentURL(params_),
-              NEW_BACKGROUND_TAB,
+      OpenURL(params_.src_url, GetDocumentURL(params_),
+              WindowOpenDisposition::NEW_BACKGROUND_TAB,
               ui::PAGE_TRANSITION_LINK);
       break;
 
@@ -2119,10 +2120,10 @@ bool RenderViewContextMenu::IsRouteMediaEnabled() const {
 
 void RenderViewContextMenu::ExecOpenLinkNewTab() {
   Browser* browser = chrome::FindBrowserWithWebContents(source_web_contents_);
-  OpenURL(params_.link_url,
-          GetDocumentURL(params_),
-          (!browser || browser->is_app()) ? NEW_FOREGROUND_TAB
-                                          : NEW_BACKGROUND_TAB,
+  OpenURL(params_.link_url, GetDocumentURL(params_),
+          (!browser || browser->is_app())
+              ? WindowOpenDisposition::NEW_FOREGROUND_TAB
+              : WindowOpenDisposition::NEW_BACKGROUND_TAB,
           ui::PAGE_TRANSITION_LINK);
 }
 

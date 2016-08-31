@@ -168,7 +168,7 @@ IN_PROC_BROWSER_TEST_F(ViewSourceTest,
   {
     ui_test_utils::UrlLoadObserver load_complete(
         url_viewsource, content::NotificationService::AllSources());
-    chrome::GoBack(browser(), CURRENT_TAB);
+    chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
     load_complete.Wait();
   }
 

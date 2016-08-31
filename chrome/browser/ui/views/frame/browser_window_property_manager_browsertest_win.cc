@@ -241,7 +241,7 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowPropertyManagerTest, DISABLED_HostedApp) {
 
   OpenApplication(AppLaunchParams(
       browser()->profile(), extension, extensions::LAUNCH_CONTAINER_WINDOW,
-      NEW_FOREGROUND_TAB, extensions::SOURCE_TEST));
+      WindowOpenDisposition::NEW_FOREGROUND_TAB, extensions::SOURCE_TEST));
 
   // Check that the new browser has an app name.
   // The launch should have created a new browser.

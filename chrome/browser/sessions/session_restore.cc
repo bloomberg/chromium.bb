@@ -201,7 +201,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
         0,
         std::min(selected_index, static_cast<int>(tab.navigations.size() - 1)));
 
-    bool use_new_window = disposition == NEW_WINDOW;
+    bool use_new_window = disposition == WindowOpenDisposition::NEW_WINDOW;
 
     Browser* browser =
         use_new_window
@@ -211,7 +211,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
     RecordAppLaunchForTab(browser, tab, selected_index);
 
     WebContents* web_contents;
-    if (disposition == CURRENT_TAB) {
+    if (disposition == WindowOpenDisposition::CURRENT_TAB) {
       DCHECK(!use_new_window);
       web_contents = chrome::ReplaceRestoredTab(
           browser, tab.navigations, selected_index, true, tab.extension_app_id,
@@ -222,7 +222,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
       web_contents = chrome::AddRestoredTab(
           browser, tab.navigations, tab_index, selected_index,
           tab.extension_app_id,
-          disposition == NEW_FOREGROUND_TAB,  // selected
+          disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB,  // selected
           tab.pinned, true, nullptr, tab.user_agent_override);
       // Start loading the tab immediately.
       web_contents->GetController().LoadIfNecessary();
@@ -663,7 +663,8 @@ class SessionRestoreImpl : public content::NotificationObserver {
         add_types |= TabStripModel::ADD_ACTIVE;
       chrome::NavigateParams params(browser, urls[i],
                                     ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
-      params.disposition = i == 0 ? NEW_FOREGROUND_TAB : NEW_BACKGROUND_TAB;
+      params.disposition = i == 0 ? WindowOpenDisposition::NEW_FOREGROUND_TAB
+                                  : WindowOpenDisposition::NEW_BACKGROUND_TAB;
       params.tabstrip_add_types = add_types;
       chrome::Navigate(&params);
     }

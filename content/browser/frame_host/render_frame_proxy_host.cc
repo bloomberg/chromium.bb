@@ -257,7 +257,7 @@ void RenderFrameProxyHost::OnOpenURL(
 
   // Since this navigation targeted a specific RenderFrameProxy, it should stay
   // in the current tab.
-  DCHECK_EQ(CURRENT_TAB, params.disposition);
+  DCHECK_EQ(WindowOpenDisposition::CURRENT_TAB, params.disposition);
 
   // TODO(alexmos, creis): Figure out whether |params.user_gesture| needs to be
   // passed in as well.

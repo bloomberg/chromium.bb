@@ -181,11 +181,12 @@ void OnSuggestionOpened(int global_position,
 
   LogCategoryHistogramScore(kHistogramOpenedScore, category, score);
 
-  UMA_HISTOGRAM_ENUMERATION(kHistogramOpenDisposition, disposition,
-                            WINDOW_OPEN_DISPOSITION_LAST + 1);
-  LogCategoryHistogramEnumeration(kHistogramOpenDisposition, category,
-                                  disposition,
-                                  WINDOW_OPEN_DISPOSITION_LAST + 1);
+  UMA_HISTOGRAM_ENUMERATION(
+      kHistogramOpenDisposition, static_cast<int>(disposition),
+      static_cast<int>(WindowOpenDisposition::MAX_VALUE) + 1);
+  LogCategoryHistogramEnumeration(
+      kHistogramOpenDisposition, category, static_cast<int>(disposition),
+      static_cast<int>(WindowOpenDisposition::MAX_VALUE) + 1);
 }
 
 void OnSuggestionMenuOpened(int global_position,

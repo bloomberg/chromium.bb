@@ -122,8 +122,8 @@ void BluetoothChooserController::Close() {
 void BluetoothChooserController::OpenHelpCenterUrl() const {
   GetBrowser()->OpenURL(content::OpenURLParams(
       GURL(chrome::kChooserBluetoothOverviewURL), content::Referrer(),
-      NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
-      false /* is_renderer_initialized */));
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui::PAGE_TRANSITION_AUTO_TOPLEVEL, false /* is_renderer_initialized */));
 }
 
 void BluetoothChooserController::OnAdapterPresenceChanged(

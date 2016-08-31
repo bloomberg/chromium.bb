@@ -853,7 +853,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStateModelLoadingTest, NavigationStateChanges) {
   // security state is neutral while the page is loading.
   browser()->OpenURL(content::OpenURLParams(
       embedded_test_server()->GetURL("/title1.html"), content::Referrer(),
-      CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
+      WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
   CheckSecurityInfoForNonSecure(
       browser()->tab_strip_model()->GetActiveWebContents());
 }
@@ -1086,7 +1086,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStyleChangedTest,
       content::NOTIFICATION_LOAD_STOP,
       content::Source<content::NavigationController>(
           &web_contents->GetController()));
-  chrome::GoBack(browser(), CURRENT_TAB);
+  chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
   back_nav_load_observer.Wait();
 
   EXPECT_EQ(content::SECURITY_STYLE_AUTHENTICATED,

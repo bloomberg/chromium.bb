@@ -561,7 +561,8 @@ void LocalDiscoveryUIHandler::ShowCloudPrintSetupDialog(
   // Open the connector enable page in the current tab.
   content::OpenURLParams params(cloud_devices::GetCloudPrintEnableURL(
                                     GetCloudPrintProxyService()->proxy_id()),
-                                content::Referrer(), CURRENT_TAB,
+                                content::Referrer(),
+                                WindowOpenDisposition::CURRENT_TAB,
                                 ui::PAGE_TRANSITION_LINK, false);
   web_ui()->GetWebContents()->OpenURL(params);
 }

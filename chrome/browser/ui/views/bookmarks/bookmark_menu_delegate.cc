@@ -176,7 +176,8 @@ bool BookmarkMenuDelegate::ShouldExecuteCommandWithoutClosingMenu(
     int id,
     const ui::Event& event) {
   return (event.flags() & ui::EF_LEFT_MOUSE_BUTTON) &&
-         ui::DispositionFromEventFlags(event.flags()) == NEW_BACKGROUND_TAB;
+         ui::DispositionFromEventFlags(event.flags()) ==
+             WindowOpenDisposition::NEW_BACKGROUND_TAB;
 }
 
 bool BookmarkMenuDelegate::GetDropFormats(

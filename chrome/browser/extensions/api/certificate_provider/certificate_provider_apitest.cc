@@ -185,7 +185,8 @@ IN_PROC_BROWSER_TEST_F(CertificateProviderApiTest, Basic) {
       nullptr /* no WebContents */);
   navigation_observer.StartWatchingNewWebContents();
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), https_server.GetURL("client-cert"), NEW_FOREGROUND_TAB,
+      browser(), https_server.GetURL("client-cert"),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_NONE);
 
   content::WebContents* const https_contents =

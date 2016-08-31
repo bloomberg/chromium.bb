@@ -174,6 +174,6 @@ bool BluetoothChooserAndroid::Register(JNIEnv* env) {
 
 void BluetoothChooserAndroid::OpenURL(const char* url) {
   web_contents_->OpenURL(content::OpenURLParams(
-      GURL(url), content::Referrer(), NEW_FOREGROUND_TAB,
+      GURL(url), content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui::PAGE_TRANSITION_AUTO_TOPLEVEL, false /* is_renderer_initiated */));
 }

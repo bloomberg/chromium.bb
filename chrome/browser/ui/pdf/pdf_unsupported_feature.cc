@@ -128,9 +128,9 @@ base::string16 PDFEnableAdobeReaderPromptClient::GetMessageText() const {
 
 // Launch the url to get the latest Adbobe Reader installer.
 void OpenReaderUpdateURL(WebContents* web_contents) {
-  OpenURLParams params(
-      GURL(kAdobeReaderUpdateUrl), Referrer(), NEW_FOREGROUND_TAB,
-      ui::PAGE_TRANSITION_LINK, false);
+  OpenURLParams params(GURL(kAdobeReaderUpdateUrl), Referrer(),
+                       WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                       ui::PAGE_TRANSITION_LINK, false);
   web_contents->OpenURL(params);
 }
 

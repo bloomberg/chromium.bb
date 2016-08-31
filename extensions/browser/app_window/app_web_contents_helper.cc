@@ -45,7 +45,7 @@ content::WebContents* AppWebContentsHelper::OpenURLFromTab(
   // navigations, which we don't want to allow.
   // TOOD(mihaip): Can we check for user gestures instead?
   WindowOpenDisposition disposition = params.disposition;
-  if (disposition == CURRENT_TAB) {
+  if (disposition == WindowOpenDisposition::CURRENT_TAB) {
     web_contents_->GetMainFrame()->AddMessageToConsole(
         content::CONSOLE_MESSAGE_LEVEL_ERROR,
         base::StringPrintf(
@@ -55,7 +55,8 @@ content::WebContents* AppWebContentsHelper::OpenURLFromTab(
   }
 
   // These dispositions aren't really navigations.
-  if (disposition == SAVE_TO_DISK || disposition == IGNORE_ACTION)
+  if (disposition == WindowOpenDisposition::SAVE_TO_DISK ||
+      disposition == WindowOpenDisposition::IGNORE_ACTION)
     return NULL;
 
   content::WebContents* contents =

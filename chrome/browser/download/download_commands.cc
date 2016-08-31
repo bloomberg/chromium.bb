@@ -342,7 +342,8 @@ void DownloadCommands::ExecuteCommand(Command command) {
     case LEARN_MORE_INTERRUPTED:
       GetBrowser()->OpenURL(content::OpenURLParams(
           GetLearnMoreURLForInterruptedDownload(), content::Referrer(),
-          NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK, false));
+          WindowOpenDisposition::NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK,
+          false));
       break;
     case PAUSE:
       download_item_->Pause();

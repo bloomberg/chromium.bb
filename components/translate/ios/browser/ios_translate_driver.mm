@@ -165,7 +165,8 @@ bool IOSTranslateDriver::HasCurrentPage() {
 }
 
 void IOSTranslateDriver::OpenUrlInNewTab(const GURL& url) {
-  web::WebState::OpenURLParams params(url, web::Referrer(), NEW_FOREGROUND_TAB,
+  web::WebState::OpenURLParams params(url, web::Referrer(),
+                                      WindowOpenDisposition::NEW_FOREGROUND_TAB,
                                       ui::PAGE_TRANSITION_LINK, false);
   web_state()->OpenURL(params);
 }

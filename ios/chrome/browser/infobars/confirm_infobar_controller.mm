@@ -152,7 +152,8 @@ ConfirmInfoBarDelegate::InfoBarButton UITagToButton(NSUInteger tag) {
     return;
   }
   if ([tag unsignedIntegerValue] == ConfirmInfoBarUITags::TITLE_LINK) {
-    _confirmInfobarDelegate->LinkClicked(NEW_FOREGROUND_TAB);
+    _confirmInfobarDelegate->LinkClicked(
+        WindowOpenDisposition::NEW_FOREGROUND_TAB);
   }
 }
 

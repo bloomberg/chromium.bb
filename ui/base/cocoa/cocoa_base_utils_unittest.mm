@@ -32,11 +32,13 @@ class CocoaBaseUtilsTest : public CocoaTest {
 TEST_F(CocoaBaseUtilsTest, WindowOpenDispositionFromNSEvent) {
   // Left Click = same tab.
   NSEvent* me = cocoa_test_event_utils::MouseEventWithType(NSLeftMouseUp, 0);
-  EXPECT_EQ(CURRENT_TAB, WindowOpenDispositionFromNSEvent(me));
+  EXPECT_EQ(WindowOpenDisposition::CURRENT_TAB,
+            WindowOpenDispositionFromNSEvent(me));
 
   // Middle Click = new background tab.
   me = cocoa_test_event_utils::MouseEventWithType(NSOtherMouseUp, 0);
-  EXPECT_EQ(NEW_BACKGROUND_TAB, WindowOpenDispositionFromNSEvent(me));
+  EXPECT_EQ(WindowOpenDisposition::NEW_BACKGROUND_TAB,
+            WindowOpenDispositionFromNSEvent(me));
 
   // Shift+Middle Click = new foreground tab.
   {
@@ -44,24 +46,27 @@ TEST_F(CocoaBaseUtilsTest, WindowOpenDispositionFromNSEvent) {
         [NSEvent class], [TestEvent class], @selector(modifierFlags));
     me = cocoa_test_event_utils::MouseEventWithType(NSOtherMouseUp,
                                                     NSShiftKeyMask);
-    EXPECT_EQ(NEW_FOREGROUND_TAB, WindowOpenDispositionFromNSEvent(me));
+    EXPECT_EQ(WindowOpenDisposition::NEW_FOREGROUND_TAB,
+              WindowOpenDispositionFromNSEvent(me));
   }
 
   // Cmd+Left Click = new background tab.
   me = cocoa_test_event_utils::MouseEventWithType(NSLeftMouseUp,
                                                   NSCommandKeyMask);
-  EXPECT_EQ(NEW_BACKGROUND_TAB, WindowOpenDispositionFromNSEvent(me));
+  EXPECT_EQ(WindowOpenDisposition::NEW_BACKGROUND_TAB,
+            WindowOpenDispositionFromNSEvent(me));
 
   // Cmd+Shift+Left Click = new foreground tab.
-  me = cocoa_test_event_utils::MouseEventWithType(NSLeftMouseUp,
-                                              NSCommandKeyMask |
-                                              NSShiftKeyMask);
-  EXPECT_EQ(NEW_FOREGROUND_TAB, WindowOpenDispositionFromNSEvent(me));
+  me = cocoa_test_event_utils::MouseEventWithType(
+      NSLeftMouseUp, NSCommandKeyMask | NSShiftKeyMask);
+  EXPECT_EQ(WindowOpenDisposition::NEW_FOREGROUND_TAB,
+            WindowOpenDispositionFromNSEvent(me));
 
   // Shift+Left Click = new window
   me = cocoa_test_event_utils::MouseEventWithType(NSLeftMouseUp,
                                                   NSShiftKeyMask);
-  EXPECT_EQ(NEW_WINDOW, WindowOpenDispositionFromNSEvent(me));
+  EXPECT_EQ(WindowOpenDisposition::NEW_WINDOW,
+            WindowOpenDispositionFromNSEvent(me));
 }
 
 }  // namespace

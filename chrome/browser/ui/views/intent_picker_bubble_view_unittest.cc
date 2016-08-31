@@ -47,8 +47,9 @@ class IntentPickerBubbleViewTest : public BrowserWithTestWindowTest {
     // We create |web_contents| since the Bubble UI has an Observer that
     // depends on this, otherwise it wouldn't work.
     GURL url("http://www.google.com");
-    WebContents* web_contents = browser()->OpenURL(OpenURLParams(
-        url, Referrer(), CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
+    WebContents* web_contents = browser()->OpenURL(
+        OpenURLParams(url, Referrer(), WindowOpenDisposition::CURRENT_TAB,
+                      ui::PAGE_TRANSITION_TYPED, false));
 
     bubble_ = IntentPickerBubbleView::CreateBubbleView(
         app_info_, base::Bind(&IntentPickerBubbleViewTest::OnBubbleClosed,

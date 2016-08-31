@@ -377,7 +377,7 @@ void PrivetNotificationDelegate::OpenTab(const GURL& url) {
   Profile* profile = Profile::FromBrowserContext(profile_);
   chrome::NavigateParams params(profile, url,
                                 ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
-  params.disposition = NEW_FOREGROUND_TAB;
+  params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   chrome::Navigate(&params);
 }
 

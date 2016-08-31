@@ -214,11 +214,11 @@ void TabAndroid::HandlePopupNavigation(chrome::NavigateParams* params) {
   WindowOpenDisposition disposition = params->disposition;
   const GURL& url = params->url;
 
-  if (disposition == NEW_POPUP ||
-      disposition == NEW_FOREGROUND_TAB ||
-      disposition == NEW_BACKGROUND_TAB ||
-      disposition == NEW_WINDOW ||
-      disposition == OFF_THE_RECORD) {
+  if (disposition == WindowOpenDisposition::NEW_POPUP ||
+      disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB ||
+      disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB ||
+      disposition == WindowOpenDisposition::NEW_WINDOW ||
+      disposition == WindowOpenDisposition::OFF_THE_RECORD) {
     JNIEnv* env = AttachCurrentThread();
     ScopedJavaLocalRef<jobject> jobj = weak_java_tab_.get(env);
     ScopedJavaLocalRef<jstring> jurl(ConvertUTF8ToJavaString(env, url.spec()));
@@ -227,9 +227,9 @@ void TabAndroid::HandlePopupNavigation(chrome::NavigateParams* params) {
     ScopedJavaLocalRef<jobject> jpost_data;
     if (params->uses_post && params->post_data)
       jpost_data = params->post_data->ToJavaObject(env);
-    Java_Tab_openNewTab(env, jobj, jurl, jheaders, jpost_data, disposition,
-                        params->created_with_opener,
-                        params->is_renderer_initiated);
+    Java_Tab_openNewTab(
+        env, jobj, jurl, jheaders, jpost_data, static_cast<int>(disposition),
+        params->created_with_opener, params->is_renderer_initiated);
   } else {
     NOTIMPLEMENTED();
   }

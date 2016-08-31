@@ -498,7 +498,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_PasteWithoutTextChange) {
   EXPECT_EQ(ASCIIToUTF16("a"), GetFindBarText());
 
   // Reload the page to clear the matching result.
-  chrome::Reload(browser(), CURRENT_TAB);
+  chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
 
   // Focus the Find bar again to make sure the text is selected.
   browser()->GetFindBarController()->Show();

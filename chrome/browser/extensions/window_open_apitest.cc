@@ -191,12 +191,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PopupBlockingHostedApp) {
                         ->GetURL(popup_app_contents_path + "open_popup.html")
                         .ReplaceComponents(replace_host);
 
-  browser()->OpenURL(OpenURLParams(
-      open_tab, Referrer(), NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_TYPED,
-      false));
-  browser()->OpenURL(OpenURLParams(
-      open_popup, Referrer(), NEW_FOREGROUND_TAB,
-      ui::PAGE_TRANSITION_TYPED, false));
+  browser()->OpenURL(OpenURLParams(open_tab, Referrer(),
+                                   WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                                   ui::PAGE_TRANSITION_TYPED, false));
+  browser()->OpenURL(OpenURLParams(open_popup, Referrer(),
+                                   WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                                   ui::PAGE_TRANSITION_TYPED, false));
 
   EXPECT_TRUE(WaitForTabsAndPopups(browser(), 3, 1));
 }

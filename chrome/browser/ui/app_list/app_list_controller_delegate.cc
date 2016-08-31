@@ -143,12 +143,9 @@ void AppListControllerDelegate::ShowAppInWebStore(
       is_search_result ?
           AppListControllerDelegate::LAUNCH_FROM_APP_LIST_SEARCH :
           AppListControllerDelegate::LAUNCH_FROM_APP_LIST);
-  OpenURL(profile,
-          net::AppendQueryParameter(url,
-                                    extension_urls::kWebstoreSourceField,
-                                    source),
-          ui::PAGE_TRANSITION_LINK,
-          CURRENT_TAB);
+  OpenURL(profile, net::AppendQueryParameter(
+                       url, extension_urls::kWebstoreSourceField, source),
+          ui::PAGE_TRANSITION_LINK, WindowOpenDisposition::CURRENT_TAB);
 }
 
 bool AppListControllerDelegate::HasOptionsPage(
@@ -166,10 +163,8 @@ void AppListControllerDelegate::ShowOptionsPage(
   if (!extension)
     return;
 
-  OpenURL(profile,
-          extensions::OptionsPageInfo::GetOptionsPage(extension),
-          ui::PAGE_TRANSITION_LINK,
-          CURRENT_TAB);
+  OpenURL(profile, extensions::OptionsPageInfo::GetOptionsPage(extension),
+          ui::PAGE_TRANSITION_LINK, WindowOpenDisposition::CURRENT_TAB);
 }
 
 extensions::LaunchType AppListControllerDelegate::GetExtensionLaunchType(

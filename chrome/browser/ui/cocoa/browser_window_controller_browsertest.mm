@@ -446,7 +446,7 @@ class BrowserWindowControllerTest : public InProcessBrowserTest {
   void AddTabAtBackground(int index, GURL url) {
     chrome::NavigateParams params(browser(), url, ui::PAGE_TRANSITION_LINK);
     params.tabstrip_index = index;
-    params.disposition = NEW_BACKGROUND_TAB;
+    params.disposition = WindowOpenDisposition::NEW_BACKGROUND_TAB;
     chrome::Navigate(&params);
     content::WaitForLoadStopWithoutSuccessCheck(params.target_contents);
   }

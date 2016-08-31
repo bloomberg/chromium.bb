@@ -97,10 +97,10 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest, TestOpenPopup) {
         content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
         content::NotificationService::AllSources());
     // Open a new window.
-    new_browser = chrome::FindBrowserWithWebContents(
-        browser()->OpenURL(content::OpenURLParams(
-            GURL("about:"), content::Referrer(), NEW_WINDOW,
-            ui::PAGE_TRANSITION_TYPED, false)));
+    new_browser = chrome::FindBrowserWithWebContents(browser()->OpenURL(
+        content::OpenURLParams(GURL("about:"), content::Referrer(),
+                               WindowOpenDisposition::NEW_WINDOW,
+                               ui::PAGE_TRANSITION_TYPED, false)));
     // Hide all the buttons to test that it opens even when the browser action
     // is in the overflow bucket.
     ToolbarActionsModel::Get(profile())->SetVisibleIconCount(0);
@@ -378,7 +378,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest,
 
   // Create a new browser window to prevent the message loop from terminating.
   browser()->OpenURL(content::OpenURLParams(GURL("about:"), content::Referrer(),
-                                            NEW_WINDOW,
+                                            WindowOpenDisposition::NEW_WINDOW,
                                             ui::PAGE_TRANSITION_TYPED, false));
 
   // Forcibly closing the browser HWND should not cause a crash.

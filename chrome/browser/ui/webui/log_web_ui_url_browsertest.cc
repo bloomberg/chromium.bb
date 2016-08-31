@@ -59,7 +59,7 @@ IN_PROC_BROWSER_TEST_F(LogWebUIUrlTest, TestHistoryFrame) {
   uint32_t history_frame_url_hash = base::Hash(history_frame_url.spec());
   EXPECT_THAT(GetSamples(), ElementsAre(Bucket(history_frame_url_hash, 1)));
 
-  chrome::Reload(browser(), CURRENT_TAB);
+  chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
 
   EXPECT_THAT(GetSamples(), ElementsAre(Bucket(history_frame_url_hash, 2)));
 }
@@ -93,7 +93,7 @@ IN_PROC_BROWSER_TEST_F(LogWebUIUrlTest, TestUberPage) {
 
   {
     content::TitleWatcher title_watcher(tab, history_title);
-    chrome::Reload(browser(), CURRENT_TAB);
+    chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
     ASSERT_EQ(history_title, title_watcher.WaitAndGetTitle());
   }
 

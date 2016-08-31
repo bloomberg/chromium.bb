@@ -65,9 +65,9 @@ class DownloadDangerPromptTest : public InProcessBrowserTest {
   void OpenNewTab() {
     ui_test_utils::NavigateToURLWithDisposition(
         browser(), GURL("about:blank"),
-        NEW_FOREGROUND_TAB,
+        WindowOpenDisposition::NEW_FOREGROUND_TAB,
         ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
-        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+            ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   }
 
   void SetUpExpectations(

@@ -850,15 +850,13 @@ void GlobalMenuBarX11::OnHistoryItemActivated(DbusmenuMenuitem* sender,
       TabRestoreServiceFactory::GetForProfile(profile_);
   if (item->session_id && service) {
     service->RestoreEntryById(browser_->live_tab_context(), item->session_id,
-                              UNKNOWN);
+                              WindowOpenDisposition::UNKNOWN);
   } else {
     DCHECK(item->url.is_valid());
-    browser_->OpenURL(content::OpenURLParams(
-        item->url,
-        content::Referrer(),
-        NEW_FOREGROUND_TAB,
-        ui::PAGE_TRANSITION_AUTO_BOOKMARK,
-        false));
+    browser_->OpenURL(
+        content::OpenURLParams(item->url, content::Referrer(),
+                               WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                               ui::PAGE_TRANSITION_AUTO_BOOKMARK, false));
   }
 }
 

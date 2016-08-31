@@ -43,8 +43,10 @@ void ServiceTabLauncher::LaunchTab(content::BrowserContext* browser_context,
                                    const content::OpenURLParams& params,
                                    const TabLaunchedCallback& callback) {
   WindowOpenDisposition disposition = params.disposition;
-  if (disposition != NEW_WINDOW && disposition != NEW_POPUP &&
-      disposition != NEW_FOREGROUND_TAB && disposition != NEW_BACKGROUND_TAB) {
+  if (disposition != WindowOpenDisposition::NEW_WINDOW &&
+      disposition != WindowOpenDisposition::NEW_POPUP &&
+      disposition != WindowOpenDisposition::NEW_FOREGROUND_TAB &&
+      disposition != WindowOpenDisposition::NEW_BACKGROUND_TAB) {
     // ServiceTabLauncher can currently only launch new tabs.
     NOTIMPLEMENTED();
     return;
@@ -66,7 +68,7 @@ void ServiceTabLauncher::LaunchTab(content::BrowserContext* browser_context,
 
   Java_ServiceTabLauncher_launchTab(env, GetApplicationContext(), request_id,
                                     browser_context->IsOffTheRecord(), url,
-                                    disposition, referrer_url,
+                                    static_cast<int>(disposition), referrer_url,
                                     params.referrer.policy, headers, post_data);
 }
 

@@ -125,7 +125,7 @@ scoped_refptr<content::DevToolsAgentHost>
 ChromeDevToolsManagerDelegate::CreateNewTarget(const GURL& url) {
   chrome::NavigateParams params(ProfileManager::GetLastUsedProfile(),
       url, ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
-  params.disposition = NEW_FOREGROUND_TAB;
+  params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   chrome::Navigate(&params);
   if (!params.target_contents)
     return nullptr;

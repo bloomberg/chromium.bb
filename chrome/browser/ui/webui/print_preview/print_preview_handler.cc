@@ -1138,12 +1138,10 @@ void PrintPreviewHandler::HandleManageCloudPrint(
     return;
   if (!user.empty())
     manage_url = net::AppendQueryParameter(manage_url, "user", user);
-  preview_web_contents()->OpenURL(content::OpenURLParams(
-      manage_url,
-      content::Referrer(),
-      NEW_FOREGROUND_TAB,
-      ui::PAGE_TRANSITION_LINK,
-      false));
+  preview_web_contents()->OpenURL(
+      content::OpenURLParams(manage_url, content::Referrer(),
+                             WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                             ui::PAGE_TRANSITION_LINK, false));
 }
 
 #if defined(ENABLE_BASIC_PRINTING)

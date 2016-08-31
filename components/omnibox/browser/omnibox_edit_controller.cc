@@ -15,7 +15,7 @@ void OmniboxEditController::OnAutocompleteAccept(
 }
 
 OmniboxEditController::OmniboxEditController()
-    : disposition_(CURRENT_TAB),
+    : disposition_(WindowOpenDisposition::CURRENT_TAB),
       transition_(ui::PageTransitionFromInt(
           ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR)) {}
 

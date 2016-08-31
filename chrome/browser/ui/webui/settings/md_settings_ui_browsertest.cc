@@ -42,7 +42,7 @@ IN_PROC_BROWSER_TEST_F(MdSettingsUITest, MAYBE_BackForwardDoesntCrash) {
 
   NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
 
-  chrome::GoBack(browser(), CURRENT_TAB);
+  chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
   WaitForLoadStop(browser()->tab_strip_model()->GetActiveWebContents());
 }
 

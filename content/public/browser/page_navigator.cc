@@ -44,12 +44,11 @@ OpenURLParams::OpenURLParams(
 OpenURLParams::OpenURLParams()
     : uses_post(false),
       frame_tree_node_id(-1),
-      disposition(UNKNOWN),
+      disposition(WindowOpenDisposition::UNKNOWN),
       transition(ui::PAGE_TRANSITION_LINK),
       is_renderer_initiated(false),
       should_replace_current_entry(false),
-      user_gesture(true) {
-}
+      user_gesture(true) {}
 
 OpenURLParams::OpenURLParams(const OpenURLParams& other) = default;
 

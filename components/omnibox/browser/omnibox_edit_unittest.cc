@@ -383,14 +383,14 @@ TEST_F(OmniboxEditTest, AlternateNavHasHTTP) {
 
   model()->OnSetFocus(false);  // Avoids DCHECK in OpenMatch().
   model()->SetUserText(base::ASCIIToUTF16("http://ab cd"));
-  model()->OpenMatch(match, CURRENT_TAB, alternate_nav_url, base::string16(),
-                     0);
+  model()->OpenMatch(match, WindowOpenDisposition::CURRENT_TAB,
+                     alternate_nav_url, base::string16(), 0);
   EXPECT_TRUE(AutocompleteInput::HasHTTPScheme(
       client->alternate_nav_match().fill_into_edit));
 
   model()->SetUserText(base::ASCIIToUTF16("ab cd"));
-  model()->OpenMatch(match, CURRENT_TAB, alternate_nav_url, base::string16(),
-                     0);
+  model()->OpenMatch(match, WindowOpenDisposition::CURRENT_TAB,
+                     alternate_nav_url, base::string16(), 0);
   EXPECT_TRUE(AutocompleteInput::HasHTTPScheme(
       client->alternate_nav_match().fill_into_edit));
 }

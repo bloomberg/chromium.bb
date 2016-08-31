@@ -1092,7 +1092,8 @@ ui::PageTransition LocationBarView::GetPageTransition() const {
 }
 
 void LocationBarView::AcceptInput() {
-  omnibox_view_->model()->AcceptInput(CURRENT_TAB, false);
+  omnibox_view_->model()->AcceptInput(WindowOpenDisposition::CURRENT_TAB,
+                                      false);
 }
 
 void LocationBarView::FocusSearch() {

@@ -536,8 +536,8 @@ void OmniboxEditModel::PasteAndGo(const base::string16& text) {
   AutocompleteMatch match;
   GURL alternate_nav_url;
   ClassifyStringForPasteAndGo(text, &match, &alternate_nav_url);
-  view_->OpenMatch(match, CURRENT_TAB, alternate_nav_url, text,
-                   OmniboxPopupModel::kNoMatch);
+  view_->OpenMatch(match, WindowOpenDisposition::CURRENT_TAB, alternate_nav_url,
+                   text, OmniboxPopupModel::kNoMatch);
 }
 
 bool OmniboxEditModel::IsPasteAndSearch(const base::string16& text) const {
@@ -708,7 +708,8 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
       << "omnibox text at same time or before the most recent time the "
       << "default match changed.";
 
-  if ((disposition == CURRENT_TAB) && client_->CurrentPageExists()) {
+  if ((disposition == WindowOpenDisposition::CURRENT_TAB) &&
+      client_->CurrentPageExists()) {
     // If we know the destination is being opened in the current tab,
     // we can easily get the tab ID.  (If it's being opened in a new
     // tab, we don't know the tab ID yet.)
@@ -735,7 +736,7 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
       // Don't increment usage count for extension keywords.
       if (client_->ProcessExtensionKeyword(template_url, match, disposition,
                                            observer.get())) {
-        if (disposition != NEW_BACKGROUND_TAB)
+        if (disposition != WindowOpenDisposition::NEW_BACKGROUND_TAB)
           view_->RevertAll();
         return;
       }
@@ -760,7 +761,7 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
   // Get the current text before we call RevertAll() which will clear it.
   base::string16 current_text = view_->GetText();
 
-  if (disposition != NEW_BACKGROUND_TAB) {
+  if (disposition != WindowOpenDisposition::NEW_BACKGROUND_TAB) {
     base::AutoReset<bool> tmp(&in_revert_, true);
     view_->RevertAll();  // Revert the box to its unedited state.
   }

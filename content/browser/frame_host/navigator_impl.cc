@@ -703,7 +703,8 @@ void NavigatorImpl::RequestOpenURL(
   // subframe in the current tab.  We'll assume it's for the main frame
   // (possibly of a new or different WebContents) otherwise.
   if (SiteIsolationPolicy::UseSubframeNavigationEntries() &&
-      disposition == CURRENT_TAB && render_frame_host->GetParent()) {
+      disposition == WindowOpenDisposition::CURRENT_TAB &&
+      render_frame_host->GetParent()) {
     frame_tree_node_id =
         render_frame_host->frame_tree_node()->frame_tree_node_id();
   }

@@ -278,9 +278,9 @@ void ErrorScreen::OnDiagnoseButtonClicked() {
 
   const extensions::Extension* extension =
       extension_service->GetExtensionById(extension_id, true);
-  OpenApplication(
-      AppLaunchParams(profile, extension, extensions::LAUNCH_CONTAINER_WINDOW,
-                      NEW_WINDOW, extensions::SOURCE_CHROME_INTERNAL));
+  OpenApplication(AppLaunchParams(
+      profile, extension, extensions::LAUNCH_CONTAINER_WINDOW,
+      WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_CHROME_INTERNAL));
   KioskAppManager::Get()->InitSession(profile, extension_id);
 
   user_manager::UserManager::Get()->SessionStarted();

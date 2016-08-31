@@ -146,11 +146,8 @@ void ResumeAppleEventAndSendReply(NSAppleEventManagerSuspensionID suspension_id,
 
   const GURL& previousURL = entry->GetVirtualURL();
   webContents_->OpenURL(OpenURLParams(
-      url,
-      content::Referrer(previousURL, blink::WebReferrerPolicyDefault),
-      CURRENT_TAB,
-      ui::PAGE_TRANSITION_TYPED,
-      false));
+      url, content::Referrer(previousURL, blink::WebReferrerPolicyDefault),
+      WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
 }
 
 - (NSString*)title {
@@ -284,10 +281,8 @@ void ResumeAppleEventAndSendReply(NSAppleEventManagerSuspensionID suspension_id,
     webContents_->OpenURL(
         OpenURLParams(GURL(content::kViewSourceScheme + std::string(":") +
                            entry->GetURL().spec()),
-                      Referrer(),
-                      NEW_FOREGROUND_TAB,
-                      ui::PAGE_TRANSITION_LINK,
-                      false));
+                      Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                      ui::PAGE_TRANSITION_LINK, false));
   }
 }
 

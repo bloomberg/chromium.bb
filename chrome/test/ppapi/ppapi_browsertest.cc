@@ -1022,7 +1022,7 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, View_CreateInvisible) {
   // Make a second tab in the foreground.
   GURL url = GetTestFileUrl("View_CreatedInvisible");
   chrome::NavigateParams params(browser(), url, ui::PAGE_TRANSITION_LINK);
-  params.disposition = NEW_BACKGROUND_TAB;
+  params.disposition = WindowOpenDisposition::NEW_BACKGROUND_TAB;
   ui_test_utils::NavigateToURL(&params);
 }
 
@@ -1045,7 +1045,7 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, DISABLED_View_PageHideShow) {
   // next phase of the test.
   chrome::NavigateParams params(
       browser(), GURL(url::kAboutBlankURL), ui::PAGE_TRANSITION_LINK);
-  params.disposition = NEW_FOREGROUND_TAB;
+  params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   ui_test_utils::NavigateToURL(&params);
 
   // Wait until the test acks that it got hidden.
@@ -1262,9 +1262,9 @@ class PackagedAppTest : public ExtensionBrowserTest {
     const extensions::Extension* extension = LoadExtension(app_dir);
     ASSERT_TRUE(extension);
 
-    AppLaunchParams params(browser()->profile(), extension,
-                           extensions::LAUNCH_CONTAINER_NONE, NEW_WINDOW,
-                           extensions::SOURCE_TEST);
+    AppLaunchParams params(
+        browser()->profile(), extension, extensions::LAUNCH_CONTAINER_NONE,
+        WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_TEST);
     params.command_line = *base::CommandLine::ForCurrentProcess();
     OpenApplication(params);
   }

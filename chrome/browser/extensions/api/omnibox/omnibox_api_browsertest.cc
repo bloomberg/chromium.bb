@@ -177,7 +177,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, OnInputEntered) {
       ASCIIToUTF16("keyword command"), base::string16::npos, std::string(),
       GURL(), OmniboxEventProto::NTP, true, false, true, true, false,
       ChromeAutocompleteSchemeClassifier(profile)));
-  omnibox_view->model()->AcceptInput(CURRENT_TAB, false);
+  omnibox_view->model()->AcceptInput(WindowOpenDisposition::CURRENT_TAB, false);
   WaitForAutocompleteDone(autocomplete_controller);
   EXPECT_TRUE(autocomplete_controller->done());
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
@@ -192,7 +192,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, OnInputEntered) {
       ASCIIToUTF16("keyword newtab"), base::string16::npos, std::string(),
       GURL(), OmniboxEventProto::NTP, true, false, true, true, false,
       ChromeAutocompleteSchemeClassifier(profile)));
-  omnibox_view->model()->AcceptInput(NEW_FOREGROUND_TAB, false);
+  omnibox_view->model()->AcceptInput(WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                                     false);
   WaitForAutocompleteDone(autocomplete_controller);
   EXPECT_TRUE(autocomplete_controller->done());
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();

@@ -91,8 +91,9 @@ const CGFloat kSupervisedUserSpacing = 26.0;
 
 - (IBAction)switchToProfile:(id)sender {
   // Check the event flags to see if a new window should be crated.
-  bool always_create = ui::WindowOpenDispositionFromNSEvent(
-      [NSApp currentEvent]) == NEW_WINDOW;
+  bool always_create =
+      ui::WindowOpenDispositionFromNSEvent([NSApp currentEvent]) ==
+      WindowOpenDisposition::NEW_WINDOW;
   menu_->SwitchToProfile([sender menuIndex], always_create,
                          ProfileMetrics::SWITCH_PROFILE_ICON);
 }

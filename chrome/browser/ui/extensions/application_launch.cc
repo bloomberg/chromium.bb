@@ -231,7 +231,7 @@ WebContents* OpenApplicationTab(const AppLaunchParams& launch_params,
     browser = new Browser(Browser::CreateParams(Browser::TYPE_TABBED, profile));
     browser->window()->Show();
     // There's no current tab in this browser window, so add a new one.
-    disposition = NEW_FOREGROUND_TAB;
+    disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   } else {
     // For existing browser, ensure its window is shown and activated.
     browser->window()->Show();
@@ -251,7 +251,7 @@ WebContents* OpenApplicationTab(const AppLaunchParams& launch_params,
   params.tabstrip_add_types = add_type;
   params.disposition = disposition;
 
-  if (disposition == CURRENT_TAB) {
+  if (disposition == WindowOpenDisposition::CURRENT_TAB) {
     WebContents* existing_tab =
         browser->tab_strip_model()->GetActiveWebContents();
     TabStripModel* model = browser->tab_strip_model();
@@ -385,7 +385,8 @@ WebContents* OpenAppShortcutWindow(Profile* profile,
                                    const GURL& url) {
   AppLaunchParams launch_params(profile,
                                 NULL,  // this is a URL app.  No extension.
-                                extensions::LAUNCH_CONTAINER_WINDOW, NEW_WINDOW,
+                                extensions::LAUNCH_CONTAINER_WINDOW,
+                                WindowOpenDisposition::NEW_WINDOW,
                                 extensions::SOURCE_COMMAND_LINE);
   launch_params.override_url = url;
 

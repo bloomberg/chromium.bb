@@ -252,7 +252,7 @@ void DownloadItemNotification::OnNotificationClick() {
           UserMetricsAction("DownloadNotification.Click_Stopped"));
       GetBrowser()->OpenURL(content::OpenURLParams(
           GURL(chrome::kChromeUIDownloadsURL), content::Referrer(),
-          NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK,
+          WindowOpenDisposition::NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK,
           false /* is_renderer_initiated */));
       CloseNotificationByUser();
       break;

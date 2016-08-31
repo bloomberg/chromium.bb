@@ -197,8 +197,8 @@ void OpenWindowOnUI(
   OpenURLParams params(
       url, Referrer::SanitizeForRequest(
                url, Referrer(script_url, blink::WebReferrerPolicyDefault)),
-      NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
-      true /* is_renderer_initiated */);
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui::PAGE_TRANSITION_AUTO_TOPLEVEL, true /* is_renderer_initiated */);
 
   GetContentClient()->browser()->OpenURL(browser_context, params,
                                          base::Bind(&DidOpenURLOnUI, callback));
@@ -230,7 +230,7 @@ void NavigateClientOnUI(const GURL& url,
   OpenURLParams params(
       url, Referrer::SanitizeForRequest(
                url, Referrer(script_url, blink::WebReferrerPolicyDefault)),
-      frame_tree_node_id, CURRENT_TAB, transition,
+      frame_tree_node_id, WindowOpenDisposition::CURRENT_TAB, transition,
       true /* is_renderer_initiated */);
   web_contents->OpenURL(params);
   new OpenURLObserver(web_contents, frame_tree_node_id, callback);

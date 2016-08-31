@@ -100,7 +100,7 @@ IN_PROC_BROWSER_TEST_F(DataSaverWithServerBrowserTest, ReloadPage) {
   // Reload the webpage and expect the main and the subresources will get the
   // correct save-data header.
   expected_save_data_header_ = "on";
-  chrome::Reload(browser(), CURRENT_TAB);
+  chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
   content::WaitForLoadStop(
       browser()->tab_strip_model()->GetActiveWebContents());
 
@@ -108,7 +108,7 @@ IN_PROC_BROWSER_TEST_F(DataSaverWithServerBrowserTest, ReloadPage) {
   // will get no save-data header.
   EnableDataSaver(false);
   expected_save_data_header_ = "";
-  chrome::Reload(browser(), CURRENT_TAB);
+  chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
   content::WaitForLoadStop(
       browser()->tab_strip_model()->GetActiveWebContents());
 }

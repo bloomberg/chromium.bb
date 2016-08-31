@@ -77,9 +77,9 @@ void RemoteDesktopBrowserTest::VerifyInternetAccess() {
 void RemoteDesktopBrowserTest::OpenClientBrowserPage() {
   // Open the client browser page in a new tab
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(),
-      GURL(http_server() + "/client.html"),
-      NEW_FOREGROUND_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
+      browser(), GURL(http_server() + "/client.html"),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
 
   // Save this web content for later reference
   client_web_content_ = browser()->tab_strip_model()->GetActiveWebContents();
@@ -195,7 +195,7 @@ content::WebContents* RemoteDesktopBrowserTest::LaunchChromotingApp(
       defer_start);
 
   if (is_platform_app()) {
-    window_open_disposition = NEW_WINDOW;
+    window_open_disposition = WindowOpenDisposition::NEW_WINDOW;
   }
 
   OpenApplication(AppLaunchParams(browser()->profile(), extension_,
@@ -237,7 +237,7 @@ content::WebContents* RemoteDesktopBrowserTest::LaunchChromotingApp(
 
 content::WebContents* RemoteDesktopBrowserTest::LaunchChromotingApp(
     bool defer_start) {
-  return LaunchChromotingApp(defer_start, CURRENT_TAB);
+  return LaunchChromotingApp(defer_start, WindowOpenDisposition::CURRENT_TAB);
 }
 
 void RemoteDesktopBrowserTest::StartChromotingApp() {

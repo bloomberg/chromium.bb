@@ -102,11 +102,9 @@ void SigninSupervisedUserImportHandler::OpenUrlInLastActiveProfileBrowser(
   std::string url;
   bool success = args->GetString(0, &url);
   DCHECK(success);
-  content::OpenURLParams params(GURL(url),
-                                content::Referrer(),
-                                NEW_FOREGROUND_TAB,
-                                ui::PAGE_TRANSITION_LINK,
-                                false);
+  content::OpenURLParams params(GURL(url), content::Referrer(),
+                                WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                                ui::PAGE_TRANSITION_LINK, false);
   // ProfileManager::GetLastUsedProfile() will attempt to load the default
   // profile if there is no last used profile. If the default profile is not
   // fully loaded and initialized, it will attempt to do so synchronously.

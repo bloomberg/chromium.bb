@@ -62,5 +62,5 @@ UpdatePasswordInfoBar::CreateRenderInfoBar(JNIEnv* env) {
 
 void UpdatePasswordInfoBar::OnLinkClicked(JNIEnv* env,
                                           const JavaParamRef<jobject>& obj) {
-  GetDelegate()->LinkClicked(NEW_FOREGROUND_TAB);
+  GetDelegate()->LinkClicked(WindowOpenDisposition::NEW_FOREGROUND_TAB);
 }

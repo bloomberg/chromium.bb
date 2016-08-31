@@ -182,15 +182,11 @@ class StartPageService::StartPageWebContentsDelegate
     chrome::ScopedTabbedBrowserDisplayer displayer(profile_);
     // Force all links to open in a new tab, even if they were trying to open a
     // new window.
-    disposition =
-        disposition == NEW_BACKGROUND_TAB ? disposition : NEW_FOREGROUND_TAB;
-    chrome::AddWebContents(displayer.browser(),
-                           nullptr,
-                           new_contents,
-                           disposition,
-                           initial_pos,
-                           user_gesture,
-                           was_blocked);
+    disposition = disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB
+                      ? disposition
+                      : WindowOpenDisposition::NEW_FOREGROUND_TAB;
+    chrome::AddWebContents(displayer.browser(), nullptr, new_contents,
+                           disposition, initial_pos, user_gesture, was_blocked);
   }
 
   content::WebContents* OpenURLFromTab(
@@ -200,10 +196,10 @@ class StartPageService::StartPageWebContentsDelegate
     // window.
     chrome::NavigateParams new_tab_params(
         static_cast<Browser*>(nullptr), params.url, params.transition);
-    if (params.disposition == NEW_BACKGROUND_TAB) {
-      new_tab_params.disposition = NEW_BACKGROUND_TAB;
+    if (params.disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB) {
+      new_tab_params.disposition = WindowOpenDisposition::NEW_BACKGROUND_TAB;
     } else {
-      new_tab_params.disposition = NEW_FOREGROUND_TAB;
+      new_tab_params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
       new_tab_params.window_action = chrome::NavigateParams::SHOW_WINDOW;
     }
 

@@ -1517,7 +1517,7 @@ void BrowserView::CutCopyPaste(int command_id) {
 
 WindowOpenDisposition BrowserView::GetDispositionForPopupBounds(
     const gfx::Rect& bounds) {
-  return NEW_POPUP;
+  return WindowOpenDisposition::NEW_POPUP;
 }
 
 FindBar* BrowserView::CreateFindBar() {

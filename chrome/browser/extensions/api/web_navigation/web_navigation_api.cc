@@ -374,12 +374,12 @@ void WebNavigationTabObserver::DidOpenRequestedURL(
 
   // We only send the onCreatedNavigationTarget if we end up creating a new
   // window.
-  if (disposition != SINGLETON_TAB &&
-      disposition != NEW_FOREGROUND_TAB &&
-      disposition != NEW_BACKGROUND_TAB &&
-      disposition != NEW_POPUP &&
-      disposition != NEW_WINDOW &&
-      disposition != OFF_THE_RECORD)
+  if (disposition != WindowOpenDisposition::SINGLETON_TAB &&
+      disposition != WindowOpenDisposition::NEW_FOREGROUND_TAB &&
+      disposition != WindowOpenDisposition::NEW_BACKGROUND_TAB &&
+      disposition != WindowOpenDisposition::NEW_POPUP &&
+      disposition != WindowOpenDisposition::NEW_WINDOW &&
+      disposition != WindowOpenDisposition::OFF_THE_RECORD)
     return;
 
   helpers::DispatchOnCreatedNavigationTarget(web_contents(),

@@ -180,7 +180,7 @@ IN_PROC_BROWSER_TEST_F(ZoomControllerBrowserTest,
   ASSERT_TRUE(tab_strip);
 
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), url, NEW_FOREGROUND_TAB,
+      browser(), url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   {
     content::WebContents* web_contents = tab_strip->GetActiveWebContents();
@@ -286,7 +286,7 @@ IN_PROC_BROWSER_TEST_F(ZoomControllerBrowserTest,
   // signin page, the HostZoomMap changes, and we need to test that the
   // ZoomController correctly detects this.
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), signin_url, NEW_FOREGROUND_TAB,
+      browser(), signin_url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   login_ui_test_utils::WaitUntilUIReady(browser());
   content::WebContents* web_contents =

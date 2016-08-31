@@ -110,7 +110,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterDialogControllerBrowserTest, Navigate) {
 
     // Refresh and block until dialog WebContents has been destroyed.
     content::WebContentsDestroyedWatcher dialog_watcher(media_router_dialog_);
-    chrome::Reload(browser(), CURRENT_TAB);
+    chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
     dialog_watcher.Wait();
   }
 

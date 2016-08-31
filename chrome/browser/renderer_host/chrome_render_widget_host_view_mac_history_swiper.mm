@@ -377,9 +377,9 @@ BOOL forceMagicMouse = NO;
       historyOverlay_.view.window);
   if (browser) {
     if (direction == history_swiper::kForwards)
-      chrome::GoForward(browser, CURRENT_TAB);
+      chrome::GoForward(browser, WindowOpenDisposition::CURRENT_TAB);
     else
-      chrome::GoBack(browser, CURRENT_TAB);
+      chrome::GoBack(browser, WindowOpenDisposition::CURRENT_TAB);
   }
 }
 
@@ -482,9 +482,9 @@ BOOL forceMagicMouse = NO;
               chrome::FindBrowserWithWindow(historyOverlay.view.window);
           if (ended && browser) {
             if (isRightScroll)
-              chrome::GoForward(browser, CURRENT_TAB);
+              chrome::GoForward(browser, WindowOpenDisposition::CURRENT_TAB);
             else
-              chrome::GoBack(browser, CURRENT_TAB);
+              chrome::GoBack(browser, WindowOpenDisposition::CURRENT_TAB);
           }
 
           if (ended || isComplete) {

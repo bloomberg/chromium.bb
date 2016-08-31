@@ -281,9 +281,7 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest, HttpHostMatchingExtensionId) {
 
   // Load a page from the test host in a new tab.
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(),
-      url,
-      NEW_FOREGROUND_TAB,
+      browser(), url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
   // Sanity check that there's no bleeding between the extension and the tab.
@@ -328,7 +326,7 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest, NoBackgroundPage) {
   EXPECT_EQ(0u, pm->GetRenderFrameHostsForExtension(extension->id()).size());
 
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), extension_url, NEW_FOREGROUND_TAB,
+      browser(), extension_url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   EXPECT_EQ(1u, pm->GetRenderFrameHostsForExtension(extension->id()).size());
 }
@@ -475,7 +473,7 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest, FrameClassification) {
 
   // Now load an extension page and a non-extension page...
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), kExt1EmptyUrl, NEW_BACKGROUND_TAB,
+      browser(), kExt1EmptyUrl, WindowOpenDisposition::NEW_BACKGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   NavigateToURL(embedded_test_server()->GetURL("/two_iframes.html"));
   EXPECT_EQ(1u, pm->GetAllFrames().size());

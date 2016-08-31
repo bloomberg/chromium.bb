@@ -164,7 +164,8 @@ void ChromeControllerClient::Reload() {
 }
 
 void ChromeControllerClient::OpenUrlInCurrentTab(const GURL& url) {
-  content::OpenURLParams params(url, Referrer(), CURRENT_TAB,
+  content::OpenURLParams params(url, Referrer(),
+                                WindowOpenDisposition::CURRENT_TAB,
                                 ui::PAGE_TRANSITION_LINK, false);
   web_contents_->OpenURL(params);
 }

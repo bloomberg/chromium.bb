@@ -98,7 +98,7 @@ void CreatePrintDialog(content::BrowserContext* browser_context,
       displayer.browser()->OpenURL(content::OpenURLParams(
           google_util::AppendGoogleLocaleParam(
               url, g_browser_process->GetApplicationLocale()),
-          content::Referrer(), NEW_FOREGROUND_TAB,
+          content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
           ui::PAGE_TRANSITION_AUTO_BOOKMARK, false));
   if (data && data->size()) {
     new PrintDataSetter(web_contents, data, print_job_title, print_ticket,

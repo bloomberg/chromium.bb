@@ -7253,9 +7253,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Now, simulate that both ShowView messages arrive by showing both of the
   // pending WebContents.
   web_contents()->ShowCreatedWindow(process1->GetID(), filter1->routing_id(),
-                                    NEW_FOREGROUND_TAB, gfx::Rect(), true);
+                                    WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                                    gfx::Rect(), true);
   web_contents()->ShowCreatedWindow(process2->GetID(), filter2->routing_id(),
-                                    NEW_FOREGROUND_TAB, gfx::Rect(), true);
+                                    WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                                    gfx::Rect(), true);
 
   // Verify that both shells were properly created.
   EXPECT_EQ(3u, Shell::windows().size());

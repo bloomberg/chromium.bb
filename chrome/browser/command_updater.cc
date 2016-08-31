@@ -41,7 +41,7 @@ bool CommandUpdater::IsCommandEnabled(int id) const {
 }
 
 bool CommandUpdater::ExecuteCommand(int id) {
-  return ExecuteCommandWithDisposition(id, CURRENT_TAB);
+  return ExecuteCommandWithDisposition(id, WindowOpenDisposition::CURRENT_TAB);
 }
 
 bool CommandUpdater::ExecuteCommandWithDisposition(

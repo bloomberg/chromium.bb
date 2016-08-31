@@ -359,7 +359,7 @@ IN_PROC_BROWSER_TEST_F(SharedOptionsTest, ScreenLockPreferencePrimary) {
   // Set the secondary user's preference to true, and reload the primary user's
   // browser to see the updated controlled-by indicator.
   prefs2->SetBoolean(prefs::kEnableAutoScreenLock, true);
-  chrome::Reload(browser, CURRENT_TAB);
+  chrome::Reload(browser, WindowOpenDisposition::CURRENT_TAB);
   content::WaitForLoadStop(contents);
   {
     SCOPED_TRACE("Screen lock false for primary user");
@@ -440,7 +440,7 @@ IN_PROC_BROWSER_TEST_F(SharedOptionsTest, ScreenLockPreferenceSecondary) {
   // Set the preference to false for the primary user and check that the
   // indicator disappears.
   prefs1->SetBoolean(prefs::kEnableAutoScreenLock, false);
-  chrome::Reload(browser, CURRENT_TAB);
+  chrome::Reload(browser, WindowOpenDisposition::CURRENT_TAB);
   content::WaitForLoadStop(contents);
   {
     SCOPED_TRACE("Screen lock false for both users");

@@ -407,11 +407,9 @@ void KeyboardOverlayHandler::GetLabelMap(const base::ListValue* args) {
 void KeyboardOverlayHandler::OpenLearnMorePage(const base::ListValue* args) {
   web_ui()->GetWebContents()->GetDelegate()->OpenURLFromTab(
       web_ui()->GetWebContents(),
-      content::OpenURLParams(GURL(kLearnMoreURL),
-                             content::Referrer(),
-                             NEW_FOREGROUND_TAB,
-                             ui::PAGE_TRANSITION_LINK,
-                             false));
+      content::OpenURLParams(GURL(kLearnMoreURL), content::Referrer(),
+                             WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                             ui::PAGE_TRANSITION_LINK, false));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -240,7 +240,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_GetUserMediaTest) {
   EXPECT_TRUE(listener.WaitUntilSatisfied());
 
   content::OpenURLParams params(GURL("about:blank"), content::Referrer(),
-                                NEW_FOREGROUND_TAB,
+                                WindowOpenDisposition::NEW_FOREGROUND_TAB,
                                 ui::PAGE_TRANSITION_LINK, false);
   content::WebContents* web_contents = browser()->OpenURL(params);
 
@@ -276,7 +276,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_ActiveTabPermission) {
   // Open a new tab and make sure capture is denied.
   EXPECT_TRUE(before_open_tab.WaitUntilSatisfied());
   content::OpenURLParams params(GURL("http://google.com"), content::Referrer(),
-                                NEW_FOREGROUND_TAB,
+                                WindowOpenDisposition::NEW_FOREGROUND_TAB,
                                 ui::PAGE_TRANSITION_LINK, false);
   content::WebContents* web_contents = browser()->OpenURL(params);
   before_open_tab.Reply("");
@@ -356,7 +356,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_GrantForChromePages) {
 
   // Open a tab on a chrome:// page and make sure we can capture.
   content::OpenURLParams params(GURL("chrome://version"), content::Referrer(),
-                                NEW_FOREGROUND_TAB,
+                                WindowOpenDisposition::NEW_FOREGROUND_TAB,
                                 ui::PAGE_TRANSITION_LINK, false);
   content::WebContents* web_contents = browser()->OpenURL(params);
   const Extension* extension = ExtensionRegistry::Get(

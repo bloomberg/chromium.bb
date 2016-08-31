@@ -186,18 +186,19 @@ WebContents* GetTabAndRevertIfNecessary(Browser* browser,
                                         WindowOpenDisposition disposition) {
   WebContents* current_tab = browser->tab_strip_model()->GetActiveWebContents();
   switch (disposition) {
-    case NEW_FOREGROUND_TAB:
-    case NEW_BACKGROUND_TAB: {
+    case WindowOpenDisposition::NEW_FOREGROUND_TAB:
+    case WindowOpenDisposition::NEW_BACKGROUND_TAB: {
       WebContents* new_tab = current_tab->Clone();
-      if (disposition == NEW_BACKGROUND_TAB)
+      if (disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB)
         new_tab->WasHidden();
       browser->tab_strip_model()->AddWebContents(
           new_tab, -1, ui::PAGE_TRANSITION_LINK,
-          (disposition == NEW_FOREGROUND_TAB) ?
-              TabStripModel::ADD_ACTIVE : TabStripModel::ADD_NONE);
+          (disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB)
+              ? TabStripModel::ADD_ACTIVE
+              : TabStripModel::ADD_NONE);
       return new_tab;
     }
-    case NEW_WINDOW: {
+    case WindowOpenDisposition::NEW_WINDOW: {
       WebContents* new_tab = current_tab->Clone();
       Browser* new_browser =
           new Browser(Browser::CreateParams(browser->profile()));
@@ -469,7 +470,8 @@ void Home(Browser* browser, WindowOpenDisposition disposition) {
     url = extensions::AppLaunchInfo::GetLaunchWebURL(extension);
   }
 
-  if (disposition == CURRENT_TAB || disposition == NEW_FOREGROUND_TAB)
+  if (disposition == WindowOpenDisposition::CURRENT_TAB ||
+      disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB)
     extensions::MaybeShowExtensionControlledHomeNotification(browser);
 #endif
 

@@ -1939,9 +1939,8 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, OpenURLFromTab_CurrentTab_Abort) {
   ExtensionTestMessageListener load_listener("WebViewTest.LOADSTOP", false);
 
   // Navigating to a file URL is forbidden inside a <webview>.
-  content::OpenURLParams params(GURL("file://foo"),
-                                content::Referrer(),
-                                CURRENT_TAB,
+  content::OpenURLParams params(GURL("file://foo"), content::Referrer(),
+                                WindowOpenDisposition::CURRENT_TAB,
                                 ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
                                 true /* is_renderer_initiated */);
   GetGuestWebContents()->GetDelegate()->OpenURLFromTab(
@@ -1964,9 +1963,9 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, OpenURLFromTab_CurrentTab_Succeed) {
   ExtensionTestMessageListener load_listener("WebViewTest.LOADSTOP", false);
 
   GURL test_url("http://www.google.com");
-  content::OpenURLParams params(test_url, content::Referrer(), CURRENT_TAB,
-                                ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
-                                false /* is_renderer_initiated */);
+  content::OpenURLParams params(
+      test_url, content::Referrer(), WindowOpenDisposition::CURRENT_TAB,
+      ui::PAGE_TRANSITION_AUTO_TOPLEVEL, false /* is_renderer_initiated */);
   GetGuestWebContents()->GetDelegate()->OpenURLFromTab(GetGuestWebContents(),
                                                        params);
 
@@ -1984,9 +1983,8 @@ IN_PROC_BROWSER_TEST_P(WebViewNewWindowTest, OpenURLFromTab_NewWindow_Abort) {
       "WebViewTest.NEWWINDOW", false);
 
   // Navigating to a file URL is forbidden inside a <webview>.
-  content::OpenURLParams params(GURL("file://foo"),
-                                content::Referrer(),
-                                NEW_BACKGROUND_TAB,
+  content::OpenURLParams params(GURL("file://foo"), content::Referrer(),
+                                WindowOpenDisposition::NEW_BACKGROUND_TAB,
                                 ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
                                 true /* is_renderer_initiated */);
   GetGuestWebContents()->GetDelegate()->OpenURLFromTab(

@@ -245,9 +245,8 @@ class BrowserCloseManagerBrowserTest
     content::DownloadTestObserverInProgress observer(
         content::BrowserContext::GetDownloadManager(browser->profile()), 1);
     ui_test_utils::NavigateToURLWithDisposition(
-        browser,
-        GURL(net::URLRequestSlowDownloadJob::kKnownSizeUrl),
-        NEW_BACKGROUND_TAB,
+        browser, GURL(net::URLRequestSlowDownloadJob::kKnownSizeUrl),
+        WindowOpenDisposition::NEW_BACKGROUND_TAB,
         ui_test_utils::BROWSER_TEST_NONE);
     observer.WaitForFinished();
     EXPECT_EQ(
@@ -343,11 +342,9 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest,
       ->CloseWebContentsAt(1, TabStripModel::CLOSE_USER_GESTURE);
   content::TestNavigationObserver navigation_observer(
       browser()->tab_strip_model()->GetActiveWebContents(), 1);
-  ASSERT_NO_FATAL_FAILURE(
-      NavigateToURLWithDisposition(browser(),
-                                   GURL(chrome::kChromeUIVersionURL),
-                                   CURRENT_TAB,
-                                   ui_test_utils::BROWSER_TEST_NONE));
+  ASSERT_NO_FATAL_FAILURE(NavigateToURLWithDisposition(
+      browser(), GURL(chrome::kChromeUIVersionURL),
+      WindowOpenDisposition::CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE));
   ASSERT_NO_FATAL_FAILURE(AcceptClose());
   navigation_observer.Wait();
 
@@ -890,9 +887,7 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerWithDownloadsBrowserTest,
       1,
       content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_QUIT);
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(),
-      GURL(download_url),
-      NEW_BACKGROUND_TAB,
+      browser(), GURL(download_url), WindowOpenDisposition::NEW_BACKGROUND_TAB,
       ui_test_utils::BROWSER_TEST_NONE);
   observer.WaitForFinished();
 

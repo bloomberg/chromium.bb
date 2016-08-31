@@ -472,7 +472,8 @@ bool SessionsRestoreFunction::RestoreLocalSession(const SessionId& session_id,
       BrowserLiveTabContext::FindContextForWebContents(
           browser->tab_strip_model()->GetActiveWebContents());
   std::vector<sessions::LiveTab*> restored_tabs =
-      tab_restore_service->RestoreEntryById(context, session_id.id(), UNKNOWN);
+      tab_restore_service->RestoreEntryById(context, session_id.id(),
+                                            WindowOpenDisposition::UNKNOWN);
   // If the ID is invalid, restored_tabs will be empty.
   if (restored_tabs.empty()) {
     SetInvalidIdError(session_id.ToString());
@@ -514,8 +515,8 @@ bool SessionsRestoreFunction::RestoreForeignSession(const SessionId& session_id,
     content::WebContents* contents = tab_strip->GetActiveWebContents();
 
     content::WebContents* tab_contents =
-        SessionRestore::RestoreForeignSessionTab(contents, *tab,
-                                                 NEW_FOREGROUND_TAB);
+        SessionRestore::RestoreForeignSessionTab(
+            contents, *tab, WindowOpenDisposition::NEW_FOREGROUND_TAB);
     SetResultRestoredTab(tab_contents);
     return true;
   }

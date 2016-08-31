@@ -367,8 +367,9 @@ void OmniboxPopupContentsView::OnMouseReleased(
   }
 
   if (event.IsOnlyMiddleMouseButton() || event.IsOnlyLeftMouseButton()) {
-    OpenSelectedLine(event, event.IsOnlyLeftMouseButton() ? CURRENT_TAB :
-                                                            NEW_BACKGROUND_TAB);
+    OpenSelectedLine(event, event.IsOnlyLeftMouseButton()
+                                ? WindowOpenDisposition::CURRENT_TAB
+                                : WindowOpenDisposition::NEW_BACKGROUND_TAB);
   }
 }
 
@@ -400,7 +401,7 @@ void OmniboxPopupContentsView::OnGestureEvent(ui::GestureEvent* event) {
       break;
     case ui::ET_GESTURE_TAP:
     case ui::ET_GESTURE_SCROLL_END:
-      OpenSelectedLine(*event, CURRENT_TAB);
+      OpenSelectedLine(*event, WindowOpenDisposition::CURRENT_TAB);
       break;
     default:
       return;

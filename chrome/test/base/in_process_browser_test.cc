@@ -387,7 +387,7 @@ void InProcessBrowserTest::AddTabAtIndexToBrowser(
     bool check_navigation_success) {
   chrome::NavigateParams params(browser, url, transition);
   params.tabstrip_index = index;
-  params.disposition = NEW_FOREGROUND_TAB;
+  params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   chrome::Navigate(&params);
 
   if (check_navigation_success)

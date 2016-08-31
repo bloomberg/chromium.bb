@@ -29,7 +29,8 @@ IN_PROC_BROWSER_TEST_F(DeferredMediaBrowserTest, BackgroundMediaIsDeferred) {
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), content::GetFileUrlWithQuery(
                      media::GetTestDataFilePath("bear-640x360.webm"), ""),
-      NEW_BACKGROUND_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      WindowOpenDisposition::NEW_BACKGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
   content::WebContents* background_contents =

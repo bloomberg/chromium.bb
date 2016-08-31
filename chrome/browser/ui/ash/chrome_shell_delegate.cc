@@ -466,7 +466,7 @@ void ChromeShellDelegate::OpenKeyboardShortcutHelpPage() const {
 
   chrome::NavigateParams params(browser, GURL(kKeyboardShortcutHelpPageUrl),
                                 ui::PAGE_TRANSITION_AUTO_BOOKMARK);
-  params.disposition = SINGLETON_TAB;
+  params.disposition = WindowOpenDisposition::SINGLETON_TAB;
   chrome::Navigate(&params);
 }
 

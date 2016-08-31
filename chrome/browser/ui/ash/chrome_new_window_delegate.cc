@@ -133,7 +133,8 @@ void ChromeNewWindowDelegate::OpenFileManager() {
   const extensions::Extension* const extension =
       service->GetInstalledExtension(kFileManagerAppId);
   OpenApplication(CreateAppLaunchParamsUserContainer(
-      profile, extension, NEW_FOREGROUND_TAB, extensions::SOURCE_KEYBOARD));
+      profile, extension, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      extensions::SOURCE_KEYBOARD));
 }
 
 void ChromeNewWindowDelegate::OpenCrosh() {
@@ -144,9 +145,9 @@ void ChromeNewWindowDelegate::OpenCrosh() {
     return;
   chrome::ScopedTabbedBrowserDisplayer displayer(profile);
   Browser* browser = displayer.browser();
-  content::WebContents* page = browser->OpenURL(
-      content::OpenURLParams(crosh_url, content::Referrer(), NEW_FOREGROUND_TAB,
-                             ui::PAGE_TRANSITION_GENERATED, false));
+  content::WebContents* page = browser->OpenURL(content::OpenURLParams(
+      crosh_url, content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui::PAGE_TRANSITION_GENERATED, false));
   browser->window()->Show();
   browser->window()->Activate();
   page->Focus();

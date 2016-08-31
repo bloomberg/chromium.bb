@@ -554,7 +554,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
         content::Source<NavigationController>(
             &browser()->tab_strip_model()->GetActiveWebContents()->
                 GetController()));
-    chrome::Reload(browser(), CURRENT_TAB);
+    chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
     observer.Wait();
   }
   // Extension should now be loaded.

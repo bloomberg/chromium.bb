@@ -71,11 +71,11 @@ AppLaunchParams CreateAppLaunchParamsWithEventFlags(
 
   extensions::LaunchContainer container;
   WindowOpenDisposition disposition;
-  if (raw_disposition == NEW_FOREGROUND_TAB ||
-      raw_disposition == NEW_BACKGROUND_TAB) {
+  if (raw_disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB ||
+      raw_disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB) {
     container = extensions::LAUNCH_CONTAINER_TAB;
     disposition = raw_disposition;
-  } else if (raw_disposition == NEW_WINDOW) {
+  } else if (raw_disposition == WindowOpenDisposition::NEW_WINDOW) {
     container = extensions::LAUNCH_CONTAINER_WINDOW;
     disposition = raw_disposition;
   } else {
@@ -83,7 +83,7 @@ AppLaunchParams CreateAppLaunchParamsWithEventFlags(
     // is set, launch as a regular tab.
     container =
         extensions::GetLaunchContainer(ExtensionPrefs::Get(profile), extension);
-    disposition = NEW_FOREGROUND_TAB;
+    disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   }
   return AppLaunchParams(profile, extension, container, disposition, source);
 }

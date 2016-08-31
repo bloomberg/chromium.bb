@@ -164,8 +164,9 @@ TEST_F(BrowserCommandsTest, BookmarkCurrentPage) {
   // Navigate to a url.
   GURL url1("http://foo/1");
   AddTab(browser(), url1);
-  browser()->OpenURL(OpenURLParams(
-      url1, Referrer(), CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
+  browser()->OpenURL(OpenURLParams(url1, Referrer(),
+                                   WindowOpenDisposition::CURRENT_TAB,
+                                   ui::PAGE_TRANSITION_TYPED, false));
 
   chrome::BookmarkCurrentPageAllowingExtensionOverrides(browser());
 
@@ -184,7 +185,7 @@ TEST_F(BrowserCommandsTest, BackForwardInNewTab) {
   NavigateAndCommitActiveTab(url2);
 
   // Go back in a new background tab.
-  chrome::GoBack(browser(), NEW_BACKGROUND_TAB);
+  chrome::GoBack(browser(), WindowOpenDisposition::NEW_BACKGROUND_TAB);
   EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
 
@@ -210,7 +211,7 @@ TEST_F(BrowserCommandsTest, BackForwardInNewTab) {
   // (to test both codepaths).
   CommitPendingLoad(&first->GetController());
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
-  chrome::GoForward(browser(), NEW_BACKGROUND_TAB);
+  chrome::GoForward(browser(), WindowOpenDisposition::NEW_BACKGROUND_TAB);
 
   // The previous tab should be unchanged and still in the foreground.
   EXPECT_EQ(url1, first->GetLastCommittedURL());
@@ -232,7 +233,7 @@ TEST_F(BrowserCommandsTest, BackForwardInNewTab) {
   browser()->tab_strip_model()->ActivateTabAt(2, true);
   // TODO(brettw) bug 11055: see the comment above about why we need this.
   CommitPendingLoad(&second->GetController());
-  chrome::GoBack(browser(), NEW_FOREGROUND_TAB);
+  chrome::GoBack(browser(), WindowOpenDisposition::NEW_FOREGROUND_TAB);
   ASSERT_EQ(3, browser()->tab_strip_model()->active_index());
   ASSERT_EQ(url1,
             browser()->tab_strip_model()->GetActiveWebContents()->
@@ -242,7 +243,7 @@ TEST_F(BrowserCommandsTest, BackForwardInNewTab) {
   // TODO(brettw) bug 11055: see the comment above about why we need this.
   CommitPendingLoad(&
       browser()->tab_strip_model()->GetActiveWebContents()->GetController());
-  chrome::GoForward(browser(), NEW_FOREGROUND_TAB);
+  chrome::GoForward(browser(), WindowOpenDisposition::NEW_FOREGROUND_TAB);
   ASSERT_EQ(4, browser()->tab_strip_model()->active_index());
   ASSERT_EQ(url2,
             browser()->tab_strip_model()->GetActiveWebContents()->

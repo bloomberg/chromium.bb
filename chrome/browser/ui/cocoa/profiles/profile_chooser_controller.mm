@@ -1099,8 +1099,9 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
 - (IBAction)switchToProfile:(id)sender {
   // Check the event flags to see if a new window should be created.
-  bool alwaysCreate = ui::WindowOpenDispositionFromNSEvent(
-      [NSApp currentEvent]) == NEW_WINDOW;
+  bool alwaysCreate =
+      ui::WindowOpenDispositionFromNSEvent([NSApp currentEvent]) ==
+      WindowOpenDisposition::NEW_WINDOW;
   avatarMenu_->SwitchToProfile([sender tag], alwaysCreate,
                                ProfileMetrics::SWITCH_PROFILE_ICON);
 }

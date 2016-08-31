@@ -71,14 +71,14 @@ bool FullscreenControllerTest::IsFullscreenBubbleDisplayed() {
 void FullscreenControllerTest::GoBack() {
   content::TestNavigationObserver observer(
       browser()->tab_strip_model()->GetActiveWebContents(), 1);
-  chrome::GoBack(browser(), CURRENT_TAB);
+  chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
   observer.Wait();
 }
 
 void FullscreenControllerTest::Reload() {
   content::TestNavigationObserver observer(
       browser()->tab_strip_model()->GetActiveWebContents(), 1);
-  chrome::Reload(browser(), CURRENT_TAB);
+  chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
   observer.Wait();
 }
 

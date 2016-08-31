@@ -131,10 +131,10 @@ void PluginInstaller::OpenDownloadURL(const GURL& plugin_url,
                                       content::WebContents* web_contents) {
   DCHECK_EQ(INSTALLER_STATE_IDLE, state_);
   web_contents->OpenURL(content::OpenURLParams(
-      plugin_url,
-      content::Referrer(web_contents->GetURL(),
-                        blink::WebReferrerPolicyDefault),
-      NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_TYPED, false));
+      plugin_url, content::Referrer(web_contents->GetURL(),
+                                    blink::WebReferrerPolicyDefault),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_TYPED,
+      false));
   FOR_EACH_OBSERVER(PluginInstallerObserver, observers_, DownloadFinished());
 }
 

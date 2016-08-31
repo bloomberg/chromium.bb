@@ -627,11 +627,9 @@ void OneClickSigninSyncStarter::ShowSettingsPageInWebContents(
   }
 
   GURL url = chrome::GetSettingsUrl(sub_page);
-  content::OpenURLParams params(url,
-                                content::Referrer(),
-                                CURRENT_TAB,
-                                ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
-                                false);
+  content::OpenURLParams params(url, content::Referrer(),
+                                WindowOpenDisposition::CURRENT_TAB,
+                                ui::PAGE_TRANSITION_AUTO_TOPLEVEL, false);
   contents->OpenURL(params);
 
   // Activate the tab.

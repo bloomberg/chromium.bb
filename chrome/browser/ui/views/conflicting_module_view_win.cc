@@ -115,9 +115,10 @@ void ConflictingModuleView::OnWidgetClosing(views::Widget* widget) {
 }
 
 bool ConflictingModuleView::Accept() {
-  browser_->OpenURL(content::OpenURLParams(
-      help_center_url_, content::Referrer(), NEW_FOREGROUND_TAB,
-      ui::PAGE_TRANSITION_LINK, false));
+  browser_->OpenURL(
+      content::OpenURLParams(help_center_url_, content::Referrer(),
+                             WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                             ui::PAGE_TRANSITION_LINK, false));
   EnumerateModulesModel::GetInstance()->AcknowledgeConflictNotification();
   return true;
 }

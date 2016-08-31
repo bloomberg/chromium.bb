@@ -393,7 +393,8 @@ bool IsInternalURL(const GURL& url) {
       WebsiteSettings::WEBSITE_SETTINGS_SITE_SETTINGS_OPENED);
   webContents_->OpenURL(content::OpenURLParams(
       GURL(chrome::kChromeUIContentSettingsURL), content::Referrer(),
-      NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK, false));
+      WindowOpenDisposition::NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK,
+      false));
 }
 
 // Handler for the site settings button below the list of permissions.

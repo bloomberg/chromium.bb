@@ -71,7 +71,8 @@ ImeWindow::ImeWindow(Profile* profile,
   }
   web_contents_.reset(content::WebContents::Create(create_params));
   web_contents_->SetDelegate(this);
-  content::OpenURLParams params(gurl, content::Referrer(), SINGLETON_TAB,
+  content::OpenURLParams params(gurl, content::Referrer(),
+                                WindowOpenDisposition::SINGLETON_TAB,
                                 ui::PAGE_TRANSITION_LINK, false);
   web_contents_->OpenURL(params);
 

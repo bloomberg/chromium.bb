@@ -88,11 +88,13 @@ IN_PROC_BROWSER_TEST_F(TabManagerObserverTest, OnDiscardStateChange) {
 
   // Open two tabs.
   OpenURLParams open1(GURL(chrome::kChromeUIAboutURL), content::Referrer(),
-                      NEW_BACKGROUND_TAB, ui::PAGE_TRANSITION_TYPED, false);
+                      WindowOpenDisposition::NEW_BACKGROUND_TAB,
+                      ui::PAGE_TRANSITION_TYPED, false);
   int index_1 = GetIndex(browser()->OpenURL(open1));
 
   OpenURLParams open2(GURL(chrome::kChromeUICreditsURL), content::Referrer(),
-                      NEW_BACKGROUND_TAB, ui::PAGE_TRANSITION_TYPED, false);
+                      WindowOpenDisposition::NEW_BACKGROUND_TAB,
+                      ui::PAGE_TRANSITION_TYPED, false);
   int index_2 = GetIndex(browser()->OpenURL(open2));
 
   // Subscribe observer to TabManager's observer list.
@@ -150,7 +152,8 @@ IN_PROC_BROWSER_TEST_F(TabManagerObserverTest, OnAutoDiscardableStateChange) {
 
   // Open two tabs.
   OpenURLParams open(GURL(chrome::kChromeUIAboutURL), content::Referrer(),
-                     NEW_BACKGROUND_TAB, ui::PAGE_TRANSITION_TYPED, false);
+                     WindowOpenDisposition::NEW_BACKGROUND_TAB,
+                     ui::PAGE_TRANSITION_TYPED, false);
   WebContents* contents = browser()->OpenURL(open);
 
   // Subscribe observer to TabManager's observer list.

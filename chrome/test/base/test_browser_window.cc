@@ -34,7 +34,7 @@ GURL TestBrowserWindow::TestLocationBar::GetDestinationURL() const {
 
 WindowOpenDisposition
     TestBrowserWindow::TestLocationBar::GetWindowOpenDisposition() const {
-  return CURRENT_TAB;
+  return WindowOpenDisposition::CURRENT_TAB;
 }
 
 ui::PageTransition
@@ -170,7 +170,7 @@ DownloadShelf* TestBrowserWindow::GetDownloadShelf() {
 
 WindowOpenDisposition TestBrowserWindow::GetDispositionForPopupBounds(
     const gfx::Rect& bounds) {
-  return NEW_POPUP;
+  return WindowOpenDisposition::NEW_POPUP;
 }
 
 FindBar* TestBrowserWindow::CreateFindBar() {

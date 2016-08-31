@@ -60,7 +60,7 @@ class HostedAppTest : public ExtensionBrowserTest {
     // Launch it in a window.
     ASSERT_TRUE(OpenApplication(AppLaunchParams(
         browser()->profile(), app, extensions::LAUNCH_CONTAINER_WINDOW,
-        NEW_WINDOW, extensions::SOURCE_TEST)));
+        WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_TEST)));
 
     for (auto* b : *BrowserList::GetInstance()) {
       if (b == browser())
@@ -199,7 +199,7 @@ IN_PROC_BROWSER_TEST_F(HostedAppTest, ShouldUseWebAppFrame) {
   // Launch it in a window, as AppLauncherHandler::HandleLaunchApp() would.
   WebContents* bookmark_app_window = OpenApplication(AppLaunchParams(
       browser()->profile(), bookmark_app, extensions::LAUNCH_CONTAINER_WINDOW,
-      NEW_WINDOW, extensions::SOURCE_UNTRACKED));
+      WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_UNTRACKED));
   ASSERT_TRUE(bookmark_app_window);
 
   //  Load a packaged app.
@@ -217,7 +217,7 @@ IN_PROC_BROWSER_TEST_F(HostedAppTest, ShouldUseWebAppFrame) {
   // Launch it in a window, as AppLauncherHandler::HandleLaunchApp() would.
   WebContents* packaged_app_window = OpenApplication(AppLaunchParams(
       browser()->profile(), packaged_app, extensions::LAUNCH_CONTAINER_WINDOW,
-      NEW_WINDOW, extensions::SOURCE_UNTRACKED));
+      WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_UNTRACKED));
   ASSERT_TRUE(packaged_app_window);
 
   DevToolsWindow* devtools_window =

@@ -251,11 +251,9 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& page_cmd) {
       GURL learn_more_url(kLearnMore);
       learn_more_url = google_util::AppendGoogleLocaleParam(
           learn_more_url, g_browser_process->GetApplicationLocale());
-      OpenURLParams params(learn_more_url,
-                           Referrer(),
-                           CURRENT_TAB,
-                           ui::PAGE_TRANSITION_LINK,
-                           false);
+      OpenURLParams params(learn_more_url, Referrer(),
+                           WindowOpenDisposition::CURRENT_TAB,
+                           ui::PAGE_TRANSITION_LINK, false);
       web_contents()->OpenURL(params);
       break;
     }
@@ -316,9 +314,9 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& page_cmd) {
              unsafe_resource.threat_type ==
                  SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL ||
              unsafe_resource.threat_type == SB_THREAT_TYPE_URL_UNWANTED);
-      OpenURLParams params(
-          diagnostic_url, Referrer(), CURRENT_TAB, ui::PAGE_TRANSITION_LINK,
-          false);
+      OpenURLParams params(diagnostic_url, Referrer(),
+                           WindowOpenDisposition::CURRENT_TAB,
+                           ui::PAGE_TRANSITION_LINK, false);
       web_contents()->OpenURL(params);
       break;
     }
@@ -335,7 +333,8 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& page_cmd) {
       GURL phishing_error_url(kReportPhishingErrorUrl);
       phishing_error_url = google_util::AppendGoogleLocaleParam(
           phishing_error_url, g_browser_process->GetApplicationLocale());
-      OpenURLParams params(phishing_error_url, Referrer(), CURRENT_TAB,
+      OpenURLParams params(phishing_error_url, Referrer(),
+                           WindowOpenDisposition::CURRENT_TAB,
                            ui::PAGE_TRANSITION_LINK, false);
       web_contents()->OpenURL(params);
       break;

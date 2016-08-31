@@ -106,7 +106,7 @@ BrowserCommandController::BrowserCommandController(Browser* browser)
       command_updater_(this),
       block_command_execution_(false),
       last_blocked_command_id_(-1),
-      last_blocked_command_disposition_(CURRENT_TAB) {
+      last_blocked_command_disposition_(WindowOpenDisposition::CURRENT_TAB) {
   browser_->tab_strip_model()->AddObserver(this);
   PrefService* local_state = g_browser_process->local_state();
   if (local_state) {
@@ -222,7 +222,7 @@ void BrowserCommandController::SetBlockCommandExecution(bool block) {
   block_command_execution_ = block;
   if (block) {
     last_blocked_command_id_ = -1;
-    last_blocked_command_disposition_ = CURRENT_TAB;
+    last_blocked_command_disposition_ = WindowOpenDisposition::CURRENT_TAB;
   }
 }
 

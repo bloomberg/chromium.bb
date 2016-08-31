@@ -116,7 +116,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest,
   // Reload the browser and wait.
   content::TestNavigationObserver reload_observer(
       browser()->tab_strip_model()->GetActiveWebContents());
-  chrome::Reload(browser(), CURRENT_TAB);
+  chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
   reload_observer.Wait();
 
   // The reload should have removed the previously created dialog.

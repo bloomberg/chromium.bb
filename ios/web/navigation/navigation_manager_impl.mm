@@ -168,7 +168,8 @@ CRWSessionController* NavigationManagerImpl::GetSessionController() {
 void NavigationManagerImpl::LoadURL(const GURL& url,
                                     const web::Referrer& referrer,
                                     ui::PageTransition type) {
-  WebState::OpenURLParams params(url, referrer, CURRENT_TAB, type, NO);
+  WebState::OpenURLParams params(url, referrer,
+                                 WindowOpenDisposition::CURRENT_TAB, type, NO);
   delegate_->GetWebState()->OpenURL(params);
 }
 
@@ -310,7 +311,8 @@ void NavigationManagerImpl::Reload(bool check_for_reposts) {
   GURL url = item ? item->GetURL() : GURL(url::kAboutBlankURL);
   web::Referrer referrer = item ? item->GetReferrer() : web::Referrer();
 
-  WebState::OpenURLParams params(url, referrer, CURRENT_TAB,
+  WebState::OpenURLParams params(url, referrer,
+                                 WindowOpenDisposition::CURRENT_TAB,
                                  ui::PAGE_TRANSITION_RELOAD, NO);
   delegate_->GetWebState()->OpenURL(params);
 }

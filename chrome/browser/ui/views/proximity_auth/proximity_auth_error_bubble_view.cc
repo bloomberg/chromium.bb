@@ -138,7 +138,7 @@ void ProximityAuthErrorBubbleView::StyledLabelLinkClicked(
   if (!web_contents())
     return;
 
-  web_contents()->OpenURL(
-      content::OpenURLParams(link_url_, content::Referrer(), NEW_FOREGROUND_TAB,
-                             ui::PAGE_TRANSITION_LINK, false));
+  web_contents()->OpenURL(content::OpenURLParams(
+      link_url_, content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui::PAGE_TRANSITION_LINK, false));
 }

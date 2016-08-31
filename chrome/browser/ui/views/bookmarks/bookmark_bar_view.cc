@@ -412,7 +412,8 @@ class BookmarkFolderButton : public BookmarkMenuButtonBase {
     // ignored.
     return BookmarkMenuButtonBase::IsTriggerableEventType(e) ||
            (e.IsMouseEvent() &&
-            ui::DispositionFromEventFlags(e.flags()) != CURRENT_TAB);
+            ui::DispositionFromEventFlags(e.flags()) !=
+                WindowOpenDisposition::CURRENT_TAB);
   }
 
  private:

@@ -244,11 +244,9 @@ void CrosLanguageOptionsHandler::InputMethodOptionsOpenCallback(
 
   Browser* browser = chrome::FindBrowserWithWebContents(
       web_ui()->GetWebContents());
-  content::OpenURLParams params(ime->options_page_url(),
-      content::Referrer(),
-      SINGLETON_TAB,
-      ui::PAGE_TRANSITION_LINK,
-      false);
+  content::OpenURLParams params(ime->options_page_url(), content::Referrer(),
+                                WindowOpenDisposition::SINGLETON_TAB,
+                                ui::PAGE_TRANSITION_LINK, false);
   browser->OpenURL(params);
 }
 

@@ -1197,7 +1197,7 @@ class DevToolsReattachAfterCrashTest : public DevToolsSanityTest {
     ui_test_utils::NavigateToURL(browser(), GURL(content::kChromeUICrashURL));
     crash_observer.Wait();
     content::TestNavigationObserver navigation_observer(GetInspectedTab(), 1);
-    chrome::Reload(browser(), CURRENT_TAB);
+    chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
     navigation_observer.Wait();
   }
 };
@@ -1448,7 +1448,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
   chrome::DuplicateTab(browser());
   chrome::SelectPreviousTab(browser());
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
-  chrome::GoBack(browser(), CURRENT_TAB);
+  chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
   RunTestFunction(window, "testWindowInitializedOnNavigateBack");
 
   DevToolsWindowTesting::CloseDevToolsWindowSync(window);

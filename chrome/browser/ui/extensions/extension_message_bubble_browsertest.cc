@@ -222,8 +222,8 @@ void ExtensionMessageBubbleBrowserTest::TestControlledHomeBubbleShown() {
 
   CheckBubbleIsNotPresent(browser(), false, false);
 
-  chrome::ExecuteCommandWithDisposition(browser(),
-                                        IDC_HOME, NEW_FOREGROUND_TAB);
+  chrome::ExecuteCommandWithDisposition(
+      browser(), IDC_HOME, WindowOpenDisposition::NEW_FOREGROUND_TAB);
   base::RunLoop().RunUntilIdle();
 
   CheckBubble(browser(), ANCHOR_BROWSER_ACTION, false);
@@ -249,7 +249,7 @@ void ExtensionMessageBubbleBrowserTest::TestControlledSearchBubbleShown() {
   omnibox->OnBeforePossibleChange();
   omnibox->SetUserText(base::ASCIIToUTF16("search for this"));
   omnibox->OnAfterPossibleChange(true);
-  omnibox->model()->AcceptInput(CURRENT_TAB, false);
+  omnibox->model()->AcceptInput(WindowOpenDisposition::CURRENT_TAB, false);
   base::RunLoop().RunUntilIdle();
 
   CheckBubble(browser(), ANCHOR_BROWSER_ACTION, false);

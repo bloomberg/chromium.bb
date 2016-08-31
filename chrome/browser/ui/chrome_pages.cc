@@ -104,11 +104,11 @@ void ShowHelpImpl(Browser* browser, Profile* profile, HelpSource source) {
     default:
       NOTREACHED() << "Unhandled help source" << source;
   }
-  OpenApplication(
-      AppLaunchParams(profile, extension,
-                      extensions::GetLaunchContainer(
-                          extensions::ExtensionPrefs::Get(profile), extension),
-                      NEW_FOREGROUND_TAB, app_launch_source, true));
+  OpenApplication(AppLaunchParams(
+      profile, extension,
+      extensions::GetLaunchContainer(extensions::ExtensionPrefs::Get(profile),
+                                     extension),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB, app_launch_source, true));
 #else
   GURL url;
   switch (source) {

@@ -360,10 +360,8 @@ void SessionCrashedBubbleView::StyledLabelLinkClicked(views::StyledLabel* label,
                                                       int event_flags) {
   browser_->OpenURL(content::OpenURLParams(
       GURL("https://support.google.com/chrome/answer/96817"),
-      content::Referrer(),
-      NEW_FOREGROUND_TAB,
-      ui::PAGE_TRANSITION_LINK,
-      false));
+      content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui::PAGE_TRANSITION_LINK, false));
   RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_HELP);
 }
 

@@ -980,7 +980,8 @@ void OutOfProcessInstance::NavigateTo(const std::string& url,
   pp::VarDictionary message;
   message.Set(kType, kJSNavigateType);
   message.Set(kJSNavigateUrl, url);
-  message.Set(kJSNavigateWindowOpenDisposition, pp::Var(disposition));
+  message.Set(kJSNavigateWindowOpenDisposition,
+              pp::Var(static_cast<int32_t>(disposition)));
   PostMessage(message);
 }
 

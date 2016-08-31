@@ -765,7 +765,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionOpenPopupOnPopup) {
   // Open a new web popup window.
   chrome::NavigateParams params(browser(), GURL("http://www.google.com/"),
                                 ui::PAGE_TRANSITION_LINK);
-  params.disposition = NEW_POPUP;
+  params.disposition = WindowOpenDisposition::NEW_POPUP;
   params.window_action = chrome::NavigateParams::SHOW_WINDOW;
   ui_test_utils::NavigateToURL(&params);
   Browser* popup_browser = params.browser;

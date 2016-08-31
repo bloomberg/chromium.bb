@@ -638,7 +638,7 @@ bool WindowsCreateFunction::RunSync() {
   for (const GURL& url : urls) {
     chrome::NavigateParams navigate_params(new_window, url,
                                            ui::PAGE_TRANSITION_LINK);
-    navigate_params.disposition = NEW_FOREGROUND_TAB;
+    navigate_params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
     navigate_params.source_site_instance =
         render_frame_host()->GetSiteInstance();
     chrome::Navigate(&navigate_params);
@@ -1597,7 +1597,8 @@ bool TabsReloadFunction::RunSync() {
     // This does as same as Browser::ReloadInternal.
     NavigationEntry* entry = web_contents->GetController().GetVisibleEntry();
     GURL reload_url = entry ? entry->GetURL() : GURL(url::kAboutBlankURL);
-    OpenURLParams params(reload_url, Referrer(), CURRENT_TAB,
+    OpenURLParams params(reload_url, Referrer(),
+                         WindowOpenDisposition::CURRENT_TAB,
                          ui::PAGE_TRANSITION_RELOAD, false);
     GetCurrentBrowser()->OpenURL(params);
   } else if (bypass_cache) {

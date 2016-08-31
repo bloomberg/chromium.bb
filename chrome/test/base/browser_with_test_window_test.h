@@ -61,7 +61,7 @@ class WebContents;
 //
 //   // This is equivalent to the above, and lets you test pending navigations.
 //   browser()->OpenURL(OpenURLParams(
-//       GURL("http://foo/2"), GURL(), CURRENT_TAB,
+//       GURL("http://foo/2"), GURL(), WindowOpenDisposition::CURRENT_TAB,
 //       ui::PAGE_TRANSITION_TYPED, false));
 //   CommitPendingLoad(controller);
 //

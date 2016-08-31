@@ -216,7 +216,7 @@ void ExtensionAppShimHandler::Delegate::LaunchApp(
       extension_misc::APP_LAUNCH_CMD_LINE_APP, extension->GetType());
   if (extension->is_hosted_app()) {
     OpenApplication(CreateAppLaunchParamsUserContainer(
-        profile, extension, NEW_FOREGROUND_TAB,
+        profile, extension, WindowOpenDisposition::NEW_FOREGROUND_TAB,
         extensions::SOURCE_COMMAND_LINE));
     return;
   }

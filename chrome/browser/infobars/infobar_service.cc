@@ -119,8 +119,10 @@ void InfoBarService::OpenURL(const GURL& url,
   // A normal user click on an infobar URL will result in a CURRENT_TAB
   // disposition; turn that into a NEW_FOREGROUND_TAB so that we don't end up
   // smashing the page the user is looking at.
-  web_contents()->OpenURL(content::OpenURLParams(
-      url, content::Referrer(),
-      (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-      ui::PAGE_TRANSITION_LINK, false));
+  web_contents()->OpenURL(
+      content::OpenURLParams(url, content::Referrer(),
+                             (disposition == WindowOpenDisposition::CURRENT_TAB)
+                                 ? WindowOpenDisposition::NEW_FOREGROUND_TAB
+                                 : disposition,
+                             ui::PAGE_TRANSITION_LINK, false));
 }

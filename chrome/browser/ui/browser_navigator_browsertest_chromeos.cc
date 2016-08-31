@@ -50,7 +50,7 @@ IN_PROC_BROWSER_TEST_F(BrowserGuestSessionNavigatorTest,
 
   // Navigate to the settings page.
   chrome::NavigateParams params(MakeNavigateParams(incognito_browser));
-  params.disposition = SINGLETON_TAB;
+  params.disposition = WindowOpenDisposition::SINGLETON_TAB;
   params.url = GURL("chrome://chrome/settings");
   params.window_action = chrome::NavigateParams::SHOW_WINDOW;
   params.path_behavior = chrome::NavigateParams::IGNORE_AND_NAVIGATE;
@@ -83,7 +83,7 @@ IN_PROC_BROWSER_TEST_F(BrowserGuestSessionNavigatorTest,
 
     // Navigate to the settings page.
     chrome::NavigateParams params(MakeNavigateParams(browser()));
-    params.disposition = NEW_POPUP;
+    params.disposition = WindowOpenDisposition::NEW_POPUP;
     params.url = GURL("chrome://chrome/settings");
     params.window_action = chrome::NavigateParams::SHOW_WINDOW;
     params.path_behavior = chrome::NavigateParams::IGNORE_AND_NAVIGATE;
@@ -107,7 +107,7 @@ IN_PROC_BROWSER_TEST_F(BrowserGuestSessionNavigatorTest,
 
     // Navigate to the settings page.
     chrome::NavigateParams params(MakeNavigateParams(browser()));
-    params.disposition = NEW_POPUP;
+    params.disposition = WindowOpenDisposition::NEW_POPUP;
     params.url = GURL("chrome://chrome/settings");
     params.window_action = chrome::NavigateParams::SHOW_WINDOW;
     params.path_behavior = chrome::NavigateParams::IGNORE_AND_NAVIGATE;

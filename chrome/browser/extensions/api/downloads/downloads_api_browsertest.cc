@@ -497,7 +497,8 @@ class DownloadExtensionTest : public ExtensionApiTest {
         CreateDownloadObserver(1));
     GURL finish_url(net::URLRequestSlowDownloadJob::kFinishDownloadUrl);
     ui_test_utils::NavigateToURLWithDisposition(
-        current_browser(), finish_url, NEW_FOREGROUND_TAB,
+        current_browser(), finish_url,
+        WindowOpenDisposition::NEW_FOREGROUND_TAB,
         ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
     observer->WaitForFinished();
     EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
@@ -4035,8 +4036,7 @@ IN_PROC_BROWSER_TEST_F(
     ui_test_utils::NavigateToURLWithDisposition(
         current_browser(),
         GURL(net::URLRequestSlowDownloadJob::kUnknownSizeUrl),
-        CURRENT_TAB,
-        ui_test_utils::BROWSER_TEST_NONE);
+        WindowOpenDisposition::CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);
     observer->WaitForFinished();
     EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::IN_PROGRESS));
     DownloadManager::DownloadVector items;
@@ -4075,7 +4075,7 @@ IN_PROC_BROWSER_TEST_F(
   ui_test_utils::NavigateToURLWithDisposition(
       current_browser(),
       GURL(net::URLRequestSlowDownloadJob::kErrorDownloadUrl),
-      NEW_BACKGROUND_TAB,
+      WindowOpenDisposition::NEW_BACKGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
   // Errors caught before filename determination are delayed until after

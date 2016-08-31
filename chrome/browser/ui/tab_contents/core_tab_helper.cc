@@ -381,7 +381,7 @@ void CoreTabHelper::DoSearchByImageInNewTab(const GURL& src_url,
     return;
 
   content::OpenURLParams open_url_params(
-      result, content::Referrer(), NEW_FOREGROUND_TAB,
+      result, content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui::PAGE_TRANSITION_LINK, false);
   const std::string& content_type = post_content.first;
   const std::string& post_data = post_content.second;

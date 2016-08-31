@@ -427,7 +427,7 @@ void ExtensionHost::AddNewContents(WebContents* source,
   // vice versa.
   // Note that we don't do this for popup windows, because we need to associate
   // those with their extension_app_id.
-  if (disposition != NEW_POPUP) {
+  if (disposition != WindowOpenDisposition::NEW_POPUP) {
     WebContents* associated_contents = GetAssociatedWebContents();
     if (associated_contents &&
         associated_contents->GetBrowserContext() ==

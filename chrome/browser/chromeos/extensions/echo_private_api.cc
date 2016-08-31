@@ -207,7 +207,7 @@ void EchoPrivateGetUserConsentFunction::OnMoreInfoLinkClicked() {
       GetProfile(), GURL(kMoreInfoLink), ui::PAGE_TRANSITION_LINK);
   // Open the link in a new window. The echo dialog is modal, so the current
   // window is useless until the dialog is closed.
-  params.disposition = NEW_WINDOW;
+  params.disposition = WindowOpenDisposition::NEW_WINDOW;
   chrome::Navigate(&params);
 }
 

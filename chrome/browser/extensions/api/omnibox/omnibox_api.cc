@@ -152,9 +152,9 @@ void ExtensionOmniboxEventRouter::OnInputEntered(
 
   std::unique_ptr<base::ListValue> args(new base::ListValue());
   args->Set(0, new base::StringValue(input));
-  if (disposition == NEW_FOREGROUND_TAB)
+  if (disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB)
     args->Set(1, new base::StringValue(kForegroundTabDisposition));
-  else if (disposition == NEW_BACKGROUND_TAB)
+  else if (disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB)
     args->Set(1, new base::StringValue(kBackgroundTabDisposition));
   else
     args->Set(1, new base::StringValue(kCurrentTabDisposition));

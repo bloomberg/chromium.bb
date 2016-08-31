@@ -100,10 +100,8 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest, MANUAL_SearchesFromFakebox) {
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(),
-      GURL(chrome::kChromeUINewTabURL),
-      CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_NONE);
+      browser(), GURL(chrome::kChromeUINewTabURL),
+      WindowOpenDisposition::CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);
   observer.Wait();
   content::WebContents* active_tab =
       browser()->tab_strip_model()->GetActiveWebContents();

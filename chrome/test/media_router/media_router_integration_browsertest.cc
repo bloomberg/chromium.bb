@@ -152,7 +152,8 @@ void MediaRouterIntegrationBrowserTest::OpenTestPageInNewTab(
     base::FilePath::StringPieceType file_name) {
   base::FilePath full_path = GetResourceFile(file_name);
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), net::FilePathToFileURL(full_path), NEW_FOREGROUND_TAB,
+      browser(), net::FilePathToFileURL(full_path),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 }
 

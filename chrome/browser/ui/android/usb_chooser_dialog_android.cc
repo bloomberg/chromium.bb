@@ -218,10 +218,11 @@ void UsbChooserDialogAndroid::RemoveDeviceFromChooserDialog(
 
 void UsbChooserDialogAndroid::OpenUrl(const std::string& url) {
   content::WebContents::FromRenderFrameHost(render_frame_host_)
-      ->OpenURL(content::OpenURLParams(GURL(url), content::Referrer(),
-                                       NEW_FOREGROUND_TAB,
-                                       ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
-                                       false));  // is_renderer_initiated
+      ->OpenURL(
+          content::OpenURLParams(GURL(url), content::Referrer(),
+                                 WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                                 ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
+                                 false));  // is_renderer_initiated
 }
 
 bool UsbChooserDialogAndroid::DisplayDevice(

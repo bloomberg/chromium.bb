@@ -45,7 +45,7 @@ void SimulateGPUCrash(Browser* browser) {
       ui::PageTransitionFromInt(
           ui::PAGE_TRANSITION_TYPED |
           ui::PAGE_TRANSITION_FROM_ADDRESS_BAR));
-  params.disposition = NEW_BACKGROUND_TAB;
+  params.disposition = WindowOpenDisposition::NEW_BACKGROUND_TAB;
   chrome::Navigate(&params);
 }
 

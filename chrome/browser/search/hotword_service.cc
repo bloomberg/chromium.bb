@@ -710,9 +710,9 @@ void HotwordService::LaunchHotwordAudioVerificationApp(
   if (!extension)
     return;
 
-  OpenApplication(
-      AppLaunchParams(profile_, extension, extensions::LAUNCH_CONTAINER_WINDOW,
-                      NEW_WINDOW, extensions::SOURCE_CHROME_INTERNAL));
+  OpenApplication(AppLaunchParams(
+      profile_, extension, extensions::LAUNCH_CONTAINER_WINDOW,
+      WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_CHROME_INTERNAL));
 }
 
 HotwordService::LaunchMode

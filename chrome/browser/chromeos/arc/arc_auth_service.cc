@@ -518,7 +518,8 @@ void ArcAuthService::ShowUI(UIPage page, const base::string16& status) {
                          ArcSupportHost::kHostAppId, profile_));
 
   OpenApplication(CreateAppLaunchParamsUserContainer(
-      profile_, extension, NEW_WINDOW, extensions::SOURCE_CHROME_INTERNAL));
+      profile_, extension, WindowOpenDisposition::NEW_WINDOW,
+      extensions::SOURCE_CHROME_INTERNAL));
 }
 
 void ArcAuthService::OnContextReady() {

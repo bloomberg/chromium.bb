@@ -879,7 +879,7 @@ bool OmniboxViewMac::OnDoCommandBySelector(SEL cmd) {
 
   // Option-Return
   if (cmd == @selector(insertNewlineIgnoringFieldEditor:)) {
-    model()->AcceptInput(NEW_FOREGROUND_TAB, false);
+    model()->AcceptInput(WindowOpenDisposition::NEW_FOREGROUND_TAB, false);
     return true;
   }
 

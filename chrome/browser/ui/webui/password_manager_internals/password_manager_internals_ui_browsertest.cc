@@ -43,7 +43,7 @@ PasswordManagerInternalsWebUIBrowserTest::
 
 void PasswordManagerInternalsWebUIBrowserTest::SetUpOnMainThread() {
   WebUIBrowserTest::SetUpOnMainThread();
-  OpenInternalsPage(CURRENT_TAB);
+  OpenInternalsPage(WindowOpenDisposition::CURRENT_TAB);
   AddLibrary(base::FilePath(
       FILE_PATH_LITERAL("password_manager_internals_browsertest.js")));
 }
@@ -100,7 +100,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerInternalsWebUIBrowserTest,
           GetForBrowserContext(browser()->profile());
   ASSERT_TRUE(service);
   service->ProcessLog("<script> text for testing");
-  OpenInternalsPage(CURRENT_TAB);  // Reload.
+  OpenInternalsPage(WindowOpenDisposition::CURRENT_TAB);  // Reload.
   ASSERT_TRUE(RunJavascriptTest("testLogEmpty"));
 }
 
@@ -119,7 +119,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerInternalsWebUIBrowserTest,
   service->ProcessLog("<script> text for testing");
   ASSERT_TRUE(RunJavascriptTest("testLogText"));
   // Now open a second tab with the internals page, but do not log anything.
-  OpenInternalsPage(NEW_FOREGROUND_TAB);
+  OpenInternalsPage(WindowOpenDisposition::NEW_FOREGROUND_TAB);
   // The previously logged text should have made it to the page.
   ASSERT_TRUE(RunJavascriptTest("testLogText"));
 }
@@ -129,7 +129,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerInternalsWebUIBrowserTest,
 IN_PROC_BROWSER_TEST_F(PasswordManagerInternalsWebUIBrowserTest,
                        LogSavePasswordProgress_NotFlushedOnReloadIfMultiple) {
   // Open one more tab with the internals page.
-  OpenInternalsPage(NEW_FOREGROUND_TAB);
+  OpenInternalsPage(WindowOpenDisposition::NEW_FOREGROUND_TAB);
   // Now log something.
   password_manager::PasswordManagerInternalsService* service =
       password_manager::PasswordManagerInternalsServiceFactory::
@@ -137,7 +137,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerInternalsWebUIBrowserTest,
   ASSERT_TRUE(service);
   service->ProcessLog("<script> text for testing");
   // Reload.
-  OpenInternalsPage(CURRENT_TAB);
+  OpenInternalsPage(WindowOpenDisposition::CURRENT_TAB);
   // The text should still be there.
   ASSERT_TRUE(RunJavascriptTest("testLogText"));
 }
@@ -171,7 +171,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerInternalsWebUIBrowserTest,
       password_manager::PasswordManagerInternalsServiceFactory::
           GetForBrowserContext(incognito->profile()->GetOffTheRecordProfile());
   EXPECT_FALSE(service);  // There should be no service for Incognito.
-  OpenInternalsPageWithBrowser(incognito, CURRENT_TAB);
+  OpenInternalsPageWithBrowser(incognito, WindowOpenDisposition::CURRENT_TAB);
   SetWebUIInstance(
       incognito->tab_strip_model()->GetActiveWebContents()->GetWebUI());
   ASSERT_TRUE(RunJavascriptTest("testIncognitoDescription"));

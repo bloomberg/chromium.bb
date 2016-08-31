@@ -25,7 +25,7 @@ NavigateParams::NavigateParams(WebContents* a_target_contents)
       uses_post(false),
       target_contents(a_target_contents),
       source_contents(nullptr),
-      disposition(CURRENT_TAB),
+      disposition(WindowOpenDisposition::CURRENT_TAB),
       trusted_source(false),
       transition(ui::PAGE_TRANSITION_LINK),
       is_renderer_initiated(false),
@@ -37,8 +37,7 @@ NavigateParams::NavigateParams(WebContents* a_target_contents)
       ref_behavior(IGNORE_REF),
       initiating_profile(nullptr),
       should_replace_current_entry(false),
-      created_with_opener(false) {
-}
+      created_with_opener(false) {}
 #else
 NavigateParams::NavigateParams(Browser* a_browser,
                                const GURL& a_url,
@@ -48,7 +47,7 @@ NavigateParams::NavigateParams(Browser* a_browser,
       uses_post(false),
       target_contents(NULL),
       source_contents(NULL),
-      disposition(CURRENT_TAB),
+      disposition(WindowOpenDisposition::CURRENT_TAB),
       trusted_source(false),
       transition(a_transition),
       is_renderer_initiated(false),
@@ -61,8 +60,7 @@ NavigateParams::NavigateParams(Browser* a_browser,
       browser(a_browser),
       initiating_profile(NULL),
       should_replace_current_entry(false),
-      created_with_opener(false) {
-}
+      created_with_opener(false) {}
 
 NavigateParams::NavigateParams(Browser* a_browser,
                                WebContents* a_target_contents)
@@ -70,7 +68,7 @@ NavigateParams::NavigateParams(Browser* a_browser,
       uses_post(false),
       target_contents(a_target_contents),
       source_contents(NULL),
-      disposition(CURRENT_TAB),
+      disposition(WindowOpenDisposition::CURRENT_TAB),
       trusted_source(false),
       transition(ui::PAGE_TRANSITION_LINK),
       is_renderer_initiated(false),
@@ -83,8 +81,7 @@ NavigateParams::NavigateParams(Browser* a_browser,
       browser(a_browser),
       initiating_profile(NULL),
       should_replace_current_entry(false),
-      created_with_opener(false) {
-}
+      created_with_opener(false) {}
 #endif  // !defined(OS_ANDROID)
 
 NavigateParams::NavigateParams(Profile* a_profile,
@@ -95,7 +92,7 @@ NavigateParams::NavigateParams(Profile* a_profile,
       uses_post(false),
       target_contents(NULL),
       source_contents(NULL),
-      disposition(NEW_FOREGROUND_TAB),
+      disposition(WindowOpenDisposition::NEW_FOREGROUND_TAB),
       trusted_source(false),
       transition(a_transition),
       is_renderer_initiated(false),

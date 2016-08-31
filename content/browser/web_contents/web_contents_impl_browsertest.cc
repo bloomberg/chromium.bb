@@ -382,7 +382,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, OpenURLSubframe) {
 
   // Navigate with the subframe's FrameTreeNode ID.
   const GURL url(embedded_test_server()->GetURL("/title1.html"));
-  OpenURLParams params(url, Referrer(), frame_tree_node_id, CURRENT_TAB,
+  OpenURLParams params(url, Referrer(), frame_tree_node_id,
+                       WindowOpenDisposition::CURRENT_TAB,
                        ui::PAGE_TRANSITION_LINK, true);
   shell()->web_contents()->OpenURL(params);
 

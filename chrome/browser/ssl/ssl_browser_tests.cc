@@ -1053,7 +1053,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
   ProvisionalLoadWaiter load_failed_observer(tab);
 
   // Simulate user clicking on back button (crbug.com/39248).
-  chrome::GoBack(browser(), CURRENT_TAB);
+  chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
 
   // Wait until we hear the load failure, and make sure we haven't changed
   // the previous RFH.  Prevents regression of http://crbug.com/82667.
@@ -1481,7 +1481,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestBadHTTPSDownload) {
       SSLBlockingPage::kTypeForTesting,
       tab->GetInterstitialPage()->GetDelegateForTesting()->GetTypeForTesting());
   EXPECT_TRUE(chrome::CanGoBack(browser()));
-  chrome::GoBack(browser(), CURRENT_TAB);
+  chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
 
   dangerous_download_observer.WaitForFinished();
 }
@@ -1767,7 +1767,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestDisplaysInsecureContentTwoTabs) {
 
   GURL url = https_server_.GetURL(replacement_path);
   chrome::NavigateParams params(browser(), url, ui::PAGE_TRANSITION_TYPED);
-  params.disposition = NEW_FOREGROUND_TAB;
+  params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   params.tabstrip_index = 0;
   params.source_contents = tab1;
   content::WindowedNotificationObserver observer(
@@ -1809,7 +1809,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRunsInsecureContentTwoTabs) {
   // because we are using process-per-site in SetUpCommandLine.
   GURL url = https_server_.GetURL(replacement_path);
   chrome::NavigateParams params(browser(), url, ui::PAGE_TRANSITION_TYPED);
-  params.disposition = NEW_FOREGROUND_TAB;
+  params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   params.source_contents = tab1;
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
@@ -2935,8 +2935,8 @@ IN_PROC_BROWSER_TEST_F(CommonNameMismatchBrowserTest,
   SSLInterstitialTimerObserver interstitial_timer_observer(contents);
 
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), https_server_mismatched_url, CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_NONE);
+      browser(), https_server_mismatched_url,
+      WindowOpenDisposition::CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);
   interstitial_timer_observer.WaitForTimerStarted();
 
   EXPECT_TRUE(contents->IsLoading());
@@ -3003,13 +3003,13 @@ IN_PROC_BROWSER_TEST_F(CommonNameMismatchBrowserTest,
   SSLInterstitialTimerObserver interstitial_timer_observer(contents);
 
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), https_server_mismatched_url, CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_NONE);
+      browser(), https_server_mismatched_url,
+      WindowOpenDisposition::CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);
   interstitial_timer_observer.WaitForTimerStarted();
 
   EXPECT_TRUE(contents->IsLoading());
   content::TestNavigationObserver observer(contents, 1);
-  chrome::Reload(browser(), CURRENT_TAB);
+  chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
   observer.Wait();
 
   SSLErrorHandler* ssl_error_handler =
@@ -3069,15 +3069,15 @@ IN_PROC_BROWSER_TEST_F(CommonNameMismatchBrowserTest,
   SSLInterstitialTimerObserver interstitial_timer_observer(contents);
 
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), https_server_mismatched_url, CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_NONE);
+      browser(), https_server_mismatched_url,
+      WindowOpenDisposition::CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);
   interstitial_timer_observer.WaitForTimerStarted();
 
   EXPECT_TRUE(contents->IsLoading());
   content::TestNavigationObserver observer(contents, 1);
-  browser()->OpenURL(content::OpenURLParams(GURL("https://google.com"),
-                                            content::Referrer(), CURRENT_TAB,
-                                            ui::PAGE_TRANSITION_TYPED, false));
+  browser()->OpenURL(content::OpenURLParams(
+      GURL("https://google.com"), content::Referrer(),
+      WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
   observer.Wait();
 
   SSLErrorHandler* ssl_error_handler =

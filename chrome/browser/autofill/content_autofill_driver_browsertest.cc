@@ -136,16 +136,12 @@ IN_PROC_BROWSER_TEST_F(ContentAutofillDriverBrowserTest,
   scoped_refptr<content::MessageLoopRunner> runner =
       new content::MessageLoopRunner;
   nav_entry_committed_callback_ = runner->QuitClosure();
-  browser()->OpenURL(content::OpenURLParams(GURL(chrome::kChromeUIBookmarksURL),
-                                            content::Referrer(),
-                                            CURRENT_TAB,
-                                            ui::PAGE_TRANSITION_TYPED,
-                                            false));
-  browser()->OpenURL(content::OpenURLParams(GURL(chrome::kChromeUIAboutURL),
-                                            content::Referrer(),
-                                            CURRENT_TAB,
-                                            ui::PAGE_TRANSITION_TYPED,
-                                            false));
+  browser()->OpenURL(content::OpenURLParams(
+      GURL(chrome::kChromeUIBookmarksURL), content::Referrer(),
+      WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
+  browser()->OpenURL(content::OpenURLParams(
+      GURL(chrome::kChromeUIAboutURL), content::Referrer(),
+      WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
   runner->Run();
   nav_entry_committed_callback_.Reset();
 }

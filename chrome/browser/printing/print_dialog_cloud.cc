@@ -80,10 +80,8 @@ void CreateCloudPrintSigninTab(Browser* browser,
         browser->OpenURL(content::OpenURLParams(
             google_util::AppendGoogleLocaleParam(
                 url, g_browser_process->GetApplicationLocale()),
-            content::Referrer(),
-            NEW_FOREGROUND_TAB,
-            ui::PAGE_TRANSITION_AUTO_BOOKMARK,
-            false));
+            content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
+            ui::PAGE_TRANSITION_AUTO_BOOKMARK, false));
     new SignInObserver(web_contents, callback);
   }
 }

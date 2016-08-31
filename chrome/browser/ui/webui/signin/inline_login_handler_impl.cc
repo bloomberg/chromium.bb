@@ -97,11 +97,9 @@ void RedirectToNtpOrAppsPage(content::WebContents* contents,
                    signin_metrics::AccessPoint::ACCESS_POINT_APPS_PAGE_LINK
                ? chrome::kChromeUIAppsURL
                : chrome::kChromeUINewTabURL);
-  content::OpenURLParams params(url,
-                                content::Referrer(),
-                                CURRENT_TAB,
-                                ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
-                                false);
+  content::OpenURLParams params(url, content::Referrer(),
+                                WindowOpenDisposition::CURRENT_TAB,
+                                ui::PAGE_TRANSITION_AUTO_TOPLEVEL, false);
   contents->OpenURL(params);
 }
 
@@ -219,10 +217,8 @@ void ConfirmEmailDialogDelegate::OnClosed() {
 void ConfirmEmailDialogDelegate::OnLinkClicked(
     WindowOpenDisposition disposition) {
   content::OpenURLParams params(
-      GURL(chrome::kChromeSyncMergeTroubleshootingURL),
-      content::Referrer(),
-      NEW_POPUP,
-      ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
+      GURL(chrome::kChromeSyncMergeTroubleshootingURL), content::Referrer(),
+      WindowOpenDisposition::NEW_POPUP, ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
       false);
   // It is guaranteed that |web_contents_| is valid here because when it's
   // deleted, the dialog is immediately closed and no further action can be

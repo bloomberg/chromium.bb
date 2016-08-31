@@ -37,11 +37,9 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, LocalNTPJavascriptTest) {
   FocusOmnibox();
 
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(),
-      ntp_url(),
-      NEW_FOREGROUND_TAB,
+      browser(), ntp_url(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+          ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   content::WebContents* active_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(search::IsInstantNTP(active_tab));
@@ -76,11 +74,10 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest,
 
   // Open a new tab.
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(),
-      GURL(chrome::kChromeUINewTabURL),
-      NEW_FOREGROUND_TAB,
+      browser(), GURL(chrome::kChromeUINewTabURL),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+          ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
   // Verify that the NTP is in French.
   content::WebContents* active_tab =

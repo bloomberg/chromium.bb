@@ -384,10 +384,10 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, MultiTabsWindowsHistory) {
   Browser* browser2 = CreateBrowser(browser()->profile());
   ui_test_utils::NavigateToURL(browser2, url2);
   ui_test_utils::NavigateToURLWithDisposition(
-      browser2, url3, NEW_FOREGROUND_TAB,
+      browser2, url3, WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   ui_test_utils::NavigateToURLWithDisposition(
-      browser2, url4, NEW_FOREGROUND_TAB,
+      browser2, url4, WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
   std::vector<GURL> urls(GetHistoryContents());
@@ -448,7 +448,7 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, ReloadBringPageToTop) {
 
   ui_test_utils::NavigateToURL(browser(), url1);
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), url2, NEW_BACKGROUND_TAB,
+      browser(), url2, WindowOpenDisposition::NEW_BACKGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
   std::vector<GURL> urls(GetHistoryContents());
@@ -478,7 +478,7 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, BackForwardBringPageToTop) {
 
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
-  chrome::GoBack(browser(), CURRENT_TAB);
+  chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
   content::WaitForLoadStop(tab);
 
   std::vector<GURL> urls(GetHistoryContents());
@@ -486,7 +486,7 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, BackForwardBringPageToTop) {
   ASSERT_EQ(url1, urls[0]);
   ASSERT_EQ(url2, urls[1]);
 
-  chrome::GoForward(browser(), CURRENT_TAB);
+  chrome::GoForward(browser(), WindowOpenDisposition::CURRENT_TAB);
   content::WaitForLoadStop(tab);
   urls = GetHistoryContents();
   ASSERT_EQ(2u, urls.size());
@@ -534,9 +534,8 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, OneHistoryTabPerWindow) {
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(),
-      GURL(url::kAboutBlankURL),
-      NEW_FOREGROUND_TAB,
+      browser(), GURL(url::kAboutBlankURL),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   chrome::ExecuteCommand(browser(), IDC_SHOW_HISTORY);
 

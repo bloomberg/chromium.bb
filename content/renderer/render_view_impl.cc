@@ -308,22 +308,22 @@ WindowOpenDisposition RenderViewImpl::NavigationPolicyToDisposition(
     WebNavigationPolicy policy) {
   switch (policy) {
     case blink::WebNavigationPolicyIgnore:
-      return IGNORE_ACTION;
+      return WindowOpenDisposition::IGNORE_ACTION;
     case blink::WebNavigationPolicyDownload:
-      return SAVE_TO_DISK;
+      return WindowOpenDisposition::SAVE_TO_DISK;
     case blink::WebNavigationPolicyCurrentTab:
-      return CURRENT_TAB;
+      return WindowOpenDisposition::CURRENT_TAB;
     case blink::WebNavigationPolicyNewBackgroundTab:
-      return NEW_BACKGROUND_TAB;
+      return WindowOpenDisposition::NEW_BACKGROUND_TAB;
     case blink::WebNavigationPolicyNewForegroundTab:
-      return NEW_FOREGROUND_TAB;
+      return WindowOpenDisposition::NEW_FOREGROUND_TAB;
     case blink::WebNavigationPolicyNewWindow:
-      return NEW_WINDOW;
+      return WindowOpenDisposition::NEW_WINDOW;
     case blink::WebNavigationPolicyNewPopup:
-      return NEW_POPUP;
+      return WindowOpenDisposition::NEW_POPUP;
   default:
     NOTREACHED() << "Unexpected WebNavigationPolicy";
-    return IGNORE_ACTION;
+    return WindowOpenDisposition::IGNORE_ACTION;
   }
 }
 
@@ -1580,7 +1580,8 @@ WebView* RenderViewImpl::createView(WebLocalFrame* creator,
   view_params.swapped_out = false;
   // WebCore will take care of setting the correct name.
   view_params.replicated_frame_state = FrameReplicationState();
-  view_params.hidden = (params.disposition == NEW_BACKGROUND_TAB);
+  view_params.hidden =
+      (params.disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB);
   view_params.never_visible = never_visible;
   view_params.next_page_id = 1;
   view_params.initial_size = initial_size;

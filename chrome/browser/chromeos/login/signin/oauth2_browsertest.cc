@@ -722,9 +722,8 @@ IN_PROC_BROWSER_TEST_F(MergeSessionTest, PageThrottle) {
   Browser* browser =
       FindOrCreateVisibleBrowser(profile());
   ui_test_utils::NavigateToURLWithDisposition(
-      browser,
-      fake_google_page_url_,
-      CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);
+      browser, fake_google_page_url_, WindowOpenDisposition::CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_NONE);
 
   // Wait until we get send merge session request.
   WaitForMergeSessionToStart();

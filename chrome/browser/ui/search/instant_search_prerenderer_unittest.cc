@@ -355,9 +355,9 @@ TEST_F(InstantSearchPrerendererTest, UsePrerenderPage) {
   // Open a search results page. A prerendered page exists for |url|. Make sure
   // the browser swaps the current tab contents with the prerendered contents.
   GURL url("https://www.google.com/alt#quux=foo&strk");
-  browser()->OpenURL(content::OpenURLParams(url, Referrer(), CURRENT_TAB,
-                                            ui::PAGE_TRANSITION_TYPED,
-                                            false));
+  browser()->OpenURL(content::OpenURLParams(url, Referrer(),
+                                            WindowOpenDisposition::CURRENT_TAB,
+                                            ui::PAGE_TRANSITION_TYPED, false));
   EXPECT_EQ(GetPrerenderURL(), GetActiveWebContents()->GetURL());
   EXPECT_EQ(static_cast<PrerenderHandle*>(NULL), prerender_handle());
 }
@@ -373,9 +373,9 @@ TEST_F(InstantSearchPrerendererTest, PrerenderRequestCancelled) {
   // Open a search results page. Prerendered page does not exists for |url|.
   // Make sure the browser navigates the current tab to this |url|.
   GURL url("https://www.google.com/alt#quux=foo&strk");
-  browser()->OpenURL(content::OpenURLParams(url, Referrer(), CURRENT_TAB,
-                                            ui::PAGE_TRANSITION_TYPED,
-                                            false));
+  browser()->OpenURL(content::OpenURLParams(url, Referrer(),
+                                            WindowOpenDisposition::CURRENT_TAB,
+                                            ui::PAGE_TRANSITION_TYPED, false));
   EXPECT_NE(GetPrerenderURL(), GetActiveWebContents()->GetURL());
   EXPECT_EQ(url, GetActiveWebContents()->GetURL());
 }
@@ -388,9 +388,9 @@ TEST_F(InstantSearchPrerendererTest,
   // prerendered search query("foo"). Make sure the browser swaps the current
   // tab contents with the prerendered contents.
   GURL url("https://www.google.com/alt#quux=pen&strk");
-  browser()->OpenURL(content::OpenURLParams(url, Referrer(), CURRENT_TAB,
-                                            ui::PAGE_TRANSITION_TYPED,
-                                            false));
+  browser()->OpenURL(content::OpenURLParams(url, Referrer(),
+                                            WindowOpenDisposition::CURRENT_TAB,
+                                            ui::PAGE_TRANSITION_TYPED, false));
   EXPECT_EQ(GetPrerenderURL(), GetActiveWebContents()->GetURL());
   EXPECT_EQ(static_cast<PrerenderHandle*>(NULL), prerender_handle());
 }
@@ -402,9 +402,9 @@ TEST_F(InstantSearchPrerendererTest,
   // Open a search results page. Make sure the InstantSearchPrerenderer cancels
   // the active prerender request upon the receipt of empty search query.
   GURL url("https://www.google.com/alt#quux=&strk");
-  browser()->OpenURL(content::OpenURLParams(url, Referrer(), CURRENT_TAB,
-                                            ui::PAGE_TRANSITION_TYPED,
-                                            false));
+  browser()->OpenURL(content::OpenURLParams(url, Referrer(),
+                                            WindowOpenDisposition::CURRENT_TAB,
+                                            ui::PAGE_TRANSITION_TYPED, false));
   EXPECT_NE(GetPrerenderURL(), GetActiveWebContents()->GetURL());
   EXPECT_EQ(url, GetActiveWebContents()->GetURL());
   EXPECT_EQ(static_cast<PrerenderHandle*>(NULL), prerender_handle());
@@ -417,9 +417,9 @@ TEST_F(InstantSearchPrerendererTest,
   // Open a search results page. Make sure the InstantSearchPrerenderer cancels
   // the active prerender request for unsupported window dispositions.
   GURL url("https://www.google.com/alt#quux=pen&strk");
-  browser()->OpenURL(content::OpenURLParams(url, Referrer(), NEW_FOREGROUND_TAB,
-                                            ui::PAGE_TRANSITION_TYPED,
-                                            false));
+  browser()->OpenURL(content::OpenURLParams(
+      url, Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui::PAGE_TRANSITION_TYPED, false));
   content::WebContents* new_tab =
       browser()->tab_strip_model()->GetWebContentsAt(1);
   EXPECT_NE(GetPrerenderURL(), new_tab->GetURL());
@@ -482,9 +482,9 @@ TEST_F(TestUsePrerenderPage, ExtractSearchTermsAndUsePrerenderPage) {
   // key. Make sure UsePrerenderedPage() extracts the search terms from the URL
   // and uses the prerendered page contents.
   GURL url("https://www.google.com/alt#quux=foo");
-  browser()->OpenURL(content::OpenURLParams(url, Referrer(), CURRENT_TAB,
-                                            ui::PAGE_TRANSITION_TYPED,
-                                            false));
+  browser()->OpenURL(content::OpenURLParams(url, Referrer(),
+                                            WindowOpenDisposition::CURRENT_TAB,
+                                            ui::PAGE_TRANSITION_TYPED, false));
   EXPECT_EQ(GetPrerenderURL(), GetActiveWebContents()->GetURL());
   EXPECT_EQ(static_cast<PrerenderHandle*>(NULL), prerender_handle());
 }
@@ -494,9 +494,9 @@ TEST_F(TestUsePrerenderPage, DoNotUsePrerenderPage) {
 
   // Do not use prerendered page for renderer initiated search request.
   GURL url("https://www.google.com/alt#quux=foo");
-  browser()->OpenURL(content::OpenURLParams(url, Referrer(), CURRENT_TAB,
-                                            ui::PAGE_TRANSITION_LINK,
-                                            true  /* is_renderer_initiated */));
+  browser()->OpenURL(content::OpenURLParams(
+      url, Referrer(), WindowOpenDisposition::CURRENT_TAB,
+      ui::PAGE_TRANSITION_LINK, true /* is_renderer_initiated */));
   EXPECT_NE(GetPrerenderURL(), GetActiveWebContents()->GetURL());
   EXPECT_EQ(static_cast<PrerenderHandle*>(NULL), prerender_handle());
 }
@@ -509,7 +509,8 @@ TEST_F(TestUsePrerenderPage, SetEmbeddedSearchRequestParams) {
   // trials. Search results page URL does not contain search terms replacement
   // key.
   GURL url("https://www.google.com/url?bar=foo&aqs=chrome...0&ie=utf-8&oq=f");
-  browser()->instant_controller()->OpenInstant(CURRENT_TAB, url);
+  browser()->instant_controller()->OpenInstant(
+      WindowOpenDisposition::CURRENT_TAB, url);
   content::MockRenderProcessHost* process =
       static_cast<content::MockRenderProcessHost*>(
           prerender_contents()->GetRenderViewHost()->GetProcess());

@@ -200,7 +200,7 @@
   base::TimeTicks newTabStartTime = base::TimeTicks::Now();
   chrome::NavigateParams params(browser_, GURL(chrome::kChromeUINewTabURL),
                                 ui::PAGE_TRANSITION_TYPED);
-  params.disposition = NEW_FOREGROUND_TAB;
+  params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   params.tabstrip_index = index;
   chrome::Navigate(&params);
   CoreTabHelper* core_tab_helper =

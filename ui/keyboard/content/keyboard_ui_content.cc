@@ -296,12 +296,9 @@ const aura::Window* KeyboardUIContent::GetKeyboardRootWindow() const {
 
 void KeyboardUIContent::LoadContents(const GURL& url) {
   if (keyboard_contents_) {
-    content::OpenURLParams params(
-        url,
-        content::Referrer(),
-        SINGLETON_TAB,
-        ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
-        false);
+    content::OpenURLParams params(url, content::Referrer(),
+                                  WindowOpenDisposition::SINGLETON_TAB,
+                                  ui::PAGE_TRANSITION_AUTO_TOPLEVEL, false);
     keyboard_contents_->OpenURL(params);
   }
 }

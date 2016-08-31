@@ -139,7 +139,8 @@ void ReloadButton::ButtonPressed(views::Button* /* button */,
 
   if (visible_mode_ == MODE_STOP) {
     if (command_updater_)
-      command_updater_->ExecuteCommandWithDisposition(IDC_STOP, CURRENT_TAB);
+      command_updater_->ExecuteCommandWithDisposition(
+          IDC_STOP, WindowOpenDisposition::CURRENT_TAB);
     // The user has clicked, so we can feel free to update the button,
     // even if the mouse is still hovering.
     ChangeMode(MODE_RELOAD, true);

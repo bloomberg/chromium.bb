@@ -90,7 +90,8 @@ void SadTabCocoa::Close() {
 
 - (void)sadTabView:(SadTabView*)sadTabView
     helpLinkClickedWithURL:(NSString*)url {
-  OpenURLParams params(GURL(url.UTF8String), Referrer(), CURRENT_TAB,
+  OpenURLParams params(GURL(url.UTF8String), Referrer(),
+                       WindowOpenDisposition::CURRENT_TAB,
                        ui::PAGE_TRANSITION_LINK, false);
   webContents_->OpenURL(params);
 }

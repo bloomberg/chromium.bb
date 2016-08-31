@@ -111,9 +111,9 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
         OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST);
   }
   else {
-    content::OpenURLParams params(GURL(chrome::kChromeUISettingsURL),
-                                  content::Referrer(), CURRENT_TAB,
-                                  ui::PAGE_TRANSITION_LINK, false);
+    content::OpenURLParams params(
+        GURL(chrome::kChromeUISettingsURL), content::Referrer(),
+        WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_LINK, false);
     webContents_->OpenURL(params);
   }
   [self close];
@@ -288,8 +288,9 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
     signin_metrics::LogSigninConfirmHistogramValue(
         signin_metrics::HISTOGRAM_CONFIRM_LEARN_MORE);
   }
-  WindowOpenDisposition location = isSyncDialog_ ?
-                                   NEW_WINDOW : NEW_FOREGROUND_TAB;
+  WindowOpenDisposition location =
+      isSyncDialog_ ? WindowOpenDisposition::NEW_WINDOW
+                    : WindowOpenDisposition::NEW_FOREGROUND_TAB;
   content::OpenURLParams params(GURL(chrome::kChromeSyncLearnMoreURL),
                                 content::Referrer(), location,
                                 ui::PAGE_TRANSITION_LINK, false);

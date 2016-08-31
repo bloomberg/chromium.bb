@@ -114,7 +114,8 @@ void OptionsUIBrowserTest::NavigateToSettings() {
 void OptionsUIBrowserTest::NavigateToSettingsSubpage(
     const std::string& sub_page) {
   const GURL& url = chrome::GetSettingsUrl(sub_page);
-  ui_test_utils::NavigateToURLWithDisposition(browser(), url, CURRENT_TAB, 0);
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url, WindowOpenDisposition::CURRENT_TAB, 0);
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -299,7 +300,7 @@ IN_PROC_BROWSER_TEST_F(OptionsUIBrowserTest, NavigateBackFromOverlayDialog) {
 
   // Go back to the settings page.
   content::TestNavigationObserver observer(contents);
-  chrome::GoBack(browser(), CURRENT_TAB);
+  chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
   observer.Wait();
 
   // Verify that the settings page lists one profile.

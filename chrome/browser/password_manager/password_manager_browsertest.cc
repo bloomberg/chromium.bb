@@ -1290,9 +1290,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, NoLastLoadGoodLastLoad) {
   // WebContents, but don't wait for navigation, which only finishes after
   // authentication.
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(),
-      embedded_test_server()->GetURL("/basic_auth"),
-      NEW_FOREGROUND_TAB,
+      browser(), embedded_test_server()->GetURL("/basic_auth"),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
 
   content::NavigationController* nav_controller =
@@ -2586,8 +2585,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
       &WebContents()->GetController();
   WindowedAuthNeededObserver auth_needed_observer(nav_controller);
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), embedded_test_server()->GetURL("/basic_auth"), CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_NONE);
+      browser(), embedded_test_server()->GetURL("/basic_auth"),
+      WindowOpenDisposition::CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);
   auth_needed_observer.Wait();
 
   // The auth dialog caused a query to PasswordStore, make sure it was
@@ -2746,13 +2745,15 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 // browser.
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, InternalsPage) {
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL("chrome://password-manager-internals"), CURRENT_TAB,
+      browser(), GURL("chrome://password-manager-internals"),
+      WindowOpenDisposition::CURRENT_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   content::WebContents* internals_web_contents = WebContents();
 
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), embedded_test_server()->GetURL("/password/password_form.html"),
-      NEW_FOREGROUND_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
   std::string find_renderer_logs =
       "var text = document.getElementById('log-entries').innerText;"

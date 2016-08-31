@@ -747,7 +747,7 @@ TEST_F(BookmarkBarControllerTest, OpenBookmark) {
 
   [bar_ openBookmark:button];
   EXPECT_EQ(noOpenBar()->urls_[0], node->url());
-  EXPECT_EQ(noOpenBar()->dispositions_[0], CURRENT_TAB);
+  EXPECT_EQ(noOpenBar()->dispositions_[0], WindowOpenDisposition::CURRENT_TAB);
 }
 
 TEST_F(BookmarkBarControllerTest, TestAddRemoveAndClear) {
@@ -1793,8 +1793,9 @@ TEST_F(BookmarkBarControllerOpenAllTest, CommandClickOnFolder) {
   [first performClick:first];
 
   size_t dispositionCount = noOpenBar()->dispositions_.size();
-  EXPECT_EQ(originalDispositionCount+1, dispositionCount);
-  EXPECT_EQ(noOpenBar()->dispositions_[dispositionCount-1], NEW_BACKGROUND_TAB);
+  EXPECT_EQ(originalDispositionCount + 1, dispositionCount);
+  EXPECT_EQ(noOpenBar()->dispositions_[dispositionCount - 1],
+            WindowOpenDisposition::NEW_BACKGROUND_TAB);
 
   // Replace NSApp
   NSApp = oldApp;

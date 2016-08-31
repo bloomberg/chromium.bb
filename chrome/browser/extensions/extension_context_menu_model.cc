@@ -244,7 +244,8 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id,
   switch (command_id) {
     case NAME: {
       content::OpenURLParams params(ManifestURL::GetHomepageURL(extension),
-                                    content::Referrer(), NEW_FOREGROUND_TAB,
+                                    content::Referrer(),
+                                    WindowOpenDisposition::NEW_FOREGROUND_TAB,
                                     ui::PAGE_TRANSITION_LINK, false);
       browser_->OpenURL(params);
       break;

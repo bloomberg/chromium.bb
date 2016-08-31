@@ -518,7 +518,7 @@ content::WebContents* BlimpEngineSession::OpenURLFromTab(
     content::WebContents* source,
     const content::OpenURLParams& params) {
   // CURRENT_TAB is the only one we implement for now.
-  if (params.disposition != CURRENT_TAB) {
+  if (params.disposition != WindowOpenDisposition::CURRENT_TAB) {
     NOTIMPLEMENTED();
     return nullptr;
   }

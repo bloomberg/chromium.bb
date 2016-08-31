@@ -118,7 +118,7 @@ void QuickUnlockNotificationController::Click() {
   chrome::NavigateParams params(profile_,
                                 GURL(kChromeAuthenticationSettingsURL),
                                 ui::PAGE_TRANSITION_LINK);
-  params.disposition = NEW_FOREGROUND_TAB;
+  params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   params.window_action = chrome::NavigateParams::SHOW_WINDOW;
   chrome::Navigate(&params);
 

@@ -156,8 +156,9 @@ void DownloadFeedbackDialogView::LinkClicked(
       ui::DispositionFromEventFlags(event_flags);
   content::OpenURLParams params(
       GURL(l10n_util::GetStringUTF8(IDS_SAFE_BROWSING_PRIVACY_POLICY_URL)),
-      content::Referrer(),
-      disposition == CURRENT_TAB ? NEW_FOREGROUND_TAB : disposition,
+      content::Referrer(), disposition == WindowOpenDisposition::CURRENT_TAB
+                               ? WindowOpenDisposition::NEW_FOREGROUND_TAB
+                               : disposition,
       ui::PAGE_TRANSITION_LINK, false);
   navigator_->OpenURL(params);
 }

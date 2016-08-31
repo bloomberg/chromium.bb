@@ -502,8 +502,9 @@ void AppLauncherHandler::HandleLaunchApp(const base::ListValue* args) {
 
   Profile* profile = extension_service_->profile();
 
-  WindowOpenDisposition disposition = args->GetSize() > 3 ?
-        webui::GetDispositionFromClick(args, 3) : CURRENT_TAB;
+  WindowOpenDisposition disposition =
+      args->GetSize() > 3 ? webui::GetDispositionFromClick(args, 3)
+                          : WindowOpenDisposition::CURRENT_TAB;
   if (extension_id != extensions::kWebStoreAppId) {
     CHECK_NE(launch_bucket, extension_misc::APP_LAUNCH_BUCKET_INVALID);
     extensions::RecordAppLaunchType(launch_bucket, extension->GetType());
@@ -511,11 +512,12 @@ void AppLauncherHandler::HandleLaunchApp(const base::ListValue* args) {
     extensions::RecordWebStoreLaunch();
   }
 
-  if (disposition == NEW_FOREGROUND_TAB || disposition == NEW_BACKGROUND_TAB ||
-      disposition == NEW_WINDOW) {
+  if (disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB ||
+      disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB ||
+      disposition == WindowOpenDisposition::NEW_WINDOW) {
     // TODO(jamescook): Proper support for background tabs.
     AppLaunchParams params(profile, extension,
-                           disposition == NEW_WINDOW
+                           disposition == WindowOpenDisposition::NEW_WINDOW
                                ? extensions::LAUNCH_CONTAINER_WINDOW
                                : extensions::LAUNCH_CONTAINER_TAB,
                            disposition, extensions::SOURCE_NEW_TAB_PAGE);
@@ -531,7 +533,9 @@ void AppLauncherHandler::HandleLaunchApp(const base::ListValue* args) {
       old_contents = browser->tab_strip_model()->GetActiveWebContents();
 
     AppLaunchParams params = CreateAppLaunchParamsUserContainer(
-        profile, extension, old_contents ? CURRENT_TAB : NEW_FOREGROUND_TAB,
+        profile, extension,
+        old_contents ? WindowOpenDisposition::CURRENT_TAB
+                     : WindowOpenDisposition::NEW_FOREGROUND_TAB,
         extensions::SOURCE_NEW_TAB_PAGE);
     params.override_url = GURL(url);
     WebContents* new_contents = OpenApplication(params);

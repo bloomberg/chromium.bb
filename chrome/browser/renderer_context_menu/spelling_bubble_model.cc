@@ -60,7 +60,8 @@ GURL SpellingBubbleModel::GetLinkURL() const {
 }
 
 void SpellingBubbleModel::LinkClicked() {
-  OpenURLParams params(GetLinkURL(), Referrer(), NEW_FOREGROUND_TAB,
+  OpenURLParams params(GetLinkURL(), Referrer(),
+                       WindowOpenDisposition::NEW_FOREGROUND_TAB,
                        ui::PAGE_TRANSITION_LINK, false);
   web_contents_->OpenURL(params);
 }

@@ -50,7 +50,7 @@ class TracingBrowserTest : public InProcessBrowserTest {
       const base::trace_event::TraceConfig& trace_config) {
     GURL url1("about:blank");
     ui_test_utils::NavigateToURLWithDisposition(
-        browser(), url1, NEW_FOREGROUND_TAB,
+        browser(), url1, WindowOpenDisposition::NEW_FOREGROUND_TAB,
         ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
     ASSERT_NO_FATAL_FAILURE(ExecuteJavascriptOnCurrentTab());
 
@@ -62,7 +62,7 @@ class TracingBrowserTest : public InProcessBrowserTest {
     // Create and destroy renderers while tracing is enabled.
     GURL url2("chrome://credits");
     ui_test_utils::NavigateToURLWithDisposition(
-        browser(), url2, NEW_FOREGROUND_TAB,
+        browser(), url2, WindowOpenDisposition::NEW_FOREGROUND_TAB,
         ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
     ASSERT_NO_FATAL_FAILURE(ExecuteJavascriptOnCurrentTab());
 
@@ -71,7 +71,7 @@ class TracingBrowserTest : public InProcessBrowserTest {
 
     GURL url3("chrome://settings");
     ui_test_utils::NavigateToURLWithDisposition(
-        browser(), url3, CURRENT_TAB,
+        browser(), url3, WindowOpenDisposition::CURRENT_TAB,
         ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
     ASSERT_NO_FATAL_FAILURE(ExecuteJavascriptOnCurrentTab());
 
@@ -142,11 +142,13 @@ IN_PROC_BROWSER_TEST_F(TracingBrowserTest, BeginTracingWithWatch) {
                                     "OnJavaScriptExecuteRequestForTests", 2));
   // Open two tabs to different URLs to encourage two separate renderer
   // processes. Each will fire an event that will be counted towards the total.
-  ui_test_utils::NavigateToURLWithDisposition(browser(), url1,
-      NEW_FOREGROUND_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url1, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   ASSERT_NO_FATAL_FAILURE(ExecuteJavascriptOnCurrentTab());
-  ui_test_utils::NavigateToURLWithDisposition(browser(), url2,
-      NEW_FOREGROUND_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url2, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   ASSERT_NO_FATAL_FAILURE(ExecuteJavascriptOnCurrentTab());
   EXPECT_TRUE(WaitForWatchEvent(no_timeout));
   ASSERT_TRUE(EndTracing(&json_events));

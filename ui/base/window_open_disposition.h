@@ -9,7 +9,7 @@
 
 // A Java counterpart will be generated for this enum.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.ui
-enum WindowOpenDisposition {
+enum class WindowOpenDisposition {
   UNKNOWN,
   CURRENT_TAB,
   // Indicates that only one tab with the url should exist in the same window.
@@ -22,7 +22,7 @@ enum WindowOpenDisposition {
   OFF_THE_RECORD,
   IGNORE_ACTION,
   // Update when adding a new disposition.
-  WINDOW_OPEN_DISPOSITION_LAST = IGNORE_ACTION
+  MAX_VALUE = IGNORE_ACTION
 };
 
 namespace ui {

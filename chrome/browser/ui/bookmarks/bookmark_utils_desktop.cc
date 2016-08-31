@@ -196,7 +196,7 @@ void OpenAll(gfx::NativeWindow parent,
     // When |initial_disposition| is OFF_THE_RECORD, a node which can't be
     // opened in incognito window, it is detected using |browser_context|, is
     // not opened.
-    if (initial_disposition == OFF_THE_RECORD &&
+    if (initial_disposition == WindowOpenDisposition::OFF_THE_RECORD &&
         !IsURLAllowedInIncognito(*url, browser_context))
       continue;
 
@@ -206,7 +206,7 @@ void OpenAll(gfx::NativeWindow parent,
 
     if (!opened_first_url) {
       opened_first_url = true;
-      disposition = NEW_BACKGROUND_TAB;
+      disposition = WindowOpenDisposition::NEW_BACKGROUND_TAB;
       // We opened the first URL which may have opened a new window or clobbered
       // the current page, reset the navigator just to be sure. |opened_tab| may
       // be NULL in tests.

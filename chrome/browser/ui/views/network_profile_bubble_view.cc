@@ -110,9 +110,10 @@ void NetworkProfileBubbleView::LinkClicked(views::Link* source,
       ui::DispositionFromEventFlags(event_flags);
   content::OpenURLParams params(
       GURL("https://sites.google.com/a/chromium.org/dev/administrators/"
-            "common-problems-and-solutions#network_profile"),
-      content::Referrer(),
-      disposition == CURRENT_TAB ? NEW_FOREGROUND_TAB : disposition,
+           "common-problems-and-solutions#network_profile"),
+      content::Referrer(), disposition == WindowOpenDisposition::CURRENT_TAB
+                               ? WindowOpenDisposition::NEW_FOREGROUND_TAB
+                               : disposition,
       ui::PAGE_TRANSITION_LINK, false);
   navigator_->OpenURL(params);
 

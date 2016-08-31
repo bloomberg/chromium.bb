@@ -221,7 +221,7 @@ void WebUIBrowserTest::BrowsePreload(const GURL& browse_to) {
   content::TestNavigationObserver navigation_observer(web_contents);
   chrome::NavigateParams params(
       browser(), GURL(browse_to), ui::PAGE_TRANSITION_TYPED);
-  params.disposition = CURRENT_TAB;
+  params.disposition = WindowOpenDisposition::CURRENT_TAB;
 
   // This is needed to make the test
   // MaterialHistoryBrowserTest.HistoryToolbarFocusTest pass on macOS. The test

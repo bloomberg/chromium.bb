@@ -485,9 +485,9 @@ class ErrorPageTest : public InProcessBrowserTest {
         browser()->tab_strip_model()->GetActiveWebContents(),
         num_navigations);
     if (direction == HISTORY_NAVIGATE_BACK) {
-      chrome::GoBack(browser(), CURRENT_TAB);
+      chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
     } else if (direction == HISTORY_NAVIGATE_FORWARD) {
-      chrome::GoForward(browser(), CURRENT_TAB);
+      chrome::GoForward(browser(), WindowOpenDisposition::CURRENT_TAB);
     } else {
       FAIL();
     }

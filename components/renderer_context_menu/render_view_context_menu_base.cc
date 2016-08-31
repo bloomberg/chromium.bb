@@ -391,7 +391,8 @@ void RenderViewContextMenuBase::OpenURLWithExtraHeaders(
       content::Referrer(referring_url.GetAsReferrer(),
                         params_.referrer_policy));
 
-  if (params_.link_url == url && disposition != OFF_THE_RECORD)
+  if (params_.link_url == url &&
+      disposition != WindowOpenDisposition::OFF_THE_RECORD)
     params_.custom_context.link_followed = url;
 
   OpenURLParams open_url_params(url, referrer, disposition, transition, false);

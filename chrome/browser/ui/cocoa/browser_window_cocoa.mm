@@ -752,8 +752,8 @@ WindowOpenDisposition BrowserWindowCocoa::GetDispositionForPopupBounds(
     const gfx::Rect& bounds) {
   // When using Cocoa's System Fullscreen mode, convert popups into tabs.
   if ([controller_ isInAppKitFullscreen])
-    return NEW_FOREGROUND_TAB;
-  return NEW_POPUP;
+    return WindowOpenDisposition::NEW_FOREGROUND_TAB;
+  return WindowOpenDisposition::NEW_POPUP;
 }
 
 FindBar* BrowserWindowCocoa::CreateFindBar() {

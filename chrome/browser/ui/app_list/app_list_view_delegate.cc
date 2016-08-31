@@ -528,9 +528,8 @@ void AppListViewDelegate::OpenHelp() {
   chrome::ScopedTabbedBrowserDisplayer displayer(profile_);
   content::OpenURLParams params(GURL(chrome::kAppLauncherHelpURL),
                                 content::Referrer(),
-                                NEW_FOREGROUND_TAB,
-                                ui::PAGE_TRANSITION_LINK,
-                                false);
+                                WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                                ui::PAGE_TRANSITION_LINK, false);
   displayer.browser()->OpenURL(params);
 }
 
@@ -761,7 +760,8 @@ gfx::ImageSkia* AppListViewDelegate::GetAppsIcon() const {
 
 void AppListViewDelegate::OpenLearnMoreLink() {
   controller_->OpenURL(profile_, GURL(GetLearnMoreLink()),
-                       ui::PAGE_TRANSITION_LINK, CURRENT_TAB);
+                       ui::PAGE_TRANSITION_LINK,
+                       WindowOpenDisposition::CURRENT_TAB);
 }
 #endif  // !defined(OS_CHROMEOS)
 

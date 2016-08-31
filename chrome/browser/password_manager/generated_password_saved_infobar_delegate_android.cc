@@ -25,11 +25,11 @@ GeneratedPasswordSavedInfoBarDelegateAndroid::
 
 void GeneratedPasswordSavedInfoBarDelegateAndroid::OnInlineLinkClicked() {
   if (smart_lock_branding_enabled_) {
-    InfoBarService::WebContentsFromInfoBar(infobar())
-        ->OpenURL(content::OpenURLParams(
+    InfoBarService::WebContentsFromInfoBar(infobar())->OpenURL(
+        content::OpenURLParams(
             GURL(password_manager::kPasswordManagerAccountDashboardURL),
-            content::Referrer(), NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK,
-            false));
+            content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
+            ui::PAGE_TRANSITION_LINK, false));
   } else {
     chrome::android::ChromeApplication::ShowPasswordSettings();
   }

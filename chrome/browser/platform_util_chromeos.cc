@@ -108,7 +108,7 @@ void OpenExternal(Profile* profile, const GURL& url) {
   //     "Browser::EmailPageLocation" (to name only one).
   // As such we should keep this code here.
   chrome::NavigateParams params(profile, url, ui::PAGE_TRANSITION_LINK);
-  params.disposition = NEW_FOREGROUND_TAB;
+  params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
 
   if (url.SchemeIs("mailto")) {
     std::string string_url = kGmailComposeUrl;

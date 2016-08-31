@@ -46,7 +46,8 @@ void IOSChromeControllerClient::Reload() {
 
 void IOSChromeControllerClient::OpenUrlInCurrentTab(const GURL& url) {
   web_state_->OpenURL(web::WebState::OpenURLParams(
-      url, web::Referrer(), CURRENT_TAB, ui::PAGE_TRANSITION_LINK, false));
+      url, web::Referrer(), WindowOpenDisposition::CURRENT_TAB,
+      ui::PAGE_TRANSITION_LINK, false));
 }
 
 const std::string& IOSChromeControllerClient::GetApplicationLocale() {
