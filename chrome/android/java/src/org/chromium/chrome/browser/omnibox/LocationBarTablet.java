@@ -572,7 +572,9 @@ public class LocationBarTablet extends LocationBarLayout {
         if (tab == null) return false;
         boolean isChromeScheme = tab.getUrl().startsWith(UrlConstants.CHROME_SCHEME)
                 || tab.getUrl().startsWith(UrlConstants.CHROME_NATIVE_SCHEME);
-        return !isChromeScheme;
+        boolean isValidTab = !tab.isOfflinePage() && !tab.isShowingErrorPage()
+                             && !tab.isShowingInterstitialPage();
+        return !isChromeScheme && isValidTab;
     }
 
     private boolean shouldShowPageActionButtons() {
