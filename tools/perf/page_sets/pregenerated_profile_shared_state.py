@@ -8,7 +8,7 @@ import sys
 import tempfile
 import zipfile
 
-from catapult_base import cloud_storage
+from py_utils import cloud_storage
 
 from telemetry.page import shared_page_state
 

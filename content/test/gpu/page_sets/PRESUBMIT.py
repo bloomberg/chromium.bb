@@ -21,11 +21,11 @@ def _CheckWprShaFiles(input_api, output_api):
   """Check whether the wpr sha files have matching URLs."""
   old_sys_path = sys.path
   try:
-    catapult_base_path = input_api.os_path.join(
-        _GetChromiumSrcDir(input_api), 'third_party', 'catapult',
-        'catapult_base')
-    sys.path.insert(1, catapult_base_path)
-    from catapult_base import cloud_storage  # pylint: disable=import-error
+    py_utils_path = input_api.os_path.join(
+        _GetChromiumSrcDir(input_api), 'third_party', 'catapult', 'common',
+        'py_utils')
+    sys.path.insert(1, py_utils_path)
+    from py_utils import cloud_storage  # pylint: disable=import-error
   finally:
     sys.path = old_sys_path
 

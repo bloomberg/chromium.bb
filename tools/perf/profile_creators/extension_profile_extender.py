@@ -14,8 +14,8 @@ import zipfile
 if sys.platform == 'win32':
   import _winreg as winreg  # pylint: disable=import-error
 
-from catapult_base import cloud_storage
 from profile_creators import profile_extender
+from py_utils import cloud_storage
 from telemetry.core import exceptions
 
 

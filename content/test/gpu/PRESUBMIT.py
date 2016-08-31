@@ -19,7 +19,7 @@ def _GetPathsToPrepend(input_api):
     input_api.os_path.join(chromium_src_dir,
         'third_party', 'catapult', 'telemetry'),
     input_api.os_path.join(chromium_src_dir,
-        'third_party', 'catapult', 'catapult_base'),
+        'third_party', 'catapult', 'common', 'py_utils'),
   ]
 
 def _GpuUnittestsArePassingCheck(input_api, output_api):

@@ -6,7 +6,7 @@ import os
 
 from telemetry.testing import serially_executed_browser_test_case
 
-from catapult_base import cloud_storage
+from py_utils import cloud_storage
 
 _WPR_ARCHIVE_PATH = os.path.join(os.path.dirname(__file__),
                                  'popular_urls_000.wpr')

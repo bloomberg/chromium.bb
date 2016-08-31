@@ -18,8 +18,8 @@ sys.path.insert(1, os.path.abspath(os.path.join(
 from core import path_util
 
 
-path_util.AddCatapultBaseToPath()
-from catapult_base import cloud_storage
+path_util.AddPyUtilsToPath()
+from py_utils import cloud_storage
 
 path_util.AddTelemetryToPath()
 from telemetry.core import exceptions

@@ -14,10 +14,6 @@ def GetChromiumSrcDir():
   return chromium_config.GetChromiumSrcDir()
 
 
-def GetCatapultBaseDir():
-  return os.path.join(
-      GetChromiumSrcDir(), 'third_party', 'catapult', 'catapult_base')
-
 
 def GetTelemetryDir():
   return chromium_config.GetTelemetryDir()
@@ -41,7 +37,8 @@ def AddTelemetryToPath():
     sys.path.insert(1, telemetry_path)
 
 
-def AddCatapultBaseToPath():
-  catapult_base_path = GetCatapultBaseDir()
-  if catapult_base_path not in sys.path:
-    sys.path.insert(1, catapult_base_path)
+def AddPyUtilsToPath():
+  py_utils_dir = os.path.join(
+      GetChromiumSrcDir(), 'third_party', 'catapult', 'common', 'py_utils')
+  if py_utils_dir not in sys.path:
+    sys.path.insert(1, py_utils_dir)

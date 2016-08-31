@@ -10,8 +10,8 @@ import sys
 
 from core import path_util
 
-path_util.AddCatapultBaseToPath()
-from catapult_base import cloud_storage
+path_util.AddPyUtilsToPath()
+from py_utils import cloud_storage
 
 path_util.AddTelemetryToPath()
 from telemetry import benchmark_runner

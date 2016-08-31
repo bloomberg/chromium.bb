@@ -34,7 +34,7 @@ def SetupTelemetryPaths():
   if telemetry_path not in sys.path:
     sys.path.append(telemetry_path)
 
-  catapult_base_path = os.path.join(
-      chromium_src_dir, 'third_party', 'catapult', 'catapult_base')
-  if catapult_base_path not in sys.path:
-    sys.path.append(catapult_base_path)
+  py_utils_path = os.path.join(
+      chromium_src_dir, 'third_party', 'catapult', 'common', 'py_utils')
+  if py_utils_path not in sys.path:
+    sys.path.append(py_utils_path)

@@ -11,4 +11,4 @@ from core import path_util
 
 
 path_util.AddTelemetryToPath()
-path_util.AddCatapultBaseToPath()
+path_util.AddPyUtilsToPath()

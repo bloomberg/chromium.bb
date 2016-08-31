@@ -20,7 +20,7 @@ def CommonChecks(input_api, output_api):
       output_api,
       pylintrc='pylintrc',
       extra_paths_list=[
-          J('third_party', 'catapult', 'catapult_base'),
+          J('third_party', 'catapult', 'common', 'py_utils'),
           J('third_party', 'catapult', 'telemetry'),
           J('tools', 'perf'),
       ])
