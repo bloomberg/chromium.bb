@@ -189,10 +189,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'intel', 'opengl'], bug=1007) # angle bug ID
 
     # Mac failures
-    self.Fail('conformance/glsl/misc/shaders-with-invariance.html',
-        ['mac'], bug=421710)
-    self.Fail('deqp/data/gles2/shaders/scoping.html',
-        ['mac'], bug=478572)
+    # La la la la la la la la ...
 
     # Mac AMD failures
     self.Fail('conformance/extensions/webgl-draw-buffers.html',
@@ -201,6 +198,19 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Mac Retina AMD failures
     self.Flaky('conformance/extensions/oes-texture-float-with-video.html',
         ['mac', ('amd', 0x6821)], bug=599272)
+
+    # Mac Retine NVidia failures
+    self.Fail('conformance/attribs/gl-disabled-vertex-attrib.html',
+        ['mac', ('nvidia', 0xfe9)], bug=635081)
+    self.Fail('conformance/programs/' +
+        'gl-bind-attrib-location-long-names-test.html',
+        ['mac', ('nvidia', 0xfe9)], bug=635081)
+    self.Fail('conformance/programs/gl-bind-attrib-location-test.html',
+        ['mac', ('nvidia', 0xfe9)], bug=635081)
+    self.Fail('conformance/renderbuffers/framebuffer-object-attachment.html',
+        ['mac', ('nvidia', 0xfe9)], bug=635081)
+    self.Fail('conformance/textures/misc/tex-input-validation.html',
+        ['mac', ('nvidia', 0xfe9)], bug=635081)
 
     # Linux failures
     self.Flaky('conformance/textures/video/' +
