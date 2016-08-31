@@ -219,6 +219,7 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
       DisallowedFeatures(),
       normalized_init.extensions.c_str(),
       normalized_init.gl_version.c_str(),
+      init.context_type,
       normalized_init.bind_generates_resource);
 
   // We initialize the ContextGroup with a MockGLES2Decoder so that

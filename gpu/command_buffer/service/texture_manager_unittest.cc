@@ -112,7 +112,8 @@ class TextureManagerTest : public GpuServiceTest {
                         const char* gl_version,
                         bool enable_es3) {
     TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
-        gl_.get(), gl_extensions, "", gl_version, enable_es3);
+        gl_.get(), gl_extensions, "", gl_version,
+        feature_info_->context_type(), enable_es3);
     feature_info_->InitializeForTesting();
     if (enable_es3) {
       EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_COLOR_ATTACHMENTS, _))

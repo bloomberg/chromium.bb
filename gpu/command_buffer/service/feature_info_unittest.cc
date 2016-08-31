@@ -95,7 +95,7 @@ class FeatureInfoTest
       const char* extensions, const char* renderer, const char* version) {
     GpuServiceTest::SetUpWithGLVersion(version, extensions);
     TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
-        gl_.get(), extensions, renderer, version);
+        gl_.get(), extensions, renderer, version, GetContextType());
     info_ = new FeatureInfo();
     info_->Initialize(GetContextType(), DisallowedFeatures());
   }
@@ -107,7 +107,7 @@ class FeatureInfoTest
       const DisallowedFeatures& disallowed_features) {
     GpuServiceTest::SetUpWithGLVersion(version, extensions);
     TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
-        gl_.get(), extensions, renderer, version);
+        gl_.get(), extensions, renderer, version, GetContextType());
     info_ = new FeatureInfo();
     info_->Initialize(GetContextType(), disallowed_features);
   }
@@ -119,7 +119,7 @@ class FeatureInfoTest
       const base::CommandLine& command_line) {
     GpuServiceTest::SetUpWithGLVersion(version, extensions);
     TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
-        gl_.get(), extensions, renderer, version);
+        gl_.get(), extensions, renderer, version, GetContextType());
     GpuDriverBugWorkarounds gpu_driver_bug_workaround(&command_line);
     info_ = new FeatureInfo(command_line, gpu_driver_bug_workaround);
     info_->Initialize(GetContextType(), DisallowedFeatures());
@@ -136,7 +136,7 @@ class FeatureInfoTest
       const base::CommandLine& command_line) {
     GpuServiceTest::SetUpWithGLVersion("2.0", extensions);
     TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
-        gl_.get(), extensions, "", "");
+        gl_.get(), extensions, "", "", GetContextType());
     GpuDriverBugWorkarounds gpu_driver_bug_workaround(&command_line);
     info_ = new FeatureInfo(command_line, gpu_driver_bug_workaround);
     info_->Initialize(GetContextType(), DisallowedFeatures());

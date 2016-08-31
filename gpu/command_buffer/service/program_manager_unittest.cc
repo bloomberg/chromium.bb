@@ -70,10 +70,10 @@ class ProgramManagerTestBase : public GpuServiceTest {
                  const char* gl_extensions,
                  FeatureInfo* feature_info = nullptr) {
     GpuServiceTest::SetUpWithGLVersion(gl_version, gl_extensions);
-    TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
-        gl_.get(), gl_extensions, "", gl_version);
     if (!feature_info)
       feature_info = new FeatureInfo();
+    TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
+        gl_.get(), gl_extensions, "", gl_version, feature_info->context_type());
     feature_info->InitializeForTesting();
     feature_info_ = feature_info;
     SetupProgramManager();

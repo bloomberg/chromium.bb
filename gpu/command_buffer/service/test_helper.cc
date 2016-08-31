@@ -34,6 +34,7 @@ using ::testing::NotNull;
 using ::testing::Return;
 using ::testing::SetArrayArgument;
 using ::testing::SetArgumentPointee;
+using ::testing::SetArgPointee;
 using ::testing::StrEq;
 using ::testing::StrictMock;
 
@@ -331,12 +332,16 @@ void TestHelper::SetupContextGroupInitExpectations(
     const DisallowedFeatures& disallowed_features,
     const char* extensions,
     const char* gl_version,
+    ContextType context_type,
     bool bind_generates_resource) {
   InSequence sequence;
 
-  SetupFeatureInfoInitExpectationsWithGLVersion(gl, extensions, "", gl_version);
-
   gl::GLVersionInfo gl_info(gl_version, "", extensions);
+
+  SetupFeatureInfoInitExpectationsWithGLVersion(gl, extensions, "", gl_version,
+      context_type,
+      context_type == CONTEXT_TYPE_WEBGL2 ||
+      context_type == CONTEXT_TYPE_OPENGLES3);
 
   EXPECT_CALL(*gl, GetIntegerv(GL_MAX_RENDERBUFFER_SIZE, _))
       .WillOnce(SetArgumentPointee<1>(kMaxRenderbufferSize))
@@ -468,7 +473,8 @@ void TestHelper::SetupContextGroupInitExpectations(
 
 void TestHelper::SetupFeatureInfoInitExpectations(::gl::MockGLInterface* gl,
                                                   const char* extensions) {
-  SetupFeatureInfoInitExpectationsWithGLVersion(gl, extensions, "", "");
+  SetupFeatureInfoInitExpectationsWithGLVersion(gl, extensions, "", "",
+      CONTEXT_TYPE_OPENGLES2);
 }
 
 void TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
@@ -476,6 +482,7 @@ void TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
     const char* extensions,
     const char* gl_renderer,
     const char* gl_version,
+    ContextType context_type,
     bool enable_es3) {
   InSequence sequence;
 
@@ -513,6 +520,14 @@ void TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
   EXPECT_CALL(*gl, GetString(GL_RENDERER))
       .WillOnce(Return(reinterpret_cast<const uint8_t*>(gl_renderer)))
       .RetiresOnSaturation();
+
+  if (!(context_type == CONTEXT_TYPE_WEBGL1 ||
+        context_type == CONTEXT_TYPE_OPENGLES2) &&
+      gl_info.is_es3_capable && enable_es3) {
+    EXPECT_CALL(*gl, GetIntegerv(GL_PIXEL_UNPACK_BUFFER_BINDING, _))
+      .WillOnce(SetArgPointee<1>(0))
+      .RetiresOnSaturation();
+  }
 
   if ((strstr(extensions, "GL_ARB_texture_float") ||
        gl_info.is_desktop_core_profile) ||

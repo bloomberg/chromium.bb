@@ -36,7 +36,8 @@ class RenderbufferManagerTestBase : public GpuServiceTest {
         gl_.get(),
         depth24_supported ? "GL_OES_depth24" : "",
         "",
-        use_gles ? "OpenGL ES 2.0" : "2.1");
+        use_gles ? "OpenGL ES 2.0" : "2.1",
+        feature_info_->context_type());
     feature_info_->InitializeForTesting();
     manager_.reset(new RenderbufferManager(
         memory_tracker, kMaxSize, kMaxSamples, feature_info_.get()));

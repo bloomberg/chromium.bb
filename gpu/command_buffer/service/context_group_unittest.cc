@@ -71,7 +71,8 @@ TEST_F(ContextGroupTest, Basic) {
 
 TEST_F(ContextGroupTest, InitializeNoExtensions) {
   TestHelper::SetupContextGroupInitExpectations(
-      gl_.get(), DisallowedFeatures(), "", "", kBindGeneratesResource);
+      gl_.get(), DisallowedFeatures(), "", "",
+      CONTEXT_TYPE_OPENGLES2, kBindGeneratesResource);
   group_->Initialize(decoder_.get(), CONTEXT_TYPE_OPENGLES2,
                      DisallowedFeatures());
   EXPECT_EQ(static_cast<uint32_t>(TestHelper::kNumVertexAttribs),
@@ -107,7 +108,8 @@ TEST_F(ContextGroupTest, InitializeNoExtensions) {
 TEST_F(ContextGroupTest, MultipleContexts) {
   std::unique_ptr<MockGLES2Decoder> decoder2_(new MockGLES2Decoder());
   TestHelper::SetupContextGroupInitExpectations(
-      gl_.get(), DisallowedFeatures(), "", "", kBindGeneratesResource);
+      gl_.get(), DisallowedFeatures(), "", "",
+      CONTEXT_TYPE_OPENGLES2, kBindGeneratesResource);
   EXPECT_TRUE(group_->Initialize(decoder_.get(), CONTEXT_TYPE_OPENGLES2,
                                  DisallowedFeatures()));
   EXPECT_FALSE(group_->Initialize(decoder2_.get(), CONTEXT_TYPE_WEBGL1,

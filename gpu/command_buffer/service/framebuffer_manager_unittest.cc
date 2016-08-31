@@ -149,7 +149,7 @@ class FramebufferInfoTestBase : public GpuServiceTest {
   void InitializeContext(const char* gl_version, const char* extensions) {
     GpuServiceTest::SetUpWithGLVersion(gl_version, extensions);
     TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(gl_.get(),
-        extensions, "", gl_version);
+        extensions, "", gl_version, manager_.context_type());
     feature_info_->InitializeForTesting();
     decoder_.reset(new MockGLES2Decoder());
     manager_.CreateFramebuffer(kClient1Id, kService1Id);
@@ -1554,7 +1554,7 @@ class FramebufferInfoES3Test : public FramebufferInfoTestBase {
   void InitializeContext(const char* gl_version, const char* extensions) {
     GpuServiceTest::SetUpWithGLVersion(gl_version, extensions);
     TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(gl_.get(),
-        extensions, "", gl_version);
+        extensions, "", gl_version, manager_.context_type());
     feature_info_->InitializeForTesting(CONTEXT_TYPE_OPENGLES3);
     decoder_.reset(new MockGLES2Decoder());
     manager_.CreateFramebuffer(kClient1Id, kService1Id);

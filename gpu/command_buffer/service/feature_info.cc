@@ -80,6 +80,34 @@ class StringSet {
   std::set<std::string> string_set_;
 };
 
+class ScopedPixelUnpackBufferOverride {
+ public:
+  explicit ScopedPixelUnpackBufferOverride(
+      bool is_es3_capable,
+      ContextType context_type,
+      GLuint binding_override)
+      : orig_binding_(-1) {
+    if (!(context_type == CONTEXT_TYPE_WEBGL1 ||
+          context_type == CONTEXT_TYPE_OPENGLES2) && is_es3_capable) {
+      GLint orig_binding;
+      glGetIntegerv(GL_PIXEL_UNPACK_BUFFER_BINDING, &orig_binding);
+      if (static_cast<GLuint>(orig_binding) != binding_override) {
+        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, binding_override);
+        orig_binding_ = orig_binding;
+      }
+    }
+  }
+
+  ~ScopedPixelUnpackBufferOverride() {
+    if (orig_binding_ != -1) {
+      glBindBuffer(GL_PIXEL_UNPACK_BUFFER, static_cast<GLuint>(orig_binding_));
+    }
+  }
+
+ private:
+    GLint orig_binding_;
+};
+
 }  // anonymous namespace.
 
 FeatureInfo::FeatureFlags::FeatureFlags()
@@ -322,6 +350,11 @@ void FeatureInfo::InitializeFeatures() {
 
   gl_version_info_.reset(
       new gl::GLVersionInfo(version_str, renderer_str, extensions.GetImpl()));
+
+  // TODO(kainino): This call to IsES3Capable is sort of a hack to get some
+  // mocked tests working.
+  ScopedPixelUnpackBufferOverride scoped_pbo_override(
+      IsES3Capable(), context_type_, 0);
 
   AddExtensionString("GL_ANGLE_translated_shader_source");
   AddExtensionString("GL_CHROMIUM_async_pixel_transfers");

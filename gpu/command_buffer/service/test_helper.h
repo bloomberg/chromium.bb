@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/shader_translator.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_mock.h"
@@ -106,6 +107,7 @@ class TestHelper {
       const DisallowedFeatures& disallowed_features,
       const char* extensions,
       const char* gl_version,
+      ContextType context_type,
       bool bind_generates_resource);
   static void SetupFeatureInfoInitExpectations(::gl::MockGLInterface* gl,
                                                const char* extensions);
@@ -114,6 +116,7 @@ class TestHelper {
       const char* extensions,
       const char* gl_renderer,
       const char* gl_version,
+      ContextType context_type,
       bool enable_es3 = false);
   static void SetupTextureManagerInitExpectations(::gl::MockGLInterface* gl,
                                                   bool is_es3_enabled,
