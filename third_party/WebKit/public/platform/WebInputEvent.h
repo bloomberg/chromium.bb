@@ -154,39 +154,46 @@ public:
     // GENERATED_JAVA_CLASS_NAME_OVERRIDE: WebInputEventModifier
     enum Modifiers {
         // modifiers for all events:
-        ShiftKey         = 1 << 0,
-        ControlKey       = 1 << 1,
-        AltKey           = 1 << 2,
-        MetaKey          = 1 << 3,
+        ShiftKey = 1 << 0,
+        ControlKey = 1 << 1,
+        AltKey = 1 << 2,
+        MetaKey = 1 << 3,
 
         // modifiers for keyboard events:
-        IsKeyPad         = 1 << 4,
-        IsAutoRepeat     = 1 << 5,
+        IsKeyPad = 1 << 4,
+        IsAutoRepeat = 1 << 5,
 
         // modifiers for mouse events:
-        LeftButtonDown   = 1 << 6,
+        LeftButtonDown = 1 << 6,
         MiddleButtonDown = 1 << 7,
-        RightButtonDown  = 1 << 8,
+        RightButtonDown = 1 << 8,
 
         // Toggle modifers for all events.
-        CapsLockOn       = 1 << 9,
-        NumLockOn        = 1 << 10,
+        CapsLockOn = 1 << 9,
+        NumLockOn = 1 << 10,
 
-        IsLeft           = 1 << 11,
-        IsRight          = 1 << 12,
+        IsLeft = 1 << 11,
+        IsRight = 1 << 12,
 
         // Indicates that an event was generated on the touch screen while
         // touch accessibility is enabled, so the event should be handled
         // by accessibility code first before normal input event processing.
         IsTouchAccessibility = 1 << 13,
 
-        IsComposing      = 1 << 14,
+        IsComposing = 1 << 14,
 
-        AltGrKey         = 1 << 15,
-        FnKey            = 1 << 16,
-        SymbolKey        = 1 << 17,
+        AltGrKey = 1 << 15,
+        FnKey = 1 << 16,
+        SymbolKey = 1 << 17,
 
-        ScrollLockOn     = 1 << 18,
+        ScrollLockOn = 1 << 18,
+
+        // The set of non-stateful modifiers that specifically change the
+        // interpretation of the key being pressed. For example; IsLeft,
+        // IsRight, IsComposing don't change the meaning of the key
+        // being pressed. NumLockOn, ScrollLockOn, CapsLockOn are stateful
+        // and don't indicate explicit depressed state.
+        KeyModifiers = SymbolKey | FnKey | AltGrKey | MetaKey | AltKey | ControlKey | ShiftKey
     };
 
     // Indicates whether the browser needs to block on the ACK result for
@@ -333,6 +340,21 @@ public:
     {
         memset(&text, 0, sizeof(text));
         memset(&unmodifiedText, 0, sizeof(unmodifiedText));
+    }
+
+    // Please refer to bug http://b/issue?id=961192, which talks about Webkit
+    // keyboard event handling changes. It also mentions the list of keys
+    // which don't have associated character events.
+    bool isCharacterKey() const
+    {
+#if 0
+    switch (windowsKeyCode) {
+    case VKEY_BACK:
+    case VKEY_ESCAPE:
+        return false;
+    }
+#endif
+        return true;
     }
 };
 

@@ -16,13 +16,23 @@
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/page/SpatialNavigation.h"
-#include "platform/PlatformKeyboardEvent.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/WindowsKeyboardCodes.h"
+#include "public/platform/WebInputEvent.h"
+
+#if OS(WIN)
+#include <windows.h>
+#elif OS(MACOSX)
+#import <Carbon/Carbon.h>
+#endif
 
 namespace blink {
 
 namespace {
+
+#if OS(WIN)
+static const unsigned short HIGHBITMASKSHORT = 0x8000;
+#endif
 
 const int kVKeyProcessKey = 229;
 
@@ -53,16 +63,16 @@ KeyboardEventManager::~KeyboardEventManager()
 {
 }
 
-bool KeyboardEventManager::handleAccessKey(const PlatformKeyboardEvent& evt)
+bool KeyboardEventManager::handleAccessKey(const WebKeyboardEvent& evt)
 {
     // FIXME: Ignoring the state of Shift key is what neither IE nor Firefox do.
     // IE matches lower and upper case access keys regardless of Shift key state - but if both upper and
     // lower case variants are present in a document, the correct element is matched based on Shift key state.
     // Firefox only matches an access key if Shift is not pressed, and does that case-insensitively.
-    DCHECK(!(PlatformKeyboardEvent::accessKeyModifiers() & PlatformEvent::ShiftKey));
-    if ((evt.getModifiers() & (PlatformEvent::KeyModifiers & ~PlatformEvent::ShiftKey)) != PlatformKeyboardEvent::accessKeyModifiers())
+    DCHECK(!(kAccessKeyModifiers & WebInputEvent::ShiftKey));
+    if ((evt.modifiers & (WebKeyboardEvent::KeyModifiers & ~WebInputEvent::ShiftKey)) != kAccessKeyModifiers)
         return false;
-    String key = evt.unmodifiedText();
+    String key = String(evt.unmodifiedText);
     Element* elem = m_frame->document()->getElementByAccessKey(key.lower());
     if (!elem)
         return false;
@@ -71,17 +81,17 @@ bool KeyboardEventManager::handleAccessKey(const PlatformKeyboardEvent& evt)
 }
 
 WebInputEventResult KeyboardEventManager::keyEvent(
-    const PlatformKeyboardEvent& initialKeyEvent)
+    const WebKeyboardEvent& initialKeyEvent)
 {
     m_frame->chromeClient().clearToolTip();
 
-    if (initialKeyEvent.windowsVirtualKeyCode() == VK_CAPITAL)
+    if (initialKeyEvent.windowsKeyCode == VK_CAPITAL)
         capsLockStateMayHaveChanged();
 
 #if OS(WIN)
     if (m_scrollManager->panScrollInProgress()) {
         // If a key is pressed while the panScroll is in progress then we want to stop
-        if (initialKeyEvent.type() == PlatformEvent::KeyDown || initialKeyEvent.type() == PlatformEvent::RawKeyDown)
+        if (initialKeyEvent.type == WebInputEvent::KeyDown || initialKeyEvent.type == WebInputEvent::RawKeyDown)
             m_scrollManager->stopAutoscroll();
 
         // If we were in panscroll mode, we swallow the key event
@@ -103,19 +113,19 @@ WebInputEventResult KeyboardEventManager::keyEvent(
     // On Windows, WebKit explicitly calls handleAccessKey() instead of dispatching a keypress event for WM_SYSCHAR messages.
     // Other platforms currently match either Mac or Windows behavior, depending on whether they send combined KeyDown events.
     bool matchedAnAccessKey = false;
-    if (initialKeyEvent.type() == PlatformEvent::KeyDown)
+    if (initialKeyEvent.type == WebInputEvent::KeyDown)
         matchedAnAccessKey = handleAccessKey(initialKeyEvent);
 
     // FIXME: it would be fair to let an input method handle KeyUp events before DOM dispatch.
-    if (initialKeyEvent.type() == PlatformEvent::KeyUp || initialKeyEvent.type() == PlatformEvent::Char) {
+    if (initialKeyEvent.type == WebInputEvent::KeyUp || initialKeyEvent.type == WebInputEvent::Char) {
         KeyboardEvent* domEvent = KeyboardEvent::create(initialKeyEvent, m_frame->document()->domWindow());
 
         return EventHandler::toWebInputEventResult(node->dispatchEvent(domEvent));
     }
 
-    PlatformKeyboardEvent keyDownEvent = initialKeyEvent;
-    if (keyDownEvent.type() != PlatformEvent::RawKeyDown)
-        keyDownEvent.disambiguateKeyDownEvent(PlatformEvent::RawKeyDown);
+    WebKeyboardEvent keyDownEvent = initialKeyEvent;
+    if (keyDownEvent.type != WebInputEvent::RawKeyDown)
+        keyDownEvent.type = WebInputEvent::RawKeyDown;
     KeyboardEvent* keydown = KeyboardEvent::create(keyDownEvent, m_frame->document()->domWindow());
     if (matchedAnAccessKey)
         keydown->setDefaultPrevented(true);
@@ -129,7 +139,7 @@ WebInputEventResult KeyboardEventManager::keyEvent(
     if (changedFocusedFrame)
         return WebInputEventResult::HandledSystem;
 
-    if (initialKeyEvent.type() == PlatformEvent::RawKeyDown)
+    if (initialKeyEvent.type == WebInputEvent::RawKeyDown)
         return WebInputEventResult::NotHandled;
 
     // Focus may have changed during keydown handling, so refetch node.
@@ -138,9 +148,19 @@ WebInputEventResult KeyboardEventManager::keyEvent(
     if (!node)
         return WebInputEventResult::NotHandled;
 
-    PlatformKeyboardEvent keyPressEvent = initialKeyEvent;
-    keyPressEvent.disambiguateKeyDownEvent(PlatformEvent::Char);
-    if (keyPressEvent.text().isEmpty())
+#if OS(MACOSX)
+    // According to NSEvents.h, OpenStep reserves the range 0xF700-0xF8FF for
+    // function keys. However, some actual private use characters happen to be
+    // in this range, e.g. the Apple logo (Option+Shift+K). 0xF7FF is an
+    // arbitrary cut-off.
+    if (initialKeyEvent.text[0U] >= 0xF700 && initialKeyEvent.text[0U] <= 0xF7FF) {
+        return WebInputEventResult::NotHandled;
+    }
+#endif
+
+    WebKeyboardEvent keyPressEvent = initialKeyEvent;
+    keyPressEvent.type = WebInputEvent::Char;
+    if (keyPressEvent.text[0] == 0)
         return WebInputEventResult::NotHandled;
     KeyboardEvent* keypress = KeyboardEvent::create(keyPressEvent, m_frame->document()->domWindow());
     keypress->setTarget(node);
@@ -290,6 +310,58 @@ void KeyboardEventManager::defaultEscapeEventHandler(KeyboardEvent* event)
 DEFINE_TRACE(KeyboardEventManager)
 {
     visitor->trace(m_frame);
+}
+
+static OverrideCapsLockState s_overrideCapsLockState;
+
+void KeyboardEventManager::setCurrentCapsLockState(OverrideCapsLockState state) { s_overrideCapsLockState = state; }
+
+bool KeyboardEventManager::currentCapsLockState()
+{
+    switch (s_overrideCapsLockState) {
+    case OverrideCapsLockState::Default:
+#if OS(WIN)
+        // FIXME: Does this even work inside the sandbox?
+        return GetKeyState(VK_CAPITAL) & 1;
+#elif OS(MACOSX)
+        return GetCurrentKeyModifiers() & alphaLock;
+#else
+        NOTIMPLEMENTED();
+        return false;
+#endif
+    case OverrideCapsLockState::On:
+        return true;
+    case OverrideCapsLockState::Off:
+    default:
+        return false;
+    }
+}
+
+WebInputEvent::Modifiers KeyboardEventManager::getCurrentModifierState()
+{
+    unsigned modifiers = 0;
+#if OS(WIN)
+    if (GetKeyState(VK_SHIFT) & HIGHBITMASKSHORT)
+        modifiers |= WebInputEvent::ShiftKey;
+    if (GetKeyState(VK_CONTROL) & HIGHBITMASKSHORT)
+        modifiers |= WebInputEvent::ControlKey;
+    if (GetKeyState(VK_MENU) & HIGHBITMASKSHORT)
+        modifiers |= WebInputEvent::AltKey;
+#elif OS(MACOSX)
+    UInt32 currentModifiers = GetCurrentKeyModifiers();
+    if (currentModifiers & ::shiftKey)
+        modifiers |= WebInputEvent::ShiftKey;
+    if (currentModifiers & ::controlKey)
+        modifiers |= WebInputEvent::ControlKey;
+    if (currentModifiers & ::optionKey)
+        modifiers |= WebInputEvent::AltKey;
+    if (currentModifiers & ::cmdKey)
+        modifiers |= WebInputEvent::MetaKey;
+#else
+    // TODO(crbug.com/538289): Implement on other platforms.
+    return static_cast<WebInputEvent::Modifiers>(0);
+#endif
+    return static_cast<WebInputEvent::Modifiers>(modifiers);
 }
 
 } // namespace blink

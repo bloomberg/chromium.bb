@@ -1045,9 +1045,7 @@ WebInputEventResult WebFrameWidgetImpl::handleKeyEvent(const WebKeyboardEvent& e
 
     LocalFrame* frame = toLocalFrame(focusedFrame);
 
-    PlatformKeyboardEventBuilder evt(event);
-
-    WebInputEventResult result = frame->eventHandler().keyEvent(evt);
+    WebInputEventResult result = frame->eventHandler().keyEvent(event);
     if (result != WebInputEventResult::NotHandled) {
         if (WebInputEvent::RawKeyDown == event.type) {
             // Suppress the next keypress event unless the focused node is a plugin node.
@@ -1098,27 +1096,26 @@ WebInputEventResult WebFrameWidgetImpl::handleCharEvent(const WebKeyboardEvent& 
 
     EventHandler& handler = frame->eventHandler();
 
-    PlatformKeyboardEventBuilder evt(event);
-    if (!evt.isCharacterKey())
+    if (!event.isCharacterKey())
         return WebInputEventResult::HandledSuppressed;
 
     // Accesskeys are triggered by char events and can't be suppressed.
     // It is unclear whether a keypress should be dispatched as well
     // crbug.com/563507
-    if (handler.handleAccessKey(evt))
+    if (handler.handleAccessKey(event))
         return WebInputEventResult::HandledSystem;
 
     // Safari 3.1 does not pass off windows system key messages (WM_SYSCHAR) to
     // the eventHandler::keyEvent. We mimic this behavior on all platforms since
     // for now we are converting other platform's key events to windows key
     // events.
-    if (evt.isSystemKey())
+    if (event.isSystemKey)
         return WebInputEventResult::NotHandled;
 
     if (suppress)
         return WebInputEventResult::HandledSuppressed;
 
-    WebInputEventResult result = handler.keyEvent(evt);
+    WebInputEventResult result = handler.keyEvent(event);
     if (result != WebInputEventResult::NotHandled)
         return result;
 

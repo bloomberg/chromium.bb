@@ -39,6 +39,7 @@
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/VisualViewport.h"
+#include "core/input/KeyboardEventManager.h"
 #include "core/style/ComputedStyle.h"
 #include "core/page/Page.h"
 #include "modules/accessibility/AXObject.h"
@@ -47,7 +48,6 @@
 #include "modules/accessibility/AXTableCell.h"
 #include "modules/accessibility/AXTableColumn.h"
 #include "modules/accessibility/AXTableRow.h"
-#include "platform/PlatformKeyboardEvent.h"
 #include "public/platform/WebFloatRect.h"
 #include "public/platform/WebPoint.h"
 #include "public/platform/WebRect.h"
@@ -770,18 +770,18 @@ WebString WebAXObject::keyboardShortcut() const
 
     DEFINE_STATIC_LOCAL(String, modifierString, ());
     if (modifierString.isNull()) {
-        unsigned modifiers = PlatformKeyboardEvent::accessKeyModifiers();
+        unsigned modifiers = KeyboardEventManager::kAccessKeyModifiers;
         // Follow the same order as Mozilla MSAA implementation:
         // Ctrl+Alt+Shift+Meta+key. MSDN states that keyboard shortcut strings
         // should not be localized and defines the separator as "+".
         StringBuilder modifierStringBuilder;
-        if (modifiers & PlatformEvent::CtrlKey)
+        if (modifiers & WebInputEvent::ControlKey)
             modifierStringBuilder.append("Ctrl+");
-        if (modifiers & PlatformEvent::AltKey)
+        if (modifiers & WebInputEvent::AltKey)
             modifierStringBuilder.append("Alt+");
-        if (modifiers & PlatformEvent::ShiftKey)
+        if (modifiers & WebInputEvent::ShiftKey)
             modifierStringBuilder.append("Shift+");
-        if (modifiers & PlatformEvent::MetaKey)
+        if (modifiers & WebInputEvent::MetaKey)
             modifierStringBuilder.append("Win+");
         modifierString = modifierStringBuilder.toString();
     }

@@ -103,7 +103,6 @@
 #include "platform/Histogram.h"
 #include "platform/KeyboardCodes.h"
 #include "platform/PlatformGestureEvent.h"
-#include "platform/PlatformKeyboardEvent.h"
 #include "platform/PlatformMouseEvent.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
@@ -1084,7 +1083,7 @@ WebInputEventResult WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event)
     // If there is a popup, it should be the one processing the event, not the
     // page.
     if (m_pagePopup) {
-        m_pagePopup->handleKeyEvent(PlatformKeyboardEventBuilder(event));
+        m_pagePopup->handleKeyEvent(event);
         // We need to ignore the next Char event after this otherwise pressing
         // enter when selecting an item in the popup will go to the page.
         if (WebInputEvent::RawKeyDown == event.type)
@@ -1104,9 +1103,7 @@ WebInputEventResult WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event)
 
     LocalFrame* frame = toLocalFrame(focusedFrame);
 
-    PlatformKeyboardEventBuilder evt(event);
-
-    WebInputEventResult result = frame->eventHandler().keyEvent(evt);
+    WebInputEventResult result = frame->eventHandler().keyEvent(event);
     if (result != WebInputEventResult::NotHandled) {
         if (WebInputEvent::RawKeyDown == event.type) {
             // Suppress the next keypress event unless the focused node is a plugin node.
@@ -1169,7 +1166,7 @@ WebInputEventResult WebViewImpl::handleCharEvent(const WebKeyboardEvent& event)
     // If there is a popup, it should be the one processing the event, not the
     // page.
     if (m_pagePopup)
-        return m_pagePopup->handleKeyEvent(PlatformKeyboardEventBuilder(event));
+        return m_pagePopup->handleKeyEvent(event);
 
     LocalFrame* frame = toLocalFrame(focusedCoreFrame());
     if (!frame)
@@ -1177,25 +1174,24 @@ WebInputEventResult WebViewImpl::handleCharEvent(const WebKeyboardEvent& event)
 
     EventHandler& handler = frame->eventHandler();
 
-    PlatformKeyboardEventBuilder evt(event);
-    if (!evt.isCharacterKey())
+    if (!event.isCharacterKey())
         return WebInputEventResult::HandledSuppressed;
 
     // Accesskeys are triggered by char events and can't be suppressed.
-    if (handler.handleAccessKey(evt))
+    if (handler.handleAccessKey(event))
         return WebInputEventResult::HandledSystem;
 
     // Safari 3.1 does not pass off windows system key messages (WM_SYSCHAR) to
     // the eventHandler::keyEvent. We mimic this behavior on all platforms since
     // for now we are converting other platform's key events to windows key
     // events.
-    if (evt.isSystemKey())
+    if (event.isSystemKey)
         return WebInputEventResult::NotHandled;
 
     if (suppress)
         return WebInputEventResult::HandledSuppressed;
 
-    WebInputEventResult result = handler.keyEvent(evt);
+    WebInputEventResult result = handler.keyEvent(event);
     if (result != WebInputEventResult::NotHandled)
         return result;
     if (keyEventDefault(event))

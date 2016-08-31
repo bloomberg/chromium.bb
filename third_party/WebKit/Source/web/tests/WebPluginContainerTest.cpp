@@ -37,7 +37,6 @@
 #include "core/layout/LayoutObject.h"
 #include "core/page/Page.h"
 #include "platform/PlatformEvent.h"
-#include "platform/PlatformKeyboardEvent.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/CullRect.h"
 #include "platform/graphics/paint/ForeignLayerDisplayItem.h"
@@ -370,12 +369,15 @@ TEST_F(WebPluginContainerTest, CopyInsertKeyboardEventsTest)
     runPendingTasks();
 
     WebElement pluginContainerOneElement = webView->mainFrame()->document().getElementById(WebString::fromUTF8("translated-plugin"));
-    PlatformEvent::Modifiers modifierKey = static_cast<PlatformEvent::Modifiers>(PlatformEvent::CtrlKey | PlatformEvent::NumLockOn | PlatformEvent::IsLeft);
+    WebInputEvent::Modifiers modifierKey = static_cast<WebInputEvent::Modifiers>(WebInputEvent::ControlKey | WebInputEvent::NumLockOn | WebInputEvent::IsLeft);
 #if OS(MACOSX)
-    modifierKey = static_cast<PlatformEvent::Modifiers>(PlatformEvent::MetaKey | PlatformEvent::NumLockOn | PlatformEvent::IsLeft);
+    modifierKey = static_cast<WebInputEvent::Modifiers>(WebInputEvent::MetaKey | WebInputEvent::NumLockOn | WebInputEvent::IsLeft);
 #endif
-    PlatformKeyboardEvent platformKeyboardEventC(PlatformEvent::RawKeyDown, "", "", "", "", 67, 0, false, modifierKey, 0.0);
-    KeyboardEvent* keyEventC = KeyboardEvent::create(platformKeyboardEventC, 0);
+    WebKeyboardEvent webKeyboardEventC;
+    webKeyboardEventC.type = WebInputEvent::RawKeyDown;
+    webKeyboardEventC.modifiers = modifierKey;
+    webKeyboardEventC.windowsKeyCode = 67;
+    KeyboardEvent* keyEventC = KeyboardEvent::create(webKeyboardEventC, 0);
     toWebPluginContainerImpl(pluginContainerOneElement.pluginContainer())->handleEvent(keyEventC);
     EXPECT_EQ(WebString("x"), Platform::current()->clipboard()->readPlainText(WebClipboard::Buffer()));
 
@@ -383,8 +385,11 @@ TEST_F(WebPluginContainerTest, CopyInsertKeyboardEventsTest)
     Platform::current()->clipboard()->writePlainText(WebString(""));
     EXPECT_EQ(WebString(""), Platform::current()->clipboard()->readPlainText(WebClipboard::Buffer()));
 
-    PlatformKeyboardEvent platformKeyboardEventInsert(PlatformEvent::RawKeyDown, "", "", "", "", 45, 0, false, modifierKey, 0.0);
-    KeyboardEvent* keyEventInsert = KeyboardEvent::create(platformKeyboardEventInsert, 0);
+    WebKeyboardEvent webKeyboardEventInsert;
+    webKeyboardEventInsert.type = WebInputEvent::RawKeyDown;
+    webKeyboardEventInsert.modifiers = modifierKey;
+    webKeyboardEventInsert.windowsKeyCode = 45;
+    KeyboardEvent* keyEventInsert = KeyboardEvent::create(webKeyboardEventInsert, 0);
     toWebPluginContainerImpl(pluginContainerOneElement.pluginContainer())->handleEvent(keyEventInsert);
     EXPECT_EQ(WebString("x"), Platform::current()->clipboard()->readPlainText(WebClipboard::Buffer()));
 }

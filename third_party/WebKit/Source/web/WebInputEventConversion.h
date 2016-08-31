@@ -32,7 +32,6 @@
 #define WebInputEventConversion_h
 
 #include "platform/PlatformGestureEvent.h"
-#include "platform/PlatformKeyboardEvent.h"
 #include "platform/PlatformMouseEvent.h"
 #include "platform/PlatformTouchEvent.h"
 #include "platform/PlatformWheelEvent.h"
@@ -73,13 +72,6 @@ public:
     PlatformGestureEventBuilder(Widget*, const WebGestureEvent&);
 };
 
-class WEB_EXPORT PlatformKeyboardEventBuilder : WTF_NON_EXPORTED_BASE(public PlatformKeyboardEvent) {
-public:
-    PlatformKeyboardEventBuilder(const WebKeyboardEvent&);
-    void setKeyType(EventType);
-    bool isCharacterKey() const;
-};
-
 // Converts a WebTouchPoint to a PlatformTouchPoint.
 class WEB_EXPORT PlatformTouchPointBuilder : WTF_NON_EXPORTED_BASE(public PlatformTouchPoint) {
 public:
@@ -109,8 +101,7 @@ public:
     WebMouseWheelEventBuilder(const Widget*, const LayoutItem, const WheelEvent&);
 };
 
-// Converts a KeyboardEvent or PlatformKeyboardEvent to a
-// corresponding WebKeyboardEvent.
+// Converts a KeyboardEvent to a corresponding WebKeyboardEvent.
 // NOTE: For KeyboardEvent, this is only implemented for keydown,
 // keyup, and keypress. If the event mapping fails, the event type will be set
 // to Undefined.

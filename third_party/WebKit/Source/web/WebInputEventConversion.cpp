@@ -345,71 +345,6 @@ PlatformGestureEventBuilder::PlatformGestureEventBuilder(Widget* widget, const W
     m_uniqueTouchEventId = e.uniqueTouchEventId;
 }
 
-// MakePlatformKeyboardEvent --------------------------------------------------
-
-inline PlatformEvent::EventType toPlatformKeyboardEventType(WebInputEvent::Type type)
-{
-    switch (type) {
-    case WebInputEvent::KeyUp:
-        return PlatformEvent::KeyUp;
-    case WebInputEvent::KeyDown:
-        return PlatformEvent::KeyDown;
-    case WebInputEvent::RawKeyDown:
-        return PlatformEvent::RawKeyDown;
-    case WebInputEvent::Char:
-        return PlatformEvent::Char;
-    default:
-        NOTREACHED();
-    }
-    return PlatformEvent::KeyDown;
-}
-
-PlatformKeyboardEventBuilder::PlatformKeyboardEventBuilder(const WebKeyboardEvent& e)
-{
-    m_type = toPlatformKeyboardEventType(e.type);
-    m_text = String(e.text);
-    m_unmodifiedText = String(e.unmodifiedText);
-    m_nativeVirtualKeyCode = e.nativeKeyCode;
-    m_isSystemKey = e.isSystemKey;
-    // TODO: BUG482880 Fix this initialization to lazy initialization.
-    m_code = Platform::current()->domCodeStringFromEnum(e.domCode);
-    m_key = Platform::current()->domKeyStringFromEnum(e.domKey);
-
-    m_modifiers = e.modifiers;
-    m_timestamp = e.timeStampSeconds;
-    m_windowsVirtualKeyCode = e.windowsKeyCode;
-}
-
-void PlatformKeyboardEventBuilder::setKeyType(EventType type)
-{
-    // According to the behavior of Webkit in Windows platform,
-    // we need to convert KeyDown to RawKeydown and Char events
-    // See WebKit/WebKit/Win/WebView.cpp
-    DCHECK(m_type == KeyDown);
-    DCHECK(type == RawKeyDown || type == Char);
-    m_type = type;
-
-    if (type == RawKeyDown) {
-        m_text = String();
-        m_unmodifiedText = String();
-    } else {
-        m_windowsVirtualKeyCode = 0;
-    }
-}
-
-// Please refer to bug http://b/issue?id=961192, which talks about Webkit
-// keyboard event handling changes. It also mentions the list of keys
-// which don't have associated character events.
-bool PlatformKeyboardEventBuilder::isCharacterKey() const
-{
-    switch (windowsVirtualKeyCode()) {
-    case VKEY_BACK:
-    case VKEY_ESCAPE:
-        return false;
-    }
-    return true;
-}
-
 inline PlatformEvent::EventType toPlatformTouchEventType(const WebInputEvent::Type type)
 {
     switch (type) {
@@ -648,6 +583,16 @@ WebMouseWheelEventBuilder::WebMouseWheelEventBuilder(const Widget* widget, const
 
 WebKeyboardEventBuilder::WebKeyboardEventBuilder(const KeyboardEvent& event)
 {
+    if (const WebKeyboardEvent* webEvent = event.keyEvent()) {
+        *static_cast<WebKeyboardEvent*>(this) = *webEvent;
+
+        // TODO(dtapuska): DOM KeyboardEvents converted back to WebInputEvents
+        // drop the Raw behaviour. Figure out if this is actually really needed.
+        if (type == RawKeyDown)
+            type = KeyDown;
+        return;
+    }
+
     if (event.type() == EventTypeNames::keydown)
         type = KeyDown;
     else if (event.type() == EventTypeNames::keyup)
@@ -658,38 +603,8 @@ WebKeyboardEventBuilder::WebKeyboardEventBuilder(const KeyboardEvent& event)
         return; // Skip all other keyboard events.
 
     modifiers = event.modifiers();
-
     timeStampSeconds = event.platformTimeStamp();
     windowsKeyCode = event.keyCode();
-
-    // The platform keyevent does not exist if the event was created using
-    // initKeyboardEvent.
-    if (!event.keyEvent())
-        return;
-    nativeKeyCode = event.keyEvent()->nativeVirtualKeyCode();
-    domCode = Platform::current()->domEnumFromCodeString(event.keyEvent()->code());
-    domKey = Platform::current()->domKeyEnumFromString(event.keyEvent()->key());
-    unsigned numberOfCharacters = std::min(event.keyEvent()->text().length(), static_cast<unsigned>(textLengthCap));
-    for (unsigned i = 0; i < numberOfCharacters; ++i) {
-        text[i] = event.keyEvent()->text()[i];
-        unmodifiedText[i] = event.keyEvent()->unmodifiedText()[i];
-    }
-}
-
-WebInputEvent::Type toWebKeyboardEventType(PlatformEvent::EventType type)
-{
-    switch (type) {
-    case PlatformEvent::KeyUp:
-        return WebInputEvent::KeyUp;
-    case PlatformEvent::KeyDown:
-        return WebInputEvent::KeyDown;
-    case PlatformEvent::RawKeyDown:
-        return WebInputEvent::RawKeyDown;
-    case PlatformEvent::Char:
-        return WebInputEvent::Char;
-    default:
-        return WebInputEvent::Undefined;
-    }
 }
 
 static WebTouchPoint toWebTouchPoint(const Touch* touch, const LayoutItem layoutItem, WebTouchPoint::State state)

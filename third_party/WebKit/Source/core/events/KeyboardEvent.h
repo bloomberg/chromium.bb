@@ -27,12 +27,12 @@
 #include "core/CoreExport.h"
 #include "core/events/KeyboardEventInit.h"
 #include "core/events/UIEventWithKeyState.h"
+#include "public/platform/WebInputEvent.h"
 #include <memory>
 
 namespace blink {
 
 class EventDispatcher;
-class PlatformKeyboardEvent;
 
 class CORE_EXPORT KeyboardEvent final : public UIEventWithKeyState {
     DEFINE_WRAPPERTYPEINFO();
@@ -49,9 +49,9 @@ public:
         return new KeyboardEvent;
     }
 
-    static KeyboardEvent* create(const PlatformKeyboardEvent& platformEvent, AbstractView* view)
+    static KeyboardEvent* create(const WebKeyboardEvent& webEvent, AbstractView* view)
     {
-        return new KeyboardEvent(platformEvent, view);
+        return new KeyboardEvent(webEvent, view);
     }
 
     static KeyboardEvent* create(ScriptState*, const AtomicString& type, const KeyboardEventInit&);
@@ -74,7 +74,7 @@ public:
 
     unsigned location() const { return m_location; }
 
-    const PlatformKeyboardEvent* keyEvent() const { return m_keyEvent.get(); }
+    const WebKeyboardEvent* keyEvent() const { return m_keyEvent.get(); }
 
     int keyCode() const; // key code for keydown and keyup, character for keypress
     int charCode() const; // character code for keypress, 0 for keydown and keyup
@@ -88,7 +88,7 @@ public:
 
 private:
     KeyboardEvent();
-    KeyboardEvent(const PlatformKeyboardEvent&, AbstractView*);
+    KeyboardEvent(const WebKeyboardEvent&, AbstractView*);
     KeyboardEvent(const AtomicString&, const KeyboardEventInit&);
     KeyboardEvent(const AtomicString& type, bool canBubble, bool cancelable, AbstractView*,
         const String& code, const String& key, unsigned location,
@@ -96,7 +96,7 @@ private:
 
     void initLocationModifiers(unsigned location);
 
-    std::unique_ptr<PlatformKeyboardEvent> m_keyEvent;
+    std::unique_ptr<WebKeyboardEvent> m_keyEvent;
     String m_code;
     String m_key;
     unsigned m_location;

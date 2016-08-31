@@ -276,8 +276,7 @@ bool InspectorOverlay::handleInputEvent(const WebInputEvent& inputEvent)
         overlayMainFrame()->eventHandler().handleTouchEvent(touchEvent);
     }
     if (WebInputEvent::isKeyboardEventType(inputEvent.type)) {
-        PlatformKeyboardEvent keyboardEvent = PlatformKeyboardEventBuilder(static_cast<const WebKeyboardEvent&>(inputEvent));
-        overlayMainFrame()->eventHandler().keyEvent(keyboardEvent);
+        overlayMainFrame()->eventHandler().keyEvent(static_cast<const WebKeyboardEvent&>(inputEvent));
     }
 
     if (inputEvent.type == WebInputEvent::MouseWheel) {

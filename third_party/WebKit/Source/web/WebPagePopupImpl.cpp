@@ -435,12 +435,14 @@ void WebPagePopupImpl::resize(const WebSize& newSizeInViewport)
 
 WebInputEventResult WebPagePopupImpl::handleKeyEvent(const WebKeyboardEvent& event)
 {
-    return handleKeyEvent(PlatformKeyboardEventBuilder(event));
+    if (m_closing || !m_page->mainFrame() || !toLocalFrame(m_page->mainFrame())->view())
+        return WebInputEventResult::NotHandled;
+    return toLocalFrame(m_page->mainFrame())->eventHandler().keyEvent(event);
 }
 
 WebInputEventResult WebPagePopupImpl::handleCharEvent(const WebKeyboardEvent& event)
 {
-    return handleKeyEvent(PlatformKeyboardEventBuilder(event));
+    return handleKeyEvent(event);
 }
 
 WebInputEventResult WebPagePopupImpl::handleGestureEvent(const WebGestureEvent& event)
@@ -484,13 +486,6 @@ WebInputEventResult WebPagePopupImpl::handleInputEvent(const WebInputEvent& even
     if (m_closing)
         return WebInputEventResult::NotHandled;
     return PageWidgetDelegate::handleInputEvent(*this, event, m_page->deprecatedLocalMainFrame());
-}
-
-WebInputEventResult WebPagePopupImpl::handleKeyEvent(const PlatformKeyboardEvent& event)
-{
-    if (m_closing || !m_page->mainFrame() || !toLocalFrame(m_page->mainFrame())->view())
-        return WebInputEventResult::NotHandled;
-    return toLocalFrame(m_page->mainFrame())->eventHandler().keyEvent(event);
 }
 
 void WebPagePopupImpl::setFocus(bool enable)

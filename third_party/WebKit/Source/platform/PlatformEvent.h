@@ -37,12 +37,6 @@ public:
     enum EventType {
         NoType = 0,
 
-        // PlatformKeyboardEvent
-        KeyDown,
-        KeyUp,
-        RawKeyDown,
-        Char,
-
         // PlatformMouseEvent
         MouseMoved,
         MousePressed,

@@ -88,7 +88,6 @@
 #include "core/style/CursorData.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "platform/PlatformGestureEvent.h"
-#include "platform/PlatformKeyboardEvent.h"
 #include "platform/PlatformTouchEvent.h"
 #include "platform/PlatformWheelEvent.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -99,6 +98,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollAnimatorBase.h"
 #include "platform/scroll/Scrollbar.h"
+#include "public/platform/WebInputEvent.h"
 #include "wtf/Assertions.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/PtrUtil.h"
@@ -2195,7 +2195,7 @@ void EventHandler::fakeMouseMoveEventTimerFired(TimerBase* timer)
     if (!isCursorVisible())
         return;
 
-    PlatformMouseEvent fakeMouseMoveEvent(m_lastKnownMousePosition, m_lastKnownMouseGlobalPosition, WebPointerProperties::Button::NoButton, PlatformEvent::MouseMoved, 0, PlatformKeyboardEvent::getCurrentModifierState(), PlatformMouseEvent::RealOrIndistinguishable, monotonicallyIncreasingTime(), WebPointerProperties::PointerType::Mouse);
+    PlatformMouseEvent fakeMouseMoveEvent(m_lastKnownMousePosition, m_lastKnownMouseGlobalPosition, WebPointerProperties::Button::NoButton, PlatformEvent::MouseMoved, 0, static_cast<PlatformEvent::Modifiers>(KeyboardEventManager::getCurrentModifierState()), PlatformMouseEvent::RealOrIndistinguishable, monotonicallyIncreasingTime(), WebPointerProperties::PointerType::Mouse);
     handleMouseMoveEvent(fakeMouseMoveEvent);
 }
 
@@ -2261,12 +2261,12 @@ void EventHandler::notifyElementActivated()
     m_lastDeferredTapElement = nullptr;
 }
 
-bool EventHandler::handleAccessKey(const PlatformKeyboardEvent& evt)
+bool EventHandler::handleAccessKey(const WebKeyboardEvent& evt)
 {
     return m_keyboardEventManager.handleAccessKey(evt);
 }
 
-WebInputEventResult EventHandler::keyEvent(const PlatformKeyboardEvent& initialKeyEvent)
+WebInputEventResult EventHandler::keyEvent(const WebKeyboardEvent& initialKeyEvent)
 {
     return m_keyboardEventManager.keyEvent(initialKeyEvent);
 }

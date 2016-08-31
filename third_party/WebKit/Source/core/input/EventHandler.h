@@ -44,6 +44,7 @@
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollTypes.h"
+#include "public/platform/WebInputEvent.h"
 #include "public/platform/WebInputEventResult.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
@@ -72,7 +73,6 @@ class LocalFrame;
 class Node;
 class OptionalCursor;
 class PlatformGestureEvent;
-class PlatformKeyboardEvent;
 class PlatformTouchEvent;
 class PlatformWheelEvent;
 class ScrollableArea;
@@ -196,8 +196,8 @@ public:
     static WebInputEventResult mergeEventResult(WebInputEventResult resultA, WebInputEventResult resultB);
     static WebInputEventResult toWebInputEventResult(DispatchEventResult);
 
-    bool handleAccessKey(const PlatformKeyboardEvent&);
-    WebInputEventResult keyEvent(const PlatformKeyboardEvent&);
+    bool handleAccessKey(const WebKeyboardEvent&);
+    WebInputEventResult keyEvent(const WebKeyboardEvent&);
     void defaultKeyboardEventHandler(KeyboardEvent*);
 
     bool handleTextInputEvent(const String& text, Event* underlyingEvent = nullptr, TextEventInputType = TextEventInputKeyboard);

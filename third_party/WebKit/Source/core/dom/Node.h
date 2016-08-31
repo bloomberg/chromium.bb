@@ -71,7 +71,6 @@ class NodeList;
 class NodeListsNodeData;
 class NodeRareData;
 class PlatformGestureEvent;
-class PlatformKeyboardEvent;
 class PlatformMouseEvent;
 class PlatformWheelEvent;
 class PointerEvent;

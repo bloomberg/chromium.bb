@@ -28,7 +28,7 @@
 
 #include "core/events/KeyboardEvent.h"
 #include "platform/KeyboardCodes.h"
-#include "platform/PlatformKeyboardEvent.h"
+#include "public/platform/WebInputEvent.h"
 
 namespace blink {
 
@@ -38,10 +38,10 @@ namespace {
 // The below code was adapted from the WebKit file webview.cpp
 //
 
-const unsigned CtrlKey = 1 << 0;
-const unsigned AltKey = 1 << 1;
-const unsigned ShiftKey = 1 << 2;
-const unsigned MetaKey = 1 << 3;
+const unsigned CtrlKey = WebInputEvent::ControlKey;
+const unsigned AltKey = WebInputEvent::AltKey;
+const unsigned ShiftKey = WebInputEvent::ShiftKey;
+const unsigned MetaKey = WebInputEvent::MetaKey;
 #if OS(MACOSX)
 // Aliases for the generic key defintions to make kbd shortcuts definitions more
 // readable on OS X.
@@ -208,7 +208,7 @@ const char* lookupCommandNameFromDomKeyKeyDown(const String& key, unsigned modif
 
 const char* EditingBehavior::interpretKeyEvent(const KeyboardEvent& event) const
 {
-    const PlatformKeyboardEvent* keyEvent = event.keyEvent();
+    const WebKeyboardEvent* keyEvent = event.keyEvent();
     if (!keyEvent)
         return "";
 
@@ -228,21 +228,13 @@ const char* EditingBehavior::interpretKeyEvent(const KeyboardEvent& event) const
         }
     }
 
-    unsigned modifiers = 0;
-    if (keyEvent->shiftKey())
-        modifiers |= ShiftKey;
-    if (keyEvent->altKey())
-        modifiers |= AltKey;
-    if (keyEvent->ctrlKey())
-        modifiers |= CtrlKey;
-    if (keyEvent->metaKey())
-        modifiers |= MetaKey;
+    unsigned modifiers = keyEvent->modifiers & (ShiftKey | AltKey | CtrlKey | MetaKey);
 
-    if (keyEvent->type() == PlatformEvent::RawKeyDown) {
+    if (keyEvent->type == WebInputEvent::RawKeyDown) {
         int mapKey = modifiers << 16 | event.keyCode();
         const char* name = mapKey ? keyDownCommandsMap->get(mapKey) : nullptr;
         if (!name)
-            name = lookupCommandNameFromDomKeyKeyDown(keyEvent->key(), modifiers);
+            name = lookupCommandNameFromDomKeyKeyDown(event.key(), modifiers);
         return name;
     }
 
@@ -252,7 +244,7 @@ const char* EditingBehavior::interpretKeyEvent(const KeyboardEvent& event) const
 
 bool EditingBehavior::shouldInsertCharacter(const KeyboardEvent& event) const
 {
-    if (event.keyEvent()->text().length() != 1)
+    if (event.keyEvent()->text[1] != 0)
         return true;
 
     // On Gtk/Linux, it emits key events with ASCII text and ctrl on for ctrl-<x>.
@@ -271,7 +263,7 @@ bool EditingBehavior::shouldInsertCharacter(const KeyboardEvent& event) const
     // which may be configured to do it so by user.
     // See also http://en.wikipedia.org/wiki/Keyboard_Layout
     // FIXME(ukai): investigate more detail for various keyboard layout.
-    UChar ch = event.keyEvent()->text()[0U];
+    UChar ch = event.keyEvent()->text[0U];
 
     // Don't insert null or control characters as they can result in
     // unexpected behaviour
@@ -281,10 +273,10 @@ bool EditingBehavior::shouldInsertCharacter(const KeyboardEvent& event) const
     // Don't insert ASCII character if ctrl w/o alt or meta is on.
     // On Mac, we should ignore events when meta is on (Command-<x>).
     if (ch < 0x80) {
-        if (event.keyEvent()->ctrlKey() && !event.keyEvent()->altKey())
+        if (event.ctrlKey() && !event.altKey())
             return false;
 #if OS(MACOSX)
-        if (event.keyEvent()->metaKey())
+        if (event.metaKey())
             return false;
 #endif
     }

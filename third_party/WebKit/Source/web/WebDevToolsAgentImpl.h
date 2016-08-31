@@ -53,7 +53,6 @@ class InspectorResourceContentLoader;
 class LocalFrame;
 class Page;
 class PlatformGestureEvent;
-class PlatformKeyboardEvent;
 class PlatformMouseEvent;
 class PlatformTouchEvent;
 class WebDevToolsAgentClient;

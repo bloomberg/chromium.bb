@@ -42,7 +42,6 @@ class GraphicsLayer;
 class Page;
 class PagePopupChromeClient;
 class PagePopupClient;
-class PlatformKeyboardEvent;
 class WebLayerTreeView;
 class WebLayer;
 class WebViewImpl;
@@ -59,7 +58,6 @@ class WebPagePopupImpl final
 public:
     ~WebPagePopupImpl() override;
     bool initialize(WebViewImpl*, PagePopupClient*);
-    WebInputEventResult handleKeyEvent(const PlatformKeyboardEvent&);
     void closePopup();
     WebWidgetClient* widgetClient() const { return m_widgetClient; }
     bool hasSamePopupClient(WebPagePopupImpl* other) { return other && m_popupClient == other->m_popupClient; }
@@ -69,6 +67,9 @@ public:
     WebPoint positionRelativeToOwner() override;
     void postMessage(const String& message) override;
     void cancel();
+
+    // PageWidgetEventHandler functions.
+    WebInputEventResult handleKeyEvent(const WebKeyboardEvent&) override;
 
 private:
     // WebWidget functions
@@ -84,7 +85,6 @@ private:
     bool isAcceleratedCompositingActive() const override { return m_isAcceleratedCompositingActive; }
 
     // PageWidgetEventHandler functions
-    WebInputEventResult handleKeyEvent(const WebKeyboardEvent&) override;
     WebInputEventResult handleCharEvent(const WebKeyboardEvent&) override;
     WebInputEventResult handleGestureEvent(const WebGestureEvent&) override;
     void handleMouseDown(LocalFrame& mainFrame, const WebMouseEvent&) override;
