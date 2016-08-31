@@ -11,7 +11,8 @@ from telemetry.core import util
 
 class BrowserMinidumpTest(tab_test_case.TabTestCase):
   @decorators.Isolated
-  @decorators.Enabled('mac')
+  # Disabled tests due to flakiness: http://crbug.com/641469
+  @decorators.Disabled('all')
   def testSymbolizeMinidump(self):
     # Wait for the browser to restart fully before crashing
     self._LoadPageThenWait('var sam = "car";', 'sam')
@@ -44,7 +45,8 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
 
 
   @decorators.Isolated
-  @decorators.Enabled('mac')
+  # Disabled tests due to flakiness: http://crbug.com/641469
+  @decorators.Disabled('all')
   def testMultipleCrashMinidumps(self):
     # Wait for the browser to restart fully before crashing
     self._LoadPageThenWait('var cat = "dog";', 'cat')
