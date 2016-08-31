@@ -17,17 +17,19 @@ class FakeSigningService : public SigningService {
   FakeSigningService();
   virtual ~FakeSigningService();
 
+  void SignRegistrationData(
+      const enterprise_management::CertificateBasedDeviceRegistrationData*
+          registration_data,
+      enterprise_management::SignedData* signed_data);
+
   void SignData(const std::string& data, const SigningCallback& callback)
       override;
 
-  // Useful for test setups without having to deal with callbacks.
-  void SignDataSynchronously(const std::string& data,
-      enterprise_management::SignedData* signed_data);
-
-  // Determine whether SignData will appear successful or not.
   void set_success(bool success);
-
  private:
+  void DoSignData(const std::string& data,
+                         enterprise_management::SignedData* signed_data);
+
   bool success_ = true;
 };
 
