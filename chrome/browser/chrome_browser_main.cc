@@ -200,7 +200,6 @@
 #include "base/trace_event/trace_event_etw_export_win.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
-#include "chrome/app/file_pre_reader_win.h"
 #include "chrome/browser/chrome_browser_main_win.h"
 #include "chrome/browser/component_updater/sw_reporter_installer_win.h"
 #include "chrome/browser/downgrade/user_data_downgrade.h"
@@ -213,7 +212,6 @@
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
-#include "chrome/installer/util/module_util_win.h"
 #include "chrome/installer/util/shell_util.h"
 #include "components/startup_metric_utils/common/pre_read_field_trial_utils_win.h"
 #include "ui/base/l10n/l10n_util_win.h"
@@ -1551,18 +1549,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   const base::TimeTicks start_time_step1 = base::TimeTicks::Now();
 
 #if defined(OS_WIN)
-  // Pre-read chrome_child.dll.
-  const startup_metric_utils::PreReadOptions pre_read_options =
-      startup_metric_utils::GetPreReadOptions();
-  if (pre_read_options.pre_read &&
-      pre_read_options.pre_read_chrome_child_in_browser) {
-    BrowserThread::PostTask(
-        BrowserThread::FILE_USER_BLOCKING, FROM_HERE,
-        base::Bind(&PreReadFile,
-                   installer::GetModulePath(installer::kChromeChildDll),
-                   pre_read_options));
-  }
-
   // Windows parental controls calls can be slow, so we do an early init here
   // that calculates this value off of the UI thread.
   IncognitoModePrefs::InitializePlatformParentalControls();

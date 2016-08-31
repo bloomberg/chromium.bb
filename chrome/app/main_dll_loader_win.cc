@@ -62,14 +62,9 @@ HMODULE LoadModuleWithDirectory(const base::FilePath& module) {
       startup_metric_utils::GetPreReadOptions();
 
   // If enabled by the PreRead field trial, pre-read the binary to avoid a lot
-  // of random IO. Don't pre-read the binary if it is chrome_child.dll and the
-  // |pre_read_chrome_child_in_browser| option is enabled; the binary should
-  // already have been pre-read by the browser process in that case.
-  if (pre_read_options.pre_read &&
-      (!pre_read_options.pre_read_chrome_child_in_browser ||
-       module.BaseName().value() != installer::kChromeChildDll)) {
+  // of random IO.
+  if (pre_read_options.pre_read)
     PreReadFile(module, pre_read_options);
-  }
 
   return ::LoadLibraryExW(module.value().c_str(), nullptr,
                           LOAD_WITH_ALTERED_SEARCH_PATH);

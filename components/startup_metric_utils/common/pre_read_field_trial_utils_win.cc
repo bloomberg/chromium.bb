@@ -33,8 +33,6 @@ const base::char16 kNoPreReadVariationName[] = L"NoPreRead";
 const base::char16 kHighPriorityVariationName[] = L"HighPriority";
 const base::char16 kPrefetchVirtualMemoryVariationName[] =
     L"PrefetchVirtualMemory";
-const base::char16 kPreReadChromeChildInBrowser[] =
-    L"PreReadChromeChildInBrowser";
 
 // Registry key in which the PreRead field trial group is stored.
 const base::char16 kPreReadFieldTrialRegistryKey[] = L"\\PreReadFieldTrial";
@@ -77,8 +75,6 @@ void InitializePreReadOptions(const base::string16& product_registry_path) {
   g_pre_read_options.high_priority = ReadBool(key, kHighPriorityVariationName);
   g_pre_read_options.prefetch_virtual_memory =
       ReadBool(key, kPrefetchVirtualMemoryVariationName);
-  g_pre_read_options.pre_read_chrome_child_in_browser =
-      ReadBool(key, kPreReadChromeChildInBrowser);
 }
 
 PreReadOptions GetPreReadOptions() {
