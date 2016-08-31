@@ -10,9 +10,9 @@ Here we append new cell, expect that cache is invalidated and paint produces exp
         <script type="text/javascript">
             function repaintTest() {
                 newCell = document.createElement("td");
-                newCell.style.borderLeftWidth = "6px";
-                newCell.style.borderLeftStyle = "solid";
-                newCell.style.borderLeftColor = "yellow";
+                newCell.style.borderWidth = "6px";
+                newCell.style.borderStyle = "solid";
+                newCell.style.borderColor = "yellow";
                 document.getElementById("row").appendChild(newCell);
             }
         </script>

@@ -704,7 +704,6 @@ crbug.com/390377 [ Release ] fast/dom/private_script_unittest.html [ Skip ]
 crbug.com/613887 http/tests/preload/meta-viewport-link-headers.html [ Failure Pass ]
 crbug.com/564403 http/tests/inspector/service-workers/service-worker-manager.html [ Failure Pass Crash Timeout ]
 
-crbug.com/613728 fast/table/border-collapsing/cached-cell-append.html [ Failure ]
 crbug.com/613728 fast/table/border-collapsing/cached-69296.html [ Failure ]
 crbug.com/613728 fast/table/border-collapsing/cached-change-table-border-width.html [ Failure ]
 

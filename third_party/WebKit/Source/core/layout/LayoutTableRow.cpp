@@ -153,8 +153,17 @@ void LayoutTableRow::addChild(LayoutObject* child, LayoutObject* beforeChild)
     LayoutTableBoxComponent::addChild(cell, beforeChild);
 
     // Generated content can result in us having a null section so make sure to null check our parent.
-    if (parent())
+    if (parent()) {
         section()->addCell(cell, this);
+        // When borders collapse, adding a cell can affect the the width of neighboring cells.
+        LayoutTable* enclosingTable = table();
+        if (enclosingTable && enclosingTable->collapseBorders()) {
+            if (LayoutTableCell* previousCell = cell->previousCell())
+                previousCell->setNeedsLayoutAndPrefWidthsRecalc(LayoutInvalidationReason::TableChanged);
+            if (LayoutTableCell* nextCell = cell->nextCell())
+                nextCell->setNeedsLayoutAndPrefWidthsRecalc(LayoutInvalidationReason::TableChanged);
+        }
+    }
 
     if (beforeChild || nextRow())
         section()->setNeedsCellRecalc();
