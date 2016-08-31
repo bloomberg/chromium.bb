@@ -700,9 +700,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerUtilityProcessBrowserTest,
       WaitForTaskManagerRows(1, MatchUtility(proxy_resolver_name)));
 }
 
-// TODO(crbug.com/642482): Disabled flaky test.
-IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
-                       DISABLED_DevToolsNewDockedWindow) {
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, DevToolsNewDockedWindow) {
   ShowTaskManager();  // Task manager shown BEFORE dev tools window.
 
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
@@ -713,9 +711,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
   DevToolsWindowTesting::CloseDevToolsWindowSync(devtools);
 }
 
-// TODO(crbug.com/642482): Disabled flaky test.
-IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
-                       DISABLED_DevToolsNewUndockedWindow) {
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, DevToolsNewUndockedWindow) {
   ShowTaskManager();  // Task manager shown BEFORE dev tools window.
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
   DevToolsWindow* devtools =
