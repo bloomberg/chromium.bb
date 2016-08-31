@@ -1219,7 +1219,6 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
 
   def testCanSwitchToPrintPreviewDialog(self):
     old_handles = self._driver.GetWindowHandles()
-    self.assertEquals(1, len(old_handles))
     self._driver.ExecuteScript('setTimeout(function(){window.print();}, 0);')
     new_window_handle = self.WaitForNewWindow(self._driver, old_handles)
     self.assertNotEqual(None, new_window_handle)
@@ -1651,9 +1650,9 @@ class ChromeExtensionsCapabilityTest(ChromeDriverBaseTest):
     app_path = os.path.join(_TEST_DATA_DIR, 'test_app')
     driver = self.CreateDriver(chrome_switches=['load-extension=%s' % app_path])
     old_handles = driver.GetWindowHandles()
-    self.assertEqual(1, len(old_handles))
     driver.LaunchApp('gegjcdcfeiojglhifpmibkadodekakpc')
-    new_window_handle = self.WaitForNewWindow(driver, old_handles)
+    new_window_handle = self.WaitForNewWindow(
+        driver, old_handles, check_closed_windows=False)
     driver.SwitchToWindow(new_window_handle)
     body_element = driver.FindElement('tag name', 'body')
     self.assertEqual('It works!', body_element.GetText())
