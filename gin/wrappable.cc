@@ -58,8 +58,10 @@ v8::Local<v8::Object> WrappableBase::GetWrapperImpl(v8::Isolate* isolate,
     delete this;
     return wrapper;
   }
-  wrapper->SetAlignedPointerInInternalField(kWrapperInfoIndex, info);
-  wrapper->SetAlignedPointerInInternalField(kEncodedValueIndex, this);
+
+  int indices[] = {kWrapperInfoIndex, kEncodedValueIndex};
+  void* values[] = {info, this};
+  wrapper->SetAlignedPointerInInternalFields(2, indices, values);
   wrapper_.Reset(isolate, wrapper);
   wrapper_.SetWeak(this, FirstWeakCallback, v8::WeakCallbackType::kParameter);
   return wrapper;
