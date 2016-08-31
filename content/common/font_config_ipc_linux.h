@@ -39,8 +39,6 @@ class FontConfigIPC : public SkFontConfigInterface {
                        SkString* outFamilyName,
                        SkFontStyle* outStyle) override;
 
-  // Returns a new SkTypeface instance or a ref'ed one from the cache. The
-  // caller should adopt the pointer.
   sk_sp<SkTypeface> makeTypeface(const FontIdentity& identity) override
       WARN_UNUSED_RESULT;
 
