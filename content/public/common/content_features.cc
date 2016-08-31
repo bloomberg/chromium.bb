@@ -76,7 +76,7 @@ const base::Feature kNonValidatingReloadOnNormalReload{
 // See https://crbug.com/591245
 const base::Feature kNonValidatingReloadOnRefreshContent{
     "NonValidatingReloadOnRefreshContentV2",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // An experiment to optimize resource loading IPC for small resources.
 // http://crbug.com/580928
