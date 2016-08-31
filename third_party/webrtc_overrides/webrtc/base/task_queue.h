@@ -11,25 +11,11 @@
 #ifndef WEBRTC_BASE_TASK_QUEUE_H_
 #define WEBRTC_BASE_TASK_QUEUE_H_
 
-#include <list>
 #include <memory>
-#include <unordered_map>
+#include <stdint.h>
 
-#if defined(WEBRTC_MAC) && !defined(WEBRTC_BUILD_LIBEVENT)
-#include <dispatch/dispatch.h>
-#endif
-
-#include "third_party/webrtc/base/constructormagic.h"
-#include "third_party/webrtc/base/criticalsection.h"
-
-#if defined(WEBRTC_WIN) || defined(WEBRTC_BUILD_LIBEVENT)
-#include "third_party/webrtc/base/platform_thread.h"
-#endif
-
-#if defined(WEBRTC_BUILD_LIBEVENT)
-struct event_base;
-struct event;
-#endif
+#include "base/macros.h"
+#include "third_party/webrtc/base/thread_annotations.h"
 
 namespace rtc {
 
@@ -49,7 +35,7 @@ class QueuedTask {
   virtual bool Run() = 0;
 
  private:
-  RTC_DISALLOW_COPY_AND_ASSIGN(QueuedTask);
+  DISALLOW_COPY_AND_ASSIGN(QueuedTask);
 };
 
 // Simple implementation of QueuedTask for use with rtc::Bind and lambdas.
@@ -225,55 +211,10 @@ class LOCKABLE TaskQueue {
   }
 
  private:
-#if defined(WEBRTC_BUILD_LIBEVENT)
-  static bool ThreadMain(void* context);
-  static void OnWakeup(int socket, short flags, void* context);  // NOLINT
-  static void RunTask(int fd, short flags, void* context);       // NOLINT
-  static void RunTimer(int fd, short flags, void* context);      // NOLINT
+  class WorkerThread;
 
-  class PostAndReplyTask;
-  class SetTimerTask;
-
-  void PrepareReplyTask(PostAndReplyTask* reply_task);
-  void ReplyTaskDone(PostAndReplyTask* reply_task);
-
-  struct QueueContext;
-
-  int wakeup_pipe_in_ = -1;
-  int wakeup_pipe_out_ = -1;
-  event_base* event_base_;
-  std::unique_ptr<event> wakeup_event_;
-  PlatformThread thread_;
-  rtc::CriticalSection pending_lock_;
-  std::list<std::unique_ptr<QueuedTask>> pending_ GUARDED_BY(pending_lock_);
-  std::list<PostAndReplyTask*> pending_replies_ GUARDED_BY(pending_lock_);
-#elif defined(WEBRTC_MAC)
-  struct QueueContext;
-  struct TaskContext;
-  struct PostTaskAndReplyContext;
-  dispatch_queue_t queue_;
-  QueueContext* const context_;
-#elif defined(WEBRTC_WIN)
-  typedef std::unordered_map<UINT_PTR, std::unique_ptr<QueuedTask>>
-      DelayedTasks;
-  static bool ThreadMain(void* context);
-  static bool ProcessQueuedMessages(DelayedTasks* delayed_tasks);
-
-  class WorkerThread : public PlatformThread {
-   public:
-    WorkerThread(ThreadRunFunction func, void* obj, const char* thread_name)
-        : PlatformThread(func, obj, thread_name) {}
-
-    bool QueueAPC(PAPCFUNC apc_function, ULONG_PTR data) {
-      return PlatformThread::QueueAPC(apc_function, data);
-    }
-  };
-  WorkerThread thread_;
-#else
-#error not supported.
-#endif
-
-  RTC_DISALLOW_COPY_AND_ASSIGN(TaskQueue);
+  std::unique_ptr<WorkerThread> thread_;
+  DISALLOW_COPY_AND_ASSIGN(TaskQueue);
 };
 
 }  // namespace rtc

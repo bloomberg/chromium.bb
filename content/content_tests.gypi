@@ -778,6 +778,8 @@
     ],
     # WebRTC-specific sources. Put WebRTC plugin-related stuff further below.
     'content_unittests_webrtc_sources': [
+       # |task_queue_unittest.cc| is added to test the webrtc_override of TaskQueue.
+       '../third_party/webrtc/base/task_queue_unittest.cc',
       'browser/renderer_host/p2p/socket_host_tcp_server_unittest.cc',
       'browser/renderer_host/p2p/socket_host_tcp_unittest.cc',
       'browser/renderer_host/p2p/socket_host_test_utils.cc',
