@@ -9,6 +9,9 @@
 #include "core/layout/LayoutView.h"
 #include "core/paint/ObjectPaintProperties.h"
 
+#include <iomanip>
+#include <sstream>
+
 #ifndef NDEBUG
 
 namespace blink {
@@ -189,7 +192,253 @@ public:
     }
 };
 
-} // anonymous namespace
+class PaintPropertyTreeGraphBuilder {
+public:
+    PaintPropertyTreeGraphBuilder() { }
+
+    void generateTreeGraph(const FrameView& frameView, StringBuilder& stringBuilder)
+    {
+        m_layout.str("");
+        m_properties.str("");
+        m_ownerEdges.str("");
+        m_properties << std::setprecision(2) << std::setiosflags(std::ios_base::fixed);
+
+        writeFrameViewNode(frameView, nullptr);
+
+        stringBuilder.append("digraph {\n");
+        stringBuilder.append("graph [rankdir=BT];\n");
+        stringBuilder.append("subgraph cluster_layout {\n");
+        std::string layoutStr = m_layout.str();
+        stringBuilder.append(layoutStr.c_str(), layoutStr.length());
+        stringBuilder.append("}\n");
+        stringBuilder.append("subgraph cluster_properties {\n");
+        std::string propertiesStr = m_properties.str();
+        stringBuilder.append(propertiesStr.c_str(), propertiesStr.length());
+        stringBuilder.append("}\n");
+        std::string ownersStr = m_ownerEdges.str();
+        stringBuilder.append(ownersStr.c_str(), ownersStr.length());
+        stringBuilder.append("}\n");
+    }
+
+private:
+    static String getTagName(Node* n)
+    {
+        if (n->isDocumentNode())
+            return "";
+        if (n->getNodeType() == Node::kCommentNode)
+            return "COMMENT";
+        return n->nodeName();
+    }
+
+    static void writeParentEdge(const void* node, const void* parent, const char* color, std::ostream& os)
+    {
+        os << "n" << node << " -> " << "n" << parent;
+        if (color)
+            os << " [color=" << color << "]";
+        os << ";" << std::endl;
+    }
+
+    void writeOwnerEdge(const void* node, const void* owner)
+    {
+        std::ostream& os = m_ownerEdges;
+        os << "n" << owner << " -> " << "n" << node << " [color=" << s_layoutNodeColor << ", arrowhead=dot, constraint=false];" << std::endl;
+    }
+
+    void writeTransformEdge(const void* node, const void* transform)
+    {
+        std::ostream& os = m_properties;
+        os << "n" << node << " -> " << "n" << transform << " [color=" << s_transformNodeColor << "];" << std::endl;
+    }
+
+    void writePaintPropertyNode(const TransformPaintPropertyNode& node, const void* owner, const char* label)
+    {
+        std::ostream& os = m_properties;
+        os << "n" << &node
+            << " [color=" << s_transformNodeColor
+            << ", fontcolor=" << s_transformNodeColor
+            << ", shape=box, label=\"" << label << "\\n";
+
+        const FloatPoint3D& origin = node.origin();
+        os << "origin=(";
+        os << origin.x() << "," << origin.y() << "," << origin.z() << ")\\n";
+
+        os << "flattensInheritedTransform=" << (node.flattensInheritedTransform() ? "true" : "false") << "\\n";
+        os << "renderingContextID=" << node.renderingContextID() << "\\n";
+
+        const TransformationMatrix& matrix = node.matrix();
+        os << "[" << std::setw(8) << matrix.m11() << "," << std::setw(8) << matrix.m12() << "," << std::setw(8) << matrix.m13() << "," << std::setw(8) << matrix.m14() << "\\n";
+        os << std::setw(9) << matrix.m21() << "," << std::setw(8) << matrix.m22() << "," << std::setw(8) << matrix.m23() << "," << std::setw(8) << matrix.m24() << "\\n";
+        os << std::setw(9) << matrix.m31() << "," << std::setw(8) << matrix.m32() << "," << std::setw(8) << matrix.m33() << "," << std::setw(8) << matrix.m34() << "\\n";
+        os << std::setw(9) << matrix.m41() << "," << std::setw(8) << matrix.m42() << "," << std::setw(8) << matrix.m43() << "," << std::setw(8) << matrix.m44() << "]";
+
+        TransformationMatrix::DecomposedType decomposition;
+        if (!node.matrix().decompose(decomposition))
+            os << "\\n(degenerate)";
+
+        os << "\"];" << std::endl;
+
+        if (owner)
+            writeOwnerEdge(&node, owner);
+        if (node.parent())
+            writeParentEdge(&node, node.parent(), s_transformNodeColor, os);
+    }
+
+    void writePaintPropertyNode(const ClipPaintPropertyNode& node, const void* owner, const char* label)
+    {
+        std::ostream& os = m_properties;
+        os << "n" << &node
+            << " [color=" << s_clipNodeColor
+            << ", fontcolor=" << s_clipNodeColor
+            << ", shape=box, label=\"" << label << "\\n";
+
+        LayoutRect rect(node.clipRect().rect());
+        if (IntRect(rect) == LayoutRect::infiniteIntRect())
+            os << "(infinite)";
+        else
+            os << "(" << rect.x() << ", " << rect.y() << ", " << rect.width() << ", " << rect.height() << ")";
+        os << "\"];" << std::endl;
+
+        if (owner)
+            writeOwnerEdge(&node, owner);
+        if (node.parent())
+            writeParentEdge(&node, node.parent(), s_clipNodeColor, os);
+        if (node.localTransformSpace())
+            writeTransformEdge(&node, node.localTransformSpace());
+    }
+
+    void writePaintPropertyNode(const EffectPaintPropertyNode& node, const void* owner, const char* label)
+    {
+        std::ostream& os = m_properties;
+        os << "n" << &node << " [shape=diamond, label=\"" << label << "\\n";
+        os << "opacity=" << node.opacity() << "\"];" << std::endl;
+
+        if (owner)
+            writeOwnerEdge(&node, owner);
+        if (node.parent())
+            writeParentEdge(&node, node.parent(), s_effectNodeColor, os);
+    }
+
+    void writeObjectPaintPropertyNodes(const LayoutObject& object)
+    {
+        const ObjectPaintProperties* properties = object.objectPaintProperties();
+        if (!properties)
+            return;
+        const TransformPaintPropertyNode* paintOffset = properties->paintOffsetTranslation();
+        if (paintOffset)
+            writePaintPropertyNode(*paintOffset, &object, "paintOffset");
+        const TransformPaintPropertyNode* transform = properties->transform();
+        if (transform)
+            writePaintPropertyNode(*transform, &object, "transform");
+        const TransformPaintPropertyNode* perspective = properties->perspective();
+        if (perspective)
+            writePaintPropertyNode(*perspective, &object, "perspective");
+        const TransformPaintPropertyNode* svgLocalToBorderBox = properties->svgLocalToBorderBoxTransform();
+        if (svgLocalToBorderBox)
+            writePaintPropertyNode(*svgLocalToBorderBox, &object, "svgLocalToBorderBox");
+        const TransformPaintPropertyNode* scrollTranslation = properties->scrollTranslation();
+        if (scrollTranslation)
+            writePaintPropertyNode(*scrollTranslation, &object, "scrollTranslation");
+        const TransformPaintPropertyNode* scrollbarPaintOffset = properties->scrollbarPaintOffset();
+        if (scrollbarPaintOffset)
+            writePaintPropertyNode(*scrollbarPaintOffset, &object, "scrollbarPaintOffset");
+        const EffectPaintPropertyNode* effect = properties->effect();
+        if (effect)
+            writePaintPropertyNode(*effect, &object, "effect");
+        const ClipPaintPropertyNode* cssClip = properties->cssClip();
+        if (cssClip)
+            writePaintPropertyNode(*cssClip, &object, "cssClip");
+        const ClipPaintPropertyNode* cssClipFixedPosition = properties->cssClipFixedPosition();
+        if (cssClipFixedPosition)
+            writePaintPropertyNode(*cssClipFixedPosition, &object, "cssClipFixedPosition");
+        const ClipPaintPropertyNode* overflowClip = properties->overflowClip();
+        if (overflowClip) {
+            writePaintPropertyNode(*overflowClip, &object, "overflowClip");
+            if (object.isLayoutView() && overflowClip->parent())
+                writePaintPropertyNode(*overflowClip->parent(), nullptr, "rootClip");
+        }
+    }
+
+    void writeFrameViewPaintPropertyNodes(const FrameView& frameView)
+    {
+        TransformPaintPropertyNode* rootTransform = frameView.rootTransform();
+        if (rootTransform)
+            writePaintPropertyNode(*rootTransform, &frameView, "rootTransform");
+        ClipPaintPropertyNode* rootClip = frameView.rootClip();
+        if (rootClip)
+            writePaintPropertyNode(*rootClip, &frameView, "rootClip");
+        EffectPaintPropertyNode* rootEffect = frameView.rootEffect();
+        if (rootEffect)
+            writePaintPropertyNode(*rootEffect, &frameView, "rootEffect");
+        TransformPaintPropertyNode* preTranslation = frameView.preTranslation();
+        if (preTranslation)
+            writePaintPropertyNode(*preTranslation, &frameView, "preTranslation");
+        TransformPaintPropertyNode* scrollTranslation = frameView.scrollTranslation();
+        if (scrollTranslation)
+            writePaintPropertyNode(*scrollTranslation, &frameView, "scrollTranslation");
+        ClipPaintPropertyNode* contentClip = frameView.contentClip();
+        if (contentClip)
+            writePaintPropertyNode(*contentClip, &frameView, "contentClip");
+    }
+
+    void writeLayoutObjectNode(const LayoutObject& object)
+    {
+        std::ostream& os = m_layout;
+        os << "n" << &object
+            << " [color=" << s_layoutNodeColor
+            << ", fontcolor=" << s_layoutNodeColor
+            << ", label=\"" << object.name();
+        Node* node = object.node();
+        if (node) {
+            os << "\\n" << getTagName(node).utf8().data();
+            if (node->isElementNode() && toElement(node)->hasID())
+                os << "\\nid=" << toElement(node)->getIdAttribute().utf8().data();
+        }
+        os << "\"];" << std::endl;
+        const void* parent = object.isLayoutView() ? (const void*) toLayoutView(object).frameView() : (const void*) object.parent();
+        writeParentEdge(&object, parent, s_layoutNodeColor, os);
+        writeObjectPaintPropertyNodes(object);
+        for (const LayoutObject* child = object.slowFirstChild(); child; child = child->nextSibling())
+            writeLayoutObjectNode(*child);
+        if (object.isLayoutPart() && toLayoutPart(object).widget() && toLayoutPart(object).widget()->isFrameView()) {
+            FrameView* frameView = static_cast<FrameView*>(toLayoutPart(object).widget());
+            writeFrameViewNode(*frameView, &object);
+        }
+    }
+
+    void writeFrameViewNode(const FrameView& frameView, const void* parent)
+    {
+        std::ostream& os = m_layout;
+        os << "n" << &frameView
+            << " [color=" << s_layoutNodeColor
+            << ", fontcolor=" << s_layoutNodeColor
+            << ", shape=doublecircle"
+            << ", label=FrameView];" << std::endl;
+
+        writeFrameViewPaintPropertyNodes(frameView);
+        if (parent)
+            writeParentEdge(&frameView, parent, s_layoutNodeColor, os);
+        LayoutView* layoutView = frameView.layoutView();
+        if (layoutView)
+            writeLayoutObjectNode(*layoutView);
+    }
+
+private:
+    static const char* s_layoutNodeColor;
+    static const char* s_transformNodeColor;
+    static const char* s_clipNodeColor;
+    static const char* s_effectNodeColor;
+
+    std::ostringstream m_layout;
+    std::ostringstream m_properties;
+    std::ostringstream m_ownerEdges;
+};
+
+const char* PaintPropertyTreeGraphBuilder::s_layoutNodeColor = "black";
+const char* PaintPropertyTreeGraphBuilder::s_transformNodeColor = "green";
+const char* PaintPropertyTreeGraphBuilder::s_clipNodeColor = "blue";
+const char* PaintPropertyTreeGraphBuilder::s_effectNodeColor = "black";
+
+} // namespace {
 } // namespace blink
 
 void showTransformPropertyTree(const blink::FrameView& rootFrame)
@@ -220,6 +469,14 @@ void showPaintPropertyPath(const blink::ClipPaintPropertyNode* node)
 void showPaintPropertyPath(const blink::EffectPaintPropertyNode* node)
 {
     blink::PropertyTreePrinter<blink::EffectPaintPropertyNode>().showPath(node);
+}
+
+String paintPropertyTreeGraph(const blink::FrameView& frameView)
+{
+    blink::PaintPropertyTreeGraphBuilder builder;
+    StringBuilder stringBuilder;
+    builder.generateTreeGraph(frameView, stringBuilder);
+    return stringBuilder.toString();
 }
 
 #endif
