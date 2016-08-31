@@ -15,6 +15,7 @@
 #include "components/sync/api/sync_change_processor.h"
 #include "components/sync/api/sync_data.h"
 #include "components/sync/api/sync_merge_result.h"
+#include "components/sync/driver/pref_names.h"
 #include "components/sync/driver/sync_prefs.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/protocol/sync.pb.h"
@@ -70,6 +71,26 @@ std::unique_ptr<ArcSyncItem> CreateSyncItemFromPrefs(
   return base::MakeUnique<ArcSyncItem>(
       package_info->package_name, package_info->package_version,
       package_info->last_backup_android_id, package_info->last_backup_time);
+}
+
+bool ValidateEnableArcPackageSyncPref(Profile* profile) {
+  PrefService* pref_service = profile->GetPrefs();
+  // If device is set to sync everything, Arc package should be synced.
+  if (pref_service->GetBoolean(sync_driver::prefs::kSyncKeepEverythingSynced))
+    return true;
+
+  bool apps_sync_enable = pref_service->GetBoolean(
+      sync_driver::SyncPrefs::GetPrefNameForDataType(syncer::APPS));
+  // ArcPackage sync service is controlled by apps checkbox in sync settings.
+  // Update ArcPackage sync setting pref if it is different from apps sync
+  // setting pref.
+  const char* arc_sync_path =
+      sync_driver::SyncPrefs::GetPrefNameForDataType(syncer::ARC_PACKAGE);
+  if (apps_sync_enable != pref_service->GetBoolean(arc_sync_path)) {
+    pref_service->SetBoolean(arc_sync_path, apps_sync_enable);
+  }
+
+  return apps_sync_enable;
 }
 
 }  // namespace
@@ -231,8 +252,8 @@ bool ArcPackageSyncableService::SyncStarted() {
   sync_driver::SyncService* sync_service =
       ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile_);
   // ArcPackage sync service is controlled by apps checkbox in sync settings.
-  bool arc_package_sync_should_enable = profile_->GetPrefs()->GetBoolean(
-      sync_driver::SyncPrefs::GetPrefNameForDataType(syncer::ARC_PACKAGE));
+  bool arc_package_sync_should_enable =
+      ValidateEnableArcPackageSyncPref(profile_);
 
   if (!sync_service || !arc_package_sync_should_enable)
     return false;
