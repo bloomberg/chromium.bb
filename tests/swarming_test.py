@@ -172,7 +172,7 @@ class SwarmingServerHandler(httpserver_mock.MockHandler):
     elif self.path == '/auth/api/v1/accounts/self':
       self._json({'identity': 'user:joe', 'xsrf_token': 'foo'})
     else:
-      m = re.match(r'/_ah/api/swarming/v1/task/(\d+)/request', self.path)
+      m = re.match(r'/api/swarming/v1/task/(\d+)/request', self.path)
       if m:
         logging.info('%s', m.group(1))
         self._json(self.server.tasks[int(m.group(1))])
@@ -341,12 +341,12 @@ class TestSwarmingTrigger(NetTestCase):
     self.expected_requests(
         [
           (
-            'https://localhost:1/_ah/api/swarming/v1/tasks/new',
+            'https://localhost:1/api/swarming/v1/tasks/new',
             {'data': request_1},
             result_1,
           ),
           (
-            'https://localhost:1/_ah/api/swarming/v1/tasks/new',
+            'https://localhost:1/api/swarming/v1/tasks/new',
             {'data': request_2},
             result_2,
           ),
@@ -398,7 +398,7 @@ class TestSwarmingTrigger(NetTestCase):
     self.expected_requests(
         [
           (
-            'https://localhost:1/_ah/api/swarming/v1/tasks/new',
+            'https://localhost:1/api/swarming/v1/tasks/new',
             {'data': request},
             result,
           ),
@@ -466,7 +466,7 @@ class TestSwarmingTrigger(NetTestCase):
     self.expected_requests(
         [
           (
-            'https://localhost:1/_ah/api/swarming/v1/tasks/new',
+            'https://localhost:1/api/swarming/v1/tasks/new',
             {'data': request},
             result,
           ),
@@ -496,12 +496,12 @@ class TestSwarmingCollection(NetTestCase):
     self.expected_requests(
         [
           (
-            'https://host:9001/_ah/api/swarming/v1/task/10100/result',
+            'https://host:9001/api/swarming/v1/task/10100/result',
             {'retry_50x': False},
             gen_result_response(),
           ),
           (
-            'https://host:9001/_ah/api/swarming/v1/task/10100/stdout',
+            'https://host:9001/api/swarming/v1/task/10100/stdout',
             {},
             {'output': OUTPUT},
           ),
@@ -513,12 +513,12 @@ class TestSwarmingCollection(NetTestCase):
     self.expected_requests(
         [
           (
-            'https://host:9001/_ah/api/swarming/v1/task/10100/result',
+            'https://host:9001/api/swarming/v1/task/10100/result',
             {'retry_50x': False},
             gen_result_response(exit_code=1),
           ),
           (
-            'https://host:9001/_ah/api/swarming/v1/task/10100/stdout',
+            'https://host:9001/api/swarming/v1/task/10100/stdout',
             {},
             {'output': OUTPUT},
           ),
@@ -546,7 +546,7 @@ class TestSwarmingCollection(NetTestCase):
     self.expected_requests(
         9 * [
           (
-            'https://host:9001/_ah/api/swarming/v1/task/10100/result',
+            'https://host:9001/api/swarming/v1/task/10100/result',
             {'retry_50x': False},
             None,
           )
@@ -559,32 +559,32 @@ class TestSwarmingCollection(NetTestCase):
     self.expected_requests(
         [
           (
-            'https://host:9001/_ah/api/swarming/v1/task/10100/result',
+            'https://host:9001/api/swarming/v1/task/10100/result',
             {'retry_50x': False},
             gen_result_response(),
           ),
           (
-            'https://host:9001/_ah/api/swarming/v1/task/10100/stdout',
+            'https://host:9001/api/swarming/v1/task/10100/stdout',
             {},
             {'output': SHARD_OUTPUT_1},
           ),
           (
-            'https://host:9001/_ah/api/swarming/v1/task/10200/result',
+            'https://host:9001/api/swarming/v1/task/10200/result',
             {'retry_50x': False},
             gen_result_response(),
           ),
           (
-            'https://host:9001/_ah/api/swarming/v1/task/10200/stdout',
+            'https://host:9001/api/swarming/v1/task/10200/stdout',
             {},
             {'output': SHARD_OUTPUT_2},
           ),
           (
-            'https://host:9001/_ah/api/swarming/v1/task/10300/result',
+            'https://host:9001/api/swarming/v1/task/10300/result',
             {'retry_50x': False},
             gen_result_response(),
           ),
           (
-            'https://host:9001/_ah/api/swarming/v1/task/10300/stdout',
+            'https://host:9001/api/swarming/v1/task/10300/stdout',
             {},
             {'output': SHARD_OUTPUT_3},
           ),
@@ -602,32 +602,32 @@ class TestSwarmingCollection(NetTestCase):
     self.expected_requests(
         [
           (
-            'https://host:9001/_ah/api/swarming/v1/task/10100/result',
+            'https://host:9001/api/swarming/v1/task/10100/result',
             {'retry_50x': False},
             gen_result_response(),
           ),
           (
-            'https://host:9001/_ah/api/swarming/v1/task/10100/stdout',
+            'https://host:9001/api/swarming/v1/task/10100/stdout',
             {},
             {'output': SHARD_OUTPUT_1},
           ),
           (
-            'https://host:9001/_ah/api/swarming/v1/task/10200/result',
+            'https://host:9001/api/swarming/v1/task/10200/result',
             {'retry_50x': False},
             gen_result_response(),
           ),
           (
-            'https://host:9001/_ah/api/swarming/v1/task/10200/stdout',
+            'https://host:9001/api/swarming/v1/task/10200/stdout',
             {},
             {'output': SHARD_OUTPUT_2},
           ),
           (
-            'https://host:9001/_ah/api/swarming/v1/task/10300/result',
+            'https://host:9001/api/swarming/v1/task/10300/result',
             {'retry_50x': False},
             gen_result_response(exit_code=1),
           ),
           (
-            'https://host:9001/_ah/api/swarming/v1/task/10300/stdout',
+            'https://host:9001/api/swarming/v1/task/10300/stdout',
             {},
             {'output': SHARD_OUTPUT_3},
           ),
@@ -814,7 +814,7 @@ class TestMain(NetTestCase):
     self.expected_requests(
         [
           (
-            'https://localhost:1/_ah/api/swarming/v1/bot/foo/delete',
+            'https://localhost:1/api/swarming/v1/bot/foo/delete',
             {'method': 'POST', 'data': {}},
             {},
           ),
@@ -852,7 +852,7 @@ class TestMain(NetTestCase):
     self.expected_requests(
         [
           (
-            'https://localhost:1/_ah/api/swarming/v1/tasks/new',
+            'https://localhost:1/api/swarming/v1/tasks/new',
             {'data': request},
             result,
           ),
@@ -894,7 +894,7 @@ class TestMain(NetTestCase):
     self.expected_requests(
         [
           (
-            'https://localhost:1/_ah/api/swarming/v1/tasks/new',
+            'https://localhost:1/api/swarming/v1/tasks/new',
             {'data': request},
             result,
           ),
@@ -957,7 +957,7 @@ class TestMain(NetTestCase):
     self.expected_requests(
         [
           (
-            'https://localhost:1/_ah/api/swarming/v1/tasks/new',
+            'https://localhost:1/api/swarming/v1/tasks/new',
             {'data': request},
             result,
           ),
@@ -1064,7 +1064,7 @@ class TestMain(NetTestCase):
     self.expected_requests(
         [
           (
-            'https://localhost:1/_ah/api/swarming/v1/tasks/new',
+            'https://localhost:1/api/swarming/v1/tasks/new',
             {'data': request},
             result,
           ),
@@ -1226,7 +1226,7 @@ class TestMain(NetTestCase):
     self.expected_requests(
         [
           (
-            'https://localhost:1/_ah/api/swarming/v1/bot/botid/tasks?limit=200',
+            'https://localhost:1/api/swarming/v1/bot/botid/tasks?limit=200',
             {},
             {'yo': 'dawg'},
           ),
@@ -1242,7 +1242,7 @@ class TestMain(NetTestCase):
     self.expected_requests(
         [
           (
-            'https://localhost:1/_ah/api/swarming/v1/bot/botid/tasks?'
+            'https://localhost:1/api/swarming/v1/bot/botid/tasks?'
                 'foo=bar&limit=2',
             {},
             {
@@ -1252,7 +1252,7 @@ class TestMain(NetTestCase):
             },
           ),
           (
-            'https://localhost:1/_ah/api/swarming/v1/bot/botid/tasks?'
+            'https://localhost:1/api/swarming/v1/bot/botid/tasks?'
                 'foo=bar&cursor=%25&limit=1',
             {},
             {
@@ -1297,7 +1297,7 @@ class TestMain(NetTestCase):
       self.expected_requests(
           [
             (
-              'https://localhost:1/_ah/api/swarming/v1/task/123/request',
+              'https://localhost:1/api/swarming/v1/task/123/request',
               {},
               {
                 'properties': {
@@ -1328,12 +1328,12 @@ class TestCommandBot(NetTestCase):
     self.expected_requests(
         [
           (
-            'https://localhost:1/_ah/api/swarming/v1/bots/list?limit=250',
+            'https://localhost:1/api/swarming/v1/bots/list?limit=250',
             {},
             self.mock_swarming_api_v1_bots_page_1(),
           ),
           (
-            'https://localhost:1/_ah/api/swarming/v1/bots/list?limit=250&'
+            'https://localhost:1/api/swarming/v1/bots/list?limit=250&'
               'cursor=opaque_cursor',
             {},
             self.mock_swarming_api_v1_bots_page_2(),
@@ -1342,7 +1342,7 @@ class TestCommandBot(NetTestCase):
 
   @staticmethod
   def mock_swarming_api_v1_bots_page_1():
-    """Returns fake /_ah/api/swarming/v1/bots/list data."""
+    """Returns fake /api/swarming/v1/bots/list data."""
     # Sample data retrieved from actual server.
     now = unicode(datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'))
     return {
@@ -1420,7 +1420,7 @@ class TestCommandBot(NetTestCase):
 
   @staticmethod
   def mock_swarming_api_v1_bots_page_2():
-    """Returns fake /_ah/api/swarming/v1/bots/list data."""
+    """Returns fake /api/swarming/v1/bots/list data."""
     # Sample data retrieved from actual server.
     now = unicode(datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'))
     return {
