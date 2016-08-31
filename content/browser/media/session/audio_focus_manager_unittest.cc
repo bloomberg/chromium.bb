@@ -17,9 +17,6 @@ using SuspendType = MediaSession::SuspendType;
 
 class AudioFocusManagerTest : public testing::Test {
  public:
-  const double kDuckingVolumeMultiplier = 0.2;
-  const double kDefaultVolumeMultiplier = 1.0;
-
   AudioFocusManagerTest() : ui_thread_(BrowserThread::UI, &message_loop_) {}
 
   void SetUp() override {
@@ -44,8 +41,8 @@ class AudioFocusManagerTest : public testing::Test {
     return AudioFocusManager::GetInstance()->TransientMayDuckEntriesCount();
   }
 
-  double GetVolumeMultiplier(MediaSession* session) {
-    return session->volume_multiplier_;
+  double IsSessionDucking(MediaSession* session) {
+    return session->is_ducking_;  // Quack! Quack!
   }
 
   WebContents* CreateWebContents() {
@@ -135,7 +132,7 @@ TEST_F(AudioFocusManagerTest, RequestAudioFocusTransient_FromGain) {
       media_session, AudioFocusManager::AudioFocusType::GainTransientMayDuck);
   ASSERT_EQ(nullptr, GetAudioFocusedContent());
   ASSERT_EQ(1, GetTransientMaybeDuckCount());
-  ASSERT_EQ(kDefaultVolumeMultiplier, GetVolumeMultiplier(media_session));
+  ASSERT_FALSE(IsSessionDucking(media_session));
 }
 
 TEST_F(AudioFocusManagerTest, RequestAudioFocusTransient_FromGainWhileDucking) {
@@ -148,17 +145,17 @@ TEST_F(AudioFocusManagerTest, RequestAudioFocusTransient_FromGainWhileDucking) {
   AudioFocusManager::GetInstance()->RequestAudioFocus(
       media_session_1, AudioFocusManager::AudioFocusType::Gain);
   ASSERT_EQ(0, GetTransientMaybeDuckCount());
-  ASSERT_EQ(kDefaultVolumeMultiplier, GetVolumeMultiplier(media_session_1));
+  ASSERT_FALSE(IsSessionDucking(media_session_1));
 
   AudioFocusManager::GetInstance()->RequestAudioFocus(
       media_session_2, AudioFocusManager::AudioFocusType::GainTransientMayDuck);
   ASSERT_EQ(1, GetTransientMaybeDuckCount());
-  ASSERT_EQ(kDuckingVolumeMultiplier, GetVolumeMultiplier(media_session_1));
+  ASSERT_TRUE(IsSessionDucking(media_session_1));
 
   AudioFocusManager::GetInstance()->RequestAudioFocus(
       media_session_1, AudioFocusManager::AudioFocusType::GainTransientMayDuck);
   ASSERT_EQ(2, GetTransientMaybeDuckCount());
-  ASSERT_EQ(kDefaultVolumeMultiplier, GetVolumeMultiplier(media_session_1));
+  ASSERT_FALSE(IsSessionDucking(media_session_1));
 }
 
 TEST_F(AudioFocusManagerTest, AbandonAudioFocus_RemovesFocusedEntry) {
@@ -203,12 +200,12 @@ TEST_F(AudioFocusManagerTest, AbandonAudioFocus_WhileDuckingThenResume) {
   AudioFocusManager::GetInstance()->RequestAudioFocus(
       media_session_1, AudioFocusManager::AudioFocusType::Gain);
   ASSERT_EQ(0, GetTransientMaybeDuckCount());
-  ASSERT_EQ(kDefaultVolumeMultiplier, GetVolumeMultiplier(media_session_1));
+  ASSERT_FALSE(IsSessionDucking(media_session_1));
 
   AudioFocusManager::GetInstance()->RequestAudioFocus(
       media_session_2, AudioFocusManager::AudioFocusType::GainTransientMayDuck);
   ASSERT_EQ(1, GetTransientMaybeDuckCount());
-  ASSERT_EQ(kDuckingVolumeMultiplier, GetVolumeMultiplier(media_session_1));
+  ASSERT_TRUE(IsSessionDucking(media_session_1));
 
   AudioFocusManager::GetInstance()->AbandonAudioFocus(media_session_1);
   ASSERT_EQ(1, GetTransientMaybeDuckCount());
@@ -218,7 +215,7 @@ TEST_F(AudioFocusManagerTest, AbandonAudioFocus_WhileDuckingThenResume) {
 
   AudioFocusManager::GetInstance()->RequestAudioFocus(
       media_session_1, AudioFocusManager::AudioFocusType::Gain);
-  ASSERT_EQ(kDefaultVolumeMultiplier, GetVolumeMultiplier(media_session_1));
+  ASSERT_FALSE(IsSessionDucking(media_session_1));
 }
 
 TEST_F(AudioFocusManagerTest, AbandonAudioFocus_StopsDucking) {
@@ -231,17 +228,16 @@ TEST_F(AudioFocusManagerTest, AbandonAudioFocus_StopsDucking) {
   AudioFocusManager::GetInstance()->RequestAudioFocus(
       media_session_1, AudioFocusManager::AudioFocusType::Gain);
   ASSERT_EQ(0, GetTransientMaybeDuckCount());
-  ASSERT_EQ(kDefaultVolumeMultiplier, GetVolumeMultiplier(media_session_1));
+  ASSERT_FALSE(IsSessionDucking(media_session_1));
 
   AudioFocusManager::GetInstance()->RequestAudioFocus(
       media_session_2, AudioFocusManager::AudioFocusType::GainTransientMayDuck);
   ASSERT_EQ(1, GetTransientMaybeDuckCount());
-  ASSERT_EQ(kDuckingVolumeMultiplier, GetVolumeMultiplier(media_session_1));
+  ASSERT_TRUE(IsSessionDucking(media_session_1));
 
   AudioFocusManager::GetInstance()->AbandonAudioFocus(media_session_2);
   ASSERT_EQ(0, GetTransientMaybeDuckCount());
-  ASSERT_EQ(kDefaultVolumeMultiplier, GetVolumeMultiplier(media_session_1));
-
+  ASSERT_FALSE(IsSessionDucking(media_session_1));
 }
 
 TEST_F(AudioFocusManagerTest, DuckWhilePlaying) {
@@ -253,11 +249,11 @@ TEST_F(AudioFocusManagerTest, DuckWhilePlaying) {
 
   AudioFocusManager::GetInstance()->RequestAudioFocus(
       media_session_1, AudioFocusManager::AudioFocusType::Gain);
-  ASSERT_EQ(kDefaultVolumeMultiplier, GetVolumeMultiplier(media_session_1));
+  ASSERT_FALSE(IsSessionDucking(media_session_1));
 
   AudioFocusManager::GetInstance()->RequestAudioFocus(
       media_session_2, AudioFocusManager::AudioFocusType::GainTransientMayDuck);
-  ASSERT_EQ(kDuckingVolumeMultiplier, GetVolumeMultiplier(media_session_1));
+  ASSERT_TRUE(IsSessionDucking(media_session_1));
 }
 
 TEST_F(AudioFocusManagerTest, DuckWhenStarting) {
@@ -272,7 +268,7 @@ TEST_F(AudioFocusManagerTest, DuckWhenStarting) {
 
   AudioFocusManager::GetInstance()->RequestAudioFocus(
       media_session_1, AudioFocusManager::AudioFocusType::Gain);
-  ASSERT_EQ(kDuckingVolumeMultiplier, GetVolumeMultiplier(media_session_1));
+  ASSERT_TRUE(IsSessionDucking(media_session_1));
 }
 
 TEST_F(AudioFocusManagerTest, DuckWithMultipleTransients) {
@@ -287,21 +283,21 @@ TEST_F(AudioFocusManagerTest, DuckWithMultipleTransients) {
 
   AudioFocusManager::GetInstance()->RequestAudioFocus(
       media_session_1, AudioFocusManager::AudioFocusType::Gain);
-  ASSERT_EQ(kDefaultVolumeMultiplier, GetVolumeMultiplier(media_session_1));
+  ASSERT_FALSE(IsSessionDucking(media_session_1));
 
   AudioFocusManager::GetInstance()->RequestAudioFocus(
       media_session_2, AudioFocusManager::AudioFocusType::GainTransientMayDuck);
-  ASSERT_EQ(kDuckingVolumeMultiplier, GetVolumeMultiplier(media_session_1));
+  ASSERT_TRUE(IsSessionDucking(media_session_1));
 
   AudioFocusManager::GetInstance()->RequestAudioFocus(
       media_session_3, AudioFocusManager::AudioFocusType::GainTransientMayDuck);
-  ASSERT_EQ(kDuckingVolumeMultiplier, GetVolumeMultiplier(media_session_1));
+  ASSERT_TRUE(IsSessionDucking(media_session_1));
 
   AudioFocusManager::GetInstance()->AbandonAudioFocus(media_session_2);
-  ASSERT_EQ(kDuckingVolumeMultiplier, GetVolumeMultiplier(media_session_1));
+  ASSERT_TRUE(IsSessionDucking(media_session_1));
 
   AudioFocusManager::GetInstance()->AbandonAudioFocus(media_session_3);
-  ASSERT_EQ(kDefaultVolumeMultiplier, GetVolumeMultiplier(media_session_1));
+  ASSERT_FALSE(IsSessionDucking(media_session_1));
 }
 
 TEST_F(AudioFocusManagerTest, WebContentsDestroyed_ReleasesFocus) {
@@ -337,14 +333,14 @@ TEST_F(AudioFocusManagerTest, WebContentsDestroyed_StopsDucking) {
 
   AudioFocusManager::GetInstance()->RequestAudioFocus(
       media_session_1, AudioFocusManager::AudioFocusType::Gain);
-  ASSERT_EQ(kDefaultVolumeMultiplier, GetVolumeMultiplier(media_session_1));
+  ASSERT_FALSE(IsSessionDucking(media_session_1));
 
   AudioFocusManager::GetInstance()->RequestAudioFocus(
       media_session_2, AudioFocusManager::AudioFocusType::GainTransientMayDuck);
-  ASSERT_EQ(kDuckingVolumeMultiplier, GetVolumeMultiplier(media_session_1));
+  ASSERT_TRUE(IsSessionDucking(media_session_1));
 
   web_contents_2.reset();
-  ASSERT_EQ(kDefaultVolumeMultiplier, GetVolumeMultiplier(media_session_1));
+  ASSERT_FALSE(IsSessionDucking(media_session_1));
 }
 
 }  // namespace content

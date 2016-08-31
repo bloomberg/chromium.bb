@@ -34,6 +34,9 @@ using ::testing::Expectation;
 
 namespace {
 
+const double kDefaultVolumeMultiplier = 1.0;
+const double kDuckingVolumeMultiplier = 0.2;
+
 class MockMediaSessionDelegate : public MediaSessionDelegate {
  public:
   bool RequestAudioFocus(content::AudioFocusManager::AudioFocusType) override {
@@ -137,8 +140,12 @@ class MediaSessionBrowserTest : public content::ContentBrowserTest {
                   : MediaSession::State::INACTIVE);
   }
 
-  void SystemSetVolumeMultiplier(double volume_multiplier) {
-    media_session_->SetVolumeMultiplier(volume_multiplier);
+  void SystemStartDucking() {
+    media_session_->StartDucking();
+  }
+
+  void SystemStopDucking() {
+    media_session_->StopDucking();
   }
 
   MockWebContentsObserver* mock_web_contents_observer() {
@@ -266,7 +273,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
-                       MediaSessionSetVolumeMultiplier) {
+                       InitialVolumeMultiplier) {
   std::unique_ptr<MockMediaSessionObserver> media_session_observer(
       new MockMediaSessionObserver);
 
@@ -275,16 +282,58 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
   StartNewPlayer(media_session_observer.get(),
                  media::MediaContentType::Persistent);
 
-  double volume_multiplier = 0.2f;
-  SystemSetVolumeMultiplier(volume_multiplier);
+  EXPECT_EQ(kDefaultVolumeMultiplier,
+            media_session_observer->GetVolumeMultiplier(0));
+  EXPECT_EQ(kDefaultVolumeMultiplier,
+            media_session_observer->GetVolumeMultiplier(1));
 
-  EXPECT_EQ(volume_multiplier, media_session_observer->GetVolumeMultiplier(0));
-  EXPECT_EQ(volume_multiplier, media_session_observer->GetVolumeMultiplier(1));
+}
+
+IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
+                       StartDuckingReducesVolumeMultiplier) {
+  std::unique_ptr<MockMediaSessionObserver> media_session_observer(
+      new MockMediaSessionObserver);
+
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
+  SystemStartDucking();
+
+  EXPECT_EQ(kDuckingVolumeMultiplier,
+            media_session_observer->GetVolumeMultiplier(0));
+  EXPECT_EQ(kDuckingVolumeMultiplier,
+            media_session_observer->GetVolumeMultiplier(1));
 
   StartNewPlayer(media_session_observer.get(),
                  media::MediaContentType::Persistent);
 
-  EXPECT_EQ(volume_multiplier, media_session_observer->GetVolumeMultiplier(2));
+  EXPECT_EQ(kDuckingVolumeMultiplier,
+            media_session_observer->GetVolumeMultiplier(2));
+}
+
+IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
+                       StopDuckingRecoversVolumeMultiplier) {
+  std::unique_ptr<MockMediaSessionObserver> media_session_observer(
+      new MockMediaSessionObserver);
+
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
+  SystemStartDucking();
+  SystemStopDucking();
+
+  EXPECT_EQ(kDefaultVolumeMultiplier,
+            media_session_observer->GetVolumeMultiplier(0));
+  EXPECT_EQ(kDefaultVolumeMultiplier,
+            media_session_observer->GetVolumeMultiplier(1));
+
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
+
+  EXPECT_EQ(kDefaultVolumeMultiplier,
+            media_session_observer->GetVolumeMultiplier(2));
 }
 
 IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, AudioFocusInitialState) {

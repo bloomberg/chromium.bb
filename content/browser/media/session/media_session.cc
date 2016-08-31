@@ -16,6 +16,7 @@ namespace content {
 namespace {
 
 const double kDefaultVolumeMultiplier = 1.0;
+const double kDuckingVolumeMultiplier = 0.2;
 
 }  // anonymous namespace
 
@@ -70,7 +71,7 @@ void MediaSession::SetMetadata(const MediaMetadata& metadata) {
 bool MediaSession::AddPlayer(MediaSessionObserver* observer,
                              int player_id,
                              media::MediaContentType media_content_type) {
-  observer->OnSetVolumeMultiplier(player_id, volume_multiplier_);
+  observer->OnSetVolumeMultiplier(player_id, GetVolumeMultiplier());
 
   // Determine the audio focus type required for playing the new player.
   // TODO(zqzhang): handle duckable and uncontrollable.
@@ -206,10 +207,27 @@ void MediaSession::Stop(SuspendType suspend_type) {
   AbandonSystemAudioFocusIfNeeded();
 }
 
-void MediaSession::SetVolumeMultiplier(double volume_multiplier) {
-  volume_multiplier_ = volume_multiplier;
+void MediaSession::StartDucking() {
+  if (is_ducking_)
+    return;
+  is_ducking_ = true;
+  UpdateVolumeMultiplier();
+}
+
+void MediaSession::StopDucking() {
+  if (!is_ducking_)
+    return;
+  is_ducking_ = false;
+  UpdateVolumeMultiplier();
+}
+
+void MediaSession::UpdateVolumeMultiplier() {
   for (const auto& it : players_)
-    it.observer->OnSetVolumeMultiplier(it.player_id, volume_multiplier_);
+    it.observer->OnSetVolumeMultiplier(it.player_id, GetVolumeMultiplier());
+}
+
+double MediaSession::GetVolumeMultiplier() const {
+  return is_ducking_ ? kDuckingVolumeMultiplier : kDefaultVolumeMultiplier;
 }
 
 bool MediaSession::IsActive() const {
@@ -325,7 +343,7 @@ MediaSession::MediaSession(WebContents* web_contents)
       audio_focus_state_(State::INACTIVE),
       audio_focus_type_(
           AudioFocusManager::AudioFocusType::GainTransientMayDuck),
-      volume_multiplier_(kDefaultVolumeMultiplier) {}
+      is_ducking_(false) {}
 
 void MediaSession::Initialize() {
   delegate_ = MediaSessionDelegate::Create(this);

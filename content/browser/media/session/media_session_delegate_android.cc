@@ -76,9 +76,12 @@ void MediaSessionDelegateAndroid::OnResume(
   media_session_->Resume(MediaSession::SuspendType::SYSTEM);
 }
 
-void MediaSessionDelegateAndroid::OnSetVolumeMultiplier(
-    JNIEnv*, jobject, jdouble volume_multiplier) {
-  media_session_->SetVolumeMultiplier(volume_multiplier);
+void MediaSessionDelegateAndroid::OnStartDucking(JNIEnv*, jobject) {
+  media_session_->StartDucking();
+}
+
+void MediaSessionDelegateAndroid::OnStopDucking(JNIEnv*, jobject) {
+  media_session_->StopDucking();
 }
 
 void MediaSessionDelegateAndroid::RecordSessionDuck(

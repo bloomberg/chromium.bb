@@ -37,12 +37,15 @@ class MediaSessionDelegateAndroid : public MediaSessionDelegate {
   // Called by Java through JNI.
   void OnResume(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
-  // Called when the Android system requests the MediaSession to duck.
+  // Called when the Android system requests the MediaSession to start ducking.
   // Called by Java through JNI.
-  void OnSetVolumeMultiplier(JNIEnv* env, jobject obj,
-                             jdouble volume_multiplier);
+  void OnStartDucking(JNIEnv* env, jobject obj);
 
-  // Called when the Android system requests the MediaSession to duck.
+  // Called when the Android system requests the MediaSession to stop ducking.
+  // Called by Java through JNI.
+  void OnStopDucking(JNIEnv* env, jobject obj);
+
+  // Record when the Android system requests the MediaSession to duck.
   // Called by Java through JNI.
   void RecordSessionDuck(JNIEnv* env,
                          const base::android::JavaParamRef<jobject> &obj);

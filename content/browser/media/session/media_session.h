@@ -103,8 +103,13 @@ class MediaSession : public WebContentsObserver,
   // |type| represents the origin of the request.
   CONTENT_EXPORT void Stop(SuspendType suspend_type);
 
-  // Change the volume multiplier of the session to |volume_multiplier|.
-  CONTENT_EXPORT void SetVolumeMultiplier(double volume_multiplier);
+  // Let the media session start ducking such that the volume multiplier is
+  // reduced.
+  CONTENT_EXPORT void StartDucking();
+
+  // Let the media session stop ducking such that the volume multiplier is
+  // recovered.
+  CONTENT_EXPORT void StopDucking();
 
   // Returns if the session can be controlled by Resume() and Suspend calls
   // above.
@@ -187,6 +192,13 @@ class MediaSession : public WebContentsObserver,
   // It sets audio_focus_state_ and notifies observers about the state change.
   void SetAudioFocusState(State audio_focus_state);
 
+  // Update the volume multiplier when ducking state changes.
+  void UpdateVolumeMultiplier();
+
+  // Get the volume multiplier, which depends on whether the media session is
+  // ducking.
+  double GetVolumeMultiplier() const;
+
   // Registers a MediaSession state change callback.
   CONTENT_EXPORT std::unique_ptr<base::CallbackList<void(State)>::Subscription>
   RegisterMediaSessionStateChangedCallbackForTest(
@@ -201,9 +213,10 @@ class MediaSession : public WebContentsObserver,
 
   MediaSessionUmaHelper uma_helper_;
 
-  // The volume multiplier of this session. All players in this session should
-  // multiply their volume with this multiplier to get the effective volume.
-  double volume_multiplier_;
+  // The ducking state of this media session. The initial value is |false|, and
+  // is set to |true| after StartDucking(), and will be set to |false| after
+  // StopDucking().
+  bool is_ducking_;
 
   MediaMetadata metadata_;
   base::CallbackList<void(State)> media_session_state_listeners_;

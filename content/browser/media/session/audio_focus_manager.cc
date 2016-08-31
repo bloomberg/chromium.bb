@@ -9,13 +9,6 @@
 
 namespace content {
 
-namespace {
-
-const double kDuckingVolumeMultiplier = 0.2;
-const double kDefaultVolumeMultiplier = 1.0;
-
-}  // anonymous namespace
-
 AudioFocusManager::AudioFocusEntry::AudioFocusEntry(
     WebContents* web_contents,
     AudioFocusManager* audio_focus_manager,
@@ -93,18 +86,14 @@ void AudioFocusManager::MaybeStartDucking() const {
   if (TransientMayDuckEntriesCount() != 1 || !focus_entry_)
     return;
 
-  // TODO(mlamouri): add StartDuck to MediaSession.
-  MediaSession::Get(focus_entry_->web_contents())
-      ->SetVolumeMultiplier(kDuckingVolumeMultiplier);
+  MediaSession::Get(focus_entry_->web_contents())->StartDucking();
 }
 
 void AudioFocusManager::MaybeStopDucking() const {
   if (TransientMayDuckEntriesCount() != 0 || !focus_entry_)
     return;
 
-  // TODO(mlamouri): add StopDuck to MediaSession.
-  MediaSession::Get(focus_entry_->web_contents())
-      ->SetVolumeMultiplier(kDefaultVolumeMultiplier);
+  MediaSession::Get(focus_entry_->web_contents())->StopDucking();
 }
 
 int AudioFocusManager::TransientMayDuckEntriesCount() const {
@@ -118,8 +107,7 @@ void AudioFocusManager::MaybeRemoveTransientEntry(WebContents* web_contents) {
 
 void AudioFocusManager::MaybeRemoveFocusEntry(WebContents* web_contents) {
   if (focus_entry_ && focus_entry_->web_contents() == web_contents) {
-    MediaSession::Get(focus_entry_->web_contents())
-        ->SetVolumeMultiplier(kDefaultVolumeMultiplier);
+    MediaSession::Get(focus_entry_->web_contents())->StopDucking();
     focus_entry_.reset();
   }
 }

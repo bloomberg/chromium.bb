@@ -26,10 +26,6 @@ import org.chromium.base.annotations.JNINamespace;
 public class MediaSessionDelegate implements AudioManager.OnAudioFocusChangeListener {
     private static final String TAG = "MediaSession";
 
-    // These need to match the values in native apps.
-    public static final double DUCKING_VOLUME_MULTIPLIER = 0.2f;
-    public static final double DEFAULT_VOLUME_MULTIPLIER = 1.0f;
-
     private Context mContext;
     private int mFocusType;
     private boolean mIsDucking = false;
@@ -82,8 +78,7 @@ public class MediaSessionDelegate implements AudioManager.OnAudioFocusChangeList
         switch (focusChange) {
             case AudioManager.AUDIOFOCUS_GAIN:
                 if (mIsDucking) {
-                    nativeOnSetVolumeMultiplier(mNativeMediaSessionDelegateAndroid,
-                                                DEFAULT_VOLUME_MULTIPLIER);
+                    nativeOnStopDucking(mNativeMediaSessionDelegateAndroid);
                     mIsDucking = false;
                 } else {
                     nativeOnResume(mNativeMediaSessionDelegateAndroid);
@@ -95,8 +90,7 @@ public class MediaSessionDelegate implements AudioManager.OnAudioFocusChangeList
             case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
                 mIsDucking = true;
                 nativeRecordSessionDuck(mNativeMediaSessionDelegateAndroid);
-                nativeOnSetVolumeMultiplier(mNativeMediaSessionDelegateAndroid,
-                                            DUCKING_VOLUME_MULTIPLIER);
+                nativeOnStartDucking(mNativeMediaSessionDelegateAndroid);
                 break;
             case AudioManager.AUDIOFOCUS_LOSS:
                 abandonAudioFocus();
@@ -110,7 +104,7 @@ public class MediaSessionDelegate implements AudioManager.OnAudioFocusChangeList
 
     private native void nativeOnSuspend(long nativeMediaSessionDelegateAndroid, boolean temporary);
     private native void nativeOnResume(long nativeMediaSessionDelegateAndroid);
-    private native void nativeOnSetVolumeMultiplier(long nativeMediaSessionDelegateAndroid,
-                                                    double volumeMultiplier);
+    private native void nativeOnStartDucking(long nativeMediaSessionDelegateAndroid);
+    private native void nativeOnStopDucking(long nativeMediaSessionDelegateAndroid);
     private native void nativeRecordSessionDuck(long nativeMediaSessionDelegateAndroid);
 }
