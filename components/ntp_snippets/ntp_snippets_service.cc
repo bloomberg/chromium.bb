@@ -335,6 +335,13 @@ void NTPSnippetsService::FetchSuggestionImage(
                  base::Unretained(this), callback, snippet_id));
 }
 
+void NTPSnippetsService::ClearHistory(
+    base::Time begin,
+    base::Time end,
+    const base::Callback<bool(const GURL& url)>& filter) {
+  // TODO(vitaliii): Implement. See crbug.com/641321.
+}
+
 void NTPSnippetsService::ClearCachedSuggestions(Category category) {
   DCHECK_EQ(category, provided_category_);
   if (!initialized())

@@ -100,6 +100,10 @@ class MockProvider : public ContentSuggestionsProvider {
     observer()->OnSuggestionInvalidated(this, category, suggestion_id);
   }
 
+  MOCK_METHOD3(ClearHistory,
+               void(base::Time begin,
+                    base::Time end,
+                    const base::Callback<bool(const GURL& url)>& filter));
   MOCK_METHOD1(ClearCachedSuggestions, void(Category category));
   MOCK_METHOD2(GetDismissedSuggestionsForDebugging,
                void(Category category,
@@ -563,6 +567,16 @@ TEST_F(ContentSuggestionsServiceTest, ShouldPutBookmarksAtEndIfEmpty) {
   EXPECT_THAT(service()->GetCategories(), ElementsAre(bookmarks, remote));
   bookmarks_provider->FireSuggestionsChanged(bookmarks, std::vector<int>());
   EXPECT_THAT(service()->GetCategories(), ElementsAre(remote, bookmarks));
+}
+
+TEST_F(ContentSuggestionsServiceTest, ShouldForwardClearHistory) {
+  Category category = FromKnownCategory(KnownCategories::DOWNLOADS);
+  MockProvider* provider = RegisterProvider(category);
+  base::Time begin = base::Time::FromTimeT(123),
+             end = base::Time::FromTimeT(456);
+  EXPECT_CALL(*provider, ClearHistory(begin, end, _));
+  base::Callback<bool(const GURL& url)> filter;
+  service()->ClearHistory(begin, end, filter);
 }
 
 }  // namespace ntp_snippets

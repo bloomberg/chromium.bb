@@ -101,6 +101,17 @@ class ContentSuggestionsProvider {
   virtual void FetchSuggestionImage(const std::string& suggestion_id,
                                     const ImageFetchedCallback& callback) = 0;
 
+  // Removes history from the specified time range where the URL matches the
+  // |filter|. The data removed depends on the provider. Note that the
+  // data outside the time range may be deleted, for example suggestions, which
+  // are based on history from that time range. Providers should immediately
+  // clear any data related to history from the specified time range where the
+  // URL matches the |filter|.
+  virtual void ClearHistory(
+      base::Time begin,
+      base::Time end,
+      const base::Callback<bool(const GURL& url)>& filter) = 0;
+
   // Clears all caches for the given category, so that the next fetch starts
   // from scratch.
   virtual void ClearCachedSuggestions(Category category) = 0;

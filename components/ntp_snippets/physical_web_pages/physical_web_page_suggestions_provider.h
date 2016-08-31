@@ -48,6 +48,10 @@ class PhysicalWebPageSuggestionsProvider : public ContentSuggestionsProvider {
   void DismissSuggestion(const std::string& suggestion_id) override;
   void FetchSuggestionImage(const std::string& suggestion_id,
                             const ImageFetchedCallback& callback) override;
+  void ClearHistory(
+      base::Time begin,
+      base::Time end,
+      const base::Callback<bool(const GURL& url)>& filter) override;
   void ClearCachedSuggestions(Category category) override;
   void GetDismissedSuggestionsForDebugging(
       Category category,

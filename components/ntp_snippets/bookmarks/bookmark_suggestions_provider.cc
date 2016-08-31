@@ -184,6 +184,13 @@ void BookmarkSuggestionsProvider::FetchSuggestionImage(
       FROM_HERE, base::Bind(callback, gfx::Image()));
 }
 
+void BookmarkSuggestionsProvider::ClearHistory(
+    base::Time begin,
+    base::Time end,
+    const base::Callback<bool(const GURL& url)>& filter) {
+  // TODO(vitaliii): Implement. See crbug.com/641321.
+}
+
 void BookmarkSuggestionsProvider::ClearCachedSuggestions(Category category) {
   DCHECK_EQ(category, provided_category_);
   // Ignored.

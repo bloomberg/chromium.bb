@@ -13,6 +13,7 @@
 #include "base/callback_forward.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/ntp_snippets/category_factory.h"
 #include "components/ntp_snippets/category_status.h"
@@ -118,6 +119,16 @@ class ContentSuggestionsService : public KeyedService,
   // one provider is registered for every category and that this method is
   // called only once per provider.
   void RegisterProvider(std::unique_ptr<ContentSuggestionsProvider> provider);
+
+  // Removes history from the specified time range where the URL matches the
+  // |filter| from all providers. The data removed depends on the provider. Note
+  // that the data outside the time range may be deleted, for example
+  // suggestions, which are based on history from that time range. Providers
+  // should immediately clear any data related to history from the specified
+  // time range where the URL matches the |filter|.
+  void ClearHistory(base::Time begin,
+                    base::Time end,
+                    const base::Callback<bool(const GURL& url)>& filter);
 
   // Removes all suggestions from all caches or internal stores in all
   // providers. See |ClearCachedSuggestions|.

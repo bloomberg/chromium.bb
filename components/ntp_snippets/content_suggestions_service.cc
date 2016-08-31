@@ -81,6 +81,15 @@ void ContentSuggestionsService::FetchSuggestionImage(
                                                          callback);
 }
 
+void ContentSuggestionsService::ClearHistory(
+    base::Time begin,
+    base::Time end,
+    const base::Callback<bool(const GURL& url)>& filter) {
+  for (const auto& provider : providers_) {
+    provider->ClearHistory(begin, end, filter);
+  }
+}
+
 void ContentSuggestionsService::ClearAllCachedSuggestions() {
   suggestions_by_category_.clear();
   id_category_map_.clear();

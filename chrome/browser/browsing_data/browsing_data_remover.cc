@@ -513,6 +513,13 @@ void BrowsingDataRemover::RemoveImpl(
 #endif
     }
 
+    ntp_snippets::ContentSuggestionsService* content_suggestions_service =
+        ContentSuggestionsServiceFactory::GetForProfile(profile_);
+    if (content_suggestions_service) {
+      content_suggestions_service->ClearHistory(delete_begin_, delete_end_,
+                                                filter);
+    }
+
 #if defined(ENABLE_EXTENSIONS)
     // Clear launch times as they are a form of history.
     extensions::ExtensionPrefs* extension_prefs =

@@ -246,7 +246,9 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
   }
 #endif  // OS_ANDROID
 
-  if (base::FeatureList::IsEnabled(ntp_snippets::kBookmarkSuggestionsFeature)) {
+  // |bookmark_model| can be null in tests.
+  if (base::FeatureList::IsEnabled(ntp_snippets::kBookmarkSuggestionsFeature) &&
+      bookmark_model) {
     RegisterBookmarkProvider(bookmark_model, service, category_factory,
                              pref_service);
   }
