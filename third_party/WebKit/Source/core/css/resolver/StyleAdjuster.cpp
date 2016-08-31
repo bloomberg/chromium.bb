@@ -169,7 +169,7 @@ void StyleAdjuster::adjustStyleForAlignment(ComputedStyle& style, const Computed
 
     // The 'auto' keyword computes the computed value of align-items on the parent
     // or 'normal' if the box has no parent.
-    if (style.alignSelfPosition() == ItemPositionAuto && parentStyle.alignItemsPosition() != ItemPositionNormal)
+    if (style.alignSelfPosition() == ItemPositionAuto && parentStyle.alignItemsPosition() != ComputedStyle::initialDefaultAlignment().position())
         style.setAlignSelf(parentStyle.alignItems());
 }
 

@@ -447,7 +447,7 @@ static CSSValueList* valueForItemPositionWithOverflowAlignment(const StyleSelfAl
     if (data.positionType() == LegacyPosition)
         result->append(*CSSPrimitiveValue::createIdentifier(CSSValueLegacy));
     // To avoid needing to copy the RareNonInheritedData, we repurpose the 'auto' flag to not just mean 'auto' prior to running the StyleAdjuster but also mean 'normal' after running it.
-    result->append(*CSSPrimitiveValue::create(data.position() == ItemPositionAuto ? ItemPositionNormal : data.position()));
+    result->append(*CSSPrimitiveValue::create(data.position() == ItemPositionAuto ? ComputedStyle::initialDefaultAlignment().position() : data.position()));
     if (data.position() >= ItemPositionCenter && data.overflow() != OverflowAlignmentDefault)
         result->append(*CSSPrimitiveValue::create(data.overflow()));
     ASSERT(result->length() <= 2);
