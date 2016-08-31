@@ -40,7 +40,33 @@ class ArcCustomNotificationView::EventForwarder : public ui::EventHandler {
       return;
     }
 
-    owner_->OnEvent(event);
+    if (event->IsScrollEvent()) {
+      ForwardScrollEvent(event->AsScrollEvent());
+    } else if (event->IsMouseWheelEvent()) {
+      ForwardMouseWheelEvent(event->AsMouseWheelEvent());
+    } else if (!event->IsTouchEvent()) {
+      // Forward the rest events to |owner_| except touches because View
+      // should no longer receive touch events. See View::OnTouchEvent.
+      owner_->OnEvent(event);
+    }
+  }
+
+  void ForwardScrollEvent(ui::ScrollEvent* event) {
+    views::Widget* widget = owner_->GetWidget();
+    if (!widget)
+      return;
+
+    event->target()->ConvertEventToTarget(widget->GetNativeWindow(), event);
+    widget->OnScrollEvent(event);
+  }
+
+  void ForwardMouseWheelEvent(ui::MouseWheelEvent* event) {
+    views::Widget* widget = owner_->GetWidget();
+    if (!widget)
+      return;
+
+    event->target()->ConvertEventToTarget(widget->GetNativeWindow(), event);
+    widget->OnMouseEvent(event);
   }
 
   ArcCustomNotificationView* const owner_;
