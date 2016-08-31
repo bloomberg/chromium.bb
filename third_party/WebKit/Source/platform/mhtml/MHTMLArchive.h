@@ -98,6 +98,7 @@ private:
 
     void setMainResource(ArchiveResource*);
     void addSubresource(ArchiveResource*);
+    static bool canLoadArchive(const KURL&);
 
     Member<ArchiveResource> m_mainResource;
     SubArchiveResources m_subresources;

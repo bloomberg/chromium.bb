@@ -69,9 +69,9 @@ MHTMLArchive::MHTMLArchive()
 
 MHTMLArchive* MHTMLArchive::create(const KURL& url, PassRefPtr<SharedBuffer> data)
 {
-    // MHTML pages can only be loaded from local URLs and http/https URLs.
+    // MHTML pages can only be loaded from local URLs, http/https URLs, and content URLs(Android specific).
     // The latter is now allowed due to full sandboxing enforcement on MHTML pages.
-    if (!SchemeRegistry::shouldTreatURLSchemeAsLocal(url.protocol()) && !url.protocolIsInHTTPFamily())
+    if (!canLoadArchive(url))
         return nullptr;
 
     MHTMLParser parser(data);
@@ -89,6 +89,21 @@ MHTMLArchive* MHTMLArchive::create(const KURL& url, PassRefPtr<SharedBuffer> dat
             archive->setMainResource(resources[i].get());
     }
     return archive;
+}
+
+bool MHTMLArchive::canLoadArchive(const KURL& url)
+{
+    // MHTML pages can only be loaded from local URLs, http/https URLs, and content URLs(Android specific).
+    // The latter is now allowed due to full sandboxing enforcement on MHTML pages.
+    if (SchemeRegistry::shouldTreatURLSchemeAsLocal(url.protocol()))
+        return true;
+    if (url.protocolIsInHTTPFamily())
+        return true;
+#if OS(ANDROID)
+    if (url.protocolIs("content"))
+        return true;
+#endif
+    return false;
 }
 
 void MHTMLArchive::generateMHTMLHeader(

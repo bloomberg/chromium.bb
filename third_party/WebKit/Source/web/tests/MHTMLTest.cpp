@@ -241,11 +241,17 @@ TEST_F(MHTMLTest, MHTMLFromScheme)
     addTestResources();
     RefPtr<SharedBuffer> data = serialize("Test Serialization", "text/html", MHTMLArchive::UseDefaultEncoding);
     KURL httpURL = toKURL("http://www.example.com");
+    KURL contentURL = toKURL("content://foo");
     KURL fileURL = toKURL("file://foo");
     KURL specialSchemeURL = toKURL("fooscheme://bar");
 
-    // MHTMLArchives can only be initialized from local schemes and http/https schemes.
+    // MHTMLArchives can only be initialized from local schemes, http/https schemes, and content scheme(Android specific).
     EXPECT_NE(nullptr, MHTMLArchive::create(httpURL, data.get()));
+#if OS(ANDROID)
+    EXPECT_NE(nullptr, MHTMLArchive::create(contentURL, data.get()));
+#else
+    EXPECT_EQ(nullptr, MHTMLArchive::create(contentURL, data.get()));
+#endif
     EXPECT_NE(nullptr, MHTMLArchive::create(fileURL, data.get()));
     EXPECT_EQ(nullptr, MHTMLArchive::create(specialSchemeURL, data.get()));
     SchemeRegistry::registerURLSchemeAsLocal("fooscheme");
