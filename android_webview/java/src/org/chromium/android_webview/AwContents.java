@@ -75,7 +75,6 @@ import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
-import org.chromium.ui.gfx.DeviceDisplayInfo;
 
 import java.io.File;
 import java.lang.annotation.Annotation;
@@ -302,8 +301,6 @@ public class AwContents implements SmartClipProvider,
 
     private Bitmap mFavicon;
     private boolean mHasRequestedVisitedHistoryFromClient;
-    // TODO(boliu): This should be in a global context, not per webview.
-    private final double mDIPScale;
     // Whether this WebView is a popup.
     private boolean mIsPopupWindow = false;
 
@@ -765,9 +762,7 @@ public class AwContents implements SmartClipProvider,
         mContentViewClient = new AwContentViewClient(contentsClient, settings, this, mContext);
         mLayoutSizer = dependencyFactory.createLayoutSizer();
         mSettings = settings;
-        mDIPScale = DeviceDisplayInfo.create(mContext).getDIPScale();
         mLayoutSizer.setDelegate(new AwLayoutSizerDelegate());
-        mLayoutSizer.setDIPScale(mDIPScale);
         mWebContentsDelegate = new AwWebContentsDelegateAdapter(
                 this, contentsClient, mContentViewClient, mContext, mContainerView);
         mContentsClientBridge = new AwContentsClientBridge(mContext, contentsClient,
@@ -798,7 +793,6 @@ public class AwContents implements SmartClipProvider,
         mDefaultVideoPosterRequestHandler = new DefaultVideoPosterRequestHandler(mContentsClient);
         mSettings.setDefaultVideoPosterURL(
                 mDefaultVideoPosterRequestHandler.getDefaultVideoPosterURL());
-        mSettings.setDIPScale(mDIPScale);
         mScrollOffsetManager =
                 dependencyFactory.createScrollOffsetManager(new AwScrollOffsetManagerDelegate());
         mScrollAccessibilityHelper = new ScrollAccessibilityHelper(mContainerView);
@@ -1059,7 +1053,12 @@ public class AwContents implements SmartClipProvider,
         mNavigationController = mWebContents.getNavigationController();
         installWebContentsObserver();
         mSettings.setWebContents(webContents);
-        nativeSetDipScale(mNativeAwContents, (float) mDIPScale);
+
+        float dipScale = mContentViewCore.getDeviceScaleFactor();
+        nativeSetDipScale(mNativeAwContents, dipScale);
+        mLayoutSizer.setDIPScale(dipScale);
+        mSettings.setDIPScale(dipScale);
+
         updateContentViewCoreVisibility();
 
         // The native side object has been bound to this java instance, so now is the time to
@@ -2099,7 +2098,7 @@ public class AwContents implements SmartClipProvider,
      */
     public float getScale() {
         if (isDestroyed(WARN)) return 1;
-        return (float) (mPageScaleFactor * mDIPScale);
+        return (float) (mPageScaleFactor * mContentViewCore.getDeviceScaleFactor());
     }
 
     /**
@@ -2877,9 +2876,9 @@ public class AwContents implements SmartClipProvider,
         if (mPageScaleFactor != pageScaleFactor) {
             float oldPageScaleFactor = mPageScaleFactor;
             mPageScaleFactor = pageScaleFactor;
+            float dipScale = mContentViewCore.getDeviceScaleFactor();
             mContentsClient.getCallbackHelper().postOnScaleChangedScaled(
-                    (float) (oldPageScaleFactor * mDIPScale),
-                    (float) (mPageScaleFactor * mDIPScale));
+                    oldPageScaleFactor * dipScale, mPageScaleFactor * dipScale);
         }
     }
 
@@ -3105,10 +3104,10 @@ public class AwContents implements SmartClipProvider,
             if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
                 // Note this will trigger IPC back to browser even if nothing is
                 // hit.
+                float dipScale = mContentViewCore.getDeviceScaleFactor();
                 nativeRequestNewHitTestDataAt(mNativeAwContents,
-                        event.getX() / (float) mDIPScale,
-                        event.getY() / (float) mDIPScale,
-                        Math.max(event.getTouchMajor(), event.getTouchMinor()) / (float) mDIPScale);
+                        event.getX() / dipScale, event.getY() / dipScale,
+                        Math.max(event.getTouchMajor(), event.getTouchMinor()) / dipScale);
             }
 
             if (mOverScrollGlow != null) {
