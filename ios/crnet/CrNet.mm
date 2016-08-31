@@ -14,6 +14,7 @@ static CrNetEnvironment* g_chrome_net = NULL;
 static BOOL g_http2_enabled = YES;
 static BOOL g_quic_enabled = NO;
 static BOOL g_sdch_enabled = NO;
+static BOOL g_user_agent_partial = NO;
 static NSString* g_user_agent = nil;
 static NSString* g_sdch_pref_store_filename = nil;
 static RequestFilterBlock g_request_filter_block = nil;
@@ -35,13 +36,18 @@ static RequestFilterBlock g_request_filter_block = nil;
 }
 
 + (void)setPartialUserAgent:(NSString *)userAgent {
+  [self setUserAgent:userAgent partial:YES];
+}
+
++ (void)setUserAgent:(NSString*)userAgent partial:(bool)partial {
   g_user_agent = userAgent;
+  g_user_agent_partial = partial;
 }
 
 + (void)installInternal {
   CrNetEnvironment::Initialize();
-  std::string partial_user_agent = base::SysNSStringToUTF8(g_user_agent);
-  g_chrome_net = new CrNetEnvironment(partial_user_agent);
+  std::string user_agent = base::SysNSStringToUTF8(g_user_agent);
+  g_chrome_net = new CrNetEnvironment(user_agent, g_user_agent_partial == YES);
 
   g_chrome_net->set_spdy_enabled(g_http2_enabled);
   g_chrome_net->set_quic_enabled(g_quic_enabled);

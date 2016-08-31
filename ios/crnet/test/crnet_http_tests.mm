@@ -11,6 +11,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/third_party/gcdwebserver/src/GCDWebServer/Core/GCDWebServer.h"
+#import "ios/third_party/gcdwebserver/src/GCDWebServer/Responses/GCDWebServerDataResponse.h"
 #include "net/base/mac/url_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
@@ -99,6 +100,7 @@
 // base::TimeDelta would normally be ideal for this but it does not support
 // nanosecond resolution.
 static const int64_t ns_in_second = 1000000000LL;
+const char kUserAgent[] = "CrNetTest/1.0.0.0";
 
 class HttpTest : public ::testing::Test {
  protected:
@@ -106,7 +108,7 @@ class HttpTest : public ::testing::Test {
   ~HttpTest() override {}
 
   void SetUp() override {
-    [CrNet setPartialUserAgent:@"CrNetTest/1.0.0.0"];
+    [CrNet setUserAgent:base::SysUTF8ToNSString(kUserAgent) partial:NO];
     [CrNet install];
     NSURLSessionConfiguration* config =
         [NSURLSessionConfiguration ephemeralSessionConfiguration];
@@ -208,12 +210,27 @@ TEST_F(HttpTest, NSURLSessionReceivesData) {
 }
 
 TEST_F(HttpTest, SdchDisabledByDefault) {
-  const char kPath[] = "/foo";
+  const char kPath[] = "/sdchtest";
   RegisterPathHandler(kPath,
       ^GCDWebServerResponse* (GCDWebServerRequest* req) {
         EXPECT_FALSE(HeaderValueContains(req, "Accept-Encoding", "sdch"));
-        return nil;
+        return [GCDWebServerDataResponse responseWithText:@"woot!"];
       });
+  StartWebServer();
+  NSURL* url = net::NSURLWithGURL(GetURL(kPath));
+  NSURLSessionDataTask* task = [session_ dataTaskWithURL:url];
+  StartDataTaskAndWaitForCompletion(task);
+  EXPECT_EQ(nil, [delegate_ error]);
+  EXPECT_TRUE([delegate_ receivedBytes]);
+}
+
+TEST_F(HttpTest, SetUserAgentIsExact) {
+  const char kPath[] = "/uatest";
+  RegisterPathHandler(kPath, ^GCDWebServerResponse*(GCDWebServerRequest* req) {
+    EXPECT_STREQ(kUserAgent,
+                 [[req.headers valueForKey:@"User-Agent"] UTF8String]);
+    return [GCDWebServerDataResponse responseWithText:@"yay!"];
+  });
   StartWebServer();
   NSURL* url = net::NSURLWithGURL(GetURL(kPath));
   NSURLSessionDataTask* task = [session_ dataTaskWithURL:url];

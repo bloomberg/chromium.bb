@@ -39,8 +39,9 @@ class CrNetEnvironment {
   // Must be called on the main thread.
   static void Initialize();
 
-  // |user_agent_product_name| will be used to generate the user-agent.
-  CrNetEnvironment(const std::string& user_agent_product_name);
+  // If |user_agent_partial| is true, then |user_agent| will be used to
+  // generate the user-agent, otherwise it will be used directly.
+  CrNetEnvironment(const std::string& user_agent, bool user_agent_partial);
   ~CrNetEnvironment();
 
   // Installs this CrNet environment so requests are intercepted.
@@ -156,7 +157,8 @@ class CrNetEnvironment {
   std::unique_ptr<net::URLRequestContext> main_context_;
   std::unique_ptr<CrNetHttpProtocolHandlerDelegate>
       http_protocol_handler_delegate_;
-  std::string user_agent_product_name_;
+  std::string user_agent_;
+  bool user_agent_partial_;
   std::unique_ptr<net::NetLog> net_log_;
   std::unique_ptr<net::WriteToFileNetLogObserver> net_log_observer_;
 

@@ -264,12 +264,14 @@ void CrNetEnvironment::CloseAllSpdySessionsInternal() {
   }
 }
 
-CrNetEnvironment::CrNetEnvironment(const std::string& user_agent_product_name)
+CrNetEnvironment::CrNetEnvironment(const std::string& user_agent,
+                                   bool user_agent_partial)
     : spdy_enabled_(false),
       quic_enabled_(false),
       sdch_enabled_(false),
       main_context_(new net::URLRequestContext),
-      user_agent_product_name_(user_agent_product_name),
+      user_agent_(user_agent),
+      user_agent_partial_(user_agent_partial),
       net_log_(new net::NetLog) {}
 
 void CrNetEnvironment::Install() {
@@ -382,16 +384,18 @@ void CrNetEnvironment::InitializeOnNetworkThread() {
     acceptableLanguages = @"en-US,en";
   std::string acceptable_languages =
       [acceptableLanguages cStringUsingEncoding:NSUTF8StringEncoding];
-  std::string user_agent =
-      web::BuildUserAgentFromProduct(user_agent_product_name_);
+  if (user_agent_partial_) {
+    user_agent_ = web::BuildUserAgentFromProduct(user_agent_);
+    user_agent_partial_ = false;
+  }
   // Set the user agent through NSUserDefaults. This sets it for both
   // UIWebViews and WKWebViews, and javascript calls to navigator.userAgent
   // return this value.
   [[NSUserDefaults standardUserDefaults] registerDefaults:@{
-    @"UserAgent" : [NSString stringWithUTF8String:user_agent.c_str()]
+    @"UserAgent" : [NSString stringWithUTF8String:user_agent_.c_str()]
   }];
   main_context_->set_http_user_agent_settings(
-      new net::StaticHttpUserAgentSettings(acceptable_languages, user_agent));
+      new net::StaticHttpUserAgentSettings(acceptable_languages, user_agent_));
 
   main_context_->set_ssl_config_service(new net::SSLConfigServiceDefaults);
   main_context_->set_transport_security_state(
