@@ -3,11 +3,16 @@
 // found in the LICENSE file.
 
 #include "base/base_paths.h"
+#include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/location.h"
+#include "base/macros.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/extension_registry.h"
@@ -16,6 +21,8 @@
 #include "extensions/browser/guest_view/mime_handler_view/test_mime_handler_view_guest.h"
 #include "extensions/test/result_catcher.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/url_request/url_request_filter.h"
+#include "net/url_request/url_request_interceptor.h"
 
 using extensions::ExtensionsAPIClient;
 using extensions::MimeHandlerViewGuest;
@@ -28,6 +35,88 @@ using guest_view::TestGuestViewManagerFactory;
 // The test extension id is set by the key value in the manifest.
 const char* kExtensionId = "oickdpebdnfbgkcaoklfcdhjniefkcji";
 
+// Counts the number of URL requests made for a given URL.
+class URLRequestCounter {
+ public:
+  explicit URLRequestCounter(const GURL& url) : url_(url), count_(0) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    base::RunLoop run_loop;
+    content::BrowserThread::PostTaskAndReply(
+        content::BrowserThread::IO, FROM_HERE,
+        base::Bind(&URLRequestCounter::AddInterceptor, base::Unretained(this)),
+        run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
+  ~URLRequestCounter() {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    base::RunLoop run_loop;
+    content::BrowserThread::PostTaskAndReply(
+        content::BrowserThread::IO, FROM_HERE,
+        base::Bind(&URLRequestCounter::RemoveInterceptor,
+                   base::Unretained(this)),
+        run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
+  int GetCount() {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    // Do a round-trip to the IO thread to guarantee that the UI thread has
+    // been notified of all the requests triggered by the IO thread.
+    base::RunLoop run_loop;
+    content::BrowserThread::PostTaskAndReply(
+        content::BrowserThread::IO, FROM_HERE, base::Bind(&base::DoNothing),
+        run_loop.QuitClosure());
+    run_loop.Run();
+    return count_;
+  }
+
+ private:
+  // This class runs a callback when a URL request is intercepted. It doesn't
+  // handle the request itself.
+  class SimpleRequestInterceptor : public net::URLRequestInterceptor {
+   public:
+    explicit SimpleRequestInterceptor(const base::Closure& callback)
+        : callback_(callback) {}
+
+    // URLRequestInterceptor implementation:
+    net::URLRequestJob* MaybeInterceptRequest(
+        net::URLRequest* request,
+        net::NetworkDelegate* network_delegate) const override {
+      DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+      content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+                                       callback_);
+      return nullptr;
+    }
+
+   private:
+    const base::Closure callback_;
+  };
+
+  void RequestFired() {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    ++count_;
+  }
+
+  void AddInterceptor() {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
+        url_, base::MakeUnique<SimpleRequestInterceptor>(base::Bind(
+                  &URLRequestCounter::RequestFired, base::Unretained(this))));
+  }
+
+  void RemoveInterceptor() {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    net::URLRequestFilter::GetInstance()->RemoveUrlHandler(url_);
+  }
+
+  const GURL url_;
+  // |count_| is only accessed on the UI thread.
+  int count_;
+
+  DISALLOW_COPY_AND_ASSIGN(URLRequestCounter);
+};
+
 class MimeHandlerViewTest : public ExtensionApiTest {
  public:
   MimeHandlerViewTest() {
@@ -35,6 +124,14 @@ class MimeHandlerViewTest : public ExtensionApiTest {
   }
 
   ~MimeHandlerViewTest() override {}
+
+  void SetUpOnMainThread() override {
+    ExtensionApiTest::SetUpOnMainThread();
+
+    ASSERT_TRUE(StartEmbeddedTestServer());
+    embedded_test_server()->ServeFilesFromDirectory(
+        test_data_dir_.AppendASCII("mime_handler_view"));
+  }
 
   // TODO(paulmeyer): This function is implemented over and over by the
   // different GuestView test classes. It really needs to be refactored out to
@@ -84,10 +181,6 @@ class MimeHandlerViewTest : public ExtensionApiTest {
   }
 
   void RunTest(const std::string& path) {
-    ASSERT_TRUE(StartEmbeddedTestServer());
-    embedded_test_server()->ServeFilesFromDirectory(
-        test_data_dir_.AppendASCII("mime_handler_view"));
-
     RunTestWithUrl(embedded_test_server()->GetURL("/" + path));
   }
 
@@ -155,4 +248,12 @@ IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, ResizeBeforeAttach) {
   auto guest_size = guest->size();
   CHECK_EQ(guest_size.width(), 500);
   CHECK_EQ(guest_size.height(), 400);
+}
+
+// Regression test for crbug.com/587709.
+IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, SingleRequest) {
+  GURL url(embedded_test_server()->GetURL("/testBasic.csv"));
+  URLRequestCounter request_counter(url);
+  RunTest("testBasic.csv");
+  EXPECT_EQ(1, request_counter.GetCount());
 }

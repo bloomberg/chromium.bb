@@ -117,8 +117,10 @@ MimeHandlerViewContainer::MimeHandlerViewContainer(
 }
 
 MimeHandlerViewContainer::~MimeHandlerViewContainer() {
-  if (loader_)
+  if (loader_) {
+    DCHECK(is_embedded_);
     loader_->cancel();
+  }
 
   if (render_frame()) {
     g_mime_handler_view_container_map.Get()[render_frame()].erase(this);
@@ -139,7 +141,7 @@ MimeHandlerViewContainer::FromRenderFrame(content::RenderFrame* render_frame) {
 }
 
 void MimeHandlerViewContainer::OnReady() {
-  if (!render_frame())
+  if (!render_frame() || !is_embedded_)
     return;
 
   blink::WebFrame* frame = render_frame()->GetWebFrame();
@@ -325,7 +327,10 @@ void MimeHandlerViewContainer::OnMimeHandlerViewGuestOnLoadCompleted(
 
 void MimeHandlerViewContainer::CreateMimeHandlerViewGuest() {
   // The loader has completed loading |view_id_| so we can dispose it.
-  loader_.reset();
+  if (loader_) {
+    DCHECK(is_embedded_);
+    loader_.reset();
+  }
 
   DCHECK_NE(element_instance_id(), guest_view::kInstanceIDNone);
 
