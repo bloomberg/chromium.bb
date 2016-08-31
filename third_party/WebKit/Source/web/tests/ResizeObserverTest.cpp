@@ -4,9 +4,14 @@
 
 #include "core/observer/ResizeObserver.h"
 
+#include "bindings/core/v8/ScriptController.h"
+#include "bindings/core/v8/ScriptSourceCode.h"
+#include "bindings/core/v8/V8GCController.h"
 #include "core/observer/ResizeObservation.h"
 #include "core/observer/ResizeObserverCallback.h"
+#include "core/observer/ResizeObserverController.h"
 #include "platform/testing/UnitTestHelpers.h"
+#include "public/web/WebHeap.h"
 #include "web/WebViewImpl.h"
 #include "web/tests/sim/SimCompositor.h"
 #include "web/tests/sim/SimDisplayItemList.h"
@@ -50,9 +55,9 @@ private:
  * modify target size
  * oubservationSizeOutOfSync == true
  */
-class ResizeObservationUnitTest : public SimTest { };
+class ResizeObserverUnitTest : public SimTest { };
 
-TEST_F(ResizeObservationUnitTest, ObserveSchedulesFrame)
+TEST_F(ResizeObserverUnitTest, ResizeObservationSize)
 {
     SimRequest mainResource("https://example.com/", "text/html");
     loadURL("https://example.com/");
@@ -93,6 +98,53 @@ TEST_F(ResizeObservationUnitTest, ObserveSchedulesFrame)
 
     // Target depths
     ASSERT_EQ(svgObservation->targetDepth() - domObservation->targetDepth(), (size_t)1);
+}
+
+TEST_F(ResizeObserverUnitTest, TestMemoryLeaks)
+{
+
+    ResizeObserverController& controller = document().ensureResizeObserverController();
+    const HeapHashSet<WeakMember<ResizeObserver>>& observers = controller.observers();
+    ASSERT_EQ(observers.size(), 0U);
+    v8::HandleScope scope(v8::Isolate::GetCurrent());
+
+    ScriptController& script = document().executingFrame()->script();
+
+    //
+    // Test whether ResizeObserver is kept alive by direct JS reference
+    //
+    script.executeScriptInMainWorldAndReturnValue(
+        ScriptSourceCode("var ro = new ResizeObserver( entries => {});"),
+        ScriptController::ExecuteScriptWhenScriptsDisabled);
+    ASSERT_EQ(observers.size(), 1U);
+    script.executeScriptInMainWorldAndReturnValue(
+        ScriptSourceCode("ro = undefined;"),
+        ScriptController::ExecuteScriptWhenScriptsDisabled);
+    V8GCController::collectAllGarbageForTesting(v8::Isolate::GetCurrent());
+    WebHeap::collectAllGarbageForTesting();
+    ASSERT_EQ(observers.isEmpty(), true);
+
+    //
+    // Test whether ResizeObserver is kept alive by an Element
+    //
+    script.executeScriptInMainWorldAndReturnValue(
+        ScriptSourceCode(
+            "var ro = new ResizeObserver( () => {});"
+            "var el = document.createElement('div');"
+            "ro.observe(el);"
+            "ro = undefined;"
+        ),
+        ScriptController::ExecuteScriptWhenScriptsDisabled);
+    ASSERT_EQ(observers.size(), 1U);
+    V8GCController::collectAllGarbageForTesting(v8::Isolate::GetCurrent());
+    WebHeap::collectAllGarbageForTesting();
+    ASSERT_EQ(observers.size(), 1U);
+    script.executeScriptInMainWorldAndReturnValue(
+        ScriptSourceCode("el = undefined;"),
+        ScriptController::ExecuteScriptWhenScriptsDisabled);
+    V8GCController::collectAllGarbageForTesting(v8::Isolate::GetCurrent());
+    WebHeap::collectAllGarbageForTesting();
+    ASSERT_EQ(observers.isEmpty(), true);
 }
 
 } // namespace blink

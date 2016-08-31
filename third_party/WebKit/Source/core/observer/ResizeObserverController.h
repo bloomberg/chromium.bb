@@ -38,6 +38,9 @@ public:
 
     DECLARE_TRACE();
 
+    // For testing only.
+    const HeapHashSet<WeakMember<ResizeObserver>>& observers() { return m_observers; }
+
 private:
     // Active observers
     HeapHashSet<WeakMember<ResizeObserver>> m_observers;
