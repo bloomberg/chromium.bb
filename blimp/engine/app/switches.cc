@@ -8,6 +8,7 @@ namespace blimp {
 namespace engine {
 
 const char kEnginePort[] = "engine-port";
+const char kAllowNonLocalhost[] = "allow-non-localhost";
 
 }  // namespace engine
 }  // namespace blimp

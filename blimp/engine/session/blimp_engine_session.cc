@@ -87,10 +87,6 @@ class FocusRulesImpl : public wm::BaseFocusRules {
   DISALLOW_COPY_AND_ASSIGN(FocusRulesImpl);
 };
 
-net::IPAddress GetIPv4AnyAddress() {
-  return net::IPAddress(0, 0, 0, 0);
-}
-
 // Proxies calls to TaskRunner::PostTask while stripping the return value,
 // which provides a suitable function prototype for binding a base::Closure.
 void PostTask(const scoped_refptr<base::TaskRunner>& task_runner,
@@ -102,6 +98,13 @@ void PostTask(const scoped_refptr<base::TaskRunner>& task_runner,
 base::Closure QuitCurrentMessageLoopClosure() {
   return base::Bind(&PostTask, base::ThreadTaskRunnerHandle::Get(),
                     base::MessageLoop::QuitWhenIdleClosure());
+}
+
+net::IPAddress GetListeningAddress() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kAllowNonLocalhost)) {
+    return net::IPAddress::IPv4AllZeros();
+  }
+  return net::IPAddress::IPv4Localhost();
 }
 
 uint16_t GetListeningPort() {
@@ -194,7 +197,7 @@ void EngineNetworkComponents::Initialize(
       base::MakeUnique<BlobChannelService>(blob_channel_sender, ui_task_runner);
 
   // Adds BlimpTransports to connection_manager_.
-  net::IPEndPoint address(GetIPv4AnyAddress(), GetListeningPort());
+  net::IPEndPoint address(GetListeningAddress(), GetListeningPort());
   TCPEngineTransport* transport = new TCPEngineTransport(address, net_log_);
   connection_manager_->AddTransport(base::WrapUnique(transport));
 

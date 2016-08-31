@@ -11,6 +11,9 @@ namespace engine {
 // The port to listen to for incoming TCP connections.
 extern const char kEnginePort[];
 
+// Flag enabling access by clients from non-localhost IP addresses.
+extern const char kAllowNonLocalhost[];
+
 }  // namespace engine
 }  // namespace blimp
 
