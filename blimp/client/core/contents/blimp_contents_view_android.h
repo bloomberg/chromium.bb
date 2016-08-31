@@ -15,7 +15,8 @@ class BlimpContentsImplAndroid;
 
 class BlimpContentsViewAndroid : public BlimpContentsView {
  public:
-  explicit BlimpContentsViewAndroid(BlimpContentsImplAndroid* blimp_contents);
+  explicit BlimpContentsViewAndroid(BlimpContentsImplAndroid* blimp_contents,
+                                    scoped_refptr<cc::Layer> contents_layer);
 
   // BlimpContentsView implementation.
   gfx::NativeView GetNativeView() override;

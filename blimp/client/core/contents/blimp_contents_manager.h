@@ -5,11 +5,19 @@
 #ifndef BLIMP_CLIENT_CORE_CONTENTS_BLIMP_CONTENTS_MANAGER_H_
 #define BLIMP_CLIENT_CORE_CONTENTS_BLIMP_CONTENTS_MANAGER_H_
 
-#include "blimp/client/core/contents/blimp_contents_impl.h"
+#include <map>
+
+#include "base/memory/weak_ptr.h"
 
 namespace blimp {
 namespace client {
 
+class BlimpCompositorDependencies;
+class BlimpContents;
+class BlimpContentsImpl;
+class ImeFeature;
+class NavigationFeature;
+class RenderWidgetFeature;
 class TabControlFeature;
 
 // BlimpContentsManager does the real work of creating BlimpContentsImpl, and
@@ -17,9 +25,12 @@ class TabControlFeature;
 // monitor the life time of the contents it creates.
 class BlimpContentsManager {
  public:
-  explicit BlimpContentsManager(ImeFeature* ime_feature,
-                                NavigationFeature* nav_feature,
-                                TabControlFeature* tab_control_feature);
+  explicit BlimpContentsManager(
+      BlimpCompositorDependencies* blimp_compositor_dependencies,
+      ImeFeature* ime_feature,
+      NavigationFeature* nav_feature,
+      RenderWidgetFeature* render_widget_feature,
+      TabControlFeature* tab_control_feature);
   ~BlimpContentsManager();
 
   // Builds a BlimpContentsImpl and notifies the engine.
@@ -53,8 +64,10 @@ class BlimpContentsManager {
   // lifetime of the observers.
   std::map<int, std::unique_ptr<BlimpContentsDeletionObserver>> observer_map_;
 
+  BlimpCompositorDependencies* blimp_compositor_dependencies_;
   ImeFeature* ime_feature_;
   NavigationFeature* navigation_feature_;
+  RenderWidgetFeature* render_widget_feature_;
   TabControlFeature* tab_control_feature_;
 
   // TODO(mlliu): Currently we want to have a single BlimpContents. Remove this

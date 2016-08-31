@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "blimp/client/core/compositor/blimp_compositor_manager.h"
 #include "blimp/client/core/contents/blimp_navigation_controller_delegate.h"
 #include "blimp/client/core/contents/blimp_navigation_controller_impl.h"
 #include "blimp/client/public/contents/blimp_contents.h"
@@ -24,11 +25,13 @@ namespace client {
 class BlimpContentsImplAndroid;
 #endif  // defined(OS_ANDROID)
 
+class BlimpCompositorDependencies;
 class BlimpContentsObserver;
 class BlimpContentsView;
 class BlimpNavigationController;
 class ImeFeature;
 class NavigationFeature;
+class RenderWidgetFeature;
 class TabControlFeature;
 
 class BlimpContentsImpl : public BlimpContents,
@@ -36,8 +39,10 @@ class BlimpContentsImpl : public BlimpContents,
  public:
   // Ownership of the features remains with the caller.
   explicit BlimpContentsImpl(int id,
+                             BlimpCompositorDependencies* compositor_deps,
                              ImeFeature* ime_feature,
                              NavigationFeature* navigation_feature,
+                             RenderWidgetFeature* render_widget_feature,
                              TabControlFeature* tab_control_feature);
   ~BlimpContentsImpl() override;
 
@@ -51,6 +56,8 @@ class BlimpContentsImpl : public BlimpContents,
   void AddObserver(BlimpContentsObserver* observer) override;
   void RemoveObserver(BlimpContentsObserver* observer) override;
   gfx::NativeView GetNativeView() override;
+  void Show() override;
+  void Hide() override;
 
   // Check if some observer is in the observer list.
   bool HasObserver(BlimpContentsObserver* observer);
@@ -67,6 +74,11 @@ class BlimpContentsImpl : public BlimpContents,
  private:
   // Handles the back/forward list and loading URLs.
   BlimpNavigationControllerImpl navigation_controller_;
+
+  // Holds onto all active BlimpCompositor instances for this BlimpContents.
+  // This properly exposes the right rendered page content for the correct
+  // BlimpCompositor based on the engine state.
+  BlimpCompositorManager compositor_manager_;
 
   // A list of all the observers of this BlimpContentsImpl.
   base::ObserverList<BlimpContentsObserver> observers_;

@@ -25,6 +25,8 @@ class SupportsUserData;
 namespace blimp {
 namespace client {
 
+class CompositorDependencies;
+
 // BlimpClientContext is the core class for the Blimp client. It provides hooks
 // for creating BlimpContents and other features that are per
 // BrowserContext/Profile.
@@ -44,9 +46,12 @@ class BlimpClientContext : public KeyedService {
   // operations.
   // The |file_thread_task_runner| must be the task runner to use for file
   // operations.
+  // |compositor_dependencies| is a support object that provides all embedder
+  // dependencies required by internal compositors.
   static BlimpClientContext* Create(
       scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner,
+      std::unique_ptr<CompositorDependencies> compositor_dependencies);
 
   // The delegate provides all the required functionality from the embedder.
   virtual void SetDelegate(BlimpClientContextDelegate* delegate) = 0;

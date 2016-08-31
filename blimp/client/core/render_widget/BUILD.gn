@@ -1,0 +1,59 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("render_widget") {
+  visibility = [ "//blimp/client/*" ]
+
+  sources = [
+    "render_widget_feature.cc",
+    "render_widget_feature.h",
+  ]
+
+  deps = [
+    "//blimp/common",
+    "//cc/proto",
+    "//net",
+  ]
+
+  public_deps = [
+    "//base",
+    "//blimp/net",
+  ]
+}
+
+source_set("test_support") {
+  testonly = true
+
+  sources = [
+    "mock_render_widget_feature_delegate.cc",
+    "mock_render_widget_feature_delegate.h",
+  ]
+
+  public_deps = [
+    ":render_widget",
+    "//testing/gmock",
+  ]
+}
+
+source_set("unit_tests") {
+  visibility = [ "//blimp/client/core:unit_tests" ]
+
+  testonly = true
+
+  sources = [
+    "render_widget_feature_unittest.cc",
+  ]
+
+  deps = [
+    ":render_widget",
+    ":test_support",
+    "//base",
+    "//blimp/common",
+    "//blimp/net:test_support",
+    "//cc/proto",
+    "//net",
+    "//net:test_support",
+    "//testing/gtest",
+  ]
+}

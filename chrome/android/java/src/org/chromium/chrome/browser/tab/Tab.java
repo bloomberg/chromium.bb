@@ -1352,6 +1352,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             assert !isFrozen();
 
             if (mContentViewCore != null) mContentViewCore.onShow();
+            if (mBlimpContents != null) mBlimpContents.show();
 
             if (mTabUma != null) {
                 mTabUma.onShow(type, getTimestampMillis(),
@@ -1391,6 +1392,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             mIsHidden = true;
 
             if (mContentViewCore != null) mContentViewCore.onHide();
+            if (mBlimpContents != null) mBlimpContents.hide();
 
             // Clean up any fullscreen state that might impact other tabs.
             if (mFullscreenManager != null) {

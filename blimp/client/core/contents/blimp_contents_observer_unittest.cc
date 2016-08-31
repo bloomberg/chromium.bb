@@ -5,7 +5,10 @@
 #include "blimp/client/public/contents/blimp_contents_observer.h"
 
 #include "base/memory/ptr_util.h"
+#include "blimp/client/core/compositor/blimp_compositor_dependencies.h"
 #include "blimp/client/core/contents/blimp_contents_impl.h"
+#include "blimp/client/core/render_widget/render_widget_feature.h"
+#include "blimp/client/support/compositor/mock_compositor_dependencies.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -30,7 +33,11 @@ class BlimpContentsObserverTest : public BlimpContentsObserver {
 };
 
 TEST(BlimpContentsObserverUnittests, ObserverDies) {
-  BlimpContentsImpl contents(kDummyTabId, nullptr, nullptr, nullptr);
+  RenderWidgetFeature render_widget_feature;
+  BlimpCompositorDependencies compositor_deps(
+      base::MakeUnique<MockCompositorDependencies>());
+  BlimpContentsImpl contents(kDummyTabId, &compositor_deps, nullptr, nullptr,
+                             &render_widget_feature, nullptr);
 
   std::unique_ptr<BlimpContentsObserver> observer =
       base::MakeUnique<BlimpContentsObserverTest>(&contents);
@@ -43,10 +50,13 @@ TEST(BlimpContentsObserverUnittests, ObserverDies) {
 
 TEST(BlimpContentsObserverUnittests, ContentsDies) {
   std::unique_ptr<BlimpContentsObserverTest> observer;
-
+  RenderWidgetFeature render_widget_feature;
+  BlimpCompositorDependencies compositor_deps(
+      base::MakeUnique<MockCompositorDependencies>());
   std::unique_ptr<BlimpContentsImpl> contents =
-      base::MakeUnique<BlimpContentsImpl>(kDummyTabId, nullptr, nullptr,
-                                          nullptr);
+      base::MakeUnique<BlimpContentsImpl>(kDummyTabId, &compositor_deps,
+                                          nullptr, nullptr,
+                                          &render_widget_feature, nullptr);
   observer.reset(new BlimpContentsObserverTest(contents.get()));
   EXPECT_CALL(*observer, OnContentsDestroyed()).Times(1);
   EXPECT_EQ(observer->blimp_contents(), contents.get());

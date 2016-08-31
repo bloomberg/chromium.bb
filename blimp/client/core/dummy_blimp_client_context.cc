@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
+#include "blimp/client/public/compositor/compositor_dependencies.h"
 
 #if defined(OS_ANDROID)
 #include "blimp/client/core/android/dummy_blimp_client_context_android.h"
@@ -22,7 +23,8 @@ namespace client {
 // static
 BlimpClientContext* BlimpClientContext::Create(
     scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner,
+    std::unique_ptr<CompositorDependencies> compositor_dependencies) {
 #if defined(OS_ANDROID)
   return new DummyBlimpClientContextAndroid();
 #else

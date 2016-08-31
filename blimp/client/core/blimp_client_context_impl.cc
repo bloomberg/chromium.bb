@@ -5,16 +5,22 @@
 #include "blimp/client/core/blimp_client_context_impl.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "blimp/client/core/blimp_client_switches.h"
+#include "blimp/client/core/compositor/blimp_compositor_dependencies.h"
 #include "blimp/client/core/contents/blimp_contents_impl.h"
 #include "blimp/client/core/contents/blimp_contents_manager.h"
 #include "blimp/client/core/contents/ime_feature.h"
 #include "blimp/client/core/contents/navigation_feature.h"
 #include "blimp/client/core/contents/tab_control_feature.h"
+#include "blimp/client/core/render_widget/render_widget_feature.h"
 #include "blimp/client/core/session/cross_thread_network_event_observer.h"
+#include "blimp/client/core/settings/settings_feature.h"
 #include "blimp/client/public/blimp_client_context_delegate.h"
+#include "blimp/client/public/compositor/compositor_dependencies.h"
 
 #if defined(OS_ANDROID)
 #include "blimp/client/core/android/blimp_client_context_impl_android.h"
@@ -35,28 +41,39 @@ const char kDefaultAssignerUrl[] =
 // static
 BlimpClientContext* BlimpClientContext::Create(
     scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner,
+    std::unique_ptr<CompositorDependencies> compositor_dependencies) {
 #if defined(OS_ANDROID)
   return new BlimpClientContextImplAndroid(io_thread_task_runner,
-                                           file_thread_task_runner);
+                                           file_thread_task_runner,
+                                           std::move(compositor_dependencies));
 #else
   return new BlimpClientContextImpl(io_thread_task_runner,
-                                    file_thread_task_runner);
+                                    file_thread_task_runner,
+                                    std::move(compositor_dependencies));
 #endif  // defined(OS_ANDROID)
 }
 
 BlimpClientContextImpl::BlimpClientContextImpl(
     scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner,
+    std::unique_ptr<CompositorDependencies> compositor_dependencies)
     : BlimpClientContext(),
       io_thread_task_runner_(io_thread_task_runner),
       file_thread_task_runner_(file_thread_task_runner),
+      blimp_compositor_dependencies_(
+          base::MakeUnique<BlimpCompositorDependencies>(
+              std::move(compositor_dependencies))),
       ime_feature_(new ImeFeature),
       navigation_feature_(new NavigationFeature),
+      render_widget_feature_(new RenderWidgetFeature),
+      settings_feature_(new SettingsFeature),
       tab_control_feature_(new TabControlFeature),
       blimp_contents_manager_(
-          new BlimpContentsManager(ime_feature_.get(),
+          new BlimpContentsManager(blimp_compositor_dependencies_.get(),
+                                   ime_feature_.get(),
                                    navigation_feature_.get(),
+                                   render_widget_feature_.get(),
                                    tab_control_feature_.get())),
       weak_factory_(this) {
   net_components_.reset(new ClientNetworkComponents(
@@ -69,6 +86,7 @@ BlimpClientContextImpl::BlimpClientContextImpl(
       io_thread_task_runner_, net_components_->GetBrowserConnectionHandler());
 
   RegisterFeatures();
+  InitializeSettings();
 
   // Initialize must only be posted after the calls features have been
   // registered.
@@ -160,9 +178,26 @@ void BlimpClientContextImpl::RegisterFeatures() {
   navigation_feature_->set_outgoing_message_processor(
       thread_pipe_manager_->RegisterFeature(BlimpMessage::kNavigation,
                                             navigation_feature_.get()));
+  render_widget_feature_->set_outgoing_input_message_processor(
+      thread_pipe_manager_->RegisterFeature(BlimpMessage::kInput,
+                                            render_widget_feature_.get()));
+  render_widget_feature_->set_outgoing_compositor_message_processor(
+      thread_pipe_manager_->RegisterFeature(BlimpMessage::kCompositor,
+                                            render_widget_feature_.get()));
+  thread_pipe_manager_->RegisterFeature(BlimpMessage::kRenderWidget,
+                                        render_widget_feature_.get());
+  settings_feature_->set_outgoing_message_processor(
+      thread_pipe_manager_->RegisterFeature(BlimpMessage::kSettings,
+                                            settings_feature_.get()));
   tab_control_feature_->set_outgoing_message_processor(
       thread_pipe_manager_->RegisterFeature(BlimpMessage::kTabControl,
                                             tab_control_feature_.get()));
+}
+
+void BlimpClientContextImpl::InitializeSettings() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDownloadWholeDocument))
+    settings_feature_->SetRecordWholeDocument(true);
 }
 
 void BlimpClientContextImpl::CreateIdentitySource() {

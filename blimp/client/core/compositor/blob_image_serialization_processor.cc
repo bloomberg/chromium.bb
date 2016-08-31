@@ -19,6 +19,7 @@
 #include "blimp/common/blob_cache/id_util.h"
 #include "blimp/common/proto/blob_cache.pb.h"
 #include "blimp/net/blob_channel/blob_channel_receiver.h"
+#include "third_party/skia/include/core/SkPicture.h"
 
 namespace blimp {
 namespace client {

@@ -6,9 +6,12 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "blimp/client/core/compositor/blimp_compositor_dependencies.h"
 #include "blimp/client/core/contents/fake_navigation_feature.h"
 #include "blimp/client/core/contents/tab_control_feature.h"
+#include "blimp/client/core/render_widget/render_widget_feature.h"
 #include "blimp/client/public/contents/blimp_contents_observer.h"
+#include "blimp/client/support/compositor/mock_compositor_dependencies.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -44,8 +47,13 @@ class MockTabControlFeature : public TabControlFeature {
 
 TEST(BlimpContentsImplTest, LoadURLAndNotifyObservers) {
   base::MessageLoop loop;
-  FakeNavigationFeature feature;
-  BlimpContentsImpl blimp_contents(kDummyTabId, nullptr, &feature, nullptr);
+  FakeNavigationFeature navigation_feature;
+  RenderWidgetFeature render_widget_feature;
+  BlimpCompositorDependencies compositor_deps(
+      base::MakeUnique<MockCompositorDependencies>());
+  BlimpContentsImpl blimp_contents(kDummyTabId, &compositor_deps, nullptr,
+                                   &navigation_feature, &render_widget_feature,
+                                   nullptr);
 
   BlimpNavigationControllerImpl& navigation_controller =
       blimp_contents.GetNavigationController();
@@ -75,9 +83,13 @@ TEST(BlimpContentsImplTest, SetSizeAndScaleThroughTabControlFeature) {
   int height = 15;
   float dp_to_px = 1.23f;
 
+  RenderWidgetFeature render_widget_feature;
   MockTabControlFeature tab_control_feature;
   base::MessageLoop loop;
-  BlimpContentsImpl blimp_contents(kDummyTabId, nullptr, nullptr,
+  BlimpCompositorDependencies compositor_deps(
+      base::MakeUnique<MockCompositorDependencies>());
+  BlimpContentsImpl blimp_contents(kDummyTabId, &compositor_deps, nullptr,
+                                   nullptr, &render_widget_feature,
                                    &tab_control_feature);
 
   EXPECT_CALL(tab_control_feature,

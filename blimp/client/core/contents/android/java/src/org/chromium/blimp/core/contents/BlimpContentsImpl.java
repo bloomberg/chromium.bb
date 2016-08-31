@@ -79,5 +79,19 @@ public class BlimpContentsImpl implements BlimpContents {
         nativeDestroy(mNativeBlimpContentsImplAndroid);
     }
 
+    @Override
+    public void show() {
+        if (mNativeBlimpContentsImplAndroid == 0) return;
+        nativeShow(mNativeBlimpContentsImplAndroid);
+    }
+
+    @Override
+    public void hide() {
+        if (mNativeBlimpContentsImplAndroid == 0) return;
+        nativeHide(mNativeBlimpContentsImplAndroid);
+    }
+
     private native void nativeDestroy(long nativeBlimpContentsImplAndroid);
+    private native void nativeShow(long nativeBlimpContentsImplAndroid);
+    private native void nativeHide(long nativeBlimpContentsImplAndroid);
 }

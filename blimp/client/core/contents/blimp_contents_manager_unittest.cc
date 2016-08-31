@@ -6,8 +6,11 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "blimp/client/core/compositor/blimp_compositor_dependencies.h"
 #include "blimp/client/core/contents/blimp_contents_impl.h"
 #include "blimp/client/core/contents/tab_control_feature.h"
+#include "blimp/client/core/render_widget/render_widget_feature.h"
+#include "blimp/client/support/compositor/mock_compositor_dependencies.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -35,9 +38,13 @@ class MockTabControlFeature : public TabControlFeature {
 
 TEST(BlimpContentsManagerUnittest, GetExistingBlimpContents) {
   base::MessageLoop loop;
+  RenderWidgetFeature render_widget_feature;
   MockTabControlFeature tab_control_feature;
 
-  BlimpContentsManager blimp_contents_manager(nullptr, nullptr,
+  BlimpCompositorDependencies compositor_deps(
+      base::MakeUnique<MockCompositorDependencies>());
+  BlimpContentsManager blimp_contents_manager(&compositor_deps, nullptr,
+                                              nullptr, &render_widget_feature,
                                               &tab_control_feature);
 
   EXPECT_CALL(tab_control_feature, CreateTab(_)).Times(1);
@@ -50,9 +57,13 @@ TEST(BlimpContentsManagerUnittest, GetExistingBlimpContents) {
 }
 
 TEST(BlimpContentsManagerUnittest, GetNonExistingBlimpContents) {
+  RenderWidgetFeature render_widget_feature;
   MockTabControlFeature tab_control_feature;
 
-  BlimpContentsManager blimp_contents_manager(nullptr, nullptr,
+  BlimpCompositorDependencies compositor_deps(
+      base::MakeUnique<MockCompositorDependencies>());
+  BlimpContentsManager blimp_contents_manager(&compositor_deps, nullptr,
+                                              nullptr, &render_widget_feature,
                                               &tab_control_feature);
 
   BlimpContentsImpl* existing_contents =
@@ -62,8 +73,12 @@ TEST(BlimpContentsManagerUnittest, GetNonExistingBlimpContents) {
 
 TEST(BlimpContentsManagerUnittest, GetDestroyedBlimpContents) {
   base::MessageLoop loop;
+  RenderWidgetFeature render_widget_feature;
   MockTabControlFeature tab_control_feature;
-  BlimpContentsManager blimp_contents_manager(nullptr, nullptr,
+  BlimpCompositorDependencies compositor_deps(
+      base::MakeUnique<MockCompositorDependencies>());
+  BlimpContentsManager blimp_contents_manager(&compositor_deps, nullptr,
+                                              nullptr, &render_widget_feature,
                                               &tab_control_feature);
   int id;
 
@@ -85,8 +100,12 @@ TEST(BlimpContentsManagerUnittest, GetDestroyedBlimpContents) {
 // TODO(mlliu): remove this test case (http://crbug.com/642558)
 TEST(BlimpContentsManagerUnittest, CreateTwoBlimpContentsDestroyAndCreate) {
   base::MessageLoop loop;
+  RenderWidgetFeature render_widget_feature;
   MockTabControlFeature tab_control_feature;
-  BlimpContentsManager blimp_contents_manager(nullptr, nullptr,
+  BlimpCompositorDependencies compositor_deps(
+      base::MakeUnique<MockCompositorDependencies>());
+  BlimpContentsManager blimp_contents_manager(&compositor_deps, nullptr,
+                                              nullptr, &render_widget_feature,
                                               &tab_control_feature);
 
   EXPECT_CALL(tab_control_feature, CreateTab(_)).Times(2);

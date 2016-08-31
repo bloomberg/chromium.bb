@@ -8,8 +8,6 @@ if (is_android) {
 }
 
 source_set("compositor") {
-  visibility = [ "//blimp/client/support" ]
-
   sources = [
     "blimp_context_provider.cc",
     "blimp_context_provider.h",
@@ -37,5 +35,22 @@ source_set("compositor") {
     "//gpu/skia_bindings",
     "//skia",
     "//ui/gfx:memory_buffer",
+  ]
+}
+
+source_set("test_support") {
+  testonly = true
+
+  sources = [
+    "mock_compositor_dependencies.cc",
+    "mock_compositor_dependencies.h",
+  ]
+
+  deps = [
+    "//cc:test_support",
+  ]
+
+  public_deps = [
+    ":compositor",
   ]
 }

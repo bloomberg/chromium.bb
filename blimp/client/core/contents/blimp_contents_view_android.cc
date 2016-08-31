@@ -13,19 +13,19 @@ namespace client {
 
 // static
 std::unique_ptr<BlimpContentsView> BlimpContentsView::Create(
-    BlimpContentsImpl* blimp_contents) {
+    BlimpContentsImpl* blimp_contents,
+    scoped_refptr<cc::Layer> contents_layer) {
   return base::MakeUnique<BlimpContentsViewAndroid>(
-      blimp_contents->GetBlimpContentsImplAndroid());
+      blimp_contents->GetBlimpContentsImplAndroid(), contents_layer);
 }
 
 BlimpContentsViewAndroid::BlimpContentsViewAndroid(
-    BlimpContentsImplAndroid* blimp_contents) {
+    BlimpContentsImplAndroid* blimp_contents,
+    scoped_refptr<cc::Layer> contents_layer) {
   // TODO(khushalsagar): Get the ViewAndroidDelegate from java after it has a
   // BlimpView. Also get the WindowAndroid so this view can add itself as a
   // child to it.
-  // TODO(dtrainor): Use the layer from the compositor manager here instead when
-  // it goes in the BlimpContents.
-  view_.SetLayer(cc::Layer::Create());
+  view_.SetLayer(contents_layer);
 }
 
 gfx::NativeView BlimpContentsViewAndroid::GetNativeView() {

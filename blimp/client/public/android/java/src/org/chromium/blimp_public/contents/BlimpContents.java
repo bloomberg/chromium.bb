@@ -13,7 +13,7 @@ package org.chromium.blimp_public.contents;
  */
 public interface BlimpContents {
     /**
-     * Retrives the {@link BlimpNavigationController} that controls all navigation related
+     * Retrieves the {@link BlimpNavigationController} that controls all navigation related
      * to this BlimpContents.
      */
     BlimpNavigationController getNavigationController();
@@ -33,4 +33,14 @@ public interface BlimpContents {
      * garbage collected.
      */
     void destroy();
+
+    /**
+     * Shows this BlimpContents.
+     */
+    void show();
+
+    /**
+     * Hide this BlimpContents.
+     */
+    void hide();
 }

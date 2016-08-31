@@ -6,9 +6,9 @@
 
 #include "blimp/client/app/compositor/browser_compositor.h"
 #include "blimp/client/core/compositor/blimp_compositor_dependencies.h"
+#include "blimp/client/core/compositor/blimp_compositor_manager.h"
 #include "blimp/client/core/contents/tab_control_feature.h"
-#include "blimp/client/feature/compositor/blimp_compositor_manager.h"
-#include "blimp/client/feature/render_widget_feature.h"
+#include "blimp/client/core/render_widget/render_widget_feature.h"
 #include "blimp/client/support/compositor/compositor_dependencies_impl.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/size.h"

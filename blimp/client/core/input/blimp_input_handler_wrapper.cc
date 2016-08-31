@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/client/feature/compositor/blimp_input_handler_wrapper.h"
+#include "blimp/client/core/input/blimp_input_handler_wrapper.h"
 
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "blimp/client/feature/compositor/blimp_input_manager.h"
+#include "blimp/client/core/input/blimp_input_manager.h"
 #include "ui/events/gestures/blink/web_gesture_curve_impl.h"
 
 namespace blimp {
@@ -21,8 +21,7 @@ BlimpInputHandlerWrapper::BlimpInputHandlerWrapper(
       input_manager_weak_ptr_(input_manager_weak_ptr) {
   DCHECK(compositor_thread_checker_.CalledOnValidThread());
   DCHECK(input_handler);
-  input_handler_proxy_.reset(
-      new ui::InputHandlerProxy(input_handler, this));
+  input_handler_proxy_.reset(new ui::InputHandlerProxy(input_handler, this));
 }
 
 BlimpInputHandlerWrapper::~BlimpInputHandlerWrapper() {
@@ -72,21 +71,21 @@ void BlimpInputHandlerWrapper::TransferActiveWheelFlingAnimation(
     const blink::WebActiveWheelFlingParameters& params) {
   DCHECK(compositor_thread_checker_.CalledOnValidThread());
 
-  NOTIMPLEMENTED() <<
-      "Transferring Fling Animations to the engine is not supported";
+  NOTIMPLEMENTED()
+      << "Transferring Fling Animations to the engine is not supported";
 }
 
 blink::WebGestureCurve* BlimpInputHandlerWrapper::CreateFlingAnimationCurve(
-      blink::WebGestureDevice device_source,
-      const blink::WebFloatPoint& velocity,
-      const blink::WebSize& cumulative_scroll) {
+    blink::WebGestureDevice device_source,
+    const blink::WebFloatPoint& velocity,
+    const blink::WebSize& cumulative_scroll) {
   DCHECK(compositor_thread_checker_.CalledOnValidThread());
 
   return ui::WebGestureCurveImpl::CreateFromDefaultPlatformCurve(
-               gfx::Vector2dF(velocity.x, velocity.y),
-               gfx::Vector2dF(cumulative_scroll.width,
-                              cumulative_scroll.height),
-               false /* on_main_thread */).release();
+             gfx::Vector2dF(velocity.x, velocity.y),
+             gfx::Vector2dF(cumulative_scroll.width, cumulative_scroll.height),
+             false /* on_main_thread */)
+      .release();
 }
 
 void BlimpInputHandlerWrapper::DidOverscroll(

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/client/feature/compositor/blimp_compositor_manager.h"
+#include "blimp/client/core/compositor/blimp_compositor_manager.h"
 
 #include "base/memory/ptr_util.h"
 #include "blimp/client/core/compositor/blimp_compositor_dependencies.h"
@@ -106,17 +106,15 @@ void BlimpCompositorManager::OnCompositorMessageReceived(
 void BlimpCompositorManager::SendWebGestureEvent(
     int render_widget_id,
     const blink::WebGestureEvent& gesture_event) {
-  render_widget_feature_->SendWebGestureEvent(kDummyTabId,
-                                             render_widget_id,
-                                             gesture_event);
+  render_widget_feature_->SendWebGestureEvent(kDummyTabId, render_widget_id,
+                                              gesture_event);
 }
 
 void BlimpCompositorManager::SendCompositorMessage(
     int render_widget_id,
     const cc::proto::CompositorMessage& message) {
-  render_widget_feature_->SendCompositorMessage(kDummyTabId,
-                                               render_widget_id,
-                                               message);
+  render_widget_feature_->SendCompositorMessage(kDummyTabId, render_widget_id,
+                                                message);
 }
 
 BlimpCompositor* BlimpCompositorManager::GetCompositor(int render_widget_id) {

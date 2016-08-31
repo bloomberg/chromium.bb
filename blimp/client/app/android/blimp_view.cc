@@ -10,7 +10,7 @@
 #include "blimp/client/app/android/blimp_client_session_android.h"
 #include "blimp/client/app/compositor/browser_compositor.h"
 #include "blimp/client/core/compositor/blimp_compositor_dependencies.h"
-#include "blimp/client/feature/compositor/blimp_compositor_manager.h"
+#include "blimp/client/core/compositor/blimp_compositor_manager.h"
 #include "blimp/client/support/compositor/compositor_dependencies_impl.h"
 #include "jni/BlimpView_jni.h"
 #include "ui/events/android/motion_event_android.h"

@@ -23,11 +23,13 @@ source_set("contents") {
     "ime_feature.h",
     "navigation_feature.cc",
     "navigation_feature.h",
+    "tab_control_feature.cc",
+    "tab_control_feature.h",
   ]
 
   public_deps = [
     "//base",
-    "//blimp/client:feature",
+    "//blimp/client/core/compositor",
     "//blimp/client/public:public_headers",
     "//blimp/net",
     "//net:net",
@@ -37,6 +39,7 @@ source_set("contents") {
   ]
 
   deps = [
+    "//blimp/client/core/render_widget",
     "//blimp/common",
     "//components/url_formatter",
     "//skia",
@@ -88,7 +91,7 @@ source_set("test_support") {
   ]
 
   public_deps = [
-    "//blimp/client/core/contents",
+    ":contents",
     "//testing/gmock",
   ]
 }
@@ -104,16 +107,18 @@ source_set("unit_tests") {
     "blimp_contents_observer_unittest.cc",
     "blimp_navigation_controller_impl_unittest.cc",
     "navigation_feature_unittest.cc",
+    "tab_control_feature_unittest.cc",
   ]
 
   deps = [
     ":contents",
     ":test_support",
     "//base",
-    "//blimp/client:feature",
     "//blimp/client/public:public_headers",
+    "//blimp/client/support:test_support",
     "//blimp/common",
     "//blimp/net:test_support",
+    "//net",
     "//net:test_support",
     "//testing/gtest",
     "//ui/gfx:test_support",

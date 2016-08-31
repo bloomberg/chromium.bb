@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BLIMP_CLIENT_FEATURE_MOCK_RENDER_WIDGET_FEATURE_DELEGATE_H_
-#define BLIMP_CLIENT_FEATURE_MOCK_RENDER_WIDGET_FEATURE_DELEGATE_H_
+#ifndef BLIMP_CLIENT_CORE_RENDER_WIDGET_MOCK_RENDER_WIDGET_FEATURE_DELEGATE_H_
+#define BLIMP_CLIENT_CORE_RENDER_WIDGET_MOCK_RENDER_WIDGET_FEATURE_DELEGATE_H_
 
 #include <string>
 
-#include "blimp/client/feature/render_widget_feature.h"
+#include "blimp/client/core/render_widget/render_widget_feature.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace blimp {
@@ -34,4 +34,4 @@ class MockRenderWidgetFeatureDelegate
 }  // namespace client
 }  // namespace blimp
 
-#endif  // BLIMP_CLIENT_FEATURE_MOCK_RENDER_WIDGET_FEATURE_DELEGATE_H_
+#endif  // BLIMP_CLIENT_CORE_RENDER_WIDGET_MOCK_RENDER_WIDGET_FEATURE_DELEGATE_H_

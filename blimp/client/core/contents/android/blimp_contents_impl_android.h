@@ -26,6 +26,8 @@ class BlimpContentsImplAndroid : public base::SupportsUserData::Data {
   BlimpContentsImpl* blimp_contents_impl() { return blimp_contents_impl_; }
 
   void Destroy(JNIEnv* env, jobject jobj);
+  void Show(JNIEnv* env, jobject jobj);
+  void Hide(JNIEnv* env, jobject jobj);
 
  private:
   BlimpContentsImpl* blimp_contents_impl_;

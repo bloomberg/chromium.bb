@@ -8,7 +8,12 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "ui/gfx/native_widget_types.h"
+
+namespace cc {
+class Layer;
+}  // namespace cc
 
 namespace blimp {
 namespace client {
@@ -17,7 +22,8 @@ class BlimpContentsImpl;
 class BlimpContentsView {
  public:
   static std::unique_ptr<BlimpContentsView> Create(
-      BlimpContentsImpl* blimp_contents);
+      BlimpContentsImpl* blimp_contents,
+      scoped_refptr<cc::Layer> contents_layer);
 
   virtual ~BlimpContentsView() {}
 

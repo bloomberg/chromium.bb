@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BLIMP_CLIENT_FEATURE_COMPOSITOR_BLIMP_COMPOSITOR_MANAGER_H_
-#define BLIMP_CLIENT_FEATURE_COMPOSITOR_BLIMP_COMPOSITOR_MANAGER_H_
+#ifndef BLIMP_CLIENT_CORE_COMPOSITOR_BLIMP_COMPOSITOR_MANAGER_H_
+#define BLIMP_CLIENT_CORE_COMPOSITOR_BLIMP_COMPOSITOR_MANAGER_H_
 
 #include <map>
 
 #include "base/macros.h"
+#include "blimp/client/core/compositor/blimp_compositor.h"
 #include "blimp/client/core/compositor/blob_image_serialization_processor.h"
-#include "blimp/client/feature/compositor/blimp_compositor.h"
-#include "blimp/client/feature/render_widget_feature.h"
+#include "blimp/client/core/render_widget/render_widget_feature.h"
 #include "cc/layers/layer.h"
 #include "cc/trees/layer_tree_settings.h"
 
@@ -94,4 +94,4 @@ class BlimpCompositorManager
 }  // namespace client
 }  // namespace blimp
 
-#endif  // BLIMP_CLIENT_FEATURE_COMPOSITOR_BLIMP_COMPOSITOR_MANAGER_H_
+#endif  // BLIMP_CLIENT_CORE_COMPOSITOR_BLIMP_COMPOSITOR_MANAGER_H_

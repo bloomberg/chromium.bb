@@ -2,21 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BLIMP_CLIENT_FEATURE_COMPOSITOR_BLIMP_INPUT_MANAGER_H_
-#define BLIMP_CLIENT_FEATURE_COMPOSITOR_BLIMP_INPUT_MANAGER_H_
+#ifndef BLIMP_CLIENT_CORE_INPUT_BLIMP_INPUT_MANAGER_H_
+#define BLIMP_CLIENT_CORE_INPUT_BLIMP_INPUT_MANAGER_H_
 
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
-#include "blimp/client/feature/compositor/blimp_input_handler_wrapper.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/events/gesture_detection/filtered_gesture_provider.h"
 #include "ui/events/gesture_detection/motion_event.h"
 
+namespace cc {
+class InputHandler;
+}  // namespace cc
+
 namespace blimp {
 namespace client {
+class BlimpInputHandlerWrapper;
 
 class BlimpInputManagerClient {
  public:
@@ -106,4 +111,4 @@ class BlimpInputManager : public ui::GestureProviderClient {
 }  // namespace client
 }  // namespace blimp
 
-#endif  // BLIMP_CLIENT_FEATURE_COMPOSITOR_BLIMP_INPUT_MANAGER_H_
+#endif  // BLIMP_CLIENT_CORE_INPUT_BLIMP_INPUT_MANAGER_H_

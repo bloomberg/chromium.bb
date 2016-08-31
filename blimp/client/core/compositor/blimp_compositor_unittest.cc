@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/client/feature/compositor/blimp_compositor.h"
+#include "blimp/client/core/compositor/blimp_compositor.h"
 
 #include "base/threading/thread_task_runner_handle.h"
 #include "blimp/client/core/compositor/blimp_compositor_dependencies.h"
 #include "blimp/client/core/compositor/blob_image_serialization_processor.h"
-#include "blimp/client/feature/compositor/mock_compositor_dependencies.h"
+#include "blimp/client/support/compositor/mock_compositor_dependencies.h"
 #include "cc/layers/layer.h"
 #include "cc/proto/compositor_message.pb.h"
 #include "cc/surfaces/surface_manager.h"
@@ -83,8 +83,7 @@ class BlimpCompositorTest : public testing::Test {
   void SendInitializeMessage() {
     std::unique_ptr<cc::proto::CompositorMessage> message;
     message.reset(new cc::proto::CompositorMessage);
-    cc::proto::CompositorMessageToImpl* to_impl =
-        message->mutable_to_impl();
+    cc::proto::CompositorMessageToImpl* to_impl = message->mutable_to_impl();
     to_impl->set_message_type(
         cc::proto::CompositorMessageToImpl::INITIALIZE_IMPL);
     cc::proto::InitializeImpl* initialize_message =
@@ -97,8 +96,7 @@ class BlimpCompositorTest : public testing::Test {
   void SendShutdownMessage() {
     std::unique_ptr<cc::proto::CompositorMessage> message;
     message.reset(new cc::proto::CompositorMessage);
-    cc::proto::CompositorMessageToImpl* to_impl =
-        message->mutable_to_impl();
+    cc::proto::CompositorMessageToImpl* to_impl = message->mutable_to_impl();
     to_impl->set_message_type(cc::proto::CompositorMessageToImpl::CLOSE_IMPL);
     compositor_->OnCompositorMessageReceived(std::move(message));
   }
@@ -143,9 +141,11 @@ TEST_F(BlimpCompositorTest, DestroyAndRecreateHost) {
 
 TEST_F(BlimpCompositorTest, MessagesHaveCorrectId) {
   EXPECT_CALL(compositor_client_,
-              MockableSendCompositorMessage(render_widget_id_)).Times(1);
+              MockableSendCompositorMessage(render_widget_id_))
+      .Times(1);
   EXPECT_CALL(compositor_client_,
-              MockableSendWebGestureEvent(render_widget_id_)).Times(1);
+              MockableSendWebGestureEvent(render_widget_id_))
+      .Times(1);
 
   compositor_->SendProto(cc::proto::CompositorMessage());
   compositor_->SendGestureEvent(blink::WebGestureEvent());

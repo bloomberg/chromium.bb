@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/client/feature/mock_render_widget_feature_delegate.h"
+#include "blimp/client/core/render_widget/mock_render_widget_feature_delegate.h"
 
 namespace blimp {
 namespace client {

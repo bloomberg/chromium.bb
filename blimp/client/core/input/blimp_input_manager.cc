@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/client/feature/compositor/blimp_input_manager.h"
+#include "blimp/client/core/input/blimp_input_manager.h"
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "blimp/client/core/input/blimp_input_handler_wrapper.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 
@@ -30,7 +31,8 @@ BlimpInputManager::BlimpInputManager(
     const base::WeakPtr<cc::InputHandler>& input_handler)
     : client_(client),
       gesture_provider_(ui::GetGestureProviderConfig(
-                ui::GestureProviderConfigType::CURRENT_PLATFORM), this),
+                            ui::GestureProviderConfigType::CURRENT_PLATFORM),
+                        this),
       main_task_runner_(main_task_runner),
       compositor_task_runner_(compositor_task_runner),
       main_thread_blocked_(false),
@@ -40,8 +42,7 @@ BlimpInputManager::BlimpInputManager(
       FROM_HERE,
       base::Bind(
           &BlimpInputManager::CreateInputHandlerWrapperOnCompositorThread,
-          base::Unretained(this), weak_factory_.GetWeakPtr(),
-          input_handler));
+          base::Unretained(this), weak_factory_.GetWeakPtr(), input_handler));
 }
 
 BlimpInputManager::~BlimpInputManager() {
@@ -51,13 +52,11 @@ BlimpInputManager::~BlimpInputManager() {
       base::WaitableEvent::ResetPolicy::AUTOMATIC,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   {
-    base::AutoReset<bool> auto_reset_main_thread_blocked(
-        &main_thread_blocked_, true);
+    base::AutoReset<bool> auto_reset_main_thread_blocked(&main_thread_blocked_,
+                                                         true);
     compositor_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(
-            &BlimpInputManager::ShutdownOnCompositorThread,
-            base::Unretained(this), &shutdown_event));
+        FROM_HERE, base::Bind(&BlimpInputManager::ShutdownOnCompositorThread,
+                              base::Unretained(this), &shutdown_event));
     shutdown_event.Wait();
   }
 }
@@ -70,9 +69,8 @@ bool BlimpInputManager::OnTouchEvent(const ui::MotionEvent& motion_event) {
   if (!result.succeeded)
     return false;
 
-  blink::WebTouchEvent touch =
-      ui::CreateWebTouchEventFromMotionEvent(motion_event,
-                                             result.moved_beyond_slop_region);
+  blink::WebTouchEvent touch = ui::CreateWebTouchEventFromMotionEvent(
+      motion_event, result.moved_beyond_slop_region);
 
   // Touch events are queued in the Gesture Provider until acknowledged to
   // allow them to be consumed by the touch event handlers in blink which can

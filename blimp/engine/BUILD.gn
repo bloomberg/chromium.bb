@@ -678,12 +678,13 @@ source_set("browser_tests") {
 
   deps = [
     "//base",
-    "//blimp/client:feature",
     "//blimp/client:session",
     "//blimp/client:test_support",
     "//blimp/client/core:switches",
     "//blimp/client/core/contents:test_support",
+    "//blimp/client/core/render_widget:test_support",
     "//blimp/client/core/session",
+    "//blimp/client/support:test_support",
     "//blimp/common",
     "//blimp/engine:app",
     "//blimp/engine:app_config",

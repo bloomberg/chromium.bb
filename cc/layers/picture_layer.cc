@@ -6,6 +6,8 @@
 
 #include "base/auto_reset.h"
 #include "base/trace_event/trace_event.h"
+#include "cc/blimp/client_picture_cache.h"
+#include "cc/blimp/engine_picture_cache.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/picture_layer_impl.h"
 #include "cc/playback/recording_source.h"

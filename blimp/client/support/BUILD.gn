@@ -2,10 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("support") {
-  visibility = [ "//blimp/client/*" ]
-
+group("support") {
   public_deps = [
     "//blimp/client/support/compositor",
+  ]
+}
+
+group("test_support") {
+  testonly = true
+
+  public_deps = [
+    "//blimp/client/support/compositor:test_support",
   ]
 }

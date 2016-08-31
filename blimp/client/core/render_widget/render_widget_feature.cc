@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/client/feature/render_widget_feature.h"
+#include "blimp/client/core/render_widget/render_widget_feature.h"
 
 #include "base/numerics/safe_conversions.h"
 #include "blimp/common/create_blimp_message.h"
@@ -89,7 +89,7 @@ void RenderWidgetFeature::ProcessMessage(
   int target_tab_id = message->target_tab_id();
   RenderWidgetFeatureDelegate* delegate = FindDelegate(target_tab_id);
   DCHECK(delegate) << "RenderWidgetFeatureDelegate not found for "
-      << target_tab_id;
+                   << target_tab_id;
 
   switch (message->feature_case()) {
     case BlimpMessage::kRenderWidget:
@@ -135,8 +135,7 @@ void RenderWidgetFeature::ProcessCompositorMessage(
   std::unique_ptr<cc::proto::CompositorMessage> payload(
       new cc::proto::CompositorMessage);
   if (payload->ParseFromString(message.payload())) {
-    delegate->OnCompositorMessageReceived(render_widget_id,
-                                          std::move(payload));
+    delegate->OnCompositorMessageReceived(render_widget_id, std::move(payload));
   }
 }
 

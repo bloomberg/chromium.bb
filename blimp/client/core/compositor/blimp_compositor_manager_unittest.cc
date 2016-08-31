@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/client/feature/compositor/blimp_compositor_manager.h"
+#include "blimp/client/core/compositor/blimp_compositor_manager.h"
 
 #include "base/memory/ptr_util.h"
 #include "blimp/client/core/compositor/blimp_compositor_dependencies.h"
 #include "blimp/client/core/compositor/blob_image_serialization_processor.h"
-#include "blimp/client/feature/compositor/mock_compositor_dependencies.h"
+#include "blimp/client/support/compositor/mock_compositor_dependencies.h"
 #include "cc/proto/compositor_message.pb.h"
 #include "cc/surfaces/surface_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -25,12 +25,9 @@ namespace {
 class MockRenderWidgetFeature : public RenderWidgetFeature {
  public:
   MOCK_METHOD3(SendCompositorMessage,
-               void(const int,
-                    const int,
-                    const cc::proto::CompositorMessage&));
-  MOCK_METHOD3(SendInputEvent, void(const int,
-                                    const int,
-                                    const blink::WebInputEvent&));
+               void(const int, const int, const cc::proto::CompositorMessage&));
+  MOCK_METHOD3(SendInputEvent,
+               void(const int, const int, const blink::WebInputEvent&));
   MOCK_METHOD2(SetDelegate, void(int, RenderWidgetFeatureDelegate*));
   MOCK_METHOD1(RemoveDelegate, void(const int));
 };
@@ -97,10 +94,10 @@ class BlimpCompositorManagerTest : public testing::Test {
     delegate()->OnRenderWidgetCreated(1);
     delegate()->OnRenderWidgetCreated(2);
 
-    mock_compositor1_ = static_cast<MockBlimpCompositor*>
-      (compositor_manager_->GetCompositor(1));
-    mock_compositor2_ = static_cast<MockBlimpCompositor*>
-      (compositor_manager_->GetCompositor(2));
+    mock_compositor1_ = static_cast<MockBlimpCompositor*>(
+        compositor_manager_->GetCompositor(1));
+    mock_compositor2_ = static_cast<MockBlimpCompositor*>(
+        compositor_manager_->GetCompositor(2));
 
     EXPECT_NE(mock_compositor1_, nullptr);
     EXPECT_NE(mock_compositor2_, nullptr);
@@ -111,8 +108,8 @@ class BlimpCompositorManagerTest : public testing::Test {
 
   RenderWidgetFeature::RenderWidgetFeatureDelegate* delegate() const {
     DCHECK(compositor_manager_);
-    return static_cast<RenderWidgetFeature::RenderWidgetFeatureDelegate*>
-        (compositor_manager_.get());
+    return static_cast<RenderWidgetFeature::RenderWidgetFeatureDelegate*>(
+        compositor_manager_.get());
   }
 
   std::unique_ptr<BlimpCompositorDependencies> compositor_dependencies_;
@@ -128,12 +125,11 @@ TEST_F(BlimpCompositorManagerTest, ForwardsMessagesToCorrectCompositor) {
 
   // Ensure that the compositor messages for a render widget are forwarded to
   // the correct compositor.
-  EXPECT_CALL(*mock_compositor1_,
-              MockableOnCompositorMessageReceived(_)).Times(2);
-  EXPECT_CALL(*mock_compositor2_,
-              MockableOnCompositorMessageReceived(_)).Times(1);
-  EXPECT_CALL(*mock_compositor1_,
-                SetVisible(false)).Times(1);
+  EXPECT_CALL(*mock_compositor1_, MockableOnCompositorMessageReceived(_))
+      .Times(2);
+  EXPECT_CALL(*mock_compositor2_, MockableOnCompositorMessageReceived(_))
+      .Times(1);
+  EXPECT_CALL(*mock_compositor1_, SetVisible(false)).Times(1);
 
   delegate()->OnCompositorMessageReceived(
       1, base::WrapUnique(new cc::proto::CompositorMessage));

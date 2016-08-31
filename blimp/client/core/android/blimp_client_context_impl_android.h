@@ -12,6 +12,8 @@
 namespace blimp {
 namespace client {
 
+class CompositorDependencies;
+
 // JNI bridge between BlimpClientContextImpl in Java and C++.
 class BlimpClientContextImplAndroid : public BlimpClientContextImpl {
  public:
@@ -25,7 +27,8 @@ class BlimpClientContextImplAndroid : public BlimpClientContextImpl {
   // operations.
   explicit BlimpClientContextImplAndroid(
       scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner,
+      std::unique_ptr<CompositorDependencies> compositor_dependencies);
   ~BlimpClientContextImplAndroid() override;
 
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();

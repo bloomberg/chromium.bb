@@ -7,6 +7,7 @@
 #include "base/memory/singleton.h"
 #include "base/supports_user_data.h"
 #include "blimp/client/public/blimp_client_context.h"
+#include "blimp/client/public/compositor/compositor_dependencies.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -38,7 +39,8 @@ KeyedService* BlimpClientContextFactory::BuildServiceInstanceFor(
       content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::IO),
       content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::FILE));
+          content::BrowserThread::FILE),
+      nullptr);
 }
 
 content::BrowserContext* BlimpClientContextFactory::GetBrowserContextToUse(

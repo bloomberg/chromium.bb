@@ -7,7 +7,11 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "blimp/client/core/compositor/blimp_compositor_dependencies.h"
+#include "blimp/client/core/contents/blimp_contents_impl.h"
+#include "blimp/client/core/contents/navigation_feature.h"
 #include "blimp/client/core/contents/tab_control_feature.h"
+#include "blimp/client/core/render_widget/render_widget_feature.h"
 #include "blimp/client/public/contents/blimp_contents_observer.h"
 
 namespace {
@@ -45,11 +49,15 @@ void BlimpContentsManager::BlimpContentsDeletionObserver::
 }
 
 BlimpContentsManager::BlimpContentsManager(
+    BlimpCompositorDependencies* blimp_compositor_dependencies,
     ImeFeature* ime_feature,
     NavigationFeature* nav_feature,
+    RenderWidgetFeature* render_widget_feature,
     TabControlFeature* tab_control_feature)
-    : ime_feature_(ime_feature),
+    : blimp_compositor_dependencies_(blimp_compositor_dependencies),
+      ime_feature_(ime_feature),
       navigation_feature_(nav_feature),
+      render_widget_feature_(render_widget_feature),
       tab_control_feature_(tab_control_feature),
       weak_ptr_factory_(this) {}
 
@@ -62,8 +70,9 @@ std::unique_ptr<BlimpContentsImpl> BlimpContentsManager::CreateBlimpContents() {
   int id = CreateBlimpContentsId();
 
   std::unique_ptr<BlimpContentsImpl> new_contents =
-      base::MakeUnique<BlimpContentsImpl>(id, ime_feature_, navigation_feature_,
-                                          tab_control_feature_);
+      base::MakeUnique<BlimpContentsImpl>(
+          id, blimp_compositor_dependencies_, ime_feature_, navigation_feature_,
+          render_widget_feature_, tab_control_feature_);
 
   // Create an observer entry for the contents.
   std::unique_ptr<BlimpContentsDeletionObserver> observer =

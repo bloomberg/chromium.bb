@@ -22,8 +22,6 @@
 #include "base/time/time.h"
 #include "cc/animation/target_property.h"
 #include "cc/base/cc_export.h"
-#include "cc/blimp/client_picture_cache.h"
-#include "cc/blimp/engine_picture_cache.h"
 #include "cc/debug/micro_benchmark.h"
 #include "cc/debug/micro_benchmark_controller.h"
 #include "cc/input/event_listener_properties.h"
@@ -56,6 +54,8 @@ namespace cc {
 class AnimationEvents;
 class AnimationHost;
 class BeginFrameSource;
+class ClientPictureCache;
+class EnginePictureCache;
 class HeadsUpDisplayLayer;
 class ImageSerializationProcessor;
 class Layer;

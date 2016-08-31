@@ -29,6 +29,8 @@
 #include "cc/animation/animation_events.h"
 #include "cc/animation/animation_host.h"
 #include "cc/base/math_util.h"
+#include "cc/blimp/client_picture_cache.h"
+#include "cc/blimp/engine_picture_cache.h"
 #include "cc/blimp/image_serialization_processor.h"
 #include "cc/blimp/picture_data.h"
 #include "cc/blimp/picture_data_conversions.h"

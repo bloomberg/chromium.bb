@@ -9,7 +9,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/macros.h"
-#include "blimp/client/feature/compositor/blimp_compositor_manager.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {

@@ -6,13 +6,11 @@
 #define CC_BLIMP_IMAGE_SERIALIZATION_PROCESSOR_H_
 
 #include "base/memory/ptr_util.h"
-#include "cc/blimp/client_picture_cache.h"
-#include "cc/blimp/engine_picture_cache.h"
-#include "third_party/skia/include/core/SkPicture.h"
-
-class SkPixelSerializer;
 
 namespace cc {
+
+class ClientPictureCache;
+class EnginePictureCache;
 
 // ImageSerializationProcessor provides functionality to serialize,
 // deserialize and cache Skia images.

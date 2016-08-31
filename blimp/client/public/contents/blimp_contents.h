@@ -39,6 +39,11 @@ class BlimpContents : public base::SupportsUserData {
   // Returns the native view that holds the contents of this tab.
   virtual gfx::NativeView GetNativeView() = 0;
 
+  // Will cause this BlimpContents and the remote contents to show and start or
+  // stop rendering content respectively.
+  virtual void Show() = 0;
+  virtual void Hide() = 0;
+
 #if defined(OS_ANDROID)
   // Returns a Java object of the type BlimpContents for the given
   // BlimpContents.

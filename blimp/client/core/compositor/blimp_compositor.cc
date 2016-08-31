@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/client/feature/compositor/blimp_compositor.h"
+#include "blimp/client/core/compositor/blimp_compositor.h"
 
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -129,8 +129,7 @@ void BlimpCompositor::SendCompositorProto(
 void BlimpCompositor::OnCompositorMessageReceived(
     std::unique_ptr<cc::proto::CompositorMessage> message) {
   DCHECK(message->has_to_impl());
-  const cc::proto::CompositorMessageToImpl& to_impl_proto =
-      message->to_impl();
+  const cc::proto::CompositorMessageToImpl& to_impl_proto = message->to_impl();
 
   DCHECK(to_impl_proto.has_message_type());
   switch (to_impl_proto.message_type()) {

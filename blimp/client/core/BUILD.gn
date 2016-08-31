@@ -38,7 +38,9 @@ group("core") {
     "//blimp/client/core/compositor",
     "//blimp/client/core/contents",
     "//blimp/client/core/geolocation",
+    "//blimp/client/core/render_widget",
     "//blimp/client/core/session",
+    "//blimp/client/core/settings",
   ]
 }
 
@@ -76,12 +78,13 @@ source_set("unit_tests") {
 
   deps = [
     ":context",
-    "//blimp/client:feature",
     "//blimp/client/core/compositor:unit_tests",
     "//blimp/client/core/contents:unit_tests",
     "//blimp/client/core/geolocation:unit_tests",
+    "//blimp/client/core/render_widget:unit_tests",
     "//blimp/client/core/session:unit_tests",
     "//blimp/client/public:public_headers",
+    "//blimp/client/support:test_support",
     "//blimp/client/test",
     "//testing/gmock",
     "//testing/gtest",
@@ -102,6 +105,11 @@ source_set("context") {
     "//url",
   ]
 
+  deps = [
+    ":switches",
+    "//blimp/client/core/settings",
+  ]
+
   if (is_android) {
     sources += [
       "android/blimp_client_context_impl_android.cc",
@@ -109,7 +117,7 @@ source_set("context") {
       "android/blimp_jni_registrar.cc",
     ]
 
-    deps = [
+    deps += [
       ":context_jni_headers",
       "//blimp/client/core/settings",
     ]

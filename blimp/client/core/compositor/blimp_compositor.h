@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BLIMP_CLIENT_FEATURE_COMPOSITOR_BLIMP_COMPOSITOR_H_
-#define BLIMP_CLIENT_FEATURE_COMPOSITOR_BLIMP_COMPOSITOR_H_
+#ifndef BLIMP_CLIENT_CORE_COMPOSITOR_BLIMP_COMPOSITOR_H_
+#define BLIMP_CLIENT_CORE_COMPOSITOR_BLIMP_COMPOSITOR_H_
 
 #include <memory>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "blimp/client/core/compositor/blimp_output_surface.h"
-#include "blimp/client/feature/compositor/blimp_input_manager.h"
+#include "blimp/client/core/input/blimp_input_manager.h"
 #include "cc/surfaces/surface_factory_client.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_client.h"
@@ -165,8 +165,7 @@ class BlimpCompositor : public cc::LayerTreeHostClient,
 
   // Helper method to build the internal CC LayerTreeHost instance from
   // |message|.
-  void CreateLayerTreeHost(
-      const cc::proto::InitializeImpl& initialize_message);
+  void CreateLayerTreeHost(const cc::proto::InitializeImpl& initialize_message);
 
   // Helper method to destroy the internal CC LayerTreeHost instance and all its
   // associated state.
@@ -223,4 +222,4 @@ class BlimpCompositor : public cc::LayerTreeHostClient,
 }  // namespace client
 }  // namespace blimp
 
-#endif  // BLIMP_CLIENT_FEATURE_COMPOSITOR_BLIMP_COMPOSITOR_H_
+#endif  // BLIMP_CLIENT_CORE_COMPOSITOR_BLIMP_COMPOSITOR_H_

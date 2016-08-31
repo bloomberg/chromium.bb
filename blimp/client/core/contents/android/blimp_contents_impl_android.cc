@@ -49,6 +49,14 @@ void BlimpContentsImplAndroid::Destroy(JNIEnv* env, jobject jobj) {
   delete blimp_contents_impl_;
 }
 
+void BlimpContentsImplAndroid::Show(JNIEnv* env, jobject jobj) {
+  blimp_contents_impl_->Show();
+}
+
+void BlimpContentsImplAndroid::Hide(JNIEnv* env, jobject jobj) {
+  blimp_contents_impl_->Hide();
+}
+
 BlimpContentsImplAndroid::~BlimpContentsImplAndroid() {
   Java_BlimpContentsImpl_clearNativePtr(base::android::AttachCurrentThread(),
                                         java_obj_);

@@ -10,9 +10,8 @@
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "cc/blimp/image_serialization_processor.h"
-#include "third_party/skia/include/core/SkPicture.h"
 
-class SkPixelSerializer;
+class SkBitmap;
 
 namespace blimp {
 

@@ -24,14 +24,19 @@ const char kBlimpContentsImplAndroidKey[] = "blimp_contents_impl_android";
 #endif  // OS_ANDROID
 }
 
-BlimpContentsImpl::BlimpContentsImpl(int id,
-                                     ImeFeature* ime_feature,
-                                     NavigationFeature* navigation_feature,
-                                     TabControlFeature* tab_control_feature)
+BlimpContentsImpl::BlimpContentsImpl(
+    int id,
+    BlimpCompositorDependencies* compositor_deps,
+    ImeFeature* ime_feature,
+    NavigationFeature* navigation_feature,
+    RenderWidgetFeature* render_widget_feature,
+    TabControlFeature* tab_control_feature)
     : navigation_controller_(this, navigation_feature),
+      compositor_manager_(render_widget_feature, compositor_deps),
       id_(id),
       tab_control_feature_(tab_control_feature) {
-  blimp_contents_view_ = BlimpContentsView::Create(this);
+  blimp_contents_view_ =
+      BlimpContentsView::Create(this, compositor_manager_.layer());
 }
 
 BlimpContentsImpl::~BlimpContentsImpl() {
@@ -71,6 +76,14 @@ void BlimpContentsImpl::RemoveObserver(BlimpContentsObserver* observer) {
 
 gfx::NativeView BlimpContentsImpl::GetNativeView() {
   return blimp_contents_view_->GetNativeView();
+}
+
+void BlimpContentsImpl::Show() {
+  compositor_manager_.SetVisible(true);
+}
+
+void BlimpContentsImpl::Hide() {
+  compositor_manager_.SetVisible(false);
 }
 
 bool BlimpContentsImpl::HasObserver(BlimpContentsObserver* observer) {

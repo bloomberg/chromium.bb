@@ -12,7 +12,7 @@
 #include "blimp/client/app/user_agent.h"
 #include "blimp/client/core/contents/tab_control_feature.h"
 #include "blimp/client/core/session/assignment_source.h"
-#include "blimp/client/feature/settings_feature.h"
+#include "blimp/client/core/settings/settings_feature.h"
 #include "blimp/net/blimp_stats.h"
 #include "components/version_info/version_info.h"
 #include "jni/BlimpClientSession_jni.h"

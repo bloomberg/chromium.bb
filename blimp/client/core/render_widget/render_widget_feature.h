@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BLIMP_CLIENT_FEATURE_RENDER_WIDGET_FEATURE_H_
-#define BLIMP_CLIENT_FEATURE_RENDER_WIDGET_FEATURE_H_
+#ifndef BLIMP_CLIENT_CORE_RENDER_WIDGET_RENDER_WIDGET_FEATURE_H_
+#define BLIMP_CLIENT_CORE_RENDER_WIDGET_RENDER_WIDGET_FEATURE_H_
 
 #include <stdint.h>
 
@@ -94,9 +94,8 @@ class RenderWidgetFeature : public BlimpMessageProcessor {
                       const net::CompletionCallback& callback) override;
 
  private:
-  void ProcessRenderWidgetMessage(
-      RenderWidgetFeatureDelegate* delegate,
-      const RenderWidgetMessage& message);
+  void ProcessRenderWidgetMessage(RenderWidgetFeatureDelegate* delegate,
+                                  const RenderWidgetMessage& message);
 
   void ProcessCompositorMessage(RenderWidgetFeatureDelegate* delegate,
                                 const CompositorMessage& message);
@@ -123,4 +122,4 @@ class RenderWidgetFeature : public BlimpMessageProcessor {
 }  // namespace client
 }  // namespace blimp
 
-#endif  // BLIMP_CLIENT_FEATURE_RENDER_WIDGET_FEATURE_H_
+#endif  // BLIMP_CLIENT_CORE_RENDER_WIDGET_RENDER_WIDGET_FEATURE_H_

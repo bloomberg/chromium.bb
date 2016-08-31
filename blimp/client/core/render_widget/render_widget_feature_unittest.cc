@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/client/feature/render_widget_feature.h"
+#include "blimp/client/core/render_widget/render_widget_feature.h"
 
 #include <memory>
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "blimp/client/feature/mock_render_widget_feature_delegate.h"
+#include "blimp/client/core/render_widget/mock_render_widget_feature_delegate.h"
 #include "blimp/common/create_blimp_message.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/common/proto/compositor.pb.h"
