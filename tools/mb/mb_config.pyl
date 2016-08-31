@@ -110,7 +110,8 @@
       'Android Remoting Tests': 'none',
       'Android Tests (trial)(dbg)': 'none',
       'Android Tests (x86 emulator)': 'android_gn_debug_static_bot_x86',
-      'Android Builder (dbg)': 'android_gn_debug_static_bot',
+      'Android VR Tests': 'none',
+      'Android Builder (dbg)': 'android_gn_debug_static_bot_vr_shell',
       'Android deterministic':
         'android_without_codecs_gn_release_bot_minimal_symbols',
       'Browser Side Navigation Linux': 'gn_release_bot',
@@ -1109,6 +1110,10 @@
 
     'android_gn_debug_static_bot_x86': [
       'android', 'gn', 'debug_static_bot', 'x86',
+    ],
+
+    'android_gn_debug_static_bot_vr_shell': [
+      'android', 'gn', 'debug_static_bot', 'vr_shell',
     ],
 
     'android_gn_debug_static_minimal_symbols_mipsel': [
@@ -2445,6 +2450,10 @@
     'v8_heap': {
       'gn_args': 'v8_enable_verify_heap=true',
       'gyp_defines': 'v8_enable_verify_heap=1',
+    },
+
+    'vr_shell': {
+      'gn_args': 'enable_vr_shell=true',
     },
 
     'win_analyze': {
