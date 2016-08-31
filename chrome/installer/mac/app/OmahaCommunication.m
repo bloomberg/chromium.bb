@@ -7,7 +7,7 @@
 #import "OmahaXMLRequest.h"
 #import "OmahaXMLParser.h"
 
-// TODO: turn this string to a command-line flag
+// TODO: Turn the below string into a command line flag for testing.
 static NSString* const omahaURLPath =
     @"https://tools.google.com/service/update2";
 

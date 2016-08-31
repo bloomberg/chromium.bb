@@ -33,7 +33,6 @@
   [delegate_ downloader:self percentProgress:downloadProgressPercentage];
 }
 
-// Delegate method to move downloaded disk image to user's Download directory.
 - (void)URLSession:(NSURLSession*)session
                  downloadTask:(NSURLSessionDownloadTask*)downloadTask
     didFinishDownloadingToURL:(NSURL*)location {

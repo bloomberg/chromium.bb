@@ -21,7 +21,9 @@ The installer breaks down its task into the following steps:
 Each of the above modules are designed to carry one action before returning via
 delegate method. All of these main steps occur on a primary working thread
 (non-UI), with the exception of `AuthorizedInstall`, which makes use of an
-authorized-if-able subprocess.
+authorized-if-able subprocess. If the user does not provide permission to
+escalate privileges, `AuthorizedInstall` still does its job, but opts for the
+User's Applications folder instead of the system Applications folder.
 
 The OmahaXML* classes and SystemInfo class are simply classes to help
 OmahaCommunication do its work.

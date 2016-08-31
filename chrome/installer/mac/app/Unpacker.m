@@ -49,15 +49,16 @@ static void unmount_callback(DADiskRef disk,
 - (void)cleanUp {
   [mountTask_ terminate];
   // It's not the end of the world if this temporary directory is not removed
-  // here. It will be deleted when the operating system itself decides to
-  // anyway.
+  // here. The directory will be deleted when the operating system itself
+  // decides to anyway.
   [[NSFileManager defaultManager] removeItemAtURL:temporaryDirectoryURL_
                                             error:nil];
   [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
-// TODO: the failure delegate methods need to be revised to be more meaningfully
-// deal with the errors (pipe in stderr / stdout)
+// TODO: The failure delegate methods need to be revised to meaningfully deal
+// with the errors (pipe in stderr / stdout to handle the error according to
+// what the error was).
 - (void)mountDMGFromURL:(NSURL*)fileURL {
   NSError* error = nil;
   temporaryDirectoryURL_ = [[NSFileManager defaultManager]

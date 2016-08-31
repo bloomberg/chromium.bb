@@ -19,22 +19,11 @@
 
 @implementation InstallerWindowController
 
-// Most buttons have the same style and differ only by their title, this method
-// simplifies styling the buttons and provides an argument for the title.
+// Simplify styling and naming buttons.
 - (void)stylizeButton:(NSButton*)button withTitle:(NSString*)title {
   button.buttonType = NSSwitchButton;
   button.bezelStyle = NSRoundedBezelStyle;
   button.title = title;
-}
-
-// Similar to stylizeButton except works with NSTextField objects instead.
-- (void)stylizeTextField:(NSTextField*)textField
-         withDescription:(NSString*)description {
-  textField.backgroundColor = NSColor.clearColor;
-  textField.textColor = NSColor.blackColor;
-  textField.stringValue = description;
-  textField.bezeled = NO;
-  textField.editable = NO;
 }
 
 // Positions and stylizes buttons.
@@ -58,6 +47,16 @@
   launchButton_.title = @"Launch";
   [launchButton_ setEnabled:NO];
   [launchButton_ setAction:@selector(launchButtonClicked)];
+}
+
+// Simplfy styling NSTextField objects.
+- (void)stylizeTextField:(NSTextField*)textField
+         withDescription:(NSString*)description {
+  textField.backgroundColor = NSColor.clearColor;
+  textField.textColor = NSColor.blackColor;
+  textField.stringValue = description;
+  textField.bezeled = NO;
+  textField.editable = NO;
 }
 
 // Positions and stylizes textfields.
@@ -84,9 +83,9 @@
   progressBar_.doubleValue = 0.0;
 }
 
-// Positions and adds the rest of the UI elements to main window. Prevents
-// resizing the window so that the absolute position will look the same on all
-// computers. Window is hidden until all positioning is finished.
+// Positions the main window and adds the rest of the UI elements to it.
+// Prevents resizing the window so that the absolute position will look the same
+// on all computers. Window is hidden until all positioning is finished.
 - (id)initWithWindow:(NSWindow*)window {
   if (self = [super initWithWindow:window]) {
     [window setFrame:NSMakeRect(0, 0, 430, 220) display:YES];
@@ -111,11 +110,10 @@
 }
 
 - (void)updateStatusDescription:(NSString*)text {
-  // First setStringValue statement is required to clear the original string.
-  // Omitting the first line will cause occasional ghosting of the previous
-  // string.
-  // TODO: Find a real solution to the ghosting problem.
-  //  downloadProgressDescription_.stringValue = @"";
+  // TODO: This method somehow causes ghosting of the previous string's contents
+  // after a redraw. The below line of code is a temporary hack to clear the
+  // ghosting behavior, but it should be replaced with a legitimate bug fix.
+  downloadProgressDescription_.stringValue = @"";
   downloadProgressDescription_.stringValue = text;
 }
 
@@ -123,6 +121,9 @@
   if (progressPercent > 0.0) {
     progressBar_.doubleValue = progressPercent;
   } else {
+    // After the progress bar is made indeterminate, it will not need to track
+    // determinate progress any more. Therefore, there is nothing implemented to
+    // set indeterminate to NO.
     progressBar_.doubleValue = 0.0;
     progressBar_.indeterminate = YES;
     [progressBar_ startAnimation:nil];

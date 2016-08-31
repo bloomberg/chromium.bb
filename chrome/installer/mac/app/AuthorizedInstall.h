@@ -10,7 +10,8 @@
 
 @interface AuthorizedInstall : NSObject
 
-// Attempts to gain elevated permissions and starts a subprocess.
+// Attempts to gain elevated permissions, then starts the subprocess with the
+// appropriate level of privilege.
 - (BOOL)loadInstallationTool;
 
 // Signals the tool to begin the installation. Returns the path to the

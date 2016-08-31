@@ -74,12 +74,12 @@
 namespace {
 
 TEST(UnpackerTest, IntegrationTest) {
-  // create objects and semaphore
+  // Create objects and semaphore
   Unpacker* unpack = [[Unpacker alloc] init];
   TestDelegate* test_delegate = [[TestDelegate alloc] init];
   unpack.delegate = test_delegate;
 
-  // get a disk image to use to test
+  // Get a disk image to use to test
   base::FilePath originalPath;
   PathService::Get(base::DIR_SOURCE_ROOT, &originalPath);
   originalPath = originalPath.AppendASCII("chrome/test/data/mac_installer/");
@@ -88,22 +88,25 @@ TEST(UnpackerTest, IntegrationTest) {
       (originalPath.AppendASCII("test-dmg.dmg")).value());
   NSString* diskImageCopiedPath = base::SysUTF8ToNSString(
       (originalPath.AppendASCII("test-dmg2.dmg")).value());
+  // The unpacker moves (not copies) a downloaded disk image directly into its
+  // own temporary directory, so if the below copy didn't happen, `test-dmg.dmg`
+  // would disappear every time this test was run
   [[NSFileManager defaultManager] copyItemAtPath:diskImageOriginalPath
                                           toPath:diskImageCopiedPath
                                            error:nil];
   NSURL* dmgURL = [NSURL fileURLWithPath:diskImageCopiedPath isDirectory:NO];
-  // start mount step
+  // Start mount step
   [unpack mountDMGFromURL:dmgURL];
   [test_delegate wait];
 
-  // is the disk image mounted?
+  // Is the disk image mounted?
   ASSERT_TRUE([test_delegate pass]);
 
-  // start unmount step
+  // Start unmount step
   [unpack unmountDMG];
   [test_delegate wait];
 
-  // is the disk image gone?
+  // Is the disk image gone?
   EXPECT_TRUE([test_delegate pass]);
 }
 

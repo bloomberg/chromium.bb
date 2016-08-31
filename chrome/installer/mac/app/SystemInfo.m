@@ -9,6 +9,8 @@
 @implementation SystemInfo
 
 + (NSString*)getArch {
+  // NOTE: It seems the below function `NSGetLocalArchInfo` returns an
+  // arch->name that is either "x84_64h" or "i486".
   const NXArchInfo* arch = NXGetLocalArchInfo();
   NSString* archName = [NSString stringWithUTF8String:arch->name];
   return archName;

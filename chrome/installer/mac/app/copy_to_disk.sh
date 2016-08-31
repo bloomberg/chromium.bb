@@ -12,9 +12,9 @@
 # used on the first line to prevent bash from setting the effective user ID to
 # the real user ID (dropping root privileges).
 
-# The 'e' flag causes the script to terminate if it comes across an error while
-# running. The 'u' flag will raise an error if a variable isn't set.
-# 'u pipefail' will set the return exit code to the last non-zero  error code.
+# 'e': terminate if error arises
+# 'u': raise an error if a variable isn't set
+# 'o pipefail': set the return exit code to the last non-zero error code
 set -euo pipefail
 
 # Waits for the main app to pass the path to the app bundle inside the mounted
@@ -26,9 +26,11 @@ APPBUNDLENAME=$(basename "${SRC}")
 FULL_DEST="${DEST}"/"${APPBUNDLENAME}"
 
 # Starts the copy
-# The 'l' flag tells rsync to copy symlinks as symlinks. 'r' is for recursive,
-# so copy all files, 'p' is to preserve permisisons. 't' is to preserve times.
-# 'q' is for quiet mode so rynsc will only log to console if an error occurs.
+# 'l': copy symlinks as symlinks
+# 'r': recursive copy
+# 'p': preserve permissions
+# 't': preserve times
+# 'q': quiet mode, so rynsc will only log to console if an error occurs
 rsync -lrptq "${SRC}" "${DEST}"
 
 # If this script is run as root, change ownership to root and set elevated

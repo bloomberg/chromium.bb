@@ -11,7 +11,7 @@
 @end
 
 @implementation AuthorizedInstall
-// Does the setup needed to authorize a tool to run as admin.
+// Does the setup needed to authorize a subprocess to run as root.
 - (OSStatus)setUpAuthorization:(AuthorizationRef*)authRef {
   OSStatus status = AuthorizationCreate(NULL, kAuthorizationEmptyEnvironment,
                                         kAuthorizationFlagDefaults, authRef);
@@ -82,10 +82,6 @@
   }
 }
 
-// Attempts to gain authorization to run installation tool with elevated
-// permissions.
-// Then starts the tool with the appropiate paths for the tools elevation
-// status.
 - (BOOL)loadInstallationTool {
   AuthorizationRef authRef = NULL;
   OSStatus status = [self setUpAuthorization:&authRef];
@@ -117,17 +113,17 @@
   return true;
 }
 
-- (NSString*)startInstall:(NSString*)appBundlePath {
-  [self sendMessageToTool:appBundlePath];
-  return destinationAppBundlePath_;
-}
-
 // Sends a message to the tool's stdin. The tool is using 'read' to wait for
 // input. 'read' adds to its buffer until it receives a newline to continue so
 // append '\n' to the message to end the read.
 - (void)sendMessageToTool:(NSString*)message {
   [communicationFile_  writeData:[[message stringByAppendingString:@"\n"]
                dataUsingEncoding:NSUTF8StringEncoding]];
+}
+
+- (NSString*)startInstall:(NSString*)appBundlePath {
+  [self sendMessageToTool:appBundlePath];
+  return destinationAppBundlePath_;
 }
 
 @end

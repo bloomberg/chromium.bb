@@ -39,7 +39,9 @@
 
 // Sets up the main window and begins the downloading process.
 - (void)applicationDidFinishLaunching:(NSNotification*)aNotification {
-  // TODO: fix UI not loading until after asking for authorization.
+  // TODO: Despite what the code implies -- when the installer is run, the main
+  // window of the application is not visible until the user has taken action on
+  // the Authorization modal.
   window_.delegate = self;
   installerWindowController_ =
       [[InstallerWindowController alloc] initWithWindow:window_];
@@ -63,7 +65,9 @@
 // applicationShouldTerminateAfterLastWindowClosed: to make sure that the
 // application does correctly terminate after closing the installer, but does
 // not terminate when we call orderOut: to hide the installer during its
-// tear-down steps.
+// tear-down steps. If the user force-quits the application, the below delegate
+// method gets called. However, when orderOut is called, the below delegate
+// method does not get called.
 - (BOOL)windowShouldClose:(id)sender {
   [self exit];
   return YES;
@@ -84,7 +88,7 @@
 
 - (void)onLoadInstallationToolFailure {
   NSError* loadToolError = [NSError
-       errorForAlerts:@"Could not load installion tool"
+       errorForAlerts:@"Internal Error"
       withDescription:
           @"Your Chrome Installer may be corrupted. Download and try again."
         isRecoverable:NO];
@@ -135,14 +139,15 @@
 - (void)unpacker:(Unpacker*)unpacker onMountSuccess:(NSString*)tempAppPath {
   SecStaticCodeRef diskStaticCode;
   SecRequirementRef diskRequirement;
-  // TODO: flush out error handling more
+  // TODO: Include some better error handling below than NSLog
   OSStatus oserror;
   oserror = SecStaticCodeCreateWithPath(
       (__bridge CFURLRef)[NSURL fileURLWithPath:tempAppPath isDirectory:NO],
       kSecCSDefaultFlags, &diskStaticCode);
   if (oserror != errSecSuccess)
     NSLog(@"code %d", oserror);
-  // TODO: add in a more specific code sign requirement
+  // TODO: The below requirement is too general as most signed entities have the
+  // below requirement; replace it with something adequately specific.
   oserror =
       SecRequirementCreateWithString((CFStringRef) @"anchor apple generic",
                                      kSecCSDefaultFlags, &diskRequirement);
@@ -171,6 +176,11 @@
   if ([installerWindowController_ isDefaultBrowserChecked])
     [installerSettings
         addObject:[NSString
+                      // NOTE: the |kMakeDefaultBrowser| constant used as a
+                      // command-line switch here only will apply at a user
+                      // level, since the application itself is not running with
+                      // privileges. grt@ suggested this constant should be
+                      // renamed |kMakeDefaultBrowserforUser|.
                       stringWithUTF8String:switches::kMakeDefaultBrowser]];
 
   NSError* error = nil;
@@ -186,7 +196,7 @@
     NSLog(@"Chrome failed to launch: %@", error);
   }
 
-  // Begin teardown stuff!
+  // Begin teardown step!
   dispatch_async(dispatch_get_main_queue(), ^{
     [window_ orderOut:nil];
   });
@@ -196,7 +206,7 @@
 
 - (void)unpacker:(Unpacker*)unpacker onMountFailure:(NSError*)error {
   NSError* extractError =
-      [NSError errorForAlerts:@"Install Failure"
+      [NSError errorForAlerts:@"Install Error"
               withDescription:@"Unable to add Google Chrome to Applications."
                 isRecoverable:NO];
   [self displayError:extractError];
@@ -209,9 +219,9 @@
 
 - (void)unpacker:(Unpacker*)unpacker onUnmountFailure:(NSError*)error {
   NSLog(@"error unmounting");
-  // NOTE: since we are not deleting the temporary folder if the unmount fails,
+  // NOTE: Since we are not deleting the temporary folder if the unmount fails,
   // we'll just leave it up to the computer to delete the temporary folder on
-  // its own time, and to unmount the disk during a restart at some point. There
+  // its own time and to unmount the disk during a restart at some point. There
   // is no other work to be done in the mean time.
   [self exit];
 }
