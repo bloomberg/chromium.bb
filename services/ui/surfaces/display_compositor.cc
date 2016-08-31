@@ -43,22 +43,21 @@ DisplayCompositor::DisplayCompositor(
   // TODO(rjkroege): If there is something better to do than CHECK, add it.
   CHECK(surfaces_context_provider->BindToCurrentThread());
 
-  std::unique_ptr<cc::SyntheticBeginFrameSource> synthetic_begin_frame_source(
-      new cc::DelayBasedBeginFrameSource(
-          base::MakeUnique<cc::DelayBasedTimeSource>(task_runner_.get())));
+  synthetic_begin_frame_source_.reset(new cc::DelayBasedBeginFrameSource(
+      base::MakeUnique<cc::DelayBasedTimeSource>(task_runner_.get())));
 
   std::unique_ptr<cc::OutputSurface> display_output_surface;
   if (surfaces_context_provider->ContextCapabilities().surfaceless) {
 #if defined(USE_OZONE)
     display_output_surface = base::MakeUnique<DirectOutputSurfaceOzone>(
-        surfaces_context_provider, widget, synthetic_begin_frame_source.get(),
+        surfaces_context_provider, widget, synthetic_begin_frame_source_.get(),
         gpu_memory_buffer_manager, GL_TEXTURE_2D, GL_RGB);
 #else
     NOTREACHED();
 #endif
   } else {
     display_output_surface = base::MakeUnique<DirectOutputSurface>(
-        surfaces_context_provider, synthetic_begin_frame_source.get());
+        surfaces_context_provider, synthetic_begin_frame_source_.get());
   }
 
   int max_frames_pending =
@@ -66,12 +65,12 @@ DisplayCompositor::DisplayCompositor(
   DCHECK_GT(max_frames_pending, 0);
 
   std::unique_ptr<cc::DisplayScheduler> scheduler(
-      new cc::DisplayScheduler(synthetic_begin_frame_source.get(),
+      new cc::DisplayScheduler(synthetic_begin_frame_source_.get(),
                                task_runner_.get(), max_frames_pending));
 
   display_.reset(new cc::Display(
       nullptr /* bitmap_manager */, gpu_memory_buffer_manager,
-      cc::RendererSettings(), std::move(synthetic_begin_frame_source),
+      cc::RendererSettings(), synthetic_begin_frame_source_.get(),
       std::move(display_output_surface), std::move(scheduler),
       base::MakeUnique<cc::TextureMailboxDeleter>(task_runner_.get())));
   display_->Initialize(this, surfaces_state_->manager(),

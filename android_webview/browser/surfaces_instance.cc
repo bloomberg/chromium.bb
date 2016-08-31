@@ -15,7 +15,6 @@
 #include "cc/output/renderer_settings.h"
 #include "cc/output/texture_mailbox_deleter.h"
 #include "cc/quads/surface_draw_quad.h"
-#include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/display_scheduler.h"
 #include "cc/surfaces/surface_factory.h"
@@ -54,8 +53,6 @@ SurfacesInstance::SurfacesInstance()
       new cc::SurfaceIdAllocator(next_surface_client_id_++));
   surface_manager_->RegisterSurfaceClientId(surface_id_allocator_->client_id());
 
-  std::unique_ptr<cc::BeginFrameSource> begin_frame_source(
-      new cc::StubBeginFrameSource);
   std::unique_ptr<cc::TextureMailboxDeleter> texture_mailbox_deleter(
       new cc::TextureMailboxDeleter(nullptr));
   std::unique_ptr<ParentOutputSurface> output_surface_holder(
@@ -63,12 +60,12 @@ SurfacesInstance::SurfacesInstance()
           gl_surface_, DeferredGpuCommandService::GetInstance())));
   output_surface_ = output_surface_holder.get();
   std::unique_ptr<cc::DisplayScheduler> scheduler(new cc::DisplayScheduler(
-      begin_frame_source.get(), nullptr,
+      &begin_frame_source_, nullptr,
       output_surface_holder->capabilities().max_frames_pending));
   display_.reset(new cc::Display(
       nullptr /* shared_bitmap_manager */,
       nullptr /* gpu_memory_buffer_manager */, settings,
-      std::move(begin_frame_source), std::move(output_surface_holder),
+      &begin_frame_source_, std::move(output_surface_holder),
       std::move(scheduler), std::move(texture_mailbox_deleter)));
   display_->Initialize(this, surface_manager_.get(),
                        surface_id_allocator_->client_id());

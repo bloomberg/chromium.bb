@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/display_client.h"
 #include "cc/surfaces/surface_factory_client.h"
 #include "cc/surfaces/surface_id.h"
@@ -75,6 +76,7 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
   uint32_t next_surface_client_id_;
 
   scoped_refptr<AwGLSurface> gl_surface_;
+  cc::StubBeginFrameSource begin_frame_source_;
   std::unique_ptr<cc::SurfaceManager> surface_manager_;
   std::unique_ptr<cc::Display> display_;
   std::unique_ptr<cc::SurfaceIdAllocator> surface_id_allocator_;

@@ -5,6 +5,7 @@
 #ifndef SERVICES_UI_SURFACES_DISPLAY_COMPOSITOR_H_
 #define SERVICES_UI_SURFACES_DISPLAY_COMPOSITOR_H_
 
+#include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/display_client.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_factory.h"
@@ -77,6 +78,7 @@ class DisplayCompositor : public cc::SurfaceFactoryClient,
 
   gfx::Size display_size_;
   std::unique_ptr<cc::Display> display_;
+  std::unique_ptr<cc::SyntheticBeginFrameSource> synthetic_begin_frame_source_;
   DISALLOW_COPY_AND_ASSIGN(DisplayCompositor);
 };
 

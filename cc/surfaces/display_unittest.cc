@@ -108,9 +108,6 @@ class DisplayTest : public testing::Test {
 
   void SetUpDisplay(const RendererSettings& settings,
                     std::unique_ptr<TestWebGraphicsContext3D> context) {
-    std::unique_ptr<BeginFrameSource> begin_frame_source(
-        new StubBeginFrameSource);
-
     std::unique_ptr<FakeOutputSurface> output_surface;
     if (context) {
       output_surface = FakeOutputSurface::Create3d(std::move(context));
@@ -123,12 +120,12 @@ class DisplayTest : public testing::Test {
     output_surface_ = output_surface.get();
 
     std::unique_ptr<TestDisplayScheduler> scheduler(
-        new TestDisplayScheduler(begin_frame_source.get(), task_runner_.get()));
+        new TestDisplayScheduler(&begin_frame_source_, task_runner_.get()));
     scheduler_ = scheduler.get();
 
     display_ = base::MakeUnique<Display>(
         &shared_bitmap_manager_, nullptr /* gpu_memory_buffer_manager */,
-        settings, std::move(begin_frame_source), std::move(output_surface),
+        settings, &begin_frame_source_, std::move(output_surface),
         std::move(scheduler),
         base::MakeUnique<TextureMailboxDeleter>(task_runner_.get()));
     display_->SetVisible(true);
@@ -153,6 +150,7 @@ class DisplayTest : public testing::Test {
   FakeSurfaceFactoryClient surface_factory_client_;
   SurfaceFactory factory_;
   SurfaceIdAllocator id_allocator_;
+  StubBeginFrameSource begin_frame_source_;
   scoped_refptr<base::NullTaskRunner> task_runner_;
   TestSharedBitmapManager shared_bitmap_manager_;
   std::unique_ptr<Display> display_;

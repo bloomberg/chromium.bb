@@ -89,7 +89,8 @@ class InProcessContextFactory : public ContextFactory {
   cc::SurfaceManager* surface_manager_;
   base::ObserverList<ContextFactoryObserver> observer_list_;
 
-  base::hash_map<Compositor*, std::unique_ptr<cc::Display>>
+  struct PerCompositorData;
+  base::hash_map<Compositor*, std::unique_ptr<PerCompositorData>>
       per_compositor_data_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcessContextFactory);

@@ -682,8 +682,7 @@ void CompositorImpl::InitializeDisplay(
   cc::SurfaceManager* manager =
       ui::ContextProviderFactory::GetInstance()->GetSurfaceManager();
   auto* task_runner = base::ThreadTaskRunnerHandle::Get().get();
-  std::unique_ptr<ExternalBeginFrameSource> begin_frame_source(
-      new ExternalBeginFrameSource(this));
+  auto begin_frame_source = base::MakeUnique<ExternalBeginFrameSource>(this);
   std::unique_ptr<cc::DisplayScheduler> scheduler(new cc::DisplayScheduler(
       begin_frame_source.get(), task_runner,
       display_output_surface->capabilities().max_frames_pending));
@@ -691,9 +690,10 @@ void CompositorImpl::InitializeDisplay(
   display_.reset(new cc::Display(
       HostSharedBitmapManager::current(),
       BrowserGpuMemoryBufferManager::current(),
-      host_->settings().renderer_settings, std::move(begin_frame_source),
+      host_->settings().renderer_settings, begin_frame_source.get(),
       std::move(display_output_surface), std::move(scheduler),
       base::MakeUnique<cc::TextureMailboxDeleter>(task_runner)));
+  begin_frame_source_ = std::move(begin_frame_source);
 
   std::unique_ptr<cc::SurfaceDisplayOutputSurface> delegated_output_surface(
       vulkan_context_provider ? new cc::SurfaceDisplayOutputSurface(

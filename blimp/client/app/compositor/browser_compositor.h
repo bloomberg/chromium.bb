@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "cc/scheduler/begin_frame_source.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
 #include "ui/gfx/geometry/size.h"
@@ -83,6 +84,7 @@ class BrowserCompositor : public cc::LayerTreeHostClient,
   gfx::AcceleratedWidget widget_;
   bool output_surface_request_pending_;
   std::unique_ptr<cc::Display> display_;
+  std::unique_ptr<cc::SyntheticBeginFrameSource> begin_frame_source_;
 
   gfx::Size viewport_size_in_px_;
 
