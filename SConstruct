@@ -2201,7 +2201,7 @@ def SetUpClang(env):
       # at the right directory using an environment variable.
       # Be sure to check and update clang_lib_version whenever updating
       # tools/clang revs in DEPS.
-      clang_lib_version = '3.9.0'
+      clang_lib_version = '4.0.0'
       clang_lib_dir = str(env.Dir('${CLANG_DIR}/../lib/clang/%s/lib/darwin' %
                                   clang_lib_version).abspath)
       env['ENV']['DYLD_LIBRARY_PATH'] = clang_lib_dir

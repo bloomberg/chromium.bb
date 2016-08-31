@@ -364,6 +364,10 @@ def RemoveGypBuildDirectories():
   RemoveDirectory('build/Release-Win32')
   RemoveDirectory('build/Debug-x64')
   RemoveDirectory('build/Release-x64')
+  RemoveDirectory('../out_32')
+  RemoveDirectory('../out_32_clang')
+  RemoveDirectory('../out_64')
+  RemoveDirectory('../out_64_clang')
 
   # Linux and Mac
   RemoveDirectory('../xcodebuild')

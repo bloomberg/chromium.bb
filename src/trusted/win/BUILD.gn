@@ -7,6 +7,9 @@ import("//build/toolchain/toolchain.gni")
 # This is a special toolchain used solely for building GNU/AT&T-syntax
 # assembly files on Windows.  See src/trusted/asm.gni for more details.
 
+tool_wrapper_path =
+    rebase_path("//build/toolchain/win/tool_wrapper.py", root_build_dir)
+
 template("nacl_win_as_toolchain") {
   toolchain(target_name) {
     tool("asm") {
@@ -23,7 +26,7 @@ template("nacl_win_as_toolchain") {
       top_srcdir = rebase_path("//", root_build_dir)
       rspfile = "{{output}}.rsp"
       rspfile_content = "$python_path $win_as_script -a $win_as_arch -p $top_srcdir -o {{output}} {{source}}"
-      command = "$python_path gyp-win-tool action-wrapper $env $rspfile"
+      command = "$python_path $tool_wrapper_path action-wrapper $env $rspfile"
       depsformat = "msvc"
       description = "GNU ASM {{output}}"
       outputs = [
@@ -48,7 +51,9 @@ template("nacl_win_as_toolchain") {
     # toolchain.
     tool("alink") {
       command = "fake"
-      outputs = ["fake"]
+      outputs = [
+        "fake",
+      ]
     }
 
     toolchain_args() {

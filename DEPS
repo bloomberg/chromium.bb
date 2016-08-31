@@ -9,12 +9,12 @@ vars = {
   # revisions at latest revision up to a high watermark from each slice.
   # Document the high watermark here:
   # chrome_rev: 411082
-  "build_rev": "01ebc7132bdd79aef8a0bdda3fa87ec4cd95d550", # from cr commit position 411082
+  "build_rev": "43fc964cebbd602e2bd9721253d510a4f42d93ac", # from cr commit position 415304
   "binutils_rev": "8d77853bc9415bcb7bb4206fa2901de7603387db", # from cr commit position 392828
   "libcxx_static_rev": "fd8f9a82862aa40dab0c5bcdea6e498715284f5a", # from cr commit position 369150
   # NOTE: be sure to update clang_lib_version in SConstruct whenever
   # updating this clang_rev (e.g., if LLVM changes from version 3.7 to 3.8).
-  "clang_rev": "040101933080540f1e103cf42729147654e7bb08", # from cr commit position 403068
+  "clang_rev": "f26ef1bab777afd1379aa900e7f39b99100db725", # from cr commit position 415563
 
   # NOTE!  These five should be kept up to date with their counterparts in
   # chromium/src/DEPS.
@@ -28,7 +28,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling build tools
   # and whatever else without interference from each other.
-  'buildtools_revision': "33a32b8aa2b7274d246fcf85ce8f762cf4291418",
+  'buildtools_revision': 'adb8bf4e8fc92aa1717bf151b862d58e6f27c4f2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling lss
   # and whatever else without interference from each other.
