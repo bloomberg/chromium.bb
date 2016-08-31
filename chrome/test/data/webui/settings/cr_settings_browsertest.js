@@ -442,7 +442,8 @@ CrSettingsPrivacyPageTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsPrivacyPageTest', 'PrivacyPage', function() {
+// TODO(crbug.com/642574) Disabled because test is flaky.
+TEST_F('CrSettingsPrivacyPageTest', 'DISABLED_PrivacyPage', function() {
   settings_privacy_page.registerTests();
   mocha.run();
 });
