@@ -33,7 +33,6 @@
 #include "core/fetch/ImageResource.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceLoader.h"
-#include "core/fetch/ResourceLoaderSet.h"
 #include "core/fetch/ResourceLoadingLog.h"
 #include "core/fetch/UniqueIdentifier.h"
 #include "platform/Histogram.h"
@@ -1057,8 +1056,16 @@ void ResourceFetcher::removeResourceLoader(ResourceLoader* loader)
 
 void ResourceFetcher::stopFetching()
 {
-    m_nonBlockingLoaders.cancelAll();
-    m_loaders.cancelAll();
+    HeapVector<Member<ResourceLoader>> loadersToCancel;
+    for (const auto& loader : m_nonBlockingLoaders)
+        loadersToCancel.append(loader);
+    for (const auto& loader : m_loaders)
+        loadersToCancel.append(loader);
+
+    for (const auto& loader : loadersToCancel) {
+        if (m_loaders.contains(loader) || m_nonBlockingLoaders.contains(loader))
+            loader->cancel();
+    }
 }
 
 bool ResourceFetcher::isFetching() const
@@ -1068,8 +1075,10 @@ bool ResourceFetcher::isFetching() const
 
 void ResourceFetcher::setDefersLoading(bool defers)
 {
-    m_loaders.setAllDefersLoading(defers);
-    m_nonBlockingLoaders.setAllDefersLoading(defers);
+    for (const auto& loader : m_nonBlockingLoaders)
+        loader->setDefersLoading(defers);
+    for (const auto& loader : m_loaders)
+        loader->setDefersLoading(defers);
 }
 
 bool ResourceFetcher::defersLoading() const

@@ -33,7 +33,6 @@
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/Resource.h"
 #include "core/fetch/ResourceLoaderOptions.h"
-#include "core/fetch/ResourceLoaderSet.h"
 #include "core/fetch/SubstituteData.h"
 #include "platform/Timer.h"
 #include "platform/network/ResourceError.h"
@@ -190,8 +189,8 @@ private:
 
     Vector<std::unique_ptr<ResourceTimingInfo>> m_scheduledResourceTimingReports;
 
-    ResourceLoaderSet m_loaders;
-    ResourceLoaderSet m_nonBlockingLoaders;
+    HeapHashSet<Member<ResourceLoader>> m_loaders;
+    HeapHashSet<Member<ResourceLoader>> m_nonBlockingLoaders;
 
     // Used in hit rate histograms.
     class DeadResourceStatsRecorder {
