@@ -107,13 +107,6 @@ class QuicEndToEndTest : public ::testing::TestWithParam<TestParams> {
         auth_handler_factory_(
             HttpAuthHandlerFactory::CreateDefault(&host_resolver_)),
         strike_register_no_startup_period_(false) {
-    // TODO(crbug.com/642709) These values are currently needed to avoid test
-    // test failures on iOS10.  It's unclear why this is happenening, and should
-    // be removed after investigation.
-    FLAGS_quic_enable_version_35 = true;
-    FLAGS_quic_enable_version_36 = true;
-    FLAGS_quic_enable_version_36_v2 = true;
-
     request_.method = "GET";
     request_.url = GURL("https://test.example.com/");
     request_.load_flags = 0;

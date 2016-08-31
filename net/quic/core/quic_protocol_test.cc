@@ -9,6 +9,7 @@
 #include "base/stl_util.h"
 #include "net/quic/core/quic_flags.h"
 #include "net/quic/core/quic_utils.h"
+#include "net/quic/test_tools/quic_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -284,6 +285,12 @@ TEST(QuicProtocolTest, PathCloseFrameToString) {
 }
 
 TEST(QuicProtocolTest, FilterSupportedVersions) {
+  ValueRestore<bool> old_v35_flag(&FLAGS_quic_enable_version_35,
+                                  FLAGS_quic_enable_version_35);
+  ValueRestore<bool> old_v36_flag(&FLAGS_quic_enable_version_36,
+                                  FLAGS_quic_enable_version_36);
+  ValueRestore<bool> old_v36_2_flag(&FLAGS_quic_enable_version_36_v2,
+                                    FLAGS_quic_enable_version_36_v2);
   QuicVersionVector all_versions = {
       QUIC_VERSION_30, QUIC_VERSION_31, QUIC_VERSION_32, QUIC_VERSION_33,
       QUIC_VERSION_34, QUIC_VERSION_35, QUIC_VERSION_36};
@@ -300,6 +307,10 @@ TEST(QuicProtocolTest, FilterSupportedVersions) {
 }
 
 TEST(QuicProtocolTest, QuicVersionManager) {
+  ValueRestore<bool> old_v35_flag(&FLAGS_quic_enable_version_35,
+                                  FLAGS_quic_enable_version_35);
+  ValueRestore<bool> old_v36_2_flag(&FLAGS_quic_enable_version_36_v2,
+                                    FLAGS_quic_enable_version_36_v2);
   FLAGS_quic_enable_version_35 = false;
   FLAGS_quic_enable_version_36_v2 = false;
   QuicVersionManager manager(AllSupportedVersions());

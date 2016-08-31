@@ -2510,6 +2510,10 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPush) {
 }
 
 TEST_P(QuicNetworkTransactionTest, QuicForceHolBlocking) {
+  ValueRestore<bool> old_v35_flag(&FLAGS_quic_enable_version_35,
+                                  FLAGS_quic_enable_version_35);
+  ValueRestore<bool> old_v36_flag(&FLAGS_quic_enable_version_36,
+                                  FLAGS_quic_enable_version_36);
   FLAGS_quic_enable_version_35 = true;
   FLAGS_quic_enable_version_36 = true;
   params_.quic_force_hol_blocking = true;
