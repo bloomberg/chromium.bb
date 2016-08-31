@@ -29,15 +29,11 @@
 #include "bindings/core/v8/DictionaryIterator.h"
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/Nullable.h"
-#include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8Binding.h"
-#include "bindings/core/v8/V8BindingMacros.h"
 #include "core/CoreExport.h"
 #include "wtf/HashMap.h"
-#include "wtf/HashSet.h"
 #include "wtf/Vector.h"
-#include "wtf/text/AtomicString.h"
-#include "wtf/text/WTFString.h"
+#include "wtf/text/StringView.h"
 #include <v8.h>
 
 namespace blink {
@@ -67,15 +63,15 @@ public:
     bool isObject() const;
     bool isUndefinedOrNull() const;
 
-    bool get(const String&, Dictionary&) const;
-    bool get(const String&, v8::Local<v8::Value>&) const;
+    bool get(const StringView&, Dictionary&) const;
+    bool get(const StringView&, v8::Local<v8::Value>&) const;
 
     v8::Local<v8::Value> v8Value() const { return m_options; }
 
     bool getOwnPropertiesAsStringHashMap(HashMap<String, String>&) const;
     bool getPropertyNames(Vector<String>&) const;
 
-    bool hasProperty(const String&) const;
+    bool hasProperty(const StringView&) const;
 
     v8::Isolate* isolate() const { return m_isolate; }
     v8::Local<v8::Context> v8Context() const
@@ -84,7 +80,6 @@ public:
         return m_isolate->GetCurrentContext();
     }
 
-    bool getKey(const String& key, v8::Local<v8::Value>&) const;
     DictionaryIterator getIterator(ExecutionContext*) const;
 
 private:
@@ -108,21 +103,21 @@ struct NativeValueTraits<Dictionary> {
 struct DictionaryHelper {
     STATIC_ONLY(DictionaryHelper);
     template <typename T>
-    static bool get(const Dictionary&, const String& key, T& value);
+    static bool get(const Dictionary&, const StringView& key, T& value);
     template <typename T>
-    static bool get(const Dictionary&, const String& key, T& value, bool& hasValue);
+    static bool get(const Dictionary&, const StringView& key, T& value, bool& hasValue);
     template <typename T>
-    static bool get(const Dictionary&, const String& key, T& value, ExceptionState&);
+    static bool get(const Dictionary&, const StringView& key, T& value, ExceptionState&);
     template <typename T>
-    static bool getWithUndefinedOrNullCheck(const Dictionary& dictionary, const String& key, T& value)
+    static bool getWithUndefinedOrNullCheck(const Dictionary& dictionary, const StringView& key, T& value)
     {
         v8::Local<v8::Value> v8Value;
-        if (!dictionary.getKey(key, v8Value) || isUndefinedOrNull(v8Value))
+        if (!dictionary.get(key, v8Value) || isUndefinedOrNull(v8Value))
             return false;
         return DictionaryHelper::get(dictionary, key, value);
     }
     template <template <typename> class PointerType, typename T>
-    static bool get(const Dictionary&, const String& key, PointerType<T>& value);
+    static bool get(const Dictionary&, const StringView& key, PointerType<T>& value);
 };
 
 } // namespace blink

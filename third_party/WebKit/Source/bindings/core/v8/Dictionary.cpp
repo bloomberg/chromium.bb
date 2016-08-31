@@ -30,6 +30,7 @@
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/V8ArrayBufferView.h"
 #include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingMacros.h"
 #include "bindings/core/v8/V8DOMError.h"
 #include "bindings/core/v8/V8Element.h"
 #include "bindings/core/v8/V8EventTarget.h"
@@ -61,7 +62,7 @@ bool Dictionary::isUndefinedOrNull() const
     return blink::isUndefinedOrNull(m_options);
 }
 
-bool Dictionary::hasProperty(const String& key) const
+bool Dictionary::hasProperty(const StringView& key) const
 {
     v8::Local<v8::Object> object;
     if (!toObject(object))
@@ -69,15 +70,13 @@ bool Dictionary::hasProperty(const String& key) const
 
     DCHECK(m_isolate);
     DCHECK_EQ(m_isolate, v8::Isolate::GetCurrent());
-    v8::Local<v8::String> v8Key = v8String(m_isolate, key);
-    return v8CallBoolean(object->Has(v8Context(), v8Key));
+    return v8CallBoolean(object->Has(v8Context(), v8String(m_isolate, key)));
 }
 
-bool Dictionary::getKey(const String& key, v8::Local<v8::Value>& value) const
+bool Dictionary::get(const StringView& key, v8::Local<v8::Value>& value) const
 {
     if (!m_isolate)
         return false;
-
     return getInternal(v8String(m_isolate, key), value);
 }
 
@@ -95,15 +94,10 @@ DictionaryIterator Dictionary::getIterator(ExecutionContext* executionContext) c
     return DictionaryIterator(v8::Local<v8::Object>::Cast(iterator), m_isolate);
 }
 
-bool Dictionary::get(const String& key, v8::Local<v8::Value>& value) const
-{
-    return getKey(key, value);
-}
-
-bool Dictionary::get(const String& key, Dictionary& value) const
+bool Dictionary::get(const StringView& key, Dictionary& value) const
 {
     v8::Local<v8::Value> v8Value;
-    if (!getKey(key, v8Value))
+    if (!get(key, v8Value))
         return false;
 
     if (v8Value->IsObject()) {

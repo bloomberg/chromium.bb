@@ -32,7 +32,7 @@
 namespace blink {
 
 template <template <typename> class PointerType, typename T>
-bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, PointerType<T>& value)
+bool DictionaryHelper::get(const Dictionary& dictionary, const StringView& key, PointerType<T>& value)
 {
     v8::Local<v8::Value> v8Value;
     if (!dictionary.get(key, v8Value))
