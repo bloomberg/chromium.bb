@@ -84,6 +84,8 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
   bool DrawAndSwap() override;
 
   // OutputSurfaceClient implementation.
+  void CommitVSyncParameters(base::TimeTicks timebase,
+                             base::TimeDelta interval) override;
   void SetBeginFrameSource(BeginFrameSource* source) override;
   void SetNeedsRedrawRect(const gfx::Rect& damage_rect) override;
   void DidSwapBuffersComplete() override;

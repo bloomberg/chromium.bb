@@ -66,6 +66,8 @@ class CC_EXPORT ProxyImpl : public NON_EXPORTED_BASE(LayerTreeHostImplClient),
 
   // LayerTreeHostImplClient implementation
   void DidLoseOutputSurfaceOnImplThread() override;
+  void CommitVSyncParameters(base::TimeTicks timebase,
+                             base::TimeDelta interval) override;
   void SetBeginFrameSource(BeginFrameSource* source) override;
   void SetEstimatedParentDrawTime(base::TimeDelta draw_time) override;
   void DidSwapBuffersCompleteOnImplThread() override;
@@ -136,6 +138,8 @@ class CC_EXPORT ProxyImpl : public NON_EXPORTED_BASE(LayerTreeHostImplClient),
   DelayedUniqueNotifier smoothness_priority_expiration_notifier_;
 
   std::unique_ptr<BeginFrameSource> external_begin_frame_source_;
+  std::unique_ptr<BeginFrameSource> unthrottled_begin_frame_source_;
+  std::unique_ptr<SyntheticBeginFrameSource> synthetic_begin_frame_source_;
 
   RenderingStatsInstrumentation* rendering_stats_instrumentation_;
 

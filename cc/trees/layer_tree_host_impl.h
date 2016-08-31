@@ -98,6 +98,8 @@ enum class GpuRasterizationStatus {
 class LayerTreeHostImplClient {
  public:
   virtual void DidLoseOutputSurfaceOnImplThread() = 0;
+  virtual void CommitVSyncParameters(base::TimeTicks timebase,
+                                     base::TimeDelta interval) = 0;
   virtual void SetBeginFrameSource(BeginFrameSource* source) = 0;
   virtual void SetEstimatedParentDrawTime(base::TimeDelta draw_time) = 0;
   virtual void DidSwapBuffersCompleteOnImplThread() = 0;
@@ -365,6 +367,8 @@ class CC_EXPORT LayerTreeHostImpl
   void RemoveVideoFrameController(VideoFrameController* controller) override;
 
   // OutputSurfaceClient implementation.
+  void CommitVSyncParameters(base::TimeTicks timebase,
+                             base::TimeDelta interval) override;
   void SetBeginFrameSource(BeginFrameSource* source) override;
   void SetNeedsRedrawRect(const gfx::Rect& rect) override;
   void SetExternalTilePriorityConstraints(

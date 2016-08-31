@@ -86,6 +86,8 @@ class CompositorOutputSurface
   };
 
   void OnMessageReceived(const IPC::Message& message);
+  void OnUpdateVSyncParametersFromBrowser(base::TimeTicks timebase,
+                                          base::TimeDelta interval);
   void OnReclaimCompositorResources(uint32_t output_surface_id,
                                     bool is_swap_ack,
                                     const cc::ReturnedResourceArray& resources);

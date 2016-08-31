@@ -2360,6 +2360,13 @@ bool LayerTreeHostImpl::InitializeRenderer(OutputSurface* output_surface) {
   CreateTileManagerResources();
   RecreateTreeResources();
 
+  // Initialize vsync parameters to sane values.
+  const base::TimeDelta display_refresh_interval =
+      base::TimeDelta::FromMicroseconds(
+          base::Time::kMicrosecondsPerSecond /
+          settings_.renderer_settings.refresh_rate);
+  CommitVSyncParameters(base::TimeTicks(), display_refresh_interval);
+
   // TODO(brianderson): Don't use a hard-coded parent draw time.
   base::TimeDelta parent_draw_time =
       (!settings_.use_external_begin_frame_source &&
@@ -2378,6 +2385,11 @@ bool LayerTreeHostImpl::InitializeRenderer(OutputSurface* output_surface) {
   SetRequiresHighResToDraw();
 
   return true;
+}
+
+void LayerTreeHostImpl::CommitVSyncParameters(base::TimeTicks timebase,
+                                              base::TimeDelta interval) {
+  client_->CommitVSyncParameters(timebase, interval);
 }
 
 void LayerTreeHostImpl::SetBeginFrameSource(BeginFrameSource* source) {

@@ -75,22 +75,28 @@ void SingleThreadProxy::Start(
             CompositorTimingHistory::BROWSER_UMA,
             layer_tree_host_->rendering_stats_instrumentation()));
 
-    // BFS must either be external or come from the output surface.  If
-    // external, it must be provided.  If from the output surface, it must
-    // not be provided.
-    // TODO(enne): Make all BFS come from the output surface.
-    DCHECK(layer_tree_host_->settings().use_external_begin_frame_source ^
-           layer_tree_host_->settings().use_output_surface_begin_frame_source);
-    DCHECK(!layer_tree_host_->settings().use_external_begin_frame_source ||
-           external_begin_frame_source_);
-    DCHECK(
-        !layer_tree_host_->settings().use_output_surface_begin_frame_source ||
-        !external_begin_frame_source_);
+    BeginFrameSource* frame_source = nullptr;
+    if (!layer_tree_host_->settings().use_output_surface_begin_frame_source) {
+      frame_source = external_begin_frame_source_.get();
+      if (!scheduler_settings.throttle_frame_production) {
+        // Unthrottled source takes precedence over external sources.
+        unthrottled_begin_frame_source_.reset(new BackToBackBeginFrameSource(
+            base::MakeUnique<DelayBasedTimeSource>(
+                task_runner_provider_->MainThreadTaskRunner())));
+        frame_source = unthrottled_begin_frame_source_.get();
+      }
+      if (!frame_source) {
+        synthetic_begin_frame_source_.reset(new DelayBasedBeginFrameSource(
+            base::MakeUnique<DelayBasedTimeSource>(
+                task_runner_provider_->MainThreadTaskRunner())));
+        frame_source = synthetic_begin_frame_source_.get();
+      }
+    }
+
     scheduler_on_impl_thread_ =
         Scheduler::Create(this, scheduler_settings, layer_tree_host_->id(),
                           task_runner_provider_->MainThreadTaskRunner(),
-                          external_begin_frame_source_.get(),
-                          std::move(compositor_timing_history));
+                          frame_source, std::move(compositor_timing_history));
   }
 
   layer_tree_host_impl_ = layer_tree_host_->CreateLayerTreeHostImpl(this);
@@ -454,6 +460,12 @@ void SingleThreadProxy::DidLoseOutputSurfaceOnImplThread() {
   if (scheduler_on_impl_thread_)
     scheduler_on_impl_thread_->DidLoseOutputSurface();
   output_surface_lost_ = true;
+}
+
+void SingleThreadProxy::CommitVSyncParameters(base::TimeTicks timebase,
+                                              base::TimeDelta interval) {
+  if (synthetic_begin_frame_source_)
+    synthetic_begin_frame_source_->OnUpdateVSyncParameters(timebase, interval);
 }
 
 void SingleThreadProxy::SetBeginFrameSource(BeginFrameSource* source) {
