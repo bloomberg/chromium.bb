@@ -1079,7 +1079,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
     ClearClientDownloadRequest();
   }
   {
-    // Invalid response should result in UNKNOWN.
+    // Invalid response should result in SAFE (default value in proto).
     ClientDownloadResponse invalid_response;
     factory.SetFakeResponse(DownloadProtectionService::GetDownloadRequestUrl(),
                             invalid_response.SerializePartialAsString(),
@@ -1089,7 +1089,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
         &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                           base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
-    EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
+    EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
     EXPECT_TRUE(HasClientDownloadRequest());
     ClearClientDownloadRequest();
     EXPECT_FALSE(DownloadFeedbackService::GetPingsForDownloadForTesting(

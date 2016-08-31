@@ -400,7 +400,7 @@ message ClientDownloadResponse {
     // Chrome should show the default warning if configured for this file type.
     UNKNOWN = 5;
   }
-  required Verdict verdict = 1;
+  optional Verdict verdict = 1 [default = SAFE];
 
   message MoreInfo {
     // A human-readable string describing the nature of the warning.
