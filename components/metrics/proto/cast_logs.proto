@@ -120,7 +120,7 @@ message CastLogsProto {
   repeated CastConnectionInfo cast_connection_info = 2;
 
   // Stores Cast-enabled device specific events with a various context data.
-  // Next tag: 10
+  // Next tag: 12
   message CastEventProto {
     // The name of the action, hashed by same logic used to hash user action
     // event and histogram.
@@ -152,6 +152,10 @@ message CastLogsProto {
 
     // An optional value for the multi-room group uuid.
     optional fixed64 group_uuid = 10;
+
+    // For application events associated with an assistant session, identifies
+    // the assistant conversation.
+    optional string conversation_key = 11;
   }
   repeated CastEventProto cast_event = 3;
 
