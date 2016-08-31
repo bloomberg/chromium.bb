@@ -159,6 +159,8 @@ static_library("protocol") {
     "transport_context.h",
     "v2_authenticator.cc",
     "v2_authenticator.h",
+    "validating_authenticator.cc",
+    "validating_authenticator.h",
     "video_renderer.h",
     "video_stats_stub.h",
     "video_stub.h",
@@ -299,6 +301,7 @@ source_set("unit_tests") {
     "ssl_hmac_channel_authenticator_unittest.cc",
     "third_party_authenticator_unittest.cc",
     "v2_authenticator_unittest.cc",
+    "validating_authenticator_unittest.cc",
     "video_frame_pump_unittest.cc",
     "webrtc_transport_unittest.cc",
   ]

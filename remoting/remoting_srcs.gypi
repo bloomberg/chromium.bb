@@ -227,6 +227,8 @@
       'protocol/transport_context.h',
       'protocol/v2_authenticator.cc',
       'protocol/v2_authenticator.h',
+      'protocol/validating_authenticator.cc',
+      'protocol/validating_authenticator.h',
       'protocol/video_renderer.h',
       'protocol/video_stats_stub.h',
       'protocol/video_stub.h',
@@ -360,7 +362,7 @@
       'client/plugin/pepper_video_renderer_3d.cc',
       'client/plugin/pepper_video_renderer_3d.h',
     ],
-    
+
     'remoting_opengl_renderer_sources': [
       'client/gl_canvas.cc',
       'client/gl_canvas.h',

@@ -13,6 +13,10 @@
 namespace remoting {
 namespace protocol {
 
+MockAuthenticator::MockAuthenticator() {}
+
+MockAuthenticator::~MockAuthenticator() {}
+
 MockConnectionToClientEventHandler::MockConnectionToClientEventHandler() {}
 
 MockConnectionToClientEventHandler::~MockConnectionToClientEventHandler() {}
