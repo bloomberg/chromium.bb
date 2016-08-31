@@ -257,6 +257,7 @@
     { "name": "google", "include_subdomains": true, "mode": "force-https", "pins": "google" },
 
     // Google domains using Expect-CT.
+    { "name": "mail.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google", "expect_ct": true, "expect_ct_report_uri": "https://clients3.google.com/ct_upload" },
     { "name": "plus.sandbox.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google", "expect_ct": true, "expect_ct_report_uri": "https://clients3.google.com/ct_upload" },
 
     // Now we force HTTPS for subtrees of google.com.
@@ -278,7 +279,6 @@
     { "name": "hostedtalkgadget.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "inbox.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "login.corp.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
-    { "name": "mail.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "mail-settings.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "myaccount.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "passwords.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
