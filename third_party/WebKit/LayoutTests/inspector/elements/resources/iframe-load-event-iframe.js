@@ -1,7 +1,7 @@
 function loadSecondIFrame()
 {
-    document.getElementById("myframe").onload = null;
     document.getElementById("myframe").src = "resources/iframe-load-event-iframe-2.html";
+    return new Promise((resolve) => document.getElementById("myframe").onload = resolve);
 }
 
 function test()
@@ -10,17 +10,7 @@ function test()
 
     function step1()
     {
-        InspectorTest.domModel.addEventListener(WebInspector.DOMModel.Events.NodeInserted, nodeInserted);
-        InspectorTest.evaluateInPage("loadSecondIFrame()");
-
-        function nodeInserted(event)
-        {
-            var node = event.data;
-            if (node.getAttribute("id") === "myframe") {
-                InspectorTest.expandElementsTree(step2);
-                InspectorTest.domModel.removeEventListener(WebInspector.DOMModel.Events.NodeInserted, nodeInserted);
-            }
-        }
+        InspectorTest.evaluateInPageAsync("loadSecondIFrame()").then(() => InspectorTest.expandElementsTree(step2));
     }
 
     function step2()
