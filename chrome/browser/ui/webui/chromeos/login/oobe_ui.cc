@@ -63,11 +63,13 @@
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/content_switches.h"
@@ -180,11 +182,6 @@ std::string GetDisplayType(const GURL& url) {
     return OobeUI::kLoginDisplay;
   }
   return path;
-}
-
-bool UseMDOobe() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kEnableMdOobe);
 }
 
 }  // namespace
@@ -494,7 +491,9 @@ void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
   bool new_kiosk_ui = KioskAppMenuHandler::EnableNewKioskUI();
   localized_strings->SetString("newKioskUI", new_kiosk_ui ? "on" : "off");
   localized_strings->SetString(
-      "newOobeUI", (md_oobe_enabled_ && UseMDOobe()) ? "on" : "off");
+      "newOobeUI",
+      g_browser_process->local_state()->GetBoolean(prefs::kOobeMdMode) ? "on"
+                                                                       : "off");
 }
 
 void OobeUI::AddScreenHandler(BaseScreenHandler* handler) {
@@ -598,10 +597,6 @@ void OobeUI::OnCurrentScreenChanged(const std::string& screen) {
   FOR_EACH_OBSERVER(Observer,
                     observer_list_,
                     OnCurrentScreenChanged(current_screen_, new_screen));
-}
-
-void OobeUI::EnableMdOobe() {
-  md_oobe_enabled_ = true;
 }
 
 }  // namespace chromeos

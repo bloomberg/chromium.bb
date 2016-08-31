@@ -184,6 +184,11 @@ void InitializeCrashReporter() {
 }
 #endif
 
+bool UseMDOobe() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kEnableMdOobe);
+}
+
 }  // namespace
 
 namespace chromeos {
@@ -313,6 +318,10 @@ void WizardController::Init(const std::string& first_screen_name) {
   // the choice to setup the device manually. The pref will be set properly if
   // an eligible controller is detected later.
   SetControllerDetectedPref(false);
+
+  // If flag disappeared after restart, disable.
+  if (!UseMDOobe())
+    GetLocalState()->SetBoolean(prefs::kOobeMdMode, false);
 
   AdvanceToScreen(first_screen_name_);
   if (!IsMachineHWIDCorrect() && !StartupUtils::IsDeviceRegistered() &&
@@ -920,7 +929,9 @@ void WizardController::OnHIDScreenNecessityCheck(bool screen_needed) {
   if (screen_needed) {
     ShowHIDDetectionScreen();
   } else {
-    oobe_ui_->EnableMdOobe();
+    if (UseMDOobe())
+      GetLocalState()->SetBoolean(prefs::kOobeMdMode, true);
+
     ShowNetworkScreen();
   }
 }
@@ -976,7 +987,9 @@ void WizardController::AdvanceToScreen(const std::string& screen_name) {
             weak_factory_.GetWeakPtr());
         oobe_ui_->GetHIDDetectionView()->CheckIsScreenRequired(on_check);
       } else {
-        oobe_ui_->EnableMdOobe();
+        if (UseMDOobe())
+          GetLocalState()->SetBoolean(prefs::kOobeMdMode, true);
+
         ShowNetworkScreen();
       }
     } else {
