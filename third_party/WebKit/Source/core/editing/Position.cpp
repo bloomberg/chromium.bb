@@ -680,7 +680,7 @@ void showTree(const blink::Position* pos)
     if (pos)
         pos->showTreeForThis();
     else
-        fprintf(stderr, "Cannot showTree for (nil)\n");
+        LOG(INFO) << "Cannot showTree for <null>";
 }
 
 #endif

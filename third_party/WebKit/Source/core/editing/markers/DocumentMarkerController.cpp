@@ -746,22 +746,30 @@ bool DocumentMarkerController::setMarkersActive(Node* node, unsigned startOffset
 #ifndef NDEBUG
 void DocumentMarkerController::showMarkers() const
 {
-    fprintf(stderr, "%d nodes have markers:\n", m_markers.size());
+    StringBuilder builder;
     MarkerMap::const_iterator end = m_markers.end();
     for (MarkerMap::const_iterator nodeIterator = m_markers.begin(); nodeIterator != end; ++nodeIterator) {
         const Node* node = nodeIterator->key;
-        fprintf(stderr, "%p", node);
+        builder.append(String::format("%p", node));
         MarkerLists* markers = m_markers.get(node);
         for (size_t markerListIndex = 0; markerListIndex < DocumentMarker::MarkerTypeIndexesCount; ++markerListIndex) {
             Member<MarkerList>& list = (*markers)[markerListIndex];
             for (unsigned markerIndex = 0; list.get() && markerIndex < list->size(); ++markerIndex) {
                 DocumentMarker* marker = list->at(markerIndex).get();
-                fprintf(stderr, " %d:[%d:%d](%d)", marker->type(), marker->startOffset(), marker->endOffset(), marker->activeMatch());
+                builder.append(" ");
+                builder.appendNumber(marker->type());
+                builder.append(":[");
+                builder.appendNumber(marker->startOffset());
+                builder.append(":");
+                builder.appendNumber(marker->endOffset());
+                builder.append("](");
+                builder.appendNumber(marker->activeMatch());
+                builder.append(")");
             }
         }
-
-        fprintf(stderr, "\n");
+        builder.append("\n");
     }
+    LOG(INFO) << m_markers.size() << " nodes have markers:\n" << builder.toString().utf8().data();
 }
 #endif
 
