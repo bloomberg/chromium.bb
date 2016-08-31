@@ -77,24 +77,20 @@ ProxyImpl::ProxyImpl(
           CompositorTimingHistory::RENDERER_UMA,
           rendering_stats_instrumentation_));
 
-  BeginFrameSource* frame_source = external_begin_frame_source_.get();
-  if (!scheduler_settings.throttle_frame_production) {
-    // Unthrottled source takes precedence over external sources.
-    unthrottled_begin_frame_source_.reset(
-        new BackToBackBeginFrameSource(base::MakeUnique<DelayBasedTimeSource>(
-            task_runner_provider_->ImplThreadTaskRunner())));
-    frame_source = unthrottled_begin_frame_source_.get();
-  }
-  if (!frame_source) {
-    synthetic_begin_frame_source_.reset(
-        new DelayBasedBeginFrameSource(base::MakeUnique<DelayBasedTimeSource>(
-            task_runner_provider_->ImplThreadTaskRunner())));
-    frame_source = synthetic_begin_frame_source_.get();
-  }
-  scheduler_ =
-      Scheduler::Create(this, scheduler_settings, layer_tree_host_id_,
-                        task_runner_provider_->ImplThreadTaskRunner(),
-                        frame_source, std::move(compositor_timing_history));
+  // BFS must either be external or come from the output surface.  If
+  // external, it must be provided.  If from the output surface, it must
+  // not be provided.
+  // TODO(enne): Make all BFS come from the output surface.
+  DCHECK(layer_tree_host->settings().use_external_begin_frame_source ^
+         layer_tree_host->settings().use_output_surface_begin_frame_source);
+  DCHECK(!layer_tree_host->settings().use_external_begin_frame_source ||
+         external_begin_frame_source_);
+  DCHECK(!layer_tree_host->settings().use_output_surface_begin_frame_source ||
+         !external_begin_frame_source_);
+  scheduler_ = Scheduler::Create(this, scheduler_settings, layer_tree_host_id_,
+                                 task_runner_provider_->ImplThreadTaskRunner(),
+                                 external_begin_frame_source_.get(),
+                                 std::move(compositor_timing_history));
 
   DCHECK_EQ(scheduler_->visible(), layer_tree_host_impl_->visible());
 }
@@ -116,8 +112,6 @@ ProxyImpl::~ProxyImpl() {
 
   scheduler_ = nullptr;
   external_begin_frame_source_ = nullptr;
-  unthrottled_begin_frame_source_ = nullptr;
-  synthetic_begin_frame_source_ = nullptr;
   layer_tree_host_impl_ = nullptr;
   // We need to explicitly shutdown the notifier to destroy any weakptrs it is
   // holding while still on the compositor thread. This also ensures any
@@ -275,13 +269,6 @@ void ProxyImpl::DidLoseOutputSurfaceOnImplThread() {
   DCHECK(IsImplThread());
   channel_impl_->DidLoseOutputSurface();
   scheduler_->DidLoseOutputSurface();
-}
-
-void ProxyImpl::CommitVSyncParameters(base::TimeTicks timebase,
-                                      base::TimeDelta interval) {
-  DCHECK(IsImplThread());
-  if (synthetic_begin_frame_source_)
-    synthetic_begin_frame_source_->OnUpdateVSyncParameters(timebase, interval);
 }
 
 void ProxyImpl::SetBeginFrameSource(BeginFrameSource* source) {
