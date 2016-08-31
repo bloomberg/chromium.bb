@@ -2131,6 +2131,7 @@
         "chrome_sdk": false,
         "chrome_sdk_build_chrome": false,
         "dev_installer_prebuilts": false,
+        "important": true,
         "sync_chrome": false,
         "vm_tests": [],
         "vm_tests_override": null
@@ -27404,6 +27405,7 @@
         "buildslave_type": "gce_beefy",
         "chrome_sdk": false,
         "chrome_sdk_build_chrome": false,
+        "important": true,
         "sync_chrome": false,
         "vm_tests": [],
         "vm_tests_override": null
