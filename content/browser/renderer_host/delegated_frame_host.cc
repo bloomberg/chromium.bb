@@ -66,9 +66,6 @@ void RequireCallback(cc::SurfaceManager* manager,
 DelegatedFrameHost::DelegatedFrameHost(DelegatedFrameHostClient* client)
     : client_(client),
       compositor_(nullptr),
-      using_begin_frame_scheduling_(
-          !base::CommandLine::ForCurrentProcess()->HasSwitch(
-              cc::switches::kDisableBeginFrameScheduling)),
       tick_clock_(new base::DefaultTickClock()),
       last_output_surface_id_(0),
       pending_delegated_ack_count_(0),
@@ -808,8 +805,6 @@ void DelegatedFrameHost::OnUpdateVSyncParameters(base::TimeTicks timebase,
                                                  base::TimeDelta interval) {
   vsync_timebase_ = timebase;
   vsync_interval_ = interval;
-  if (!using_begin_frame_scheduling_ && client_->DelegatedFrameHostIsVisible())
-    client_->DelegatedFrameHostUpdateVSyncParameters(timebase, interval);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

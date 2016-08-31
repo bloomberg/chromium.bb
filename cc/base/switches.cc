@@ -44,9 +44,6 @@ const char kSlowDownRasterScaleFactor[] = "slow-down-raster-scale-factor";
 // Compress tile textures for GPUs supporting it.
 const char kEnableTileCompression[] = "enable-tile-compression";
 
-// Disable the BeginFrame signal from browser to renderer to schedule rendering.
-const char kDisableBeginFrameScheduling[] = "disable-begin-frame-scheduling";
-
 // Enables the GPU benchmarking extension
 const char kEnableGpuBenchmarking[] = "enable-gpu-benchmarking";
 
