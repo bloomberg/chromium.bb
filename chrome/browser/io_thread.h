@@ -222,10 +222,12 @@ class IOThread : public content::BrowserThreadDelegate {
   // Returns a getter for the URLRequestContext.  Only called on the UI thread.
   net::URLRequestContextGetter* system_url_request_context_getter();
 
-  // Clears the host cache.  Intended to be used to prevent exposing recently
+  // Clears the host cache. Intended to be used to prevent exposing recently
   // visited sites on about:net-internals/#dns and about:dns pages.  Must be
-  // called on the IO thread.
-  void ClearHostCache();
+  // called on the IO thread. If |host_filter| is not null, only hosts matched
+  // by it are deleted from the cache.
+  void ClearHostCache(
+      const base::Callback<bool(const std::string&)>& host_filter);
 
   const net::HttpNetworkSession::Params& NetworkSessionParams() const;
 

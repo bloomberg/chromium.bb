@@ -6,6 +6,7 @@
 
 #include "ash/common/system/chromeos/devicetype_utils.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -162,7 +163,7 @@ void ClearDnsCache(IOThread* io_thread) {
   if (browser_shutdown::IsTryingToQuit())
     return;
 
-  io_thread->ClearHostCache();
+  io_thread->ClearHostCache(base::Callback<bool(const std::string&)>());
 }
 
 void PushFrontIMIfNotExists(const std::string& input_method,

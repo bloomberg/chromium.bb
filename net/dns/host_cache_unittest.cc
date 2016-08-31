@@ -4,6 +4,10 @@
 
 #include "net/dns/host_cache.h"
 
+#include <string>
+
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/format_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -20,6 +24,10 @@ const int kMaxCacheEntries = 10;
 // Builds a key for |hostname|, defaulting the address family to unspecified.
 HostCache::Key Key(const std::string& hostname) {
   return HostCache::Key(hostname, ADDRESS_FAMILY_UNSPECIFIED, 0);
+}
+
+bool FoobarIndexIsOdd(const std::string& foobarx_com) {
+  return (foobarx_com[6] - '0') % 2 == 1;
 }
 
 }  // namespace
@@ -292,6 +300,40 @@ TEST(HostCacheTest, Clear) {
   EXPECT_EQ(3u, cache.size());
 
   cache.clear();
+
+  EXPECT_EQ(0u, cache.size());
+}
+
+TEST(HostCacheTest, ClearForHosts) {
+  const base::TimeDelta kTTL = base::TimeDelta::FromSeconds(10);
+
+  HostCache cache(kMaxCacheEntries);
+
+  // Set t=0.
+  base::TimeTicks now;
+
+  HostCache::Entry entry = HostCache::Entry(OK, AddressList());
+
+  EXPECT_EQ(0u, cache.size());
+
+  // Add several entries.
+  cache.Set(Key("foobar1.com"), entry, now, kTTL);
+  cache.Set(Key("foobar2.com"), entry, now, kTTL);
+  cache.Set(Key("foobar3.com"), entry, now, kTTL);
+  cache.Set(Key("foobar4.com"), entry, now, kTTL);
+  cache.Set(Key("foobar5.com"), entry, now, kTTL);
+
+  EXPECT_EQ(5u, cache.size());
+
+  // Clear the hosts matching a certain predicate, such as the number being odd.
+  cache.ClearForHosts(base::Bind(&FoobarIndexIsOdd));
+
+  EXPECT_EQ(2u, cache.size());
+  EXPECT_TRUE(cache.Lookup(Key("foobar2.com"), now));
+  EXPECT_TRUE(cache.Lookup(Key("foobar4.com"), now));
+
+  // Passing null callback will delete all hosts.
+  cache.ClearForHosts(base::Callback<bool(const std::string&)>());
 
   EXPECT_EQ(0u, cache.size());
 }

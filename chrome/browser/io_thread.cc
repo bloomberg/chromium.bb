@@ -757,12 +757,13 @@ void IOThread::CreateDefaultAuthHandlerFactory() {
           globals_->http_auth_preferences.get(), globals_->host_resolver.get());
 }
 
-void IOThread::ClearHostCache() {
+void IOThread::ClearHostCache(
+    const base::Callback<bool(const std::string&)>& host_filter) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   net::HostCache* host_cache = globals_->host_resolver->GetHostCache();
   if (host_cache)
-    host_cache->clear();
+    host_cache->ClearForHosts(host_filter);
 }
 
 const net::HttpNetworkSession::Params& IOThread::NetworkSessionParams() const {
@@ -782,7 +783,7 @@ void IOThread::ChangedToOnTheRecordOnIOThread() {
 
   // Clear the host cache to avoid showing entries from the OTR session
   // in about:net-internals.
-  ClearHostCache();
+  ClearHostCache(base::Callback<bool(const std::string&)>());
 }
 
 void IOThread::InitSystemRequestContext() {

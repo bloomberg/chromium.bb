@@ -170,10 +170,12 @@ bool ForwardPrimaryPatternCallback(
   return predicate.Run(primary_pattern);
 }
 
-void ClearHostnameResolutionCacheOnIOThread(IOThread* io_thread) {
+void ClearHostnameResolutionCacheOnIOThread(
+    IOThread* io_thread,
+    base::Callback<bool(const std::string&)> host_filter) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  io_thread->ClearHostCache();
+  io_thread->ClearHostCache(host_filter);
 }
 
 void ClearNetworkPredictorOnIOThread(chrome_browser_net::Predictor* predictor) {
@@ -535,15 +537,18 @@ void BrowsingDataRemover::RemoveImpl(
       origin_power_map->ClearOriginMap(nullable_filter);
 
     // Need to clear the host cache and accumulated speculative data, as it also
-    // reveals some history: we have no mechanism to track when these items were
-    // created, so we'll clear them all. Better safe than sorry.
+    // reveals some history. We have no mechanism to track when these items were
+    // created, so we'll not honor the time range.
+    // TODO(msramek): We can use the plugin filter here because plugins, same
+    // as the hostname resolution cache, key their entries by hostname. Rename
+    // BuildPluginFilter() to something more general to reflect this use.
     if (g_browser_process->io_thread()) {
-      // TODO(dmurph): Support all backends with filter (crbug.com/113621).
       waiting_for_clear_hostname_resolution_cache_ = true;
       BrowserThread::PostTaskAndReply(
           BrowserThread::IO, FROM_HERE,
           base::Bind(&ClearHostnameResolutionCacheOnIOThread,
-                     g_browser_process->io_thread()),
+                     g_browser_process->io_thread(),
+                     filter_builder.BuildPluginFilter()),
           base::Bind(&BrowsingDataRemover::OnClearedHostnameResolutionCache,
                      weak_ptr_factory_.GetWeakPtr()));
     }
