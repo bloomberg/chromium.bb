@@ -73,6 +73,12 @@ class FlagsState {
                               SentinelsMode sentinels,
                               const char* enable_features_flag_name,
                               const char* disable_features_flag_name);
+
+  // Reads the state from |flags_storage| and returns the set of command line
+  // flags that correspond to enabled entries. Does not populate any information
+  // about entries that enable/disable base::Feature states.
+  std::set<std::string> GetSwitchesFromFlags(FlagsStorage* flags_storage);
+
   bool IsRestartNeededToCommitChanges();
   void SetFeatureEntryEnabled(FlagsStorage* flags_storage,
                               const std::string& internal_name,
@@ -122,6 +128,10 @@ class FlagsState {
       const char* extra_flag_sentinel_end_flag_name);
 
  private:
+  // Keeps track of affected switches for each FeatureEntry, based on which
+  // choice is selected for it.
+  struct SwitchEntry;
+
   // Adds mapping to |name_to_switch_map| to set the given switch name/value.
   void AddSwitchMapping(const std::string& key,
                         const std::string& switch_name,
@@ -170,6 +180,15 @@ class FlagsState {
   void GetSanitizedEnabledFlagsForCurrentPlatform(
       FlagsStorage* flags_storage,
       std::set<std::string>* result);
+
+  // Generates a flags to switches mapping based on the set of enabled flags
+  // from |flags_storage|. On output, |enabled_entries| will contain the
+  // internal names of enabled flags and |name_to_switch_map| will contain
+  // information on how they map to command-line flags or features.
+  void GenerateFlagsToSwitchesMapping(
+      FlagsStorage* flags_storage,
+      std::set<std::string>* enabled_entries,
+      std::map<std::string, SwitchEntry>* name_to_switch_map);
 
   const FeatureEntry* feature_entries_;
   size_t num_feature_entries_;

@@ -2184,8 +2184,9 @@ void ResetAllFlags(flags_ui::FlagsStorage* flags_storage) {
 }
 
 void RecordUMAStatistics(flags_ui::FlagsStorage* flags_storage) {
-  std::set<std::string> flags = flags_storage->GetFlags();
-  ReportAboutFlagsHistogram("Launch.FlagsAtStartup", flags);
+  const std::set<std::string> switches =
+      FlagsStateSingleton::GetFlagsState()->GetSwitchesFromFlags(flags_storage);
+  ReportAboutFlagsHistogram("Launch.FlagsAtStartup", switches);
 }
 
 base::HistogramBase::Sample GetSwitchUMAId(const std::string& switch_name) {
