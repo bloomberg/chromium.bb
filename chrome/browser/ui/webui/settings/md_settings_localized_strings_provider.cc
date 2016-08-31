@@ -31,6 +31,7 @@
 #include "ash/common/system/chromeos/devicetype_utils.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/webui/chromeos/ui_account_tweaks.h"
+#include "chrome/common/chrome_switches.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
@@ -1083,6 +1084,12 @@ void AddPrintingStrings(content::WebUIDataSource* html_source) {
   html_source->AddString("devicesUrl", chrome::kChromeUIDevicesURL);
   html_source->AddString("printingCloudPrintLearnMoreUrl",
                          chrome::kCloudPrintLearnMoreURL);
+
+#if defined(OS_CHROMEOS)
+  html_source->AddBoolean("showCupsPrintingFeatures",
+                          base::CommandLine::ForCurrentProcess()->HasSwitch(
+                              ::switches::kEnableNativeCups));
+#endif
 }
 
 void AddPrivacyStrings(content::WebUIDataSource* html_source) {

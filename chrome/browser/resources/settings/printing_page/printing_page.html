@@ -21,11 +21,13 @@
       </array-selector>
       <neon-animatable route-path="default">
 <if expr="chromeos">
-        <div id="cupsPrinters" class="settings-box first"
-            on-tap="onTapCupsPrinters_" actionable>
-          <iron-icon icon="cr:print"></iron-icon>
-          <div class="middle">$i18n{cupsPrintersTitle}</div>
-        </div>
+        <template is="dom-if" if="[[showCupsPrintingFeatures_]]">
+          <div id="cupsPrinters" class="settings-box first"
+              on-tap="onTapCupsPrinters_" actionable>
+            <iron-icon icon="cr:print"></iron-icon>
+            <div class="middle">$i18n{cupsPrintersTitle}</div>
+          </div>
+        </template>
 </if>
         <div id="cloudPrinters" class="settings-box"
             on-tap="onTapCloudPrinters_" actionable>
