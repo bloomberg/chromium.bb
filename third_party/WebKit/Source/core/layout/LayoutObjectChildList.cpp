@@ -84,6 +84,8 @@ LayoutObject* LayoutObjectChildList::removeChildNode(LayoutObject* owner, Layout
         if (notifyLayoutObject) {
             LayoutCounter::layoutObjectSubtreeWillBeDetached(oldChild);
             oldChild->willBeRemovedFromTree();
+        } else if (oldChild->isBox() && toLayoutBox(oldChild)->isOrthogonalWritingModeRoot()) {
+            toLayoutBox(oldChild)->unmarkOrthogonalWritingModeRoot();
         }
     }
 
