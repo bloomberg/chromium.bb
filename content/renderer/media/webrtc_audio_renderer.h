@@ -213,7 +213,7 @@ class CONTENT_EXPORT WebRtcAudioRenderer
 
   // Protects access to |state_|, |source_|, |audio_fifo_|,
   // |audio_delay_milliseconds_|, |fifo_delay_milliseconds_|, |current_time_|,
-  // |sink_params_| and |render_callback_count_|
+  // |sink_params_|, |render_callback_count_| and |max_render_time_|.
   mutable base::Lock lock_;
 
   // Ref count for the MediaPlayers which are playing audio.

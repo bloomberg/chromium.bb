@@ -302,15 +302,6 @@ void WebRtcAudioRenderer::EnterPauseState() {
 void WebRtcAudioRenderer::Stop() {
   DVLOG(1) << "WebRtcAudioRenderer::Stop()";
   DCHECK(thread_checker_.CalledOnValidThread());
-  // If |max_render_time_| is zero, no render call has been made.
-  if (!max_render_time_.is_zero()) {
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "Media.Audio.Render.GetSourceDataTimeMax.WebRTC",
-        max_render_time_.InMicroseconds(), kRenderTimeHistogramMinMicroseconds,
-        kRenderTimeHistogramMaxMicroseconds, 50);
-    max_render_time_ = base::TimeDelta();
-  }
-
   {
     base::AutoLock auto_lock(lock_);
     if (state_ == UNINITIALIZED)
@@ -324,6 +315,19 @@ void WebRtcAudioRenderer::Stop() {
     source_->RemoveAudioRenderer(this);
     source_ = NULL;
     state_ = UNINITIALIZED;
+  }
+
+  // Apart from here, |max_render_time_| is only accessed in SourceCallback(),
+  // which is guaranteed to not run after |source_| has been set to null, and
+  // not before this function has returned.
+  // If |max_render_time_| is zero, no render call has been made.
+  if (!max_render_time_.is_zero()) {
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "Media.Audio.Render.GetSourceDataTimeMax.WebRTC",
+        max_render_time_.InMicroseconds(),
+        kRenderTimeHistogramMinMicroseconds,
+        kRenderTimeHistogramMaxMicroseconds, 50);
+    max_render_time_ = base::TimeDelta();
   }
 
   // Make sure to stop the sink while _not_ holding the lock since the Render()
