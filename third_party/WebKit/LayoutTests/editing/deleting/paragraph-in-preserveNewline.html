@@ -1,37 +1,27 @@
-<!DOCTYPE html>
-<html>
-<body>
-<p id="description">This tests for a bug where deleting a paragraph in preserveNewline text would introduce an extra line.  You should see '\nbar' below.</p>
-<div id="test" contenteditable="true"><pre>foo
-bar</pre></div>
-
-<script src="../../resources/dump-as-markup.js"></script>
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
-function runTestsOn(platform) {
-    var sel = window.getSelection();
-    var e = document.getElementById("test");
-    
-    if (window.internals)
-        internals.settings.setEditingBehavior(platform);
+    test(() => {
+        assert_not_equals(window.internals, undefined,
+            'This test requires window.internals');
+        ['mac', 'win', 'unix', 'android'].forEach(platform => {
+            internals.settings.setEditingBehavior(platform);
+            assert_selection(
+                '<div contenteditable><pre>^foo|\n</pre></div>',
+                'delete',
+                '<div contenteditable><pre>|\n</pre></div>',
+                `${platform}: Delete a paragraph in preserving newline`);
 
-    sel.collapse(e, 0);
-    sel.modify("extend", "forward", "character");
-    sel.modify("extend", "forward", "character");
-    sel.modify("extend", "forward", "character");
-    document.execCommand("Delete");
-    Markup.dump("test", "on " + platform);
-    document.execCommand("undo");
-    Markup.dump("test", "after undo on " + platform);
-}
-
-if (window.testRunner)
-     testRunner.dumpEditingCallbacks();
-Markup.description(description.textContent);
-Markup.dump("test", "initial state");
-runTestsOn("mac");
-runTestsOn("win");
-runTestsOn("unix");
-runTestsOn("android");
+            assert_selection(
+                '<div contenteditable><pre>^foo|\n</pre></div>',
+                selection => {
+                    selection.document.execCommand('delete');
+                    selection.document.execCommand('undo');
+                },
+                '<div contenteditable><pre>^foo|\n</pre></div>',
+                '${platform}: Undo after delete a paragraph in preserving newline');
+        });
+    });
 </script>
-</body>
-</html>
