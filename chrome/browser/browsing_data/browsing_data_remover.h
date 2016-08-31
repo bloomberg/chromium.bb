@@ -382,7 +382,7 @@ class BrowsingDataRemover : public KeyedService
 
   // Callback for when TemplateURLService has finished loading. Clears the data,
   // clears the respective waiting flag, and invokes NotifyIfDone.
-  void OnKeywordsLoaded();
+  void OnKeywordsLoaded(base::Callback<bool(const GURL&)> url_filter);
 
 #if defined(ENABLE_PLUGINS)
   // Called when plugin data has been cleared. Invokes NotifyIfDone.
