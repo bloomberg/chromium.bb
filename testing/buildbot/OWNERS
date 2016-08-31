@@ -18,6 +18,7 @@ per-file chromium.android.json=jbudorick@chromium.org
 per-file chromium.fyi.json=creis@chromium.org
 per-file chromium.fyi.json=nick@chromium.org
 
+per-file *chromium.perf*.json=dtu@chromium.org
 per-file chromium.perf.json=eakuefner@chromium.org
 per-file chromium.perf.json=fmeawad@chromium.org
 per-file chromium.perf.json=simonhatch@chromium.org
