@@ -356,11 +356,12 @@ void SharedSampler::UnregisterCallbacks(base::ProcessId process_id) {
 
 void SharedSampler::Refresh(base::ProcessId process_id, int64_t refresh_flags) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(callbacks_map_.find(process_id) != callbacks_map_.end());
   DCHECK_NE(0, refresh_flags & GetSupportedFlags());
 
   if (process_id == 0)
     return;
+
+  DCHECK(callbacks_map_.find(process_id) != callbacks_map_.end());
 
   if (refresh_flags_ == 0) {
     base::PostTaskAndReplyWithResult(
