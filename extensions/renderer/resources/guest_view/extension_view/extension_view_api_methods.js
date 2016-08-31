@@ -32,9 +32,9 @@ ExtensionViewImpl.prototype.load = function(src) {
     this.pendingLoad = null;
     this.loadNextSrc();
   }.bind(this), function onLoadRejected() {
+    this.pendingLoad.reject('Failed to load.');
     this.pendingLoad = null;
     this.loadNextSrc();
-    reject('Failed to load.');
   }.bind(this));
 };
 
