@@ -228,7 +228,7 @@ static_library("test_support") {
 
     public_deps += [
       "//ash",
-      "//ash:test_support_without_content",
+      "//ash:test_support",
       "//ui/aura",
       "//ui/aura:test_support",
     ]
@@ -1154,7 +1154,7 @@ test("browser_tests") {
           rebase_path(chrome_tests_gypi_values.chrome_browser_tests_ash_sources,
                       ".",
                       "//chrome")
-      deps += [ "//ash:test_support_without_content" ]
+      deps += [ "//ash:test_support" ]
 
       if (enable_app_list) {
         deps += [ ":test_support_applist_ash" ]
@@ -1963,7 +1963,7 @@ test("unit_tests") {
                     ".",
                     "//chrome")
     deps += [
-      "//ash:test_support_with_content",
+      "//ash:test_support",
       "//ash/common/strings",
       "//ash/resources",
     ]
@@ -2108,10 +2108,6 @@ test("unit_tests") {
     sources -= [
       "../browser/policy/cloud/user_policy_signin_service_unittest.cc",
       "../browser/signin/signin_manager_unittest.cc",
-    ]
-    sources += [
-      "base/ash_test_environment_chrome.cc",
-      "base/ash_test_environment_chrome.h",
     ]
   }
   if (use_x11) {

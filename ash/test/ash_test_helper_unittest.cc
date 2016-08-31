@@ -4,12 +4,13 @@
 
 #include "ash/test/ash_test_helper.h"
 
-#include "ash/test/ash_test_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/views/widget/widget.h"
 
-namespace ash {
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
 
 // Tests for AshTestHelper. Who will watch the watchers? And who will test
 // the tests?
@@ -20,11 +21,9 @@ class AshTestHelperTest : public testing::Test {
 
   void SetUp() override {
     testing::Test::SetUp();
-    ash_test_environment_ = test::AshTestEnvironment::Create();
-    ash_test_helper_.reset(
-        new test::AshTestHelper(ash_test_environment_.get()));
+    ash_test_helper_.reset(new ash::test::AshTestHelper(&message_loop_));
     ash_test_helper_->SetUp(true,
-                            MaterialDesignController::Mode::UNINITIALIZED);
+                            ash::MaterialDesignController::Mode::UNINITIALIZED);
   }
 
   void TearDown() override {
@@ -32,13 +31,11 @@ class AshTestHelperTest : public testing::Test {
     testing::Test::TearDown();
   }
 
-  test::AshTestHelper* ash_test_helper() { return ash_test_helper_.get(); }
-
- protected:
-  std::unique_ptr<test::AshTestEnvironment> ash_test_environment_;
+  ash::test::AshTestHelper* ash_test_helper() { return ash_test_helper_.get(); }
 
  private:
-  std::unique_ptr<test::AshTestHelper> ash_test_helper_;
+  base::MessageLoopForUI message_loop_;
+  std::unique_ptr<ash::test::AshTestHelper> ash_test_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(AshTestHelperTest);
 };
@@ -46,6 +43,7 @@ class AshTestHelperTest : public testing::Test {
 // Ensure that we have initialized enough of Ash to create and show a window.
 TEST_F(AshTestHelperTest, AshTestHelper) {
   // Check initial state.
+  EXPECT_TRUE(ash_test_helper()->message_loop());
   EXPECT_TRUE(ash_test_helper()->test_shell_delegate());
   EXPECT_TRUE(ash_test_helper()->CurrentContext());
 
@@ -60,5 +58,3 @@ TEST_F(AshTestHelperTest, AshTestHelper) {
   EXPECT_TRUE(w1->IsActive());
   EXPECT_TRUE(w1->IsVisible());
 }
-
-}  // namespace ash

@@ -10460,15 +10460,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "ash_content_unittests"
-      },
-      {
-        "args": [
-          "--top-chrome-md=material-hybrid"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "ash_unittests"
       },
       {
@@ -10529,15 +10520,6 @@
   },
   "MD Top Chrome ChromeOS non-material": {
     "gtest_tests": [
-      {
-        "args": [
-          "--top-chrome-md=non-material"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "ash_content_unittests"
-      },
       {
         "args": [
           "--top-chrome-md=non-material"

@@ -17,7 +17,6 @@
 #include "ash/content/shell_content_state.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/ash_test_environment_content.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shell_delegate.h"
@@ -282,10 +281,7 @@ class MultiUserWindowManagerChromeOSTest : public AshTestBase {
 
 void MultiUserWindowManagerChromeOSTest::SetUp() {
   ash_test_helper()->set_test_shell_delegate(new TestShellDelegateChromeOS);
-  ash::test::AshTestEnvironmentContent* test_environment =
-      static_cast<ash::test::AshTestEnvironmentContent*>(
-          ash_test_helper()->ash_test_environment());
-  test_environment->set_content_state(new ::TestShellContentState);
+  ash_test_helper()->set_content_state(new ::TestShellContentState);
   AshTestBase::SetUp();
   session_state_delegate_ = AshTestHelper::GetTestSessionStateDelegate();
   profile_manager_.reset(

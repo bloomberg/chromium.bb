@@ -24,7 +24,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/test/ash_test_helper.h"
-#include "chrome/test/base/ash_test_environment_chrome.h"
 #elif defined(TOOLKIT_VIEWS)
 #include "ui/views/test/scoped_views_test_helper.h"
 #endif
@@ -55,9 +54,8 @@ void BrowserWithTestWindowTest::SetUp() {
   // TODO(jamescook): Windows Ash support. This will require refactoring
   // AshTestHelper and AuraTestHelper so they can be used at the same time,
   // perhaps by AshTestHelper owning an AuraTestHelper.
-  ash_test_environment_ = base::MakeUnique<AshTestEnvironmentChrome>();
-  ash_test_helper_.reset(
-      new ash::test::AshTestHelper(ash_test_environment_.get()));
+  ash_test_helper_.reset(new ash::test::AshTestHelper(
+      base::MessageLoopForUI::current()));
   ash_test_helper_->SetUp(true,
                           ash::MaterialDesignController::Mode::UNINITIALIZED);
 #elif defined(TOOLKIT_VIEWS)

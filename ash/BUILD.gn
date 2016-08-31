@@ -185,14 +185,9 @@ component("ash_with_content") {
   ]
 }
 
-# Internal target consumed by |test_support_with_content| and
-# |test_support_without_content|. This target contains all the test support
-# files, with the exception of an implementation of AshTestEnvironment.
-# Consumers of ash should use one of |test_support_with_content| or
-# |test_support_without_content|.
-static_library("test_support_common") {
+# TODO(msw): Move support code with content deps to test_support_with_content.
+static_library("test_support") {
   testonly = true
-  visibility = [ ":*" ]
   sources = gypi_values.ash_test_support_sources
   configs += [ "//build/config:precompiled_headers" ]
 
@@ -200,11 +195,14 @@ static_library("test_support_common") {
     ":ash",
   ]
   deps = [
+    ":test_support_with_content",  # TODO(beng): reverse this direction.
     "//ash/resources",
     "//base:i18n",
     "//base/test:test_support",
     "//components/signin/core/account_id",
     "//components/user_manager:user_manager",
+    "//content/public/browser",
+    "//content/test:test_support",
     "//device/bluetooth",
     "//skia",
     "//testing/gtest",
@@ -244,35 +242,13 @@ static_library("test_support_common") {
   }
 }
 
-static_library("test_support_without_content") {
-  testonly = true
-  sources = [
-    "test/ash_test_environment_default.cc",
-  ]
-
-  public_deps = [
-    ":test_support_common",
-  ]
-
-  deps = [
-    "//base",
-    "//skia",
-  ]
-}
-
 static_library("test_support_with_content") {
   testonly = true
   sources = gypi_values.ash_test_support_with_content_sources
-  sources += [
-    "test/ash_test_environment_content.cc",
-    "test/ash_test_environment_content.h",
-  ]
   configs += [ "//build/config:precompiled_headers" ]
 
-  public_deps = [
+  deps = [
     ":ash_with_content",
-    ":test_support_common",
-    "//content/public/browser",
     "//content/test:test_support",
     "//skia",
   ]
@@ -283,7 +259,7 @@ static_library("interactive_ui_test_support") {
   configs += [ "//build/config:precompiled_headers" ]
   public_deps = [
     ":ash",
-    ":test_support_without_content",
+    ":test_support",
   ]
   sources = [
     "test/ash_interactive_ui_test_base.cc",
@@ -291,7 +267,7 @@ static_library("interactive_ui_test_support") {
   ]
   deps = [
     ":ash",
-    ":test_support_with_content",
+    ":test_support",
     "//base",
     "//skia",
     "//testing/gtest",
@@ -308,7 +284,7 @@ static_library("ash_shell_lib") {
   deps = [
     ":ash",
     ":ash_with_content",
-    ":test_support_without_content",
+    ":test_support",
     "//ash/common/strings",
     "//ash/resources",
     "//base",
@@ -367,76 +343,15 @@ static_library("ash_shell_lib_with_content") {
   }
 }
 
-# This target is intended for tests that use content. In general very few tests
-# need or use content and should be placed in |ash_unittests| instead.
-test("ash_content_unittests") {
-  sources = [
-    "content/display/screen_orientation_controller_chromeos_unittest.cc",
-    "content/keyboard_overlay/keyboard_overlay_delegate_unittest.cc",
-    "content/keyboard_overlay/keyboard_overlay_view_unittest.cc",
-    "test/ash_unittests.cc",
-  ]
-  configs += [
-    "//build/config:precompiled_headers",
-    "//build/config/compiler:no_size_t_to_int_warning",
-  ]
+test("ash_unittests") {
+  sources = gypi_values.ash_unittests_sources
+  configs += [ "//build/config:precompiled_headers" ]
 
   deps = [
     ":ash",
     ":ash_with_content",
+    ":test_support",
     ":test_support_with_content",
-    "//base",
-    "//base/test:test_support",
-    "//components/signin/core/account_id",
-    "//components/user_manager",
-    "//content/public/browser",
-    "//content/test:test_support",
-    "//mojo/edk/system",
-    "//skia",
-    "//testing/gtest",
-    "//ui/aura",
-    "//ui/aura:test_support",
-    "//ui/message_center",
-    "//ui/message_center:test_support",
-    "//ui/views",
-    "//ui/views:test_support",
-    "//ui/views/controls/webview:test_support",
-    "//ui/web_dialogs:test_support",
-  ]
-
-  data_deps = [
-    "//ash/common/strings:ash_test_strings",
-    "//ash/resources:ash_test_resources_100_percent",
-    "//ash/resources:ash_test_resources_200_percent",
-  ]
-
-  if (is_chromeos) {
-    deps += [
-      "//chromeos",
-      "//chromeos:power_manager_proto",
-      "//chromeos:test_support_without_gmock",
-      "//components/quirks",
-      "//device/bluetooth",
-      "//net:net",
-      "//ui/chromeos",
-      "//ui/display",
-      "//ui/display:test_support",
-      "//ui/display:test_util",
-    ]
-  }
-}
-
-test("ash_unittests") {
-  sources = gypi_values.ash_unittests_sources
-  sources += [ "test/ash_test_environment_default.cc" ]
-  configs += [
-    "//build/config:precompiled_headers",
-    "//build/config/compiler:no_size_t_to_int_warning",
-  ]
-
-  deps = [
-    ":ash",
-    ":test_support_without_content",
     "//ash/autoclick/common:autoclick",
     "//ash/common/strings",
     "//ash/resources",
@@ -445,9 +360,10 @@ test("ash_unittests") {
     "//base/test:test_support",
     "//components/signin/core/account_id",
     "//components/user_manager",
+    "//content/public/browser",
+    "//content/test:test_support",
     "//mojo/edk/system",
     "//skia",
-    "//testing/gmock",
     "//testing/gtest",
     "//third_party/icu",
     "//ui/accessibility",
@@ -467,12 +383,15 @@ test("ash_unittests") {
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/keyboard",
+    "//ui/keyboard:keyboard_with_content",
     "//ui/message_center",
     "//ui/message_center:test_support",
     "//ui/resources",
     "//ui/strings",
     "//ui/views",
     "//ui/views:test_support",
+    "//ui/views/controls/webview:test_support",
+    "//ui/web_dialogs:test_support",
     "//ui/wm",
     "//ui/wm:test_support",
     "//url",
@@ -484,10 +403,36 @@ test("ash_unittests") {
     "//ash/resources:ash_test_resources_200_percent",
   ]
 
+  if (!is_chromeos) {
+    sources -= [
+      # TODO(zork): fix this test to build on Windows. See: crosbug.com/26906
+      "focus_cycler_unittest.cc",
+
+      # All tests for multiple displays: not supported on Windows Ash.
+      "wm/drag_window_resizer_unittest.cc",
+
+      # Talks to ChromeOS system services.
+      "wm/lock_state_controller_unittest.cc",
+
+      # Maximize mode is only available on Chrome OS.
+      "wm/maximize_mode/maximize_mode_controller_unittest.cc",
+      "wm/maximize_mode/maximize_mode_window_manager_unittest.cc",
+
+      # Can't resize on Windows Ash. http://crbug.com/165962
+      "autoclick/autoclick_unittest.cc",
+      "magnifier/magnification_controller_unittest.cc",
+      "magnifier/partial_magnification_controller_unittest.cc",
+      "sticky_keys/sticky_keys_overlay_unittest.cc",
+      "virtual_keyboard_controller_unittest.cc",
+      "wm/workspace/workspace_window_resizer_unittest.cc",
+    ]
+  }
+
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
   if (!use_x11) {
     sources -= [ "host/ash_window_tree_host_x11_unittest.cc" ]
   }
-
   if (is_chromeos) {
     sources += [ "first_run/first_run_helper_unittest.cc" ]
     deps += [
@@ -506,35 +451,17 @@ test("ash_unittests") {
     sources -= [
       "accelerators/magnifier_key_scroller_unittest.cc",
       "accelerators/spoken_feedback_toggler_unittest.cc",
-
-      # Can't resize on Windows Ash. http://crbug.com/165962
-      "autoclick/autoclick_unittest.cc",
       "display/resolution_notification_controller_unittest.cc",
-
-      # TODO(zork): fix this test to build on Windows. See: crosbug.com/26906
-      "focus_cycler_unittest.cc",
-      "magnifier/magnification_controller_unittest.cc",
-      "magnifier/partial_magnification_controller_unittest.cc",
-      "sticky_keys/sticky_keys_overlay_unittest.cc",
-      "sticky_keys/sticky_keys_unittest.cc",
       "touch/touchscreen_util_unittest.cc",
-      "virtual_keyboard_controller_unittest.cc",
-
-      # All tests for multiple displays: not supported on Windows Ash.
-      "wm/drag_window_resizer_unittest.cc",
-
-      # Talks to ChromeOS system services.
-      "wm/lock_state_controller_unittest.cc",
-
-      # Maximize mode is only available on Chrome OS.
-      "wm/maximize_mode/maximize_mode_controller_unittest.cc",
-      "wm/maximize_mode/maximize_mode_window_manager_unittest.cc",
-      "wm/workspace/workspace_window_resizer_unittest.cc",
     ]
   }
 
   if (!use_x11 || !is_chromeos) {
     sources -= [ "touch/touch_transformer_controller_unittest.cc" ]
+  }
+
+  if (!is_chromeos) {
+    sources -= [ "sticky_keys/sticky_keys_unittest.cc" ]
   }
 }
 

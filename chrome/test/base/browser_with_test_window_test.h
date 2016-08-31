@@ -31,7 +31,6 @@ class GURL;
 #if defined(OS_CHROMEOS)
 namespace ash {
 namespace test {
-class AshTestEnvironment;
 class AshTestHelper;
 }
 }
@@ -172,7 +171,6 @@ class BrowserWithTestWindowTest : public testing::Test {
   content::RenderViewHostTestEnabler rvh_test_enabler_;
 
 #if defined(OS_CHROMEOS)
-  std::unique_ptr<ash::test::AshTestEnvironment> ash_test_environment_;
   std::unique_ptr<ash::test::AshTestHelper> ash_test_helper_;
 #elif defined(TOOLKIT_VIEWS)
   std::unique_ptr<views::ScopedViewsTestHelper> views_test_helper_;

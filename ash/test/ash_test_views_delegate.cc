@@ -5,6 +5,7 @@
 #include "ash/test/ash_test_views_delegate.h"
 
 #include "ash/shell.h"
+#include "content/public/test/web_contents_tester.h"
 
 namespace ash {
 namespace test {
@@ -12,6 +13,13 @@ namespace test {
 AshTestViewsDelegate::AshTestViewsDelegate() {}
 
 AshTestViewsDelegate::~AshTestViewsDelegate() {}
+
+content::WebContents* AshTestViewsDelegate::CreateWebContents(
+    content::BrowserContext* browser_context,
+    content::SiteInstance* site_instance) {
+  return content::WebContentsTester::CreateTestWebContents(browser_context,
+                                                           site_instance);
+}
 
 void AshTestViewsDelegate::OnBeforeWidgetInit(
     views::Widget::InitParams* params,

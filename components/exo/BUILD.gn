@@ -77,7 +77,7 @@ source_set("test_support") {
 
   deps = [
     ":exo",
-    "//ash:test_support_without_content",
+    "//ash:test_support",
     "//base",
     "//gpu",
     "//skia",
@@ -141,7 +141,7 @@ test("exo_unittests") {
 
   deps = [
     ":unit_tests",
-    "//ash:test_support_without_content",
+    "//ash:test_support",
     "//base",
     "//base/test:test_support",
     "//device/gamepad:test_helpers",
