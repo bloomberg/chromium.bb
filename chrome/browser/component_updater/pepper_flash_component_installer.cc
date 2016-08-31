@@ -28,6 +28,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pepper_flash.h"
@@ -113,9 +114,18 @@ void RegisterPepperFlashWithChrome(const base::FilePath& path,
 
   std::vector<content::WebPluginInfo> plugins;
   PluginService::GetInstance()->GetInternalPlugins(&plugins);
+  base::FilePath placeholder_path =
+      base::FilePath::FromUTF8Unsafe(ChromeContentClient::kNotPresent);
   for (const auto& plugin : plugins) {
     if (!plugin.is_pepper_plugin() || plugin.name != web_plugin.name)
       continue;
+
+    if (plugin.path == placeholder_path) {
+      // This is the Flash placeholder; replace it regardless of version or
+      // other considerations.
+      PluginService::GetInstance()->UnregisterInternalPlugin(plugin.path);
+      break;
+    }
 
     Version registered_version(base::UTF16ToUTF8(plugin.version));
 
