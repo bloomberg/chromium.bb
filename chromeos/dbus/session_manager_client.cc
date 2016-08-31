@@ -83,10 +83,6 @@ void CreateValidCredConduit(dbus::FileDescriptor* local_auth_fd,
   remote_auth_fd->CheckValidity();
 }
 
-void HandleDBusError(dbus::ErrorResponse* response) {
-  LOG(ERROR) << "DBus error " << response->ToString();
-}
-
 }  // namespace
 
 // The SessionManagerClient implementation used in production.
@@ -512,12 +508,11 @@ class SessionManagerClientImpl : public SessionManagerClient {
     // Ownership of local_auth_fd is passed to the callback that is to be
     // called on completion of this method call. This keeps the browser end
     // of the socket-pair alive for the duration of the RPC.
-    session_manager_proxy_->CallMethodWithErrorCallback(
+    session_manager_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::Bind(&SessionManagerClientImpl::OnRestartJob,
                    weak_ptr_factory_.GetWeakPtr(),
-                   base::Passed(&local_auth_fd)),
-        base::Bind(HandleDBusError));
+                   base::Passed(&local_auth_fd)));
   }
 
   // Called when kSessionManagerRestartJob method is complete.
