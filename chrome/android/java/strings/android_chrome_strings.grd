@@ -1680,9 +1680,6 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_DOWNLOAD_CANT_OPEN_FILE" desc="Toast that appears when a downloaded file can't be opened.">
         Can't open file
       </message>
-      <message name="IDS_DOWNLOAD_CANT_SHARE_DELETED" desc="Toast that appears when the user attempts to share downloaded files that have been deleted.">
-        Can't share deleted files
-      </message>
       <message name="IDS_DOWNLOAD_NOTIFICATION_PAUSE_BUTTON" desc="Text on the button that pauses a download.">
         Pause
       </message>
@@ -1802,9 +1799,6 @@ To obtain new licenses, connect to the internet and play your downloaded content
       </message>
       <message name="IDS_DOWNLOAD_PAGE" desc="Download this page.">
         Download page
-      </message>
-      <message name="IDS_DOWNLOAD_MANAGER_UI_DELETED" desc="Indicates that a downloaded file has been deleted.">
-        Deleted
       </message>
       <message name="IDS_DOWNLOAD_MANAGER_UI_EMPTY" desc="Indicates that there are no downloaded items.">
         No downloads here
@@ -2514,7 +2508,7 @@ You can control the Physical Web in Chrome Settings.
       <message name="IDS_PHYSICAL_WEB_BOTTOM_BAR" desc="A message displayed in the nearby URLs list activity informing the user that a notification will appear whenever devices broadcasting URLs are nearby">
         Future nearby Physical Web pages will show up in your notifications list
       </message>
-   
+
       <!-- WebUsb Picker UI strings -->
       <message name="IDS_USB_CHOOSER_DIALOG_PROMPT" desc="The text that is used to introduce the USB chooser dialog to the user.">
         <ph name="SITE">%1$s<ex>https://www.google.com</ex></ph> wants to connect to:

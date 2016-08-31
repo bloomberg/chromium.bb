@@ -262,16 +262,12 @@ Still reading?
         AndroidManifest.xml after rolling to SDK 24.
     -->
     <ignore regexp="chrome/android/java/res/xml/network_security_config.xml" />
-    <ignore regexp="chrome/android/java/res/values/dimens.xml" />
-    <ignore regexp="chrome/android/java/res/values/ids.xml" />
-    <ignore regexp="chrome/android/webapk/shell_apk/res/layout/main.xml" />
     <ignore regexp="chromecast/browser/android/apk/res/values/strings.xml" />
     <ignore regexp="chromecast/internal" />
     <ignore regexp="clank" />
     <ignore regexp="gen/android_webview/locale_paks.resources.zip/values/locale-paks.xml" />
     <ignore regexp="gen/android_webview/strings_grd.resources.zip/values/android_webview_strings.xml" />
     <ignore regexp="gen/blimp/client/blimp_strings_grd.resources.zip/values/android_blimp_strings.xml" />
-    <ignore regexp="gen/chrome/android/chrome_strings_grd.resources.zip/values/android_chrome_strings.xml" />
     <ignore regexp="gen/components/strings/components_strings_grd.resources.zip/values.*/components_strings.xml" />
     <ignore regexp="gen/remoting/resources/strings_java.resources.zip/values/remoting_strings.xml" />
     <ignore regexp="remoting/android/java/res/layout/navigation_list_item.xml" />
