@@ -880,8 +880,7 @@ void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
       "event_natives",
       std::unique_ptr<NativeHandler>(new EventBindings(context)));
   module_system->RegisterNativeHandler(
-      "messaging_natives",
-      std::unique_ptr<NativeHandler>(MessagingBindings::Get(context)));
+      "messaging_natives", base::MakeUnique<MessagingBindings>(context));
   module_system->RegisterNativeHandler(
       "apiDefinitions", std::unique_ptr<NativeHandler>(
                             new ApiDefinitionsNatives(dispatcher, context)));

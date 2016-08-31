@@ -12,11 +12,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/values.h"
-#include "components/guest_view/common/guest_view_constants.h"
 #include "content/public/child/v8_value_converter.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/renderer/render_frame.h"
@@ -24,10 +21,8 @@
 #include "extensions/common/api/messaging/message.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_handlers/externally_connectable.h"
-#include "extensions/renderer/event_bindings.h"
 #include "extensions/renderer/extension_frame_helper.h"
 #include "extensions/renderer/gc_callback.h"
-#include "extensions/renderer/object_backed_native_handler.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
 #include "extensions/renderer/v8_helpers.h"
@@ -48,106 +43,12 @@
 //   port.postMessage('I got your reponse');
 // });
 
-using content::RenderThread;
-using content::V8ValueConverter;
-
 namespace extensions {
 
 using v8_helpers::ToV8String;
-using v8_helpers::ToV8StringUnsafe;
 using v8_helpers::IsEmptyOrUndefied;
 
 namespace {
-
-class ExtensionImpl : public ObjectBackedNativeHandler {
- public:
-  explicit ExtensionImpl(ScriptContext* context)
-      : ObjectBackedNativeHandler(context), weak_ptr_factory_(this) {
-    RouteFunction(
-        "CloseChannel",
-        base::Bind(&ExtensionImpl::CloseChannel, base::Unretained(this)));
-    RouteFunction(
-        "PostMessage",
-        base::Bind(&ExtensionImpl::PostMessage, base::Unretained(this)));
-    // TODO(fsamuel, kalman): Move BindToGC out of messaging natives.
-    RouteFunction("BindToGC",
-                  base::Bind(&ExtensionImpl::BindToGC, base::Unretained(this)));
-  }
-
-  ~ExtensionImpl() override {}
-
- private:
-  // Sends a message along the given channel.
-  void PostMessage(const v8::FunctionCallbackInfo<v8::Value>& args) {
-    // Arguments are (int32_t port_id, string message).
-    CHECK(args.Length() == 2 && args[0]->IsInt32() && args[1]->IsString());
-
-    int port_id = args[0].As<v8::Int32>()->Value();
-
-    content::RenderFrame* render_frame = context()->GetRenderFrame();
-    if (render_frame) {
-      render_frame->Send(new ExtensionHostMsg_PostMessage(
-          render_frame->GetRoutingID(), port_id,
-          Message(*v8::String::Utf8Value(args[1]),
-                  blink::WebUserGestureIndicator::isProcessingUserGesture())));
-    }
-  }
-
-  // Close a port, optionally forcefully (i.e. close the whole channel instead
-  // of just the given port).
-  void CloseChannel(const v8::FunctionCallbackInfo<v8::Value>& args) {
-    // Arguments are (int32_t port_id, bool force_close).
-    CHECK_EQ(2, args.Length());
-    CHECK(args[0]->IsInt32());
-    CHECK(args[1]->IsBoolean());
-
-    int port_id = args[0].As<v8::Int32>()->Value();
-    bool force_close = args[1].As<v8::Boolean>()->Value();
-    ClosePort(port_id, force_close);
-  }
-
-  // void BindToGC(object, callback, port_id)
-  //
-  // Binds |callback| to be invoked *sometime after* |object| is garbage
-  // collected. We don't call the method re-entrantly so as to avoid executing
-  // JS in some bizarro undefined mid-GC state, nor do we then call into the
-  // script context if it's been invalidated.
-  //
-  // If the script context *is* invalidated in the meantime, as a slight hack,
-  // release the port with ID |port_id| if it's >= 0.
-  void BindToGC(const v8::FunctionCallbackInfo<v8::Value>& args) {
-    CHECK(args.Length() == 3 && args[0]->IsObject() && args[1]->IsFunction() &&
-          args[2]->IsInt32());
-    int port_id = args[2].As<v8::Int32>()->Value();
-    base::Closure fallback = base::Bind(&base::DoNothing);
-    if (port_id >= 0) {
-      // TODO(robwu): Falling back to closing the port shouldn't be needed. If
-      // the script context is destroyed, then the frame has navigated. But that
-      // is already detected by the browser, so this logic is redundant. Remove
-      // this fallback (and move BindToGC out of messaging because it is also
-      // used in other places that have nothing to do with messaging...).
-      fallback =
-          base::Bind(&ExtensionImpl::ClosePort, weak_ptr_factory_.GetWeakPtr(),
-                     port_id, false /* force_close */);
-    }
-    // Destroys itself when the object is GC'd or context is invalidated.
-    new GCCallback(context(), args[0].As<v8::Object>(),
-                   args[1].As<v8::Function>(), fallback);
-  }
-
-  // See ExtensionImpl::CloseChannel for documentation.
-  // TODO(robwu): Merge this logic with CloseChannel once the TODO in BindToGC
-  // has been addressed.
-  void ClosePort(int port_id, bool force_close) {
-    content::RenderFrame* render_frame = context()->GetRenderFrame();
-    if (render_frame) {
-      render_frame->Send(new ExtensionHostMsg_CloseMessagePort(
-          render_frame->GetRoutingID(), port_id, force_close));
-    }
-  }
-
-  base::WeakPtrFactory<ExtensionImpl> weak_ptr_factory_;
-};
 
 void HasMessagePort(int port_id,
                     bool* has_port,
@@ -181,7 +82,8 @@ void DispatchOnConnectToScriptContext(
   v8::Isolate* isolate = script_context->isolate();
   v8::HandleScope handle_scope(isolate);
 
-  std::unique_ptr<V8ValueConverter> converter(V8ValueConverter::create());
+  std::unique_ptr<content::V8ValueConverter> converter(
+      content::V8ValueConverter::create());
 
   const std::string& source_url_spec = info.source_url.spec();
   std::string target_extension_id = script_context->GetExtensionID();
@@ -328,10 +230,20 @@ void DispatchOnDisconnectToScriptContext(int port_id,
 
 }  // namespace
 
-ObjectBackedNativeHandler* MessagingBindings::Get(ScriptContext* context) {
-  return new ExtensionImpl(context);
+MessagingBindings::MessagingBindings(ScriptContext* context)
+    : ObjectBackedNativeHandler(context), weak_ptr_factory_(this) {
+  RouteFunction("CloseChannel", base::Bind(&MessagingBindings::CloseChannel,
+                                           base::Unretained(this)));
+  RouteFunction("PostMessage", base::Bind(&MessagingBindings::PostMessage,
+                                          base::Unretained(this)));
+  // TODO(fsamuel, kalman): Move BindToGC out of messaging natives.
+  RouteFunction("BindToGC", base::Bind(&MessagingBindings::BindToGC,
+                                       base::Unretained(this)));
 }
 
+MessagingBindings::~MessagingBindings() {}
+
+// static
 void MessagingBindings::ValidateMessagePort(
     const ScriptContextSet& context_set,
     int port_id,
@@ -401,6 +313,65 @@ void MessagingBindings::DispatchOnDisconnect(
   context_set.ForEach(
       restrict_to_render_frame,
       base::Bind(&DispatchOnDisconnectToScriptContext, port_id, error_message));
+}
+
+void MessagingBindings::PostMessage(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  // Arguments are (int32_t port_id, string message).
+  CHECK(args.Length() == 2 && args[0]->IsInt32() && args[1]->IsString());
+
+  int port_id = args[0].As<v8::Int32>()->Value();
+
+  content::RenderFrame* render_frame = context()->GetRenderFrame();
+  if (render_frame) {
+    render_frame->Send(new ExtensionHostMsg_PostMessage(
+        render_frame->GetRoutingID(), port_id,
+        Message(*v8::String::Utf8Value(args[1]),
+                blink::WebUserGestureIndicator::isProcessingUserGesture())));
+  }
+}
+
+void MessagingBindings::CloseChannel(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  // Arguments are (int32_t port_id, bool force_close).
+  CHECK_EQ(2, args.Length());
+  CHECK(args[0]->IsInt32());
+  CHECK(args[1]->IsBoolean());
+
+  int port_id = args[0].As<v8::Int32>()->Value();
+  bool force_close = args[1].As<v8::Boolean>()->Value();
+  ClosePort(port_id, force_close);
+}
+
+void MessagingBindings::BindToGC(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  CHECK(args.Length() == 3 && args[0]->IsObject() && args[1]->IsFunction() &&
+        args[2]->IsInt32());
+  int port_id = args[2].As<v8::Int32>()->Value();
+  base::Closure fallback = base::Bind(&base::DoNothing);
+  if (port_id >= 0) {
+    // TODO(robwu): Falling back to closing the port shouldn't be needed. If
+    // the script context is destroyed, then the frame has navigated. But that
+    // is already detected by the browser, so this logic is redundant. Remove
+    // this fallback (and move BindToGC out of messaging because it is also
+    // used in other places that have nothing to do with messaging...).
+    fallback = base::Bind(&MessagingBindings::ClosePort,
+                          weak_ptr_factory_.GetWeakPtr(), port_id,
+                          false /* force_close */);
+  }
+  // Destroys itself when the object is GC'd or context is invalidated.
+  new GCCallback(context(), args[0].As<v8::Object>(),
+                 args[1].As<v8::Function>(), fallback);
+}
+
+void MessagingBindings::ClosePort(int port_id, bool force_close) {
+  // TODO(robwu): Merge this logic with CloseChannel once the TODO in BindToGC
+  // has been addressed.
+  content::RenderFrame* render_frame = context()->GetRenderFrame();
+  if (render_frame) {
+    render_frame->Send(new ExtensionHostMsg_CloseMessagePort(
+        render_frame->GetRoutingID(), port_id, force_close));
+  }
 }
 
 }  // namespace extensions
