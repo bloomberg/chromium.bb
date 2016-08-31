@@ -1,8 +1,8 @@
-layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 850
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 846
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 785x850 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
-  LayoutBlockFlow {HTML} at (0,0) size 785x850
-    LayoutBlockFlow {BODY} at (8,8) size 769x834
+layer at (0,0) size 785x846 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+  LayoutBlockFlow {HTML} at (0,0) size 785x846
+    LayoutBlockFlow {BODY} at (8,8) size 769x830
       LayoutBlockFlow (anonymous) at (0,0) size 769x108
         LayoutText {#text} at (0,0) size 318x17
           text run at (0,0) width 318: "The following three examples are 2 nested tables."
@@ -40,19 +40,19 @@ layer at (0,0) size 785x850 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                         text run at (2,2) width 234: "outer table has height:200px on <tr>"
       LayoutBlockFlow (anonymous) at (0,532) size 769x18
         LayoutBR {BR} at (0,0) size 0x17
-      LayoutTable {TABLE} at (0,550) size 257x210 [border: (1px outset #808080)]
-        LayoutTableSection {TBODY} at (1,1) size 255x208
-          LayoutTableRow {TR} at (0,2) size 255x204
-            LayoutTableCell {TD} at (2,2) size 251x204 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              LayoutTable {TABLE} at (2,2) size 247x200 [border: (1px outset #808080)]
-                LayoutTableSection {TBODY} at (1,1) size 245x198
-                  LayoutTableRow {TR} at (0,2) size 245x194
-                    LayoutTableCell {TD} at (2,88) size 241x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,550) size 257x206 [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 255x204
+          LayoutTableRow {TR} at (0,2) size 255x200
+            LayoutTableCell {TD} at (2,2) size 251x200 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              LayoutTable {TABLE} at (2,2) size 247x196 [border: (1px outset #808080)]
+                LayoutTableSection {TBODY} at (1,1) size 245x194
+                  LayoutTableRow {TR} at (0,2) size 245x190
+                    LayoutTableCell {TD} at (2,86) size 241x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
                       LayoutText {#text} at (2,2) size 237x17
                         text run at (2,2) width 237: "outer table has height:200px on <td>"
-      LayoutBlockFlow (anonymous) at (0,760) size 769x18
+      LayoutBlockFlow (anonymous) at (0,756) size 769x18
         LayoutBR {BR} at (0,0) size 0x17
-      LayoutTable {TABLE} at (0,778) size 630x56 [border: (1px outset #808080)]
+      LayoutTable {TABLE} at (0,774) size 630x56 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 628x54
           LayoutTableRow {TR} at (0,2) size 628x50
             LayoutTableCell {TD} at (2,2) size 624x50 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]

@@ -1,8 +1,8 @@
-layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 4340
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 4336
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 785x4340 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
-  LayoutBlockFlow {HTML} at (0,0) size 785x4340
-    LayoutBlockFlow {BODY} at (8,8) size 769x4324
+layer at (0,0) size 785x4336 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+  LayoutBlockFlow {HTML} at (0,0) size 785x4336
+    LayoutBlockFlow {BODY} at (8,8) size 769x4320
       LayoutTable {TABLE} at (0,0) size 40x584 [bgcolor=#0000FF] [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 38x582
           LayoutTableRow {TR} at (0,2) size 38x114
@@ -159,13 +159,13 @@ layer at (0,0) size 785x4340 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (2,2) width 28: "auto"
       LayoutBlockFlow (anonymous) at (0,3896) size 769x18
         LayoutBR {BR} at (0,0) size 0x17
-      LayoutTable {TABLE} at (0,3914) size 54x410 [bgcolor=#FFA500] [border: (1px outset #808080)]
-        LayoutTableSection {TBODY} at (1,1) size 52x408
-          LayoutTableRow {TR} at (0,2) size 52x404
-            LayoutTableCell {TD} at (2,2) size 48x404 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              LayoutTable {TABLE} at (2,2) size 44x400 [bgcolor=#0000FF]
-                LayoutTableSection {TBODY} at (0,0) size 44x400
-                  LayoutTableRow {TR} at (0,2) size 44x396
-                    LayoutTableCell {TD} at (2,190) size 40x20 [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,3914) size 54x406 [bgcolor=#FFA500] [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 52x404
+          LayoutTableRow {TR} at (0,2) size 52x400
+            LayoutTableCell {TD} at (2,2) size 48x400 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              LayoutTable {TABLE} at (2,2) size 44x396 [bgcolor=#0000FF]
+                LayoutTableSection {TBODY} at (0,0) size 44x396
+                  LayoutTableRow {TR} at (0,2) size 44x392
+                    LayoutTableCell {TD} at (2,188) size 40x20 [r=0 c=0 rs=1 cs=1]
                       LayoutText {#text} at (1,1) size 38x17
                         text run at (1,1) width 38: "100%"
