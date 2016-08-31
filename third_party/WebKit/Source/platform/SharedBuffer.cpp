@@ -54,35 +54,23 @@ static inline void freeSegment(char* p)
 
 SharedBuffer::SharedBuffer()
     : m_size(0)
-    , m_buffer(PurgeableVector::NotPurgeable)
 {
 }
 
 SharedBuffer::SharedBuffer(size_t size)
     : m_size(size)
-    , m_buffer(PurgeableVector::NotPurgeable)
+    , m_buffer(size)
 {
-    m_buffer.reserveCapacity(size);
-    m_buffer.grow(size);
 }
 
 SharedBuffer::SharedBuffer(const char* data, size_t size)
     : m_size(0)
-    , m_buffer(PurgeableVector::NotPurgeable)
-{
-    appendInternal(data, size);
-}
-
-SharedBuffer::SharedBuffer(const char* data, size_t size, PurgeableVector::PurgeableOption purgeable)
-    : m_size(0)
-    , m_buffer(purgeable)
 {
     appendInternal(data, size);
 }
 
 SharedBuffer::SharedBuffer(const unsigned char* data, size_t size)
     : m_size(0)
-    , m_buffer(PurgeableVector::NotPurgeable)
 {
     appendInternal(reinterpret_cast<const char*>(data), size);
 }
@@ -95,7 +83,7 @@ SharedBuffer::~SharedBuffer()
 PassRefPtr<SharedBuffer> SharedBuffer::adoptVector(Vector<char>& vector)
 {
     RefPtr<SharedBuffer> buffer = create();
-    buffer->m_buffer.adopt(vector);
+    buffer->m_buffer.swap(vector);
     buffer->m_size = buffer->m_buffer.size();
     return buffer.release();
 }
@@ -178,7 +166,7 @@ PassRefPtr<SharedBuffer> SharedBuffer::copy() const
 {
     RefPtr<SharedBuffer> clone(adoptRef(new SharedBuffer));
     clone->m_size = m_size;
-    clone->m_buffer.reserveCapacity(m_size);
+    clone->m_buffer.reserveInitialCapacity(m_size);
     clone->m_buffer.append(m_buffer.data(), m_buffer.size());
     if (!m_segments.isEmpty()) {
         const char* segment = 0;
@@ -284,7 +272,9 @@ sk_sp<SkData> SharedBuffer::getAsSkData() const
 void SharedBuffer::onMemoryDump(const String& dumpPrefix, WebProcessMemoryDump* memoryDump) const
 {
     if (m_buffer.size()) {
-        m_buffer.onMemoryDump(dumpPrefix + "/shared_buffer", memoryDump);
+        WebMemoryAllocatorDump* dump = memoryDump->createMemoryAllocatorDump(dumpPrefix + "/shared_buffer");
+        dump->addScalar("size", "bytes", m_buffer.size());
+        memoryDump->addSuballocation(dump->guid(), String(WTF::Partitions::kAllocatedObjectPoolName));
     } else {
         // If there is data in the segments, then it should have been allocated
         // using fastMalloc.

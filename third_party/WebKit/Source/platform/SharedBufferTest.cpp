@@ -154,24 +154,4 @@ TEST(SharedBufferTest, constructorWithSizeOnly)
     ASSERT_EQ(length, sharedBuffer->getSomeData(data, static_cast<size_t>(0u)));
 }
 
-TEST(SharedBufferTest, createPurgeable)
-{
-    Vector<char> testData(30000);
-    std::generate(testData.begin(), testData.end(), &std::rand);
-
-    size_t length = testData.size();
-    RefPtr<SharedBuffer> sharedBuffer = SharedBuffer::createPurgeable(testData.data(), length);
-    ASSERT_EQ(length, sharedBuffer->size());
-    // Merge the segments into a single vector.
-    const char* data = sharedBuffer->data();
-    ASSERT_EQ(0, memcmp(data, testData.data(), length));
-
-    // Do another append + merge the segments again.
-    size_t previousTestDataSize = testData.size();
-    testData.resize(2 * previousTestDataSize);
-    std::generate(testData.begin() + previousTestDataSize, testData.end(), &std::rand);
-    sharedBuffer->append(testData.data() + previousTestDataSize, previousTestDataSize);
-    ASSERT_EQ(0, memcmp(data, testData.data(), length));
-}
-
 } // namespace blink

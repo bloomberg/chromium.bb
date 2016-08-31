@@ -28,10 +28,10 @@
 #define SharedBuffer_h
 
 #include "platform/PlatformExport.h"
-#include "platform/PurgeableVector.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
+#include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -63,13 +63,6 @@ public:
     {
         STRICT_ARG_TYPE(size_t);
         return adoptRef(new SharedBuffer(data, size));
-    }
-
-    HAS_STRICTLY_TYPED_ARG
-    static PassRefPtr<SharedBuffer> createPurgeable(const char* data, STRICTLY_TYPED_ARG(size))
-    {
-        STRICT_ARG_TYPE(size_t);
-        return adoptRef(new SharedBuffer(data, size, PurgeableVector::Purgeable));
     }
 
     static PassRefPtr<SharedBuffer> adoptVector(Vector<char>&);
@@ -152,7 +145,6 @@ private:
     explicit SharedBuffer(size_t);
     SharedBuffer(const char*, size_t);
     SharedBuffer(const unsigned char*, size_t);
-    SharedBuffer(const char*, size_t, PurgeableVector::PurgeableOption);
 
     // See SharedBuffer::data().
     void mergeSegmentsIntoBuffer() const;
@@ -162,7 +154,7 @@ private:
     size_t getSomeDataInternal(const char*& data, size_t position) const;
 
     size_t m_size;
-    mutable PurgeableVector m_buffer;
+    mutable Vector<char> m_buffer;
     mutable Vector<char*> m_segments;
 };
 
