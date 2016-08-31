@@ -455,7 +455,6 @@ TEST_F(NTPSnippetsServiceTest, Full) {
   EXPECT_EQ(MakeUniqueID(*service, kSnippetUrl), suggestion.id());
   EXPECT_EQ(kSnippetTitle, base::UTF16ToUTF8(suggestion.title()));
   EXPECT_EQ(kSnippetText, base::UTF16ToUTF8(suggestion.snippet_text()));
-  // EXPECT_EQ(GURL(kSnippetSalientImage), suggestion.salient_image_url());
   EXPECT_EQ(GetDefaultCreationTime(), suggestion.publish_date());
   EXPECT_EQ(kSnippetPublisherName,
             base::UTF16ToUTF8(suggestion.publisher_name()));

@@ -77,7 +77,6 @@ class ContentSuggestion {
   GURL amp_url_;
   base::string16 title_;
   base::string16 snippet_text_;
-  GURL salient_image_url_;
   base::Time publish_date_;
   base::string16 publisher_name_;
   float score_;
