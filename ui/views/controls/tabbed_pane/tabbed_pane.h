@@ -58,18 +58,18 @@ class VIEWS_EXPORT TabbedPane : public View {
   const char* GetClassName() const override;
 
  private:
-   friend class TabStrip;
+  friend class TabStrip;
 
-   // Get the Tab (the tabstrip view, not its content) at the valid |index|.
-   Tab* GetTabAt(int index);
+  // Get the Tab (the tabstrip view, not its content) at the valid |index|.
+  Tab* GetTabAt(int index);
 
   // Overridden from View:
-   void Layout() override;
-   void ViewHierarchyChanged(
-       const ViewHierarchyChangedDetails& details) override;
-   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
-   void OnFocus() override;
-   void GetAccessibleState(ui::AXViewState* state) override;
+  void Layout() override;
+  void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) override;
+  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+  void OnFocus() override;
+  void GetAccessibleState(ui::AXViewState* state) override;
 
   // A listener notified when tab selection changes. Weak, not owned.
   TabbedPaneListener* listener_;

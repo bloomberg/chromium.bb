@@ -10,12 +10,15 @@
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/default_style.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane_listener.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_manager.h"
 #include "ui/views/widget/widget.h"
 
@@ -31,6 +34,9 @@ const SkScalar kTabBorderThickness = 1.0f;
 const gfx::Font::Weight kHoverWeight = gfx::Font::Weight::NORMAL;
 const gfx::Font::Weight kActiveWeight = gfx::Font::Weight::BOLD;
 const gfx::Font::Weight kInactiveWeight = gfx::Font::Weight::NORMAL;
+
+const int kHarmonyTabStripVerticalPad = 16;
+const int kHarmonyTabStripTabHeight = 40;
 
 }  // namespace
 
@@ -62,6 +68,12 @@ class Tab : public View {
   void Layout() override;
   const char* GetClassName() const override;
 
+ protected:
+  Label* title() { return title_; }
+
+  // Called whenever |tab_state_| changes.
+  virtual void OnStateChanged();
+
  private:
   enum TabState {
     TAB_INACTIVE,
@@ -79,6 +91,19 @@ class Tab : public View {
   View* contents_;
 
   DISALLOW_COPY_AND_ASSIGN(Tab);
+};
+
+// A subclass of Tab that implements the Harmony visual styling.
+class MdTab : public Tab {
+ public:
+  MdTab(TabbedPane* tabbed_pane, const base::string16& title, View* contents);
+  ~MdTab() override;
+
+  // Overridden from Tab:
+  void OnStateChanged() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MdTab);
 };
 
 // The tab strip shown above the tab contents.
@@ -100,6 +125,22 @@ class TabStrip : public View {
   TabbedPane* tabbed_pane_;
 
   DISALLOW_COPY_AND_ASSIGN(TabStrip);
+};
+
+// A subclass of TabStrip that implements the Harmony visual styling. This
+// class uses a BoxLayout to position tabs.
+class MdTabStrip : public TabStrip {
+ public:
+  explicit MdTabStrip(TabbedPane* tabbed_pane);
+  ~MdTabStrip() override;
+
+  // Overridden from View:
+  gfx::Size GetPreferredSize() const override;
+  void Layout() override;
+  void OnPaint(gfx::Canvas* canvas) override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MdTabStrip);
 };
 
 // static
@@ -127,6 +168,27 @@ Tab::~Tab() {}
 void Tab::SetSelected(bool selected) {
   contents_->SetVisible(selected);
   SetState(selected ? TAB_ACTIVE : TAB_INACTIVE);
+}
+
+void Tab::OnStateChanged() {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  switch (tab_state_) {
+    case TAB_INACTIVE:
+      title_->SetEnabledColor(kTabTitleColor_Inactive);
+      title_->SetFontList(rb.GetFontListWithDelta(
+          ui::kLabelFontSizeDelta, gfx::Font::NORMAL, kInactiveWeight));
+      break;
+    case TAB_ACTIVE:
+      title_->SetEnabledColor(kTabTitleColor_Active);
+      title_->SetFontList(rb.GetFontListWithDelta(
+          ui::kLabelFontSizeDelta, gfx::Font::NORMAL, kActiveWeight));
+      break;
+    case TAB_HOVERED:
+      title_->SetEnabledColor(kTabTitleColor_Hovered);
+      title_->SetFontList(rb.GetFontListWithDelta(
+          ui::kLabelFontSizeDelta, gfx::Font::NORMAL, kHoverWeight));
+      break;
+  }
 }
 
 bool Tab::OnMousePressed(const ui::MouseEvent& event) {
@@ -185,26 +247,43 @@ void Tab::SetState(TabState tab_state) {
   if (tab_state == tab_state_)
     return;
   tab_state_ = tab_state;
+  OnStateChanged();
+  SchedulePaint();
+}
+
+MdTab::MdTab(TabbedPane* tabbed_pane,
+             const base::string16& title,
+             View* contents)
+    : Tab(tabbed_pane, title, contents) {
+  OnStateChanged();
+}
+
+MdTab::~MdTab() {}
+
+void MdTab::OnStateChanged() {
+  // These values are directly from the Harmony specs for tabbed panes.
+  const SkColor kSelectedBorderColor = SkColorSetRGB(0x42, 0x85, 0xF4);
+  const SkColor kNormalBorderColor = SkColorSetARGB(0x23, 0x00, 0x00, 0x00);
+  const SkColor kSelectedFontColor = SkColorSetRGB(0x42, 0x85, 0xF4);
+  const SkColor kNormalFontColor = SkColorSetRGB(0x5A, 0x5A, 0x5A);
+
+  SkColor border_color = selected() ? kSelectedBorderColor : kNormalBorderColor;
+  int border_thickness = selected() ? 2 : 1;
+  SetBorder(
+      Border::CreateSolidSidedBorder(0, 0, border_thickness, 0, border_color));
+
+  SkColor font_color = selected() ? kSelectedFontColor : kNormalFontColor;
+  title()->SetEnabledColor(font_color);
+
+  gfx::Font::Weight font_weight = gfx::Font::Weight::NORMAL;
+#if defined(OS_WIN)
+  if (selected())
+    font_weight = gfx::Font::Weight::BOLD;
+#endif
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  switch (tab_state) {
-    case TAB_INACTIVE:
-      title_->SetEnabledColor(kTabTitleColor_Inactive);
-      title_->SetFontList(rb.GetFontListWithDelta(
-          ui::kLabelFontSizeDelta, gfx::Font::NORMAL, kInactiveWeight));
-      break;
-    case TAB_ACTIVE:
-      title_->SetEnabledColor(kTabTitleColor_Active);
-      title_->SetFontList(rb.GetFontListWithDelta(
-          ui::kLabelFontSizeDelta, gfx::Font::NORMAL, kActiveWeight));
-      break;
-    case TAB_HOVERED:
-      title_->SetEnabledColor(kTabTitleColor_Hovered);
-      title_->SetFontList(rb.GetFontListWithDelta(
-          ui::kLabelFontSizeDelta, gfx::Font::NORMAL, kHoverWeight));
-      break;
-  }
-  SchedulePaint();
+  title()->SetFontList(rb.GetFontListWithDelta(ui::kLabelFontSizeDelta,
+                                               gfx::Font::NORMAL, font_weight));
 }
 
 // static
@@ -273,11 +352,40 @@ void TabStrip::OnPaint(gfx::Canvas* canvas) {
   }
 }
 
+MdTabStrip::MdTabStrip(TabbedPane* tabbed_pane) : TabStrip(tabbed_pane) {
+  BoxLayout* layout =
+      new BoxLayout(BoxLayout::kHorizontal, 0, kHarmonyTabStripVerticalPad, 0);
+  layout->set_main_axis_alignment(BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
+  layout->set_cross_axis_alignment(BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
+  layout->SetDefaultFlex(1);
+  SetLayoutManager(layout);
+}
+
+MdTabStrip::~MdTabStrip() {}
+
+gfx::Size MdTabStrip::GetPreferredSize() const {
+  return gfx::Size(width(),
+                   kHarmonyTabStripVerticalPad * 2 + kHarmonyTabStripTabHeight);
+}
+
+// Let this class's LayoutManager handle the layout.
+void MdTabStrip::Layout() {
+  return View::Layout();
+}
+
+// The tab strip "border" is drawn as part of the tabs, so all this method needs
+// to do is paint the background.
+void MdTabStrip::OnPaint(gfx::Canvas* canvas) {
+  OnPaintBackground(canvas);
+}
+
 TabbedPane::TabbedPane()
-  : listener_(NULL),
-    tab_strip_(new TabStrip(this)),
-    contents_(new View()),
-    selected_tab_index_(-1) {
+    : listener_(NULL),
+      tab_strip_(ui::MaterialDesignController::IsSecondaryUiMaterial()
+                     ? new MdTabStrip(this)
+                     : new TabStrip(this)),
+      contents_(new View()),
+      selected_tab_index_(-1) {
 #if defined(OS_MACOSX)
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
 #else
@@ -310,7 +418,11 @@ void TabbedPane::AddTabAtIndex(int index,
   DCHECK(index >= 0 && index <= GetTabCount());
   contents->SetVisible(false);
 
-  tab_strip_->AddChildViewAt(new Tab(this, title, contents), index);
+  tab_strip_->AddChildViewAt(
+      ui::MaterialDesignController::IsSecondaryUiMaterial()
+          ? new MdTab(this, title, contents)
+          : new Tab(this, title, contents),
+      index);
   contents_->AddChildViewAt(contents, index);
   if (selected_tab_index() < 0)
     SelectTabAt(index);
