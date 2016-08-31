@@ -5,6 +5,7 @@
 <div id="testImage1"></div>
 <div id="testImage2"></div>
 <div id="testImage3"></div>
+<div id="testImage4"></div>
 
 <script>
 
@@ -19,6 +20,15 @@ function url() {
 
 function base64Url() {
   return "data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA=";
+}
+
+function assertCorrectURLImageValue(image, expectedUrl, expectedWidth, expectedHeight, expectedRatio) {
+  assert_true(image instanceof CSSURLImageValue);
+  assert_equals(image.url, expectedUrl);
+  assert_equals(image.state, "loaded");
+  assert_equals(image.intrinsicWidth, expectedWidth);
+  assert_equals(image.intrinsicHeight, expectedHeight);
+  assert_equals(image.intrinsicRatio, expectedRatio);
 }
 
 test(function() {
@@ -106,5 +116,18 @@ test(function() {
     test3.done();
   };
 }
+
+test(function() {
+  var url4 = base64Url();
+
+  for (var i = 0; i < imageProperties.length; ++i) {
+    testImage4.style[imageProperties[i]] = 'url(' + url4 + ')';
+  }
+
+  for (var i = 0; i < imageProperties.length; ++i) {
+    assertCorrectURLImageValue(getComputedStyleMap(testImage4).get(imageProperties[i]), url4, 1, 1, 1);
+    assertCorrectURLImageValue(testImage4.styleMap.get(imageProperties[i]), url4, 1, 1, 1);
+  }
+}, "Getting CSSURLImageValue from StyleMap");
 
 </script>

@@ -12,21 +12,21 @@
 // supporting some of these properties.
 
 test(function() {
-  testElement.style.backgroundImage = 'url("")';
+  testElement.style.backgroundColor = 'green';
 
-  var result = testElement.styleMap.get('background-image');
+  var result = testElement.styleMap.get('background-color');
   assert_equals(result.constructor, CSSStyleValue);
-  assert_equals(result.cssText, 'url("")');
+  assert_equals(result.cssText, 'green');
 }, 'Unsupported property returns a base StyleValue with the correct cssText.');
 
 test(function() {
-  testElement.style.backgroundImage = 'url("")';
+  testElement.style.backgroundColor = 'green';
 
-  secondElement.styleMap.set('background-image', testElement.styleMap.get('background-image'));
+  secondElement.styleMap.set('background-color', testElement.styleMap.get('background-color'));
 
-  var result = secondElement.styleMap.get('background-image');
+  var result = secondElement.styleMap.get('background-color');
   assert_equals(result.constructor, CSSStyleValue);
-  assert_equals(result.cssText, 'url("")');
+  assert_equals(result.cssText, 'green');
 }, 'Setting the same property using the result of getting an unknown value works');
 
 test(function() {
