@@ -145,8 +145,6 @@ bool MenuButton::Activate(const ui::Event* event) {
     increment_pressed_lock_called_ = nullptr;
     destroyed_flag_ = nullptr;
 
-    menu_closed_time_ = TimeTicks::Now();
-
     if (!increment_pressed_lock_called && pressed_lock_count_ == 0) {
       AnimateInkDrop(InkDropState::ACTION_TRIGGERED,
                      ui::LocatedEvent::FromIfValid(event));
@@ -387,6 +385,7 @@ void MenuButton::DecrementPressedLocked() {
 
   // If this was the last lock, manually reset state to the desired state.
   if (pressed_lock_count_ == 0) {
+    menu_closed_time_ = TimeTicks::Now();
     ButtonState desired_state = STATE_NORMAL;
     if (should_disable_after_press_) {
       desired_state = STATE_DISABLED;
