@@ -20,11 +20,6 @@ rjkroege@chromium.org
 sadrul@chromium.org
 tdresser@chromium.org
 
-# WebSocket
-per-file *websocket*=ricea@chromium.org
-per-file *websocket*=tyoshino@chromium.org
-per-file *websocket*=yhirano@chromium.org
-
 # Linux sandboxing
 per-file render_sandbox_host_linux.*=jln@chromium.org
 per-file render_sandbox_host_linux.*=jorgelo@chromium.org
