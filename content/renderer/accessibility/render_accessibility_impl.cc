@@ -78,15 +78,6 @@ RenderAccessibilityImpl::RenderAccessibilityImpl(RenderFrameImpl* render_frame)
       ack_pending_(false),
       reset_token_(0),
       weak_factory_(this) {
-  // There's only one AXObjectCache for the root of a local frame tree,
-  // so if this frame's parent is local we can safely do nothing.
-  if (render_frame_ &&
-      render_frame_->GetWebFrame() &&
-      render_frame_->GetWebFrame()->parent() &&
-      render_frame_->GetWebFrame()->parent()->isWebLocalFrame()) {
-    return;
-  }
-
   WebView* web_view = render_frame_->GetRenderView()->GetWebView();
   WebSettings* settings = web_view->settings();
   settings->setAccessibilityEnabled(true);
