@@ -1425,3 +1425,16 @@ source_set("unit_tests") {
     "//testing/gtest",
   ]
 }
+
+# Fuzzer for blink::StyleSheetContents
+fuzzer_test("stylesheet_contents_fuzzer") {
+  sources = [
+    "css/StyleSheetContentsFuzzer.cpp",
+  ]
+  deps = [
+    ":core",
+    "../platform:blink_fuzzer_test_support",
+  ]
+  seed_corpus = "//third_party/WebKit/LayoutTests/fast/css/resources"
+  libfuzzer_options = [ "max_len=2048" ]
+}

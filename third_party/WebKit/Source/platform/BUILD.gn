@@ -668,6 +668,24 @@ if (current_cpu == "x86" || current_cpu == "x64") {
   }
 }
 
+# This source set is used for fuzzers that need an environment similar to unit
+# tests.
+source_set("blink_fuzzer_test_support") {
+  testonly = true
+  visibility = []  # Allow re-assignment of list.
+  visibility = [ "*" ]
+  sources = [
+    "testing/BlinkFuzzerTestSupport.cpp",
+    "testing/BlinkFuzzerTestSupport.h",
+  ]
+  deps = [
+    ":platform",
+    ":test_support",
+    "//content/test:test_support",
+    "//mojo/edk/system:system",
+  ]
+}
+
 # Fuzzer for blink::MHTMLParser.
 fuzzer_test("mhtml_parser_fuzzer") {
   sources = [
