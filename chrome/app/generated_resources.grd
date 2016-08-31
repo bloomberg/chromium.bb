@@ -7704,16 +7704,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <if expr="enable_extensions">
         <!-- Feedback Dialog -->
         <message name="IDS_FEEDBACK_REPORT_PAGE_TITLE" desc="Label showing the title of the page that will be reported">
-          Tell us what's happening.
+          Tell us what's happening
         </message>
         <message name="IDS_FEEDBACK_REPORT_URL_LABEL" desc="Label showing the URL that will be reported">
-          URL (optional):
+          URL
         </message>
         <message name="IDS_FEEDBACK_USER_EMAIL_LABEL" desc="Label showing the e-mail address that will be reported">
-          Email (optional):
+          Email
         </message>
         <message name="IDS_FEEDBACK_SCREENSHOT_LABEL" desc="Label for the screenshot field if current screenshots are being shown">
-          Include this screenshot:
+          Include this screenshot
         </message>
         <message name="IDS_FEEDBACK_INCLUDE_PERFORMANCE_TRACE_CHECKBOX" desc="Checkbox for including system performance data on the bug report dialog box">
           Send performance trace data
@@ -7738,10 +7738,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
           </message>
         </if>
         <message name="IDS_FEEDBACK_ATTACH_FILE_NOTE" desc="Text for describing the maximum size for an attached file">
-          The attached file is uploaded to Google servers for debugging.
+          File will be sent to Google for debugging
         </message>
         <message name="IDS_FEEDBACK_ATTACH_FILE_LABEL" desc="Text for the label for the attached filename">
-          Attach file:
+          Attach file
         </message>
         <message name="IDS_FEEDBACK_READING_FILE" desc="Text to display if reading a file when the user clicks the send report button">
           Reading file..
@@ -7764,13 +7764,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Please tell us what is happening before sending the feedback.
         </message>
         <message name="IDS_FEEDBACK_SEND_REPORT" desc="Text for OK button of the send feedback dialog">
-          Send feedback
+          Send
         </message>
         <message name="IDS_FEEDBACK_SYSINFO_PAGE_TITLE" desc="The title of the system information preview page">
           System Information Preview
         </message>
         <message name="IDS_FEEDBACK_SYSINFO_PAGE_LOADING" desc="The message showing the status of the system information preview page that it is still loading">
           Loading...
+        </message>
+        <message name="IDS_FEEDBACK_ADDITIONAL_INFO_LABEL" desc="Text for the group label to indicate that some fields are optional.">
+          Additional info (optional)
         </message>
 
         <!-- Feedback Dialog SRT Prompt -->

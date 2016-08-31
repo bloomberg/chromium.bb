@@ -56,6 +56,10 @@ body {
   width: 100%;
 }
 
+.content #additional-info-label {
+  -webkit-margin-start: 10px;
+}
+
 .content .text-field-container {
   -webkit-align-items: center;
   -webkit-padding-start: 10px;
