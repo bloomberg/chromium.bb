@@ -98,17 +98,17 @@ void RunTest_PostTask(MessagePumpFactory factory) {
   scoped_refptr<Foo> foo(new Foo());
   std::string a("a"), b("b"), c("c"), d("d");
   MessageLoop::current()->task_runner()->PostTask(FROM_HERE,
-                                                  Bind(&Foo::Test0, foo.get()));
+                                                  Bind(&Foo::Test0, foo));
   MessageLoop::current()->task_runner()->PostTask(
-      FROM_HERE, Bind(&Foo::Test1ConstRef, foo.get(), a));
+      FROM_HERE, Bind(&Foo::Test1ConstRef, foo, a));
   MessageLoop::current()->task_runner()->PostTask(
-      FROM_HERE, Bind(&Foo::Test1Ptr, foo.get(), &b));
+      FROM_HERE, Bind(&Foo::Test1Ptr, foo, &b));
   MessageLoop::current()->task_runner()->PostTask(
-      FROM_HERE, Bind(&Foo::Test1Int, foo.get(), 100));
+      FROM_HERE, Bind(&Foo::Test1Int, foo, 100));
   MessageLoop::current()->task_runner()->PostTask(
-      FROM_HERE, Bind(&Foo::Test2Ptr, foo.get(), &a, &c));
+      FROM_HERE, Bind(&Foo::Test2Ptr, foo, &a, &c));
   MessageLoop::current()->task_runner()->PostTask(
-      FROM_HERE, Bind(&Foo::Test2Mixed, foo.get(), a, &d));
+      FROM_HERE, Bind(&Foo::Test2Mixed, foo, a, &d));
   // After all tests, post a message that will shut down the message loop
   MessageLoop::current()->task_runner()->PostTask(
       FROM_HERE,
@@ -303,7 +303,7 @@ class RecordDeletionProbe : public RefCounted<RecordDeletionProbe> {
     *was_deleted_ = true;
     if (post_on_delete_.get())
       MessageLoop::current()->task_runner()->PostTask(
-          FROM_HERE, Bind(&RecordDeletionProbe::Run, post_on_delete_.get()));
+          FROM_HERE, Bind(&RecordDeletionProbe::Run, post_on_delete_));
   }
 
   scoped_refptr<RecordDeletionProbe> post_on_delete_;

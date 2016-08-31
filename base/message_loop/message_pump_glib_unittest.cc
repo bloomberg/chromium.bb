@@ -357,15 +357,15 @@ TEST_F(MessagePumpGLibTest, TestConcurrentEventPostedTask) {
   // Add 2 events to the queue to make sure it is always full (when we remove
   // the event before processing it).
   injector()->AddEventAsTask(
-      0, Bind(&ConcurrentHelper::FromEvent, helper.get()));
+      0, Bind(&ConcurrentHelper::FromEvent, helper));
   injector()->AddEventAsTask(
-      0, Bind(&ConcurrentHelper::FromEvent, helper.get()));
+      0, Bind(&ConcurrentHelper::FromEvent, helper));
 
   // Similarly post 2 tasks.
   loop()->task_runner()->PostTask(
-      FROM_HERE, Bind(&ConcurrentHelper::FromTask, helper.get()));
+      FROM_HERE, Bind(&ConcurrentHelper::FromTask, helper));
   loop()->task_runner()->PostTask(
-      FROM_HERE, Bind(&ConcurrentHelper::FromTask, helper.get()));
+      FROM_HERE, Bind(&ConcurrentHelper::FromTask, helper));
 
   RunLoop().Run();
   EXPECT_EQ(0, helper->event_count());
@@ -459,7 +459,7 @@ void TestGLibLoopInternal(EventInjector* injector) {
       FROM_HERE, Bind(&IncrementInt, &task_count),
       TimeDelta::FromMilliseconds(30));
   ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, Bind(&GLibLoopRunner::Quit, runner.get()),
+      FROM_HERE, Bind(&GLibLoopRunner::Quit, runner),
       TimeDelta::FromMilliseconds(40));
 
   // Run a nested, straight GLib message loop.
@@ -492,7 +492,7 @@ void TestGtkLoopInternal(EventInjector* injector) {
       FROM_HERE, Bind(&IncrementInt, &task_count),
       TimeDelta::FromMilliseconds(30));
   ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, Bind(&GLibLoopRunner::Quit, runner.get()),
+      FROM_HERE, Bind(&GLibLoopRunner::Quit, runner),
       TimeDelta::FromMilliseconds(40));
 
   // Run a nested, straight Gtk message loop.

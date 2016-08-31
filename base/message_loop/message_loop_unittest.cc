@@ -868,7 +868,7 @@ TEST(MessageLoopTest, ThreadMainTaskRunner) {
   scoped_refptr<Foo> foo(new Foo());
   std::string a("a");
   ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, Bind(
-      &Foo::Test1ConstRef, foo.get(), a));
+      &Foo::Test1ConstRef, foo, a));
 
   // Post quit task;
   MessageLoop::current()->task_runner()->PostTask(
@@ -997,7 +997,7 @@ TEST(MessageLoopTest, OriginalRunnerWorks) {
 
   scoped_refptr<Foo> foo(new Foo());
   original_runner->PostTask(FROM_HERE,
-                            Bind(&Foo::Test1ConstRef, foo.get(), "a"));
+                            Bind(&Foo::Test1ConstRef, foo, "a"));
   RunLoop().RunUntilIdle();
   EXPECT_EQ(1, foo->test_count());
 }
