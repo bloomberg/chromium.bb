@@ -390,6 +390,10 @@ class WindowCycleView : public views::WidgetDelegateView {
     }
   }
 
+  void OnMouseCaptureLost() override {
+    WmShell::Get()->window_cycle_controller()->StopCycling();
+  }
+
   View* GetContentsView() override { return this; }
 
   View* GetInitiallyFocusedView() override {
@@ -464,6 +468,7 @@ WindowCycleList::WindowCycleList(const WindowList& windows)
       current_index_(0),
       initial_direction_(WindowCycleController::FORWARD),
       cycle_view_(nullptr),
+      cycle_ui_widget_(nullptr),
       screen_observer_(this) {
   if (!ShouldShowUi())
     WmShell::Get()->mru_window_tracker()->SetIgnoreActivations(true);
@@ -495,6 +500,9 @@ WindowCycleList::~WindowCycleList() {
     target_window->Show();
     target_window->GetWindowState()->Activate();
   }
+
+  if (cycle_ui_widget_)
+    cycle_ui_widget_->Close();
 }
 
 void WindowCycleList::Step(WindowCycleController::Direction direction) {
@@ -598,7 +606,6 @@ void WindowCycleList::InitWindowCycleView() {
   views::Widget::InitParams params;
   params.delegate = cycle_view_;
   params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.accept_events = true;
   params.name = "WindowCycleList (Alt+Tab)";
@@ -616,7 +623,9 @@ void WindowCycleList::InitWindowCycleView() {
   widget_rect.set_height(widget_height);
   widget->SetBounds(widget_rect);
   widget->Show();
-  cycle_ui_widget_.reset(widget);
+  widget->SetCapture(cycle_view_);
+  widget->set_auto_release_capture(false);
+  cycle_ui_widget_ = widget;
 }
 
 }  // namespace ash

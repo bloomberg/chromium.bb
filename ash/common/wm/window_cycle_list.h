@@ -95,7 +95,7 @@ class ASH_EXPORT WindowCycleList : public WmWindowObserver,
   WindowCycleView* cycle_view_;
 
   // The widget that hosts the window cycle UI.
-  std::unique_ptr<views::Widget> cycle_ui_widget_;
+  views::Widget* cycle_ui_widget_;
 
   // The window list will dismiss if the display metrics change.
   ScopedObserver<display::Screen, display::DisplayObserver> screen_observer_;
