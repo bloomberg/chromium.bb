@@ -18,8 +18,8 @@ if __name__ == '__main__':
   parse.add_option('--root', help='The location of the checkout.')
   parse.add_option('--gerrit_no_reset', action='store_true',
                    help='Bypass calling reset after applying a gerrit ref.')
-  parse.add_option('--gerrit_rebase_patch_ref', action='store_true',
-                   help='Rebase Gerrit patch ref after of checking it out.')
+  parse.add_option('--gerrit_no_rebase_patch_ref', action='store_true',
+                   help='Bypass rebase of Gerrit patch ref after checkout.')
 
   options, _ = parse.parse_args()
 
@@ -29,5 +29,5 @@ if __name__ == '__main__':
           options.gerrit_ref,
           options.root,
           not options.gerrit_no_reset,
-          options.gerrit_rebase_patch_ref)
+          not options.gerrit_no_rebase_patch_ref)
   )

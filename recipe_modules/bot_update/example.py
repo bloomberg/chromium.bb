@@ -34,13 +34,14 @@ def RunSteps(api):
   root_solution_revision = api.properties.get('root_solution_revision')
   suffix = api.properties.get('suffix')
   gerrit_no_reset = True if api.properties.get('gerrit_no_reset') else False
-  gerrit_rebase_patch_ref = bool(api.properties.get('gerrit_rebase_patch_ref'))
+  gerrit_no_rebase_patch_ref = bool(
+      api.properties.get('gerrit_no_rebase_patch_ref'))
 
   if api.properties.get('test_apply_gerrit_ref'):
     api.bot_update.apply_gerrit_ref(
         root='/tmp/test/root',
         gerrit_no_reset=gerrit_no_reset,
-        gerrit_rebase_patch_ref=gerrit_rebase_patch_ref)
+        gerrit_no_rebase_patch_ref=gerrit_no_rebase_patch_ref)
   else:
     api.bot_update.ensure_checkout(
         force=force,
@@ -53,7 +54,7 @@ def RunSteps(api):
         root_solution_revision=root_solution_revision,
         suffix=suffix,
         gerrit_no_reset=gerrit_no_reset,
-        gerrit_rebase_patch_ref=gerrit_rebase_patch_ref)
+        gerrit_no_rebase_patch_ref=gerrit_no_rebase_patch_ref)
 
 
 def GenTests(api):
@@ -158,15 +159,15 @@ def GenTests(api):
       slavename='somehost',
       gerrit_no_reset=1
   )
-  yield api.test('gerrit_rebase_patch_ref') + api.properties(
+  yield api.test('gerrit_no_rebase_patch_ref') + api.properties(
       mastername='experimental',
       buildername='Experimental Builder',
       slavename='somehost',
-      gerrit_rebase_patch_ref=True
+      gerrit_no_rebase_patch_ref=True
   )
   yield api.test('apply_gerrit_ref') + api.properties(
       repository='chromium',
-      gerrit_rebase_patch_ref=True,
+      gerrit_no_rebase_patch_ref=True,
       gerrit_no_reset=1,
       test_apply_gerrit_ref=True,
   )

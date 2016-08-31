@@ -1414,8 +1414,8 @@ def parse_args():
   parse.add_option('--gerrit_repo',
                    help='Gerrit repository to pull the ref from.')
   parse.add_option('--gerrit_ref', help='Gerrit ref to apply.')
-  parse.add_option('--gerrit_rebase_patch_ref', action='store_true',
-                   help='Rebase Gerrit patch ref after of checking it out.')
+  parse.add_option('--gerrit_no_rebase_patch_ref', action='store_true',
+                   help='Bypass rebase of Gerrit patch ref after checkout.')
   parse.add_option('--gerrit_no_reset', action='store_true',
                    help='Bypass calling reset after applying a gerrit ref.')
   parse.add_option('--specs', help='Gcilent spec.')
@@ -1577,7 +1577,7 @@ def checkout(options, git_slns, specs, buildspec, master,
           rietveld_server=options.rietveld_server,
           gerrit_repo=options.gerrit_repo,
           gerrit_ref=options.gerrit_ref,
-          gerrit_rebase_patch_ref=options.gerrit_rebase_patch_ref,
+          gerrit_rebase_patch_ref=not options.gerrit_no_rebase_patch_ref,
           revision_mapping=options.revision_mapping,
           apply_issue_email_file=options.apply_issue_email_file,
           apply_issue_key_file=options.apply_issue_key_file,

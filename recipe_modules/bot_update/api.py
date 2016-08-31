@@ -50,6 +50,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
   # The below method will be removed after there are no more callers of
   # tryserver.maybe_apply_issue (skbug.com/5588).
   def apply_gerrit_ref(self, root, gerrit_no_reset=False,
+                       gerrit_no_rebase_patch_ref=False,
                        gerrit_rebase_patch_ref=True, **kwargs):
     apply_gerrit_path = self.resource('apply_gerrit.py')
     kwargs.setdefault('infra_step', True)
@@ -63,8 +64,8 @@ class BotUpdateApi(recipe_api.RecipeApi):
     ]
     if gerrit_no_reset:
       cmd.append('--gerrit_no_reset')
-    if gerrit_rebase_patch_ref:
-      cmd.append('--gerrit_rebase_patch_ref')
+    if gerrit_no_rebase_patch_ref or not gerrit_rebase_patch_ref:
+      cmd.append('--gerrit_no_rebase_patch_ref')
     return self.m.python('apply_gerrit', apply_gerrit_path, cmd, **kwargs)
 
   def ensure_checkout(self, gclient_config=None, suffix=None,
@@ -75,7 +76,8 @@ class BotUpdateApi(recipe_api.RecipeApi):
                       output_manifest=True, clobber=False,
                       root_solution_revision=None, rietveld=None, issue=None,
                       patchset=None, gerrit_no_reset=False,
-                      gerrit_rebase_patch_ref=False, **kwargs):
+                      gerrit_no_rebase_patch_ref=False,
+                      gerrit_rebase_patch_ref=True, **kwargs):
     """
     Args:
       use_site_config_creds: If the oauth2 credentials are in the buildbot
@@ -231,8 +233,8 @@ class BotUpdateApi(recipe_api.RecipeApi):
       cmd.append('--with_branch_heads')
     if gerrit_no_reset:
       cmd.append('--gerrit_no_reset')
-    if gerrit_rebase_patch_ref:
-      cmd.append('--gerrit_rebase_patch_ref')
+    if gerrit_no_rebase_patch_ref or not gerrit_rebase_patch_ref:
+      cmd.append('--gerrit_no_rebase_patch_ref')
 
     # Inject Json output for testing.
     first_sln = cfg.solutions[0].name

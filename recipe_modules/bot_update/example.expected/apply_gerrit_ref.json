@@ -11,7 +11,7 @@
       "--root",
       "/tmp/test/root",
       "--gerrit_no_reset",
-      "--gerrit_rebase_patch_ref"
+      "--gerrit_no_rebase_patch_ref"
     ],
     "env": {
       "PATH": "%(PATH)s:RECIPE_PACKAGE_REPO[depot_tools]"
