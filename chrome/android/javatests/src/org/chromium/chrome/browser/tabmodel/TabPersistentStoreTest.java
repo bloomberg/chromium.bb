@@ -171,7 +171,7 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
             };
             TabModelImpl regularTabModel = ThreadUtils.runOnUiThreadBlocking(callable);
             TabModel incognitoTabModel = new IncognitoTabModel(
-                    new OffTheRecordTabModelImplCreator(mTabCreatorManager.getTabCreator(false),
+                    new IncognitoTabModelImplCreator(mTabCreatorManager.getTabCreator(false),
                             mTabCreatorManager.getTabCreator(true),
                             null, mTabModelOrderController, null, mTabPersistentStore, this));
             initialize(false, regularTabModel, incognitoTabModel);

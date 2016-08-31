@@ -16,10 +16,10 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
  * specifically, Android doesn't fire signals when tasks are swiped away from the Recents menu if
  * the Activity is dead when it occurs.
  */
-public class OffTheRecordDocumentTabModel extends IncognitoTabModel implements DocumentTabModel {
+public class IncognitoDocumentTabModel extends IncognitoTabModel implements DocumentTabModel {
     private final ActivityDelegate mActivityDelegate;
 
-    public OffTheRecordDocumentTabModel(IncognitoTabModelDelegate offTheRecordDelegate,
+    public IncognitoDocumentTabModel(IncognitoTabModelDelegate offTheRecordDelegate,
             ActivityDelegate delegate) {
         super(offTheRecordDelegate);
         mActivityDelegate = delegate;

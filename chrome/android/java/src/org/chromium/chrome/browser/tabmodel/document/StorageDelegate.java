@@ -57,7 +57,7 @@ public class StorageDelegate extends TabPersister {
     /**
      * Reads the file containing the minimum info required to restore the state of the
      * {@link DocumentTabModel}.
-     * @param encrypted Whether or not the file corresponds to an OffTheRecord TabModel.
+     * @param encrypted Whether or not the file corresponds to an Incognito TabModel.
      * @return Byte buffer containing the task file's data, or null if it wasn't read.
      */
     protected byte[] readMetadataFileBytes(boolean encrypted) {
@@ -151,7 +151,7 @@ public class StorageDelegate extends TabPersister {
 
     /**
      * Return the filename of the persisted TabModel state.
-     * @param encrypted Whether or not the state belongs to an OffTheRecordDocumentTabModel.
+     * @param encrypted Whether or not the state belongs to an IncognitoDocumentTabModel.
      * @return String pointing at the TabModel's persisted state.
      */
     private String getFilename(boolean encrypted) {

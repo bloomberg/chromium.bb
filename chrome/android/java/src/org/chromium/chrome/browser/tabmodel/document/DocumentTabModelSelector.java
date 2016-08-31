@@ -70,7 +70,7 @@ public class DocumentTabModelSelector extends TabModelSelectorBase implements Ta
     /**
      * TabModel that keeps track of incognito tabs. This may be null if no incognito tabs exist.
      */
-    private final OffTheRecordDocumentTabModel mIncognitoTabModel;
+    private final IncognitoDocumentTabModel mIncognitoTabModel;
 
     /**
      * If the TabModels haven't been initialized yet, prioritize the correct one to load the Tab.
@@ -92,7 +92,7 @@ public class DocumentTabModelSelector extends TabModelSelectorBase implements Ta
         final Context context = ContextUtils.getApplicationContext();
         mRegularTabModel = new DocumentTabModelImpl(
                 mActivityDelegate, mStorageDelegate, this, false, sPrioritizedTabId, context);
-        mIncognitoTabModel = new OffTheRecordDocumentTabModel(new IncognitoTabModelDelegate() {
+        mIncognitoTabModel = new IncognitoDocumentTabModel(new IncognitoTabModelDelegate() {
             @Override
             public TabModel createTabModel() {
                 DocumentTabModel incognitoModel = new DocumentTabModelImpl(mActivityDelegate,

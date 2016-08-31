@@ -11,7 +11,7 @@ import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 /**
  * Stores all the variables needed to create an Incognito TabModelImpl when it is needed.
  */
-class OffTheRecordTabModelImplCreator implements IncognitoTabModelDelegate {
+class IncognitoTabModelImplCreator implements IncognitoTabModelDelegate {
     private final TabCreator mRegularTabCreator;
     private final TabCreator mIncognitoTabCreator;
     private final TabModelSelectorUma mUma;
@@ -21,7 +21,7 @@ class OffTheRecordTabModelImplCreator implements IncognitoTabModelDelegate {
     private final TabModelDelegate mModelDelegate;
 
     /**
-     * Constructor for an OffTheRecordTabModelImplCreator, used by {@link IncognitoTabModel}.
+     * Constructor for an IncognitoTabModelImplCreator, used by {@link IncognitoTabModel}.
      *
      * Creating an instance of this class does not create the Incognito TabModelImpl immediately.
      * The {@link IncognitoTabModel} will use this class to create the real TabModelImpl when it
@@ -35,7 +35,7 @@ class OffTheRecordTabModelImplCreator implements IncognitoTabModelDelegate {
      * @param tabSaver            Handler for saving tabs.
      * @param modelDelegate       Delegate to handle external dependencies and interactions.
      */
-    public OffTheRecordTabModelImplCreator(TabCreator regularTabCreator,
+    public IncognitoTabModelImplCreator(TabCreator regularTabCreator,
             TabCreator incognitoTabCreator, TabModelSelectorUma uma,
             TabModelOrderController orderController, TabContentManager tabContentManager,
             TabPersistentStore tabSaver, TabModelDelegate modelDelegate) {
