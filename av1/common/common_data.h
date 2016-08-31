@@ -111,6 +111,11 @@ static const BLOCK_SIZE subsize_lookup[PARTITION_TYPES][BLOCK_SIZES] = {
   }
 };
 
+// transform block size in pixels
+static const int tx_size_1d[TX_SIZES] = { 4, 8, 16, 32 };
+
+static const uint8_t tx_size_1d_log2[TX_SIZES] = { 2, 3, 4, 5 };
+
 static const TX_SIZE max_txsize_lookup[BLOCK_SIZES] = {
   TX_4X4,   TX_4X4,   TX_4X4,   TX_8X8,   TX_8X8,   TX_8X8,  TX_16X16,
   TX_16X16, TX_16X16, TX_32X32, TX_32X32, TX_32X32, TX_32X32
