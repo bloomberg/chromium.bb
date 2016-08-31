@@ -58,7 +58,8 @@ NGPhysicalFragment* NGFragmentBuilder::ToFragment() {
   DCHECK_EQ(offsets_.size(), children_.size());
 
   NGPhysicalSize physical_size = size_.ConvertToPhysical(writing_mode_);
-  HeapVector<Member<const NGPhysicalFragmentBase>> children(children_.size());
+  HeapVector<Member<const NGPhysicalFragmentBase>> children;
+  children.reserveCapacity(children_.size());
 
   for (size_t i = 0; i < children_.size(); ++i) {
     NGPhysicalFragmentBase* child = children_[i].get();
