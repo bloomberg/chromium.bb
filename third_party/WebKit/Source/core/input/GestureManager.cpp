@@ -254,14 +254,18 @@ WebInputEventResult GestureManager::handleGestureLongPress(const GestureEventWit
     // supplied HitTestResult), but that will require some overhaul of the touch drag-and-drop code
     // and LongPress is such a special scenario that it's unlikely to matter much in practice.
 
+    IntPoint hitTestPoint = m_frame->view()->rootFrameToContents(gestureEvent.position());
+    HitTestResult hitTestResult = m_frame->eventHandler().hitTestResultAtPoint(hitTestPoint);
+
     m_longTapShouldInvokeContextMenu = false;
-    if (m_frame->eventHandler().handleDragDropIfPossible(targetedEvent)) {
+    bool hitTestContainsLinks = hitTestResult.URLElement() || !hitTestResult.absoluteImageURL().isNull() || !hitTestResult.absoluteMediaURL().isNull();
+
+    if (!hitTestContainsLinks && m_frame->eventHandler().handleDragDropIfPossible(targetedEvent)) {
         m_longTapShouldInvokeContextMenu = true;
         return WebInputEventResult::HandledSystem;
     }
-    IntPoint hitTestPoint = m_frame->view()->rootFrameToContents(gestureEvent.position());
-    HitTestResult result = m_frame->eventHandler().hitTestResultAtPoint(hitTestPoint);
-    if (m_selectionController->handleGestureLongPress(gestureEvent, result)) {
+
+    if (m_selectionController->handleGestureLongPress(gestureEvent, hitTestResult)) {
         m_frame->eventHandler().focusDocumentView();
         return WebInputEventResult::HandledSystem;
     }

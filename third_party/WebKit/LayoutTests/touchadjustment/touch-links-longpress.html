@@ -16,7 +16,7 @@
 <body>
 
 <div id="sandbox">
-<p><a href="" id="link1">I</a> propose to consider <a href="" id="link2">the question</a>, "Can machines think?"<br>This should begin with definitions of the meaning of the terms "machine" and <a href="" id="link3">"think."</a></p>
+<p><a id="link1">I</a> propose to consider <a id="link2">the question</a>, "Can machines think?"<br>This should begin with definitions of the meaning of the terms "machine" and <a id="link3">"think."</a></p>
 </div>
 
 <p id='description'></p>
@@ -35,8 +35,15 @@
 
     function testLongPress(touchpoint)
     {
-        if (eventSender.gestureLongPress)
+        if (eventSender.gestureLongPress) {
+            // Anchor tags without href are not treated as links, but as texts
+            // instead.
+            // The first long press selects the text. The second long press will
+            // initiate drag and drop.
             eventSender.gestureLongPress(touchpoint.x, touchpoint.y, touchpoint.width, touchpoint.height);
+            eventSender.leapForward(100);
+            eventSender.gestureLongPress(touchpoint.x, touchpoint.y, touchpoint.width, touchpoint.height);
+        }
         else
             debug("gestureLongPress not implemented by this platform.");
     }

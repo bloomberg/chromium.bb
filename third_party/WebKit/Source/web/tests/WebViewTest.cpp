@@ -1734,6 +1734,30 @@ TEST_F(WebViewTest, LongPressLink)
     EXPECT_EQ(WebInputEventResult::HandledSystem, webView->handleInputEvent(event));
 }
 
+TEST_F(WebViewTest, showContextMenuOnLongPressingLinks)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()),
+        WebString::fromUTF8("long_press_links_and_images.html"));
+
+    URLTestHelpers::registerMockedURLLoad(toKURL("http://www.test.com/foo.png"), "white-1x1.png");
+    WebViewImpl* webView = m_webViewHelper.initializeAndLoad(
+        m_baseURL + "long_press_links_and_images.html", true);
+
+    webView->settingsImpl()->setTouchDragDropEnabled(true);
+    webView->resize(WebSize(500, 300));
+    webView->updateAllLifecyclePhases();
+    runPendingTasks();
+
+    WebString anchorTagId = WebString::fromUTF8("anchorTag");
+    WebString imageTagId = WebString::fromUTF8("imageTag");
+
+    EXPECT_TRUE(tapElementById(WebInputEvent::GestureLongPress, anchorTagId));
+    EXPECT_STREQ("anchor contextmenu", webView->mainFrame()->document().title().utf8().data());
+
+    EXPECT_TRUE(tapElementById(WebInputEvent::GestureLongPress, imageTagId));
+    EXPECT_STREQ("image contextmenu", webView->mainFrame()->document().title().utf8().data());
+}
+
 TEST_F(WebViewTest, LongPressEmptyEditableSelection)
 {
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()),
