@@ -127,8 +127,7 @@ void ChromeMetricsServicesManagerClient::CreateFallbackSamplingTrial(
           1, 1, base::FieldTrial::ONE_TIME_RANDOMIZED, nullptr));
 
   // Like the trial name, the order that these two groups are added to the trial
-  // must be kept in sync with the order that they appear in the server
-  // config.
+  // must be kept in sync with the order that they appear in the server config.
 
   // 100 per-mille sampling rate group.
   static const char kInSampleGroup[] = "InReportingSample";
