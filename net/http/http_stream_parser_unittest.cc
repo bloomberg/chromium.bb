@@ -1070,9 +1070,20 @@ TEST(HttpStreamParser, Websocket101Response) {
 // Helper class for constructing HttpStreamParser and running GET requests.
 class SimpleGetRunner {
  public:
-  SimpleGetRunner() : read_buffer_(new GrowableIOBuffer), sequence_number_(0) {
+  SimpleGetRunner()
+      : url_("http://localhost"),
+        http_09_on_non_default_ports_enabled_(false),
+        read_buffer_(new GrowableIOBuffer),
+        sequence_number_(0) {
     writes_.push_back(MockWrite(
         SYNCHRONOUS, sequence_number_++, "GET / HTTP/1.1\r\n\r\n"));
+  }
+
+  void set_url(const GURL& url) { url_ = url; }
+  void set_http_09_on_non_default_ports_enabled(
+      bool http_09_on_non_default_ports_enabled) {
+    http_09_on_non_default_ports_enabled_ =
+        http_09_on_non_default_ports_enabled;
   }
 
   HttpStreamParser* parser() { return parser_.get(); }
@@ -1099,21 +1110,27 @@ class SimpleGetRunner {
     socket_handle_ = CreateConnectedSocketHandle(data_.get());
 
     request_info_.method = "GET";
-    request_info_.url = GURL("http://localhost");
+    request_info_.url = url_;
     request_info_.load_flags = LOAD_NORMAL;
 
     parser_.reset(new HttpStreamParser(
         socket_handle_.get(), &request_info_, read_buffer(), BoundNetLog()));
+
+    parser_->set_http_09_on_non_default_ports_enabled(
+        http_09_on_non_default_ports_enabled_);
 
     TestCompletionCallback callback;
     ASSERT_EQ(OK, parser_->SendRequest("GET / HTTP/1.1\r\n", request_headers_,
                                        &response_info_, callback.callback()));
   }
 
-  void ReadHeaders() {
+  void ReadHeadersExpectingError(Error error) {
     TestCompletionCallback callback;
-    EXPECT_THAT(parser_->ReadResponseHeaders(callback.callback()), IsOk());
+    EXPECT_THAT(parser_->ReadResponseHeaders(callback.callback()),
+                IsError(error));
   }
+
+  void ReadHeaders() { ReadHeadersExpectingError(OK); }
 
   void ReadBody(int user_buf_len, int* read_lengths) {
     TestCompletionCallback callback;
@@ -1131,6 +1148,9 @@ class SimpleGetRunner {
   }
 
  private:
+  GURL url_;
+  bool http_09_on_non_default_ports_enabled_;
+
   HttpRequestHeaders request_headers_;
   HttpResponseInfo response_info_;
   HttpRequestInfo request_info_;
@@ -1143,21 +1163,81 @@ class SimpleGetRunner {
   int sequence_number_;
 };
 
-// Test that HTTP/0.9 response size is correctly calculated.
-TEST(HttpStreamParser, ReceivedBytesNoHeaders) {
-  std::string response = "hello\r\nworld\r\n";
+// Test that HTTP/0.9 works as expected, only on ports where it should be
+// enabled.
+TEST(HttpStreamParser, Http09PortTests) {
+  struct TestCase {
+    const char* url;
+    bool http_09_on_non_default_ports_enabled;
 
-  SimpleGetRunner get_runner;
-  get_runner.AddRead(response);
-  get_runner.SetupParserAndSendRequest();
-  get_runner.ReadHeaders();
-  EXPECT_EQ(0, get_runner.parser()->received_bytes());
+    // Expected result when trying to read headers.
+    Error expected_header_error;
+  };
+
+  const TestCase kTestCases[] = {
+      // Default ports should work for HTTP/0.9, regardless of whether the port
+      // is explicitly specified or not.
+      {"http://foo.com/", false, OK},
+      {"http://foo.com:80/", false, OK},
+      {"https://foo.com/", false, OK},
+      {"https://foo.com:443/", false, OK},
+
+      // Non-standard ports should not support HTTP/0.9, by default.
+      {"http://foo.com:8080/", false, ERR_INVALID_HTTP_RESPONSE},
+      {"https://foo.com:8080/", false, ERR_INVALID_HTTP_RESPONSE},
+      {"http://foo.com:443/", false, ERR_INVALID_HTTP_RESPONSE},
+      {"https://foo.com:80/", false, ERR_INVALID_HTTP_RESPONSE},
+
+      // Allowing non-default ports should not break the default ones.
+      {"http://foo.com/", true, OK},
+      {"http://foo.com:80/", true, OK},
+      {"https://foo.com/", true, OK},
+      {"https://foo.com:443/", true, OK},
+
+      // Check that non-default ports works.
+      {"http://foo.com:8080/", true, OK},
+      {"https://foo.com:8080/", true, OK},
+      {"http://foo.com:443/", true, OK},
+      {"https://foo.com:80/", true, OK},
+  };
+
+  std::string response = "hello\r\nworld\r\n";
   int response_size = response.size();
-  int read_lengths[] = {response_size, 0};
-  get_runner.ReadBody(response_size, read_lengths);
-  EXPECT_EQ(response_size, get_runner.parser()->received_bytes());
-  EXPECT_EQ(HttpResponseInfo::CONNECTION_INFO_HTTP0_9,
-            get_runner.response_info()->connection_info);
+
+  for (const auto& test_case : kTestCases) {
+    SimpleGetRunner get_runner;
+    get_runner.set_url(GURL(test_case.url));
+    get_runner.set_http_09_on_non_default_ports_enabled(
+        test_case.http_09_on_non_default_ports_enabled);
+    get_runner.AddRead(response);
+    get_runner.SetupParserAndSendRequest();
+
+    get_runner.ReadHeadersExpectingError(test_case.expected_header_error);
+    if (test_case.expected_header_error != OK)
+      continue;
+
+    ASSERT_TRUE(get_runner.response_info()->headers);
+    EXPECT_EQ("HTTP/0.9 200 OK",
+              get_runner.response_info()->headers->GetStatusLine());
+
+    EXPECT_EQ(0, get_runner.parser()->received_bytes());
+    int read_lengths[] = {response_size, 0};
+    get_runner.ReadBody(response_size, read_lengths);
+    EXPECT_EQ(response_size, get_runner.parser()->received_bytes());
+    EXPECT_EQ(HttpResponseInfo::CONNECTION_INFO_HTTP0_9,
+              get_runner.response_info()->connection_info);
+  }
+}
+
+// Make sure that HTTP/0.9 isn't allowed in the truncated header case on a weird
+// port.
+TEST(HttpStreamParser, Http09TruncatedHeaderPortTest) {
+  SimpleGetRunner get_runner;
+  get_runner.set_url(GURL("http://foo.com:8080/"));
+  get_runner.AddRead("HT");
+  get_runner.SetupParserAndSendRequest();
+
+  get_runner.ReadHeadersExpectingError(ERR_INVALID_HTTP_RESPONSE);
 }
 
 // Test basic case where there is no keep-alive or extra data from the socket,

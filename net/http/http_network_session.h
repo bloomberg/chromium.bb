@@ -192,6 +192,10 @@ class NET_EXPORT HttpNetworkSession
     ProxyDelegate* proxy_delegate;
     // Enable support for Token Binding.
     bool enable_token_binding;
+
+    // Enable HTTP/0.9 for HTTP/HTTPS on ports other than the default one for
+    // each protocol.
+    bool http_09_on_non_default_ports_enabled;
   };
 
   enum SocketPoolType {

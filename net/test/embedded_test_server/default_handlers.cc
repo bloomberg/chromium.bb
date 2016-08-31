@@ -17,6 +17,7 @@
 #include "base/format_macros.h"
 #include "base/macros.h"
 #include "base/md5.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -157,6 +158,12 @@ std::unique_ptr<HttpResponse> HandleEchoAll(const HttpRequest& request) {
   http_response->set_content_type("text/html");
   http_response->set_content(body);
   return std::move(http_response);
+}
+
+// /echo-raw
+// Returns the query string as the raw response (no HTTP headers).
+std::unique_ptr<HttpResponse> HandleEchoRaw(const HttpRequest& request) {
+  return base::MakeUnique<RawHttpResponse>("", request.GetURL().query());
 }
 
 // /set-cookie?COOKIES
@@ -601,6 +608,7 @@ void RegisterDefaultHandlers(EmbeddedTestServer* server) {
   server->RegisterDefaultHandler(
       PREFIXED_HANDLER("/echotitle", &HandleEchoTitle));
   server->RegisterDefaultHandler(PREFIXED_HANDLER("/echoall", &HandleEchoAll));
+  server->RegisterDefaultHandler(PREFIXED_HANDLER("/echo-raw", &HandleEchoRaw));
   server->RegisterDefaultHandler(
       PREFIXED_HANDLER("/set-cookie", &HandleSetCookie));
   server->RegisterDefaultHandler(

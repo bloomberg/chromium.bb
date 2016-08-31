@@ -17,20 +17,25 @@ namespace {
 TEST(HttpBasicStateTest, ConstructsProperly) {
   ClientSocketHandle* const handle = new ClientSocketHandle;
   // Ownership of |handle| is passed to |state|.
-  const HttpBasicState state(base::WrapUnique(handle), true);
+  const HttpBasicState state(base::WrapUnique(handle), true /* using_proxy */,
+                             false /* http_09_on_non_default_ports_enabled */);
   EXPECT_EQ(handle, state.connection());
   EXPECT_TRUE(state.using_proxy());
+  EXPECT_FALSE(state.http_09_on_non_default_ports_enabled());
 }
 
-TEST(HttpBasicStateTest, UsingProxyCanBeFalse) {
-  const HttpBasicState state(base::MakeUnique<ClientSocketHandle>(), false);
+TEST(HttpBasicStateTest, ConstructsProperlyWithDifferentOptions) {
+  const HttpBasicState state(base::MakeUnique<ClientSocketHandle>(),
+                             false /* using_proxy */,
+                             true /* http_09_on_non_default_ports_enabled */);
   EXPECT_FALSE(state.using_proxy());
+  EXPECT_TRUE(state.http_09_on_non_default_ports_enabled());
 }
 
 TEST(HttpBasicStateTest, ReleaseConnectionWorks) {
   ClientSocketHandle* const handle = new ClientSocketHandle;
   // Ownership of |handle| is passed to |state|.
-  HttpBasicState state(base::WrapUnique(handle), false);
+  HttpBasicState state(base::WrapUnique(handle), false, false);
   const std::unique_ptr<ClientSocketHandle> released_connection(
       state.ReleaseConnection());
   EXPECT_EQ(NULL, state.connection());
@@ -38,7 +43,7 @@ TEST(HttpBasicStateTest, ReleaseConnectionWorks) {
 }
 
 TEST(HttpBasicStateTest, InitializeWorks) {
-  HttpBasicState state(base::MakeUnique<ClientSocketHandle>(), false);
+  HttpBasicState state(base::MakeUnique<ClientSocketHandle>(), false, false);
   const HttpRequestInfo request_info;
   EXPECT_EQ(OK,
             state.Initialize(
@@ -47,7 +52,7 @@ TEST(HttpBasicStateTest, InitializeWorks) {
 }
 
 TEST(HttpBasicStateTest, DeleteParser) {
-  HttpBasicState state(base::MakeUnique<ClientSocketHandle>(), false);
+  HttpBasicState state(base::MakeUnique<ClientSocketHandle>(), false, false);
   const HttpRequestInfo request_info;
   state.Initialize(&request_info, LOW, BoundNetLog(), CompletionCallback());
   EXPECT_TRUE(state.parser());
@@ -57,7 +62,8 @@ TEST(HttpBasicStateTest, DeleteParser) {
 
 TEST(HttpBasicStateTest, GenerateRequestLineNoProxy) {
   const bool use_proxy = false;
-  HttpBasicState state(base::MakeUnique<ClientSocketHandle>(), use_proxy);
+  HttpBasicState state(base::MakeUnique<ClientSocketHandle>(), use_proxy,
+                       false);
   HttpRequestInfo request_info;
   request_info.url = GURL("http://www.example.com/path?foo=bar#hoge");
   request_info.method = "PUT";
@@ -67,7 +73,8 @@ TEST(HttpBasicStateTest, GenerateRequestLineNoProxy) {
 
 TEST(HttpBasicStateTest, GenerateRequestLineWithProxy) {
   const bool use_proxy = true;
-  HttpBasicState state(base::MakeUnique<ClientSocketHandle>(), use_proxy);
+  HttpBasicState state(base::MakeUnique<ClientSocketHandle>(), use_proxy,
+                       false);
   HttpRequestInfo request_info;
   request_info.url = GURL("http://www.example.com/path?foo=bar#hoge");
   request_info.method = "PUT";

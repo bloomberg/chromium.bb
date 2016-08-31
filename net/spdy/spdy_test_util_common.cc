@@ -343,7 +343,8 @@ SpdySessionDependencies::SpdySessionDependencies(
       stream_max_recv_window_size(kDefaultInitialWindowSize),
       time_func(&base::TimeTicks::Now),
       enable_http2_alternative_service_with_different_host(false),
-      net_log(NULL) {
+      net_log(nullptr),
+      http_09_on_non_default_ports_enabled(false) {
   // Note: The CancelledTransaction test does cleanup by running all
   // tasks in the message loop (RunAllPending).  Unfortunately, that
   // doesn't clean up tasks on the host resolver thread; and
@@ -397,6 +398,8 @@ HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
   params.enable_http2_alternative_service_with_different_host =
       session_deps->enable_http2_alternative_service_with_different_host;
   params.net_log = session_deps->net_log;
+  params.http_09_on_non_default_ports_enabled =
+      session_deps->http_09_on_non_default_ports_enabled;
   return params;
 }
 
