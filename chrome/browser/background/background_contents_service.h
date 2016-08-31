@@ -21,6 +21,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/common/window_container_type.h"
 #include "extensions/browser/extension_registry_observer.h"
+#include "net/base/backoff_entry.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 
@@ -238,6 +239,12 @@ class BackgroundContentsService : private content::NotificationObserver,
   typedef std::map<base::string16, BackgroundContentsInfo>
       BackgroundContentsMap;
   BackgroundContentsMap contents_map_;
+
+  // Map associating component extensions that have attempted to reload with a
+  // BackoffEntry keeping track of retry timing.
+  typedef std::map<extensions::ExtensionId, std::unique_ptr<net::BackoffEntry>>
+      ExtensionBackoffEntryMap;
+  ExtensionBackoffEntryMap backoff_map_;
 
   ScopedObserver<extensions::ExtensionRegistry,
                  extensions::ExtensionRegistryObserver>
