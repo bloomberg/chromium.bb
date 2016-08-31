@@ -21,21 +21,12 @@ public class GlDesktopView extends DesktopView implements SurfaceHolder.Callback
     private Object mOnHostSizeChangedListenerKey;
     private Object mOnCanvasRenderedListenerKey;
 
-    private Event.ParameterRunnable<Void> mProcessAnimationRunnable;
-
     private float mScaleFactor;
 
     public GlDesktopView(GlDisplay display, Desktop desktop, Client client) {
         super(desktop, client);
         Preconditions.notNull(display);
         mDisplay = display;
-
-        mProcessAnimationRunnable = new Event.ParameterRunnable<Void>() {
-            @Override
-            public void run(Void p) {
-                mInputHandler.processAnimation();
-            }
-        };
 
         mScaleFactor = 0;
 
@@ -70,24 +61,20 @@ public class GlDesktopView extends DesktopView implements SurfaceHolder.Callback
     }
 
     @Override
-    public void setAnimationEnabled(boolean enabled) {
-        if (enabled && mOnCanvasRenderedListenerKey == null) {
-            mOnCanvasRenderedListenerKey = mDisplay.onCanvasRendered()
-                    .add(mProcessAnimationRunnable);
-            mInputHandler.processAnimation();
-        } else if (!enabled && mOnCanvasRenderedListenerKey != null) {
-            mDisplay.onCanvasRendered().remove(mOnCanvasRenderedListenerKey);
-            mOnCanvasRenderedListenerKey = null;
-        }
-    }
-
-    @Override
     public void surfaceCreated(SurfaceHolder holder) {
         mOnHostSizeChangedListenerKey = mDisplay
                 .onHostSizeChanged().add(new Event.ParameterRunnable<SizeChangedEventParameter>() {
                     @Override
                     public void run(SizeChangedEventParameter p) {
                         mOnHostSizeChanged.raise(p);
+                    }
+                });
+
+        mOnCanvasRenderedListenerKey = mDisplay
+                .onCanvasRendered().add(new Event.ParameterRunnable<Void>() {
+                    @Override
+                    public void run(Void p) {
+                        mOnCanvasRendered.raise(p);
                     }
                 });
 

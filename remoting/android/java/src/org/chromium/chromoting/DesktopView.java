@@ -43,6 +43,11 @@ public abstract class DesktopView extends SurfaceView {
     protected final Event.Raisable<SizeChangedEventParameter> mOnHostSizeChanged =
             new Event.Raisable<>();
 
+    /**
+     * Subclass should trigger this event when a frame is rendered.
+     */
+    protected final Event.Raisable<Void> mOnCanvasRendered = new Event.Raisable<>();
+
     private final int mTinyFeedbackPixelRadius;
     private final int mSmallFeedbackPixelRadius;
     private final int mLargeFeedbackPixelRadius;
@@ -99,6 +104,11 @@ public abstract class DesktopView extends SurfaceView {
     /** An {@link Event} which is triggered when the host size is changed. */
     public final Event<SizeChangedEventParameter> onHostSizeChanged() {
         return mOnHostSizeChanged;
+    }
+
+    /** An {@link Event} which is triggered when a frame is rendered. */
+    public final Event<Void> onCanvasRendered() {
+        return mOnCanvasRendered;
     }
 
     // View overrides.
@@ -172,10 +182,4 @@ public abstract class DesktopView extends SurfaceView {
      * the TouchInputHandler, which requires repainting.
      */
     public abstract void cursorVisibilityChanged(boolean visible);
-
-    /**
-     * Starts or stops an animation. Whilst the animation is running, the DesktopView will
-     * periodically call TouchInputHandler.processAnimation() and repaint itself.
-     */
-    public abstract void setAnimationEnabled(boolean enabled);
 }

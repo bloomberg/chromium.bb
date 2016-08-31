@@ -93,6 +93,8 @@ public class TouchInputHandler {
      */
     private boolean mIsDragging = false;
 
+    private Event.ParameterCallback<Boolean, Void> mProcessAnimationCallback;
+
     /**
      * This class implements fling animation for cursor
      */
@@ -210,16 +212,37 @@ public class TouchInputHandler {
         mCursorAnimationJob = new CursorAnimationJob(context);
         mScrollAnimationJob = new ScrollAnimationJob(context);
 
+        mProcessAnimationCallback = new Event.ParameterCallback<Boolean, Void>() {
+            @Override
+            public Boolean run(Void p) {
+                return processAnimation();
+            }
+        };
+
         attachViewEvents(viewer);
     }
 
-    public void processAnimation() {
-        boolean active = mCursorAnimationJob.processAnimation();
-        active |= mScrollAnimationJob.processAnimation();
+    /**
+     * Steps forward the animation.
+     * @return true if the animation is not finished yet.
+     */
+    private boolean processAnimation() {
+        return mCursorAnimationJob.processAnimation() || mScrollAnimationJob.processAnimation();
+    }
 
-        if (!active) {
-            mViewer.setAnimationEnabled(false);
-        }
+    /**
+     * Start stepping animation when onCanvasRendered is triggered.
+     */
+    private void startAnimation() {
+        mViewer.onCanvasRendered().addSelfRemovable(mProcessAnimationCallback);
+    }
+
+    /**
+     * Abort all animations.
+     */
+    private void abortAnimation() {
+        mCursorAnimationJob.abortAnimation();
+        mScrollAnimationJob.abortAnimation();
     }
 
     public void init(Desktop desktop, final InputEventSender injector) {
@@ -324,7 +347,7 @@ public class TouchInputHandler {
 
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
-                mViewer.setAnimationEnabled(false);
+                abortAnimation();
                 mSuppressCursorMovement = false;
                 mSuppressFling = false;
                 mSwipeCompleted = false;
@@ -373,8 +396,7 @@ public class TouchInputHandler {
     private void setInputStrategy(InputStrategyInterface inputStrategy) {
         // Since the rules for flinging differ between input modes, we want to stop running the
         // current fling animation when the mode changes to prevent a wonky experience.
-        mCursorAnimationJob.abortAnimation();
-        mScrollAnimationJob.abortAnimation();
+        abortAnimation();
         mInputStrategy = inputStrategy;
     }
 
@@ -519,7 +541,7 @@ public class TouchInputHandler {
 
             if (mScrollFling) {
                 mScrollAnimationJob.startAnimation(velocityX, velocityY);
-                mViewer.setAnimationEnabled(true);
+                startAnimation();
                 mScrollFling = false;
                 return true;
             }
@@ -532,7 +554,7 @@ public class TouchInputHandler {
             // gesture-detector will still generate onFling() notifications based on movement of
             // the fingers, which would result in unwanted cursor movement.
             mCursorAnimationJob.startAnimation(velocityX, velocityY);
-            mViewer.setAnimationEnabled(true);
+            startAnimation();
             return true;
         }
 
