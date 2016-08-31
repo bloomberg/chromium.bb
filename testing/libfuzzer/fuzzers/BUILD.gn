@@ -245,8 +245,6 @@ fuzzer_test("v8_wasm_code_fuzzer") {
   deps = [
     "//v8:wasm_code_fuzzer",
   ]
-  dict = "dicts/v8_wasm.dict"
-  seed_corpus = "//v8/test/fuzzer/wasm_code/"
   libfuzzer_options = [ "max_len=500" ]
 }
 
