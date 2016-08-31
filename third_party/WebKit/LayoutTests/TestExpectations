@@ -1129,6 +1129,10 @@ crbug.com/594672 fast/events/scale-and-scroll-iframe-body.html [ Failure Pass ]
 crbug.com/594672 fast/events/updateLayoutForHitTest.html [ Failure Pass ]
 crbug.com/594672 fast/events/scale-and-scroll-iframe-window.html [ Failure Pass ]
 
+crbug.com/637811 [ Mac Win ] fast/table/dynamic-descendant-percentage-height.html [ NeedsRebaseline ]
+crbug.com/637811 [ Mac Win ] tables/mozilla/core/cell_heights.html [ NeedsRebaseline ]
+crbug.com/637811 [ Mac Win ] tables/mozilla_expected_failures/bugs/bug32205-1.html [ NeedsRebaseline ]
+
 crbug.com/593568 [ Win Debug ] virtual/threaded/fast/scroll-behavior/smooth-scroll/horizontal-smooth-scroll-in-rtl.html [ Failure ]
 
 crbug.com/594595 [ Linux ] http/tests/security/mixedContent/websocket/insecure-websocket-in-secure-page-worker-allowed.html [ Timeout Pass ]

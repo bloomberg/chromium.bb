@@ -1907,8 +1907,7 @@ LayoutUnit LayoutBlock::availableLogicalHeightForPercentageComputation() const
         availableHeight = overrideLogicalContentHeight();
     } else if (style.logicalHeight().isFixed()) {
         LayoutUnit contentBoxHeight = adjustContentBoxLogicalHeightForBoxSizing(style.logicalHeight().value());
-        availableHeight = constrainContentBoxLogicalHeightByMinMax(
-            contentBoxHeight - scrollbarLogicalHeight(), LayoutUnit(-1)).clampNegativeToZero();
+        availableHeight = std::max(LayoutUnit(), constrainContentBoxLogicalHeightByMinMax(contentBoxHeight - scrollbarLogicalHeight(), LayoutUnit(-1)));
     } else if (style.logicalHeight().hasPercent() && !isOutOfFlowPositionedWithSpecifiedHeight) {
         LayoutUnit heightWithScrollbar = computePercentageLogicalHeight(style.logicalHeight());
         if (heightWithScrollbar != -1) {
