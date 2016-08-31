@@ -33,7 +33,7 @@ mac_app_bundle("mac_installer_app") {
   extra_substitutions = [ "MACOSX_DEPLOYMENT_TARGET=10.9" ]
   sources = [
     "AppDelegate.h",
-    "AppDelegate.m",
+    "AppDelegate.mm",
     "AuthorizedInstall.h",
     "AuthorizedInstall.m",
     "InstallerWindowController.h",
@@ -45,6 +45,7 @@ mac_app_bundle("mac_installer_app") {
     ":mac_installer_base",
     ":mac_installer_resources",
     ":mac_installer_xibs",
+    "//chrome/common:constants",
   ]
 
   libs = [
@@ -79,6 +80,7 @@ test("mac_installer_unittests") {
     ":mac_installer_base",
     "//base:base",
     "//base/test:run_all_unittests",
+    "//chrome/common:constants",
     "//testing/gtest:gtest",
   ]
   libs = [

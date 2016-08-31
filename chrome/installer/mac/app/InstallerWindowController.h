@@ -13,6 +13,9 @@
 - (void)updateStatusDescription:(NSString*)text;
 - (void)updateDownloadProgress:(double)progressPercent;
 - (void)enableLaunchButton;
+
+- (BOOL)isUserMetricsChecked;
+- (BOOL)isDefaultBrowserChecked;
 @end
 
 #endif  // CHROME_INSTALLER_MAC_APP_INSTALLERWINDOWCONTROLLER_H_

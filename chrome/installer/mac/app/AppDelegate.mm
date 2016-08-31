@@ -6,6 +6,8 @@
 
 #include <Security/Security.h>
 
+#include "chrome/common/chrome_switches.h"
+
 #import "Downloader.h"
 #import "InstallerWindowController.h"
 #import "NSError+ChromeInstallerAdditions.h"
@@ -162,12 +164,23 @@
   NSString* chromeInApplicationsFolder =
       [authorizedInstall_ startInstall:tempAppPath];
 
+  NSMutableArray* installerSettings = [[NSMutableArray alloc] init];
+  if ([installerWindowController_ isUserMetricsChecked])
+    [installerSettings
+        addObject:[NSString stringWithUTF8String:switches::kEnableUserMetrics]];
+  if ([installerWindowController_ isDefaultBrowserChecked])
+    [installerSettings
+        addObject:[NSString
+                      stringWithUTF8String:switches::kMakeDefaultBrowser]];
+
   NSError* error = nil;
   [[NSWorkspace sharedWorkspace]
       launchApplicationAtURL:[NSURL fileURLWithPath:chromeInApplicationsFolder
                                         isDirectory:NO]
                      options:NSWorkspaceLaunchDefault
-               configuration:@{}
+               configuration:@{
+                 NSWorkspaceLaunchConfigurationArguments : installerSettings
+               }
                        error:&error];
   if (error) {
     NSLog(@"Chrome failed to launch: %@", error);

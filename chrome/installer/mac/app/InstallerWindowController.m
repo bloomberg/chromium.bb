@@ -138,4 +138,12 @@
   [NSApp terminate:nil];
 }
 
+- (BOOL)isUserMetricsChecked {
+  return optInButton_.state == NSOnState;
+}
+
+- (BOOL)isDefaultBrowserChecked {
+  return defaultBrowserButton_.state == NSOnState;
+}
+
 @end

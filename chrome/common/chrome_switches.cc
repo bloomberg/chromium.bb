@@ -1153,6 +1153,9 @@ const char kDisableMacViewsNativeAppWindows[] =
 // Disables Translate experimental new UX which replaces the infobar.
 const char kDisableTranslateNewUX[] = "disable-translate-new-ux";
 
+// Enable user metrics from within the installer.
+const char kEnableUserMetrics[] = "enable-user-metrics";
+
 // Enable the toolkit-views App Info dialog for Mac. This is accessible from
 // chrome://apps and chrome://extensions and is already enabled on non-mac.
 const char kEnableAppInfoDialogMac[] = "enable-app-info-dialog-mac";
@@ -1195,6 +1198,10 @@ const char kRelauncherProcess[]             = "relauncher";
 // image and move its disk image file to the trash.  The argument's value must
 // be a BSD device name of the form "diskN" or "diskNsM".
 const char kRelauncherProcessDMGDevice[]    = "dmg-device";
+
+// Indicates whether Chrome should be set as the default browser during
+// installation.
+const char kMakeChromeDefault[] = "make-chrome-default";
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_WIN)

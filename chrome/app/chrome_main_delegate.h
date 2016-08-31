@@ -54,6 +54,7 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
 #if defined(OS_MACOSX)
   void InitMacCrashReporter(const base::CommandLine& command_line,
                             const std::string& process_type);
+  void SetUpInstallerPreferences(const base::CommandLine& command_line);
 #endif  // defined(OS_MACOSX)
 
   ChromeContentClient chrome_content_client_;

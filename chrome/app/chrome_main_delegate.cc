@@ -72,6 +72,7 @@
 #include "base/mac/foundation_util.h"
 #include "chrome/app/chrome_main_mac.h"
 #include "chrome/browser/mac/relauncher.h"
+#include "chrome/browser/shell_integration.h"
 #include "chrome/common/mac/cfbundle_blocker.h"
 #include "components/crash/content/app/crashpad.h"
 #include "components/crash/core/common/objc_zombie.h"
@@ -695,6 +696,18 @@ void ChromeMainDelegate::InitMacCrashReporter(
         << "Main application forbids --type, saw " << process_type;
   }
 }
+
+void ChromeMainDelegate::SetUpInstallerPreferences(
+    const base::CommandLine& command_line) {
+  const bool uma_setting = command_line.HasSwitch(switches::kEnableUserMetrics);
+  const bool default_browser_setting =
+      command_line.HasSwitch(switches::kMakeChromeDefault);
+
+  if (uma_setting)
+    crash_reporter::SetUploadConsent(uma_setting);
+  if (default_browser_setting)
+    shell_integration::SetAsDefaultBrowser();
+}
 #endif  // defined(OS_MACOSX)
 
 void ChromeMainDelegate::PreSandboxStartup() {
@@ -715,6 +728,7 @@ void ChromeMainDelegate::PreSandboxStartup() {
                         Append(chrome::kHelperProcessExecutablePath));
 
   InitMacCrashReporter(command_line, process_type);
+  SetUpInstallerPreferences(command_line);
 #endif
 
 #if defined(OS_WIN)
