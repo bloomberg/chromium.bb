@@ -93,7 +93,7 @@ void GpuServiceProxy::EstablishGpuChannel(
 }
 
 void GpuServiceProxy::CreateGpuMemoryBuffer(
-    mojom::GpuMemoryBufferIdPtr id,
+    gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
@@ -102,7 +102,7 @@ void GpuServiceProxy::CreateGpuMemoryBuffer(
   NOTIMPLEMENTED();
 }
 
-void GpuServiceProxy::DestroyGpuMemoryBuffer(mojom::GpuMemoryBufferIdPtr id,
+void GpuServiceProxy::DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                                              const gpu::SyncToken& sync_token) {
   NOTIMPLEMENTED();
 }

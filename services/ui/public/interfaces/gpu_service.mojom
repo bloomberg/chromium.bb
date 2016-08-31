@@ -20,7 +20,7 @@ interface GpuService {
                             gpu.mojom.GpuInfo gpu_info);
 
   // Tells the GPU service to create a new GPU memory buffer.
-  CreateGpuMemoryBuffer(GpuMemoryBufferId id,
+  CreateGpuMemoryBuffer(gfx.mojom.GpuMemoryBufferId id,
                         gfx.mojom.Size size,
                         gfx.mojom.BufferFormat format,
                         gfx.mojom.BufferUsage usage,
@@ -28,6 +28,6 @@ interface GpuService {
       => (GpuMemoryBufferHandle buffer_handle);
 
   // Tells the GPU process to destroy GPU memory buffer.
-  DestroyGpuMemoryBuffer(GpuMemoryBufferId id,
+  DestroyGpuMemoryBuffer(gfx.mojom.GpuMemoryBufferId id,
                          gpu.mojom.SyncToken sync_token);
 };

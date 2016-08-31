@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_MOJO_BUFFER_TYPES_ENUM_TRAITS_H_
-#define UI_GFX_MOJO_BUFFER_TYPES_ENUM_TRAITS_H_
+#ifndef UI_GFX_MOJO_BUFFER_TYPES_TRAITS_H_
+#define UI_GFX_MOJO_BUFFER_TYPES_TRAITS_H_
 
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/mojo/buffer_types.mojom.h"
@@ -139,6 +139,62 @@ struct EnumTraits<gfx::mojom::BufferUsage, gfx::BufferUsage> {
   }
 };
 
+template <>
+struct EnumTraits<gfx::mojom::GpuMemoryBufferType, gfx::GpuMemoryBufferType> {
+  static gfx::mojom::GpuMemoryBufferType ToMojom(
+      gfx::GpuMemoryBufferType type) {
+    switch (type) {
+      case gfx::GpuMemoryBufferType::EMPTY_BUFFER:
+        return gfx::mojom::GpuMemoryBufferType::EMPTY_BUFFER;
+      case gfx::GpuMemoryBufferType::SHARED_MEMORY_BUFFER:
+        return gfx::mojom::GpuMemoryBufferType::SHARED_MEMORY_BUFFER;
+      case gfx::GpuMemoryBufferType::IO_SURFACE_BUFFER:
+        return gfx::mojom::GpuMemoryBufferType::IO_SURFACE_BUFFER;
+      case gfx::GpuMemoryBufferType::SURFACE_TEXTURE_BUFFER:
+        return gfx::mojom::GpuMemoryBufferType::SURFACE_TEXTURE_BUFFER;
+      case gfx::GpuMemoryBufferType::OZONE_NATIVE_PIXMAP:
+        return gfx::mojom::GpuMemoryBufferType::OZONE_NATIVE_PIXMAP;
+    }
+    NOTREACHED();
+    return gfx::mojom::GpuMemoryBufferType::LAST;
+  }
+
+  static bool FromMojom(gfx::mojom::GpuMemoryBufferType input,
+                        gfx::GpuMemoryBufferType* out) {
+    switch (input) {
+      case gfx::mojom::GpuMemoryBufferType::EMPTY_BUFFER:
+        *out = gfx::GpuMemoryBufferType::EMPTY_BUFFER;
+        return true;
+      case gfx::mojom::GpuMemoryBufferType::SHARED_MEMORY_BUFFER:
+        *out = gfx::GpuMemoryBufferType::SHARED_MEMORY_BUFFER;
+        return true;
+      case gfx::mojom::GpuMemoryBufferType::IO_SURFACE_BUFFER:
+        *out = gfx::GpuMemoryBufferType::IO_SURFACE_BUFFER;
+        return true;
+      case gfx::mojom::GpuMemoryBufferType::SURFACE_TEXTURE_BUFFER:
+        *out = gfx::GpuMemoryBufferType::SURFACE_TEXTURE_BUFFER;
+        return true;
+      case gfx::mojom::GpuMemoryBufferType::OZONE_NATIVE_PIXMAP:
+        *out = gfx::GpuMemoryBufferType::OZONE_NATIVE_PIXMAP;
+        return true;
+    }
+    return false;
+  }
+};
+
+template <>
+struct StructTraits<gfx::mojom::GpuMemoryBufferIdDataView,
+                    gfx::GpuMemoryBufferId> {
+  static int32_t id(const gfx::GpuMemoryBufferId& buffer_id) {
+    return buffer_id.id;
+  }
+  static bool Read(gfx::mojom::GpuMemoryBufferIdDataView data,
+                   gfx::GpuMemoryBufferId* out) {
+    out->id = data.id();
+    return true;
+  }
+};
+
 }  // namespace mojo
 
-#endif  // UI_GFX_MOJO_BUFFER_TYPES_ENUM_TRAITS_H_
+#endif  // UI_GFX_MOJO_BUFFER_TYPES_TRAITS_H_

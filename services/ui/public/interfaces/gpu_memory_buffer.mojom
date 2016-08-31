@@ -4,18 +4,7 @@
 
 module ui.mojom;
 
-enum GpuMemoryBufferType {
-  EMPTY,
-  SHARED_MEMORY,
-  IO_SURFACE,
-  SURFACE_TEXTURE,
-  OZONE_NATIVE_PIXMAP,
-  LAST = OZONE_NATIVE_PIXMAP
-};
-
-struct GpuMemoryBufferId {
-  int32 id;
-};
+import "ui/gfx/mojo/buffer_types.mojom";
 
 struct NativePixmapHandle {
   // A file descriptor for the underlying memory object (usually dmabuf).
@@ -27,8 +16,8 @@ struct NativePixmapHandle {
 
 
 struct GpuMemoryBufferHandle {
-  GpuMemoryBufferType type;
-  GpuMemoryBufferId id;
+  gfx.mojom.GpuMemoryBufferType type;
+  gfx.mojom.GpuMemoryBufferId id;
   handle buffer_handle;
   uint32 offset;
   int32 stride;

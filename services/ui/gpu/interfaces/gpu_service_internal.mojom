@@ -5,6 +5,8 @@
 module ui.mojom;
 
 import "gpu/ipc/common/gpu_info.mojom";
+import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/mojo/buffer_types.mojom";
 
 interface GpuServiceInternal {
   Initialize() => (gpu.mojom.GpuInfo gpu_info);

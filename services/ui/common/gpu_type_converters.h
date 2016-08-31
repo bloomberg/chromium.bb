@@ -35,18 +35,6 @@ struct TypeConverter<gfx::NativePixmapHandle,
 #endif
 
 template <>
-struct TypeConverter<ui::mojom::GpuMemoryBufferIdPtr, gfx::GpuMemoryBufferId> {
-  static ui::mojom::GpuMemoryBufferIdPtr Convert(
-      const gfx::GpuMemoryBufferId& id);
-};
-
-template <>
-struct TypeConverter<gfx::GpuMemoryBufferId, ui::mojom::GpuMemoryBufferIdPtr> {
-  static gfx::GpuMemoryBufferId Convert(
-      const ui::mojom::GpuMemoryBufferIdPtr& id);
-};
-
-template <>
 struct TypeConverter<ui::mojom::GpuMemoryBufferHandlePtr,
                      gfx::GpuMemoryBufferHandle> {
   static ui::mojom::GpuMemoryBufferHandlePtr Convert(

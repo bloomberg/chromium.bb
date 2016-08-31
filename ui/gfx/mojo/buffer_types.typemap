@@ -3,12 +3,17 @@
 # found in the LICENSE file.
 
 mojom = "//ui/gfx/mojo/buffer_types.mojom"
-public_headers = [ "//ui/gfx/buffer_types.h" ]
-traits_headers = [ "//ui/gfx/mojo/buffer_types_enum_traits.h" ]
+public_headers = [
+  "//ui/gfx/buffer_types.h",
+  "//ui/gfx/gpu_memory_buffer.h",
+]
+traits_headers = [ "//ui/gfx/mojo/buffer_types_traits.h" ]
 public_deps = [
   "//ui/gfx",
 ]
 type_mappings = [
   "gfx.mojom.BufferFormat=gfx::BufferFormat",
   "gfx.mojom.BufferUsage=gfx::BufferUsage",
+  "gfx.mojom.GpuMemoryBufferId=gfx::GpuMemoryBufferId[copyable_pass_by_value]",
+  "gfx.mojom.GpuMemoryBufferType=gfx::GpuMemoryBufferType",
 ]

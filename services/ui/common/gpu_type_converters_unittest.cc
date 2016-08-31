@@ -31,8 +31,8 @@ TEST(MusGpuTypeConvertersTest, GpuMemoryBufferHandle) {
   ui::mojom::GpuMemoryBufferHandlePtr gpu_handle =
       ui::mojom::GpuMemoryBufferHandle::From<gfx::GpuMemoryBufferHandle>(
           handle);
-  ASSERT_EQ(gpu_handle->type, ui::mojom::GpuMemoryBufferType::SHARED_MEMORY);
-  ASSERT_EQ(gpu_handle->id->id, 99);
+  ASSERT_EQ(gpu_handle->type, gfx::GpuMemoryBufferType::SHARED_MEMORY_BUFFER);
+  ASSERT_EQ(gpu_handle->id.id, 99);
   ASSERT_EQ(gpu_handle->offset, kOffset);
   ASSERT_EQ(gpu_handle->stride, kStride);
 

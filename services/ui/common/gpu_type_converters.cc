@@ -37,30 +37,14 @@ TypeConverter<gfx::NativePixmapHandle, ui::mojom::NativePixmapHandlePtr>::
 #endif
 
 // static
-ui::mojom::GpuMemoryBufferIdPtr
-TypeConverter<ui::mojom::GpuMemoryBufferIdPtr, gfx::GpuMemoryBufferId>::Convert(
-    const gfx::GpuMemoryBufferId& id) {
-  ui::mojom::GpuMemoryBufferIdPtr result = ui::mojom::GpuMemoryBufferId::New();
-  result->id = id.id;
-  return result;
-}
-
-// static
-gfx::GpuMemoryBufferId
-TypeConverter<gfx::GpuMemoryBufferId, ui::mojom::GpuMemoryBufferIdPtr>::Convert(
-    const ui::mojom::GpuMemoryBufferIdPtr& id) {
-  return gfx::GpuMemoryBufferId(id->id);
-}
-
-// static
 ui::mojom::GpuMemoryBufferHandlePtr
 TypeConverter<ui::mojom::GpuMemoryBufferHandlePtr, gfx::GpuMemoryBufferHandle>::
     Convert(const gfx::GpuMemoryBufferHandle& handle) {
   DCHECK(handle.type == gfx::SHARED_MEMORY_BUFFER);
   ui::mojom::GpuMemoryBufferHandlePtr result =
       ui::mojom::GpuMemoryBufferHandle::New();
-  result->type = static_cast<ui::mojom::GpuMemoryBufferType>(handle.type);
-  result->id = ui::mojom::GpuMemoryBufferId::From(handle.id);
+  result->type = handle.type;
+  result->id = handle.id;
   base::PlatformFile platform_file;
 #if defined(OS_WIN)
   platform_file = handle.handle.GetHandle();
@@ -82,10 +66,10 @@ TypeConverter<ui::mojom::GpuMemoryBufferHandlePtr, gfx::GpuMemoryBufferHandle>::
 gfx::GpuMemoryBufferHandle
 TypeConverter<gfx::GpuMemoryBufferHandle, ui::mojom::GpuMemoryBufferHandlePtr>::
     Convert(const ui::mojom::GpuMemoryBufferHandlePtr& handle) {
-  DCHECK(handle->type == ui::mojom::GpuMemoryBufferType::SHARED_MEMORY);
+  DCHECK_EQ(handle->type, gfx::GpuMemoryBufferType::SHARED_MEMORY_BUFFER);
   gfx::GpuMemoryBufferHandle result;
-  result.type = static_cast<gfx::GpuMemoryBufferType>(handle->type);
-  result.id = handle->id.To<gfx::GpuMemoryBufferId>();
+  result.type = handle->type;
+  result.id = handle->id;
   base::PlatformFile platform_file;
   MojoResult unwrap_result = mojo::UnwrapPlatformFile(
       std::move(handle->buffer_handle), &platform_file);

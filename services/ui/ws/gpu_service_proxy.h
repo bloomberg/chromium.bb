@@ -51,14 +51,14 @@ class GpuServiceProxy : public mojom::GpuService,
   void EstablishGpuChannel(
       const EstablishGpuChannelCallback& callback) override;
   void CreateGpuMemoryBuffer(
-      mojom::GpuMemoryBufferIdPtr id,
+      gfx::GpuMemoryBufferId id,
       const gfx::Size& size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage,
       uint64_t surface_id,
       const mojom::GpuService::CreateGpuMemoryBufferCallback& callback)
       override;
-  void DestroyGpuMemoryBuffer(mojom::GpuMemoryBufferIdPtr id,
+  void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                               const gpu::SyncToken& sync_token) override;
 
   // gpu::GpuChannelHostFactory overrides:
