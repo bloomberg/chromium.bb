@@ -183,6 +183,7 @@
 <translation id="1240892293903523606">DOM Inspector</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> möchte Ihre Einstellungen zurücksetzen.</translation>
 <translation id="1243314992276662751">Hochladen</translation>
+<translation id="1244147615850840081">Mobilfunkanbieter</translation>
 <translation id="1244303850296295656">Erweiterungsfehler</translation>
 <translation id="1245907074925860695">Nutzer entfernen</translation>
 <translation id="1248269069727746712"><ph name="PRODUCT_NAME" /> verwendet die System-Proxy-Einstellungen Ihres Geräts, um eine Verbindung mit dem Netzwerk herzustellen.</translation>
@@ -195,7 +196,6 @@
 <translation id="126710816202626562">Zielsprache:</translation>
 <translation id="1272079795634619415">Stopp</translation>
 <translation id="1272978324304772054">Dieses Nutzerkonto gehört nicht zu der Domain, in der das Gerät angemeldet ist. Wenn Sie sich in einer anderen Domain anmelden möchten, müssen Sie zunächst eine Gerätewiederherstellung durchführen.</translation>
-<translation id="127353061808977798">Schrift und Codierung</translation>
 <translation id="1274997165432133392">Cookies und andere Websitedaten</translation>
 <translation id="1275718070701477396">Ausgewählt</translation>
 <translation id="127668050356036882">Alle Fenster schließen</translation>
@@ -1313,6 +1313,7 @@ Ich glaube nicht, dass diese Website blockiert werden sollte.</translation>
 <translation id="2799223571221894425">Neu starten</translation>
 <translation id="2800537048826676660">Diese Sprache für die Rechtschreibprüfung verwenden</translation>
 <translation id="2801702994096586034">Server 3</translation>
+<translation id="2803375539583399270">PIN eingeben</translation>
 <translation id="2803887722080936828"><ph name="BEGIN_H3" />Debugging-Funktionen<ph name="END_H3" />
     <ph name="BR" />
     Sie können die Debugging-Funktionen auf Ihrem Chrome OS-Gerät aktivieren, um benutzerdefinierten Code auf Ihrem Gerät zu installieren und zu testen. Dadurch können Sie:<ph name="BR" />
@@ -2064,6 +2065,7 @@ von <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3743492083222969745">Bewegungseingabeoption auf der Einstellungsseite für die Bildschirmtastatur aktivieren/deaktivieren.</translation>
 <translation id="3744111561329211289">Hintergrundsync</translation>
 <translation id="3745016858329272300">Allgemeine Informationen</translation>
+<translation id="3748026146096797577">Nicht verbunden</translation>
 <translation id="3749289110408117711">Dateiname</translation>
 <translation id="3751427701788899101">Verbindung wurde getrennt</translation>
 <translation id="3752439026432317933">Zahlungsangaben eingeben...</translation>
@@ -2779,6 +2781,7 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="480990236307250886">Startseite öffnen</translation>
 <translation id="4811502511369621968">Ungültige E-Mail-Adresse. Bitte überprüfen Sie Ihre Angaben und versuchen Sie es erneut.</translation>
 <translation id="4812632551187706935">Verbindung konnte nicht hergestellt werden</translation>
+<translation id="4812684235631257312">Host</translation>
 <translation id="4813345808229079766">Verbindung</translation>
 <translation id="4813512666221746211">Netzwerkfehler</translation>
 <translation id="4816492930507672669">An Seite anpassen</translation>
@@ -3156,6 +3159,7 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="5306802244647481941">Schnellansicht der App "Dateien"</translation>
 <translation id="5308380583665731573">Verbinden</translation>
 <translation id="5311260548612583999">Private Schlüsseldatei (optional):</translation>
+<translation id="5315873049536339193">Identität</translation>
 <translation id="5316588172263354223">Jederzeit die Sprachsuche nutzen</translation>
 <translation id="5316716239522500219">Monitore spiegeln</translation>
 <translation id="5317780077021120954">Speichern</translation>
@@ -3432,7 +3436,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="5684661240348539843">Geräte-ID</translation>
 <translation id="569068482611873351">Importieren...</translation>
 <translation id="56907980372820799">Daten verknüpfen</translation>
-<translation id="569109051430110155">Automatisch erkennen</translation>
 <translation id="5691596662111998220">Hoppla, <ph name="FILE_NAME" /> existiert nicht mehr.</translation>
 <translation id="5694501201003948907">$1-Elemente werden gezippt...</translation>
 <translation id="5697118958262594262">Wichtige Inhalte standardmäßig erkennen</translation>
@@ -4494,7 +4497,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="7225179976675429563">Netzwerktyp fehlt.</translation>
 <translation id="7230787553283372882">Textgröße anpassen</translation>
 <translation id="7231224339346098802">Geben Sie eine Zahl ein, um die Anzahl der zu druckenden Exemplare festzulegen (1 oder mehr).</translation>
-<translation id="7234907163682057631">Wichtige Plug-in-Inhalte erkennen und ausführen</translation>
 <translation id="7238585580608191973">SHA-256-Fingerabdruck</translation>
 <translation id="7240120331469437312">Alternativer Name für den Antragsteller des Zertifikats</translation>
 <translation id="7241389281993241388">Melden Sie sich in <ph name="TOKEN_NAME" /> an, um das Clientzertifikat zu importieren.</translation>
@@ -4679,6 +4681,7 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="7484645889979462775">Für diese Website niemals</translation>
 <translation id="7484964289312150019">Alle Lesezeichen in &amp;neuem Fenster öffnen</translation>
 <translation id="7485236722522518129">F4</translation>
+<translation id="7487067081878637334">Technik</translation>
 <translation id="7487099628810939106">Klickverzögerung:</translation>
 <translation id="7487969577036436319">Es sind keine Komponenten installiert.</translation>
 <translation id="7489605380874780575">Unterstützung überprüfen</translation>
@@ -4950,6 +4953,7 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="7877451762676714207">Unbekannter Serverfehler. Bitte versuchen Sie es erneut oder wenden Sie sich an den Serveradministrator.</translation>
 <translation id="7878999881405658917">Google hat eine Benachrichtigung an dieses Telefon gesendet. Beachten Sie, dass Ihr Telefon über Bluetooth ein Sperren Ihres <ph name="DEVICE_TYPE" /> auf eine Entfernung von über 9 m verhindern kann. Falls dies ein Problem darstellen sollte, können Sie &lt;a&gt;diese Funktion vorübergehend deaktivieren&lt;/a&gt;.</translation>
 <translation id="7880836220014399562">"<ph name="BUNDLE_NAME" />" fügt diese Apps und Erweiterungen hinzu:</translation>
+<translation id="7881483672146086348">Konto anzeigen</translation>
 <translation id="7881969471599061635">Untertitel deaktivieren</translation>
 <translation id="7885253890047913815">Letzte Ziele</translation>
 <translation id="7887192723714330082">Auf "Ok Google" reagieren, wenn das Display eingeschaltet und entsperrt ist</translation>
@@ -5342,7 +5346,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8428213095426709021">Einstellungen</translation>
 <translation id="8428634594422941299">OK</translation>
 <translation id="8432745813735585631">US-amerikanische Colemak-Tastatur</translation>
-<translation id="8434177709403049435">&amp;Codierung</translation>
 <translation id="8434480141477525001">NaCl-Debug-Port</translation>
 <translation id="8435334418765210033">Gespeicherte Netzwerke</translation>
 <translation id="8437209419043462667">USA</translation>
@@ -5733,7 +5736,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8970203673128054105">Übertragungsmodusliste aufrufen</translation>
 <translation id="89720367119469899">Esc-Taste</translation>
 <translation id="8972513834460200407">Bitten Sie Ihren Netzwerkadministrator, zu überprüfen, ob Downloads von Google-Servern von der Firewall blockiert werden.</translation>
-<translation id="8974161578568356045">Automatisch erkennen</translation>
 <translation id="8978526688207379569">Diese Website hat automatisch mehrere Dateien heruntergeladen.</translation>
 <translation id="8982248110486356984">Nutzer wechseln</translation>
 <translation id="8986267729801483565">Downloadpfad:</translation>
@@ -5919,7 +5921,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="923467487918828349">Alle einblenden</translation>
 <translation id="927151012416335806">Ihr Gerät wird auf Kanal <ph name="CHANNEL_NAME" /> aktualisiert</translation>
 <translation id="930268624053534560">Detaillierter Zeitstempel</translation>
-<translation id="931068751149008062">Schriftarten und Codierung auswählen</translation>
 <translation id="932327136139879170">Privat</translation>
 <translation id="932508678520956232">Druckvorgang konnte nicht gestartet werden.</translation>
 <translation id="93393615658292258">Nur Passwort</translation>

@@ -183,6 +183,7 @@
 <translation id="1240892293903523606">DOM 检查器</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" />要重置您的设置。</translation>
 <translation id="1243314992276662751">上传</translation>
+<translation id="1244147615850840081">运营商</translation>
 <translation id="1244303850296295656">扩展程序错误</translation>
 <translation id="1245907074925860695">移除用户</translation>
 <translation id="1248269069727746712"><ph name="PRODUCT_NAME" /> 正使用您设备的系统代理设置连接到网络。</translation>
@@ -195,7 +196,6 @@
 <translation id="126710816202626562">翻译语言：</translation>
 <translation id="1272079795634619415">停止</translation>
 <translation id="1272978324304772054">此用户帐户不属于设备所注册的域。如果想注册其他域，那么您首先需要执行设备恢复。</translation>
-<translation id="127353061808977798">字体和编码</translation>
 <translation id="1274997165432133392">Cookie及其他网站数据</translation>
 <translation id="1275718070701477396">已选中</translation>
 <translation id="127668050356036882">关闭所有窗口</translation>
@@ -1033,7 +1033,7 @@
 <translation id="2422426094670600218">&lt;未命名&gt;</translation>
 <translation id="2423578206845792524">图片另存为(&amp;V)...</translation>
 <translation id="2424091190911472304">在 <ph name="ORIGIN" /> 上始终运行</translation>
-<translation id="2425040750078864123">允许将 PWA 封装到 Android WebAPK 中。必须向 Chrome 服务器发送数据，才能生成应用。</translation>
+<translation id="2425040750078864123">允许将 PWA 封装为 Android WebAPK。必须向 Chrome 服务器发送数据，才能生成应用。</translation>
 <translation id="2425632738803359658">使用 Material Design 用户菜单</translation>
 <translation id="2425665904502185219">文件总大小</translation>
 <translation id="2431394478374894294">启用虚拟键盘语音输入功能。</translation>
@@ -1313,6 +1313,7 @@
 <translation id="2799223571221894425">重新启动</translation>
 <translation id="2800537048826676660">拼写检查时以此语言为标准</translation>
 <translation id="2801702994096586034">服务器 3</translation>
+<translation id="2803375539583399270">输入 PIN 码</translation>
 <translation id="2803887722080936828"><ph name="BEGIN_H3" />调试功能<ph name="END_H3" />
     <ph name="BR" />
     您可以在 Chrome 操作系统设备上启用调试功能，以便在该设备上安装和测试自定义代码。启用这些功能后，您可以：<ph name="BR" />
@@ -2062,6 +2063,7 @@
 <translation id="3743492083222969745">在虚拟键盘的设置页中启用/停用滑行输入选项。</translation>
 <translation id="3744111561329211289">后台同步</translation>
 <translation id="3745016858329272300">基本信息</translation>
+<translation id="3748026146096797577">未建立连接</translation>
 <translation id="3749289110408117711">文件名</translation>
 <translation id="3751427701788899101">连接已断开</translation>
 <translation id="3752439026432317933">输入结算明细…</translation>
@@ -2294,7 +2296,7 @@
 <translation id="4071770069230198275"><ph name="PROFILE_NAME" />：登录错误</translation>
 <translation id="4072248638558688893">泰米尔语键盘（注音）</translation>
 <translation id="4074900173531346617">电子邮件签名人证书</translation>
-<translation id="4074945132384537841">允许通过 Feature-Policy HTTP 标头授予或撤消对相关功能的使用权限。</translation>
+<translation id="4074945132384537841">允许通过 Feature-Policy HTTP 标头授予和撤消对相关功能的使用权限。</translation>
 <translation id="4075084141581903552">自动登录功能可用：<ph name="EMAIL_ADDRESS" /></translation>
 <translation id="4078738236287221428">首次加载时强制缓存</translation>
 <translation id="408098233265424160">Smart Lock 近距离检测</translation>
@@ -2776,6 +2778,7 @@
 <translation id="480990236307250886">打开主页</translation>
 <translation id="4811502511369621968">电子邮件地址无效。请进行检查，然后重试。</translation>
 <translation id="4812632551187706935">无法初始化此连接</translation>
+<translation id="4812684235631257312">主机</translation>
 <translation id="4813345808229079766">连接</translation>
 <translation id="4813512666221746211">网络错误</translation>
 <translation id="4816492930507672669">适合页面大小</translation>
@@ -3147,6 +3150,7 @@
 <translation id="5306802244647481941">“文件”应用快速视图</translation>
 <translation id="5308380583665731573">连接</translation>
 <translation id="5311260548612583999">私有密钥文件（可选）：</translation>
+<translation id="5315873049536339193">身份</translation>
 <translation id="5316588172263354223">随时进行语音搜索</translation>
 <translation id="5316716239522500219">镜像显示器</translation>
 <translation id="5317780077021120954">保存</translation>
@@ -3423,7 +3427,6 @@
 <translation id="5684661240348539843">资产标识符</translation>
 <translation id="569068482611873351">导入...</translation>
 <translation id="56907980372820799">关联数据</translation>
-<translation id="569109051430110155">自动检测</translation>
 <translation id="5691596662111998220">糟糕，<ph name="FILE_NAME" />已经不存在了。</translation>
 <translation id="5694501201003948907">正在压缩$1项内容…</translation>
 <translation id="5697118958262594262">默认情况下检测重要内容</translation>
@@ -3910,7 +3913,7 @@
 <translation id="6401495857465634232">新的翻译用户体验</translation>
 <translation id="6402990355583388081">启用悬停功能（将手指悬停在屏幕上方即触发鼠标悬停事件）。</translation>
 <translation id="6404511346730675251">修改书签</translation>
-<translation id="6404519443262761446">必须锁定屏幕，才能从睡眠状态唤醒。</translation>
+<translation id="6404519443262761446">必须解除屏幕锁定，才能从睡眠状态唤醒。</translation>
 <translation id="6406303162637086258">模拟浏览器重启</translation>
 <translation id="6406506848690869874">同步</translation>
 <translation id="6407080938771313237">投射触摸显示屏</translation>
@@ -4485,7 +4488,6 @@
 <translation id="7225179976675429563">缺少网络类型</translation>
 <translation id="7230787553283372882">自定义文字大小</translation>
 <translation id="7231224339346098802">用数字指明要打印多少份（1 份或多份）。</translation>
-<translation id="7234907163682057631">检测并运行重要插件内容</translation>
 <translation id="7238585580608191973">SHA-256 指纹</translation>
 <translation id="7240120331469437312">证书主题背景的备用名称</translation>
 <translation id="7241389281993241388">请登录“<ph name="TOKEN_NAME" />”，导入客户端证书。</translation>
@@ -4660,6 +4662,7 @@
 <translation id="7484645889979462775">此网站一律不保存密码</translation>
 <translation id="7484964289312150019">在新窗口中打开所有书签(&amp;N)</translation>
 <translation id="7485236722522518129">F4</translation>
+<translation id="7487067081878637334">技术</translation>
 <translation id="7487099628810939106">点击前延迟：</translation>
 <translation id="7487969577036436319">没有安装任何组件</translation>
 <translation id="7489605380874780575">检查资格</translation>
@@ -4929,6 +4932,7 @@
 <translation id="7877451762676714207">未知服务器错误。请重试或与服务器管理员联系。</translation>
 <translation id="7878999881405658917">Google 已向这部手机发送通知。请注意，蓝牙功能开启后，配对手机即使在 10 米以外，也可用来为您的<ph name="DEVICE_TYPE" />解锁。若要避免这一问题，您可以&lt;a&gt;暂时停用此功能&lt;/a&gt;。</translation>
 <translation id="7880836220014399562">“<ph name="BUNDLE_NAME" />”会添加以下应用和扩展程序：</translation>
+<translation id="7881483672146086348">查看帐户</translation>
 <translation id="7881969471599061635">停用字幕</translation>
 <translation id="7885253890047913815">近期使用过的目标打印机</translation>
 <translation id="7887192723714330082">当屏幕处于开启状态并且未锁定时，对“Ok Google”做出回应</translation>
@@ -5321,7 +5325,6 @@
 <translation id="8428213095426709021">设置</translation>
 <translation id="8428634594422941299">知道了</translation>
 <translation id="8432745813735585631">英语（美国）Colemak 键盘</translation>
-<translation id="8434177709403049435">编码(&amp;E)</translation>
 <translation id="8434480141477525001">NaCl调试端口</translation>
 <translation id="8435334418765210033">已保存的网络信息</translation>
 <translation id="8437209419043462667">美国英语</translation>
@@ -5712,7 +5715,6 @@
 <translation id="8970203673128054105">查看投射模式列表</translation>
 <translation id="89720367119469899">转义</translation>
 <translation id="8972513834460200407">请与您的网络管理员联系，确保防火墙没有阻止系统从 Google 服务器下载内容。</translation>
-<translation id="8974161578568356045">自动检测</translation>
 <translation id="8978526688207379569">此网站已自动下载多个文件。</translation>
 <translation id="8982248110486356984">切换用户</translation>
 <translation id="8986267729801483565">下载内容保存位置：</translation>
@@ -5898,7 +5900,6 @@
 <translation id="923467487918828349">显示全部</translation>
 <translation id="927151012416335806">正在将您的设备更新至<ph name="CHANNEL_NAME" />版本</translation>
 <translation id="930268624053534560">详细时间戳</translation>
-<translation id="931068751149008062">选择字体类型和编码</translation>
 <translation id="932327136139879170">首页</translation>
 <translation id="932508678520956232">无法开始打印。</translation>
 <translation id="93393615658292258">仅限密码</translation>

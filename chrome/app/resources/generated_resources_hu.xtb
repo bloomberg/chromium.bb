@@ -183,6 +183,7 @@
 <translation id="1240892293903523606">DOM ellenőr</translation>
 <translation id="1242633766021457174">A(z) <ph name="THIRD_PARTY_TOOL_NAME" /> vissza akarja állítani a beállításokat.</translation>
 <translation id="1243314992276662751">Feltöltés</translation>
+<translation id="1244147615850840081">Szállító</translation>
 <translation id="1244303850296295656">Bővítménnyel kapcsolatos hiba</translation>
 <translation id="1245907074925860695">Felhasználó eltávolítása</translation>
 <translation id="1248269069727746712">A(z) <ph name="PRODUCT_NAME" /> az eszköz rendszerének proxybeállításait használja a hálózati csatlakozásra.</translation>
@@ -195,7 +196,6 @@
 <translation id="126710816202626562">A fordítás nyelve:</translation>
 <translation id="1272079795634619415">Leállítás</translation>
 <translation id="1272978324304772054">Ez a felhasználói fiók nem ahhoz a domainhez tartozik, amelyhez az eszköz. Ha másik domainen kívánja regisztrálni azt, először vissza kell állítania az eszköz beállításait.</translation>
-<translation id="127353061808977798">Betűtípusok és karakterkódolás</translation>
 <translation id="1274997165432133392">Cookie-k és egyéb webhelyadatok</translation>
 <translation id="1275718070701477396">Kijelölt</translation>
 <translation id="127668050356036882">Az összes ablak bezárása</translation>
@@ -1318,6 +1318,7 @@ Miután létrehozott egy új felügyelt felhasználót, bármikor és bármilyen
 <translation id="2799223571221894425">Újraindítás</translation>
 <translation id="2800537048826676660">Helyesírás-ellenőrzés ezen a nyelven</translation>
 <translation id="2801702994096586034">3. szerver</translation>
+<translation id="2803375539583399270">PIN-kód megadása</translation>
 <translation id="2803887722080936828"><ph name="BEGIN_H3" />Hibaelhárítási funkciók<ph name="END_H3" />
     <ph name="BR" />
     Ha bekapcsolja a hibaelhárítási funkciókat a Chrome OS rendszert használó eszközén, akkor egyéni kódokat telepíthet eszközére, majd tesztelheti őket.  A következőkre nyílik lehetősége:<ph name="BR" />
@@ -2069,6 +2070,7 @@ Innen: <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3743492083222969745">A kézmozdulatokkal való gépelés engedélyezése/letiltása a virtuális billentyűzet beállításainak oldalán.</translation>
 <translation id="3744111561329211289">Szinkronizálás a háttérben</translation>
 <translation id="3745016858329272300">Általános információk</translation>
+<translation id="3748026146096797577">Nincs kapcsolódva</translation>
 <translation id="3749289110408117711">Fájlnév</translation>
 <translation id="3751427701788899101">A kapcsolat megszakadt</translation>
 <translation id="3752439026432317933">Számlázási adatok megadása…</translation>
@@ -2785,6 +2787,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="480990236307250886">A kezdőoldal megnyitása</translation>
 <translation id="4811502511369621968">Érvénytelen e-mail-cím. Ellenőrizze, majd próbálja újra.</translation>
 <translation id="4812632551187706935">Nem sikerült inicializálni a kapcsolatot</translation>
+<translation id="4812684235631257312">Gazdagép</translation>
 <translation id="4813345808229079766">Kapcsolat</translation>
 <translation id="4813512666221746211">Hálózati hiba</translation>
 <translation id="4816492930507672669">Igazítás az oldalmérethez</translation>
@@ -3164,6 +3167,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="5306802244647481941">Fájlok alkalmazás gyorsnézete</translation>
 <translation id="5308380583665731573">Csatlakozás</translation>
 <translation id="5311260548612583999">Privátkulcs-fájl (nem kötelező):</translation>
+<translation id="5315873049536339193">Azonosítás</translation>
 <translation id="5316588172263354223">Hangalapú keresés bármikor</translation>
 <translation id="5316716239522500219">Monitorok tükrözése</translation>
 <translation id="5317780077021120954">Mentés</translation>
@@ -3441,7 +3445,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="5684661240348539843">Tartalomazonosító</translation>
 <translation id="569068482611873351">Importálás...</translation>
 <translation id="56907980372820799">Adatok összekapcsolása</translation>
-<translation id="569109051430110155">Automatikus felismerés</translation>
 <translation id="5691596662111998220">Hoppá! A(z) <ph name="FILE_NAME" /> már nem létezik.</translation>
 <translation id="5694501201003948907">$1 elem tömörítése...</translation>
 <translation id="5697118958262594262">Fontos tartalmak észlelése alapértelmezés szerint</translation>
@@ -4504,7 +4507,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="7225179976675429563">Hiányzik a hálózat típusa</translation>
 <translation id="7230787553283372882">Szövegméret személyre szabása</translation>
 <translation id="7231224339346098802">Számmal jelezze, hogy hány példányt kell nyomtatni (1 vagy több).</translation>
-<translation id="7234907163682057631">Fontos plug-in tartalmak észlelése és futtatása</translation>
 <translation id="7238585580608191973">SHA-256 ujjlenyomat</translation>
 <translation id="7240120331469437312">Tanúsítványtulajdonos egyéb neve</translation>
 <translation id="7241389281993241388">Kérjük, jelentkezzen be a(z) <ph name="TOKEN_NAME" /> szolgáltatásba az ügyféltanúsítvány importálásához.</translation>
@@ -4686,6 +4688,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="7484645889979462775">Ezen a webhelyen soha</translation>
 <translation id="7484964289312150019">Összes könyvjelző megnyitása új &amp;ablakban</translation>
 <translation id="7485236722522518129">F4</translation>
+<translation id="7487067081878637334">Technológia</translation>
 <translation id="7487099628810939106">Kattintás előtti késleltetés:</translation>
 <translation id="7487969577036436319">Nincsenek összetevők telepítve</translation>
 <translation id="7489605380874780575">Jogosultság ellenőrzése</translation>
@@ -4957,6 +4960,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="7877451762676714207">Ismeretlen szerverhiba. Kérjük, próbálja újra, vagy lépjen kapcsolatba a szerver rendszergazdájával.</translation>
 <translation id="7878999881405658917">A Google értesítést küldött erre a telefonra. Felhívjuk figyelmét arra, hogy Bluetooth segítségével telefonja akár 10 méterről is feloldva tarthatja a következő eszközt: <ph name="DEVICE_TYPE" />. Ha ez problémát jelent, &lt;a&gt;átmenetileg kikapcsolhatja a funkciót&lt;/a&gt;.</translation>
 <translation id="7880836220014399562">A(z) „<ph name="BUNDLE_NAME" />” a következő alkalmazásokat és bővítményeket adja hozzá:</translation>
+<translation id="7881483672146086348">Fiók megtekintése</translation>
 <translation id="7881969471599061635">Feliratok letiltása</translation>
 <translation id="7885253890047913815">Legutóbbi célhelyek</translation>
 <translation id="7887192723714330082">Válasz az „Ok Google” kimondására, amikor a képernyő be van kapcsolva, és nincs zárolva</translation>
@@ -5349,7 +5353,6 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="8428213095426709021">Beállítások</translation>
 <translation id="8428634594422941299">Értem</translation>
 <translation id="8432745813735585631">Amerikai Colemak billentyűzet</translation>
-<translation id="8434177709403049435">&amp;Karakterkódolás</translation>
 <translation id="8434480141477525001">NaCl hibakeresési port</translation>
 <translation id="8435334418765210033">Megjegyzett hálózatok</translation>
 <translation id="8437209419043462667">USA</translation>
@@ -5741,7 +5744,6 @@ letiltásához nyomja le a Ctrl+Alt+Z billentyűkombinációt.</translation>
 <translation id="8970203673128054105">Átküldési módok listájának megtekintése</translation>
 <translation id="89720367119469899">Vezérlő</translation>
 <translation id="8972513834460200407">Kérdezze meg a hálózati rendszergazdától, hogy a tűzfal nem tiltja-e le a Google szervereiről érkező letöltéseket.</translation>
-<translation id="8974161578568356045">Automatikus felismerés</translation>
 <translation id="8978526688207379569">Ez a webhely automatikusan letöltött több fájlt.</translation>
 <translation id="8982248110486356984">Felhasználóváltás</translation>
 <translation id="8986267729801483565">Letöltés helye:</translation>
@@ -5927,7 +5929,6 @@ letiltásához nyomja le a Ctrl+Alt+Z billentyűkombinációt.</translation>
 <translation id="923467487918828349">Összes megjelenítése</translation>
 <translation id="927151012416335806">Eszköz frissítése a(z) <ph name="CHANNEL_NAME" /> csatornára</translation>
 <translation id="930268624053534560">Részletes időbélyegek</translation>
-<translation id="931068751149008062">Betűtípusok és karakterkódolás választása</translation>
 <translation id="932327136139879170">Főoldal</translation>
 <translation id="932508678520956232">Nem sikerült előkészíteni a nyomtatást.</translation>
 <translation id="93393615658292258">Csak jelszó</translation>

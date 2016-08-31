@@ -18,6 +18,7 @@
 <translation id="3407245330823033366">Επιλέξτε έναν λογαριασμό που θα χρησιμοποιήσετε με το Blimp.</translation>
 <translation id="3775180005489871350">Η ανάθεση απέτυχε. Σφάλμα 400 (BAD_REQUEST).</translation>
 <translation id="3877411575395047031">Απόκρυψη πληροφοριών αντιμετώπισης προβλημάτων</translation>
+<translation id="4013794286379809233">Πραγματοποιήστε σύνδεση</translation>
 <translation id="4542350224991263059">Η ανάθεση απέτυχε.  Το διακριτικό πρόσβασης χρήστη έληξε.</translation>
 <translation id="4562971394107096647">Η ανάθεση απέτυχε.  Σφάλμα διακομιστή.</translation>
 <translation id="4641972508298030550">Αδυναμία ελέγχου ταυτότητας χρήστη.</translation>
@@ -28,6 +29,7 @@
 <translation id="5860346505531085166">Η ανάθεση απέτυχε. Ο λογαριασμός δεν έχει πρόσβαση.</translation>
 <translation id="6232798399907177395">Σχετικά με το Blimp</translation>
 <translation id="6245894610106451476">Ελήφθησαν (KB)</translation>
+<translation id="6522797484310591766">Σύνδεση τώρα</translation>
 <translation id="704835510384979817">Η ανάθεση απέτυχε. Η έκδοση μηχανής δεν αντιστοιχεί.</translation>
 <translation id="7145680970336344212">Επανεκκίνηση Blimp</translation>
 <translation id="7536363920335771251">Η μηχανή αποσυνδέθηκε. Αιτία: %1$s</translation>

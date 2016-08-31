@@ -183,6 +183,7 @@
 <translation id="1240892293903523606">DOM Inspector</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> želi ponastaviti nastavitve.</translation>
 <translation id="1243314992276662751">Prenesi</translation>
+<translation id="1244147615850840081">Operater</translation>
 <translation id="1244303850296295656">Napaka razširitve</translation>
 <translation id="1245907074925860695">Odstranitev uporabnika</translation>
 <translation id="1248269069727746712"><ph name="PRODUCT_NAME" /> uporablja sistemske nastavitve naprave za namestniški strežnik, ko se povezuje v omrežje.</translation>
@@ -195,7 +196,6 @@
 <translation id="126710816202626562">Jezik prevoda:</translation>
 <translation id="1272079795634619415">Ustavi</translation>
 <translation id="1272978324304772054">Uporabniški račun ne sodi v domeno, v katero je včlanjena naprava. Če se želite včlaniti v drugo domeno, morate najprej obnoviti napravo.</translation>
-<translation id="127353061808977798">Pisave in kodiranje</translation>
 <translation id="1274997165432133392">Piškotki in drugi podatki spletnega mesta</translation>
 <translation id="1275718070701477396">Izbrano</translation>
 <translation id="127668050356036882">Zapri vsa okna</translation>
@@ -1319,6 +1319,7 @@ To spletno mesto ne sme biti blokirano.</translation>
 <translation id="2799223571221894425">Vnovičen zagon</translation>
 <translation id="2800537048826676660">Uporabi ta jezik za preverjanje črkovanja</translation>
 <translation id="2801702994096586034">Strežnik 3</translation>
+<translation id="2803375539583399270">Vnesite kodo PIN</translation>
 <translation id="2803887722080936828"><ph name="BEGIN_H3" />Funkcije za odpravljanje napak<ph name="END_H3" />
     <ph name="BR" />
     Če želite v napravi s sistemom Chrome OS namestiti in preskusiti kodo po meri, lahko v njej omogočite funkcije za odpravljanje napak. S tem boste lahko:<ph name="BR" />
@@ -2070,6 +2071,7 @@ Iz <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3743492083222969745">Omogoči/onemogoči možnost pisanja s kretnjami v strani z nastavitvami navidezne tipkovnice.</translation>
 <translation id="3744111561329211289">Sinhroniziranje v ozadju</translation>
 <translation id="3745016858329272300">Splošni podatki</translation>
+<translation id="3748026146096797577">Povezava ni vzpostavljena</translation>
 <translation id="3749289110408117711">Ime datoteke</translation>
 <translation id="3751427701788899101">Povezava je bila prekinjena</translation>
 <translation id="3752439026432317933">Vnos podrobnosti za obračun ...</translation>
@@ -2788,6 +2790,7 @@ Pritisnite katero koli tipko, če želite še naprej raziskovati.</translation>
 <translation id="480990236307250886">Odpri domačo stran</translation>
 <translation id="4811502511369621968">Neveljaven e-poštni naslov. Preverite ga in poskusite znova.</translation>
 <translation id="4812632551187706935">Povezave ni bilo mogoče inicializirati</translation>
+<translation id="4812684235631257312">Gostitelj</translation>
 <translation id="4813345808229079766">Povezava</translation>
 <translation id="4813512666221746211">Napaka v omrežju</translation>
 <translation id="4816492930507672669">Prilagodi strani</translation>
@@ -3167,6 +3170,7 @@ Pritisnite katero koli tipko, če želite še naprej raziskovati.</translation>
 <translation id="5306802244647481941">Hiter pogled aplikacije Datoteke</translation>
 <translation id="5308380583665731573">Povezovanje</translation>
 <translation id="5311260548612583999">Dat. z zaseb. klj. (neobv.)</translation>
+<translation id="5315873049536339193">Identiteta</translation>
 <translation id="5316588172263354223">Glasovno iskanje kadar koli</translation>
 <translation id="5316716239522500219">Zrcaljenje monitorjev</translation>
 <translation id="5317780077021120954">Shrani</translation>
@@ -3444,7 +3448,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="5684661240348539843">ID sredstva</translation>
 <translation id="569068482611873351">Uvozi ...</translation>
 <translation id="56907980372820799">Poveži podatke</translation>
-<translation id="569109051430110155">Samodejno zaznavanje</translation>
 <translation id="5691596662111998220">Ups, <ph name="FILE_NAME" /> ne obstaja več.</translation>
 <translation id="5694501201003948907">Stiskanje toliko elementov: $1 ...</translation>
 <translation id="5697118958262594262">Privzeto zaznaj pomembno vsebino</translation>
@@ -4506,7 +4509,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7225179976675429563">Vrsta omrežja manjka</translation>
 <translation id="7230787553283372882">Prilagajanje velikosti besedila</translation>
 <translation id="7231224339346098802">Vnesite število izvodov, ki jih želite natisniti (1 ali več).</translation>
-<translation id="7234907163682057631">Zaznaj in zaženi pomembno vsebino vtičnikov</translation>
 <translation id="7238585580608191973">Prstni odtis SHA-256</translation>
 <translation id="7240120331469437312">Nadomestno ime subjekta potrdila</translation>
 <translation id="7241389281993241388">Prijavite se v <ph name="TOKEN_NAME" />, da uvozite potrdilo odjemalca.</translation>
@@ -4688,6 +4690,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7484645889979462775">Nikoli za to spletno mesto</translation>
 <translation id="7484964289312150019">Vse zaznamke odpri v &amp;novem oknu</translation>
 <translation id="7485236722522518129">F4</translation>
+<translation id="7487067081878637334">Tehnologija</translation>
 <translation id="7487099628810939106">Zakasnitev pred klikom:</translation>
 <translation id="7487969577036436319">Ni nameščenih komponent</translation>
 <translation id="7489605380874780575">Preveri primernost</translation>
@@ -4959,6 +4962,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7877451762676714207">Neznana napaka strežnika. Poskusite znova ali se obrnite na skrbnika strežnika.</translation>
 <translation id="7878999881405658917">Google je v ta telefon poslal obvestilo. Upoštevajte, da lahko z Bluetoothom naprava <ph name="DEVICE_TYPE" /> ostane odklenjena, tudi če je telefon oddaljen več kot 30 metrov. Če je to lahko težava, lahko &lt;a&gt;to funkcijo začasno onemogočite&lt;/a&gt;.</translation>
 <translation id="7880836220014399562">»<ph name="BUNDLE_NAME" />« doda te aplikacije in razširitve</translation>
+<translation id="7881483672146086348">Prikaz računa</translation>
 <translation id="7881969471599061635">Onemogočanje podnapisov</translation>
 <translation id="7885253890047913815">Nedavni cilji</translation>
 <translation id="7887192723714330082">Odziv na »Ok Google«, ko je zaslon vklopljen in odklenjen</translation>
@@ -5352,7 +5356,6 @@ izračun časa do napolnjenosti</translation>
 <translation id="8428213095426709021">Nastavitve</translation>
 <translation id="8428634594422941299">Razumem</translation>
 <translation id="8432745813735585631">Angleška tipkovnica Colemak (ZDA)</translation>
-<translation id="8434177709403049435">&amp;Kodiranje</translation>
 <translation id="8434480141477525001">Vrata za odpravljanje napak NaCl</translation>
 <translation id="8435334418765210033">Shranjena omrežja</translation>
 <translation id="8437209419043462667">Združene države</translation>
@@ -5744,7 +5747,6 @@ izračun časa do napolnjenosti</translation>
 <translation id="8970203673128054105">Ogled seznama načinov predvajanja</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Pri skrbniku omrežja se prepričajte, da požarni zid ne blokira prenosov iz Googlovih strežnikov.</translation>
-<translation id="8974161578568356045">Samodejno zaznavanje</translation>
 <translation id="8978526688207379569">To spletno mesto je samodejno preneslo več datotek.</translation>
 <translation id="8982248110486356984">Preklop med uporabniki</translation>
 <translation id="8986267729801483565">Mesto za prenos:</translation>
@@ -5931,7 +5933,6 @@ izračun časa do napolnjenosti</translation>
 <translation id="923467487918828349">Pokaži vse</translation>
 <translation id="927151012416335806">Posodabljanje naprave na kanal <ph name="CHANNEL_NAME" /> ...</translation>
 <translation id="930268624053534560">Podrobni časovni žigi</translation>
-<translation id="931068751149008062">Izberite vrste pisave in kodiranje</translation>
 <translation id="932327136139879170">Domov</translation>
 <translation id="932508678520956232">Tiskanja ni bilo mogoče začeti.</translation>
 <translation id="93393615658292258">Samo geslo</translation>

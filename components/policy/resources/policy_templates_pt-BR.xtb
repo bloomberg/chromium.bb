@@ -469,6 +469,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="2623014935069176671">Aguardar atividade inicial do usuário</translation>
 <translation id="262740370354162807">Ativar o envio de documentos para <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Ativar feedback falado</translation>
+<translation id="2646290749315461919">Permite que você defina se os websites são autorizados a rastrear a localização física dos usuários. O rastreamento da localização física dos usuários pode ser permitido ou bloqueado por padrão ou o usuário será solicitado cada vez a dar sua localização física. Se esta política for deixada sem definição, a política "AskGeolocation" será utilizada e o usuário será capaz de modificá-la.</translation>
 <translation id="2650049181907741121">Ação a ser realizada quando o usuário fecha a tampa</translation>
 <translation id="2655233147335439767">Especifica o URL do mecanismo de pesquisa usado durante uma pesquisa padrão. O URL deve conter a string "<ph name="SEARCH_TERM_MARKER" />", que será substituída no momento da consulta pelos termos que o usuário está pesquisando.
 
@@ -479,12 +480,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="267596348720209223">Especifica a codificação de caracteres suportados pelo mecanismo de pesquisa. Codificações são nomes de código da página como UTF-8, GB2312 e ISO-8859-1. Eles são testados na ordem fornecida. Esta política é opcional. Se não for definida, será utilizado o padrão, UTF-8. Esta política só é respeitada se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
 <translation id="2682225790874070339">Desativa o Google Drive no aplicativo Arquivos do <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Ativar o recurso de proxy de compactação de dados</translation>
-<translation id="2692168654831544772">Desativa o recurso de captura de tela.
-
-      Se for ativada, não será possível capturar telas usando atalhos do teclado ou APIs de extensão.
-      Além disso, capturas de tela são desativadas para apps ARC.
-
-      Se for desativada ou não for especificada, a captura de tela será permitida.</translation>
 <translation id="2731627323327011390">Desativar o uso de certificados do <ph name="PRODUCT_OS_NAME" /> para apps Arc</translation>
 <translation id="2742843273354638707">Oculta o link do aplicativo e do rodapé da Chrome Web Store na página "Nova guia" e no iniciador de aplicativos do <ph name="PRODUCT_OS_NAME" />.
 
@@ -537,22 +532,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       Cada item da lista é um padrão de correspondência de estilo de extensões (ver http://code.google.com/chrome/extensions/match_patterns.html). Os usuários podem instalar itens com facilidade a partir de qualquer URL que corresponda a um item desta lista. Tanto a localização do arquivo *.crx como a página a partir da qual o download é iniciado (ou seja, a referência) devem ser autorizados por esses padrões. 
 
       ExtensionInstallBlacklist tem precedência sobre esta política. Ou seja, as extensões da lista negra não são instaladas, mesmo que sejam de um site desta lista.</translation>
-<translation id="2813740161943223811">O uso desta política foi suspenso. Use o ProxyMode em vez dela.
-
-          Permite que você especifique o servidor proxy usado por <ph name="PRODUCT_NAME" /> e impede que os usuários alterem as configurações de proxy. Os apps ARC também poderão usar esse servidor proxy.
-
-          Se você optar por nunca usar um servidor proxy e sempre se conectar diretamente, todas as outras opções serão ignoradas.
-
-          Se você optar por usar as configurações de proxy do sistema ou detectar automaticamente o servidor proxy, todas as outras opções serão ignoradas.
-
-          Se você optar pelas configurações de proxy manuais, será possível especificar outras opções no "Endereço ou URL do servidor proxy", "URL de um arquivo proxy .pac" e "Lista separada por vírgulas das regras de proxies ignoráveis". Apenas o servidor proxy HTTP com a maior prioridade está disponível para apps ARC.
-
-          Para ver exemplos detalhados, visite:
-          <ph name="PROXY_HELP_URL" />.
-
-          Se você ativar essa configuração, o <ph name="PRODUCT_NAME" /> ignorará todas as opções relacionadas ao proxy especificadas na linha de comando.
-
-          Se esta política não for definida, os usuários poderão escolher as configurações de proxy por conta própria.</translation>
 <translation id="2818551149761607847">Configurar imagem do avatar do usuário.
 
       Esta política permite configurar a imagem do avatar que representa o usuário na tela de login. A política é definida especificando o URL no qual o <ph name="PRODUCT_OS_NAME" /> pode fazer o download da imagem do avatar e de um hash criptográfico, usado para verificar a integridade do download. A imagem deve estar no formato JPEG, e seu tamanho não deve ultrapassar 512 kB. O URL deve ser acessado sem nenhuma autenticação.
@@ -691,18 +670,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
           </translation>
 <translation id="3205825995289802549">Maximizar a primeira janela do navegador na primeira execução</translation>
 <translation id="3206731874112238027">Desativar a visualização de impressão (uso suspenso)</translation>
-<translation id="3208854390109736596">Permite que você especifique o servidor proxy usado por <ph name="PRODUCT_NAME" /> e impede que os usuários alterem as configurações de proxy. Os apps ARC também poderão usar esse servidor proxy.
-
-      Se você optar por nunca usar um servidor proxy e sempre se conectar diretamente, todas as outras opções serão ignoradas.
-
-      Se você optar por detectar automaticamente o servidor proxy, todas as outras opções serão ignoradas.
-
-      Para ver exemplos detalhados, visite:
-      <ph name="PROXY_HELP_URL" />.
-
-      Se você ativar essa configuração, o <ph name="PRODUCT_NAME" /> e os apps ARC ignorarão todas as opções relacionadas ao proxy especificadas na linha de comando.
-
-      Se esta política não for definida, os usuários poderão escolher as configurações de proxy por conta própria.</translation>
 <translation id="3213821784736959823">Controla se o cliente DNS integrado é usado no <ph name="PRODUCT_NAME" />.
 
       Se esta política estiver definida como verdadeira, o cliente DNS integrado será usado, se disponível.
@@ -743,11 +710,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="3322771899429619102">Permite que você defina uma lista de padrões de URL que especificam sites que têm permissão para usar a geração de chaves. Se um padrão de URL está na política "KeygenBlockedForUrls", essa política substitui essas exceções.
 
           Se esta política não for definida, o valor padrão global será utilizado para todos os sites a partir da política "DefaultKeygenSetting", caso ela tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
-<translation id="3337150554416948435">Permite que você defina se os websites estão autorizados a rastrear a localização física dos usuários. O rastreamento da localização física dos usuários pode ser permitido ou bloqueado por padrão, ou o usuário receberá uma solicitação sempre que um website quiser saber a localização física dele.
-
-          Se esta política for definida como "BlockGeolocation", o compartilhamento de localização ficará bloqueado para apps ARC.
-
-          Se esta política for deixada sem definição, "AskGeolocation" será utilizada, e o usuário será capaz de modificá-la.</translation>
 <translation id="3381968327636295719">Usar o navegador de host por padrão</translation>
 <translation id="3417418267404583991">Se esta política for definida como true ou não for configurada, o <ph name="PRODUCT_OS_NAME" /> permitirá o login de visitantes. Os logins de visitantes são sessões anônimas de usuários e não requerem uma senha. Se esta política for configurada para false, o <ph name="PRODUCT_OS_NAME" /> não permitirá que sejam iniciadas sessões de visitantes.</translation>
 <translation id="3428247105888806363">Ativar previsão de rede</translation>
@@ -764,14 +726,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
           Se esta política for definida como verdadeira, os intervalos de gerenciamento de energia e o limite de duração da sessão só começarão a ser contados depois que a primeira atividade do usuário for detectada em uma sessão.
 
           Se esta política for definida como "Falsa" ou não for definida, os intervalos de gerenciamento de energia e o limite de duração da sessão começarão a ser contados imediatamente após o início da sessão.</translation>
-<translation id="3469657928310999477">O <ph name="PRODUCT_NAME" /> ignorará qualquer proxy da lista de hosts apresentada aqui. Os apps ARC poderão usar essa lista como uma lista de regras de ignoráveis.
-
-          Esta política só entrará em vigor se você tiver selecionado as configurações de proxy manuais em "Escolha como especificar as configurações do servidor proxy".
-
-          Deixe esta política sem definição caso você tenha selecionado qualquer outro modo de definição de políticas de proxy.
-
-          Para ver exemplos mais detalhados, visite:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="3478024346823118645">Limpa os dados do usuário ao sair</translation>
 <translation id="348495353354674884">Ativar teclado virtual</translation>
 <translation id="3496296378755072552">Gerenciador de senhas</translation>
@@ -894,17 +848,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
       Se essa política for deixada sem definição, o SPDY ficará disponível.</translation>
 <translation id="3891357445869647828">Ativar o JavaScript</translation>
-<translation id="3898060089412156345">Permitir ou negar a captura de áudio.
-
-      Se esta opção estiver ativada ou não configurada (padrão), o usuário receberá uma solicitação
-      para acesso de captura de áudio, exceto para URLs configurados na
-      lista AudioCaptureAllowedUrls, os quais terão acesso sem solicitação.
-
-      Quando esta política está desativada, o usuário nunca recebe solicitações. A
-      captura de áudio fica disponível apenas para URLs configurados em AudioCaptureAllowedUrls.
-      Em apps ARC, o microfone é permanentemente silenciado.
-
-      Esta política afeta todos os tipos de entradas de áudio, não somente o microfone integrado.</translation>
 <translation id="3907986150060929099">Definir as localidades recomendadas para uma sessão pública</translation>
 <translation id="391531815696899618">Desativa a sincronização do Google Drive no aplicativo Files do <ph name="PRODUCT_OS_NAME" /> quando definida como "true". Nesse caso, nenhum dado é transferido por upload para o Google Drive.
 
@@ -1030,6 +973,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       Embora a política seja compatível com as plataformas acima, o recurso que ela ativa pode estar disponível em menos plataformas, Nem todos os recursos de uso suspenso da plataforma Web podem ser reativados. Apenas aqueles explicitamente listados abaixo podem ser reativados por um período de tempo limitado, e isso difere de acordo com o recurso. O formato geral da tag de string será [NomeDoRecursoDeUsoSuspenso]_EffectiveUntil[aaaammdd]. Como referência, é possível verificar o objeto por trás das alterações do recurso da plataforma Web em https://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Ativar o bloqueio quando o dispositivo entrar no modo ocioso ou suspenso</translation>
+<translation id="4445684791305970001">Desativa as Ferramentas do desenvolvedor e o console JavaScript. Se ativar esta configuração, as Ferramentas do desenvolvedor não podem ser acessadas ​​e elementos de websites não poderão mais ser inspecionados. Quaisquer entradas para abrir as Ferramentas do desenvolvedor ou o Console de JavaScript em atalhos de teclado, menus ou menus de contextos serão desativadas. Definir esta opção como desativada ou deixá-la sem definição permitirá a utilização das Ferramentas do desenvolvedor e do console JavaScript.</translation>
 <translation id="4449545651113180484">Girar tela no sentido horário em 270 graus</translation>
 <translation id="4467952432486360968">Bloquear cookies de terceiros</translation>
 <translation id="4474167089968829729">Ativar salvamento de senhas no gerenciador de senhas</translation>
@@ -1138,6 +1082,15 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
           O valor deve ser uma matriz de dicionários JSON com strings. Cada dicionário deve ter a forma { "padrão": "$PADRÃO_DE_URL", "filtro" : $FILTRO}, em que $PADRÃO_DE_URL é um padrão de configuração de conteúdo. $FILTRO restringe a partir de quais certificados de cliente o navegador selecionará automaticamente. Independentemente do filtro, apenas certificados que correspondam à solicitação de certificado do servidor serão selecionados. Se $FILTRO tem a forma { "EMISSOR": { "CN": "$CN_DO_EMISSOR" } }, apenas os certificados de cliente que são emitidos por um certificado com o nome real $CN_DO_EMISSOR são selecionados. Se $FILTRO for o dicionário em branco {}, a seleção de certificados de cliente não ficará mais restrita.
 
           Se esta política não for definida, nenhuma seleção automática será feita para nenhum site.</translation>
+<translation id="4980301635509504364">Permitir ou negar a captura de vídeo.
+
+      Se ativada ou não configurada (padrão), o usuário receberá uma
+      solicitação para acesso à captura de vídeo, exceto para URLs
+      configurados na lista VideoCaptureAllowedUrls, que terão acesso sem solicitação.
+
+      Quando esta política está desativada, o usuário nunca recebe solicitação        e a captura de vídeo fica disponível apenas para URLs configurados no VideoCaptureAllowedUrls.
+
+      Esta política afeta todos os tipos de entradas de vídeo, não somente a câmera integrada.</translation>
 <translation id="4980635395568992380">Tipo do dado:</translation>
 <translation id="4983201894483989687">Permitir a execução de plug-ins que estão desatualizados</translation>
 <translation id="4988291787868618635">Ação a ser realizada quando o intervalo de inatividade for atingido</translation>
@@ -1145,7 +1098,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="5052081091120171147">Se ativada, esta política força a importação do histórico de navegação a partir do navegador padrão atual. Se ativada, esta política também afeta a caixa de diálogo de importação. Se desativada, nenhum histórico de navegação é importado. Caso não seja definida, o usuário pode ser solicitado a responder se deseja importar ou permitir a importação automática.</translation>
 <translation id="5056708224511062314">Lupa desativada</translation>
 <translation id="5067143124345820993">Lista de permissões de login de usuário</translation>
-<translation id="510186355068252378">Desativa a sincronização de dados em <ph name="PRODUCT_NAME" />, utilizando serviços de sincronização hospedados pelo Google e impede que os usuários alterem esta configuração. Se ativar esta configuração, os usuários não podem alterar ou sobrepor esta configuração em <ph name="PRODUCT_NAME" />. Se esta política for deixada sem definição, o Google Sync estará disponível para que o usuário escolha se deseja utilizá-lo ou não.</translation>
 <translation id="5105313908130842249">Intervalo de bloqueio da tela no funcionamento com energia da bateria</translation>
 <translation id="5111573778467334951">Especifica a ação a ser executada quando o tempo de inatividade for atingido durante a operação com alimentação por bateria.
 
@@ -1253,13 +1205,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       Se especificada, a política adicionará um parâmetro de consulta chamado "restrict" ao URL usado para buscar o termo-semente "Variações". O valor do parâmetro será o valor especificado nesta política.
 
       Se não for especificada, a política não modificará o URL do termo-semente "Variações".</translation>
-<translation id="5563853101694018649">Desativa as Ferramentas de desenvolvedor e o Console JavaScript.
-
-      Se você ativar essa configuração, as Ferramentas de desenvolvedor não poderão ser acessadas, e os elementos de websites não poderão mais ser inspecionados. Todos os atalhos do teclado e todas as entradas de menu ou menu de contexto para abrir as Ferramentas de desenvolvedor ou o Console JavaScript serão desativados.
-
-      Se esta opção for definida como desativada ou não for definida, a utilização das Ferramentas do desenvolvedor e do Console JavaScript será permitida.
-
-      Em dispositivos <ph name="PRODUCT_OS_NAME" /> com capacidade de executar apps Android, esta política também controla o acesso a Opções do desenvolvedor Android. Se você definir esta política como "true", os usuários não poderão acessar as Opções do desenvolvedor. Se você definir esta política como "false" ou deixá-la sem definição, os usuários poderão acessar as Opções do desenvolvedor tocando sete vezes no número da versão no app Config. do Android.</translation>
 <translation id="556941986578702361">Controla a ocultação automática da estante do <ph name="PRODUCT_OS_NAME" />.
 
       Se esta política estiver definida como "AlwaysAutoHideShelf", a estante sempre será ocultada automaticamente.
@@ -1697,6 +1642,18 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       Se você ativar ou desativar esta configuração, os usuários não poderão alterá-la ou substituí-la.
 
       Se esta política não for configurada, o usuário poderá escolher se prefere receber ou não uma solicitação de senha para desbloquear o dispositivo.</translation>
+<translation id="7109916642577279530">Permitir ou negar a captura de áudio.
+
+      Se esta opção estiver ativada ou não configurada (padrão), o usuário
+      receberá uma solicitação para acesso de captura de áudio, exceto para
+      URLs configurados na lista AudioCaptureAllowedUrls, que terão acesso
+      sem solicitação.
+
+      Quando esta política está desativada, o usuário nunca recebe solicitação
+      e a captura de áudio fica disponível apenas para URLs configurados em
+      AudioCaptureAllowedUrls.
+
+      Esta política afeta todos os tipos de entradas de áudio, não somente o microfone integrado.</translation>
 <translation id="7115494316187648452">Determina se um processo de <ph name="PRODUCT_NAME" /> é iniciado no login do sistema operacional e continua em execução quando a última janela do navegador é fechada, permitindo que apps de segundo plano e a sessão atual de navegação continuem ativos, incluindo todos os cookies de sessão. O processo de segundo plano exibe um ícone na bandeja do sistema e pode ser sempre fechado a partir desse ícone.
 
       Se esta política é definida como "true", o modo de segundo plano é ativado e não pode ser controlado pelo usuário nas configurações do navegador.
@@ -1972,20 +1929,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       Determina a identificação da extensão a ser usada como protetor de tela na tela de login. A extensão deve ser parte do AppPack configurado para este domínio por meio da política DeviceAppPack.</translation>
 <translation id="7882890448959833986">Remover o aviso de SO não compatível</translation>
 <translation id="7912255076272890813">Configurar tipos permitidos de aplicativo/extensão</translation>
-<translation id="7914271217607102111">Permitir ou negar capturas de vídeo.
-
-      Se esta política está ativada ou não configurada (padrão), o usuário recebe uma solicitação para
-      acessar a captura de vídeo, exceto no caso de URLs configurados na lista
-      VideoCaptureAllowedUrls, os quais terão acesso sem solicitação.
-      Apps ARC terão acesso à câmera, caso tenham recebido
-      permissão.
-
-      Quando esta política está desativada, o usuário nunca recebe solicitações. A captura
-      de vídeo fica disponível apenas para URLs configurados em VideoCaptureAllowedUrls.
-      Apps ARC não terão acesso à câmera.
-
-      Fora dos apps ARC, esta política afeta todos os tipos de entrada de vídeo, e
-      não apenas a câmera integrada.</translation>
 <translation id="7915236031252389808">É possível especificar um URL para um arquivo proxy .pac aqui.
 
           Esta política só entrará em vigor se você tiver selecionado as configurações manuais de proxy em "Escolha como especificar as configurações do servidor proxy".
@@ -2356,24 +2299,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="9112897538922695510">Permite registrar uma lista de gerenciadores de protocolo. Essa política só pode ser uma política recomendada. A propriedade |protocolo| deve ser definida para o esquema, por exemplo, 'mailto', e a propriedade |url| deve ser definida para o padrão URL do aplicativo que administra o esquema. O padrão pode incluir '%s', que, se presente, será substituído por um URL administrado.
 
           Os gerenciadores de protocolos registrados pela política são misturados com os registrados pelo usuário, e ambos estão disponíveis para uso. O usuário pode substituir os gerenciadores de protocolos instalados por política, instalando um novo administrador padrão. Entretanto, o usuário não pode remover um gerenciador de protocolos registrado pela política.</translation>
-<translation id="913138516158420759">Permite que você especifique o servidor proxy usado por <ph name="PRODUCT_NAME" /> e impede que os usuários alterem as configurações de proxy. Os apps ARC também poderão usar este servidor proxy.
-
-          Se você optar por nunca usar um servidor proxy e sempre se conectar diretamente, todas as outras opções serão ignoradas.
-
-          Se você optar por usar as configurações de proxy do sistema, todas as outras opções serão ignoradas.
-
-          Se você optar por detectar automaticamente o servidor proxy, todas as outras opções serão ignoradas.
-
-          Se você optar pelo modo fixo de servidor proxy, poderá especificar outras opções no "Endereço ou URL do servidor proxy" e na "Lista separada por vírgulas de regras de proxy ignoráveis". Apenas o servidor proxy HTTP com a maior prioridade ficará disponível para apps ARC.
-
-          Se você optar por usar um script de proxy .pac, deverá especificar o URL para o script em "URL de um arquivo proxy .pac".
-
-          Para ver exemplos detalhados, visite:
-          <ph name="PROXY_HELP_URL" />.
-
-          Se você ativar esta configuração, o <ph name="PRODUCT_NAME" /> e os apps ARC ignorarão todas as opções relacionadas ao proxy especificadas na linha de comando.
-
-          Se esta política não for configurada, os usuários poderão escolher as configurações de proxy por conta própria.</translation>
 <translation id="913195841488580904">Bloquear acesso a uma lista de URLs</translation>
 <translation id="9135033364005346124">Ativar proxy do <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="9147029539363974059">Enviar registros de sistema para o servidor de gerenciamento, a fim de permitir
@@ -2387,6 +2312,11 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="9187743794267626640">Desativa a montagem de armazenamento externo</translation>
 <translation id="9197740283131855199">Percentual pelo qual calcular o intervalo de escurecimento da tela se o usuário ficar ativo após o escurecimento</translation>
 <translation id="9200828125069750521">Parâmetros para URL de imagens que usa POST</translation>
+<translation id="9203071022800375458">Desativa o recurso de captura de tela. 
+
+      Se for ativada, não será possível capturar telas usando atalhos do teclado ou APIs de extensão.
+
+      Se for desativada ou não for especificada, a captura de tela será permitida.</translation>
 <translation id="9217154963008402249">Frequência de pacotes de monitoramento de rede</translation>
 <translation id="922540222991413931">Configurar extensão, aplicativo e origens de instalação do script do usuário</translation>
 <translation id="924557436754151212">Importar senhas salvas do navegador padrão na primeira execução</translation>

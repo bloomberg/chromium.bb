@@ -183,6 +183,7 @@
 <translation id="1240892293903523606">Інспектор DOM</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> хоче скинути ваші налаштування.</translation>
 <translation id="1243314992276662751">Завантажити</translation>
+<translation id="1244147615850840081">Постачальник</translation>
 <translation id="1244303850296295656">Помилка розширення</translation>
 <translation id="1245907074925860695">Вилучити користувача</translation>
 <translation id="1248269069727746712"><ph name="PRODUCT_NAME" /> використовує системні налаштування проксі-сервера вашого пристрою, щоб під’єднуватися до мережі.</translation>
@@ -195,7 +196,6 @@
 <translation id="126710816202626562">Мова перекладу:</translation>
 <translation id="1272079795634619415">Зупинити</translation>
 <translation id="1272978324304772054">Цей обліковий запис користувача не належить домену, в якому зареєстровано пристрій. Якщо ви хочете зареєструватися в іншому домені, спершу потрібно виконати процедуру відновлення пристрою.</translation>
-<translation id="127353061808977798">Шрифти та кодування</translation>
 <translation id="1274997165432133392">Файли cookie та інші дані із сайтів</translation>
 <translation id="1275718070701477396">Вибрано</translation>
 <translation id="127668050356036882">Закрити всі вікна</translation>
@@ -1317,6 +1317,7 @@
 <translation id="2799223571221894425">Перезапустити</translation>
 <translation id="2800537048826676660">Використовувати цю мову для перевірки орфографії</translation>
 <translation id="2801702994096586034">Сервер 3</translation>
+<translation id="2803375539583399270">Введіть PIN-код</translation>
 <translation id="2803887722080936828"><ph name="BEGIN_H3" />Функції налагодження<ph name="END_H3" />
     <ph name="BR" />
     Ви можете ввімкнути функції налагодження на своєму пристрої з ОС Chrome, щоб установити та перевірити на ньому спеціальний код.  Після цього ви зможете:<ph name="BR" />
@@ -2068,6 +2069,7 @@
 <translation id="3743492083222969745">Увімкнути або вимкнути ввід жестами на сторінці налаштувань віртуальної клавіатури.</translation>
 <translation id="3744111561329211289">Фонова синхронізація</translation>
 <translation id="3745016858329272300">Загальна інформація</translation>
+<translation id="3748026146096797577">Не з’єднано</translation>
 <translation id="3749289110408117711">Ім’я файлу</translation>
 <translation id="3751427701788899101">З’єднання втрачено</translation>
 <translation id="3752439026432317933">Введіть платіжні дані…</translation>
@@ -2786,6 +2788,7 @@
 <translation id="480990236307250886">Відкрити домашню сторінку</translation>
 <translation id="4811502511369621968">Недійсна електронна адреса. Перевірте й повторіть спробу.</translation>
 <translation id="4812632551187706935">Не вдалось ініціалізувати з’єднання</translation>
+<translation id="4812684235631257312">Хост</translation>
 <translation id="4813345808229079766">З’єднання</translation>
 <translation id="4813512666221746211">Помилка мережі</translation>
 <translation id="4816492930507672669">За розміром сторінки</translation>
@@ -3165,6 +3168,7 @@
 <translation id="5306802244647481941">Швидкий перегляд у додатку Файли</translation>
 <translation id="5308380583665731573">Під’єднатися</translation>
 <translation id="5311260548612583999">Файл секретного ключа (необов'язково):</translation>
+<translation id="5315873049536339193">Ідентифікаційна інформація</translation>
 <translation id="5316588172263354223">Голосовий пошук у будь-який час</translation>
 <translation id="5316716239522500219">Дбулювати зображення на моніторах</translation>
 <translation id="5317780077021120954">Зберегти</translation>
@@ -3441,7 +3445,6 @@
 <translation id="5684661240348539843">Ідентифікатор об’єкта</translation>
 <translation id="569068482611873351">Імпорт...</translation>
 <translation id="56907980372820799">Зв’язати облікові записи</translation>
-<translation id="569109051430110155">Автом. визначення</translation>
 <translation id="5691596662111998220">На жаль, файл "<ph name="FILE_NAME" />" більше не існує.</translation>
 <translation id="5694501201003948907">Архівування елементів ($1)…</translation>
 <translation id="5697118958262594262">Виявляти важливий вміст за умовчанням</translation>
@@ -4505,7 +4508,6 @@
 <translation id="7225179976675429563">Відсутній тип мережі</translation>
 <translation id="7230787553283372882">Налаштувати розмір тексту</translation>
 <translation id="7231224339346098802">Використовуйте число, щоб указати кількість копій для друку (1 або більше).</translation>
-<translation id="7234907163682057631">Виявляти та запускати важливий вміст плагіна</translation>
 <translation id="7238585580608191973">Відбиток SHA-256</translation>
 <translation id="7240120331469437312">Альтернативне ім'я суб'єкта сертифіката</translation>
 <translation id="7241389281993241388">Увійдіть у <ph name="TOKEN_NAME" />, щоб імпортувати сертифікат клієнта.</translation>
@@ -4687,6 +4689,7 @@
 <translation id="7484645889979462775">Ніколи для цього сайта</translation>
 <translation id="7484964289312150019">Відкрити всі закладки в &amp;новому вікні</translation>
 <translation id="7485236722522518129">F4</translation>
+<translation id="7487067081878637334">Технології</translation>
 <translation id="7487099628810939106">Затримка перед кліком:</translation>
 <translation id="7487969577036436319">Немає встановлених компонентів</translation>
 <translation id="7489605380874780575">Перевірити придатність</translation>
@@ -4958,6 +4961,7 @@
 <translation id="7877451762676714207">Невідома помилка сервера. Повторіть спробу чи зв’яжіться з адміністратором сервера.</translation>
 <translation id="7878999881405658917">На цей телефон надіслано сповіщення від Google. Зауважте, що за допомогою Bluetooth можна розблокувати пристрій <ph name="DEVICE_TYPE" /> із телефона на відстані близько 10 метрів. У разі виникнення проблем можна &lt;a&gt;тимчасово вимкнути цю функцію&lt;/a&gt;.</translation>
 <translation id="7880836220014399562">Пакет "<ph name="BUNDLE_NAME" />" додає такі додатки та розширення:</translation>
+<translation id="7881483672146086348">Переглянути обліковий запис</translation>
 <translation id="7881969471599061635">Вимкнути субтитри</translation>
 <translation id="7885253890047913815">Останні місця призначення</translation>
 <translation id="7887192723714330082">Реагувати на команду "Ok Google", коли екран увімкнено та розблоковано</translation>
@@ -5350,7 +5354,6 @@
 <translation id="8428213095426709021">Налаштування</translation>
 <translation id="8428634594422941299">Зрозуміло</translation>
 <translation id="8432745813735585631">Розкладка клавіатури Colemak (США)</translation>
-<translation id="8434177709403049435">&amp;Кодування</translation>
 <translation id="8434480141477525001">Порт налагодження NaCl</translation>
 <translation id="8435334418765210033">Збережені мережі</translation>
 <translation id="8437209419043462667">Американська</translation>
@@ -5741,7 +5744,6 @@
 <translation id="8970203673128054105">Переглянути список режиму трансляції</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Зверніться до адміністратора мережі, щоб переконатися, що брандмауер не блокує завантаження із серверів Google.</translation>
-<translation id="8974161578568356045">Автоматичне визначення</translation>
 <translation id="8978526688207379569">Цей сайт автоматично завантажив декілька файлів.</translation>
 <translation id="8982248110486356984">Змінити користувача</translation>
 <translation id="8986267729801483565">Папка для завантажень:</translation>
@@ -5927,7 +5929,6 @@
 <translation id="923467487918828349">Показати всі</translation>
 <translation id="927151012416335806">Оновлення пристрою до каналу <ph name="CHANNEL_NAME" /></translation>
 <translation id="930268624053534560">Детальні позначки часу</translation>
-<translation id="931068751149008062">Вибрати типи шрифтів і кодування</translation>
 <translation id="932327136139879170">Домашня сторінка</translation>
 <translation id="932508678520956232">Не вдалося ініціювати друк.</translation>
 <translation id="93393615658292258">Лише пароль</translation>

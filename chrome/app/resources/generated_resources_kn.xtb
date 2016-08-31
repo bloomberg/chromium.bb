@@ -183,6 +183,7 @@
 <translation id="1240892293903523606">DOM ಪರೀಕ್ಷಕ</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> ನಿಮ್ಮ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಮರುಹೊಂದಿಸಲು ಬಯಸುತ್ತದೆ.</translation>
 <translation id="1243314992276662751">ಅಪ್‌ಲೋಡ್</translation>
+<translation id="1244147615850840081">ವಾಹಕ</translation>
 <translation id="1244303850296295656">ವಿಸ್ತರಣೆ ದೋಷ</translation>
 <translation id="1245907074925860695">ಬಳಕೆದಾರರನ್ನು ತೆಗೆದುಹಾಕಿ</translation>
 <translation id="1248269069727746712">ನೆಟ್‌ವರ್ಕ್‌ಗೆ ಸಂಪರ್ಕಪಡಿಸಲು ನಿಮ್ಮ ಸಾಧನದ ಸಿಸ್ಟಂ ಪ್ರಾಕ್ಸಿ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು <ph name="PRODUCT_NAME" /> ಬಳಸುತ್ತಿದೆ.</translation>
@@ -195,7 +196,6 @@
 <translation id="126710816202626562">ಅನುವಾದ ಭಾಷೆ:</translation>
 <translation id="1272079795634619415">ನಿಲ್ಲಿಸು</translation>
 <translation id="1272978324304772054">ಈ ಬಳಕೆದಾರನ ಖಾತೆಯು ಸಾಧನವು ದಾಖಲಾಗಿರುವ ಡೊಮೇನ್‌ಗೆ ಸಂಬಂಧಿಸಿಲ್ಲ. ನೀವು ವಿಭಿನ್ನ ಡೊಮೆನ್ ಅನ್ನು ದಾಖಲಿಸಲು ಬಯಸುವುದಾದರೆ ನೀವು ಮೊದಲು ಮರುಪ್ರಾಪ್ತಿಯ ಸಾಧನದ ಮೂಲಕ ಹೋಗುವ ಅವಶ್ಯಕತೆ ಇದೆ.</translation>
-<translation id="127353061808977798">ಫಾಂಟ್‌‌ಗಳು ಮತ್ತು ಎನ್‌ಕೋಡಿಂಗ್</translation>
 <translation id="1274997165432133392">ಕುಕೀಗಳು ಮತ್ತು ಇತರ ಡೇಟಾ</translation>
 <translation id="1275718070701477396">ಆಯ್ಕೆ ಮಾಡಿದ</translation>
 <translation id="127668050356036882">ನಿಮ್ಮ ಎಲ್ಲಾ ವಿಂಡೋಗಳನ್ನು ಮುಚ್ಚಿ</translation>
@@ -1318,6 +1318,7 @@
 <translation id="2799223571221894425">ಮರುಪ್ರಾರಂಭಿಸು</translation>
 <translation id="2800537048826676660">ಕಾಗುಣಿತ ಪರಿಶೀಲನೆಗಾಗಿ ಈ ಭಾಷೆಯನ್ನು ಬಳಸಿ</translation>
 <translation id="2801702994096586034">ಸರ್ವರ್ 3</translation>
+<translation id="2803375539583399270">ಪಿನ್ ನಮೂದಿಸಿ</translation>
 <translation id="2803887722080936828"><ph name="BEGIN_H3" />ಡೀಬಗ್ ಮಾಡುವಿಕೆ ವೈಶಿಷ್ಟ್ಯಗಳು<ph name="END_H3" />
     <ph name="BR" />
     ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿ ಕಸ್ಟಮ್ ಕೋಡ್ ಅನ್ನು ಸ್ಥಾಪಿಸಲು ಮತ್ತು ಪರಿಶೀಲಿಸುವುದಕ್ಕಾಗಿ ನಿಮ್ಮ Chrome OS ನಲ್ಲಿ ಡೀಬಗ್ ಮಾಡುವಿಕೆ ವೈಶಿಷ್ಟ್ಯಗಳನ್ನು ನೀವು ಸಕ್ರಿಯಗೊಳಿಸಬಹುದು.  ಇದು ನಿಮಗೆ ಇವುಗಳಿಗೆ ಅನುಮತಿಸುತ್ತದೆ:<ph name="BR" />
@@ -2068,6 +2069,7 @@
 <translation id="3743492083222969745">ವರ್ಚ್ಯುಯಲ್ ಕೀಬೋರ್ಡ್‌ಗೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳ ಪುಟದಲ್ಲಿ ಗೆಸ್ಚರ್ ಟೈಪಿಂಗ್ ಆಯ್ಕೆಯನ್ನು ಸಕ್ರಿಯ/ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ.</translation>
 <translation id="3744111561329211289">ಹಿನ್ನೆಲೆ ಸಿಂಕ್</translation>
 <translation id="3745016858329272300">ಸಾಮಾನ್ಯ ಮಾಹಿತಿ</translation>
+<translation id="3748026146096797577">ಸಂಪರ್ಕಗೊಳಿಸಿಲ್ಲ</translation>
 <translation id="3749289110408117711">ಫೈಲ್ ಹೆಸರು</translation>
 <translation id="3751427701788899101">ಸಂಪರ್ಕ ತಪ್ಪಿಹೋಗಿದೆ</translation>
 <translation id="3752439026432317933">ಬಿಲ್ಲಿಂಗ್ ವಿವರಗಳನ್ನು ನಮೂದಿಸಿ ...</translation>
@@ -2787,6 +2789,7 @@
 <translation id="480990236307250886">ಮುಖ ಪುಟ ತೆರೆಯಿರಿ</translation>
 <translation id="4811502511369621968">ಅಮಾನ್ಯವಾದ ಇಮೇಲ್ ವಿಳಾಸ. ಪರಿಶೀಲಿಸಿ ಹಾಗೂ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="4812632551187706935">ಸಂಪರ್ಕವನ್ನು ಪ್ರಾರಂಭಿಸಲಾಗಲಿಲ್ಲ</translation>
+<translation id="4812684235631257312">ಹೋಸ್ಟ್</translation>
 <translation id="4813345808229079766">ಸಂಪರ್ಕ</translation>
 <translation id="4813512666221746211">ನೆಟ್‌ವರ್ಕ್  ದೋಷ</translation>
 <translation id="4816492930507672669">ಪುಟಕ್ಕೆ ಹೊಂದಿಸು</translation>
@@ -3171,6 +3174,7 @@
 <translation id="5306802244647481941">ಫೈಲ್‌ಗಳ ಅಪ್ಲಿಕೇಶನ್‌ನ ತ್ವರಿತ ವೀಕ್ಷಣೆ</translation>
 <translation id="5308380583665731573">ಸಂಪರ್ಕಿಸು</translation>
 <translation id="5311260548612583999">ಖಾಸಗಿ ಕೀಲಿ ಫೈಲ್ (ಐಚ್ಛಿಕ):</translation>
+<translation id="5315873049536339193">ಗುರುತು</translation>
 <translation id="5316588172263354223">ಧ್ವನಿ ಹುಡುಕಾಟ; ಯಾವುದೇ ಸಮಯದಲ್ಲಿ!</translation>
 <translation id="5316716239522500219">ಪ್ರತಿಬಿಂಬಿಸುವ ಮಾನೀಟರ್‌ಗಳು</translation>
 <translation id="5317780077021120954">ಉಳಿಸು</translation>
@@ -3448,7 +3452,6 @@
 <translation id="5684661240348539843">ಸ್ವತ್ತು ಗುರುತಿಸುವಿಕೆ</translation>
 <translation id="569068482611873351">ಆಮದು...</translation>
 <translation id="56907980372820799">ಲಿಂಕ್ ಡೇಟಾ</translation>
-<translation id="569109051430110155">ಸ್ವಯಂ ಪತ್ತೆಮಾಡು</translation>
 <translation id="5691596662111998220">ಓಹ್, <ph name="FILE_NAME" /> ಇನ್ನು ಮುಂದೆ ಅಸ್ತಿತ್ವದಲ್ಲಿರುವುದಿಲ್ಲ.</translation>
 <translation id="5694501201003948907">$1 ಐಟಂಗಳನ್ನು ಜಿಪ್ ಮಾಡಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="5697118958262594262">ಡಿಫಾಲ್ಟ್ ಮೂಲಕ ಪ್ರಮುಖ ವಿಷಯವನ್ನು ಪತ್ತೆ ಮಾಡಿ</translation>
@@ -4512,7 +4515,6 @@
 <translation id="7225179976675429563">ನೆಟ್‌ವರ್ಕ್ ಪ್ರಕಾರ ಕಾಣೆಯಾಗಿದೆ</translation>
 <translation id="7230787553283372882">ನಿಮ್ಮ ಪಠ್ಯ ಗಾತ್ರ ಗ್ರಾಹಕೀಯಗೊಳಿಸಿ</translation>
 <translation id="7231224339346098802">ಎಷ್ಟು ಪ್ರತಿಗಳನ್ನು ಮುದ್ರಿಸಬೇಕೆಂದು (1 ಅಥವಾ ಹೆಚ್ಚು) ಸೂಚಿಸಲು ಸಂಖ್ಯೆಯನ್ನು ಬಳಸಿ.</translation>
-<translation id="7234907163682057631">ಪ್ರಮುಖ ಪ್ಲಗಿನ್ ವಿಷಯವನ್ನು ಪತ್ತೆ ಮಾಡಿ ಹಾಗೂ ರನ್ ಮಾಡಿ</translation>
 <translation id="7238585580608191973">SHA-256 ಬೆರಳಚ್ಚು</translation>
 <translation id="7240120331469437312">ಪ್ರಮಾಣಪತ್ರ ವಿಷಯ ಪರ್ಯಾಯ ಹೆಸರು</translation>
 <translation id="7241389281993241388">ಕ್ಲೈಂಟ್ ಪ್ರಮಾಣಪತ್ರವನ್ನು ಆಮದು ಮಾಡಿಕೊಳ್ಳಲು <ph name="TOKEN_NAME" /> ಗೆ ದಯವಿಟ್ಟು ಸೈನ್ ಇನ್ ಮಾಡಿ.</translation>
@@ -4694,6 +4696,7 @@
 <translation id="7484645889979462775">ಈ ಸೈಟ್‌ಗೆ ಎಂದಿಗೂ ಬೇಡ</translation>
 <translation id="7484964289312150019">&amp;ಹೊಸ ವಿಂಡೋದಲ್ಲಿ ಎಲ್ಲ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="7485236722522518129">F4</translation>
+<translation id="7487067081878637334">ತಂತ್ರಜ್ಞಾನ</translation>
 <translation id="7487099628810939106">ಕ್ಲಿಕ್ ಮಾಡುವ ಮೊದಲು ವಿಳಂಬ:</translation>
 <translation id="7487969577036436319">ಯಾವುದೇ ಕಾಂಪೊನೆಂಟ್‌ಗಳನ್ನು ಸ್ಥಾಪಿಸಿಲ್ಲ</translation>
 <translation id="7489605380874780575">ಅರ್ಹತೆಯನ್ನು ಪರಿಶೀಲಿಸಿ</translation>
@@ -4965,6 +4968,7 @@
 <translation id="7877451762676714207">ಅಜ್ಞಾತ ಸರ್ವರ್ ದೋಷ. ದಯವಿಟ್ಟು ಪುನಃ ಪ್ರಯತ್ನಿಸಿ, ಅಥವಾ ಸರ್ವರ್ ನಿರ್ವಾಹಕರನ್ನು ಸಂಪರ್ಕಿಸಿ.</translation>
 <translation id="7878999881405658917">Google ಈ ಫೋನ್‌ಗೆ ಅಧಿಸೂಚನೆಯನ್ನು ಕಳುಹಿಸಿದೆ. ಬ್ಲೂಟೂತ್‌ ಜೊತೆಗೆ ನಿಮ್ಮ ಫೋನ್‌ 100 ಅಡಿ ದೂರದಿಂದ ನಿಮ್ಮ <ph name="DEVICE_TYPE" /> ಸಾಧನವನ್ನು ಅನ್‌ಲಾಕ್‌ ಮಾಡಿ ಇರಿಸಿರಬಹುದು ಎಂಬುದನ್ನು ಗಮನಿಸಿ. ಕೆಲವು ಸಂದರ್ಭಗಳಲ್ಲಿ ಇದು ಸಮಸ್ಯೆಯಾದಲ್ಲಿ, ನೀವು &lt;a&gt;ತಾತ್ಕಾಲಿಕವಾಗಿ ಈ ವೈಶಿಷ್ಟ್ಯವನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಬಹುದು&lt;/a&gt;.</translation>
 <translation id="7880836220014399562">"<ph name="BUNDLE_NAME" />" ಈ ಅಪ್ಲಿಕೇಶನ್‌ಗಳು ಮತ್ತು ವಿಸ್ತರಣೆಗಳನ್ನು ಸೇರಿಸುತ್ತದೆ:</translation>
+<translation id="7881483672146086348">ಖಾತೆಯನ್ನು ವೀಕ್ಷಿಸಿ</translation>
 <translation id="7881969471599061635">ಉಪಶೀರ್ಷಿಕೆಗಳನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸು</translation>
 <translation id="7885253890047913815">ಇತ್ತೀಚಿನ ಗಮ್ಯಸ್ಥಾನಗಳು</translation>
 <translation id="7887192723714330082">ಪರದೆಯು ಆನ್ ಆಗಿರುವಾಗ ಮತ್ತು ಅನ್‌ಲಾಕ್ ಮಾಡಿರುವಾಗ "Ok Google" ಗೆ ಪ್ರತಿಕ್ರಿಯಿಸಿ</translation>
@@ -5357,7 +5361,6 @@
 <translation id="8428213095426709021">ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="8428634594422941299">ಅರ್ಥವಾಯಿತು</translation>
 <translation id="8432745813735585631">ಯುಎಸ್ ಕೋಲ್‌ಮಾರ್ಕ್ ಕೀಬೋರ್ಡ್</translation>
-<translation id="8434177709403049435">&amp;ಎನ್ಕೋಡಿಂಗ್</translation>
 <translation id="8434480141477525001">NaCl ಡೀಬಗ್‌ ಪೋರ್ಟ್‌</translation>
 <translation id="8435334418765210033">ನೆನಪಿರುವ ನೆಟ್‌ವರ್ಕ್‌ಗಳು</translation>
 <translation id="8437209419043462667">US</translation>
@@ -5750,7 +5753,6 @@
 <translation id="8970203673128054105">ಬಿತ್ತರಿಸು ಮೋಡ್ ಪಟ್ಟಿ ವೀಕ್ಷಿಸಿ</translation>
 <translation id="89720367119469899">ಎಸ್ಕೇಪ್</translation>
 <translation id="8972513834460200407">Google ಸರ್ವರ್‌ಗಳಿಂದ ಮಾಡಲಾಗುವ ಡೌನ್‌ಲೋಡ್‌ಗಳನ್ನು ಫೈರ್‌‌ವಾಲ್‌ ನಿರ್ಬಂಧಿಸುತ್ತಿಲ್ಲ ಎಂಬುದನ್ನು ಖಚಿತಪಡಿಸಿಕೊಳ್ಳಲು ದಯವಿಟ್ಟು ನೀವು ನಿಮ್ಮ ನೆಟ್‌ವರ್ಕ್ ನಿರ್ವಾಹಕರೊಂದಿಗೆ ಚರ್ಚಿಸಿ.</translation>
-<translation id="8974161578568356045">ಸ್ವಯಂ ಪತ್ತೆ</translation>
 <translation id="8978526688207379569">ಈ ಸೈಟ್‌ ಬಹು ಫೈಲ್‌ಗಳನ್ನು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಡೌನ್‌ಲೋಡ್‌ ಮಾಡಿದೆ.</translation>
 <translation id="8982248110486356984">ಬಳಕೆದಾರರನ್ನು ಬದಲಿಸಿ</translation>
 <translation id="8986267729801483565">ಡೌನ್‌ಲೋಡ್ ಮಾಡುವ ಸ್ಥಳ:</translation>
@@ -5938,7 +5940,6 @@
 <translation id="923467487918828349">ಎಲ್ಲಾ ತೋರಿಸಿ</translation>
 <translation id="927151012416335806">ನಿಮ್ಮ ಸಾಧನವನ್ನು <ph name="CHANNEL_NAME" /> ಚಾನಲ್‌ಗೆ ಅಪ್‌ಡೇಟ್ ಮಾಡಲಾಗುತ್ತಿದೆ</translation>
 <translation id="930268624053534560">ವಿವರವಾದ ಸಮಯಮೊಹರುಗಳು</translation>
-<translation id="931068751149008062">ಫಾಂಟ್ ಪ್ರಕಾರಗಳು ಮತ್ತು ಎನ್‌ಕೋಡಿಂಗ್ ಆಯ್ಕೆಮಾಡಿ</translation>
 <translation id="932327136139879170">ಮುಖಪುಟ</translation>
 <translation id="932508678520956232">ಮುದ್ರಣವನ್ನು ಪ್ರಾರಂಭಿಸುವುದಕ್ಕೆ ಆಗುವುದಿಲ್ಲ.</translation>
 <translation id="93393615658292258">ಪಾಸ್‌ವರ್ಡ್ ಮಾತ್ರ</translation>

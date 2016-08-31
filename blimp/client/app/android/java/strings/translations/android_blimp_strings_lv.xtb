@@ -18,6 +18,7 @@
 <translation id="3407245330823033366">Lūdzu, izvēlieties kontu, kurš tiks izmantots ar Blimp.</translation>
 <translation id="3775180005489871350">Piešķires kļūme. 400. kļūda (BAD_REQUEST).</translation>
 <translation id="3877411575395047031">Slēpt atkļūdošanas informāciju</translation>
+<translation id="4013794286379809233">Pierakstieties</translation>
 <translation id="4542350224991263059">Piešķires kļūme. Lietotāja piekļuves pilnvaras derīgums ir beidzies.</translation>
 <translation id="4562971394107096647">Piešķires kļūme. Servera kļūda.</translation>
 <translation id="4641972508298030550">Nevarēja autentificēt lietotāju.</translation>
@@ -28,6 +29,7 @@
 <translation id="5860346505531085166">Piešķires kļūme. Kontam nav piekļuves.</translation>
 <translation id="6232798399907177395">Par Blimp</translation>
 <translation id="6245894610106451476">Saņemts (KB)</translation>
+<translation id="6522797484310591766">Pierakstīties tūlīt</translation>
 <translation id="704835510384979817">Piešķires kļūme. Nav atbilstošas programmas versijas.</translation>
 <translation id="7145680970336344212">Restartēt Blimp</translation>
 <translation id="7536363920335771251">Programma ir atvienota, iemesls: %1$s</translation>

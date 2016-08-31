@@ -183,6 +183,7 @@
 <translation id="1240892293903523606">DOM 檢查器</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> 要求重設您的設定。</translation>
 <translation id="1243314992276662751">上傳</translation>
+<translation id="1244147615850840081">通訊業者</translation>
 <translation id="1244303850296295656">擴充功能錯誤</translation>
 <translation id="1245907074925860695">移除使用者</translation>
 <translation id="1248269069727746712"><ph name="PRODUCT_NAME" /> 目前正透過裝置系統的 Proxy 設定連線至網路。</translation>
@@ -195,7 +196,6 @@
 <translation id="126710816202626562">翻譯語言：</translation>
 <translation id="1272079795634619415">停止</translation>
 <translation id="1272978324304772054">裝置註冊的網域中沒有這個使用者帳戶。如果您要使用其他網域進行註冊，必須先完成裝置修復作業。</translation>
-<translation id="127353061808977798">字型和編碼</translation>
 <translation id="1274997165432133392">Cookie 和其他網站資料</translation>
 <translation id="1275718070701477396">已選取</translation>
 <translation id="127668050356036882">關閉所有視窗</translation>
@@ -1317,6 +1317,7 @@
 <translation id="2799223571221894425">重新啟動</translation>
 <translation id="2800537048826676660">使用這個語言進行拼字檢查</translation>
 <translation id="2801702994096586034">伺服器 3</translation>
+<translation id="2803375539583399270">輸入 PIN</translation>
 <translation id="2803887722080936828"><ph name="BEGIN_H3" />偵錯功能<ph name="END_H3" />
     <ph name="BR" />
     您只要啟用 Chrome 作業系統裝置的偵錯功能，即可在裝置上安裝並測試自訂程式碼。這項功能可讓您：<ph name="BR" />
@@ -2068,6 +2069,7 @@
 <translation id="3743492083222969745">在虛擬鍵盤的設定頁面中啟用/停用手勢輸入選項。</translation>
 <translation id="3744111561329211289">背景同步處理</translation>
 <translation id="3745016858329272300">一般資訊</translation>
+<translation id="3748026146096797577">尚未連線</translation>
 <translation id="3749289110408117711">檔案名稱</translation>
 <translation id="3751427701788899101">連線已中斷</translation>
 <translation id="3752439026432317933">輸入帳單詳細資訊...</translation>
@@ -2783,6 +2785,7 @@
 <translation id="480990236307250886">開啟首頁</translation>
 <translation id="4811502511369621968">輸入的電子郵件地址有誤。請檢查拼寫是否正確，然後再試一次。</translation>
 <translation id="4812632551187706935">無法初始化連線</translation>
+<translation id="4812684235631257312">主機</translation>
 <translation id="4813345808229079766">連線</translation>
 <translation id="4813512666221746211">網路錯誤</translation>
 <translation id="4816492930507672669">依頁面大小自動調整</translation>
@@ -3160,6 +3163,7 @@
 <translation id="5306802244647481941">檔案應用程式快速檢視</translation>
 <translation id="5308380583665731573">連線</translation>
 <translation id="5311260548612583999">秘密金鑰檔案 (選擇性)：</translation>
+<translation id="5315873049536339193">身分</translation>
 <translation id="5316588172263354223">隨時進行語音搜尋</translation>
 <translation id="5316716239522500219">顯示器鏡像</translation>
 <translation id="5317780077021120954">儲存</translation>
@@ -3436,7 +3440,6 @@
 <translation id="5684661240348539843">資產識別碼</translation>
 <translation id="569068482611873351">匯入...</translation>
 <translation id="56907980372820799">連結資料</translation>
-<translation id="569109051430110155">自動偵測</translation>
 <translation id="5691596662111998220">糟糕！「<ph name="FILE_NAME" />」已不存在。</translation>
 <translation id="5694501201003948907">正在壓縮 $1 個項目...</translation>
 <translation id="5697118958262594262">預設偵測重要內容</translation>
@@ -4498,7 +4501,6 @@
 <translation id="7225179976675429563">找不到網路類型</translation>
 <translation id="7230787553283372882">自訂文字大小</translation>
 <translation id="7231224339346098802">使用數字指定列印份數 (1 或多份)。</translation>
-<translation id="7234907163682057631">偵測並執行重要的外掛程式內容</translation>
 <translation id="7238585580608191973">SHA-256 指紋</translation>
 <translation id="7240120331469437312">憑證主體替代名稱</translation>
 <translation id="7241389281993241388">登入 <ph name="TOKEN_NAME" /> 即可匯入用戶端憑證。</translation>
@@ -4678,6 +4680,7 @@
 <translation id="7484645889979462775">一律不儲存這個網站的密碼</translation>
 <translation id="7484964289312150019">在新視窗中開啟所有書籤(&amp;N)</translation>
 <translation id="7485236722522518129">F4</translation>
+<translation id="7487067081878637334">科技資訊</translation>
 <translation id="7487099628810939106">點擊前延遲：</translation>
 <translation id="7487969577036436319">未安裝任何元件</translation>
 <translation id="7489605380874780575">檢查資格</translation>
@@ -4948,6 +4951,7 @@
 <translation id="7877451762676714207">不明的伺服器錯誤。請再試一次，或與伺服器管理員聯絡。</translation>
 <translation id="7878999881405658917">Google 已將通知傳送至這支手機。請注意，啟用藍牙時，您的手機可能會讓超過 30 英尺外的 <ph name="DEVICE_TYPE" /> 解除鎖定。如果這樣會造成問題，您可以&lt;a&gt;暫時停用這項功能&lt;/a&gt;。</translation>
 <translation id="7880836220014399562">「<ph name="BUNDLE_NAME" />」會新增下列應用程式和擴充功能：</translation>
+<translation id="7881483672146086348">查看帳戶</translation>
 <translation id="7881969471599061635">停用字幕</translation>
 <translation id="7885253890047913815">最近用過的印表機</translation>
 <translation id="7887192723714330082">螢幕開啟且已解鎖時回應「Ok Google」</translation>
@@ -5340,7 +5344,6 @@
 <translation id="8428213095426709021">設定</translation>
 <translation id="8428634594422941299">我知道了</translation>
 <translation id="8432745813735585631">美式 Colemak 鍵盤</translation>
-<translation id="8434177709403049435">編碼(&amp;E)</translation>
 <translation id="8434480141477525001">NaCl 偵錯通訊埠</translation>
 <translation id="8435334418765210033">已經記錄的網路</translation>
 <translation id="8437209419043462667">美式配置</translation>
@@ -5731,7 +5734,6 @@
 <translation id="8970203673128054105">查看投放模式清單</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">請與網路管理員聯絡，確認防火牆並未封鎖從 Google 伺服器下載的內容。</translation>
-<translation id="8974161578568356045">自動偵測</translation>
 <translation id="8978526688207379569">這個網站已自動下載多個檔案。</translation>
 <translation id="8982248110486356984">切換使用者</translation>
 <translation id="8986267729801483565">檔案下載儲存位置：</translation>
@@ -5917,7 +5919,6 @@
 <translation id="923467487918828349">全部顯示</translation>
 <translation id="927151012416335806">正在將您的裝置更新至<ph name="CHANNEL_NAME" />版</translation>
 <translation id="930268624053534560">詳細時間戳記</translation>
-<translation id="931068751149008062">選擇字型類型和編碼</translation>
 <translation id="932327136139879170">首頁</translation>
 <translation id="932508678520956232">無法初始化列印作業。</translation>
 <translation id="93393615658292258">僅限密碼</translation>

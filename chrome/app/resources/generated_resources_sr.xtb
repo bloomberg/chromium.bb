@@ -183,6 +183,7 @@
 <translation id="1240892293903523606">DOM Inspector</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> жели да ресетује подешавања.</translation>
 <translation id="1243314992276662751">Отпреми</translation>
+<translation id="1244147615850840081">Мобилни оператер</translation>
 <translation id="1244303850296295656">Грешка додатка</translation>
 <translation id="1245907074925860695">Уклоните корисника</translation>
 <translation id="1248269069727746712"><ph name="PRODUCT_NAME" /> користи системска подешавања проксија уређаја за повезивање са мрежом.</translation>
@@ -195,7 +196,6 @@
 <translation id="126710816202626562">Језик на који се преводи:</translation>
 <translation id="1272079795634619415">Заустави</translation>
 <translation id="1272978324304772054">Овај кориснички налог не припада домену на ком је уређај регистрован. Ако желите да се региструјете на другом домену, прво морате да обавите опоравак уређаја.</translation>
-<translation id="127353061808977798">Фонтови и кодирање</translation>
 <translation id="1274997165432133392">Колачићи и други подаци о сајтовима</translation>
 <translation id="1275718070701477396">Изабрано</translation>
 <translation id="127668050356036882">Затвори све моје прозоре</translation>
@@ -1314,6 +1314,7 @@
 <translation id="2799223571221894425">Поново покрени</translation>
 <translation id="2800537048826676660">Користи овај језик за проверу правописа</translation>
 <translation id="2801702994096586034">3. сервер</translation>
+<translation id="2803375539583399270">Унесите PIN</translation>
 <translation id="2803887722080936828"><ph name="BEGIN_H3" />Функције за отклањање грешака<ph name="END_H3" />
     <ph name="BR" />
     Можете да омогућите функције за отклањање грешака на Chrome ОС уређају да бисте инсталирали и тестирали прилагођени кôд на уређају.  Тада ћете моћи:<ph name="BR" />
@@ -2065,6 +2066,7 @@
 <translation id="3743492083222969745">Омогућите/онемогућите опцију за куцање покретима на страници подешавања за виртуелну тастатуру.</translation>
 <translation id="3744111561329211289">Синхронизација у позадини</translation>
 <translation id="3745016858329272300">Опште информације</translation>
+<translation id="3748026146096797577">Није повезано</translation>
 <translation id="3749289110408117711">Назив датотеке</translation>
 <translation id="3751427701788899101">Веза је прекинута</translation>
 <translation id="3752439026432317933">Унесите детаље обрачуна...</translation>
@@ -2783,6 +2785,7 @@
 <translation id="480990236307250886">Отвори почетну страницу</translation>
 <translation id="4811502511369621968">Неважећа имејл адреса. Проверите и покушајте поново.</translation>
 <translation id="4812632551187706935">Иницијализовање везе није успело</translation>
+<translation id="4812684235631257312">Хост</translation>
 <translation id="4813345808229079766">Веза</translation>
 <translation id="4813512666221746211">Грешка на мрежи</translation>
 <translation id="4816492930507672669">Уклопи у страницу</translation>
@@ -3162,6 +3165,7 @@
 <translation id="5306802244647481941">Кратки преглед апликације Датотеке</translation>
 <translation id="5308380583665731573">Повезивање</translation>
 <translation id="5311260548612583999">Приватни кључ (опционално)</translation>
+<translation id="5315873049536339193">Идентитет</translation>
 <translation id="5316588172263354223">Гласовна претрага у сваком тренутку</translation>
 <translation id="5316716239522500219">Пресликавање монитора</translation>
 <translation id="5317780077021120954">Сачувај</translation>
@@ -3439,7 +3443,6 @@
 <translation id="5684661240348539843">Идентификатор елемента</translation>
 <translation id="569068482611873351">Увези...</translation>
 <translation id="56907980372820799">Повежи податке</translation>
-<translation id="569109051430110155">Аутоматски откриј</translation>
 <translation id="5691596662111998220">Упс, <ph name="FILE_NAME" /> више не постоји.</translation>
 <translation id="5694501201003948907">Додавање ставки ($1) у zip датотеку...</translation>
 <translation id="5697118958262594262">Подразумевано откривај важан садржај</translation>
@@ -4504,7 +4507,6 @@
 <translation id="7225179976675429563">Недостаје тип мреже</translation>
 <translation id="7230787553283372882">Прилагодите величину текста</translation>
 <translation id="7231224339346098802">Наведите број примерака за штампање (1 или више).</translation>
-<translation id="7234907163682057631">Откривај и покрећи важан садржај додатних компонената</translation>
 <translation id="7238585580608191973">SHA-256 Fingerprint</translation>
 <translation id="7240120331469437312">Алтернативно име субјекта сертификата</translation>
 <translation id="7241389281993241388">Пријавите се на <ph name="TOKEN_NAME" /> да бисте увезли сертификат клијента.</translation>
@@ -4680,6 +4682,7 @@
 <translation id="7484645889979462775">Никад за овај сајт</translation>
 <translation id="7484964289312150019">Отвори све обележиваче у &amp;новом прозору</translation>
 <translation id="7485236722522518129">F4</translation>
+<translation id="7487067081878637334">Технологија</translation>
 <translation id="7487099628810939106">Одлагање клика:</translation>
 <translation id="7487969577036436319">Није инсталирана ниједна компонента</translation>
 <translation id="7489605380874780575">Провери да ли испуњава услове</translation>
@@ -4951,6 +4954,7 @@
 <translation id="7877451762676714207">Непозната грешка сервера. Покушајте поново или контактирајте администратора сервера.</translation>
 <translation id="7878999881405658917">Google је послао обавештење на овај телефон. Имајте на уму да, када користите Bluetooth, телефон може да откључава <ph name="DEVICE_TYPE" /> на удаљености од преко 9 метара. У случајевима где то може да представља проблем, можете &lt;a&gt;привремено да онемогућите ову функцију&lt;/a&gt;.</translation>
 <translation id="7880836220014399562">„<ph name="BUNDLE_NAME" />“ додаје следеће апликације и додатке:</translation>
+<translation id="7881483672146086348">Прикажи налог</translation>
 <translation id="7881969471599061635">Онемогући титлове</translation>
 <translation id="7885253890047913815">Недавна одредишта</translation>
 <translation id="7887192723714330082">Реагуј на „ОК Google“ када је екран укључен и откључан</translation>
@@ -5345,7 +5349,6 @@
 <translation id="8428213095426709021">Подешавања</translation>
 <translation id="8428634594422941299">Важи</translation>
 <translation id="8432745813735585631">Језик тастатуре: енглески (САД Colemak)</translation>
-<translation id="8434177709403049435">&amp;Кодирање</translation>
 <translation id="8434480141477525001">NaCl порт за отклањање грешака</translation>
 <translation id="8435334418765210033">Запамћене мреже</translation>
 <translation id="8437209419043462667">америчка</translation>
@@ -5736,7 +5739,6 @@
 <translation id="8970203673128054105">Прикажи листу режима пребацивања</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Проверите са администратором мреже да бисте се уверили да заштитни зид не блокира преузимања са Google сервера.</translation>
-<translation id="8974161578568356045">Аутоматски откриј</translation>
 <translation id="8978526688207379569">Овај сајт је аутоматски преузео више датотека.</translation>
 <translation id="8982248110486356984">Промени кориснике</translation>
 <translation id="8986267729801483565">Локација преузимања:</translation>
@@ -5923,7 +5925,6 @@
 <translation id="923467487918828349">Прикажи све</translation>
 <translation id="927151012416335806">Ажурирање уређаја на канал <ph name="CHANNEL_NAME" /></translation>
 <translation id="930268624053534560">Детаљне временске ознаке</translation>
-<translation id="931068751149008062">Избор врсте фонта и кодирања</translation>
 <translation id="932327136139879170">Почетна</translation>
 <translation id="932508678520956232">Није могуће покренути штампање.</translation>
 <translation id="93393615658292258">Само лозинка</translation>

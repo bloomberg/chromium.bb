@@ -18,6 +18,7 @@
 <translation id="3407245330823033366">Escolha uma conta para usar com o Blimp.</translation>
 <translation id="3775180005489871350">Falha na atribuição. Erro 400 (BAD_REQUEST).</translation>
 <translation id="3877411575395047031">Ocultar informações de depuração</translation>
+<translation id="4013794286379809233">Faça login</translation>
 <translation id="4542350224991263059">Falha na atribuição. Token de acesso do usuário expirado.</translation>
 <translation id="4562971394107096647">Falha na atribuição. Erro do servidor.</translation>
 <translation id="4641972508298030550">Não foi possível autenticar usuário.</translation>
@@ -28,6 +29,7 @@
 <translation id="5860346505531085166">Falha na atribuição. A conta não tem acesso.</translation>
 <translation id="6232798399907177395">Sobre o Blimp</translation>
 <translation id="6245894610106451476">Recebidos (KB)</translation>
+<translation id="6522797484310591766">Fazer login agora</translation>
 <translation id="704835510384979817">Falha na atribuição. Nenhuma versão compatível do mecanismo.</translation>
 <translation id="7145680970336344212">Reiniciar o Blimp</translation>
 <translation id="7536363920335771251">Mecanismo desconectado, motivo: %1$s</translation>

@@ -505,6 +505,9 @@
 <translation id="2623014935069176671">Laukti pradinės naudotojo veiklos</translation>
 <translation id="262740370354162807">Įgalinti dokumentų pateikimą „<ph name="CLOUD_PRINT_NAME" />“</translation>
 <translation id="2633084400146331575">Įgalinti ekrano skaitymą balsu</translation>
+<translation id="2646290749315461919">Leidžiama nustatyti, ar svetainėse galima stebėti naudotojų fizinę vietą. Naudotojų fizinės vietos stebėjimas gali būti leidžiamas, draudžiamas pagal numatytuosius nustatymus arba naudotojo (-os) gali būti klausiama kiekvieną kartą, kai svetainėje pateikiama fizinės vietos užklausa.
+
+          Nenustačius šios politikos bus naudojama „Klausti geografinės vietos“ ir naudotojas (-a) galės tai pakeisti.</translation>
 <translation id="2650049181907741121">Veiksmas, kuris bus atliktas, kai naudotojas uždarys dangtelį</translation>
 <translation id="2655233147335439767">Nurodomas paieškos variklio, naudojamo atliekant numatytąją paiešką, URL. URL turėtų būti eilutė „<ph name="SEARCH_TERM_MARKER" />“, kuri pateikiant užklausą bus pakeista terminais, kurių naudotojas ieško.
 
@@ -519,12 +522,6 @@
           Į šią politiką atsižvelgiama, tik jei įgalinta politika „Numatytasis paieškos teikėjas įgalintas“.</translation>
 <translation id="2682225790874070339">Išjungiamas Diskas „<ph name="PRODUCT_OS_NAME" />“ programoje „Failai“</translation>
 <translation id="268577405881275241">Įgalinti duomenų glaudinimo tarpinio serverio funkciją</translation>
-<translation id="2692168654831544772">Išjungiamas ekrano kopijų kūrimas.
-
-      Jei įgalinta, ekrano kopijų negalima kurti naudojant sparčiuosius klavišus ar plėtinių API.
-      Be to, ekrano fiksavimas išjungtas ARC programose.
-
-      Jei išjungta ar nenurodyta, leidžiama kurti ekrano kopijas.</translation>
 <translation id="2731627323327011390">Neleisti naudoti „<ph name="PRODUCT_OS_NAME" />“ sertifikatų ARC programose</translation>
 <translation id="2742843273354638707">Slėpti „Chrome“ internetinės parduotuvės programą ir poraštės nuorodą Naujo skirtuko puslapyje ir „<ph name="PRODUCT_OS_NAME" />“ programų paleidimo priemonėje.
 
@@ -577,22 +574,6 @@
           Kiekvienas šio sąrašo elementas yra plėtinio stiliaus atitikmens šablonas (žr. https://developer.chrome.com/extensions/match_patterns). Naudotojai galės paprastai įdiegti elementus iš bet kurio URL, atitinkančio šio sąrašo elementą. Šių šablonų turi būti leidžiama *.crx failo vieta ir puslapis, iš kurio pradedamas atsisiuntimas (pvz., persiuntėjo).
 
           Į „ExtensionInstallBlacklist“ (plėtinių diegimo juodąjį sąrašą) įtrauktiems plėtiniams ši politika negalioja. T. y. juodajame sąraše esantis plėtinys įdiegtas nebus, net jei tai atliekama iš šio sąrašo svetainės.</translation>
-<translation id="2813740161943223811">Ši politika nebenaudojama, vietoje jos naudokite „ProxyMode“.
-
-          Leidžiama nustatyti „<ph name="PRODUCT_NAME" />“ naudojamą tarpinį serverį ir naudotojams neleidžiama keisti tarpinio serverio nustatymų. ARC programos taip pat galės naudoti šį tarpinį serverį.
-
-          Jei pasirinksite niekada nenaudoti tarpinio serverio ir visada prisijungti tiesiogiai, bus nepaisoma visų kitų parinkčių.
-
-          Jei pasirinksite naudoti sistemos tarpinį serverį arba automatiškai aptikti tarpinį serverį, bus nepaisoma visų kitų parinkčių.
-
-          Jei pasirinksite neautomatinius tarpinio serverio nustatymus, kitas parinktis galėsite nurodyti skiltyse „Tarpinio serverio adresas ar URL“, „Tarpinio serverio .pac failo URL“ ir „Kableliais atskirtų tarpinio serverio apėjimo taisyklių sąrašas“. ARC programos gali naudoti tik HTTP tarpinį serverį, kurio pirmumas yra didžiausias.
-
-          Jei reikia išsamių pavyzdžių, apsilankykite adresu
-          <ph name="PROXY_HELP_URL" />.
-
-          Jei įgalinsite šį nustatymą, „<ph name="PRODUCT_NAME" />“ nepaisys visų su tarpiniu serveriu susijusių parinkčių, nurodytų komandos eilutėje.
-
-          Jei ši politika bus nenustatyta, naudotojai galės patys pasirinkti tarpinio serverio nustatymus.</translation>
 <translation id="2818551149761607847">Konfigūruokite naudotojo pseudoportreto vaizdą.
 
       Ši politika suteikia galimybę konfigūruoti prisijungimo ekrane rodomą naudotojo pseudoportreto vaizdą. Politiką reikia nustatyti nurodant URL, iš kurio „<ph name="PRODUCT_OS_NAME" />“ gali atsisiųsti pseudoportreto vaizdą, ir kriptografinę maišos vertę, kuri naudojama atsisiuntimo vientisumui patvirtinti. Vaizdas turi būti JPEG formato, o dydis neturi viršyti 512 KB. URL turi būti pasiekiamas be autentifikavimo.
@@ -737,19 +718,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
           </translation>
 <translation id="3205825995289802549">Pirmo naršyklės lango padidinimas pirmą kartą paleidus programą</translation>
 <translation id="3206731874112238027">Spaudinio peržiūros išjungimas (nebenaudojama)</translation>
-<translation id="3208854390109736596">Leidžiama nustatyti „<ph name="PRODUCT_NAME" />“ naudojamą tarpinį serverį ir naudotojams neleidžiama keisti tarpinio serverio nustatymų. ARC programos taip pat galės naudoti šį tarpinį serverį.
-
-      Jei pasirinksite niekada nenaudoti tarpinio serverio ir visada prisijungti tiesiogiai, bus nepaisoma visų kitų parinkčių.
-
-      Jei pasirinksite automatiškai aptikti tarpinį serverį, bus nepaisoma visų kitų parinkčių.
-
-      Jei reikia išsamių pavyzdžių, apsilankykite adresu
-      <ph name="PROXY_HELP_URL" />.
-
-      Jei įgalinsite šį nustatymą, „<ph name="PRODUCT_NAME" />“ ir ARC programos nepaisys visų su tarpiniu serveriu susijusių parinkčių, nurodytų komandos eilutėje.
-
-
-      Jei ši politika bus nenustatyta, naudotojai galės patys pasirinkti tarpinio serverio nustatymus.</translation>
 <translation id="3213821784736959823">Valdoma, ar integruota DNS kliento programa naudojama „<ph name="PRODUCT_NAME" />“.
 
       Jei ši politika aktyvinta, esant galimybei integruota DNS kliento programa bus naudojama.
@@ -794,11 +762,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="3322771899429619102">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose leidžiama naudoti rakto generavimą, sąrašą. Jei URL šablonas yra politikoje „KeygenBlockedForUrls“, šių išimčių nepaisoma.
 
           Nenustačius šios politikos visose svetainėse bus naudojama visuotinė numatytoji vertė iš politikos „DefaultKeygenSetting“ (jei nustatyta) arba naudotojo asmeninės konfigūracijos.</translation>
-<translation id="3337150554416948435">Leidžiama nustatyti, ar svetainėse galima stebėti naudotojų fizinę vietovę. Naudotojų fizinės vietovės stebėjimas gali būti leidžiamas, draudžiamas pagal numatytuosius nustatymus arba naudotojo gali būti klausiama kiekvieną kartą, kai svetainėje pateikiama fizinės vietovės užklausa.
-
-          Jei ši politika nustatyta į „Blokuoti geografinę vietovę“, vietovės bendrinimas neleidžiamas ARC programose.
-
-          Nenustačius šios politikos bus naudojama „Klausti geografinės vietovės“ ir naudotojas galės tai pakeisti.</translation>
 <translation id="3381968327636295719">Pagal numatytuosius nustatymus naudoti prieglobos naršyklę</translation>
 <translation id="3417418267404583991">Jei ši politika nustatyta į „true“ (tiesa) arba nesukonfigūruota, „<ph name="PRODUCT_OS_NAME" />“ įgalinami svečių prisijungimai. Svečių prisijungimai – tai anoniminės naudotojų sesijos ir nereikalaujama slaptažodžio.
 
@@ -817,14 +780,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
           Jei ši politika nustatyta į „True“, energijos valdymo delsa ir seanso ilgio apribojimas nesuaktyvinami, kol naudotojas nepradeda seanso veiklos.
 
           Jei ši politika nustatyta į „False“, energijos valdymo delsa ir seanso ilgio apribojimas suaktyvinami iškart pradėjus seansą.</translation>
-<translation id="3469657928310999477">„<ph name="PRODUCT_NAME" />“ apeis bet kokį tarpinį serverį iš čia pateikto prieglobų sąrašo. ARC programos galės naudoti šį sąrašą kaip apėjimo taisyklių sąrašą.
-
-          Ši politika galioja tik tuo atveju, jei pasirinkote neautomatinius tarpinio serverio nustatymus skiltyje „Pasirinkti, kaip nurodyti tarpinio serverio nustatymus“.
-
-          Jei pasirinkote kokį nors kitą tarpinio serverio politikos nustatymo režimą, šios politikos neturėtumėte nustatyti.
-
-          Jei reikia išsamesnių pavyzdžių, apsilankykite adresu
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="3478024346823118645">Ištrinti naudotojo duomenis atsijungiant</translation>
 <translation id="348495353354674884">Įgalinti virtualiąją klaviatūrą</translation>
 <translation id="3496296378755072552">Slaptažodžių tvarkytuvė</translation>
@@ -955,17 +910,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 
       Nenustačius šios politikos, SPDY bus pasiekiamas.</translation>
 <translation id="3891357445869647828">Įgalinti „JavaScript“</translation>
-<translation id="3898060089412156345">Garso fiksavimo leidimas arba draudimas.
-
-      Jei ši politika įgalinta arba nesukonfigūruota (numatytasis nustatymas), naudotojas bus paragintas
-      pasinaudoti garso fiksavimo prieiga, išskyrus URL, sukonfigūruotus sąraše
-      „Leidžiami garso fiksavimo URL“, kuriuos jis galės pasiekti be paraginimo.
-
-      Kai ši politika išjungta, naudotojas niekada nebus raginamas ir garso
-      fiksavimas bus pasiekiamas tik URL, sukonfigūruotiems sąraše „Leidžiami garso fiksavimo URL“.
-      Naudojant ARC programas mikrofonas yra visam laikui nutildytas.
-
-      Ši politika turi įtakos visų tipų garso įvestims, ne tik įdiegtam mikrofonui.</translation>
 <translation id="3907986150060929099">Rekomenduojamų viešos sesijos lokalių nustatymas</translation>
 <translation id="391531815696899618">Kai nustatyta kaip „true“, neleidžiamas „Google“ disko sinchronizavimas „<ph name="PRODUCT_OS_NAME" />“ programoje „Failai“. Tokiu atveju duomenys į „Google“ diską neįkeliami.
 
@@ -1100,6 +1044,11 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
       Politika palaikoma anksčiau nurodytose platformose, tačiau įgalinama funkcija gali būti pasiekiama mažiau platformų. Ne visas nebenaudojamas žiniatinklio platformos funkcijas galima įgalinti. Tik šiame sąraše pateiktas funkcijas galima laikinai (atsižvelgiant į funkciją) įgalinti. Bendra eilutės žymos forma [NebeteikiamosFunkcijosPavadinimas]_GaliojaIki[yyyymmdd]. Informacijos apie žiniatinklio platformos funkcijos pakeitimus galite gauti apsilankę adresu https://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Įgalinti užraktą, kai įrenginys nenaudojamas arba laikinai sustabdytas</translation>
+<translation id="4445684791305970001">Neleidžiami kūrėjo įrankiai ir „JavaScript“ pultas.
+
+      Jei įgalinsite šį nustatymą, daugiau nebus galima pasiekti kūrėjo įrankių ir patikrinti svetainės elementų. Bus neleidžiami visi spartieji klavišai ir meniu ar kontekstinių meniu įrašai, skirti kūrėjo įrankiams ar „JavaScript“ konsolei atidaryti.
+
+      Neleidus šios parinkties ar jos nenustačius, naudotojas (-a) galės naudoti kūrėjo įrankius ir „JavaScript“ konsolę.</translation>
 <translation id="4449545651113180484">Sukti ekraną pagal laikrodžio rodyklę 270 laipsnių kampu</translation>
 <translation id="4467952432486360968">Blokuoti trečiosios šalies slapukus</translation>
 <translation id="4474167089968829729">Įgalinti slaptažodžių saugojimą slaptažodžių tvarkytuvėje</translation>
@@ -1223,6 +1172,16 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
           Vertė turi būti eilutėmis suskirstytų JSON žodynų masyvas. Kiekvienas žodynas turi būti tokios formos: { "pattern": "$URL_PATTERN", "filter" : $FILTER }, kur $URL_PATTERN yra turinio nustatymo šablonas. $FILTER apriboja, iš kurių klientų sertifikatų naršyklė automatiškai pasirinks. Neatsižvelgiant į filtrą, bus pasirinkti tik tie sertifikatai, kurie atitinka serverio sertifikato užklausą. Jei $FILTER yra tokios formos: { "ISSUER": { "CN": "$ISSUER_CN" } }, papildomai pasirenkami tik klientų sertifikatai, kurie išduoti pagal sertifikatą, kurio „CommonName“ $ISSUER_CN. Jei $FILTER yra tuščias žodynas {}, klientų sertifikatų pasirinkimas nėra papildomai ribojamas.
 
           Nenustačius šios politikos, jokioje svetainėje nėra atliekamas joks automatinis pasirinkimas.</translation>
+<translation id="4980301635509504364">Leisti fiksavimą arba jo neleisti.
+
+      Jei ši politika įgalinta arba nesukonfigūruota (numatytasis nustatymas),
+      naudotojas bus paragintas suteikti prieigą fiksavimo funkcijai, išskyrus
+      sąraše „VideoCaptureAllowedUrls“ sukonfigūruotiems URL, kuriems prieiga bus suteikta be paraginimo.
+
+      Kai ši politika išjungta, naudotojas niekada nebus raginamas, o vaizdo
+      fiksavimo funkcija bus pasiekiama sąraše „VideoCaptureAllowedUrls“ sukonfigūruotiems URL.
+
+      Ši politika turi įtakos visų tipų vaizdo įvestims, ne tik įdiegtam fotoaparatui.</translation>
 <translation id="4980635395568992380">Duomenų tipas:</translation>
 <translation id="4983201894483989687">Leisti paleisti pasenusius papildinius</translation>
 <translation id="4988291787868618635">Veiksmas, kuris bus atliktas, kai bus pasiektas neveikos delsos laikas</translation>
@@ -1234,11 +1193,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
       Jei nenustatyta, naudotojo gali būti klausiama, ar importuoti, arba gali būti automatiškai importuojama.</translation>
 <translation id="5056708224511062314">Ekrano didinimas išjungtas</translation>
 <translation id="5067143124345820993">Prisijungusių naudotojų baltasis sąrašas</translation>
-<translation id="510186355068252378">Neleidžiamas duomenų sinchronizavimas „<ph name="PRODUCT_NAME" />“ naudojant „Google“ priglobtas sinchronizavimo paslaugas ir neleidžiama naudotojams keisti šio nustatymo.
-
-      Jei įgalinsite šį nustatymą, naudotojai negalės pakeisti ar panaikinti šio nustatymo „<ph name="PRODUCT_NAME" />“.
-
-      Nenustačius šios politikos, naudotojai galės pasirinkti, ar naudoti „Google“ sinchronizavimą.</translation>
 <translation id="5105313908130842249">Ekrano užrakto delsa, kai naudojama akumuliatoriaus energija</translation>
 <translation id="5111573778467334951">Nurodykite veiksmą, kuris bus atliktas, kai bus pasiektas neaktyvumo delsos laikas, kai veikiama iš akumuliatoriaus energijos.
 
@@ -1375,13 +1329,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
       Jei jis nurodytas, prie pateikiant variantų pirminę reikšmę naudojamo URL bus pridėtas URL parametras „restrict“. Parametro vertė bus šioje politikoje nustatyta vertė.
 
       Jei ši politika nenustatyta, variantų pirminės reikšmės URL keičiamas nebus.</translation>
-<translation id="5563853101694018649">Išjungiami kūrėjo įrankiai ir „JavaScript“ pultas.
-
-      Jei įgalinsite šį nustatymą, nebus galima pasiekti kūrėjo įrankių, o svetainės elementų nebebus galima tikrinti. Bus išjungti visi spartieji klavišai, meniu ar kontekstinio meniu įrašai, skirti atidaryti kūrėjo įrankius ar „JavaScript“ pultą.
-
-      Išjungus šį nustatymą arba jo nenustačius, naudotojui bus leidžiama naudoti kūrėjo įrankius ir „JavaScript“ pultą.
-
-      „<ph name="PRODUCT_OS_NAME" />“ įrenginiuose, kuriuose galima paleisti „Android“ programas, pagal šią politiką valdoma ir prieiga prie „Android“ kūrėjo parinkčių. Jei nustatysite šią politiką į „true“, naudotojai negalės pasiekti Kūrėjo parinkčių. Jei nustatysite šią politiką į „false“ ar paliksite ją nenustatytą, naudotojai galės pasiekti Kūrėjo parinktis septynis kartus palietę „Android“ nustatymų programos versijos numerį.</translation>
 <translation id="556941986578702361">Valdomas automatinis „<ph name="PRODUCT_OS_NAME" />“ lentynos paslėpimas.
 
       Jei ši politika nustatyta kaip „Visada automatiškai paslėpti lentyną“, lentyna visada automatiškai paslepiama.
@@ -1861,6 +1808,16 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
       Jei įgalinsite arba išjungsite šį nustatymą, naudotojai negalės jo pakeisti arba nepaisyti.
 
       Nenustačius politikos, naudotojas galės pasirinkti, ar atrakinant įrenginį turi būti prašoma slaptažodžio.</translation>
+<translation id="7109916642577279530">Leisti arba atmesti garso fiksavimą.
+
+      Jei ši politika yra įgalinta arba nesukonfigūruota (numatytasis nustatymas), naudotojas bus paragintas
+      suteikti prieigą fiksuoti garsą, išskyrus sąraše „AudioCaptureAllowedUrls“
+      sukonfigūruotiems URL, kuriems prieiga bus suteikta be paraginimo.
+
+      Kai ši politika išjungta, naudotojas niekada nebus raginamas ir garso
+      fiksavimas bus pasiekiamas tik sąraše „AudioCaptureAllowedUrls“ sukonfigūruotiems URL.
+
+      Ši politika turi įtakos visoms garso įrašų įvestims, ne tik įdiegtam mikrofonui.</translation>
 <translation id="7115494316187648452">Nustatoma, ar „<ph name="PRODUCT_NAME" />“ procesas pradedamas prisijungiant prie OS ir toliau vykdomas, kai uždaromas paskutinis naršyklės langas, leidžiant foninėms programoms ir dabartinei naršymo sesijai išlikti aktyvioms, įskaitant visus sesijos slapukus. Vykdant foninį procesą pateikiama piktograma sistemos juostelėje; jį galima bet kada čia uždaryti.
 
       Jei ši politika nustatyta į „True“, foninis režimas įgalinamas ir naudotojas negali jo valdyti naršyklės nustatymuose.
@@ -2149,20 +2106,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
       Nustatomas plėtinio, kuris turėtų būti naudojamas kaip ekrano užsklanda prisijungimo ekrane, ID. Plėtinys turi būti „AppPack“ (programų paketo), kuris sukonfigūruotas šiam domenui taikant politiką „DeviceAppPack“ (įrenginio programų paketas), dalis.</translation>
 <translation id="7882890448959833986">Nerodyti nepalaikomos OS įspėjimo</translation>
 <translation id="7912255076272890813">Konfigūruoti leidžiamus programų / plėtinių tipus</translation>
-<translation id="7914271217607102111">Vaizdo įrašų fiksavimo leidimas arba draudimas.
-
-      Jei ši politika įgalinta arba nesukonfigūruota (numatytasis nustatymas), naudotojas bus paragintas
-      pasinaudoti vaizdo įrašų fiksavimo prieiga, išskyrus URL, sukonfigūruotus sąraše
-      „Leidžiami vaizdo įrašų fiksavimo URL“, kuriuos jis galės pasiekti be paraginimo.
-      ARC programos galės pasiekti fotoaparatą, jei joms buvo suteiktas
-      leidimas.
-
-      Kai ši politika išjungta, naudotojas niekada nebus raginamas ir vaizdo įrašo
-      fiksavimas bus pasiekiamas tik URL, sukonfigūruotiems sąraše „Leidžiami vaizdo įrašų fiksavimo URL“.
-      ARC programos negalės pasiekti fotoaparato.
-
-      Be ARC programų ši politika turi įtakos visų tipų vaizdo įrašų įvestims,
-      ne tik įdiegtam fotoaparatui.</translation>
 <translation id="7915236031252389808">Čia galite nurodyti tarpinio serverio .pac failo URL.
 
           Ši politika galioja, tik jei skiltyje „Pasirinkti, kaip nurodyti tarpinio serverio nustatymus“ pasirinkote neautomatinius tarpinio serverio nustatymus.
@@ -2575,25 +2518,6 @@ Jei plėtinio nėra sąraše arba sąrašas nenustatytas, kreipiantis į API įv
 <translation id="9112897538922695510">Leidžiama registruoti protokolo doroklių sąrašą. Tai gali būti tik rekomenduojama politika. Ypatybė |protocol| turėtų būti nustatyta į schemą, pvz., „mailto“, o ypatybė |url| turėtų būti nustatyta į schemą apdorojančios programos URL šabloną. Šablone gali būti įtrauktas „%s“, kurį pakeis apdorotas URL.
 
           Pagal politiką užregistruotos protokolo doroklės sujungiamos su naudotojo užregistruotomis doroklėmis ir jas abi galima naudoti. Naudotojas gali nepaisyti pagal politiką įdiegtų protokolo doroklių įdiegdamas naują numatytąją doroklę, bet jis negali pašalinti pagal politiką užregistruotos protokolo doroklės.</translation>
-<translation id="913138516158420759">Leidžia nurodyti „<ph name="PRODUCT_NAME" />“ naudojamą tarpinį serverį ir neleidžia naudotojams keisti tarpinio serverio nustatymų. ARC programos taip pat galės naudoti šį tarpinį serverį.
-
-          
-Jei pasirinksite niekada nenaudoti tarpinio serverio ir visada prisijungti tiesiogiai, bus nepaisoma visų kitų parinkčių.
-
-          Jei pasirinksite naudoti sistemos tapinio serverio nustatymus, bus nepaisoma visų kitų parinkčių.
-
-          Jei pasirinksite automatiškai aptikti tarpinį serverį, bus nepaisoma visų kitų parinkčių.
-
-          Jei pasirinksite naudoti fiksuoto tarpinio serverio režimą, galėsite nurodyti kitas parinktis skiltyse „Tarpinio serverio adresas ar URL“ ir „Kableliais atskirtų tarpinio serverio apėjimo taisyklių sąrašas“. ARC programos HTTP tarpinį serverį naudos tik tuo atveju, jei jam bus nustatytas didžiausias pirmumas.
-
-          Jei pasirinksite naudoti .pac tarpinio serverio scenarijų, turėsite nurodyti scenarijaus URL skiltyje „Tarpinio serverio .pac failo URL“.
-
-          Jei reikia išsamių pavyzdžių, apsilankykite adresu
-          <ph name="PROXY_HELP_URL" />.
-
-          Jei įgalinsite šį nustatymą, „<ph name="PRODUCT_NAME" />“ ir ARC programos nepaisys visų su tarpiniu serveriu susijusių parinkčių, nurodytų komandos eilutėje.
-
-          Jei ši politika nebus nustatyta, naudotojai galės patys pasirinkti tarpinio serverio nustatymus.</translation>
 <translation id="913195841488580904">Blokuoti prieigą prie URL sąrašo</translation>
 <translation id="9135033364005346124">Įgalinti <ph name="CLOUD_PRINT_NAME" /> tarpinį serverį</translation>
 <translation id="9147029539363974059">Siunčiami sistemos žurnalai valdymo serveriui, kad būtų leidžiama
@@ -2614,6 +2538,11 @@ Jei pasirinksite niekada nenaudoti tarpinio serverio ir visada prisijungti tiesi
 <translation id="9187743794267626640">Neleisti montuoti išorinės atminties</translation>
 <translation id="9197740283131855199">Ekrano užtemdymo delsos mastelio keitimo procentas, naudojamas, jei naudotojas atlieka veiksmų po užtemdymo</translation>
 <translation id="9200828125069750521">Vaizdo URL parametrai, kuriuose naudojama POST</translation>
+<translation id="9203071022800375458">Neleisti kurti ekrano kopijų.
+
+      Jei įgalinta, ekrano kopijų negalima kurti naudojant sparčiuosius klavišus ar plėtinio API.
+
+      Jei neleidžiama ar nenurodyta, leidžiama kurti ekrano kopijas.</translation>
 <translation id="9217154963008402249">Tinklo paketų stebėjimo dažnis</translation>
 <translation id="922540222991413931">Konfigūruokite plėtinio, programos ir naudotojo scenarijaus įdiegimo šaltinius.</translation>
 <translation id="924557436754151212">Importuoti išsaugotus slaptažodžius iš numatytosios naršyklės paleidžiant pirmą kartą</translation>

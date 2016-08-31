@@ -183,6 +183,7 @@
 <translation id="1240892293903523606">DOM ઇન્સપેક્ટર</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" />, તમારી સેટિંગ્સને ફરીથી સેટ કરવા માગે છે.</translation>
 <translation id="1243314992276662751">અપલોડ કરો</translation>
+<translation id="1244147615850840081">વાહક</translation>
 <translation id="1244303850296295656">એક્સટેંશન ભૂલ</translation>
 <translation id="1245907074925860695">વપરાશકર્તાને દૂર કરો</translation>
 <translation id="1248269069727746712"><ph name="PRODUCT_NAME" /> નેટવર્કથી કનેક્ટ કરવા માટે તમારા ઉપકરણની સિસ્ટમ પ્રોક્સી સેટિંગ્સનો ઉપયોગ કરી રહ્યાં છે.</translation>
@@ -195,7 +196,6 @@
 <translation id="126710816202626562">અનુવાદ ભાષા:</translation>
 <translation id="1272079795634619415">રોકો</translation>
 <translation id="1272978324304772054">આ વપરાશકર્તા એકાઉન્ટ ઉપકરણની નોંધણી થયેલા ડોમેનમાંનું નથી. જો તમે કોઈ અલગ ડોમેન પર નોંધણી કરવા માગતા હો તો તમારે પ્રથમ ઉપકરણ પુનઃપ્રાપ્તિથી જવાની જરૂર પડશે.</translation>
-<translation id="127353061808977798">ફોન્ટ અને એન્કોડિંગ</translation>
 <translation id="1274997165432133392">કુકીઝ અને અન્ય સાઇટ ડેટા</translation>
 <translation id="1275718070701477396">પસંદ કરેલું</translation>
 <translation id="127668050356036882">તમારી તમામ વિંડોઝ બંધ કરો</translation>
@@ -1314,6 +1314,7 @@
 <translation id="2799223571221894425">ફરીથી લોંચ કરો</translation>
 <translation id="2800537048826676660">આ ભાષાનો જોડણી પરીક્ષણ માટે ઉપયોગ કરો</translation>
 <translation id="2801702994096586034">સર્વર 3</translation>
+<translation id="2803375539583399270">PIN દાખલ કરો</translation>
 <translation id="2803887722080936828"><ph name="BEGIN_H3" />ડીબગિંગ સુવિધાઓ<ph name="END_H3" />
     <ph name="BR" />
     તમે તમારા ઉપકરણ પર કસ્ટમ મોડને ઇન્સ્ટોલ કરવા અને પરીક્ષણ કરવા માટે તમારા Chrome OS ઉપકરણ પર ડીબગિંગ સુવિધાઓ સક્ષમ કરી શકો છો.  આ તમને આની મંજૂરી આપશે:<ph name="BR" />
@@ -2065,6 +2066,7 @@
 <translation id="3743492083222969745">વર્ચ્યુઅલ કીબોર્ડ માટે સેટિંગ્સ પૃષ્ઠમાં હાવભાવથી ટાઇપિંગ કરવાનો વિકલ્પ સક્ષમ/અક્ષમ કરો.</translation>
 <translation id="3744111561329211289">પૃષ્ઠભૂમિ સમન્વયન</translation>
 <translation id="3745016858329272300">સામાન્ય માહિતી</translation>
+<translation id="3748026146096797577">કનેક્ટેડ નથી</translation>
 <translation id="3749289110408117711">ફાઇલનું નામ</translation>
 <translation id="3751427701788899101">કનેક્શન કપાઇ ગયું હતું</translation>
 <translation id="3752439026432317933">બિલિંગ વિગતો દાખલ કરો...</translation>
@@ -2783,6 +2785,7 @@
 <translation id="480990236307250886">હોમ પેજ ખોલો</translation>
 <translation id="4811502511369621968">અમાન્ય ઇમેઇલ સરનામું. કૃપા કરીને તપાસો અને ફરી પ્રયાસ કરો.</translation>
 <translation id="4812632551187706935">કનેક્શન શરૂ કરી શકાયું નથી</translation>
+<translation id="4812684235631257312">હોસ્ટ:</translation>
 <translation id="4813345808229079766">કનેક્શન</translation>
 <translation id="4813512666221746211">નેટવર્ક ભૂલ</translation>
 <translation id="4816492930507672669">પૃષ્ઠ પર ફિટ</translation>
@@ -3160,6 +3163,7 @@
 <translation id="5306802244647481941">ફાઇલો ઍપ્લિકેશન ઝડપી દૃશ્ય</translation>
 <translation id="5308380583665731573">કનેક્ટ કરો</translation>
 <translation id="5311260548612583999">ખાનગી કી ફાઇલ (વૈકલ્પિક):</translation>
+<translation id="5315873049536339193">ઓળખ</translation>
 <translation id="5316588172263354223">કોઇપણ સમયે વૉઇસ શોધ</translation>
 <translation id="5316716239522500219">મિરર મૉનિટર્સ</translation>
 <translation id="5317780077021120954">સાચવો</translation>
@@ -3437,7 +3441,6 @@
 <translation id="5684661240348539843">સંપત્તિ ઓળખકર્તા</translation>
 <translation id="569068482611873351">આયાત કરો...</translation>
 <translation id="56907980372820799">ડેટાને લિંક કરો</translation>
-<translation id="569109051430110155">સ્વતઃ શોધો</translation>
 <translation id="5691596662111998220">ઊફ્ફ, <ph name="FILE_NAME" /> હવે અસ્તિત્વમાં નથી.</translation>
 <translation id="5694501201003948907">$1 આઇટમ્સ ઝિપ કરી રહ્યું છે...</translation>
 <translation id="5697118958262594262">મૂળભૂત રીતે મહત્વપૂર્ણ સામગ્રી શોધો</translation>
@@ -4502,7 +4505,6 @@
 <translation id="7225179976675429563">નેટવર્ક પ્રકાર ખૂટે છે</translation>
 <translation id="7230787553283372882">તમારી ટેક્સ્ટના કદને કસ્ટમાઇઝ કરો</translation>
 <translation id="7231224339346098802">કેટલી કૉપિ છાપવાની છે તે દર્શાવવા માટે સંખ્યાનો ઉપયોગ કરો (1 અથવા વધુ).</translation>
-<translation id="7234907163682057631">મહત્વપૂર્ણ પ્લગઇન સામગ્રી શોધો અને ચલાવો</translation>
 <translation id="7238585580608191973">SHA-256 ફિંગરપ્રિંટ</translation>
 <translation id="7240120331469437312">પ્રમાણપત્ર વિષય વૈકલ્પિક નામ</translation>
 <translation id="7241389281993241388">ક્લાયંટ પ્રમાણપત્ર આયાત કરવા માટે કૃપા કરીને <ph name="TOKEN_NAME" /> પર સાઇન ઇન કરો.</translation>
@@ -4684,6 +4686,7 @@
 <translation id="7484645889979462775">આ સાઇટ માટે ક્યારેય નહીં</translation>
 <translation id="7484964289312150019">બધાં બુકમાર્ક્સને &amp;નવી વિંડોમાં ખોલો</translation>
 <translation id="7485236722522518129">F4</translation>
+<translation id="7487067081878637334">તકનીક</translation>
 <translation id="7487099628810939106">ક્લિક પહેલાં વિલંબ:</translation>
 <translation id="7487969577036436319">કોઈ ઘટકો ઇન્સ્ટોલ કરેલા નથી</translation>
 <translation id="7489605380874780575">યોગ્યતા તપાસો</translation>
@@ -4955,6 +4958,7 @@
 <translation id="7877451762676714207">અજ્ઞાત સર્વર ભૂલ. કૃપા કરી ફરીથી પ્રયત્ન કરો અથવા સર્વર વ્યવસ્થાપકનો સંપર્ક કરો.</translation>
 <translation id="7878999881405658917">Google એ આ ફોન પર એક સૂચના મોકલી છે. નોંધ લો કે બ્લુટૂથ વડે, તમારો ફોન 100 કરતાં વધુ ફીટ દૂરથી તમારા <ph name="DEVICE_TYPE" /> ને અનલૉક રાખી શકે છે. જ્યાં આ કોઈ સમસ્યા હોઈ શકે તેવા કિસ્સાઓમાં, તમે &lt;a&gt;આ સુવિધાને અસ્થાયી રૂપે અક્ષમ કરી&lt;/a&gt; શકો છો.</translation>
 <translation id="7880836220014399562">"<ph name="BUNDLE_NAME" />" આ ઍપ્લિકેશનો અને એક્સટેન્શન્સ ઉમેરે છે:</translation>
+<translation id="7881483672146086348">એકાઉન્ટ જુઓ</translation>
 <translation id="7881969471599061635">ઉપશીર્ષકો અક્ષમ કરો</translation>
 <translation id="7885253890047913815">તાજેતરનાં ગંતવ્યો</translation>
 <translation id="7887192723714330082">જ્યારે સ્ક્રીન ચાલુ અને અનલૉક કરેલી હોય ત્યારે "Ok Google" સાથે જવાબ આપો</translation>
@@ -5345,7 +5349,6 @@
 <translation id="8428213095426709021">સેટિંગ્સ</translation>
 <translation id="8428634594422941299">સમજાઈ ગયું</translation>
 <translation id="8432745813735585631">યુએસ કોલમેક કીબોર્ડ</translation>
-<translation id="8434177709403049435">&amp;એન્કોંડિંગ</translation>
 <translation id="8434480141477525001">NaCl ડિબગ પોર્ટ</translation>
 <translation id="8435334418765210033">યાદ રાખેલા નેટવર્ક્સ</translation>
 <translation id="8437209419043462667">અમેરિકા</translation>
@@ -5736,7 +5739,6 @@
 <translation id="8970203673128054105">કાસ્ટ મોડ સૂચિ જુઓ</translation>
 <translation id="89720367119469899">બહાર નીકળો</translation>
 <translation id="8972513834460200407">ફાયરવોલ Google સર્વર્સથી ડાઉનલોડ્સ અવરોધિત તો નથી કરતું તેની ખાતરી કરવા માટે કૃપા કરીને તમારા નેટવર્ક વ્યવસ્થાપક સાથે તપાસ કરો.</translation>
-<translation id="8974161578568356045">સ્વતઃ શોધો</translation>
 <translation id="8978526688207379569">આ સાઇટે બહુવિધ ફાઇલો આપમેળે ડાઉનલોડ કરી છે.</translation>
 <translation id="8982248110486356984">વપરાશકર્તાઓને સ્વિચ કરો</translation>
 <translation id="8986267729801483565">ડાઉનલોડ સ્થાન:</translation>
@@ -5923,7 +5925,6 @@
 <translation id="923467487918828349">બધું બતાવો</translation>
 <translation id="927151012416335806">તમારા ઉપકરણને <ph name="CHANNEL_NAME" /> ચેનલ પર અપડેટ કરી રહ્યાં છે</translation>
 <translation id="930268624053534560">વિગતવાર ટાઇમસ્ટેમ્પસ</translation>
-<translation id="931068751149008062">ફૉન્ટ પ્રકાર અને એન્કોડિંગ પસંદ કરો</translation>
 <translation id="932327136139879170">હોમ</translation>
 <translation id="932508678520956232">છાપકામ શરૂ કરી શકાયું નથી.</translation>
 <translation id="93393615658292258">ફક્ત પાસવર્ડ</translation>

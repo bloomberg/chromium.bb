@@ -183,6 +183,7 @@
 <translation id="1240892293903523606">Inspector de DOM</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> quiere restablecer la configuración.</translation>
 <translation id="1243314992276662751">Subir</translation>
+<translation id="1244147615850840081">Operador</translation>
 <translation id="1244303850296295656">Error de extensión</translation>
 <translation id="1245907074925860695">Quitar usuario</translation>
 <translation id="1248269069727746712"><ph name="PRODUCT_NAME" /> está utilizando la configuración del proxy del sistema de tu dispositivo para conectarse a la red.</translation>
@@ -195,7 +196,6 @@
 <translation id="126710816202626562">Idioma de traducción:</translation>
 <translation id="1272079795634619415">Interrumpir</translation>
 <translation id="1272978324304772054">Esta cuenta de usuario no pertenece al dominio en el que se ha registrado el dispositivo. Si quieres registrarlo en un dominio diferente, primero debes llevar a cabo el proceso de recuperación de dispositivo.</translation>
-<translation id="127353061808977798">Fuentes y codificación</translation>
 <translation id="1274997165432133392">Cookies y otros datos de sitios</translation>
 <translation id="1275718070701477396">Seleccionado</translation>
 <translation id="127668050356036882">Cerrar todas las ventanas</translation>
@@ -1318,6 +1318,7 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="2799223571221894425">Reiniciar</translation>
 <translation id="2800537048826676660">Utilizar este idioma para el corrector ortográfico</translation>
 <translation id="2801702994096586034">Servidor 3</translation>
+<translation id="2803375539583399270">Introducir PIN</translation>
 <translation id="2803887722080936828"><ph name="BEGIN_H3" />Funciones de depuración<ph name="END_H3" />
     <ph name="BR" />
     Puedes habilitar las funciones de depuración en tu dispositivo Chrome OS para instalar y probar código personalizado en el dispositivo. Esto te permitirá:<ph name="BR" />
@@ -2069,6 +2070,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3743492083222969745">Habilita o inhabilita la opción de escritura gestual en la página de configuración del teclado virtual.</translation>
 <translation id="3744111561329211289">Sincronización en segundo plano</translation>
 <translation id="3745016858329272300">Información general</translation>
+<translation id="3748026146096797577">No conectado</translation>
 <translation id="3749289110408117711">Nombre del archivo</translation>
 <translation id="3751427701788899101">Se ha perdido la conexión</translation>
 <translation id="3752439026432317933">Introducir información de facturación...</translation>
@@ -2786,6 +2788,7 @@ Pulsa cualquier tecla para seguir con la exploración.</translation>
 <translation id="480990236307250886">Abrir página de inicio</translation>
 <translation id="4811502511369621968">La dirección de correo electrónico no es válida. Compruébala y vuelve a intentarlo.</translation>
 <translation id="4812632551187706935">No se ha podido iniciar la conexión</translation>
+<translation id="4812684235631257312">Host</translation>
 <translation id="4813345808229079766">Conexión</translation>
 <translation id="4813512666221746211">Error de red</translation>
 <translation id="4816492930507672669">Ajustar a página</translation>
@@ -3162,6 +3165,7 @@ Pulsa cualquier tecla para seguir con la exploración.</translation>
 <translation id="5306802244647481941">Vista rápida de la aplicación Archivos</translation>
 <translation id="5308380583665731573">Conectar</translation>
 <translation id="5311260548612583999">Clave privada (opcional):</translation>
+<translation id="5315873049536339193">Identidad</translation>
 <translation id="5316588172263354223">Haz búsquedas por voz en cualquier momento</translation>
 <translation id="5316716239522500219">Copiar monitores</translation>
 <translation id="5317780077021120954">Guardar</translation>
@@ -3438,7 +3442,6 @@ Pulsa cualquier tecla para seguir con la exploración.</translation>
 <translation id="5684661240348539843">Identificador de recurso</translation>
 <translation id="569068482611873351">Importar...</translation>
 <translation id="56907980372820799">Vincular datos</translation>
-<translation id="569109051430110155">Detección automática</translation>
 <translation id="5691596662111998220">¡Vaya! <ph name="FILE_NAME" /> ya no existe.</translation>
 <translation id="5694501201003948907">Comprimiendo $1 elementos...</translation>
 <translation id="5697118958262594262">Detectar contenido importante de forma predeterminada</translation>
@@ -4501,7 +4504,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7225179976675429563">Falta el tipo de red.</translation>
 <translation id="7230787553283372882">Personalizar el tamaño del texto</translation>
 <translation id="7231224339346098802">Escribe un número para indicar el número de copias que quieres imprimir (una copia o varias).</translation>
-<translation id="7234907163682057631">Detectar y ejecutar el contenido importante de complementos</translation>
 <translation id="7238585580608191973">Huella digital SHA-256</translation>
 <translation id="7240120331469437312">Nombre alternativo de la entidad receptora del certificado</translation>
 <translation id="7241389281993241388">Inicia sesión en <ph name="TOKEN_NAME" /> para importar el certificado de cliente.</translation>
@@ -4682,6 +4684,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7484645889979462775">Jamás para este sitio</translation>
 <translation id="7484964289312150019">Abrir todos los marcadores en una &amp;ventana nueva</translation>
 <translation id="7485236722522518129">F4</translation>
+<translation id="7487067081878637334">Tecnología</translation>
 <translation id="7487099628810939106">Retraso antes del clic:</translation>
 <translation id="7487969577036436319">No hay componentes instalados</translation>
 <translation id="7489605380874780575">Comprobar elegibilidad</translation>
@@ -4953,6 +4956,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7877451762676714207">Se ha producido un error desconocido en el servidor. Vuelve a intentarlo o ponte en contacto con el administrador del servidor.</translation>
 <translation id="7878999881405658917">Google envió una notificación a este teléfono. Ten en cuenta que tu teléfono puede mantener tu <ph name="DEVICE_TYPE" /> desbloqueado a través de Bluetooth desde una distancia de más de 9 m. En aquellos casos en los que esto pueda suponer un problema, puedes &lt;a&gt;inhabilitar esta función temporalmente&lt;/a&gt;.</translation>
 <translation id="7880836220014399562">"<ph name="BUNDLE_NAME" />" añade estas aplicaciones y extensiones:</translation>
+<translation id="7881483672146086348">Ver cuenta</translation>
 <translation id="7881969471599061635">Inhabilitar subtítulos</translation>
 <translation id="7885253890047913815">Destinos recientes</translation>
 <translation id="7887192723714330082">Responder a "Ok Google" cuando la pantalla esté encendida y desbloqueada</translation>
@@ -5347,7 +5351,6 @@ Calculando el tiempo de carga completa</translation>
 <translation id="8428213095426709021">Ajustes</translation>
 <translation id="8428634594422941299">Entendido</translation>
 <translation id="8432745813735585631">Teclado EE.UU. Colemak</translation>
-<translation id="8434177709403049435">&amp;Codificación</translation>
 <translation id="8434480141477525001">Puerto de depuración NaCl</translation>
 <translation id="8435334418765210033">Redes recordadas</translation>
 <translation id="8437209419043462667">Estados Unidos</translation>
@@ -5738,7 +5741,6 @@ Calculando el tiempo de carga completa</translation>
 <translation id="8970203673128054105">Ver la lista del modo de envío</translation>
 <translation id="89720367119469899">Esc</translation>
 <translation id="8972513834460200407">Consulta al administrador de tu red para asegurarte de que el cortafuegos no está bloqueando las descargas procedentes de los servidores de Google.</translation>
-<translation id="8974161578568356045">Detección automática</translation>
 <translation id="8978526688207379569">Este sitio ha descargado varios archivos automáticamente.</translation>
 <translation id="8982248110486356984">Cambiar usuarios</translation>
 <translation id="8986267729801483565">Ubicación de la descarga:</translation>
@@ -5925,7 +5927,6 @@ Calculando el tiempo de carga completa</translation>
 <translation id="923467487918828349">Mostrar todas</translation>
 <translation id="927151012416335806">Actualizando el canal del dispositivo a <ph name="CHANNEL_NAME" /></translation>
 <translation id="930268624053534560">Marcas de tiempo detalladas</translation>
-<translation id="931068751149008062">Seleccionar tipos de fuente y codificación</translation>
 <translation id="932327136139879170">Página principal</translation>
 <translation id="932508678520956232">No se ha podido iniciar la impresión.</translation>
 <translation id="93393615658292258">Solo contraseña</translation>

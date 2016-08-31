@@ -477,6 +477,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="2623014935069176671">Vent på første aktivitet fra brugeren</translation>
 <translation id="262740370354162807">Aktiver indsendelse af dokumenter til <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Aktivér talefeedback</translation>
+<translation id="2646290749315461919">Giver dig mulighed for at angive, om websites skal have tilladelse til at spore brugernes fysiske placering. Sporing af brugernes fysiske placering kan tillades som standard, nægtes som standard, eller brugeren kan blive spurgt, hver gang et website anmoder om den fysiske placering. Hvis denne politik ikke angives, anvendes "AskGeolocation", og brugeren vil kunne ændre den.</translation>
 <translation id="2650049181907741121">Handling, der skal udføres, når brugeren slår skærmen ned</translation>
 <translation id="2655233147335439767">Angiver webadressen for den søgemaskine, der bruges ved standardsøgninger. Webadressen skal indeholde strengen "<ph name="SEARCH_TERM_MARKER" />", som på forespørgselstidspunktet erstattes af søgeord, når brugeren foretager en søgning.
 
@@ -487,12 +488,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="267596348720209223">Angiver tegnkodninger, der understøttes af søgemaskinen. Kodninger er tegntabelnavne såsom UTF-8, GB2312, og ISO-8859-1. De afprøves i den angivne rækkefølge. Denne politik er valgfri. Hvis den ikke er angivet, anvendes standarden, UTF-8. Denne politik respekteres kun, hvis politikken "DefaultSearchProviderEnabled" er aktiveret.</translation>
 <translation id="2682225790874070339">Deaktiverer Drev i appen Filer i <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Aktivér proxyfunktionen for datakomprimering</translation>
-<translation id="2692168654831544772">Deaktiverer funktionen til at tage skærmbilleder.
-
-      Hvis funktionen er aktiveret, kan du ikke tage skærmbilleder ved hjælp af tastaturgenveje eller udvidelses-API'er.
-      Derudover er skærmbilleder deaktiveret i ARC-apps.
-
-      Hvis funktionen er deaktiveret eller ikke er angivet, kan du tage skærmbilleder.</translation>
 <translation id="2731627323327011390">Deaktiver brug af certifikater i <ph name="PRODUCT_OS_NAME" /> til ARC-apps</translation>
 <translation id="2742843273354638707">Skjul appen Chrome Webshop og linket i sidefoden på siden Ny fane og applisten for <ph name="PRODUCT_OS_NAME" />.
 
@@ -545,22 +540,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
          Alle elementerne på denne liste er en slags udvidelse til matchmønstret (se https://developer.chrome.com/extensions/match_patterns). Brugerne vil være i stand til nemt at installere elementer fra enhver webadresse, der matcher et element på denne liste. Både placeringen af *.crx-filen og siden, hvor downloaden er startet fra (dvs. henvisningswebadressen), skal tillades af disse mønstre.
 
          ExtensionInstallBlacklist har forrang i forhold til denne politik. Dvs. at en sortlistet udvidelse ikke vil blive installeret, selvom det sker fra et website på denne liste.</translation>
-<translation id="2813740161943223811">Denne politik er udfaset. Brug ProxyMode i stedet.
-
-          Giver dig mulighed for at angive den proxyserver, der anvendes af <ph name="PRODUCT_NAME" />, og forhindrer brugerne i at ændre proxyindstillingerne. ARC-apps vil også kunne anvende denne proxyserver.
-
-          Hvis du vælger aldrig at bruge en proxyserver og altid at oprette direkte forbindelse, ignoreres alle andre valgmuligheder.
-
-          Hvis du vælger at bruge systemets proxyindstillinger eller registrere proxyserveren automatisk, ignoreres alle andre valgmuligheder.
-
-          Hvis du vælger manuelle proxyindstillinger, kan du angive yderligere valgmuligheder i "Adresse eller webadresse til proxyserveren", "Webadresse til en proxyfil af typen .pac" og "Kommasepareret liste over regler for omgåelse af proxy". Det er kun HTTP-proxyserveren med den højeste prioritet, der er tilgængelig for ARC-apps.
-
-          Få detaljerede eksempler på:
-          <ph name="PROXY_HELP_URL" />.
-
-          Hvis du aktiverer denne indstilling, ignorerer <ph name="PRODUCT_NAME" /> alle proxyrelaterede valgmuligheder, der angives på kommandolinjen.
-
-          Hvis denne politik ikke angives, kan brugerne selv vælge proxyindstillingerne.</translation>
 <translation id="2818551149761607847">Konfigurer brugerens avatarbillede.
 
       Denne politik giver dig mulighed for at konfigurere det avatarbillede, der repræsenterer brugeren på loginskærmen. Politikken konfigureres ved at angive den webadresse, hvor <ph name="PRODUCT_OS_NAME" /> kan downloade avatarbilledet, og et kryptografisk hash, som bruges til at bekræfte overførslens integritet. Billedet skal være i JPEG-format, og dets størrelse må ikke overstige 512 KB. Webadressen skal være tilgængelig uden nogen form for godkendelse.
@@ -703,18 +682,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
           </translation>
 <translation id="3205825995289802549">Maksimer det første browservindue ved første kørsel</translation>
 <translation id="3206731874112238027">Deaktiver Vis udskrift (udfaset)</translation>
-<translation id="3208854390109736596">Giver dig mulighed for at angive den proxyserver, der anvendes af <ph name="PRODUCT_NAME" />, og forhindrer brugerne i at ændre proxyindstillingerne. ARC-apps vil også kunne anvende denne proxyserver.
-
-      Hvis du vælger aldrig at bruge en proxyserver og altid at oprette direkte forbindelse, ignoreres alle andre valgmuligheder.
-
-      Hvis du vælger at registrere proxyserveren automatisk, ignoreres alle andre valgmuligheder.
-
-      Få detaljerede eksempler på:
-      <ph name="PROXY_HELP_URL" />.
-
-      Hvis du aktiverer denne indstilling, ignorerer <ph name="PRODUCT_NAME" /> og ARC-apps alle proxyrelaterede valgmuligheder, der angives på kommandolinjen.
-
-      Hvis denne politik ikke angives, kan brugerne selv vælge proxyindstillingerne.</translation>
 <translation id="3213821784736959823">Styrer, om den indbyggede DNS-klient bruges i <ph name="PRODUCT_NAME" />.
 
       Hvis denne politik er angivet som Sand, anvendes den indbyggede DNS-klient, hvis den er tilgængelig.
@@ -755,11 +722,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="3322771899429619102">Giver dig mulighed for at oprette en liste med webadressemønstre, der angiver websites, som har tilladelse til at benytte nøglegenerering. Hvis et webadressemønster findes i "KeygenBlockedForUrls", tilsidesættes disse undtagelser.
 
           Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken "DefaultKeygenSetting", hvis den er angivet, eller brugerens personlige konfiguration.</translation>
-<translation id="3337150554416948435">Giver dig mulighed for at angive, om websites skal have tilladelse til at spore brugernes fysiske placering. Sporing af brugernes fysiske placering kan tillades eller nægtes som standard, eller brugeren kan blive spurgt, hver gang et website anmoder om den fysiske placering.
-
-          Hvis denne politik er angivet til "BlockGeolocation", tillades placeringsdeling ikke for ARC-apps.
-
-          Hvis denne politik ikke angives, anvendes "AskGeolocation", og brugeren vil kunne ændre den.</translation>
 <translation id="3381968327636295719">Brug værtsbrowseren som standard</translation>
 <translation id="3417418267404583991">Hvis denne politik er angivet til sand eller ikke er konfigureret, aktiverer <ph name="PRODUCT_OS_NAME" /> gæstelogins. Gæstelogins er anonyme brugersessioner, der ikke kræver en adgangskode,
 
@@ -778,14 +740,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
           Hvis denne politik er indstillet til Sand, begynder strømstyringsforsinkelser og begrænsing af sessionslængden først at køre, efter den første brugeraktivitet er blevet registreret i en session.
 
           Hvis denne politik er indstillet til Falsk eller ikke er indstillet, begynder strømstyringsforsinkelser og begræsning af sessionslængden straks at køre ved sessionstart.</translation>
-<translation id="3469657928310999477"><ph name="PRODUCT_NAME" /> omgår alle proxyservere for den liste over hosts, der vises her. ARC-apps vil kunne bruge denne liste som en liste over regler for omgåelse.
-
-          Denne politik træder kun i kraft, hvis du har valgt manuelle proxyindstillinger i "Vælg, hvordan indstillinger for proxyservere skal angives".
-
-          Denne politik bør ikke angives, hvis du har valgt en anden tilstand til angivelse af proxypolitikker.
-
-          Få flere detaljerede eksempler på:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="3478024346823118645">Slet alle brugerdata, når der logges ud</translation>
 <translation id="348495353354674884">Aktivér virtuelt tastatur</translation>
 <translation id="3496296378755072552">Adgangskodemanager</translation>
@@ -914,16 +868,6 @@ Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME" /> tillade b
 
       Hvis denne politik ikke angives, vil SPDY være tilgængelig.</translation>
 <translation id="3891357445869647828">Aktiver JavaScript</translation>
-<translation id="3898060089412156345">Tillad eller afvis lydoptagelse.
-
-      Hvis denne funktion er aktiveret eller ikke er konfigureret (standard), vil brugeren blive bedt om at give
-      adgang til lydoptagelse, undtagen for webadresser, der er konfigureret på listen 
-      AudioCaptureAllowedUrls, som får adgang, uden at brugeren skal give tilladelse.
-
-      Hvis denne politik er deaktiveret, vil brugeren aldrig blive bedt om at give tilladelse, og lydoptagelse
-      vil kun være mulig for webadresser, der er konfigureret i AudioCaptureAllowedUrls. Ved ARC-apps er mikrofonen slået fra permanent.
-
-      Denne politik påvirker alle typer af lydinput, og ikke kun den indbyggede mikrofon.</translation>
 <translation id="3907986150060929099">Indstil de anbefalede landestandarder for en offentlig session</translation>
 <translation id="391531815696899618">Deaktiverer Google Drev-synkronisering i appen Filer i <ph name="PRODUCT_OS_NAME" />, når den er angivet til Sand. I dette tilfælde uploades der ingen data til Google Drev.
 
@@ -1050,6 +994,7 @@ Hvis denne politik ikke er indstillet, eller hvis listen er tom eller ikke stemm
 Mens selve politikken understøttes på ovenstående platforme, kan den funktion, som politikken aktiverer, være tilgængelig på færre platforme. Det er ikke alle funktioner på webplatforme, der kan genaktiveres. Det er kun de funktioner, der er angivet på listen nedenfor, som kan genaktiveres i en begrænset periode, hvis længde afhænger af funktionen. Det overordnede format for strengtagget er [DeprecatedFeatureName]_EffectiveUntil[yyyymmdd]. Du kan se hensigten med ændringerne af funktionen Webplatform på https://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Aktivér låsen, hvis enheden bliver inaktiv eller suspenderes</translation>
+<translation id="4445684791305970001">Deaktiverer udviklerværktøjerne og JavaScript-konsollen. Hvis du aktiverer denne indstilling, kan man ikke få adgang til udviklerværktøjerne, og webstedselementer kan ikke inspiceres. Alle tastaturgenveje og menuer eller genvejsmenuer, der åbner udviklerværktøjerne eller JavaScript-konsollen, vil blive deaktiveret. Hvis du deaktiverer denne indstilling eller ikke angiver den, tillades brugen af udviklerværktøjer og JavaScript-konsollen.</translation>
 <translation id="4449545651113180484">Roter skærmen 270 grader med uret</translation>
 <translation id="4467952432486360968">Bloker cookies fra tredjeparter</translation>
 <translation id="4474167089968829729">Aktivér lagring af adgangskoder i adgangskodeadministratoren</translation>
@@ -1164,6 +1109,16 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
           Værdien skal være en matrix af JSON-ordbøger i strengformat. Alle ordbøgerne skal have formatet { "pattern": "$URL_PATTERN", "filter" : $FILTER }, hvor $URL_PATTERN er et mønster for indholdsangivelse. $FILTER begrænser, hvilke klientcertifikater browseren automatisk vælger fra. Uafhængigt af filteret vælges der kun certifikater, der stemmer overens med serverens certifikatanmodning. Hvis $FILTER har formatet { "ISSUER": { "CN": "$ISSUER_CN" } }, vælges der desuden kun klientcertifikater, der er udstedt af et certifikat med CommonName $ISSUER_CN. Hvis $FILTER er den tomme ordbog {}, begrænses valget af klientcertifikater ikke yderligere.
 
           Hvis denne politik ikke indstilles, vil valget blive foretaget automatisk på alle websites.</translation>
+<translation id="4980301635509504364">Tillad eller afvis videooptagelse.
+
+      Hvis denne funktion er aktiveret eller ikke er konfigureret (standard), vil brugeren blive bedt om give
+      tilladelse til videooptagelse, undtagen for webadresser, der er konfigureret på listen
+      VideoCaptureAllowedUrls, som vil være tilladt automatisk.
+
+      Når denne politik er deaktiveret, vil brugeren aldrig blive bedt om at tillade den, og videooptagelse
+      vil kun være muligt for webadresser, der er konfigureret i VideoCaptureAllowedUrls.
+
+      Denne politik påvirker alle typer af videoinput, og ikke kun det indbyggede kamera.</translation>
 <translation id="4980635395568992380">Datatype:</translation>
 <translation id="4983201894483989687">Tillad, at der køres forældede plugins</translation>
 <translation id="4988291787868618635">Påkrævet handling for inaktivitetsforsinkelse</translation>
@@ -1171,11 +1126,6 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 <translation id="5052081091120171147">Denne politik tvinger import af browserhistorikken fra den aktuelle standardbrowser, hvis den er aktiveret. Hvis denne politik er aktiveret, påvirker den også dialogboksen for import. Hvis den er deaktiveret, importeres der ikke nogen browserdata. Hvis den ikke er angivet, kan brugeren blive spurgt, om der skal importeres, ellers sker importen automatisk.</translation>
 <translation id="5056708224511062314">Luppen er deaktiveret</translation>
 <translation id="5067143124345820993">Login til brugerens hvidliste</translation>
-<translation id="510186355068252378">Deaktiverer datasynkronisering i <ph name="PRODUCT_NAME" /> ved hjælp af Google-hostede synkroniseringstjenester og forhindrer brugerne i at ændre denne indstilling.
-
-      Hvis du aktiverer denne indstilling, kan brugerne ikke ændre eller tilsidesætte indstillingen i <ph name="PRODUCT_NAME" />.
-
-      Hvis denne politik ikke er angivet, kan brugeren vælge, om Google Synkroniser skal anvendes eller ej.</translation>
 <translation id="5105313908130842249">Skærmlåsforsinkelse, når batteriet bruges</translation>
 <translation id="5111573778467334951">Angiv den handling, der skal igangsættes ved inaktiv forsinkelse på batteristrøm.
 
@@ -1287,13 +1237,6 @@ Hvis denne politik ikke er indstillet, er standardfrekvensen 3 minutter. Minimum
       Hvis dette er angivet, føjes der en forespørgselsparameter med navnet "restrict" til den webadresse, der bruges til at hente variationbasistallet. Værdien for parameteren er den værdi, der er angivet i denne politik.
 
       Hvis dette ikke er angivet, ændres variationbasistallet ikke.</translation>
-<translation id="5563853101694018649">Deaktiverer Udviklerværktøjer og JavaScript-konsollen.
-
-      Hvis du aktiverer denne indstilling, kan Udviklerværktøjer ikke tilgås, og elementer på websites kan ikke længere inspiceres. Alle tastaturgenveje og alle angivelser i menuer eller genvejsmenuer, der bruges til at åbne Udviklerværktøjer eller JavaScript-konsollen, deaktiveres.
-
-      Hvis denne indstilling deaktiveres eller ikke angives, har brugerne mulighed for at bruge Udviklerværktøjer og JavaScript-konsollen.
-
-      I forbindelse med <ph name="PRODUCT_OS_NAME" />-enheder, der understøtter Android-apps, kontrollerer denne politik også adgang til Indstillinger for udviklere i Android. Hvis denne politik angives som sand, kan brugerne ikke få adgang til Indstillinger for udviklere. Hvis du angiver politikken som falsk eller ikke angiver den, kan brugerne få adgang til Indstillinger for udviklere ved at trykke syv gange på build-nummeret i appen Android Indstillinger.</translation>
 <translation id="556941986578702361">Administrer, hvornår <ph name="PRODUCT_OS_NAME" />-hylden skjules automatisk.
 
       Hvis denne politik er angivet som "AlwaysAutoHideShelf'", skjules hylden altid automatisk.
@@ -1731,6 +1674,16 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
       Hvis du aktiverer eller deaktiverer denne indstilling, kan brugerne ikke ændre eller tilsidesætte den.
 
       Hvis politikken ikke angives, kan brugeren vælge, om der skal angives en adgangskode for at låse enheden op.</translation>
+<translation id="7109916642577279530">Tillad og afvis lydoptagelse.
+
+      Hvis denne funktion er aktiveret eller ikke er konfigureret (standard), vil brugeren blive bedt om at give
+      adgang til lydoptagelse, undtagen for webadresser, der er konfigureret på listen 
+      AudioCaptureAllowedUrls, som får adgang, uden at brugeren skal give tilladelse.
+
+      Hvis politikken er deaktiveret, vil brugeren aldrig blive bedt om at give tilladelse, og lydoptagelse
+      vil kun være muligt for webadresser, der er konfigureret i AudioCaptureAllowedUrls.
+
+      Denne politik påvirker alle typer af lydinput, og ikke kun den indbyggede mikrofon.</translation>
 <translation id="7115494316187648452">Afgør, om en <ph name="PRODUCT_NAME" />-proces startes ved OS-login og bliver ved med at køre, når det sidste browservindue lukkes, så baggrundsapps og den aktuelle browsersession forbliver aktiv, inklusive eventuelle sessionscookies. Baggrundsprocessen viser et ikon i systembakken og kan altid lukkes derfra.
 
       Hvis denne politik er angivet til Sand, er baggrundstilstanden aktiveret og kan ikke styres af brugeren i browserindstillingerne.
@@ -2010,20 +1963,6 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
       Bestemmer id'et for den udvidelse, der skal bruges som pauseskærm på loginskærmen. Udvidelsen skal være en del af den AppPack, der er konfigureret til dette domæne via politikken DeviceAppPack.</translation>
 <translation id="7882890448959833986">Ignorer advarslen om manglende understøttelse af OS</translation>
 <translation id="7912255076272890813">Konfigurer tilladte app-/udvidelsestyper</translation>
-<translation id="7914271217607102111">Tillad eller afvis videooptagelse.
-
-      Hvis denne er aktiveret eller ikke er konfigureret (standard), bliver
-      brugeren bedt om at give tilladelse til videooptagelse, medmindre der er tale
-      om webadresser, der er konfigureret på listen VideoCaptureAllowedUrls, som
-      automatisk gives adgang. ARC-apps kan få adgang til kameraet, hvis de har
-      fået tilladelse til det.
-
-      Når denne politik er deaktiveret, bliver brugeren aldrig bedt om at tillade
-      den, og videooptagelse er kun mulig for webadresser, der er konfigureret i
-      VideoCaptureAllowedUrls. ARC-apps kan ikke få adgang til kameraet.
-
-      Uden for ARC-apps påvirker denne politik alle typer videoinput og ikke
-      kun det indbyggede kamera.</translation>
 <translation id="7915236031252389808">Du kan angive en webadresse til en proxyfil af typen .pac her.
 
           Denne politik fungerer kun, hvis du har valgt manuelle proxyindstillinger i "Vælg, hvordan indstillinger for proxyservere skal angives".
@@ -2401,24 +2340,6 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="9112897538922695510">Giver dig mulighed for at registrere en liste over protokolhandlere. Dette kan kun være en anbefalet politik. Egenskaben |protocol| skal indstilles til ordningen, f.eks. "mailto", og egenskaben |url| bør indstilles til webadressemønsteret for den applikation, der handler ordningen. Dette mønster kan omfatte et "%s", som, hvis det findes, erstattes med den handlede webadresse.
 
           De protokolhandlere, der er registreret via politikker, flettes med dem, der er registreret af brugeren, og begge er tilgængelige og kan anvendes. Brugeren kan tilsidesætte protokolhandlere, der er installeret via en politik, ved at installere en ny standardhandler, men kan ikke fjerne en protokolhandler, der er registreret via en politik.</translation>
-<translation id="913138516158420759">Giver dig mulighed for at angive den proxyserver, der anvendes af <ph name="PRODUCT_NAME" />, og forhindrer brugerne i at ændre proxyindstillingerne. ARC-apps vil også kunne anvende denne proxyserver.
-
-          Hvis du vælger aldrig at bruge en proxyserver og altid at oprette direkte forbindelse, ignoreres alle andre valgmuligheder.
-
-          Hvis du vælger at bruge systemets proxyindstillinger, ignoreres alle andre valgmuligheder.
-
-          Hvis du vælger at registrere proxyserveren automatisk, ignoreres alle andre valgmuligheder.
-
-          Hvis du vælger tilstanden for en fast proxyserver, kan du angive yderligere valgmuligheder i "Adresse eller webadresse til proxyserveren" og "Kommasepareret liste over regler for omgåelse af proxy". Det er kun HTTP-proxyserveren med den højeste prioritet, der er tilgængelig for ARC-apps.
-
-          Hvis du vælger at bruge et proxyscript af typen .pac, skal du angive webadressen til scriptet i "Webadresse til en proxyfil af typen .pac".
-
-          Få detaljerede eksempler på:
-          <ph name="PROXY_HELP_URL" />.
-
-          Hvis du aktiverer denne indstilling, ignorerer <ph name="PRODUCT_NAME" /> og ARC-apps alle proxyrelaterede valgmuligheder, der angives på kommandolinjen.
-
-          Hvis denne politik ikke angives, kan brugerne selv vælge proxyindstillingerne.</translation>
 <translation id="913195841488580904">Bloker adgang til en liste over webadresser</translation>
 <translation id="9135033364005346124">Aktiver <ph name="CLOUD_PRINT_NAME" />-proxyen</translation>
 <translation id="9147029539363974059">Send systemlogfiler til administrationsserveren for at tillade,
@@ -2432,6 +2353,11 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="9187743794267626640">Deaktiver isætning af eksternt lager</translation>
 <translation id="9197740283131855199">Den procentdel, som nedtoningsforsinkelsen på skærmen skaleres, hvis brugeren bliver aktiv efter nedtoningen</translation>
 <translation id="9200828125069750521">Parametre for billedets webadresse, som anvender POST</translation>
+<translation id="9203071022800375458">Deaktiverer skærmbilleder.
+
+      Hvis funktionen er aktiveret, kan der ikke tages skærmbilleder ved hjælp af tastaturgenveje eller udvidelses-API'er.
+
+      Hvis funktionen er deaktiveret eller ikke specificeret, kan der tages skærmbilleder.</translation>
 <translation id="9217154963008402249">Hyppighed for netværkspakker til overvågning</translation>
 <translation id="922540222991413931">Konfigurer udvidelser, apps og installationskilder til brugerscripts</translation>
 <translation id="924557436754151212">Importer gemte adgangskoder fra standardbrowser på første visning</translation>

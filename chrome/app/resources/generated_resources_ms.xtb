@@ -183,6 +183,7 @@
 <translation id="1240892293903523606">Pemeriksa DOM</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> mahu menetapkan semula tetapan anda.</translation>
 <translation id="1243314992276662751">Muat naik</translation>
+<translation id="1244147615850840081">Pembawa</translation>
 <translation id="1244303850296295656">Ralat sambungan</translation>
 <translation id="1245907074925860695">Alih Keluar Pengguna</translation>
 <translation id="1248269069727746712"><ph name="PRODUCT_NAME" /> menggunakan tetapan proksi sistem peranti anda untuk bersambung ke rangkaian.</translation>
@@ -195,7 +196,6 @@
 <translation id="126710816202626562">Bahasa terjemahan:</translation>
 <translation id="1272079795634619415">Berhenti</translation>
 <translation id="1272978324304772054">Akaun pengguna ini tidak tergolong dalam domain tempat peranti anda didaftarkan. Jika anda ingin mendaftar untuk domain yang berbeza, anda perlu melalui pemulihan peranti terlebih dahulu.</translation>
-<translation id="127353061808977798">Fon dan Pengekodan</translation>
 <translation id="1274997165432133392">Kuki dan data tapak yang lain</translation>
 <translation id="1275718070701477396">Dipilih</translation>
 <translation id="127668050356036882">Tutup semua tetingkap anda</translation>
@@ -1318,6 +1318,7 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="2799223571221894425">Lancarkan semula</translation>
 <translation id="2800537048826676660">Gunakan bahasa ini untuk memeriksa ejaan</translation>
 <translation id="2801702994096586034">Pelayan 3</translation>
+<translation id="2803375539583399270">Masukkan PIN</translation>
 <translation id="2803887722080936828"><ph name="BEGIN_H3" />Ciri Penyahpepijatan<ph name="END_H3" />
     <ph name="BR" />
     Anda boleh mendayakan ciri penyahpepijatan pada Peranti OS Chrome bagi memasang dan menguji kod peribadi pada peranti anda.  Ini akan membolehkan anda untuk:<ph name="BR" />
@@ -2069,6 +2070,7 @@ Daripada <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3743492083222969745">Dayakan/Lumpuhkan pilihan taipan gerak isyarat dalam halaman tetapan untuk papan kekunci maya.</translation>
 <translation id="3744111561329211289">Penyegerakan latar belakang</translation>
 <translation id="3745016858329272300">Maklumat Am</translation>
+<translation id="3748026146096797577">Tidak Disambung</translation>
 <translation id="3749289110408117711">Nama fail</translation>
 <translation id="3751427701788899101">Sambungan telah terputus</translation>
 <translation id="3752439026432317933">Masukkan butiran pengebilan...</translation>
@@ -2787,6 +2789,7 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="480990236307250886">Buka halaman utama</translation>
 <translation id="4811502511369621968">Alamat e-mel tidak sah. Sila semak dan cuba lagi.</translation>
 <translation id="4812632551187706935">Tidak dapat memulakan sambungan</translation>
+<translation id="4812684235631257312">Hos</translation>
 <translation id="4813345808229079766">Sambungan</translation>
 <translation id="4813512666221746211">Ralat rangkaian</translation>
 <translation id="4816492930507672669">Muat halaman</translation>
@@ -3166,6 +3169,7 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="5306802244647481941">Paparan pantas apl fail</translation>
 <translation id="5308380583665731573">Sambung</translation>
 <translation id="5311260548612583999">Fail kunci persendirian (pilihan):</translation>
+<translation id="5315873049536339193">Identiti</translation>
 <translation id="5316588172263354223">Carian suara pada bila-bila masa</translation>
 <translation id="5316716239522500219">Cerminkan monitor</translation>
 <translation id="5317780077021120954">Simpan</translation>
@@ -3442,7 +3446,6 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="5684661240348539843">Pengecam Aset</translation>
 <translation id="569068482611873351">Import...</translation>
 <translation id="56907980372820799">Pautkan data</translation>
-<translation id="569109051430110155">Auto kesan</translation>
 <translation id="5691596662111998220">Op, <ph name="FILE_NAME" /> tidak lagi wujud.</translation>
 <translation id="5694501201003948907">Mengezip $1 item...</translation>
 <translation id="5697118958262594262">Kesan kandungan penting secara lalai</translation>
@@ -4506,7 +4509,6 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="7225179976675429563">Jenis rangkaian tiada</translation>
 <translation id="7230787553283372882">Sesuaikan saiz teks anda</translation>
 <translation id="7231224339346098802">Gunakan nombor untuk menunjukkan bilangan salinan untuk dicetak (1 atau lebih).</translation>
-<translation id="7234907163682057631">Kesan dan jalankan kandungan pemalam penting</translation>
 <translation id="7238585580608191973">Cap jari SHA-256</translation>
 <translation id="7240120331469437312">Nama Alternatif Subjek Sijil</translation>
 <translation id="7241389281993241388">Sila log masuk ke <ph name="TOKEN_NAME" /> untuk mengimport sijil klien.</translation>
@@ -4958,6 +4960,7 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="7877451762676714207">Ralat pelayan tidak diketahui. Sila cuba lagi atau hubungi pentadbir pelayan.</translation>
 <translation id="7878999881405658917">Google telah menghantar pemberitahuan ke telefon ini. Harap maklum bahawa dengan Bluetooth, telefon anda boleh terus membuka kunci <ph name="DEVICE_TYPE" /> dari jarak lebih 100 kaki. Sekiranya perkara ini boleh mendatangkan masalah, anda boleh &lt;a&gt;melumpuhkan ciri ini buat sementara waktu&lt;/a&gt;.</translation>
 <translation id="7880836220014399562">"<ph name="BUNDLE_NAME" />" menambahkan apl dan sambungan ini:</translation>
+<translation id="7881483672146086348">Paparkan Akaun</translation>
 <translation id="7881969471599061635">Lumpuhkan sari kata</translation>
 <translation id="7885253890047913815">Destinasi Baru-baru Ini</translation>
 <translation id="7887192723714330082">Beri respon kepada "Ok Google" apabila skrin dihidupkan dan dikunci</translation>
@@ -5352,7 +5355,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8428213095426709021">Tetapan</translation>
 <translation id="8428634594422941299">OK</translation>
 <translation id="8432745813735585631">Papan kekunci AS Colemak</translation>
-<translation id="8434177709403049435">&amp;Mengekod</translation>
 <translation id="8434480141477525001">Port Nyahpepijat NaCl</translation>
 <translation id="8435334418765210033">Rangkaian yang diingati</translation>
 <translation id="8437209419043462667">AS</translation>
@@ -5743,7 +5745,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8970203673128054105">Lihat senarai mod hantar</translation>
 <translation id="89720367119469899">Lepas</translation>
 <translation id="8972513834460200407">Sila semak dengan pentadbir rangkaian anda bagi memastikan bahawa tembok api tidak menyekat muat turun dari pelayan Google.</translation>
-<translation id="8974161578568356045">Auto Kesan</translation>
 <translation id="8978526688207379569">Tapak ini memuat turun berbilang fail secara automatik.</translation>
 <translation id="8982248110486356984">Tukar pengguna</translation>
 <translation id="8986267729801483565">Lokasi muat turun:</translation>
@@ -5929,7 +5930,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="923467487918828349">Paparkan Semua</translation>
 <translation id="927151012416335806">Mengemas kini peranti anda kepada saluran <ph name="CHANNEL_NAME" /></translation>
 <translation id="930268624053534560">Cap Masa Terperinci</translation>
-<translation id="931068751149008062">Pilih jenis fon dan pengekodan</translation>
 <translation id="932327136139879170">Laman Utama</translation>
 <translation id="932508678520956232">Tidak dapat memulakan percetakan.</translation>
 <translation id="93393615658292258">Kata laluan sahaja</translation>

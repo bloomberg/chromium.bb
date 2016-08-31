@@ -183,6 +183,7 @@
 <translation id="1240892293903523606">Inspector DOM</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> pretende repor as suas definições.</translation>
 <translation id="1243314992276662751">Carregar</translation>
+<translation id="1244147615850840081">Operador</translation>
 <translation id="1244303850296295656">Erro de extensão</translation>
 <translation id="1245907074925860695">Remover utilizador</translation>
 <translation id="1248269069727746712">O <ph name="PRODUCT_NAME" /> está a utilizar as definições de proxy do sistema do dispositivo para se ligar à rede.</translation>
@@ -195,7 +196,6 @@
 <translation id="126710816202626562">Idioma de tradução:</translation>
 <translation id="1272079795634619415">Parar</translation>
 <translation id="1272978324304772054">Esta conta de utilizador não pertence ao domínio no qual o dispositivo está inscrito. Se pretender inscrever-se num outro domínio, necessita de efetuar a recuperação do dispositivo em primeiro lugar.</translation>
-<translation id="127353061808977798">Tipos de letra e codificação</translation>
 <translation id="1274997165432133392">Cookies e outros dados do site</translation>
 <translation id="1275718070701477396">Selecionado</translation>
 <translation id="127668050356036882">Fechar todas as janelas</translation>
@@ -1318,6 +1318,7 @@ Acho que este site não deveria estar bloqueado.</translation>
 <translation id="2799223571221894425">Reiniciar</translation>
 <translation id="2800537048826676660">Utilizar este idioma para a verificação ortográfica</translation>
 <translation id="2801702994096586034">Servidor 3</translation>
+<translation id="2803375539583399270">Introduzir PIN</translation>
 <translation id="2803887722080936828"><ph name="BEGIN_H3" />Funcionalidades de depuração<ph name="END_H3" />
     <ph name="BR" />
     Pode ativar as funcionalidade de depuração no seu dispositivo SO Chrome para instalar e testar código personalizado no seu dispositivo. Isto permite:<ph name="BR" />
@@ -2070,6 +2071,7 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3743492083222969745">Ativar/desativar a opção Escrita com gestos na página de definições para o teclado virtual.</translation>
 <translation id="3744111561329211289">Sincronização em segundo plano</translation>
 <translation id="3745016858329272300">Informações gerais</translation>
+<translation id="3748026146096797577">Desligado</translation>
 <translation id="3749289110408117711">Nome do ficheiro</translation>
 <translation id="3751427701788899101">Perda de ligação</translation>
 <translation id="3752439026432317933">Introduzir detalhes de faturação...</translation>
@@ -2788,6 +2790,7 @@ Prima qualquer tecla para continuar a explorar.</translation>
 <translation id="480990236307250886">Abrir a página de início</translation>
 <translation id="4811502511369621968">Endereço de email inválido. Verifique e tente novamente.</translation>
 <translation id="4812632551187706935">Não foi possível inicializar a ligação</translation>
+<translation id="4812684235631257312">Anfitrião</translation>
 <translation id="4813345808229079766">Ligação</translation>
 <translation id="4813512666221746211">Erro de rede</translation>
 <translation id="4816492930507672669">Ajustar à página</translation>
@@ -3167,6 +3170,7 @@ Prima qualquer tecla para continuar a explorar.</translation>
 <translation id="5306802244647481941">Vista rápida da aplicação Ficheiros</translation>
 <translation id="5308380583665731573">Ligar</translation>
 <translation id="5311260548612583999">Ficheiro chave privada (opcional):</translation>
+<translation id="5315873049536339193">Identidade</translation>
 <translation id="5316588172263354223">Pesquisa por voz a qualquer altura</translation>
 <translation id="5316716239522500219">Espelhar monitores</translation>
 <translation id="5317780077021120954">Guardar</translation>
@@ -3444,7 +3448,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="5684661240348539843">Identificador de recursos</translation>
 <translation id="569068482611873351">Importar...</translation>
 <translation id="56907980372820799">Associar dados</translation>
-<translation id="569109051430110155">Detectar automaticamente</translation>
 <translation id="5691596662111998220">Ups, <ph name="FILE_NAME" /> já não existe.</translation>
 <translation id="5694501201003948907">A criar zip de $1 itens...</translation>
 <translation id="5697118958262594262">Detetar conteúdo importante por predefinição</translation>
@@ -4507,7 +4510,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7225179976675429563">Tipo de rede em falta</translation>
 <translation id="7230787553283372882">Personalizar o tamanho do texto</translation>
 <translation id="7231224339346098802">Utilize um número para indicar as cópias a imprimir (1 ou mais).</translation>
-<translation id="7234907163682057631">Detetar e executar conteúdo de plug-ins importantes</translation>
 <translation id="7238585580608191973">Impressão digital SHA-256</translation>
 <translation id="7240120331469437312">Nome alternativo do requerente do certificado</translation>
 <translation id="7241389281993241388">Inicie sessão no <ph name="TOKEN_NAME" /> para importar o certificado de cliente.</translation>
@@ -4689,6 +4691,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7484645889979462775">Nunca para este site</translation>
 <translation id="7484964289312150019">Abrir todos os marcadores numa &amp;nova janela</translation>
 <translation id="7485236722522518129">F4</translation>
+<translation id="7487067081878637334">Tecnologia</translation>
 <translation id="7487099628810939106">Atraso antes do clique:</translation>
 <translation id="7487969577036436319">Não existem componentes instalados</translation>
 <translation id="7489605380874780575">Verificar elegibilidade</translation>
@@ -4960,6 +4963,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7877451762676714207">Erro de servidor desconhecido. Tente novamente ou contacte o administrador do servidor.</translation>
 <translation id="7878999881405658917">O Google enviou uma notificação para este telemóvel. Tenha em atenção que com a tecnologia Bluetooth, o telemóvel pode manter o <ph name="DEVICE_TYPE" /> desbloqueado a partir de uma distância superior a 30 metros. Nos casos em que tal possa representar um problema, é possível &lt;a&gt;desativar temporariamente esta funcionalidade&lt;/a&gt;.</translation>
 <translation id="7880836220014399562">"<ph name="BUNDLE_NAME" />" adiciona as seguintes aplicações e extensões:</translation>
+<translation id="7881483672146086348">Ver Conta</translation>
 <translation id="7881969471599061635">Desativar legendas</translation>
 <translation id="7885253890047913815">Destinos recentes</translation>
 <translation id="7887192723714330082">Responder a "Ok Google" quando o ecrã está ligado e desbloqueado</translation>
@@ -5352,7 +5356,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8428213095426709021">Definições</translation>
 <translation id="8428634594422941299">Compreendi</translation>
 <translation id="8432745813735585631">Teclado americano (Colemak)</translation>
-<translation id="8434177709403049435">&amp;Codificação</translation>
 <translation id="8434480141477525001">Porta de depuração de NaCl</translation>
 <translation id="8435334418765210033">Redes memorizadas</translation>
 <translation id="8437209419043462667">EUA</translation>
@@ -5743,7 +5746,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8970203673128054105">Ver lista do modo de transmissão</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Consulte o seu administrador de rede para ter a certeza de que a firewall não está a bloquear as transferências dos servidores da Google.</translation>
-<translation id="8974161578568356045">Detectar Automaticamente</translation>
 <translation id="8978526688207379569">Este site transferiu vários ficheiros automaticamente.</translation>
 <translation id="8982248110486356984">Mudar utilizadores</translation>
 <translation id="8986267729801483565">Localização da transferência:</translation>
@@ -5929,7 +5931,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="923467487918828349">Mostrar todas</translation>
 <translation id="927151012416335806">A atualizar o dispositivo para o canal <ph name="CHANNEL_NAME" />…</translation>
 <translation id="930268624053534560">Data/hora em detalhe</translation>
-<translation id="931068751149008062">Escolher a codificação e os tipos de letra</translation>
 <translation id="932327136139879170">Página inicial</translation>
 <translation id="932508678520956232">Não foi possível iniciar a impressão.</translation>
 <translation id="93393615658292258">Apenas palavra-passe</translation>

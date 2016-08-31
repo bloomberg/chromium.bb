@@ -183,6 +183,7 @@
 <translation id="1240892293903523606">‏مراقب DOM</translation>
 <translation id="1242633766021457174">يريد <ph name="THIRD_PARTY_TOOL_NAME" /> إعادة تعيين إعداداتك.</translation>
 <translation id="1243314992276662751">تحميل</translation>
+<translation id="1244147615850840081">شركة اتصالات</translation>
 <translation id="1244303850296295656">خطأ في الإضافة</translation>
 <translation id="1245907074925860695">إزالة المستخدم</translation>
 <translation id="1248269069727746712">يستخدم <ph name="PRODUCT_NAME" /> إعدادات وكيل النظام في جهازك للاتصال بالشبكة.</translation>
@@ -195,7 +196,6 @@
 <translation id="126710816202626562">لغة الترجمة:</translation>
 <translation id="1272079795634619415">إيقاف</translation>
 <translation id="1272978324304772054">لا ينتمي حساب المستخدم هذا إلى النطاق المسجَّل به هذا الجهاز. إذا أردت التسجيل بنطاق مختلف، فيلزمك إجراء استرداد الجهاز أولاً.</translation>
-<translation id="127353061808977798">الخطوط والتشفير</translation>
 <translation id="1274997165432133392">ملفات تعريف الارتباط وبيانات الموقع الأخرى</translation>
 <translation id="1275718070701477396">محدد</translation>
 <translation id="127668050356036882">إغلاق كل النوافذ</translation>
@@ -1317,6 +1317,7 @@
 <translation id="2799223571221894425">إعادة تشغيل</translation>
 <translation id="2800537048826676660">استخدام هذه اللغة للتدقيق الإملائي</translation>
 <translation id="2801702994096586034">Server 3</translation>
+<translation id="2803375539583399270">أدخل رقم التعريف الشخصي</translation>
 <translation id="2803887722080936828">‏<ph name="BEGIN_H3" />ميزات التصحيح<ph name="END_H3" />
     <ph name="BR" />
     يُمكنك تمكين ميزات التصحيح في جهاز يعمل بنظام التشغيل Chrome لتثبيت واختبار الرمز المخصص في الجهاز لديك..  هذا سيسمح لك بـ:<ph name="BR" />
@@ -2066,6 +2067,7 @@
 <translation id="3743492083222969745">تمكين/تعطيل خيار الكتابة بالإشارة في صفحة الإعدادات للوحة المفاتيح الظاهرية.</translation>
 <translation id="3744111561329211289">مزامنة الخلفية</translation>
 <translation id="3745016858329272300">معلومات عامة</translation>
+<translation id="3748026146096797577">غير متصل</translation>
 <translation id="3749289110408117711">اسم الملف</translation>
 <translation id="3751427701788899101">تم فقد الاتصال</translation>
 <translation id="3752439026432317933">أدخل تفاصيل الفوترة...</translation>
@@ -2781,6 +2783,7 @@
 <translation id="480990236307250886">فتح الصفحة الرئيسية</translation>
 <translation id="4811502511369621968">عنوان بريد إلكتروني غير صالح. الرجاء التحقق وإعادة المحاولة.</translation>
 <translation id="4812632551187706935">تعذَّر تهيئة الاتصال</translation>
+<translation id="4812684235631257312">المضيف</translation>
 <translation id="4813345808229079766">اتصال</translation>
 <translation id="4813512666221746211">حدث خطأ في الشبكة</translation>
 <translation id="4816492930507672669">احتواء ضمن الصفحة</translation>
@@ -3159,6 +3162,7 @@
 <translation id="5306802244647481941">عرض سريع لتطبيق الملفات</translation>
 <translation id="5308380583665731573">اتصال</translation>
 <translation id="5311260548612583999">ملف مفتاح خاص (اختياري):</translation>
+<translation id="5315873049536339193">الهوية</translation>
 <translation id="5316588172263354223">البحث الصوتي في أي وقت</translation>
 <translation id="5316716239522500219">نسخ الشاشات</translation>
 <translation id="5317780077021120954">حفظ</translation>
@@ -3435,7 +3439,6 @@
 <translation id="5684661240348539843">معرّف الأصول</translation>
 <translation id="569068482611873351">استيراد...</translation>
 <translation id="56907980372820799">ربط البيانات</translation>
-<translation id="569109051430110155">الكشف التلقائيّ</translation>
 <translation id="5691596662111998220">عذرًا، لم يعد <ph name="FILE_NAME" /> متوفرًا.</translation>
 <translation id="5694501201003948907">جارٍ ضغط $1 من العناصر...</translation>
 <translation id="5697118958262594262">كشف محتوى مهم افتراضيًا</translation>
@@ -4502,7 +4505,6 @@
 <translation id="7225179976675429563">نوع الشبكة مفقود</translation>
 <translation id="7230787553283372882">تخصيص حجم النَّص</translation>
 <translation id="7231224339346098802">استخدم رقمًا للإشارة إلى عدد النُسخ المطلوب طباعتها (1 أو أكثر).</translation>
-<translation id="7234907163682057631">اكتشاف محتوى مكون إضافي مهم وتشغيله</translation>
 <translation id="7238585580608191973">‏بصمة أصبع SHA-256</translation>
 <translation id="7240120331469437312">الاسم البديل لصاحب الشهادة</translation>
 <translation id="7241389281993241388">الرجاء تسجيل الدخول إلى <ph name="TOKEN_NAME" /> لاستيراد شهادة العميل.</translation>
@@ -4684,6 +4686,7 @@
 <translation id="7484645889979462775">عدم حفظ كلمة المرور لهذا الموقع</translation>
 <translation id="7484964289312150019">فتح كل الإشارات المرجعية في &amp;نافذة جديدة</translation>
 <translation id="7485236722522518129">F4</translation>
+<translation id="7487067081878637334">التقنية</translation>
 <translation id="7487099628810939106">التأخير قبل النقر:</translation>
 <translation id="7487969577036436319">لم يتم تثبيت أي مكونات</translation>
 <translation id="7489605380874780575">تحقق من الأهلية</translation>
@@ -4955,6 +4958,7 @@
 <translation id="7877451762676714207">خطأ غير معروف في الخادم. الرجاء إعادة المحاولة أو الاتصال بمشرف الخادم.</translation>
 <translation id="7878999881405658917">‏لقد أرسلت Google إشعارًا إلى هذا الهاتف. تجدر الإشارة إلى أنه يمكن لهاتفك باستخدام البلوتوث أن يحتفظ بإلغاء قفل <ph name="DEVICE_TYPE" /> من على بُعد أكثر من 30 قدمًا. إذا أحدث ذلك مشكلة لك، يمكنك &lt;a&gt; تعطيل هذه الميزة مؤقتًا&lt;/a&gt;.</translation>
 <translation id="7880836220014399562">يضيف "<ph name="BUNDLE_NAME" />" هذه التطبيقات والإضافات:</translation>
+<translation id="7881483672146086348">عرض حساب</translation>
 <translation id="7881969471599061635">تعطيل الترجمات المصاحبة</translation>
 <translation id="7885253890047913815">أحدث الوجهات</translation>
 <translation id="7887192723714330082">‏الرد على "Ok Google" عندما تكون الشاشة مُشغلة وملغاة القفل</translation>
@@ -5348,7 +5352,6 @@
 <translation id="8428213095426709021">إعدادات</translation>
 <translation id="8428634594422941299">حسنًا</translation>
 <translation id="8432745813735585631">‏لوحة المفاتيح الأمريكية Colemak</translation>
-<translation id="8434177709403049435">&amp;التشفير</translation>
 <translation id="8434480141477525001">‏منفذ تصحيح أخطاء NaCl</translation>
 <translation id="8435334418765210033">الشبكات المسجّلة</translation>
 <translation id="8437209419043462667">الأمريكية</translation>
@@ -5739,7 +5742,6 @@
 <translation id="8970203673128054105">عرض قائمة وضع الإرسال</translation>
 <translation id="89720367119469899">خروج</translation>
 <translation id="8972513834460200407">‏الرجاء التحقق مع مشرف الشبكة للتأكد من عدم حظر الجدار الناري للتنزيلات من خوادم Google.</translation>
-<translation id="8974161578568356045">اكتشاف تلقائي</translation>
 <translation id="8978526688207379569">نزَّل هذا الموقع عدة ملفات تلقائيًا.</translation>
 <translation id="8982248110486356984">التبديل بين المستخدمين</translation>
 <translation id="8986267729801483565">حفظ التزيلات في المجلد:</translation>
@@ -5926,7 +5928,6 @@
 <translation id="923467487918828349">إظهار الكل</translation>
 <translation id="927151012416335806">تحديث جهازك إلى قناة <ph name="CHANNEL_NAME" /></translation>
 <translation id="930268624053534560">الطوابع الزمنية المفصلة</translation>
-<translation id="931068751149008062">اختيار أنواع الخط والتشفير</translation>
 <translation id="932327136139879170">الصفحة الرئيسية</translation>
 <translation id="932508678520956232">تعذر بدء الطباعة.</translation>
 <translation id="93393615658292258">كلمة المرور فقط</translation>

@@ -509,6 +509,9 @@ Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" es
 <translation id="2623014935069176671">Attendre l'activité utilisateur initiale</translation>
 <translation id="262740370354162807">Activer l'envoi de documents à <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Activer les commentaires audio</translation>
+<translation id="2646290749315461919">Permet de définir si les sites Web sont autorisés à suivre la position géographique des utilisateurs. Ce suivi peut être autorisé par défaut, refusée par défaut, ou l'utilisateur peut recevoir un message chaque fois qu'un site Web demande sa position géographique. 
+
+Si cette règle n'est pas configurée, le paramètre "AskGeolocation" est utilisé et l'utilisateur est en mesure de le modifier.</translation>
 <translation id="2650049181907741121">Action à effectuer lorsque l'utilisateur ferme le couvercle</translation>
 <translation id="2655233147335439767">Spécifie l'URL du moteur de recherche utilisé lorsque vous faites une recherche par défaut. Cette URL doit contenir la chaîne <ph name="SEARCH_TERM_MARKER" />, qui sera remplacée au moment de la requête par les termes que l'utilisateur recherche.
 
@@ -523,12 +526,6 @@ Cette règle est facultative. Si elle n'est pas configurée, la valeur par défa
 Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" est activée.</translation>
 <translation id="2682225790874070339">Désactiver Drive dans l'application Fichiers de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Activer la fonctionnalité de proxy pour la compression de données</translation>
-<translation id="2692168654831544772">Désactive l'option de capture d'écran.
-
-      Si cette règle est activée, l'utilisateur ne peut pas effectuer de captures d'écran à l'aide de raccourcis clavier ou d'API d'extension.
-      En outre, l'option de capture d'écran est désactivée pour les applications ARC.
-
-      Si cette règle est désactivée ou n'est pas spécifiée, l'utilisateur est autorisé à effectuer des captures d'écran.</translation>
 <translation id="2731627323327011390">Désactiver l'utilisation de certificats <ph name="PRODUCT_OS_NAME" /> pour les applications ARC</translation>
 <translation id="2742843273354638707">Masque l'application Chrome Web Store et le lien de bas de page sur la page Nouvel onglet et dans le lanceur d'applications de <ph name="PRODUCT_OS_NAME" />.
 
@@ -581,22 +578,6 @@ Si cette règle est définie sur "False", les utilisateurs ne pourront pas jouer
           Chaque élément de cette liste est un schéma de correspondance de style extension (voir https://developer.chrome.com/extensions/match_patterns). Les utilisateurs pourront facilement installer des éléments depuis n'importe quelle URL correspondant à un élément de cette liste. L'emplacement du fichier *.crx et la page de téléchargement (page de provenance) doivent tous deux être autorisés par ces schémas.
 
           ExtensionInstallBlacklist reste prioritaire face à cette règle : une extension figurant dans la liste noire ne sera pas installée, même si elle provient d'un site mentionné dans cette liste.</translation>
-<translation id="2813740161943223811">Cette règle a été abandonnée. Utilisez plutôt le mode proxy.
-
-          Permet de préciser le serveur proxy utilisé par <ph name="PRODUCT_NAME" /> et d'empêcher les utilisateurs de modifier les paramètres de proxy. Les applications ARC peuvent également utiliser ce serveur proxy.
-
-          Si vous choisissez de ne jamais utiliser de serveur proxy et de toujours vous connecter directement, toutes les autres options sont ignorées.
-
-          Si vous optez pour les paramètres de proxy du système ou la détection automatique du serveur proxy, toutes les autres options sont ignorées.
-
-          Si vous sélectionnez les paramètres de proxy manuels, vous pouvez indiquer des options supplémentaires dans "Adresse ou URL du serveur proxy", "URL d'un fichier .pac de proxy" et "Liste de règles de contournement de proxy séparées par des virgules". Seul le serveur proxy HTTP ayant la priorité la plus élevée est disponible pour les applications ARC.
-
-          Pour consulter des exemples détaillés, rendez-vous sur :
-          <ph name="PROXY_HELP_URL" />
-
-          Si vous activez ce paramètre, <ph name="PRODUCT_NAME" /> ignore toutes les options liées au proxy indiquées à partir de la ligne de commande.
-
-          Si cette règle n'est pas configurée, les utilisateurs peuvent choisir eux-mêmes leurs paramètres de proxy.</translation>
 <translation id="2818551149761607847">Configurer l'image d'avatar d'un utilisateur
 
       Cette règle vous permet de configurer l'image d'avatar représentant l'utilisateur sur l'écran de connexion. Pour définir cette règle, indiquez l'URL à laquelle <ph name="PRODUCT_OS_NAME" /> peut télécharger l'image d'avatar, ainsi qu'un hachage chiffré, utilisé pour vérifier l'intégrité du téléchargement. L'image doit être au format JPEG et ne doit pas dépasser 512 Ko. L'URL doit être accessible sans authentification.
@@ -741,18 +722,6 @@ Si cette règle n'est pas configurée, l'utilisateur peut installer n'importe qu
           </translation>
 <translation id="3205825995289802549">Agrandir la première fenêtre du navigateur à la première exécution</translation>
 <translation id="3206731874112238027">Désactiver l'aperçu avant impression (abandonné)</translation>
-<translation id="3208854390109736596">Permet de préciser le serveur proxy utilisé par <ph name="PRODUCT_NAME" /> et d'empêcher les utilisateurs de modifier les paramètres de proxy. Les applications ARC peuvent également utiliser ce serveur proxy.
-
-      Si vous choisissez de ne jamais utiliser de serveur proxy et de toujours vous connecter directement, toutes les autres options sont ignorées.
-
-      Si vous optez pour la détection automatique du serveur proxy, toutes les autres options sont ignorées.
-
-      Pour consulter des exemples détaillés, rendez-vous sur :
-      <ph name="PROXY_HELP_URL" />
-
-      Si vous activez ce paramètre, <ph name="PRODUCT_NAME" /> et les applications ARC ignorent toutes les options liées au proxy indiquées à partir de la ligne de commande.
-
-      Si ces règles ne sont pas configurées, les utilisateurs peuvent choisir eux-mêmes leurs paramètres de proxy.</translation>
 <translation id="3213821784736959823">Définit si le client DNS intégré est utilisé dans <ph name="PRODUCT_NAME" />.
 
       Si cette règle est définie sur "True", le client DNS intégré est utilisé, si disponible.
@@ -797,11 +766,6 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 <translation id="3322771899429619102">Permet de définir une liste de formats d'URL qui déterminent les sites autorisés à utiliser la génération de clé. Si la règle "KeygenBlockedForUrls" est appliquée à un format d'URL, elle a priorité sur ces exceptions.
 
           Si cette règle n'est pas définie, la valeur globale par défaut est utilisée pour tous les sites, et déterminée à partir de la règle "DefaultKeygenSetting" si celle-ci est définie, ou à partir de la configuration personnelle de l'utilisateur.</translation>
-<translation id="3337150554416948435">Vous permet de définir si les sites Web sont autorisés à suivre la position géographique des utilisateurs. Ce suivi peut être autorisé par défaut, refusé par défaut, ou l'utilisateur peut recevoir un message chaque fois qu'un site Web demande sa position géographique.
-
-          Si cette règle n'est pas définie sur "BlockGeolocation", le partage de position n'est pas autorisé pour les applications ARC.
-
-          Si cette règle n'est pas configurée, le paramètre "AskGeolocation" prévaut, et l'utilisateur peut le modifier.</translation>
 <translation id="3381968327636295719">Utiliser le navigateur hôte par défaut</translation>
 <translation id="3417418267404583991">Si cette règle est définie sur "true" ou si elle n'est pas configurée, <ph name="PRODUCT_OS_NAME" /> autorise les connexions en mode invité. Les connexions en mode invité correspondent à des sessions utilisateur anonymes et ne nécessitent pas de mot de passe.
 
@@ -820,14 +784,6 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
           Si la règle est définie sur "True", les délais liés à la gestion de l'alimentation et la limite relative à la durée de la session ne sont activés que lorsque l'utilisateur a effectué une première activité au cours d'une session.
 
           Si la règle est définie sur "False" ou si elle n'a pas été configurée, les délais liés à la gestion de l'alimentation et la limite relative à la durée de la session sont activés dès que la session débute.</translation>
-<translation id="3469657928310999477">Permet de définir une liste d'hôtes pour lesquels <ph name="PRODUCT_NAME" /> contournera le serveur proxy. Les applications ARC peuvent également utiliser cette liste comme liste de règles de contournement.
-
-          Cette règle n'est applicable que si vous avez sélectionné les paramètres de proxy manuels pour l'option "Sélectionner le mode de spécification des paramètres de serveur proxy".
-
-          Ne configurez pas cette règle si vous avez sélectionné un autre mode de spécification des règles de proxy.
-
-          Pour consulter des exemples détaillés, rendez-vous sur :
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="3478024346823118645">Effacer les données utilisateur à la déconnexion</translation>
 <translation id="348495353354674884">Activer le clavier virtuel</translation>
 <translation id="3496296378755072552">Gestionnaire de mots de passe</translation>
@@ -958,17 +914,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
       Si cette règle n'est pas définie, le protocole SPDY est disponible.</translation>
 <translation id="3891357445869647828">Activer JavaScript</translation>
-<translation id="3898060089412156345">Permet d'autoriser ou d'interdire la capture audio.
-
-      Si cette règle est activée ou n'est pas configurée (par défaut), l'utilisateur
-      est invité à accepter l'accès à la capture audio, excepté pour les URL
-      configurées dans la liste AudioCaptureAllowedUrls qui bénéficient d'un accès instantané.
-
-      Lorsque cette règle est désactivée, aucune invite ne s'affiche
-      et la capture audio n'est disponible qu'avec les URL de la liste AudioCaptureAllowedUrls.
-      Pour les applications ARC, le son du micro est coupé de façon permanente.
-
-      Cette règle a une incidence sur tous les types d'entrée audio, et pas uniquement sur le micro intégré.</translation>
 <translation id="3907986150060929099">Définir les paramètres régionaux recommandés pour une session publique</translation>
 <translation id="391531815696899618">Désactive la synchronisation de Google Drive dans l'application Fichiers de <ph name="PRODUCT_OS_NAME" /> lorsque ce paramètre est défini sur "True". Dans ce cas, aucune donnée n'est importée dans Google Drive.
 
@@ -1106,6 +1051,11 @@ Cette option est habituellement désactivée dans le cadre de la protection cont
       Bien que la règle elle-même soit compatible avec les plates-formes citées, la fonctionnalité qu'elle active peut n'être disponible que sur un nombre plus restreint de plates-formes. Les fonctionnalités abandonnées de la plate-forme en ligne ne peuvent pas toutes être réactivées. Seules celles qui sont énumérées ci-dessous peuvent l'être pendant une durée limitée, qui varie selon la fonctionnalité. Le format général de la balise de chaîne est [FonctionnalitéAbandonnée]_EffectiveUntil[aaaammjj]. Pour information, vous pouvez découvrir les raisons pour lesquelles des motivations ont été apportées aux fonctionnalités des plates-formes en ligne en consultant la page https://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Activer le verrouillage lorsque l'appareil est inactif ou en veille</translation>
+<translation id="4445684791305970001">Désactive les outils de développement et la console JavaScript. 
+
+Si vous activez ce paramètre, les outils de développement ne sont plus accessibles et les éléments du site Web ne peuvent plus être  inspectés. Tous les raccourcis clavier et toutes les entrées de menu ou de menu contextuel permettant d'ouvrir les outils de développement ou la console JavaScript sont désactivés. 
+
+Si vous désactivez cette option ou si vous ne la configurez pas, l'utilisateur peut utiliser les outils de développement et la console JavaScript.</translation>
 <translation id="4449545651113180484">Faire pivoter l'écran vers la droite de 270 degrés</translation>
 <translation id="4467952432486360968">Bloquer les cookies tiers</translation>
 <translation id="4474167089968829729">Activer l'enregistrement des mots de passe dans le gestionnaire de mots de passe</translation>
@@ -1230,6 +1180,16 @@ Si vous désactivez ce paramètre, il est impossible d'ajouter, de supprimer ou 
           La valeur doit être un ensemble de dictionnaires convertis au format JSON à l'aide de la méthode JSON.stringify(). Chaque dictionnaire doit avoir le format { "pattern": "$URL_PATTERN", "filter": $FILTER }, où $URL_PATTERN correspond à un schéma de paramètre de contenu. La valeur $FILTER limite les certificats client à partir desquels le navigateur effectue une sélection automatique. Indépendamment du filtre, seuls les certificats correspondant à la demande de certificats du serveur sont sélectionnés. De plus, si $FILTER a le format { "ISSUER": { "CN": "$ISSUER_CN" } }, seuls les certificats client émis par un certificat dont la valeur CommonName est $ISSUER_CN sont sélectionnés. Si $FILTER correspond à la valeur {} vide du dictionnaire, la sélection de certificats client ne fait pas l'objet de restrictions supplémentaires.
 
           Si cette règle n'est pas définie, la sélection automatique n'est effectuée pour aucun site.</translation>
+<translation id="4980301635509504364">Permet d'autoriser ou d'interdire la capture vidéo.
+
+      Si cette règle est activée ou n'est pas configurée (par défaut), l'utilisateur est invité à accepter
+      l'accès à la capture vidéo, excepté pour les URL configurées dans la
+      liste VideoCaptureAllowedUrls qui bénéficient d'un accès instantané.
+
+      Lorsque cette règle est désactivée, l'utilisateur ne reçoit pas de message d'invitation,
+       et la capture vidéo n'est disponible que pour les URL configurées dans VideoCaptureAllowedUrls.
+
+      Cette règle a une incidence sur tous les types d'entrée vidéo, et pas uniquement sur la caméra intégrée.</translation>
 <translation id="4980635395568992380">Type de données :</translation>
 <translation id="4983201894483989687">Autoriser l'exécution de plug-ins obsolètes</translation>
 <translation id="4988291787868618635">Action à effectuer au terme du délai d'inactivité</translation>
@@ -1241,11 +1201,6 @@ Si elle est désactivée, aucun historique de navigation n'est importé.
 Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'importation, ou celle-ci peut se faire automatiquement.</translation>
 <translation id="5056708224511062314">Loupe désactivée</translation>
 <translation id="5067143124345820993">Liste des utilisateurs autorisés à se connecter</translation>
-<translation id="510186355068252378">Désactive la synchronisation des données dans <ph name="PRODUCT_NAME" /> en utilisant les services de synchronisation hébergés par Google et empêche les utilisateurs de modifier ce paramètre. 
-
-Si vous activez ce paramètre, les utilisateurs ne peuvent pas le modifier, ni le remplacer dans <ph name="PRODUCT_NAME" />. 
-
-Si cette règle n'est pas configurée, Google Sync est disponible et l'utilisateur décide de l'utiliser ou non.</translation>
 <translation id="5105313908130842249">Délai de verrouillage de l'écran (batterie)</translation>
 <translation id="5111573778467334951">Définit l'action à effectuer lorsque le délai d'inactivité est atteint en cas de fonctionnement de l'appareil sur batterie
 
@@ -1385,13 +1340,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Si cette règle est spécifiée, un paramètre de requête "restrict" est ajouté à l'URL utilisée pour récupérer la valeur de départ des variantes. La valeur de ce paramètre correspond à la valeur définie dans cette règle.
 
       Si elle n'est pas spécifiée, l'URL utilisée pour récupérer la valeur de départ des variantes n'est pas modifiée.</translation>
-<translation id="5563853101694018649">Permet de désactiver les outils pour les développeurs et la console JavaScript.
-
-      Si vous activez ce paramètre, les outils pour les développeurs ne sont pas accessibles, et les éléments du site Web ne peuvent plus être inspectés. Les éventuels raccourcis clavier et les entrées de menu ou de menu contextuel permettant d'accéder aux outils pour les développeurs ou à la console JavaScript sont désactivés.
-
-      Si vous désactivez cette option ou si vous la laissez telle quelle, les outils pour les développeurs et la console JavaScript pourront être utilisés.
-
-      Pour les appareils <ph name="PRODUCT_OS_NAME" /> capables d'exécuter des applications Android, cette règle contrôle également l'accès aux options pour les développeurs Android. Si vous définissez cette règle sur "True", les utilisateurs ne pourront pas accéder aux options pour les développeurs. Si vous la définissez sur "False" ou si vous ne la modifiez pas, les utilisateurs pourront accéder aux options pour les développeurs en appuyant plusieurs fois sur le numéro de version dans l'application des paramètres Android.</translation>
 <translation id="556941986578702361">Définit si l'étagère <ph name="PRODUCT_OS_NAME" /> doit être masquée automatiquement ou non.
 
       Si cette règle est définie sur "AlwaysAutoHideShelf", l'étagère est toujours masquée automatiquement.
@@ -1869,6 +1817,16 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
       Dans les deux cas, les utilisateurs ne peuvent ni modifier ni remplacer ce paramètre.
 
       Si la règle n'est pas définie, l'utilisateur peut choisir d'être invité ou non à saisir le mot de passe pour déverrouiller l'appareil.</translation>
+<translation id="7109916642577279530">Permet d'autoriser ou d'interdire la capture audio.
+
+      Si cette règle est activée ou n'est pas configurée (par défaut), l'utilisateur est invité à accepter
+      l'accès à la capture audio, excepté pour les URL configurées dans la
+      liste AudioCaptureAllowedUrls qui bénéficient d'un accès instantané.
+
+      Lorsque cette règle est désactivée, l'utilisateur ne reçoit pas de message d'invitation,
+      et la capture audio n'est disponible que pour les URL configurées dans AudioCaptureAllowedUrls.
+
+      Cette règle a une incidence sur tous les types d'entrée audio, et pas uniquement sur le micro intégré.</translation>
 <translation id="7115494316187648452">Détermine si un processus de <ph name="PRODUCT_NAME" /> doit être démarré lors de la connexion au système d'exploitation et s'il doit rester ouvert jusqu'à la fermeture de la dernière fenêtre du navigateur, permettant ainsi aux applications exécutées en arrière-plan et à la session de navigation en cours de rester actives, y compris tout cookie de session. Le processus exécuté en arrière-plan affiche une icône dans la barre d'état système et peut être fermé à tout moment à partir de cet emplacement.
 
       Si cette règle est définie sur "True", le mode arrière-plan est activé et ne peut pas être contrôlé par l'utilisateur dans les paramètres du navigateur.
@@ -2159,20 +2117,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale est utilis�
        Détermine l'identifiant de l'extension à utiliser comme économiseur d'écran sur l'écran de connexion. L'extension doit faire partie de l'AppPack configuré pour ce domaine via la règle DeviceAppPack.</translation>
 <translation id="7882890448959833986">Supprimer l'avertissement relatif au système d'exploitation non compatible</translation>
 <translation id="7912255076272890813">Configurer les types d'applications ou d'extensions autorisés</translation>
-<translation id="7914271217607102111">Permet d'autoriser ou d'interdire la capture vidéo.
-
-      Si cette règle est activée ou n'est pas configurée (par défaut), l'utilisateur
-      est invité à accepter l'accès à la capture vidéo, excepté pour les URL
-      configurées dans la liste VideoCaptureAllowedUrls qui bénéficient d'un accès
-      instantané. Les applications ARC ont accès à la caméra si elles y ont
-      été autorisées.
-
-      Si cette règle est désactivée, aucune invite ne s'affiche et la capture vidéo
-      n'est disponible qu'avec les URL de la liste VideoCaptureAllowedUrls.
-      Les applications ARC n'ont pas accès à la caméra.
-
-      En dehors des applications ARC, cette règle concerne tous les types
-      d'entrées vidéo et pas seulement la caméra intégrée.</translation>
 <translation id="7915236031252389808">Vous pouvez indiquer ici une URL pointant vers un fichier .pac de proxy.
 
           Cette règle n'est applicable que si vous avez sélectionné les paramètres de proxy manuels pour l'option "Sélectionner le mode de spécification des paramètres de serveur proxy".
@@ -2585,24 +2529,6 @@ Si vous désactivez ce paramètre ou s'il n'est pas défini, le nom canonique du
 <translation id="9112897538922695510">Permettre d'inscrire une liste de gestionnaires de protocoles. Cette règle ne peut être qu'une recommandation. La propriété |protocol| doit être définie sur un schéma tel que "mailto", et la propriété |url| doit être définie sur le format d'URL de l'application qui gère le schéma. Le modèle peut inclure une variable "%s", qui sera remplacée par l'URL traitée le cas échéant.
 
           Les gestionnaires de protocoles inscrits via la règle sont fusionnés avec ceux inscrits par l'utilisateur, et tous sont disponibles. L'utilisateur peut remplacer les gestionnaires de protocoles installés via la règle en installant un nouveau gestionnaire par défaut, mais il ne peut pas supprimer un gestionnaire de protocoles inscrit via la règle.</translation>
-<translation id="913138516158420759">Permet de préciser le serveur proxy utilisé par <ph name="PRODUCT_NAME" /> et d'empêcher les utilisateurs de modifier les paramètres de proxy. Les applications ARC peuvent également utiliser ce serveur proxy.
-
-          Si vous choisissez de ne jamais utiliser de serveur proxy et de toujours vous connecter directement, toutes les autres options sont ignorées.
-
-          Si vous décidez d'utiliser les paramètres de proxy du système, toutes les autres options sont ignorées.
-
-          Si vous optez pour la détection automatique du serveur proxy, toutes les autres options sont ignorées.
-
-          Si vous choisissez le mode serveur proxy déterminé, vous pouvez définir des options supplémentaires dans "Adresse ou URL du serveur proxy" et "Liste de règles de contournement de proxy séparées par des virgules". Seul le serveur proxy HTTP ayant la priorité la plus élevée est disponible pour les applications ARC.
-
-          Si vous décidez d'utiliser un script de proxy .pac, vous devez indiquer l'URL du script dans "URL d'un fichier .pac de proxy".
-
-          Pour consulter des exemples détaillés, rendez-vous sur :
-          <ph name="PROXY_HELP_URL" />.
-
-          Si vous activez ce paramètre, <ph name="PRODUCT_NAME" /> et les applications ARC ignorent toutes les options liées au proxy indiquées à partir de la ligne de commande.
-
-          Si cette règle n'est pas configurée, les utilisateurs peuvent choisir eux-mêmes leurs paramètres de proxy.</translation>
 <translation id="913195841488580904">Bloquer l'accès à une liste d'URL</translation>
 <translation id="9135033364005346124">Activer le proxy <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="9147029539363974059">Envoyer des journaux système vers le serveur de gestion pour permettre
@@ -2623,6 +2549,11 @@ Si cette règle n'est pas configurée, ce paramètre est activé et l'utilisateu
 <translation id="9187743794267626640">Désactiver le montage de périphériques de stockage externe</translation>
 <translation id="9197740283131855199">Pourcentage d'adaptation du délai d'assombrissement de l'écran si l'utilisateur devient actif après la réduction de la luminosité</translation>
 <translation id="9200828125069750521">Paramètres pour l'URL d'image utilisant POST</translation>
+<translation id="9203071022800375458">Désactive les captures d'écran.
+
+      En cas d'activation de cette règle, il n'est pas possible d'utiliser des raccourcis clavier ou des API d'extension pour effectuer des captures d'écran.
+
+      En cas de désactivation ou de non-configuration de cette règle, les captures d'écran sont autorisées.</translation>
 <translation id="9217154963008402249">Fréquence des paquets réseau de contrôle</translation>
 <translation id="922540222991413931">Configurer les sources d'installation des extensions, des applications et des scripts d'utilisateur</translation>
 <translation id="924557436754151212">Importer les mots de passe enregistrés du navigateur par défaut à la première exécution</translation>

@@ -183,6 +183,7 @@
 <translation id="1240892293903523606">DOM 검사기</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" />에서 설정을 재설정하려 합니다.</translation>
 <translation id="1243314992276662751">업로드</translation>
+<translation id="1244147615850840081">네트워크 사업자</translation>
 <translation id="1244303850296295656">확장 프로그램 오류</translation>
 <translation id="1245907074925860695">사용자 제거</translation>
 <translation id="1248269069727746712"><ph name="PRODUCT_NAME" />에서 사용자 기기의 시스템 프록시 설정을 사용하여 네트워크에 연결합니다.</translation>
@@ -195,7 +196,6 @@
 <translation id="126710816202626562">번역 언어:</translation>
 <translation id="1272079795634619415">중지</translation>
 <translation id="1272978324304772054">이 사용자 계정은 기기가 등록된 도메인에 속해 있지 않습니다. 다른 도메인에 등록하려면 먼저 기기 복구 절차를 거쳐야 합니다.</translation>
-<translation id="127353061808977798">글꼴 및 인코딩</translation>
 <translation id="1274997165432133392">쿠키 및 기타 사이트 데이터</translation>
 <translation id="1275718070701477396">선택됨</translation>
 <translation id="127668050356036882">모든 창 닫기</translation>
@@ -1319,6 +1319,7 @@
 <translation id="2799223571221894425">다시 시작</translation>
 <translation id="2800537048826676660">이 언어로 맞춤법 검사</translation>
 <translation id="2801702994096586034">서버 3</translation>
+<translation id="2803375539583399270">PIN 입력</translation>
 <translation id="2803887722080936828"><ph name="BEGIN_H3" />디버깅 기능<ph name="END_H3" />
     <ph name="BR" />
     Chrome OS 기기에서 디버깅 기능을 사용 설정하여 기기에 맞춤 코드를 설치하고 테스트할 수 있습니다.  이렇게 하면 다음 작업을 수행할 수 있습니다.<ph name="BR" />
@@ -2070,6 +2071,7 @@
 <translation id="3743492083222969745">가상 키보드의 설정 페이지에서 제스처 타이핑 옵션을 사용 설정/사용 중지합니다.</translation>
 <translation id="3744111561329211289">백그라운드 동기화</translation>
 <translation id="3745016858329272300">일반 정보</translation>
+<translation id="3748026146096797577">연결되어 있지 않음</translation>
 <translation id="3749289110408117711">파일 이름</translation>
 <translation id="3751427701788899101">연결이 끊김</translation>
 <translation id="3752439026432317933">결제 세부정보 입력...</translation>
@@ -2787,6 +2789,7 @@
 <translation id="480990236307250886">홈페이지 열기</translation>
 <translation id="4811502511369621968">이메일 주소가 잘못되었습니다. 확인한 다음 다시 시도하세요.</translation>
 <translation id="4812632551187706935">연결을 초기화할 수 없음</translation>
+<translation id="4812684235631257312">호스트</translation>
 <translation id="4813345808229079766">연결</translation>
 <translation id="4813512666221746211">네트워크 오류</translation>
 <translation id="4816492930507672669">페이지 맞춤</translation>
@@ -3166,6 +3169,7 @@
 <translation id="5306802244647481941">파일 앱 바로보기</translation>
 <translation id="5308380583665731573">연결</translation>
 <translation id="5311260548612583999">비공개 키 파일(선택사항):</translation>
+<translation id="5315873049536339193">주소</translation>
 <translation id="5316588172263354223">언제든지 음성 검색</translation>
 <translation id="5316716239522500219">모니터 미러</translation>
 <translation id="5317780077021120954">저장</translation>
@@ -3442,7 +3446,6 @@
 <translation id="5684661240348539843">애셋 식별자</translation>
 <translation id="569068482611873351">가져오기...</translation>
 <translation id="56907980372820799">데이터 연결</translation>
-<translation id="569109051430110155">자동 선택</translation>
 <translation id="5691596662111998220"><ph name="FILE_NAME" />이(가) 더 이상 존재하지 않습니다.</translation>
 <translation id="5694501201003948907">$1개 항목 압축 중...</translation>
 <translation id="5697118958262594262">기본적으로 중요한 콘텐츠 감지</translation>
@@ -4507,7 +4510,6 @@
 <translation id="7225179976675429563">네트워크 유형이 없습니다.</translation>
 <translation id="7230787553283372882">텍스트 크기 맞춤설정</translation>
 <translation id="7231224339346098802">숫자로 인쇄 매수를 표시하세요(1 이상).</translation>
-<translation id="7234907163682057631">중요한 플러그인 콘텐츠 감지 및 실행</translation>
 <translation id="7238585580608191973">SHA-256 지문</translation>
 <translation id="7240120331469437312">인증서 대상 대체 이름</translation>
 <translation id="7241389281993241388"><ph name="TOKEN_NAME" />에 로그인하여 클라이언트 인증서를 가져오세요.</translation>
@@ -4689,6 +4691,7 @@
 <translation id="7484645889979462775">이 사이트 제외</translation>
 <translation id="7484964289312150019">모든 북마크를 새 창에서 열기(&amp;N)</translation>
 <translation id="7485236722522518129">F4</translation>
+<translation id="7487067081878637334">테크놀로지</translation>
 <translation id="7487099628810939106">클릭하기 전 지연:</translation>
 <translation id="7487969577036436319">설치된 구성요소가 없습니다.</translation>
 <translation id="7489605380874780575">자격 확인</translation>
@@ -4960,6 +4963,7 @@
 <translation id="7877451762676714207">알 수 없는 서버 오류입니다. 다시 시도하거나 서버 관리자에게 문의하시기 바랍니다.</translation>
 <translation id="7878999881405658917">Google에서 이 휴대전화로 알림을 보냈습니다. 블루투스를 사용하면 휴대전화가 9m 이상 떨어진 곳에 있어도 <ph name="DEVICE_TYPE" />을(를) 잠금 해제 상태로 계속 유지할 수 있습니다. 이 설정이 문제가 될 수 있는 경우에는 &lt;a&gt;임시로 이 기능을 사용 중지&lt;/a&gt;할 수 있습니다.</translation>
 <translation id="7880836220014399562">'<ph name="BUNDLE_NAME" />'을(를) 설치하면 추가되는 앱과 확장 프로그램은 다음과 같습니다.</translation>
+<translation id="7881483672146086348">계정 보기</translation>
 <translation id="7881969471599061635">자막 사용 중지</translation>
 <translation id="7885253890047913815">최근 대상</translation>
 <translation id="7887192723714330082">화면이 켜지고 잠금 해제된 경우 'Ok Google'에 응답합니다.</translation>
@@ -5354,7 +5358,6 @@
 <translation id="8428213095426709021">설정</translation>
 <translation id="8428634594422941299">확인</translation>
 <translation id="8432745813735585631">영어(미국식) 콜맥 키보드</translation>
-<translation id="8434177709403049435">인코딩(&amp;E)</translation>
 <translation id="8434480141477525001">NaCl 디버그 포트</translation>
 <translation id="8435334418765210033">기억된 네트워크</translation>
 <translation id="8437209419043462667">영어(미국)</translation>
@@ -5745,7 +5748,6 @@
 <translation id="8970203673128054105">전송 모드 목록 보기</translation>
 <translation id="89720367119469899">Esc</translation>
 <translation id="8972513834460200407">네트워크 관리자에게 문의하여 방화벽이 Google 서버에서 다운로드를 차단하지 않는지 확인하시기 바랍니다.</translation>
-<translation id="8974161578568356045">자동 선택</translation>
 <translation id="8978526688207379569">이 사이트에서 여러 파일을 자동으로 다운로드했습니다.</translation>
 <translation id="8982248110486356984">사용자 전환</translation>
 <translation id="8986267729801483565">다운로드 위치:</translation>
@@ -5932,7 +5934,6 @@
 <translation id="923467487918828349">모두 표시</translation>
 <translation id="927151012416335806">기기를 <ph name="CHANNEL_NAME" /> 채널로 업데이트 중</translation>
 <translation id="930268624053534560">상세 타임스탬프</translation>
-<translation id="931068751149008062">글꼴 유형 및 인코딩 선택</translation>
 <translation id="932327136139879170">홈</translation>
 <translation id="932508678520956232">인쇄를 시작할 수 없습니다.</translation>
 <translation id="93393615658292258">비밀번호만</translation>

@@ -18,6 +18,7 @@
 <translation id="3407245330823033366">Valitse Blimpin kanssa käytettävä tili.</translation>
 <translation id="3775180005489871350">Tehtävä epäonnistui. Tapahtui virhe 400 (BAD_REQUEST).</translation>
 <translation id="3877411575395047031">Piilota virheenkorjaustiedot</translation>
+<translation id="4013794286379809233">Kirjaudu sisään</translation>
 <translation id="4542350224991263059">Tehtävä epäonnistui. Käyttäjän käyttötunnus on vanhentunut.</translation>
 <translation id="4562971394107096647">Tehtävä epäonnistui. Tapahtui palvelinvirhe.</translation>
 <translation id="4641972508298030550">Käyttäjän todennus epäonnistui.</translation>
@@ -28,6 +29,7 @@
 <translation id="5860346505531085166">Tehtävä epäonnistui. Tilillä ei ole käyttöoikeutta.</translation>
 <translation id="6232798399907177395">Tietoja Blimpistä</translation>
 <translation id="6245894610106451476">Vastaanotettu (Kt)</translation>
+<translation id="6522797484310591766">Kirjaudu sisään nyt</translation>
 <translation id="704835510384979817">Tehtävä epäonnistui. Koneiden versiot eivät täsmää.</translation>
 <translation id="7145680970336344212">Käynnistä Blimp uudelleen</translation>
 <translation id="7536363920335771251">Yhteys katkaistiin. Syy: %1$s.</translation>

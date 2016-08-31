@@ -504,6 +504,9 @@
 <translation id="2623014935069176671">Kasutaja esmase tegevuse ootamine</translation>
 <translation id="262740370354162807">Luba dokumentide saatmine teenusesse <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Luba suuline tagasiside</translation>
+<translation id="2646290749315461919">Võimaldab määrata, kas veebisaitidel on lubatud jälgida kasutajate füüsilist asukohta. Kasutajate füüsilise asukoha jälgimine võib olla vaikimisi lubatud või keelatud või kasutajalt võidakse luba küsida iga kord, kui veebisait taotleb füüsilise asukoha jälgimist.
+
+          Kui jätate selle reegli määramata, siis kasutatakse reeglit „AskGeolocation” ja kasutaja saab seda muuta.</translation>
 <translation id="2650049181907741121">Tehtav toiming, kui kasutaja kaane sulgeb</translation>
 <translation id="2655233147335439767">Määrab vaikeotsingu puhul kasutatava otsingumootori URL-i. URL peab sisaldama stringi „<ph name="SEARCH_TERM_MARKER" />”, mis asendatakse päringu ajal kasutaja sisestatud terminitega.
 
@@ -518,12 +521,6 @@
           See reegel kehtivad vaid juhul, kui reegel „DefaultSearchProviderEnabled” on lubatud.</translation>
 <translation id="2682225790874070339">Keelab Drive'i operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> rakenduses Failid</translation>
 <translation id="268577405881275241">Andmete tihendamise puhverserveri funktsiooni lubamine</translation>
-<translation id="2692168654831544772">Keelab ekraanipiltide tegemise.
-
-      Kui reegel on lubatud, ei saa ekraanipiltide tegemiseks kasutada klaviatuuri otseteid ega laienduse API-sid.
-      Peale selle on keelatud ekraani jäädvustamine ARC-rakenduste puhul.
-
-      Kui reegel on keelatud või määramata, on ekraanipiltide jäädvustamine lubatud.</translation>
 <translation id="2731627323327011390">Keela ARC-rakenduste jaoks operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> sertifikaatide kasutamine</translation>
 <translation id="2742843273354638707">Peitke Chrome'i veebipoe rakendus ja jaluse link uuel vahelehel ja operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> rakenduse käivitajas.
 
@@ -576,22 +573,6 @@
           Kõik loendis olevad üksused on laiendusstiilis vastendusmustrid (vt https://developer.chrome.com/extensions/match_patterns). Kasutajad saavad üksused hõlpsasti installida mis tahes URL-ilt, mis vastab loendis olevale üksusele. Need mustrid peavad lubama nii *.crx-faili asukoha kui ka lehe, millelt allalaadimine käivitatakse (st viitaja).
 
           Selle reegli alistab reegel ExtensionInstallBlacklist. See tähendab, et mustas nimekirjas olevat laiendust ei installita isegi siis, kui see toimub loendis olevalt saidilt.</translation>
-<translation id="2813740161943223811">See reegel on vananenud, kasutage selle asemel ProxyMode'i.
-
-          Võimaldab määrata puhverserveri, mida kasutab brauser <ph name="PRODUCT_NAME" />, ega lase kasutajatel puhverserveri seadeid muuta. Ka ARC-rakendused saavad seda puhverserverit kasutada.
-
-          Kui otsustate puhverserverit mitte kasutada ja ühenduse alati otse luua, siis eiratakse kõiki muid valikuid.
-
-          Kui otsustate kasutada süsteemi puhverserveri seadeid või tuvastada puhverserveri automaatselt, eiratakse kõiki muid valikuid.
-
-          Kui otsustate määrata puhverserveri seaded käsitsi, saate täpsemad valikud määrata jaotistes „Puhverserveri aadress või URL”, „Puhverserveri PAC-faili URL” ja „Puhverserveri möödumisreeglite komaeraldusega loend”. ARC-rakenduste jaoks on saadaval ainult kõige kõrgema prioriteediga HTTP-puhverserver.
-
-          Vaadake üksikasjalikke näiteid siit:
-          <ph name="PROXY_HELP_URL" />.
-
-          Seade lubamisel eirab brauser <ph name="PRODUCT_NAME" /> kõiki käsureal määratud puhverserveri valikuid.
-
-          Kui jätate reegli määramata, saavad kasutajad ise puhverserveri seaded valida.</translation>
 <translation id="2818551149761607847">Saate seadistada kasutaja avatari pildi.
 
       Reegel võimaldab teil seadistada avatari pildi, mis esindab kasutajat sisselogimisekraanil. Reegli määramiseks valige URL, millelt <ph name="PRODUCT_OS_NAME" /> saab avatari pildi alla laadida ja usaldusväärsuse kinnitamiseks krüptograafilise räsi allalaadimise hankida. Pilt peab olema JPEG-vormingus ega tohi olla suurem kui 512 kB. URL peab olema autentimata saadaval.
@@ -732,18 +713,6 @@
           </translation>
 <translation id="3205825995289802549">Esmasel käivitamisel esimese brauseriakna maksimeerimine</translation>
 <translation id="3206731874112238027">Printimise eelvaate keelamine (tugi on katkestatud)</translation>
-<translation id="3208854390109736596">Võimaldab määrata puhverserveri, mida kasutab brauser <ph name="PRODUCT_NAME" />, ega lase kasutajatel puhverserveri seadeid muuta. Ka ARC-rakendused saavad seda puhverserverit kasutada.
-
-      Kui otsustate puhverserverit mitte kasutada ja ühenduse alati otse luua, siis eiratakse kõiki muid valikuid.
-
-      Kui otsustate tuvastada puhverserveri automaatselt, eiratakse kõiki muid valikuid.
-
-      Vaadake üksikasjalikke näiteid siit:
-      <ph name="PROXY_HELP_URL" />.
-
-      Seade lubamisel eiravad brauser <ph name="PRODUCT_NAME" /> ja ARC-rakendused kõiki käsureal määratud puhverserveri valikuid.
-
-      Kui jätate need reeglid määramata, saavad kasutajad ise puhverserveri seaded valida.</translation>
 <translation id="3213821784736959823">Määrab, kas rakenduses <ph name="PRODUCT_NAME" /> kasutatakse sisseehitatud DNS-i klienti.
 
       Kui reegel on lubatud, kasutatakse võimalusel sisseehitatud DNS-i klienti.
@@ -784,11 +753,6 @@
 <translation id="3322771899429619102">Võimaldab määrata URL-i mustrite loendi, mis määrab saidid, millel on lubatud kasutada võtmete loomist. Kui URL-i muster on loendis „KeygenBlockedForUrls”, alistab see need erandid.
 
           Kui jätate reegli määramata, kasutatakse kõikide saitide puhul globaalset vaikeväärtust, mis pärineb reeglist „DefaultKeygenSetting”, kui see on määratud, või kasutaja isiklikku seadistust.</translation>
-<translation id="3337150554416948435">Võimaldab määrata, kas veebisaitidel on lubatud jälgida kasutajate füüsilist asukohta. Kasutajate füüsilise asukoha jälgimine võib olla vaikimisi lubatud või keelatud või kasutajalt võidakse luba küsida iga kord, kui veebisait taotleb teavet füüsilise asukoha kohta.
-
-          Kui määrate reegli seadeks „BlockGeolocation”, keelatakse asukoha jagamine ARC-rakenduste puhul.
-
-          Kui jätate selle reegli määramata, siis kasutatakse reeglit „AskGeolocation” ja kasutaja saab seda muuta.</translation>
 <translation id="3381968327636295719">Kasuta vaikimisi hostbrauserit</translation>
 <translation id="3417418267404583991">Kui lubate selle reegli või jätate seadistamata, siis lubab <ph name="PRODUCT_OS_NAME" /> külastajatel sisse logida. Külastajana sisse logides kasutatakse anonüümseid seansse ja selleks ei ole vaja parooli sisestada.
 
@@ -807,14 +771,6 @@
           Kui reegel on määratud olekule Tõene, siis ei toimu toitehalduse viivituste ja seansi pikkuse limiidi aktiveerimine enne, kui seansi ajal on toimunud esimene kasutajatoiming.
 
           Kui see reegel on määratud olekule Väär või seda pole määratud, siis toimub toitehalduse viivituste ja seansi pikkuse limiidi aktiveerimine kohe, kui seanss algab.</translation>
-<translation id="3469657928310999477">Brauser <ph name="PRODUCT_NAME" /> möödub siin loetletud hostide puhul kõikidest puhverserveritest. ARC-rakendused saavad seda loendit kasutada möödumisreeglite loendina.
-
-          Reegel kehtib vaid juhul, kui valisite jaotises „Valige puhverserveri seadete määramise viis” puhverserveri käsitsi seadistamise.
-
-          Kui valisite puhverserveri reeglite seadistamiseks muu viisi, jätke see reegel määramata.
-
-          Vaadake üksikasjalikke näiteid siit:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="3478024346823118645">Kustuta kasutaja andmed väljalogimisel</translation>
 <translation id="348495353354674884">Luba virtuaalne klaviatuur</translation>
 <translation id="3496296378755072552">Paroolihaldur</translation>
@@ -939,18 +895,6 @@
 
       Kui jätate selle reegli määramata, on SPDY saadaval.</translation>
 <translation id="3891357445869647828">Luba JavaScript</translation>
-<translation id="3898060089412156345">Lubage või keelake heli jäädvustamine.
-
-      Kui reegel on lubatud või seadistamata (vaikimisi), küsitakse kasutajalt
-      heli jäädvustamiseks juurdepääsu, v.a loendis AudioCaptureAllowedUrls
-      seadistatud URL-ide puhul, millele antakse juurdepääs ilma luba küsimata.
-
-      Kui reegel on keelatud, ei küsita kasutajalt kunagi luba ja heli
-      jäädvustamine on saadaval ainult loendis AudioCaptureAllowedUrls
-      seadistatud URL-ide puhul.
-      ARC-rakenduste puhul on mikrofon jäädavalt vaigistatud.
-
-      Reegel mõjutab igat tüüpi helisisendeid, mitte ainult sisseehitatud mikrofone.</translation>
 <translation id="3907986150060929099">Avaliku seansi soovitatud lokaatide määramine</translation>
 <translation id="391531815696899618">Keelab Google Drive'i sünkroonimise operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> rakenduses Failid, kui väärtuse olekuks on määratud Tõene. Sellisel juhul ei laadita Google Drive'i üles mingeid andmeid.
 
@@ -1085,6 +1029,11 @@
       Reegel on küll toetatud ülalnimetatud platvormidel, kuid lubatud funktsioon ei pruugi olla saadaval kõikidel platvormidel. Kõiki katkestatud toega veebiplatvormi funktsioone ei saa uuesti lubada. Piiratud ajaks saab lubada ainult allnimetatud funktsioone ja iga funktsiooni ajalimiit on erinev. Stringimärgendi üldine vorming on [DeprecatedFeatureName]_EffectiveUntil[yyyymmdd]. Veebiplatvormi funktsiooni muudatuste eesmärgi kohta leiate lisateavet aadressilt https://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Luba lukustamine, kui seade on ootel või peatatud</translation>
+<translation id="4445684791305970001">Keelab arendaja tööriistad ja JavaScripti konsooli.
+
+      Seade lubamisel ei saa arendaja tööriistu kasutada ega veebisaitide elemente uurida. Kõik klaviatuuri otseteed ning arendaja tööriistade ja JavaScripti konsooli avamise käsud menüüdes ja kontekstimenüüdes keelatakse.
+
+      Kui keelate valiku või jätate selle määramata, siis saab arendaja tööriistu ja JavaScripti konsooli kasutada.</translation>
 <translation id="4449545651113180484">Ekraani pööramine 270 kraadi päripäeva</translation>
 <translation id="4467952432486360968">Blokeeri kolmanda osapoole küpsised</translation>
 <translation id="4474167089968829729">Luba paroolide salvestamine paroolihaldurisse</translation>
@@ -1209,6 +1158,16 @@
           Väärtus peab olema rida stringideks jaotatud JSON-i sõnastikke. Igas sõnastikus peab olema vorm { "pattern": "$URL_PATTERN", "filter" : $FILTER }, kus $URL_PATTERN on sisuseadete muster. $FILTER piirab seda, milliste kliendisertifikaatide hulgast brauser automaatselt valib. Olenemata filtrist, valitakse ainult sertifikaadid, mis ühtivad serveri sertifikaadi taotlusega. Kui $FILTER on vormis { "ISSUER": { "CN": "$ISSUER_CN" } }, valitakse lisaks ainult kliendisertifikaadid, mille on väljastanud sertifikaat mustriga CommonName $ISSUER_CN. Kui $FILTER on tühi sõnastik {}, ei ole kliendisertifikaatide valik täiendavalt piiratud.
 
           Kui seda reeglit ei määrata, ei tehta ühegi saidi puhul automaatset valikut.</translation>
+<translation id="4980301635509504364">Video jäädvustamise lubamine või keelamine.
+
+      Kui reegel on lubatud või seadistamata (vaikeseade), küsitakse kasutajalt
+      video jäädvustamiseks juurdepääsu, v.a loendis VideoCaptureAllowedUrls 
+      seadistatud URL-ide puhul, millele antakse juurdepääs ilma küsimata.
+
+      Kui reegel on keelatud, ei küsita kasutajalt kunagi ja video jäädvustamine
+      on saadaval ainult loendis VideoCaptureAllowedUrls seadistatud URL-idele.
+
+      Reegel mõjutab igat tüüpi videosisendeid, mitte ainult sisseehitatud kaamerat.</translation>
 <translation id="4980635395568992380">Andmetüüp:</translation>
 <translation id="4983201894483989687">Luba vananenud pistikprogrammide käitamine</translation>
 <translation id="4988291787868618635">Tehtav toiming, kui möödub jõudeoleku viiteaeg</translation>
@@ -1220,11 +1179,6 @@
       Kui jätate reegli määramata, siis võib importimine toimuda automaatselt või kasutajalt võidakse küsida, kas ta soovib importida.</translation>
 <translation id="5056708224511062314">Ekraaniluup on keelatud</translation>
 <translation id="5067143124345820993">Kasutajate sisselogimise lubatud loend</translation>
-<translation id="510186355068252378">Keelab rakenduses <ph name="PRODUCT_NAME" /> andmete sünkroonimise Google'i hostitud sünkroonimisteenuste abil ja takistab kasutajatel seade muutmist.
-
-      Seade lubamisel ei saa kasutajad seadet teenuses <ph name="PRODUCT_NAME" /> muuta ega alistada.
-
-      Kui seda reeglit ei määrata, siis saavad kasutajad otsustada, kas nad soovivad Google Synci kasutada.</translation>
 <translation id="5105313908130842249">Ekraani lukustamise viiteaeg akutoite kasutamisel</translation>
 <translation id="5111573778467334951">Määrab toimingu, mis rakendub siis, kui tegevusetuse viivitusaeg täitub akutoite kasutamisel.
 
@@ -1357,13 +1311,6 @@
       Kui see on määratud, lisatakse päringu parameeter „restrict” URL-ile, mida kasutatakse variatsioonide lähteväärtuse toomiseks. Parameetri väärtus on selles reeglis määratud väärtus.
 
       Kui seda ei määrata, siis variatsioonide lähteväärtuse URL-i ei muudeta.</translation>
-<translation id="5563853101694018649">Keelab arendaja tööriistad ja JavaScripti konsooli.
-
-      Kui selle seade lubate, ei pääse kasutajad arendaja tööriistadele juurde ja veebisaidi elemente ei saa enam kontrollida. Kõik klaviatuuri otseteed ja menüüde või kontekstimenüüde sisestused arendaja tööriistade või JavaScripi konsooli avamiseks keelatakse.
-
-      Kui keelate selle valiku või ei määra seda, lubatakse arendaja tööriistade ja JavaScripti konsooli kasutamine.
-
-      Teenuse <ph name="PRODUCT_OS_NAME" /> seadmetes, milles saab käitada Androidi rakendusi, juhib see reegel ka juurdepääsu Androidi arendaja valikutele. Kui määrate selle reegli väärtuseks Tõene, ei pääse kasutajad arendaja valikutele juurde. Kui määrate selle reegli väärtuseks Väär või jätate selle määramata, pääsevad kasutajad arendaja valikutele juurde, puudutades Androidi seadete rakenduses seitse korda järgu numbrit.</translation>
 <translation id="556941986578702361">Seadistage hoidla <ph name="PRODUCT_OS_NAME" /> automaatne peitmine.
 
       Kui reegel on seatud väärtusele „AlwaysAutoHideShelf”, peidetakse hoidla alati automaatselt.
@@ -1846,6 +1793,16 @@
       Kui lubate või keelate seade, ei saa kasutajad seda muuta ega alistada.
 
       Kui jätate reegli määramata, saavad kasutajad valida, kas nad soovivad seadme avamiseks parooli sisestada või mitte.</translation>
+<translation id="7109916642577279530">Heli jäädvustamise lubamine või keelamine.
+
+      Kui reegel on lubatud või pole seadistatud (vaikimisi), küsitakse kasutajalt
+      heli jäädvustamiseks juurdepääsu, v.a loendis AudioCaptureAllowedUrls
+      seadistatud URL-ide puhul, millele antakse juurdepääs ilma küsimata.
+
+      Kui reegel on keelatud, ei küsita kasutajalt kunagi ning heli
+      jäädvustamine on saadaval ainult loendis AudioCaptureAllowedUrls seadistatud URL-ide puhul.
+
+      Reegel mõjutab igat tüüpi helisisendeid, mitte ainult sisseehitatud mikrofone.</translation>
 <translation id="7115494316187648452">Määrab, kas brauseri <ph name="PRODUCT_NAME" /> protsess käivitub operatsioonisüsteemi sisselogimisel ja jätkab töötamist pärast viimase brauseriakna sulgemist. Sel juhul võivad taustarakendused ja praegune sirvimisseanss, sh seansipõhised küpsisefailid, jääda aktiivseks. Taustaprotsess kuvab süsteemisalves ikooni, mis võimaldab protsessi igal ajal sulgeda.
 
       Kui reegel on seatud väärtusele Tõene, on taustarežiim lubatud ja kasutaja ei saa seda brauseri seadetes muuta.
@@ -2131,19 +2088,6 @@
       Määrab laienduse ID, mida kasutatakse sisselogimisekraani ekraanisäästjana. Laiendus peab kuuluma AppPacki, mis on seadistatud domeenile DeviceAppPack-reegliga.</translation>
 <translation id="7882890448959833986">Toetuseta OS-is hoiatuse blokeerimine</translation>
 <translation id="7912255076272890813">Seadista lubatud rakenduste/laienduste tüübid</translation>
-<translation id="7914271217607102111">Lubage või keelake video jäädvustamine.
-
-      Kui reegel on lubatud või seadistamata (vaikeseade), küsitakse kasutajalt
-      video jäädvustamiseks juurdepääsu, v.a loendis VideoCaptureAllowedUrls seadistatud
-      URL-ide puhul, millele antakse juurdepääs luba küsimata.
-      ARC-rakendustel on juurdepääs kaamerale juhul, kui neile on antud luba.
-
-      Kui reegel on keelatud, ei küsita kasutajalt kunagi luba ja videote
-      jäädvustamine on saadaval ainult loendis VideoCaptureAllowedUrls seadistatud URL-ide puhul.
-      ARC-rakendustel ei ole juurdepääsu kaamerale.
-
-      Peale ARC-rakenduste mõjutab reegel kõiki videosisendi tüüpe,
-      mitte ainult sisseehitatud kaamerat.</translation>
 <translation id="7915236031252389808">Siin saate määrata puhverserveri PAC-faili URL-i.
 
           Reegel kehtib vaid juhul, kui valisite jaotises „Valige puhverserveri seadete määramise viis” puhverserveri käsitsi seadistamise.
@@ -2551,24 +2495,6 @@
 <translation id="9112897538922695510">Lubab teil registreerida protokollitöötlejate loendi. See saab olla ainult soovitatud reegel. Atribuut |protocol| tuleb määrata skeemile (nagu „mailto”) ja atribuut |url| tuleb määrata skeemi käsitleva rakenduse URL-i mustrile. Muster võib sisaldada märgendit „%s”, mis asendatakse sellisel juhul käsitletava URL-iga.
 
           Reegliga registreeritud protokollitöötlejad liidetakse kasutaja registreeritud töötlejatega ja mõlemad on kasutamiseks saadaval. Kasutajad saavad alistada reegliga installitud protokollitöötlejad, kui installivad uue vaiketöötleja, kuid nad ei saa eemaldada reegliga registreeritud protokollitöötlejat.</translation>
-<translation id="913138516158420759">Võimaldab määrata puhverserveri, mida kasutab brauser <ph name="PRODUCT_NAME" />, ega lase kasutajatel puhverserveri seadeid muuta. Ka ARC-rakendused saavad seda puhverserverit kasutada.
-
-          Kui otsustate puhverserverit mitte kasutada ja ühenduse alati otse luua, eiratakse kõiki muid valikuid.
-
-          Kui otsustate süsteemi puhverserveri seadeid kasutada, eiratakse kõiki muid valikuid.
-
-          Kui otsustate tuvastada puhverserveri automaatselt, eiratakse kõiki muid valikuid.
-
-          Kui valite serveri puhverserveri fikseeritud režiimi, saate määrata täpsemad valikud jaotistes „Puhverserveri aadress või URL” ja „Puhverserveri möödumisreeglite komaeraldusega loend”. ARC-rakenduste jaoks on saadaval ainult kõige kõrgema prioriteediga HTTP-puhverserver.
-
-          Kui otsustate kasutada puhverserveri PAC-skripti, tuleb teil määrata skripti URL jaotises „Puhverserveri PAC-faili URL”.
-
-          Vaadake üksikasjalikke näiteid siit:
-          <ph name="PROXY_HELP_URL" />.
-
-          Seade lubamisel eiravad brauser <ph name="PRODUCT_NAME" /> ja ARC-rakendused kõiki käsureal määratud puhverserveri valikuid.
-
-          Kui jätate reegli määramata, saavad kasutajad ise puhverserveri seaded valida.</translation>
 <translation id="913195841488580904">URL-ide loendile juurdepääsu blokeerimine</translation>
 <translation id="9135033364005346124">Teenuse <ph name="CLOUD_PRINT_NAME" /> puhverserveri lubamine</translation>
 <translation id="9147029539363974059">Saadab süsteemilogid haldusserverisse, et administraatorid
@@ -2589,6 +2515,11 @@
 <translation id="9187743794267626640">Keela välismäluseadmete ühendamine</translation>
 <translation id="9197740283131855199">Ekraani tumenduse viivituse skaleerimise määr protsentides, kui kasutaja muutub pärast tumendamist aktiivseks.</translation>
 <translation id="9200828125069750521">Parameetrid POST-meetodit kasutava kujutise URL-i jaoks</translation>
+<translation id="9203071022800375458">Keelab ekraanipiltide tegemise.
+
+      Kui seade on lubatud, siis ei saa ekraanipiltide tegemiseks kasutada klaviatuuri otseteid ega laienduse API-sid.
+
+      Kui seade on keelatud või pole määratud, siis saab ekraanipilte teha.</translation>
 <translation id="9217154963008402249">Võrgupakettide jälgimise sagedus</translation>
 <translation id="922540222991413931">Seadistage laienduste, rakenduste ja kasutaja skriptide installimise allikad</translation>
 <translation id="924557436754151212">Impordi salvestatud paroolid vaikebrauserist esimesel käitamisel</translation>

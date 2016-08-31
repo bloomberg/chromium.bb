@@ -183,6 +183,7 @@
 <translation id="1240892293903523606">DOM Inspector</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> ต้องการรีเซ็ตการตั้งค่าของคุณ</translation>
 <translation id="1243314992276662751">อัปโหลด</translation>
+<translation id="1244147615850840081">ผู้ให้บริการ</translation>
 <translation id="1244303850296295656">ข้อผิดพลาดของส่วนขยาย</translation>
 <translation id="1245907074925860695">นำผู้ใช้ออก</translation>
 <translation id="1248269069727746712"><ph name="PRODUCT_NAME" /> กำลังใช้การตั้งค่าพร็อกซีระบบของอุปกรณ์เพื่อเชื่อมต่อเครือข่าย</translation>
@@ -195,7 +196,6 @@
 <translation id="126710816202626562">ภาษาที่แปล:</translation>
 <translation id="1272079795634619415">หยุด</translation>
 <translation id="1272978324304772054">บัญชีผู้ใช้นี้ไม่ได้อยู่ในโดเมนที่ลงทะเบียนอุปกรณ์ ถ้าคุณต้องการลงทะเบียนไปยังโดเมนอื่น คุณจะต้องกู้คืนอุปกรณ์ก่อน</translation>
-<translation id="127353061808977798">แบบอักษรและการเข้ารหัส</translation>
 <translation id="1274997165432133392">คุกกี้และข้อมูลอื่นของไซต์</translation>
 <translation id="1275718070701477396">เลือกแล้ว</translation>
 <translation id="127668050356036882">ปิดหน้าต่างทั้งหมด</translation>
@@ -1317,6 +1317,7 @@
 <translation id="2799223571221894425">เปิดใหม่</translation>
 <translation id="2800537048826676660">ใช้ภาษานี้สำหรับการตรวจสอบการสะกด</translation>
 <translation id="2801702994096586034">เซิร์ฟเวอร์ 3</translation>
+<translation id="2803375539583399270">ป้อน PIN</translation>
 <translation id="2803887722080936828"><ph name="BEGIN_H3" />คุณลักษณะการแก้ไขข้อบกพร่อง<ph name="END_H3" />
     <ph name="BR" />
     คุณสามารถเปิดใช้คุณลักษณะการแก้ไขข้อบกพร่องบนอุปกรณ์ Chrome OS เพื่อติดตั้งและทดสอบรหัสที่กำหนดเองบนอุปกรณ์ได้ ซึ่งจะให้คุณสามารถ:<ph name="BR" />
@@ -2068,6 +2069,7 @@
 <translation id="3743492083222969745">เปิด/ปิดตัวเลือกการป้อนข้อมูลด้วยท่าทางในหน้าการตั้งค่าสำหรับแป้นพิมพ์เสมือน</translation>
 <translation id="3744111561329211289">ซิงค์ในแบ็กกราวด์</translation>
 <translation id="3745016858329272300">ข้อมูลทั่วไป</translation>
+<translation id="3748026146096797577">ไม่ได้เชื่อมต่อ</translation>
 <translation id="3749289110408117711">ชื่อไฟล์</translation>
 <translation id="3751427701788899101">สูญเสียการเชื่อมต่อ</translation>
 <translation id="3752439026432317933">ป้อนรายละเอียดสำหรับการเรียกเก็บเงิน...</translation>
@@ -2786,6 +2788,7 @@
 <translation id="480990236307250886">เปิดหน้าแรก</translation>
 <translation id="4811502511369621968">ที่อยู่อีเมลไม่ถูกต้อง โปรดตรวจสอบและลองอีกครั้ง</translation>
 <translation id="4812632551187706935">ไม่สามารถเริ่มการเชื่อมต่อ</translation>
+<translation id="4812684235631257312">โฮสต์</translation>
 <translation id="4813345808229079766">การเชื่อมต่อ</translation>
 <translation id="4813512666221746211">ข้อผิดพลาดของเครือข่าย</translation>
 <translation id="4816492930507672669">พอดีกับหน้า</translation>
@@ -3165,6 +3168,7 @@
 <translation id="5306802244647481941">มุมมองแอปไฟล์แบบด่วน</translation>
 <translation id="5308380583665731573">เชื่อมต่อ</translation>
 <translation id="5311260548612583999">ไฟล์กุญแจส่วนตัว (ตัวเลือก):</translation>
+<translation id="5315873049536339193">ข้อมูลประจำตัว</translation>
 <translation id="5316588172263354223">ค้นหาด้วยเสียงได้ทุกเมื่อ</translation>
 <translation id="5316716239522500219">แสดงผลบนหน้าจอ</translation>
 <translation id="5317780077021120954">บันทึก</translation>
@@ -3441,7 +3445,6 @@
 <translation id="5684661240348539843">รหัสสินทรัพย์</translation>
 <translation id="569068482611873351">นำเข้า...</translation>
 <translation id="56907980372820799">ลิงก์ข้อมูล</translation>
-<translation id="569109051430110155">ตรวจหาอัตโนมัติ</translation>
 <translation id="5691596662111998220">อ๊ะ ไม่มี <ph name="FILE_NAME" /> แล้ว</translation>
 <translation id="5694501201003948907">กำลังซิป $1 รายการ...</translation>
 <translation id="5697118958262594262">ตรวจหาเนื้อหาที่สำคัญโดยค่าเริ่มต้น</translation>
@@ -4504,7 +4507,6 @@
 <translation id="7225179976675429563">ไม่มีประเภทเครือข่าย</translation>
 <translation id="7230787553283372882">กำหนดขนาดข้อความของคุณ</translation>
 <translation id="7231224339346098802">ใช้ตัวเลขเพื่อระบุจำนวนสำเนาที่ต้องการพิมพ์ (1 หรือมากกว่า)</translation>
-<translation id="7234907163682057631">ตรวจหาและเรียกใช้เนื้อหาปลั๊กอินที่สำคัญ</translation>
 <translation id="7238585580608191973">ลายนิ้วมือ SHA-256</translation>
 <translation id="7240120331469437312">ชื่อสำรองของหัวเรื่องใบรับรอง</translation>
 <translation id="7241389281993241388">โปรดลงชื่อเข้าใช้ <ph name="TOKEN_NAME" /> เพื่อนำเข้าใบรับรองไคลเอ็นต์</translation>
@@ -4686,6 +4688,7 @@
 <translation id="7484645889979462775">ไม่จดจำสำหรับเว็บไซต์นี้</translation>
 <translation id="7484964289312150019">เปิดบุ๊กมาร์กทั้งหมดใน&amp;หน้าต่างใหม่</translation>
 <translation id="7485236722522518129">F4</translation>
+<translation id="7487067081878637334">เทคโนโลยี</translation>
 <translation id="7487099628810939106">หน่วงเวลาก่อนการคลิก:</translation>
 <translation id="7487969577036436319">ไม่มีคอมโพเนนต์ที่ได้รับการติดตั้ง</translation>
 <translation id="7489605380874780575">ตรวจสอบคุณสมบัติ</translation>
@@ -4957,6 +4960,7 @@
 <translation id="7877451762676714207">ข้อผิดพลาดของเซิร์ฟเวอร์ที่ไม่รู้จัก โปรดลองอีกครั้งหรือติดต่อผู้ดูแลระบบเซิร์ฟเวอร์</translation>
 <translation id="7878999881405658917">Google ส่งการแจ้งเตือนไปยังโทรศัพท์เครื่องนี้แล้ว โปรดทราบว่าเมื่อใช้บลูทูธ โทรศัพท์อาจทำให้ <ph name="DEVICE_TYPE" /> ไม่ล็อกตลอดเวลาจากระยะเกินกว่า 100 ฟุต หากคุณไม่ต้องการใช้คุณลักษณะนี้ คุณสามารถ&lt;a&gt;ปิดคุณลักษณะนี้ชั่วคราว&lt;/a&gt;ได้</translation>
 <translation id="7880836220014399562">"<ph name="BUNDLE_NAME" />" เพิ่มแอปและส่วนขยายเหล่านี้:</translation>
+<translation id="7881483672146086348">ดูบัญชี</translation>
 <translation id="7881969471599061635">ปิดคำบรรยาย</translation>
 <translation id="7885253890047913815">ปลายทางล่าสุด</translation>
 <translation id="7887192723714330082">ตอบสนองต่อ "Ok Google" เมื่อหน้าจอเปิดอยู่และไม่ได้ล็อก</translation>
@@ -5349,7 +5353,6 @@
 <translation id="8428213095426709021">การตั้งค่า</translation>
 <translation id="8428634594422941299">รับทราบ</translation>
 <translation id="8432745813735585631">แป้นพิมพ์ Colemak สหรัฐอเมริกา</translation>
-<translation id="8434177709403049435">&amp;การเข้ารหัส</translation>
 <translation id="8434480141477525001">พอร์ตแก้ปัญหา NaCl</translation>
 <translation id="8435334418765210033">เครือข่ายที่จำข้อมูลไว้</translation>
 <translation id="8437209419043462667">สหรัฐอเมริกา</translation>
@@ -5740,7 +5743,6 @@
 <translation id="8970203673128054105">ดูรายการโหมดแคสต์</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">โปรดตรวจสอบกับผู้ดูแลระบบเครือข่ายของคุณเพื่อให้แน่ใจว่าไฟร์วอลล์ไม่ได้บล็อกการดาวน์โหลดจากเซิร์ฟเวอร์ของ Google</translation>
-<translation id="8974161578568356045">ตรวจหาอัตโนมัติ</translation>
 <translation id="8978526688207379569">ไซต์นี้มีการดาวน์โหลดไฟล์หลายๆ ไฟล์โดยอัตโนมัติ</translation>
 <translation id="8982248110486356984">สลับผู้ใช้</translation>
 <translation id="8986267729801483565">ตำแหน่งไฟล์ที่ดาวน์โหลด:</translation>
@@ -5926,7 +5928,6 @@
 <translation id="923467487918828349">แสดงทั้งหมด</translation>
 <translation id="927151012416335806">กำลังอัปเดตอุปกรณ์ของคุณไปยังช่อง <ph name="CHANNEL_NAME" /></translation>
 <translation id="930268624053534560">การประทับเวลาโดยละเอียด</translation>
-<translation id="931068751149008062">เลือกประเภทแบบอักษรและการเข้ารหัส</translation>
 <translation id="932327136139879170">หน้าแรก</translation>
 <translation id="932508678520956232">ไม่สามารถเริ่มพิมพ์</translation>
 <translation id="93393615658292258">เฉพาะรหัสผ่านเท่านั้น</translation>

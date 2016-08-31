@@ -183,6 +183,7 @@
 <translation id="1240892293903523606">DOM கண்காணிப்பான்</translation>
 <translation id="1242633766021457174">உங்கள் அமைப்புகளை மீட்டமைக்க <ph name="THIRD_PARTY_TOOL_NAME" /> விரும்புகிறது.</translation>
 <translation id="1243314992276662751">பதிவேற்று</translation>
+<translation id="1244147615850840081">சேவை வழங்குநர்</translation>
 <translation id="1244303850296295656">நீட்டிப்புப் பிழை</translation>
 <translation id="1245907074925860695">பயனரை அகற்று</translation>
 <translation id="1248269069727746712">பிணையத்துடன் இணைக்க உங்கள் சாதனத்தின் ப்ராக்ஸி அமைப்புகளை <ph name="PRODUCT_NAME" /> பயன்படுத்துகிறது.</translation>
@@ -195,7 +196,6 @@
 <translation id="126710816202626562">மொழிபெயர்ப்பிற்கான மொழி:</translation>
 <translation id="1272079795634619415">நிறுத்து</translation>
 <translation id="1272978324304772054">இந்தப் பயனர் கணக்கானது சாதனம் பதிவுசெய்யப்பட்ட களத்திற்கு உரியது அல்ல. வேறொரு களத்தில் பதிவுசெய்ய விரும்பினால், முதலில் சாதன மீட்புக்குச் செல்ல வேண்டும்.</translation>
-<translation id="127353061808977798">எழுத்துருக்களும் குறியீட்டு முறையும்</translation>
 <translation id="1274997165432133392">குக்கீகள் மற்றும் பிற தளத்தின் தரவு</translation>
 <translation id="1275718070701477396">தேர்ந்தெடுக்கப்பட்டது</translation>
 <translation id="127668050356036882">எல்லா சாளரங்களையும் மூடு</translation>
@@ -1318,6 +1318,7 @@
 <translation id="2799223571221894425">மீண்டும் தொடங்கு</translation>
 <translation id="2800537048826676660">எழுத்துப்பிழை சரிபார்ப்பிற்கு இந்த மொழியைப் பயன்படுத்து</translation>
 <translation id="2801702994096586034">சேவையகம் 3</translation>
+<translation id="2803375539583399270">பின்னை உள்ளிடவும்</translation>
 <translation id="2803887722080936828"><ph name="BEGIN_H3" />பிழைத்திருத்த அம்சங்கள்<ph name="END_H3" />
     <ph name="BR" />
     உங்கள் சாதனத்தில் தனிப்பயன் குறியீட்டை நிறுவி, சோதனை செய்வதற்கு, Chrome OS சாதனத்தில் பிழைத்திருத்த அம்சங்களை இயக்கலாம். இதனால் உங்களுக்குக் கிடைக்கும் அனுமதிகள்:<ph name="BR" />
@@ -2068,6 +2069,7 @@
 <translation id="3743492083222969745">விர்ச்சுவல் விசைப்பலகைக்கான அமைப்புகள் பக்கத்தில் ஸ்வைப் தட்டச்சு விருப்பத்தை இயக்கு/முடக்கு.</translation>
 <translation id="3744111561329211289">பின்புல ஒத்திசைவு</translation>
 <translation id="3745016858329272300">பொதுவான தகவல்</translation>
+<translation id="3748026146096797577">இணைக்கப்படவில்லை</translation>
 <translation id="3749289110408117711">கோப்பு பெயர்</translation>
 <translation id="3751427701788899101">இணைப்பு துண்டிக்கப்பட்டது</translation>
 <translation id="3752439026432317933">பில்லிங் விவரங்களை உள்ளிடுக...</translation>
@@ -2784,6 +2786,7 @@
 <translation id="480990236307250886">முகப்புப் பக்கத்தைத் திற</translation>
 <translation id="4811502511369621968">தவறான மின்னஞ்சல் முகவரி. சரிபார்த்து மீண்டும் முயற்சிக்கவும்.</translation>
 <translation id="4812632551187706935">இணைப்பைத் துவக்க முடியவில்லை</translation>
+<translation id="4812684235631257312">புரவன்</translation>
 <translation id="4813345808229079766">இணைப்பு</translation>
 <translation id="4813512666221746211">பிணைய பிழை</translation>
 <translation id="4816492930507672669">பக்கத்தில் பொருத்து</translation>
@@ -3161,6 +3164,7 @@
 <translation id="5306802244647481941">கோப்புகள் பயன்பாட்டின் விரைவுப் பார்வை</translation>
 <translation id="5308380583665731573">இணை</translation>
 <translation id="5311260548612583999">தனிப்பட்ட விசை கோப்பு (விரும்பினால்):</translation>
+<translation id="5315873049536339193">அடையாளம்</translation>
 <translation id="5316588172263354223">எந்த நேரத்திலும் குரல் தேடல் இயங்கும்</translation>
 <translation id="5316716239522500219">மானிட்டர்களைப் பிரதிபலி</translation>
 <translation id="5317780077021120954">சேமி</translation>
@@ -3438,7 +3442,6 @@
 <translation id="5684661240348539843">பண்பு அடையாளங்காட்டி</translation>
 <translation id="569068482611873351">இறக்குமதி செய்க...</translation>
 <translation id="56907980372820799">தரவை இணை</translation>
-<translation id="569109051430110155">தானியங்கு கண்டறிதல்</translation>
 <translation id="5691596662111998220">அடடா, <ph name="FILE_NAME" /> இல்லை.</translation>
 <translation id="5694501201003948907">$1 உருப்படிகளை ஜிப் செய்கிறது...</translation>
 <translation id="5697118958262594262">இயல்பாகவே முக்கியமான உள்ளடக்கத்தைக் கண்டுபிடி</translation>
@@ -4501,7 +4504,6 @@
 <translation id="7225179976675429563">நெட்வொர்க் வகை இல்லை</translation>
 <translation id="7230787553283372882">உரை அளவைத் தனிப்பயனாக்கலாம்</translation>
 <translation id="7231224339346098802">எத்தனை நகல்கள் அச்சிட வேண்டுமென்பதைக் குறிக்க எண்ணைப் பயன்படுத்தவும் (1 அல்லது அதற்கு மேற்பட்டவை).</translation>
-<translation id="7234907163682057631">முக்கியமான செருகுநிரல் உள்ளடகத்தைக் கண்டறிந்து இயக்கு</translation>
 <translation id="7238585580608191973">SHA-256 விரல்அச்சு</translation>
 <translation id="7240120331469437312">சான்றிதழ் பொருள் மாற்றுப் பெயர்</translation>
 <translation id="7241389281993241388">கிளையன்ட் சான்றிதழை இறக்குமதி செய்ய தயவுசெய்து <ph name="TOKEN_NAME" /> இல் உள்நுழைக.</translation>
@@ -4677,6 +4679,7 @@
 <translation id="7484645889979462775">இந்த தளத்திற்கு எப்போதும் இல்லை</translation>
 <translation id="7484964289312150019">&amp;புதிய சாளரத்தில் எல்லா புக்மார்க்ஸையும் திற</translation>
 <translation id="7485236722522518129">F4</translation>
+<translation id="7487067081878637334">தொழில்நுட்பம்</translation>
 <translation id="7487099628810939106">கிளிக் செய்யுமுன் தாமதிக்க:</translation>
 <translation id="7487969577036436319">கூறுகள் எதுவும் நிறுவப்படவில்லை</translation>
 <translation id="7489605380874780575">தகுதியைச் சரிபார்</translation>
@@ -4946,6 +4949,7 @@
 <translation id="7877451762676714207">அறியாத சேவையகப் பிழை. மீண்டும் முயலவும் அல்லது சேவையக நிர்வாகியை தொடர்பு கொள்ளவும்.</translation>
 <translation id="7878999881405658917">Google இந்த மொபைலிற்கு அறிவிப்பை அனுப்பியுள்ளது. புளூடூத் மூலம், உங்கள் மொபைல் <ph name="DEVICE_TYPE" />ஐ 30 அடி தூரத்தில் திறந்தநிலையில் வைத்திருக்கலாம். இதில் சிக்கல் ஏற்பட்டால், &lt;a&gt;இந்த அம்சத்தைத் தற்காலிகமாக முடக்கவும்&lt;/a&gt;.</translation>
 <translation id="7880836220014399562">"<ph name="BUNDLE_NAME" />", இந்தப் பயன்பாடுகளையும் நீட்டிப்புகளையும் சேர்க்கும்:</translation>
+<translation id="7881483672146086348">கணக்கைப் பார்</translation>
 <translation id="7881969471599061635">வசனங்களை முடக்கு</translation>
 <translation id="7885253890047913815">சமீபத்திய இலக்குகள்</translation>
 <translation id="7887192723714330082">திரை இயக்கப்பட்டிருக்கும் போதும், திறக்கப்பட்டிருக்கும் போதும், "Ok Google"க்குப் பதிலளிக்கும்</translation>
@@ -5338,7 +5342,6 @@
 <translation id="8428213095426709021">அமைப்புகள்</translation>
 <translation id="8428634594422941299">நிராகரி</translation>
 <translation id="8432745813735585631">யுஎஸ் கோல்மேக் விசைப்பலகை</translation>
-<translation id="8434177709403049435">&amp;குறியீட்டு முறை</translation>
 <translation id="8434480141477525001">NaCl பிழைத்திருத்தப் போர்ட்</translation>
 <translation id="8435334418765210033">நினைவில் உள்ள நெட்வொர்க்குகள்</translation>
 <translation id="8437209419043462667">யு.எஸ்.</translation>
@@ -5730,7 +5733,6 @@
 <translation id="8970203673128054105">அனுப்பும் பயன்முறையின் பட்டியலைக் காட்டு</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Google சேவையகங்களிலிருந்து பதிவிறக்குவதை தீச்சுவர் தடுக்கவில்லை என்பதை உங்கள் பிணைய நிர்வாகியிடம் கேட்டு உறுதிப்படுத்திக்கொள்ளவும்.</translation>
-<translation id="8974161578568356045">தானியங்கு கண்டறிதல்</translation>
 <translation id="8978526688207379569">இந்தத் தளம் தானாகவே பல கோப்புகளைப் பதிவிறக்கம் செய்தது.</translation>
 <translation id="8982248110486356984">பயனர்களை மாற்று</translation>
 <translation id="8986267729801483565">பதிவிறக்க இருப்பிடம்:</translation>
@@ -5916,7 +5918,6 @@
 <translation id="923467487918828349">அனைத்தும் காண்பி</translation>
 <translation id="927151012416335806">உங்கள் சாதனத்தை <ph name="CHANNEL_NAME" /> சேனலுக்குப் புதுப்பிக்கிறது</translation>
 <translation id="930268624053534560">விவரமான நேரமுத்திரைகள்</translation>
-<translation id="931068751149008062">எழுத்துரு வகைகளையும் என்கோடிங்கையும் தேர்வுசெய்க</translation>
 <translation id="932327136139879170">முகப்பு</translation>
 <translation id="932508678520956232">அச்சிடலைத் தொடங்க முடியவில்லை.</translation>
 <translation id="93393615658292258">கடவுச்சொல் மட்டும்</translation>

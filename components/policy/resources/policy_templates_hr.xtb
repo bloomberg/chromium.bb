@@ -477,6 +477,7 @@
 <translation id="2623014935069176671">Pričekaj početnu aktivnost korisnika</translation>
 <translation id="262740370354162807">Omogući slanje dokumenata na uslugu <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Omogućavanje govornih povratnih informacija</translation>
+<translation id="2646290749315461919">Omogućuje da postavite smiju li web-lokacije pratiti fizičku lokaciju korisnika. Praćenje fizičke lokacije korisnika može biti dopušteno prema zadanim postavkama, odbijeno prema zadanim postavkama ili se korisniku može postaviti upit svaki puta kada web-lokacija zahtijeva fizičku lokaciju. Ako ovo pravilo nije postavljeno, upotrebljavat će se pravilo "AskGeolocation", a korisnik će to moći promijeniti.</translation>
 <translation id="2650049181907741121">Radnja koja će se izvršiti kada korisnik spusti poklopac</translation>
 <translation id="2655233147335439767">Određuje URL tražilice koja se upotrebljava za zadano pretraživanje. URL treba sadržavati niz "<ph name="SEARCH_TERM_MARKER" />" koji će se u trenutku upita zamijeniti pojmovima koje korisnik traži.
 
@@ -487,12 +488,6 @@
 <translation id="267596348720209223">Određuje kodiranje znakova koje podržava davatelj usluga pretraživanja. Kodiranja su nazivi kodnih stranica poput UTF-8, GB2312 i ISO-8859-1. Isprobavaju se navedenim redoslijedom. Ovo je pravilo izborno. Ako nije postavljeno, upotrebljavat će se zadana stranica UTF-8. Ovo će se pravilo poštovati samo ako je omogućeno pravilo "DefaultSearchProviderEnabled".</translation>
 <translation id="2682225790874070339">Onemogućuje Disk u aplikaciji Datoteke za <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Omogući značajku proxyja za kompresiju podataka</translation>
-<translation id="2692168654831544772">Onemogućuje snimanje zaslona.
-
-      Ako je omogućeno, snimke zaslona ne mogu se snimiti tipkovnim prečacima ili API-jima proširenja.
-      Osim toga, snimanje zaslona onemogućeno je za ARC aplikacije.
-
-      Ako je onemogućeno ili nije određeno, dopušteno je snimanje zaslona.</translation>
 <translation id="2731627323327011390">Onemogući upotrebu <ph name="PRODUCT_OS_NAME" /> certifikata za ARC aplikacije</translation>
 <translation id="2742843273354638707">Skrivanje aplikacije Chrome web-trgovine i veze u podnožju na web-stranici nove kartice i pokretača aplikacija za <ph name="PRODUCT_OS_NAME" />.
 
@@ -545,22 +540,6 @@
           Svaka stavka na tom popisu podudaran je uzorak stila proširenja (pogledajte https://developer.chrome.com/extensions/match_patterns). Korisnici će moći jednostavno instalirati stavke s bilo kojeg URL-a koji se podudara sa stavkom na tom popisu. Ti uzorci moraju dopustiti lokaciju *.crx datoteke kao i stranicu s koje se pokreće preuzimanje (tj. referalnu stranicu).
 
           ExtensionInstallBlacklist ima prednost nad tim pravilom. To znači da proširenje na popisu zabranjenih proširenja neće biti instalirano čak ni ako dolazi s web-lokacije na tom popisu.</translation>
-<translation id="2813740161943223811">Ovo je pravilo obustavljeno, umjesto njega upotrijebite ProxyMode.
-
-          Omogućuje vam da odredite proxy poslužitelj kojim se koristi <ph name="PRODUCT_NAME" /> i onemogućuje korisnicima da mijenjaju postavke proxyja. Taj proxy poslužitelj moći će upotrebljavati i ARC aplikacije.
-
-          Ako odaberete da se proxy poslužitelj nikad ne upotrebljava i da će povezivanje uvijek biti izravno, sve će se ostale opcije zanemariti.
-
-          Ako odaberete upotrebu sistemskih postavki poxyja ili automatsko otkrivanje proxy poslužitelja, sve će se ostale opcije zanemariti.
-
-          Ako odaberete ručne postavke proxyja, možete odrediti dodatne opcije pod stavkama "Adresa ili URL proxy poslužitelja", "URL prema proxy .pac datoteci" i "Popis pravila proxy zaobilaženja odvojenih zarezima". ARC aplikacije upotrebljavat će samo HTTP proxy poslužitelj najvišeg prioriteta.
-
-          Detaljne primjere potražite na stranici:
-          <ph name="PROXY_HELP_URL" />.
-
-          Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemaruje sve opcije koje se odnose na proxy navedene u naredbenom retku.
-
-          Ako se to pravilo ne postavi, korisnici će moći odabrati vlastite postavke proxyja.</translation>
 <translation id="2818551149761607847">Konfiguriraj sliku avatara za korisnika.
 
       To vam pravilo omogućuje konfiguriranje slike avatara koja predstavlja korisnika na zaslonu za prijavu. Pravilo se postavlja navođenjem URL-a s kojeg <ph name="PRODUCT_OS_NAME" /> može preuzeti sliku avatara i kriptografski sažetak (hash) kojim se potvrđuje integritet preuzimanja. Slika mora biti u JPEG formatu, a njezina veličina ne smije prelaziti 512 KB. URL mora biti dostupan bez ikakve autentifikacije.
@@ -699,18 +678,6 @@
           </translation>
 <translation id="3205825995289802549">Maksimiziraj prvi prozor preglednika pri prvom pokretanju</translation>
 <translation id="3206731874112238027">Onemogućivanje pregleda ispisa (obustavljeno)</translation>
-<translation id="3208854390109736596">Omogućuje vam da odredite proxy poslužitelj kojim se koristi <ph name="PRODUCT_NAME" /> i onemogućuje korisnicima da mijenjaju postavke proxyja. Taj proxy poslužitelj moći će upotrebljavati i ARC aplikacije.
-
-      Ako odaberete da se proxy poslužitelj nikad ne upotrebljava i da će povezivanje uvijek biti izravno, sve će se ostale opcije zanemariti.
-
-      Ako odaberete automatsko otkrivanje proxy poslužitelja, sve će se ostale opcije zanemariti.
-
-      Detaljne primjere potražite na stranici:
-      <ph name="PROXY_HELP_URL" />.
-
-      Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> i ARC aplikacije zanemaruju sve opcije koje se odnose na proxy navedene u naredbenom retku.
-
-      Ako se ta pravila ne postave, korisnici će moći odabrati vlastite postavke proxyja.</translation>
 <translation id="3213821784736959823">Kontrolira primjenjuje li se ugrađeni DNS klijent u proizvodu <ph name="PRODUCT_NAME" />.
 
       Ako je to pravilo postavljeno na točno, primijenit će se ugrađeni DNS klijent ako je dostupan.
@@ -747,11 +714,6 @@
 <translation id="3322771899429619102">Omogućuje postavljanje popisa uzoraka URL-ova koji određuju web-lokacije koje smiju upotrebljavati generiranje ključeva. Ako je uzorak URL-ova u pravilu "KeygenBlockedForUrls", to nadjačava ove iznimke.
 
           Ako se to pravilo ne postavi, globalna zadana vrijednost upotrebljavat će se za sve web-lokacije iz pravila "DefaultKeygenSetting" ako je postavljeno, a u suprotnom iz korisnikove osobne konfiguracije.</translation>
-<translation id="3337150554416948435">Ovim pravilom možete postaviti smiju li web-lokacije pratiti fizičku lokaciju korisnika. Praćenje fizičke lokacije korisnika može se dopustiti prema zadanim postavkama, zabraniti prema zadanim postavkama ili se korisniku može postaviti upit svaki put kad web-lokacija zahtijeva fizičku lokaciju.
-
-          Ako se pravilo postavi na "BlockGeolocation", dijeljenje lokacije nije omogućeno za ARC aplikacije.
-
-          Ako se to pravilo ne postavi, upotrebljavat će se pravilo "AskGeolocation" i korisnik će to moći promijeniti.</translation>
 <translation id="3381968327636295719">Upotrijebi preglednik hosta prema zadanim postavkama</translation>
 <translation id="3417418267404583991">Ako je to pravilo postavljeno na "istinito" ili ako nije konfigurirano, sustav <ph name="PRODUCT_OS_NAME" /> omogućit će prijave gostiju. Prijave gostiju predstavljaju sesije anonimnih korisnika i zaporka nije potrebna.
 
@@ -770,14 +732,6 @@
           Ako se to pravilo postavi na istinito, odgode upravljanja potrošnjom energije i ograničenje duljine sesije neće početi teći dok se ne uoči prva aktivnost korisnika u sesiji.
 
           Ako se to pravilo postavi na neistinito ili se ne postavi, odgode upravljanja potrošnjom energije i ograničenje duljine sesije počinju teći odmah po početku sesije.</translation>
-<translation id="3469657928310999477"><ph name="PRODUCT_NAME" /> zaobilazit će sve proxy poslužitelje na ovdje navedenom popisu hostova. ARC aplikacije moći će upotrebljavati taj popis kao popis pravila za zaobilaženje.
-
-          To će pravilo vrijediti samo ako odaberete ručne postavke proxyja pod stavkom "Odaberi način određivanja postavki proxy poslužitelja".
-
-          Ne postavljajte to pravilo ako ste odabrali bilo koji drugi način postavljanja pravila za proxy poslužitelje.
-
-          Detaljne primjere možete pronaći ovdje:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="3478024346823118645">Izbriši korisničke podatke nakon odjave</translation>
 <translation id="348495353354674884">Omogućavanje virtualne tipkovnice</translation>
 <translation id="3496296378755072552">Upravitelj zaporki</translation>
@@ -900,17 +854,6 @@
 
       Ako se to pravilo ne postavi, SPDY će biti dostupan.</translation>
 <translation id="3891357445869647828">Omogući JavaScript</translation>
-<translation id="3898060089412156345">Omogućuje ili onemogućuje snimanje audiozapisa.
-
-      Ako je to pravilo omogućeno ili nije konfigurirano (zadano), od korisnika će se
-      tražiti pristup za snimanje audiozapisa osim za URL-ove konfigurirane na popisu
-      AudioCaptureAllowedUrls kojima će se pristup odobravati bez postavljanja upita.
-
-      Kada je to pravilo onemogućeno, korisniku se nikad neće postaviti upit i
-      snimanje će biti dostupno samo URL-ovima na popisu AudioCaptureAllowedUrls.
-      Za ARC aplikacije mikrofon je trajno utišan.
-
-      To pravilo utječe na sve vrste audioulaza, a ne samo na ugrađeni mikrofon.</translation>
 <translation id="3907986150060929099">Postavi preporučene jezike za javnu sesiju</translation>
 <translation id="391531815696899618">Onemogućuje sinkronizaciju Google diska u aplikaciji Datoteke za <ph name="PRODUCT_OS_NAME" /> kada je postavljeno na točno. U tom se slučaju nikakvi podaci ne prenose na Google disk.
 
@@ -1037,6 +980,7 @@
       Iako je pravilo podržano na prethodno navedenim platformama, značajka koju omogućuje može biti dostupna na manje platformi. Neke zastarjele značajke web-platformi ne mogu se ponovo omogućiti. Samo one koje su izričito navedene u nastavku mogu se ponovo omogućiti na ograničeno vrijeme koje se razlikuje od značajke do značajke. Općeniti oblik oznake niza bit će [Nazivzastarjeleznačajke]_EffectiveUntil[ggggmmdd]. Ako vas zanima, namjeru promjene značajke web-platforme možete pronaći na stranici https://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Omogući zaključavanje kada uređaj prijeđe u stanje mirovanja ili se isključi</translation>
+<translation id="4445684791305970001">Onemogućuje Alate za razvojne programere i konzolu JavaScriptu. Ako omogućite ovu postavku, više neće biti moguće pristupiti Alatima za razvojne programere i više se neće moći provjeravati elementi web-lokacija. Bit će onemogućeni svi tipkovnički prečaci i stavke izbornika ili kontekstnih izbornika za otvaranje Alata za razvojne programere ili konzole JavaScriptu. Ako se ova opcija onemogući ili ne postavi, bit će dopuštena upotreba Alata za razvojne programere i konzole JavaScripta.</translation>
 <translation id="4449545651113180484">Zakreni zaslon u smjeru kazaljke na satu 270 stupnjeva</translation>
 <translation id="4467952432486360968">Blokiraj kolačiće trećih strana</translation>
 <translation id="4474167089968829729">Omogući spremanje zaporki u upravitelj zaporki</translation>
@@ -1147,6 +1091,16 @@
           Vrijednost mora biti polje JSON rječnika u nizovima. Svaki rječnik mora biti u obliku { "pattern": "$URL_PATTERN", "filter" : $FILTER }, pri čemu je $URL_PATTERN uzorak postavke sadržaja. $FILTER ograničava između kojih će klijentskih certifikata preglednik automatski birati. Neovisno o filtru, birat će se samo certifikati koji se podudaraju sa zahtjevom poslužitelja za certifikat. Ako je $FILTER u obliku { "ISSUER": { "CN": "$ISSUER_CN" } }, dodatno se biraju samo klijentski certifikati koje izdaje certifikat koji ima CommonName $ISSUER_CN. Ako je $FILTER prazan rječnik {}, odabir klijentskih certifikata nije dodatno ograničen.
 
           Ako se to pravilo ne postavi, neće biti automatskog odabira ni za jednu web-lokaciju.</translation>
+<translation id="4980301635509504364">Dopusti ili odbij videosnimanje.
+
+      Ako je to pravilo omogućeno ili nije konfigurirano (zadano), korisniku će se nuditi
+      pristup videosnimanju, osim za URL-ove konfigurirane na popisu
+      VideoCaptureAllowedUrls koji će dobiti pristup bez postavljanja upita.
+
+      Kada je to pravilo onemogućeno, korisniku se nikad neće postaviti upit i snimanje
+      će biti dostupno samo URL-ovima konfiguriranima na VideoCaptureAllowedUrls.
+
+      To pravilo utječe na sve vrste videoulaza, a ne samo na ugrađenu kameru.</translation>
 <translation id="4980635395568992380">Vrste podataka:</translation>
 <translation id="4983201894483989687">Dopusti pokretanje dodataka koji su zastarjeli</translation>
 <translation id="4988291787868618635">Radnja koja će se izvršiti kada nastupi odgoda neaktivnosti</translation>
@@ -1154,7 +1108,6 @@
 <translation id="5052081091120171147">Ako je omogućeno, ovo pravilo prisilno uvozi povijest pregledavanja iz trenutačno zadanog preglednika. Ako je omogućeno, ovo pravilo također utječe na dijaloški okvir za uvoz. Ako je onemogućeno, povijest pregledavanja se ne uvozi. Ako nije postavljeno, korisniku može biti postavljen upit želi li uvesti povijest pregledavanja ili do uvoza može doći automatski.</translation>
 <translation id="5056708224511062314">Povećalo je onemogućeno</translation>
 <translation id="5067143124345820993">Popis korisnika kojima je dopuštena prijava</translation>
-<translation id="510186355068252378">Onemogućuje sinkronizaciju podataka u proizvodu <ph name="PRODUCT_NAME" /> pomoću usluga sinkronizacije s hostingom na Googleu i sprječava korisnike da promijene ovu postavku. Ako omogućite ovu postavku, korisnici ne mogu promijeniti ni poništiti ovu postavku u proizvodu <ph name="PRODUCT_NAME" />. Ako se ovo pravilo ne postavi, korisnik će moći odabrati želi li upotrebljavati Google Sinkronizaciju.</translation>
 <translation id="5105313908130842249">Odgoda zaključavanja zaslona za vrijeme baterijskog napajanja</translation>
 <translation id="5111573778467334951">Određuje radnju koja se treba poduzeti kada se dosegne odgoda zbog neaktivnosti dok računalo pokreće baterija.
 
@@ -1272,13 +1225,6 @@
       Ako je naveden, parametar upita pod nazivom "restrict" dodat će se URL-u za dohvaćanje vrijednosti varijacija. Vrijednost parametra bit će vrijednost navedena u ovom pravilu.
 
       Ako nije naveden, URL vrijednosti varijacija neće se izmijeniti.</translation>
-<translation id="5563853101694018649">Onemogućuje alate za razvojne programere i Konzolu JavaScripta.
-
-      Ako omogućite tu postavku, nije moguć pristup alatima za razvojne programere i elementi web-lokacije više se ne mogu pregledavati. Onemogućit će se svi tipkovni prečaci i svi unosi izbornika ili kontekstnih izbornika za otvaranje alata za razvojne programere ili Konzole JavaScripta.
-
-      Ako tu opciju postavite na onemogućeno ili je ne postavite, korisnici će moći upotrebljavati alate za razvojne programere i Konzolu JavaScripta.
-
-      Za <ph name="PRODUCT_OS_NAME" /> uređaje koji mogu izvoditi Android aplikacije to pravilo upravlja i pristupom Opcijama za razvojne programere Androida. Ako to pravilo postavite na True, korisnici ne mogu pristupiti Opcijama za razvojne programere. Ako to pravilo postavite na False ili ga ne postavite, korisnici mogu pristupiti Opcijama za razvojne programere tako što će u aplikaciji postavki Androida sedam puta dodirnuti broj kompilacije.</translation>
 <translation id="556941986578702361">Kontroliraj automatsko skrivanje police proizvoda <ph name="PRODUCT_OS_NAME" />.
 
       Ako je ta polica postavljena na "AlwaysAutoHideShelf", polica će uvijek biti automatski skrivena.
@@ -1717,6 +1663,16 @@
       Ako omogućite ili onemogućite tu postavku, korisnici je ne mogu promijeniti ni nadjačati.
 
       Ako ne postavite to pravilo, korisnici mogu odabrati žele li unositi zaporku za otključavanje uređaja.</translation>
+<translation id="7109916642577279530">Dopusti ili odbij snimanje zvuka.
+
+      Ako je to pravilo omogućeno ili nije konfigurirano (zadano), korisniku će se nuditi
+      pristup snimanju zvuka, osim za URL-ove konfigurirane na popisu
+      AudioCaptureAllowedUrls koji će dobiti pristup bez postavljanja upita.
+
+      Kada je to pravilo onemogućeno, korisniku se nikad neće postaviti upit i snimanje
+      će biti dostupno samo URL-ovima konfiguriranima na AudioCaptureAllowedUrls.
+
+      To pravilo utječe na sve vrste audioulaza, a ne samo na ugrađeni mikrofon.</translation>
 <translation id="7115494316187648452">Određuje je li proces preglednika <ph name="PRODUCT_NAME" /> pokrenut prilikom prijave u OS i nastavlja li raditi nakon što se zatvori posljednji prozor preglednika, uslijed čega pozadinske aplikacije i trenutačna sesija pregledavanja mogu ostati aktivne, uključujući kolačiće sesije. Za pozadinski proces prikazuje se ikona na traci sustava putem koje ga se može zatvoriti u bilo kojem trenutku.
 
       Ako se to pravilo postavi na "točno", pozadinski je način omogućen i korisnik ne može njime upravljati u postavkama preglednika.
@@ -1991,19 +1947,6 @@
       Određuje ID proširenja koje će se upotrebljavati kao čuvar zaslona na zaslonu prijave. To proširenje mora biti dijelom paketa AppPack koji se konfigurira za ovu domenu pravilom DeviceAppPack.</translation>
 <translation id="7882890448959833986">Spriječi upozorenje o nepodržanom OS-u</translation>
 <translation id="7912255076272890813">Konfiguriraj dopuštene vrste aplikacija/proširenja</translation>
-<translation id="7914271217607102111">Omogućuje ili onemogućuje snimanje videozapisa.
-
-      Ako je to pravilo omogućeno ili nije konfigurirano (zadano), od korisnika će se
-      tražiti pristup za snimanje videozapisa osim za URL-ove konfigurirane na popisu
-      VideoCaptureAllowedUrls kojima će se pristup odobravati bez postavljanja upita.
-      ARC aplikacije moći će pristupati kameri ako dobiju dopuštenje.
-
-      Kada je to pravilo onemogućeno, korisniku se nikad neće postaviti upit i snimanje
-      će biti dostupno samo URL-ovima na popisu VideoCaptureAllowedUrls.
-      ARC aplikacije neće imati pristup kameri.
-
-      Pored ARC aplikacija to pravilo utječe na sve vrste videoulaza, a
-      ne samo na ugrađenu kameru.</translation>
 <translation id="7915236031252389808">Ovdje možete navesti URL za .pac datoteku proxy poslužitelja.
 
           To će pravilo vrijediti samo ako odaberete ručne postavke proxyja pod stavkom "Odaberi način određivanja postavki proxy poslužitelja".
@@ -2371,24 +2314,6 @@ Svaka stavka na popisu jest niz koji sadrži ID proširenja i URL za ažuriranje
 <translation id="9112897538922695510">Omogućuje vam registriranje popisa rukovatelja protokola. To pravilo može biti samo preporučeno. Entitet |protocol| treba se postaviti u shemu kao "mailto", a entitet |url| treba se postaviti u uzorak URL-a aplikacije koja rukuje shemom. Uzorak može uključivati "%s" koji će se, ako postoji, zamijeniti rukovanim URL-om.
 
           Rukovatelji protokola koji su registrirani pravilom spojeni su s onima koje je registrirao korisnik i za upotrebu su dostupne obje vrste rukovatelja. Korisnik može nadjačati rukovatelje protokola instalirane pravilom tako što će instalirati novog zadanog rukovatelja, ali ne može ukloniti onoga koji je pravilom registriran.</translation>
-<translation id="913138516158420759">Omogućuje vam da navedete proxy poslužitelj koji upotrebljava <ph name="PRODUCT_NAME" /> i onemogućuje korisnicima da mijenjaju postavke proxyja. Taj proxy poslužitelj moći će upotrebljavati i ARC aplikacije.
-
-          Ako odaberete da se proxy poslužitelj nikad ne upotrebljava i da će povezivanje uvijek biti izravno, sve će se ostale opcije zanemariti.
-
-          Ako odaberete upotrebu sistemskih postavki proxyja, sve će se ostale opcije zanemariti.
-
-          Ako odaberete automatsko otkrivanje proxy poslužitelja, sve će se ostale opcije zanemariti.
-
-          Ako odaberete način fiksnog proxy poslužitelja, možete odrediti dodatne opcije pod stavkama "Adresa ili URL proxy poslužitelja" i "Popis pravila proxy zaobilaženja odvojenih zarezima". ARC aplikacije upotrebljavat će samo HTTP proxy poslužitelj najvišeg prioriteta.
-
-          Ako odaberete upotrebu .pac skripte proxy poslužitelja, morate navesti URL prema skripti u pravilu "URL prema .pac datoteci proxy poslužitelja".
-
-          Detaljne primjere možete pronaći ovdje:
-          <ph name="PROXY_HELP_URL" />.
-
-          Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> i ARC aplikacije zanemarivat će sve opcije u vezi s proxy poslužiteljem određene naredbenim retkom.
-
-          Ako se to pravilo ne postavi, korisnici će moći sami odabrati postavke proxyja.</translation>
 <translation id="913195841488580904">Blokiranje pristupa popisu URL-ova</translation>
 <translation id="9135033364005346124">Omogući <ph name="CLOUD_PRINT_NAME" /> proxy</translation>
 <translation id="9147029539363974059">Šalje zapisnike sustava poslužitelju za upravljanje da bi se administratorima
@@ -2402,6 +2327,11 @@ Svaka stavka na popisu jest niz koji sadrži ID proširenja i URL za ažuriranje
 <translation id="9187743794267626640">Onemogući priključivanje vanjske pohrane</translation>
 <translation id="9197740283131855199">Postotak skaliranja odgode zatamnjivanja zaslona ako korisnik postane aktivan nakon zatamnjivanja</translation>
 <translation id="9200828125069750521">Parametri za URL slike koji upotrebljava POST</translation>
+<translation id="9203071022800375458">Onemogućuje izradu snimki zaslona.
+
+      Ako je omogućeno, snimke zaslona ne mogu se izrađivati upotrebom tipkovničkih prečaca ni API-ja proširenja.
+
+      Ako je onemogućeno ili nije određeno, izrada snimki zaslona dopuštena je.</translation>
 <translation id="9217154963008402249">Učestalost mrežnih paketa za praćenje</translation>
 <translation id="922540222991413931">Konfiguracija izvora instalacija proširenja, aplikacija i korisničkih skripti</translation>
 <translation id="924557436754151212">Uvoz spremljenih zaporki iz zadanog preglednika pri prvom pokretanju</translation>

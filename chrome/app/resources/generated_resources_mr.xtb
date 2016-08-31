@@ -183,6 +183,7 @@
 <translation id="1240892293903523606">DOM निरीक्षक</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> आपल्या सेटिंग्ज रीसेट करू इच्छिते.</translation>
 <translation id="1243314992276662751">अपलोड करा</translation>
+<translation id="1244147615850840081">कॅरियर</translation>
 <translation id="1244303850296295656">विस्तार त्रुटी</translation>
 <translation id="1245907074925860695">वापरकर्त्यास काढा</translation>
 <translation id="1248269069727746712">नेटवर्कशी कनेक्ट करण्यासाठी <ph name="PRODUCT_NAME" /> आपल्या डिव्हाइसच्या सिस्टिमच्या प्रॉक्सी सेटिंग्ज वापरत आहे.</translation>
@@ -195,7 +196,6 @@
 <translation id="126710816202626562">भाषांतर भाषा:</translation>
 <translation id="1272079795634619415">थांबा</translation>
 <translation id="1272978324304772054">हे वापरकर्ता खाते ज्यावर डिव्हाइसने नोंदणी केली आहे त्या डोमेनशी संबंधित नाही. आपण एखादे वेगळ्या डोमेनची नोंदणी करू इच्छित असल्यास, आपल्याला प्रथम डिव्हाइस पुनर्प्राप्तीद्वारा जाणे आवश्यक आहे.</translation>
-<translation id="127353061808977798">फॉन्ट आणि एन्कोडिंग</translation>
 <translation id="1274997165432133392">कुकीज आणि इतर साइट डेटा</translation>
 <translation id="1275718070701477396">निवडलेले</translation>
 <translation id="127668050356036882">आपल्या सर्व विंडो बंद करा</translation>
@@ -1316,6 +1316,7 @@
 <translation id="2799223571221894425">पुन्हा लाँच करा</translation>
 <translation id="2800537048826676660">शब्दलेखन तपासणीसाठी ही भाषा वापरा</translation>
 <translation id="2801702994096586034">सर्व्हर 3</translation>
+<translation id="2803375539583399270">पिन प्रविष्ट करा</translation>
 <translation id="2803887722080936828"><ph name="BEGIN_H3" />डिबगिंग वैशिष्ट्ये<ph name="END_H3" />
     <ph name="BR" />
     आपण आपल्या डिव्हाइसवर सानुकूल कोड स्थापित आणि त्याची चाचणी घेण्यासाठी आपल्या Chrome OS डिव्हाइसवर डिबगिंग वैशिष्ट्ये सक्षम करू शकता.  हे आपल्याला याची अनुमती देईल:<ph name="BR" />
@@ -2063,6 +2064,7 @@
 <translation id="3743492083222969745">व्हर्च्युअल कीबोर्ड साठी सेटिंग्ज पृष्‍ठामधील जेश्चर टायपिंग पर्याय सक्षम/अक्षम करा.</translation>
 <translation id="3744111561329211289">पार्श्वभूमी संकालन</translation>
 <translation id="3745016858329272300">सर्वसाधारण माहिती</translation>
+<translation id="3748026146096797577">कनेक्टेड नाही</translation>
 <translation id="3749289110408117711">फाइल नाव</translation>
 <translation id="3751427701788899101">कनेक्शन गमावले होते</translation>
 <translation id="3752439026432317933">बिलिंग तपशील प्रविष्ट करा...</translation>
@@ -2779,6 +2781,7 @@
 <translation id="480990236307250886">मुख्यपृष्ठ उघडा</translation>
 <translation id="4811502511369621968">अवैध ईमेल पत्ता. कृपया तपासा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="4812632551187706935">कनेक्शन प्रारंभ करणे शक्य झाले नाही</translation>
+<translation id="4812684235631257312">होस्ट</translation>
 <translation id="4813345808229079766">कनेक्शन</translation>
 <translation id="4813512666221746211">नेटवर्क त्रुटी</translation>
 <translation id="4816492930507672669">पृष्‍ठानुरुप करा</translation>
@@ -3159,6 +3162,7 @@
 <translation id="5306802244647481941">फायली अॅप द्रुत दृश्य</translation>
 <translation id="5308380583665731573">कनेक्‍ट करा</translation>
 <translation id="5311260548612583999">खाजगी की फाइल (पर्यायी):</translation>
+<translation id="5315873049536339193">ओळख</translation>
 <translation id="5316588172263354223">व्‍हॉइस शोध कधीही</translation>
 <translation id="5316716239522500219">मॉनिटर मिरर करा</translation>
 <translation id="5317780077021120954">जतन करा</translation>
@@ -3435,7 +3439,6 @@
 <translation id="5684661240348539843">मालमत्ता अभिज्ञापक</translation>
 <translation id="569068482611873351">आयात...</translation>
 <translation id="56907980372820799">डेटा चा दुवा जोडा</translation>
-<translation id="569109051430110155">स्वयं तपासणी</translation>
 <translation id="5691596662111998220">अरेरे, <ph name="FILE_NAME" /> यापुढे अस्तित्वात नाही.</translation>
 <translation id="5694501201003948907">$1 आयटम झिप करत आहे...</translation>
 <translation id="5697118958262594262">डीफॉल्‍टनुसार महत्त्वाची सामग्री शोधा</translation>
@@ -4499,7 +4502,6 @@
 <translation id="7225179976675429563">नेटवर्क प्रकार गहाळ</translation>
 <translation id="7230787553283372882">आपला मजकूर आकार सानुकूलित करा</translation>
 <translation id="7231224339346098802">किती कॉपी मुद्रित करायच्या हे सूचित करण्यासाठी संख्या वापरा (1 किंवा अधिक).</translation>
-<translation id="7234907163682057631">महत्त्वाची प्लगिन सामग्री शोधा आणि चालवा</translation>
 <translation id="7238585580608191973">SHA-256 बोटाचा ठसा</translation>
 <translation id="7240120331469437312">प्रमाणपत्र विषय वैकल्पिक नाव</translation>
 <translation id="7241389281993241388">कृपया क्लायंट प्रमाणपत्र आयात करण्यासाठी <ph name="TOKEN_NAME" /> मध्ये साइन इन करा.</translation>
@@ -4681,6 +4683,7 @@
 <translation id="7484645889979462775">या साइटसाठी कधीही नाही</translation>
 <translation id="7484964289312150019">सर्व बुकमार्क &amp;नवीन विंडोमध्ये उघडा</translation>
 <translation id="7485236722522518129">F4</translation>
+<translation id="7487067081878637334">तंत्रज्ञान</translation>
 <translation id="7487099628810939106">क्लिक करण्यापूर्वी विलंब:</translation>
 <translation id="7487969577036436319">कोणतेही घटक स्थापित केलेले नाहीत</translation>
 <translation id="7489605380874780575">पात्रता तपासा</translation>
@@ -4951,6 +4954,7 @@
 <translation id="7877451762676714207">अज्ञात सर्व्हर त्रुटी. कृपया पुन्हा प्रयत्न करा किंवा सर्व्हर प्रशासकाशी संपर्क साधा.</translation>
 <translation id="7878999881405658917">या फोनवर Google ने एक सूचना पाठविली आहे. लक्षात ठेवा की Bluetooth सह, आपला फोन 30 फूट दुरून आपले <ph name="DEVICE_TYPE" /> अनलॉक केलेले ठेवू शकतो. याला समस्या येत असल्यास, आपण &lt;a&gt;हे वैशिष्ट्य तात्पुरते अक्षम करू शकता&lt;/a&gt;.</translation>
 <translation id="7880836220014399562">"<ph name="BUNDLE_NAME" />" हे अॅप्स आणि विस्तार जोडते:</translation>
+<translation id="7881483672146086348">खाते पहा</translation>
 <translation id="7881969471599061635">उपशीर्षके अक्षम करा</translation>
 <translation id="7885253890047913815">अलीकडील गंतव्ये</translation>
 <translation id="7887192723714330082">स्क्रीन चालू आणि अनलॉक असते तेव्हा "Ok Google" ला प्रतिसाद द्या</translation>
@@ -5343,7 +5347,6 @@
 <translation id="8428213095426709021">सेटिंग्ज</translation>
 <translation id="8428634594422941299">समजले</translation>
 <translation id="8432745813735585631">यूएस कोलमॅक कीबोर्ड</translation>
-<translation id="8434177709403049435">एन्कोडिंग</translation>
 <translation id="8434480141477525001">NaCl  डीबग पोर्ट</translation>
 <translation id="8435334418765210033">लक्षात असलेले नेटवर्क्स</translation>
 <translation id="8437209419043462667">यूएस</translation>
@@ -5735,7 +5738,6 @@
 <translation id="8970203673128054105">कास्ट मोड सूची पहा</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">कृपया फायरवॉल Google सर्व्हरवरून डाउनलोड अवरोधित करत नसल्याची खात्री करण्यासाठी आपल्या नेटवर्क प्रशासकासह तपासा.</translation>
-<translation id="8974161578568356045">स्वयं तपासणी</translation>
 <translation id="8978526688207379569">या साइटने एकाधिक फायली स्वयंचलितपणे डाउनलोड केल्या.</translation>
 <translation id="8982248110486356984">वापरकर्ते स्‍विच करा</translation>
 <translation id="8986267729801483565">डाउनलोड स्थान:</translation>
@@ -5921,7 +5923,6 @@
 <translation id="923467487918828349">सर्व दर्शवा</translation>
 <translation id="927151012416335806">आपले डिव्हाइस <ph name="CHANNEL_NAME" /> चॅनेलवर अद्यतनित करीत आहे</translation>
 <translation id="930268624053534560">तपशीलवार टाइमस्टॅम्प</translation>
-<translation id="931068751149008062">फॉन्ट प्रकार आणि संकेतन निवडा</translation>
 <translation id="932327136139879170">मुख्यपृष्ठ</translation>
 <translation id="932508678520956232">मुद्रण आरंभ करणे शक्य नव्हते.</translation>
 <translation id="93393615658292258">फक्त संकेतशब्द</translation>

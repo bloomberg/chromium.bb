@@ -183,6 +183,7 @@
 <translation id="1240892293903523606">DOM インスペクタ</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> が設定のリセットを求めています。</translation>
 <translation id="1243314992276662751">アップロード</translation>
+<translation id="1244147615850840081">通信会社</translation>
 <translation id="1244303850296295656">拡張機能のエラー</translation>
 <translation id="1245907074925860695">ユーザーの削除</translation>
 <translation id="1248269069727746712"><ph name="PRODUCT_NAME" />は、端末のシステムプロキシ設定を使用してネットワークに接続しています。</translation>
@@ -195,7 +196,6 @@
 <translation id="126710816202626562">翻訳言語:</translation>
 <translation id="1272079795634619415">中止</translation>
 <translation id="1272978324304772054">このユーザー アカウントは、デバイスが登録されているドメインに属していません。別のドメインに登録する場合は、まず、デバイス リカバリ操作を行う必要があります。</translation>
-<translation id="127353061808977798">フォントとエンコード</translation>
 <translation id="1274997165432133392">Cookie と他のサイト データ</translation>
 <translation id="1275718070701477396">選択されています</translation>
 <translation id="127668050356036882">すべてのウィンドウを閉じる</translation>
@@ -1318,6 +1318,7 @@
 <translation id="2799223571221894425">再起動</translation>
 <translation id="2800537048826676660">この言語でスペルチェック</translation>
 <translation id="2801702994096586034">サーバー 3</translation>
+<translation id="2803375539583399270">PIN を入力</translation>
 <translation id="2803887722080936828"><ph name="BEGIN_H3" />デバッグ機能<ph name="END_H3" />
     <ph name="BR" />
     Chrome OS デバイスでは、カスタムコードをインストールしてテストするためにデバッグ機能を有効にできます。この設定により次のことが可能になります。<ph name="BR" />
@@ -2069,6 +2070,7 @@
 <translation id="3743492083222969745">仮想キーボードの設定ページのジェスチャー入力機能を有効または無効にします。</translation>
 <translation id="3744111561329211289">バックグラウンド同期</translation>
 <translation id="3745016858329272300">一般情報</translation>
+<translation id="3748026146096797577">接続されていません</translation>
 <translation id="3749289110408117711">ファイル名</translation>
 <translation id="3751427701788899101">接続が切断されました</translation>
 <translation id="3752439026432317933">お支払いの詳細情報を入力...</translation>
@@ -2787,6 +2789,7 @@
 <translation id="480990236307250886">ホームページを開く</translation>
 <translation id="4811502511369621968">メール アドレスが無効です。確認してから、もう一度お試しください。</translation>
 <translation id="4812632551187706935">接続を初期化できませんでした</translation>
+<translation id="4812684235631257312">ホスト</translation>
 <translation id="4813345808229079766">接続</translation>
 <translation id="4813512666221746211">ネットワーク エラー</translation>
 <translation id="4816492930507672669">ページサイズに合わせる</translation>
@@ -3166,6 +3169,7 @@
 <translation id="5306802244647481941">ファイルアプリのクイック表示</translation>
 <translation id="5308380583665731573">接続</translation>
 <translation id="5311260548612583999">秘密鍵ファイル（省略可能）:</translation>
+<translation id="5315873049536339193">ID</translation>
 <translation id="5316588172263354223">いつでも音声検索が可能</translation>
 <translation id="5316716239522500219">モニターをミラーリングする</translation>
 <translation id="5317780077021120954">保存</translation>
@@ -3442,7 +3446,6 @@
 <translation id="5684661240348539843">アセット ID</translation>
 <translation id="569068482611873351">インポート...</translation>
 <translation id="56907980372820799">データをリンク</translation>
-<translation id="569109051430110155">自動検出</translation>
 <translation id="5691596662111998220"><ph name="FILE_NAME" /> が存在しません。</translation>
 <translation id="5694501201003948907">$1 件のアイテムを圧縮しています...</translation>
 <translation id="5697118958262594262">重要なコンテンツを既定で検出</translation>
@@ -4506,7 +4509,6 @@
 <translation id="7225179976675429563">ネットワークの種類が指定されていません</translation>
 <translation id="7230787553283372882">テキストサイズをカスタマイズします</translation>
 <translation id="7231224339346098802">1 以上の数字を使用して、印刷する部数を指定してください。</translation>
-<translation id="7234907163682057631">重要なプラグイン コンテンツを検出して実行する</translation>
 <translation id="7238585580608191973">SHA-256 指紋</translation>
 <translation id="7240120331469437312">証明書のサブジェクトの代替名</translation>
 <translation id="7241389281993241388">クライアント証明書をインポートするには <ph name="TOKEN_NAME" /> にログインしてください。</translation>
@@ -4690,6 +4692,7 @@
 <translation id="7484645889979462775">このサイトでは保存しない</translation>
 <translation id="7484964289312150019">すべてのブックマークを新しいウィンドウで開く(&amp;N)</translation>
 <translation id="7485236722522518129">F4</translation>
+<translation id="7487067081878637334">テクノロジー</translation>
 <translation id="7487099628810939106">クリックされるまでの時間:</translation>
 <translation id="7487969577036436319">コンポーネントはインストールされていません</translation>
 <translation id="7489605380874780575">対象かどうかチェック</translation>
@@ -4961,6 +4964,7 @@
 <translation id="7877451762676714207">不明なサーバー エラーが発生しました。もう一度お試しになるか、サーバー管理者にご連絡ください。</translation>
 <translation id="7878999881405658917">Google からこのスマートフォンに通知を送信しました。Bluetooth を使用している場合、スマートフォンと 9 m 以上離れていても <ph name="DEVICE_TYPE" /> がロック解除のままになる可能性があります。これが問題となる場合は、&lt;a&gt;この機能を一時的に無効にする&lt;/a&gt;ことができます。</translation>
 <translation id="7880836220014399562">「<ph name="BUNDLE_NAME" />」で追加されるアプリと拡張機能:</translation>
+<translation id="7881483672146086348">アカウントを表示</translation>
 <translation id="7881969471599061635">字幕を無効にする</translation>
 <translation id="7885253890047913815">最近使用した送信先</translation>
 <translation id="7887192723714330082">画面がオンでロック解除された状態のときに「OK Google」に反応するようになりました</translation>
@@ -5353,7 +5357,6 @@
 <translation id="8428213095426709021">設定</translation>
 <translation id="8428634594422941299">OK</translation>
 <translation id="8432745813735585631">Colemak キーボード（米国）</translation>
-<translation id="8434177709403049435">エンコード(&amp;E)</translation>
 <translation id="8434480141477525001">NaCl デバッグ ポート</translation>
 <translation id="8435334418765210033">記録されているネットワーク</translation>
 <translation id="8437209419043462667">US</translation>
@@ -5744,7 +5747,6 @@
 <translation id="8970203673128054105">キャストモード リストを表示</translation>
 <translation id="89720367119469899">エスケープ</translation>
 <translation id="8972513834460200407">ファイアウォールが Google のサーバーからのダウンロードをブロックしていないかどうかをネットワーク管理者に確認してください。</translation>
-<translation id="8974161578568356045">自動検出</translation>
 <translation id="8978526688207379569">サイトが複数のファイルを自動的にダウンロードしました。</translation>
 <translation id="8982248110486356984">ユーザーを切り替える</translation>
 <translation id="8986267729801483565">ダウンロード保存先:</translation>
@@ -5930,7 +5932,6 @@
 <translation id="923467487918828349">すべてを表示</translation>
 <translation id="927151012416335806">端末を <ph name="CHANNEL_NAME" /> チャンネルに更新しています</translation>
 <translation id="930268624053534560">詳細なタイムスタンプ</translation>
-<translation id="931068751149008062">フォントの種類とエンコードを指定します</translation>
 <translation id="932327136139879170">ホーム</translation>
 <translation id="932508678520956232">印刷を開始できませんでした。</translation>
 <translation id="93393615658292258">パスワードのみ</translation>

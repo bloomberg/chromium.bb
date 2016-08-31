@@ -507,6 +507,7 @@
 <translation id="2623014935069176671">Tunggu aktiviti pengguna awal</translation>
 <translation id="262740370354162807">Dayakan penyerahan dokumen pada <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Dayakan maklum balas yang dituturkan</translation>
+<translation id="2646290749315461919">Membenarkan anda menetapkan sama ada tapak web dibenarkan untuk mengesan lokasi fizikal pengguna. Penjejakan lokasi fizikal pengguna boleh dibenarkan secara lalai, dinafikan secara lalai atau pengguna boleh ditanya setiap kali tapak web meminta lokasi fizikal. Jika dasar ini tidak ditetapkan, 'AskGeolocation' akan digunakan dan pengguna akan dapat mengubah.</translation>
 <translation id="2650049181907741121">Tindakan yang perlu diambil apabila pengguna menutup penutup</translation>
 <translation id="2655233147335439767">Menentukan URL enjin carian yang digunakan apabila melakukan carian lalai. URL ini harus mengandungi rentetan '<ph name="SEARCH_TERM_MARKER" />', yang akan digantikan oleh istilah yang dicari oleh pengguna pada masa pertanyaan dibuat.
 
@@ -521,12 +522,6 @@
           Dasar ini hanya dihormati jika dasar 'DefaultSearchProviderEnabled' didayakan.</translation>
 <translation id="2682225790874070339">Melumpuhkan Drive dalam apl Fail <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Dayakan ciri proksi pemampatan data</translation>
-<translation id="2692168654831544772">Melumpuhkan pengambilan tangkapan skrin.
-
-      Jika didayakan, tangkapan skrin tidak boleh diambil menggunakan pintasan papan kekunci atau API sambungan.
-      Selain itu, penangkapan skrin dilumpuhkan untuk apl ARC.
-
-      Jika dilumpuhkan atau tidak ditentukan, pengambilan tangkapan skrin akan dibenarkan.</translation>
 <translation id="2731627323327011390">Lumpuhkan penggunaan sijil <ph name="PRODUCT_OS_NAME" /> pada apl ARC</translation>
 <translation id="2742843273354638707">Sembunyikan apl Gedung Web Chrome dan pautan pembawah daripada Halaman Tab Baharu dan pelancar apl <ph name="PRODUCT_OS_NAME" />.
 
@@ -579,22 +574,6 @@
           Setiap item dalam senarai ini merupakan pola padanan ala sambungan (lihat https://developer.chrome.com/extensions/match_patterns). Pengguna akan dapat memasang item daripada mana-mana URL yang sepadan dengan item dalam senarai ini dengan mudah. Kedua-dua lokasi fail *.crx dan halaman tempat muat turun dimulakan (contohnya perujuk) mestilah dibenarkan oleh pola ini.
 
           ExtensionInstallBlacklist diberikan keutamaan melebihi dasar ini. Bermakna, sambungan pada senarai hitam tidak akan dipasang walaupun sambungan tersebut berasal daripada tapak pada senarai ini.</translation>
-<translation id="2813740161943223811">Dasar ini sudah tidak digunakan lagi, sebaliknya gunakan ProxyMode.
-
-          Membenarkan anda menentukan pelayan proksi yang digunakan oleh <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada menukar tetapan proksi. Apl ARC turut dapat menggunakan pelayan proksi ini.
-
-          Jika anda memilih untuk tidak menggunakan pelayan proksi dan sentiasa disambungkan terus, semua pilihan lain akan diabaikan.
-
-          Jika anda memilih untuk menggunakan tetapan proksi sistem atau mengesan pelayan proksi secara automatik, semua pilihan lain akan diabaikan.
-
-          Jika anda memilih tetapan proksi manual, anda boleh menetapkan pilihan lanjut dalam 'Alamat atau URL pelayan proksi', 'URL kepada fail .pac proksi' dan 'Senarai dipisahkan koma peraturan pintasan proksi'. Hanya pelayan proksi HTTP dengan keutamaan tertinggi tersedia untuk apl ARC.
-
-          Untuk melihat contoh terperinci, lawati:
-          <ph name="PROXY_HELP_URL" />.
-
-          Jika anda mendayakan tetapan ini, <ph name="PRODUCT_NAME" /> akan mengabaikan semua pilihan berkaitan proksi yang ditetapkan daripada baris perintah.
-
-          Jika dasar ini dibiarkan tanpa ditetapkan, pengguna boleh memilih tetapan proksi mereka sendiri.</translation>
 <translation id="2818551149761607847">Konfigurasikan imej avatar pengguna.
 
       Dasar ini membolehkan anda mengkonfigurasikan imej avatar yang mewakili pengguna pada skrin log masuk. Dasar ini ditetapkan dengan menetapkan URL yang boleh digunakan oleh <ph name="PRODUCT_OS_NAME" /> untuk memuat turun imej avatar dan cincangan kriptografi yang digunakan untuk mengesahkan integriti muat turun tersebut. Imej mestilah dalam format JPEG dan saiznya tidak boleh melebihi 512kB. URL ini mesti boleh diakses tanpa sebarang pengesahan.
@@ -740,18 +719,6 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
           </translation>
 <translation id="3205825995289802549">Maksimumkan tetingkap penyemak imbas pertama pada kendalian pertama</translation>
 <translation id="3206731874112238027">Lumpuhkan Pratonton Cetak (ditamatkan)</translation>
-<translation id="3208854390109736596">Membenarkan anda menentukan pelayan proksi yang digunakan oleh <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada menukar tetapan proksi. Apl ARC turut dapat menggunakan pelayan proksi ini.
-
-      Jika anda memilih untuk tidak menggunakan pelayan proksi dan sentiasa disambungkan terus, semua pilihan lain akan diabaikan.
-
-      Jika anda memilih untuk mengesan pelayan proksi secara automatik, semua pilihan lain akan diabaikan.
-
-      Untuk melhat contoh terperinci, lawati:
-      <ph name="PROXY_HELP_URL" />.
-
-      Jika anda mendayakan tetapan ini, <ph name="PRODUCT_NAME" /> dan apl ARC akan mengabaikan semua pilihan berkaitan proksi yang ditetapkan daripada baris perintah.
-
-      Jika dasar ini dibiarkan tanpa ditetapkan, pengguna boleh memilih tetapan proksi mereka sendiri.</translation>
 <translation id="3213821784736959823">Mengawal sama ada pelanggan DNS terbina dalam digunakan dalam <ph name="PRODUCT_NAME" />.
 
       Jika dasar ini ditetapkan kepada benar, pelanggan DNS terbina dalam akan digunakan, jika tersedia.
@@ -796,11 +763,6 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 <translation id="3322771899429619102">Membenarkan anda menetapkan senarai pola url yang menentukan tapak yang dibenarkan untuk menggunakan penghasilan kunci. Pengecualian akan dibatalkan jika pola url berada dalam 'KeygenBlockedForUrls'.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak, sama ada daripada dasar 'DefaultKeygenSetting' jika ditetapkan atau konfigurasi peribadi pengguna jika tidak ditetapkan.</translation>
-<translation id="3337150554416948435">Membenarkan anda menetapkan sama ada tapak web dibenarkan untuk menjejak lokasi fizikal pengguna atau tidak. Penjejakan lokasi fizikal pengguna boleh dibenarkan secara lalai, dinafikan secara lalai atau pengguna boleh ditanya setiap kali tapak web meminta lokasi fizikal.
-
-          Jika dasar ini ditetapkan kepada 'BlockGeolocation', perkongsian lokasi tidak dibenarkan untuk apl ARC.
-
-          Jika dasar ini dibiarkan tanpa ditetapkan, 'AskGeolocation' akan digunakan dan pengguna akan dapat mengubahnya.</translation>
 <translation id="3381968327636295719">Gunakan penyemak imbas hos secara lalai</translation>
 <translation id="3417418267404583991">Jika dasar ini ditetapkan kepada benar atau tidak dikonfigurasi, <ph name="PRODUCT_OS_NAME" /> akan mendayakan log masuk tetamu. Log masuk tetamu adalah sesi pengguna tanpa nama dan tidak memerlukan kata laluan.
 
@@ -819,14 +781,6 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
           Jika dasar ini ditetapkan kepada Benar, lengah pengurusan kuasa dan had tempoh sesi tidak mula dijalankan sehingga selepas aktiviti pengguna pertama telah diperhatikan dalam sesi.
 
           Jika dasar ini ditetapkan kepada Palsu atau dibiarkan tanpa ditetapkan, lengah pengurusan kuasa dan had tempoh sesi akan mula dijalankan serta merta pada permulaan sesi.</translation>
-<translation id="3469657928310999477"><ph name="PRODUCT_NAME" /> akan memintas mana-mana proksi untuk hos yang disenaraikan di sini. Apl ARC akan dapat menggunakan senarai ini sebagai senarai peraturan pintasan.
-
-          Dasar ini hanya berkuat kuasa jika anda telah memilih tetapan proksi manual pada 'Pilih cara untuk menentukan tetapan pelayan proksi'.
-
-          Anda harus membiarkan dasar ini tanpa ditetapkan jika anda telah memilih mana-mana mod lain untuk menetapkan dasar proksi.
-
-          Untuk melihat contoh terperinci, lawati:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="3478024346823118645">Hapuskan data pengguna semasa log keluar</translation>
 <translation id="348495353354674884">Dayakan papan kekunci maya</translation>
 <translation id="3496296378755072552">Pengurus kata laluan</translation>
@@ -957,18 +911,6 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 
       Jika dasar ini dibiarkan tanpa ditetapkan, SPDY akan tersedia.</translation>
 <translation id="3891357445869647828">Dayakan JavaScript</translation>
-<translation id="3898060089412156345">Benarkan atau tolak penangkapan audio.
-
-      Jika didayakan atau tidak dikonfigurasi (lalai), pengguna akan digesa untuk
-      akses tangkapan audio kecuali untuk URL yang dikonfigurasi dalam senarai
-      AudioCaptureAllowedUrls yang akan diberikan akses tanpa digesa.
-
-      Apabila dasar ini dilumpuhkan, pengguna tidak akan digesa dan tangkapan
-      audio hanya tersedia kepada URL yang dikonfigurasi dalam 
-     .AudioCaptureAllowedUrls.
-      Untuk apl ARC, mikrofon disenyapkan secara kekal.
-
-      Dasar ini memberi kesan kepada semua jenis input audio dan bukan sahaja mikrofon terbina dalam.</translation>
 <translation id="3907986150060929099">Tetapkan penempatan yang disyorkan untuk sesi awam</translation>
 <translation id="391531815696899618">Melumpuhkan penyegerakan Google Drive dalam apl Fail <ph name="PRODUCT_OS_NAME" /> apabila ditetapkan kepada Benar. Jika ini berlaku, tiada data akan dimuat naik ke Google Drive.
 
@@ -1103,6 +1045,11 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
       Walaupun dasar ini sendiri disokong pada platform di atas, ciri yang didayakannya mungkin tersedia pada lagi kurang platform. Bukan semua ciri Platform Web yang ditamatkan boleh didayakan semula. Hanya ciri yang disenaraikan dengan jelas di bawah ini boleh didayakan semula untuk tempoh yang terhad, yang berbeza bagi setiap ciri. Format umum bagi tanda rentetan ialah [DeprecatedFeatureName]_EffectiveUntil[yyyymmdd]. Sebagai rujukan, anda boleh dapati tujuan di sebalik perubahan ciri Platform Web di https://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Dayakan kunci apabila peranti melahu atau digantung</translation>
+<translation id="4445684791305970001">Melumpuhkan Alat Pembangun dan konsol JavaScript.
+
+      Jika anda mendayakan tetapan ini, Alat Pembangun tidak boleh diakses dan elemen tapak web tidak lagi boleh diperiksa. Sebarang pintasan papan kekunci dan mana-mana menu atau masukan menu konteks untuk membuka Alat Pembangun atau Konsol JavaScript akan dilumpuhkan.
+
+      Menetapkan pilihan ini kepada dilumpuhkan atau membiarkannya tanpa ditetapkan, akan membolehkan pengguna menggunakan Alat Pembangun dan konsol JavaScript.</translation>
 <translation id="4449545651113180484">Putar skrin 270 darjah mengikut arah jam</translation>
 <translation id="4467952432486360968">Sekat kuki pihak ketiga</translation>
 <translation id="4474167089968829729">Dayakan penyimpanan kata laluan pada pengurus kata laluan</translation>
@@ -1227,6 +1174,17 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
           Nilai tersebut mestilah tatasusunan pelbagai kamus JSON yang berentetan. Setiap kamus mestilah berbentuk { "pattern": "$URL_PATTERN", "filter" : $FILTER }, dengan $URL_PATTERN ialah pola tetapan kandungan. $FILTER menyekat yang daripadanya sijil pelanggan akan dipilih secara automatik oleh penyemak imbas. Tanpa bergantung kepada penapis, hanya sijil akan dipilih apabila sepadan dengan permintaan sijil pelayan. Jika $FILTER berbentuk { "ISSUER": { "CN": "$ISSUER_CN" } }, selain itu hanya sijil pelanggan dipilih yang dikeluarkan oleh sijil dengan CommonName $ISSUER_CN. Jika $FILTER ialah kamus kosong {}, pemilihan sijil pelanggan tidak dihadkan sebagai tambahan.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, tiada auto pilihan akan dibuat untuk mana-mana tapak.</translation>
+<translation id="4980301635509504364">Benarkan atau tolak tangkapan video.
+
+      Jika didayakan atau tidak dikonfigurasi (lalai), pengguna akan diminta untuk
+      akses tangkapan video kecuali URL yang dikonfigurasikan dalam senarai
+      VideoCaptureAllowedUrls yang akan diberikan akses tanpa gesaan.
+
+      Apabila dasar ini dilumpuhkan, pengguna tidak akan digesa dan tangkapan video
+      hanya tersedia untuk URL yang dikonfigurasi dalam VideoCaptureAllowedUrls.
+      
+      Dasar ini memberi kesan kepada semua jenis input video dan bukan sahaja
+      kamera terbina dalam.</translation>
 <translation id="4980635395568992380">Jenis data:</translation>
 <translation id="4983201894483989687">Benarkan pemalam yang lapuk dijalankan</translation>
 <translation id="4988291787868618635">Tindakan yang perlu diambil apabila kelewatan melahu dicapai</translation>
@@ -1238,11 +1196,6 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
       Jika ia tidak ditetapkan, pengguna mungkin ditanya sama ada hendak mengimport atau import boleh berlaku secara automatik.</translation>
 <translation id="5056708224511062314">Penggadang skrin dilumpuhkan</translation>
 <translation id="5067143124345820993">Log masuk senarai putih pengguna</translation>
-<translation id="510186355068252378">Melumpuhkan penyegerakan data dalam <ph name="PRODUCT_NAME" /> menggunakan perkhidmatan penyegerakan yang dihoskan oleh Google dan menghalang pengguna daripada mengubah tetapan ini.
-
-      Jika anda mendayakan tetapan ini, pengguna tidak boleh mengubah atau mengatasi tetapan ini dalam <ph name="PRODUCT_NAME" />.
-
-      Jika dasar ini dibiarkan tanpa ditetapkan, Penyegerakan Google akan tersedia untuk pengguna memilih sama ada untuk menggunakannya atau tidak.</translation>
 <translation id="5105313908130842249">Kelewatan kunci skrin apabila dijalankan dengan kuasa bateri</translation>
 <translation id="5111573778467334951">Menentukan tindakan yang perlu diambil apabila kelewatan melahu dicapai semasa dijalankan menggunakan kuasa bateri.
 
@@ -1375,13 +1328,6 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
       Jika ditetapkan, parameter pertanyaan yang dipanggil 'hadkan' akan ditambahkan kepada URL yang digunakan untuk mengambil benih Variasi. Nilai yang dinyatakan dalam dasar ini akan menjadi nilai parameter.
 
       Jika tidak ditetapkan, URL benih Variasi tidak akan diubah suai.</translation>
-<translation id="5563853101694018649">Melumpuhkan Alatan Pembangun dan konsol JavaScript.
-
-      Jika anda mendayakan tetapan ini, Alatan Pembangun tidak dapat diakses dan elemen tapak web tidak dapat disemak lagi. Mana-mana pintasan papan kekunci dan mana-mana entri menu atau menu konteks untuk membuka Alatan Pembangun atau Konsol JavaScript akan dilumpuhkan.
-
-      Apabila pilihan ini dilumpuhkan atau dibiarkan tidak ditetapkan, pengguna akan dibenarkan untuk menggunakan Alatan Pembangun dan konsol JavaScript.
-
-      Untuk peranti <ph name="PRODUCT_OS_NAME" /> yang berupaya menjalankan apl Android, dasar ini turut mengawal akses kepada Pilihan Pembangun Android. Jika anda menetapkan dasar ini kepada benar, pengguna tidak dapat mengakses Pilihan Pembangun. Jika anda menetapkan dasar ini kepada palsu atau membiarkannya tidak ditetapkan, pengguna boleh mengakses Pilihan Pembangun dengan mengetik nombor binaan sebanyak tujuh kali dalam apl tetapan Android.</translation>
 <translation id="556941986578702361">Mengawal penyembunyian automatik rak <ph name="PRODUCT_OS_NAME" />.
 
       Jika dasar ini ditetapkan kepada 'AlwaysAutoHideShelf', rak akan sentiasa disembunyikan secara automatik.
@@ -1863,6 +1809,17 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Jika anda mendayakan atau melumpuhkan tetapan ini, pengguna tidak boleh mengubah atau membatalkan tetapan ini.
 
       Jika dasar dibiarkan tanpa ditetapkan, pengguna boleh memilih sama ada mereka ingin diminta memberikan kata laluan untuk membuka kunci peranti atau tidak.</translation>
+<translation id="7109916642577279530">Benarkan atau tolak tangkapan audio.
+
+      Jika didayakan atau tidak dikonfigurasi (lalai), pengguna akan digesa untuk 
+      akses tangkapan audio kecuali untuk URL yang dikonfigurasi dalam senarai
+      AudioCaptureAllowedUrls yang akan diberikan akses tanpa digesa.
+
+      Apabila dasar ini dilumpuhkan, pengguna tidak akan digesa dan tangkapan audio
+      hanya tersedia kepada URL yang dikonfigurasi dalam AudioCaptureAllowedUrls.
+
+      Dasar ini memberi kesan kepada semua jenis input audio dan bukan sahaja
+      mikrofon terbina dalam.</translation>
 <translation id="7115494316187648452">Menentukan sama ada proses <ph name="PRODUCT_NAME" /> dimulakan pada log masuk OS dan terus berjalan apabila tetingkap penyemak imbas terakhir ditutup, membenarkan apl latar belakang dan sesi penyemakan imbas semasa kekal aktif, termasuk sebarang kuki sesi. Proses latar belakang memaparkan ikon dalam dulang sistem dan boleh ditutup dari sana pada bila-bila masa.
 
       Jika dasar ini ditetapkan kepada Benar, mod latar belakang didayakan dan tidak boleh dikawal oleh pengguna dalam tetapan penyemak imbas.
@@ -2152,20 +2109,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Menentukan id sambungan untuk digunakan sebagai penyelamat skrin pada skrin log masuk. Sambungan mestilah sebahagian daripada AppPack yang dikonfigurasikan untuk domain ini melalui dasar DeviceAppPack.</translation>
 <translation id="7882890448959833986">Sekat amaran OS yang tidak disokong</translation>
 <translation id="7912255076272890813">Konfigurasi jenis apl/sambungan yang dibenarkan</translation>
-<translation id="7914271217607102111">Benarkan atau tolak rakaman video.
-
-      Jika didayakan atau tidak dikonfigurasikan (lalai), pengguna akan digesa supaya memberikan
-      akses rakaman video kecuali untuk URL yang dikonfigurasi dalam
-      senarai VideoCaptureAllowedUrls yang akan diberikan akses tanpa memberi gesaan.
-      Apl ARC akan dapat mengakses kamera jika telah diberikan
-      kebenaran.
-
-      Apabila dasar ini dilumpuhkan, pengguna tidak akan digesa dan rakaman
-      video hanya tersedia untuk URL yang dikonfigurasi dalam VideoCaptureAllowedUrls.
-      Apl ARC tidak akan dapat mengakses kamera.
-
-      Di luar apl ARC, dasar ini memberi kesan kepada semua jenis input video
-      dan bukan sahaja kamera terbina dalam.</translation>
 <translation id="7915236031252389808">Anda boleh menetapkan URL untuk fail .pac proksi di sini.
 
           Dasar ini hanya berkuat kuasa jika anda telah memilih tetapan proksi manual pada 'Pilih cara untuk menentukan tetapan pelayan proksi'.
@@ -2579,24 +2522,6 @@ Jika dasar ini dibiarkan tidak ditetapkan mana-mana pemalam yang sepadan dengan 
 <translation id="9112897538922695510">Membolehkan anda mendaftar senarai pengendali protokol. Langkah ini hanya boleh menjadi dasar yang disyorkan. Sifat |protocol| hendaklah ditetapkan kepada skema seperti 'mailto' dan sifat |url| hendaklah ditetapkan kepada corak URL aplikasi yang mengendalikan skema. Corak boleh mengandungi '%s', di mana apabila disertakan akan digantikan oleh URL yang dikendalikan.
 
           Pengendali protokol yang didaftarkan oleh dasar digabungkan dengan protokol yang didaftarkan oleh pengguna dan kedua-duanya tersedia untuk digunakan. Pengguna boleh mengatasi pengendali protokol yang dipasang oleh dasar dengan memasang pengendali lalai baharu tetapi tidak boleh mengalih keluar pengendali protokol yang didaftarkan oleh dasar.</translation>
-<translation id="913138516158420759">Membenarkan anda menentukan pelayan proksi yang digunakan oleh <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada menukar tetapan proksi. Apl ARC turut dapat menggunakan pelayan proksi ini.
-
-          Jika anda memilih untuk tidak menggunakan pelayan proksi dan sentiasa disambungkan terus, semua pilihan lain akan diabaikan.
-
-          Jika anda memilih untuk menggunakan tetapan proksi sistem, semua pilihan lain akan diabaikan.
-
-          Jika anda memilih untuk mengesan pelayan proksi secara automatik, semua pilihan lain akan  diabaikan.
-
-          Jika anda memilih mod proksi pelayan tetap, anda boleh menetapkan pilihan lanjut dalam 'Alamat atau URL pelayan proksi' dan 'Senarai dipisahkan koma peraturan pintasan proksi'. Hanya pelayan proksi HTTP dengan keutamaan tertinggi tersedia untuk apl ARC.
-
-          Jika anda memilih untuk menggunakan skrip proksi .pac, anda mesti menetapkan URL kepada skrip tersebut dalam 'URL kepada fail .pac proksi'.
-
-          Untuk melihat contoh terperinci, lawati:
-          <ph name="PROXY_HELP_URL" />.
-
-          Jika anda mendayakan tetapan ini, <ph name="PRODUCT_NAME" /> dan apl ARC akan mengabaikan semua pilihan berkaitan proksi yang ditetapkan daripada baris perintah.
-
-          Jika dasar ini dibiarkan tanpa ditetapkan, pengguna dapat memilih tetapan proksi mereka sendiri.</translation>
 <translation id="913195841488580904">Sekat akses kepada senarai URL</translation>
 <translation id="9135033364005346124">Dayakan proksi <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="9147029539363974059">Hantar log sistem ke pelayan pengurusan, untuk membolehkan
@@ -2617,6 +2542,11 @@ Jika dasar ini dibiarkan tidak ditetapkan mana-mana pemalam yang sepadan dengan 
 <translation id="9187743794267626640">Lumpuhkan pelekapan storan luaran</translation>
 <translation id="9197740283131855199">Peratusan yang digunakan untuk menskala kelewatan pemalapan skrin jika pengguna menjadi aktif selepas pemalapan</translation>
 <translation id="9200828125069750521">Parameter untuk URL imej yang menggunakan POST</translation>
+<translation id="9203071022800375458">Melumpuhkan pengambilan tangkapan skrin.
+
+      Jika didayakan, tangkapan skrin tidak boleh diambil menggunakan pintasan papan kekunci atau API sambungan.
+
+      Jika dilumpuhkan atau tidak ditentukan, pengambilan tangkapan skrin dibenarkan.</translation>
 <translation id="9217154963008402249">Kekerapan pemantauan bingkisan rangkaian</translation>
 <translation id="922540222991413931">Konfigurasi sambungan, apl dan sumber pemasangan skrip pengguna</translation>
 <translation id="924557436754151212">Import kata laluan yang disimpan daripada penyemak imbas lalai pada kali pertama menjalankannya</translation>

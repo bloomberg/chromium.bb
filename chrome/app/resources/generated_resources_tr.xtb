@@ -183,6 +183,7 @@
 <translation id="1240892293903523606">DOM denetleyicisi</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" />, ayarlarınızı sıfırlamak istiyor.</translation>
 <translation id="1243314992276662751">Yükle</translation>
+<translation id="1244147615850840081">Operatör</translation>
 <translation id="1244303850296295656">Uzantı hatası</translation>
 <translation id="1245907074925860695">Kullanıcıyı Kaldır</translation>
 <translation id="1248269069727746712"><ph name="PRODUCT_NAME" />, ağa bağlanmak için cihazınızın sistem proxy ayarlarını kullanıyor.</translation>
@@ -195,7 +196,6 @@
 <translation id="126710816202626562">Çeviri dili:</translation>
 <translation id="1272079795634619415">Durdur</translation>
 <translation id="1272978324304772054">Bu kullanıcı hesabı, cihazın kaydedildiği alan adına ait değil. Farklı bir alan adına kaydolmak istiyorsanız, öncelikle cihaz kurtarma işlemini tamamlamanız gerekir.</translation>
-<translation id="127353061808977798">Yazı tipleri ve kodlama</translation>
 <translation id="1274997165432133392">Çerezler ve diğer site verileri</translation>
 <translation id="1275718070701477396">Seçili</translation>
 <translation id="127668050356036882">Tüm pencerelerinizi kapatın</translation>
@@ -1037,7 +1037,7 @@ Yeni bir denetlenen kullanıcı oluşturduktan sonra, istediğiniz zaman herhang
 <translation id="2422426094670600218">&lt;adsız&gt;</translation>
 <translation id="2423578206845792524">Res&amp;mi farklı kaydet...</translation>
 <translation id="2424091190911472304"><ph name="ORIGIN" /> sitesinde her zaman çalıştır</translation>
-<translation id="2425040750078864123">PWA'ların Android WebAPK'sı paketine eklemenmesini etkinleştirir. Uygulamanın oluşturulması için verilerin bir Chrome sunucusuna gönderilmesini gerektirir.</translation>
+<translation id="2425040750078864123">PWA'ların Android WebAPK'sı paketine eklenmesini etkinleştirir. Uygulamanın oluşturulması için verilerin bir Chrome sunucusuna gönderilmesini gerektirir.</translation>
 <translation id="2425632738803359658">Materyal tasarım kullanıcı menüsünü kullan</translation>
 <translation id="2425665904502185219">Toplam dosya boyutu</translation>
 <translation id="2431394478374894294">Sanal klavyede ses girişini etkinleştirir.</translation>
@@ -1318,6 +1318,7 @@ Bu sitenin engellenmesi gerektiğini düşünmüyorum!</translation>
 <translation id="2799223571221894425">Yeniden başlat</translation>
 <translation id="2800537048826676660">Yazım denetimi için bu dili kullan</translation>
 <translation id="2801702994096586034">Sunucu 3</translation>
+<translation id="2803375539583399270">PIN girin</translation>
 <translation id="2803887722080936828"><ph name="BEGIN_H3" />Hata Ayıklama Özellikleri<ph name="END_H3" />
     <ph name="BR" />
     Cihazınıza özel kod yüklemek ve bu kodu test etmek için Chrome OS Cihazınızda hata ayıklama özelliklerini etkinleştirebilirsiniz. Bu özellik şunları yapabilmenize olanak sağlar:<ph name="BR" />
@@ -2069,6 +2070,7 @@ Bunlar ve diğer talimatlar için lütfen <ph name="ACCOUNT_EMAIL" /> e-postanı
 <translation id="3743492083222969745">Sanal klavye için ayarlar sayfasından, hareketle yazma seçeneğini etkinleştirin/devre dışı bırakın.</translation>
 <translation id="3744111561329211289">Arka plan senkronizasyonu</translation>
 <translation id="3745016858329272300">Genel Bilgiler</translation>
+<translation id="3748026146096797577">Bağlı Değil</translation>
 <translation id="3749289110408117711">Dosya adı</translation>
 <translation id="3751427701788899101">Bağlantı kesildi</translation>
 <translation id="3752439026432317933">Fatura ayrıntılarını girin...</translation>
@@ -2787,6 +2789,7 @@ Keşfetmeye devam etmek için herhangi bir tuşa basın.</translation>
 <translation id="480990236307250886">Ana sayfayı aç</translation>
 <translation id="4811502511369621968">Geçersiz e-posta adresi. Lütfen kontrol edin ve tekrar deneyin.</translation>
 <translation id="4812632551187706935">Bağlantı ilk kullanıma hazırlanamadı</translation>
+<translation id="4812684235631257312">Ana makine</translation>
 <translation id="4813345808229079766">Bağlantı</translation>
 <translation id="4813512666221746211">Ağ hatası</translation>
 <translation id="4816492930507672669">Sayfaya sığdır</translation>
@@ -3166,6 +3169,7 @@ Keşfetmeye devam etmek için herhangi bir tuşa basın.</translation>
 <translation id="5306802244647481941">Dosyalar uygulaması hızlı görüntüleme</translation>
 <translation id="5308380583665731573">Bağlan</translation>
 <translation id="5311260548612583999">Özel anahtar dosyası (isteğe bağlı):</translation>
+<translation id="5315873049536339193">Kimlik</translation>
 <translation id="5316588172263354223">İstediğiniz zaman sesli arama yapın</translation>
 <translation id="5316716239522500219">Monitörleri yansıt</translation>
 <translation id="5317780077021120954">Kaydet</translation>
@@ -3443,7 +3447,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="5684661240348539843">Öğe Tanımlayıcı</translation>
 <translation id="569068482611873351">İçe aktar...</translation>
 <translation id="56907980372820799">Verileri bağla</translation>
-<translation id="569109051430110155">Otomatik algıla</translation>
 <translation id="5691596662111998220">Hata! <ph name="FILE_NAME" /> artık mevcut değil.</translation>
 <translation id="5694501201003948907">$1 öğe sıkıştırılıyor...</translation>
 <translation id="5697118958262594262">Önemli içeriği varsayılan olarak algıla</translation>
@@ -4506,7 +4509,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7225179976675429563">Ağ türü eksik</translation>
 <translation id="7230787553283372882">Metin boyutunu özelleştir</translation>
 <translation id="7231224339346098802">Yazdırılacak kopya sayısını göstermek için rakam kullanın (1 veya daha fazla).</translation>
-<translation id="7234907163682057631">Önemli eklenti içeriğini algıla ve çalıştır</translation>
 <translation id="7238585580608191973">SHA-256 Parmak İzi</translation>
 <translation id="7240120331469437312">Sertifika Konusu Diğer Adı</translation>
 <translation id="7241389281993241388">Lütfen istemci sertifikasını içe aktarmak için <ph name="TOKEN_NAME" /> cihazında oturum açın.</translation>
@@ -4688,6 +4690,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7484645889979462775">Bu site için hiçbir zaman</translation>
 <translation id="7484964289312150019">Tü&amp;m yer işaretlerini yeni pencerede aç</translation>
 <translation id="7485236722522518129">F4</translation>
+<translation id="7487067081878637334">Teknoloji</translation>
 <translation id="7487099628810939106">Tıklama öncesi gecikme:</translation>
 <translation id="7487969577036436319">Yüklü hiç bileşen yok</translation>
 <translation id="7489605380874780575">Uygunluğu kontrol et</translation>
@@ -4959,6 +4962,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7877451762676714207">Bilinmeyen sunucu hatası. Lütfen tekrar deneyin veya sunucu yöneticinize başvurun.</translation>
 <translation id="7878999881405658917">Google bu telefona bir bildirim gönderdi. Telefonunuzun, Bluetooth bağlantısını kullanarak 9 metreden daha uzak bir mesafeden <ph name="DEVICE_TYPE" /> cihazınızın kilitlenmesini önleyebileceğine dikkat edin. Bunun sorun yaratabileceği durumlarda, &lt;a&gt;bu özelliği geçici olarak devre dışı bırakabilirsiniz&lt;/a&gt;.</translation>
 <translation id="7880836220014399562">"<ph name="BUNDLE_NAME" />" şu uygulamaları ve uzantıları ekler:</translation>
+<translation id="7881483672146086348">Hesabı Görüntüle</translation>
 <translation id="7881969471599061635">Altyazıları devre dışı bırak</translation>
 <translation id="7885253890047913815">En Son Hedefler</translation>
 <translation id="7887192723714330082">Ekran ve kilidi açıkken "Ok Google"a yanıt verme</translation>
@@ -5353,7 +5357,6 @@ Dolana kadar geçecek süre hesaplanıyor</translation>
 <translation id="8428213095426709021">Ayarlar</translation>
 <translation id="8428634594422941299">Anladım!</translation>
 <translation id="8432745813735585631">ABD Colemak klavye</translation>
-<translation id="8434177709403049435">Ko&amp;dlama</translation>
 <translation id="8434480141477525001">NaCl Hata Ayıklama Bağlantı Noktası</translation>
 <translation id="8435334418765210033">Hatırlanan ağlar</translation>
 <translation id="8437209419043462667">ABD</translation>
@@ -5744,7 +5747,6 @@ Dolana kadar geçecek süre hesaplanıyor</translation>
 <translation id="8970203673128054105">Yayın modu listesini görüntüle</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Güvenlik duvarının, Google sunucularından yapılan indirme işlemlerini engellemediğinden emin olmak için lütfen ağ yöneticinizle görüşün.</translation>
-<translation id="8974161578568356045">Otomatik Algıla</translation>
 <translation id="8978526688207379569">Bu site otomatik olarak birden fazla dosya indirdi.</translation>
 <translation id="8982248110486356984">Kullanıcı değiştir</translation>
 <translation id="8986267729801483565">İndirme konumu:</translation>
@@ -5931,7 +5933,6 @@ Dolana kadar geçecek süre hesaplanıyor</translation>
 <translation id="923467487918828349">Tümünü Göster</translation>
 <translation id="927151012416335806">Cihazınız <ph name="CHANNEL_NAME" /> kanalına güncelleniyor</translation>
 <translation id="930268624053534560">Ayrıntılı Zaman Damgaları</translation>
-<translation id="931068751149008062">Yazı tiplerini ve kodlamayı seçin</translation>
 <translation id="932327136139879170">Ana Sayfa</translation>
 <translation id="932508678520956232">Yazdırma başlatılamadı.</translation>
 <translation id="93393615658292258">Yalnızca şifre</translation>

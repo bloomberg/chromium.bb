@@ -183,6 +183,7 @@
 <translation id="1240892293903523606">Inšpektor DOM</translation>
 <translation id="1242633766021457174">Nástroj <ph name="THIRD_PARTY_TOOL_NAME" /> chce resetovať vaše nastavenia.</translation>
 <translation id="1243314992276662751">Nahrať</translation>
+<translation id="1244147615850840081">Operátor</translation>
 <translation id="1244303850296295656">Chyba rozšírenia</translation>
 <translation id="1245907074925860695">Odstránenie používateľa</translation>
 <translation id="1248269069727746712">Aplikácia <ph name="PRODUCT_NAME" /> používa na pripojenie k sieti systémové nastavenia servera proxy v zariadení.</translation>
@@ -195,7 +196,6 @@
 <translation id="126710816202626562">Jazyk prekladu:</translation>
 <translation id="1272079795634619415">Zastaviť</translation>
 <translation id="1272978324304772054">Tento používateľský účet nepatrí do domény, do ktorej je zaregistrované toto zariadenie. Ak sa chcete zaregistrovať do inej domény, musíte najprv zariadenie obnoviť.</translation>
-<translation id="127353061808977798">Písma a kódovanie</translation>
 <translation id="1274997165432133392">Súbory cookie a ďalšie dáta webov</translation>
 <translation id="1275718070701477396">Vybraté</translation>
 <translation id="127668050356036882">Zavrieť všetky okná</translation>
@@ -1319,6 +1319,7 @@ Tieto webové stránky by podľa mňa nemali byť blokované.</translation>
 <translation id="2799223571221894425">Znova spustiť</translation>
 <translation id="2800537048826676660">Použiť tento jazyk na kontrolu pravopisu</translation>
 <translation id="2801702994096586034">Server 3</translation>
+<translation id="2803375539583399270">Zadajte kód PIN</translation>
 <translation id="2803887722080936828"><ph name="BEGIN_H3" />Funkcie ladenia<ph name="END_H3" />
     <ph name="BR" />
     Na svojom zariadení so systémom OS Chrome môžete aktivovať funkcie ladenia, ktoré vám pomôžu na ňom nainštalovať a otestovať vlastný kód. Umožní vám to:<ph name="BR" />
@@ -2070,6 +2071,7 @@ z domény <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3743492083222969745">Povoľte alebo zakážte možnosť písania gestami pre virtuálnu klávesnicu na stránke Nastavenia.</translation>
 <translation id="3744111561329211289">Synchronizácia na pozadí</translation>
 <translation id="3745016858329272300">Všeobecné informácie</translation>
+<translation id="3748026146096797577">Nepripojené</translation>
 <translation id="3749289110408117711">Názov súboru</translation>
 <translation id="3751427701788899101">Pripojenie bolo prerušené</translation>
 <translation id="3752439026432317933">Zadať fakturačné údaje...</translation>
@@ -2788,6 +2790,7 @@ Ak chcete pokračovať v práci, stlačte ľubovoľný kláves.</translation>
 <translation id="480990236307250886">Otvoriť domovskú stránku</translation>
 <translation id="4811502511369621968">Neplatná e-mailová adresa. Skontrolujte ju a skúste to znova.</translation>
 <translation id="4812632551187706935">Nepodarilo sa inicializovať pripojenie</translation>
+<translation id="4812684235631257312">Hostiteľ</translation>
 <translation id="4813345808229079766">Pripojenie</translation>
 <translation id="4813512666221746211">Chyba siete</translation>
 <translation id="4816492930507672669">Prispôsobiť stránke</translation>
@@ -3167,6 +3170,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="5306802244647481941">Rýchle zobrazenie aplikácie Súbory</translation>
 <translation id="5308380583665731573">Pripojenie</translation>
 <translation id="5311260548612583999">Súkromný kľúč (nepovinné):</translation>
+<translation id="5315873049536339193">Identita</translation>
 <translation id="5316588172263354223">Hlasové vyhľadávanie kedykoľvek</translation>
 <translation id="5316716239522500219">Zrkadliť monitory</translation>
 <translation id="5317780077021120954">Uložiť</translation>
@@ -3443,7 +3447,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="5684661240348539843">Identifikátor obsahu</translation>
 <translation id="569068482611873351">Importovať...</translation>
 <translation id="56907980372820799">Prepojiť údaje</translation>
-<translation id="569109051430110155">Zistiť automaticky</translation>
 <translation id="5691596662111998220">Hops, súbor <ph name="FILE_NAME" /> už neexistuje.</translation>
 <translation id="5694501201003948907">Prebieha komprimovanie $1 položiek...</translation>
 <translation id="5697118958262594262">Zisťovať predvolene dôležitý obsah</translation>
@@ -4508,7 +4511,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="7225179976675429563">Chýba typ siete</translation>
 <translation id="7230787553283372882">Prispôsobiť veľkosť textu</translation>
 <translation id="7231224339346098802">Počet kópií, ktoré chcete vytlačiť, treba zadať číslovkou (1 alebo vyššia).</translation>
-<translation id="7234907163682057631">Zistiť a spustiť dôležitý obsah doplnku</translation>
 <translation id="7238585580608191973">Odtlačok SHA-256</translation>
 <translation id="7240120331469437312">Alternatívny názov subjektu certifikátu</translation>
 <translation id="7241389281993241388">Ak chcete importovať certifikát klienta, prihláste sa do <ph name="TOKEN_NAME" />.</translation>
@@ -4690,6 +4692,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="7484645889979462775">Nikdy pre tieto stránky</translation>
 <translation id="7484964289312150019">Otvoriť všetky záložky v &amp;novom okne</translation>
 <translation id="7485236722522518129">F4</translation>
+<translation id="7487067081878637334">Technológia</translation>
 <translation id="7487099628810939106">Oneskorenie pred kliknutím:</translation>
 <translation id="7487969577036436319">Nie sú nainštalované žiadne komponenty</translation>
 <translation id="7489605380874780575">Skontrolovať spôsobilosť</translation>
@@ -4961,6 +4964,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="7877451762676714207">Neznáma chyba servera. Skúste to znova alebo sa obráťte na správcu servera.</translation>
 <translation id="7878999881405658917">Google odoslal na tento telefón upozornenie. Vďaka pripojeniu Bluetooth dokáže váš telefón ponechať zariadenie <ph name="DEVICE_TYPE" /> odomknuté až do vzdialenosti 10 metrov. V nevhodných prípadoch môžete &lt;a&gt;túto funkciu dočasne zakázať&lt;/a&gt;.</translation>
 <translation id="7880836220014399562">Balík <ph name="BUNDLE_NAME" /> pridá tieto aplikácie a rozšírenia:</translation>
+<translation id="7881483672146086348">Zobraziť účet</translation>
 <translation id="7881969471599061635">Zakázať titulky</translation>
 <translation id="7885253890047913815">Nedávne ciele</translation>
 <translation id="7887192723714330082">Reagovať na „Ok Google“, keď je obrazovka zapnutá a odomknutá</translation>
@@ -5354,7 +5358,6 @@ Prebieha výpočet času do úplného nabitia</translation>
 <translation id="8428213095426709021">Nastavenia</translation>
 <translation id="8428634594422941299">Dobre</translation>
 <translation id="8432745813735585631">americká klávesnica s rozložením klávesov Colemak</translation>
-<translation id="8434177709403049435">&amp;Kódovanie</translation>
 <translation id="8434480141477525001">Port ladenia klienta NaCl</translation>
 <translation id="8435334418765210033">Zapamätané siete</translation>
 <translation id="8437209419043462667">Americká klávesnica</translation>
@@ -5745,7 +5748,6 @@ Prebieha výpočet času do úplného nabitia</translation>
 <translation id="8970203673128054105">Zobraziť zoznam režimov prenosu</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Kontaktujte správcu siete a uistite sa, že brána firewall neblokuje sťahovanie súborov zo serverov Google.</translation>
-<translation id="8974161578568356045">Zistiť automaticky</translation>
 <translation id="8978526688207379569">Tieto stránky automaticky stiahli viacero súborov súčasne.</translation>
 <translation id="8982248110486356984">Prepnúť používateľov</translation>
 <translation id="8986267729801483565">Umiestnenie sťahovaných súborov:</translation>
@@ -5931,7 +5933,6 @@ Prebieha výpočet času do úplného nabitia</translation>
 <translation id="923467487918828349">Zobraziť všetko</translation>
 <translation id="927151012416335806">Prebieha aktualizácia vášho zariadenia na kanál <ph name="CHANNEL_NAME" /></translation>
 <translation id="930268624053534560">Podrobné časové pečiatky</translation>
-<translation id="931068751149008062">Výber typov písma a kódovania</translation>
 <translation id="932327136139879170">Domov</translation>
 <translation id="932508678520956232">Nepodarilo sa spustiť tlač.</translation>
 <translation id="93393615658292258">Iba heslo</translation>

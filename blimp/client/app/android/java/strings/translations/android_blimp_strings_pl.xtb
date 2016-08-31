@@ -18,6 +18,7 @@
 <translation id="3407245330823033366">Wybierz konto, którego chcesz używać w aplikacji Blimp.</translation>
 <translation id="3775180005489871350">Przypisanie się nie udało. Błąd 400 (BAD_REQUEST).</translation>
 <translation id="3877411575395047031">Ukryj informacje o debugowaniu</translation>
+<translation id="4013794286379809233">Zaloguj się</translation>
 <translation id="4542350224991263059">Przypisanie się nie udało. Token dostępu użytkownika wygasł.</translation>
 <translation id="4562971394107096647">Przypisanie się nie udało. Błąd serwera.</translation>
 <translation id="4641972508298030550">Nie można uwierzytelnić użytkownika.</translation>
@@ -28,6 +29,7 @@
 <translation id="5860346505531085166">Przypisanie się nie udało. Konto nie ma dostępu.</translation>
 <translation id="6232798399907177395">Blimp – informacje</translation>
 <translation id="6245894610106451476">Odebrane (KB)</translation>
+<translation id="6522797484310591766">Zaloguj się teraz</translation>
 <translation id="704835510384979817">Przypisanie się nie udało. Brak pasującej wersji przeglądarki.</translation>
 <translation id="7145680970336344212">Uruchom ponownie Blimp</translation>
 <translation id="7536363920335771251">Rozłączono z mechanizmem, powód: %1$s</translation>

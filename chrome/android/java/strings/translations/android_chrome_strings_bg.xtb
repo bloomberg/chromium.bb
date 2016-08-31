@@ -547,7 +547,7 @@
 <translation id="7562080006725997899">Данните за сърфирането се изчистват</translation>
 <translation id="756809126120519699">Данните в Chrome са изчистени</translation>
 <translation id="7588950540487816470">Физическа мрежа</translation>
-<translation id="7593557518625677601">За старт на синхронизирането в Chrome отворете настройките на Android и активирайте повторно системното синхронизиране</translation>
+<translation id="7593557518625677601">За старт на синхронизирането активирайте системното синхронизиране на Android</translation>
 <translation id="7596558890252710462">Операционна система</translation>
 <translation id="7605594153474022051">Синхронизирането не работи</translation>
 <translation id="7612619742409846846">Влезли сте в Google като</translation>
@@ -631,7 +631,6 @@
 <translation id="8523928698583292556">Изтриване на съхранената парола</translation>
 <translation id="8525306231823319788">На цял екран</translation>
 <translation id="854522910157234410">Отваряне на тази страница</translation>
-<translation id="8559882854823529713">Четене по-късно в Chrome</translation>
 <translation id="8562452229998620586">Запазените пароли ще се покажат тук.</translation>
 <translation id="856481929701340285">Заявка за настолния сайт</translation>
 <translation id="857943718398505171">Разрешено (препоръчително)</translation>

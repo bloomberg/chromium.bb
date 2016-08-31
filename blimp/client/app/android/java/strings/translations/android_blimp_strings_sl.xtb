@@ -18,6 +18,7 @@
 <translation id="3407245330823033366">Izberite račun, ki ga želite uporabljati s storitvijo Blimp.</translation>
 <translation id="3775180005489871350">Dodelitev ni uspela. Napaka 400 (BAD_REQUEST).</translation>
 <translation id="3877411575395047031">Skrij informacije za odpravljanje težav</translation>
+<translation id="4013794286379809233">Prijavite se</translation>
 <translation id="4542350224991263059">Dodelitev ni uspela. Potekel žeton za uporabniški dostop.</translation>
 <translation id="4562971394107096647">Dodelitev ni uspela. Napaka strežnika.</translation>
 <translation id="4641972508298030550">Pristnosti uporabnika ni mogoče preveriti.</translation>
@@ -28,6 +29,7 @@
 <translation id="5860346505531085166">Dodelitev ni uspela. Račun nima dostopa.</translation>
 <translation id="6232798399907177395">O mehanizmu Blimp</translation>
 <translation id="6245894610106451476">Prejeto (KB)</translation>
+<translation id="6522797484310591766">Prijava</translation>
 <translation id="704835510384979817">Dodelitev ni uspela. Ni ujemajoče se različice iskalnika.</translation>
 <translation id="7145680970336344212">Znova zaženite Blimp</translation>
 <translation id="7536363920335771251">Povezava z mehanizmom je prekinjena; razlog: %1$s</translation>

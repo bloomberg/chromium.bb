@@ -183,6 +183,7 @@
 <translation id="1240892293903523606">Инспектор DOM</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> предлагает сбросить настройки</translation>
 <translation id="1243314992276662751">Загрузить</translation>
+<translation id="1244147615850840081">Оператор связи</translation>
 <translation id="1244303850296295656">Ошибка расширения</translation>
 <translation id="1245907074925860695">Удаление пользователя</translation>
 <translation id="1248269069727746712"><ph name="PRODUCT_NAME" /> использует для подключения к сети системные настройки прокси-сервера.</translation>
@@ -195,7 +196,6 @@
 <translation id="126710816202626562">Перевести на:</translation>
 <translation id="1272079795634619415">Остановить</translation>
 <translation id="1272978324304772054">Этот аккаунт не относится к домену, в котором зарегистрировано устройство. Чтобы зарегистрироваться в другом домене, сначала восстановите настройки устройства.</translation>
-<translation id="127353061808977798">Шрифты и кодировка</translation>
 <translation id="1274997165432133392">Файлы cookie и другие данные сайтов</translation>
 <translation id="1275718070701477396">Выбрано</translation>
 <translation id="127668050356036882">Закрыть все окна</translation>
@@ -1319,6 +1319,7 @@
 <translation id="2799223571221894425">Перезапустить</translation>
 <translation id="2800537048826676660">Использовать этот язык для проверки правописания</translation>
 <translation id="2801702994096586034">Сервер 3</translation>
+<translation id="2803375539583399270">Введите PIN-код</translation>
 <translation id="2803887722080936828"><ph name="BEGIN_H3" />Функции отладки<ph name="END_H3" />
 <ph name="BR" />
 Вы можете включить функции отладки на устройстве с Chrome OS, чтобы установить и протестировать собственный код. Это позволит вам:<ph name="BR" />
@@ -2070,6 +2071,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3743492083222969745">Включает либо отключает функцию непрерывного ввода на странице настроек виртуальной клавиатуры.</translation>
 <translation id="3744111561329211289">Фоновая синхронизация</translation>
 <translation id="3745016858329272300">Общая информация</translation>
+<translation id="3748026146096797577">Нет соединения</translation>
 <translation id="3749289110408117711">Название файла</translation>
 <translation id="3751427701788899101">Соединение прервано</translation>
 <translation id="3752439026432317933">Ввести платежные данные…</translation>
@@ -2788,6 +2790,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="480990236307250886">Перейти на главную страницу</translation>
 <translation id="4811502511369621968">Неверно указан адрес электронной почты. Проверьте его и повторите попытку.</translation>
 <translation id="4812632551187706935">Не удалось выполнить инициализацию подключения</translation>
+<translation id="4812684235631257312">Хост</translation>
 <translation id="4813345808229079766">Соединение</translation>
 <translation id="4813512666221746211">Ошибка сети</translation>
 <translation id="4816492930507672669">По размеру страницы</translation>
@@ -3167,6 +3170,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="5306802244647481941">Быстрый просмотр в приложении "Файлы"</translation>
 <translation id="5308380583665731573">Подключение</translation>
 <translation id="5311260548612583999">Файл закрытого ключа (необязательно):</translation>
+<translation id="5315873049536339193">Идентификационные данные</translation>
 <translation id="5316588172263354223">Удобное управление голосом</translation>
 <translation id="5316716239522500219">Дублировать изображения на мониторах</translation>
 <translation id="5317780077021120954">Сохранить</translation>
@@ -3443,7 +3447,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="5684661240348539843">Идентификатор объекта</translation>
 <translation id="569068482611873351">Импорт...</translation>
 <translation id="56907980372820799">Связать аккаунты</translation>
-<translation id="569109051430110155">Автоматически</translation>
 <translation id="5691596662111998220">Элемент "<ph name="FILE_NAME" />" удален</translation>
 <translation id="5694501201003948907">Архивирование элементов ($1)…</translation>
 <translation id="5697118958262594262">Находить важный контент по умолчанию</translation>
@@ -4507,7 +4510,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7225179976675429563">Не указан тип сети</translation>
 <translation id="7230787553283372882">Позволяет настроить размер текста</translation>
 <translation id="7231224339346098802">Укажите цифрами число копий для печати (1 или более).</translation>
-<translation id="7234907163682057631">Находить и запускать важный контент плагинов</translation>
 <translation id="7238585580608191973">Отпечаток SHA-256</translation>
 <translation id="7240120331469437312">Альтернативное имя субъекта сертификата</translation>
 <translation id="7241389281993241388">Войдите в <ph name="TOKEN_NAME" />, чтобы импортировать сертификат клиента.</translation>
@@ -4689,6 +4691,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7484645889979462775">Никогда для этого сайта</translation>
 <translation id="7484964289312150019">Открыть все закладки в &amp;новом окне</translation>
 <translation id="7485236722522518129">F4</translation>
+<translation id="7487067081878637334">Технологии</translation>
 <translation id="7487099628810939106">Задержка перед нажатием:</translation>
 <translation id="7487969577036436319">Компоненты не установлены</translation>
 <translation id="7489605380874780575">Проверить возможность участия</translation>
@@ -4960,6 +4963,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7877451762676714207">Обнаружена неизвестная ошибка сервера. Повторите попытку или свяжитесь с его администратором.</translation>
 <translation id="7878999881405658917">На телефон отправлено оповещение. Учтите, что когда Bluetooth включен, телефон может препятствовать блокировке устройства <ph name="DEVICE_TYPE" /> на расстоянии более 30 м. В случае необходимости эту функцию можно &lt;a&gt;временно отключить&lt;/a&gt;.</translation>
 <translation id="7880836220014399562">В набор "<ph name="BUNDLE_NAME" />" входят следующие приложения и расширения:</translation>
+<translation id="7881483672146086348">Просмотреть аккаунт</translation>
 <translation id="7881969471599061635">Отключить субтитры</translation>
 <translation id="7885253890047913815">Недавние места назначения</translation>
 <translation id="7887192723714330082">Выполняет команду "О'кей, Google", когда экран включен и разблокирован.</translation>
@@ -5352,7 +5356,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="8428634594422941299">ОК</translation>
 <translation id="8432745813735585631">Американская раскладка (Colemak)</translation>
-<translation id="8434177709403049435">&amp;Кодировка</translation>
 <translation id="8434480141477525001">Порт отладки NaCl</translation>
 <translation id="8435334418765210033">Знакомые сети</translation>
 <translation id="8437209419043462667">США</translation>
@@ -5743,7 +5746,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="8970203673128054105">Просмотреть список режимов трансляции</translation>
 <translation id="89720367119469899">Отключить</translation>
 <translation id="8972513834460200407">Уточните у администратора сети, не блокирует ли брандмауэр скачивание файлов с серверов Google.</translation>
-<translation id="8974161578568356045">Определять автоматически</translation>
 <translation id="8978526688207379569">Этот сайт автоматически скачал несколько файлов.</translation>
 <translation id="8982248110486356984">Сменить профиль</translation>
 <translation id="8986267729801483565">Расположение скачиваемых файлов:</translation>
@@ -5929,7 +5931,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="923467487918828349">Показать все</translation>
 <translation id="927151012416335806">Переключение на канал "<ph name="CHANNEL_NAME" />"…</translation>
 <translation id="930268624053534560">Подробные временные метки</translation>
-<translation id="931068751149008062">Выберите типы шрифтов и кодировку</translation>
 <translation id="932327136139879170">Главная страница</translation>
 <translation id="932508678520956232">Не удалось начать печать.</translation>
 <translation id="93393615658292258">Только пароль</translation>

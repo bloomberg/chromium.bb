@@ -183,6 +183,7 @@
 <translation id="1240892293903523606">Inspecteur de DOM</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> souhaite rétablir vos paramètres.</translation>
 <translation id="1243314992276662751">Importer</translation>
+<translation id="1244147615850840081">Opérateur</translation>
 <translation id="1244303850296295656">Erreur au niveau des extensions.</translation>
 <translation id="1245907074925860695">Supprimer un utilisateur</translation>
 <translation id="1248269069727746712"><ph name="PRODUCT_NAME" /> utilise les paramètres du serveur proxy de votre appareil pour se connecter au réseau.</translation>
@@ -195,7 +196,6 @@
 <translation id="126710816202626562">Langue de traduction :</translation>
 <translation id="1272079795634619415">Arrêter</translation>
 <translation id="1272978324304772054">Ce compte utilisateur n'appartient pas au domaine auprès duquel l'appareil est enregistré. Si vous souhaitez vous enregistrer auprès d'un autre domaine, vous devez d'abord suivre la procédure de récupération de votre appareil.</translation>
-<translation id="127353061808977798">Polices et encodage</translation>
 <translation id="1274997165432133392">Cookies et autres données de site</translation>
 <translation id="1275718070701477396">Sélectionnée</translation>
 <translation id="127668050356036882">Fermer toutes les fenêtres</translation>
@@ -1317,6 +1317,7 @@ Je ne pense pas que ce site devrait être bloqué.</translation>
 <translation id="2799223571221894425">Relancer</translation>
 <translation id="2800537048826676660">Utiliser cette langue pour corriger l'orthographe</translation>
 <translation id="2801702994096586034">Serveur 3</translation>
+<translation id="2803375539583399270">Saisir le code</translation>
 <translation id="2803887722080936828"><ph name="BEGIN_H3" />Fonctionnalités de débogage<ph name="END_H3" />
     <ph name="BR" />
     Vous pouvez activer les fonctionnalités de débogage sur votre appareil Chrome OS afin d'installer et de tester du code personnalisé sur votre appareil. Vous aurez ainsi la possibilité d'effectuer les opérations suivantes :<ph name="BR" />
@@ -2068,6 +2069,7 @@ Domaine d'origine : <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3743492083222969745">Activer/désactiver l'option de saisie gestuelle sur la page des paramètres du clavier virtuel.</translation>
 <translation id="3744111561329211289">Synchronisation en arrière-plan</translation>
 <translation id="3745016858329272300">Informations générales</translation>
+<translation id="3748026146096797577">Non connecté</translation>
 <translation id="3749289110408117711">Nom du fichier</translation>
 <translation id="3751427701788899101">Connexion perdue</translation>
 <translation id="3752439026432317933">Saisir les informations de facturation…</translation>
@@ -2785,6 +2787,7 @@ Pour poursuivre l'exploration, appuyez sur n'importe quelle touche.</translation
 <translation id="480990236307250886">Ouvrir la page d'accueil</translation>
 <translation id="4811502511369621968">Adresse e-mail non valide. Veuillez la vérifier, puis réessayer.</translation>
 <translation id="4812632551187706935">Impossible d'initialiser la connexion</translation>
+<translation id="4812684235631257312">Hôte</translation>
 <translation id="4813345808229079766">Connexion</translation>
 <translation id="4813512666221746211">Erreur réseau.</translation>
 <translation id="4816492930507672669">Ajuster à la page</translation>
@@ -3164,6 +3167,7 @@ Pour poursuivre l'exploration, appuyez sur n'importe quelle touche.</translation
 <translation id="5306802244647481941">Aperçu de l'application Fichiers</translation>
 <translation id="5308380583665731573">Connexion</translation>
 <translation id="5311260548612583999">Fichier de clé privée (facultatif) :</translation>
+<translation id="5315873049536339193">Identité</translation>
 <translation id="5316588172263354223">Effectuer une recherche vocale à tout moment</translation>
 <translation id="5316716239522500219">Mettre en miroir les moniteurs</translation>
 <translation id="5317780077021120954">Enregistrer</translation>
@@ -3441,7 +3445,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="5684661240348539843">Identifiant d'élément</translation>
 <translation id="569068482611873351">Importer...</translation>
 <translation id="56907980372820799">Associer les données</translation>
-<translation id="569109051430110155">Détection automatique</translation>
 <translation id="5691596662111998220">Désolé, le fichier <ph name="FILE_NAME" /> n'existe plus.</translation>
 <translation id="5694501201003948907">Compression de $1 éléments en cours…</translation>
 <translation id="5697118958262594262">Détecter le contenu important par défaut</translation>
@@ -4504,7 +4507,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7225179976675429563">Type de réseau manquant.</translation>
 <translation id="7230787553283372882">Personnaliser la taille du texte</translation>
 <translation id="7231224339346098802">Indiquez le nombre de copies à imprimer (une ou plus).</translation>
-<translation id="7234907163682057631">Détecter et exécuter du contenu de plug-in important</translation>
 <translation id="7238585580608191973">Empreinte SHA-256</translation>
 <translation id="7240120331469437312">Autre nom de l'objet du certificat</translation>
 <translation id="7241389281993241388">Connectez-vous à <ph name="TOKEN_NAME" /> pour importer le certificat client.</translation>
@@ -4686,6 +4688,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7484645889979462775">Jamais pour ce site</translation>
 <translation id="7484964289312150019">Ouvrir tous les favoris dans une &amp;nouvelle fenêtre</translation>
 <translation id="7485236722522518129">F4</translation>
+<translation id="7487067081878637334">Technologie</translation>
 <translation id="7487099628810939106">Délai avant un clic :</translation>
 <translation id="7487969577036436319">Aucun composant installé</translation>
 <translation id="7489605380874780575">Vérifier l'éligibilité</translation>
@@ -4957,6 +4960,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7877451762676714207">Erreur serveur inconnue. Veuillez réessayer ou contacter l'administrateur du serveur.</translation>
 <translation id="7878999881405658917">Nous avons envoyé une notification à ce téléphone. Grâce au Bluetooth, votre téléphone peut maintenir votre <ph name="DEVICE_TYPE" /> déverrouillé dans un rayon de plus de 10 mètres. Si cela risque de poser problème, vous pouvez &lt;a&gt;désactiver provisoirement cette fonctionnalité&lt;/a&gt;.</translation>
 <translation id="7880836220014399562">"<ph name="BUNDLE_NAME" />" permet d'ajouter les applications et les extensions suivantes :</translation>
+<translation id="7881483672146086348">Afficher le compte</translation>
 <translation id="7881969471599061635">Désactiver les sous-titres</translation>
 <translation id="7885253890047913815">Emplacements de destination récents</translation>
 <translation id="7887192723714330082">Répondez à "Ok Google" lorsque l'écran est actif et déverrouillé.</translation>
@@ -5350,7 +5354,6 @@ Calcul de la durée restante</translation>
 <translation id="8428213095426709021">Paramètres</translation>
 <translation id="8428634594422941299">OK</translation>
 <translation id="8432745813735585631">Clavier Colemak américain</translation>
-<translation id="8434177709403049435">Codag&amp;e</translation>
 <translation id="8434480141477525001">Port de débogage de Native Client</translation>
 <translation id="8435334418765210033">Réseaux mémorisés</translation>
 <translation id="8437209419043462667">Américain</translation>
@@ -5741,7 +5744,6 @@ Calcul de la durée restante</translation>
 <translation id="8970203673128054105">Afficher la liste des modes de diffusion</translation>
 <translation id="89720367119469899">Échap</translation>
 <translation id="8972513834460200407">Vérifiez auprès de votre administrateur réseau que le pare-feu ne bloque pas les téléchargements effectués depuis les serveurs Google.</translation>
-<translation id="8974161578568356045">Détecter automatiquement</translation>
 <translation id="8978526688207379569">Plusieurs fichiers ont été téléchargés automatiquement via ce site</translation>
 <translation id="8982248110486356984">Changer d'utilisateur</translation>
 <translation id="8986267729801483565">Enregistrer les fichiers dans le dossier :</translation>
@@ -5928,7 +5930,6 @@ Calcul de la durée restante</translation>
 <translation id="923467487918828349">Tout afficher</translation>
 <translation id="927151012416335806">Installation de la version <ph name="CHANNEL_NAME" /> sur votre appareil…</translation>
 <translation id="930268624053534560">Horodatage détaillé</translation>
-<translation id="931068751149008062">Choisir les types de polices et l'encodage</translation>
 <translation id="932327136139879170">Accueil</translation>
 <translation id="932508678520956232">Impossible de lancer l'impression.</translation>
 <translation id="93393615658292258">Mot de passe uniquement</translation>

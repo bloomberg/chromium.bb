@@ -506,6 +506,9 @@
 <translation id="2623014935069176671">Gaidīt sākotnējo lietotāja darbību</translation>
 <translation id="262740370354162807">Iespējo dokumentu iesniegšanu pakalpojumā <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Iespējot izrunu</translation>
+<translation id="2646290749315461919">Ļauj iestatīt, vai vietnēm ir atļauts izsekot lietotāju fizisko atrašanās vietu. Lietotāju fiziskās atrašanās vietas izsekošana var tikt atļauta pēc noklusējuma, noraidīta pēc noklusējuma vai lietotājam var tikt vaicāts katru reizi, kad vietne pieprasa datus par fizisko atrašanās vietu.
+
+          Ja šī politika nav iestatīta, tiks lietota politika AskGeolocation un lietotājs to varēs mainīt.</translation>
 <translation id="2650049181907741121">Pēc vāka aizvēršanas veicamā darbība</translation>
 <translation id="2655233147335439767">Norāda tās meklētājprogrammas vietrādi URL, kas tiek izmantota noklusējuma meklēšanai. Vietrādī URL ir jābūt virknei “<ph name="SEARCH_TERM_MARKER" />”, kas vaicājuma ievadīšanas brīdī tiks aizstāta ar lietotāja meklētajiem vārdiem.
 
@@ -520,12 +523,6 @@
           Šī politika tiek ievērota tikai tad, ja ir iespējota politika DefaultSearchProviderEnabled.</translation>
 <translation id="2682225790874070339">Tiek atspējota Diska izmantošana operētājsistēmas <ph name="PRODUCT_OS_NAME" /> lietotnē Faili.</translation>
 <translation id="268577405881275241">Iespējot datu saspiešanas starpniekservera funkciju</translation>
-<translation id="2692168654831544772">Atspējo ekrānuzņēmumu veidošanu.
-
-      Ja šī politika ir iespējota, ekrānuzņēmumus nevar veidot, izmantojot īsinājumtaustiņus vai paplašinājumu API.
-      Turklāt ekrānuzņēmumu veidošana ir atspējota ARC lietotnēm.
-
-      Ja šī politika ir atspējota vai nav norādīta, ekrānuzņēmumu veidošana ir atļauta.</translation>
 <translation id="2731627323327011390">Atspējot <ph name="PRODUCT_OS_NAME" /> sertifikātu izmantošanu ARC lietotnēm</translation>
 <translation id="2742843273354638707">Paslēpt Chrome interneta veikala lietotnes un kājenes saiti Jaunas cilnes lapā un <ph name="PRODUCT_OS_NAME" /> lietotņu palaidējā.
 
@@ -578,22 +575,6 @@
           Katrs šī saraksta vienums ir paplašinājuma veida atbilstības modelis (skatiet vietni https://developer.chrome.com/extensions/match_patterns). Lietotāji var ērti instalēt vienumus no jebkura URL, kas atbilst kādam saraksta vienumam. Šiem modeļiem ir jāatļauj gan *.crx faila atrašanās vieta, gan lapa, no kuras tiek sākta lejupielāde (t.i., novirzītājs).
 
           Politika ExtensionInstallBlacklist ir svarīgāka par šo politiku. Tas nozīmē, ka melnajā sarakstā esošs paplašinājums netiks instalēts, pat ja tas atrodas šajā sarakstā minētā vietnē.</translation>
-<translation id="2813740161943223811">Šī politika ir novecojusi. Tās vietā lietojiet ProxyMode.
-
-          Ļauj norādīt produkta <ph name="PRODUCT_NAME" /> izmantoto starpniekserveri un neļauj lietotājiem mainīt starpniekservera iestatījumus. Šo starpniekserveri varēs izmantot arī ARC lietotnes.
-
-          Ja izvēlaties nekad neizmantot starpniekserveri un vienmēr izmantot tiešu savienojumu, visas pārējās opcijas tiek ignorētas.
-
-          Ja izvēlaties lietot sistēmas starpniekservera iestatījumus vai automātiski atklāt starpniekserveri, visas pārējās opcijas tiek ignorētas.
-
-          Ja tiek izvēlēti manuāli starpniekservera iestatījumi, laukos “Starpniekservera adrese vai URL”, “URL uz starpniekservera .pac failu” un “Ar komatu atdalītu starpniekserveru apiešanas kārtulu saraksts” var norādīt papildu opcijas. ARC lietotnēm ir pieejams tikai HTTP starpniekserveris ar visaugstāko prioritāti.
-
-          Detalizētus piemērus skatiet šeit:
-          <ph name="PROXY_HELP_URL" />.
-
-          Ja šis iestatījums ir iespējots, <ph name="PRODUCT_NAME" /> ignorē visas ar starpniekserveri saistītās opcijas, kas tiek norādītas komandrindā.
-
-          Ja šīs politikas nav iestatītas, lietotāji varēs izvēlēties savus starpniekserveru iestatījumus.</translation>
 <translation id="2818551149761607847">Lietotāja iemiesojuma attēla konfigurēšana.
 
       Šī politika ļauj konfigurēt iemiesojuma attēlu, kas pieteikšanās ekrānā tiks rādīts konkrētam lietotājam. Politika tiek iestatīta, norādot vietrādi URL, no kura operētājsistēma <ph name="PRODUCT_OS_NAME" /> var lejupielādēt iemiesojuma attēlu un kriptogrāfisko jaucējalgoritmu, kas tiek izmantots lejupielādes integritātes pārbaudei. Attēlam ir jābūt JPEG formātā, un tā lielums nedrīkst pārsniegt 512 KB. Vietrādim URL ir jābūt pieejamam bez autentifikācijas.
@@ -738,18 +719,6 @@
           </translation>
 <translation id="3205825995289802549">Pirmā pārlūka loga maksimizēšana pirmajā palaišanas reizē</translation>
 <translation id="3206731874112238027">Drukas priekšskatījuma atspējošana (novecojusi)</translation>
-<translation id="3208854390109736596">Ļauj norādīt produkta <ph name="PRODUCT_NAME" /> izmantoto starpniekserveri un neļauj lietotājiem mainīt starpniekservera iestatījumus. Šo starpniekserveri varēs izmantot arī ARC lietotnes.
-
-      Ja izvēlaties nekad neizmantot starpniekserveri un vienmēr izmantot tiešu savienojumu, visas pārējās opcijas tiek ignorētas.
-
-      Ja izvēlaties atrast starpniekserveri automātiski, visas pārējās opcijas tiek ignorētas.
-
-      Detalizētus piemērus skatiet šeit:
-      <ph name="PROXY_HELP_URL" />.
-
-      Ja šis iestatījums ir iespējots, <ph name="PRODUCT_NAME" /> un ARC lietotnes ignorē visas ar starpniekserveri saistītās opcijas, kas norādītas komandrindā.
-
-      Ja šīs politikas nav iestatītas, lietotāji varēs izvēlēties savus starpniekserveru iestatījumus.</translation>
 <translation id="3213821784736959823">Tiek noteikts, vai pārlūkā <ph name="PRODUCT_NAME" /> tiek lietots iebūvētais DNS klients.
 
       Ja šai politikai ir iestatīta vērtība Patiess, tiks izmantots iebūvētais DNS klients (ja iespējams).
@@ -794,11 +763,6 @@
 <translation id="3322771899429619102">Ļauj iestatīt URL šablonu sarakstu, kurā ir norādītas vietnes, kam ir atļauts izmantot atslēgu ģenerēšanu. Ja URL šablons ir iestatīts politikā “KeygenBlockedForUrls”, šie izņēmumi tiek ignorēti.
 
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantota globālā noklusējuma vērtība no politikas “DefaultKeygenSetting” (ja tā ir iestatīta) vai pretējā gadījumā no lietotāja personīgās konfigurācijas.</translation>
-<translation id="3337150554416948435">Ļauj iestatīt, vai vietnēm ir atļauts izsekot lietotāju fizisko atrašanās vietu. Lietotāju fiziskās atrašanās vietas izsekošana var tikt atļauta pēc noklusējuma, noraidīta pēc noklusējuma vai lietotājam var tikt vaicāts katru reizi, kad vietne pieprasa datus par fizisko atrašanās vietu.
-
-          Ja šai politikai ir iestatīta vērtība BlockGeolocation, atrašanās vietas datu kopīgošana ir aizliegta ARC lietotnēm.
-
-          Ja šī politika nav iestatīta, tiek lietota vērtība AskGeolocation un lietotājs to var mainīt.</translation>
 <translation id="3381968327636295719">Pēc noklusējuma lieto saimniekdatora pārlūku</translation>
 <translation id="3417418267404583991">Ja šī politika ir iestatīta uz Patiesa vai nav konfigurēta, produkts <ph name="PRODUCT_OS_NAME" /> iespējo viesu pieteikšanās sesijas. Viesu pieteikšanās sesijas ir anonīmu lietotāju sesijas, un tām nav jāizmanto parole.
 
@@ -817,14 +781,6 @@
           Ja politikas iestatījums ir “True” (patiess), jaudas pārvaldības aizkaves un sesijas ilguma ierobežojuma uzskaite tiek sākta tikai pēc tam, kad sesijā ir konstatēta pirmā lietotāja darbība.
 
           Ja politika nav iestatīta vai iestatījums ir “False” (aplams), jaudas pārvaldības aizkaves un sesijas ilguma ierobežojuma uzskaite tiek sākta nekavējoties pēc sesijas sākuma.</translation>
-<translation id="3469657928310999477"><ph name="PRODUCT_NAME" /> apies visus šajā sarakstā iekļauto saimniekdatoru starpniekserverus.
-
-          Šī politika ir spēkā tikai tad, ja iestatījumā “Izvēlieties, kādā veidā jānorāda starpniekserveru iestatījumi” ir atlasīti manuālie starpniekserveru iestatījumi.
-
-          Šī politika nav jāiestata, ja ir atlasīts jebkurš cits starpniekserveru politiku iestatīšanas režīms.
-
-          Detalizētus piemērus skatiet šeit:
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="3478024346823118645">Notīrīt lietotāja datus izrakstīšanās brīdī</translation>
 <translation id="348495353354674884">Iespējot virtuālo tastatūru</translation>
 <translation id="3496296378755072552">Paroļu pārvaldnieks</translation>
@@ -955,17 +911,6 @@
 
       Ja šī politika nav iestatīta, SPDY būs pieejams.</translation>
 <translation id="3891357445869647828">Iespējo JavaScript</translation>
-<translation id="3898060089412156345">Atļaujiet vai noraidiet audio ierakstīšanu.
-
-      Ja šī politika ir iespējota vai nav konfigurēta (noklusējuma iestatījums), lietotājam tiks pieprasīta piekļuve
-      audio ierakstīšanai, izņemot vietrāžus URL, kas konfigurēti sarakstā
-      AudioCaptureAllowedUrls, — piekļuve tiem tiks nodrošināta bez uzvednes parādīšanas.
-
-      Ja šī politika ir atspējota, lietotājam netiks parādīta uzvedne un audio
-      ierakstīšana būs pieejama tikai vietrāžiem URL, kas konfigurēti sarakstā AudioCaptureAllowedUrls.
-      ARC lietotnēm mikrofona skaņa ir pastāvīgi izslēgta.
-
-      Šī politika attiecas uz visiem audio ievades veidiem, nevis tikai uz iebūvēto mikrofonu.</translation>
 <translation id="3907986150060929099">Ieteikto lokalizāciju iestatīšana publiskai sesijai</translation>
 <translation id="391531815696899618">Tiek atspējota Google diska sinhronizēšana operētājsistēmas <ph name="PRODUCT_OS_NAME" /> lietotnē Faili, ja ir iestatīta vērtība Patiesa. Šajā gadījumā Google diskā netiek augšupielādēti dati.
 
@@ -1091,6 +1036,11 @@
       Lai gan šī politika ir atbalstīta iepriekš minētajās platformās, ne visas iespējotās funkcijas var būt pieejamas visās platformās. Ne visas novecojušās tīmekļa platformas funkcijas var iespējot atkārtoti. Var iespējot tikai tālāk norādītās funkcijas, un katrai funkcijai ir atšķirīgs derīguma laiks. Virknes taga vispārīgais formāts ir [NovecojušāsFunkcijasNosaukums]_SpēkāLīdz[ggggmmdd]. Ja vēlaties uzzināt vairāk, vietnē https://bit.ly/blinkintents ir minēti iemesli, kādēļ tīmekļa platformas funkcijās ir veiktas izmaiņas.
       </translation>
 <translation id="4442582539341804154">Bloķēšanas iespējošana, ja ierīce pāriet dīkstāvē vai tās darbība tiek apturēta</translation>
+<translation id="4445684791305970001">Atspējo izstrādātāju rīkus un JavaScript konsoli.
+
+      Ja šis iestatījums ir iespējots, nevar piekļūt izstrādātāju rīkiem un vairs nevar pārbaudīt vietņu elementus. Tiks atspējoti visi īsinājumtaustiņi un visi izvēļņu vai kontekstizvēlņu ieraksti, ar kuriem tiek atvērti izstrādātāju rīki vai JavaScript konsole.
+
+      Ja šis iestatījums ir atspējots vai nav iestatīts, izstrādātāju rīkus un JavaScript konsoli varēs lietot.</translation>
 <translation id="4449545651113180484">Pagriezt ekrānu pulksteņrādītāju kustības virzienā par 270 grādiem</translation>
 <translation id="4467952432486360968">Bloķē trešo pušu sīkfailus</translation>
 <translation id="4474167089968829729">Iespējot paroļu saglabāšanu paroļu pārvaldniekā</translation>
@@ -1215,6 +1165,16 @@
           Vērtībai ir jābūt virknētai JSON vārdnīcu masīvam. Katrai vārdnīcai ir jābūt šādā formā: { "pattern": "$URL_PATTERN", "filter" : $FILTER } (kur $URL_PATTERN ir satura iestatījuma raksts). $FILTER ierobežo, no kura klienta pārlūkprogrammā tiks automātiski atlasīti sertifikāti. Neatkarīgi no filtra tiks atlasīti tikai sertifikāti, kas atbilst servera sertifikāta pieprasījumam. Ja $FILTER ir formā { "ISSUER": { "CN": "$ISSUER_CN" } }, papildus tiek atlasīti tikai klienta sertifikāti, kas izsniegti, izmantojot sertifikātu ar nosaukumu CommonName $ISSUER_CN. Ja $FILTER ir tukšā vārdnīca {}, klienta sertifikātu atlasīšana nav papildus ierobežota.
 
           Ja šī politika nav iestatīta, nevienai vietnei netiks veikta automātiskā atlase.</translation>
+<translation id="4980301635509504364">Atļaujiet vai noraidiet video ierakstīšanu.
+
+      Ja šī politika ir iespējota vai nav konfigurēta (noklusējuma iestatījums), lietotājam tiks pieprasīta piekļuve
+      video ierakstīšanai, izņemot vietrāžus URL, kas konfigurēti sarakstā
+      VideoCaptureAllowedUrls, — piekļuve tiem tiks nodrošināta bez uzvednes parādīšanas.
+
+      Ja šī politika ir atspējota, lietotājam nekad netiks parādīta uzvedne un video
+      ierakstīšana būs pieejama tikai vietrāžiem URL, kas konfigurēti sarakstā VideoCaptureAllowedUrls.
+
+      Šī politika attiecas uz visiem video ievades veidiem, nevis tikai uz iebūvēto kameru.</translation>
 <translation id="4980635395568992380">Datu tips:</translation>
 <translation id="4983201894483989687">Atļauj palaist novecojušus spraudņus</translation>
 <translation id="4988291787868618635">Darbība, kas ir jāveic, kad ir aizritējis laiks līdz dīkstāvei</translation>
@@ -1226,11 +1186,6 @@
       Ja tā nav iestatīta, vai nu lietotājam var tikt vaicāts, vai importēt, vai arī importēšana var notikt automātiski.</translation>
 <translation id="5056708224511062314">Ekrāna lupa ir atspējota</translation>
 <translation id="5067143124345820993">Pieteikšanās lietotāju baltais saraksts</translation>
-<translation id="510186355068252378">Atspējo produktā <ph name="PRODUCT_NAME" /> datu sinhronizāciju, izmantojot Google mitinātos sinhronizācijas pakalpojumus, un neļauj lietotājiem mainīt šo iestatījumu.
-
-      Ja šis iestatījums ir iespējots, lietotāji nevar mainīt vai ignorēt šo iestatījumu produktā <ph name="PRODUCT_NAME" />.
-
-      Ja šī politika nav iestatīta, lietotājs varēs izvēlēties, vai lietot Google Sync.</translation>
 <translation id="5105313908130842249">Aizkave līdz ekrāna bloķēšanai, ja ierīce darbojas ar akumulatora jaudu</translation>
 <translation id="5111573778467334951">Norāda darbību, kura ir jāveic, kad ir aizritējis laiks līdz dīkstāvei un ir zems akumulatora uzlādes līmenis.
 
@@ -1367,13 +1322,6 @@
       Ja ir norādīta šīs politikas vērtība, vietrādim URL, kas tiek izmantots variantu sākotnējās vērtības iegūšanai, tiks pievienots vaicājuma parametrs “restrict”. Parametra vērtība būs šīs politikas norādītā vērtība.
 
       Ja šīs politikas vērtība nav norādīta, variantu sākotnējās vērtības URL netiks modificēts.</translation>
-<translation id="5563853101694018649">Atspējo izstrādātāju rīkus un JavaScript konsoli.
-
-      Ja iespējosiet šo iestatījumu, lietotājs vairs nevarēs piekļūt izstrādātāju rīkiem un pārbaudīt vietņu elementus. Tiks atspējoti visi īsinājumtaustiņi un izvēļņu vai kontekstizvēļņu opcijas, kas paredzētas izstrādātāju rīku vai JavaScript konsoles atvēršanai.
-
-      Ja šī opcija tiks atspējota vai netiks iestatīta, lietotājs varēs izmantot izstrādātāju rīkus un JavaScript konsoli.
-
-      <ph name="PRODUCT_OS_NAME" /> ierīcēs, kurās var palaist Android lietotnes, ar šo politiku tiek pārvaldīta arī piekļuve Android izstrādātājiem paredzētajām opcijām. Ja politikai tiek iestatīta vērtība “Patiesa”, lietotāji nevar piekļūt izstrādātājiem paredzētajām opcijām. Ja politikai tiek iestatīta vērtība “Nepatiesa” vai netiek iestatīta nekāda vērtība, lietotāji var piekļūt izstrādātājiem paredzētajām opcijām, septiņas reizes pieskaroties versijas numuram Android lietotnē Iestatījumi.</translation>
 <translation id="556941986578702361">Kontrolējiet <ph name="PRODUCT_OS_NAME" /> plaukta automātisko slēpšanu.
 
       Ja šai politikai tiks izvēlēts iestatījums “AlwaysAutoHideShelf”, plaukts vienmēr tiks automātiski slēpts.
@@ -1850,6 +1798,16 @@
       Ja šis iestatījums ir iespējots vai atspējots, lietotāji to nevar mainīt vai ignorēt.
 
       Ja šī politika nav iestatīta, lietotājs var izvēlēties, vai ierīces atbloķēšanai tiek prasīta parole.</translation>
+<translation id="7109916642577279530">Atļaujiet vai noraidiet audio ierakstīšanu.
+
+      Ja šī politika ir iespējota vai nav konfigurēta (noklusējuma iestatījums), lietotājam tiks pieprasīta piekļuve
+      audio ierakstīšanai, izņemot vietrāžus URL, kas konfigurēti sarakstā
+      AudioCaptureAllowedUrls, — piekļuve tiem tiks nodrošināta bez uzvednes parādīšanas.
+
+      Ja šī politika ir atspējota, lietotājam netiks parādīta uzvedne un audio
+      ierakstīšana būs pieejama tikai vietrāžiem URL, kas konfigurēti sarakstā AudioCaptureAllowedUrls.
+
+      Šī politika attiecas uz visiem audio ievades veidiem, nevis tikai uz iebūvēto mikrofonu.</translation>
 <translation id="7115494316187648452">Šī politika tiek izmantota, lai noteiktu, vai <ph name="PRODUCT_NAME" /> process tiek sākts līdz ar pieteikšanos operētājsistēmā un vai tas tiek turpināts, līdz tiek aizvērts pēdējais pārlūka logs, ļaujot fona lietotnēm un pašreizējai pārlūkošanas sesijai un jebkādiem sesijas sīkfailiem palikt aktīviem. Fona process tiek rādīts kā ikona sistēmas teknē, kur to jebkurā brīdī var pārtraukt.
 
       Ja šai politikai ir iestatīta vērtība Patiesa, fona režīms ir iespējots un lietotājs nevar to kontrolēt pārlūka iestatījumos.
@@ -2139,20 +2097,6 @@
       Nosaka paplašinājuma ID, kas jāizmanto kā ekrānsaudzētājs pierakstīšanās ekrānā. Paplašinājumam ir jābūt daļai no AppPack, kas konfigurēts šim domēnam, izmantojot politiku DeviceAppPack.</translation>
 <translation id="7882890448959833986">Brīdinājuma par neatbalstītu OS rādīšanas apturēšana</translation>
 <translation id="7912255076272890813">Atļauto lietotņu/paplašinājumu veidu konfigurēšana</translation>
-<translation id="7914271217607102111">Atļaujiet vai noraidiet video ierakstīšanu.
-
-      Ja šī politika ir iespējota vai nav konfigurēta (noklusējuma iestatījums), lietotājam tiks pieprasīta piekļuve
-      video ierakstīšanai, izņemot vietrāžus URL, kas konfigurēti sarakstā
-      VideoCaptureAllowedUrls, — piekļuve tiem tiks nodrošināta bez uzvednes parādīšanas.
-      ARC lietotnes varēs piekļūt kamerai, ja tām būs piešķirta attiecīga
-      atļauja.
-
-      Ja šī politika ir atspējota, lietotājam nekad netiks parādīta uzvedne un video
-      ierakstīšana būs pieejama tikai vietrāžiem URL, kas konfigurēti sarakstā VideoCaptureAllowedUrls.
-      ARC lietotnes nevarēs piekļūt kamerai.
-
-      Neskaitot ARC lietotnes, šī politika attiecas uz visiem video ievades veidiem,
-      nevis tikai uz iebūvēto kameru.</translation>
 <translation id="7915236031252389808">Šeit varat norādīt starpniekservera .pac faila vietrādi URL.
 
           Šī politika ir spēkā tikai tad, ja iestatījumā “Izvēlieties, kādā veidā jānorāda starpniekserveru iestatījumi” ir atlasīti manuālie starpniekserveru iestatījumi.
@@ -2567,24 +2511,6 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
 <translation id="9112897538922695510">Ļauj reģistrēt protokolu apdarinātāju sarakstu. Šī var būt tikai ieteicama politika. Rekvizītā |protocol| ir jāiestata shēma, piemēram “mailto”, un rekvizītā |url| ir jāiestata tās lietojumprogrammas URL raksts, kura apstrādā shēmu. Parametrā var iekļaut “%s”, kas tiks aizstāts ar apstrādāto URL.
 
           Politikas reģistrētie protokolu apdarinātāji tiek apvienoti ar lietotāja reģistrētajiem, un tie visi ir pieejami lietošanai. Lietotājs var ignorēt politikas instalētos protokolu apdarinātājus, instalējot jaunu noklusējuma apdarinātāju, bet nevar noņemt politikas reģistrētu protokola apdarinātāju.</translation>
-<translation id="913138516158420759">Ļauj norādīt produkta <ph name="PRODUCT_NAME" /> izmantoto starpniekserveri un neļauj lietotājiem mainīt starpniekservera iestatījumus. Šo starpniekserveri varēs izmantot arī ARC lietotnes.
-
-          Ja izvēlaties nekad neizmantot starpniekserveri un vienmēr izmantot tiešu savienojumu, visas pārējās opcijas tiek ignorētas.
-
-          Ja izvēlaties izmantot sistēmas starpniekservera iestatījumus, visas citas opcijas tiek ignorētas.
-
-          Ja izvēlaties atrast starpniekserveri automātiski, visas pārējās opcijas tiek ignorētas.
-
-          Ja tiek izvēlēts fiksēta servera starpniekservera režīms, laukos “Starpniekservera adrese vai URL” un “Ar komatu atdalītu starpniekserveru apiešanas kārtulu saraksts” var norādīt papildu opcijas. ARC lietotnēm ir pieejams tikai HTTP starpniekserveris ar visaugstāko prioritāti.
-
-          Ja tiek izvēlēts izmantot .pac starpniekservera skriptu, laukā “URL uz starpniekservera .pac failu” obligāti jānorāda šī skripta URL.
-
-          Detalizētus piemērus skatiet šeit:
-          <ph name="PROXY_HELP_URL" />.
-
-          Ja šis iestatījums ir iespējots, <ph name="PRODUCT_NAME" /> un ARC lietotnes ignorē visas ar starpniekserveri saistītās opcijas, kas tiek norādītas komandrindā.
-
-          Ja šī politika nav iestatīta, lietotāji varēs izvēlēties savus starpniekserveru iestatījumus.</translation>
 <translation id="913195841488580904">Bloķēt piekļuvi vietrāžu URL sarakstam</translation>
 <translation id="9135033364005346124">Iespējo <ph name="CLOUD_PRINT_NAME" /> starpniekserveri</translation>
 <translation id="9147029539363974059">Sūta sistēmas žurnālus uz pārvaldības serveri, lai ļautu
@@ -2605,6 +2531,11 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
 <translation id="9187743794267626640">Ārējas krātuves uzstādīšanas atspējošana</translation>
 <translation id="9197740283131855199">Aizkaves līdz ekrāna aptumšošanai norādīšana procentos, ja lietotājs ir aktīvs pēc aptumšošanas</translation>
 <translation id="9200828125069750521">Tā attēla URL parametri, kurā tiek izmantota metode POST</translation>
+<translation id="9203071022800375458">Atspējo ekrānuzņēmumu izveidi.
+
+      Ja šis iestatījums ir iespējots, nevar uzņemt ekrānuzņēmumus, izmantojot īsinājumtaustiņus vai paplašinājumu API.
+
+      Ja šis iestatījums ir atspējots vai nav norādīts, veidot ekrānuzņēmumus ir atļauts.</translation>
 <translation id="9217154963008402249">Pārraudzības tīkla pakešu biežums</translation>
 <translation id="922540222991413931">Konfigurē paplašinājumu, lietotņu un lietotāja skriptu instalēšanas avotus</translation>
 <translation id="924557436754151212">Saglabāto paroļu importēšana no noklusējuma pārlūka pirmajā palaišanas reizē</translation>

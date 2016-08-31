@@ -183,6 +183,7 @@
 <translation id="1240892293903523606">‏بازرس DOM</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> می‌خواهد تنظیمات شما را بازنشانی کند.</translation>
 <translation id="1243314992276662751">آپلود</translation>
+<translation id="1244147615850840081">شرکت مخابراتی</translation>
 <translation id="1244303850296295656">خطای افزونه</translation>
 <translation id="1245907074925860695">حذف کاربر</translation>
 <translation id="1248269069727746712"><ph name="PRODUCT_NAME" /> در حال استفاده از تنظیمات پراکسی سیستم دستگاه شما برای اتصال به شبکه است.</translation>
@@ -195,7 +196,6 @@
 <translation id="126710816202626562">زبان ترجمه:</translation>
 <translation id="1272079795634619415">توقف</translation>
 <translation id="1272978324304772054">این حساب کاربری متعلق به دامنه‌ای که دستگاه در آن ثبت‌ شده است، نیست. اگر می‌خواهید در دامنه دیگری ثبت‌نام کنید ابتدا باید دستگاه را بازیابی کنید.</translation>
-<translation id="127353061808977798">قلم‌ها و رمزگذاری</translation>
 <translation id="1274997165432133392">کوکی‌ها و دیگر داده‌های سایت</translation>
 <translation id="1275718070701477396">انتخاب شد</translation>
 <translation id="127668050356036882">بستن همه پنجره‌ها</translation>
@@ -1314,6 +1314,7 @@
 <translation id="2799223571221894425">راه‌اندازی مجدد</translation>
 <translation id="2800537048826676660">از این زبان برای بررسی املا استفاده شود</translation>
 <translation id="2801702994096586034">سرور ۳</translation>
+<translation id="2803375539583399270">پین را وارد کنید</translation>
 <translation id="2803887722080936828">‏<ph name="BEGIN_H3" />ویژگی‌های رفع اشکال<ph name="END_H3" />
     <ph name="BR" />
     می‌توانید ویژگی‌های رفع اشکال را در دستگاه دارای سیستم عامل Chrome فعال کنید تا کد سفارشی را در دستگاهتان نصب و آزمایش کنید.  با این کار می‌توانید:<ph name="BR" />
@@ -2065,6 +2066,7 @@
 <translation id="3743492083222969745">فعال/غیرفعال کردن گزینه ورودی اشاره‌ای در صفحه تنظیمات برای صفحه‌کلید مجازی.</translation>
 <translation id="3744111561329211289">همگام‌سازی پس‌زمینه</translation>
 <translation id="3745016858329272300">اطلاعات موارد کلی</translation>
+<translation id="3748026146096797577">متصل نیست</translation>
 <translation id="3749289110408117711">نام فایل</translation>
 <translation id="3751427701788899101">اتصال قطع شد</translation>
 <translation id="3752439026432317933">جزئیات پرداخت را وارد کنید...</translation>
@@ -2781,6 +2783,7 @@
 <translation id="480990236307250886">باز کردن صفحه اصلی</translation>
 <translation id="4811502511369621968">آدرس رایانامه نامعتبر است. لطفاً آن را بررسی کرده، دوباره امتحان کنید.</translation>
 <translation id="4812632551187706935">اتصال راه‌اندازی اولیه نشد</translation>
+<translation id="4812684235631257312">میزبان</translation>
 <translation id="4813345808229079766">اتصال</translation>
 <translation id="4813512666221746211">خطای شبکه</translation>
 <translation id="4816492930507672669">متناسب با صفحه</translation>
@@ -3161,6 +3164,7 @@
 <translation id="5306802244647481941">مشاهده سریع برنامه فایل‌ها</translation>
 <translation id="5308380583665731573">اتصال</translation>
 <translation id="5311260548612583999">فایل کلید خصوصی (اختیاری):</translation>
+<translation id="5315873049536339193">هویت</translation>
 <translation id="5316588172263354223">جستجوی شفاهی در زمان دلخواه</translation>
 <translation id="5316716239522500219">بازتاب مانیتورها</translation>
 <translation id="5317780077021120954">ذخیره</translation>
@@ -3437,7 +3441,6 @@
 <translation id="5684661240348539843">شناسه دارایی</translation>
 <translation id="569068482611873351">وارد کردن...</translation>
 <translation id="56907980372820799">داده‌های پیوند</translation>
-<translation id="569109051430110155">شناسایی خودکار</translation>
 <translation id="5691596662111998220">اوه، <ph name="FILE_NAME" /> دیگر وجود ندارد.</translation>
 <translation id="5694501201003948907">در حال فشرده‌سازی $1 مورد...</translation>
 <translation id="5697118958262594262">شناسایی محتوای مهم به صورت پیش‌فرض</translation>
@@ -4500,7 +4503,6 @@
 <translation id="7225179976675429563">نوع شبکه موجود نیست</translation>
 <translation id="7230787553283372882">سفارشی کردن اندازه نوشتار</translation>
 <translation id="7231224339346098802">استفاده از شماره برای نشان دادن تعداد کپی های چاپ (1 یا بیشتر).</translation>
-<translation id="7234907163682057631">شناسایی و اجرای محتوای مهم افزایه</translation>
 <translation id="7238585580608191973">‏اثر انگشت SHA-256</translation>
 <translation id="7240120331469437312">نام دیگر موضوع گواهی</translation>
 <translation id="7241389281993241388">لطفاً جهت ورود به مجوز سرویس گیرنده، به <ph name="TOKEN_NAME" /> وارد شوید.</translation>
@@ -4954,6 +4956,7 @@
 <translation id="7877451762676714207">خطای سرور ناشناس. لطفاً دوباره سعی کنید یا با سرپرست سرور تماس بگیرید.</translation>
 <translation id="7878999881405658917">‏Google اعلانی برای این تلفن ارسال کرد. توجه داشته باشید که تلفن شما می‌تواند قفل <ph name="DEVICE_TYPE" /> را تا بیش از ۹ متر باز نگه دارد. در مواردی که این موضوع می‌تواند مشکل آفرین باشد، می‌توانید &lt;a&gt;به صورت موقت این قابلیت را غیرفعال کنید&lt;/a&gt;.</translation>
 <translation id="7880836220014399562">«<ph name="BUNDLE_NAME" />» این برنامه‌ها و افزونه‌ها را اضافه می‌کند:</translation>
+<translation id="7881483672146086348">مشاهده حساب</translation>
 <translation id="7881969471599061635">غیرفعال کردن زیرنویس</translation>
 <translation id="7885253890047913815">مقصدهای اخیر</translation>
 <translation id="7887192723714330082">‏پاسخ دادن به «Ok Google» وقتی صفحه روشن است و قفل نیست</translation>
@@ -5346,7 +5349,6 @@
 <translation id="8428213095426709021">تنظیمات</translation>
 <translation id="8428634594422941299">متوجه شدم</translation>
 <translation id="8432745813735585631">صفحه‌کلید کلماک آمریکایی</translation>
-<translation id="8434177709403049435">&amp;رمزگذاری</translation>
 <translation id="8434480141477525001">‏درگاه اشکال‌زدایی NaCl</translation>
 <translation id="8435334418765210033">شبکه‌های به خاطر سپرده شده</translation>
 <translation id="8437209419043462667">آمریکایی</translation>
@@ -5737,7 +5739,6 @@
 <translation id="8970203673128054105">مشاهده فهرست حالت ارسال محتوا</translation>
 <translation id="89720367119469899">فرار</translation>
 <translation id="8972513834460200407">‏لطفاً با سرپرست شبکه خود بررسی کنید تا مطمئن شوید فایروال از بارگیری از سرورهای Google جلوگیری نمی‌کند.</translation>
-<translation id="8974161578568356045">شناسایی خودکار</translation>
 <translation id="8978526688207379569">این سایت چند فایل را به صورت خودکار دانلود کرد.</translation>
 <translation id="8982248110486356984">تغییر کاربران</translation>
 <translation id="8986267729801483565">مکان دانلود:</translation>
@@ -5924,7 +5925,6 @@
 <translation id="923467487918828349">نمایش همه</translation>
 <translation id="927151012416335806">درحال به روزرسانی دستگاه شما به کانال <ph name="CHANNEL_NAME" /></translation>
 <translation id="930268624053534560">مهرهای زمان با جزئیات</translation>
-<translation id="931068751149008062">نوع قلم و کدبندی را انتخاب کنید</translation>
 <translation id="932327136139879170">منزل</translation>
 <translation id="932508678520956232">نمی‌توان چاپ کردن را آغاز کرد.</translation>
 <translation id="93393615658292258">فقط گذرواژه</translation>

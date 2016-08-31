@@ -501,6 +501,9 @@
 <translation id="2623014935069176671">Maghintay sa paunang aktibidad ng user</translation>
 <translation id="262740370354162807">Paganahin ang pagsusumite ng mga dokumento sa <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Paganahin ang pasalitang feedback</translation>
+<translation id="2646290749315461919">Binibigyang-daan kang itakda kung pinapayagan o hindi ang mga website na subaybayan ang pisikal na lokasyon ng mga user. Maaaring payagan bilang default, tanggihan bilang ang pagsubaybay sa pisikal na lokasyon ng mga user, o maaaring tanungin ang user sa bawat pagkakataong humiling ng pisikal na lokasyon ang isang website.
+
+          Kung hinayaang hindi nakatakda ang patakarang ito, gagamitin ang 'AskGeolocation' at magagawa itong baguhin ng user.</translation>
 <translation id="2650049181907741121">Pagkilos na gagawin kapag isinara ng user ang takip</translation>
 <translation id="2655233147335439767">Tinutukoy ang URL ng search engine na ginagamit kapag nagsasagawa ng isang default na paghahanap. Ang URL ay dapat na maglaman ng string na '<ph name="SEARCH_TERM_MARKER" />,' na papalitan sa panahon ng query ng mga terminong hinahanap ng user.
 
@@ -515,12 +518,6 @@
           Kinikilala lamang ang patakarang ito kung pinagana ang patakaran ng 'DefaultSearchProviderEnabled.'</translation>
 <translation id="2682225790874070339">Dini-disable ang Drive sa <ph name="PRODUCT_OS_NAME" /> Files app</translation>
 <translation id="268577405881275241">Ine-enable ang feature na proxy ng compression ng data</translation>
-<translation id="2692168654831544772">Dini-disable ang pagkuha ng mga screenshot.
-
-      Kung naka-enable, hindi makakakuha ng mga screenshot gamit ang mga keyboard shortcut o extension API.
-      Dagdag pa rito, naka-disable ang screen capture para sa mga ARC app.
-
-      Kung naka-disable o hindi natukoy, pinapayagan ang pagkuha ng mga screenshot.</translation>
 <translation id="2731627323327011390">I-disable ang paggamit ng mga certificate ng <ph name="PRODUCT_OS_NAME" /> sa mga ARC app</translation>
 <translation id="2742843273354638707">Itago ang Chrome Web Store app at link ng footer mula sa Page ng Bagong Tab at sa app launcher ng <ph name="PRODUCT_OS_NAME" />.
 
@@ -573,22 +570,6 @@
           Ang bawat item sa listahang ito ay isang match pattern na uri ng extension (tingnan ang https://developer.chrome.com/extensions/match_patterns). Madaling makakapag-install ang mga user ng mga item mula sa anumang URL na tumutugma sa isang item sa listahang ito. Dapat parehong payagan ng mga pattern na ito ang lokasyon ng *.crx file at ang page kung saan nagsimula ang pag-download (i.e. ang referrer).
 
           Binibigyang-halaga ang ExtensionInstallBlacklist sa patakarang ito. Dahil dito, hindi mai-install ang extension sa blacklist, kahit na mangyari ito mula sa isang site sa listahang ito.</translation>
-<translation id="2813740161943223811">Hindi na ginagamit ang patakarang ito, gamitin na lang ang ProxyMode.
-
-          Nagbibigay-daan sa iyong itakda ang proxy server na ginagamit ng <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na baguhin ang mga setting ng proxy. Magagamit din ng mga ARC app ang proxy server na ito.
-
-          Kung pipiliin mong huwag kailanman gumamit ng proxy server at palaging direktang kumonekta, mababalewala ang lahat ng iba pang opsyon.
-
-          Kung pipiliin mong gumamit ng mga setting ng proxy ng system o awtomatikong tukuyin ang proxy server, mababalewala ang lahat ng iba ang opsyon.
-
-          Kung pipiliin mo ang mga setting ng manual na proxy, makakapagtakda ka ng iba pang mga opsyon sa 'Address o URL ng proxy server,' 'URL sa isang proxy .pac file' at 'Listahan ng mga panuntunan sa pag-bypass ng proxy na pinaghihiwalay ng mga kuwit.' Tanging ang HTTP na proxy server lang na may pinakamataas na priyoridad ang available para sa mga ARC app.
-
-          Upang makakita ng mga detalyadong halimbawa, bisitahin ang:
-          <ph name="PROXY_HELP_URL" />.
-
-          Kung ie-enable mo ang setting na ito, babalewalain ng <ph name="PRODUCT_NAME" /> ang lahat ng nakasaad na opsyong nauugnay sa proxy sa linya ng command.
-
-          Kapag hindi mo itinakda ang patakarang ito, mabibigyang-daan ang mga user na piliin ang mga setting ng proxy nang mag-isa.</translation>
 <translation id="2818551149761607847">I-configure ang larawan ng avatar ng user.
 
       Nagbibigay-daan sa iyo ang patakarang ito na i-configure ang larawan ng avatar na kumakatawan sa user sa screen sa pag-login. Itinatakda ang patakaran sa pamamagitan ng pagtukoy sa URL kung saan mada-download ng <ph name="PRODUCT_OS_NAME" /> ang larawan ng avatar at ang isang cryptographic hash na ginagamit upang i-verify ang integridad ng pag-download. Dapat ay nasa JPEG format ang larawan, ang laki nito ay hindi dapat lumampas sa 512kB. Dapat ay naa-access ang URL nang walang anumang pagpapatotoo.
@@ -733,18 +714,6 @@
           </translation>
 <translation id="3205825995289802549">I-maximize ang unang window ng browser sa unang pagtakbo</translation>
 <translation id="3206731874112238027">I-disable ang Preview ng Pag-print (hindi na ginagamit)</translation>
-<translation id="3208854390109736596">Nagbibigay-daan sa iyong itakda ang proxy server na ginagamit ng <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na baguhin ang mga setting ng proxy. Magagamit din ng mga ARC app ang proxy server na ito.
-
-      Kung pipiliin mong huwag kailanman gumamit ng proxy server at palaging direktang kumonekta, mababalewala ang lahat ng iba pang opsyon.
-
-      Kung pipiliin mong awtomatikong tukuyin ang proxy server, mababalewala ang lahat ng iba ang opsyon.
-
-      Upang makakita ng mga detalyadong halimbawa, bisitahin ang:
-      <ph name="PROXY_HELP_URL" />.
-
-      Kung ie-enable mo ang setting na ito, babalewalain ng <ph name="PRODUCT_NAME" /> at mga ARC app ang lahat ng nakasaad na opsyong nauugnay sa proxy sa linya ng command.
-
-      Kapag hindi mo itinakda ang patakarang ito, mabibigyang-daan ang mga user na piliin ang mga setting ng proxy nang mag-isa.</translation>
 <translation id="3213821784736959823">Kinokontrol kung gagamitin ang built-in na DNS client sa <ph name="PRODUCT_NAME" />.
 
       Kung nakatakda sa true ang patakarang ito, gagamitin ang built-in na DNS client, kung available.
@@ -789,11 +758,6 @@
 <translation id="3322771899429619102">Binibigyang-daan ka na magtakda ng isang listahan ng mga pattern ng URL na tumutukoy sa mga site na pinapayagang gumamit ng pagbuo ng key. Kung ang isang pattern ng URL ay nasa 'KeygenBlockedForUrls,' ino-override nito ang mga pagbubukod na ito.
 
           Kung hinayaang hindi nakatakda ang patakarang ito, gagamitin ang default na pandaigdigang value para sa lahat ng site mula sa patakaran na 'DefaultKeygenSetting' kung nakatakda ito, o kung hindi naman ay sa personal na configuration ng user.</translation>
-<translation id="3337150554416948435">Binibigyang-daan kang itakda kung papayagan o hindi ang mga website na subaybayan ang pisikal na lokasyon ng mga user. Maaaring payagan bilang default o tanggihan bilang default ang pagsubaybay sa pisikal na lokasyon ng mga user, o maaaring tanungin ang user sa tuwing hihingin ng isang website ang pisikal na lokasyon.
-
-          Kung nakatakda ang patakarang ito sa 'BlockGeolocation', hindi pinapayagan ang pagbabahagi ng lokasyon para sa mga ARC app.
-
-          Kung hinayaang hindi nakatakda ang patakarang ito, gagamitin ang 'AskGeolocation' at mababago ito ng user.</translation>
 <translation id="3381968327636295719">Gamitin ang host browser bilang default</translation>
 <translation id="3417418267404583991">Kung nakatakda sa true o hindi naka-configure ang patakarang ito, papaganahin ng <ph name="PRODUCT_OS_NAME" /> ang mga pag-login ng bisita. Ang mga pag-login ng bisita ay mga walang pagkakakilanlang session ng user at hindi nangangailangan ng password.
 
@@ -812,14 +776,6 @@
           Kung nakatakda ang patakarang ito sa True, hindi magsisimulang tumakbo ang mga pagkaantala sa pamamahala sa power management at ang limitasyon sa haba ng session hanggang makita ang unang aktibidad ng user sa isang session.
 
           Kung nakatakda ang patakarang ito sa False o iniwang hindi nakatakda, agad na tatakbo ang mga pagkaantala sa pamamahala sa power at ang limitasyon sa haba ng session sa pagsisimula ng session.</translation>
-<translation id="3469657928310999477">Iba-bypass ng <ph name="PRODUCT_NAME" /> ang anumang proxy para sa listahan ng mga host na nakasaad dito. Magagamit ng mga ARC app ang listahang ito bilang isang listahan ng mga panuntunan sa pag-bypass.
-
-          Magkakaroon lang ng bisa ang patakarang ito kung pinili mo ang mga setting ng manual na proxy sa 'Piliin kung paano itatakda ang mga setting ng proxy server.'
-
-          Hindi mo dapat itakda ang patakarang ito kung pumili ka ng iba pang mode para sa pagtatakda ng mga patakaran ng proxy.
-
-          Upang makakita ng iba pang mga detalyadong halimbawa, bisitahin ang:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="3478024346823118645">I-wipe ang data ng user sa pag-sign-out</translation>
 <translation id="348495353354674884">Paganahin ang virtual keyboard</translation>
 <translation id="3496296378755072552">Tagapamahala ng password</translation>
@@ -944,17 +900,6 @@
 
       Kung hindi itinakda ang patakarang ito, magiging available ang SPDY.</translation>
 <translation id="3891357445869647828">Paganahin ang JavaScript</translation>
-<translation id="3898060089412156345">Pahintulutan o tanggihan ang pagkuha ng audio.
-
-       Kung naka-enable o hindi naka-configure (default), ipo-prompt ang user para sa
-      access para sa pagkuha ng audio maliban sa mga URL na naka-configure sa
-      listahan na AudioCaptureAllowedUrls na mabibigyan ng access nang hindi pino-prompt.
-
-      Kapag naka-disable ang patakarang ito, hindi kailanman ipo-prompt ang user at magiging available lang ang pagkuha ng
-      audio sa mga URL na naka-configure sa AudioCaptureAllowedUrls.
-      Para sa mga ARC app, permanenteng naka-mute ang mikropono.
-
-      Nakakaapekto ang patakarang ito sa lahat ng uri ng audio input at hindi lang sa built-in na mikropono.</translation>
 <translation id="3907986150060929099">Itakda ang mga inirerekumendang lokal para sa isang pampublikong session</translation>
 <translation id="391531815696899618">Dini-disable ang pagsi-sync ng Google Drive sa <ph name="PRODUCT_OS_NAME" /> Files app kapag nakatakda sa True. Sa sitwasyong iyon, walang data na maa-upload sa Google Drive.
 
@@ -1089,6 +1034,11 @@
       Kahit ang mismong patakaran ay sinusuportahan sa mga platform sa itaas, maaaring available sa mas kaunting platform ang ine-enable nitong feature. Hindi lahat ng mga hindi na ginagamit na feature ng Web Platform ay maaaring i-enable muli. Sa mga feature lang na nakikitang nakalista sa ibaba ang maaaring maging sa limitadong yugto ng panahon, na magkakaiba para sa bawat feature. Ang pangkalahatang format ng string tag ay magiging [DeprecatedFeatureName]_EffectiveUntil[yyyymmdd]. Bilang sanggunian, makikita mo ang layunin sa likod ng mga pagbabago ng feature ng Web Platform sa https://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Paganahin ang lock kapag naging idle o nasuspinde ang device.</translation>
+<translation id="4445684791305970001">Hindi pinapagana ang Mga Tool ng Developer at ang console ng JavaScript.
+
+      Kung pinagana mo ang setting na ito, hindi maa-access ang Mga Tool ng Developer at hindi na maaaring siyasatin ang mga elemento ng web-site. Hindi papaganahin ang anumang mga keyboard shortcut at anumang mga entry ng menu o menu ng konteksto upang buksan ang Mga Tool ng Developer o ang Console ng JavaScript.
+
+      Bibigyang-daan ng pagtatakda sa pagpipiliang ito na hindi pinagana o pag-iwan ditong hindi nakatakda ang user na gamitin ang Mga Tool ng Developer at ang console ng JavaScript.</translation>
 <translation id="4449545651113180484">I-rotate ang screen pakanan nang 270 degrees</translation>
 <translation id="4467952432486360968">I-block ang cookies ng third party</translation>
 <translation id="4474167089968829729">I-enable ang pagse-save ng mga password sa password manager</translation>
@@ -1213,6 +1163,16 @@
           Ang value ay dapat na isang array ng stringified na mga diksyunaryong JSON. Ang bawat diksyunaryo ay dapat na mayroong anyong { "pattern": "$URL_PATTERN", "filter" : $FILTER }, kung saan ang $URL_PATTERN ay isang pattern ng setting ng content. Nililimitahan ng $FILTER kung aling mga client certificate ang awtomatikong pipiliin ng browser. Anuman ang filter, ang mga certificate na tumutugma sa kahilingan sa certificate ng server ang pipiliin. Kung ang $FILTER ay may anyong { "ISSUER": { "CN": "$ISSUER_CN" } }, mga client certificate na ibinigay ng isang certificate na may CommonName $ISSUER_CN lang ang pipiliin. Kung ang $FILTER ay ang walang lamang diksyunaryo na {}, hindi na nililimitahan ang pagpili ng mga client certificate.
 
           Kung hindi nakatakda ang patakarang ito, walang gagawing awtomatikong pagpili para sa anumang site.</translation>
+<translation id="4980301635509504364">Pahintulutan o tanggihan ang pagkuha ng video.
+
+      Kung naka-enable o hindi naka-configure (default), tatanungin ang user para sa
+      access sa pagkuha ng video maliban sa mga  URL na naka-configure sa listahan
+      na VideoCaptureAllowedUrls na mabibigyan ng access nang hindi nagtatanong.
+
+      Kapag naka-disabled ang patakarang ito, hindi kailanman tatanungin ang user at
+      magiging available lang ang pagkuha ng video sa mga url na naka-configure sa VideoCaptureAllowedUrls.
+
+      Naaapektuhan ng patakarang ito ang lahat ng uri ng video input at hindi lang ang built-in na camera.</translation>
 <translation id="4980635395568992380">Uri ng data:</translation>
 <translation id="4983201894483989687">Payagan ang pagpapatakbo ng mga plugin na wala na sa panahon</translation>
 <translation id="4988291787868618635">Pagkilos na gagawin kapag naabot ang idle delay</translation>
@@ -1224,11 +1184,6 @@
       Kung hindi ito nakatakda, maaaring tanungin sa user kung mag-i-import o hindi, o maaaring awtomatikong mangyari ang pag-import.</translation>
 <translation id="5056708224511062314">Naka-disable ang magnifier ng screen</translation>
 <translation id="5067143124345820993">White list ng user sa pag-login</translation>
-<translation id="510186355068252378">Hindi pinapaganana ang pag-synchronize ng data sa <ph name="PRODUCT_NAME" /> gamit ang mga serbisyo ng pag-synchronize na hino-host ng Google at pinipigilan ang mga user na baguhin ang setting na ito.
-
-      Kung pinagana mo ang setting na ito, hindi maaaring baguhin o i-override ng mga user ang setting na ito sa <ph name="PRODUCT_NAME" />.
-
-      Kung hinayaang hindi nakatakda ang patakarang ito magiging available ang Google Sync upang makapili ang user kung gagamitin ito o hindi.</translation>
 <translation id="5105313908130842249">Delay ng pag-lock ng screen kapag tumatakbo gamit ang power ng baterya</translation>
 <translation id="5111573778467334951">Tukuyin ang pagkilos na gagawin kapag naabot na ang pagkaantala ng idle habang tumatakbo gamit ang power ng baterya.
 
@@ -1362,13 +1317,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung tinukoy ito, magdaragdag ito ng parameter ng query na tinatawag na 'paghigpitan' sa URL na ginagamit upang kunin ang seed ng Mga Variation. Ang halaga ng parameter ay ang halagang tutukuyin sa patakarang ito.
 
       Kung hindi ito tinukoy, hindi nito babaguhin ang URL ng seed ng Mga Variation.</translation>
-<translation id="5563853101694018649">Dini-disable ang Developer Tools at ang JavaScript console.
-
-      Kung ie-enable mo ang setting na ito, hindi maa-access ang Developer Tools at hindi na masisiyasat ang mga elemento sa web-site. Madi-disable ang anumang mga keyboard shortcut at anumang entry sa menu o menu ng konteksto upang buksan ang Developer Tools o ang JavaScript Console.
-
-      Kung itatakda ang opsyong ito sa naka-disable o kung iiwan itong hindi nakatakda, papayagan nito ang paggamit ng Developer Tools at JavaScript console.
-
-      Para sa mga <ph name="PRODUCT_OS_NAME" /> device na may kakayahang magpatakbo ng mga Android app, kinokontrol din ng patakarang ito ang access sa Mga Opsyon ng Android Developer. Kung itatakda mo sa true ang patakarang ito, hindi maa-access ng mga user ang Mga Opsyon ng Developer. Kung itatakda mo sa false o iiwanang hindi nakatakda ang patakarang ito, maa-access ng mga user ang Mga Opsyon ng Developer sa pamamagitan ng pagta-tap nang pitong beses sa numero ng build sa app na Mga setting ng Android.</translation>
 <translation id="556941986578702361">Kontrolin ang awtomatikong pagtatago ng shelf ng <ph name="PRODUCT_OS_NAME" />.
 
       Kung nakatakda ang patakarang ito sa 'AlwaysAutoHideShelf', palaging awtomatikong itatago ang shelf.
@@ -1849,6 +1797,16 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung ie-enable o idi-disable mo ang setting na ito, hindi ito mababago o mao-override ng mga user.
 
       Kung hindi nakatakda ang patakaran, makakapili ang user kung gusto niyang mahingan ng password upang i-unlock ang device o hindi.</translation>
+<translation id="7109916642577279530">Pahintulutan o tanggihan ang pagkuha ng audio.
+
+      Kung naka-enable o hindi naka-configure (default), tatanungin ang user para sa 
+      pag-access para sa pagkuha ng audio maliban sa mga URL na naka-configure sa 
+      listahan na AudioCaptureAllowedUrls na mabibigyan ng access nang hindi nagtatanong.
+
+      Kapag na-disable ang patakarang ito, hindi tatanungin ang user at magiging 
+      available lang ang audio capture sa mga URL na naka-configure sa AudioCaptureAllowedUrls.
+
+      Nakakaapekto ang patakarang ito sa lahat ng uri ng audio input at hindi lang sa built-in na mikropono.</translation>
 <translation id="7115494316187648452">Tinutukoy kung sinimulan ang isang proseso ng <ph name="PRODUCT_NAME" /> sa pag-login ng OS at patuloy na tumatakbo kapag isinara ang huling window ng browser, na nagbibigay-daan sa mga app sa background at sa kasalukuyang session sa pagba-browse na manatiling aktibo, kabilang ang anumang cookies ng session. Nagpapakita ang proseso sa background ng icon sa system tray at maaaring maisara kailanman mula roon.
 
       Kung nakatakda sa True ang patakarang ito, naka-enable ang background mode at hindi makokontrol ng user sa mga setting ng browser.
@@ -2137,20 +2095,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Tinutukoy ang id ng extension na gagamitin bilang isang screen saver sa screen sa pag-sign-in. Ang extension ay dapat na bahagi ng AppPack na naka-configure para sa domain na ito sa pamamagitan ng patakarang AppPacks.</translation>
 <translation id="7882890448959833986">Pigilan ang babala ng hindi sinusuportahang OS</translation>
 <translation id="7912255076272890813">I-configure ang mga pinapayagang uri ng app/extension</translation>
-<translation id="7914271217607102111">Pahintulutan o tanggihan ang pagkuha ng video.
-
-      Kung naka-enable o hindi naka-configure (default), ipo-prompt ang user para sa
-      access sa pagkuha ng video maliban sa mga URL na naka-configure sa
-      VideoCaptureAllowedUrls na mabibigyan ng access nang hindi pino-prompt.
-      Maa-access ng mga ARC app ang camera kung nabigyan ng
-      pahintulot ang mga ito.
-
-      Kapag naka-disable ang patakarang ito, hindi kailanman ipo-prompt ang user at ang pagkuha ng video
-      ay magiging available lang sa mga URL na naka-configure sa VideoCaptureAllowedUrls.
-      Hindi maa-access ng mga ARC app ang camera.
-
-      Sa labas ng mga ARC app, nakakaapekto ang patakarang ito sa lahat ng uri ng video input at
-      hindi lang sa built-in na camera.</translation>
 <translation id="7915236031252389808">Makakapagtakda ka rito ng URL sa isang proxy .pac file.
 
           Magkakaroon lang ng bisa ang patakarang ito kung pinili mo ang mga setting ng manual na proxy sa 'Piliin kung paano itatakda ang mga setting ng proxy server.'
@@ -2559,24 +2503,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="9112897538922695510">Nagbibigay-daan sa iyong magrehistro ng isang listahan ng mga tagapangasiwa ng protocol. Dapat ay isa itong inirerekomendang patakaran. Dapat itakda ang property na |protocol| sa scheme gaya ng 'mailto' at dapat itakda ang property na |url| sa pattern ng URL ng application na nangangasiwa sa scheme. Maaaring maglaman ng '%s' ang pattern, at kung mayroon nito, papalitan ito ng pinapangasiwaang URL.
 
           Ang mga tagapangasiwa ng protocol na irerehistro ng patakaran ay isasama sa mga inirehistro ng user, at available gamitin ang dalawang ito. Maaaring i-override ng user ang mga tagapangasiwa ng protocol na na-install ng patakaran sa pamamagitan ng pag-i-install ng bagong default na tagapangasiwa, ngunit hindi nila maaalis ang isang tagapangasiwa ng protocol na inirehistro ng patakaran.</translation>
-<translation id="913138516158420759">Nagbibigay-daan sa iyong itakda ang proxy server na ginagamit ng <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na baguhin ang mga setting ng proxy. Magagamit din ng mga ARC app ang proxy server na ito.
-
-          Kung pipiliin mong huwag kailanman gumamit ng proxy server at palaging direktang kumonekta, mababalewala ang lahat ng iba pang opsyon.
-
-          Kung pipiliin mong gumamit ng mga setting ng proxy ng system, mababalewala ang lahat ng iba ang opsyon.
-
-          Kung pipiliin mong awtomatikong tukuyin ang proxy server, mababalewala ang lahat ng iba ang opsyon.
-
-          Kung pipiliin mo ang proxy mode ng hindi nagbabagong server, makakapagtakda ka ng iba pang mga opsyon sa 'Address o URL ng proxy server' at 'Listahan ng mga panuntunan sa pag-bypass ng proxy na pinaghihiwalay ng mga kuwit.' Tanging ang HTTP na proxy server lang na may pinakamataas na priyoridad ang available para sa mga ARC app.
-
-          Kung pipiliin mong gumamit ng .pac proxy script, dapat mong itakda ang URL sa script sa 'URL sa isang proxy .pac file.'
-
-          Upang makakita ng mga detalyadong halimbawa, bisitahin ang:
-          <ph name="PROXY_HELP_URL" />.
-
-          Kung ie-enable mo ang setting na ito, babalewalain ng <ph name="PRODUCT_NAME" /> at mga ARC app ang lahat ng nakasaad na opsyong nauugnay sa proxy sa linya ng command.
-
-          Kapag hindi mo itinakda ang patakarang ito, mabibigyang-daan ang mga user na piliin ang mga setting ng proxy nang mag-isa.</translation>
 <translation id="913195841488580904">I-block ang access sa isang listahan ng mga URL</translation>
 <translation id="9135033364005346124">Paganahin ang <ph name="CLOUD_PRINT_NAME" /> proxy</translation>
 <translation id="9147029539363974059">Magpadala ng mga log ng system sa server sa pamamahala, upang payagan
@@ -2597,6 +2523,11 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="9187743794267626640">Huwag paganahin ang pag-mount ng panlabas na storage</translation>
 <translation id="9197740283131855199">Porsyento na nase-scale ang pagkaantala ng pagdilim ng screen kapag naging aktibo ang user pagkatapos ng pagdilim</translation>
 <translation id="9200828125069750521">Mga parameter para sa URL ng larawan na gumagamit ng POST</translation>
+<translation id="9203071022800375458">Hindi pinapagana ang pagkuha ng mga screenshot.
+
+      Kung pinapagana, hindi makakakuha ng mga screenshot gamit ang mga keyboard shortcut o mga extension API.
+
+      Kung hindi pinapagana o hindi tinukoy, papayagan ang pagkuha ng mga screenshot.</translation>
 <translation id="9217154963008402249">Dalas ng mga sinusubaybayang network packet</translation>
 <translation id="922540222991413931">Mag-configure ng mga pinagmulan ng pag-install ng extension, app, at script ng user</translation>
 <translation id="924557436754151212">Mag-import ng mga naka-save na password mula sa default na browser sa unang pagtakbo</translation>

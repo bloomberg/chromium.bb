@@ -183,6 +183,7 @@
 <translation id="1240892293903523606">DOM Inspector</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> wil je instellingen resetten.</translation>
 <translation id="1243314992276662751">Uploaden</translation>
+<translation id="1244147615850840081">Provider</translation>
 <translation id="1244303850296295656">Fout met extensie</translation>
 <translation id="1245907074925860695">Gebruiker verwijderen</translation>
 <translation id="1248269069727746712"><ph name="PRODUCT_NAME" /> gebruikt de proxy-instellingen van je apparaat om verbinding te maken met het netwerk.</translation>
@@ -195,7 +196,6 @@
 <translation id="126710816202626562">Doeltaal:</translation>
 <translation id="1272079795634619415">Stop</translation>
 <translation id="1272978324304772054">Dit gebruikersaccount hoort niet bij het domein waarbij het apparaat is geregistreerd. Als je het apparaat wilt registreren bij een ander domein, moet je eerst apparaatherstel uitvoeren.</translation>
-<translation id="127353061808977798">Lettertypen en coderingen</translation>
 <translation id="1274997165432133392">Cookies en andere sitegegevens</translation>
 <translation id="1275718070701477396">Geselecteerd</translation>
 <translation id="127668050356036882">Al je vensters sluiten</translation>
@@ -1318,6 +1318,7 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="2799223571221894425">Opnieuw starten</translation>
 <translation id="2800537048826676660">Deze taal voor spellingcontrole gebruiken</translation>
 <translation id="2801702994096586034">Server 3</translation>
+<translation id="2803375539583399270">Pincode opgeven</translation>
 <translation id="2803887722080936828"><ph name="BEGIN_H3" />Functies voor foutopsporing<ph name="END_H3" />
     <ph name="BR" />
     Je kunt de functies voor foutopsporing op je Chrome OS-apparaat inschakelen om aangepaste code op je apparaat te installeren en te testen. Hiermee kun je het volgende doen:<ph name="BR" />
@@ -2069,6 +2070,7 @@ van <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3743492083222969745">De optie voor Invoer met bewegingen in-/uitschakelen op de pagina met instellingen voor het virtuele toetsenbord.</translation>
 <translation id="3744111561329211289">Synchronisatie op de achtergrond</translation>
 <translation id="3745016858329272300">Algemene informatie</translation>
+<translation id="3748026146096797577">Niet verbonden</translation>
 <translation id="3749289110408117711">Bestandsnaam</translation>
 <translation id="3751427701788899101">Verbinding is verbroken</translation>
 <translation id="3752439026432317933">Factureringsgegevens opgeven...</translation>
@@ -2787,6 +2789,7 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="480990236307250886">Open de startpagina</translation>
 <translation id="4811502511369621968">Ongeldig e-mailadres. Controleer het adres en probeer het opnieuw.</translation>
 <translation id="4812632551187706935">Kan de verbinding niet initialiseren</translation>
+<translation id="4812684235631257312">Host</translation>
 <translation id="4813345808229079766">Verbinding</translation>
 <translation id="4813512666221746211">Netwerkfout</translation>
 <translation id="4816492930507672669">Aanpassen aan pagina</translation>
@@ -3165,6 +3168,7 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="5306802244647481941">Snelle weergave voor Bestanden-app</translation>
 <translation id="5308380583665731573">Verbinding maken</translation>
 <translation id="5311260548612583999">Privésleutelbestand (optioneel):</translation>
+<translation id="5315873049536339193">Identiteit</translation>
 <translation id="5316588172263354223">Gesproken zoekopdrachten op elk moment</translation>
 <translation id="5316716239522500219">Monitoren spiegelen</translation>
 <translation id="5317780077021120954">Opslaan</translation>
@@ -3441,7 +3445,6 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="5684661240348539843">Item-ID</translation>
 <translation id="569068482611873351">Importeren...</translation>
 <translation id="56907980372820799">Gegevens koppelen</translation>
-<translation id="569109051430110155">Automatisch detecteren</translation>
 <translation id="5691596662111998220"><ph name="FILE_NAME" /> bestaat niet meer.</translation>
 <translation id="5694501201003948907">$1 items inpakken...</translation>
 <translation id="5697118958262594262">Belangrijke inhoud standaard detecteren</translation>
@@ -4507,7 +4510,6 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="7225179976675429563">Type netwerk ontbreekt</translation>
 <translation id="7230787553283372882">Lettergrootte aanpassen</translation>
 <translation id="7231224339346098802">Gebruik een cijfer om aan te geven hoeveel exemplaren er moeten worden afgedrukt (1 of meer).</translation>
-<translation id="7234907163682057631">Belangrijke inhoud in plug-ins detecteren en uitvoeren</translation>
 <translation id="7238585580608191973">SHA-256-vingerafdruk</translation>
 <translation id="7240120331469437312">Alternatieve naam voor entiteit van certificaat</translation>
 <translation id="7241389281993241388">Log in bij <ph name="TOKEN_NAME" /> om het klantcertificaat te importeren.</translation>
@@ -4689,6 +4691,7 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="7484645889979462775">Nooit voor deze site</translation>
 <translation id="7484964289312150019">Alle bladwijzers openen in een &amp;nieuw venster</translation>
 <translation id="7485236722522518129">F4</translation>
+<translation id="7487067081878637334">Technologie</translation>
 <translation id="7487099628810939106">Vertragen vóór klikken:</translation>
 <translation id="7487969577036436319">Er zijn geen componenten geïnstalleerd</translation>
 <translation id="7489605380874780575">Geschiktheid controleren</translation>
@@ -4960,6 +4963,7 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="7877451762676714207">Onbekende serverfout. Probeer het opnieuw of neem contact op met de serverbeheerder.</translation>
 <translation id="7878999881405658917">Google heeft een melding naar deze telefoon verstuurd. Houd er rekening mee dat wanneer je Bluetooth hebt ingeschakeld, je telefoon je <ph name="DEVICE_TYPE" /> tot een afstand van 9 m ontgrendeld kan houden. Wanneer dit een probleem is, kun je &lt;a&gt;deze functie tijdelijk uitschakelen&lt;/a&gt;.</translation>
 <translation id="7880836220014399562">Met '<ph name="BUNDLE_NAME" />' worden deze apps en extensies toegevoegd:</translation>
+<translation id="7881483672146086348">Account bekijken</translation>
 <translation id="7881969471599061635">Ondertiteling uitschakelen</translation>
 <translation id="7885253890047913815">Recente bestemmingen</translation>
 <translation id="7887192723714330082">Reageren op "Ok Google" wanneer het scherm is ingeschakeld en ontgrendeld</translation>
@@ -5354,7 +5358,6 @@ Tijd berekenen tot vol</translation>
 <translation id="8428213095426709021">Instellingen</translation>
 <translation id="8428634594422941299">OK</translation>
 <translation id="8432745813735585631">Amerikaans Colemak-toetsenbord</translation>
-<translation id="8434177709403049435">Te&amp;kenset</translation>
 <translation id="8434480141477525001">Foutopsporingspoort voor systeemeigen client</translation>
 <translation id="8435334418765210033">Opgeslagen netwerken</translation>
 <translation id="8437209419043462667">Amerikaans</translation>
@@ -5746,7 +5749,6 @@ Tijd berekenen tot vol</translation>
 <translation id="8970203673128054105">Lijst voor Cast-modus bekijken</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Neem contact op met je netwerkbeheerder om ervoor te zorgen dat downloads van Google-servers niet door de firewall worden geblokkeerd.</translation>
-<translation id="8974161578568356045">Automatisch detecteren</translation>
 <translation id="8978526688207379569">Deze site heeft automatisch meerdere bestanden gedownload.</translation>
 <translation id="8982248110486356984">Gebruikers wijzigen</translation>
 <translation id="8986267729801483565">Downloadlocatie:</translation>
@@ -5933,7 +5935,6 @@ Tijd berekenen tot vol</translation>
 <translation id="923467487918828349">Toon alles</translation>
 <translation id="927151012416335806">Je apparaat updaten naar het <ph name="CHANNEL_NAME" /> kanaal</translation>
 <translation id="930268624053534560">Gedetailleerde tijdstempels</translation>
-<translation id="931068751149008062">Lettertypen en codering kiezen</translation>
 <translation id="932327136139879170">Startpagina</translation>
 <translation id="932508678520956232">Kan afdrukken niet starten.</translation>
 <translation id="93393615658292258">Alleen wachtwoord</translation>

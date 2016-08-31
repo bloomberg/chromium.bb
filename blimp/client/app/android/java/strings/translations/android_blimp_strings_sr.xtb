@@ -18,6 +18,7 @@
 <translation id="3407245330823033366">Изаберите налог који ћете користити са Blimp-ом.</translation>
 <translation id="3775180005489871350">Пренос права није успео. Грешка 400 (BAD_REQUEST).</translation>
 <translation id="3877411575395047031">Сакриј информације о отклањању грешака</translation>
+<translation id="4013794286379809233">Пријавите се</translation>
 <translation id="4542350224991263059">Пренос права није успео. Ознака приступа за корисника је истекла.</translation>
 <translation id="4562971394107096647">Пренос права није успео. Грешка на серверу.</translation>
 <translation id="4641972508298030550">Потврда аутентичности корисника није успела.</translation>
@@ -28,6 +29,7 @@
 <translation id="5860346505531085166">Пренос права није успео. Налог нема приступ.</translation>
 <translation id="6232798399907177395">О Blimp-у</translation>
 <translation id="6245894610106451476">Примљено (kB)</translation>
+<translation id="6522797484310591766">Пријави ме одмах</translation>
 <translation id="704835510384979817">Пренос права није успео. Нема одговарајуће верзије механизма.</translation>
 <translation id="7145680970336344212">Рестартујте Blimp</translation>
 <translation id="7536363920335771251">Прекинута је веза са механизмом, разлог: %1$s</translation>

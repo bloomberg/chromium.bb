@@ -18,6 +18,7 @@
 <translation id="3407245330823033366">Odaberite račun koji ćete upotrebljavati s Blimpom.</translation>
 <translation id="3775180005489871350">Dodjeljivanje nije uspjelo. Pogreška 400 (BAD_REQUEST).</translation>
 <translation id="3877411575395047031">Sakrij informacije o otklanjanju pogreški</translation>
+<translation id="4013794286379809233">Prijavite se</translation>
 <translation id="4542350224991263059">Dodjeljivanje nije uspjelo. Korisnička je oznaka za pristup istekla.</translation>
 <translation id="4562971394107096647">Dodjeljivanje nije uspjelo. Pogreška poslužitelja.</translation>
 <translation id="4641972508298030550">Autentifikacija korisnika nije uspjela.</translation>
@@ -28,6 +29,7 @@
 <translation id="5860346505531085166">Dodjeljivanje nije uspjelo. Račun nema pristup.</translation>
 <translation id="6232798399907177395">O Blimpu</translation>
 <translation id="6245894610106451476">Primljeno (KB)</translation>
+<translation id="6522797484310591766">Prijavite se sada</translation>
 <translation id="704835510384979817">Dodjeljivanje nije uspjelo. Nema podudarne verzije tražilice.</translation>
 <translation id="7145680970336344212">Ponovo pokreni Blimp</translation>
 <translation id="7536363920335771251">Prekinuta je veza s uređajem, razlog: %1$s</translation>

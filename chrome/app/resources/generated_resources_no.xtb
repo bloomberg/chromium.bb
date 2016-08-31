@@ -183,6 +183,7 @@
 <translation id="1240892293903523606">DOM-inspektør</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> vil tilbakestille innstillingene dine.</translation>
 <translation id="1243314992276662751">Last opp</translation>
+<translation id="1244147615850840081">Operatør</translation>
 <translation id="1244303850296295656">Feil med utvidelse</translation>
 <translation id="1245907074925860695">Fjern brukeren</translation>
 <translation id="1248269069727746712"><ph name="PRODUCT_NAME" /> bruker systeminnstillingene for mellomtjener på enheten din for å koble til nettverket.</translation>
@@ -195,7 +196,6 @@
 <translation id="126710816202626562">Målspråket:</translation>
 <translation id="1272079795634619415">Stopp</translation>
 <translation id="1272978324304772054">Denne brukerkontoen tilhører ikke domenet som enheten er registrert for. Hvis du vil registrere deg for et annet domene, må du først gå gjennom enhetsgjenoppretting.</translation>
-<translation id="127353061808977798">Skrifter og koding</translation>
 <translation id="1274997165432133392">Informasjonskapsler og andre nettsteddata</translation>
 <translation id="1275718070701477396">Valgt</translation>
 <translation id="127668050356036882">Lukk alle vinduene dine</translation>
@@ -1313,6 +1313,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="2799223571221894425">Start på nytt</translation>
 <translation id="2800537048826676660">Bruk dette språket til stavekontroll</translation>
 <translation id="2801702994096586034">Tjener 3</translation>
+<translation id="2803375539583399270">Skriv inn PIN-koden</translation>
 <translation id="2803887722080936828"><ph name="BEGIN_H3" />Feilsøkingsfunksjoner<ph name="END_H3" />
     <ph name="BR" />
     Du kan slå på feilsøkingsfunksjonene på Chrome OS-enheten din slik at du kan installere og teste spesialtipasset kode på den. Dette gjør det mulig<ph name="BR" />
@@ -2063,6 +2064,7 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3743492083222969745">Slår alternativet for ordføring på/av på innstillingssiden for det virtuelle tastaturet.</translation>
 <translation id="3744111561329211289">Bakgrunnssynkronisering</translation>
 <translation id="3745016858329272300">Generell informasjon</translation>
+<translation id="3748026146096797577">Ikke tilkoblet</translation>
 <translation id="3749289110408117711">Filnavn</translation>
 <translation id="3751427701788899101">Tilkoblingen ble brutt</translation>
 <translation id="3752439026432317933">Skriv inn faktureringsinformasjon</translation>
@@ -2779,6 +2781,7 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="480990236307250886">Åpne startsiden</translation>
 <translation id="4811502511369621968">Ugyldig e-postadresse. Sjekk den og prøv på nytt.</translation>
 <translation id="4812632551187706935">Kunne ikke initialisere tilkoblingen</translation>
+<translation id="4812684235631257312">Vert</translation>
 <translation id="4813345808229079766">Tilkobling</translation>
 <translation id="4813512666221746211">Nettverksfeil</translation>
 <translation id="4816492930507672669">Tilpass til siden</translation>
@@ -3155,6 +3158,7 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="5306802244647481941">Hurtigvisning av Filer-appen</translation>
 <translation id="5308380583665731573">Koble til</translation>
 <translation id="5311260548612583999">Privat nøkkelfil (valgfritt):</translation>
+<translation id="5315873049536339193">Identitet</translation>
 <translation id="5316588172263354223">Talesøk når som helst</translation>
 <translation id="5316716239522500219">Speil skjermer</translation>
 <translation id="5317780077021120954">Lagre</translation>
@@ -3431,7 +3435,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="5684661240348539843">Ressursidentifikator</translation>
 <translation id="569068482611873351">Importer</translation>
 <translation id="56907980372820799">Koble sammen data</translation>
-<translation id="569109051430110155">Oppdag automatisk</translation>
 <translation id="5691596662111998220">Beklager, <ph name="FILE_NAME" /> eksisterer ikke lenger.</translation>
 <translation id="5694501201003948907">Zipper $1 elementer ...</translation>
 <translation id="5697118958262594262">Oppdag viktig innhold som standard</translation>
@@ -4494,7 +4497,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="7225179976675429563">Nettverkstype mangler</translation>
 <translation id="7230787553283372882">Tilpass tekststørrelsen</translation>
 <translation id="7231224339346098802">Bruk et nummer for å angi hvor mange kopier som skal skrives ut (1 eller flere).</translation>
-<translation id="7234907163682057631">Oppdag og kjør viktig programtillegginnhold</translation>
 <translation id="7238585580608191973">SHA-256-fingeravtrykk</translation>
 <translation id="7240120331469437312">Alternativt navn på sertifikatemne</translation>
 <translation id="7241389281993241388">Logg på <ph name="TOKEN_NAME" /> for å importere klientsertifikat.</translation>
@@ -4670,6 +4672,7 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="7484645889979462775">Aldri for dette nettstedet</translation>
 <translation id="7484964289312150019">Åpne alle bokmerker i &amp;nytt vindu</translation>
 <translation id="7485236722522518129">F4</translation>
+<translation id="7487067081878637334">Teknologi</translation>
 <translation id="7487099628810939106">Forsinkelse før klikk:</translation>
 <translation id="7487969577036436319">Ingen komponenter er installert</translation>
 <translation id="7489605380874780575">Sjekk støtte</translation>
@@ -4939,6 +4942,7 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="7877451762676714207">Ukjent tjenerfeil. Prøv på nytt eller kontakt tjeneradministratoren.</translation>
 <translation id="7878999881405658917">Google sendte et varsel til denne telefonen. Merk: Med Bluetooth kan det hende telefonen din holder <ph name="DEVICE_TYPE" />-enheten ulåst på en avstand på over 30 meter. Hvis dette er et problem for deg, kan du &lt;a&gt;slå av denne funksjonen midlertidig&lt;/a&gt;.</translation>
 <translation id="7880836220014399562">«<ph name="BUNDLE_NAME" />» legger til disse programmene og utvidelsene:</translation>
+<translation id="7881483672146086348">Se konto</translation>
 <translation id="7881969471599061635">Slå av undertekstene</translation>
 <translation id="7885253890047913815">Nylige destinasjoner</translation>
 <translation id="7887192723714330082">Svar «Ok Google» når skjermen er på og ulåst</translation>
@@ -5331,7 +5335,6 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="8428213095426709021">Innstillinger</translation>
 <translation id="8428634594422941299">Greit</translation>
 <translation id="8432745813735585631">Amerikansk tastatur (Colemak)</translation>
-<translation id="8434177709403049435">&amp;Koding</translation>
 <translation id="8434480141477525001">Feilsøkingsport for NaCl</translation>
 <translation id="8435334418765210033">Lagrede nettverk</translation>
 <translation id="8437209419043462667">Amerikansk</translation>
@@ -5722,7 +5725,6 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="8970203673128054105">Vis listen over castemoduser</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Kontakt nettverksadministratoren din for å sjekke at brannmuren ikke blokkerer nedlastinger fra Google-tjenere.</translation>
-<translation id="8974161578568356045">Oppdag automatisk</translation>
 <translation id="8978526688207379569">Dette nettstedet lastet ned flere filer automatisk.</translation>
 <translation id="8982248110486356984">Bytt mellom brukere</translation>
 <translation id="8986267729801483565">Plassering for nedlasting:</translation>
@@ -5909,7 +5911,6 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="923467487918828349">Vis alle</translation>
 <translation id="927151012416335806">Oppdaterer enheten din til <ph name="CHANNEL_NAME" />-kanalen</translation>
 <translation id="930268624053534560">Detaljerte tidsstempler</translation>
-<translation id="931068751149008062">Velg skrifttyper og koding</translation>
 <translation id="932327136139879170">Start</translation>
 <translation id="932508678520956232">Kan ikke starte utskrift.</translation>
 <translation id="93393615658292258">Bare passord</translation>

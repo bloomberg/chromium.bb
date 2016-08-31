@@ -183,6 +183,7 @@
 <translation id="1240892293903523606">DOM inspector</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> wants to reset your settings.</translation>
 <translation id="1243314992276662751">Upload</translation>
+<translation id="1244147615850840081">Operator</translation>
 <translation id="1244303850296295656">Extension error</translation>
 <translation id="1245907074925860695">Remove User</translation>
 <translation id="1248269069727746712"><ph name="PRODUCT_NAME" /> is using your device's system proxy settings to connect to the network.</translation>
@@ -195,7 +196,6 @@
 <translation id="126710816202626562">Translation language:</translation>
 <translation id="1272079795634619415">Stop</translation>
 <translation id="1272978324304772054">This user account does not belong to the domain that the device is enrolled to.  If you want to enrol to a different domain you need to go through device recovery first.</translation>
-<translation id="127353061808977798">Fonts and Encoding</translation>
 <translation id="1274997165432133392">Cookies and other site data</translation>
 <translation id="1275718070701477396">Selected</translation>
 <translation id="127668050356036882">Close all your windows</translation>
@@ -1318,6 +1318,7 @@ I don't think this site should be blocked!</translation>
 <translation id="2799223571221894425">Relaunch</translation>
 <translation id="2800537048826676660">Use this language for spell checking</translation>
 <translation id="2801702994096586034">Server 3</translation>
+<translation id="2803375539583399270">Enter PIN</translation>
 <translation id="2803887722080936828"><ph name="BEGIN_H3" />Debugging Features<ph name="END_H3" />
     <ph name="BR" />
     You can enable the debugging features on your Chrome OS Device in order to install and test customised code on your device. This will allow you to:<ph name="BR" />
@@ -2069,6 +2070,7 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3743492083222969745">Enable/Disable gesture typing option in the settings page for the virtual keyboard.</translation>
 <translation id="3744111561329211289">Background sync</translation>
 <translation id="3745016858329272300">General Info</translation>
+<translation id="3748026146096797577">Not Connected</translation>
 <translation id="3749289110408117711">File name</translation>
 <translation id="3751427701788899101">Connection was lost</translation>
 <translation id="3752439026432317933">Enter billing details...</translation>
@@ -2787,6 +2789,7 @@ Press any key to continue exploring.</translation>
 <translation id="480990236307250886">Open the homepage</translation>
 <translation id="4811502511369621968">Invalid email address. Please check and try again.</translation>
 <translation id="4812632551187706935">Could not initialise the connection</translation>
+<translation id="4812684235631257312">Host</translation>
 <translation id="4813345808229079766">Connection</translation>
 <translation id="4813512666221746211">Network error</translation>
 <translation id="4816492930507672669">Fit to page</translation>
@@ -3166,6 +3169,7 @@ Press any key to continue exploring.</translation>
 <translation id="5306802244647481941">Files app quick view</translation>
 <translation id="5308380583665731573">Connect</translation>
 <translation id="5311260548612583999">Private key file (optional):</translation>
+<translation id="5315873049536339193">Identity</translation>
 <translation id="5316588172263354223">Voice search at any time</translation>
 <translation id="5316716239522500219">Mirror monitors</translation>
 <translation id="5317780077021120954">Save</translation>
@@ -3442,7 +3446,6 @@ Press any key to continue exploring.</translation>
 <translation id="5684661240348539843">Asset Identifier</translation>
 <translation id="569068482611873351">Import...</translation>
 <translation id="56907980372820799">Link data</translation>
-<translation id="569109051430110155">Auto detect</translation>
 <translation id="5691596662111998220">Whoops, <ph name="FILE_NAME" /> no longer exists.</translation>
 <translation id="5694501201003948907">Zipping $1 items...</translation>
 <translation id="5697118958262594262">Detect important content by default</translation>
@@ -4508,7 +4511,6 @@ Press any key to continue exploring.</translation>
 <translation id="7225179976675429563">Network type missing</translation>
 <translation id="7230787553283372882">Customise your text size</translation>
 <translation id="7231224339346098802">Use a number to indicate how many copies to print (1 or more).</translation>
-<translation id="7234907163682057631">Detect and run important plug-in content</translation>
 <translation id="7238585580608191973">SHA-256 Fingerprint</translation>
 <translation id="7240120331469437312">Certificate Subject Alternative Name</translation>
 <translation id="7241389281993241388">Please sign in to <ph name="TOKEN_NAME" /> to import the client certificate.</translation>
@@ -4690,6 +4692,7 @@ Press any key to continue exploring.</translation>
 <translation id="7484645889979462775">Never for this site</translation>
 <translation id="7484964289312150019">Open all bookmarks in &amp;new window</translation>
 <translation id="7485236722522518129">F4</translation>
+<translation id="7487067081878637334">Technology</translation>
 <translation id="7487099628810939106">Delay before click:</translation>
 <translation id="7487969577036436319">No components are installed</translation>
 <translation id="7489605380874780575">Check eligibility</translation>
@@ -4961,6 +4964,7 @@ Press any key to continue exploring.</translation>
 <translation id="7877451762676714207">Unknown server error. Please try again, or contact the server administrator.</translation>
 <translation id="7878999881405658917">Google sent a notification to this phone. Note that with Bluetooth, your phone may keep your <ph name="DEVICE_TYPE" /> unlocked from over 30 feet away. In cases where this could be a problem, you can &lt;a&gt;temporarily disable this feature&lt;/a&gt;.</translation>
 <translation id="7880836220014399562">"<ph name="BUNDLE_NAME" />" adds these apps and extensions:</translation>
+<translation id="7881483672146086348">View Account</translation>
 <translation id="7881969471599061635">Disable subtitles</translation>
 <translation id="7885253890047913815">Recent destinations</translation>
 <translation id="7887192723714330082">Respond to "OK Google" when the screen is on and unlocked</translation>
@@ -5355,7 +5359,6 @@ Calculating time until full</translation>
 <translation id="8428213095426709021">Settings</translation>
 <translation id="8428634594422941299">Got it</translation>
 <translation id="8432745813735585631">US Colemak keyboard</translation>
-<translation id="8434177709403049435">&amp;Encoding</translation>
 <translation id="8434480141477525001">NaCl Debug Port</translation>
 <translation id="8435334418765210033">Remembered networks</translation>
 <translation id="8437209419043462667">US</translation>
@@ -5746,7 +5749,6 @@ Calculating time until full</translation>
 <translation id="8970203673128054105">View cast mode list</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Please check with your network administrator to make sure that the firewall is not blocking downloads from Google servers.</translation>
-<translation id="8974161578568356045">Auto Detect</translation>
 <translation id="8978526688207379569">This site downloaded multiple files automatically.</translation>
 <translation id="8982248110486356984">Switch users</translation>
 <translation id="8986267729801483565">Download location:</translation>
@@ -5933,7 +5935,6 @@ Calculating time until full</translation>
 <translation id="923467487918828349">Show All</translation>
 <translation id="927151012416335806">Updating your device to <ph name="CHANNEL_NAME" /> channel</translation>
 <translation id="930268624053534560">Detailed Timestamps</translation>
-<translation id="931068751149008062">Choose font types and encoding</translation>
 <translation id="932327136139879170">Home</translation>
 <translation id="932508678520956232">Could not initiate printing.</translation>
 <translation id="93393615658292258">Password only</translation>

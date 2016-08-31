@@ -9,7 +9,7 @@
 <translation id="10614374240317010">Jangan pernah disimpan</translation>
 <translation id="106701514854093668">Bookmark Desktop</translation>
 <translation id="1080116354587839789">Paskan dengan lebar</translation>
-<translation id="1103124106085518534">Cukup untuk saat ini</translation>
+<translation id="1103124106085518534">Sudah tidak ada konten baru</translation>
 <translation id="1103523840287552314">Selalu terjemahkan <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Apabila dicentang, Chrome akan menyimpan salinan kartu Anda pada perangkat ini untuk pengisian formulir yang lebih cepat.</translation>
 <translation id="1111153019813902504">Bookmark terbaru</translation>
@@ -71,7 +71,7 @@
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Coba jalankan Diagnostik Jaringan Windows<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Perbarui frasa sandi sinkronisasi Anda.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
-<translation id="1815084229389833348">Bookmark yang baru-baru ini Anda kunjungi akan muncul di sini.</translation>
+<translation id="1815084229389833348">Bookmark yang baru-baru ini dikunjungi akan muncul di sini.</translation>
 <translation id="1821930232296380041">Permintaan atau parameter permintaan tidak valid</translation>
 <translation id="1838667051080421715">Anda sedang melihat sumber laman web.</translation>
 <translation id="1871208020102129563">Proxy disetel untuk menggunakan server proxy tetap, bukan URL skrip .pac.</translation>
@@ -370,7 +370,7 @@
 <translation id="5179510805599951267">Bukan <ph name="ORIGINAL_LANGUAGE" />? Laporkan kesalahan deteksi ini</translation>
 <translation id="5190835502935405962">Bilah Bookmark</translation>
 <translation id="5199729219167945352">Eksperimen</translation>
-<translation id="52060377617855516">{URL_count,plural, =1{1 laman web ditemukan}other{# laman web ditemukan}}</translation>
+<translation id="52060377617855516">{URL_count,plural, =1{ditemukan 1 laman web}other{ditemukan # laman web}}</translation>
 <translation id="5251803541071282808">Awan</translation>
 <translation id="5299298092464848405">Kebijakan kesalahan penguraian</translation>
 <translation id="5300589172476337783">Tampilkan</translation>

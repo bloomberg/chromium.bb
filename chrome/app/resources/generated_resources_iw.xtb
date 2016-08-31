@@ -183,6 +183,7 @@
 <translation id="1240892293903523606">‏בודק DOM</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> רוצה לאפס את ההגדרות שלך.</translation>
 <translation id="1243314992276662751">העלה</translation>
+<translation id="1244147615850840081">ספק</translation>
 <translation id="1244303850296295656">שגיאת תוסף</translation>
 <translation id="1245907074925860695">הסרת משתמש</translation>
 <translation id="1248269069727746712">‏<ph name="PRODUCT_NAME" /> משתמש בהגדרות שרת ה-Proxy של המכשיר שלך כדי להתחבר לרשת.</translation>
@@ -195,7 +196,6 @@
 <translation id="126710816202626562">שפת תרגום:</translation>
 <translation id="1272079795634619415">הפסק</translation>
 <translation id="1272978324304772054">חשבון משתמש זה אינו שייך לדומיין שאליו רשום המכשיר. אם ברצונך להירשם לדומיין אחר, ראשית עליך לבצע שחזור מכשיר.</translation>
-<translation id="127353061808977798">גופנים וקידוד</translation>
 <translation id="1274997165432133392">‏קובצי Cookie ונתוני אתר נוספים</translation>
 <translation id="1275718070701477396">נבחר</translation>
 <translation id="127668050356036882">סגור את כל החלונות</translation>
@@ -1313,6 +1313,7 @@
 <translation id="2799223571221894425">הפעל מחדש</translation>
 <translation id="2800537048826676660">השתמש בשפה זו לבדיקת איות</translation>
 <translation id="2801702994096586034">שרת 3</translation>
+<translation id="2803375539583399270">‏הזן PIN</translation>
 <translation id="2803887722080936828">‏<ph name="BEGIN_H3" />תכונות של ניפוי באגים<ph name="END_H3" />
 <ph name="BR" />
 אפשר להפעיל את תכונות ניפוי הבאגים במכשיר ה-Chrome כדי לבצע במכשיר התקנה ובדיקה של קוד בהתאמה אישית. כך תוכל:<ph name="BR" />
@@ -2063,6 +2064,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3743492083222969745">הפעל/השבת את האפשרות להקלדה רציפה בדף ההגדרות בשביל המקלדת הווירטואלית.</translation>
 <translation id="3744111561329211289">סינכרון ברקע</translation>
 <translation id="3745016858329272300">מידע כללי</translation>
+<translation id="3748026146096797577">לא מחובר</translation>
 <translation id="3749289110408117711">שם קובץ</translation>
 <translation id="3751427701788899101">החיבור נותק</translation>
 <translation id="3752439026432317933">הזן פרטי חיוב...</translation>
@@ -2781,6 +2783,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="480990236307250886">פתח את דף הבית</translation>
 <translation id="4811502511369621968">כתובת אימייל לא חוקית. בדוק ונסה שוב.</translation>
 <translation id="4812632551187706935">לא ניתן היה לאתחל את החיבור</translation>
+<translation id="4812684235631257312">מארח</translation>
 <translation id="4813345808229079766">התקשרות</translation>
 <translation id="4813512666221746211">שגיאת רשת</translation>
 <translation id="4816492930507672669">התאמה לדף</translation>
@@ -3161,6 +3164,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="5306802244647481941">תצוגה מהירה של האפליקציה 'קבצים'</translation>
 <translation id="5308380583665731573">התחברות</translation>
 <translation id="5311260548612583999">קובץ מפתח פרטי (אופציונלי):</translation>
+<translation id="5315873049536339193">זהות</translation>
 <translation id="5316588172263354223">חיפוש קולי בכל עת</translation>
 <translation id="5316716239522500219">שיקוף צגים</translation>
 <translation id="5317780077021120954">שמור</translation>
@@ -3437,7 +3441,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="5684661240348539843">מזהה נכסים</translation>
 <translation id="569068482611873351">יבא...</translation>
 <translation id="56907980372820799">קשר נתונים</translation>
-<translation id="569109051430110155">איתור אוטומטי</translation>
 <translation id="5691596662111998220">אופס, <ph name="FILE_NAME" /> כבר לא קיים.</translation>
 <translation id="5694501201003948907">מכווץ $1 פריטים...</translation>
 <translation id="5697118958262594262">זהה תוכן חשוב כברירת מחדל</translation>
@@ -4499,7 +4502,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7225179976675429563">חסר סוג רשת</translation>
 <translation id="7230787553283372882">התאם אישית את גודל הטקסט</translation>
 <translation id="7231224339346098802">השתמש במספר כדי לציין כמה עותקים להדפיס (1 או יותר).</translation>
-<translation id="7234907163682057631">זהה והפעל רכיבי פלאגין חשובים</translation>
 <translation id="7238585580608191973">‏טביעת אצבע SHA-256</translation>
 <translation id="7240120331469437312">שם חלופי של נושא האישור</translation>
 <translation id="7241389281993241388">היכנס אל <ph name="TOKEN_NAME" /> כדי לייבא את אישור הלקוח.</translation>
@@ -4675,6 +4677,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7484645889979462775">לעולם לא עבור אתר זה</translation>
 <translation id="7484964289312150019">פתח את כל הסימניות ב&amp;חלון חדש</translation>
 <translation id="7485236722522518129">F4</translation>
+<translation id="7487067081878637334">טכנולוגיה</translation>
 <translation id="7487099628810939106">השהיה לפני לחיצה:</translation>
 <translation id="7487969577036436319">לא מותקנים רכיבים</translation>
 <translation id="7489605380874780575">בדוק כשירות</translation>
@@ -4944,6 +4947,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7877451762676714207">שגיאת שרת לא ידועה. נסה שוב או פנה למנהל השרת.</translation>
 <translation id="7878999881405658917">‏Google שלחה הודעה לטלפון הזה. לידיעתך, עם Bluetooth, הטלפון שלך עשוי להשאיר את <ph name="DEVICE_TYPE" /> לא נעול במרחק של מעל 3 מטרים. אם הדבר מהווה בעיה מבחינתך, תוכל &lt;a&gt;להשבית זמנית את התכונה הזו&lt;/a&gt;.</translation>
 <translation id="7880836220014399562">"<ph name="BUNDLE_NAME" />" מוסיף את היישומים והתוספים הבאים:</translation>
+<translation id="7881483672146086348">הצג חשבון</translation>
 <translation id="7881969471599061635">השבת כתוביות</translation>
 <translation id="7885253890047913815">יעדים אחרונים</translation>
 <translation id="7887192723714330082">‏הגב ל-"Ok Google" כשהמסך פועל ואינו נעול</translation>
@@ -5336,7 +5340,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="8428213095426709021">הגדרות</translation>
 <translation id="8428634594422941299">הבנתי</translation>
 <translation id="8432745813735585631">‏מקלדת Colemak אנגלית (ארה"ב)</translation>
-<translation id="8434177709403049435">&amp;קידוד</translation>
 <translation id="8434480141477525001">יציאת ניפוי באגים של לקוח מקומי</translation>
 <translation id="8435334418765210033">רשתות השמורות בזיכרון</translation>
 <translation id="8437209419043462667">ארה"ב</translation>
@@ -5727,7 +5730,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="8970203673128054105">הצג רשימה של מצבי העברה</translation>
 <translation id="89720367119469899">Esc</translation>
 <translation id="8972513834460200407">‏פנה אל מנהל המערכת של הרשת שלך כדי לוודא שחומת האש אינה חוסמת הורדות משרתי Google.</translation>
-<translation id="8974161578568356045">אתר באופן אוטומטי</translation>
 <translation id="8978526688207379569">אתר זה הוריד קבצים מרובים באופן אוטומטי.</translation>
 <translation id="8982248110486356984">החלף משתמשים</translation>
 <translation id="8986267729801483565">מקום ההורדה:</translation>
@@ -5913,7 +5915,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="923467487918828349">הצג הכל</translation>
 <translation id="927151012416335806">מעדכן את המכשיר שלך לערוץ <ph name="CHANNEL_NAME" /></translation>
 <translation id="930268624053534560">חותמות זמן מפורטות</translation>
-<translation id="931068751149008062">בחר סוגי גופן וקידוד</translation>
 <translation id="932327136139879170">בית</translation>
 <translation id="932508678520956232">לא ניתן להתחיל הדפסה.</translation>
 <translation id="93393615658292258">סיסמה בלבד</translation>

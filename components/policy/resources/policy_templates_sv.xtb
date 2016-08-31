@@ -509,6 +509,9 @@
 <translation id="2623014935069176671">Vänta på inledande användaraktivitet</translation>
 <translation id="262740370354162807">Aktivera sändning av dokument till <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Aktivera talad feedback.</translation>
+<translation id="2646290749315461919">Policyn gör att du kan ställa in om webbplatser får spåra användarnas fysiska plats. Att spåra användarnas fysiska plats kan vara tillåtet som standard, inte tillåtet som standard eller användaren kan bli tillfrågad varje gång en webbplats efterfrågar den fysiska platsen.
+
+          Om policyn inte har angetts används AskGeolocation och användaren kan ändra inställningen.</translation>
 <translation id="2650049181907741121">Åtgärd som ska vidtas när användaren stänger locket</translation>
 <translation id="2655233147335439767">Principen anger webbadressen till sökmotorn som används för standardsökning. Webbadressen ska innehålla strängen <ph name="SEARCH_TERM_MARKER" />, som ersätts av användarens sökord när sökningen utförs.
 
@@ -523,12 +526,6 @@
           Policyn används bara om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
 <translation id="2682225790874070339">Inaktiverar Drive i appen Filer i <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Aktivera proxyfunktionen för datakomprimering</translation>
-<translation id="2692168654831544772">Inaktiverar skärmdumpar.
-
-       Om aktiverade skärmdumpar inte kan tas med kortkommandon eller API:er för tillägg.
-       Skärmdumpar är inaktiverade för ARC-appar.
-
-       Om principen är inaktiverad eller inte har angetts är det tillåtet att ta skärmdumpar.</translation>
 <translation id="2731627323327011390">Inaktivera användning av <ph name="PRODUCT_OS_NAME" />-certifikat för ARC-appar</translation>
 <translation id="2742843273354638707">Dölj appen Chrome Web Store och länken i sidfoten från den nya fliksidan och startprogrammet för <ph name="PRODUCT_OS_NAME" />.
 
@@ -581,22 +578,6 @@
           Varje objekt i listan motsvarar en matchning i form av ett tillägg (se http://code.google.com/chrome/extensions/match_patterns.html). Användarna kan enkelt installera objekt från alla webbadresser som matchar ett objekt i listan. Både *.crx-filens plats och sidan där objektet hämtas (dvs. referenten) måste tillåtas enligt matchningsmönstren.
 
           ExtensionInstallBlacklist har företräde framför den här principen. Det innebär att ett tillägg på den svarta listan inte kommer att installeras även om det sker från en webbplats på den här listan.</translation>
-<translation id="2813740161943223811">Den här principen är utfasad. Använd ProxyMode i stället.
-
-          Innebär att du kan ange vilken proxyserver som ska användas av <ph name="PRODUCT_NAME" /> och förhindra att användarna ändrar proxyinställningarna. Den här proxyservern kan också användas av ARC-appar.
-
-          Om du väljer att aldrig använda en proxyserver och alltid ansluta direkt ignoreras alla andra alternativ.
-
-          Om du väljer att använda datorns proxyinställningar eller identifiera proxyserver automatiskt ignoreras alla andra alternativ.
-
-          Om du väljer manuella proxyinställningar kan du ange fler alternativ i fälten Proxyserverns adress eller webbadress och Kommaavgränsad lista med regler för proxybypass. ARC-appar kan bara använda den HTTP-proxyserver som har högst prioritet.
-
-          Mer ingående exempel hittar du på:
-          <ph name="PROXY_HELP_URL" />.
-
-          Om du aktiverar inställningen ignorerar <ph name="PRODUCT_NAME" /> alla proxyrelaterade alternativ som har angetts i kommandoraden.
-
-          Om du inte anger inställningarna kan användarna själva välja proxyinställningar.</translation>
 <translation id="2818551149761607847">Konfigurera användarens avatarbild.
 
       Med den här policyn kan du konfigurera avatarbilden som representerar användaren på inloggningsskärmen. Du kan ställa in policyn genom att ange en webbadress från vilken <ph name="PRODUCT_OS_NAME" /> kan ladda ned avatarbilden och en kryptografisk hash som används för att verifiera nedladdningens integritet. Bilden måste vara i JPEG-format och får inte vara större än 512 kB. Webbadressen måste vara åtkomlig utan autentisering.
@@ -741,18 +722,6 @@
           </translation>
 <translation id="3205825995289802549">Maximera det först visade fönstret första gången som webbläsaren körs</translation>
 <translation id="3206731874112238027">Inaktivera förhandsgranskning av utskrift (har fasats ut)</translation>
-<translation id="3208854390109736596">Innebär att du kan ange vilken proxyserver som ska användas av <ph name="PRODUCT_NAME" /> och förhindra att användarna ändrar proxyinställningarna. Den här proxyservern kan också användas av ARC-appar.
-
-      Om du väljer att aldrig använda en proxyserver och alltid ansluta direkt ignoreras alla andra alternativ.
-
-      Om du väljer att identifiera proxyservern automatiskt ignoreras alla andra alternativ.
-
-      Mer ingående exempel hittar du på:
-      <ph name="PROXY_HELP_URL" />.
-
-      Om du aktiverar inställningen ignorerar <ph name="PRODUCT_NAME" /> alla proxyrelaterade alternativ som har angetts i kommandoraden.
-
-      Om du inte anger inställningarna kan användarna själva välja proxyinställningar.</translation>
 <translation id="3213821784736959823">Styr huruvida den inbyggda DNS-klienten används i <ph name="PRODUCT_NAME" />.
 
       Om policyn tillämpas används den inbyggda DNS-klienten om den är tillgänglig.
@@ -797,11 +766,6 @@
 <translation id="3322771899429619102">Policyn gör att du kan ange en lista med webbadressmönster som anger vilka webbplatser som får använda nyckelgenerering. Om ett webbadressmönster har policyn KeygenBlockedForUrls åsidosätts dessa undantag.
 
           Om policyn inte anges används den globala standardpolicyn för alla webbplatser. Standardvärdet hämtas antingen från policyn DefaultKeygenSetting om den har angetts, eller från användarens personliga konfiguration om den inte har det.</translation>
-<translation id="3337150554416948435">Principen gör att du kan ange om webbplatser får spåra användarnas fysiska plats. Att spåra användarnas fysiska plats kan vara tillåtet som standard, inte tillåtet som standard eller så kan användaren bli tillfrågad varje gång en webbplats efterfrågar den fysiska platsen.
-
-          Om principen är inställd på BlockGeolocation är platsdelning inte tillåtet för ARC-appar.
-
-          Om principen inte har angetts används AskGeolocation och användaren kan ändra inställningen.</translation>
 <translation id="3381968327636295719">Använd värdwebbläsaren som standard</translation>
 <translation id="3417418267404583991">Om den här policyn är inställd på sant eller inte är konfigurerad aktiveras gästinloggning i <ph name="PRODUCT_OS_NAME" />. Gästinloggningar är anonyma användarsessioner och kräver inget lösenord.
 
@@ -820,14 +784,6 @@
           Om Sant har angetts för den här policyn börjar inte fördröjningar i energisparfunktionen och begränsningar i sessionslängden förrän den första användaraktiviteten har observerats i sessionen.
 
           Om Falskt har angetts för den här policyn, eller om ingenting har angetts, påbörjas fördröjningar i energisparfunktionen och begränsningar i sessionslängden så fort sessionen har påbörjats.</translation>
-<translation id="3469657928310999477"><ph name="PRODUCT_NAME" /> förbigår proxyn för listan med värdenheter som anges här. Listan kan användas av ARC-appar som en regellista för proxybypass.
-
-          Den här principen används bara om du har valt manuella proxyinställningar i Välj hur inställningar för proxyserver ska anges.
-
-          Ange inte den här principen om du har valt något annat läge för inställning av proxyprinciper.
-
-          Mer ingående exempel hittar du på:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="3478024346823118645">Ta bort användardata vid utloggning</translation>
 <translation id="348495353354674884">Aktivera virtuellt tangentbord</translation>
 <translation id="3496296378755072552">Lösenordshanteraren</translation>
@@ -958,17 +914,6 @@
 
       Om den här principen inte anges kommer SPDY att bli tillgängligt.</translation>
 <translation id="3891357445869647828">Aktivera JavaScript</translation>
-<translation id="3898060089412156345">Tillåt eller neka ljudinspelning.
-
-      Om principen är aktiverad eller inte konfigurerad (standard) tillfrågas användaren
-      om tillåtelse att spela in ljud, förutom i fråga om webbadresser som har 
-      angetts i listan AudioCaptureAllowedUrls, som ges tillstånd automatiskt.
-
-      När principen är inaktiverad får användaren aldrig någon fråga och bara
-      de webbadresser som har angetts i AudioCaptureAllowedUrls kan spela in ljud.
-.........I ARC-appar är mikrofonen alltid avstängd.
-
-      Principen gäller alla typer av ljudingångar, inte bara den inbyggda mikrofonen.</translation>
 <translation id="3907986150060929099">Anger de rekommenderade språkkoderna för en offentlig session</translation>
 <translation id="391531815696899618">När inställningen här är Sant inaktiveras Google Drive-synkronisering i appen Filer i <ph name="PRODUCT_OS_NAME" />. Då överförs ingen data till Google Drive.
 
@@ -1103,6 +1048,11 @@
       Även om själva policyn stöds av plattformarna ovan kanske inte den återaktiverade funktionen stöds av alla dessa plattformar. Det är inte alla utfasade webbplattformsfunktioner som kan återaktiveras. Endast de funktioner som uttryckligen tas upp i listan nedan kan återaktiveras under en begränsad tid som varierar mellan olika funktioner. Strängtaggens allmänna format är [DeprecatedFeatureName]_EffectiveUntil[yyyymmdd]. För information om ändringarna av webbplattformsfunktioner hänvisar vi till http://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Aktivera lås när enheten är i viloläge eller vänteläge</translation>
+<translation id="4445684791305970001">Policyn inaktiverar utvecklarverktygen och JavaScript-konsolen.
+
+      Om du aktiverar inställningen går det inte att använda utvecklarverktygen och det går inte att inspektera webbplatselement. Alla kortkommandon och alla objekt på menyer och snabbmenyer som öppnar utvecklarverktygen eller JavaScript-konsolen inaktiveras.
+
+      Om det här alternativet inaktiveras eller inte anges kan utvecklarverktygen och JavaScript-konsolen användas.</translation>
 <translation id="4449545651113180484">Rotera skärmen 270 grader medurs</translation>
 <translation id="4467952432486360968">Blockera cookies från tredje part</translation>
 <translation id="4474167089968829729">Aktivera lösenordshanteraren för sparade lösenord</translation>
@@ -1227,6 +1177,16 @@
           Värdet måste vara JSON-ordlistor i strängformat i en matris. Varje ordlista måste ha formen { "pattern": "$URL_PATTERN", "filter" : $FILTER }, där $URL_PATTERN är ett innehållsinställningsmönster. $FILTER begränsar vilka klientcertifikat webbläsaren automatiskt väljer mellan. Oavsett vilket filter som används väljs bara certifikat som matchar serverns certifikatbegäran. Om $FILTER har formen { "ISSUER": { "CN": "$ISSUER_CN" } } är det dessutom endast klientcertifikat som har skapats av ett certifikat med CommonName $ISSUER_CN som väljs. Om $FILTER är en tom ordlista {} begränsas inte valet av klientcertifikat ytterligare.
 
           Om principen inte anges görs inga automatiska val för någon webbplats.</translation>
+<translation id="4980301635509504364">Tillåta eller neka videoinspelning.
+
+      Om detta alternativ är aktiverat eller inte konfigurerat (standard), kommer användaren att bli tillfrågad om
+      videoinspelningsåtkomst förutom för de webbadresser som har angetts på
+      listan VideoCaptureAllowedUrls. De ges åtkomst automatiskt.
+
+      När den här principen är inaktiverad får användaren aldrig någon fråga och
+      bara de webbadresser som har angetts i VideoCaptureAllowedUrls får spela in video.
+
+      Den här principen gäller alla typer av videoingångar och inte enbart den inbyggda kameran.</translation>
 <translation id="4980635395568992380">Datatyp:</translation>
 <translation id="4983201894483989687">Tillåt att föråldrade plugin-program körs</translation>
 <translation id="4988291787868618635">Åtgärd som ska vidtas när inaktivitetstiden har gått</translation>
@@ -1238,11 +1198,6 @@
       Om den inte anges kan användaren få välja om import ska göras, eller så kan import göras automatiskt.</translation>
 <translation id="5056708224511062314">Skärmförstoraren är inaktiverad</translation>
 <translation id="5067143124345820993">Vitlista för användarinloggning</translation>
-<translation id="510186355068252378">Policyn inaktiverar datasynkronisering i <ph name="PRODUCT_NAME" /> med Googles synkroniseringstjänster och förhindrar att användarna ändrar inställningen.
-
-      Om du aktiverar inställningen kan användarna inte ändra eller åsidosätta inställningen i <ph name="PRODUCT_NAME" />.
-
-      Om den här policyn inte ställs in kan användaren själv välja om Google Synk ska användas eller inte.</translation>
 <translation id="5105313908130842249">Skärmlåsningstid när enheten drivs av batteriet</translation>
 <translation id="5111573778467334951">Ange vilken åtgärd som ska vidtas när fördröjning på grund av inaktivitet har uppnåtts vid batteridrift.
 
@@ -1379,13 +1334,6 @@
       Om den anges läggs en frågeparameter som kallas "restrict" till i webbadressen som används för att hämta startvärdet för Variations. Värdet för parametern kommer att vara det värde som anges i policyn.
 
       Om den inte anges ändras inte webbadressen för startvärdet för Variations.</translation>
-<translation id="5563853101694018649">Inaktiverar utvecklarverktygen och JavaScript-konsolen.
-
-      Om du aktiverar den här inställningen går utvecklarverktygen inte att öppna och det går inte längre att kontrollera element på webbplatser. Kortkommandon och alternativ för att öppna utvecklarverktygen eller JavaScript-konsolen på menyer och snabbmenyer inaktiveras.
-
-      Om du inaktiverar alternativet eller inte väljer något går det att använda utvecklarverktygen och JavaScript-konsolen.
-
-      På <ph name="PRODUCT_OS_NAME" />-enheter som det går att köra Android-appar på styr den här principen även tillgången till Androids utvecklaralternativ. Om principen är inställd på sant kan användarna inte öppna utvecklaralternativen. Om principen är inställd på falskt eller lämnas utan inställning kan användarna öppna utvecklaralternativen genom att trycka sju gånger på versionsnumret i appen Inställningar i Android.</translation>
 <translation id="556941986578702361">Kontrollera hur <ph name="PRODUCT_OS_NAME" />-hyllan döljs automatiskt.
 
       Om policyn har angetts till AlwaysAutoHideShelf döljs alltid hyllan automatiskt.
@@ -1866,6 +1814,16 @@
       Om du aktiverar eller inaktiverar inställningen kan användarna inte ändra eller åsidosätta den.
 
       Om du inte anger policyn kan användarna välja om det ska behövas ett lösenord för att låsa upp enheten eller inte.</translation>
+<translation id="7109916642577279530">Tillåt eller neka ljudinspelning.
+
+      Om detta är aktiverat eller inte konfigurerat (standard) tillfrågas användaren
+      om tillåtelse att spela in ljud, förutom i fråga om webbadresser som har angetts i
+      listan AudioCaptureAllowedUrls, som ges tillstånd automatiskt.
+
+      När denna princip är inaktiverad får användaren aldrig någon fråga och bara
+      de webbadresser som har angetts i AudioCaptureAllowedUrls kan spela in ljud.
+
+      Den här principen gäller alla typer av ljudingångar, inte bara den inbyggda mikrofonen.</translation>
 <translation id="7115494316187648452">Avgör om en process i <ph name="PRODUCT_NAME" /> startas när användaren loggar in i operativsystemet och fortsätter köras när det sista webbläsarfönstret har stängts, så att bakgrundsappar och den aktuella sessionen kan fortsätta vara aktiva (inklusive eventuella sessionscookies). Bakgrundsprocessen visas som en ikon i systemfältet och kan alltid stängas därifrån.
 
       Om policyn är inställd på sant aktiveras bakgrundsläget och det kan inte ändras av användaren i webbläsarinställningarna.
@@ -2153,20 +2111,6 @@
       Avgör ID för det tillägg som ska användas som skärmsläckare på inloggningsskärmen. Tillägget måste finnas i det AppPack som är konfigurerat för domänen i policyn DeviceAppPack.</translation>
 <translation id="7882890448959833986">Ignorera varningar för operativsystem som inte stöds</translation>
 <translation id="7912255076272890813">Konfigurera tillåtna app- och tilläggstyper</translation>
-<translation id="7914271217607102111">Tillåta eller neka videoinspelning.
-
-      Om principen är aktiverad eller inte konfigurerad (standard) blir användaren ombedd att bevilja
-      videoinspelningsåtkomst, förutom för de webbadresser som har angetts på
-      listan VideoCaptureAllowedUrls. De ges åtkomst automatiskt.
-      ARC-appar har tillgång till kameran om de har beviljats
-      tillstånd.
-
-      När den här principen är inaktiverad blir användaren aldrig tillfrågad och
-      bara de webbadresser som har angetts i VideoCaptureAllowedUrls får spela in video.
-      ARC-appar har inte tillgång till kameran.
-
-      Förutom ARC-appar gäller principen alla typer av videoingångar och
-      inte enbart den inbyggda kameran.</translation>
 <translation id="7915236031252389808">Här kan du ange webbadressen till en PAC-fil för proxy.
 
           Den här principen används bara om du har valt manuella proxyinställningar i Välj hur inställningar för proxyserver ska anges.
@@ -2581,24 +2525,6 @@
 <translation id="9112897538922695510">Gör att du kan registrera en lista över protokollhanterare. Detta kan bara vara en rekommenderad policy. Egendomen |protokoll| ska anges till systemet som "mailto" och egendomen |webbadress| ska anges till webbadressmönstret i appen som hanterar systemet. Mönstret kan innehålla "%s", som ersätts av den hanterade webbadressen vid förekomst.
 
           Protokollhanterare som registreras av policyn slås ihop med de som registreras av användaren och båda går att använda. Användare kan åsidosätta protokollhanterarna som har installerats av policyn genom att installera en ny standardhanterare, men användare kan inte ta bort en protokollhanterare som har registrerats av policyn.</translation>
-<translation id="913138516158420759">Innebär att du kan ange vilken proxyserver som ska användas av <ph name="PRODUCT_NAME" /> och förhindra att användarna ändrar proxyinställningarna. Den här proxyservern kan också användas av ARC-appar.
-
-          Om du väljer att aldrig använda en proxyserver och alltid ansluta direkt ignoreras alla andra alternativ.
-
-          Om du väljer att använda datorns proxyinställningar ignoreras alla andra alternativ.
-
-          Om du väljer att identifiera proxyserver automatiskt ignoreras alla andra alternativ.
-
-          Om du väljer läget för fast serverproxy kan du ange fler alternativ i fälten Proxyserverns adress eller webbadress och Kommaavgränsad lista med regler för proxybypass. ARC-appar använder bara den HTTP-proxyserver som har högst prioritet.
-
-          Om du väljer att använda ett pac-proxyskript måste du ange webbadressen till skriptet i fältet Webbadress till en pac-proxyfil.
-
-          Mer ingående exempel hittar du på: 
-          <ph name="PROXY_HELP_URL" />.
-
-          Om du aktiverar inställningen ignorerar <ph name="PRODUCT_NAME" /> och ARC-appar alla proxyrelaterade alternativ som har angetts i kommandoraden.
-
-          Om du inte anger inställningarna kan användarna själva välja proxyinställningar.</translation>
 <translation id="913195841488580904">Blockera åtkomst till en lista med webbadresser</translation>
 <translation id="9135033364005346124">Aktivera <ph name="CLOUD_PRINT_NAME" />-proxy</translation>
 <translation id="9147029539363974059">Skickar systemloggar till hanteringsservern så att administratörer kan
@@ -2619,6 +2545,11 @@
 <translation id="9187743794267626640">Inaktivera montering av extern lagring</translation>
 <translation id="9197740283131855199">Procentsats med vilken fördröjningen av dämpningen av skärmen ska skalanpassas om användaren gör något efter dämpningen</translation>
 <translation id="9200828125069750521">Parametrar för bildwebbadresser som använder POST</translation>
+<translation id="9203071022800375458">Inaktiverar tagning av skärmdumpar.
+
+      Om inställningen aktiveras kan du ta skärmdumpar med kortkommandon eller API:er för tillägg.
+
+      Om inställningen inaktiveras eller inte anges är tagning av skärmdumpar tillåtet.</translation>
 <translation id="9217154963008402249">Frekvens för nätverkspaket för övervakning</translation>
 <translation id="922540222991413931">Konfigurera installationskällor för tillägg, appar och användarskript</translation>
 <translation id="924557436754151212">Importera sparade lösenord från standardwebbläsaren första gången den körs</translation>

@@ -18,6 +18,7 @@
 <translation id="3407245330823033366">Válassza ki a Blimp alkalmazással használni kívánt fiókot.</translation>
 <translation id="3775180005489871350">A hozzárendelés nem sikerült. 400-as (BAD_REQUEST) hiba.</translation>
 <translation id="3877411575395047031">Hibakeresési adatok elrejtése</translation>
+<translation id="4013794286379809233">Kérjük, jelentkezzen be</translation>
 <translation id="4542350224991263059">A hozzárendelés nem sikerült. Lejárt a felhasználói hozzáférés tokenje.</translation>
 <translation id="4562971394107096647">A hozzárendelés nem sikerült. Szerverhiba.</translation>
 <translation id="4641972508298030550">Nem lehet hitelesíteni a felhasználót.</translation>
@@ -28,6 +29,7 @@
 <translation id="5860346505531085166">A hozzárendelés nem sikerült. A fióknak nincs hozzáférése.</translation>
 <translation id="6232798399907177395">A Blimp névjegye</translation>
 <translation id="6245894610106451476">Fogadott (KB)</translation>
+<translation id="6522797484310591766">Bejelentkezés most</translation>
 <translation id="704835510384979817">A hozzárendelés nem sikerült. Nincs egyező motorverzió.</translation>
 <translation id="7145680970336344212">A Blimp újraindítása</translation>
 <translation id="7536363920335771251">Motor leválasztva, ok: %1$s</translation>

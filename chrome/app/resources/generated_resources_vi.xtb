@@ -183,6 +183,7 @@
 <translation id="1240892293903523606">Trình theo dõi DOM</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> muốn đặt lại cài đặt của bạn.</translation>
 <translation id="1243314992276662751">Tải lên</translation>
+<translation id="1244147615850840081">Nhà cung cấp</translation>
 <translation id="1244303850296295656">Lỗi tiện ích</translation>
 <translation id="1245907074925860695">Xóa người dùng</translation>
 <translation id="1248269069727746712"><ph name="PRODUCT_NAME" /> đang sử dụng cài đặt proxy hệ thống của thiết bị để kết nối với mạng.</translation>
@@ -195,7 +196,6 @@
 <translation id="126710816202626562">Ngôn ngữ dịch:</translation>
 <translation id="1272079795634619415">Dừng</translation>
 <translation id="1272978324304772054">Tài khoản người dùng này không thuộc về miền mà thiết bị được đăng ký. Nếu bạn muốn đăng ký miền khác, bạn cần tìm thiết bị trước tiên.</translation>
-<translation id="127353061808977798">Phông chữ và mã hóa</translation>
 <translation id="1274997165432133392">Cookie và các dữ liệu trang web khác</translation>
 <translation id="1275718070701477396">Đã chọn</translation>
 <translation id="127668050356036882">Đóng tất cả các cửa sổ</translation>
@@ -1319,6 +1319,7 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="2799223571221894425">Chạy lại</translation>
 <translation id="2800537048826676660">Sử dụng ngôn ngữ này để kiểm tra chính tả</translation>
 <translation id="2801702994096586034">Máy chủ 3</translation>
+<translation id="2803375539583399270">Nhập mã PIN</translation>
 <translation id="2803887722080936828"><ph name="BEGIN_H3" />Các tính năng gỡ lỗi<ph name="END_H3" />
     <ph name="BR" />
     Bạn có thể bật các tính năng gỡ lỗi trên thiết bị Chrome OS để cài đặt và kiểm tra mã tùy chỉnh trên thiết bị của mình.  Điều này cho phép bạn:<ph name="BR" />
@@ -2070,6 +2071,7 @@ Từ <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3743492083222969745">Bật/Tắt tùy chọn nhập bằng cử chỉ trong trang cài đặt cho bàn phím ảo.</translation>
 <translation id="3744111561329211289">Đồng bộ hóa dưới nền</translation>
 <translation id="3745016858329272300">Thông tin chung</translation>
+<translation id="3748026146096797577">Chưa được kết nối</translation>
 <translation id="3749289110408117711">Tên tệp</translation>
 <translation id="3751427701788899101">Đã mất kết nối</translation>
 <translation id="3752439026432317933">Nhập chi tiết thanh toán...</translation>
@@ -2788,6 +2790,7 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="480990236307250886">Mở trang chủ</translation>
 <translation id="4811502511369621968">Địa chỉ email không hợp lệ. Vui lòng kiểm tra và thử lại.</translation>
 <translation id="4812632551187706935">Không thể khởi tạo kết nối</translation>
+<translation id="4812684235631257312">Máy chủ</translation>
 <translation id="4813345808229079766">Kết nối</translation>
 <translation id="4813512666221746211">Lỗi mạng</translation>
 <translation id="4816492930507672669">Vừa với trang</translation>
@@ -3167,6 +3170,7 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="5306802244647481941">Chế độ xem nhanh ứng dụng tệp</translation>
 <translation id="5308380583665731573">Kết nối</translation>
 <translation id="5311260548612583999">Tệp khóa cá nhân (tùy chọn):</translation>
+<translation id="5315873049536339193">Nhận dạng</translation>
 <translation id="5316588172263354223">Tìm kiếm bằng giọng nói bất kỳ lúc nào</translation>
 <translation id="5316716239522500219">Phản chiếu màn hình</translation>
 <translation id="5317780077021120954">Lưu</translation>
@@ -3443,7 +3447,6 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="5684661240348539843">Số nhận dạng phần tử</translation>
 <translation id="569068482611873351">Nhập...</translation>
 <translation id="56907980372820799">Liên kết dữ liệu</translation>
-<translation id="569109051430110155">Tự động phát hiện</translation>
 <translation id="5691596662111998220">Rất tiếc, <ph name="FILE_NAME" /> không tồn tại nữa.</translation>
 <translation id="5694501201003948907">Đang nén $1 mục...</translation>
 <translation id="5697118958262594262">Phát hiện nội dung quan trọng theo mặc định</translation>
@@ -4508,7 +4511,6 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="7225179976675429563">Thiếu loại mạng</translation>
 <translation id="7230787553283372882">Tùy chỉnh kích thước văn bản của bạn</translation>
 <translation id="7231224339346098802">Sử dụng một số để cho biết cần in bao nhiêu bản (1 hoặc nhiều hơn).</translation>
-<translation id="7234907163682057631">Phát hiện và chạy nội dung plugin quan trọng</translation>
 <translation id="7238585580608191973">SHA-256 Fingerprint</translation>
 <translation id="7240120331469437312">Tên Thay thế Đối tượng của Chứng chỉ</translation>
 <translation id="7241389281993241388">Vui lòng đăng nhập vào <ph name="TOKEN_NAME" /> để nhập chứng chỉ ứng dụng khách.</translation>
@@ -4690,6 +4692,7 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="7484645889979462775">Không bao giờ đối với trang web này</translation>
 <translation id="7484964289312150019">Mở tất cả dấu trang trong &amp;cửa sổ mới</translation>
 <translation id="7485236722522518129">F4</translation>
+<translation id="7487067081878637334">Công nghệ</translation>
 <translation id="7487099628810939106">Độ trễ trước khi nhấp chuột:</translation>
 <translation id="7487969577036436319">Không có thành phần nào được cài đặt</translation>
 <translation id="7489605380874780575">Kiểm tra tính đủ điều kiện</translation>
@@ -4961,6 +4964,7 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="7877451762676714207">Lỗi máy chủ không xác định. Vui lòng thử lại hoặc liên hệ với quản trị viên máy chủ.</translation>
 <translation id="7878999881405658917">Google đã gửi thông báo đến điện thoại này. Lưu ý rằng với Bluetooth, điện thoại của bạn có thể luôn mở khóa <ph name="DEVICE_TYPE" /> từ khoảng cách trên 30 foot. Trong trường hợp xảy ra sự cố, bạn có thể &lt;a&gt;tạm thời vô hiệu hóa tính năng này&lt;/a&gt;.</translation>
 <translation id="7880836220014399562">"<ph name="BUNDLE_NAME" />" thêm các ứng dụng và tiện ích sau:</translation>
+<translation id="7881483672146086348">Xem tài khoản</translation>
 <translation id="7881969471599061635">Tắt phụ đề</translation>
 <translation id="7885253890047913815">Máy in đích gần đây</translation>
 <translation id="7887192723714330082">Phải hồi "Ok Google" khi màn hình được bật và mở khóa</translation>
@@ -5353,7 +5357,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8428213095426709021">Cài đặt</translation>
 <translation id="8428634594422941299">OK</translation>
 <translation id="8432745813735585631">Bàn phím Colemak Hoa Kỳ</translation>
-<translation id="8434177709403049435">&amp;Mã hóa</translation>
 <translation id="8434480141477525001">Cổng gỡ lỗi NaCl</translation>
 <translation id="8435334418765210033">Mạng đã nhớ</translation>
 <translation id="8437209419043462667">Hoa Kỳ</translation>
@@ -5744,7 +5747,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8970203673128054105">Xem danh sách chế độ truyền</translation>
 <translation id="89720367119469899">Thoát</translation>
 <translation id="8972513834460200407">Vui lòng kiểm tra với quản trị viên mạng của bạn để đảm bảo rằng tường lửa không chặn tài nguyên đã tải xuống từ máy chủ của Google.</translation>
-<translation id="8974161578568356045">Tự động Phát hiện</translation>
 <translation id="8978526688207379569">Trang này đã tự động tải nhiều tệp xuống.</translation>
 <translation id="8982248110486356984">Chuyển người dùng</translation>
 <translation id="8986267729801483565">Vị trí tải xuống:</translation>
@@ -5931,7 +5933,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="923467487918828349">Hiển thị Tất cả</translation>
 <translation id="927151012416335806">Đang cập nhật thiết bị tới kênh <ph name="CHANNEL_NAME" /></translation>
 <translation id="930268624053534560">Dấu thời gian chi tiết</translation>
-<translation id="931068751149008062">Chọn mã hóa và kiểu phông chữ</translation>
 <translation id="932327136139879170">Trang chủ</translation>
 <translation id="932508678520956232">Không thể chạy in.</translation>
 <translation id="93393615658292258">Chỉ mật khẩu</translation>

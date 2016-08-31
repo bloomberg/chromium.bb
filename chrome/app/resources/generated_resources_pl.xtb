@@ -183,6 +183,7 @@
 <translation id="1240892293903523606">Inspektor DOM</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> chce zresetować Twoje ustawienia.</translation>
 <translation id="1243314992276662751">Prześlij</translation>
+<translation id="1244147615850840081">Operator</translation>
 <translation id="1244303850296295656">Błąd rozszerzenia</translation>
 <translation id="1245907074925860695">Usuwanie użytkownika</translation>
 <translation id="1248269069727746712"><ph name="PRODUCT_NAME" /> łączy się z siecią, korzystając z ustawień serwera proxy określonych w systemie Twojego urządzenia.</translation>
@@ -195,7 +196,6 @@
 <translation id="126710816202626562">Język tłumaczenia:</translation>
 <translation id="1272079795634619415">Zatrzymaj</translation>
 <translation id="1272978324304772054">To konto użytkownika nie należy do domeny, w której urządzenie jest zarejestrowane. Jeśli chcesz się zarejestrować w innej domenie, musisz najpierw przeprowadzić odzyskiwanie urządzenia.</translation>
-<translation id="127353061808977798">Czcionki i kodowanie</translation>
 <translation id="1274997165432133392">Pliki cookie i inne dane witryn</translation>
 <translation id="1275718070701477396">Zaznaczone</translation>
 <translation id="127668050356036882">Zamknij wszystkie okna</translation>
@@ -1317,6 +1317,7 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="2799223571221894425">Uruchom ponownie</translation>
 <translation id="2800537048826676660">Użyj tego języka do sprawdzania pisowni</translation>
 <translation id="2801702994096586034">Serwer 3</translation>
+<translation id="2803375539583399270">Wpisz kod PIN</translation>
 <translation id="2803887722080936828"><ph name="BEGIN_H3" />Funkcje debugowania<ph name="END_H3" />
     <ph name="BR" />
     Możesz włączyć funkcje debugowania na swoim urządzeniu z systemem operacyjnym Chrome, by implementować i testować na nim niestandardowy kod. Dzięki temu możesz:<ph name="BR" />
@@ -2068,6 +2069,7 @@ Dalsze instrukcje znajdziesz w e-mailu przesłanym na adres <ph name="ACCOUNT_EM
 <translation id="3743492083222969745">Włącz/wyłącz opcję pisania gestami na stronie ustawień klawiatury wirtualnej.</translation>
 <translation id="3744111561329211289">Synchronizacja w tle</translation>
 <translation id="3745016858329272300">Informacje ogólne</translation>
+<translation id="3748026146096797577">Brak połączenia</translation>
 <translation id="3749289110408117711">Nazwa pliku</translation>
 <translation id="3751427701788899101">Połączenie zostało utracone</translation>
 <translation id="3752439026432317933">Wpisz szczegółowe informacje rozliczeniowe...</translation>
@@ -2783,6 +2785,7 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="480990236307250886">Otwórz stronę startową</translation>
 <translation id="4811502511369621968">Nieprawidłowy adres e-mail. Sprawdź wpisane informacje i spróbuj ponownie.</translation>
 <translation id="4812632551187706935">Nie można zainicjować połączenia</translation>
+<translation id="4812684235631257312">Host</translation>
 <translation id="4813345808229079766">Połączenie</translation>
 <translation id="4813512666221746211">Błąd sieci</translation>
 <translation id="4816492930507672669">Dopasuj do strony.</translation>
@@ -3163,6 +3166,7 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="5306802244647481941">Podgląd w aplikacji Pliki</translation>
 <translation id="5308380583665731573">Połącz</translation>
 <translation id="5311260548612583999">Plik kluczy (opcjonalnie):</translation>
+<translation id="5315873049536339193">Tożsamość</translation>
 <translation id="5316588172263354223">Wyszukuj głosowo w dowolnej chwili</translation>
 <translation id="5316716239522500219">Wyświetl na monitorach odbicie lustrzane</translation>
 <translation id="5317780077021120954">Zapisz</translation>
@@ -3439,7 +3443,6 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="5684661240348539843">Identyfikator zasobu</translation>
 <translation id="569068482611873351">Importuj...</translation>
 <translation id="56907980372820799">Połącz dane</translation>
-<translation id="569109051430110155">Wykrywaj automatycznie</translation>
 <translation id="5691596662111998220">Ups, pliku <ph name="FILE_NAME" /> już nie ma.</translation>
 <translation id="5694501201003948907">Pakuję $1 elementy(ów)...</translation>
 <translation id="5697118958262594262">Domyślnie wykrywaj ważną treść</translation>
@@ -4501,7 +4504,6 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="7225179976675429563">Brak typu sieci</translation>
 <translation id="7230787553283372882">Dostosuj rozmiar tekstu</translation>
 <translation id="7231224339346098802">Wprowadź wartość numeryczną, aby określić liczbę kopii do wydrukowania (1 lub więcej).</translation>
-<translation id="7234907163682057631">Wykrywaj i uruchamiaj tylko ważną treść wtyczki</translation>
 <translation id="7238585580608191973">Odcisk cyfrowy SHA-256</translation>
 <translation id="7240120331469437312">Alternatywna nazwa podmiotu certyfikatu</translation>
 <translation id="7241389281993241388">Zaloguj się do urządzenia <ph name="TOKEN_NAME" />, aby zaimportować certyfikat klienta.</translation>
@@ -4676,6 +4678,7 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="7484645889979462775">Nigdy dla tej witryny</translation>
 <translation id="7484964289312150019">Otwórz wszystkie zakładki w &amp;nowym oknie</translation>
 <translation id="7485236722522518129">F4</translation>
+<translation id="7487067081878637334">Technologia</translation>
 <translation id="7487099628810939106">Opóźnienie przed kliknięciem:</translation>
 <translation id="7487969577036436319">Nie zainstalowano żadnych komponentów</translation>
 <translation id="7489605380874780575">Sprawdź uprawnienia</translation>
@@ -4947,6 +4950,7 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="7877451762676714207">Nieznany błąd serwera. Spróbuj ponownie lub skontaktuj się z administratorem serwera.</translation>
 <translation id="7878999881405658917">Na ten telefon zostało wysłane powiadomienie z Google. Pamiętaj, że gdy korzystasz z Bluetooth, Twój telefon może utrzymywać odblokowanie urządzenia <ph name="DEVICE_TYPE" /> nawet z odległości większej niż 9 metrów. Gdy sprawia to problem, możesz &lt;a&gt;tymczasowo wyłączyć tę funkcję&lt;/a&gt;.</translation>
 <translation id="7880836220014399562">„<ph name="BUNDLE_NAME" />” dodaje te aplikacje i rozszerzenia:</translation>
+<translation id="7881483672146086348">Wyświetl konto</translation>
 <translation id="7881969471599061635">Wyłącz napisy</translation>
 <translation id="7885253890047913815">Ostatnie urządzenia docelowe</translation>
 <translation id="7887192723714330082">Reaguje na „Ok Google”, gdy ekran jest włączony i odblokowany</translation>
@@ -5339,7 +5343,6 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8428213095426709021">Ustawienia</translation>
 <translation id="8428634594422941299">OK</translation>
 <translation id="8432745813735585631">Klawiatura amerykańska (Colemak)</translation>
-<translation id="8434177709403049435">&amp;Kodowanie</translation>
 <translation id="8434480141477525001">Port debugowania NaCl</translation>
 <translation id="8435334418765210033">Zapamiętane sieci</translation>
 <translation id="8437209419043462667">amerykański</translation>
@@ -5730,7 +5733,6 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8970203673128054105">Pokaż listę trybów przesyłania</translation>
 <translation id="89720367119469899">Ucieczka</translation>
 <translation id="8972513834460200407">Skontaktuj się z administratorem sieci, by dowiedzieć się, czy zapora sieciowa nie blokuje pobrań z serwerów Google.</translation>
-<translation id="8974161578568356045">Wykrywaj automatycznie</translation>
 <translation id="8978526688207379569">Ta witryna automatycznie pobrała wiele plików.</translation>
 <translation id="8982248110486356984">Przełącz użytkownika</translation>
 <translation id="8986267729801483565">Zapisuj pobrane pliki w:</translation>
@@ -5916,7 +5918,6 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="923467487918828349">Pokaż wszystko</translation>
 <translation id="927151012416335806">Aktualizuję Twoje urządzenie do kanału: <ph name="CHANNEL_NAME" /></translation>
 <translation id="930268624053534560">Szczegółowe sygnatury czasowe</translation>
-<translation id="931068751149008062">Wybierz typy i kodowanie czcionek</translation>
 <translation id="932327136139879170">Strona główna</translation>
 <translation id="932508678520956232">Nie można zainicjować drukowania.</translation>
 <translation id="93393615658292258">Tylko hasło</translation>

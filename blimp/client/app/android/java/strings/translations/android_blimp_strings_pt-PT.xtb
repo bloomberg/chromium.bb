@@ -18,6 +18,7 @@
 <translation id="3407245330823033366">Escolha uma conta para utilizar com o Blimp.</translation>
 <translation id="3775180005489871350">A atribuição falhou. Erro 400 (BAD_REQUEST).</translation>
 <translation id="3877411575395047031">Ocultar informações de depuração</translation>
+<translation id="4013794286379809233">Inicie sessão</translation>
 <translation id="4542350224991263059">A atribuição falhou. A chave de acesso do utilizador expirou.</translation>
 <translation id="4562971394107096647">A atribuição falhou. Erro do servidor.</translation>
 <translation id="4641972508298030550">Não é possível autenticar o utilizador.</translation>
@@ -28,6 +29,7 @@
 <translation id="5860346505531085166">A atribuição falhou. A conta não tem acesso.</translation>
 <translation id="6232798399907177395">Acerca do Blimp</translation>
 <translation id="6245894610106451476">Recebido (KB)</translation>
+<translation id="6522797484310591766">Iniciar sessão agora</translation>
 <translation id="704835510384979817">A atribuição falhou. Não há uma versão do motor correspondente.</translation>
 <translation id="7145680970336344212">Reiniciar o Blimp</translation>
 <translation id="7536363920335771251">Motor desligado, motivo: %1$s</translation>

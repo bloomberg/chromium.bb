@@ -478,6 +478,7 @@
 <translation id="2623014935069176671">Várakozás a kezdeti felhasználói tevékenységre</translation>
 <translation id="262740370354162807">A dokumentumok <ph name="CLOUD_PRINT_NAME" /> szolgáltatás részére való benyújtásának engedélyezése</translation>
 <translation id="2633084400146331575">Hangos visszajelzések engedélyezése</translation>
+<translation id="2646290749315461919">Lehetővé teszi, hogy megadja azon weboldalak listáját, amelyek követhetik a felhasználók tartózkodási helyét. A felhasználók tartózkodási helyének követése lehet alapértelmezetten engedélyezett, alapértelmezetten tiltott, vagy megkérdezheti a felhasználót minden alkalommal, amikor egy webhely a tartózkodási helyét szeretné tudni. Ha a házirend konfigurálatlanul marad, a rendszer az "AskGeolocation" értéket használja, amelyet a felhasználó módosíthat.</translation>
 <translation id="2650049181907741121">Az a művelet, amelyet akkor végez a rendszer, ha a felhasználó lezárja a fedelet</translation>
 <translation id="2655233147335439767">Meghatározza az alapértelmezett keresés esetén használatos keresőmotor URL-jét. Az URL-nek tartalmaznia kell a(z) „<ph name="SEARCH_TERM_MARKER" />” karakterláncot, amelyet kereséskor a felhasználó által keresett kifejezések helyettesítenek.
 
@@ -488,12 +489,6 @@
 <translation id="267596348720209223">Meghatározza a keresési szolgáltató által támogatott karakterkódolásokat. A kódolások kódtáblanevek, például UTF-8, GB2312 vagy ISO-8859-1. A szolgáltató a megadott sorrendben próbálja őket használni. A házirend nem kötelező. Ha nincs beállítva, akkor a rendszer az alapértelmezés szerinti UTF-8-at használja. A házirend csak akkor teljesül, ha a "DefaultSearchProviderEnabled" házirend engedélyezve van.</translation>
 <translation id="2682225790874070339">Letiltja a Google Drive szolgáltatást a <ph name="PRODUCT_OS_NAME" /> Fájlok alkalmazásában</translation>
 <translation id="268577405881275241">Az adattömörítő proxyfunkció engedélyezése</translation>
-<translation id="2692168654831544772">Letiltja a képernyőfelvételek készítését.
-
-      Ha engedélyezve van, nem lehet képernyőfelvételt készíteni billentyűparancsokkal vagy bővítmény API-kkal.
-      Továbbá a képernyőrögzítés le van tiltva az ARC-alkalmazásoknál.
-
-      Ha le van tiltva vagy nincs megadva, a képernyőfelvételek készítése engedélyezett.</translation>
 <translation id="2731627323327011390">A(z) <ph name="PRODUCT_OS_NAME" /> által az ARC-alkalmazásoknak kiadott CA-tanúsítványok használatának letiltása</translation>
 <translation id="2742843273354638707">A Chrome Internetes áruház alkalmazásnak és a láblécben lévő linkjének elrejtése az Új lap oldalon és a <ph name="PRODUCT_OS_NAME" /> alkalmazásindítóban.
 
@@ -546,22 +541,6 @@
               A listában szereplő összes elem bővítmény jellegű egyezési minta (lásd: http://code.google.com/chrome/extensions/match_patterns.html). A felhasználók a listában szereplő bármelyik elemmel egyező URL-ről a könnyű módszerrel telepíthetnek elemeket. A mintáknak a *.crx fájl helye mellett azt az oldalt is engedélyezniük kell, ahonnan a letöltés megkezdődik (azaz a hivatkozó oldalt). 
 
               Az ExtensionInstallBlacklist elsőbbséget élvez ezen házirenddel szemben, azaz a tiltólistán lévő bővítmények akkor sem lesznek telepítve, ha ezen a listán szereplő webhelyről származnak.</translation>
-<translation id="2813740161943223811">Ez a házirend már megszűnt – használja helyette a ProxyMode házirendet.
-
-          Lehetővé teszi a <ph name="PRODUCT_NAME" /> és az ARC-alkalmazások által használt proxyszerver meghatározását, és megakadályozza, hogy a felhasználók megváltoztassák a proxybeállításokat. Ezt a proxyszervert az ARC-alkalmazások is használni tudják.
-
-          Ha úgy dönt, hogy soha nem használ proxyszervert, és mindig közvetlenül kapcsolódik, az összes többi beállítás figyelmen kívül marad.
-
-          Ha úgy dönt, hogy a rendszer proxybeállításait használja, vagy automatikusan észleli a proxyszervert, az összes többi beállítás figyelmen kívül marad.
-
-          Ha a proxybeállítások manuális megadását választja, további beállításokat adhat meg a „Proxyszerver címe vagy URL-je”, „URL egy proxy .pac fájlhoz” és „A proxykihagyási szabályok vesszővel elválasztott listája” lehetőségeknél. Az ARC-alkalmazások számára csak a legmagasabb prioritású HTTP proxyszerver áll rendelkezésre.
-
-          Részletes példákért látogassa meg a következő címet:
-          <ph name="PROXY_HELP_URL" />.
-
-          Ha engedélyezi ezt a beállítást, a <ph name="PRODUCT_NAME" /> figyelmen kívül hagyja a proxyval kapcsolatban a parancssorból megadott összes beállítást.
-
-          Ha beállítatlanul hagyja ezt a házirendet, akkor a felhasználók saját maguk választhatják ki a proxybeállításaikat.</translation>
 <translation id="2818551149761607847">Felhasználó avatarképének beállítása.
 
       Ez a házirend lehetővé teszi a felhasználót a bejelentkezési képernyőn jelképező avatarkép beállítását. A házirendet úgy állíthatja be, hogy megad egy URL-t, amelyről a <ph name="PRODUCT_OS_NAME" /> letöltheti az avatarképet, valamint egy olyan kriptográfiai hash-értéket, amely a letöltés integritásának ellenőrzésére szolgál. A kép formátumának JPEG-nek kell lennie, mérete pedig nem haladhatja meg az 512 kB-ot. Az URL-nek hitelesítés nélkül hozzáférhetőnek kell lennie.
@@ -700,18 +679,6 @@
           </translation>
 <translation id="3205825995289802549">Az első böngészőablak nagy méretre állítása az első indításkor</translation>
 <translation id="3206731874112238027">Nyomtatási előnézet letiltása (elavult)</translation>
-<translation id="3208854390109736596">Lehetővé teszi a <ph name="PRODUCT_NAME" /> és az ARC-alkalmazások által használt proxyszerver meghatározását, és megakadályozza, hogy a felhasználók megváltoztassák a proxybeállításokat.
-
-      Ha úgy dönt, hogy soha nem használ proxyszervert, és mindig közvetlenül kapcsolódik, az összes többi beállítás figyelmen kívül marad.
-
-      Ha úgy dönt, hogy automatikusan érzékeli a proxyszervert, az összes többi beállítási lehetőség figyelmen kívül marad.
-
-      Részletes példákért látogassa meg a következő címet:
-      <ph name="PROXY_HELP_URL" />.
-
-      Ha engedélyezi ezt a beállítást, <ph name="PRODUCT_NAME" /> figyelmen kívül hagyja a  proxyval kapcsolatban a parancssorból megadott összes beállítást.
-
-      Ha beállítatlanul hagyja ezt a házirendet, akkor a felhasználók saját maguk választhatják ki a proxybeállításaikat.</translation>
 <translation id="3213821784736959823">Azt szabályozza, hogy a beépített DNS-ügyfél van-e használatban a(z) <ph name="PRODUCT_NAME" /> termékben.
 
       Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített DNS-ügyfelet használja, ha rendelkezésre áll ilyen.
@@ -752,11 +719,6 @@
 <translation id="3322771899429619102">Lehetővé teszi, hogy létrehozza az olyan webhelyeket megadó URL-minták egy listáját, ahol engedélyezett a kulcslétrehozás. Ha valamelyik URL-minta a „KeygenBlockedForUrls” házirendben található, akkor az felülírja ezen kivételeket.
 
           Ha a házirend konfigurálatlanul marad, akkor a rendszer a globális alapértelmezett értéket használja a „DefaultKeygenSetting” házirendből (ha az be van állítva), egyéb esetben pedig a felhasználó saját személyes beállításából.</translation>
-<translation id="3337150554416948435">Lehetővé teszi, hogy megadja azon weboldalak listáját, amelyek követhetik a felhasználók fizikai tartózkodási helyét. A felhasználók fizikai tartózkodási helyének követése lehet alapértelmezetten engedélyezett, alapértelmezetten tiltott, vagy megkérdezheti a felhasználót minden alkalommal, amikor az adott webhely a fizikai tartózkodási helyét szeretné megismerni.
-
-          Ha a házirend beállítása „BlockGeolocation”, a helymegosztás le van tiltva az ARC-alkalmazások számára.
-
-          Ha a házirend konfigurálatlanul marad, a rendszer az „AskGeolocation” értéket használja, amelyet a felhasználó módosíthat.</translation>
 <translation id="3381968327636295719">Alapértelmezés szerint használja a gazdagép böngészőjét</translation>
 <translation id="3417418267404583991">Ha a házirend beállítása igaz, vagy nincs megadva az értéke, akkor a(z) <ph name="PRODUCT_OS_NAME" /> engedélyezi a Vendég módban való bejelentkezéseket. A vendégbejelentkezések névtelen felhasználói munkamenetek, amelyek nem kérik jelszó magadását.
 
@@ -775,14 +737,6 @@
           Ha az irányelv beállítása Igaz, akkor az energiagazdálkodási késleltetések és a munkamenet hosszúsági korlátja nem indul el egy munkamenet során az első felhasználói tevékenység észleléséig.
 
           Ha az irányelv értéke Hamis, vagy nincs beállítva, akkor az energiagazdálkodási késleltetések és a munkamenet hosszúsági korlátja rögtön egy munkamenet megkezdésekor elindul.</translation>
-<translation id="3469657928310999477">A <ph name="PRODUCT_NAME" /> figyelmen kívül hagy bármilyen proxyt a listán megadott gazdagépek esetében. Az ARC-alkalmazások szintén használni tudják a listát – a kihagyási szabályok listájaként.
-
-          Ez a házirend csak akkor lép érvénybe, ha a manuális proxybeállításokat választotta a „Válassza ki, hogyan adja meg a proxyszerver beállításait” résznél.
-
-          Ha valamilyen más módját választotta a proxyházirendek beállításának, akkor hagyja ezt a házirendet konfigurálatlanul.
-
-          További részletes példák megtekintéséhez keresse fel a következő oldalt:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="3478024346823118645">Felhasználói adatok törlése a kijelentkezésnél</translation>
 <translation id="348495353354674884">Virtuális billentyűzet engedélyezése</translation>
 <translation id="3496296378755072552">Jelszókezelő</translation>
@@ -905,16 +859,6 @@
 
       Ha nem állítja be ezt az irányelvet, akkor a SPDY rendelkezésre áll.</translation>
 <translation id="3891357445869647828">JavaScript engedélyezése</translation>
-<translation id="3898060089412156345">Hangrögzítés engedélyezése vagy tiltása.
-
-      Ha engedélyezett, vagy ha nincs beállítva (ez az alapértelmezett),
-      a rendszer hangrögzítési hozzáférést kér az AudioCaptureAllowedUrls
-      listában beállított URL-ek kivételével, amelyek kérdés nélkül hozzáférést kapnak.
-
-      Ha a házirend le van tiltva, a felhasználót sosem kérdezik meg, és a
-      hangrögzítés csak az AudioCaptureAllowedUrls listában szereplő URL-ek esetében áll rendelkezésre.
-
-      Ez a házirend minden hangbemenetre érvényes, nem csak a beépített mikrofonra.</translation>
 <translation id="3907986150060929099">Beállítja a nyilvános munkamenet ajánlott nyelv- és országkódjait</translation>
 <translation id="391531815696899618">Igaz érték esetén letiltja a Google Drive szinkronizálását a <ph name="PRODUCT_OS_NAME" /> Fájlok alkalmazásában. Ebben az esetben nem lesznek feltöltve adatok a Google Drive-ra.
 
@@ -1041,6 +985,7 @@
       Bár magát a házirendet támogatja az összes fenti platform, előfordulhat, hogy maga az engedélyezett funkció kevesebb platformon áll rendelkezésre. Nem lehet újraengedélyezni az összes elavult Web Platform-funkciót. Kizárólag a lent felsoroltakat lehet engedélyezni korlátozott időtartamra, amely időtartam eltérő az egyes funkciók esetében. A karakterlánccímkék általános formátuma a következő: [DeprecatedFeatureName]_EffectiveUntil[yyyymmdd]. A https://bit.ly/blinkintents webhelyen további információkat talál a Web Platform-funkciók módosításának hátterében álló szándékokról.
       </translation>
 <translation id="4442582539341804154">Lezárás engedélyezése, ha az eszköz tétlen vagy felfüggesztett</translation>
+<translation id="4445684791305970001">Kikapcsolja a fejlesztői eszközöket és a JavaScript-konzolt. Ha engedélyezi ezt a beállítást, a fejlesztői eszközöket nem lehet elérni, és a webhelyek elemeit nem lehet ellenőrizni többé. Bármely billentyűparancs, menü vagy helyi menüpont le lesz tiltva, amely megnyitná a fejlesztői eszközöket vagy a JavaScript-konzolt. Ha letiltja ezt a beállítást, vagy konfigurálatlanul hagyja, akkor a felhasználó használhatja a felhasználói eszközöket és a JavaScript-konzolt.</translation>
 <translation id="4449545651113180484">Képernyő elforgatása 270 fokkal</translation>
 <translation id="4467952432486360968">Harmadik féltől származó cookie-k letiltása</translation>
 <translation id="4474167089968829729">Jelszavak mentésének aktiválása a jelszókezelőben</translation>
@@ -1151,6 +1096,16 @@
           Az értéknek szöveges karakterláncként megadott JSON-könyvtárak tömbjének kell lennie. A könyvtárakat a { "pattern": "$URL_PATTERN", "filter" : $FILTER } formátumban kell megadni, ahol az $URL_PATTERN egy tartalombeállítási mintát jelöl. A $FILTER korlátozza azt, hogy a böngésző melyik ügyféltanúsítványok közül választhat automatikusan. A szűrőtől függetlenül csak olyan tanúsítványokat választhat, amelyek megfelelnek a szerver tanúsítványkérelmének. Ezenkívül ha a $FILTER formátuma { "ISSUER": { "CN": "$ISSUER_CN" } }, akkor a böngésző csak olyan ügyféltanúsítványokat választ, amelyeket az $ISSUER_CN nevű tanúsítványkibocsátó adott ki. Ha a $FILTER egy üres könyvtár („{}”), akkor az ügyféltanúsítványok kiválaszthatósága nem lesz tovább korlátozva.
 
           Ha nem állítja be ezt a házirendet, akkor semmilyen webhely esetében nem történik automatikus kiválasztás.</translation>
+<translation id="4980301635509504364">Videorögzítés engedélyezése vagy tiltása.
+
+      Ha engedélyezett, vagy ha nincs beállítva (alapértelmezett), a böngésző
+      – a VideoCaptureAllowedUrls listában beállított URL-ek kivételével, amelyek
+      kérdés nélkül megkapják – videorögzítési hozzáférést kér a felhasználótól.
+
+      Ha le van tiltva, akkor a felhasználó sosem kap kérdést, és a videorögzítés
+      csak a VideoCaptureAllowedUrls listában beállított URL-ek számára érhető el.
+
+      Ez a házirend minden videobemenetre érvényes, nem csak a beépített kamerára.</translation>
 <translation id="4980635395568992380">Adattípus:</translation>
 <translation id="4983201894483989687">Elavult bővítmények futtatásának engedélyezése</translation>
 <translation id="4988291787868618635">A tétlenségi késleltetés elteltével végzendő művelet</translation>
@@ -1158,7 +1113,6 @@
 <translation id="5052081091120171147">Ez a házirend engedélyezése esetén a böngészési előzmények importálását kényszeríti a jelenlegi alapértelmezett böngészőből. Bekapcsolása esetén a házirend az importálás párbeszédpanelére is hatással van. Ha le van tiltva, nem történik meg a böngészési előzmények importálása. Ha nincs beállítva, akkor előfordulhat, hogy a rendszer a felhasználótól kérdezi meg, hogy megtörténjen-e az importálás, vagy hogy lehet-e automatikus az importálás.</translation>
 <translation id="5056708224511062314">Nagyító kikapcsolva</translation>
 <translation id="5067143124345820993">A bejelentkezett felhasználó engedélyezőlistája</translation>
-<translation id="510186355068252378">Tiltja az adatok szinkronizálását a Google szinkronizálási szolgáltatásainak segítségével a(z) <ph name="PRODUCT_NAME" /> alkalmazásban, valamint megakadályozza, hogy a felhasználók módosítsák ezt a beállítást. Ha engedélyezi ezt a beállítást, a felhasználók nem módosíthatják, illetve nem írhatják felül a(z) <ph name="PRODUCT_NAME" /> ezen beállítását. Ha ez a házirend beállítatlanul marad, akkor a felhasználó dönthet arról, hogy kívánja-e használni a Google Sync szolgáltatást.</translation>
 <translation id="5105313908130842249">Képernyő lezárásának késleltetése akkumulátorról való működés során</translation>
 <translation id="5111573778467334951">A tétlenségi késleltetés elérésekor végrehajtandó művelet megadása akkumulátorról való működés során.
 
@@ -1272,13 +1226,6 @@
       Ha meg van határozva, egy „restrict” nevű lekérdezési paramétert ad a Variations seed lekérdezésére használatos URL-hez. A paraméter értéke a házirendben meghatározott érték lesz.
 
       Ha nincs meghatározva, nem változtat a Variations seed URL-jén.</translation>
-<translation id="5563853101694018649">Letiltja a fejlesztői eszközöket és a JavaScript-konzolt.
-
-      Ha engedélyezi ezt a beállítást, akkor a fejlesztői eszközökhöz nem férhet hozzá, illetve a webhelyek elemeit nem ellenőrizheti a jövőben. Bármely billentyűparancs, menü vagy helyi menüpont le lesz tiltva, amely megnyitná a fejlesztői eszközöket vagy a JavaScript-konzolt.
-
-      Ha letiltja ezt a beállítást, vagy konfigurálatlanul hagyja, akkor a felhasználó használhatja a fejlesztői eszközöket és a JavaScript-konzolt.
-
-      Az androidos alkalmazások futtatására képes <ph name="PRODUCT_OS_NAME" />eszközök esetén ez a házirend vezérli az Android fejlesztői beállításaihoz való hozzáférést. Ha igaz értékre állítja ezt a házirendet, akkor a felhasználók nem férhetnek hozzá a fejlesztői beállításokhoz. Ha hamis értékre állítja a házirendet, illetve nem ad meg beállítást, akkor a felhasználók hozzáférhetnek a fejlesztői beállításokhoz, ha hétszer a build számára kattintanak az Android Beállítások alkalmazásában.</translation>
 <translation id="556941986578702361">A(z) <ph name="PRODUCT_OS_NAME" /> polc automatikus elrejtését szabályozza.
 
       Ha az irányelv 'AlwaysAutoHideShelf' értékre van beállítva, akkor a rendszer mindig automatikusan elrejti a polcot.
@@ -1721,6 +1668,16 @@
       Ha engedélyezi vagy letiltja ezt a beállítást, a felhasználók nem módosíthatják és nem írhatják felül.
 
       Ha nem állítja be ezt a házirendet, a felhasználó döntheti el, hogy kívánja-e az eszköz feloldását jelszóhoz kötni.</translation>
+<translation id="7109916642577279530">Hangrögzítés engedélyezése vagy tiltása.
+
+      Ha engedélyezett, vagy ha nincs beállítva (ez az alapértelmezett),
+      a rendszer hangrögzítési hozzáférést kér az AudioCaptureAllowedUrls
+      listában beállított URL-ek kivételével, amelyek kérdés nélkül hozzáférést kapnak.
+
+      Ha a házirend le van tiltva, a felhasználót sosem kérdezik meg, és a
+      hangrögzítés csak az AudioCaptureAllowedUrls listában szereplő URL-ek esetében érhető el.
+
+      Ez a házirend minden hangbemenetre érvényes, nem csak a beépített mikrofonra.</translation>
 <translation id="7115494316187648452">Meghatározza, hogy elinduljon-e a <ph name="PRODUCT_NAME" /> folyamata az operációs rendszerbe való bejelentkezéskor, és az utolsó böngészőablak bezárásakor is futásban hagyja, lehetővé téve a háttéralkalmazások és az aktuális böngészési munkamenet számára, hogy aktívak maradjanak, a munkamenetek esetleges cookie-jaival együtt. A háttérfolyamat egy ikont jelenít meg a tálcán, ahonnan mindig bezárható.
 
       Ha a házirend értéke True (igaz), akkor a háttérmód engedélyezve van, a felhasználó pedig ezt nem tudja módosítani a böngésző beállításaiban.
@@ -1996,20 +1953,6 @@
       Meghatározza a bejelentkezési képernyőn képernyőkímélőként használni kívánt bővítmény azonosítóját. A bővítménynek abban az alkalmazáscsomagban kell lennie, amely meg van határozva ennél a domainnél az DeviceAppPack házirend használatával.</translation>
 <translation id="7882890448959833986">A nem támogatott operációs rendszerre vonatkozó figyelmeztetés elrejtése</translation>
 <translation id="7912255076272890813">Engedélyezett alkalmazás-/bővítménytípusok konfigurálása</translation>
-<translation id="7914271217607102111">Videórögzítés engedélyezése vagy tiltása.
-
-      Ha a házirend engedélyezett, vagy ha nincs beállítva (alapértelmezett), a böngésző
-      videórögzítési hozzáférést kér (a VideoCaptureAllowedUrls listában beállított 
-      URL-ek kivételével, amelyek kérdés nélkül megkapják
-      a felhasználótól). Az ARC-alkalmazások akkor férhetnek hozzá a
-      kamerához, ha erre engedélyt kaptak.
-
-      Ha a házirend le van tiltva, akkor a felhasználó soha nem kap kérdést,
-      és a videórögzítés csak a VideoCaptureAllowedUrls listában beállított URL-ek
-      számára hozzáférhető. Az ARC-alkalmazások nem férhetnek hozzá a kamerához.
-
-      Ez a házirend az ARC-alkalmazásokon kívül minden videóbemenet-típust
-      befolyásol; nem csupán a beépített kamerát.</translation>
 <translation id="7915236031252389808">Itt adhatja meg a proxy .pac fájlok URL-jét.
 
           Ez a házirend csak akkor lép érvénybe, ha a manuális proxybeállításokat választotta a „Válassza ki, hogyan adja meg a proxyszerver beállításait” résznél.
@@ -2388,24 +2331,6 @@
 <translation id="9112897538922695510">Lehetővé teszi a protokollkezelők listájának regisztrálását. Csak ajánlott házirend lehet. A |protocol| tulajdonságot a sémához – például „mailto” – kell beállítani, az |url| tulajdonságot pedig a sémát kezelő alkalmazás URL-mintájához. A minta tartalmazhat „%s” karakterláncot, amelynek – ha van – helyére majd a kezelt URL kerül.
 
           A rendszer egyesíti a házirend által regisztrált protokollkezelőket a felhasználó által regisztráltakkal, és mindkétféle protokollkezelő használatra készen rendelkezésre áll. A felhasználó új alapértelmezett kezelő telepítésével felülírhatja a házirend által telepített protokollkezelőket, a házirend által regisztrált protokollkezelőt azonban nem tudja eltávolítani.</translation>
-<translation id="913138516158420759">Lehetővé teszi a <ph name="PRODUCT_NAME" /> által használt proxyszerver meghatározását, és megakadályozza, hogy a felhasználók megváltoztassák a proxybeállításokat. A proxyszervert az ARC-alkalmazások is használni tudják.
-
-          Ha úgy dönt, hogy soha nem használ proxyszervert, és mindig közvetlenül kapcsolódik, az összes többi beállítás figyelmen kívül marad.
-
-          Ha úgy dönt, hogy a rendszer proxybeállításait használja, az összes többi beállítás figyelmen kívül marad.
-
-          Ha a proxyszerver automatikus észlelését választja, az összes többi beállítás figyelmen kívül marad.
-
-          Ha a fix proxyszerver módot választja, további beállításokat adhat meg „A proxyszerver címe vagy URL-je” és a „Proxykihagyási szabályok vesszővel elválasztott listája” házirendekben. Az ARC-alkalmazások csak a legmagasabb prioritású HTTP-proxyszervert használják.
-
-          Ha .pac proxyszkriptet használ, meg kell adnia a szkript URL-jét „A proxy .pac fájl URL-je” beállításban.
-
-          Részletes példákért látogassa meg a következő címet:
-          <ph name="PROXY_HELP_URL" />.
-
-          Ha engedélyezi ezt a beállítást, a <ph name="PRODUCT_NAME" /> és az ARC-alkalmazások figyelmen kívül hagynak minden, a parancssorból megadott proxybeállítást.
-
-          Ha beállítatlanul hagyja ezt a házirendet, akkor a felhasználók saját maguk választhatják ki a proxybeállításaikat.</translation>
 <translation id="913195841488580904">Letiltja a hozzáférést az URL-ek egy listájához</translation>
 <translation id="9135033364005346124"><ph name="CLOUD_PRINT_NAME" /> proxy engedélyezése</translation>
 <translation id="9147029539363974059">Rendszernaplókat küld a felügyeleti szervernek, hogy a
@@ -2419,6 +2344,11 @@
 <translation id="9187743794267626640">Külső tárhely csatlakoztatásának letiltása</translation>
 <translation id="9197740283131855199">Az a százalék, amelynek alapján a képernyő-elsötétítési késleltetés skálázódik, ha az elsötétedés után a felhasználó aktív lesz</translation>
 <translation id="9200828125069750521">Paraméterek POST metódust használó kép-URL-hez</translation>
+<translation id="9203071022800375458">Letiltja a képernyőképek készítését.
+
+      Ha engedélyezve van, nem lehet képernyőképeket készíteni billentyűkódokkal vagy bővítmény API-kkal.
+
+      Ha le van tiltva vagy nincs megadva, akkor lehetséges képernyőképek készítése.</translation>
 <translation id="9217154963008402249">Az ellenőrző hálózati csomagok gyakorisága</translation>
 <translation id="922540222991413931">Bővítmény-, alkalmazás- és felhasználói szkripttelepítési források konfigurálása</translation>
 <translation id="924557436754151212">Mentett jelszavak importálása az alapértelmezett böngészőből az első indításkor</translation>

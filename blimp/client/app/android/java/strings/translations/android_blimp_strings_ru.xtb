@@ -18,6 +18,7 @@
 <translation id="3407245330823033366">Выберите аккаунт для входа в Blimp.</translation>
 <translation id="3775180005489871350">Ошибка 400: неверный запрос.</translation>
 <translation id="3877411575395047031">Скрыть сведения об отладке</translation>
+<translation id="4013794286379809233">Вход в систему</translation>
 <translation id="4542350224991263059">Ошибка. Срок действия токена доступа истек.</translation>
 <translation id="4562971394107096647">Ошибка сервера.</translation>
 <translation id="4641972508298030550">Не удалось идентифицировать пользователя.</translation>
@@ -28,6 +29,7 @@
 <translation id="5860346505531085166">Ошибка. У аккаунта нет права доступа.</translation>
 <translation id="6232798399907177395">О Blimp</translation>
 <translation id="6245894610106451476">Получено (КБ)</translation>
+<translation id="6522797484310591766">Войти</translation>
 <translation id="704835510384979817">Ошибка. Совместимая версия поисковой системы отсутствует.</translation>
 <translation id="7145680970336344212">Перезапустите Blimp</translation>
 <translation id="7536363920335771251">Соединение прервано. Причина: %1$s.</translation>
