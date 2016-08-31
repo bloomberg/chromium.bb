@@ -1694,6 +1694,7 @@
             'fetch/AccessControlStatus.h',
             'fetch/CSSStyleSheetResource.cpp',
             'fetch/CSSStyleSheetResource.h',
+            'fetch/CachedMetadata.cpp',
             'fetch/CachedMetadata.h',
             'fetch/CachedMetadataHandler.h',
             'fetch/ClientHintsPreferences.cpp',

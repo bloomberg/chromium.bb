@@ -153,7 +153,7 @@ static v8::MaybeLocal<v8::Script> compileAndConsumeCache(CachedMetadataHandler* 
 }
 
 // Compile a script, and produce a V8 cache for future use.
-v8::MaybeLocal<v8::Script> compileAndProduceCache(CachedMetadataHandler* cacheHandler, unsigned tag, v8::ScriptCompiler::CompileOptions compileOptions, CachedMetadataHandler::CacheType cacheType, v8::Isolate* isolate, v8::Local<v8::String> code, v8::ScriptOrigin origin)
+v8::MaybeLocal<v8::Script> compileAndProduceCache(CachedMetadataHandler* cacheHandler, uint32_t tag, v8::ScriptCompiler::CompileOptions compileOptions, CachedMetadataHandler::CacheType cacheType, v8::Isolate* isolate, v8::Local<v8::String> code, v8::ScriptOrigin origin)
 {
     V8CompileHistogram histogramScope(V8CompileHistogram::Cacheable);
     v8::ScriptCompiler::Source source(code, origin);
@@ -176,7 +176,7 @@ v8::MaybeLocal<v8::Script> compileAndProduceCache(CachedMetadataHandler* cacheHa
 
 // Compile a script, and consume or produce a V8 Cache, depending on whether the
 // given resource already has cached data available.
-v8::MaybeLocal<v8::Script> compileAndConsumeOrProduce(CachedMetadataHandler* cacheHandler, unsigned tag, v8::ScriptCompiler::CompileOptions consumeOptions, v8::ScriptCompiler::CompileOptions produceOptions, CachedMetadataHandler::CacheType cacheType, v8::Isolate* isolate, v8::Local<v8::String> code, v8::ScriptOrigin origin)
+v8::MaybeLocal<v8::Script> compileAndConsumeOrProduce(CachedMetadataHandler* cacheHandler, uint32_t tag, v8::ScriptCompiler::CompileOptions consumeOptions, v8::ScriptCompiler::CompileOptions produceOptions, CachedMetadataHandler::CacheType cacheType, v8::Isolate* isolate, v8::Local<v8::String> code, v8::ScriptOrigin origin)
 {
     RefPtr<CachedMetadata> codeCache(cacheHandler->cachedMetadata(tag));
     return codeCache.get()
@@ -193,11 +193,11 @@ enum CacheTagKind {
 
 static const int kCacheTagKindSize = 2;
 
-unsigned cacheTag(CacheTagKind kind, CachedMetadataHandler* cacheHandler)
+uint32_t cacheTag(CacheTagKind kind, CachedMetadataHandler* cacheHandler)
 {
     static_assert((1 << kCacheTagKindSize) >= CacheTagLast, "CacheTagLast must be large enough");
 
-    static unsigned v8CacheDataVersion = v8::ScriptCompiler::CachedDataVersionTag() << kCacheTagKindSize;
+    static uint32_t v8CacheDataVersion = v8::ScriptCompiler::CachedDataVersionTag() << kCacheTagKindSize;
 
     // A script can be (successfully) interpreted with different encodings,
     // depending on the page it appears in. The cache doesn't know anything
@@ -211,7 +211,7 @@ unsigned cacheTag(CacheTagKind kind, CachedMetadataHandler* cacheHandler)
 bool isResourceHotForCaching(CachedMetadataHandler* cacheHandler, int hotHours)
 {
     const double cacheWithinSeconds = hotHours * 60 * 60;
-    unsigned tag = cacheTag(CacheTagTimeStamp, cacheHandler);
+    uint32_t tag = cacheTag(CacheTagTimeStamp, cacheHandler);
     RefPtr<CachedMetadata> cachedMetadata = cacheHandler->cachedMetadata(tag);
     if (!cachedMetadata)
         return false;
@@ -311,7 +311,7 @@ static std::unique_ptr<CompileFn> selectCompileFunction(V8CacheOptions cacheOpti
             V8ScriptRunner::setCacheTimeStamp(cacheHandler);
             return bind(compileWithoutOptions, V8CompileHistogram::Cacheable);
         }
-        unsigned codeCacheTag = cacheTag(CacheTagCode, cacheHandler);
+        uint32_t codeCacheTag = cacheTag(CacheTagCode, cacheHandler);
         return bind(compileAndProduceCache, wrapPersistent(cacheHandler), codeCacheTag, v8::ScriptCompiler::kProduceCodeCache, CachedMetadataHandler::SendToPlatform);
         break;
     }
@@ -569,12 +569,12 @@ v8::MaybeLocal<v8::Object> V8ScriptRunner::instantiateObjectInDocument(v8::Isola
     return result;
 }
 
-unsigned V8ScriptRunner::tagForParserCache(CachedMetadataHandler* cacheHandler)
+uint32_t V8ScriptRunner::tagForParserCache(CachedMetadataHandler* cacheHandler)
 {
     return cacheTag(CacheTagParser, cacheHandler);
 }
 
-unsigned V8ScriptRunner::tagForCodeCache(CachedMetadataHandler* cacheHandler)
+uint32_t V8ScriptRunner::tagForCodeCache(CachedMetadataHandler* cacheHandler)
 {
     return cacheTag(CacheTagCode, cacheHandler);
 }
@@ -583,7 +583,7 @@ unsigned V8ScriptRunner::tagForCodeCache(CachedMetadataHandler* cacheHandler)
 void V8ScriptRunner::setCacheTimeStamp(CachedMetadataHandler* cacheHandler)
 {
     double now = WTF::currentTime();
-    unsigned tag = cacheTag(CacheTagTimeStamp, cacheHandler);
+    uint32_t tag = cacheTag(CacheTagTimeStamp, cacheHandler);
     cacheHandler->clearCachedMetadata(CachedMetadataHandler::CacheLocally);
     cacheHandler->setCachedMetadata(tag, reinterpret_cast<char*>(&now), sizeof(now), CachedMetadataHandler::SendToPlatform);
 }

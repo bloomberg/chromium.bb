@@ -49,6 +49,7 @@
 #include "wtf/text/StringBuilder.h"
 #include <algorithm>
 #include <memory>
+#include <stdint.h>
 
 namespace blink {
 
@@ -102,9 +103,9 @@ public:
     }
     ~CachedMetadataHandlerImpl() override {}
     DECLARE_VIRTUAL_TRACE();
-    void setCachedMetadata(unsigned, const char*, size_t, CacheType) override;
+    void setCachedMetadata(uint32_t, const char*, size_t, CacheType) override;
     void clearCachedMetadata(CacheType) override;
-    PassRefPtr<CachedMetadata> cachedMetadata(unsigned) const override;
+    PassRefPtr<CachedMetadata> cachedMetadata(uint32_t) const override;
     String encoding() const override;
     // Sets the serialized metadata retrieved from the platform's cache.
     void setSerializedCachedMetadata(const char*, size_t);
@@ -131,7 +132,7 @@ DEFINE_TRACE(Resource::CachedMetadataHandlerImpl)
     CachedMetadataHandler::trace(visitor);
 }
 
-void Resource::CachedMetadataHandlerImpl::setCachedMetadata(unsigned dataTypeID, const char* data, size_t size, CachedMetadataHandler::CacheType cacheType)
+void Resource::CachedMetadataHandlerImpl::setCachedMetadata(uint32_t dataTypeID, const char* data, size_t size, CachedMetadataHandler::CacheType cacheType)
 {
     // Currently, only one type of cached metadata per resource is supported.
     // If the need arises for multiple types of metadata per resource this could
@@ -149,7 +150,7 @@ void Resource::CachedMetadataHandlerImpl::clearCachedMetadata(CachedMetadataHand
         sendToPlatform();
 }
 
-PassRefPtr<CachedMetadata> Resource::CachedMetadataHandlerImpl::cachedMetadata(unsigned dataTypeID) const
+PassRefPtr<CachedMetadata> Resource::CachedMetadataHandlerImpl::cachedMetadata(uint32_t dataTypeID) const
 {
     if (!m_cachedMetadata || m_cachedMetadata->dataTypeID() != dataTypeID)
         return nullptr;
@@ -167,13 +168,13 @@ void Resource::CachedMetadataHandlerImpl::setSerializedCachedMetadata(const char
     // If this triggers, it indicates an efficiency problem which is most
     // likely unexpected in code designed to improve performance.
     ASSERT(!m_cachedMetadata);
-    m_cachedMetadata = CachedMetadata::deserialize(data, size);
+    m_cachedMetadata = CachedMetadata::createFromSerializedData(data, size);
 }
 
 void Resource::CachedMetadataHandlerImpl::sendToPlatform()
 {
     if (m_cachedMetadata) {
-        const Vector<char>& serializedData = m_cachedMetadata->serialize();
+        const Vector<char>& serializedData = m_cachedMetadata->serializedData();
         Platform::current()->cacheMetadata(response().url(), response().responseTime(), serializedData.data(), serializedData.size());
     } else {
         Platform::current()->cacheMetadata(response().url(), response().responseTime(), nullptr, 0);
@@ -219,7 +220,7 @@ void Resource::ServiceWorkerResponseCachedMetadataHandler::sendToPlatform()
         return;
 
     if (m_cachedMetadata) {
-        const Vector<char>& serializedData = m_cachedMetadata->serialize();
+        const Vector<char>& serializedData = m_cachedMetadata->serializedData();
         Platform::current()->cacheMetadataInCacheStorage(response().url(), response().responseTime(), serializedData.data(), serializedData.size(), WebSecurityOrigin(m_securityOrigin), response().cacheStorageCacheName());
     } else {
         Platform::current()->cacheMetadataInCacheStorage(response().url(), response().responseTime(), nullptr, 0, WebSecurityOrigin(m_securityOrigin), response().cacheStorageCacheName());

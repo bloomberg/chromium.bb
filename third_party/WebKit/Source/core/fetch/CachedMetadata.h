@@ -31,9 +31,13 @@
 #ifndef CachedMetadata_h
 #define CachedMetadata_h
 
-#include "wtf/Forward.h"
+#include "core/CoreExport.h"
+#include "wtf/Assertions.h"
+#include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
+#include <stdint.h>
 
 namespace blink {
 
@@ -41,84 +45,54 @@ namespace blink {
 //
 // Serialized data is NOT portable across architectures. However, reading the
 // data type ID will reject data generated with a different byte-order.
-class CachedMetadata : public RefCounted<CachedMetadata> {
+class CORE_EXPORT CachedMetadata : public RefCounted<CachedMetadata> {
 public:
-    static PassRefPtr<CachedMetadata> create(unsigned dataTypeID, const char* data, size_t size)
+    static PassRefPtr<CachedMetadata> create(uint32_t dataTypeID, const char* data, size_t size)
     {
         return adoptRef(new CachedMetadata(dataTypeID, data, size));
     }
 
-    static PassRefPtr<CachedMetadata> deserialize(const char* data, size_t size)
+    static PassRefPtr<CachedMetadata> createFromSerializedData(const char* data, size_t size)
     {
         return adoptRef(new CachedMetadata(data, size));
     }
 
-    const Vector<char>& serialize() const
-    {
-        return m_serializedData;
-    }
-
     ~CachedMetadata() { }
 
-    unsigned dataTypeID() const
+    const Vector<char>& serializedData() const { return m_serializedData; }
+
+    uint32_t dataTypeID() const
     {
-        return readUnsigned(dataTypeIDStart);
+        // We need to define a local variable to use the constant in DCHECK.
+        constexpr auto kDataStart = CachedMetadata::kDataStart;
+        DCHECK_GE(m_serializedData.size(), kDataStart);
+        return *reinterpret_cast_ptr<uint32_t*>(const_cast<char*>(m_serializedData.data()));
     }
 
     const char* data() const
     {
-        if (m_serializedData.size() < dataStart)
-            return 0;
-        return m_serializedData.data() + dataStart;
+        constexpr auto kDataStart = CachedMetadata::kDataStart;
+        DCHECK_GE(m_serializedData.size(), kDataStart);
+        return m_serializedData.data() + kDataStart;
     }
 
     size_t size() const
     {
-        if (m_serializedData.size() < dataStart)
-            return 0;
-        return m_serializedData.size() - dataStart;
+        constexpr auto kDataStart = CachedMetadata::kDataStart;
+        DCHECK_GE(m_serializedData.size(), kDataStart);
+        return m_serializedData.size() - kDataStart;
     }
 
 private:
-    // Reads an unsigned value at position. Returns 0 on error.
-    unsigned readUnsigned(size_t position) const
-    {
-        if (m_serializedData.size() < position + sizeof(unsigned))
-            return 0;
-        return *reinterpret_cast_ptr<unsigned*>(const_cast<char*>(m_serializedData.data() + position));
-    }
-
-    // Appends an unsigned value to the end of the serialized data.
-    void appendUnsigned(unsigned value)
-    {
-        m_serializedData.append(reinterpret_cast<const char*>(&value), sizeof(unsigned));
-    }
-
-    CachedMetadata(const char* data, size_t size)
-    {
-        // Serialized metadata should have non-empty data.
-        ASSERT(size > dataStart);
-
-        m_serializedData.append(data, size);
-    }
-
-    CachedMetadata(unsigned dataTypeID, const char* data, size_t size)
-    {
-        // Don't allow an ID of 0, it is used internally to indicate errors.
-        ASSERT(dataTypeID);
-        ASSERT(data);
-
-        appendUnsigned(dataTypeID);
-        m_serializedData.append(data, size);
-    }
-
-    // Serialization offsets. Format: [DATA_TYPE_ID][DATA].
-    static const size_t dataTypeIDStart = 0;
-    static const size_t dataStart = sizeof(unsigned);
+    CachedMetadata(const char* data, size_t);
+    CachedMetadata(uint32_t dataTypeID, const char* data, size_t);
 
     // Since the serialization format supports random access, storing it in
     // serialized form avoids need for a copy during serialization.
     Vector<char> m_serializedData;
+
+    // |m_serializedData| consists of 32 bits type ID and and actual data.
+    static constexpr size_t kDataStart = sizeof(uint32_t);
 };
 
 } // namespace blink

@@ -35,6 +35,7 @@
 #include "wtf/Allocator.h"
 #include "wtf/text/TextPosition.h"
 #include "wtf/text/WTFString.h"
+#include <stdint.h>
 #include <v8.h>
 
 namespace blink {
@@ -68,8 +69,8 @@ public:
     static v8::MaybeLocal<v8::Object> instantiateObject(v8::Isolate*, v8::Local<v8::Function>, int argc = 0, v8::Local<v8::Value> argv[] = 0);
     static v8::MaybeLocal<v8::Object> instantiateObjectInDocument(v8::Isolate*, v8::Local<v8::Function>, ExecutionContext*, int argc = 0, v8::Local<v8::Value> argv[] = 0);
 
-    static unsigned tagForParserCache(CachedMetadataHandler*);
-    static unsigned tagForCodeCache(CachedMetadataHandler*);
+    static uint32_t tagForParserCache(CachedMetadataHandler*);
+    static uint32_t tagForCodeCache(CachedMetadataHandler*);
     static void setCacheTimeStamp(CachedMetadataHandler*);
 
 
