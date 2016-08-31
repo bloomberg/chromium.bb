@@ -76,7 +76,8 @@ class UI_ANDROID_EXPORT WindowAndroid : public ViewAndroid {
   // Return whether the specified Android permission can be requested by Chrome.
   bool CanRequestPermission(const std::string& permission);
 
-  static WindowAndroid* createForTesting();
+  static WindowAndroid* CreateForTesting();
+  void DestroyForTesting();
 
  private:
   ~WindowAndroid() override;

@@ -120,6 +120,7 @@ source_set("context") {
     deps += [
       ":context_jni_headers",
       "//blimp/client/core/settings",
+      "//ui/android",
     ]
   }
 }
@@ -177,6 +178,7 @@ if (is_android) {
     deps = [
       "//base:base_java",
       "//blimp/client/public:public_headers_java",
+      "//ui/android:ui_java",
     ]
   }
 
@@ -192,6 +194,7 @@ if (is_android) {
       "//blimp/client/core/contents:contents_java",
       "//blimp/client/core/settings:settings_java",
       "//blimp/client/public:public_headers_java",
+      "//ui/android:ui_java",
     ]
   }
 

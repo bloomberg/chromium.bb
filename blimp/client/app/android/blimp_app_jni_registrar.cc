@@ -20,7 +20,7 @@ namespace {
 base::android::RegistrationMethod kBlimpRegistrationMethods[] = {
     {"BlimpClientSessionAndroid", BlimpClientSessionAndroid::RegisterJni},
     {"BlimpLibraryLoader", RegisterBlimpLibraryLoaderJni},
-    {"BlimpView", BlimpView::RegisterJni},
+    {"BlimpView", app::BlimpView::RegisterJni},
     {"SafeJson", safe_json::android::RegisterSafeJsonJni},
     {"TabControlFeatureAndroid", TabControlFeatureAndroid::RegisterJni},
     {"Toolbar", Toolbar::RegisterJni},

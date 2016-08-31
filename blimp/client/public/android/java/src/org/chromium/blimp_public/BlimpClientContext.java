@@ -7,6 +7,7 @@ package org.chromium.blimp_public;
 import android.preference.PreferenceFragment;
 
 import org.chromium.blimp_public.contents.BlimpContents;
+import org.chromium.ui.base.WindowAndroid;
 
 /**
  * BlimpClientContext is the Java representation of a native BlimpClientContext object.
@@ -19,8 +20,9 @@ public interface BlimpClientContext {
     /**
      * Creates a {@link BlimpContents} and takes ownership of it. The caller must call
      * {@link BlimpContents#destroy()} for destruction of the BlimpContents.
+     * @param windowAndroid the window this BlimpContents will be displayed in.
      */
-    BlimpContents createBlimpContents();
+    BlimpContents createBlimpContents(WindowAndroid windowAndroid);
 
     /**
      * @return If Blimp is supported with this build.

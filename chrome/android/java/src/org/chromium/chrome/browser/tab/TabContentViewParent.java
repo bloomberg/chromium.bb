@@ -29,19 +29,26 @@ public class TabContentViewParent extends FrameLayout {
     private final Behavior<?> mBehavior = new SnackbarAwareBehavior();
 
     private EmptyTabObserver mTabObserver = new EmptyTabObserver() {
+        /**
+         * @return the {@link View} to show for the given {@link Tab}.
+         */
+        private View getViewToShow(Tab tab) {
+            if (tab.getNativePage() != null) {
+                return tab.getNativePage().getView();
+            } else if (tab.getBlimpContents() != null) {
+                return tab.getBlimpContents().getView();
+            } else {
+                return tab.getContentViewCore().getContainerView();
+            }
+        }
+
         @Override
         public void onContentChanged(Tab tab) {
             // If the tab is frozen, both native page and content view are not ready.
             if (tab.isFrozen()) return;
-            View viewToShow = null;
-            if (tab.getNativePage() != null) {
-                viewToShow = tab.getNativePage().getView();
-                if (isShowing(viewToShow)) return;
 
-            } else {
-                viewToShow = tab.getContentViewCore().getContainerView();
-                if (isShowing(viewToShow)) return;
-            }
+            View viewToShow = getViewToShow(tab);
+            if (isShowing(viewToShow)) return;
 
             removeCurrentContent();
             LayoutParams lp = (LayoutParams) viewToShow.getLayoutParams();

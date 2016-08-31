@@ -39,7 +39,8 @@ DummyBlimpClientContext::~DummyBlimpClientContext() {}
 void DummyBlimpClientContext::SetDelegate(
     BlimpClientContextDelegate* delegate) {}
 
-std::unique_ptr<BlimpContents> DummyBlimpClientContext::CreateBlimpContents() {
+std::unique_ptr<BlimpContents> DummyBlimpClientContext::CreateBlimpContents(
+    gfx::NativeWindow window) {
   return nullptr;
 }
 

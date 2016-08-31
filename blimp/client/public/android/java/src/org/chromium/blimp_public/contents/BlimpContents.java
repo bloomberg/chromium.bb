@@ -4,6 +4,8 @@
 
 package org.chromium.blimp_public.contents;
 
+import android.view.ViewGroup;
+
 /**
  * BlimpContents is the Java representation of a native BlimpContents object.
  *
@@ -27,6 +29,11 @@ public interface BlimpContents {
      * Removes an observer from this BlimpContents.
      */
     void removeObserver(BlimpContentsObserver observer);
+
+    /**
+     * Returns a view that represents the content for this BlimpContents.
+     */
+    ViewGroup getView();
 
     /**
      * For BlimpContents that are owned by Java, this must be called before this BlimpContents is

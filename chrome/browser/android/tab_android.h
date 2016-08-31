@@ -179,7 +179,8 @@ class TabAndroid : public CoreTabHelperDelegate,
   base::android::ScopedJavaLocalRef<jobject> InitBlimpContents(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jobject>& j_profile);
+      const base::android::JavaParamRef<jobject>& j_profile,
+      jlong window_android_ptr);
   void UpdateDelegates(
         JNIEnv* env,
         const base::android::JavaParamRef<jobject>& obj,

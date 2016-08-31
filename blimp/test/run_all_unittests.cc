@@ -13,6 +13,7 @@
 #include "base/android/jni_android.h"
 #include "blimp/client/public/android/blimp_jni_registrar.h"
 #include "net/android/net_jni_registrar.h"
+#include "ui/android/ui_android_jni_registrar.h"
 #include "ui/gfx/android/gfx_jni_registrar.h"
 #endif
 
@@ -45,6 +46,10 @@ class BlimpTestSuite : public base::TestSuite {
     }
 
     if (!gfx::android::RegisterJni(env)) {
+      return false;
+    }
+
+    if (!ui::RegisterUIAndroidJni(env)) {
       return false;
     }
 

@@ -86,6 +86,7 @@ if (is_android) {
 
     deps = [
       "//third_party/android_tools:android_support_annotations_java",
+      "//ui/android:ui_java",
     ]
 
     # The enums are added here for convenience for embedders, so they can still

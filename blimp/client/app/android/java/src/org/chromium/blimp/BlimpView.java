@@ -25,7 +25,7 @@ import org.chromium.ui.UiUtils;
  * A {@link View} that will visually represent the Blimp rendered content.  This {@link View} starts
  * a native compositor.
  */
-@JNINamespace("blimp::client")
+@JNINamespace("blimp::client::app")
 public class BlimpView
         extends SurfaceView implements SurfaceHolder.Callback, View.OnLayoutChangeListener {
     private long mNativeBlimpViewPtr;

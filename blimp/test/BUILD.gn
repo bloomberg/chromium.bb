@@ -17,6 +17,10 @@ source_set("run_all_unittests") {
     "//mojo/edk/system",
     "//ui/gfx:gfx",
   ]
+
+  if (is_android) {
+    deps += [ "//ui/android" ]
+  }
 }
 
 source_set("support") {

@@ -40,13 +40,18 @@ bool WindowAndroid::RegisterWindowAndroid(JNIEnv* env) {
 WindowAndroid::~WindowAndroid() {
   DCHECK(parent_ == nullptr) << "WindowAndroid must be a root view.";
   DCHECK(!compositor_);
+  Java_WindowAndroid_clearNativePointer(AttachCurrentThread(), GetJavaObject());
 }
 
-WindowAndroid* WindowAndroid::createForTesting() {
+WindowAndroid* WindowAndroid::CreateForTesting() {
   JNIEnv* env = AttachCurrentThread();
   const JavaRef<jobject>& context = base::android::GetApplicationContext();
   return new WindowAndroid(
       env, Java_WindowAndroid_createForTesting(env, context).obj());
+}
+
+void WindowAndroid::DestroyForTesting() {
+  delete this;
 }
 
 void WindowAndroid::OnCompositingDidCommit() {

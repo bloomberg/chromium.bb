@@ -63,7 +63,8 @@ BlimpContentsManager::BlimpContentsManager(
 
 BlimpContentsManager::~BlimpContentsManager() {}
 
-std::unique_ptr<BlimpContentsImpl> BlimpContentsManager::CreateBlimpContents() {
+std::unique_ptr<BlimpContentsImpl> BlimpContentsManager::CreateBlimpContents(
+    gfx::NativeWindow window) {
   if (tab_exists_) return nullptr;
   tab_exists_ = true;
 
@@ -71,8 +72,8 @@ std::unique_ptr<BlimpContentsImpl> BlimpContentsManager::CreateBlimpContents() {
 
   std::unique_ptr<BlimpContentsImpl> new_contents =
       base::MakeUnique<BlimpContentsImpl>(
-          id, blimp_compositor_dependencies_, ime_feature_, navigation_feature_,
-          render_widget_feature_, tab_control_feature_);
+          id, window, blimp_compositor_dependencies_, ime_feature_,
+          navigation_feature_, render_widget_feature_, tab_control_feature_);
 
   // Create an observer entry for the contents.
   std::unique_ptr<BlimpContentsDeletionObserver> observer =

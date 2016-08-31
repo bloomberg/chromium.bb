@@ -23,7 +23,8 @@ class DummyBlimpClientContext : public BlimpClientContext {
 
   // BlimpClientContext implementation.
   void SetDelegate(BlimpClientContextDelegate* delegate) override;
-  std::unique_ptr<BlimpContents> CreateBlimpContents() override;
+  std::unique_ptr<BlimpContents> CreateBlimpContents(
+      gfx::NativeWindow window) override;
   void Connect() override;
 
  private:

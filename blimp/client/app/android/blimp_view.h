@@ -23,6 +23,8 @@ class BlimpCompositorManager;
 class BrowserCompositor;
 class RenderWidgetFeature;
 
+namespace app {
+
 // The native component of org.chromium.blimp.BlimpView.  This builds and
 // maintains a BlimpCompositorAndroid and handles notifying the compositor of
 // SurfaceView surface changes (size, creation, destruction, etc.).
@@ -40,7 +42,7 @@ class BlimpView {
             const gfx::Size& real_size,
             const gfx::Size& size,
             float dp_to_px,
-            RenderWidgetFeature* render_widget_feature);
+            blimp::client::RenderWidgetFeature* render_widget_feature);
 
   // Methods called from Java via JNI.
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& jobj);
@@ -117,6 +119,7 @@ class BlimpView {
   DISALLOW_COPY_AND_ASSIGN(BlimpView);
 };
 
+}  // namespace app
 }  // namespace client
 }  // namespace blimp
 

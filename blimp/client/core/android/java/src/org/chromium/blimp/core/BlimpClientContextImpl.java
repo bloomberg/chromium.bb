@@ -15,6 +15,7 @@ import org.chromium.blimp.core.settings.PreferencesUtil;
 import org.chromium.blimp_public.BlimpClientContext;
 import org.chromium.blimp_public.BlimpClientContextDelegate;
 import org.chromium.blimp_public.contents.BlimpContents;
+import org.chromium.ui.base.WindowAndroid;
 
 /**
  * BlimpClientContextImpl is a Java wrapper to allow communicating with the native
@@ -57,9 +58,10 @@ public class BlimpClientContextImpl implements BlimpClientContext, BlimpPreferen
     }
 
     @Override
-    public BlimpContents createBlimpContents() {
+    public BlimpContents createBlimpContents(WindowAndroid windowAndroid) {
         assert mNativeBlimpClientContextImplAndroid != 0;
-        return nativeCreateBlimpContentsJava(mNativeBlimpClientContextImplAndroid);
+        return nativeCreateBlimpContentsJava(
+                mNativeBlimpClientContextImplAndroid, windowAndroid.getNativePointer());
     }
 
     @Override
@@ -106,7 +108,7 @@ public class BlimpClientContextImpl implements BlimpClientContext, BlimpPreferen
     }
 
     private native BlimpContents nativeCreateBlimpContentsJava(
-            long nativeBlimpClientContextImplAndroid);
+            long nativeBlimpClientContextImplAndroid, long windowAndroidPtr);
 
     private native void nativeConnectFromJava(long nativeBlimpClientContextImplAndroid);
     private native void nativeInitSettingsPage(

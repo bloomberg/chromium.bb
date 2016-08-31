@@ -9,6 +9,7 @@
 #include "blimp/client/core/contents/blimp_contents_view.h"
 #include "blimp/client/core/contents/tab_control_feature.h"
 #include "blimp/client/public/contents/blimp_contents_observer.h"
+#include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_ANDROID)
 #include "blimp/client/core/contents/android/blimp_contents_impl_android.h"
@@ -26,6 +27,7 @@ const char kBlimpContentsImplAndroidKey[] = "blimp_contents_impl_android";
 
 BlimpContentsImpl::BlimpContentsImpl(
     int id,
+    gfx::NativeWindow window,
     BlimpCompositorDependencies* compositor_deps,
     ImeFeature* ime_feature,
     NavigationFeature* navigation_feature,
@@ -34,6 +36,7 @@ BlimpContentsImpl::BlimpContentsImpl(
     : navigation_controller_(this, navigation_feature),
       compositor_manager_(render_widget_feature, compositor_deps),
       id_(id),
+      window_(window),
       tab_control_feature_(tab_control_feature) {
   blimp_contents_view_ =
       BlimpContentsView::Create(this, compositor_manager_.layer());
@@ -64,6 +67,10 @@ BlimpContentsImplAndroid* BlimpContentsImpl::GetBlimpContentsImplAndroid() {
 
 BlimpNavigationControllerImpl& BlimpContentsImpl::GetNavigationController() {
   return navigation_controller_;
+}
+
+gfx::NativeWindow BlimpContentsImpl::GetNativeWindow() {
+  return window_;
 }
 
 void BlimpContentsImpl::AddObserver(BlimpContentsObserver* observer) {
@@ -98,6 +105,10 @@ void BlimpContentsImpl::OnNavigationStateChanged() {
 void BlimpContentsImpl::SetSizeAndScale(const gfx::Size& size,
                                         float device_pixel_ratio) {
   tab_control_feature_->SetSizeAndScale(size, device_pixel_ratio);
+}
+
+BlimpContentsView* BlimpContentsImpl::GetBlimpContentsView() {
+  return blimp_contents_view_.get();
 }
 
 }  // namespace client

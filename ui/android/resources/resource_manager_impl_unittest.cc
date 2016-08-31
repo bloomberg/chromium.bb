@@ -89,7 +89,7 @@ class MockLayerTreeHost : public cc::LayerTreeHost {
 class ResourceManagerTest : public testing::Test {
  public:
   ResourceManagerTest()
-      : window_android_(WindowAndroid::createForTesting()),
+      : window_android_(WindowAndroid::CreateForTesting()),
         resource_manager_(window_android_) {
     cc::LayerTreeHost::InitParams params;
     cc::LayerTreeSettings settings;

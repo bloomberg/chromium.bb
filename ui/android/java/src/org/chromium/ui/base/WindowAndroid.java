@@ -182,6 +182,11 @@ public class WindowAndroid {
         return new WindowAndroid(context);
     }
 
+    @CalledByNative
+    private void clearNativePointer() {
+        mNativeWindowAndroid = 0;
+    }
+
     /**
      * Set the delegate that will handle android permissions requests.
      */
@@ -502,8 +507,8 @@ public class WindowAndroid {
      */
     public void destroy() {
         if (mNativeWindowAndroid != 0) {
+            // Native code clears |mNativeWindowAndroid|.
             nativeDestroy(mNativeWindowAndroid);
-            mNativeWindowAndroid = 0;
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {

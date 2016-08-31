@@ -6,7 +6,10 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
+#include "base/memory/ptr_util.h"
 #include "blimp/client/core/contents/android/blimp_navigation_controller_impl_android.h"
+#include "blimp/client/core/contents/android/blimp_view.h"
+#include "blimp/client/core/contents/blimp_contents_view_android.h"
 #include "jni/BlimpContentsImpl_jni.h"
 
 namespace blimp {
@@ -36,12 +39,16 @@ BlimpContentsImplAndroid::BlimpContentsImplAndroid(
       blimp_navigation_controller_impl_android_(
           static_cast<BlimpNavigationControllerImpl*>(
               &(blimp_contents_impl->GetNavigationController()))) {
-  JNIEnv* env = base::android::AttachCurrentThread();
+  BlimpView* blimp_view = static_cast<BlimpContentsViewAndroid*>(
+                              blimp_contents_impl_->GetBlimpContentsView())
+                              ->GetBlimpView();
 
+  JNIEnv* env = base::android::AttachCurrentThread();
   java_obj_.Reset(env,
                   Java_BlimpContentsImpl_create(
                       env, reinterpret_cast<intptr_t>(this),
-                      blimp_navigation_controller_impl_android_.GetJavaObject())
+                      blimp_navigation_controller_impl_android_.GetJavaObject(),
+                      blimp_view->GetJavaObject())
                       .obj());
 }
 

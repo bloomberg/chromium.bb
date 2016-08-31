@@ -11,18 +11,26 @@
 
 namespace blimp {
 namespace client {
-class BlimpContentsImplAndroid;
+class BlimpContentsImpl;
+class BlimpView;
 
 class BlimpContentsViewAndroid : public BlimpContentsView {
  public:
-  explicit BlimpContentsViewAndroid(BlimpContentsImplAndroid* blimp_contents,
-                                    scoped_refptr<cc::Layer> contents_layer);
+  BlimpContentsViewAndroid(BlimpContentsImpl* blimp_contents,
+                           scoped_refptr<cc::Layer> contents_layer);
+  ~BlimpContentsViewAndroid() override;
 
   // BlimpContentsView implementation.
   gfx::NativeView GetNativeView() override;
 
+  // Returns the JNI-bridge for the Android View for this BlimpContentsView.
+  BlimpView* GetBlimpView();
+
  private:
-  ui::ViewAndroid view_;
+  std::unique_ptr<ui::ViewAndroid> view_;
+
+  // The JNI-bridge for the Android View for this BlimpContentsView.
+  std::unique_ptr<BlimpView> blimp_view_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpContentsViewAndroid);
 };

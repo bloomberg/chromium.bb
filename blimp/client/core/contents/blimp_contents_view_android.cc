@@ -6,7 +6,9 @@
 
 #include "base/memory/ptr_util.h"
 #include "blimp/client/core/contents/android/blimp_contents_impl_android.h"
+#include "blimp/client/core/contents/android/blimp_view.h"
 #include "cc/layers/layer.h"
+#include "ui/android/window_android.h"
 
 namespace blimp {
 namespace client {
@@ -15,21 +17,28 @@ namespace client {
 std::unique_ptr<BlimpContentsView> BlimpContentsView::Create(
     BlimpContentsImpl* blimp_contents,
     scoped_refptr<cc::Layer> contents_layer) {
-  return base::MakeUnique<BlimpContentsViewAndroid>(
-      blimp_contents->GetBlimpContentsImplAndroid(), contents_layer);
+  return base::MakeUnique<BlimpContentsViewAndroid>(blimp_contents,
+                                                    contents_layer);
 }
 
 BlimpContentsViewAndroid::BlimpContentsViewAndroid(
-    BlimpContentsImplAndroid* blimp_contents,
+    BlimpContentsImpl* blimp_contents,
     scoped_refptr<cc::Layer> contents_layer) {
-  // TODO(khushalsagar): Get the ViewAndroidDelegate from java after it has a
-  // BlimpView. Also get the WindowAndroid so this view can add itself as a
-  // child to it.
-  view_.SetLayer(contents_layer);
+  blimp_view_ = base::MakeUnique<BlimpView>(blimp_contents);
+  view_ = base::MakeUnique<ui::ViewAndroid>(
+      blimp_view_->CreateViewAndroidDelegate());
+  view_->SetLayer(contents_layer);
+  blimp_contents->GetNativeWindow()->AddChild(view_.get());
 }
 
+BlimpContentsViewAndroid::~BlimpContentsViewAndroid() = default;
+
 gfx::NativeView BlimpContentsViewAndroid::GetNativeView() {
-  return &view_;
+  return view_.get();
+}
+
+BlimpView* BlimpContentsViewAndroid::GetBlimpView() {
+  return blimp_view_.get();
 }
 
 }  // namespace client

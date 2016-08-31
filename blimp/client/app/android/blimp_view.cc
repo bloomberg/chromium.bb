@@ -11,6 +11,7 @@
 #include "blimp/client/app/compositor/browser_compositor.h"
 #include "blimp/client/core/compositor/blimp_compositor_dependencies.h"
 #include "blimp/client/core/compositor/blimp_compositor_manager.h"
+#include "blimp/client/core/render_widget/render_widget_feature.h"
 #include "blimp/client/support/compositor/compositor_dependencies_impl.h"
 #include "jni/BlimpView_jni.h"
 #include "ui/events/android/motion_event_android.h"
@@ -20,6 +21,7 @@ using base::android::JavaParamRef;
 
 namespace blimp {
 namespace client {
+namespace app {
 
 static jlong Init(JNIEnv* env,
                   const JavaParamRef<jobject>& jobj,
@@ -52,7 +54,7 @@ BlimpView::BlimpView(JNIEnv* env,
                      const gfx::Size& real_size,
                      const gfx::Size& size,
                      float dp_to_px,
-                     RenderWidgetFeature* render_widget_feature)
+                     blimp::client::RenderWidgetFeature* render_widget_feature)
     : device_scale_factor_(dp_to_px),
       current_surface_format_(0),
       window_(gfx::kNullAcceleratedWidget),
@@ -207,5 +209,6 @@ void BlimpView::OnSwapBuffersCompleted() {
   Java_BlimpView_onSwapBuffersCompleted(env, java_obj_);
 }
 
+}  // namespace app
 }  // namespace client
 }  // namespace blimp

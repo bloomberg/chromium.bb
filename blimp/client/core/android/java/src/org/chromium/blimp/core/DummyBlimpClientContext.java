@@ -11,6 +11,7 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.blimp_public.BlimpClientContext;
 import org.chromium.blimp_public.BlimpClientContextDelegate;
 import org.chromium.blimp_public.contents.BlimpContents;
+import org.chromium.ui.base.WindowAndroid;
 
 /**
  * A dummy implementation of the {@link BlimpClientContext}.
@@ -32,7 +33,7 @@ public class DummyBlimpClientContext implements BlimpClientContext {
     }
 
     @Override
-    public BlimpContents createBlimpContents() {
+    public BlimpContents createBlimpContents(WindowAndroid windowAndroid) {
         return null;
     }
 

@@ -13,6 +13,11 @@
 #include "blimp/client/support/compositor/mock_compositor_dependencies.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/native_widget_types.h"
+
+#if defined(OS_ANDROID)
+#include "ui/android/window_android.h"
+#endif  // defined(OS_ANDROID)
 
 using testing::_;
 
@@ -23,6 +28,23 @@ const int kDummyTabId = 0;
 namespace blimp {
 namespace client {
 namespace {
+
+class BlimpContentsManagerTest : public testing::Test {
+ public:
+  BlimpContentsManagerTest() = default;
+
+#if defined(OS_ANDROID)
+  void SetUp() override { window_ = ui::WindowAndroid::CreateForTesting(); }
+
+  void TearDown() override { window_->DestroyForTesting(); }
+#endif  // defined(OS_ANDROID)
+
+ protected:
+  gfx::NativeWindow window_ = nullptr;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BlimpContentsManagerTest);
+};
 
 class MockTabControlFeature : public TabControlFeature {
  public:
@@ -36,7 +58,7 @@ class MockTabControlFeature : public TabControlFeature {
   DISALLOW_COPY_AND_ASSIGN(MockTabControlFeature);
 };
 
-TEST(BlimpContentsManagerUnittest, GetExistingBlimpContents) {
+TEST_F(BlimpContentsManagerTest, GetExistingBlimpContents) {
   base::MessageLoop loop;
   RenderWidgetFeature render_widget_feature;
   MockTabControlFeature tab_control_feature;
@@ -49,14 +71,14 @@ TEST(BlimpContentsManagerUnittest, GetExistingBlimpContents) {
 
   EXPECT_CALL(tab_control_feature, CreateTab(_)).Times(1);
   std::unique_ptr<BlimpContentsImpl> blimp_contents =
-      blimp_contents_manager.CreateBlimpContents();
+      blimp_contents_manager.CreateBlimpContents(window_);
   int id = blimp_contents->id();
   BlimpContentsImpl* existing_contents =
       blimp_contents_manager.GetBlimpContents(id);
   EXPECT_EQ(blimp_contents.get(), existing_contents);
 }
 
-TEST(BlimpContentsManagerUnittest, GetNonExistingBlimpContents) {
+TEST_F(BlimpContentsManagerTest, GetNonExistingBlimpContents) {
   RenderWidgetFeature render_widget_feature;
   MockTabControlFeature tab_control_feature;
 
@@ -71,7 +93,7 @@ TEST(BlimpContentsManagerUnittest, GetNonExistingBlimpContents) {
   EXPECT_EQ(nullptr, existing_contents);
 }
 
-TEST(BlimpContentsManagerUnittest, GetDestroyedBlimpContents) {
+TEST_F(BlimpContentsManagerTest, GetDestroyedBlimpContents) {
   base::MessageLoop loop;
   RenderWidgetFeature render_widget_feature;
   MockTabControlFeature tab_control_feature;
@@ -84,7 +106,7 @@ TEST(BlimpContentsManagerUnittest, GetDestroyedBlimpContents) {
 
   EXPECT_CALL(tab_control_feature, CreateTab(_)).Times(1);
   std::unique_ptr<BlimpContentsImpl> blimp_contents =
-      blimp_contents_manager.CreateBlimpContents();
+      blimp_contents_manager.CreateBlimpContents(window_);
   id = blimp_contents.get()->id();
   BlimpContentsImpl* existing_contents =
       blimp_contents_manager.GetBlimpContents(id);
@@ -98,7 +120,7 @@ TEST(BlimpContentsManagerUnittest, GetDestroyedBlimpContents) {
 }
 
 // TODO(mlliu): remove this test case (http://crbug.com/642558)
-TEST(BlimpContentsManagerUnittest, CreateTwoBlimpContentsDestroyAndCreate) {
+TEST_F(BlimpContentsManagerTest, CreateTwoBlimpContentsDestroyAndCreate) {
   base::MessageLoop loop;
   RenderWidgetFeature render_widget_feature;
   MockTabControlFeature tab_control_feature;
@@ -110,16 +132,16 @@ TEST(BlimpContentsManagerUnittest, CreateTwoBlimpContentsDestroyAndCreate) {
 
   EXPECT_CALL(tab_control_feature, CreateTab(_)).Times(2);
   std::unique_ptr<BlimpContentsImpl> blimp_contents =
-      blimp_contents_manager.CreateBlimpContents();
+      blimp_contents_manager.CreateBlimpContents(window_);
   EXPECT_NE(blimp_contents, nullptr);
 
   std::unique_ptr<BlimpContentsImpl> second_blimp_contents =
-      blimp_contents_manager.CreateBlimpContents();
+      blimp_contents_manager.CreateBlimpContents(window_);
   EXPECT_EQ(second_blimp_contents, nullptr);
 
   blimp_contents.reset();
   std::unique_ptr<BlimpContentsImpl> third_blimp_contents =
-      blimp_contents_manager.CreateBlimpContents();
+      blimp_contents_manager.CreateBlimpContents(window_);
   EXPECT_NE(third_blimp_contents, nullptr);
 }
 

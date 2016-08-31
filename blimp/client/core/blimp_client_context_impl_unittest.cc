@@ -17,6 +17,11 @@
 #include "blimp/client/test/test_blimp_client_context_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/native_widget_types.h"
+
+#if defined(OS_ANDROID)
+#include "ui/android/window_android.h"
+#endif  // defined(OS_ANDROID)
 
 namespace blimp {
 namespace client {
@@ -31,15 +36,22 @@ class BlimpClientContextImplTest : public testing::Test {
     base::Thread::Options options;
     options.message_loop_type = base::MessageLoop::TYPE_IO;
     io_thread_.StartWithOptions(options);
+#if defined(OS_ANDROID)
+    window_ = ui::WindowAndroid::CreateForTesting();
+#endif  // defined(OS_ANDROID)
   }
 
   void TearDown() override {
     io_thread_.Stop();
     base::RunLoop().RunUntilIdle();
+#if defined(OS_ANDROID)
+    window_->DestroyForTesting();
+#endif  // defined(OS_ANDROID)
   }
 
  protected:
   base::Thread io_thread_;
+  gfx::NativeWindow window_ = nullptr;
 
  private:
   base::MessageLoop message_loop_;
@@ -62,7 +74,7 @@ TEST_F(BlimpClientContextImplTest,
       .RetiresOnSaturation();
 
   std::unique_ptr<BlimpContents> blimp_contents =
-      blimp_client_context.CreateBlimpContents();
+      blimp_client_context.CreateBlimpContents(window_);
   DCHECK(blimp_contents);
   DCHECK_EQ(blimp_contents.get(), attached_blimp_contents);
 }

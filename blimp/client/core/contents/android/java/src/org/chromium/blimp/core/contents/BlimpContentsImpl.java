@@ -4,6 +4,8 @@
 
 package org.chromium.blimp.core.contents;
 
+import android.view.ViewGroup;
+
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.blimp_public.contents.BlimpContents;
@@ -17,9 +19,10 @@ import org.chromium.blimp_public.contents.BlimpNavigationController;
 @JNINamespace("blimp::client")
 public class BlimpContentsImpl implements BlimpContents {
     @CalledByNative
-    private static BlimpContentsImpl create(
-            long nativeBlimpContentsImplAndroid, BlimpNavigationController navigationController) {
-        return new BlimpContentsImpl(nativeBlimpContentsImplAndroid, navigationController);
+    private static BlimpContentsImpl create(long nativeBlimpContentsImplAndroid,
+            BlimpNavigationController navigationController, BlimpView blimpView) {
+        return new BlimpContentsImpl(
+                nativeBlimpContentsImplAndroid, navigationController, blimpView);
     }
 
     private long mNativeBlimpContentsImplAndroid;
@@ -33,10 +36,14 @@ public class BlimpContentsImpl implements BlimpContents {
     // single JNI hop for each call to observers.
     private BlimpContentsObserverProxy mObserverProxy;
 
-    private BlimpContentsImpl(
-            long nativeBlimpContentsImplAndroid, BlimpNavigationController navigationController) {
+    // The Android View for this BlimpContents.
+    private BlimpView mBlimpView;
+
+    private BlimpContentsImpl(long nativeBlimpContentsImplAndroid,
+            BlimpNavigationController navigationController, BlimpView blimpView) {
         mNativeBlimpContentsImplAndroid = nativeBlimpContentsImplAndroid;
         mBlimpNavigationController = navigationController;
+        mBlimpView = blimpView;
     }
 
     @CalledByNative
@@ -53,6 +60,11 @@ public class BlimpContentsImpl implements BlimpContents {
     private long getNativePtr() {
         assert mNativeBlimpContentsImplAndroid != 0;
         return mNativeBlimpContentsImplAndroid;
+    }
+
+    @Override
+    public ViewGroup getView() {
+        return mBlimpView;
     }
 
     @Override

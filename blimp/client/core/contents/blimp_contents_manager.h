@@ -8,6 +8,8 @@
 #include <map>
 
 #include "base/memory/weak_ptr.h"
+#include "blimp/client/core/contents/blimp_contents_impl.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace blimp {
 namespace client {
@@ -36,7 +38,8 @@ class BlimpContentsManager {
   // Builds a BlimpContentsImpl and notifies the engine.
   // TODO(mlliu): Currently we want to have a single BlimpContents. If there is
   // an existing contents, return nullptr (http://crbug.com/642558).
-  std::unique_ptr<BlimpContentsImpl> CreateBlimpContents();
+  std::unique_ptr<BlimpContentsImpl> CreateBlimpContents(
+      gfx::NativeWindow window);
 
   // The caller can query the contents through its id.
   BlimpContentsImpl* GetBlimpContents(int id);

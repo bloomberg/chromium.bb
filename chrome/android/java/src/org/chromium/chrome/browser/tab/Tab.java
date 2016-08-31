@@ -1504,7 +1504,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             if (isBlimpTab() && getBlimpContents() == null) {
                 Profile profile = Profile.getLastUsedProfile();
                 if (mIncognito) profile = profile.getOffTheRecordProfile();
-                mBlimpContents = nativeInitBlimpContents(mNativeTabAndroid, profile);
+                mBlimpContents = nativeInitBlimpContents(
+                        mNativeTabAndroid, profile, mWindowAndroid.getNativePointer());
                 if (mBlimpContents != null) {
                     getBlimpContents().addObserver(new TabBlimpContentsObserver(this));
                 } else {
@@ -3318,7 +3319,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     private native void nativeInitWebContents(long nativeTabAndroid, boolean incognito,
             WebContents webContents, TabWebContentsDelegateAndroid delegate,
             ContextMenuPopulator contextMenuPopulator);
-    private native BlimpContents nativeInitBlimpContents(long nativeTabAndroid, Profile profile);
+    private native BlimpContents nativeInitBlimpContents(
+            long nativeTabAndroid, Profile profile, long windowAndroidPtr);
     private native void nativeUpdateDelegates(long nativeTabAndroid,
             TabWebContentsDelegateAndroid delegate, ContextMenuPopulator contextMenuPopulator);
     private native void nativeDestroyWebContents(long nativeTabAndroid, boolean deleteNative);

@@ -21,6 +21,7 @@
 #include "blimp/client/core/settings/settings_feature.h"
 #include "blimp/client/public/blimp_client_context_delegate.h"
 #include "blimp/client/public/compositor/compositor_dependencies.h"
+#include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_ANDROID)
 #include "blimp/client/core/android/blimp_client_context_impl_android.h"
@@ -103,9 +104,10 @@ void BlimpClientContextImpl::SetDelegate(BlimpClientContextDelegate* delegate) {
   delegate_ = delegate;
 }
 
-std::unique_ptr<BlimpContents> BlimpClientContextImpl::CreateBlimpContents() {
+std::unique_ptr<BlimpContents> BlimpClientContextImpl::CreateBlimpContents(
+    gfx::NativeWindow window) {
   std::unique_ptr<BlimpContents> blimp_contents =
-      blimp_contents_manager_->CreateBlimpContents();
+      blimp_contents_manager_->CreateBlimpContents(window);
   if (blimp_contents)
     delegate_->AttachBlimpContentsHelpers(blimp_contents.get());
   return blimp_contents;

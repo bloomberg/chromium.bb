@@ -87,6 +87,7 @@
 #include "skia/ext/image_operations.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "ui/android/view_android.h"
+#include "ui/android/window_android.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/display/display.h"
@@ -423,13 +424,16 @@ void TabAndroid::InitWebContents(
 base::android::ScopedJavaLocalRef<jobject> TabAndroid::InitBlimpContents(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jobject>& j_profile) {
+    const JavaParamRef<jobject>& j_profile,
+    jlong window_android_ptr) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile.obj());
   DCHECK(!profile->IsOffTheRecord());
   blimp::client::BlimpClientContext* context =
       BlimpClientContextFactory::GetForBrowserContext(profile);
   DCHECK(context);
-  blimp_contents_ = context->CreateBlimpContents();
+  ui::WindowAndroid* window =
+      reinterpret_cast<ui::WindowAndroid*>(window_android_ptr);
+  blimp_contents_ = context->CreateBlimpContents(window);
   DCHECK(blimp_contents_);
 
   // Let's detach the layer from WebContents first, just to be sure.

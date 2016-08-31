@@ -14,6 +14,11 @@
 #include "blimp/client/support/compositor/mock_compositor_dependencies.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/native_widget_types.h"
+
+#if defined(OS_ANDROID)
+#include "ui/android/window_android.h"
+#endif  // defined(OS_ANDROID)
 
 namespace blimp {
 namespace client {
@@ -45,15 +50,32 @@ class MockTabControlFeature : public TabControlFeature {
   DISALLOW_COPY_AND_ASSIGN(MockTabControlFeature);
 };
 
-TEST(BlimpContentsImplTest, LoadURLAndNotifyObservers) {
+class BlimpContentsImplTest : public testing::Test {
+ public:
+  BlimpContentsImplTest() = default;
+
+#if defined(OS_ANDROID)
+  void SetUp() override { window_ = ui::WindowAndroid::CreateForTesting(); }
+
+  void TearDown() override { window_->DestroyForTesting(); }
+#endif  // defined(OS_ANDROID)
+
+ protected:
+  gfx::NativeWindow window_ = nullptr;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BlimpContentsImplTest);
+};
+
+TEST_F(BlimpContentsImplTest, LoadURLAndNotifyObservers) {
   base::MessageLoop loop;
   FakeNavigationFeature navigation_feature;
   RenderWidgetFeature render_widget_feature;
   BlimpCompositorDependencies compositor_deps(
       base::MakeUnique<MockCompositorDependencies>());
-  BlimpContentsImpl blimp_contents(kDummyTabId, &compositor_deps, nullptr,
-                                   &navigation_feature, &render_widget_feature,
-                                   nullptr);
+  BlimpContentsImpl blimp_contents(kDummyTabId, window_, &compositor_deps,
+                                   nullptr, &navigation_feature,
+                                   &render_widget_feature, nullptr);
 
   BlimpNavigationControllerImpl& navigation_controller =
       blimp_contents.GetNavigationController();
@@ -78,7 +100,7 @@ TEST(BlimpContentsImplTest, LoadURLAndNotifyObservers) {
   EXPECT_EQ(kOtherExampleURL, navigation_controller.GetURL().spec());
 }
 
-TEST(BlimpContentsImplTest, SetSizeAndScaleThroughTabControlFeature) {
+TEST_F(BlimpContentsImplTest, SetSizeAndScaleThroughTabControlFeature) {
   int width = 10;
   int height = 15;
   float dp_to_px = 1.23f;
@@ -88,8 +110,8 @@ TEST(BlimpContentsImplTest, SetSizeAndScaleThroughTabControlFeature) {
   base::MessageLoop loop;
   BlimpCompositorDependencies compositor_deps(
       base::MakeUnique<MockCompositorDependencies>());
-  BlimpContentsImpl blimp_contents(kDummyTabId, &compositor_deps, nullptr,
-                                   nullptr, &render_widget_feature,
+  BlimpContentsImpl blimp_contents(kDummyTabId, window_, &compositor_deps,
+                                   nullptr, nullptr, &render_widget_feature,
                                    &tab_control_feature);
 
   EXPECT_CALL(tab_control_feature,

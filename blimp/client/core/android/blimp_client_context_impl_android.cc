@@ -12,6 +12,7 @@
 #include "blimp/client/public/blimp_client_context.h"
 #include "blimp/client/public/compositor/compositor_dependencies.h"
 #include "jni/BlimpClientContextImpl_jni.h"
+#include "ui/android/window_android.h"
 
 namespace blimp {
 namespace client {
@@ -66,10 +67,15 @@ BlimpClientContextImplAndroid::GetJavaObject() {
 }
 
 base::android::ScopedJavaLocalRef<jobject>
-BlimpClientContextImplAndroid::CreateBlimpContentsJava(JNIEnv* env,
-                                                       jobject jobj) {
+BlimpClientContextImplAndroid::CreateBlimpContentsJava(
+    JNIEnv* env,
+    jobject jobj,
+    jlong window_android_ptr) {
+  ui::WindowAndroid* window_android =
+      reinterpret_cast<ui::WindowAndroid*>(window_android_ptr);
   std::unique_ptr<BlimpContents> blimp_contents =
-      BlimpClientContextImpl::CreateBlimpContents();
+      CreateBlimpContents(window_android);
+
   // This intentionally releases the ownership and gives it to Java.
   BlimpContentsImpl* blimp_contents_impl =
       static_cast<BlimpContentsImpl*>(blimp_contents.release());

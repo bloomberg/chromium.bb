@@ -13,6 +13,7 @@
 #include "blimp/client/public/blimp_client_context_delegate.h"
 #include "blimp/client/public/contents/blimp_contents.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
@@ -56,10 +57,11 @@ class BlimpClientContext : public KeyedService {
   // The delegate provides all the required functionality from the embedder.
   virtual void SetDelegate(BlimpClientContextDelegate* delegate) = 0;
 
-  // Creates a new BlimpContents.
+  // Creates a new BlimpContents that will be shown in |window|.
   // TODO(mlliu): Currently we want to have a single BlimpContents. If there is
   // an existing contents, return nullptr (http://crbug.com/642558).
-  virtual std::unique_ptr<BlimpContents> CreateBlimpContents() = 0;
+  virtual std::unique_ptr<BlimpContents> CreateBlimpContents(
+      gfx::NativeWindow window) = 0;
 
   // Start authentication flow and connection to engine.
   virtual void Connect() = 0;

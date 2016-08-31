@@ -12,6 +12,7 @@
 #include "blimp/client/core/contents/blimp_navigation_controller_impl.h"
 #include "blimp/client/public/contents/blimp_contents.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
@@ -38,7 +39,9 @@ class BlimpContentsImpl : public BlimpContents,
                           public BlimpNavigationControllerDelegate {
  public:
   // Ownership of the features remains with the caller.
+  // |window| must be the platform specific window that this will be shown in.
   explicit BlimpContentsImpl(int id,
+                             gfx::NativeWindow window,
                              BlimpCompositorDependencies* compositor_deps,
                              ImeFeature* ime_feature,
                              NavigationFeature* navigation_feature,
@@ -59,6 +62,9 @@ class BlimpContentsImpl : public BlimpContents,
   void Show() override;
   void Hide() override;
 
+  // Returns the platform specific window that this BlimpContents is showed in.
+  gfx::NativeWindow GetNativeWindow();
+
   // Check if some observer is in the observer list.
   bool HasObserver(BlimpContentsObserver* observer);
 
@@ -70,6 +76,12 @@ class BlimpContentsImpl : public BlimpContents,
   void SetSizeAndScale(const gfx::Size& size, float device_pixel_ratio);
 
   int id() { return id_; }
+
+  // Returns the BlimpContentsView for this BlimpContentsImpl.
+  BlimpContentsView* GetBlimpContentsView();
+
+  // TODO(nyquist): Remove this once the Android BlimpView uses a delegate.
+  BlimpCompositorManager* compositor_manager() { return &compositor_manager_; }
 
  private:
   // Handles the back/forward list and loading URLs.
@@ -86,6 +98,9 @@ class BlimpContentsImpl : public BlimpContents,
   // The id is assigned during contents creation. It is used by
   // BlimpContentsManager to control the life time of the its observer.
   int id_;
+
+  // The platform specific window that this BlimpContents is showed in.
+  gfx::NativeWindow window_;
 
   // The tab control feature through which the BlimpContentsImpl is able to
   // set size and scale.

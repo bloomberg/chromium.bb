@@ -11,6 +11,7 @@ import org.chromium.blimp.core.settings.BlimpPreferencesDelegate;
 import org.chromium.blimp_public.BlimpClientContext;
 import org.chromium.blimp_public.BlimpClientContextDelegate;
 import org.chromium.blimp_public.contents.BlimpContents;
+import org.chromium.ui.base.WindowAndroid;
 
 /**
  * Mock {@link BlimpClientContext}.
@@ -37,7 +38,7 @@ public class MockBlimpClientContext implements BlimpClientContext, BlimpPreferen
     }
 
     @Override
-    public BlimpContents createBlimpContents() {
+    public BlimpContents createBlimpContents(WindowAndroid window) {
         return null;
     }
 
