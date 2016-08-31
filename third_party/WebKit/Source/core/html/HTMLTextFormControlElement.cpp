@@ -190,7 +190,10 @@ void HTMLTextFormControlElement::setSelectionDirection(const String& direction)
 void HTMLTextFormControlElement::select()
 {
     setSelectionRangeForBinding(0, std::numeric_limits<int>::max());
-    focus();
+    // Avoid SelectionBehaviorOnFocus::Restore, which scrolls containers to show
+    // the selection.
+    focus(FocusParams(SelectionBehaviorOnFocus::None, WebFocusTypeNone, nullptr));
+    restoreCachedSelection();
 }
 
 bool HTMLTextFormControlElement::shouldDispatchFormControlChangeEvent(String& oldValue, String& newValue)
