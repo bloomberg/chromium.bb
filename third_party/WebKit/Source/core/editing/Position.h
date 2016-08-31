@@ -173,8 +173,8 @@ public:
     static PositionTemplate<Strategy> firstPositionInOrBeforeNode(Node* anchorNode);
     static PositionTemplate<Strategy> lastPositionInOrAfterNode(Node* anchorNode);
 
-#ifndef NDEBUG
     String toAnchorTypeAndOffsetString() const;
+#ifndef NDEBUG
     void showTreeForThis() const;
     void showTreeForThisInFlatTree() const;
 #endif

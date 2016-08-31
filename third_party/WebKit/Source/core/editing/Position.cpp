@@ -574,33 +574,31 @@ Position toPositionInDOMTree(const PositionInFlatTree& position)
     }
 }
 
-#ifndef NDEBUG
-
 template <typename Strategy>
 String PositionTemplate<Strategy>::toAnchorTypeAndOffsetString() const
 {
-    StringBuilder builder;
     switch (anchorType()) {
-    case PositionAnchorType::OffsetInAnchor:
-        builder.append("offset");
-        break;
-    case PositionAnchorType::BeforeChildren:
-        builder.append("beforeChildren");
-        break;
-    case PositionAnchorType::AfterChildren:
-        builder.append("afterChildren");
-        break;
-    case PositionAnchorType::BeforeAnchor:
-        builder.append("before");
-        break;
-    case PositionAnchorType::AfterAnchor:
-        builder.append("after");
-        break;
+    case PositionAnchorType::OffsetInAnchor: {
+        StringBuilder builder;
+        builder.append("offsetInAnchor[");
+        builder.append(m_offset);
+        builder.append("]");
+        return builder.toString();
     }
-    builder.append(", offset:");
-    builder.append(m_offset);
-    return builder.toString();
+    case PositionAnchorType::BeforeChildren:
+        return "beforeChildren";
+    case PositionAnchorType::AfterChildren:
+        return "afterChildren";
+    case PositionAnchorType::BeforeAnchor:
+        return "beforeAnchor";
+    case PositionAnchorType::AfterAnchor:
+        return "afterAnchor";
+    }
+    NOTREACHED();
+    return emptyString();
 }
+
+#ifndef NDEBUG
 
 template <typename Strategy>
 void PositionTemplate<Strategy>::showTreeForThis() const
@@ -629,10 +627,7 @@ static std::ostream& printPosition(std::ostream& ostream, const PositionType& po
 {
     if (position.isNull())
         return ostream << "null";
-    ostream << position.anchorNode() << "@";
-    if (position.isOffsetInAnchor())
-        return ostream << position.offsetInContainerNode();
-    return ostream << position.anchorType();
+    return ostream << position.anchorNode() << "@" << position.toAnchorTypeAndOffsetString().utf8().data();
 }
 
 std::ostream& operator<<(std::ostream& ostream, PositionAnchorType anchorType)
