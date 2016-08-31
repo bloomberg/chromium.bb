@@ -163,7 +163,7 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
 
         TabModelImpl normalModel = new TabModelImpl(false, mRegularTabCreator, mIncognitoTabCreator,
                 mUma, mOrderController, mTabContentManager, mTabSaver, this, mIsUndoSupported);
-        TabModel incognitoModel = new OffTheRecordTabModel(new OffTheRecordTabModelImplCreator(
+        TabModel incognitoModel = new IncognitoTabModel(new OffTheRecordTabModelImplCreator(
                 mRegularTabCreator, mIncognitoTabCreator, mUma, mOrderController,
                 mTabContentManager, mTabSaver, this));
         initialize(isIncognitoSelected(), normalModel, incognitoModel);

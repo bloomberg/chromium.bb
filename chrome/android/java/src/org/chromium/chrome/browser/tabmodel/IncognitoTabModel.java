@@ -22,25 +22,25 @@ import org.chromium.chrome.browser.tab.Tab;
  * no Tabs remain, the native model will be destroyed and only rebuilt when a new incognito Tab
  * is created.
  */
-public class OffTheRecordTabModel implements TabModel {
-    /** Creates TabModels for use in OffTheRecordModel. */
-    public interface OffTheRecordTabModelDelegate {
+public class IncognitoTabModel implements TabModel {
+    /** Creates TabModels for use in IncognitoModel. */
+    public interface IncognitoTabModelDelegate {
         /** Creates a fully working TabModel to delegate calls to. */
         TabModel createTabModel();
 
-        /** @return Whether OffTheRecord Tabs exist. */
-        boolean doOffTheRecordTabsExist();
+        /** @return Whether Incognito Tabs exist. */
+        boolean doIncognitoTabsExist();
     }
 
-    private final OffTheRecordTabModelDelegate mDelegate;
+    private final IncognitoTabModelDelegate mDelegate;
     private final ObserverList<TabModelObserver> mObservers = new ObserverList<TabModelObserver>();
     private TabModel mDelegateModel;
     private boolean mIsAddingTab;
 
     /**
-     * Constructor for OffTheRecordTabModel.
+     * Constructor for IncognitoTabModel.
      */
-    public OffTheRecordTabModel(OffTheRecordTabModelDelegate tabModelCreator) {
+    public IncognitoTabModel(IncognitoTabModelDelegate tabModelCreator) {
         mDelegate = tabModelCreator;
         mDelegateModel = EmptyTabModel.getInstance();
     }
@@ -60,7 +60,7 @@ public class OffTheRecordTabModel implements TabModel {
     }
 
     /**
-     * @return The TabModel that this {@link OffTheRecordTabModel} is delegating calls to.
+     * @return The TabModel that this {@link IncognitoTabModel} is delegating calls to.
      */
     protected TabModel getDelegateModel() {
         return mDelegateModel;
@@ -81,7 +81,7 @@ public class OffTheRecordTabModel implements TabModel {
 
         // Only delete the incognito profile if there are no incognito tabs open in any tab
         // model selector as the profile is shared between them.
-        if (profile != null && !mDelegate.doOffTheRecordTabsExist()) {
+        if (profile != null && !mDelegate.doIncognitoTabsExist()) {
             IncognitoNotificationManager.dismissIncognitoNotification();
 
             profile.destroyWhenAppropriate();

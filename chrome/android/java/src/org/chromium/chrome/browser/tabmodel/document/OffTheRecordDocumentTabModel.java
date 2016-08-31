@@ -7,19 +7,19 @@ package org.chromium.chrome.browser.tabmodel.document;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.incognito.IncognitoNotificationManager;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModel;
-import org.chromium.chrome.browser.tabmodel.OffTheRecordTabModel;
+import org.chromium.chrome.browser.tabmodel.IncognitoTabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 
 /**
- * Implements an OffTheRecord version of the DocumentTabModel.  Timing is a little bit different for
+ * Implements an Incognito version of the DocumentTabModel.  Timing is a little bit different for
  * profile deletion because we don't get all the signals we'd expect when Tabs are closed.  More
  * specifically, Android doesn't fire signals when tasks are swiped away from the Recents menu if
  * the Activity is dead when it occurs.
  */
-public class OffTheRecordDocumentTabModel extends OffTheRecordTabModel implements DocumentTabModel {
+public class OffTheRecordDocumentTabModel extends IncognitoTabModel implements DocumentTabModel {
     private final ActivityDelegate mActivityDelegate;
 
-    public OffTheRecordDocumentTabModel(OffTheRecordTabModelDelegate offTheRecordDelegate,
+    public OffTheRecordDocumentTabModel(IncognitoTabModelDelegate offTheRecordDelegate,
             ActivityDelegate delegate) {
         super(offTheRecordDelegate);
         mActivityDelegate = delegate;

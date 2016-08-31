@@ -14,9 +14,9 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 import org.chromium.content_public.browser.LoadUrlParams;
 
 /**
- * Tests for OffTheRecordTabModel.
+ * Tests for IncognitoTabModel.
  */
-public class OffTheRecordTabModelTest extends ChromeTabbedActivityTestBase {
+public class IncognitoTabModelTest extends ChromeTabbedActivityTestBase {
     private TabModel mTabModel;
 
     @Override

@@ -16,7 +16,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabIdManager;
-import org.chromium.chrome.browser.tabmodel.OffTheRecordTabModel.OffTheRecordTabModelDelegate;
+import org.chromium.chrome.browser.tabmodel.IncognitoTabModel.IncognitoTabModelDelegate;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
@@ -92,7 +92,7 @@ public class DocumentTabModelSelector extends TabModelSelectorBase implements Ta
         final Context context = ContextUtils.getApplicationContext();
         mRegularTabModel = new DocumentTabModelImpl(
                 mActivityDelegate, mStorageDelegate, this, false, sPrioritizedTabId, context);
-        mIncognitoTabModel = new OffTheRecordDocumentTabModel(new OffTheRecordTabModelDelegate() {
+        mIncognitoTabModel = new OffTheRecordDocumentTabModel(new IncognitoTabModelDelegate() {
             @Override
             public TabModel createTabModel() {
                 DocumentTabModel incognitoModel = new DocumentTabModelImpl(mActivityDelegate,
@@ -102,7 +102,7 @@ public class DocumentTabModelSelector extends TabModelSelectorBase implements Ta
             }
 
             @Override
-            public boolean doOffTheRecordTabsExist() {
+            public boolean doIncognitoTabsExist() {
                 // TODO(dfalcantara): Devices in document mode do not trigger the TabWindowManager.
                 //                    Revisit this when we have a Samsung L multi-instance device.
                 return mIncognitoTabModel.getCount() > 0;
