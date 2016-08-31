@@ -78,10 +78,10 @@ class ThreadWatcher {
   // base::Bind supports methods with up to 6 parameters. WatchingParams is used
   // as a workaround that limitation for invoking ThreadWatcher::StartWatching.
   struct WatchingParams {
-    const content::BrowserThread::ID& thread_id;
-    const std::string& thread_name;
-    const base::TimeDelta& sleep_time;
-    const base::TimeDelta& unresponsive_time;
+    content::BrowserThread::ID thread_id;
+    std::string thread_name;
+    base::TimeDelta sleep_time;
+    base::TimeDelta unresponsive_time;
     uint32_t unresponsive_threshold;
     bool crash_on_hang;
     uint32_t live_threads_threshold;
