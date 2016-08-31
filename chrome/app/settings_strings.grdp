@@ -1500,8 +1500,8 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_JAVASCRIPT" desc="Label for the javascript site settings.">
     Javascript
   </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_PLUGINS" desc="Label for the plugins site settings.">
-    Plugins
+  <message name="IDS_SETTINGS_SITE_SETTINGS_FLASH" desc="Label for the Flash site settings.">
+    Flash
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_POPUPS" desc="Label for the popups site settings.">
     Popups

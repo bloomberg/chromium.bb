@@ -1256,7 +1256,7 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source) {
       {"siteSettingsNotifications", IDS_SETTINGS_SITE_SETTINGS_NOTIFICATIONS},
       {"siteSettingsImages", IDS_SETTINGS_SITE_SETTINGS_IMAGES},
       {"siteSettingsJavascript", IDS_SETTINGS_SITE_SETTINGS_JAVASCRIPT},
-      {"siteSettingsPlugins", IDS_SETTINGS_SITE_SETTINGS_PLUGINS},
+      {"siteSettingsFlash", IDS_SETTINGS_SITE_SETTINGS_FLASH},
       {"siteSettingsPopups", IDS_SETTINGS_SITE_SETTINGS_POPUPS},
       {"siteSettingsUnsandboxedPlugins",
        IDS_SETTINGS_SITE_SETTINGS_UNSANDBOXED_PLUGINS},

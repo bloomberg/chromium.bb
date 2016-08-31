@@ -136,7 +136,7 @@ var SiteSettingsBehaviorImpl = {
       case settings.ContentSettingsTypes.NOTIFICATIONS:
         return settings.Route.SITE_SETTINGS_NOTIFICATIONS;
       case settings.ContentSettingsTypes.PLUGINS:
-        return settings.Route.SITE_SETTINGS_PLUGINS;
+        return settings.Route.SITE_SETTINGS_FLASH;
       case settings.ContentSettingsTypes.POPUPS:
         return settings.Route.SITE_SETTINGS_POPUPS;
       case settings.ContentSettingsTypes.PROTOCOL_HANDLERS:
@@ -230,7 +230,7 @@ var SiteSettingsBehaviorImpl = {
       case settings.ContentSettingsTypes.NOTIFICATIONS:
         return loadTimeData.getString('siteSettingsNotifications');
       case settings.ContentSettingsTypes.PLUGINS:
-        return loadTimeData.getString('siteSettingsPlugins');
+        return loadTimeData.getString('siteSettingsFlash');
       case settings.ContentSettingsTypes.POPUPS:
         return loadTimeData.getString('siteSettingsPopups');
       case settings.ContentSettingsTypes.PROTOCOL_HANDLERS:
