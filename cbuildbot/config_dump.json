@@ -18979,7 +18979,7 @@
         "_template": "toolchain",
         "active_waterfall": "chromeos",
         "boards": [
-            "peppy"
+            "falco"
         ],
         "buildslave_type": "gce_beefy",
         "description": "Full release build with LLVM toolchain",

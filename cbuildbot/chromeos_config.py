@@ -2339,7 +2339,7 @@ def GetConfig():
   site_config.Add(
       'peppy-llvm-toolchain',
       _toolchain, _llvm_builder,
-      boards=['peppy'],
+      boards=['falco'],
       buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
   )
 
