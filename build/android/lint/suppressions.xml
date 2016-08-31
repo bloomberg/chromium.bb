@@ -255,6 +255,7 @@ Still reading?
     <ignore regexp="blimp/client/app/android/java/res/layout/toolbar_popup_item.xml" />
     <ignore regexp="blimp/client/app/android/java/res/values/dimens.xml" />
     <ignore regexp="blimp/client/app/android/java/res/xml/about_blimp_preferences.xml" />
+    <ignore regexp="blimp/client/app/android/java/res/xml/blimp_preferences.xml" />
     <!--
         This file isn't used if the target SDK version is less than 24.
         TODO(estevenson) remove this and the conditional inclusion in

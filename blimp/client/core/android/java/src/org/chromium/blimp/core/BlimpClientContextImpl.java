@@ -6,13 +6,14 @@ package org.chromium.blimp.core;
 
 import android.preference.PreferenceFragment;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.blimp.core.settings.AboutBlimpPreferences;
+import org.chromium.blimp.core.settings.BlimpPreferencesDelegate;
 import org.chromium.blimp.core.settings.PreferencesUtil;
 import org.chromium.blimp_public.BlimpClientContext;
 import org.chromium.blimp_public.BlimpClientContextDelegate;
-import org.chromium.blimp_public.BlimpSettingsCallbacks;
 import org.chromium.blimp_public.contents.BlimpContents;
 
 /**
@@ -20,8 +21,7 @@ import org.chromium.blimp_public.contents.BlimpContents;
  * BlimpClientContextImpl object.
  */
 @JNINamespace("blimp::client")
-public class BlimpClientContextImpl implements BlimpClientContext {
-
+public class BlimpClientContextImpl implements BlimpClientContext, BlimpPreferencesDelegate {
     // Delegate that contains functions Blimp needed in the embedder.
     private BlimpClientContextDelegate mDelegate;
 
@@ -32,13 +32,14 @@ public class BlimpClientContextImpl implements BlimpClientContext {
      *
      * @return BlimpClientContextDelegate, which contains functions we need in embedder.
      */
+    @Override
     public BlimpClientContextDelegate getDelegate() {
         return mDelegate;
     }
 
     @Override
-    public void setDelegate(BlimpClientContextDelegate delegate) {
-        mDelegate = delegate;
+    public void initSettingsPage(AboutBlimpPreferences preferences) {
+        nativeInitSettingsPage(mNativeBlimpClientContextImplAndroid, preferences);
     }
 
     @CalledByNative
@@ -68,14 +69,18 @@ public class BlimpClientContextImpl implements BlimpClientContext {
 
     @Override
     public boolean isBlimpEnabled() {
-        return false;
+        return PreferencesUtil.isBlimpEnabled()
+                || CommandLine.getInstance().hasSwitch(BlimpClientSwitches.ENGINE_IP);
     }
 
     @Override
-    public void attachBlimpPreferences(
-            PreferenceFragment fragment, BlimpSettingsCallbacks callbacks) {
-        AboutBlimpPreferences.addBlimpPreferences(fragment);
-        AboutBlimpPreferences.registerCallback(callbacks);
+    public void attachBlimpPreferences(PreferenceFragment fragment) {
+        AboutBlimpPreferences.addBlimpPreferences(fragment, this);
+    }
+
+    @Override
+    public void setDelegate(BlimpClientContextDelegate delegate) {
+        mDelegate = delegate;
     }
 
     @Override
@@ -104,4 +109,6 @@ public class BlimpClientContextImpl implements BlimpClientContext {
             long nativeBlimpClientContextImplAndroid);
 
     private native void nativeConnectFromJava(long nativeBlimpClientContextImplAndroid);
+    private native void nativeInitSettingsPage(
+            long nativeBlimpClientContextImplAndroid, AboutBlimpPreferences preferences);
 }

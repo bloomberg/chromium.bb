@@ -10,7 +10,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-
 #include "blimp/client/public/blimp_client_context_delegate.h"
 #include "google_apis/gaia/identity_provider.h"
 #include "google_apis/gaia/oauth2_token_service.h"
@@ -33,6 +32,12 @@ class IdentitySource : public OAuth2TokenService::Consumer,
   // Start Blimp authentication by requesting OAuth2 token from Google.
   // Duplicate connect calls during token fetching will be ignored.
   void Connect();
+
+  // Add sign in state observer.
+  void AddObserver(IdentityProvider::Observer* observer);
+
+  // Remove sign in state observer.
+  void RemoveObserver(IdentityProvider::Observer* observer);
 
   // OAuth2TokenService::Consumer implementation.
   void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
@@ -67,6 +72,9 @@ class IdentitySource : public OAuth2TokenService::Consumer,
 
   // Account id of current active user, used during token request.
   std::string account_id_;
+
+  // Current retry count due to request cancellation.
+  int retry_times_;
 
   BlimpClientContextDelegate* delegate_;
 

@@ -19,7 +19,6 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.PasswordUIView;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.blimp.BlimpClientContextFactory;
-import org.chromium.chrome.browser.blimp.BlimpSettingsCallbacksImpl;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionPreferences;
@@ -250,6 +249,6 @@ public class MainPreferences extends PreferenceFragment implements SignInStateOb
     private void addBlimpPreferences() {
         BlimpClientContext blimpClientContext = BlimpClientContextFactory
                 .getBlimpClientContextForProfile(Profile.getLastUsedProfile().getOriginalProfile());
-        blimpClientContext.attachBlimpPreferences(this, new BlimpSettingsCallbacksImpl());
+        blimpClientContext.attachBlimpPreferences(this);
     }
 }

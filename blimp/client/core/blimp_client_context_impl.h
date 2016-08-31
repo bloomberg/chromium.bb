@@ -43,6 +43,8 @@ class BlimpClientContextImpl : public BlimpClientContext,
       scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner);
   ~BlimpClientContextImpl() override;
 
+  IdentitySource* GetIdentitySource();
+
   // BlimpClientContext implementation.
   void SetDelegate(BlimpClientContextDelegate* delegate) override;
   std::unique_ptr<BlimpContents> CreateBlimpContents() override;
@@ -58,6 +60,13 @@ class BlimpClientContextImpl : public BlimpClientContext,
   // Returns the URL to use for connections to the assigner. Used to construct
   // the AssignmentSource.
   virtual GURL GetAssignerURL();
+
+  // Create IdentitySource which provides user sign in states and OAuth2 token
+  // service.
+  void CreateIdentitySource();
+
+  // Provide OAuth2 token and propagate account sign in states change.
+  std::unique_ptr<IdentitySource> identity_source_;
 
  private:
   // Connect to assignment source with OAuth2 token to get an assignment.
@@ -95,9 +104,6 @@ class BlimpClientContextImpl : public BlimpClientContext,
   std::unique_ptr<ClientNetworkComponents> net_components_;
 
   std::unique_ptr<ThreadPipeManager> thread_pipe_manager_;
-
-  // Provide OAuth2 token and propagate account sign in states change.
-  std::unique_ptr<IdentitySource> identity_source_;
 
   base::WeakPtrFactory<BlimpClientContextImpl> weak_factory_;
 

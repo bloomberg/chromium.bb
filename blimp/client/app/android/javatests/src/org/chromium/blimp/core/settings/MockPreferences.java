@@ -17,9 +17,11 @@ public class MockPreferences extends Activity {
 
     public static final String FRAGMENT_TAG = "TestMainPref";
 
-    // Mock {@link MainPreferences} in Clank, this is a PreferenceFragment that holds a list of
-    // sub preferences items, including AboutBlimpPreferences.
-    static class MockMainPreferences extends PreferenceFragment {
+    /** Mock {@link MainPreferences} in Clank, this is a PreferenceFragment that holds a list of
+     * sub preferences items, including AboutBlimpPreferences.
+     */
+    @SuppressWarnings("javadoc")
+    public static class MockMainPreferences extends PreferenceFragment {
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);

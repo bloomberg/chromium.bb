@@ -7,6 +7,7 @@
 #include "base/android/jni_registrar.h"
 #include "blimp/client/core/android/blimp_client_context_impl_android.h"
 #include "blimp/client/core/contents/android/blimp_contents_jni_registrar.h"
+#include "blimp/client/core/settings/android/blimp_settings_android.h"
 
 namespace blimp {
 namespace client {
@@ -16,6 +17,7 @@ base::android::RegistrationMethod kBlimpRegistrationMethods[] = {
     {"BlimpClientContextImplAndroid",
      BlimpClientContextImplAndroid::RegisterJni},
     {"BlimpContentsJni", RegisterBlimpContentsJni},
+    {"BlimpSettingsAndroid", BlimpSettingsAndroid::RegisterJni},
 };
 
 }  // namespace

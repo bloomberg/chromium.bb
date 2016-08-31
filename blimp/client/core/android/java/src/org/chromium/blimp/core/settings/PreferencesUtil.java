@@ -10,7 +10,19 @@ import org.chromium.base.ContextUtils;
  * Blimp preferences utilities.
  */
 public class PreferencesUtil {
-    private static final String DEFAULT_ASSIGNER_URL =
+    /**
+     * Blimp switch preference key, also the key for this PreferenceFragment.
+     */
+    public static final String PREF_BLIMP_SWITCH = "blimp_switch";
+    /**
+     * Blimp assigner URL preference key.
+     */
+    public static final String PREF_ASSIGNER_URL = "blimp_assigner_url";
+
+    /**
+     * Default assigner URL.
+     */
+    public static final String DEFAULT_ASSIGNER_URL =
             "https://dev-blimp-pa.sandbox.googleapis.com/v1/assignment";
 
     /**
@@ -20,6 +32,13 @@ public class PreferencesUtil {
      */
     public static String getLastUsedAssigner() {
         return ContextUtils.getAppSharedPreferences().getString(
-                AboutBlimpPreferences.PREF_ASSIGNER_URL, DEFAULT_ASSIGNER_URL);
+                PREF_ASSIGNER_URL, DEFAULT_ASSIGNER_URL);
+    }
+
+    /**
+     * @return If Blimp switch preference in the setting page is turned on.
+     */
+    public static boolean isBlimpEnabled() {
+        return ContextUtils.getAppSharedPreferences().getBoolean(PREF_BLIMP_SWITCH, false);
     }
 }

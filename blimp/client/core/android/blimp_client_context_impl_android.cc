@@ -8,6 +8,7 @@
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "blimp/client/core/contents/blimp_contents_impl.h"
+#include "blimp/client/core/settings/android/blimp_settings_android.h"
 #include "blimp/client/public/blimp_client_context.h"
 #include "jni/BlimpClientContextImpl_jni.h"
 
@@ -82,6 +83,15 @@ GURL BlimpClientContextImplAndroid::GetAssignerURL() {
 
 void BlimpClientContextImplAndroid::ConnectFromJava(JNIEnv* env, jobject jobj) {
   BlimpClientContextImpl::Connect();
+}
+
+void BlimpClientContextImplAndroid::InitSettingsPage(JNIEnv* env,
+                                                     jobject jobj,
+                                                     jobject blimp_settings) {
+  BlimpSettingsAndroid* settings_android =
+      BlimpSettingsAndroid::FromJavaObject(env, blimp_settings);
+
+  settings_android->SetIdentitySource(GetIdentitySource());
 }
 
 }  // namespace client

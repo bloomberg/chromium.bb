@@ -392,15 +392,20 @@ if (is_android) {
       ":blimp_java",
       "//base:base_java",
       "//base:base_java_test_support",
-      "//blimp/client/core:settings_java",
+      "//blimp/client/core:common_java",
       "//blimp/client/core/contents:contents_java",
+      "//blimp/client/core/settings:settings_java",
       "//blimp/client/public:public_headers_java",
+      "//components/sync/android:sync_java",
+      "//third_party/android_tools:android_support_v7_appcompat_java",
       google_play_services_library,
     ]
 
     java_files = [
       "app/android/javatests/src/org/chromium/blimp/auth/MockTokenSource.java",
       "app/android/javatests/src/org/chromium/blimp/auth/RetryingTokenSourceTest.java",
+      "app/android/javatests/src/org/chromium/blimp/core/MockBlimpClientContext.java",
+      "app/android/javatests/src/org/chromium/blimp/core/MockBlimpClientContextDelegate.java",
       "app/android/javatests/src/org/chromium/blimp/core/settings/BlimpPreferencesTest.java",
       "app/android/javatests/src/org/chromium/blimp/core/settings/MockPreferences.java",
       "app/android/javatests/src/org/chromium/blimp/BlimpNativeInstrumentationTestCase.java",

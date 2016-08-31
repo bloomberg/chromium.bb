@@ -93,17 +93,16 @@ std::unique_ptr<BlimpContents> BlimpClientContextImpl::CreateBlimpContents() {
 }
 
 void BlimpClientContextImpl::Connect() {
-  // Lazy initialization of IdentitySource.
-  if (!identity_source_) {
-    identity_source_ = base::MakeUnique<IdentitySource>(
-        delegate_,
-        base::Bind(&BlimpClientContextImpl::ConnectToAssignmentSource,
-                   base::Unretained(this)));
-  }
-
   // Start Blimp authentication flow. The OAuth2 token will be used in
   // assignment source.
-  identity_source_->Connect();
+  GetIdentitySource()->Connect();
+}
+
+IdentitySource* BlimpClientContextImpl::GetIdentitySource() {
+  if (!identity_source_) {
+    CreateIdentitySource();
+  }
+  return identity_source_.get();
 }
 
 void BlimpClientContextImpl::ConnectToAssignmentSource(
@@ -163,6 +162,12 @@ void BlimpClientContextImpl::RegisterFeatures() {
   tab_control_feature_->set_outgoing_message_processor(
       thread_pipe_manager_->RegisterFeature(BlimpMessage::kTabControl,
                                             tab_control_feature_.get()));
+}
+
+void BlimpClientContextImpl::CreateIdentitySource() {
+  identity_source_ = base::MakeUnique<IdentitySource>(
+      delegate_, base::Bind(&BlimpClientContextImpl::ConnectToAssignmentSource,
+                            base::Unretained(this)));
 }
 
 }  // namespace client

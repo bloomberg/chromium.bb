@@ -37,6 +37,10 @@ class BlimpClientContextImplAndroid : public BlimpClientContextImpl {
   // Start authentication flow from Java.
   void ConnectFromJava(JNIEnv* env, jobject jobj);
 
+  // Initialize blimp settings page, this involves setup neccessary data in
+  // native for setting page.
+  void InitSettingsPage(JNIEnv* env, jobject jobj, jobject blimp_settings);
+
  protected:
   // BlimpClientContextImpl implementation.
   GURL GetAssignerURL() override;

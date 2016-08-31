@@ -167,7 +167,7 @@ TEST_F(IdentitySourceTest, TestConnect) {
   auth.ResetTestRecords();
 
   // Direct connect with refresh token, and no listener should be
-  // added.
+  // added. The request is a retry request.
   auth.Connect();
   auth.Connect();
   token_service->IssueAllTokensForAccount(account, mock_access_token, time);
@@ -175,6 +175,48 @@ TEST_F(IdentitySourceTest, TestConnect) {
   DCHECK_EQ(auth.Token(), mock_access_token);
   mock_token_service_delegate->UpdateCredentials(account, "mock_refresh_token");
   DCHECK_EQ(auth.Refreshed(), 0);
+  DCHECK_EQ(auth.TokenCallbackCount(), 1);
+  DCHECK_EQ(auth.CallbackToken(), mock_access_token);
+}
+
+// Test retry on token fetching when refresh token is updated during token
+// request.
+TEST_F(IdentitySourceTest, TestConnectRetry) {
+  TestBlimpClientContextDelegate mock_blimp_delegate;
+  MockIdentitySource auth(
+      &mock_blimp_delegate,
+      base::Bind(&MockIdentitySource::MockTokenCall, base::Unretained(&auth)));
+  FakeOAuth2TokenService* token_service = mock_blimp_delegate.GetTokenService();
+  FakeIdentityProvider* id_provider =
+      static_cast<FakeIdentityProvider*>(auth.GetIdentityProvider());
+
+  std::string account = "mock_account";
+  std::string mock_access_token = "mock_token";
+  id_provider->LogIn(account);
+
+  // Prepare refresh token.
+  FakeOAuth2TokenServiceDelegate* mock_token_service_delegate =
+      token_service->GetFakeOAuth2TokenServiceDelegate();
+  mock_token_service_delegate->UpdateCredentials(account, "mock_refresh_token");
+
+  // Connect and update the refresh token.
+  auth.Connect();
+  GoogleServiceAuthError error(GoogleServiceAuthError::State::REQUEST_CANCELED);
+  token_service->IssueErrorForAllPendingRequestsForAccount(account, error);
+
+  // At this point, the first request should be canceled, but there should be
+  // another retry request.
+  DCHECK_EQ(auth.Succeeded(), 0);
+  DCHECK_EQ(auth.Failed(), 1);
+  DCHECK_EQ(auth.Token(), std::string());
+  DCHECK_EQ(auth.TokenCallbackCount(), 0);
+  auth.ResetTestRecords();
+
+  // Trigger the second request without calling connect.
+  base::Time time;
+  token_service->IssueAllTokensForAccount(account, mock_access_token, time);
+  DCHECK_EQ(auth.Succeeded(), 1);
+  DCHECK_EQ(auth.Token(), mock_access_token);
   DCHECK_EQ(auth.TokenCallbackCount(), 1);
   DCHECK_EQ(auth.CallbackToken(), mock_access_token);
 }

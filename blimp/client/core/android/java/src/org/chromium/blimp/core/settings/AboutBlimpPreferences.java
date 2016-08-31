@@ -12,56 +12,87 @@ import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceScreen;
+import android.preference.SwitchPreference;
 import android.support.v7.app.AlertDialog;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 import org.chromium.blimp.R;
-import org.chromium.blimp_public.BlimpSettingsCallbacks;
+import org.chromium.components.sync.signin.ChromeSigninController;
 
 /**
- * Blimp preferences page in Chrome.
+ * Blimp preferences page in embedder.
  */
+@JNINamespace("blimp::client")
 public class AboutBlimpPreferences extends PreferenceFragment {
-
     /**
-     * Blimp switch preference key, also the key for this PreferenceFragment.
+     * If this fragment is waiting for user sign in.
      */
-    public static final String PREF_BLIMP_SWITCH = "blimp_switch";
-    /**
-     * Blimp assigner URL preference key.
-     */
-    public static final String PREF_ASSIGNER_URL = "blimp_assigner_url";
+    @VisibleForTesting
+    protected boolean mWaitForSignIn = false;
 
-    private static BlimpSettingsCallbacks sSettingsCallback;
+    private static BlimpPreferencesDelegate sPreferencesDelegate;
+
+    private long mNativeBlimpSettingsAndroid;
 
     /**
      * Attach the blimp setting preferences to a {@link PreferenceFragment}.
+     * And Set the delegate.
      * @param fragment The fragment that blimp setting attach to.
+     * @param delegate {@link BlimpPreferencesDelegate} implemented by BlimpClientContextImpl.
      */
-    public static void addBlimpPreferences(PreferenceFragment fragment) {
+    public static void addBlimpPreferences(
+            PreferenceFragment fragment, BlimpPreferencesDelegate delegate) {
+        addBlimpPreferences(fragment);
+        setDelegate(delegate);
+    }
+
+    private static void addBlimpPreferences(PreferenceFragment fragment) {
         PreferenceScreen screen = fragment.getPreferenceScreen();
 
         Preference blimpSetting = new Preference(fragment.getActivity());
         blimpSetting.setTitle(R.string.blimp_about_blimp_preferences);
         blimpSetting.setFragment(AboutBlimpPreferences.class.getName());
-        blimpSetting.setKey(AboutBlimpPreferences.PREF_BLIMP_SWITCH);
+        blimpSetting.setKey(PreferencesUtil.PREF_BLIMP_SWITCH);
 
         screen.addPreference(blimpSetting);
         fragment.setPreferenceScreen(screen);
     }
 
     /**
-     * Register Chrome callback related to Blimp settings.
-     * @param callback
+     * Set {@link BlimpPreferencesDelegate}.
      */
-    public static void registerCallback(BlimpSettingsCallbacks callback) {
-        sSettingsCallback = callback;
+    @VisibleForTesting
+    protected static void setDelegate(BlimpPreferencesDelegate delegate) {
+        sPreferencesDelegate = delegate;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        initializeNative();
         getActivity().setTitle(R.string.blimp_about_blimp_preferences);
+        updateSettingPage();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        updateSettingPage();
+    }
+
+    @Override
+    public void onDestroy() {
+        destroyNative();
+        super.onDestroy();
+    }
+
+    // Reload the items in preferences list.
+    private void updateSettingPage() {
+        PreferenceScreen screen = getPreferenceScreen();
+        if (screen != null) screen.removeAll();
         addPreferencesFromResource(R.xml.blimp_preferences);
 
         setupBlimpSwitch();
@@ -69,23 +100,65 @@ public class AboutBlimpPreferences extends PreferenceFragment {
     }
 
     /**
-     * Setup the switch preference for blimp.
+     * Setup the switch preference for Blimp.
      */
     private void setupBlimpSwitch() {
         // TODO(xingliu): Use {@link ChromeSwitchPreference} after move this class to Chrome.
         // http://crbug.com/630675
-        final Preference pref = findPreference(PREF_BLIMP_SWITCH);
+        final SwitchPreference pref =
+                (SwitchPreference) findPreference(PreferencesUtil.PREF_BLIMP_SWITCH);
+
+        if (!isSignedIn()) pref.setChecked(false);
 
         pref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
-                // For blimp client 0.6, if blimp switch changed, show restart dialog.
-                // TODO(xingliu): Figure out if we need to close all tabs before restart or reset
-                // the settings before restarting.
-                showRestartDialog(getActivity(), R.string.blimp_switch_changed_please_restart);
-                return true;
+                return onBlimpSwitchPreferenceChange((boolean) newValue);
             }
         });
+    }
+
+    /**
+      * Handles switch preference change.
+      * @param switchValue The new value of the preference.
+      * @return If the new value will be persisted.
+      */
+    private boolean onBlimpSwitchPreferenceChange(boolean switchValue) {
+        if (switchValue) {
+            if (isSignedIn()) {
+                assert sPreferencesDelegate != null;
+
+                // If user has signed in and the switch is turned on, start authentication.
+                sPreferencesDelegate.connect();
+            } else {
+                // If user didn't sign in, show a dialog to let the user sign in.
+                showSignInDialog();
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Show sign in dialog, it will show AccountSigninView to let user to sign in.
+     *
+     * If the user signed in after clicking the confirm button, turn on the Blimp switch and connect
+     * to the engine.
+     */
+    private void showSignInDialog() {
+        final Context context = getActivity();
+        new AlertDialog.Builder(context)
+                .setTitle(R.string.blimp_sign_in_title)
+                .setMessage(R.string.blimp_sign_in_msg)
+                .setPositiveButton(R.string.blimp_sign_in_btn,
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                startUserSignInFlow();
+                            }
+                        })
+                .create()
+                .show();
     }
 
     /**
@@ -98,7 +171,12 @@ public class AboutBlimpPreferences extends PreferenceFragment {
     private void setupAssignerPreferences() {
         final Activity activity = getActivity();
 
-        final ListPreference listPreference = (ListPreference) findPreference(PREF_ASSIGNER_URL);
+        final ListPreference listPreference =
+                (ListPreference) findPreference(PreferencesUtil.PREF_ASSIGNER_URL);
+
+        // Set to default assigner URL on first time loading this UI.
+        listPreference.setValue(PreferencesUtil.getLastUsedAssigner());
+
         listPreference.setSummary(listPreference.getValue());
 
         listPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
@@ -117,10 +195,11 @@ public class AboutBlimpPreferences extends PreferenceFragment {
      * @param context The context where we display the restart browser dialog.
      * @param message The message shown to the user.
      */
-    private static void showRestartDialog(final Context context, int message) {
+    private void showRestartDialog(final Context context, int message) {
         new AlertDialog.Builder(context)
                 .setTitle(R.string.blimp_restart_blimp)
                 .setMessage(message)
+                .setCancelable(false)
                 .setPositiveButton(R.string.blimp_restart_now,
                         new DialogInterface.OnClickListener() {
                             @Override
@@ -136,9 +215,76 @@ public class AboutBlimpPreferences extends PreferenceFragment {
      * Restart the browser.
      */
     @VisibleForTesting
-    protected static void restartBrowser() {
-        if (sSettingsCallback != null) {
-            sSettingsCallback.onRestartBrowserRequested();
+    protected void restartBrowser() {
+        assert sPreferencesDelegate != null;
+        sPreferencesDelegate.getDelegate().restartBrowser();
+    }
+
+    /**
+     * Start user sign in flow to let the user pick an existing account or create new account.
+     */
+    private void startUserSignInFlow() {
+        mWaitForSignIn = true;
+        assert sPreferencesDelegate != null;
+        sPreferencesDelegate.getDelegate().startUserSignInFlow(getActivity());
+    }
+
+    private boolean isSignedIn() {
+        return ChromeSigninController.get(ContextUtils.getApplicationContext()).isSignedIn();
+    }
+
+    @VisibleForTesting
+    @CalledByNative
+    protected void onSignedOut() {
+        // If user signed out, turn off the switch. We also do a sign in state check on
+        // {@link AboutBlimpPreferences#updateSettingPage()}.
+        final SwitchPreference pref =
+                (SwitchPreference) findPreference(PreferencesUtil.PREF_BLIMP_SWITCH);
+        pref.setChecked(false);
+        showRestartDialog(getActivity(), R.string.blimp_sign_out_restart);
+    }
+
+    @VisibleForTesting
+    @CalledByNative
+    protected void onSignedIn() {
+        // If user came back from sign in flow, turn on the switch and connect to engine.
+        // This logic won't trigger the {@link OnPreferenceChangeListener} call.
+        if (mWaitForSignIn) {
+            final SwitchPreference pref =
+                    (SwitchPreference) findPreference(PreferencesUtil.PREF_BLIMP_SWITCH);
+            pref.setChecked(true);
+
+            assert sPreferencesDelegate != null;
+            sPreferencesDelegate.connect();
+            mWaitForSignIn = false;
         }
     }
+
+    @VisibleForTesting
+    protected void initializeNative() {
+        mNativeBlimpSettingsAndroid = nativeInit();
+        assert sPreferencesDelegate != null && mNativeBlimpSettingsAndroid != 0;
+
+        // Initialize in native code.
+        sPreferencesDelegate.initSettingsPage(this);
+    }
+
+    @VisibleForTesting
+    protected void destroyNative() {
+        nativeDestroy(mNativeBlimpSettingsAndroid);
+    }
+
+    @CalledByNative
+    private void clearNativePtr() {
+        mNativeBlimpSettingsAndroid = 0;
+    }
+
+    @CalledByNative
+    private long getNativePtr() {
+        assert mNativeBlimpSettingsAndroid != 0;
+        return mNativeBlimpSettingsAndroid;
+    }
+
+    private native long nativeInit();
+    private native void nativeDestroy(long nativeBlimpSettingsAndroid);
 }

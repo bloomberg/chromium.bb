@@ -199,8 +199,11 @@
       <message name="IDS_BLIMP_ASSIGNER_URL" desc="Blimp Assigner URL.">
         Assigner URL
       </message>
-     <message name="IDS_BLIMP_ASSIGNER_CHANGED_PLEASE_RESTART" desc="Blimp assigner changed, restart message.">
+      <message name="IDS_BLIMP_ASSIGNER_CHANGED_PLEASE_RESTART" desc="Blimp assigner changed, restart message.">
         Please restart the application to use the new assigner configuration.
+      </message>
+      <message name="IDS_BLIMP_SIGN_OUT_RESTART" desc="User sign out, restart message.">
+        Please restart the application.
       </message>
       <message name="IDS_BLIMP_SWITCH_CHANGED_PLEASE_RESTART" desc="Blimp switch changed, restart message.">
         Blimp switch changed, Please restart the application.
@@ -210,6 +213,15 @@
       </message>
       <message name="IDS_BLIMP_RESTART_NOW" desc="Restart now message">
         Restart Now
+      </message>
+      <message name="IDS_BLIMP_SIGN_IN_TITLE" desc="Sign in.">
+        Please sign in
+      </message>
+      <message name="IDS_BLIMP_SIGN_IN_MSG" desc="Sign in message.">
+        Please sign in to google account to enable Blimp.
+      </message>
+      <message name="IDS_BLIMP_SIGN_IN_BTN" desc="Sign in button.">
+        Sign in now
       </message>
     </messages>
   </release>

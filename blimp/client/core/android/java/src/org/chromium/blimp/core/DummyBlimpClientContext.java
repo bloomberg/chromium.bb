@@ -10,7 +10,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.blimp_public.BlimpClientContext;
 import org.chromium.blimp_public.BlimpClientContextDelegate;
-import org.chromium.blimp_public.BlimpSettingsCallbacks;
 import org.chromium.blimp_public.contents.BlimpContents;
 
 /**
@@ -59,12 +58,10 @@ public class DummyBlimpClientContext implements BlimpClientContext {
     }
 
     @Override
-    public void attachBlimpPreferences(
-            PreferenceFragment fragment, BlimpSettingsCallbacks callbacks) {}
+    public void attachBlimpPreferences(PreferenceFragment fragment) {}
 
     @Override
-    public void setDelegate(BlimpClientContextDelegate delegate) {
-    }
+    public void setDelegate(BlimpClientContextDelegate delegate) {}
 
     @Override
     public void connect() {}

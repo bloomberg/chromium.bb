@@ -28,16 +28,16 @@ public interface BlimpClientContext {
     boolean isBlimpSupported();
 
     /**
-     * @return If Blimp is enabled by the user.
+     * @return If Blimp is enabled in settings UI by the user. Or if we have development mode
+     * command line arguments.
      */
     boolean isBlimpEnabled();
 
     /**
      * Attach blimp settings UI to a {@link PreferenceFragment}
      * @param fragment PreferenceFragment that blimp settings UI attached to.
-     * @param callback Chrome layer callbacks that passed to Blimp.
      */
-    void attachBlimpPreferences(PreferenceFragment fragment, BlimpSettingsCallbacks callback);
+    void attachBlimpPreferences(PreferenceFragment fragment);
 
     /**
      * Set the {@link BlimpClientContextDelegate}, functions in this interface should be used in
@@ -47,9 +47,6 @@ public interface BlimpClientContext {
 
     /**
      * Start authentication flow and connection to engine.
-     * This must be called after AccountTrackerService.onSystemAccountsSeedingComplete, since the
-     * embedder may asynchronously seed account info to native layer, and revoke all OAuth2 refresh
-     * token during the request.
      */
     void connect();
 }
