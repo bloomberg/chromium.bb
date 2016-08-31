@@ -227,7 +227,6 @@ TEST_P(MainThreadEventQueueTest, NonBlockingTouch) {
 
 TEST_P(MainThreadEventQueueTest, BlockingTouch) {
   base::HistogramTester histogram_tester;
-
   SyntheticWebTouchEvent kEvents[4];
   kEvents[0].PressPoint(10, 10);
   kEvents[1].PressPoint(10, 10);
@@ -254,6 +253,11 @@ TEST_P(MainThreadEventQueueTest, BlockingTouch) {
   EXPECT_EQ(kEvents[2].uniqueTouchEventId, additional_acked_events_.at(0));
   EXPECT_EQ(kEvents[3].uniqueTouchEventId, additional_acked_events_.at(1));
 
+  HandleEvent(kEvents[1], INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  HandleEvent(kEvents[2], INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  HandleEvent(kEvents[3], INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  EXPECT_EQ(1u, event_queue().size());
+  RunPendingTasksWithSimulatedRaf();
   histogram_tester.ExpectUniqueSample(kCoalescedCountHistogram, 2, 1);
 }
 
@@ -403,6 +407,18 @@ TEST_P(MainThreadEventQueueTest, RafAlignedTouchInput) {
   EXPECT_EQ(2u, event_queue().size());
   RunPendingTasksWithSimulatedRaf();
   EXPECT_EQ(0u, event_queue().size());
+
+  // Simulate the touch move being discrete
+  kEvents[0].touchStartOrFirstTouchMove = true;
+  kEvents[1].touchStartOrFirstTouchMove = true;
+
+  for (SyntheticWebTouchEvent& event : kEvents)
+    HandleEvent(event, INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+
+  EXPECT_EQ(3u, event_queue().size());
+  EXPECT_TRUE(main_task_runner_->HasPendingTask());
+  EXPECT_FALSE(needs_main_frame_);
+  main_task_runner_->RunUntilIdle();
 }
 
 TEST_P(MainThreadEventQueueTest, RafAlignedMaxSize) {
@@ -459,6 +475,7 @@ TEST_P(MainThreadEventQueueTest, BlockingTouchesDuringFling) {
 
   kEvents[0].MovePoint(0, 30, 30);
   HandleEvent(kEvents[0], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(handle_raf_aligned_input_, !main_task_runner_->HasPendingTask());
   RunPendingTasksWithSimulatedRaf();
   EXPECT_FALSE(main_task_runner_->HasPendingTask());
   EXPECT_EQ(0u, event_queue().size());

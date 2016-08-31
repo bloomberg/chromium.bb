@@ -23,9 +23,14 @@ const size_t kTenSeconds = 10 * 1000 * 1000;
 bool isContinuousEvent(const std::unique_ptr<EventWithDispatchType>& event) {
   switch (event->event().type) {
     case blink::WebInputEvent::MouseMove:
-    case blink::WebInputEvent::TouchMove:
     case blink::WebInputEvent::MouseWheel:
       return true;
+    case blink::WebInputEvent::TouchMove:
+      // TouchMoves that are blocking end up blocking scroll. Do not treat
+      // them as continuous events otherwise we will end up waiting up to an
+      // additional frame.
+      return static_cast<const blink::WebTouchEvent&>(event->event())
+                 .dispatchType != blink::WebInputEvent::Blocking;
     default:
       return false;
   }
