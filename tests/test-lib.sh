@@ -8,6 +8,7 @@
 set -e
 
 export DEPOT_TOOLS_UPDATE=0
+export PYTHONUNBUFFERED=
 
 PWD=$(pwd)
 REPO_URL=file://$PWD/svnrepo
