@@ -19,6 +19,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Callback that tracks information from different callbacks and and has a
@@ -45,6 +46,8 @@ class TestUrlRequestCallback extends UrlRequest.Callback {
     // When false, the consumer is responsible for all calls into the request
     // that advance it.
     private boolean mAutoAdvance = true;
+    // Whether an exception is thrown by maybeThrowCancelOrPause().
+    private boolean mListenerExceptionThrown;
 
     // Conditionally fail on certain steps.
     private FailureType mFailureType = FailureType.NONE;
@@ -91,7 +94,9 @@ class TestUrlRequestCallback extends UrlRequest.Callback {
         ON_RECEIVED_REDIRECT,
         ON_RESPONSE_STARTED,
         ON_READ_COMPLETED,
-        ON_SUCCEEDED
+        ON_SUCCEEDED,
+        ON_FAILED,
+        ON_CANCELED,
     }
 
     public enum FailureType {
@@ -128,6 +133,21 @@ class TestUrlRequestCallback extends UrlRequest.Callback {
 
     public void shutdownExecutor() {
         mExecutorService.shutdown();
+    }
+
+    /**
+     * Shuts down the ExecutorService and waits until it executes all posted
+     * tasks.
+     */
+    public void shutdownExecutorAndWait() {
+        mExecutorService.shutdown();
+        try {
+            // Termination shouldn't take long. Use 1 min which should be more than enough.
+            mExecutorService.awaitTermination(1, TimeUnit.MINUTES);
+        } catch (InterruptedException e) {
+            assertTrue("ExecutorService is interrupted while waiting for termination", false);
+        }
+        assertTrue(mExecutorService.isTerminated());
     }
 
     @Override
@@ -218,7 +238,7 @@ class TestUrlRequestCallback extends UrlRequest.Callback {
         assertFalse(mOnErrorCalled);
         assertFalse(mOnCanceledCalled);
         assertNull(mError);
-        if (mFailureType == FailureType.THROW_SYNC) {
+        if (mListenerExceptionThrown) {
             assertEquals(UrlRequestError.LISTENER_EXCEPTION_THROWN, error.getErrorCode());
             assertEquals(0, error.getCronetInternalErrorCode());
             assertEquals("Exception received from UrlRequest.Callback", error.getMessage());
@@ -228,6 +248,7 @@ class TestUrlRequestCallback extends UrlRequest.Callback {
             assertFalse(error.immediatelyRetryable());
         }
 
+        mResponseStep = ResponseStep.ON_FAILED;
         mOnErrorCalled = true;
         mError = error;
         openDone();
@@ -243,6 +264,7 @@ class TestUrlRequestCallback extends UrlRequest.Callback {
         assertFalse(mOnErrorCalled);
         assertNull(mError);
 
+        mResponseStep = ResponseStep.ON_CANCELED;
         mOnCanceledCalled = true;
         openDone();
         maybeThrowCancelOrPause(request);
@@ -273,6 +295,7 @@ class TestUrlRequestCallback extends UrlRequest.Callback {
      * request.
      */
     private boolean maybeThrowCancelOrPause(final UrlRequest request) {
+        assertEquals(mExecutorThread, Thread.currentThread());
         if (mResponseStep != mFailureStep || mFailureType == FailureType.NONE) {
             if (!mAutoAdvance) {
                 mStepBlock.open();
@@ -282,6 +305,8 @@ class TestUrlRequestCallback extends UrlRequest.Callback {
         }
 
         if (mFailureType == FailureType.THROW_SYNC) {
+            assertFalse(mListenerExceptionThrown);
+            mListenerExceptionThrown = true;
             throw new IllegalStateException("Listener Exception.");
         }
         Runnable task = new Runnable() {

@@ -63,6 +63,8 @@ public class CronetUrlRequestTest extends CronetTestBase {
         UrlRequest urlRequest = builder.build();
         urlRequest.start();
         callback.blockForDone();
+        // Wait for all posted tasks to be executed to ensure there is no unhandled exception.
+        callback.shutdownExecutorAndWait();
         assertTrue(urlRequest.isDone());
         return callback;
     }
@@ -627,7 +629,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
         assertEquals(arbitraryNetError, callback.mError.getCronetInternalErrorCode());
         assertEquals(0, callback.mRedirectCount);
         assertTrue(callback.mOnErrorCalled);
-        assertEquals(callback.mResponseStep, ResponseStep.NOTHING);
+        assertEquals(ResponseStep.ON_FAILED, callback.mResponseStep);
     }
 
     @SmallTest
@@ -644,7 +646,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
         assertEquals(arbitraryNetError, callback.mError.getCronetInternalErrorCode());
         assertEquals(0, callback.mRedirectCount);
         assertTrue(callback.mOnErrorCalled);
-        assertEquals(callback.mResponseStep, ResponseStep.ON_RESPONSE_STARTED);
+        assertEquals(ResponseStep.ON_FAILED, callback.mResponseStep);
     }
 
     @SmallTest
@@ -661,7 +663,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
         assertEquals(arbitraryNetError, callback.mError.getCronetInternalErrorCode());
         assertEquals(0, callback.mRedirectCount);
         assertTrue(callback.mOnErrorCalled);
-        assertEquals(callback.mResponseStep, ResponseStep.ON_RESPONSE_STARTED);
+        assertEquals(ResponseStep.ON_FAILED, callback.mResponseStep);
     }
 
     /**
@@ -696,7 +698,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
         assertEquals(-201, callback.mError.getCronetInternalErrorCode());
         assertEquals("Exception in CronetUrlRequest: net::ERR_CERT_DATE_INVALID",
                 callback.mError.getMessage());
-        assertEquals(callback.mResponseStep, ResponseStep.NOTHING);
+        assertEquals(ResponseStep.ON_FAILED, callback.mResponseStep);
     }
 
     /**
@@ -1571,8 +1573,14 @@ public class CronetUrlRequestTest extends CronetTestBase {
         UrlRequest urlRequest = builder.build();
         urlRequest.start();
         callback.blockForDone();
+        // Wait for all posted tasks to be executed to ensure there is no unhandled exception.
+        callback.shutdownExecutorAndWait();
         assertEquals(1, callback.mRedirectCount);
-        assertEquals(callback.mResponseStep, failureStep);
+        if (failureType == FailureType.CANCEL_SYNC || failureType == FailureType.CANCEL_ASYNC) {
+            assertEquals(ResponseStep.ON_CANCELED, callback.mResponseStep);
+        } else if (failureType == FailureType.THROW_SYNC) {
+            assertEquals(ResponseStep.ON_FAILED, callback.mResponseStep);
+        }
         assertTrue(urlRequest.isDone());
         assertEquals(expectResponseInfo, callback.mResponseInfo != null);
         assertEquals(expectError, callback.mError != null);
@@ -1616,20 +1624,83 @@ public class CronetUrlRequestTest extends CronetTestBase {
 
     @SmallTest
     @Feature({"Cronet"})
-    public void testThrowON_SUCCEEDED() {
-        TestUrlRequestCallback callback = new TestUrlRequestCallback();
-        callback.setFailure(FailureType.THROW_SYNC, ResponseStep.ON_SUCCEEDED);
-        UrlRequest.Builder builder = new UrlRequest.Builder(NativeTestServer.getRedirectURL(),
-                callback, callback.getExecutor(), mTestFramework.mCronetEngine);
-        UrlRequest urlRequest = builder.build();
-        urlRequest.start();
-        callback.blockForDone();
-        assertEquals(1, callback.mRedirectCount);
-        assertEquals(callback.mResponseStep, ResponseStep.ON_SUCCEEDED);
-        assertTrue(urlRequest.isDone());
-        assertNotNull(callback.mResponseInfo);
-        assertNull(callback.mError);
-        assertFalse(callback.mOnErrorCalled);
+    public void testThrowOrCancelInOnSucceeded() {
+        FailureType[] testTypes = new FailureType[] {
+                FailureType.THROW_SYNC, FailureType.CANCEL_SYNC, FailureType.CANCEL_ASYNC};
+        for (FailureType type : testTypes) {
+            TestUrlRequestCallback callback = new TestUrlRequestCallback();
+            callback.setFailure(type, ResponseStep.ON_SUCCEEDED);
+            UrlRequest.Builder builder = new UrlRequest.Builder(NativeTestServer.getEchoMethodURL(),
+                    callback, callback.getExecutor(), mTestFramework.mCronetEngine);
+            UrlRequest urlRequest = builder.build();
+            urlRequest.start();
+            callback.blockForDone();
+            // Wait for all posted tasks to be executed to ensure there is no unhandled exception.
+            callback.shutdownExecutorAndWait();
+            assertNull(callback.mError);
+            assertEquals(ResponseStep.ON_SUCCEEDED, callback.mResponseStep);
+            assertTrue(urlRequest.isDone());
+            assertNotNull(callback.mResponseInfo);
+            assertFalse(callback.mOnErrorCalled);
+            assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
+            assertEquals("GET", callback.mResponseAsString);
+        }
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testThrowOrCancelInOnFailed() {
+        FailureType[] testTypes = new FailureType[] {
+                FailureType.THROW_SYNC, FailureType.CANCEL_SYNC, FailureType.CANCEL_ASYNC};
+        for (FailureType type : testTypes) {
+            String url = NativeTestServer.getEchoBodyURL();
+            // Shut down NativeTestServer so request will fail.
+            NativeTestServer.shutdownNativeTestServer();
+            TestUrlRequestCallback callback = new TestUrlRequestCallback();
+            callback.setFailure(type, ResponseStep.ON_FAILED);
+            UrlRequest.Builder builder = new UrlRequest.Builder(
+                    url, callback, callback.getExecutor(), mTestFramework.mCronetEngine);
+            UrlRequest urlRequest = builder.build();
+            urlRequest.start();
+            callback.blockForDone();
+            // Wait for all posted tasks to be executed to ensure there is no unhandled exception.
+            callback.shutdownExecutorAndWait();
+            assertEquals(ResponseStep.ON_FAILED, callback.mResponseStep);
+            assertTrue(callback.mOnErrorCalled);
+            assertNotNull(callback.mError);
+            assertTrue(urlRequest.isDone());
+            // Start NativeTestServer again to run the test for a second time.
+            assertTrue(NativeTestServer.startNativeTestServer(getContext()));
+        }
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testThrowOrCancelInOnCanceled() {
+        FailureType[] testTypes = new FailureType[] {
+                FailureType.THROW_SYNC, FailureType.CANCEL_SYNC, FailureType.CANCEL_ASYNC};
+        for (FailureType type : testTypes) {
+            TestUrlRequestCallback callback = new TestUrlRequestCallback() {
+                @Override
+                public void onResponseStarted(UrlRequest request, UrlResponseInfo info) {
+                    super.onResponseStarted(request, info);
+                    request.cancel();
+                }
+            };
+            callback.setFailure(type, ResponseStep.ON_CANCELED);
+            UrlRequest.Builder builder = new UrlRequest.Builder(NativeTestServer.getEchoBodyURL(),
+                    callback, callback.getExecutor(), mTestFramework.mCronetEngine);
+            UrlRequest urlRequest = builder.build();
+            urlRequest.start();
+            callback.blockForDone();
+            // Wait for all posted tasks to be executed to ensure there is no unhandled exception.
+            callback.shutdownExecutorAndWait();
+            assertEquals(ResponseStep.ON_CANCELED, callback.mResponseStep);
+            assertTrue(urlRequest.isDone());
+            assertNotNull(callback.mResponseInfo);
+            assertNull(callback.mError);
+            assertTrue(callback.mOnCanceledCalled);
+        }
     }
 
     @SmallTest
@@ -1837,7 +1908,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
                 "Exception in CronetUrlRequest: net::ERR_" + name, callback.mError.getMessage());
         assertEquals(0, callback.mRedirectCount);
         assertTrue(callback.mOnErrorCalled);
-        assertEquals(callback.mResponseStep, ResponseStep.NOTHING);
+        assertEquals(ResponseStep.ON_FAILED, callback.mResponseStep);
     }
 
     // Returns the contents of byteBuffer, from its position() to its limit(),
