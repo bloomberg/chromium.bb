@@ -33,6 +33,14 @@ class MultiprocessTestHelper {
 
     // Launch the child process as an unrelated peer process in the mojo system.
     PEER,
+
+    // Launch the child process as a child in the mojo system, using a named
+    // pipe.
+    NAMED_CHILD,
+
+    // Launch the child process as an unrelated peer process in the mojo
+    // system, using a named pipe.
+    NAMED_PEER,
   };
 
   MultiprocessTestHelper();

@@ -15,7 +15,9 @@ ScopedPlatformHandle DuplicatePlatformHandle(PlatformHandle platform_handle) {
   DCHECK(platform_handle.is_valid());
   // Note that |dup()| returns -1 on error (which is exactly the value we use
   // for invalid |PlatformHandle| FDs).
-  return ScopedPlatformHandle(PlatformHandle(dup(platform_handle.handle)));
+  PlatformHandle duped(dup(platform_handle.handle));
+  duped.needs_connection = platform_handle.needs_connection;
+  return ScopedPlatformHandle(duped);
 }
 
 }  // namespace edk

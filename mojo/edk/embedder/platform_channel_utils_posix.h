@@ -18,6 +18,7 @@ struct iovec;  // Declared in <sys/uio.h>.
 
 namespace mojo {
 namespace edk {
+class ScopedPlatformHandle;
 
 // The maximum number of handles that can be sent "at once" using
 // |PlatformChannelSendmsgWithHandles()|. This must be less than the Linux
@@ -69,6 +70,13 @@ PlatformChannelRecvmsg(PlatformHandle h,
                        size_t num_bytes,
                        std::deque<PlatformHandle>* platform_handles,
                        bool block = false);
+
+// Returns false if |server_handle| encounters an unrecoverable error.
+// Returns true if it's valid to keep listening on |server_handle|. In this
+// case, it's possible that a connection wasn't successfully established; then,
+// |connection_handle| will be invalid.
+bool ServerAcceptConnection(PlatformHandle server_handle,
+                            ScopedPlatformHandle* connection_handle);
 
 }  // namespace edk
 }  // namespace mojo

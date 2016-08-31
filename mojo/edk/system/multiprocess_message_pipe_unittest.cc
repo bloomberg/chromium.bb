@@ -1419,10 +1419,13 @@ TEST_F(MultiprocessMessagePipeTest, NotifyBadMessage) {
   EXPECT_NE(std::string::npos, first_process_error.find(kFirstErrorMessage));
   EXPECT_NE(std::string::npos, second_process_error.find(kSecondErrorMessage));
 }
-INSTANTIATE_TEST_CASE_P(,
-                        MultiprocessMessagePipeTestWithPeerSupport,
-                        testing::Values(test::MojoTestBase::LaunchType::CHILD,
-                                        test::MojoTestBase::LaunchType::PEER));
+INSTANTIATE_TEST_CASE_P(
+    ,
+    MultiprocessMessagePipeTestWithPeerSupport,
+    testing::Values(test::MojoTestBase::LaunchType::CHILD,
+                    test::MojoTestBase::LaunchType::PEER,
+                    test::MojoTestBase::LaunchType::NAMED_CHILD,
+                    test::MojoTestBase::LaunchType::NAMED_PEER));
 }  // namespace
 }  // namespace edk
 }  // namespace mojo

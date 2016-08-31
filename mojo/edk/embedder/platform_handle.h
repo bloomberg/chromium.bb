@@ -53,6 +53,9 @@ struct MOJO_SYSTEM_IMPL_EXPORT PlatformHandle {
 
   int handle = -1;
 
+  // A POSIX handle may be a listen handle that can accept a connection.
+  bool needs_connection = false;
+
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   mach_port_t port = MACH_PORT_NULL;
 #endif

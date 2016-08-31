@@ -211,11 +211,19 @@ class ChannelPosix : public Channel,
     DCHECK(!read_watcher_);
     DCHECK(!write_watcher_);
     read_watcher_.reset(new base::MessageLoopForIO::FileDescriptorWatcher);
-    write_watcher_.reset(new base::MessageLoopForIO::FileDescriptorWatcher);
-    base::MessageLoopForIO::current()->WatchFileDescriptor(
-        handle_.get().handle, true /* persistent */,
-        base::MessageLoopForIO::WATCH_READ, read_watcher_.get(), this);
     base::MessageLoop::current()->AddDestructionObserver(this);
+    if (handle_.get().needs_connection) {
+      base::MessageLoopForIO::current()->WatchFileDescriptor(
+          handle_.get().handle, false /* persistent */,
+          base::MessageLoopForIO::WATCH_READ, read_watcher_.get(), this);
+    } else {
+      write_watcher_.reset(new base::MessageLoopForIO::FileDescriptorWatcher);
+      base::MessageLoopForIO::current()->WatchFileDescriptor(
+          handle_.get().handle, true /* persistent */,
+          base::MessageLoopForIO::WATCH_READ, read_watcher_.get(), this);
+      base::AutoLock lock(write_lock_);
+      FlushOutgoingMessagesNoLock();
+    }
   }
 
   void WaitForWriteOnIOThread() {
@@ -265,6 +273,24 @@ class ChannelPosix : public Channel,
   // base::MessageLoopForIO::Watcher:
   void OnFileCanReadWithoutBlocking(int fd) override {
     CHECK_EQ(fd, handle_.get().handle);
+    if (handle_.get().needs_connection) {
+#if !defined(OS_NACL)
+      read_watcher_.reset();
+      base::MessageLoop::current()->RemoveDestructionObserver(this);
+
+      ScopedPlatformHandle accept_fd;
+      ServerAcceptConnection(handle_.get(), &accept_fd);
+      if (!accept_fd.is_valid()) {
+        OnError();
+        return;
+      }
+      handle_ = std::move(accept_fd);
+      StartOnIOThread();
+#else
+      NOTREACHED();
+#endif
+      return;
+    }
 
     bool read_error = false;
     size_t next_read_size = 0;
@@ -321,6 +347,10 @@ class ChannelPosix : public Channel,
   // cannot be written, it's queued and a wait is initiated to write the message
   // ASAP on the I/O thread.
   bool WriteNoLock(MessageView message_view) {
+    if (handle_.get().needs_connection) {
+      outgoing_messages_.emplace_front(std::move(message_view));
+      return true;
+    }
     size_t bytes_written = 0;
     do {
       message_view.advance_data_offset(bytes_written);
