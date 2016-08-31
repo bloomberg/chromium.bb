@@ -222,7 +222,8 @@ bool IsSupportedDevToolsURL(const GURL& url, base::FilePath* path) {
   if (inspector_dir.empty())
     return false;
 
-  *path = inspector_dir.AppendASCII(relative_path);
+  // Use the non-bundled and non-minified devtools app for development
+  *path = inspector_dir.AppendASCII("debug").AppendASCII(relative_path);
   return true;
 }
 

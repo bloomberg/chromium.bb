@@ -15,6 +15,7 @@ namespace switches {
 extern const char kAllowExternalPages[];
 extern const char kCheckLayoutTestSysDeps[];
 extern const char kCrashOnFailure[];
+extern const char kDebugDevTools[];
 extern const char kEnableAccelerated2DCanvas[];
 extern const char kEnableFontAntialiasing[];
 extern const char kAlwaysUseComplexText[];

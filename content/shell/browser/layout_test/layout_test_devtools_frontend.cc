@@ -15,6 +15,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/shell/browser/layout_test/blink_test_controller.h"
 #include "content/shell/browser/shell.h"
+#include "content/shell/common/layout_test/layout_test_switches.h"
 #include "net/base/filename_util.h"
 
 namespace content {
@@ -51,15 +52,17 @@ GURL LayoutTestDevToolsFrontend::GetDevToolsPathAsURL(
   // We need to go up 3 directories to get to out/Release.
   dir_exe = dir_exe.AppendASCII("../../..");
 #endif
+  bool is_debug_dev_tools = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDebugDevTools);
+  std::string folder = is_debug_dev_tools ? "debug/" : "";
   base::FilePath dev_tools_path =
-      dir_exe.AppendASCII("resources/inspector/inspector.html");
+      dir_exe.AppendASCII("resources/inspector/" + folder + "inspector.html");
 
   GURL result = net::FilePathToFileURL(dev_tools_path);
   std::string url_string =
       base::StringPrintf("%s?experiments=true", result.spec().c_str());
-#if defined(DEBUG_DEVTOOLS)
-  url_string += "&debugFrontend=true";
-#endif  // defined(DEBUG_DEVTOOLS)
+  if (is_debug_dev_tools)
+    url_string += "&debugFrontend=true";
   return GURL(url_string);
 }
 

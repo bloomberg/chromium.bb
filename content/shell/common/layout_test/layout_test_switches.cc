@@ -19,6 +19,9 @@ const char kCheckLayoutTestSysDeps[] = "check-layout-test-sys-deps";
 // causes the leak detector to cause immediate crash when found leak.
 const char kCrashOnFailure[] = "crash-on-failure";
 
+// Run devtools tests in debug mode (not bundled and minified)
+const char kDebugDevTools[] = "debug-devtools";
+
 // Enable accelerated 2D canvas.
 const char kEnableAccelerated2DCanvas[] = "enable-accelerated-2d-canvas";
 
