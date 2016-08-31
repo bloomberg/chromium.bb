@@ -10,6 +10,7 @@ import collections
 import contextlib
 import datetime
 import errno
+import fnmatch
 import getpass
 import hashlib
 import os
@@ -59,6 +60,10 @@ LS_LA_RE = re.compile(
     r')?\s*$')
 LS_RE = re.compile(r'^\s*(?P<content_length>)(?P<creation_time>)(?P<url>.*)'
                    r'(?P<generation>)(?P<metageneration>)\s*$')
+
+# Format used by ContainsWildCard, which is duplicated from
+# https://github.com/GoogleCloudPlatform/gsutil/blob/v4.21/gslib/storage_url.py#L307.
+WILDCARD_REGEX = re.compile(r'[*?\[\]]')
 
 
 def PathIsGs(path):
@@ -1124,6 +1129,75 @@ class GSContext(object):
 
     timeout_util.WaitForSuccess(_Retry, _CheckForExistence,
                                 timeout=timeout, period=period)
+
+  def ContainsWildcard(self, url):
+    """Checks whether url_string contains a wildcard.
+
+    Args:
+      url: URL string to check.
+
+    Returns:
+      True if |url| contains a wildcard.
+    """
+    return bool(WILDCARD_REGEX.search(url))
+
+  def GetGsNamesWithWait(self, pattern, url, timeout=600, period=10,
+                         is_regex_pattern=False):
+    """Returns the google storage names specified by the given pattern.
+
+    This method polls Google Storage until the target files specified by the
+    pattern is available or until the timeout occurs. Because we may not know
+    the exact name of the target files, the method accepts a filename pattern,
+    to identify whether a file whose name matches the pattern exists
+    (e.g. use pattern '*_full_*' to search for the full payload
+    'chromeos_R17-1413.0.0-a1_x86-mario_full_dev.bin'). Returns the name only
+    if found before the timeout.
+
+    Warning: GS listing are not perfect, and are eventually consistent. Doing a
+    search for file existence is a 'best effort'. Calling code should be aware
+    and ready to handle that.
+
+    Args:
+      pattern: a path pattern (glob or regex) identifying the files we need.
+      url: URL of the Google Storage bucket.
+      timeout: how many seconds are we allowed to keep trying.
+      period: how many seconds to wait between attempts.
+      is_regex_pattern: Whether the pattern is a regex (otherwise a glob).
+
+    Returns:
+      The list of files matching the pattern in Google Storage bucket or None
+      if the files are not found and hit the timeout_util.TimeoutError.
+    """
+    def _GetGsName():
+      uploaded_list = [os.path.basename(p.url) for p in self.List(url)]
+
+      if is_regex_pattern:
+        filter_re = re.compile(pattern)
+        matching_names = [f for f in uploaded_list
+                          if filter_re.search(f) is not None]
+      else:
+        matching_names = fnmatch.filter(uploaded_list, pattern)
+
+      return matching_names
+
+    try:
+      matching_names = None
+      if not (is_regex_pattern or self.ContainsWildcard(pattern)):
+        try:
+          self.WaitForGsPaths(['%s/%s' % (url, pattern)], timeout)
+          return [os.path.basename(pattern)]
+        except GSCommandError:
+          pass
+
+      if not matching_names:
+        matching_names = timeout_util.WaitForSuccess(
+            lambda x: not x, _GetGsName, timeout=timeout, period=period)
+
+      logging.debug('matching_names=%s, is_regex_pattern=%r',
+                    matching_names, is_regex_pattern)
+      return matching_names
+    except timeout_util.TimeoutError:
+      return None
 
 
 @contextlib.contextmanager
