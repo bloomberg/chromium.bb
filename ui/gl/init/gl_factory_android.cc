@@ -60,8 +60,9 @@ bool GLNonOwnedContext::Initialize(GLSurface* compatible_surface,
 }
 
 bool GLNonOwnedContext::MakeCurrent(GLSurface* surface) {
-  SetCurrent(surface);
   SetRealGLApi();
+  SetCurrent(surface);
+  InitializeDynamicBindings();
   return true;
 }
 
