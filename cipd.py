@@ -4,7 +4,7 @@
 
 """Fetches CIPD client and installs packages."""
 
-__version__ = '0.3'
+__version__ = '0.4'
 
 import collections
 import contextlib
@@ -373,7 +373,7 @@ def get_client(
   # Is it an instance id already? They look like HEX SHA1.
   if isolated_format.is_valid_hash(version, hashlib.sha1):
     instance_id = version
-  else:
+  elif ':' in version: # it's an immutable tag
     # version_cache is {version_digest -> instance id} mapping.
     # It does not take a lot of disk space.
     version_cache = isolateserver.DiskCache(
@@ -392,6 +392,9 @@ def get_client(
         instance_id = resolve_version(
             service_url, package_name, version, timeout=timeoutfn())
         version_cache.write(version_digest, instance_id)
+  else: # it's a ref
+    instance_id = resolve_version(
+        service_url, package_name, version, timeout=timeoutfn())
 
   # instance_cache is {instance_id -> client binary} mapping.
   # It is bounded by 5 client versions.
