@@ -311,25 +311,57 @@ void PaintPath(Canvas* canvas,
 
 class VectorIconSource : public CanvasImageSource {
  public:
-  VectorIconSource(VectorIconId id,
+  VectorIconSource(const VectorIcon& icon,
                    int dip_size,
                    SkColor color,
-                   VectorIconId badge_id)
+                   const VectorIcon& badge_icon)
+      : CanvasImageSource(gfx::Size(dip_size, dip_size), false),
+        color_(color),
+        icon_(icon),
+        badge_(badge_icon) {}
+
+  ~VectorIconSource() override {}
+
+  // CanvasImageSource:
+  bool HasRepresentationAtAllScales() const override {
+    return !icon_.is_empty();
+  }
+
+  void Draw(gfx::Canvas* canvas) override {
+    PaintVectorIcon(canvas, icon_, size_.width(), color_);
+    if (!badge_.is_empty())
+      PaintVectorIcon(canvas, badge_, size_.width(), color_);
+  }
+
+ private:
+  const SkColor color_;
+  const VectorIcon& icon_;
+  const VectorIcon& badge_;
+
+  DISALLOW_COPY_AND_ASSIGN(VectorIconSource);
+};
+
+class VectorIconSourceLegacy : public CanvasImageSource {
+ public:
+  VectorIconSourceLegacy(VectorIconId id,
+                         int dip_size,
+                         SkColor color,
+                         VectorIconId badge_id)
       : CanvasImageSource(gfx::Size(dip_size, dip_size), false),
         id_(id),
         color_(color),
         badge_id_(badge_id) {}
 
-  VectorIconSource(const std::string& definition,
-                   int dip_size,
-                   SkColor color)
+  VectorIconSourceLegacy(const std::string& definition,
+                         int dip_size,
+                         SkColor color)
       : CanvasImageSource(gfx::Size(dip_size, dip_size), false),
         id_(VectorIconId::VECTOR_ICON_NONE),
         path_(PathFromSource(definition)),
         color_(color),
         badge_id_(VectorIconId::VECTOR_ICON_NONE) {}
 
-  ~VectorIconSource() override {}
+  ~VectorIconSourceLegacy() override {}
 
   // CanvasImageSource:
   bool HasRepresentationAtAllScales() const override {
@@ -352,7 +384,7 @@ class VectorIconSource : public CanvasImageSource {
   const SkColor color_;
   const VectorIconId badge_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(VectorIconSource);
+  DISALLOW_COPY_AND_ASSIGN(VectorIconSourceLegacy);
 };
 
 // This class caches vector icons (as ImageSkia) so they don't have to be drawn
@@ -363,6 +395,58 @@ class VectorIconCache {
   VectorIconCache() {}
   ~VectorIconCache() {}
 
+  ImageSkia GetOrCreateIcon(const VectorIcon& icon,
+                            int dip_size,
+                            SkColor color,
+                            const VectorIcon& badge_icon) {
+    IconDescription description(&icon, dip_size, color, &badge_icon);
+    auto iter = images_.find(description);
+    if (iter != images_.end())
+      return iter->second;
+
+    ImageSkia icon_image(
+        new VectorIconSource(icon, dip_size, color, badge_icon),
+        gfx::Size(dip_size, dip_size));
+    images_.insert(std::make_pair(description, icon_image));
+    return icon_image;
+  }
+
+ private:
+  struct IconDescription {
+    IconDescription(const VectorIcon* icon,
+                    int dip_size,
+                    SkColor color,
+                    const VectorIcon* badge_icon)
+        : icon(icon),
+          dip_size(dip_size),
+          color(color),
+          badge_icon(badge_icon) {}
+
+    bool operator<(const IconDescription& other) const {
+      return std::tie(icon, dip_size, color, badge_icon) <
+             std::tie(other.icon, other.dip_size, other.color,
+                      other.badge_icon);
+    }
+
+    const gfx::VectorIcon* icon;
+    int dip_size;
+    SkColor color;
+    const gfx::VectorIcon* badge_icon;
+  };
+
+  std::map<IconDescription, ImageSkia> images_;
+
+  DISALLOW_COPY_AND_ASSIGN(VectorIconCache);
+};
+
+static base::LazyInstance<VectorIconCache> g_icon_cache =
+    LAZY_INSTANCE_INITIALIZER;
+
+class VectorIconCacheLegacy {
+ public:
+  VectorIconCacheLegacy() {}
+  ~VectorIconCacheLegacy() {}
+
   ImageSkia GetOrCreateIcon(VectorIconId id,
                             int dip_size,
                             SkColor color,
@@ -372,7 +456,7 @@ class VectorIconCache {
     if (iter != images_.end())
       return iter->second;
 
-    ImageSkia icon(new VectorIconSource(id, dip_size, color, badge_id),
+    ImageSkia icon(new VectorIconSourceLegacy(id, dip_size, color, badge_id),
                    gfx::Size(dip_size, dip_size));
     images_.insert(std::make_pair(description, icon));
     return icon;
@@ -392,20 +476,22 @@ class VectorIconCache {
     }
 
     VectorIconId id;
-    size_t dip_size;
+    int dip_size;
     SkColor color;
     VectorIconId badge_id;
   };
 
   std::map<IconDescription, ImageSkia> images_;
 
-  DISALLOW_COPY_AND_ASSIGN(VectorIconCache);
+  DISALLOW_COPY_AND_ASSIGN(VectorIconCacheLegacy);
 };
 
-static base::LazyInstance<VectorIconCache> g_icon_cache =
+static base::LazyInstance<VectorIconCacheLegacy> g_icon_cache_legacy =
     LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
+
+const VectorIcon kNoneIcon = {};
 
 void PaintVectorIcon(Canvas* canvas,
                      VectorIconId id,
@@ -418,6 +504,17 @@ void PaintVectorIcon(Canvas* canvas,
   PaintPath(canvas, path, dip_size, color);
 }
 
+void PaintVectorIcon(Canvas* canvas,
+                     const VectorIcon& icon,
+                     int dip_size,
+                     SkColor color) {
+  DCHECK(!icon.is_empty());
+  const PathElement* path = (canvas->image_scale() == 1.f && icon.path_1x_)
+                                ? icon.path_1x_
+                                : icon.path_;
+  PaintPath(canvas, path, dip_size, color);
+}
+
 ImageSkia CreateVectorIcon(VectorIconId id, SkColor color) {
   const PathElement* one_x_path = GetPathForVectorIconAt1xScale(id);
   int size = (one_x_path[0].type == CANVAS_DIMENSIONS)
@@ -426,9 +523,22 @@ ImageSkia CreateVectorIcon(VectorIconId id, SkColor color) {
   return CreateVectorIcon(id, size, color);
 }
 
+ImageSkia CreateVectorIcon(const VectorIcon& icon, SkColor color) {
+  const PathElement* one_x_path = icon.path_1x_ ? icon.path_1x_ : icon.path_;
+  int size = one_x_path[0].type == CANVAS_DIMENSIONS ? one_x_path[1].arg
+                                                     : kReferenceSizeDip;
+  return CreateVectorIcon(icon, size, color);
+}
+
 ImageSkia CreateVectorIcon(VectorIconId id, int dip_size, SkColor color) {
   return CreateVectorIconWithBadge(id, dip_size, color,
                                    VectorIconId::VECTOR_ICON_NONE);
+}
+
+ImageSkia CreateVectorIcon(const VectorIcon& icon,
+                           int dip_size,
+                           SkColor color) {
+  return CreateVectorIconWithBadge(icon, dip_size, color, kNoneIcon);
 }
 
 ImageSkia CreateVectorIconWithBadge(VectorIconId id,
@@ -437,16 +547,24 @@ ImageSkia CreateVectorIconWithBadge(VectorIconId id,
                                     VectorIconId badge_id) {
   return (id == VectorIconId::VECTOR_ICON_NONE)
              ? gfx::ImageSkia()
-             : g_icon_cache.Get().GetOrCreateIcon(id, dip_size, color,
-                                                  badge_id);
+             : g_icon_cache_legacy.Get().GetOrCreateIcon(id, dip_size, color,
+                                                         badge_id);
+}
+
+ImageSkia CreateVectorIconWithBadge(const VectorIcon& icon,
+                                    int dip_size,
+                                    SkColor color,
+                                    const VectorIcon& badge_icon) {
+  return icon.is_empty() ? gfx::ImageSkia()
+                         : g_icon_cache.Get().GetOrCreateIcon(
+                               icon, dip_size, color, badge_icon);
 }
 
 ImageSkia CreateVectorIconFromSource(const std::string& source,
                                      int dip_size,
                                      SkColor color) {
-  return ImageSkia(
-      new VectorIconSource(source, dip_size, color),
-      gfx::Size(dip_size, dip_size));
+  return ImageSkia(new VectorIconSourceLegacy(source, dip_size, color),
+                   gfx::Size(dip_size, dip_size));
 }
 
 }  // namespace gfx

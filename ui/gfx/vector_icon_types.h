@@ -72,6 +72,17 @@ struct PathElement {
   };
 };
 
+struct VectorIcon {
+  VectorIcon() : path_(nullptr), path_1x_(nullptr) {}
+  VectorIcon(gfx::PathElement* path, gfx::PathElement* path_1x)
+      : path_(path), path_1x_(path_1x) {}
+
+  bool is_empty() const { return !path_; }
+
+  gfx::PathElement* path_;
+  gfx::PathElement* path_1x_;
+};
+
 // Returns an array of path commands and arguments, terminated by END.
 const PathElement* GetPathForVectorIcon(VectorIconId id);
 // As above, but returns an icon specifically adjusted for 1x scale factors.

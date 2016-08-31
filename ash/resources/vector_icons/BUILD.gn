@@ -1,0 +1,47 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+action("aggregate_vector_icons") {
+  visibility = [ ":*" ]
+
+  script = "//ui/gfx/vector_icons/aggregate_vector_icons.py"
+
+  icons = [
+    "system_menu_keyboard.1x.icon",
+    "system_menu_keyboard.icon",
+  ]
+
+  output_cc = "$target_gen_dir/vector_icons.cc"
+  output_h = "$target_gen_dir/vector_icons.h"
+
+  inputs = icons
+  inputs += [
+    "vector_icons.cc.template",
+    "vector_icons.h.template",
+  ]
+  outputs = [
+    output_cc,
+    output_h,
+  ]
+
+  response_file_contents = rebase_path(icons, root_build_dir)
+
+  args = [
+    "--working_directory=" + rebase_path("./"),
+    "--file_list={{response_file_name}}",
+    "--output_cc=" + rebase_path(output_cc, root_build_dir),
+    "--output_h=" + rebase_path(output_h, root_build_dir),
+  ]
+}
+
+source_set("vector_icons") {
+  sources = get_target_outputs(":aggregate_vector_icons")
+  sources += [ "//ui/gfx/vector_icon_types.h" ]
+
+  deps = [
+    ":aggregate_vector_icons",
+    "//base",
+    "//skia",
+  ]
+}

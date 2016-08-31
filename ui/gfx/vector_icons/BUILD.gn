@@ -171,8 +171,6 @@ action("aggregate_vector_icons") {
     "system_menu_cast.icon",
     "system_menu_child_user.1x.icon",
     "system_menu_child_user.icon",
-    "system_menu_keyboard.1x.icon",
-    "system_menu_keyboard.icon",
     "system_menu_rotation_lock_auto.1x.icon",
     "system_menu_rotation_lock_auto.icon",
     "system_menu_rotation_lock_locked.1x.icon",
@@ -268,6 +266,7 @@ action("aggregate_vector_icons") {
     "--file_list={{response_file_name}}",
     "--output_cc=" + rebase_path(output_cc, root_build_dir),
     "--output_h=" + rebase_path(output_h, root_build_dir),
+    "--use_legacy_template",
   ]
 }
 

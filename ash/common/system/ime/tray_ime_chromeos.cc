@@ -20,6 +20,7 @@
 #include "ash/common/system/tray/tray_utils.h"
 #include "ash/common/system/tray_accessibility.h"
 #include "ash/common/wm_shell.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ash_resources.h"
@@ -30,7 +31,6 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -70,11 +70,10 @@ class SelectableHoverHighlightView : public HoverHighlightView {
 
 class IMEDefaultView : public TrayItemMore {
  public:
-  explicit IMEDefaultView(SystemTrayItem* owner, const base::string16& label)
+  IMEDefaultView(SystemTrayItem* owner, const base::string16& label)
       : TrayItemMore(owner, true) {
     if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
-      SetImage(gfx::CreateVectorIcon(gfx::VectorIconId::SYSTEM_MENU_KEYBOARD,
-                                     kMenuIconColor));
+      SetImage(gfx::CreateVectorIcon(kSystemMenuKeyboardIcon, kMenuIconColor));
     } else {
       ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
       SetImage(*bundle.GetImageNamed(IDR_AURA_UBER_TRAY_IME).ToImageSkia());

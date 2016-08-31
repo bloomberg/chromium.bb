@@ -24,6 +24,7 @@ component("ash") {
   public_deps = [
     "//ash/common/strings",
     "//ash/resources",
+    "//ash/resources/vector_icons",
   ]
   deps = [
     "//ash/autoclick/common:autoclick",
