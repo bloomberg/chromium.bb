@@ -995,7 +995,7 @@ def GetConfig():
       # The amd64-host has to be last as that is when the toolchains
       # are bundled up for inclusion in the sdk.
       boards=[
-          'x86-generic', 'arm-generic', 'amd64-generic'
+          'x86-generic', 'arm-generic', 'amd64-generic', 'peppy'
       ],
       build_type=constants.CHROOT_BUILDER_TYPE,
       buildslave_type=constants.BAREMETAL_BUILD_SLAVE_TYPE,
