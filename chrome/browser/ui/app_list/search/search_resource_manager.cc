@@ -24,12 +24,12 @@ std::unique_ptr<SearchBoxModel::SpeechButtonProperty> CreateNewProperty(
     return nullptr;
 
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  return base::WrapUnique(new SearchBoxModel::SpeechButtonProperty(
+  return base::MakeUnique<SearchBoxModel::SpeechButtonProperty>(
       *bundle.GetImageSkiaNamed(IDR_APP_LIST_MIC_HOTWORD_ON),
       l10n_util::GetStringUTF16(IDS_APP_LIST_HOTWORD_LISTENING),
       *bundle.GetImageSkiaNamed(IDR_APP_LIST_MIC_HOTWORD_OFF),
       l10n_util::GetStringUTF16(IDS_APP_LIST_START_SPEECH_RECOGNITION),
-      l10n_util::GetStringUTF16(IDS_TOOLTIP_MIC_SEARCH)));
+      l10n_util::GetStringUTF16(IDS_TOOLTIP_MIC_SEARCH));
 }
 
 }  // namespace

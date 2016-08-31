@@ -29,8 +29,8 @@
 #include "ui/base/cocoa/window_size_constants.h"
 
 std::unique_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
-  return base::WrapUnique(
-      new ChooserBubbleUiCocoa(browser_, std::move(chooser_controller_)));
+  return base::MakeUnique<ChooserBubbleUiCocoa>(browser_,
+                                                std::move(chooser_controller_));
 }
 
 @interface ChooserBubbleUiController

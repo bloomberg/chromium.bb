@@ -204,16 +204,16 @@ std::unique_ptr<ContentSettingImageModel>
 ContentSettingSimpleImageModel::CreateForContentTypeForTesting(
     ContentSettingsType content_settings_type) {
   if (content_settings_type == CONTENT_SETTINGS_TYPE_GEOLOCATION)
-    return base::WrapUnique(new ContentSettingGeolocationImageModel());
+    return base::MakeUnique<ContentSettingGeolocationImageModel>();
 
   if (content_settings_type == CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS)
-    return base::WrapUnique(new ContentSettingRPHImageModel());
+    return base::MakeUnique<ContentSettingRPHImageModel>();
 
   if (content_settings_type == CONTENT_SETTINGS_TYPE_MIDI_SYSEX)
-    return base::WrapUnique(new ContentSettingMIDISysExImageModel());
+    return base::MakeUnique<ContentSettingMIDISysExImageModel>();
 
-  return base::WrapUnique(
-      new ContentSettingBlockedImageModel(content_settings_type));
+  return base::MakeUnique<ContentSettingBlockedImageModel>(
+      content_settings_type);
 }
 
 // Generic blocked content settings --------------------------------------------

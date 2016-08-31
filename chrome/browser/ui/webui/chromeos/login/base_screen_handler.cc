@@ -43,7 +43,7 @@ void BaseScreenHandler::InitializeBase() {
 }
 
 void BaseScreenHandler::GetLocalizedStrings(base::DictionaryValue* dict) {
-  auto builder = base::WrapUnique(new ::login::LocalizedValuesBuilder(dict));
+  auto builder = base::MakeUnique<::login::LocalizedValuesBuilder>(dict);
   DeclareLocalizedValues(builder.get());
   GetAdditionalParameters(dict);
 }

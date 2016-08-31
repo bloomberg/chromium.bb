@@ -24,7 +24,7 @@ namespace {
 
 std::unique_ptr<KeyedService> BuildPinnedTabService(
     content::BrowserContext* profile) {
-  return base::WrapUnique(new PinnedTabService(static_cast<Profile*>(profile)));
+  return base::MakeUnique<PinnedTabService>(static_cast<Profile*>(profile));
 }
 
 PinnedTabService* BuildForProfile(Profile* profile) {

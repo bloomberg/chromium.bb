@@ -183,9 +183,9 @@ void ChromeAutofillClient::ConfirmSaveCreditCardLocally(
 #if defined(OS_ANDROID)
   InfoBarService::FromWebContents(web_contents())
       ->AddInfoBar(CreateSaveCardInfoBarMobile(
-          base::WrapUnique(new AutofillSaveCardInfoBarDelegateMobile(
+          base::MakeUnique<AutofillSaveCardInfoBarDelegateMobile>(
               false, card, std::unique_ptr<base::DictionaryValue>(nullptr),
-              callback))));
+              callback)));
 #else
   // Do lazy initialization of SaveCardBubbleControllerImpl.
   autofill::SaveCardBubbleControllerImpl::CreateForWebContents(
@@ -203,8 +203,8 @@ void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
 #if defined(OS_ANDROID)
   InfoBarService::FromWebContents(web_contents())
       ->AddInfoBar(CreateSaveCardInfoBarMobile(
-          base::WrapUnique(new AutofillSaveCardInfoBarDelegateMobile(
-              true, card, std::move(legal_message), callback))));
+          base::MakeUnique<AutofillSaveCardInfoBarDelegateMobile>(
+              true, card, std::move(legal_message), callback)));
 #else
   // Do lazy initialization of SaveCardBubbleControllerImpl.
   autofill::SaveCardBubbleControllerImpl::CreateForWebContents(web_contents());

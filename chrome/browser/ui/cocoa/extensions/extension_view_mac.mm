@@ -104,7 +104,7 @@ namespace extensions {
 std::unique_ptr<ExtensionView> ExtensionViewHost::CreateExtensionView(
     ExtensionViewHost* host,
     Browser* browser) {
-  return base::WrapUnique(new ExtensionViewMac(host, browser));
+  return base::MakeUnique<ExtensionViewMac>(host, browser);
 }
 
 }  // namespace extensions

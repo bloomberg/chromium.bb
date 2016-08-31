@@ -79,7 +79,7 @@ class DefaultBrowserInfoBarDelegateTest : public ::testing::Test {
 
   void AddDefaultBrowserInfoBar() {
     infobar_service_->AddInfoBar(infobar_service_->CreateConfirmInfoBar(
-        base::WrapUnique(new FakeDefaultBrowserInfoBarDelegate())));
+        base::MakeUnique<FakeDefaultBrowserInfoBarDelegate>()));
   }
 
   InfoBarService* infobar_service() { return infobar_service_; }

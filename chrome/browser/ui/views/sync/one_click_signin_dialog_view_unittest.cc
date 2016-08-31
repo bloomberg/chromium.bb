@@ -50,7 +50,7 @@ class OneClickSigninDialogViewTest : public views::ViewsTestBase,
   OneClickSigninDialogView* ShowOneClickSigninDialog() {
     OneClickSigninDialogView::ShowDialog(
         base::string16(),
-        base::WrapUnique(new TestOneClickSigninLinksDelegate(this)),
+        base::MakeUnique<TestOneClickSigninLinksDelegate>(this),
         anchor_widget_->GetNativeWindow(),
         base::Bind(&OneClickSigninDialogViewTest::OnStartSync,
                    base::Unretained(this)));

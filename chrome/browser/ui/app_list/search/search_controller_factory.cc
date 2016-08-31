@@ -77,7 +77,7 @@ std::unique_ptr<SearchController> CreateSearchController(
   controller->AddProvider(
       apps_group_id,
       std::unique_ptr<SearchProvider>(new AppSearchProvider(
-          profile, list_controller, base::WrapUnique(new base::DefaultClock()),
+          profile, list_controller, base::MakeUnique<base::DefaultClock>(),
           model->top_level_item_list())));
   controller->AddProvider(omnibox_group_id,
                           std::unique_ptr<SearchProvider>(

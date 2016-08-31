@@ -402,7 +402,7 @@ TEST_F(MediaRouterUITest, GetExtensionNameExtensionPresent) {
   std::string id = "extensionid";
   GURL url = GURL("chrome-extension://" + id);
   std::unique_ptr<extensions::ExtensionRegistry> registry =
-      base::WrapUnique(new extensions::ExtensionRegistry(nullptr));
+      base::MakeUnique<extensions::ExtensionRegistry>(nullptr);
   scoped_refptr<extensions::Extension> app =
       extensions::test_util::BuildApp(extensions::ExtensionBuilder())
           .MergeManifest(extensions::DictionaryBuilder()
@@ -420,7 +420,7 @@ TEST_F(MediaRouterUITest, GetExtensionNameEmptyWhenNotInstalled) {
   std::string id = "extensionid";
   GURL url = GURL("chrome-extension://" + id);
   std::unique_ptr<extensions::ExtensionRegistry> registry =
-      base::WrapUnique(new extensions::ExtensionRegistry(nullptr));
+      base::MakeUnique<extensions::ExtensionRegistry>(nullptr);
 
   EXPECT_EQ("", MediaRouterUI::GetExtensionName(url, registry.get()));
 }
@@ -428,7 +428,7 @@ TEST_F(MediaRouterUITest, GetExtensionNameEmptyWhenNotInstalled) {
 TEST_F(MediaRouterUITest, GetExtensionNameEmptyWhenNotExtensionURL) {
   GURL url = GURL("https://www.google.com");
   std::unique_ptr<extensions::ExtensionRegistry> registry =
-      base::WrapUnique(new extensions::ExtensionRegistry(nullptr));
+      base::MakeUnique<extensions::ExtensionRegistry>(nullptr);
 
   EXPECT_EQ("", MediaRouterUI::GetExtensionName(url, registry.get()));
 }

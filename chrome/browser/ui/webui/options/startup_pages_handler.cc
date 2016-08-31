@@ -110,7 +110,7 @@ void StartupPagesHandler::InitializeHandler() {
                  base::Unretained(this)));
 
   autocomplete_controller_.reset(new AutocompleteController(
-      base::WrapUnique(new ChromeAutocompleteProviderClient(profile)), this,
+      base::MakeUnique<ChromeAutocompleteProviderClient>(profile), this,
       AutocompleteClassifier::kDefaultOmniboxProviders));
 }
 

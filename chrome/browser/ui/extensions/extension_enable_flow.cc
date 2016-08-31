@@ -118,12 +118,11 @@ void ExtensionEnableFlow::CheckPermissionAndMaybePromptUser() {
   ExtensionInstallPrompt::PromptType type =
       ExtensionInstallPrompt::GetReEnablePromptTypeForExtension(profile_,
                                                                 extension);
-  prompt_->ShowDialog(
-      base::Bind(&ExtensionEnableFlow::InstallPromptDone,
-                 weak_ptr_factory_.GetWeakPtr()),
-      extension, nullptr,
-      base::WrapUnique(new ExtensionInstallPrompt::Prompt(type)),
-      ExtensionInstallPrompt::GetDefaultShowDialogCallback());
+  prompt_->ShowDialog(base::Bind(&ExtensionEnableFlow::InstallPromptDone,
+                                 weak_ptr_factory_.GetWeakPtr()),
+                      extension, nullptr,
+                      base::MakeUnique<ExtensionInstallPrompt::Prompt>(type),
+                      ExtensionInstallPrompt::GetDefaultShowDialogCallback());
 }
 
 void ExtensionEnableFlow::CreatePrompt() {

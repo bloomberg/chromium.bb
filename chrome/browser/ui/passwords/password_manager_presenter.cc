@@ -248,7 +248,7 @@ PasswordManagerPresenter::GetAllPasswords() {
   std::vector<std::unique_ptr<autofill::PasswordForm>> ret_val;
 
   for (const auto& form : password_list_) {
-    ret_val.push_back(base::WrapUnique(new autofill::PasswordForm(*form)));
+    ret_val.push_back(base::MakeUnique<autofill::PasswordForm>(*form));
   }
 
   return ret_val;

@@ -35,5 +35,5 @@ views::BubbleBorder::Arrow PermissionPromptImpl::GetAnchorArrow() {
 std::unique_ptr<PermissionPrompt> PermissionPrompt::Create(Browser* browser) {
   if (chrome::ToolkitViewsWebUIDialogsEnabled())
     return base::WrapUnique(new PermissionPromptImpl(browser));
-  return base::WrapUnique(new PermissionBubbleCocoa(browser));
+  return base::MakeUnique<PermissionBubbleCocoa>(browser);
 }

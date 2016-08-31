@@ -97,11 +97,11 @@ class OneClickSigninSyncStarterTest : public ChromeRenderViewHostTestHarness {
   static std::unique_ptr<KeyedService> BuildSigninManager(
       content::BrowserContext* context) {
     Profile* profile = static_cast<Profile*>(context);
-    return base::WrapUnique(new FakeSigninManager(
+    return base::MakeUnique<FakeSigninManager>(
         ChromeSigninClientFactory::GetForProfile(profile),
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
         AccountTrackerServiceFactory::GetForProfile(profile),
-        GaiaCookieManagerServiceFactory::GetForProfile(profile)));
+        GaiaCookieManagerServiceFactory::GetForProfile(profile));
   }
 
   DISALLOW_COPY_AND_ASSIGN(OneClickSigninSyncStarterTest);

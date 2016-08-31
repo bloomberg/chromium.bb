@@ -87,7 +87,7 @@ InfoBarView::InfoBarView(std::unique_ptr<infobars::InfoBarDelegate> delegate)
   set_owned_by_client();  // InfoBar deletes itself at the appropriate time.
   set_background(
       new InfoBarBackground(infobars::InfoBar::delegate()->GetInfoBarType()));
-  SetEventTargeter(base::WrapUnique(new views::ViewTargeter(this)));
+  SetEventTargeter(base::MakeUnique<views::ViewTargeter>(this));
 
   AddChildView(child_container_);
 

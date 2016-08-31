@@ -174,7 +174,7 @@ std::unique_ptr<base::StringValue> DictionaryToJSONString(
   base::JSONWriter::WriteWithOptions(dict,
                                      base::JSONWriter::OPTIONS_PRETTY_PRINT,
                                      &json_string);
-  return base::WrapUnique(new base::StringValue(json_string));
+  return base::MakeUnique<base::StringValue>(json_string);
 }
 
 // Returns a copy of |value| with some values converted to a representation that

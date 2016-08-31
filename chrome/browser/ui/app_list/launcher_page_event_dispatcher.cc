@@ -28,15 +28,15 @@ LauncherPageEventDispatcher::~LauncherPageEventDispatcher() {
 }
 
 void LauncherPageEventDispatcher::ProgressChanged(double progress) {
-  DispatchEvent(base::WrapUnique(new extensions::Event(
+  DispatchEvent(base::MakeUnique<extensions::Event>(
       extensions::events::LAUNCHER_PAGE_ON_TRANSITION_CHANGED,
-      OnTransitionChanged::kEventName, OnTransitionChanged::Create(progress))));
+      OnTransitionChanged::kEventName, OnTransitionChanged::Create(progress)));
 }
 
 void LauncherPageEventDispatcher::PopSubpage() {
-  DispatchEvent(base::WrapUnique(
-      new extensions::Event(extensions::events::LAUNCHER_PAGE_ON_POP_SUBPAGE,
-                            OnPopSubpage::kEventName, OnPopSubpage::Create())));
+  DispatchEvent(base::MakeUnique<extensions::Event>(
+      extensions::events::LAUNCHER_PAGE_ON_POP_SUBPAGE,
+      OnPopSubpage::kEventName, OnPopSubpage::Create()));
 }
 
 void LauncherPageEventDispatcher::DispatchEvent(

@@ -211,6 +211,6 @@ void OmniboxPageHandler::StartOmniboxQuery(const mojo::String& input_string,
 
 void OmniboxPageHandler::ResetController() {
   controller_.reset(new AutocompleteController(
-      base::WrapUnique(new ChromeAutocompleteProviderClient(profile_)), this,
+      base::MakeUnique<ChromeAutocompleteProviderClient>(profile_), this,
       AutocompleteClassifier::kDefaultOmniboxProviders));
 }

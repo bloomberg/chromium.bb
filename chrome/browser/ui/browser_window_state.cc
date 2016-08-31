@@ -86,8 +86,7 @@ std::unique_ptr<DictionaryPrefUpdate> GetWindowPlacementDictionaryReadWrite(
   DCHECK(!window_name.empty());
   // A normal DictionaryPrefUpdate will suffice for non-app windows.
   if (prefs->FindPreference(window_name.c_str())) {
-    return base::WrapUnique(
-        new DictionaryPrefUpdate(prefs, window_name.c_str()));
+    return base::MakeUnique<DictionaryPrefUpdate>(prefs, window_name.c_str());
   }
   return std::unique_ptr<DictionaryPrefUpdate>(
       new WindowPlacementPrefUpdate(prefs, window_name));

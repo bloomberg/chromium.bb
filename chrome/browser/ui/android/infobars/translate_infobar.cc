@@ -25,7 +25,7 @@ using base::android::ScopedJavaLocalRef;
 
 std::unique_ptr<infobars::InfoBar> ChromeTranslateClient::CreateInfoBar(
     std::unique_ptr<translate::TranslateInfoBarDelegate> delegate) const {
-  return base::WrapUnique(new TranslateInfoBar(std::move(delegate)));
+  return base::MakeUnique<TranslateInfoBar>(std::move(delegate));
 }
 
 

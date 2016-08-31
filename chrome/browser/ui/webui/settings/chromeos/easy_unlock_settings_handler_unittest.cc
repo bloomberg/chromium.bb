@@ -96,8 +96,8 @@ class TestEasyUnlockSettingsHandler : public EasyUnlockSettingsHandler {
 
 std::unique_ptr<KeyedService> CreateEasyUnlockServiceForTest(
     content::BrowserContext* context) {
-  return base::WrapUnique(
-      new FakeEasyUnlockService(Profile::FromBrowserContext(context)));
+  return base::MakeUnique<FakeEasyUnlockService>(
+      Profile::FromBrowserContext(context));
 }
 
 }  // namespace

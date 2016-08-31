@@ -22,7 +22,7 @@
 // static
 std::unique_ptr<infobars::InfoBar> AlternateNavInfoBarDelegate::CreateInfoBar(
     std::unique_ptr<AlternateNavInfoBarDelegate> delegate) {
-  return base::WrapUnique(new AlternateNavInfoBarView(std::move(delegate)));
+  return base::MakeUnique<AlternateNavInfoBarView>(std::move(delegate));
 }
 
 

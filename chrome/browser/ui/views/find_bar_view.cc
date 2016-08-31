@@ -547,13 +547,13 @@ void FindBarView::InitViewsForNonMaterial() {
 
 void FindBarView::InitViewsForMaterial() {
   // The background color is not used since there's no arrow.
-  SetBorder(base::WrapUnique(new views::BubbleBorder(
+  SetBorder(base::MakeUnique<views::BubbleBorder>(
       views::BubbleBorder::NONE, views::BubbleBorder::SMALL_SHADOW,
-      SK_ColorGREEN)));
+      SK_ColorGREEN));
 
   match_count_text_ = new MatchCountLabel();
   match_count_text_->SetEventTargeter(
-      base::WrapUnique(new views::ViewTargeter(this)));
+      base::MakeUnique<views::ViewTargeter>(this));
   AddChildViewAt(match_count_text_, 1);
 
   separator_ = new views::Separator(views::Separator::VERTICAL);

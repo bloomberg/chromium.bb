@@ -88,11 +88,11 @@ TEST_F(PasswordDialogControllerTest, ShowAccountChooser) {
   local_form2.username_value = base::ASCIIToUTF16(kUsername2);
   autofill::PasswordForm idp_form = GetFederationProviderForm();
   std::vector<std::unique_ptr<autofill::PasswordForm>> locals;
-  locals.push_back(base::WrapUnique(new autofill::PasswordForm(local_form)));
-  locals.push_back(base::WrapUnique(new autofill::PasswordForm(local_form2)));
+  locals.push_back(base::MakeUnique<autofill::PasswordForm>(local_form));
+  locals.push_back(base::MakeUnique<autofill::PasswordForm>(local_form2));
   autofill::PasswordForm* local_form_ptr = locals[0].get();
   std::vector<std::unique_ptr<autofill::PasswordForm>> federations;
-  federations.push_back(base::WrapUnique(new autofill::PasswordForm(idp_form)));
+  federations.push_back(base::MakeUnique<autofill::PasswordForm>(idp_form));
 
   EXPECT_CALL(prompt, ShowAccountChooser());
   controller().ShowAccountChooser(&prompt,
@@ -126,7 +126,7 @@ TEST_F(PasswordDialogControllerTest, ShowAccountChooserAndSignIn) {
   StrictMock<MockPasswordPrompt> prompt;
   autofill::PasswordForm local_form = GetLocalForm();
   std::vector<std::unique_ptr<autofill::PasswordForm>> locals;
-  locals.push_back(base::WrapUnique(new autofill::PasswordForm(local_form)));
+  locals.push_back(base::MakeUnique<autofill::PasswordForm>(local_form));
   std::vector<std::unique_ptr<autofill::PasswordForm>> federations;
 
   EXPECT_CALL(prompt, ShowAccountChooser());
@@ -156,8 +156,7 @@ TEST_F(PasswordDialogControllerTest, AccountChooserClosed) {
   base::HistogramTester histogram_tester;
   StrictMock<MockPasswordPrompt> prompt;
   std::vector<std::unique_ptr<autofill::PasswordForm>> locals;
-  locals.push_back(
-      base::WrapUnique(new autofill::PasswordForm(GetLocalForm())));
+  locals.push_back(base::MakeUnique<autofill::PasswordForm>(GetLocalForm()));
   EXPECT_CALL(prompt, ShowAccountChooser());
   controller().ShowAccountChooser(&prompt, std::move(locals),
                                   PasswordDialogController::FormsVector());

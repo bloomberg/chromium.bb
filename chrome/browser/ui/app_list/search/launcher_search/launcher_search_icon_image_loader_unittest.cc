@@ -98,7 +98,7 @@ class FakeErrorReporter : public ErrorReporter {
   const std::string& GetLastWarningMessage() { return *last_message_.get(); }
 
   std::unique_ptr<ErrorReporter> Duplicate() override {
-    return base::WrapUnique(new FakeErrorReporter(last_message_));
+    return base::MakeUnique<FakeErrorReporter>(last_message_);
   }
 
  private:
@@ -136,7 +136,7 @@ class LauncherSearchIconImageLoaderTest : public testing::Test {
   void SetUp() override { extension_ = CreateTestExtension(kTestExtensionId); }
 
   std::unique_ptr<FakeErrorReporter> GetFakeErrorReporter() {
-    return base::WrapUnique(new FakeErrorReporter());
+    return base::MakeUnique<FakeErrorReporter>();
   }
 
   scoped_refptr<extensions::Extension> extension_;

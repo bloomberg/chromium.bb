@@ -224,22 +224,21 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, SendPolicyValues) {
   expected_values[policy::key::kRestoreOnStartupURLs] = "aaa,bbb,ccc";
   values.Set(policy::key::kHomepageLocation, policy::POLICY_LEVEL_MANDATORY,
              policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_CLOUD,
-             base::WrapUnique(new base::StringValue("http://google.com")),
-             nullptr);
+             base::MakeUnique<base::StringValue>("http://google.com"), nullptr);
   expected_values[policy::key::kHomepageLocation] = "http://google.com";
   values.Set(policy::key::kRestoreOnStartup, policy::POLICY_LEVEL_RECOMMENDED,
              policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-             base::WrapUnique(new base::FundamentalValue(4)), nullptr);
+             base::MakeUnique<base::FundamentalValue>(4), nullptr);
   expected_values[policy::key::kRestoreOnStartup] = "4";
   values.Set(policy::key::kShowHomeButton, policy::POLICY_LEVEL_RECOMMENDED,
              policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_CLOUD,
-             base::WrapUnique(new base::FundamentalValue(true)), nullptr);
+             base::MakeUnique<base::FundamentalValue>(true), nullptr);
   expected_values[policy::key::kShowHomeButton] = "true";
   // Set the value of a policy that does not exist.
   const std::string kUnknownPolicy = "NoSuchThing";
   values.Set(kUnknownPolicy, policy::POLICY_LEVEL_MANDATORY,
              policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_PLATFORM,
-             base::WrapUnique(new base::FundamentalValue(true)), nullptr);
+             base::MakeUnique<base::FundamentalValue>(true), nullptr);
   expected_values[kUnknownPolicy] = "true";
   UpdateProviderPolicy(values);
 

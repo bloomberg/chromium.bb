@@ -28,8 +28,8 @@
 #include "ui/views/window/dialog_client_view.h"
 
 std::unique_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
-  return base::WrapUnique(
-      new ChooserBubbleUiView(browser_, std::move(chooser_controller_)));
+  return base::MakeUnique<ChooserBubbleUiView>(browser_,
+                                               std::move(chooser_controller_));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

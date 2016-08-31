@@ -43,7 +43,7 @@ class UtilAboutSyncDataExtractor : public AboutSyncDataExtractor {
 
 SyncInternalsMessageHandler::SyncInternalsMessageHandler()
     : SyncInternalsMessageHandler(
-          base::WrapUnique(new UtilAboutSyncDataExtractor())) {}
+          base::MakeUnique<UtilAboutSyncDataExtractor>()) {}
 
 SyncInternalsMessageHandler::SyncInternalsMessageHandler(
     std::unique_ptr<AboutSyncDataExtractor> about_sync_data_extractor)

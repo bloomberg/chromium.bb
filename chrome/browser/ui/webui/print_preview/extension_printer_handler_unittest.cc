@@ -449,7 +449,7 @@ class FakePrinterProviderAPI : public PrinterProviderAPI {
 
 std::unique_ptr<KeyedService> BuildTestingPrinterProviderAPI(
     content::BrowserContext* context) {
-  return base::WrapUnique(new FakePrinterProviderAPI());
+  return base::MakeUnique<FakePrinterProviderAPI>();
 }
 
 }  // namespace

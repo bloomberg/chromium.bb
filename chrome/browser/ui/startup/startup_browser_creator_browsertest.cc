@@ -1182,7 +1182,7 @@ void StartupBrowserCreatorFirstRunTest::SetUpInProcessBrowserTestFixture() {
   policy_map_.Set(policy::key::kMetricsReportingEnabled,
                   policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                   policy::POLICY_SOURCE_CLOUD,
-                  base::WrapUnique(new base::FundamentalValue(false)), nullptr);
+                  base::MakeUnique<base::FundamentalValue>(false), nullptr);
   provider_.UpdateChromePolicy(policy_map_);
 #endif  // defined(OS_LINUX) && defined(GOOGLE_CHROME_BUILD)
 

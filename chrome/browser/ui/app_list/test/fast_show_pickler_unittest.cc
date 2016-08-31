@@ -81,15 +81,15 @@ TEST_F(AppListModelPicklerUnitTest, EmptyModel) {
 
 TEST_F(AppListModelPicklerUnitTest, OneItem) {
   AppListModel model;
-  model.AddItem(base::WrapUnique(new AppListItem("abc")));
+  model.AddItem(base::MakeUnique<AppListItem>("abc"));
   DoConsistencyChecks(&model);
 }
 
 TEST_F(AppListModelPicklerUnitTest, TwoItems) {
   AppListModel model;
-  AppListItem* app1 = model.AddItem(base::WrapUnique(new AppListItem("abc")));
+  AppListItem* app1 = model.AddItem(base::MakeUnique<AppListItem>("abc"));
   model.SetItemNameAndShortName(app1, "hello, there", "ht");
-  AppListItem* app2 = model.AddItem(base::WrapUnique(new AppListItem("abc2")));
+  AppListItem* app2 = model.AddItem(base::MakeUnique<AppListItem>("abc2"));
   model.SetItemNameAndShortName(app2, "hello, there 2", "ht2");
 
   DoConsistencyChecks(&model);
@@ -97,10 +97,10 @@ TEST_F(AppListModelPicklerUnitTest, TwoItems) {
 
 TEST_F(AppListModelPicklerUnitTest, Images) {
   AppListModel model;
-  AppListItem* app1 = model.AddItem(base::WrapUnique(new AppListItem("abc")));
+  AppListItem* app1 = model.AddItem(base::MakeUnique<AppListItem>("abc"));
   model.SetItemName(app1, "hello, there");
   app1->SetIcon(MakeImage());
-  AppListItem* app2 = model.AddItem(base::WrapUnique(new AppListItem("abc2")));
+  AppListItem* app2 = model.AddItem(base::MakeUnique<AppListItem>("abc2"));
   model.SetItemName(app2, "hello, there 2");
 
   DoConsistencyChecks(&model);
@@ -108,7 +108,7 @@ TEST_F(AppListModelPicklerUnitTest, Images) {
 
 TEST_F(AppListModelPicklerUnitTest, EmptyImage) {
   AppListModel model;
-  AppListItem* app1 = model.AddItem(base::WrapUnique(new AppListItem("abc")));
+  AppListItem* app1 = model.AddItem(base::MakeUnique<AppListItem>("abc"));
   model.SetItemName(app1, "hello, there");
   app1->SetIcon(gfx::ImageSkia());
 

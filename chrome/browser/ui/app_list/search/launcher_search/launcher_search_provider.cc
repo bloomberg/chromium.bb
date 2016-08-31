@@ -62,8 +62,8 @@ void LauncherSearchProvider::SetSearchResults(
   DCHECK(Service::Get(profile_)->IsQueryRunning());
 
   // Add this extension's results (erasing any existing results).
-  extension_results_[extension_id] = base::WrapUnique(
-      new ScopedVector<LauncherSearchResult>(std::move(results)));
+  extension_results_[extension_id] =
+      base::MakeUnique<ScopedVector<LauncherSearchResult>>(std::move(results));
 
   // Update results with other extension results.
   ClearResults();

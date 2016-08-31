@@ -242,9 +242,9 @@ class BookmarkButtonBase : public views::LabelButton {
   }
 
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
-    return base::WrapUnique(new views::FloodFillInkDropRipple(
+    return base::MakeUnique<views::FloodFillInkDropRipple>(
         CalculateInkDropBounds(size()), GetInkDropCenterBasedOnLastEvent(),
-        GetInkDropBaseColor(), ink_drop_visible_opacity()));
+        GetInkDropBaseColor(), ink_drop_visible_opacity());
   }
 
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
@@ -253,9 +253,9 @@ class BookmarkButtonBase : public views::LabelButton {
       return nullptr;
 
     const gfx::Rect bounds = CalculateInkDropBounds(size());
-    return base::WrapUnique(new views::InkDropHighlight(
+    return base::MakeUnique<views::InkDropHighlight>(
         bounds.size(), 0, gfx::RectF(bounds).CenterPoint(),
-        GetInkDropBaseColor()));
+        GetInkDropBaseColor());
   }
 
   SkColor GetInkDropBaseColor() const override {
@@ -343,9 +343,9 @@ class BookmarkMenuButtonBase : public views::MenuButton {
   }
 
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
-    return base::WrapUnique(new views::FloodFillInkDropRipple(
+    return base::MakeUnique<views::FloodFillInkDropRipple>(
         CalculateInkDropBounds(size()), GetInkDropCenterBasedOnLastEvent(),
-        GetInkDropBaseColor(), ink_drop_visible_opacity()));
+        GetInkDropBaseColor(), ink_drop_visible_opacity());
   }
 
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
@@ -354,9 +354,9 @@ class BookmarkMenuButtonBase : public views::MenuButton {
       return nullptr;
 
     const gfx::Rect bounds = CalculateInkDropBounds(size());
-    return base::WrapUnique(new views::InkDropHighlight(
+    return base::MakeUnique<views::InkDropHighlight>(
         bounds.size(), 0, gfx::RectF(bounds).CenterPoint(),
-        GetInkDropBaseColor()));
+        GetInkDropBaseColor());
   }
 
   SkColor GetInkDropBaseColor() const override {

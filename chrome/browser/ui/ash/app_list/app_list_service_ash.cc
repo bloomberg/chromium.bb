@@ -59,8 +59,8 @@ class AppListPresenterDelegateFactoryMus
 
   std::unique_ptr<app_list::AppListPresenterDelegate> GetDelegate(
       app_list::AppListPresenter* presenter) override {
-    return base::WrapUnique(
-        new AppListPresenterDelegateMus(view_delegate_factory_.get()));
+    return base::MakeUnique<AppListPresenterDelegateMus>(
+        view_delegate_factory_.get());
   }
 
  private:
@@ -80,10 +80,10 @@ AppListServiceAsh* AppListServiceAsh::GetInstance() {
 AppListServiceAsh::AppListServiceAsh() {
   if (chrome::IsRunningInMash()) {
     presenter_delegate_factory_.reset(new AppListPresenterDelegateFactoryMus(
-        base::WrapUnique(new ViewDelegateFactoryImpl(this))));
+        base::MakeUnique<ViewDelegateFactoryImpl>(this)));
   } else {
     presenter_delegate_factory_.reset(new ash::AppListPresenterDelegateFactory(
-        base::WrapUnique(new ViewDelegateFactoryImpl(this))));
+        base::MakeUnique<ViewDelegateFactoryImpl>(this)));
   }
   app_list_presenter_.reset(
       new app_list::AppListPresenterImpl(presenter_delegate_factory_.get()));

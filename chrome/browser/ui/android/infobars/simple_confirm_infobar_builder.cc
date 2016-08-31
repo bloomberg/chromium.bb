@@ -161,9 +161,9 @@ void Create(JNIEnv* env,
   InfoBarService* service = InfoBarService::FromWebContents(
       TabAndroid::GetNativeTab(env, j_tab)->web_contents());
   service->AddInfoBar(service->CreateConfirmInfoBar(
-      base::WrapUnique(new SimpleConfirmInfoBarDelegate(
+      base::MakeUnique<SimpleConfirmInfoBarDelegate>(
           j_listener, infobar_identifier, icon_bitmap, message_str, primary_str,
-          secondary_str, auto_expire))));
+          secondary_str, auto_expire)));
 }
 
 bool RegisterSimpleConfirmInfoBarBuilder(JNIEnv* env) {

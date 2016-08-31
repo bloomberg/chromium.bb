@@ -101,7 +101,7 @@ SearchEnginesHandler::GetSearchEnginesList() {
 
   // Build the first list (default search engines).
   std::unique_ptr<base::ListValue> defaults =
-      base::WrapUnique(new base::ListValue());
+      base::MakeUnique<base::ListValue>();
   int last_default_engine_index =
       list_controller_.table_model()->last_search_engine_index();
   for (int i = 0; i < last_default_engine_index; ++i) {
@@ -110,8 +110,7 @@ SearchEnginesHandler::GetSearchEnginesList() {
   }
 
   // Build the second list (other search engines).
-  std::unique_ptr<base::ListValue> others =
-      base::WrapUnique(new base::ListValue());
+  std::unique_ptr<base::ListValue> others = base::MakeUnique<base::ListValue>();
   int last_other_engine_index =
       list_controller_.table_model()->last_other_engine_index();
   for (int i = std::max(last_default_engine_index, 0);
@@ -121,7 +120,7 @@ SearchEnginesHandler::GetSearchEnginesList() {
 
   // Build the third list (omnibox extensions).
   std::unique_ptr<base::ListValue> extensions =
-      base::WrapUnique(new base::ListValue());
+      base::MakeUnique<base::ListValue>();
   int engine_count = list_controller_.table_model()->RowCount();
   for (int i = std::max(last_other_engine_index, 0); i < engine_count; ++i) {
     extensions->Append(CreateDictionaryForEngine(i, i == default_index));

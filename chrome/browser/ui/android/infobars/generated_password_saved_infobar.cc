@@ -19,9 +19,9 @@ using base::android::JavaParamRef;
 void GeneratedPasswordSavedInfoBarDelegateAndroid::Create(
     content::WebContents* web_contents) {
   InfoBarService::FromWebContents(web_contents)
-      ->AddInfoBar(base::WrapUnique(new GeneratedPasswordSavedInfoBar(
-          base::WrapUnique(new GeneratedPasswordSavedInfoBarDelegateAndroid(
-              web_contents)))));
+      ->AddInfoBar(
+          base::MakeUnique<GeneratedPasswordSavedInfoBar>(base::WrapUnique(
+              new GeneratedPasswordSavedInfoBarDelegateAndroid(web_contents))));
 }
 
 GeneratedPasswordSavedInfoBar::GeneratedPasswordSavedInfoBar(

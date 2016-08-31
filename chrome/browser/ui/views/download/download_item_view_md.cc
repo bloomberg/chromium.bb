@@ -493,10 +493,10 @@ void DownloadItemViewMd::AddInkDropLayer(ui::Layer* ink_drop_layer) {
 
 std::unique_ptr<views::InkDropRipple> DownloadItemViewMd::CreateInkDropRipple()
     const {
-  return base::WrapUnique(new views::FloodFillInkDropRipple(
+  return base::MakeUnique<views::FloodFillInkDropRipple>(
       GetLocalBounds(), GetInkDropCenterBasedOnLastEvent(),
       color_utils::DeriveDefaultIconColor(GetTextColor()),
-      ink_drop_visible_opacity()));
+      ink_drop_visible_opacity());
 }
 
 std::unique_ptr<views::InkDropHighlight>
@@ -505,10 +505,10 @@ DownloadItemViewMd::CreateInkDropHighlight() const {
     return nullptr;
 
   gfx::Size size = GetPreferredSize();
-  return base::WrapUnique(new views::InkDropHighlight(
+  return base::MakeUnique<views::InkDropHighlight>(
       size, kInkDropSmallCornerRadius,
       gfx::RectF(gfx::SizeF(size)).CenterPoint(),
-      color_utils::DeriveDefaultIconColor(GetTextColor())));
+      color_utils::DeriveDefaultIconColor(GetTextColor()));
 }
 
 void DownloadItemViewMd::OnGestureEvent(ui::GestureEvent* event) {
@@ -802,8 +802,8 @@ void DownloadItemViewMd::UpdateColorsFromTheme() {
   if (!GetThemeProvider())
     return;
 
-  SetBorder(base::WrapUnique(new SeparatorBorder(GetThemeProvider()->GetColor(
-      ThemeProperties::COLOR_TOOLBAR_VERTICAL_SEPARATOR))));
+  SetBorder(base::MakeUnique<SeparatorBorder>(GetThemeProvider()->GetColor(
+      ThemeProperties::COLOR_TOOLBAR_VERTICAL_SEPARATOR)));
 
   SkColor text_color = GetTextColor();
   if (dangerous_download_label_)

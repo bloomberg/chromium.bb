@@ -29,7 +29,7 @@ class TestOmniboxClient : public OmniboxClient {
   // OmniboxClient:
   std::unique_ptr<AutocompleteProviderClient> CreateAutocompleteProviderClient()
       override {
-    return base::WrapUnique(new ChromeAutocompleteProviderClient(profile_));
+    return base::MakeUnique<ChromeAutocompleteProviderClient>(profile_);
   }
   std::unique_ptr<OmniboxNavigationObserver> CreateOmniboxNavigationObserver(
       const base::string16& text,

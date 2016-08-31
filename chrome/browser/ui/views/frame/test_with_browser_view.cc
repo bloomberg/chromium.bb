@@ -37,7 +37,7 @@ namespace {
 std::unique_ptr<KeyedService> CreateTemplateURLService(
     content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
-  return base::WrapUnique(new TemplateURLService(
+  return base::MakeUnique<TemplateURLService>(
       profile->GetPrefs(),
       std::unique_ptr<SearchTermsData>(new UIThreadSearchTermsData(profile)),
       WebDataServiceFactory::GetKeywordWebDataForProfile(
@@ -46,19 +46,19 @@ std::unique_ptr<KeyedService> CreateTemplateURLService(
           new ChromeTemplateURLServiceClient(
               HistoryServiceFactory::GetForProfile(
                   profile, ServiceAccessType::EXPLICIT_ACCESS))),
-      nullptr, nullptr, base::Closure()));
+      nullptr, nullptr, base::Closure());
 }
 
 std::unique_ptr<KeyedService> CreateAutocompleteClassifier(
     content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
-  return base::WrapUnique(new AutocompleteClassifier(
+  return base::MakeUnique<AutocompleteClassifier>(
       base::WrapUnique(new AutocompleteController(
           base::WrapUnique(new ChromeAutocompleteProviderClient(profile)),
 
           nullptr, AutocompleteClassifier::kDefaultOmniboxProviders)),
       std::unique_ptr<AutocompleteSchemeClassifier>(
-          new TestSchemeClassifier())));
+          new TestSchemeClassifier()));
 }
 
 }  // namespace

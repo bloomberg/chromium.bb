@@ -84,7 +84,7 @@ class TestSyncService : public ProfileSyncServiceMock {
 
 std::unique_ptr<KeyedService> TestingSyncFactoryFunction(
     content::BrowserContext* context) {
-  return base::WrapUnique(new TestSyncService(static_cast<Profile*>(context)));
+  return base::MakeUnique<TestSyncService>(static_cast<Profile*>(context));
 }
 
 }  // namespace

@@ -25,7 +25,7 @@ using base::android::ScopedJavaLocalRef;
 
 std::unique_ptr<infobars::InfoBar> InfoBarService::CreateConfirmInfoBar(
     std::unique_ptr<ConfirmInfoBarDelegate> delegate) {
-  return base::WrapUnique(new ConfirmInfoBar(std::move(delegate)));
+  return base::MakeUnique<ConfirmInfoBar>(std::move(delegate));
 }
 
 

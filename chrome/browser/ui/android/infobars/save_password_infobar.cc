@@ -50,5 +50,5 @@ void SavePasswordInfoBar::OnLinkClicked(JNIEnv* env,
 
 std::unique_ptr<infobars::InfoBar> CreateSavePasswordInfoBar(
     std::unique_ptr<SavePasswordInfoBarDelegate> delegate) {
-  return base::WrapUnique(new SavePasswordInfoBar(std::move(delegate)));
+  return base::MakeUnique<SavePasswordInfoBar>(std::move(delegate));
 }

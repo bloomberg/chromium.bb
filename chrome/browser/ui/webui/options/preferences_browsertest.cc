@@ -883,7 +883,7 @@ class ProxyPreferencesBrowserTest : public PreferencesBrowserTest {
     policy::PolicyMap map;
     map.Set(policy_name, policy::POLICY_LEVEL_MANDATORY, scope,
             policy::POLICY_SOURCE_CLOUD,
-            base::WrapUnique(new base::StringValue(onc_policy)), nullptr);
+            base::MakeUnique<base::StringValue>(onc_policy), nullptr);
     policy_provider_.UpdateChromePolicy(map);
 
     content::RunAllPendingInMessageLoop();

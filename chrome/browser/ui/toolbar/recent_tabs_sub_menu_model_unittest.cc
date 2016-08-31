@@ -150,10 +150,10 @@ class RecentTabsSubMenuModelTest
 
   static std::unique_ptr<KeyedService> GetTabRestoreService(
       content::BrowserContext* browser_context) {
-    return base::WrapUnique(new sessions::PersistentTabRestoreService(
+    return base::MakeUnique<sessions::PersistentTabRestoreService>(
         base::WrapUnique(new ChromeTabRestoreServiceClient(
             Profile::FromBrowserContext(browser_context))),
-        nullptr));
+        nullptr);
   }
 
   sync_driver::OpenTabsUIDelegate* GetOpenTabsDelegate() {

@@ -36,8 +36,8 @@ class TestCertificateSelector : public chrome::CertificateSelector {
   }
 
   void Init() {
-    InitWithText(base::WrapUnique(
-        new views::Label(base::ASCIIToUTF16("some arbitrary text"))));
+    InitWithText(base::MakeUnique<views::Label>(
+        base::ASCIIToUTF16("some arbitrary text")));
   }
 
   bool Accept() override {

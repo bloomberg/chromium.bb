@@ -522,8 +522,8 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
   void StartAppSyncService(const syncer::SyncDataList& init_sync_list) {
     app_service_->MergeDataAndStartSyncing(
         syncer::APP_LIST, init_sync_list,
-        base::WrapUnique(new syncer::FakeSyncChangeProcessor()),
-        base::WrapUnique(new syncer::SyncErrorFactoryMock()));
+        base::MakeUnique<syncer::FakeSyncChangeProcessor>(),
+        base::MakeUnique<syncer::SyncErrorFactoryMock>());
     EXPECT_EQ(init_sync_list.size(), app_service_->sync_items().size());
   }
 

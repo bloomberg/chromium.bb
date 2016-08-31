@@ -173,8 +173,8 @@ void BluetoothDeviceConnectError(
 
 std::unique_ptr<ash::CastConfigDelegate> CreateCastConfigDelegate() {
   if (CastConfigDelegateMediaRouter::IsEnabled())
-    return base::WrapUnique(new CastConfigDelegateMediaRouter());
-  return base::WrapUnique(new CastConfigDelegateChromeos());
+    return base::MakeUnique<CastConfigDelegateMediaRouter>();
+  return base::MakeUnique<CastConfigDelegateChromeos>();
 }
 
 void ShowSettingsSubPageForActiveUser(const std::string& sub_page) {

@@ -104,6 +104,6 @@ void DropdownBarView::SetBorderFromIds(int left_border_image_id,
   int border_image_ids[3] = {left_border_image_id, middle_border_image_id,
       right_border_image_id};
   SetBorder(views::Border::CreateBorderPainter(
-      base::WrapUnique(new views::HorizontalPainter(border_image_ids)),
+      base::MakeUnique<views::HorizontalPainter>(border_image_ids),
       gfx::Insets()));
 }

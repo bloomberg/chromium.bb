@@ -51,8 +51,8 @@ std::unique_ptr<KeyedService> AppListSyncableServiceFactory::BuildInstanceFor(
 #endif
   VLOG(1) << "BuildInstanceFor: " << profile->GetDebugName()
           << " (" << profile << ")";
-  return base::WrapUnique(new AppListSyncableService(
-      profile, extensions::ExtensionSystem::Get(profile)));
+  return base::MakeUnique<AppListSyncableService>(
+      profile, extensions::ExtensionSystem::Get(profile));
 }
 
 // static

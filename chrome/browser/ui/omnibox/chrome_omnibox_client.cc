@@ -127,7 +127,7 @@ ChromeOmniboxClient::~ChromeOmniboxClient() {
 
 std::unique_ptr<AutocompleteProviderClient>
 ChromeOmniboxClient::CreateAutocompleteProviderClient() {
-  return base::WrapUnique(new ChromeAutocompleteProviderClient(profile_));
+  return base::MakeUnique<ChromeAutocompleteProviderClient>(profile_);
 }
 
 std::unique_ptr<OmniboxNavigationObserver>
@@ -135,8 +135,8 @@ ChromeOmniboxClient::CreateOmniboxNavigationObserver(
     const base::string16& text,
     const AutocompleteMatch& match,
     const AutocompleteMatch& alternate_nav_match) {
-  return base::WrapUnique(new ChromeOmniboxNavigationObserver(
-      profile_, text, match, alternate_nav_match));
+  return base::MakeUnique<ChromeOmniboxNavigationObserver>(
+      profile_, text, match, alternate_nav_match);
 }
 
 bool ChromeOmniboxClient::CurrentPageExists() const {

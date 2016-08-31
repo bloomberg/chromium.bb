@@ -49,10 +49,10 @@ class CertificateManagerBrowserTest : public options::OptionsUIBrowserTest {
     const std::string& user_policy_blob =
         chromeos::onc::test_utils::ReadTestData(filename);
     policy::PolicyMap policy;
-    policy.Set(
-        policy::key::kOpenNetworkConfiguration, policy::POLICY_LEVEL_MANDATORY,
-        policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-        base::WrapUnique(new base::StringValue(user_policy_blob)), nullptr);
+    policy.Set(policy::key::kOpenNetworkConfiguration,
+               policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+               policy::POLICY_SOURCE_CLOUD,
+               base::MakeUnique<base::StringValue>(user_policy_blob), nullptr);
     provider_.UpdateChromePolicy(policy);
     content::RunAllPendingInMessageLoop();
   }
