@@ -207,15 +207,12 @@ component("gpu") {
 
   if (is_android) {
     sources += [
-      "android_copying_backing_strategy.cc",
-      "android_copying_backing_strategy.h",
-      "android_deferred_rendering_backing_strategy.cc",
-      "android_deferred_rendering_backing_strategy.h",
       "android_video_decode_accelerator.cc",
       "android_video_decode_accelerator.h",
       "avda_codec_image.cc",
       "avda_codec_image.h",
-      "avda_return_on_failure.h",
+      "avda_picture_buffer_manager.cc",
+      "avda_picture_buffer_manager.h",
       "avda_shared_state.cc",
       "avda_shared_state.h",
       "avda_state_provider.h",

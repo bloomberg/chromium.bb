@@ -10,10 +10,6 @@
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "media/video/video_decode_accelerator.h"
 
-namespace gl {
-class SurfaceTexture;
-}
-
 namespace gpu {
 namespace gles2 {
 class GLES2Decoder;
@@ -22,21 +18,13 @@ class GLES2Decoder;
 
 namespace media {
 
-// Helper class that provides the BackingStrategy with enough state
+// Helper class that provides AVDAPictureBufferManager with enough state
 // to do useful work.
 class AVDAStateProvider {
  public:
   // Various handy getters.
   virtual const gfx::Size& GetSize() const = 0;
-  virtual const base::ThreadChecker& ThreadChecker() const = 0;
   virtual base::WeakPtr<gpu::gles2::GLES2Decoder> GetGlDecoder() const = 0;
-  virtual gpu::gles2::TextureRef* GetTextureForPicture(
-      const PictureBuffer& picture_buffer) = 0;
-
-  // Create a SurfaceTexture and attach a new gl texture to it. |*service_id|
-  // is set to the created texture id.
-  virtual scoped_refptr<gl::SurfaceTexture> CreateAttachedSurfaceTexture(
-      GLuint* service_id) = 0;
 
   // Helper function to report an error condition and stop decoding.
   // This will post NotifyError(), and transition to the error state.

@@ -15,20 +15,21 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
 #include "media/base/android/media_codec_util.h"
 #include "media/base/android/media_jni_registrar.h"
-#include "media/gpu/android_copying_backing_strategy.h"
 #include "media/gpu/android_video_decode_accelerator.h"
 #include "media/video/picture.h"
 #include "media/video/video_decode_accelerator.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gl/android/surface_texture.h"
+#include "ui/gl/gl_context.h"
+#include "ui/gl/gl_surface.h"
+#include "ui/gl/init/gl_factory.h"
 
 namespace {
 
-bool MockMakeContextCurrent() {
+bool MakeContextCurrent() {
   return true;
 }
 
-static base::WeakPtr<gpu::gles2::GLES2Decoder> MockGetGLES2Decoder(
+base::WeakPtr<gpu::gles2::GLES2Decoder> GetGLES2Decoder(
     const base::WeakPtr<gpu::gles2::GLES2Decoder>& decoder) {
   return decoder;
 }
@@ -65,43 +66,48 @@ class AndroidVideoDecodeAcceleratorTest : public testing::Test {
     JNIEnv* env = base::android::AttachCurrentThread();
     RegisterJni(env);
 
-    // Start message loop because
-    // AndroidVideoDecodeAccelerator::ConfigureMediaCodec() starts a timer task.
-    message_loop_.reset(new base::MessageLoop());
+    gl::init::ClearGLBindings();
+    ASSERT_TRUE(gl::init::InitializeGLOneOff());
+    surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size(1024, 1024));
+    context_ = gl::init::CreateGLContext(nullptr, surface_.get(),
+                                         gl::PreferDiscreteGpu);
+    context_->MakeCurrent(surface_.get());
 
-    std::unique_ptr<gpu::gles2::MockGLES2Decoder> decoder(
-        new gpu::gles2::MockGLES2Decoder());
-    std::unique_ptr<MockVideoDecodeAcceleratorClient> client(
-        new MockVideoDecodeAcceleratorClient());
-    accelerator_.reset(new AndroidVideoDecodeAccelerator(
-        base::Bind(&MockMakeContextCurrent),
-        base::Bind(&MockGetGLES2Decoder, decoder->AsWeakPtr())));
+    // Start a message loop because AVDA starts a timer task.
+    message_loop_.reset(new base::MessageLoop());
+    gl_decoder_.reset(new testing::NiceMock<gpu::gles2::MockGLES2Decoder>());
+    client_.reset(new MockVideoDecodeAcceleratorClient());
+
+    vda_.reset(new AndroidVideoDecodeAccelerator(
+        base::Bind(&MakeContextCurrent),
+        base::Bind(&GetGLES2Decoder, gl_decoder_->AsWeakPtr())));
   }
 
-  bool Configure(VideoCodec codec) {
-    AndroidVideoDecodeAccelerator* accelerator =
-        static_cast<AndroidVideoDecodeAccelerator*>(accelerator_.get());
-    scoped_refptr<gl::SurfaceTexture> surface_texture =
-        gl::SurfaceTexture::Create(0);
-    accelerator->codec_config_->surface_ =
-        gl::ScopedJavaSurface(surface_texture.get());
-    accelerator->codec_config_->codec_ = codec;
-    return accelerator->ConfigureMediaCodecSynchronously();
+  bool Initialize(VideoCodecProfile profile) {
+    return vda_->Initialize(VideoDecodeAccelerator::Config(profile),
+                            client_.get());
   }
 
  private:
-  std::unique_ptr<VideoDecodeAccelerator> accelerator_;
   std::unique_ptr<base::MessageLoop> message_loop_;
+  scoped_refptr<gl::GLSurface> surface_;
+  scoped_refptr<gl::GLContext> context_;
+  std::unique_ptr<gpu::gles2::MockGLES2Decoder> gl_decoder_;
+  std::unique_ptr<MockVideoDecodeAcceleratorClient> client_;
+
+  // This must be a unique pointer to a VDA and not an AVDA to ensure the
+  // the default_delete specialization that calls Destroy() will be used.
+  std::unique_ptr<VideoDecodeAccelerator> vda_;
 };
 
 TEST_F(AndroidVideoDecodeAcceleratorTest, ConfigureUnsupportedCodec) {
-  EXPECT_FALSE(Configure(kUnknownVideoCodec));
+  ASSERT_FALSE(Initialize(VIDEO_CODEC_PROFILE_UNKNOWN));
 }
 
 TEST_F(AndroidVideoDecodeAcceleratorTest, ConfigureSupportedCodec) {
   if (!MediaCodecUtil::IsMediaCodecAvailable())
     return;
-  EXPECT_TRUE(Configure(kCodecVP8));
+  ASSERT_TRUE(Initialize(VP8PROFILE_ANY));
 }
 
 }  // namespace media
