@@ -22,6 +22,12 @@ import java.util.concurrent.Callable;
  */
 @VisibleForTesting
 public class AwContentsClientCallbackHelper {
+    /**
+     * Interface to tell CallbackHelper to cancel posted callbacks.
+     */
+    public static interface CancelCallbackPoller {
+        boolean cancelAllCallbacks();
+    }
 
     // TODO(boliu): Consider removing DownloadInfo and LoginRequestInfo by using native
     // MessageLoop to post directly to AwContents.
@@ -126,6 +132,8 @@ public class AwContentsClientCallbackHelper {
 
     private final Handler mHandler;
 
+    private CancelCallbackPoller mCancelCallbackPoller;
+
     private class MyHandler extends Handler {
         private MyHandler(Looper looper) {
             super(looper);
@@ -133,6 +141,11 @@ public class AwContentsClientCallbackHelper {
 
         @Override
         public void handleMessage(Message msg) {
+            if (mCancelCallbackPoller != null && mCancelCallbackPoller.cancelAllCallbacks()) {
+                removeCallbacksAndMessages(null);
+                return;
+            }
+
             switch(msg.what) {
                 case MSG_ON_LOAD_RESOURCE: {
                     final String url = (String) msg.obj;
@@ -225,6 +238,11 @@ public class AwContentsClientCallbackHelper {
     public AwContentsClientCallbackHelper(Looper looper, AwContentsClient contentsClient) {
         mHandler = new MyHandler(looper);
         mContentsClient = contentsClient;
+    }
+
+    // Public for tests.
+    public void setCancelCallbackPoller(CancelCallbackPoller poller) {
+        mCancelCallbackPoller = poller;
     }
 
     public void postOnLoadResource(String url) {

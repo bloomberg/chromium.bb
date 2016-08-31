@@ -759,6 +759,13 @@ public class AwContents implements SmartClipProvider,
         mInitialFunctor = new AwGLFunctor(mNativeDrawGLFunctorFactory, mContainerView);
         mCurrentFunctor = mInitialFunctor;
         mContentsClient = contentsClient;
+        mContentsClient.getCallbackHelper().setCancelCallbackPoller(
+                new AwContentsClientCallbackHelper.CancelCallbackPoller() {
+                    @Override
+                    public boolean cancelAllCallbacks() {
+                        return AwContents.this.isDestroyed(NO_WARN);
+                    }
+                });
         mAwViewMethods = new AwViewMethodsImpl();
         mFullScreenTransitionsState = new FullScreenTransitionsState(
                 mContainerView, mInternalAccessAdapter, mAwViewMethods);
@@ -1218,12 +1225,7 @@ public class AwContents implements SmartClipProvider,
      * @return whether this instance of WebView is flagged as destroyed.
      */
     private boolean isDestroyed(int warnIfDestroyed) {
-        if (!mIsDestroyed) {
-            assert mContentViewCore != null;
-            assert mWebContents != null;
-            assert mNavigationController != null;
-            assert mNativeAwContents != 0;
-        } else if (warnIfDestroyed == WARN) {
+        if (mIsDestroyed && warnIfDestroyed == WARN) {
             Log.w(TAG, "Application attempted to call on a destroyed WebView", new Throwable());
         }
         boolean destroyRunnableHasRun =

@@ -15,6 +15,7 @@ import org.chromium.android_webview.test.TestAwContentsClient.OnDownloadStartHel
 import org.chromium.android_webview.test.TestAwContentsClient.OnReceivedLoginRequestHelper;
 import org.chromium.android_webview.test.TestAwContentsClient.PictureListenerHelper;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.parameter.ParameterizedTest;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageStartedHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnReceivedErrorHelper;
@@ -24,6 +25,7 @@ import java.util.concurrent.Callable;
 /**
  * Test suite for AwContentsClientCallbackHelper.
  */
+@ParameterizedTest.Set  // These are unit tests. No need to repeat for multiprocess.
 public class AwContentsClientCallbackHelperTest extends AwTestBase {
     /**
      * Callback helper for OnLoadedResource.
@@ -65,6 +67,26 @@ public class AwContentsClientCallbackHelperTest extends AwTestBase {
         }
     }
 
+    private static class TestCancelCallbackPoller
+            implements AwContentsClientCallbackHelper.CancelCallbackPoller {
+        private boolean mCancelled;
+        private final CallbackHelper mCallbackHelper = new CallbackHelper();
+
+        public void setCancelled() {
+            mCancelled = true;
+        }
+
+        public CallbackHelper getCallbackHelper() {
+            return mCallbackHelper;
+        }
+
+        @Override
+        public boolean cancelAllCallbacks() {
+            mCallbackHelper.notifyCalled();
+            return mCancelled;
+        }
+    }
+
     static final int PICTURE_TIMEOUT = 5000;
     static final String TEST_URL = "www.example.com";
     static final String REALM = "www.example.com";
@@ -82,6 +104,7 @@ public class AwContentsClientCallbackHelperTest extends AwTestBase {
 
     private TestAwContentsClient mContentsClient;
     private AwContentsClientCallbackHelper mClientHelper;
+    private TestCancelCallbackPoller mCancelCallbackPoller;
     private Looper mLooper;
 
     @Override
@@ -90,6 +113,8 @@ public class AwContentsClientCallbackHelperTest extends AwTestBase {
         mLooper = Looper.getMainLooper();
         mContentsClient = new TestAwContentsClient();
         mClientHelper = new AwContentsClientCallbackHelper(mLooper, mContentsClient);
+        mCancelCallbackPoller = new TestCancelCallbackPoller();
+        mClientHelper.setCancelCallbackPoller(mCancelCallbackPoller);
     }
 
     @Feature({"AndroidWebView"})
@@ -225,5 +250,32 @@ public class AwContentsClientCallbackHelperTest extends AwTestBase {
         scaleChangedHelper.waitForCallback(onScaleChangeCount);
         assertEquals(OLD_SCALE, scaleChangedHelper.getOldScale());
         assertEquals(NEW_SCALE, scaleChangedHelper.getNewScale());
+    }
+
+    @Feature({"AndroidWebView"})
+    @SmallTest
+    public void testCancelCallbackPoller() throws Exception {
+        mCancelCallbackPoller.setCancelled();
+        CallbackHelper cancelCallbackPollerHelper = mCancelCallbackPoller.getCallbackHelper();
+        OnPageStartedHelper pageStartedHelper = mContentsClient.getOnPageStartedHelper();
+
+        int pollCount = pageStartedHelper.getCallCount();
+        int onPageStartedCount = pageStartedHelper.getCallCount();
+        // Post two callbacks.
+        mClientHelper.postOnPageStarted(TEST_URL);
+        mClientHelper.postOnPageStarted(TEST_URL);
+
+        // Wait for at least one poll.
+        cancelCallbackPollerHelper.waitForCallback(pollCount);
+
+        // Flush main queue.
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+            }
+        });
+
+        // Neither callback should actually happen.
+        assertEquals(onPageStartedCount, pageStartedHelper.getCallCount());
     }
 }
