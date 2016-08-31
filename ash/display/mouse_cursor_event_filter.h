@@ -22,6 +22,7 @@ class Window;
 
 namespace ash {
 class DisplayEdgeController;
+class MouseWarpController;
 
 // An event filter that controls mouse location in extended desktop
 // environment.

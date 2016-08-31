@@ -10,6 +10,11 @@
 #include "ash/common/system/system_notifier.h"
 #include "ash/common/wm_shell.h"
 #include "ash/display/display_manager.h"
+
+#include "ash/display/extended_mouse_warp_controller.h"
+#include "ash/display/null_mouse_warp_controller.h"
+#include "ash/display/unified_mouse_warp_controller.h"
+
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/shell.h"
 #include "base/strings/string_number_conversions.h"
@@ -82,6 +87,18 @@ scoped_refptr<display::ManagedDisplayMode> GetDisplayModeForUIScale(
 }
 
 }  // namespace
+
+std::unique_ptr<MouseWarpController> CreateMouseWarpController(
+    DisplayManager* manager,
+    aura::Window* drag_source) {
+  if (manager->IsInUnifiedMode() && manager->num_connected_displays() >= 2)
+    return base::MakeUnique<UnifiedMouseWarpController>();
+  // Extra check for |num_connected_displays()| is for SystemDisplayApiTest
+  // that injects MockScreen.
+  if (manager->GetNumDisplays() < 2 || manager->num_connected_displays() < 2)
+    return base::MakeUnique<NullMouseWarpController>();
+  return base::MakeUnique<ExtendedMouseWarpController>(drag_source);
+}
 
 bool SetDisplayUIScale(int64_t id, float ui_scale) {
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();

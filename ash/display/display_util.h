@@ -5,16 +5,14 @@
 #ifndef ASH_DISPLAY_DISPLAY_UTIL_H_
 #define ASH_DISPLAY_DISPLAY_UTIL_H_
 
-#include <stdint.h>
-
-#include <set>
-#include <utility>
-#include <vector>
+#include <memory>
 
 #include "ash/ash_export.h"
-#include "base/memory/ref_counted.h"
-#include "ui/display/manager/display_layout.h"
-#include "ui/display/manager/managed_display_info.h"
+#include "base/strings/string16.h"
+
+namespace aura {
+class Window;
+}
 
 namespace display {
 class ManagedDisplayInfo;
@@ -23,13 +21,19 @@ class ManagedDisplayInfo;
 namespace gfx {
 class Point;
 class Rect;
-class Size;
 }
-
-namespace ui {}
 
 namespace ash {
 class AshWindowTreeHost;
+class DisplayManager;
+class MouseWarpController;
+
+// Creates a MouseWarpController for the current display
+// configuration. |drag_source| is the window where dragging
+// started, or nullptr otherwise.
+std::unique_ptr<MouseWarpController> CreateMouseWarpController(
+    DisplayManager* manager,
+    aura::Window* drag_source);
 
 // TODO(rjkroege): Move this into display_manager.h
 // Sets the UI scale for the |display_id|. Returns false if the

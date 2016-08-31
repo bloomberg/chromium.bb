@@ -45,7 +45,6 @@ class Rect;
 
 namespace ash {
 class AcceleratorControllerTest;
-class MouseWarpController;
 class ScreenAsh;
 
 using DisplayInfoList = std::vector<display::ManagedDisplayInfo>;
@@ -327,12 +326,6 @@ class ASH_EXPORT DisplayManager
   // Creates mirror window asynchronously if the software mirror mode
   // is enabled.
   void CreateMirrorWindowAsyncIfAny();
-
-  // Creates a MouseWarpController for the current display
-  // configuration. |drag_source| is the window where dragging
-  // started, or nullptr otherwise.
-  std::unique_ptr<MouseWarpController> CreateMouseWarpController(
-      aura::Window* drag_source) const;
 
   // Create a screen instance to be used during shutdown.
   void CreateScreenForShutdown() const;

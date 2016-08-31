@@ -15,10 +15,7 @@
 
 #include "ash/common/ash_switches.h"
 #include "ash/display/display_util.h"
-#include "ash/display/extended_mouse_warp_controller.h"
-#include "ash/display/null_mouse_warp_controller.h"
 #include "ash/display/screen_ash.h"
-#include "ash/display/unified_mouse_warp_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "base/auto_reset.h"
@@ -1069,17 +1066,6 @@ void DisplayManager::CreateMirrorWindowAsyncIfAny() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&DisplayManager::CreateMirrorWindowIfAny,
                             weak_ptr_factory_.GetWeakPtr()));
-}
-
-std::unique_ptr<MouseWarpController> DisplayManager::CreateMouseWarpController(
-    aura::Window* drag_source) const {
-  if (IsInUnifiedMode() && num_connected_displays() >= 2)
-    return base::MakeUnique<UnifiedMouseWarpController>();
-  // Extra check for |num_connected_displays()| is for SystemDisplayApiTest
-  // that injects MockScreen.
-  if (GetNumDisplays() < 2 || num_connected_displays() < 2)
-    return base::MakeUnique<NullMouseWarpController>();
-  return base::MakeUnique<ExtendedMouseWarpController>(drag_source);
 }
 
 void DisplayManager::CreateScreenForShutdown() const {
