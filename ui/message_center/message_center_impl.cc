@@ -650,7 +650,7 @@ void MessageCenterImpl::RemoveNotificationsForNotifierId(
 }
 
 void MessageCenterImpl::RemoveAllNotifications(bool by_user, RemoveType type) {
-  bool remove_pinned = (type == RemoveType::NON_PINNED);
+  bool remove_pinned = (type == RemoveType::ALL);
 
   const NotificationBlockers& blockers =
       (type == RemoveType::ALL ? NotificationBlockers() /* empty blockers */

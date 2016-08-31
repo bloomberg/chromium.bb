@@ -576,6 +576,104 @@ TEST_F(MessageCenterImplTest, TotalNotificationBlocker) {
   EXPECT_EQ(0u, message_center()->NotificationCount());
 }
 
+TEST_F(MessageCenterImplTest, RemoveAllNotifications) {
+  NotifierId notifier_id1(NotifierId::APPLICATION, "app1");
+  NotifierId notifier_id2(NotifierId::APPLICATION, "app2");
+
+  TotalNotificationBlocker blocker(message_center(), notifier_id1);
+  blocker.SetNotificationsEnabled(false);
+
+  // Notification 1: Visible, non-pinned
+  message_center()->AddNotification(std::unique_ptr<Notification>(
+      new Notification(NOTIFICATION_TYPE_SIMPLE, "id1", UTF8ToUTF16("title"),
+                       UTF8ToUTF16("message"), gfx::Image() /* icon */,
+                       base::string16() /* display_source */, GURL(),
+                       notifier_id1, RichNotificationData(), NULL)));
+
+  // Notification 2: Invisible, non-pinned
+  message_center()->AddNotification(std::unique_ptr<Notification>(
+      new Notification(NOTIFICATION_TYPE_SIMPLE, "id2", UTF8ToUTF16("title"),
+                       UTF8ToUTF16("message"), gfx::Image() /* icon */,
+                       base::string16() /* display_source */, GURL(),
+                       notifier_id2, RichNotificationData(), NULL)));
+
+  // Remove all the notifications which are visible and non-pinned.
+  message_center()->RemoveAllNotifications(
+      false /* by_user */, MessageCenter::RemoveType::NON_PINNED);
+
+  EXPECT_EQ(0u, message_center()->NotificationCount());
+  blocker.SetNotificationsEnabled(true);  // Show invisible notifications.
+  EXPECT_EQ(1u, message_center()->NotificationCount());
+
+  NotificationList::Notifications notifications =
+      message_center()->GetVisibleNotifications();
+  // Notification 1 should be removed.
+  EXPECT_FALSE(NotificationsContain(notifications, "id1"));
+  // Notification 2 shouldn't be removed since it was invisible.
+  EXPECT_TRUE(NotificationsContain(notifications, "id2"));
+}
+
+#if defined(OS_CHROMEOS)
+TEST_F(MessageCenterImplTest, RemoveAllNotificationsWithPinned) {
+  NotifierId notifier_id1(NotifierId::APPLICATION, "app1");
+  NotifierId notifier_id2(NotifierId::APPLICATION, "app2");
+
+  TotalNotificationBlocker blocker(message_center(), notifier_id1);
+  blocker.SetNotificationsEnabled(false);
+
+  // Notification 1: Visible, non-pinned
+  message_center()->AddNotification(std::unique_ptr<Notification>(
+      new Notification(NOTIFICATION_TYPE_SIMPLE, "id1", UTF8ToUTF16("title"),
+                       UTF8ToUTF16("message"), gfx::Image() /* icon */,
+                       base::string16() /* display_source */, GURL(),
+                       notifier_id1, RichNotificationData(), NULL)));
+
+  // Notification 2: Invisible, non-pinned
+  message_center()->AddNotification(std::unique_ptr<Notification>(
+      new Notification(NOTIFICATION_TYPE_SIMPLE, "id2", UTF8ToUTF16("title"),
+                       UTF8ToUTF16("message"), gfx::Image() /* icon */,
+                       base::string16() /* display_source */, GURL(),
+                       notifier_id2, RichNotificationData(), NULL)));
+
+  // Notification 3: Visible, pinned
+  std::unique_ptr<Notification> notification3(
+      new Notification(NOTIFICATION_TYPE_SIMPLE, "id3", UTF8ToUTF16("title"),
+                       UTF8ToUTF16("message"), gfx::Image() /* icon */,
+                       base::string16() /* display_source */, GURL(),
+                       notifier_id1, RichNotificationData(), NULL));
+  notification3->set_pinned(true);
+  message_center()->AddNotification(std::move(notification3));
+
+  // Notification 4: Invisible, pinned
+  std::unique_ptr<Notification> notification4(
+      new Notification(NOTIFICATION_TYPE_SIMPLE, "id4", UTF8ToUTF16("title"),
+                       UTF8ToUTF16("message"), gfx::Image() /* icon */,
+                       base::string16() /* display_source */, GURL(),
+                       notifier_id2, RichNotificationData(), NULL));
+  notification4->set_pinned(true);
+  message_center()->AddNotification(std::move(notification4));
+
+  // Remove all the notifications which are visible and non-pinned.
+  message_center()->RemoveAllNotifications(
+      false /* by_user */, MessageCenter::RemoveType::NON_PINNED);
+
+  EXPECT_EQ(1u, message_center()->NotificationCount());
+  blocker.SetNotificationsEnabled(true);  // Show invisible notifications.
+  EXPECT_EQ(3u, message_center()->NotificationCount());
+
+  NotificationList::Notifications notifications =
+      message_center()->GetVisibleNotifications();
+  // Notification 1 should be removed.
+  EXPECT_FALSE(NotificationsContain(notifications, "id1"));
+  // Notification 2 shouldn't be removed since it was invisible.
+  EXPECT_TRUE(NotificationsContain(notifications, "id2"));
+  // Notification 3 shouldn't be removed since it was pinned.
+  EXPECT_TRUE(NotificationsContain(notifications, "id3"));
+  // Notification 4 shouldn't be removed since it was invisible and pinned.
+  EXPECT_TRUE(NotificationsContain(notifications, "id4"));
+}
+#endif
+
 #if defined(OS_CHROMEOS)
 TEST_F(MessageCenterImplTest, CachedUnreadCount) {
   message_center()->AddNotification(
