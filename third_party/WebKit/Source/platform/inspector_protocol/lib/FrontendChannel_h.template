@@ -9,7 +9,7 @@
 namespace {{namespace}} {
 {% endfor %}
 
-class {{config.class_export.macro}} FrontendChannel {
+class {{config.lib.export_macro}} FrontendChannel {
 public:
     virtual ~FrontendChannel() { }
     virtual void sendProtocolResponse(int callId, const String& message) = 0;

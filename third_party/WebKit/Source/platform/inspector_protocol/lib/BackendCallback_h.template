@@ -11,7 +11,7 @@
 namespace {{namespace}} {
 {% endfor %}
 
-class {{config.class_export.macro}} BackendCallback {
+class {{config.lib.export_macro}} BackendCallback {
 public:
     virtual ~BackendCallback() { }
     virtual void sendFailure(const ErrorString&) = 0;

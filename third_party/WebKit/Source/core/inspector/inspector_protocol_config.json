@@ -3,7 +3,9 @@
         "path": "browser_protocol.json",
         "package": "core/inspector/protocol",
         "output": "inspector/protocol",
-        "namespace": ["blink", "protocol"]
+        "namespace": ["blink", "protocol"],
+        "export_macro": "CORE_EXPORT",
+        "export_header": "core/CoreExport.h"
     },
 
     "imported": {
@@ -18,11 +20,8 @@
         "package": "core/inspector/protocol",
         "output": "inspector/protocol",
         "string_header": "core/inspector/V8InspectorString.h",
-        "platform_header": "core/inspector/ProtocolPlatform.h"
-    },
-
-    "class_export": {
-        "macro": "CORE_EXPORT",
-        "header": "core/CoreExport.h"
+        "platform_header": "core/inspector/ProtocolPlatform.h",
+        "export_macro": "CORE_EXPORT",
+        "export_header": "core/CoreExport.h"
     }
 }

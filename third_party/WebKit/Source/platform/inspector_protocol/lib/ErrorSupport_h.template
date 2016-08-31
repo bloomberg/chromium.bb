@@ -11,7 +11,7 @@
 namespace {{namespace}} {
 {% endfor %}
 
-class {{config.class_export.macro}} ErrorSupport {
+class {{config.lib.export_macro}} ErrorSupport {
 public:
     ErrorSupport();
     ErrorSupport(String* errorString);

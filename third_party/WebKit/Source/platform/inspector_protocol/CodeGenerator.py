@@ -32,6 +32,21 @@ def read_config():
             return collections.namedtuple('X', keys)(*values)
         return json.loads(data, object_hook=json_object_hook)
 
+    def init_defaults(config_tuple, path, defaults):
+        keys = list(config_tuple._fields)  # pylint: disable=E1101
+        values = [getattr(config_tuple, k) for k in keys]
+        for i in xrange(len(keys)):
+            if hasattr(values[i], "_fields"):
+                values[i] = init_defaults(values[i], path + "." + keys[i], defaults)
+        for optional in defaults:
+            if optional.find(path + ".") != 0:
+                continue
+            optional_key = optional[len(path) + 1:]
+            if optional_key.find(".") == -1 and optional_key not in keys:
+                keys.append(optional_key)
+                values.append(defaults[optional])
+        return collections.namedtuple('X', keys)(*values)
+
     try:
         cmdline_parser = optparse.OptionParser()
         cmdline_parser.add_option("--output_base")
@@ -58,14 +73,23 @@ def read_config():
         config_json_file = open(config_file, "r")
         config_json_string = config_json_file.read()
         config_partial = json_to_object(config_json_string, output_base, config_base)
-        keys = list(config_partial._fields)  # pylint: disable=E1101
-        values = [getattr(config_partial, k) for k in keys]
-        for optional in ["imported", "exported", "lib"]:
-            if optional not in keys:
-                keys.append(optional)
-                values.append(False)
         config_json_file.close()
-        return (jinja_dir, config_file, collections.namedtuple('X', keys)(*values))
+        defaults = {
+            ".imported": False,
+            ".imported.export_macro": "",
+            ".imported.export_header": False,
+            ".imported.header": False,
+            ".imported.package": False,
+            ".protocol.export_macro": "",
+            ".protocol.export_header": False,
+            ".exported": False,
+            ".exported.export_macro": "",
+            ".exported.export_header": False,
+            ".lib": False,
+            ".lib.export_macro": "",
+            ".lib.export_header": False,
+        }
+        return (jinja_dir, config_file, init_defaults(config_partial, "", defaults))
     except Exception:
         # Work with python 2 and 3 http://docs.python.org/py3k/howto/pyporting.html
         exc = sys.exc_info()[1]
@@ -320,6 +344,10 @@ def has_disable(commands):
     return False
 
 
+def format_include(header):
+    return "\"" + header + "\"" if header[0] not in "<\"" else header
+
+
 def read_protocol_file(file_name, json_api):
     input_file = open(file_name, "r")
     json_string = input_file.read()
@@ -391,7 +419,8 @@ def main():
             "join_arrays": join_arrays,
             "resolve_type": functools.partial(resolve_type, protocol),
             "type_definition": functools.partial(type_definition, protocol),
-            "has_disable": has_disable
+            "has_disable": has_disable,
+            "format_include": format_include,
         }
 
         if domain["domain"] in protocol.generate_domains:
@@ -404,7 +433,8 @@ def main():
 
     if config.lib:
         template_context = {
-            "config": config
+            "config": config,
+            "format_include": format_include,
         }
 
         lib_templates_dir = os.path.join(module_path, "lib")

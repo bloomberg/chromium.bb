@@ -7,8 +7,10 @@
 #ifndef {{"_".join(config.protocol.namespace)}}_{{domain.domain}}_api_h
 #define {{"_".join(config.protocol.namespace)}}_{{domain.domain}}_api_h
 
-#include "{{config.class_export.header}}"
-#include "{{config.exported.string_header}}"
+{% if config.exported.export_header %}
+#include {{format_include(config.exported.export_header)}}
+{% endif %}
+#include {{format_include(config.exported.string_header)}}
 
 {% for namespace in config.protocol.namespace %}
 namespace {{namespace}} {
@@ -22,7 +24,7 @@ namespace API {
 
 namespace {{type.id}}Enum {
       {% for literal in type.enum %}
-{{config.class_export.macro}} extern const char* {{ literal | dash_to_camelcase}};
+{{config.exported.export_macro}} extern const char* {{ literal | dash_to_camelcase}};
       {% endfor %}
 } // {{type.id}}Enum
     {% endif %}
@@ -34,7 +36,7 @@ namespace {{type.id}}Enum {
 namespace {{command.name | to_title_case}} {
 namespace {{param.name | to_title_case}}Enum {
         {% for literal in param.enum %}
-{{config.class_export.macro}} extern const char* {{ literal | dash_to_camelcase}};
+{{config.exported.export_macro}} extern const char* {{ literal | dash_to_camelcase}};
         {% endfor %}
 } // {{param.name | to_title_case}}Enum
 } // {{command.name | to_title_case }}
@@ -46,7 +48,7 @@ namespace {{param.name | to_title_case}}Enum {
   {% for type in domain.types %}
     {% if not (type.type == "object") or not ("properties" in type) or not (type.exported) %}{% continue %}{% endif %}
 
-class {{config.class_export.macro}} {{type.id}} {
+class {{config.exported.export_macro}} {{type.id}} {
 public:
     virtual {{config.exported.string_out}} toJSONString() const = 0;
     virtual ~{{type.id}}() { }

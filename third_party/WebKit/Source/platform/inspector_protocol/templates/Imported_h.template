@@ -8,7 +8,7 @@
 #define {{"_".join(config.protocol.namespace)}}_{{domain.domain}}_imported_h
 
 #include "{{config.protocol.package}}/Protocol.h"
-#include "{{config.imported.package}}/{{domain.domain}}.h"
+#include {{format_include(config.imported.header if config.imported.header else "\"%s/%s.h\"" % (config.imported.package, domain.domain))}}
 
 {% for namespace in config.protocol.namespace %}
 namespace {{namespace}} {

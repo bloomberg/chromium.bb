@@ -5,9 +5,11 @@
 #ifndef {{"_".join(config.protocol.namespace)}}_Forward_h
 #define {{"_".join(config.protocol.namespace)}}_Forward_h
 
-#include "{{config.class_export.header}}"
-#include "{{config.lib.platform_header}}"
-#include "{{config.lib.string_header}}"
+{% if config.lib.export_header %}
+#include {{format_include(config.lib.export_header)}}
+{% endif %}
+#include {{format_include(config.lib.platform_header)}}
+#include {{format_include(config.lib.string_header)}}
 
 #include <vector>
 

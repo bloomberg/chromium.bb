@@ -13,7 +13,7 @@
 namespace {{namespace}} {
 {% endfor %}
 
-class {{config.class_export.macro}} Object {
+class {{config.lib.export_macro}} Object {
 public:
     static std::unique_ptr<Object> parse(protocol::Value*, ErrorSupport*);
     ~Object();
