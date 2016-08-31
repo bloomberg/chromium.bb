@@ -30,11 +30,11 @@
 #include <unistd.h>
 #include <sys/mman.h>
 
-
 #include <linux/input.h>
 
 #include "window.h"
 #include "input-method-unstable-v1-client-protocol.h"
+#include "shared/helpers.h"
 
 enum compose_state {
 	state_normal,
@@ -398,7 +398,7 @@ simple_im_key_handler(struct simple_im *keyboard,
 		if (state == WL_KEYBOARD_KEY_STATE_PRESSED)
 			return;
 
-		for (i = 0; i < sizeof(ignore_keys_on_compose) / sizeof(ignore_keys_on_compose[0]); i++) {
+		for (i = 0; i < ARRAY_LENGTH(ignore_keys_on_compose); i++) {
 			if (sym == ignore_keys_on_compose[i]) {
 				zwp_input_method_context_v1_key(context,
 								keyboard->serial,
@@ -414,7 +414,7 @@ simple_im_key_handler(struct simple_im *keyboard,
 		keyboard->compose_seq.keys[i] = sym;
 
 		cs = bsearch (&keyboard->compose_seq, compose_seqs,
-			      sizeof(compose_seqs) / sizeof(compose_seqs[0]),
+			      ARRAY_LENGTH(compose_seqs),
 			      sizeof(compose_seqs[0]), compare_compose_keys);
 
 		if (cs) {
