@@ -203,7 +203,7 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(GraphicsCon
 
     PaintResult result = FullyPainted;
 
-    if (paintFlags & PaintLayerPaintingRootBackgroundOnly && !m_paintLayer.layoutObject()->isLayoutView() && !m_paintLayer.layoutObject()->isDocumentElement())
+    if (paintFlags & PaintLayerPaintingRootBackgroundOnly && !m_paintLayer.layoutObject()->isLayoutView())
         return result;
 
     if (m_paintLayer.layoutObject()->view()->frame() && m_paintLayer.layoutObject()->view()->frame()->shouldThrottleRendering())
@@ -564,20 +564,13 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintChildren(unsigned childre
     return result;
 }
 
-// FIXME: inline this.
-static bool paintForFixedRootBackground(const PaintLayer* layer, PaintLayerFlags paintFlags)
-{
-    return layer->layoutObject()->isDocumentElement() && (paintFlags & PaintLayerPaintingRootBackgroundOnly);
-}
-
 bool PaintLayerPainter::shouldPaintLayerInSoftwareMode(const GlobalPaintFlags globalPaintFlags, PaintLayerFlags paintFlags)
 {
     DisableCompositingQueryAsserts disabler;
 
     return m_paintLayer.compositingState() == NotComposited
         || (globalPaintFlags & GlobalPaintFlattenCompositingLayers)
-        || ((paintFlags & PaintLayerPaintingReflection) && !m_paintLayer.has3DTransform())
-        || paintForFixedRootBackground(&m_paintLayer, paintFlags);
+        || ((paintFlags & PaintLayerPaintingReflection) && !m_paintLayer.has3DTransform());
 }
 
 void PaintLayerPainter::paintOverflowControlsForFragments(const PaintLayerFragments& layerFragments, GraphicsContext& context, const PaintLayerPaintingInfo& localPaintingInfo, PaintLayerFlags paintFlags)
@@ -677,6 +670,8 @@ void PaintLayerPainter::paintForegroundForFragments(const PaintLayerFragments& l
     GraphicsContext& context, const LayoutRect& transparencyPaintDirtyRect,
     const PaintLayerPaintingInfo& localPaintingInfo, bool selectionOnly, PaintLayerFlags paintFlags)
 {
+    DCHECK(!(paintFlags & PaintLayerPaintingRootBackgroundOnly));
+
     // Optimize clipping for the single fragment case.
     bool shouldClip = localPaintingInfo.clipToDirtyRect && layerFragments.size() == 1 && !layerFragments[0].foregroundRect.isEmpty();
     ClipState clipState = HasNotClipped;

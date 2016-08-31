@@ -2464,7 +2464,7 @@ void CompositedLayerMapping::paintContents(const GraphicsLayer* graphicsLayer, G
         paintLayerFlags |= PaintLayerPaintingCompositingScrollingPhase;
 
     if (graphicsLayer == m_backgroundLayer.get())
-        paintLayerFlags |= (PaintLayerPaintingRootBackgroundOnly | PaintLayerPaintingCompositingForegroundPhase); // Need PaintLayerPaintingCompositingForegroundPhase to walk child layers.
+        paintLayerFlags |= PaintLayerPaintingRootBackgroundOnly;
     else if (compositor()->fixedRootBackgroundLayer() && m_owningLayer.isRootLayer())
         paintLayerFlags |= PaintLayerPaintingSkipRootBackground;
 
