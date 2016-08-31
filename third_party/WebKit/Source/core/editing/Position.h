@@ -173,8 +173,6 @@ public:
     static PositionTemplate<Strategy> firstPositionInOrBeforeNode(Node* anchorNode);
     static PositionTemplate<Strategy> lastPositionInOrAfterNode(Node* anchorNode);
 
-    void debugPosition(const char* msg = "") const;
-
 #ifndef NDEBUG
     String toAnchorTypeAndOffsetString() const;
     void showTreeForThis() const;

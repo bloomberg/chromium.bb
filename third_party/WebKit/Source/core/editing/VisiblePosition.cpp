@@ -134,16 +134,6 @@ VisiblePositionInFlatTree createVisiblePosition(const PositionInFlatTreeWithAffi
 #ifndef NDEBUG
 
 template<typename Strategy>
-void VisiblePositionTemplate<Strategy>::debugPosition(const char* msg) const
-{
-    if (isNull()) {
-        fprintf(stderr, "Position [%s]: null\n", msg);
-        return;
-    }
-    deepEquivalent().debugPosition(msg);
-}
-
-template<typename Strategy>
 void VisiblePositionTemplate<Strategy>::showTreeForThis() const
 {
     deepEquivalent().showTreeForThis();

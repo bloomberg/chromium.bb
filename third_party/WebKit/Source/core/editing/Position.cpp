@@ -492,32 +492,6 @@ PositionTemplate<Strategy> PositionTemplate<Strategy>::lastPositionInOrAfterNode
     return Strategy::editingIgnoresContent(node) ? afterNode(node) : lastPositionInNode(node);
 }
 
-template <typename Strategy>
-void PositionTemplate<Strategy>::debugPosition(const char* msg) const
-{
-    static const char* const anchorTypes[] = {
-        "OffsetInAnchor",
-        "BeforeAnchor",
-        "AfterAnchor",
-        "BeforeChildren",
-        "AfterChildren",
-        "Invalid",
-    };
-
-    if (isNull()) {
-        fprintf(stderr, "Position [%s]: null\n", msg);
-        return;
-    }
-
-    const char* anchorType = anchorTypes[std::min(static_cast<size_t>(m_anchorType), WTF_ARRAY_LENGTH(anchorTypes) - 1)];
-    if (m_anchorNode->isTextNode()) {
-        fprintf(stderr, "Position [%s]: %s [%p] %s, (%s) at %d\n", msg, anchorNode()->nodeName().utf8().data(), anchorNode(), anchorType, m_anchorNode->nodeValue().utf8().data(), m_offset);
-        return;
-    }
-
-    fprintf(stderr, "Position [%s]: %s [%p] %s at %d\n", msg, anchorNode()->nodeName().utf8().data(), anchorNode(), anchorType, m_offset);
-}
-
 PositionInFlatTree toPositionInFlatTree(const Position& pos)
 {
     if (pos.isNull())

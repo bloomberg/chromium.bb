@@ -126,7 +126,6 @@ public:
     void validatePositionsIfNeeded();
 
 #ifndef NDEBUG
-    void debugPosition(const char* message) const;
     void showTreeForThis() const;
 #endif
     static void PrintTo(const VisibleSelectionTemplate&, std::ostream*);

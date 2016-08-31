@@ -104,7 +104,6 @@ public:
     }
 
 #ifndef NDEBUG
-    void debugPosition(const char* msg = "") const;
     void showTreeForThis() const;
 #endif
 

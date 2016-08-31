@@ -782,28 +782,6 @@ bool VisibleSelectionTemplate<Strategy>::operator==(const VisibleSelectionTempla
 #ifndef NDEBUG
 
 template <typename Strategy>
-void VisibleSelectionTemplate<Strategy>::debugPosition(const char* message) const
-{
-    fprintf(stderr, "VisibleSelection (%s) ===============\n", message);
-
-    if (m_baseIsFirst) {
-        m_start.debugPosition("start: ");
-        m_base.debugPosition("base: ");
-        m_end.debugPosition("end: ");
-        m_extent.debugPosition("extent: ");
-    } else {
-        m_start.debugPosition("start: ");
-        m_extent.debugPosition("extent: ");
-        m_end.debugPosition("end: ");
-        m_base.debugPosition("base: ");
-    }
-
-    fprintf(stderr, "isDirectional=%s\n", isDirectional() ? "true" : "false");
-    fprintf(stderr, "affinity=%s\n", affinity() == TextAffinity::Downstream ? "DOWNSTREaM" : affinity() == TextAffinity::Upstream ? "UPSTREAM" : "UNKNOWN");
-    fprintf(stderr, "================================\n");
-}
-
-template <typename Strategy>
 void VisibleSelectionTemplate<Strategy>::showTreeForThis() const
 {
     if (!start().anchorNode())
