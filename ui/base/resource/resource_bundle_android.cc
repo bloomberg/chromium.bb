@@ -8,7 +8,6 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/logging.h"
-#include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "jni/ResourceBundle_jni.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -109,8 +108,6 @@ std::string ResourceBundle::LoadLocaleResources(
   std::unique_ptr<DataPack> data_pack(new DataPack(SCALE_FACTOR_100P));
   if (!data_pack->LoadFromFileRegion(base::File(g_locale_pack_fd),
                                      g_locale_pack_region)) {
-    UMA_HISTOGRAM_ENUMERATION("ResourceBundle.LoadLocaleResourcesError",
-                              logging::GetLastSystemErrorCode(), 16000);
     LOG(ERROR) << "failed to load locale.pak";
     NOTREACHED();
     return std::string();

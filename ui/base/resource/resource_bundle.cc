@@ -17,7 +17,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
@@ -332,8 +331,6 @@ std::string ResourceBundle::LoadLocaleResources(
 
   std::unique_ptr<DataPack> data_pack(new DataPack(SCALE_FACTOR_100P));
   if (!data_pack->LoadFromPath(locale_file_path)) {
-    UMA_HISTOGRAM_ENUMERATION("ResourceBundle.LoadLocaleResourcesError",
-                              logging::GetLastSystemErrorCode(), 16000);
     LOG(ERROR) << "failed to load locale.pak";
     NOTREACHED();
     return std::string();
