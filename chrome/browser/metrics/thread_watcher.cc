@@ -886,25 +886,30 @@ void StartupTimeBomb::Arm(const base::TimeDelta& duration) {
 void StartupTimeBomb::Disarm() {
   DCHECK_EQ(thread_id_, base::PlatformThread::CurrentId());
   if (startup_watchdog_) {
-    startup_watchdog_->Disarm();
-    startup_watchdog_->Cleanup();
-    DeleteStartupWatchdog();
+    base::Watchdog* startup_watchdog = startup_watchdog_;
+    startup_watchdog_ = nullptr;
+
+    startup_watchdog->Disarm();
+    startup_watchdog->Cleanup();
+    DeleteStartupWatchdog(thread_id_, startup_watchdog);
   }
 }
 
-void StartupTimeBomb::DeleteStartupWatchdog() {
-  DCHECK_EQ(thread_id_, base::PlatformThread::CurrentId());
-  if (startup_watchdog_->IsJoinable()) {
+// static
+void StartupTimeBomb::DeleteStartupWatchdog(
+    const base::PlatformThreadId thread_id,
+    base::Watchdog* startup_watchdog) {
+  DCHECK_EQ(thread_id, base::PlatformThread::CurrentId());
+  if (startup_watchdog->IsJoinable()) {
     // Allow the watchdog thread to shutdown on UI. Watchdog thread shutdowns
     // very fast.
     base::ThreadRestrictions::ScopedAllowIO allow_io;
-    delete startup_watchdog_;
-    startup_watchdog_ = nullptr;
+    delete startup_watchdog;
     return;
   }
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&StartupTimeBomb::DeleteStartupWatchdog,
-                            base::Unretained(this)),
+      FROM_HERE, base::Bind(&StartupTimeBomb::DeleteStartupWatchdog, thread_id,
+                            base::Unretained(startup_watchdog)),
       base::TimeDelta::FromSeconds(10));
 }
 

@@ -626,9 +626,10 @@ class StartupTimeBomb {
   static void DisarmStartupTimeBomb();
 
  private:
-  // Deletes |startup_watchdog_| if it is joinable. If |startup_watchdog_| is
-  // not joinable, then it will post a delayed task to try again.
-  void DeleteStartupWatchdog();
+  // Deletes the watchdog thread if it is joinable; otherwise it posts a delayed
+  // task to try again.
+  static void DeleteStartupWatchdog(const base::PlatformThreadId thread_id,
+                                    base::Watchdog* startup_watchdog);
 
   // The singleton of this class.
   static StartupTimeBomb* g_startup_timebomb_;
