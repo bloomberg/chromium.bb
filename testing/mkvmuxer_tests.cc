@@ -478,6 +478,12 @@ TEST_F(MuxerTest, CuesBeforeClusters) {
 
   EXPECT_TRUE(CompareFiles(GetTestFilePath("cues_before_clusters.webm"),
                            cues_filename));
+  MkvParser parser;
+  ASSERT_TRUE(ParseMkvFileReleaseParser(cues_filename, &parser));
+  int64_t cues_offset = 0;
+  ASSERT_TRUE(HasCuePoints(parser.segment, &cues_offset));
+  ASSERT_GT(cues_offset, 0);
+  ASSERT_TRUE(ValidateCues(parser.segment, parser.reader));
 }
 
 TEST_F(MuxerTest, MaxClusterSize) {
@@ -794,13 +800,12 @@ TEST_F(MuxerTest, Colour) {
   ASSERT_TRUE(video_track->SetColour(muxer_colour));
   ASSERT_NO_FATAL_FAILURE(AddDummyFrameAndFinalize(kVideoTrackNumber));
 
-  mkvparser::Segment* segment = nullptr;
-  ASSERT_TRUE(ParseMkvFileReleaseSegment(filename_, &segment));
-  std::unique_ptr<mkvparser::Segment> segment_ptr(segment);
+  MkvParser parser;
+  ASSERT_TRUE(ParseMkvFileReleaseParser(filename_, &parser));
 
   const mkvparser::VideoTrack* const parser_track =
       static_cast<const mkvparser::VideoTrack*>(
-          segment_ptr->GetTracks()->GetTrackByIndex(0));
+          parser.segment->GetTracks()->GetTrackByIndex(0));
   const mkvparser::Colour* parser_colour = parser_track->GetColour();
   ASSERT_TRUE(parser_colour != nullptr);
   EXPECT_EQ(static_cast<long long>(muxer_colour.matrix_coefficients()),
@@ -865,13 +870,12 @@ TEST_F(MuxerTest, Projection) {
   ASSERT_TRUE(video_track->SetProjection(muxer_proj));
   ASSERT_NO_FATAL_FAILURE(AddDummyFrameAndFinalize(kVideoTrackNumber));
 
-  mkvparser::Segment* segment = nullptr;
-  ASSERT_TRUE(ParseMkvFileReleaseSegment(filename_, &segment));
-  std::unique_ptr<mkvparser::Segment> segment_ptr(segment);
+  MkvParser parser;
+  ASSERT_TRUE(ParseMkvFileReleaseParser(filename_, &parser));
 
   const mkvparser::VideoTrack* const parser_track =
       static_cast<const mkvparser::VideoTrack*>(
-          segment_ptr->GetTracks()->GetTrackByIndex(0));
+          parser.segment->GetTracks()->GetTrackByIndex(0));
 
   const mkvparser::Projection* const parser_proj =
       parser_track->GetProjection();

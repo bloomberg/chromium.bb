@@ -78,10 +78,11 @@ bool HasCuePoints(const mkvparser::Segment* segment,
     }
   }
 
-  if (offset == -1) {
+  if (offset <= 0) {
     // No Cues found.
     return false;
   }
+
   *cues_offset = offset;
   return true;
 }
@@ -143,10 +144,16 @@ bool ValidateCues(mkvparser::Segment* segment, mkvparser::IMkvReader* reader) {
   return true;
 }
 
-bool ParseMkvFileReleaseSegment(const std::string& webm_file,
-                                mkvparser::Segment** segment_out) {
-  mkvparser::MkvReader reader;
-  if (reader.Open(webm_file.c_str()) < 0) {
+MkvParser::~MkvParser() {
+  delete segment;
+  delete reader;
+}
+
+bool ParseMkvFileReleaseParser(const std::string& webm_file,
+                               MkvParser* parser_out) {
+  parser_out->reader = new (std::nothrow) mkvparser::MkvReader;
+  mkvparser::MkvReader& reader = *parser_out->reader;
+  if (!parser_out->reader || reader.Open(webm_file.c_str()) < 0) {
     return false;
   }
 
@@ -192,14 +199,15 @@ bool ParseMkvFileReleaseSegment(const std::string& webm_file,
     cluster = segment->GetNext(cluster);
   }
 
-  *segment_out = segment.release();
+  parser_out->segment = segment.release();
   return true;
 }
 
 bool ParseMkvFile(const std::string& webm_file) {
-  mkvparser::Segment* segment = nullptr;
-  const bool result = ParseMkvFileReleaseSegment(webm_file, &segment);
-  delete segment;
+  MkvParser parser;
+  const bool result = ParseMkvFileReleaseParser(webm_file, &parser);
+  delete parser.segment;
+  delete parser.reader;
   return result;
 }
 
