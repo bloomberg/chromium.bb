@@ -63,6 +63,7 @@ GpuServiceInternal::~GpuServiceInternal() {
 }
 
 void GpuServiceInternal::Add(mojom::GpuServiceInternalRequest request) {
+  binding_.Close();
   binding_.Bind(std::move(request));
 }
 

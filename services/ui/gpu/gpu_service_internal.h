@@ -18,7 +18,7 @@
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
 #include "gpu/ipc/service/gpu_config.h"
 #include "gpu/ipc/service/x_util.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/gpu/interfaces/gpu_service_internal.mojom.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -153,7 +153,7 @@ class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
   // Information about the GPU, such as device and vendor ID.
   gpu::GPUInfo gpu_info_;
 
-  mojo::StrongBinding<mojom::GpuServiceInternal> binding_;
+  mojo::Binding<mojom::GpuServiceInternal> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuServiceInternal);
 };
