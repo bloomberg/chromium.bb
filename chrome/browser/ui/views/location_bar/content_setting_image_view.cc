@@ -28,9 +28,8 @@ const int kStayOpenTimeMS = 3200;
 
 
 // static
-const int ContentSettingImageView::kOpenTimeMS = 150;
 const int ContentSettingImageView::kAnimationDurationMS =
-    (kOpenTimeMS * 2) + kStayOpenTimeMS;
+    (IconLabelBubbleView::kOpenTimeMS * 2) + kStayOpenTimeMS;
 
 ContentSettingImageView::ContentSettingImageView(
     ContentSettingImageModel* image_model,

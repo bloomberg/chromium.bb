@@ -22,7 +22,6 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/painter.h"
 
-using content::NavigationController;
 using content::NavigationEntry;
 using content::WebContents;
 
@@ -34,7 +33,8 @@ LocationIconView::LocationIconView(const gfx::FontList& font_list,
                           parent_background_color,
                           true),
       suppress_mouse_released_action_(false),
-      location_bar_(location_bar) {
+      location_bar_(location_bar),
+      animation_(this) {
   set_id(VIEW_ID_LOCATION_ICON);
 
 #if defined(OS_MACOSX)
@@ -44,6 +44,7 @@ LocationIconView::LocationIconView(const gfx::FontList& font_list,
 #endif
 
   SetBackground(false);
+  animation_.SetSlideDuration(kOpenTimeMS);
 }
 
 LocationIconView::~LocationIconView() {
@@ -104,7 +105,7 @@ bool LocationIconView::GetTooltipText(const gfx::Point& p,
 }
 
 SkColor LocationIconView::GetTextColor() const {
-  return location_bar_->GetColor(LocationBarView::EV_BUBBLE_TEXT_AND_BORDER);
+  return location_bar_->GetColor(LocationBarView::SECURITY_CHIP_TEXT);
 }
 
 SkColor LocationIconView::GetBorderColor() const {
@@ -144,6 +145,25 @@ void LocationIconView::SetBackground(bool should_show_ev) {
     SetBackgroundImageGrid(kEvBackgroundImages);
   else
     UnsetBackgroundImageGrid();
+}
+
+void LocationIconView::SetSecurityState(bool should_show, bool should_animate) {
+  if (!should_animate) {
+    animation_.Reset(should_show);
+  } else if (should_show) {
+    animation_.Show();
+  } else {
+    animation_.Hide();
+  }
+}
+
+double LocationIconView::WidthMultiplier() const {
+  return animation_.GetCurrentValue();
+}
+
+void LocationIconView::AnimationProgressed(const gfx::Animation*) {
+  location_bar_->Layout();
+  location_bar_->SchedulePaint();
 }
 
 void LocationIconView::ProcessLocatedEvent(const ui::LocatedEvent& event) {

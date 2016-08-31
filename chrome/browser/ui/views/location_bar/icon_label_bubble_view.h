@@ -54,6 +54,8 @@ class IconLabelBubbleView : public views::InkDropHostView {
   views::ImageView* GetImageView() { return image_; }
 
  protected:
+  static constexpr int kOpenTimeMS = 150;
+
   views::ImageView* image() { return image_; }
   views::Label* label() { return label_; }
   const views::Label* label() const { return label_; }

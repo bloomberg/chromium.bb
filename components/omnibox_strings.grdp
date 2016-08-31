@@ -13,6 +13,12 @@
   <message name="IDS_SECURE_CONNECTION_EV" desc="Short text shown in the location bar when the connection is secure with an EV cert.">
     <ph name="ORGANIZATION">$1<ex>Paypal Inc.</ex></ph> [<ph name="COUNTRY">$2<ex>US</ex></ph>]
   </message>
+  <message name="IDS_SECURE_VERBOSE_STATE" desc="Text for the Secure Omnibox Verbose State.">
+    Secure
+  </message>
+  <message name="IDS_NOT_SECURE_VERBOSE_STATE" desc="Text for the Now Secure Omnibox Verbose State.">
+    Not Secure
+  </message>
   <if expr="is_ios">
     <message name="IDS_OMNIBOX_EMPTY_HINT" desc="The text displayed in the omnibox when it is empty.">
       Search or type URL

@@ -129,6 +129,17 @@ base::string16 ToolbarModelImpl::GetEVCertName() const {
       base::UTF8ToUTF16(cert->subject().country_name));
 }
 
+base::string16 ToolbarModelImpl::GetSecureVerboseText() const {
+  switch (GetSecurityLevel(false)) {
+    case SecurityStateModel::SECURE:
+      return l10n_util::GetStringUTF16(IDS_SECURE_VERBOSE_STATE);
+    case SecurityStateModel::SECURITY_ERROR:
+      return l10n_util::GetStringUTF16(IDS_NOT_SECURE_VERBOSE_STATE);
+    default:
+      return base::string16();
+  }
+}
+
 bool ToolbarModelImpl::ShouldDisplayURL() const {
   return delegate_->ShouldDisplayURL();
 }

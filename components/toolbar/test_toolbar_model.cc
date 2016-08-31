@@ -41,6 +41,10 @@ gfx::VectorIconId TestToolbarModel::GetVectorIcon() const {
   return icon_;
 }
 
+base::string16 TestToolbarModel::GetSecureVerboseText() const {
+  return base::string16();
+}
+
 base::string16 TestToolbarModel::GetEVCertName() const {
   return (security_level_ == security_state::SecurityStateModel::EV_SECURE)
              ? ev_cert_name_

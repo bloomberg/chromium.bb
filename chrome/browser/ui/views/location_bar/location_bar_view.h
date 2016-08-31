@@ -109,7 +109,7 @@ class LocationBarView : public LocationBar,
     TEXT,
     SELECTED_TEXT,
     DEEMPHASIZED_TEXT,
-    EV_BUBBLE_TEXT_AND_BORDER,
+    SECURITY_CHIP_TEXT,
   };
 
   // The location bar view's class name.
@@ -318,8 +318,16 @@ class LocationBarView : public LocationBar,
   // Returns true if the suggest text is valid.
   bool HasValidSuggestText() const;
 
+  // Returns text describing the URL's security level, to be placed in the
+  // security chip.
+  base::string16 GetSecurityText() const;
+
   bool ShouldShowKeywordBubble() const;
   bool ShouldShowEVBubble() const;
+
+  // Returns true when the current page is explicitly secure or insecure.
+  // In these cases, we should show the state of the security chip.
+  bool ShouldShowSecurityChip() const;
 
   // Used to "reverse" the URL showing/hiding animations, since we use separate
   // animations whose curves are not true inverses of each other.  Based on the

@@ -29,6 +29,7 @@ class TestToolbarModel : public ToolbarModel {
       bool ignore_editing) const override;
   int GetIcon() const override;
   gfx::VectorIconId GetVectorIcon() const override;
+  base::string16 GetSecureVerboseText() const override;
   base::string16 GetEVCertName() const override;
   bool ShouldDisplayURL() const override;
 

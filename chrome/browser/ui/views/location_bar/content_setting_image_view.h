@@ -52,10 +52,6 @@ class ContentSettingImageView : public IconLabelBubbleView,
   void Update(content::WebContents* web_contents);
 
  private:
-  // Number of milliseconds spent animating open; also the time spent animating
-  // closed.
-  static const int kOpenTimeMS;
-
   // The total animation time, including open and close as well as an
   // intervening "stay open" period.
   static const int kAnimationDurationMS;

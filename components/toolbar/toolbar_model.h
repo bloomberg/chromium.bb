@@ -52,6 +52,9 @@ class ToolbarModel {
   // Like GetIcon(), but gets the vector asset ID.
   virtual gfx::VectorIconId GetVectorIcon() const = 0;
 
+  // Returns text for the omnibox secure verbose chip.
+  virtual base::string16 GetSecureVerboseText() const = 0;
+
   // Returns the name of the EV cert holder.  This returns an empty string if
   // the security level is not EV_SECURE.
   virtual base::string16 GetEVCertName() const = 0;

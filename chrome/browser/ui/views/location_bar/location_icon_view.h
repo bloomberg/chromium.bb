@@ -7,6 +7,8 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/views/location_bar/icon_label_bubble_view.h"
+#include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/slide_animation.h"
 
 class LocationBarView;
 
@@ -18,7 +20,8 @@ class LocatedEvent;
 // Use a LocationIconView to display an icon on the leading side of the edit
 // field. It shows the user's current action (while the user is editing), or the
 // page security status (after navigation has completed).
-class LocationIconView : public IconLabelBubbleView {
+class LocationIconView : public IconLabelBubbleView,
+                         public gfx::AnimationDelegate {
  public:
   LocationIconView(const gfx::FontList& font_list,
                    SkColor parent_background_color,
@@ -49,7 +52,18 @@ class LocationIconView : public IconLabelBubbleView {
   // HTTPS contexts.
   void SetBackground(bool should_show_ev);
 
+  // Sets whether the verbose security state text should be visible.
+  // |should_animate| controls whether any necessary transition to this state
+  // should be animated.
+  void SetSecurityState(bool should_show, bool should_animate);
+
  private:
+  // IconLabelBubbleView:
+  double WidthMultiplier() const override;
+
+  // gfx::AnimationDelegate:
+  void AnimationProgressed(const gfx::Animation*) override;
+
   void ProcessLocatedEvent(const ui::LocatedEvent& event);
 
   // Returns what the minimum size would be if the preferred size were |size|.
@@ -68,6 +82,7 @@ class LocationIconView : public IconLabelBubbleView {
   bool show_tooltip_;
 
   LocationBarView* location_bar_;
+  gfx::SlideAnimation animation_;
 
   DISALLOW_COPY_AND_ASSIGN(LocationIconView);
 };

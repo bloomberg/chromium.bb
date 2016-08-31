@@ -326,10 +326,10 @@ SkColor LocationBarView::GetColor(
     case DEEMPHASIZED_TEXT:
       return color_utils::AlphaBlend(GetColor(TEXT), GetColor(BACKGROUND), 128);
 
-    case EV_BUBBLE_TEXT_AND_BORDER:
+    case SECURITY_CHIP_TEXT:
       return ui::MaterialDesignController::IsModeMaterial()
                  ? GetSecureTextColor(
-                       security_state::SecurityStateModel::EV_SECURE)
+                       GetToolbarModel()->GetSecurityLevel(false))
                  : SkColorSetRGB(7, 149, 0);
   }
   NOTREACHED();
@@ -358,7 +358,7 @@ SkColor LocationBarView::GetSecureTextColor(
                security_state::SecurityStateModel::SECURITY_ERROR) {
       text_color = SkColorSetRGB(162, 0, 0);
     } else {
-      text_color = GetColor(EV_BUBBLE_TEXT_AND_BORDER);
+      text_color = GetColor(SECURITY_CHIP_TEXT);
     }
   }
   return color_utils::GetReadableColor(text_color, GetColor(BACKGROUND));
@@ -532,11 +532,11 @@ gfx::Size LocationBarView::GetPreferredSize() const {
   int leading_width = edge_thickness;
   if (ShouldShowKeywordBubble()) {
     // The selected keyword view can collapse completely.
-  } else if (ShouldShowEVBubble()) {
-    leading_width += GetLayoutConstant(LOCATION_BAR_BUBBLE_HORIZONTAL_PADDING) +
-                     location_icon_view_->GetMinimumSizeForLabelText(
-                                            GetToolbarModel()->GetEVCertName())
-                         .width();
+  } else if (ShouldShowSecurityChip()) {
+    base::string16 security_text = GetSecurityText();
+    leading_width +=
+        GetLayoutConstant(LOCATION_BAR_BUBBLE_HORIZONTAL_PADDING) +
+        location_icon_view_->GetMinimumSizeForLabelText(security_text).width();
   } else {
     leading_width += padding + location_icon_view_->GetMinimumSize().width();
   }
@@ -612,8 +612,8 @@ void LocationBarView::Layout() {
         selected_keyword_view_->set_is_extension_icon(false);
       }
     }
-  } else if (ShouldShowEVBubble()) {
-    location_icon_view_->SetLabel(GetToolbarModel()->GetEVCertName());
+  } else if (ShouldShowSecurityChip()) {
+    location_icon_view_->SetLabel(GetSecurityText());
     location_icon_view_->SetBackground(true);
     // The largest fraction of the omnibox that can be taken by the EV bubble.
     const double kMaxBubbleFraction = 0.5;
@@ -790,7 +790,7 @@ void LocationBarView::Update(const WebContents* contents) {
   RefreshTranslateIcon();
   RefreshSaveCreditCardIconView();
   RefreshManagePasswordsIconView();
-  content::WebContents* web_contents_for_sub_views =
+  WebContents* web_contents_for_sub_views =
       GetToolbarModel()->input_in_progress() ? nullptr : GetWebContents();
   open_pdf_in_reader_view_->Update(web_contents_for_sub_views);
 
@@ -801,6 +801,9 @@ void LocationBarView::Update(const WebContents* contents) {
     omnibox_view_->OnTabChanged(contents);
   else
     omnibox_view_->Update();
+
+  bool should_show = ShouldShowSecurityChip();
+  location_icon_view_->SetSecurityState(should_show, should_show && !contents);
 
   OnChanged();  // NOTE: Calls Layout().
 }
@@ -1038,6 +1041,11 @@ bool LocationBarView::HasValidSuggestText() const {
       !suggested_text_view_->size().IsEmpty();
 }
 
+base::string16 LocationBarView::GetSecurityText() const {
+  return ShouldShowEVBubble() ? GetToolbarModel()->GetEVCertName()
+                              : GetToolbarModel()->GetSecureVerboseText();
+}
+
 bool LocationBarView::ShouldShowKeywordBubble() const {
   return !omnibox_view_->model()->keyword().empty() &&
       !omnibox_view_->model()->is_keyword_hint();
@@ -1046,6 +1054,13 @@ bool LocationBarView::ShouldShowKeywordBubble() const {
 bool LocationBarView::ShouldShowEVBubble() const {
   return (GetToolbarModel()->GetSecurityLevel(false) ==
           security_state::SecurityStateModel::EV_SECURE);
+}
+
+bool LocationBarView::ShouldShowSecurityChip() const {
+  using SecurityLevel = security_state::SecurityStateModel::SecurityLevel;
+  SecurityLevel level = GetToolbarModel()->GetSecurityLevel(false);
+  return level == SecurityLevel::SECURE || level == SecurityLevel::EV_SECURE ||
+         level == SecurityLevel::SECURITY_ERROR;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
