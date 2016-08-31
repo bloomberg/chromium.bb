@@ -357,8 +357,6 @@
       'exported/WebServiceWorkerProxy.cpp',
       'exported/WebServiceWorkerRequest.cpp',
       'exported/WebServiceWorkerResponse.cpp',
-      'exported/WebSocketHandshakeRequestInfo.cpp',
-      'exported/WebSocketHandshakeResponseInfo.cpp',
       'exported/WebSourceInfo.cpp',
       'exported/WebSpeechSynthesisUtterance.cpp',
       'exported/WebSpeechSynthesisVoice.cpp',

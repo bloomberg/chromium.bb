@@ -417,8 +417,6 @@ target(link_target_type, "renderer") {
     "webscrollbarbehavior_impl_mac.mm",
     "websharedworker_proxy.cc",
     "websharedworker_proxy.h",
-    "websockethandle_impl.cc",
-    "websockethandle_impl.h",
   ]
 
   configs += [

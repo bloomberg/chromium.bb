@@ -22,7 +22,7 @@ static const int kMagicRenderProcessId = 506116062;
 class TestWebSocketImpl : public WebSocketImpl {
  public:
   TestWebSocketImpl(Delegate* delegate,
-                    mojom::WebSocketRequest request,
+                    blink::mojom::WebSocketRequest request,
                     int frame_id,
                     base::TimeDelta delay)
       : WebSocketImpl(delegate, std::move(request), frame_id, delay) {}
@@ -54,13 +54,13 @@ class TestWebSocketManager : public WebSocketManager {
            num_previous_succeeded_connections_;
   }
 
-  void DoCreateWebSocket(mojom::WebSocketRequest request) {
+  void DoCreateWebSocket(blink::mojom::WebSocketRequest request) {
     WebSocketManager::DoCreateWebSocket(MSG_ROUTING_NONE, std::move(request));
   }
 
  private:
   WebSocketImpl* CreateWebSocketImpl(WebSocketImpl::Delegate* delegate,
-                                     mojom::WebSocketRequest request,
+                                     blink::mojom::WebSocketRequest request,
                                      int frame_id,
                                      base::TimeDelta delay) override {
     TestWebSocketImpl* impl =
@@ -91,14 +91,14 @@ class WebSocketManagerTest : public ::testing::Test {
 
   void AddMultipleChannels(int number_of_channels) {
     for (int i = 0; i < number_of_channels; ++i) {
-      mojom::WebSocketPtr websocket;
+      blink::mojom::WebSocketPtr websocket;
       websocket_manager_->DoCreateWebSocket(mojo::GetProxy(&websocket));
     }
   }
 
   void AddAndCancelMultipleChannels(int number_of_channels) {
     for (int i = 0; i < number_of_channels; ++i) {
-      mojom::WebSocketPtr websocket;
+      blink::mojom::WebSocketPtr websocket;
       websocket_manager_->DoCreateWebSocket(mojo::GetProxy(&websocket));
       websocket_manager_->sockets().back()->SimulateConnectionError();
     }
@@ -116,7 +116,7 @@ TEST_F(WebSocketManagerTest, Construct) {
 }
 
 TEST_F(WebSocketManagerTest, CreateWebSocket) {
-  mojom::WebSocketPtr websocket;
+  blink::mojom::WebSocketPtr websocket;
 
   websocket_manager()->DoCreateWebSocket(mojo::GetProxy(&websocket));
 
@@ -124,14 +124,14 @@ TEST_F(WebSocketManagerTest, CreateWebSocket) {
 }
 
 TEST_F(WebSocketManagerTest, SendFrameButNotConnectedYet) {
-  mojom::WebSocketPtr websocket;
+  blink::mojom::WebSocketPtr websocket;
 
   websocket_manager()->DoCreateWebSocket(mojo::GetProxy(&websocket));
 
   // This should not crash.
   mojo::Array<uint8_t> data;
   websocket->SendFrame(
-      true, mojom::WebSocketMessageType::TEXT, std::move(data));
+      true, blink::mojom::WebSocketMessageType::TEXT, std::move(data));
 }
 
 TEST_F(WebSocketManagerTest, DelayFor4thPendingConnectionIsZero) {

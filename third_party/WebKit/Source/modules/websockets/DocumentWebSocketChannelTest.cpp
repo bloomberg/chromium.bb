@@ -10,14 +10,10 @@
 #include "core/testing/DummyPageHolder.h"
 #include "modules/websockets/DocumentWebSocketChannel.h"
 #include "modules/websockets/WebSocketChannelClient.h"
+#include "modules/websockets/WebSocketHandle.h"
+#include "modules/websockets/WebSocketHandleClient.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
-#include "public/platform/WebSecurityOrigin.h"
-#include "public/platform/WebString.h"
-#include "public/platform/WebURL.h"
-#include "public/platform/WebVector.h"
-#include "public/platform/modules/websockets/WebSocketHandle.h"
-#include "public/platform/modules/websockets/WebSocketHandleClient.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/PtrUtil.h"
@@ -80,10 +76,11 @@ public:
 
     ~MockWebSocketHandle() override { }
 
-    MOCK_METHOD6(connect, void(const WebURL&, const WebVector<WebString>&, const WebSecurityOrigin&, const WebURL&, const WebString&, WebSocketHandleClient*));
+    MOCK_METHOD1(initialize, void(InterfaceProvider*));
+    MOCK_METHOD6(connect, void(const KURL&, const Vector<String>&, SecurityOrigin*, const KURL&, const String&, WebSocketHandleClient*));
     MOCK_METHOD4(send, void(bool, WebSocketHandle::MessageType, const char*, size_t));
     MOCK_METHOD1(flowControl, void(int64_t));
-    MOCK_METHOD2(close, void(unsigned short, const WebString&));
+    MOCK_METHOD2(close, void(unsigned short, const String&));
 };
 
 class DocumentWebSocketChannelTest : public ::testing::Test {
@@ -132,12 +129,13 @@ public:
     {
         {
             InSequence s;
-            EXPECT_CALL(*handle(), connect(WebURL(KURL(KURL(), "ws://localhost/")), _, _, _, _, handleClient()));
+            EXPECT_CALL(*handle(), initialize(_));
+            EXPECT_CALL(*handle(), connect(KURL(KURL(), "ws://localhost/"), _, _, _, _, handleClient()));
             EXPECT_CALL(*handle(), flowControl(65536));
             EXPECT_CALL(*channelClient(), didConnect(String("a"), String("b")));
         }
         EXPECT_TRUE(channel()->connect(KURL(KURL(), "ws://localhost/"), "x"));
-        handleClient()->didConnect(handle(), WebString("a"), WebString("b"));
+        handleClient()->didConnect(handle(), String("a"), String("b"));
         ::testing::Mock::VerifyAndClearExpectations(this);
     }
 
@@ -158,25 +156,26 @@ MATCHER_P2(MemEq, p, len,
     return memcmp(arg, p, len) == 0;
 }
 
-MATCHER_P(WebURLEq, urlString,
+MATCHER_P(KURLEq, urlString,
     std::string(negation ? "doesn't equal" : "equals")
     + " to \"" + urlString + "\""
 )
 {
-    WebURL url(KURL(KURL(), urlString));
-    *result_listener << "where the url is \"" << arg.string().utf8() << "\"";
+    KURL url(KURL(), urlString);
+    *result_listener << "where the url is \"" << arg.getString().utf8().data() << "\"";
     return arg == url;
 }
 
 TEST_F(DocumentWebSocketChannelTest, connectSuccess)
 {
-    WebVector<WebString> protocols;
-    WebSecurityOrigin origin;
+    Vector<String> protocols;
+    RefPtr<SecurityOrigin> origin;
 
     Checkpoint checkpoint;
     {
         InSequence s;
-        EXPECT_CALL(*handle(), connect(WebURLEq("ws://localhost/"), _, _, WebURLEq("http://example.com/"), _, handleClient())).WillOnce(DoAll(
+        EXPECT_CALL(*handle(), initialize(_));
+        EXPECT_CALL(*handle(), connect(KURLEq("ws://localhost/"), _, _, KURLEq("http://example.com/"), _, handleClient())).WillOnce(DoAll(
             SaveArg<1>(&protocols),
             SaveArg<2>(&origin)));
         EXPECT_CALL(*handle(), flowControl(65536));
@@ -196,10 +195,10 @@ TEST_F(DocumentWebSocketChannelTest, connectSuccess)
     EXPECT_EQ(1U, protocols.size());
     EXPECT_STREQ("x", protocols[0].utf8().data());
 
-    EXPECT_STREQ("http://example.com", origin.toString().utf8().data());
+    EXPECT_STREQ("http://example.com", origin->toString().utf8().data());
 
     checkpoint.Call(1);
-    handleClient()->didConnect(handle(), WebString("a"), WebString("b"));
+    handleClient()->didConnect(handle(), String("a"), String("b"));
 }
 
 TEST_F(DocumentWebSocketChannelTest, sendText)
@@ -643,7 +642,7 @@ TEST_F(DocumentWebSocketChannelTest, closeFromBrowser)
         EXPECT_CALL(*channelClient(), didStartClosingHandshake());
         EXPECT_CALL(checkpoint, Call(1));
 
-        EXPECT_CALL(*handle(), close(WebSocketChannel::CloseEventCodeNormalClosure, WebString("close reason")));
+        EXPECT_CALL(*handle(), close(WebSocketChannel::CloseEventCodeNormalClosure, String("close reason")));
         EXPECT_CALL(checkpoint, Call(2));
 
         EXPECT_CALL(*channelClient(), didClose(WebSocketChannelClient::ClosingHandshakeComplete, WebSocketChannel::CloseEventCodeNormalClosure, String("close reason")));
@@ -669,7 +668,7 @@ TEST_F(DocumentWebSocketChannelTest, closeFromWebSocket)
     {
         InSequence s;
 
-        EXPECT_CALL(*handle(), close(WebSocketChannel::CloseEventCodeNormalClosure, WebString("close reason")));
+        EXPECT_CALL(*handle(), close(WebSocketChannel::CloseEventCodeNormalClosure, String("close reason")));
         EXPECT_CALL(checkpoint, Call(1));
 
         EXPECT_CALL(*channelClient(), didClose(WebSocketChannelClient::ClosingHandshakeComplete, WebSocketChannel::CloseEventCodeNormalClosure, String("close reason")));

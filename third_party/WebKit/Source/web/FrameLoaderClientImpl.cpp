@@ -909,11 +909,6 @@ void FrameLoaderClientImpl::didChangeFrameOwnerProperties(HTMLFrameElementBase* 
     m_webFrame->client()->didChangeFrameOwnerProperties(WebFrame::fromFrame(frameElement->contentFrame()), WebFrameOwnerProperties(frameElement->scrollingMode(), frameElement->marginWidth(), frameElement->marginHeight(), frameElement->allowFullscreen(), frameElement->delegatedPermissions()));
 }
 
-void FrameLoaderClientImpl::dispatchWillOpenWebSocket(WebSocketHandle* handle)
-{
-    m_webFrame->client()->willOpenWebSocket(handle);
-}
-
 void FrameLoaderClientImpl::dispatchWillStartUsingPeerConnectionHandler(WebRTCPeerConnectionHandler* handler)
 {
     m_webFrame->client()->willStartUsingPeerConnectionHandler(handler);

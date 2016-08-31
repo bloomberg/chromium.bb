@@ -199,6 +199,11 @@ int64_t WebSharedWorkerImpl::serviceWorkerID(WebDataSource& dataSource)
     return m_networkProvider->serviceWorkerID(dataSource);
 }
 
+InterfaceProvider* WebSharedWorkerImpl::interfaceProvider()
+{
+    return Platform::current()->interfaceProvider();
+}
+
 void WebSharedWorkerImpl::sendProtocolMessage(int sessionId, int callId, const WebString& message, const WebString& state)
 {
     m_client->sendDevToolsMessage(sessionId, callId, message, state);

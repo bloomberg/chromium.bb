@@ -28,36 +28,47 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebSocketHandshakeRequestInfo_h
-#define WebSocketHandshakeRequestInfo_h
+#ifndef WebSocketHandle_h
+#define WebSocketHandle_h
 
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebNonCopyable.h"
-#include "public/platform/WebPrivatePtr.h"
+#include "wtf/Forward.h"
+#include "wtf/Vector.h"
+#include <stdint.h>
 
 namespace blink {
 
-class WebString;
-class WebSocketHandshakeRequest;
-class WebURL;
+class InterfaceProvider;
+class KURL;
+class SecurityOrigin;
+class WebSocketHandleClient;
 
-class WebSocketHandshakeRequestInfo : public WebNonCopyable {
+// WebSocketHandle is an interface class designed to be a handle of WebSocket connection.
+// WebSocketHandle will be used together with WebSocketHandleClient.
+//
+// Once a WebSocketHandle is deleted there will be no notification to the corresponding WebSocketHandleClient.
+// Once a WebSocketHandleClient receives didClose, any method of the corresponding WebSocketHandle can't be called.
+
+class WebSocketHandle {
 public:
-    BLINK_PLATFORM_EXPORT WebSocketHandshakeRequestInfo();
-    BLINK_PLATFORM_EXPORT ~WebSocketHandshakeRequestInfo();
+    enum MessageType {
+        MessageTypeContinuation,
+        MessageTypeText,
+        MessageTypeBinary,
+    };
 
-    BLINK_PLATFORM_EXPORT void setURL(const WebURL&);
-    BLINK_PLATFORM_EXPORT void addHeaderField(const WebString& name, const WebString& value);
-    BLINK_PLATFORM_EXPORT void setHeadersText(const WebString&);
+    virtual ~WebSocketHandle() {}
 
-#if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT const WebSocketHandshakeRequest& toCoreRequest() const { return *m_private.get(); }
-#endif // INSIDE_BLINK
+    // This method may optionally be called before connect() to specify an
+    // InterfaceProvider to get a WebSocket instance. By default, connect() will
+    // use Platform::interfaceProvider().
+    virtual void initialize(InterfaceProvider*) = 0;
 
-private:
-    WebPrivatePtr<WebSocketHandshakeRequest> m_private;
+    virtual void connect(const KURL&, const Vector<String>& protocols, SecurityOrigin*, const KURL& firstPartyForCookies, const String& userAgentOverride, WebSocketHandleClient*) = 0;
+    virtual void send(bool fin, MessageType, const char* data, size_t) = 0;
+    virtual void flowControl(int64_t quota) = 0;
+    virtual void close(unsigned short code, const String& reason) = 0;
 };
 
 } // namespace blink
 
-#endif // WebSocketHandshakeRequestInfo_h
+#endif // WebSocketHandle_h
