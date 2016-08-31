@@ -44,10 +44,11 @@ URLResponseBodyConsumer::URLResponseBodyConsumer(
     int request_id,
     ResourceDispatcher* resource_dispatcher,
     mojo::ScopedDataPipeConsumerHandle handle,
-    base::SingleThreadTaskRunner* task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : request_id_(request_id),
       resource_dispatcher_(resource_dispatcher),
       handle_(std::move(handle)),
+      handle_watcher_(task_runner),
       has_seen_end_of_data_(!handle_.is_valid()) {
   handle_watcher_.Start(
       handle_.get(), MOJO_HANDLE_SIGNAL_READABLE,
@@ -83,7 +84,6 @@ void URLResponseBodyConsumer::OnReadable(MojoResult unused) {
     return;
 
   // TODO(yhirano): Suppress notification when deferred.
-  // TODO(yhirano): Run this operation on the loading task runner.
   while (!has_been_cancelled_) {
     const void* buffer = nullptr;
     uint32_t available = 0;

@@ -98,7 +98,7 @@ class URLLoaderClientImpl final : public mojom::URLLoaderClient {
       mojo::ScopedDataPipeConsumerHandle body) override {
     DCHECK(!body_consumer_);
     body_consumer_ = new URLResponseBodyConsumer(
-        request_id_, resource_dispatcher_, std::move(body), task_runner_.get());
+        request_id_, resource_dispatcher_, std::move(body), task_runner_);
   }
 
   void OnComplete(const ResourceRequestCompletionStatus& status) override {

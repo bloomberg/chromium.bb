@@ -135,7 +135,7 @@ TEST_F(URLResponseBodyConsumerTest, ReceiveData) {
 
   scoped_refptr<URLResponseBodyConsumer> consumer(new URLResponseBodyConsumer(
       request_id, dispatcher_.get(), std::move(data_pipe.consumer_handle),
-      message_loop_.task_runner().get()));
+      message_loop_.task_runner()));
 
   mojo::ScopedDataPipeProducerHandle writer =
       std::move(data_pipe.producer_handle);
@@ -160,7 +160,7 @@ TEST_F(URLResponseBodyConsumerTest, OnCompleteThenClose) {
 
   scoped_refptr<URLResponseBodyConsumer> consumer(new URLResponseBodyConsumer(
       request_id, dispatcher_.get(), std::move(data_pipe.consumer_handle),
-      message_loop_.task_runner().get()));
+      message_loop_.task_runner()));
 
   consumer->OnComplete(ResourceRequestCompletionStatus());
   mojo::ScopedDataPipeProducerHandle writer =
@@ -192,7 +192,7 @@ TEST_F(URLResponseBodyConsumerTest, CloseThenOnComplete) {
 
   scoped_refptr<URLResponseBodyConsumer> consumer(new URLResponseBodyConsumer(
       request_id, dispatcher_.get(), std::move(data_pipe.consumer_handle),
-      message_loop_.task_runner().get()));
+      message_loop_.task_runner()));
 
   ResourceRequestCompletionStatus status;
   status.error_code = net::ERR_FAILED;

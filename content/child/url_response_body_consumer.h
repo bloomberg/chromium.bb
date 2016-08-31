@@ -31,10 +31,11 @@ class CONTENT_EXPORT URLResponseBodyConsumer final
     : public base::RefCounted<URLResponseBodyConsumer>,
       public base::SupportsWeakPtr<URLResponseBodyConsumer> {
  public:
-  URLResponseBodyConsumer(int request_id,
-                          ResourceDispatcher* resource_dispatcher,
-                          mojo::ScopedDataPipeConsumerHandle handle,
-                          base::SingleThreadTaskRunner* task_runner);
+  URLResponseBodyConsumer(
+      int request_id,
+      ResourceDispatcher* resource_dispatcher,
+      mojo::ScopedDataPipeConsumerHandle handle,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // Sets the completion status. The completion status is dispatched to the
   // ResourceDispatcher when the both following conditions hold:
