@@ -84,6 +84,10 @@ div.content:last-of-type {
   line-height: 200%;
 }
 
+select {
+  max-width: 85vw;
+}
+
 #experiment-reset-all {
   float: right;
 }
