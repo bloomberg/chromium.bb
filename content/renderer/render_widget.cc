@@ -830,12 +830,16 @@ void RenderWidget::RequestScheduleAnimation() {
 
 void RenderWidget::UpdateVisualState() {
   webwidget_->updateAllLifecyclePhases();
-  UpdateTextInputState(ShowIme::HIDE_IME, ChangeSource::FROM_NON_IME);
-  UpdateSelectionBounds();
 }
 
 void RenderWidget::WillBeginCompositorFrame() {
   TRACE_EVENT0("gpu", "RenderWidget::willBeginCompositorFrame");
+
+  // The UpdateTextInputState can result in further layout and possibly
+  // enable GPU acceleration so they need to be called before any painting
+  // is done.
+  UpdateTextInputState(ShowIme::HIDE_IME, ChangeSource::FROM_NON_IME);
+  UpdateSelectionBounds();
 
   FOR_EACH_OBSERVER(RenderFrameProxy, render_frame_proxies_,
                     WillBeginCompositorFrame());
