@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.download.ui;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.os.StrictMode;
 import android.support.v4.view.GravityCompat;
@@ -75,11 +76,16 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
     private static class DownloadBackendProvider implements BackendProvider {
         private OfflinePageDownloadBridge mOfflinePageBridge;
         private SelectionDelegate<DownloadHistoryItemWrapper> mSelectionDelegate;
+        private ThumbnailProvider mThumbnailProvider;
 
         DownloadBackendProvider() {
+            Resources resources = ContextUtils.getApplicationContext().getResources();
+            int iconSize = resources.getDimensionPixelSize(R.dimen.downloads_item_icon_size);
+
             mOfflinePageBridge = new OfflinePageDownloadBridge(
                     Profile.getLastUsedProfile().getOriginalProfile());
             mSelectionDelegate = new SelectionDelegate<DownloadHistoryItemWrapper>();
+            mThumbnailProvider = new ThumbnailProviderImpl(iconSize);
         }
 
         @Override
@@ -94,8 +100,21 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
         }
 
         @Override
+        public ThumbnailProvider getThumbnailProvider() {
+            return mThumbnailProvider;
+        }
+
+        @Override
         public SelectionDelegate<DownloadHistoryItemWrapper> getSelectionDelegate() {
             return mSelectionDelegate;
+        }
+
+        @Override
+        public void destroy() {
+            getOfflinePageBridge().destroy();
+
+            mThumbnailProvider.destroy();
+            mThumbnailProvider = null;
         }
     }
 
@@ -211,7 +230,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
             removeObserver(observer);
         }
 
-        mBackendProvider.getOfflinePageBridge().destroy();
+        mBackendProvider.destroy();
 
         mHistoryAdapter.unregisterAdapterDataObserver(mAdapterObserver);
         mHistoryAdapter.unregisterAdapterDataObserver(mSpaceDisplay);

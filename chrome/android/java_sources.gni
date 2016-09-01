@@ -327,6 +327,8 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/download/ui/DownloadManagerToolbar.java",
   "java/src/org/chromium/chrome/browser/download/ui/FilterAdapter.java",
   "java/src/org/chromium/chrome/browser/download/ui/SpaceDisplay.java",
+  "java/src/org/chromium/chrome/browser/download/ui/ThumbnailProvider.java",
+  "java/src/org/chromium/chrome/browser/download/ui/ThumbnailProviderImpl.java",
   "java/src/org/chromium/chrome/browser/externalauth/ExternalAuthUtils.java",
   "java/src/org/chromium/chrome/browser/externalauth/UserRecoverableErrorHandler.java",
   "java/src/org/chromium/chrome/browser/externalauth/VerifiedHandler.java",

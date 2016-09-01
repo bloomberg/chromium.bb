@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.download.ui;
 
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.text.TextUtils;
@@ -16,6 +18,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
@@ -41,12 +45,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class DownloadHistoryAdapter extends DateDividedAdapter implements DownloadUiObserver {
 
     /** Holds onto a View that displays information about a downloaded file. */
-    public static class ItemViewHolder extends RecyclerView.ViewHolder {
+    public static class ItemViewHolder
+            extends RecyclerView.ViewHolder implements ThumbnailProvider.ThumbnailRequest {
         public DownloadItemView mItemView;
         public ImageView mIconView;
         public TextView mFilenameView;
         public TextView mHostnameView;
         public TextView mFilesizeView;
+        public DownloadHistoryItemWrapper mItem;
 
         public ItemViewHolder(View itemView) {
             super(itemView);
@@ -58,6 +64,20 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
             mFilenameView = (TextView) itemView.findViewById(R.id.filename_view);
             mHostnameView = (TextView) itemView.findViewById(R.id.hostname_view);
             mFilesizeView = (TextView) itemView.findViewById(R.id.filesize_view);
+        }
+
+        @Override
+        public String getFilePath() {
+            return mItem == null ? null : mItem.getFilePath();
+        }
+
+        @Override
+        public void onThumbnailRetrieved(String filePath, Bitmap thumbnail) {
+            if (TextUtils.equals(getFilePath(), filePath) && thumbnail != null
+                    && thumbnail.getWidth() != 0 && thumbnail.getHeight() != 0) {
+                mIconView.setBackground(null);
+                mIconView.setImageBitmap(thumbnail);
+            }
         }
     }
 
@@ -89,6 +109,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
     private final boolean mShowOffTheRecord;
     private final LoadingStateDelegate mLoadingDelegate;
 
+    private int mIconBackgroundColor;
     private BackendProvider mBackendProvider;
     private OfflinePageDownloadBridge.Observer mOfflinePageObserver;
     private int mFilter = DownloadFilter.FILTER_ALL;
@@ -96,8 +117,14 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
     DownloadHistoryAdapter(boolean showOffTheRecord, ComponentName parentComponent) {
         mShowOffTheRecord = showOffTheRecord;
         mParentComponent = parentComponent;
-        setHasStableIds(true);
         mLoadingDelegate = new LoadingStateDelegate(mShowOffTheRecord);
+
+        Resources resources = ContextUtils.getApplicationContext().getResources();
+        mIconBackgroundColor =
+                ApiCompatibilityUtils.getColor(resources, R.color.light_active_color);
+
+        // Using stable IDs allows the RecyclerView to animate changes.
+        setHasStableIds(true);
     }
 
     public void initialize(BackendProvider provider) {
@@ -164,13 +191,9 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
     public long getTotalDownloadSize() {
         long totalSize = 0;
         for (DownloadHistoryItemWrapper wrapper : mDownloadItems) {
-            assert wrapper instanceof DownloadItemWrapper;
-            DownloadItemWrapper downloadWrapper = (DownloadItemWrapper) wrapper;
             totalSize += wrapper.getFileSize();
         }
         for (DownloadHistoryItemWrapper wrapper : mDownloadOffTheRecordItems) {
-            assert wrapper instanceof DownloadItemWrapper;
-            DownloadItemWrapper downloadWrapper = (DownloadItemWrapper) wrapper;
             totalSize += wrapper.getFileSize();
         }
         for (DownloadHistoryItemWrapper wrapper : mOfflinePageItems) {
@@ -194,9 +217,14 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
 
     @Override
     public void bindViewHolderForTimedItem(ViewHolder current, TimedItem timedItem) {
+        ThumbnailProvider thumbnailProvider = mBackendProvider.getThumbnailProvider();
         final DownloadHistoryItemWrapper item = (DownloadHistoryItemWrapper) timedItem;
 
         ItemViewHolder holder = (ItemViewHolder) current;
+
+        // Cancel any previous request for a thumbnail that was to be displayed in this holder.
+        thumbnailProvider.cancelRetrieval(holder);
+
         Context context = holder.mFilesizeView.getContext();
         holder.mFilenameView.setText(item.getDisplayFileName());
         holder.mHostnameView.setText(
@@ -204,9 +232,17 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
         holder.mFilesizeView.setText(
                 Formatter.formatFileSize(context, item.getFileSize()));
         holder.mItemView.initialize(item);
+        holder.mItem = item;
+
+        // Asynchronously grab a thumbnail for the file if it might have one.
+        int fileType = item.getFilterType();
+        if (fileType == DownloadFilter.FILTER_IMAGE) {
+            thumbnailProvider.getThumbnail(holder);
+        } else {
+            // TODO(dfalcantara): Get thumbnails for audio and video files when possible.
+        }
 
         // Pick what icon to display for the item.
-        int fileType = item.getFilterType();
         int iconResource = R.drawable.ic_drive_file_white_24dp;
         switch (fileType) {
             case DownloadFilter.FILTER_PAGE:
@@ -226,7 +262,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
                 break;
             default:
         }
-
+        holder.mIconView.setBackgroundColor(mIconBackgroundColor);
         holder.mIconView.setImageResource(iconResource);
     }
 
@@ -438,6 +474,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
     private Map<String, Boolean> getExternallyDeletedItemsMap(boolean isOffTheRecord) {
         return isOffTheRecord ? sExternallyDeletedOffTheRecordItems : sExternallyDeletedItems;
     }
+
     /**
      * Determines when the data from all of the backends has been loaded.
      * <p>

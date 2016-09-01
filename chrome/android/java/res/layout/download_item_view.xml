@@ -20,14 +20,14 @@
 
         <ImageView
                 android:id="@+id/icon_view"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
+                android:layout_width="@dimen/downloads_item_icon_size"
+                android:layout_height="@dimen/downloads_item_icon_size"
                 android:layout_alignParentStart="true"
                 android:layout_alignParentTop="true"
                 android:layout_alignParentBottom="true"
                 android:layout_marginEnd="16dp"
                 android:contentDescription="@null"
-                android:scaleType="centerInside"
+                android:scaleType="center"
                 android:background="@color/light_active_color" />
 
         <TextView

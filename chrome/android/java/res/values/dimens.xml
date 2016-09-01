@@ -365,4 +365,7 @@
     <!-- Dialog dimensions.
          https://www.google.com/design/spec/components/dialogs.html#dialogs-simple-dialogs -->
     <dimen name="dialog_width_unit">56dp</dimen>  <!-- MD dialog widths are multiples of this. -->
+    
+    <!-- Downloads dimensions. -->
+    <dimen name="downloads_item_icon_size">48dp</dimen>
 </resources>

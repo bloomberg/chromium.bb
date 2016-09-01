@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.download.ui;
 import android.content.ComponentName;
 import android.support.annotation.Nullable;
 
+import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadItem;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
@@ -63,6 +64,12 @@ public interface BackendProvider {
     /** Returns the {@link OfflinePageDelegate} that works with the Offline Pages backend. */
     OfflinePageDelegate getOfflinePageBridge();
 
+    /** Returns the {@link ThumbnailProvider} that gets thumbnails for files. */
+    ThumbnailProvider getThumbnailProvider();
+
     /** Returns the {@link SelectionDelegate} that tracks selected items. */
     SelectionDelegate<DownloadHistoryItemWrapper> getSelectionDelegate();
+
+    /** Destroys the BackendProvider. */
+    void destroy();
 }

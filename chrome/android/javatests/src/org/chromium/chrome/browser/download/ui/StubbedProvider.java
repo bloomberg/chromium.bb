@@ -136,18 +136,30 @@ public class StubbedProvider implements BackendProvider {
         @Override public void destroy() { }
     }
 
+    /** Stubs out all attempts to get thumbnails for files. */
+    public static class StubbedThumbnailProvider implements ThumbnailProvider {
+        @Override
+        public void destroy() {}
+        @Override
+        public void getThumbnail(ThumbnailRequest request) {}
+        @Override
+        public void cancelRetrieval(ThumbnailRequest request) {}
+    }
+
     private static final long ONE_GIGABYTE = 1024L * 1024L * 1024L;
 
     private final Handler mHandler;
     private final StubbedDownloadDelegate mDownloadDelegate;
     private final StubbedOfflinePageDelegate mOfflineDelegate;
     private final SelectionDelegate<DownloadHistoryItemWrapper> mSelectionDelegate;
+    private final StubbedThumbnailProvider mStubbedThumbnailProvider;
 
     public StubbedProvider() {
         mHandler = new Handler(Looper.getMainLooper());
         mDownloadDelegate = new StubbedDownloadDelegate();
         mOfflineDelegate = new StubbedOfflinePageDelegate();
         mSelectionDelegate = new SelectionDelegate<>();
+        mStubbedThumbnailProvider = new StubbedThumbnailProvider();
     }
 
     @Override
@@ -164,6 +176,14 @@ public class StubbedProvider implements BackendProvider {
     public SelectionDelegate<DownloadHistoryItemWrapper> getSelectionDelegate() {
         return mSelectionDelegate;
     }
+
+    @Override
+    public StubbedThumbnailProvider getThumbnailProvider() {
+        return mStubbedThumbnailProvider;
+    }
+
+    @Override
+    public void destroy() {}
 
     /** Creates a new DownloadItem with pre-defined values. */
     public static DownloadItem createDownloadItem(int which, String date) throws Exception {

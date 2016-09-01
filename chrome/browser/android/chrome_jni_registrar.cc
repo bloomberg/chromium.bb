@@ -44,6 +44,7 @@
 #include "chrome/browser/android/download/chrome_download_delegate.h"
 #include "chrome/browser/android/download/download_controller.h"
 #include "chrome/browser/android/download/download_manager_service.h"
+#include "chrome/browser/android/download/ui/thumbnail_provider.h"
 #include "chrome/browser/android/favicon_helper.h"
 #include "chrome/browser/android/feature_utilities.h"
 #include "chrome/browser/android/feedback/connectivity_checker.h"
@@ -357,6 +358,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"TabStripSceneLayer", RegisterTabStripSceneLayer},
     {"TabWebContentsDelegateAndroid", RegisterTabWebContentsDelegateAndroid},
     {"TemplateUrlServiceAndroid", TemplateUrlServiceAndroid::Register},
+    {"ThumbnailProvider", ThumbnailProvider::RegisterThumbnailProvider},
     {"ToolbarModelAndroid", ToolbarModelAndroid::RegisterToolbarModelAndroid},
     {"ToolbarSceneLayer", RegisterToolbarSceneLayer},
     {"TranslateInfoBarDelegate", RegisterTranslateInfoBarDelegate},
