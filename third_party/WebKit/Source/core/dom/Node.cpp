@@ -214,30 +214,34 @@ void Node::dumpStatistics()
         }
     }
 
-    printf("Number of Nodes: %d\n\n", liveNodeSet().size());
-    printf("Number of Nodes with RareData: %zu\n\n", nodesWithRareData);
-
-    printf("NodeType distribution:\n");
-    printf("  Number of Element nodes: %zu\n", elementNodes);
-    printf("  Number of Attribute nodes: %zu\n", attrNodes);
-    printf("  Number of Text nodes: %zu\n", textNodes);
-    printf("  Number of CDATASection nodes: %zu\n", cdataNodes);
-    printf("  Number of Comment nodes: %zu\n", commentNodes);
-    printf("  Number of ProcessingInstruction nodes: %zu\n", piNodes);
-    printf("  Number of Document nodes: %zu\n", documentNodes);
-    printf("  Number of DocumentType nodes: %zu\n", docTypeNodes);
-    printf("  Number of DocumentFragment nodes: %zu\n", fragmentNodes);
-    printf("  Number of ShadowRoot nodes: %zu\n", shadowRootNodes);
-
-    printf("Element tag name distibution:\n");
+    std::stringstream perTagStream;
     for (const auto& entry : perTagCount)
-        printf("  Number of <%s> tags: %zu\n", entry.key.utf8().data(), entry.value);
+        perTagStream << "  Number of <" << entry.key.utf8().data() << "> tags: " << entry.value << "\n";
 
-    printf("Attributes:\n");
-    printf("  Number of Attributes (non-Node and Node): %zu [%zu]\n", attributes, sizeof(Attribute));
-    printf("  Number of Elements with attribute storage: %zu [%zu]\n", elementsWithAttributeStorage, sizeof(ElementData));
-    printf("  Number of Elements with RareData: %zu\n", elementsWithRareData);
-    printf("  Number of Elements with NamedNodeMap: %zu [%zu]\n", elementsWithNamedNodeMap, sizeof(NamedNodeMap));
+    LOG(INFO) << "\n"
+        << "Number of Nodes: " << liveNodeSet().size() << "\n"
+        << "Number of Nodes with RareData: " << nodesWithRareData << "\n\n"
+
+        << "NodeType distribution:\n"
+        << "  Number of Element nodes: " << elementNodes << "\n"
+        << "  Number of Attribute nodes: " << attrNodes << "\n"
+        << "  Number of Text nodes: " << textNodes << "\n"
+        << "  Number of CDATASection nodes: " << cdataNodes << "\n"
+        << "  Number of Comment nodes: " << commentNodes << "\n"
+        << "  Number of ProcessingInstruction nodes: " << piNodes << "\n"
+        << "  Number of Document nodes: " << documentNodes << "\n"
+        << "  Number of DocumentType nodes: " << docTypeNodes << "\n"
+        << "  Number of DocumentFragment nodes: " << fragmentNodes << "\n"
+        << "  Number of ShadowRoot nodes: " << shadowRootNodes << "\n"
+
+        << "Element tag name distibution:\n"
+        << perTagStream.str()
+
+        << "Attributes:\n"
+        << "  Number of Attributes (non-Node and Node): " << attributes << " x " << sizeof(Attribute) << "Bytes\n"
+        << "  Number of Elements with attribute storage: " << elementsWithAttributeStorage << " x " << sizeof(ElementData) << "Bytes\n"
+        << "  Number of Elements with RareData: " << elementsWithRareData << "\n"
+        << "  Number of Elements with NamedNodeMap: " << elementsWithNamedNodeMap << " x " << sizeof(NamedNodeMap) << "Bytes";
 #endif
 }
 
