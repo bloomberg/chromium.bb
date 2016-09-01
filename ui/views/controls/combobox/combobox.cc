@@ -601,22 +601,21 @@ bool Combobox::OnKeyPressed(const ui::KeyEvent& e) {
       new_index = GetAdjacentIndex(model(), -1, selected_index_);
       break;
 
-    // Click the button only when the button style mode.
     case ui::VKEY_SPACE:
       if (style_ == STYLE_ACTION) {
         // When pressing space, the click event will be raised after the key is
         // released.
         text_button_->SetState(Button::STATE_PRESSED);
       } else {
-        return false;
+        show_menu = true;
       }
       break;
 
-    // Click the button only when the button style mode.
     case ui::VKEY_RETURN:
-      if (style_ != STYLE_ACTION)
-        return false;
-      OnPerformAction();
+      if (style_ == STYLE_ACTION)
+        OnPerformAction();
+      else
+        show_menu = true;
       break;
 
     default:

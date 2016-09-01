@@ -626,10 +626,14 @@ TEST_F(ComboboxTest, NotifyOnClickWithMouse) {
 TEST_F(ComboboxTest, ConsumingPressKeyEvents) {
   InitCombobox(nullptr, Combobox::STYLE_NORMAL);
 
-  EXPECT_FALSE(combobox_->OnKeyPressed(
+  int menu_show_count = 0;
+  test_api_->InstallTestMenuRunner(&menu_show_count);
+  EXPECT_TRUE(combobox_->OnKeyPressed(
       ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, ui::EF_NONE)));
-  EXPECT_FALSE(combobox_->OnKeyPressed(
+  EXPECT_EQ(1, menu_show_count);
+  EXPECT_TRUE(combobox_->OnKeyPressed(
       ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_SPACE, ui::EF_NONE)));
+  EXPECT_EQ(2, menu_show_count);
 }
 
 TEST_F(ComboboxTest, ConsumingKeyPressEventsActionStyle) {
