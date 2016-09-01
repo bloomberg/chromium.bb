@@ -1342,6 +1342,9 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   // to use field trials. Note: it could also be the first thing in
   // CreateThreads() but being in chrome/ is convenient for now as the
   // initialization uses variations parameters extensively.
+  //
+  // To maintain scoping symmetry, if this line is moved, the corresponding
+  // shutdown call may also need to be moved.
   MaybeInitializeTaskScheduler();
 
   return content::RESULT_CODE_NORMAL_EXIT;
@@ -2165,6 +2168,12 @@ void ChromeBrowserMainParts::PostDestroyThreads() {
   // not finish.
   NOTREACHED();
 #else
+  // The TaskScheduler was initialized at the very end of PreCreateThreads. To
+  // maintain scoping symmetry, perform the shutdown here at the beginning of
+  // PostDestroyThreads.
+  base::TaskScheduler* task_scheduler = base::TaskScheduler::GetInstance();
+  if (task_scheduler)
+    task_scheduler->Shutdown();
 
   int restart_flags = restart_last_session_
                           ? browser_shutdown::RESTART_LAST_SESSION
