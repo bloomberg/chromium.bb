@@ -53,10 +53,6 @@ TermMatches SortMatches(const TermMatches& matches);
 // cleaned up matches.  Assumes |matches| is already sorted.
 TermMatches DeoverlapMatches(const TermMatches& sorted_matches);
 
-// Sorts and removes overlapping substring matches from |matches| and
-// returns the cleaned up matches.
-TermMatches SortAndDeoverlapMatches(const TermMatches& matches);
-
 // Extracts and returns the offsets from |matches|.  This includes both
 // the offsets corresponding to the beginning of a match and the offsets
 // corresponding to the end of a match (i.e., offset+length for that match).

@@ -60,10 +60,6 @@ TermMatches DeoverlapMatches(const TermMatches& sorted_matches) {
   return out;
 }
 
-TermMatches SortAndDeoverlapMatches(const TermMatches& matches) {
-  return DeoverlapMatches(SortMatches(matches));
-}
-
 std::vector<size_t> OffsetsFromTermMatches(const TermMatches& matches) {
   std::vector<size_t> offsets;
   for (TermMatches::const_iterator i = matches.begin(); i != matches.end();

@@ -188,13 +188,8 @@ ScoredHistoryMatch::ScoredHistoryMatch(
 
   // Sort matches by offset, which is needed for GetTopicalityScore() to
   // function correctly.
-  if (OmniboxFieldTrial::HQPAllowDupMatchesForScoring()) {
-    url_matches = SortMatches(url_matches);
-    title_matches = SortMatches(title_matches);
-  } else {
-    url_matches = SortAndDeoverlapMatches(url_matches);
-    title_matches = SortAndDeoverlapMatches(title_matches);
-  }
+  url_matches = SortMatches(url_matches);
+  title_matches = SortMatches(title_matches);
 
   // We can likely inline autocomplete a match if:
   //  1) there is only one search term
@@ -326,12 +321,8 @@ ScoredHistoryMatch::ScoredHistoryMatch(
     raw_score = std::max(raw_score, hup_like_score);
   }
 
-  // If we haven't yet removed overlaps / duplicates in the matches variables,
-  // do so now.
-  if (OmniboxFieldTrial::HQPAllowDupMatchesForScoring()) {
-    url_matches = DeoverlapMatches(url_matches);
-    title_matches = DeoverlapMatches(title_matches);
-  }
+  url_matches = DeoverlapMatches(url_matches);
+  title_matches = DeoverlapMatches(title_matches);
 
   // Now that we're done processing this entry, correct the offsets of the
   // matches in |url_matches| so they point to offsets in the original URL

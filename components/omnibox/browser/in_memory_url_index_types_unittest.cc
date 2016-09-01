@@ -91,13 +91,13 @@ TEST_F(InMemoryURLIndexTypesTest, StaticFunctions) {
   EXPECT_TRUE(IntArraysEqual(expected_starts_d, arraysize(expected_starts_d),
                              actual_starts_d));
 
-  // Test SortAndDeoverlapMatches
+  // Test SortMatches and DeoverlapMatches.
   TermMatches matches_e;
   matches_e.push_back(TermMatch(1, 13, 10));
   matches_e.push_back(TermMatch(2, 23, 10));
   matches_e.push_back(TermMatch(3, 3, 10));
   matches_e.push_back(TermMatch(4, 40, 5));
-  TermMatches matches_f = SortAndDeoverlapMatches(matches_e);
+  TermMatches matches_f = DeoverlapMatches(SortMatches(matches_e));
   // Nothing should have been eliminated.
   EXPECT_EQ(matches_e.size(), matches_f.size());
   // The order should now be 3, 1, 2, 4.
@@ -107,7 +107,7 @@ TEST_F(InMemoryURLIndexTypesTest, StaticFunctions) {
   EXPECT_EQ(4, matches_f[3].term_num);
   matches_e.push_back(TermMatch(5, 18, 10));
   matches_e.push_back(TermMatch(6, 38, 5));
-  matches_f = SortAndDeoverlapMatches(matches_e);
+  matches_f = DeoverlapMatches(SortMatches(matches_e));
   // Two matches should have been eliminated.
   EXPECT_EQ(matches_e.size() - 2, matches_f.size());
   // The order should now be 3, 1, 2, 6.

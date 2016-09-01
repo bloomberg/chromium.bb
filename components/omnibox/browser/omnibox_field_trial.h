@@ -347,16 +347,6 @@ class OmniboxFieldTrial {
   static int KeywordScoreForSufficientlyCompleteMatch();
 
   // ---------------------------------------------------------
-  // For the HQPAllowDupMatchesForScoring experiment that's part of the
-  // bundled omnibox field trial.
-
-  // Returns true if HistoryQuick provider should allow overlapping term hits
-  // to count when scoring and only remove overlaps/duplicates later (which
-  // is necessary for highlighting).  Returns false if the experiment isn't
-  // active.
-  static bool HQPAllowDupMatchesForScoring();
-
-  // ---------------------------------------------------------
   // For the EmphasizeTitles experiment that's part of the bundled omnibox
   // field trial.
 
