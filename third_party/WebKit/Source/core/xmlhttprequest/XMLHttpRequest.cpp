@@ -138,6 +138,26 @@ enum HeaderValueCategoryByRFC7230 {
     HeaderValueCategoryByRFC7230End
 };
 
+bool validateOpenArguments(const AtomicString& method, const KURL& url, ExceptionState& exceptionState)
+{
+    if (!isValidHTTPToken(method)) {
+        exceptionState.throwDOMException(SyntaxError, "'" + method + "' is not a valid HTTP method.");
+        return false;
+    }
+
+    if (FetchUtils::isForbiddenMethod(method)) {
+        exceptionState.throwSecurityError("'" + method + "' HTTP method is unsupported.");
+        return false;
+    }
+
+    if (!url.isValid()) {
+        exceptionState.throwDOMException(SyntaxError, "Invalid URL");
+        return false;
+    }
+
+    return true;
+}
+
 } // namespace
 
 class XMLHttpRequest::BlobLoader final : public GarbageCollectedFinalized<XMLHttpRequest::BlobLoader>, public FileReaderLoaderClient {
@@ -536,12 +556,19 @@ void XMLHttpRequest::setWithCredentials(bool value, ExceptionState& exceptionSta
 
 void XMLHttpRequest::open(const AtomicString& method, const String& urlString, ExceptionState& exceptionState)
 {
-    open(method, getExecutionContext()->completeURL(urlString), true, exceptionState);
+    KURL url(getExecutionContext()->completeURL(urlString));
+    if (!validateOpenArguments(method, url, exceptionState))
+        return;
+
+    open(method, url, true, exceptionState);
 }
 
 void XMLHttpRequest::open(const AtomicString& method, const String& urlString, bool async, const String& username, const String& password, ExceptionState& exceptionState)
 {
     KURL url(getExecutionContext()->completeURL(urlString));
+    if (!validateOpenArguments(method, url, exceptionState))
+        return;
+
     if (!username.isNull())
         url.setUser(username);
     if (!password.isNull())
@@ -554,6 +581,8 @@ void XMLHttpRequest::open(const AtomicString& method, const KURL& url, bool asyn
 {
     NETWORK_DVLOG(1) << this << " open(" << method << ", " << url.elidedString() << ", " << async << ")";
 
+    DCHECK(validateOpenArguments(method, url, exceptionState));
+
     if (!internalAbort())
         return;
 
@@ -561,16 +590,6 @@ void XMLHttpRequest::open(const AtomicString& method, const KURL& url, bool asyn
     m_state = kUnsent;
     m_error = false;
     m_uploadComplete = false;
-
-    if (!isValidHTTPToken(method)) {
-        exceptionState.throwDOMException(SyntaxError, "'" + method + "' is not a valid HTTP method.");
-        return;
-    }
-
-    if (FetchUtils::isForbiddenMethod(method)) {
-        exceptionState.throwSecurityError("'" + method + "' HTTP method is unsupported.");
-        return;
-    }
 
     if (!ContentSecurityPolicy::shouldBypassMainWorld(getExecutionContext()) && !getExecutionContext()->contentSecurityPolicy()->allowConnectToSource(url)) {
         // We can safely expose the URL to JavaScript, as these checks happen synchronously before redirection. JavaScript receives no new information.

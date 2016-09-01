@@ -1,20 +1,5 @@
 <html>
 <script>
-function testInvalidMethod() {
-    var result = 'FAILURE';
-    
-    var req = new XMLHttpRequest();
-
-    try {
-        req.open('test\r\nfoobar', window.location, true)
-    } catch (e) {
-        if (e.code == DOMException.SYNTAX_ERR)
-            result = 'SUCCESS';
-    }
-    
-    debug('testInvalidMethod: ' + result);
-}
-
 function testInvalidHeaderName() {
     var result = 'FAILURE';
 
@@ -76,7 +61,6 @@ function runTest() {
     if (window.testRunner)
         testRunner.dumpAsText();
 
-    testInvalidMethod();
     testInvalidHeaderName();
     testInvalidHeaderValues();
 }

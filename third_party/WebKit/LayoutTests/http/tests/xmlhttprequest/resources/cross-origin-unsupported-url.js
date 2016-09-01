@@ -39,8 +39,7 @@ function issueRequest(url, contentType)
 }
 
 var withContentType = true;
-var tests = [ 'http://localhost:1291a/',
-              'ftp://127.0.0.1',
+var tests = [ 'ftp://127.0.0.1',
               'localhost:8080/',
               'tel:1234' ];
 
