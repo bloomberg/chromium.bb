@@ -8,24 +8,19 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "ui/arc/notification/arc_notification_item.h"
-#include "ui/arc/notification/arc_notification_surface_manager.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace arc {
 
-class ArcCustomNotificationItem
-    : public ArcNotificationItem,
-      public ArcNotificationSurfaceManager::Observer {
+class ArcCustomNotificationItem : public ArcNotificationItem {
  public:
   class Observer {
    public:
     // Invoked when the notification data for this item has changed.
     virtual void OnItemDestroying() = 0;
 
-    // Invoked when the pinned stated is changed.
-    virtual void OnItemPinnedChanged() = 0;
-
-    // Invoked when the notification surface for this item is gone.
-    virtual void OnItemNotificationSurfaceRemoved() = 0;
+    // Invoked when the notification data for the item is updated.
+    virtual void OnItemUpdated() = 0;
 
    protected:
     virtual ~Observer() = default;
@@ -45,14 +40,22 @@ class ArcCustomNotificationItem
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  // Increment |window_ref_count_| and a CreateNotificationWindow request
+  // is sent when |window_ref_count_| goes from zero to one.
+  void IncrementWindowRefCount();
+
+  // Decrement |window_ref_count_| and a CloseNotificationWindow request
+  // is sent when |window_ref_count_| goes from one to zero.
+  void DecrementWindowRefCount();
+
   bool pinned() const { return pinned_; }
+  const gfx::ImageSkia& snapshot() const { return snapshot_; }
 
  private:
-  // ArcNotificationSurfaceManager::Observer:
-  void OnNotificationSurfaceAdded(exo::NotificationSurface* surface) override;
-  void OnNotificationSurfaceRemoved(exo::NotificationSurface* surface) override;
-
   bool pinned_ = false;
+  gfx::ImageSkia snapshot_;
+  int window_ref_count_ = 0;
+
   base::ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcCustomNotificationItem);

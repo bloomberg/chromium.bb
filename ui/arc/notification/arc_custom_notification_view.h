@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "ui/arc/notification/arc_custom_notification_item.h"
+#include "ui/arc/notification/arc_notification_surface_manager.h"
 #include "ui/aura/window_observer.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/native/native_view_host.h"
@@ -25,13 +26,14 @@ class Widget;
 
 namespace arc {
 
-class ArcCustomNotificationView : public views::NativeViewHost,
-                                  public views::ButtonListener,
-                                  public aura::WindowObserver,
-                                  public ArcCustomNotificationItem::Observer {
+class ArcCustomNotificationView
+    : public views::NativeViewHost,
+      public views::ButtonListener,
+      public aura::WindowObserver,
+      public ArcCustomNotificationItem::Observer,
+      public ArcNotificationSurfaceManager::Observer {
  public:
-  ArcCustomNotificationView(ArcCustomNotificationItem* item,
-                            exo::NotificationSurface* surface);
+  explicit ArcCustomNotificationView(ArcCustomNotificationItem* item);
   ~ArcCustomNotificationView() override;
 
  private:
@@ -42,11 +44,15 @@ class ArcCustomNotificationView : public views::NativeViewHost,
   void SetSurface(exo::NotificationSurface* surface);
   void UpdatePreferredSize();
   void UpdateCloseButtonVisiblity();
+  void UpdatePinnedState();
+  void UpdateSnapshot();
+  void AttachSurface();
 
   // views::NativeViewHost
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
   void Layout() override;
+  void OnPaint(gfx::Canvas* canvas) override;
   void OnKeyEvent(ui::KeyEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   void OnMouseEntered(const ui::MouseEvent& event) override;
@@ -63,11 +69,16 @@ class ArcCustomNotificationView : public views::NativeViewHost,
 
   // ArcCustomNotificationItem::Observer
   void OnItemDestroying() override;
-  void OnItemPinnedChanged() override;
-  void OnItemNotificationSurfaceRemoved() override;
+  void OnItemUpdated() override;
+
+  // ArcNotificationSurfaceManager::Observer:
+  void OnNotificationSurfaceAdded(exo::NotificationSurface* surface) override;
+  void OnNotificationSurfaceRemoved(exo::NotificationSurface* surface) override;
 
   ArcCustomNotificationItem* item_ = nullptr;
   exo::NotificationSurface* surface_ = nullptr;
+
+  const std::string notification_key_;
 
   // A pre-target event handler to forward events on the surface to this view.
   // Using a pre-target event handler instead of a target handler on the surface

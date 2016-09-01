@@ -49,6 +49,8 @@ class ArcNotificationManager
   void SendNotificationClickedOnChrome(const std::string& key);
   void SendNotificationButtonClickedOnChrome(const std::string& key,
                                              int button_index);
+  void CreateNotificationWindow(const std::string& key);
+  void CloseNotificationWindow(const std::string& key);
 
  private:
   const AccountId main_profile_id_;

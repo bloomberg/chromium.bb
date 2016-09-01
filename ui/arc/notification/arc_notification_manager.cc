@@ -14,6 +14,13 @@
 
 namespace arc {
 
+namespace {
+
+// Min version to support Create/CloseNotificationWindow.
+constexpr int kMinVersionNotificationWindow = 7;
+
+}  // namespace
+
 ArcNotificationManager::ArcNotificationManager(ArcBridgeService* bridge_service,
                                                const AccountId& main_profile_id)
     : ArcNotificationManager(bridge_service,
@@ -190,6 +197,57 @@ void ArcNotificationManager::SendNotificationButtonClickedOnChrome(
   }
 
   notifications_instance->SendNotificationEventToAndroid(key, command);
+}
+
+void ArcNotificationManager::CreateNotificationWindow(const std::string& key) {
+  if (items_.find(key) == items_.end()) {
+    VLOG(3) << "Chrome requests to create window on notification (key: " << key
+            << "), but it is gone.";
+    return;
+  }
+
+  auto* notifications_instance =
+      arc_bridge_service()->notifications()->instance();
+  // On shutdown, the ARC channel may quit earlier then notifications.
+  if (!notifications_instance) {
+    VLOG(2) << "Request to create window for ARC Notification (key: " << key
+            << "), but the ARC channel has already gone.";
+    return;
+  }
+
+  if (arc_bridge_service()->notifications()->version() <
+      kMinVersionNotificationWindow) {
+    VLOG(2)
+        << "NotificationInstance does not support CreateNotificationWindow.";
+    return;
+  }
+
+  notifications_instance->CreateNotificationWindow(key);
+}
+
+void ArcNotificationManager::CloseNotificationWindow(const std::string& key) {
+  if (items_.find(key) == items_.end()) {
+    VLOG(3) << "Chrome requests to close window on notification (key: " << key
+            << "), but it is gone.";
+    return;
+  }
+
+  auto* notifications_instance =
+      arc_bridge_service()->notifications()->instance();
+  // On shutdown, the ARC channel may quit earlier then notifications.
+  if (!notifications_instance) {
+    VLOG(2) << "Request to close window for ARC Notification (key: " << key
+            << "), but the ARC channel has already gone.";
+    return;
+  }
+
+  if (arc_bridge_service()->notifications()->version() <
+      kMinVersionNotificationWindow) {
+    VLOG(2) << "NotificationInstance does not support CloseNotificationWindow.";
+    return;
+  }
+
+  notifications_instance->CloseNotificationWindow(key);
 }
 
 void ArcNotificationManager::OnToastPosted(mojom::ArcToastDataPtr data) {

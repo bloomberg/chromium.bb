@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 7
+// Next MinVersion: 8
 
 module arc.mojom;
 
@@ -77,6 +77,11 @@ struct ArcNotificationData {
   bool use_custom_notification;
   [MinVersion=6]
   ArcBitmap? small_icon;
+  // A snapshot image to show before the notification window is created.
+  [MinVersion=7]
+  ArcBitmap? snapshot_image;
+  [MinVersion=7]
+  float snapshot_image_scale;
 };
 
 [MinVersion=2]
@@ -121,4 +126,12 @@ interface NotificationsInstance {
   // Sends an event from Chrome notification UI to Android.
   // |event| is a type of occured event.
   SendNotificationEventToAndroid@1(string key, ArcNotificationEvent event);
+
+  // Requests to Android side to create the notification window.
+  [MinVersion=7]
+  CreateNotificationWindow@2(string key);
+
+  // Requests to Android side to close the notification window.
+  [MinVersion=7]
+  CloseNotificationWindow@3(string key);
 };

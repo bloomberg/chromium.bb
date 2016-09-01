@@ -12,6 +12,8 @@
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/display/screen.h"
 #include "ui/events/event_handler.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/transform.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/resources/grit/ui_resources.h"
@@ -140,24 +142,39 @@ class ArcCustomNotificationView::SlideHelper
 };
 
 ArcCustomNotificationView::ArcCustomNotificationView(
-    ArcCustomNotificationItem* item,
-    exo::NotificationSurface* surface)
-    : item_(item), event_forwarder_(new EventForwarder(this)) {
-  SetSurface(surface);
+    ArcCustomNotificationItem* item)
+    : item_(item),
+      notification_key_(item->notification_key()),
+      event_forwarder_(new EventForwarder(this)) {
+  item_->IncrementWindowRefCount();
   item_->AddObserver(this);
-  OnItemPinnedChanged();
+
+  ArcNotificationSurfaceManager::Get()->AddObserver(this);
+  exo::NotificationSurface* surface =
+      ArcNotificationSurfaceManager::Get()->GetSurface(notification_key_);
+  if (surface)
+    OnNotificationSurfaceAdded(surface);
 
   // Create a layer as an anchor to insert surface copy during a slide.
   SetPaintToLayer(true);
+  UpdatePreferredSize();
 }
 
 ArcCustomNotificationView::~ArcCustomNotificationView() {
   SetSurface(nullptr);
-  if (item_)
+  if (item_) {
+    item_->DecrementWindowRefCount();
     item_->RemoveObserver(this);
+  }
+
+  if (ArcNotificationSurfaceManager::Get())
+    ArcNotificationSurfaceManager::Get()->RemoveObserver(this);
 }
 
 void ArcCustomNotificationView::CreateFloatingCloseButton() {
+  if (!surface_)
+    return;
+
   floating_close_button_ = new views::ImageButton(this);
   floating_close_button_->set_background(
       views::Background::CreateSolidBackground(SK_ColorTRANSPARENT));
@@ -205,11 +222,21 @@ void ArcCustomNotificationView::SetSurface(exo::NotificationSurface* surface) {
   if (surface_ && surface_->window()) {
     surface_->window()->AddObserver(this);
     surface_->window()->AddPreTargetHandler(event_forwarder_.get());
+
+    if (GetWidget())
+      AttachSurface();
+
+    UpdatePinnedState();
   }
 }
 
 void ArcCustomNotificationView::UpdatePreferredSize() {
-  gfx::Size preferred_size = surface_->GetSize();
+  gfx::Size preferred_size =
+      surface_ ? surface_->GetSize() : item_ ? item_->snapshot().size()
+                                             : gfx::Size();
+  if (preferred_size.IsEmpty())
+    return;
+
   if (preferred_size.width() != message_center::kNotificationWidth) {
     const float scale = static_cast<float>(message_center::kNotificationWidth) /
                         preferred_size.width();
@@ -236,6 +263,34 @@ void ArcCustomNotificationView::UpdateCloseButtonVisiblity() {
     floating_close_button_widget_->Hide();
 }
 
+void ArcCustomNotificationView::UpdatePinnedState() {
+  if (item_->pinned() && floating_close_button_widget_) {
+    floating_close_button_widget_.reset();
+  } else if (!item_->pinned() && !floating_close_button_widget_) {
+    CreateFloatingCloseButton();
+  }
+}
+
+void ArcCustomNotificationView::UpdateSnapshot() {
+  // Bail if we have a |surface_| because it controls the sizes and paints UI.
+  if (surface_)
+    return;
+
+  UpdatePreferredSize();
+  SchedulePaint();
+}
+
+void ArcCustomNotificationView::AttachSurface() {
+  if (!GetWidget())
+    return;
+
+  UpdatePreferredSize();
+  Attach(surface_->window());
+
+  // Creates slide helper after this view is added to its parent.
+  slide_helper_.reset(new SlideHelper(this));
+}
+
 void ArcCustomNotificationView::ViewHierarchyChanged(
     const views::View::ViewHierarchyChangedDetails& details) {
   views::Widget* widget = GetWidget();
@@ -256,11 +311,7 @@ void ArcCustomNotificationView::ViewHierarchyChanged(
   if (!widget || !surface_ || !details.is_add)
     return;
 
-  UpdatePreferredSize();
-  Attach(surface_->window());
-
-  // Creates slide helper after this view is added to its parent.
-  slide_helper_.reset(new SlideHelper(this));
+  AttachSurface();
 }
 
 void ArcCustomNotificationView::Layout() {
@@ -291,6 +342,19 @@ void ArcCustomNotificationView::Layout() {
   floating_close_button_widget_->SetBounds(close_button_bounds);
 
   UpdateCloseButtonVisiblity();
+}
+
+void ArcCustomNotificationView::OnPaint(gfx::Canvas* canvas) {
+  views::NativeViewHost::OnPaint(canvas);
+
+  // Bail if there is a |surface_| or no item or no snapshot image.
+  if (surface_ || !item_ || item_->snapshot().isNull())
+    return;
+  const gfx::Rect contents_bounds = GetContentsBounds();
+  canvas->DrawImageInt(item_->snapshot(), 0, 0, item_->snapshot().width(),
+                       item_->snapshot().height(), contents_bounds.x(),
+                       contents_bounds.y(), contents_bounds.width(),
+                       contents_bounds.height(), false);
 }
 
 void ArcCustomNotificationView::OnKeyEvent(ui::KeyEvent* event) {
@@ -327,7 +391,7 @@ void ArcCustomNotificationView::OnWindowBoundsChanged(
 }
 
 void ArcCustomNotificationView::OnWindowDestroying(aura::Window* window) {
-  window->RemoveObserver(this);
+  SetSurface(nullptr);
 }
 
 void ArcCustomNotificationView::OnItemDestroying() {
@@ -339,15 +403,24 @@ void ArcCustomNotificationView::OnItemDestroying() {
   SetSurface(nullptr);
 }
 
-void ArcCustomNotificationView::OnItemPinnedChanged() {
-  if (item_->pinned() && floating_close_button_widget_) {
-    floating_close_button_widget_.reset();
-  } else if (!item_->pinned() && !floating_close_button_widget_) {
-    CreateFloatingCloseButton();
-  }
+void ArcCustomNotificationView::OnItemUpdated() {
+  UpdatePinnedState();
+  UpdateSnapshot();
 }
 
-void ArcCustomNotificationView::OnItemNotificationSurfaceRemoved() {
+void ArcCustomNotificationView::OnNotificationSurfaceAdded(
+    exo::NotificationSurface* surface) {
+  if (surface->notification_id() != notification_key_)
+    return;
+
+  SetSurface(surface);
+}
+
+void ArcCustomNotificationView::OnNotificationSurfaceRemoved(
+    exo::NotificationSurface* surface) {
+  if (surface->notification_id() != notification_key_)
+    return;
+
   SetSurface(nullptr);
 }
 

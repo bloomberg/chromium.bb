@@ -7,7 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/exo/notification_surface.h"
+#include "components/arc/bitmap/bitmap_type_converters.h"
 #include "ui/arc/notification/arc_custom_notification_view.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_types.h"
@@ -24,14 +24,7 @@ class ArcNotificationDelegate : public message_center::NotificationDelegate {
       : item_(item) {}
 
   std::unique_ptr<views::View> CreateCustomContent() override {
-    if (!surface_)
-      return nullptr;
-
-    return base::MakeUnique<ArcCustomNotificationView>(item_, surface_);
-  }
-
-  void set_notification_surface(exo::NotificationSurface* surface) {
-    surface_ = surface;
+    return base::MakeUnique<ArcCustomNotificationView>(item_);
   }
 
  private:
@@ -39,7 +32,6 @@ class ArcNotificationDelegate : public message_center::NotificationDelegate {
   ~ArcNotificationDelegate() override {}
 
   ArcCustomNotificationItem* const item_;
-  exo::NotificationSurface* surface_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ArcNotificationDelegate);
 };
@@ -55,13 +47,9 @@ ArcCustomNotificationItem::ArcCustomNotificationItem(
                           message_center,
                           notification_key,
                           profile_id) {
-  ArcNotificationSurfaceManager::Get()->AddObserver(this);
 }
 
 ArcCustomNotificationItem::~ArcCustomNotificationItem() {
-  if (ArcNotificationSurfaceManager::Get())
-    ArcNotificationSurfaceManager::Get()->RemoveObserver(this);
-
   FOR_EACH_OBSERVER(Observer, observers_, OnItemDestroying());
 }
 
@@ -92,13 +80,18 @@ void ArcCustomNotificationItem::UpdateWithArcNotificationData(
       GURL(),                    // empty origin url, for system component
       notifier_id, rich_data, new ArcNotificationDelegate(this)));
 
-  exo::NotificationSurface* surface =
-      ArcNotificationSurfaceManager::Get()->GetSurface(notification_key());
-  if (surface)
-    OnNotificationSurfaceAdded(surface);
-
   pinned_ = rich_data.pinned;
-  FOR_EACH_OBSERVER(Observer, observers_, OnItemPinnedChanged());
+
+  if (data.snapshot_image.is_null()) {
+    snapshot_ = gfx::ImageSkia();
+  } else {
+    snapshot_ = gfx::ImageSkia(gfx::ImageSkiaRep(
+        data.snapshot_image.To<SkBitmap>(), data.snapshot_image_scale));
+  }
+
+  FOR_EACH_OBSERVER(Observer, observers_, OnItemUpdated());
+
+  AddToMessageCenter();
 }
 
 void ArcCustomNotificationItem::CloseFromCloseButton() {
@@ -116,24 +109,17 @@ void ArcCustomNotificationItem::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void ArcCustomNotificationItem::OnNotificationSurfaceAdded(
-    exo::NotificationSurface* surface) {
-  if (!pending_notification() ||
-      surface->notification_id() != notification_key()) {
-    return;
-  }
-
-  static_cast<ArcNotificationDelegate*>(pending_notification()->delegate())
-      ->set_notification_surface(surface);
-  AddToMessageCenter();
+void ArcCustomNotificationItem::IncrementWindowRefCount() {
+  ++window_ref_count_;
+  if (window_ref_count_ == 1)
+    manager()->CreateNotificationWindow(notification_key());
 }
 
-void ArcCustomNotificationItem::OnNotificationSurfaceRemoved(
-    exo::NotificationSurface* surface) {
-  if (surface->notification_id() != notification_key())
-    return;
-
-  FOR_EACH_OBSERVER(Observer, observers_, OnItemNotificationSurfaceRemoved());
+void ArcCustomNotificationItem::DecrementWindowRefCount() {
+  DCHECK_GT(window_ref_count_, 0);
+  --window_ref_count_;
+  if (window_ref_count_ == 0)
+    manager()->CloseNotificationWindow(notification_key());
 }
 
 }  // namespace arc

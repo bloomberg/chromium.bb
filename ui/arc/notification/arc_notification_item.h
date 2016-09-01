@@ -39,6 +39,8 @@ class ArcNotificationItem {
   void Click();
   void ButtonClick(int button_index);
 
+  const std::string& notification_key() const { return notification_key_; }
+
  protected:
   static int ConvertAndroidPriority(int android_priority);
   static gfx::Image ConvertAndroidSmallIcon(
@@ -59,9 +61,9 @@ class ArcNotificationItem {
   bool CalledOnValidThread() const;
 
   const AccountId& profile_id() const { return profile_id_; }
-  const std::string& notification_key() const { return notification_key_; }
   const std::string& notification_id() const { return notification_id_; }
   message_center::MessageCenter* message_center() { return message_center_; }
+  ArcNotificationManager* manager() { return manager_; }
 
   message_center::Notification* pending_notification() {
     return notification_.get();
