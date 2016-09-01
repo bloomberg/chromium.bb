@@ -1121,17 +1121,25 @@ uint64_t Colour::ColourSize() const {
 bool Colour::Valid() const {
   if (mastering_metadata_ && !mastering_metadata_->Valid())
     return false;
-  if (!IsMatrixCoefficientsValueValid(matrix_coefficients_))
+  if (matrix_coefficients_ != kValueNotPresent &&
+      !IsMatrixCoefficientsValueValid(matrix_coefficients_)) {
     return false;
-  if (!IsChromaSitingHorzValueValid(chroma_siting_horz_))
+  }
+  if (chroma_siting_horz_ != kValueNotPresent &&
+      !IsChromaSitingHorzValueValid(chroma_siting_horz_)) {
     return false;
-  if (!IsChromaSitingVertValueValid(chroma_siting_vert_))
+  }
+  if (chroma_siting_vert_ != kValueNotPresent &&
+      !IsChromaSitingVertValueValid(chroma_siting_vert_)) {
     return false;
-  if (!IsColourRangeValueValid(range_))
+  }
+  if (range_ != kValueNotPresent && !IsColourRangeValueValid(range_))
     return false;
-  if (!IsTransferCharacteristicsValueValid(transfer_characteristics_))
+  if (transfer_characteristics_ != kValueNotPresent &&
+      !IsTransferCharacteristicsValueValid(transfer_characteristics_)) {
     return false;
-  if (!IsPrimariesValueValid(primaries_))
+  }
+  if (primaries_ != kValueNotPresent && !IsPrimariesValueValid(primaries_))
     return false;
 
   return true;

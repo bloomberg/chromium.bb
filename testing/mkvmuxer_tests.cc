@@ -850,6 +850,30 @@ TEST_F(MuxerTest, Colour) {
   EXPECT_TRUE(CompareFiles(GetTestFilePath("colour.webm"), filename_));
 }
 
+TEST_F(MuxerTest, ColourPartial) {
+  EXPECT_TRUE(SegmentInit(false, false, false));
+  AddVideoTrack();
+  mkvmuxer::Colour muxer_colour;
+  muxer_colour.set_matrix_coefficients(
+      mkvmuxer::Colour::kBt2020NonConstantLuminance);
+
+  VideoTrack* const video_track =
+      dynamic_cast<VideoTrack*>(segment_.GetTrackByNumber(kVideoTrackNumber));
+  ASSERT_TRUE(video_track != nullptr);
+  ASSERT_TRUE(video_track->SetColour(muxer_colour));
+  ASSERT_NO_FATAL_FAILURE(AddDummyFrameAndFinalize(kVideoTrackNumber));
+
+  MkvParser parser;
+  ASSERT_TRUE(ParseMkvFileReleaseParser(filename_, &parser));
+
+  const mkvparser::VideoTrack* const parser_track =
+      static_cast<const mkvparser::VideoTrack*>(
+          parser.segment->GetTracks()->GetTrackByIndex(0));
+  const mkvparser::Colour* parser_colour = parser_track->GetColour();
+  EXPECT_EQ(static_cast<long long>(muxer_colour.matrix_coefficients()),
+            parser_colour->matrix_coefficients);
+}
+
 TEST_F(MuxerTest, Projection) {
   EXPECT_TRUE(SegmentInit(false, false, false));
   AddVideoTrack();
