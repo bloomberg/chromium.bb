@@ -440,6 +440,9 @@ TEST_F(FFmpegDemuxerTest, AbortPendingReads) {
   // Ensure blocking thread has completed outstanding work.
   demuxer_->Stop();
   EXPECT_EQ(format_context()->pb->eof_reached, 0);
+
+  // Calling abort after stop should not crash.
+  demuxer_->AbortPendingReads();
   demuxer_.reset();
 }
 

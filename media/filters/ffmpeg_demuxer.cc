@@ -891,8 +891,11 @@ void FFmpegDemuxer::Initialize(DemuxerHost* host,
 void FFmpegDemuxer::AbortPendingReads() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
+  // If Stop() has been called, then drop this call.
+  if (!blocking_thread_.IsRunning())
+    return;
+
   // This should only be called after the demuxer has been initialized.
-  DCHECK(blocking_thread_.IsRunning());
   DCHECK_GT(streams_.size(), 0u);
 
   // Abort all outstanding reads.
