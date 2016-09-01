@@ -388,12 +388,12 @@ TEST_F(MetricsLogTest, InitialLogStabilityMetrics) {
   // Required metrics:
   EXPECT_TRUE(stability.has_launch_count());
   EXPECT_TRUE(stability.has_crash_count());
-  // Initial log metrics:
-  EXPECT_TRUE(stability.has_incomplete_shutdown_count());
-  EXPECT_TRUE(stability.has_breakpad_registration_success_count());
-  EXPECT_TRUE(stability.has_breakpad_registration_failure_count());
-  EXPECT_TRUE(stability.has_debugger_present_count());
-  EXPECT_TRUE(stability.has_debugger_not_present_count());
+  // Initial log metrics: only expected if non-zero.
+  EXPECT_FALSE(stability.has_incomplete_shutdown_count());
+  EXPECT_FALSE(stability.has_breakpad_registration_success_count());
+  EXPECT_FALSE(stability.has_breakpad_registration_failure_count());
+  EXPECT_FALSE(stability.has_debugger_present_count());
+  EXPECT_FALSE(stability.has_debugger_not_present_count());
 
   // The test provider should have been called upon to provide initial
   // stability and regular stability metrics.
@@ -418,7 +418,7 @@ TEST_F(MetricsLogTest, OngoingLogStabilityMetrics) {
   // Required metrics:
   EXPECT_TRUE(stability.has_launch_count());
   EXPECT_TRUE(stability.has_crash_count());
-  // Initial log metrics:
+  // Initial log metrics: only expected if non-zero.
   EXPECT_FALSE(stability.has_incomplete_shutdown_count());
   EXPECT_FALSE(stability.has_breakpad_registration_success_count());
   EXPECT_FALSE(stability.has_breakpad_registration_failure_count());

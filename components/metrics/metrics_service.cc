@@ -523,7 +523,11 @@ void MetricsService::ClearSavedStabilityMetrics() {
     provider->ClearSavedStabilityMetrics();
 
   // Reset the prefs that are managed by MetricsService/MetricsLog directly.
+  local_state_->SetInteger(prefs::kStabilityBreakpadRegistrationSuccess, 0);
+  local_state_->SetInteger(prefs::kStabilityBreakpadRegistrationFail, 0);
   local_state_->SetInteger(prefs::kStabilityCrashCount, 0);
+  local_state_->SetInteger(prefs::kStabilityDebuggerPresent, 0);
+  local_state_->SetInteger(prefs::kStabilityDebuggerNotPresent, 0);
   local_state_->SetInteger(prefs::kStabilityExecutionPhase,
                            UNINITIALIZED_PHASE);
   local_state_->SetInteger(prefs::kStabilityIncompleteSessionEndCount, 0);
