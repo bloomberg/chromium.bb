@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/symlink.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 
 if (is_android) {
@@ -145,6 +146,40 @@ if (!is_win) {
       configs -= [ "//build/config/compiler:chromium_code" ]
       configs += [ "//build/config/compiler:no_chromium_code" ]
       configs += [ ":tools_config" ]
+    }
+
+    fuzzer_test("minidump_fuzzer") {
+      sources = [
+        "minidump_fuzzer.cc",
+        "src/processor/exploitability.cc",
+        "src/processor/minidump.cc",
+        "src/processor/minidump_processor.cc",
+      ]
+
+      deps = [
+        ":stackwalk_common",
+        "//base",
+      ]
+
+      defines = [ "BPLOG_MINIMUM_SEVERITY=SEVERITY_ERROR" ]
+      include_dirs = [ "src" ]
+      dict = "minidump_fuzzer.dict"
+
+      libfuzzer_options = [
+        "close_fd_mask=3",
+        "max_len=128000",
+      ]
+
+      # Always want these files included regardless of platform.
+      set_sources_assignment_filter([])
+      sources += [
+        "src/processor/exploitability_linux.cc",
+        "src/processor/exploitability_linux.h",
+        "src/processor/exploitability_win.cc",
+        "src/processor/exploitability_win.h",
+        "src/processor/symbolic_constants_win.cc",
+        "src/processor/symbolic_constants_win.h",
+      ]
     }
 
     executable("microdump_stackwalk") {
