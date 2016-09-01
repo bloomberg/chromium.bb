@@ -42,7 +42,7 @@ declare_args() {
       # platform with --ozone-platform=x11.
       # TODO(halliwell): Create a libcast_graphics implementation for desktop
       # using X11, and disable this platform.
-      if (is_cast_desktop_build && !disable_display) {
+      if (is_cast_desktop_build && !is_cast_audio_only) {
         ozone_platform_x11 = true
       } else {
         ozone_platform = "cast"

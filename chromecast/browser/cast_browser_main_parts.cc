@@ -223,7 +223,7 @@ DefaultCommandLineSwitch g_default_switches[] = {
   // Enable media sessions by default (even on non-Android platforms).
   { switches::kEnableDefaultMediaSession, "" },
 #endif
-#if BUILDFLAG(DISABLE_DISPLAY)
+#if BUILDFLAG(IS_CAST_AUDIO_ONLY)
   { switches::kDisableGpu, "" },
 #endif
 #if defined(OS_LINUX)
@@ -234,7 +234,7 @@ DefaultCommandLineSwitch g_default_switches[] = {
 #elif defined(ARCH_CPU_ARM_FAMILY)
   // On Linux arm, enable CMA pipeline by default.
   { switches::kEnableCmaMediaPipeline, "" },
-#if !BUILDFLAG(DISABLE_DISPLAY)
+#if !BUILDFLAG(IS_CAST_AUDIO_ONLY)
   { switches::kEnableHardwareOverlays, "" },
 #endif
 #endif
@@ -462,9 +462,9 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
           cast_browser_process_->browser_client()
               ->EnableRemoteDebuggingImmediately()));
 
-#if defined(USE_AURA) && !BUILDFLAG(DISABLE_DISPLAY)
+#if defined(USE_AURA) && !BUILDFLAG(IS_CAST_AUDIO_ONLY)
   // TODO(halliwell) move audio builds to use ozone_platform_cast, then can
-  // simplify this by removing DISABLE_DISPLAY condition.  Should then also
+  // simplify this by removing IS_CAST_AUDIO_ONLY condition.  Should then also
   // assert(ozone_platform_cast) in BUILD.gn where it depends on //ui/ozone.
   gfx::Size display_size =
       display::Screen::GetScreen()->GetPrimaryDisplay().GetSizeInPixel();

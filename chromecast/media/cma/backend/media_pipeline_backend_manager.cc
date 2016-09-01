@@ -15,7 +15,7 @@
 namespace chromecast {
 namespace media {
 namespace {
-#if BUILDFLAG(DISABLE_DISPLAY)
+#if BUILDFLAG(IS_CAST_AUDIO_ONLY)
 constexpr int kAudioDecoderLimit = std::numeric_limits<int>::max();
 #else
 constexpr int kAudioDecoderLimit = 2;

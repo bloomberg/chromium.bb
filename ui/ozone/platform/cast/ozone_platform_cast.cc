@@ -81,10 +81,10 @@ class OzonePlatformCast : public OzonePlatform {
     // or if we're an audio-only build.
     // Note: switch is kDisableGpu from content/public/common/content_switches.h
     bool enable_dummy_software_rendering = true;
-#if !BUILDFLAG(DISABLE_DISPLAY)
+#if !BUILDFLAG(IS_CAST_AUDIO_ONLY)
     enable_dummy_software_rendering =
         base::CommandLine::ForCurrentProcess()->HasSwitch("disable-gpu");
-#endif  // BUILDFLAG(DISABLE_DISPLAY)
+#endif  // BUILDFLAG(IS_CAST_AUDIO_ONLY)
 
     if (enable_dummy_software_rendering)
       surface_factory_.reset(new SurfaceFactoryCast());

@@ -93,7 +93,7 @@ cast_test_group("cast_tests") {
     # Disable ProcessUtilTest.* (need to define OS_ANDROID)
     # Disable StackContainer.BufferAlignment (don't support 16-byte alignment)
     # Disable SystemMetrics2Test.GetSystemMemoryInfo (buffers>0 can't be guaranteed)
-    if (disable_display) {
+    if (is_cast_audio_only) {
       # Also disable TimeFormattingTest on audio-only builds, since we don't
       # include the necessary info in icudtl.dat.
       filters += [ "base_unittests --gtest_filter=-ProcessMetricsTest.GetNumberOfThreads:ProcessUtilTest.*:StackContainer.BufferAlignment:SystemMetrics2Test.GetSystemMemoryInfo:TimeFormattingTest.*" ]
@@ -144,7 +144,7 @@ cast_test_group("cast_tests") {
     }
   }
 
-  if (!disable_display) {
+  if (!is_cast_audio_only) {
     tests += [ "//gpu:gpu_unittests" ]
   }
 }
@@ -306,7 +306,7 @@ action("chromecast_locales_pak") {
 
 buildflag_header("chromecast_features") {
   header = "chromecast_features.h"
-  flags = [ "DISABLE_DISPLAY=$disable_display" ]
+  flags = [ "IS_CAST_AUDIO_ONLY=$is_cast_audio_only" ]
 }
 
 if (is_android) {

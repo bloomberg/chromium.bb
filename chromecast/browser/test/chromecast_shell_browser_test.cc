@@ -84,7 +84,7 @@ IN_PROC_BROWSER_TEST_F(ChromecastShellBrowserTest, AudioPlaybackWavPcm) {
   PlayAudio("bear_pcm.wav");
 }
 
-#if !BUILDFLAG(DISABLE_DISPLAY)
+#if !BUILDFLAG(IS_CAST_AUDIO_ONLY)
 IN_PROC_BROWSER_TEST_F(ChromecastShellBrowserTest, VideoPlaybackMp4) {
   PlayVideo("bear.mp4");
 }
