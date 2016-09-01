@@ -121,6 +121,12 @@ ExtensionFunction::ResponseAction QuickUnlockPrivateSetModesFunction::Run() {
   if (params_->modes.size() > 1)
     return RespondNow(Error(kMultipleModesNotSupported));
 
+  // Verify every credential is numeric.
+  for (const std::string& credential : params_->credentials) {
+    if (!std::all_of(credential.begin(), credential.end(), ::isdigit))
+      return RespondNow(ArgumentList(SetModes::Results::Create(false)));
+  }
+
   user_manager::User* user = chromeos::ProfileHelper::Get()->GetUserByProfile(
       chrome_details_.GetProfile());
   chromeos::UserContext user_context(user->GetAccountId());
@@ -198,10 +204,12 @@ void QuickUnlockPrivateSetModesFunction::ApplyModeChange() {
     chromeos::PinStorage* pin_storage =
         chromeos::PinStorageFactory::GetForProfile(profile);
 
-    if (pin_credential.empty())
+    if (pin_credential.empty()) {
       pin_storage->RemovePin();
-    else
+    } else {
       pin_storage->SetPin(pin_credential);
+      pin_storage->MarkStrongAuth();
+    }
   }
 }
 
