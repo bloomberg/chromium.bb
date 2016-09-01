@@ -65,10 +65,11 @@ TEST_F(ContentSecurityPolicyTest, ParseInsecureRequestPolicy)
 
         document = Document::create();
         document->setSecurityOrigin(secureOrigin);
+        document->setURL(secureURL);
         csp->bindToExecutionContext(document.get());
         EXPECT_EQ(test.expectedPolicy, document->getInsecureRequestPolicy());
         bool expectUpgrade = test.expectedPolicy & kUpgradeInsecureRequests;
-        EXPECT_EQ(expectUpgrade, document->insecureNavigationsToUpgrade()->contains(secureOrigin->host().impl()->hash()));
+        EXPECT_EQ(expectUpgrade, document->insecureNavigationsToUpgrade()->contains(document->url().host().impl()->hash()));
     }
 
     // Report-Only

@@ -208,11 +208,9 @@ void ContentSecurityPolicy::setupSelf(const SecurityOrigin& securityOrigin)
 
 void ContentSecurityPolicy::applyPolicySideEffectsToExecutionContext()
 {
-    ASSERT(m_executionContext);
+    DCHECK(m_executionContext && m_executionContext->securityContext().getSecurityOrigin());
 
-    SecurityOrigin* securityOrigin = m_executionContext->securityContext().getSecurityOrigin();
-    DCHECK(securityOrigin);
-    setupSelf(*securityOrigin);
+    setupSelf(*m_executionContext->securityContext().getSecurityOrigin());
 
     if (didSetReferrerPolicy())
         m_executionContext->setReferrerPolicy(m_referrerPolicy);
@@ -230,8 +228,8 @@ void ContentSecurityPolicy::applyPolicySideEffectsToExecutionContext()
         document->enforceInsecureRequestPolicy(m_insecureRequestPolicy);
         if (m_insecureRequestPolicy & kUpgradeInsecureRequests) {
             UseCounter::count(document, UseCounter::UpgradeInsecureRequestsEnabled);
-            if (!securityOrigin->host().isNull())
-                document->addInsecureNavigationUpgrade(securityOrigin->host().impl()->hash());
+            if (!document->url().host().isEmpty())
+                document->addInsecureNavigationUpgrade(document->url().host().impl()->hash());
         }
 
         for (const auto& consoleMessage : m_consoleMessages)
