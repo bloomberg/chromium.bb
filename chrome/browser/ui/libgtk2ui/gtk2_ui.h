@@ -19,18 +19,12 @@
 #include "ui/views/linux_ui/linux_ui.h"
 #include "ui/views/window/frame_buttons.h"
 
-typedef struct _GtkBorder GtkBorder;
 typedef struct _GtkStyle GtkStyle;
 typedef struct _GtkWidget GtkWidget;
 
 class SkBitmap;
 
-namespace gfx {
-class Image;
-}
-
 namespace libgtk2ui {
-class Gtk2Border;
 class Gtk2KeyBindingsHandler;
 class GConfListener;
 
@@ -77,10 +71,8 @@ class Gtk2UI : public views::LinuxUI {
   // TODO(varkha): This should not be necessary once Material Design is on
   // unconditionally.
   void MaterialDesignControllerReady() override;
-  gfx::Image GetThemeImageNamed(int id) const override;
   bool GetTint(int id, color_utils::HSL* tint) const override;
   bool GetColor(int id, SkColor* color) const override;
-  bool HasCustomImage(int id) const override;
   SkColor GetFocusRingColor() const override;
   SkColor GetThumbActiveColor() const override;
   SkColor GetThumbInactiveColor() const override;
@@ -123,7 +115,6 @@ class Gtk2UI : public views::LinuxUI {
  private:
   typedef std::map<int, SkColor> ColorMap;
   typedef std::map<int, color_utils::HSL> TintMap;
-  typedef std::map<int, gfx::Image> ImageCache;
 
   // This method returns the colors webkit will use for the scrollbars. When no
   // colors are specified by the GTK+ theme, this function averages of the
@@ -144,28 +135,10 @@ class Gtk2UI : public views::LinuxUI {
 
   // Reads in explicit theme frame colors from the ChromeGtkFrame style class
   // or generates them per our fallback algorithm.
-  SkColor BuildFrameColors();
+  void BuildFrameColors();
 
   // Gets a tint which depends on the default for |id| as well as |color|.
   color_utils::HSL ColorToTint(int id, SkColor color);
-
-  // Lazily generates each image used in the gtk theme.
-  gfx::Image GenerateGtkThemeImage(int id) const;
-  SkBitmap GenerateGtkThemeBitmap(int id) const;
-
-  // Creates a GTK+ version of IDR_THEME_FRAME. Instead of tinting, this
-  // creates a theme configurable gradient ending with |color_id| at the
-  // bottom, and |gradient_name| at the top if that color is specified in the
-  // theme.
-  SkBitmap GenerateFrameImage(int color_id,
-                              const char* gradient_name) const;
-
-  // Takes the base frame image |base_id| and tints it with |tint_id|.
-  SkBitmap GenerateTabImage(int base_id) const;
-
-  // Tints an icon based on tint.
-  SkBitmap GenerateTintedIcon(int base_id,
-                              const color_utils::HSL& tint) const;
 
   // Returns the tint for buttons that contrasts with the normal window
   // background color.
@@ -180,9 +153,6 @@ class Gtk2UI : public views::LinuxUI {
 
   // Gets a color for the background of the call to action button.
   SkColor CallToActionBgColor(int gtk_state) const;
-
-  // Frees all calculated images and color data.
-  void ClearAllThemeData();
 
   // Updates |default_font_*|.
   void UpdateDefaultFont();
@@ -233,9 +203,6 @@ class Gtk2UI : public views::LinuxUI {
   // Whether we should lower the window on a middle click to the non client
   // area.
   NonClientMiddleClickAction middle_click_action_;
-
-  // Image cache of lazily created images.
-  mutable ImageCache gtk_images_;
 
   // Used to override the native theme for a window. If no override is provided
   // or the callback returns NULL, Gtk2UI will default to a NativeThemeGtk2

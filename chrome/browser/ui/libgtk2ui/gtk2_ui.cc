@@ -85,75 +85,6 @@ namespace libgtk2ui {
 
 namespace {
 
-class GtkThemeIconSource : public gfx::ImageSkiaSource {
- public:
-  GtkThemeIconSource(int id, const char* icon, bool enabled)
-      : id_(id), icon_(icon), enabled_(enabled) {}
-
-  ~GtkThemeIconSource() override {}
-
-  gfx::ImageSkiaRep GetImageForScale(float scale) override {
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    SkBitmap default_icon = rb.GetImageNamed(id_).AsBitmap();
-
-    int scalew = default_icon.width() * scale;
-    int scaleh = default_icon.height() * scale;
-
-    // Ask GTK to render the icon to a buffer, which we will steal from.
-    GtkIconTheme* icon_theme = gtk_icon_theme_get_default();
-    GdkPixbuf* gdk_icon = gtk_icon_theme_load_icon(
-        icon_theme, icon_, 20 * scale, (GtkIconLookupFlags)0, NULL);
-
-    // This can theoretically happen if an icon theme doesn't provide a
-    // specific image. This should realistically never happen, but I bet there
-    // are some theme authors who don't reliably provide all icons.
-    if (!gdk_icon)
-      return gfx::ImageSkiaRep();
-
-#if GTK_MAJOR_VERSION == 2
-    GtkIconSource* icon_source = gtk_icon_source_new();
-    gtk_icon_source_set_pixbuf(icon_source, gdk_icon);
-
-    GdkPixbuf* temp = gtk_style_render_icon(
-        gtk_rc_get_style(NativeThemeGtk2::instance()->GetButton()), icon_source,
-        GTK_TEXT_DIR_NONE, enabled_ ? GTK_STATE_NORMAL : GTK_STATE_INSENSITIVE,
-        (GtkIconSize)-1, NativeThemeGtk2::instance()->GetButton(), NULL);
-
-    gtk_icon_source_free(icon_source);
-    g_object_unref(gdk_icon);
-
-    gdk_icon = temp;
-#endif
-
-    SkBitmap retval;
-    retval.allocN32Pixels(scalew, scaleh);
-    retval.eraseColor(0);
-
-    const SkBitmap icon = GdkPixbufToImageSkia(gdk_icon);
-    g_object_unref(gdk_icon);
-
-    SkCanvas canvas(retval);
-    SkPaint paint;
-
-#if GTK_MAJOR_VERSION > 2
-    if (!enabled_)
-      paint.setAlpha(128);
-#endif
-
-    canvas.drawBitmap(icon, (scalew / 2) - (icon.width() / 2),
-                      (scaleh / 2) - (icon.height() / 2), &paint);
-
-    return gfx::ImageSkiaRep(retval, scale);
-  }
-
- private:
-  int id_;
-  const char* icon_;
-  bool enabled_;
-
-  DISALLOW_COPY_AND_ASSIGN(GtkThemeIconSource);
-};
-
 class GtkButtonImageSource : public gfx::ImageSkiaSource {
  public:
   GtkButtonImageSource(const char* idr_string, gfx::Size size)
@@ -297,10 +228,6 @@ int indicators_count;
 // The unknown content type.
 const char* kUnknownContentType = "application/octet-stream";
 
-// The size of the rendered toolbar image.
-const int kToolbarImageWidth = 64;
-const int kToolbarImageHeight = 128;
-
 // Values used as the new luminance and saturation values in the inactive tab
 // text color.
 const double kInactiveLuminance = 0.15;
@@ -313,7 +240,6 @@ const double kInactiveSaturation = 0.3;
 // Default tints.
 const color_utils::HSL kDefaultTintFrameIncognito = { -1, 0.2f, 0.35f };
 const color_utils::HSL kDefaultTintFrameIncognitoInactive = { -1, 0.3f, 0.6f };
-const color_utils::HSL kDefaultTintBackgroundTab = { -1, 0.5, 0.75 };
 
 #if GTK_MAJOR_VERSION == 3
 const color_utils::HSL kDefaultTintFrameInactive = { -1, -1, 0.75f };
@@ -498,7 +424,7 @@ Gtk2UI::Gtk2UI()
   GtkInitFromCommandLine(*base::CommandLine::ForCurrentProcess());
 }
 
-
+Gtk2UI::~Gtk2UI() {}
 
 void OnThemeChanged(GObject* obj, GParamSpec* param, Gtk2UI* gtkui) {
   gtkui->ResetStyle();
@@ -541,28 +467,6 @@ void Gtk2UI::MaterialDesignControllerReady() {
   UpdateMaterialDesignColors();
 }
 
-Gtk2UI::~Gtk2UI() {
-  ClearAllThemeData();
-}
-
-gfx::Image Gtk2UI::GetThemeImageNamed(int id) const {
-  // Try to get our cached version:
-  ImageCache::const_iterator it = gtk_images_.find(id);
-  if (it != gtk_images_.end())
-    return it->second;
-
-  gfx::Image image = GenerateGtkThemeImage(id);
-
-  if (image.IsEmpty()) {
-    SkBitmap bitmap = GenerateGtkThemeBitmap(id);
-    if (!bitmap.empty())
-      image = gfx::Image::CreateFrom1xBitmap(bitmap);
-  }
-
-  gtk_images_[id] = image;
-  return image;
-}
-
 bool Gtk2UI::GetTint(int id, color_utils::HSL* tint) const {
   switch (id) {
     // Tints for which the cross-platform default is fine. Before adding new
@@ -589,10 +493,6 @@ bool Gtk2UI::GetColor(int id, SkColor* color) const {
   }
 
   return false;
-}
-
-bool Gtk2UI::HasCustomImage(int id) const {
-  return !GetThemeImageNamed(id).IsEmpty();
 }
 
 SkColor Gtk2UI::GetFocusRingColor() const {
@@ -928,11 +828,10 @@ void Gtk2UI::LoadGtkValues() {
   GetNormalButtonTintHSL(&button_tint_);
   GetNormalEntryForegroundHSL(&entry_tint_);
   GetSelectedEntryForegroundHSL(&selected_entry_tint_);
-  SkColor frame_color = BuildFrameColors();
 
   // The inactive frame color never occurs naturally in the theme, as it is a
-  // tinted version of |frame_color|. We generate another color based on the
-  // background tab color, with the lightness and saturation moved in the
+  // tinted version of the normal frame color. We generate another color based
+  // on the background tab color, with the lightness and saturation moved in the
   // opposite direction. (We don't touch the hue, since there should be subtle
   // hints of the color in the text.)
   color_utils::HSL inactive_tab_text_hsl;
@@ -967,6 +866,8 @@ void Gtk2UI::LoadGtkValues() {
   // border around the "Recent Links" section, but matching the frame color is
   // more important.
 
+  BuildFrameColors();
+  SkColor frame_color = colors_[ThemeProperties::COLOR_FRAME];
   colors_[ThemeProperties::COLOR_NTP_HEADER] = frame_color;
   colors_[ThemeProperties::COLOR_NTP_SECTION] = toolbar_color;
   colors_[ThemeProperties::COLOR_NTP_SECTION_TEXT] = label_color;
@@ -1039,23 +940,18 @@ void Gtk2UI::UpdateMaterialDesignColors() {
       color_utils::BlendTowardOppositeLuma(label_color, 50);
 }
 
-SkColor Gtk2UI::BuildFrameColors() {
+void Gtk2UI::BuildFrameColors() {
+#if GTK_MAJOR_VERSION == 2
   NativeThemeGtk2* theme = NativeThemeGtk2::instance();
+  color_utils::HSL kDefaultFrameShift = { -1, -1, 0.4 };
   SkColor frame_color =
       theme->GetSystemColor(ui::NativeTheme::kColorId_WindowBackground);
-  SkColor temp_color;
-
-#if GTK_MAJOR_VERSION == 2
-  color_utils::HSL kDefaultFrameShift = { -1, -1, 0.4 };
-  GtkStyle* style = gtk_rc_get_style(theme->GetWindow());
-
   frame_color = color_utils::HSLShift(frame_color, kDefaultFrameShift);
   theme->GetChromeStyleColor("frame-color", &frame_color);
+  colors_[ThemeProperties::COLOR_FRAME] = frame_color;
 
-  temp_color = frame_color;
-  colors_[ThemeProperties::COLOR_FRAME] = temp_color;
-
-  temp_color = color_utils::HSLShift(
+  GtkStyle* style = gtk_rc_get_style(theme->GetWindow());
+  SkColor temp_color = color_utils::HSLShift(
       GdkColorToSkColor(style->bg[GTK_STATE_INSENSITIVE]),
       kDefaultFrameShift);
   theme->GetChromeStyleColor("inactive-frame-color", &temp_color);
@@ -1073,258 +969,60 @@ SkColor Gtk2UI::BuildFrameColors() {
   theme->GetChromeStyleColor("incognito-inactive-frame-color", &temp_color);
   colors_[ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE] = temp_color;
 #else
-  const SkBitmap* bitmap;
+  auto set_frame_color = [this](int color_id) {
+    // Render a GtkHeaderBar as our title bar, cropping out any curved edges
+    // on the left and right sides. Also remove the bottom border for good
+    // measure.
+    SkBitmap bitmap;
+    bitmap.allocN32Pixels(kToolbarImageWidth, 40);
+    bitmap.eraseColor(0);
 
-  bitmap = GetThemeImageNamed(IDR_THEME_FRAME).ToSkBitmap();
-  bitmap->lockPixels();
-  temp_color = bitmap->getColor(bitmap->width() / 2, bitmap->height() - 1);
-  bitmap->unlockPixels();
-  colors_[ThemeProperties::COLOR_FRAME] = temp_color;
+    static GtkWidget* title = nullptr;
+    if (!title) {
+      title = gtk_header_bar_new();
+      gtk_widget_set_size_request(title, kToolbarImageWidth * 2, 48);
 
-  bitmap = GetThemeImageNamed(IDR_THEME_FRAME_INACTIVE).ToSkBitmap();
-  bitmap->lockPixels();
-  temp_color = bitmap->getColor(bitmap->width() / 2, bitmap->height() - 1);
-  bitmap->unlockPixels();
-  colors_[ThemeProperties::COLOR_FRAME_INACTIVE] = temp_color;
+      GtkWidget* window = gtk_offscreen_window_new();
+      gtk_container_add(GTK_CONTAINER(window), title);
 
-  bitmap = GetThemeImageNamed(IDR_THEME_FRAME_INCOGNITO).ToSkBitmap();
-  bitmap->lockPixels();
-  temp_color = bitmap->getColor(bitmap->width() / 2, bitmap->height() - 1);
-  bitmap->unlockPixels();
-  colors_[ThemeProperties::COLOR_FRAME_INCOGNITO] = temp_color;
-
-  bitmap = GetThemeImageNamed(IDR_THEME_FRAME_INCOGNITO_INACTIVE).ToSkBitmap();
-  bitmap->lockPixels();
-  temp_color = bitmap->getColor(bitmap->width() / 2, bitmap->height() - 1);
-  bitmap->unlockPixels();
-  colors_[ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE] = temp_color;
-#endif
-
-  return frame_color;
-}
-
-gfx::Image Gtk2UI::GenerateGtkThemeImage(int id) const {
-  gfx::ImageSkiaSource* source = NULL;
-
-  switch (id) {
-    case IDR_BACK:
-      source = new GtkThemeIconSource(id, "go-previous", true);
-      break;
-    case IDR_BACK_D:
-      source = new GtkThemeIconSource(id, "go-previous", false);
-      break;
-
-    case IDR_FORWARD:
-      source = new GtkThemeIconSource(id, "go-next", true);
-      break;
-    case IDR_FORWARD_D:
-      source = new GtkThemeIconSource(id, "go-next", false);
-      break;
-
-    case IDR_HOME:
-      source = new GtkThemeIconSource(id, "go-home", true);
-      break;
-
-    case IDR_RELOAD:
-      source = new GtkThemeIconSource(id, "view-refresh", true);
-      break;
-    case IDR_RELOAD_D:
-      source = new GtkThemeIconSource(id, "view-refresh", false);
-      break;
-
-    case IDR_STOP:
-      source = new GtkThemeIconSource(id, "process-stop", true);
-      break;
-    case IDR_STOP_D:
-      source = new GtkThemeIconSource(id, "process-stop", false);
-      break;
-
-
-    // The toolbar bezels don't seem to be in use anymore, remove at your
-    // discretion
-    case IDR_TOOLBAR_BEZEL_HOVER: {
-      gfx::Size size = ResourceBundle::GetSharedInstance().
-          GetImageSkiaNamed(id)->size();
-      source = new GtkButtonImageSource("IDR_BUTTON_HOVER", size);
-      break;
+      gtk_widget_show_all(window);
     }
-    case IDR_TOOLBAR_BEZEL_PRESSED: {
-      gfx::Size size = ResourceBundle::GetSharedInstance().
-          GetImageSkiaNamed(id)->size();
-      source = new GtkButtonImageSource("IDR_BUTTON_PRESSED", size);
-      break;
-    }
-  }
 
-  if (source)
-    return gfx::Image(gfx::ImageSkia(source, 1));
+    cairo_surface_t* surface = cairo_image_surface_create_for_data(
+        static_cast<unsigned char*>(bitmap.getAddr(0, 0)), CAIRO_FORMAT_ARGB32,
+        bitmap.width(), bitmap.height(), bitmap.width() * 4);
+    cairo_t* cr = cairo_create(surface);
+    cairo_translate(cr, kToolbarImageWidth / -2, 0);
+    gtk_widget_draw(title, cr);
+    cairo_destroy(cr);
+    cairo_surface_destroy(surface);
 
-  return gfx::Image();
-}
-
-SkBitmap Gtk2UI::GenerateGtkThemeBitmap(int id) const {
-  switch (id) {
-    case IDR_THEME_TOOLBAR: {
-      if (ui::MaterialDesignController::IsModeMaterial())
+    switch (color_id) {
+      case ThemeProperties::COLOR_FRAME_INACTIVE:
+        bitmap = SkBitmapOperations::CreateHSLShiftedBitmap(
+            bitmap, kDefaultTintFrameInactive);
         break;
-
-      SkBitmap bitmap;
-      bitmap.allocN32Pixels(kToolbarImageWidth, kToolbarImageHeight);
-      bitmap.eraseColor(
-          NativeThemeGtk2::instance()->GetSystemColor(
-              ui::NativeTheme::kColorId_LabelBackgroundColor));
-      return bitmap;
+      case ThemeProperties::COLOR_FRAME_INCOGNITO:
+        bitmap = SkBitmapOperations::CreateHSLShiftedBitmap(
+            bitmap, kDefaultTintFrameIncognito);
+        break;
+      case ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE:
+        bitmap = SkBitmapOperations::CreateHSLShiftedBitmap(
+            bitmap, kDefaultTintFrameIncognitoInactive);
+        break;
     }
 
-    case IDR_THEME_TAB_BACKGROUND:
-      return GenerateTabImage(IDR_THEME_FRAME);
-    case IDR_THEME_TAB_BACKGROUND_INCOGNITO:
-      return GenerateTabImage(IDR_THEME_FRAME_INCOGNITO);
-    case IDR_FRAME:
-    case IDR_THEME_FRAME:
-      return GenerateFrameImage(ThemeProperties::COLOR_FRAME,
-                                "frame-gradient-color");
-    case IDR_FRAME_INACTIVE:
-    case IDR_THEME_FRAME_INACTIVE:
-      return GenerateFrameImage(ThemeProperties::COLOR_FRAME_INACTIVE,
-                                "inactive-frame-gradient-color");
-    case IDR_THEME_FRAME_INCOGNITO:
-      return GenerateFrameImage(ThemeProperties::COLOR_FRAME_INCOGNITO,
-                                "incognito-frame-gradient-color");
-    case IDR_THEME_FRAME_INCOGNITO_INACTIVE: {
-      return GenerateFrameImage(
-          ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE,
-          "incognito-inactive-frame-gradient-color");
-    }
-    // Icons that sit inside the omnibox shouldn't receive TINT_BUTTONS and
-    // instead should tint based on the foreground text entry color in GTK+
-    // mode because some themes that try to be dark *and* light have very
-    // different colors between the omnibox and the normal background area.
-    // TODO(erg): Decide what to do about other icons that appear in the
-    // omnibox, e.g. content settings icons.
-    case IDR_OMNIBOX_CALCULATOR:
-    case IDR_OMNIBOX_EXTENSION_APP:
-    case IDR_OMNIBOX_HTTP:
-    case IDR_OMNIBOX_SEARCH:
-    case IDR_OMNIBOX_STAR:
-    case IDR_OMNIBOX_TTS: {
-      return GenerateTintedIcon(id, entry_tint_);
-    }
+    bitmap.lockPixels();
+    colors_[color_id] =
+        bitmap.getColor(bitmap.width() / 2, bitmap.height() - 1);
+    bitmap.unlockPixels();
+  };
 
-    // TODO(erg): The dropdown arrow should be tinted because we're injecting
-    // various background GTK colors, but the code that accesses them needs to
-    // be modified so that they ask their ui::ThemeProvider instead of the
-    // ResourceBundle. (i.e. in a light on dark theme, the dropdown arrow will
-    // be dark on dark)
-    case IDR_MENU_DROPARROW:
-      return GenerateTintedIcon(id, button_tint_);
-  }
-
-  return SkBitmap();
-}
-
-SkBitmap Gtk2UI::GenerateFrameImage(
-    int color_id,
-    const char* gradient_name) const {
-#if GTK_MAJOR_VERSION == 2
-  if (ui::MaterialDesignController::IsModeMaterial())
-    return SkBitmap();
-
-  ColorMap::const_iterator it = colors_.find(color_id);
-  DCHECK(it != colors_.end());
-  SkColor base = it->second;
-
-  // We use two colors: the main color (passed in) and a lightened version of
-  // that color (which is supposed to match the light gradient at the top of
-  // several GTK+ themes, such as Ambiance, Clearlooks or Bluebird).
-  const color_utils::HSL kGtkFrameShift = { -1, -1, 0.58 };
-  gfx::Canvas canvas(gfx::Size(kToolbarImageWidth, kToolbarImageHeight),
-      1.0f, true);
-
-  SkColor gradient_top_color = color_utils::HSLShift(base, kGtkFrameShift);
-  int gradient_size;
-
-  NativeThemeGtk2::instance()->GetChromeStyleColor(gradient_name,
-                                                   &gradient_top_color);
-  gtk_widget_style_get(NativeThemeGtk2::instance()->GetWindow(),
-                       "frame-gradient-size", &gradient_size,
-                       NULL);
-
-  if (gradient_size) {
-    SkPaint paint;
-    paint.setStyle(SkPaint::kFill_Style);
-    paint.setAntiAlias(true);
-    paint.setShader(gfx::CreateGradientShader(
-        0, gradient_size, gradient_top_color, base));
-
-    canvas.DrawRect(gfx::Rect(0, 0, kToolbarImageWidth, gradient_size), paint);
-  }
-
-  canvas.FillRect(gfx::Rect(0, gradient_size, kToolbarImageWidth,
-                            kToolbarImageHeight - gradient_size), base);
-  return canvas.ExtractImageRep().sk_bitmap();
-#else
-  // Render a GtkHeaderBar as our title bar, cropping out any curved edges on
-  // the left and right sides. Also remove the bottom border for good measure.
-  SkBitmap bitmap;
-  bitmap.allocN32Pixels(kToolbarImageWidth, 40);
-  bitmap.eraseColor(0);
-
-  static GtkWidget* title = NULL;
-  if (!title) {
-    title = gtk_header_bar_new();
-    gtk_widget_set_size_request(title, kToolbarImageWidth * 2, 48);
-
-    GtkWidget* window = gtk_offscreen_window_new();
-    gtk_container_add(GTK_CONTAINER(window), title);
-
-    gtk_widget_show_all(window);
-  }
-
-  cairo_surface_t* surface = cairo_image_surface_create_for_data(
-    static_cast<unsigned char*>(bitmap.getAddr(0, 0)),
-    CAIRO_FORMAT_ARGB32,
-    bitmap.width(), bitmap.height(),
-    bitmap.width() * 4);
-  cairo_t* cr = cairo_create(surface);
-  cairo_translate(cr, kToolbarImageWidth / -2, 0);
-  gtk_widget_draw(title, cr);
-  cairo_destroy(cr);
-  cairo_surface_destroy(surface);
-
-  switch (color_id) {
-    case ThemeProperties::COLOR_FRAME_INACTIVE:
-      return SkBitmapOperations::CreateHSLShiftedBitmap(bitmap,
-          kDefaultTintFrameInactive);
-    case ThemeProperties::COLOR_FRAME_INCOGNITO:
-      return SkBitmapOperations::CreateHSLShiftedBitmap(bitmap,
-          kDefaultTintFrameIncognito);
-    case ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE:
-      return SkBitmapOperations::CreateHSLShiftedBitmap(bitmap,
-          kDefaultTintFrameIncognitoInactive);
-  }
-
-  return bitmap;
+  set_frame_color(ThemeProperties::COLOR_FRAME);
+  set_frame_color(ThemeProperties::COLOR_FRAME_INACTIVE);
+  set_frame_color(ThemeProperties::COLOR_FRAME_INCOGNITO);
+  set_frame_color(ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE);
 #endif
-}
-
-SkBitmap Gtk2UI::GenerateTabImage(int base_id) const {
-  if (ui::MaterialDesignController::IsModeMaterial())
-    return SkBitmap();
-
-  const SkBitmap* base_image = GetThemeImageNamed(base_id).ToSkBitmap();
-  SkBitmap bg_tint = SkBitmapOperations::CreateHSLShiftedBitmap(
-      *base_image, kDefaultTintBackgroundTab);
-  return SkBitmapOperations::CreateTiledBitmap(
-      bg_tint, 0, 0, bg_tint.width(), bg_tint.height());
-}
-
-SkBitmap Gtk2UI::GenerateTintedIcon(
-    int base_id,
-    const color_utils::HSL& tint) const {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  return SkBitmapOperations::CreateHSLShiftedBitmap(
-      rb.GetImageNamed(base_id).AsBitmap(), tint);
 }
 
 void Gtk2UI::GetNormalButtonTintHSL(color_utils::HSL* tint) const {
@@ -1370,10 +1068,6 @@ void Gtk2UI::GetSelectedEntryForegroundHSL(color_utils::HSL* tint) const {
   color_utils::SkColorToHSL(color, tint);
 }
 
-void Gtk2UI::ClearAllThemeData() {
-  gtk_images_.clear();
-}
-
 void Gtk2UI::UpdateDefaultFont() {
   PangoContext* pc = gtk_widget_get_pango_context(
     NativeThemeGtk2::instance()->GetLabel());
@@ -1415,7 +1109,6 @@ void Gtk2UI::UpdateDefaultFont() {
 }
 
 void Gtk2UI::ResetStyle() {
-  ClearAllThemeData();
   LoadGtkValues();
   // TODO(varkha): There will be no need to call UpdateMaterialDesignColors()
   // once Material Design is on unconditionally.

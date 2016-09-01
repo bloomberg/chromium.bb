@@ -57,6 +57,7 @@ class CustomThemeSupplier : public base::RefCountedThreadSafe<
 
   // Returns the theme image for |id|. Returns an empty image if no image is
   // found for |id|.
+  // TODO(estade): Remove this function; it's not used in Material Design.
   virtual gfx::Image GetImageNamed(int id);
 
   // Returns the raw PNG encoded data for IDR_THEME_NTP_*. This method only

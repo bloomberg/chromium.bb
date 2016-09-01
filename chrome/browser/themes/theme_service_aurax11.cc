@@ -65,11 +65,11 @@ bool SystemThemeX11::GetColor(int id, SkColor* color) const {
 }
 
 gfx::Image SystemThemeX11::GetImageNamed(int id) {
-  return linux_ui_ ? linux_ui_->GetThemeImageNamed(id) : gfx::Image();
+  return gfx::Image();
 }
 
 bool SystemThemeX11::HasCustomImage(int id) const {
-  return linux_ui_ && linux_ui_->HasCustomImage(id);
+  return false;
 }
 
 SystemThemeX11::~SystemThemeX11() {}
