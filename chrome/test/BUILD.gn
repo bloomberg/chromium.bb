@@ -228,7 +228,7 @@ static_library("test_support") {
 
     public_deps += [
       "//ash",
-      "//ash:test_support",
+      "//ash:test_support_without_content",
       "//ui/aura",
       "//ui/aura:test_support",
     ]
@@ -2042,7 +2042,7 @@ test("browser_tests") {
         "../browser/ui/ash/volume_controller_browsertest_chromeos.cc",
         "../browser/ui/views/frame/browser_non_client_frame_view_ash_browsertest.cc",
       ]
-      deps += [ "//ash:test_support" ]
+      deps += [ "//ash:test_support_without_content" ]
 
       if (enable_app_list) {
         deps += [ ":test_support_applist_ash" ]
@@ -3149,7 +3149,7 @@ test("unit_tests") {
                     ".",
                     "//chrome")
     deps += [
-      "//ash:test_support",
+      "//ash:test_support_with_content",
       "//ash/common/strings",
       "//ash/resources",
     ]
@@ -3294,6 +3294,10 @@ test("unit_tests") {
     sources -= [
       "../browser/policy/cloud/user_policy_signin_service_unittest.cc",
       "../browser/signin/signin_manager_unittest.cc",
+    ]
+    sources += [
+      "base/ash_test_environment_chrome.cc",
+      "base/ash_test_environment_chrome.h",
     ]
   }
   if (use_x11) {

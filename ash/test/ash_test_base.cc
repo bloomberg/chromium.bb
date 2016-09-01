@@ -16,6 +16,7 @@
 #include "ash/ime/input_method_event_handler.h"
 #include "ash/shell.h"
 #include "ash/shell/toplevel_window.h"
+#include "ash/test/ash_test_environment.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/display_manager_test_api.h"
 #include "ash/test/test_session_state_delegate.h"
@@ -98,10 +99,11 @@ AshTestBase::AshTestBase()
   gfx::InitializeThreadedX11();
 #endif
 
-  thread_bundle_.reset(new content::TestBrowserThreadBundle);
+  ash_test_environment_ = AshTestEnvironment::Create();
+
   // Must initialize |ash_test_helper_| here because some tests rely on
   // AshTestBase methods before they call AshTestBase::SetUp().
-  ash_test_helper_.reset(new AshTestHelper(base::MessageLoopForUI::current()));
+  ash_test_helper_.reset(new AshTestHelper(ash_test_environment_.get()));
 }
 
 AshTestBase::~AshTestBase() {

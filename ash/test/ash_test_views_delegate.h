@@ -20,9 +20,6 @@ class AshTestViewsDelegate : public views::TestViewsDelegate {
   ~AshTestViewsDelegate() override;
 
   // Overriden from TestViewsDelegate.
-  content::WebContents* CreateWebContents(
-      content::BrowserContext* browser_context,
-      content::SiteInstance* site_instance) override;
   void OnBeforeWidgetInit(
       views::Widget::InitParams* params,
       views::internal::NativeWidgetDelegate* delegate) override;

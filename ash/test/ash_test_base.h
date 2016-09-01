@@ -15,7 +15,6 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/display/display.h"
@@ -53,12 +52,10 @@ class WmShelf;
 
 namespace test {
 
+class AshTestEnvironment;
 class AshTestHelper;
 class TestScreenshotDelegate;
 class TestSystemTrayDelegate;
-#if defined(OS_WIN)
-class TestMetroViewerProcessHost;
-#endif
 
 class AshTestBase : public testing::Test {
  public:
@@ -179,7 +176,7 @@ class AshTestBase : public testing::Test {
   // |SetUp()| doesn't activate session if this is set to false.
   bool start_session_;
   MaterialDesignController::Mode material_mode_;
-  std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle_;
+  std::unique_ptr<AshTestEnvironment> ash_test_environment_;
   std::unique_ptr<AshTestHelper> ash_test_helper_;
   std::unique_ptr<ui::test::EventGenerator> event_generator_;
 #if defined(OS_WIN)
