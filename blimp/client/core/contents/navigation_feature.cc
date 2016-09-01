@@ -42,28 +42,14 @@ void NavigationFeature::RemoveDelegate(int tab_id) {
 
 void NavigationFeature::NavigateToUrlText(int tab_id,
                                           const std::string& url_text) {
-  // Fixes up url, e.g., convert "google.com" to "http://google.com".
-  // It also converts "example" to "http://example/" (a valid GURL but no
-  // website). In order to use search instead in this case, we check
-  // the host part of the URL to see if it contains '.', and use search
-  // instead if it does not. Note that this heuristic is not correct, since
-  // valid GURL such as "chrome://version/" do not have '.'. The heuristic is
-  // used only for v0.5 and useful for dev&test.
-  // TODO(haibinlu): Remove once omnibox is used.
   GURL url = url_formatter::FixupURL(url_text, std::string());
-  if (!url.is_valid() || url.host_piece().find('.') == std::string::npos) {
-    url::RawCanonOutputT<char> buffer;
-    url::EncodeURIComponent(url_text.data(), url_text.size(), &buffer);
-    std::string encoded_query(buffer.data(), buffer.length());
-    url = GURL("https://www.google.com/#q=" + encoded_query);
-    DCHECK(url.is_valid());
-  }
-
   NavigationMessage* navigation_message;
   std::unique_ptr<BlimpMessage> blimp_message =
       CreateBlimpMessage(&navigation_message, tab_id);
   navigation_message->set_type(NavigationMessage::LOAD_URL);
-  navigation_message->mutable_load_url()->set_url(url.spec());
+  // Use the possibly invalid spec here.  Just load what we're getting from the
+  // embedder.
+  navigation_message->mutable_load_url()->set_url(url.possibly_invalid_spec());
   outgoing_message_processor_->ProcessMessage(std::move(blimp_message),
                                               net::CompletionCallback());
 }
