@@ -1981,6 +1981,19 @@ fuzzer_test("net_http_proxy_client_socket_fuzzer") {
   dict = "data/fuzzer_dictionaries/net_http_proxy_client_socket_fuzzer.dict"
 }
 
+fuzzer_test("net_parse_url_hostname_to_address_fuzzer") {
+  sources = [
+    "base/parse_url_hostname_to_address_fuzzer.cc",
+  ]
+  deps = [
+    ":net_fuzzer_test_support",
+    "//base",
+    "//net",
+  ]
+  libfuzzer_options = [ "max_len=512" ]
+  seed_corpus = "data/fuzzer_data/hostnames/"
+}
+
 fuzzer_test("net_quic_crypto_framer_parse_message_fuzzer") {
   sources = [
     "quic/core/quic_crypto_framer_parse_message_fuzzer.cc",
