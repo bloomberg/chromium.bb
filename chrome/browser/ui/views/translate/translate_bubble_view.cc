@@ -39,6 +39,7 @@
 #include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/label.h"
@@ -51,36 +52,13 @@
 
 namespace {
 
-views::LabelButton* CreateBlueButton(views::ButtonListener* listener,
-                                     const base::string16& label,
-                                     int id) {
-  views::LabelButton* button = new views::BlueButton(listener, label);
-  button->set_id(id);
-  return button;
-}
-
-views::LabelButton* CreateLabelButton(views::ButtonListener* listener,
-                                      const base::string16& label,
-                                      int id) {
-  views::LabelButton* button = new views::LabelButton(listener, label);
-  button->set_id(id);
-  button->SetStyle(views::Button::STYLE_BUTTON);
-  return button;
-}
-
-views::Link* CreateLink(views::LinkListener* listener,
-                        const base::string16& text,
-                        int id) {
-  views::Link* link = new views::Link(text);
-  link->set_listener(listener);
-  link->set_id(id);
-  return link;
-}
-
 views::Link* CreateLink(views::LinkListener* listener,
                         int resource_id,
                         int id) {
-  return CreateLink(listener, l10n_util::GetStringUTF16(resource_id), id);
+  views::Link* link = new views::Link(l10n_util::GetStringUTF16(resource_id));
+  link->set_listener(listener);
+  link->set_id(id);
+  return link;
 }
 
 // TODO(ftang) Restore icons in CreateViewAfterTranslate and CreateViewError
@@ -629,12 +607,11 @@ views::View* TranslateBubbleView::CreateViewBeforeTranslate() {
   layout->StartRow(0, COLUMN_SET_ID_CONTENT);
   views::LabelButton* accept_button =
       Use2016Q2UI()
-          ? CreateBlueButton(
-                this, l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_ACCEPT),
-                BUTTON_ID_TRANSLATE)
-          : CreateLabelButton(
-                this, l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_ACCEPT),
-                BUTTON_ID_TRANSLATE);
+          ? views::MdTextButton::CreateSecondaryUiBlueButton(
+                this, l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_ACCEPT))
+          : views::MdTextButton::CreateSecondaryUiButton(
+                this, l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_ACCEPT));
+  accept_button->set_id(BUTTON_ID_TRANSLATE);
   layout->AddView(accept_button);
   accept_button->SetIsDefault(true);
   if (Use2016Q2UI()) {
@@ -705,9 +682,10 @@ views::View* TranslateBubbleView::CreateViewTranslating() {
   layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
 
   layout->StartRow(0, COLUMN_SET_ID_CONTENT);
-  views::LabelButton* revert_button = CreateLabelButton(
-      this, l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_REVERT),
-      BUTTON_ID_SHOW_ORIGINAL);
+  views::LabelButton* revert_button =
+      views::MdTextButton::CreateSecondaryUiButton(
+          this, l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_REVERT));
+  revert_button->set_id(BUTTON_ID_SHOW_ORIGINAL);
   revert_button->SetEnabled(false);
   layout->AddView(revert_button);
 
@@ -753,9 +731,10 @@ views::View* TranslateBubbleView::CreateViewAfterTranslate() {
   layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
 
   layout->StartRow(0, COLUMN_SET_ID_CONTENT);
-  layout->AddView(CreateLabelButton(
-      this, l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_REVERT),
-      BUTTON_ID_SHOW_ORIGINAL));
+  views::LabelButton* button = views::MdTextButton::CreateSecondaryUiButton(
+      this, l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_REVERT));
+  button->set_id(BUTTON_ID_SHOW_ORIGINAL);
+  layout->AddView(button);
 
   return view;
 }
@@ -799,9 +778,10 @@ views::View* TranslateBubbleView::CreateViewError() {
   layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
 
   layout->StartRow(0, COLUMN_SET_ID_CONTENT);
-  layout->AddView(CreateLabelButton(
-      this, l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_TRY_AGAIN),
-      BUTTON_ID_TRY_AGAIN));
+  views::LabelButton* button = views::MdTextButton::CreateSecondaryUiButton(
+      this, l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_TRY_AGAIN));
+  button->set_id(BUTTON_ID_TRY_AGAIN);
+  layout->AddView(button);
 
   return view;
 }
@@ -889,17 +869,20 @@ views::View* TranslateBubbleView::CreateViewAdvanced() {
   layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
 
   layout->StartRow(0, COLUMN_SET_ID_BUTTONS);
+  // TODO(estade): this should use CreateExtraView().
   layout->AddView(CreateLink(this, IDS_TRANSLATE_BUBBLE_LANGUAGE_SETTINGS,
                              LINK_ID_LANGUAGE_SETTINGS));
   advanced_done_button_ =
-      Use2016Q2UI()
-          ? CreateBlueButton(this, l10n_util::GetStringUTF16(IDS_DONE),
-                             BUTTON_ID_DONE)
-          : CreateLabelButton(this, l10n_util::GetStringUTF16(IDS_DONE),
-                              BUTTON_ID_DONE);
+      Use2016Q2UI() ? views::MdTextButton::CreateSecondaryUiBlueButton(
+                          this, l10n_util::GetStringUTF16(IDS_DONE))
+                    : views::MdTextButton::CreateSecondaryUiButton(
+                          this, l10n_util::GetStringUTF16(IDS_DONE));
+  advanced_done_button_->set_id(BUTTON_ID_DONE);
   advanced_done_button_->SetIsDefault(true);
-  advanced_cancel_button_ = CreateLabelButton(
-      this, l10n_util::GetStringUTF16(IDS_CANCEL), BUTTON_ID_CANCEL);
+  advanced_cancel_button_ = views::MdTextButton::CreateSecondaryUiButton(
+      this, l10n_util::GetStringUTF16(IDS_CANCEL));
+  advanced_cancel_button_->set_id(BUTTON_ID_CANCEL);
+  // TODO(estade): this should be using GetDialogButtons().
   layout->AddView(advanced_done_button_);
   layout->AddView(advanced_cancel_button_);
 
