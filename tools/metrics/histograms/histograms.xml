@@ -68209,6 +68209,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebUsb.DetectorInitialization" units="ms">
+  <owner>reillyg@chromium.org</owner>
+  <owner>juncai@chromium.org</owner>
+  <summary>
+    Records the time spent initializing the WebUSB detector module.
+  </summary>
+</histogram>
+
 <histogram name="WebUsb.NotificationClosed" enum="WebUsbNotificationClosed">
   <owner>reillyg@chromium.org</owner>
   <owner>juncai@chromium.org</owner>

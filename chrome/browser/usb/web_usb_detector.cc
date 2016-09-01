@@ -113,13 +113,12 @@ class WebUsbNotificationDelegate : public message_center::NotificationDelegate {
 
 }  // namespace
 
-WebUsbDetector::WebUsbDetector() : observer_(this) {
-  Initialize();
-}
+WebUsbDetector::WebUsbDetector() : observer_(this) {}
 
 WebUsbDetector::~WebUsbDetector() {}
 
 void WebUsbDetector::Initialize() {
+  SCOPED_UMA_HISTOGRAM_TIMER("WebUsb.DetectorInitialization");
   device::UsbService* usb_service =
       device::DeviceClient::Get()->GetUsbService();
   if (!usb_service)
