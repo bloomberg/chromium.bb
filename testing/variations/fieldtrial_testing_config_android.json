@@ -333,6 +333,14 @@
             "group_name": "Enabled"
         }
     ],
+    "PassiveEventListenersDueToFling": [
+        {
+            "enable_features": [
+                "PassiveEventListenersDueToFling"
+            ],
+            "group_name": "Enabled"
+        }
+    ],
     "PasswordBranding": [
         {
             "group_name": "SmartLockBrandingSavePromptOnly"
