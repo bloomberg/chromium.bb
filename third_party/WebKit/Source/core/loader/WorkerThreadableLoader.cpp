@@ -252,10 +252,7 @@ void WorkerThreadableLoader::start(const ResourceRequest& originalRequest)
     if (m_blockingBehavior == LoadAsynchronously)
         return;
 
-    {
-        SafePointScope scope(BlinkGC::HeapPointersOnStack);
-        eventWithTasks->wait();
-    }
+    eventWithTasks->wait();
 
     if (eventWithTasks->isAborted()) {
         // This thread is going to terminate.

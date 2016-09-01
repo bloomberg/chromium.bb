@@ -5,6 +5,9 @@
 #include "platform/WaitableEvent.h"
 
 #include "base/synchronization/waitable_event.h"
+#include "platform/heap/SafePoint.h"
+#include "platform/heap/ThreadState.h"
+#include "wtf/Optional.h"
 #include "wtf/PtrUtil.h"
 #include <vector>
 
@@ -30,7 +33,15 @@ void WaitableEvent::reset()
 
 void WaitableEvent::wait()
 {
-    m_impl->Wait();
+    if (ThreadState::current()) {
+        // We only enter a safe point scope if the thread is attached, ex. never
+        // during shutdown.
+        // TODO(esprehn): Why can't SafePointScope do this for us?
+        SafePointScope scope(BlinkGC::HeapPointersOnStack);
+        m_impl->Wait();
+    } else {
+        m_impl->Wait();
+    }
 }
 
 void WaitableEvent::signal()

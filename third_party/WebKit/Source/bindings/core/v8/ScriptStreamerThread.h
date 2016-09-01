@@ -6,9 +6,9 @@
 #define ScriptStreamerThread_h
 
 #include "core/CoreExport.h"
-#include "platform/TaskSynchronizer.h"
 #include "public/platform/WebThread.h"
 #include "wtf/Functional.h"
+#include "wtf/ThreadingPrimitives.h"
 #include <memory>
 #include <v8.h>
 

@@ -388,10 +388,7 @@ bool Bridge::connect(std::unique_ptr<SourceLocation> location, const KURL& url, 
     // content check must synchronously be conducted.
     WebSocketChannelSyncHelper syncHelper;
     m_loaderProxy->postTaskToLoader(BLINK_FROM_HERE, createCrossThreadTask(&Bridge::connectOnMainThread, wrapCrossThreadPersistent(this), passed(location->clone()), wrapCrossThreadPersistent(m_workerGlobalScope->thread()->getWorkerThreadLifecycleContext()), url, protocol, crossThreadUnretained(&syncHelper)));
-    {
-        SafePointScope scope(BlinkGC::HeapPointersOnStack);
-        syncHelper.wait();
-    }
+    syncHelper.wait();
     return syncHelper.connectRequestResult();
 }
 

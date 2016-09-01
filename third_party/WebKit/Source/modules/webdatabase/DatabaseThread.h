@@ -40,7 +40,7 @@ class Database;
 class DatabaseTask;
 class SQLTransactionClient;
 class SQLTransactionCoordinator;
-class TaskSynchronizer;
+class WaitableEvent;
 
 class DatabaseThread : public GarbageCollectedFinalized<DatabaseThread> {
 public:
@@ -80,7 +80,7 @@ private:
 
     std::unique_ptr<SQLTransactionClient> m_transactionClient;
     CrossThreadPersistent<SQLTransactionCoordinator> m_transactionCoordinator;
-    TaskSynchronizer* m_cleanupSync;
+    WaitableEvent* m_cleanupSync;
 
     Mutex m_terminationRequestedMutex;
     bool m_terminationRequested;

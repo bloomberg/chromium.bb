@@ -34,6 +34,7 @@
 #include "modules/webdatabase/SQLTransactionCoordinator.h"
 #include "modules/webdatabase/StorageLog.h"
 #include "platform/CrossThreadFunctional.h"
+#include "platform/WaitableEvent.h"
 #include "platform/WebThreadSupportingGC.h"
 #include "public/platform/Platform.h"
 #include "wtf/PtrUtil.h"
@@ -77,7 +78,7 @@ void DatabaseThread::setupDatabaseThread()
 void DatabaseThread::terminate()
 {
     ASSERT(isMainThread());
-    TaskSynchronizer sync;
+    WaitableEvent sync;
     {
         MutexLocker lock(m_terminationRequestedMutex);
         ASSERT(!m_terminationRequested);
@@ -86,7 +87,7 @@ void DatabaseThread::terminate()
         STORAGE_DVLOG(1) << "DatabaseThread " << this << " was asked to terminate";
         m_thread->postTask(BLINK_FROM_HERE, crossThreadBind(&DatabaseThread::cleanupDatabaseThread, wrapCrossThreadPersistent(this)));
     }
-    sync.waitForTaskCompletion();
+    sync.wait();
     // The WebThread destructor blocks until all the tasks of the database
     // thread are processed. However, it shouldn't block at all because
     // the database thread has already finished processing the cleanup task.
@@ -121,7 +122,7 @@ void DatabaseThread::cleanupDatabaseThreadCompleted()
 {
     m_thread->shutdown();
     if (m_cleanupSync) // Someone wanted to know when we were done cleaning up.
-        m_cleanupSync->taskCompleted();
+        m_cleanupSync->signal();
 }
 
 void DatabaseThread::recordDatabaseOpen(Database* database)

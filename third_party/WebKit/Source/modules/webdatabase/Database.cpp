@@ -48,6 +48,7 @@
 #include "modules/webdatabase/StorageLog.h"
 #include "modules/webdatabase/sqlite/SQLiteStatement.h"
 #include "modules/webdatabase/sqlite/SQLiteTransaction.h"
+#include "platform/WaitableEvent.h"
 #include "platform/heap/SafePoint.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebDatabaseObserver.h"
@@ -259,15 +260,15 @@ DEFINE_TRACE(Database)
 
 bool Database::openAndVerifyVersion(bool setVersionInNewDatabase, DatabaseError& error, String& errorMessage)
 {
-    TaskSynchronizer synchronizer;
+    WaitableEvent event;
     if (!getDatabaseContext()->databaseThreadAvailable())
         return false;
 
     DatabaseTracker::tracker().prepareToOpenDatabase(this);
     bool success = false;
-    std::unique_ptr<DatabaseOpenTask> task = DatabaseOpenTask::create(this, setVersionInNewDatabase, &synchronizer, error, errorMessage, success);
+    std::unique_ptr<DatabaseOpenTask> task = DatabaseOpenTask::create(this, setVersionInNewDatabase, &event, error, errorMessage, success);
     getDatabaseContext()->databaseThread()->scheduleTask(std::move(task));
-    synchronizer.waitForTaskCompletion();
+    event.wait();
 
     return success;
 }
@@ -883,13 +884,13 @@ Vector<String> Database::tableNames()
     // take strict turns in dealing with them. However, if the code changes,
     // this may not be true anymore.
     Vector<String> result;
-    TaskSynchronizer synchronizer;
+    WaitableEvent event;
     if (!getDatabaseContext()->databaseThreadAvailable())
         return result;
 
-    std::unique_ptr<DatabaseTableNamesTask> task = DatabaseTableNamesTask::create(this, &synchronizer, result);
+    std::unique_ptr<DatabaseTableNamesTask> task = DatabaseTableNamesTask::create(this, &event, result);
     getDatabaseContext()->databaseThread()->scheduleTask(std::move(task));
-    synchronizer.waitForTaskCompletion();
+    event.wait();
 
     return result;
 }

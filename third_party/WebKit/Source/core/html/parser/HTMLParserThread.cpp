@@ -68,7 +68,6 @@ void HTMLParserThread::shutdown()
     if (Platform::current()->currentThread() && s_sharedThread->m_thread) {
         WaitableEvent waitableEvent;
         s_sharedThread->postTask(crossThreadBind(&HTMLParserThread::cleanupHTMLParserThread, crossThreadUnretained(s_sharedThread), crossThreadUnretained(&waitableEvent)));
-        SafePointScope scope(BlinkGC::HeapPointersOnStack);
         waitableEvent.wait();
     }
     delete s_sharedThread;

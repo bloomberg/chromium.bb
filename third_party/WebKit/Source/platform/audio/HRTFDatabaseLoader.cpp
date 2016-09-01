@@ -29,7 +29,7 @@
 #include "platform/audio/HRTFDatabaseLoader.h"
 
 #include "platform/CrossThreadFunctional.h"
-#include "platform/TaskSynchronizer.h"
+#include "platform/WaitableEvent.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebTraceLocation.h"
@@ -121,9 +121,9 @@ HRTFDatabase* HRTFDatabaseLoader::database()
 
 // This cleanup task is needed just to make sure that the loader thread finishes
 // the load task and thus the loader thread doesn't touch m_thread any more.
-void HRTFDatabaseLoader::cleanupTask(TaskSynchronizer* sync)
+void HRTFDatabaseLoader::cleanupTask(WaitableEvent* sync)
 {
-    sync->taskCompleted();
+    sync->signal();
 }
 
 void HRTFDatabaseLoader::waitForLoaderThreadCompletion()
@@ -131,10 +131,10 @@ void HRTFDatabaseLoader::waitForLoaderThreadCompletion()
     if (!m_thread)
         return;
 
-    TaskSynchronizer sync;
+    WaitableEvent sync;
     // TODO(alexclarke): Should this be posted as a loading task?
     m_thread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, crossThreadBind(&HRTFDatabaseLoader::cleanupTask, crossThreadUnretained(this), crossThreadUnretained(&sync)));
-    sync.waitForTaskCompletion();
+    sync.wait();
     m_thread.reset();
 }
 

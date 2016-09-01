@@ -38,10 +38,9 @@
 
 namespace blink {
 
-class TaskSynchronizer;
+class WaitableEvent;
 
 // HRTFDatabaseLoader will asynchronously load the default HRTFDatabase in a new thread.
-
 class PLATFORM_EXPORT HRTFDatabaseLoader final : public RefCounted<HRTFDatabaseLoader> {
 public:
     // Lazily creates a HRTFDatabaseLoader (if not already created) for the given sample-rate
@@ -76,7 +75,7 @@ private:
 
     // Called in asynchronous loading thread.
     void loadTask();
-    void cleanupTask(TaskSynchronizer*);
+    void cleanupTask(WaitableEvent*);
 
     // Holding a m_lock is required when accessing m_hrtfDatabase since we access it from multiple threads.
     Mutex m_lock;

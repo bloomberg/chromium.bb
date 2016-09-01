@@ -33,7 +33,7 @@
 #include "modules/webdatabase/DatabaseBasicTypes.h"
 #include "modules/webdatabase/DatabaseError.h"
 #include "modules/webdatabase/SQLTransactionBackend.h"
-#include "platform/TaskSynchronizer.h"
+#include "platform/WaitableEvent.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/Threading.h"
@@ -53,14 +53,14 @@ public:
     Database* database() const { return m_database.get(); }
 
 protected:
-    DatabaseTask(Database*, TaskSynchronizer*);
+    DatabaseTask(Database*, WaitableEvent* completeEvent);
 
 private:
     virtual void doPerformTask() = 0;
     virtual void taskCancelled() { }
 
     CrossThreadPersistent<Database> m_database;
-    TaskSynchronizer* m_synchronizer;
+    WaitableEvent* m_completeEvent;
 
 #if DCHECK_IS_ON()
     virtual const char* debugTaskName() const = 0;
@@ -70,13 +70,13 @@ private:
 
 class Database::DatabaseOpenTask final : public DatabaseTask {
 public:
-    static std::unique_ptr<DatabaseOpenTask> create(Database* db, bool setVersionInNewDatabase, TaskSynchronizer* synchronizer, DatabaseError& error, String& errorMessage, bool& success)
+    static std::unique_ptr<DatabaseOpenTask> create(Database* db, bool setVersionInNewDatabase, WaitableEvent* completeEvent, DatabaseError& error, String& errorMessage, bool& success)
     {
-        return wrapUnique(new DatabaseOpenTask(db, setVersionInNewDatabase, synchronizer, error, errorMessage, success));
+        return wrapUnique(new DatabaseOpenTask(db, setVersionInNewDatabase, completeEvent, error, errorMessage, success));
     }
 
 private:
-    DatabaseOpenTask(Database*, bool setVersionInNewDatabase, TaskSynchronizer*, DatabaseError&, String& errorMessage, bool& success);
+    DatabaseOpenTask(Database*, bool setVersionInNewDatabase, WaitableEvent*, DatabaseError&, String& errorMessage, bool& success);
 
     void doPerformTask() override;
 #if DCHECK_IS_ON()
@@ -91,13 +91,13 @@ private:
 
 class Database::DatabaseCloseTask final : public DatabaseTask {
 public:
-    static std::unique_ptr<DatabaseCloseTask> create(Database* db, TaskSynchronizer* synchronizer)
+    static std::unique_ptr<DatabaseCloseTask> create(Database* db, WaitableEvent* synchronizer)
     {
         return wrapUnique(new DatabaseCloseTask(db, synchronizer));
     }
 
 private:
-    DatabaseCloseTask(Database*, TaskSynchronizer*);
+    DatabaseCloseTask(Database*, WaitableEvent*);
 
     void doPerformTask() override;
 #if DCHECK_IS_ON()
@@ -131,13 +131,13 @@ private:
 
 class Database::DatabaseTableNamesTask final : public DatabaseTask {
 public:
-    static std::unique_ptr<DatabaseTableNamesTask> create(Database* db, TaskSynchronizer* synchronizer, Vector<String>& names)
+    static std::unique_ptr<DatabaseTableNamesTask> create(Database* db, WaitableEvent* synchronizer, Vector<String>& names)
     {
         return wrapUnique(new DatabaseTableNamesTask(db, synchronizer, names));
     }
 
 private:
-    DatabaseTableNamesTask(Database*, TaskSynchronizer*, Vector<String>& names);
+    DatabaseTableNamesTask(Database*, WaitableEvent*, Vector<String>& names);
 
     void doPerformTask() override;
 #if DCHECK_IS_ON()
