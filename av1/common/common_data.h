@@ -116,6 +116,8 @@ static const int tx_size_1d[TX_SIZES] = { 4, 8, 16, 32 };
 
 static const uint8_t tx_size_1d_log2[TX_SIZES] = { 2, 3, 4, 5 };
 
+static const int tx_size_1d_in_unit[TX_SIZES] = { 1, 2, 4, 8 };
+
 static const TX_SIZE max_txsize_lookup[BLOCK_SIZES] = {
   TX_4X4,   TX_4X4,   TX_4X4,   TX_8X8,   TX_8X8,   TX_8X8,  TX_16X16,
   TX_16X16, TX_16X16, TX_32X32, TX_32X32, TX_32X32, TX_32X32
