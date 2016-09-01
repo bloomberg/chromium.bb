@@ -88,23 +88,6 @@ void LogMessageFilterError(MessageFilterError error) {
                             MESSAGE_FILTER_ERROR_MAX_VALUE);
 }
 
-const wchar_t* kFontsToIgnore[] = {
-    // "Gill Sans Ultra Bold" turns into an Ultra Bold weight "Gill Sans" in
-    // DirectWrite, but most users don't have any other weights. The regular
-    // weight font is named "Gill Sans MT", but that ends up in a different
-    // family with that name. On Mac, there's a "Gill Sans" with various
-    // weights, so CSS authors use { 'font-family': 'Gill Sans',
-    // 'Gill Sans MT', ... } and because of the DirectWrite family futzing,
-    // they end up with an Ultra Bold font, when they just wanted "Gill Sans".
-    // Mozilla implemented a more complicated hack where they effectively
-    // rename the Ultra Bold font to "Gill Sans MT Ultra Bold", but because the
-    // Ultra Bold font is so ugly anyway, we simply ignore it. See
-    // http://www.microsoft.com/typography/fonts/font.aspx?FMID=978 for a
-    // picture of the font, and the file name. We also ignore "Gill Sans Ultra
-    // Bold Condensed".
-    L"gilsanub.ttf", L"gillubcd.ttf",
-};
-
 base::string16 GetWindowsFontsPath() {
   std::vector<base::char16> font_path_chars;
   // SHGetSpecialFolderPath requires at least MAX_PATH characters.
@@ -140,9 +123,13 @@ struct RequiredFontStyle {
 };
 
 const RequiredFontStyle kRequiredStyles[] = {
-    {L"open sans", DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STRETCH_NORMAL,
+    // The regular version of Gill Sans is actually in the Gill Sans MT family,
+    // and the Gill Sans family typically contains just the ultra-bold styles.
+    {L"gill sans", DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STRETCH_NORMAL,
      DWRITE_FONT_STYLE_NORMAL},
     {L"helvetica", DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STRETCH_NORMAL,
+     DWRITE_FONT_STYLE_NORMAL},
+    {L"open sans", DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STRETCH_NORMAL,
      DWRITE_FONT_STYLE_NORMAL},
 };
 
@@ -614,21 +601,6 @@ bool DWriteFontProxyMessageFilter::AddLocalFile(
   }
 
   base::string16 file_path = base::i18n::FoldCase(file_path_chars.data());
-
-  // Refer to comments in kFontsToIgnore for this block.
-  for (const auto& file_to_ignore : kFontsToIgnore) {
-    // Ok to do ascii comparison since the strings we are looking for are
-    // all ascii.
-    if (base::EndsWith(file_path, file_to_ignore,
-                       base::CompareCase::INSENSITIVE_ASCII)) {
-      // Unlike most other cases in this function, we do not abort loading
-      // the entire family, since we want to specifically ignore particular
-      // font styles and load the rest of the family if it exists. The
-      // renderer can deal with a family with zero files if that ends up
-      // being the case.
-      return true;
-    }
-  }
 
   if (!base::StartsWith(file_path, windows_fonts_path_,
                         base::CompareCase::SENSITIVE) ||
