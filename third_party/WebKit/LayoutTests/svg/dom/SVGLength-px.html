@@ -1,11 +1,108 @@
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
-<html>
-<head>
-<script src="../../resources/js-test.js"></script>
-</head>
-<body>
-<p id="description"></p>
-<div id="console"></div>
-<script src="script-tests/SVGLength-px.js"></script>
-</body>
-</html>
+<!DOCTYPE HTML>
+<title>SVGLength, converting from 'px' to other units (detached)</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+var cssPixelsPerInch = 96;
+setup(function() {
+  window.svgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+});
+
+test(function() {
+  var length = svgElement.createSVGLength();
+  length.valueAsString = "2px";
+  length.convertToSpecifiedUnits(SVGLength.SVG_LENGTHTYPE_NUMBER);
+  assert_equals(length.valueAsString, "2");
+  assert_equals(length.value, 2);
+  assert_equals(length.valueInSpecifiedUnits, 2);
+  assert_equals(length.unitType, SVGLength.SVG_LENGTHTYPE_NUMBER);
+}, document.title + ", unitless");
+
+test(function() {
+  var length = svgElement.createSVGLength();
+  length.valueAsString = "2px";
+  // Try converting from px to percentage, should fail as the SVGLength is not associated with a SVGSVGElement, and thus no viewport information is available.
+  assert_throws("NotSupportedError", function() { length.convertToSpecifiedUnits(SVGLength.SVG_LENGTHTYPE_PERCENTAGE); });
+  assert_equals(length.valueAsString, "2px");
+  assert_equals(length.value, 2);
+  assert_equals(length.valueInSpecifiedUnits, 2);
+  assert_equals(length.unitType, SVGLength.SVG_LENGTHTYPE_PX);
+}, document.title + ", percentage");
+
+test(function() {
+  var length = svgElement.createSVGLength();
+  length.valueAsString = "2px";
+  // Try converting from px to ems, should fail as the SVGLength is not associated with a SVGSVGElement, and thus no font-size information is available.
+  assert_throws("NotSupportedError", function() { length.convertToSpecifiedUnits(SVGLength.SVG_LENGTHTYPE_EMS); });
+  assert_equals(length.valueAsString, "2px");
+  assert_equals(length.value, 2);
+  assert_equals(length.valueInSpecifiedUnits, 2);
+  assert_equals(length.unitType, SVGLength.SVG_LENGTHTYPE_PX);
+}, document.title + ", ems");
+
+test(function() {
+  var length = svgElement.createSVGLength();
+  length.valueAsString = "2px";
+  // Try converting from px to exs, should fail as the SVGLength is not associated with a SVGSVGElement, and thus no font-size information is available.
+  assert_throws("NotSupportedError", function() { length.convertToSpecifiedUnits(SVGLength.SVG_LENGTHTYPE_EXS); });
+  assert_equals(length.valueAsString, "2px");
+  assert_equals(length.value, 2);
+  assert_equals(length.valueInSpecifiedUnits, 2);
+  assert_equals(length.unitType, SVGLength.SVG_LENGTHTYPE_PX);
+}, document.title + ", exs");
+
+test(function() {
+  var length = svgElement.createSVGLength();
+  length.valueAsString = "2px";
+  length.convertToSpecifiedUnits(SVGLength.SVG_LENGTHTYPE_CM);
+  var referenceValue = Number(2 * 2.54 / cssPixelsPerInch).toFixed(7);
+  assert_equals(length.valueAsString, referenceValue + "cm");
+  assert_equals(length.valueInSpecifiedUnits.toFixed(7), referenceValue);
+  assert_equals(length.value.toFixed(1), "2.0");
+  assert_equals(length.unitType, SVGLength.SVG_LENGTHTYPE_CM);
+}, document.title + ", cm");
+
+test(function() {
+  var length = svgElement.createSVGLength();
+  length.valueAsString = "2px";
+  length.convertToSpecifiedUnits(SVGLength.SVG_LENGTHTYPE_MM);
+  var referenceValue = Number(2 * 25.4 / cssPixelsPerInch).toFixed(6);
+  assert_equals(length.valueAsString, referenceValue + "mm");
+  assert_equals(length.valueInSpecifiedUnits.toFixed(6), referenceValue);
+  assert_equals(length.value.toFixed(1), "2.0");
+  assert_equals(length.unitType, SVGLength.SVG_LENGTHTYPE_MM);
+}, document.title + ", mm");
+
+test(function() {
+  var length = svgElement.createSVGLength();
+  length.valueAsString = "2px";
+  length.convertToSpecifiedUnits(SVGLength.SVG_LENGTHTYPE_IN);
+  var referenceValue = Number(2 / cssPixelsPerInch).toFixed(7);
+  assert_equals(length.valueAsString, referenceValue + "in");
+  assert_equals(length.valueInSpecifiedUnits.toFixed(7), referenceValue);
+  assert_equals(length.value.toFixed(1), "2.0");
+  assert_equals(length.unitType, SVGLength.SVG_LENGTHTYPE_IN);
+}, document.title + ", in");
+
+test(function() {
+  var length = svgElement.createSVGLength();
+  length.valueAsString = "2px";
+  length.convertToSpecifiedUnits(SVGLength.SVG_LENGTHTYPE_PT);
+  var referenceValue = Number(2 / cssPixelsPerInch * 72);
+  assert_equals(length.valueAsString, referenceValue + "pt");
+  assert_equals(length.valueInSpecifiedUnits, referenceValue);
+  assert_equals(length.value.toFixed(1), "2.0");
+  assert_equals(length.unitType, SVGLength.SVG_LENGTHTYPE_PT);
+}, document.title + ", pt");
+
+test(function() {
+  var length = svgElement.createSVGLength();
+  length.valueAsString = "2px";
+  length.convertToSpecifiedUnits(SVGLength.SVG_LENGTHTYPE_PC);
+  var referenceValue = Number(2 / cssPixelsPerInch * 6).toFixed(3);
+  // Don't check valueAsString here, it's unreliable across browsers.
+  assert_equals(length.valueInSpecifiedUnits.toFixed(3), referenceValue);
+  assert_equals(length.value.toFixed(1), "2.0");
+  assert_equals(length.unitType, SVGLength.SVG_LENGTHTYPE_PC);
+}, document.title + ", pc");
+</script>
