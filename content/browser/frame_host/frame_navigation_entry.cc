@@ -83,6 +83,17 @@ void FrameNavigationEntry::set_document_sequence_number(
   document_sequence_number_ = document_sequence_number;
 }
 
+void FrameNavigationEntry::SetPageState(const PageState& page_state) {
+  page_state_ = page_state;
+
+  ExplodedPageState exploded_state;
+  if (!DecodePageState(page_state_.ToEncodedData(), &exploded_state))
+    return;
+
+  item_sequence_number_ = exploded_state.top.item_sequence_number;
+  document_sequence_number_ = exploded_state.top.document_sequence_number;
+}
+
 scoped_refptr<ResourceRequestBodyImpl> FrameNavigationEntry::GetPostData()
     const {
   DCHECK(SiteIsolationPolicy::UseSubframeNavigationEntries());

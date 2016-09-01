@@ -890,7 +890,7 @@ bool NavigationControllerImpl::RendererDidNavigate(
     // We may not find a frame_entry in some cases; ignore the PageState if so.
     // TODO(creis): Remove the "if" once https://crbug.com/522193 is fixed.
     if (frame_entry)
-      frame_entry->set_page_state(params.page_state);
+      frame_entry->SetPageState(params.page_state);
   } else {
     active_entry->SetPageState(params.page_state);
   }

@@ -59,7 +59,7 @@ void RecursivelyGenerateFrameEntries(const ExplodedFrameState& state,
     base::debug::DumpWithoutCrashing();
     NOTREACHED() << "Shouldn't generate an empty PageState.";
   }
-  node->frame_entry->set_page_state(PageState::CreateFromEncodedData(data));
+  node->frame_entry->SetPageState(PageState::CreateFromEncodedData(data));
 
   for (const ExplodedFrameState& child_state : state.children) {
     NavigationEntryImpl::TreeNode* child_node =
@@ -338,7 +338,7 @@ const base::string16& NavigationEntryImpl::GetTitle() const {
 
 void NavigationEntryImpl::SetPageState(const PageState& state) {
   if (!SiteIsolationPolicy::UseSubframeNavigationEntries()) {
-    frame_tree_->frame_entry->set_page_state(state);
+    frame_tree_->frame_entry->SetPageState(state);
     return;
   }
 
@@ -360,7 +360,7 @@ void NavigationEntryImpl::SetPageState(const PageState& state) {
   ExplodedPageState exploded_state;
   if (!DecodePageState(state.ToEncodedData(), &exploded_state) ||
       exploded_state.top.children.size() == 0U) {
-    frame_tree_->frame_entry->set_page_state(state);
+    frame_tree_->frame_entry->SetPageState(state);
     return;
   }
 
@@ -835,7 +835,7 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(
       unique_name, item_sequence_number, document_sequence_number,
       site_instance, std::move(source_site_instance), url, referrer, method,
       post_id);
-  frame_entry->set_page_state(page_state);
+  frame_entry->SetPageState(page_state);
   parent_node->children.push_back(
       new NavigationEntryImpl::TreeNode(parent_node, frame_entry));
 }

@@ -110,7 +110,7 @@ class CONTENT_EXPORT FrameNavigationEntry
   void set_referrer(const Referrer& referrer) { referrer_ = referrer; }
   const Referrer& referrer() const { return referrer_; }
 
-  void set_page_state(const PageState& page_state) { page_state_ = page_state; }
+  void SetPageState(const PageState& page_state);
   const PageState& page_state() const { return page_state_; }
 
   // The HTTP method used to navigate.

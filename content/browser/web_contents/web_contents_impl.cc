@@ -4528,7 +4528,7 @@ void WebContentsImpl::UpdateStateForFrame(RenderFrameHost* render_frame_host,
     return;
   }
 
-  frame_entry->set_page_state(page_state);
+  frame_entry->SetPageState(page_state);
   controller_.NotifyEntryChanged(entry);
 }
 
