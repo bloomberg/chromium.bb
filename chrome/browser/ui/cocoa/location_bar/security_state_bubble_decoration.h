@@ -1,0 +1,112 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_UI_COCOA_LOCATION_BAR_SECURITY_STATE_BUBBLE_DECORATION_H_
+#define CHROME_BROWSER_UI_COCOA_LOCATION_BAR_SECURITY_STATE_BUBBLE_DECORATION_H_
+
+#import <Cocoa/Cocoa.h>
+
+#include "base/macros.h"
+#include "chrome/browser/ui/cocoa/location_bar/bubble_decoration.h"
+#include "ui/compositor/layer_animation_observer.h"
+#include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/slide_animation.h"
+
+// Draws the verbose state bubble, which contains the security icon and a label
+// describing its security state. If an EV cert is available, the icon will be
+// a lock and the label will contain the certificate's name. The
+// |location_icon| is used to fulfill drag-related calls.
+
+class LocationBarViewMac;
+class LocationIconDecoration;
+
+namespace {
+class SecurityStateBubbleDecorationTest;
+}
+
+class SecurityStateBubbleDecoration : public BubbleDecoration,
+                                      public gfx::AnimationDelegate {
+ public:
+  SecurityStateBubbleDecoration(LocationIconDecoration* location_icon,
+                                LocationBarViewMac* owner);
+  ~SecurityStateBubbleDecoration() override;
+
+  // |GetWidthForSpace()| will set |full_label| as the label, if it
+  // fits, else it will set an elided version.
+  void SetFullLabel(NSString* full_label);
+
+  // Set the color of the label.
+  void SetLabelColor(SkColor color);
+
+  // Methods that animate in and out the chip.
+  void AnimateIn(bool image_fade = true);
+  void AnimateOut();
+
+  // Returns true if the chip has fully animated in.
+  bool HasAnimatedIn() const;
+
+  // Returns true if the chip has fully animated out.
+  bool HasAnimatedOut() const;
+
+  // Returns true if the chip is in the process of animating out.
+  bool AnimatingOut() const;
+
+  // LocationBarDecoration:
+  CGFloat GetWidthForSpace(CGFloat width) override;
+  void DrawInFrame(NSRect frame, NSView* control_view) override;
+  void DrawWithBackgroundInFrame(NSRect background_frame,
+                                 NSRect frame,
+                                 NSView* control_view) override;
+  bool IsDraggable() override;
+  NSPasteboard* GetDragPasteboard() override;
+  NSImage* GetDragImage() override;
+  NSRect GetDragImageFrame(NSRect frame) override;
+  bool OnMousePressed(NSRect frame, NSPoint location) override;
+  bool AcceptsMousePress() override;
+  NSPoint GetBubblePointInFrame(NSRect frame) override;
+
+  // BubbleDecoration:
+  NSColor* GetBackgroundBorderColor() override;
+  ui::NinePartImageIds GetBubbleImageIds() override;
+
+  // gfx::AnimationDelegate:
+  void AnimationProgressed(const gfx::Animation* animation) override;
+
+ protected:
+  NSColor* GetDarkModeTextColor() override;
+
+ private:
+  friend class ::SecurityStateBubbleDecorationTest;
+
+  // Returns the animation progress. If not in MD, the animation progress
+  // should always be 1.0.
+  CGFloat GetAnimationProgress() const;
+
+  // Helper method that calculates and returns the width of the label and icon
+  // within |width|.
+  CGFloat GetWidthForText(CGFloat width);
+
+  LocationIconDecoration* location_icon_;  // weak, owned by location bar.
+
+  // The real label. BubbleDecoration's label may be elided.
+  base::scoped_nsobject<NSString> full_label_;
+
+  // The color of the label's text. The default color is kGoogleGreen700.
+  SkColor label_color_;
+
+  // True if the image should fade when the verbose animates in.
+  bool image_fade_;
+
+  // The animation of the decoration.
+  gfx::SlideAnimation animation_;
+
+  LocationBarViewMac* owner_;  // weak
+
+  // Used to disable find bar animations when testing.
+  bool disable_animations_during_testing_;
+
+  DISALLOW_COPY_AND_ASSIGN(SecurityStateBubbleDecoration);
+};
+
+#endif  // CHROME_BROWSER_UI_COCOA_LOCATION_BAR_SECURITY_STATE_BUBBLE_DECORATION_H_

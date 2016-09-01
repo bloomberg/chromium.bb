@@ -24,12 +24,8 @@ CGFloat BubblePadding() {
   return ui::MaterialDesignController::IsModeMaterial() ? 8.0 : 3.0;
 }
 
-// Additional padding between the divider between the omnibox text and the
-// divider. The desired value is 8px. We get 3px by subtracting the existing
-// padding in location_bar_view from 8px.
-CGFloat DividerPadding() {
-  return ui::MaterialDesignController::IsModeMaterial() ? 2.0 : 0.0;
-}
+// Additional padding between the divider and the label.
+const CGFloat kDividerPadding = 2.0;
 
 // Padding between the icon and label.
 CGFloat kIconLabelPadding = 4.0;
@@ -46,6 +42,10 @@ BubbleDecoration::BubbleDecoration() : retina_baseline_offset_(0) {
 }
 
 BubbleDecoration::~BubbleDecoration() {
+}
+
+CGFloat BubbleDecoration::DividerPadding() const {
+  return ui::MaterialDesignController::IsModeMaterial() ? kDividerPadding : 0.0;
 }
 
 CGFloat BubbleDecoration::GetWidthForImageAndLabel(NSImage* image,

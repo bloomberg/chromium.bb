@@ -4,27 +4,31 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "chrome/browser/ui/cocoa/location_bar/ev_bubble_decoration.h"
+#import "chrome/browser/ui/cocoa/location_bar/security_state_bubble_decoration.h"
 
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#import "chrome/browser/ui/cocoa/location_bar/location_icon_decoration.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
-class EVBubbleDecorationTest : public CocoaTest {
+class SecurityStateBubbleDecorationTest : public CocoaTest {
  public:
-  EVBubbleDecorationTest() : decoration_(NULL) {
+  SecurityStateBubbleDecorationTest()
+      : icon_(nullptr), decoration_(&icon_, nullptr) {
+    decoration_.disable_animations_during_testing_ = true;
   }
 
-  EVBubbleDecoration decoration_;
+  LocationIconDecoration icon_;
+  SecurityStateBubbleDecoration decoration_;
 };
 
 // Test that the decoration gets smaller when there's not enough space
 // to fit, within bounds.
-TEST_F(EVBubbleDecorationTest, MiddleElide) {
+TEST_F(SecurityStateBubbleDecorationTest, MiddleElide) {
   NSString* kLongString = @"A very long string with spaces";
-  const CGFloat kWide = 1000.0;  // Wide enough to fit everything.
-  const CGFloat kNarrow = 10.0;  // Too narrow for anything.
+  const CGFloat kWide = 1000.0;         // Wide enough to fit everything.
+  const CGFloat kNarrow = 10.0;         // Too narrow for anything.
   const CGFloat kMinimumWidth = 100.0;  // Never should get this small.
 
   const NSSize kImageSize = NSMakeSize(20.0, 20.0);

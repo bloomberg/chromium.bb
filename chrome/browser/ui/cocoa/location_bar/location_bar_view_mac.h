@@ -20,12 +20,12 @@
 #include "chrome/browser/ui/omnibox/chrome_omnibox_edit_controller.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/prefs/pref_member.h"
+#include "components/security_state/security_state_model.h"
 #include "components/zoom/zoom_event_manager_observer.h"
 
 @class AutocompleteTextField;
 class CommandUpdater;
 class ContentSettingDecoration;
-class EVBubbleDecoration;
 class KeywordHintDecoration;
 class LocationBarDecoration;
 class LocationIconDecoration;
@@ -36,6 +36,7 @@ class SaveCreditCardDecoration;
 class SelectedKeywordDecoration;
 class StarDecoration;
 class TranslateDecoration;
+class SecurityStateBubbleDecoration;
 class ZoomDecoration;
 class ZoomDecorationTest;
 
@@ -184,7 +185,15 @@ class LocationBarViewMac : public LocationBar,
   content::WebContents* GetWebContents() override;
 
   bool ShouldShowEVBubble() const;
+
+  // Returns true if the security state decoration should be displayed. The
+  // security state should only be shown for valid and invalid HTTPS states.
+  bool ShouldShowSecurityState() const;
+
   NSImage* GetKeywordImage(const base::string16& keyword);
+
+  // Returns the color for the vector icon in the location bar.
+  SkColor GetLocationBarIconColor() const;
 
   AutocompleteTextField* GetAutocompleteTextField() { return field_; }
 
@@ -243,6 +252,13 @@ class LocationBarViewMac : public LocationBar,
   // Returns whether any updates were made.
   bool UpdateZoomDecoration(bool default_zoom_changed);
 
+  // Updates the security state bubble decoration.
+  void UpdateSecurityState(bool tab_changed);
+
+  // Returns true if |level| is SECURE or EV_SECURE.
+  bool IsSecureConnection(
+      security_state::SecurityStateModel::SecurityLevel level) const;
+
   // Returns pointers to all of the LocationBarDecorations owned by this
   // LocationBarViewMac. This helper function is used for positioning and
   // re-positioning accessibility views.
@@ -262,9 +278,10 @@ class LocationBarViewMac : public LocationBar,
   // A decoration that shows the keyword-search bubble on the left.
   std::unique_ptr<SelectedKeywordDecoration> selected_keyword_decoration_;
 
-  // A decoration that shows a lock icon and ev-cert label in a bubble
-  // on the left.
-  std::unique_ptr<EVBubbleDecoration> ev_bubble_decoration_;
+  // A decoration that shows a security icon and the security state in a
+  // bubble on the left.
+  std::unique_ptr<SecurityStateBubbleDecoration>
+      security_state_bubble_decoration_;
 
   // Save credit card icon on the right side of the omnibox.
   std::unique_ptr<SaveCreditCardDecoration> save_credit_card_decoration_;
@@ -298,6 +315,11 @@ class LocationBarViewMac : public LocationBar,
 
   // Indicates whether or not the location bar is currently visible.
   bool location_bar_visible_;
+
+  bool is_width_narrow_;
+
+  // The security level of the location bar icon.
+  security_state::SecurityStateModel::SecurityLevel security_level_;
 
   // Used to schedule a task for the first run info bubble.
   base::WeakPtrFactory<LocationBarViewMac> weak_ptr_factory_;
