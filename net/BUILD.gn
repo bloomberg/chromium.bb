@@ -1935,6 +1935,18 @@ fuzzer_test("net_unescape_url_component_fuzzer") {
   libfuzzer_options = [ "max_len = 2048" ]
 }
 
+fuzzer_test("net_websocket_deflate_stream_fuzzer") {
+  sources = [
+    "websockets/websocket_deflate_stream_fuzzer.cc",
+  ]
+  deps = [
+    ":net_fuzzer_test_support",
+    "//net",
+  ]
+  dict = "data/fuzzer_dictionaries/net_websocket_frame_parser_fuzzer.dict"
+  libfuzzer_options = [ "max_len=512" ]
+}
+
 fuzzer_test("net_websocket_frame_parser_fuzzer") {
   sources = [
     "websockets/websocket_frame_parser_fuzzer.cc",
