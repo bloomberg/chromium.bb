@@ -236,11 +236,11 @@ void ContentSecurityPolicy::applyPolicySideEffectsToExecutionContext()
             m_executionContext->addConsoleMessage(consoleMessage);
         m_consoleMessages.clear();
 
-        for (const auto& policy : m_policies)
+        for (const auto& policy : m_policies) {
             UseCounter::count(*document, getUseCounterType(policy->headerType()));
-
-        if (allowDynamic())
-            UseCounter::count(*document, UseCounter::CSPWithStrictDynamic);
+            if (policy->allowDynamic())
+                UseCounter::count(*document, UseCounter::CSPWithStrictDynamic);
+        }
     }
 
     // We disable 'eval()' even in the case of report-only policies, and rely on the check in the
