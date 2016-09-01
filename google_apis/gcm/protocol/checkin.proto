@@ -7,7 +7,6 @@
 syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
-option retain_unknown_fields = true;
 
 package checkin_proto;
 
