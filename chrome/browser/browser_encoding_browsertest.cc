@@ -193,19 +193,7 @@ INSTANTIATE_TEST_CASE_P(EncodingAliases,
 // windows-1257
 // windows-1258
 
-// For Hebrew, the expected encoding value is ISO-8859-8-I. See
-// http://crbug.com/2927 for more details.
-//
-// This test is failing consistently on ChromeOS, see http://crbug.com/512996.
-#if defined(OS_CHROMEOS)
-#define MAYBE_TestEncodingAutoDetect DISABLED_TestEncodingAutoDetect
-#else
-#define MAYBE_TestEncodingAutoDetect TestEncodingAutoDetect
-#endif
-// TODO(phajdan.jr): See if fix for http://crbug.com/122053 would help here.
-// Disabled to revert a depending Blink CL. crbug.com/328354, and
-// crbug.com/510422.
-IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, DISABLED_TestEncodingAutoDetect) {
+IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, TestEncodingAutoDetect) {
   struct EncodingAutoDetectTestData {
     const char* test_file_name;   // File name of test data.
     const char* expected_result;  // File name of expected results.
@@ -215,9 +203,9 @@ IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, DISABLED_TestEncodingAutoDetect) {
       { "Big5_with_no_encoding_specified.html",
         "expected_Big5_saved_from_no_encoding_specified.html",
         "Big5" },
-      { "gb18030_with_no_encoding_specified.html",
-        "expected_gb18030_saved_from_no_encoding_specified.html",
-        "gb18030" },
+      { "GBK_with_no_encoding_specified.html",
+        "expected_GBK_saved_from_no_encoding_specified.html",
+        "GBK" },
       { "iso-8859-1_with_no_encoding_specified.html",
         "expected_iso-8859-1_saved_from_no_encoding_specified.html",
         "windows-1252" },
@@ -230,9 +218,9 @@ IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, DISABLED_TestEncodingAutoDetect) {
       { "ISO-8859-7_with_no_encoding_specified.html",
         "expected_ISO-8859-7_saved_from_no_encoding_specified.html",
         "ISO-8859-7" },
-      { "ISO-8859-8_with_no_encoding_specified.html",
-        "expected_ISO-8859-8_saved_from_no_encoding_specified.html",
-        "ISO-8859-8-I" },
+      { "ISO-8859-8-I_with_no_encoding_specified.html",
+        "expected_ISO-8859-8-I_saved_from_no_encoding_specified.html",
+        "windows-1255" },
       { "KOI8-R_with_no_encoding_specified.html",
         "expected_KOI8-R_saved_from_no_encoding_specified.html",
         "KOI8-R" },

@@ -344,12 +344,6 @@ public interface WebContents extends Parcelable {
      */
     void onContextMenuClosed();
 
-    /**
-     * @return The character encoding for the current visible page.
-     */
-    @VisibleForTesting
-    String getEncoding();
-
     public void getContentBitmapAsync(Bitmap.Config config, float scale, Rect srcRect,
             ContentBitmapCallback callback);
     /**

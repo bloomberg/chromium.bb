@@ -373,11 +373,6 @@ import java.util.UUID;
         nativeStopMediaSession(mNativeWebContentsAndroid);
     }
 
-    @Override
-    public String getEncoding() {
-        return nativeGetEncoding(mNativeWebContentsAndroid);
-    }
-
     // root node can be null if parsing fails.
     @CalledByNative
     private static void onAccessibilitySnapshot(AccessibilitySnapshotNode root,
@@ -557,7 +552,6 @@ import java.util.UUID;
     private native void nativeResumeMediaSession(long nativeWebContentsAndroid);
     private native void nativeSuspendMediaSession(long nativeWebContentsAndroid);
     private native void nativeStopMediaSession(long nativeWebContentsAndroid);
-    private native String nativeGetEncoding(long nativeWebContentsAndroid);
     private native void nativeGetContentBitmap(long nativeWebContentsAndroid,
             ContentBitmapCallback callback, Bitmap.Config config, float scale,
             float x, float y, float width, float height);
