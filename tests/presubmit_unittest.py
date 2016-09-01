@@ -1253,6 +1253,7 @@ class InputApiUnittest(PresubmitTestsBase):
         'ReadFile',
         'RightHandSideLines',
         'ServerPaths',
+        'ShutdownPool',
         'basename',
         'cPickle',
         'cpplint',

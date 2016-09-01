@@ -563,6 +563,11 @@ class InputApi(object):
       msgs.extend(map(CallCommand, tests))
     return [m for m in msgs if m]
 
+  def ShutdownPool(self):
+    self._run_tests_pool.close()
+    self._run_tests_pool.join()
+    self._run_tests_pool = None
+
 
 class _DiffCache(object):
   """Caches diffs retrieved from a particular SCM."""
@@ -1447,6 +1452,8 @@ class PresubmitExecuter(object):
             'output_api.PresubmitResult')
     else:
       result = ()  # no error since the script doesn't care about current event.
+
+    input_api.ShutdownPool()
 
     # Return the process to the original working directory.
     os.chdir(main_path)
