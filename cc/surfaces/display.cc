@@ -33,14 +33,14 @@ namespace cc {
 Display::Display(SharedBitmapManager* bitmap_manager,
                  gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
                  const RendererSettings& settings,
-                 BeginFrameSource* begin_frame_source,
+                 std::unique_ptr<BeginFrameSource> begin_frame_source,
                  std::unique_ptr<OutputSurface> output_surface,
                  std::unique_ptr<DisplayScheduler> scheduler,
                  std::unique_ptr<TextureMailboxDeleter> texture_mailbox_deleter)
     : bitmap_manager_(bitmap_manager),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
       settings_(settings),
-      begin_frame_source_(begin_frame_source),
+      begin_frame_source_(std::move(begin_frame_source)),
       output_surface_(std::move(output_surface)),
       scheduler_(std::move(scheduler)),
       texture_mailbox_deleter_(std::move(texture_mailbox_deleter)) {
@@ -54,7 +54,7 @@ Display::~Display() {
   // Only do this if Initialize() happened.
   if (client_) {
     if (begin_frame_source_)
-      surface_manager_->UnregisterBeginFrameSource(begin_frame_source_);
+      surface_manager_->UnregisterBeginFrameSource(begin_frame_source_.get());
     surface_manager_->RemoveObserver(this);
   }
   if (aggregator_) {
@@ -80,7 +80,7 @@ void Display::Initialize(DisplayClient* client,
   // This must be done in Initialize() so that the caller can delay this until
   // they are ready to receive a BeginFrameSource.
   if (begin_frame_source_) {
-    surface_manager_->RegisterBeginFrameSource(begin_frame_source_,
+    surface_manager_->RegisterBeginFrameSource(begin_frame_source_.get(),
                                                compositor_surface_namespace_);
   }
 

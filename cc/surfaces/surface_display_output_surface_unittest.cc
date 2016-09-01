@@ -42,16 +42,17 @@ class SurfaceDisplayOutputSurfaceTest : public testing::Test {
         FakeOutputSurface::Create3d();
     display_output_surface_ = display_output_surface.get();
 
-    begin_frame_source_.reset(new BackToBackBeginFrameSource(
-        base::MakeUnique<DelayBasedTimeSource>(task_runner_.get())));
+    std::unique_ptr<BeginFrameSource> begin_frame_source(
+        new BackToBackBeginFrameSource(
+            base::MakeUnique<DelayBasedTimeSource>(task_runner_.get())));
 
     int max_frames_pending = 2;
     std::unique_ptr<DisplayScheduler> scheduler(new DisplayScheduler(
-        begin_frame_source_.get(), task_runner_.get(), max_frames_pending));
+        begin_frame_source.get(), task_runner_.get(), max_frames_pending));
 
     display_.reset(new Display(
         &bitmap_manager_, &gpu_memory_buffer_manager_, RendererSettings(),
-        begin_frame_source_.get(), std::move(display_output_surface),
+        std::move(begin_frame_source), std::move(display_output_surface),
         std::move(scheduler),
         base::MakeUnique<TextureMailboxDeleter>(task_runner_.get())));
     delegated_output_surface_.reset(new SurfaceDisplayOutputSurface(
@@ -105,7 +106,6 @@ class SurfaceDisplayOutputSurfaceTest : public testing::Test {
   scoped_refptr<TestContextProvider> context_provider_;
   FakeOutputSurface* display_output_surface_ = nullptr;
   std::unique_ptr<Display> display_;
-  std::unique_ptr<BeginFrameSource> begin_frame_source_;
   FakeOutputSurfaceClient delegated_output_surface_client_;
   std::unique_ptr<SurfaceDisplayOutputSurface> delegated_output_surface_;
 };

@@ -165,7 +165,7 @@ namespace content {
 struct GpuProcessTransportFactory::PerCompositorData {
   gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
   BrowserCompositorOutputSurface* display_output_surface = nullptr;
-  std::unique_ptr<cc::SyntheticBeginFrameSource> begin_frame_source;
+  cc::SyntheticBeginFrameSource* begin_frame_source = nullptr;
   ReflectorImpl* reflector = nullptr;
   std::unique_ptr<cc::Display> display;
   bool output_is_secure = false;
@@ -528,6 +528,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
   }
 
   data->display_output_surface = display_output_surface.get();
+  data->begin_frame_source = begin_frame_source.get();
   if (data->reflector)
     data->reflector->OnSourceSurfaceReady(data->display_output_surface);
 
@@ -542,15 +543,12 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
 
   // The Display owns and uses the |display_output_surface| created above.
   data->display = base::MakeUnique<cc::Display>(
-      HostSharedBitmapManager::current(), GetGpuMemoryBufferManager(),
-      compositor->GetRendererSettings(), begin_frame_source.get(),
+      HostSharedBitmapManager::current(),
+      GetGpuMemoryBufferManager(),
+      compositor->GetRendererSettings(), std::move(begin_frame_source),
       std::move(display_output_surface), std::move(scheduler),
       base::MakeUnique<cc::TextureMailboxDeleter>(
           compositor->task_runner().get()));
-
-  // Initialize this after the display as the previous display had a reference
-  // to the previous BFS.
-  data->begin_frame_source = std::move(begin_frame_source);
 
   // The |delegated_output_surface| is given back to the compositor, it
   // delegates to the Display as its root surface. Importantly, it shares the

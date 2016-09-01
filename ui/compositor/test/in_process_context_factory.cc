@@ -99,11 +99,6 @@ class DirectOutputSurface : public cc::OutputSurface {
 
 }  // namespace
 
-struct InProcessContextFactory::PerCompositorData {
-  std::unique_ptr<cc::SyntheticBeginFrameSource> begin_frame_source;
-  std::unique_ptr<cc::Display> display;
-};
-
 InProcessContextFactory::InProcessContextFactory(
     bool context_factory_for_test,
     cc::SurfaceManager* surface_manager)
@@ -173,26 +168,25 @@ void InProcessContextFactory::CreateOutputSurface(
   }
 
   if (surface_manager_) {
-    auto data = base::MakeUnique<PerCompositorData>();
-    data->begin_frame_source.reset(new cc::DelayBasedBeginFrameSource(
-        base::MakeUnique<cc::DelayBasedTimeSource>(
-            compositor->task_runner().get())));
+    std::unique_ptr<cc::DelayBasedBeginFrameSource> begin_frame_source(
+        new cc::DelayBasedBeginFrameSource(
+            base::MakeUnique<cc::DelayBasedTimeSource>(
+                compositor->task_runner().get())));
     std::unique_ptr<cc::DisplayScheduler> scheduler(new cc::DisplayScheduler(
-        data->begin_frame_source.get(), compositor->task_runner().get(),
+        begin_frame_source.get(), compositor->task_runner().get(),
         display_output_surface->capabilities().max_frames_pending));
-    data->display = base::MakeUnique<cc::Display>(
+    per_compositor_data_[compositor.get()] = base::MakeUnique<cc::Display>(
         GetSharedBitmapManager(), GetGpuMemoryBufferManager(),
-        compositor->GetRendererSettings(), data->begin_frame_source.get(),
+        compositor->GetRendererSettings(), std::move(begin_frame_source),
         std::move(display_output_surface), std::move(scheduler),
         base::MakeUnique<cc::TextureMailboxDeleter>(
             compositor->task_runner().get()));
+
+    auto* display = per_compositor_data_[compositor.get()].get();
     std::unique_ptr<cc::SurfaceDisplayOutputSurface> surface_output_surface(
         new cc::SurfaceDisplayOutputSurface(
-            surface_manager_, compositor->surface_id_allocator(),
-            data->display.get(), context_provider,
-            shared_worker_context_provider_));
-
-    per_compositor_data_[compositor.get()] = std::move(data);
+            surface_manager_, compositor->surface_id_allocator(), display,
+            context_provider, shared_worker_context_provider_));
     compositor->SetOutputSurface(std::move(surface_output_surface));
   } else {
     compositor->SetOutputSurface(std::move(display_output_surface));
@@ -265,14 +259,14 @@ void InProcessContextFactory::SetDisplayVisible(ui::Compositor* compositor,
                                                 bool visible) {
   if (!per_compositor_data_.count(compositor))
     return;
-  per_compositor_data_[compositor]->display->SetVisible(visible);
+  per_compositor_data_[compositor]->SetVisible(visible);
 }
 
 void InProcessContextFactory::ResizeDisplay(ui::Compositor* compositor,
                                             const gfx::Size& size) {
   if (!per_compositor_data_.count(compositor))
     return;
-  per_compositor_data_[compositor]->display->Resize(size);
+  per_compositor_data_[compositor]->Resize(size);
 }
 
 void InProcessContextFactory::AddObserver(ContextFactoryObserver* observer) {

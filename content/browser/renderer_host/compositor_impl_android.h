@@ -15,7 +15,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
-#include "cc/scheduler/begin_frame_source.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
 #include "content/common/content_export.h"
@@ -150,7 +149,6 @@ class CONTENT_EXPORT CompositorImpl
   ui::ResourceManagerImpl resource_manager_;
 
   std::unique_ptr<cc::Display> display_;
-  std::unique_ptr<cc::BeginFrameSource> begin_frame_source_;
 
   gfx::Size size_;
   bool has_transparent_background_;

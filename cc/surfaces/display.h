@@ -57,7 +57,7 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
   Display(SharedBitmapManager* bitmap_manager,
           gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
           const RendererSettings& settings,
-          BeginFrameSource* begin_frame_source,
+          std::unique_ptr<BeginFrameSource> begin_frame_source,
           std::unique_ptr<OutputSurface> output_surface,
           std::unique_ptr<DisplayScheduler> scheduler,
           std::unique_ptr<TextureMailboxDeleter> texture_mailbox_deleter);
@@ -117,7 +117,6 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
   SharedBitmapManager* const bitmap_manager_;
   gpu::GpuMemoryBufferManager* const gpu_memory_buffer_manager_;
   const RendererSettings settings_;
-  BeginFrameSource* const begin_frame_source_;
 
   DisplayClient* client_ = nullptr;
   SurfaceManager* surface_manager_ = nullptr;
@@ -132,6 +131,9 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
   gfx::Rect external_viewport_;
   bool output_is_secure_ = false;
 
+  // The begin_frame_source_ is often known by the output_surface_ and
+  // the scheduler_.
+  std::unique_ptr<BeginFrameSource> begin_frame_source_;
   std::unique_ptr<OutputSurface> output_surface_;
   std::unique_ptr<DisplayScheduler> scheduler_;
   std::unique_ptr<ResourceProvider> resource_provider_;

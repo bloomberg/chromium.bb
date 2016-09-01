@@ -90,7 +90,8 @@ class TestDelegatingOutputSurface : public OutputSurface,
 
   // Uses surface_manager_.
   std::unique_ptr<SurfaceFactory> surface_factory_;
-  std::unique_ptr<SyntheticBeginFrameSource> begin_frame_source_;
+
+  // Uses surface_manager_.
   std::unique_ptr<Display> display_;
 
   bool bound_ = false;

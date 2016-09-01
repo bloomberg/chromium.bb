@@ -179,15 +179,16 @@ void BrowserCompositor::HandlePendingOutputSurfaceRequest() {
       base::MakeUnique<DisplayOutputSurface>(context_provider);
 
   auto* task_runner = base::ThreadTaskRunnerHandle::Get().get();
-  begin_frame_source_.reset(new cc::DelayBasedBeginFrameSource(
-      base::MakeUnique<cc::DelayBasedTimeSource>(task_runner)));
+  std::unique_ptr<cc::SyntheticBeginFrameSource> begin_frame_source(
+      new cc::DelayBasedBeginFrameSource(
+          base::MakeUnique<cc::DelayBasedTimeSource>(task_runner)));
   std::unique_ptr<cc::DisplayScheduler> scheduler(new cc::DisplayScheduler(
-      begin_frame_source_.get(), task_runner,
+      begin_frame_source.get(), task_runner,
       display_output_surface->capabilities().max_frames_pending));
 
   display_ = base::MakeUnique<cc::Display>(
       nullptr /*shared_bitmap_manager*/, gpu_memory_buffer_manager,
-      host_->settings().renderer_settings, begin_frame_source_.get(),
+      host_->settings().renderer_settings, std::move(begin_frame_source),
       std::move(display_output_surface), std::move(scheduler),
       base::MakeUnique<cc::TextureMailboxDeleter>(task_runner));
   display_->SetVisible(true);
