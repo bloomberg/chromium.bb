@@ -211,7 +211,7 @@ class ChromeLauncherControllerImpl
   // Internal helpers for pinning and unpinning that handle both
   // client-triggered and internal pinning operations.
   void DoPinAppWithID(const std::string& app_id);
-  void DoUnpinAppWithID(const std::string& app_id);
+  void DoUnpinAppWithID(const std::string& app_id, bool update_prefs);
 
   // Pin a running app with |shelf_id| internally to |index|. It returns
   // the index where the item was pinned.
@@ -308,6 +308,10 @@ class ChromeLauncherControllerImpl
 
   // app_list::AppListSyncableService::Observer:
   void OnSyncModelUpdated() override;
+
+  // Unpins shelf item and optionally updates pin prefs when |update_prefs| is
+  // set to true.
+  void UnpinAndUpdatePrefs(ash::ShelfID id, bool update_prefs);
 
   ash::ShelfModel* model_;
 

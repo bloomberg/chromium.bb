@@ -51,8 +51,9 @@ void AppListModelBuilder::InsertApp(
   model_->AddItem(std::move(app));
 }
 
-void AppListModelBuilder::RemoveApp(const std::string& id) {
-  if (service_) {
+void AppListModelBuilder::RemoveApp(const std::string& id,
+                                    bool unsynced_change) {
+  if (!unsynced_change && service_) {
     service_->RemoveUninstalledItem(id);
     return;
   }

@@ -10,6 +10,8 @@
 #include "base/run_loop.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
+#include "chrome/browser/ui/app_list/app_list_syncable_service.h"
+#include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_deferred_launcher_controller.h"
@@ -303,6 +305,11 @@ INSTANTIATE_TEST_CASE_P(ArcAppDeferredLauncherBrowserTestInstance,
 // This tests validates pin state on package update and remove.
 IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, PinOnPackageUpdateAndRemove) {
   StartInstance();
+
+  // Make use app list sync service is started. Normally it is started when
+  // sycing is initialized.
+  app_list::AppListSyncableServiceFactory::GetForProfile(profile())->GetModel();
+
   InstallTestApps(true);
   SendPackageAdded(false);
 

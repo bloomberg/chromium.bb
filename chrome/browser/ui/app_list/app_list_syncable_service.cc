@@ -37,6 +37,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/arc/arc_auth_service.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/genius_app/app_id.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_item.h"
@@ -220,6 +221,17 @@ class AppListSyncableService::ModelObserver : public AppListModelObserver {
     // deleted when the last item is removed (in PruneEmptySyncFolders()).
     if (item->GetItemType() == AppListFolderItem::kItemType)
       return;
+
+#if defined(OS_CHROMEOS)
+    if (item->GetItemType() == ArcAppItem::kItemType) {
+      // Don't sync remove changes coming as result of disabling Arc.
+      const arc::ArcAuthService* auth_service = arc::ArcAuthService::Get();
+      DCHECK(auth_service);
+      if (!auth_service->IsArcEnabled())
+        return;
+    }
+#endif
+
     owner_->RemoveSyncItem(item->id());
   }
 

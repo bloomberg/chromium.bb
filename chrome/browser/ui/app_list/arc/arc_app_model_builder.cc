@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_model_builder.h"
 
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/chromeos/arc/arc_auth_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_item.h"
 
@@ -52,7 +53,11 @@ void ArcAppModelBuilder::OnAppRegistered(
 }
 
 void ArcAppModelBuilder::OnAppRemoved(const std::string& app_id) {
-  RemoveApp(app_id);
+  const arc::ArcAuthService* auth_service = arc::ArcAuthService::Get();
+  DCHECK(auth_service);
+  // Don't sync app removal in case it was caused by disabling Arc.
+  const bool unsynced_change = !auth_service->IsArcEnabled();
+  RemoveApp(app_id, unsynced_change);
 }
 
 void ArcAppModelBuilder::OnAppIconUpdated(const std::string& app_id,

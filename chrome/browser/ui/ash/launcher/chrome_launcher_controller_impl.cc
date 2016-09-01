@@ -383,10 +383,16 @@ void ChromeLauncherControllerImpl::Pin(ash::ShelfID id) {
 }
 
 void ChromeLauncherControllerImpl::Unpin(ash::ShelfID id) {
+  UnpinAndUpdatePrefs(id, true /* update_prefs */);
+}
+
+void ChromeLauncherControllerImpl::UnpinAndUpdatePrefs(ash::ShelfID id,
+                                                       bool update_prefs) {
   LauncherItemController* controller = GetLauncherItemController(id);
   CHECK(controller);
 
-  ash::launcher::RemovePinPosition(profile_, GetAppIDForShelfID(id));
+  if (update_prefs)
+    ash::launcher::RemovePinPosition(profile_, GetAppIDForShelfID(id));
 
   if (controller->type() == LauncherItemController::TYPE_APP ||
       controller->locked()) {
@@ -939,7 +945,7 @@ bool ChromeLauncherControllerImpl::IsAppPinned(const std::string& app_id) {
 void ChromeLauncherControllerImpl::UnpinAppWithID(const std::string& app_id) {
   if (GetPinnableForAppID(app_id, profile_) ==
       AppListControllerDelegate::PIN_EDITABLE)
-    DoUnpinAppWithID(app_id);
+    DoUnpinAppWithID(app_id, true /* update_prefs */);
   else
     NOTREACHED();
 }
@@ -980,8 +986,12 @@ void ChromeLauncherControllerImpl::OnAppUninstalledPrepared(
     CloseWindowedAppsFromRemovedExtension(app_id, profile);
 
   if (IsAppPinned(app_id)) {
-    if (profile == profile_)
-      DoUnpinAppWithID(app_id);
+    if (profile == profile_) {
+      // Some apps may be removed locally. Don't remove pin position from sync
+      // model. When needed, it is automatically deleted on app list model
+      // update.
+      DoUnpinAppWithID(app_id, false /* update_prefs */);
+    }
     AppIconLoader* app_icon_loader = GetAppIconLoaderForApp(app_id);
     if (app_icon_loader)
       app_icon_loader->ClearImage(app_id);
@@ -1099,10 +1109,11 @@ void ChromeLauncherControllerImpl::DoPinAppWithID(const std::string& app_id) {
   }
 }
 
-void ChromeLauncherControllerImpl::DoUnpinAppWithID(const std::string& app_id) {
+void ChromeLauncherControllerImpl::DoUnpinAppWithID(const std::string& app_id,
+                                                    bool update_prefs) {
   ash::ShelfID shelf_id = GetShelfIDForAppID(app_id);
   if (shelf_id && IsPinned(shelf_id))
-    Unpin(shelf_id);
+    UnpinAndUpdatePrefs(shelf_id, update_prefs);
 }
 
 int ChromeLauncherControllerImpl::PinRunningAppInternal(int index,
