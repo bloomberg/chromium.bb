@@ -47,7 +47,7 @@ void av1_foreach_transformed_block_in_plane(
   const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
   const int num_4x4_w = num_4x4_blocks_wide_lookup[plane_bsize];
   const int num_4x4_h = num_4x4_blocks_high_lookup[plane_bsize];
-  const int step = 1 << (tx_size << 1);
+  const int step = 1 << (tx_size_1d_in_unit_log2[tx_size] * 2);
   int i = 0, r, c;
 
   // If mb_to_right_edge is < 0 we are in a situation in which
@@ -60,13 +60,15 @@ void av1_foreach_transformed_block_in_plane(
       num_4x4_h + (xd->mb_to_bottom_edge >= 0
                        ? 0
                        : xd->mb_to_bottom_edge >> (5 + pd->subsampling_y));
-  const int extra_step = ((num_4x4_w - max_blocks_wide) >> tx_size) * step;
+  const int extra_step =
+      ((num_4x4_w - max_blocks_wide) >> tx_size_1d_in_unit_log2[tx_size]) *
+      step;
 
   // Keep track of the row and column of the blocks we use so that we know
   // if we are in the unrestricted motion border.
-  for (r = 0; r < max_blocks_high; r += (1 << tx_size)) {
+  for (r = 0; r < max_blocks_high; r += tx_size_1d_in_unit[tx_size]) {
     // Skip visiting the sub blocks that are wholly within the UMV.
-    for (c = 0; c < max_blocks_wide; c += (1 << tx_size)) {
+    for (c = 0; c < max_blocks_wide; c += tx_size_1d_in_unit[tx_size]) {
       visit(plane, i, r, c, plane_bsize, tx_size, arg);
       i += step;
     }
@@ -88,7 +90,7 @@ void av1_set_contexts(const MACROBLOCKD *xd, struct macroblockd_plane *pd,
                       TX_SIZE tx_size, int has_eob, int aoff, int loff) {
   ENTROPY_CONTEXT *const a = pd->above_context + aoff;
   ENTROPY_CONTEXT *const l = pd->left_context + loff;
-  const int tx_size_in_blocks = 1 << tx_size;
+  const int tx_size_in_blocks = tx_size_1d_in_unit[tx_size];
 
   // above
   if (has_eob && xd->mb_to_right_edge < 0) {
