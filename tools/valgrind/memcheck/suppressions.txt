@@ -1382,16 +1382,6 @@
    fun:_ZNK7blink11RenderLayer18backgroundClipRectEPKS0_PNS_12RenderRegionENS_13ClipRectsTypeENS_29OverlayScrollbarSizeRelevancyE
 }
 {
-   bug_138058
-   Memcheck:Uninitialized
-   ...
-   fun:_ZN5blink12WebVTTParser22constructTreeFromTokenEPNS_8DocumentE
-   fun:_ZN5blink12WebVTTParser33createDocumentFragmentFromCueTextERKN3WTF6StringE
-   fun:_ZN5blink12TextTrackCue12getCueAsHTMLEv
-   fun:_ZN5blink12TextTrackCue17updateDisplayTreeEf
-   fun:_ZN5blink16HTMLMediaElement25updateActiveTextTrackCuesEf
-}
-{
    bug_138060
    Memcheck:Uninitialized
    fun:_NPN_EvaluateHelper
