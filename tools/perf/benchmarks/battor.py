@@ -130,3 +130,14 @@ class BattOrTrivialPages(_BattOrBenchmark):
   @classmethod
   def Name(cls):
     return 'battor.trivial_pages'
+
+@benchmark.Enabled('mac')
+class BattOrSteadyStatePages(_BattOrBenchmark):
+
+  def CreateStorySet(self, options):
+    # We want it to wait for 30 seconds to be comparable to legacy power tests.
+    return page_sets.IdleAfterLoadingStories(wait_in_seconds=30)
+
+  @classmethod
+  def Name(cls):
+    return 'battor.steady_state'
