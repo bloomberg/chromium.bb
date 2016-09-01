@@ -77,13 +77,16 @@ const WebsiteSettingsInfo* WebsiteSettingsRegistry::Register(
 #elif defined(OS_ANDROID)
   if (!(platform & PLATFORM_ANDROID))
     return nullptr;
+  // Don't sync settings to mobile platforms. The UI is different to desktop and
+  // doesn't allow the settings to be managed in the same way. See
+  // crbug.com/642184.
+  sync_status = WebsiteSettingsInfo::UNSYNCABLE;
 #elif defined(OS_IOS)
   if (!(platform & PLATFORM_IOS))
     return nullptr;
-  // Only default settings for Cookies and Popups are used in iOS. Exceptions
-  // and all the other content setting types are not used in iOS currently. So
-  // make content settings unsyncable on iOS for now.
-  // TODO(lshang): address this once we have proper content settings on iOS.
+  // Don't sync settings to mobile platforms. The UI is different to desktop and
+  // doesn't allow the settings to be managed in the same way. See
+  // crbug.com/642184.
   sync_status = WebsiteSettingsInfo::UNSYNCABLE;
 #else
 #error "Unsupported platform"

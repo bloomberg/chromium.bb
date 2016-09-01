@@ -86,7 +86,7 @@ TEST_F(ContentSettingsRegistryTest, Properties) {
   ASSERT_TRUE(
       website_settings_info->initial_default_value()->GetAsInteger(&setting));
   EXPECT_EQ(CONTENT_SETTING_ALLOW, setting);
-#if defined(OS_IOS)
+#if defined(OS_ANDROID) || defined(OS_IOS)
   EXPECT_EQ(PrefRegistry::NO_REGISTRATION_FLAGS,
             website_settings_info->GetPrefRegistrationFlags());
 #else

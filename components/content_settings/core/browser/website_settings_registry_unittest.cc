@@ -102,7 +102,7 @@ TEST_F(WebsiteSettingsRegistryTest, Properties) {
   int setting;
   ASSERT_TRUE(info->initial_default_value()->GetAsInteger(&setting));
   EXPECT_EQ(999, setting);
-#if defined(OS_IOS)
+#if defined(OS_ANDROID) || defined(OS_IOS)
   EXPECT_EQ(PrefRegistry::LOSSY_PREF, info->GetPrefRegistrationFlags());
 #else
   EXPECT_EQ(PrefRegistry::LOSSY_PREF |
