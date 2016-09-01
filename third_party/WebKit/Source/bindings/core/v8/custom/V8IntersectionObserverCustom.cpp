@@ -47,7 +47,7 @@ void V8IntersectionObserver::constructorCustom(const v8::FunctionCallbackInfo<v8
     v8SetReturnValue(info, V8DOMWrapper::associateObjectWithWrapper(info.GetIsolate(), observer, &wrapperTypeInfo, wrapper));
 }
 
-void V8IntersectionObserver::visitDOMWrapper(v8::Isolate* isolate, ScriptWrappable* scriptWrappable, const v8::Persistent<v8::Object>& wrapper)
+void V8IntersectionObserver::visitDOMWrapperCustom(v8::Isolate* isolate, ScriptWrappable* scriptWrappable, const v8::Persistent<v8::Object>& wrapper)
 {
     IntersectionObserver* observer = scriptWrappable->toImpl<IntersectionObserver>();
     for (auto& observation : observer->observations()) {

@@ -38,7 +38,7 @@ using namespace WTF;
 
 namespace blink {
 
-void V8CSSStyleRule::visitDOMWrapper(v8::Isolate* isolate, ScriptWrappable* scriptWrappable, const v8::Persistent<v8::Object>& wrapper)
+void V8CSSStyleRule::visitDOMWrapperCustom(v8::Isolate* isolate, ScriptWrappable* scriptWrappable, const v8::Persistent<v8::Object>& wrapper)
 {
     CSSStyleRule* impl = scriptWrappable->toImpl<CSSStyleRule>();
     CSSRule* parentRule = impl->parentRule();

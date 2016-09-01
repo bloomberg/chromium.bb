@@ -210,8 +210,10 @@ def interface_context(interface):
         set_wrapper_reference_to['idl_type'].add_includes_for_type()
 
     # [Custom=VisitDOMWrapper]
-    has_visit_dom_wrapper = (
-        has_extended_attribute_value(interface, 'Custom', 'VisitDOMWrapper') or
+    has_visit_dom_wrapper_custom = (
+        has_extended_attribute_value(interface, 'Custom', 'VisitDOMWrapper'))
+
+    has_visit_dom_wrapper = (has_visit_dom_wrapper_custom or
         set_wrapper_reference_from or set_wrapper_reference_to)
 
     wrapper_class_id = ('NodeClassId' if inherits_interface(interface.name, 'Node') else 'ObjectClassId')
@@ -237,6 +239,7 @@ def interface_context(interface):
         'has_custom_legacy_call_as_function': has_extended_attribute_value(interface, 'Custom', 'LegacyCallAsFunction'),  # [Custom=LegacyCallAsFunction]
         'has_partial_interface': len(interface.partial_interfaces) > 0,
         'has_visit_dom_wrapper': has_visit_dom_wrapper,
+        'has_visit_dom_wrapper_custom': has_visit_dom_wrapper_custom,
         'header_includes': header_includes,
         'interface_name': interface.name,
         'is_array_buffer_or_view': is_array_buffer_or_view,

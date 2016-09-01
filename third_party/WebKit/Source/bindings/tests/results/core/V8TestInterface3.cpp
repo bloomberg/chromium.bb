@@ -246,6 +246,11 @@ static void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::A
 
 } // namespace TestInterface3V8Internal
 
+void V8TestInterface3::visitDOMWrapper(v8::Isolate* isolate, ScriptWrappable* scriptWrappable, const v8::Persistent<v8::Object>& wrapper)
+{
+    V8TestInterface3::visitDOMWrapperCustom(isolate, scriptWrappable, wrapper);
+}
+
 const V8DOMConfiguration::AccessorConfiguration V8TestInterface3Accessors[] = {
     {"readonlyStringifierAttribute", TestInterface3V8Internal::readonlyStringifierAttributeAttributeGetterCallback, 0, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
 };

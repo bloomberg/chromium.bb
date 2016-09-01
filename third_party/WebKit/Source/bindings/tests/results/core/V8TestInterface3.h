@@ -40,6 +40,7 @@ public:
         visitor->traceWrappers(scriptWrappable->toImpl<TestInterface3>());
     }
     static void visitDOMWrapper(v8::Isolate*, ScriptWrappable*, const v8::Persistent<v8::Object>&);
+    static void visitDOMWrapperCustom(v8::Isolate*, ScriptWrappable*, const v8::Persistent<v8::Object>&);
     static void indexedPropertyGetterCustom(uint32_t, const v8::PropertyCallbackInfo<v8::Value>&);
     static void indexedPropertySetterCustom(uint32_t, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<v8::Value>&);
     static void indexedPropertyDeleterCustom(uint32_t, const v8::PropertyCallbackInfo<v8::Boolean>&);

@@ -562,10 +562,15 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 {##############################################################################}
 {% block visit_dom_wrapper %}
-{% if set_wrapper_reference_from or set_wrapper_reference_to %}
+{% if has_visit_dom_wrapper %}
 void {{v8_class}}::visitDOMWrapper(v8::Isolate* isolate, ScriptWrappable* scriptWrappable, const v8::Persistent<v8::Object>& wrapper)
 {
+    {% if has_visit_dom_wrapper_custom %}
+    {{v8_class}}::visitDOMWrapperCustom(isolate, scriptWrappable, wrapper);
+    {% endif %}
+    {% if set_wrapper_reference_to or set_wrapper_reference_from %}
     {{cpp_class}}* impl = scriptWrappable->toImpl<{{cpp_class}}>();
+    {% endif %}
     {% if set_wrapper_reference_to %}
     {{set_wrapper_reference_to.cpp_type}} {{set_wrapper_reference_to.name}} = impl->{{set_wrapper_reference_to.name}}();
     if ({{set_wrapper_reference_to.name}}) {

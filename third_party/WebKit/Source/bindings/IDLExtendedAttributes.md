@@ -844,7 +844,7 @@ v8::Handle<v8::Value> V8XXX::callAsFunctionCallback(const v8::Arguments& args)
 #### [Custom=VisitDOMWrapper] _(i)_
 
 
-Summary: Allows you to write custom code for visitDOMWrapper: like `[SetWrapperReferenceFrom]`, but does not generate the function. One use (Nodelist.idl).
+Summary: Allows you to write custom code for visitDOMWrapper: like `[SetWrapperReferenceFrom]`, but with custom code. One use (Nodelist.idl).
 
 Usage:
 
@@ -859,7 +859,7 @@ Usage:
 And then in V8XXXCustom.cpp:
 
 ```c++
-void V8XXX::visitDOMWrapper(DOMDataStore* store, void* object, v8::Persistent<v8::Object> wrapper)
+void V8XXX::visitDOMWrapperCustom(v8::Isolate* isolate, ScriptWrappable* scriptWrappable, v8::Persistent<v8::Object> wrapper)
 {
     ...
 }
@@ -1283,7 +1283,7 @@ When specified, caches the resulting object and returns it in later calls so tha
 
 Summary: This generates code that allows you to set up implicit references between wrappers which can be used to keep wrappers alive during GC.
 
-Usage: `[SetWrapperReferenceFrom]` and `[SetWrapperReferenceTo]` can be specified on an interface. Use `[Custom=VisitDOMWrapper]` instead if want to write a custom function.
+Usage: `[SetWrapperReferenceFrom]` and `[SetWrapperReferenceTo]` can be specified on an interface. Use `[Custom=VisitDOMWrapper]` if want to write a custom function.
 
 ```webidl
 [

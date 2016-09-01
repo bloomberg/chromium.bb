@@ -76,6 +76,9 @@ public:
     {% if has_visit_dom_wrapper %}
     static void visitDOMWrapper(v8::Isolate*, ScriptWrappable*, const v8::Persistent<v8::Object>&);
     {% endif %}
+    {% if has_visit_dom_wrapper_custom %}
+    static void visitDOMWrapperCustom(v8::Isolate*, ScriptWrappable*, const v8::Persistent<v8::Object>&);
+    {% endif %}
     {% for method in methods %}
     {% if method.is_custom %}
     static void {{method.name}}MethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
