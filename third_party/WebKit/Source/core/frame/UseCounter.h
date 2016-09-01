@@ -1251,7 +1251,6 @@ public:
         RadioNameMatchingCaseFolding = 1515,
         NavigatorPointerEnabled = 1516,
         InputSelectionGettersThrow = 1517,
-        DocumentCreateEventVRDisplayEvent = 1518,
         UsbGetDevices = 1519,
         UsbRequestDevice = 1520,
         UsbDeviceOpen = 1521,
@@ -1268,6 +1267,8 @@ public:
         UsbDeviceIsochronousTransferIn = 1532,
         UsbDeviceIsochronousTransferOut = 1533,
         UsbDeviceReset = 1534,
+        // The above items are available in M54 branch
+
         PointerEnterLeaveFired = 1535,
         PointerOverOutFired = 1536,
         PointerEnterLeaveFiredWhileCaptured = 1537,
