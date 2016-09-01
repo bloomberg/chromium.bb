@@ -440,6 +440,23 @@
             "group_name": "Enabled"
         }
     ],
+    "SecurityWarningIconUpdate": [
+        {
+            "enable_features": [
+                "SecurityWarningIconUpdate"
+            ],
+            "group_name": "Enabled"
+        },
+        {
+            "disable_features": [
+                "SecurityWarningIconUpdate"
+            ],
+            "group_name": "Control"
+        },
+        {
+            "group_name": "Default"
+        }
+    ],
     "SettingsEnforcement": [
         {
             "group_name": "enforce_always_with_extensions_and_dse"

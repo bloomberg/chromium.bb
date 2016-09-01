@@ -464,6 +464,23 @@
             "group_name": "Enabled"
         }
     ],
+    "SecurityWarningIconUpdate": [
+        {
+            "enable_features": [
+                "SecurityWarningIconUpdate"
+            ],
+            "group_name": "Enabled"
+        },
+        {
+            "disable_features": [
+                "SecurityWarningIconUpdate"
+            ],
+            "group_name": "Control"
+        },
+        {
+            "group_name": "Default"
+        }
+    ],
     "SpeculativeLaunchServiceWorker": [
         {
             "enable_features": [
