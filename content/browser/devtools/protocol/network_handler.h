@@ -26,9 +26,6 @@ class NetworkHandler {
   void SetRenderFrameHost(RenderFrameHostImpl* host);
   void SetClient(std::unique_ptr<Client> client);
 
-  Response Enable(const int* max_total_size,
-                  const int* max_resource_size);
-  Response Disable();
   Response ClearBrowserCache();
   Response ClearBrowserCookies();
   Response GetCookies(DevToolsCommandId command_id);
@@ -66,7 +63,6 @@ class NetworkHandler {
 
   RenderFrameHostImpl* host_;
   std::unique_ptr<Client> client_;
-  bool enabled_;
   base::WeakPtrFactory<NetworkHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkHandler);
