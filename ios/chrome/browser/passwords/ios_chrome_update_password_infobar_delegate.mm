@@ -84,11 +84,14 @@ base::string16 IOSChromeUpdatePasswordInfoBarDelegate::GetMessageText() const {
                    IDS_IOS_PASSWORD_MANAGER_UPDATE_PASSWORD, GetBranding());
 }
 
+int IOSChromeUpdatePasswordInfoBarDelegate::GetButtons() const {
+  return BUTTON_OK;
+}
+
 base::string16 IOSChromeUpdatePasswordInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
-  return l10n_util::GetStringUTF16(
-      (button == BUTTON_OK) ? IDS_IOS_PASSWORD_MANAGER_UPDATE_BUTTON
-                            : IDS_IOS_PASSWORD_MANAGER_CANCEL_BUTTON);
+  DCHECK_EQ(BUTTON_OK, button);
+  return l10n_util::GetStringUTF16(IDS_IOS_PASSWORD_MANAGER_UPDATE_BUTTON);
 }
 
 bool IOSChromeUpdatePasswordInfoBarDelegate::Accept() {
@@ -99,9 +102,5 @@ bool IOSChromeUpdatePasswordInfoBarDelegate::Accept() {
   } else {
     form_to_save()->Update(form_to_save()->pending_credentials());
   }
-  return true;
-}
-
-bool IOSChromeUpdatePasswordInfoBarDelegate::Cancel() {
   return true;
 }
