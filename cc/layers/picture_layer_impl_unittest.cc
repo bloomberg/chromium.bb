@@ -2586,7 +2586,7 @@ TEST_F(PictureLayerImplTest, ConsiderAnimationStartScaleForRasterScale) {
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 3.f);
 }
 
-TEST_F(PictureLayerImplTest, HighResTilingDuringAnimationForCpuRasterization) {
+TEST_F(PictureLayerImplTest, HighResTilingDuringAnimation) {
   gfx::Size viewport_size(1000, 1000);
   host_impl()->SetViewportSize(viewport_size);
 
@@ -2602,8 +2602,8 @@ TEST_F(PictureLayerImplTest, HighResTilingDuringAnimationForCpuRasterization) {
 
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 1.f);
 
-  // Since we're CPU-rasterizing, starting an animation should cause tiling
-  // resolution to get set to the maximum animation scale factor.
+  // Starting an animation should cause tiling resolution to get set to the
+  // maximum animation scale factor.
   animating_transform = true;
   maximum_animation_scale = 3.f;
   contents_scale = 2.f;
@@ -2725,68 +2725,6 @@ TEST_F(PictureLayerImplTest, HighResTilingDuringAnimationForCpuRasterization) {
                                maximum_animation_scale,
                                starting_animation_scale, animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 11.f);
-}
-
-TEST_F(PictureLayerImplTest, HighResTilingDuringAnimationForGpuRasterization) {
-  gfx::Size layer_bounds(100, 100);
-  gfx::Size viewport_size(1000, 1000);
-  SetupDefaultTrees(layer_bounds);
-  host_impl()->SetViewportSize(viewport_size);
-  host_impl()->SetHasGpuRasterizationTrigger(true);
-  host_impl()->SetContentIsSuitableForGpuRasterization(true);
-  host_impl()->CommitComplete();
-
-  float contents_scale = 1.f;
-  float device_scale = 1.3f;
-  float page_scale = 1.4f;
-  float maximum_animation_scale = 1.f;
-  float starting_animation_scale = 0.f;
-  bool animating_transform = false;
-
-  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
-                               maximum_animation_scale,
-                               starting_animation_scale, animating_transform);
-  EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 1.f);
-  EXPECT_BOTH_FALSE(GetRasterSource()->ShouldAttemptToUseDistanceFieldText());
-
-  // Since we're GPU-rasterizing, starting an animation should cause tiling
-  // resolution to get set to the current contents scale.
-  animating_transform = true;
-  contents_scale = 2.f;
-  maximum_animation_scale = 4.f;
-
-  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
-                               maximum_animation_scale,
-                               starting_animation_scale, animating_transform);
-  EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 2.f);
-  EXPECT_BOTH_TRUE(GetRasterSource()->ShouldAttemptToUseDistanceFieldText());
-
-  // Further changes to scale during the animation should cause a new high-res
-  // tiling to get created.
-  contents_scale = 3.f;
-
-  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
-                               maximum_animation_scale,
-                               starting_animation_scale, animating_transform);
-  EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 3.f);
-
-  // Since we're re-rasterizing during the animation, scales smaller than 1
-  // should be respected.
-  contents_scale = 0.25f;
-
-  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
-                               maximum_animation_scale,
-                               starting_animation_scale, animating_transform);
-  EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 0.25f);
-
-  // Once we stop animating, a new high-res tiling should be created.
-  contents_scale = 4.f;
-  animating_transform = false;
-
-  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
-                               maximum_animation_scale,
-                               starting_animation_scale, animating_transform);
-  EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 4.f);
 }
 
 TEST_F(PictureLayerImplTest, TilingSetRasterQueue) {

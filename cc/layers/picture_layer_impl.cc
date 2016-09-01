@@ -926,11 +926,6 @@ bool PictureLayerImpl::ShouldAdjustRasterScale() const {
       draw_properties().screen_space_transform_is_animating)
     return true;
 
-  if (draw_properties().screen_space_transform_is_animating &&
-      raster_contents_scale_ != ideal_contents_scale_ &&
-      ShouldAdjustRasterScaleDuringScaleAnimations())
-    return true;
-
   bool is_pinching = layer_tree_impl()->PinchGestureActive();
   if (is_pinching && raster_page_scale_) {
     // We change our raster scale when it is:
@@ -1054,14 +1049,13 @@ void PictureLayerImpl::RecalculateRasterScales() {
         raster_contents_scale_ / raster_device_scale_ / raster_source_scale_;
   }
 
-  // If we're not re-rasterizing during animation, rasterize at the maximum
-  // scale that will occur during the animation, if the maximum scale is
-  // known. However we want to avoid excessive memory use. If the scale is
-  // smaller than what we would choose otherwise, then it's always better off
-  // for us memory-wise. But otherwise, we don't choose a scale at which this
-  // layer's rastered content would become larger than the viewport.
-  if (draw_properties().screen_space_transform_is_animating &&
-      !ShouldAdjustRasterScaleDuringScaleAnimations()) {
+  // We rasterize at the maximum scale that will occur during the animation, if
+  // the maximum scale is known. However we want to avoid excessive memory use.
+  // If the scale is smaller than what we would choose otherwise, then it's
+  // always better off for us memory-wise. But otherwise, we don't choose a
+  // scale at which this layer's rastered content would become larger than the
+  // viewport.
+  if (draw_properties().screen_space_transform_is_animating) {
     bool can_raster_at_maximum_scale = false;
     bool should_raster_at_starting_scale = false;
     CombinedAnimationScale animation_scales =
@@ -1233,10 +1227,6 @@ void PictureLayerImpl::SanityCheckTilingState() const {
   // We should only have one high res tiling.
   DCHECK_EQ(1, tilings_->NumHighResTilings());
 #endif
-}
-
-bool PictureLayerImpl::ShouldAdjustRasterScaleDuringScaleAnimations() const {
-  return layer_tree_impl()->use_gpu_rasterization();
 }
 
 float PictureLayerImpl::MaximumTilingContentsScale() const {
