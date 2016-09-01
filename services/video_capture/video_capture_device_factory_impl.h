@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "mojo/public/cpp/bindings/binding.h"
 #include "services/video_capture/public/interfaces/video_capture_device_factory.mojom.h"
 #include "services/video_capture/video_capture_device_proxy_impl.h"
 
@@ -47,10 +48,16 @@ class VideoCaptureDeviceFactoryImpl : public mojom::VideoCaptureDeviceFactory {
     DeviceEntry& operator=(DeviceEntry&& other);
 
     mojom::VideoCaptureDeviceDescriptorPtr MakeDescriptorCopy() const;
+    bool DescriptorEquals(
+        const mojom::VideoCaptureDeviceDescriptorPtr& other) const;
+    bool is_bound() const;
+    void Bind(mojom::VideoCaptureDeviceProxyRequest request);
+    void Unbind();
 
    private:
     mojom::VideoCaptureDeviceDescriptorPtr descriptor_;
     std::unique_ptr<VideoCaptureDeviceProxyImpl> device_proxy_;
+    std::unique_ptr<mojo::Binding<mojom::VideoCaptureDeviceProxy>> binding_;
 
     DISALLOW_COPY_AND_ASSIGN(DeviceEntry);
   };

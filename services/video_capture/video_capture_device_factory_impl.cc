@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "media/capture/video/fake_video_capture_device.h"
 #include "services/video_capture/video_capture_device_factory_impl.h"
 
 namespace video_capture {
@@ -14,7 +15,10 @@ VideoCaptureDeviceFactoryImpl::DeviceEntry::DeviceEntry(
     mojom::VideoCaptureDeviceDescriptorPtr descriptor,
     std::unique_ptr<VideoCaptureDeviceProxyImpl> bindable_target)
     : descriptor_(std::move(descriptor)),
-      device_proxy_(std::move(bindable_target)) {}
+      binding_(base::MakeUnique<mojo::Binding<mojom::VideoCaptureDeviceProxy>>(
+          bindable_target.get())) {
+  device_proxy_ = std::move(bindable_target);
+}
 
 VideoCaptureDeviceFactoryImpl::DeviceEntry::~DeviceEntry() = default;
 
@@ -28,6 +32,24 @@ VideoCaptureDeviceFactoryImpl::DeviceEntry::operator=(
 mojom::VideoCaptureDeviceDescriptorPtr
 VideoCaptureDeviceFactoryImpl::DeviceEntry::MakeDescriptorCopy() const {
   return descriptor_.Clone();
+}
+
+bool VideoCaptureDeviceFactoryImpl::DeviceEntry::DescriptorEquals(
+    const mojom::VideoCaptureDeviceDescriptorPtr& other) const {
+  return descriptor_.Equals(other);
+}
+
+bool VideoCaptureDeviceFactoryImpl::DeviceEntry::is_bound() const {
+  return binding_->is_bound();
+}
+
+void VideoCaptureDeviceFactoryImpl::DeviceEntry::Bind(
+    mojom::VideoCaptureDeviceProxyRequest request) {
+  binding_->Bind(std::move(request));
+}
+
+void VideoCaptureDeviceFactoryImpl::DeviceEntry::Unbind() {
+  binding_->Unbind();
 }
 
 VideoCaptureDeviceFactoryImpl::VideoCaptureDeviceFactoryImpl() = default;
@@ -56,9 +78,18 @@ void VideoCaptureDeviceFactoryImpl::GetSupportedFormats(
 
 void VideoCaptureDeviceFactoryImpl::CreateDeviceProxy(
     mojom::VideoCaptureDeviceDescriptorPtr device_descriptor,
-    mojom::VideoCaptureDeviceProxyRequest request,
+    mojom::VideoCaptureDeviceProxyRequest proxy_request,
     const CreateDeviceProxyCallback& callback) {
-  callback.Run(mojom::DeviceAccessResultCode::SUCCESS);
+  for (auto& entry : devices_) {
+    if (entry.DescriptorEquals(device_descriptor)) {
+      if (entry.is_bound())
+        entry.Unbind();
+      entry.Bind(std::move(proxy_request));
+      callback.Run(mojom::DeviceAccessResultCode::SUCCESS);
+      return;
+    }
+  }
+  callback.Run(mojom::DeviceAccessResultCode::ERROR_DEVICE_NOT_FOUND);
 }
 
 }  // namespace video_capture

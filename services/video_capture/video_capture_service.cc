@@ -4,12 +4,14 @@
 
 #include "services/video_capture/video_capture_service.h"
 
+#include "media/capture/video/fake_video_capture_device.h"
 #include "services/video_capture/video_capture_device_factory_impl.h"
 
 namespace {
 static const char kFakeDeviceDisplayName[] = "Fake Video Capture Device";
 static const char kFakeDeviceId[] = "FakeDeviceId";
 static const char kFakeModelId[] = "FakeModelId";
+static const float kFakeCaptureDefaultFrameRate = 20.0f;
 }
 
 namespace video_capture {
@@ -61,7 +63,10 @@ void VideoCaptureService::LazyInitializeFakeDeviceFactory() {
       mojom::VideoCaptureTransportType::OTHER_TRANSPORT;
   fake_device_factory_->AddDevice(
       std::move(fake_device_descriptor),
-      base::MakeUnique<VideoCaptureDeviceProxyImpl>());
+      base::MakeUnique<VideoCaptureDeviceProxyImpl>(
+          base::MakeUnique<media::FakeVideoCaptureDevice>(
+              media::FakeVideoCaptureDevice::BufferOwnership::OWN_BUFFERS,
+              kFakeCaptureDefaultFrameRate)));
 }
 
 }  // namespace video_capture
