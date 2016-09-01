@@ -219,11 +219,12 @@ public class TabPersistentStore extends TabPersister {
         mPreferences = ContextUtils.getAppSharedPreferences();
 
         assert isStateFile(policy.getStateFileName()) : "State file name is not valid";
-        boolean needsMigration = mPersistencePolicy.performMigration(AsyncTask.SERIAL_EXECUTOR);
+        boolean needsInitialization = mPersistencePolicy.performInitialization(
+                AsyncTask.SERIAL_EXECUTOR);
 
         if (mPersistencePolicy.isMergeInProgress()) return;
 
-        Executor executor = needsMigration
+        Executor executor = needsInitialization
                 ? AsyncTask.SERIAL_EXECUTOR : AsyncTask.THREAD_POOL_EXECUTOR;
 
         mPrefetchTabListTask =
@@ -247,7 +248,7 @@ public class TabPersistentStore extends TabPersister {
      */
     @VisibleForTesting
     public void waitForMigrationToFinish() {
-        mPersistencePolicy.waitForMigrationToFinish();
+        mPersistencePolicy.waitForInitializationToFinish();
     }
 
     /**
@@ -998,7 +999,7 @@ public class TabPersistentStore extends TabPersister {
      * @param forMerge Whether this state file was read as part of a merge.
      * @return The next available tab ID based on the maximum ID referenced in this state file.
      */
-    protected static int readSavedStateFile(
+    public static int readSavedStateFile(
             DataInputStream stream, @Nullable OnTabStateReadCallback callback,
             @Nullable SparseBooleanArray tabIds, boolean forMerge) throws IOException {
         if (stream == null) return 0;
@@ -1367,9 +1368,19 @@ public class TabPersistentStore extends TabPersister {
     }
 
     /**
+     * Parses the state file name and returns the unique ID encoded into it.
+     * @param stateFileName The state file name to be parsed.
+     * @return The unique ID used when generating the file name.
+     */
+    public static String getStateFileUniqueId(String stateFileName) {
+        assert isStateFile(stateFileName);
+        return stateFileName.substring(TabPersistencePolicy.SAVED_STATE_FILE_PREFIX.length());
+    }
+
+    /**
      * @return Whether the specified filename matches the expected pattern of the tab state files.
      */
-    private static boolean isStateFile(String fileName) {
+    public static boolean isStateFile(String fileName) {
         return fileName.startsWith(TabPersistencePolicy.SAVED_STATE_FILE_PREFIX);
     }
 
