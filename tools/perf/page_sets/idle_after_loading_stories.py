@@ -4,6 +4,55 @@
 from telemetry.page import page as page_module
 from telemetry import story
 
+# Chrome has high idle CPU usage on these sites, even after they have quiesced.
+SITES = [
+  # https://bugs.chromium.org/p/chromium/issues/detail?id=638365
+  'http://www.labradortraininghq.com/labrador-training/how-to-crate-train'
+  '-a-puppy/#How_Long_DoesIt_Take_To_Crate_Train_A_Puppy',
+
+  # https://bugs.chromium.org/p/chromium/issues/detail?id=505990
+  'http://abcnews.go.com/',
+
+  # https://bugs.chromium.org/p/chromium/issues/detail?id=505601
+  'http://www.slideshare.net/patrickmeenan',
+
+  # https://bugs.chromium.org/p/chromium/issues/detail?id=505577
+  'http://tumblr.all-that-is-interesting.com/',
+
+  # https://bugs.chromium.org/p/chromium/issues/detail?id=505553
+  'https://instagram.com/cnn/',
+
+  # https://bugs.chromium.org/p/chromium/issues/detail?id=505544
+  'http://www.sina.com.cn',
+
+  # https://bugs.chromium.org/p/chromium/issues/detail?id=505056
+  'http://bbc.com/news/uk/',
+
+  # https://bugs.chromium.org/p/chromium/issues/detail?id=505054
+  'http://www.uol.com.br',
+
+  # https://bugs.chromium.org/p/chromium/issues/detail?id=505052
+  'http://www.indiatimes.com',
+
+  # https://bugs.chromium.org/p/chromium/issues/detail?id=505044
+  'http://www.w3schools.com/html/default.asp',
+
+  # https://bugs.chromium.org/p/chromium/issues/detail?id=505002
+  'http://www.microsoft.com',
+
+  # https://bugs.chromium.org/p/chromium/issues/detail?id=489936
+  'http://capitalone.com',
+
+  # https://bugs.chromium.org/p/chromium/issues/detail?id=481225
+  'https://twitter.com/katyperry',
+
+  # https://bugs.chromium.org/p/chromium/issues/detail?id=476158
+  'http://bgr.com',
+
+  # https://bugs.chromium.org/p/chromium/issues/detail?id=425474
+  'http://www.androidpolice.com/2014/10/20/animation-bonanza-android'
+  '-5-0-lollipop-in-gifs/',
+]
 
 # TODO(rnephew): Move to seperate file and merge with mac_gpu_sites BasePage.
 class _BasePage(page_module.Page):
@@ -26,9 +75,5 @@ class IdleAfterLoadingStories(story.StorySet):
 
     # Chrome has high idle CPU usage on this site, even after its quiesced.
     # https://crbug.com/638365.
-    urls = [
-        'http://www.labradortraininghq.com/labrador-training/how-to-crate-train'
-        '-a-puppy/#How_Long_DoesIt_Take_To_Crate_Train_A_Puppy'
-    ]
-    for url in urls:
+    for url in SITES:
       self.AddStory(_BasePage(self, url, wait_in_seconds))
