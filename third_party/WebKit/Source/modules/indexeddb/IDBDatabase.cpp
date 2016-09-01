@@ -195,13 +195,13 @@ IDBObjectStore* IDBDatabase::createObjectStore(const String& name, const IDBKeyP
         return nullptr;
     }
 
-    if (containsObjectStore(name)) {
-        exceptionState.throwDOMException(ConstraintError, "An object store with the specified name already exists.");
+    if (!keyPath.isNull() && !keyPath.isValid()) {
+        exceptionState.throwDOMException(SyntaxError, "The keyPath option is not a valid key path.");
         return nullptr;
     }
 
-    if (!keyPath.isNull() && !keyPath.isValid()) {
-        exceptionState.throwDOMException(SyntaxError, "The keyPath option is not a valid key path.");
+    if (containsObjectStore(name)) {
+        exceptionState.throwDOMException(ConstraintError, "An object store with the specified name already exists.");
         return nullptr;
     }
 
@@ -279,20 +279,6 @@ IDBTransaction* IDBDatabase::transaction(ScriptState* scriptState, const StringO
         ASSERT_NOT_REACHED();
     }
 
-    if (scope.isEmpty()) {
-        exceptionState.throwDOMException(InvalidAccessError, "The storeNames parameter was empty.");
-        return nullptr;
-    }
-
-    WebIDBTransactionMode mode = IDBTransaction::stringToMode(modeString);
-    if (mode != WebIDBTransactionModeReadOnly && mode != WebIDBTransactionModeReadWrite) {
-        exceptionState.throwTypeError("The mode provided ('" + modeString + "') is not one of 'readonly' or 'readwrite'.");
-        return nullptr;
-    }
-
-    if (exceptionState.hadException())
-        return nullptr;
-
     if (m_versionChangeTransaction) {
         exceptionState.throwDOMException(InvalidStateError, "A version change transaction is running.");
         return nullptr;
@@ -300,6 +286,17 @@ IDBTransaction* IDBDatabase::transaction(ScriptState* scriptState, const StringO
 
     if (m_closePending) {
         exceptionState.throwDOMException(InvalidStateError, "The database connection is closing.");
+        return nullptr;
+    }
+
+    if (!m_backend) {
+        exceptionState.throwDOMException(InvalidStateError, IDBDatabase::databaseClosedErrorMessage);
+        return nullptr;
+    }
+
+
+    if (scope.isEmpty()) {
+        exceptionState.throwDOMException(InvalidAccessError, "The storeNames parameter was empty.");
         return nullptr;
     }
 
@@ -313,8 +310,9 @@ IDBTransaction* IDBDatabase::transaction(ScriptState* scriptState, const StringO
         objectStoreIds.append(objectStoreId);
     }
 
-    if (!m_backend) {
-        exceptionState.throwDOMException(InvalidStateError, IDBDatabase::databaseClosedErrorMessage);
+    WebIDBTransactionMode mode = IDBTransaction::stringToMode(modeString);
+    if (mode != WebIDBTransactionModeReadOnly && mode != WebIDBTransactionModeReadWrite) {
+        exceptionState.throwTypeError("The mode provided ('" + modeString + "') is not one of 'readonly' or 'readwrite'.");
         return nullptr;
     }
 

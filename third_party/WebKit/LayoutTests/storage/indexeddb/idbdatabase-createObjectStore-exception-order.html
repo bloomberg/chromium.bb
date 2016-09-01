@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<title>IndexedDB: IDBDatabase createObjectStore() Exception Ordering</title>
+<link rel="help" href="https://w3c.github.io/IndexedDB/#dom-idbdatabase-createobjectstore">
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="resources/testharness-helpers.js"></script>
+
+<script>
+
+indexeddb_test(
+    function(t, db) {
+        db.createObjectStore('s');
+        assert_throws('SyntaxError', function() {
+            db.createObjectStore('s', {keyPath: 'not a valid key path'});
+        }, '"Invalid keyath" check (SyntaxError) should precede ' +
+           '"duplicate store name" check (ConstraintError)');
+        t.done();
+    },
+    function(t, db) {},
+    'IDBDatabase.createObjectStore exception order: ConstraintError vs. SyntaxError'
+);
+
+</script>
