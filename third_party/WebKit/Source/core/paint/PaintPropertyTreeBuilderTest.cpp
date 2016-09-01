@@ -6,6 +6,7 @@
 #include "core/layout/LayoutTreeAsText.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/paint/ObjectPaintProperties.h"
+#include "core/paint/PaintPropertyTreePrinter.h"
 #include "platform/graphics/paint/GeometryMapper.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
@@ -100,12 +101,14 @@ do { \
     LayoutRect source((sourceLayoutObject)->localOverflowRectForPaintInvalidation()); \
     source.moveBy((sourceLayoutObject)->objectPaintProperties()->localBorderBoxProperties()->paintOffset); \
     bool success = false; \
+    PropertyTreeState contentsProperties; \
+    (ancestorLayoutObject)->objectPaintProperties()->getContentsProperties(contentsProperties); \
     FloatRect actual = geometryMapper.mapToVisualRectInDestinationSpace( \
         FloatRect(source), \
         (sourceLayoutObject)->objectPaintProperties()->localBorderBoxProperties()->propertyTreeState, \
-        (ancestorLayoutObject)->objectPaintProperties()->localBorderBoxProperties()->propertyTreeState, success); \
+        contentsProperties, success); \
     ASSERT_TRUE(success); \
-    EXPECT_EQ(expected, LayoutRect(actual)); \
+    EXPECT_EQ(expected, LayoutRect(actual)) << "GeometryMapper: expected: " << expected.toString() << ", actual: " << actual.toString(); \
 \
     if (slopFactor == LayoutUnit::max()) \
         break; \
@@ -118,7 +121,7 @@ do { \
         EXPECT_TRUE(slowPathRect.contains(LayoutRect(actual))); \
         EXPECT_TRUE(inflatedActual.contains(slowPathRect)); \
     } else { \
-        EXPECT_EQ(slowPathRect, LayoutRect(actual)); \
+        EXPECT_EQ(expected, slowPathRect) << "Slow path: expected: " << slowPathRect.toString() << ", actual: " << actual.toString().ascii().data(); \
     } \
 } while (0)
 
@@ -1586,6 +1589,129 @@ TEST_P(PaintPropertyTreeBuilderTest, CachedProperties)
     CHECK_EXACT_VISUAL_RECT(LayoutRect(33, 44, 50, 60), a->layoutObject(), frameView->layoutView());
     CHECK_EXACT_VISUAL_RECT(LayoutRect(37, 49, 50, 20), b->layoutObject(), frameView->layoutView());
     CHECK_EXACT_VISUAL_RECT(LayoutRect(114, 137, 10, 20), c->layoutObject(), frameView->layoutView());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, OverflowClipContentsProperties)
+{
+    // This test verifies the tree builder correctly computes and records the property tree context
+    // for a (pseudo) stacking context that is scrolled by a containing block that is not one of
+    // the painting ancestors.
+    setBodyInnerHTML(
+        "<style>body { margin: 0; }</style>"
+        "<div id='clipper' style='overflow:hidden; width:400px; height:300px;'>"
+        "  <div id='child' style='position:relative; width:500px; height: 600px;'></div>"
+        "</div>"
+    );
+
+    LayoutBoxModelObject* clipper = toLayoutBoxModelObject(document().getElementById("clipper")->layoutObject());
+    const ObjectPaintProperties* clipProperties = clipper->objectPaintProperties();
+    LayoutObject* child = document().getElementById("child")->layoutObject();
+    const ObjectPaintProperties* childProperties = child->objectPaintProperties();
+
+    EXPECT_EQ(frameScrollTranslation(), clipProperties->localBorderBoxProperties()->propertyTreeState.transform);
+    EXPECT_EQ(frameContentClip(), clipProperties->localBorderBoxProperties()->propertyTreeState.clip);
+
+    PropertyTreeState contentsProperties;
+    clipProperties->getContentsProperties(contentsProperties);
+    EXPECT_EQ(frameScrollTranslation(), contentsProperties.transform);
+    EXPECT_EQ(clipProperties->overflowClip(), contentsProperties.clip);
+
+    EXPECT_EQ(frameScrollTranslation(), childProperties->localBorderBoxProperties()->propertyTreeState.transform);
+    EXPECT_EQ(clipProperties->overflowClip(), childProperties->localBorderBoxProperties()->propertyTreeState.clip);
+
+    EXPECT_NE(nullptr, childProperties->localBorderBoxProperties()->propertyTreeState.effect);
+    CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 500, 600), child, clipper);
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollContentsProperties)
+{
+    // This test verifies the tree builder correctly computes and records the property tree context
+    // for a (pseudo) stacking context that is scrolled by a containing block that is not one of
+    // the painting ancestors.
+    setBodyInnerHTML(
+        "<style>body { margin: 0; }</style>"
+        "<div id='clipper' style='overflow:scroll; width:400px; height:300px;'>"
+        "  <div id='child' style='position:relative; width:500px; height: 600px;'></div>"
+        "  <div style='width: 200px; height: 10000px'>"
+        "</div>"
+    );
+
+    Element* clipperElement = document().getElementById("clipper");
+    clipperElement->scrollTo(1, 2);
+
+    LayoutBoxModelObject* clipper = toLayoutBoxModelObject(clipperElement->layoutObject());
+    const ObjectPaintProperties* clipProperties = clipper->objectPaintProperties();
+    LayoutObject* child = document().getElementById("child")->layoutObject();
+    const ObjectPaintProperties* childProperties = child->objectPaintProperties();
+
+    EXPECT_EQ(frameScrollTranslation(), clipProperties->localBorderBoxProperties()->propertyTreeState.transform);
+    EXPECT_EQ(frameContentClip(), clipProperties->localBorderBoxProperties()->propertyTreeState.clip);
+
+    PropertyTreeState contentsProperties;
+    clipProperties->getContentsProperties(contentsProperties);
+    EXPECT_EQ(clipProperties->scrollTranslation(), contentsProperties.transform);
+    EXPECT_EQ(clipProperties->overflowClip(), contentsProperties.clip);
+
+    EXPECT_EQ(clipProperties->scrollTranslation(), childProperties->localBorderBoxProperties()->propertyTreeState.transform);
+    EXPECT_EQ(clipProperties->overflowClip(), childProperties->localBorderBoxProperties()->propertyTreeState.clip);
+
+    CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 500, 600), child, clipper);
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, CssClipContentsProperties)
+{
+    // This test verifies the tree builder correctly computes and records the property tree context
+    // for a (pseudo) stacking context that is scrolled by a containing block that is not one of
+    // the painting ancestors.
+    setBodyInnerHTML(
+        "<style>body { margin: 0; }</style>"
+        "<div id='clipper' style='position: absolute; clip: rect(10px, 80px, 70px, 40px); width:400px; height:300px;'>"
+        "  <div id='child' style='position:relative; width:500px; height: 600px;'></div>"
+        "</div>"
+    );
+
+    LayoutBoxModelObject* clipper = toLayoutBoxModelObject(document().getElementById("clipper")->layoutObject());
+    const ObjectPaintProperties* clipProperties = clipper->objectPaintProperties();
+    LayoutObject* child = document().getElementById("child")->layoutObject();
+
+    EXPECT_EQ(frameScrollTranslation(), clipProperties->localBorderBoxProperties()->propertyTreeState.transform);
+    // CSS clip on an element causes it to clip itself, not just descendants.
+    EXPECT_EQ(clipProperties->cssClip(), clipProperties->localBorderBoxProperties()->propertyTreeState.clip);
+
+    PropertyTreeState contentsProperties;
+    clipProperties->getContentsProperties(contentsProperties);
+    EXPECT_EQ(frameScrollTranslation(), contentsProperties.transform);
+    EXPECT_EQ(clipProperties->cssClip(), contentsProperties.clip);
+
+    CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 500, 600), child, clipper);
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, SvgLocalToBorderBoxTransformContentsProperties)
+{
+    setBodyInnerHTML(
+        "<style>"
+        "  body {"
+        "    margin: 0px;"
+        "  }"
+        "  svg {"
+        "    position: absolute;"
+        "  }"
+        "  rect {"
+        "    transform: translate(100px, 100px);"
+        "  }"
+        "</style>"
+        "<svg id='svgWithViewBox' width='100px' height='100px' viewBox='50 50 100 100'>"
+        "  <rect id='rect' width='100px' height='100px' />"
+        "</svg>");
+
+    LayoutObject& svgWithViewBox = *document().getElementById("svgWithViewBox")->layoutObject();
+    const ObjectPaintProperties* svgWithViewBoxProperties = svgWithViewBox.objectPaintProperties();
+
+    EXPECT_EQ(frameScrollTranslation(), svgWithViewBoxProperties->localBorderBoxProperties()->propertyTreeState.transform);
+
+    PropertyTreeState contentsProperties;
+    svgWithViewBoxProperties->getContentsProperties(contentsProperties);
+    EXPECT_EQ(svgWithViewBoxProperties->svgLocalToBorderBoxTransform(), contentsProperties.transform);
 }
 
 } // namespace blink

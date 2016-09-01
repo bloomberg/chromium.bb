@@ -59,6 +59,7 @@ public:
 
     // The hierarchy of the clip subtree created by a LayoutObject is as follows:
     // [ css clip ]
+    // [ css clip fixed position]
     // |
     // +--- [ overflow clip ]
     const ClipPaintPropertyNode* cssClip() const { return m_cssClip.get(); }
@@ -77,6 +78,9 @@ public:
         PropertyTreeState propertyTreeState;
     };
     const LocalBorderBoxProperties* localBorderBoxProperties() const { return m_localBorderBoxProperties.get(); }
+    // ContentsProperties is the PropertyTreeState state that is the same as in localBorderBoxProperties, except that it is inside
+    // any clips and scrolls caused by this object. This PropertyTreeState is suitable as the destination for paint invalidation.
+    void getContentsProperties(PropertyTreeState&) const;
 
     void clearPaintOffsetTranslation() { m_paintOffsetTranslation = nullptr; }
     void clearTransform() { m_transform = nullptr; }

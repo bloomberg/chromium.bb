@@ -2145,6 +2145,7 @@
             'paint/NinePieceImageGrid.h',
             'paint/NinePieceImagePainter.cpp',
             'paint/NinePieceImagePainter.h',
+            'paint/ObjectPaintProperties.cpp',
             'paint/ObjectPaintProperties.h',
             'paint/ObjectPaintInvalidator.cpp',
             'paint/ObjectPaintInvalidator.h',
