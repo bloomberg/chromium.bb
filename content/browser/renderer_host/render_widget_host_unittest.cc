@@ -39,6 +39,7 @@
 #if defined(OS_ANDROID)
 #include "content/browser/renderer_host/context_provider_factory_impl_android.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
+#include "content/test/mock_gpu_channel_establish_factory.h"
 #endif
 
 #if defined(USE_AURA) || defined(OS_MACOSX)
@@ -472,6 +473,7 @@ class RenderWidgetHostTest : public testing::Test {
             new NoTransportImageTransportFactory));
 #endif
 #if defined(OS_ANDROID)
+    ContextProviderFactoryImpl::Initialize(&gpu_channel_factory_);
     ui::ContextProviderFactory::SetInstance(
         ContextProviderFactoryImpl::GetInstance());
 #endif
@@ -505,6 +507,7 @@ class RenderWidgetHostTest : public testing::Test {
 #endif
 #if defined(OS_ANDROID)
     ui::ContextProviderFactory::SetInstance(nullptr);
+    ContextProviderFactoryImpl::Terminate();
 #endif
 
     // Process all pending tasks to avoid leaks.
@@ -650,6 +653,10 @@ class RenderWidgetHostTest : public testing::Test {
   bool handle_mouse_event_;
   double last_simulated_event_time_seconds_;
   double simulated_event_time_delta_seconds_;
+
+#if defined(OS_ANDROID)
+  MockGpuChannelEstablishFactory gpu_channel_factory_;
+#endif
 
  private:
   SyntheticWebTouchEvent touch_event_;

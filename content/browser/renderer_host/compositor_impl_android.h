@@ -127,7 +127,8 @@ class CONTENT_EXPORT CompositorImpl
   void CreateVulkanOutputSurface();
 #endif
   void CreateCompositorOutputSurface(
-      const scoped_refptr<cc::ContextProvider>& context_provider);
+      const scoped_refptr<cc::ContextProvider>& context_provider,
+      ui::ContextProviderFactory::ContextCreationResult result);
   void InitializeDisplay(
       std::unique_ptr<cc::OutputSurface> display_output_surface,
       scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider,

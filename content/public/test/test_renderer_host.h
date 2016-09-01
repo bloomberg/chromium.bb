@@ -36,6 +36,7 @@ namespace content {
 
 class BrowserContext;
 class ContentBrowserSanityChecker;
+class MockGpuChannelEstablishFactory;
 class MockRenderProcessHost;
 class MockRenderProcessHostFactory;
 class NavigationController;
@@ -275,6 +276,9 @@ class RenderViewHostTestHarness : public testing::Test {
 #endif
 #if defined(USE_AURA)
   std::unique_ptr<aura::test::AuraTestHelper> aura_test_helper_;
+#endif
+#if defined(OS_ANDROID)
+  std::unique_ptr<MockGpuChannelEstablishFactory> gpu_channel_factory_;
 #endif
   RenderViewHostTestEnabler rvh_test_enabler_;
 
