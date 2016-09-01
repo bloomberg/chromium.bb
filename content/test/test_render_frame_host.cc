@@ -18,7 +18,7 @@
 #include "content/public/browser/stream_handle.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/url_constants.h"
-#include "content/test/browser_side_navigation_test_utils.h"
+#include "content/public/test/browser_side_navigation_test_utils.h"
 #include "content/test/test_navigation_url_loader.h"
 #include "content/test/test_render_view_host.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -448,6 +448,13 @@ void TestRenderFrameHost::PrepareForCommitWithServerRedirect(
   // TODO(carlosk): ideally with PlzNavigate it should be possible someday to
   // fully commit the navigation at this call to CallOnResponseStarted.
   url_loader->CallOnResponseStarted(response, MakeEmptyStream(), nullptr);
+}
+
+void TestRenderFrameHost::PrepareForCommitIfNecessary() {
+  if (!IsBrowserSideNavigationEnabled() ||
+      frame_tree_node()->navigation_request()) {
+    PrepareForCommit();
+  }
 }
 
 WebBluetoothServiceImpl*

@@ -524,6 +524,7 @@ class CONTENT_EXPORT RenderFrameHostManager
  private:
   friend class NavigatorTestWithBrowserSideNavigation;
   friend class RenderFrameHostManagerTest;
+  friend class RenderFrameHostTester;
   friend class TestWebContents;
 
   enum class SiteInstanceRelation {

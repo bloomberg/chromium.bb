@@ -55,12 +55,7 @@ class RenderFrameHostTester {
   // RenderViewHostTestEnabler instance (see below) to do this.
   static RenderFrameHostTester* For(RenderFrameHost* host);
 
-  // If the given NavigationController has a pending main frame, returns it,
-  // otherwise NULL. This is an alternative to
-  // WebContentsTester::GetPendingMainFrame() when your WebContents was not
-  // created via a TestWebContents.
-  static RenderFrameHost* GetPendingForController(
-      NavigationController* controller);
+  static void CommitPendingLoad(NavigationController* controller);
 
   virtual ~RenderFrameHostTester() {}
 

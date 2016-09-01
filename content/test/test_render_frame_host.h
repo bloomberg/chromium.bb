@@ -132,6 +132,13 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   // redirect step is ignored.
   void PrepareForCommitWithServerRedirect(const GURL& redirect_url);
 
+  // If we are doing a cross-site navigation, this simulates the current
+  // RenderFrameHost notifying that BeforeUnload has executed so the pending
+  // RenderFrameHost is resumed and can navigate.
+  // PlzNavigate: This simulates a BeforeUnload ACK from the renderer, and the
+  // interaction with the IO thread up until the response is ready to commit.
+  void PrepareForCommitIfNecessary();
+
   // PlzNavigate
   void set_pending_commit(bool pending) { pending_commit_ = pending; }
   bool pending_commit() const { return pending_commit_; }

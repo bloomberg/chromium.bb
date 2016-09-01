@@ -16,9 +16,9 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/browser_side_navigation_policy.h"
+#include "content/public/test/browser_side_navigation_test_utils.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/test/browser_side_navigation_test_utils.h"
 #include "content/test/content_browser_sanity_checker.h"
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_render_frame_host_factory.h"
@@ -56,11 +56,53 @@ RenderFrameHostTester* RenderFrameHostTester::For(RenderFrameHost* host) {
 }
 
 // static
-RenderFrameHost* RenderFrameHostTester::GetPendingForController(
+void RenderFrameHostTester::CommitPendingLoad(
     NavigationController* controller) {
-  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
-      controller->GetWebContents());
-  return web_contents->GetRenderManagerForTesting()->pending_frame_host();
+  // This function is currently used by BrowserWithTestWindowTest. It would be
+  // ideal to instead make the users of that class create TestWebContents
+  // (rather than WebContentsImpl directly). This would allow the implementation
+  // of PrepareForCommitIfNecessary() to live directly in
+  // TestWebContents::CommitPendingNavigation() which could then be the only
+  // place to handle this simulation. Unfortunately, it is not trivial to make
+  // that change, so for now we have this extra simulation for
+  // non-TestWebContents.
+  RenderFrameHost* old_rfh = controller->GetWebContents()->GetMainFrame();
+  TestRenderFrameHost* old_rfh_tester =
+      static_cast<TestRenderFrameHost*>(old_rfh);
+  old_rfh_tester->PrepareForCommitIfNecessary();
+
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(controller->GetWebContents());
+  RenderFrameHost* pending_rfh =
+      IsBrowserSideNavigationEnabled()
+          ? web_contents->GetRenderManagerForTesting()
+                ->speculative_render_frame_host_.get()
+          : web_contents->GetRenderManagerForTesting()->pending_frame_host();
+
+  // Commit on the pending_rfh, if one exists.
+  RenderFrameHost* test_rfh = pending_rfh ? pending_rfh : old_rfh;
+  RenderFrameHostTester* test_rfh_tester = For(test_rfh);
+
+  // For new navigations, we need to send a larger page ID. For renavigations,
+  // we need to send the preexisting page ID. We can tell these apart because
+  // renavigations will have a pending_entry_index while new ones won't (they'll
+  // just have a standalong pending_entry that isn't in the list already).
+  if (controller->GetPendingEntryIndex() >= 0) {
+    test_rfh_tester->SendNavigateWithTransition(
+        controller->GetPendingEntry()->GetPageID(),
+        controller->GetPendingEntry()->GetUniqueID(),
+        false,
+        controller->GetPendingEntry()->GetURL(),
+        controller->GetPendingEntry()->GetTransitionType());
+  } else {
+    test_rfh_tester->SendNavigateWithTransition(
+        controller->GetWebContents()->GetMaxPageIDForSiteInstance(
+            test_rfh->GetSiteInstance()) + 1,
+        controller->GetPendingEntry()->GetUniqueID(),
+        true,
+        controller->GetPendingEntry()->GetURL(),
+        controller->GetPendingEntry()->GetTransitionType());
+  }
 }
 
 // RenderViewHostTester -------------------------------------------------------
