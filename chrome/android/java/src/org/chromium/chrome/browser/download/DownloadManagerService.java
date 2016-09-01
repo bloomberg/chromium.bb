@@ -76,10 +76,6 @@ public class DownloadManagerService extends BroadcastReceiver implements
     public static final int DOWNLOAD_STATUS_INTERRUPTED = 4;
 
     private static final String TAG = "DownloadService";
-    // Deprecated shared preference entry. Keep this for a while so that it will be removed when
-    // user updates Chrome.
-    // TODO(qinmin): remove this when most users have upgraded to M49 or above.
-    private static final String DEPRECATED_DOWNLOAD_NOTIFICATION_IDS = "DownloadNotificationIds";
     private static final String DOWNLOAD_DIRECTORY = "Download";
     protected static final String PENDING_OMA_DOWNLOADS = "PendingOMADownloads";
     private static final String UNKNOWN_MIME_TYPE = "application/unknown";
@@ -254,9 +250,6 @@ public class DownloadManagerService extends BroadcastReceiver implements
         mOMADownloadHandler = new OMADownloadHandler(context);
         mDownloadSnackbarController = new DownloadSnackbarController(context);
         mDownloadManagerDelegate = new DownloadManagerDelegate(mContext);
-        if (mSharedPrefs.contains(DEPRECATED_DOWNLOAD_NOTIFICATION_IDS)) {
-            mSharedPrefs.edit().remove(DEPRECATED_DOWNLOAD_NOTIFICATION_IDS).apply();
-        }
         // Note that this technically leaks the native object, however, DownloadManagerService
         // is a singleton that lives forever and there's no clean shutdown of Chrome on Android.
         init();
