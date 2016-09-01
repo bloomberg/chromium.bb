@@ -1560,6 +1560,7 @@ component("platform") {
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/bindings:wtf_support",
     "//third_party/WebKit/Source/platform/heap",
+    "//third_party/WebKit/public:offscreen_canvas_mojo_bindings_blink",
     "//third_party/ced",
     "//third_party/harfbuzz-ng",
     "//third_party/icu",
@@ -2083,6 +2084,7 @@ source_set("unit_tests") {
 
   deps = [
     ":test_support",
+    "//cc/surfaces:surface_id",
     "//testing/gmock",
     "//testing/gtest",
   ]

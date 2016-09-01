@@ -5,7 +5,7 @@
 #ifndef SKIA_PUBLIC_INTERFACES_IMAGE_FILTER_STRUCT_TRAITS_H_
 #define SKIA_PUBLIC_INTERFACES_IMAGE_FILTER_STRUCT_TRAITS_H_
 
-#include "skia/public/interfaces/image_filter.mojom.h"
+#include "skia/public/interfaces/image_filter.mojom-shared.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "third_party/skia/include/core/SkFlattenableSerialization.h"

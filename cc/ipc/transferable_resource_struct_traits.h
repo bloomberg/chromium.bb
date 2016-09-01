@@ -5,7 +5,7 @@
 #ifndef CC_IPC_TRANSFERABLE_RESOURCE_STRUCT_TRAITS_H_
 #define CC_IPC_TRANSFERABLE_RESOURCE_STRUCT_TRAITS_H_
 
-#include "cc/ipc/transferable_resource.mojom.h"
+#include "cc/ipc/transferable_resource.mojom-shared.h"
 #include "cc/resources/transferable_resource.h"
 
 namespace mojo {

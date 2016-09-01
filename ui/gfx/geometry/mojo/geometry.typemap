@@ -11,11 +11,11 @@ public_headers = [
   "//ui/gfx/geometry/rect_f.h",
   "//ui/gfx/geometry/insets.h",
   "//ui/gfx/geometry/vector2d.h",
-  "//ui/gfx/geometry/vector2d_f.h"
+  "//ui/gfx/geometry/vector2d_f.h",
 ]
 traits_headers = [ "//ui/gfx/geometry/mojo/geometry_struct_traits.h" ]
 deps = [
-  "//ui/gfx/geometry",
+  "//ui/gfx/geometry/mojo:struct_traits",
 ]
 type_mappings = [
   "gfx.mojom.Point=gfx::Point",

@@ -6,7 +6,7 @@
 #define GPU_IPC_COMMON_MAILBOX_HOLDER_STRUCT_TRAITS_H_
 
 #include "gpu/command_buffer/common/mailbox_holder.h"
-#include "gpu/ipc/common/mailbox_holder.mojom.h"
+#include "gpu/ipc/common/mailbox_holder.mojom-shared.h"
 
 namespace mojo {
 

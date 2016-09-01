@@ -32,6 +32,7 @@ source_set("common") {
 
   public_deps = [
     ":mojo_bindings",
+    "//cc",
     "//gpu/command_buffer/common",
     "//ipc",
     "//third_party/WebKit/public:blink_headers",
@@ -43,7 +44,6 @@ source_set("common") {
     "//base",
     "//base/third_party/dynamic_annotations",
     "//build/util:webkit_version",
-    "//cc",
     "//cc/ipc",
     "//cc/surfaces",
     "//components/tracing",

@@ -6,12 +6,7 @@ mojom = "//cc/ipc/compositor_frame_metadata.mojom"
 public_headers = [ "//cc/output/compositor_frame_metadata.h" ]
 traits_headers = [ "//cc/ipc/compositor_frame_metadata_struct_traits.h" ]
 sources = [
-  "//cc/ipc/compositor_frame_metadata_struct_traits.cc",
-]
-deps = [
-  "//cc",
-  "//ui/events:events_base",
-  "//ui/gfx",
+  "//cc/ipc:struct_traits",
 ]
 type_mappings =
     [ "cc.mojom.CompositorFrameMetadata=cc::CompositorFrameMetadata" ]

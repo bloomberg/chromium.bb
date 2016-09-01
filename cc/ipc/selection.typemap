@@ -8,5 +8,7 @@ public_headers = [
   "//ui/gfx/selection_bound.h",
 ]
 traits_headers = [ "//cc/ipc/selection_struct_traits.h" ]
-public_deps = [ "//cc", "//ui/gfx:selection_bound" ]
+deps = [
+  "//cc/ipc:struct_traits",
+]
 type_mappings = [ "cc.mojom.Selection=cc::Selection<gfx::SelectionBound>" ]

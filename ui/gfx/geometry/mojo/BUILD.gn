@@ -37,3 +37,13 @@ source_set("unit_test") {
     "//ui/gfx/geometry",
   ]
 }
+
+source_set("struct_traits") {
+  sources = [
+    "geometry_struct_traits.h",
+  ]
+  public_deps = [
+    ":mojo_shared_cpp_sources",
+    "//ui/gfx/geometry",
+  ]
+}

@@ -15,7 +15,7 @@ traits_headers = [
   "//mojo/common/common_custom_types_struct_traits.h",
 ]
 sources = [
-  "//mojo/common/common_custom_types_struct_traits.cc",
+  "//mojo/common:struct_traits",
 ]
 public_deps = [
   "//ipc",

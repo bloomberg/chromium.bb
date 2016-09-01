@@ -650,14 +650,12 @@ mojom("mojo_bindings") {
     "platform/modules/hyphenation/hyphenation.mojom",
     "platform/modules/notifications/notification.mojom",
     "platform/modules/notifications/notification_service.mojom",
-    "platform/modules/offscreencanvas/offscreen_canvas_surface.mojom",
     "platform/modules/serviceworker/service_worker_event_status.mojom",
     "platform/modules/wake_lock/wake_lock_service.mojom",
   ]
   public_deps = [
     ":android_mojo_bindings",
     ":new_wrapper_types_mojo_bindings",
-    "//cc/ipc:interfaces_surfaceid_only",
     "//device/bluetooth/public/interfaces:bluetooth_mojom_bluetooth_uuid",
     "//url/mojo:url_mojom_origin",
   ]
@@ -718,8 +716,29 @@ mojom("android_mojo_bindings") {
   export_header_blink = "third_party/WebKit/public/platform/WebCommon.h"
 }
 
+# The offscreen_canvas_mojo_bindings is separated from the rest of mojom files
+# because its deps contain too many files in Chromium that would pollute the
+# include paths in generated mojom-blink files for other services.
+mojom("offscreen_canvas_mojo_bindings") {
+  sources = [
+    "platform/modules/offscreencanvas/offscreen_canvas_surface.mojom",
+  ]
+  deps = [
+    "//cc/ipc:interfaces",
+  ]
+
+  # See comment above
+  export_class_attribute = "CONTENT_EXPORT"
+  export_define = "CONTENT_IMPLEMENTATION=1"
+  export_header = "content/common/content_export.h"
+  export_class_attribute_blink = "BLINK_PLATFORM_EXPORT"
+  export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
+  export_header_blink = "third_party/WebKit/public/platform/WebCommon.h"
+}
+
 group("generate_mojo_bindings") {
   deps = [
     ":mojo_bindings_blink__generator",
+    ":offscreen_canvas_mojo_bindings_blink__generator",
   ]
 }

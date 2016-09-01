@@ -5,5 +5,7 @@
 mojom = "//cc/ipc/render_pass_id.mojom"
 public_headers = [ "//cc/quads/render_pass_id.h" ]
 traits_headers = [ "//cc/ipc/render_pass_id_struct_traits.h" ]
-deps = [ "//cc", ]
+deps = [
+  "//cc/ipc:struct_traits",
+]
 type_mappings = [ "cc.mojom.RenderPassId=cc::RenderPassId" ]

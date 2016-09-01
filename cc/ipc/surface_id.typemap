@@ -5,5 +5,7 @@
 mojom = "//cc/ipc/surface_id.mojom"
 public_headers = [ "//cc/surfaces/surface_id.h" ]
 traits_headers = [ "//cc/ipc/surface_id_struct_traits.h" ]
-deps = [ "//cc/surfaces:surface_id", ]
+deps = [
+  "//cc/ipc:struct_traits",
+]
 type_mappings = [ "cc.mojom.SurfaceId=cc::SurfaceId" ]

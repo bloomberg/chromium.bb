@@ -6,7 +6,7 @@
 #define CC_IPC_RENDER_PASS_STRUCT_TRAITS_H_
 
 #include "cc/ipc/quads_struct_traits.h"
-#include "cc/ipc/render_pass.mojom.h"
+#include "cc/ipc/render_pass.mojom-shared.h"
 #include "cc/ipc/render_pass_id_struct_traits.h"
 #include "cc/quads/render_pass.h"
 #include "ui/gfx/mojo/transform_struct_traits.h"

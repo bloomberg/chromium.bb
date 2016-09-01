@@ -5,7 +5,7 @@
 #ifndef UI_GFX_MOJO_SELECTION_BOUND_STRUCT_TRAITS_H_
 #define UI_GFX_MOJO_SELECTION_BOUND_STRUCT_TRAITS_H_
 
-#include "ui/gfx/mojo/selection_bound.mojom.h"
+#include "ui/gfx/mojo/selection_bound.mojom-shared.h"
 #include "ui/gfx/selection_bound.h"
 
 namespace mojo {

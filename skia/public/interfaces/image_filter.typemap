@@ -5,7 +5,10 @@
 mojom = "//skia/public/interfaces/image_filter.mojom"
 public_headers = [ "//third_party/skia/include/core/SkImageFilter.h" ]
 traits_headers = [ "//skia/public/interfaces/image_filter_struct_traits.h" ]
-sources = [ "//skia/public/interfaces/image_filter_struct_traits.cc" ]
-deps = [ "//mojo/public/cpp/bindings" ]
-public_deps = [ "//skia" ]
+sources = [
+  "//skia/public/interfaces:struct_traits",
+]
+deps = [
+  "//skia/public/interfaces:struct_traits",
+]
 type_mappings = [ "skia.mojom.ImageFilter=sk_sp<SkImageFilter>" ]

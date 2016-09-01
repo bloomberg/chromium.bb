@@ -8,39 +8,39 @@
 namespace mojo {
 
 cc::DrawQuad* AllocateAndConstruct(
-    cc::mojom::DrawQuadState::DataView::Tag material,
+    cc::mojom::DrawQuadStateDataView::Tag material,
     cc::QuadList* list) {
   cc::DrawQuad* quad = nullptr;
   switch (material) {
-    case cc::mojom::DrawQuadState::DataView::Tag::DEBUG_BORDER_QUAD_STATE:
+    case cc::mojom::DrawQuadStateDataView::Tag::DEBUG_BORDER_QUAD_STATE:
       quad = list->AllocateAndConstruct<cc::DebugBorderDrawQuad>();
       quad->material = cc::DrawQuad::DEBUG_BORDER;
       return quad;
-    case cc::mojom::DrawQuadState::DataView::Tag::RENDER_PASS_QUAD_STATE:
+    case cc::mojom::DrawQuadStateDataView::Tag::RENDER_PASS_QUAD_STATE:
       quad = list->AllocateAndConstruct<cc::RenderPassDrawQuad>();
       quad->material = cc::DrawQuad::RENDER_PASS;
       return quad;
-    case cc::mojom::DrawQuadState::DataView::Tag::SOLID_COLOR_QUAD_STATE:
+    case cc::mojom::DrawQuadStateDataView::Tag::SOLID_COLOR_QUAD_STATE:
       quad = list->AllocateAndConstruct<cc::SolidColorDrawQuad>();
       quad->material = cc::DrawQuad::SOLID_COLOR;
       return quad;
-    case cc::mojom::DrawQuadState::DataView::Tag::STREAM_VIDEO_QUAD_STATE:
+    case cc::mojom::DrawQuadStateDataView::Tag::STREAM_VIDEO_QUAD_STATE:
       quad = list->AllocateAndConstruct<cc::StreamVideoDrawQuad>();
       quad->material = cc::DrawQuad::STREAM_VIDEO_CONTENT;
       return quad;
-    case cc::mojom::DrawQuadState::DataView::Tag::SURFACE_QUAD_STATE:
+    case cc::mojom::DrawQuadStateDataView::Tag::SURFACE_QUAD_STATE:
       quad = list->AllocateAndConstruct<cc::SurfaceDrawQuad>();
       quad->material = cc::DrawQuad::SURFACE_CONTENT;
       return quad;
-    case cc::mojom::DrawQuadState::DataView::Tag::TEXTURE_QUAD_STATE:
+    case cc::mojom::DrawQuadStateDataView::Tag::TEXTURE_QUAD_STATE:
       quad = list->AllocateAndConstruct<cc::TextureDrawQuad>();
       quad->material = cc::DrawQuad::TEXTURE_CONTENT;
       return quad;
-    case cc::mojom::DrawQuadState::DataView::Tag::TILE_QUAD_STATE:
+    case cc::mojom::DrawQuadStateDataView::Tag::TILE_QUAD_STATE:
       quad = list->AllocateAndConstruct<cc::TileDrawQuad>();
       quad->material = cc::DrawQuad::TILED_CONTENT;
       return quad;
-    case cc::mojom::DrawQuadState::DataView::Tag::YUV_VIDEO_QUAD_STATE:
+    case cc::mojom::DrawQuadStateDataView::Tag::YUV_VIDEO_QUAD_STATE:
       quad = list->AllocateAndConstruct<cc::YUVVideoDrawQuad>();
       quad->material = cc::DrawQuad::YUV_VIDEO_CONTENT;
       return quad;

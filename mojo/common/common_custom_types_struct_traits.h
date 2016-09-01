@@ -5,21 +5,18 @@
 #ifndef MOJO_COMMON_COMMON_CUSTOM_TYPES_STRUCT_TRAITS_H_
 #define MOJO_COMMON_COMMON_CUSTOM_TYPES_STRUCT_TRAITS_H_
 
-#include "mojo/common/common_custom_types.mojom.h"
-
-namespace base {
-class Version;
-}
+#include "base/version.h"
+#include "mojo/common/common_custom_types.mojom-shared.h"
 
 namespace mojo {
 
 template <>
 struct StructTraits<mojo::common::mojom::VersionDataView, base::Version> {
   static bool IsNull(const base::Version& version) {
-    return !version.IsValid();
+      return !version.IsValid();
   }
   static void SetToNull(base::Version* out) {
-    *out = base::Version(std::string());
+      *out = base::Version(std::string());
   }
   static const std::vector<uint32_t>& components(const base::Version& version);
   static bool Read(mojo::common::mojom::VersionDataView data,

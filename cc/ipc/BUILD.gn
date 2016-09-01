@@ -49,24 +49,18 @@ mojom("interfaces") {
     "returned_resource.mojom",
     "selection.mojom",
     "shared_quad_state.mojom",
+    "surface_id.mojom",
+    "surface_sequence.mojom",
     "transferable_resource.mojom",
   ]
 
-  public_deps = [
-    ":interfaces_surfaceid_only",
+  deps = [
     "//gpu/ipc/common:interfaces",
     "//mojo/common:common_custom_types",
     "//skia/public/interfaces",
     "//ui/events/mojo:interfaces",
     "//ui/gfx/geometry/mojo",
     "//ui/gfx/mojo",
-  ]
-}
-
-mojom("interfaces_surfaceid_only") {
-  sources = [
-    "surface_id.mojom",
-    "surface_sequence.mojom",
   ]
 }
 
@@ -78,6 +72,42 @@ mojom("test_interfaces") {
 
   public_deps = [
     ":interfaces",
-    ":interfaces_surfaceid_only",
+  ]
+}
+
+source_set("struct_traits") {
+  sources = [
+    "compositor_frame_metadata_struct_traits.cc",
+    "compositor_frame_metadata_struct_traits.h",
+    "compositor_frame_struct_traits.cc",
+    "compositor_frame_struct_traits.h",
+    "filter_operation_struct_traits.h",
+    "filter_operations_struct_traits.h",
+    "quads_struct_traits.cc",
+    "quads_struct_traits.h",
+    "render_pass_id_struct_traits.h",
+    "render_pass_struct_traits.cc",
+    "render_pass_struct_traits.h",
+    "selection_struct_traits.h",
+    "shared_quad_state_struct_traits.h",
+    "surface_id_struct_traits.h",
+    "surface_sequence_struct_traits.h",
+    "transferable_resource_struct_traits.cc",
+    "transferable_resource_struct_traits.h",
+  ]
+  public_deps = [
+    ":interfaces_shared_cpp_sources",
+    "//base",
+    "//cc",
+    "//cc/surfaces:surface_id",
+    "//gpu/ipc/common:struct_traits",
+    "//mojo/common:struct_traits",
+    "//skia/public/interfaces:struct_traits",
+    "//ui/events:events_base",
+    "//ui/events/mojo:struct_traits",
+    "//ui/gfx",
+    "//ui/gfx:selection_bound",
+    "//ui/gfx/geometry/mojo:struct_traits",
+    "//ui/gfx/mojo:struct_traits",
   ]
 }

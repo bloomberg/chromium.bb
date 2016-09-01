@@ -6,7 +6,7 @@
 #define UI_EVENTS_MOJO_LATENCY_INFO_STRUCT_TRAITS_H_
 
 #include "ui/events/latency_info.h"
-#include "ui/events/mojo/latency_info.mojom.h"
+#include "ui/events/mojo/latency_info.mojom-shared.h"
 #include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
 
 namespace mojo {

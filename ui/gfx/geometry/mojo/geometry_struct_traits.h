@@ -7,7 +7,7 @@
 
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/insets_f.h"
-#include "ui/gfx/geometry/mojo/geometry.mojom.h"
+#include "ui/gfx/geometry/mojo/geometry.mojom-shared.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"

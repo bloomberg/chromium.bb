@@ -5,7 +5,7 @@
 #ifndef CC_IPC_COMPOSITOR_FRAME_STRUCT_TRAITS_H_
 #define CC_IPC_COMPOSITOR_FRAME_STRUCT_TRAITS_H_
 
-#include "cc/ipc/compositor_frame.mojom.h"
+#include "cc/ipc/compositor_frame.mojom-shared.h"
 #include "cc/output/compositor_frame.h"
 
 namespace mojo {

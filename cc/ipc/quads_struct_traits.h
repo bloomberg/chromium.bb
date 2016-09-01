@@ -7,7 +7,7 @@
 
 #include "cc/ipc/filter_operation_struct_traits.h"
 #include "cc/ipc/filter_operations_struct_traits.h"
-#include "cc/ipc/quads.mojom.h"
+#include "cc/ipc/quads.mojom-shared.h"
 #include "cc/ipc/render_pass_id_struct_traits.h"
 #include "cc/ipc/shared_quad_state_struct_traits.h"
 #include "cc/ipc/surface_id_struct_traits.h"
@@ -25,37 +25,37 @@
 namespace mojo {
 
 cc::DrawQuad* AllocateAndConstruct(
-    cc::mojom::DrawQuadState::DataView::Tag material,
+    cc::mojom::DrawQuadStateDataView::Tag material,
     cc::QuadList* list);
 
 template <>
 struct UnionTraits<cc::mojom::DrawQuadStateDataView, cc::DrawQuad> {
-  static cc::mojom::DrawQuadState::DataView::Tag GetTag(
+  static cc::mojom::DrawQuadStateDataView::Tag GetTag(
       const cc::DrawQuad& quad) {
     switch (quad.material) {
       case cc::DrawQuad::INVALID:
         break;
       case cc::DrawQuad::DEBUG_BORDER:
-        return cc::mojom::DrawQuadState::DataView::Tag::DEBUG_BORDER_QUAD_STATE;
+        return cc::mojom::DrawQuadStateDataView::Tag::DEBUG_BORDER_QUAD_STATE;
       case cc::DrawQuad::PICTURE_CONTENT:
         break;
       case cc::DrawQuad::RENDER_PASS:
-        return cc::mojom::DrawQuadState::DataView::Tag::RENDER_PASS_QUAD_STATE;
+        return cc::mojom::DrawQuadStateDataView::Tag::RENDER_PASS_QUAD_STATE;
       case cc::DrawQuad::SOLID_COLOR:
-        return cc::mojom::DrawQuadState::DataView::Tag::SOLID_COLOR_QUAD_STATE;
+        return cc::mojom::DrawQuadStateDataView::Tag::SOLID_COLOR_QUAD_STATE;
       case cc::DrawQuad::STREAM_VIDEO_CONTENT:
-        return cc::mojom::DrawQuadState::DataView::Tag::STREAM_VIDEO_QUAD_STATE;
+        return cc::mojom::DrawQuadStateDataView::Tag::STREAM_VIDEO_QUAD_STATE;
       case cc::DrawQuad::SURFACE_CONTENT:
-        return cc::mojom::DrawQuadState::DataView::Tag::SURFACE_QUAD_STATE;
+        return cc::mojom::DrawQuadStateDataView::Tag::SURFACE_QUAD_STATE;
       case cc::DrawQuad::TEXTURE_CONTENT:
-        return cc::mojom::DrawQuadState::DataView::Tag::TEXTURE_QUAD_STATE;
+        return cc::mojom::DrawQuadStateDataView::Tag::TEXTURE_QUAD_STATE;
       case cc::DrawQuad::TILED_CONTENT:
-        return cc::mojom::DrawQuadState::DataView::Tag::TILE_QUAD_STATE;
+        return cc::mojom::DrawQuadStateDataView::Tag::TILE_QUAD_STATE;
       case cc::DrawQuad::YUV_VIDEO_CONTENT:
-        return cc::mojom::DrawQuadState::DataView::Tag::YUV_VIDEO_QUAD_STATE;
+        return cc::mojom::DrawQuadStateDataView::Tag::YUV_VIDEO_QUAD_STATE;
     }
     NOTREACHED();
-    return cc::mojom::DrawQuadState::DataView::Tag::DEBUG_BORDER_QUAD_STATE;
+    return cc::mojom::DrawQuadStateDataView::Tag::DEBUG_BORDER_QUAD_STATE;
   }
 
   static const cc::DrawQuad& debug_border_quad_state(const cc::DrawQuad& quad) {
@@ -90,23 +90,23 @@ struct UnionTraits<cc::mojom::DrawQuadStateDataView, cc::DrawQuad> {
     return quad;
   }
 
-  static bool Read(cc::mojom::DrawQuadState::DataView data, cc::DrawQuad* out) {
+  static bool Read(cc::mojom::DrawQuadStateDataView data, cc::DrawQuad* out) {
     switch (data.tag()) {
-      case cc::mojom::DrawQuadState::DataView::Tag::DEBUG_BORDER_QUAD_STATE:
+      case cc::mojom::DrawQuadStateDataView::Tag::DEBUG_BORDER_QUAD_STATE:
         return data.ReadDebugBorderQuadState(out);
-      case cc::mojom::DrawQuadState::DataView::Tag::RENDER_PASS_QUAD_STATE:
+      case cc::mojom::DrawQuadStateDataView::Tag::RENDER_PASS_QUAD_STATE:
         return data.ReadRenderPassQuadState(out);
-      case cc::mojom::DrawQuadState::DataView::Tag::SOLID_COLOR_QUAD_STATE:
+      case cc::mojom::DrawQuadStateDataView::Tag::SOLID_COLOR_QUAD_STATE:
         return data.ReadSolidColorQuadState(out);
-      case cc::mojom::DrawQuadState::DataView::Tag::SURFACE_QUAD_STATE:
+      case cc::mojom::DrawQuadStateDataView::Tag::SURFACE_QUAD_STATE:
         return data.ReadSurfaceQuadState(out);
-      case cc::mojom::DrawQuadState::DataView::Tag::TEXTURE_QUAD_STATE:
+      case cc::mojom::DrawQuadStateDataView::Tag::TEXTURE_QUAD_STATE:
         return data.ReadTextureQuadState(out);
-      case cc::mojom::DrawQuadState::DataView::Tag::TILE_QUAD_STATE:
+      case cc::mojom::DrawQuadStateDataView::Tag::TILE_QUAD_STATE:
         return data.ReadTileQuadState(out);
-      case cc::mojom::DrawQuadState::DataView::Tag::STREAM_VIDEO_QUAD_STATE:
+      case cc::mojom::DrawQuadStateDataView::Tag::STREAM_VIDEO_QUAD_STATE:
         return data.ReadStreamVideoQuadState(out);
-      case cc::mojom::DrawQuadState::DataView::Tag::YUV_VIDEO_QUAD_STATE:
+      case cc::mojom::DrawQuadStateDataView::Tag::YUV_VIDEO_QUAD_STATE:
         return data.ReadYuvVideoQuadState(out);
     }
     NOTREACHED();

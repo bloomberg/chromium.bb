@@ -37,3 +37,14 @@ mojom("test_interfaces") {
 
   use_new_wrapper_types = false
 }
+
+source_set("struct_traits") {
+  sources = [
+    "image_filter_struct_traits.cc",
+    "image_filter_struct_traits.h",
+  ]
+  public_deps = [
+    ":interfaces_shared_cpp_sources",
+    "//skia",
+  ]
+}

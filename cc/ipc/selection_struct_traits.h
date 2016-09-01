@@ -6,7 +6,7 @@
 #define CC_IPC_SELECTION_STRUCT_TRAITS_H_
 
 #include "cc/input/selection.h"
-#include "cc/ipc/selection.mojom.h"
+#include "cc/ipc/selection.mojom-shared.h"
 
 namespace mojo {
 

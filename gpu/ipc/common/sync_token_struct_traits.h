@@ -6,7 +6,7 @@
 #define GPU_IPC_COMMON_SYNC_TOKEN_STRUCT_TRAITS_H_
 
 #include "gpu/command_buffer/common/sync_token.h"
-#include "gpu/ipc/common/sync_token.mojom.h"
+#include "gpu/ipc/common/sync_token.mojom-shared.h"
 
 namespace mojo {
 

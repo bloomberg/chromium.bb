@@ -144,3 +144,16 @@ mojom("test_interfaces") {
     ":interfaces",
   ]
 }
+
+source_set("struct_traits") {
+  sources = [
+    "mailbox_holder_struct_traits.h",
+    "mailbox_struct_traits.h",
+    "sync_token_struct_traits.h",
+  ]
+  deps = [
+    ":interfaces_shared_cpp_sources",
+    "//gpu/command_buffer/common",
+    "//mojo/public/cpp/bindings:bindings",
+  ]
+}

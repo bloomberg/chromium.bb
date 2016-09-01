@@ -6,10 +6,9 @@ mojom = "//cc/ipc/compositor_frame.mojom"
 public_headers = [ "//cc/output/compositor_frame.h" ]
 traits_headers = [ "//cc/ipc/compositor_frame_struct_traits.h" ]
 sources = [
-  "//cc/ipc/compositor_frame_struct_traits.cc",
+  "//cc/ipc:struct_traits",
 ]
-public_deps = [
+deps = [
   "//cc",
 ]
-type_mappings =
-    [ "cc.mojom.CompositorFrame=cc::CompositorFrame[move_only]" ]
+type_mappings = [ "cc.mojom.CompositorFrame=cc::CompositorFrame[move_only]" ]

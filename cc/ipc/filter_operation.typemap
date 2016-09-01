@@ -5,5 +5,7 @@
 mojom = "//cc/ipc/filter_operation.mojom"
 public_headers = [ "//cc/output/filter_operation.h" ]
 traits_headers = [ "//cc/ipc/filter_operation_struct_traits.h" ]
-deps = [ "//cc", ]
+deps = [
+  "//cc/ipc:struct_traits",
+]
 type_mappings = [ "cc.mojom.FilterOperation=cc::FilterOperation" ]

@@ -5,7 +5,7 @@
 #ifndef CC_IPC_SHARED_QUAD_STATE_STRUCT_TRAITS_H_
 #define CC_IPC_SHARED_QUAD_STATE_STRUCT_TRAITS_H_
 
-#include "cc/ipc/shared_quad_state.mojom.h"
+#include "cc/ipc/shared_quad_state.mojom-shared.h"
 #include "cc/quads/shared_quad_state.h"
 
 namespace mojo {

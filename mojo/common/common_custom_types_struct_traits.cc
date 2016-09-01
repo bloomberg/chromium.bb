@@ -6,8 +6,6 @@
 
 #include <iterator>
 
-#include "base/version.h"
-
 namespace mojo {
 
 // static

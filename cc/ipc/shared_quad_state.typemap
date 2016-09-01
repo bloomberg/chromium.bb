@@ -5,6 +5,7 @@
 mojom = "//cc/ipc/shared_quad_state.mojom"
 public_headers = [ "//cc/quads/shared_quad_state.h" ]
 traits_headers = [ "//cc/ipc/shared_quad_state_struct_traits.h" ]
-deps = [ "//cc", ]
-public_deps = [ "//cc", ]
+deps = [
+  "//cc/ipc:struct_traits",
+]
 type_mappings = [ "cc.mojom.SharedQuadState=cc::SharedQuadState" ]

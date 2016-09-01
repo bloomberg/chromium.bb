@@ -5,7 +5,7 @@
 #ifndef CC_IPC_RENDER_PASS_ID_STRUCT_TRAITS_H_
 #define CC_IPC_RENDER_PASS_ID_STRUCT_TRAITS_H_
 
-#include "cc/ipc/render_pass_id.mojom.h"
+#include "cc/ipc/render_pass_id.mojom-shared.h"
 #include "cc/quads/render_pass_id.h"
 
 namespace mojo {
