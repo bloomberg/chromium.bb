@@ -9,6 +9,7 @@
 # * Change [ Skip ] to [ Pass ]
 # * Add a leading comment: ## Owners: user@example.com
 
+imported/csswg-test/WOFF2-UserAgent [ Skip ]
 imported/csswg-test/compositing-1 [ Skip ]
 imported/csswg-test/css-align-3 [ Skip ]
 imported/csswg-test/css-animations-1 [ Skip ]
@@ -165,6 +166,7 @@ imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/masking [ Sk
 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/multicol3 [ Skip ]
 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/reftest.list [ Skip ]
 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/ruby [ Skip ]
+imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/selectors4 [ Skip ]
 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/sync-tests-filter [ Skip ]
 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/sync-tests.sh [ Skip ]
 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/text-decor-3 [ Skip ]
