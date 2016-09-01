@@ -48,8 +48,6 @@ class BlimpClientContextImpl : public BlimpClientContext,
       std::unique_ptr<CompositorDependencies> compositor_dependencies);
   ~BlimpClientContextImpl() override;
 
-  IdentitySource* GetIdentitySource();
-
   // BlimpClientContext implementation.
   void SetDelegate(BlimpClientContextDelegate* delegate) override;
   std::unique_ptr<BlimpContents> CreateBlimpContents(
@@ -60,12 +58,12 @@ class BlimpClientContextImpl : public BlimpClientContext,
   void OnConnected() override;
   void OnDisconnected(int result) override;
 
-  TabControlFeature* GetTabControlFeature() const;
-
  protected:
   // Returns the URL to use for connections to the assigner. Used to construct
   // the AssignmentSource.
   virtual GURL GetAssignerURL();
+
+  IdentitySource* GetIdentitySource();
 
  private:
   // Connect to assignment source with OAuth2 token to get an assignment.

@@ -119,13 +119,6 @@ void BlimpClientContextImpl::Connect() {
   GetIdentitySource()->Connect();
 }
 
-IdentitySource* BlimpClientContextImpl::GetIdentitySource() {
-  if (!identity_source_) {
-    CreateIdentitySource();
-  }
-  return identity_source_.get();
-}
-
 void BlimpClientContextImpl::ConnectToAssignmentSource(
     const std::string& client_auth_token) {
   if (!assignment_source_) {
@@ -144,12 +137,15 @@ void BlimpClientContextImpl::OnConnected() {}
 
 void BlimpClientContextImpl::OnDisconnected(int result) {}
 
-TabControlFeature* BlimpClientContextImpl::GetTabControlFeature() const {
-  return tab_control_feature_.get();
-}
-
 GURL BlimpClientContextImpl::GetAssignerURL() {
   return GURL(kDefaultAssignerUrl);
+}
+
+IdentitySource* BlimpClientContextImpl::GetIdentitySource() {
+  if (!identity_source_) {
+    CreateIdentitySource();
+  }
+  return identity_source_.get();
 }
 
 void BlimpClientContextImpl::ConnectWithAssignment(
