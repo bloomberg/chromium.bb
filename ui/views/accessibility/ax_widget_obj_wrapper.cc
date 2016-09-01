@@ -58,6 +58,10 @@ void AXWidgetObjWrapper::OnWidgetDestroying(Widget* widget) {
   AXAuraObjCache::GetInstance()->Remove(widget);
 }
 
+void AXWidgetObjWrapper::OnWidgetClosing(Widget* widget) {
+  AXAuraObjCache::GetInstance()->Remove(widget);
+}
+
 void AXWidgetObjWrapper::OnWillRemoveView(Widget* widget, View* view) {
   AXAuraObjCache::GetInstance()->RemoveViewSubtree(view);
 }

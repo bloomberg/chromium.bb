@@ -74,8 +74,12 @@ void AXAuraObjCache::Remove(Widget* widget) {
     RemoveViewSubtree(widget->GetRootView());
 }
 
-void AXAuraObjCache::Remove(aura::Window* window) {
+void AXAuraObjCache::Remove(aura::Window* window, aura::Window* parent) {
+  int id = GetIDInternal(parent, window_to_id_map_);
+  AXAuraObjWrapper* parent_window_obj = Get(id);
   RemoveInternal(window, window_to_id_map_);
+  if (parent && delegate_)
+    delegate_->OnChildWindowRemoved(parent_window_obj);
 }
 
 AXAuraObjWrapper* AXAuraObjCache::Get(int32_t id) {
@@ -117,8 +121,8 @@ AXAuraObjWrapper* AXAuraObjCache::GetFocus() {
 AXAuraObjCache::AXAuraObjCache()
     : current_id_(1),
       focus_client_(nullptr),
-      is_destroying_(false) {
-}
+      is_destroying_(false),
+      delegate_(nullptr) {}
 
 AXAuraObjCache::~AXAuraObjCache() {
   is_destroying_ = true;

@@ -61,7 +61,19 @@ int32_t AXWindowObjWrapper::GetID() {
 }
 
 void AXWindowObjWrapper::OnWindowDestroyed(aura::Window* window) {
-  AXAuraObjCache::GetInstance()->Remove(window);
+  AXAuraObjCache::GetInstance()->Remove(window, nullptr);
+}
+
+void AXWindowObjWrapper::OnWindowDestroying(aura::Window* window) {
+  Widget* widget = Widget::GetWidgetForNativeView(window);
+  if (widget)
+    AXAuraObjCache::GetInstance()->Remove(widget);
+}
+
+void AXWindowObjWrapper::OnWindowHierarchyChanged(
+    const HierarchyChangeParams& params) {
+  if (params.phase == WindowObserver::HierarchyChangeParams::HIERARCHY_CHANGED)
+    AXAuraObjCache::GetInstance()->Remove(params.target, params.old_parent);
 }
 
 }  // namespace views

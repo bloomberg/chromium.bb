@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/api/automation_internal/automation_action_adapter.h"
 #include "chrome/browser/ui/aura/accessibility/ax_tree_source_aura.h"
 #include "ui/accessibility/ax_tree_serializer.h"
+#include "ui/views/accessibility/ax_aura_obj_cache.h"
 
 namespace base {
 template <typename T>
@@ -34,7 +35,8 @@ using AuraAXTreeSerializer =
                          ui::AXTreeData>;
 
 // Manages a tree of automation nodes.
-class AutomationManagerAura : public extensions::AutomationActionAdapter {
+class AutomationManagerAura : public extensions::AutomationActionAdapter,
+                              views::AXAuraObjCache::Delegate {
  public:
   // Get the single instance of this class.
   static AutomationManagerAura* GetInstance();
@@ -61,6 +63,9 @@ class AutomationManagerAura : public extensions::AutomationActionAdapter {
                     int32_t focus_id,
                     int32_t focus_offset) override;
   void ShowContextMenu(int32_t id) override;
+
+  // views::AXAuraObjCache::Delegate implementation.
+  void OnChildWindowRemoved(views::AXAuraObjWrapper* parent) override;
 
  private:
   friend struct base::DefaultSingletonTraits<AutomationManagerAura>;

@@ -17,7 +17,6 @@
 #include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/browser_context.h"
 #include "ui/aura/window.h"
-#include "ui/views/accessibility/ax_aura_obj_cache.h"
 #include "ui/views/accessibility/ax_aura_obj_wrapper.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -41,6 +40,7 @@ void AutomationManagerAura::Enable(BrowserContext* context) {
   ResetSerializer();
 
   SendEvent(context, current_tree_->GetRoot(), ui::AX_EVENT_LOAD_COMPLETE);
+  views::AXAuraObjCache::GetInstance()->SetDelegate(this);
 
 #if defined(OS_CHROMEOS)
   aura::Window* active_window = ash::wm::GetActiveWindow();
@@ -65,17 +65,9 @@ void AutomationManagerAura::HandleEvent(BrowserContext* context,
   if (!enabled_)
     return;
 
-  if (!context && g_browser_process->profile_manager())
-    context = g_browser_process->profile_manager()->GetLastUsedProfile();
-
-  if (!context) {
-    LOG(WARNING) << "Accessibility notification but no browser context";
-    return;
-  }
-
   views::AXAuraObjWrapper* aura_obj =
       views::AXAuraObjCache::GetInstance()->GetOrCreate(view);
-  SendEvent(context, aura_obj, event_type);
+  SendEvent(nullptr, aura_obj, event_type);
 }
 
 void AutomationManagerAura::HandleAlert(content::BrowserContext* context,
@@ -121,6 +113,17 @@ void AutomationManagerAura::ShowContextMenu(int32_t id) {
   current_tree_->ShowContextMenu(id);
 }
 
+void AutomationManagerAura::OnChildWindowRemoved(
+    views::AXAuraObjWrapper* parent) {
+  if (!enabled_)
+    return;
+
+  if (!parent)
+    parent = current_tree_->GetRoot();
+
+  SendEvent(nullptr, parent, ui::AX_EVENT_CHILDREN_CHANGED);
+}
+
 AutomationManagerAura::AutomationManagerAura()
     : enabled_(false), processing_events_(false) {}
 
@@ -135,6 +138,15 @@ void AutomationManagerAura::ResetSerializer() {
 void AutomationManagerAura::SendEvent(BrowserContext* context,
                                       views::AXAuraObjWrapper* aura_obj,
                                       ui::AXEvent event_type) {
+  if (!context && g_browser_process->profile_manager()) {
+    context = g_browser_process->profile_manager()->GetLastUsedProfile();
+  }
+
+  if (!context) {
+    LOG(WARNING) << "Accessibility notification but no browser context";
+    return;
+  }
+
   if (processing_events_) {
     pending_events_.push_back(std::make_pair(aura_obj, event_type));
     return;
