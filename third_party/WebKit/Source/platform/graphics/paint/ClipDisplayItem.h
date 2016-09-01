@@ -36,14 +36,12 @@ private:
 #ifndef NDEBUG
     void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
 #endif
-#if ENABLE(ASSERT)
     bool equals(const DisplayItem& other) const final
     {
         return DisplayItem::equals(other)
             && m_clipRect == static_cast<const ClipDisplayItem&>(other).m_clipRect
             && m_roundedRectClips == static_cast<const ClipDisplayItem&>(other).m_roundedRectClips;
     }
-#endif
 
     const IntRect m_clipRect;
     Vector<FloatRoundedRect> m_roundedRectClips;

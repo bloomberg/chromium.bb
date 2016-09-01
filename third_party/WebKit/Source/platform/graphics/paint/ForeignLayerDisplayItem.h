@@ -42,9 +42,7 @@ public:
     void replay(GraphicsContext&) const override;
     void appendToWebDisplayItemList(const IntRect&, WebDisplayItemList*) const override;
     bool drawsContent() const override;
-#if ENABLE(ASSERT)
     bool equals(const DisplayItem&) const override;
-#endif
 #ifndef NDEBUG
     void dumpPropertiesAsDebugString(StringBuilder&) const override;
 #endif
