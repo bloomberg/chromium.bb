@@ -6,7 +6,9 @@
 #define ASH_COMMON_WM_FORWARDING_LAYER_DELEGATE_H_
 
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "ui/compositor/layer_delegate.h"
+#include "ui/compositor/layer_observer.h"
 
 namespace ui {
 class Layer;
@@ -19,16 +21,13 @@ class WmWindow;
 namespace wm {
 
 // A layer delegate to paint the content of a recreated layer by delegating
-// the paint request to the original delegate. It checks if the original
-// delegate is still valid by traversing the original layers.
-class ForwardingLayerDelegate : public ui::LayerDelegate {
+// the paint request to the original delegate. It is a delegate of the recreated
+// layer and an observer of the original layer.
+class ForwardingLayerDelegate : public ui::LayerDelegate,
+                                public ui::LayerObserver {
  public:
-  ForwardingLayerDelegate(WmWindow* original_window,
-                          ui::LayerDelegate* delegate);
+  ForwardingLayerDelegate(ui::Layer* new_layer, ui::Layer* original_layer);
   ~ForwardingLayerDelegate() override;
-
- private:
-  bool IsDelegateValid(ui::Layer* layer) const;
 
   // ui:LayerDelegate:
   void OnPaintLayer(const ui::PaintContext& context) override;
@@ -36,8 +35,19 @@ class ForwardingLayerDelegate : public ui::LayerDelegate {
   void OnDeviceScaleFactorChanged(float device_scale_factor) override;
   base::Closure PrepareForLayerBoundsChange() override;
 
-  WmWindow* original_window_;
-  ui::LayerDelegate* original_delegate_;
+  // ui::LayerObserver:
+  void DidPaintLayer(ui::Layer* layer, const gfx::Rect& rect) override;
+  void SurfaceChanged(ui::Layer* layer) override;
+  void LayerDestroyed(ui::Layer* layer) override;
+
+ private:
+  // The layer for which |this| is the delegate.
+  ui::Layer* client_layer_;
+
+  // The layer that was recreated to replace |new_layer_|.
+  ui::Layer* original_layer_;
+
+  ScopedObserver<ui::Layer, ui::LayerObserver> scoped_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ForwardingLayerDelegate);
 };

@@ -7,26 +7,24 @@
 #include "ash/common/wm_window.h"
 #include "base/callback.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/layer_owner.h"
 
 namespace ash {
 namespace wm {
 
-ForwardingLayerDelegate::ForwardingLayerDelegate(WmWindow* original_window,
-                                                 ui::LayerDelegate* delegate)
-    : original_window_(original_window), original_delegate_(delegate) {}
+ForwardingLayerDelegate::ForwardingLayerDelegate(ui::Layer* new_layer,
+                                                 ui::Layer* original_layer)
+    : client_layer_(new_layer),
+      original_layer_(original_layer),
+      scoped_observer_(this) {
+  scoped_observer_.Add(original_layer);
+}
 
 ForwardingLayerDelegate::~ForwardingLayerDelegate() {}
 
 void ForwardingLayerDelegate::OnPaintLayer(const ui::PaintContext& context) {
-  if (!original_delegate_)
-    return;
-  // |original_delegate_| may have already been deleted or
-  // disconnected by this time. Check if |original_delegate_| is still
-  // used by the original_window tree, or skip otherwise.
-  if (IsDelegateValid(original_window_->GetLayer()))
-    original_delegate_->OnPaintLayer(context);
-  else
-    original_delegate_ = nullptr;
+  if (original_layer_ && original_layer_->delegate())
+    original_layer_->delegate()->OnPaintLayer(context);
 }
 
 void ForwardingLayerDelegate::OnDelegatedFrameDamage(
@@ -42,14 +40,34 @@ base::Closure ForwardingLayerDelegate::PrepareForLayerBoundsChange() {
   return base::Closure();
 }
 
-bool ForwardingLayerDelegate::IsDelegateValid(ui::Layer* layer) const {
-  if (layer->delegate() == original_delegate_)
-    return true;
-  for (auto* child : layer->children()) {
-    if (IsDelegateValid(child))
-      return true;
-  }
-  return false;
+void ForwardingLayerDelegate::DidPaintLayer(ui::Layer* layer,
+                                            const gfx::Rect& rect) {
+  client_layer_->SchedulePaint(rect);
+}
+
+void ForwardingLayerDelegate::SurfaceChanged(ui::Layer* layer) {
+  // This will delete the old layer and any descendants.
+  ui::LayerOwner old_client;
+  old_client.SetLayer(client_layer_);
+
+  ui::LayerOwner* owner = layer->owner();
+  // The layer recreation step isn't recursive, but layers with surfaces don't
+  // tend to have children anyway. We may end up missing some children, but we
+  // can also reach that state if layers are ever added or removed.
+  // TODO(estade): address this if it ever becomes a practical issue.
+  std::unique_ptr<ui::Layer> recreated = owner->RecreateLayer();
+  client_layer_ = recreated.get();
+  old_client.layer()->parent()->Add(recreated.release());
+  old_client.layer()->parent()->Remove(old_client.layer());
+
+  scoped_observer_.Remove(original_layer_);
+  original_layer_ = owner->layer();
+  scoped_observer_.Add(original_layer_);
+}
+
+void ForwardingLayerDelegate::LayerDestroyed(ui::Layer* layer) {
+  original_layer_ = nullptr;
+  scoped_observer_.Remove(layer);
 }
 
 }  // namespace wm

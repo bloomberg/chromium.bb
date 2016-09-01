@@ -28,7 +28,7 @@ void CloneChildren(ui::Layer* to_clone,
     if (old_layer) {
       if (factory && owner->layer()->delegate())
         old_layer->set_delegate(
-            factory->CreateDelegate(owner->layer()->delegate()));
+            factory->CreateDelegate(old_layer, owner->layer()));
       parent->Add(old_layer);
       // RecreateLayer() moves the existing children to the new layer. Create a
       // copy of those.
@@ -93,7 +93,7 @@ std::unique_ptr<ui::LayerTreeOwner> RecreateLayers(
   if (old_layer->root()) {
     if (factory) {
       old_layer->root()->set_delegate(
-          factory->CreateDelegate(root->layer()->delegate()));
+          factory->CreateDelegate(old_layer->root(), root->layer()));
     }
     CloneChildren(root->layer(), old_layer->root(), factory);
   }

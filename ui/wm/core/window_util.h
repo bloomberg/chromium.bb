@@ -41,12 +41,12 @@ WM_EXPORT aura::Window* GetToplevelWindow(aura::Window* window);
 class WM_EXPORT LayerDelegateFactory {
  public:
   virtual ~LayerDelegateFactory() = default;
-  // |original_delegate| may already be deleted by the time the new
+  // |original_layer| may already be deleted by the time the new
   // delegate is created, so if the new delegate has to access it
   // later, it is the new delegate's responsibility to make sure the
-  // original delegate is alive.
-  virtual ui::LayerDelegate* CreateDelegate(
-      ui::LayerDelegate* original_delegate) = 0;
+  // original layer/delegate is alive.
+  virtual ui::LayerDelegate* CreateDelegate(ui::Layer* new_layer,
+                                            ui::Layer* original_layer) = 0;
 };
 
 // Returns the existing Layer for |root| (and all its descendants) and creates

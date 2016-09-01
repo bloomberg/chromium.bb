@@ -133,11 +133,11 @@ class DragWindowController::DragWindowDetails
   }
 
   // aura::WindowDelegate:
-  ui::LayerDelegate* CreateDelegate(ui::LayerDelegate* delegate) override {
-    if (!delegate)
+  ui::LayerDelegate* CreateDelegate(ui::Layer* foo, ui::Layer* layer) override {
+    if (!layer || !layer->delegate())
       return nullptr;
-    wm::ForwardingLayerDelegate* new_delegate = new wm::ForwardingLayerDelegate(
-        WmWindowAura::Get(original_window_), delegate);
+    wm::ForwardingLayerDelegate* new_delegate =
+        new wm::ForwardingLayerDelegate(foo, layer);
     delegates_.push_back(base::WrapUnique(new_delegate));
     return new_delegate;
   }

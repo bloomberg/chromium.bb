@@ -36,7 +36,8 @@ class WindowMirrorView : public views::View, public ::wm::LayerDelegateFactory {
   void OnVisibleBoundsChanged() override;
 
   // ::wm::LayerDelegateFactory:
-  ui::LayerDelegate* CreateDelegate(ui::LayerDelegate* delegate) override;
+  ui::LayerDelegate* CreateDelegate(ui::Layer* new_layer,
+                                    ui::Layer* layer) override;
 
  private:
   void InitLayerOwner();

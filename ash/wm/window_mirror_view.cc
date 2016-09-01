@@ -74,13 +74,12 @@ void WindowMirrorView::OnVisibleBoundsChanged() {
     InitLayerOwner();
 }
 
-ui::LayerDelegate* WindowMirrorView::CreateDelegate(
-    ui::LayerDelegate* delegate) {
-  if (!delegate)
+ui::LayerDelegate* WindowMirrorView::CreateDelegate(ui::Layer* new_layer,
+                                                    ui::Layer* old_layer) {
+  if (!old_layer || !old_layer->delegate())
     return nullptr;
   delegates_.push_back(
-      base::MakeUnique<ForwardingLayerDelegate>(target_, delegate));
-
+      base::MakeUnique<ForwardingLayerDelegate>(new_layer, old_layer));
   return delegates_.back().get();
 }
 

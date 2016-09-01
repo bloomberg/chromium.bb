@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/observer_list.h"
 #include "cc/base/region.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/layer_client.h"
@@ -51,6 +52,7 @@ namespace ui {
 
 class Compositor;
 class LayerAnimator;
+class LayerObserver;
 class LayerOwner;
 class LayerThreadedAnimationDelegate;
 
@@ -92,6 +94,9 @@ class COMPOSITOR_EXPORT Layer
   void set_delegate(LayerDelegate* delegate) { delegate_ = delegate; }
 
   LayerOwner* owner() { return owner_; }
+
+  void AddObserver(LayerObserver* observer);
+  void RemoveObserver(LayerObserver* observer);
 
   // Adds a new Layer to this Layer.
   void Add(Layer* child);
@@ -486,6 +491,8 @@ class COMPOSITOR_EXPORT Layer
   std::string name_;
 
   LayerDelegate* delegate_;
+
+  base::ObserverList<LayerObserver> observer_list_;
 
   LayerOwner* owner_;
 

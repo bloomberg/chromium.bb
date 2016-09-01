@@ -20,8 +20,8 @@ namespace {
 // the correct delegate.
 class TestLayerDelegate : public ui::LayerDelegate {
  public:
-  explicit TestLayerDelegate(ui::LayerDelegate* original_delegate)
-      : original_delegate_(original_delegate) {}
+  explicit TestLayerDelegate(ui::Layer* original_layer)
+      : original_layer_(original_layer) {}
   ~TestLayerDelegate() override = default;
 
   // ui::LayerDelegate:
@@ -32,10 +32,10 @@ class TestLayerDelegate : public ui::LayerDelegate {
     return base::Closure();
   }
 
-  ui::LayerDelegate* original_delegate() { return original_delegate_; }
+  ui::Layer* original_layer() { return original_layer_; }
 
  private:
-  ui::LayerDelegate* original_delegate_;
+  ui::Layer* original_layer_;
 
   DISALLOW_COPY_AND_ASSIGN(TestLayerDelegate);
 };
@@ -47,10 +47,10 @@ class TestLayerDelegateFactory : public ::wm::LayerDelegateFactory {
   ~TestLayerDelegateFactory() override = default;
 
   // ::wm::LayerDelegateFactory:
-  ui::LayerDelegate* CreateDelegate(ui::LayerDelegate* delegate) override {
-    TestLayerDelegate* new_delegate = new TestLayerDelegate(delegate);
-    delegates_.push_back(base::WrapUnique(new_delegate));
-    return new_delegate;
+  ui::LayerDelegate* CreateDelegate(ui::Layer* new_layer,
+                                    ui::Layer* original_layer) override {
+    delegates_.push_back(base::MakeUnique<TestLayerDelegate>(original_layer));
+    return delegates_.back().get();
   }
 
   size_t delegate_count() const { return delegates_.size(); }
@@ -124,11 +124,11 @@ TEST_F(WindowUtilTest, RecreateLayersWithDelegate) {
   TestLayerDelegate* new_delegate_11 = factory.GetDelegateAt(1);
   TestLayerDelegate* new_delegate_12 = factory.GetDelegateAt(2);
 
-  EXPECT_EQ(window1->layer()->delegate(), new_delegate_1->original_delegate());
-  EXPECT_EQ(window11->layer()->delegate(),
-            new_delegate_11->original_delegate());
-  EXPECT_EQ(window12->layer()->delegate(),
-            new_delegate_12->original_delegate());
+  EXPECT_EQ(window1->layer(), new_delegate_1->original_layer());
+  EXPECT_EQ(window11->layer(),
+            new_delegate_11->original_layer());
+  EXPECT_EQ(window12->layer(),
+            new_delegate_12->original_layer());
 
   EXPECT_EQ(tree->root()->delegate(), new_delegate_1);
   EXPECT_EQ(tree->root()->children()[0]->delegate(), new_delegate_11);
