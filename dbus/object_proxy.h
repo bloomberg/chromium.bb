@@ -137,10 +137,10 @@ class CHROME_DBUS_EXPORT ObjectProxy
   // from the method (i.e. calling a method that does not return a value),
   // EmptyResponseCallback() can be passed to the |callback| parameter.
   //
-  // If the method call is successful, a pointer to Response object will
-  // be passed to the callback. If unsuccessful, the error callback will be
-  // called and a pointer to ErrorResponse object will be passed to the error
-  // callback if available, otherwise NULL will be passed.
+  // If the method call is successful, |callback| will be invoked with a
+  // Response object. If unsuccessful, |error_callback| will be invoked with an
+  // ErrorResponse object (if the remote object returned an error) or nullptr
+  // (if a response was not received at all).
   //
   // Must be called in the origin thread.
   virtual void CallMethodWithErrorCallback(MethodCall* method_call,
