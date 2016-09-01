@@ -225,10 +225,7 @@ void AwContentBrowserClient::RenderProcessWillLaunch(
   host->AddFilter(new AwPrintingMessageFilter(host->GetID()));
 
 #if defined(ENABLE_SPELLCHECK)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-      spellcheck::switches::kEnableAndroidSpellChecker)) {
-    host->AddFilter(new SpellCheckMessageFilterPlatform(host->GetID()));
-  }
+  host->AddFilter(new SpellCheckMessageFilterPlatform(host->GetID()));
 #endif
 }
 

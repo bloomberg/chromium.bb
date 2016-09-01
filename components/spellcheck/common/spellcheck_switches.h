@@ -11,9 +11,6 @@ namespace spellcheck {
 namespace switches {
 
 #if defined(ENABLE_SPELLCHECK)
-#if defined(OS_ANDROID)
-extern const char kEnableAndroidSpellChecker[];
-#endif  // defined(OS_ANDROID)
 extern const char kEnableSpellingFeedbackFieldTrial[];
 extern const char kSpellingServiceFeedbackIntervalSeconds[];
 extern const char kSpellingServiceFeedbackUrl[];

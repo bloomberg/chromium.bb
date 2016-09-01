@@ -9,11 +9,6 @@ namespace spellcheck {
 namespace switches {
 
 #if defined(ENABLE_SPELLCHECK)
-#if defined(OS_ANDROID)
-// Enables use of the Android spellchecker.
-const char kEnableAndroidSpellChecker[] = "enable-android-spellchecker";
-#endif  // defined(OS_ANDROID)
-
 // Enables participation in the field trial for user feedback to spelling
 // service.
 const char kEnableSpellingFeedbackFieldTrial[] =
