@@ -495,7 +495,8 @@ WebInputEventResult PointerEventManager::sendTouchPointerEvent(
     processCaptureAndPositionOfPointerEvent(pointerEvent, target);
 
     // Setting the implicit capture for touch
-    if (pointerEvent->type() == EventTypeNames::pointerdown)
+    if (!RuntimeEnabledFeatures::pointerEventV1SpecCapturingEnabled()
+        && pointerEvent->type() == EventTypeNames::pointerdown)
         setPointerCapture(pointerEvent->pointerId(), target);
 
     WebInputEventResult result = dispatchPointerEvent(

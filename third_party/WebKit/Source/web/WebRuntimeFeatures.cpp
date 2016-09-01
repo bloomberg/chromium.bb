@@ -235,6 +235,11 @@ void WebRuntimeFeatures::enablePointerEvent(bool enable)
     RuntimeEnabledFeatures::setPointerEventEnabled(enable);
 }
 
+void WebRuntimeFeatures::enablePointerEventV1SpecCapturing(bool enable)
+{
+    RuntimeEnabledFeatures::setPointerEventV1SpecCapturingEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableScriptedSpeech(bool enable)
 {
     RuntimeEnabledFeatures::setScriptedSpeechEnabled(enable);

@@ -244,6 +244,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (base::FeatureList::IsEnabled(features::kPointerEvents))
     WebRuntimeFeatures::enablePointerEvent(true);
 
+  if (base::FeatureList::IsEnabled(features::kPointerEventV1SpecCapturing))
+    WebRuntimeFeatures::enablePointerEventV1SpecCapturing(true);
+
   if (base::FeatureList::IsEnabled(features::kPassiveDocumentEventListeners))
     WebRuntimeFeatures::enablePassiveDocumentEventListeners(true);
 
