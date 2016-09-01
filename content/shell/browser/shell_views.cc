@@ -22,7 +22,7 @@
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/views/background.h"
-#include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/controls/webview/webview.h"
@@ -131,8 +131,8 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
       views::ColumnSet* toolbar_column_set =
           toolbar_layout->AddColumnSet(0);
       // Back button
-      back_button_ = new views::LabelButton(this, base::ASCIIToUTF16("Back"));
-      back_button_->SetStyle(views::Button::STYLE_BUTTON);
+      back_button_ =
+          views::MdTextButton::CreateMdButton(this, base::ASCIIToUTF16("Back"));
       gfx::Size back_button_size = back_button_->GetPreferredSize();
       toolbar_column_set->AddColumn(views::GridLayout::CENTER,
                                     views::GridLayout::CENTER, 0,
@@ -140,9 +140,8 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
                                     back_button_size.width(),
                                     back_button_size.width() / 2);
       // Forward button
-      forward_button_ =
-          new views::LabelButton(this, base::ASCIIToUTF16("Forward"));
-      forward_button_->SetStyle(views::Button::STYLE_BUTTON);
+      forward_button_ = views::MdTextButton::CreateMdButton(
+          this, base::ASCIIToUTF16("Forward"));
       gfx::Size forward_button_size = forward_button_->GetPreferredSize();
       toolbar_column_set->AddColumn(views::GridLayout::CENTER,
                                     views::GridLayout::CENTER, 0,
@@ -150,9 +149,8 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
                                     forward_button_size.width(),
                                     forward_button_size.width() / 2);
       // Refresh button
-      refresh_button_ =
-          new views::LabelButton(this, base::ASCIIToUTF16("Refresh"));
-      refresh_button_->SetStyle(views::Button::STYLE_BUTTON);
+      refresh_button_ = views::MdTextButton::CreateMdButton(
+          this, base::ASCIIToUTF16("Refresh"));
       gfx::Size refresh_button_size = refresh_button_->GetPreferredSize();
       toolbar_column_set->AddColumn(views::GridLayout::CENTER,
                                     views::GridLayout::CENTER, 0,
@@ -160,8 +158,8 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
                                     refresh_button_size.width(),
                                     refresh_button_size.width() / 2);
       // Stop button
-      stop_button_ = new views::LabelButton(this, base::ASCIIToUTF16("Stop"));
-      stop_button_->SetStyle(views::Button::STYLE_BUTTON);
+      stop_button_ =
+          views::MdTextButton::CreateMdButton(this, base::ASCIIToUTF16("Stop"));
       gfx::Size stop_button_size = stop_button_->GetPreferredSize();
       toolbar_column_set->AddColumn(views::GridLayout::CENTER,
                                     views::GridLayout::CENTER, 0,
@@ -294,10 +292,10 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
 
   // Toolbar view contains forward/backward/reload button and URL entry
   View* toolbar_view_;
-  views::LabelButton* back_button_;
-  views::LabelButton* forward_button_;
-  views::LabelButton* refresh_button_;
-  views::LabelButton* stop_button_;
+  views::CustomButton* back_button_;
+  views::CustomButton* forward_button_;
+  views::CustomButton* refresh_button_;
+  views::CustomButton* stop_button_;
   views::Textfield* url_entry_;
 
   // Contents view contains the web contents view
