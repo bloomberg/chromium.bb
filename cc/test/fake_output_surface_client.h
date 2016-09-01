@@ -19,8 +19,6 @@ class FakeOutputSurfaceClient : public OutputSurfaceClient {
         did_lose_output_surface_called_(false),
         memory_policy_(0) {}
 
-  void CommitVSyncParameters(base::TimeTicks timebase,
-                             base::TimeDelta interval) override {}
   void SetBeginFrameSource(BeginFrameSource* source) override {}
   void SetNeedsRedrawRect(const gfx::Rect& damage_rect) override {}
   void DidSwapBuffersComplete() override;

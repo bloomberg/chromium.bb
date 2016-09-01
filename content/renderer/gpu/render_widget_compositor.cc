@@ -244,6 +244,8 @@ void RenderWidgetCompositor::Initialize(float device_scale_factor) {
   if (settings.use_external_begin_frame_source) {
     params.external_begin_frame_source =
         delegate_->CreateExternalBeginFrameSource();
+  } else {
+    DCHECK(settings.use_output_surface_begin_frame_source);
   }
   params.animation_host = cc::AnimationHost::CreateMainInstance();
 
@@ -436,9 +438,6 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
 
   // TODO(danakj): Only do this on low end devices.
   settings.create_low_res_tiling = true;
-
-  settings.use_external_begin_frame_source = true;
-
 #else  // defined(OS_ANDROID)
 #if !defined(OS_MACOSX)
   if (ui::ShouldHideScrollbars()) {
@@ -475,7 +474,15 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
     settings.create_low_res_tiling = true;
   if (cmd.HasSwitch(switches::kDisableLowResTiling))
     settings.create_low_res_tiling = false;
-  settings.use_external_begin_frame_source = true;
+
+  // TODO(enne): fold external BFS into output surface BFS.
+  if (cmd.HasSwitch(switches::kUseRemoteCompositing)) {
+    settings.use_output_surface_begin_frame_source = true;
+    settings.use_external_begin_frame_source = false;
+  } else {
+    settings.use_output_surface_begin_frame_source = false;
+    settings.use_external_begin_frame_source = true;
+  }
 
   if (cmd.HasSwitch(switches::kEnableRGBA4444Textures) &&
       !cmd.HasSwitch(switches::kDisableRGBA4444Textures)) {
@@ -496,9 +503,6 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
 
   settings.use_cached_picture_raster =
       !cmd.HasSwitch(cc::switches::kDisableCachedPictureRaster);
-
-  if (cmd.HasSwitch(switches::kUseRemoteCompositing))
-    settings.use_external_begin_frame_source = false;
 
   return settings;
 }

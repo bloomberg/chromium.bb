@@ -135,22 +135,9 @@ void CompositorOutputSurface::OnMessageReceived(const IPC::Message& message) {
   if (!HasClient())
     return;
   IPC_BEGIN_MESSAGE_MAP(CompositorOutputSurface, message)
-    IPC_MESSAGE_HANDLER(ViewMsg_UpdateVSyncParameters,
-                        OnUpdateVSyncParametersFromBrowser);
     IPC_MESSAGE_HANDLER(ViewMsg_ReclaimCompositorResources,
                         OnReclaimCompositorResources);
   IPC_END_MESSAGE_MAP()
-}
-
-void CompositorOutputSurface::OnUpdateVSyncParametersFromBrowser(
-    base::TimeTicks timebase,
-    base::TimeDelta interval) {
-  DCHECK(client_thread_checker_.CalledOnValidThread());
-  TRACE_EVENT2("cc",
-               "CompositorOutputSurface::OnUpdateVSyncParametersFromBrowser",
-               "timebase", (timebase - base::TimeTicks()).InSecondsF(),
-               "interval", interval.InSecondsF());
-  client_->CommitVSyncParameters(timebase, interval);
 }
 
 void CompositorOutputSurface::OnReclaimCompositorResources(
