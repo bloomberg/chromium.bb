@@ -481,9 +481,9 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::consumePseudo(CSSParserTok
     std::unique_ptr<CSSParserSelector> selector = CSSParserSelector::create();
     selector->setMatch(colons == 1 ? CSSSelector::PseudoClass : CSSSelector::PseudoElement);
 
-    String value = token.value().toString();
+    AtomicString value = token.value().toAtomicString().lowerASCII();
     bool hasArguments = token.type() == FunctionToken;
-    selector->updatePseudoType(AtomicString(value.is8Bit() ? value.lower() : value), hasArguments);
+    selector->updatePseudoType(value, hasArguments);
 
     if (selector->match() == CSSSelector::PseudoElement && m_disallowPseudoElements)
         return nullptr;
