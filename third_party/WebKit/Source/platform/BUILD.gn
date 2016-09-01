@@ -16,11 +16,6 @@ import("//third_party/WebKit/Source/platform/platform_generated.gni")
 # Most targets in this file are private actions so use that as the default.
 visibility = [ ":*" ]
 
-heap_gypi = exec_script("//build/gypi_to_gn.py",
-                        [ rebase_path("heap/blink_heap.gypi") ],
-                        "scope",
-                        [ "heap/blink_heap.gypi" ])
-
 blink_platform_neon_files = [ "graphics/cpu/arm/WebGLImageConversionNEON.h" ]
 
 blink_platform_sse_files = [ "graphics/cpu/x86/WebGLImageConversionSSE.h" ]
@@ -500,40 +495,6 @@ static_library("test_support") {
 
   if (is_win) {
     cflags = [ "/wd4267" ]  # Truncation from size_t to int.
-  }
-}
-
-# GYP: blink_heap_unittests
-test("blink_heap_unittests") {
-  visibility = []  # Allow re-assignment of list.
-  visibility = [ "*" ]
-
-  sources = rebase_path(heap_gypi.platform_heap_test_files, ".", "heap")
-  sources += [ "heap/RunAllTests.cpp" ]
-
-  configs += [
-    "//third_party/WebKit/Source/wtf:wtf_config",
-    "//third_party/WebKit/Source:config",
-  ]
-
-  defines = [ "INSIDE_BLINK" ]
-
-  deps = [
-    ":platform",
-    ":test_support",
-    "//base",
-    "//base/test:test_support",
-    "//content/test:test_support",
-    "//testing/gmock",
-    "//testing/gtest",
-    "//third_party/WebKit/Source/wtf",
-  ]
-  if (is_android) {
-    deps += [
-      "//base:base_java",
-      "//content/shell/android:content_shell_assets",
-      "//net/android:net_java",
-    ]
   }
 }
 
