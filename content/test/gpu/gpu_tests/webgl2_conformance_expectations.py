@@ -410,8 +410,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Mac Intel
     self.Fail('deqp/functional/gles3/shaderpackingfunction.html',
         ['mac', 'intel'], bug=619264)
-    self.Fail('deqp/functional/gles3/shadercommonfunction.html',
-        ['mac', 'intel'], bug=483282)
 
     self.Fail('deqp/functional/gles3/texturefiltering/2d_combinations_01.html',
         ['mac', 'intel'], bug=606074)

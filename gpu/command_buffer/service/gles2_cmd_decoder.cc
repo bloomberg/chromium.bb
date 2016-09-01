@@ -3726,6 +3726,8 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
     driver_bug_workarounds |= SH_REGENERATE_STRUCT_NAMES;
   if (workarounds().remove_pow_with_constant_exponent)
     driver_bug_workarounds |= SH_REMOVE_POW_WITH_CONSTANT_EXPONENT;
+  if (workarounds().emulate_abs_int_function)
+    driver_bug_workarounds |= SH_EMULATE_ABS_INT_FUNCTION;
 
   resources.WEBGL_debug_shader_precision =
       group_->gpu_preferences().emulate_shader_precision;

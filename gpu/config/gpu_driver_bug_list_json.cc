@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.90",
+  "version": "8.91",
   "entries": [
     {
       "id": 1,
@@ -1983,6 +1983,18 @@ LONG_STRING_CONST(
       "gl_renderer": ".*Mali-T7.*",
       "features": [
         "gl_clear_broken"
+      ]
+    },
+    {
+      "id": 183,
+      "description": "Result of abs(i) where i is an integer in vertex shader is wrong",
+      "cr_bugs": [642227],
+      "os": {
+        "type": "macosx"
+      },
+      "vendor_id": "0x8086",
+      "features": [
+        "emulate_abs_int_function"
       ]
     }
   ]
