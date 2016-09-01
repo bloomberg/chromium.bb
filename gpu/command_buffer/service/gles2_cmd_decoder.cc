@@ -16626,7 +16626,8 @@ class PathCommandValidatorContext {
   bool GetPathCountAndType(const Cmd& cmd,
                            GLuint* out_num_paths,
                            GLenum* out_path_name_type) {
-    if (cmd.numPaths < 0) {
+    int32_t numPaths = cmd.numPaths;
+    if (numPaths < 0) {
       ERRORSTATE_SET_GL_ERROR(error_state_, GL_INVALID_VALUE, function_name_,
                               "numPaths < 0");
       return false;
@@ -16637,7 +16638,7 @@ class PathCommandValidatorContext {
                                            path_name_type, "pathNameType");
       return false;
     }
-    *out_num_paths = static_cast<GLsizei>(cmd.numPaths);
+    *out_num_paths = static_cast<GLsizei>(numPaths);
     *out_path_name_type = path_name_type;
     return true;
   }
