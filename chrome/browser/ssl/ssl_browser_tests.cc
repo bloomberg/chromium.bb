@@ -71,6 +71,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/page_state.h"
 #include "content/public/common/security_style.h"
 #include "content/public/common/ssl_status.h"
 #include "content/public/test/browser_test_utils.h"
@@ -3123,6 +3124,78 @@ IN_PROC_BROWSER_TEST_F(CertVerifierBrowserTest, MockCertVerifierSmokeTest) {
                      net::CERT_STATUS_NAME_CONSTRAINT_VIOLATION,
                      content::SECURITY_STYLE_AUTHENTICATION_BROKEN,
                      AuthState::SHOWING_INTERSTITIAL);
+}
+
+IN_PROC_BROWSER_TEST_F(SSLUITest, RestoreHasSSLState) {
+  ASSERT_TRUE(https_server_.Start());
+  GURL url(https_server_.GetURL("/ssl/google.html"));
+  ui_test_utils::NavigateToURL(browser(), url);
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  CheckAuthenticatedState(tab, AuthState::NONE);
+
+  NavigationEntry* entry = tab->GetController().GetLastCommittedEntry();
+  std::unique_ptr<NavigationEntry> restored_entry =
+      content::NavigationController::CreateNavigationEntry(
+          url, content::Referrer(), ui::PAGE_TRANSITION_RELOAD, false,
+          std::string(), tab->GetBrowserContext());
+  restored_entry->SetPageID(0);
+  restored_entry->SetPageState(entry->GetPageState());
+
+  WebContents::CreateParams params(tab->GetBrowserContext());
+  WebContents* tab2 = WebContents::Create(params);
+  tab->GetDelegate()->AddNewContents(
+      nullptr, tab2, WindowOpenDisposition::NEW_FOREGROUND_TAB, gfx::Rect(),
+      false, nullptr);
+  std::vector<std::unique_ptr<NavigationEntry>> entries;
+  entries.push_back(std::move(restored_entry));
+  content::TestNavigationObserver observer(tab2);
+  tab2->GetController().Restore(
+      entries.size() - 1,
+      NavigationController::RESTORE_LAST_SESSION_EXITED_CLEANLY, &entries);
+  tab2->GetController().LoadIfNecessary();
+  observer.Wait();
+  CheckAuthenticatedState(tab2, AuthState::NONE);
+}
+
+// Simulate the URL changing when the user presses enter in the omnibox. This
+// could happen when the user's login is expired and the server redirects them
+// to a login page. This will be considered a SAME_PAGE navigation but we do
+// want to update the SSL state.
+IN_PROC_BROWSER_TEST_F(SSLUITest, SamePageHasSSLState) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_TRUE(https_server_.Start());
+
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Navigate to a simple page and then perform an in-page navigation.
+  GURL start_url(embedded_test_server()->GetURL("/title1.html"));
+  ui_test_utils::NavigateToURL(browser(), start_url);
+
+  GURL same_page_url(embedded_test_server()->GetURL("/title1.html#foo"));
+  ui_test_utils::NavigateToURL(browser(), same_page_url);
+  CheckUnauthenticatedState(tab, AuthState::NONE);
+
+  // Replace the URL of the current NavigationEntry with one that will cause
+  // a server redirect when loaded.
+  {
+    GURL redirect_dest_url(https_server_.GetURL("/ssl/google.html"));
+    content::TestNavigationObserver observer(tab);
+    std::string script = "history.replaceState({}, '', '/server-redirect?" +
+                         redirect_dest_url.spec() + "')";
+    EXPECT_TRUE(ExecuteScript(tab, script));
+    observer.Wait();
+  }
+
+  // Simulate the user hitting Enter in the omnibox without changing the URL.
+  {
+    content::TestNavigationObserver observer(tab);
+    tab->GetController().LoadURL(tab->GetLastCommittedURL(),
+                                 content::Referrer(), ui::PAGE_TRANSITION_LINK,
+                                 std::string());
+    observer.Wait();
+  }
+
+  CheckAuthenticatedState(tab, AuthState::NONE);
 }
 
 // TODO(jcampan): more tests to do below.

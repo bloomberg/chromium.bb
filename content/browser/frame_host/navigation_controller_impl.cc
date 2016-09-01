@@ -1186,6 +1186,11 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
   } else if (params.nav_entry_id) {
     // This is a browser-initiated navigation (back/forward/reload).
     entry = GetEntryWithUniqueID(params.nav_entry_id);
+
+    // Needed for the restore case, where the serialized NavigationEntry doesn't
+    // have the SSL state.
+    NavigationHandleImpl* handle = rfh->navigation_handle();
+    entry->GetSSL() = handle->ssl_status();
   } else {
     // This is renderer-initiated. The only kinds of renderer-initated
     // navigations that are EXISTING_PAGE are reloads and location.replace,
@@ -1259,6 +1264,11 @@ void NavigationControllerImpl::RendererDidNavigateToSamePage(
   if (existing_entry->update_virtual_url_with_url())
     UpdateVirtualURLToURL(existing_entry, params.url);
   existing_entry->SetURL(params.url);
+
+  // If a user presses enter in the omnibox and the server redirects, the URL
+  // might change (but it's still considered a SAME_PAGE navigation). So we must
+  // update the SSL status.
+  existing_entry->GetSSL() = rfh->navigation_handle()->ssl_status();
 
   // Update the existing FrameNavigationEntry to ensure all of its members
   // reflect the parameters coming from the renderer process.
