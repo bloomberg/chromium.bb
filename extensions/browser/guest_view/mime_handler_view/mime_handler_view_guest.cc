@@ -213,8 +213,17 @@ bool MimeHandlerViewGuest::PreHandleGestureEvent(
 content::JavaScriptDialogManager*
 MimeHandlerViewGuest::GetJavaScriptDialogManager(
     WebContents* source) {
+  // WebContentsDelegates often service multiple WebContentses, and use the
+  // WebContents* parameter to tell which WebContents made the request. If we
+  // pass in our own pointer to the delegate call, the delegate will be asked,
+  // "What's the JavaScriptDialogManager of this WebContents for which you are
+  // not a delegate?" And it won't be able to answer that.
+  //
+  // So we pretend to be our owner WebContents, but only for the request to
+  // obtain the JavaScriptDialogManager. During calls to the
+  // JavaScriptDialogManager we will be honest about who we are.
   return owner_web_contents()->GetDelegate()->GetJavaScriptDialogManager(
-      web_contents());
+      owner_web_contents());
 }
 
 bool MimeHandlerViewGuest::SaveFrame(const GURL& url,

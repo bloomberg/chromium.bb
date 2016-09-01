@@ -164,12 +164,11 @@ DialogHelper::DialogHelper(content::WebContents* web_contents)
       client_(nullptr) {
   app_modal::JavaScriptDialogManager* dialog_manager_impl =
       app_modal::JavaScriptDialogManager::GetInstance();
-  dialog_manager_ =
-      web_contents_->GetDelegate()->GetJavaScriptDialogManager(web_contents_);
-  DCHECK_EQ(dialog_manager_impl, dialog_manager_);
-
   client_ = new DialogClient(this);
   dialog_manager_impl->SetExtensionsClient(base::WrapUnique(client_));
+
+  dialog_manager_ =
+      web_contents_->GetDelegate()->GetJavaScriptDialogManager(web_contents_);
 }
 
 DialogHelper::~DialogHelper() {

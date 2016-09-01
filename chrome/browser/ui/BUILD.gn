@@ -103,6 +103,8 @@ split_static_library("ui") {
     "find_bar/find_tab_helper.cc",
     "find_bar/find_tab_helper.h",
     "javascript_dialogs/chrome_javascript_native_dialog_factory.h",
+    "javascript_dialogs/javascript_dialog_tab_helper.cc",
+    "javascript_dialogs/javascript_dialog_tab_helper.h",
     "login/login_handler.cc",
     "login/login_handler.h",
     "login/login_interstitial_delegate.cc",
