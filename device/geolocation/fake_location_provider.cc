@@ -29,12 +29,18 @@ void FakeLocationProvider::HandlePositionChanged(const Geoposition& position) {
     // The location arbitrator unit tests rely on this method running
     // synchronously.
     position_ = position;
-    NotifyCallback(position_);
+    if (!callback_.is_null())
+      callback_.Run(this, position_);
   } else {
     provider_task_runner_->PostTask(
         FROM_HERE, base::Bind(&FakeLocationProvider::HandlePositionChanged,
                               base::Unretained(this), position));
   }
+}
+
+void FakeLocationProvider::SetUpdateCallback(
+    const LocationProviderUpdateCallback& callback) {
+  callback_ = callback;
 }
 
 bool FakeLocationProvider::StartProvider(bool high_accuracy) {

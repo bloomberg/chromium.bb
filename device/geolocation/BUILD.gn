@@ -36,8 +36,6 @@ component("device_geolocation") {
     "location_provider.h",
     "location_provider_android.cc",
     "location_provider_android.h",
-    "location_provider_base.cc",
-    "location_provider_base.h",
     "network_location_provider.cc",
     "network_location_provider.h",
     "network_location_request.cc",

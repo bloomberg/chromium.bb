@@ -23,7 +23,13 @@ LocationProviderAndroid::~LocationProviderAndroid() {
 void LocationProviderAndroid::NotifyNewGeoposition(
     const Geoposition& position) {
   last_position_ = position;
-  NotifyCallback(last_position_);
+  if (!callback_.is_null())
+    callback_.Run(this, position);
+}
+
+void LocationProviderAndroid::SetUpdateCallback(
+    const LocationProviderUpdateCallback& callback) {
+  callback_ = callback;
 }
 
 bool LocationProviderAndroid::StartProvider(bool high_accuracy) {

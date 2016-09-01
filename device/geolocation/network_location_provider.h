@@ -19,7 +19,7 @@
 #include "base/threading/thread.h"
 #include "device/geolocation/geolocation_export.h"
 #include "device/geolocation/geoposition.h"
-#include "device/geolocation/location_provider_base.h"
+#include "device/geolocation/location_provider.h"
 #include "device/geolocation/network_location_request.h"
 #include "device/geolocation/wifi_data_provider_manager.h"
 
@@ -27,7 +27,7 @@ namespace device {
 class AccessTokenStore;
 
 class NetworkLocationProvider : public base::NonThreadSafe,
-                                public LocationProviderBase {
+                                public LocationProvider {
  public:
   // Cache of recently resolved locations. Public for tests.
   class DEVICE_GEOLOCATION_EXPORT PositionCache {
@@ -71,6 +71,8 @@ class NetworkLocationProvider : public base::NonThreadSafe,
   ~NetworkLocationProvider() override;
 
   // LocationProvider implementation
+  void SetUpdateCallback(
+      const LocationProviderUpdateCallback& callback) override;
   bool StartProvider(bool high_accuracy) override;
   void StopProvider() override;
   const Geoposition& GetPosition() override;
@@ -114,6 +116,9 @@ class NetworkLocationProvider : public base::NonThreadSafe,
   // The current best position estimate.
   Geoposition position_;
 
+  LocationProvider::LocationProviderUpdateCallback
+      location_provider_update_callback_;
+
   // Whether permission has been granted for the provider to operate.
   bool is_permission_granted_;
 
@@ -132,7 +137,7 @@ class NetworkLocationProvider : public base::NonThreadSafe,
 
 // Factory functions for the various types of location provider to abstract
 // over the platform-dependent implementations.
-DEVICE_GEOLOCATION_EXPORT LocationProviderBase* NewNetworkLocationProvider(
+DEVICE_GEOLOCATION_EXPORT LocationProvider* NewNetworkLocationProvider(
     const scoped_refptr<AccessTokenStore>& access_token_store,
     const scoped_refptr<net::URLRequestContextGetter>& context,
     const GURL& url,

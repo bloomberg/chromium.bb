@@ -93,7 +93,7 @@ bool NetworkLocationProvider::PositionCache::MakeKey(const WifiData& wifi_data,
 }
 
 // NetworkLocationProvider factory function
-LocationProviderBase* NewNetworkLocationProvider(
+LocationProvider* NewNetworkLocationProvider(
     const scoped_refptr<AccessTokenStore>& access_token_store,
     const scoped_refptr<net::URLRequestContextGetter>& context,
     const GURL& url,
@@ -134,6 +134,11 @@ const Geoposition& NetworkLocationProvider::GetPosition() {
   return position_;
 }
 
+void NetworkLocationProvider::SetUpdateCallback(
+    const LocationProvider::LocationProviderUpdateCallback& callback) {
+  location_provider_update_callback_ = callback;
+}
+
 void NetworkLocationProvider::OnPermissionGranted() {
   const bool was_permission_granted = is_permission_granted_;
   is_permission_granted_ = true;
@@ -167,7 +172,8 @@ void NetworkLocationProvider::OnLocationResponse(
   }
 
   // Let listeners know that we now have a position available.
-  NotifyCallback(position_);
+  if (!location_provider_update_callback_.is_null())
+    location_provider_update_callback_.Run(this, position_);
 }
 
 bool NetworkLocationProvider::StartProvider(bool high_accuracy) {
@@ -241,7 +247,8 @@ void NetworkLocationProvider::RequestPosition() {
     is_new_data_available_ = false;
 
     // Let listeners know that we now have a position available.
-    NotifyCallback(position_);
+    if (!location_provider_update_callback_.is_null())
+      location_provider_update_callback_.Run(this, position_);
     return;
   }
   // Don't send network requests until authorized. http://crbug.com/39171
