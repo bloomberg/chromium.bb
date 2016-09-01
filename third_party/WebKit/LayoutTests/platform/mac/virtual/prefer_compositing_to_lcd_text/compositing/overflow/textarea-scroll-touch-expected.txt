@@ -13,7 +13,6 @@
           "name": "LayoutTextControl TEXTAREA",
           "position": [18, 18],
           "bounds": [206, 126],
-          "contentsOpaque": true,
           "shouldFlattenTransform": false,
           "drawsContent": true,
           "backgroundColor": "#CCCCCC",
@@ -27,6 +26,7 @@
                 {
                   "name": "Scrolling Contents Layer",
                   "bounds": [189, 270],
+                  "contentsOpaque": true,
                   "drawsContent": true
                 }
               ]
@@ -54,7 +54,6 @@
           "name": "LayoutTextControl TEXTAREA",
           "position": [248, 18],
           "bounds": [206, 126],
-          "contentsOpaque": true,
           "shouldFlattenTransform": false,
           "drawsContent": true,
           "backgroundColor": "#CCCCCC",
@@ -68,6 +67,7 @@
                 {
                   "name": "Scrolling Contents Layer",
                   "bounds": [189, 270],
+                  "contentsOpaque": true,
                   "drawsContent": true
                 }
               ]

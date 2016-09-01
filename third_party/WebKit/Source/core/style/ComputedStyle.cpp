@@ -1268,23 +1268,6 @@ bool ComputedStyle::hasEntirelyFixedBackground() const
     return allLayersAreFixed(backgroundLayers());
 }
 
-bool ComputedStyle::hasEntirelyLocalBackground() const
-{
-    const FillLayer* layer = &backgroundLayers();
-    for (; layer; layer = layer->next()) {
-        if (layer->attachment() == LocalBackgroundAttachment)
-            continue;
-        // Solid color layers with a background clip of the padding box can be treated
-        // as local.
-        // TODO(flackr): We can handle other fill boxes with solid colors as long as they
-        // are essentially the same (i.e. PaddingFillBox == ContentFillBox when padding = 0).
-        if (!layer->image() && !layer->next() && layer->clip() == PaddingFillBox)
-            continue;
-        return false;
-    }
-    return true;
-}
-
 const CounterDirectiveMap* ComputedStyle::counterDirectives() const
 {
     return m_rareNonInheritedData->m_counterDirectives.get();
