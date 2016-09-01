@@ -363,6 +363,11 @@
       'settings/timezone_settings_helper.h',
       'system/devicetype.cc',
       'system/devicetype.h',
+
+      # Used when running mash, both on Linux and on real devices.
+      'system/fake_statistics_provider.cc',
+      'system/fake_statistics_provider.h',
+
       'system/name_value_pairs_parser.cc',
       'system/name_value_pairs_parser.h',
       'system/statistics_provider.cc',
@@ -563,8 +568,6 @@
         'network/mock_network_device_handler.h',
         'network/onc/onc_test_utils.cc',
         'network/onc/onc_test_utils.h',
-        'system/fake_statistics_provider.cc',
-        'system/fake_statistics_provider.h',
       ],
       'include_dirs': [
         '..',

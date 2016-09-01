@@ -9,13 +9,14 @@
 #include <string>
 
 #include "base/macros.h"
+#include "chromeos/chromeos_export.h"
 #include "chromeos/system/statistics_provider.h"
 
 namespace chromeos {
 namespace system {
 
 // A fake StatisticsProvider implementation that is useful in tests.
-class FakeStatisticsProvider : public StatisticsProvider {
+class CHROMEOS_EXPORT FakeStatisticsProvider : public StatisticsProvider {
  public:
   FakeStatisticsProvider();
   ~FakeStatisticsProvider() override;
@@ -44,7 +45,8 @@ class FakeStatisticsProvider : public StatisticsProvider {
 
 // A convenience subclass that automatically registers itself as the test
 // StatisticsProvider during construction and cleans up at destruction.
-class ScopedFakeStatisticsProvider : public FakeStatisticsProvider {
+class CHROMEOS_EXPORT ScopedFakeStatisticsProvider
+    : public FakeStatisticsProvider {
  public:
   ScopedFakeStatisticsProvider();
   ~ScopedFakeStatisticsProvider() override;

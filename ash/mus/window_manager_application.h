@@ -20,6 +20,12 @@
 #include "services/ui/common/types.h"
 #include "services/ui/public/interfaces/accelerator_registrar.mojom.h"
 
+namespace chromeos {
+namespace system {
+class ScopedFakeStatisticsProvider;
+}
+}
+
 namespace views {
 class AuraInit;
 class SurfaceContextFactory;
@@ -94,6 +100,11 @@ class WindowManagerApplication
 
   mojo::Binding<mash::session::mojom::ScreenlockStateListener>
       screenlock_state_listener_binding_;
+
+#if defined(OS_CHROMEOS)
+  std::unique_ptr<chromeos::system::ScopedFakeStatisticsProvider>
+      statistics_provider_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerApplication);
 };

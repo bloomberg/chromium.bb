@@ -31,6 +31,7 @@
 #include "ash/common/system/chromeos/power/power_status.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/system/fake_statistics_provider.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"  // nogncheck
 #endif
 
@@ -44,6 +45,8 @@ void InitializeComponents() {
   // Must occur after mojo::ApplicationRunner has initialized AtExitManager, but
   // before WindowManager::Init().
   chromeos::DBusThreadManager::Initialize();
+
+  // See ChromeBrowserMainPartsChromeos for ordering details.
   bluez::BluezDBusManager::Initialize(
       chromeos::DBusThreadManager::Get()->GetSystemBus(),
       chromeos::DBusThreadManager::Get()->IsUsingStub(
@@ -81,6 +84,9 @@ WindowManagerApplication::~WindowManagerApplication() {
   // OnWillDestroyRootWindowController() is called (if it hasn't been already).
   window_manager_.reset();
   gpu_service_.reset();
+#if defined(OS_CHROMEOS)
+  statistics_provider_.reset();
+#endif
   ShutdownComponents();
 }
 
@@ -92,7 +98,15 @@ void WindowManagerApplication::OnAcceleratorRegistrarDestroyed(
 void WindowManagerApplication::InitWindowManager(
     ui::WindowTreeClient* window_tree_client) {
   InitializeComponents();
-
+#if defined(OS_CHROMEOS)
+  // TODO(jamescook): Refactor StatisticsProvider so we can get just the data
+  // we need in ash. Right now StatisticsProviderImpl launches the crossystem
+  // binary to get system data, which we don't want to do twice on startup.
+  statistics_provider_.reset(
+      new chromeos::system::ScopedFakeStatisticsProvider());
+  statistics_provider_->SetMachineStatistic("initial_locale", "en-US");
+  statistics_provider_->SetMachineStatistic("keyboard_layout", "");
+#endif
   window_manager_->Init(window_tree_client);
 }
 

@@ -117,8 +117,6 @@ static_library("test_support") {
     "network/mock_network_device_handler.h",
     "network/onc/onc_test_utils.cc",
     "network/onc/onc_test_utils.h",
-    "system/fake_statistics_provider.cc",
-    "system/fake_statistics_provider.h",
   ]
 }
 
