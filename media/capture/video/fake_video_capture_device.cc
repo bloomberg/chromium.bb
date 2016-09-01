@@ -204,6 +204,7 @@ void FakeVideoCaptureDevice::GetPhotoCapabilities(
   photo_capabilities->exposure_compensation->current = 0;
   photo_capabilities->exposure_compensation->max = 0;
   photo_capabilities->exposure_compensation->min = 0;
+  photo_capabilities->white_balance_mode = mojom::MeteringMode::UNAVAILABLE;
   callback.Run(std::move(photo_capabilities));
 }
 

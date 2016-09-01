@@ -41,6 +41,9 @@ public:
     MediaSettingsRange* exposureCompensation() const { return m_exposureCompensation; }
     void setExposureCompensation(MediaSettingsRange* value) { m_exposureCompensation = value; }
 
+    String whiteBalanceMode() const;
+    void setWhiteBalanceMode(media::mojom::blink::MeteringMode whiteBalanceMode) { m_whiteBalanceMode = whiteBalanceMode; }
+
     DECLARE_VIRTUAL_TRACE();
 
 private:
@@ -53,6 +56,7 @@ private:
     media::mojom::blink::MeteringMode m_focusMode = media::mojom::blink::MeteringMode::UNAVAILABLE;
     media::mojom::blink::MeteringMode m_exposureMode = media::mojom::blink::MeteringMode::UNAVAILABLE;
     Member<MediaSettingsRange> m_exposureCompensation;
+    media::mojom::blink::MeteringMode m_whiteBalanceMode = media::mojom::blink::MeteringMode::UNAVAILABLE;
 };
 
 } // namespace blink

@@ -21,6 +21,7 @@ enum MeteringMode {
     readonly attribute MeteringMode focusMode;
     readonly attribute MeteringMode exposureMode;
     readonly attribute MediaSettingsRange exposureCompensation;
+    readonly attribute MeteringMode whiteBalanceMode;
 
     // TODO(mcasas): Implement all other PhotoCapabilities fields
     // https://crbug.com/518807

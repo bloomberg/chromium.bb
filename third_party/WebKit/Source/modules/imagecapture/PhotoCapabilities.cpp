@@ -43,6 +43,11 @@ String PhotoCapabilities::exposureMode() const
     return meteringModeToString(m_exposureMode);
 }
 
+String PhotoCapabilities::whiteBalanceMode() const
+{
+    return meteringModeToString(m_whiteBalanceMode);
+}
+
 DEFINE_TRACE(PhotoCapabilities)
 {
     visitor->trace(m_iso);

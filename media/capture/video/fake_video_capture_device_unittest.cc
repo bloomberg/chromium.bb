@@ -339,6 +339,7 @@ TEST_F(FakeVideoCaptureDeviceTest, GetAndSetCapabilities) {
   EXPECT_EQ(0, capabilities->exposure_compensation->min);
   EXPECT_EQ(0, capabilities->exposure_compensation->max);
   EXPECT_EQ(0, capabilities->exposure_compensation->current);
+  EXPECT_EQ(mojom::MeteringMode::UNAVAILABLE, capabilities->white_balance_mode);
 
   // Set options: zoom to the maximum value.
   const int max_zoom_value = capabilities->zoom->max;

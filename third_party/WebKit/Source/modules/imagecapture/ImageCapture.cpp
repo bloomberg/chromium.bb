@@ -144,6 +144,15 @@ ScriptPromise ImageCapture::setOptions(ScriptState* scriptState, const PhotoSett
     settings->has_exposure_compensation = photoSettings.hasExposureCompensation();
     if (settings->has_exposure_compensation)
         settings->exposure_compensation = photoSettings.exposureCompensation();
+    settings->has_white_balance_mode = photoSettings.hasWhiteBalanceMode();
+    if (settings->has_white_balance_mode)
+        settings->white_balance_mode = parseMeteringMode(photoSettings.whiteBalanceMode());
+    settings->has_iso = photoSettings.hasIso();
+    if (settings->has_iso)
+        settings->iso = photoSettings.iso();
+    settings->has_red_eye_reduction = photoSettings.hasRedEyeReduction();
+    if (settings->has_red_eye_reduction)
+        settings->red_eye_reduction = photoSettings.redEyeReduction();
     if (photoSettings.hasPointsOfInterest()) {
         for (const auto& point : photoSettings.pointsOfInterest()) {
             auto mojoPoint = media::mojom::blink::Point2D::New();
@@ -244,6 +253,7 @@ void ImageCapture::onCapabilities(ScriptPromiseResolver* resolver, media::mojom:
         caps->setFocusMode(capabilities->focus_mode);
         caps->setExposureMode(capabilities->exposure_mode);
         caps->setExposureCompensation(exposureCompensation);
+        caps->setWhiteBalanceMode(capabilities->white_balance_mode);
         resolver->resolve(caps);
     }
     m_serviceRequests.remove(resolver);

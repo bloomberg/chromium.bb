@@ -8,6 +8,8 @@
 </body>
 <script>
 
+const meteringModeNames = ["unavailable", "manual", "single-shot", "continuous"];
+
 // This test verifies that ImageCapture can get PhotoCapabilities(), with a mock
 // Mojo interface implementation.
 
@@ -62,15 +64,24 @@ async_test(function(t) {
       assert_equals(capabilities.zoom.current,
                     mock_capabilities.zoom.current);
 
-      assert_equals(capabilities.focusMode, mock_capabilities.focusMode);
+      assert_equals(capabilities.focusMode,
+          meteringModeNames[mock_capabilities.focus_mode], 'focusMode');
 
-      assert_true(capabilities.exposureCompensation instanceof MediaSettingsRange);
+      assert_equals(capabilities.exposureMode,
+          meteringModeNames[mock_capabilities.exposure_mode], 'exposureMode;');
+
+      assert_true(capabilities.exposureCompensation
+          instanceof MediaSettingsRange);
       assert_equals(capabilities.exposureCompensation.max,
           mock_capabilities.exposure_compensation.max);
       assert_equals(capabilities.exposureCompensation.min,
           mock_capabilities.exposure_compensation.min);
       assert_equals(capabilities.exposureCompensation.current,
           mock_capabilities.exposure_compensation.current);
+
+      assert_equals(capabilities.whiteBalanceMode,
+          meteringModeNames[mock_capabilities.white_balance_mode],
+          'whiteBalanceMode');
 
       t.done();
     })

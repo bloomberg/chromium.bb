@@ -111,4 +111,12 @@ int PhotoCapabilities::getCurrentExposureCompensation() const {
       AttachCurrentThread(), object_);
 }
 
+PhotoCapabilities::AndroidMeteringMode PhotoCapabilities::getWhiteBalanceMode()
+    const {
+  DCHECK(!object_.is_null());
+  return static_cast<AndroidMeteringMode>(
+      Java_PhotoCapabilities_getWhiteBalanceMode(AttachCurrentThread(),
+                                                 object_));
+}
+
 }  // namespace media

@@ -246,12 +246,15 @@ public class VideoCaptureCamera2 extends VideoCapture {
     private CameraState mCameraState = CameraState.STOPPED;
     private final float mMaxZoom;
     private Rect mCropRect = new Rect();
-    private int mFocusMode = AndroidMeteringMode.CONTINUOUS;
-    private int mExposureMode = AndroidMeteringMode.CONTINUOUS;
     private int mPhotoWidth = 0;
     private int mPhotoHeight = 0;
+    private int mFocusMode = AndroidMeteringMode.CONTINUOUS;
+    private int mExposureMode = AndroidMeteringMode.CONTINUOUS;
     private MeteringRectangle mAreaOfInterest;
     private int mExposureCompensation = 0;
+    private int mWhiteBalanceMode = AndroidMeteringMode.CONTINUOUS;
+    private int mIso = 0;
+    private boolean mRedEyeReduction = false;
 
     // Service function to grab CameraCharacteristics and handle exceptions.
     private static CameraCharacteristics getCameraCharacteristics(Context appContext, int id) {
@@ -325,22 +328,36 @@ public class VideoCaptureCamera2 extends VideoCapture {
             previewRequestBuilder.set(
                     CaptureRequest.CONTROL_AE_MODE, CameraMetadata.CONTROL_AE_MODE_OFF);
         } else {
-            previewRequestBuilder.set(
-                    CaptureRequest.CONTROL_AE_MODE, CameraMetadata.CONTROL_AE_MODE_ON);
+            // TODO(mcasas): Factor the flash settings when wired.
+            previewRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE, mRedEyeReduction
+                            ? CameraMetadata.CONTROL_AE_MODE_ON_AUTO_FLASH_REDEYE
+                            : CameraMetadata.CONTROL_AE_MODE_ON);
         }
         previewRequestBuilder.set(
                 CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION, mExposureCompensation);
+
+        // White Balance mode AndroidMeteringMode.SINGLE_SHOT is not supported.
+        // TODO(mcasas): support FIXED mode, i.e. the scene mode.
+        if (mWhiteBalanceMode == AndroidMeteringMode.CONTINUOUS) {
+            previewRequestBuilder.set(
+                    CaptureRequest.CONTROL_AWB_MODE, CameraMetadata.CONTROL_AWB_MODE_AUTO);
+        } else if (mWhiteBalanceMode == AndroidMeteringMode.UNAVAILABLE) {
+            previewRequestBuilder.set(
+                    CaptureRequest.CONTROL_AWB_MODE, CameraMetadata.CONTROL_AWB_MODE_OFF);
+        }
 
         if (mAreaOfInterest != null) {
             MeteringRectangle[] array = {mAreaOfInterest};
             Log.d(TAG, "Area of interest %s", mAreaOfInterest.toString());
             previewRequestBuilder.set(CaptureRequest.CONTROL_AF_REGIONS, array);
             previewRequestBuilder.set(CaptureRequest.CONTROL_AE_REGIONS, array);
+            previewRequestBuilder.set(CaptureRequest.CONTROL_AWB_REGIONS, array);
         }
 
         if (!mCropRect.isEmpty()) {
             previewRequestBuilder.set(CaptureRequest.SCALER_CROP_REGION, mCropRect);
         }
+        if (mIso > 0) previewRequestBuilder.set(CaptureRequest.SENSOR_SENSITIVITY, mIso);
 
         List<Surface> surfaceList = new ArrayList<Surface>(1);
         // TODO(mcasas): Hold on to this Surface and release() it when not needed.
@@ -656,12 +673,22 @@ public class VideoCaptureCamera2 extends VideoCapture {
         builder.setCurrentExposureCompensation(Math.round(
                 mPreviewRequest.get(CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION) * step * 100));
 
+        final int whiteBalanceMode = mPreviewRequest.get(CaptureRequest.CONTROL_AWB_MODE);
+        if (whiteBalanceMode == CameraMetadata.CONTROL_AWB_MODE_OFF) {
+            builder.setWhiteBalanceMode(AndroidMeteringMode.UNAVAILABLE);
+        } else if (whiteBalanceMode == CameraMetadata.CONTROL_AWB_MODE_AUTO) {
+            builder.setWhiteBalanceMode(AndroidMeteringMode.CONTINUOUS);
+        } else {
+            builder.setWhiteBalanceMode(AndroidMeteringMode.FIXED);
+        }
+
         return builder.build();
     }
 
     @Override
     public void setPhotoOptions(int zoom, int focusMode, int exposureMode, int width, int height,
-            float[] pointsOfInterest2D, boolean hasExposureCompensation, int exposureCompensation) {
+            float[] pointsOfInterest2D, boolean hasExposureCompensation, int exposureCompensation,
+            int whiteBalanceMode, int iso, boolean hasRedEyeReduction, boolean redEyeReduction) {
         final CameraCharacteristics cameraCharacteristics = getCameraCharacteristics(mContext, mId);
         final Rect canvas =
                 cameraCharacteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE);
@@ -679,8 +706,6 @@ public class VideoCaptureCamera2 extends VideoCapture {
 
         if (focusMode != AndroidMeteringMode.NOT_SET) mFocusMode = focusMode;
         if (exposureMode != AndroidMeteringMode.NOT_SET) mExposureMode = exposureMode;
-
-        // TODO(mcasas): https://crbug.com/518807 support exposure compensation.
 
         if (width > 0) mPhotoWidth = width;
         if (height > 0) mPhotoHeight = height;
@@ -727,6 +752,10 @@ public class VideoCaptureCamera2 extends VideoCapture {
                     / cameraCharacteristics.get(CameraCharacteristics.CONTROL_AE_COMPENSATION_STEP)
                               .floatValue());
         }
+        if (whiteBalanceMode != AndroidMeteringMode.NOT_SET) mWhiteBalanceMode = whiteBalanceMode;
+        if (iso > 0) mIso = iso;
+
+        if (hasRedEyeReduction) mRedEyeReduction = redEyeReduction;
 
         final Handler mainHandler = new Handler(mContext.getMainLooper());
         mainHandler.removeCallbacks(mRestartCapture);
@@ -794,20 +823,32 @@ public class VideoCaptureCamera2 extends VideoCapture {
             photoRequestBuilder.set(
                     CaptureRequest.CONTROL_AE_MODE, CameraMetadata.CONTROL_AE_MODE_OFF);
         } else {
-            photoRequestBuilder.set(
-                    CaptureRequest.CONTROL_AE_MODE, CameraMetadata.CONTROL_AE_MODE_ON);
-            // TODO(mcasas): set to CONTROL_AE_MODE_ON_{AUTO,ALWAYS}_FLASH{,_REDEYE} depending on
-            // other options that need to be wired and passed to setPhotoOptions().
+            // TODO(mcasas): Factor the flash settings when wired.
+            photoRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE, mRedEyeReduction
+                            ? CameraMetadata.CONTROL_AE_MODE_ON_AUTO_FLASH_REDEYE
+                            : CameraMetadata.CONTROL_AE_MODE_ON);
         }
         photoRequestBuilder.set(
                 CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION, mExposureCompensation);
+
+        // White Balance mode AndroidMeteringMode.SINGLE_SHOT is not supported.
+        // TODO(mcasas): support FIXED mode, i.e. the scene mode.
+        if (mWhiteBalanceMode == AndroidMeteringMode.CONTINUOUS) {
+            photoRequestBuilder.set(
+                    CaptureRequest.CONTROL_AWB_MODE, CameraMetadata.CONTROL_AWB_MODE_AUTO);
+        } else if (mWhiteBalanceMode == AndroidMeteringMode.UNAVAILABLE) {
+            photoRequestBuilder.set(
+                    CaptureRequest.CONTROL_AWB_MODE, CameraMetadata.CONTROL_AWB_MODE_OFF);
+        }
 
         if (mAreaOfInterest != null) {
             MeteringRectangle[] array = {mAreaOfInterest};
             Log.d(TAG, "Area of interest %s", mAreaOfInterest.toString());
             photoRequestBuilder.set(CaptureRequest.CONTROL_AF_REGIONS, array);
             photoRequestBuilder.set(CaptureRequest.CONTROL_AE_REGIONS, array);
+            photoRequestBuilder.set(CaptureRequest.CONTROL_AWB_REGIONS, array);
         }
+        if (mIso > 0) photoRequestBuilder.set(CaptureRequest.SENSOR_SENSITIVITY, mIso);
 
         final CaptureRequest photoRequest = photoRequestBuilder.build();
         final CrPhotoSessionListener sessionListener =

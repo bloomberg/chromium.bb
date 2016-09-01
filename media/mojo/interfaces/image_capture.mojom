@@ -26,6 +26,7 @@ struct PhotoCapabilities {
   MeteringMode focus_mode;
   MeteringMode exposure_mode;
   Range exposure_compensation;
+  MeteringMode white_balance_mode;
 };
 
 // Equivalent to idl Point2D.
@@ -51,6 +52,12 @@ struct PhotoSettings {
   MeteringMode exposure_mode;
   bool has_exposure_compensation;
   uint32 exposure_compensation;
+  bool has_white_balance_mode;
+  MeteringMode white_balance_mode;
+  bool has_iso;
+  uint32 iso;
+  bool has_red_eye_reduction;
+  bool red_eye_reduction;
   array<Point2D> points_of_interest;
 };
 

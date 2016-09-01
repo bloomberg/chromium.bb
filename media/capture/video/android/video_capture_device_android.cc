@@ -481,6 +481,8 @@ void VideoCaptureDeviceAndroid::DoGetPhotoCapabilities(
       caps.getMaxExposureCompensation();
   photo_capabilities->exposure_compensation->min =
       caps.getMinExposureCompensation();
+  photo_capabilities->white_balance_mode =
+      ToMojomMeteringMode(caps.getWhiteBalanceMode());
 
   callback.Run(std::move(photo_capabilities));
 }
@@ -523,10 +525,19 @@ void VideoCaptureDeviceAndroid::DoSetPhotoOptions(
   const int exposure_compensation =
       settings->has_exposure_compensation ? settings->exposure_compensation : 0;
 
+  const PhotoCapabilities::AndroidMeteringMode white_balance_mode =
+      settings->has_white_balance_mode
+          ? ToAndroidMeteringMode(settings->white_balance_mode)
+          : PhotoCapabilities::AndroidMeteringMode::NOT_SET;
+
+  const int iso = settings->has_iso ? settings->iso : 0;
+
   Java_VideoCapture_setPhotoOptions(
       env, j_capture_, zoom, static_cast<int>(focus_mode),
       static_cast<int>(exposure_mode), width, height, points_of_interest,
-      settings->has_exposure_compensation, exposure_compensation);
+      settings->has_exposure_compensation, exposure_compensation,
+      static_cast<int>(white_balance_mode), iso,
+      settings->has_red_eye_reduction, settings->red_eye_reduction);
 
   callback.Run(true);
 }

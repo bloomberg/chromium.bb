@@ -375,12 +375,23 @@ public abstract class VideoCaptureCamera
         builder.setCurrentExposureCompensation(
                 Math.round(parameters.getExposureCompensation() * step * 100));
 
+        int jniWhiteBalanceMode = AndroidMeteringMode.UNAVAILABLE;
+        if (parameters.isAutoWhiteBalanceLockSupported()
+                && parameters.getSupportedWhiteBalance() != null) {
+            jniWhiteBalanceMode = parameters.getWhiteBalance()
+                            == android.hardware.Camera.Parameters.WHITE_BALANCE_AUTO
+                    ? AndroidMeteringMode.CONTINUOUS
+                    : AndroidMeteringMode.FIXED;
+        }
+        builder.setWhiteBalanceMode(jniExposureMode);
+
         return builder.build();
     }
 
     @Override
     public void setPhotoOptions(int zoom, int focusMode, int exposureMode, int width, int height,
-            float[] pointsOfInterest2D, boolean hasExposureCompensation, int exposureCompensation) {
+            float[] pointsOfInterest2D, boolean hasExposureCompensation, int exposureCompensation,
+            int whiteBalanceMode, int iso, boolean hasRedEyeReduction, boolean redEyeReduction) {
         android.hardware.Camera.Parameters parameters = getCameraParameters(mCamera);
 
         if (parameters.isZoomSupported() && zoom > 0) {
@@ -411,8 +422,6 @@ public abstract class VideoCaptureCamera
                 parameters.setAutoExposureLock(false);
             }
         }
-        // TODO(mcasas): https://crbug.com/518807 set the exposure compensation.
-
         if (width > 0) mPhotoWidth = width;
         if (height > 0) mPhotoHeight = height;
 
@@ -458,6 +467,26 @@ public abstract class VideoCaptureCamera
             final int unnormalizedExposureCompensation = Math.round(
                     exposureCompensation / 100.0f / parameters.getExposureCompensationStep());
             parameters.setExposureCompensation(unnormalizedExposureCompensation);
+        }
+
+        // |iso| setting is not supported, see explanation in getPhotoCapabilities().
+
+        if (hasRedEyeReduction) {
+            // TODO(mcasas): Factor the flash settings when wired.
+            parameters.setFlashMode(redEyeReduction
+                            ? android.hardware.Camera.Parameters.FLASH_MODE_RED_EYE
+                            : android.hardware.Camera.Parameters.FLASH_MODE_AUTO);
+        }
+
+        // White Balance mode AndroidMeteringMode.SINGLE_SHOT is not supported.
+        // TODO(mcasas): support FIXED mode, i.e. the scene mode.
+        if (whiteBalanceMode == AndroidMeteringMode.CONTINUOUS
+                && parameters.getSupportedWhiteBalance() != null) {
+            // setWhiteBalance() will release the lock set with setAutoWhiteBalanceLock(), if any.
+            parameters.setWhiteBalance(android.hardware.Camera.Parameters.WHITE_BALANCE_AUTO);
+        } else if (whiteBalanceMode == AndroidMeteringMode.FIXED
+                && parameters.isAutoWhiteBalanceLockSupported()) {
+            parameters.setAutoWhiteBalanceLock(true);
         }
 
         try {

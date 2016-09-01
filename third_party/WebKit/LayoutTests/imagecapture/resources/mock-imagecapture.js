@@ -20,8 +20,10 @@ let mockImageCaptureReady = define(
           width : { min : 320, max : 3264, current : 320 },
           width : { min : 320, max : 3264, current : 320 },
           zoom : { min : 0, max : 10, current : 5 },
-          focusMode : "unavailable",
+          focus_mode : imageCapture.MeteringMode.MANUAL,
+          exposure_mode : imageCapture.MeteringMode.SINGLE_SHOT,
           exposure_compensation : { min : -200, max : 200, current : 33},
+          white_balance_mode : imageCapture.MeteringMode.CONTINUOUS,
       }};
       this.settings_ = null;
     }

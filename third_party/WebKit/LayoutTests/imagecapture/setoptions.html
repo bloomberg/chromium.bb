@@ -8,7 +8,7 @@
 </body>
 <script>
 
-const focusModeNames = ["unavailable", "manual", "single-shot", "continuous"];
+const meteringModeNames = ["unavailable", "manual", "single-shot", "continuous"];
 
 // This test verifies that ImageCapture can call setOptions()s, with a mock Mojo
 // interface implementation.
@@ -26,7 +26,11 @@ async_test(function(t) {
                         focusMode : "single-shot",
                         pointsOfInterest : [{x : 0.1, y : 0.2},
                                             {x : 0.3, y : 0.4}],
+                        exposureMode : "continuous",
                         exposureCompensation : 133,
+                        whiteBalanceMode : "manual",
+                        iso : 120,
+                        redEyeReduction : true,
                       };
   mockImageCaptureReady
     .then(mock => {
@@ -48,7 +52,7 @@ async_test(function(t) {
       assert_equals(optionsDict.imageHeight, theMock.options().height, 'height value');
       assert_equals(true, theMock.options().has_focus_mode, 'has_focus_mode must be true');
       assert_equals(optionsDict.focusMode,
-                    focusModeNames[theMock.options().focus_mode],
+                    meteringModeNames[theMock.options().focus_mode],
                     'focusMode value');
       assert_equals(optionsDict.pointsOfInterest.length,
                     theMock.options().points_of_interest.length,
@@ -63,11 +67,28 @@ async_test(function(t) {
                                0.001,
                                'pointsOfInterest\' y');
       }
+      assert_equals(true, theMock.options().has_exposure_mode, 'has_exposure_mode must be true');
+      assert_equals(optionsDict.exposureMode,
+                    meteringModeNames[theMock.options().exposure_mode],
+                    'exposureMode value');
       assert_equals(true, theMock.options().has_exposure_compensation,
                     'has_exposure_compensation must be true');
       assert_equals(optionsDict.exposureCompensation,
                     theMock.options().exposure_compensation,
                     'exposure_compensation value');
+      assert_equals(true, theMock.options().has_white_balance_mode, 'has_white_balance_mode must be true');
+      assert_equals(optionsDict.whiteBalanceMode,
+                    meteringModeNames[theMock.options().white_balance_mode],
+                    'whiteBalanceMode value');
+      assert_equals(true, theMock.options().has_iso, 'has_iso must be true');
+      assert_equals(optionsDict.iso, theMock.options().iso, 'iso value');
+      assert_equals(true, theMock.options().has_red_eye_reduction,
+                    'has_red_eye_reduction must be true');
+      // Depending on how mojo boolean packing in integers is arranged, this can
+      // be a number instead of a boolean, compare directly.
+      // TODO(mcasas): Revert to assert_equals() when yzshen@ has sorted it out.
+      assert_true(optionsDict.redEyeReduction == theMock.options().red_eye_reduction,
+                    'red_eye_reduction value');
 
       t.done();
     })

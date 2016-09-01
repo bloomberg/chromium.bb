@@ -46,6 +46,7 @@ class PhotoCapabilities {
   int getMinExposureCompensation() const;
   int getMaxExposureCompensation() const;
   int getCurrentExposureCompensation() const;
+  AndroidMeteringMode getWhiteBalanceMode() const;
 
  private:
   const base::android::ScopedJavaLocalRef<jobject> object_;
