@@ -235,25 +235,26 @@ class MainTest(cros_test_lib.MockOutputTestCase):
 
     # Verify that a message beginning with "Usage: " was printed
     stdout = output.GetStdout()
-    self.assertTrue(stdout.startswith('Usage: '),
-                    msg='Expected output starting with "Usage: " but got:\n%s' %
+    self.assertTrue(stdout.startswith('usage: '),
+                    msg='Expected output starting with "usage: " but got:\n%s' %
                     stdout)
 
   def testMissingOut(self):
     """Test that running without --out exits with an error."""
-    with self.OutputCapturer():
+    with self.OutputCapturer() as output:
       # Running without --out should exit with code!=0
       try:
-        mps.main([])
+        mps.main(['pkg'])
       except exceptions.SystemExit as e:
         self.assertNotEquals(e.args[0], 0)
 
     # Verify that output ends in error.
-    self.AssertOutputEndsInError()
+    stderr = output.GetStderr()
+    self.assertIn('error: argument --out is required', stderr)
 
   def testMissingPackage(self):
     """Test that running without a package argument exits with an error."""
-    with self.OutputCapturer():
+    with self.OutputCapturer() as output:
       # Running without a package should exit with code!=0
       try:
         mps.main(['--out=any-out'])
@@ -261,7 +262,8 @@ class MainTest(cros_test_lib.MockOutputTestCase):
         self.assertNotEquals(e.args[0], 0)
 
     # Verify that output ends in error.
-    self.AssertOutputEndsInError()
+    stderr = output.GetStderr()
+    self.assertIn('error: too few arguments', stderr)
 
   def testMain(self):
     """Verify that running main method runs expected functons.
@@ -273,4 +275,4 @@ class MainTest(cros_test_lib.MockOutputTestCase):
 
     mps.main(['--out=any-out', 'any-package'])
 
-    m.assert_called_with('csv_table', 'any-out')
+    m.assert_called_with('csv_table', os.path.join(os.getcwd(), 'any-out'))

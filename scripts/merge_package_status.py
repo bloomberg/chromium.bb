@@ -9,10 +9,10 @@ This simplifies uploading to a Google Docs spreadsheet.
 
 from __future__ import print_function
 
-import optparse  # pylint: disable=deprecated-module
 import os
 import re
 
+from chromite.lib import commandline
 from chromite.lib import operation
 from chromite.lib import table
 from chromite.lib import upgrade_table as utable
@@ -252,24 +252,21 @@ def WriteTable(csv_table, outpath):
     raise
 
 
+def GetParser():
+  """Return a command line parser."""
+  parser = commandline.ArgumentParser(description=__doc__)
+  parser.add_argument('--out', dest='outpath', type='path',
+                      required=True,
+                      help='File to write merged results to')
+  parser.add_argument('input_csv_files', nargs='+')
+  return parser
+
+
 def main(argv):
   """Main function."""
-  usage = 'Usage: %prog --out=merged_csv_file input_csv_files...'
-  parser = optparse.OptionParser(usage=usage)
-  parser.add_option('--out', dest='outpath', type='string',
-                    action='store', default=None,
-                    help='File to write merged results to')
+  parser = GetParser()
+  options = parser.parse_args(argv)
 
-  (options, args) = parser.parse_args(argv)
-
-  # Check required options
-  if not options.outpath:
-    parser.print_help()
-    oper.Die('The --out option is required.')
-  if not args:
-    parser.print_help()
-    oper.Die('At least one input_csv_file is required.')
-
-  csv_table = LoadAndMergeTables(args)
+  csv_table = LoadAndMergeTables(options.input_csv_files)
 
   WriteTable(csv_table, options.outpath)
