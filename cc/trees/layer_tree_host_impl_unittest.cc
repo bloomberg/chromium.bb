@@ -10004,6 +10004,19 @@ TEST_F(LayerTreeHostImplTest, ScrollAnimated) {
   host_impl_->DidFinishImplFrame();
 }
 
+TEST_F(LayerTreeHostImplTest, SecondScrollAnimatedBeginNotIgnored) {
+  const gfx::Size content_size(1000, 1000);
+  const gfx::Size viewport_size(50, 100);
+  CreateBasicVirtualViewportLayers(viewport_size, content_size);
+
+  EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
+            host_impl_->ScrollAnimatedBegin(gfx::Point()).thread);
+
+  // The second ScrollAnimatedBegin should not get ignored.
+  EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
+            host_impl_->ScrollAnimatedBegin(gfx::Point()).thread);
+}
+
 // Verfify that a smooth scroll animation doesn't jump when UpdateTarget gets
 // called before the animation is started.
 TEST_F(LayerTreeHostImplTest, AnimatedScrollUpdateTargetBeforeStarting) {

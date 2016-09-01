@@ -581,6 +581,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollBegin(
         &scroll_state, GestureScrollInputType(gesture_event.sourceDevice));
   } else if (ShouldAnimate(gesture_event.data.scrollBegin.deltaHintUnits !=
                            blink::WebGestureEvent::ScrollUnits::Pixels)) {
+    DCHECK(!scroll_state.is_in_inertial_phase());
     gfx::Point scroll_point(gesture_event.x, gesture_event.y);
     scroll_status = input_handler_->ScrollAnimatedBegin(scroll_point);
   } else {

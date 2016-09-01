@@ -2759,7 +2759,6 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimatedBegin(
   ScrollStateData scroll_state_data;
   scroll_state_data.position_x = viewport_point.x();
   scroll_state_data.position_y = viewport_point.y();
-  scroll_state_data.is_in_inertial_phase = true;
   ScrollState scroll_state(scroll_state_data);
 
   // ScrollAnimated is used for animated wheel scrolls. We find the first layer
@@ -2772,7 +2771,11 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimatedBegin(
     ScrollStateData scroll_state_end_data;
     scroll_state_end_data.is_ending = true;
     ScrollState scroll_state_end(scroll_state_end_data);
+    // TODO(Sahel): Once the touchpad scroll latching for Non-mac devices is
+    // implemented, the current scrolling layer should not get cleared after
+    // each animation (crbug.com/526463).
     ScrollEnd(&scroll_state_end);
+    ClearCurrentlyScrollingLayer();
   }
   return scroll_status;
 }
@@ -2857,7 +2860,6 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
   ScrollStateData scroll_state_data;
   scroll_state_data.position_x = viewport_point.x();
   scroll_state_data.position_y = viewport_point.y();
-  scroll_state_data.is_in_inertial_phase = false;
   ScrollState scroll_state(scroll_state_data);
 
   // ScrollAnimated is used for animated wheel scrolls. We find the first layer
@@ -2896,7 +2898,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
   }
   scroll_state.set_is_ending(true);
   // TODO(Sahel): Once the touchpad scroll latching for Non-mac devices is
-  // impelemented, the current scrolling layer should not get cleared after
+  // implemented, the current scrolling layer should not get cleared after
   // each animation (crbug.com/526463).
   ScrollEnd(&scroll_state);
   ClearCurrentlyScrollingLayer();
@@ -4137,7 +4139,7 @@ void LayerTreeHostImpl::ScrollOffsetAnimationFinished() {
   ScrollStateData scroll_state_data;
   ScrollState scroll_state(scroll_state_data);
   // TODO(Sahel): Once the touchpad scroll latching for Non-mac devices is
-  // impelemented, the current scrolling layer should not get cleared after
+  // implemented, the current scrolling layer should not get cleared after
   // each animation (crbug.com/526463).
   ScrollEnd(&scroll_state);
   ClearCurrentlyScrollingLayer();
