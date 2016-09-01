@@ -525,7 +525,9 @@ PassRefPtr<SecurityOrigin> SecurityOrigin::create(const String& protocol, const 
 {
     if (port < 0 || port > MaxAllowedPort)
         return createUnique();
-    String decodedHost = decodeURLEscapeSequences(host);
+
+    DCHECK_EQ(host, decodeURLEscapeSequences(host));
+
     String portPart = port ? ":" + String::number(port) : String();
     return create(KURL(KURL(), protocol + "://" + host + portPart + "/"));
 }
