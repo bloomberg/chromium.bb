@@ -178,10 +178,9 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase,
   // Compares the |captured_video_filename| with the |reference_video_filename|.
   //
   // The barcode decoder decodes the captured video containing barcodes overlaid
-  // into every frame of the video (produced by rgba_to_i420_converter). It
-  // produces a set of PNG images and a |stats_file| that maps each captured
-  // frame to a frame in the reference video. The frames should be of size
-  // |width| x |height|.
+  // into every frame of the video. It produces a set of PNG images and a
+  // |stats_file| that maps each captured frame to a frame in the reference
+  // video. The frames should be of size |width| x |height|.
   // All measurements calculated are printed as perf parsable numbers to stdout.
   bool CompareVideosAndPrintResult(
       const std::string& test_label,
