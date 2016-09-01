@@ -25,6 +25,10 @@ extra_trybots = [
     "mastername": "master.tryserver.chromium.linux",
     "buildernames": ["linux_optional_gpu_tests_rel"]
   },
+  {
+    "mastername": "master.tryserver.chromium.android",
+    "buildernames": ["android_optional_gpu_tests_rel"]
+  },
 ]
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
