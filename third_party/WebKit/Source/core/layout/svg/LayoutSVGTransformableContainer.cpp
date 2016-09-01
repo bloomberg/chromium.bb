@@ -90,7 +90,7 @@ SVGTransformChange LayoutSVGTransformableContainer::calculateLocalTransform()
     }
 
     if (useElement) {
-        SVGLengthContext lengthContext(useElement);
+        SVGLengthContext lengthContext(element);
         FloatSize translation(
             useElement->x()->currentValue()->value(lengthContext),
             useElement->y()->currentValue()->value(lengthContext));
