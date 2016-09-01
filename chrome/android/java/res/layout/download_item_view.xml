@@ -18,7 +18,7 @@
             android:paddingTop="16dp"
             android:paddingBottom="16dp" >
 
-        <ImageView
+        <org.chromium.chrome.browser.widget.TintedImageView
                 android:id="@+id/icon_view"
                 android:layout_width="@dimen/downloads_item_icon_size"
                 android:layout_height="@dimen/downloads_item_icon_size"

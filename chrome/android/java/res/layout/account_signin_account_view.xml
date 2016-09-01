@@ -36,7 +36,7 @@
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:layout_marginStart="16dp"
-        android:src="@drawable/bookmark_check_blue"
+        android:src="@drawable/ic_check_googblue_24dp"
         android:contentDescription="@null"
         android:visibility="gone"/>
 </LinearLayout>

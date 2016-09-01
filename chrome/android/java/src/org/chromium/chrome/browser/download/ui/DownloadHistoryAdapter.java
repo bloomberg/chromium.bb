@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.download.ui;
 
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
@@ -15,11 +14,8 @@ import android.text.format.Formatter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
-import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
@@ -48,7 +44,6 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
     public static class ItemViewHolder
             extends RecyclerView.ViewHolder implements ThumbnailProvider.ThumbnailRequest {
         public DownloadItemView mItemView;
-        public ImageView mIconView;
         public TextView mFilenameView;
         public TextView mHostnameView;
         public TextView mFilesizeView;
@@ -60,7 +55,6 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
             assert itemView instanceof DownloadItemView;
             mItemView = (DownloadItemView) itemView;
 
-            mIconView = (ImageView) itemView.findViewById(R.id.icon_view);
             mFilenameView = (TextView) itemView.findViewById(R.id.filename_view);
             mHostnameView = (TextView) itemView.findViewById(R.id.hostname_view);
             mFilesizeView = (TextView) itemView.findViewById(R.id.filesize_view);
@@ -75,8 +69,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
         public void onThumbnailRetrieved(String filePath, Bitmap thumbnail) {
             if (TextUtils.equals(getFilePath(), filePath) && thumbnail != null
                     && thumbnail.getWidth() != 0 && thumbnail.getHeight() != 0) {
-                mIconView.setBackground(null);
-                mIconView.setImageBitmap(thumbnail);
+                mItemView.setThumbnailBitmap(thumbnail);
             }
         }
     }
@@ -109,7 +102,6 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
     private final boolean mShowOffTheRecord;
     private final LoadingStateDelegate mLoadingDelegate;
 
-    private int mIconBackgroundColor;
     private BackendProvider mBackendProvider;
     private OfflinePageDownloadBridge.Observer mOfflinePageObserver;
     private int mFilter = DownloadFilter.FILTER_ALL;
@@ -118,10 +110,6 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
         mShowOffTheRecord = showOffTheRecord;
         mParentComponent = parentComponent;
         mLoadingDelegate = new LoadingStateDelegate(mShowOffTheRecord);
-
-        Resources resources = ContextUtils.getApplicationContext().getResources();
-        mIconBackgroundColor =
-                ApiCompatibilityUtils.getColor(resources, R.color.light_active_color);
 
         // Using stable IDs allows the RecyclerView to animate changes.
         setHasStableIds(true);
@@ -231,7 +219,6 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
                 UrlFormatter.formatUrlForSecurityDisplay(item.getUrl(), false));
         holder.mFilesizeView.setText(
                 Formatter.formatFileSize(context, item.getFileSize()));
-        holder.mItemView.initialize(item);
         holder.mItem = item;
 
         // Asynchronously grab a thumbnail for the file if it might have one.
@@ -262,8 +249,9 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
                 break;
             default:
         }
-        holder.mIconView.setBackgroundColor(mIconBackgroundColor);
-        holder.mIconView.setImageResource(iconResource);
+
+        // Initialize the DownloadItemView.
+        holder.mItemView.initialize(item, iconResource);
     }
 
     /**

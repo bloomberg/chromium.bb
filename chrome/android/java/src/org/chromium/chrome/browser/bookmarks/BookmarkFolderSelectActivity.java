@@ -341,7 +341,7 @@ public class BookmarkFolderSelectActivity extends SynchronousInitializationActiv
                     iconId);
             // Selected entry has an end_icon, a blue check mark.
             Drawable drawableEnd = entry.mIsSelected ? ApiCompatibilityUtils.getDrawable(
-                    textView.getResources(), R.drawable.bookmark_check_blue) : null;
+                    textView.getResources(), R.drawable.ic_check_googblue_24dp) : null;
             ApiCompatibilityUtils.setCompoundDrawablesRelativeWithIntrinsicBounds(textView,
                     drawableStart, null, drawableEnd, null);
         }
