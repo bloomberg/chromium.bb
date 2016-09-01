@@ -137,7 +137,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 344
+#   For your editing convenience: highest ID currently used: 345
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -518,6 +518,27 @@
 
       If this policy is left not set or the list is empty all schemes will be accessible in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
       'label': '''List of disabled protocol schemes''',
+    },
+    {
+      'name': 'Http09OnNonDefaultPortsEnabled',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:54-', 'chrome_os:54-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'example_value': False,
+      'id': 345,
+      'caption': '''Enables HTTP/0.9 support on non-default ports''',
+      'tags': [],
+      'desc': '''This policy enables HTTP/0.9 on ports other than 80 for HTTP and 443 for HTTPS.
+
+      This policy is disabled by default, and if enabled, leaves users open to the security issue https://crbug.com/600352.
+
+      This policy is intended to give enterprises a chance to migrate exising servers off of HTTP/0.9, and will be removed in the future.
+
+      If this policy is not set, HTTP/0.9 will be disabled on non-default ports.''',
     },
     {
       'name': 'JavascriptEnabled',

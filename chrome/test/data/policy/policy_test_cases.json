@@ -155,6 +155,9 @@
     ]
   },
 
+  "Http09OnNonDefaultPortsEnabled": {
+  },
+
   "JavascriptEnabled": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "JavascriptEnabled": false },

@@ -206,6 +206,7 @@ struct SpdySessionDependencies {
   std::unique_ptr<ProxyDelegate> proxy_delegate;
   bool enable_http2_alternative_service_with_different_host;
   NetLog* net_log;
+  bool http_09_on_non_default_ports_enabled;
 };
 
 class SpdyURLRequestContext : public URLRequestContext {

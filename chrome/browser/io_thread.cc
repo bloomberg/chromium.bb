@@ -318,8 +318,9 @@ IOThread::IOThread(
 #if defined(ENABLE_EXTENSIONS)
       extension_event_router_forwarder_(extension_event_router_forwarder),
 #endif
-      globals_(NULL),
+      globals_(nullptr),
       is_quic_allowed_by_policy_(true),
+      http_09_on_non_default_ports_enabled_(false),
       creation_time_(base::TimeTicks::Now()),
       weak_factory_(this) {
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_proxy =
@@ -393,6 +394,13 @@ IOThread::IOThread(
       std::string())).GetValue(policy::key::kQuicAllowed);
   if (value)
     value->GetAsBoolean(&is_quic_allowed_by_policy_);
+
+  value = policy_service
+              ->GetPolicies(policy::PolicyNamespace(
+                  policy::POLICY_DOMAIN_CHROME, std::string()))
+              .GetValue(policy::key::kHttp09OnNonDefaultPortsEnabled);
+  if (value)
+    value->GetAsBoolean(&http_09_on_non_default_ports_enabled_);
 
   // Some unit tests use IOThread but do not initialize MetricsService. In that
   // case it is fine not to have |metrics_data_use_forwarder_|.
@@ -607,7 +615,8 @@ void IOThread::Init() {
   net::CheckSupportAndMaybeEnableTCPFastOpen(always_enable_tfo_if_supported);
 
   ConfigureParamsFromFieldTrialsAndCommandLine(
-      command_line, is_quic_allowed_by_policy_, &params_);
+      command_line, is_quic_allowed_by_policy_,
+      http_09_on_non_default_ports_enabled_, &params_);
 
   TRACE_EVENT_BEGIN0("startup",
                      "IOThread::Init:ProxyScriptFetcherRequestContext");
@@ -887,6 +896,7 @@ net::URLRequestContext* IOThread::ConstructSystemRequestContext(
 void IOThread::ConfigureParamsFromFieldTrialsAndCommandLine(
     const base::CommandLine& command_line,
     bool is_quic_allowed_by_policy,
+    bool http_09_on_non_default_ports_enabled,
     net::HttpNetworkSession::Params* params) {
   std::string quic_user_agent_id = chrome::GetChannelString();
   if (!quic_user_agent_id.empty())
@@ -983,6 +993,9 @@ void IOThread::ConfigureParamsFromFieldTrialsAndCommandLine(
     params->testing_fixed_https_port =
         GetSwitchValueAsInt(command_line, switches::kTestingFixedHttpsPort);
   }
+
+  params->http_09_on_non_default_ports_enabled =
+      http_09_on_non_default_ports_enabled;
 }
 
 // static

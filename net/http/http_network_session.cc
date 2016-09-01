@@ -133,7 +133,8 @@ HttpNetworkSession::Params::Params()
       quic_race_cert_verification(false),
       quic_do_not_fragment(false),
       proxy_delegate(NULL),
-      enable_token_binding(false) {
+      enable_token_binding(false),
+      http_09_on_non_default_ports_enabled(false) {
   quic_supported_versions.push_back(QUIC_VERSION_35);
 }
 

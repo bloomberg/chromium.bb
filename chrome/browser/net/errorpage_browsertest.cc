@@ -17,6 +17,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
@@ -35,6 +36,9 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/error_page/common/error_page_switches.h"
 #include "components/google/core/browser/google_util.h"
+#include "components/policy/core/browser/browser_policy_connector.h"
+#include "components/policy/core/common/mock_configuration_policy_provider.h"
+#include "components/policy/core/common/policy_map.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
@@ -1492,6 +1496,47 @@ IN_PROC_BROWSER_TEST_F(ErrorPageForIDNTest, IDN) {
       URLRequestFailedJob::GetMockHttpUrlForHostname(net::ERR_UNSAFE_PORT,
                                                      kHostname));
   EXPECT_TRUE(IsDisplayingText(browser(), kHostnameJSUnicode));
+}
+
+// Make sure HTTP/0.9 is disabled on non-default ports by default.
+IN_PROC_BROWSER_TEST_F(ErrorPageTest, Http09WeirdPort) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/echo-raw?spam"));
+  ExpectDisplayingLocalErrorPage(browser(), net::ERR_INVALID_HTTP_RESPONSE);
+}
+
+class ErrorPageWithHttp09OnNonDefaultPortsTest : public InProcessBrowserTest {
+ public:
+  // InProcessBrowserTest:
+  void SetUp() override {
+    EXPECT_CALL(policy_provider_, IsInitializationComplete(testing::_))
+        .WillRepeatedly(testing::Return(true));
+    policy::PolicyMap values;
+    values.Set(policy::key::kHttp09OnNonDefaultPortsEnabled,
+               policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_MACHINE,
+               policy::POLICY_SOURCE_CLOUD,
+               base::WrapUnique(new base::FundamentalValue(true)), nullptr);
+    policy_provider_.UpdateChromePolicy(values);
+    policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
+        &policy_provider_);
+
+    InProcessBrowserTest::SetUp();
+  }
+
+ private:
+  policy::MockConfigurationPolicyProvider policy_provider_;
+};
+
+// Make sure HTTP/0.9 works on non-default ports when enabled by policy.
+IN_PROC_BROWSER_TEST_F(ErrorPageWithHttp09OnNonDefaultPortsTest,
+                       Http09WeirdPortEnabled) {
+  const char kHttp09Response[] = "JumboShrimp";
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(std::string("/echo-raw?") +
+                                                kHttp09Response));
+  EXPECT_TRUE(IsDisplayingText(browser(), kHttp09Response));
 }
 
 }  // namespace

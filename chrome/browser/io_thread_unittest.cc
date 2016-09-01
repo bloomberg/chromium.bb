@@ -56,7 +56,7 @@ class IOThreadPeer {
       bool is_quic_allowed_by_policy,
       net::HttpNetworkSession::Params* params) {
     IOThread::ConfigureParamsFromFieldTrialsAndCommandLine(
-        command_line, is_quic_allowed_by_policy, params);
+        command_line, is_quic_allowed_by_policy, false, params);
   }
 };
 

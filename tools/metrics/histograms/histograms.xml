@@ -76095,6 +76095,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="344"
       label="Allow remote users to interact with elevated windows in remote
              assistance sessions"/>
+  <int value="345" label="Enables HTTP/0.9 support on non-default ports"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">
