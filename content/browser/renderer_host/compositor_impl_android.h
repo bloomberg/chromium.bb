@@ -127,7 +127,8 @@ class CONTENT_EXPORT CompositorImpl
   void CreateVulkanOutputSurface();
 #endif
   void CreateCompositorOutputSurface(
-      const scoped_refptr<cc::ContextProvider>& context_provider);
+      const scoped_refptr<cc::ContextProvider>& context_provider,
+      ui::ContextProviderFactory::ContextCreationResult result);
   void InitializeDisplay(
       std::unique_ptr<cc::OutputSurface> display_output_surface,
       scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider,
@@ -168,6 +169,7 @@ class CONTENT_EXPORT CompositorImpl
   // the GPU thread.
   unsigned int pending_swapbuffers_;
 
+  size_t num_successive_gpu_process_initialization_failures_;
   size_t num_successive_context_creation_failures_;
 
   // Whether there is an OutputSurface request pending from the current

@@ -17,17 +17,13 @@
 #include "gpu/ipc/common/surface_handle.h"
 #include "ui/android/context_provider_factory.h"
 
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}
-
 namespace cc {
 class VulkanInProcessContextProvider;
 }
 
 namespace gpu {
 class GpuChannelHost;
+class GpuChannelEstablishFactory;
 }
 
 namespace content {
@@ -36,13 +32,19 @@ class ContextProviderCommandBuffer;
 class CONTENT_EXPORT ContextProviderFactoryImpl
     : public ui::ContextProviderFactory {
  public:
+  // The factory must outlive the ContextProviderFactoryImpl instance, which
+  // will be destroyed when terminate is called.
+  static void Initialize(gpu::GpuChannelEstablishFactory* gpu_channel_factory);
+
+  static void Terminate();
+
   static ContextProviderFactoryImpl* GetInstance();
 
   ~ContextProviderFactoryImpl() override;
 
   // The callback may be triggered synchronously, if the Gpu Channel is already
-  // initialized. In case the surface_handle is invalidated before the context
-  // can be created, the request is dropped and the callback will *not* run.
+  // initialized. In case the context creation fails, a null context is passed
+  // with the failure reason.
   void CreateDisplayContextProvider(
       gpu::SurfaceHandle surface_handle,
       gpu::SharedMemoryLimits shared_memory_limits,
@@ -68,7 +70,8 @@ class CONTENT_EXPORT ContextProviderFactoryImpl
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
 
  private:
-  friend struct base::DefaultSingletonTraits<ContextProviderFactoryImpl>;
+  ContextProviderFactoryImpl(
+      gpu::GpuChannelEstablishFactory* gpu_channel_factory);
 
   void CreateContextProviderInternal(
       command_buffer_metrics::ContextType context_type,
@@ -95,14 +98,16 @@ class CONTENT_EXPORT ContextProviderFactoryImpl
     ContextProviderCallback result_callback;
   };
 
-  ContextProviderFactoryImpl();
-
   // Will return nullptr if the Gpu channel has not been established.
-  gpu::GpuChannelHost* EnsureGpuChannelEstablished();
+  void EstablishGpuChannel();
   void OnGpuChannelEstablished(scoped_refptr<gpu::GpuChannelHost> gpu_channel);
   void OnGpuChannelTimeout();
 
-  void HandlePendingRequests();
+  void HandlePendingRequests(
+      scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
+      ContextCreationResult result);
+
+  gpu::GpuChannelEstablishFactory* gpu_channel_factory_;
 
   std::list<ContextProvidersRequest> context_provider_requests_;
 
@@ -111,6 +116,8 @@ class CONTENT_EXPORT ContextProviderFactoryImpl
   scoped_refptr<cc::VulkanContextProvider> shared_vulkan_context_provider_;
 
   bool in_handle_pending_requests_;
+
+  bool in_shutdown_;
 
   base::OneShotTimer establish_gpu_channel_timeout_;
 

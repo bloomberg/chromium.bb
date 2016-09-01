@@ -119,6 +119,8 @@
       'test/mock_background_sync_controller.h',
       'test/mock_google_streaming_server.cc',
       'test/mock_google_streaming_server.h',
+      'test/mock_gpu_channel_establish_factory.cc',
+      'test/mock_gpu_channel_establish_factory.h',
       'test/mock_keyboard.cc',
       'test/mock_keyboard.h',
       'test/mock_keyboard_driver_win.cc',
