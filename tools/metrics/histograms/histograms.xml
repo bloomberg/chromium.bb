@@ -4292,90 +4292,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Bluetooth.Web.Android.onCharacteristicRead.Status"
-    enum="AndroidGATTStatusResult">
-  <owner>jyasskin@chromium.org</owner>
-  <owner>ortuno@chromium.org</owner>
-  <owner>scheib@chromium.org</owner>
-  <summary>onCharacteristicRead 'status' values.</summary>
-</histogram>
+<histogram name="Bluetooth.Web.Android" enum="AndroidGATTStatusResult">
+<!-- Name completed by histogram_suffixes name="AndroidGATTEvents" -->
 
-<histogram name="Bluetooth.Web.Android.onCharacteristicWrite.Status"
-    enum="AndroidGATTStatusResult">
   <owner>jyasskin@chromium.org</owner>
   <owner>ortuno@chromium.org</owner>
   <owner>scheib@chromium.org</owner>
-  <summary>onCharacteristicWrite 'status' values..</summary>
-</histogram>
-
-<histogram
-    name="Bluetooth.Web.Android.onConnectionStateChange.Status.Connected"
-    enum="AndroidGATTStatusResult">
-  <owner>jyasskin@chromium.org</owner>
-  <owner>ortuno@chromium.org</owner>
-  <owner>scheib@chromium.org</owner>
-  <summary>
-    onConnectionStateChange 'status' values received in the connected state.
-  </summary>
-</histogram>
-
-<histogram
-    name="Bluetooth.Web.Android.onConnectionStateChange.Status.Disconnected"
-    enum="AndroidGATTStatusResult">
-  <owner>jyasskin@chromium.org</owner>
-  <owner>ortuno@chromium.org</owner>
-  <owner>scheib@chromium.org</owner>
-  <summary>
-    onConnectionStateChange 'status' values received in the disconnected state.
-  </summary>
-</histogram>
-
-<histogram
-    name="Bluetooth.Web.Android.onConnectionStateChange.Status.InvalidState"
-    enum="AndroidGATTStatusResult">
-  <owner>jyasskin@chromium.org</owner>
-  <owner>ortuno@chromium.org</owner>
-  <owner>scheib@chromium.org</owner>
-  <summary>
-    onConnectionStateChange 'status' values received in an unhandled 'state'.
-  </summary>
-</histogram>
-
-<histogram name="Bluetooth.Web.Android.onDescriptorRead.Status"
-    enum="AndroidGATTStatusResult">
-  <owner>jyasskin@chromium.org</owner>
-  <owner>ortuno@chromium.org</owner>
-  <owner>scheib@chromium.org</owner>
-  <summary>onDescriptorRead 'status' values.</summary>
-</histogram>
-
-<histogram name="Bluetooth.Web.Android.onDescriptorWrite.Status"
-    enum="AndroidGATTStatusResult">
-  <owner>jyasskin@chromium.org</owner>
-  <owner>ortuno@chromium.org</owner>
-  <owner>scheib@chromium.org</owner>
-  <summary>onDescriptorWrite 'status' values..</summary>
-</histogram>
-
-<histogram name="Bluetooth.Web.Android.onServicesDiscovered.Status.Connected"
-    enum="AndroidGATTStatusResult">
-  <owner>jyasskin@chromium.org</owner>
-  <owner>ortuno@chromium.org</owner>
-  <owner>scheib@chromium.org</owner>
-  <summary>
-    onServicesDiscovered 'status' values received in the connected state.
-  </summary>
-</histogram>
-
-<histogram
-    name="Bluetooth.Web.Android.onServicesDiscovered.Status.Disconnected"
-    enum="AndroidGATTStatusResult">
-  <owner>jyasskin@chromium.org</owner>
-  <owner>ortuno@chromium.org</owner>
-  <owner>scheib@chromium.org</owner>
-  <summary>
-    onServicesDiscovered 'status' values received in the disconnected state.
-  </summary>
+  <summary>'status' values returned by Android GATT event.</summary>
 </histogram>
 
 <histogram name="Bluetooth.Web.Blacklist.ParsedNonEmptyString"
@@ -98417,6 +98340,23 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="Total"/>
   <suffix name="Video"/>
   <affected-histogram name="Android.DownloadManager.InitialCount"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="AndroidGATTEvents" separator=".">
+  <suffix name="onCharacteristicRead.Status"/>
+  <suffix name="onCharacteristicWrite.Status"/>
+  <suffix name="onConnectionStateChange.Status.Connected"
+      label="While Connected"/>
+  <suffix name="onConnectionStateChange.Status.Disconnected"
+      label="While Disonnected"/>
+  <suffix name="onConnectionStateChange.Status.InvalidState"
+      label="While InvalidState"/>
+  <suffix name="onDescriptorRead.Status"/>
+  <suffix name="onDescriptorWrite.Status"/>
+  <suffix name="onServicesDiscovered.Status.Connected" label="While Connected"/>
+  <suffix name="onServicesDiscovered.Status.Disconnected"
+      label="While Disconnected"/>
+  <affected-histogram name="Bluetooth.Web.Android"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="AndroidGetAccountsTypes">
