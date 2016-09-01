@@ -4473,7 +4473,14 @@ void RenderFrameImpl::RemoveObserver(RenderFrameObserver* observer) {
 
 void RenderFrameImpl::OnStop() {
   DCHECK(frame_);
+
+  // The stopLoading call may run script, which may cause this frame to be
+  // detached/deleted.  If that happens, return immediately.
+  base::WeakPtr<RenderFrameImpl> weak_this = weak_factory_.GetWeakPtr();
   frame_->stopLoading();
+  if (!weak_this)
+    return;
+
   if (frame_ && !frame_->parent())
     FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers_, OnStop());
 
@@ -5538,10 +5545,21 @@ void RenderFrameImpl::NavigateInternal(
             current_history_item_.isNull() &&
             item_for_history_navigation.urlString() == url::kAboutBlankURL;
         if (staying_at_about_blank) {
-          // TODO(creis): We need to generate a commit for the initial empty
-          // document, rather than just faking a DidStopLoading.  See
-          // https://crbug.com/626416.
+          // TODO(creis): We should avoid the need to go to the browser and back
+          // when loading about:blank as a history item, which we can do by
+          // sending a subtree of same-process history items when navigating a
+          // frame back/forward (see https://crbug.com/639842).
+          //
+          // Until then, we need to fake a DidStopLoading, since there's no easy
+          // way to generate a commit for the initial empty document at this
+          // point in time.
+          //
+          // Note that the stopLoading call may run script which might delete
+          // this frame, so return immediately if this frame is no longer valid.
+          base::WeakPtr<RenderFrameImpl> weak_this = weak_factory_.GetWeakPtr();
           frame_->stopLoading();
+          if (!weak_this)
+            return;
         }
         if (request_params.is_history_navigation_in_new_child &&
             (interrupted_by_client_redirect || staying_at_about_blank)) {

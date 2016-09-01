@@ -3061,7 +3061,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
     EXPECT_EQ(blank_url, entry->root_node()->children[0]->frame_entry->url());
   }
 
-  // 3. Navigate the main frame, destroying the frames.
+  // 2. Navigate the main frame, destroying the frames.
   GURL main_url_2(embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url_2));
@@ -3071,7 +3071,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(2, controller.GetEntryCount());
   EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
 
-  // 4. Go back, recreating the iframe.
+  // 3. Go back, recreating the iframe.
   {
     TestNavigationObserver back_load_observer(shell()->web_contents());
     controller.GoBack();
@@ -3096,6 +3096,65 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
         "domAutomationController.send(document.body.innerHTML)", &value));
     EXPECT_EQ(expected_text, value);
   }
+
+  EXPECT_EQ(2, controller.GetEntryCount());
+  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(entry, controller.GetLastCommittedEntry());
+
+  // The entry should have a FrameNavigationEntry for the blank subframe.
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
+    ASSERT_EQ(1U, entry->root_node()->children.size());
+    EXPECT_EQ(blank_url, entry->root_node()->children[0]->frame_entry->url());
+  }
+}
+
+// Ensure we don't crash if an onload handler removes an about:blank frame after
+// recreating it on a back/forward.  See https://crbug.com/638166.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       FrameNavigationEntry_RemoveRecreatedBlankSubframe) {
+  // 1. Start on a page that removes its about:blank iframe during onload.
+  GURL main_url(embedded_test_server()->GetURL(
+      "/navigation_controller/remove_blank_iframe_on_load.html"));
+  GURL blank_url(url::kAboutBlankURL);
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  EXPECT_EQ(main_url, root->current_url());
+
+  EXPECT_EQ(1, controller.GetEntryCount());
+  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
+  NavigationEntryImpl* entry = controller.GetLastCommittedEntry();
+
+  // The entry should have a FrameNavigationEntry for the blank subframe, even
+  // though it is being removed from the page.
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
+    ASSERT_EQ(1U, entry->root_node()->children.size());
+    EXPECT_EQ(blank_url, entry->root_node()->children[0]->frame_entry->url());
+  }
+
+  // 2. Navigate the main frame, destroying the frames.
+  GURL main_url_2(embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url_2));
+  ASSERT_EQ(0U, root->child_count());
+  EXPECT_EQ(main_url_2, root->current_url());
+
+  EXPECT_EQ(2, controller.GetEntryCount());
+  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
+
+  // 3. Go back, recreating the iframe (and removing it again).
+  {
+    TestNavigationObserver back_load_observer(shell()->web_contents());
+    controller.GoBack();
+    back_load_observer.Wait();
+  }
+  EXPECT_EQ(main_url, root->current_url());
+
+  // Check that the renderer is still alive.
+  EXPECT_TRUE(ExecuteScript(shell(), "console.log('Success');"));
 
   EXPECT_EQ(2, controller.GetEntryCount());
   EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
