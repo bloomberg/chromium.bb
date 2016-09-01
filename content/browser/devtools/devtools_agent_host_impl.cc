@@ -36,7 +36,7 @@ base::LazyInstance<DiscoveryCallbacks>::Leaky g_providers =
 }  // namespace
 
 char DevToolsAgentHost::kTypePage[] = "page";
-char DevToolsAgentHost::kTypeFrame[] = "frame";
+char DevToolsAgentHost::kTypeFrame[] = "iframe";
 char DevToolsAgentHost::kTypeSharedWorker[] = "shared_worker";
 char DevToolsAgentHost::kTypeServiceWorker[] = "service_worker";
 char DevToolsAgentHost::kTypeExternal[] = "external";
