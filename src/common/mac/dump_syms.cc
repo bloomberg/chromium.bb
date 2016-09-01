@@ -31,7 +31,7 @@
 
 // Author: Jim Blandy <jimb@mozilla.com> <jimb@red-bean.com>
 
-// dump_syms.mm: Create a symbol file for use with minidumps
+// dump_syms.cc: Create a symbol file for use with minidumps
 
 #include "common/mac/dump_syms.h"
 
