@@ -11,6 +11,8 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/common/browser_side_navigation_policy.h"
+#include "content/public/test/browser_side_navigation_test_utils.h"
 #include "content/public/test/web_contents_tester.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/test_util.h"
@@ -57,6 +59,9 @@ void TabsApiUnitTest::SetUp() {
   ExtensionServiceTestBase::SetUp();
   InitializeEmptyExtensionService();
 
+  if (content::IsBrowserSideNavigationEnabled())
+    content::BrowserSideNavigationSetUp();
+
   browser_window_.reset(new TestBrowserWindow());
   Browser::CreateParams params(profile());
   params.type = Browser::TYPE_TABBED;
@@ -67,6 +72,8 @@ void TabsApiUnitTest::SetUp() {
 void TabsApiUnitTest::TearDown() {
   browser_.reset();
   browser_window_.reset();
+  if (content::IsBrowserSideNavigationEnabled())
+    content::BrowserSideNavigationTearDown();
   ExtensionServiceTestBase::TearDown();
 }
 

@@ -26,6 +26,8 @@
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/crx_file/id_util.h"
+#include "content/public/common/browser_side_navigation_policy.h"
+#include "content/public/test/browser_side_navigation_test_utils.h"
 #include "content/public/test/web_contents_tester.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_registry.h"
@@ -133,6 +135,9 @@ class ExtensionContextMenuModelTest : public ExtensionServiceTestBase {
 
   Browser* GetBrowser();
 
+  void SetUp() override;
+  void TearDown() override;
+
  private:
   std::unique_ptr<TestBrowserWindow> test_window_;
   std::unique_ptr<Browser> browser_;
@@ -183,6 +188,18 @@ Browser* ExtensionContextMenuModelTest::GetBrowser() {
     browser_.reset(new Browser(params));
   }
   return browser_.get();
+}
+
+void ExtensionContextMenuModelTest::SetUp() {
+  ExtensionServiceTestBase::SetUp();
+  if (content::IsBrowserSideNavigationEnabled())
+    content::BrowserSideNavigationSetUp();
+}
+
+void ExtensionContextMenuModelTest::TearDown() {
+  if (content::IsBrowserSideNavigationEnabled())
+    content::BrowserSideNavigationTearDown();
+  ExtensionServiceTestBase::TearDown();
 }
 
 // Tests that applicable menu items are disabled when a ManagementPolicy
