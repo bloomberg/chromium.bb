@@ -156,6 +156,10 @@ Polymer({
     var ipv4 =
         CrOnc.getIPConfigForType(this.networkProperties, CrOnc.IPType.IPV4);
     this.IPAddress = (ipv4 && ipv4.IPAddress) || '';
+
+    // Update the detail page title.
+    this.parentNode.pageTitle =
+        CrOnc.getNetworkName(this.networkProperties, this.i18n);
   },
 
   /** @private */
@@ -235,15 +239,6 @@ Polymer({
    */
   getEmptyNetworkProperties_: function() {
     return {Type: this.networkProperties.Type};
-  },
-
-  /**
-   * @return {string} The text to display for the network name.
-   * @private
-   */
-  getStateName_: function() {
-    return /** @type {string} */ (
-        CrOnc.getActiveValue(this.networkProperties.Name) || '');
   },
 
   /**

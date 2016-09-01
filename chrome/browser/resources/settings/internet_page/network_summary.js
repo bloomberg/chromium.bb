@@ -52,7 +52,9 @@ Polymer({
      */
     deviceStates: {
       type: Object,
-      value: function() { return {}; },
+      value: function() {
+        return {};
+      },
     },
 
     /**
@@ -61,7 +63,9 @@ Polymer({
      */
     activeNetworkStates: {
       type: Array,
-      value: function() { return []; },
+      value: function() {
+        return [];
+      },
     },
 
     /**
@@ -70,7 +74,9 @@ Polymer({
      */
     networkStateLists: {
       type: Object,
-      value: function() { return {}; },
+      value: function() {
+        return {};
+      },
     },
 
     /**
@@ -188,13 +194,17 @@ Polymer({
    * networkingPrivate.onNetworkListChanged event callback.
    * @private
    */
-  onNetworkListChangedEvent_: function() { this.getNetworkLists_(); },
+  onNetworkListChangedEvent_: function() {
+    this.getNetworkLists_();
+  },
 
   /**
    * networkingPrivate.onDeviceStateListChanged event callback.
    * @private
    */
-  onDeviceStateListChangedEvent_: function() { this.getNetworkLists_(); },
+  onDeviceStateListChangedEvent_: function() {
+    this.getNetworkLists_();
+  },
 
   /**
    * networkingPrivate.onNetworksChanged event callback.
@@ -366,12 +376,19 @@ Polymer({
       });
     }
 
-    // Push the active networks onto newActiveNetworkStates in device order,
-    // creating an empty state for devices with no networks.
-    var newActiveNetworkStates = [];
+    // Push the active networks onto newActiveNetworkStates in order based on
+    // device priority, creating an empty state for devices with no networks.
+    let newActiveNetworkStates = [];
     this.activeNetworkIds_ = new Set;
-    for (let type in newDeviceStates) {
-      var state = activeNetworkStatesByType.get(type) || {GUID: '', Type: type};
+    let orderedDeviceTypes = [
+      CrOnc.Type.ETHERNET, CrOnc.Type.WI_FI, CrOnc.Type.CELLULAR,
+      CrOnc.Type.WI_MAX, CrOnc.Type.VPN
+    ];
+    for (let type of orderedDeviceTypes) {
+      let device = newDeviceStates[type];
+      if (!device)
+        continue;
+      let state = activeNetworkStatesByType.get(type) || {GUID: '', Type: type};
       newActiveNetworkStates.push(state);
       this.activeNetworkIds_.add(state.GUID);
     }

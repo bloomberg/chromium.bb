@@ -91,7 +91,7 @@ Polymer({
     }
     let network = /** @type {!CrOnc.NetworkStateProperties} */ (this.item);
     if (this.isListItem)
-      return this.getNetworkName_(network);
+      return CrOnc.getNetworkName(network, this.i18n);
     return this.i18n('OncType' + network.Type);
   },
 
@@ -117,7 +117,7 @@ Polymer({
       return this.i18n('networkListItemConnected');
     if (network.Name && network.ConnectionState) {
       return this.getConnectionStateText_(
-          network.ConnectionState, this.getNetworkName_(network));
+          network.ConnectionState, CrOnc.getNetworkName(network, this.i18n));
     }
     return this.i18n('networkDisabled');
   },
@@ -139,24 +139,6 @@ Polymer({
     if (this.i18nExists(state))
       return this.i18n(state);
     return state;
-  },
-
-  /**
-   * Returns the name to display for |network|.
-   * @param {?CrOnc.NetworkStateProperties} network
-   * @return {string}
-   */
-  getNetworkName_: function(network) {
-    let name = network.Name;
-    if (!name)
-      return this.i18n('OncType' + network.Type);
-    if (network.Type == 'VPN' && network.VPN &&
-        network.VPN.Type == 'ThirdPartyVPN' && network.VPN.ThirdPartyVPN) {
-      let providerName = network.VPN.ThirdPartyVPN.ProviderName;
-      if (providerName)
-        return this.i18n('vpnNameTemplate', providerName, name);
-    }
-    return name;
   },
 
   /** @private */

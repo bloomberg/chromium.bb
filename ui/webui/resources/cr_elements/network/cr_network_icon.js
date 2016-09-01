@@ -59,17 +59,17 @@ Polymer({
      */
     networkState: {
       type: Object,
-      observer: 'networkStateChanged_'
+      observer: 'networkStateChanged_',
     },
 
     /**
      * If set, the ONC network type will be used to display the icon.
      * @type {?chrome.networkingPrivate.NetworkType}
      */
-    networkType:  {
+    networkType: {
       type: String,
       value: null,
-      observer: 'networkTypeChanged_'
+      observer: 'networkTypeChanged_',
     },
 
     /**
@@ -77,34 +77,34 @@ Polymer({
      * differently, e.g. the disconnected image will never be shown for
      * list items.
      */
-    isListItem:  {
+    isListItem: {
       type: Boolean,
       value: false,
-      observer: 'isListItemChanged_'
+      observer: 'isListItemChanged_',
     },
 
     /** The icon type to use for the base image of the icon. */
     iconType_: {
       type: String,
-      value: 'ethernet'
+      value: 'ethernet',
     },
 
     /** Set to true to show a badge for roaming networks. */
     roaming_: {
       type: Boolean,
-      value: false
+      value: false,
     },
 
     /** Set to true to show a badge for secure networks. */
     secure_: {
       type: Boolean,
-      value: false
+      value: false,
     },
 
     /** Set to the name of a technology to show show a badge. */
     technology_: {
       type: String,
-      value: ''
+      value: '',
     },
   },
 
@@ -193,6 +193,10 @@ Polymer({
     } else {
       icon.classList.toggle('multi-level', multiLevel);
       icon.classList.toggle('level0', multiLevel);
+      icon.classList.toggle('level1', false);
+      icon.classList.toggle('level2', false);
+      icon.classList.toggle('level3', false);
+      icon.classList.toggle('level4', false);
     }
 
     this.setIconBadges_(params);
@@ -214,8 +218,9 @@ Polymer({
     if (connectionState == CrOnc.ConnectionState.CONNECTING) {
       strength = 0;
       connecting = true;
-    } else if (connectionState == CrOnc.ConnectionState.CONNECTED ||
-               !params.showDisconnected) {
+    } else if (
+        connectionState == CrOnc.ConnectionState.CONNECTED ||
+        !params.showDisconnected) {
       strength = params.strength || 0;
     }
 
@@ -237,8 +242,7 @@ Polymer({
   setIconBadges_: function(params) {
     var networkState = this.networkState;
 
-    var type =
-        (params.showBadges && networkState) ? networkState.Type : '';
+    var type = (params.showBadges && networkState) ? networkState.Type : '';
     if (type == CrOnc.Type.WI_FI) {
       this.roaming_ = false;
       var security = networkState.WiFi ? networkState.WiFi.Security : '';
