@@ -8,8 +8,8 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "components/leveldb/public/cpp/remote_iterator.h"
+#include "components/leveldb/public/cpp/util.h"
 #include "components/leveldb/public/interfaces/leveldb.mojom.h"
-#include "mojo/common/common_type_converters.h"
 #include "services/shell/public/cpp/service_context.h"
 #include "services/shell/public/cpp/service_test.h"
 
@@ -55,8 +55,8 @@ class RemoteIteratorTest : public shell::test::ServiceTest {
       // Write a key to the database.
       error = mojom::DatabaseError::INVALID_ARGUMENT;
       base::RunLoop run_loop;
-      database_->Put(mojo::Array<uint8_t>::From(p.first),
-                     mojo::Array<uint8_t>::From(p.second),
+      database_->Put(StdStringToUint8Vector(p.first),
+                     StdStringToUint8Vector(p.second),
                      Capture(&error, run_loop.QuitClosure()));
       run_loop.Run();
       EXPECT_EQ(mojom::DatabaseError::OK, error);

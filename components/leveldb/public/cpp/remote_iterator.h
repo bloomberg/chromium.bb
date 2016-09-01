@@ -6,7 +6,6 @@
 #define COMPONENTS_LEVELDB_PUBLIC_CPP_REMOTE_ITERATOR_H_
 
 #include "components/leveldb/public/interfaces/leveldb.mojom.h"
-#include "mojo/public/cpp/bindings/array.h"
 #include "third_party/leveldatabase/src/include/leveldb/iterator.h"
 
 namespace leveldb {
@@ -37,8 +36,8 @@ class RemoteIterator : public Iterator {
 
   bool valid_;
   mojom::DatabaseError status_;
-  mojo::Array<uint8_t> key_;
-  mojo::Array<uint8_t> value_;
+  base::Optional<std::vector<uint8_t>> key_;
+  base::Optional<std::vector<uint8_t>> value_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteIterator);
 };

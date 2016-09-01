@@ -25,22 +25,23 @@ class LevelDBDatabaseImpl : public mojom::LevelDBDatabase {
   ~LevelDBDatabaseImpl() override;
 
   // Overridden from LevelDBDatabase:
-  void Put(mojo::Array<uint8_t> key,
-           mojo::Array<uint8_t> value,
+  void Put(const std::vector<uint8_t>& key,
+           const std::vector<uint8_t>& value,
            const PutCallback& callback) override;
-  void Delete(mojo::Array<uint8_t> key,
+  void Delete(const std::vector<uint8_t>& key,
               const DeleteCallback& callback) override;
-  void DeletePrefixed(mojo::Array<uint8_t> key_prefix,
+  void DeletePrefixed(const std::vector<uint8_t>& key_prefix,
                       const DeletePrefixedCallback& callback) override;
-  void Write(mojo::Array<mojom::BatchedOperationPtr> operations,
+  void Write(std::vector<mojom::BatchedOperationPtr> operations,
              const WriteCallback& callback) override;
-  void Get(mojo::Array<uint8_t> key, const GetCallback& callback) override;
-  void GetPrefixed(mojo::Array<uint8_t> key_prefix,
+  void Get(const std::vector<uint8_t>& key,
+           const GetCallback& callback) override;
+  void GetPrefixed(const std::vector<uint8_t>& key_prefix,
                    const GetPrefixedCallback& callback) override;
   void GetSnapshot(const GetSnapshotCallback& callback) override;
   void ReleaseSnapshot(uint64_t snapshot_id) override;
   void GetFromSnapshot(uint64_t snapshot_id,
-                       mojo::Array<uint8_t> key,
+                       const std::vector<uint8_t>& key,
                        const GetCallback& callback) override;
   void NewIterator(const NewIteratorCallback& callback) override;
   void NewIteratorFromSnapshot(uint64_t snapshot_id,
@@ -52,7 +53,7 @@ class LevelDBDatabaseImpl : public mojom::LevelDBDatabase {
   void IteratorSeekToLast(uint64_t iterator_id,
                           const IteratorSeekToLastCallback& callback) override;
   void IteratorSeek(uint64_t iterator_id,
-                    mojo::Array<uint8_t> target,
+                    const std::vector<uint8_t>& target,
                     const IteratorSeekToLastCallback& callback) override;
   void IteratorNext(uint64_t iterator_id,
                     const IteratorNextCallback& callback) override;

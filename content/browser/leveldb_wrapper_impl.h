@@ -107,7 +107,7 @@ class LevelDBWrapperImpl : public mojom::LevelDBWrapper {
   void OnConnectionError();
   void LoadMap(const base::Closure& completion_callback);
   void OnLoadComplete(leveldb::mojom::DatabaseError status,
-                      mojo::Array<leveldb::mojom::KeyValuePtr> data);
+                      std::vector<leveldb::mojom::KeyValuePtr> data);
   void CreateCommitBatchIfNeeded();
   void StartCommitTimer();
   base::TimeDelta ComputeCommitDelay() const;

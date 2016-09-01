@@ -26,7 +26,7 @@ LevelDBServiceImpl::LevelDBServiceImpl(
 LevelDBServiceImpl::~LevelDBServiceImpl() {}
 
 void LevelDBServiceImpl::Open(filesystem::mojom::DirectoryPtr directory,
-                              const mojo::String& dbname,
+                              const std::string& dbname,
                               leveldb::mojom::LevelDBDatabaseRequest database,
                               const OpenCallback& callback) {
   OpenWithOptions(leveldb::mojom::OpenOptions::New(), std::move(directory),
@@ -36,7 +36,7 @@ void LevelDBServiceImpl::Open(filesystem::mojom::DirectoryPtr directory,
 void LevelDBServiceImpl::OpenWithOptions(
     leveldb::mojom::OpenOptionsPtr open_options,
     filesystem::mojom::DirectoryPtr directory,
-    const mojo::String& dbname,
+    const std::string& dbname,
     leveldb::mojom::LevelDBDatabaseRequest database,
     const OpenCallback& callback) {
   leveldb::Options options;
@@ -57,7 +57,7 @@ void LevelDBServiceImpl::OpenWithOptions(
   options.env = env_mojo.get();
 
   leveldb::DB* db = nullptr;
-  leveldb::Status s = leveldb::DB::Open(options, dbname.To<std::string>(), &db);
+  leveldb::Status s = leveldb::DB::Open(options, dbname, &db);
 
   if (s.ok()) {
     new LevelDBDatabaseImpl(std::move(database), std::move(env_mojo),

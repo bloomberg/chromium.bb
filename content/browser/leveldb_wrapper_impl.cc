@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/leveldb/public/cpp/util.h"
 #include "content/public/browser/browser_thread.h"
-#include "mojo/common/common_type_converters.h"
 
 namespace content {
 
@@ -249,18 +249,18 @@ void LevelDBWrapperImpl::LoadMap(const base::Closure& completion_callback) {
     return;
 
   // TODO(michaeln): Import from sqlite localstorage db.
-  database_->GetPrefixed(mojo::Array<uint8_t>::From(prefix_),
+  database_->GetPrefixed(leveldb::StdStringToUint8Vector(prefix_),
                          base::Bind(&LevelDBWrapperImpl::OnLoadComplete,
                                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void LevelDBWrapperImpl::OnLoadComplete(
     leveldb::mojom::DatabaseError status,
-    mojo::Array<leveldb::mojom::KeyValuePtr> data) {
+    std::vector<leveldb::mojom::KeyValuePtr> data) {
   DCHECK(!map_);
   map_.reset(new ValueMap);
   for (auto& it : data)
-    (*map_)[it->key.PassStorage()] = it->value.PassStorage();
+    (*map_)[it->key] = it->value;
 
   // We proceed without using a backing store, nothing will be persisted but the
   // class is functional for the lifetime of the object.
@@ -323,18 +323,18 @@ void LevelDBWrapperImpl::CommitChanges() {
   data_rate_limiter_.add_samples(commit_batch_->GetDataSize());
 
   // Commit all our changes in a single batch.
-  mojo::Array<leveldb::mojom::BatchedOperationPtr> operations;
+  std::vector<leveldb::mojom::BatchedOperationPtr> operations;
   if (commit_batch_->clear_all_first) {
     leveldb::mojom::BatchedOperationPtr item =
         leveldb::mojom::BatchedOperation::New();
     item->type = leveldb::mojom::BatchOperationType::DELETE_PREFIXED_KEY;
-    item->key = mojo::Array<uint8_t>::From(std::string(prefix_));
+    item->key = leveldb::StdStringToUint8Vector(prefix_);
     operations.push_back(std::move(item));
   }
   for (auto& it : commit_batch_->changed_values) {
     leveldb::mojom::BatchedOperationPtr item =
         leveldb::mojom::BatchedOperation::New();
-    item->key = std::vector<uint8_t>(it.first);
+    item->key = std::move(it.first);
     if (!it.second) {
       item->type = leveldb::mojom::BatchOperationType::DELETE_KEY;
     } else {

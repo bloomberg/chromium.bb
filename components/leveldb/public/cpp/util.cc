@@ -45,19 +45,28 @@ leveldb::Status DatabaseErrorToStatus(mojom::DatabaseError e,
   return leveldb::Status::InvalidArgument(msg, msg2);
 }
 
-leveldb::Slice GetSliceFor(const mojo::Array<uint8_t>& key) {
+leveldb::Slice GetSliceFor(const std::vector<uint8_t>& key) {
   if (key.size() == 0)
     return leveldb::Slice();
   return leveldb::Slice(reinterpret_cast<const char*>(&key.front()),
                         key.size());
 }
 
-mojo::Array<uint8_t> GetArrayFor(const leveldb::Slice& s) {
+std::vector<uint8_t> GetVectorFor(const leveldb::Slice& s) {
   if (s.size() == 0)
-    return mojo::Array<uint8_t>();
-  return mojo::Array<uint8_t>(std::vector<uint8_t>(
+    return std::vector<uint8_t>();
+  return std::vector<uint8_t>(
       reinterpret_cast<const uint8_t*>(s.data()),
-      reinterpret_cast<const uint8_t*>(s.data() + s.size())));
+      reinterpret_cast<const uint8_t*>(s.data() + s.size()));
+}
+
+std::string Uint8VectorToStdString(const std::vector<uint8_t>& input) {
+  return std::string(reinterpret_cast<const char*>(input.data()), input.size());
+}
+
+std::vector<uint8_t> StdStringToUint8Vector(const std::string& input) {
+  const uint8_t* data = reinterpret_cast<const uint8_t*>(input.data());
+  return std::vector<uint8_t>(data, data + input.size());
 }
 
 }  // namespace leveldb

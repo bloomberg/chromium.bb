@@ -20,12 +20,12 @@ class LevelDBServiceImpl : public mojom::LevelDBService {
 
   // Overridden from LevelDBService:
   void Open(filesystem::mojom::DirectoryPtr directory,
-            const mojo::String& dbname,
+            const std::string& dbname,
             leveldb::mojom::LevelDBDatabaseRequest database,
             const OpenCallback& callback) override;
   void OpenWithOptions(leveldb::mojom::OpenOptionsPtr open_options,
                        filesystem::mojom::DirectoryPtr directory,
-                       const mojo::String& dbname,
+                       const std::string& dbname,
                        leveldb::mojom::LevelDBDatabaseRequest database,
                        const OpenCallback& callback) override;
   void OpenInMemory(leveldb::mojom::LevelDBDatabaseRequest database,

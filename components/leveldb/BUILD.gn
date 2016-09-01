@@ -18,10 +18,13 @@ static_library("lib") {
     "leveldb_service_impl.h",
   ]
 
-  deps = [
+  public_deps = [
     "//components/filesystem/public/interfaces",
     "//components/leveldb/public/cpp",
     "//components/leveldb/public/interfaces",
+  ]
+
+  deps = [
     "//mojo/common",
     "//mojo/public/cpp/system",
     "//services/shell/public/cpp",

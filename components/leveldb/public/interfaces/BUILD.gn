@@ -12,6 +12,4 @@ mojom("interfaces") {
   deps = [
     "//components/filesystem/public/interfaces",
   ]
-
-  use_new_wrapper_types = false
 }
