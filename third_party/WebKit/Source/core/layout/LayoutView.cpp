@@ -32,6 +32,7 @@
 #include "core/layout/LayoutMedia.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/ViewFragmentationContext.h"
+#include "core/layout/api/LayoutAPIShim.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/page/Page.h"
 #include "core/paint/PaintLayer.h"
@@ -350,7 +351,7 @@ const LayoutObject* LayoutView::pushMappingToContainer(const LayoutBoxModelObjec
     }
 
     if (geometryMap.getMapCoordinatesFlags() & TraverseDocumentBoundaries) {
-        if (LayoutPart* parentDocLayoutObject = frame()->ownerLayoutObject()) {
+        if (LayoutPart* parentDocLayoutObject = toLayoutPart(LayoutAPIShim::layoutObjectFrom(frame()->ownerLayoutItem()))) {
             offset = -LayoutSize(m_frameView->scrollOffset());
             offset += parentDocLayoutObject->contentBoxOffset();
             container = parentDocLayoutObject;
@@ -378,7 +379,7 @@ void LayoutView::mapAncestorToLocal(const LayoutBoxModelObject* ancestor, Transf
         return;
 
     if (mode & TraverseDocumentBoundaries) {
-        if (LayoutPart* parentDocLayoutObject = frame()->ownerLayoutObject()) {
+        if (LayoutPart* parentDocLayoutObject = toLayoutPart(LayoutAPIShim::layoutObjectFrom(frame()->ownerLayoutItem()))) {
             // A LayoutView is a containing block for fixed-position elements, so don't carry this state across frames.
             parentDocLayoutObject->mapAncestorToLocal(ancestor, transformState, mode & ~IsFixed);
 
