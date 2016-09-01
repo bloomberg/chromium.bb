@@ -437,11 +437,13 @@ void LayoutBox::layout()
 
 // More IE extensions.  clientWidth and clientHeight represent the interior of an object
 // excluding border and scrollbar.
+DISABLE_CFI_PERF
 LayoutUnit LayoutBox::clientWidth() const
 {
     return m_frameRect.width() - borderLeft() - borderRight() - verticalScrollbarWidth();
 }
 
+DISABLE_CFI_PERF
 LayoutUnit LayoutBox::clientHeight() const
 {
     return m_frameRect.height() - borderTop() - borderBottom() - horizontalScrollbarHeight();
@@ -452,6 +454,7 @@ int LayoutBox::pixelSnappedClientWidth() const
     return snapSizeToPixel(clientWidth(), location().x() + clientLeft());
 }
 
+DISABLE_CFI_PERF
 int LayoutBox::pixelSnappedClientHeight() const
 {
     return snapSizeToPixel(clientHeight(), location().y() + clientTop());
@@ -1110,6 +1113,7 @@ LayoutUnit LayoutBox::minPreferredLogicalWidth() const
     return m_minPreferredLogicalWidth;
 }
 
+DISABLE_CFI_PERF
 LayoutUnit LayoutBox::maxPreferredLogicalWidth() const
 {
     if (preferredLogicalWidthsDirty()) {
@@ -1498,6 +1502,7 @@ bool LayoutBox::foregroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect, u
     return false;
 }
 
+DISABLE_CFI_PERF
 bool LayoutBox::computeBackgroundIsKnownToBeObscured() const
 {
     if (scrollsOverflow())
@@ -2262,6 +2267,7 @@ static float getMaxWidthListMarker(const LayoutBox* layoutObject)
     return maxWidth;
 }
 
+DISABLE_CFI_PERF
 void LayoutBox::computeLogicalWidth(LogicalExtentComputedValues& computedValues) const
 {
     computedValues.m_extent = style()->containsSize() ? borderAndPaddingLogicalWidth() : logicalWidth();
@@ -2367,6 +2373,7 @@ LayoutUnit LayoutBox::fillAvailableMeasure(LayoutUnit availableLogicalWidth, Lay
     return available;
 }
 
+DISABLE_CFI_PERF
 LayoutUnit LayoutBox::computeIntrinsicLogicalWidthUsing(const Length& logicalWidthLength, LayoutUnit availableLogicalWidth, LayoutUnit borderAndPadding) const
 {
     if (logicalWidthLength.type() == FillAvailable)
@@ -2392,6 +2399,7 @@ LayoutUnit LayoutBox::computeIntrinsicLogicalWidthUsing(const Length& logicalWid
     return LayoutUnit();
 }
 
+DISABLE_CFI_PERF
 LayoutUnit LayoutBox::computeLogicalWidthUsing(SizeType widthType, const Length& logicalWidth, LayoutUnit availableLogicalWidth, const LayoutBlock* cb) const
 {
     ASSERT(widthType == MinSize || widthType == MainOrPreferredSize || !logicalWidth.isAuto());
@@ -2591,6 +2599,7 @@ void LayoutBox::computeMarginsForDirection(MarginDirection flowDirection, const 
     marginEnd = marginEndWidth;
 }
 
+DISABLE_CFI_PERF
 void LayoutBox::updateLogicalHeight()
 {
     m_intrinsicContentLogicalHeight = contentLogicalHeight();
@@ -3984,6 +3993,7 @@ PositionWithAffinity LayoutBox::positionForPoint(const LayoutPoint& point)
     return createPositionWithAffinity(firstPositionInOrBeforeNode(nonPseudoNode()));
 }
 
+DISABLE_CFI_PERF
 bool LayoutBox::shrinkToAvoidFloats() const
 {
     // Floating objects don't shrink.  Objects that don't avoid floats don't shrink.
@@ -4000,6 +4010,7 @@ static bool shouldBeConsideredAsReplaced(Node* node)
     return node && node->isElementNode() && (toElement(node)->isFormControlElement() || isHTMLImageElement(toElement(node)));
 }
 
+DISABLE_CFI_PERF
 bool LayoutBox::avoidsFloats() const
 {
     return isAtomicInlineLevel() || shouldBeConsideredAsReplaced(node()) || hasOverflowClip() || isHR() || isLegend() || isWritingModeRoot() || isFlexItemIncludingDeprecated() || style()->containsPaint() || style()->containsLayout();
@@ -4093,6 +4104,7 @@ LayoutRectOutsets LayoutBox::computeVisualEffectOverflowOutsets() const
     return LayoutRectOutsets(top, right, bottom, left);
 }
 
+DISABLE_CFI_PERF
 void LayoutBox::addOverflowFromChild(LayoutBox* child, const LayoutSize& delta)
 {
     // Never allow flow threads to propagate overflow up to a parent.
@@ -4126,6 +4138,7 @@ bool LayoutBox::hasLeftOverflow() const
     return !style()->isLeftToRightDirection() && isHorizontalWritingMode();
 }
 
+DISABLE_CFI_PERF
 void LayoutBox::addLayoutOverflow(const LayoutRect& rect)
 {
     if (rect.isEmpty())
@@ -4213,6 +4226,7 @@ bool LayoutBox::percentageLogicalHeightIsResolvable() const
     return computePercentageLogicalHeight(fakeLength) != -1;
 }
 
+DISABLE_CFI_PERF
 bool LayoutBox::hasUnsplittableScrollingOverflow() const
 {
     // We will paginate as long as we don't scroll overflow in the pagination direction.
@@ -4253,6 +4267,7 @@ LayoutUnit LayoutBox::lineHeight(bool /*firstLine*/, LineDirectionMode direction
     return LayoutUnit();
 }
 
+DISABLE_CFI_PERF
 int LayoutBox::baselinePosition(FontBaseline baselineType, bool /*firstLine*/, LineDirectionMode direction, LinePositionMode linePositionMode) const
 {
     ASSERT(linePositionMode == PositionOnContainingLine);
@@ -4286,6 +4301,7 @@ LayoutRect LayoutBox::logicalVisualOverflowRectForPropagation(const ComputedStyl
     return rect;
 }
 
+DISABLE_CFI_PERF
 LayoutRect LayoutBox::visualOverflowRectForPropagation(const ComputedStyle& parentStyle) const
 {
     // If the writing modes of the child and parent match, then we don't have to
@@ -4302,6 +4318,7 @@ LayoutRect LayoutBox::visualOverflowRectForPropagation(const ComputedStyle& pare
     return rect;
 }
 
+DISABLE_CFI_PERF
 LayoutRect LayoutBox::logicalLayoutOverflowRectForPropagation(const ComputedStyle& parentStyle) const
 {
     LayoutRect rect = layoutOverflowRectForPropagation(parentStyle);
@@ -4310,6 +4327,7 @@ LayoutRect LayoutBox::logicalLayoutOverflowRectForPropagation(const ComputedStyl
     return rect;
 }
 
+DISABLE_CFI_PERF
 LayoutRect LayoutBox::layoutOverflowRectForPropagation(const ComputedStyle& parentStyle) const
 {
     // Only propagate interior layout overflow if we don't clip it.
@@ -4352,6 +4370,7 @@ LayoutRect LayoutBox::layoutOverflowRectForPropagation(const ComputedStyle& pare
     return rect;
 }
 
+DISABLE_CFI_PERF
 LayoutRect LayoutBox::noOverflowRect() const
 {
     // Because of the special coordinate system used for overflow rectangles and many other

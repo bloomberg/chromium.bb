@@ -347,7 +347,7 @@ public:
     IntRect borderBoundingBox() const final { return pixelSnappedBorderBoxRect(); }
 
     // The content area of the box (excludes padding - and intrinsic padding for table cells, etc... - and border).
-    LayoutRect contentBoxRect() const { return LayoutRect(borderLeft() + paddingLeft(), borderTop() + paddingTop(), contentWidth(), contentHeight()); }
+    DISABLE_CFI_PERF LayoutRect contentBoxRect() const { return LayoutRect(borderLeft() + paddingLeft(), borderTop() + paddingTop(), contentWidth(), contentHeight()); }
     LayoutSize contentBoxOffset() const { return LayoutSize(borderLeft() + paddingLeft(), borderTop() + paddingTop()); }
     // The content box in absolute coords. Ignores transforms.
     IntRect absoluteContentBox() const;
@@ -417,8 +417,8 @@ public:
 
     void updateLayerTransformAfterLayout();
 
-    LayoutUnit contentWidth() const { return clientWidth() - paddingLeft() - paddingRight(); }
-    LayoutUnit contentHeight() const { return clientHeight() - paddingTop() - paddingBottom(); }
+    DISABLE_CFI_PERF LayoutUnit contentWidth() const { return clientWidth() - paddingLeft() - paddingRight(); }
+    DISABLE_CFI_PERF LayoutUnit contentHeight() const { return clientHeight() - paddingTop() - paddingBottom(); }
     LayoutSize contentSize() const { return LayoutSize(contentWidth(), contentHeight()); }
     LayoutUnit contentLogicalWidth() const { return style()->isHorizontalWritingMode() ? contentWidth() : contentHeight(); }
     LayoutUnit contentLogicalHeight() const { return style()->isHorizontalWritingMode() ? contentHeight() : contentWidth(); }
@@ -433,14 +433,14 @@ public:
 
     // More IE extensions.  clientWidth and clientHeight represent the interior of an object
     // excluding border and scrollbar.  clientLeft/Top are just the borderLeftWidth and borderTopWidth.
-    LayoutUnit clientLeft() const { return LayoutUnit(borderLeft() + (shouldPlaceBlockDirectionScrollbarOnLogicalLeft() ? verticalScrollbarWidth() : 0)); }
-    LayoutUnit clientTop() const { return LayoutUnit(borderTop()); }
+    DISABLE_CFI_PERF LayoutUnit clientLeft() const { return LayoutUnit(borderLeft() + (shouldPlaceBlockDirectionScrollbarOnLogicalLeft() ? verticalScrollbarWidth() : 0)); }
+    DISABLE_CFI_PERF LayoutUnit clientTop() const { return LayoutUnit(borderTop()); }
     LayoutUnit clientWidth() const;
     LayoutUnit clientHeight() const;
-    LayoutUnit clientLogicalWidth() const { return style()->isHorizontalWritingMode() ? clientWidth() : clientHeight(); }
-    LayoutUnit clientLogicalHeight() const { return style()->isHorizontalWritingMode() ? clientHeight() : clientWidth(); }
-    LayoutUnit clientLogicalBottom() const { return borderBefore() + clientLogicalHeight(); }
-    LayoutRect clientBoxRect() const { return LayoutRect(clientLeft(), clientTop(), clientWidth(), clientHeight()); }
+    DISABLE_CFI_PERF LayoutUnit clientLogicalWidth() const { return style()->isHorizontalWritingMode() ? clientWidth() : clientHeight(); }
+    DISABLE_CFI_PERF LayoutUnit clientLogicalHeight() const { return style()->isHorizontalWritingMode() ? clientHeight() : clientWidth(); }
+    DISABLE_CFI_PERF LayoutUnit clientLogicalBottom() const { return borderBefore() + clientLogicalHeight(); }
+    DISABLE_CFI_PERF LayoutRect clientBoxRect() const { return LayoutRect(clientLeft(), clientTop(), clientWidth(), clientHeight()); }
 
     int pixelSnappedClientWidth() const;
     int pixelSnappedClientHeight() const;
@@ -771,9 +771,9 @@ public:
     virtual void stopAutoscroll() { }
     virtual void panScroll(const IntPoint&);
 
-    bool hasAutoVerticalScrollbar() const { return hasOverflowClip() && (style()->overflowY() == OverflowAuto || style()->overflowY() == OverflowPagedY || style()->overflowY() == OverflowOverlay); }
-    bool hasAutoHorizontalScrollbar() const { return hasOverflowClip() && (style()->overflowX() == OverflowAuto || style()->overflowX() == OverflowOverlay); }
-    bool scrollsOverflow() const { return scrollsOverflowX() || scrollsOverflowY(); }
+    DISABLE_CFI_PERF bool hasAutoVerticalScrollbar() const { return hasOverflowClip() && (style()->overflowY() == OverflowAuto || style()->overflowY() == OverflowPagedY || style()->overflowY() == OverflowOverlay); }
+    DISABLE_CFI_PERF bool hasAutoHorizontalScrollbar() const { return hasOverflowClip() && (style()->overflowX() == OverflowAuto || style()->overflowX() == OverflowOverlay); }
+    DISABLE_CFI_PERF bool scrollsOverflow() const { return scrollsOverflowX() || scrollsOverflowY(); }
     virtual bool shouldPlaceBlockDirectionScrollbarOnLogicalLeft() const { return style()->shouldPlaceBlockDirectionScrollbarOnLogicalLeft(); }
 
     bool hasScrollableOverflowX() const { return scrollsOverflowX() && pixelSnappedScrollWidth() != pixelSnappedClientWidth(); }
