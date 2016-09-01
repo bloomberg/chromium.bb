@@ -29,6 +29,17 @@
 #include "storage/common/fileapi/file_system_mount_option.h"
 
 namespace chromeos {
+namespace {
+
+// TODO(mtomasz): Remove this hacky whitelist.
+// See: crbug.com/271946
+const char* kOemAccessibleExtensions[] = {
+    "mlbmkoenclnokonejhlfakkeabdlmpek",  // TimeScapes,
+    "nhpmmldpbfjofkipjaieeomhnmcgihfm",  // Retail Demo (public session),
+    "klimoghijjogocdbaikffefjfcfheiel",  // Retail Demo (OOBE),
+};
+
+}  // namespace
 
 // static
 bool FileSystemBackend::CanHandleURL(const storage::FileSystemURL& url) {
@@ -181,12 +192,12 @@ bool FileSystemBackend::IsAccessAllowed(
   if (url.origin().is_empty())
     return true;
 
-  std::string extension_id = url.origin().host();
-  // TODO(mtomasz): Temporarily whitelist TimeScapes.
-  // See: crbug.com/271946
-  if (extension_id == "mlbmkoenclnokonejhlfakkeabdlmpek" &&
-      url.type() == storage::kFileSystemTypeRestrictedNativeLocal) {
-    return true;
+  const std::string& extension_id = url.origin().host();
+  if (url.type() == storage::kFileSystemTypeRestrictedNativeLocal) {
+    for (size_t i = 0; i < arraysize(kOemAccessibleExtensions); ++i) {
+      if (extension_id == kOemAccessibleExtensions[i])
+        return true;
+    }
   }
 
   return file_access_permissions_->HasAccessPermission(extension_id,
