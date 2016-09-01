@@ -426,7 +426,6 @@ class Cpu(cros_test_lib.MockTestCase):
 
   def testCpuLoadExisting(self):
     """Test cpu load information collection when a record exists."""
-    self.assertTrue(True)
     cpu = self._CreateCpu(1)
 
     dataname, data = (systeminfo.RESOURCENAME_CPULOADS, 'testvalue')
@@ -480,7 +479,7 @@ class InfoClassCacheTest(cros_test_lib.MockTestCase):
 
     self.assertTrue(all(id(x) == id(cpus1[0]) for x in cpus1))
     self.assertTrue(all(id(x) == id(cpus2[0]) for x in cpus2))
-    self.assertTrue(id(cpus1[0]) != id(cpus2[0]))
+    self.assertNotEqual(id(cpus1[0]), id(cpus2[0]))
 
   def testGetMemory(self):
     """Test caching explicitly for Memory information objects."""
@@ -493,7 +492,7 @@ class InfoClassCacheTest(cros_test_lib.MockTestCase):
 
     self.assertTrue(all(id(x) == id(mems1[0]) for x in mems1))
     self.assertTrue(all(id(x) == id(mems2[0]) for x in mems2))
-    self.assertTrue(id(mems1[0]) != id(mems2[0]))
+    self.assertNotEqual(id(mems1[0]), id(mems2[0]))
 
   def testGetDisk(self):
     """Test caching explicitly for Disk information objects."""
@@ -506,4 +505,4 @@ class InfoClassCacheTest(cros_test_lib.MockTestCase):
 
     self.assertTrue(all(id(x) == id(disks1[0]) for x in disks1))
     self.assertTrue(all(id(x) == id(disks2[0]) for x in disks2))
-    self.assertTrue(id(disks1[0]) != id(disks2[0]))
+    self.assertNotEqual(id(disks1[0]), id(disks2[0]))
