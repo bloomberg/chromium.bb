@@ -1,9 +1,9 @@
 importAutomationScript('/pointerevents/pointerevent_common_input.js');
 
 function inject_input() {
-  mouseClickInTarget('btnCapture');
-
-  // To handle delayed capturing
-  mouseMoveIntoTarget('btnCapture');
+  return mouseClickInTarget('btnCapture').then(function() {
+    // To handle delayed capturing.
+    return mouseMoveIntoTarget('btnCapture');
+  });
 }
 

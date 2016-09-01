@@ -1,10 +1,12 @@
 importAutomationScript('/pointerevents/pointerevent_common_input.js');
 
 function inject_input() {
-  mouseMoveIntoTarget('target0');
-  mouseMoveIntoTarget('target1');
-  mouseDragInTargets(['btnCapture', 'target1', 'target0']);
-
-  // To handle delayed capturing
-  mouseMoveIntoTarget('target0');
+  return mouseMoveIntoTarget('target0').then(function() {
+    return mouseMoveIntoTarget('target1');
+  }).then(function() {
+    return mouseDragInTargets(['btnCapture', 'target1', 'target0']);
+  }).then(function() {
+    // To handle delayed capturing.
+    return mouseMoveIntoTarget('target0');
+  });
 }

@@ -1,64 +1,85 @@
 // This file contains the commonly used functions in pointerevent tests.
 
-// Mouse actions
-function mouseMoveToDocument() {
-  if (window.eventSender)
-    eventSender.mouseMoveTo(0, 0);
-}
-
-function mouseMoveIntoTarget(targetId) {
-  if (window.eventSender) {
-    var target = document.getElementById(targetId);
-    var targetRect = target.getBoundingClientRect();
-    eventSender.mouseMoveTo(targetRect.left+5, targetRect.top+5);
-  }
-}
-
-function mouseClickInTarget(targetId) {
-  if (window.eventSender) {
-    mouseMoveIntoTarget(targetId);
-    eventSender.mouseDown(0);
-    eventSender.mouseUp(0);
-  }
-}
-
-function mouseDragInTargets(targetIdList) {
-  if (window.eventSender) {
-    var target = document.getElementById(targetIdList[0]);
-    mouseMoveIntoTarget(targetIdList[0]);
-    eventSender.mouseDown(0);
-    for (var i=1; i<targetIdList.length; i++)
-      mouseMoveIntoTarget(targetIdList[i]);
-    eventSender.mouseUp(0);
-  }
-}
-
-function mouseDragInTarget(targetId) {
-  if (window.eventSender) {
-    var target = document.getElementById(targetId);
-    mouseMoveIntoTarget(targetId);
-    eventSender.mouseDown(0);
-    mouseMoveIntoTarget(targetId);
-    eventSender.mouseUp(0);
-  }
-}
-
-function mouseScrollUp() {
-  if (window.eventSender)
-    eventSender.continuousMouseScrollBy(-50, 0);
-
-}
-
-function mouseScrollLeft() {
-  if (window.eventSender)
-    eventSender.continuousMouseScrollBy(0, -50);
-}
-
-// Touch actions
 const scrollOffset = 30;
 const boundaryOffset = 5;
 const touchSourceType = 1;
 
+// Mouse inputs.
+function mouseMoveToDocument() {
+  return new Promise(function(resolve, reject) {
+    if (window.eventSender) {
+      eventSender.mouseMoveTo(0, 0);
+      resolve();
+    } else {
+      reject();
+    }
+  });
+}
+
+function mouseMoveIntoTarget(targetId) {
+  return new Promise(function(resolve, reject) {
+    if (window.eventSender) {
+      var target = document.getElementById(targetId);
+      var targetRect = target.getBoundingClientRect();
+      eventSender.mouseMoveTo(targetRect.left+boundaryOffset, targetRect.top+boundaryOffset);
+      resolve();
+    } else {
+      reject();
+    }
+  });
+}
+
+function mouseClickInTarget(targetId) {
+  return mouseMoveIntoTarget(targetId).then(function() {
+    return new Promise(function(resolve, reject) {
+      if (window.eventSender) {
+        eventSender.mouseDown(0);
+        eventSender.mouseUp(0);
+        resolve();
+      } else {
+        reject();
+      }
+    });
+  });
+}
+
+function mouseDragInTargets(targetIdList) {
+  return new Promise(function(resolve, reject) {
+    if (window.eventSender) {
+      mouseMoveIntoTarget(targetIdList[0]).then(function() {
+        eventSender.mouseDown(0);
+        for (var i=1; i<targetIdList.length; i++)
+          mouseMoveIntoTarget(targetIdList[i]);
+        eventSender.mouseUp(0);
+        resolve();
+      });
+    } else {
+      reject();
+    }
+  });
+}
+
+function mouseDragInTarget(targetId) {
+  return mouseDragInTargets([targetId, targetId]);
+}
+
+function mouseWheelScroll(direction) {
+  return new Promise(function(resolve, reject) {
+    if (window.eventSender) {
+      if (direction == 'down')
+        eventSender.continuousMouseScrollBy(-scrollOffset, 0);
+      else if (direction == 'right')
+        eventSender.continuousMouseScrollBy(0, -scrollOffset);
+      else
+        reject();
+      resolve();
+    } else {
+      reject();
+    }
+  });
+}
+
+// Touch inputs.
 function touchTapInTarget(targetId) {
   return new Promise(function(resolve, reject) {
     if (window.chrome && chrome.gpuBenchmarking) {
@@ -145,28 +166,66 @@ function touchScrollByPosition(x, y, offset, direction, callback_func) {
   }
 }
 
-// Pen actions
-function penMoveIntoTarget(target) {
-  var targetRect = target.getBoundingClientRect();
-  eventSender.mouseMoveTo(targetRect.left+5, targetRect.top+5, [], "pen", 0);
+// Pen inputs.
+function penMoveToDocument() {
+  return new Promise(function(resolve, reject) {
+    if (window.eventSender) {
+      eventSender.mouseMoveTo(0, 0, [], "pen", 0);
+      resolve();
+    } else {
+      reject();
+    }
+  });
 }
 
-function penClickIntoTarget(target) {
-  penMoveIntoTarget(target);
-  eventSender.mouseDown(0, [], "pen", 0);
-  eventSender.mouseUp(0, [], "pen", 0);
+function penMoveIntoTarget(targetId) {
+  return new Promise(function(resolve, reject) {
+    if (window.eventSender) {
+      var target = document.getElementById(targetId);
+      var targetRect = target.getBoundingClientRect();
+      eventSender.mouseMoveTo(targetRect.left+boundaryOffset, targetRect.top+boundaryOffset, [], "pen", 0);
+      resolve();
+    } else {
+      reject();
+    }
+  });
 }
 
-// Keyboard actions
-function keyboardScrollUp() {
-  if (window.eventSender)
-    eventSender.keyDown('ArrowDown');
+function penClickIntoTarget(targetId) {
+  return penMoveIntoTarget(targetId).then(function() {
+    return new Promise(function(resolve, reject) {
+      if (window.eventSender) {
+        eventSender.mouseDown(0, [], "pen", 0);
+        eventSender.mouseUp(0, [], "pen", 0);
+        resolve();
+      } else {
+        reject();
+      }
+    });
+  });
 }
 
-function keyboardScrollLeft() {
-  if (window.eventSender)
-    eventSender.keyDown('ArrowRight');
+// Keyboard inputs.
+function keyboardScroll(direction) {
+  return new Promise(function(resolve, reject) {
+    if (window.eventSender) {
+      if (direction == 'down')
+        eventSender.keyDown('ArrowDown');
+      else if (direction == 'right')
+        eventSender.keyDown('ArrowRight');
+      else
+        reject();
+      resolve();
+    } else {
+      reject();
+    }
+  });
 }
 
-// Defined in every test
-inject_input();
+{
+  var pointerevent_automation = async_test("PointerEvent Automation");
+  // Defined in every test and should return a promise that gets resolved when input is finished.
+  inject_input().then(function() {
+    pointerevent_automation.done();
+  });
+}

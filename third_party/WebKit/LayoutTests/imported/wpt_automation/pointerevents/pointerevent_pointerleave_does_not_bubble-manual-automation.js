@@ -1,7 +1,8 @@
 importAutomationScript('/pointerevents/pointerevent_common_input.js');
 
 function inject_input() {
-  mouseMoveIntoTarget('target0');
-  mouseMoveToDocument();
+  return mouseMoveIntoTarget('target0').then(function() {
+    return mouseMoveToDocument();
+  });
 }
 

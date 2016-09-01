@@ -1,8 +1,10 @@
 importAutomationScript('/pointerevents/pointerevent_common_input.js');
 
 function inject_input() {
-  mouseClickInTarget('target0');
-  keyboardScrollUp();
-  keyboardScrollLeft();
+  return mouseClickInTarget('target0').then(function() {
+    return keyboardScroll('down');
+  }).then(function() {
+    return keyboardScroll('right');
+  });
 }
 
