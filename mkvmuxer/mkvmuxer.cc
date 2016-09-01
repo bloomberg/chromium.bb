@@ -26,6 +26,11 @@
 
 namespace mkvmuxer {
 
+const float PrimaryChromaticity::kChromaticityMin = 0.0f;
+const float PrimaryChromaticity::kChromaticityMax = 1.0f;
+const float MasteringMetadata::kMinLuminance = 0.0f;
+const float MasteringMetadata::kMinLuminanceMax = 999.99f;
+const float MasteringMetadata::kMaxLuminanceMax = 9999.99f;
 const float MasteringMetadata::kValueNotPresent = FLT_MAX;
 const uint64_t Colour::kValueNotPresent = UINT64_MAX;
 
@@ -957,8 +962,16 @@ uint64_t PrimaryChromaticity::PrimaryChromaticitySize(
 
 bool PrimaryChromaticity::Write(IMkvWriter* writer, libwebm::MkvId x_id,
                                 libwebm::MkvId y_id) const {
+  if (!Valid()) {
+    return false;
+  }
   return WriteEbmlElement(writer, x_id, x_) &&
          WriteEbmlElement(writer, y_id, y_);
+}
+
+bool PrimaryChromaticity::Valid() const {
+  return (x_ >= kChromaticityMin && x_ <= kChromaticityMax &&
+          y_ >= kChromaticityMin && y_ <= kChromaticityMax);
 }
 
 uint64_t MasteringMetadata::MasteringMetadataSize() const {
@@ -968,6 +981,31 @@ uint64_t MasteringMetadata::MasteringMetadataSize() const {
     size += EbmlMasterElementSize(libwebm::kMkvMasteringMetadata, size);
 
   return size;
+}
+
+bool MasteringMetadata::Valid() const {
+  if (luminance_min_ != kValueNotPresent) {
+    if (luminance_min_ < kMinLuminance || luminance_min_ > kMinLuminanceMax ||
+        luminance_min_ > luminance_max_) {
+      return false;
+    }
+  }
+  if (luminance_max_ != kValueNotPresent) {
+    if (luminance_max_ < kMinLuminance || luminance_max_ > kMaxLuminanceMax ||
+        luminance_max_ < luminance_min_) {
+      return false;
+    }
+  }
+  if (r_ && !r_->Valid())
+    return false;
+  if (g_ && !g_->Valid())
+    return false;
+  if (b_ && !b_->Valid())
+    return false;
+  if (white_point_ && !white_point_->Valid())
+    return false;
+
+  return true;
 }
 
 bool MasteringMetadata::Write(IMkvWriter* writer) const {
@@ -1080,12 +1118,35 @@ uint64_t Colour::ColourSize() const {
   return size;
 }
 
+bool Colour::Valid() const {
+  if (mastering_metadata_ && !mastering_metadata_->Valid())
+    return false;
+  if (!IsMatrixCoefficientsValueValid(matrix_coefficients_))
+    return false;
+  if (!IsChromaSitingHorzValueValid(chroma_siting_horz_))
+    return false;
+  if (!IsChromaSitingVertValueValid(chroma_siting_vert_))
+    return false;
+  if (!IsColourRangeValueValid(range_))
+    return false;
+  if (!IsTransferCharacteristicsValueValid(transfer_characteristics_))
+    return false;
+  if (!IsPrimariesValueValid(primaries_))
+    return false;
+
+  return true;
+}
+
 bool Colour::Write(IMkvWriter* writer) const {
   const uint64_t size = PayloadSize();
 
   // Don't write an empty element.
   if (size == 0)
     return true;
+
+  // Don't write an invalid element.
+  if (!Valid())
+    return false;
 
   if (!WriteEbmlMasterElement(writer, libwebm::kMkvColour, size))
     return false;

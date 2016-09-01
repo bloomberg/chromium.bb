@@ -773,17 +773,17 @@ TEST_F(MuxerTest, Colour) {
       muxer_mm.SetChromaticity(&muxer_pc, &muxer_pc, &muxer_pc, &muxer_pc));
 
   mkvmuxer::Colour muxer_colour;
-  muxer_colour.set_matrix_coefficients(0);
+  muxer_colour.set_matrix_coefficients(mkvmuxer::Colour::kGbr);
   muxer_colour.set_bits_per_channel(1);
   muxer_colour.set_chroma_subsampling_horz(2);
   muxer_colour.set_chroma_subsampling_vert(3);
   muxer_colour.set_cb_subsampling_horz(4);
   muxer_colour.set_cb_subsampling_vert(5);
-  muxer_colour.set_chroma_siting_horz(6);
-  muxer_colour.set_chroma_siting_vert(7);
-  muxer_colour.set_range(8);
-  muxer_colour.set_transfer_characteristics(9);
-  muxer_colour.set_primaries(10);
+  muxer_colour.set_chroma_siting_horz(mkvmuxer::Colour::kLeftCollocated);
+  muxer_colour.set_chroma_siting_vert(mkvmuxer::Colour::kTopCollocated);
+  muxer_colour.set_range(mkvmuxer::Colour::kFullRange);
+  muxer_colour.set_transfer_characteristics(mkvmuxer::Colour::kLog);
+  muxer_colour.set_primaries(mkvmuxer::Colour::kSmpteSt4281P);
   muxer_colour.set_max_cll(11);
   muxer_colour.set_max_fall(12);
   ASSERT_TRUE(muxer_colour.SetMasteringMetadata(muxer_mm));

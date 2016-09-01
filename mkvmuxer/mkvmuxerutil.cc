@@ -646,4 +646,97 @@ uint64 MakeUID(unsigned int* seed) {
   return uid;
 }
 
+bool IsMatrixCoefficientsValueValid(uint64_t value) {
+  switch (value) {
+    case mkvmuxer::Colour::kGbr:
+    case mkvmuxer::Colour::kBt709:
+    case mkvmuxer::Colour::kUnspecifiedMc:
+    case mkvmuxer::Colour::kReserved:
+    case mkvmuxer::Colour::kFcc:
+    case mkvmuxer::Colour::kBt470bg:
+    case mkvmuxer::Colour::kSmpte170MMc:
+    case mkvmuxer::Colour::kSmpte240MMc:
+    case mkvmuxer::Colour::kYcocg:
+    case mkvmuxer::Colour::kBt2020NonConstantLuminance:
+    case mkvmuxer::Colour::kBt2020ConstantLuminance:
+      return true;
+  }
+  return false;
+}
+
+bool IsChromaSitingHorzValueValid(uint64_t value) {
+  switch (value) {
+    case mkvmuxer::Colour::kUnspecifiedCsh:
+    case mkvmuxer::Colour::kLeftCollocated:
+    case mkvmuxer::Colour::kHalfCsh:
+      return true;
+  }
+  return false;
+}
+
+bool IsChromaSitingVertValueValid(uint64_t value) {
+  switch (value) {
+    case mkvmuxer::Colour::kUnspecifiedCsv:
+    case mkvmuxer::Colour::kTopCollocated:
+    case mkvmuxer::Colour::kHalfCsv:
+      return true;
+  }
+  return false;
+}
+
+bool IsColourRangeValueValid(uint64_t value) {
+  switch (value) {
+    case mkvmuxer::Colour::kUnspecifiedCr:
+    case mkvmuxer::Colour::kBroadcastRange:
+    case mkvmuxer::Colour::kFullRange:
+    case mkvmuxer::Colour::kMcTcDefined:
+      return true;
+  }
+  return false;
+}
+
+bool IsTransferCharacteristicsValueValid(uint64_t value) {
+  switch (value) {
+    case mkvmuxer::Colour::kIturBt709Tc:
+    case mkvmuxer::Colour::kUnspecifiedTc:
+    case mkvmuxer::Colour::kReservedTc:
+    case mkvmuxer::Colour::kGamma22Curve:
+    case mkvmuxer::Colour::kGamma28Curve:
+    case mkvmuxer::Colour::kSmpte170MTc:
+    case mkvmuxer::Colour::kSmpte240MTc:
+    case mkvmuxer::Colour::kLinear:
+    case mkvmuxer::Colour::kLog:
+    case mkvmuxer::Colour::kLogSqrt:
+    case mkvmuxer::Colour::kIec6196624:
+    case mkvmuxer::Colour::kIturBt1361ExtendedColourGamut:
+    case mkvmuxer::Colour::kIec6196621:
+    case mkvmuxer::Colour::kIturBt202010bit:
+    case mkvmuxer::Colour::kIturBt202012bit:
+    case mkvmuxer::Colour::kSmpteSt2084:
+    case mkvmuxer::Colour::kSmpteSt4281Tc:
+    case mkvmuxer::Colour::kAribStdB67Hlg:
+      return true;
+  }
+  return false;
+}
+
+bool IsPrimariesValueValid(uint64_t value) {
+  switch (value) {
+    case mkvmuxer::Colour::kReservedP0:
+    case mkvmuxer::Colour::kIturBt709P:
+    case mkvmuxer::Colour::kUnspecifiedP:
+    case mkvmuxer::Colour::kReservedP3:
+    case mkvmuxer::Colour::kIturBt470M:
+    case mkvmuxer::Colour::kIturBt470Bg:
+    case mkvmuxer::Colour::kSmpte170MP:
+    case mkvmuxer::Colour::kSmpte240MP:
+    case mkvmuxer::Colour::kFilm:
+    case mkvmuxer::Colour::kIturBt2020:
+    case mkvmuxer::Colour::kSmpteSt4281P:
+    case mkvmuxer::Colour::kJedecP22Phosphors:
+      return true;
+  }
+  return false;
+}
+
 }  // namespace mkvmuxer

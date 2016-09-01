@@ -356,6 +356,9 @@ class ContentEncoding {
 // Colour element.
 class PrimaryChromaticity {
  public:
+  static const float kChromaticityMin;
+  static const float kChromaticityMax;
+
   PrimaryChromaticity(float x_val, float y_val) : x_(x_val), y_(y_val) {}
   PrimaryChromaticity() : x_(0), y_(0) {}
   ~PrimaryChromaticity() {}
@@ -363,7 +366,7 @@ class PrimaryChromaticity {
   // Returns sum of |x_id| and |y_id| element id sizes and payload sizes.
   uint64_t PrimaryChromaticitySize(libwebm::MkvId x_id,
                                    libwebm::MkvId y_id) const;
-
+  bool Valid() const;
   bool Write(IMkvWriter* writer, libwebm::MkvId x_id,
              libwebm::MkvId y_id) const;
 
@@ -380,6 +383,9 @@ class PrimaryChromaticity {
 class MasteringMetadata {
  public:
   static const float kValueNotPresent;
+  static const float kMinLuminance;
+  static const float kMinLuminanceMax;
+  static const float kMaxLuminanceMax;
 
   MasteringMetadata()
       : luminance_max_(kValueNotPresent),
@@ -397,6 +403,7 @@ class MasteringMetadata {
 
   // Returns total size of the MasteringMetadata element.
   uint64_t MasteringMetadataSize() const;
+  bool Valid() const;
   bool Write(IMkvWriter* writer) const;
 
   // Copies non-null chromaticity.
@@ -432,6 +439,69 @@ class MasteringMetadata {
 
 class Colour {
  public:
+  enum MatrixCoefficients {
+    kGbr = 0,
+    kBt709 = 1,
+    kUnspecifiedMc = 2,
+    kReserved = 3,
+    kFcc = 4,
+    kBt470bg = 5,
+    kSmpte170MMc = 6,
+    kSmpte240MMc = 7,
+    kYcocg = 8,
+    kBt2020NonConstantLuminance = 9,
+    kBt2020ConstantLuminance = 10,
+  };
+  enum ChromaSitingHorz {
+    kUnspecifiedCsh = 0,
+    kLeftCollocated = 1,
+    kHalfCsh = 2,
+  };
+  enum ChromaSitingVert {
+    kUnspecifiedCsv = 0,
+    kTopCollocated = 1,
+    kHalfCsv = 2,
+  };
+  enum Range {
+    kUnspecifiedCr = 0,
+    kBroadcastRange = 1,
+    kFullRange = 2,
+    kMcTcDefined = 3,  // Defined by MatrixCoefficients/TransferCharacteristics.
+  };
+  enum TransferCharacteristics {
+    kIturBt709Tc = 1,
+    kUnspecifiedTc = 2,
+    kReservedTc = 3,
+    kGamma22Curve = 4,
+    kGamma28Curve = 5,
+    kSmpte170MTc = 6,
+    kSmpte240MTc = 7,
+    kLinear = 8,
+    kLog = 9,
+    kLogSqrt = 10,
+    kIec6196624 = 11,
+    kIturBt1361ExtendedColourGamut = 12,
+    kIec6196621 = 13,
+    kIturBt202010bit = 14,
+    kIturBt202012bit = 15,
+    kSmpteSt2084 = 16,
+    kSmpteSt4281Tc = 17,
+    kAribStdB67Hlg = 18,
+  };
+  enum Primaries {
+    kReservedP0 = 0,
+    kIturBt709P = 1,
+    kUnspecifiedP = 2,
+    kReservedP3 = 3,
+    kIturBt470M = 4,
+    kIturBt470Bg = 5,
+    kSmpte170MP = 6,
+    kSmpte240MP = 7,
+    kFilm = 8,
+    kIturBt2020 = 9,
+    kSmpteSt4281P = 10,
+    kJedecP22Phosphors = 22,
+  };
   static const uint64_t kValueNotPresent;
   Colour()
       : matrix_coefficients_(kValueNotPresent),
@@ -452,6 +522,7 @@ class Colour {
 
   // Returns total size of the Colour element.
   uint64_t ColourSize() const;
+  bool Valid() const;
   bool Write(IMkvWriter* writer) const;
 
   // Deep copies |mastering_metadata|.

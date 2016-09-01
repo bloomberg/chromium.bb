@@ -10,6 +10,8 @@
 
 #include "mkvmuxertypes.h"
 
+#include "stdint.h"
+
 namespace mkvmuxer {
 class Cluster;
 class Frame;
@@ -96,6 +98,14 @@ void GetVersion(int32* major, int32* minor, int32* build, int32* revision);
 // Returns a random number to be used for UID, using |seed| to seed
 // the random-number generator (see POSIX rand_r() for semantics).
 uint64 MakeUID(unsigned int* seed);
+
+// Colour field validation helpers. All return true when |value| is valid.
+bool IsMatrixCoefficientsValueValid(uint64_t value);
+bool IsChromaSitingHorzValueValid(uint64_t value);
+bool IsChromaSitingVertValueValid(uint64_t value);
+bool IsColourRangeValueValid(uint64_t value);
+bool IsTransferCharacteristicsValueValid(uint64_t value);
+bool IsPrimariesValueValid(uint64_t value);
 
 }  // namespace mkvmuxer
 

@@ -621,9 +621,9 @@ TEST_F(ParserTest, CanParseColour) {
   EXPECT_EQ(3u, colour->chroma_subsampling_vert);
   EXPECT_EQ(4u, colour->cb_subsampling_horz);
   EXPECT_EQ(5u, colour->cb_subsampling_vert);
-  EXPECT_EQ(6u, colour->chroma_siting_horz);
-  EXPECT_EQ(7u, colour->chroma_siting_vert);
-  EXPECT_EQ(8u, colour->range);
+  EXPECT_EQ(1u, colour->chroma_siting_horz);
+  EXPECT_EQ(1u, colour->chroma_siting_vert);
+  EXPECT_EQ(2u, colour->range);
   EXPECT_EQ(9u, colour->transfer_characteristics);
   EXPECT_EQ(10u, colour->primaries);
   EXPECT_EQ(11u, colour->max_cll);
@@ -652,8 +652,8 @@ TEST_F(ParserTest, CanParseProjection) {
   ASSERT_TRUE(CreateAndLoadSegment("projection.webm"));
   const unsigned int kTracksCount = 1;
   EXPECT_EQ(kTracksCount, segment_->GetTracks()->GetTracksCount());
-  const VideoTrack* const video_track = static_cast<const VideoTrack*>(
-      segment_->GetTracks()->GetTrackByIndex(0));
+  const VideoTrack* const video_track =
+      static_cast<const VideoTrack*>(segment_->GetTracks()->GetTrackByIndex(0));
 
   const mkvparser::Projection* const projection = video_track->GetProjection();
   ASSERT_TRUE(projection != nullptr);
