@@ -55,11 +55,8 @@ bool AccessibilityTreeContainsLoadedDocWithUrl(BrowserAccessibility* node,
   if ((node->GetRole() == ui::AX_ROLE_WEB_AREA ||
        node->GetRole() == ui::AX_ROLE_ROOT_WEB_AREA) &&
       node->GetStringAttribute(ui::AX_ATTR_URL) == url) {
-    // If possible, ensure the doc has finished loading. That's currently
-    // not possible with same-process iframes until https://crbug.com/532249
-    // is fixed.
-    return (node->manager()->GetTreeData().url != url ||
-            node->manager()->GetTreeData().loaded);
+    // Ensure the doc has finished loading.
+    return node->manager()->GetTreeData().loaded;
   }
 
   for (unsigned i = 0; i < node->PlatformChildCount(); i++) {
@@ -270,19 +267,6 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
     std::string url = node->current_url().spec();
     if (url != url::kAboutBlankURL)
       all_frame_urls.push_back(url);
-
-    // We won't get the correct coordinate transformations for
-    // out-of-process iframes until each frame's surface is ready.
-    RenderFrameHostImpl* current_frame_host = node->current_frame_host();
-    if (!current_frame_host || !current_frame_host->is_local_root())
-      continue;
-    RenderWidgetHostViewBase* rwhv =
-        static_cast<RenderWidgetHostViewBase*>(current_frame_host->GetView());
-    if (rwhv && rwhv->IsChildFrameForTesting()) {
-      SurfaceHitTestReadyNotifier notifier(
-          static_cast<RenderWidgetHostViewChildFrame*>(rwhv));
-      notifier.WaitForSurfaceReady();
-    }
   }
 
   // Wait for the accessibility tree to fully load for all frames,
