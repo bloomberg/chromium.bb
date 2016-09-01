@@ -1397,6 +1397,7 @@ TEST(HttpUtilTest, IsToken) {
   EXPECT_FALSE(HttpUtil::IsToken(""));
   EXPECT_FALSE(HttpUtil::IsToken(base::StringPiece()));
   EXPECT_FALSE(HttpUtil::IsToken("hello, world"));
+  EXPECT_FALSE(HttpUtil::IsToken("\x7F"));
 }
 
 }  // namespace net
