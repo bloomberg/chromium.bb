@@ -14,6 +14,7 @@
 #define SHADER(Src) #Src
 
 namespace gpu {
+namespace gles2 {
 
 ApplyFramebufferAttachmentCMAAINTELResourceManager::
     ApplyFramebufferAttachmentCMAAINTELResourceManager()
@@ -1907,4 +1908,5 @@ const char
     );
 /* clang-format on */
 
+}  // namespace gles2
 }  // namespace gpu

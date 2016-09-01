@@ -18,8 +18,6 @@ namespace gles2 {
 
 class GLES2Decoder;
 
-}  // namespace gles2.
-
 // This class encapsulates the resources required to implement the
 // glCopyTexImage and glCopyTexSubImage commands.  These commands somtimes
 // require a blit.
@@ -83,6 +81,7 @@ class GPU_EXPORT CopyTexImageResourceManager {
   DISALLOW_COPY_AND_ASSIGN(CopyTexImageResourceManager);
 };
 
-}  // namespace gpu.
+}  // namespace gles2
+}  // namespace gpu
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_COPY_TEX_IMAGE_H_

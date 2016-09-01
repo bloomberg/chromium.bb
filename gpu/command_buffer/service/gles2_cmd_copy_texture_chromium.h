@@ -18,8 +18,6 @@ namespace gles2 {
 
 class GLES2Decoder;
 
-}  // namespace gles2.
-
 // This class encapsulates the resources required to implement the
 // GL_CHROMIUM_copy_texture extension.  The copy operation is performed
 // via glCopyTexImage2D() or a blit to a framebuffer object.
@@ -169,6 +167,7 @@ class GPU_EXPORT CopyTextureCHROMIUMResourceManager {
   DISALLOW_COPY_AND_ASSIGN(CopyTextureCHROMIUMResourceManager);
 };
 
-}  // namespace gpu.
+}  // namespace gles2
+}  // namespace gpu
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_COPY_TEXTURE_CHROMIUM_H_

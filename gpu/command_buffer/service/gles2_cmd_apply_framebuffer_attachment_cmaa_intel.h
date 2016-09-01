@@ -16,7 +16,6 @@ namespace gpu {
 namespace gles2 {
 class GLES2Decoder;
 class Framebuffer;
-}
 
 // This class encapsulates the resources required to implement the
 // GL_INTEL_framebuffer_CMAA extension via shaders.
@@ -97,6 +96,7 @@ class GPU_EXPORT ApplyFramebufferAttachmentCMAAINTELResourceManager {
   DISALLOW_COPY_AND_ASSIGN(ApplyFramebufferAttachmentCMAAINTELResourceManager);
 };
 
+}  // namespace gles2
 }  // namespace gpu
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_APPLY_FRAMEBUFFER_ATTACHMENT_CMAA_INTEL_H_

@@ -54,6 +54,7 @@ void CompileShader(GLuint shader, const char* shader_source) {
 }  // namespace
 
 namespace gpu {
+namespace gles2 {
 
 ClearFramebufferResourceManager::ClearFramebufferResourceManager(
     const gles2::GLES2Decoder* decoder)
@@ -185,4 +186,5 @@ void ClearFramebufferResourceManager::ClearFramebuffer(
   decoder->RestoreGlobalState();
 }
 
+}  // namespace gles2
 }  // namespace gpu

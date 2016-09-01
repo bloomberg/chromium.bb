@@ -23,6 +23,7 @@ void CompileShader(GLuint shader, const char* shader_source) {
 }  // anonymous namespace
 
 namespace gpu {
+namespace gles2 {
 
 CopyTexImageResourceManager::CopyTexImageResourceManager(
     const gles2::FeatureInfo* feature_info)
@@ -276,4 +277,5 @@ bool CopyTexImageResourceManager::CopyTexImageRequiresBlit(
   return false;
 }
 
+}  // namespace gles2
 }  // namespace gpu
