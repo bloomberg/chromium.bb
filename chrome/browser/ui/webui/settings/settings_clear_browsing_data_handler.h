@@ -30,7 +30,6 @@ namespace settings {
 
 // Chrome browser startup settings handler.
 class ClearBrowsingDataHandler : public SettingsPageUIHandler,
-                                 public BrowsingDataRemover::Observer,
                                  public sync_driver::SyncServiceObserver {
  public:
   explicit ClearBrowsingDataHandler(content::WebUI* webui);
@@ -42,11 +41,16 @@ class ClearBrowsingDataHandler : public SettingsPageUIHandler,
   void OnJavascriptDisallowed() override;
 
  private:
+  // Observes one |remover| task initiated from ClearBrowsingDataHandler.
+  // Calls |callback| when the task is finished.
+  class TaskObserver;
+
   // Clears browsing data, called by Javascript.
   void HandleClearBrowsingData(const base::ListValue* value);
 
-  // BrowsingDataRemover::Observer implementation.
-  void OnBrowsingDataRemoving(bool is_removing) override;
+  // Called when a clearing task finished. |webui_callback_id| is provided
+  // by the WebUI action that initiated it.
+  void OnClearingTaskFinished(const std::string& webui_callback_id);
 
   // Updates UI when the pref to allow clearing history changes.
   virtual void OnBrowsingHistoryPrefChanged();
@@ -84,19 +88,13 @@ class ClearBrowsingDataHandler : public SettingsPageUIHandler,
   // Counters that calculate the data volume for individual data types.
   std::vector<std::unique_ptr<browsing_data::BrowsingDataCounter>> counters_;
 
+  // Observes the currently active data clearing task.
+  std::unique_ptr<TaskObserver> task_observer_;
+
   // ProfileSyncService to observe sync state changes.
   ProfileSyncService* sync_service_;
   ScopedObserver<ProfileSyncService, sync_driver::SyncServiceObserver>
       sync_service_observer_;
-
-  // Observe the remover progress.
-  BrowsingDataRemover* remover_;
-  ScopedObserver<BrowsingDataRemover, BrowsingDataRemover::Observer>
-      remover_observer_;
-
-  // The WebUI callback ID of the last performClearBrowserData request. There
-  // can only be one such request in-flight.
-  std::string webui_callback_id_;
 
   // Used to listen for pref changes to allow / disallow deleting browsing data.
   PrefChangeRegistrar profile_pref_registrar_;

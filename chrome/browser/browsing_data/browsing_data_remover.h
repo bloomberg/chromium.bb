@@ -92,21 +92,6 @@ class URLRequestContextGetter;
 //         }
 //       }
 //
-//  3. Using an observer to report when any removal task started or all removal
-//     tasks finished (i.e. when BrowsingDataRemover changes state from idle
-//     to busy and vice versa).
-//
-//       class BrowsingDataRemoverStatusObsever {
-//         BrowsingDataRemoverStatusObserver() { remover->AddObserver(this); }
-//         ~BrowsingDataRemoverStatusObserver() {
-//           remover->RemoveObserver(this);
-//         }
-//
-//         void OnBrowsingDataRemoving(bool removing) {
-//           LOG(INFO) << "Remover is now " << (removing ? "busy" : "idle");
-//         }
-//       }
-//
 ////////////////////////////////////////////////////////////////////////////////
 
 class BrowsingDataRemover : public KeyedService
@@ -202,23 +187,12 @@ class BrowsingDataRemover : public KeyedService
     base::Time end;
   };
 
-  // Observer is notified when the removal is active and when it's done.
-  // TODO(msramek): The semantics of the two methods are slightly different;
-  // one is called for every observer at the same time, while the other only
-  // for one observer at a time. Split the interface or deprecate
-  // OnBrowsingDataRemoving().
+  // Observer is notified when its own removal task is done.
   class Observer {
    public:
-    // NOTE: DEPRECATED; talk to dbeam/msramek before using this.
-    //
-    // Whether removal is active. Note that not having an active removal is not
-    // same as completing a removal. That is why the removing status is separate
-    // from the done message.
-    virtual void OnBrowsingDataRemoving(bool is_removing) {}
-
     // Called when a removal task is finished. Note that every removal task can
     // only have one observer attached to it, and only that one is called.
-    virtual void OnBrowsingDataRemoverDone() {}
+    virtual void OnBrowsingDataRemoverDone() = 0;
 
    protected:
     virtual ~Observer() {}
