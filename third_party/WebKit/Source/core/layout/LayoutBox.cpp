@@ -47,6 +47,7 @@
 #include "core/layout/LayoutReplica.h"
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/api/LayoutAPIShim.h"
 #include "core/layout/api/LineLayoutBox.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/layout/shapes/ShapeOutsideInfo.h"
@@ -1607,8 +1608,8 @@ bool LayoutBox::intersectsVisibleViewport() const
 {
     LayoutRect rect = visualOverflowRect();
     LayoutView* layoutView = view();
-    while (layoutView->frame()->ownerLayoutObject())
-        layoutView = layoutView->frame()->ownerLayoutObject()->view();
+    while (!layoutView->frame()->ownerLayoutItem().isNull())
+        layoutView = LayoutAPIShim::layoutObjectFrom(layoutView->frame()->ownerLayoutItem())->view();
     mapToVisualRectInAncestorSpace(layoutView, rect);
     return rect.intersects(LayoutRect(layoutView->frameView()->getScrollableArea()->visibleContentRectDouble()));
 }
