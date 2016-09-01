@@ -4975,6 +4975,13 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     }
   }
 
+  if (!allowLoad && action.targetFrame.isMainFrame) {
+    // WKWebView will stop this navigation without calling any further
+    // callbacks, so change load phase to loaded now.
+    _loadPhase = web::PAGE_LOADED;
+    _webStateImpl->SetIsLoading(false);
+  }
+
   decisionHandler(allowLoad ? WKNavigationActionPolicyAllow
                             : WKNavigationActionPolicyCancel);
 }
