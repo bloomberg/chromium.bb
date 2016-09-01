@@ -54,8 +54,8 @@ OfflineAudioDestinationHandler::OfflineAudioDestinationHandler(AudioNode& node, 
 
     // Node-specific defaults.
     m_channelCount = m_renderTarget->numberOfChannels();
-    m_channelCountMode = Explicit;
-    m_channelInterpretation = AudioBus::Speakers;
+    setInternalChannelCountMode(Explicit);
+    setInternalChannelInterpretation(AudioBus::Speakers);
 }
 
 PassRefPtr<OfflineAudioDestinationHandler> OfflineAudioDestinationHandler::create(AudioNode& node, AudioBuffer* renderTarget)

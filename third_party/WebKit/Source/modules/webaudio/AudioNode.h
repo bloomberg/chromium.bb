@@ -266,10 +266,17 @@ private:
     static int s_nodeCount[NodeTypeEnd];
 #endif
 
-protected:
-    unsigned m_channelCount;
     ChannelCountMode m_channelCountMode;
     AudioBus::ChannelInterpretation m_channelInterpretation;
+
+protected:
+    // Set the (internal) channelCountMode and channelInterpretation
+    // accordingly. Use this in the node constructors to set the internal state
+    // correctly if the node uses values different from the defaults.
+    void setInternalChannelCountMode(ChannelCountMode);
+    void setInternalChannelInterpretation(AudioBus::ChannelInterpretation);
+
+    unsigned m_channelCount;
     // The new channel count mode that will be used to set the actual mode in the pre or post
     // rendering phase.
     ChannelCountMode m_newChannelCountMode;

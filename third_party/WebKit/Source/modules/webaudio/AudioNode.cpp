@@ -49,11 +49,10 @@ AudioHandler::AudioHandler(NodeType nodeType, AudioNode& node, float sampleRate)
     , m_connectionRefCount(0)
     , m_isDisabled(false)
     , m_channelCount(2)
-    , m_channelCountMode(Max)
-    , m_channelInterpretation(AudioBus::Speakers)
-    , m_newChannelCountMode(Max)
 {
     setNodeType(nodeType);
+    setInternalChannelCountMode(Max);
+    setInternalChannelInterpretation(AudioBus::Speakers);
 
 #if DEBUG_AUDIONODE_REFERENCES
     if (!s_isNodeCountInitialized) {
@@ -79,6 +78,9 @@ AudioHandler::~AudioHandler()
 
 void AudioHandler::initialize()
 {
+    DCHECK_EQ(m_newChannelCountMode, m_channelCountMode);
+    DCHECK_EQ(m_newChannelInterpretation, m_channelInterpretation);
+
     m_isInitialized = true;
 }
 
@@ -206,6 +208,18 @@ unsigned long AudioHandler::channelCount()
     return m_channelCount;
 }
 
+void AudioHandler::setInternalChannelCountMode(ChannelCountMode mode)
+{
+    m_channelCountMode = mode;
+    m_newChannelCountMode = mode;
+}
+
+void AudioHandler::setInternalChannelInterpretation(AudioBus::ChannelInterpretation interpretation)
+{
+    m_channelInterpretation = interpretation;
+    m_newChannelInterpretation = interpretation;
+}
+
 void AudioHandler::setChannelCount(unsigned long channelCount, ExceptionState& exceptionState)
 {
     DCHECK(isMainThread());
@@ -232,7 +246,10 @@ void AudioHandler::setChannelCount(unsigned long channelCount, ExceptionState& e
 
 String AudioHandler::channelCountMode()
 {
-    switch (m_channelCountMode) {
+    // Because we delay the actual setting of the mode to the pre or post
+    // rendering phase, we want to return the value that was set, not the actual
+    // current mode.
+    switch (m_newChannelCountMode) {
     case Max:
         return "max";
     case ClampedMax:
@@ -267,7 +284,10 @@ void AudioHandler::setChannelCountMode(const String& mode, ExceptionState& excep
 
 String AudioHandler::channelInterpretation()
 {
-    switch (m_channelInterpretation) {
+    // Because we delay the actual setting of the interpreation to the pre or
+    // post rendering phase, we want to return the value that was set, not the
+    // actual current interpretation.
+    switch (m_newChannelInterpretation) {
     case AudioBus::Speakers:
         return "speakers";
     case AudioBus::Discrete:

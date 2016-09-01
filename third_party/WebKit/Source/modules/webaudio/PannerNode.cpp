@@ -72,8 +72,8 @@ PannerHandler::PannerHandler(
 
     // Node-specific default mixing rules.
     m_channelCount = 2;
-    m_channelCountMode = ClampedMax;
-    m_channelInterpretation = AudioBus::Speakers;
+    setInternalChannelCountMode(ClampedMax);
+    setInternalChannelInterpretation(AudioBus::Speakers);
 
     // Explicitly set the default panning model here so that the histograms
     // include the default value.
@@ -565,7 +565,7 @@ void PannerHandler::setChannelCount(unsigned long channelCount, ExceptionState& 
     if (channelCount > 0 && channelCount <= 2) {
         if (m_channelCount != channelCount) {
             m_channelCount = channelCount;
-            if (m_channelCountMode != Max)
+            if (internalChannelCountMode() != Max)
                 updateChannelsForInputs();
         }
     } else {
@@ -586,7 +586,7 @@ void PannerHandler::setChannelCountMode(const String& mode, ExceptionState& exce
     DCHECK(isMainThread());
     BaseAudioContext::AutoLocker locker(context());
 
-    ChannelCountMode oldMode = m_channelCountMode;
+    ChannelCountMode oldMode = internalChannelCountMode();
 
     if (mode == "clamped-max") {
         m_newChannelCountMode = ClampedMax;
