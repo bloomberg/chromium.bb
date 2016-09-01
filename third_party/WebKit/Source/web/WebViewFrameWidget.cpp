@@ -182,9 +182,9 @@ bool WebViewFrameWidget::isSelectionAnchorFirst() const
     return m_webView->isSelectionAnchorFirst();
 }
 
-bool WebViewFrameWidget::caretOrSelectionRange(size_t* location, size_t* length)
+WebRange WebViewFrameWidget::caretOrSelectionRange()
 {
-    return m_webView->caretOrSelectionRange(location, length);
+    return m_webView->caretOrSelectionRange();
 }
 
 void WebViewFrameWidget::setTextDirection(WebTextDirection direction)

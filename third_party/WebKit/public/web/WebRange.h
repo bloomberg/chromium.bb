@@ -39,12 +39,14 @@
 namespace blink {
 
 class LocalFrame;
+class PlainTextRange;
 class Range;
 class WebString;
 
 class WebRange final {
 public:
     BLINK_EXPORT WebRange(int start, int length);
+    BLINK_EXPORT WebRange() {}
 
     int startOffset() const { return m_start; }
     int endOffset() const { return m_end; }
@@ -54,11 +56,14 @@ public:
 
 #if BLINK_IMPLEMENTATION
     WebRange(const EphemeralRange&);
+    WebRange(const PlainTextRange&);
 
     EphemeralRange createEphemeralRange(LocalFrame*) const;
 #endif
 
 private:
+    // Note that this also matches the values for gfx::Range::InvalidRange
+    // for easy conversion.
     int m_start = -1;
     int m_end = -1;
 };

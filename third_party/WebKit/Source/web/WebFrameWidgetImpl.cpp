@@ -772,19 +772,13 @@ bool WebFrameWidgetImpl::isSelectionAnchorFirst() const
     return false;
 }
 
-bool WebFrameWidgetImpl::caretOrSelectionRange(size_t* location, size_t* length)
+WebRange WebFrameWidgetImpl::caretOrSelectionRange()
 {
     LocalFrame* focused = focusedLocalFrameInWidget();
     if (!focused)
-        return false;
+        return WebRange();
 
-    PlainTextRange selectionOffsets = focused->inputMethodController().getSelectionOffsets();
-    if (selectionOffsets.isNull())
-        return false;
-
-    *location = selectionOffsets.start();
-    *length = selectionOffsets.length();
-    return true;
+    return focused->inputMethodController().getSelectionOffsets();
 }
 
 void WebFrameWidgetImpl::setTextDirection(WebTextDirection direction)

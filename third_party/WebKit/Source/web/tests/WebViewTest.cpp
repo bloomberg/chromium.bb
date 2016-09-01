@@ -1872,10 +1872,10 @@ TEST_F(WebViewTest, LongPressImageTextarea)
     WebString image = WebString::fromUTF8("purpleimage");
 
     EXPECT_TRUE(tapElementById(WebInputEvent::GestureLongPress, image));
-    size_t location, length;
-    EXPECT_TRUE(webView->caretOrSelectionRange(&location, &length));
-    EXPECT_EQ(0UL, location);
-    EXPECT_EQ(1UL, length);
+    WebRange range = webView->caretOrSelectionRange();
+    EXPECT_FALSE(range.isNull());
+    EXPECT_EQ(0, range.startOffset());
+    EXPECT_EQ(1, range.length());
 }
 
 TEST_F(WebViewTest, BlinkCaretAfterLongPress)
@@ -1940,11 +1940,10 @@ TEST_F(WebViewTest, SelectionOnReadOnlyInput)
     WebLocalFrameImpl* frame = webView->mainFrameImpl();
     EXPECT_EQ(testWord, std::string(frame->selectionAsText().utf8().data()));
 
-    size_t location;
-    size_t length;
-    EXPECT_TRUE(webView->caretOrSelectionRange(&location, &length));
-    EXPECT_EQ(location, 0UL);
-    EXPECT_EQ(length, testWord.length());
+    WebRange range = webView->caretOrSelectionRange();
+    EXPECT_FALSE(range.isNull());
+    EXPECT_EQ(0, range.startOffset());
+    EXPECT_EQ(static_cast<int>(testWord.length()), range.length());
 }
 
 static void configueCompositingWebView(WebSettings* settings)

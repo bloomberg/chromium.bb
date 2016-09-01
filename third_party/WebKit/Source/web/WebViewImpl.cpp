@@ -2713,19 +2713,13 @@ WebPagePopup* WebViewImpl::pagePopup() const
     return m_pagePopup.get();
 }
 
-bool WebViewImpl::caretOrSelectionRange(size_t* location, size_t* length)
+WebRange WebViewImpl::caretOrSelectionRange()
 {
     const LocalFrame* focused = focusedLocalFrameInWidget();
     if (!focused)
-        return false;
+        return WebRange();
 
-    PlainTextRange selectionOffsets = focused->inputMethodController().getSelectionOffsets();
-    if (selectionOffsets.isNull())
-        return false;
-
-    *location = selectionOffsets.start();
-    *length = selectionOffsets.length();
-    return true;
+    return focused->inputMethodController().getSelectionOffsets();
 }
 
 void WebViewImpl::setTextDirection(WebTextDirection direction)

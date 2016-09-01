@@ -110,6 +110,7 @@ using blink::WebNode;
 using blink::WebPagePopup;
 using blink::WebPoint;
 using blink::WebPopupType;
+using blink::WebRange;
 using blink::WebRect;
 using blink::WebScreenInfo;
 using blink::WebSize;
@@ -1881,11 +1882,10 @@ void RenderWidget::GetCompositionRange(gfx::Range* range) {
   if (webwidget_->compositionRange(&location, &length)) {
     range->set_start(location);
     range->set_end(location + length);
-  } else if (webwidget_->caretOrSelectionRange(&location, &length)) {
-    range->set_start(location);
-    range->set_end(location + length);
   } else {
-    *range = gfx::Range::InvalidRange();
+    WebRange web_range = webwidget_->caretOrSelectionRange();
+    range->set_start(web_range.startOffset());
+    range->set_end(web_range.endOffset());
   }
 }
 

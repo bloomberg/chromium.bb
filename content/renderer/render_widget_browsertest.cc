@@ -19,6 +19,10 @@ class RenderWidgetTest : public RenderViewTest {
     widget()->OnResize(params);
   }
 
+  void GetCompositionRange(gfx::Range* range) {
+    widget()->GetCompositionRange(range);
+  }
+
   bool next_paint_is_resize_ack() {
     return widget()->next_paint_is_resize_ack();
   }
@@ -101,5 +105,38 @@ TEST_F(RenderWidgetInitialSizeTest, InitialSize) {
   EXPECT_TRUE(next_paint_is_resize_ack());
 }
 
+TEST_F(RenderWidgetTest, GetCompositionRangeValidComposition) {
+  LoadHTML(
+      "<div contenteditable>EDITABLE</div>"
+      "<script> document.querySelector('div').focus(); </script>");
+  blink::WebVector<blink::WebCompositionUnderline> emptyUnderlines;
+  widget()->webwidget()->setComposition("hello", emptyUnderlines, 3, 3);
+  gfx::Range range;
+  GetCompositionRange(&range);
+  EXPECT_TRUE(range.IsValid());
+  EXPECT_EQ(0U, range.start());
+  EXPECT_EQ(5U, range.end());
+}
+
+TEST_F(RenderWidgetTest, GetCompositionRangeValidSelection) {
+  LoadHTML(
+      "<div>NOT EDITABLE</div>"
+      "<script> document.execCommand('selectAll'); </script>");
+  gfx::Range range;
+  GetCompositionRange(&range);
+  EXPECT_TRUE(range.IsValid());
+  EXPECT_EQ(0U, range.start());
+  EXPECT_EQ(12U, range.end());
+}
+
+TEST_F(RenderWidgetTest, GetCompositionRangeInvalid) {
+  LoadHTML("<div>NOT EDITABLE</div>");
+  gfx::Range range;
+  GetCompositionRange(&range);
+  // If this test ever starts failing, one likely outcome is that WebRange
+  // and gfx::Range::InvalidRange are no longer expressed in the same
+  // values of start/end.
+  EXPECT_FALSE(range.IsValid());
+}
 
 }  // namespace content

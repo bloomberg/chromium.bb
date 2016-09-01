@@ -316,7 +316,7 @@ namespace content {
 
 namespace {
 
-const size_t kExtraCharsBeforeAndAfterSelection = 100;
+const int kExtraCharsBeforeAndAfterSelection = 100;
 
 typedef std::map<int, RenderFrameImpl*> RoutingIDFrameMap;
 static base::LazyInstance<RoutingIDFrameMap> g_routing_id_frame_map =
@@ -1817,26 +1817,22 @@ void RenderFrameImpl::OnSelectRange(const gfx::Point& base,
 
 void RenderFrameImpl::OnAdjustSelectionByCharacterOffset(int start_adjust,
                                                          int end_adjust) {
-  size_t start, length;
-  if (!GetRenderWidget()->webwidget()->caretOrSelectionRange(
-      &start, &length)) {
+  WebRange range = GetRenderWidget()->webwidget()->caretOrSelectionRange();
+  if (range.isNull())
     return;
-  }
 
   // Sanity checks to disallow empty and out of range selections.
-  if (start_adjust - end_adjust > static_cast<int>(length)
-      || static_cast<int>(start) + start_adjust < 0) {
+  if (start_adjust - end_adjust > range.length() ||
+      range.startOffset() + start_adjust < 0)
     return;
-  }
+
+  base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
 
   // A negative adjust amount moves the selection towards the beginning of
   // the document, a positive amount moves the selection towards the end of
   // the document.
-  start += start_adjust;
-  length += end_adjust - start_adjust;
-
-  base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
-  frame_->selectRange(WebRange(start, length));
+  frame_->selectRange(WebRange(range.startOffset() + start_adjust,
+                               range.length() + end_adjust - start_adjust));
 }
 
 void RenderFrameImpl::OnUnselect() {
@@ -5658,27 +5654,27 @@ void RenderFrameImpl::SyncSelectionIfRequired() {
   } else
 #endif
   {
-    size_t location, length;
-    if (!GetRenderWidget()->webwidget()->caretOrSelectionRange(
-            &location, &length)) {
+    WebRange selection =
+        GetRenderWidget()->webwidget()->caretOrSelectionRange();
+    if (selection.isNull())
       return;
-    }
 
-    range = gfx::Range(location, location + length);
+    range = gfx::Range(selection.startOffset(), selection.endOffset());
 
     if (GetRenderWidget()->webwidget()->textInputType() !=
         blink::WebTextInputTypeNone) {
       // If current focused element is editable, we will send 100 more chars
       // before and after selection. It is for input method surrounding text
       // feature.
-      if (location > kExtraCharsBeforeAndAfterSelection)
-        offset = location - kExtraCharsBeforeAndAfterSelection;
+      if (selection.startOffset() > kExtraCharsBeforeAndAfterSelection)
+        offset = selection.startOffset() - kExtraCharsBeforeAndAfterSelection;
       else
         offset = 0;
-      length = location + length - offset + kExtraCharsBeforeAndAfterSelection;
+      size_t length =
+          selection.endOffset() - offset + kExtraCharsBeforeAndAfterSelection;
       text = frame_->rangeAsText(WebRange(offset, length));
     } else {
-      offset = location;
+      offset = selection.startOffset();
       text = frame_->selectionAsText();
       // http://crbug.com/101435
       // In some case, frame->selectionAsText() returned text's length is not

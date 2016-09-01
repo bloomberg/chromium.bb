@@ -40,6 +40,7 @@
 #include "../platform/WebSize.h"
 #include "../platform/WebTopControlsState.h"
 #include "WebCompositionUnderline.h"
+#include "WebRange.h"
 #include "WebTextDirection.h"
 #include "WebTextInputInfo.h"
 
@@ -193,11 +194,8 @@ public:
     // (i.e its anchor is its start).
     virtual bool isSelectionAnchorFirst() const { return false; }
 
-    // Fetch the current selection range of this WebWidget. If there is no
-    // selection, it will output a 0-length range with the location at the
-    // caret. Returns true and fills the out-paramters on success; returns false
-    // on failure.
-    virtual bool caretOrSelectionRange(size_t* location, size_t* length) { return false; }
+    // Fetch the current selection range of this WebWidget.
+    virtual WebRange caretOrSelectionRange() { return WebRange(); }
 
     // Changes the text direction of the selected input node.
     virtual void setTextDirection(WebTextDirection) { }

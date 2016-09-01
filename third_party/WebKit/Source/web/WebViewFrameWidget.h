@@ -75,7 +75,7 @@ public:
     bool selectionBounds(WebRect& anchor, WebRect& focus) const override;
     bool selectionTextDirection(WebTextDirection& start, WebTextDirection& end) const override;
     bool isSelectionAnchorFirst() const override;
-    bool caretOrSelectionRange(size_t* location, size_t* length) override;
+    WebRange caretOrSelectionRange() override;
     void setTextDirection(WebTextDirection) override;
     bool isAcceleratedCompositingActive() const override;
     bool isWebView() const override { return false; }

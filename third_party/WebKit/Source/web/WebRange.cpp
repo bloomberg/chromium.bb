@@ -54,6 +54,15 @@ WebRange::WebRange(const EphemeralRange& range)
     m_end =range.endPosition().computeOffsetInContainerNode();
 }
 
+WebRange::WebRange(const PlainTextRange& range)
+{
+    if (range.isNull())
+        return;
+
+    m_start = range.start();
+    m_end = range.end();
+}
+
 EphemeralRange WebRange::createEphemeralRange(LocalFrame* frame) const
 {
     Element* selectionRoot = frame->selection().rootEditableElement();
