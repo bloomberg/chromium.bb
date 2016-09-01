@@ -406,15 +406,15 @@ const int kDefaultFontSize = 12;
 - (void)drawFocusRingMaskWithFrame:(NSRect)cellFrame
                             inView:(NSView*)controlView {
   if (ui::MaterialDesignController::IsModeMaterial()) {
-    // In Material Design we have to move the focus ring over by 2 pts to get it
-    // to line up with the image.
-    if ([self visibleTitle].length > 0) {
-      cellFrame.origin.x += 2;
-    }
-
-    // We also have to nudge the chevron button's focus ring up 2pts.
+    // In Material Design we have to adjust the focus ring slightly for the
+    // chevron and regular bookmark icons.
     if ([self isOffTheSideButtonCell]) {
       cellFrame.origin.y -= 2;
+    } else if ([self visibleTitle].length > 0) {
+      cellFrame.origin.x += 4;
+    }
+    if ([controlView cr_lineWidth] < 1) {
+      cellFrame.origin.y -= 0.5;
     }
   }
   [super drawFocusRingMaskWithFrame:cellFrame inView:controlView];
