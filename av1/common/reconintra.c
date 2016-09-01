@@ -92,10 +92,10 @@ static int av1_has_right(BLOCK_SIZE bsize, int mi_row, int mi_col,
   if (bsize == BLOCK_4X8 && y == 1) return 0;
 
   if (y == 0) {
-    int wl = mi_width_log2_lookup[bsize];
-    int hl = mi_height_log2_lookup[bsize];
-    int w = 1 << (wl + 1 - ss_x);
-    int step = 1 << txsz;
+    const int wl = mi_width_log2_lookup[bsize];
+    const int hl = mi_height_log2_lookup[bsize];
+    const int w = 1 << (wl + 1 - ss_x);
+    const int step = tx_size_1d_in_unit[txsz];
     const uint8_t *order = orders[bsize];
     int my_order, tr_order;
 
@@ -113,9 +113,9 @@ static int av1_has_right(BLOCK_SIZE bsize, int mi_row, int mi_col,
 
     return my_order > tr_order;
   } else {
-    int wl = mi_width_log2_lookup[bsize];
-    int w = 1 << (wl + 1 - ss_x);
-    int step = 1 << txsz;
+    const int wl = mi_width_log2_lookup[bsize];
+    const int w = 1 << (wl + 1 - ss_x);
+    const int step = tx_size_1d_in_unit[txsz];
 
     return x + step < w;
   }
@@ -127,10 +127,10 @@ static int av1_has_bottom(BLOCK_SIZE bsize, int mi_row, int mi_col,
   if (!bottom_available || x != 0) {
     return 0;
   } else {
-    int wl = mi_width_log2_lookup[bsize];
-    int hl = mi_height_log2_lookup[bsize];
-    int h = 1 << (hl + 1 - ss_y);
-    int step = 1 << txsz;
+    const int wl = mi_width_log2_lookup[bsize];
+    const int hl = mi_height_log2_lookup[bsize];
+    const int h = 1 << (hl + 1 - ss_y);
+    const int step = tx_size_1d_in_unit[txsz];
     const uint8_t *order = orders[bsize];
     int my_order, bl_order;
 
@@ -368,7 +368,7 @@ static void dr_predictor(uint8_t *dst, ptrdiff_t stride, TX_SIZE tx_size,
                          int angle) {
   const int dx = get_dx(angle);
   const int dy = get_dy(angle);
-  const int bs = 4 << tx_size;
+  const int bs = tx_size_1d[tx_size];
 
   assert(angle > 0 && angle < 270);
   switch (angle) {
@@ -502,7 +502,7 @@ static void dr_predictor_high(uint16_t *dst, ptrdiff_t stride, TX_SIZE tx_size,
                               int angle, int bd) {
   const int dx = get_dx(angle);
   const int dy = get_dy(angle);
-  const int bs = 4 << tx_size;
+  const int bs = tx_size_1d[tx_size];
 
   assert(angle > 0 && angle < 270);
   switch (angle) {
@@ -553,7 +553,7 @@ static void build_intra_predictors_high(const MACROBLOCKD *xd,
   DECLARE_ALIGNED(16, uint16_t, above_data[64 + 16]);
   uint16_t *above_row = above_data + 16;
   const uint16_t *const_above_row = above_row;
-  const int bs = 4 << tx_size;
+  const int bs = tx_size_1d[tx_size];
   const uint16_t *above_ref = ref - ref_stride;
   const int base = 128 << (bd - 8);
 #if CONFIG_EXT_INTRA
@@ -683,7 +683,7 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
   DECLARE_ALIGNED(16, uint8_t, above_data[64 + 16]);
   uint8_t *above_row = above_data + 16;
   const uint8_t *const_above_row = above_row;
-  const int bs = 4 << tx_size;
+  const int bs = tx_size_1d[tx_size];
   int need_left = extend_modes[mode] & NEED_LEFT;
   int need_above = extend_modes[mode] & NEED_ABOVE;
 #if CONFIG_EXT_INTRA
@@ -829,7 +829,7 @@ void av1_predict_intra_block(const MACROBLOCKD *xd, int bwl_in, int bhl_in,
 
 #if CONFIG_PALETTE
   if (xd->mi[0]->mbmi.palette_mode_info.palette_size[plane != 0] > 0) {
-    const int bs = 4 * (1 << tx_size);
+    const int bs = tx_size_1d[tx_size];
     const int stride = 4 * (1 << bwl_in);
     int r, c;
     uint8_t *map = NULL;
