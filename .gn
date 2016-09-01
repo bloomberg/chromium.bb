@@ -258,11 +258,8 @@ exec_script_whitelist = [
   "//clank/native/BUILD.gn",
 
   "//content/browser/browser.gni",
-  "//content/child/child.gni",
-  "//content/common/common.gni",
   "//content/public/android/BUILD.gn",
   "//content/test/BUILD.gn",
-  "//content/utility/utility.gni",
   "//extensions/common/api/schemas.gni",
   "//extensions/extensions.gni",
   "//extensions/shell/app_shell.gni",

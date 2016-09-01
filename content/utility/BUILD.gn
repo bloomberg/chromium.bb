@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//content/utility/utility.gni")
 import("//media/media_options.gni")
 
 source_set("utility") {
@@ -13,8 +12,17 @@ source_set("utility") {
     "//content/public/utility:utility_sources",
   ]
 
-  sources =
-      rebase_path(content_utility_gypi_values.utility_sources, ".", "//content")
+  sources = [
+    "in_process_utility_thread.cc",
+    "in_process_utility_thread.h",
+    "utility_blink_platform_impl.cc",
+    "utility_blink_platform_impl.h",
+    "utility_main.cc",
+    "utility_service_factory.cc",
+    "utility_service_factory.h",
+    "utility_thread_impl.cc",
+    "utility_thread_impl.h",
+  ]
 
   configs += [ "//content:content_implementation" ]
 

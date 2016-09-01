@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//content/utility/utility.gni")
-
 # See //content/BUILD.gn for how this works.
 group("utility") {
   if (is_component_build) {
@@ -21,9 +19,12 @@ source_set("utility_sources") {
   # External code should depend on via ":utility" above.
   visibility = [ "//content/*" ]
 
-  sources = rebase_path(content_utility_gypi_values.public_utility_sources,
-                        ".",
-                        "//content")
+  sources = [
+    "content_utility_client.cc",
+    "content_utility_client.h",
+    "utility_thread.cc",
+    "utility_thread.h",
+  ]
 
   configs += [ "//content:content_implementation" ]
 
