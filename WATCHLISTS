@@ -1043,6 +1043,9 @@
     'blink_bindings': {
       'filepath': 'third_party/WebKit/Source/bindings',
     },
+    'blink_bindings_serialization': {
+      'filepath': 'third_party/WebKit/Source/bindings/(core|modules)/v8/.*[Ss]erializ',
+    },
     'blink_bluetooth': {
       'filepath': 'third_party/WebKit/.*[Bb]luetooth'
     },
@@ -1471,6 +1474,7 @@
                              'timvolodine@chromium.org'],
     'blink_bidi': ['leviw+bidiwatch@chromium.org'],
     'blink_bindings': ['blink-reviews-bindings@chromium.org'],
+    'blink_bindings_serialization': ['jbroman+watch@chromium.org'],
     'blink_bluetooth': ['ortuno+watch@chromium.org',
                         'scheib+watch@chromium.org'],
     'blink_canvas2d': ['ajuma+watch-canvas@chromium.org',
