@@ -49,6 +49,12 @@ _DISABLED_TESTS = frozenset({
   'benchmarks.system_health_smoke_test.SystemHealthBenchmarkSmokeTest.system_health.memory_mobile.browse:news:reddit',  # pylint: disable=line-too-long
   'benchmarks.system_health_smoke_test.SystemHealthBenchmarkSmokeTest.system_health.memory_mobile.browse:social:facebook',  # pylint: disable=line-too-long
   'benchmarks.system_health_smoke_test.SystemHealthBenchmarkSmokeTest.system_health.memory_mobile.load:news:cnn',  # pylint: disable=line-too-long
+
+  # Permenently disabled from smoke test for being long-running.
+  'benchmarks.system_health_smoke_test.SystemHealthBenchmarkSmokeTest.system_health.memory_mobile.long_running:tools:gmail-foreground',  # pylint: disable=line-too-long
+  'benchmarks.system_health_smoke_test.SystemHealthBenchmarkSmokeTest.system_health.memory_mobile.long_running:tools:gmail-background',  # pylint: disable=line-too-long
+  'benchmarks.system_health_smoke_test.SystemHealthBenchmarkSmokeTest.system_health.memory_desktop.long_running:tools:gmail-foreground',  # pylint: disable=line-too-long
+  'benchmarks.system_health_smoke_test.SystemHealthBenchmarkSmokeTest.system_health.memory_desktop.long_running:tools:gmail-background',  # pylint: disable=line-too-long
 })
 
 
