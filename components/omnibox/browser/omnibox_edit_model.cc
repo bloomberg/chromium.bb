@@ -664,15 +664,14 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
   base::TimeDelta elapsed_time_since_last_change_to_default_match(
       now - autocomplete_controller()->last_time_default_match_changed());
   DCHECK(match.provider);
-  // These elapsed times don't really make sense for ZeroSuggest matches
-  // (because the user does not modify the omnibox for ZeroSuggest), so for
-  // those we set the elapsed times to something that will be ignored by
+  // These elapsed times don't really make sense for matches that come from
+  // omnibox focus (because the user did not modify the omnibox), so for those
+  // we set the elapsed times to something that will be ignored by
   // metrics_log.cc.  They also don't necessarily make sense if the omnibox
   // dropdown is closed or the user used a paste-and-go action.  (In most
   // cases when this happens, the user never modified the omnibox.)
   const bool popup_open = PopupIsOpen();
-  if ((match.provider->type() == AutocompleteProvider::TYPE_ZERO_SUGGEST) ||
-      !popup_open || !pasted_text.empty()) {
+  if (input_.from_omnibox_focus() || !popup_open || !pasted_text.empty()) {
     const base::TimeDelta default_time_delta =
         base::TimeDelta::FromMilliseconds(-1);
     elapsed_time_since_user_first_modified_omnibox = default_time_delta;
