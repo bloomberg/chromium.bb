@@ -11,10 +11,10 @@ class TraceTestExpectations(GpuTestExpectations):
     # Sample Usage:
     # self.Fail('trace_test.Canvas2DRedBox',
     #     ['mac', 'amd', ('nvidia', 0x1234)], bug=123)
-    self.Flaky('trace_test.2DCanvasWebGL', ['win'], bug=638744)
-    self.Flaky('trace_test.SolidColorBackground', ['win'], bug=638744)
-    self.Flaky('trace_test.WebGLGreenTriangle.AA.NoAlpha', ['win'], bug=638744)
-    self.Flaky('trace_test.WebGLGreenTriangle.NoAA.Alpha', ['win'], bug=638744)
+    self.Fail('trace_test.2DCanvasWebGL', ['win'], bug=638744)
+    self.Fail('trace_test.SolidColorBackground', ['win'], bug=638744)
+    self.Fail('trace_test.WebGLGreenTriangle.AA.NoAlpha', ['win'], bug=638744)
+    self.Fail('trace_test.WebGLGreenTriangle.NoAA.Alpha', ['win'], bug=638744)
 
 
 class DeviceTraceTestExpectations(GpuTestExpectations):
