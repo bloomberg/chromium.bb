@@ -1075,7 +1075,7 @@ if (enable_java_templates) {
     }
 
     if (_proguard_preprocess) {
-      _proguard_config_path = invoker.proguard_config
+      _proguard_config_path = invoker.proguard_preprocess_config
       proguard(_proguard_target) {
         if (_filter_jar) {
           _proguard_input_jar = _filtered_jar_path
@@ -1785,6 +1785,8 @@ if (enable_java_templates) {
       forward_variables_from(invoker,
                              [
                                "jar_excluded_patterns",
+                               "proguard_preprocess",
+                               "proguard_preprocess_config",
                                "strip_resource_classes",
                              ])
 
@@ -1796,9 +1798,10 @@ if (enable_java_templates) {
         visibility += [ ":$_dex_target_name" ]
       }
 
-      if (defined(invoker.proguard_preprocess) && invoker.proguard_preprocess) {
-        proguard_preprocess = true
-        proguard_config = invoker.proguard_config
+      # TODO(agrieve): Delete proguard_config once all usages are move to
+      #     proguard_preprocess_config.
+      if (defined(invoker.proguard_config)) {
+        proguard_preprocess_config = invoker.proguard_config
       }
 
       build_config = _build_config
@@ -2075,13 +2078,20 @@ if (enable_java_templates) {
     }
 
     process_java_prebuilt(_process_prebuilt_target_name) {
-      forward_variables_from(invoker, [ "jar_excluded_patterns" ])
+      forward_variables_from(invoker,
+                             [
+                               "jar_excluded_patterns",
+                               "proguard_preprocess",
+                               "proguard_preprocess_config",
+                             ])
       build_config = _build_config
       input_jar_path = _javac_jar_path
       output_jar_path = _process_prebuilt_jar_path
-      if (defined(invoker.proguard_preprocess) && invoker.proguard_preprocess) {
-        proguard_preprocess = invoker.proguard_preprocess
-        proguard_config = invoker.proguard_config
+
+      # TODO(agrieve): Delete proguard_config once all usages are move to
+      #     proguard_preprocess_config.
+      if (defined(invoker.proguard_config)) {
+        proguard_preprocess_config = invoker.proguard_config
       }
       deps = [
         ":$_javac_target_name",
@@ -2297,7 +2307,7 @@ if (enable_java_templates) {
                                "manifest_entries",
                                "processors_javac",
                                "processor_args_javac",
-                               "proguard_config",
+                               "proguard_preprocess_config",
                                "proguard_preprocess",
                                "provider_configurations",
                              ])

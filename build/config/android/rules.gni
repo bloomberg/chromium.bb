@@ -1170,7 +1170,7 @@ if (enable_java_templates) {
   #
   #   proguard_preprocess: If true, proguard preprocessing will be run. This can
   #     be used to remove unwanted parts of the library.
-  #   proguard_config: Path to the proguard config for preprocessing.
+  #   proguard_preprocess_config: Path to the proguard config for preprocessing.
   #
   #   supports_android: If true, Android targets (android_library, android_apk)
   #     may depend on this target. Note: if true, this target must only use the
@@ -1219,7 +1219,7 @@ if (enable_java_templates) {
   #   jar_dep: Target that builds jar_path (optional).
   #   proguard_preprocess: If true, proguard preprocessing will be run. This can
   #     be used to remove unwanted parts of the library.
-  #   proguard_config: Path to the proguard config for preprocessing.
+  #   proguard_preprocess_config: Path to the proguard config for preprocessing.
   #   supports_android: If true, Android targets (android_library, android_apk)
   #     may depend on this target. Note: if true, this target must only use the
   #     subset of Java available on Android.
@@ -1269,7 +1269,7 @@ if (enable_java_templates) {
   #
   #   proguard_preprocess: If true, proguard preprocessing will be run. This can
   #     be used to remove unwanted parts of the library.
-  #   proguard_config: Path to the proguard config for preprocessing.
+  #   proguard_preprocess_config: Path to the proguard config for preprocessing.
   #
   #   dex_path: If set, the resulting .dex.jar file will be placed under this
   #     path.
@@ -1358,7 +1358,7 @@ if (enable_java_templates) {
   #   jar_path: Path to the prebuilt jar.
   #   proguard_preprocess: If true, proguard preprocessing will be run. This can
   #     be used to remove unwanted parts of the library.
-  #   proguard_config: Path to the proguard config for preprocessing.
+  #   proguard_preprocess_config: Path to the proguard config for preprocessing.
   #
   # Example
   #   android_java_prebuilt("foo_java") {
