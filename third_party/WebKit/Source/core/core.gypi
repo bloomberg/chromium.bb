@@ -551,8 +551,6 @@
             'layout/ng/ng_box.h',
             'layout/ng/ng_constraint_space.cc',
             'layout/ng/ng_constraint_space.h',
-            'layout/ng/ng_derived_constraint_space.cc',
-            'layout/ng/ng_derived_constraint_space.h',
             'layout/ng/ng_direction.cc',
             'layout/ng/ng_direction.h',
             'layout/ng/ng_physical_constraint_space.cc',

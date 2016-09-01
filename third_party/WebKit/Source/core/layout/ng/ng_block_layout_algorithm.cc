@@ -32,8 +32,9 @@ bool NGBlockLayoutAlgorithm::Layout(const NGConstraintSpace* constraint_space,
       // -1?
       LayoutUnit block_size = computeBlockSizeForFragment(
           *constraint_space, *style_, LayoutUnit(-1));
-      constraint_space_for_children_ = new NGConstraintSpace(
-          *constraint_space, NGLogicalSize(inline_size, block_size));
+      constraint_space_for_children_ =
+          new NGConstraintSpace(*constraint_space, NGLogicalOffset(),
+                                NGLogicalSize(inline_size, block_size));
       content_size_ = LayoutUnit();
 
       builder_ = new NGFragmentBuilder(NGPhysicalFragmentBase::FragmentBox);

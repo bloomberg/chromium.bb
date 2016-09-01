@@ -6,6 +6,7 @@
 #define NGConstraintSpace_h
 
 #include "core/CoreExport.h"
+#include "core/layout/LayoutBox.h"
 #include "core/layout/ng/ng_physical_constraint_space.h"
 #include "core/layout/ng/ng_writing_mode.h"
 #include "platform/heap/Handle.h"
@@ -21,26 +22,35 @@ class NGLayoutOpportunityIterator;
 // which a layout algorithm may produce a NGFragment within. It is a view on
 // top of a NGPhysicalConstraintSpace and provides accessor methods in the
 // logical coordinate system defined by the writing mode given.
-class CORE_EXPORT NGConstraintSpace
+class CORE_EXPORT NGConstraintSpace final
     : public GarbageCollected<NGConstraintSpace> {
  public:
   // Constructs a constraint space with a new backing NGPhysicalConstraintSpace.
-  NGConstraintSpace(NGWritingMode writing_mode, NGLogicalSize container_size);
+  NGConstraintSpace(NGWritingMode, NGLogicalSize);
 
   // Constructs a constraint space based on an existing backing
   // NGPhysicalConstraintSpace.
-  NGConstraintSpace(NGWritingMode writing_mode, NGPhysicalConstraintSpace*);
+  NGConstraintSpace(NGWritingMode, NGPhysicalConstraintSpace*);
 
   // Constructs a constraint space with a different NGWritingMode.
-  NGConstraintSpace(NGWritingMode writing_mode,
-                    const NGConstraintSpace* constraint_space)
-      : physical_space_(constraint_space->PhysicalSpace()),
-        writing_mode_(writing_mode) {}
+  NGConstraintSpace(NGWritingMode, const NGConstraintSpace*);
 
-  // TODO: This should either be removed or also take an offset (if we merge
-  // this with NGDerivedConstraintSpace).
+  // Constructs a derived constraint space sharing the same backing
+  // NGPhysicalConstraintSpace and NGWritingMode.
   NGConstraintSpace(const NGConstraintSpace& other,
-                    NGLogicalSize container_size);
+                    NGLogicalOffset,
+                    NGLogicalSize);
+
+  // Constructs a derived constraint space sharing the same backing
+  // NGPhysicalConstraintSpace and a different NGWritingMode.
+  NGConstraintSpace(NGWritingMode,
+                    const NGConstraintSpace& other,
+                    NGLogicalOffset,
+                    NGLogicalSize);
+
+  // This should live on NGBox or another layout bridge and probably take a root
+  // NGConstraintSpace or a NGPhysicalConstraintSpace.
+  static NGConstraintSpace* CreateFromLayoutObject(const LayoutBox&);
 
   NGPhysicalConstraintSpace* PhysicalSpace() const { return physical_space_; }
 
@@ -56,10 +66,13 @@ class CORE_EXPORT NGConstraintSpace
   //    direction.
   NGLogicalSize ContainerSize() const;
 
-  // Returns the effective size of the constraint space. Defaults to
+  // Offset relative to the root constraint space.
+  NGLogicalOffset Offset() const { return offset_; }
+
+  // Returns the effective size of the constraint space. Equal to the
   // ContainerSize() for the root constraint space but derived constraint spaces
-  // overrides it to return the size of the layout opportunity.
-  virtual NGLogicalSize Size() const { return ContainerSize(); }
+  // return the size of the layout opportunity.
+  virtual NGLogicalSize Size() const { return size_; }
 
   // Whether exceeding the containerSize triggers the presence of a scrollbar
   // for the indicated direction.
@@ -90,16 +103,16 @@ class CORE_EXPORT NGConstraintSpace
 
   DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(physical_space_); }
 
- protected:
   // The setters for the NGConstraintSpace should only be used when constructing
-  // via the NGDerivedConstraintSpace.
-  void SetContainerSize(NGLogicalSize);
+  // a derived NGConstraintSpace.
   void SetOverflowTriggersScrollbar(bool inlineTriggers, bool blockTriggers);
   void SetFixedSize(bool inlineFixed, bool blockFixed);
   void SetFragmentationType(NGFragmentationType);
 
  private:
   Member<NGPhysicalConstraintSpace> physical_space_;
+  NGLogicalOffset offset_;
+  NGLogicalSize size_;
   unsigned writing_mode_ : 3;
 };
 

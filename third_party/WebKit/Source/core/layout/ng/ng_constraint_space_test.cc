@@ -4,7 +4,6 @@
 
 #include "core/layout/ng/ng_constraint_space.h"
 
-#include "core/layout/ng/ng_derived_constraint_space.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -12,9 +11,12 @@ namespace blink {
 namespace {
 
 TEST(NGConstraintSpaceTest, WritingMode) {
-  NGConstraintSpace* horz_space = new NGDerivedConstraintSpace(
-      HorizontalTopBottom, NGLogicalSize(LayoutUnit(200), LayoutUnit(100)),
-      true, false, true, false, FragmentColumn);
+  NGConstraintSpace* horz_space = new NGConstraintSpace(
+      HorizontalTopBottom, NGLogicalSize(LayoutUnit(200), LayoutUnit(100)));
+  horz_space->SetOverflowTriggersScrollbar(true, false);
+  horz_space->SetFixedSize(true, false);
+  horz_space->SetFragmentationType(FragmentColumn);
+
   NGConstraintSpace* vert_space =
       new NGConstraintSpace(VerticalRightLeft, horz_space);
 
@@ -41,18 +43,7 @@ TEST(NGConstraintSpaceTest, WritingMode) {
 }
 
 TEST(NGConstraintSpaceTest, LayoutOpportunities) {
-  NGPhysicalSize physical_size;
-  physical_size.width = LayoutUnit(600);
-  physical_size.height = LayoutUnit(400);
-  auto* physical_space = new NGPhysicalConstraintSpace(physical_size);
-  auto* space = new NGConstraintSpace(HorizontalTopBottom, physical_space);
-
-  bool for_inline_or_bfc = false;
-  auto iterator = space->LayoutOpportunities(NGClearNone, for_inline_or_bfc);
-
-  auto firstOpportunity = iterator.Next();
-  EXPECT_EQ(LayoutUnit(600), firstOpportunity->Size().inline_size);
-  EXPECT_EQ(LayoutUnit(400), firstOpportunity->Size().block_size);
+  // TODO(eae): Implement in followup change.
 }
 
 }  // namespace

@@ -13,21 +13,67 @@ namespace blink {
 // NGPhysicalConstraintSpace.
 NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
                                      NGLogicalSize container_size)
-    : physical_space_(new NGPhysicalConstraintSpace()),
-      writing_mode_(writing_mode) {
-  SetContainerSize(container_size);
-}
+    : physical_space_(new NGPhysicalConstraintSpace(
+          container_size.ConvertToPhysical(writing_mode))),
+      size_(container_size),
+      writing_mode_(writing_mode) {}
 
 NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
                                      NGPhysicalConstraintSpace* physical_space)
-    : physical_space_(physical_space), writing_mode_(writing_mode) {
-}
+    : physical_space_(physical_space),
+      size_(physical_space->ContainerSize().ConvertToLogical(writing_mode)),
+      writing_mode_(writing_mode) {}
+
+NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
+                                     const NGConstraintSpace* constraint_space)
+    : physical_space_(constraint_space->PhysicalSpace()),
+      offset_(constraint_space->Offset()),
+      size_(constraint_space->Size()),
+      writing_mode_(writing_mode) {}
+
+NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
+                                     const NGConstraintSpace& other,
+                                     NGLogicalOffset offset,
+                                     NGLogicalSize size)
+    : physical_space_(other.PhysicalSpace()),
+      offset_(offset),
+      size_(size),
+      writing_mode_(writing_mode) {}
 
 NGConstraintSpace::NGConstraintSpace(const NGConstraintSpace& other,
-                                     NGLogicalSize container_size)
-    : physical_space_(*other.physical_space_),
-      writing_mode_(other.writing_mode_) {
-  SetContainerSize(container_size);
+                                     NGLogicalOffset offset,
+                                     NGLogicalSize size)
+    : physical_space_(other.PhysicalSpace()),
+      offset_(offset),
+      size_(size),
+      writing_mode_(other.WritingMode()) {}
+
+NGConstraintSpace* NGConstraintSpace::CreateFromLayoutObject(
+    const LayoutBox& box) {
+  bool fixed_inline = false, fixed_block = false;
+  // XXX for orthogonal writing mode this is not right
+  LayoutUnit container_logical_width =
+      std::max(LayoutUnit(), box.containingBlockLogicalWidthForContent());
+  // XXX Make sure this height is correct
+  LayoutUnit container_logical_height =
+      box.containingBlockLogicalHeightForContent(ExcludeMarginBorderPadding);
+  if (box.hasOverrideLogicalContentWidth()) {
+    container_logical_width = box.overrideLogicalContentWidth();
+    fixed_inline = true;
+  }
+  if (box.hasOverrideLogicalContentHeight()) {
+    container_logical_width = box.overrideLogicalContentHeight();
+    fixed_block = true;
+  }
+
+  NGConstraintSpace* derived_constraint_space = new NGConstraintSpace(
+      FromPlatformWritingMode(box.styleRef().getWritingMode()),
+      NGLogicalSize(container_logical_width, container_logical_height));
+  derived_constraint_space->SetOverflowTriggersScrollbar(
+      box.styleRef().overflowInlineDirection() == OverflowAuto,
+      box.styleRef().overflowBlockDirection() == OverflowAuto);
+  derived_constraint_space->SetFixedSize(fixed_inline, fixed_block);
+  return derived_constraint_space;
 }
 
 NGLogicalSize NGConstraintSpace::ContainerSize() const {
@@ -73,11 +119,6 @@ NGLayoutOpportunityIterator NGConstraintSpace::LayoutOpportunities(
     bool for_inline_or_bfc) {
   NGLayoutOpportunityIterator iterator(this, clear, for_inline_or_bfc);
   return iterator;
-}
-
-void NGConstraintSpace::SetContainerSize(NGLogicalSize container_size) {
-  physical_space_->container_size_ = container_size.ConvertToPhysical(
-      static_cast<NGWritingMode>(writing_mode_));
 }
 
 void NGConstraintSpace::SetOverflowTriggersScrollbar(bool inline_triggers,

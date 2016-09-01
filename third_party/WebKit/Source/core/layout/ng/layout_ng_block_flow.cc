@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "core/layout/ng/layout_ng_block_flow.h"
-#include "core/layout/ng/ng_derived_constraint_space.h"
+#include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_block_layout_algorithm.h"
 #include "core/layout/ng/ng_fragment.h"
 #include "core/layout/LayoutAnalyzer.h"
@@ -21,7 +21,7 @@ void LayoutNGBlockFlow::layoutBlock(bool relayoutChildren) {
   LayoutAnalyzer::BlockScope analyzer(*this);
 
   const auto* constraint_space =
-      NGDerivedConstraintSpace::CreateFromLayoutObject(*this);
+      NGConstraintSpace::CreateFromLayoutObject(*this);
   NGBox* box = new NGBox(this);
   NGFragment* fragment;
   while (!box->Layout(constraint_space, &fragment))

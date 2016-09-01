@@ -5,7 +5,6 @@
 #include "core/layout/ng/ng_length_utils.h"
 
 #include "core/layout/ng/ng_constraint_space.h"
-#include "core/layout/ng/ng_derived_constraint_space.h"
 #include "core/layout/ng/ng_margin_strut.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/CalculationValue.h"
@@ -25,10 +24,12 @@ class NGLengthUtilsTest : public ::testing::Test {
                                                      int block_size,
                                                      bool fixed_inline = false,
                                                      bool fixed_block = false) {
-    return new NGDerivedConstraintSpace(
+    NGConstraintSpace* derived_constraint_space = new NGConstraintSpace(
         HorizontalTopBottom,
-        NGLogicalSize(LayoutUnit(inline_size), LayoutUnit(block_size)), false,
-        false, fixed_inline, fixed_block, FragmentNone);
+        NGLogicalSize(LayoutUnit(inline_size), LayoutUnit(block_size)));
+    derived_constraint_space->SetOverflowTriggersScrollbar(false, false);
+    derived_constraint_space->SetFixedSize(fixed_inline, fixed_block);
+    return derived_constraint_space;
   }
 
   LayoutUnit resolveInlineLength(
