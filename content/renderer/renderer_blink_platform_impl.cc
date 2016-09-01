@@ -962,6 +962,7 @@ void RendererBlinkPlatformImpl::createHTMLVideoElementCapturer(
 void RendererBlinkPlatformImpl::createHTMLAudioElementCapturer(
     WebMediaStream* web_media_stream,
     WebMediaPlayer* web_media_player) {
+#if defined(ENABLE_WEBRTC)
   DCHECK(web_media_stream);
   DCHECK(web_media_player);
 
@@ -984,6 +985,7 @@ void RendererBlinkPlatformImpl::createHTMLAudioElementCapturer(
 
   media_stream_source->ConnectToTrack(web_media_stream_track);
   web_media_stream->addTrack(web_media_stream_track);
+#endif
 }
 
 //------------------------------------------------------------------------------

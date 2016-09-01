@@ -38,11 +38,6 @@ target(link_target_type, "renderer_sources") {
     "context_menu_client.h",
     "document_state.cc",
     "document_state.h",
-    "media_stream_audio_renderer.h",
-    "media_stream_audio_sink.cc",
-    "media_stream_audio_sink.h",
-    "media_stream_sink.h",
-    "media_stream_video_renderer.h",
     "navigation_state.cc",
     "navigation_state.h",
     "pepper_plugin_instance.h",
@@ -96,9 +91,14 @@ target(link_target_type, "renderer_sources") {
 
   if (enable_webrtc) {
     sources += [
+      "media_stream_audio_renderer.h",
+      "media_stream_audio_sink.cc",
+      "media_stream_audio_sink.h",
       "media_stream_renderer_factory.h",
+      "media_stream_sink.h",
       "media_stream_utils.cc",
       "media_stream_utils.h",
+      "media_stream_video_renderer.h",
       "media_stream_video_sink.cc",
       "media_stream_video_sink.h",
       "webrtc_log_message_delegate.h",
