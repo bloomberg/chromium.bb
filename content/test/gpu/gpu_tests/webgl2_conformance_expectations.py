@@ -40,12 +40,15 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     # All platforms.
     self.Flaky('conformance2/query/occlusion-query.html', bug=603168)
+    self.Fail('conformance2/misc/expando-loss-2.html', bug=483282)
 
     # All platforms with AMD GPU.
     self.Fail('deqp/functional/gles3/multisample.html',
         ['amd'], bug=617290)
 
     # Windows only.
+    self.Fail('conformance2/textures/misc/copy-texture-image-luma-format.html',
+        ['win'], bug=638470)
 
     # This should be fixed in the latest driver.
     self.Fail('deqp/functional/gles3/fboinvalidate/sub.html',
@@ -192,6 +195,11 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/uniformbuffers/random.html',
         ['mac'], bug=618464)
 
+    self.Fail('conformance2/rendering/rgb-format-support.html',
+        ['mac'], bug=483282)
+
+    self.Fail('conformance2/textures/misc/copy-texture-image-luma-format.html',
+        ['mac'], bug=638470)
     # This is due to "centroid out" / "in" mismatch.
     self.Fail('deqp/data/gles3/shaders/qualification_order.html',
         ['mac'], bug=483282)
@@ -511,6 +519,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     # Linux NVIDIA only.
     # La la la la la la la la la la ...
+    self.Fail('conformance2/misc/getextension-while-pbo-bound-stability.html',
+        ['linux', 'nvidia'], bug=483282)
 
     # Linux NVIDIA with ANGLE only
     self.Fail('conformance/attribs/gl-disabled-vertex-attrib.html',
