@@ -2020,7 +2020,8 @@ bool ComputedStyle::shadowListHasCurrentColor(const ShadowList* shadowList)
 static inline Vector<GridTrackSize> initialGridAutoTracks()
 {
     Vector<GridTrackSize> trackSizeList;
-    trackSizeList.append(GridTrackSize(Length(Auto)));
+    trackSizeList.reserveInitialCapacity(1);
+    trackSizeList.uncheckedAppend(GridTrackSize(Length(Auto)));
     return trackSizeList;
 }
 
