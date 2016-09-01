@@ -14,6 +14,8 @@ import org.chromium.base.test.util.Feature;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 /**
@@ -31,6 +33,8 @@ public class CrashFileManagerTest extends CrashTestCase {
 
     private File mUpFile1;
     private File mUpFile2;
+
+    private File mLogfile;
 
     @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
     @Override
@@ -58,6 +62,9 @@ public class CrashFileManagerTest extends CrashTestCase {
 
         mUpFile2 = new File(mCrashDir, "chromium-renderer_abcd.up" + TEST_PID);
         mUpFile2.createNewFile();
+
+        mLogfile = new File(mCrashDir, CrashFileManager.CRASH_DUMP_LOGFILE);
+        mLogfile.createNewFile();
     }
 
     @SmallTest
@@ -104,6 +111,18 @@ public class CrashFileManagerTest extends CrashTestCase {
         assertNotNull(actualFiles);
         MoreAsserts.assertEquals("Failed to sort minidumps by modification time", expectedFiles,
                 actualFiles);
+    }
+
+    @SmallTest
+    @Feature({"Android-AppBase"})
+    public void testGetAllFilesSorted() {
+        CrashFileManager crashFileManager = new CrashFileManager(mCacheDir);
+        File[] expectedFiles = new File[] {mLogfile, mUpFile2, mUpFile1, mDmpFile2, mDmpFile1,
+                mTmpFile3, mTmpFile2, mTmpFile1};
+        File[] actualFiles = crashFileManager.getAllFilesSorted();
+        assertNotNull(actualFiles);
+        MoreAsserts.assertEquals(
+                "Failed to sort all files by modification time", expectedFiles, actualFiles);
     }
 
     @SmallTest
@@ -189,5 +208,74 @@ public class CrashFileManagerTest extends CrashTestCase {
         CrashFileManager.markUploadSkipped(mDmpFile1);
         assertFalse(mDmpFile1.exists());
         assertTrue(new File(mCrashDir, "123_abc.skipped0").exists());
+    }
+
+    @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
+    @SmallTest
+    @Feature({"Android-AppBase"})
+    public void testCleanOutAllNonFreshMinidumpFiles() throws IOException {
+        // Create some simulated old files.
+        long oldTimestamp = new Date().getTime() - TimeUnit.MILLISECONDS.convert(31, TimeUnit.DAYS);
+        File old1 = new File(mCrashDir, "chromium-renderer-minidump-cooo10ff.dmp");
+        File old2 = new File(mCrashDir, "chromium-renderer-minidump-cooo10ff.up0");
+        File old3 = new File(mCrashDir, "chromium-renderer-minidump-cooo10ff.logcat");
+        old1.setLastModified(oldTimestamp);
+        old2.setLastModified(oldTimestamp - 1);
+        old3.setLastModified(oldTimestamp - 2);
+
+        // These will be the most recent files in the directory, after all successfully uploaded
+        // files and all temp files are removed.
+        File[] recentFiles = new File[3 * CrashFileManager.MAX_CRASH_REPORTS_TO_KEEP];
+        for (int i = 0; i < CrashFileManager.MAX_CRASH_REPORTS_TO_KEEP; ++i) {
+            String prefix = "chromium-renderer-minidump-deadbeef" + i;
+            // There is no reason why both a minidump and failed upload should exist at the same
+            // time, but the cleanup code should be robust to it anyway.
+            File recentMinidump = new File(mCrashDir, prefix + ".dmp");
+            File recentFailedUpload = new File(mCrashDir, prefix + ".up0.try0");
+            File recentLogcatFile = new File(mCrashDir, prefix + ".logcat");
+            recentMinidump.createNewFile();
+            recentFailedUpload.createNewFile();
+            recentLogcatFile.createNewFile();
+            recentFiles[3 * i + 0] = recentMinidump;
+            recentFiles[3 * i + 1] = recentFailedUpload;
+            recentFiles[3 * i + 2] = recentLogcatFile;
+        }
+
+        // Create some additional successful uploads.
+        File success1 = new File(mCrashDir, "chromium-renderer-minidump-cafebebe1.up0");
+        File success2 = new File(mCrashDir, "chromium-renderer-minidump-cafebebe2.up1");
+        File success3 = new File(mCrashDir, "chromium-renderer-minidump-cafebebe3.up2");
+        success1.createNewFile();
+        success2.createNewFile();
+        success3.createNewFile();
+
+        // Create some additional temp files.
+        File temp1 = new File(mCrashDir, "chromium-renderer-minidump-oooff1ce1.tmp");
+        File temp2 = new File(mCrashDir, "chromium-renderer-minidump-oooff1ce2.tmp");
+        temp1.createNewFile();
+        temp2.createNewFile();
+
+        CrashFileManager crashFileManager = new CrashFileManager(mCacheDir);
+        crashFileManager.cleanOutAllNonFreshMinidumpFiles();
+
+        assertFalse(old1.exists());
+        assertFalse(old2.exists());
+        assertFalse(old3.exists());
+        for (File f : recentFiles) {
+            assertTrue(f.exists());
+        }
+        assertTrue(mLogfile.exists());
+        assertFalse(mTmpFile1.exists());
+        assertFalse(mTmpFile2.exists());
+        assertFalse(mTmpFile3.exists());
+        assertFalse(mDmpFile1.exists());
+        assertFalse(mDmpFile2.exists());
+        assertFalse(mUpFile1.exists());
+        assertFalse(mUpFile2.exists());
+        assertFalse(temp1.exists());
+        assertFalse(temp2.exists());
+        assertFalse(success1.exists());
+        assertFalse(success2.exists());
+        assertFalse(success3.exists());
     }
 }

@@ -178,7 +178,7 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        mUploadLog = new File(mCacheDir, CrashFileManager.CRASH_DUMP_LOGFILE);
+        mUploadLog = new File(mCrashDir, CrashFileManager.CRASH_DUMP_LOGFILE);
         // Delete all logs from previous runs if possible.
         mUploadLog.delete();
 
@@ -386,7 +386,7 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
     }
 
     private void assertValidUploadLogEntry() throws IOException {
-        File logfile = new File(mCacheDir, CrashFileManager.CRASH_DUMP_LOGFILE);
+        File logfile = new File(mCrashDir, CrashFileManager.CRASH_DUMP_LOGFILE);
         BufferedReader input =  new BufferedReader(new FileReader(logfile));
         String line = null;
         String lastEntry = null;

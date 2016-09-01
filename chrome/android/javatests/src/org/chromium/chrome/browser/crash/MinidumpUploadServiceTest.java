@@ -312,7 +312,7 @@ public class MinidumpUploadServiceTest extends CrashTestCase {
         // Create the file used for uploading.
         File minidumpFile = new File(mCrashDir, "chromium_renderer-111.dmp1");
         minidumpFile.createNewFile();
-        File logfile = new File(mCacheDir, CrashFileManager.CRASH_DUMP_LOGFILE);
+        File logfile = new File(mCrashDir, CrashFileManager.CRASH_DUMP_LOGFILE);
         setUpMinidumpFile(minidumpFile, BOUNDARY);
 
         // Run test.

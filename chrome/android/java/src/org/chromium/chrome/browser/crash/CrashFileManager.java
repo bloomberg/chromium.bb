@@ -12,6 +12,10 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -28,7 +32,7 @@ public class CrashFileManager {
 
     // This should mirror the C++ CrashUploadList::kReporterLogFilename variable.
     @VisibleForTesting
-    static final String CRASH_DUMP_LOGFILE = CRASH_DUMP_DIR + "/uploads.log";
+    static final String CRASH_DUMP_LOGFILE = "uploads.log";
 
     private static final Pattern MINIDUMP_FIRST_TRY_PATTERN =
             Pattern.compile("\\.dmp([0-9]*)$\\z");
@@ -51,6 +55,17 @@ public class CrashFileManager {
     protected static final String TMP_SUFFIX = ".tmp";
 
     private static final Pattern TMP_PATTERN = Pattern.compile("\\.tmp\\z");
+
+    // The maximum number of non-uploaded crashes that may be kept in the crash reports directory.
+    // Chosen to attempt to balance between keeping a generous number of crashes, and not using up
+    // too much filesystem storage space for obsolete crash reports.
+    @VisibleForTesting
+    protected static final int MAX_CRASH_REPORTS_TO_KEEP = 10;
+
+    // The maximum age, in days, considered acceptable for a crash report. Reports older than this
+    // age will be removed. The constant is chosen to be quite conservative, while still allowing
+    // users to eventually reclaim filesystem storage space from obsolete crash reports.
+    private static final int MAX_CRASH_REPORT_AGE_IN_DAYS = 30;
 
     /**
      * Comparator used for sorting files by modification
@@ -188,6 +203,18 @@ public class CrashFileManager {
         return minidumps;
     }
 
+    @VisibleForTesting
+    protected File[] getAllFilesSorted() {
+        File crashDir = getCrashDirectoryIfExists();
+        if (crashDir == null) {
+            return new File[] {};
+        }
+
+        File[] files = crashDir.listFiles();
+        Arrays.sort(files, sFileComparator);
+        return files;
+    }
+
     public void cleanOutAllNonFreshMinidumpFiles() {
         for (File f : getAllUploadedFiles()) {
             deleteFile(f);
@@ -195,20 +222,42 @@ public class CrashFileManager {
         for (File f : getAllTempFiles()) {
             deleteFile(f);
         }
+
+        Set<String> recentCrashes = new HashSet<String>();
+        for (File f : getAllFilesSorted()) {
+            // The uploads.log file should always be preserved, as it stores the metadata that
+            // powers the chrome://crashes UI.
+            if (f.getName().equals(CRASH_DUMP_LOGFILE)) {
+                continue;
+            }
+
+            // Delete any crash reports that are especially old.
+            long ageInMillis = new Date().getTime() - f.lastModified();
+            long ageInDays = TimeUnit.DAYS.convert(ageInMillis, TimeUnit.MILLISECONDS);
+            if (ageInDays > MAX_CRASH_REPORT_AGE_IN_DAYS) {
+                deleteFile(f);
+                continue;
+            }
+
+            // Delete the oldest crash reports that exceed the cap on the number of allowed reports.
+            // Each crash typically has two files associated with it: a .dmp file and a .logcat
+            // file. These have the same filename other than the file extension.
+            String fileNameSansExtension = f.getName().split("\\.")[0];
+            if (recentCrashes.size() < MAX_CRASH_REPORTS_TO_KEEP) {
+                recentCrashes.add(fileNameSansExtension);
+            } else if (!recentCrashes.contains(fileNameSansExtension)) {
+                deleteFile(f);
+            }
+        }
     }
 
     @VisibleForTesting
     File[] getMatchingFiles(final Pattern pattern) {
-        // Get dump dir and get all files with specified suffix.. The path
+        // Get dump dir and get all files with specified suffix. The path
         // constructed here must match chrome_paths.cc (see case
         // chrome::DIR_CRASH_DUMPS).
-        File crashDir = getCrashDirectory();
-        if (!crashDir.exists()) {
-            Log.w(TAG, crashDir.getAbsolutePath() + " does not exist!");
-            return new File[] {};
-        }
-        if (!crashDir.isDirectory()) {
-            Log.w(TAG, crashDir.getAbsolutePath() + " is not a directory!");
+        File crashDir = getCrashDirectoryIfExists();
+        if (crashDir == null) {
             return new File[] {};
         }
         File[] minidumps = crashDir.listFiles(new FilenameFilter() {
@@ -232,6 +281,20 @@ public class CrashFileManager {
         return new File(mCacheDir, CRASH_DUMP_DIR);
     }
 
+    @VisibleForTesting
+    File getCrashDirectoryIfExists() {
+        File crashDirectory = getCrashDirectory();
+        if (!crashDirectory.exists()) {
+            Log.w(TAG, crashDirectory.getAbsolutePath() + " does not exist!");
+            return null;
+        }
+        if (!crashDirectory.isDirectory()) {
+            Log.w(TAG, crashDirectory.getAbsolutePath() + " is not a directory!");
+            return null;
+        }
+        return crashDirectory;
+    }
+
     public File createNewTempFile(String name) throws IOException {
         File f = new File(getCrashDirectory(), name);
         if (f.exists()) {
@@ -250,7 +313,7 @@ public class CrashFileManager {
     }
 
     File getCrashUploadLogFile() {
-        return new File(mCacheDir, CRASH_DUMP_LOGFILE);
+        return new File(getCrashDirectory(), CRASH_DUMP_LOGFILE);
     }
 
     private File[] getAllTempFiles() {
