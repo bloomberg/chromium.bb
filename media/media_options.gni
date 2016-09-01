@@ -72,7 +72,7 @@ declare_args() {
   # |mojo_media_services|). When enabled, selected mojo paths will be enabled in
   # the media pipeline and corresponding services will hosted in the selected
   # remote process (e.g. "utility" process, see |mojo_media_host|).
-  enable_mojo_media = is_android || (is_chromecast && !is_cast_desktop_build)
+  enable_mojo_media = is_android || is_chromecast
 }
 
 # Use a second declare_args() to pick up possible overrides of enable_mojo_media
