@@ -33,9 +33,12 @@
 using autofill::PasswordForm;
 using base::ASCIIToUTF16;
 using ::testing::Eq;
+using ::testing::Pointee;
+using ::testing::UnorderedElementsAre;
 
 namespace password_manager {
 namespace {
+
 PasswordStoreChangeList AddChangeForForm(const PasswordForm& form) {
   return PasswordStoreChangeList(
       1, PasswordStoreChange(PasswordStoreChange::ADD, form));
@@ -105,6 +108,24 @@ bool AddZeroClickableLogin(LoginDatabase* db,
   form.skip_zero_click = false;
 
   return db->AddLogin(form) == AddChangeForForm(form);
+}
+
+MATCHER(IsGoogle1Account, "") {
+  return arg.origin.spec() == "https://accounts.google.com/ServiceLogin" &&
+         arg.action.spec() == "https://accounts.google.com/ServiceLoginAuth" &&
+         arg.username_value == ASCIIToUTF16("theerikchen") &&
+         arg.scheme == PasswordForm::SCHEME_HTML;
+}
+
+MATCHER(IsGoogle2Account, "") {
+  return arg.origin.spec() == "https://accounts.google.com/ServiceLogin" &&
+         arg.action.spec() == "https://accounts.google.com/ServiceLoginAuth" &&
+         arg.username_value == ASCIIToUTF16("theerikchen2") &&
+         arg.scheme == PasswordForm::SCHEME_HTML;
+}
+
+MATCHER(IsBasicAuthAccount, "") {
+  return arg.scheme == PasswordForm::SCHEME_BASIC;
 }
 
 }  // namespace
@@ -393,15 +414,14 @@ TEST_F(LoginDatabaseTest, TestFederatedMatching) {
   PasswordStore::FormDigest form_request = {
       PasswordForm::SCHEME_HTML, "https://foo.com/", GURL("https://foo.com/")};
   EXPECT_TRUE(db().GetLogins(form_request, &result));
-  EXPECT_THAT(result, testing::ElementsAre(testing::Pointee(form)));
+  EXPECT_THAT(result, testing::ElementsAre(Pointee(form)));
 
   // Match against the mobile site.
   form_request.origin = GURL("https://mobile.foo.com/");
   form_request.signon_realm = "https://mobile.foo.com/";
   EXPECT_TRUE(db().GetLogins(form_request, &result));
   form.is_public_suffix_match = true;
-  EXPECT_THAT(result, testing::UnorderedElementsAre(testing::Pointee(form),
-                                                    testing::Pointee(form2)));
+  EXPECT_THAT(result, UnorderedElementsAre(Pointee(form), Pointee(form2)));
 }
 
 TEST_F(LoginDatabaseTest, TestPublicSuffixDisabledForNonHTMLForms) {
@@ -503,7 +523,7 @@ TEST_F(LoginDatabaseTest, TestFederatedMatchingWithoutPSLMatching) {
   PasswordStore::FormDigest form_request = {PasswordForm::SCHEME_HTML,
                                             form.signon_realm, form.origin};
   EXPECT_TRUE(db().GetLogins(form_request, &result));
-  EXPECT_THAT(result, testing::ElementsAre(testing::Pointee(form)));
+  EXPECT_THAT(result, testing::ElementsAre(Pointee(form)));
 
   // Match against the second one.
   ASSERT_FALSE(ShouldPSLDomainMatchingApply(
@@ -512,7 +532,7 @@ TEST_F(LoginDatabaseTest, TestFederatedMatchingWithoutPSLMatching) {
   form_request.signon_realm = form2.signon_realm;
   EXPECT_TRUE(db().GetLogins(form_request, &result));
   form.is_public_suffix_match = true;
-  EXPECT_THAT(result, testing::ElementsAre(testing::Pointee(form2)));
+  EXPECT_THAT(result, testing::ElementsAre(Pointee(form2)));
 }
 
 // This test fails if the implementation of GetLogins uses GetCachedStatement
@@ -914,7 +934,7 @@ TEST_F(LoginDatabaseTest, BlacklistedLogins) {
   EXPECT_EQ(form, *result[0]);
   result.clear();
 
-  // So should GetAllBlacklistedLogins.
+  // So should GetBlacklistedLogins.
   EXPECT_TRUE(db().GetBlacklistLogins(&result));
   ASSERT_EQ(1U, result.size());
   EXPECT_EQ(form, *result[0]);
@@ -1576,16 +1596,21 @@ void LoginDatabaseMigrationTest::MigrationToVCurrent(
   CreateDatabase(sql_file);
   // Original date, in seconds since UTC epoch.
   std::vector<int64_t> date_created(GetValues<int64_t>("date_created"));
-  ASSERT_EQ(2U, date_created.size());
+  if (version() == 10)  // Version 10 has a duplicate entry.
+    ASSERT_EQ(4U, date_created.size());
+  else
+    ASSERT_EQ(3U, date_created.size());
   // Migration to version 8 performs changes dates to the new format.
   // So for versions less of equal to 8 create date should be in old
   // format before migration and in new format after.
   if (version() <= 8) {
     ASSERT_EQ(1402955745, date_created[0]);
     ASSERT_EQ(1402950000, date_created[1]);
+    ASSERT_EQ(1402950000, date_created[2]);
   } else {
     ASSERT_EQ(13047429345000000, date_created[0]);
     ASSERT_EQ(13047423600000000, date_created[1]);
+    ASSERT_EQ(13047423600000000, date_created[2]);
   }
 
   {
@@ -1593,6 +1618,14 @@ void LoginDatabaseMigrationTest::MigrationToVCurrent(
     // to current version.
     LoginDatabase db(database_path_);
     ASSERT_TRUE(db.Init());
+
+    // Check that the contents was preserved.
+    std::vector<std::unique_ptr<PasswordForm>> result;
+    EXPECT_TRUE(db.GetAutofillableLogins(&result));
+    EXPECT_THAT(result, UnorderedElementsAre(Pointee(IsGoogle1Account()),
+                                             Pointee(IsGoogle2Account()),
+                                             Pointee(IsBasicAuthAccount())));
+
     // Verifies that the final version can save all the appropriate fields.
     PasswordForm form;
     GenerateExamplePasswordForm(&form);
@@ -1603,7 +1636,7 @@ void LoginDatabaseMigrationTest::MigrationToVCurrent(
     list.push_back(PasswordStoreChange(PasswordStoreChange::ADD, form));
     EXPECT_EQ(list, db.AddLogin(form));
 
-    std::vector<std::unique_ptr<PasswordForm>> result;
+    result.clear();
     EXPECT_TRUE(db.GetLogins(PasswordStore::FormDigest(form), &result));
     ASSERT_EQ(1U, result.size());
     EXPECT_EQ(form, *result[0]);
@@ -1611,20 +1644,17 @@ void LoginDatabaseMigrationTest::MigrationToVCurrent(
   }
   // New date, in microseconds since platform independent epoch.
   std::vector<int64_t> new_date_created(GetValues<int64_t>("date_created"));
+  ASSERT_EQ(3U, new_date_created.size());
   if (version() <= 8) {
-    ASSERT_EQ(2U, new_date_created.size());
     // Check that the two dates match up.
     for (size_t i = 0; i < date_created.size(); ++i) {
       EXPECT_EQ(base::Time::FromInternalValue(new_date_created[i]),
                 base::Time::FromTimeT(date_created[i]));
     }
-  } else if (version() == 10) {
-    // The test data is setup on this version to cause a unique key collision.
-    EXPECT_EQ(1U, new_date_created.size());
   } else {
-    ASSERT_EQ(2U, new_date_created.size());
     ASSERT_EQ(13047429345000000, new_date_created[0]);
     ASSERT_EQ(13047423600000000, new_date_created[1]);
+    ASSERT_EQ(13047423600000000, new_date_created[2]);
   }
 
   if (version() >= 7 && version() <= 13) {
@@ -1633,15 +1663,8 @@ void LoginDatabaseMigrationTest::MigrationToVCurrent(
     // to >= 14 should not break theses URLs.
     std::vector<std::string> urls(GetValues<std::string>("icon_url"));
 
-    if (version() == 10) {
-      // The testcase for version 10 tests duplicate entries, so we only expect
-      // one URL.
-      EXPECT_THAT(urls, testing::ElementsAre("https://www.google.com/icon"));
-    } else {
-      // Otherwise, we expect one empty and one valid URL.
-      EXPECT_THAT(
-          urls, testing::ElementsAre("", "https://www.google.com/icon"));
-    }
+    EXPECT_THAT(urls, UnorderedElementsAre("", "https://www.google.com/icon",
+                                           "https://www.google.com/icon"));
   }
 
   {

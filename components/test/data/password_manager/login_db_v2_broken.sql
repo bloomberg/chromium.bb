@@ -61,6 +61,25 @@ X'00000000', /* possible_usernames */
 1, /* times_used */
 X'18000000020000000000000000000000000000000000000000000000' /* form_data */
 );
+INSERT INTO "logins" VALUES(
+'http://example.com', /* origin_url */
+'http://example.com/landing', /* action_url */
+'', /* username_element */
+'user', /* username_value */
+'', /* password_element */
+X'', /* password_value */
+'', /* submit_element */
+'http://example.com', /* signon_realm */
+1, /* ssl_valid */
+1, /* preferred */
+1402950000, /* date_created */
+0, /* blacklisted_by_user */
+1, /* scheme */
+0, /* password_type */
+X'00000000', /* possible_usernames */
+1, /* times_used */
+X'18000000020000000000000000000000000000000000000000000000' /* form_data */
+);
 CREATE INDEX logins_signon ON logins (signon_realm);
 COMMIT;
 
