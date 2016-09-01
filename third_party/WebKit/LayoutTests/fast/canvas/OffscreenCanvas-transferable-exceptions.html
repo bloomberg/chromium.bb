@@ -26,6 +26,9 @@ shouldThrow("offscreenCanvas2.transferToImageBitmap()");
 shouldThrow("worker.postMessage({data: offscreenCanvas2}, [offscreenCanvas2])");
 shouldThrow("offscreenCanvas2.getContext('2d')");
 
+// using a transferred OffscreenCanvas as a source image throws.
+shouldThrow("ctx.drawImage(offscreenCanvas2, 0, 0)");
+
 finishJSTest();
 </script>
 </body>

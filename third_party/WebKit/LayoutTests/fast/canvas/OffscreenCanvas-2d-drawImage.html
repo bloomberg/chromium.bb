@@ -13,6 +13,8 @@
 <canvas id="videoOutput" width="150" height="150"></canvas>
 <canvas id="imageOutput" width="150" height="150"></canvas>
 <canvas id="canvasOutput" width="150" height="150"></canvas>
+<canvas id="offscreenCanvas2DOutput" width="150" height="150"></canvas>
+<canvas id="offscreenCanvasWebGLOutput" width="150" height="150"></canvas>
 
 <script>
 function drawImageSourceToOffscreenCanvas(imageSource, outputCanvas) {
@@ -58,6 +60,22 @@ htmlCanvasCtx.fillRect(0, 0, 15, 30);
 htmlCanvasCtx.fillStyle = "red";
 htmlCanvasCtx.fillRect(15, 0, 30, 30);
 drawImageSourceToOffscreenCanvas(htmlCanvas, document.getElementById('canvasOutput'));
+
+// image source as OffscreenCanvas with 2D context
+var offscreenCanvas2D = new OffscreenCanvas(30, 30);
+var offscreenCanvas2DCtx = offscreenCanvas2D.getContext("2d");
+offscreenCanvas2DCtx.fillStyle = "blue";
+offscreenCanvas2DCtx.fillRect(0, 0, 15, 30);
+offscreenCanvas2DCtx.fillStyle = "red";
+offscreenCanvas2DCtx.fillRect(15, 0, 30, 30);
+drawImageSourceToOffscreenCanvas(offscreenCanvas2D, document.getElementById('offscreenCanvas2DOutput'));
+
+// Image source as OffscreenCanvas with webGL context
+var offscreenCanvasWebGL = new OffscreenCanvas(30, 30);
+var gl = offscreenCanvasWebGL.getContext("webgl");
+gl.clearColor(0.0, 0.0, 1.0, 1.0);
+gl.clear(gl.COLOR_BUFFER_BIT);
+drawImageSourceToOffscreenCanvas(offscreenCanvasWebGL, document.getElementById('offscreenCanvasWebGLOutput'));
 
 </script>
 </body>

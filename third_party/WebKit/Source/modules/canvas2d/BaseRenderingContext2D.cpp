@@ -13,6 +13,7 @@
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/ImageData.h"
+#include "core/offscreencanvas/OffscreenCanvas.h"
 #include "modules/canvas2d/CanvasGradient.h"
 #include "modules/canvas2d/CanvasPattern.h"
 #include "modules/canvas2d/CanvasStyle.h"
@@ -877,6 +878,13 @@ static inline CanvasImageSource* toImageSourceInternal(const CanvasImageSourceUn
             return nullptr;
         }
         return value.getAsImageBitmap();
+    }
+    if (value.isOffscreenCanvas()) {
+        if (static_cast<OffscreenCanvas*>(value.getAsOffscreenCanvas())->isNeutered()) {
+            exceptionState.throwDOMException(InvalidStateError, String::format("The image source is detached"));
+            return nullptr;
+        }
+        return value.getAsOffscreenCanvas();
     }
     ASSERT_NOT_REACHED();
     return nullptr;

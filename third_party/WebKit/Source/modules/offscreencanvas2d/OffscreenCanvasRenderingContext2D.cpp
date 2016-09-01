@@ -58,9 +58,9 @@ void OffscreenCanvasRenderingContext2D::setOriginTainted()
 bool OffscreenCanvasRenderingContext2D::wouldTaintOrigin(CanvasImageSource* source, ExecutionContext* executionContext)
 {
     if (executionContext->isWorkerGlobalScope()) {
-        // Currently, we only support passing in ImageBitmap as source image in
-        // drawImage() or createPattern() in a OffscreenCanvas2d in worker.
-        ASSERT(source->isImageBitmap());
+        // We only support passing in ImageBitmap and OffscreenCanvases as source images
+        // in drawImage() or createPattern() in a OffscreenCanvas2d in worker.
+        DCHECK(source->isImageBitmap() || source->isOffscreenCanvas());
     }
 
     return CanvasRenderingContext::wouldTaintOrigin(source, executionContext->getSecurityOrigin());
@@ -125,6 +125,15 @@ ImageBitmap* OffscreenCanvasRenderingContext2D::transferToImageBitmap(ExceptionS
     m_imageBuffer.reset(); // "Transfer" means no retained buffer
     m_needsMatrixClipRestore = true;
     return ImageBitmap::create(image.release());
+}
+
+PassRefPtr<Image> OffscreenCanvasRenderingContext2D::getImage(SnapshotReason reason) const
+{
+    if (!imageBuffer())
+        return nullptr;
+    RefPtr<SkImage> skImage = m_imageBuffer->newSkImageSnapshot(PreferAcceleration, reason);
+    RefPtr<StaticBitmapImage> image = StaticBitmapImage::create(skImage.release());
+    return image;
 }
 
 void OffscreenCanvasRenderingContext2D::setOffscreenCanvasGetContextResult(OffscreenRenderingContext& result)

@@ -42,6 +42,7 @@ public:
     void stop() final { ASSERT_NOT_REACHED(); }
     void setCanvasGetContextResult(RenderingContext&) final {}
     void clearRect(double x, double y, double width, double height) override { BaseRenderingContext2D::clearRect(x, y, width, height); }
+    PassRefPtr<Image> getImage(SnapshotReason) const final;
 
     // BaseRenderingContext2D implementation
     bool originClean() const final;

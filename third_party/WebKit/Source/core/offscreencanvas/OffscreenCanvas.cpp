@@ -61,6 +61,23 @@ ImageBitmap* OffscreenCanvas::transferToImageBitmap(ExceptionState& exceptionSta
     return image;
 }
 
+PassRefPtr<Image> OffscreenCanvas::getSourceImageForCanvas(SourceImageStatus* status, AccelerationHint, SnapshotReason reason, const FloatSize&) const
+{
+    if (!m_context) {
+        *status = InvalidSourceImageStatus;
+        return nullptr;
+    }
+    *status = NormalSourceImageStatus;
+    return m_context->getImage(reason);
+}
+
+bool OffscreenCanvas::isOpaque() const
+{
+    if (!m_context)
+        return false;
+    return !m_context->creationAttributes().hasAlpha();
+}
+
 CanvasRenderingContext* OffscreenCanvas::getCanvasRenderingContext(ScriptState* scriptState, const String& id, const CanvasContextCreationAttributes& attributes)
 {
     CanvasRenderingContext::ContextType contextType = CanvasRenderingContext::contextTypeFromId(id);

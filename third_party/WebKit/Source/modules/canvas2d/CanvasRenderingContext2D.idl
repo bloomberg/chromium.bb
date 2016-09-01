@@ -28,8 +28,8 @@
 typedef (HTMLImageElement or
          HTMLVideoElement or
          HTMLCanvasElement or
-         // CanvasRenderingContext2D or
-         ImageBitmap) CanvasImageSource;
+         ImageBitmap or
+         OffscreenCanvas) CanvasImageSource;
 
 enum CanvasFillRule { "nonzero", "evenodd" };
 enum ImageSmoothingQuality {"low", "medium", "high"};

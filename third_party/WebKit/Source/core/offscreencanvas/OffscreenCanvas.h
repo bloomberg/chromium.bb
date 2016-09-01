@@ -9,6 +9,7 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/html/HTMLCanvasElement.h"
+#include "core/html/canvas/CanvasImageSource.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/heap/Handle.h"
 #include <memory>
@@ -20,7 +21,7 @@ class ImageBitmap;
 class OffscreenCanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContext;
 typedef OffscreenCanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContext OffscreenRenderingContext;
 
-class CORE_EXPORT OffscreenCanvas final : public GarbageCollected<OffscreenCanvas>, public ScriptWrappable {
+class CORE_EXPORT OffscreenCanvas final : public GarbageCollectedFinalized<OffscreenCanvas>, public ScriptWrappable, public CanvasImageSource {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static OffscreenCanvas* create(unsigned width, unsigned height);
@@ -58,6 +59,15 @@ public:
     uint32_t clientId() const { return m_clientId; }
     uint32_t localId() const { return m_localId; }
     uint64_t nonce() const { return m_nonce; }
+
+    // CanvasImageSource implementation
+    PassRefPtr<Image> getSourceImageForCanvas(SourceImageStatus*, AccelerationHint, SnapshotReason, const FloatSize&) const final;
+    bool wouldTaintOrigin(SecurityOrigin*) const final { return !m_originClean; }
+    bool isOffscreenCanvas() const final { return true; }
+    FloatSize elementSize(const FloatSize& defaultObjectSize) const final { return FloatSize(width(), height()); }
+    bool isOpaque() const final;
+    int sourceWidth() final { return width(); }
+    int sourceHeight() final { return height(); }
 
     DECLARE_VIRTUAL_TRACE();
 

@@ -412,6 +412,7 @@ public:
         DECLARE_TRACE();
     };
 
+    PassRefPtr<Image> getImage(SnapshotReason) const override;
     void setFilterQuality(SkFilterQuality) override;
     bool isWebGL2OrHigher() { return version() >= 2; }
 
@@ -1037,7 +1038,7 @@ protected:
     void enableOrDisable(GLenum capability, bool enable);
 
     // Clamp the width and height to GL_MAX_VIEWPORT_DIMS.
-    IntSize clampedCanvasSize();
+    IntSize clampedCanvasSize() const;
 
     // First time called, if EXT_draw_buffers is supported, query the value; otherwise return 0.
     // Later, return the cached value.

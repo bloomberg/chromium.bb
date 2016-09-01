@@ -255,11 +255,7 @@ bool HTMLCanvasElement::shouldBeDirectComposited() const
 
 bool HTMLCanvasElement::isPaintable() const
 {
-    if (!m_context)
-        return ImageBuffer::canCreateImageBuffer(size());
-    if (m_context->getContextType() == CanvasRenderingContext::ContextImageBitmap)
-        return (renderingContext()->getImage().get());
-    return buffer();
+    return (m_context && m_context->isPaintable()) || ImageBuffer::canCreateImageBuffer(size());
 }
 
 void HTMLCanvasElement::didDraw(const FloatRect& rect)
@@ -1124,12 +1120,10 @@ PassRefPtr<Image> HTMLCanvasElement::getSourceImageForCanvas(SourceImageStatus* 
     }
 
     RefPtr<SkImage> skImage;
-    RefPtr<blink::Image> image = renderingContext()->getImage();
+    RefPtr<blink::Image> image = renderingContext()->getImage(reason);
 
     if (image)
         skImage = image->imageForCurrentFrame();
-    else
-        skImage = hasImageBuffer() ? buffer()->newSkImageSnapshot(hint, reason) : createTransparentImage(size())->imageForCurrentFrame();
 
     if (skImage) {
         *status = NormalSourceImageStatus;

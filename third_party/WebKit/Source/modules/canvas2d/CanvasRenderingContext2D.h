@@ -60,7 +60,7 @@ class Path2D;
 class SVGMatrixTearOff;
 class TextMetrics;
 
-typedef HTMLImageElementOrHTMLVideoElementOrHTMLCanvasElementOrImageBitmap CanvasImageSourceUnion;
+typedef HTMLImageElementOrHTMLVideoElementOrHTMLCanvasElementOrImageBitmapOrOffscreenCanvas CanvasImageSourceUnion;
 
 class MODULES_EXPORT CanvasRenderingContext2D final : public CanvasRenderingContext, public BaseRenderingContext2D, public WebThread::TaskObserver, public SVGResourceClient {
     DEFINE_WRAPPERTYPEINFO();
@@ -167,11 +167,15 @@ public:
 
     void validateStateStack() final;
 
+    PassRefPtr<Image> getImage(SnapshotReason) const final;
+
     bool isAccelerationOptimalForCanvasContent() const;
 
     void resetUsageTracking();
 
-    void incrementFrameCount() { m_usageCounters.numFramesSinceReset++; };
+    void incrementFrameCount() { m_usageCounters.numFramesSinceReset++; }
+
+    bool isPaintable() const final { return hasImageBuffer(); }
 
 private:
     friend class CanvasRenderingContext2DAutoRestoreSkCanvas;
@@ -224,12 +228,6 @@ private:
     HashMap<String, Font> m_fontsResolvedUsingCurrentStyle;
     bool m_pruneLocalFontCacheScheduled;
     ListHashSet<String> m_fontLRUList;
-
-    bool isPaintable() const final
-    {
-        NOTREACHED();
-        return false;
-    }
 };
 
 DEFINE_TYPE_CASTS(CanvasRenderingContext2D, CanvasRenderingContext, context,

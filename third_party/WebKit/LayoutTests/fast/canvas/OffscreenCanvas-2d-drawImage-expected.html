@@ -13,6 +13,8 @@
 <canvas id="videoOutput" width="150" height="150"></canvas>
 <canvas id="imageOutput" width="150" height="150"></canvas>
 <canvas id="canvasOutput" width="150" height="150"></canvas>
+<canvas id="offscreenCanvas2DOutput" width="150" height="150"></canvas>
+<canvas id="offscreenCanvasWebGLOutput" width="150" height="150"></canvas>
 
 <script>
 function drawImageSourceToHTMLCanvas(imageSource, outputCanvas) { 
@@ -54,6 +56,17 @@ htmlCanvasCtx.fillRect(0, 0, 15, 30);
 htmlCanvasCtx.fillStyle = "red";
 htmlCanvasCtx.fillRect(15, 0, 30, 30);
 drawImageSourceToHTMLCanvas(htmlCanvas, document.getElementById('canvasOutput'));
+
+// Assume html and offscreen canvases should yield identical results
+drawImageSourceToHTMLCanvas(htmlCanvas, document.getElementById('offscreenCanvas2DOutput'));
+
+// Image source as OffscreenCanvas with webGL context
+var glCanvas = document.createElement('canvas');
+glCanvas.width = glCanvas.height = 30;
+var gl = glCanvas.getContext("webgl");
+gl.clearColor(0.0, 0.0, 1.0, 1.0);
+gl.clear(gl.COLOR_BUFFER_BIT);
+drawImageSourceToHTMLCanvas(glCanvas, document.getElementById('offscreenCanvasWebGLOutput'));
 
 </script>
 </body>

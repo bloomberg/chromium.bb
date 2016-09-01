@@ -58,6 +58,7 @@ public:
     virtual bool isCanvasElement() const { return false; }
     virtual bool isSVGSource() const { return false; }
     virtual bool isImageBitmap() const { return false; }
+    virtual bool isOffscreenCanvas() const { return false; }
 
     // Adjusts the source and destination rectangles for cases where the actual
     // source image is a subregion of the image returned by getSourceImageForCanvas.

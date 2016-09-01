@@ -36,7 +36,7 @@ public:
     bool isContextLost() const override { return false; }
     bool paint(GraphicsContext&, const IntRect&) override;
     void setCanvasGetContextResult(RenderingContext&) final;
-    PassRefPtr<Image> getImage() const final { return m_image.get(); }
+    PassRefPtr<Image> getImage(SnapshotReason) const final { return m_image.get(); }
 
     // TODO(junov): Implement GPU accelerated rendering using a layer bridge
     WebLayer* platformLayer() const override { return nullptr; }
@@ -45,14 +45,14 @@ public:
 
     void stop() override;
 
+    bool isPaintable() const final { return m_image.get(); }
+
     virtual ~ImageBitmapRenderingContext();
 
 private:
     ImageBitmapRenderingContext(HTMLCanvasElement*, const CanvasContextCreationAttributes&, Document&);
 
     RefPtr<Image> m_image;
-
-    bool isPaintable() const final { return m_image.get(); }
 };
 
 DEFINE_TYPE_CASTS(ImageBitmapRenderingContext, CanvasRenderingContext, context,

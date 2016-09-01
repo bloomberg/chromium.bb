@@ -649,6 +649,27 @@ ImageBitmap* WebGLRenderingContextBase::transferToImageBitmapBase()
     return ImageBitmap::create(drawingBuffer()->transferToStaticBitmapImage());
 }
 
+PassRefPtr<Image> WebGLRenderingContextBase::getImage(SnapshotReason reason) const
+{
+    if (!drawingBuffer())
+        return nullptr;
+
+    drawingBuffer()->commit();
+    IntSize size = clampedCanvasSize();
+    OpacityMode opacityMode = creationAttributes().hasAlpha() ? NonOpaque : Opaque;
+    std::unique_ptr<AcceleratedImageBufferSurface> surface = wrapUnique(new AcceleratedImageBufferSurface(size, opacityMode));
+    if (!surface->isValid())
+        return nullptr;
+    std::unique_ptr<ImageBuffer> buffer = ImageBuffer::create(std::move(surface));
+    if (!buffer->copyRenderingResultsFromDrawingBuffer(drawingBuffer(), BackBuffer)) {
+        // copyRenderingResultsFromDrawingBuffer is expected to always succeed because we've
+        // explicitly created an Accelerated surface and have already validated it.
+        NOTREACHED();
+        return nullptr;
+    }
+    return buffer->newImageSnapshot(PreferAcceleration, reason);
+}
+
 namespace {
 
 // ES2 enums
@@ -6301,7 +6322,7 @@ void WebGLRenderingContextBase::enableOrDisable(GLenum capability, bool enable)
         contextGL()->Disable(capability);
 }
 
-IntSize WebGLRenderingContextBase::clampedCanvasSize()
+IntSize WebGLRenderingContextBase::clampedCanvasSize() const
 {
     int width, height;
     if (canvas()) {

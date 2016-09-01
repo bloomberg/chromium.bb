@@ -9,6 +9,7 @@ PASS worker.postMessage({data: offscreenCanvas1}, [offscreenCanvas1]) threw exce
 PASS offscreenCanvas2.transferToImageBitmap() threw exception InvalidStateError: Failed to execute 'transferToImageBitmap' on 'OffscreenCanvas': Cannot transfer an ImageBitmap from a detached OffscreenCanvas.
 PASS worker.postMessage({data: offscreenCanvas2}, [offscreenCanvas2]) threw exception DataCloneError: Failed to execute 'postMessage' on 'Worker': An OffscreenCanvas is detached and could not be cloned..
 PASS offscreenCanvas2.getContext('2d') threw exception InvalidStateError: Failed to execute 'getContext' on 'OffscreenCanvas': OffscreenCanvas object is detached.
+PASS ctx.drawImage(offscreenCanvas2, 0, 0) threw exception InvalidStateError: Failed to execute 'drawImage' on 'OffscreenCanvasRenderingContext2D': The image source is detached.
 PASS successfullyParsed is true
 
 TEST COMPLETE

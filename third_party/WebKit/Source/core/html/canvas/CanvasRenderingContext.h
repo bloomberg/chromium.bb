@@ -81,6 +81,7 @@ public:
     WTF::String colorSpaceAsString() const;
     sk_sp<SkColorSpace> skColorSpace() const;
 
+    virtual PassRefPtr<Image> getImage(SnapshotReason) const = 0;
     virtual ContextType getContextType() const = 0;
     virtual bool isAccelerated() const { return false; }
     virtual bool shouldAntialias() const { return false; }
@@ -88,12 +89,11 @@ public:
     virtual bool isContextLost() const { return true; }
     virtual void setCanvasGetContextResult(RenderingContext&) { NOTREACHED(); };
     virtual void setOffscreenCanvasGetContextResult(OffscreenRenderingContext&) { NOTREACHED(); }
+    virtual bool isPaintable() const = 0;
 
     // Return true if the content is updated.
     virtual bool paintRenderingResultsToCanvas(SourceDrawingBuffer) { return false; }
 
-    // Note: this function is strictly for OffscreenCanvas only.
-    virtual bool isPaintable() const = 0;
 
     virtual WebLayer* platformLayer() const { return nullptr; }
 
@@ -137,14 +137,13 @@ public:
 
     // ImageBitmap-specific interface
     virtual bool paint(GraphicsContext&, const IntRect&) { return false; }
-    virtual PassRefPtr<Image> getImage() const { return nullptr; }
-
-    bool wouldTaintOrigin(CanvasImageSource*, SecurityOrigin* = nullptr);
-    void didMoveToNewDocument(Document*);
 
     // OffscreenCanvas-specific methods
     OffscreenCanvas* getOffscreenCanvas() const { return m_offscreenCanvas; }
     virtual ImageBitmap* transferToImageBitmap(ExceptionState&) { return nullptr; }
+
+    bool wouldTaintOrigin(CanvasImageSource*, SecurityOrigin* = nullptr);
+    void didMoveToNewDocument(Document*);
 
     void detachCanvas() { m_canvas = nullptr; }
 
