@@ -287,16 +287,16 @@ void BluetoothRemoteGattCharacteristicBlueZ::ReadRemoteCharacteristic(
 }
 
 void BluetoothRemoteGattCharacteristicBlueZ::WriteRemoteCharacteristic(
-    const std::vector<uint8_t>& new_value,
+    const std::vector<uint8_t>& value,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
   VLOG(1) << "Sending GATT characteristic write request to characteristic: "
           << GetIdentifier() << ", UUID: " << GetUUID().canonical_value()
-          << ", with value: " << new_value << ".";
+          << ", with value: " << value << ".";
 
   bluez::BluezDBusManager::Get()
       ->GetBluetoothGattCharacteristicClient()
-      ->WriteValue(object_path(), new_value, callback,
+      ->WriteValue(object_path(), value, callback,
                    base::Bind(&BluetoothRemoteGattCharacteristicBlueZ::OnError,
                               weak_ptr_factory_.GetWeakPtr(), error_callback));
 }

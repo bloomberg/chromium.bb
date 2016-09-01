@@ -123,13 +123,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristic
       const ValueCallback& callback,
       const ErrorCallback& error_callback) = 0;
 
-  // Sends a write request to a remote characteristic, to modify the
-  // characteristic's value with the new value |new_value|. |callback| is
-  // called to signal success and |error_callback| for failures. This method
-  // only applies to remote characteristics and will fail for those that are
-  // locally hosted.
+  // Sends a write request to a remote characteristic with the value |value|.
+  // |callback| is called to signal success and |error_callback| for failures.
+  // This method only applies to remote characteristics and will fail for those
+  // that are locally hosted.
   virtual void WriteRemoteCharacteristic(
-      const std::vector<uint8_t>& new_value,
+      const std::vector<uint8_t>& value,
       const base::Closure& callback,
       const ErrorCallback& error_callback) = 0;
 

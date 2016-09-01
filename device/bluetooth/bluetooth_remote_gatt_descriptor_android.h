@@ -49,7 +49,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattDescriptorAndroid
       const override;
   void ReadRemoteDescriptor(const ValueCallback& callback,
                             const ErrorCallback& error_callback) override;
-  void WriteRemoteDescriptor(const std::vector<uint8_t>& new_value,
+  void WriteRemoteDescriptor(const std::vector<uint8_t>& value,
                              const base::Closure& callback,
                              const ErrorCallback& error_callback) override;
 

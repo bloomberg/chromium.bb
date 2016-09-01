@@ -198,7 +198,7 @@ void BluetoothRemoteGattCharacteristicMac::ReadRemoteCharacteristic(
 }
 
 void BluetoothRemoteGattCharacteristicMac::WriteRemoteCharacteristic(
-    const std::vector<uint8_t>& new_value,
+    const std::vector<uint8_t>& value,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
   if (!IsWritable()) {
@@ -219,7 +219,7 @@ void BluetoothRemoteGattCharacteristicMac::WriteRemoteCharacteristic(
   write_characteristic_value_callbacks_ =
       std::make_pair(callback, error_callback);
   base::scoped_nsobject<NSData> nsdata_value(
-      [[NSData alloc] initWithBytes:new_value.data() length:new_value.size()]);
+      [[NSData alloc] initWithBytes:value.data() length:value.size()]);
   CBCharacteristicWriteType write_type = GetCBWriteType();
   [gatt_service_->GetCBPeripheral() writeValue:nsdata_value
                              forCharacteristic:cb_characteristic_

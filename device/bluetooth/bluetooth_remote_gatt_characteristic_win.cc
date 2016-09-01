@@ -233,7 +233,7 @@ void BluetoothRemoteGattCharacteristicWin::ReadRemoteCharacteristic(
 }
 
 void BluetoothRemoteGattCharacteristicWin::WriteRemoteCharacteristic(
-    const std::vector<uint8_t>& new_value,
+    const std::vector<uint8_t>& value,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
@@ -252,7 +252,7 @@ void BluetoothRemoteGattCharacteristicWin::WriteRemoteCharacteristic(
   write_characteristic_value_callbacks_ =
       std::make_pair(callback, error_callback);
   task_manager_->PostWriteGattCharacteristicValue(
-      parent_service_->GetServicePath(), characteristic_info_.get(), new_value,
+      parent_service_->GetServicePath(), characteristic_info_.get(), value,
       base::Bind(&BluetoothRemoteGattCharacteristicWin::
                      OnWriteRemoteCharacteristicValueCallback,
                  weak_ptr_factory_.GetWeakPtr()));
