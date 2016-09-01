@@ -253,7 +253,7 @@ bool ResourceFetcher::canAccessResponse(Resource* resource, const ResourceRespon
         resource->setCORSFailed();
         if (!forPreload) {
             String resourceType = Resource::resourceTypeToString(resource->getType(), resource->options().initiatorInfo);
-            context().addConsoleMessage("Access to " + resourceType + " at '" + response.url().getString() + "' from origin '" + SecurityOrigin::create(response.url())->toString() + "' has been blocked by CORS policy: " + errorDescription);
+            context().addConsoleMessage("Access to " + resourceType + " at '" + response.url().getString() + "' from origin '" + sourceOrigin->toString() + "' has been blocked by CORS policy: " + errorDescription);
         }
         return false;
     }
