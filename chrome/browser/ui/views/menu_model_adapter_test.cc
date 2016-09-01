@@ -111,8 +111,8 @@ class SubMenuModel : public CommonMenuModel {
 
   void MenuWillShow() override { showing_ = true; }
 
-  // Called when the menu has been closed.
-  void MenuClosed() override { showing_ = false; }
+  // Called when the menu is about to close.
+  void MenuWillClose() override { showing_ = false; }
 
   bool showing_;
 

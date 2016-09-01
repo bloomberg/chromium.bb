@@ -397,7 +397,7 @@ void SimpleMenuModel::MenuWillShow() {
     delegate_->MenuWillShow(this);
 }
 
-void SimpleMenuModel::MenuClosed() {
+void SimpleMenuModel::MenuWillClose() {
   // Due to how menus work on the different platforms, ActivatedAt will be
   // called after this.  It's more convenient for the delegate to be called
   // afterwards though, so post a task.

@@ -161,7 +161,7 @@ class UI_BASE_EXPORT SimpleMenuModel : public MenuModel {
   void ActivatedAt(int index, int event_flags) override;
   MenuModel* GetSubmenuModelAt(int index) const override;
   void MenuWillShow() override;
-  void MenuClosed() override;
+  void MenuWillClose() override;
   void SetMenuModelDelegate(
       ui::MenuModelDelegate* menu_model_delegate) override;
   MenuModelDelegate* GetMenuModelDelegate() const override;

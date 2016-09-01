@@ -262,7 +262,7 @@ void MenuModelAdapter::WillHideMenu(MenuItemView* menu) {
   const std::map<MenuItemView*, ui::MenuModel*>::const_iterator map_iterator =
       menu_map_.find(menu);
   if (map_iterator != menu_map_.end()) {
-    map_iterator->second->MenuClosed();
+    map_iterator->second->MenuWillClose();
     return;
   }
 

@@ -118,8 +118,9 @@ class UI_BASE_EXPORT MenuModel {
   // Called when the menu is about to be shown.
   virtual void MenuWillShow() {}
 
-  // Called when the menu has been closed.
-  virtual void MenuClosed() {}
+  // Called when the menu is about to be closed. The MenuRunner, and |this|
+  // should not be deleted here.
+  virtual void MenuWillClose() {}
 
   // Set the MenuModelDelegate. Owned by the caller of this function.
   virtual void SetMenuModelDelegate(MenuModelDelegate* delegate) = 0;

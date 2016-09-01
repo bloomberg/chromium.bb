@@ -85,7 +85,7 @@ class MenuModelBase : public ui::MenuModel {
 
   void MenuWillShow() override {}
 
-  void MenuClosed() override {}
+  void MenuWillClose() override {}
 
   void SetMenuModelDelegate(ui::MenuModelDelegate* delegate) override {}
 
