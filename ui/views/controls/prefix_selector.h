@@ -17,12 +17,13 @@
 namespace views {
 
 class PrefixDelegate;
+class View;
 
 // PrefixSelector is used to change the selection in a view as the user
 // types characters.
 class VIEWS_EXPORT PrefixSelector : public ui::TextInputClient {
  public:
-  explicit PrefixSelector(PrefixDelegate* delegate);
+  PrefixSelector(PrefixDelegate* delegate, View* host_view);
   ~PrefixSelector() override;
 
   // Invoked from the view when it loses focus.
@@ -70,6 +71,8 @@ class VIEWS_EXPORT PrefixSelector : public ui::TextInputClient {
   void ClearText();
 
   PrefixDelegate* prefix_delegate_;
+
+  View* host_view_;
 
   // Time OnTextInput() was last invoked.
   base::TimeTicks time_of_last_key_;

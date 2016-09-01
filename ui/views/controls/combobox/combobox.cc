@@ -14,6 +14,7 @@
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/default_style.h"
 #include "ui/base/ime/input_method.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/models/combobox_model_observer.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -27,6 +28,8 @@
 #include "ui/native_theme/native_theme.h"
 #include "ui/native_theme/native_theme_aura.h"
 #include "ui/resources/grit/ui_resources.h"
+#include "ui/views/animation/flood_fill_ink_drop_ripple.h"
+#include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/button/label_button.h"
@@ -88,6 +91,10 @@ const int kFocusedPressedMenuButtonImages[] =
 
 #undef MENU_IMAGE_GRID
 
+bool UseMd() {
+  return ui::MaterialDesignController::IsSecondaryUiMaterial();
+}
+
 gfx::Rect PositionArrowWithinContainer(const gfx::Rect& container_bounds,
                                        const gfx::Size& arrow_size,
                                        Combobox::Style style) {
@@ -112,20 +119,37 @@ class TransparentButton : public CustomButton {
     SetAnimationDuration(LabelButton::kHoverAnimationDurationMs);
     SetFocusBehavior(FocusBehavior::NEVER);
     set_notify_action(PlatformStyle::kMenuNotifyActivationAction);
+
+    if (UseMd()) {
+      SetInkDropMode(PlatformStyle::kUseRipples ? InkDropMode::ON
+                                                : InkDropMode::OFF);
+      set_has_ink_drop_action_on_click(true);
+    }
   }
   ~TransparentButton() override {}
 
-#if !defined(OS_MACOSX)
-  // Override OnMousePressed() to transfer focus to the parent() on a click
-  // except on Mac, which doesn't transfer focus when buttons are clicked.
   bool OnMousePressed(const ui::MouseEvent& mouse_event) override {
-    parent()->RequestFocus();
-    return true;
+    if (!UseMd())
+      parent()->RequestFocus();
+    return CustomButton::OnMousePressed(mouse_event);
   }
-#endif
 
   double GetAnimationValue() const {
     return hover_animation().GetCurrentValue();
+  }
+
+  // Overridden from InkDropHost:
+  std::unique_ptr<InkDropRipple> CreateInkDropRipple() const override {
+    return std::unique_ptr<views::InkDropRipple>(
+        new views::FloodFillInkDropRipple(
+            GetLocalBounds(), GetInkDropCenterBasedOnLastEvent(),
+            GetNativeTheme()->GetSystemColor(
+                ui::NativeTheme::kColorId_LabelEnabledColor),
+            ink_drop_visible_opacity()));
+  }
+
+  std::unique_ptr<InkDropHighlight> CreateInkDropHighlight() const override {
+    return nullptr;
   }
 
  private:
@@ -481,7 +505,7 @@ void Combobox::SetInvalid(bool invalid) {
 }
 
 void Combobox::Layout() {
-  PrefixDelegate::Layout();
+  View::Layout();
 
   int text_button_width = 0;
   int arrow_button_width = 0;
@@ -504,7 +528,7 @@ void Combobox::Layout() {
 }
 
 void Combobox::OnEnabledChanged() {
-  PrefixDelegate::OnEnabledChanged();
+  View::OnEnabledChanged();
   arrow_image_ = PlatformStyle::CreateComboboxArrow(enabled(), style_);
 }
 
@@ -691,7 +715,8 @@ void Combobox::ButtonPressed(Button* sender, const ui::Event& event) {
   if (!enabled())
     return;
 
-  RequestFocus();
+  if (!UseMd())
+    RequestFocus();
 
   if (sender == text_button_) {
     OnPerformAction();
@@ -905,7 +930,7 @@ gfx::Size Combobox::GetContentSize() const {
 
 PrefixSelector* Combobox::GetPrefixSelector() {
   if (!selector_)
-    selector_.reset(new PrefixSelector(this));
+    selector_.reset(new PrefixSelector(this, this));
   return selector_.get();
 }
 

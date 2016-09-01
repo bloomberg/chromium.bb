@@ -42,7 +42,9 @@ class PrefixSelector;
 // * STYLE_ACTION: clicking on the text notifies the listener. The menu can be
 // shown only by clicking on the arrow. The selected index is always reverted to
 // 0 after the listener is notified.
-class VIEWS_EXPORT Combobox : public PrefixDelegate, public ButtonListener {
+class VIEWS_EXPORT Combobox : public View,
+                              public PrefixDelegate,
+                              public ButtonListener {
  public:
   // The style of the combobox.
   enum Style {

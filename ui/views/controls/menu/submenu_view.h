@@ -40,7 +40,8 @@ class MenuControllerTest;
 // MenuScrollViewContainer handles showing as much of the SubmenuView as the
 // screen allows. If the SubmenuView is taller than the screen, scroll buttons
 // are provided that allow the user to see all the menu items.
-class VIEWS_EXPORT SubmenuView : public PrefixDelegate,
+class VIEWS_EXPORT SubmenuView : public View,
+                                 public PrefixDelegate,
                                  public ScrollDelegate {
  public:
   // The submenu's class name.

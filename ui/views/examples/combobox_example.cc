@@ -23,7 +23,7 @@ int ComboboxModelExample::GetItemCount() const {
 }
 
 base::string16 ComboboxModelExample::GetItemAt(int index) {
-  return base::UTF8ToUTF16(base::StringPrintf("Item %d", index));
+  return base::UTF8ToUTF16(base::StringPrintf("%c item", 'A' + index));
 }
 
 ComboboxExample::ComboboxExample() : ExampleBase("Combo Box") {
@@ -56,7 +56,7 @@ void ComboboxExample::CreateExampleView(View* container) {
 
   container->SetLayoutManager(new BoxLayout(
       BoxLayout::kVertical,
-      1, 1, 1));
+      0, 10, 5));
   container->AddChildView(combobox_);
   container->AddChildView(disabled_combobox_);
   container->AddChildView(action_combobox_);

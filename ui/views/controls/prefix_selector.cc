@@ -9,6 +9,7 @@
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/range/range.h"
 #include "ui/views/controls/prefix_delegate.h"
+#include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
@@ -27,8 +28,8 @@ void ConvertRectToScreen(const views::View* src, gfx::Rect* r) {
 
 }  // namespace
 
-PrefixSelector::PrefixSelector(PrefixDelegate* delegate)
-    : prefix_delegate_(delegate) {
+PrefixSelector::PrefixSelector(PrefixDelegate* delegate, View* host_view)
+    : prefix_delegate_(delegate), host_view_(host_view) {
 }
 
 PrefixSelector::~PrefixSelector() {
@@ -77,10 +78,10 @@ bool PrefixSelector::CanComposeInline() const {
 }
 
 gfx::Rect PrefixSelector::GetCaretBounds() const {
-  gfx::Rect rect(prefix_delegate_->GetVisibleBounds().origin(), gfx::Size());
+  gfx::Rect rect(host_view_->GetVisibleBounds().origin(), gfx::Size());
   // TextInputClient::GetCaretBounds is expected to return a value in screen
   // coordinates.
-  ConvertRectToScreen(prefix_delegate_, &rect);
+  ConvertRectToScreen(host_view_, &rect);
   return rect;
 }
 

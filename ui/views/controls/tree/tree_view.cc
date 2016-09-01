@@ -1035,7 +1035,7 @@ bool TreeView::ExpandImpl(TreeModelNode* model_node) {
 
 PrefixSelector* TreeView::GetPrefixSelector() {
   if (!selector_)
-    selector_.reset(new PrefixSelector(this));
+    selector_.reset(new PrefixSelector(this, this));
   return selector_.get();
 }
 

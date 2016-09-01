@@ -6,11 +6,12 @@
 #define UI_VIEWS_CONTROLS_PREFIX_DELEGATE_H_
 
 #include "ui/views/view.h"
+#include "ui/views/views_export.h"
 
 namespace views {
 
 // An interface used to expose lists of items for selection by text input.
-class VIEWS_EXPORT PrefixDelegate : public View {
+class VIEWS_EXPORT PrefixDelegate {
  public:
   // Returns the total number of selectable items.
   virtual int GetRowCount() = 0;
@@ -24,9 +25,6 @@ class VIEWS_EXPORT PrefixDelegate : public View {
 
   // Returns the item at the specified row.
   virtual base::string16 GetTextForRow(int row) = 0;
-
- protected:
-  ~PrefixDelegate() override {}
 };
 
 } // namespace views
