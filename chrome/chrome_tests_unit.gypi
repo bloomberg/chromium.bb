@@ -849,6 +849,7 @@
       'browser/component_updater/component_installers_unittest.cc',
       'browser/metrics/chrome_stability_metrics_provider_unittest.cc',
       'browser/metrics/plugin_metrics_provider_unittest.cc',
+      'browser/plugins/flash_download_interception_unittest.cc',
       'browser/plugins/plugin_finder_unittest.cc',
       'browser/plugins/plugin_info_message_filter_unittest.cc',
       'browser/plugins/plugin_installer_unittest.cc',

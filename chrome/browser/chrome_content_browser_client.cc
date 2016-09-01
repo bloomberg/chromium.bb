@@ -302,6 +302,7 @@
 
 #if defined(ENABLE_PLUGINS)
 #include "chrome/browser/plugins/chrome_content_browser_client_plugins_part.h"
+#include "chrome/browser/plugins/flash_download_interception.h"
 #endif
 
 #if defined(ENABLE_SPELLCHECK)
@@ -3003,7 +3004,15 @@ ScopedVector<content::NavigationThrottle>
 ChromeContentBrowserClient::CreateThrottlesForNavigation(
     content::NavigationHandle* handle) {
   ScopedVector<content::NavigationThrottle> throttles;
+
   if (handle->IsInMainFrame()) {
+#if defined(ENABLE_PLUGINS)
+    std::unique_ptr<content::NavigationThrottle> flash_url_throttle =
+        FlashDownloadInterception::MaybeCreateThrottleFor(handle);
+    if (flash_url_throttle)
+      throttles.push_back(std::move(flash_url_throttle));
+#endif
+
     throttles.push_back(
         page_load_metrics::MetricsNavigationThrottle::Create(handle));
   }
