@@ -30,6 +30,7 @@ class Point;
 
 namespace views {
 class PointerWatcher;
+enum class PointerWatcherEventTypes;
 }
 
 namespace ash {
@@ -329,11 +330,14 @@ class ASH_EXPORT WmShell {
   void AddShellObserver(ShellObserver* observer);
   void RemoveShellObserver(ShellObserver* observer);
 
-  // If |wants_moves| is true PointerWatcher::OnPointerEventObserved() is
-  // called for pointer move events. Enabling pointer moves may incur a
-  // performance hit and should be avoided if possible.
+  // If |events| is PointerWatcherEventTypes::MOVES,
+  // PointerWatcher::OnPointerEventObserved() is called for pointer move events.
+  // If |events| is PointerWatcherEventTypes::DRAGS,
+  // PointerWatcher::OnPointerEventObserved() is called for pointer drag events.
+  // Requesting pointer moves or drags may incur a performance hit and should be
+  // avoided if possible.
   virtual void AddPointerWatcher(views::PointerWatcher* watcher,
-                                 bool wants_moves) = 0;
+                                 views::PointerWatcherEventTypes events) = 0;
   virtual void RemovePointerWatcher(views::PointerWatcher* watcher) = 0;
 
   // TODO: Move these back to LockStateController when that has been moved.

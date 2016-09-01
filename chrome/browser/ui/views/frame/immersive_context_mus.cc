@@ -7,6 +7,7 @@
 #include "services/ui/public/cpp/window_tree_client.h"
 #include "ui/views/mus/pointer_watcher_event_router.h"
 #include "ui/views/mus/window_manager_connection.h"
+#include "ui/views/pointer_watcher.h"
 
 ImmersiveContextMus::ImmersiveContextMus() {}
 
@@ -32,11 +33,14 @@ gfx::Rect ImmersiveContextMus::GetDisplayBoundsInScreen(views::Widget* widget) {
   return widget->GetWindowBoundsInScreen();
 }
 
-void ImmersiveContextMus::AddPointerWatcher(views::PointerWatcher* watcher,
-                                            bool wants_moves) {
+void ImmersiveContextMus::AddPointerWatcher(
+    views::PointerWatcher* watcher,
+    views::PointerWatcherEventTypes events) {
+  // TODO: http://crbug.com/641164
   views::WindowManagerConnection::Get()
       ->pointer_watcher_event_router()
-      ->AddPointerWatcher(watcher, wants_moves);
+      ->AddPointerWatcher(watcher,
+                          events == views::PointerWatcherEventTypes::MOVES);
 }
 
 void ImmersiveContextMus::RemovePointerWatcher(views::PointerWatcher* watcher) {

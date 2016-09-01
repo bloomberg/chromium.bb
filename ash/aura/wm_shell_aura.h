@@ -79,7 +79,7 @@ class ASH_EXPORT WmShellAura : public WmShell,
   void AddDisplayObserver(WmDisplayObserver* observer) override;
   void RemoveDisplayObserver(WmDisplayObserver* observer) override;
   void AddPointerWatcher(views::PointerWatcher* watcher,
-                         bool wants_moves) override;
+                         views::PointerWatcherEventTypes events) override;
   void RemovePointerWatcher(views::PointerWatcher* watcher) override;
   bool IsTouchDown() override;
 #if defined(OS_CHROMEOS)

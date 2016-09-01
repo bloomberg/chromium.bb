@@ -35,7 +35,8 @@ LaserPointerMode::LaserPointerMode(Delegate* delegate)
       FROM_HERE, base::TimeDelta::FromMilliseconds(kAddStationaryPointsDelayMs),
       base::Bind(&LaserPointerMode::AddStationaryPoint, base::Unretained(this)),
       true));
-  WmShell::Get()->AddPointerWatcher(this, true);
+  WmShell::Get()->AddPointerWatcher(this,
+                                    views::PointerWatcherEventTypes::DRAGS);
 }
 
 LaserPointerMode::~LaserPointerMode() {

@@ -388,8 +388,11 @@ void WmShellMus::RemoveDisplayObserver(WmDisplayObserver* observer) {
 }
 
 void WmShellMus::AddPointerWatcher(views::PointerWatcher* watcher,
-                                   bool wants_moves) {
-  pointer_watcher_event_router_->AddPointerWatcher(watcher, wants_moves);
+                                   views::PointerWatcherEventTypes events) {
+  // TODO: implement drags for mus pointer watcher, http://crbug.com/641164.
+  // NOTIMPLEMENTED drags for mus pointer watcher.
+  pointer_watcher_event_router_->AddPointerWatcher(
+      watcher, events == views::PointerWatcherEventTypes::MOVES);
 }
 
 void WmShellMus::RemovePointerWatcher(views::PointerWatcher* watcher) {

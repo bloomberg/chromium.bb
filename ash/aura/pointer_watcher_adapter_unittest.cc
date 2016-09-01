@@ -14,77 +14,136 @@ namespace ash {
 
 using PointerWatcherAdapterTest = test::AshTestBase;
 
+enum TestPointerCaptureEvents {
+  NONE = 0x01,
+  CAPTURE = 0x02,
+  WHEEL = 0x04,
+  PRESS_OR_RELEASE = 0x08,
+  MOVE = 0x10,
+  DRAG = 0x20
+};
+
 // Records calls to OnPointerEventObserved() in |mouse_wheel_event_count| for a
 // mouse wheel event, in |capture_changed_count_| for a mouse capture change
 // event and in |pointer_event_count_| for all other pointer events.
 class TestPointerWatcher : public views::PointerWatcher {
  public:
-  explicit TestPointerWatcher(bool wants_moves) {
-    WmShell::Get()->AddPointerWatcher(this, wants_moves);
+  explicit TestPointerWatcher(views::PointerWatcherEventTypes events) {
+    WmShell::Get()->AddPointerWatcher(this, events);
   }
   ~TestPointerWatcher() override { WmShell::Get()->RemovePointerWatcher(this); }
 
   void ClearCounts() {
     pointer_event_count_ = capture_changed_count_ = mouse_wheel_event_count_ =
-        0;
+        move_changed_count_ = drag_changed_count_ = 0;
   }
 
   int pointer_event_count() const { return pointer_event_count_; }
   int capture_changed_count() const { return capture_changed_count_; }
   int mouse_wheel_event_count() const { return mouse_wheel_event_count_; }
+  int move_changed_count() const { return move_changed_count_; }
+  int drag_changed_count() const { return drag_changed_count_; }
 
   // views::PointerWatcher:
   void OnPointerEventObserved(const ui::PointerEvent& event,
                               const gfx::Point& location_in_screen,
                               views::Widget* target) override {
-    if (event.type() == ui::ET_POINTER_WHEEL_CHANGED)
+    if (event.type() == ui::ET_POINTER_WHEEL_CHANGED) {
       mouse_wheel_event_count_++;
-    else if (event.type() == ui::ET_POINTER_CAPTURE_CHANGED)
+    } else if (event.type() == ui::ET_POINTER_CAPTURE_CHANGED) {
       capture_changed_count_++;
-    else
+    } else if (event.type() == ui::ET_POINTER_MOVED) {
+      // Pointer moved events are drags if they are a touch event.
+      if (event.IsTouchPointerEvent()) {
+        drag_changed_count_++;
+      } else if (event.IsMousePointerEvent()) {
+        // Differentiate between a drag and move event.
+        if (event.flags() &
+            (ui::EF_LEFT_MOUSE_BUTTON | ui::EF_MIDDLE_MOUSE_BUTTON |
+             ui::EF_RIGHT_MOUSE_BUTTON)) {
+          drag_changed_count_++;
+        } else {
+          move_changed_count_++;
+        }
+      } else {
+        move_changed_count_++;
+      }
+    } else {
       pointer_event_count_++;
+    }
   }
 
  private:
   int pointer_event_count_ = 0;
   int capture_changed_count_ = 0;
   int mouse_wheel_event_count_ = 0;
+  int move_changed_count_ = 0;
+  int drag_changed_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestPointerWatcher);
 };
 
-// Creates two TestPointerWatchers, one that wants moves and one that doesn't.
+// Creates three TestPointerWatchers, one that wants moves and one that wants
+// drags, and one that does not want either.
 class TestHelper {
  public:
-  TestHelper() : non_move_watcher_(false), move_watcher_(true) {}
+  TestHelper()
+      : basic_watcher_(views::PointerWatcherEventTypes::BASIC),
+        move_watcher_(views::PointerWatcherEventTypes::MOVES),
+        drag_watcher_(views::PointerWatcherEventTypes::DRAGS) {}
   ~TestHelper() {}
 
-  // Used to verify call counts.
-  void ExpectCallCount(int non_move_pointer_event_count,
-                       int non_move_capture_changed_count,
-                       int non_move_mouse_wheel_event_count,
-                       int move_pointer_event_count,
-                       int move_capture_changed_count,
-                       int move_mouse_wheel_event_count) {
-    EXPECT_EQ(non_move_pointer_event_count,
-              non_move_watcher_.pointer_event_count());
-    EXPECT_EQ(non_move_capture_changed_count,
-              non_move_watcher_.capture_changed_count());
-    EXPECT_EQ(non_move_mouse_wheel_event_count,
-              non_move_watcher_.mouse_wheel_event_count());
-    EXPECT_EQ(move_pointer_event_count, move_watcher_.pointer_event_count());
-    EXPECT_EQ(move_capture_changed_count,
+  // Used to verify call counts. One ExpectCallCount call should be made after
+  // each generated mouse events. |basic_events_bitmask| defines which events
+  // the test basic watcher should receive and |move_events_bitamsk| defines
+  // which events the test move watcher should receive and |drag_events_bitmask|
+  // defines which events the test drag watcher should receive.
+  void ExpectCallCount(int basic_events_bitmask,
+                       int move_events_bitmask,
+                       int drag_events_bitmask) {
+    // Compare the expected events in the |basic_events_bitmask| with the actual
+    // counts. Basic watcher should never have any move or drag counts.
+    EXPECT_EQ(0, basic_watcher_.move_changed_count());
+    EXPECT_EQ(0, basic_watcher_.drag_changed_count());
+    EXPECT_EQ(basic_events_bitmask & PRESS_OR_RELEASE ? 1 : 0,
+              basic_watcher_.pointer_event_count());
+    EXPECT_EQ(basic_events_bitmask & CAPTURE ? 1 : 0,
+              basic_watcher_.capture_changed_count());
+    EXPECT_EQ(basic_events_bitmask & WHEEL ? 1 : 0,
+              basic_watcher_.mouse_wheel_event_count());
+    // Compare the expected events in the |move_events_bitmask| with the actual
+    // counts. Move watcher should never have any drag counts.
+    EXPECT_EQ(0, move_watcher_.drag_changed_count());
+    EXPECT_EQ(move_events_bitmask & MOVE ? 1 : 0,
+              move_watcher_.move_changed_count());
+    EXPECT_EQ(move_events_bitmask & PRESS_OR_RELEASE ? 1 : 0,
+              move_watcher_.pointer_event_count());
+    EXPECT_EQ(move_events_bitmask & CAPTURE ? 1 : 0,
               move_watcher_.capture_changed_count());
-    EXPECT_EQ(move_mouse_wheel_event_count,
+    EXPECT_EQ(move_events_bitmask & WHEEL ? 1 : 0,
               move_watcher_.mouse_wheel_event_count());
+    // Compare the expected events in the |drag_events_bitmask| with the actual
+    // counts.
+    EXPECT_EQ(drag_events_bitmask & MOVE ? 1 : 0,
+              drag_watcher_.move_changed_count());
+    EXPECT_EQ(drag_events_bitmask & DRAG ? 1 : 0,
+              drag_watcher_.drag_changed_count());
+    EXPECT_EQ(drag_events_bitmask & PRESS_OR_RELEASE ? 1 : 0,
+              drag_watcher_.pointer_event_count());
+    EXPECT_EQ(drag_events_bitmask & CAPTURE ? 1 : 0,
+              drag_watcher_.capture_changed_count());
+    EXPECT_EQ(drag_events_bitmask & WHEEL ? 1 : 0,
+              drag_watcher_.mouse_wheel_event_count());
 
-    non_move_watcher_.ClearCounts();
+    basic_watcher_.ClearCounts();
     move_watcher_.ClearCounts();
+    drag_watcher_.ClearCounts();
   }
 
  private:
-  TestPointerWatcher non_move_watcher_;
+  TestPointerWatcher basic_watcher_;
   TestPointerWatcher move_watcher_;
+  TestPointerWatcher drag_watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(TestHelper);
 };
@@ -92,59 +151,60 @@ class TestHelper {
 TEST_F(PointerWatcherAdapterTest, MouseEvents) {
   TestHelper helper;
 
-  // Move: only the move PointerWatcher should get the event.
+  // Move: only the move and drag PointerWatcher should get the event.
   GetEventGenerator().MoveMouseTo(gfx::Point(10, 10));
-  helper.ExpectCallCount(0, 0, 0, 1, 0, 0);
+  helper.ExpectCallCount(NONE, MOVE, MOVE);
 
-  // Press: both.
+  // Press: all.
   GetEventGenerator().PressLeftButton();
-  helper.ExpectCallCount(1, 0, 0, 1, 0, 0);
+  helper.ExpectCallCount(PRESS_OR_RELEASE, PRESS_OR_RELEASE, PRESS_OR_RELEASE);
 
-  // Drag: none.
+  // Drag: only drag PointerWatcher should get the event.
   GetEventGenerator().MoveMouseTo(gfx::Point(20, 30));
-  helper.ExpectCallCount(0, 0, 0, 0, 0, 0);
+  helper.ExpectCallCount(NONE, NONE, DRAG);
 
-  // Release: both (aura generates a capture event here).
+  // Release: all (aura generates a capture event here).
   GetEventGenerator().ReleaseLeftButton();
-  helper.ExpectCallCount(1, 1, 0, 1, 1, 0);
+  helper.ExpectCallCount(CAPTURE | PRESS_OR_RELEASE, CAPTURE | PRESS_OR_RELEASE,
+                         CAPTURE | PRESS_OR_RELEASE);
 
   // Exit: none.
   GetEventGenerator().SendMouseExit();
-  helper.ExpectCallCount(0, 0, 0, 0, 0, 0);
+  helper.ExpectCallCount(NONE, NONE, NONE);
 
   // Enter: none.
   ui::MouseEvent enter_event(ui::ET_MOUSE_ENTERED, gfx::Point(), gfx::Point(),
                              ui::EventTimeForNow(), 0, 0);
   GetEventGenerator().Dispatch(&enter_event);
-  helper.ExpectCallCount(0, 0, 0, 0, 0, 0);
+  helper.ExpectCallCount(NONE, NONE, NONE);
 
-  // Wheel: both
+  // Wheel: all
   GetEventGenerator().MoveMouseWheel(10, 11);
-  helper.ExpectCallCount(0, 0, 1, 0, 0, 1);
+  helper.ExpectCallCount(WHEEL, WHEEL, WHEEL);
 
-  // Capture: both.
+  // Capture: all.
   ui::MouseEvent capture_event(ui::ET_MOUSE_CAPTURE_CHANGED, gfx::Point(),
                                gfx::Point(), ui::EventTimeForNow(), 0, 0);
   GetEventGenerator().Dispatch(&capture_event);
-  helper.ExpectCallCount(0, 1, 0, 0, 1, 0);
+  helper.ExpectCallCount(CAPTURE, CAPTURE, CAPTURE);
 }
 
 TEST_F(PointerWatcherAdapterTest, TouchEvents) {
   TestHelper helper;
 
-  // Press: both.
+  // Press: all.
   const int touch_id = 11;
   GetEventGenerator().PressTouchId(touch_id);
-  helper.ExpectCallCount(1, 0, 0, 1, 0, 0);
+  helper.ExpectCallCount(PRESS_OR_RELEASE, PRESS_OR_RELEASE, PRESS_OR_RELEASE);
 
-  // Drag: none.
+  // Drag: only drag.
   GetEventGenerator().MoveTouchId(gfx::Point(20, 30), touch_id);
-  helper.ExpectCallCount(0, 0, 0, 0, 0, 0);
+  helper.ExpectCallCount(NONE, NONE, DRAG);
 
   // Release: both (contrary to mouse above, touch does not implicitly generate
   // capture).
   GetEventGenerator().ReleaseTouchId(touch_id);
-  helper.ExpectCallCount(1, 0, 0, 1, 0, 0);
+  helper.ExpectCallCount(PRESS_OR_RELEASE, PRESS_OR_RELEASE, PRESS_OR_RELEASE);
 }
 
 }  // namespace ash

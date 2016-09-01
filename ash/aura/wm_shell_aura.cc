@@ -263,8 +263,8 @@ void WmShellAura::RemoveDisplayObserver(WmDisplayObserver* observer) {
 }
 
 void WmShellAura::AddPointerWatcher(views::PointerWatcher* watcher,
-                                    bool wants_moves) {
-  pointer_watcher_adapter_->AddPointerWatcher(watcher, wants_moves);
+                                    views::PointerWatcherEventTypes events) {
+  pointer_watcher_adapter_->AddPointerWatcher(watcher, events);
 }
 
 void WmShellAura::RemovePointerWatcher(views::PointerWatcher* watcher) {

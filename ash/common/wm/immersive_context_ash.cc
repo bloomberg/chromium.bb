@@ -48,9 +48,10 @@ gfx::Rect ImmersiveContextAsh::GetDisplayBoundsInScreen(views::Widget* widget) {
   return window->GetDisplayNearestWindow().bounds();
 }
 
-void ImmersiveContextAsh::AddPointerWatcher(views::PointerWatcher* watcher,
-                                            bool wants_moves) {
-  WmShell::Get()->AddPointerWatcher(watcher, wants_moves);
+void ImmersiveContextAsh::AddPointerWatcher(
+    views::PointerWatcher* watcher,
+    views::PointerWatcherEventTypes events) {
+  WmShell::Get()->AddPointerWatcher(watcher, events);
 }
 
 void ImmersiveContextAsh::RemovePointerWatcher(views::PointerWatcher* watcher) {

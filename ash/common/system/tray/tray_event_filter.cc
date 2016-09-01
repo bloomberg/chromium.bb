@@ -25,8 +25,8 @@ void TrayEventFilter::AddWrapper(TrayBubbleWrapper* wrapper) {
   bool was_empty = wrappers_.empty();
   wrappers_.insert(wrapper);
   if (was_empty && !wrappers_.empty()) {
-    const bool wants_moves = false;
-    WmShell::Get()->AddPointerWatcher(this, wants_moves);
+    WmShell::Get()->AddPointerWatcher(this,
+                                      views::PointerWatcherEventTypes::BASIC);
   }
 }
 

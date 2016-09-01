@@ -21,6 +21,7 @@ class PointerEvent;
 
 namespace views {
 class PointerWatcher;
+enum class PointerWatcherEventTypes;
 class Widget;
 }
 
@@ -34,7 +35,8 @@ class ASH_EXPORT PointerWatcherAdapter : public ui::EventHandler {
   ~PointerWatcherAdapter() override;
 
   // See WmShell::AddPointerWatcher() for details.
-  void AddPointerWatcher(views::PointerWatcher* watcher, bool wants_moves);
+  void AddPointerWatcher(views::PointerWatcher* watcher,
+                         views::PointerWatcherEventTypes events);
   void RemovePointerWatcher(views::PointerWatcher* watcher);
 
   // ui::EventHandler:
@@ -58,6 +60,7 @@ class ASH_EXPORT PointerWatcherAdapter : public ui::EventHandler {
   // observers wanting moves too.
   base::ObserverList<views::PointerWatcher, true> non_move_watchers_;
   base::ObserverList<views::PointerWatcher, true> move_watchers_;
+  base::ObserverList<views::PointerWatcher, true> drag_watchers_;
 
   DISALLOW_COPY_AND_ASSIGN(PointerWatcherAdapter);
 };

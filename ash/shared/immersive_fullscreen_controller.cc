@@ -306,8 +306,8 @@ void ImmersiveFullscreenController::EnableWindowObservers(bool enable) {
     immersive_gesture_handler_ =
         ImmersiveHandlerFactory::Get()->CreateGestureHandler(this);
     widget_->AddObserver(this);
-    const bool wants_moves = true;
-    ImmersiveContext::Get()->AddPointerWatcher(this, wants_moves);
+    ImmersiveContext::Get()->AddPointerWatcher(
+        this, views::PointerWatcherEventTypes::MOVES);
   } else {
     ImmersiveContext::Get()->RemovePointerWatcher(this);
     widget_->RemoveObserver(this);

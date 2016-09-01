@@ -21,7 +21,7 @@ class ImmersiveContextMus : public ash::ImmersiveContext {
       bool entering) override;
   gfx::Rect GetDisplayBoundsInScreen(views::Widget* widget) override;
   void AddPointerWatcher(views::PointerWatcher* watcher,
-                         bool wants_moves) override;
+                         views::PointerWatcherEventTypes events) override;
   void RemovePointerWatcher(views::PointerWatcher* watcher) override;
   bool DoesAnyWindowHaveCapture() override;
   bool IsMouseEventsEnabled() override;

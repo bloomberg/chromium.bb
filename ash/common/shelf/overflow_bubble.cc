@@ -19,8 +19,8 @@ OverflowBubble::OverflowBubble(WmShelf* wm_shelf)
       bubble_(nullptr),
       anchor_(nullptr),
       shelf_view_(nullptr) {
-  const bool wants_moves = false;
-  WmShell::Get()->AddPointerWatcher(this, wants_moves);
+  WmShell::Get()->AddPointerWatcher(this,
+                                    views::PointerWatcherEventTypes::BASIC);
 }
 
 OverflowBubble::~OverflowBubble() {

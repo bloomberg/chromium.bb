@@ -12,6 +12,7 @@ class Rect;
 }
 namespace views {
 class PointerWatcher;
+enum class PointerWatcherEventTypes;
 class Widget;
 }
 
@@ -48,7 +49,7 @@ class ASH_EXPORT ImmersiveContext {
 
   // See WmShell::AddPointerWatcher for details.
   virtual void AddPointerWatcher(views::PointerWatcher* watcher,
-                                 bool wants_moves) = 0;
+                                 views::PointerWatcherEventTypes events) = 0;
   virtual void RemovePointerWatcher(views::PointerWatcher* watcher) = 0;
 
   // Returns true if any window has capture.
