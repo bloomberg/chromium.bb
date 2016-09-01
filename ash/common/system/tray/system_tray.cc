@@ -6,6 +6,7 @@
 
 #include "ash/common/ash_switches.h"
 #include "ash/common/login_status.h"
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shelf/wm_shelf_util.h"
@@ -68,8 +69,9 @@ using views::TrayBubbleView;
 
 namespace ash {
 
-// The minimum width of the system tray menu width.
+// The minimum width of the system tray menu.
 const int kMinimumSystemTrayMenuWidth = 300;
+const int kMinimumSystemTrayMenuWidthMd = 332;
 
 // Class to initialize and manage the SystemTrayBubble and TrayBubbleWrapper
 // instances for a bubble.
@@ -489,7 +491,9 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
     full_system_tray_menu_ = items.size() > 1;
     // The menu width is fixed, and it is a per language setting.
     int menu_width = std::max(
-        kMinimumSystemTrayMenuWidth,
+        MaterialDesignController::IsSystemTrayMenuMaterial()
+            ? kMinimumSystemTrayMenuWidthMd
+            : kMinimumSystemTrayMenuWidth,
         WmShell::Get()->system_tray_delegate()->GetSystemTrayMenuWidth());
 
     TrayBubbleView::InitParams init_params(TrayBubbleView::ANCHOR_TYPE_TRAY,
