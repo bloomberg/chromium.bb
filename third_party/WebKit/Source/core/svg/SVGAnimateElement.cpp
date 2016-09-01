@@ -157,19 +157,6 @@ bool SVGAnimateElement::calculateFromAndByValues(const String& fromString, const
     return true;
 }
 
-SVGElementInstances SVGAnimateElement::findElementInstances(SVGElement* targetElement)
-{
-    ASSERT(targetElement);
-    SVGElementInstances animatedElements;
-
-    animatedElements.append(targetElement);
-
-    const auto& instances = targetElement->instancesForElement();
-    animatedElements.appendRange(instances.begin(), instances.end());
-
-    return animatedElements;
-}
-
 void SVGAnimateElement::resetAnimatedType()
 {
     SVGElement* targetElement = this->targetElement();

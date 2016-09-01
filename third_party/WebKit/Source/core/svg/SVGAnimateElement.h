@@ -32,9 +32,6 @@
 
 namespace blink {
 
-// The size of SVGElementInstances is 1 unless there is a <use> instance of the element.
-using SVGElementInstances = HeapVector<Member<SVGElement>, 1u>;
-
 class CORE_EXPORT SVGAnimateElement : public SVGAnimationElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
@@ -47,8 +44,6 @@ public:
 
     AnimatedPropertyType animatedPropertyType();
     bool animatedPropertyTypeSupportsAddition();
-
-    static SVGElementInstances findElementInstances(SVGElement* targetElement);
 
 protected:
     SVGAnimateElement(const QualifiedName&, Document&);

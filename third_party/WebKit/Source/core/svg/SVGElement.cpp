@@ -42,7 +42,6 @@
 #include "core/html/HTMLElement.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/svg/LayoutSVGResourceContainer.h"
-#include "core/svg/SVGAnimateElement.h"
 #include "core/svg/SVGCursorElement.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGElementRareData.h"
@@ -247,7 +246,8 @@ template<typename T>
 static void forSelfAndInstances(SVGElement* element, T callback)
 {
     SVGElement::InstanceUpdateBlocker blocker(element);
-    for (SVGElement* instance : SVGAnimateElement::findElementInstances(element))
+    callback(element);
+    for (SVGElement* instance : element->instancesForElement())
         callback(instance);
 }
 
