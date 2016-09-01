@@ -66,6 +66,7 @@
 #include "core/layout/LayoutTableRow.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/api/LayoutAPIShim.h"
 #include "core/layout/ng/layout_ng_block_flow.h"
 #include "core/page/AutoscrollController.h"
 #include "core/page/Page.h"
@@ -1032,8 +1033,8 @@ const LayoutBoxModelObject& LayoutObject::containerForPaintInvalidation() const
     // the main frame's LayoutView so that we generate invalidations
     // on the window.
     const LayoutView* layoutView = view();
-    while (layoutView->frame()->ownerLayoutObject())
-        layoutView = layoutView->frame()->ownerLayoutObject()->view();
+    while (LayoutAPIShim::layoutObjectFrom(layoutView->frame()->ownerLayoutItem()))
+        layoutView = LayoutAPIShim::layoutObjectFrom(layoutView->frame()->ownerLayoutItem())->view();
     ASSERT(layoutView);
     return *layoutView;
 }
@@ -2264,7 +2265,7 @@ LayoutObject* LayoutObject::container(const LayoutBoxModelObject* ancestor, bool
 LayoutObject* LayoutObject::paintInvalidationParent() const
 {
     if (isLayoutView())
-        return frame()->ownerLayoutObject();
+        return LayoutAPIShim::layoutObjectFrom(frame()->ownerLayoutItem());
     if (isColumnSpanAll())
         return spannerPlaceholder();
     return parent();
