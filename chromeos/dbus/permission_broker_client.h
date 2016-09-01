@@ -10,10 +10,10 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
-#include "dbus/file_descriptor.h"
 
 namespace chromeos {
 
@@ -32,7 +32,7 @@ class CHROMEOS_EXPORT PermissionBrokerClient : public DBusClient {
   typedef base::Callback<void(bool)> ResultCallback;
 
   // An OpenPathCallback callback is run when an OpenPath request is completed.
-  typedef base::Callback<void(dbus::FileDescriptor)> OpenPathCallback;
+  typedef base::Callback<void(base::ScopedFD)> OpenPathCallback;
 
   // An ErrorCallback callback is run when an error is returned by the
   // permission broker.
@@ -60,20 +60,24 @@ class CHROMEOS_EXPORT PermissionBrokerClient : public DBusClient {
 
   // Requests the |port| be opened on the firewall for incoming TCP/IP
   // connections received on |interface| (an empty string indicates all
-  // interfaces). An open pipe must be passed as |lifeline_fd| so that the
-  // permission broker can monitor the lifetime of the calling process.
+  // interfaces). One end of an open pipe must be passed as |lifeline_fd| so
+  // that the permission broker can monitor the lifetime of the calling process
+  // by being notified when the other end is closed. This method duplicates
+  // |lifeline_fd| so it's OK to close it without waiting for the result.
   virtual void RequestTcpPortAccess(uint16_t port,
                                     const std::string& interface,
-                                    const dbus::FileDescriptor& lifeline_fd,
+                                    int lifeline_fd,
                                     const ResultCallback& callback) = 0;
 
   // Requests the |port| be opened on the firewall for incoming UDP packets
-  // received on |interface| (an empty string indicates all interfaces). An open
-  // pipe must be passed as |lifeline_fd| so that the permission broker can
-  // monitor the lifetime of the calling process.
+  // received on |interface| (an empty string indicates all interfaces). One end
+  // of an open pipe must be passed as |lifeline_fd| so that the permission
+  // broker can monitor the lifetime of the calling process by being notified
+  // when the other end is closed. This method duplicates |lifeline_fd| so it's
+  // OK to close it without waiting for the result.
   virtual void RequestUdpPortAccess(uint16_t port,
                                     const std::string& interface,
-                                    const dbus::FileDescriptor& lifeline_fd,
+                                    int lifeline_fd,
                                     const ResultCallback& callback) = 0;
 
   // Releases a request for an open firewall port for TCP/IP connections. The

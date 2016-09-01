@@ -254,12 +254,12 @@ void HidServiceLinux::Connect(const HidDeviceId& device_id,
 
 // static
 void HidServiceLinux::OnPathOpenComplete(std::unique_ptr<ConnectParams> params,
-                                         dbus::FileDescriptor fd) {
+                                         base::ScopedFD fd) {
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner =
       params->file_task_runner;
-  file_task_runner->PostTask(
-      FROM_HERE, base::Bind(&HidServiceLinux::ValidateFdOnBlockingThread,
-                            base::Passed(&params), base::Passed(&fd)));
+  params->device_file = base::File(fd.release());
+  file_task_runner->PostTask(FROM_HERE, base::Bind(&HidServiceLinux::FinishOpen,
+                                                   base::Passed(&params)));
 }
 
 // static
@@ -270,17 +270,6 @@ void HidServiceLinux::OnPathOpenError(const std::string& device_path,
   HID_LOG(EVENT) << "Permission broker failed to open '" << device_path
                  << "': " << error_name << ": " << error_message;
   callback.Run(nullptr);
-}
-
-// static
-void HidServiceLinux::ValidateFdOnBlockingThread(
-    std::unique_ptr<ConnectParams> params,
-    dbus::FileDescriptor fd) {
-  base::ThreadRestrictions::AssertIOAllowed();
-  fd.CheckValidity();
-  DCHECK(fd.is_valid());
-  params->device_file = base::File(fd.TakeValue());
-  FinishOpen(std::move(params));
 }
 
 #else

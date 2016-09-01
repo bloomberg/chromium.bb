@@ -61,7 +61,7 @@ class PermissionBrokerClientImpl : public PermissionBrokerClient {
 
   void RequestTcpPortAccess(uint16_t port,
                             const std::string& interface,
-                            const dbus::FileDescriptor& lifeline_fd,
+                            int lifeline_fd,
                             const ResultCallback& callback) override {
     dbus::MethodCall method_call(kPermissionBrokerInterface,
                                  kRequestTcpPortAccess);
@@ -76,7 +76,7 @@ class PermissionBrokerClientImpl : public PermissionBrokerClient {
 
   void RequestUdpPortAccess(uint16_t port,
                             const std::string& interface,
-                            const dbus::FileDescriptor& lifeline_fd,
+                            int lifeline_fd,
                             const ResultCallback& callback) override {
     dbus::MethodCall method_call(kPermissionBrokerInterface,
                                  kRequestUdpPortAccess);
@@ -139,7 +139,7 @@ class PermissionBrokerClientImpl : public PermissionBrokerClient {
 
   void OnOpenPathResponse(const OpenPathCallback& callback,
                           dbus::Response* response) {
-    dbus::FileDescriptor fd;
+    base::ScopedFD fd;
     dbus::MessageReader reader(response);
     if (!reader.PopFileDescriptor(&fd))
       LOG(WARNING) << "Could not parse response: " << response->ToString();

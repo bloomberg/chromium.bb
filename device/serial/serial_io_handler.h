@@ -20,10 +20,6 @@
 #include "device/serial/buffer.h"
 #include "device/serial/serial.mojom.h"
 
-namespace dbus {
-class FileDescriptor;
-}
-
 namespace device {
 
 // Provides a simplified interface for performing asynchronous I/O on serial
@@ -48,20 +44,14 @@ class SerialIoHandler : public base::NonThreadSafe,
 #if defined(OS_CHROMEOS)
   // Signals that the port has been opened.
   void OnPathOpened(
-      scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
-      dbus::FileDescriptor fd);
+      base::ScopedFD fd);
 
   // Signals that the permission broker failed to open the port.
   void OnPathOpenError(
       scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
       const std::string& error_name,
       const std::string& error_message);
-
-  // Validates the file descriptor provided by the permission broker.
-  void ValidateOpenPort(
-      scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
-      dbus::FileDescriptor fd);
 
   // Reports the open error from the permission broker.
   void ReportPathOpenError(const std::string& error_name,

@@ -21,10 +21,6 @@ namespace base {
 class SequencedTaskRunner;
 }
 
-namespace dbus {
-class FileDescriptor;
-}
-
 namespace device {
 
 struct UsbConfigDescriptor;
@@ -64,13 +60,10 @@ class UsbDeviceLinux : public UsbDevice {
 
  private:
 #if defined(OS_CHROMEOS)
-  void OnOpenRequestComplete(const OpenCallback& callback,
-                             dbus::FileDescriptor fd);
+  void OnOpenRequestComplete(const OpenCallback& callback, base::ScopedFD fd);
   void OnOpenRequestError(const OpenCallback& callback,
                           const std::string& error_name,
                           const std::string& error_message);
-  void OpenOnBlockingThreadWithFd(dbus::FileDescriptor fd,
-                                  const OpenCallback& callback);
 #else
   void OpenOnBlockingThread(const OpenCallback& callback);
 #endif  // defined(OS_CHROMEOS)

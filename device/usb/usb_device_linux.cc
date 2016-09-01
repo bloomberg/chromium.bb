@@ -23,7 +23,6 @@
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/permission_broker_client.h"
-#include "dbus/file_descriptor.h"  // nogncheck
 #endif                             // defined(OS_CHROMEOS)
 
 namespace device {
@@ -88,10 +87,13 @@ void UsbDeviceLinux::Open(const OpenCallback& callback) {
 #if defined(OS_CHROMEOS)
 
 void UsbDeviceLinux::OnOpenRequestComplete(const OpenCallback& callback,
-                                           dbus::FileDescriptor fd) {
-  blocking_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&UsbDeviceLinux::OpenOnBlockingThreadWithFd, this,
-                            base::Passed(&fd), callback));
+                                           base::ScopedFD fd) {
+  if (!fd.is_valid()) {
+    USB_LOG(EVENT) << "Did not get valid device handle from permission broker.";
+    callback.Run(nullptr);
+    return;
+  }
+  Opened(std::move(fd), callback);
 }
 
 void UsbDeviceLinux::OnOpenRequestError(const OpenCallback& callback,
@@ -100,20 +102,6 @@ void UsbDeviceLinux::OnOpenRequestError(const OpenCallback& callback,
   USB_LOG(EVENT) << "Permission broker failed to open the device: "
                  << error_name << ": " << error_message;
   callback.Run(nullptr);
-}
-
-void UsbDeviceLinux::OpenOnBlockingThreadWithFd(dbus::FileDescriptor fd,
-                                                const OpenCallback& callback) {
-  fd.CheckValidity();
-  if (fd.is_valid()) {
-    base::ScopedFD scoped_fd(fd.TakeValue());
-    task_runner_->PostTask(FROM_HERE,
-                           base::Bind(&UsbDeviceLinux::Opened, this,
-                                      base::Passed(&scoped_fd), callback));
-  } else {
-    USB_LOG(EVENT) << "Did not get valid device handle from permission broker.";
-    task_runner_->PostTask(FROM_HERE, base::Bind(callback, nullptr));
-  }
 }
 
 #else

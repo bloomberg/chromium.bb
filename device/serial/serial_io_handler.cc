@@ -16,7 +16,6 @@
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/permission_broker_client.h"
-#include "dbus/file_descriptor.h"  // nogncheck
 #endif  // defined(OS_CHROMEOS)
 
 namespace device {
@@ -61,8 +60,7 @@ void SerialIoHandler::Open(const std::string& port,
       FROM_HERE,
       base::Bind(
           &chromeos::PermissionBrokerClient::OpenPath, base::Unretained(client),
-          port, base::Bind(&SerialIoHandler::OnPathOpened, this,
-                           file_thread_task_runner_, task_runner),
+          port, base::Bind(&SerialIoHandler::OnPathOpened, this, task_runner),
           base::Bind(&SerialIoHandler::OnPathOpenError, this, task_runner)));
 #else
   file_thread_task_runner_->PostTask(
@@ -74,12 +72,12 @@ void SerialIoHandler::Open(const std::string& port,
 #if defined(OS_CHROMEOS)
 
 void SerialIoHandler::OnPathOpened(
-    scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
-    dbus::FileDescriptor fd) {
-  file_thread_task_runner->PostTask(
-      FROM_HERE, base::Bind(&SerialIoHandler::ValidateOpenPort, this,
-                            io_thread_task_runner, base::Passed(&fd)));
+    base::ScopedFD fd) {
+  base::File file(fd.release());
+  io_thread_task_runner->PostTask(
+      FROM_HERE,
+      base::Bind(&SerialIoHandler::FinishOpen, this, base::Passed(&file)));
 }
 
 void SerialIoHandler::OnPathOpenError(
@@ -89,20 +87,6 @@ void SerialIoHandler::OnPathOpenError(
   io_thread_task_runner->PostTask(
       FROM_HERE, base::Bind(&SerialIoHandler::ReportPathOpenError, this,
                             error_name, error_message));
-}
-
-void SerialIoHandler::ValidateOpenPort(
-    scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
-    dbus::FileDescriptor fd) {
-  base::File file;
-  fd.CheckValidity();
-  if (fd.is_valid()) {
-    file = base::File(fd.TakeValue());
-  }
-
-  io_thread_task_runner->PostTask(
-      FROM_HERE,
-      base::Bind(&SerialIoHandler::FinishOpen, this, base::Passed(&file)));
 }
 
 void SerialIoHandler::ReportPathOpenError(const std::string& error_name,

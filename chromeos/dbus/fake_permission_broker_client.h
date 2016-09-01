@@ -27,11 +27,11 @@ class CHROMEOS_EXPORT FakePermissionBrokerClient
                 const ErrorCallback& error_callback) override;
   void RequestTcpPortAccess(uint16_t port,
                             const std::string& interface,
-                            const dbus::FileDescriptor& lifeline_fd,
+                            int lifeline_fd,
                             const ResultCallback& callback) override;
   void RequestUdpPortAccess(uint16_t port,
                             const std::string& interface,
-                            const dbus::FileDescriptor& lifeline_fd,
+                            int lifeline_fd,
                             const ResultCallback& callback) override;
   void ReleaseTcpPort(uint16_t port,
                       const std::string& interface,

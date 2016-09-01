@@ -31,12 +31,12 @@ class MockPermissionBrokerClient : public PermissionBrokerClient {
   MOCK_METHOD4(RequestTcpPortAccess,
                void(uint16_t port,
                     const std::string& interface,
-                    const dbus::FileDescriptor& lifeline_fd,
+                    int lifeline_fd,
                     const ResultCallback& callback));
   MOCK_METHOD4(RequestUdpPortAccess,
                void(uint16_t port,
                     const std::string& interface,
-                    const dbus::FileDescriptor& lifeline_fd,
+                    int lifeline_fd,
                     const ResultCallback& callback));
   MOCK_METHOD3(ReleaseTcpPort,
                void(uint16_t port,
