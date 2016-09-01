@@ -103,7 +103,4 @@ void DecoderStreamTraits<DemuxerStream::AUDIO>::OnDecodeDone(
   audio_ts_validator_->RecordOutputDuration(buffer);
 }
 
-template class DecoderStreamTraits<DemuxerStream::VIDEO>;
-template class DecoderStreamTraits<DemuxerStream::AUDIO>;
-
 }  // namespace media
