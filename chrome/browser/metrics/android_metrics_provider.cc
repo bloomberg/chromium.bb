@@ -4,7 +4,7 @@
 
 #include "chrome/browser/metrics/android_metrics_provider.h"
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/sys_info.h"
 #include "base/values.h"
 #include "chrome/browser/android/feature_utilities.h"

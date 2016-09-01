@@ -10,7 +10,7 @@
 #include <algorithm>
 
 #include "base/cpu.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
 

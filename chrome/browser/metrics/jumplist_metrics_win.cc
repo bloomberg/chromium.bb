@@ -4,7 +4,7 @@
 
 #include "chrome/browser/metrics/jumplist_metrics_win.h"
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 
 namespace jumplist {
 
