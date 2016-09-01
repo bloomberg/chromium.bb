@@ -544,19 +544,22 @@ def get_deps(build_dir, target):
 def compare_deps(first_dir, second_dir, targets):
   """Print difference of dependent files."""
   for target in targets:
-    print 'Checking %s difference:' % target
     first_deps = get_deps(first_dir, target)
-    second_deps =get_deps(second_dir, target)
+    second_deps = get_deps(second_dir, target)
+    print 'Checking %s difference: (%s deps)' % (target, len(first_deps))
     if set(first_deps) != set(second_deps):
       # Since we do not thiks this case occur, we do not do anything special
       # for this case.
       print 'deps on %s are different: %s' % (
           target, set(first_deps).symmetric_difference(set(second_deps)))
       continue
+    max_filepath_len = max(len(n) for n in first_deps)
     for d in first_deps:
       first_file = os.path.join(first_dir, d)
       second_file = os.path.join(second_dir, d)
-      compare_files(first_file, second_file)
+      result = compare_files(first_file, second_file)
+      if result:
+        print('%-*s: %s' % (max_filepath_len, d, result))
 
 
 def compare_build_artifacts(first_dir, second_dir, target_platform,
