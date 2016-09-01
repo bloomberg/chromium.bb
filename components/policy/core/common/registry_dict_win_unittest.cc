@@ -103,7 +103,7 @@ TEST(RegistryDictTest, CaseInsensitiveButPreservingKeyNames) {
 
   base::FundamentalValue int_value(42);
 
-  test_dict.SetKey("One", base::WrapUnique(new RegistryDict()));
+  test_dict.SetKey("One", base::MakeUnique<RegistryDict>());
   EXPECT_EQ(1u, test_dict.keys().size());
   RegistryDict* actual_subdict = test_dict.GetKey("One");
   ASSERT_TRUE(actual_subdict);
@@ -170,7 +170,7 @@ TEST(RegistryDictTest, Swap) {
   base::StringValue string_value("fortytwo");
 
   dict_a.SetValue("one", int_value.CreateDeepCopy());
-  dict_a.SetKey("two", base::WrapUnique(new RegistryDict()));
+  dict_a.SetKey("two", base::MakeUnique<RegistryDict>());
   dict_b.SetValue("three", string_value.CreateDeepCopy());
 
   dict_a.Swap(&dict_b);

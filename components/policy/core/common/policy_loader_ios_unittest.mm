@@ -90,7 +90,7 @@ ConfigurationPolicyProvider* TestHarness::CreateProvider(
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
   std::unique_ptr<AsyncPolicyLoader> loader();
   return new AsyncPolicyProvider(
-      registry, base::WrapUnique(new PolicyLoaderIOS(task_runner)));
+      registry, base::MakeUnique<PolicyLoaderIOS>(task_runner));
 }
 
 void TestHarness::InstallEmptyPolicy() {

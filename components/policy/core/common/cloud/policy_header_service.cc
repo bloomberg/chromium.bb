@@ -43,8 +43,9 @@ std::unique_ptr<PolicyHeaderIOHelper>
 PolicyHeaderService::CreatePolicyHeaderIOHelper(
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
   std::string initial_header_value = CreateHeaderValue();
-  std::unique_ptr<PolicyHeaderIOHelper> helper = base::WrapUnique(
-      new PolicyHeaderIOHelper(server_url_, initial_header_value, task_runner));
+  std::unique_ptr<PolicyHeaderIOHelper> helper =
+      base::MakeUnique<PolicyHeaderIOHelper>(server_url_, initial_header_value,
+                                             task_runner);
   helpers_.push_back(helper.get());
   return helper;
 }

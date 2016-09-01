@@ -71,10 +71,10 @@ std::unique_ptr<CloudPolicyClient>
 UserCloudPolicyManager::CreateCloudPolicyClient(
     DeviceManagementService* device_management_service,
     scoped_refptr<net::URLRequestContextGetter> request_context) {
-  return base::WrapUnique(new CloudPolicyClient(
+  return base::MakeUnique<CloudPolicyClient>(
       std::string(), std::string(), kPolicyVerificationKeyHash,
       device_management_service, request_context,
-      nullptr /* signing_service_ */));
+      nullptr /* signing_service_ */);
 }
 
 void UserCloudPolicyManager::DisconnectAndRemovePolicy() {

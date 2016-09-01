@@ -111,10 +111,10 @@ void ComponentCloudPolicyUpdaterTest::SetUp() {
   PolicyMap& policy = expected_bundle_.Get(ns);
   policy.Set("Name", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
              POLICY_SOURCE_CLOUD,
-             base::WrapUnique(new base::StringValue("disabled")), nullptr);
+             base::MakeUnique<base::StringValue>("disabled"), nullptr);
   policy.Set("Second", POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
-             POLICY_SOURCE_CLOUD,
-             base::WrapUnique(new base::StringValue("maybe")), nullptr);
+             POLICY_SOURCE_CLOUD, base::MakeUnique<base::StringValue>("maybe"),
+             nullptr);
 }
 
 void ComponentCloudPolicyUpdaterTest::TearDown() {
@@ -125,7 +125,7 @@ void ComponentCloudPolicyUpdaterTest::TearDown() {
 std::unique_ptr<em::PolicyFetchResponse>
 ComponentCloudPolicyUpdaterTest::CreateResponse() {
   builder_.Build();
-  return base::WrapUnique(new em::PolicyFetchResponse(builder_.policy()));
+  return base::MakeUnique<em::PolicyFetchResponse>(builder_.policy());
 }
 
 TEST_F(ComponentCloudPolicyUpdaterTest, FetchAndCache) {

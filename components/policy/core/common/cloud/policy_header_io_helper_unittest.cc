@@ -28,8 +28,8 @@ class PolicyHeaderIOHelperTest : public testing::Test {
   ~PolicyHeaderIOHelperTest() override {}
 
   void SetUp() override {
-    helper_ = base::WrapUnique(new PolicyHeaderIOHelper(
-        kDMServerURL, kInitialPolicyHeader, task_runner_));
+    helper_ = base::MakeUnique<PolicyHeaderIOHelper>(
+        kDMServerURL, kInitialPolicyHeader, task_runner_);
     task_runner_->RunUntilIdle();
   }
   void TearDown() override {

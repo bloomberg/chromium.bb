@@ -37,7 +37,7 @@ class UserCloudPolicyManagerTest : public testing::Test {
     // Set up a policy map for testing.
     policy_map_.Set("key", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                     POLICY_SOURCE_CLOUD,
-                    base::WrapUnique(new base::StringValue("value")), nullptr);
+                    base::MakeUnique<base::StringValue>("value"), nullptr);
     expected_bundle_.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
         .CopyFrom(policy_map_);
   }

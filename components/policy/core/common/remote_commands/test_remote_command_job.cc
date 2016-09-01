@@ -39,7 +39,7 @@ class TestRemoteCommandJob::EchoPayload
 };
 
 std::unique_ptr<std::string> TestRemoteCommandJob::EchoPayload::Serialize() {
-  return base::WrapUnique(new std::string(payload_));
+  return base::MakeUnique<std::string>(payload_);
 }
 
 TestRemoteCommandJob::TestRemoteCommandJob(bool succeed,

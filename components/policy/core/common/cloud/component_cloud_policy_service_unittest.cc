@@ -130,11 +130,10 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
 
     expected_policy_.Set(
         "Name", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-        base::WrapUnique(new base::StringValue("disabled")), nullptr);
+        base::MakeUnique<base::StringValue>("disabled"), nullptr);
     expected_policy_.Set("Second", POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
                          POLICY_SOURCE_CLOUD,
-                         base::WrapUnique(new base::StringValue("maybe")),
-                         nullptr);
+                         base::MakeUnique<base::StringValue>("maybe"), nullptr);
   }
 
   void TearDown() override {
@@ -203,7 +202,7 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
 
   std::unique_ptr<em::PolicyFetchResponse> CreateResponse() {
     builder_.Build();
-    return base::WrapUnique(new em::PolicyFetchResponse(builder_.policy()));
+    return base::MakeUnique<em::PolicyFetchResponse>(builder_.policy());
   }
 
   std::string CreateSerializedResponse() {
@@ -512,7 +511,7 @@ TEST_F(ComponentCloudPolicyServiceTest, LoadInvalidPolicyFromCache) {
   const PolicyNamespace ns(POLICY_DOMAIN_EXTENSIONS, kTestExtension);
   expected_bundle.Get(ns).Set(
       "Name", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-      base::WrapUnique(new base::StringValue("published")), nullptr);
+      base::MakeUnique<base::StringValue>("published"), nullptr);
   EXPECT_TRUE(service_->policy().Equals(expected_bundle));
 }
 

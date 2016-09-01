@@ -170,8 +170,8 @@ ExternalPolicyDataFetcherBackend::~ExternalPolicyDataFetcherBackend() {
 std::unique_ptr<ExternalPolicyDataFetcher>
 ExternalPolicyDataFetcherBackend::CreateFrontend(
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
-  return base::WrapUnique(new ExternalPolicyDataFetcher(
-      task_runner, io_task_runner_, weak_factory_.GetWeakPtr()));
+  return base::MakeUnique<ExternalPolicyDataFetcher>(
+      task_runner, io_task_runner_, weak_factory_.GetWeakPtr());
 }
 
 void ExternalPolicyDataFetcherBackend::StartJob(

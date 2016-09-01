@@ -358,7 +358,7 @@ TEST_P(ConfigurationPolicyProviderTest, RefreshPolicies) {
   bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
       .Set(harness_->key_string(), harness_->policy_level(),
            harness_->policy_scope(), harness_->policy_source(),
-           base::WrapUnique(new base::StringValue("value")), nullptr);
+           base::MakeUnique<base::StringValue>("value"), nullptr);
   EXPECT_TRUE(provider_->policies().Equals(bundle));
   provider_->RemoveObserver(&observer);
 }

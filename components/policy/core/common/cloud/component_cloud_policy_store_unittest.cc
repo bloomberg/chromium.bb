@@ -88,10 +88,10 @@ class ComponentCloudPolicyStoreTest : public testing::Test {
     PolicyMap& policy = expected_bundle_.Get(ns);
     policy.Set("Name", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                POLICY_SOURCE_CLOUD,
-               base::WrapUnique(new base::StringValue("disabled")), nullptr);
+               base::MakeUnique<base::StringValue>("disabled"), nullptr);
     policy.Set("Second", POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
                POLICY_SOURCE_CLOUD,
-               base::WrapUnique(new base::StringValue("maybe")), nullptr);
+               base::MakeUnique<base::StringValue>("maybe"), nullptr);
   }
 
   // Returns true if the policy exposed by the |store_| is empty.
@@ -101,7 +101,7 @@ class ComponentCloudPolicyStoreTest : public testing::Test {
 
   std::unique_ptr<em::PolicyFetchResponse> CreateResponse() {
     builder_.Build();
-    return base::WrapUnique(new em::PolicyFetchResponse(builder_.policy()));
+    return base::MakeUnique<em::PolicyFetchResponse>(builder_.policy());
   }
 
   std::string CreateSerializedResponse() {

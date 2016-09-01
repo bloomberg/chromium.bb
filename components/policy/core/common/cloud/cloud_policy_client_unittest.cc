@@ -914,7 +914,7 @@ TEST_F(CloudPolicyClientTest, FetchRemoteCommands) {
   const std::vector<em::RemoteCommandResult> command_results(
       1, remote_command_request_.remote_command_request().command_results(0));
   client_->FetchRemoteCommands(
-      base::WrapUnique(new RemoteCommandJob::UniqueIDType(kLastCommandId)),
+      base::MakeUnique<RemoteCommandJob::UniqueIDType>(kLastCommandId),
       command_results, callback);
 
   EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());

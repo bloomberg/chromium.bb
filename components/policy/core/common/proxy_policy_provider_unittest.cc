@@ -55,8 +55,8 @@ TEST_F(ProxyPolicyProviderTest, Delegate) {
   PolicyBundle bundle;
   bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
       .Set("policy", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-           POLICY_SOURCE_CLOUD,
-           base::WrapUnique(new base::StringValue("value")), nullptr);
+           POLICY_SOURCE_CLOUD, base::MakeUnique<base::StringValue>("value"),
+           nullptr);
   mock_provider_.UpdatePolicy(CopyBundle(bundle));
 
   EXPECT_CALL(observer_, OnUpdatePolicy(&proxy_provider_));
@@ -68,7 +68,7 @@ TEST_F(ProxyPolicyProviderTest, Delegate) {
   bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
       .Set("policy", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
            POLICY_SOURCE_CLOUD,
-           base::WrapUnique(new base::StringValue("new value")), nullptr);
+           base::MakeUnique<base::StringValue>("new value"), nullptr);
   mock_provider_.UpdatePolicy(CopyBundle(bundle));
   Mock::VerifyAndClearExpectations(&observer_);
   EXPECT_TRUE(bundle.Equals(proxy_provider_.policies()));

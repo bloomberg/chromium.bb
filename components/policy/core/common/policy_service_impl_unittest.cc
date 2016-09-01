@@ -56,16 +56,16 @@ void AddTestPolicies(PolicyBundle* bundle,
       &bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
   policy_map->Set(kSameLevelPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                   POLICY_SOURCE_ENTERPRISE_DEFAULT,
-                  base::WrapUnique(new base::StringValue(value)), nullptr);
+                  base::MakeUnique<base::StringValue>(value), nullptr);
   policy_map->Set(kDiffLevelPolicy, level, scope, POLICY_SOURCE_PLATFORM,
-                  base::WrapUnique(new base::StringValue(value)), nullptr);
+                  base::MakeUnique<base::StringValue>(value), nullptr);
   policy_map =
       &bundle->Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, kExtension));
   policy_map->Set(kSameLevelPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                   POLICY_SOURCE_ENTERPRISE_DEFAULT,
-                  base::WrapUnique(new base::StringValue(value)), nullptr);
+                  base::MakeUnique<base::StringValue>(value), nullptr);
   policy_map->Set(kDiffLevelPolicy, level, scope, POLICY_SOURCE_PLATFORM,
-                  base::WrapUnique(new base::StringValue(value)), nullptr);
+                  base::MakeUnique<base::StringValue>(value), nullptr);
 }
 
 // Observer class that changes the policy in the passed provider when the
@@ -82,7 +82,7 @@ class ChangePolicyObserver : public PolicyService::Observer {
     PolicyMap new_policy;
     new_policy.Set("foo", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                    POLICY_SOURCE_CLOUD,
-                   base::WrapUnique(new base::FundamentalValue(14)), nullptr);
+                   base::MakeUnique<base::FundamentalValue>(14), nullptr);
     provider_->UpdateChromePolicy(new_policy);
     observer_invoked_ = true;
   }
@@ -113,7 +113,7 @@ class PolicyServiceTest : public testing::Test {
 
     policy0_.Set("pre", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                  POLICY_SOURCE_ENTERPRISE_DEFAULT,
-                 base::WrapUnique(new base::FundamentalValue(13)), nullptr);
+                 base::MakeUnique<base::FundamentalValue>(13), nullptr);
     provider0_.UpdateChromePolicy(policy0_);
 
     PolicyServiceImpl::Providers providers;
@@ -163,7 +163,7 @@ TEST_F(PolicyServiceTest, LoadsPoliciesBeforeProvidersRefresh) {
   PolicyMap expected;
   expected.Set("pre", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                POLICY_SOURCE_ENTERPRISE_DEFAULT,
-               base::WrapUnique(new base::FundamentalValue(13)), nullptr);
+               base::MakeUnique<base::FundamentalValue>(13), nullptr);
   EXPECT_TRUE(VerifyPolicies(
       PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()), expected));
 }
@@ -175,17 +175,16 @@ TEST_F(PolicyServiceTest, NotifyObservers) {
   PolicyMap expectedPrevious;
   expectedPrevious.Set("pre", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                        POLICY_SOURCE_ENTERPRISE_DEFAULT,
-                       base::WrapUnique(new base::FundamentalValue(13)),
-                       nullptr);
+                       base::MakeUnique<base::FundamentalValue>(13), nullptr);
 
   PolicyMap expectedCurrent;
   expectedCurrent.CopyFrom(expectedPrevious);
-  expectedCurrent.Set(
-      "aaa", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-      base::WrapUnique(new base::FundamentalValue(123)), nullptr);
+  expectedCurrent.Set("aaa", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                      POLICY_SOURCE_CLOUD,
+                      base::MakeUnique<base::FundamentalValue>(123), nullptr);
   policy0_.Set("aaa", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                POLICY_SOURCE_CLOUD,
-               base::WrapUnique(new base::FundamentalValue(123)), nullptr);
+               base::MakeUnique<base::FundamentalValue>(123), nullptr);
   EXPECT_CALL(observer, OnPolicyUpdated(PolicyNamespace(POLICY_DOMAIN_CHROME,
                                                         std::string()),
                                         PolicyEquals(&expectedPrevious),
@@ -202,12 +201,12 @@ TEST_F(PolicyServiceTest, NotifyObservers) {
 
   // New policy.
   expectedPrevious.CopyFrom(expectedCurrent);
-  expectedCurrent.Set(
-      "bbb", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-      base::WrapUnique(new base::FundamentalValue(456)), nullptr);
+  expectedCurrent.Set("bbb", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                      POLICY_SOURCE_CLOUD,
+                      base::MakeUnique<base::FundamentalValue>(456), nullptr);
   policy0_.Set("bbb", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                POLICY_SOURCE_CLOUD,
-               base::WrapUnique(new base::FundamentalValue(456)), nullptr);
+               base::MakeUnique<base::FundamentalValue>(456), nullptr);
   EXPECT_CALL(observer, OnPolicyUpdated(PolicyNamespace(POLICY_DOMAIN_CHROME,
                                                         std::string()),
                                         PolicyEquals(&expectedPrevious),
@@ -228,12 +227,12 @@ TEST_F(PolicyServiceTest, NotifyObservers) {
 
   // Changed policy.
   expectedPrevious.CopyFrom(expectedCurrent);
-  expectedCurrent.Set(
-      "aaa", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-      base::WrapUnique(new base::FundamentalValue(789)), nullptr);
+  expectedCurrent.Set("aaa", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                      POLICY_SOURCE_CLOUD,
+                      base::MakeUnique<base::FundamentalValue>(789), nullptr);
   policy0_.Set("aaa", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                POLICY_SOURCE_CLOUD,
-               base::WrapUnique(new base::FundamentalValue(789)), nullptr);
+               base::MakeUnique<base::FundamentalValue>(789), nullptr);
 
   EXPECT_CALL(observer, OnPolicyUpdated(PolicyNamespace(POLICY_DOMAIN_CHROME,
                                                         std::string()),
@@ -264,13 +263,13 @@ TEST_F(PolicyServiceTest, NotifyObserversInMultipleNamespaces) {
   PolicyMap previous_policy_map;
   previous_policy_map.Set("pre", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                           POLICY_SOURCE_ENTERPRISE_DEFAULT,
-                          base::WrapUnique(new base::FundamentalValue(13)),
+                          base::MakeUnique<base::FundamentalValue>(13),
                           nullptr);
   PolicyMap policy_map;
   policy_map.CopyFrom(previous_policy_map);
   policy_map.Set("policy", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                  POLICY_SOURCE_CLOUD,
-                 base::WrapUnique(new base::StringValue("value")), nullptr);
+                 base::MakeUnique<base::StringValue>("value"), nullptr);
 
   std::unique_ptr<PolicyBundle> bundle(new PolicyBundle());
   // The initial setup includes a policy for chrome that is now changing.
@@ -308,9 +307,9 @@ TEST_F(PolicyServiceTest, NotifyObserversInMultipleNamespaces) {
   bundle.reset(new PolicyBundle());
   bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
       .CopyFrom(policy_map);
-  policy_map.Set(
-      "policy", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-      base::WrapUnique(new base::StringValue("another value")), nullptr);
+  policy_map.Set("policy", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                 POLICY_SOURCE_CLOUD,
+                 base::MakeUnique<base::StringValue>("another value"), nullptr);
   bundle->Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, kExtension1))
       .CopyFrom(policy_map);
   bundle->Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, kExtension2))
@@ -347,10 +346,10 @@ TEST_F(PolicyServiceTest, ObserverChangesPolicy) {
   policy_service_->AddObserver(POLICY_DOMAIN_CHROME, &observer);
   policy0_.Set("aaa", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                POLICY_SOURCE_CLOUD,
-               base::WrapUnique(new base::FundamentalValue(123)), nullptr);
+               base::MakeUnique<base::FundamentalValue>(123), nullptr);
   policy0_.Set("bbb", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                POLICY_SOURCE_CLOUD,
-               base::WrapUnique(new base::FundamentalValue(1234)), nullptr);
+               base::MakeUnique<base::FundamentalValue>(1234), nullptr);
   // Should not crash.
   provider0_.UpdateChromePolicy(policy0_);
   policy_service_->RemoveObserver(POLICY_DOMAIN_CHROME, &observer);
@@ -361,19 +360,19 @@ TEST_F(PolicyServiceTest, Priorities) {
   PolicyMap expected;
   expected.Set("pre", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                POLICY_SOURCE_ENTERPRISE_DEFAULT,
-               base::WrapUnique(new base::FundamentalValue(13)), nullptr);
+               base::MakeUnique<base::FundamentalValue>(13), nullptr);
   expected.Set("aaa", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-               POLICY_SOURCE_CLOUD,
-               base::WrapUnique(new base::FundamentalValue(0)), nullptr);
+               POLICY_SOURCE_CLOUD, base::MakeUnique<base::FundamentalValue>(0),
+               nullptr);
   policy0_.Set("aaa", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-               POLICY_SOURCE_CLOUD,
-               base::WrapUnique(new base::FundamentalValue(0)), nullptr);
+               POLICY_SOURCE_CLOUD, base::MakeUnique<base::FundamentalValue>(0),
+               nullptr);
   policy1_.Set("aaa", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-               POLICY_SOURCE_CLOUD,
-               base::WrapUnique(new base::FundamentalValue(1)), nullptr);
+               POLICY_SOURCE_CLOUD, base::MakeUnique<base::FundamentalValue>(1),
+               nullptr);
   policy2_.Set("aaa", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-               POLICY_SOURCE_CLOUD,
-               base::WrapUnique(new base::FundamentalValue(2)), nullptr);
+               POLICY_SOURCE_CLOUD, base::MakeUnique<base::FundamentalValue>(2),
+               nullptr);
   provider0_.UpdateChromePolicy(policy0_);
   provider1_.UpdateChromePolicy(policy1_);
   provider2_.UpdateChromePolicy(policy2_);
@@ -381,19 +380,19 @@ TEST_F(PolicyServiceTest, Priorities) {
       PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()), expected));
 
   expected.Set("aaa", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-               POLICY_SOURCE_CLOUD,
-               base::WrapUnique(new base::FundamentalValue(1)), nullptr);
+               POLICY_SOURCE_CLOUD, base::MakeUnique<base::FundamentalValue>(1),
+               nullptr);
   policy0_.Erase("aaa");
   provider0_.UpdateChromePolicy(policy0_);
   EXPECT_TRUE(VerifyPolicies(
       PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()), expected));
 
   expected.Set("aaa", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-               POLICY_SOURCE_CLOUD,
-               base::WrapUnique(new base::FundamentalValue(2)), nullptr);
+               POLICY_SOURCE_CLOUD, base::MakeUnique<base::FundamentalValue>(2),
+               nullptr);
   policy1_.Set("aaa", POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
-               POLICY_SOURCE_CLOUD,
-               base::WrapUnique(new base::FundamentalValue(1)), nullptr);
+               POLICY_SOURCE_CLOUD, base::MakeUnique<base::FundamentalValue>(1),
+               nullptr);
   provider1_.UpdateChromePolicy(policy1_);
   EXPECT_TRUE(VerifyPolicies(
       PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()), expected));
@@ -545,12 +544,12 @@ TEST_F(PolicyServiceTest, NamespaceMerge) {
   // precedence, on every namespace.
   expected.Set(kSameLevelPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                POLICY_SOURCE_ENTERPRISE_DEFAULT,
-               base::WrapUnique(new base::StringValue("bundle0")), nullptr);
+               base::MakeUnique<base::StringValue>("bundle0"), nullptr);
   // For policies with different levels and scopes, the highest priority
   // level/scope combination takes precedence, on every namespace.
   expected.Set(kDiffLevelPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
                POLICY_SOURCE_PLATFORM,
-               base::WrapUnique(new base::StringValue("bundle2")), nullptr);
+               base::MakeUnique<base::StringValue>("bundle2"), nullptr);
   EXPECT_TRUE(policy_service_->GetPolicies(
       PolicyNamespace(POLICY_DOMAIN_CHROME, std::string())).Equals(expected));
   EXPECT_TRUE(policy_service_->GetPolicies(
@@ -647,24 +646,22 @@ TEST_F(PolicyServiceTest, FixDeprecatedPolicies) {
   // into a dictionary.
   policy_map.Set(key::kProxyServerMode, POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                 base::WrapUnique(new base::FundamentalValue(3)), nullptr);
+                 base::MakeUnique<base::FundamentalValue>(3), nullptr);
 
   // Both these policies should be ignored, since there's a higher priority
   // policy available.
   policy_map.Set(key::kProxyMode, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
                  POLICY_SOURCE_CLOUD,
-                 base::WrapUnique(new base::StringValue("pac_script")),
+                 base::MakeUnique<base::StringValue>("pac_script"), nullptr);
+  policy_map.Set(key::kProxyPacUrl, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
+                 POLICY_SOURCE_CLOUD, base::MakeUnique<base::StringValue>(
+                                          "http://example.com/wpad.dat"),
                  nullptr);
-  policy_map.Set(
-      key::kProxyPacUrl, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
-      POLICY_SOURCE_CLOUD,
-      base::WrapUnique(new base::StringValue("http://example.com/wpad.dat")),
-      nullptr);
 
   // Add a value to a non-Chrome namespace.
   policy_bundle->Get(extension_namespace)
       .Set(key::kProxyServerMode, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-           POLICY_SOURCE_CLOUD, base::WrapUnique(new base::FundamentalValue(3)),
+           POLICY_SOURCE_CLOUD, base::MakeUnique<base::FundamentalValue>(3),
            nullptr);
 
   // The resulting Chrome namespace map should have the collected policy.
@@ -680,8 +677,7 @@ TEST_F(PolicyServiceTest, FixDeprecatedPolicies) {
   PolicyMap expected_extension;
   expected_extension.Set(key::kProxyServerMode, POLICY_LEVEL_MANDATORY,
                          POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                         base::WrapUnique(new base::FundamentalValue(3)),
-                         nullptr);
+                         base::MakeUnique<base::FundamentalValue>(3), nullptr);
 
   provider0_.UpdatePolicy(std::move(policy_bundle));
   RunUntilIdle();

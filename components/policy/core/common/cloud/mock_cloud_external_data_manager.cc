@@ -21,8 +21,8 @@ MockCloudExternalDataManager::~MockCloudExternalDataManager() {
 std::unique_ptr<ExternalDataFetcher>
 MockCloudExternalDataManager::CreateExternalDataFetcher(
     const std::string& policy) {
-  return base::WrapUnique(
-      new ExternalDataFetcher(weak_factory_.GetWeakPtr(), policy));
+  return base::MakeUnique<ExternalDataFetcher>(weak_factory_.GetWeakPtr(),
+                                               policy);
 }
 
 }  // namespace policy

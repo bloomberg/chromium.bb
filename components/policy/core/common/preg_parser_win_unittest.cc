@@ -78,7 +78,7 @@ TEST(PRegParserWinTest, TestParseFile) {
   RegistryDict dict;
   SetInteger(&dict, "DeleteValuesTest1", 1);
   SetString(&dict, "DeleteValuesTest2", "2");
-  dict.SetKey("DeleteKeysTest1", base::WrapUnique(new RegistryDict()));
+  dict.SetKey("DeleteKeysTest1", base::MakeUnique<RegistryDict>());
   std::unique_ptr<RegistryDict> delete_keys_test(new RegistryDict());
   SetInteger(delete_keys_test.get(), "DeleteKeysTest2Entry", 1);
   dict.SetKey("DeleteKeysTest2", std::move(delete_keys_test));
@@ -86,7 +86,7 @@ TEST(PRegParserWinTest, TestParseFile) {
   std::unique_ptr<RegistryDict> subdict(new RegistryDict());
   SetInteger(subdict.get(), "DelValsTest1", 1);
   SetString(subdict.get(), "DelValsTest2", "2");
-  subdict->SetKey("DelValsTest3", base::WrapUnique(new RegistryDict()));
+  subdict->SetKey("DelValsTest3", base::MakeUnique<RegistryDict>());
   dict.SetKey("DelValsTest", std::move(subdict));
 
   // Run the parser.
@@ -99,7 +99,7 @@ TEST(PRegParserWinTest, TestParseFile) {
   // Build the expected output dictionary.
   RegistryDict expected;
   std::unique_ptr<RegistryDict> del_vals_dict(new RegistryDict());
-  del_vals_dict->SetKey("DelValsTest3", base::WrapUnique(new RegistryDict()));
+  del_vals_dict->SetKey("DelValsTest3", base::MakeUnique<RegistryDict>());
   expected.SetKey("DelValsTest", std::move(del_vals_dict));
   SetInteger(&expected, "HomepageIsNewTabPage", 1);
   SetString(&expected, "HomepageLocation", "http://www.example.com");

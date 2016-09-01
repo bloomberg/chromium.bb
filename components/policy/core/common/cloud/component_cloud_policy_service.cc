@@ -440,7 +440,7 @@ void ComponentCloudPolicyService::OnPolicyFetched(CloudPolicyClient* client) {
       continue;
     }
     valid_responses->set(
-        ns, base::WrapUnique(new em::PolicyFetchResponse(*it->second)));
+        ns, base::MakeUnique<em::PolicyFetchResponse>(*it->second));
   }
 
   backend_task_runner_->PostTask(

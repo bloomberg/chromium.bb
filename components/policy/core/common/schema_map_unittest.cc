@@ -142,7 +142,7 @@ TEST_F(SchemaMapTest, FilterBundle) {
   PolicyNamespace chrome_ns(POLICY_DOMAIN_CHROME, "");
   expected_bundle.Get(chrome_ns).Set(
       "ChromePolicy", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-      POLICY_SOURCE_CLOUD, base::WrapUnique(new base::StringValue("value")),
+      POLICY_SOURCE_CLOUD, base::MakeUnique<base::StringValue>("value"),
       nullptr);
   bundle.CopyFrom(expected_bundle);
 
@@ -150,8 +150,8 @@ TEST_F(SchemaMapTest, FilterBundle) {
   PolicyNamespace another_extension_ns(POLICY_DOMAIN_EXTENSIONS, "xyz");
   bundle.Get(another_extension_ns)
       .Set("AnotherExtensionPolicy", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-           POLICY_SOURCE_CLOUD,
-           base::WrapUnique(new base::StringValue("value")), nullptr);
+           POLICY_SOURCE_CLOUD, base::MakeUnique<base::StringValue>("value"),
+           nullptr);
   schema_map->FilterBundle(&bundle);
   EXPECT_TRUE(bundle.Equals(expected_bundle));
 
@@ -163,30 +163,30 @@ TEST_F(SchemaMapTest, FilterBundle) {
   map.Set("list", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
           POLICY_SOURCE_CLOUD, list.CreateDeepCopy(), nullptr);
   map.Set("boolean", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-          POLICY_SOURCE_CLOUD,
-          base::WrapUnique(new base::FundamentalValue(true)), nullptr);
+          POLICY_SOURCE_CLOUD, base::MakeUnique<base::FundamentalValue>(true),
+          nullptr);
   map.Set("integer", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-          POLICY_SOURCE_CLOUD, base::WrapUnique(new base::FundamentalValue(1)),
+          POLICY_SOURCE_CLOUD, base::MakeUnique<base::FundamentalValue>(1),
           nullptr);
   map.Set("null", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
           POLICY_SOURCE_CLOUD, base::Value::CreateNullValue(), nullptr);
   map.Set("double", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-          POLICY_SOURCE_CLOUD,
-          base::WrapUnique(new base::FundamentalValue(1.2)), nullptr);
+          POLICY_SOURCE_CLOUD, base::MakeUnique<base::FundamentalValue>(1.2),
+          nullptr);
   base::DictionaryValue dict;
   dict.SetString("a", "b");
   dict.SetInteger("b", 2);
   map.Set("object", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
           POLICY_SOURCE_CLOUD, dict.CreateDeepCopy(), nullptr);
   map.Set("string", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-          POLICY_SOURCE_CLOUD, base::WrapUnique(new base::StringValue("value")),
+          POLICY_SOURCE_CLOUD, base::MakeUnique<base::StringValue>("value"),
           nullptr);
 
   bundle.MergeFrom(expected_bundle);
   bundle.Get(extension_ns)
       .Set("Unexpected", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
            POLICY_SOURCE_CLOUD,
-           base::WrapUnique(new base::StringValue("to-be-removed")), nullptr);
+           base::MakeUnique<base::StringValue>("to-be-removed"), nullptr);
 
   schema_map->FilterBundle(&bundle);
   EXPECT_TRUE(bundle.Equals(expected_bundle));
@@ -196,25 +196,25 @@ TEST_F(SchemaMapTest, FilterBundle) {
   PolicyMap& badmap = bundle.Get(extension_ns);
   badmap.Set("list", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
              POLICY_SOURCE_CLOUD,
-             base::WrapUnique(new base::FundamentalValue(false)), nullptr);
+             base::MakeUnique<base::FundamentalValue>(false), nullptr);
   badmap.Set("boolean", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             POLICY_SOURCE_CLOUD,
-             base::WrapUnique(new base::FundamentalValue(0)), nullptr);
+             POLICY_SOURCE_CLOUD, base::MakeUnique<base::FundamentalValue>(0),
+             nullptr);
   badmap.Set("integer", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
              POLICY_SOURCE_CLOUD,
-             base::WrapUnique(new base::FundamentalValue(false)), nullptr);
+             base::MakeUnique<base::FundamentalValue>(false), nullptr);
   badmap.Set("null", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
              POLICY_SOURCE_CLOUD,
-             base::WrapUnique(new base::FundamentalValue(false)), nullptr);
+             base::MakeUnique<base::FundamentalValue>(false), nullptr);
   badmap.Set("double", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
              POLICY_SOURCE_CLOUD,
-             base::WrapUnique(new base::FundamentalValue(false)), nullptr);
+             base::MakeUnique<base::FundamentalValue>(false), nullptr);
   badmap.Set("object", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
              POLICY_SOURCE_CLOUD,
-             base::WrapUnique(new base::FundamentalValue(false)), nullptr);
+             base::MakeUnique<base::FundamentalValue>(false), nullptr);
   badmap.Set("string", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
              POLICY_SOURCE_CLOUD, nullptr,
-             base::WrapUnique(new ExternalDataFetcher(nullptr, std::string())));
+             base::MakeUnique<ExternalDataFetcher>(nullptr, std::string()));
 
   schema_map->FilterBundle(&bundle);
   EXPECT_TRUE(bundle.Equals(empty_bundle));
@@ -243,14 +243,14 @@ TEST_F(SchemaMapTest, LegacyComponents) {
   PolicyNamespace extension_ns(POLICY_DOMAIN_EXTENSIONS, "with-schema");
   bundle.Get(extension_ns)
       .Set("String", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-           POLICY_SOURCE_CLOUD,
-           base::WrapUnique(new base::StringValue("value 1")), nullptr);
+           POLICY_SOURCE_CLOUD, base::MakeUnique<base::StringValue>("value 1"),
+           nullptr);
 
   // The Chrome namespace isn't filtered.
   PolicyNamespace chrome_ns(POLICY_DOMAIN_CHROME, "");
   bundle.Get(chrome_ns).Set("ChromePolicy", POLICY_LEVEL_MANDATORY,
                             POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                            base::WrapUnique(new base::StringValue("value 3")),
+                            base::MakeUnique<base::StringValue>("value 3"),
                             nullptr);
 
   PolicyBundle expected_bundle;
@@ -260,21 +260,21 @@ TEST_F(SchemaMapTest, LegacyComponents) {
   PolicyNamespace without_schema_ns(POLICY_DOMAIN_EXTENSIONS, "without-schema");
   bundle.Get(without_schema_ns)
       .Set("Schemaless", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-           POLICY_SOURCE_CLOUD,
-           base::WrapUnique(new base::StringValue("value 2")), nullptr);
+           POLICY_SOURCE_CLOUD, base::MakeUnique<base::StringValue>("value 2"),
+           nullptr);
 
   // Unknown policies of known components with a schema are removed.
   bundle.Get(extension_ns)
       .Set("Surprise", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-           POLICY_SOURCE_CLOUD,
-           base::WrapUnique(new base::StringValue("value 4")), nullptr);
+           POLICY_SOURCE_CLOUD, base::MakeUnique<base::StringValue>("value 4"),
+           nullptr);
 
   // Unknown components are removed.
   PolicyNamespace unknown_ns(POLICY_DOMAIN_EXTENSIONS, "unknown");
   bundle.Get(unknown_ns)
       .Set("Surprise", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-           POLICY_SOURCE_CLOUD,
-           base::WrapUnique(new base::StringValue("value 5")), nullptr);
+           POLICY_SOURCE_CLOUD, base::MakeUnique<base::StringValue>("value 5"),
+           nullptr);
 
   schema_map->FilterBundle(&bundle);
   EXPECT_TRUE(bundle.Equals(expected_bundle));
