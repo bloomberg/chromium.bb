@@ -5,7 +5,7 @@
 #include "chrome/browser/chrome_child_process_watcher.h"
 
 #include "base/command_line.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_child_process_observer.h"

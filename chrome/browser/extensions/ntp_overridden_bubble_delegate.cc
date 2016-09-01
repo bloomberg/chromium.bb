@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/ntp_overridden_bubble_delegate.h"
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/profiles/profile.h"

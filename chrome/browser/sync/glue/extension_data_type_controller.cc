@@ -4,7 +4,7 @@
 
 #include "chrome/browser/sync/glue/extension_data_type_controller.h"
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_system.h"

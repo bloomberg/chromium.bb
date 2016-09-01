@@ -4,7 +4,7 @@
 
 #include "chrome/browser/memory/tab_manager_web_contents_data.h"
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/time/tick_clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/engagement/site_engagement_service.h"

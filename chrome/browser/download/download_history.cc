@@ -31,7 +31,7 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/download/download_crx_util.h"
 #include "components/history/content/browser/download_constants_utils.h"
 #include "components/history/core/browser/download_database.h"

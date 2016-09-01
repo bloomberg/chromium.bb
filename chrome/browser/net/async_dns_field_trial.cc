@@ -5,7 +5,7 @@
 #include "chrome/browser/net/async_dns_field_trial.h"
 
 #include "base/metrics/field_trial.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 

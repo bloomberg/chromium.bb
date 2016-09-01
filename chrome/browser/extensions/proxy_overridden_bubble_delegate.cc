@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/proxy_overridden_bubble_delegate.h"
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/settings_api_helpers.h"

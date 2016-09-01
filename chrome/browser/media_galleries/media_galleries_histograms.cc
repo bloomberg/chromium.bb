@@ -4,7 +4,7 @@
 
 #include "chrome/browser/media_galleries/media_galleries_histograms.h"
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 
 namespace media_galleries {
 

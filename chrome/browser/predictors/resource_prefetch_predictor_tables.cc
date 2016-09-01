@@ -11,7 +11,7 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "content/public/browser/browser_thread.h"
 #include "sql/meta_table.h"

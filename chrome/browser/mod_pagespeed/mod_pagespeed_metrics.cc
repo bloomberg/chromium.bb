@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "net/http/http_response_headers.h"
 #include "url/gurl.h"

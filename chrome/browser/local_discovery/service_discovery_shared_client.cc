@@ -8,7 +8,7 @@
 
 #if defined(OS_WIN)
 #include "base/files/file_path.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/timer/elapsed_timer.h"
 #include "chrome/installer/util/browser_distribution.h"

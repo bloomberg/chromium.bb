@@ -5,7 +5,7 @@
 #include "chrome/browser/prerender/prerender_origin.h"
 
 #include "base/macros.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 
 namespace prerender {

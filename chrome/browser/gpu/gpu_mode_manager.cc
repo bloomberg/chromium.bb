@@ -5,7 +5,7 @@
 #include "chrome/browser/gpu/gpu_mode_manager.h"
 
 #include "base/bind.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -29,7 +29,7 @@ void SetPreviousGpuModePref(bool enabled) {
   service->SetBoolean(prefs::kHardwareAccelerationModePrevious, enabled);
 }
 
-}  // namespace anonymous
+}  // namespace
 
 // static
 void GpuModeManager::RegisterPrefs(PrefRegistrySimple* registry) {

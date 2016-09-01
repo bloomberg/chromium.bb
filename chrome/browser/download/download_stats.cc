@@ -4,7 +4,7 @@
 
 #include "chrome/browser/download/download_stats.h"
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 
 void RecordDownloadShelfClose(int size, int in_progress, bool autoclose) {
   static const int kMaxShelfSize = 16;

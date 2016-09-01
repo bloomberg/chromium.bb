@@ -4,7 +4,7 @@
 
 #include "chrome/browser/content_settings/chrome_content_settings_utils.h"
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 
 namespace content_settings {
 

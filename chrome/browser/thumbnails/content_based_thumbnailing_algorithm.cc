@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/thumbnails/content_analysis.h"
 #include "chrome/browser/thumbnails/simple_thumbnail_crop.h"

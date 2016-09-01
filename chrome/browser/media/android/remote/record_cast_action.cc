@@ -6,7 +6,7 @@
 
 #include <jni.h>
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "content/public/browser/user_metrics.h"
 #include "jni/RecordCastAction_jni.h"
 #include "media/base/container_names.h"

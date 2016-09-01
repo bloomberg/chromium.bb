@@ -9,7 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/md5.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "components/safe_browsing_db/prefix_set.h"
 

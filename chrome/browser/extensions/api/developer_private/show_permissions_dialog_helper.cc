@@ -8,7 +8,7 @@
 
 #include "apps/app_load_service.h"
 #include "apps/saved_files_service.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/apps/app_info_dialog.h"
 #include "content/public/browser/web_contents.h"

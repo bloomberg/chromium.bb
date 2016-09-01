@@ -4,7 +4,7 @@
 
 #include "chrome/browser/bookmarks/bookmark_stats.h"
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "content/public/browser/user_metrics.h"
 

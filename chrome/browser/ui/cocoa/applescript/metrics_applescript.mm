@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/applescript/metrics_applescript.h"
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 
 namespace AppleScript {
 
