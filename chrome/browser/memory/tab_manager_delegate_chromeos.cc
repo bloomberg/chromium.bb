@@ -437,7 +437,7 @@ void TabManagerDelegate::LowMemoryKill(
     const TabStatsList& tab_list) {
   arc::ArcProcessService* arc_process_service = arc::ArcProcessService::Get();
   if (arc_process_service &&
-      arc_process_service->RequestProcessList(
+      arc_process_service->RequestAppProcessList(
           base::Bind(&TabManagerDelegate::LowMemoryKillImpl,
                      weak_ptr_factory_.GetWeakPtr(), tab_list))) {
     // LowMemoryKillImpl will be called asynchronously so nothing left to do.
@@ -569,7 +569,7 @@ void TabManagerDelegate::AdjustOomPriorities(const TabStatsList& tab_list) {
   if (IsArcMemoryManagementEnabled()) {
     arc::ArcProcessService* arc_process_service = arc::ArcProcessService::Get();
     if (arc_process_service &&
-        arc_process_service->RequestProcessList(
+        arc_process_service->RequestAppProcessList(
             base::Bind(&TabManagerDelegate::AdjustOomPrioritiesImpl,
                        weak_ptr_factory_.GetWeakPtr(), tab_list))) {
       return;

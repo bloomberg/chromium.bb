@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/logging.h"
 #include "base/process/process.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -23,7 +24,8 @@ namespace task_manager {
 
 namespace {
 
-const int kUpdateProcessListDelaySeconds = 1;
+const int kUpdateAppProcessListDelaySeconds = 1;
+const int kUpdateSystemProcessListDelaySeconds = 3;
 
 }  // namespace
 
@@ -44,10 +46,9 @@ Task* ArcProcessTaskProvider::GetTaskOfUrlRequest(int origin_pid,
   return nullptr;
 }
 
-void ArcProcessTaskProvider::OnUpdateProcessList(
+void ArcProcessTaskProvider::UpdateProcessList(
+    ArcTaskMap* pid_to_task,
     const std::vector<ArcProcess>& processes) {
-  TRACE_EVENT0("browser", "ArcProcessTaskProvider::OnUpdateProcessList");
-
   if (!is_updating_)
     return;
 
@@ -56,13 +57,13 @@ void ArcProcessTaskProvider::OnUpdateProcessList(
   // ArcProcessTaskProvider.
 
   set<ProcessId> nspid_to_remove;
-  for (const auto& entry : nspid_to_task_)
+  for (const auto& entry : *pid_to_task)
     nspid_to_remove.insert(entry.first);
 
   for (const auto& entry : processes) {
     if (nspid_to_remove.erase(entry.nspid()) == 0) {
       // New arc process.
-      std::unique_ptr<ArcProcessTask>& task = nspid_to_task_[entry.nspid()];
+      std::unique_ptr<ArcProcessTask>& task = (*pid_to_task)[entry.nspid()];
       // After calling NotifyObserverTaskAdded(), the raw pointer of |task| is
       // remebered somewhere else. One should not (implicitly) delete the
       // referenced object before calling NotifyObserverTaskRemoved() first
@@ -75,7 +76,7 @@ void ArcProcessTaskProvider::OnUpdateProcessList(
       NotifyObserverTaskAdded(task.get());
     } else {
       // Update process state of existing process.
-      std::unique_ptr<ArcProcessTask>& task = nspid_to_task_[entry.nspid()];
+      std::unique_ptr<ArcProcessTask>& task = (*pid_to_task)[entry.nspid()];
       DCHECK(task.get());
       task->SetProcessState(entry.process_state());
     }
@@ -83,48 +84,83 @@ void ArcProcessTaskProvider::OnUpdateProcessList(
 
   for (const auto& entry : nspid_to_remove) {
     // Stale arc process.
-    NotifyObserverTaskRemoved(nspid_to_task_[entry].get());
-    nspid_to_task_.erase(entry);
+    NotifyObserverTaskRemoved((*pid_to_task)[entry].get());
+    pid_to_task->erase(entry);
   }
-  ScheduleNextRequest();
 }
 
-void ArcProcessTaskProvider::RequestProcessList() {
+void ArcProcessTaskProvider::OnUpdateAppProcessList(
+    const std::vector<ArcProcess>& processes) {
+  TRACE_EVENT0("browser", "ArcProcessTaskProvider::OnUpdateAppProcessList");
+  UpdateProcessList(&nspid_to_task_, processes);
+  ScheduleNextAppRequest();
+}
+
+void ArcProcessTaskProvider::OnUpdateSystemProcessList(
+    const std::vector<ArcProcess>& processes) {
+  UpdateProcessList(&nspid_to_sys_task_, processes);
+  ScheduleNextSystemRequest();
+}
+
+void ArcProcessTaskProvider::RequestAppProcessList() {
   arc::ArcProcessService* arc_process_service =
       arc::ArcProcessService::Get();
-  auto callback = base::Bind(&ArcProcessTaskProvider::OnUpdateProcessList,
+  auto callback = base::Bind(&ArcProcessTaskProvider::OnUpdateAppProcessList,
                              weak_ptr_factory_.GetWeakPtr());
   if (!arc_process_service ||
-      !arc_process_service->RequestProcessList(callback)) {
+      !arc_process_service->RequestAppProcessList(callback)) {
     VLOG(2) << "ARC process instance is not ready.";
-    // Update with the empty ARC process list.
-    // Note that this can happen in the middle of the session if the user has
-    // just opted out from ARC.
-    callback.Run(std::vector<ArcProcess>());
+    ScheduleNextAppRequest();
+    return;
   }
+}
+
+void ArcProcessTaskProvider::RequestSystemProcessList() {
+  arc::ArcProcessService* arc_process_service = arc::ArcProcessService::Get();
+  auto callback = base::Bind(&ArcProcessTaskProvider::OnUpdateSystemProcessList,
+                             weak_ptr_factory_.GetWeakPtr());
+  if (!arc_process_service) {
+    VLOG(2) << "ARC process instance is not ready.";
+    ScheduleNextSystemRequest();
+    return;
+  }
+  arc_process_service->RequestSystemProcessList(callback);
 }
 
 void ArcProcessTaskProvider::StartUpdating() {
   is_updating_ = true;
-  RequestProcessList();
+  RequestAppProcessList();
+  RequestSystemProcessList();
 }
 
 void ArcProcessTaskProvider::StopUpdating() {
   is_updating_ = false;
   nspid_to_task_.clear();
+  nspid_to_sys_task_.clear();
 }
 
-void ArcProcessTaskProvider::ScheduleNextRequest() {
+void ArcProcessTaskProvider::ScheduleNextRequest(const base::Closure& task,
+                                                 const int delaySeconds) {
   if (!is_updating_)
     return;
   // TODO(nya): Remove this timer once ARC starts to send us UpdateProcessList
   // message when the process list changed. As of today, ARC does not send
-  // the process list unless we request it by RequestProcessList message.
+  // the process list unless we request it by RequestAppProcessList message.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&ArcProcessTaskProvider::RequestProcessList,
+      FROM_HERE, task, base::TimeDelta::FromSeconds(delaySeconds));
+}
+
+void ArcProcessTaskProvider::ScheduleNextAppRequest() {
+  ScheduleNextRequest(base::Bind(&ArcProcessTaskProvider::RequestAppProcessList,
+                                 weak_ptr_factory_.GetWeakPtr()),
+                      kUpdateAppProcessListDelaySeconds);
+}
+
+void ArcProcessTaskProvider::ScheduleNextSystemRequest() {
+  ScheduleNextRequest(
+      base::Bind(&ArcProcessTaskProvider::RequestSystemProcessList,
                  weak_ptr_factory_.GetWeakPtr()),
-      base::TimeDelta::FromSeconds(kUpdateProcessListDelaySeconds));
+      kUpdateSystemProcessListDelaySeconds);
 }
 
 }  // namespace task_manager

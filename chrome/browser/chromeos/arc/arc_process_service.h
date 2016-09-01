@@ -9,10 +9,12 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/sequenced_worker_pool.h"
-#include "base/threading/thread_checker.h"
+#include "base/process/process_iterator.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread.h"
 #include "chrome/browser/chromeos/arc/arc_process.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
@@ -22,19 +24,26 @@ namespace arc {
 
 // A single global entry to get a list of ARC processes.
 //
-// Call RequestProcessList() on the main UI thread to get a list of all ARC
-// processes. It returns vector<arc::ArcProcess>, which includes pid <-> nspid
-// mapping.
+// Call RequestAppProcessList() / RequestSystemProcessList() on the main UI
+// thread to get a list of all ARC app / system processes. It returns
+// vector<arc::ArcProcess>, which includes pid <-> nspid mapping.
 // Example:
 //   void OnUpdateProcessList(const vector<arc::ArcProcess>&) {...}
 //
 //   arc::ArcProcessService* arc_process_service =
 //       arc::ArcProcessService::Get();
 //   if (!arc_process_service ||
-//       !arc_process_service->RequestProcessList(
+//       !arc_process_service->RequestAppProcessList(
 //           base::Bind(&OnUpdateProcessList)) {
 //     LOG(ERROR) << "ARC process instance not ready.";
 //   }
+//
+// [System Process]
+// The system process here is defined by the scope. If the process is produced
+// under system_server in Android, we regard it as one of Android app process.
+// Otherwise, the processes that are introduced by init would then be regarded
+// as System Process. RequestAppProcessList() is responsible for app processes
+// while RequestSystemProcessList() is responsible for System Processes.
 class ArcProcessService
     : public ArcService,
       public InstanceHolder<mojom::ProcessInstance>::Observer {
@@ -53,38 +62,56 @@ class ArcProcessService
 
   // Returns true if ARC IPC is ready for process list request,
   // otherwise false.
-  bool RequestProcessList(RequestProcessListCallback callback);
+  bool RequestAppProcessList(RequestProcessListCallback callback);
+  void RequestSystemProcessList(RequestProcessListCallback callback);
+
+  using PidMap = std::map<base::ProcessId, base::ProcessId>;
+
+  class NSPidToPidMap : public base::RefCountedThreadSafe<NSPidToPidMap> {
+   public:
+    NSPidToPidMap();
+    base::ProcessId& operator[](const base::ProcessId& key) {
+      return pidmap_[key];
+    }
+    const base::ProcessId& at(const base::ProcessId& key) const {
+      return pidmap_.at(key);
+    }
+    PidMap::size_type erase(const base::ProcessId& key) {
+      return pidmap_.erase(key);
+    }
+    PidMap::const_iterator begin() const { return pidmap_.begin(); }
+    PidMap::const_iterator end() const { return pidmap_.end(); }
+    PidMap::const_iterator find(const base::ProcessId& key) const {
+      return pidmap_.find(key);
+    }
+    void clear() { pidmap_.clear(); }
+
+   private:
+    friend base::RefCountedThreadSafe<NSPidToPidMap>;
+    ~NSPidToPidMap();
+
+    PidMap pidmap_;
+    DISALLOW_COPY_AND_ASSIGN(NSPidToPidMap);
+  };
 
  private:
-  void Reset();
-
   void OnReceiveProcessList(
       const RequestProcessListCallback& callback,
-      mojo::Array<arc::mojom::RunningAppProcessInfoPtr> mojo_processes);
+      const mojo::Array<arc::mojom::RunningAppProcessInfoPtr>
+          instance_processes);
 
-  void CallbackRelay(
-      const RequestProcessListCallback& callback,
-      const std::vector<ArcProcess>* ret_processes);
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner();
 
-  void UpdateAndReturnProcessList(
-      const std::vector<arc::mojom::RunningAppProcessInfoPtr>* raw_processes,
-      std::vector<ArcProcess>* ret_processes);
-
-  void PopulateProcessList(
-      const std::vector<arc::mojom::RunningAppProcessInfoPtr>* raw_processes,
-      std::vector<ArcProcess>* ret_processes);
-
-  void UpdateNspidToPidMap();
+  // There are some expensive tasks such as traverse whole process tree that
+  // we can't do it on the UI thread. Thus we need an additional thread to
+  // handle
+  // such tasks.
+  base::Thread heavy_task_thread_;
 
   // Keep a cache pid mapping of all arc processes so to minimize the number of
   // nspid lookup from /proc/<PID>/status.
-  // To play safe, always modify |nspid_to_pid_| on the worker thread.
-  std::map<base::ProcessId, base::ProcessId> nspid_to_pid_;
-
-  scoped_refptr<base::SequencedWorkerPool> worker_pool_;
-
-  // To ensure internal state changes are done on the same worker thread.
-  base::ThreadChecker thread_checker_;
+  // To play safe, always modify |nspid_to_pid_| on the |heavy_task_thread_|.
+  scoped_refptr<NSPidToPidMap> nspid_to_pid_;
 
   // Always keep this the last member of this class to make sure it's the
   // first thing to be destructed.
