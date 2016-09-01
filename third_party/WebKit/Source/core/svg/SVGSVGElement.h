@@ -59,6 +59,7 @@ public:
     float intrinsicHeight() const;
     FloatSize currentViewportSize() const;
     FloatRect currentViewBoxRect() const;
+    SVGPreserveAspectRatio* currentPreserveAspectRatio() const;
 
     float currentScale() const;
     void setCurrentScale(float scale);
@@ -133,6 +134,7 @@ private:
 
     void inheritViewAttributes(SVGViewElement*);
 
+    bool shouldSynthesizeViewBox() const;
     void updateUserTransform();
 
     void finishParsingChildren() override;

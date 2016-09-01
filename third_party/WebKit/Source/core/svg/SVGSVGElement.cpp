@@ -567,6 +567,13 @@ bool SVGSVGElement::selfHasRelativeLengths() const
         || m_height->currentValue()->isRelative();
 }
 
+bool SVGSVGElement::shouldSynthesizeViewBox() const
+{
+    return layoutObject()
+        && layoutObject()->isSVGRoot()
+        && toLayoutSVGRoot(layoutObject())->isEmbeddedThroughSVGImage();
+}
+
 FloatRect SVGSVGElement::currentViewBoxRect() const
 {
     if (m_useCurrentView) {
@@ -577,14 +584,33 @@ FloatRect SVGSVGElement::currentViewBoxRect() const
     FloatRect useViewBox = viewBox()->currentValue()->value();
     if (!useViewBox.isEmpty())
         return useViewBox;
-    if (!layoutObject() || !layoutObject()->isSVGRoot())
-        return FloatRect();
-    if (!toLayoutSVGRoot(layoutObject())->isEmbeddedThroughSVGImage())
+    if (!shouldSynthesizeViewBox())
         return FloatRect();
 
     // If no viewBox is specified but non-relative width/height values, then we
     // should always synthesize a viewBox if we're embedded through a SVGImage.
-    return FloatRect(FloatPoint(), FloatSize(intrinsicWidth(), intrinsicHeight()));
+    FloatSize synthesizedViewBoxSize(intrinsicWidth(), intrinsicHeight());
+    if (!hasIntrinsicWidth())
+        synthesizedViewBoxSize.setWidth(width()->currentValue()->scaleByPercentage(currentViewportSize().width()));
+    if (!hasIntrinsicHeight())
+        synthesizedViewBoxSize.setHeight(height()->currentValue()->scaleByPercentage(currentViewportSize().height()));
+    return FloatRect(FloatPoint(), synthesizedViewBoxSize);
+}
+
+SVGPreserveAspectRatio* SVGSVGElement::currentPreserveAspectRatio() const
+{
+    if (m_useCurrentView) {
+        DCHECK(m_viewSpec);
+        return m_viewSpec->preserveAspectRatio()->currentValue();
+    }
+    if (!viewBox()->currentValue()->isValid() && shouldSynthesizeViewBox()) {
+        // If no viewBox is specified and we're embedded through SVGImage, then
+        // synthesize a pAR with the value 'none'.
+        SVGPreserveAspectRatio* synthesizedPAR = SVGPreserveAspectRatio::create();
+        synthesizedPAR->setAlign(SVGPreserveAspectRatio::kSvgPreserveaspectratioNone);
+        return synthesizedPAR;
+    }
+    return preserveAspectRatio()->currentValue();
 }
 
 FloatSize SVGSVGElement::currentViewportSize() const
@@ -631,11 +657,11 @@ float SVGSVGElement::intrinsicHeight() const
 
 AffineTransform SVGSVGElement::viewBoxToViewTransform(float viewWidth, float viewHeight) const
 {
+    AffineTransform ctm = SVGFitToViewBox::viewBoxToViewTransform(currentViewBoxRect(), currentPreserveAspectRatio(), viewWidth, viewHeight);
     if (!m_useCurrentView)
-        return SVGFitToViewBox::viewBoxToViewTransform(currentViewBoxRect(), preserveAspectRatio()->currentValue(), viewWidth, viewHeight);
+        return ctm;
     DCHECK(m_viewSpec);
 
-    AffineTransform ctm = SVGFitToViewBox::viewBoxToViewTransform(currentViewBoxRect(), m_viewSpec->preserveAspectRatio()->currentValue(), viewWidth, viewHeight);
     SVGTransformList* transformList = m_viewSpec->transform();
     if (transformList->isEmpty())
         return ctm;
