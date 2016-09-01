@@ -54,6 +54,17 @@ const int kDefaultFontSize = 12;
   return l10n_util::GetNSString(IDS_ACCNAME_BOOKMARKS_CHEVRON);
 }
 
+- (NSRect)imageRectForBounds:(NSRect)theRect {
+  NSRect imageRect = [super imageRectForBounds:theRect];
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    // Make sure the chevron icon stays centered. Normally a bookmark bar item
+    // with no label has its icon placed at a fixed x-position.
+    CGFloat totalWidth = NSMaxX(theRect);
+    imageRect.origin.x = (totalWidth - [self image].size.width) / 2;
+  }
+  return imageRect;
+}
+
 @end
 
 @interface BookmarkButtonCell(Private)
