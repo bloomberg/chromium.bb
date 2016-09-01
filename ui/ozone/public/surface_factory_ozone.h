@@ -21,6 +21,7 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/ozone/ozone_base_export.h"
+#include "ui/ozone/public/gl_ozone.h"
 #include "ui/ozone/public/native_pixmap.h"
 
 namespace ui {
@@ -43,11 +44,8 @@ class SurfaceOzoneCanvas;
 // 1) Accelerated Drawing (GL path):
 //
 // The following functions are specific to GL:
-//  - GetNativeDisplay (EGL only)
-//  - LoadEGLGLES2Bindings (EGL only)
-//  - CreateViewGLSurface (all GL implementations)
-//  - CreateSurfacelessViewGLSurface (EGL only)
-//  - CreateOffscreenGLSurface (all GL implementations)
+//  - GetAllowedGLImplementations
+//  - GetOzoneGLementation (along with the associated GLOzone)
 //
 // 2) Software Drawing (Skia):
 //
@@ -61,26 +59,28 @@ class SurfaceOzoneCanvas;
 // modes (See comments bellow for descriptions).
 class OZONE_BASE_EXPORT SurfaceFactoryOzone {
  public:
-  // Returns native platform display handle. This is used to obtain the EGL
-  // display connection for the native display.
+  // Returns a list of allowed GL implementations. The default implementation
+  // will be the first item.
+  virtual std::vector<gl::GLImplementation> GetAllowedGLImplementations();
+
+  // Returns the GLOzone to use for the specified GL implementation, or null if
+  // GL implementation doesn't exist.
+  virtual GLOzone* GetGLOzone(gl::GLImplementation implemenation);
+
+  // DEPRECATED(kylechar): Implement GLOzoneEGL instead.
   virtual intptr_t GetNativeDisplay();
 
-  // Creates a GL surface that renders directly to a view for the specified GL
-  // implementation.
+  // DEPRECATED(kylechar): Implement GLOzone instead.
   virtual scoped_refptr<gl::GLSurface> CreateViewGLSurface(
       gl::GLImplementation implementation,
       gfx::AcceleratedWidget widget);
 
-  // Creates a GL surface that renders directly into a window with surfaceless
-  // semantics for the specified GL implementation. The surface is not backed
-  // by any buffers and is used for overlay-only displays. This will return
-  // nullptr if surfaceless mode unsupported.
+  // DEPRECATED(kylechar): Implement GLOzone instead.
   virtual scoped_refptr<gl::GLSurface> CreateSurfacelessViewGLSurface(
       gl::GLImplementation implementation,
       gfx::AcceleratedWidget widget);
 
-  // Creates a GL surface used for offscreen rendering for the specified GL
-  // implementation.
+  // DEPRECATED(kylechar): Implement GLOzone instead.
   virtual scoped_refptr<gl::GLSurface> CreateOffscreenGLSurface(
       gl::GLImplementation implementation,
       const gfx::Size& size);
@@ -92,7 +92,7 @@ class OZONE_BASE_EXPORT SurfaceFactoryOzone {
   virtual std::unique_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
       gfx::AcceleratedWidget widget);
 
-  // Sets up GL bindings for the native surface.
+  // DEPRECATED(kylechar): Implement GLOzoneEGL instead.
   virtual bool LoadEGLGLES2Bindings();
 
   // Returns all scanout formats for |widget| representing a particular display

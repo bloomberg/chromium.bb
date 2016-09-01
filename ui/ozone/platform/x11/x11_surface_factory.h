@@ -6,30 +6,28 @@
 #define UI_OZONE_PLATFORM_X11_X11_SURFACE_FACTORY_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/ozone/public/gl_ozone.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 
 namespace ui {
 
-// Handles creation of EGL and software surfaces for drawing in XWindow.
+// Handles GL initialization and surface/context creation for X11.
 class X11SurfaceFactory : public SurfaceFactoryOzone {
  public:
   X11SurfaceFactory();
   ~X11SurfaceFactory() override;
 
   // SurfaceFactoryOzone:
-  scoped_refptr<gl::GLSurface> CreateViewGLSurface(
-      gl::GLImplementation implementation,
-      gfx::AcceleratedWidget widget) override;
-  scoped_refptr<gl::GLSurface> CreateOffscreenGLSurface(
-      gl::GLImplementation implementation,
-      const gfx::Size& size) override;
-  bool LoadEGLGLES2Bindings() override;
-  intptr_t GetNativeDisplay() override;
+  std::vector<gl::GLImplementation> GetAllowedGLImplementations() override;
+  GLOzone* GetGLOzone(gl::GLImplementation implementation) override;
 
  private:
+  std::unique_ptr<GLOzone> egl_implementation_;
+
   DISALLOW_COPY_AND_ASSIGN(X11SurfaceFactory);
 };
 

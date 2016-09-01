@@ -67,6 +67,7 @@ component("ozone_base") {
   sources = [
     "public/cursor_factory_ozone.cc",
     "public/cursor_factory_ozone.h",
+    "public/gl_ozone.h",
     "public/gpu_platform_support_host.cc",
     "public/gpu_platform_support_host.h",
     "public/input_controller.cc",

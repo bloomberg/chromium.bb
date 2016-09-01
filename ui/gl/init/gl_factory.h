@@ -45,7 +45,7 @@ GL_INIT_EXPORT bool GetGLWindowSystemBindingInfo(
     GLWindowSystemBindingInfo* info);
 
 // Creates a GL context that is compatible with the given surface.
-// |share_group|, if non-NULL, is a group of contexts which the internally
+// |share_group|, if non-null, is a group of contexts which the internally
 // created OpenGL context shares textures and other resources.
 GL_INIT_EXPORT scoped_refptr<GLContext> CreateGLContext(
     GLShareGroup* share_group,

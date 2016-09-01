@@ -16,6 +16,20 @@ SurfaceFactoryOzone::SurfaceFactoryOzone() {}
 
 SurfaceFactoryOzone::~SurfaceFactoryOzone() {}
 
+std::vector<gl::GLImplementation>
+SurfaceFactoryOzone::GetAllowedGLImplementations() {
+  std::vector<gl::GLImplementation> impls;
+  // TODO(kylechar): Remove EGL from this list once every Ozone platform that
+  // uses EGL overrides this method.
+  impls.push_back(gl::kGLImplementationEGLGLES2);
+  impls.push_back(gl::kGLImplementationOSMesaGL);
+  return impls;
+}
+
+GLOzone* SurfaceFactoryOzone::GetGLOzone(gl::GLImplementation implemenation) {
+  return nullptr;
+}
+
 intptr_t SurfaceFactoryOzone::GetNativeDisplay() {
   return 0;
 }

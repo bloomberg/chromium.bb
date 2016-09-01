@@ -11,6 +11,7 @@
 #include "ui/gl/gl_implementation_osmesa.h"
 #include "ui/gl/gl_osmesa_api_implementation.h"
 #include "ui/gl/gl_surface_egl.h"
+#include "ui/gl/init/ozone_util.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 
@@ -19,12 +20,8 @@ namespace init {
 
 namespace {
 
-ui::SurfaceFactoryOzone* GetSurfaceFactory() {
-  return ui::OzonePlatform::GetInstance()->GetSurfaceFactoryOzone();
-}
-
 bool InitializeStaticEGLInternal() {
-  if (!GetSurfaceFactory()->LoadEGLGLES2Bindings())
+  if (!GetSurfaceFactoryOzone()->LoadEGLGLES2Bindings())
     return false;
 
   SetGLImplementation(kGLImplementationEGLGLES2);
@@ -37,10 +34,13 @@ bool InitializeStaticEGLInternal() {
 }  // namespace
 
 bool InitializeGLOneOffPlatform() {
+  if (HasGLOzone())
+    return GetGLOzone()->InitializeGLOneOffPlatform();
+
   switch (GetGLImplementation()) {
     case kGLImplementationEGLGLES2:
       if (!GLSurfaceEGL::InitializeOneOff(
-              GetSurfaceFactory()->GetNativeDisplay())) {
+              GetSurfaceFactoryOzone()->GetNativeDisplay())) {
         LOG(ERROR) << "GLSurfaceEGL::InitializeOneOff failed.";
         return false;
       }
@@ -58,7 +58,11 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
   // unit tests have initialized with kGLImplementationMock, we don't want to
   // later switch to another GL implementation.
   DCHECK_EQ(kGLImplementationNone, GetGLImplementation());
-  ui::OzonePlatform::InitializeForGPU();
+
+  if (HasGLOzone(implementation)) {
+    return GetGLOzone(implementation)
+        ->InitializeStaticGLBindings(implementation);
+  }
 
   switch (implementation) {
     case kGLImplementationOSMesaGL:
@@ -77,12 +81,22 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
 }
 
 void InitializeDebugGLBindings() {
+  if (HasGLOzone()) {
+    GetGLOzone()->InitializeDebugGLBindings();
+    return;
+  }
+
   InitializeDebugGLBindingsEGL();
   InitializeDebugGLBindingsGL();
   InitializeDebugGLBindingsOSMESA();
 }
 
 void ClearGLBindingsPlatform() {
+  if (HasGLOzone()) {
+    GetGLOzone()->ClearGLBindings();
+    return;
+  }
+
   ClearGLBindingsEGL();
   ClearGLBindingsGL();
   ClearGLBindingsOSMESA();

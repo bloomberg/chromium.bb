@@ -311,6 +311,10 @@ static_library("test_support") {
     configs += [ "//build/config/linux:x11" ]
     deps += [ "//ui/platform_window/x11" ]
   }
+
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
+  }
 }
 
 source_set("run_all_unittests") {

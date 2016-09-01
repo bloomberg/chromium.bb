@@ -11,6 +11,7 @@
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/ozone/common/egl_util.h"
+#include "ui/ozone/common/gl_ozone_egl.h"
 
 namespace ui {
 
@@ -119,40 +120,55 @@ GLSurfaceEGLOzoneX11::~GLSurfaceEGLOzoneX11() {
   Destroy();
 }
 
+class GLOzoneEGLX11 : public GLOzoneEGL {
+ public:
+  GLOzoneEGLX11() {}
+  ~GLOzoneEGLX11() override {}
+
+  scoped_refptr<gl::GLSurface> CreateViewGLSurface(
+      gfx::AcceleratedWidget window) override {
+    return gl::InitializeGLSurface(new GLSurfaceEGLOzoneX11(window));
+  }
+
+  scoped_refptr<gl::GLSurface> CreateOffscreenGLSurface(
+      const gfx::Size& size) override {
+    return gl::InitializeGLSurface(new gl::PbufferGLSurfaceEGL(size));
+  }
+
+ protected:
+  intptr_t GetNativeDisplay() override {
+    return reinterpret_cast<intptr_t>(gfx::GetXDisplay());
+  }
+
+  bool LoadGLES2Bindings() override { return LoadDefaultEGLGLES2Bindings(); }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(GLOzoneEGLX11);
+};
+
 }  // namespace
 
-X11SurfaceFactory::X11SurfaceFactory() {}
+X11SurfaceFactory::X11SurfaceFactory() {
+  egl_implementation_.reset(new GLOzoneEGLX11());
+}
 
 X11SurfaceFactory::~X11SurfaceFactory() {}
 
-scoped_refptr<gl::GLSurface> X11SurfaceFactory::CreateViewGLSurface(
-    gl::GLImplementation implementation,
-    gfx::AcceleratedWidget widget) {
-  if (implementation != gl::kGLImplementationEGLGLES2) {
-    NOTREACHED();
-    return nullptr;
+std::vector<gl::GLImplementation>
+X11SurfaceFactory::GetAllowedGLImplementations() {
+  std::vector<gl::GLImplementation> impls;
+  impls.push_back(gl::kGLImplementationEGLGLES2);
+  impls.push_back(gl::kGLImplementationOSMesaGL);
+  return impls;
+}
+
+GLOzone* X11SurfaceFactory::GetGLOzone(gl::GLImplementation implementation) {
+  switch (implementation) {
+    case gl::kGLImplementationEGLGLES2:
+      return egl_implementation_.get();
+    default:
+      return nullptr;
   }
-
-  return gl::InitializeGLSurface(new GLSurfaceEGLOzoneX11(widget));
-}
-
-scoped_refptr<gl::GLSurface> X11SurfaceFactory::CreateOffscreenGLSurface(
-    gl::GLImplementation implementation,
-    const gfx::Size& size) {
-  if (implementation != gl::kGLImplementationEGLGLES2) {
-    NOTREACHED();
-    return nullptr;
-  }
-
-  return gl::InitializeGLSurface(new gl::PbufferGLSurfaceEGL(size));
-}
-
-bool X11SurfaceFactory::LoadEGLGLES2Bindings() {
-  return LoadDefaultEGLGLES2Bindings();
-}
-
-intptr_t X11SurfaceFactory::GetNativeDisplay() {
-  return reinterpret_cast<intptr_t>(gfx::GetXDisplay());
 }
 
 }  // namespace ui
