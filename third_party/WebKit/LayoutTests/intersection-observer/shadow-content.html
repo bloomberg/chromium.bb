@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<script src="../resources/js-test.js"></script>
+<script src="../resources/intersection-observer-helper-functions.js"></script>
+<div id="host"></div>
+
+<script>
+description("Tests that observations can be made across shadow DOM boundaries.");
+var entries = [];
+var target;
+var observer = new IntersectionObserver(changes => { entries = entries.concat(changes) });
+
+onload = function() {
+  let shadowHost = document.getElementById("host");
+  let shadowRoot = shadowHost.createShadowRoot();
+  target = document.createElement('div');
+  target.style.cssText = "background-color: green; width:100px; height:100px";
+  shadowRoot.appendChild(target);
+  observer.observe(target);
+
+  entries = entries.concat(observer.takeRecords());
+  shouldBeEqualToNumber("entries.length", 0);
+  waitForNotification(step1);
+};
+
+function step1() {
+  shouldBeEqualToNumber("entries.length", 1);
+  if (entries.length > 0) {
+    shouldBeEqualToNumber("entries[0].boundingClientRect.left", 8);
+    shouldBeEqualToNumber("entries[0].boundingClientRect.right", 108);
+    shouldBeEqualToNumber("entries[0].boundingClientRect.top", 8);
+    shouldBeEqualToNumber("entries[0].boundingClientRect.bottom", 108);
+    shouldBeEqualToNumber("entries[0].intersectionRect.left", 8);
+    shouldBeEqualToNumber("entries[0].intersectionRect.right", 108);
+    shouldBeEqualToNumber("entries[0].intersectionRect.top", 8);
+    shouldBeEqualToNumber("entries[0].intersectionRect.bottom", 108);
+    shouldBeEqualToNumber("entries[0].rootBounds.left", 0);
+    shouldBeEqualToNumber("entries[0].rootBounds.right", 800);
+    shouldBeEqualToNumber("entries[0].rootBounds.top", 0);
+    shouldBeEqualToNumber("entries[0].rootBounds.bottom", 600);
+    shouldEvaluateToSameObject("entries[0].target", target);
+  }
+  finishJSTest();
+}
+</script>

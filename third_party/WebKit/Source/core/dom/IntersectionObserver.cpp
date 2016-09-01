@@ -249,7 +249,7 @@ void IntersectionObserver::observe(Element* target, ExceptionState& exceptionSta
 
     if (target->document() == rootNode()->document()) {
         shouldReportRootBounds = true;
-        isDOMDescendant = target->isDescendantOf(rootNode());
+        isDOMDescendant = rootNode()->isShadowIncludingInclusiveAncestorOf(target);
     } else if (targetFrame && rootFrame) {
         shouldReportRootBounds = targetFrame->securityContext()->getSecurityOrigin()->canAccess(rootFrame->securityContext()->getSecurityOrigin());
         isDOMDescendant = (targetFrame->tree().top() == rootFrame);
