@@ -1753,9 +1753,9 @@ void LayoutFlexibleBox::layoutColumnReverse(const OrderedFlexItemList& children,
     }
 }
 
-static LayoutUnit initialAlignContentOffset(LayoutUnit availableFreeSpace, ContentPosition alignContent, ContentDistributionType alignContentDistribution, bool isMultiline, unsigned numberOfLines)
+static LayoutUnit initialAlignContentOffset(LayoutUnit availableFreeSpace, ContentPosition alignContent, ContentDistributionType alignContentDistribution, unsigned numberOfLines)
 {
-    if (!isMultiline)
+    if (numberOfLines <= 1)
         return LayoutUnit();
     if (alignContent == ContentPositionFlexEnd)
         return availableFreeSpace;
@@ -1783,15 +1783,13 @@ static LayoutUnit alignContentSpaceBetweenChildren(LayoutUnit availableFreeSpace
 
 void LayoutFlexibleBox::alignFlexLines(Vector<LineContext>& lineContexts)
 {
-    if (!lineContexts.size())
-        return;
-
     ContentPosition position = styleRef().resolvedAlignContentPosition(contentAlignmentNormalBehavior());
     ContentDistributionType distribution = styleRef().resolvedAlignContentDistribution(contentAlignmentNormalBehavior());
 
-    // If we have a single line flexbox the line height is all the available space.
+    // If we have a single line flexbox or a multiline line flexbox with only one flex line,
+    // the line height is all the available space.
     // For flex-direction: row, this means we need to use the height, so we do this after calling updateLogicalHeight.
-    if (!isMultiline()) {
+    if (lineContexts.size() == 1) {
         lineContexts[0].crossAxisExtent = crossAxisContentExtent();
         return;
     }
@@ -1804,7 +1802,7 @@ void LayoutFlexibleBox::alignFlexLines(Vector<LineContext>& lineContexts)
         availableCrossAxisSpace -= lineContexts[i].crossAxisExtent;
 
     LayoutBox* child = m_orderIterator.first();
-    LayoutUnit lineOffset = initialAlignContentOffset(availableCrossAxisSpace, position, distribution, isMultiline(), lineContexts.size());
+    LayoutUnit lineOffset = initialAlignContentOffset(availableCrossAxisSpace, position, distribution, lineContexts.size());
     for (unsigned lineNumber = 0; lineNumber < lineContexts.size(); ++lineNumber) {
         lineContexts[lineNumber].crossAxisOffset += lineOffset;
         for (size_t childNumber = 0; childNumber < lineContexts[lineNumber].numberOfChildren; ++childNumber, child = m_orderIterator.next())

@@ -6,27 +6,19 @@
     display: flex;
     flex-wrap: wrap;
     position: relative;
-    height: 70px;
+    height: 75px;
     border: 1px solid red;
     margin: 5px;
-}
-
-.default > div {
-  height: 20px;
 }
 
 .verticalWriting {
     display: flex;
     flex-wrap: wrap;
     position: relative;
-    width: 70px;
+    width: 75px;
     border: 1px solid red;
     margin: 5px;
     writing-mode: vertical-lr;
-}
-
-.verticalWriting > div {
-  width: 20px;
 }
 </style>
 <script src="../../resources/testharness.js"></script>
@@ -35,42 +27,42 @@
 </head>
 <body onload="checkLayout('.default, .verticalWriting'); ">
 <div id=log></div>
-<p>Test that we honor align-content even in single-line flex containers</p>
+<p>Test for BUG=324178: Chrome incorrectly honors "align-content" in "flex-wrap: wrap" flex containers that only have a single line</p>
 <div class="default" style="align-content: flex-start">
-<div data-offset-y="0">This text should be at the top of its container</div>
+<div data-offset-y="0">This text should be at the top of it's container</div>
 </div>
 <div class="default" style="align-content: flex-end">
-<div data-offset-y="50">This text should be at the bottom of its container</div>
+<div data-offset-y="0">This text should be at the top of it's container</div>
 </div>
 <div class="default" style="align-content: center">
-<div data-offset-y="25">This text should be centered in its container</div>
+<div data-offset-y="0">This text should be at the top of it's container</div>
 </div>
 <div class="default" style="align-content: space-between">
-<div data-offset-y="0">This text should be at the top of its container</div>
+<div data-offset-y="0">This text should be at the top of it's container</div>
 </div>
 <div class="default" style="align-content: space-around">
-<div data-offset-y="25">This text should be centered in its container</div>
+<div data-offset-y="0">This text should be at the top of it's container</div>
 </div>
 <div class="default" style="align-content: stretch">
-<div data-offset-y="0">This text should be at the top of its container</div>
+<div data-offset-y="0">This text should be at the top of it's container</div>
 </div>
 <div class="verticalWriting" style="align-content: flex-start">
-<div data-offset-x="0">This text should be at the left of its container</div>
+<div data-offset-x="0">This text should be at the left of it's container</div>
 </div>
 <div class="verticalWriting" style="align-content: flex-end">
-<div data-offset-x="50">This text should be at the right of its container</div>
+<div data-offset-x="0">This text should be at the left of it's container</div>
 </div>
 <div class="verticalWriting" style="align-content: center">
-<div data-offset-x="25">This text should be centered in its container</div>
+<div data-offset-x="0">This text should be at the left of it's container</div>
 </div>
 <div class="verticalWriting" style="align-content: space-between">
-<div data-offset-x="0">This text should be at the left of its container</div>
+<div data-offset-x="0">This text should be at the left of it's container</div>
 </div>
 <div class="verticalWriting" style="align-content: space-around">
-<div data-offset-x="25">This text should be centered in its container</div>
+<div data-offset-x="0">This text should be at the left of it's container</div>
 </div>
 <div class="verticalWriting" style="align-content: stretch">
-<div data-offset-x="0">This text should be at the left of its container</div>
+<div data-offset-x="0">This text should be at the left of it's container</div>
 </div>
 </body>
 </html>
