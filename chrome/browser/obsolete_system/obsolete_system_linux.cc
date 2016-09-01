@@ -31,7 +31,7 @@ bool ObsoleteSystem::IsObsoleteNowOrSoon() {
   // 14.04 does not actually require glibc 2.19. Thus this function checks for
   // glibc 2.17 as the minimum requirement, so Ubuntu 12.04 (glibc 2.15) will
   // be considered obsolete, but RHEL 7 (glibc 2.17) will not.
-  Version version(gnu_get_libc_version());
+  base::Version version(gnu_get_libc_version());
   if (!version.IsValid() || version.components().size() != 2)
     return false;
 
