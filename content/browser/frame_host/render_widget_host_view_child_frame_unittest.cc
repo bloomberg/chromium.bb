@@ -32,7 +32,6 @@
 
 #if defined(OS_ANDROID)
 #include "content/browser/renderer_host/context_provider_factory_impl_android.h"
-#include "content/test/mock_gpu_channel_establish_factory.h"
 #endif
 
 namespace content {
@@ -86,7 +85,6 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
     ImageTransportFactory::InitializeForUnitTests(
         base::WrapUnique(new NoTransportImageTransportFactory));
 #else
-    ContextProviderFactoryImpl::Initialize(&gpu_channel_factory_);
     ui::ContextProviderFactory::SetInstance(
         ContextProviderFactoryImpl::GetInstance());
 #endif
@@ -117,7 +115,6 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
     ImageTransportFactory::Terminate();
 #else
     ui::ContextProviderFactory::SetInstance(nullptr);
-    ContextProviderFactoryImpl::Terminate();
 #endif
   }
 
@@ -133,10 +130,6 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
   RenderWidgetHostImpl* widget_host_;
   RenderWidgetHostViewChildFrame* view_;
   MockCrossProcessFrameConnector* test_frame_connector_;
-
-#if defined(OS_ANDROID)
-  MockGpuChannelEstablishFactory gpu_channel_factory_;
-#endif
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewChildFrameTest);
