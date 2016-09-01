@@ -74,6 +74,15 @@ class ServiceManager : public Service {
   mojom::ServiceRequest StartEmbedderService(const std::string& name);
 
  private:
+  enum class InstanceErrorType {
+    // The Instance has lost it's Service pointer, but still has connections. It
+    // should not be immediately deleted.
+    LOST_SERVICE,
+
+    // The Instance should no longer be kept around.
+    DESTROY,
+  };
+
   class Instance;
 
   // Service:
@@ -93,8 +102,10 @@ class ServiceManager : public Service {
   // have a chance to shut down.
   void TerminateServiceManagerConnections();
 
-  // Removes a Instance when it encounters an error.
-  void OnInstanceError(Instance* instance);
+  // Called when |instance| encounters an error. If |error_type| is DESTROY
+  // the instance is deleted immediately, otherwise it is moved to
+  // |instances_without_service_|.
+  void OnInstanceError(Instance* instance, InstanceErrorType error_type);
 
   // Completes a connection between a source and target application as defined
   // by |params|, exchanging InterfaceProviders between them. If no existing
@@ -156,6 +167,9 @@ class ServiceManager : public Service {
   // Tracks the names of instances that are allowed to field connection requests
   // from all users.
   std::set<std::string> singletons_;
+
+  // See OnInstanceError() for details.
+  std::set<Instance*> instances_without_service_;
 
   std::map<Identity, mojom::ServiceFactoryPtr> service_factories_;
   std::map<Identity, mojom::ResolverPtr> identity_to_resolver_;

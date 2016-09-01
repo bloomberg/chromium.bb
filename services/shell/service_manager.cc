@@ -138,7 +138,7 @@ class ServiceManager::Instance
     // |children_| will be modified during destruction.
     std::set<Instance*> children = children_;
     for (auto* child : children)
-      service_manager_->OnInstanceError(child);
+      service_manager_->OnInstanceError(child, InstanceErrorType::DESTROY);
 
     // Shutdown all bindings before we close the runner. This way the process
     // should see the pipes closed and exit, as well as waking up any potential
@@ -402,7 +402,7 @@ class ServiceManager::Instance
 
   void PIDAvailable(base::ProcessId pid) {
     if (pid == base::kNullProcessId) {
-      service_manager_->OnInstanceError(this);
+      service_manager_->OnInstanceError(this, InstanceErrorType::DESTROY);
       return;
     }
     pid_ = pid;
@@ -417,9 +417,11 @@ class ServiceManager::Instance
   void OnConnectionLost(base::WeakPtr<shell::ServiceManager> service_manager) {
     // Any time a Connector is lost or we lose the Service connection, it
     // may have been the last pipe using this Instance. If so, clean up.
-    if (service_manager && connectors_.empty() && !service_) {
-      // Deletes |this|.
-      service_manager->OnInstanceError(this);
+    if (service_manager && !service_) {
+      InstanceErrorType instance_error_type =
+          connectors_.empty() ? InstanceErrorType::DESTROY
+                              : InstanceErrorType::LOST_SERVICE;
+      service_manager->OnInstanceError(this, instance_error_type);
     }
   }
 
@@ -437,7 +439,7 @@ class ServiceManager::Instance
     if (!runner_.get())
       return;  // We're in the destructor.
 
-    service_manager_->OnInstanceError(this);
+    service_manager_->OnInstanceError(this, InstanceErrorType::DESTROY);
   }
 
   shell::ServiceManager* const service_manager_;
@@ -499,8 +501,14 @@ ServiceManager::ServiceManager(
 ServiceManager::~ServiceManager() {
   TerminateServiceManagerConnections();
   // Terminate any remaining instances.
-  while (!identity_to_instance_.empty())
-    OnInstanceError(identity_to_instance_.begin()->second);
+  while (!identity_to_instance_.empty()) {
+    OnInstanceError(identity_to_instance_.begin()->second,
+                    InstanceErrorType::DESTROY);
+  }
+  while (!instances_without_service_.empty()) {
+    OnInstanceError(*instances_without_service_.begin(),
+                    InstanceErrorType::DESTROY);
+  }
   identity_to_resolver_.clear();
 }
 
@@ -580,19 +588,31 @@ mojom::Resolver* ServiceManager::GetResolver(const Identity& identity) {
 void ServiceManager::TerminateServiceManagerConnections() {
   Instance* instance = GetExistingInstance(CreateServiceManagerIdentity());
   if (instance)
-    OnInstanceError(instance);
+    OnInstanceError(instance, InstanceErrorType::DESTROY);
 }
 
-void ServiceManager::OnInstanceError(Instance* instance) {
+void ServiceManager::OnInstanceError(Instance* instance,
+                                     InstanceErrorType error_type) {
   const Identity identity = instance->identity();
-  // Remove the Service Manager.
-  auto it = identity_to_instance_.find(identity);
-  DCHECK(it != identity_to_instance_.end());
-  identity_to_instance_.erase(it);
-  listeners_.ForAllPtrs(
-      [this, identity](mojom::ServiceManagerListener* listener) {
-        listener->OnServiceStopped(identity);
-      });
+
+  const bool in_identity_to_instance =
+      identity_to_instance_.erase(identity) > 0;
+  const bool in_instances_without_services =
+      instances_without_service_.erase(instance) > 0;
+  DCHECK_NE(in_identity_to_instance, in_instances_without_services);
+
+  if (error_type == InstanceErrorType::LOST_SERVICE) {
+    // |instance| has lost its service but still has connections to it, we need
+    // to keep it around. The instance is removed from |identity_to_instance_|
+    // so that if an attempt is made to connect to the same identity a new
+    // Instance is created.
+    instances_without_service_.insert(instance);
+    return;
+  }
+
+  listeners_.ForAllPtrs([identity](mojom::ServiceManagerListener* listener) {
+    listener->OnServiceStopped(identity);
+  });
   delete instance;
   if (!instance_quit_callback_.is_null())
     instance_quit_callback_.Run(identity);
@@ -657,7 +677,7 @@ void ServiceManager::NotifyPIDAvailable(const Identity& identity,
 bool ServiceManager::ConnectToExistingInstance(
     std::unique_ptr<ConnectParams>* params) {
   Instance* instance = GetExistingInstance((*params)->target());
-  return !!instance && instance->ConnectToService(params);
+  return instance && instance->ConnectToService(params);
 }
 
 ServiceManager::Instance* ServiceManager::CreateInstance(
@@ -737,8 +757,16 @@ void ServiceManager::OnGotResolvedName(std::unique_ptr<ConnectParams> params,
       result->qualifier != GetNamePath(result->resolved_name)) {
     instance_name = result->qualifier;
   }
-  Identity target(params->target().name(), params->target().user_id(),
-                  instance_name);
+  // |result->capabilities| can be null when there is no manifest, e.g. for URL
+  // types not resolvable by the resolver.
+  CapabilitySpec capabilities = GetPermissiveCapabilities();
+  if (result->capabilities.has_value())
+    capabilities = result->capabilities.value();
+
+  const std::string user_id = HasClass(capabilities, kCapabilityClass_AllUsers)
+                                  ? base::GenerateGUID()
+                                  : params->target().user_id();
+  const Identity target(params->target().name(), user_id, instance_name);
   params->set_target(target);
 
   // It's possible that when this manifest request was issued, another one was
@@ -748,11 +776,6 @@ void ServiceManager::OnGotResolvedName(std::unique_ptr<ConnectParams> params,
     return;
 
   Identity source = params->source();
-  // |result->capabilities| can be null when there is no manifest, e.g. for URL
-  // types not resolvable by the resolver.
-  CapabilitySpec capabilities = GetPermissiveCapabilities();
-  if (result->capabilities.has_value())
-    capabilities = result->capabilities.value();
 
   // Services that request "all_users" class from the Service Manager are
   // allowed to field connection requests from any user. They also run with a
@@ -763,7 +786,6 @@ void ServiceManager::OnGotResolvedName(std::unique_ptr<ConnectParams> params,
   Identity source_identity_for_creation;
   if (HasClass(capabilities, kCapabilityClass_AllUsers)) {
     singletons_.insert(target.name());
-    target.set_user_id(base::GenerateGUID());
     source_identity_for_creation = CreateServiceManagerIdentity();
   } else {
     source_identity_for_creation = params->source();
