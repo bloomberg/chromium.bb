@@ -258,8 +258,6 @@ exec_script_whitelist = [
   "//clank/java/BUILD.gn",
   "//clank/native/BUILD.gn",
 
-  "//components/domain_reliability/BUILD.gn",
-  "//components/sync/protocol/protocol_sources.gni",
   "//content/browser/browser.gni",
   "//content/child/child.gni",
   "//content/common/common.gni",

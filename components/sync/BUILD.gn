@@ -598,7 +598,6 @@ static_library("sync") {
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
-# GYP version: sync/sync_tests.gypi:test_support_sync_core
 static_library("test_support_sync_core") {
   testonly = true
   sources = [
@@ -669,7 +668,6 @@ static_library("test_support_sync_core") {
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
-# GYP version: sync/sync_tests.gypi:test_support_sync_core_impl
 static_library("test_support_sync_core_impl") {
   testonly = true
   sources = [
@@ -706,7 +704,6 @@ static_library("test_support_sync_core_impl") {
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
-# GYP version: sync/sync_tests.gypi:test_support_sync_api
 static_library("test_support_sync_api") {
   testonly = true
   sources = [
@@ -956,7 +953,6 @@ source_set("unit_tests") {
   defines = [ "SYNC_TEST" ]
 }
 
-# GYP version: sync/sync_tests.gypi:test_support_sync_fake_server
 static_library("test_support_sync_fake_server") {
   testonly = true
   sources = [
@@ -1001,7 +997,6 @@ static_library("test_support_sync_fake_server") {
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
-# GYP version: sync/sync_tests.gypi:test_support_sync_testserver
 static_library("test_support_sync_testserver") {
   testonly = true
   sources = [
@@ -1024,7 +1019,6 @@ static_library("test_support_sync_testserver") {
 }
 
 if (!is_ios) {
-  # GYP version: sync/sync_tests.gypi:run_sync_testserver
   executable("run_sync_testserver") {
     testonly = true
     sources = [
@@ -1046,7 +1040,6 @@ if (!is_ios) {
 if (is_android) {
   import("//build/config/android/rules.gni")
 
-  # GYP: //components/sync/sync_tests.gypi:fake_server_jni
   generate_jni("fake_server_jni") {
     testonly = true
     jni_package = "sync/test/fake_server"
@@ -1070,7 +1063,6 @@ if (is_android) {
     args += rebase_path(sync_protocol_sources, root_build_dir)
   }
 
-  # GYP: //components/sync/sync_tests.gypi:test_support_sync_proto_java
   proto_java_library("test_support_sync_proto_java") {
     proto_path = _test_support_sync_prepared_protos_dir
     sources = get_target_outputs(":test_support_sync_proto_java_prepare")
@@ -1079,7 +1071,6 @@ if (is_android) {
     ]
   }
 
-  # GYP: //components/sync/sync_tests.gypi:sync_java_test_support
   android_library("sync_java_test_support") {
     testonly = true
     deps = [
@@ -1096,7 +1087,6 @@ if (is_android) {
     ]
   }
 
-  # GYP: //components/sync/sync_tests.gypi:test_support_sync_fake_server_android
   static_library("test_support_sync_fake_server_android") {
     testonly = true
     sources = [

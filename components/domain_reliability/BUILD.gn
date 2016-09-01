@@ -2,28 +2,30 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Paths to the JSON files are kind of gross. They're stored in the gypi
-# relative to //components, since that's the working directory gyp seems
-# to use for all of the components. When we depend on them here, we need
-# to remove the leading domain_reliability, since *our* working directory
-# is one level deeper. When we call bake_in_configs.py, we need to give
-# it a properly-rebased path to //components so it can properly join the
-# paths relative to that and find the JSON files.
-
-baked_in_configs_gypi = exec_script("//build/gypi_to_gn.py",
-                                    [ rebase_path("baked_in_configs.gypi") ],
-                                    "scope",
-                                    [ "baked_in_configs.gypi" ])
-
-# The config file names in the .gypi are relative to "//components".
-baked_in_configs =
-    rebase_path(baked_in_configs_gypi.baked_in_configs, ".", "//components")
-
 action("bake_in_configs") {
   visibility = [ ":*" ]
   script = "bake_in_configs.py"
 
-  inputs = baked_in_configs + [ "baked_in_configs.gypi" ]
+  inputs = [
+    "baked_in_configs/c_android_clients_google_com.json",
+    "baked_in_configs/c_bigcache_googleapis_com.json",
+    "baked_in_configs/c_doc-0-0-sj_sj_googleusercontent_com.json",
+    "baked_in_configs/c_docs_google_com.json",
+    "baked_in_configs/c_drive_google_com.json",
+    "baked_in_configs/c_googlesyndication_com.json",
+    "baked_in_configs/c_pack_google_com.json",
+    "baked_in_configs/c_play_google_com.json",
+    "baked_in_configs/c_youtube_com.json",
+    "baked_in_configs/clients2_google_com.json",
+    "baked_in_configs/docs_google_com.json",
+    "baked_in_configs/google-analytics_com.json",
+    "baked_in_configs/googlevideo_com.json",
+    "baked_in_configs/gvt1_com.json",
+    "baked_in_configs/gvt2_com.json",
+    "baked_in_configs/ssl_gstatic_com.json",
+    "baked_in_configs/www_google_com.json",
+  ]
+
   output_file = "$target_gen_dir/baked_in_configs.cc"
   outputs = [
     output_file,
@@ -31,7 +33,7 @@ action("bake_in_configs") {
 
   # The JSON file list is too long for the command line on Windows, so put
   # them in a response file.
-  response_file_contents = rebase_path(baked_in_configs, root_build_dir)
+  response_file_contents = rebase_path(inputs, root_build_dir)
   args = [
     "--file-list",
     "{{response_file_name}}",
