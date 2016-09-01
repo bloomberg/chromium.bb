@@ -31,6 +31,7 @@
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutScrollbarPart.h"
 #include "core/layout/LayoutScrollbarTheme.h"
+#include "core/layout/api/LayoutAPIShim.h"
 #include "core/paint/ObjectPaintInvalidator.h"
 #include "platform/graphics/GraphicsContext.h"
 
@@ -90,7 +91,7 @@ DEFINE_TRACE(LayoutScrollbar)
 LayoutBox* LayoutScrollbar::owningLayoutObject() const
 {
     if (m_owningFrame)
-        return m_owningFrame->ownerLayoutObject();
+        return toLayoutBox(LayoutAPIShim::layoutObjectFrom(m_owningFrame->ownerLayoutItem()));
     return m_owner && m_owner->layoutObject() ? m_owner->layoutObject()->enclosingBox() : 0;
 }
 
