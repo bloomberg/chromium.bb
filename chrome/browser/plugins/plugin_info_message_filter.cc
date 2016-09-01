@@ -412,7 +412,9 @@ bool PluginInfoMessageFilter::Context::FindEnabledPlugin(
   matching_plugins.erase(
       std::remove_if(
           matching_plugins.begin(), matching_plugins.end(),
-          [&](const WebPluginInfo& info) { return info.path == not_present; }),
+          [&not_present](const WebPluginInfo& info) {
+            return info.path == not_present;
+          }),
       matching_plugins.end());
 #endif  // defined(GOOGLE_CHROME_BUILD)
   if (matching_plugins.empty()) {
