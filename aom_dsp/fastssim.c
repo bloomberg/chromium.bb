@@ -19,6 +19,7 @@
 #include "./aom_dsp_rtcd.h"
 #include "aom_dsp/ssim.h"
 #include "aom_ports/system_state.h"
+
 typedef struct fs_level fs_level;
 typedef struct fs_ctx fs_ctx;
 

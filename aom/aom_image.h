@@ -119,11 +119,10 @@ typedef struct aom_image {
 
   int bps; /**< bits per sample (for packed formats) */
 
-  /* The following member may be set by the application to associate data
-   * with this image.
+  /*!\brief The following member may be set by the application to associate
+   * data with this image.
    */
-  void *user_priv; /**< may be set by the application to associate data
-                    *   with this image. */
+  void *user_priv;
 
   /* The following members should be treated as private. */
   unsigned char *img_data; /**< private */

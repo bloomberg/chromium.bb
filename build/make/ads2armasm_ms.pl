@@ -9,10 +9,6 @@
 ## PATENTS file, you can obtain it at www.aomedia.org/license/patent.
 ##
 
-#
-
-##
-
 use FindBin;
 use lib $FindBin::Bin;
 use thumb;

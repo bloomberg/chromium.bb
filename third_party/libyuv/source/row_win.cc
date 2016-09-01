@@ -4851,23 +4851,23 @@ void ARGBMultiplyRow_AVX2(const uint8* src_argb0, const uint8* src_argb1,
                           uint8* dst_argb, int width) {
   __asm {
     push       esi
-    mov        eax, [esp + 4 + 4]   // src_argb0
-    mov        esi, [esp + 4 + 8]   // src_argb1
+    mov        eax, [esp + 4 + 4]  // src_argb0
+    mov        esi, [esp + 4 + 8]  // src_argb1
     mov        edx, [esp + 4 + 12]  // dst_argb
     mov        ecx, [esp + 4 + 16]  // width
     vpxor      ymm5, ymm5, ymm5     // constant 0
 
  convertloop:
-    vmovdqu    ymm1, [eax]        // read 8 pixels from src_argb0
+    vmovdqu    ymm1, [eax]  // read 8 pixels from src_argb0
     lea        eax, [eax + 32]
-    vmovdqu    ymm3, [esi]        // read 8 pixels from src_argb1
+    vmovdqu    ymm3, [esi]  // read 8 pixels from src_argb1
     lea        esi, [esi + 32]
-    vpunpcklbw ymm0, ymm1, ymm1   // low 4
-    vpunpckhbw ymm1, ymm1, ymm1   // high 4
-    vpunpcklbw ymm2, ymm3, ymm5   // low 4
-    vpunpckhbw ymm3, ymm3, ymm5   // high 4
-    vpmulhuw   ymm0, ymm0, ymm2   // src_argb0 * src_argb1 low 4
-    vpmulhuw   ymm1, ymm1, ymm3   // src_argb0 * src_argb1 high 4
+    vpunpcklbw ymm0, ymm1, ymm1  // low 4
+    vpunpckhbw ymm1, ymm1, ymm1  // high 4
+    vpunpcklbw ymm2, ymm3, ymm5  // low 4
+    vpunpckhbw ymm3, ymm3, ymm5  // high 4
+    vpmulhuw   ymm0, ymm0, ymm2  // src_argb0 * src_argb1 low 4
+    vpmulhuw   ymm1, ymm1, ymm3  // src_argb0 * src_argb1 high 4
     vpackuswb  ymm0, ymm0, ymm1
     vmovdqu    [edx], ymm0
     lea        edx, [edx + 32]
@@ -5512,8 +5512,8 @@ void InterpolateRow_AVX2(uint8* dst_ptr, const uint8* src_ptr,
   __asm {
     push       esi
     push       edi
-    mov        edi, [esp + 8 + 4]   // dst_ptr
-    mov        esi, [esp + 8 + 8]   // src_ptr
+    mov        edi, [esp + 8 + 4]  // dst_ptr
+    mov        esi, [esp + 8 + 8]  // src_ptr
     mov        edx, [esp + 8 + 12]  // src_stride
     mov        ecx, [esp + 8 + 16]  // dst_width
     mov        eax, [esp + 8 + 20]  // source_y_fraction (0..255)
@@ -5523,11 +5523,11 @@ void InterpolateRow_AVX2(uint8* dst_ptr, const uint8* src_ptr,
     je         xloop100  // 0 / 128.  Blend 100 / 0.
     sub        edi, esi
     cmp        eax, 32
-    je         xloop75   // 32 / 128 is 0.25.  Blend 75 / 25.
+    je         xloop75  // 32 / 128 is 0.25.  Blend 75 / 25.
     cmp        eax, 64
-    je         xloop50   // 64 / 128 is 0.50.  Blend 50 / 50.
+    je         xloop50  // 64 / 128 is 0.50.  Blend 50 / 50.
     cmp        eax, 96
-    je         xloop25   // 96 / 128 is 0.75.  Blend 25 / 75.
+    je         xloop25  // 96 / 128 is 0.75.  Blend 25 / 75.
 
     vmovd      xmm0, eax  // high fraction 0..127
     neg        eax
@@ -5547,14 +5547,14 @@ void InterpolateRow_AVX2(uint8* dst_ptr, const uint8* src_ptr,
     vpmaddubsw ymm1, ymm1, ymm5
     vpsrlw     ymm0, ymm0, 7
     vpsrlw     ymm1, ymm1, 7
-    vpackuswb  ymm0, ymm0, ymm1  // unmutates
+    vpackuswb  ymm0, ymm0, ymm1            // unmutates
     vmovdqu    [esi + edi], ymm0
     lea        esi, [esi + 32]
     sub        ecx, 32
     jg         xloop
     jmp        xloop99
 
-   // Blend 25 / 75.
+    // Blend 25 / 75.
  xloop25:
    vmovdqu    ymm0, [esi]
    vmovdqu    ymm1, [esi + edx]
@@ -5566,7 +5566,7 @@ void InterpolateRow_AVX2(uint8* dst_ptr, const uint8* src_ptr,
    jg         xloop25
    jmp        xloop99
 
-   // Blend 50 / 50.
+    // Blend 50 / 50.
  xloop50:
    vmovdqu    ymm0, [esi]
    vpavgb     ymm0, ymm0, [esi + edx]
@@ -5576,7 +5576,7 @@ void InterpolateRow_AVX2(uint8* dst_ptr, const uint8* src_ptr,
    jg         xloop50
    jmp        xloop99
 
-   // Blend 75 / 25.
+    // Blend 75 / 25.
  xloop75:
    vmovdqu    ymm1, [esi]
    vmovdqu    ymm0, [esi + edx]
@@ -5588,7 +5588,7 @@ void InterpolateRow_AVX2(uint8* dst_ptr, const uint8* src_ptr,
    jg         xloop75
    jmp        xloop99
 
-   // Blend 100 / 0 - Copy row unchanged.
+    // Blend 100 / 0 - Copy row unchanged.
  xloop100:
    rep movsb
 

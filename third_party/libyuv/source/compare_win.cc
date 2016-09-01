@@ -64,9 +64,9 @@ uint32 SumSquareError_SSE2(const uint8* src_a, const uint8* src_b, int count) {
 __declspec(naked)
 uint32 SumSquareError_AVX2(const uint8* src_a, const uint8* src_b, int count) {
   __asm {
-    mov        eax, [esp + 4]    // src_a
-    mov        edx, [esp + 8]    // src_b
-    mov        ecx, [esp + 12]   // count
+    mov        eax, [esp + 4]  // src_a
+    mov        edx, [esp + 8]  // src_b
+    mov        ecx, [esp + 12]  // count
     vpxor      ymm0, ymm0, ymm0  // sum
     vpxor      ymm5, ymm5, ymm5  // constant 0 for unpck
     sub        edx, eax

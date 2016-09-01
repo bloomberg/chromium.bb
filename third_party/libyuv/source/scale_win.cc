@@ -232,12 +232,12 @@ __declspec(naked)
 void ScaleRowDown2Linear_AVX2(const uint8* src_ptr, ptrdiff_t src_stride,
                               uint8* dst_ptr, int dst_width) {
   __asm {
-    mov         eax, [esp + 4]        // src_ptr
-                                      // src_stride
-    mov         edx, [esp + 12]       // dst_ptr
-    mov         ecx, [esp + 16]       // dst_width
+    mov         eax, [esp + 4]  // src_ptr
+    // src_stride
+    mov         edx, [esp + 12]  // dst_ptr
+    mov         ecx, [esp + 16]  // dst_width
 
-    vpcmpeqb    ymm4, ymm4, ymm4      // '1' constant, 8b
+    vpcmpeqb    ymm4, ymm4, ymm4  // '1' constant, 8b
     vpsrlw      ymm4, ymm4, 15
     vpackuswb   ymm4, ymm4, ymm4
     vpxor       ymm5, ymm5, ymm5      // constant 0
@@ -247,12 +247,12 @@ void ScaleRowDown2Linear_AVX2(const uint8* src_ptr, ptrdiff_t src_stride,
     vmovdqu     ymm1, [eax + 32]
     lea         eax,  [eax + 64]
 
-    vpmaddubsw  ymm0, ymm0, ymm4      // average horizontally
+    vpmaddubsw  ymm0, ymm0, ymm4  // average horizontally
     vpmaddubsw  ymm1, ymm1, ymm4
-    vpavgw      ymm0, ymm0, ymm5      // (x + 1) / 2
+    vpavgw      ymm0, ymm0, ymm5  // (x + 1) / 2
     vpavgw      ymm1, ymm1, ymm5
     vpackuswb   ymm0, ymm0, ymm1
-    vpermq      ymm0, ymm0, 0xd8      // unmutate vpackuswb
+    vpermq      ymm0, ymm0, 0xd8       // unmutate vpackuswb
 
     vmovdqu     [edx], ymm0
     lea         edx, [edx + 32]
@@ -270,29 +270,29 @@ void ScaleRowDown2Box_AVX2(const uint8* src_ptr, ptrdiff_t src_stride,
                            uint8* dst_ptr, int dst_width) {
   __asm {
     push        esi
-    mov         eax, [esp + 4 + 4]    // src_ptr
-    mov         esi, [esp + 4 + 8]    // src_stride
-    mov         edx, [esp + 4 + 12]   // dst_ptr
-    mov         ecx, [esp + 4 + 16]   // dst_width
+    mov         eax, [esp + 4 + 4]  // src_ptr
+    mov         esi, [esp + 4 + 8]  // src_stride
+    mov         edx, [esp + 4 + 12]  // dst_ptr
+    mov         ecx, [esp + 4 + 16]  // dst_width
 
-    vpcmpeqb    ymm4, ymm4, ymm4      // '1' constant, 8b
+    vpcmpeqb    ymm4, ymm4, ymm4  // '1' constant, 8b
     vpsrlw      ymm4, ymm4, 15
     vpackuswb   ymm4, ymm4, ymm4
     vpxor       ymm5, ymm5, ymm5      // constant 0
 
   wloop:
-    vmovdqu     ymm0, [eax]           // average rows
+    vmovdqu     ymm0, [eax]  // average rows
     vmovdqu     ymm1, [eax + 32]
     vpavgb      ymm0, ymm0, [eax + esi]
     vpavgb      ymm1, ymm1, [eax + esi + 32]
     lea         eax,  [eax + 64]
 
-    vpmaddubsw  ymm0, ymm0, ymm4      // average horizontally
+    vpmaddubsw  ymm0, ymm0, ymm4  // average horizontally
     vpmaddubsw  ymm1, ymm1, ymm4
-    vpavgw      ymm0, ymm0, ymm5      // (x + 1) / 2
+    vpavgw      ymm0, ymm0, ymm5  // (x + 1) / 2
     vpavgw      ymm1, ymm1, ymm5
     vpackuswb   ymm0, ymm0, ymm1
-    vpermq      ymm0, ymm0, 0xd8      // unmutate vpackuswb
+    vpermq      ymm0, ymm0, 0xd8  // unmutate vpackuswb
 
     vmovdqu     [edx], ymm0
     lea         edx, [edx + 32]
@@ -831,21 +831,21 @@ void ScaleAddRow_SSE2(const uint8* src_ptr, uint16* dst_ptr, int src_width) {
 __declspec(naked)
 void ScaleAddRow_AVX2(const uint8* src_ptr, uint16* dst_ptr, int src_width) {
   __asm {
-    mov         eax, [esp + 4]   // src_ptr
-    mov         edx, [esp + 8]   // dst_ptr
+    mov         eax, [esp + 4]  // src_ptr
+    mov         edx, [esp + 8]  // dst_ptr
     mov         ecx, [esp + 12]  // src_width
     vpxor       ymm5, ymm5, ymm5
 
-  // sum rows
+    // sum rows
   xloop:
-    vmovdqu     ymm3, [eax]       // read 32 bytes
+    vmovdqu     ymm3, [eax]  // read 32 bytes
     lea         eax, [eax + 32]
     vpermq      ymm3, ymm3, 0xd8  // unmutate for vpunpck
     vpunpcklbw  ymm2, ymm3, ymm5
     vpunpckhbw  ymm3, ymm3, ymm5
-    vpaddusw    ymm0, ymm2, [edx] // sum 16 words
+    vpaddusw    ymm0, ymm2, [edx]  // sum 16 words
     vpaddusw    ymm1, ymm3, [edx + 32]
-    vmovdqu     [edx], ymm0       // write 32 words to destination
+    vmovdqu     [edx], ymm0  // write 32 words to destination
     vmovdqu     [edx + 32], ymm1
     lea         edx, [edx + 64]
     sub         ecx, 32

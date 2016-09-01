@@ -9,10 +9,6 @@
 ## PATENTS file, you can obtain it at www.aomedia.org/license/patent.
 ##
 
-#
-
-##
-
 
 # ads2gas_apple.pl
 # Author: Eric Fung (efung (at) acm.org)

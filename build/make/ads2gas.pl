@@ -9,10 +9,6 @@
 ## PATENTS file, you can obtain it at www.aomedia.org/license/patent.
 ##
 
-#
-
-##
-
 
 # ads2gas.pl
 # Author: Eric Fung (efung (at) acm.org)

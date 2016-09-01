@@ -55,10 +55,10 @@ extern "C" {
 #define AOM_CODEC_CAP_PUT_SLICE 0x10000 /**< Will issue put_slice callbacks */
 #define AOM_CODEC_CAP_PUT_FRAME 0x20000 /**< Will issue put_frame callbacks */
 #define AOM_CODEC_CAP_POSTPROC 0x40000  /**< Can postprocess decoded frame */
+/*!\brief Can conceal errors due to packet loss */
 #define AOM_CODEC_CAP_ERROR_CONCEALMENT 0x80000
-/**< Can conceal errors due to packet loss */
+/*!\brief Can receive encoded frames one fragment at a time */
 #define AOM_CODEC_CAP_INPUT_FRAGMENTS 0x100000
-/**< Can receive encoded frames one fragment at a time */
 
 /*! \brief Initialization-time Feature Enabling
  *
@@ -67,18 +67,19 @@ extern "C" {
  *
  *  The available flags are specified by AOM_CODEC_USE_* defines.
  */
+/*!\brief Can support frame-based multi-threading */
 #define AOM_CODEC_CAP_FRAME_THREADING 0x200000
-/**< Can support frame-based multi-threading */
+/*!brief Can support external frame buffers */
 #define AOM_CODEC_CAP_EXTERNAL_FRAME_BUFFER 0x400000
-/**< Can support external frame buffers */
 
 #define AOM_CODEC_USE_POSTPROC 0x10000 /**< Postprocess decoded frame */
+/*!\brief Conceal errors in decoded frames */
 #define AOM_CODEC_USE_ERROR_CONCEALMENT 0x20000
-/**< Conceal errors in decoded frames */
+/*!\brief The input frame should be passed to the decoder one fragment at a
+ * time */
 #define AOM_CODEC_USE_INPUT_FRAGMENTS 0x40000
-/**< The input frame should be passed to the decoder one fragment at a time */
+/*!\brief Enable frame-based multi-threading */
 #define AOM_CODEC_USE_FRAME_THREADING 0x80000
-/**< Enable frame-based multi-threading */
 
 /*!\brief Stream properties
  *

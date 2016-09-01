@@ -25,7 +25,7 @@
 // -----
 // This example encodes a raw video. And the last argument passed in specifies
 // the frame number to update the reference frame on. For example, run
-// examples/aom_cx_set_ref vp10 352 288 in.yuv out.ivf 4 30
+// examples/aom_cx_set_ref av1 352 288 in.yuv out.ivf 4 30
 // The parameter is parsed as follows:
 //
 //
