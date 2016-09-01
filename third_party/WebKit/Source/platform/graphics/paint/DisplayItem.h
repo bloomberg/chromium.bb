@@ -303,8 +303,6 @@ public:
 
 #if DCHECK_IS_ON()
     virtual bool isEndAndPairedWith(DisplayItem::Type otherType) const { return false; }
-#endif
-
     virtual bool equals(const DisplayItem& other) const
     {
         return m_client == other.m_client
@@ -312,6 +310,7 @@ public:
             && m_derivedSize == other.m_derivedSize
             && m_skippedCache == other.m_skippedCache;
     }
+#endif
 
     // True if the client is non-null. Because m_client is const, this should
     // never be false except when we explicitly create a tombstone/"dead display

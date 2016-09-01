@@ -11,7 +11,7 @@ var repaintRects = "";
 
 if (window.internals) {
     internals.settings.setUseDefaultImageInterpolationQuality(true);
-    internals.runtimeFlags.paintUnderInvalidationCheckingEnabled = true;
+    internals.runtimeFlags.slimmingPaintUnderInvalidationCheckingEnabled = true;
 }
 
 function doTest() {

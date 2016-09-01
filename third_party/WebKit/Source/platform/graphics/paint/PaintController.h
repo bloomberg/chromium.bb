@@ -165,7 +165,7 @@ protected:
         , m_skippingCacheCount(0)
         , m_numCachedNewItems(0)
         , m_currentChunkIsFromCachedSubsequence(true)
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
         , m_numSequentialMatches(0)
         , m_numOutOfOrderMatches(0)
         , m_numIndexedItems(0)
@@ -210,11 +210,13 @@ private:
     void generateChunkRasterInvalidationRects(PaintChunk& newChunk);
     void generateChunkRasterInvalidationRectsComparingOldChunk(PaintChunk& newChunk, const PaintChunk& oldChunk);
 
+#if DCHECK_IS_ON()
     // The following two methods are for checking under-invalidations
-    // (when RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled).
+    // (when RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled).
     void showUnderInvalidationError(const char* reason, const DisplayItem& newItem, const DisplayItem* oldItem) const;
     void checkUnderInvalidation();
     bool isCheckingUnderInvalidation() const { return m_underInvalidationCheckingEnd - m_underInvalidationCheckingBegin > 0; }
+#endif
 
     // The last complete paint artifact.
     // In SPv2, this includes paint chunks as well as display items.
@@ -264,16 +266,13 @@ private:
 
     DisplayItemClient::CacheGenerationOrInvalidationReason m_currentCacheGeneration;
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
     int m_numSequentialMatches;
     int m_numOutOfOrderMatches;
     int m_numIndexedItems;
-#endif
 
-#if DCHECK_IS_ON()
     // This is used to check duplicated ids during createAndAppend().
     IndicesByClientMap m_newDisplayItemIndicesByClient;
-#endif
 
     // These are set in useCachedDrawingIfPossible() and useCachedSubsequenceIfPossible()
     // when we could use cached drawing or subsequence and under-invalidation checking is on,
@@ -287,6 +286,7 @@ private:
     // compositing folding.
     int m_skippedProbableUnderInvalidationCount;
     String m_underInvalidationMessagePrefix;
+#endif
 
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
     // A stack recording subsequence clients that are currently painting.

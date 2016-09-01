@@ -33,11 +33,14 @@ public:
 
     void analyzeForGpuRasterization(SkPictureGpuAnalyzer&) const override;
 
+#if ENABLE(ASSERT)
+    bool equals(const DisplayItem& other) const final;
+#endif
+
 private:
 #ifndef NDEBUG
     void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
 #endif
-    bool equals(const DisplayItem& other) const final;
 
     RefPtr<const SkPicture> m_picture;
 

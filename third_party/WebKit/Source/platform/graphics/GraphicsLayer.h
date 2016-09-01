@@ -207,7 +207,11 @@ public:
     void setTracksPaintInvalidations(bool);
     bool isTrackingOrCheckingPaintInvalidations() const
     {
-        return RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled() || m_isTrackingPaintInvalidations;
+#if DCHECK_IS_ON()
+        if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled())
+            return true;
+#endif
+        return m_isTrackingPaintInvalidations;
     }
 
     void resetTrackedPaintInvalidations();
@@ -294,8 +298,10 @@ private:
     typedef HashMap<int, int> RenderingContextMap;
     std::unique_ptr<JSONObject> layerTreeAsJSONInternal(LayerTreeFlags, RenderingContextMap&) const;
 
+#if DCHECK_IS_ON()
     PassRefPtr<SkPicture> capturePicture();
     void checkPaintUnderInvalidations(const SkPicture&);
+#endif
 
     GraphicsLayerClient* m_client;
 

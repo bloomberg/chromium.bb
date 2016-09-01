@@ -22,7 +22,7 @@
 //     }, true);
 
 if (window.internals)
-    internals.runtimeFlags.paintUnderInvalidationCheckingEnabled = true;
+    internals.runtimeFlags.slimmingPaintUnderInvalidationCheckingEnabled = true;
 
 function runAfterLayoutAndPaint(callback, autoNotifyDone) {
     if (!window.testRunner) {
