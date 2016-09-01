@@ -26,9 +26,7 @@
 #include "content/browser/service_worker/service_worker_fetch_dispatcher.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_response_info.h"
-#include "content/browser/streams/stream.h"
-#include "content/browser/streams/stream_context.h"
-#include "content/browser/streams/stream_registry.h"
+#include "content/browser/service_worker/service_worker_stream_reader.h"
 #include "content/common/resource_request_body_impl.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
@@ -218,7 +216,6 @@ ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
       client_id_(client_id),
       blob_storage_context_(blob_storage_context),
       resource_context_(resource_context),
-      stream_pending_buffer_size_(0),
       request_mode_(request_mode),
       credentials_mode_(credentials_mode),
       redirect_mode_(redirect_mode),
@@ -233,7 +230,7 @@ ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
 }
 
 ServiceWorkerURLRequestJob::~ServiceWorkerURLRequestJob() {
-  ClearStream();
+  stream_reader_.reset();
   blob_construction_waiter_.reset();
 
   if (!ShouldRecordResult())
@@ -278,7 +275,7 @@ void ServiceWorkerURLRequestJob::Start() {
 
 void ServiceWorkerURLRequestJob::Kill() {
   net::URLRequestJob::Kill();
-  ClearStream();
+  stream_reader_.reset();
   fetch_dispatcher_.reset();
   blob_reader_.reset();
   weak_factory_.InvalidateWeakPtrs();
@@ -338,31 +335,9 @@ void ServiceWorkerURLRequestJob::SetExtraRequestHeaders(
 int ServiceWorkerURLRequestJob::ReadRawData(net::IOBuffer* buf, int buf_size) {
   DCHECK(buf);
   DCHECK_GE(buf_size, 0);
-  DCHECK(waiting_stream_url_.is_empty());
 
-  if (stream_.get()) {
-    int bytes_read = 0;
-    switch (stream_->ReadRawData(buf, buf_size, &bytes_read)) {
-      case Stream::STREAM_HAS_DATA:
-        DCHECK_GT(bytes_read, 0);
-        return bytes_read;
-      case Stream::STREAM_COMPLETE:
-        DCHECK_EQ(0, bytes_read);
-        RecordResult(ServiceWorkerMetrics::REQUEST_JOB_STREAM_RESPONSE);
-        return 0;
-      case Stream::STREAM_EMPTY:
-        stream_pending_buffer_ = buf;
-        stream_pending_buffer_size_ = buf_size;
-        return net::ERR_IO_PENDING;
-      case Stream::STREAM_ABORTED:
-        // Handle this as connection reset.
-        RecordResult(ServiceWorkerMetrics::REQUEST_JOB_ERROR_STREAM_ABORTED);
-        return net::ERR_CONNECTION_RESET;
-    }
-    NOTREACHED();
-    return net::ERR_FAILED;
-  }
-
+  if (stream_reader_)
+    return stream_reader_->ReadRawData(buf, buf_size);
   if (blob_reader_)
     return blob_reader_->ReadRawData(buf, buf_size);
 
@@ -394,62 +369,10 @@ void ServiceWorkerURLRequestJob::RecordResult(
   }
 }
 
-// TODO(falken): Refactor Stream specific handling to a separate class.
-// Overrides for Stream reading -----------------------------------------------
-
-void ServiceWorkerURLRequestJob::OnDataAvailable(Stream* stream) {
-  // Do nothing if stream_pending_buffer_ is empty, i.e. there's no ReadRawData
-  // operation waiting for IO completion.
-  if (!stream_pending_buffer_.get())
-    return;
-
-  // stream_pending_buffer_ is set to the IOBuffer instance provided to
-  // ReadRawData() by URLRequestJob.
-
-  int result = 0;
-  switch (stream_->ReadRawData(stream_pending_buffer_.get(),
-                               stream_pending_buffer_size_, &result)) {
-    case Stream::STREAM_HAS_DATA:
-      DCHECK_GT(result, 0);
-      break;
-    case Stream::STREAM_COMPLETE:
-      // Calling NotifyReadComplete with 0 signals completion.
-      DCHECK(!result);
-      RecordResult(ServiceWorkerMetrics::REQUEST_JOB_STREAM_RESPONSE);
-      break;
-    case Stream::STREAM_EMPTY:
-      NOTREACHED();
-      break;
-    case Stream::STREAM_ABORTED:
-      // Handle this as connection reset.
-      result = net::ERR_CONNECTION_RESET;
-      RecordResult(ServiceWorkerMetrics::REQUEST_JOB_ERROR_STREAM_ABORTED);
-      break;
-  }
-
-  // Clear the buffers before notifying the read is complete, so that it is
-  // safe for the observer to read.
-  stream_pending_buffer_ = nullptr;
-  stream_pending_buffer_size_ = 0;
-  ReadRawDataComplete(result);
-}
-
-void ServiceWorkerURLRequestJob::OnStreamRegistered(Stream* stream) {
-  StreamContext* stream_context =
-      GetStreamContextForResourceContext(resource_context_);
-  stream_context->registry()->RemoveRegisterObserver(waiting_stream_url_);
-  waiting_stream_url_ = GURL();
-  stream_ = stream;
-  stream_->SetReadObserver(this);
-  CommitResponseHeader();
-}
-
 base::WeakPtr<ServiceWorkerURLRequestJob>
 ServiceWorkerURLRequestJob::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
-
-// Misc -----------------------------------------------------------------------
 
 const net::HttpResponseInfo* ServiceWorkerURLRequestJob::http_info() const {
   if (!http_response_info_)
@@ -730,21 +653,8 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
     DCHECK(response.blob_uuid.empty());
     SetResponseBodyType(STREAM);
     SetResponse(response);
-    streaming_version_ = version;
-    streaming_version_->AddStreamingURLRequestJob(this);
-    StreamContext* stream_context =
-        GetStreamContextForResourceContext(resource_context_);
-    stream_ =
-        stream_context->registry()->GetStream(response.stream_url);
-    if (!stream_.get()) {
-      waiting_stream_url_ = response.stream_url;
-      // Wait for StreamHostMsg_StartBuilding message from the ServiceWorker.
-      stream_context->registry()->SetRegisterObserver(waiting_stream_url_,
-                                                      this);
-      return;
-    }
-    stream_->SetReadObserver(this);
-    CommitResponseHeader();
+    stream_reader_.reset(new ServiceWorkerStreamReader(this, version));
+    stream_reader_->Start(response.stream_url);
     return;
   }
 
@@ -889,24 +799,6 @@ void ServiceWorkerURLRequestJob::RecordStatusZeroResponseError(
   RecordResult(ServiceWorkerMetrics::REQUEST_JOB_ERROR_RESPONSE_STATUS_ZERO);
   ServiceWorkerMetrics::RecordStatusZeroResponseError(IsMainResourceLoad(),
                                                       error);
-}
-
-void ServiceWorkerURLRequestJob::ClearStream() {
-  if (streaming_version_) {
-    streaming_version_->RemoveStreamingURLRequestJob(this);
-    streaming_version_ = nullptr;
-  }
-  if (stream_) {
-    stream_->RemoveReadObserver(this);
-    stream_->Abort();
-    stream_ = nullptr;
-  }
-  if (!waiting_stream_url_.is_empty()) {
-    StreamRegistry* stream_registry =
-        GetStreamContextForResourceContext(resource_context_)->registry();
-    stream_registry->RemoveRegisterObserver(waiting_stream_url_);
-    stream_registry->AbortPendingStream(waiting_stream_url_);
-  }
 }
 
 void ServiceWorkerURLRequestJob::NotifyHeadersComplete() {

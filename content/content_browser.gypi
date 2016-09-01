@@ -1413,6 +1413,8 @@
       'browser/service_worker/service_worker_script_cache_map.h',
       'browser/service_worker/service_worker_storage.cc',
       'browser/service_worker/service_worker_storage.h',
+      'browser/service_worker/service_worker_stream_reader.cc',
+      'browser/service_worker/service_worker_stream_reader.h',
       'browser/service_worker/service_worker_unregister_job.cc',
       'browser/service_worker/service_worker_unregister_job.h',
       'browser/service_worker/service_worker_url_request_job.cc',

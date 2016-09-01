@@ -17,8 +17,6 @@
 #include "base/time/time.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
-#include "content/browser/streams/stream_read_observer.h"
-#include "content/browser/streams/stream_register_observer.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
@@ -47,16 +45,14 @@ namespace content {
 class ResourceContext;
 class ResourceRequestBodyImpl;
 class ServiceWorkerBlobReader;
+class ServiceWorkerStreamReader;
 class ServiceWorkerContextCore;
 class ServiceWorkerFetchDispatcher;
 class ServiceWorkerProviderHost;
 class ServiceWorkerVersion;
 class Stream;
 
-class CONTENT_EXPORT ServiceWorkerURLRequestJob
-    : public net::URLRequestJob,
-      public StreamReadObserver,
-      public StreamRegisterObserver {
+class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
  public:
   class CONTENT_EXPORT Delegate {
    public:
@@ -103,6 +99,8 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
 
   ~ServiceWorkerURLRequestJob() override;
 
+  const ResourceContext* resource_context() const { return resource_context_; }
+
   // Sets the response type.
   // When an in-flight request possibly needs CORS check, use
   // FallbackToNetworkOrRenderer. This method will decide whether the request
@@ -135,14 +133,8 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
   void SetExtraRequestHeaders(const net::HttpRequestHeaders& headers) override;
   int ReadRawData(net::IOBuffer* buf, int buf_size) override;
 
-  // StreamObserver override:
-  void OnDataAvailable(Stream* stream) override;
-
-  // StreamRegisterObserver override:
-  void OnStreamRegistered(Stream* stream) override;
-
   //----------------------------------------------------------------------------
-  // The following are intended for use by ServiceWorkerBlobReader.
+  // The following are intended for use by ServiceWorker(Blob|Stream)Reader.
   void OnResponseStarted();
   void OnReadRawDataComplete(int bytes_read);
   void RecordResult(ServiceWorkerMetrics::URLRequestJobResult result);
@@ -220,9 +212,6 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
   void RecordStatusZeroResponseError(
       blink::WebServiceWorkerResponseError error);
 
-  // Releases the resources for streaming.
-  void ClearStream();
-
   const net::HttpResponseInfo* http_info() const;
 
   // Invoke callbacks before invoking corresponding URLRequestJob methods.
@@ -265,11 +254,9 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
   std::string client_id_;
   base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
   const ResourceContext* resource_context_;
+  // Only one of |blob_reader_| and |stream_reader_| can be non-null.
   std::unique_ptr<ServiceWorkerBlobReader> blob_reader_;
-  scoped_refptr<Stream> stream_;
-  GURL waiting_stream_url_;
-  scoped_refptr<net::IOBuffer> stream_pending_buffer_;
-  int stream_pending_buffer_size_;
+  std::unique_ptr<ServiceWorkerStreamReader> stream_reader_;
 
   FetchRequestMode request_mode_;
   FetchCredentialsMode credentials_mode_;
@@ -282,7 +269,6 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
   // using the userdata mechanism. So we have to keep it not to free the blobs.
   scoped_refptr<ResourceRequestBodyImpl> body_;
   std::unique_ptr<storage::BlobDataHandle> request_body_blob_data_handle_;
-  scoped_refptr<ServiceWorkerVersion> streaming_version_;
   ServiceWorkerFetchType fetch_type_;
 
   ResponseBodyType response_body_type_ = UNKNOWN;
