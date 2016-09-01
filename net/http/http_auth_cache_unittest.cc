@@ -377,6 +377,44 @@ TEST(HttpAuthCacheTest, Remove) {
   EXPECT_FALSE(NULL == entry);
 }
 
+TEST(HttpAuthCacheTest, ClearEntriesAddedWithin) {
+  GURL origin("http://foobar.com");
+
+  HttpAuthCache cache;
+  base::TimeTicks old_creation_time =
+      base::TimeTicks::Now() - base::TimeDelta::FromMinutes(2);
+  cache
+      .Add(origin, kRealm1, HttpAuth::AUTH_SCHEME_BASIC, "basic realm=Realm1",
+           AuthCredentials(kAlice, k123), "/")
+      ->set_creation_time_for_testing(old_creation_time);
+  cache
+      .Add(origin, kRealm2, HttpAuth::AUTH_SCHEME_BASIC, "basic realm=Realm2",
+           AuthCredentials(kRoot, kWileCoyote), "/")
+      ->set_creation_time_for_testing(old_creation_time);
+
+  cache.Add(origin, kRealm3, HttpAuth::AUTH_SCHEME_BASIC, "basic realm=Realm3",
+            AuthCredentials(kAlice2, k1234), "/");
+  cache.Add(origin, kRealm4, HttpAuth::AUTH_SCHEME_BASIC, "basic realm=Realm4",
+            AuthCredentials(kUsername, kPassword), "/");
+  // Add path to existing entry.
+  cache.Add(origin, kRealm2, HttpAuth::AUTH_SCHEME_BASIC, "basic realm=Realm2",
+            AuthCredentials(kAdmin, kPassword), "/baz/");
+
+  cache.ClearEntriesAddedWithin(base::TimeDelta::FromMinutes(1));
+
+  EXPECT_NE(nullptr,
+            cache.Lookup(origin, kRealm1, HttpAuth::AUTH_SCHEME_BASIC));
+  EXPECT_NE(nullptr,
+            cache.Lookup(origin, kRealm2, HttpAuth::AUTH_SCHEME_BASIC));
+  // Creation time is set for a whole entry rather than for a particular path.
+  // Path added within the requested duration isn't be removed.
+  EXPECT_NE(nullptr, cache.LookupByPath(origin, "/baz/"));
+  EXPECT_EQ(nullptr,
+            cache.Lookup(origin, kRealm3, HttpAuth::AUTH_SCHEME_BASIC));
+  EXPECT_EQ(nullptr,
+            cache.Lookup(origin, kRealm4, HttpAuth::AUTH_SCHEME_BASIC));
+}
+
 TEST(HttpAuthCacheTest, UpdateStaleChallenge) {
   HttpAuthCache cache;
   GURL origin("http://foobar2.com");

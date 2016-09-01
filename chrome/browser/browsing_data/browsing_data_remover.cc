@@ -75,6 +75,8 @@
 #include "content/public/browser/user_metrics.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/cookie_store.h"
+#include "net/http/http_network_session.h"
+#include "net/http/http_transaction_factory.h"
 #include "net/http/transport_security_state.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/channel_id_store.h"
@@ -176,6 +178,20 @@ void ClearHostnameResolutionCacheOnIOThread(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   io_thread->ClearHostCache(host_filter);
+}
+
+void ClearHttpAuthCacheOnIOThread(
+    scoped_refptr<net::URLRequestContextGetter> context_getter,
+    base::Time delete_begin) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  net::HttpNetworkSession* http_session = context_getter->GetURLRequestContext()
+                                              ->http_transaction_factory()
+                                              ->GetSession();
+  DCHECK(http_session);
+  http_session->http_auth_cache()->ClearEntriesAddedWithin(base::Time::Now() -
+                                                           delete_begin);
+  http_session->CloseAllConnections();
 }
 
 void ClearNetworkPredictorOnIOThread(chrome_browser_net::Predictor* predictor) {
@@ -994,6 +1010,18 @@ void BrowsingDataRemover::RemoveImpl(
       content_suggestions_service->ClearAllCachedSuggestions();
   }
 
+  if (remove_mask & REMOVE_COOKIES || remove_mask & REMOVE_PASSWORDS) {
+    scoped_refptr<net::URLRequestContextGetter> request_context =
+        profile_->GetRequestContext();
+    waiting_for_clear_http_auth_cache_ = true;
+    BrowserThread::PostTaskAndReply(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&ClearHttpAuthCacheOnIOThread, std::move(request_context),
+                   delete_begin_),
+        base::Bind(&BrowsingDataRemover::OnClearedHttpAuthCache,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+
   // Content Decryption Modules used by Encrypted Media store licenses in a
   // private filesystem. These are different than content licenses used by
   // Flash (which are deleted father down in this method).
@@ -1226,6 +1254,7 @@ bool BrowsingDataRemover::AllDone() {
          !waiting_for_clear_domain_reliability_monitor_ &&
          !waiting_for_clear_form_ && !waiting_for_clear_history_ &&
          !waiting_for_clear_hostname_resolution_cache_ &&
+         !waiting_for_clear_http_auth_cache_ &&
          !waiting_for_clear_keyword_data_ && !waiting_for_clear_nacl_cache_ &&
          !waiting_for_clear_network_predictor_ &&
          !waiting_for_clear_networking_history_ &&
@@ -1323,6 +1352,12 @@ void BrowsingDataRemover::OnHistoryDeletionDone() {
 void BrowsingDataRemover::OnClearedHostnameResolutionCache() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   waiting_for_clear_hostname_resolution_cache_ = false;
+  NotifyIfDone();
+}
+
+void BrowsingDataRemover::OnClearedHttpAuthCache() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  waiting_for_clear_http_auth_cache_ = false;
   NotifyIfDone();
 }
 

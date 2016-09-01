@@ -436,6 +436,10 @@ class BrowsingDataRemover : public KeyedService
   // Clears the respective waiting flag and invokes NotifyIfDone.
   void OnClearedHostnameResolutionCache();
 
+  // Callback for when HTTP auth cache has been cleared.
+  // Clears the respective waiting flag and invokes NotifyIfDone.
+  void OnClearedHttpAuthCache();
+
   // Callback for when speculative data in the network Predictor has been
   // cleared. Clears the respective waiting flag and invokes
   // NotifyIfDone.
@@ -566,6 +570,7 @@ class BrowsingDataRemover : public KeyedService
   bool waiting_for_clear_form_ = false;
   bool waiting_for_clear_history_ = false;
   bool waiting_for_clear_hostname_resolution_cache_ = false;
+  bool waiting_for_clear_http_auth_cache_ = false;
   bool waiting_for_clear_keyword_data_ = false;
   bool waiting_for_clear_nacl_cache_ = false;
   bool waiting_for_clear_network_predictor_ = false;

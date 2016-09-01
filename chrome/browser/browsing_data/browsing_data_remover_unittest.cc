@@ -80,6 +80,8 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "net/cookies/cookie_store.h"
+#include "net/http/http_network_session.h"
+#include "net/http/http_transaction_factory.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/channel_id_store.h"
 #include "net/ssl/ssl_client_cert_type.h"
@@ -146,6 +148,9 @@ const char kTestOriginDevTools[] = "chrome-devtools://abcdefghijklmnopqrstuvw/";
 
 // For Autofill.
 const char kWebOrigin[] = "https://www.example.com/";
+
+// For HTTP auth.
+const char kTestRealm[] = "TestRealm";
 
 const GURL kOrigin1(kTestOrigin1);
 const GURL kOrigin2(kTestOrigin2);
@@ -2688,6 +2693,56 @@ TEST_F(BrowsingDataRemoverTest, ClearWithPredicate) {
   EXPECT_EQ(1u, host_settings.size());
   EXPECT_EQ(ContentSettingsPattern::FromURLNoWildcard(url1),
             host_settings[0].primary_pattern);
+}
+
+// Test that removing cookies clears HTTP auth data.
+TEST_F(BrowsingDataRemoverTest, ClearHttpAuthCache_RemoveCookies) {
+  net::HttpNetworkSession* http_session = GetProfile()
+                                              ->GetRequestContext()
+                                              ->GetURLRequestContext()
+                                              ->http_transaction_factory()
+                                              ->GetSession();
+  DCHECK(http_session);
+
+  net::HttpAuthCache* http_auth_cache = http_session->http_auth_cache();
+  http_auth_cache->Add(kOrigin1, kTestRealm, net::HttpAuth::AUTH_SCHEME_BASIC,
+                       "test challenge",
+                       net::AuthCredentials(base::ASCIIToUTF16("foo"),
+                                            base::ASCIIToUTF16("bar")),
+                       "/");
+  CHECK(http_auth_cache->Lookup(kOrigin1, kTestRealm,
+                                net::HttpAuth::AUTH_SCHEME_BASIC));
+
+  BlockUntilBrowsingDataRemoved(browsing_data::ALL_TIME,
+                                BrowsingDataRemover::REMOVE_COOKIES, false);
+
+  EXPECT_EQ(nullptr, http_auth_cache->Lookup(kOrigin1, kTestRealm,
+                                             net::HttpAuth::AUTH_SCHEME_BASIC));
+}
+
+// Test that removing passwords clears HTTP auth data.
+TEST_F(BrowsingDataRemoverTest, ClearHttpAuthCache_RemovePasswords) {
+  net::HttpNetworkSession* http_session = GetProfile()
+                                              ->GetRequestContext()
+                                              ->GetURLRequestContext()
+                                              ->http_transaction_factory()
+                                              ->GetSession();
+  DCHECK(http_session);
+
+  net::HttpAuthCache* http_auth_cache = http_session->http_auth_cache();
+  http_auth_cache->Add(kOrigin1, kTestRealm, net::HttpAuth::AUTH_SCHEME_BASIC,
+                       "test challenge",
+                       net::AuthCredentials(base::ASCIIToUTF16("foo"),
+                                            base::ASCIIToUTF16("bar")),
+                       "/");
+  CHECK(http_auth_cache->Lookup(kOrigin1, kTestRealm,
+                                net::HttpAuth::AUTH_SCHEME_BASIC));
+
+  BlockUntilBrowsingDataRemoved(browsing_data::ALL_TIME,
+                                BrowsingDataRemover::REMOVE_PASSWORDS, false);
+
+  EXPECT_EQ(nullptr, http_auth_cache->Lookup(kOrigin1, kTestRealm,
+                                             net::HttpAuth::AUTH_SCHEME_BASIC));
 }
 
 TEST_F(BrowsingDataRemoverTest, ClearPermissionPromptCounts) {
