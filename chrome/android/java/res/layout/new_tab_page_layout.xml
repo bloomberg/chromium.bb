@@ -107,7 +107,7 @@
         android:layout_weight="0"
         android:visibility="invisible" />
 
-    <!--  Logo spacer -->
+    <!-- Spacer for when there is no search provider logo. -->
     <View
         android:id="@+id/no_search_logo_spacer"
         android:layout_width="match_parent"
@@ -115,7 +115,7 @@
         android:layout_weight="1"
         android:visibility="gone" />
 
-    <!--  Scroll spacer -->
+    <!-- Spacer to make the page scrollable when needed. -->
     <View
         android:id="@+id/ntp_scroll_spacer"
         android:layout_width="match_parent"

@@ -50,6 +50,7 @@ public class NewTabPageLayout extends LinearLayout {
     private LogoView mSearchProviderLogoView;
     private View mSearchBoxView;
     private MostVisitedLayout mMostVisitedLayout;
+
     /**
      * Constructor for inflating from XML.
      */
@@ -101,79 +102,105 @@ public class NewTabPageLayout extends LinearLayout {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        // Remove the scroll spacer from the layout so the weighted children can be measured
-        // correctly.
-        mScrollCompensationSpacer.setVisibility(View.GONE);
+        if (mCardsUiEnabled) {
+            measureWithCardsUiEnabled(widthMeasureSpec, heightMeasureSpec);
+        } else {
+            measureWithCardsUiDisabled(widthMeasureSpec, heightMeasureSpec);
+        }
+
+        measureCommonParts();
+    }
+
+    /**
+     * Performs layout measurements for when the cards ui is enabled.
+     */
+    private void measureWithCardsUiEnabled(int widthMeasureSpec, int heightMeasureSpec) {
+        assert mCardsUiEnabled;
 
         // Remove the extra spacing before measuring because it might not be needed anymore.
         mMostVisitedLayout.setExtraVerticalSpacing(0);
 
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
-        if (mCardsUiEnabled) {
-            boolean hasSpaceForPeekingCard = false;
-            int maxAboveTheFoldHeight =
-                    mParentViewportHeight - mPeekingCardHeight - mTabStripHeight;
+        boolean hasSpaceForPeekingCard = false;
+        int maxAboveTheFoldHeight = mParentViewportHeight - mPeekingCardHeight - mTabStripHeight;
 
-            // We need to make sure we have just enough space to show the peeking card.
-            if (getMeasuredHeight() > maxAboveTheFoldHeight) {
-                // We don't have enough, we will push the peeking card completely below the fold
-                // and let MostVisited get cut to make it clear that the page is scrollable.
-                if (mMostVisitedLayout.getChildCount() > 0) {
-                    // Add some extra space if needed.
-                    int currentBleed = getMeasuredHeight() - mParentViewportHeight;
-                    int minimumBleed =
-                            (int) (mMostVisitedLayout.getChildAt(0).getMeasuredHeight() * 0.7);
-                    if (currentBleed < minimumBleed) {
-                        mMostVisitedLayout.setExtraVerticalSpacing(minimumBleed - currentBleed);
-                        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-                    }
-                }
-            } else {
-                hasSpaceForPeekingCard = true;
-                // We leave more than or just enough space needed for the peeking card. Redistribute
-                // any weighted space.
-
-                // Call super.onMeasure with mode EXACTLY and the target height to allow the top
-                // spacer (which has a weight of 1) to grow and take up the remaining space.
-                heightMeasureSpec =
-                        MeasureSpec.makeMeasureSpec(maxAboveTheFoldHeight, MeasureSpec.EXACTLY);
-                super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-
-                distributeExtraSpace(mTopSpacer.getMeasuredHeight());
-            }
-
-            assert getParent() instanceof NewTabPageRecyclerView;
-            NewTabPageRecyclerView recyclerView = (NewTabPageRecyclerView) getParent();
-            recyclerView.setHasSpaceForPeekingCard(hasSpaceForPeekingCard);
-        } else {
-            if (getMeasuredHeight() > mParentViewportHeight) {
-                // This layout is bigger than its parent's viewport, so the user will need to scroll
-                // to see all of it. Extra spacing should be added at the bottom so the user can
-                // scroll until Most Visited is at the top.
-
-                // The top, middle, and bottom spacers should have a measured height of 0 at this
-                // point since they use weights to set height, and there was no extra space.
-                assert mTopSpacer.getMeasuredHeight() == 0;
-                assert mMiddleSpacer.getMeasuredHeight() == 0;
-                assert mBottomSpacer.getMeasuredHeight() == 0;
-
-                final int topOfMostVisited = calculateTopOfMostVisited();
-                final int belowTheFoldHeight = getMeasuredHeight() - mParentViewportHeight;
-                if (belowTheFoldHeight < topOfMostVisited) {
-                    // Include the scroll spacer in the layout and call super.onMeasure again so it
-                    // is measured.
-                    mScrollCompensationSpacer.getLayoutParams().height =
-                            topOfMostVisited - belowTheFoldHeight;
-
-                    mScrollCompensationSpacer.setVisibility(View.INVISIBLE);
+        // We need to make sure we have just enough space to show the peeking card.
+        if (getMeasuredHeight() > maxAboveTheFoldHeight) {
+            // We don't have enough, we will push the peeking card completely below the fold
+            // and let MostVisited get cut to make it clear that the page is scrollable.
+            if (mMostVisitedLayout.getChildCount() > 0) {
+                // Add some extra space if needed.
+                int currentBleed = getMeasuredHeight() - mParentViewportHeight;
+                int minimumBleed =
+                        (int) (mMostVisitedLayout.getChildAt(0).getMeasuredHeight() * 0.7);
+                if (currentBleed < minimumBleed) {
+                    mMostVisitedLayout.setExtraVerticalSpacing(minimumBleed - currentBleed);
                     super.onMeasure(widthMeasureSpec, heightMeasureSpec);
                 }
-            } else {
-                distributeExtraSpace(mTopSpacer.getMeasuredHeight());
             }
+        } else {
+            hasSpaceForPeekingCard = true;
+            // We leave more than or just enough space needed for the peeking card. Redistribute
+            // any weighted space.
+
+            // Call super.onMeasure with mode EXACTLY and the target height to allow the top
+            // spacer (which has a weight of 1) to grow and take up the remaining space.
+            heightMeasureSpec =
+                    MeasureSpec.makeMeasureSpec(maxAboveTheFoldHeight, MeasureSpec.EXACTLY);
+            super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+
+            distributeExtraSpace(mTopSpacer.getMeasuredHeight());
         }
 
+        assert getParent() instanceof NewTabPageRecyclerView;
+        NewTabPageRecyclerView recyclerView = (NewTabPageRecyclerView) getParent();
+        recyclerView.setHasSpaceForPeekingCard(hasSpaceForPeekingCard);
+    }
+
+    /**
+     * Performs layout measurements for when the cards ui is disabled.
+     */
+    private void measureWithCardsUiDisabled(int widthMeasureSpec, int heightMeasureSpec) {
+        assert !mCardsUiEnabled;
+
+        // Remove the scroll spacer from the layout so the weighted children can be measured
+        // correctly.
+        mScrollCompensationSpacer.setVisibility(View.GONE);
+
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+
+        if (getMeasuredHeight() > mParentViewportHeight) {
+            // This layout is bigger than its parent's viewport, so the user will need to scroll
+            // to see all of it. Extra spacing should be added at the bottom so the user can
+            // scroll until Most Visited is at the top.
+
+            // The top, middle, and bottom spacers should have a measured height of 0 at this
+            // point since they use weights to set height, and there was no extra space.
+            assert mTopSpacer.getMeasuredHeight() == 0;
+            assert mMiddleSpacer.getMeasuredHeight() == 0;
+            assert mBottomSpacer.getMeasuredHeight() == 0;
+
+            final int topOfMostVisited = calculateTopOfMostVisited();
+            final int belowTheFoldHeight = getMeasuredHeight() - mParentViewportHeight;
+            if (belowTheFoldHeight < topOfMostVisited) {
+                // Include the scroll spacer in the layout and call super.onMeasure again so it
+                // is measured.
+                mScrollCompensationSpacer.getLayoutParams().height =
+                        topOfMostVisited - belowTheFoldHeight;
+
+                mScrollCompensationSpacer.setVisibility(View.INVISIBLE);
+                super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+            }
+        } else {
+            distributeExtraSpace(mTopSpacer.getMeasuredHeight());
+        }
+    }
+
+    /**
+     * Performs measurements that should be done whether the cards ui is enabled or not.
+     */
+    private void measureCommonParts() {
         // Make the search box and logo as wide as the most visited items.
         if (mMostVisitedLayout.getVisibility() != GONE) {
             final int width = mMostVisitedLayout.getMeasuredWidth() - mMostVisitedLayoutBleed;
@@ -194,11 +221,11 @@ public class NewTabPageLayout extends LinearLayout {
         int mostVisitedIndex = indexOfChild(mMostVisitedLayout);
         for (int i = 0; i < mostVisitedIndex; i++) {
             View child = getChildAt(i);
-            MarginLayoutParams params = (MarginLayoutParams) child.getLayoutParams();
 
-            if (child.getVisibility() != View.GONE) {
-                top += params.topMargin + child.getMeasuredHeight() + params.bottomMargin;
-            }
+            if (child.getVisibility() == View.GONE) continue;
+
+            MarginLayoutParams params = (MarginLayoutParams) child.getLayoutParams();
+            top += params.topMargin + child.getMeasuredHeight() + params.bottomMargin;
         }
         top += ((MarginLayoutParams) mMostVisitedLayout.getLayoutParams()).topMargin;
         return top;
