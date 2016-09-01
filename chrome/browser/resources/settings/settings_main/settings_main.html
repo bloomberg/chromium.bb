@@ -58,8 +58,7 @@
       <div>$i18nRaw{searchNoResultsHelp}</div>
     </div>
     <template is="dom-if" if="[[showPages_.basic]]">
-      <settings-basic-page route="BASIC"
-          prefs="{{prefs}}"
+      <settings-basic-page route="BASIC" prefs="{{prefs}}"
           page-visibility="[[pageVisibility]]"
           on-subpage-expand="onSubpageExpand_">
       </settings-basic-page>
@@ -77,8 +76,7 @@
         </div>
       </template>
       <template is="dom-if" if="[[showPages_.advanced]]">
-        <settings-advanced-page route="ADVANCED"
-            prefs="{{prefs}}"
+        <settings-advanced-page route="ADVANCED" prefs="{{prefs}}"
             page-visibility="[[pageVisibility]]"
             on-subpage-expand="onSubpageExpand_">
         </settings-advanced-page>

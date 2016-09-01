@@ -59,14 +59,8 @@ var MainPageBehaviorImpl = {
     } else {
       doWhenReady(
         function() {
-          if (this.scrollHeight > 0)
-            return true;
-
-          // Height is irrelevant if this page isn't the current page.
-          if (!settings.Route[this.route].contains(settings.getCurrentRoute()))
-            return true;
-
-          return false;
+          return this.scrollHeight > 0 ||
+              !settings.Route[this.route].contains(settings.getCurrentRoute());
         }.bind(this),
         this.tryTransitionToSection_.bind(this));
     }
