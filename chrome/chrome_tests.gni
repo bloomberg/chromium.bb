@@ -2,12 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# This file loads the chrome_tests variables which is then shared between
-# all BUILD.gn files that need it.
-chrome_tests_gypi_values = exec_script("//build/gypi_to_gn.py",
-                                       [ rebase_path("chrome_tests.gypi") ],
-                                       "scope",
-                                       [ "chrome_tests.gypi" ])
 chrome_tests_unit_gypi_values =
     exec_script("//build/gypi_to_gn.py",
                 [ rebase_path("chrome_tests_unit.gypi") ],

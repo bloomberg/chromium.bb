@@ -1,9 +1,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# TODO(rockot) bug 505926: Don't include chrome files from here.
-# See chrome_browser_tests_extensions_sources below
-import("//chrome/chrome_tests.gni")
 import("//extensions/extensions.gni")
 import("//testing/test.gni")
 import("//tools/grit/grit_rule.gni")
@@ -194,10 +191,20 @@ test("extensions_browsertests") {
 # //chrome/test:browser_tests.
 source_set("chrome_extensions_browsertests") {
   testonly = true
-  sources = rebase_path(
-          chrome_tests_gypi_values.chrome_browser_tests_extensions_sources,
-          ".",
-          "//chrome")
+  sources = [
+    "browser/api/app_window/app_window_apitest.cc",
+    "browser/api/bluetooth/bluetooth_apitest.cc",
+    "browser/api/bluetooth/bluetooth_private_apitest.cc",
+    "browser/api/cast_channel/cast_channel_apitest.cc",
+    "browser/api/runtime/runtime_apitest.cc",
+    "browser/api/serial/serial_apitest.cc",
+    "browser/api/usb/usb_manual_apitest.cc",
+    "browser/app_window/app_window_browsertest.cc",
+    "browser/guest_view/extension_options/extension_options_apitest.cc",
+    "browser/guest_view/mime_handler_view/mime_handler_view_browsertest.cc",
+    "renderer/console_apitest.cc",
+    "renderer/script_context_browsertest.cc",
+  ]
 
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 
@@ -263,10 +270,9 @@ source_set("chrome_extensions_browsertests") {
 # chrome_extensions_browsertests.
 source_set("chrome_extensions_interactive_uitests") {
   testonly = true
-  sources = rebase_path(
-          chrome_tests_gypi_values.chrome_interactive_ui_test_extensions_sources,
-          ".",
-          "//chrome")
+  sources = [
+    "browser/app_window/app_window_interactive_uitest.cc",
+  ]
 
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 
