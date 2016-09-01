@@ -279,19 +279,13 @@ class ThreadWatcherTest : public ::testing::Test {
     thread_watcher_list_ = new ThreadWatcherList();
 
     // Create thread watcher object for the IO thread.
-    std::unique_ptr<CustomThreadWatcher> io_watcher(
-        new CustomThreadWatcher(BrowserThread::IO, kIOThreadName,
-                                kSleepTime, kUnresponsiveTime));
-    io_watcher_ = io_watcher.get();
-    ASSERT_TRUE(ThreadWatcherList::Register(std::move(io_watcher)));
+    io_watcher_ = new CustomThreadWatcher(BrowserThread::IO, kIOThreadName,
+                                          kSleepTime, kUnresponsiveTime);
     EXPECT_EQ(io_watcher_, thread_watcher_list_->Find(BrowserThread::IO));
 
     // Create thread watcher object for the DB thread.
-    std::unique_ptr<CustomThreadWatcher> db_watcher(
-        new CustomThreadWatcher(BrowserThread::DB, kDBThreadName,
-                                kSleepTime, kUnresponsiveTime));
-    db_watcher_ = db_watcher.get();
-    ASSERT_TRUE(ThreadWatcherList::Register(std::move(db_watcher)));
+    db_watcher_ = new CustomThreadWatcher(BrowserThread::DB, kDBThreadName,
+                                          kSleepTime, kUnresponsiveTime);
     EXPECT_EQ(db_watcher_, thread_watcher_list_->Find(BrowserThread::DB));
 
     {
