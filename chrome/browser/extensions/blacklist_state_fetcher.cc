@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/blacklist_state_fetcher.h"
 
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
@@ -28,8 +27,6 @@ BlacklistStateFetcher::BlacklistStateFetcher()
 
 BlacklistStateFetcher::~BlacklistStateFetcher() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::STLDeleteContainerPairFirstPointers(requests_.begin(), requests_.end());
-  requests_.clear();
 }
 
 void BlacklistStateFetcher::Request(const std::string& id,
@@ -69,10 +66,10 @@ void BlacklistStateFetcher::SendRequest(const std::string& id) {
   request.SerializeToString(&request_str);
 
   GURL request_url = RequestUrl();
-  net::URLFetcher* fetcher =
-      net::URLFetcher::Create(url_fetcher_id_++, request_url,
-                              net::URLFetcher::POST, this).release();
-  requests_[fetcher] = id;
+  std::unique_ptr<net::URLFetcher> fetcher_ptr = net::URLFetcher::Create(
+      url_fetcher_id_++, request_url, net::URLFetcher::POST, this);
+  net::URLFetcher* fetcher = fetcher_ptr.get();
+  requests_[fetcher] = {std::move(fetcher_ptr), id};
   fetcher->SetAutomaticallyRetryOn5xx(false);  // Don't retry on error.
   fetcher->SetRequestContext(url_request_context_getter_.get());
   fetcher->SetUploadData("application/octet-stream", request_str);
@@ -108,17 +105,14 @@ GURL BlacklistStateFetcher::RequestUrl() const {
 void BlacklistStateFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  std::map<const net::URLFetcher*, std::string>::iterator it =
-     requests_.find(source);
+  auto it = requests_.find(source);
   if (it == requests_.end()) {
     NOTREACHED();
     return;
   }
 
-  std::unique_ptr<const net::URLFetcher> fetcher;
-
-  fetcher.reset(it->first);
-  std::string id = it->second;
+  std::unique_ptr<net::URLFetcher> fetcher = std::move(it->second.first);
+  std::string id = it->second.second;
   requests_.erase(it);
 
   BlacklistState state;

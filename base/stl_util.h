@@ -47,19 +47,6 @@ void STLDeleteContainerPointers(ForwardIterator begin, ForwardIterator end) {
   }
 }
 
-// For a range within a container of pairs, calls delete (non-array version) on
-// the FIRST item in the pairs.
-// NOTE: Like STLDeleteContainerPointers, deleting behind the iterator.
-template <class ForwardIterator>
-void STLDeleteContainerPairFirstPointers(ForwardIterator begin,
-                                         ForwardIterator end) {
-  while (begin != end) {
-    ForwardIterator temp = begin;
-    ++begin;
-    delete temp->first;
-  }
-}
-
 // For a range within a container of pairs, calls delete.
 // NOTE: Like STLDeleteContainerPointers, deleting behind the iterator.
 // Deleting the value does not always invalidate the iterator, but it may

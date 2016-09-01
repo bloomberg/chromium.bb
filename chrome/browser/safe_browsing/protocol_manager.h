@@ -15,6 +15,7 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <deque>
 #include <memory>
 #include <set>
@@ -290,7 +291,6 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate {
     FullHashCallback callback;
     bool is_download;
   };
-  using HashRequests = base::hash_map<const net::URLFetcher*, FullHashDetails>;
 
   // The factory that controls the creation of SafeBrowsingProtocolManager.
   // This is used by tests.
@@ -334,7 +334,9 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate {
   // All chunk requests that need to be made.
   std::deque<ChunkUrl> chunk_request_urls_;
 
-  HashRequests hash_requests_;
+  base::hash_map<const net::URLFetcher*,
+                 std::pair<std::unique_ptr<net::URLFetcher>, FullHashDetails>>
+      hash_requests_;
 
   // True if the service has been given an add/sub chunk but it hasn't been
   // added to the database yet.

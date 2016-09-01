@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <list>
 #include <map>
 #include <memory>
@@ -154,7 +155,9 @@ class ResourcePrefetcher : public net::URLRequest::Delegate {
   PrefetchKeyType key_type_;
   std::unique_ptr<RequestVector> request_vector_;
 
-  std::map<net::URLRequest*, Request*> inflight_requests_;
+  std::map<net::URLRequest*,
+           std::pair<std::unique_ptr<net::URLRequest>, Request*>>
+      inflight_requests_;
   std::list<Request*> request_queue_;
   std::map<std::string, size_t> host_inflight_counts_;
 

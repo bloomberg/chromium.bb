@@ -7,7 +7,6 @@
 #include <iterator>
 #include <utility>
 
-#include "base/stl_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
@@ -55,11 +54,7 @@ ResourcePrefetcher::ResourcePrefetcher(
             std::back_inserter(request_queue_));
 }
 
-ResourcePrefetcher::~ResourcePrefetcher() {
-  // Delete any pending net::URLRequests.
-  base::STLDeleteContainerPairFirstPointers(inflight_requests_.begin(),
-                                            inflight_requests_.end());
-}
+ResourcePrefetcher::~ResourcePrefetcher() {}
 
 void ResourcePrefetcher::Start() {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -113,7 +108,7 @@ void ResourcePrefetcher::TryToLaunchPrefetchRequests() {
     }
   }
 
-  // If the inflight_requests_ is empty, we cant launch any more. Finish.
+  // If the inflight_requests_ is empty, we can't launch any more. Finish.
   if (inflight_requests_.empty()) {
     CHECK(host_inflight_counts_.empty());
     CHECK(request_queue_.empty() || state_ == STOPPED);
@@ -126,11 +121,12 @@ void ResourcePrefetcher::TryToLaunchPrefetchRequests() {
 void ResourcePrefetcher::SendRequest(Request* request) {
   request->prefetch_status = Request::PREFETCH_STATUS_STARTED;
 
-  net::URLRequest* url_request =
-      delegate_->GetURLRequestContext()->CreateRequest(
-          request->resource_url, net::LOW, this).release();
+  std::unique_ptr<net::URLRequest> url_request_ptr =
+      delegate_->GetURLRequestContext()->CreateRequest(request->resource_url,
+                                                       net::LOW, this);
+  net::URLRequest* url_request = url_request_ptr.get();
 
-  inflight_requests_[url_request] = request;
+  inflight_requests_[url_request] = {std::move(url_request_ptr), request};
   host_inflight_counts_[url_request->original_url().host()] += 1;
 
   url_request->set_method("GET");
@@ -147,8 +143,7 @@ void ResourcePrefetcher::StartURLRequest(net::URLRequest* request) {
 
 void ResourcePrefetcher::FinishRequest(net::URLRequest* request,
                                        Request::PrefetchStatus status) {
-  std::map<net::URLRequest*, Request*>::iterator request_it =
-      inflight_requests_.find(request);
+  auto request_it = inflight_requests_.find(request);
   CHECK(request_it != inflight_requests_.end());
 
   const std::string host = request->original_url().host();
@@ -159,10 +154,8 @@ void ResourcePrefetcher::FinishRequest(net::URLRequest* request,
   if (host_it->second == 0)
     host_inflight_counts_.erase(host);
 
-  request_it->second->prefetch_status = status;
+  request_it->second.second->prefetch_status = status;
   inflight_requests_.erase(request_it);
-
-  delete request;
 
   TryToLaunchPrefetchRequests();
 }

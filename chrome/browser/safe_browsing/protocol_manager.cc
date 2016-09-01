@@ -14,7 +14,6 @@
 #include "base/metrics/sparse_histogram.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/rand_util.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -191,12 +190,7 @@ bool SafeBrowsingProtocolManager::IsUpdateScheduled() const {
   return update_timer_.IsRunning();
 }
 
-SafeBrowsingProtocolManager::~SafeBrowsingProtocolManager() {
-  // Delete in-progress SafeBrowsing requests.
-  base::STLDeleteContainerPairFirstPointers(hash_requests_.begin(),
-                                            hash_requests_.end());
-  hash_requests_.clear();
-}
+SafeBrowsingProtocolManager::~SafeBrowsingProtocolManager() {}
 
 // We can only have one update or chunk request outstanding, but there may be
 // multiple GetHash requests pending since we don't want to serialize them and
@@ -217,11 +211,11 @@ void SafeBrowsingProtocolManager::GetFullHash(
     return;
   }
   GURL gethash_url = GetHashUrl(is_extended_reporting);
-  net::URLFetcher* fetcher =
-      net::URLFetcher::Create(url_fetcher_id_++, gethash_url,
-                              net::URLFetcher::POST, this)
-          .release();
-  hash_requests_[fetcher] = FullHashDetails(callback, is_download);
+  std::unique_ptr<net::URLFetcher> fetcher_ptr = net::URLFetcher::Create(
+      url_fetcher_id_++, gethash_url, net::URLFetcher::POST, this);
+  net::URLFetcher* fetcher = fetcher_ptr.get();
+  hash_requests_[fetcher] = {std::move(fetcher_ptr),
+                             FullHashDetails(callback, is_download)};
 
   const std::string get_hash = FormatGetHash(prefixes);
 
@@ -252,19 +246,16 @@ void SafeBrowsingProtocolManager::GetNextUpdate() {
 void SafeBrowsingProtocolManager::OnURLFetchComplete(
     const net::URLFetcher* source) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  std::unique_ptr<const net::URLFetcher> fetcher;
 
-  HashRequests::iterator it = hash_requests_.find(source);
+  auto it = hash_requests_.find(source);
   int response_code = source->GetResponseCode();
   net::URLRequestStatus status = source->GetStatus();
 
   if (it != hash_requests_.end()) {
     // GetHash response.
-    // Reset the scoped pointer so the fetcher gets destroyed properly.
-    fetcher.reset(it->first);
     RecordHttpResponseOrErrorCode(kGetHashUmaResponseMetricName, status,
                                   response_code);
-    const FullHashDetails& details = it->second;
+    const FullHashDetails& details = it->second.second;
     std::vector<SBFullHashResult> full_hashes;
     base::TimeDelta cache_lifetime;
     if (status.is_success() && (response_code == net::HTTP_OK ||
@@ -310,7 +301,7 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
     // Update or chunk response.
     RecordHttpResponseOrErrorCode(kGetChunkUmaResponseMetricName, status,
                                   response_code);
-    fetcher.reset(request_.release());
+    std::unique_ptr<net::URLFetcher> fetcher = std::move(request_);
 
     if (request_type_ == UPDATE_REQUEST ||
         request_type_ == BACKUP_UPDATE_REQUEST) {

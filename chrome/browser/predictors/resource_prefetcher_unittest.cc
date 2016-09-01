@@ -106,18 +106,16 @@ class ResourcePrefetcherTest : public testing::Test {
   net::URLRequest* GetInFlightRequest(const std::string& url_str) {
     GURL url(url_str);
 
-    for (std::list<Request*>::const_iterator it =
-         prefetcher_->request_queue_.begin();
+    for (auto it = prefetcher_->request_queue_.begin();
          it != prefetcher_->request_queue_.end(); ++it) {
       EXPECT_NE((*it)->resource_url, url);
     }
-    for (std::map<net::URLRequest*, Request*>::const_iterator it =
-         prefetcher_->inflight_requests_.begin();
+    for (auto it = prefetcher_->inflight_requests_.begin();
          it != prefetcher_->inflight_requests_.end(); ++it) {
       if (it->first->original_url() == url)
         return it->first;
     }
-    EXPECT_TRUE(false) << "Infligh request not found: " << url_str;
+    EXPECT_TRUE(false) << "Inflight request not found: " << url_str;
     return NULL;
   }
 
