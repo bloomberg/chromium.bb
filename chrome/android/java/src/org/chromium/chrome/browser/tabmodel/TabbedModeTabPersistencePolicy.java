@@ -143,7 +143,7 @@ public class TabbedModeTabPersistencePolicy implements TabPersistencePolicy {
     }
 
     @Override
-    public boolean performInitialization(Executor executor) {
+    public boolean performMigration(Executor executor) {
         ThreadUtils.assertOnUiThread();
 
         final boolean hasRunLegacyMigration =
@@ -291,7 +291,7 @@ public class TabbedModeTabPersistencePolicy implements TabPersistencePolicy {
     }
 
     @Override
-    public void waitForInitializationToFinish() {
+    public void waitForMigrationToFinish() {
         if (sMigrationTask == null) return;
         try {
             sMigrationTask.get();
