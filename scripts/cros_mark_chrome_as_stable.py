@@ -19,12 +19,12 @@ from __future__ import print_function
 import base64
 import distutils.version
 import filecmp
-import optparse  # pylint: disable=deprecated-module
 import os
 import re
 import urlparse
 
 from chromite.cbuildbot import constants
+from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
@@ -419,34 +419,36 @@ def MarkChromeEBuildAsStable(stable_candidate, unstable_ebuild, chrome_pn,
   return '%s-%s' % (new_ebuild.package, new_ebuild.version)
 
 
-def main(_argv):
-  usage_options = '|'.join(constants.VALID_CHROME_REVISIONS)
-  usage = '%s OPTIONS [%s]' % (__file__, usage_options)
-  parser = optparse.OptionParser(usage)
-  parser.add_option('-b', '--boards', default=None)
-  parser.add_option('-c', '--chrome_url',
-                    default=constants.CHROMIUM_GOB_URL)
-  parser.add_option('-f', '--force_version', default=None,
-                    help='Chrome version or git revision hash to use')
-  parser.add_option('-s', '--srcroot', default=os.path.join(os.environ['HOME'],
-                                                            'trunk', 'src'),
-                    help='Path to the src directory')
-  parser.add_option('-t', '--tracking_branch', default='cros/master',
-                    help='Branch we are tracking changes against')
-  (options, args) = parser.parse_args()
+def GetParser():
+  """Return a command line parser."""
+  parser = commandline.ArgumentParser(description=__doc__)
+  parser.add_argument('-b', '--boards')
+  parser.add_argument('-c', '--chrome_url',
+                      default=constants.CHROMIUM_GOB_URL)
+  parser.add_argument('-f', '--force_version',
+                      help='Chrome version or git revision hash to use')
+  parser.add_argument('-s', '--srcroot',
+                      default=os.path.join(os.environ['HOME'], 'trunk', 'src'),
+                      help='Path to the src directory')
+  parser.add_argument('-t', '--tracking_branch', default='cros/master',
+                      help='Branch we are tracking changes against')
+  parser.add_argument('revision', choices=constants.VALID_CHROME_REVISIONS)
+  return parser
 
-  if len(args) != 1 or args[0] not in constants.VALID_CHROME_REVISIONS:
-    parser.error('Commit requires arg set to one of %s.'
-                 % constants.VALID_CHROME_REVISIONS)
 
-  if options.force_version and args[0] not in (constants.CHROME_REV_SPEC,
-                                               constants.CHROME_REV_LATEST):
+def main(argv):
+  parser = GetParser()
+  options = parser.parse_args(argv)
+  options.Freeze()
+  chrome_rev = options.revision
+
+  if options.force_version and chrome_rev not in (constants.CHROME_REV_SPEC,
+                                                  constants.CHROME_REV_LATEST):
     parser.error('--force_version is not compatible with the %r '
-                 'option.' % (args[0],))
+                 'option.' % (chrome_rev,))
 
   overlay_dir = os.path.abspath(_OVERLAY_DIR % {'srcroot': options.srcroot})
   chrome_package_dir = os.path.join(overlay_dir, constants.CHROME_CP)
-  chrome_rev = args[0]
   version_to_uprev = None
   commit_to_use = None
   sticky_branch = None
