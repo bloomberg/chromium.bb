@@ -410,8 +410,8 @@ TEST_F(ScreenOrientationControllerTest, RotationLockPreventsRotation) {
   EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
 }
 
-// The TrayDisplay class that is responsible for adding/updating MessageCenter
-// notifications is only added to the SystemTray on ChromeOS.
+// The ScreenLayoutObserver class that is responsible for adding/updating
+// MessageCenter notifications is only added to the SystemTray on ChromeOS.
 // Tests that the screen rotation notifications are suppressed when
 // triggered by the accelerometer.
 TEST_F(ScreenOrientationControllerTest, BlockRotationNotifications) {

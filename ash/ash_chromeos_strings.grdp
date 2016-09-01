@@ -296,14 +296,8 @@
   <message name="IDS_ASH_STATUS_TRAY_DISPLAY_ROTATED" desc="The label used in the tray to notify that the display rotation settings has changed.">
     <ph name="DISPLAY_NAME">$1</ph> was rotated to <ph name="ROTATION">$2</ph>
   </message>
-  <message name="IDS_ASH_STATUS_TRAY_DISPLAY_SINGLE_DISPLAY" desc="The label used in the tray to show a single display's configuration">
-    <ph name="DISPLAY_NAME">$1</ph>: <ph name="ANNOTATION">$2</ph>
-  </message>
   <message name="IDS_ASH_STATUS_TRAY_DISPLAY_ANNOTATED_NAME" desc="Label used to show a display name with annotation (like screen resolution or overscan info).">
     <ph name="DISPLAY_NAME">$1</ph> (<ph name="ANNOTATION">$2</ph>)
-  </message>
-  <message name="IDS_ASH_STATUS_TRAY_DISPLAY_ANNOTATION" desc="Label used to annotate the display's status like resolution or overscan flag.">
-    <ph name="RESOLUTION">$1</ph>, <ph name="OVERSCAN">$2</ph>
   </message>
   <message name="IDS_ASH_STATUS_TRAY_DISPLAY_ANNOTATION_OVERSCAN" desc="Label used to describe that the system notice that this display device may have overscan area.">
     overscan

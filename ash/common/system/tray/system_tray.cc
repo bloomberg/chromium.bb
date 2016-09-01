@@ -195,12 +195,6 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   AddTrayItem(new TrayBluetooth(this));
   tray_cast_ = new TrayCast(this);
   AddTrayItem(tray_cast_);
-  // TODO(jamescook): Remove this when mus has support for display management
-  // and we have a DisplayManager equivalent. See http://crbug.com/548429
-  std::unique_ptr<SystemTrayItem> tray_display =
-      delegate->CreateDisplayTrayItem(this);
-  if (tray_display)
-    AddTrayItem(tray_display.release());
   screen_capture_tray_item_ = new ScreenCaptureTrayItem(this);
   AddTrayItem(screen_capture_tray_item_);
   screen_share_tray_item_ = new ScreenShareTrayItem(this);

@@ -2,35 +2,35 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_CHROMEOS_TRAY_DISPLAY_H_
-#define ASH_SYSTEM_CHROMEOS_TRAY_DISPLAY_H_
+#ifndef ASH_SYSTEM_CHROMEOS_SCREEN_LAYOUT_OBSERVER_H_
+#define ASH_SYSTEM_CHROMEOS_SCREEN_LAYOUT_OBSERVER_H_
 
 #include <stdint.h>
 
 #include <map>
 
 #include "ash/ash_export.h"
-#include "ash/common/system/tray/system_tray_item.h"
 #include "ash/common/wm_display_observer.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "ui/display/manager/managed_display_info.h"
-#include "ui/views/view.h"
 
 namespace ash {
 
 class DisplayView;
 
-class ASH_EXPORT TrayDisplay : public SystemTrayItem, public WmDisplayObserver {
+// ScreenLayoutObserver is responsible to send notification to users when screen
+// resolution changes or screen rotation changes.
+class ASH_EXPORT ScreenLayoutObserver : public WmDisplayObserver {
  public:
-  explicit TrayDisplay(SystemTray* system_tray);
-  ~TrayDisplay() override;
+  ScreenLayoutObserver();
+  ~ScreenLayoutObserver() override;
 
   // Overridden from WmDisplayObserver:
   void OnDisplayConfigurationChanged() override;
 
  private:
-  friend class TrayDisplayTest;
+  friend class ScreenLayoutObserverTest;
 
   using DisplayInfoMap = std::map<int64_t, display::ManagedDisplayInfo>;
 
@@ -54,23 +54,11 @@ class ASH_EXPORT TrayDisplay : public SystemTrayItem, public WmDisplayObserver {
   void CreateOrUpdateNotification(const base::string16& message,
                                   const base::string16& additional_message);
 
-  // Overridden from SystemTrayItem.
-  views::View* CreateDefaultView(LoginStatus status) override;
-  void DestroyDefaultView() override;
-
-  // Test accessors.
-  base::string16 GetDefaultViewMessage() const;
-  bool GetAccessibleStateForTesting(ui::AXViewState* state);
-  const views::View* default_view() const {
-    return reinterpret_cast<views::View*>(default_);
-  }
-
-  DisplayView* default_;
   DisplayInfoMap display_info_;
 
-  DISALLOW_COPY_AND_ASSIGN(TrayDisplay);
+  DISALLOW_COPY_AND_ASSIGN(ScreenLayoutObserver);
 };
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_CHROMEOS_TRAY_DISPLAY_H_
+#endif  // ASH_SYSTEM_CHROMEOS_SCREEN_LAYOUT_OBSERVER_H_

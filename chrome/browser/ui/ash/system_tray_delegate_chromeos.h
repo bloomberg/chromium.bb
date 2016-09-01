@@ -154,8 +154,6 @@ class SystemTrayDelegateChromeOS
   void ShouldRebootOnShutdown(
       const ash::RebootOnShutdownCallback& callback) override;
   ash::VPNDelegate* GetVPNDelegate() const override;
-  std::unique_ptr<ash::SystemTrayItem> CreateDisplayTrayItem(
-      ash::SystemTray* tray) override;
   std::unique_ptr<ash::SystemTrayItem> CreateRotationLockTrayItem(
       ash::SystemTray* tray) override;
 

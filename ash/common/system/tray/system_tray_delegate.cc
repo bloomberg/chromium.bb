@@ -229,11 +229,6 @@ VPNDelegate* SystemTrayDelegate::GetVPNDelegate() const {
   return nullptr;
 }
 
-std::unique_ptr<SystemTrayItem> SystemTrayDelegate::CreateDisplayTrayItem(
-    SystemTray* tray) {
-  return nullptr;
-}
-
 std::unique_ptr<SystemTrayItem> SystemTrayDelegate::CreateRotationLockTrayItem(
     SystemTray* tray) {
   return nullptr;

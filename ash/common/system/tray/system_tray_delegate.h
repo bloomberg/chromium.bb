@@ -322,12 +322,6 @@ class ASH_EXPORT SystemTrayDelegate {
   // Returns VPNDelegate. May return nullptr.
   virtual VPNDelegate* GetVPNDelegate() const;
 
-  // Creates a system tray item for display settings.
-  // TODO(jamescook): Remove this when mus has support for display management
-  // and we have a DisplayManager equivalent. See http://crbug.com/548429
-  virtual std::unique_ptr<SystemTrayItem> CreateDisplayTrayItem(
-      SystemTray* tray);
-
   // Creates a system tray item for display rotation lock.
   // TODO(jamescook): Remove this when mus has support for display management
   // and we have a DisplayManager equivalent. See http://crbug.com/548429

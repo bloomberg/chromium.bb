@@ -55,6 +55,7 @@
 #include "ash/magnifier/partial_magnification_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell_init_params.h"
+#include "ash/system/chromeos/screen_layout_observer.h"
 #include "ash/utility/screenshot_controller.h"
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wallpaper/wallpaper_view.h"
@@ -549,6 +550,7 @@ Shell::~Shell() {
 
 #if defined(OS_CHROMEOS)
   screen_orientation_controller_.reset();
+  screen_layout_observer_.reset();
 #endif
 
 // Destroy the virtual keyboard controller before the maximize mode controller
@@ -944,6 +946,7 @@ void Shell::Init(const ShellInitParams& init_params) {
       new VideoActivityNotifier(video_detector_.get()));
   bluetooth_notification_controller_.reset(new BluetoothNotificationController);
   screen_orientation_controller_.reset(new ScreenOrientationController());
+  screen_layout_observer_.reset(new ScreenLayoutObserver());
 #endif
   // The compositor thread and main message loop have to be running in
   // order to create mirror window. Run it after the main message loop

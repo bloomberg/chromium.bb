@@ -37,10 +37,6 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
-#if defined(OS_CHROMEOS)
-#include "ash/system/chromeos/tray_display.h"
-#endif
-
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #include "ui/platform_window/win/win_window.h"

@@ -15,7 +15,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/system/chromeos/rotation/tray_rotation_lock.h"
-#include "ash/system/chromeos/tray_display.h"
 #include "base/memory/ptr_util.h"
 #else
 #include "ash/common/system/tray/system_tray_item.h"
@@ -122,15 +121,6 @@ bool TestSystemTrayDelegate::GetSessionLengthLimit(
 
 void TestSystemTrayDelegate::SignOut() {
   base::MessageLoop::current()->QuitWhenIdle();
-}
-
-std::unique_ptr<SystemTrayItem> TestSystemTrayDelegate::CreateDisplayTrayItem(
-    SystemTray* tray) {
-#if defined(OS_CHROMEOS)
-  return base::MakeUnique<TrayDisplay>(tray);
-#else
-  return nullptr;
-#endif
 }
 
 std::unique_ptr<SystemTrayItem>

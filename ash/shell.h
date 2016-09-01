@@ -124,6 +124,7 @@ class SystemTray;
 class ToplevelWindowEventHandler;
 class TouchTransformerController;
 class TouchObserverHUD;
+class ScreenLayoutObserver;
 class VirtualKeyboardController;
 class VideoActivityNotifier;
 class VideoDetector;
@@ -385,6 +386,10 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
     return display_error_observer_.get();
   }
 
+  ScreenLayoutObserver* screen_layout_observer() {
+    return screen_layout_observer_.get();
+  }
+
   ResolutionNotificationController* resolution_notification_controller() {
     return resolution_notification_controller_.get();
   }
@@ -561,6 +566,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
 
   // Implements content::ScreenOrientationController for ChromeOS
   std::unique_ptr<ScreenOrientationController> screen_orientation_controller_;
+  std::unique_ptr<ScreenLayoutObserver> screen_layout_observer_;
 
   std::unique_ptr<TouchTransformerController> touch_transformer_controller_;
 
