@@ -214,8 +214,11 @@ class DBusServices {
     service_providers.push_back(
         base::WrapUnique(ProxyResolutionServiceProvider::Create(
             base::MakeUnique<ChromeProxyResolverDelegate>())));
-    service_providers.push_back(base::MakeUnique<DisplayPowerServiceProvider>(
-        base::MakeUnique<ChromeDisplayPowerServiceProviderDelegate>()));
+    if (!chrome::IsRunningInMash()) {
+      // TODO(crbug.com/629707): revisit this with mustash dbus work.
+      service_providers.push_back(base::MakeUnique<DisplayPowerServiceProvider>(
+          base::MakeUnique<ChromeDisplayPowerServiceProviderDelegate>()));
+    }
     service_providers.push_back(base::MakeUnique<LivenessServiceProvider>());
     service_providers.push_back(base::MakeUnique<ScreenLockServiceProvider>());
     service_providers.push_back(base::MakeUnique<ConsoleServiceProvider>(
