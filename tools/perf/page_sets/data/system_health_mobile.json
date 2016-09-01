@@ -106,10 +106,6 @@
         "system_health_mobile_040.wpr": [
             "load:media:facebook_photos",
             "browse:media:facebook_photos"
-        ],
-        "system_health_mobile_042.wpr": [
-            "long_running:tools:gmail-foreground",
-            "long_running:tools:gmail-background"
         ]
     },
     "description": "Describes the Web Page Replay archives for a story set. Don't edit by hand! Use record_wpr for updating."
