@@ -185,10 +185,10 @@ def GenerateBreakpadSymbols(board, breakpad_dir=None, strip_cfi=False,
   Returns:
     The number of errors that were encountered.
   """
-  if breakpad_dir is None:
-    breakpad_dir = FindBreakpadDir(board)
   if sysroot is None:
     sysroot = cros_build_lib.GetSysroot(board=board)
+  if breakpad_dir is None:
+    breakpad_dir = FindBreakpadDir(board, sysroot=sysroot)
   if clean_breakpad:
     logging.info('cleaning out %s first', breakpad_dir)
     osutils.RmDir(breakpad_dir, ignore_missing=True, sudo=True)
@@ -197,7 +197,7 @@ def GenerateBreakpadSymbols(board, breakpad_dir=None, strip_cfi=False,
   if not os.access(breakpad_dir, os.W_OK):
     cros_build_lib.SudoRunCommand(['chown', '-R', str(os.getuid()),
                                    breakpad_dir])
-  debug_dir = FindDebugDir(board)
+  debug_dir = FindDebugDir(board, sysroot=sysroot)
   exclude_paths = [os.path.join(debug_dir, x) for x in exclude_dirs]
   if file_list is None:
     file_list = []
@@ -282,15 +282,16 @@ def GenerateBreakpadSymbols(board, breakpad_dir=None, strip_cfi=False,
   return bg_errors.value
 
 
-def FindDebugDir(board):
+def FindDebugDir(board, sysroot=None):
   """Given a |board|, return the path to the split debug dir for it"""
-  sysroot = cros_build_lib.GetSysroot(board=board)
+  if sysroot is None:
+    sysroot = cros_build_lib.GetSysroot(board=board)
   return os.path.join(sysroot, 'usr', 'lib', 'debug')
 
 
-def FindBreakpadDir(board):
+def FindBreakpadDir(board, sysroot=None):
   """Given a |board|, return the path to the breakpad dir for it"""
-  return os.path.join(FindDebugDir(board), 'breakpad')
+  return os.path.join(FindDebugDir(board, sysroot=sysroot), 'breakpad')
 
 
 def main(argv):
@@ -299,7 +300,9 @@ def main(argv):
   parser.add_argument('--board', default=None,
                       help='board to generate symbols for')
   parser.add_argument('--breakpad_root', type='path', default=None,
-                      help='root directory for breakpad symbols')
+                      help='root output directory for breakpad symbols')
+  parser.add_argument('--sysroot', type='path', default=None,
+                      help='root input directory for files')
   parser.add_argument('--exclude-dir', type=str, action='append',
                       default=[],
                       help='directory (relative to |board| root) to not search')
@@ -319,12 +322,13 @@ def main(argv):
   opts = parser.parse_args(argv)
   opts.Freeze()
 
-  if opts.board is None:
-    cros_build_lib.Die('--board is required')
+  if opts.board is None and opts.sysroot is None:
+    cros_build_lib.Die('--board or --sysroot is required')
 
   ret = GenerateBreakpadSymbols(opts.board, breakpad_dir=opts.breakpad_root,
                                 strip_cfi=opts.strip_cfi,
                                 generate_count=opts.generate_count,
+                                sysroot=opts.sysroot,
                                 num_processes=opts.jobs,
                                 clean_breakpad=opts.clean,
                                 exclude_dirs=opts.exclude_dir,
