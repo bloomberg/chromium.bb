@@ -14,6 +14,8 @@ source_set("gpu") {
     "gpu_service_internal.h",
   ]
 
+  defines = [ "NOTIMPLEMENTED_POLICY=5" ]
+
   deps = [
     "//gpu/ipc/common",
     "//gpu/ipc/service",
