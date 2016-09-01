@@ -78,6 +78,8 @@ public:
             m_loader->cancel();
             m_loader = nullptr;
         }
+        if (!m_registeredBlobURL.isEmpty())
+            BlobRegistry::revokePublicBlobURL(m_registeredBlobURL);
     }
 
     void start(ExecutionContext* executionContext) override
@@ -85,17 +87,17 @@ public:
         ASSERT(executionContext->isContextThread());
         ASSERT(!m_loader);
 
-        KURL url = BlobURL::createPublicURL(executionContext->getSecurityOrigin());
-        if (url.isEmpty()) {
+        m_registeredBlobURL = BlobURL::createPublicURL(executionContext->getSecurityOrigin());
+        if (m_registeredBlobURL.isEmpty()) {
             m_updater->update(createUnexpectedErrorDataConsumerHandle());
             return;
         }
-        BlobRegistry::registerPublicBlobURL(executionContext->getSecurityOrigin(), url, m_blobDataHandle);
+        BlobRegistry::registerPublicBlobURL(executionContext->getSecurityOrigin(), m_registeredBlobURL, m_blobDataHandle);
 
         m_loader = createLoader(executionContext, this);
         ASSERT(m_loader);
 
-        ResourceRequest request(url);
+        ResourceRequest request(m_registeredBlobURL);
         request.setRequestContext(WebURLRequest::RequestContextInternal);
         request.setUseStreamOnResponse(true);
         // We intentionally skip 'setExternalRequestStateFromRequestorAddressSpace', as 'data:' can never be external.
@@ -155,6 +157,7 @@ private:
     RefPtr<BlobDataHandle> m_blobDataHandle;
     Persistent<FetchBlobDataConsumerHandle::LoaderFactory> m_loaderFactory;
     Persistent<ThreadableLoader> m_loader;
+    KURL m_registeredBlobURL;
 
     bool m_receivedResponse;
 };
