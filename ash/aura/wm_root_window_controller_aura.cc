@@ -60,7 +60,7 @@ const WmRootWindowControllerAura* WmRootWindowControllerAura::Get(
 }
 
 bool WmRootWindowControllerAura::HasShelf() {
-  return root_window_controller_->shelf_widget() != nullptr;
+  return root_window_controller_->wm_shelf_aura()->shelf_widget() != nullptr;
 }
 
 WmShell* WmRootWindowControllerAura::GetShell() {

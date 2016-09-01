@@ -4,7 +4,7 @@
 
 #include "ash/screen_util.h"
 
-#include "ash/common/shelf/shelf_widget.h"
+#include "ash/aura/wm_shelf_aura.h"
 #include "ash/display/display_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
@@ -31,7 +31,8 @@ display::Display ScreenUtil::FindDisplayContainingPoint(
 
 // static
 gfx::Rect ScreenUtil::GetMaximizedWindowBoundsInParent(aura::Window* window) {
-  if (GetRootWindowController(window->GetRootWindow())->shelf_widget())
+  aura::Window* root_window = window->GetRootWindow();
+  if (GetRootWindowController(root_window)->wm_shelf_aura()->shelf_widget())
     return GetDisplayWorkAreaBoundsInParent(window);
   else
     return GetDisplayBoundsInParent(window);

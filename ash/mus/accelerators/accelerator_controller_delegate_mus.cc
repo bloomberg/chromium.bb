@@ -33,7 +33,6 @@ bool AcceleratorControllerDelegateMus::HandlesAction(AcceleratorAction action) {
     case SCALE_UI_DOWN:
     case SCALE_UI_RESET:
     case SCALE_UI_UP:
-    case SHOW_MESSAGE_CENTER_BUBBLE:
     case SHOW_SYSTEM_TRAY_BUBBLE:
     case TAKE_PARTIAL_SCREENSHOT:
     case TAKE_SCREENSHOT:

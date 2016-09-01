@@ -4,7 +4,6 @@
 
 #include "ash/test/status_area_widget_test_helper.h"
 
-#include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/system/status_area_widget.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/wm_shell.h"
@@ -18,9 +17,7 @@ LoginStatus StatusAreaWidgetTestHelper::GetUserLoginStatus() {
 }
 
 StatusAreaWidget* StatusAreaWidgetTestHelper::GetStatusAreaWidget() {
-  return Shell::GetPrimaryRootWindowController()
-      ->shelf_widget()
-      ->status_area_widget();
+  return Shell::GetPrimaryRootWindowController()->GetStatusAreaWidget();
 }
 
 StatusAreaWidget* StatusAreaWidgetTestHelper::GetSecondaryStatusAreaWidget() {
@@ -30,10 +27,10 @@ StatusAreaWidget* StatusAreaWidgetTestHelper::GetSecondaryStatusAreaWidget() {
       Shell::GetAllRootWindowControllers();
   for (size_t i = 0; i < controllers.size(); ++i) {
     if (controllers[i] != primary_controller)
-      return controllers[i]->shelf_widget()->status_area_widget();
+      return controllers[i]->GetStatusAreaWidget();
   }
 
-  return NULL;
+  return nullptr;
 }
 
 }  // namespace ash

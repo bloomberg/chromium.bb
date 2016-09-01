@@ -34,10 +34,10 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
                                public ShelfBackgroundAnimatorObserver,
                                public ShelfLayoutManagerObserver {
  public:
-  ShelfWidget(WmWindow* shelf_container,
-              WmWindow* status_container,
-              WmShelf* wm_shelf);
+  ShelfWidget(WmWindow* shelf_container, WmShelf* wm_shelf);
   ~ShelfWidget() override;
+
+  void CreateStatusAreaWidget(WmWindow* status_container);
 
   // Returns if shelf alignment option is enabled, and the user is able to
   // adjust the alignment (guest and supervised mode users cannot for example).
@@ -130,6 +130,8 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
 
   // Owned by the shelf container's window.
   ShelfLayoutManager* shelf_layout_manager_;
+
+  // Owned by the native widget.
   StatusAreaWidget* status_area_widget_;
 
   // |delegate_view_| is the contents view of this widget and is cleaned up

@@ -51,8 +51,8 @@ WmDimmerView* WmShelfAura::CreateDimmerView(bool disable_animations_for_test) {
   return DimmerView::Create(this, disable_animations_for_test);
 }
 
-void WmShelfAura::SetShelfLayoutManager(ShelfLayoutManager* manager) {
-  WmShelf::SetShelfLayoutManager(manager);
+void WmShelfAura::CreateShelfWidget(WmWindow* root) {
+  WmShelf::CreateShelfWidget(root);
   bezel_event_handler_.reset(new ShelfBezelEventHandler(this));
 }
 

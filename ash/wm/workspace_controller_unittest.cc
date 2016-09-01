@@ -15,7 +15,6 @@
 #include "ash/common/wm/panels/panel_layout_manager.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/workspace/workspace_window_resizer.h"
-#include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_md_test_base.h"
@@ -142,12 +141,10 @@ class WorkspaceControllerTest : public test::AshMDTestBase {
         .bounds();
   }
 
-  ShelfWidget* shelf_widget() {
-    return Shell::GetPrimaryRootWindowController()->shelf_widget();
-  }
+  ShelfWidget* shelf_widget() { return GetPrimaryShelf()->shelf_widget(); }
 
   ShelfLayoutManager* shelf_layout_manager() {
-    return Shell::GetPrimaryRootWindowController()->GetShelfLayoutManager();
+    return GetPrimaryShelf()->shelf_layout_manager();
   }
 
   bool GetWindowOverlapsShelf() {

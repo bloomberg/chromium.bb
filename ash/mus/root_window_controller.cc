@@ -170,7 +170,7 @@ void RootWindowController::CreateLayoutManagers() {
       new ScreenlockLayout(lock_screen_container->mus_window()));
 
   // Creating the shelf also creates the status area and both layout managers.
-  wm_shelf_.reset(new WmShelfMus(wm_root_window_controller_.get()));
+  wm_shelf_.reset(new WmShelfMus(wm_root_window_controller_->GetWindow()));
 
   WmWindowMus* default_container =
       GetWindowByShellWindowId(kShellWindowId_DefaultContainer);

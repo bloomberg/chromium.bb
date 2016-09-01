@@ -56,7 +56,6 @@ class DockedWindowLayoutManager;
 enum class LoginStatus;
 class PanelLayoutManager;
 class ShelfLayoutManager;
-class ShelfWidget;
 class StackingController;
 class StatusAreaWidget;
 class SystemModalContainerLayoutManager;
@@ -118,11 +117,6 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
 
   WmShelfAura* wm_shelf_aura() const { return wm_shelf_aura_.get(); }
 
-  // Access the shelf widget associated with this root window controller,
-  // NULL if no such shelf exists.
-  // DEPRECATED: Prefer GetShelf()->shelf_widget().
-  ShelfWidget* shelf_widget() { return shelf_widget_.get(); }
-
   // Get touch HUDs associated with this root window controller.
   TouchHudDebug* touch_hud_debug() const { return touch_hud_debug_; }
   TouchHudProjection* touch_hud_projection() const {
@@ -151,6 +145,9 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   // Access the shelf layout manager associated with this root
   // window controller, NULL if no such shelf exists.
   ShelfLayoutManager* GetShelfLayoutManager();
+
+  // May return null, for example for a secondary monitor at the login screen.
+  StatusAreaWidget* GetStatusAreaWidget();
 
   // Returns the system tray on this root window. Note that
   // calling this on the root window that doesn't have a shelf will
@@ -274,10 +271,6 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   // of the RootWindowController so that it is safe for observers to be added
   // to it during construction of the shelf widget and status tray.
   std::unique_ptr<WmShelfAura> wm_shelf_aura_;
-
-  // The shelf widget for this root window.
-  // TODO(jamescook): Move ownership to WmShelf.
-  std::unique_ptr<ShelfWidget> shelf_widget_;
 
   // An invisible/empty window used as a event target for
   // |MouseCursorEventFilter| before a user logs in.

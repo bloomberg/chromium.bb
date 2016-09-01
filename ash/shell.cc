@@ -24,7 +24,7 @@
 #include "ash/common/shelf/shelf_delegate.h"
 #include "ash/common/shelf/shelf_item_delegate.h"
 #include "ash/common/shelf/shelf_model.h"
-#include "ash/common/shelf/shelf_widget.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_delegate.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/locale/locale_notification_controller.h"
@@ -37,6 +37,7 @@
 #include "ash/common/wm/root_window_finder.h"
 #include "ash/common/wm/window_positioner.h"
 #include "ash/common/wm/workspace_controller.h"
+#include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/display/cursor_window_controller.h"
 #include "ash/display/display_configuration_controller.h"
@@ -405,15 +406,6 @@ void Shell::ShowShelf() {
     (*iter)->ShowShelf();
 }
 
-void Shell::ShutdownShelf() {
-  RootWindowControllerList controllers = GetAllRootWindowControllers();
-  for (RootWindowControllerList::iterator iter = controllers.begin();
-       iter != controllers.end(); ++iter) {
-    if ((*iter)->shelf_widget())
-      (*iter)->shelf_widget()->Shutdown();
-  }
-}
-
 #if defined(OS_CHROMEOS)
 bool Shell::ShouldSaveDisplaySettings() {
   return !(
@@ -423,11 +415,8 @@ bool Shell::ShouldSaveDisplaySettings() {
 #endif
 
 void Shell::UpdateShelfVisibility() {
-  RootWindowControllerList controllers = GetAllRootWindowControllers();
-  for (RootWindowControllerList::iterator iter = controllers.begin();
-       iter != controllers.end(); ++iter)
-    if ((*iter)->shelf_widget())
-      (*iter)->UpdateShelfVisibility();
+  for (WmWindow* root : wm_shell_->GetAllRootWindows())
+    root->GetRootWindowController()->GetShelf()->UpdateVisibilityState();
 }
 
 void Shell::CreateModalBackground(aura::Window* window) {
@@ -455,14 +444,12 @@ void Shell::OnModalWindowRemoved(aura::Window* removed) {
 
 WebNotificationTray* Shell::GetWebNotificationTray() {
   return GetPrimaryRootWindowController()
-      ->shelf_widget()
-      ->status_area_widget()
+      ->GetStatusAreaWidget()
       ->web_notification_tray();
 }
 
 bool Shell::HasPrimaryStatusArea() {
-  ShelfWidget* shelf = GetPrimaryRootWindowController()->shelf_widget();
-  return shelf && shelf->status_area_widget();
+  return !!GetPrimaryRootWindowController()->GetStatusAreaWidget();
 }
 
 SystemTray* Shell::GetPrimarySystemTray() {
@@ -584,7 +571,8 @@ Shell::~Shell() {
 
   // Destroy SystemTrayDelegate before destroying the status area(s). Make sure
   // to deinitialize the shelf first, as it is initialized after the delegate.
-  ShutdownShelf();
+  for (WmWindow* root : wm_shell_->GetAllRootWindows())
+    root->GetRootWindowController()->GetShelf()->ShutdownShelfWidget();
   wm_shell_->DeleteSystemTrayDelegate();
 
   locale_notification_controller_.reset();

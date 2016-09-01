@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "ash/common/session/session_state_delegate.h"
-#include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/status_area_widget.h"
 #include "ash/common/system/web_notification/web_notification_tray.h"
@@ -318,8 +317,7 @@ void WindowTypeLauncher::ButtonPressed(views::Button* sender,
         message_center::RichNotificationData(), NULL /* delegate */));
 
     Shell::GetPrimaryRootWindowController()
-        ->shelf_widget()
-        ->status_area_widget()
+        ->GetStatusAreaWidget()
         ->web_notification_tray()
         ->message_center()
         ->AddNotification(std::move(notification));

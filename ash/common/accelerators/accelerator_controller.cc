@@ -24,6 +24,7 @@
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/volume_control_delegate.h"
+#include "ash/common/system/web_notification/web_notification_tray.h"
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/overview/window_selector_controller.h"
 #include "ash/common/wm/window_cycle_controller.h"
@@ -219,6 +220,27 @@ void HandleRestoreTab() {
 void HandleShowKeyboardOverlay() {
   base::RecordAction(UserMetricsAction("Accel_Show_Keyboard_Overlay"));
   WmShell::Get()->new_window_delegate()->ShowKeyboardOverlay();
+}
+
+bool CanHandleShowMessageCenterBubble() {
+  WmWindow* target_root = WmShell::Get()->GetRootWindowForNewWindows();
+  StatusAreaWidget* status_area_widget =
+      WmShelf::ForWindow(target_root)->shelf_widget()->status_area_widget();
+  return status_area_widget &&
+         status_area_widget->web_notification_tray()->visible();
+}
+
+void HandleShowMessageCenterBubble() {
+  base::RecordAction(UserMetricsAction("Accel_Show_Message_Center_Bubble"));
+  WmWindow* target_root = WmShell::Get()->GetRootWindowForNewWindows();
+  StatusAreaWidget* status_area_widget =
+      WmShelf::ForWindow(target_root)->shelf_widget()->status_area_widget();
+  if (status_area_widget) {
+    WebNotificationTray* notification_tray =
+        status_area_widget->web_notification_tray();
+    if (notification_tray->visible())
+      notification_tray->ShowMessageCenterBubble();
+  }
 }
 
 void HandleShowTaskManager() {
@@ -729,6 +751,8 @@ bool AcceleratorController::CanPerformAction(
       return CanHandleNextIme(ime_control_delegate_.get());
     case PREVIOUS_IME:
       return CanHandlePreviousIme(ime_control_delegate_.get());
+    case SHOW_MESSAGE_CENTER_BUBBLE:
+      return CanHandleShowMessageCenterBubble();
     case SWITCH_IME:
       return CanHandleSwitchIme(ime_control_delegate_.get(), accelerator);
     case TOGGLE_APP_LIST:
@@ -909,6 +933,9 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
       break;
     case SHOW_KEYBOARD_OVERLAY:
       HandleShowKeyboardOverlay();
+      break;
+    case SHOW_MESSAGE_CENTER_BUBBLE:
+      HandleShowMessageCenterBubble();
       break;
     case SHOW_TASK_MANAGER:
       HandleShowTaskManager();

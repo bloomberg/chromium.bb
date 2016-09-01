@@ -10,24 +10,20 @@
 
 namespace ash {
 
-class ShelfWidget;
-class WmRootWindowController;
+class WmWindow;
 
 namespace mus {
 
 // WmShelf implementation for mus.
 class WmShelfMus : public WmShelf {
  public:
-  WmShelfMus(WmRootWindowController* root_window_controller);
+  explicit WmShelfMus(WmWindow* root_window);
   ~WmShelfMus() override;
 
   // WmShelf:
   void WillDeleteShelfLayoutManager() override;
 
  private:
-  // The shelf widget for this shelf.
-  std::unique_ptr<ShelfWidget> shelf_widget_;
-
   DISALLOW_COPY_AND_ASSIGN(WmShelfMus);
 };
 

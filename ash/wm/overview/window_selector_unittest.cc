@@ -633,7 +633,7 @@ TEST_P(WindowSelectorTest, BasicWithDocked) {
   EXPECT_FALSE(WindowsOverlapping(window1.get(), window2.get()));
 
   gfx::Rect container_bounds = docked1->parent()->bounds();
-  ShelfWidget* shelf = Shell::GetPrimaryRootWindowController()->shelf_widget();
+  ShelfWidget* shelf = GetPrimaryShelf()->shelf_widget();
   DockedWindowLayoutManager* manager =
       DockedWindowLayoutManager::Get(WmWindowAura::Get(docked1.get()));
 
@@ -1174,7 +1174,7 @@ TEST_P(WindowSelectorTest, OverviewUndimsShelf) {
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   wm::WindowState* window_state = wm::GetWindowState(window1.get());
   window_state->Maximize();
-  ShelfWidget* shelf = Shell::GetPrimaryRootWindowController()->shelf_widget();
+  ShelfWidget* shelf = GetPrimaryShelf()->shelf_widget();
   EXPECT_TRUE(shelf->GetDimsShelf());
   ToggleOverview();
   EXPECT_FALSE(shelf->GetDimsShelf());

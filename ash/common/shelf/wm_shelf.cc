@@ -10,6 +10,7 @@
 #include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shelf/wm_shelf_observer.h"
+#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
@@ -24,13 +25,31 @@ WmShelf* WmShelf::ForWindow(WmWindow* window) {
   return window->GetRootWindowController()->GetShelf();
 }
 
-void WmShelf::SetShelfLayoutManager(ShelfLayoutManager* manager) {
+void WmShelf::CreateShelfWidget(WmWindow* root) {
+  DCHECK(!shelf_widget_);
+  WmWindow* shelf_container =
+      root->GetChildByShellWindowId(kShellWindowId_ShelfContainer);
+  shelf_widget_.reset(new ShelfWidget(shelf_container, this));
+
   DCHECK(!shelf_layout_manager_);
-  DCHECK(manager);
-  shelf_layout_manager_ = manager;
+  shelf_layout_manager_ = shelf_widget_->shelf_layout_manager();
   shelf_layout_manager_->AddObserver(this);
-  DCHECK(manager->shelf_widget());
-  shelf_widget_ = manager->shelf_widget();
+
+  // Must occur after |shelf_widget_| is constructed because the system tray
+  // constructors call back into WmShelf::shelf_widget().
+  DCHECK(!shelf_widget_->status_area_widget());
+  WmWindow* status_container =
+      root->GetChildByShellWindowId(kShellWindowId_StatusContainer);
+  shelf_widget_->CreateStatusAreaWidget(status_container);
+}
+
+void WmShelf::ShutdownShelfWidget() {
+  if (shelf_widget_)
+    shelf_widget_->Shutdown();
+}
+
+void WmShelf::DestroyShelfWidget() {
+  shelf_widget_.reset();
 }
 
 void WmShelf::InitializeShelf() {
@@ -58,10 +77,7 @@ bool WmShelf::IsShelfInitialized() const {
 }
 
 WmWindow* WmShelf::GetWindow() {
-  // Use |shelf_layout_manager_| to access ShelfWidget because it is set before
-  // before the Shelf instance is available.
-  return WmLookup::Get()->GetWindowForWidget(
-      shelf_layout_manager_->shelf_widget());
+  return WmLookup::Get()->GetWindowForWidget(shelf_widget_.get());
 }
 
 void WmShelf::SetAlignment(ShelfAlignment alignment) {
@@ -79,7 +95,7 @@ void WmShelf::SetAlignment(ShelfAlignment alignment) {
 
   alignment_ = alignment;
   // The ShelfWidget notifies the ShelfView of the alignment change.
-  shelf_layout_manager_->shelf_widget()->OnShelfAlignmentChanged();
+  shelf_widget_->OnShelfAlignmentChanged();
   WmShell::Get()->shelf_delegate()->OnShelfAlignmentChanged(this);
   shelf_layout_manager_->LayoutShelf();
   WmShell::Get()->NotifyShelfAlignmentChanged(GetWindow()->GetRootWindow());
@@ -139,7 +155,7 @@ void WmShelf::UpdateAutoHideState() {
 }
 
 ShelfBackgroundType WmShelf::GetBackgroundType() const {
-  return shelf_layout_manager_->shelf_widget()->GetBackgroundType();
+  return shelf_widget_->GetBackgroundType();
 }
 
 WmDimmerView* WmShelf::CreateDimmerView(bool disable_animations_for_test) {
@@ -147,7 +163,7 @@ WmDimmerView* WmShelf::CreateDimmerView(bool disable_animations_for_test) {
 }
 
 bool WmShelf::IsDimmed() const {
-  return shelf_layout_manager_->shelf_widget()->GetDimsShelf();
+  return shelf_widget_->GetDimsShelf();
 }
 
 bool WmShelf::IsVisible() const {
@@ -174,14 +190,13 @@ gfx::Rect WmShelf::GetUserWorkAreaBounds() const {
 }
 
 void WmShelf::UpdateIconPositionForPanel(WmWindow* panel) {
-  shelf_layout_manager_->shelf_widget()->UpdateIconPositionForPanel(panel);
+  shelf_widget_->UpdateIconPositionForPanel(panel);
 }
 
 gfx::Rect WmShelf::GetScreenBoundsOfItemIconForWindow(WmWindow* window) {
-  if (!shelf_layout_manager_)
+  if (!shelf_widget_)
     return gfx::Rect();
-  return shelf_layout_manager_->shelf_widget()
-      ->GetScreenBoundsOfItemIconForWindow(window);
+  return shelf_widget_->GetScreenBoundsOfItemIconForWindow(window);
 }
 
 // static
@@ -244,7 +259,7 @@ void WmShelf::NotifyShelfIconPositionsChanged() {
 }
 
 StatusAreaWidget* WmShelf::GetStatusAreaWidget() const {
-  return shelf_layout_manager_->shelf_widget()->status_area_widget();
+  return shelf_widget_->status_area_widget();
 }
 
 void WmShelf::SetVirtualKeyboardBoundsForTesting(const gfx::Rect& bounds) {

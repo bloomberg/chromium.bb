@@ -15,14 +15,11 @@
 #include "ash/common/ash_switches.h"
 #include "ash/common/gpu_support.h"
 #include "ash/common/session/session_state_delegate.h"
-#include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_delegate.h"
 #include "ash/common/shell_window_ids.h"
-#include "ash/common/system/status_area_widget.h"
 #include "ash/common/system/system_notifier.h"
 #include "ash/common/system/tray/system_tray.h"
-#include "ash/common/system/web_notification/web_notification_tray.h"
 #include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm/window_state.h"
@@ -198,29 +195,6 @@ void HandleRotateActiveWindow() {
     active_window->layer()->GetAnimator()->StartAnimation(
         new ui::LayerAnimationSequence(
             new WindowRotation(360, active_window->layer())));
-  }
-}
-
-bool CanHandleShowMessageCenterBubble() {
-  RootWindowController* controller =
-      RootWindowController::ForTargetRootWindow();
-  StatusAreaWidget* status_area_widget =
-      controller->shelf_widget()->status_area_widget();
-  return status_area_widget &&
-         status_area_widget->web_notification_tray()->visible();
-}
-
-void HandleShowMessageCenterBubble() {
-  base::RecordAction(UserMetricsAction("Accel_Show_Message_Center_Bubble"));
-  RootWindowController* controller =
-      RootWindowController::ForTargetRootWindow();
-  StatusAreaWidget* status_area_widget =
-      controller->shelf_widget()->status_area_widget();
-  if (status_area_widget) {
-    WebNotificationTray* notification_tray =
-        status_area_widget->web_notification_tray();
-    if (notification_tray->visible())
-      notification_tray->ShowMessageCenterBubble();
   }
 }
 
@@ -408,8 +382,6 @@ bool AcceleratorControllerDelegateAura::CanPerformAction(
     case SCALE_UI_RESET:
     case SCALE_UI_UP:
       return accelerators::IsInternalDisplayZoomEnabled();
-    case SHOW_MESSAGE_CENTER_BUBBLE:
-      return CanHandleShowMessageCenterBubble();
     case UNPIN:
       return CanHandleUnpin();
 
@@ -493,9 +465,6 @@ void AcceleratorControllerDelegateAura::PerformAction(
       break;
     case SCALE_UI_UP:
       accelerators::ZoomInternalDisplay(true /* up */);
-      break;
-    case SHOW_MESSAGE_CENTER_BUBBLE:
-      HandleShowMessageCenterBubble();
       break;
     case SHOW_SYSTEM_TRAY_BUBBLE:
       HandleShowSystemTrayBubble();
