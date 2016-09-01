@@ -82,5 +82,7 @@ public class LightweightFirstRunActivity extends FirstRunActivity {
         Intent intent = new Intent();
         intent.putExtras(mFreProperties);
         finishAllTheActivities(getLocalClassName(), Activity.RESULT_OK, intent);
+
+        sendPendingIntentIfNecessary(true);
     }
 }

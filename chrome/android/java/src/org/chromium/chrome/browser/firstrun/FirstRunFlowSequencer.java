@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.firstrun;
 
 import android.accounts.Account;
 import android.app.Activity;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -33,6 +34,8 @@ import org.chromium.components.sync.signin.ChromeSigninController;
  * }.start();
  */
 public abstract class FirstRunFlowSequencer  {
+    private static final int FIRST_RUN_EXPERIENCE_REQUEST_CODE = 101;
+
     private final Activity mActivity;
     private final Bundle mLaunchProperties;
 
@@ -60,7 +63,7 @@ public abstract class FirstRunFlowSequencer  {
             return;
         }
 
-        if (!mLaunchProperties.getBoolean(FirstRunActivity.USE_FRE_FLOW_SEQUENCER)) {
+        if (!mLaunchProperties.getBoolean(FirstRunActivity.EXTRA_USE_FRE_FLOW_SEQUENCER)) {
             onFlowIsKnown(mLaunchProperties);
             return;
         }
@@ -136,7 +139,7 @@ public abstract class FirstRunFlowSequencer  {
 
         Bundle freProperties = new Bundle();
         freProperties.putAll(mLaunchProperties);
-        freProperties.remove(FirstRunActivity.USE_FRE_FLOW_SEQUENCER);
+        freProperties.remove(FirstRunActivity.EXTRA_USE_FRE_FLOW_SEQUENCER);
 
         Account[] googleAccounts = getGoogleAccounts();
         boolean onlyOneAccount = googleAccounts.length == 1;
@@ -248,21 +251,37 @@ public abstract class FirstRunFlowSequencer  {
     private static Intent createLightweightFirstRunIntent(Context context, boolean fromChromeIcon) {
         Intent intent = new Intent();
         intent.setClassName(context, LightweightFirstRunActivity.class.getName());
-        intent.putExtra(FirstRunActivity.COMING_FROM_CHROME_ICON, fromChromeIcon);
-        intent.putExtra(FirstRunActivity.START_LIGHTWEIGHT_FRE, true);
+        intent.putExtra(FirstRunActivity.EXTRA_COMING_FROM_CHROME_ICON, fromChromeIcon);
+        intent.putExtra(FirstRunActivity.EXTRA_START_LIGHTWEIGHT_FRE, true);
         return intent;
     }
 
     /**
      * @return A generic intent to show the First Run Activity.
-     * @param context The context
-     * @param fromChromeIcon Whether Chrome is opened via the Chrome icon
+     * @param context        The context.
+     * @param fromChromeIcon Whether Chrome is opened via the Chrome icon.
     */
     public static Intent createGenericFirstRunIntent(Context context, boolean fromChromeIcon) {
         Intent intent = new Intent();
         intent.setClassName(context, FirstRunActivity.class.getName());
-        intent.putExtra(FirstRunActivity.COMING_FROM_CHROME_ICON, fromChromeIcon);
-        intent.putExtra(FirstRunActivity.USE_FRE_FLOW_SEQUENCER, true);
+        intent.putExtra(FirstRunActivity.EXTRA_COMING_FROM_CHROME_ICON, fromChromeIcon);
+        intent.putExtra(FirstRunActivity.EXTRA_USE_FRE_FLOW_SEQUENCER, true);
         return intent;
+    }
+
+    /**
+     * Adds fromIntent as a PendingIntent to the firstRunIntent. This should be used to add a
+     * PendingIntent that will be sent when first run is either completed or canceled.
+     *
+     * @param context        The context.
+     * @param firstRunIntent The intent that will be used to start first run.
+     * @param fromIntent     The intent that was used to launch Chrome.
+     */
+    public static void addPendingIntent(Context context, Intent firstRunIntent, Intent fromIntent) {
+        PendingIntent pendingIntent = PendingIntent.getActivity(context,
+                FIRST_RUN_EXPERIENCE_REQUEST_CODE,
+                fromIntent,
+                fromIntent.getFlags());
+        firstRunIntent.putExtra(FirstRunActivity.EXTRA_CHROME_LAUNCH_INTENT, pendingIntent);
     }
 }

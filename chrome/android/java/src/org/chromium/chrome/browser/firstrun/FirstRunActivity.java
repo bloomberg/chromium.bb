@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.firstrun;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.app.PendingIntent;
+import android.app.PendingIntent.CanceledException;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -19,12 +21,15 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.EmbedContentViewActivity;
+import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
+import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionPromoUtils;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionProxyUma;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.util.IntentUtils;
 
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
@@ -44,18 +49,22 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
     protected static final String TAG = "FirstRunActivity";
 
     // Incoming parameters:
-    public static final String COMING_FROM_CHROME_ICON = "ComingFromChromeIcon";
-    public static final String USE_FRE_FLOW_SEQUENCER = "UseFreFlowSequencer";
-    public static final String START_LIGHTWEIGHT_FRE = "StartLightweightFRE";
+    public static final String EXTRA_COMING_FROM_CHROME_ICON = "Extra.ComingFromChromeIcon";
+    public static final String EXTRA_USE_FRE_FLOW_SEQUENCER = "Extra.UseFreFlowSequencer";
+    public static final String EXTRA_START_LIGHTWEIGHT_FRE = "Extra.StartLightweightFRE";
+    public static final String EXTRA_CHROME_LAUNCH_INTENT = "Extra.FreChromeLaunchIntent";
 
     static final String SHOW_WELCOME_PAGE = "ShowWelcome";
     static final String SHOW_SIGNIN_PAGE = "ShowSignIn";
     static final String SHOW_DATA_REDUCTION_PAGE = "ShowDataReduction";
 
-    // Outcoming results:
+    // Outgoing results:
     public static final String RESULT_CLOSE_APP = "Close App";
     public static final String RESULT_SIGNIN_ACCOUNT_NAME = "ResultSignInTo";
     public static final String RESULT_SHOW_SIGNIN_SETTINGS = "ResultShowSignInSettings";
+    public static final String EXTRA_FIRST_RUN_ACTIVITY_RESULT = "Extra.FreActivityResult";
+    public static final String EXTRA_FIRST_RUN_COMPLETE = "Extra.FreComplete";
+
     public static final boolean DEFAULT_METRICS_AND_CRASH_REPORTING = true;
 
     // UMA constants.
@@ -147,7 +156,7 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
         }
 
         // Skip creating content view if it is to start a lightweight First Run Experience.
-        if (mFreProperties.getBoolean(FirstRunActivity.START_LIGHTWEIGHT_FRE)) {
+        if (mFreProperties.getBoolean(FirstRunActivity.EXTRA_START_LIGHTWEIGHT_FRE)) {
             return;
         }
 
@@ -216,7 +225,7 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
     protected void onStart() {
         super.onStart();
         stopProgressionIfNotAcceptedTermsOfService();
-        if (!mFreProperties.getBoolean(USE_FRE_FLOW_SEQUENCER)) {
+        if (!mFreProperties.getBoolean(EXTRA_USE_FRE_FLOW_SEQUENCER)) {
             if (FirstRunStatus.getFirstRunFlowComplete(this)) {
                 // This is a parallel flow that needs to be refreshed/re-fired.
                 // Signal the FRE flow completion and re-launch the original intent.
@@ -269,6 +278,8 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
         if (mFreProperties != null) intent.putExtras(mFreProperties);
         intent.putExtra(RESULT_CLOSE_APP, true);
         finishAllTheActivities(getLocalClassName(), Activity.RESULT_CANCELED, intent);
+
+        sendPendingIntentIfNecessary(false);
     }
 
     @Override
@@ -317,6 +328,8 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
         Intent resultData = new Intent();
         resultData.putExtras(mFreProperties);
         finishAllTheActivities(getLocalClassName(), Activity.RESULT_OK, resultData);
+
+        sendPendingIntentIfNecessary(true);
     }
 
     @Override
@@ -380,6 +393,42 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
     }
 
     /**
+     * Sends the PendingIntent included with the CHROME_LAUNCH_INTENT extra if it exists.
+     * @param complete Whether first run completed successfully.
+     */
+    protected void sendPendingIntentIfNecessary(final boolean complete) {
+        PendingIntent pendingIntent = IntentUtils.safeGetParcelableExtra(getIntent(),
+                EXTRA_CHROME_LAUNCH_INTENT);
+        if (pendingIntent == null) return;
+
+        Intent extraDataIntent = new Intent();
+        extraDataIntent.putExtra(FirstRunActivity.EXTRA_FIRST_RUN_ACTIVITY_RESULT, true);
+        extraDataIntent.putExtra(FirstRunActivity.EXTRA_FIRST_RUN_COMPLETE, complete);
+
+        try {
+            // After the PendingIntent has been sent, send a first run callback to custom tabs if
+            // necessary.
+            PendingIntent.OnFinished onFinished = new PendingIntent.OnFinished() {
+                @Override
+                public void onSendFinished(PendingIntent pendingIntent, Intent intent,
+                        int resultCode, String resultData, Bundle resultExtras) {
+                    if (ChromeLauncherActivity.isCustomTabIntent(intent)) {
+                        CustomTabsConnection.getInstance(
+                                getApplication()).sendFirstRunCallbackIfNecessary(intent, complete);
+                    }
+                }
+            };
+
+            // Use the PendingIntent to send the intent that originally launched Chrome. The intent
+            // will go back to the ChromeLauncherActivity, which will route it accordingly.
+            pendingIntent.send(this, complete ? Activity.RESULT_OK : Activity.RESULT_CANCELED,
+                    extraDataIntent, onFinished, null);
+        } catch (CanceledException e) {
+            Log.e(TAG, "Unable to send PendingIntent.", e);
+        }
+    }
+
+    /**
      * Transitions to a given page.
      * @return Whether the transition to a given page was allowed.
      * @param position A page index to transition to.
@@ -431,7 +480,7 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
     }
 
     private void recordFreProgressHistogram(int state) {
-        String entryType = mFreProperties.getBoolean(FirstRunActivity.COMING_FROM_CHROME_ICON)
+        String entryType = mFreProperties.getBoolean(FirstRunActivity.EXTRA_COMING_FROM_CHROME_ICON)
                 ? FRE_ENTRY_MAIN_INTENT
                 : FRE_ENTRY_VIEW_INTENT;
         RecordHistogram.recordEnumeratedHistogram(

@@ -37,7 +37,6 @@ import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
-import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.customtabs.SeparateTaskCustomTabActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
@@ -81,8 +80,6 @@ public class ChromeLauncherActivity extends Activity
             "org.chromium.chrome.browser.document.IS_ALLOWED_TO_RETURN_TO_PARENT";
 
     private static final String TAG = "document_CLActivity";
-
-    private static final int FIRST_RUN_EXPERIENCE_REQUEST_CODE = 101;
 
     /**
      * Timeout in ms for reading PartnerBrowserCustomizations provider. We do not trust third party
@@ -168,6 +165,17 @@ public class ChromeLauncherActivity extends Activity
         boolean incognito = intent.getBooleanExtra(
                 IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, false);
 
+        // Check if this intent was fired at the end of the first run experience and return if
+        // first run was not successfully completed.
+        boolean firstRunActivityResult = IntentUtils.safeGetBooleanExtra(intent,
+                FirstRunActivity.EXTRA_FIRST_RUN_ACTIVITY_RESULT, false);
+        boolean firstRunComplete = IntentUtils.safeGetBooleanExtra(intent,
+                FirstRunActivity.EXTRA_FIRST_RUN_COMPLETE, false);
+        if (firstRunActivityResult && !firstRunComplete) {
+            finish();
+            return;
+        }
+
         // Check if a web search Intent is being handled.
         String url = IntentHandler.getUrlFromIntent(intent);
         if (url == null && tabId == Tab.INVALID_TAB_ID
@@ -212,6 +220,7 @@ public class ChromeLauncherActivity extends Activity
                 if (getIntent() != null && getIntent().getAction() == Intent.ACTION_VIEW
                         && IntentHandler.getUrlFromIntent(getIntent()) != null) {
                     if (launchFirstRunExperience(true)) {
+                        finish();
                         return;
                     }
                     checkedFre = true;
@@ -225,6 +234,7 @@ public class ChromeLauncherActivity extends Activity
         // Check if we should launch the FirstRunActivity.  This occurs after the check to launch
         // ChromeTabbedActivity because ChromeTabbedActivity handles FRE in its own way.
         if (launchFirstRunExperience(false)) {
+            finish();
             return;
         }
 
@@ -253,32 +263,6 @@ public class ChromeLauncherActivity extends Activity
     public void onDestroy() {
         super.onDestroy();
         TraceEvent.end("ChromeLauncherActivity");
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == FIRST_RUN_EXPERIENCE_REQUEST_CODE) {
-            if (mIsCustomTabIntent) {
-                CustomTabsConnection.getInstance(getApplication())
-                        .sendFirstRunCallbackIfNecessary(
-                                getIntent(), resultCode == Activity.RESULT_OK);
-            }
-            if (resultCode == Activity.RESULT_OK) {
-                // User might have opted out during FRE, so check again.
-                if (mIsCustomTabIntent) {
-                    launchCustomTabActivity();
-                    finish();
-                } else {
-                    launchTabbedMode(true);
-                    finish();
-                }
-                return;
-            }
-
-            // TODO(aruslan): FAIL.
-            ApiCompatibilityUtils.finishAndRemoveTask(this);
-        }
     }
 
     @Override
@@ -570,13 +554,16 @@ public class ChromeLauncherActivity extends Activity
                             this, TextUtils.equals(getIntent().getAction(), Intent.ACTION_MAIN));
                 }
             }
-            startActivityForResult(freIntent, FIRST_RUN_EXPERIENCE_REQUEST_CODE);
+            // Add a PendingIntent so that the intent used to launch Chrome will be resent when
+            // first run is completed or canceled.
+            FirstRunFlowSequencer.addPendingIntent(this, freIntent, getIntent());
+            startActivity(freIntent);
         } else {
             Intent newIntent = new Intent(getIntent());
             newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(newIntent);
-            finish();
         }
+        finish();
         return true;
     }
 
