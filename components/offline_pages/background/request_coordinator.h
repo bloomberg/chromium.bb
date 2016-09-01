@@ -211,6 +211,15 @@ class RequestCoordinator : public KeyedService,
   // If there is an active request in the list, cancel that request.
   bool CancelActiveRequestIfItMatches(const std::vector<int64_t>& request_ids);
 
+  // Records an aborted attempt for the request and update it in the queue
+  // (possibly removing it). Returns the updated copy.
+  void AbortRequestAttempt(SavePageRequest* request);
+
+  // Remove the attempted request from the queue with status to pass through to
+  // any observers and UMA histogram.
+  void RemoveAttemptedRequest(const SavePageRequest& request,
+                              SavePageStatus status);
+
   // Returns the appropriate offliner to use, getting a new one from the factory
   // if needed.
   void GetOffliner();

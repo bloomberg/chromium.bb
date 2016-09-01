@@ -45,6 +45,22 @@ void RecordOfflinerResultUMA(const ClientId& client_id,
   histogram->Add(static_cast<int>(request_status));
 }
 
+// Records the number of started attempts for completed requests (whether
+// successful or not).
+void RecordAttemptCount(const SavePageRequest& request,
+                        RequestNotifier::SavePageStatus status) {
+  if (status == RequestNotifier::SavePageStatus::SUCCESS) {
+    // TODO(dougarnett): Also record UMA for completed attempts here.
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "OfflinePages.Background.RequestSuccess.StartedAttemptCount",
+        request.started_attempt_count(), 1, 10, 11);
+  } else {
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "OfflinePages.Background.RequestFailure.StartedAttemptCount",
+        request.started_attempt_count(), 1, 10, 11);
+  }
+}
+
 // This should use the same algorithm as we use for OfflinePageItem, so the IDs
 // are similar.
 int64_t GenerateOfflineId() {
@@ -119,13 +135,9 @@ void RequestCoordinator::GetQueuedRequestsCallback(
 
 void RequestCoordinator::StopPrerendering() {
   if (offliner_ && is_busy_) {
+    DCHECK(active_request_.get());
     offliner_->Cancel();
-    // Find current request and mark attempt aborted.
-    active_request_->MarkAttemptAborted();
-    queue_->UpdateRequest(*(active_request_.get()),
-                          base::Bind(&RequestCoordinator::UpdateRequestCallback,
-                                     weak_ptr_factory_.GetWeakPtr(),
-                                     active_request_->client_id()));
+    AbortRequestAttempt(active_request_.get());
   }
 
   // Stopping offliner means it will not call callback.
@@ -155,6 +167,28 @@ bool RequestCoordinator::CancelActiveRequestIfItMatches(
   }
 
   return false;
+}
+
+void RequestCoordinator::AbortRequestAttempt(SavePageRequest* request) {
+  request->MarkAttemptAborted();
+  if (request->started_attempt_count() >= policy_->GetMaxStartedTries()) {
+    RemoveAttemptedRequest(*request, SavePageStatus::START_COUNT_EXCEEDED);
+  } else {
+    queue_->UpdateRequest(
+        *request,
+        base::Bind(&RequestCoordinator::UpdateRequestCallback,
+                   weak_ptr_factory_.GetWeakPtr(), request->client_id()));
+  }
+}
+
+void RequestCoordinator::RemoveAttemptedRequest(const SavePageRequest& request,
+                                                SavePageStatus status) {
+  std::vector<int64_t> remove_requests;
+  remove_requests.push_back(request.request_id());
+  queue_->RemoveRequests(remove_requests,
+                         base::Bind(&RequestCoordinator::HandleRemovedRequests,
+                                    weak_ptr_factory_.GetWeakPtr(), status));
+  RecordAttemptCount(request, status);
 }
 
 void RequestCoordinator::RemoveRequests(
@@ -412,37 +446,22 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
     // TODO(dougarnett): See if we can conclusively identify other attempt
     // aborted cases to treat this way (eg, for Render Process Killed).
     SavePageRequest updated_request(request);
-    updated_request.MarkAttemptAborted();
-    queue_->UpdateRequest(updated_request,
-                          base::Bind(&RequestCoordinator::UpdateRequestCallback,
-                                     weak_ptr_factory_.GetWeakPtr(),
-                                     updated_request.client_id()));
+    AbortRequestAttempt(&updated_request);
     SavePageStatus notify_status =
         (status == Offliner::RequestStatus::FOREGROUND_CANCELED)
             ? SavePageStatus::FOREGROUND_CANCELED
             : SavePageStatus::PRERENDER_CANCELED;
     NotifyCompleted(updated_request, notify_status);
-
   } else if (status == Offliner::RequestStatus::SAVED) {
     // Remove the request from the queue if it succeeded.
-    std::vector<int64_t> remove_requests;
-    remove_requests.push_back(request.request_id());
-    queue_->RemoveRequests(
-        remove_requests,
-        base::Bind(&RequestCoordinator::HandleRemovedRequests,
-                   weak_ptr_factory_.GetWeakPtr(), SavePageStatus::SUCCESS));
+    RemoveAttemptedRequest(request, SavePageStatus::SUCCESS);
   } else if (request.completed_attempt_count() + 1 >=
              policy_->GetMaxCompletedTries()) {
-    // Remove from the request queue if we exceeeded max retries. The +1
+    // Remove from the request queue if we exceeded max retries. The +1
     // represents the request that just completed. Since we call
     // MarkAttemptCompleted within the if branches, the completed_attempt_count
     // has not yet been updated when we are checking the if condition.
-    std::vector<int64_t> remove_requests;
-    remove_requests.push_back(request.request_id());
-    queue_->RemoveRequests(
-        remove_requests, base::Bind(&RequestCoordinator::HandleRemovedRequests,
-                                    weak_ptr_factory_.GetWeakPtr(),
-                                    SavePageStatus::RETRY_COUNT_EXCEEDED));
+    RemoveAttemptedRequest(request, SavePageStatus::RETRY_COUNT_EXCEEDED);
   } else {
     // If we failed, but are not over the limit, update the request in the
     // queue.

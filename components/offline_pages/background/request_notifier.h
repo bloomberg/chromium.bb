@@ -21,6 +21,7 @@ class RequestNotifier {
     SAVE_FAILED,
     EXPIRED,
     RETRY_COUNT_EXCEEDED,
+    START_COUNT_EXCEEDED,
     REMOVED,
   };
 

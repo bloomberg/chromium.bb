@@ -6,11 +6,13 @@
 
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "net/base/network_change_notifier.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace offline_pages {
@@ -177,6 +179,10 @@ void PrerenderingLoader::HandleLoadingStopped() {
     if (adapter_->GetFinalStatus() ==
         prerender::FinalStatus::FINAL_STATUS_UNSUPPORTED_SCHEME) {
       request_status = Offliner::RequestStatus::PRERENDERING_CANCELED;
+      UMA_HISTOGRAM_ENUMERATION(
+          "OfflinePages.Background.UnsupportedScheme.ConnectionType",
+          net::NetworkChangeNotifier::GetConnectionType(),
+          net::NetworkChangeNotifier::ConnectionType::CONNECTION_LAST + 1);
     }
     adapter_->DestroyActive();
   }

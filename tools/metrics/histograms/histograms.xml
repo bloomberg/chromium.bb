@@ -37515,6 +37515,32 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="OfflinePages.Background.RequestFailure.StartedAttemptCount">
+  <owner>dougarnett@chromium.org</owner>
+  <summary>
+    Number of started attempts by failed background load requests.
+  </summary>
+</histogram>
+
+<histogram name="OfflinePages.Background.RequestSuccess.StartedAttemptCount">
+  <owner>dougarnett@chromium.org</owner>
+  <summary>
+    Number of started attempts by successful background load requests.
+  </summary>
+</histogram>
+
+<histogram name="OfflinePages.Background.UnsupportedScheme.ConnectionType"
+    enum="NetworkConnectionType">
+  <owner>dougarnett@chromium.org</owner>
+  <summary>
+    Connection type when prerenderer reports Unsupported Scheme error.
+
+    To give insight about Unsupported Scheme errors that may be due to lost
+    network connection (as data URL used for rendering an error page will
+    manifest as an Unsupported Scheme error by the prerenderer).
+  </summary>
+</histogram>
+
 <histogram name="OfflinePages.BatchDelete.Count">
   <owner>jianli@chromium.org</owner>
   <summary>Number of offline pages that are deleted in a batch.</summary>

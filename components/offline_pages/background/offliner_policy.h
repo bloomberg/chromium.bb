@@ -6,7 +6,7 @@
 #define COMPONENTS_OFFLINE_PAGES_BACKGROUND_OFFLINER_POLICY_H_
 
 namespace {
-const int kMaxStartedTries = 5;
+const int kMaxStartedTries = 4;
 const int kMaxCompletedTries = 1;
 const int kBackgroundProcessingTimeBudgetSeconds = 170;
 const int kSinglePageTimeLimitSeconds = 120;
