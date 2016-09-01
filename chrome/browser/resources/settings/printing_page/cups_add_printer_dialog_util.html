@@ -1,0 +1,66 @@
+<link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
+<link rel="import" href="/printing_page/cups_printers_browser_proxy.html">
+<link rel="import" href="/settings_shared_css.html">
+
+<dom-module id="add-printer-list">
+  <template>
+    <style include="settings-shared">
+      .list-frame {
+        -webkit-padding-end: 0;
+        -webkit-padding-start: 0;
+      }
+
+      .list-item {
+        -webkit-padding-start: 20px;
+        min-height: 35px;
+      }
+    </style>
+    <div class="list-frame">
+      <array-selector id="arraySelector" items="[[printers]]"
+          selected="{{selectedPrinter}}">
+      </array-selector>
+      <template is="dom-repeat" items="[[printers]]">
+        <paper-item class="list-item" on-tap="onSelect_">
+          [[item.printerName]] [[item.printerModel]]
+        </paper-item>
+      </template>
+    </div>
+  </template>
+</dom-module>
+
+<dom-module id="add-printer-dialog">
+  <template>
+    <style include="settings-shared">
+      #dialog .body {
+        -webkit-padding-end: 0;
+        -webkit-padding-start: 0;
+        height: 350px;
+      }
+
+      #dialog .button-container {
+        border-top: 1px solid rgba(0, 0, 0, 0.14);
+        margin-top: 0;
+        padding-top: 10px;
+      }
+
+      #dialog .button-container ::content paper-button {
+        font-size: 14px;
+        font-weight: bold;
+      }
+    </style>
+
+    <dialog is="cr-dialog" id="dialog">
+      <div class="title">$i18n{addPrinterTitle}</div>
+      <div class="body">
+        <content select=".dialog-body"></content>
+      </div>
+      <div class="button-container">
+        <content select=".dialog-buttons"></content>
+      </div>
+    </dialog>
+  </template>
+  <script src="cups_add_printer_dialog_util.js"></script>
+</dom-module>

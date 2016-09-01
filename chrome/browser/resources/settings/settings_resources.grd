@@ -697,6 +697,12 @@
         <structure name="IDR_SETTINGS_CUPS_ADD_PRINTER_DIALOG_JS"
                    file="printing_page/cups_add_printer_dialog.js"
                    type="chrome_html" />
+        <structure name="IDR_SETTINGS_CUPS_ADD_PRINTER_DIALOG_UTIL_HTML"
+                   file="printing_page/cups_add_printer_dialog_util.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_CUPS_ADD_PRINTER_DIALOG_UTIL_JS"
+                   file="printing_page/cups_add_printer_dialog_util.js"
+                   type="chrome_html" />
       </if>
       <structure name="IDR_SETTINGS_CLOUD_PRINTING_PAGE_HTML"
                  file="printing_page/cloud_printers.html"

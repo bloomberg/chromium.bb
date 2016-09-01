@@ -1,39 +1,206 @@
-<link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="/i18n_setup.html">
+<link rel="import" href="/printing_page/cups_add_printer_dialog_util.html">
+<link rel="import" href="/printing_page/cups_printers_browser_proxy.html">
 <link rel="import" href="/settings_shared_css.html">
+
+<dom-module id="add-printer-discovery-dialog">
+  <template>
+    <style include="settings-shared">
+      add-printer-list {
+        max-height: 350px;
+        overflow-y: auto;
+      }
+
+      #manuallyAddPrinterButton {
+        -webkit-margin-end: 210px;
+      }
+    </style>
+    <add-printer-dialog>
+      <div class="dialog-body">
+        <add-printer-list printers="[[discoveredPrinters]]"
+            selected-printer="{{selectedPrinter}}">
+        </add-printer-list>
+        <!-- TODO(xdai): Add the paper-spinner -->
+      </div>
+      <div class="dialog-buttons">
+        <paper-button id="manuallyAddPrinterButton"
+            on-tap="switchToManualAddDialog_">
+          $i18n{manuallyAddPrinterButtonText}
+        </paper-button>
+        <paper-button class="cancel-button" on-tap="onCancelTap_">
+          $i18n{cancelButtonText}
+        </paper-button>
+        <paper-button class="action-button" id="addPrinterButton"
+            disabled="[[!selectedPrinter]]" on-tap="switchToConfiguringDialog_">
+          $i18n{addPrinterButtonText}
+        </paper-button>
+      </div>
+    </add-printer-dialog>
+  </template>
+</dom-module>
+
+<dom-module id="add-printer-maually-dialog">
+  <template>
+    <style include="settings-shared">
+      #discoverPrintersButton {
+        -webkit-margin-end: 153px;
+      }
+
+      .settings-box {
+        border-top: none;
+      }
+
+      .settings-box.two-line {
+        min-height: 72px;
+      }
+
+      .settings-box .start .label {
+        color: var(--google-grey-700);
+      }
+
+      paper-dropdown-menu,
+      paper-input {
+        width: 270px;
+      }
+
+      paper-input {
+        --paper-input-container-input: {
+          font-size: inherit;
+        };
+
+        --paper-input-container-color: var(--google-grey-500);
+      }
+
+      #printerNameInput {
+        width: 450px;
+      }
+    </style>
+    <add-printer-dialog>
+      <div class="dialog-body">
+        <div class="settings-box first two-line">
+          <div class="start">
+            <div class="label">$i18n{printerName}</div>
+            <div class="secondary">
+              <paper-input no-label-float id="printerNameInput"
+                  value="{{newPrinter.printerName}}">
+              </paper-input>
+            </div>
+          </div>
+        </div>
+        <div class="settings-box two-line">
+          <div class="start">
+            <div class="label">$i18n{printerAddress}</div>
+            <div class="secondary">
+              <paper-input no-label-float value="{{newPrinter.printerAddress}}">
+              </paper-input>
+            </div>
+          </div>
+        </div>
+        <div class="settings-box two-line">
+          <div class="start">
+            <div class="label">$i18n{printerProtocol}</div>
+            <div class="secondary">
+              <paper-dropdown-menu no-label-float>
+                <paper-listbox class="dropdown-content"
+                    selected="{{newPrinter.printerProtocol}}"
+                    attr-for-selected="value">
+                  <paper-item value="ipp">
+                    $i18n{printerProtocolIpp}
+                  </paper-item>
+                  <paper-item value="ipps">
+                    $i18n{printerProtocolIpps}
+                  </paper-item>
+                  <paper-item value="http">
+                    $i18n{printerProtocolHttp}
+                  </paper-item>
+                  <paper-item value="https">
+                    $i18n{printerProtocolHttps}
+                  </paper-item>
+                  <paper-item value="socket">
+                    $i18n{printerProtocolAppSocket}
+                  </paper-item>
+                  <paper-item value="lpd">$i18n{printerProtocolLpd}</paper-item>
+                  <paper-item value="usb">$i18n{printerProtocolUsb}</paper-item>
+                </paper-listbox>
+              </paper-dropdown-menu>
+            </div>
+          </div>
+        </div>
+        <div class="settings-box two-line">
+          <div class="start">
+            <div class="label">$i18n{printerQueue}</div>
+            <div class="secondary">
+              <paper-input no-label-float value="{{newPrinter.printerQueue}}">
+              </paper-input>
+            </div>
+          </div>
+        </div>
+        <!-- TODO(xdai): Add paper-spinner -->
+      </div>
+      <div class="dialog-buttons">
+        <paper-button id="discoverPrintersButton"
+            on-tap="switchToDiscoveryDialog_">
+          $i18n{discoverPrintersButtonText}
+        </paper-button>
+        <paper-button class="cancel-button" on-tap="onCancelTap_">
+          $i18n{cancelButtonText}
+        </paper-button>
+        <paper-button class="action-button" on-tap="switchToConfiguringDialog_">
+          $i18n{addPrinterButtonText}
+        </paper-button>
+      </div>
+    </add-printer-dialog>
+  </template>
+</dom-module>
+
+<dom-module id="add-printer-configuring-dialog">
+  <template>
+    <style include="settings-shared">
+      .dialog-body {
+        padding-top: 140px;
+        text-align: center;
+      }
+    </style>
+    <add-printer-dialog>
+      <div class="dialog-body">
+        <paper-spinner active></paper-spinner>
+        <div id="configuringMessage">$i18n{printerConfiguringMessage}</div>
+      </div>
+      <div class="dialog-buttons">
+        <paper-button class="cancel-button" on-tap="onCancelConfiguringTap_">
+          $i18n{cancelButtonText}
+        </paper-button>
+      </div>
+    </add-printer-dialog>
+  </template>
+</dom-module>
 
 <dom-module id="settings-cups-add-printer-dialog">
   <template>
     <style include="settings-shared"></style>
-    <style>      
-      #dialog .body {
-        height: 350px;
-      }
-      
-      #dialog .button-container {
-        border-top: 1px solid rgba(0, 0, 0, 0.14);
-        font-size: 15px;
-        font-weight: bold;
-        margin-top: 0;
-        padding-top: 10px;
-      }
-    </style>
-    <dialog is="cr-dialog" id="dialog">
-      <div class="title">$i18n{addPrinterTitle}</div>
-      <div class="body">
-        <!--TODO(xdai): Add printer settings go here. -->
-        (coming soon) Add printer settings go here.
-      </div>
-      <div class="button-container">
-        <paper-button on-tap="onCancelTap_">
-          $i18n{cancelButtonText}
-        </paper-button>
-        <paper-button disabled>
-          $i18n{addPrinterButtonText}
-        </paper-button>
-      </div>
-    </dialog>
+
+    <!-- Printer Discovery Dialog -->
+    <template is="dom-if" if="[[showDiscoveryDialog_]]" restamp>
+      <add-printer-discovery-dialog selected-printer="{{selectedPrinter}}">
+      </add-printer-discovery-dialog>
+    </template>
+
+    <!-- Manually Add Printer Dialog -->
+    <template is="dom-if" if="[[showManuallyAddDialog_]]" restamp>
+      <add-printer-maually-dialog new-printer="{{newPrinter}}">
+      </add-printer-maually-dialog>
+    </template>
+
+    <!-- Configuring Printer Dialog -->
+    <template is="dom-if" if="[[showConfiguringDialog_]]" restamp>
+      <add-printer-configuring-dialog
+          printer-name="[[getConfiguringPrinterName_()]]">
+      </add-printer-configuring-dialog>
+    </template>
+
+    <!-- TODO(xdai): Implement Manufacturer and Model Dialog -->
   </template>
   <script src="cups_add_printer_dialog.js"></script>
 </dom-module>

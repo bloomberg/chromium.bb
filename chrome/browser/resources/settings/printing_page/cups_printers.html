@@ -5,8 +5,7 @@
 
 <dom-module id="settings-cups-printers">
   <template>
-    <style include="settings-shared"></style>
-    <style>
+    <style include="settings-shared">
       a[is='action-link'] {
         display: inline-block;
         text-decoration: none;
@@ -17,8 +16,6 @@
         text-decoration: underline;
       }
     </style>
-
-    <!-- TODO(xdai): Implement the search field as seen in the mock. -->
 
     <div class="settings-box first">
       <a is="action-link" on-tap="onAddPrinterTap_" actionable>
