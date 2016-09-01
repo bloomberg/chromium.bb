@@ -7,8 +7,11 @@
 from __future__ import print_function
 
 import os
+import time
 
+from chromite.cbuildbot import commands
 from chromite.cbuildbot import config_lib
+from chromite.cbuildbot import constants
 from chromite.cbuildbot import repository
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
@@ -135,27 +138,31 @@ class RepoSyncTests(cros_test_lib.TempDirTestCase, cros_test_lib.MockTestCase):
                                           self.tempdir, branch='master')
     self.PatchObject(repository.RepoRepository, 'Initialize')
     self.PatchObject(repository.RepoRepository, '_EnsureMirroring')
+    self.PatchObject(commands, 'BuildRootGitCleanup')
+    self.PatchObject(time, 'sleep')
 
-  def testSyncWithOneException(self):
+  def testSyncWithException(self):
     """Test Sync retry on repo network sync failure"""
-    ex = cros_build_lib.RunCommandError('foo', cros_build_lib.CommandResult())
-    self.PatchObject(cros_build_lib, 'RunCommand', side_effect=ex)
-    clean_up_run_command_mock = self.PatchObject(repository.RepoRepository,
-                                                 '_CleanUpAndRunCommand')
-    self.repo.Sync(local_manifest='local_manifest', network_only=True)
-    cmd = ['repo', '--time', 'sync', '-n']
+    result = cros_build_lib.CommandResult(
+        cmd=['cmd'], returncode=0, error='error')
+    ex = cros_build_lib.RunCommandError('msg', result)
 
-    # _CleanUpAndRunCommand should be called once in exception handler
-    clean_up_run_command_mock.assert_called_once_with(cmd, cwd=self.tempdir,
-                                                      local_manifest=
-                                                      'local_manifest')
+    run_cmd_mock = self.PatchObject(cros_build_lib, 'RunCommand',
+                                    side_effect=ex)
+
+    # repo.Sync raises SrcCheckOutException.
+    self.assertRaises(
+        repository.SrcCheckOutException,
+        self.repo.Sync, local_manifest='local_manifest', network_only=True)
+
+    # RunCommand should be called SYNC_RETRIES + 1 times.
+    self.assertEqual(run_cmd_mock.call_count,
+                     constants.SYNC_RETRIES + 1)
 
   def testSyncWithoutException(self):
     """Test successful repo sync without exception and retry"""
-    self.PatchObject(cros_build_lib, 'RunCommand')
-    clean_up_run_command_mock = self.PatchObject(repository.RepoRepository,
-                                                 '_CleanUpAndRunCommand')
+    run_cmd_mock = self.PatchObject(cros_build_lib, 'RunCommand')
     self.repo.Sync(local_manifest='local_manifest', network_only=True)
 
-    # _CleanUpAndRunCommand should not be called if repo sync succeeded
-    self.assertFalse(clean_up_run_command_mock.called)
+    # RunCommand should be called once.
+    self.assertEqual(run_cmd_mock.call_count, 1)

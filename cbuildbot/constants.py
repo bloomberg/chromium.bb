@@ -896,7 +896,7 @@ DELTA_SYSROOT_BATCH = 'batch'
 # Global configuration constants.
 CHROMITE_CONFIG_DIR = os.path.expanduser('~/.chromite')
 CHROME_SDK_BASHRC = os.path.join(CHROMITE_CONFIG_DIR, 'chrome_sdk.bashrc')
-SYNC_RETRIES = 2
+SYNC_RETRIES = 4
 SLEEP_TIMEOUT = 30
 
 # Lab status url.

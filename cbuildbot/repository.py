@@ -6,14 +6,15 @@
 
 from __future__ import print_function
 
-import constants
 import glob
 import os
 import re
 import shutil
+import time
 
 from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import commands
+from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
@@ -28,6 +29,9 @@ site_config = config_lib.GetConfig()
 
 # File that marks a buildroot as being used by a trybot
 _TRYBOT_MARKER = '.trybot'
+
+# Default sleep time(second) between retries
+DEFAULT_SLEEP_TIME = 5
 
 
 class SrcCheckOutException(Exception):
@@ -430,10 +434,13 @@ class RepoRepository(object):
           # decrement max_retry for this command
           logging.warning('cmd %s failed, clean up repository and retry sync.'
                           % cmd)
+          time.sleep(DEFAULT_SLEEP_TIME)
           retry_util.RetryCommand(self._CleanUpAndRunCommand,
                                   constants.SYNC_RETRIES - 1,
                                   cmd + ['-n'], cwd=self.directory,
-                                  local_manifest=local_manifest)
+                                  sleep=DEFAULT_SLEEP_TIME,
+                                  backoff_factor=2,
+                                  log_retries=True)
         else:
           # No need to retry
           raise
