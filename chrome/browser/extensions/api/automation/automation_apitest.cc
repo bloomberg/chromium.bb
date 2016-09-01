@@ -166,14 +166,9 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, DISABLED_Desktop) {
       << message_;
 }
 
-// TODO(crbug.com/615908): Flaky on CrOS sanitizers.
 #if defined(OS_CHROMEOS)
-#if defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER)
-#define MAYBE_DesktopInitialFocus DISABLED_DesktopInitialFocus
-#else
-#define MAYBE_DesktopInitialFocus DesktopInitialFocus
-#endif
-IN_PROC_BROWSER_TEST_F(AutomationApiTest, MAYBE_DesktopInitialFocus) {
+// TODO(crbug.com/615908): Flaky on CrOS sanitizers.
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, DISABLED_DesktopInitialFocus) {
   ASSERT_TRUE(
       RunExtensionSubtest("automation/tests/desktop", "initial_focus.html"))
       << message_;
