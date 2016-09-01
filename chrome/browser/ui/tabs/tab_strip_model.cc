@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_shutdown.h"

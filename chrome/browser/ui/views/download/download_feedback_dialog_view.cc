@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/download/download_feedback_dialog_view.h"
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/supports_user_data.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"

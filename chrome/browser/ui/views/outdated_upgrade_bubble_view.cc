@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/outdated_upgrade_bubble_view.h"
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/layout_constants.h"

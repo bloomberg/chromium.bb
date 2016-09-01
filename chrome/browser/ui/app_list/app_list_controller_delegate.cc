@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"

@@ -16,7 +16,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/process/process_info.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"

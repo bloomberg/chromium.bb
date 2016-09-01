@@ -15,7 +15,7 @@
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/rtl.h"
 #include "base/location.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"

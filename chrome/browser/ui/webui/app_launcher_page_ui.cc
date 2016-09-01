@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/memory/ref_counted_memory.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/app_launcher_login_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/app_list/search/search_util.h"
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 
 namespace {
 const char kAppListSearchResultOpenTypeHistogram[] =

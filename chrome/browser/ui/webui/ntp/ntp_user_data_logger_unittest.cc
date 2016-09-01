@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/webui/ntp/ntp_user_data_logger.h"
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/search/ntp_logging_events.h"
