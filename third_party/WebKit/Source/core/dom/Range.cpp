@@ -1568,11 +1568,11 @@ DEFINE_TRACE(Range)
 void showTree(const blink::Range* range)
 {
     if (range && range->boundaryPointsValid()) {
-        // TODO(tkent): Replace WTFLogAlways with something else.
-        WTFLogAlways("%s", range->startContainer()->toMarkedTreeString(range->startContainer(), "S", range->endContainer(), "E").utf8().data());
-        fprintf(stderr, "start offset: %d, end offset: %d\n", range->startOffset(), range->endOffset());
+        LOG(INFO) << "\n"
+            << range->startContainer()->toMarkedTreeString(range->startContainer(), "S", range->endContainer(), "E").utf8().data()
+            << "start offset: " << range->startOffset() << ", end offset: " << range->endOffset();
     } else {
-        fprintf(stderr, "Cannot show tree if range is null, or if boundary points are invalid.\n");
+        LOG(INFO) << "Cannot show tree if range is null, or if boundary points are invalid.";
     }
 }
 
