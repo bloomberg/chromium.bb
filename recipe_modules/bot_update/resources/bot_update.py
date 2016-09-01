@@ -1080,10 +1080,12 @@ def apply_gerrit_ref(gerrit_repo, gerrit_ref, root, gerrit_reset,
                      gerrit_rebase_patch_ref):
   gerrit_repo = gerrit_repo or 'origin'
   assert gerrit_ref
+  base_rev = git('rev-parse', 'HEAD', cwd=root).strip()
+
   print '===Applying gerrit ref==='
-  print 'Repo is %r, ref is %r, root is %r' % (gerrit_repo, gerrit_ref, root)
+  print 'Repo is %r @ %r, ref is %r, root is %r' % (
+      gerrit_repo, base_rev, gerrit_ref, root)
   try:
-    base_rev = git('rev-parse', 'HEAD', cwd=root).strip()
     git('retry', 'fetch', gerrit_repo, gerrit_ref, cwd=root, tries=1)
     git('checkout', 'FETCH_HEAD', cwd=root)
 
@@ -1282,6 +1284,7 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
   print '===Processing patch solutions==='
   already_patched = []
   patch_root = patch_root or ''
+  applied_gerrit_patch = False
   print 'Patch root is %r' % patch_root
   for solution in solutions:
     print 'Processing solution %r' % solution['name']
@@ -1298,9 +1301,10 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
                              revision_mapping, git_ref, apply_issue_email_file,
                              apply_issue_key_file, whitelist=[target])
         already_patched.append(target)
-      elif gerrit_ref and gerrit_rebase_patch_ref:
+      elif gerrit_ref:
         apply_gerrit_ref(gerrit_repo, gerrit_ref, patch_root, gerrit_reset,
-                         True)
+                         gerrit_rebase_patch_ref)
+        applied_gerrit_patch = True
 
   # Ensure our build/ directory is set up with the correct .gclient file.
   gclient_configure(solutions, target_os, target_os_only, git_cache_dir)
@@ -1334,8 +1338,12 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
     apply_rietveld_issue(issue, patchset, patch_root, rietveld_server,
                          revision_mapping, git_ref, apply_issue_email_file,
                          apply_issue_key_file, blacklist=already_patched)
-  elif gerrit_ref and not gerrit_rebase_patch_ref:
-    apply_gerrit_ref(gerrit_repo, gerrit_ref, patch_root, gerrit_reset, False)
+  elif gerrit_ref and not applied_gerrit_patch:
+    # If gerrit_ref was for solution's main repository, it has already been
+    # applied above. This chunk is executed only for patches to DEPS-ed in
+    # git repositories.
+    apply_gerrit_ref(gerrit_repo, gerrit_ref, patch_root, gerrit_reset,
+                     gerrit_rebase_patch_ref)
 
   # Reset the deps_file point in the solutions so that hooks get run properly.
   for sln in solutions:
