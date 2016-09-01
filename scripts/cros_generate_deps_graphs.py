@@ -7,10 +7,10 @@
 from __future__ import print_function
 
 import json
-import optparse  # pylint: disable=deprecated-module
 import os
 import sys
 
+from chromite.lib import commandline
 from chromite.lib import dot_helper
 
 
@@ -123,21 +123,30 @@ def GenerateImages(data, options):
     dot_helper.GenerateImage(lines, filename, options.format, save_dot_filename)
 
 
+def GetParser():
+  """Return a command line parser."""
+  parser = commandline.ArgumentParser(description=__doc__)
+  parser.add_argument('-f', '--format', default='svg',
+                      help='Dot output format (png, svg, etc.).')
+  parser.add_argument('-o', '--output-dir', default='.',
+                      help='Output directory.')
+  parser.add_argument('-c', '--children', action='store_true',
+                      help='Also add children.')
+  parser.add_argument('-l', '--link', action='store_true',
+                      help='Embed links.')
+  parser.add_argument('-b', '--base-url', default='',
+                      help='Base url for links.')
+  parser.add_argument('-s', '--save-dot', action='store_true',
+                      help='Save dot files.')
+  parser.add_argument('inputs', nargs='*',
+                      help='Chromium OS package lists')
+  return parser
+
+
 def main(argv):
-  parser = optparse.OptionParser(usage='usage: %prog [options] input')
-  parser.add_option('-f', '--format', default='svg',
-                    help='Dot output format (png, svg, etc.).')
-  parser.add_option('-o', '--output-dir', default='.',
-                    help='Output directory.')
-  parser.add_option('-c', '--children', action='store_true',
-                    help='Also add children.')
-  parser.add_option('-l', '--link', action='store_true',
-                    help='Embed links.')
-  parser.add_option('-b', '--base-url', default='',
-                    help='Base url for links.')
-  parser.add_option('-s', '--save-dot', action='store_true',
-                    help='Save dot files.')
-  (options, inputs) = parser.parse_args(argv)
+  parser = GetParser()
+  options = parser.parse_args(argv)
+  options.Freeze()
 
   try:
     os.makedirs(options.output_dir)
@@ -145,9 +154,9 @@ def main(argv):
     # The directory already exists.
     pass
 
-  if not inputs:
+  if not options.inputs:
     GenerateImages(sys.stdin.read(), options)
   else:
-    for i in inputs:
+    for i in options.inputs:
       with open(i) as handle:
         GenerateImages(handle.read(), options)
