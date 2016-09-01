@@ -382,7 +382,9 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest, DisableRecordingStoresMetadata) {
   EXPECT_TRUE(cpu_brand.length() > 0);
 }
 
-IN_PROC_BROWSER_TEST_F(TracingControllerTest, NotWhitelistedMetadataStripped) {
+// TODO(crbug.com/642991) Disabled for flakiness.
+IN_PROC_BROWSER_TEST_F(TracingControllerTest,
+                       DISABLED_NotWhitelistedMetadataStripped) {
   TestStartAndStopTracingStringWithFilter();
   // Check that a number of important keys exist in the metadata dictionary.
   EXPECT_TRUE(last_metadata() != NULL);
