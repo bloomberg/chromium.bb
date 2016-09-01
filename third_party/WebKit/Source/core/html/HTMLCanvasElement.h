@@ -230,6 +230,7 @@ private:
 
     void reset();
 
+    std::unique_ptr<ImageBufferSurface> createWebGLImageBufferSurface(const IntSize& deviceSize, OpacityMode, sk_sp<SkColorSpace>);
     std::unique_ptr<ImageBufferSurface> createAcceleratedImageBufferSurface(const IntSize& deviceSize, OpacityMode, sk_sp<SkColorSpace>, int* msaaSampleCount);
     std::unique_ptr<ImageBufferSurface> createUnacceleratedImageBufferSurface(const IntSize& deviceSize, OpacityMode, sk_sp<SkColorSpace>);
     void createImageBuffer();
