@@ -72,4 +72,9 @@ hooks = [
                "--no-circular-check",
                "src/src/client/windows/breakpad_client.gyp"],
   },
+  {
+    # Keep the manifest up to date.
+    "action": ["python", "src/src/tools/python/deps-to-manifest.py",
+               "src/DEPS", "src/default.xml"],
+  },
 ]
