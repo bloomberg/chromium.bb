@@ -167,7 +167,7 @@ bool CastMetricsServiceClient::IsOffTheRecordSessionActive() {
 
 int32_t CastMetricsServiceClient::GetProduct() {
   // Chromecast currently uses the same product identifier as Chrome.
-  return ::metrics::ChromeUserMetricsExtension::CHROME;
+  return ::metrics::ChromeUserMetricsExtension::CAST;
 }
 
 std::string CastMetricsServiceClient::GetApplicationLocale() {

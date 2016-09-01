@@ -31,6 +31,9 @@ message ChromeUserMetricsExtension {
 
     // UMA metrics from Android Webview.
     ANDROID_WEBVIEW = 20;
+
+    // Cast receivers, e.g. Chromecast
+    CAST = 35;
   }
   // The product corresponding to this log. The field type is int32 instead of
   // Product so that downstream users of the Chromium metrics component can
