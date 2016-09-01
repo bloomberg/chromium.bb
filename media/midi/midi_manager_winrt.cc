@@ -15,6 +15,8 @@
 #include <unordered_set>
 
 #include "base/bind.h"
+#include "base/lazy_instance.h"
+#include "base/scoped_generic.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -50,17 +52,125 @@ std::ostream& operator<<(std::ostream& os, const PrintHr& phr) {
   return os;
 }
 
+// Provides access to functions in combase.dll which may not be available on
+// Windows 7. Loads functions dynamically at runtime to prevent library
+// dependencies. Use this class through the global LazyInstance
+// |g_combase_functions|.
+class CombaseFunctions {
+ public:
+  CombaseFunctions() = default;
+
+  ~CombaseFunctions() {
+    if (combase_dll_)
+      ::FreeLibrary(combase_dll_);
+  }
+
+  bool LoadFunctions() {
+    combase_dll_ = ::LoadLibrary(L"combase.dll");
+    if (!combase_dll_)
+      return false;
+
+    get_factory_func_ = reinterpret_cast<decltype(&::RoGetActivationFactory)>(
+        ::GetProcAddress(combase_dll_, "RoGetActivationFactory"));
+    if (!get_factory_func_)
+      return false;
+
+    create_string_func_ = reinterpret_cast<decltype(&::WindowsCreateString)>(
+        ::GetProcAddress(combase_dll_, "WindowsCreateString"));
+    if (!create_string_func_)
+      return false;
+
+    delete_string_func_ = reinterpret_cast<decltype(&::WindowsDeleteString)>(
+        ::GetProcAddress(combase_dll_, "WindowsDeleteString"));
+    if (!delete_string_func_)
+      return false;
+
+    get_string_raw_buffer_func_ =
+        reinterpret_cast<decltype(&::WindowsGetStringRawBuffer)>(
+            ::GetProcAddress(combase_dll_, "WindowsGetStringRawBuffer"));
+    if (!get_string_raw_buffer_func_)
+      return false;
+
+    return true;
+  }
+
+  HRESULT RoGetActivationFactory(HSTRING class_id,
+                                 const IID& iid,
+                                 void** out_factory) {
+    DCHECK(get_factory_func_);
+    return get_factory_func_(class_id, iid, out_factory);
+  }
+
+  HRESULT WindowsCreateString(const base::char16* src,
+                              uint32_t len,
+                              HSTRING* out_hstr) {
+    DCHECK(create_string_func_);
+    return create_string_func_(src, len, out_hstr);
+  }
+
+  HRESULT WindowsDeleteString(HSTRING hstr) {
+    DCHECK(delete_string_func_);
+    return delete_string_func_(hstr);
+  }
+
+  const base::char16* WindowsGetStringRawBuffer(HSTRING hstr,
+                                                uint32_t* out_len) {
+    DCHECK(get_string_raw_buffer_func_);
+    return get_string_raw_buffer_func_(hstr, out_len);
+  }
+
+ private:
+  HMODULE combase_dll_ = nullptr;
+
+  decltype(&::RoGetActivationFactory) get_factory_func_ = nullptr;
+  decltype(&::WindowsCreateString) create_string_func_ = nullptr;
+  decltype(&::WindowsDeleteString) delete_string_func_ = nullptr;
+  decltype(&::WindowsGetStringRawBuffer) get_string_raw_buffer_func_ = nullptr;
+};
+
+base::LazyInstance<CombaseFunctions> g_combase_functions =
+    LAZY_INSTANCE_INITIALIZER;
+
+// Scoped HSTRING class to maintain lifetime of HSTRINGs allocated with
+// WindowsCreateString().
+class ScopedHStringTraits {
+ public:
+  static HSTRING InvalidValue() { return nullptr; }
+
+  static void Free(HSTRING hstr) {
+    g_combase_functions.Get().WindowsDeleteString(hstr);
+  }
+};
+
+class ScopedHString : public base::ScopedGeneric<HSTRING, ScopedHStringTraits> {
+ public:
+  explicit ScopedHString(const base::char16* str) : ScopedGeneric(nullptr) {
+    HSTRING hstr;
+    HRESULT hr = g_combase_functions.Get().WindowsCreateString(
+        str, static_cast<uint32_t>(wcslen(str)), &hstr);
+    if (FAILED(hr))
+      VLOG(1) << "WindowsCreateString failed: " << PrintHr(hr);
+    else
+      reset(hstr);
+  }
+};
+
 // Factory functions that activate and create WinRT components. The caller takes
 // ownership of the returning ComPtr.
 template <typename InterfaceType, base::char16 const* runtime_class_id>
 ScopedComPtr<InterfaceType> WrlStaticsFactory() {
   ScopedComPtr<InterfaceType> com_ptr;
 
-  HRESULT hr = GetActivationFactory(
-      WRL::Wrappers::HStringReference(runtime_class_id).Get(),
-      com_ptr.Receive());
+  ScopedHString class_id_hstring(runtime_class_id);
+  if (!class_id_hstring.is_valid()) {
+    com_ptr = nullptr;
+    return com_ptr;
+  }
+
+  HRESULT hr = g_combase_functions.Get().RoGetActivationFactory(
+      class_id_hstring.get(), __uuidof(InterfaceType), com_ptr.ReceiveVoid());
   if (FAILED(hr)) {
-    VLOG(1) << "GetActivationFactory failed: " << PrintHr(hr);
+    VLOG(1) << "RoGetActivationFactory failed: " << PrintHr(hr);
     com_ptr = nullptr;
   }
 
@@ -78,7 +188,8 @@ std::string GetStringFromObjectMethod(T* obj) {
 
   // Note: empty HSTRINGs are represent as nullptr, and instantiating
   // std::string with nullptr (in base::WideToUTF8) is undefined behavior.
-  const base::char16* buffer = WindowsGetStringRawBuffer(result, nullptr);
+  const base::char16* buffer =
+      g_combase_functions.Get().WindowsGetStringRawBuffer(result, nullptr);
   if (buffer)
     return base::WideToUTF8(buffer);
   return std::string();
@@ -375,16 +486,14 @@ class MidiManagerWinrt::MidiPortManager {
 
     port_names_[dev_id] = dev_name;
 
-    WRL::Wrappers::HString dev_id_hstring;
-    HRESULT hr = dev_id_hstring.Set(base::UTF8ToWide(dev_id).c_str());
-    if (FAILED(hr)) {
-      VLOG(1) << "Set failed: " << PrintHr(hr);
+    ScopedHString dev_id_hstring(base::UTF8ToWide(dev_id).c_str());
+    if (!dev_id_hstring.is_valid())
       return;
-    }
 
     IAsyncOperation<RuntimeType*>* async_op;
 
-    hr = midi_port_statics_->FromIdAsync(dev_id_hstring.Get(), &async_op);
+    HRESULT hr =
+        midi_port_statics_->FromIdAsync(dev_id_hstring.get(), &async_op);
     if (FAILED(hr)) {
       VLOG(1) << "FromIdAsync failed: " << PrintHr(hr);
       return;
@@ -742,6 +851,13 @@ void MidiManagerWinrt::InitializeOnComThread() {
 
   com_thread_checker_.reset(new base::ThreadChecker);
 
+  if (!g_combase_functions.Get().LoadFunctions()) {
+    VLOG(1) << "Failed loading functions from combase.dll: "
+            << PrintHr(HRESULT_FROM_WIN32(GetLastError()));
+    CompleteInitialization(Result::INITIALIZATION_ERROR);
+    return;
+  }
+
   port_manager_in_.reset(new MidiInPortManager(this));
   port_manager_out_.reset(new MidiOutPortManager(this));
 
@@ -762,10 +878,15 @@ void MidiManagerWinrt::FinalizeOnComThread() {
 
   scheduler_.reset();
 
-  port_manager_in_->StopWatcher();
-  port_manager_in_.reset();
-  port_manager_out_->StopWatcher();
-  port_manager_out_.reset();
+  if (port_manager_in_) {
+    port_manager_in_->StopWatcher();
+    port_manager_in_.reset();
+  }
+
+  if (port_manager_out_) {
+    port_manager_out_->StopWatcher();
+    port_manager_out_.reset();
+  }
 
   com_thread_checker_.reset();
 }
