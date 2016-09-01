@@ -296,7 +296,6 @@ exec_script_whitelist = [
   "//third_party/WebKit/Source/config.gni",
   "//third_party/WebKit/Source/core/core.gni",
   "//third_party/WebKit/Source/modules/modules.gni",
-  "//third_party/WebKit/Source/platform/platform.gni",
   "//third_party/WebKit/Source/web/BUILD.gn",
   "//tools/gn/BUILD.gn",
   "//tools/gn/build_settings.h",
