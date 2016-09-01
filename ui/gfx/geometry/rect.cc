@@ -71,10 +71,16 @@ void Rect::Inset(int left, int top, int right, int bottom) {
 
 void Rect::Offset(int horizontal, int vertical) {
   origin_ += Vector2d(horizontal, vertical);
+  // Ensure that width and height remain valid.
+  set_width(width());
+  set_height(height());
 }
 
 void Rect::operator+=(const Vector2d& offset) {
   origin_ += offset;
+  // Ensure that width and height remain valid.
+  set_width(width());
+  set_height(height());
 }
 
 void Rect::operator-=(const Vector2d& offset) {

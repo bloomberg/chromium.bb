@@ -37,10 +37,13 @@ class GFX_EXPORT Rect {
   constexpr Rect() = default;
   constexpr Rect(int width, int height) : size_(width, height) {}
   constexpr Rect(int x, int y, int width, int height)
-      : origin_(x, y), size_(width, height) {}
+      : origin_(x, y),
+        size_(GetClampedValue(x, width), GetClampedValue(y, height)) {}
   constexpr explicit Rect(const Size& size) : size_(size) {}
   constexpr Rect(const Point& origin, const Size& size)
-      : origin_(origin), size_(size) {}
+      : origin_(origin),
+        size_(GetClampedValue(origin.x(), size.width()),
+              GetClampedValue(origin.y(), size.height())) {}
 
 #if defined(OS_WIN)
   explicit Rect(const RECT& r);
@@ -57,22 +60,38 @@ class GFX_EXPORT Rect {
 #endif
 
   constexpr int x() const { return origin_.x(); }
-  void set_x(int x) { origin_.set_x(x); }
+  void set_x(int x) {
+    origin_.set_x(x);
+    size_.set_width(GetClampedValue(x, width()));
+  }
 
   constexpr int y() const { return origin_.y(); }
-  void set_y(int y) { origin_.set_y(y); }
+  void set_y(int y) {
+    origin_.set_y(y);
+    size_.set_height(GetClampedValue(y, height()));
+  }
 
   constexpr int width() const { return size_.width(); }
-  void set_width(int width) { size_.set_width(width); }
+  void set_width(int width) { size_.set_width(GetClampedValue(x(), width)); }
 
   constexpr int height() const { return size_.height(); }
-  void set_height(int height) { size_.set_height(height); }
+  void set_height(int height) {
+    size_.set_height(GetClampedValue(y(), height));
+  }
 
   constexpr const Point& origin() const { return origin_; }
-  void set_origin(const Point& origin) { origin_ = origin; }
+  void set_origin(const Point& origin) {
+    origin_ = origin;
+    // Ensure that width and height remain valid.
+    set_width(width());
+    set_height(height());
+  }
 
   constexpr const Size& size() const { return size_; }
-  void set_size(const Size& size) { size_ = size; }
+  void set_size(const Size& size) {
+    set_width(size.width());
+    set_height(size.height());
+  }
 
   constexpr int right() const { return x() + width(); }
   constexpr int bottom() const { return y() + height(); }
@@ -85,7 +104,9 @@ class GFX_EXPORT Rect {
 
   void SetRect(int x, int y, int width, int height) {
     origin_.SetPoint(x, y);
-    size_.SetSize(width, height);
+    // Ensure that width and height remain valid.
+    set_width(width);
+    set_height(height);
   }
 
   // Shrink the rectangle by a horizontal and vertical distance on all sides.
@@ -184,6 +205,26 @@ class GFX_EXPORT Rect {
  private:
   gfx::Point origin_;
   gfx::Size size_;
+
+  // Clamp the size to avoid integer overflow in bottom() and right().
+  // There are three conditions to determine whether there is a potential
+  // overflow:
+  // 1) Origin > 0: if the origin is a negative value, origin + size will
+  //    definitely be less than int_max.
+  // 2) size > 0: if size <= 0, it will be clamped to 0 making x + 0 valid for
+  //    all x.
+  // 3) We cast the values to unsigned int because the compiler can optimize
+  //    this check away entirely but it is not smart enough to know that it
+  //    won't overflow. It can't overflow since origin is positive ensured by
+  //    part 1). If size > int_max - origin it will overflow when added to
+  //    origin.
+  static constexpr int GetClampedValue(int origin, int size) {
+    return origin > 0 && size > 0 &&
+                   static_cast<unsigned>(std::numeric_limits<int>::max() -
+                                         origin) < static_cast<unsigned>(size)
+               ? std::numeric_limits<int>::max() - origin
+               : size;
+  }
 };
 
 inline bool operator==(const Rect& lhs, const Rect& rhs) {
