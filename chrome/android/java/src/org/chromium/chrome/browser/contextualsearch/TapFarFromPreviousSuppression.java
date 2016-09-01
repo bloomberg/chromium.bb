@@ -35,6 +35,16 @@ class TapFarFromPreviousSuppression extends ContextualSearchHeuristic {
         return !mShouldHandleTap;
     }
 
+    @Override
+    protected boolean shouldAggregateLogForTapSuppression() {
+        return false;
+    }
+
+    @Override
+    protected boolean isConditionSatisfiedForAggregateLogging() {
+        return false;
+    }
+
     /**
      * @return whether a tap at the given coordinates should be handled or not.
      */

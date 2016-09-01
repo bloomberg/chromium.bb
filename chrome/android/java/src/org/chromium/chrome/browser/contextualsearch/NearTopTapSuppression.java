@@ -23,7 +23,7 @@ public class NearTopTapSuppression extends ContextualSearchHeuristic {
     NearTopTapSuppression(ContextualSearchSelectionController selectionController, int y) {
         mExperiementThresholdDps = ContextualSearchFieldTrial.getScreenTopSuppressionDps();
         mYDp = (int) (y * selectionController.getPxToDp());
-        mIsConditionSatisfied = mYDp < ContextualSearchFieldTrial.getScreenTopSuppressionDps();
+        mIsConditionSatisfied = mYDp < mExperiementThresholdDps;
     }
 
     @Override
@@ -40,9 +40,16 @@ public class NearTopTapSuppression extends ContextualSearchHeuristic {
 
     @Override
     protected void logResultsSeen(boolean wasSearchContentViewSeen, boolean wasActivatedByTap) {
-        if (wasActivatedByTap && ContextualSearchFieldTrial.isScreenTopCollectionEnabled()) {
+        if (wasActivatedByTap) {
             ContextualSearchUma.logScreenTopTapLocation(
                     wasSearchContentViewSeen, wasActivatedByTap, mYDp);
         }
+    }
+
+    @Override
+    protected boolean isConditionSatisfiedForAggregateLogging() {
+        // TODO(twellington): Define a default value to use when determining if the condition is
+        // satisfied for logging.
+        return false;
     }
 }

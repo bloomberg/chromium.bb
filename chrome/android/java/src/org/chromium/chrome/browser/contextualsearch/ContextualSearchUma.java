@@ -146,6 +146,14 @@ public class ContextualSearchUma {
     private static final int RESULTS_NOT_SEEN_FROM_LONG_PRESS = 3;
     private static final int RESULTS_BY_GESTURE_BOUNDARY = 4;
 
+    // Constants used to log UMA "enum" histograms with details about whether search results
+    // were seen, and whether any existing tap suppression heuristics were satisfied.
+    private static final int RESULTS_SEEN_SUPPRESSION_HEURSTIC_SATISFIED = 0;
+    private static final int RESULTS_NOT_SEEN_SUPPRESSION_HEURSTIC_SATISFIED = 1;
+    private static final int RESULTS_SEEN_SUPPRESSION_HEURSTIC_NOT_SATISFIED = 2;
+    private static final int RESULTS_NOT_SEEN_SUPPRESSION_HEURSTIC_NOT_SATISFIED = 3;
+    private static final int RESULTS_SEEN_SUPPRESSION_BOUNDARY = 4;
+
     // Constants used to log UMA "enum" histograms with details about the Peek Promo Outcome.
     private static final int PEEK_PROMO_OUTCOME_SEEN_OPENED = 0;
     private static final int PEEK_PROMO_OUTCOME_SEEN_NOT_OPENED = 1;
@@ -898,6 +906,29 @@ public class ContextualSearchUma {
     }
 
     /**
+     * Logs whether results were seen and whether any tap suppression heuristics were satisfied.
+     * @param wasSearchContentViewSeen If the panel was opened.
+     * @param wasAnySuppressionHeuristicSatisfied Whether any of the implemented suppression
+     *                                            heuristics were satisfied.
+     */
+    public static void logAnyTapSuppressionHeuristicSatisfied(boolean wasSearchContentViewSeen,
+            boolean wasAnySuppressionHeuristicSatisfied) {
+        int code;
+        if (wasAnySuppressionHeuristicSatisfied) {
+            code = wasSearchContentViewSeen ? RESULTS_SEEN_SUPPRESSION_HEURSTIC_SATISFIED
+                    : RESULTS_NOT_SEEN_SUPPRESSION_HEURSTIC_SATISFIED;
+        } else {
+            code = wasSearchContentViewSeen ? RESULTS_SEEN_SUPPRESSION_HEURSTIC_NOT_SATISFIED
+                    : RESULTS_NOT_SEEN_SUPPRESSION_HEURSTIC_NOT_SATISFIED;
+        }
+
+        RecordHistogram.recordEnumeratedHistogram(
+                "Search.ContextualSearchTapSuppressionSeen.AnyHeuristicSatisfied",
+                code,
+                RESULTS_SEEN_SUPPRESSION_BOUNDARY);
+    }
+
+    /**
      * Logs whether search results were seen, whether the search provider icon sprite was animated
      * when the panel first appeared, and the triggering gesture.
      * @param wasIconSpriteAnimated Whether the search provider icon sprite was animated when the
@@ -1202,7 +1233,6 @@ public class ContextualSearchUma {
         int code = ContextualSearchBlacklist.getBlacklistMetricsCode(reason, wasSeen);
         RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchBlacklistSeen",
                 code, ContextualSearchBlacklist.BLACKLIST_BOUNDARY);
-
     }
 
     /**

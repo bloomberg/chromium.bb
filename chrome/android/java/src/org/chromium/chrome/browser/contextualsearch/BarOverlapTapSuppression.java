@@ -56,6 +56,11 @@ public class BarOverlapTapSuppression extends ContextualSearchHeuristic {
         }
     }
 
+    @Override
+    protected boolean isConditionSatisfiedForAggregateLogging() {
+        return mDoesBarOverlap;
+    }
+
     /**
      * @return The height of the content view area of the base page in pixels, or 0 if the
      *         Height cannot be reliably obtained.

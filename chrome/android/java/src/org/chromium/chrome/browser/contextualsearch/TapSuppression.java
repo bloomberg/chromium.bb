@@ -68,8 +68,13 @@ class TapSuppression extends ContextualSearchHeuristic {
         }
     }
 
+    @Override
+    protected boolean isConditionSatisfiedForAggregateLogging() {
+        return !mIsSecondTap && !shouldHandleFirstTap();
+    }
+
     /**
-     * @return whether a first tap should be handled or not.
+     * @return Whether a first tap should be handled or not.
      */
     private boolean shouldHandleFirstTap() {
         return mTapsSinceOpen < mExperimentThresholdTaps;

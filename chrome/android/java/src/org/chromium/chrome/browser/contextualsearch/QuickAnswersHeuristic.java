@@ -55,4 +55,14 @@ class QuickAnswersHeuristic extends ContextualSearchHeuristic {
                     wasSearchContentViewSeen, mIsConditionSatisfied, mDidAnswer);
         }
     }
+
+    @Override
+    protected boolean shouldAggregateLogForTapSuppression() {
+        return false;
+    }
+
+    @Override
+    protected boolean isConditionSatisfiedForAggregateLogging() {
+        return false;
+    }
 }

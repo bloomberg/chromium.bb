@@ -1227,6 +1227,9 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
     public void handleMetricsForWouldSuppressTap(ContextualSearchHeuristics tapHeuristics) {
         mHeuristics = tapHeuristics;
         if (ContextualSearchFieldTrial.isQuickAnswersEnabled()) {
+            // TODO(donnd): QuickAnswersHeuristic is getting added to TapSuppressionHeuristics and
+            // and getting considered in TapSuppressionHeuristics#shouldSuppressTap(). It should
+            // be a part of ContextualSearchHeuristics for logging purposes but not for suppression.
             mQuickAnswersHeuristic = new QuickAnswersHeuristic();
             mHeuristics.add(mQuickAnswersHeuristic);
         }

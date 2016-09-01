@@ -32,6 +32,8 @@ public class ContextualSearchPanelMetrics {
     private boolean mWasIconSpriteAnimated;
     private boolean mWasPanelOpenedBeyondPeek;
     private boolean mWasSelectionPartOfUrl;
+    // Whether any Tap suppression heuristic was satisfied when the panel was shown.
+    private boolean mWasAnyHeuristicSatisfiedOnPanelShow;
     // Time when the panel peeks into view (not reset by a chained search).
     // Used to log total time the panel is showing (not closed).
     private long mFirstPeekTimeNs;
@@ -105,6 +107,14 @@ public class ContextualSearchPanelMetrics {
                         mWasSearchContentViewSeen, mWasActivatedByTap);
                 mResultsSeenExperiments = null;
             }
+
+            if (mWasActivatedByTap) {
+                // TODO(twellington): consider blacklist in suppression heuristic satisfaction?
+                boolean wasAnySuppressionHeuristicSatisfied =
+                        mWasAnyHeuristicSatisfiedOnPanelShow || mWasSelectionPartOfUrl;
+                ContextualSearchUma.logAnyTapSuppressionHeuristicSatisfied(
+                        mWasSearchContentViewSeen, wasAnySuppressionHeuristicSatisfied);
+            }
         }
 
         if (isExitingPanelOpenedBeyondPeeked) {
@@ -122,6 +132,12 @@ public class ContextualSearchPanelMetrics {
             mIsSearchPanelFullyPreloaded = false;
             mWasActivatedByTap = reason == StateChangeReason.TEXT_SELECT_TAP;
             mBlacklistReason = BlacklistReason.NONE;
+            if (mWasActivatedByTap && mResultsSeenExperiments != null) {
+                mWasAnyHeuristicSatisfiedOnPanelShow =
+                        mResultsSeenExperiments.isAnyConditionSatisfiedForAggregrateLogging();
+            } else {
+                mWasAnyHeuristicSatisfiedOnPanelShow = false;
+            }
         }
         if (isFirstSearchView) {
             onSearchPanelFirstView();

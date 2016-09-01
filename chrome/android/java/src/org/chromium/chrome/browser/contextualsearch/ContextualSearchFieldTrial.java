@@ -71,7 +71,6 @@ public class ContextualSearchFieldTrial {
     // Set non-zero to establish an recent scroll suppression threshold for taps.
     private static final String RECENT_SCROLL_DURATION_MS = "recent_scroll_duration_ms";
     // TODO(donnd): remove all supporting code once short-lived data collection is done.
-    private static final String ENABLE_SCREEN_TOP_COLLECTION = "enable_screen_top_collection";
     private static final String SCREEN_TOP_SUPPRESSION_DPS = "screen_top_suppression_dps";
     private static final String ENABLE_BAR_OVERLAP_COLLECTION = "enable_bar_overlap_collection";
     private static final String BAR_OVERLAP_SUPPRESSION_ENABLED = "enable_bar_overlap_suppression";
@@ -93,7 +92,6 @@ public class ContextualSearchFieldTrial {
     private static Boolean sIsQuickAnswersEnabled;
     private static Boolean sIsRecentScrollCollectionEnabled;
     private static Integer sRecentScrollDurationMs;
-    private static Boolean sIsScreenTopCollectionEnabled;
     private static Integer sScreenTopSuppressionDps;
     private static Boolean sIsBarOverlapCollectionEnabled;
     private static Boolean sIsBarOverlapSuppressionEnabled;
@@ -323,16 +321,6 @@ public class ContextualSearchFieldTrial {
             sRecentScrollDurationMs = getIntParamValueOrDefault(RECENT_SCROLL_DURATION_MS, 0);
         }
         return sRecentScrollDurationMs.intValue();
-    }
-
-    /**
-     * @return Whether collecting metrics for tap triggering near the top of the screen is enabled.
-     */
-    static boolean isScreenTopCollectionEnabled() {
-        if (sIsScreenTopCollectionEnabled == null) {
-            sIsScreenTopCollectionEnabled = getBooleanParam(ENABLE_SCREEN_TOP_COLLECTION);
-        }
-        return sIsScreenTopCollectionEnabled.booleanValue();
     }
 
     /**

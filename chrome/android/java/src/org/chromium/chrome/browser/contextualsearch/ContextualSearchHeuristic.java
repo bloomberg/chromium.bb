@@ -34,4 +34,19 @@ abstract class ContextualSearchHeuristic {
      * @param wasActivatedByTap Whether the panel was activated by a Tap or not.
      */
     protected void logResultsSeen(boolean wasSearchContentViewSeen, boolean wasActivatedByTap) {}
+
+    /**
+     * @return Whether this heuristic should be considered when logging aggregate metrics for Tap
+     *         suppression.
+     */
+    protected boolean shouldAggregateLogForTapSuppression() {
+        return true;
+    }
+
+    /**
+     * @return Whether this heuristic's condition would have been satisfied if it were enabled
+     *         through VariationsAssociatedData. When logging aggregate metrics for Tap suppression,
+     *         the condition may be considered satisfied even if the tap wasn't suppresed.
+     */
+    protected abstract boolean isConditionSatisfiedForAggregateLogging();
 }

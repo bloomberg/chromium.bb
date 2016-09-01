@@ -9,6 +9,10 @@ package org.chromium.chrome.browser.contextualsearch;
  * Handles logging of results seen and activation.
  */
 public class RecentScrollTapSuppression extends ContextualSearchHeuristic {
+    // TODO(twellington): Use this condition rather than an experiment threshold for suppression
+    // once feature is enabled by default.
+    private static final int DEFAULT_RECENT_SCROLL_SUPPRESSION_DURATION_MS = 300;
+
     private final int mExperiementThresholdMs;
     private final int mDurationSinceRecentScrollMs;
     private final boolean mIsConditionSatisfied;
@@ -57,5 +61,11 @@ public class RecentScrollTapSuppression extends ContextualSearchHeuristic {
             ContextualSearchUma.logRecentScrollDuration(
                     mDurationSinceRecentScrollMs, wasSearchContentViewSeen);
         }
+    }
+
+    @Override
+    protected boolean isConditionSatisfiedForAggregateLogging() {
+        return mDurationSinceRecentScrollMs > 0
+                && mDurationSinceRecentScrollMs < DEFAULT_RECENT_SCROLL_SUPPRESSION_DURATION_MS;
     }
 }

@@ -53189,6 +53189,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram
+    name="Search.ContextualSearchTapSuppressionSeen.AnyHeuristicSatisfied"
+    enum="ContextualSearchSuppressionResultsSeen">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    Whether results were seen for a Tap and whether any suppression heuristic
+    was satisifed. Recorded when the UX is still shown (suppression not enabled,
+    only logged). Implemented for Android.
+  </summary>
+</histogram>
+
 <histogram name="Search.ContextualSearchTimeToSearch" units="ms">
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
@@ -73107,6 +73119,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
   <int value="0" label="Did force a translation"/>
   <int value="1" label="Would force a translation (if not disabled)"/>
+</enum>
+
+<enum name="ContextualSearchSuppressionResultsSeen" type="int">
+  <int value="0" label="Seen, heuristic satisfied"/>
+  <int value="1" label="Not seen, heuristic satisfied"/>
+  <int value="2" label="Seen, heuristic not satisfied"/>
+  <int value="3" label="Not seen, heuristic not satisfied"/>
 </enum>
 
 <enum name="ContextualSearchTapSuppression" type="int">
