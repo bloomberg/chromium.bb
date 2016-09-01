@@ -6,13 +6,7 @@
 
 set -e
 
-@@include@@../common/variables.include
-
 @@include@@../common/postinst.include
-
-@@include@@../common/apt.include
-
-@@include@@../common/symlinks.include
 
 # Add to the alternatives system
 #
@@ -50,11 +44,6 @@ case $CHANNEL in
     ;;
 esac
 
-remove_chrome_symlinks
-add_chrome_symlinks
-
-remove_udev_symlinks
-
 update-alternatives --install /usr/bin/x-www-browser x-www-browser \
   /usr/bin/@@USR_BIN_SYMLINK_NAME@@ $PRIORITY
 update-alternatives --install /usr/bin/gnome-www-browser gnome-www-browser \
@@ -62,6 +51,12 @@ update-alternatives --install /usr/bin/gnome-www-browser gnome-www-browser \
 
 update-alternatives --install /usr/bin/google-chrome google-chrome \
   /usr/bin/@@USR_BIN_SYMLINK_NAME@@ $PRIORITY
+
+@@include@@../common/apt.include
+
+@@include@@../common/symlinks.include
+
+remove_udev_symlinks
 
 ## MAIN ##
 if [ ! -e "$DEFAULTS_FILE" ]; then

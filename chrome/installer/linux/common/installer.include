@@ -58,7 +58,6 @@ process_template() (
     -e "s#@@VERSION@@#${VERSION}#g" \
     -e "s#@@PACKAGE_RELEASE@@#${PACKAGE_RELEASE}#g" \
     -e "s#@@VERSIONFULL@@#${VERSIONFULL}#g" \
-    -e "s#@@INSTALLDIRPREFIX@@#${INSTALLDIRPREFIX}#g" \
     -e "s#@@INSTALLDIR@@#${INSTALLDIR}#g" \
     -e "s#@@BUILDDIR@@#${BUILDDIR}#g" \
     -e "s#@@STAGEDIR@@#${STAGEDIR}#g" \
@@ -217,6 +216,8 @@ stage_install_common() {
     ln -sn "${INSTALLDIR}/${PACKAGE}" \
       "${STAGEDIR}/${INSTALLDIR}/google-chrome"
   fi
+  ln -snf "${INSTALLDIR}/${PACKAGE}" \
+    "${STAGEDIR}/usr/bin/${USR_BIN_SYMLINK_NAME}"
 
   # app icons
   install -m 644 \

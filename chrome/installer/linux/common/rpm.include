@@ -1,3 +1,5 @@
+@@include@@variables.include
+
 # Install the repository signing key (see also:
 # https://www.google.com/linuxrepositories/)
 install_rpm_key() {

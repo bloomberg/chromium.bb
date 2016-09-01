@@ -88,6 +88,7 @@ rm -rf "$RPM_BUILD_ROOT"
 # accidentally "own" stuff that's not ours (crbug.com/123990).
 /etc/cron.daily/@@PACKAGE@@
 %ghost %attr(755,root,root) /usr/bin/google-chrome
+/usr/bin/@@USR_BIN_SYMLINK_NAME@@
 /usr/share/applications/@@PACKAGE@@.desktop
 /usr/share/gnome-control-center/default-apps/@@PACKAGE@@.xml
 %docdir /usr/share/man/man1
@@ -108,8 +109,6 @@ exit 0
 #------------------------------------------------------------------------------
 %post
 
-@@include@@../common/variables.include
-
 @@include@@../common/postinst.include
 
 @@include@@../common/rpm.include
@@ -118,9 +117,6 @@ exit 0
 
 remove_nss_symlinks
 add_nss_symlinks
-
-remove_chrome_symlinks
-add_chrome_symlinks
 
 remove_udev_symlinks
 
@@ -192,8 +188,6 @@ elif [ "$1" -eq "1" ]; then
   mode="upgrade"
 fi
 
-@@include@@../common/variables.include
-
 @@include@@../common/rpm.include
 
 @@include@@../common/symlinks.include
@@ -202,12 +196,11 @@ fi
 # old_pkg's %preun runs after new_pkg's %post.
 if [ "$mode" = "uninstall" ]; then
 @@include@@../common/prerm.include
+  remove_nss_symlinks
+  remove_udev_symlinks
+
   %{_sbindir}/update-alternatives --remove google-chrome \
     /usr/bin/@@USR_BIN_SYMLINK_NAME@@
-
-  remove_nss_symlinks
-  remove_chrome_symlinks
-  remove_udev_symlinks
 fi
 
 # On Debian we only remove when we purge. However, RPM has no equivalent to

@@ -11,11 +11,8 @@ PACKAGE="chromium-browser"
 # Filename of the main executable (for generating launcher scripts, etc.)
 PROGNAME=chrome
 
-# Relocatable part of base directory for package installation.
-INSTALLDIRPREFIX=/opt
-
 # Base directory for package installation.
-INSTALLDIR="${INSTALLDIRPREFIX}"/chromium.org/chromium
+INSTALLDIR=/opt/chromium.org/chromium
 
 # Display string for desktop menu/icon.
 MENUNAME="Chromium Web Browser"

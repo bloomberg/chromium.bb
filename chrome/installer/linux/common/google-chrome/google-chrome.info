@@ -11,11 +11,8 @@ PACKAGE="google-chrome"
 # Filename of the main executable (for generating launcher scripts, etc.)
 PROGNAME=chrome
 
-# Relocatable part of base directory for package installation.
-INSTALLDIRPREFIX=/opt
-
 # Base directory for package installation.
-INSTALLDIR="${INSTALLDIRPREFIX}"/google/chrome
+INSTALLDIR=/opt/google/chrome
 
 # Display string for desktop menu/icon.
 MENUNAME="Google Chrome"

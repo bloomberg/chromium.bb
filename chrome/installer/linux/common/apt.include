@@ -1,3 +1,5 @@
+@@include@@variables.include
+
 APT_GET="`which apt-get 2> /dev/null`"
 APT_CONFIG="`which apt-config 2> /dev/null`"
 

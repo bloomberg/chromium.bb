@@ -13,13 +13,10 @@ if [ "$action" != "purge" ] ; then
   exit 0
 fi
 
-@@include@@../common/variables.include
-
 @@include@@../common/apt.include
 
 @@include@@../common/symlinks.include
 
-remove_chrome_symlinks
 remove_udev_symlinks
 
 # Only remove the defaults file if it is not empty. An empty file was probably
