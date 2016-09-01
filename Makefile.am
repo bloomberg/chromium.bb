@@ -1347,6 +1347,7 @@ EXTRA_DIST = \
 	src/processor/testdata/linux_raise_sigabrt.dmp \
 	src/processor/testdata/linux_stack_pointer_in_module.dmp \
 	src/processor/testdata/linux_stack_pointer_in_stack.dmp \
+	src/processor/testdata/linux_stack_pointer_in_stack_alt_name.dmp \
 	src/processor/testdata/linux_stacksmash.dmp \
 	src/processor/testdata/linux_write_to_nonwritable_module.dmp \
 	src/processor/testdata/linux_write_to_nonwritable_region_math.dmp \
