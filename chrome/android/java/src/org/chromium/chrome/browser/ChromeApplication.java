@@ -100,7 +100,6 @@ import org.chromium.components.sync.signin.SystemAccountManagerDelegate;
 import org.chromium.content.app.ContentApplication;
 import org.chromium.content.browser.ChildProcessCreationParams;
 import org.chromium.content.browser.ChildProcessLauncher;
-import org.chromium.content.browser.ContentViewStatics;
 import org.chromium.content.common.ContentSwitches;
 import org.chromium.policy.AppRestrictionsProvider;
 import org.chromium.policy.CombinedPolicyProvider;
@@ -131,54 +130,6 @@ public class ChromeApplication extends ContentApplication {
     private static boolean sIsFinishedCachingNativeFlags;
     private static DocumentTabModelSelector sDocumentTabModelSelector;
 
-    /**
-     * This class allows pausing scripts & network connections when we
-     * go to the background and resume when we are back in foreground again.
-     * TODO(pliard): Get rid of this class once JavaScript timers toggling is done directly on
-     * the native side by subscribing to the system monitor events.
-     */
-    private static class BackgroundProcessing {
-        private class SuspendRunnable implements Runnable {
-            @Override
-            public void run() {
-                mSuspendRunnable = null;
-                assert !mWebKitTimersAreSuspended;
-                mWebKitTimersAreSuspended = true;
-                ContentViewStatics.setWebKitSharedTimersSuspended(true);
-            }
-        }
-
-        private static final int SUSPEND_TIMERS_AFTER_MS = 5 * 60 * 1000;
-        private final Handler mHandler = new Handler();
-        private boolean mWebKitTimersAreSuspended = false;
-        private SuspendRunnable mSuspendRunnable;
-
-        private void onDestroy() {
-            if (mSuspendRunnable != null) {
-                mHandler.removeCallbacks(mSuspendRunnable);
-                mSuspendRunnable = null;
-            }
-        }
-
-        private void suspendTimers() {
-            if (mSuspendRunnable == null) {
-                mSuspendRunnable = new SuspendRunnable();
-                mHandler.postDelayed(mSuspendRunnable, SUSPEND_TIMERS_AFTER_MS);
-            }
-        }
-
-        private void startTimers() {
-            if (mSuspendRunnable != null) {
-                mHandler.removeCallbacks(mSuspendRunnable);
-                mSuspendRunnable = null;
-            } else if (mWebKitTimersAreSuspended) {
-                ContentViewStatics.setWebKitSharedTimersSuspended(false);
-                mWebKitTimersAreSuspended = false;
-            }
-        }
-    }
-
-    private final BackgroundProcessing mBackgroundProcessing = new BackgroundProcessing();
     private final PowerBroadcastReceiver mPowerBroadcastReceiver = new PowerBroadcastReceiver();
 
     // Used to trigger variation changes (such as seed fetches) upon application foregrounding.
@@ -280,7 +231,6 @@ public class ChromeApplication extends ContentApplication {
     private void onForegroundSessionStart() {
         UmaUtils.recordForegroundStartTime();
         ChildProcessLauncher.onBroughtToForeground();
-        mBackgroundProcessing.startTimers();
         updatePasswordEchoState();
         FontSizePrefs.getInstance(this).onSystemFontScaleChanged();
         updateAcceptLanguages();
@@ -302,7 +252,6 @@ public class ChromeApplication extends ContentApplication {
      */
     private void onForegroundSessionEnd() {
         if (!mIsStarted) return;
-        mBackgroundProcessing.suspendTimers();
         flushPersistentData();
         mIsStarted = false;
         mPowerBroadcastReceiver.onForegroundSessionEnd();
@@ -333,7 +282,6 @@ public class ChromeApplication extends ContentApplication {
     private void onForegroundActivityDestroyed() {
         if (ApplicationStatus.isEveryActivityDestroyed()) {
             // These will all be re-initialized when a new Activity starts / upon next use.
-            mBackgroundProcessing.onDestroy();
             PartnerBrowserCustomizations.destroy();
             ShareHelper.clearSharedImages(this);
         }
