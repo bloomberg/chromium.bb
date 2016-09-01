@@ -150,29 +150,42 @@ static bool shouldCreateSubsequence(const PaintLayer& paintLayer, GraphicsContex
     return true;
 }
 
-static bool shouldRepaintSubsequence(PaintLayer& paintLayer, const PaintLayerPaintingInfo& paintingInfo, ShouldRespectOverflowClipType respectOverflowClip, const LayoutSize& subpixelAccumulation)
+static bool shouldRepaintSubsequence(PaintLayer& paintLayer, const PaintLayerPaintingInfo& paintingInfo, ShouldRespectOverflowClipType respectOverflowClip, const LayoutSize& subpixelAccumulation, bool& shouldClearEmptyPaintPhaseFlags)
 {
     bool needsRepaint = false;
 
+    // We should set shouldResetEmptyPaintPhaseFlags if some previously unpainted objects may begin
+    // to be painted, causing a previously empty paint phase to become non-empty.
+
     // Repaint subsequence if the layer is marked for needing repaint.
+    // We don't set needsResetEmptyPaintPhase here, but clear the empty paint phase flags
+    // in PaintLayer::setNeedsPaintPhaseXXX(), to ensure that we won't clear
+    // previousPaintPhaseXXXEmpty flags when unrelated things changed which won't
+    // cause the paint phases to become non-empty.
     if (paintLayer.needsRepaint())
         needsRepaint = true;
 
     // Repaint if layer's clip changes.
     ClipRects& clipRects = paintLayer.clipper().paintingClipRects(paintingInfo.rootLayer, respectOverflowClip, subpixelAccumulation);
     ClipRects* previousClipRects = paintLayer.previousPaintingClipRects();
-    if (!needsRepaint && &clipRects != previousClipRects && (!previousClipRects || clipRects != *previousClipRects))
+    if (&clipRects != previousClipRects && (!previousClipRects || clipRects != *previousClipRects)) {
         needsRepaint = true;
+        shouldClearEmptyPaintPhaseFlags = true;
+    }
     paintLayer.setPreviousPaintingClipRects(clipRects);
 
     // Repaint if previously the layer might be clipped by paintDirtyRect and paintDirtyRect changes.
-    if (!needsRepaint && paintLayer.previousPaintResult() == PaintLayerPainter::MayBeClippedByPaintDirtyRect && paintLayer.previousPaintDirtyRect() != paintingInfo.paintDirtyRect)
+    if (paintLayer.previousPaintResult() == PaintLayerPainter::MayBeClippedByPaintDirtyRect && paintLayer.previousPaintDirtyRect() != paintingInfo.paintDirtyRect) {
         needsRepaint = true;
+        shouldClearEmptyPaintPhaseFlags = true;
+    }
     paintLayer.setPreviousPaintDirtyRect(paintingInfo.paintDirtyRect);
 
     // Repaint if scroll offset accumulation changes.
-    if (!needsRepaint && paintingInfo.scrollOffsetAccumulation != paintLayer.previousScrollOffsetAccumulationForPainting())
+    if (paintingInfo.scrollOffsetAccumulation != paintLayer.previousScrollOffsetAccumulationForPainting()) {
         needsRepaint = true;
+        shouldClearEmptyPaintPhaseFlags = true;
+    }
     paintLayer.setPreviousScrollOffsetAccumulationForPainting(paintingInfo.scrollOffsetAccumulation);
 
     return needsRepaint;
@@ -216,11 +229,20 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(GraphicsCon
     ShouldRespectOverflowClipType respectOverflowClip = shouldRespectOverflowClip(paintFlags, m_paintLayer.layoutObject());
 
     Optional<SubsequenceRecorder> subsequenceRecorder;
+    bool shouldClearEmptyPaintPhaseFlags = false;
     if (shouldCreateSubsequence(m_paintLayer, context, paintingInfoArg, paintFlags)) {
-        if (!shouldRepaintSubsequence(m_paintLayer, paintingInfoArg, respectOverflowClip, subpixelAccumulation)
+        if (!shouldRepaintSubsequence(m_paintLayer, paintingInfoArg, respectOverflowClip, subpixelAccumulation, shouldClearEmptyPaintPhaseFlags)
             && SubsequenceRecorder::useCachedSubsequenceIfPossible(context, m_paintLayer))
             return result;
         subsequenceRecorder.emplace(context, m_paintLayer);
+    } else {
+        shouldClearEmptyPaintPhaseFlags = true;
+    }
+
+    if (shouldClearEmptyPaintPhaseFlags) {
+        m_paintLayer.setPreviousPaintPhaseDescendantOutlinesEmpty(false);
+        m_paintLayer.setPreviousPaintPhaseFloatEmpty(false);
+        m_paintLayer.setPreviousPaintPhaseDescendantBlockBackgroundsEmpty(false);
     }
 
     PaintLayerPaintingInfo paintingInfo = paintingInfoArg;
@@ -686,13 +708,34 @@ void PaintLayerPainter::paintForegroundForFragments(const PaintLayerFragments& l
     if (selectionOnly) {
         paintForegroundForFragmentsWithPhase(PaintPhaseSelection, layerFragments, context, localPaintingInfo, paintFlags, clipState);
     } else {
-        if (m_paintLayer.needsPaintPhaseDescendantBlockBackgrounds())
+        if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled() || m_paintLayer.needsPaintPhaseDescendantBlockBackgrounds()) {
+            size_t sizeBefore = context.getPaintController().newDisplayItemList().size();
             paintForegroundForFragmentsWithPhase(PaintPhaseDescendantBlockBackgroundsOnly, layerFragments, context, localPaintingInfo, paintFlags, clipState);
-        if (m_paintLayer.needsPaintPhaseFloat())
+            // Don't set the empty flag if we are not painting the whole background.
+            if (!(paintFlags & PaintLayerPaintingSkipRootBackground)) {
+                bool phaseIsEmpty = context.getPaintController().newDisplayItemList().size() == sizeBefore;
+                DCHECK(phaseIsEmpty || m_paintLayer.needsPaintPhaseDescendantBlockBackgrounds());
+                m_paintLayer.setPreviousPaintPhaseDescendantBlockBackgroundsEmpty(phaseIsEmpty);
+            }
+        }
+
+        if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled() || m_paintLayer.needsPaintPhaseFloat()) {
+            size_t sizeBefore = context.getPaintController().newDisplayItemList().size();
             paintForegroundForFragmentsWithPhase(PaintPhaseFloat, layerFragments, context, localPaintingInfo, paintFlags, clipState);
+            bool phaseIsEmpty = context.getPaintController().newDisplayItemList().size() == sizeBefore;
+            DCHECK(phaseIsEmpty || m_paintLayer.needsPaintPhaseFloat());
+            m_paintLayer.setPreviousPaintPhaseFloatEmpty(phaseIsEmpty);
+        }
+
         paintForegroundForFragmentsWithPhase(PaintPhaseForeground, layerFragments, context, localPaintingInfo, paintFlags, clipState);
-        if (m_paintLayer.needsPaintPhaseDescendantOutlines())
+
+        if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled() || m_paintLayer.needsPaintPhaseDescendantOutlines()) {
+            size_t sizeBefore = context.getPaintController().newDisplayItemList().size();
             paintForegroundForFragmentsWithPhase(PaintPhaseDescendantOutlinesOnly, layerFragments, context, localPaintingInfo, paintFlags, clipState);
+            bool phaseIsEmpty = context.getPaintController().newDisplayItemList().size() == sizeBefore;
+            DCHECK(phaseIsEmpty || m_paintLayer.needsPaintPhaseDescendantOutlines());
+            m_paintLayer.setPreviousPaintPhaseDescendantOutlinesEmpty(phaseIsEmpty);
+        }
     }
 }
 

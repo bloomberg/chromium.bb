@@ -681,17 +681,37 @@ public:
     void setPreviousPaintResult(PaintLayerPainter::PaintResult result) { m_previousPaintResult = static_cast<unsigned>(result); ASSERT(m_previousPaintResult == static_cast<unsigned>(result)); }
 
     // Used to skip PaintPhaseDescendantOutlinesOnly for layers that have never had descendant outlines.
-    // Once it's set we never clear it because it's not easy to track if all outlines have been removed.
+    // The flag is set during paint invalidation on a self painting layer if any contained object has outline.
+    // It's cleared during painting if PaintPhaseDescendantOutlinesOnly painted nothing.
     // For more details, see core/paint/REAME.md#Empty paint phase optimization.
-    bool needsPaintPhaseDescendantOutlines() const { return m_needsPaintPhaseDescendantOutlines; }
-    void setNeedsPaintPhaseDescendantOutlines() { ASSERT(isSelfPaintingLayer()); m_needsPaintPhaseDescendantOutlines = true; }
+    bool needsPaintPhaseDescendantOutlines() const { return m_needsPaintPhaseDescendantOutlines && !m_previousPaintPhaseDescendantOutlinesWasEmpty; }
+    void setNeedsPaintPhaseDescendantOutlines()
+    {
+        DCHECK(isSelfPaintingLayer());
+        m_needsPaintPhaseDescendantOutlines = true;
+        m_previousPaintPhaseDescendantOutlinesWasEmpty = false;
+    }
+    void setPreviousPaintPhaseDescendantOutlinesEmpty(bool isEmpty) { m_previousPaintPhaseDescendantOutlinesWasEmpty = isEmpty; }
 
     // Similar to above, but for PaintPhaseFloat.
-    bool needsPaintPhaseFloat() const { return m_needsPaintPhaseFloat; }
-    void setNeedsPaintPhaseFloat() { ASSERT(isSelfPaintingLayer()); m_needsPaintPhaseFloat = true; }
+    bool needsPaintPhaseFloat() const { return m_needsPaintPhaseFloat && !m_previousPaintPhaseFloatWasEmpty; }
+    void setNeedsPaintPhaseFloat()
+    {
+        DCHECK(isSelfPaintingLayer());
+        m_needsPaintPhaseFloat = true;
+        m_previousPaintPhaseFloatWasEmpty = false;
+    }
+    void setPreviousPaintPhaseFloatEmpty(bool isEmpty) { m_previousPaintPhaseFloatWasEmpty= isEmpty; }
 
-    bool needsPaintPhaseDescendantBlockBackgrounds() const { return m_needsPaintPhaseDescendantBlockBackgrounds; }
-    void setNeedsPaintPhaseDescendantBlockBackgrounds() { ASSERT(isSelfPaintingLayer()); m_needsPaintPhaseDescendantBlockBackgrounds = true; }
+    // Similar to above, but for PaintPhaseDescendantBlockBackgroundsOnly.
+    bool needsPaintPhaseDescendantBlockBackgrounds() const { return m_needsPaintPhaseDescendantBlockBackgrounds && !m_previousPaintPhaseDescendantBlockBackgroundsWasEmpty; }
+    void setNeedsPaintPhaseDescendantBlockBackgrounds()
+    {
+        DCHECK(isSelfPaintingLayer());
+        m_needsPaintPhaseDescendantBlockBackgrounds = true;
+        m_previousPaintPhaseDescendantBlockBackgroundsWasEmpty = false;
+    }
+    void setPreviousPaintPhaseDescendantBlockBackgroundsEmpty(bool isEmpty) { m_previousPaintPhaseDescendantBlockBackgroundsWasEmpty = isEmpty; }
 
     PaintTiming* paintTiming();
 
@@ -851,8 +871,11 @@ private:
     unsigned m_previousPaintResult : 1; // PaintLayerPainter::PaintResult
 
     unsigned m_needsPaintPhaseDescendantOutlines : 1;
+    unsigned m_previousPaintPhaseDescendantOutlinesWasEmpty : 1;
     unsigned m_needsPaintPhaseFloat : 1;
+    unsigned m_previousPaintPhaseFloatWasEmpty : 1;
     unsigned m_needsPaintPhaseDescendantBlockBackgrounds : 1;
+    unsigned m_previousPaintPhaseDescendantBlockBackgroundsWasEmpty : 1;
 
     // These bitfields are part of ancestor/descendant dependent compositing inputs.
     unsigned m_hasDescendantWithClipPath : 1;

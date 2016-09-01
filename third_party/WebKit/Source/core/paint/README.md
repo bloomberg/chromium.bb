@@ -247,7 +247,16 @@ During painting, we check the flag before painting a paint phase and skip the tr
 the flag is not set.
 
 It's hard to clear a `needsPaintPhaseXXX` flag when a layer no longer needs the paint phase,
-so we never clear the flags.
+so we never clear the flags. Instead, we use another set of flags (`previousPaintPhaseXXXWasEmpty`)
+to record if a painting of a phase actually produced nothing. We'll skip the next
+painting of the phase if the flag is set, regardless of the corresponding
+`needsPaintPhaseXXX` flag. We will clear the `previousPaintPhaseXXXWasEmpty` flags when
+we paint with different clipping, scroll offset or interest rect from the previous paint.
+
+We don't clear the `previousPaintPhaseXXXWasEmpty` flags when the layer is marked `needsRepaint`.
+Instead we clear the flag when the corresponding `needsPaintPhaseXXX` is set. This ensures that
+we won't clear `previousPaintPhaseXXXWasEmpty` flags when unrelated things changed which won't
+cause the paint phases to become non-empty.
 
 When layer structure changes, and we are not invalidate paint of the changed subtree,
 we need to manually update the `needsPaintPhaseXXX` flags. For example, if an object changes

@@ -272,6 +272,11 @@ TEST_P(PaintLayerPainterTest, PaintPhaseOutline)
     EXPECT_FALSE(nonSelfPaintingLayer.needsPaintPhaseDescendantOutlines());
     paint();
     EXPECT_TRUE(displayItemListContains(rootPaintController().getDisplayItemList(), outlineDiv, DisplayItem::paintPhaseToDrawingType(PaintPhaseSelfOutlineOnly)));
+
+    // needsPaintPhaseDescendantOutlines should be reset when no outline is actually painted.
+    toHTMLElement(outlineDiv.node())->setAttribute(HTMLNames::styleAttr, styleWithoutOutline);
+    document().view()->updateAllLifecyclePhases();
+    EXPECT_FALSE(selfPaintingLayer.needsPaintPhaseDescendantOutlines());
 }
 
 TEST_P(PaintLayerPainterTest, PaintPhaseFloat)
@@ -307,6 +312,11 @@ TEST_P(PaintLayerPainterTest, PaintPhaseFloat)
     EXPECT_FALSE(nonSelfPaintingLayer.needsPaintPhaseFloat());
     paint();
     EXPECT_TRUE(displayItemListContains(rootPaintController().getDisplayItemList(), floatDiv, DisplayItem::kBoxDecorationBackground));
+
+    // needsPaintPhaseFloat should be reset when there is no float actually painted.
+    toHTMLElement(floatDiv.node())->setAttribute(HTMLNames::styleAttr, styleWithoutFloat);
+    document().view()->updateAllLifecyclePhases();
+    EXPECT_FALSE(selfPaintingLayer.needsPaintPhaseFloat());
 }
 
 TEST_P(PaintLayerPainterTest, PaintPhaseFloatUnderInlineLayer)
@@ -378,6 +388,11 @@ TEST_P(PaintLayerPainterTest, PaintPhaseBlockBackground)
     EXPECT_FALSE(nonSelfPaintingLayer.needsPaintPhaseDescendantBlockBackgrounds());
     paint();
     EXPECT_TRUE(displayItemListContains(rootPaintController().getDisplayItemList(), backgroundDiv, DisplayItem::kBoxDecorationBackground));
+
+    // needsPaintPhaseDescendantBlockBackgrounds should be reset when no outline is actually painted.
+    toHTMLElement(backgroundDiv.node())->setAttribute(HTMLNames::styleAttr, styleWithoutBackground);
+    document().view()->updateAllLifecyclePhases();
+    EXPECT_FALSE(selfPaintingLayer.needsPaintPhaseDescendantBlockBackgrounds());
 }
 
 TEST_P(PaintLayerPainterTest, PaintPhasesUpdateOnLayerRemoval)
