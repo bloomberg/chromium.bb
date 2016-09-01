@@ -23,9 +23,10 @@ Supported sanitizer configurations are:
 
 | GN Argument | Description |
 |--------------|----|
-| is_asan=true | enables [Address Sanitizer] to catch problems like buffer overruns. |
-| is_msan=true | enables [Memory Sanitizer] to catch problems like uninitialed reads. |
-| is_ubsan_security=true | enables [Undefined Behavior Sanitizer] to catch<sup>\[[1](#Notes)\]</sup> undefined behavior like integer overflow. |
+| `is_asan=true` | enables [Address Sanitizer] to catch problems like buffer overruns. |
+| `is_msan=true` | enables [Memory Sanitizer] to catch problems like uninitialed reads. |
+| `is_ubsan_security=true` | enables [Undefined Behavior Sanitizer] to catch<sup>\[[1](#Notes)\]</sup> undefined behavior like integer overflow. |
+| | it is possible to run libfuzzer without any sanitizers; *probably not what you want*.|
 
 
 ## Write Fuzzer Function
