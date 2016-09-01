@@ -17,11 +17,17 @@ parsed.
 
 # Building
 
-CMake support will be be added, but for now the parser may be build into a
-static library using the following commands:
+CMake support has been added to the root libwebm `CMakeLists.txt` file. Simply
+enable the `ENABLE_WEBM_PARSER` feature if using the interactive CMake builder,
+or alternatively pass the `-DENABLE_WEBM_PARSER:BOOL=ON` flag from the command
+line. By default, this parser is not enabled when building libwebm, so you must
+explicitly enable it.
+
+Alternatively, the following illustrates the minimal commands necessary to
+compile the code into a static library without CMake:
 
 ```.sh
-c++ -Iinclude -std=c++11 -c src/*.cc
+c++ -Iinclude -I. -std=c++11 -c src/*.cc
 ar rcs libwebm.a *.o
 ```
 
