@@ -1008,7 +1008,7 @@ bool ProcessSingleton::Create() {
       BrowserThread::IO,
       FROM_HERE,
       base::Bind(&ProcessSingleton::LinuxWatcher::StartListening,
-                 watcher_.get(),
+                 watcher_,
                  sock));
 
   return true;

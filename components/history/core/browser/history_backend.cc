@@ -2257,7 +2257,7 @@ void HistoryBackend::ScheduleCommit() {
   scheduled_commit_ = new CommitLaterTask(this);
   task_runner_->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&CommitLaterTask::RunCommit, scheduled_commit_.get()),
+      base::Bind(&CommitLaterTask::RunCommit, scheduled_commit_),
       base::TimeDelta::FromSeconds(kCommitIntervalSeconds));
 }
 

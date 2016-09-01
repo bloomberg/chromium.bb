@@ -112,9 +112,7 @@ bool ExampleEmployer::DoSomething(const CompletionCallback& callback) {
 
   // Dispatch to worker thread...
   if (!base::WorkerPool::PostTask(
-          FROM_HERE,
-          base::Bind(&ExampleWorker::DoWork, request_.get()),
-          true)) {
+          FROM_HERE, base::Bind(&ExampleWorker::DoWork, request_), true)) {
     NOTREACHED();
     request_ = NULL;
     return false;

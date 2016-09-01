@@ -199,7 +199,7 @@ bool ExtensionCreator::CreateZip(const base::FilePath& extension_dir,
 
   scoped_refptr<ExtensionCreatorFilter> filter = new ExtensionCreatorFilter();
   const base::Callback<bool(const base::FilePath&)>& filter_cb =
-    base::Bind(&ExtensionCreatorFilter::ShouldPackageFile, filter.get());
+    base::Bind(&ExtensionCreatorFilter::ShouldPackageFile, filter);
   if (!zip::ZipWithFilterCallback(extension_dir, *zip_path, filter_cb)) {
     error_message_ =
         l10n_util::GetStringUTF8(IDS_EXTENSION_FAILED_DURING_PACKAGING);

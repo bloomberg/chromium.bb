@@ -2533,7 +2533,7 @@ TEST_F(CookieMonsterTest, FlushStore) {
   ASSERT_EQ(0, counter->callback_count());
 
   // Before initialization, FlushStore() should just run the callback.
-  cm->FlushStore(base::Bind(&CallbackCounter::Callback, counter.get()));
+  cm->FlushStore(base::Bind(&CallbackCounter::Callback, counter));
   base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(0, store->flush_count());
@@ -2548,7 +2548,7 @@ TEST_F(CookieMonsterTest, FlushStore) {
 
   // After initialization, FlushStore() should delegate to the store.
   GetAllCookies(cm.get());  // Force init.
-  cm->FlushStore(base::Bind(&CallbackCounter::Callback, counter.get()));
+  cm->FlushStore(base::Bind(&CallbackCounter::Callback, counter));
   base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(1, store->flush_count());
@@ -2569,7 +2569,7 @@ TEST_F(CookieMonsterTest, FlushStore) {
 
   ASSERT_EQ(2, counter->callback_count());
 
-  cm->FlushStore(base::Bind(&CallbackCounter::Callback, counter.get()));
+  cm->FlushStore(base::Bind(&CallbackCounter::Callback, counter));
   base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(3, counter->callback_count());

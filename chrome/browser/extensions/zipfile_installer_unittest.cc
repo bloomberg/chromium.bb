@@ -100,7 +100,7 @@ class ZipFileInstallerTest : public testing::Test {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&ZipFileInstaller::LoadFromZipFile,
-                   zipfile_installer_.get(),
+                   zipfile_installer_,
                    original_path));
     observer_.WaitForInstall();
   }

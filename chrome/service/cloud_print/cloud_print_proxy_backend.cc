@@ -186,7 +186,7 @@ bool CloudPrintProxyBackend::InitializeWithToken(
     return false;
   PostCoreTask(FROM_HERE,
                base::Bind(&CloudPrintProxyBackend::Core::DoInitializeWithToken,
-                          core_.get(), cloud_print_token));
+                          core_, cloud_print_token));
   return true;
 }
 
@@ -198,7 +198,7 @@ bool CloudPrintProxyBackend::InitializeWithRobotToken(
   PostCoreTask(
       FROM_HERE,
       base::Bind(&CloudPrintProxyBackend::Core::DoInitializeWithRobotToken,
-                 core_.get(), robot_oauth_refresh_token, robot_email));
+                 core_, robot_oauth_refresh_token, robot_email));
   return true;
 }
 
@@ -210,13 +210,13 @@ bool CloudPrintProxyBackend::InitializeWithRobotAuthCode(
   PostCoreTask(
       FROM_HERE,
       base::Bind(&CloudPrintProxyBackend::Core::DoInitializeWithRobotAuthCode,
-                 core_.get(), robot_oauth_auth_code, robot_email));
+                 core_, robot_oauth_auth_code, robot_email));
   return true;
 }
 
 void CloudPrintProxyBackend::Shutdown() {
   PostCoreTask(FROM_HERE, base::Bind(&CloudPrintProxyBackend::Core::DoShutdown,
-                                     core_.get()));
+                                     core_));
   core_thread_.Stop();
   core_ = nullptr;  // Releases reference to |core_|.
 }
@@ -224,7 +224,7 @@ void CloudPrintProxyBackend::Shutdown() {
 void CloudPrintProxyBackend::UnregisterPrinters() {
   PostCoreTask(FROM_HERE,
                base::Bind(&CloudPrintProxyBackend::Core::DoUnregisterPrinters,
-                          core_.get()));
+                          core_));
 }
 
 bool CloudPrintProxyBackend::PostCoreTask(

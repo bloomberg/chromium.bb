@@ -98,7 +98,7 @@ void PrefService::InitFromStorage(bool async) {
     // Guarantee that initialization happens after this function returned.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&PersistentPrefStore::ReadPrefsAsync, user_pref_store_.get(),
+        base::Bind(&PersistentPrefStore::ReadPrefsAsync, user_pref_store_,
                    new ReadErrorHandler(read_error_callback_)));
   }
 }

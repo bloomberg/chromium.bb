@@ -249,7 +249,7 @@ NonBlockingInvalidator::NonBlockingInvalidator(
           FROM_HERE,
           base::Bind(
               &NonBlockingInvalidator::Core::Initialize,
-              core_.get(),
+              core_,
               initialize_options))) {
     NOTREACHED();
   }
@@ -260,7 +260,7 @@ NonBlockingInvalidator::~NonBlockingInvalidator() {
   if (!network_task_runner_->PostTask(
           FROM_HERE,
           base::Bind(&NonBlockingInvalidator::Core::Teardown,
-                     core_.get()))) {
+                     core_))) {
     DVLOG(1) << "Network thread stopped before invalidator is destroyed.";
   }
 }
@@ -279,7 +279,7 @@ bool NonBlockingInvalidator::UpdateRegisteredIds(InvalidationHandler* handler,
           FROM_HERE,
           base::Bind(
               &NonBlockingInvalidator::Core::UpdateRegisteredIds,
-              core_.get(),
+              core_,
               registrar_.GetAllRegisteredIds()))) {
     NOTREACHED();
   }
@@ -302,7 +302,7 @@ void NonBlockingInvalidator::UpdateCredentials(const std::string& email,
   if (!network_task_runner_->PostTask(
           FROM_HERE,
           base::Bind(&NonBlockingInvalidator::Core::UpdateCredentials,
-                     core_.get(), email, token))) {
+                     core_, email, token))) {
     NOTREACHED();
   }
 }
@@ -315,7 +315,7 @@ void NonBlockingInvalidator::RequestDetailedStatus(
   if (!network_task_runner_->PostTask(
           FROM_HERE,
           base::Bind(&NonBlockingInvalidator::Core::RequestDetailedStatus,
-                     core_.get(),
+                     core_,
                      proxy_callback))) {
     NOTREACHED();
   }

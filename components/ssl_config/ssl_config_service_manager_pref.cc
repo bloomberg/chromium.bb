@@ -270,7 +270,7 @@ void SSLConfigServiceManagerPref::OnPreferenceChanged(
   // update |cached_config_|.
   io_task_runner_->PostTask(FROM_HERE,
                             base::Bind(&SSLConfigServicePref::SetNewSSLConfig,
-                                       ssl_config_service_.get(), new_config));
+                                       ssl_config_service_, new_config));
 }
 
 void SSLConfigServiceManagerPref::GetSSLConfigFromPrefs(

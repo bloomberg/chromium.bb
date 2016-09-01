@@ -188,7 +188,7 @@ void CrxInstaller::InstallCrxFile(const CRXFileInfo& source_file) {
 
   if (!installer_task_runner_->PostTask(
           FROM_HERE, base::Bind(&SandboxedUnpacker::StartWithCrx,
-                                unpacker.get(), source_file))) {
+                                unpacker, source_file))) {
     NOTREACHED();
   }
 }

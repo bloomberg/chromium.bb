@@ -374,7 +374,7 @@ void UtilityProcessHostImpl::OnProcessLaunchFailed(int error_code) {
   client_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&UtilityProcessHostClient::OnProcessLaunchFailed,
-                 client_.get(),
+                 client_,
                  error_code));
 }
 
@@ -384,7 +384,7 @@ void UtilityProcessHostImpl::OnProcessCrashed(int exit_code) {
 
   client_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&UtilityProcessHostClient::OnProcessCrashed, client_.get(),
+      base::Bind(&UtilityProcessHostClient::OnProcessCrashed, client_,
             exit_code));
 }
 

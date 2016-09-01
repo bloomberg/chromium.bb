@@ -2976,7 +2976,7 @@ PP_ExternalPluginResult PepperPluginInstanceImpl::ResetAsProxied(
   original_instance_interface_.reset(instance_interface_.release());
 
   base::Callback<const void*(const char*)> get_plugin_interface_func =
-      base::Bind(&PluginModule::GetPluginInterface, module_.get());
+      base::Bind(&PluginModule::GetPluginInterface, module_);
   PPP_Instance_Combined* ppp_instance_combined =
       PPP_Instance_Combined::Create(get_plugin_interface_func);
   if (!ppp_instance_combined) {

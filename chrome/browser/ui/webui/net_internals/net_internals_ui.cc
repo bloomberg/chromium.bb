@@ -392,7 +392,7 @@ NetInternalsMessageHandler::~NetInternalsMessageHandler() {
     proxy_->OnWebUIDeleted();
     // Notify the handler on the IO thread that the renderer is gone.
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::Bind(&IOThreadImpl::Detach, proxy_.get()));
+                            base::Bind(&IOThreadImpl::Detach, proxy_));
   }
 }
 

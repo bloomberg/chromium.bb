@@ -535,7 +535,7 @@ void PrintViewManagerBase::ReleasePrinterQuery() {
     return;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&PrinterQuery::StopWorker, printer_query.get()));
+      base::Bind(&PrinterQuery::StopWorker, printer_query));
 }
 
 }  // namespace printing

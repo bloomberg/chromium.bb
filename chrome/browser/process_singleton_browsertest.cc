@@ -262,7 +262,7 @@ IN_PROC_BROWSER_TEST_F(ProcessSingletonTest, DISABLED_StartupRaceCondition) {
 
       chrome_starter_threads_[i]->task_runner()->PostTask(
           FROM_HERE,
-          base::Bind(&ChromeStarter::StartChrome, chrome_starters_[i].get(),
+          base::Bind(&ChromeStarter::StartChrome, chrome_starters_[i],
                      &threads_waker_, first_run));
     }
 

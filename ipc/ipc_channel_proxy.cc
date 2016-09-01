@@ -490,13 +490,13 @@ void ChannelProxy::Init(std::unique_ptr<ChannelFactory> factory,
     context_->CreateChannel(std::move(factory));
   } else {
     context_->ipc_task_runner()->PostTask(
-        FROM_HERE, base::Bind(&Context::CreateChannel, context_.get(),
+        FROM_HERE, base::Bind(&Context::CreateChannel, context_,
                               base::Passed(&factory)));
   }
 
   // complete initialization on the background thread
   context_->ipc_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&Context::OnChannelOpened, context_.get()));
+      FROM_HERE, base::Bind(&Context::OnChannelOpened, context_));
 
   did_init_ = true;
   OnChannelInit();
@@ -512,7 +512,7 @@ void ChannelProxy::Close() {
 
   if (context_->ipc_task_runner()) {
     context_->ipc_task_runner()->PostTask(
-        FROM_HERE, base::Bind(&Context::OnChannelClosed, context_.get()));
+        FROM_HERE, base::Bind(&Context::OnChannelClosed, context_));
   }
 }
 
@@ -548,7 +548,7 @@ void ChannelProxy::RemoveFilter(MessageFilter* filter) {
   DCHECK(CalledOnValidThread());
 
   context_->ipc_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&Context::OnRemoveFilter, context_.get(),
+      FROM_HERE, base::Bind(&Context::OnRemoveFilter, context_,
                             base::RetainedRef(filter)));
 }
 
@@ -574,7 +574,7 @@ void ChannelProxy::GetGenericRemoteAssociatedInterface(
   DCHECK(did_init_);
   context_->ipc_task_runner()->PostTask(
       FROM_HERE, base::Bind(&Context::GetRemoteAssociatedInterface,
-                            context_.get(), name, base::Passed(&handle)));
+                            context_, name, base::Passed(&handle)));
 }
 
 void ChannelProxy::ClearIPCTaskRunner() {

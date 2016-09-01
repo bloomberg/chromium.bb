@@ -208,7 +208,7 @@ void GpuChannelHost::AddRouteWithTaskRunner(
   io_task_runner->PostTask(
       FROM_HERE,
       base::Bind(&GpuChannelHost::MessageFilter::AddRoute,
-                 channel_filter_.get(), route_id, listener, task_runner));
+                 channel_filter_, route_id, listener, task_runner));
 }
 
 void GpuChannelHost::RemoveRoute(int route_id) {
@@ -216,7 +216,7 @@ void GpuChannelHost::RemoveRoute(int route_id) {
       factory_->GetIOThreadTaskRunner();
   io_task_runner->PostTask(
       FROM_HERE, base::Bind(&GpuChannelHost::MessageFilter::RemoveRoute,
-                            channel_filter_.get(), route_id));
+                            channel_filter_, route_id));
 }
 
 base::SharedMemoryHandle GpuChannelHost::ShareToGpuProcess(

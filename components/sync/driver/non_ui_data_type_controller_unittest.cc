@@ -485,7 +485,7 @@ TEST_F(SyncNonUIDataTypeControllerTest, OnSingleDataTypeUnrecoverableError) {
       FROM_HERE,
       base::Bind(
           &NonUIDataTypeControllerFake::OnSingleDataTypeUnrecoverableError,
-          non_ui_dtc_.get(), error));
+          non_ui_dtc_, error));
   WaitForDTC();
 }
 

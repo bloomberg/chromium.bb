@@ -449,7 +449,7 @@ void SafeBrowsingBlockingPage::FinishThreatDetails(int64_t delay_ms,
   // Finish the malware details collection, send it over.
   BrowserThread::PostDelayedTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&ThreatDetails::FinishCollection, threat_details_.get(),
+      base::Bind(&ThreatDetails::FinishCollection, threat_details_,
                  did_proceed, num_visits),
       base::TimeDelta::FromMilliseconds(delay_ms));
 }

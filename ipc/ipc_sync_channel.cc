@@ -373,7 +373,7 @@ bool SyncChannel::SyncContext::Pop() {
   // can now unblock the listener thread.
   ipc_task_runner()->PostTask(
       FROM_HERE, base::Bind(&ReceivedSyncMsgQueue::DispatchReplies,
-                            received_sync_msgs_.get()));
+                            received_sync_msgs_));
 
   return result;
 }

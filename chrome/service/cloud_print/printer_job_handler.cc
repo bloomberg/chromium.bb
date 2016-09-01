@@ -241,7 +241,7 @@ void PrinterJobHandler::OnJobChanged() {
   // and have them check for updates.
   for (const auto& it : job_status_updater_list_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&JobStatusUpdater::UpdateStatus, it.get()));
+        FROM_HERE, base::Bind(&JobStatusUpdater::UpdateStatus, it));
   }
 }
 
@@ -623,7 +623,7 @@ void PrinterJobHandler::JobSpooled(PlatformJobId local_job_id) {
   job_status_updater_list_.push_back(job_status_updater);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&JobStatusUpdater::UpdateStatus, job_status_updater.get()));
+      base::Bind(&JobStatusUpdater::UpdateStatus, job_status_updater));
 
   CheckForJobs(kJobFetchReasonQueryMore);
 

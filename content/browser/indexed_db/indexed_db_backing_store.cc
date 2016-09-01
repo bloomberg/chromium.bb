@@ -2445,7 +2445,7 @@ bool IndexedDBBackingStore::WriteBlobFile(
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
         base::Bind(&LocalWriteClosure::WriteBlobToFileOnIOThread,
-                   write_closure.get(), path, descriptor.url(),
+                   write_closure, path, descriptor.url(),
                    descriptor.last_modified(), request_context_getter_));
   }
   return true;

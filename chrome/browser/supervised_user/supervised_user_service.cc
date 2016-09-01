@@ -442,7 +442,7 @@ void SupervisedUserService::URLFilterContext::SetDefaultFilteringBehavior(
       BrowserThread::IO,
       FROM_HERE,
       base::Bind(&SupervisedUserURLFilter::SetDefaultFilteringBehavior,
-                 io_url_filter_.get(), behavior));
+                 io_url_filter_, behavior));
 }
 
 void SupervisedUserService::URLFilterContext::LoadWhitelists(
