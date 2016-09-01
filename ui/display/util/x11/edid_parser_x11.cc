@@ -12,7 +12,7 @@
 #include "ui/display/util/edid_parser.h"
 #include "ui/gfx/x/x11_types.h"
 
-namespace ui {
+namespace display {
 
 namespace {
 
@@ -106,4 +106,4 @@ bool EDIDParserX11::GetOutputOverscanFlag(bool* out_flag) const {
   return ParseOutputOverscanFlag(edid_, out_flag);
 }
 
-}  // namespace ui
+}  // namespace display

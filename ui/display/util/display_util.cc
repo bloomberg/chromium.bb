@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 
-namespace ui {
+namespace display {
 
 namespace {
 
@@ -78,4 +78,4 @@ int64_t GenerateDisplayID(uint16_t manufacturer_id,
           (static_cast<int64_t>(product_code_hash) << 8) | output_index);
 }
 
-}  // namespace ui
+}  // namespace display

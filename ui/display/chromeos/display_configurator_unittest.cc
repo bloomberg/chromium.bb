@@ -377,7 +377,7 @@ TEST_F(DisplayConfiguratorTest, EnableVirtualDisplay) {
   // Add virtual display.
   int64_t virtual_display_id =
       configurator_.AddVirtualDisplay(big_mode_.size());
-  EXPECT_EQ(GenerateDisplayID(0x8000, 0x0, 1), virtual_display_id);
+  EXPECT_EQ(display::GenerateDisplayID(0x8000, 0x0, 1), virtual_display_id);
   EXPECT_FALSE(mirroring_controller_.SoftwareMirroringEnabled());
   EXPECT_EQ(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED,
             configurator_.display_state());
@@ -430,7 +430,7 @@ TEST_F(DisplayConfiguratorTest, EnableTwoVirtualDisplays) {
   // Add 1st virtual display.
   int64_t virtual_display_id_1 =
       configurator_.AddVirtualDisplay(big_mode_.size());
-  EXPECT_EQ(GenerateDisplayID(0x8000, 0x0, 1), virtual_display_id_1);
+  EXPECT_EQ(display::GenerateDisplayID(0x8000, 0x0, 1), virtual_display_id_1);
   EXPECT_FALSE(mirroring_controller_.SoftwareMirroringEnabled());
   EXPECT_EQ(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED,
             configurator_.display_state());
@@ -458,7 +458,7 @@ TEST_F(DisplayConfiguratorTest, EnableTwoVirtualDisplays) {
   // Add 2nd virtual display
   int64_t virtual_display_id_2 =
       configurator_.AddVirtualDisplay(big_mode_.size());
-  EXPECT_EQ(GenerateDisplayID(0x8000, 0x0, 2), virtual_display_id_2);
+  EXPECT_EQ(display::GenerateDisplayID(0x8000, 0x0, 2), virtual_display_id_2);
   EXPECT_FALSE(mirroring_controller_.SoftwareMirroringEnabled());
   EXPECT_EQ(MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED,
             configurator_.display_state());

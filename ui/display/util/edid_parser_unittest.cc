@@ -12,7 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace ui {
+namespace display {
 
 namespace {
 
@@ -272,4 +272,4 @@ TEST(EDIDParserTest, GetDisplayIdFailure) {
   EXPECT_EQ(-1, product_id);
 }
 
-}   // namespace ui
+}  // namespace display

@@ -36,10 +36,10 @@ bool IsIdInList(int64_t id, const DisplayIdList& list) {
   return iter != list.end();
 }
 
-display::Display* FindDisplayById(DisplayList* display_list, int64_t id) {
-  auto iter = std::find_if(
-      display_list->begin(), display_list->end(),
-      [id](const display::Display& display) { return display.id() == id; });
+Display* FindDisplayById(DisplayList* display_list, int64_t id) {
+  auto iter =
+      std::find_if(display_list->begin(), display_list->end(),
+                   [id](const Display& display) { return display.id() == id; });
   return &(*iter);
 }
 
@@ -49,15 +49,15 @@ display::Display* FindDisplayById(DisplayList* display_list, int64_t id) {
 // DisplayPlacement
 
 DisplayPlacement::DisplayPlacement()
-    : DisplayPlacement(display::Display::kInvalidDisplayID,
-                       display::Display::kInvalidDisplayID,
+    : DisplayPlacement(Display::kInvalidDisplayID,
+                       Display::kInvalidDisplayID,
                        DisplayPlacement::RIGHT,
                        0,
                        DisplayPlacement::TOP_LEFT) {}
 
 DisplayPlacement::DisplayPlacement(Position position, int offset)
-    : DisplayPlacement(display::Display::kInvalidDisplayID,
-                       display::Display::kInvalidDisplayID,
+    : DisplayPlacement(Display::kInvalidDisplayID,
+                       Display::kInvalidDisplayID,
                        position,
                        offset,
                        DisplayPlacement::TOP_LEFT) {}
@@ -65,8 +65,8 @@ DisplayPlacement::DisplayPlacement(Position position, int offset)
 DisplayPlacement::DisplayPlacement(Position position,
                                    int offset,
                                    OffsetReference offset_reference)
-    : DisplayPlacement(display::Display::kInvalidDisplayID,
-                       display::Display::kInvalidDisplayID,
+    : DisplayPlacement(Display::kInvalidDisplayID,
+                       Display::kInvalidDisplayID,
                        position,
                        offset,
                        offset_reference) {}
@@ -120,9 +120,9 @@ DisplayPlacement& DisplayPlacement::Swap() {
 
 std::string DisplayPlacement::ToString() const {
   std::stringstream s;
-  if (display_id != display::Display::kInvalidDisplayID)
+  if (display_id != Display::kInvalidDisplayID)
     s << "id=" << display_id << ", ";
-  if (parent_display_id != display::Display::kInvalidDisplayID)
+  if (parent_display_id != Display::kInvalidDisplayID)
     s << "parent=" << parent_display_id << ", ";
   s << PositionToString(position) << ", ";
   s << offset;
@@ -178,7 +178,7 @@ bool DisplayPlacement::StringToPosition(const base::StringPiece& string,
 DisplayLayout::DisplayLayout()
     : mirrored(false),
       default_unified(true),
-      primary_id(display::Display::kInvalidDisplayID) {}
+      primary_id(Display::kInvalidDisplayID) {}
 
 DisplayLayout::~DisplayLayout() {}
 
@@ -225,11 +225,11 @@ bool DisplayLayout::Validate(const DisplayIdList& list,
       LOG(ERROR) << "PlacementList must be sorted by display_id";
       return false;
     }
-    if (placement.display_id == display::Display::kInvalidDisplayID) {
+    if (placement.display_id == Display::kInvalidDisplayID) {
       LOG(ERROR) << "display_id is not initialized";
       return false;
     }
-    if (placement.parent_display_id == display::Display::kInvalidDisplayID) {
+    if (placement.parent_display_id == Display::kInvalidDisplayID) {
       LOG(ERROR) << "display_parent_id is not initialized";
       return false;
     }
@@ -312,11 +312,10 @@ DisplayPlacement DisplayLayout::FindPlacementById(int64_t display_id) const {
 bool DisplayLayout::ApplyDisplayPlacement(const DisplayPlacement& placement,
                                           DisplayList* display_list,
                                           int minimum_offset_overlap) {
-  const display::Display& parent_display =
+  const Display& parent_display =
       *FindDisplayById(display_list, placement.parent_display_id);
   DCHECK(parent_display.is_valid());
-  display::Display* target_display =
-      FindDisplayById(display_list, placement.display_id);
+  Display* target_display = FindDisplayById(display_list, placement.display_id);
   gfx::Rect old_bounds(target_display->bounds());
   DCHECK(target_display);
 

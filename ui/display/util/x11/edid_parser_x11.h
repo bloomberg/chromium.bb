@@ -19,7 +19,7 @@ typedef XID RROutput;
 
 // Xrandr utility functions to help get EDID information.
 
-namespace ui {
+namespace display {
 
 // Xrandr utility class to help get EDID information.
 class DISPLAY_UTIL_EXPORT EDIDParserX11 {
@@ -55,6 +55,6 @@ class DISPLAY_UTIL_EXPORT EDIDParserX11 {
   DISALLOW_COPY_AND_ASSIGN(EDIDParserX11);
 };
 
-}  // namespace ui
+}  // namespace display
 
 #endif  // UI_DISPLAY_UTIL_X11_EDID_PARSER_X11_H_

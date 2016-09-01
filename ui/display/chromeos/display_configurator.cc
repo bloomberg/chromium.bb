@@ -1129,10 +1129,10 @@ int64_t DisplayConfigurator::AddVirtualDisplay(const gfx::Size& display_size) {
     return display::Display::kInvalidDisplayID;
   }
 
-  DisplaySnapshotVirtual* virtual_snapshot =
-      new DisplaySnapshotVirtual(GenerateDisplayID(kReservedManufacturerID, 0x0,
-                                                   ++last_virtual_display_id_),
-                                 display_size);
+  DisplaySnapshotVirtual* virtual_snapshot = new DisplaySnapshotVirtual(
+      display::GenerateDisplayID(kReservedManufacturerID, 0x0,
+                                 ++last_virtual_display_id_),
+      display_size);
   virtual_display_snapshots_.push_back(virtual_snapshot);
   ConfigureDisplays();
 

@@ -72,7 +72,7 @@ std::vector<display::Display> GetFallbackDisplayList() {
   gfx::Rect bounds_in_pixels(0, 0, width, height);
   display::Display gfx_display(0, bounds_in_pixels);
   if (!display::Display::HasForceDeviceScaleFactor() &&
-      !ui::IsDisplaySizeBlackListed(physical_size)) {
+      !display::IsDisplaySizeBlackListed(physical_size)) {
     const float device_scale_factor = GetDeviceScaleFactor();
     DCHECK_LE(1.0f, device_scale_factor);
     gfx_display.SetScaleAndBounds(device_scale_factor, bounds_in_pixels);
@@ -335,8 +335,8 @@ std::vector<display::Display> DesktopScreenX11::BuildDisplaysFromXRandRInfo() {
           crtc(XRRGetCrtcInfo(xdisplay_, resources.get(), output_info->crtc));
 
       int64_t display_id = -1;
-      if (!ui::EDIDParserX11(output_id).GetDisplayId(static_cast<uint8_t>(i),
-                                                     &display_id)) {
+      if (!display::EDIDParserX11(output_id).GetDisplayId(
+              static_cast<uint8_t>(i), &display_id)) {
         // It isn't ideal, but if we can't parse the EDID data, fallback on the
         // display number.
         display_id = i;

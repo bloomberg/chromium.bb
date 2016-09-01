@@ -14,7 +14,7 @@
 #include "ui/display/util/display_util.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace ui {
+namespace display {
 
 namespace {
 
@@ -260,4 +260,4 @@ bool ParseOutputOverscanFlag(const std::vector<uint8_t>& edid,
   return false;
 }
 
-}  // namespace ui
+}  // namespace display

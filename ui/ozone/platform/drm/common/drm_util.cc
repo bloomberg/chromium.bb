@@ -289,12 +289,12 @@ DisplaySnapshot_Params CreateDisplaySnapshotParams(
         static_cast<uint8_t*>(edid_blob->data),
         static_cast<uint8_t*>(edid_blob->data) + edid_blob->length);
 
-    GetDisplayIdFromEDID(params.edid, connector_index, &params.display_id,
-                         &params.product_id);
+    display::GetDisplayIdFromEDID(params.edid, connector_index,
+                                  &params.display_id, &params.product_id);
 
-    ParseOutputDeviceData(params.edid, nullptr, nullptr, &params.display_name,
-                          nullptr, nullptr);
-    ParseOutputOverscanFlag(params.edid, &params.has_overscan);
+    display::ParseOutputDeviceData(params.edid, nullptr, nullptr,
+                                   &params.display_name, nullptr, nullptr);
+    display::ParseOutputOverscanFlag(params.edid, &params.has_overscan);
   } else {
     VLOG(1) << "Failed to get EDID blob for connector "
             << info->connector()->connector_id;

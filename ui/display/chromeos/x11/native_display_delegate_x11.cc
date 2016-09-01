@@ -312,7 +312,7 @@ DisplaySnapshotX11* NativeDisplayDelegateX11::InitDisplaySnapshot(
     std::set<RRCrtc>* last_used_crtcs,
     int index) {
   int64_t display_id = 0;
-  ui::EDIDParserX11 edid_parser(output);
+  display::EDIDParserX11 edid_parser(output);
   if (!edid_parser.GetDisplayId(static_cast<uint8_t>(index), &display_id))
     display_id = index;
 

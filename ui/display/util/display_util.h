@@ -10,7 +10,7 @@
 #include "ui/display/util/display_util_export.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace ui {
+namespace display {
 
 // Returns true if a given size is in the list of bogus sizes in mm that should
 // be ignored.
@@ -34,6 +34,6 @@ DISPLAY_UTIL_EXPORT int64_t GenerateDisplayID(uint16_t manufacturer_id,
                                               uint32_t product_code_hash,
                                               uint8_t output_index);
 
-}  // namespace ui
+}  // namespace display
 
 #endif  // UI_DISPLAY_UTIL_DISPLAY_UTIL_H_

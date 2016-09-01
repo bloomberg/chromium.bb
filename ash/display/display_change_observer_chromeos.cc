@@ -204,7 +204,7 @@ void DisplayChangeObserver::OnDisplayModeChanged(
 
     float device_scale_factor = 1.0f;
     // Sets dpi only if the screen size is not blacklisted.
-    float dpi = ui::IsDisplaySizeBlackListed(state->physical_size())
+    float dpi = display::IsDisplaySizeBlackListed(state->physical_size())
                     ? 0
                     : kInchInMm * mode_info->size().width() /
                           state->physical_size().width();

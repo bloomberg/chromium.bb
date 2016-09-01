@@ -19,7 +19,7 @@ class Size;
 // EDID (Extended Display Identification Data) is a format for monitor
 // metadata. This provides a parser for the data.
 
-namespace ui {
+namespace display {
 
 // Generates the display id and product id for the pair of |edid| and |index|,
 // and store in |display_id_out| and |product_id_out|. Returns true if the
@@ -47,6 +47,6 @@ DISPLAY_UTIL_EXPORT bool ParseOutputOverscanFlag(
     const std::vector<uint8_t>& edid,
     bool* flag);
 
-}  // namespace ui
+}  // namespace display
 
 #endif // UI_DISPLAY_UTIL_EDID_PARSER_H_

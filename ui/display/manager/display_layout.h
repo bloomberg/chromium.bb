@@ -27,7 +27,7 @@ class Display;
 // DisplayLayoutStore.
 using DisplayIdList = std::vector<int64_t>;
 
-using DisplayList = std::vector<display::Display>;
+using DisplayList = std::vector<Display>;
 
 // DisplayPlacement specifies where the display (D) is placed relative to
 // parent (P) display. In the following example, D given by |display_id| is

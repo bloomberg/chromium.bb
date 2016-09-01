@@ -6,7 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace ui {
+namespace display {
 
 TEST(DisplayUtilTest, TestBlackListedDisplay) {
   EXPECT_TRUE(IsDisplaySizeBlackListed(gfx::Size(10, 10)));
@@ -50,4 +50,4 @@ TEST(DisplayUtilTest, GetScaleFactor) {
       gfx::Size(293, 165), gfx::Size(1920, 1080)));
 }
 
-}  // namespace ui
+}  // namespace display
