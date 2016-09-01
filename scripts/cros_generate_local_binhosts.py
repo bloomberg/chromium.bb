@@ -12,10 +12,10 @@ from __future__ import print_function
 
 import collections
 import glob
-import optparse  # pylint: disable=deprecated-module
 import os
 import sys
 
+from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 
 
@@ -48,21 +48,19 @@ def GenerateBinhostLine(build_root, compatible_boards):
   return "LOCAL_BINHOST='%s'" % local_binhosts
 
 
+def GetParser():
+  """Return a command line parser."""
+  parser = commandline.ArgumentParser(description=__doc__)
+  parser.add_argument('--build_root', default='/build',
+                      help='Location of boards (normally %(default)s)')
+  parser.add_argument('--board', required=True,
+                      help='Board name')
+  return parser
+
+
 def main(argv):
-  parser = optparse.OptionParser(usage="USAGE: ./%prog --board=board [options]")
-
-  parser.add_option("--build_root", default="/build",
-                    dest="build_root",
-                    help="Location of boards (normally /build)")
-  parser.add_option("--board", default=None,
-                    dest="board",
-                    help="Board name (required).")
-
-  flags, remaining_arguments = parser.parse_args(argv)
-
-  if remaining_arguments or not flags.board:
-    parser.print_help()
-    sys.exit(1)
+  parser = GetParser()
+  flags = parser.parse_args(argv)
 
   by_compatibility = collections.defaultdict(set)
   compatible_boards = None
