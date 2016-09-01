@@ -45,6 +45,7 @@
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutVideo.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/api/LayoutAPIShim.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
@@ -2331,8 +2332,8 @@ IntRect CompositedLayerMapping::recomputeInterestRect(const GraphicsLayer* graph
     // Now map the bounds to its visible content rect in screen space, including applying clips along the way.
     LayoutRect visibleContentRect(graphicsLayerBoundsInObjectSpace);
     LayoutView* rootView = anchorLayoutObject->view();
-    while (rootView->frame()->ownerLayoutObject())
-        rootView = rootView->frame()->ownerLayoutObject()->view();
+    while (!rootView->frame()->ownerLayoutItem().isNull())
+        rootView = LayoutAPIShim::layoutObjectFrom(rootView->frame()->ownerLayoutItem())->view();
     anchorLayoutObject->mapToVisualRectInAncestorSpace(rootView, visibleContentRect);
     visibleContentRect.intersect(LayoutRect(rootView->frameView()->visibleContentRect()));
 
