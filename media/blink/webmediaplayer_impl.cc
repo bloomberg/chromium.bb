@@ -1087,6 +1087,15 @@ void WebMediaPlayerImpl::OnBufferingStateChange(BufferingState state) {
     return;
 
   if (state == BUFFERING_HAVE_ENOUGH) {
+    if (data_source_ &&
+        highest_ready_state_ < WebMediaPlayer::ReadyStateHaveEnoughData) {
+      DCHECK_EQ(underflow_count_, 0);
+      // Record a zero value for underflow histograms so that the histogram
+      // includes playbacks which never encounter an underflow event.
+      UMA_HISTOGRAM_COUNTS_100("Media.UnderflowCount", 0);
+      UMA_HISTOGRAM_TIMES("Media.UnderflowDuration", base::TimeDelta());
+    }
+
     // TODO(chcunningham): Monitor playback position vs buffered. Potentially
     // transition to HAVE_FUTURE_DATA here if not enough is buffered.
     SetReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);
