@@ -7,8 +7,9 @@
 #include "base/single_thread_task_runner.h"
 #include "content/renderer/input/input_handler_manager.h"
 #include "content/renderer/mus/render_widget_mus_connection.h"
-#include "mojo/converters/blink/blink_input_events_type_converters.h"
+#include "ui/events/blink/blink_event_util.h"
 #include "ui/events/blink/did_overscroll_params.h"
+#include "ui/events/blink/web_input_event.h"
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/events/latency_info.h"
 #include "ui/events/mojo/event.mojom.h"
@@ -18,6 +19,10 @@ using ui::mojom::EventResult;
 namespace {
 
 void DoNothingWithEventResult(EventResult result) {}
+
+gfx::Point GetScreenLocationFromEvent(const ui::LocatedEvent& event) {
+  return event.root_location();
+}
 
 }  // namespace
 
@@ -97,6 +102,32 @@ void CompositorMusConnection::OnWindowInputEventAckOnMainThread(
   compositor_task_runner_->PostTask(FROM_HERE, base::Bind(ack, result));
 }
 
+std::unique_ptr<blink::WebInputEvent> CompositorMusConnection::Convert(
+    const ui::Event& event) {
+  if (event.IsMousePointerEvent()) {
+    const ui::MouseEvent mouse_event(*event.AsPointerEvent());
+    blink::WebMouseEvent blink_event = ui::MakeWebMouseEvent(
+        mouse_event, base::Bind(&GetScreenLocationFromEvent));
+    return base::MakeUnique<blink::WebMouseEvent>(blink_event);
+  } else if (event.IsTouchPointerEvent()) {
+    ui::TouchEvent touch_event(*event.AsPointerEvent());
+    pointer_state_.OnTouch(touch_event);
+    blink::WebTouchEvent blink_event = ui::CreateWebTouchEventFromMotionEvent(
+        pointer_state_, touch_event.may_cause_scrolling());
+    pointer_state_.CleanupRemovedTouchPoints(touch_event);
+    return base::MakeUnique<blink::WebTouchEvent>(blink_event);
+  } else if (event.IsMouseWheelEvent()) {
+    blink::WebMouseWheelEvent blink_event = ui::MakeWebMouseWheelEvent(
+        *event.AsMouseWheelEvent(), base::Bind(&GetScreenLocationFromEvent));
+    return base::MakeUnique<blink::WebMouseWheelEvent>(blink_event);
+  } else if (event.IsKeyEvent()) {
+    blink::WebKeyboardEvent blink_event =
+        ui::MakeWebKeyboardEvent(*event.AsKeyEvent());
+    return base::MakeUnique<blink::WebKeyboardEvent>(blink_event);
+  }
+  return nullptr;
+}
+
 void CompositorMusConnection::OnDidDestroyClient(ui::WindowTreeClient* client) {
   DCHECK(compositor_task_runner_->BelongsToCurrentThread());
   main_task_runner_->PostTask(
@@ -125,9 +156,7 @@ void CompositorMusConnection::OnWindowInputEvent(
     const ui::Event& event,
     std::unique_ptr<base::Callback<void(EventResult)>>* ack_callback) {
   DCHECK(compositor_task_runner_->BelongsToCurrentThread());
-  std::unique_ptr<blink::WebInputEvent> web_event(
-      mojo::TypeConverter<std::unique_ptr<blink::WebInputEvent>,
-                          ui::Event>::Convert(event));
+  std::unique_ptr<blink::WebInputEvent> web_event(Convert(event));
   // TODO(sad): We probably need to plumb LatencyInfo through Mus.
   ui::LatencyInfo info;
   InputEventAckState ack_state = input_handler_manager_->HandleInputEvent(

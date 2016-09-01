@@ -18,8 +18,6 @@
 namespace ui {
 
 namespace {
-// Used for scrolling. This matches Firefox behavior.
-const int kPixelsPerTick = 53;
 
 gfx::Point GetScreenLocationFromEvent(
     const LocatedEvent& event,
@@ -67,10 +65,9 @@ blink::WebMouseEvent MakeUntranslatedWebMouseEventFromNativeEvent(
     const base::NativeEvent& native_event,
     const base::TimeTicks& time_stamp,
     blink::WebPointerProperties::PointerType pointer_type) {
-  return WebMouseEventBuilder::Build(native_event.hwnd, native_event.message,
-                                     native_event.wParam, native_event.lParam,
-                                     ui::EventTimeStampToSeconds(time_stamp),
-                                     pointer_type);
+  return WebMouseEventBuilder::Build(
+      native_event.hwnd, native_event.message, native_event.wParam,
+      native_event.lParam, EventTimeStampToSeconds(time_stamp), pointer_type);
 }
 
 blink::WebMouseWheelEvent MakeUntranslatedWebMouseWheelEventFromNativeEvent(
@@ -79,8 +76,7 @@ blink::WebMouseWheelEvent MakeUntranslatedWebMouseWheelEventFromNativeEvent(
     blink::WebPointerProperties::PointerType pointer_type) {
   return WebMouseWheelEventBuilder::Build(
       native_event.hwnd, native_event.message, native_event.wParam,
-      native_event.lParam, ui::EventTimeStampToSeconds(time_stamp),
-      pointer_type);
+      native_event.lParam, EventTimeStampToSeconds(time_stamp), pointer_type);
 }
 
 blink::WebKeyboardEvent MakeWebKeyboardEventFromNativeEvent(
@@ -88,7 +84,7 @@ blink::WebKeyboardEvent MakeWebKeyboardEventFromNativeEvent(
     const base::TimeTicks& time_stamp) {
   return WebKeyboardEventBuilder::Build(
       native_event.hwnd, native_event.message, native_event.wParam,
-      native_event.lParam, ui::EventTimeStampToSeconds(time_stamp));
+      native_event.lParam, EventTimeStampToSeconds(time_stamp));
 }
 #endif  // defined(OS_WIN)
 
@@ -155,8 +151,8 @@ blink::WebMouseWheelEvent MakeWebMouseWheelEventFromUiEvent(
 
   if (offset_ordinal_x != 0.f && webkit_event.deltaX != 0.f)
     webkit_event.accelerationRatioX = offset_ordinal_x / webkit_event.deltaX;
-  webkit_event.wheelTicksX = webkit_event.deltaX / kPixelsPerTick;
-  webkit_event.wheelTicksY = webkit_event.deltaY / kPixelsPerTick;
+  webkit_event.wheelTicksX = webkit_event.deltaX / MouseWheelEvent::kWheelDelta;
+  webkit_event.wheelTicksY = webkit_event.deltaY / MouseWheelEvent::kWheelDelta;
   if (offset_ordinal_y != 0.f && webkit_event.deltaY != 0.f)
     webkit_event.accelerationRatioY = offset_ordinal_y / webkit_event.deltaY;
 
@@ -221,12 +217,12 @@ blink::WebMouseWheelEvent MakeWebMouseWheelEventFromUiEvent(
 
 blink::WebMouseEvent MakeWebMouseEvent(
     const MouseEvent& event,
-    const base::Callback<gfx::Point(const ui::LocatedEvent& event)>&
+    const base::Callback<gfx::Point(const LocatedEvent& event)>&
         screen_location_callback) {
   // Construct an untranslated event from the platform event data.
   blink::WebMouseEvent webkit_event =
 #if defined(OS_WIN)
-      // On Windows we have WM_ events comming from desktop and pure ui::Events
+      // On Windows we have WM_ events comming from desktop and pure Events
       // comming from metro mode.
       event.native_event().message && (event.type() != ET_MOUSE_EXITED)
           ? MakeUntranslatedWebMouseEventFromNativeEvent(
@@ -257,7 +253,7 @@ blink::WebMouseEvent MakeWebMouseEvent(
 
 blink::WebMouseWheelEvent MakeWebMouseWheelEvent(
     const MouseWheelEvent& event,
-    const base::Callback<gfx::Point(const ui::LocatedEvent& event)>&
+    const base::Callback<gfx::Point(const LocatedEvent& event)>&
         screen_location_callback) {
 #if defined(OS_WIN)
   // Construct an untranslated event from the platform event data.
@@ -288,7 +284,7 @@ blink::WebMouseWheelEvent MakeWebMouseWheelEvent(
 
 blink::WebMouseWheelEvent MakeWebMouseWheelEvent(
     const ScrollEvent& event,
-    const base::Callback<gfx::Point(const ui::LocatedEvent& event)>&
+    const base::Callback<gfx::Point(const LocatedEvent& event)>&
         screen_location_callback) {
 #if defined(OS_WIN)
   // Construct an untranslated event from the platform event data.
@@ -340,7 +336,7 @@ blink::WebKeyboardEvent MakeWebKeyboardEvent(const KeyEvent& event) {
 
 blink::WebGestureEvent MakeWebGestureEvent(
     const GestureEvent& event,
-    const base::Callback<gfx::Point(const ui::LocatedEvent& event)>&
+    const base::Callback<gfx::Point(const LocatedEvent& event)>&
         screen_location_callback) {
   blink::WebGestureEvent gesture_event = MakeWebGestureEventFromUIEvent(event);
 
@@ -357,7 +353,7 @@ blink::WebGestureEvent MakeWebGestureEvent(
 
 blink::WebGestureEvent MakeWebGestureEvent(
     const ScrollEvent& event,
-    const base::Callback<gfx::Point(const ui::LocatedEvent& event)>&
+    const base::Callback<gfx::Point(const LocatedEvent& event)>&
         screen_location_callback) {
   blink::WebGestureEvent gesture_event = MakeWebGestureEventFromUiEvent(event);
   gesture_event.x = event.x();
@@ -448,8 +444,8 @@ blink::WebMouseWheelEvent MakeWebMouseWheelEventFromUiEvent(
     webkit_event.deltaY = event.y_offset();
   }
 
-  webkit_event.wheelTicksX = webkit_event.deltaX / kPixelsPerTick;
-  webkit_event.wheelTicksY = webkit_event.deltaY / kPixelsPerTick;
+  webkit_event.wheelTicksX = webkit_event.deltaX / MouseWheelEvent::kWheelDelta;
+  webkit_event.wheelTicksY = webkit_event.deltaY / MouseWheelEvent::kWheelDelta;
 
   webkit_event.tiltX = roundf(event.pointer_details().tilt_x);
   webkit_event.tiltY = roundf(event.pointer_details().tilt_y);

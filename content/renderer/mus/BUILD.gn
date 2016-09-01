@@ -24,7 +24,6 @@ static_library("mus") {
     "//content/public/child:child_sources",
     "//content/public/common:common_sources",
     "//mojo/common",
-    "//mojo/converters/blink",
     "//services/shell/public/cpp",
     "//services/ui/public/cpp",
     "//services/ui/public/interfaces",

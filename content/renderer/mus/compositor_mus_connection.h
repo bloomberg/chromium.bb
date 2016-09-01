@@ -14,6 +14,7 @@
 #include "services/ui/public/cpp/window_tree_client.h"
 #include "services/ui/public/cpp/window_tree_client_delegate.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "ui/events/gestures/motion_event_aura.h"
 
 namespace ui {
 struct DidOverscrollParams;
@@ -69,6 +70,8 @@ class CONTENT_EXPORT CompositorMusConnection
       const base::Callback<void(ui::mojom::EventResult)>& ack,
       ui::mojom::EventResult result);
 
+  std::unique_ptr<blink::WebInputEvent> Convert(const ui::Event& event);
+
   // WindowTreeClientDelegate implementation:
   void OnDidDestroyClient(ui::WindowTreeClient* client) override;
   void OnEmbed(ui::Window* root) override;
@@ -88,6 +91,9 @@ class CONTENT_EXPORT CompositorMusConnection
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
   InputHandlerManager* const input_handler_manager_;
   std::unique_ptr<ui::WindowSurfaceBinding> window_surface_binding_;
+
+  // Stores the current state of the active pointers targeting this object.
+  ui::MotionEventAura pointer_state_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorMusConnection);
 };

@@ -19,7 +19,6 @@ class LocatedEvent;
 class MouseEvent;
 class MouseWheelEvent;
 class ScrollEvent;
-class TouchEvent;
 
 // Several methods take a |screen_location_callback| which should translate the
 // provided coordinates relative to the hosting window, rather than the top
