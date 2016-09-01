@@ -2,16 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""This module allows adding and deleting of projects to the local manifest."""
+"""Manage projects in the local manifest."""
 
 from __future__ import print_function
 
 import platform
-import optparse  # pylint: disable=deprecated-module
 import os
 import sys
 import xml.etree.ElementTree as ElementTree
 
+from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
@@ -144,21 +144,27 @@ def _UpgradeMinilayout(options):
   logging.info("Converted the checkout to manifest groups based minilayout.")
 
 
+def GetParser():
+  """Return a command line parser."""
+  parser = commandline.ArgumentParser(description=__doc__)
+  parser.add_argument('-w', '--workon', action='store_true',
+                      default=False, help='Is this a workon package?')
+  parser.add_argument('-r', '--remote')
+  parser.add_argument('-v', '--revision',
+                      help=('Use to override the manifest defined default '
+                            'revision used for a given project.'))
+  parser.add_argument('--upgrade-minilayout', default=False,
+                      action='store_true',
+                      help=('Upgrade a minilayout checkout into a full.xml '
+                            'checkout utilizing manifest groups.'))
+  parser.add_argument('args', nargs='*')
+  return parser
+
+
 def main(argv):
-  parser = optparse.OptionParser(usage='usage: %prog add [options] <name> '
-                                       '<--workon | <path> --remote <remote> >')
-  parser.add_option('-w', '--workon', action='store_true', dest='workon',
-                    default=False, help='Is this a workon package?')
-  parser.add_option('-r', '--remote', dest='remote',
-                    default=None)
-  parser.add_option('-v', '--revision', dest='revision',
-                    default=None,
-                    help="Use to override the manifest defined default "
-                    "revision used for a given project.")
-  parser.add_option('--upgrade-minilayout', default=False, action='store_true',
-                    help="Upgrade a minilayout checkout into a full.xml "
-                    "checkout utilizing manifest groups.")
-  (options, args) = parser.parse_args(argv)
+  parser = GetParser()
+  options = parser.parse_args(argv)
+  args = options.args
 
   repo_dir = git.FindRepoDir(os.getcwd())
   if not repo_dir:
