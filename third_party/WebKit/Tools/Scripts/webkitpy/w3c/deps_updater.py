@@ -51,7 +51,7 @@ class DepsUpdater(object):
 
         if options.target == 'wpt':
             import_commitish = self.update(WPT_DEST_NAME, WPT_REPO_URL, options.keep_w3c_repos_around)
-            self._copy_resources_to_wpt()
+            self._copy_resources()
         elif options.target == 'css':
             import_commitish = self.update(CSS_DEST_NAME, CSS_REPO_URL, options.keep_w3c_repos_around)
         else:
@@ -102,20 +102,40 @@ class DepsUpdater(object):
 
         return True
 
-    def _copy_resources_to_wpt(self):
-        """Copies some files over to a newly-updated wpt directory.
+    def _copy_resources(self):
+        """Copies resources from LayoutTests/resources to wpt and vice versa.
 
-        There are some resources in our repository that we use instead of the
-        upstream versions.
+        There are resources from our repository that we use instead of the
+        upstream versions. Conversely, there are also some resources that
+        are copied in the other direction.
+
+        Specifically:
+          - testharnessreport.js contains code needed to integrate our testing
+            with testharness.js; we also want our code to be used for tests
+            in wpt.
+          - TODO(qyearsley, jsbell): Document why other other files are copied,
+            or stop copying them if it's unnecessary.
+
+        If this method is changed, the lists of files expected to be identical
+        in LayoutTests/PRESUBMIT.py should also be changed.
         """
-        resources_to_copy = [
+        resources_to_copy_to_wpt = [
             ('testharnessreport.js', 'resources'),
             ('WebIDLParser.js', 'resources'),
             ('vendor-prefix.js', 'common'),
         ]
-        for filename, wpt_subdir in resources_to_copy:
+        resources_to_copy_from_wpt = [
+            ('idlharness.js', 'resources'),
+            ('testharness.js', 'resources'),
+        ]
+        for filename, wpt_subdir in resources_to_copy_to_wpt:
             source = self.path_from_webkit_base('LayoutTests', 'resources', filename)
             destination = self.path_from_webkit_base('LayoutTests', 'imported', WPT_DEST_NAME, wpt_subdir, filename)
+            self.copyfile(source, destination)
+            self.run(['git', 'add', destination])
+        for filename, wpt_subdir in resources_to_copy_from_wpt:
+            source = self.path_from_webkit_base('LayoutTests', 'imported', WPT_DEST_NAME, wpt_subdir, filename)
+            destination = self.path_from_webkit_base('LayoutTests', 'resources', filename)
             self.copyfile(source, destination)
             self.run(['git', 'add', destination])
 

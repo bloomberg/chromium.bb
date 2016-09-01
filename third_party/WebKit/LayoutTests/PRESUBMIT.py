@@ -57,20 +57,20 @@ def _TestharnessBaselineFilesToCheck(input_api):
 
 def _CheckIdenticalFiles(input_api, output_api):
     """Verifies that certain files are identical in various locations.
-    These files should always be updated together."""
 
+    These files should always be updated together. If this list is modified,
+    consider also changing the list of files to copy from web-platform-tests
+    when importing in Tools/Scripts/webkitpy/deps_updater.py.
+    """
     dirty_files = set(input_api.LocalPaths())
 
-    groups = [[
-        'imported/wpt/resources/testharness.js',
-        'resources/testharness.js',
-    ], [
-        'imported/wpt/resources/testharnessreport.js',
-        'resources/testharnessreport.js',
-    ], [
-        'imported/wpt/resources/idlharness.js',
-        'resources/idlharness.js',
-    ]]
+    groups = [
+        ('imported/wpt/common/vendor-prefix.js', 'resources/vendor-prefix.js'),
+        ('imported/wpt/resources/idlharness.js', 'resources/idlharness.js'),
+        ('imported/wpt/resources/testharness.js', 'resources/testharness.js'),
+        ('imported/wpt/resources/testharnessreport.js', 'resources/testharnessreport.js'),
+        ('imported/wpt/resources/WebIDLParser.js', 'resources/WebIDLParser.js'),
+    ]
 
     def _absolute_path(s):
         return input_api.os_path.join(input_api.PresubmitLocalPath(), *s.split('/'))
