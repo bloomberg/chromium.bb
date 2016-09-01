@@ -28,14 +28,14 @@ localizer_template_h = \
 //     %(xib_files)s
 //
 
-#ifndef UI_LOCALIZER_TABLE_H_
-#define UI_LOCALIZER_TABLE_H_
+#ifndef CHROME_APP_NIBS_LOCALIZER_TABLE_H_
+#define CHROME_APP_NIBS_LOCALIZER_TABLE_H_
 
 static const UILocalizerResourceMap kUIResources[] = {
 %(resource_map_list)s  };
 static const size_t kUIResourcesSize = arraysize(kUIResources);
 
-#endif  // UI_LOCALIZER_TABLE_H_
+#endif  // CHROME_APP_NIBS_LOCALIZER_TABLE_H_
 '''
 
 def xib_localizable_strings(xib_path):

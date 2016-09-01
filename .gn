@@ -246,7 +246,6 @@ exec_script_whitelist = [
   "//chrome/browser/extensions/BUILD.gn",
   "//chrome/browser/resources/chromeos/chromevox/BUILD.gn",
   "//chrome/browser/media/router/BUILD.gn",
-  "//chrome/browser/ui/BUILD.gn",
   "//chrome/chrome_tests.gni",
   "//chrome/common/extensions/api/schemas.gni",
   "//chrome/renderer/BUILD.gn",

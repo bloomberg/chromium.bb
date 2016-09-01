@@ -2280,7 +2280,7 @@ split_static_library("ui") {
       "webui/cast/cast_ui.h",
     ]
     deps += [
-      ":generate_localizer",
+      "//chrome/app/nibs:localizer_table",
       "//third_party/apple_sample_code",
       "//third_party/google_toolbox_for_mac",
       "//third_party/molokocacao",
@@ -3281,26 +3281,6 @@ split_static_library("ui") {
       "webui/local_discovery/local_discovery_ui_handler.cc",
       "webui/local_discovery/local_discovery_ui_handler.h",
     ]
-  }
-}
-
-if (is_mac) {
-  nib_gypi_values = exec_script("//build/gypi_to_gn.py",
-                                [ rebase_path("../../chrome_nibs.gypi") ],
-                                "scope",
-                                [ "../../chrome_nibs.gypi" ])
-
-  action("generate_localizer") {
-    script = "//chrome/tools/build/mac/generate_localizer"
-    sources = rebase_path(nib_gypi_values.mac_translated_xibs, ".", "//chrome")
-    table_path = "$target_gen_dir/ui_localizer_table.h"
-    outputs = [
-      table_path,
-    ]
-    args = [ rebase_path(table_path, root_build_dir) ] +
-           rebase_path(nib_gypi_values.mac_translated_xibs,
-                       root_build_dir,
-                       "//chrome")
   }
 }
 

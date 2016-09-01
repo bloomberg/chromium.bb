@@ -64,7 +64,7 @@ int ResourceMapCompare(const void* utf8Void,
 
   // Include the table here so it is a local static.  This header provides
   // kUIResources and kUIResourcesSize.
-#include "ui_localizer_table.h"
+#include "chrome/app/nibs/localizer_table.h"
 
   // Look up the string for the resource id to fetch.
   const char* utf8_key = [string UTF8String];
