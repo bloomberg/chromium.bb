@@ -17,12 +17,9 @@ namespace client {
 
 // Handles all incoming and outgoing protobuf messages for text input of type
 // BlimpMessage::IME for blimp client.
-// Upon receiving a text input request from the engine, the ImeFeature caches
-// the |tab_id_| and |render_widget_id_| for the request and
-// delegates the request to the Delegate which then opens up the IME.
-// After user is done typing, the text is passed back to ImeFeature, which then
-// sends the text to the engine over network along with the same |tab_id_| and
-// |render_widget_id_|.
+// Upon receiving a text input request from the engine, the ImeFeature
+// delegates the request to the appropriate Delegate to show IME along with a
+// Callback bound with respective tab id and render widget id.
 // Any time user taps on an input text, ImeMessage::SHOW_IME message will be
 // sent to client. Similarly, any time the text input is out of focus (e.g. if
 // user navigates away from the currently page or the page loads for the first
@@ -30,12 +27,16 @@ namespace client {
 
 class ImeFeature : public BlimpMessageProcessor {
  public:
+  // A callback to show IME.
+  using ShowImeCallback = base::Callback<void(const std::string&)>;
+
   // A delegate to be notified of text input requests.
   class Delegate {
    public:
     virtual ~Delegate() {}
     virtual void OnShowImeRequested(ui::TextInputType input_type,
-                                    const std::string& text) = 0;
+                                    const std::string& text,
+                                    const ShowImeCallback& callback) = 0;
     virtual void OnHideImeRequested() = 0;
   };
 
@@ -54,24 +55,18 @@ class ImeFeature : public BlimpMessageProcessor {
   // to the ImeFeature for processing, until the last message is processed.
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }
 
-  // Sends text from IME to the blimp engine.
-  void OnImeTextEntered(const std::string& text);
-
   // BlimpMessageProcessor implementation.
   void ProcessMessage(std::unique_ptr<BlimpMessage> message,
                       const net::CompletionCallback& callback) override;
 
  private:
+  // Sends text from IME to the blimp engine.
+  void OnImeTextEntered(int tab_id,
+                        int render_widget_id,
+                        const std::string& text);
+
   // Used to actually show or hide the IME. See notes on |set_delegate|.
   Delegate* delegate_ = nullptr;
-
-  // Tab id and render widget id for the input field for which user input is
-  // being requested.
-  // The values are cached from the ImeMessage::SHOW_IME message and sent back
-  // to engine in the subsequent ImeMessage::SET_TEXT message.
-  // The cached values are cleared on receiving ImeMessage::HIDE_IME request.
-  int tab_id_ = -1;
-  int render_widget_id_ = 0;
 
   // Used to send BlimpMessage::IME messages to the engine.
   std::unique_ptr<BlimpMessageProcessor> outgoing_message_processor_;

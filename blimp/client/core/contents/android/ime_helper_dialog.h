@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BLIMP_CLIENT_APP_ANDROID_IME_HELPER_DIALOG_H_
-#define BLIMP_CLIENT_APP_ANDROID_IME_HELPER_DIALOG_H_
+#ifndef BLIMP_CLIENT_CORE_CONTENTS_ANDROID_IME_HELPER_DIALOG_H_
+#define BLIMP_CLIENT_CORE_CONTENTS_ANDROID_IME_HELPER_DIALOG_H_
 
 #include <string>
 
@@ -12,28 +12,27 @@
 #include "blimp/client/core/contents/ime_feature.h"
 #include "ui/base/ime/text_input_type.h"
 
+namespace ui {
+class WindowAndroid;
+}  // namespace ui
+
 namespace blimp {
 namespace client {
 
-// The native component of org.chromium.blimp.input.ImeHelperDialog.
+// The native component of
+// org.chromium.blimp.core.contents.input.ImeHelperDialog
 class ImeHelperDialog : public ImeFeature::Delegate {
  public:
   static bool RegisterJni(JNIEnv* env);
 
-  // |ime_feature| is expected to outlive the ImeHelperDialog.
-  ImeHelperDialog(JNIEnv* env,
-                  const base::android::JavaParamRef<jobject>& jobj,
-                  ImeFeature* ime_feature);
+  explicit ImeHelperDialog(ui::WindowAndroid* window);
+  ~ImeHelperDialog() override;
 
-  // Brings up IME for user to enter text.
+  // ImeFeature::Delegate implementation.
   void OnShowImeRequested(ui::TextInputType input_type,
-                          const std::string& text) override;
-
-  // Hides IME.
+                          const std::string& text,
+                          const ImeFeature::ShowImeCallback& callback) override;
   void OnHideImeRequested() override;
-
-  // Methods called from Java via JNI.
-  void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& jobj);
 
   // Sends the text entered from IME to the blimp engine.
   void OnImeTextEntered(JNIEnv* env,
@@ -41,19 +40,15 @@ class ImeHelperDialog : public ImeFeature::Delegate {
                         const base::android::JavaParamRef<jstring>& text);
 
  private:
-  ~ImeHelperDialog() override;
-
-  // Reference to the Java object which owns this class.
   base::android::ScopedJavaGlobalRef<jobject> java_obj_;
 
-  // A bridge to the network layer which does the work of (de)serializing the
-  // outgoing and incoming BlimpMessage::IME messages from the engine.
-  ImeFeature* ime_feature_;
+  // A callback for the current request to be executed on text submission from
+  // the user.
+  ImeFeature::ShowImeCallback text_submit_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ImeHelperDialog);
 };
 
 }  // namespace client
 }  // namespace blimp
-
-#endif  // BLIMP_CLIENT_APP_ANDROID_IME_HELPER_DIALOG_H_
+#endif  // BLIMP_CLIENT_CORE_CONTENTS_ANDROID_IME_HELPER_DIALOG_H_

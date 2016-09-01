@@ -19,8 +19,10 @@ class MockImeFeatureDelegate : public client::ImeFeature::Delegate {
   MockImeFeatureDelegate();
   ~MockImeFeatureDelegate() override;
 
-  MOCK_METHOD2(OnShowImeRequested,
-               void(ui::TextInputType input_type, const std::string& text));
+  MOCK_METHOD3(OnShowImeRequested,
+               void(ui::TextInputType input_type,
+                    const std::string& text,
+                    const ImeFeature::ShowImeCallback& callback));
   MOCK_METHOD0(OnHideImeRequested, void());
 };
 

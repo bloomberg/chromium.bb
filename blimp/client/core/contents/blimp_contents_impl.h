@@ -99,6 +99,9 @@ class BlimpContentsImpl : public BlimpContents,
   // BlimpContentsManager to control the life time of the its observer.
   int id_;
 
+  // Handles the text input for web forms.
+  ImeFeature* ime_feature_;
+
   // The platform specific window that this BlimpContents is showed in.
   gfx::NativeWindow window_;
 

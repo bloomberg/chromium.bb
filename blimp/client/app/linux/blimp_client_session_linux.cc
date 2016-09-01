@@ -73,7 +73,8 @@ class FakeImeFeatureDelegate : public ImeFeature::Delegate {
 
   // ImeFeature::Delegate implementation.
   void OnShowImeRequested(ui::TextInputType input_type,
-                          const std::string& text) override;
+                          const std::string& text,
+                          const ImeFeature::ShowImeCallback& callback) override;
   void OnHideImeRequested() override;
 
  private:
@@ -84,8 +85,10 @@ FakeImeFeatureDelegate::FakeImeFeatureDelegate() {}
 
 FakeImeFeatureDelegate::~FakeImeFeatureDelegate() {}
 
-void FakeImeFeatureDelegate::OnShowImeRequested(ui::TextInputType input_type,
-                                                const std::string& text) {
+void FakeImeFeatureDelegate::OnShowImeRequested(
+    ui::TextInputType input_type,
+    const std::string& text,
+    const ImeFeature::ShowImeCallback& callback) {
   DVLOG(1) << "Show IME requested (input_type=" << input_type << ")";
 }
 

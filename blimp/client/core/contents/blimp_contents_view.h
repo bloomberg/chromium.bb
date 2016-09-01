@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "blimp/client/core/contents/ime_feature.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace cc {
@@ -28,6 +29,7 @@ class BlimpContentsView {
   virtual ~BlimpContentsView() {}
 
   virtual gfx::NativeView GetNativeView() = 0;
+  virtual ImeFeature::Delegate* GetImeDelegate() = 0;
 };
 
 }  // namespace client

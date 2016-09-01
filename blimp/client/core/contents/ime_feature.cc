@@ -18,14 +18,16 @@ ImeFeature::ImeFeature() {}
 
 ImeFeature::~ImeFeature() {}
 
-void ImeFeature::OnImeTextEntered(const std::string& text) {
-  DCHECK_LE(0, tab_id_);
-  DCHECK_LT(0, render_widget_id_);
+void ImeFeature::OnImeTextEntered(int tab_id,
+                                  int render_widget_id,
+                                  const std::string& text) {
+  DCHECK_LE(0, tab_id);
+  DCHECK_LT(0, render_widget_id);
 
   ImeMessage* ime_message;
   std::unique_ptr<BlimpMessage> blimp_message =
-      CreateBlimpMessage(&ime_message, tab_id_);
-  ime_message->set_render_widget_id(render_widget_id_);
+      CreateBlimpMessage(&ime_message, tab_id);
+  ime_message->set_render_widget_id(render_widget_id);
   ime_message->set_type(ImeMessage::SET_TEXT);
   ime_message->set_ime_text(text);
 
@@ -49,18 +51,17 @@ void ImeFeature::ProcessMessage(std::unique_ptr<BlimpMessage> message,
         callback.Run(net::ERR_INVALID_ARGUMENT);
         return;
       }
-
-      tab_id_ = message->target_tab_id();
-      render_widget_id_ = ime_message.render_widget_id();
-
-      delegate_->OnShowImeRequested(
-          InputMessageConverter::TextInputTypeFromProto(
-              ime_message.text_input_type()),
-          ime_message.ime_text());
+      {
+        ShowImeCallback show_ime_callback = base::Bind(
+            &ImeFeature::OnImeTextEntered, base::Unretained(this),
+            message->target_tab_id(), ime_message.render_widget_id());
+        delegate_->OnShowImeRequested(
+            InputMessageConverter::TextInputTypeFromProto(
+                ime_message.text_input_type()),
+            ime_message.ime_text(), show_ime_callback);
+      }
       break;
     case ImeMessage::HIDE_IME:
-      tab_id_ = -1;
-      render_widget_id_ = 0;
       delegate_->OnHideImeRequested();
       break;
     case ImeMessage::SET_TEXT:

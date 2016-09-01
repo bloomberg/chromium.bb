@@ -8,6 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "blimp/client/core/compositor/blimp_compositor_dependencies.h"
 #include "blimp/client/core/contents/blimp_contents_impl.h"
+#include "blimp/client/core/contents/ime_feature.h"
 #include "blimp/client/core/contents/tab_control_feature.h"
 #include "blimp/client/core/render_widget/render_widget_feature.h"
 #include "blimp/client/support/compositor/mock_compositor_dependencies.h"
@@ -60,12 +61,13 @@ class MockTabControlFeature : public TabControlFeature {
 
 TEST_F(BlimpContentsManagerTest, GetExistingBlimpContents) {
   base::MessageLoop loop;
+  ImeFeature ime_feature;
   RenderWidgetFeature render_widget_feature;
   MockTabControlFeature tab_control_feature;
 
   BlimpCompositorDependencies compositor_deps(
       base::MakeUnique<MockCompositorDependencies>());
-  BlimpContentsManager blimp_contents_manager(&compositor_deps, nullptr,
+  BlimpContentsManager blimp_contents_manager(&compositor_deps, &ime_feature,
                                               nullptr, &render_widget_feature,
                                               &tab_control_feature);
 
@@ -79,12 +81,13 @@ TEST_F(BlimpContentsManagerTest, GetExistingBlimpContents) {
 }
 
 TEST_F(BlimpContentsManagerTest, GetNonExistingBlimpContents) {
+  ImeFeature ime_feature;
   RenderWidgetFeature render_widget_feature;
   MockTabControlFeature tab_control_feature;
 
   BlimpCompositorDependencies compositor_deps(
       base::MakeUnique<MockCompositorDependencies>());
-  BlimpContentsManager blimp_contents_manager(&compositor_deps, nullptr,
+  BlimpContentsManager blimp_contents_manager(&compositor_deps, &ime_feature,
                                               nullptr, &render_widget_feature,
                                               &tab_control_feature);
 
@@ -95,11 +98,12 @@ TEST_F(BlimpContentsManagerTest, GetNonExistingBlimpContents) {
 
 TEST_F(BlimpContentsManagerTest, GetDestroyedBlimpContents) {
   base::MessageLoop loop;
+  ImeFeature ime_feature;
   RenderWidgetFeature render_widget_feature;
   MockTabControlFeature tab_control_feature;
   BlimpCompositorDependencies compositor_deps(
       base::MakeUnique<MockCompositorDependencies>());
-  BlimpContentsManager blimp_contents_manager(&compositor_deps, nullptr,
+  BlimpContentsManager blimp_contents_manager(&compositor_deps, &ime_feature,
                                               nullptr, &render_widget_feature,
                                               &tab_control_feature);
   int id;
@@ -122,11 +126,12 @@ TEST_F(BlimpContentsManagerTest, GetDestroyedBlimpContents) {
 // TODO(mlliu): remove this test case (http://crbug.com/642558)
 TEST_F(BlimpContentsManagerTest, CreateTwoBlimpContentsDestroyAndCreate) {
   base::MessageLoop loop;
+  ImeFeature ime_feature;
   RenderWidgetFeature render_widget_feature;
   MockTabControlFeature tab_control_feature;
   BlimpCompositorDependencies compositor_deps(
       base::MakeUnique<MockCompositorDependencies>());
-  BlimpContentsManager blimp_contents_manager(&compositor_deps, nullptr,
+  BlimpContentsManager blimp_contents_manager(&compositor_deps, &ime_feature,
                                               nullptr, &render_widget_feature,
                                               &tab_control_feature);
 

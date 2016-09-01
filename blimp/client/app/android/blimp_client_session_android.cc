@@ -17,6 +17,7 @@
 #include "components/version_info/version_info.h"
 #include "jni/BlimpClientSession_jni.h"
 #include "net/base/net_errors.h"
+#include "ui/android/window_android.h"
 
 using base::android::JavaParamRef;
 
@@ -35,9 +36,10 @@ GURL CreateAssignerGURL(const std::string& assigner_url) {
 
 static jlong Init(JNIEnv* env,
                   const JavaParamRef<jobject>& jobj,
-                  const base::android::JavaParamRef<jstring>& jassigner_url) {
-  return reinterpret_cast<intptr_t>(
-      new BlimpClientSessionAndroid(env, jobj, jassigner_url));
+                  const base::android::JavaParamRef<jstring>& jassigner_url,
+                  jlong window_android_ptr) {
+  return reinterpret_cast<intptr_t>(new BlimpClientSessionAndroid(
+      env, jobj, jassigner_url, window_android_ptr));
 }
 
 // static
@@ -56,10 +58,16 @@ BlimpClientSessionAndroid* BlimpClientSessionAndroid::FromJavaObject(
 BlimpClientSessionAndroid::BlimpClientSessionAndroid(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jobj,
-    const base::android::JavaParamRef<jstring>& jassigner_url)
+    const base::android::JavaParamRef<jstring>& jassigner_url,
+    jlong window_android_ptr)
     : BlimpClientSession(CreateAssignerGURL(
           base::android::ConvertJavaStringToUTF8(jassigner_url))) {
   java_obj_.Reset(env, jobj);
+
+  ui::WindowAndroid* window =
+      reinterpret_cast<ui::WindowAndroid*>(window_android_ptr);
+  ime_dialog_.reset(new ImeHelperDialog(window));
+  GetImeFeature()->set_delegate(ime_dialog_.get());
 
   // Send OS info before creating any tab.
   GetSettingsFeature()->SendUserAgentOSVersionInfo(
@@ -83,7 +91,9 @@ void BlimpClientSessionAndroid::Connect(
   BlimpClientSession::Connect(client_auth_token);
 }
 
-BlimpClientSessionAndroid::~BlimpClientSessionAndroid() {}
+BlimpClientSessionAndroid::~BlimpClientSessionAndroid() {
+  GetImeFeature()->set_delegate(nullptr);
+}
 
 void BlimpClientSessionAndroid::OnConnected() {
   JNIEnv* env = base::android::AttachCurrentThread();

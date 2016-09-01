@@ -7,6 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "blimp/client/core/compositor/blimp_compositor_dependencies.h"
 #include "blimp/client/core/contents/blimp_contents_impl.h"
+#include "blimp/client/core/contents/ime_feature.h"
 #include "blimp/client/core/render_widget/render_widget_feature.h"
 #include "blimp/client/support/compositor/mock_compositor_dependencies.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -55,11 +56,13 @@ class BlimpContentsObserverTest : public testing::Test {
 };
 
 TEST_F(BlimpContentsObserverTest, ObserverDies) {
+  ImeFeature ime_feature;
   RenderWidgetFeature render_widget_feature;
   BlimpCompositorDependencies compositor_deps(
       base::MakeUnique<MockCompositorDependencies>());
-  BlimpContentsImpl contents(kDummyTabId, window_, &compositor_deps, nullptr,
-                             nullptr, &render_widget_feature, nullptr);
+  BlimpContentsImpl contents(kDummyTabId, window_, &compositor_deps,
+                             &ime_feature, nullptr, &render_widget_feature,
+                             nullptr);
 
   std::unique_ptr<BlimpContentsObserver> observer =
       base::MakeUnique<TestBlimpContentsObserver>(&contents);
@@ -72,13 +75,14 @@ TEST_F(BlimpContentsObserverTest, ObserverDies) {
 
 TEST_F(BlimpContentsObserverTest, ContentsDies) {
   std::unique_ptr<TestBlimpContentsObserver> observer;
+  ImeFeature ime_feature;
   RenderWidgetFeature render_widget_feature;
   BlimpCompositorDependencies compositor_deps(
       base::MakeUnique<MockCompositorDependencies>());
   std::unique_ptr<BlimpContentsImpl> contents =
-      base::MakeUnique<BlimpContentsImpl>(kDummyTabId, window_,
-                                          &compositor_deps, nullptr, nullptr,
-                                          &render_widget_feature, nullptr);
+      base::MakeUnique<BlimpContentsImpl>(
+          kDummyTabId, window_, &compositor_deps, &ime_feature, nullptr,
+          &render_widget_feature, nullptr);
   observer.reset(new TestBlimpContentsObserver(contents.get()));
   EXPECT_CALL(*observer, OnContentsDestroyed()).Times(1);
   EXPECT_EQ(observer->blimp_contents(), contents.get());

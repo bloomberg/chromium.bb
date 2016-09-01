@@ -8,9 +8,9 @@
 #include "blimp/client/app/android/blimp_client_session_android.h"
 #include "blimp/client/app/android/blimp_library_loader.h"
 #include "blimp/client/app/android/blimp_view.h"
-#include "blimp/client/app/android/ime_helper_dialog.h"
 #include "blimp/client/app/android/tab_control_feature_android.h"
 #include "blimp/client/app/android/toolbar.h"
+#include "blimp/client/core/contents/android/ime_helper_dialog.h"
 #include "components/safe_json/android/component_jni_registrar.h"
 
 namespace blimp {

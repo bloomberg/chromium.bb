@@ -176,7 +176,6 @@ if (is_android) {
     sources = [
       "app/android/java/src/org/chromium/blimp/BlimpLibraryLoader.java",
       "app/android/java/src/org/chromium/blimp/BlimpView.java",
-      "app/android/java/src/org/chromium/blimp/input/ImeHelperDialog.java",
       "app/android/java/src/org/chromium/blimp/session/BlimpClientSession.java",
       "app/android/java/src/org/chromium/blimp/session/TabControlFeature.java",
       "app/android/java/src/org/chromium/blimp/toolbar/Toolbar.java",
@@ -250,7 +249,6 @@ if (is_android) {
       "//blimp/client/core:core_java",
       "//blimp/client/public:public_headers_java",
       "//third_party/android_tools:android_support_annotations_java",
-      "//third_party/android_tools:android_support_v7_appcompat_java",
 
       # TODO(dtrainor): Remove the ui_java target once no more Android Toast
       # notifications are used.
@@ -267,8 +265,6 @@ if (is_android) {
       "app/android/java/src/org/chromium/blimp/BlimpRendererActivity.java",
       "app/android/java/src/org/chromium/blimp/BlimpView.java",
       "app/android/java/src/org/chromium/blimp/BrowserRestartActivity.java",
-      "app/android/java/src/org/chromium/blimp/input/ImeEditText.java",
-      "app/android/java/src/org/chromium/blimp/input/ImeHelperDialog.java",
       "app/android/java/src/org/chromium/blimp/preferences/PreferencesUtil.java",
       "app/android/java/src/org/chromium/blimp/session/BlimpClientSession.java",
       "app/android/java/src/org/chromium/blimp/session/EngineInfo.java",
@@ -341,8 +337,6 @@ if (is_android) {
       "app/android/blimp_library_loader.h",
       "app/android/blimp_view.cc",
       "app/android/blimp_view.h",
-      "app/android/ime_helper_dialog.cc",
-      "app/android/ime_helper_dialog.h",
       "app/android/tab_control_feature_android.cc",
       "app/android/tab_control_feature_android.h",
       "app/android/toolbar.cc",

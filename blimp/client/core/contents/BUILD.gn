@@ -58,6 +58,8 @@ source_set("contents") {
       "android/blimp_navigation_controller_impl_android.h",
       "android/blimp_view.cc",
       "android/blimp_view.h",
+      "android/ime_helper_dialog.cc",
+      "android/ime_helper_dialog.h",
       "blimp_contents_view_android.cc",
       "blimp_contents_view_android.h",
     ]
@@ -147,11 +149,15 @@ if (is_android) {
       "android/java/src/org/chromium/blimp/core/contents/BlimpContentsObserverProxy.java",
       "android/java/src/org/chromium/blimp/core/contents/BlimpNavigationControllerImpl.java",
       "android/java/src/org/chromium/blimp/core/contents/BlimpView.java",
+      "android/java/src/org/chromium/blimp/core/contents/input/ImeEditText.java",
+      "android/java/src/org/chromium/blimp/core/contents/input/ImeHelperDialog.java",
     ]
 
     deps = [
       "//base:base_java",
+      "//blimp/client:blimp_java_resources",
       "//blimp/client/public:public_headers_java",
+      "//third_party/android_tools:android_support_v7_appcompat_java",
       "//ui/android:ui_java",
     ]
   }
@@ -164,6 +170,7 @@ if (is_android) {
       "android/java/src/org/chromium/blimp/core/contents/BlimpContentsObserverProxy.java",
       "android/java/src/org/chromium/blimp/core/contents/BlimpNavigationControllerImpl.java",
       "android/java/src/org/chromium/blimp/core/contents/BlimpView.java",
+      "android/java/src/org/chromium/blimp/core/contents/input/ImeHelperDialog.java",
     ]
 
     jni_package = "blimp/client/core/contents"

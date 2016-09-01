@@ -23,5 +23,9 @@ gfx::NativeView BlimpContentsViewAura::GetNativeView() {
   return nullptr;
 }
 
+ImeFeature::Delegate* BlimpContentsViewAura::GetImeDelegate() {
+  return nullptr;
+}
+
 }  // namespace client
 }  // namespace blimp

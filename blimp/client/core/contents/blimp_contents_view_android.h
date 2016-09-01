@@ -13,6 +13,7 @@ namespace blimp {
 namespace client {
 class BlimpContentsImpl;
 class BlimpView;
+class ImeHelperDialog;
 
 class BlimpContentsViewAndroid : public BlimpContentsView {
  public:
@@ -22,6 +23,7 @@ class BlimpContentsViewAndroid : public BlimpContentsView {
 
   // BlimpContentsView implementation.
   gfx::NativeView GetNativeView() override;
+  ImeFeature::Delegate* GetImeDelegate() override;
 
   // Returns the JNI-bridge for the Android View for this BlimpContentsView.
   BlimpView* GetBlimpView();
@@ -31,6 +33,8 @@ class BlimpContentsViewAndroid : public BlimpContentsView {
 
   // The JNI-bridge for the Android View for this BlimpContentsView.
   std::unique_ptr<BlimpView> blimp_view_;
+
+  std::unique_ptr<ImeHelperDialog> ime_dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpContentsViewAndroid);
 };

@@ -9,6 +9,7 @@
 #include "blimp/client/core/contents/android/blimp_contents_observer_proxy.h"
 #include "blimp/client/core/contents/android/blimp_navigation_controller_impl_android.h"
 #include "blimp/client/core/contents/android/blimp_view.h"
+#include "blimp/client/core/contents/android/ime_helper_dialog.h"
 
 namespace blimp {
 namespace client {
@@ -19,6 +20,7 @@ base::android::RegistrationMethod kBlimpRegistrationMethods[] = {
     {"BlimpContentsObserverProxy", BlimpContentsObserverProxy::RegisterJni},
     {"BlimpNavigationControllerImplAndroid",
      BlimpNavigationControllerImplAndroid::RegisterJni},
+    {"ImeHelperDialog", ImeHelperDialog::RegisterJni},
     {"BlimpView", BlimpView::RegisterJni},
 };
 

@@ -8,6 +8,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.blimp.R;
 import org.chromium.blimp_public.session.AssignmentRequestResult;
+import org.chromium.ui.base.WindowAndroid;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,10 +62,11 @@ public class BlimpClientSession {
     private final List<ConnectionObserver> mObservers;
     private long mNativeBlimpClientSessionAndroidPtr;
 
-    public BlimpClientSession(String assignerUrl) {
+    public BlimpClientSession(String assignerUrl, WindowAndroid windowAndroid) {
         mAssignerUrl = assignerUrl;
         mObservers = new ArrayList<ConnectionObserver>();
-        mNativeBlimpClientSessionAndroidPtr = nativeInit(mAssignerUrl);
+        mNativeBlimpClientSessionAndroidPtr =
+                nativeInit(mAssignerUrl, windowAndroid.getNativePointer());
     }
 
     /**
@@ -178,7 +180,7 @@ public class BlimpClientSession {
         return nativeGetDebugInfo(mNativeBlimpClientSessionAndroidPtr);
     }
 
-    private native long nativeInit(String assignerUrl);
+    private native long nativeInit(String assignerUrl, long windowAndroidPtr);
     private native void nativeConnect(long nativeBlimpClientSessionAndroid, String token);
     private native void nativeDestroy(long nativeBlimpClientSessionAndroid);
     private native int[] nativeGetDebugInfo(long nativeBlimpClientSessionAndroid);

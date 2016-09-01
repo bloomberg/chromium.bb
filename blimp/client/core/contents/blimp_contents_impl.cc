@@ -36,14 +36,17 @@ BlimpContentsImpl::BlimpContentsImpl(
     : navigation_controller_(this, navigation_feature),
       compositor_manager_(render_widget_feature, compositor_deps),
       id_(id),
+      ime_feature_(ime_feature),
       window_(window),
       tab_control_feature_(tab_control_feature) {
   blimp_contents_view_ =
       BlimpContentsView::Create(this, compositor_manager_.layer());
+  ime_feature_->set_delegate(blimp_contents_view_->GetImeDelegate());
 }
 
 BlimpContentsImpl::~BlimpContentsImpl() {
   FOR_EACH_OBSERVER(BlimpContentsObserver, observers_, BlimpContentsDying());
+  ime_feature_->set_delegate(nullptr);
 }
 
 #if defined(OS_ANDROID)

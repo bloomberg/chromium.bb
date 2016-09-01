@@ -8,6 +8,7 @@
 #include "base/run_loop.h"
 #include "blimp/client/core/compositor/blimp_compositor_dependencies.h"
 #include "blimp/client/core/contents/fake_navigation_feature.h"
+#include "blimp/client/core/contents/ime_feature.h"
 #include "blimp/client/core/contents/tab_control_feature.h"
 #include "blimp/client/core/render_widget/render_widget_feature.h"
 #include "blimp/client/public/contents/blimp_contents_observer.h"
@@ -69,12 +70,13 @@ class BlimpContentsImplTest : public testing::Test {
 
 TEST_F(BlimpContentsImplTest, LoadURLAndNotifyObservers) {
   base::MessageLoop loop;
+  ImeFeature ime_feature;
   FakeNavigationFeature navigation_feature;
   RenderWidgetFeature render_widget_feature;
   BlimpCompositorDependencies compositor_deps(
       base::MakeUnique<MockCompositorDependencies>());
   BlimpContentsImpl blimp_contents(kDummyTabId, window_, &compositor_deps,
-                                   nullptr, &navigation_feature,
+                                   &ime_feature, &navigation_feature,
                                    &render_widget_feature, nullptr);
 
   BlimpNavigationControllerImpl& navigation_controller =
@@ -105,14 +107,15 @@ TEST_F(BlimpContentsImplTest, SetSizeAndScaleThroughTabControlFeature) {
   int height = 15;
   float dp_to_px = 1.23f;
 
+  ImeFeature ime_feature;
   RenderWidgetFeature render_widget_feature;
   MockTabControlFeature tab_control_feature;
   base::MessageLoop loop;
   BlimpCompositorDependencies compositor_deps(
       base::MakeUnique<MockCompositorDependencies>());
-  BlimpContentsImpl blimp_contents(kDummyTabId, window_, &compositor_deps,
-                                   nullptr, nullptr, &render_widget_feature,
-                                   &tab_control_feature);
+  BlimpContentsImpl blimp_contents(
+      kDummyTabId, window_, &compositor_deps, &ime_feature, nullptr,
+      &render_widget_feature, &tab_control_feature);
 
   EXPECT_CALL(tab_control_feature,
               SetSizeAndScale(gfx::Size(width, height), dp_to_px)).Times(1);

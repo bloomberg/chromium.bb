@@ -17,6 +17,7 @@ class BlimpContentsViewAura : public BlimpContentsView {
 
   // BlimpContentsView implementation.
   gfx::NativeView GetNativeView() override;
+  ImeFeature::Delegate* GetImeDelegate() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BlimpContentsViewAura);

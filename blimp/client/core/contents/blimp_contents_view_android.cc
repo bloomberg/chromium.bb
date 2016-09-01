@@ -5,8 +5,9 @@
 #include "blimp/client/core/contents/blimp_contents_view_android.h"
 
 #include "base/memory/ptr_util.h"
-#include "blimp/client/core/contents/android/blimp_contents_impl_android.h"
 #include "blimp/client/core/contents/android/blimp_view.h"
+#include "blimp/client/core/contents/android/ime_helper_dialog.h"
+#include "blimp/client/core/contents/blimp_contents_impl.h"
 #include "cc/layers/layer.h"
 #include "ui/android/window_android.h"
 
@@ -23,7 +24,8 @@ std::unique_ptr<BlimpContentsView> BlimpContentsView::Create(
 
 BlimpContentsViewAndroid::BlimpContentsViewAndroid(
     BlimpContentsImpl* blimp_contents,
-    scoped_refptr<cc::Layer> contents_layer) {
+    scoped_refptr<cc::Layer> contents_layer)
+    : ime_dialog_(new ImeHelperDialog(blimp_contents->GetNativeWindow())) {
   blimp_view_ = base::MakeUnique<BlimpView>(blimp_contents);
   view_ = base::MakeUnique<ui::ViewAndroid>(
       blimp_view_->CreateViewAndroidDelegate());
@@ -39,6 +41,10 @@ gfx::NativeView BlimpContentsViewAndroid::GetNativeView() {
 
 BlimpView* BlimpContentsViewAndroid::GetBlimpView() {
   return blimp_view_.get();
+}
+
+ImeFeature::Delegate* BlimpContentsViewAndroid::GetImeDelegate() {
+  return ime_dialog_.get();
 }
 
 }  // namespace client

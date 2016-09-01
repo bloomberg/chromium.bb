@@ -20,13 +20,13 @@ import org.chromium.blimp.auth.RetryingTokenSource;
 import org.chromium.blimp.auth.TokenSource;
 import org.chromium.blimp.auth.TokenSourceImpl;
 import org.chromium.blimp.core.BlimpClientSwitches;
-import org.chromium.blimp.input.ImeHelperDialog;
 import org.chromium.blimp.preferences.PreferencesUtil;
 import org.chromium.blimp.session.BlimpClientSession;
 import org.chromium.blimp.session.EngineInfo;
 import org.chromium.blimp.session.TabControlFeature;
 import org.chromium.blimp.toolbar.Toolbar;
 import org.chromium.blimp.toolbar.ToolbarMenu;
+import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.widget.Toast;
 
 /**
@@ -53,7 +53,7 @@ public class BlimpRendererActivity
     private Toolbar mToolbar;
     private BlimpClientSession mBlimpClientSession;
     private TabControlFeature mTabControlFeature;
-    private ImeHelperDialog mImeHelperDialog;
+    private WindowAndroid mWindowAndroid;
 
     private Handler mHandler = new Handler();
 
@@ -100,11 +100,6 @@ public class BlimpRendererActivity
         if (mToolbar != null) {
             mToolbar.destroy();
             mToolbar = null;
-        }
-
-        if (mImeHelperDialog != null) {
-            mImeHelperDialog.destroy();
-            mImeHelperDialog = null;
         }
 
         if (mTokenSource != null) {
@@ -158,7 +153,9 @@ public class BlimpRendererActivity
 
         setContentView(R.layout.blimp_main);
 
-        mBlimpClientSession = new BlimpClientSession(PreferencesUtil.findAssignerUrl(this));
+        mWindowAndroid = new WindowAndroid(BlimpRendererActivity.this);
+        mBlimpClientSession =
+                new BlimpClientSession(PreferencesUtil.findAssignerUrl(this), mWindowAndroid);
         mBlimpClientSession.addObserver(this);
 
         mBlimpView = (BlimpView) findViewById(R.id.renderer);
@@ -166,9 +163,6 @@ public class BlimpRendererActivity
 
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         mToolbar.initialize(mBlimpClientSession, this);
-
-        mImeHelperDialog = new ImeHelperDialog(this);
-        mImeHelperDialog.initialize(mBlimpClientSession);
 
         mTabControlFeature = new TabControlFeature(mBlimpClientSession, mBlimpView);
 
