@@ -18,21 +18,21 @@
 #include "include/aom_mem_intrnl.h"
 #include "aom/aom_integer.h"
 
-static inline size_t GetAlignedMallocSize(size_t size, size_t align) {
+static INLINE size_t GetAlignedMallocSize(size_t size, size_t align) {
   return size + align - 1 + ADDRESS_STORAGE_SIZE;
 }
 
-static inline size_t *GetMallocAddressLocation(const void *const mem) {
+static INLINE size_t *GetMallocAddressLocation(const void *const mem) {
   return ((size_t *)mem) - 1;
 }
 
-static inline void SetActualMallocAddress(void *const mem,
+static INLINE void SetActualMallocAddress(void *const mem,
                                           const void *const malloc_addr) {
   size_t *const malloc_addr_location = GetMallocAddressLocation(mem);
   *malloc_addr_location = (size_t)malloc_addr;
 }
 
-static inline void *GetActualMallocAddress(const void *const mem) {
+static INLINE void *GetActualMallocAddress(const void *const mem) {
   const size_t *const malloc_addr_location = GetMallocAddressLocation(mem);
   return (void *)(*malloc_addr_location);
 }

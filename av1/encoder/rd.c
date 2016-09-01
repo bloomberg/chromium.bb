@@ -601,7 +601,7 @@ YV12_BUFFER_CONFIG *av1_get_scaled_ref_frame(const AV1_COMP *cpi,
              : NULL;
 }
 
-int av1_get_switchable_rate(const AV1_COMP *cpi, const MACROBLOCKD *const xd) {
+int av1_get_switchable_rate(const AV1_COMP *cpi, const MACROBLOCKD *xd) {
   const AV1_COMMON *const cm = &cpi->common;
   if (cm->interp_filter == SWITCHABLE) {
 #if CONFIG_EXT_INTERP
