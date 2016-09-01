@@ -25,7 +25,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification_types.h"
-#include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/examples/examples_window_with_content.h"
@@ -33,6 +33,7 @@
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/shadow_types.h"
 
+using views::MdTextButton;
 using views::MenuItemView;
 using views::MenuRunner;
 
@@ -51,9 +52,8 @@ class ModalWindow : public views::WidgetDelegateView,
       : modal_type_(modal_type),
         color_(g_colors[g_color_index]),
         open_button_(
-            new views::LabelButton(this, base::ASCIIToUTF16("Moar!"))) {
+            MdTextButton::CreateMdButton(this, base::ASCIIToUTF16("Moar!"))) {
     ++g_color_index %= arraysize(g_colors);
-    open_button_->SetStyle(views::Button::STYLE_BUTTON);
     AddChildView(open_button_);
   }
   ~ModalWindow() override {}
@@ -94,7 +94,7 @@ class ModalWindow : public views::WidgetDelegateView,
  private:
   ui::ModalType modal_type_;
   SkColor color_;
-  views::LabelButton* open_button_;
+  views::Button* open_button_;
 
   DISALLOW_COPY_AND_ASSIGN(ModalWindow);
 };
@@ -174,55 +174,44 @@ void InitWindowTypeLauncher() {
 
 WindowTypeLauncher::WindowTypeLauncher()
     : create_button_(
-          new views::LabelButton(this, base::ASCIIToUTF16("Create Window"))),
+          MdTextButton::CreateMdButton(this,
+                                       base::ASCIIToUTF16("Create Window"))),
       panel_button_(
-          new views::LabelButton(this, base::ASCIIToUTF16("Create Panel"))),
-      create_nonresizable_button_(new views::LabelButton(
+          MdTextButton::CreateMdButton(this,
+                                       base::ASCIIToUTF16("Create Panel"))),
+      create_nonresizable_button_(MdTextButton::CreateMdButton(
           this,
           base::ASCIIToUTF16("Create Non-Resizable Window"))),
-      bubble_button_(
-          new views::LabelButton(this,
-                                 base::ASCIIToUTF16("Create Pointy Bubble"))),
+      bubble_button_(MdTextButton::CreateMdButton(
+          this,
+          base::ASCIIToUTF16("Create Pointy Bubble"))),
       lock_button_(
-          new views::LabelButton(this, base::ASCIIToUTF16("Lock Screen"))),
-      widgets_button_(
-          new views::LabelButton(this,
-                                 base::ASCIIToUTF16("Show Example Widgets"))),
-      system_modal_button_(new views::LabelButton(
+          MdTextButton::CreateMdButton(this,
+                                       base::ASCIIToUTF16("Lock Screen"))),
+      widgets_button_(MdTextButton::CreateMdButton(
+          this,
+          base::ASCIIToUTF16("Show Example Widgets"))),
+      system_modal_button_(MdTextButton::CreateMdButton(
           this,
           base::ASCIIToUTF16("Open System Modal Window"))),
-      window_modal_button_(new views::LabelButton(
+      window_modal_button_(MdTextButton::CreateMdButton(
           this,
           base::ASCIIToUTF16("Open Window Modal Window"))),
-      child_modal_button_(new views::LabelButton(
+      child_modal_button_(MdTextButton::CreateMdButton(
           this,
           base::ASCIIToUTF16("Open Child Modal Window"))),
-      transient_button_(new views::LabelButton(
+      transient_button_(MdTextButton::CreateMdButton(
           this,
           base::ASCIIToUTF16("Open Non-Modal Transient Window"))),
-      examples_button_(new views::LabelButton(
+      examples_button_(MdTextButton::CreateMdButton(
           this,
           base::ASCIIToUTF16("Open Views Examples Window"))),
-      show_hide_window_button_(
-          new views::LabelButton(this,
-                                 base::ASCIIToUTF16("Show/Hide a Window"))),
-      show_web_notification_(new views::LabelButton(
+      show_hide_window_button_(MdTextButton::CreateMdButton(
+          this,
+          base::ASCIIToUTF16("Show/Hide a Window"))),
+      show_web_notification_(MdTextButton::CreateMdButton(
           this,
           base::ASCIIToUTF16("Show a web/app notification"))) {
-  create_button_->SetStyle(views::Button::STYLE_BUTTON);
-  panel_button_->SetStyle(views::Button::STYLE_BUTTON);
-  create_nonresizable_button_->SetStyle(views::Button::STYLE_BUTTON);
-  bubble_button_->SetStyle(views::Button::STYLE_BUTTON);
-  lock_button_->SetStyle(views::Button::STYLE_BUTTON);
-  widgets_button_->SetStyle(views::Button::STYLE_BUTTON);
-  system_modal_button_->SetStyle(views::Button::STYLE_BUTTON);
-  window_modal_button_->SetStyle(views::Button::STYLE_BUTTON);
-  child_modal_button_->SetStyle(views::Button::STYLE_BUTTON);
-  transient_button_->SetStyle(views::Button::STYLE_BUTTON);
-  examples_button_->SetStyle(views::Button::STYLE_BUTTON);
-  show_hide_window_button_->SetStyle(views::Button::STYLE_BUTTON);
-  show_web_notification_->SetStyle(views::Button::STYLE_BUTTON);
-
   views::GridLayout* layout = new views::GridLayout(this);
   layout->SetInsets(5, 5, 5, 5);
   SetLayoutManager(layout);

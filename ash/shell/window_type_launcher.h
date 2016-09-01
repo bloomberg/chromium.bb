@@ -15,7 +15,6 @@
 
 namespace views {
 class MenuRunner;
-class LabelButton;
 }
 
 namespace ash {
@@ -61,19 +60,19 @@ class WindowTypeLauncher : public views::WidgetDelegateView,
                               const gfx::Point& point,
                               ui::MenuSourceType source_type) override;
 
-  views::LabelButton* create_button_;
-  views::LabelButton* panel_button_;
-  views::LabelButton* create_nonresizable_button_;
-  views::LabelButton* bubble_button_;
-  views::LabelButton* lock_button_;
-  views::LabelButton* widgets_button_;
-  views::LabelButton* system_modal_button_;
-  views::LabelButton* window_modal_button_;
-  views::LabelButton* child_modal_button_;
-  views::LabelButton* transient_button_;
-  views::LabelButton* examples_button_;
-  views::LabelButton* show_hide_window_button_;
-  views::LabelButton* show_web_notification_;
+  views::Button* create_button_;
+  views::Button* panel_button_;
+  views::Button* create_nonresizable_button_;
+  views::Button* bubble_button_;
+  views::Button* lock_button_;
+  views::Button* widgets_button_;
+  views::Button* system_modal_button_;
+  views::Button* window_modal_button_;
+  views::Button* child_modal_button_;
+  views::Button* transient_button_;
+  views::Button* examples_button_;
+  views::Button* show_hide_window_button_;
+  views::Button* show_web_notification_;
   std::unique_ptr<views::MenuRunner> menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTypeLauncher);

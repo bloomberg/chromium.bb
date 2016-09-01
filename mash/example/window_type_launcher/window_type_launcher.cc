@@ -25,7 +25,7 @@
 #include "ui/views/background.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/menu/menu_delegate.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -36,6 +36,7 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
+using views::MdTextButton;
 using views::MenuItemView;
 using views::MenuRunner;
 
@@ -102,8 +103,8 @@ class ModalWindow : public views::WidgetDelegateView,
   explicit ModalWindow(ui::ModalType modal_type)
       : modal_type_(modal_type),
         color_(g_colors[g_color_index]),
-        open_button_(new views::LabelButton(this,
-                                            base::ASCIIToUTF16("Moar!"))) {
+        open_button_(
+            MdTextButton::CreateMdButton(this, base::ASCIIToUTF16("Moar!"))) {
     ++g_color_index %= arraysize(g_colors);
     open_button_->SetStyle(views::Button::STYLE_BUTTON);
     AddChildView(open_button_);
@@ -230,70 +231,56 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
       : window_type_launcher_(window_type_launcher),
         connector_(connector),
         create_button_(
-            new views::LabelButton(this, base::ASCIIToUTF16("Create Window"))),
-        always_on_top_button_(new views::LabelButton(
+            MdTextButton::CreateMdButton(this,
+                                         base::ASCIIToUTF16("Create Window"))),
+        always_on_top_button_(MdTextButton::CreateMdButton(
             this,
             base::ASCIIToUTF16("Create Always On Top Window"))),
         panel_button_(
-            new views::LabelButton(this, base::ASCIIToUTF16("Create Panel"))),
-        create_nonresizable_button_(new views::LabelButton(
+            MdTextButton::CreateMdButton(this,
+                                         base::ASCIIToUTF16("Create Panel"))),
+        create_nonresizable_button_(MdTextButton::CreateMdButton(
             this,
             base::ASCIIToUTF16("Create Non-Resizable Window"))),
-        bubble_button_(
-            new views::LabelButton(this,
-                                   base::ASCIIToUTF16("Create Pointy Bubble"))),
+        bubble_button_(MdTextButton::CreateMdButton(
+            this,
+            base::ASCIIToUTF16("Create Pointy Bubble"))),
         lock_button_(
-            new views::LabelButton(this, base::ASCIIToUTF16("Lock Screen"))),
+            MdTextButton::CreateMdButton(this,
+                                         base::ASCIIToUTF16("Lock Screen"))),
         logout_button_(
-            new views::LabelButton(this, base::ASCIIToUTF16("Log Out"))),
+            MdTextButton::CreateMdButton(this, base::ASCIIToUTF16("Log Out"))),
         switch_user_button_(
-            new views::LabelButton(this, base::ASCIIToUTF16("Switch User"))),
-        widgets_button_(
-            new views::LabelButton(this,
-                                   base::ASCIIToUTF16("Show Example Widgets"))),
-        system_modal_button_(new views::LabelButton(
+            MdTextButton::CreateMdButton(this,
+                                         base::ASCIIToUTF16("Switch User"))),
+        widgets_button_(MdTextButton::CreateMdButton(
+            this,
+            base::ASCIIToUTF16("Show Example Widgets"))),
+        system_modal_button_(MdTextButton::CreateMdButton(
             this,
             base::ASCIIToUTF16("Open System Modal Window"))),
-        window_modal_button_(new views::LabelButton(
+        window_modal_button_(MdTextButton::CreateMdButton(
             this,
             base::ASCIIToUTF16("Open Window Modal Window"))),
-        child_modal_button_(new views::LabelButton(
+        child_modal_button_(MdTextButton::CreateMdButton(
             this,
             base::ASCIIToUTF16("Open Child Modal Window"))),
-        transient_button_(new views::LabelButton(
+        transient_button_(MdTextButton::CreateMdButton(
             this,
             base::ASCIIToUTF16("Open Non-Modal Transient Window"))),
-        examples_button_(new views::LabelButton(
+        examples_button_(MdTextButton::CreateMdButton(
             this,
             base::ASCIIToUTF16("Open Views Examples Window"))),
-        show_hide_window_button_(
-            new views::LabelButton(this,
-                                   base::ASCIIToUTF16("Show/Hide a Window"))),
-        show_web_notification_(new views::LabelButton(
+        show_hide_window_button_(MdTextButton::CreateMdButton(
+            this,
+            base::ASCIIToUTF16("Show/Hide a Window"))),
+        show_web_notification_(MdTextButton::CreateMdButton(
             this,
             base::ASCIIToUTF16("Show a web/app notification"))),
-        jank_button_(new views::LabelButton(
-            this, base::ASCIIToUTF16("Jank for (s):"))),
+        jank_button_(
+            MdTextButton::CreateMdButton(this,
+                                         base::ASCIIToUTF16("Jank for (s):"))),
         jank_duration_field_(new views::Textfield) {
-    create_button_->SetStyle(views::Button::STYLE_BUTTON);
-    always_on_top_button_->SetStyle(views::Button::STYLE_BUTTON);
-    panel_button_->SetStyle(views::Button::STYLE_BUTTON);
-    create_nonresizable_button_->SetStyle(views::Button::STYLE_BUTTON);
-    bubble_button_->SetStyle(views::Button::STYLE_BUTTON);
-    lock_button_->SetStyle(views::Button::STYLE_BUTTON);
-    logout_button_->SetStyle(views::Button::STYLE_BUTTON);
-    switch_user_button_->SetStyle(views::Button::STYLE_BUTTON);
-    widgets_button_->SetStyle(views::Button::STYLE_BUTTON);
-    system_modal_button_->SetStyle(views::Button::STYLE_BUTTON);
-    window_modal_button_->SetStyle(views::Button::STYLE_BUTTON);
-    child_modal_button_->SetStyle(views::Button::STYLE_BUTTON);
-    transient_button_->SetStyle(views::Button::STYLE_BUTTON);
-    examples_button_->SetStyle(views::Button::STYLE_BUTTON);
-    show_hide_window_button_->SetStyle(views::Button::STYLE_BUTTON);
-    show_web_notification_->SetStyle(views::Button::STYLE_BUTTON);
-    jank_button_->SetStyle(views::Button::STYLE_BUTTON);
-    jank_duration_field_->SetText(base::ASCIIToUTF16("5"));
-
     views::GridLayout* layout = new views::GridLayout(this);
     layout->SetInsets(5, 5, 5, 5);
     SetLayoutManager(layout);
@@ -454,23 +441,23 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
 
   WindowTypeLauncher* window_type_launcher_;
   shell::Connector* connector_;
-  views::LabelButton* create_button_;
-  views::LabelButton* always_on_top_button_;
-  views::LabelButton* panel_button_;
-  views::LabelButton* create_nonresizable_button_;
-  views::LabelButton* bubble_button_;
-  views::LabelButton* lock_button_;
-  views::LabelButton* logout_button_;
-  views::LabelButton* switch_user_button_;
-  views::LabelButton* widgets_button_;
-  views::LabelButton* system_modal_button_;
-  views::LabelButton* window_modal_button_;
-  views::LabelButton* child_modal_button_;
-  views::LabelButton* transient_button_;
-  views::LabelButton* examples_button_;
-  views::LabelButton* show_hide_window_button_;
-  views::LabelButton* show_web_notification_;
-  views::LabelButton* jank_button_;
+  views::Button* create_button_;
+  views::Button* always_on_top_button_;
+  views::Button* panel_button_;
+  views::Button* create_nonresizable_button_;
+  views::Button* bubble_button_;
+  views::Button* lock_button_;
+  views::Button* logout_button_;
+  views::Button* switch_user_button_;
+  views::Button* widgets_button_;
+  views::Button* system_modal_button_;
+  views::Button* window_modal_button_;
+  views::Button* child_modal_button_;
+  views::Button* transient_button_;
+  views::Button* examples_button_;
+  views::Button* show_hide_window_button_;
+  views::Button* show_web_notification_;
+  views::Button* jank_button_;
   views::Textfield* jank_duration_field_;
   std::unique_ptr<views::MenuRunner> menu_runner_;
 
