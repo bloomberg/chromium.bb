@@ -198,7 +198,7 @@ static void dump_encoders(struct device *dev)
 
 static void dump_mode(drmModeModeInfo *mode)
 {
-	printf("  %s %d %d %d %d %d %d %d %d %d",
+	printf("  %s %d %d %d %d %d %d %d %d %d %d",
 	       mode->name,
 	       mode->vrefresh,
 	       mode->hdisplay,
@@ -208,7 +208,8 @@ static void dump_mode(drmModeModeInfo *mode)
 	       mode->vdisplay,
 	       mode->vsync_start,
 	       mode->vsync_end,
-	       mode->vtotal);
+	       mode->vtotal,
+	       mode->clock);
 
 	printf(" flags: ");
 	mode_flag_str(mode->flags);
