@@ -56,7 +56,6 @@ PASS oldChildWindow.navigator.mediaDevices.ondevicechange is newChildWindow.navi
 PASS oldChildWindow.navigator.onLine is newChildWindow.navigator.onLine
 PASS oldChildWindow.navigator.platform is newChildWindow.navigator.platform
 PASS oldChildWindow.navigator.presentation.defaultRequest is newChildWindow.navigator.presentation.defaultRequest
-PASS oldChildWindow.navigator.presentation.receiver.onconnectionavailable is newChildWindow.navigator.presentation.receiver.onconnectionavailable
 PASS oldChildWindow.navigator.product is newChildWindow.navigator.product
 PASS oldChildWindow.navigator.productSub is newChildWindow.navigator.productSub
 PASS oldChildWindow.navigator.serviceWorker.controller is newChildWindow.navigator.serviceWorker.controller

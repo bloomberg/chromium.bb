@@ -29,7 +29,7 @@ modules/payments/PaymentRequest
 modules/permissions/PermissionStatus
 modules/presentation/PresentationAvailability
 modules/presentation/PresentationConnection
-modules/presentation/PresentationReceiver
+modules/presentation/PresentationConnectionList
 modules/presentation/PresentationRequest
 modules/remoteplayback/RemotePlayback
 modules/remoteplayback/RemotePlaybackAvailability

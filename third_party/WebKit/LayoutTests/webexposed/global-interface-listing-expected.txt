@@ -4575,13 +4575,16 @@ interface PresentationConnectionCloseEvent : Event
     getter message
     getter reason
     method constructor
-interface PresentationReceiver : EventTarget
+interface PresentationConnectionList : EventTarget
     attribute @@toStringTag
+    getter connections
     getter onconnectionavailable
     method constructor
-    method getConnection
-    method getConnections
     setter onconnectionavailable
+interface PresentationReceiver
+    attribute @@toStringTag
+    getter connectionList
+    method constructor
 interface PresentationRequest : EventTarget
     attribute @@toStringTag
     getter onconnectionavailable

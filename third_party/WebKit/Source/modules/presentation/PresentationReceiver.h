@@ -6,34 +6,37 @@
 #define PresentationReceiver_h
 
 #include "bindings/core/v8/ScriptPromise.h"
-#include "core/events/EventTarget.h"
+#include "bindings/core/v8/ScriptPromiseProperty.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/frame/DOMWindowProperty.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/Heap.h"
 
 namespace blink {
 
+class PresentationConnectionList;
+class PresentationReceiver;
+
+using ConnectionListProperty = ScriptPromiseProperty<Member<PresentationReceiver>, Member<PresentationConnectionList>, Member<DOMException>>;
+
 // Implements the PresentationReceiver interface from the Presentation API from
 // which websites can implement the receiving side of a presentation session.
 class PresentationReceiver final
-    : public EventTargetWithInlineData
-    , DOMWindowProperty {
+    : public GarbageCollected<PresentationReceiver>
+    , public ScriptWrappable
+    , public DOMWindowProperty {
     USING_GARBAGE_COLLECTED_MIXIN(PresentationReceiver);
     DEFINE_WRAPPERTYPEINFO();
 public:
-    PresentationReceiver(LocalFrame*);
+    explicit PresentationReceiver(LocalFrame*);
     ~PresentationReceiver() = default;
 
-    // EventTarget implementation.
-    const AtomicString& interfaceName() const override;
-    ExecutionContext* getExecutionContext() const override;
-
-    ScriptPromise getConnection(ScriptState*);
-    ScriptPromise getConnections(ScriptState*);
-
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(connectionavailable);
+    ScriptPromise connectionList(ScriptState*);
 
     DECLARE_VIRTUAL_TRACE();
+
+private:
+    Member<ConnectionListProperty> m_connectionListProperty;
 };
 
 } // namespace blink

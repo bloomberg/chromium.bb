@@ -6,10 +6,9 @@
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "core/dom/DOMException.h"
-#include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/LocalFrame.h"
-#include "modules/EventTargetModules.h"
+#include "modules/presentation/PresentationConnectionList.h"
 
 namespace blink {
 
@@ -18,29 +17,17 @@ PresentationReceiver::PresentationReceiver(LocalFrame* frame)
 {
 }
 
-const AtomicString& PresentationReceiver::interfaceName() const
+ScriptPromise PresentationReceiver::connectionList(ScriptState* scriptState)
 {
-    return EventTargetNames::PresentationReceiver;
-}
+    if (!m_connectionListProperty)
+        m_connectionListProperty = new ConnectionListProperty(scriptState->getExecutionContext(), this, ConnectionListProperty::Loaded);
 
-ExecutionContext* PresentationReceiver::getExecutionContext() const
-{
-    return frame() ? frame()->document() : nullptr;
-}
-
-ScriptPromise PresentationReceiver::getConnection(ScriptState* scriptState)
-{
-    return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError, "PresentationReceiver::getConnection() is not implemented yet."));
-}
-
-ScriptPromise PresentationReceiver::getConnections(ScriptState* scriptState)
-{
-    return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError, "PresentationReceiver::getConnections() is not implemented yet."));
+    return m_connectionListProperty->promise(scriptState->world());
 }
 
 DEFINE_TRACE(PresentationReceiver)
 {
-    EventTargetWithInlineData::trace(visitor);
+    visitor->trace(m_connectionListProperty);
     DOMWindowProperty::trace(visitor);
 }
 

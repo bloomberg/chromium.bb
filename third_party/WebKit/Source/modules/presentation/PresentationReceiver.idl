@@ -2,13 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://w3c.github.io/presentation-api/#interface-presentation
+// https://w3c.github.io/presentation-api/#idl-def-presentationreceiver
 
 [
     RuntimeEnabled=PresentationReceiver
-] interface PresentationReceiver : EventTarget {
-    [CallWith=ScriptState] Promise<PresentationConnection> getConnection();
-    [CallWith=ScriptState] Promise<sequence<PresentationConnection>> getConnections();
-
-    attribute EventHandler onconnectionavailable;
+] interface PresentationReceiver {
+    [SameObject, CallWith=ScriptState] readonly attribute Promise<PresentationConnectionList> connectionList;
 };
