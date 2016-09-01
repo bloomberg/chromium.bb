@@ -31,6 +31,11 @@ function doWhenReady(readyTest, readyCallback) {
  * @polymerBehavior MainPageBehavior
  */
 var MainPageBehaviorImpl = {
+  properties: {
+    // Name of the root route corresponding to this page.
+    route: String,
+  },
+
   /** @type {?HTMLElement} The scrolling container. */
   scroller: null,
 
@@ -54,7 +59,14 @@ var MainPageBehaviorImpl = {
     } else {
       doWhenReady(
         function() {
-          return this.scrollHeight > 0;
+          if (this.scrollHeight > 0)
+            return true;
+
+          // Height is irrelevant if this page isn't the current page.
+          if (!settings.Route[this.route].contains(settings.getCurrentRoute()))
+            return true;
+
+          return false;
         }.bind(this),
         this.tryTransitionToSection_.bind(this));
     }
