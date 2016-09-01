@@ -165,6 +165,7 @@
       'ClangToTLinux (dbg)': 'swarming_clang_tot_shared_debug',
       'ClangToTLinuxASan': 'swarming_gn_clang_tot_asan_lsan_static_release',
       'ClangToTLinuxASan tester': 'none',
+      'ClangToTLinuxASanLibfuzzer': 'gn_release_libfuzzer_asan_clang_tot',
       'ClangToTLinuxLLD': 'swarming_clang_tot_lld_release_shared',
       'ClangToTLinuxLLD tester': 'none',
       'ClangToTLinuxUBSanVptr':
@@ -1328,6 +1329,11 @@
     'gn_release_libfuzzer_asan': [
       'gn', 'release', 'libfuzzer', 'asan', 'chromeos_codecs', 'pdf_xfa',
       'disable_nacl',
+    ],
+
+    'gn_release_libfuzzer_asan_clang_tot': [
+      'gn', 'clang_tot', 'release', 'libfuzzer', 'asan',
+      'chromeos_codecs', 'pdf_xfa', 'disable_nacl',
     ],
 
     'gn_release_libfuzzer_msan': [
