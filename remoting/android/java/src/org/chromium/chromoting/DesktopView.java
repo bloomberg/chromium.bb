@@ -60,6 +60,9 @@ public abstract class DesktopView extends SurfaceView {
         mDesktop = desktop;
         mInputHandler = new TouchInputHandler(this, desktop);
         mInputHandler.init(desktop, new InputEventSender(client));
+
+        // Give this view keyboard focus, allowing us to customize the soft keyboard's settings.
+        setFocusableInTouchMode(true);
     }
 
     // TODO(yuweih): move showActionBar and showKeyboard out of this abstract class.
