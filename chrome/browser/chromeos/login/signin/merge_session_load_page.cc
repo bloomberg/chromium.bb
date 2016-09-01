@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/login/signin/merge_session_load_page.h"
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"

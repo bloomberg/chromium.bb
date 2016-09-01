@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/policy_oauth2_token_fetcher.h"
 #include "components/policy/core/browser/browser_policy_connector.h"

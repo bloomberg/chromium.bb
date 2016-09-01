@@ -10,7 +10,7 @@
 #include <memory>
 
 #include "ash/first_run/first_run_helper.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/ui/webui/chromeos/first_run/first_run_actor.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/widget/widget.h"

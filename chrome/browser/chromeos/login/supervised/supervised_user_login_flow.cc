@@ -7,7 +7,7 @@
 #include "base/base64.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_authentication.h"

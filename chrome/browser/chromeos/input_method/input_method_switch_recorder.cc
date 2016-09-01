@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/input_method/input_method_switch_recorder.h"
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 
 namespace {
 

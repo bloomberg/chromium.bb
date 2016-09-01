@@ -10,7 +10,7 @@
 #include "base/guid.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/policy/server_backed_device_state.h"

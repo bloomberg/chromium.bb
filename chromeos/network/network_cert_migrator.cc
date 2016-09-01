@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/network/client_cert_util.h"

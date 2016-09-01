@@ -16,7 +16,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_split.h"

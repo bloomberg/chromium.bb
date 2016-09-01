@@ -9,7 +9,7 @@
 
 #include "base/logging.h"
 #include "base/memory/singleton.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "ui/events/devices/x11/device_data_manager_x11.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"

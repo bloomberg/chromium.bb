@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/metrics/statistics_recorder.h"
 #include "chrome/browser/browser_process.h"

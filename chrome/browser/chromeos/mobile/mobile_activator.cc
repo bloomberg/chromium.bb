@@ -16,7 +16,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop/message_loop.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"

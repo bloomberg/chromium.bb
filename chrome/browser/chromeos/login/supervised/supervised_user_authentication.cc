@@ -7,7 +7,7 @@
 #include "base/base64.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/macros.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/threading/sequenced_worker_pool.h"

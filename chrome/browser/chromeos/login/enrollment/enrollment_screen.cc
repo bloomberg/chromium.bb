@@ -8,7 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/timer/elapsed_timer.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
