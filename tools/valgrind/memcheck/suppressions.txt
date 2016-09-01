@@ -1826,12 +1826,6 @@
    fun:_ZN2v88internal25FunctionCallbackArguments4CallEPFvRKNS_20FunctionCallbackInfoINS_5ValueEEEE
 }
 {
-   bug_298143
-   Memcheck:Uninitialized
-   ...
-   fun:_ZN5blink25TypeConversionsV8Internal*AttributeGetterE*
-}
-{
    bug_298788
    Memcheck:Leak
    fun:_Znw*
