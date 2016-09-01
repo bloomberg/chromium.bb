@@ -801,7 +801,6 @@ void av1_predict_intra_block(const MACROBLOCKD *xd, int bwl_in, int bhl_in,
                              TX_SIZE tx_size, PREDICTION_MODE mode,
                              const uint8_t *ref, int ref_stride, uint8_t *dst,
                              int dst_stride, int aoff, int loff, int plane) {
-  const int txw = (1 << tx_size);
   const int have_top = loff || xd->up_available;
   const int have_left = aoff || xd->left_available;
   const int x = aoff * 4;
@@ -821,8 +820,7 @@ void av1_predict_intra_block(const MACROBLOCKD *xd, int bwl_in, int bhl_in,
                      loff, aoff, pd->subsampling_y);
   const int wpx = 4 * bw;
   const int hpx = 4 * bh;
-  const int txpx = 4 * txw;
-
+  const int txpx = tx_size_1d[tx_size];
   int xr = (xd->mb_to_right_edge >> (3 + pd->subsampling_x)) + (wpx - x - txpx);
   int yd =
       (xd->mb_to_bottom_edge >> (3 + pd->subsampling_y)) + (hpx - y - txpx);
