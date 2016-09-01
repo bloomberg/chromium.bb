@@ -24,7 +24,14 @@ namespace media {
 
 TestMojoMediaClient::TestMojoMediaClient() {}
 
-TestMojoMediaClient::~TestMojoMediaClient() {}
+TestMojoMediaClient::~TestMojoMediaClient() {
+  DVLOG(1) << __FUNCTION__;
+  // AudioManager destructor requires MessageLoop.
+  // Destroy it before the message loop goes away.
+  audio_manager_.reset();
+  // Flush the message loop to ensure that the audio manager is destroyed.
+  base::RunLoop().RunUntilIdle();
+}
 
 void TestMojoMediaClient::Initialize() {
   InitializeMediaLibrary();
@@ -39,16 +46,6 @@ void TestMojoMediaClient::Initialize() {
     // Flush the message loop to ensure that the audio manager is initialized.
     base::RunLoop().RunUntilIdle();
   }
-
-}
-
-void TestMojoMediaClient::WillQuit() {
-  DVLOG(1) << __FUNCTION__;
-  // AudioManager destructor requires MessageLoop.
-  // Destroy it before the message loop goes away.
-  audio_manager_.reset();
-  // Flush the message loop to ensure that the audio manager is destroyed.
-  base::RunLoop().RunUntilIdle();
 }
 
 scoped_refptr<AudioRendererSink> TestMojoMediaClient::CreateAudioRendererSink(

@@ -31,7 +31,6 @@ class TestMojoMediaClient : public MojoMediaClient {
 
   // MojoMediaClient implementation.
   void Initialize() final;
-  void WillQuit() final;
   scoped_refptr<AudioRendererSink> CreateAudioRendererSink(
       const std::string& audio_device_id) final;
   std::unique_ptr<VideoRendererSink> CreateVideoRendererSink(

@@ -37,7 +37,7 @@ bool MojoMediaApplication::OnConnect(const shell::Identity& remote_identity,
 }
 
 bool MojoMediaApplication::OnStop() {
-  mojo_media_client_->WillQuit();
+  mojo_media_client_.reset();
   return true;
 }
 
@@ -49,6 +49,10 @@ void MojoMediaApplication::Create(const shell::Identity& remote_identity,
 void MojoMediaApplication::CreateServiceFactory(
     mojom::ServiceFactoryRequest request,
     shell::mojom::InterfaceProviderPtr remote_interfaces) {
+  // Ignore request if service has already stopped.
+  if (!mojo_media_client_)
+    return;
+
   // The created object is owned by the pipe.
   new ServiceFactoryImpl(std::move(request), std::move(remote_interfaces),
                          media_log_, ref_factory_.CreateRef(),
