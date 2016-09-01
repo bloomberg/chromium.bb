@@ -2069,6 +2069,9 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   // equivalent functions reset shared state.
   void ClearScheduleCALayerState();
 
+  // Helper method to call glClear workaround.
+  void ClearFramebufferForWorkaround(GLbitfield mask);
+
   bool InitializeCopyTexImageBlitter(const char* function_name);
   bool InitializeCopyTextureCHROMIUM(const char* function_name);
   // Generate a member function prototype for each command in an automated and
@@ -4142,7 +4145,11 @@ bool GLES2DecoderImpl::CheckFramebufferValid(
           buf = GL_COLOR_ATTACHMENT0;
         glDrawBuffersARB(1, &buf);
       }
-      glClear(backbuffer_needs_clear_bits_);
+      if (workarounds().gl_clear_broken) {
+        ClearFramebufferForWorkaround(backbuffer_needs_clear_bits_);
+      } else {
+        glClear(backbuffer_needs_clear_bits_);
+      }
       if (reset_draw_buffer) {
         GLenum buf = GL_NONE;
         glDrawBuffersARB(1, &buf);
@@ -6908,16 +6915,11 @@ error::Error GLES2DecoderImpl::DoClear(GLbitfield mask) {
   if (CheckBoundDrawFramebufferValid(func_name)) {
     ApplyDirtyState();
     if (workarounds().gl_clear_broken) {
-      ScopedGLErrorSuppressor suppressor("GLES2DecoderImpl::ClearWorkaround",
-                                         GetErrorState());
       if (!BoundFramebufferHasDepthAttachment())
         mask &= ~GL_DEPTH_BUFFER_BIT;
       if (!BoundFramebufferHasStencilAttachment())
         mask &= ~GL_STENCIL_BUFFER_BIT;
-      clear_framebuffer_blit_->ClearFramebuffer(
-          this, GetBoundReadFramebufferSize(), mask, state_.color_clear_red,
-          state_.color_clear_green, state_.color_clear_blue,
-          state_.color_clear_alpha, state_.depth_clear, state_.stencil_clear);
+      ClearFramebufferForWorkaround(mask);
       return error::kNoError;
     }
     if (mask & GL_COLOR_BUFFER_BIT) {
@@ -7192,13 +7194,7 @@ void GLES2DecoderImpl::ClearUnclearedAttachments(
     }
     state_.SetDeviceCapabilityState(GL_SCISSOR_TEST, false);
     if (workarounds().gl_clear_broken) {
-      ScopedGLErrorSuppressor suppressor("GLES2DecoderImpl::ClearWorkaround",
-                                         GetErrorState());
-      clear_framebuffer_blit_->ClearFramebuffer(
-          this, GetBoundReadFramebufferSize(), clear_bits,
-          state_.color_clear_red, state_.color_clear_green,
-          state_.color_clear_blue, state_.color_clear_alpha, state_.depth_clear,
-          state_.stencil_clear);
+      ClearFramebufferForWorkaround(clear_bits);
     } else {
       glClear(clear_bits);
     }
@@ -17583,6 +17579,15 @@ bool GLES2DecoderImpl::ChromiumImageNeedsRGBEmulation() {
 
 void GLES2DecoderImpl::ClearScheduleCALayerState() {
   ca_layer_shared_state_.reset();
+}
+
+void GLES2DecoderImpl::ClearFramebufferForWorkaround(GLbitfield mask) {
+  ScopedGLErrorSuppressor suppressor("GLES2DecoderImpl::ClearWorkaround",
+                                     GetErrorState());
+  clear_framebuffer_blit_->ClearFramebuffer(
+      this, GetBoundReadFramebufferSize(), mask, state_.color_clear_red,
+      state_.color_clear_green, state_.color_clear_blue,
+      state_.color_clear_alpha, state_.depth_clear, state_.stencil_clear);
 }
 
 error::Error GLES2DecoderImpl::HandleBindFragmentInputLocationCHROMIUMBucket(

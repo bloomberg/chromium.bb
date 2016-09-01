@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.89",
+  "version": "8.90",
   "entries": [
     {
       "id": 1,
@@ -1968,8 +1968,26 @@ LONG_STRING_CONST(
       "features": [
         "reset_base_mipmap_level_before_texstorage"
       ]
+    },
+    {
+      "id": 182,
+      "cr_bugs": [638691],
+      "description": "Frequent hang in glClear on old android versions on Mali-T7xx",
+      "os": {
+        "type": "android",
+        "version": {
+          "op": "<",
+          "value": "6.0"
+        }
+      },
+      "gl_renderer": ".*Mali-T7.*",
+      "features": [
+        "gl_clear_broken"
+      ]
     }
   ]
+  // Please update the version number at beginning of this file whenever you
+  // change this file.
 }
 
 );  // LONG_STRING_CONST macro
