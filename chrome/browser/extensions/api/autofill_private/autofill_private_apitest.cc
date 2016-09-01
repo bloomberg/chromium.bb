@@ -48,7 +48,13 @@ IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest, SaveAddress) {
   EXPECT_TRUE(RunAutofillSubtest("saveAddress")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest, GetCountryList) {
+// TODO(crbug.com/643097) Disabled for flakiness.
+#if defined(OS_WIN)
+#define MAYBE_GetCountryList DISABLED_GetCountryList
+#else
+#define MAYBE_GetCountryList GetCountryList
+#endif  // defined(OS_WIN)
+IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest, MAYBE_GetCountryList) {
   EXPECT_TRUE(RunAutofillSubtest("getCountryList")) << message_;
 }
 
@@ -60,7 +66,13 @@ IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest, SaveCreditCard) {
   EXPECT_TRUE(RunAutofillSubtest("saveCreditCard")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest, RemoveEntry) {
+// TODO(crbug.com/643097) Disabled for flakiness.
+#if defined(OS_WIN)
+#define MAYBE_RemoveEntry DISABLED_RemoveEntry
+#else
+#define MAYBE_RemoveEntry RemoveEntry
+#endif  // defined(OS_WIN)
+IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest, MAYBE_RemoveEntry) {
   EXPECT_TRUE(RunAutofillSubtest("removeEntry")) << message_;
 }
 
