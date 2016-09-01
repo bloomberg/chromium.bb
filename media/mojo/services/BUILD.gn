@@ -102,21 +102,10 @@ component("services") {
 
   if (is_android) {
     sources += [
-      "mojo_provision_fetcher.cc",
-      "mojo_provision_fetcher.h",
-    ]
-  }
-
-  if (enable_test_mojo_media_client) {
-    defines += [ "ENABLE_TEST_MOJO_MEDIA_CLIENT" ]
-    sources += [
-      "test_mojo_media_client.cc",
-      "test_mojo_media_client.h",
-    ]
-  } else if (is_android) {
-    sources += [
       "android_mojo_media_client.cc",
       "android_mojo_media_client.h",
+      "mojo_provision_fetcher.cc",
+      "mojo_provision_fetcher.h",
     ]
   } else {
     sources += [
@@ -131,8 +120,6 @@ service("media") {
 
   sources = [
     "main.cc",
-    "test_mojo_media_client.cc",
-    "test_mojo_media_client.h",
   ]
 
   public_deps = [
