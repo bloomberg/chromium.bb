@@ -53,10 +53,11 @@ class RequestCoordinator : public KeyedService,
     virtual void OnChanged(const SavePageRequest& request) = 0;
   };
 
-  // Callback to report when the processing of a triggered task is complete.
+  // Callback to report when a request was available.
   typedef base::Callback<void(const SavePageRequest& request)>
       RequestPickedCallback;
-  typedef base::Callback<void()> RequestQueueEmptyCallback;
+  // Callback to report when no request was available.
+  typedef base::Callback<void(bool)> RequestNotPickedCallback;
 
   RequestCoordinator(std::unique_ptr<OfflinerPolicy> policy,
                      std::unique_ptr<OfflinerFactory> factory,
@@ -110,7 +111,8 @@ class RequestCoordinator : public KeyedService,
   // is stopped or complete.
   void StopProcessing();
 
-  const Scheduler::TriggerConditions GetTriggerConditionsForUserRequest();
+  const Scheduler::TriggerConditions GetTriggerConditions(
+      const bool user_requested);
 
   // A way for tests to set the callback in use when an operation is over.
   void SetProcessingCallbackForTest(const base::Callback<void(bool)> callback) {
@@ -137,6 +139,8 @@ class RequestCoordinator : public KeyedService,
   // Return an unowned pointer to the Scheduler.
   Scheduler* scheduler() { return scheduler_.get(); }
 
+  OfflinerPolicy* policy() { return policy_.get(); }
+
   // Returns the status of the most recent offlining.
   Offliner::RequestStatus last_offlining_status() {
     return last_offlining_status_;
@@ -162,6 +166,12 @@ class RequestCoordinator : public KeyedService,
   void GetQueuedRequestsCallback(const GetRequestsCallback& callback,
                                  RequestQueue::GetRequestsResult result,
                                  const std::vector<SavePageRequest>& requests);
+
+  // Receives the results of a get from the request queue, and turns that into
+  // SavePageRequest objects for the caller of GetQueuedRequests.
+  void GetRequestsForSchedulingCallback(
+      RequestQueue::GetRequestsResult result,
+      const std::vector<SavePageRequest>& requests);
 
   // Receives the result of add requests to the request queue.
   void AddRequestResultCallback(RequestQueue::AddRequestResult result,
@@ -190,11 +200,17 @@ class RequestCoordinator : public KeyedService,
   // as to other device conditions).
   void StartProcessingIfConnected();
 
+  // Check the request queue, and schedule a task corresponding
+  // to the least restrictive type of request in the queue.
+  void ScheduleAsNeeded();
+
   // Callback from the request picker when it has chosen our next request.
   void RequestPicked(const SavePageRequest& request);
 
   // Callback from the request picker when no more requests are in the queue.
-  void RequestQueueEmpty();
+  // The parameter is a signal for what (if any) conditions to schedule future
+  // processing for.
+  void RequestNotPicked(bool non_user_requested_tasks_remaining);
 
   // Cancels an in progress pre-rendering, and updates state appropriately.
   void StopPrerendering();

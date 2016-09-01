@@ -34,10 +34,10 @@ RequestPicker::~RequestPicker() {}
 // Entry point for the async operation to choose the next request.
 void RequestPicker::ChooseNextRequest(
     RequestCoordinator::RequestPickedCallback picked_callback,
-    RequestCoordinator::RequestQueueEmptyCallback empty_callback,
+    RequestCoordinator::RequestNotPickedCallback not_picked_callback,
     DeviceConditions* device_conditions) {
   picked_callback_ = picked_callback;
-  empty_callback_ = empty_callback;
+  not_picked_callback_ = not_picked_callback;
   fewer_retries_better_ = policy_->ShouldPreferUntriedRequests();
   earlier_requests_better_ = policy_->ShouldPreferEarlierRequests();
   current_conditions_.reset(new DeviceConditions(*device_conditions));
@@ -53,7 +53,7 @@ void RequestPicker::GetRequestResultCallback(
     const std::vector<SavePageRequest>& requests) {
   // If there is nothing to do, return right away.
   if (requests.size() == 0) {
-    empty_callback_.Run();
+    not_picked_callback_.Run(false);
     return;
   }
 
@@ -82,7 +82,10 @@ void RequestPicker::GetRequestResultCallback(
     comparator = &RequestPicker::RecencyFirstCompareFunction;
 
   // Iterate once through the requests, keeping track of best candidate.
+  bool non_user_requested_tasks_remaining = false;
   for (unsigned i = 0; i < valid_requests.size(); ++i) {
+    if (!valid_requests[i].user_requested())
+      non_user_requested_tasks_remaining = true;
     if (!RequestConditionsSatisfied(valid_requests[i]))
       continue;
     if (IsNewRequestBetter(picked_request, &(valid_requests[i]), comparator))
@@ -94,7 +97,7 @@ void RequestPicker::GetRequestResultCallback(
   if (picked_request != nullptr) {
     picked_callback_.Run(*picked_request);
   } else {
-    empty_callback_.Run();
+    not_picked_callback_.Run(non_user_requested_tasks_remaining);
   }
 }
 
@@ -105,21 +108,21 @@ bool RequestPicker::RequestConditionsSatisfied(const SavePageRequest& request) {
   // If the user did not request the page directly, make sure we are connected
   // to power and have WiFi and sufficient battery remaining before we take this
   // request.
-  // TODO(petewil): We may later want to configure whether to allow 2G for non
-  // user_requested items, add that to policy.
-  if (!request.user_requested()) {
-    if (!current_conditions_->IsPowerConnected())
-      return false;
 
-    if (current_conditions_->GetNetConnectionType() !=
-        net::NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI) {
-      return false;
-    }
+  if (!current_conditions_->IsPowerConnected() &&
+      policy_->PowerRequired(request.user_requested())) {
+    return false;
+  }
 
-    if (current_conditions_->GetBatteryPercentage() <
-        policy_->GetMinimumBatteryPercentageForNonUserRequestOfflining()) {
-      return false;
-    }
+  if (current_conditions_->GetNetConnectionType() !=
+          net::NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI &&
+      policy_->UnmeteredNetworkRequired(request.user_requested())) {
+    return false;
+  }
+
+  if (current_conditions_->GetBatteryPercentage() <
+      policy_->BatteryPercentageRequired(request.user_requested())) {
+    return false;
   }
 
   // If we have already started this page the max number of times, it is not

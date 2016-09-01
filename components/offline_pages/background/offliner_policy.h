@@ -10,7 +10,6 @@ const int kMaxStartedTries = 4;
 const int kMaxCompletedTries = 1;
 const int kBackgroundProcessingTimeBudgetSeconds = 170;
 const int kSinglePageTimeLimitSeconds = 120;
-const int kMinimumBatteryPercentageForNonUserRequestOfflining = 50;
 const int kRequestExpirationTimeInSeconds = 60 * 60 * 24 * 7;
 }  // namespace
 
@@ -65,20 +64,22 @@ class OfflinerPolicy {
   // completed, but failed.
   int GetMaxCompletedTries() const { return max_completed_tries_; }
 
-  bool PowerRequiredForUserRequestedPage() const { return false; }
+  bool PowerRequired(bool user_requested) const {
+    return (!user_requested);
+  }
 
-  bool PowerRequiredForNonUserRequestedPage() const { return true; }
+  bool UnmeteredNetworkRequired(bool user_requested) const {
+    return !(user_requested);
+  }
 
-  bool UnmeteredNetworkRequiredForUserRequestedPage() const { return false; }
-
-  bool UnmeteredNetworkRequiredForNonUserRequestedPage() const { return true; }
-
-  int BatteryPercentageRequiredForUserRequestedPage() const { return 0; }
-
-  // This is so low because we require the device to be plugged in and charging.
-  // If we decide to allow non-user requested pages when not plugged in, we
-  // should raise this somewhat higher.
-  int BatteryPercentageRequiredForNonUserRequestedPage() const { return 25; }
+  int BatteryPercentageRequired(bool user_requested) const {
+    if (user_requested)
+      return 0;
+    // This is so low because we require the device to be plugged in and
+    // charging.  If we decide to allow non-user requested pages when not
+    // plugged in, we should raise this somewhat higher.
+    return 25;
+  }
 
   // How many seconds to keep trying new pages for, before we give up,  and
   // return to the scheduler.
@@ -94,12 +95,6 @@ class OfflinerPolicy {
   // How long we allow requests to remain in the system before giving up.
   int GetRequestExpirationTimeInSeconds() const {
     return kRequestExpirationTimeInSeconds;
-  }
-
-  // How much battery must we have before fetching a page not explicitly
-  // requested by the user?
-  int GetMinimumBatteryPercentageForNonUserRequestOfflining() const {
-    return kMinimumBatteryPercentageForNonUserRequestOfflining;
   }
 
  private:

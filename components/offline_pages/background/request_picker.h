@@ -32,7 +32,7 @@ class RequestPicker {
   // conditions, and call back to the RequestCoordinator when we have one.
   void ChooseNextRequest(
       RequestCoordinator::RequestPickedCallback picked_callback,
-      RequestCoordinator::RequestQueueEmptyCallback empty_callback,
+      RequestCoordinator::RequestNotPickedCallback not_picked_callback,
       DeviceConditions* device_conditions);
 
  private:
@@ -92,7 +92,7 @@ class RequestPicker {
   // Callback for when we are done picking a request to do next.
   RequestCoordinator::RequestPickedCallback picked_callback_;
   // Callback for when there are no more reqeusts to pick.
-  RequestCoordinator::RequestQueueEmptyCallback empty_callback_;
+  RequestCoordinator::RequestNotPickedCallback not_picked_callback_;
   // Allows us to pass a weak pointer to callbacks.
   base::WeakPtrFactory<RequestPicker> weak_ptr_factory_;
 };

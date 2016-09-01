@@ -22,6 +22,7 @@
 namespace offline_pages {
 
 namespace {
+const bool kUserRequest = true;
 
 // Records the final request status UMA for an offlining request. This should
 // only be called once per Offliner::LoadAndSave request.
@@ -153,6 +154,26 @@ void RequestCoordinator::StopPrerendering() {
 
 }
 
+void RequestCoordinator::GetRequestsForSchedulingCallback(
+    RequestQueue::GetRequestsResult result,
+    const std::vector<SavePageRequest>& requests) {
+  bool user_requested = false;
+
+  // Examine all requests, if we find a user requested one, we will use the less
+  // restrictive conditions for user_requested requests.  Otherwise we will use
+  // the more restrictive non-user-requested conditions.
+  for (const SavePageRequest& request : requests) {
+    if (request.user_requested()) {
+      user_requested = true;
+      break;
+    }
+  }
+
+  // In the get callback, determine the least restrictive, and call
+  // GetTriggerConditions based on that.
+  scheduler_->Schedule(GetTriggerConditions(user_requested));
+}
+
 bool RequestCoordinator::CancelActiveRequestIfItMatches(
     const std::vector<int64_t>& request_ids) {
   // If we have a request in progress and need to cancel it, call the
@@ -222,7 +243,8 @@ void RequestCoordinator::ResumeRequests(
       request_ids, SavePageRequest::RequestState::AVAILABLE,
       base::Bind(&RequestCoordinator::UpdateMultipleRequestsCallback,
                  weak_ptr_factory_.GetWeakPtr()));
-  scheduler_->Schedule(GetTriggerConditionsForUserRequest());
+  // Schedule a task, in case there is not one scheduled.
+  ScheduleAsNeeded();
 }
 
 net::NetworkChangeNotifier::ConnectionType
@@ -238,8 +260,8 @@ void RequestCoordinator::AddRequestResultCallback(
     RequestQueue::AddRequestResult result,
     const SavePageRequest& request) {
   NotifyAdded(request);
-  // Inform the scheduler that we have an outstanding task..
-  scheduler_->Schedule(GetTriggerConditionsForUserRequest());
+  // Inform the scheduler that we have an outstanding task.
+  scheduler_->Schedule(GetTriggerConditions(kUserRequest));
 
   if (request.user_requested())
     StartProcessingIfConnected();
@@ -302,6 +324,13 @@ void RequestCoordinator::HandleRemovedRequests(
     NotifyCompleted(request, status);
 }
 
+void RequestCoordinator::ScheduleAsNeeded() {
+  // Get all requests from queue (there is no filtering mechanism).
+  queue_->GetRequests(
+      base::Bind(&RequestCoordinator::GetRequestsForSchedulingCallback,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
 void RequestCoordinator::StopProcessing() {
   is_stopped_ = true;
   StopPrerendering();
@@ -362,12 +391,11 @@ void RequestCoordinator::TryNextRequest() {
 
   // Choose a request to process that meets the available conditions.
   // This is an async call, and returns right away.
-  picker_->ChooseNextRequest(
-      base::Bind(&RequestCoordinator::RequestPicked,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&RequestCoordinator::RequestQueueEmpty,
-                 weak_ptr_factory_.GetWeakPtr()),
-      current_conditions_.get());
+  picker_->ChooseNextRequest(base::Bind(&RequestCoordinator::RequestPicked,
+                                        weak_ptr_factory_.GetWeakPtr()),
+                             base::Bind(&RequestCoordinator::RequestNotPicked,
+                                        weak_ptr_factory_.GetWeakPtr()),
+                             current_conditions_.get());
 }
 
 // Called by the request picker when a request has been picked.
@@ -376,9 +404,13 @@ void RequestCoordinator::RequestPicked(const SavePageRequest& request) {
   SendRequestToOffliner(request);
 }
 
-void RequestCoordinator::RequestQueueEmpty() {
+void RequestCoordinator::RequestNotPicked(
+    bool non_user_requested_tasks_remaining) {
   // Clear the outstanding "safety" task in the scheduler.
   scheduler_->Unschedule();
+
+  if (non_user_requested_tasks_remaining)
+    scheduler_->Schedule(GetTriggerConditions(!kUserRequest));
   // Let the scheduler know we are done processing.
   scheduler_callback_.Run(true);
 }
@@ -498,13 +530,12 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
   }
 }
 
-const Scheduler::TriggerConditions
-RequestCoordinator::GetTriggerConditionsForUserRequest() {
-  Scheduler::TriggerConditions trigger_conditions(
-      policy_->PowerRequiredForUserRequestedPage(),
-      policy_->BatteryPercentageRequiredForUserRequestedPage(),
-      policy_->UnmeteredNetworkRequiredForUserRequestedPage());
-  return trigger_conditions;
+const Scheduler::TriggerConditions RequestCoordinator::GetTriggerConditions(
+    const bool user_requested) {
+  return Scheduler::TriggerConditions(
+      policy_->PowerRequired(user_requested),
+      policy_->BatteryPercentageRequired(user_requested),
+      policy_->UnmeteredNetworkRequired(user_requested));
 }
 
 void RequestCoordinator::AddObserver(Observer* observer) {

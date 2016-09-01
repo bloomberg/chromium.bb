@@ -93,7 +93,7 @@ class RequestPickerTest : public testing::Test {
 
   void RequestPicked(const SavePageRequest& request);
 
-  void RequestQueueEmpty();
+  void RequestNotPicked(const bool non_user_requested_tasks_remaining);
 
   void QueueRequestsAndChooseOne(const SavePageRequest& request1,
                                  const SavePageRequest& request2);
@@ -108,7 +108,7 @@ class RequestPickerTest : public testing::Test {
   std::unique_ptr<RequestNotifierStub> notifier_;
   std::unique_ptr<SavePageRequest> last_picked_;
   std::unique_ptr<OfflinerPolicy> policy_;
-  bool request_queue_empty_called_;
+  bool request_queue_not_picked_called_;
 
  private:
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
@@ -129,7 +129,7 @@ void RequestPickerTest::SetUp() {
   notifier_.reset(new RequestNotifierStub());
   picker_.reset(
       new RequestPicker(queue_.get(), policy_.get(), notifier_.get()));
-  request_queue_empty_called_ = false;
+  request_queue_not_picked_called_ = false;
 }
 
 void RequestPickerTest::PumpLoop() {
@@ -143,8 +143,9 @@ void RequestPickerTest::RequestPicked(const SavePageRequest& request) {
   last_picked_.reset(new SavePageRequest(request));
 }
 
-void RequestPickerTest::RequestQueueEmpty() {
-  request_queue_empty_called_ = true;
+void RequestPickerTest::RequestNotPicked(
+    const bool non_user_requested_tasks_remaining) {
+  request_queue_not_picked_called_ = true;
 }
 
 // Test helper to queue the two given requests and then pick one of them per
@@ -164,7 +165,7 @@ void RequestPickerTest::QueueRequestsAndChooseOne(
   // Call the method under test.
   picker_->ChooseNextRequest(
       base::Bind(&RequestPickerTest::RequestPicked, base::Unretained(this)),
-      base::Bind(&RequestPickerTest::RequestQueueEmpty, base::Unretained(this)),
+      base::Bind(&RequestPickerTest::RequestNotPicked, base::Unretained(this)),
       &conditions);
 
   // Pump the loop again to give the async queue the opportunity to return
@@ -177,7 +178,7 @@ TEST_F(RequestPickerTest, PickFromEmptyQueue) {
   DeviceConditions conditions;
   picker_->ChooseNextRequest(
       base::Bind(&RequestPickerTest::RequestPicked, base::Unretained(this)),
-      base::Bind(&RequestPickerTest::RequestQueueEmpty, base::Unretained(this)),
+      base::Bind(&RequestPickerTest::RequestNotPicked, base::Unretained(this)),
       &conditions);
 
   // Pump the loop again to give the async queue the opportunity to return
@@ -185,7 +186,7 @@ TEST_F(RequestPickerTest, PickFromEmptyQueue) {
   // callback.
   PumpLoop();
 
-  EXPECT_TRUE(request_queue_empty_called_);
+  EXPECT_TRUE(request_queue_not_picked_called_);
 }
 
 TEST_F(RequestPickerTest, ChooseRequestWithHigherRetryCount) {
@@ -205,7 +206,7 @@ TEST_F(RequestPickerTest, ChooseRequestWithHigherRetryCount) {
   QueueRequestsAndChooseOne(request1, request2);
 
   EXPECT_EQ(kRequestId2, last_picked_->request_id());
-  EXPECT_FALSE(request_queue_empty_called_);
+  EXPECT_FALSE(request_queue_not_picked_called_);
 }
 
 TEST_F(RequestPickerTest, ChooseRequestWithSameRetryCountButEarlier) {
@@ -220,7 +221,7 @@ TEST_F(RequestPickerTest, ChooseRequestWithSameRetryCountButEarlier) {
   QueueRequestsAndChooseOne(request1, request2);
 
   EXPECT_EQ(kRequestId1, last_picked_->request_id());
-  EXPECT_FALSE(request_queue_empty_called_);
+  EXPECT_FALSE(request_queue_not_picked_called_);
 }
 
 TEST_F(RequestPickerTest, ChooseEarlierRequest) {
@@ -243,7 +244,7 @@ TEST_F(RequestPickerTest, ChooseEarlierRequest) {
   QueueRequestsAndChooseOne(request1, request2);
 
   EXPECT_EQ(kRequestId1, last_picked_->request_id());
-  EXPECT_FALSE(request_queue_empty_called_);
+  EXPECT_FALSE(request_queue_not_picked_called_);
 }
 
 TEST_F(RequestPickerTest, ChooseSameTimeRequestWithHigherRetryCount) {
@@ -264,7 +265,7 @@ TEST_F(RequestPickerTest, ChooseSameTimeRequestWithHigherRetryCount) {
   QueueRequestsAndChooseOne(request1, request2);
 
   EXPECT_EQ(kRequestId2, last_picked_->request_id());
-  EXPECT_FALSE(request_queue_empty_called_);
+  EXPECT_FALSE(request_queue_not_picked_called_);
 }
 
 TEST_F(RequestPickerTest, ChooseRequestWithLowerRetryCount) {
@@ -285,7 +286,7 @@ TEST_F(RequestPickerTest, ChooseRequestWithLowerRetryCount) {
   QueueRequestsAndChooseOne(request1, request2);
 
   EXPECT_EQ(kRequestId1, last_picked_->request_id());
-  EXPECT_FALSE(request_queue_empty_called_);
+  EXPECT_FALSE(request_queue_not_picked_called_);
 }
 
 TEST_F(RequestPickerTest, ChooseLaterRequest) {
@@ -307,7 +308,7 @@ TEST_F(RequestPickerTest, ChooseLaterRequest) {
   QueueRequestsAndChooseOne(request1, request2);
 
   EXPECT_EQ(kRequestId2, last_picked_->request_id());
-  EXPECT_FALSE(request_queue_empty_called_);
+  EXPECT_FALSE(request_queue_not_picked_called_);
 }
 
 TEST_F(RequestPickerTest, ChooseNonExpiredRequest) {
@@ -325,7 +326,7 @@ TEST_F(RequestPickerTest, ChooseNonExpiredRequest) {
   PumpLoop();
 
   EXPECT_EQ(kRequestId1, last_picked_->request_id());
-  EXPECT_FALSE(request_queue_empty_called_);
+  EXPECT_FALSE(request_queue_not_picked_called_);
   EXPECT_EQ(kRequestId2, GetNotifier()->last_expired_request().request_id());
   EXPECT_EQ(RequestNotifier::SavePageStatus::EXPIRED,
             GetNotifier()->last_request_expiration_status());
@@ -348,7 +349,7 @@ TEST_F(RequestPickerTest, ChooseRequestThatHasNotExceededStartLimit) {
   QueueRequestsAndChooseOne(request1, request2);
 
   EXPECT_EQ(kRequestId2, last_picked_->request_id());
-  EXPECT_FALSE(request_queue_empty_called_);
+  EXPECT_FALSE(request_queue_not_picked_called_);
 }
 
 TEST_F(RequestPickerTest, ChooseRequestThatHasNotExceededCompletionLimit) {
@@ -367,6 +368,6 @@ TEST_F(RequestPickerTest, ChooseRequestThatHasNotExceededCompletionLimit) {
   QueueRequestsAndChooseOne(request1, request2);
 
   EXPECT_EQ(kRequestId2, last_picked_->request_id());
-  EXPECT_FALSE(request_queue_empty_called_);
+  EXPECT_FALSE(request_queue_not_picked_called_);
 }
 }  // namespace offline_pages

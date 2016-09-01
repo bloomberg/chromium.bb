@@ -239,6 +239,12 @@ class RequestCoordinatorTest
     coordinator()->SetNetworkConditionsForTest(connection);
   }
 
+  void ScheduleForTest() { coordinator_->ScheduleAsNeeded(); }
+
+  void CallRequestNotPicked(bool non_user_requested_tasks_remaining) {
+    coordinator_->RequestNotPicked(non_user_requested_tasks_remaining);
+  }
+
   void SetOfflinerTimeoutForTest(const base::TimeDelta& timeout) {
     coordinator_->SetOfflinerTimeoutForTest(timeout);
   }
@@ -391,7 +397,7 @@ TEST_F(RequestCoordinatorTest, SavePageLater) {
       coordinator()->scheduler());
   EXPECT_TRUE(scheduler_stub->schedule_called());
   EXPECT_EQ(coordinator()
-                ->GetTriggerConditionsForUserRequest()
+                ->GetTriggerConditions(last_requests()[0].user_requested())
                 .minimum_battery_percentage,
             scheduler_stub->conditions()->minimum_battery_percentage);
 
@@ -580,6 +586,70 @@ TEST_F(RequestCoordinatorTest, OfflinerDonePrerenderingCancel) {
   // Verify prerendering cancel not counted as an attempt after all.
   const SavePageRequest& found_request = last_requests().front();
   EXPECT_EQ(0L, found_request.completed_attempt_count());
+}
+
+// If one item completes, and there are no more user requeted items left,
+// we should make a scheduler entry for a non-user requested item.
+TEST_F(RequestCoordinatorTest, RequestNotPickedNonUserRequestedItemsRemain) {
+  // Call start processing just to set up a scheduler callback.
+  DeviceConditions device_conditions(false, 75,
+                                     net::NetworkChangeNotifier::CONNECTION_3G);
+  base::Callback<void(bool)> callback = base::Bind(
+      &RequestCoordinatorTest::EmptyCallbackFunction, base::Unretained(this));
+  coordinator()->StartProcessing(device_conditions, callback);
+
+  // Call RequestNotPicked, and make sure we pick schedule a task for non user
+  // requested conditions.
+  CallRequestNotPicked(true);
+  PumpLoop();
+
+  // The scheduler should have been called to schedule the non-user requested
+  // task.
+  SchedulerStub* scheduler_stub =
+      reinterpret_cast<SchedulerStub*>(coordinator()->scheduler());
+  EXPECT_TRUE(scheduler_stub->schedule_called());
+  EXPECT_TRUE(scheduler_stub->unschedule_called());
+  const Scheduler::TriggerConditions* conditions = scheduler_stub->conditions();
+  EXPECT_EQ(conditions->require_power_connected,
+            coordinator()->policy()->PowerRequired(!kUserRequested));
+  EXPECT_EQ(
+      conditions->minimum_battery_percentage,
+      coordinator()->policy()->BatteryPercentageRequired(!kUserRequested));
+  EXPECT_EQ(conditions->require_unmetered_network,
+            coordinator()->policy()->UnmeteredNetworkRequired(!kUserRequested));
+}
+
+TEST_F(RequestCoordinatorTest, SchedulerGetsLeastRestrictiveConditions) {
+  // Put two requests on the queue - The first is user requested, and
+  // the second is not user requested.
+  offline_pages::SavePageRequest request1(kRequestId1, kUrl1, kClientId1,
+                                          base::Time::Now(), kUserRequested);
+  coordinator()->queue()->AddRequest(
+      request1, base::Bind(&RequestCoordinatorTest::AddRequestDone,
+                           base::Unretained(this)));
+  offline_pages::SavePageRequest request2(kRequestId2, kUrl2, kClientId2,
+                                          base::Time::Now(), !kUserRequested);
+  coordinator()->queue()->AddRequest(
+      request2, base::Bind(&RequestCoordinatorTest::AddRequestDone,
+                           base::Unretained(this)));
+  PumpLoop();
+
+  // Trigger the scheduler to schedule for the least restrictive condition.
+  ScheduleForTest();
+  PumpLoop();
+
+  // Expect that the scheduler got notified, and it is at user_requested
+  // priority.
+  SchedulerStub* scheduler_stub =
+      reinterpret_cast<SchedulerStub*>(coordinator()->scheduler());
+  const Scheduler::TriggerConditions* conditions = scheduler_stub->conditions();
+  EXPECT_TRUE(scheduler_stub->schedule_called());
+  EXPECT_EQ(conditions->require_power_connected,
+            coordinator()->policy()->PowerRequired(kUserRequested));
+  EXPECT_EQ(conditions->minimum_battery_percentage,
+            coordinator()->policy()->BatteryPercentageRequired(kUserRequested));
+  EXPECT_EQ(conditions->require_unmetered_network,
+            coordinator()->policy()->UnmeteredNetworkRequired(kUserRequested));
 }
 
 // This tests a StopProcessing call before we have actually started the
