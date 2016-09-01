@@ -10082,8 +10082,12 @@ error::Error GLES2DecoderImpl::HandleVertexAttribIPointer(
     return error::kUnknownCommand;
   const gles2::cmds::VertexAttribIPointer& c =
       *static_cast<const gles2::cmds::VertexAttribIPointer*>(cmd_data);
-
+  GLuint indx = c.indx;
+  GLint size = c.size;
+  GLenum type = c.type;
+  GLsizei stride = c.stride;
   GLsizei offset = c.offset;
+
   if (!state_.bound_array_buffer.get() ||
       state_.bound_array_buffer->IsDeleted()) {
     if (state_.vertex_attrib_manager.get() ==
@@ -10100,10 +10104,6 @@ error::Error GLES2DecoderImpl::HandleVertexAttribIPointer(
     }
   }
 
-  GLuint indx = c.indx;
-  GLint size = c.size;
-  GLenum type = c.type;
-  GLsizei stride = c.stride;
   const void* ptr = reinterpret_cast<const void*>(offset);
   if (!validators_->vertex_attrib_i_type.IsValid(type)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glVertexAttribIPointer", type, "type");
@@ -10174,6 +10174,12 @@ error::Error GLES2DecoderImpl::HandleVertexAttribPointer(
     const void* cmd_data) {
   const gles2::cmds::VertexAttribPointer& c =
       *static_cast<const gles2::cmds::VertexAttribPointer*>(cmd_data);
+  GLuint indx = c.indx;
+  GLint size = c.size;
+  GLenum type = c.type;
+  GLboolean normalized = static_cast<GLboolean>(c.normalized);
+  GLsizei stride = c.stride;
+  GLsizei offset = c.offset;
 
   if (!state_.bound_array_buffer.get() ||
       state_.bound_array_buffer->IsDeleted()) {
@@ -10183,20 +10189,13 @@ error::Error GLES2DecoderImpl::HandleVertexAttribPointer(
           GL_INVALID_OPERATION,
           "glVertexAttribPointer", "no array buffer bound");
       return error::kNoError;
-    } else if (c.offset != 0) {
+    } else if (offset != 0) {
       LOCAL_SET_GL_ERROR(
           GL_INVALID_OPERATION,
           "glVertexAttribPointer", "client side arrays are not allowed");
       return error::kNoError;
     }
   }
-
-  GLuint indx = c.indx;
-  GLint size = c.size;
-  GLenum type = c.type;
-  GLboolean normalized = static_cast<GLboolean>(c.normalized);
-  GLsizei stride = c.stride;
-  GLsizei offset = c.offset;
   const void* ptr = reinterpret_cast<const void*>(offset);
   if (!validators_->vertex_attrib_type.IsValid(type)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glVertexAttribPointer", type, "type");
