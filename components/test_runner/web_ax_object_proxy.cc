@@ -363,8 +363,9 @@ blink::WebRect BoundsForCharacter(const blink::WebAXObject& object,
     int localIndex = characterIndex - start;
     blink::WebVector<int> character_offsets;
     inline_text_box.characterOffsets(character_offsets);
-    DCHECK(character_offsets.size() > 0 &&
-           character_offsets.size() == name.length());
+    if (character_offsets.size() != name.length())
+      return blink::WebRect();
+
     switch (inline_text_box.textDirection()) {
       case blink::WebAXTextDirectionLR: {
         if (localIndex) {
