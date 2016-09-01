@@ -145,6 +145,8 @@ IntRect CaretBase::absoluteBoundsForLocalRect(Node* node, const LayoutRect& rect
 DisplayItemClient* CaretBase::displayItemClientForCaret(Node* node)
 {
     LayoutBlock* caretLayoutBlock = caretLayoutObject(node);
+    if (!caretLayoutBlock)
+        return nullptr;
     if (caretLayoutBlock->usesCompositedScrolling())
         return static_cast<DisplayItemClient*>(caretLayoutBlock->layer()->graphicsLayerBackingForScrolling());
     return caretLayoutBlock;
@@ -206,7 +208,11 @@ void CaretBase::paintCaret(Node* node, GraphicsContext& context, const LayoutPoi
     if (m_caretVisibility == CaretVisibility::Hidden)
         return;
 
-    if (DrawingRecorder::useCachedDrawingIfPossible(context, *displayItemClientForCaret(node), displayItemType))
+    DisplayItemClient* displayItemClient = displayItemClientForCaret(node);
+    if (!displayItemClient)
+        return;
+
+    if (DrawingRecorder::useCachedDrawingIfPossible(context, *displayItemClient, displayItemType))
         return;
 
     LayoutRect drawingRect = localCaretRectWithoutUpdate();
