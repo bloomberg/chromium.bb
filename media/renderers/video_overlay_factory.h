@@ -31,6 +31,8 @@ class MEDIA_EXPORT VideoOverlayFactory {
 
  private:
   class Texture;
+  Texture* GetTexture();
+
   ::media::GpuVideoAcceleratorFactories* gpu_factories_;
   std::unique_ptr<Texture> texture_;
 
