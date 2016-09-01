@@ -46,10 +46,10 @@ const char kChromeUIVersionHost[] = "version";
 // These hosts will also be suggested by BuiltinProvider.
 // 'histograms' is chrome WebUI on iOS, content WebUI on other platforms.
 const char* const kChromeHostURLs[] = {
-    kChromeUIBookmarksHost, kChromeUIChromeURLsHost, kChromeUICreditsHost,
-    kChromeUIFlagsHost,     kChromeUIHistogramHost,  kChromeUIHistoryHost,
-    kChromeUINetExportHost, kChromeUINewTabHost,     kChromeUISyncInternalsHost,
-    kChromeUITermsHost,     kChromeUIVersionHost,
+    kChromeUIBookmarksHost, kChromeUIChromeURLsHost,    kChromeUICreditsHost,
+    kChromeUIFlagsHost,     kChromeUIHistogramHost,     kChromeUINetExportHost,
+    kChromeUINewTabHost,    kChromeUISyncInternalsHost, kChromeUITermsHost,
+    kChromeUIVersionHost,
 };
 const size_t kNumberOfChromeHostURLs = arraysize(kChromeHostURLs);
 
