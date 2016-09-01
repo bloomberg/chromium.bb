@@ -37,8 +37,8 @@ Category ContentSuggestionsProvider::GetCategoryFromUniqueID(
   DCHECK_NE(std::string::npos, colon_index) << "Not a valid unique_id: "
                                             << unique_id;
   int category = -1;
-  DCHECK(base::StringToInt(unique_id.substr(0, colon_index), &category))
-      << "Non-numeric category part in unique_id: " << unique_id;
+  bool ret = base::StringToInt(unique_id.substr(0, colon_index), &category);
+  DCHECK(ret) << "Non-numeric category part in unique_id: " << unique_id;
   return category_factory_->FromIDValue(category);
 }
 
