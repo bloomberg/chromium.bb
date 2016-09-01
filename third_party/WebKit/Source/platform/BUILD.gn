@@ -19,7 +19,6 @@ blink_platform_neon_files = [ "graphics/cpu/arm/WebGLImageConversionNEON.h" ]
 
 blink_platform_sse_files = [ "graphics/cpu/x86/WebGLImageConversionSSE.h" ]
 
-# blink_common in blink_platform.gyp
 component("blink_common") {
   visibility = []  # Allow re-assignment of list.
   visibility = [ "//third_party/WebKit/*" ]
@@ -58,8 +57,6 @@ component("blink_common") {
   ]
 }
 
-# FontFamilyNames action in make_platform_generated in
-# platform_generated.gyp
 action("font_family_names") {
   script = "../build/scripts/make_names.py"
 
@@ -78,8 +75,6 @@ action("font_family_names") {
   ]
 }
 
-# HTTPNames action in make_platform_generated in
-# platform_generated.gyp
 action("http_names") {
   script = "../build/scripts/make_names.py"
 
@@ -98,8 +93,6 @@ action("http_names") {
   ]
 }
 
-# RuntimeEnabledFeatures action in make_platform_generated in
-# platform_generated.gyp
 action("runtime_enabled_features") {
   script = "../build/scripts/make_runtime_features.py"
 
@@ -122,7 +115,6 @@ action("runtime_enabled_features") {
   ]
 }
 
-# ColorData action in make_platform_generated in platform_generated.gyp
 action("color_data") {
   script = "../build/scripts/gperf.py"
 
