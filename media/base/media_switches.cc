@@ -144,21 +144,25 @@ const base::Feature kFlashJoinsMediaSession{"flash-join-media-session",
 const base::Feature kNewAudioRenderingMixingStrategy{
     "NewAudioRenderingMixingStrategy", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Only used for disabling overlay fullscreen (aka SurfaceView) in Clank.
+const base::Feature kOverlayFullscreenVideo{"overlay-fullscreen-video",
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Let videos be resumed via remote controls (for example, the notification)
 // when in background.
 const base::Feature kResumeBackgroundVideo {
   "resume-background-video",
 #if defined(OS_ANDROID)
       base::FEATURE_ENABLED_BY_DEFAULT
-};
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
-};
 #endif
+};
 
 // Use shared block-based buffering for media.
 const base::Feature kUseNewMediaCache{"use-new-media-cache",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Correct video colors based on output display?
 const base::Feature kVideoColorManagement{"video-color-management",
                                           base::FEATURE_DISABLED_BY_DEFAULT};

@@ -522,6 +522,10 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // Force to use SurfaceView instead of SurfaceTexture on Android.
   bool force_video_overlays_;
 
+  // Prevent use of SurfaceView on Android. (Ignored when
+  // |force_video_overlays_| is true.)
+  bool disable_fullscreen_video_overlays_;
+
   // Suppresses calls to OnPipelineError() after destruction / shutdown has been
   // started; prevents us from spuriously logging errors that are transient or
   // unimportant.
