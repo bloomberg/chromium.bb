@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BLIMP_CLIENT_APP_ANDROID_WEB_INPUT_BOX_H_
-#define BLIMP_CLIENT_APP_ANDROID_WEB_INPUT_BOX_H_
+#ifndef BLIMP_CLIENT_APP_ANDROID_IME_HELPER_DIALOG_H_
+#define BLIMP_CLIENT_APP_ANDROID_IME_HELPER_DIALOG_H_
 
 #include <string>
 
@@ -15,15 +15,15 @@
 namespace blimp {
 namespace client {
 
-// The native component of org.chromium.blimp.input.WebInputBox.
-class WebInputBox : public ImeFeature::Delegate {
+// The native component of org.chromium.blimp.input.ImeHelperDialog.
+class ImeHelperDialog : public ImeFeature::Delegate {
  public:
   static bool RegisterJni(JNIEnv* env);
 
-  // |ime_feature| is expected to outlive the WebInputBox.
-  WebInputBox(JNIEnv* env,
-              const base::android::JavaParamRef<jobject>& jobj,
-              ImeFeature* ime_feature);
+  // |ime_feature| is expected to outlive the ImeHelperDialog.
+  ImeHelperDialog(JNIEnv* env,
+                  const base::android::JavaParamRef<jobject>& jobj,
+                  ImeFeature* ime_feature);
 
   // Brings up IME for user to enter text.
   void OnShowImeRequested(ui::TextInputType input_type,
@@ -35,13 +35,13 @@ class WebInputBox : public ImeFeature::Delegate {
   // Methods called from Java via JNI.
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& jobj);
 
-  // Sends the text entered from IME to the blimp engine
+  // Sends the text entered from IME to the blimp engine.
   void OnImeTextEntered(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& jobj,
                         const base::android::JavaParamRef<jstring>& text);
 
  private:
-  ~WebInputBox() override;
+  ~ImeHelperDialog() override;
 
   // Reference to the Java object which owns this class.
   base::android::ScopedJavaGlobalRef<jobject> java_obj_;
@@ -50,10 +50,10 @@ class WebInputBox : public ImeFeature::Delegate {
   // outgoing and incoming BlimpMessage::IME messages from the engine.
   ImeFeature* ime_feature_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebInputBox);
+  DISALLOW_COPY_AND_ASSIGN(ImeHelperDialog);
 };
 
 }  // namespace client
 }  // namespace blimp
 
-#endif  // BLIMP_CLIENT_APP_ANDROID_WEB_INPUT_BOX_H_
+#endif  // BLIMP_CLIENT_APP_ANDROID_IME_HELPER_DIALOG_H_

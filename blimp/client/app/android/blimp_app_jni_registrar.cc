@@ -8,9 +8,9 @@
 #include "blimp/client/app/android/blimp_client_session_android.h"
 #include "blimp/client/app/android/blimp_library_loader.h"
 #include "blimp/client/app/android/blimp_view.h"
+#include "blimp/client/app/android/ime_helper_dialog.h"
 #include "blimp/client/app/android/tab_control_feature_android.h"
 #include "blimp/client/app/android/toolbar.h"
-#include "blimp/client/app/android/web_input_box.h"
 #include "components/safe_json/android/component_jni_registrar.h"
 
 namespace blimp {
@@ -21,10 +21,10 @@ base::android::RegistrationMethod kBlimpRegistrationMethods[] = {
     {"BlimpClientSessionAndroid", BlimpClientSessionAndroid::RegisterJni},
     {"BlimpLibraryLoader", RegisterBlimpLibraryLoaderJni},
     {"BlimpView", app::BlimpView::RegisterJni},
+    {"ImeHelperDialog", ImeHelperDialog::RegisterJni},
     {"SafeJson", safe_json::android::RegisterSafeJsonJni},
     {"TabControlFeatureAndroid", TabControlFeatureAndroid::RegisterJni},
     {"Toolbar", Toolbar::RegisterJni},
-    {"WebInputBox", WebInputBox::RegisterJni},
 };
 
 }  // namespace

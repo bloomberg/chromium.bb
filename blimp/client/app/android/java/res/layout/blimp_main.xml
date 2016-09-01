@@ -69,17 +69,5 @@
             android:layout_alignParentBottom="true"
             android:visibility="invisible" />
 
-        <org.chromium.blimp.input.WebInputBox
-            android:id="@+id/editText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@drawable/web_input_background"
-            android:layout_alignParentBottom="true"
-            android:layout_marginTop="45dp"
-            android:padding="10dp"
-            android:paddingTop="16dp"
-            android:inputType="text|textWebEditText"
-            android:visibility="gone"/>
-
     </RelativeLayout>
 </merge>

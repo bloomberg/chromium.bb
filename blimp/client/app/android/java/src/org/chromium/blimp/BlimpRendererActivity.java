@@ -20,7 +20,7 @@ import org.chromium.blimp.auth.RetryingTokenSource;
 import org.chromium.blimp.auth.TokenSource;
 import org.chromium.blimp.auth.TokenSourceImpl;
 import org.chromium.blimp.core.BlimpClientSwitches;
-import org.chromium.blimp.input.WebInputBox;
+import org.chromium.blimp.input.ImeHelperDialog;
 import org.chromium.blimp.preferences.PreferencesUtil;
 import org.chromium.blimp.session.BlimpClientSession;
 import org.chromium.blimp.session.EngineInfo;
@@ -53,7 +53,7 @@ public class BlimpRendererActivity
     private Toolbar mToolbar;
     private BlimpClientSession mBlimpClientSession;
     private TabControlFeature mTabControlFeature;
-    private WebInputBox mWebInputBox;
+    private ImeHelperDialog mImeHelperDialog;
 
     private Handler mHandler = new Handler();
 
@@ -102,9 +102,9 @@ public class BlimpRendererActivity
             mToolbar = null;
         }
 
-        if (mWebInputBox != null) {
-            mWebInputBox.destroy();
-            mWebInputBox = null;
+        if (mImeHelperDialog != null) {
+            mImeHelperDialog.destroy();
+            mImeHelperDialog = null;
         }
 
         if (mTokenSource != null) {
@@ -167,8 +167,8 @@ public class BlimpRendererActivity
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         mToolbar.initialize(mBlimpClientSession, this);
 
-        mWebInputBox = (WebInputBox) findViewById(R.id.editText);
-        mWebInputBox.initialize(mBlimpClientSession);
+        mImeHelperDialog = new ImeHelperDialog(this);
+        mImeHelperDialog.initialize(mBlimpClientSession);
 
         mTabControlFeature = new TabControlFeature(mBlimpClientSession, mBlimpView);
 

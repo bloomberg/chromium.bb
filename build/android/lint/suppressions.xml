@@ -252,6 +252,7 @@ Still reading?
     <ignore regexp="android_ui_strings.xml" />
     <ignore regexp="android_webview/tools/automated_ui_tests/java/res/" />
     <ignore regexp="blimp/client/app/android/java/res/layout/blimp_main.xml" />
+    <ignore regexp="blimp/client/app/android/java/res/layout/text_input_popup.xml" />
     <ignore regexp="blimp/client/app/android/java/res/layout/toolbar_popup_item.xml" />
     <ignore regexp="blimp/client/app/android/java/res/values/dimens.xml" />
     <ignore regexp="blimp/client/app/android/java/res/xml/about_blimp_preferences.xml" />

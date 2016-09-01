@@ -214,6 +214,15 @@
       <message name="IDS_BLIMP_RESTART_NOW" desc="Restart now message">
         Restart Now
       </message>
+      <message name="IDS_BLIMP_IME_DIALOG_TITLE" desc="Label for the title text for IME dialog.">
+        Enter Text
+      </message>
+      <message name="IDS_BLIMP_FORM_INPUT_OK" desc="Label for a confirm button. Used in multiple contexts. [CHAR-LIMIT=20]">
+        OK
+      </message>
+      <message name="IDS_BLIMP_FORM_INPUT_CANCEL" desc="Label for a cancel button. Used in multiple contexts. [CHAR-LIMIT=20]">
+        Cancel
+      </message>
       <message name="IDS_BLIMP_SIGN_IN_TITLE" desc="Sign in.">
         Please sign in
       </message>
