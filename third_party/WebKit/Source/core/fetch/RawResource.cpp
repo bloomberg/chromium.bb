@@ -299,7 +299,9 @@ void RawResourceClientStateChecker::dataSent()
 
 void RawResourceClientStateChecker::responseReceived()
 {
-    SECURITY_CHECK(m_state == Started);
+    // TODO(hiroshige): Temporarily we use DCHECK() here instead of CHECK(),
+    // due to crbug.com/640960.
+    SECURITY_DCHECK(m_state == Started);
     m_state = ResponseReceived;
 }
 
