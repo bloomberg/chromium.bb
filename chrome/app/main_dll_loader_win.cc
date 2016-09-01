@@ -203,6 +203,14 @@ void ChromeDllLoader::OnBeforeLaunch(const std::string& process_type,
                                      const base::FilePath& dll_path) {
   if (process_type.empty()) {
     RecordDidRun(dll_path);
+
+    // Launch the watcher process.
+    base::FilePath exe_path;
+    if (PathService::Get(base::FILE_EXE, &exe_path)) {
+      chrome_watcher_client_.reset(new ChromeWatcherClient(
+          base::Bind(&GenerateChromeWatcherCommandLine, exe_path)));
+      chrome_watcher_client_->LaunchWatcher();
+    }
   } else {
     // Set non-browser processes up to be killed by the system after the browser
     // goes away. The browser uses the default shutdown order, which is 0x280.
