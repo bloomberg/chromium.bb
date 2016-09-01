@@ -1003,8 +1003,13 @@ void WindowTreeClient::OnWindowInputEvent(uint32_t event_id,
   // TODO(moshayedi): crbug.com/617222. No need to convert to ui::MouseEvent or
   // ui::TouchEvent once we have proper support for pointer events.
   if (event->IsMousePointerEvent()) {
-    window->input_event_handler_->OnWindowInputEvent(
-        window, ui::MouseEvent(*event->AsPointerEvent()), &ack_callback);
+    if (event->type() == ui::ET_POINTER_WHEEL_CHANGED) {
+      window->input_event_handler_->OnWindowInputEvent(
+          window, ui::MouseWheelEvent(*event->AsPointerEvent()), &ack_callback);
+    } else {
+      window->input_event_handler_->OnWindowInputEvent(
+          window, ui::MouseEvent(*event->AsPointerEvent()), &ack_callback);
+    }
   } else if (event->IsTouchPointerEvent()) {
     window->input_event_handler_->OnWindowInputEvent(
         window, ui::TouchEvent(*event->AsPointerEvent()), &ack_callback);

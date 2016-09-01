@@ -459,6 +459,9 @@ class EVENTS_EXPORT MouseEvent : public LocatedEvent {
   explicit MouseEvent(const base::NativeEvent& native_event);
 
   // |pointer_event.IsMousePointerEvent()| must be true.
+  // Note: If |pointer_event| is a mouse wheel pointer event, use the
+  // MouseWheelEvent version of this function to convert to a MouseWheelEvent
+  // instead.
   explicit MouseEvent(const PointerEvent& pointer_event);
 
   // Create a new MouseEvent based on the provided model.
@@ -591,6 +594,7 @@ class EVENTS_EXPORT MouseWheelEvent : public MouseEvent {
 
   explicit MouseWheelEvent(const base::NativeEvent& native_event);
   explicit MouseWheelEvent(const ScrollEvent& scroll_event);
+  explicit MouseWheelEvent(const PointerEvent& pointer_event);
   MouseWheelEvent(const MouseEvent& mouse_event, int x_offset, int y_offset);
   MouseWheelEvent(const MouseWheelEvent& mouse_wheel_event);
 

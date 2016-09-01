@@ -207,7 +207,7 @@ TEST_F(StructTraitsTest, PointerEvent) {
   }
 }
 
-TEST_F(StructTraitsTest, MouseWheelEvent) {
+TEST_F(StructTraitsTest, PointerWheelEvent) {
   MouseWheelEvent kTestData[] = {
       {gfx::Vector2d(11, 15), gfx::Point(3, 4), gfx::Point(40, 30),
        base::TimeTicks(), EF_LEFT_MOUSE_BUTTON, EF_LEFT_MOUSE_BUTTON},
@@ -221,16 +221,17 @@ TEST_F(StructTraitsTest, MouseWheelEvent) {
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
   for (size_t i = 0; i < arraysize(kTestData); i++) {
     std::unique_ptr<Event> output;
-    proxy->EchoEvent(Event::Clone(kTestData[i]), &output);
-    EXPECT_TRUE(output->IsMouseWheelEvent());
+    proxy->EchoEvent(Event::Clone(ui::PointerEvent(kTestData[i])), &output);
+    EXPECT_EQ(ET_POINTER_WHEEL_CHANGED, output->type());
 
-    const MouseWheelEvent* output_wheel_event = output->AsMouseWheelEvent();
-    EXPECT_EQ(kTestData[i].type(), output_wheel_event->type());
-    EXPECT_EQ(kTestData[i].flags(), output_wheel_event->flags());
-    EXPECT_EQ(kTestData[i].location(), output_wheel_event->location());
+    const PointerEvent* output_pointer_event = output->AsPointerEvent();
+    EXPECT_EQ(ET_POINTER_WHEEL_CHANGED, output_pointer_event->type());
+    EXPECT_EQ(kTestData[i].flags(), output_pointer_event->flags());
+    EXPECT_EQ(kTestData[i].location(), output_pointer_event->location());
     EXPECT_EQ(kTestData[i].root_location(),
-              output_wheel_event->root_location());
-    EXPECT_EQ(kTestData[i].offset(), output_wheel_event->offset());
+              output_pointer_event->root_location());
+    EXPECT_EQ(kTestData[i].offset(),
+              output_pointer_event->pointer_details().offset);
   }
 }
 

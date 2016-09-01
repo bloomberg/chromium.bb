@@ -498,7 +498,8 @@ MouseEvent::MouseEvent(const PointerEvent& pointer_event)
       break;
 
     case ET_POINTER_WHEEL_CHANGED:
-      SetType(ET_MOUSEWHEEL);
+      // Explicitly not setting a type here. MouseWheelEvent should be converted
+      // from PointerEvent using its own ctor.
       break;
 
     case ET_POINTER_CAPTURE_CHANGED:
@@ -626,8 +627,8 @@ void MouseEvent::SetClickCount(int click_count) {
   if (type() != ET_MOUSE_PRESSED && type() != ET_MOUSE_RELEASED)
     return;
 
-  DCHECK(click_count > 0);
-  DCHECK(click_count <= 3);
+  DCHECK_LT(0, click_count);
+  DCHECK_GE(3, click_count);
 
   int f = flags();
   switch (click_count) {
@@ -662,6 +663,13 @@ MouseWheelEvent::MouseWheelEvent(const ScrollEvent& scroll_event)
   SetType(ET_MOUSEWHEEL);
 }
 
+MouseWheelEvent::MouseWheelEvent(const PointerEvent& pointer_event)
+    : MouseEvent(pointer_event),
+      offset_(pointer_event.pointer_details().offset.x(),
+              pointer_event.pointer_details().offset.y()) {
+  SetType(ET_MOUSEWHEEL);
+}
+
 MouseWheelEvent::MouseWheelEvent(const MouseEvent& mouse_event,
                                  int x_offset,
                                  int y_offset)
@@ -672,7 +680,7 @@ MouseWheelEvent::MouseWheelEvent(const MouseEvent& mouse_event,
 MouseWheelEvent::MouseWheelEvent(const MouseWheelEvent& mouse_wheel_event)
     : MouseEvent(mouse_wheel_event),
       offset_(mouse_wheel_event.offset()) {
-  DCHECK(type() == ET_MOUSEWHEEL);
+  DCHECK_EQ(ET_MOUSEWHEEL, type());
 }
 
 MouseWheelEvent::MouseWheelEvent(const gfx::Vector2d& offset,
@@ -1152,7 +1160,7 @@ base::char16 KeyEvent::GetCharacter() const {
     // Until this explicitly changes, require |key_| to hold a BMP character.
     DomKey::Base utf32_character = key_.ToCharacter();
     base::char16 ucs2_character = static_cast<base::char16>(utf32_character);
-    DCHECK(static_cast<DomKey::Base>(ucs2_character) == utf32_character);
+    DCHECK_EQ(static_cast<DomKey::Base>(ucs2_character), utf32_character);
     // Check if the control character is down. Note that ALTGR is represented
     // on Windows as CTRL|ALT, so we need to make sure that is not set.
     if ((flags() & (EF_ALTGR_DOWN | EF_CONTROL_DOWN)) == EF_CONTROL_DOWN) {

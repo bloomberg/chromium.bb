@@ -23,14 +23,14 @@ ui::mojom::EventType UIEventTypeToMojo(ui::EventType type) {
     case ui::ET_POINTER_EXITED:
       return ui::mojom::EventType::MOUSE_EXIT;
 
-    case ui::ET_MOUSEWHEEL:
-      return ui::mojom::EventType::WHEEL;
-
     case ui::ET_POINTER_UP:
       return ui::mojom::EventType::POINTER_UP;
 
     case ui::ET_POINTER_CANCELLED:
       return ui::mojom::EventType::POINTER_CANCEL;
+
+    case ui::ET_POINTER_WHEEL_CHANGED:
+      return ui::mojom::EventType::POINTER_WHEEL_CHANGED;
 
     case ui::ET_KEY_PRESSED:
       return ui::mojom::EventType::KEY_PRESSED;
@@ -60,6 +60,9 @@ ui::EventType MojoPointerEventTypeToUIEvent(ui::mojom::EventType action) {
 
     case ui::mojom::EventType::MOUSE_EXIT:
       return ui::ET_POINTER_EXITED;
+
+    case ui::mojom::EventType::POINTER_WHEEL_CHANGED:
+      return ui::ET_POINTER_WHEEL_CHANGED;
 
     default:
       NOTREACHED();
@@ -158,22 +161,14 @@ StructTraits<ui::mojom::EventDataView, EventUniquePtr>::key_data(
 ui::mojom::PointerDataPtr
 StructTraits<ui::mojom::EventDataView, EventUniquePtr>::pointer_data(
     const EventUniquePtr& event) {
-  if (!event->IsPointerEvent() && !event->IsMouseWheelEvent())
+  if (!event->IsPointerEvent())
     return nullptr;
 
+  const ui::PointerEvent* pointer_event = event->AsPointerEvent();
   ui::mojom::PointerDataPtr pointer_data(ui::mojom::PointerData::New());
-
-  const ui::PointerDetails* pointer_details = nullptr;
-  if (event->IsPointerEvent()) {
-    const ui::PointerEvent* pointer_event = event->AsPointerEvent();
-    pointer_data->pointer_id = pointer_event->pointer_id();
-    pointer_data->changed_button_flags = pointer_event->changed_button_flags();
-    pointer_details = &pointer_event->pointer_details();
-  } else {
-    const ui::MouseWheelEvent* wheel_event = event->AsMouseWheelEvent();
-    pointer_data->pointer_id = ui::PointerEvent::kMousePointerId;
-    pointer_details = &wheel_event->pointer_details();
-  }
+  pointer_data->pointer_id = pointer_event->pointer_id();
+  pointer_data->changed_button_flags = pointer_event->changed_button_flags();
+  const ui::PointerDetails* pointer_details = &pointer_event->pointer_details();
 
   switch (pointer_details->pointer_type) {
     case ui::EventPointerType::POINTER_TYPE_MOUSE:
@@ -208,9 +203,7 @@ StructTraits<ui::mojom::EventDataView, EventUniquePtr>::pointer_data(
   location_data->screen_y = located_event->root_location_f().y();
   pointer_data->location = std::move(location_data);
 
-  if (event->IsMouseWheelEvent()) {
-    const ui::MouseWheelEvent* wheel_event = event->AsMouseWheelEvent();
-
+  if (event->type() == ui::ET_POINTER_WHEEL_CHANGED) {
     ui::mojom::WheelDataPtr wheel_data(ui::mojom::WheelData::New());
 
     // TODO(rjkroege): Support page scrolling on windows by directly
@@ -219,14 +212,14 @@ StructTraits<ui::mojom::EventDataView, EventUniquePtr>::pointer_data(
     // TODO(rjkroege): Support precise scrolling deltas.
 
     if ((event->flags() & ui::EF_SHIFT_DOWN) != 0 &&
-        wheel_event->x_offset() == 0) {
-      wheel_data->delta_x = wheel_event->y_offset();
+        pointer_details->offset.x() == 0) {
+      wheel_data->delta_x = pointer_details->offset.y();
       wheel_data->delta_y = 0;
       wheel_data->delta_z = 0;
     } else {
       // TODO(rjkroege): support z in ui::Events.
-      wheel_data->delta_x = wheel_event->x_offset();
-      wheel_data->delta_y = wheel_event->y_offset();
+      wheel_data->delta_x = pointer_details->offset.x();
+      wheel_data->delta_y = pointer_details->offset.y();
       wheel_data->delta_z = 0;
     }
     pointer_data->wheel_data = std::move(wheel_data);
@@ -264,7 +257,7 @@ bool StructTraits<ui::mojom::EventDataView, EventUniquePtr>::Read(
     case ui::mojom::EventType::POINTER_MOVE:
     case ui::mojom::EventType::POINTER_CANCEL:
     case ui::mojom::EventType::MOUSE_EXIT:
-    case ui::mojom::EventType::WHEEL: {
+    case ui::mojom::EventType::POINTER_WHEEL_CHANGED: {
       ui::mojom::PointerDataPtr pointer_data;
       if (!event.ReadPointerData<ui::mojom::PointerDataPtr>(&pointer_data))
         return false;
@@ -276,20 +269,19 @@ bool StructTraits<ui::mojom::EventDataView, EventUniquePtr>::Read(
 
       switch (pointer_data->kind) {
         case ui::mojom::PointerKind::MOUSE: {
-          if (event.action() == ui::mojom::EventType::WHEEL) {
-            out->reset(new ui::MouseWheelEvent(
-                gfx::Vector2d(
-                    static_cast<int>(pointer_data->wheel_data->delta_x),
-                    static_cast<int>(pointer_data->wheel_data->delta_y)),
-                location, screen_location, ui::EventTimeForNow(),
-                ui::EventFlags(event.flags()), ui::EventFlags(event.flags())));
-            return true;
-          }
           out->reset(new ui::PointerEvent(
               MojoPointerEventTypeToUIEvent(event.action()), location,
               screen_location, event.flags(), ui::PointerEvent::kMousePointerId,
               pointer_data->changed_button_flags,
-              ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE),
+              event.action() == ui::mojom::EventType::POINTER_WHEEL_CHANGED
+                  ? ui::PointerDetails(
+                        ui::EventPointerType::POINTER_TYPE_MOUSE,
+                        gfx::Vector2d(
+                            static_cast<int>(pointer_data->wheel_data->delta_x),
+                            static_cast<int>(
+                                pointer_data->wheel_data->delta_y)))
+                  : ui::PointerDetails(
+                        ui::EventPointerType::POINTER_TYPE_MOUSE),
               ui::EventTimeForNow()));
           return true;
         }

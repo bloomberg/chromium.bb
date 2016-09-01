@@ -20,8 +20,8 @@ enum EventType {
   POINTER_DOWN,
   POINTER_MOVE,
   POINTER_UP,
+  POINTER_WHEEL_CHANGED,
   MOUSE_EXIT,
-  WHEEL,
 };
 
 // This mirrors ui::EventFlags
