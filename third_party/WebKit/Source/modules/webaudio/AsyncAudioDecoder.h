@@ -26,7 +26,6 @@
 #define AsyncAudioDecoder_h
 
 #include "platform/heap/Handle.h"
-#include "public/platform/WebThread.h"
 #include "wtf/build_config.h"
 #include <memory>
 
@@ -39,15 +38,17 @@ class AudioBus;
 class DOMArrayBuffer;
 class ScriptPromiseResolver;
 
-// AsyncAudioDecoder asynchronously decodes audio file data from a DOMArrayBuffer in a worker thread.
-// Upon successful decoding, a completion callback will be invoked with the decoded PCM data in an AudioBuffer.
+// AsyncAudioDecoder asynchronously decodes audio file data from a
+// DOMArrayBuffer in the background thread. Upon successful decoding, a
+// completion callback will be invoked with the decoded PCM data in an
+// AudioBuffer.
 
 class AsyncAudioDecoder {
     DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(AsyncAudioDecoder);
 public:
-    AsyncAudioDecoder();
-    ~AsyncAudioDecoder();
+    AsyncAudioDecoder() { };
+    ~AsyncAudioDecoder() { };
 
     // Must be called on the main thread.  |decodeAsync| and callees must not modify any of the
     // parameters except |audioData|.  They are used to associate this decoding instance with the
@@ -56,10 +57,8 @@ public:
 
 private:
     AudioBuffer* createAudioBufferFromAudioBus(AudioBus*);
-    static void decode(DOMArrayBuffer* audioData, float sampleRate, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, ScriptPromiseResolver*, BaseAudioContext*);
+    static void decodeOnBackgroundThread(DOMArrayBuffer* audioData, float sampleRate, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, ScriptPromiseResolver*, BaseAudioContext*);
     static void notifyComplete(DOMArrayBuffer* audioData, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, AudioBus*, ScriptPromiseResolver*, BaseAudioContext*);
-
-    std::unique_ptr<WebThread> m_thread;
 };
 
 } // namespace blink
