@@ -1484,7 +1484,7 @@ class TestGitCl(TestCase):
     })
     self.calls.append(
         ((['ask_for_data', 'If you know what you are doing, '
-				   								 'press Enter to continue, Ctrl+C to abort.'],), ''))
+                           'press Enter to continue, Ctrl+C to abort.'],), ''))
     self.assertIsNone(cl.EnsureAuthenticated(force=False))
 
   def test_gerrit_ensure_authenticated_ok(self):
@@ -1849,6 +1849,54 @@ class TestGitCl(TestCase):
     self.assertEqual(
         out.getvalue(),
         'scheduled CQ Dry Run on https://codereview.chromium.org/123\n')
+
+  def test_write_try_results_json(self):
+    builds = {
+        '9000': {
+            'id': '9000',
+            'status': 'STARTED',
+            'url': 'http://build.cr.org/p/x.y/builders/my-builder/builds/2',
+            'result_details_json': '{"properties": {}}',
+            'bucket': 'master.x.y',
+            'created_by': 'user:someone@chromium.org',
+            'created_ts': '147200002222000',
+            'parameters_json': '{"builder_name": "my-builder", "category": ""}',
+        },
+        '8000': {
+            'id': '8000',
+            'status': 'COMPLETED',
+            'result': 'FAILURE',
+            'failure_reason': 'BUILD_FAILURE',
+            'url': 'http://build.cr.org/p/x.y/builders/my-builder/builds/1',
+            'result_details_json': '{"properties": {}}',
+            'bucket': 'master.x.y',
+            'created_by': 'user:someone@chromium.org',
+            'created_ts': '147200001111000',
+            'parameters_json': '{"builder_name": "my-builder", "category": ""}',
+        },
+    }
+    expected_output = [
+        {
+            'buildbucket_id': '8000',
+            'bucket': 'master.x.y',
+            'builder_name': 'my-builder',
+            'status': 'COMPLETED',
+            'result': 'FAILURE',
+            'failure_reason': 'BUILD_FAILURE',
+            'url': 'http://build.cr.org/p/x.y/builders/my-builder/builds/1',
+        },
+        {
+            'buildbucket_id': '9000',
+            'bucket': 'master.x.y',
+            'builder_name': 'my-builder',
+            'status': 'STARTED',
+            'result': None,
+            'failure_reason': None,
+            'url': 'http://build.cr.org/p/x.y/builders/my-builder/builds/2',
+        }
+    ]
+    self.calls = [(('write_json', 'output.json', expected_output), '')]
+    git_cl.write_try_results_json('output.json', builds)
 
   def _common_GerritCommitMsgHookCheck(self):
     self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
