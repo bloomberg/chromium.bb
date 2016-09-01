@@ -9,13 +9,16 @@
 
 namespace blink {
 
+// We limit the maximum length of the currency code to 2048 bytes for security reasons.
+static const int maxCurrencyCodeLength = 2048;
+
 bool PaymentsValidators::isValidCurrencyCodeFormat(const String& code, String* optionalErrorMessage)
 {
-    if (ScriptRegexp("^[A-Z]{3}$", TextCaseSensitive).match(code) == 0)
+    if (code.length() <= maxCurrencyCodeLength)
         return true;
 
     if (optionalErrorMessage)
-        *optionalErrorMessage = "'" + code + "' is not a valid ISO 4217 currency code, should be 3 upper case letters [A-Z]";
+        *optionalErrorMessage = "The currency code should be at most 2048 characters long";
 
     return false;
 }
@@ -26,7 +29,7 @@ bool PaymentsValidators::isValidAmountFormat(const String& amount, String* optio
         return true;
 
     if (optionalErrorMessage)
-        *optionalErrorMessage = "'" + amount + "' is not a valid ISO 20022 CurrencyAnd30Amount";
+        *optionalErrorMessage = "'" + amount + "' is not a valid amount format";
 
     return false;
 }

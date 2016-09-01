@@ -275,24 +275,6 @@ var detailNames = ['total', 'displayItems.0', 'shippingOptions.0', 'modifiers.0.
 for (var i in detailNames) {
     generate_tests(assert_throws, [
         // Invalid currency code formats.
-        ['Invalid currency code US1 should throw', null, function() {
-            new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(detailNames[i], {'currency': 'US1'}))
-        }],
-        ['Invalid currency code US should throw', null, function() {
-            new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(detailNames[i], {'currency': 'US'}))
-        }],
-        ['Invalid currency code USDO should throw', null, function() {
-            new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(detailNames[i], {'currency': 'USDO'}))
-        }],
-        ['Invalid currency code usd should throw', null, function() {
-            new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(detailNames[i], {'currency': 'usd'}))
-        }],
-        ['Empty currency code should throw', null, function() {
-            new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(detailNames[i], {'currency': ''}))
-        }],
-        ['Null currency code should throw', null, function() {
-            new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(detailNames[i], {'currency': null}))
-        }],
         ['Undefined currency code should throw', null, function() {
             new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(detailNames[i], {'currency': undefined}))
         }],

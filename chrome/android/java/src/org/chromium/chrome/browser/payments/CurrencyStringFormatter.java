@@ -21,14 +21,13 @@ public class CurrencyStringFormatter {
     private static final int DIGITS_BETWEEN_NEGATIVE_AND_PERIOD_GROUP = 2;
     private static final int DIGITS_AFTER_PERIOD_GROUP = 4;
 
-    // Amount currency code pattern.
-    private static final String AMOUNT_CURRENCY_CODE_PATTERN = "^[A-Z]{3}$";
+    // Max currency code length. Maximum length of currency code can be at most 2048.
+    private static final int MAX_CURRENCY_CODE_LEN = 2048;
 
     // Formatting constants.
     private static final int DIGIT_GROUPING_SIZE = 3;
 
     private final Pattern mAmountValuePattern;
-    private final Pattern mAmountCurrencyCodePattern;
 
     /**
      * The symbol for the currency specified on the bill. For example, the symbol for "USD" is "$".
@@ -66,7 +65,6 @@ public class CurrencyStringFormatter {
         assert userLocale != null : "userLocale should not be null";
 
         mAmountValuePattern = Pattern.compile(AMOUNT_VALUE_PATTERN);
-        mAmountCurrencyCodePattern = Pattern.compile(AMOUNT_CURRENCY_CODE_PATTERN);
 
         String currencySymbol;
         int defaultFractionDigits;
@@ -120,8 +118,7 @@ public class CurrencyStringFormatter {
      * @return Whether the currency code is in valid format.
      */
     public boolean isValidAmountCurrencyCode(String amountCurrencyCode) {
-        return amountCurrencyCode != null
-                && mAmountCurrencyCodePattern.matcher(amountCurrencyCode).matches();
+        return amountCurrencyCode != null && amountCurrencyCode.length() <= MAX_CURRENCY_CODE_LEN;
     }
 
     /**

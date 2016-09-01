@@ -32,6 +32,24 @@ std::ostream& operator<<(std::ostream& out, const TestCase& testCase)
 class PaymentsCurrencyValidatorTest : public testing::TestWithParam<TestCase> {
 };
 
+const char* longString2048()
+{
+    static char longString[2049];
+    for (int i = 0; i < 2048; i++)
+        longString[i] = 'a';
+    longString[2048] = '\0';
+    return longString;
+}
+
+const char* longString2049()
+{
+    static char longString[2050];
+    for (int i = 0; i < 2049; i++)
+        longString[i] = 'a';
+    longString[2049] = '\0';
+    return longString;
+}
+
 TEST_P(PaymentsCurrencyValidatorTest, IsValidCurrencyCodeFormat)
 {
     String errorMessage;
@@ -44,13 +62,16 @@ TEST_P(PaymentsCurrencyValidatorTest, IsValidCurrencyCodeFormat)
 INSTANTIATE_TEST_CASE_P(CurrencyCodes,
     PaymentsCurrencyValidatorTest,
     testing::Values(
+        // Any string of at most 2048 characters can be a valid currency code
         TestCase("USD", true),
-        // Invalid currency code formats
-        TestCase("US1", false),
-        TestCase("US", false),
-        TestCase("USDO", false),
-        TestCase("usd", false),
-        TestCase("", false)));
+        TestCase("US1", true),
+        TestCase("US", true),
+        TestCase("USDO", true),
+        TestCase("usd", true),
+        TestCase("ANYSTRING", true),
+        TestCase("", true),
+        TestCase(longString2048(), true),
+        TestCase(longString2049(), false)));
 
 class PaymentsAmountValidatorTest : public testing::TestWithParam<TestCase> {
 };

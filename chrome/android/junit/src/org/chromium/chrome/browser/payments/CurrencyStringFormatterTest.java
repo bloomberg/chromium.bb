@@ -74,13 +74,14 @@ public class CurrencyStringFormatterTest {
                     "$123,456,789,012,345,678,901,234,567,890.123456789012345678901234567890",
                     ExpectedValidity.VALID_AMOUNT},
 
+            // Any string of at most 2048 characters can be valid amount currency codes.
+            {"55.00", "", "en-US", "55.00", ExpectedValidity.VALID_AMOUNT},
+            {"55.00", "ABCDEF", "en-US", "55.00", ExpectedValidity.VALID_AMOUNT},
+            {"55.00", longStringOfLength(2048), "en-US", "55.00", ExpectedValidity.VALID_AMOUNT},
+
             // Invalid amount currency codes.
-            {"55.00", "", "en-US", null, ExpectedValidity.INVALID_AMOUNT_CURRENCY_CODE},
-            {"55.00", "usd", "en-US", null, ExpectedValidity.INVALID_AMOUNT_CURRENCY_CODE},
-            {"55.00", "US8", "en-US", null, ExpectedValidity.INVALID_AMOUNT_CURRENCY_CODE},
-            {"55.00", "US", "en-US", null, ExpectedValidity.INVALID_AMOUNT_CURRENCY_CODE},
-            {"55.00", "USDR", "en-US", null, ExpectedValidity.INVALID_AMOUNT_CURRENCY_CODE},
-            {"55.00", "USDr", "en-US", null, ExpectedValidity.INVALID_AMOUNT_CURRENCY_CODE},
+            {"55.00", longStringOfLength(2049), "en-US", null,
+                    ExpectedValidity.INVALID_AMOUNT_CURRENCY_CODE},
 
             // Invalid amount values.
             {"", "USD", "en-US", null, ExpectedValidity.INVALID_AMOUNT_VALUE},
@@ -101,6 +102,14 @@ public class CurrencyStringFormatterTest {
     private final String mLanguageTag;
     private final String mExpectedFormatting;
     private final ExpectedValidity mExpectedValidity;
+
+    private static String longStringOfLength(int len) {
+        StringBuilder currency = new StringBuilder();
+        for (int i = 0; i < len; i++) {
+            currency.append("A");
+        }
+        return currency.toString();
+    }
 
     public CurrencyStringFormatterTest(String amount, String currency, String languageTag,
             String expectedFormatting, ExpectedValidity expectedValidity) {
