@@ -293,7 +293,7 @@ class W3CExpectationsLineAdder(object):
             testharness.js tests that required new baselines to be downloaded
             from `webkit-patch rebaseline-from-try-jobs`.
         """
-        modified_files = self.host.executive.run_command(['git', 'diff', 'master', '--name-only']).splitlines()
+        modified_files = self.host.executive.run_command(['git', 'diff', 'origin/master', '--name-only']).splitlines()
         tests_to_rebaseline, tests_results = self.get_tests_to_rebaseline(modified_files, tests_results)
         if tests_to_rebaseline:
             webkit_patch = self.host.filesystem.join(

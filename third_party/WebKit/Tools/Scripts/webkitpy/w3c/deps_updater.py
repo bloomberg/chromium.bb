@@ -298,7 +298,7 @@ class DepsUpdater(object):
             'Tools', 'Scripts', 'webkitpy', 'w3c', 'directory_owners.json')
         with open(directory_owners_file_path) as data_file:
             directory_to_owner = self.parse_directory_owners(json.load(data_file))
-        out = self.check_run(['git', 'diff', 'master', '--name-only'])
+        out = self.check_run(['git', 'diff', 'origin/master', '--name-only'])
         changed_files = out.splitlines()
         return self.generate_email_list(changed_files, directory_to_owner)
 
