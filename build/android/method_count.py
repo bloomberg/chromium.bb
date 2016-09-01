@@ -48,10 +48,10 @@ import perf_tests_results_helper # pylint: disable=import-error
 # https://source.android.com/devices/tech/dalvik/dex-format.html
 
 
-_CONTRIBUTORS_TO_DEX_CACHE = {'type_ids_size': 'types',
-                              'string_ids_size': 'strings',
-                              'method_ids_size': 'methods',
-                              'field_ids_size': 'fields'}
+CONTRIBUTORS_TO_DEX_CACHE = {'type_ids_size': 'types',
+                             'string_ids_size': 'strings',
+                             'method_ids_size': 'methods',
+                             'field_ids_size': 'fields'}
 
 
 def _ExtractSizesFromDexFile(dex_path):
@@ -61,7 +61,7 @@ def _ExtractSizesFromDexFile(dex_path):
       # Each method, type, field, and string contributes 4 bytes (1 reference)
       # to our DexCache size.
       counts['dex_cache_size'] = (
-          sum(counts[x] for x in _CONTRIBUTORS_TO_DEX_CACHE)) * 4
+          sum(counts[x] for x in CONTRIBUTORS_TO_DEX_CACHE)) * 4
       return counts
     m = re.match(r'([a-z_]+_size) *: (\d+)', line)
     if m:
@@ -69,7 +69,7 @@ def _ExtractSizesFromDexFile(dex_path):
   raise Exception('Unexpected end of output.')
 
 
-def _ExtractSizesFromZip(path):
+def ExtractSizesFromZip(path):
   tmpdir = tempfile.mkdtemp(suffix='_dex_extract')
   try:
     counts = collections.defaultdict(int)
@@ -109,7 +109,7 @@ def main():
           'and --apk-name was not provided.' % args.dexfile)
 
   if os.path.splitext(args.dexfile)[1] in ('.zip', '.apk', '.jar'):
-    sizes = _ExtractSizesFromZip(args.dexfile)
+    sizes = ExtractSizesFromZip(args.dexfile)
   else:
     sizes = _ExtractSizesFromDexFile(args.dexfile)
 
@@ -118,7 +118,7 @@ def main():
         '%s_%s' % (args.apk_name, name), 'total', [sizes[value_key]],
         description or name)
 
-  for dex_header_name, readable_name in _CONTRIBUTORS_TO_DEX_CACHE.iteritems():
+  for dex_header_name, readable_name in CONTRIBUTORS_TO_DEX_CACHE.iteritems():
     print_result(readable_name, dex_header_name)
   print_result(
       'DexCache_size', 'dex_cache_size', 'bytes of permanent dirty memory')
