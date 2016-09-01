@@ -10,9 +10,11 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/timer/timer.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
 #include "components/arc/common/bluetooth.mojom.h"
@@ -360,6 +362,9 @@ class ArcBluetoothBridge
                                    const base::Closure& success_callback,
                                    const ErrorCallback& error_callback);
 
+  void OnSetDiscoverable(bool discoverable, bool success, uint32_t timeout);
+  void SetDiscoverable(bool discoverable, uint32_t timeout);
+
   bool CalledOnValidThread();
 
   mojo::Binding<mojom::BluetoothHost> binding_;
@@ -380,6 +385,8 @@ class ArcBluetoothBridge
   int32_t gatt_server_attribute_next_handle_ = 0;
   // Keeps track of all devices which initiated a GATT connection to us.
   std::unordered_set<std::string> gatt_connection_cache_;
+  // Timer to turn adapter discoverable off.
+  base::OneShotTimer discoverable_off_timer_;
 
   base::ThreadChecker thread_checker_;
 
