@@ -1809,7 +1809,7 @@ def _BoardIsSetUp(board):
 
 
 def _CreateParser():
-  """Create the optparser.parser object for command-line args."""
+  """Create the parser object for command-line args."""
   epilog = (
       '\n'
       'There are essentially two "modes": status report mode and '

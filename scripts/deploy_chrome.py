@@ -490,8 +490,7 @@ def _PostParseCheck(options):
   """Perform some usage validation (after we've parsed the arguments).
 
   Args:
-    options: The options object returned by optparse.
-    _args: The args object returned by optparse.
+    options: The options object returned by the cli parser.
   """
   if options.local_pkg_path and not os.path.isfile(options.local_pkg_path):
     cros_build_lib.Die('%s is not a file.', options.local_pkg_path)
