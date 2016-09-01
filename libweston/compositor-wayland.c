@@ -627,9 +627,9 @@ wayland_output_destroy(struct weston_output *output_base)
 		pixman_renderer_output_destroy(output_base);
 	} else {
 		gl_renderer->output_destroy(output_base);
+		wl_egl_window_destroy(output->gl.egl_window);
 	}
 
-	wl_egl_window_destroy(output->gl.egl_window);
 	wl_surface_destroy(output->parent.surface);
 	if (output->parent.shell_surface)
 		wl_shell_surface_destroy(output->parent.shell_surface);
