@@ -1171,6 +1171,8 @@ if (enable_java_templates) {
   #   proguard_preprocess: If true, proguard preprocessing will be run. This can
   #     be used to remove unwanted parts of the library.
   #   proguard_preprocess_config: Path to the proguard config for preprocessing.
+  #   proguard_configs: List of proguard configs to use in final apk step for
+  #     any apk that depends on this library.
   #
   #   supports_android: If true, Android targets (android_library, android_apk)
   #     may depend on this target. Note: if true, this target must only use the
@@ -1220,6 +1222,8 @@ if (enable_java_templates) {
   #   proguard_preprocess: If true, proguard preprocessing will be run. This can
   #     be used to remove unwanted parts of the library.
   #   proguard_preprocess_config: Path to the proguard config for preprocessing.
+  #   proguard_configs: List of proguard configs to use in final apk step for
+  #     any apk that depends on this library.
   #   supports_android: If true, Android targets (android_library, android_apk)
   #     may depend on this target. Note: if true, this target must only use the
   #     subset of Java available on Android.
@@ -1270,6 +1274,8 @@ if (enable_java_templates) {
   #   proguard_preprocess: If true, proguard preprocessing will be run. This can
   #     be used to remove unwanted parts of the library.
   #   proguard_preprocess_config: Path to the proguard config for preprocessing.
+  #   proguard_configs: List of proguard configs to use in final apk step for
+  #     any apk that depends on this library.
   #
   #   dex_path: If set, the resulting .dex.jar file will be placed under this
   #     path.
@@ -1359,6 +1365,8 @@ if (enable_java_templates) {
   #   proguard_preprocess: If true, proguard preprocessing will be run. This can
   #     be used to remove unwanted parts of the library.
   #   proguard_preprocess_config: Path to the proguard config for preprocessing.
+  #   proguard_configs: List of proguard configs to use in final apk step for
+  #     any apk that depends on this library.
   #
   # Example
   #   android_java_prebuilt("foo_java") {
@@ -1862,6 +1870,7 @@ if (enable_java_templates) {
             rebase_path(_proguard_configs, root_build_dir)
         args = [
           "--proguard-configs=$_rebased_proguard_configs",
+          "--proguard-configs=@FileArg($_rebased_build_config:proguard:lib_configs)",
           "--input-paths=@FileArg($_rebased_build_config:proguard:input_paths)",
           "--classpath=@FileArg($_rebased_build_config:proguard:lib_paths)",
         ]
@@ -2595,6 +2604,8 @@ if (enable_java_templates) {
   #
   # Variables
   #   aar_path: Path to the AAR.
+  #   proguard_configs: List of proguard configs to use in final apk step for
+  #     any apk that depends on this library.
   #   TODO(jbudorick@): remove this arguments after crbug.com/522043 is fixed.
   #   requires_android: Whether this target can only be used for compiling Android related targets.
   #
@@ -2681,8 +2692,9 @@ if (enable_java_templates) {
                                [
                                  "deps",
                                  "input_jars_paths",
-                                 "requires_android",
                                  "jar_excluded_patterns",
+                                 "proguard_configs",
+                                 "requires_android",
                                ])
         if (!defined(deps)) {
           deps = []

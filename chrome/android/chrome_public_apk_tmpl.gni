@@ -44,20 +44,14 @@ template("chrome_public_apk_tmpl") {
       enable_multidex = true
     } else {
       proguard_enabled = true
-      _prev_proguard_configs = []
-      if (defined(proguard_configs)) {
-        _prev_proguard_configs = proguard_configs
+      if (!defined(proguard_configs)) {
+        proguard_configs = []
       }
-      proguard_configs = []
-      proguard_configs = _prev_proguard_configs + [
-                           "//chrome/android/java/proguard.flags",
-                           "//base/android/base_proguard_config.flags",
-                           "//base/android/release_proguard_config.flags",
-                         ]
-      if (enable_webvr || enable_vr_shell) {
-        proguard_configs +=
-            [ "//third_party/gvr-android-sdk/proguard/base.flags" ]
-      }
+      proguard_configs += [
+        "//chrome/android/java/proguard.flags",
+        "//base/android/base_proguard_config.flags",
+        "//base/android/release_proguard_config.flags",
+      ]
     }
 
     if (!defined(use_chromium_linker)) {

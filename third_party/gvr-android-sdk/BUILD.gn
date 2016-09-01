@@ -16,6 +16,7 @@ android_aar_prebuilt("gvr_common_java") {
 
 android_aar_prebuilt("gvr_base_java") {
   aar_path = "src/libraries/base/base.aar"
+  proguard_configs = [ "proguard/base.flags" ]
 }
 
 android_aar_prebuilt("gvr_controller_java") {

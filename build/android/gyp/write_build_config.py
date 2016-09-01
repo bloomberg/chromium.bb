@@ -278,6 +278,8 @@ def main(argv):
       'test apk).')
   parser.add_option('--proguard-enabled', action='store_true',
       help='Whether proguard is enabled for this apk.')
+  parser.add_option('--proguard-configs',
+      help='GYP-list of proguard flag files to use in final apk.')
   parser.add_option('--proguard-info',
       help='Path to the proguard .info output for this apk.')
   parser.add_option('--has-alternative-locale-resource', action='store_true',
@@ -574,6 +576,11 @@ def main(argv):
     deps_dex_files = [
         p for p in deps_dex_files if not p in tested_apk_deps_dex_files]
 
+  if options.proguard_configs:
+    assert options.type == 'java_library'
+    deps_info['proguard_configs'] = (
+        build_utils.ParseGnList(options.proguard_configs))
+
   if options.type == 'android_apk':
     deps_info['proguard_enabled'] = options.proguard_enabled
     deps_info['proguard_info'] = options.proguard_info
@@ -581,9 +588,12 @@ def main(argv):
     proguard_config = config['proguard']
     proguard_config['input_paths'] = [options.jar_path] + java_full_classpath
     extra_jars = set()
+    lib_configs = set()
     for c in all_library_deps:
       extra_jars.update(c.get('extra_classpath_jars', ()))
+      lib_configs.update(c.get('proguard_configs', ()))
     proguard_config['lib_paths'] = list(extra_jars)
+    proguard_config['lib_configs'] = list(lib_configs)
 
   # Dependencies for the final dex file of an apk or a 'deps_dex'.
   if options.type in ['android_apk', 'deps_dex']:

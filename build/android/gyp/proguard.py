@@ -29,7 +29,7 @@ def _ParseOptions(args):
   parser.add_option('--input-paths',
                     help='Paths to the .jar files proguard should run on.')
   parser.add_option('--output-path', help='Path to the generated .jar file.')
-  parser.add_option('--proguard-configs',
+  parser.add_option('--proguard-configs', action='append',
                     help='Paths to proguard configuration files.')
   parser.add_option('--mapping', help='Path to proguard mapping to apply.')
   parser.add_option('--is-test', action='store_true',
@@ -52,6 +52,13 @@ def _ParseOptions(args):
     classpath += build_utils.ParseGnList(arg)
   options.classpath = classpath
 
+  configs = []
+  for arg in options.proguard_configs:
+    configs += build_utils.ParseGnList(arg)
+  options.proguard_configs = configs
+
+  options.input_paths = build_utils.ParseGnList(options.input_paths)
+
   return options
 
 
@@ -60,9 +67,10 @@ def main(args):
   options = _ParseOptions(args)
 
   proguard = proguard_util.ProguardCmdBuilder(options.proguard_path)
-  proguard.injars(build_utils.ParseGnList(options.input_paths))
-  proguard.configs(build_utils.ParseGnList(options.proguard_configs))
+  proguard.injars(options.input_paths)
+  proguard.configs(options.proguard_configs)
   proguard.outjar(options.output_path)
+  print options.proguard_configs
 
   if options.mapping:
     proguard.mapping(options.mapping)

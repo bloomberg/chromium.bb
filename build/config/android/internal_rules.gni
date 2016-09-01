@@ -343,6 +343,11 @@ template("write_build_config") {
           rebase_path(invoker.input_jars_paths, root_build_dir)
       args += [ "--extra-classpath-jars=$_rebased_input_jars_paths" ]
     }
+    if (defined(invoker.proguard_configs)) {
+      _rebased_proguard_configs =
+          rebase_path(invoker.proguard_configs, root_build_dir)
+      args += [ "--proguard-configs=$_rebased_proguard_configs" ]
+    }
     if (current_toolchain != default_toolchain) {
       # This has to be a built-time error rather than a GN assert because many
       # packages have a mix of java and non-java targets. For example, the
@@ -1766,7 +1771,11 @@ if (enable_java_templates) {
 
     write_build_config(_build_config_target_name) {
       type = "java_prebuilt"
-      forward_variables_from(invoker, [ "input_jars_paths" ])
+      forward_variables_from(invoker,
+                             [
+                               "input_jars_paths",
+                               "proguard_configs",
+                             ])
       supports_android = _supports_android
       requires_android =
           defined(invoker.requires_android) && invoker.requires_android
@@ -2245,7 +2254,11 @@ if (enable_java_templates) {
       build_config_target_name = "${_template_name}__build_config"
 
       write_build_config(build_config_target_name) {
-        forward_variables_from(invoker, [ "input_jars_paths" ])
+        forward_variables_from(invoker,
+                               [
+                                 "input_jars_paths",
+                                 "proguard_configs",
+                               ])
         if (defined(invoker.is_java_binary) && invoker.is_java_binary) {
           type = "java_binary"
         } else {
