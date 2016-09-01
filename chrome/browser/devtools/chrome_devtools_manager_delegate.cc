@@ -70,13 +70,13 @@ std::string ChromeDevToolsManagerDelegate::GetTargetType(
   if (guest_contents)
     return kTypeWebView;
 
+  if (host->GetParent())
+    return content::DevToolsAgentHost::kTypeFrame;
+
   for (TabContentsIterator it; !it.done(); it.Next()) {
     if (*it == web_contents)
       return content::DevToolsAgentHost::kTypePage;
   }
-
-  if (host->GetParent())
-    return content::DevToolsAgentHost::kTypeFrame;
 
   const extensions::Extension* extension = extensions::ExtensionRegistry::Get(
       web_contents->GetBrowserContext())->enabled_extensions().GetByID(
