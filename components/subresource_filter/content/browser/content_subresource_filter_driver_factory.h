@@ -127,13 +127,6 @@ class ContentSubresourceFilterDriverFactory
       bool is_iframe_srcdoc) override;
   bool OnMessageReceived(const IPC::Message& message,
                          content::RenderFrameHost* render_frame_host) override;
-  void DidCommitProvisionalLoadForFrame(
-      content::RenderFrameHost* render_frame_host,
-      const GURL& url,
-      ui::PageTransition transition_type) override;
-
-  // Checks pre-conditions and sets UI visibility accordingly.
-  void PromptUserIfNeeded(content::RenderFrameHost* render_frame_host);
 
   // Checks base on the value of |urr| and current activation scope if
   // activation signal should be sent.

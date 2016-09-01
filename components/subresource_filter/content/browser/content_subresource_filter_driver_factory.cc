@@ -65,7 +65,8 @@ void ContentSubresourceFilterDriverFactory::CreateDriverForFrameHostIfNeeded(
 }
 
 void ContentSubresourceFilterDriverFactory::OnFirstSubresourceLoadDisallowed() {
-  // TODO(melandory): Handle this.
+  client_->ToggleNotificationVisibility(activation_state() ==
+                                        ActivationState::ENABLED);
 }
 
 bool ContentSubresourceFilterDriverFactory::IsWhitelisted(
@@ -181,10 +182,12 @@ void ContentSubresourceFilterDriverFactory::DidStartProvisionalLoadForFrame(
     const GURL& validated_url,
     bool is_error_page,
     bool is_iframe_srcdoc) {
-  if (!render_frame_host->GetParent())
+  if (!render_frame_host->GetParent()) {
+    client_->ToggleNotificationVisibility(false);
     set_activation_state(ActivationState::DISABLED);
-  else
+  } else {
     ActivateForFrameHostIfNeeded(render_frame_host, validated_url);
+  }
 }
 
 bool ContentSubresourceFilterDriverFactory::OnMessageReceived(
@@ -197,21 +200,6 @@ bool ContentSubresourceFilterDriverFactory::OnMessageReceived(
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-void ContentSubresourceFilterDriverFactory::DidCommitProvisionalLoadForFrame(
-    content::RenderFrameHost* render_frame_host,
-    const GURL& url,
-    ui::PageTransition transition_type) {
-  PromptUserIfNeeded(render_frame_host);
-}
-
-void ContentSubresourceFilterDriverFactory::PromptUserIfNeeded(
-    content::RenderFrameHost* render_frame_host) {
-  if (render_frame_host->GetParent())
-    return;  // Not a main frame, do nothing.
-  client_->ToggleNotificationVisibility(activation_state() ==
-                                        ActivationState::ENABLED);
 }
 
 void ContentSubresourceFilterDriverFactory::set_activation_state(
