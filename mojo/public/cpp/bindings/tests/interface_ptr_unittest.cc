@@ -78,6 +78,8 @@ class MathCalculatorUI {
 
   double GetOutput() const { return output_; }
 
+  math::CalculatorPtr& GetInterfacePtr() { return calculator_; }
+
  private:
   void Output(const base::Closure& closure, double output) {
     output_ = output;
@@ -733,6 +735,41 @@ TEST_F(InterfacePtrTest, Fusion) {
   ptr->Ping(base::Bind(&SetFlagAndRunClosure, &called, loop.QuitClosure()));
   loop.Run();
   EXPECT_TRUE(called);
+}
+
+void Fail() {
+  FAIL() << "Unexpected connection error";
+}
+
+TEST_F(InterfacePtrTest, FlushForTesting) {
+  math::CalculatorPtr calc;
+  MathCalculatorImpl calc_impl(GetProxy(&calc));
+  calc.set_connection_error_handler(base::Bind(&Fail));
+
+  MathCalculatorUI calculator_ui(std::move(calc));
+
+  calculator_ui.Add(2.0, base::Bind(&base::DoNothing));
+  calculator_ui.GetInterfacePtr().FlushForTesting();
+  EXPECT_EQ(2.0, calculator_ui.GetOutput());
+
+  calculator_ui.Multiply(5.0, base::Bind(&base::DoNothing));
+  calculator_ui.GetInterfacePtr().FlushForTesting();
+
+  EXPECT_EQ(10.0, calculator_ui.GetOutput());
+}
+
+void SetBool(bool* value) {
+  *value = true;
+}
+
+TEST_F(InterfacePtrTest, FlushForTestingWithClosedPeer) {
+  math::CalculatorPtr calc;
+  GetProxy(&calc);
+  bool called = false;
+  calc.set_connection_error_handler(base::Bind(&SetBool, &called));
+  calc.FlushForTesting();
+  EXPECT_TRUE(called);
+  calc.FlushForTesting();
 }
 
 }  // namespace

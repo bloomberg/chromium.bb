@@ -248,6 +248,12 @@ class Binding {
     return internal_state_.associated_group();
   }
 
+  // Sends a no-op message on the underlying message pipe and runs the current
+  // message loop until its response is received. This can be used in tests to
+  // verify that no message was sent on a message pipe in response to some
+  // stimulus.
+  void FlushForTesting() { internal_state_.FlushForTesting(); }
+
   // Exposed for testing, should not generally be used.
   void EnableTestingMode() { internal_state_.EnableTestingMode(); }
 

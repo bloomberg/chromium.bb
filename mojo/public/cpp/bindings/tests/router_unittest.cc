@@ -40,9 +40,9 @@ class RouterTest : public testing::Test {
 
 TEST_F(RouterTest, BasicRequestResponse) {
   internal::Router router0(std::move(handle0_), FilterChain(), false,
-                           base::ThreadTaskRunnerHandle::Get());
+                           base::ThreadTaskRunnerHandle::Get(), 0u);
   internal::Router router1(std::move(handle1_), FilterChain(), false,
-                           base::ThreadTaskRunnerHandle::Get());
+                           base::ThreadTaskRunnerHandle::Get(), 0u);
 
   ResponseGenerator generator;
   router1.set_incoming_receiver(&generator);
@@ -86,9 +86,9 @@ TEST_F(RouterTest, BasicRequestResponse) {
 
 TEST_F(RouterTest, BasicRequestResponse_Synchronous) {
   internal::Router router0(std::move(handle0_), FilterChain(), false,
-                           base::ThreadTaskRunnerHandle::Get());
+                           base::ThreadTaskRunnerHandle::Get(), 0u);
   internal::Router router1(std::move(handle1_), FilterChain(), false,
-                           base::ThreadTaskRunnerHandle::Get());
+                           base::ThreadTaskRunnerHandle::Get(), 0u);
 
   ResponseGenerator generator;
   router1.set_incoming_receiver(&generator);
@@ -128,39 +128,13 @@ TEST_F(RouterTest, BasicRequestResponse_Synchronous) {
             std::string(reinterpret_cast<const char*>(response.payload())));
 }
 
-TEST_F(RouterTest, RequestWithNoReceiver) {
-  internal::Router router0(std::move(handle0_), FilterChain(), false,
-                           base::ThreadTaskRunnerHandle::Get());
-  internal::Router router1(std::move(handle1_), FilterChain(), false,
-                           base::ThreadTaskRunnerHandle::Get());
-
-  // Without an incoming receiver set on router1, we expect router0 to observe
-  // an error as a result of sending a message.
-
-  Message request;
-  AllocRequestMessage(1, "hello", &request);
-
-  MessageQueue message_queue;
-  base::RunLoop run_loop, run_loop2;
-  router0.set_connection_error_handler(run_loop.QuitClosure());
-  router1.set_connection_error_handler(run_loop2.QuitClosure());
-  router0.AcceptWithResponder(&request, new MessageAccumulator(&message_queue));
-
-  run_loop.Run();
-  run_loop2.Run();
-
-  EXPECT_TRUE(router0.encountered_error());
-  EXPECT_TRUE(router1.encountered_error());
-  EXPECT_TRUE(message_queue.IsEmpty());
-}
-
 // Tests Router using the LazyResponseGenerator. The responses will not be
 // sent until after the requests have been accepted.
 TEST_F(RouterTest, LazyResponses) {
   internal::Router router0(std::move(handle0_), FilterChain(), false,
-                           base::ThreadTaskRunnerHandle::Get());
+                           base::ThreadTaskRunnerHandle::Get(), 0u);
   internal::Router router1(std::move(handle1_), FilterChain(), false,
-                           base::ThreadTaskRunnerHandle::Get());
+                           base::ThreadTaskRunnerHandle::Get(), 0u);
 
   base::RunLoop run_loop;
   LazyResponseGenerator generator(run_loop.QuitClosure());
@@ -231,14 +205,14 @@ void ForwardErrorHandler(bool* called, const base::Closure& callback) {
 TEST_F(RouterTest, MissingResponses) {
   base::RunLoop run_loop0, run_loop1;
   internal::Router router0(std::move(handle0_), FilterChain(), false,
-                           base::ThreadTaskRunnerHandle::Get());
+                           base::ThreadTaskRunnerHandle::Get(), 0u);
   bool error_handler_called0 = false;
   router0.set_connection_error_handler(
       base::Bind(&ForwardErrorHandler, &error_handler_called0,
                  run_loop0.QuitClosure()));
 
   internal::Router router1(std::move(handle1_), FilterChain(), false,
-                           base::ThreadTaskRunnerHandle::Get());
+                           base::ThreadTaskRunnerHandle::Get(), 0u);
   bool error_handler_called1 = false;
   router1.set_connection_error_handler(
       base::Bind(&ForwardErrorHandler, &error_handler_called1,
@@ -288,10 +262,10 @@ TEST_F(RouterTest, LateResponse) {
   base::RunLoop run_loop;
   LazyResponseGenerator generator(run_loop.QuitClosure());
   {
-    internal::Router router0(std::move(handle0_), FilterChain(),
-                             false, base::ThreadTaskRunnerHandle::Get());
-    internal::Router router1(std::move(handle1_), FilterChain(),
-                             false, base::ThreadTaskRunnerHandle::Get());
+    internal::Router router0(std::move(handle0_), FilterChain(), false,
+                             base::ThreadTaskRunnerHandle::Get(), 0u);
+    internal::Router router1(std::move(handle1_), FilterChain(), false,
+                             base::ThreadTaskRunnerHandle::Get(), 0u);
 
     router1.set_incoming_receiver(&generator);
 

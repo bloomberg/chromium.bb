@@ -145,7 +145,7 @@ bool {{class_name}}_{{method.name}}_ForwardToCallback::Accept(
 {%- endfor %}
 
 {{proxy_name}}::{{proxy_name}}(mojo::MessageReceiverWithResponder* receiver)
-    : ControlMessageProxy(receiver) {
+    : receiver_(receiver) {
 }
 
 {#--- Proxy definitions #}
@@ -296,8 +296,7 @@ void {{class_name}}_{{method.name}}_ProxyToResponder::Run(
 {%- endfor %}
 
 {{class_name}}Stub::{{class_name}}Stub()
-    : sink_(nullptr),
-      control_message_handler_({{interface.name}}::Version_) {
+    : sink_(nullptr) {
 }
 
 {{class_name}}Stub::~{{interface.name}}Stub() {}
@@ -305,8 +304,6 @@ void {{class_name}}_{{method.name}}_ProxyToResponder::Run(
 {#--- Stub definition #}
 
 bool {{class_name}}Stub::Accept(mojo::Message* message) {
-  if (mojo::internal::ControlMessageHandler::IsControlMessage(message))
-    return control_message_handler_.Accept(message);
 {%- if interface.methods %}
   switch (message->header()->name) {
 {%-   for method in interface.methods %}
@@ -337,8 +334,6 @@ bool {{class_name}}Stub::Accept(mojo::Message* message) {
 
 bool {{class_name}}Stub::AcceptWithResponder(
     mojo::Message* message, mojo::MessageReceiverWithStatus* responder) {
-  if (mojo::internal::ControlMessageHandler::IsControlMessage(message))
-    return control_message_handler_.AcceptWithResponder(message, responder);
 {%- if interface.methods %}
   switch (message->header()->name) {
 {%-   for method in interface.methods %}
@@ -378,15 +373,12 @@ bool {{class_name}}Stub::AcceptWithResponder(
 {#--- Request validator definitions #}
 
 bool {{class_name}}RequestValidator::Accept(mojo::Message* message) {
+  if (mojo::internal::ControlMessageHandler::IsControlMessage(message))
+    return true;
+
   mojo::internal::ValidationContext validation_context(
     message->data(), message->data_num_bytes(), message->handles()->size(),
     message, "{{class_name}} RequestValidator");
-
-  if (mojo::internal::ControlMessageHandler::IsControlMessage(message)) {
-    if (!mojo::internal::ValidateControlRequest(message, &validation_context))
-      return false;
-    return true;
-  }
 
   switch (message->header()->name) {
 {%- for method in interface.methods %}
@@ -424,15 +416,12 @@ bool {{class_name}}RequestValidator::Accept(mojo::Message* message) {
 {#--- Response validator definitions #}
 {% if interface|has_callbacks %}
 bool {{class_name}}ResponseValidator::Accept(mojo::Message* message) {
+  if (mojo::internal::ControlMessageHandler::IsControlMessage(message))
+    return true;
+
   mojo::internal::ValidationContext validation_context(
     message->data(), message->data_num_bytes(), message->handles()->size(),
     message, "{{class_name}} ResponseValidator");
-
-  if (mojo::internal::ControlMessageHandler::IsControlMessage(message)) {
-    if (!mojo::internal::ValidateControlResponse(message, &validation_context))
-      return false;
-    return true;
-  }
 
   if (!mojo::internal::ValidateMessageIsResponse(message, &validation_context))
     return false;

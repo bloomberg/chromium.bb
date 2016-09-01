@@ -64,6 +64,8 @@ class SimpleBindingState {
 
   AssociatedGroup* associated_group() { return nullptr; }
 
+  void FlushForTesting();
+
   void EnableTestingMode();
 
  protected:
@@ -72,7 +74,8 @@ class SimpleBindingState {
                     const char* interface_name,
                     std::unique_ptr<MessageReceiver> request_validator,
                     bool has_sync_methods,
-                    MessageReceiverWithResponderStatus* stub);
+                    MessageReceiverWithResponderStatus* stub,
+                    uint32_t interface_version);
 
   void DestroyRouter();
 
@@ -105,7 +108,7 @@ class BindingState<Interface, false> : public SimpleBindingState {
     SimpleBindingState::BindInternal(
         std::move(handle), runner, Interface::Name_,
         base::MakeUnique<typename Interface::RequestValidator_>(),
-        Interface::HasSyncMethods_, &stub_);
+        Interface::HasSyncMethods_, &stub_, Interface::Version_);
   }
 
   InterfaceRequest<Interface> Unbind() {
@@ -159,6 +162,8 @@ class MultiplexedBindingState {
     return endpoint_client_ ? endpoint_client_->associated_group() : nullptr;
   }
 
+  void FlushForTesting();
+
   void EnableTestingMode();
 
  protected:
@@ -167,7 +172,8 @@ class MultiplexedBindingState {
                     const char* interface_name,
                     std::unique_ptr<MessageReceiver> request_validator,
                     bool has_sync_methods,
-                    MessageReceiverWithResponderStatus* stub);
+                    MessageReceiverWithResponderStatus* stub,
+                    uint32_t interface_version);
 
   scoped_refptr<internal::MultiplexRouter> router_;
   std::unique_ptr<InterfaceEndpointClient> endpoint_client_;
@@ -193,7 +199,7 @@ class BindingState<Interface, true> : public MultiplexedBindingState {
     MultiplexedBindingState::BindInternal(
         std::move(handle), runner, Interface::Name_,
         base::MakeUnique<typename Interface::RequestValidator_>(),
-        Interface::HasSyncMethods_, &stub_);
+        Interface::HasSyncMethods_, &stub_, Interface::Version_);
     stub_.serialization_context()->group_controller = router_;
   }
 

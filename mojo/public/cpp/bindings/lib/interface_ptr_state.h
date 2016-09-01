@@ -23,6 +23,7 @@
 #include "mojo/public/cpp/bindings/interface_endpoint_client.h"
 #include "mojo/public/cpp/bindings/interface_id.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
+#include "mojo/public/cpp/bindings/lib/control_message_handler.h"
 #include "mojo/public/cpp/bindings/lib/control_message_proxy.h"
 #include "mojo/public/cpp/bindings/lib/multiplex_router.h"
 #include "mojo/public/cpp/bindings/lib/router.h"
@@ -64,12 +65,10 @@ class InterfacePtrState<Interface, false> {
   void QueryVersion(const base::Callback<void(uint32_t)>& callback) {
     ConfigureProxyIfNecessary();
 
-    // Do a static cast in case the interface contains methods with the same
-    // name. It is safe to capture |this| because the callback won't be run
-    // after this object goes away.
-    static_cast<ControlMessageProxy*>(proxy_)->QueryVersion(
-        base::Bind(&InterfacePtrState::OnQueryVersion, base::Unretained(this),
-                   callback));
+    // It is safe to capture |this| because the callback won't be run after this
+    // object goes away.
+    router_->control_message_proxy()->QueryVersion(base::Bind(
+        &InterfacePtrState::OnQueryVersion, base::Unretained(this), callback));
   }
 
   void RequireVersion(uint32_t version) {
@@ -79,9 +78,12 @@ class InterfacePtrState<Interface, false> {
       return;
 
     version_ = version;
-    // Do a static cast in case the interface contains methods with the same
-    // name.
-    static_cast<ControlMessageProxy*>(proxy_)->RequireVersion(version);
+    router_->control_message_proxy()->RequireVersion(version);
+  }
+
+  void FlushForTesting() {
+    ConfigureProxyIfNecessary();
+    router_->control_message_proxy()->FlushForTesting();
   }
 
   void Swap(InterfacePtrState* other) {
@@ -157,8 +159,10 @@ class InterfacePtrState<Interface, false> {
     filters.Append<MessageHeaderValidator>(Interface::Name_);
     filters.Append<typename Interface::ResponseValidator_>();
 
+    // The version is only queried from the client so the value passed here
+    // will not be used.
     router_ = new Router(std::move(handle_), std::move(filters), false,
-                         std::move(runner_));
+                         std::move(runner_), 0u);
 
     proxy_ = new Proxy(router_);
   }
@@ -209,13 +213,10 @@ class InterfacePtrState<Interface, true> {
   void QueryVersion(const base::Callback<void(uint32_t)>& callback) {
     ConfigureProxyIfNecessary();
 
-
-    // Do a static cast in case the interface contains methods with the same
-    // name. It is safe to capture |this| because the callback won't be run
-    // after this object goes away.
-    static_cast<ControlMessageProxy*>(proxy_.get())->QueryVersion(
-        base::Bind(&InterfacePtrState::OnQueryVersion, base::Unretained(this),
-                   callback));
+    // It is safe to capture |this| because the callback won't be run after this
+    // object goes away.
+    endpoint_client_->control_message_proxy()->QueryVersion(base::Bind(
+        &InterfacePtrState::OnQueryVersion, base::Unretained(this), callback));
   }
 
   void RequireVersion(uint32_t version) {
@@ -225,9 +226,12 @@ class InterfacePtrState<Interface, true> {
       return;
 
     version_ = version;
-    // Do a static cast in case the interface contains methods with the same
-    // name.
-    static_cast<ControlMessageProxy*>(proxy_.get())->RequireVersion(version);
+    endpoint_client_->control_message_proxy()->RequireVersion(version);
+  }
+
+  void FlushForTesting() {
+    ConfigureProxyIfNecessary();
+    endpoint_client_->control_message_proxy()->FlushForTesting();
   }
 
   void Swap(InterfacePtrState* other) {
@@ -314,7 +318,10 @@ class InterfacePtrState<Interface, true> {
     endpoint_client_.reset(new InterfaceEndpointClient(
         router_->CreateLocalEndpointHandle(kMasterInterfaceId), nullptr,
         base::WrapUnique(new typename Interface::ResponseValidator_()), false,
-        std::move(runner_)));
+        std::move(runner_),
+        // The version is only queried from the client so the value passed here
+        // will not be used.
+        0u));
     proxy_.reset(new Proxy(endpoint_client_.get()));
     proxy_->serialization_context()->group_controller =
         endpoint_client_->group_controller();

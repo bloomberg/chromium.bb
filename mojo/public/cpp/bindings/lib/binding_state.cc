@@ -4,6 +4,8 @@
 
 #include "mojo/public/cpp/bindings/lib/binding_state.h"
 
+#include "mojo/public/cpp/bindings/lib/control_message_proxy.h"
+
 namespace mojo {
 namespace internal {
 
@@ -38,6 +40,10 @@ void SimpleBindingState::Close() {
   DestroyRouter();
 }
 
+void SimpleBindingState::FlushForTesting() {
+  router_->control_message_proxy()->FlushForTesting();
+}
+
 void SimpleBindingState::EnableTestingMode() {
   DCHECK(is_bound());
   router_->EnableTestingMode();
@@ -49,13 +55,15 @@ void SimpleBindingState::BindInternal(
     const char* interface_name,
     std::unique_ptr<MessageReceiver> request_validator,
     bool has_sync_methods,
-    MessageReceiverWithResponderStatus* stub) {
+    MessageReceiverWithResponderStatus* stub,
+    uint32_t interface_version) {
   FilterChain filters;
   filters.Append<MessageHeaderValidator>(interface_name);
   filters.Append(std::move(request_validator));
 
   router_ = new internal::Router(std::move(handle), std::move(filters),
-                                 has_sync_methods, std::move(runner));
+                                 has_sync_methods, std::move(runner),
+                                 interface_version);
   router_->set_incoming_receiver(stub);
   router_->set_connection_error_handler(base::Bind(
       &SimpleBindingState::RunConnectionErrorHandler, base::Unretained(this)));
@@ -113,6 +121,10 @@ void MultiplexedBindingState::Close() {
   connection_error_handler_.Reset();
 }
 
+void MultiplexedBindingState::FlushForTesting() {
+  endpoint_client_->control_message_proxy()->FlushForTesting();
+}
+
 void MultiplexedBindingState::EnableTestingMode() {
   DCHECK(is_bound());
   router_->EnableTestingMode();
@@ -124,7 +136,8 @@ void MultiplexedBindingState::BindInternal(
     const char* interface_name,
     std::unique_ptr<MessageReceiver> request_validator,
     bool has_sync_methods,
-    MessageReceiverWithResponderStatus* stub) {
+    MessageReceiverWithResponderStatus* stub,
+    uint32_t interface_version) {
   DCHECK(!router_);
 
   router_ = new internal::MultiplexRouter(false, std::move(handle), runner);
@@ -132,7 +145,8 @@ void MultiplexedBindingState::BindInternal(
 
   endpoint_client_.reset(new InterfaceEndpointClient(
       router_->CreateLocalEndpointHandle(kMasterInterfaceId), stub,
-      std::move(request_validator), has_sync_methods, std::move(runner)));
+      std::move(request_validator), has_sync_methods, std::move(runner),
+      interface_version));
 
   endpoint_client_->set_connection_error_handler(
       base::Bind(&MultiplexedBindingState::RunConnectionErrorHandler,

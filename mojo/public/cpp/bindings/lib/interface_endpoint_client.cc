@@ -17,6 +17,7 @@
 #include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/associated_group_controller.h"
 #include "mojo/public/cpp/bindings/interface_endpoint_controller.h"
+#include "mojo/public/cpp/bindings/lib/validation_util.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 
 namespace mojo {
@@ -134,7 +135,8 @@ InterfaceEndpointClient::InterfaceEndpointClient(
     MessageReceiverWithResponderStatus* receiver,
     std::unique_ptr<MessageReceiver> payload_validator,
     bool expect_sync_requests,
-    scoped_refptr<base::SingleThreadTaskRunner> runner)
+    scoped_refptr<base::SingleThreadTaskRunner> runner,
+    uint32_t interface_version)
     : handle_(std::move(handle)),
       incoming_receiver_(receiver),
       thunk_(this),
@@ -142,6 +144,8 @@ InterfaceEndpointClient::InterfaceEndpointClient(
       next_request_id_(1),
       encountered_error_(false),
       task_runner_(std::move(runner)),
+      control_message_proxy_(this),
+      control_message_handler_(interface_version),
       weak_ptr_factory_(this) {
   DCHECK(handle_.is_valid());
   DCHECK(handle_.is_local());
@@ -275,6 +279,8 @@ void InterfaceEndpointClient::NotifyError() {
   // longer.
   async_responders_.clear();
 
+  control_message_proxy_.OnConnectionError();
+
   if (!error_handler_.is_null())
     error_handler_.Run();
 }
@@ -284,12 +290,14 @@ bool InterfaceEndpointClient::HandleValidatedMessage(Message* message) {
   DCHECK(!encountered_error_);
 
   if (message->has_flag(Message::kFlagExpectsResponse)) {
-    if (!incoming_receiver_)
-      return false;
-
     MessageReceiverWithStatus* responder =
         new ResponderThunk(weak_ptr_factory_.GetWeakPtr(), task_runner_);
-    bool ok = incoming_receiver_->AcceptWithResponder(message, responder);
+    bool ok = false;
+    if (mojo::internal::ControlMessageHandler::IsControlMessage(message)) {
+      ok = control_message_handler_.AcceptWithResponder(message, responder);
+    } else {
+      ok = incoming_receiver_->AcceptWithResponder(message, responder);
+    }
     if (!ok)
       delete responder;
     return ok;
@@ -312,8 +320,8 @@ bool InterfaceEndpointClient::HandleValidatedMessage(Message* message) {
     async_responders_.erase(it);
     return responder->Accept(message);
   } else {
-    if (!incoming_receiver_)
-      return false;
+    if (mojo::internal::ControlMessageHandler::IsControlMessage(message))
+      return control_message_handler_.Accept(message);
 
     return incoming_receiver_->Accept(message);
   }

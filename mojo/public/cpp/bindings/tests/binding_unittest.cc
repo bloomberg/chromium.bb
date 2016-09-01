@@ -64,7 +64,8 @@ void DoSetFlagAndRunClosure(bool* flag,
                             const base::Closure& closure,
                             Args... args) {
   *flag = true;
-  closure.Run();
+  if (!closure.is_null())
+    closure.Run();
 }
 
 template <typename... Args>
@@ -385,6 +386,44 @@ TEST_F(BindingTest, MessageFilter) {
   }
 }
 
+void Fail() {
+  FAIL() << "Unexpected connection error";
+}
+
+TEST_F(BindingTest, FlushForTesting) {
+  bool called = false;
+  sample::ServicePtr ptr;
+  auto request = GetProxy(&ptr);
+  ServiceImpl impl;
+  Binding<sample::Service> binding(&impl, std::move(request));
+  binding.set_connection_error_handler(base::Bind(&Fail));
+
+  ptr->Frobinate(nullptr, sample::Service::BazOptions::REGULAR, nullptr,
+                 SetFlagAndRunClosure<int32_t>(&called));
+  EXPECT_FALSE(called);
+  // Because the flush is sent from the binding, it only guarantees that the
+  // request has been received, not the response. The second flush waits for the
+  // response to be received.
+  binding.FlushForTesting();
+  binding.FlushForTesting();
+  EXPECT_TRUE(called);
+}
+
+TEST_F(BindingTest, FlushForTestingWithClosedPeer) {
+  bool called = false;
+  sample::ServicePtr ptr;
+  auto request = GetProxy(&ptr);
+  ServiceImpl impl;
+  Binding<sample::Service> binding(&impl, std::move(request));
+  binding.set_connection_error_handler(SetFlagAndRunClosure(&called));
+  ptr.reset();
+
+  EXPECT_FALSE(called);
+  binding.FlushForTesting();
+  EXPECT_TRUE(called);
+  binding.FlushForTesting();
+}
+
 // StrongBindingTest -----------------------------------------------------------
 
 using StrongBindingTest = BindingTestBase;
@@ -483,6 +522,50 @@ TEST_F(StrongBindingTest, ExplicitDeleteImpl) {
   EXPECT_FALSE(was_deleted);
 
   EXPECT_FALSE(binding_error_handler_called);
+}
+
+TEST_F(StrongBindingTest, FlushForTesting) {
+  bool called = false;
+  bool was_deleted = false;
+  sample::ServicePtr ptr;
+  auto request = GetProxy(&ptr);
+  StrongBinding<sample::Service> binding(new ServiceImpl(&was_deleted),
+                                         std::move(request));
+  binding.set_connection_error_handler(base::Bind(&Fail));
+
+  ptr->Frobinate(nullptr, sample::Service::BazOptions::REGULAR, nullptr,
+                 SetFlagAndRunClosure<int32_t>(&called));
+  EXPECT_FALSE(called);
+  // Because the flush is sent from the binding, it only guarantees that the
+  // request has been received, not the response. The second flush waits for the
+  // response to be received.
+  binding.FlushForTesting();
+  binding.FlushForTesting();
+  EXPECT_TRUE(called);
+  EXPECT_FALSE(was_deleted);
+  ptr.reset();
+  binding.set_connection_error_handler(base::Closure());
+  binding.FlushForTesting();
+  EXPECT_TRUE(was_deleted);
+}
+
+TEST_F(StrongBindingTest, FlushForTestingWithClosedPeer) {
+  bool called = false;
+  bool was_deleted = false;
+  sample::ServicePtr ptr;
+  auto request = GetProxy(&ptr);
+  StrongBinding<sample::Service> binding(new ServiceImpl(&was_deleted),
+                                         std::move(request));
+  binding.set_connection_error_handler(SetFlagAndRunClosure(&called));
+  ptr.reset();
+
+  EXPECT_FALSE(called);
+  EXPECT_FALSE(was_deleted);
+  binding.FlushForTesting();
+  EXPECT_TRUE(called);
+  EXPECT_TRUE(was_deleted);
+  binding.FlushForTesting();
+  EXPECT_TRUE(was_deleted);
 }
 
 }  // namespace

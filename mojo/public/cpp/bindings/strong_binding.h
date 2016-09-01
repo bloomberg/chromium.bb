@@ -114,6 +114,12 @@ class StrongBinding {
     delete binding_.impl();
   }
 
+  // Sends a message on the underlying message pipe and runs the current
+  // message loop until its response is received. This can be used in tests to
+  // verify that no message was sent on a message pipe in response to some
+  // stimulus.
+  void FlushForTesting() { binding_.FlushForTesting(); }
+
  private:
   base::Closure connection_error_handler_;
   Binding<Interface> binding_;

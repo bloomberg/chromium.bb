@@ -78,13 +78,6 @@ bool ValidateMessagePayload(const Message* message,
   return ParamsType::Validate(message->payload(), validation_context);
 }
 
-// The following methods validate control messages defined in
-// interface_control_messages.mojom.
-bool ValidateControlRequest(const Message* message,
-                            ValidationContext* validation_context);
-bool ValidateControlResponse(const Message* message,
-                             ValidationContext* validation_context);
-
 // The following Validate.*NonNullable() functions validate that the given
 // |input| is not null/invalid.
 template <typename T>

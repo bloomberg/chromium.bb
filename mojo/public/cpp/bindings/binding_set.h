@@ -95,6 +95,12 @@ class BindingSet {
     return dispatch_context_;
   }
 
+  void FlushForTesting() {
+    for (auto& binding : bindings_) {
+      binding.first->FlushForTesting();
+    }
+  }
+
  private:
   friend class Entry;
 
@@ -112,6 +118,8 @@ class BindingSet {
       binding_.set_connection_error_handler(base::Bind(
           &Entry::OnConnectionError, base::Unretained(this)));
     }
+
+    void FlushForTesting() { binding_.FlushForTesting(); }
 
    private:
     class DispatchFilter : public MessageReceiver {

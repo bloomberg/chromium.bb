@@ -19,6 +19,7 @@
 #include "mojo/public/cpp/bindings/associated_group_controller.h"
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
 #include "mojo/public/cpp/bindings/interface_endpoint_client.h"
+#include "mojo/public/cpp/bindings/lib/control_message_proxy.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 
 namespace mojo {
@@ -103,7 +104,7 @@ class AssociatedBinding {
     endpoint_client_.reset(new InterfaceEndpointClient(
         std::move(handle), &stub_,
         base::WrapUnique(new typename Interface::RequestValidator_()),
-        Interface::HasSyncMethods_, std::move(runner)));
+        Interface::HasSyncMethods_, std::move(runner), Interface::Version_));
     endpoint_client_->set_connection_error_handler(
         base::Bind(&AssociatedBinding::RunConnectionErrorHandler,
                    base::Unretained(this)));
@@ -163,6 +164,14 @@ class AssociatedBinding {
   // the object is not bound.
   AssociatedGroup* associated_group() {
     return endpoint_client_ ? endpoint_client_->associated_group() : nullptr;
+  }
+
+  // Sends a message on the underlying message pipe and runs the current
+  // message loop until its response is received. This can be used in tests to
+  // verify that no message was sent on a message pipe in response to some
+  // stimulus.
+  void FlushForTesting() {
+    endpoint_client_->control_message_proxy()->FlushForTesting();
   }
 
  private:

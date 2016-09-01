@@ -107,6 +107,12 @@ class AssociatedInterfacePtr {
     internal_state_.RequireVersion(version);
   }
 
+  // Sends a message on the underlying message pipe and runs the current
+  // message loop until its response is received. This can be used in tests to
+  // verify that no message was sent on a message pipe in response to some
+  // stimulus.
+  void FlushForTesting() { internal_state_.FlushForTesting(); }
+
   // Closes the associated interface (if any) and returns the pointer to the
   // unbound state.
   void reset() {

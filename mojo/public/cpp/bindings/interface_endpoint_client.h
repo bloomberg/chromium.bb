@@ -18,6 +18,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "mojo/public/cpp/bindings/filter_chain.h"
+#include "mojo/public/cpp/bindings/lib/control_message_handler.h"
+#include "mojo/public/cpp/bindings/lib/control_message_proxy.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 
@@ -38,7 +40,8 @@ class InterfaceEndpointClient : public MessageReceiverWithResponder {
                           MessageReceiverWithResponderStatus* receiver,
                           std::unique_ptr<MessageReceiver> payload_validator,
                           bool expect_sync_requests,
-                          scoped_refptr<base::SingleThreadTaskRunner> runner);
+                          scoped_refptr<base::SingleThreadTaskRunner> runner,
+                          uint32_t interface_version);
   ~InterfaceEndpointClient() override;
 
   // Sets the error handler to receive notifications when an error is
@@ -88,6 +91,10 @@ class InterfaceEndpointClient : public MessageReceiverWithResponder {
   // NOTE: |message| must have passed message header validation.
   bool HandleIncomingMessage(Message* message);
   void NotifyError();
+
+  internal::ControlMessageProxy* control_message_proxy() {
+    return &control_message_proxy_;
+  }
 
  private:
   // Maps from the id of a response to the MessageReceiver that handles the
@@ -146,6 +153,9 @@ class InterfaceEndpointClient : public MessageReceiverWithResponder {
   bool encountered_error_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  internal::ControlMessageProxy control_message_proxy_;
+  internal::ControlMessageHandler control_message_handler_;
 
   base::ThreadChecker thread_checker_;
 

@@ -11,10 +11,48 @@
 #include "base/logging.h"
 #include "mojo/public/cpp/bindings/lib/message_builder.h"
 #include "mojo/public/cpp/bindings/lib/serialization.h"
+#include "mojo/public/cpp/bindings/lib/validation_util.h"
 #include "mojo/public/interfaces/bindings/interface_control_messages.mojom.h"
 
 namespace mojo {
 namespace internal {
+namespace {
+
+bool ValidateControlRequestWithResponse(Message* message) {
+  ValidationContext validation_context(
+      message->data(), message->data_num_bytes(), message->handles()->size(),
+      message, "ControlRequestValidator");
+  if (!ValidateMessageIsRequestExpectingResponse(message, &validation_context))
+    return false;
+
+  switch (message->header()->name) {
+    case interface_control::kRunMessageId:
+      return ValidateMessagePayload<
+          interface_control::internal::RunMessageParams_Data>(
+          message, &validation_context);
+  }
+  return false;
+}
+
+bool ValidateControlRequestWithoutResponse(Message* message) {
+  ValidationContext validation_context(
+      message->data(), message->data_num_bytes(), message->handles()->size(),
+      message, "ControlRequestValidator");
+  if (!ValidateMessageIsRequestWithoutResponse(message, &validation_context))
+    return false;
+
+  switch (message->header()->name) {
+    case interface_control::kRunOrClosePipeMessageId:
+      return ValidateMessageIsRequestWithoutResponse(message,
+                                                     &validation_context) &&
+             ValidateMessagePayload<
+                 interface_control::internal::RunOrClosePipeMessageParams_Data>(
+                 message, &validation_context);
+  }
+  return false;
+}
+
+}  // namespace
 
 // static
 bool ControlMessageHandler::IsControlMessage(const Message* message) {
@@ -30,6 +68,9 @@ ControlMessageHandler::~ControlMessageHandler() {
 }
 
 bool ControlMessageHandler::Accept(Message* message) {
+  if (!ValidateControlRequestWithoutResponse(message))
+    return false;
+
   if (message->header()->name == interface_control::kRunOrClosePipeMessageId)
     return RunOrClosePipe(message);
 
@@ -40,6 +81,9 @@ bool ControlMessageHandler::Accept(Message* message) {
 bool ControlMessageHandler::AcceptWithResponder(
     Message* message,
     MessageReceiverWithStatus* responder) {
+  if (!ValidateControlRequestWithResponse(message))
+    return false;
+
   if (message->header()->name == interface_control::kRunMessageId)
     return Run(message, responder);
 
@@ -61,6 +105,8 @@ bool ControlMessageHandler::Run(Message* message,
     output->set_query_version_result(
         interface_control::QueryVersionResult::New());
     output->get_query_version_result()->version = interface_version_;
+  } else if (input.is_flush_for_testing()) {
+    output.reset();
   } else {
     output.reset();
   }

@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
+#include "mojo/public/cpp/bindings/lib/validation_util.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 
 namespace mojo {
@@ -118,7 +119,8 @@ bool Router::HandleIncomingMessageThunk::Accept(Message* message) {
 Router::Router(ScopedMessagePipeHandle message_pipe,
                FilterChain filters,
                bool expects_sync_requests,
-               scoped_refptr<base::SingleThreadTaskRunner> runner)
+               scoped_refptr<base::SingleThreadTaskRunner> runner,
+               int interface_version)
     : thunk_(this),
       filters_(std::move(filters)),
       connector_(std::move(message_pipe),
@@ -129,6 +131,8 @@ Router::Router(ScopedMessagePipeHandle message_pipe,
       testing_mode_(false),
       pending_task_for_messages_(false),
       encountered_error_(false),
+      control_message_proxy_(this),
+      control_message_handler_(interface_version),
       weak_factory_(this) {
   filters_.SetSink(&thunk_);
   if (expects_sync_requests)
@@ -253,12 +257,14 @@ bool Router::HandleMessageInternal(Message* message) {
   DCHECK(!encountered_error_);
 
   if (message->has_flag(Message::kFlagExpectsResponse)) {
-    if (!incoming_receiver_)
-      return false;
-
     MessageReceiverWithStatus* responder = new ResponderThunk(
         weak_factory_.GetWeakPtr(), connector_.task_runner());
-    bool ok = incoming_receiver_->AcceptWithResponder(message, responder);
+    bool ok = false;
+    if (mojo::internal::ControlMessageHandler::IsControlMessage(message)) {
+      ok = control_message_handler_.AcceptWithResponder(message, responder);
+    } else {
+      ok = incoming_receiver_->AcceptWithResponder(message, responder);
+    }
     if (!ok)
       delete responder;
     return ok;
@@ -286,8 +292,8 @@ bool Router::HandleMessageInternal(Message* message) {
     async_responders_.erase(it);
     return responder->Accept(message);
   } else {
-    if (!incoming_receiver_)
-      return false;
+    if (mojo::internal::ControlMessageHandler::IsControlMessage(message))
+      return control_message_handler_.Accept(message);
 
     return incoming_receiver_->Accept(message);
   }
@@ -312,6 +318,8 @@ void Router::OnConnectionError() {
         base::Bind(&Router::OnConnectionError, weak_factory_.GetWeakPtr()));
     return;
   }
+
+  control_message_proxy_.OnConnectionError();
 
   encountered_error_ = true;
 

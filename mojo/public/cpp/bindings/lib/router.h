@@ -19,6 +19,8 @@
 #include "base/threading/thread_checker.h"
 #include "mojo/public/cpp/bindings/connector.h"
 #include "mojo/public/cpp/bindings/filter_chain.h"
+#include "mojo/public/cpp/bindings/lib/control_message_handler.h"
+#include "mojo/public/cpp/bindings/lib/control_message_proxy.h"
 #include "mojo/public/cpp/bindings/message.h"
 
 namespace mojo {
@@ -31,7 +33,8 @@ class Router : public MessageReceiverWithResponder {
   Router(ScopedMessagePipeHandle message_pipe,
          FilterChain filters,
          bool expects_sync_requests,
-         scoped_refptr<base::SingleThreadTaskRunner> runner);
+         scoped_refptr<base::SingleThreadTaskRunner> runner,
+         int interface_version);
   ~Router() override;
 
   // Sets the receiver to handle messages read from the message pipe that do
@@ -118,6 +121,10 @@ class Router : public MessageReceiverWithResponder {
     return !async_responders_.empty() || !sync_responses_.empty();
   }
 
+  ControlMessageProxy* control_message_proxy() {
+    return &control_message_proxy_;
+  }
+
  private:
   // Maps from the id of a response to the MessageReceiver that handles the
   // response.
@@ -172,6 +179,8 @@ class Router : public MessageReceiverWithResponder {
   bool pending_task_for_messages_;
   bool encountered_error_;
   base::Closure error_handler_;
+  ControlMessageProxy control_message_proxy_;
+  ControlMessageHandler control_message_handler_;
   base::ThreadChecker thread_checker_;
   base::WeakPtrFactory<Router> weak_factory_;
 };

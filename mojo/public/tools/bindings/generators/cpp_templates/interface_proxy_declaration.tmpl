@@ -1,7 +1,6 @@
 {%- import "interface_macros.tmpl" as interface_macros %}
 class {{export_attribute}} {{interface.name}}Proxy
-    : public {{interface.name}},
-      public NON_EXPORTED_BASE(mojo::internal::ControlMessageProxy) {
+    : public {{interface.name}} {
  public:
   explicit {{interface.name}}Proxy(mojo::MessageReceiverWithResponder* receiver);
 
@@ -17,5 +16,6 @@ class {{export_attribute}} {{interface.name}}Proxy
   }
 
  private:
+  mojo::MessageReceiverWithResponder* receiver_;
   mojo::internal::SerializationContext serialization_context_;
 };

@@ -9,9 +9,12 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/lib/message_builder.h"
 #include "mojo/public/cpp/bindings/lib/serialization.h"
+#include "mojo/public/cpp/bindings/lib/validation_util.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/interfaces/bindings/interface_control_messages.mojom.h"
 
@@ -19,6 +22,22 @@ namespace mojo {
 namespace internal {
 
 namespace {
+
+bool ValidateControlResponse(Message* message) {
+  ValidationContext validation_context(
+      message->data(), message->data_num_bytes(), message->handles()->size(),
+      message, "ControlResponseValidator");
+  if (!ValidateMessageIsResponse(message, &validation_context))
+    return false;
+
+  switch (message->header()->name) {
+    case interface_control::kRunMessageId:
+      return ValidateMessagePayload<
+          interface_control::internal::RunResponseMessageParams_Data>(
+          message, &validation_context);
+  }
+  return false;
+}
 
 using RunCallback =
     base::Callback<void(interface_control::RunResponseMessageParamsPtr)>;
@@ -35,6 +54,9 @@ class RunResponseForwardToCallback : public MessageReceiver {
 };
 
 bool RunResponseForwardToCallback::Accept(Message* message) {
+  if (!ValidateControlResponse(message))
+    return false;
+
   interface_control::internal::RunResponseMessageParams_Data* params =
       reinterpret_cast<
           interface_control::internal::RunResponseMessageParams_Data*>(
@@ -95,11 +117,18 @@ void RunVersionCallback(
   callback.Run(version);
 }
 
+void RunClosure(const base::Closure& callback,
+                interface_control::RunResponseMessageParamsPtr run_response) {
+  callback.Run();
+}
+
 }  // namespace
 
 ControlMessageProxy::ControlMessageProxy(MessageReceiverWithResponder* receiver)
     : receiver_(receiver) {
 }
+
+ControlMessageProxy::~ControlMessageProxy() = default;
 
 void ControlMessageProxy::QueryVersion(
     const base::Callback<void(uint32_t)>& callback) {
@@ -115,6 +144,34 @@ void ControlMessageProxy::RequireVersion(uint32_t version) {
   auto input_ptr = interface_control::RunOrClosePipeInput::New();
   input_ptr->set_require_version(std::move(require_version));
   SendRunOrClosePipeMessage(receiver_, std::move(input_ptr), &context_);
+}
+
+void ControlMessageProxy::FlushForTesting() {
+  if (encountered_error_)
+    return;
+
+  auto input_ptr = interface_control::RunInput::New();
+  input_ptr->set_flush_for_testing(interface_control::FlushForTesting::New());
+  base::RunLoop run_loop;
+  run_loop_quit_closure_ = run_loop.QuitClosure();
+  SendRunMessage(
+      receiver_, std::move(input_ptr),
+      base::Bind(&RunClosure,
+                 base::Bind(&ControlMessageProxy::RunFlushForTestingClosure,
+                            base::Unretained(this))),
+      &context_);
+  run_loop.Run();
+}
+
+void ControlMessageProxy::RunFlushForTestingClosure() {
+  DCHECK(!run_loop_quit_closure_.is_null());
+  base::ResetAndReturn(&run_loop_quit_closure_).Run();
+}
+
+void ControlMessageProxy::OnConnectionError() {
+  encountered_error_ = true;
+  if (!run_loop_quit_closure_.is_null())
+    RunFlushForTestingClosure();
 }
 
 }  // namespace internal

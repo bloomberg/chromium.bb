@@ -65,11 +65,11 @@ class MultiplexRouterTest : public testing::Test {
 TEST_F(MultiplexRouterTest, BasicRequestResponse) {
   InterfaceEndpointClient client0(std::move(endpoint0_), nullptr,
                                   base::MakeUnique<PassThroughFilter>(), false,
-                                  base::ThreadTaskRunnerHandle::Get());
+                                  base::ThreadTaskRunnerHandle::Get(), 0u);
   ResponseGenerator generator;
   InterfaceEndpointClient client1(std::move(endpoint1_), &generator,
                                   base::MakeUnique<PassThroughFilter>(), false,
-                                  base::ThreadTaskRunnerHandle::Get());
+                                  base::ThreadTaskRunnerHandle::Get(), 0u);
 
   Message request;
   AllocRequestMessage(1, "hello", &request);
@@ -112,11 +112,11 @@ TEST_F(MultiplexRouterTest, BasicRequestResponse) {
 TEST_F(MultiplexRouterTest, BasicRequestResponse_Synchronous) {
   InterfaceEndpointClient client0(std::move(endpoint0_), nullptr,
                                   base::MakeUnique<PassThroughFilter>(), false,
-                                  base::ThreadTaskRunnerHandle::Get());
+                                  base::ThreadTaskRunnerHandle::Get(), 0u);
   ResponseGenerator generator;
   InterfaceEndpointClient client1(std::move(endpoint1_), &generator,
                                   base::MakeUnique<PassThroughFilter>(), false,
-                                  base::ThreadTaskRunnerHandle::Get());
+                                  base::ThreadTaskRunnerHandle::Get(), 0u);
 
   Message request;
   AllocRequestMessage(1, "hello", &request);
@@ -153,46 +153,18 @@ TEST_F(MultiplexRouterTest, BasicRequestResponse_Synchronous) {
             std::string(reinterpret_cast<const char*>(response.payload())));
 }
 
-TEST_F(MultiplexRouterTest, RequestWithNoReceiver) {
-  InterfaceEndpointClient client0(std::move(endpoint0_), nullptr,
-                                  base::MakeUnique<PassThroughFilter>(), false,
-                                  base::ThreadTaskRunnerHandle::Get());
-  InterfaceEndpointClient client1(std::move(endpoint1_), nullptr,
-                                  base::MakeUnique<PassThroughFilter>(), false,
-                                  base::ThreadTaskRunnerHandle::Get());
-
-  // Without an incoming receiver set on client1, we expect client0 to observe
-  // an error as a result of sending a message.
-
-  Message request;
-  AllocRequestMessage(1, "hello", &request);
-
-  MessageQueue message_queue;
-  base::RunLoop run_loop, run_loop2;
-  client0.set_connection_error_handler(run_loop.QuitClosure());
-  client1.set_connection_error_handler(run_loop2.QuitClosure());
-  client0.AcceptWithResponder(
-      &request, new MessageAccumulator(&message_queue, run_loop.QuitClosure()));
-
-  run_loop.Run();
-  run_loop2.Run();
-
-  EXPECT_TRUE(client0.encountered_error());
-  EXPECT_TRUE(client1.encountered_error());
-  EXPECT_TRUE(message_queue.IsEmpty());
-}
-
 // Tests MultiplexRouter using the LazyResponseGenerator. The responses will not
 // be sent until after the requests have been accepted.
 TEST_F(MultiplexRouterTest, LazyResponses) {
-  InterfaceEndpointClient client0(std::move(endpoint0_), nullptr,
-                                  base::WrapUnique(new PassThroughFilter()),
-                                  false, base::ThreadTaskRunnerHandle::Get());
+  InterfaceEndpointClient client0(
+      std::move(endpoint0_), nullptr, base::WrapUnique(new PassThroughFilter()),
+      false, base::ThreadTaskRunnerHandle::Get(), 0u);
   base::RunLoop run_loop;
   LazyResponseGenerator generator(run_loop.QuitClosure());
   InterfaceEndpointClient client1(std::move(endpoint1_), &generator,
                                   base::WrapUnique(new PassThroughFilter()),
-                                  false, base::ThreadTaskRunnerHandle::Get());
+                                  false, base::ThreadTaskRunnerHandle::Get(),
+                                  0u);
 
   Message request;
   AllocRequestMessage(1, "hello", &request);
@@ -256,9 +228,9 @@ void ForwardErrorHandler(bool* called, const base::Closure& callback) {
 // both sides still appear to have a valid message pipe handle bound.
 TEST_F(MultiplexRouterTest, MissingResponses) {
   base::RunLoop run_loop0, run_loop1;
-  InterfaceEndpointClient client0(std::move(endpoint0_), nullptr,
-                                  base::WrapUnique(new PassThroughFilter()),
-                                  false, base::ThreadTaskRunnerHandle::Get());
+  InterfaceEndpointClient client0(
+      std::move(endpoint0_), nullptr, base::WrapUnique(new PassThroughFilter()),
+      false, base::ThreadTaskRunnerHandle::Get(), 0u);
   bool error_handler_called0 = false;
   client0.set_connection_error_handler(
       base::Bind(&ForwardErrorHandler, &error_handler_called0,
@@ -268,7 +240,8 @@ TEST_F(MultiplexRouterTest, MissingResponses) {
   LazyResponseGenerator generator(run_loop3.QuitClosure());
   InterfaceEndpointClient client1(std::move(endpoint1_), &generator,
                                   base::WrapUnique(new PassThroughFilter()),
-                                  false, base::ThreadTaskRunnerHandle::Get());
+                                  false, base::ThreadTaskRunnerHandle::Get(),
+                                  0u);
   bool error_handler_called1 = false;
   client1.set_connection_error_handler(
       base::Bind(&ForwardErrorHandler, &error_handler_called1,
@@ -313,12 +286,13 @@ TEST_F(MultiplexRouterTest, LateResponse) {
   base::RunLoop run_loop;
   LazyResponseGenerator generator(run_loop.QuitClosure());
   {
-    InterfaceEndpointClient client0(std::move(endpoint0_), nullptr,
-                                    base::MakeUnique<PassThroughFilter>(),
-                                    false, base::ThreadTaskRunnerHandle::Get());
+    InterfaceEndpointClient client0(
+        std::move(endpoint0_), nullptr, base::MakeUnique<PassThroughFilter>(),
+        false, base::ThreadTaskRunnerHandle::Get(), 0u);
     InterfaceEndpointClient client1(std::move(endpoint1_), &generator,
                                     base::MakeUnique<PassThroughFilter>(),
-                                    false, base::ThreadTaskRunnerHandle::Get());
+                                    false, base::ThreadTaskRunnerHandle::Get(),
+                                    0u);
 
     Message request;
     AllocRequestMessage(1, "hello", &request);

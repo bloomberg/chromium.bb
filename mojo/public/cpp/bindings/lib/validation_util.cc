@@ -100,38 +100,6 @@ bool ValidateMessageIsResponse(const Message* message,
   return true;
 }
 
-bool ValidateControlRequest(const Message* message,
-                            ValidationContext* validation_context) {
-  switch (message->header()->name) {
-    case interface_control::kRunMessageId:
-      return ValidateMessageIsRequestExpectingResponse(message,
-                                                       validation_context) &&
-             ValidateMessagePayload<
-                 interface_control::internal::RunMessageParams_Data>(
-                 message, validation_context);
-    case interface_control::kRunOrClosePipeMessageId:
-      return ValidateMessageIsRequestWithoutResponse(message,
-                                                     validation_context) &&
-             ValidateMessagePayload<
-                 interface_control::internal::RunOrClosePipeMessageParams_Data>(
-                 message, validation_context);
-  }
-  return false;
-}
-
-bool ValidateControlResponse(const Message* message,
-                             ValidationContext* validation_context) {
-  if (!ValidateMessageIsResponse(message, validation_context))
-    return false;
-  switch (message->header()->name) {
-    case interface_control::kRunMessageId:
-      return ValidateMessagePayload<
-          interface_control::internal::RunResponseMessageParams_Data>(
-          message, validation_context);
-  }
-  return false;
-}
-
 bool IsHandleOrInterfaceValid(const AssociatedInterface_Data& input) {
   return IsValidInterfaceId(input.interface_id);
 }

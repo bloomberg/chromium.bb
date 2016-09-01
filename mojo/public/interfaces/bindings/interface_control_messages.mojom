@@ -23,6 +23,7 @@ struct RunMessageParams {
 };
 union RunInput {
   QueryVersion query_version;
+  FlushForTesting flush_for_testing;
 };
 
 struct RunResponseMessageParams {
@@ -37,6 +38,9 @@ struct QueryVersion {
 };
 struct QueryVersionResult {
   uint32 version;
+};
+
+struct FlushForTesting {
 };
 
 ////////////////////////////////////////////////////////////////////////////////
