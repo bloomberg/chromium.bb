@@ -13,6 +13,7 @@
 #include <unistd.h>
 
 #include "base/bind.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/sys_info.h"
 #include "base/threading/thread.h"
@@ -164,7 +165,7 @@ BPF_TEST_C(ParameterRestrictions,
   // different.
   base::Thread getparam_thread("sched_getparam_thread");
   BPF_ASSERT(getparam_thread.Start());
-  getparam_thread.message_loop()->PostTask(
+  getparam_thread.task_runner()->PostTask(
       FROM_HERE, base::Bind(&SchedGetParamThread, &thread_run));
   BPF_ASSERT(thread_run.TimedWait(base::TimeDelta::FromMilliseconds(5000)));
   getparam_thread.Stop();
