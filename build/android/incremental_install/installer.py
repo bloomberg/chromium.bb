@@ -164,7 +164,7 @@ def Install(device, apk, split_globs=None, native_libs=None, dex_files=None,
     has_selinux = device.build_version_sdk >= version_codes.LOLLIPOP
     if has_selinux and apk.HasIsolatedProcesses():
       raise Exception('Cannot use incremental installs on Android L+ without '
-                      'first disabling isoloated processes.\n'
+                      'first disabling isolated processes.\n'
                       'To do so, use GN arg:\n'
                       '    disable_incremental_isolated_processes=true')
 
