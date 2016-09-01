@@ -45,7 +45,8 @@
       "--revision",
       "src@HEAD",
       "--force",
-      "--output_manifest"
+      "--output_manifest",
+      "--gerrit_no_rebase_patch_ref"
     ],
     "cwd": "[BUILDER_CACHE]/Linux_remote_run_Tester",
     "env": {
