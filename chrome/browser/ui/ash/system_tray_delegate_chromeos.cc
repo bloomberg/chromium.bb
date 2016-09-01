@@ -136,7 +136,7 @@ const int kSessionLengthLimitMaxMs = 24 * 60 * 60 * 1000;  // 24 hours.
 
 const char kDisplaySettingsSubPageName[] = "display";
 const char kDisplayOverscanSettingsSubPageName[] = "displayOverscan";
-const char kPaletteSettingsSubPageName[] = "note-overlay";
+const char kPaletteSettingsSubPageName[] = "stylus-overlay";
 
 void ExtractIMEInfo(const input_method::InputMethodDescriptor& ime,
                     const input_method::InputMethodUtil& util,
