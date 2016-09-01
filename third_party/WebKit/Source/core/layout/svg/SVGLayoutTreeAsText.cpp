@@ -639,7 +639,6 @@ void writeResources(TextStream& ts, const LayoutObject& object, int indent)
 
     // FIXME: We want to use SVGResourcesCache to determine which resources are present, instead of quering the resource <-> id cache.
     // For now leave the DRT output as is, but later on we should change this so cycles are properly ignored in the DRT output.
-    LayoutObject& layoutObject = const_cast<LayoutObject&>(object);
     if (!svgStyle.maskerResource().isEmpty()) {
         if (LayoutSVGResourceMasker* masker = getLayoutSVGResourceById<LayoutSVGResourceMasker>(object.document(), svgStyle.maskerResource())) {
             writeIndent(ts, indent);
@@ -647,7 +646,7 @@ void writeResources(TextStream& ts, const LayoutObject& object, int indent)
             writeNameAndQuotedValue(ts, "masker", svgStyle.maskerResource());
             ts << " ";
             writeStandardPrefix(ts, *masker, 0);
-            ts << " " << masker->resourceBoundingBox(&layoutObject) << "\n";
+            ts << " " << masker->resourceBoundingBox(&object) << "\n";
         }
     }
     if (!svgStyle.clipperResource().isEmpty()) {
@@ -657,7 +656,7 @@ void writeResources(TextStream& ts, const LayoutObject& object, int indent)
             writeNameAndQuotedValue(ts, "clipPath", svgStyle.clipperResource());
             ts << " ";
             writeStandardPrefix(ts, *clipper, 0);
-            ts << " " << clipper->resourceBoundingBox(&layoutObject) << "\n";
+            ts << " " << clipper->resourceBoundingBox(object.objectBoundingBox()) << "\n";
         }
     }
     if (style.hasFilter()) {
@@ -673,7 +672,7 @@ void writeResources(TextStream& ts, const LayoutObject& object, int indent)
                     writeNameAndQuotedValue(ts, "filter", id);
                     ts << " ";
                     writeStandardPrefix(ts, *filter, 0);
-                    ts << " " << filter->resourceBoundingBox(&layoutObject) << "\n";
+                    ts << " " << filter->resourceBoundingBox(&object) << "\n";
                 }
             }
         }

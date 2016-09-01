@@ -24,7 +24,6 @@ public:
         GraphicsContext&,
         const LayoutObject&,
         const FloatRect& referenceBox,
-        const FloatRect& visualOverflowRect,
         const FloatPoint& origin);
     ~ClipPathClipper();
 

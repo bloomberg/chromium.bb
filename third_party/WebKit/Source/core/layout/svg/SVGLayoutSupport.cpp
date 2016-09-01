@@ -356,7 +356,7 @@ void SVGLayoutSupport::intersectPaintInvalidationRectWithResources(const LayoutO
         paintInvalidationRect = filter->resourceBoundingBox(layoutObject);
 
     if (LayoutSVGResourceClipper* clipper = resources->clipper())
-        paintInvalidationRect.intersect(clipper->resourceBoundingBox(layoutObject));
+        paintInvalidationRect.intersect(clipper->resourceBoundingBox(layoutObject->objectBoundingBox()));
 
     if (LayoutSVGResourceMasker* masker = resources->masker())
         paintInvalidationRect.intersect(masker->resourceBoundingBox(layoutObject));

@@ -37,7 +37,7 @@ public:
     void removeAllClientsFromCache(bool markForInvalidation = true) override;
     void removeClientFromCache(LayoutObject*, bool markForInvalidation = true) override;
 
-    FloatRect resourceBoundingBox(const LayoutObject*);
+    FloatRect resourceBoundingBox(const FloatRect& referenceBox);
 
     static const LayoutSVGResourceType s_resourceType = ClipperResourceType;
     LayoutSVGResourceType resourceType() const override { return s_resourceType; }

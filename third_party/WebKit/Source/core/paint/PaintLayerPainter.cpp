@@ -255,9 +255,6 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(GraphicsCon
     if (!paintingInfo.paintDirtyRect.contains(bounds))
         result = MayBeClippedByPaintDirtyRect;
 
-    LayoutRect rootRelativeBounds;
-    bool rootRelativeBoundsComputed = false;
-
     if (paintingInfo.ancestorHasClipPathClipping && m_paintLayer.layoutObject()->isPositioned())
         UseCounter::count(m_paintLayer.layoutObject()->document(), UseCounter::ClipPathOfPositionedElement);
 
@@ -268,16 +265,12 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(GraphicsCon
     // It must, however, still be applied to the mask layer, so that the compositor can properly mask the
     // scrolling contents and scrollbars.
     if (m_paintLayer.layoutObject()->hasClipPath() && (!m_paintLayer.needsCompositedScrolling() || (paintFlags & PaintLayerPaintingChildClippingMaskPhase))) {
-        if (!rootRelativeBoundsComputed) {
-            rootRelativeBounds = m_paintLayer.physicalBoundingBoxIncludingReflectionAndStackingChildren(offsetFromRoot);
-            rootRelativeBoundsComputed = true;
-        }
         paintingInfo.ancestorHasClipPathClipping = true;
 
         LayoutRect referenceBox(m_paintLayer.boxForClipPath());
         referenceBox.moveBy(offsetFromRoot);
         clipPathClipper.emplace(
-            context, *m_paintLayer.layoutObject(), FloatRect(referenceBox), FloatRect(rootRelativeBounds), FloatPoint(offsetFromRoot));
+            context, *m_paintLayer.layoutObject(), FloatRect(referenceBox), FloatPoint(offsetFromRoot));
     }
 
     Optional<CompositingRecorder> compositingRecorder;
@@ -326,8 +319,7 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(GraphicsCon
     bool selectionOnly = localPaintingInfo.getGlobalPaintFlags() & GlobalPaintSelectionOnly;
 
     { // Begin block for the lifetime of any filter.
-        FilterPainter filterPainter(m_paintLayer, context, offsetFromRoot, layerFragments.isEmpty() ? ClipRect() : layerFragments[0].backgroundRect, localPaintingInfo, paintFlags,
-            rootRelativeBounds, rootRelativeBoundsComputed);
+        FilterPainter filterPainter(m_paintLayer, context, offsetFromRoot, layerFragments.isEmpty() ? ClipRect() : layerFragments[0].backgroundRect, localPaintingInfo, paintFlags);
 
         Optional<ScopedPaintChunkProperties> scopedPaintChunkProperties;
         if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {

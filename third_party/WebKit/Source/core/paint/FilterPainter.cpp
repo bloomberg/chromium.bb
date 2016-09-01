@@ -15,15 +15,12 @@
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/graphics/paint/FilterDisplayItem.h"
 #include "platform/graphics/paint/PaintController.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebCompositorSupport.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
 
 namespace blink {
 
-FilterPainter::FilterPainter(PaintLayer& layer, GraphicsContext& context, const LayoutPoint& offsetFromRoot, const ClipRect& clipRect, PaintLayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags,
-    LayoutRect& rootRelativeBounds, bool& rootRelativeBoundsComputed)
+FilterPainter::FilterPainter(PaintLayer& layer, GraphicsContext& context, const LayoutPoint& offsetFromRoot, const ClipRect& clipRect, PaintLayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags)
     : m_filterInProgress(false)
     , m_context(context)
     , m_layoutObject(layer.layoutObject())
@@ -35,17 +32,12 @@ FilterPainter::FilterPainter(PaintLayer& layer, GraphicsContext& context, const 
     if (!lastEffect)
         return;
 
-    ASSERT(layer.filterInfo());
+    DCHECK(layer.filterInfo());
 
     lastEffect->determineFilterPrimitiveSubregion(MapRectForward);
     sk_sp<SkImageFilter> imageFilter = SkiaImageFilterBuilder::build(lastEffect, ColorSpaceDeviceRGB);
     if (!imageFilter)
         return;
-
-    if (!rootRelativeBoundsComputed) {
-        rootRelativeBounds = layer.physicalBoundingBoxIncludingReflectionAndStackingChildren(offsetFromRoot);
-        rootRelativeBoundsComputed = true;
-    }
 
     // We'll handle clipping to the dirty rect before filter rasterization.
     // Filter processing will automatically expand the clip rect and the offscreen to accommodate any filter outsets.
@@ -55,11 +47,11 @@ FilterPainter::FilterPainter(PaintLayer& layer, GraphicsContext& context, const 
     // done it above, and doing it later will defeat the outsets.
     paintingInfo.clipToDirtyRect = false;
 
-    if (clipRect.rect() != paintingInfo.paintDirtyRect || clipRect.hasRadius()) {
-        m_clipRecorder = wrapUnique(new LayerClipRecorder(context, *layer.layoutObject(), DisplayItem::kClipLayerFilter, clipRect, &paintingInfo, LayoutPoint(), paintFlags));
-    }
+    DCHECK(m_layoutObject);
 
-    ASSERT(m_layoutObject);
+    if (clipRect.rect() != paintingInfo.paintDirtyRect || clipRect.hasRadius())
+        m_clipRecorder = wrapUnique(new LayerClipRecorder(context, *layer.layoutObject(), DisplayItem::kClipLayerFilter, clipRect, &paintingInfo, LayoutPoint(), paintFlags));
+
     if (!context.getPaintController().displayItemConstructionIsDisabled()) {
         FilterOperations filterOperations(layer.computeFilterOperations(m_layoutObject->styleRef()));
         CompositorFilterOperations compositorFilterOperations;
@@ -70,7 +62,7 @@ FilterPainter::FilterPainter(PaintLayer& layer, GraphicsContext& context, const 
         // the layer's filter. See crbug.com/502026.
         if (compositorFilterOperations.isEmpty())
             return;
-        LayoutRect visualBounds(rootRelativeBounds);
+        LayoutRect visualBounds(layer.physicalBoundingBoxIncludingReflectionAndStackingChildren(offsetFromRoot));
         if (layer.enclosingPaginationLayer()) {
             // Filters are set up before pagination, so we need to make the bounding box visual on our own.
             visualBounds.moveBy(-offsetFromRoot);

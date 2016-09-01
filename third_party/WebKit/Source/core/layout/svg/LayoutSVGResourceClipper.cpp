@@ -264,22 +264,20 @@ bool LayoutSVGResourceClipper::hitTestClipContent(const FloatRect& objectBoundin
     return false;
 }
 
-FloatRect LayoutSVGResourceClipper::resourceBoundingBox(const LayoutObject* object)
+FloatRect LayoutSVGResourceClipper::resourceBoundingBox(const FloatRect& referenceBox)
 {
-    // Resource was not layouted yet. Give back the boundingBox of the object.
+    // The resource has not been layouted yet. Return the reference box.
     if (selfNeedsLayout())
-        return object->objectBoundingBox();
+        return referenceBox;
 
     if (m_localClipBounds.isEmpty())
         calculateLocalClipBounds();
 
     AffineTransform transform = toSVGClipPathElement(element())->calculateAnimatedLocalTransform();
     if (clipPathUnits() == SVGUnitTypes::kSvgUnitTypeObjectboundingbox) {
-        FloatRect objectBoundingBox = object->objectBoundingBox();
-        transform.translate(objectBoundingBox.x(), objectBoundingBox.y());
-        transform.scaleNonUniform(objectBoundingBox.width(), objectBoundingBox.height());
+        transform.translate(referenceBox.x(), referenceBox.y());
+        transform.scaleNonUniform(referenceBox.width(), referenceBox.height());
     }
-
     return transform.mapRect(m_localClipBounds);
 }
 
