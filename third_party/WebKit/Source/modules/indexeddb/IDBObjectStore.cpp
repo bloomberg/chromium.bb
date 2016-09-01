@@ -544,15 +544,14 @@ IDBIndex* IDBObjectStore::createIndex(ScriptState* scriptState, const String& na
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
         return nullptr;
     }
-    if (!keyPath.isValid()) {
-        exceptionState.throwDOMException(SyntaxError, "The keyPath argument contains an invalid key path.");
-        return nullptr;
-    }
     if (containsIndex(name)) {
         exceptionState.throwDOMException(ConstraintError, "An index with the specified name already exists.");
         return nullptr;
     }
-
+    if (!keyPath.isValid()) {
+        exceptionState.throwDOMException(SyntaxError, "The keyPath argument contains an invalid key path.");
+        return nullptr;
+    }
     if (keyPath.getType() == IDBKeyPath::ArrayType && options.multiEntry()) {
         exceptionState.throwDOMException(InvalidAccessError, "The keyPath argument was an array and the multiEntry option is true.");
         return nullptr;
