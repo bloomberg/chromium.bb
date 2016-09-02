@@ -65,6 +65,8 @@ NSString* const NSAccessibilityLoadCompleteNotification =
     @"AXLoadComplete";
 NSString* const NSAccessibilityInvalidStatusChangedNotification =
     @"AXInvalidStatusChanged";
+NSString* const NSAccessibilityLiveRegionCreatedNotification =
+    @"AXLiveRegionCreated";
 NSString* const NSAccessibilityLiveRegionChangedNotification =
     @"AXLiveRegionChanged";
 NSString* const NSAccessibilityExpandedChanged =
@@ -268,7 +270,9 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
         return;
       }
       break;
-    // TODO(nektar): Need to add an event for live region created.
+    case ui::AX_EVENT_ALERT:
+      mac_notification = NSAccessibilityLiveRegionCreatedNotification;
+      break;
     case ui::AX_EVENT_LIVE_REGION_CHANGED:
       mac_notification = NSAccessibilityLiveRegionChangedNotification;
       break;
@@ -291,7 +295,6 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
       break;
 
     // These events are not used on Mac for now.
-    case ui::AX_EVENT_ALERT:
     case ui::AX_EVENT_TEXT_CHANGED:
     case ui::AX_EVENT_CHILDREN_CHANGED:
     case ui::AX_EVENT_MENU_LIST_VALUE_CHANGED:
@@ -380,7 +383,6 @@ void BrowserAccessibilityManagerMac::OnAtomicUpdateFinished(
   BrowserAccessibilityManager::OnAtomicUpdateFinished(
       tree, root_changed, changes);
 
-  bool created_live_region = false;
   for (size_t i = 0; i < changes.size(); ++i) {
     if (changes[i].type != NODE_CREATED && changes[i].type != SUBTREE_CREATED)
       continue;
@@ -389,27 +391,9 @@ void BrowserAccessibilityManagerMac::OnAtomicUpdateFinished(
     DCHECK(changed_node);
     BrowserAccessibility* obj = GetFromAXNode(changed_node);
     if (obj && obj->HasStringAttribute(ui::AX_ATTR_LIVE_STATUS)) {
-      created_live_region = true;
-      break;
+      NotifyAccessibilityEvent(BrowserAccessibilityEvent::FromTreeChange,
+                               ui::AX_EVENT_ALERT, obj);
     }
-  }
-
-  if (!created_live_region)
-    return;
-
-  // This code is to work around a bug in VoiceOver, where a new live
-  // region that gets added is ignored. VoiceOver seems to only scan the
-  // page for live regions once. By recreating the NSAccessibility
-  // object for the root of the tree, we force VoiceOver to clear out its
-  // internal state and find newly-added live regions this time.
-  BrowserAccessibilityMac* root =
-      static_cast<BrowserAccessibilityMac*>(GetRoot());
-  if (root) {
-    root->RecreateNativeObject();
-    NotifyAccessibilityEvent(
-        BrowserAccessibilityEvent::FromTreeChange,
-        ui::AX_EVENT_CHILDREN_CHANGED,
-        root);
   }
 }
 
