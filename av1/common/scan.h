@@ -37,6 +37,8 @@ extern const SCAN_ORDER av1_scan_orders[TX_SIZES][TX_TYPES];
 #if CONFIG_ADAPT_SCAN
 void update_scan_prob(AV1_COMMON *cm, TX_SIZE tx_size, TX_TYPE tx_type,
                       int rate_16);
+void update_scan_count_facade(AV1_COMMON *cm, TX_SIZE tx_size, TX_TYPE tx_type,
+                              tran_low_t *dqcoeffs, int max_scan);
 #endif
 
 static INLINE int get_coef_context(const int16_t *neighbors,

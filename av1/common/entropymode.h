@@ -74,6 +74,11 @@ typedef struct frame_contexts {
   uint32_t non_zero_prob_8X8[TX_TYPES][64];
   uint32_t non_zero_prob_16X16[TX_TYPES][256];
   uint32_t non_zero_prob_32X32[TX_TYPES][1024];
+
+  int16_t scan_4X4[TX_TYPES][16];
+  int16_t scan_8X8[TX_TYPES][64];
+  int16_t scan_16X16[TX_TYPES][256];
+  int16_t scan_32X32[TX_TYPES][1024];
 #endif
 
 #if CONFIG_REF_MV

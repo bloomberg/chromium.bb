@@ -759,6 +759,16 @@ uint32_t *get_non_zero_prob(FRAME_CONTEXT *fc, TX_SIZE tx_size,
   }
 }
 
+int16_t *get_adapt_scan(FRAME_CONTEXT *fc, TX_SIZE tx_size, TX_TYPE tx_type) {
+  switch (tx_size) {
+    case TX_4X4: return fc->scan_4X4[tx_type];
+    case TX_8X8: return fc->scan_8X8[tx_type];
+    case TX_16X16: return fc->scan_16X16[tx_type];
+    case TX_32X32: return fc->scan_32X32[tx_type];
+    default: assert(0); return NULL;
+  }
+}
+
 uint32_t *get_non_zero_counts(FRAME_COUNTS *counts, TX_SIZE tx_size,
                               TX_TYPE tx_type) {
   switch (tx_size) {
@@ -793,5 +803,21 @@ void update_scan_prob(AV1_COMMON *cm, TX_SIZE tx_size, TX_TYPE tx_type,
         (curr_prob * rate_16 + prev_prob * ((1 << 16) - rate_16)) >> 16;
     non_zero_prob[i] = clamp(pred_prob, 0, UINT16_MAX);
   }
+}
+
+void update_scan_count(int16_t *scan, int max_scan, tran_low_t *dqcoeffs,
+                       uint32_t *non_zero_count) {
+  int i;
+  for (i = 0; i < max_scan; ++i) {
+    int coeff_idx = scan[i];
+    non_zero_count[coeff_idx] += (dqcoeffs[coeff_idx] != 0);
+  }
+}
+
+void update_scan_count_facade(AV1_COMMON *cm, TX_SIZE tx_size, TX_TYPE tx_type,
+                              tran_low_t *dqcoeffs, int max_scan) {
+  int16_t *scan = get_adapt_scan(cm->fc, tx_size, tx_type);
+  uint32_t *non_zero_count = get_non_zero_counts(&cm->counts, tx_size, tx_type);
+  update_scan_count(scan, max_scan, dqcoeffs, non_zero_count);
 }
 #endif
