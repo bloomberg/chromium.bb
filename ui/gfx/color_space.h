@@ -74,8 +74,13 @@ class GFX_EXPORT ColorSpace {
     // Chrome-specific values start at 1000.
     GAMMA24 = 1000,
 
+    // This is an ad-hoc transfer function that decodes SMPTE 2084 content
+    // into a 0-1 range more or less suitable for viewing on a non-hdr
+    // display.
+    SMPTEST2084_NON_HDR,
+
     // TODO(hubbe): Need to store an approximation of the gamma function(s).
-    CUSTOM = 1001,
+    CUSTOM,
     LAST = CUSTOM,
   };
 

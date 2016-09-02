@@ -398,7 +398,37 @@ GFX_EXPORT float ToLinear(ColorSpace::TransferID id, float v) {
     case ColorSpace::TransferID::GAMMA24:
       v = fmax(0.0f, v);
       return powf(v, 2.4f);
+
+    case ColorSpace::TransferID::SMPTEST2084_NON_HDR:
+      v = fmax(0.0f, v);
+      return fmin(2.3f * pow(v, 2.8f), v / 5.0f + 0.8f);
   }
+}
+
+namespace {
+// Assumes bt2020
+float Luma(const ColorTransform::TriStim& c) {
+  return c.x() * 0.2627f + c.y() * 0.6780f + c.z() * 0.0593f;
+}
+};
+
+GFX_EXPORT ColorTransform::TriStim ToLinear(ColorSpace::TransferID id,
+                                            ColorTransform::TriStim color) {
+  ColorTransform::TriStim ret(ToLinear(id, color.x()), ToLinear(id, color.y()),
+                              ToLinear(id, color.z()));
+
+  if (id == ColorSpace::TransferID::SMPTEST2084_NON_HDR) {
+    if (Luma(ret) > 0.0) {
+      ColorTransform::TriStim smpte2084(
+          ToLinear(ColorSpace::TransferID::SMPTEST2084, color.x()),
+          ToLinear(ColorSpace::TransferID::SMPTEST2084, color.y()),
+          ToLinear(ColorSpace::TransferID::SMPTEST2084, color.z()));
+      smpte2084.Scale(Luma(ret) / Luma(smpte2084));
+      ret = smpte2084;
+    }
+  }
+
+  return ret;
 }
 
 GFX_EXPORT Transform GetTransferMatrix(ColorSpace::MatrixID id) {
@@ -507,6 +537,12 @@ class ColorSpaceToColorSpaceTransform : public ColorTransform {
         case ColorSpace::TransferID::SMPTE170M:
           // See SMPTE 1886
           from_.transfer_ = ColorSpace::TransferID::GAMMA24;
+          break;
+
+        case ColorSpace::TransferID::SMPTEST2084:
+          // We don't have an HDR display, so replace SMPTE 2084 with something
+          // that returns ranges more or less suitable for a normal display.
+          from_.transfer_ = ColorSpace::TransferID::SMPTEST2084_NON_HDR;
           break;
 
         default:  // Do nothing
