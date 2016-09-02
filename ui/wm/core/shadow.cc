@@ -195,13 +195,12 @@ void Shadow::UpdateLayerBounds() {
       gfx::Rect(aperture_x, aperture_y, aperture_x * 2, aperture_y * 2));
 
   // The content bounds in the shadow's layer space are offsetted by
-  // |interior_inset_|. The occlusion area also has to be shrinked to
-  // allow rounded corners overdrawing on top of the window's content.
-  gfx::Rect content_bounds(
-      content_bounds_.x() + interior_inset_ + kRoundedCornerRadius,
-      content_bounds_.y() + interior_inset_ + kRoundedCornerRadius,
-      content_bounds_.width() - 2 * kRoundedCornerRadius,
-      content_bounds_.height() - 2 * kRoundedCornerRadius);
+  // |interior_inset_|. The occlusion area also has to be shrunk to allow
+  // rounded corners overdrawing on top of the window's content.
+  gfx::Rect content_bounds(interior_inset_ + kRoundedCornerRadius,
+                           interior_inset_ + kRoundedCornerRadius,
+                           content_bounds_.width() - 2 * kRoundedCornerRadius,
+                           content_bounds_.height() - 2 * kRoundedCornerRadius);
   shadow_layer_->UpdateNinePatchOcclusion(content_bounds);
 }
 
