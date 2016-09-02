@@ -482,12 +482,10 @@ void SourceBuffer::abortIfUpdating()
     DCHECK_EQ(m_pendingRemoveStart, -1);
 
     const char* traceEventName = 0;
-    if (!m_pendingAppendData.isEmpty()) {
-        traceEventName = "SourceBuffer::appendBuffer";
-    } else if (m_stream) {
+    if (m_stream) {
         traceEventName = "SourceBuffer::appendStream";
     } else {
-        NOTREACHED();
+        traceEventName = "SourceBuffer::appendBuffer";
     }
 
     // 4.1. Abort the buffer append and stream append loop algorithms if they are running.
