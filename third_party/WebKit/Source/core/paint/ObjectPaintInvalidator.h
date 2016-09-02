@@ -51,7 +51,8 @@ public:
 
     // Invalidate the paint of a specific subrectangle within a given object. The rect is in the object's coordinate space.
     // If a DisplayItemClient is specified, that client is invalidated rather than |m_object|.
-    void invalidatePaintRectangle(const LayoutRect&, DisplayItemClient*);
+    // Returns the visual rect that was invalidated (i.e, invalidation in the space of the GraphicsLayer backing this LayoutObject).
+    LayoutRect invalidatePaintRectangle(const LayoutRect&, DisplayItemClient*);
 
     void invalidatePaintIncludingNonCompositingDescendants();
     void invalidatePaintIncludingNonSelfPaintingLayerDescendants(const LayoutBoxModelObject& paintInvalidationContainer);

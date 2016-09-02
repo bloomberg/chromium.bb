@@ -187,7 +187,7 @@ public:
     bool isCaretBoundsDirty() const;
     void setCaretRectNeedsUpdate();
     void scheduleVisualUpdate() const;
-    void invalidateCaretRect();
+    void invalidateCaretRect(bool forceInvalidation = false);
     void paintCaret(GraphicsContext&, const LayoutPoint&);
 
     // Used to suspend caret blinking while the mouse is down.
@@ -246,6 +246,8 @@ public:
 
 private:
     friend class FrameSelectionTest;
+    friend class PaintControllerPaintTestForSlimmingPaintV1AndV2;
+    FRIEND_TEST_ALL_PREFIXES(PaintControllerPaintTestForSlimmingPaintV1AndV2, FullDocumentPaintingWithCaret);
 
     explicit FrameSelection(LocalFrame*);
 

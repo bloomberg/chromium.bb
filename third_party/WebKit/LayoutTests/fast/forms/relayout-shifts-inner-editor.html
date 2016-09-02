@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <script>
 var i = 0;
 var refreshIntervalId;
@@ -8,13 +9,12 @@ function repaintTest()
 }
 function moveInputElement()
 {
-    var input = document.getElementById('input');
     i++;
     input.style.left = i*10 + 'px';
     if (i >= 3) {
-        clearInterval(refreshIntervalId);
-        if (window.testRunner)
-            testRunner.notifyDone();
+        runAfterLayoutAndPaint(function() {
+            clearInterval(refreshIntervalId);
+            }, true);
     }
 }
 if (window.testRunner)

@@ -708,9 +708,9 @@ IntRect FrameSelection::absoluteCaretBounds()
     return m_frameCaret->absoluteCaretBounds();
 }
 
-void FrameSelection::invalidateCaretRect()
+void FrameSelection::invalidateCaretRect(bool forceInvalidation)
 {
-    m_frameCaret->invalidateCaretRect();
+    m_frameCaret->invalidateCaretRect(forceInvalidation);
 }
 
 void FrameSelection::dataWillChange(const CharacterData& node)

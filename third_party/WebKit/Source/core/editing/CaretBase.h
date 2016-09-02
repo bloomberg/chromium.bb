@@ -44,7 +44,7 @@ class LayoutViewItem;
 
 enum class CaretVisibility { Visible, Hidden };
 
-class CORE_EXPORT CaretBase : public  GarbageCollectedFinalized<CaretBase> {
+class CORE_EXPORT CaretBase : public GarbageCollectedFinalized<CaretBase>, public DisplayItemClient {
     WTF_MAKE_NONCOPYABLE(CaretBase);
 public:
     explicit CaretBase(CaretVisibility = CaretVisibility::Hidden);
@@ -69,15 +69,18 @@ public:
     CaretVisibility getCaretVisibility() const { return m_caretVisibility; }
 
     static LayoutBlock* caretLayoutObject(Node*);
-    static void invalidateLocalCaretRect(Node*, const LayoutRect&);
+    void invalidateLocalCaretRect(Node*, const LayoutRect&);
+
+    // DisplayItemClient methods.
+    LayoutRect visualRect() const override;
+    String debugName() const final;
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    static DisplayItemClient* displayItemClientForCaret(Node*);
-
     LayoutRect m_caretLocalRect; // caret rect in coords local to the layoutObject responsible for painting the caret
     CaretVisibility m_caretVisibility;
+    LayoutRect m_visualRect;
 };
 
 } // namespace blink

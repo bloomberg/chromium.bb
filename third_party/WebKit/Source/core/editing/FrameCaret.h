@@ -52,7 +52,9 @@ public:
     void setCaretVisibility(CaretVisibility) override;
     bool isCaretBoundsDirty() const { return m_caretRectDirty; }
     void setCaretRectNeedsUpdate();
-    void invalidateCaretRect();
+    // If |forceInvalidation| is true the caret's previous and new rectangles
+    // are forcibly invalidated regardless of the state of the blink timer.
+    void invalidateCaretRect(bool forceInvalidation);
     IntRect absoluteCaretBounds();
 
     bool shouldShowBlockCursor() const { return m_shouldShowBlockCursor; }

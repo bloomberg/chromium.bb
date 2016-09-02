@@ -115,7 +115,6 @@ void FrameCaret::startBlinkCaret()
 
     m_shouldPaintCaret = true;
     setCaretRectNeedsUpdate();
-
 }
 
 void FrameCaret::setCaretVisibility(CaretVisibility visibility)
@@ -147,7 +146,7 @@ bool FrameCaret::caretPositionIsValidForDocument(const Document& document) const
         && !caretPosition().position().isOrphan();
 }
 
-void FrameCaret::invalidateCaretRect()
+void FrameCaret::invalidateCaretRect(bool forceInvalidation)
 {
     if (!m_caretRectDirty)
         return;
@@ -160,7 +159,14 @@ void FrameCaret::invalidateCaretRect()
         newRect = localCaretRectOfPosition(caretPosition(), layoutObject);
     Node* newNode = layoutObject ? layoutObject->node() : nullptr;
 
-    if (!m_caretBlinkTimer.isActive()
+    // It's possible for the timer to be inactive even though we want to
+    // invalidate the caret. For example, when running as a layout test the
+    // caret blink interval could be zero and thus |m_caretBlinkTimer| will
+    // never be started. We provide |forceInvalidation| for use by paint
+    // invalidation internals where we need to invalidate the caret regardless
+    // of timer state.
+    if (!forceInvalidation
+        && !m_caretBlinkTimer.isActive()
         && newNode == m_previousCaretNode
         && newRect == m_previousCaretRect
         && getCaretVisibility() == m_previousCaretVisibility)

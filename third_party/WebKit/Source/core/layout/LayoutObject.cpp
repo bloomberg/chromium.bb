@@ -1119,9 +1119,9 @@ IntSize LayoutObject::scrollAdjustmentForPaintInvalidation(const LayoutBoxModelO
     return IntSize();
 }
 
-void LayoutObject::invalidatePaintRectangle(const LayoutRect& dirtyRect, DisplayItemClient* displayItemClient) const
+LayoutRect LayoutObject::invalidatePaintRectangle(const LayoutRect& dirtyRect, DisplayItemClient* displayItemClient) const
 {
-    ObjectPaintInvalidator(*this).invalidatePaintRectangle(dirtyRect, displayItemClient);
+    return ObjectPaintInvalidator(*this).invalidatePaintRectangle(dirtyRect, displayItemClient);
 }
 
 void LayoutObject::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)

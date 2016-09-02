@@ -361,6 +361,10 @@ public:
     bool hasCursorCaret() const;
     bool hasDragCaret() const;
     bool hasCaret() const { return hasCursorCaret() || hasDragCaret(); }
+    void invalidateCaret() const;
+
+protected:
+    PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&) override;
 
 private:
     LayoutRect localCaretRect(InlineBox*, int caretOffset, LayoutUnit* extraWidthToEndOfLine = nullptr) final;

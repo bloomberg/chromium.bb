@@ -4,6 +4,8 @@
 
 #include "core/paint/PaintControllerPaintTest.h"
 
+#include "core/editing/FrameCaret.h"
+#include "core/editing/FrameSelection.h"
 #include "core/layout/LayoutText.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/page/FocusController.h"
@@ -23,7 +25,6 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV1AndV2, FullDocumentPaintingWith
     document().page()->focusController().setActive(true);
     document().page()->focusController().setFocused(true);
     Element& div = *toElement(document().body()->firstChild());
-    LayoutObject& divLayoutObject = *document().body()->firstChild()->layoutObject();
     InlineTextBox& textInlineBox = *toLayoutText(div.firstChild()->layoutObject())->firstTextBox();
 
     EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 2,
@@ -36,7 +37,7 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV1AndV2, FullDocumentPaintingWith
     EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 3,
         TestDisplayItem(layoutView(), documentBackgroundType),
         TestDisplayItem(textInlineBox, foregroundType),
-        TestDisplayItem(divLayoutObject, DisplayItem::kCaret)); // New!
+        TestDisplayItem(*document().frame()->selection().m_frameCaret, DisplayItem::kCaret)); // New!
 }
 
 TEST_P(PaintControllerPaintTestForSlimmingPaintV1AndV2, InlineRelayout)

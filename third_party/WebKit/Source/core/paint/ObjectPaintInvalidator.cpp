@@ -274,15 +274,15 @@ void ObjectPaintInvalidator::invalidatePaintUsingContainer(const LayoutBoxModelO
         setBackingNeedsPaintInvalidationInRect(paintInvalidationContainer, dirtyRect, invalidationReason);
 }
 
-void ObjectPaintInvalidator::invalidatePaintRectangle(const LayoutRect& dirtyRect, DisplayItemClient* displayItemClient)
+LayoutRect ObjectPaintInvalidator::invalidatePaintRectangle(const LayoutRect& dirtyRect, DisplayItemClient* displayItemClient)
 {
     CHECK(m_object.isRooted());
 
     if (dirtyRect.isEmpty())
-        return;
+        return LayoutRect();
 
     if (m_object.view()->document().printing())
-        return; // Don't invalidate paints if we're printing.
+        return LayoutRect(); // Don't invalidate paints if we're printing.
 
     const LayoutBoxModelObject& paintInvalidationContainer = m_object.containerForPaintInvalidation();
     LayoutRect dirtyRectOnBacking = dirtyRect;
@@ -295,6 +295,8 @@ void ObjectPaintInvalidator::invalidatePaintRectangle(const LayoutRect& dirtyRec
         invalidateDisplayItemClient(*displayItemClient, PaintInvalidationRectangle);
     else
         m_object.invalidateDisplayItemClients(PaintInvalidationRectangle);
+
+    return dirtyRectOnBacking;
 }
 
 void ObjectPaintInvalidator::slowSetPaintingLayerNeedsRepaint()
