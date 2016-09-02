@@ -4,7 +4,9 @@
 
 import("//build/json_schema_api.gni")
 import("//tools/json_schema_compiler/json_features.gni")
-import("schemas.gni")
+
+schema_sources = [ "identity.idl" ]
+root_namespace = "extensions::shell::api::%(namespace)s"
 
 # GYP version: extensions/shell/common/api/api.gyp:shell_api
 json_schema_api("api") {

@@ -4,7 +4,6 @@
 
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
-import("//extensions/shell/app_shell.gni")
 
 # Technically, this directory should not depend on files from src/chrome, but
 # that's where the VERSION file is. This  should probably all be moved to
@@ -64,30 +63,115 @@ source_set("app_shell_lib") {
     "//v8",
   ]
 
-  sources = rebase_path(app_shell_gypi_values.app_shell_lib_sources,
-                        ".",
-                        "//extensions/shell")
+  sources = [
+    "app/paths_mac.h",
+    "app/paths_mac.mm",
+    "app/shell_main_delegate.cc",
+    "app/shell_main_delegate.h",
+    "browser/api/identity/identity_api.cc",
+    "browser/api/identity/identity_api.h",
+    "browser/default_shell_browser_main_delegate.cc",
+    "browser/default_shell_browser_main_delegate.h",
+    "browser/desktop_controller.cc",
+    "browser/desktop_controller.h",
+    "browser/media_capture_util.cc",
+    "browser/media_capture_util.h",
+    "browser/shell_app_delegate.cc",
+    "browser/shell_app_delegate.h",
+    "browser/shell_app_view_guest_delegate.cc",
+    "browser/shell_app_view_guest_delegate.h",
+    "browser/shell_app_window_client.cc",
+    "browser/shell_app_window_client.h",
+    "browser/shell_app_window_client_mac.mm",
+    "browser/shell_audio_controller_chromeos.cc",
+    "browser/shell_audio_controller_chromeos.h",
+    "browser/shell_browser_context.cc",
+    "browser/shell_browser_context.h",
+    "browser/shell_browser_context_keyed_service_factories.cc",
+    "browser/shell_browser_context_keyed_service_factories.h",
+    "browser/shell_browser_main_delegate.h",
+    "browser/shell_browser_main_parts.cc",
+    "browser/shell_browser_main_parts.h",
+    "browser/shell_browser_main_parts_mac.h",
+    "browser/shell_browser_main_parts_mac.mm",
+    "browser/shell_content_browser_client.cc",
+    "browser/shell_content_browser_client.h",
+    "browser/shell_desktop_controller_mac.h",
+    "browser/shell_desktop_controller_mac.mm",
+    "browser/shell_device_client.cc",
+    "browser/shell_device_client.h",
+    "browser/shell_display_info_provider.cc",
+    "browser/shell_display_info_provider.h",
+    "browser/shell_extension_host_delegate.cc",
+    "browser/shell_extension_host_delegate.h",
+    "browser/shell_extension_system.cc",
+    "browser/shell_extension_system.h",
+    "browser/shell_extension_system_factory.cc",
+    "browser/shell_extension_system_factory.h",
+    "browser/shell_extension_web_contents_observer.cc",
+    "browser/shell_extension_web_contents_observer.h",
+    "browser/shell_extensions_api_client.cc",
+    "browser/shell_extensions_api_client.h",
+    "browser/shell_extensions_browser_client.cc",
+    "browser/shell_extensions_browser_client.h",
+    "browser/shell_native_app_window.cc",
+    "browser/shell_native_app_window.h",
+    "browser/shell_native_app_window_mac.h",
+    "browser/shell_native_app_window_mac.mm",
+    "browser/shell_network_controller_chromeos.cc",
+    "browser/shell_network_controller_chromeos.h",
+    "browser/shell_network_delegate.cc",
+    "browser/shell_network_delegate.h",
+    "browser/shell_oauth2_token_service.cc",
+    "browser/shell_oauth2_token_service.h",
+    "browser/shell_oauth2_token_service_delegate.cc",
+    "browser/shell_oauth2_token_service_delegate.h",
+    "browser/shell_prefs.cc",
+    "browser/shell_prefs.h",
+    "browser/shell_runtime_api_delegate.cc",
+    "browser/shell_runtime_api_delegate.h",
+    "browser/shell_special_storage_policy.cc",
+    "browser/shell_special_storage_policy.h",
+    "browser/shell_speech_recognition_manager_delegate.cc",
+    "browser/shell_speech_recognition_manager_delegate.h",
+    "browser/shell_update_query_params_delegate.cc",
+    "browser/shell_update_query_params_delegate.h",
+    "browser/shell_url_request_context_getter.cc",
+    "browser/shell_url_request_context_getter.h",
+    "common/shell_content_client.cc",
+    "common/shell_content_client.h",
+    "common/shell_extensions_client.cc",
+    "common/shell_extensions_client.h",
+    "common/switches.cc",
+    "common/switches.h",
+    "renderer/shell_content_renderer_client.cc",
+    "renderer/shell_content_renderer_client.h",
+    "renderer/shell_extensions_renderer_client.cc",
+    "renderer/shell_extensions_renderer_client.h",
+    "utility/shell_content_utility_client.cc",
+    "utility/shell_content_utility_client.h",
+  ]
 
   if (use_aura) {
+    sources += [
+      "browser/shell_app_window_client_aura.cc",
+      "browser/shell_desktop_controller_aura.cc",
+      "browser/shell_desktop_controller_aura.h",
+      "browser/shell_native_app_window_aura.cc",
+      "browser/shell_native_app_window_aura.h",
+      "browser/shell_screen.cc",
+      "browser/shell_screen.h",
+    ]
     deps += [ "//ui/wm" ]
-
-    aura_sources = rebase_path(app_shell_gypi_values.app_shell_lib_sources_aura,
-                               ".",
-                               "//extensions/shell")
-    sources += aura_sources
   }
 
   if (is_chromeos) {
+    sources += [ "browser/api/vpn_provider/vpn_service_factory.cc" ]
     deps += [
       "//chromeos",
       "//ui/chromeos",
       "//ui/display",
     ]
-    chromeos_sources =
-        rebase_path(app_shell_gypi_values.app_shell_lib_sources_chromeos,
-                    ".",
-                    "//extensions/shell")
-    sources += chromeos_sources
   }
 
   if (enable_nacl) {
@@ -117,9 +201,10 @@ source_set("app_shell_lib") {
 executable("app_shell") {
   # testonly because :app_shell_lib is testonly. See :app_shell_lib comment.
   testonly = true
-  sources = rebase_path(app_shell_gypi_values.app_shell_sources,
-                        ".",
-                        "//extensions/shell")
+  sources = [
+    "app/shell_main.cc",
+  ]
+
   deps = [
     ":app_shell_lib",
     "//build/config/sanitizers:deps",
@@ -144,9 +229,13 @@ executable("app_shell") {
 }
 
 test("app_shell_unittests") {
-  sources = rebase_path(app_shell_gypi_values.app_shell_unittests_sources,
-                        ".",
-                        "//extensions/shell")
+  sources = [
+    "../test/extensions_unittests_main.cc",
+    "browser/api/identity/identity_api_unittest.cc",
+    "browser/shell_oauth2_token_service_unittest.cc",
+    "browser/shell_prefs_unittest.cc",
+    "common/shell_content_client_unittest.cc",
+  ]
 
   data = [
     "//extensions/test/data/",
@@ -172,30 +261,21 @@ test("app_shell_unittests") {
   ]
 
   if (use_aura) {
+    sources += [
+      "browser/shell_desktop_controller_aura_unittest.cc",
+      "browser/shell_native_app_window_aura_unittest.cc",
+      "browser/shell_screen_unittest.cc",
+    ]
     deps += [ "//ui/aura:test_support" ]
-
-    aura_sources =
-        rebase_path(app_shell_gypi_values.app_shell_unittests_sources_aura,
-                    ".",
-                    "//extensions/shell")
-    sources += aura_sources
   }
 
   if (is_chromeos) {
+    sources += [ "browser/shell_audio_controller_chromeos_unittest.cc" ]
     deps += [ "//chromeos:test_support_without_gmock" ]
-
-    chromeos_sources =
-        rebase_path(app_shell_gypi_values.app_shell_unittests_sources_chromeos,
-                    ".",
-                    "//extensions/shell")
-    sources += chromeos_sources
   }
 
   if (enable_nacl) {
-    sources +=
-        rebase_path(app_shell_gypi_values.app_shell_unittests_sources_nacl,
-                    ".",
-                    "//extensions/shell")
+    sources += [ "browser/shell_nacl_browser_delegate_unittest.cc" ]
   }
 }
 
