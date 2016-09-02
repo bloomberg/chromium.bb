@@ -22,7 +22,12 @@ struct MainThreadScrollingReason {
   enum : uint32_t { kThreadedScrollingDisabled = 1 << 2 };
   enum : uint32_t { kScrollbarScrolling = 1 << 3 };
   enum : uint32_t { kPageOverlay = 1 << 4 };
-  enum : uint32_t { kAnimatingScrollOnMainThread = 1 << 13 };
+  // This bit is set when any of the other main thread scrolling reasons cause
+  // an input event to be handled on the main thread, and the main thread
+  // blink::ScrollAnimator is in the middle of running a scroll offset
+  // animation. Note that a scroll handled by the main thread can result in an
+  // animation running on the main thread or on the compositor thread.
+  enum : uint32_t { kHandlingScrollFromMainThread = 1 << 13 };
   enum : uint32_t { kHasStickyPositionObjects = 1 << 14 };
   enum : uint32_t { kCustomScrollbarScrolling = 1 << 15 };
 
@@ -45,7 +50,7 @@ struct MainThreadScrollingReason {
     uint32_t reasons_set_by_main_thread =
         kNotScrollingOnMain | kHasBackgroundAttachmentFixedObjects |
         kHasNonLayerViewportConstrainedObjects | kThreadedScrollingDisabled |
-        kScrollbarScrolling | kPageOverlay | kAnimatingScrollOnMainThread |
+        kScrollbarScrolling | kPageOverlay | kHandlingScrollFromMainThread |
         kHasStickyPositionObjects | kCustomScrollbarScrolling;
     return (reasons & reasons_set_by_main_thread) == reasons;
   }
@@ -87,8 +92,8 @@ struct MainThreadScrollingReason {
       tracedValue->AppendString("Scrollbar scrolling");
     if (reasons & MainThreadScrollingReason::kPageOverlay)
       tracedValue->AppendString("Page overlay");
-    if (reasons & MainThreadScrollingReason::kAnimatingScrollOnMainThread)
-      tracedValue->AppendString("Animating scroll on main thread");
+    if (reasons & MainThreadScrollingReason::kHandlingScrollFromMainThread)
+      tracedValue->AppendString("Handling scroll from main thread");
     if (reasons & MainThreadScrollingReason::kHasStickyPositionObjects)
       tracedValue->AppendString("Has sticky position objects");
     if (reasons & MainThreadScrollingReason::kCustomScrollbarScrolling)

@@ -535,7 +535,7 @@ bool ScrollableArea::shouldScrollOnMainThread() const
         // TODO(ymalik): We have a non-transient "main thread scrolling reason"
         // that doesn't actually cause shouldScrollOnMainThread() to be true.
         // This is confusing and should be cleaned up.
-        return !!(reasons & ~MainThreadScrollingReason::kAnimatingScrollOnMainThread);
+        return !!(reasons & ~MainThreadScrollingReason::kHandlingScrollFromMainThread);
     }
     return true;
 }

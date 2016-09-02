@@ -383,7 +383,7 @@ void ScrollAnimator::addMainThreadScrollingReason()
 {
     if (WebLayer* scrollLayer = toWebLayer(getScrollableArea()->layerForScrolling())) {
         scrollLayer->addMainThreadScrollingReasons(
-            MainThreadScrollingReason::kAnimatingScrollOnMainThread);
+            MainThreadScrollingReason::kHandlingScrollFromMainThread);
     }
 }
 
@@ -391,7 +391,7 @@ void ScrollAnimator::removeMainThreadScrollingReason()
 {
     if (WebLayer* scrollLayer = toWebLayer(getScrollableArea()->layerForScrolling())) {
         scrollLayer->clearMainThreadScrollingReasons(
-            MainThreadScrollingReason::kAnimatingScrollOnMainThread);
+            MainThreadScrollingReason::kHandlingScrollFromMainThread);
     }
 }
 

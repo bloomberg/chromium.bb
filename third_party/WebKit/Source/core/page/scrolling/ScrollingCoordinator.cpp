@@ -699,7 +699,7 @@ void ScrollingCoordinator::setShouldUpdateScrollLayerPositionOnMainThread(MainTh
             // Clear all main thread scrolling reasons except the one that's set
             // if there is a running scroll animation.
             uint32_t mainThreadScrollingReasonsToClear = ~0u;
-            mainThreadScrollingReasonsToClear &= ~MainThreadScrollingReason::kAnimatingScrollOnMainThread;
+            mainThreadScrollingReasonsToClear &= ~MainThreadScrollingReason::kHandlingScrollFromMainThread;
             scrollLayer->clearMainThreadScrollingReasons(mainThreadScrollingReasonsToClear);
             if (visualViewportScrollLayer)
                 visualViewportScrollLayer->clearMainThreadScrollingReasons(mainThreadScrollingReasonsToClear);
