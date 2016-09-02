@@ -113,13 +113,12 @@ void SelectorDataList::initialize(const CSSSelectorList& selectorList)
     m_usesDeepCombinatorOrShadowPseudo = false;
     m_needsUpdatedDistribution = false;
     m_selectors.reserveInitialCapacity(selectorCount);
-    unsigned index = 0;
-    for (const CSSSelector* selector = selectorList.first(); selector; selector = CSSSelectorList::next(*selector), ++index) {
+    for (const CSSSelector* selector = selectorList.first(); selector; selector = CSSSelectorList::next(*selector)) {
         if (selector->matchesPseudoElement())
             continue;
         m_selectors.uncheckedAppend(selector);
-        m_usesDeepCombinatorOrShadowPseudo |= selectorList.selectorUsesDeepCombinatorOrShadowPseudo(index);
-        m_needsUpdatedDistribution |= selectorList.selectorNeedsUpdatedDistribution(index);
+        m_usesDeepCombinatorOrShadowPseudo |= selector->hasDeepCombinatorOrShadowPseudo();
+        m_needsUpdatedDistribution |= selector->needsUpdatedDistribution();
     }
 }
 

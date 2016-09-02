@@ -258,11 +258,11 @@ void RuleSet::addChildRules(const HeapVector<Member<StyleRuleBase>>& rules, cons
 
             const CSSSelectorList& selectorList = styleRule->selectorList();
             for (size_t selectorIndex = 0; selectorIndex != kNotFound; selectorIndex = selectorList.indexOfNextSelectorAfter(selectorIndex)) {
-                if (selectorList.selectorUsesDeepCombinatorOrShadowPseudo(selectorIndex)) {
+                if (selectorList.selectorAt(selectorIndex).hasDeepCombinatorOrShadowPseudo()) {
                     m_deepCombinatorOrShadowPseudoRules.append(MinimalRuleData(styleRule, selectorIndex, addRuleFlags));
-                } else if (selectorList.selectorHasContentPseudo(selectorIndex)) {
+                } else if (selectorList.selectorAt(selectorIndex).hasContentPseudo()) {
                     m_contentPseudoElementRules.append(MinimalRuleData(styleRule, selectorIndex, addRuleFlags));
-                } else if (selectorList.selectorHasSlottedPseudo(selectorIndex)) {
+                } else if (selectorList.selectorAt(selectorIndex).hasSlottedPseudo()) {
                     m_slottedPseudoElementRules.append(MinimalRuleData(styleRule, selectorIndex, addRuleFlags));
                 } else {
                     addRule(styleRule, selectorIndex, addRuleFlags);

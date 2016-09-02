@@ -296,6 +296,11 @@ public:
 
     bool matchesPseudoElement() const;
 
+    bool hasContentPseudo() const;
+    bool hasSlottedPseudo() const;
+    bool hasDeepCombinatorOrShadowPseudo() const;
+    bool needsUpdatedDistribution() const;
+
 private:
     unsigned m_relation               : 3; // enum RelationType
     unsigned m_match                  : 4; // enum MatchType

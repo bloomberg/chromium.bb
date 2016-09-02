@@ -76,12 +76,6 @@ public:
         return next - m_selectorArray;
     }
 
-    bool selectorNeedsUpdatedDistribution(size_t index) const;
-
-    bool selectorHasContentPseudo(size_t index) const;
-    bool selectorHasSlottedPseudo(size_t index) const;
-    bool selectorUsesDeepCombinatorOrShadowPseudo(size_t index) const;
-
     String selectorsText() const;
 
 private:
