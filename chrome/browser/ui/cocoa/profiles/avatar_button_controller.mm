@@ -20,6 +20,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/signin/core/common/profile_management_switches.h"
+#include "skia/ext/skia_utils_mac.h"
 #import "ui/base/cocoa/appkit_utils.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -32,11 +33,6 @@
 #include "ui/gfx/vector_icons_public.h"
 
 namespace {
-
-// NSButtons have a default padding of 5px. This button should have a padding
-// of 8px.
-const CGFloat kButtonExtraPadding = 8 - 5;
-const CGFloat kButtonHeight = 28;
 
 const ui::NinePartImageIds kNormalBorderImageIds =
     IMAGE_GRID(IDR_AVATAR_NATIVE_BUTTON_NORMAL);
@@ -51,6 +47,32 @@ NSImage* GetImageFromResourceID(int resourceId) {
   return ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       resourceId).ToNSImage();
 }
+
+const SkColor kMaterialButtonHoverColor = SkColorSetARGB(20, 0, 0, 0);
+const SkColor kMaterialButtonPressedColor = SkColorSetARGB(31, 0, 0, 0);
+const SkColor kMaterialAvatarIconColor = SkColorSetRGB(0x5a, 0x5a, 0x5a);
+
+CGFloat ButtonHeight() {
+  const CGFloat kButtonHeight = 28;
+  const CGFloat kMaterialButtonHeight = 24;
+  return ui::MaterialDesignController::IsModeMaterial() ? kMaterialButtonHeight
+                                                        : kButtonHeight;
+}
+
+// NSButtons have a default padding of 5px. Non-MD buttons should have a
+// padding of 8px. Meanwhile, MD buttons should have a padding of 6px.
+CGFloat ButtonExtraPadding() {
+  const CGFloat kDefaultPadding = 5;
+  const CGFloat kButtonExtraPadding = 8 - kDefaultPadding;
+  const CGFloat kMaterialButtonExtraPadding = 6 - kDefaultPadding;
+
+  return ui::MaterialDesignController::IsModeMaterial()
+             ? kMaterialButtonExtraPadding
+             : kButtonExtraPadding;
+}
+
+// Extra padding for the MD signed out avatar button.
+const CGFloat kMaterialSignedOutWidthPadding = 2;
 
 }  // namespace
 
@@ -81,16 +103,18 @@ NSImage* GetImageFromResourceID(int resourceId) {
   // is square. Otherwise, we are displaying the profile's name and an
   // optional authentication error icon.
   if ([self image] && !hasError_) {
-    buttonSize.width = kButtonHeight;
+    buttonSize.width = ButtonHeight();
+    if (ui::MaterialDesignController::IsModeMaterial())
+      buttonSize.width += kMaterialSignedOutWidthPadding;
   } else {
-    buttonSize.width += 2 * kButtonExtraPadding;
+    buttonSize.width += 2 * ButtonExtraPadding();
   }
-  buttonSize.height = kButtonHeight;
+  buttonSize.height = ButtonHeight();
   return buttonSize;
 }
 
 - (void)drawInteriorWithFrame:(NSRect)frame inView:(NSView*)controlView {
-  NSRect frameAfterPadding = NSInsetRect(frame, kButtonExtraPadding, 0);
+  NSRect frameAfterPadding = NSInsetRect(frame, ButtonExtraPadding(), 0);
   [super drawInteriorWithFrame:frameAfterPadding inView:controlView];
 }
 
@@ -109,15 +133,33 @@ NSImage* GetImageFromResourceID(int resourceId) {
                     inView:(NSView*)controlView {
   HoverState hoverState =
       [base::mac::ObjCCastStrict<AvatarButton>(controlView) hoverState];
-  ui::NinePartImageIds imageIds = kNormalBorderImageIds;
-  if (isThemedWindow_)
-    imageIds = kThemedBorderImageIds;
 
-  if (hoverState == kHoverStateMouseDown)
-    imageIds = kPressedBorderImageIds;
-  else if (hoverState == kHoverStateMouseOver)
-    imageIds = kHoverBorderImageIds;
-  ui::DrawNinePartImage(frame, imageIds, NSCompositeSourceOver, 1.0, true);
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    NSColor* backgroundColor = nil;
+    if (hoverState == kHoverStateMouseDown) {
+      backgroundColor = skia::SkColorToSRGBNSColor(kMaterialButtonPressedColor);
+    } else if (hoverState == kHoverStateMouseOver) {
+      backgroundColor = skia::SkColorToSRGBNSColor(kMaterialButtonHoverColor);
+    }
+
+    if (backgroundColor) {
+      [backgroundColor set];
+      NSBezierPath* path = [NSBezierPath bezierPathWithRoundedRect:frame
+                                                           xRadius:2.0f
+                                                           yRadius:2.0f];
+      [path fill];
+    }
+  } else {
+    ui::NinePartImageIds imageIds = kNormalBorderImageIds;
+    if (isThemedWindow_)
+      imageIds = kThemedBorderImageIds;
+
+    if (hoverState == kHoverStateMouseDown)
+      imageIds = kPressedBorderImageIds;
+    else if (hoverState == kHoverStateMouseOver)
+      imageIds = kHoverBorderImageIds;
+    ui::DrawNinePartImage(frame, imageIds, NSCompositeSourceOver, 1.0, true);
+  }
 }
 
 - (void)drawFocusRingMaskWithFrame:(NSRect)frame inView:(NSView*)view {
@@ -162,8 +204,10 @@ NSImage* GetImageFromResourceID(int resourceId) {
     AvatarButton* avatarButton =
         [[AvatarButton alloc] initWithFrame:NSZeroRect];
     button_.reset(avatarButton);
-    base::scoped_nsobject<CustomThemeButtonCell> cell(
+
+    base::scoped_nsobject<NSButtonCell> cell(
         [[CustomThemeButtonCell alloc] initWithThemedWindow:isThemedWindow_]);
+
     [avatarButton setCell:cell.get()];
 
     [avatarButton setWantsLayer:YES];
@@ -250,21 +294,33 @@ NSImage* GetImageFromResourceID(int resourceId) {
 
   AvatarButton* button =
       base::mac::ObjCCastStrict<AvatarButton>(button_);
+
   if (useGenericButton) {
-    [button setDefaultImage:GetImageFromResourceID(
-        IDR_AVATAR_NATIVE_BUTTON_AVATAR)];
-    [button setHoverImage:GetImageFromResourceID(
-        IDR_AVATAR_NATIVE_BUTTON_AVATAR_HOVER)];
-    [button setPressedImage:GetImageFromResourceID(
-        IDR_AVATAR_NATIVE_BUTTON_AVATAR_PRESSED)];
-    // This is a workaround for an issue in the HoverImageButton where the
-    // button is initially sized incorrectly unless a default image is provided.
-    // See crbug.com/298501.
-    [button setImage:GetImageFromResourceID(IDR_AVATAR_NATIVE_BUTTON_AVATAR)];
+    if (ui::MaterialDesignController::IsModeMaterial()) {
+      NSImage* avatarIcon = NSImageFromImageSkia(
+          gfx::CreateVectorIcon(gfx::VectorIconId::USER_ACCOUNT_AVATAR, 18,
+                                kMaterialAvatarIconColor));
+      [button setDefaultImage:avatarIcon];
+      [button setHoverImage:nil];
+      [button setPressedImage:nil];
+    } else {
+      [button setDefaultImage:GetImageFromResourceID(
+                                  IDR_AVATAR_NATIVE_BUTTON_AVATAR)];
+      [button setHoverImage:GetImageFromResourceID(
+                                IDR_AVATAR_NATIVE_BUTTON_AVATAR_HOVER)];
+      [button setPressedImage:GetImageFromResourceID(
+                                  IDR_AVATAR_NATIVE_BUTTON_AVATAR_PRESSED)];
+      // This is a workaround for an issue in the HoverImageButton where the
+      // button is initially sized incorrectly unless a default image is
+      // provided.
+      // See crbug.com/298501.
+      [button setImage:GetImageFromResourceID(IDR_AVATAR_NATIVE_BUTTON_AVATAR)];
+    }
     [button setImagePosition:NSImageOnly];
   } else if (hasError_) {
+    BOOL isMaterial = ui::MaterialDesignController::IsModeMaterial();
     NSImage* errorIcon =
-        switches::IsMaterialDesignUserMenu()
+        isMaterial
             ? NSImageFromImageSkia(gfx::CreateVectorIcon(
                   gfx::VectorIconId::SYNC_PROBLEM, 16, gfx::kGoogleRed700))
             : GetImageFromResourceID(IDR_ICON_PROFILES_AVATAR_BUTTON_ERROR);
@@ -272,9 +328,7 @@ NSImage* GetImageFromResourceID(int resourceId) {
     [button setHoverImage:nil];
     [button setPressedImage:nil];
     [button setImage:errorIcon];
-    [button setImagePosition:switches::IsMaterialDesignUserMenu()
-                                 ? NSImageLeft
-                                 : NSImageRight];
+    [button setImagePosition:isMaterial ? NSImageLeft : NSImageRight];
   } else {
     [button setDefaultImage:nil];
     [button setHoverImage:nil];

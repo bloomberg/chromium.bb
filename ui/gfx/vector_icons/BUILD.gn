@@ -224,6 +224,7 @@ action("aggregate_vector_icons") {
     "tab_usb_connected.icon",
     "tablet.icon",
     "translate.icon",
+    "user_account_avatar.icon",
     "videocam.icon",
     "warning.icon",
     "warning_badge.icon",
