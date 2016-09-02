@@ -41,7 +41,6 @@ public class NewTabPageRecyclerView extends RecyclerView {
     private final GestureDetector mGestureDetector;
     private final LinearLayoutManager mLayoutManager;
     private final int mToolbarHeight;
-    private final int mMinBottomSpacing;
     private final int mMaxHeaderHeight;
 
     /**
@@ -80,8 +79,6 @@ public class NewTabPageRecyclerView extends RecyclerView {
         Resources res = context.getResources();
         mToolbarHeight = res.getDimensionPixelSize(R.dimen.toolbar_height_no_shadow)
                 + res.getDimensionPixelSize(R.dimen.toolbar_progress_bar_height);
-        mMinBottomSpacing =
-                res.getDimensionPixelSize(R.dimen.ntp_min_bottom_spacing_recycler_view);
         mMaxHeaderHeight = res.getDimensionPixelSize(R.dimen.snippets_article_header_height);
     }
 
@@ -177,12 +174,12 @@ public class NewTabPageRecyclerView extends RecyclerView {
         int firstVisiblePos = mLayoutManager.findFirstVisibleItemPosition();
         if (firstHeaderPos == RecyclerView.NO_POSITION
                 || firstVisiblePos == RecyclerView.NO_POSITION) {
-            return mMinBottomSpacing;
+            return 0;
         }
 
         // We have enough items to fill the view, since the snap point item is not even visible.
         if (firstVisiblePos > firstHeaderPos) {
-            return mMinBottomSpacing;
+            return 0;
         }
 
         ViewHolder lastContentItem = findLastContentItem();
@@ -211,7 +208,7 @@ public class NewTabPageRecyclerView extends RecyclerView {
             bottomSpacing -= contentHeight - mCompensationHeight;
         }
 
-        return Math.max(mMinBottomSpacing, bottomSpacing);
+        return Math.max(0, bottomSpacing);
     }
 
     public void updatePeekingCardAndHeader() {
