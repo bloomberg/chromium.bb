@@ -223,7 +223,9 @@ InvalidationSet& ensureInvalidationSet(Map& map, const typename Map::KeyType& ke
     if (type == InvalidateDescendants)
         return toSiblingInvalidationSet(addResult.storedValue->value.get())->ensureDescendants();
 
-    addResult.storedValue->value = SiblingInvalidationSet::create(toDescendantInvalidationSet(addResult.storedValue->value.get()));
+    RefPtr<InvalidationSet> descendants = addResult.storedValue->value;
+    RefPtr<InvalidationSet> siblings = SiblingInvalidationSet::create(toDescendantInvalidationSet(descendants.get()));
+    addResult.storedValue->value = siblings;
     return *addResult.storedValue->value;
 }
 
@@ -276,21 +278,25 @@ RuleFeatureSet::~RuleFeatureSet()
 
 ALWAYS_INLINE InvalidationSet& RuleFeatureSet::ensureClassInvalidationSet(const AtomicString& className, InvalidationType type)
 {
+    RELEASE_ASSERT(!className.isEmpty());
     return ensureInvalidationSet(m_classInvalidationSets, className, type);
 }
 
 ALWAYS_INLINE InvalidationSet& RuleFeatureSet::ensureAttributeInvalidationSet(const AtomicString& attributeName, InvalidationType type)
 {
+    RELEASE_ASSERT(!attributeName.isEmpty());
     return ensureInvalidationSet(m_attributeInvalidationSets, attributeName, type);
 }
 
 ALWAYS_INLINE InvalidationSet& RuleFeatureSet::ensureIdInvalidationSet(const AtomicString& id, InvalidationType type)
 {
+    RELEASE_ASSERT(!id.isEmpty());
     return ensureInvalidationSet(m_idInvalidationSets, id, type);
 }
 
 ALWAYS_INLINE InvalidationSet& RuleFeatureSet::ensurePseudoInvalidationSet(CSSSelector::PseudoType pseudoType, InvalidationType type)
 {
+    RELEASE_ASSERT(pseudoType != CSSSelector::PseudoUnknown);
     return ensureInvalidationSet(m_pseudoInvalidationSets, pseudoType, type);
 }
 
@@ -730,6 +736,7 @@ void RuleFeatureSet::add(const RuleFeatureSet& other)
 {
     RELEASE_ASSERT(m_isAlive);
     RELEASE_ASSERT(other.m_isAlive);
+    RELEASE_ASSERT(&other != this);
     for (const auto& entry : other.m_classInvalidationSets)
         ensureInvalidationSet(m_classInvalidationSets, entry.key, entry.value->type()).combine(*entry.value);
     for (const auto& entry : other.m_attributeInvalidationSets)

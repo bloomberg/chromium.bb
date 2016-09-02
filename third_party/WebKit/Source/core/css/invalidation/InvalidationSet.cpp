@@ -104,7 +104,10 @@ bool InvalidationSet::invalidatesElement(Element& element) const
 
 void InvalidationSet::combine(const InvalidationSet& other)
 {
-    ASSERT(type() == other.type());
+    RELEASE_ASSERT(m_isAlive);
+    RELEASE_ASSERT(other.m_isAlive);
+    RELEASE_ASSERT(&other != this);
+    RELEASE_ASSERT(type() == other.type());
     if (type() == InvalidateSiblings) {
         SiblingInvalidationSet& siblings = toSiblingInvalidationSet(*this);
         const SiblingInvalidationSet& otherSiblings = toSiblingInvalidationSet(other);
@@ -201,6 +204,7 @@ void InvalidationSet::addClass(const AtomicString& className)
 {
     if (wholeSubtreeInvalid())
         return;
+    RELEASE_ASSERT(!className.isEmpty());
     ensureClassSet().add(className);
 }
 
@@ -208,6 +212,7 @@ void InvalidationSet::addId(const AtomicString& id)
 {
     if (wholeSubtreeInvalid())
         return;
+    RELEASE_ASSERT(!id.isEmpty());
     ensureIdSet().add(id);
 }
 
@@ -215,6 +220,7 @@ void InvalidationSet::addTagName(const AtomicString& tagName)
 {
     if (wholeSubtreeInvalid())
         return;
+    RELEASE_ASSERT(!tagName.isEmpty());
     ensureTagNameSet().add(tagName);
 }
 
@@ -222,6 +228,7 @@ void InvalidationSet::addAttribute(const AtomicString& attribute)
 {
     if (wholeSubtreeInvalid())
         return;
+    RELEASE_ASSERT(!attribute.isEmpty());
     ensureAttributeSet().add(attribute);
 }
 
