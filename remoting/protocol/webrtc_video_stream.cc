@@ -69,7 +69,6 @@ WebrtcVideoStream::WebrtcVideoStream()
 WebrtcVideoStream::~WebrtcVideoStream() {
   if (stream_) {
     for (const auto& track : stream_->GetVideoTracks()) {
-      track->GetSource()->Stop();
       stream_->RemoveTrack(track.get());
     }
     peer_connection_->RemoveStream(stream_.get());
