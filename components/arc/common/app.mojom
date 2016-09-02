@@ -10,12 +10,25 @@ import "scale_factor.mojom";
 import "screen_rect.mojom";
 
 // Describes OrientationLock request.
+// Note: ChromeOS currently assumes the internal panel is always landscape.
+// All rotation angles mentioned here are measured clockwise.
 [Extensible]
 enum OrientationLock {
   NONE = 0,
+  // Rotated 90 or 270 deg.
   PORTRAIT = 1,
+  // Rotated 0 or 180 deg.
   LANDSCAPE = 2,
+  // Keep the current orientation.
   CURRENT = 3,
+  // Rotated 90 deg.
+  PORTRAIT_PRIMARY = 4,
+  // Rotated 0 deg.
+  LANDSCAPE_PRIMARY = 5,
+  // Rotated 270 deg.
+  PORTRAIT_SECONDARY = 6,
+  // Rotated 180 deg.
+  LANDSCAPE_SECONDARY = 7,
 };
 
 // Describes ARC app.

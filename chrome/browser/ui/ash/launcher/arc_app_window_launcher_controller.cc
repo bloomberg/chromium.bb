@@ -54,11 +54,13 @@ arc::mojom::OrientationLock GetCurrentOrientation() {
   // landscape (ROTATE_0 == landscape).
   switch (internal_display.rotation()) {
     case display::Display::ROTATE_0:
-    case display::Display::ROTATE_180:
-      return arc::mojom::OrientationLock::LANDSCAPE;
+      return arc::mojom::OrientationLock::LANDSCAPE_PRIMARY;
     case display::Display::ROTATE_90:
+      return arc::mojom::OrientationLock::PORTRAIT_PRIMARY;
+    case display::Display::ROTATE_180:
+      return arc::mojom::OrientationLock::LANDSCAPE_SECONDARY;
     case display::Display::ROTATE_270:
-      return arc::mojom::OrientationLock::PORTRAIT;
+      return arc::mojom::OrientationLock::PORTRAIT_SECONDARY;
   }
   return arc::mojom::OrientationLock::NONE;
 }
@@ -66,12 +68,21 @@ arc::mojom::OrientationLock GetCurrentOrientation() {
 blink::WebScreenOrientationLockType BlinkOrientationLockFromMojom(
     arc::mojom::OrientationLock orientation_lock) {
   DCHECK_NE(arc::mojom::OrientationLock::CURRENT, orientation_lock);
-  if (orientation_lock == arc::mojom::OrientationLock::PORTRAIT) {
-    return blink::WebScreenOrientationLockPortrait;
-  } else if (orientation_lock == arc::mojom::OrientationLock::LANDSCAPE) {
-    return blink::WebScreenOrientationLockLandscape;
-  } else {
-    return blink::WebScreenOrientationLockAny;
+  switch (orientation_lock) {
+    case arc::mojom::OrientationLock::PORTRAIT:
+      return blink::WebScreenOrientationLockPortrait;
+    case arc::mojom::OrientationLock::LANDSCAPE:
+      return blink::WebScreenOrientationLockLandscape;
+    case arc::mojom::OrientationLock::PORTRAIT_PRIMARY:
+      return blink::WebScreenOrientationLockPortraitPrimary;
+    case arc::mojom::OrientationLock::LANDSCAPE_PRIMARY:
+      return blink::WebScreenOrientationLockLandscapePrimary;
+    case arc::mojom::OrientationLock::PORTRAIT_SECONDARY:
+      return blink::WebScreenOrientationLockPortraitSecondary;
+    case arc::mojom::OrientationLock::LANDSCAPE_SECONDARY:
+      return blink::WebScreenOrientationLockLandscapeSecondary;
+    default:
+      return blink::WebScreenOrientationLockAny;
   }
 }
 
