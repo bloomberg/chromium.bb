@@ -125,7 +125,7 @@ static void RunTests(JNIEnv* env,
     AndroidLog(ANDROID_LOG_VERBOSE,
                "Native test waiting for GDB because flag %s was supplied",
                switches::kWaitForDebugger);
-    base::debug::WaitForDebugger(24 * 60 * 60, false);
+    base::debug::WaitForDebugger(24 * 60 * 60, true);
   }
 
   base::FilePath test_data_dir(
