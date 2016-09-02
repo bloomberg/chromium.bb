@@ -20,7 +20,7 @@ import org.chromium.base.test.BaseActivityInstrumentationTestCase;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryAdapter;
-import org.chromium.chrome.browser.download.ui.DownloadHistoryAdapter.ItemViewHolder;
+import org.chromium.chrome.browser.download.ui.DownloadHistoryItemViewHolder;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper;
 import org.chromium.chrome.browser.download.ui.DownloadItemView;
 import org.chromium.chrome.browser.download.ui.DownloadManagerUi;
@@ -217,12 +217,14 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
 
         // Select the first two items.
         ViewHolder mostRecentHolder = mRecyclerView.findViewHolderForAdapterPosition(1);
-        assertTrue(mostRecentHolder instanceof ItemViewHolder);
-        final DownloadItemView firstItemView = ((ItemViewHolder) mostRecentHolder).mItemView;
+        assertTrue(mostRecentHolder instanceof DownloadHistoryItemViewHolder);
+        final DownloadItemView firstItemView =
+                ((DownloadHistoryItemViewHolder) mostRecentHolder).getItemView();
 
         ViewHolder nextMostRecentHolder = mRecyclerView.findViewHolderForAdapterPosition(2);
-        assertTrue(nextMostRecentHolder instanceof ItemViewHolder);
-        final DownloadItemView secondItemView = ((ItemViewHolder) nextMostRecentHolder).mItemView;
+        assertTrue(nextMostRecentHolder instanceof DownloadHistoryItemViewHolder);
+        final DownloadItemView secondItemView =
+                ((DownloadHistoryItemViewHolder) nextMostRecentHolder).getItemView();
 
         assertTrue(mAdapterObserver.mOnSelectionItems.isEmpty());
         int callCount = mAdapterObserver.onSelectionCallback.getCallCount();

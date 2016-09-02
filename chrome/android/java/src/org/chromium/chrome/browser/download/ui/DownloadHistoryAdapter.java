@@ -5,16 +5,11 @@
 package org.chromium.chrome.browser.download.ui;
 
 import android.content.ComponentName;
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.text.TextUtils;
-import android.text.format.Formatter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -29,7 +24,6 @@ import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBri
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadItem;
 import org.chromium.chrome.browser.widget.DateDividedAdapter;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
-import org.chromium.components.url_formatter.UrlFormatter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,40 +33,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /** Bridges the user's download history and the UI used to display it. */
 public class DownloadHistoryAdapter extends DateDividedAdapter implements DownloadUiObserver {
-
-    /** Holds onto a View that displays information about a downloaded file. */
-    public static class ItemViewHolder
-            extends RecyclerView.ViewHolder implements ThumbnailProvider.ThumbnailRequest {
-        public DownloadItemView mItemView;
-        public TextView mFilenameView;
-        public TextView mHostnameView;
-        public TextView mFilesizeView;
-        public DownloadHistoryItemWrapper mItem;
-
-        public ItemViewHolder(View itemView) {
-            super(itemView);
-
-            assert itemView instanceof DownloadItemView;
-            mItemView = (DownloadItemView) itemView;
-
-            mFilenameView = (TextView) itemView.findViewById(R.id.filename_view);
-            mHostnameView = (TextView) itemView.findViewById(R.id.hostname_view);
-            mFilesizeView = (TextView) itemView.findViewById(R.id.filesize_view);
-        }
-
-        @Override
-        public String getFilePath() {
-            return mItem == null ? null : mItem.getFilePath();
-        }
-
-        @Override
-        public void onThumbnailRetrieved(String filePath, Bitmap thumbnail) {
-            if (TextUtils.equals(getFilePath(), filePath) && thumbnail != null
-                    && thumbnail.getWidth() != 0 && thumbnail.getHeight() != 0) {
-                mItemView.setThumbnailBitmap(thumbnail);
-            }
-        }
-    }
 
     /** See {@link #findItemIndex}. */
     private static final int INVALID_INDEX = -1;
@@ -200,58 +160,15 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
         View v = LayoutInflater.from(parent.getContext()).inflate(
                 R.layout.download_item_view, parent, false);
         ((DownloadItemView) v).setSelectionDelegate(getSelectionDelegate());
-        return new ItemViewHolder(v);
+        return new DownloadHistoryItemViewHolder(v);
     }
 
     @Override
     public void bindViewHolderForTimedItem(ViewHolder current, TimedItem timedItem) {
-        ThumbnailProvider thumbnailProvider = mBackendProvider.getThumbnailProvider();
         final DownloadHistoryItemWrapper item = (DownloadHistoryItemWrapper) timedItem;
 
-        ItemViewHolder holder = (ItemViewHolder) current;
-
-        // Cancel any previous request for a thumbnail that was to be displayed in this holder.
-        thumbnailProvider.cancelRetrieval(holder);
-
-        Context context = holder.mFilesizeView.getContext();
-        holder.mFilenameView.setText(item.getDisplayFileName());
-        holder.mHostnameView.setText(
-                UrlFormatter.formatUrlForSecurityDisplay(item.getUrl(), false));
-        holder.mFilesizeView.setText(
-                Formatter.formatFileSize(context, item.getFileSize()));
-        holder.mItem = item;
-
-        // Asynchronously grab a thumbnail for the file if it might have one.
-        int fileType = item.getFilterType();
-        if (fileType == DownloadFilter.FILTER_IMAGE) {
-            thumbnailProvider.getThumbnail(holder);
-        } else {
-            // TODO(dfalcantara): Get thumbnails for audio and video files when possible.
-        }
-
-        // Pick what icon to display for the item.
-        int iconResource = R.drawable.ic_drive_file_white_24dp;
-        switch (fileType) {
-            case DownloadFilter.FILTER_PAGE:
-                iconResource = R.drawable.ic_drive_site_white_24dp;
-                break;
-            case DownloadFilter.FILTER_VIDEO:
-                iconResource = R.drawable.ic_play_arrow_white_24dp;
-                break;
-            case DownloadFilter.FILTER_AUDIO:
-                iconResource = R.drawable.ic_music_note_white_24dp;
-                break;
-            case DownloadFilter.FILTER_IMAGE:
-                iconResource = R.drawable.ic_image_white_24dp;
-                break;
-            case DownloadFilter.FILTER_DOCUMENT:
-                iconResource = R.drawable.ic_drive_text_white_24dp;
-                break;
-            default:
-        }
-
-        // Initialize the DownloadItemView.
-        holder.mItemView.initialize(item, iconResource);
+        DownloadHistoryItemViewHolder holder = (DownloadHistoryItemViewHolder) current;
+        holder.displayItem(mBackendProvider, item);
     }
 
     /**
