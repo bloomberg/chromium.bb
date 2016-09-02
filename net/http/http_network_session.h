@@ -164,6 +164,9 @@ class NET_EXPORT HttpNetworkSession
     bool quic_close_sessions_on_ip_change;
     // Specifies QUIC idle connection state lifetime.
     int quic_idle_connection_timeout_seconds;
+    // Specifies the reduced ping timeout subsequent connections should use when
+    // a connection was timed out with open streams.
+    int quic_reduced_ping_timeout_seconds;
     // Specifies the maximum time duration that QUIC packet reader can perform
     // consecutive packets reading.
     int quic_packet_reader_yield_after_duration_milliseconds;

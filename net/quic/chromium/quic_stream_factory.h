@@ -190,6 +190,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       bool close_sessions_on_ip_change,
       bool disable_quic_on_timeout_with_open_streams,
       int idle_connection_timeout_seconds,
+      int reduced_ping_timeout_seconds,
       int packet_reader_yield_after_duration_milliseconds,
       bool migrate_sessions_on_network_change,
       bool migrate_sessions_early,
@@ -254,6 +255,9 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   // Called by a session after it shuts down.
   void OnSessionClosed(QuicChromiumClientSession* session);
+
+  // Called by a session when it times out with open streams.
+  void OnTimeoutWithOpenStreams();
 
   // Cancels a pending request.
   void CancelRequest(QuicStreamRequest* request);
@@ -598,6 +602,10 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   // Set if we do want to delay TCP connection when it is racing with QUIC.
   bool delay_tcp_race_;
+
+  // PING timeout for connections.
+  QuicTime::Delta ping_timeout_;
+  QuicTime::Delta reduced_ping_timeout_;
 
   // If more than |yield_after_packets_| packets have been read or more than
   // |yield_after_duration_| time has passed, then

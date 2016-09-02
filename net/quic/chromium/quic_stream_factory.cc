@@ -737,6 +737,7 @@ QuicStreamFactory::QuicStreamFactory(
     bool close_sessions_on_ip_change,
     bool disable_quic_on_timeout_with_open_streams,
     int idle_connection_timeout_seconds,
+    int reduced_ping_timeout_seconds,
     int packet_reader_yield_after_duration_milliseconds,
     bool migrate_sessions_on_network_change,
     bool migrate_sessions_early,
@@ -789,6 +790,9 @@ QuicStreamFactory::QuicStreamFactory(
           threshold_public_resets_post_handshake),
       socket_receive_buffer_size_(socket_receive_buffer_size),
       delay_tcp_race_(delay_tcp_race),
+      ping_timeout_(QuicTime::Delta::FromSeconds(kPingTimeoutSecs)),
+      reduced_ping_timeout_(
+          QuicTime::Delta::FromSeconds(reduced_ping_timeout_seconds)),
       yield_after_packets_(kQuicYieldAfterPacketsRead),
       yield_after_duration_(QuicTime::Delta::FromMilliseconds(
           packet_reader_yield_after_duration_milliseconds)),
@@ -1372,6 +1376,13 @@ void QuicStreamFactory::OnSessionClosed(QuicChromiumClientSession* session) {
   all_sessions_.erase(session);
 }
 
+void QuicStreamFactory::OnTimeoutWithOpenStreams() {
+  // Reduce PING timeout when connection times out with open stream.
+  if (ping_timeout_ > reduced_ping_timeout_) {
+    ping_timeout_ = reduced_ping_timeout_;
+  }
+}
+
 void QuicStreamFactory::CancelRequest(QuicStreamRequest* request) {
   RequestMap::iterator request_it = active_requests_.find(request);
   DCHECK(request_it != active_requests_.end());
@@ -1805,6 +1816,7 @@ int QuicStreamFactory::CreateSession(
   QuicConnection* connection = new QuicConnection(
       connection_id, addr, helper_.get(), alarm_factory_.get(), writer,
       true /* owns_writer */, Perspective::IS_CLIENT, supported_versions_);
+  connection->set_ping_timeout(ping_timeout_);
   connection->SetMaxPacketLength(max_packet_length_);
 
   QuicConfig config = config_;

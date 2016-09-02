@@ -77,6 +77,11 @@ int QuicStreamFactoryPeer::GetNumberOfLossyConnections(
   return factory->number_of_lossy_connections_[port];
 }
 
+QuicTime::Delta QuicStreamFactoryPeer::GetPingTimeout(
+    QuicStreamFactory* factory) {
+  return factory->ping_timeout_;
+}
+
 bool QuicStreamFactoryPeer::IsQuicDisabled(QuicStreamFactory* factory,
                                            uint16_t port) {
   return factory->IsQuicDisabled(port);

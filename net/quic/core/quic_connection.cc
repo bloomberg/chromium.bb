@@ -231,6 +231,7 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
       delay_setting_retransmission_alarm_(false),
       pending_retransmission_alarm_(false),
       defer_send_in_response_to_packets_(false),
+      ping_timeout_(QuicTime::Delta::FromSeconds(kPingTimeoutSecs)),
       arena_(),
       ack_alarm_(alarm_factory_->CreateAlarm(arena_.New<AckAlarmDelegate>(this),
                                              &arena_)),
@@ -2243,8 +2244,7 @@ void QuicConnection::SetPingAlarm() {
     // Don't send a ping unless there are open streams.
     return;
   }
-  QuicTime::Delta ping_timeout = QuicTime::Delta::FromSeconds(kPingTimeoutSecs);
-  ping_alarm_->Update(clock_->ApproximateNow() + ping_timeout,
+  ping_alarm_->Update(clock_->ApproximateNow() + ping_timeout_,
                       QuicTime::Delta::FromSeconds(1));
 }
 

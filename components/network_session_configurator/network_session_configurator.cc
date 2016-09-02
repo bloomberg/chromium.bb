@@ -207,6 +207,17 @@ int GetQuicIdleConnectionTimeoutSeconds(
   return 0;
 }
 
+int GetQuicReducedPingTimeoutSeconds(
+    const VariationParameters& quic_trial_params) {
+  int value;
+  if (base::StringToInt(
+          GetVariationParam(quic_trial_params, "reduced_ping_timeout_seconds"),
+          &value)) {
+    return value;
+  }
+  return 0;
+}
+
 int GetQuicPacketReaderYieldAfterDurationMilliseconds(
     const VariationParameters& quic_trial_params) {
   int value;
@@ -346,6 +357,12 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
     if (idle_connection_timeout_seconds != 0) {
       params->quic_idle_connection_timeout_seconds =
           idle_connection_timeout_seconds;
+    }
+    int reduced_ping_timeout_seconds =
+        GetQuicReducedPingTimeoutSeconds(quic_trial_params);
+    if (reduced_ping_timeout_seconds > 0 &&
+        reduced_ping_timeout_seconds < net::kPingTimeoutSecs) {
+      params->quic_reduced_ping_timeout_seconds = reduced_ping_timeout_seconds;
     }
     int packet_reader_yield_after_duration_milliseconds =
         GetQuicPacketReaderYieldAfterDurationMilliseconds(quic_trial_params);

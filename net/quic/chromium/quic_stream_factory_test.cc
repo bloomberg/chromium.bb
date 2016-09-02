@@ -259,6 +259,7 @@ class QuicStreamFactoryTestBase {
         close_sessions_on_ip_change_(false),
         disable_quic_on_timeout_with_open_streams_(false),
         idle_connection_timeout_seconds_(kIdleConnectionTimeoutSeconds),
+        reduced_ping_timeout_seconds_(kPingTimeoutSecs),
         packet_reader_yield_after_duration_milliseconds_(
             kQuicYieldAfterDurationMilliseconds),
         migrate_sessions_on_network_change_(false),
@@ -295,7 +296,7 @@ class QuicStreamFactoryTestBase {
         delay_tcp_race_, /*max_server_configs_stored_in_properties*/ 0,
         close_sessions_on_ip_change_,
         disable_quic_on_timeout_with_open_streams_,
-        idle_connection_timeout_seconds_,
+        idle_connection_timeout_seconds_, reduced_ping_timeout_seconds_,
         packet_reader_yield_after_duration_milliseconds_,
         migrate_sessions_on_network_change_, migrate_sessions_early_,
         allow_server_migration_, force_hol_blocking_, race_cert_verification_,
@@ -554,6 +555,7 @@ class QuicStreamFactoryTestBase {
   bool close_sessions_on_ip_change_;
   bool disable_quic_on_timeout_with_open_streams_;
   int idle_connection_timeout_seconds_;
+  int reduced_ping_timeout_seconds_;
   int packet_reader_yield_after_duration_milliseconds_;
   bool migrate_sessions_on_network_change_;
   bool migrate_sessions_early_;
@@ -3517,6 +3519,117 @@ TEST_P(QuicStreamFactoryTest, TimeoutsWithOpenStreamsTwoOfTwo) {
   EXPECT_EQ(OK, stream2->InitializeStream(&request_info, DEFAULT_PRIORITY,
                                           net_log_, CompletionCallback()));
 
+  session2->connection()->CloseConnection(
+      QUIC_NETWORK_IDLE_TIMEOUT, "test", ConnectionCloseBehavior::SILENT_CLOSE);
+  // Need to spin the loop now to ensure that
+  // QuicStreamFactory::OnSessionClosed() runs.
+  base::RunLoop run_loop2;
+  run_loop2.RunUntilIdle();
+  EXPECT_EQ(
+      2, QuicStreamFactoryPeer::GetNumTimeoutsWithOpenStreams(factory_.get()));
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsQuicDisabled(factory_.get(),
+                                                    host_port_pair_.port()));
+  EXPECT_EQ(QuicChromiumClientSession::QUIC_DISABLED_TIMEOUT_WITH_OPEN_STREAMS,
+            factory_->QuicDisabledReason(host_port_pair_.port()));
+
+  // Verify that QUIC is un-disabled after a TCP job fails.
+  factory_->OnTcpJobCompleted(/*succeeded=*/false);
+  EXPECT_EQ(
+      0, QuicStreamFactoryPeer::GetNumTimeoutsWithOpenStreams(factory_.get()));
+  EXPECT_FALSE(QuicStreamFactoryPeer::IsQuicDisabled(factory_.get(),
+                                                     host_port_pair_.port()));
+
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
+  EXPECT_TRUE(socket_data2.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data2.AllWriteDataConsumed());
+}
+
+TEST_P(QuicStreamFactoryTest, ReducePingTimeoutOnConnectionTimeOutOpenStreams) {
+  reduced_ping_timeout_seconds_ = 10;
+  disable_disk_cache_ = true;
+  threshold_timeouts_with_open_streams_ = 2;
+  Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+  QuicStreamFactoryPeer::SetTaskRunner(factory_.get(), runner_.get());
+  EXPECT_FALSE(QuicStreamFactoryPeer::IsQuicDisabled(factory_.get(),
+                                                     host_port_pair_.port()));
+  EXPECT_EQ(0, QuicStreamFactoryPeer::GetNumberOfLossyConnections(
+                   factory_.get(), host_port_pair_.port()));
+
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
+
+  MockQuicData socket_data2;
+  socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data2.AddSocketDataToFactory(&socket_factory_);
+
+  HostPortPair server2(kServer2HostName, kDefaultServerPort);
+
+  crypto_client_stream_factory_.set_handshake_mode(
+      MockCryptoClientStream::CONFIRM_HANDSHAKE);
+  host_resolver_.set_synchronous_mode(true);
+  host_resolver_.rules()->AddIPLiteralRule(host_port_pair_.host(),
+                                           "192.168.0.1", "");
+  host_resolver_.rules()->AddIPLiteralRule(server2.host(), "192.168.0.1", "");
+
+  // Quic should use default PING timeout when no previous connection times out
+  // with open stream.
+  EXPECT_EQ(QuicTime::Delta::FromSeconds(kPingTimeoutSecs),
+            QuicStreamFactoryPeer::GetPingTimeout(factory_.get()));
+  QuicStreamRequest request(factory_.get());
+  EXPECT_EQ(OK, request.Request(host_port_pair_, privacy_mode_,
+                                /*cert_verify_flags=*/0, url_, "GET", net_log_,
+                                callback_.callback()));
+
+  QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
+  EXPECT_EQ(QuicTime::Delta::FromSeconds(kPingTimeoutSecs),
+            session->connection()->ping_timeout());
+
+  std::unique_ptr<QuicHttpStream> stream = request.CreateStream();
+  EXPECT_TRUE(stream.get());
+  HttpRequestInfo request_info;
+  EXPECT_EQ(OK, stream->InitializeStream(&request_info, DEFAULT_PRIORITY,
+                                         net_log_, CompletionCallback()));
+
+  DVLOG(1)
+      << "Created 1st session and initialized a stream. Now trigger timeout";
+  session->connection()->CloseConnection(QUIC_NETWORK_IDLE_TIMEOUT, "test",
+                                         ConnectionCloseBehavior::SILENT_CLOSE);
+  // Need to spin the loop now to ensure that
+  // QuicStreamFactory::OnSessionClosed() runs.
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
+
+  EXPECT_EQ(
+      1, QuicStreamFactoryPeer::GetNumTimeoutsWithOpenStreams(factory_.get()));
+  EXPECT_FALSE(QuicStreamFactoryPeer::IsQuicDisabled(factory_.get(),
+                                                     host_port_pair_.port()));
+
+  // The first connection times out with open stream, QUIC should reduce initial
+  // PING time for subsequent connections.
+  EXPECT_EQ(QuicTime::Delta::FromSeconds(10),
+            QuicStreamFactoryPeer::GetPingTimeout(factory_.get()));
+
+  // Test two-in-a-row timeouts with open streams.
+  DVLOG(1) << "Create 2nd session and timeout with open stream";
+  TestCompletionCallback callback2;
+  QuicStreamRequest request2(factory_.get());
+  EXPECT_EQ(OK, request2.Request(server2, privacy_mode_,
+                                 /*cert_verify_flags=*/0, url2_, "GET",
+                                 net_log_, callback2.callback()));
+  QuicChromiumClientSession* session2 = GetActiveSession(server2);
+  EXPECT_EQ(QuicTime::Delta::FromSeconds(10),
+            session2->connection()->ping_timeout());
+
+  std::unique_ptr<QuicHttpStream> stream2 = request2.CreateStream();
+  EXPECT_TRUE(stream2.get());
+  EXPECT_EQ(OK, stream2->InitializeStream(&request_info, DEFAULT_PRIORITY,
+                                          net_log_, CompletionCallback()));
   session2->connection()->CloseConnection(
       QUIC_NETWORK_IDLE_TIMEOUT, "test", ConnectionCloseBehavior::SILENT_CLOSE);
   // Need to spin the loop now to ensure that

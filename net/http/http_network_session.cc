@@ -122,6 +122,7 @@ HttpNetworkSession::Params::Params()
       quic_threshold_timeouts_streams_open(0),
       quic_close_sessions_on_ip_change(false),
       quic_idle_connection_timeout_seconds(kIdleConnectionTimeoutSeconds),
+      quic_reduced_ping_timeout_seconds(kPingTimeoutSecs),
       quic_packet_reader_yield_after_duration_milliseconds(
           kQuicYieldAfterDurationMilliseconds),
       quic_disable_preconnect_if_0rtt(false),
@@ -189,6 +190,7 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
           params.quic_close_sessions_on_ip_change,
           params.disable_quic_on_timeout_with_open_streams,
           params.quic_idle_connection_timeout_seconds,
+          params.quic_reduced_ping_timeout_seconds,
           params.quic_packet_reader_yield_after_duration_milliseconds,
           params.quic_migrate_sessions_on_network_change,
           params.quic_migrate_sessions_early,
@@ -342,6 +344,8 @@ std::unique_ptr<base::Value> HttpNetworkSession::QuicInfoToValue() const {
                    params_.quic_max_server_configs_stored_in_properties);
   dict->SetInteger("idle_connection_timeout_seconds",
                    params_.quic_idle_connection_timeout_seconds);
+  dict->SetInteger("reduced_ping_timeout_seconds",
+                   params_.quic_reduced_ping_timeout_seconds);
   dict->SetInteger(
       "packet_reader_yield_after_duration_milliseconds",
       params_.quic_packet_reader_yield_after_duration_milliseconds);
