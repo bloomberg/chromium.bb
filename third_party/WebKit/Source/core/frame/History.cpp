@@ -37,6 +37,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "wtf/text/StringView.h"
 
 namespace blink {
 
@@ -44,36 +45,12 @@ namespace {
 
 bool equalIgnoringPathQueryAndFragment(const KURL& a, const KURL& b)
 {
-    int aLength = a.pathStart();
-    int bLength = b.pathStart();
-
-    if (aLength != bLength)
-        return false;
-
-    const String& aString = a.getString();
-    const String& bString = b.getString();
-    for (int i = 0; i < aLength; ++i) {
-        if (aString[i] != bString[i])
-            return false;
-    }
-    return true;
+    return StringView(a.getString(), 0, a.pathStart()) == StringView(b.getString(), 0, b.pathStart());
 }
 
 bool equalIgnoringQueryAndFragment(const KURL& a, const KURL& b)
 {
-    int aLength = a.pathEnd();
-    int bLength = b.pathEnd();
-
-    if (aLength != bLength)
-        return false;
-
-    const String& aString = a.getString();
-    const String& bString = b.getString();
-    for (int i = 0; i < aLength; ++i) {
-        if (aString[i] != bString[i])
-            return false;
-    }
-    return true;
+    return StringView(a.getString(), 0, a.pathEnd()) == StringView(b.getString(), 0, b.pathEnd());
 }
 
 }  // namespace
