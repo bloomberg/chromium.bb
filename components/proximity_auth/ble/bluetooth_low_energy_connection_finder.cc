@@ -251,9 +251,9 @@ BluetoothLowEnergyConnectionFinder::CreateConnection(
   DCHECK(remote_device_.bluetooth_address.empty() ||
          remote_device_.bluetooth_address == device_address);
   remote_device_.bluetooth_address = device_address;
-  return base::WrapUnique(new BluetoothLowEnergyConnection(
+  return base::MakeUnique<BluetoothLowEnergyConnection>(
       remote_device_, adapter_, remote_service_uuid_, bluetooth_throttler_,
-      max_number_of_tries_));
+      max_number_of_tries_);
 }
 
 void BluetoothLowEnergyConnectionFinder::OnConnectionStatusChanged(

@@ -58,8 +58,7 @@ class FakeBluetoothConnectionFinder : public BluetoothConnectionFinder {
   ~FakeBluetoothConnectionFinder() override {}
 
   void Find(const ConnectionCallback& connection_callback) override {
-    connection_callback.Run(
-        base::WrapUnique(new FakeConnection(RemoteDevice())));
+    connection_callback.Run(base::MakeUnique<FakeConnection>(RemoteDevice()));
   }
 
  private:

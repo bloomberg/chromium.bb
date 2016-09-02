@@ -160,10 +160,10 @@ void CryptAuthEnrollmentManager::OnEnrollmentFinished(bool success) {
 
 std::unique_ptr<SyncScheduler>
 CryptAuthEnrollmentManager::CreateSyncScheduler() {
-  return base::WrapUnique(new SyncSchedulerImpl(
+  return base::MakeUnique<SyncSchedulerImpl>(
       this, base::TimeDelta::FromDays(kEnrollmentRefreshPeriodDays),
       base::TimeDelta::FromMinutes(kEnrollmentBaseRecoveryPeriodMinutes),
-      kEnrollmentMaxJitterRatio, "CryptAuth Enrollment"));
+      kEnrollmentMaxJitterRatio, "CryptAuth Enrollment");
 }
 
 std::string CryptAuthEnrollmentManager::GetUserPublicKey() {

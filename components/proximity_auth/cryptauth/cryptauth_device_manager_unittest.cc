@@ -256,8 +256,9 @@ class ProximityAuthCryptAuthDeviceManagerTest
     SyncScheduler::Delegate* delegate =
         static_cast<SyncScheduler::Delegate*>(device_manager_.get());
 
-    std::unique_ptr<SyncScheduler::SyncRequest> sync_request = base::WrapUnique(
-        new SyncScheduler::SyncRequest(device_manager_->GetSyncScheduler()));
+    std::unique_ptr<SyncScheduler::SyncRequest> sync_request =
+        base::MakeUnique<SyncScheduler::SyncRequest>(
+            device_manager_->GetSyncScheduler());
     EXPECT_CALL(*this, OnSyncStartedProxy());
     delegate->OnSyncRequested(std::move(sync_request));
 
@@ -353,8 +354,8 @@ TEST_F(ProximityAuthCryptAuthDeviceManagerTest, InitWithDefaultPrefs) {
 
   TestCryptAuthDeviceManager device_manager(
       std::move(clock),
-      base::WrapUnique(new MockCryptAuthClientFactory(
-          MockCryptAuthClientFactory::MockType::MAKE_STRICT_MOCKS)),
+      base::MakeUnique<MockCryptAuthClientFactory>(
+          MockCryptAuthClientFactory::MockType::MAKE_STRICT_MOCKS),
       &gcm_manager_, &pref_service);
 
   EXPECT_CALL(

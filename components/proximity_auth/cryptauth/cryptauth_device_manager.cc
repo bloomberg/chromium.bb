@@ -235,10 +235,10 @@ void CryptAuthDeviceManager::OnGetMyDevicesFailure(const std::string& error) {
 }
 
 std::unique_ptr<SyncScheduler> CryptAuthDeviceManager::CreateSyncScheduler() {
-  return base::WrapUnique(new SyncSchedulerImpl(
+  return base::MakeUnique<SyncSchedulerImpl>(
       this, base::TimeDelta::FromHours(kRefreshPeriodHours),
       base::TimeDelta::FromMinutes(kDeviceSyncBaseRecoveryPeriodMinutes),
-      kDeviceSyncMaxJitterRatio, "CryptAuth DeviceSync"));
+      kDeviceSyncMaxJitterRatio, "CryptAuth DeviceSync");
 }
 
 void CryptAuthDeviceManager::OnResyncMessage() {

@@ -50,7 +50,7 @@ void FakeConnection::SendMessageImpl(std::unique_ptr<WireMessage> message) {
 std::unique_ptr<WireMessage> FakeConnection::DeserializeWireMessage(
     bool* is_incomplete_message) {
   *is_incomplete_message = false;
-  return base::WrapUnique(new WireMessage(pending_payload_));
+  return base::MakeUnique<WireMessage>(pending_payload_);
 }
 
 }  // namespace proximity_auth

@@ -92,7 +92,7 @@ void DeviceToDeviceAuthenticator::OnKeyPairGenerated(
 }
 
 std::unique_ptr<base::Timer> DeviceToDeviceAuthenticator::CreateTimer() {
-  return base::WrapUnique(new base::OneShotTimer());
+  return base::MakeUnique<base::OneShotTimer>();
 }
 
 void DeviceToDeviceAuthenticator::OnHelloMessageCreated(
@@ -115,7 +115,7 @@ void DeviceToDeviceAuthenticator::OnHelloMessageCreated(
   hello_message_ = message;
   std::string permit_id = kPermitIdPrefix + account_id_;
   connection_->SendMessage(
-      base::WrapUnique(new WireMessage(hello_message_, permit_id)));
+      base::MakeUnique<WireMessage>(hello_message_, permit_id));
 }
 
 void DeviceToDeviceAuthenticator::OnResponderAuthTimedOut() {
@@ -154,7 +154,7 @@ void DeviceToDeviceAuthenticator::OnInitiatorAuthCreated(
   }
 
   state_ = State::SENT_INITIATOR_AUTH;
-  connection_->SendMessage(base::WrapUnique(new WireMessage(message)));
+  connection_->SendMessage(base::MakeUnique<WireMessage>(message));
 }
 
 void DeviceToDeviceAuthenticator::Fail(const std::string& error_message) {
@@ -181,9 +181,9 @@ void DeviceToDeviceAuthenticator::Succeed() {
   connection_->RemoveObserver(this);
   callback_.Run(
       Result::SUCCESS,
-      base::WrapUnique(new DeviceToDeviceSecureContext(
+      base::MakeUnique<DeviceToDeviceSecureContext>(
           std::move(secure_message_delegate_), session_symmetric_key_,
-          responder_auth_message_, SecureContext::PROTOCOL_VERSION_THREE_ONE)));
+          responder_auth_message_, SecureContext::PROTOCOL_VERSION_THREE_ONE));
 }
 
 void DeviceToDeviceAuthenticator::OnConnectionStatusChanged(

@@ -32,7 +32,7 @@ void SaveResult(std::string* result_out, const std::string& result) {
 class ProximityAuthDeviceToDeviceSecureContextTest : public testing::Test {
  protected:
   ProximityAuthDeviceToDeviceSecureContextTest()
-      : secure_context_(base::WrapUnique(new FakeSecureMessageDelegate()),
+      : secure_context_(base::MakeUnique<FakeSecureMessageDelegate>(),
                         kSymmetricKey,
                         kResponderAuthMessage,
                         kProtocolVersion) {}
@@ -74,7 +74,7 @@ TEST_F(ProximityAuthDeviceToDeviceSecureContextTest, DecodeInvalidMessage) {
 TEST_F(ProximityAuthDeviceToDeviceSecureContextTest, EncodeAndDecode) {
   // Initialize second secure channel with the same parameters as the first.
   DeviceToDeviceSecureContext secure_context2(
-      base::WrapUnique(new FakeSecureMessageDelegate()), kSymmetricKey,
+      base::MakeUnique<FakeSecureMessageDelegate>(), kSymmetricKey,
       kResponderAuthMessage, kProtocolVersion);
   std::string message = "encrypt this message";
 
@@ -95,7 +95,7 @@ TEST_F(ProximityAuthDeviceToDeviceSecureContextTest,
        DecodeInvalidSequenceNumber) {
   // Initialize second secure channel with the same parameters as the first.
   DeviceToDeviceSecureContext secure_context2(
-      base::WrapUnique(new FakeSecureMessageDelegate()), kSymmetricKey,
+      base::MakeUnique<FakeSecureMessageDelegate>(), kSymmetricKey,
       kResponderAuthMessage, kProtocolVersion);
 
   // Send a few messages over the first secure context.

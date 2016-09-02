@@ -19,9 +19,9 @@ CryptAuthEnrollerFactoryImpl::~CryptAuthEnrollerFactoryImpl() {}
 
 std::unique_ptr<CryptAuthEnroller>
 CryptAuthEnrollerFactoryImpl::CreateInstance() {
-  return base::WrapUnique(new CryptAuthEnrollerImpl(
+  return base::MakeUnique<CryptAuthEnrollerImpl>(
       proximity_auth_client_->CreateCryptAuthClientFactory(),
-      proximity_auth_client_->CreateSecureMessageDelegate()));
+      proximity_auth_client_->CreateSecureMessageDelegate());
 }
 
 }  // namespace proximity_auth

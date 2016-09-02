@@ -193,11 +193,11 @@ CryptAuthClientFactoryImpl::~CryptAuthClientFactoryImpl() {
 }
 
 std::unique_ptr<CryptAuthClient> CryptAuthClientFactoryImpl::CreateInstance() {
-  return base::WrapUnique(new CryptAuthClientImpl(
+  return base::MakeUnique<CryptAuthClientImpl>(
       base::WrapUnique(new CryptAuthApiCallFlow()),
       base::WrapUnique(
           new CryptAuthAccessTokenFetcherImpl(token_service_, account_id_)),
-      url_request_context_, device_classifier_));
+      url_request_context_, device_classifier_);
 }
 
 }  // proximity_auth

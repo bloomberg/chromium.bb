@@ -177,7 +177,7 @@ void MessengerImpl::ProcessMessageQueue() {
 }
 
 void MessengerImpl::OnMessageEncoded(const std::string& encoded_message) {
-  connection_->SendMessage(base::WrapUnique(new WireMessage(encoded_message)));
+  connection_->SendMessage(base::MakeUnique<WireMessage>(encoded_message));
 }
 
 void MessengerImpl::OnMessageDecoded(const std::string& decoded_message) {

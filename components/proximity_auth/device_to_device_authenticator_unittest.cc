@@ -341,10 +341,10 @@ TEST_F(ProximityAuthDeviceToDeviceAuthenticatorTest,
   // completes.
   WireMessage wire_message(base::RandBytesAsString(300u));
   connection_.SendMessage(
-      base::WrapUnique(new WireMessage(base::RandBytesAsString(300u))));
+      base::MakeUnique<WireMessage>(base::RandBytesAsString(300u)));
   connection_.OnBytesReceived(wire_message.Serialize());
   connection_.SendMessage(
-      base::WrapUnique(new WireMessage(base::RandBytesAsString(300u))));
+      base::MakeUnique<WireMessage>(base::RandBytesAsString(300u)));
   connection_.OnBytesReceived(wire_message.Serialize());
 }
 

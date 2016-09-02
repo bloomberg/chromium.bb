@@ -83,22 +83,22 @@ void RemoteDeviceLifeCycleImpl::RemoveObserver(Observer* observer) {
 std::unique_ptr<ConnectionFinder>
 RemoteDeviceLifeCycleImpl::CreateConnectionFinder() {
   if (remote_device_.bluetooth_type == RemoteDevice::BLUETOOTH_LE) {
-    return base::WrapUnique(new BluetoothLowEnergyConnectionFinder(
+    return base::MakeUnique<BluetoothLowEnergyConnectionFinder>(
         remote_device_, kBLESmartLockServiceUUID,
         BluetoothLowEnergyConnectionFinder::FinderStrategy::FIND_PAIRED_DEVICE,
-        nullptr, bluetooth_throttler_.get(), 3));
+        nullptr, bluetooth_throttler_.get(), 3);
   } else {
-    return base::WrapUnique(new BluetoothConnectionFinder(
+    return base::MakeUnique<BluetoothConnectionFinder>(
         remote_device_, device::BluetoothUUID(kClassicBluetoothServiceUUID),
-        base::TimeDelta::FromSeconds(3)));
+        base::TimeDelta::FromSeconds(3));
   }
 }
 
 std::unique_ptr<Authenticator>
 RemoteDeviceLifeCycleImpl::CreateAuthenticator() {
-  return base::WrapUnique(new DeviceToDeviceAuthenticator(
+  return base::MakeUnique<DeviceToDeviceAuthenticator>(
       connection_.get(), remote_device_.user_id,
-      proximity_auth_client_->CreateSecureMessageDelegate()));
+      proximity_auth_client_->CreateSecureMessageDelegate());
 }
 
 void RemoteDeviceLifeCycleImpl::TransitionToState(

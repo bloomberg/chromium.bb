@@ -139,23 +139,23 @@ class ProximityAuthBluetoothLowEnergyConnectionTest : public testing::Test {
         task_runner_(new base::TestSimpleTaskRunner) {}
 
   void SetUp() override {
-    device_ = base::WrapUnique(new NiceMock<device::MockBluetoothDevice>(
+    device_ = base::MakeUnique<NiceMock<device::MockBluetoothDevice>>(
         adapter_.get(), 0, kTestRemoteDeviceName,
-        kTestRemoteDeviceBluetoothAddress, false, false));
+        kTestRemoteDeviceBluetoothAddress, false, false);
 
-    service_ = base::WrapUnique(new NiceMock<device::MockBluetoothGattService>(
-        device_.get(), kServiceID, service_uuid_, true, false));
+    service_ = base::MakeUnique<NiceMock<device::MockBluetoothGattService>>(
+        device_.get(), kServiceID, service_uuid_, true, false);
     to_peripheral_char_ =
-        base::WrapUnique(new NiceMock<device::MockBluetoothGattCharacteristic>(
+        base::MakeUnique<NiceMock<device::MockBluetoothGattCharacteristic>>(
             service_.get(), kToPeripheralCharID, to_peripheral_char_uuid_,
             false, kCharacteristicProperties,
-            device::BluetoothRemoteGattCharacteristic::PERMISSION_NONE));
+            device::BluetoothRemoteGattCharacteristic::PERMISSION_NONE);
 
     from_peripheral_char_ =
-        base::WrapUnique(new NiceMock<device::MockBluetoothGattCharacteristic>(
+        base::MakeUnique<NiceMock<device::MockBluetoothGattCharacteristic>>(
             service_.get(), kFromPeripheralCharID, from_peripheral_char_uuid_,
             false, kCharacteristicProperties,
-            device::BluetoothRemoteGattCharacteristic::PERMISSION_NONE));
+            device::BluetoothRemoteGattCharacteristic::PERMISSION_NONE);
 
     device::BluetoothAdapterFactory::SetAdapterForTesting(adapter_);
 
@@ -220,8 +220,8 @@ class ProximityAuthBluetoothLowEnergyConnectionTest : public testing::Test {
             Return(new NiceMock<MockBluetoothLowEnergyCharacteristicsFinder>)));
 
     create_gatt_connection_success_callback_.Run(
-        base::WrapUnique(new NiceMock<device::MockBluetoothGattConnection>(
-            adapter_, kTestRemoteDeviceBluetoothAddress)));
+        base::MakeUnique<NiceMock<device::MockBluetoothGattConnection>>(
+            adapter_, kTestRemoteDeviceBluetoothAddress));
 
     EXPECT_EQ(connection->sub_status(),
               BluetoothLowEnergyConnection::SubStatus::WAITING_CHARACTERISTICS);
@@ -598,7 +598,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
   int message_size = 100;
   std::string message(message_size, 'A');
   message[0] = 'B';
-  connection->SendMessage(base::WrapUnique(new FakeWireMessage(message)));
+  connection->SendMessage(base::MakeUnique<FakeWireMessage>(message));
 
   // Expecting that |kSendSignal| + |message_size| + |message| was written.
   EXPECT_EQ(last_value_written_on_to_peripheral_char_,
@@ -626,7 +626,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
   int message_size = 600;
   std::string message(message_size, 'A');
   message[0] = 'B';
-  connection->SendMessage(base::WrapUnique(new FakeWireMessage(message)));
+  connection->SendMessage(base::MakeUnique<FakeWireMessage>(message));
 
   // Expecting that |kSendSignal| + |message_size| was written in the first 8
   // bytes.
@@ -692,8 +692,8 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
           Return(new NiceMock<MockBluetoothLowEnergyCharacteristicsFinder>)));
 
   create_gatt_connection_success_callback_.Run(
-      base::WrapUnique(new NiceMock<device::MockBluetoothGattConnection>(
-          adapter_, kTestRemoteDeviceBluetoothAddress)));
+      base::MakeUnique<NiceMock<device::MockBluetoothGattConnection>>(
+          adapter_, kTestRemoteDeviceBluetoothAddress));
 
   CharacteristicsFound(connection.get());
   NotifySessionStarted(connection.get());

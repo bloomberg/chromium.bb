@@ -113,13 +113,13 @@ void SyncSchedulerImpl::OnTimerFired() {
   }
 
   delegate_->OnSyncRequested(
-      base::WrapUnique(new SyncRequest(weak_ptr_factory_.GetWeakPtr())));
+      base::MakeUnique<SyncRequest>(weak_ptr_factory_.GetWeakPtr()));
 }
 
 std::unique_ptr<base::Timer> SyncSchedulerImpl::CreateTimer() {
   bool retain_user_task = false;
   bool is_repeating = false;
-  return base::WrapUnique(new base::Timer(retain_user_task, is_repeating));
+  return base::MakeUnique<base::Timer>(retain_user_task, is_repeating);
 }
 
 void SyncSchedulerImpl::ScheduleNextSync(const base::TimeDelta& sync_delta) {

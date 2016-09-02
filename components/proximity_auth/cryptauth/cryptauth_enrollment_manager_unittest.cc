@@ -221,8 +221,8 @@ class ProximityAuthCryptAuthEnrollmentManagerTest
         Enroll(public_key_, private_key_, _, expected_invocation_reason, _))
         .WillOnce(SaveArg<4>(&completion_callback));
 
-    auto sync_request = base::WrapUnique(
-        new SyncScheduler::SyncRequest(enrollment_manager_.GetSyncScheduler()));
+    auto sync_request = base::MakeUnique<SyncScheduler::SyncRequest>(
+        enrollment_manager_.GetSyncScheduler());
     EXPECT_CALL(*this, OnEnrollmentStartedProxy());
 
     SyncScheduler::Delegate* delegate =
@@ -308,8 +308,8 @@ TEST_F(ProximityAuthCryptAuthEnrollmentManagerTest, InitWithDefaultPrefs) {
   CryptAuthEnrollmentManager::RegisterPrefs(pref_service.registry());
 
   TestCryptAuthEnrollmentManager enrollment_manager(
-      std::move(clock), base::WrapUnique(new MockCryptAuthEnrollerFactory()),
-      base::WrapUnique(new FakeSecureMessageDelegate()), device_info_,
+      std::move(clock), base::MakeUnique<MockCryptAuthEnrollerFactory>(),
+      base::MakeUnique<FakeSecureMessageDelegate>(), device_info_,
       &gcm_manager_, &pref_service);
 
   EXPECT_CALL(
@@ -409,8 +409,8 @@ TEST_F(ProximityAuthCryptAuthEnrollmentManagerTest,
 
   // Trigger a sync request.
   EXPECT_CALL(*this, OnEnrollmentStartedProxy());
-  auto sync_request = base::WrapUnique(
-      new SyncScheduler::SyncRequest(enrollment_manager_.GetSyncScheduler()));
+  auto sync_request = base::MakeUnique<SyncScheduler::SyncRequest>(
+      enrollment_manager_.GetSyncScheduler());
   static_cast<SyncScheduler::Delegate*>(&enrollment_manager_)
       ->OnSyncRequested(std::move(sync_request));
 
@@ -445,8 +445,8 @@ TEST_F(ProximityAuthCryptAuthEnrollmentManagerTest, GCMRegistrationFails) {
 
   // Trigger a sync request.
   EXPECT_CALL(*this, OnEnrollmentStartedProxy());
-  auto sync_request = base::WrapUnique(
-      new SyncScheduler::SyncRequest(enrollment_manager_.GetSyncScheduler()));
+  auto sync_request = base::MakeUnique<SyncScheduler::SyncRequest>(
+      enrollment_manager_.GetSyncScheduler());
   static_cast<SyncScheduler::Delegate*>(&enrollment_manager_)
       ->OnSyncRequested(std::move(sync_request));
 

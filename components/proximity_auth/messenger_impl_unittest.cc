@@ -63,9 +63,9 @@ class MockMessengerObserver : public MessengerObserver {
 class TestMessenger : public MessengerImpl {
  public:
   TestMessenger()
-      : MessengerImpl(base::WrapUnique(new FakeConnection(
-                          CreateClassicRemoteDeviceForTest())),
-                      base::WrapUnique(new FakeSecureContext())) {}
+      : MessengerImpl(base::MakeUnique<FakeConnection>(
+                          CreateClassicRemoteDeviceForTest()),
+                      base::MakeUnique<FakeSecureContext>()) {}
   ~TestMessenger() override {}
 
   // Simple getters for the mock objects owned by |this| messenger.

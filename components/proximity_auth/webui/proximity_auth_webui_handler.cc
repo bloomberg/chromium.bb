@@ -431,7 +431,7 @@ ProximityAuthWebUIHandler::GetEnrollmentStateDictionary() {
   CryptAuthEnrollmentManager* enrollment_manager =
       proximity_auth_client_->GetCryptAuthEnrollmentManager();
   if (!enrollment_manager)
-    return base::WrapUnique(new base::DictionaryValue());
+    return base::MakeUnique<base::DictionaryValue>();
 
   return CreateSyncStateDictionary(
       enrollment_manager->GetLastEnrollmentTime().ToJsTime(),
@@ -445,7 +445,7 @@ ProximityAuthWebUIHandler::GetDeviceSyncStateDictionary() {
   CryptAuthDeviceManager* device_manager =
       proximity_auth_client_->GetCryptAuthDeviceManager();
   if (!device_manager)
-    return base::WrapUnique(new base::DictionaryValue());
+    return base::MakeUnique<base::DictionaryValue>();
 
   return CreateSyncStateDictionary(
       device_manager->GetLastSyncTime().ToJsTime(),

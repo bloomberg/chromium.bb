@@ -321,8 +321,8 @@ void UnlockManager::OnAuthAttempted(
 
 std::unique_ptr<ProximityMonitor> UnlockManager::CreateProximityMonitor(
     const RemoteDevice& remote_device) {
-  return base::WrapUnique(new ProximityMonitorImpl(
-      remote_device, base::WrapUnique(new base::DefaultTickClock())));
+  return base::MakeUnique<ProximityMonitorImpl>(
+      remote_device, base::WrapUnique(new base::DefaultTickClock()));
 }
 
 void UnlockManager::SendSignInChallenge() {
