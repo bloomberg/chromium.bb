@@ -72,7 +72,7 @@ public class BlimpClientContextImpl implements BlimpClientContext, BlimpPreferen
     @Override
     public boolean isBlimpEnabled() {
         return PreferencesUtil.isBlimpEnabled()
-                || CommandLine.getInstance().hasSwitch(BlimpClientSwitches.ENGINE_IP);
+                || CommandLine.getInstance().hasSwitch(BlimpClientSwitches.ENABLE_BLIMP);
     }
 
     @Override

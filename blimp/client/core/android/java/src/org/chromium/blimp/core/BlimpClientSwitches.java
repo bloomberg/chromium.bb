@@ -9,6 +9,8 @@ package org.chromium.blimp.core;
  * portion of Chromium on Android.
  */
 public final class BlimpClientSwitches {
+    // Can be used to force blimp on, bypassing the settings requirements.
+    public static final String ENABLE_BLIMP = "enable-blimp";
 
     // Specifies the engine's IP address. Must be used in conjunction with
     // --engine-port and --engine-transport.
