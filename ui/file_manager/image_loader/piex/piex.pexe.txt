@@ -1,1 +1,1 @@
-This is dummy file for piex.pexe.
+<include src="../../internal/piex/piex.pexe">
