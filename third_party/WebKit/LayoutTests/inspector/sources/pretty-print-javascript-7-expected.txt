@@ -60,3 +60,12 @@ Correct mapping for <1>
 Correct mapping for <continue>
 Correct mapping for <test>
 
+Running: inconsistentSpaceAfterNull
+====== 8< ------
+1 || null;
+
+------ >8 ======
+Correct mapping for <||>
+Correct mapping for <null>
+Correct mapping for <;>
+

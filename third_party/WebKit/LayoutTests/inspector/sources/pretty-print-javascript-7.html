@@ -34,6 +34,12 @@ function test()
             var mappingQueries = ["function", "1", "continue", "test"];
             testJSFormatter("function foo(){while(1){if (a)continue;test();}}", mappingQueries, next);
         },
+
+        function inconsistentSpaceAfterNull(next)
+        {
+            var mappingQueries = ["||", "null", ";"];
+            testJSFormatter("1||null;", mappingQueries, next);
+        },
     ]);
 }
 
