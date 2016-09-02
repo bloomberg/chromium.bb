@@ -50,6 +50,13 @@ fuzzer_test("pdf_psengine_fuzzer") {
   ]
 }
 
+fuzzer_test("pdf_streamparser_fuzzer") {
+  sources = []
+  deps = [
+    "//third_party/pdfium/testing/libfuzzer:pdf_streamparser_fuzzer",
+  ]
+}
+
 if (pdf_enable_xfa) {
   fuzzer_test("pdf_codec_bmp_fuzzer") {
     sources = []
