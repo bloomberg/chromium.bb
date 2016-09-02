@@ -77,7 +77,7 @@
       "reason": "subtree"
     },
     {
-      "object": "LayoutBlockFlow DIV id='inner-editor'",
+      "object": "Caret",
       "reason": "invalidate paint rectangle"
     }
   ]

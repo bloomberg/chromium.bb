@@ -18,7 +18,7 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutBlockFlow DIV id='target'",
+      "object": "Caret",
       "reason": "invalidate paint rectangle"
     }
   ]

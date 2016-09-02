@@ -84,7 +84,7 @@
       "reason": "subtree"
     },
     {
-      "object": "Scrolling Contents Layer",
+      "object": "Caret",
       "reason": "invalidate paint rectangle"
     }
   ]

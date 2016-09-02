@@ -23,11 +23,11 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutBlockFlow DIV id='inner-editor'",
+      "object": "Caret",
       "reason": "invalidate paint rectangle"
     },
     {
-      "object": "LayoutBlockFlow DIV id='inner-editor'",
+      "object": "Caret",
       "reason": "invalidate paint rectangle"
     }
   ]

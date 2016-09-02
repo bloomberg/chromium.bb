@@ -11,33 +11,33 @@
         {
           "name": "LayoutTextControl INPUT id='root'",
           "position": [7, 7],
-          "bounds": [70, 24],
+          "bounds": [66, 24],
           "drawsContent": true,
           "backgroundColor": "#FFFFFF",
           "paintInvalidations": [
             {
               "object": "LayoutTextControl INPUT id='root'",
-              "rect": [0, 0, 70, 24],
+              "rect": [0, 0, 66, 24],
               "reason": "subtree"
             },
             {
               "object": "LayoutTextControl INPUT id='root'",
-              "rect": [0, 0, 68, 22],
+              "rect": [0, 0, 64, 22],
               "reason": "full"
             },
             {
               "object": "LayoutBlockFlow DIV id='inner-editor'",
-              "rect": [3, 4, 64, 16],
+              "rect": [3, 4, 60, 16],
               "reason": "subtree"
             },
             {
               "object": "LayoutText #text",
-              "rect": [3, 4, 64, 16],
+              "rect": [3, 4, 60, 16],
               "reason": "subtree"
             },
             {
               "object": "LayoutText #text",
-              "rect": [64, 4, 3, 16],
+              "rect": [60, 4, 3, 16],
               "reason": "invalidate paint rectangle"
             }
           ]
@@ -63,16 +63,16 @@
       "reason": "scroll"
     },
     {
-      "object": "Caret",
-      "reason": "invalidate paint rectangle"
-    },
-    {
       "object": "LayoutText #text",
       "reason": "subtree"
     },
     {
       "object": "InlineTextBox 'test test test'",
       "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='inner-editor'",
+      "reason": "invalidate paint rectangle"
     }
   ]
 }

@@ -45,6 +45,10 @@
       "reason": "forced by layout"
     },
     {
+      "object": "Caret",
+      "reason": "invalidate paint rectangle"
+    },
+    {
       "object": "LayoutInline SPAN id='test'",
       "reason": "forced by layout"
     },
@@ -71,10 +75,6 @@
     {
       "object": "InlineTextBox 'dolor\u00A0'",
       "reason": "full"
-    },
-    {
-      "object": "LayoutBlockFlow DIV",
-      "reason": "invalidate paint rectangle"
     }
   ]
 }

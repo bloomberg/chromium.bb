@@ -63,16 +63,16 @@
       "reason": "scroll"
     },
     {
+      "object": "Caret",
+      "reason": "invalidate paint rectangle"
+    },
+    {
       "object": "LayoutText #text",
       "reason": "subtree"
     },
     {
       "object": "InlineTextBox 'test test test'",
       "reason": "subtree"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='inner-editor'",
-      "reason": "invalidate paint rectangle"
     }
   ]
 }

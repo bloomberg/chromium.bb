@@ -115,16 +115,16 @@
       "reason": "full"
     },
     {
+      "object": "Caret",
+      "reason": "invalidate paint rectangle"
+    },
+    {
       "object": "LayoutText #text",
       "reason": "layoutObject insertion"
     },
     {
       "object": "InlineTextBox 'three'",
       "reason": "layoutObject insertion"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='one'",
-      "reason": "invalidate paint rectangle"
     }
   ]
 }

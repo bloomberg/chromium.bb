@@ -45,20 +45,20 @@
       "reason": "layoutObject insertion"
     },
     {
+      "object": "Caret",
+      "reason": "invalidate paint rectangle"
+    },
+    {
+      "object": "Caret",
+      "reason": "invalidate paint rectangle"
+    },
+    {
       "object": "LayoutBR BR",
       "reason": "layoutObject insertion"
     },
     {
       "object": "InlineTextBox '\n'",
       "reason": "layoutObject insertion"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='div'",
-      "reason": "invalidate paint rectangle"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='div'",
-      "reason": "invalidate paint rectangle"
     }
   ]
 }
