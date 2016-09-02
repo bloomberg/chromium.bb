@@ -6,14 +6,11 @@
 
 #include "platform/graphics/GraphicsContext.h"
 #include "public/platform/WebDisplayItemList.h"
-#include "third_party/skia/include/core/SkPictureAnalyzer.h"
-
-#if ENABLE(ASSERT)
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkData.h"
+#include "third_party/skia/include/core/SkPictureAnalyzer.h"
 #include "third_party/skia/include/core/SkStream.h"
-#endif
 
 namespace blink {
 
@@ -51,7 +48,6 @@ void DrawingDisplayItem::dumpPropertiesAsDebugString(StringBuilder& stringBuilde
 }
 #endif
 
-#if ENABLE(ASSERT)
 static bool picturesEqual(const SkPicture* picture1, const SkPicture* picture2)
 {
     if (picture1->approximateOpCount() != picture2->approximateOpCount())
@@ -127,6 +123,5 @@ bool DrawingDisplayItem::equals(const DisplayItem& other) const
     // which should be treated as equal.
     return bitmapsEqual(picture, otherPicture);
 }
-#endif // ENABLE(ASSERT)
 
 } // namespace blink

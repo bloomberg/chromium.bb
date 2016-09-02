@@ -151,6 +151,7 @@ ForceOverlayFullscreenVideo
 OverlayScrollbars
 HideScrollbars settable_from_internals=True
 PagePopup status=stable
+PaintUnderInvalidationChecking settable_from_internals=True
 PassiveDocumentEventListeners status=experimental
 PassiveEventListenersDueToFling status=experimental
 PassPaintVisualRectToCompositor
@@ -199,7 +200,6 @@ SharedWorker status=stable
 SlimmingPaintInvalidation implied_by=SlimmingPaintV2
 SlimmingPaintV2
 SlimmingPaintStrictCullRectClipping
-SlimmingPaintUnderInvalidationChecking settable_from_internals=True
 // Used as argument in attribute of stable-release functions/interfaces where
 // a runtime-enabled feature name is required for correct IDL syntax.
 // This is a global flag; do not change its status.

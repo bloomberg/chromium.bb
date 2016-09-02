@@ -25,7 +25,7 @@ DrawingRecorder::DrawingRecorder(GraphicsContext& context, const DisplayItemClie
         return;
 
     // Must check DrawingRecorder::useCachedDrawingIfPossible before creating the DrawingRecorder.
-    DCHECK(RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled()
+    DCHECK(RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled()
         || !useCachedDrawingIfPossible(m_context, m_displayItemClient, m_displayItemType));
 
     DCHECK(DisplayItem::isDrawingType(displayItemType));
