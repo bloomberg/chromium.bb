@@ -92,14 +92,6 @@ std::string MockAudioManager::GetAssociatedOutputDeviceID(
   return std::string();
 }
 
-std::string MockAudioManager::GetGroupIDOutput(const std::string& output_id) {
-  return "";
-}
-
-std::string MockAudioManager::GetGroupIDInput(const std::string& input_id) {
-  return "";
-}
-
 std::unique_ptr<AudioLog> MockAudioManager::CreateAudioLog(
     AudioLogFactory::AudioComponent component) {
   return nullptr;

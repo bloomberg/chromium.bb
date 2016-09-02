@@ -241,12 +241,6 @@ class MEDIA_EXPORT AudioManager {
   virtual std::string GetAssociatedOutputDeviceID(
       const std::string& input_device_id) = 0;
 
-  // These functions assign group ids to devices based on their device ids.
-  // The default implementation is an attempt to do this based on
-  // GetAssociatedOutputDeviceID.
-  virtual std::string GetGroupIDOutput(const std::string& output_device_id) = 0;
-  virtual std::string GetGroupIDInput(const std::string& input_device_id) = 0;
-
   // Create a new AudioLog object for tracking the behavior for one or more
   // instances of the given component.  See AudioLogFactory for more details.
   virtual std::unique_ptr<AudioLog> CreateAudioLog(

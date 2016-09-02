@@ -129,11 +129,6 @@ struct CONTENT_EXPORT MediaStreamDevice {
   // The device's "friendly" name. Not guaranteed to be unique.
   std::string name;
 
-  // A unique identifier for the physical device this device is part of.
-  // Will be hashed before being sent to renderer.
-  // TODO(maxmorin): Add support for video devices as well.
-  std::string group_id;
-
   // Contains properties that match directly with those with the same name
   // in media::AudioParameters.
   // TODO(ajm): Remove this type and use media::AudioParameters directly.
