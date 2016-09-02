@@ -9,7 +9,11 @@
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "cc/output/compositor_frame.h"
+#include "cc/output/output_surface_client.h"
+#include "cc/scheduler/begin_frame_source.h"
+#include "cc/scheduler/delay_based_time_source.h"
 
 namespace blimp {
 namespace client {
@@ -46,6 +50,11 @@ uint32_t DelegatedOutputSurface::GetFramebufferCopyTextureFormat() {
 bool DelegatedOutputSurface::BindToClient(cc::OutputSurfaceClient* client) {
   bool success = cc::OutputSurface::BindToClient(client);
   if (success) {
+    begin_frame_source_ = base::MakeUnique<cc::DelayBasedBeginFrameSource>(
+        base::MakeUnique<cc::DelayBasedTimeSource>(
+            base::ThreadTaskRunnerHandle::Get().get()));
+    client->SetBeginFrameSource(begin_frame_source_.get());
+
     main_task_runner_->PostTask(
         FROM_HERE, base::Bind(&BlimpOutputSurfaceClient::BindToOutputSurface,
                               client_, weak_factory_.GetWeakPtr()));

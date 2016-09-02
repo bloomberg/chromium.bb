@@ -87,10 +87,6 @@ void PopulateCommonLayerTreeSettings(cc::LayerTreeSettings* settings) {
   // TODO(danakj): Only do this on low end devices.
   settings->create_low_res_tiling = true;
 
-// TODO(dtrainor): Investigate whether or not we want to use an external
-// source here.
-// settings->use_external_begin_frame_source = true;
-
 #elif !defined(OS_MACOSX)
   settings->scrollbar_animator = cc::LayerTreeSettings::LINEAR_FADE;
   settings->solid_color_scrollbar_color = SkColorSetARGB(128, 128, 128, 128);

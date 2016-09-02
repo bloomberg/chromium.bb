@@ -5,6 +5,8 @@
 #ifndef BLIMP_CLIENT_CORE_COMPOSITOR_DELEGATED_OUTPUT_SURFACE_H_
 #define BLIMP_CLIENT_CORE_COMPOSITOR_DELEGATED_OUTPUT_SURFACE_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "blimp/client/core/compositor/blimp_output_surface.h"
@@ -15,6 +17,7 @@ class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace cc {
+class BeginFrameSource;
 class ContextProvider;
 }  // namespace cc
 
@@ -49,6 +52,11 @@ class DelegatedOutputSurface : public cc::OutputSurface,
   base::WeakPtr<BlimpOutputSurfaceClient> client_;
 
   bool bound_to_client_;
+
+  // This OutputSurface is responsible for providing the BeginFrameSource to
+  // drive frame creation.  This will be built on the compositor impl thread at
+  // BindToClient call time.
+  std::unique_ptr<cc::BeginFrameSource> begin_frame_source_;
 
   base::WeakPtrFactory<DelegatedOutputSurface> weak_factory_;
 
