@@ -6,6 +6,7 @@
 
 #include <xdg-shell-unstable-v5-client-protocol.h>
 
+#include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/events/event.h"
 #include "ui/events/ozone/events_ozone.h"
