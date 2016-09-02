@@ -895,3 +895,14 @@ fuzzer_test("media_vpx_video_decoder_fuzzer") {
   libfuzzer_options = [ "max_len = 400000" ]
   seed_corpus = "//media/test/data"
 }
+
+fuzzer_test("media_webm_muxer_fuzzer") {
+  sources = [
+    "muxers/webm_muxer_fuzzertest.cc",
+  ]
+  deps = [
+    ":media",
+    "//base",
+    "//third_party/libwebm",
+  ]
+}
