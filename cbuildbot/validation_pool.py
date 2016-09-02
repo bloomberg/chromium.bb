@@ -1692,6 +1692,7 @@ class ValidationPool(object):
     # that repeated calls to Apply always consider the same list of candidates.
     fail_streak = self._GetFailStreak()
     test_pool_size = max(1, len(self.candidates) / (2**fail_streak))
+    test_pool_size = min(test_pool_size, 50)
     random.shuffle(self.candidates)
     self.candidates = self.candidates[:test_pool_size]
 
