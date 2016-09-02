@@ -32,7 +32,7 @@
 #define UnacceleratedImageBufferSurface_h
 
 #include "platform/graphics/ImageBufferSurface.h"
-#include "wtf/RefPtr.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 
 class SkSurface;
 
@@ -47,7 +47,7 @@ public:
     SkCanvas* canvas() override;
     bool isValid() const override;
 
-    PassRefPtr<SkImage> newImageSnapshot(AccelerationHint, SnapshotReason) override;
+    sk_sp<SkImage> newImageSnapshot(AccelerationHint, SnapshotReason) override;
 private:
     sk_sp<SkSurface> m_surface;
 };

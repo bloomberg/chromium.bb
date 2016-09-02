@@ -35,11 +35,11 @@
 #include "platform/fonts/FontCacheKey.h"
 #include "platform/fonts/FontFaceCreationParams.h"
 #include "platform/fonts/FontFallbackPriority.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/Unicode.h"
 #include "wtf/text/WTFString.h"
@@ -106,7 +106,7 @@ public:
     void invalidate();
 
     SkFontMgr* fontManager() { return m_fontManager.get(); }
-    static void setFontManager(const RefPtr<SkFontMgr>&);
+    static void setFontManager(const sk_sp<SkFontMgr>&);
 
 #if OS(WIN)
     static bool antialiasedTextEnabled() { return s_antialiasedTextEnabled; }
@@ -177,7 +177,7 @@ private:
     std::unique_ptr<FontPlatformData> scaleFontPlatformData(const FontPlatformData&, const FontDescription&, const FontFaceCreationParams&, float fontSize);
 
     // Implemented on skia platforms.
-    PassRefPtr<SkTypeface> createTypeface(const FontDescription&, const FontFaceCreationParams&, CString& name);
+    sk_sp<SkTypeface> createTypeface(const FontDescription&, const FontFaceCreationParams&, CString& name);
 
 #if OS(ANDROID) || OS(LINUX)
     static AtomicString getFamilyNameForCharacter(SkFontMgr*, UChar32, const FontDescription&, FontFallbackPriority);
@@ -188,7 +188,7 @@ private:
     // Don't purge if this count is > 0;
     int m_purgePreventCount;
 
-    RefPtr<SkFontMgr> m_fontManager;
+    sk_sp<SkFontMgr> m_fontManager;
 
     static SkFontMgr* s_staticFontManager;
 
@@ -196,7 +196,7 @@ private:
     static bool s_antialiasedTextEnabled;
     static bool s_lcdTextEnabled;
     static float s_deviceScaleFactor;
-    static HashMap<String, RefPtr<SkTypeface>>* s_sideloadedFonts;
+    static HashMap<String, sk_sp<SkTypeface>>* s_sideloadedFonts;
     // The system font metrics cache.
     static AtomicString* s_menuFontFamilyName;
     static int32_t s_menuFontHeight;

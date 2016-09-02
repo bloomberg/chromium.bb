@@ -137,7 +137,7 @@ protected:
             Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(std::move(contextProvider), IntSize(300, 150), 0, NonOpaque, Canvas2DLayerBridge::EnableAcceleration, nullptr)));
             EXPECT_TRUE(bridge->checkSurfaceValid());
             EXPECT_TRUE(bridge->isAccelerated());
-            RefPtr<SkImage> snapshot = bridge->newImageSnapshot(PreferAcceleration, SnapshotReasonUnitTests);
+            sk_sp<SkImage> snapshot = bridge->newImageSnapshot(PreferAcceleration, SnapshotReasonUnitTests);
             EXPECT_TRUE(bridge->isAccelerated());
             EXPECT_TRUE(snapshot->isTextureBacked());
         }
@@ -153,7 +153,7 @@ protected:
             // This will cause SkSurface_Gpu creation to fail without
             // Canvas2DLayerBridge otherwise detecting that anything was disabled.
             gr->abandonContext();
-            RefPtr<SkImage> snapshot = bridge->newImageSnapshot(PreferAcceleration, SnapshotReasonUnitTests);
+            sk_sp<SkImage> snapshot = bridge->newImageSnapshot(PreferAcceleration, SnapshotReasonUnitTests);
             EXPECT_FALSE(bridge->isAccelerated());
             EXPECT_FALSE(snapshot->isTextureBacked());
         }
@@ -248,7 +248,7 @@ protected:
             Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(std::move(contextProvider), IntSize(300, 300), 0, NonOpaque, Canvas2DLayerBridge::EnableAcceleration, nullptr)));
             SkPaint paint;
             bridge->canvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), paint);
-            RefPtr<SkImage> image = bridge->newImageSnapshot(PreferAcceleration, SnapshotReasonUnitTests);
+            sk_sp<SkImage> image = bridge->newImageSnapshot(PreferAcceleration, SnapshotReasonUnitTests);
             EXPECT_TRUE(bridge->checkSurfaceValid());
             EXPECT_TRUE(bridge->isAccelerated());
         }
@@ -259,7 +259,7 @@ protected:
             Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(std::move(contextProvider), IntSize(300, 300), 0, NonOpaque, Canvas2DLayerBridge::EnableAcceleration, nullptr)));
             SkPaint paint;
             bridge->canvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), paint);
-            RefPtr<SkImage> image = bridge->newImageSnapshot(PreferNoAcceleration, SnapshotReasonUnitTests);
+            sk_sp<SkImage> image = bridge->newImageSnapshot(PreferNoAcceleration, SnapshotReasonUnitTests);
             EXPECT_TRUE(bridge->checkSurfaceValid());
             EXPECT_FALSE(bridge->isAccelerated());
         }
@@ -796,9 +796,9 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_SnapshotWhileHibernating)
     EXPECT_TRUE(bridge->checkSurfaceValid());
 
     // Take a snapshot and verify that it is not accelerated due to hibernation
-    RefPtr<SkImage> image = bridge->newImageSnapshot(PreferAcceleration, SnapshotReasonUnitTests);
+    sk_sp<SkImage> image = bridge->newImageSnapshot(PreferAcceleration, SnapshotReasonUnitTests);
     EXPECT_FALSE(image->isTextureBacked());
-    image.clear();
+    image.reset();
 
     // Verify that taking a snapshot did not affect the state of bridge
     EXPECT_FALSE(bridge->isAccelerated());

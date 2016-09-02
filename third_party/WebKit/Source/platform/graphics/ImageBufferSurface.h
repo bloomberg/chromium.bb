@@ -36,9 +36,9 @@
 #include "platform/graphics/GraphicsTypes.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/PassRefPtr.h"
 
 class SkBitmap;
 class SkCanvas;
@@ -72,7 +72,7 @@ public:
     virtual void setFilterQuality(SkFilterQuality) { }
     virtual void setIsHidden(bool) { }
     virtual void setImageBuffer(ImageBuffer*) { }
-    virtual PassRefPtr<SkPicture> getPicture();
+    virtual sk_sp<SkPicture> getPicture();
     virtual void finalizeFrame(const FloatRect &dirtyRect) { }
     virtual void draw(GraphicsContext&, const FloatRect& destRect, const FloatRect& srcRect, SkXfermode::Mode);
     virtual void setHasExpensiveOp() { }
@@ -83,7 +83,7 @@ public:
     virtual bool writePixels(const SkImageInfo& origInfo, const void* pixels, size_t rowBytes, int x, int y);
 
     // May return nullptr if the surface is GPU-backed and the GPU context was lost.
-    virtual PassRefPtr<SkImage> newImageSnapshot(AccelerationHint, SnapshotReason) = 0;
+    virtual sk_sp<SkImage> newImageSnapshot(AccelerationHint, SnapshotReason) = 0;
 
     OpacityMode getOpacityMode() const { return m_opacityMode; }
     const IntSize& size() const { return m_size; }

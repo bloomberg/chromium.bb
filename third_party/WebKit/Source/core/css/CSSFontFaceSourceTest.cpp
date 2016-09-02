@@ -17,7 +17,7 @@ class DummyFontFaceSource : public CSSFontFaceSource {
 public:
     PassRefPtr<SimpleFontData> createFontData(const FontDescription&) override
     {
-        return SimpleFontData::create(FontPlatformData(fromSkSp(SkTypeface::MakeDefault()), "", 0, false, false));
+        return SimpleFontData::create(FontPlatformData(SkTypeface::MakeDefault(), "", 0, false, false));
     }
 
     DummyFontFaceSource() { }

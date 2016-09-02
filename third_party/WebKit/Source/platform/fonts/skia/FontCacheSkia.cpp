@@ -50,13 +50,13 @@
 #if !OS(WIN) && !OS(ANDROID)
 #include "SkFontConfigInterface.h"
 
-static PassRefPtr<SkTypeface> typefaceForFontconfigInterfaceIdAndTtcIndex(int fontconfigInterfaceId, int ttcIndex)
+static sk_sp<SkTypeface> typefaceForFontconfigInterfaceIdAndTtcIndex(int fontconfigInterfaceId, int ttcIndex)
 {
     SkAutoTUnref<SkFontConfigInterface> fci(SkFontConfigInterface::RefGlobal());
     SkFontConfigInterface::FontIdentity fontIdentity;
     fontIdentity.fID = fontconfigInterfaceId;
     fontIdentity.fTTCIndex = ttcIndex;
-    return blink::fromSkSp(fci->makeTypeface(fontIdentity));
+    return fci->makeTypeface(fontIdentity);
 }
 #endif
 
@@ -91,7 +91,7 @@ AtomicString FontCache::getFamilyNameForCharacter(SkFontMgr* fm, UChar32 c, cons
     if (fallbackPriority == FontFallbackPriority::EmojiEmoji)
         bcp47Locales[localeCount++] = kAndroidColorEmojiLocale;
     SECURITY_DCHECK(localeCount <= kMaxLocales);
-    RefPtr<SkTypeface> typeface = adoptRef(fm->matchFamilyStyleCharacter(0, SkFontStyle(), bcp47Locales, localeCount, c));
+    sk_sp<SkTypeface> typeface(fm->matchFamilyStyleCharacter(0, SkFontStyle(), bcp47Locales, localeCount, c));
     if (!typeface)
         return emptyAtom;
 
@@ -154,13 +154,13 @@ PassRefPtr<SimpleFontData> FontCache::getLastResortFallbackFont(const FontDescri
     return fontDataFromFontPlatformData(fontPlatformData, shouldRetain);
 }
 
-PassRefPtr<SkTypeface> FontCache::createTypeface(const FontDescription& fontDescription, const FontFaceCreationParams& creationParams, CString& name)
+sk_sp<SkTypeface> FontCache::createTypeface(const FontDescription& fontDescription, const FontFaceCreationParams& creationParams, CString& name)
 {
 #if !OS(WIN) && !OS(ANDROID)
     if (creationParams.creationType() == CreateFontByFciIdAndTtcIndex) {
         if (Platform::current()->sandboxSupport())
             return typefaceForFontconfigInterfaceIdAndTtcIndex(creationParams.fontconfigInterfaceId(), creationParams.ttcIndex());
-        return fromSkSp(SkTypeface::MakeFromFile(creationParams.filename().data(), creationParams.ttcIndex()));
+        return SkTypeface::MakeFromFile(creationParams.filename().data(), creationParams.ttcIndex());
     }
 #endif
 
@@ -176,7 +176,7 @@ PassRefPtr<SkTypeface> FontCache::createTypeface(const FontDescription& fontDesc
 
 #if OS(WIN)
     if (s_sideloadedFonts) {
-        HashMap<String, RefPtr<SkTypeface>>::iterator sideloadedFont =
+        HashMap<String, sk_sp<SkTypeface>>::iterator sideloadedFont =
             s_sideloadedFonts->find(name.data());
         if (sideloadedFont != s_sideloadedFonts->end())
             return sideloadedFont->value;
@@ -189,13 +189,13 @@ PassRefPtr<SkTypeface> FontCache::createTypeface(const FontDescription& fontDesc
     // call to the default font Manager.
     // On Windows the font manager is always present.
     if (m_fontManager)
-        return adoptRef(m_fontManager->matchFamilyStyle(name.data(), fontDescription.skiaFontStyle()));
+        return sk_sp<SkTypeface>(m_fontManager->matchFamilyStyle(name.data(), fontDescription.skiaFontStyle()));
 #endif
 
     // FIXME: Use m_fontManager, matchFamilyStyle instead of
     // legacyCreateTypeface on all platforms.
-    RefPtr<SkFontMgr> fm = adoptRef(SkFontMgr::RefDefault());
-    return adoptRef(fm->legacyCreateTypeface(name.data(),
+    sk_sp<SkFontMgr> fm(SkFontMgr::RefDefault());
+    return sk_sp<SkTypeface>(fm->legacyCreateTypeface(name.data(),
         fontDescription.skiaFontStyle()));
 }
 
@@ -204,7 +204,7 @@ std::unique_ptr<FontPlatformData> FontCache::createFontPlatformData(const FontDe
     const FontFaceCreationParams& creationParams, float fontSize)
 {
     CString name;
-    RefPtr<SkTypeface> tf(createTypeface(fontDescription, creationParams, name));
+    sk_sp<SkTypeface> tf = createTypeface(fontDescription, creationParams, name);
     if (!tf)
         return nullptr;
 

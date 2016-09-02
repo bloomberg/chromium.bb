@@ -428,7 +428,7 @@ PassRefPtr<StaticBitmapImage> DrawingBuffer::transferToStaticBitmapImage()
         // If we can't get a mailbox, return an transparent black ImageBitmap.
         // The only situation this could happen is when two or more calls to transferToImageBitmap are made back-to-back, or when the context gets lost.
         sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(m_size.width(), m_size.height());
-        return StaticBitmapImage::create(fromSkSp(surface->makeImageSnapshot()));
+        return StaticBitmapImage::create(surface->makeImageSnapshot());
     }
 
     DCHECK_EQ(m_size.width(), textureMailbox.size_in_pixels().width());
@@ -471,7 +471,7 @@ PassRefPtr<StaticBitmapImage> DrawingBuffer::transferToStaticBitmapImage()
 
     // TODO(xidachen): Create a small pool of recycled textures from ImageBitmapRenderingContext's
     // transferFromImageBitmap, and try to use them in DrawingBuffer.
-    return AcceleratedStaticBitmapImage::create(fromSkSp(skImage), grContextRef, skImageMailbox, skImageSyncToken);
+    return AcceleratedStaticBitmapImage::create(std::move(skImage), grContextRef, skImageMailbox, skImageSyncToken);
 }
 
 DrawingBuffer::TextureParameters DrawingBuffer::chromiumImageTextureParameters()

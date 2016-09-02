@@ -41,7 +41,7 @@ namespace blink {
 
 PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(const FontDescription& fontDescription, UChar32 c, const SimpleFontData*, FontFallbackPriority fallbackPriority)
 {
-    RefPtr<SkFontMgr> fm = adoptRef(SkFontMgr::RefDefault());
+    sk_sp<SkFontMgr> fm(SkFontMgr::RefDefault());
     AtomicString familyName = getFamilyNameForCharacter(fm.get(), c, fontDescription, fallbackPriority);
     if (familyName.isEmpty())
         return getLastResortFallbackFont(fontDescription, DoNotRetain);
@@ -77,7 +77,7 @@ AtomicString FontCache::getGenericFamilyNameForScript(const AtomicString& family
         return familyName;
     }
 
-    RefPtr<SkFontMgr> fm = adoptRef(SkFontMgr::RefDefault());
+    sk_sp<SkFontMgr> fm(SkFontMgr::RefDefault());
     return getFamilyNameForCharacter(fm.get(), examplerChar, fontDescription, FontFallbackPriority::Text);
 }
 

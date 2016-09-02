@@ -9,6 +9,7 @@
 #include "modules/canvas2d/ClipList.h"
 #include "platform/fonts/Font.h"
 #include "platform/transforms/AffineTransform.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -194,9 +195,9 @@ private:
     FloatSize m_shadowOffset;
     double m_shadowBlur;
     SkColor m_shadowColor;
-    mutable RefPtr<SkDrawLooper> m_emptyDrawLooper;
-    mutable RefPtr<SkDrawLooper> m_shadowOnlyDrawLooper;
-    mutable RefPtr<SkDrawLooper> m_shadowAndForegroundDrawLooper;
+    mutable sk_sp<SkDrawLooper> m_emptyDrawLooper;
+    mutable sk_sp<SkDrawLooper> m_shadowOnlyDrawLooper;
+    mutable sk_sp<SkDrawLooper> m_shadowAndForegroundDrawLooper;
     mutable sk_sp<SkImageFilter> m_shadowOnlyImageFilter;
     mutable sk_sp<SkImageFilter> m_shadowAndForegroundImageFilter;
 

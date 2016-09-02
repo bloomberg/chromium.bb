@@ -32,6 +32,7 @@
 #define CrossThreadCopier_h
 
 #include "platform/PlatformExport.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "wtf/Assertions.h"
 #include "wtf/Forward.h"
 #include "wtf/Functional.h" // FunctionThreadAffinity
@@ -92,12 +93,17 @@ struct CrossThreadCopier : public CrossThreadCopierBase<T, std::is_arithmetic<T>
 template <typename T>
 struct CrossThreadCopier<PassRefPtr<T>> : public CrossThreadCopierPassThrough<PassRefPtr<T>> {
     STATIC_ONLY(CrossThreadCopier);
-    static_assert(WTF::IsSubclassOfTemplate<T, ThreadSafeRefCounted>::value || std::is_base_of<SkRefCnt, T>::value, "PassRefPtr<T> can be passed across threads only if T is ThreadSafeRefCounted or SkRefCnt.");
+    static_assert(WTF::IsSubclassOfTemplate<T, ThreadSafeRefCounted>::value, "PassRefPtr<T> can be passed across threads only if T is ThreadSafeRefCounted.");
 };
 template <typename T>
 struct CrossThreadCopier<RefPtr<T>> : public CrossThreadCopierPassThrough<RefPtr<T>> {
     STATIC_ONLY(CrossThreadCopier);
-    static_assert(WTF::IsSubclassOfTemplate<T, ThreadSafeRefCounted>::value || std::is_base_of<SkRefCnt, T>::value, "RefPtr<T> can be passed across threads only if T is ThreadSafeRefCounted or SkRefCnt.");
+    static_assert(WTF::IsSubclassOfTemplate<T, ThreadSafeRefCounted>::value, "RefPtr<T> can be passed across threads only if T is ThreadSafeRefCounted.");
+};
+template <typename T>
+struct CrossThreadCopier<sk_sp<T>> : public CrossThreadCopierPassThrough<sk_sp<T>> {
+    STATIC_ONLY(CrossThreadCopier);
+    static_assert(std::is_base_of<SkRefCnt, T>::value, "sk_sp<T> can be passed across threads only if T is SkRefCnt.");
 };
 
 // nullptr_t can be passed through without any changes.

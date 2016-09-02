@@ -40,7 +40,7 @@ LayoutSVGResourceMasker::~LayoutSVGResourceMasker()
 
 void LayoutSVGResourceMasker::removeAllClientsFromCache(bool markForInvalidation)
 {
-    m_maskContentPicture.clear();
+    m_maskContentPicture.reset();
     m_maskContentBoundaries = FloatRect();
     markAllClientsForInvalidation(markForInvalidation ? LayoutAndBoundariesInvalidation : ParentOnlyInvalidation);
 }
@@ -51,7 +51,7 @@ void LayoutSVGResourceMasker::removeClientFromCache(LayoutObject* client, bool m
     markClientForInvalidation(client, markForInvalidation ? BoundariesInvalidation : ParentOnlyInvalidation);
 }
 
-PassRefPtr<const SkPicture> LayoutSVGResourceMasker::createContentPicture(AffineTransform& contentTransformation, const FloatRect& targetBoundingBox,
+sk_sp<const SkPicture> LayoutSVGResourceMasker::createContentPicture(AffineTransform& contentTransformation, const FloatRect& targetBoundingBox,
     GraphicsContext& context)
 {
     SVGUnitTypes::SVGUnitType contentUnits = toSVGMaskElement(element())->maskContentUnits()->currentValue()->enumValue();

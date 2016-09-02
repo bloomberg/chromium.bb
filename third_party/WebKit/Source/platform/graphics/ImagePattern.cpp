@@ -20,7 +20,7 @@ PassRefPtr<ImagePattern> ImagePattern::create(PassRefPtr<Image> image, RepeatMod
 
 ImagePattern::ImagePattern(PassRefPtr<Image> image, RepeatMode repeatMode)
     : Pattern(repeatMode)
-    , m_tileImage(toSkSp(image->imageForCurrentFrame()))
+    , m_tileImage(image->imageForCurrentFrame())
 {
     m_previousLocalMatrix.setIdentity();
     if (m_tileImage) {

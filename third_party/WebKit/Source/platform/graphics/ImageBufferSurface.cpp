@@ -50,7 +50,7 @@ ImageBufferSurface::ImageBufferSurface(const IntSize& size, OpacityMode opacityM
 
 ImageBufferSurface::~ImageBufferSurface() { }
 
-PassRefPtr<SkPicture> ImageBufferSurface::getPicture()
+sk_sp<SkPicture> ImageBufferSurface::getPicture()
 {
     return nullptr;
 }
@@ -72,11 +72,11 @@ void ImageBufferSurface::clear()
 
 void ImageBufferSurface::draw(GraphicsContext& context, const FloatRect& destRect, const FloatRect& srcRect, SkXfermode::Mode op)
 {
-    RefPtr<SkImage> snapshot = newImageSnapshot(PreferNoAcceleration, SnapshotReasonPaint);
+    sk_sp<SkImage> snapshot = newImageSnapshot(PreferNoAcceleration, SnapshotReasonPaint);
     if (!snapshot)
         return;
 
-    RefPtr<Image> image = StaticBitmapImage::create(snapshot.release());
+    RefPtr<Image> image = StaticBitmapImage::create(std::move(snapshot));
     context.drawImage(image.get(), destRect, &srcRect, op);
 }
 

@@ -131,10 +131,10 @@ FontPlatformData::FontPlatformData(const FontPlatformData& src, float textSize)
 #endif
 }
 
-FontPlatformData::FontPlatformData(PassRefPtr<SkTypeface> tf,
+FontPlatformData::FontPlatformData(sk_sp<SkTypeface> tf,
     const char* family, float textSize, bool syntheticBold,
     bool syntheticItalic, FontOrientation orientation)
-    : m_typeface(tf)
+    : m_typeface(std::move(tf))
 #if !OS(WIN)
     , m_family(family)
 #endif

@@ -85,7 +85,7 @@ sk_sp<SkImageFilter> build(FilterEffect* effect, ColorSpace colorSpace, bool des
 
 sk_sp<SkImageFilter> transformColorSpace(sk_sp<SkImageFilter> input, ColorSpace srcColorSpace, ColorSpace dstColorSpace)
 {
-    sk_sp<SkColorFilter> colorFilter = toSkSp(ColorSpaceUtilities::createColorSpaceFilter(srcColorSpace, dstColorSpace));
+    sk_sp<SkColorFilter> colorFilter = ColorSpaceUtilities::createColorSpaceFilter(srcColorSpace, dstColorSpace);
     if (!colorFilter)
         return input;
 

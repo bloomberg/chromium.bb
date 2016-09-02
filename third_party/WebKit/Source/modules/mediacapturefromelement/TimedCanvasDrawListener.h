@@ -9,6 +9,7 @@
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebCanvasCaptureHandler.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include <memory>
 
 namespace blink {
@@ -18,7 +19,7 @@ class TimedCanvasDrawListener final : public GarbageCollectedFinalized<TimedCanv
 public:
     ~TimedCanvasDrawListener();
     static TimedCanvasDrawListener* create(std::unique_ptr<WebCanvasCaptureHandler>, double frameRate);
-    void sendNewFrame(WTF::PassRefPtr<SkImage>) override;
+    void sendNewFrame(sk_sp<SkImage>) override;
 
     DEFINE_INLINE_TRACE() {}
 private:

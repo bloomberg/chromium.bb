@@ -39,7 +39,7 @@ FontCache::FontCache()
 {
     if (s_staticFontManager) {
         adopted(s_staticFontManager);
-        m_fontManager = s_staticFontManager;
+        m_fontManager = sk_ref_sp(s_staticFontManager);
     } else {
         m_fontManager = nullptr;
     }

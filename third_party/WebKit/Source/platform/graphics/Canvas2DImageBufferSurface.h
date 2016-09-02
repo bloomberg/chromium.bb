@@ -33,6 +33,7 @@
 
 #include "platform/graphics/Canvas2DLayerBridge.h"
 #include "platform/graphics/ImageBufferSurface.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace blink {
 
@@ -76,7 +77,7 @@ public:
     void prepareSurfaceForPaintingIfNeeded() override { m_layerBridge->prepareSurfaceForPaintingIfNeeded(); }
     bool writePixels(const SkImageInfo& origInfo, const void* pixels, size_t rowBytes, int x, int y) override { return m_layerBridge->writePixels(origInfo, pixels, rowBytes, x, y); }
 
-    PassRefPtr<SkImage> newImageSnapshot(AccelerationHint hint, SnapshotReason reason) override { return m_layerBridge->newImageSnapshot(hint, reason); }
+    sk_sp<SkImage> newImageSnapshot(AccelerationHint hint, SnapshotReason reason) override { return m_layerBridge->newImageSnapshot(hint, reason); }
 
 private:
     void init()

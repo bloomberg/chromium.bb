@@ -54,9 +54,9 @@ std::unique_ptr<DrawLooperBuilder> DrawLooperBuilder::create()
     return wrapUnique(new DrawLooperBuilder);
 }
 
-PassRefPtr<SkDrawLooper> DrawLooperBuilder::detachDrawLooper()
+sk_sp<SkDrawLooper> DrawLooperBuilder::detachDrawLooper()
 {
-    return fromSkSp(m_skDrawLooperBuilder.detach());
+    return m_skDrawLooperBuilder.detach();
 }
 
 void DrawLooperBuilder::addUnmodifiedContent()

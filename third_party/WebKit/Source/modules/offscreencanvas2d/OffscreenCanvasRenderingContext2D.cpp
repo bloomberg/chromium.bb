@@ -118,9 +118,9 @@ ImageBitmap* OffscreenCanvasRenderingContext2D::transferToImageBitmap(ExceptionS
 {
     if (!imageBuffer())
         return nullptr;
-    RefPtr<SkImage> skImage = m_imageBuffer->newSkImageSnapshot(PreferAcceleration, SnapshotReasonTransferToImageBitmap);
+    sk_sp<SkImage> skImage = m_imageBuffer->newSkImageSnapshot(PreferAcceleration, SnapshotReasonTransferToImageBitmap);
     DCHECK(isMainThread() || !skImage->isTextureBacked()); // Acceleration not yet supported in Workers
-    RefPtr<StaticBitmapImage> image = StaticBitmapImage::create(skImage.release());
+    RefPtr<StaticBitmapImage> image = StaticBitmapImage::create(std::move(skImage));
     image->setOriginClean(this->originClean());
     m_imageBuffer.reset(); // "Transfer" means no retained buffer
     m_needsMatrixClipRestore = true;
@@ -131,8 +131,8 @@ PassRefPtr<Image> OffscreenCanvasRenderingContext2D::getImage(SnapshotReason rea
 {
     if (!imageBuffer())
         return nullptr;
-    RefPtr<SkImage> skImage = m_imageBuffer->newSkImageSnapshot(PreferAcceleration, reason);
-    RefPtr<StaticBitmapImage> image = StaticBitmapImage::create(skImage.release());
+    sk_sp<SkImage> skImage = m_imageBuffer->newSkImageSnapshot(PreferAcceleration, reason);
+    RefPtr<StaticBitmapImage> image = StaticBitmapImage::create(std::move(skImage));
     return image;
 }
 

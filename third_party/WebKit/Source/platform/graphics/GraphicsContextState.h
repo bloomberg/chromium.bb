@@ -34,10 +34,10 @@
 #include "platform/graphics/StrokeData.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PtrUtil.h"
-#include "wtf/RefPtr.h"
 #include <memory>
 
 namespace blink {
@@ -90,7 +90,7 @@ public:
         DCHECK_EQ(m_fillPaint.getLooper(), m_strokePaint.getLooper());
         return m_fillPaint.getLooper();
     }
-    void setDrawLooper(PassRefPtr<SkDrawLooper>);
+    void setDrawLooper(sk_sp<SkDrawLooper>);
 
     // Text. (See TextModeFill & friends.)
     TextDrawingModeFlags textDrawingMode() const { return m_textDrawingMode; }
@@ -101,7 +101,7 @@ public:
         DCHECK_EQ(m_fillPaint.getColorFilter(), m_strokePaint.getColorFilter());
         return m_fillPaint.getColorFilter();
     }
-    void setColorFilter(PassRefPtr<SkColorFilter>);
+    void setColorFilter(sk_sp<SkColorFilter>);
 
     // Image interpolation control.
     InterpolationQuality getInterpolationQuality() const { return m_interpolationQuality; }

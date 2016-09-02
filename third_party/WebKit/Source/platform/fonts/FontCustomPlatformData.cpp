@@ -44,7 +44,7 @@
 
 namespace blink {
 
-FontCustomPlatformData::FontCustomPlatformData(PassRefPtr<SkTypeface> typeface)
+FontCustomPlatformData::FontCustomPlatformData(sk_sp<SkTypeface> typeface)
     : m_typeface(typeface) { }
 
 FontCustomPlatformData::~FontCustomPlatformData()
@@ -54,19 +54,19 @@ FontCustomPlatformData::~FontCustomPlatformData()
 FontPlatformData FontCustomPlatformData::fontPlatformData(float size, bool bold, bool italic, FontOrientation orientation)
 {
     ASSERT(m_typeface);
-    return FontPlatformData(m_typeface.get(), "", size, bold && !m_typeface->isBold(), italic && !m_typeface->isItalic(), orientation);
+    return FontPlatformData(m_typeface, "", size, bold && !m_typeface->isBold(), italic && !m_typeface->isItalic(), orientation);
 }
 
 std::unique_ptr<FontCustomPlatformData> FontCustomPlatformData::create(SharedBuffer* buffer, String& otsParseMessage)
 {
     DCHECK(buffer);
     WebFontDecoder decoder;
-    RefPtr<SkTypeface> typeface = decoder.decode(buffer);
+    sk_sp<SkTypeface> typeface = decoder.decode(buffer);
     if (!typeface) {
         otsParseMessage = decoder.getErrorString();
         return nullptr;
     }
-    return wrapUnique(new FontCustomPlatformData(typeface.release()));
+    return wrapUnique(new FontCustomPlatformData(std::move(typeface)));
 }
 
 bool FontCustomPlatformData::supportsFormat(const String& format)

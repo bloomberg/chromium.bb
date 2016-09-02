@@ -24,6 +24,7 @@
 #include "core/svg/SVGMaskElement.h"
 #include "core/svg/SVGUnitTypes.h"
 #include "platform/geometry/FloatRect.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 
 class SkPicture;
 
@@ -50,12 +51,12 @@ public:
     static const LayoutSVGResourceType s_resourceType = MaskerResourceType;
     LayoutSVGResourceType resourceType() const override { return s_resourceType; }
 
-    PassRefPtr<const SkPicture> createContentPicture(AffineTransform&, const FloatRect&, GraphicsContext&);
+    sk_sp<const SkPicture> createContentPicture(AffineTransform&, const FloatRect&, GraphicsContext&);
 
 private:
     void calculateMaskContentPaintInvalidationRect();
 
-    RefPtr<const SkPicture> m_maskContentPicture;
+    sk_sp<const SkPicture> m_maskContentPicture;
     FloatRect m_maskContentBoundaries;
 };
 

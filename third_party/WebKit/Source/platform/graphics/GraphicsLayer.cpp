@@ -91,7 +91,7 @@ struct UnderPaintInvalidation {
 struct PaintInvalidationTracking {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     Vector<PaintInvalidationInfo> trackedPaintInvalidations;
-    RefPtr<SkPicture> lastPaintedPicture;
+    sk_sp<SkPicture> lastPaintedPicture;
     Region paintInvalidationRegionSinceLastPaint;
     Vector<UnderPaintInvalidation> underPaintInvalidations;
 };
@@ -333,10 +333,10 @@ void GraphicsLayer::paint(const IntRect* interestRect, GraphicsContext::Disabled
     if (paintWithoutCommit(interestRect, disabledMode)) {
         getPaintController().commitNewDisplayItems(offsetFromLayoutObjectWithSubpixelAccumulation());
         if (RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled()) {
-            RefPtr<SkPicture> newPicture = capturePicture();
+            sk_sp<SkPicture> newPicture = capturePicture();
             checkPaintUnderInvalidations(*newPicture);
             PaintInvalidationTracking& tracking = paintInvalidationTrackingMap().add(this, PaintInvalidationTracking()).storedValue->value;
-            tracking.lastPaintedPicture = newPicture;
+            tracking.lastPaintedPicture = std::move(newPicture);
             tracking.paintInvalidationRegionSinceLastPaint = Region();
         }
     }
@@ -1111,12 +1111,12 @@ void GraphicsLayer::setContentsRect(const IntRect& rect)
 
 void GraphicsLayer::setContentsToImage(Image* image, RespectImageOrientationEnum respectImageOrientation)
 {
-    RefPtr<SkImage> skImage = image ? image->imageForCurrentFrame() : nullptr;
+    sk_sp<SkImage> skImage = image ? image->imageForCurrentFrame() : nullptr;
 
     if (image && skImage && image->isBitmapImage()) {
         if (respectImageOrientation == RespectImageOrientation) {
             ImageOrientation imageOrientation = toBitmapImage(image)->currentFrameOrientation();
-            skImage = DragImage::resizeAndOrientImage(skImage.release(), imageOrientation);
+            skImage = DragImage::resizeAndOrientImage(std::move(skImage), imageOrientation);
         }
     }
 
@@ -1244,7 +1244,7 @@ void GraphicsLayer::setCompositorMutableProperties(uint32_t properties)
         layer->setCompositorMutableProperties(properties);
 }
 
-PassRefPtr<SkPicture> GraphicsLayer::capturePicture()
+sk_sp<SkPicture> GraphicsLayer::capturePicture()
 {
     if (!drawsContent())
         return nullptr;
@@ -1335,7 +1335,7 @@ void GraphicsLayer::checkPaintUnderInvalidations(const SkPicture& newPicture)
     SkPictureRecorder recorder;
     recorder.beginRecording(width, height);
     recorder.getRecordingCanvas()->drawBitmap(newBitmap, 0, 0);
-    RefPtr<SkPicture> picture = fromSkSp(recorder.finishRecordingAsPicture());
+    sk_sp<SkPicture> picture = recorder.finishRecordingAsPicture();
     getPaintController().appendDebugDrawingAfterCommit(*this, picture, offsetFromLayoutObjectWithSubpixelAccumulation());
 }
 

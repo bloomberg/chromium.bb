@@ -77,7 +77,7 @@ BitmapImage::BitmapImage(const SkBitmap& bitmap, ImageObserver* observer)
     : Image(observer)
     , m_size(bitmap.width(), bitmap.height())
     , m_currentFrame(0)
-    , m_cachedFrame(fromSkSp(SkImage::MakeFromBitmap(bitmap)))
+    , m_cachedFrame(SkImage::MakeFromBitmap(bitmap))
     , m_cachedFrameIndex(0)
     , m_repetitionCount(cAnimationNone)
     , m_repetitionCountStatus(Unknown)
@@ -111,7 +111,7 @@ bool BitmapImage::currentFrameHasSingleSecurityOrigin() const
 
 void BitmapImage::destroyDecodedData()
 {
-    m_cachedFrame.clear();
+    m_cachedFrame.reset();
     for (size_t i = 0; i < m_frames.size(); ++i)
         m_frames[i].clear(true);
     m_source.clearCacheExceptFrame(kNotFound);
@@ -138,7 +138,7 @@ size_t BitmapImage::totalFrameBytes()
     return totalBytes;
 }
 
-PassRefPtr<SkImage> BitmapImage::decodeAndCacheFrame(size_t index)
+sk_sp<SkImage> BitmapImage::decodeAndCacheFrame(size_t index)
 {
     size_t numFrames = frameCount();
     if (m_frames.size() < numFrames)
@@ -146,7 +146,7 @@ PassRefPtr<SkImage> BitmapImage::decodeAndCacheFrame(size_t index)
 
     // We are caching frame snapshots.  This is OK even for partially decoded frames,
     // as they are cleared by dataChanged() when new data arrives.
-    RefPtr<SkImage> image = m_source.createFrameAtIndex(index);
+    sk_sp<SkImage> image = m_source.createFrameAtIndex(index);
     m_cachedFrame = image;
     m_cachedFrameIndex = index;
 
@@ -159,7 +159,7 @@ PassRefPtr<SkImage> BitmapImage::decodeAndCacheFrame(size_t index)
     m_frames[index].m_frameBytes = m_source.frameBytesAtIndex(index);
 
     notifyMemoryChanged();
-    return image.release();
+    return image;
 }
 
 void BitmapImage::updateSize() const
@@ -234,7 +234,7 @@ Image::SizeAvailability BitmapImage::dataChanged(bool allDataReceived)
         if (m_frames[i].m_haveMetadata && !m_frames[i].m_isComplete) {
             m_frames[i].clear(true);
             if (i == m_cachedFrameIndex)
-                m_cachedFrame.clear();
+                m_cachedFrame.reset();
         }
     }
 
@@ -259,7 +259,7 @@ void BitmapImage::draw(SkCanvas* canvas, const SkPaint& paint, const FloatRect& 
 {
     TRACE_EVENT0("skia", "BitmapImage::draw");
 
-    RefPtr<SkImage> image = imageForCurrentFrame();
+    sk_sp<SkImage> image = imageForCurrentFrame();
     if (!image)
         return; // It's too early and we don't have an image yet.
 
@@ -336,7 +336,7 @@ bool BitmapImage::isSizeAvailable()
     return m_sizeAvailable;
 }
 
-PassRefPtr<SkImage> BitmapImage::frameAtIndex(size_t index)
+sk_sp<SkImage> BitmapImage::frameAtIndex(size_t index)
 {
     if (index >= frameCount())
         return nullptr;
@@ -363,7 +363,7 @@ float BitmapImage::frameDurationAtIndex(size_t index)
     return m_source.frameDurationAtIndex(index);
 }
 
-PassRefPtr<SkImage> BitmapImage::imageForCurrentFrame()
+sk_sp<SkImage> BitmapImage::imageForCurrentFrame()
 {
     return frameAtIndex(currentFrame());
 }
@@ -371,9 +371,9 @@ PassRefPtr<SkImage> BitmapImage::imageForCurrentFrame()
 PassRefPtr<Image> BitmapImage::imageForDefaultFrame()
 {
     if (frameCount() > 1) {
-        RefPtr<SkImage> firstFrame = frameAtIndex(0);
+        sk_sp<SkImage> firstFrame = frameAtIndex(0);
         if (firstFrame)
-            return StaticBitmapImage::create(firstFrame);
+            return StaticBitmapImage::create(std::move(firstFrame));
     }
 
     return Image::imageForDefaultFrame();
@@ -414,7 +414,7 @@ bool BitmapImage::currentFrameIsComplete()
 
 bool BitmapImage::currentFrameIsLazyDecoded()
 {
-    RefPtr<SkImage> image = frameAtIndex(currentFrame());
+    sk_sp<SkImage> image = frameAtIndex(currentFrame());
     return image && image->isLazyGenerated();
 }
 
@@ -552,7 +552,7 @@ void BitmapImage::resetAnimation()
     m_repetitionsComplete = 0;
     m_desiredFrameStartTime = 0;
     m_animationFinished = false;
-    m_cachedFrame.clear();
+    m_cachedFrame.reset();
 }
 
 bool BitmapImage::maybeAnimated()

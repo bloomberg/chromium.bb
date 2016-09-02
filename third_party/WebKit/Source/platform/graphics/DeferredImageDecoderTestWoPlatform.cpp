@@ -39,11 +39,11 @@ static void mixImages(const char* fileName, size_t bytesForFirstFrame, size_t la
     std::unique_ptr<DeferredImageDecoder> decoder = DeferredImageDecoder::create(partialFile, false,
         ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileIgnored);
     ASSERT_NE(decoder, nullptr);
-    RefPtr<SkImage> partialImage = decoder->createFrameAtIndex(0);
+    sk_sp<SkImage> partialImage = decoder->createFrameAtIndex(0);
 
     RefPtr<SharedBuffer> almostCompleteFile = SharedBuffer::create(file->data(), file->size() - 1);
     decoder->setData(almostCompleteFile, false);
-    RefPtr<SkImage> imageWithMoreData = decoder->createFrameAtIndex(laterFrame);
+    sk_sp<SkImage> imageWithMoreData = decoder->createFrameAtIndex(laterFrame);
 
     imageWithMoreData->preroll();
     partialImage->preroll();

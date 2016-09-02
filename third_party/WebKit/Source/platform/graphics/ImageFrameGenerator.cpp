@@ -131,7 +131,7 @@ bool ImageFrameGenerator::decodeAndScale(SegmentReader* data, bool allDataReceiv
     ASSERT(m_fullSize == scaledSize);
 
     // TODO (scroggo): Convert tryToResumeDecode() and decode() to take a
-    // PassRefPtr<SkBitmap::Allocator> instead of a bare pointer.
+    // sk_sp<SkBitmap::Allocator> instead of a bare pointer.
     SkBitmap bitmap = tryToResumeDecode(data, allDataReceived, index, scaledSize, externalAllocator.get());
     if (bitmap.isNull())
         return false;

@@ -97,12 +97,12 @@ void GraphicsContextState::setFillColor(const Color& color)
 }
 
 // Shadow. (This will need tweaking if we use draw loopers for other things.)
-void GraphicsContextState::setDrawLooper(PassRefPtr<SkDrawLooper> drawLooper)
+void GraphicsContextState::setDrawLooper(sk_sp<SkDrawLooper> drawLooper)
 {
     // Grab a new ref for stroke.
     m_strokePaint.setLooper(sk_ref_sp(drawLooper.get()));
     // Pass the existing ref to fill (to minimize refcount churn).
-    m_fillPaint.setLooper(toSkSp(drawLooper));
+    m_fillPaint.setLooper(std::move(drawLooper));
 }
 
 void GraphicsContextState::setLineDash(const DashArray& dashes, float dashOffset)
@@ -110,12 +110,12 @@ void GraphicsContextState::setLineDash(const DashArray& dashes, float dashOffset
     m_strokeData.setLineDash(dashes, dashOffset);
 }
 
-void GraphicsContextState::setColorFilter(PassRefPtr<SkColorFilter> colorFilter)
+void GraphicsContextState::setColorFilter(sk_sp<SkColorFilter> colorFilter)
 {
     // Grab a new ref for stroke.
     m_strokePaint.setColorFilter(sk_ref_sp(colorFilter.get()));
     // Pass the existing ref to fill (to minimize refcount churn).
-    m_fillPaint.setColorFilter(toSkSp(colorFilter));
+    m_fillPaint.setColorFilter(std::move(colorFilter));
 }
 
 void GraphicsContextState::setInterpolationQuality(InterpolationQuality quality)

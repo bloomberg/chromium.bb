@@ -47,13 +47,10 @@ namespace {
 static inline bool isFontPresent(const UChar* fontName, SkFontMgr* fontManager)
 {
     String family = fontName;
-    SkTypeface* typeface;
-    typeface = fontManager->matchFamilyStyle(family.utf8().data(), SkFontStyle());
-
-    if (!typeface)
+    sk_sp<SkTypeface> tf(fontManager->matchFamilyStyle(family.utf8().data(), SkFontStyle()));
+    if (!tf)
         return false;
 
-    RefPtr<SkTypeface> tf = adoptRef(typeface);
     SkTypeface::LocalizedStrings* actualFamilies = tf->createFamilyNameIterator();
     bool matchesRequestedFamily = false;
     SkTypeface::LocalizedString actualFamily;

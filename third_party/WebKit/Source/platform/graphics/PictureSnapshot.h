@@ -36,6 +36,7 @@
 #include "platform/json/JSONValues.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "wtf/RefCounted.h"
 #include <memory>
 
@@ -55,7 +56,7 @@ public:
 
     static PassRefPtr<PictureSnapshot> load(const Vector<RefPtr<TilePictureStream>>&);
 
-    PictureSnapshot(PassRefPtr<const SkPicture>);
+    PictureSnapshot(sk_sp<const SkPicture>);
 
     std::unique_ptr<Vector<char>> replay(unsigned fromStep = 0, unsigned toStep = 0, double scale = 1.0) const;
     std::unique_ptr<Timings> profile(unsigned minIterations, double minDuration, const FloatRect* clipRect) const;
@@ -65,7 +66,7 @@ public:
 private:
     std::unique_ptr<SkBitmap> createBitmap() const;
 
-    RefPtr<const SkPicture> m_picture;
+    sk_sp<const SkPicture> m_picture;
 };
 
 } // namespace blink

@@ -53,8 +53,8 @@
 
 namespace blink {
 
-PictureSnapshot::PictureSnapshot(PassRefPtr<const SkPicture> picture)
-    : m_picture(picture)
+PictureSnapshot::PictureSnapshot(sk_sp<const SkPicture> picture)
+    : m_picture(std::move(picture))
 {
 }
 
@@ -91,7 +91,7 @@ PassRefPtr<PictureSnapshot> PictureSnapshot::load(const Vector<RefPtr<TilePictur
         pictures.append(std::move(picture));
     }
     if (tiles.size() == 1)
-        return adoptRef(new PictureSnapshot(fromSkSp(std::move(pictures[0]))));
+        return adoptRef(new PictureSnapshot(std::move(pictures[0])));
     SkPictureRecorder recorder;
     SkCanvas* canvas = recorder.beginRecording(unionRect.width(), unionRect.height(), 0, 0);
     for (size_t i = 0; i < pictures.size(); ++i) {
@@ -100,7 +100,7 @@ PassRefPtr<PictureSnapshot> PictureSnapshot::load(const Vector<RefPtr<TilePictur
         pictures[i]->playback(canvas, 0);
         canvas->restore();
     }
-    return adoptRef(new PictureSnapshot(fromSkSp(recorder.finishRecordingAsPicture())));
+    return adoptRef(new PictureSnapshot(recorder.finishRecordingAsPicture()));
 }
 
 bool PictureSnapshot::isEmpty() const
@@ -131,7 +131,7 @@ std::unique_ptr<Vector<char>> PictureSnapshot::replay(unsigned fromStep, unsigne
     std::unique_ptr<Vector<char>> base64Data = wrapUnique(new Vector<char>());
     Vector<char> encodedImage;
 
-    RefPtr<SkImage> image = fromSkSp(SkImage::MakeFromBitmap(bitmap));
+    sk_sp<SkImage> image = SkImage::MakeFromBitmap(bitmap);
     if (!image)
         return nullptr;
 

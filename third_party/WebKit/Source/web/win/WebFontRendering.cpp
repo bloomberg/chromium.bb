@@ -12,7 +12,7 @@ namespace blink {
 void WebFontRendering::setSkiaFontManager(SkFontMgr* fontMgr)
 {
     WTF::adopted(fontMgr);
-    FontCache::setFontManager(RefPtr<SkFontMgr>(fontMgr));
+    FontCache::setFontManager(sk_ref_sp(fontMgr));
 }
 
 // static

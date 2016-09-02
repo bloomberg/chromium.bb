@@ -64,9 +64,9 @@ bool UnacceleratedImageBufferSurface::isValid() const
     return m_surface;
 }
 
-PassRefPtr<SkImage> UnacceleratedImageBufferSurface::newImageSnapshot(AccelerationHint, SnapshotReason)
+sk_sp<SkImage> UnacceleratedImageBufferSurface::newImageSnapshot(AccelerationHint, SnapshotReason)
 {
-    return fromSkSp(m_surface->makeImageSnapshot());
+    return m_surface->makeImageSnapshot();
 }
 
 } // namespace blink

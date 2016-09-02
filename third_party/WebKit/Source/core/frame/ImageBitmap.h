@@ -16,6 +16,7 @@
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/heap/Handle.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "wtf/PassRefPtr.h"
 #include <memory>
 
@@ -48,7 +49,7 @@ public:
     // isImageBitmapPremultiplied indicates whether the original ImageBitmap is premultiplied or not.
     // isImageBitmapOriginClean indicates whether the original ImageBitmap is origin clean or not.
     static ImageBitmap* create(std::unique_ptr<uint8_t[]> data, uint32_t width, uint32_t height, bool isImageBitmapPremultiplied, bool isImageBitmapOriginClean);
-    static PassRefPtr<SkImage> getSkImageFromDecoder(std::unique_ptr<ImageDecoder>);
+    static sk_sp<SkImage> getSkImageFromDecoder(std::unique_ptr<ImageDecoder>);
     static bool isResizeOptionValid(const ImageBitmapOptions&, ExceptionState&);
     static bool isSourceSizeValid(int sourceWidth, int sourceHeight, ExceptionState&);
 

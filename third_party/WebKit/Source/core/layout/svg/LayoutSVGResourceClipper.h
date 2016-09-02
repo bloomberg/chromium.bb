@@ -22,6 +22,7 @@
 
 #include "core/layout/svg/LayoutSVGResourceContainer.h"
 #include "core/svg/SVGClipPathElement.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 
 class SkPicture;
 
@@ -47,7 +48,7 @@ public:
     SVGUnitTypes::SVGUnitType clipPathUnits() const { return toSVGClipPathElement(element())->clipPathUnits()->currentValue()->enumValue(); }
 
     bool asPath(const AffineTransform&, const FloatRect& referenceBox, Path&);
-    PassRefPtr<const SkPicture> createContentPicture();
+    sk_sp<const SkPicture> createContentPicture();
 
     bool hasCycle() { return m_inClipExpansion; }
     void beginClipExpansion() { ASSERT(!m_inClipExpansion); m_inClipExpansion = true; }
@@ -62,7 +63,7 @@ private:
     Path m_clipContentPath;
 
     // Cache of the clip path picture when falling back to masking for clipping.
-    RefPtr<const SkPicture> m_clipContentPicture;
+    sk_sp<const SkPicture> m_clipContentPicture;
 
     FloatRect m_localClipBounds;
 

@@ -57,7 +57,7 @@ public:
     IntSize size() const override { return IntSize(); }
     void destroyDecodedData() override { }
     void draw(SkCanvas*, const SkPaint&, const FloatRect& dstRect, const FloatRect& srcRect, RespectImageOrientationEnum, ImageClampingMode) override { }
-    PassRefPtr<SkImage> imageForCurrentFrame() override { return nullptr; }
+    sk_sp<SkImage> imageForCurrentFrame() override { return nullptr; }
 };
 
 TEST_F(ImageQualityControllerTest, ImageMaybeAnimated)
@@ -78,7 +78,7 @@ public:
     void draw(SkCanvas*, const SkPaint&, const FloatRect& dstRect, const FloatRect& srcRect, RespectImageOrientationEnum, ImageClampingMode) override { }
 
     bool isBitmapImage() const override { return true; }
-    PassRefPtr<SkImage> imageForCurrentFrame() override { return nullptr; }
+    sk_sp<SkImage> imageForCurrentFrame() override { return nullptr; }
 };
 
 TEST_F(ImageQualityControllerTest, LowQualityFilterForContrast)
@@ -99,7 +99,7 @@ public:
     void draw(SkCanvas*, const SkPaint&, const FloatRect& dstRect, const FloatRect& srcRect, RespectImageOrientationEnum, ImageClampingMode) override { }
 
     bool isBitmapImage() const override { return true; }
-    PassRefPtr<SkImage> imageForCurrentFrame() override { return nullptr; }
+    sk_sp<SkImage> imageForCurrentFrame() override { return nullptr; }
 };
 
 TEST_F(ImageQualityControllerTest, MediumQualityFilterForUnscaledImage)

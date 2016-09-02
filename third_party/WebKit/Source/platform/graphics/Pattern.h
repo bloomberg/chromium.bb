@@ -55,7 +55,7 @@ public:
     };
 
     static PassRefPtr<Pattern> createImagePattern(PassRefPtr<Image>, RepeatMode = RepeatModeXY);
-    static PassRefPtr<Pattern> createPicturePattern(PassRefPtr<SkPicture>,
+    static PassRefPtr<Pattern> createPicturePattern(sk_sp<SkPicture>,
         RepeatMode = RepeatModeXY);
     virtual ~Pattern();
 

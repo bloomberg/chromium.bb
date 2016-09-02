@@ -141,7 +141,7 @@ WebImage::WebImage(PassRefPtr<Image> image)
     if (!image)
         return;
 
-    if (RefPtr<SkImage> skImage = image->imageForCurrentFrame())
+    if (sk_sp<SkImage> skImage = image->imageForCurrentFrame())
         skImage->asLegacyBitmap(&m_bitmap, SkImage::kRO_LegacyBitmapMode);
 }
 

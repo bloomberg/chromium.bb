@@ -8,9 +8,9 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageBufferSurface.h"
 #include "public/platform/WebThread.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/RefPtr.h"
 #include <memory>
 
 class SkCanvas;
@@ -45,7 +45,7 @@ public:
     // Implementation of ImageBufferSurface interfaces
     SkCanvas* canvas() override;
     void disableDeferral(DisableDeferralReason) override;
-    PassRefPtr<SkPicture> getPicture() override;
+    sk_sp<SkPicture> getPicture() override;
     void flush(FlushReason) override;
     void didDraw(const FloatRect&) override;
     bool isValid() const override { return true; }
@@ -54,7 +54,7 @@ public:
     void willOverwriteCanvas() override;
     virtual void finalizeFrame(const FloatRect&);
     void setImageBuffer(ImageBuffer*) override;
-    PassRefPtr<SkImage> newImageSnapshot(AccelerationHint, SnapshotReason) override;
+    sk_sp<SkImage> newImageSnapshot(AccelerationHint, SnapshotReason) override;
     void draw(GraphicsContext&, const FloatRect& destRect, const FloatRect& srcRect, SkXfermode::Mode) override;
     bool isExpensiveToPaint() override;
     void setHasExpensiveOp() override { m_currentFrameHasExpensiveOp = true; }
@@ -101,7 +101,7 @@ private:
     int approximateOpCount();
 
     std::unique_ptr<SkPictureRecorder> m_currentFrame;
-    RefPtr<SkPicture> m_previousFrame;
+    sk_sp<SkPicture> m_previousFrame;
     std::unique_ptr<ImageBufferSurface> m_fallbackSurface;
     ImageBuffer* m_imageBuffer;
     int m_initialSaveCount;

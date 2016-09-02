@@ -24,9 +24,9 @@ bool infoIsCompatible(const SkImageInfo& info, SkAlphaType alphaType, SkColorTyp
 
 } // anonymous namespace
 
-ImagePixelLocker::ImagePixelLocker(PassRefPtr<const SkImage> image, SkAlphaType alphaType,
+ImagePixelLocker::ImagePixelLocker(sk_sp<const SkImage> image, SkAlphaType alphaType,
     SkColorType colorType)
-    : m_image(image)
+    : m_image(std::move(image))
 {
     // If the image has in-RAM pixels and their format matches, use them directly.
     // TODO(fmalita): All current clients expect packed pixel rows.  Maybe we could update them

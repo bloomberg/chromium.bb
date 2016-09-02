@@ -183,7 +183,7 @@ void ImageBuffer::resetCanvas(SkCanvas* canvas) const
         m_client->restoreCanvasMatrixClipStack(canvas);
 }
 
-PassRefPtr<SkImage> ImageBuffer::newSkImageSnapshot(AccelerationHint hint, SnapshotReason reason) const
+sk_sp<SkImage> ImageBuffer::newSkImageSnapshot(AccelerationHint hint, SnapshotReason reason) const
 {
     if (m_snapshotState == InitialSnapshotState)
         m_snapshotState = DidAcquireSnapshot;
@@ -195,10 +195,10 @@ PassRefPtr<SkImage> ImageBuffer::newSkImageSnapshot(AccelerationHint hint, Snaps
 
 PassRefPtr<Image> ImageBuffer::newImageSnapshot(AccelerationHint hint, SnapshotReason reason) const
 {
-    RefPtr<SkImage> snapshot = newSkImageSnapshot(hint, reason);
+    sk_sp<SkImage> snapshot = newSkImageSnapshot(hint, reason);
     if (!snapshot)
         return nullptr;
-    return StaticBitmapImage::create(snapshot);
+    return StaticBitmapImage::create(std::move(snapshot));
 }
 
 void ImageBuffer::didDraw(const FloatRect& rect) const
@@ -221,7 +221,7 @@ bool ImageBuffer::copyToPlatformTexture(gpu::gles2::GLES2Interface* gl, GLuint t
     if (!isSurfaceValid())
         return false;
 
-    RefPtr<const SkImage> textureImage = m_surface->newImageSnapshot(PreferAcceleration, SnapshotReasonCopyToWebGLTexture);
+    sk_sp<const SkImage> textureImage = m_surface->newImageSnapshot(PreferAcceleration, SnapshotReasonCopyToWebGLTexture);
     if (!textureImage)
         return false;
 
@@ -343,7 +343,7 @@ bool ImageBuffer::getImageData(Multiply multiplied, const IntRect& rect, WTF::Ar
     if (ExpensiveCanvasHeuristicParameters::GetImageDataForcesNoAcceleration && !RuntimeEnabledFeatures::canvas2dFixedRenderingModeEnabled())
         const_cast<ImageBuffer*>(this)->disableAcceleration();
 
-    RefPtr<SkImage> snapshot = m_surface->newImageSnapshot(PreferNoAcceleration, SnapshotReasonGetImageData);
+    sk_sp<SkImage> snapshot = m_surface->newImageSnapshot(PreferNoAcceleration, SnapshotReasonGetImageData);
     if (!snapshot)
         return false;
 

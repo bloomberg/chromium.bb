@@ -77,7 +77,7 @@ GraphicsContext::GraphicsContext(PaintController& paintController, DisabledMode 
     m_paintState = m_paintStateStack.last().get();
 
     if (contextDisabled()) {
-        DEFINE_STATIC_REF(SkCanvas, nullCanvas, (adoptRef(SkCreateNullCanvas())));
+        DEFINE_STATIC_LOCAL(SkCanvas*, nullCanvas, (SkCreateNullCanvas()));
         m_canvas = nullCanvas;
     }
 }
@@ -236,7 +236,7 @@ void GraphicsContext::beginLayer(float opacity, SkXfermode::Mode xfermode, const
     SkPaint layerPaint;
     layerPaint.setAlpha(static_cast<unsigned char>(opacity * 255));
     layerPaint.setXfermodeMode(xfermode);
-    layerPaint.setColorFilter(toSkSp(WebCoreColorFilterToSkiaColorFilter(colorFilter)));
+    layerPaint.setColorFilter(WebCoreColorFilterToSkiaColorFilter(colorFilter));
     layerPaint.setImageFilter(std::move(imageFilter));
 
     if (bounds) {
@@ -273,28 +273,28 @@ void GraphicsContext::beginRecording(const FloatRect& bounds)
 
 namespace {
 
-PassRefPtr<SkPicture> createEmptyPicture()
+sk_sp<SkPicture> createEmptyPicture()
 {
     SkPictureRecorder recorder;
     recorder.beginRecording(SkRect::MakeEmpty(), nullptr);
-    return fromSkSp(recorder.finishRecordingAsPicture());
+    return recorder.finishRecordingAsPicture();
 }
 
 } // anonymous namespace
 
-PassRefPtr<SkPicture> GraphicsContext::endRecording()
+sk_sp<SkPicture> GraphicsContext::endRecording()
 {
     if (contextDisabled()) {
         // Clients expect endRecording() to always return a non-null picture.
         // Cache an empty SKP to minimize overhead when disabled.
-        DEFINE_STATIC_REF(SkPicture, emptyPicture, createEmptyPicture());
+        DEFINE_STATIC_LOCAL(sk_sp<SkPicture>, emptyPicture, (createEmptyPicture()));
         return emptyPicture;
     }
 
-    RefPtr<SkPicture> picture = fromSkSp(m_pictureRecorder.finishRecordingAsPicture());
+    sk_sp<SkPicture> picture = m_pictureRecorder.finishRecordingAsPicture();
     m_canvas = nullptr;
     ASSERT(picture);
-    return picture.release();
+    return picture;
 }
 
 void GraphicsContext::drawPicture(const SkPicture* picture)
@@ -306,7 +306,7 @@ void GraphicsContext::drawPicture(const SkPicture* picture)
     m_canvas->drawPicture(picture);
 }
 
-void GraphicsContext::compositePicture(PassRefPtr<SkPicture> picture, const FloatRect& dest, const FloatRect& src, SkXfermode::Mode op)
+void GraphicsContext::compositePicture(sk_sp<SkPicture> picture, const FloatRect& dest, const FloatRect& src, SkXfermode::Mode op)
 {
     if (contextDisabled() || !picture)
         return;
@@ -320,7 +320,7 @@ void GraphicsContext::compositePicture(PassRefPtr<SkPicture> picture, const Floa
     SkMatrix pictureTransform;
     pictureTransform.setRectToRect(sourceBounds, skBounds, SkMatrix::kFill_ScaleToFit);
     m_canvas->concat(pictureTransform);
-    picturePaint.setImageFilter(SkPictureImageFilter::MakeForLocalSpace(toSkSp(picture), sourceBounds, static_cast<SkFilterQuality>(imageInterpolationQuality())));
+    picturePaint.setImageFilter(SkPictureImageFilter::MakeForLocalSpace(std::move(picture), sourceBounds, static_cast<SkFilterQuality>(imageInterpolationQuality())));
     m_canvas->saveLayer(&sourceBounds, &picturePaint);
     m_canvas->restore();
     m_canvas->restore();
@@ -1226,11 +1226,11 @@ void GraphicsContext::adjustLineToPixelBoundaries(FloatPoint& p1, FloatPoint& p2
     }
 }
 
-PassRefPtr<SkColorFilter> GraphicsContext::WebCoreColorFilterToSkiaColorFilter(ColorFilter colorFilter)
+sk_sp<SkColorFilter> GraphicsContext::WebCoreColorFilterToSkiaColorFilter(ColorFilter colorFilter)
 {
     switch (colorFilter) {
     case ColorFilterLuminanceToAlpha:
-        return fromSkSp(SkLumaColorFilter::Make());
+        return SkLumaColorFilter::Make();
     case ColorFilterLinearRGBToSRGB:
         return ColorSpaceUtilities::createColorSpaceFilter(ColorSpaceLinearRGB, ColorSpaceDeviceRGB);
     case ColorFilterSRGBToLinearRGB:

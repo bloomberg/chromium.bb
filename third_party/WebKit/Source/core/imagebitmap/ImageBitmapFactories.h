@@ -40,6 +40,7 @@
 #include "core/imagebitmap/ImageBitmapOptions.h"
 #include "platform/Supplementable.h"
 #include "platform/geometry/IntRect.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include <memory>
 
 class SkImage;
@@ -94,7 +95,7 @@ private:
 
         void scheduleAsyncImageBitmapDecoding(DOMArrayBuffer*);
         void decodeImageOnDecoderThread(WebTaskRunner*, DOMArrayBuffer*, const String& premultiplyAlphaOption, const String& colorSpaceConversionOption);
-        void resolvePromiseOnOriginalThread(PassRefPtr<SkImage>);
+        void resolvePromiseOnOriginalThread(sk_sp<SkImage>);
 
         // FileReaderLoaderClient
         void didStartLoading() override { }

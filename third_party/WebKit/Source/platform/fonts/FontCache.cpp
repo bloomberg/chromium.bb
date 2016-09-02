@@ -185,7 +185,7 @@ FontVerticalDataCache& fontVerticalDataCacheInstance()
     return fontVerticalDataCache;
 }
 
-void FontCache::setFontManager(const RefPtr<SkFontMgr>& fontManager)
+void FontCache::setFontManager(const sk_sp<SkFontMgr>& fontManager)
 {
     DCHECK(!s_staticFontManager);
     s_staticFontManager = fontManager.get();

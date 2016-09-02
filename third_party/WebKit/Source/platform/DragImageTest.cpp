@@ -51,7 +51,7 @@ namespace blink {
 
 class TestImage : public Image {
 public:
-    static PassRefPtr<TestImage> create(PassRefPtr<SkImage> image)
+    static PassRefPtr<TestImage> create(sk_sp<SkImage> image)
     {
         return adoptRef(new TestImage(image));
     }
@@ -68,7 +68,7 @@ public:
         return IntSize(m_image->width(), m_image->height());
     }
 
-    PassRefPtr<SkImage> imageForCurrentFrame() override
+    sk_sp<SkImage> imageForCurrentFrame() override
     {
         return m_image;
     }
@@ -89,7 +89,7 @@ public:
     }
 
 private:
-    explicit TestImage(PassRefPtr<SkImage> image)
+    explicit TestImage(sk_sp<SkImage> image)
         : m_image(image)
     {
     }
@@ -102,7 +102,7 @@ private:
             return;
 
         surface->getCanvas()->clear(SK_ColorTRANSPARENT);
-        m_image = fromSkSp(surface->makeImageSnapshot());
+        m_image = surface->makeImageSnapshot();
     }
 
     static sk_sp<SkSurface> createSkSurface(IntSize size)
@@ -110,7 +110,7 @@ private:
         return SkSurface::MakeRaster(SkImageInfo::MakeN32(size.width(), size.height(), kPremul_SkAlphaType));
     }
 
-    RefPtr<SkImage> m_image;
+    sk_sp<SkImage> m_image;
 };
 
 TEST(DragImageTest, NullHandling)
@@ -183,7 +183,7 @@ TEST(DragImageTest, InvalidRotatedBitmapImage)
     // Create a BitmapImage which will fail to produce pixels, and hence not
     // draw.
     SkImageInfo info = SkImageInfo::MakeN32Premul(100, 100);
-    RefPtr<SkPixelRef> pixelRef = adoptRef(new InvalidPixelRef(info));
+    sk_sp<SkPixelRef> pixelRef(new InvalidPixelRef(info));
     SkBitmap invalidBitmap;
     invalidBitmap.setInfo(info);
     invalidBitmap.setPixelRef(pixelRef.get());
@@ -221,7 +221,7 @@ TEST(DragImageTest, InterpolationNone)
         testBitmap.eraseArea(SkIRect::MakeXYWH(1, 1, 1, 1), 0xFFFFFFFF);
     }
 
-    RefPtr<TestImage> testImage = TestImage::create(fromSkSp(SkImage::MakeFromBitmap(testBitmap)));
+    RefPtr<TestImage> testImage = TestImage::create(SkImage::MakeFromBitmap(testBitmap));
     std::unique_ptr<DragImage> dragImage = DragImage::create(testImage.get(), DoNotRespectImageOrientation, 1, InterpolationNone);
     ASSERT_TRUE(dragImage);
     dragImage->scale(2, 2);

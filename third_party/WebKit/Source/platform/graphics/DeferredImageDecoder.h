@@ -30,6 +30,7 @@
 #include "platform/geometry/IntSize.h"
 #include "platform/image-decoders/ImageDecoder.h"
 #include "third_party/skia/include/core/SkRWBuffer.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
@@ -56,7 +57,7 @@ public:
 
     String filenameExtension() const;
 
-    PassRefPtr<SkImage> createFrameAtIndex(size_t);
+    sk_sp<SkImage> createFrameAtIndex(size_t);
 
     PassRefPtr<SharedBuffer> data();
     void setData(PassRefPtr<SharedBuffer> data, bool allDataReceived);
@@ -84,7 +85,7 @@ private:
     void activateLazyDecoding();
     void prepareLazyDecodedFrames();
 
-    PassRefPtr<SkImage> createFrameImageAtIndex(size_t index, bool knownToBeOpaque);
+    sk_sp<SkImage> createFrameImageAtIndex(size_t index, bool knownToBeOpaque);
 
     void setDataInternal(PassRefPtr<SharedBuffer> data, bool allDataReceived, bool pushDataToDecoder);
 

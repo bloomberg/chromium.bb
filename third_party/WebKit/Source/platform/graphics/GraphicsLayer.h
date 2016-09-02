@@ -50,6 +50,7 @@
 #include "public/platform/WebImageLayer.h"
 #include "public/platform/WebLayerScrollClient.h"
 #include "third_party/skia/include/core/SkFilterQuality.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "wtf/Vector.h"
 #include <memory>
 
@@ -294,7 +295,7 @@ private:
     typedef HashMap<int, int> RenderingContextMap;
     std::unique_ptr<JSONObject> layerTreeAsJSONInternal(LayerTreeFlags, RenderingContextMap&) const;
 
-    PassRefPtr<SkPicture> capturePicture();
+    sk_sp<SkPicture> capturePicture();
     void checkPaintUnderInvalidations(const SkPicture&);
 
     GraphicsLayerClient* m_client;

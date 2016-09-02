@@ -26,6 +26,7 @@
 #define SkewTransformOperation_h
 
 #include "platform/transforms/TransformOperation.h"
+#include "wtf/PassRefPtr.h"
 
 namespace blink {
 

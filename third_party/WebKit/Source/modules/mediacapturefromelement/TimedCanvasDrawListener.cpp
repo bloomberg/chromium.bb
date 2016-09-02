@@ -26,10 +26,10 @@ TimedCanvasDrawListener* TimedCanvasDrawListener::create(std::unique_ptr<WebCanv
     return listener;
 }
 
-void TimedCanvasDrawListener::sendNewFrame(WTF::PassRefPtr<SkImage> image)
+void TimedCanvasDrawListener::sendNewFrame(sk_sp<SkImage> image)
 {
     m_frameCaptureRequested = false;
-    CanvasDrawListener::sendNewFrame(image);
+    CanvasDrawListener::sendNewFrame(std::move(image));
 }
 
 void TimedCanvasDrawListener::requestFrameTimerFired(TimerBase*)

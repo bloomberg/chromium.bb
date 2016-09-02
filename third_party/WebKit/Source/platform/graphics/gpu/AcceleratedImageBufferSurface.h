@@ -33,6 +33,7 @@
 
 #include "platform/graphics/ImageBufferSurface.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include <memory>
 
@@ -47,7 +48,7 @@ public:
     SkCanvas* canvas() override { return m_surface ? m_surface->getCanvas() : nullptr; }
     bool isValid() const override { return m_surface; }
     bool isAccelerated() const override { return true; }
-    PassRefPtr<SkImage> newImageSnapshot(AccelerationHint, SnapshotReason) override;
+    sk_sp<SkImage> newImageSnapshot(AccelerationHint, SnapshotReason) override;
     GLuint getBackingTextureHandleForOverwrite() override;
 
 private:

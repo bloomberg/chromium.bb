@@ -34,6 +34,7 @@
 #include "public/platform/WebExternalTextureLayer.h"
 #include "public/platform/WebThread.h"
 #include "third_party/khronos/GLES2/gl2.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "wtf/Allocator.h"
 #include "wtf/Deque.h"
@@ -125,7 +126,7 @@ public:
     bool isHibernating() const { return m_hibernationImage.get(); }
     sk_sp<SkColorSpace> colorSpace() const { return m_colorSpace; }
 
-    PassRefPtr<SkImage> newImageSnapshot(AccelerationHint, SnapshotReason);
+    sk_sp<SkImage> newImageSnapshot(AccelerationHint, SnapshotReason);
 
     // The values of the enum entries must not change because they are used for
     // usage metrics histograms. New values can be added to the end.
@@ -176,7 +177,7 @@ private:
     struct MailboxInfo {
         DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
         gpu::Mailbox m_mailbox;
-        RefPtr<SkImage> m_image;
+        sk_sp<SkImage> m_image;
         RefPtr<Canvas2DLayerBridge> m_parentLayerBridge;
 
 #if USE_IOSURFACE_FOR_2D_CANVAS
@@ -230,15 +231,15 @@ private:
 
     // Returns whether the mailbox was successfully prepared from the SkImage.
     // The mailbox is an out parameter only populated on success.
-    bool prepareMailboxFromImage(PassRefPtr<SkImage>, cc::TextureMailbox*);
+    bool prepareMailboxFromImage(sk_sp<SkImage>, cc::TextureMailbox*);
 
     // Resets Skia's texture bindings. This method should be called after
     // changing texture bindings.
     void resetSkiaTextureBinding();
 
     std::unique_ptr<SkPictureRecorder> m_recorder;
-    RefPtr<SkSurface> m_surface;
-    RefPtr<SkImage> m_hibernationImage;
+    sk_sp<SkSurface> m_surface;
+    sk_sp<SkImage> m_hibernationImage;
     int m_initialSurfaceSaveCount;
     std::unique_ptr<WebExternalTextureLayer> m_layer;
     std::unique_ptr<WebGraphicsContext3DProvider> m_contextProvider;

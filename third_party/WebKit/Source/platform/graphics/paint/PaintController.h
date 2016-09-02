@@ -16,6 +16,7 @@
 #include "platform/graphics/paint/PaintChunk.h"
 #include "platform/graphics/paint/PaintChunker.h"
 #include "platform/graphics/paint/Transform3DDisplayItem.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "wtf/Alignment.h"
 #include "wtf/Assertions.h"
 #include "wtf/HashMap.h"
@@ -147,7 +148,7 @@ public:
     // the last commitNewDisplayItems(). Use with care.
     DisplayItemList& newDisplayItemList() { return m_newDisplayItemList; }
 
-    void appendDebugDrawingAfterCommit(const DisplayItemClient&, PassRefPtr<SkPicture>, const LayoutSize& offsetFromLayoutObject);
+    void appendDebugDrawingAfterCommit(const DisplayItemClient&, sk_sp<SkPicture>, const LayoutSize& offsetFromLayoutObject);
 
     void showDebugData() const;
 

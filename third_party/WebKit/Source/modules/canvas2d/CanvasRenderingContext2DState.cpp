@@ -399,8 +399,8 @@ SkImageFilter* CanvasRenderingContext2DState::shadowAndForegroundImageFilter() c
 
 void CanvasRenderingContext2DState::shadowParameterChanged()
 {
-    m_shadowOnlyDrawLooper.clear();
-    m_shadowAndForegroundDrawLooper.clear();
+    m_shadowOnlyDrawLooper.reset();
+    m_shadowAndForegroundDrawLooper.reset();
     m_shadowOnlyImageFilter.reset();
     m_shadowAndForegroundImageFilter.reset();
 }

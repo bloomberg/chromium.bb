@@ -37,6 +37,7 @@
 #include "platform/graphics/ImageOrientation.h"
 #include "platform/graphics/ImageSource.h"
 #include "platform/image-decoders/ImageAnimation.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "wtf/Forward.h"
 #include <memory>
 
@@ -78,7 +79,7 @@ public:
     ImageAnimationPolicy animationPolicy() override { return m_animationPolicy; }
     void advanceTime(double deltaTimeInSeconds) override;
 
-    PassRefPtr<SkImage> imageForCurrentFrame() override;
+    sk_sp<SkImage> imageForCurrentFrame() override;
     PassRefPtr<Image> imageForDefaultFrame() override;
 
     bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata) override;
@@ -107,14 +108,14 @@ private:
     size_t currentFrame() const { return m_currentFrame; }
     size_t frameCount();
 
-    PassRefPtr<SkImage> frameAtIndex(size_t);
+    sk_sp<SkImage> frameAtIndex(size_t);
 
     bool frameIsCompleteAtIndex(size_t);
     float frameDurationAtIndex(size_t);
     bool frameHasAlphaAtIndex(size_t);
     ImageOrientation frameOrientationAtIndex(size_t);
 
-    PassRefPtr<SkImage> decodeAndCacheFrame(size_t index);
+    sk_sp<SkImage> decodeAndCacheFrame(size_t index);
     void updateSize() const;
 
     // Returns the total number of bytes allocated for all framebuffers, i.e.
@@ -170,7 +171,7 @@ private:
     size_t m_currentFrame; // The index of the current frame of animation.
     Vector<FrameData, 1> m_frames; // An array of the cached frames of the animation. We have to ref frames to pin them in the cache.
 
-    RefPtr<SkImage> m_cachedFrame; // A cached copy of the most recently-accessed frame.
+    sk_sp<SkImage> m_cachedFrame; // A cached copy of the most recently-accessed frame.
     size_t m_cachedFrameIndex; // Index of the frame that is cached.
 
     std::unique_ptr<Timer<BitmapImage>> m_frameTimer;

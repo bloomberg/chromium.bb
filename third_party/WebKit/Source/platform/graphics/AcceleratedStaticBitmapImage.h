@@ -9,6 +9,7 @@
 #include "gpu/command_buffer/common/sync_token.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/StaticBitmapImage.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 
 #include <memory>
 
@@ -23,20 +24,20 @@ namespace blink {
 class PLATFORM_EXPORT AcceleratedStaticBitmapImage final : public StaticBitmapImage {
 public:
     // SkImage with a texture backing that is assumed to be from the shared main thread context.
-    static PassRefPtr<AcceleratedStaticBitmapImage> create(PassRefPtr<SkImage>);
+    static PassRefPtr<AcceleratedStaticBitmapImage> create(sk_sp<SkImage>);
     // Can specify the GrContext that created the texture backing the for the given SkImage. Ideally all callers would use this option.
     // The |mailbox| is a name for the texture backing the SkImage, allowing other contexts to use the same backing.
-    static PassRefPtr<AcceleratedStaticBitmapImage> create(PassRefPtr<SkImage>, sk_sp<GrContext>, const gpu::Mailbox&, const gpu::SyncToken&);
+    static PassRefPtr<AcceleratedStaticBitmapImage> create(sk_sp<SkImage>, sk_sp<GrContext>, const gpu::Mailbox&, const gpu::SyncToken&);
 
     ~AcceleratedStaticBitmapImage() override;
 
     // StaticBitmapImage overrides.
-    PassRefPtr<SkImage> imageForCurrentFrame() override;
+    sk_sp<SkImage> imageForCurrentFrame() override;
     void copyToTexture(WebGraphicsContext3DProvider*, GLuint destTextureId, GLenum destInternalFormat, GLenum destType, bool flipY) override;
 
 private:
-    AcceleratedStaticBitmapImage(PassRefPtr<SkImage>);
-    AcceleratedStaticBitmapImage(PassRefPtr<SkImage>, sk_sp<GrContext>, const gpu::Mailbox&, const gpu::SyncToken&);
+    AcceleratedStaticBitmapImage(sk_sp<SkImage>);
+    AcceleratedStaticBitmapImage(sk_sp<SkImage>, sk_sp<GrContext>, const gpu::Mailbox&, const gpu::SyncToken&);
 
     bool switchStorageToMailbox(WebGraphicsContext3DProvider*);
     GLuint switchStorageToSkImageForWebGL(WebGraphicsContext3DProvider*);

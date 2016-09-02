@@ -99,7 +99,7 @@ String DeferredImageDecoder::filenameExtension() const
     return m_actualDecoder ? m_actualDecoder->filenameExtension() : m_filenameExtension;
 }
 
-PassRefPtr<SkImage> DeferredImageDecoder::createFrameAtIndex(size_t index)
+sk_sp<SkImage> DeferredImageDecoder::createFrameAtIndex(size_t index)
 {
     if (m_frameGenerator && m_frameGenerator->decodeFailed())
         return nullptr;
@@ -125,14 +125,14 @@ PassRefPtr<SkImage> DeferredImageDecoder::createFrameAtIndex(size_t index)
     if (!frame || frame->getStatus() == ImageFrame::FrameEmpty)
         return nullptr;
 
-    return fromSkSp(SkImage::MakeFromBitmap(frame->bitmap()));
+    return SkImage::MakeFromBitmap(frame->bitmap());
 }
 
 PassRefPtr<SharedBuffer> DeferredImageDecoder::data()
 {
     if (!m_rwBuffer)
         return nullptr;
-    RefPtr<SkROBuffer> roBuffer = adoptRef(m_rwBuffer->newRBufferSnapshot());
+    sk_sp<SkROBuffer> roBuffer(m_rwBuffer->newRBufferSnapshot());
     RefPtr<SharedBuffer> sharedBuffer = SharedBuffer::create();
     SkROBuffer::Iter it(roBuffer.get());
     do {
@@ -318,16 +318,16 @@ inline SkImageInfo imageInfoFrom(const SkISize& decodedSize, bool knownToBeOpaqu
     return SkImageInfo::MakeN32(decodedSize.width(), decodedSize.height(), knownToBeOpaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType);
 }
 
-PassRefPtr<SkImage> DeferredImageDecoder::createFrameImageAtIndex(size_t index, bool knownToBeOpaque)
+sk_sp<SkImage> DeferredImageDecoder::createFrameImageAtIndex(size_t index, bool knownToBeOpaque)
 {
     const SkISize& decodedSize = m_frameGenerator->getFullSize();
     ASSERT(decodedSize.width() > 0);
     ASSERT(decodedSize.height() > 0);
 
-    RefPtr<SkROBuffer> roBuffer = adoptRef(m_rwBuffer->newRBufferSnapshot());
-    RefPtr<SegmentReader> segmentReader = SegmentReader::createFromSkROBuffer(roBuffer.release());
+    sk_sp<SkROBuffer> roBuffer(m_rwBuffer->newRBufferSnapshot());
+    RefPtr<SegmentReader> segmentReader = SegmentReader::createFromSkROBuffer(std::move(roBuffer));
     DecodingImageGenerator* generator = new DecodingImageGenerator(m_frameGenerator, imageInfoFrom(decodedSize, knownToBeOpaque), segmentReader.release(), m_allDataReceived, index, m_frameData[index].m_uniqueID);
-    RefPtr<SkImage> image = fromSkSp(SkImage::MakeFromGenerator(generator)); // SkImage takes ownership of the generator.
+    sk_sp<SkImage> image = SkImage::MakeFromGenerator(generator); // SkImage takes ownership of the generator.
     if (!image)
         return nullptr;
 
@@ -341,7 +341,7 @@ PassRefPtr<SkImage> DeferredImageDecoder::createFrameImageAtIndex(size_t index, 
 
     generator->setCanYUVDecode(m_canYUVDecode);
 
-    return image.release();
+    return image;
 }
 
 bool DeferredImageDecoder::hotSpot(IntPoint& hotSpot) const

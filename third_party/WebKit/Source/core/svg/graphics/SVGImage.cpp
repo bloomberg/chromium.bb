@@ -249,7 +249,7 @@ void SVGImage::drawForContainer(SkCanvas* canvas, const SkPaint& paint, const Fl
     drawInternal(canvas, paint, dstRect, scaledSrc, DoNotRespectImageOrientation, ClampImageToSourceRect, url);
 }
 
-PassRefPtr<SkImage> SVGImage::imageForCurrentFrame()
+sk_sp<SkImage> SVGImage::imageForCurrentFrame()
 {
     return imageForCurrentFrameForContainer(KURL(), FloatSize(size()));
 }
@@ -276,20 +276,20 @@ void SVGImage::drawPatternForContainer(GraphicsContext& context, const FloatSize
         SkPaint paint;
         drawForContainer(patternPicture.context().canvas(), paint, containerSize, zoom, tile, srcRect, url);
     }
-    RefPtr<SkPicture> tilePicture = patternPicture.endRecording();
+    sk_sp<SkPicture> tilePicture = patternPicture.endRecording();
 
     SkMatrix patternTransform;
     patternTransform.setTranslate(phase.x() + spacedTile.x(), phase.y() + spacedTile.y());
 
     SkPaint paint;
-    paint.setShader(SkShader::MakePictureShader(toSkSp(tilePicture.release()),
+    paint.setShader(SkShader::MakePictureShader(std::move(tilePicture),
         SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode, &patternTransform, nullptr));
     paint.setXfermodeMode(compositeOp);
     paint.setColorFilter(sk_ref_sp(context.colorFilter()));
     context.drawRect(dstRect, paint);
 }
 
-PassRefPtr<SkImage> SVGImage::imageForCurrentFrameForContainer(const KURL& url, const FloatSize& containerSize)
+sk_sp<SkImage> SVGImage::imageForCurrentFrameForContainer(const KURL& url, const FloatSize& containerSize)
 {
     if (!m_page)
         return nullptr;
@@ -304,8 +304,8 @@ PassRefPtr<SkImage> SVGImage::imageForCurrentFrameForContainer(const KURL& url, 
     const SkMatrix residualScale = SkMatrix::MakeScale(
         static_cast<float>(imageSize.width()) / containerSize.width(),
         static_cast<float>(imageSize.height()) / containerSize.height());
-    return fromSkSp(SkImage::MakeFromPicture(recorder.finishRecordingAsPicture(),
-        SkISize::Make(imageSize.width(), imageSize.height()), &residualScale, nullptr));
+    return SkImage::MakeFromPicture(recorder.finishRecordingAsPicture(),
+        SkISize::Make(imageSize.width(), imageSize.height()), &residualScale, nullptr);
 }
 
 static bool drawNeedsLayer(const SkPaint& paint)
@@ -373,7 +373,7 @@ void SVGImage::drawInternal(SkCanvas* canvas, const SkPaint& paint, const FloatR
             SkRect layerRect = dstRect;
             canvas->saveLayer(&layerRect, &paint);
         }
-        RefPtr<const SkPicture> recording = imagePicture.endRecording();
+        sk_sp<const SkPicture> recording = imagePicture.endRecording();
         canvas->drawPicture(recording.get());
     }
 

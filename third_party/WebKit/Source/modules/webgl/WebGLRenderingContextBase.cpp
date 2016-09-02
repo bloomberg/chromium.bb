@@ -4544,7 +4544,7 @@ void WebGLRenderingContextBase::texImageHelperImageBitmap(TexImageFunctionID fun
         }
         return;
     }
-    RefPtr<SkImage> skImage = bitmap->bitmapImage()->imageForCurrentFrame();
+    sk_sp<SkImage> skImage = bitmap->bitmapImage()->imageForCurrentFrame();
     SkPixmap pixmap;
     uint8_t* pixelDataPtr = nullptr;
     RefPtr<Uint8Array> pixelData;

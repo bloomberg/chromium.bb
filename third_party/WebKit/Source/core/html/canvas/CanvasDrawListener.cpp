@@ -11,7 +11,7 @@ namespace blink {
 
 CanvasDrawListener::~CanvasDrawListener() {}
 
-void CanvasDrawListener::sendNewFrame(WTF::PassRefPtr<SkImage> image)
+void CanvasDrawListener::sendNewFrame(sk_sp<SkImage> image)
 {
     m_handler->sendNewFrame(image.get());
 }

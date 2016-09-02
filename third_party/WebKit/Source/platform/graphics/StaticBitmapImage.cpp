@@ -15,16 +15,16 @@
 
 namespace blink {
 
-PassRefPtr<StaticBitmapImage> StaticBitmapImage::create(PassRefPtr<SkImage> image)
+PassRefPtr<StaticBitmapImage> StaticBitmapImage::create(sk_sp<SkImage> image)
 {
     if (!image)
         return nullptr;
     if (image->isTextureBacked())
-        return AcceleratedStaticBitmapImage::create(image);
-    return adoptRef(new StaticBitmapImage(image));
+        return AcceleratedStaticBitmapImage::create(std::move(image));
+    return adoptRef(new StaticBitmapImage(std::move(image)));
 }
 
-StaticBitmapImage::StaticBitmapImage(PassRefPtr<SkImage> image) : m_image(image)
+StaticBitmapImage::StaticBitmapImage(sk_sp<SkImage> image) : m_image(std::move(image))
 {
     ASSERT(m_image);
 }
@@ -60,7 +60,7 @@ void StaticBitmapImage::draw(SkCanvas* canvas, const SkPaint& paint, const Float
         observer->didDraw(this);
 }
 
-PassRefPtr<SkImage> StaticBitmapImage::imageForCurrentFrame()
+sk_sp<SkImage> StaticBitmapImage::imageForCurrentFrame()
 {
     return m_image;
 }

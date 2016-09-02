@@ -104,13 +104,13 @@ Color convertColor(const Color& srcColor, ColorSpace dstColorSpace, ColorSpace s
     return Color(lookupTable[srcColor.red()], lookupTable[srcColor.green()], lookupTable[srcColor.blue()], srcColor.alpha());
 }
 
-PassRefPtr<SkColorFilter> createColorSpaceFilter(ColorSpace srcColorSpace, ColorSpace dstColorSpace)
+sk_sp<SkColorFilter> createColorSpaceFilter(ColorSpace srcColorSpace, ColorSpace dstColorSpace)
 {
     const uint8_t* lookupTable = getConversionLUT(dstColorSpace, srcColorSpace);
     if (!lookupTable)
         return nullptr;
 
-    return fromSkSp(SkTableColorFilter::MakeARGB(0, lookupTable, lookupTable, lookupTable));
+    return SkTableColorFilter::MakeARGB(0, lookupTable, lookupTable, lookupTable);
 }
 
 } // namespace ColorSpaceUtilities

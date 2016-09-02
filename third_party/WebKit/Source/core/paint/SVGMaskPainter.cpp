@@ -49,7 +49,7 @@ void SVGMaskPainter::finishEffect(const LayoutObject& object, GraphicsContext& c
 void SVGMaskPainter::drawMaskForLayoutObject(GraphicsContext& context, const LayoutObject& layoutObject, const FloatRect& targetBoundingBox, const FloatRect& targetPaintInvalidationRect)
 {
     AffineTransform contentTransformation;
-    RefPtr<const SkPicture> maskContentPicture = m_mask.createContentPicture(contentTransformation, targetBoundingBox, context);
+    sk_sp<const SkPicture> maskContentPicture = m_mask.createContentPicture(contentTransformation, targetBoundingBox, context);
 
     if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, layoutObject, DisplayItem::kSVGMask))
         return;

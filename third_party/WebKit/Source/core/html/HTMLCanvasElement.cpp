@@ -116,7 +116,7 @@ PassRefPtr<Image> createTransparentImage(const IntSize& size)
 {
     DCHECK(ImageBuffer::canCreateImageBuffer(size));
     sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(size.width(), size.height());
-    return StaticBitmapImage::create(fromSkSp(surface->makeImageSnapshot()));
+    return StaticBitmapImage::create(surface->makeImageSnapshot());
 }
 
 } // namespace
@@ -454,7 +454,7 @@ void HTMLCanvasElement::notifyListenersCanvasChanged()
         RefPtr<Image> sourceImage = getSourceImageForCanvas(&status, PreferNoAcceleration, SnapshotReasonCanvasListenerCapture, FloatSize());
         if (status != NormalSourceImageStatus)
             return;
-        RefPtr<SkImage> image = sourceImage->imageForCurrentFrame();
+        sk_sp<SkImage> image = sourceImage->imageForCurrentFrame();
         for (CanvasDrawListener* listener : m_listeners) {
             if (listener->needsNewFrame()) {
                 listener->sendNewFrame(image);
@@ -603,7 +603,7 @@ ImageData* HTMLCanvasElement::toImageData(SourceDrawingBuffer sourceBuffer, Snap
 
         m_context->paintRenderingResultsToCanvas(sourceBuffer);
         imageData = ImageData::create(m_size);
-        RefPtr<SkImage> snapshot = buffer()->newSkImageSnapshot(PreferNoAcceleration, reason);
+        sk_sp<SkImage> snapshot = buffer()->newSkImageSnapshot(PreferNoAcceleration, reason);
         if (snapshot) {
             SkImageInfo imageInfo = SkImageInfo::Make(width(), height(), kRGBA_8888_SkColorType, kUnpremul_SkAlphaType);
             snapshot->readPixels(imageInfo, imageData->data()->data(), imageInfo.minRowBytes(), 0, 0);
@@ -617,7 +617,7 @@ ImageData* HTMLCanvasElement::toImageData(SourceDrawingBuffer sourceBuffer, Snap
         return imageData;
 
     DCHECK(m_context->is2d());
-    RefPtr<SkImage> snapshot = buffer()->newSkImageSnapshot(PreferNoAcceleration, reason);
+    sk_sp<SkImage> snapshot = buffer()->newSkImageSnapshot(PreferNoAcceleration, reason);
     if (snapshot) {
         SkImageInfo imageInfo = SkImageInfo::Make(width(), height(), kRGBA_8888_SkColorType, kUnpremul_SkAlphaType);
         snapshot->readPixels(imageInfo, imageData->data()->data(), imageInfo.minRowBytes(), 0, 0);
@@ -1130,7 +1130,7 @@ PassRefPtr<Image> HTMLCanvasElement::getSourceImageForCanvas(SourceImageStatus* 
         m_context->paintRenderingResultsToCanvas(BackBuffer);
     }
 
-    RefPtr<SkImage> skImage;
+    sk_sp<SkImage> skImage;
     RefPtr<blink::Image> image = renderingContext()->getImage(reason);
 
     if (image)
@@ -1138,7 +1138,7 @@ PassRefPtr<Image> HTMLCanvasElement::getSourceImageForCanvas(SourceImageStatus* 
 
     if (skImage) {
         *status = NormalSourceImageStatus;
-        return StaticBitmapImage::create(skImage.release());
+        return StaticBitmapImage::create(std::move(skImage));
     }
 
     *status = InvalidSourceImageStatus;

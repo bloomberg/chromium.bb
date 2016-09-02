@@ -31,6 +31,7 @@
 #include "platform/geometry/FloatSize.h"
 #include "platform/graphics/Image.h"
 #include "platform/weborigin/KURL.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace blink {
 
@@ -57,7 +58,7 @@ public:
     // FIXME: Implement this to be less conservative.
     bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata) override { return false; }
 
-    PassRefPtr<SkImage> imageForCurrentFrame() override;
+    sk_sp<SkImage> imageForCurrentFrame() override;
 
 private:
     SVGImageForContainer(SVGImage* image, const FloatSize& containerSize, float zoom, const KURL& url)

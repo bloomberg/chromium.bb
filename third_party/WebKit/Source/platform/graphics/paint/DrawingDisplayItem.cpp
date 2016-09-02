@@ -23,7 +23,7 @@ void DrawingDisplayItem::replay(GraphicsContext& context) const
 void DrawingDisplayItem::appendToWebDisplayItemList(const IntRect& visualRect, WebDisplayItemList* list) const
 {
     if (m_picture)
-        list->appendDrawingItem(visualRect, toSkSp(m_picture));
+        list->appendDrawingItem(visualRect, m_picture);
 }
 
 bool DrawingDisplayItem::drawsContent() const
@@ -60,8 +60,8 @@ static bool picturesEqual(const SkPicture* picture1, const SkPicture* picture2)
     if (picture1Serialized.bytesWritten() != picture2Serialized.bytesWritten())
         return false;
 
-    RefPtr<SkData> data1 = adoptRef(picture1Serialized.copyToData());
-    RefPtr<SkData> data2 = adoptRef(picture2Serialized.copyToData());
+    sk_sp<SkData> data1(picture1Serialized.copyToData());
+    sk_sp<SkData> data2(picture2Serialized.copyToData());
     return data1->equals(data2.get());
 }
 

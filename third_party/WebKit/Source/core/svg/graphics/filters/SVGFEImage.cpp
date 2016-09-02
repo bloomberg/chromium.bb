@@ -178,7 +178,7 @@ sk_sp<SkImageFilter> FEImage::createImageFilterForLayoutObject(const LayoutObjec
         SVGPaintContext::paintSubtree(filterPicture.context(), &layoutObject);
     }
 
-    return SkPictureImageFilter::Make(toSkSp(filterPicture.endRecording()), dstRect);
+    return SkPictureImageFilter::Make(filterPicture.endRecording(), dstRect);
 }
 
 sk_sp<SkImageFilter> FEImage::createImageFilter()
@@ -186,7 +186,7 @@ sk_sp<SkImageFilter> FEImage::createImageFilter()
     if (auto* layoutObject = referencedLayoutObject())
         return createImageFilterForLayoutObject(*layoutObject);
 
-    sk_sp<SkImage> image = m_image ? toSkSp(m_image->imageForCurrentFrame()) : nullptr;
+    sk_sp<SkImage> image = m_image ? m_image->imageForCurrentFrame() : nullptr;
     if (!image) {
         // "A href reference that is an empty image (zero width or zero height), that fails
         // to download, is non-existent, or that cannot be displayed (e.g. because it is

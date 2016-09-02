@@ -25,8 +25,8 @@
 #include "core/layout/svg/LayoutSVGResourcePaintServer.h"
 #include "core/svg/PatternAttributes.h"
 #include "platform/heap/Handle.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "wtf/HashMap.h"
-#include "wtf/RefPtr.h"
 #include <memory>
 
 class SkPicture;
@@ -54,7 +54,7 @@ public:
 
 private:
     std::unique_ptr<PatternData> buildPatternData(const LayoutObject&);
-    PassRefPtr<SkPicture> asPicture(const FloatRect& tile, const AffineTransform&) const;
+    sk_sp<SkPicture> asPicture(const FloatRect& tile, const AffineTransform&) const;
     PatternData* patternForLayoutObject(const LayoutObject&);
 
     const LayoutSVGResourceContainer* resolveContentElement() const;

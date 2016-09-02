@@ -233,14 +233,14 @@ void ImageBitmapFactories::ImageBitmapLoader::decodeImageOnDecoderThread(WebTask
     if (colorSpaceConversionOption == "none")
         colorSpaceOp = ImageDecoder::GammaAndColorProfileIgnored;
     std::unique_ptr<ImageDecoder> decoder(ImageDecoder::create(sharedBuffer.release(), true, alphaOp, colorSpaceOp));
-    RefPtr<SkImage> frame;
+    sk_sp<SkImage> frame;
     if (decoder) {
         frame = ImageBitmap::getSkImageFromDecoder(std::move(decoder));
     }
-    taskRunner->postTask(BLINK_FROM_HERE, crossThreadBind(&ImageBitmapFactories::ImageBitmapLoader::resolvePromiseOnOriginalThread, wrapCrossThreadPersistent(this), frame.release()));
+    taskRunner->postTask(BLINK_FROM_HERE, crossThreadBind(&ImageBitmapFactories::ImageBitmapLoader::resolvePromiseOnOriginalThread, wrapCrossThreadPersistent(this), std::move(frame)));
 }
 
-void ImageBitmapFactories::ImageBitmapLoader::resolvePromiseOnOriginalThread(PassRefPtr<SkImage> frame)
+void ImageBitmapFactories::ImageBitmapLoader::resolvePromiseOnOriginalThread(sk_sp<SkImage> frame)
 {
     if (!frame) {
         rejectPromise();
@@ -248,7 +248,7 @@ void ImageBitmapFactories::ImageBitmapLoader::resolvePromiseOnOriginalThread(Pas
     }
     ASSERT(frame->width() && frame->height());
 
-    RefPtr<StaticBitmapImage> image = StaticBitmapImage::create(frame);
+    RefPtr<StaticBitmapImage> image = StaticBitmapImage::create(std::move(frame));
     image->setOriginClean(true);
     ImageBitmap* imageBitmap = ImageBitmap::create(image, m_cropRect, m_options);
     if (imageBitmap && imageBitmap->bitmapImage()) {

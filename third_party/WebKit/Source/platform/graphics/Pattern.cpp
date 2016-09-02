@@ -42,10 +42,10 @@ PassRefPtr<Pattern> Pattern::createImagePattern(PassRefPtr<Image> tileImage, Rep
     return ImagePattern::create(tileImage, repeatMode);
 }
 
-PassRefPtr<Pattern> Pattern::createPicturePattern(PassRefPtr<SkPicture> picture,
+PassRefPtr<Pattern> Pattern::createPicturePattern(sk_sp<SkPicture> picture,
     RepeatMode repeatMode)
 {
-    return PicturePattern::create(picture, repeatMode);
+    return PicturePattern::create(std::move(picture), repeatMode);
 }
 
 Pattern::Pattern(RepeatMode repeatMode, int64_t externalMemoryAllocated)

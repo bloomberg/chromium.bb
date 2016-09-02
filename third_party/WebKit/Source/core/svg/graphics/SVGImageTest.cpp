@@ -29,7 +29,7 @@ public:
     void pumpFrame()
     {
         Image* image = m_image.get();
-        RefPtr<SkCanvas> nullCanvas = adoptRef(SkCreateNullCanvas());
+        sk_sp<SkCanvas> nullCanvas(SkCreateNullCanvas());
         SkPaint paint;
         FloatRect dummyRect(0, 0, 100, 100);
         image->draw(

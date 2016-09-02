@@ -60,9 +60,9 @@ AcceleratedImageBufferSurface::AcceleratedImageBufferSurface(const IntSize& size
     clear();
 }
 
-PassRefPtr<SkImage> AcceleratedImageBufferSurface::newImageSnapshot(AccelerationHint, SnapshotReason)
+sk_sp<SkImage> AcceleratedImageBufferSurface::newImageSnapshot(AccelerationHint, SnapshotReason)
 {
-    return fromSkSp(m_surface->makeImageSnapshot());
+    return m_surface->makeImageSnapshot();
 }
 
 GLuint AcceleratedImageBufferSurface::getBackingTextureHandleForOverwrite()

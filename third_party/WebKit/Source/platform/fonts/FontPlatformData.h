@@ -39,6 +39,7 @@
 #include "platform/fonts/FontOrientation.h"
 #include "platform/fonts/SmallCapsIterator.h"
 #include "platform/fonts/opentype/OpenTypeVerticalData.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/HashTableDeletedValueType.h"
@@ -87,7 +88,7 @@ public:
 #if OS(MACOSX)
     FontPlatformData(NSFont*, float size, bool syntheticBold = false, bool syntheticItalic = false, FontOrientation = FontOrientation::Horizontal);
 #endif
-    FontPlatformData(PassRefPtr<SkTypeface>, const char* name, float textSize, bool syntheticBold, bool syntheticItalic, FontOrientation = FontOrientation::Horizontal);
+    FontPlatformData(sk_sp<SkTypeface>, const char* name, float textSize, bool syntheticBold, bool syntheticItalic, FontOrientation = FontOrientation::Horizontal);
     ~FontPlatformData();
 
 #if OS(MACOSX)
@@ -141,7 +142,7 @@ private:
     void querySystemForRenderStyle();
 #endif
 
-    RefPtr<SkTypeface> m_typeface;
+    sk_sp<SkTypeface> m_typeface;
 #if !OS(WIN)
     CString m_family;
 #endif

@@ -10,12 +10,13 @@
 #include "platform/geometry/FloatPoint.h"
 #include "platform/graphics/paint/DisplayItem.h"
 #include "third_party/skia/include/core/SkPicture.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace blink {
 
 class PLATFORM_EXPORT DrawingDisplayItem final : public DisplayItem {
 public:
-    DrawingDisplayItem(const DisplayItemClient& client, Type type, PassRefPtr<const SkPicture> picture, bool knownToBeOpaque = false)
+    DrawingDisplayItem(const DisplayItemClient& client, Type type, sk_sp<const SkPicture> picture, bool knownToBeOpaque = false)
         : DisplayItem(client, type, sizeof(*this))
         , m_picture(picture && picture->approximateOpCount() ? picture : nullptr)
         , m_knownToBeOpaque(knownToBeOpaque)
@@ -39,7 +40,7 @@ private:
 #endif
     bool equals(const DisplayItem& other) const final;
 
-    RefPtr<const SkPicture> m_picture;
+    sk_sp<const SkPicture> m_picture;
 
     // True if there are no transparent areas. Only used for SlimmingPaintV2.
     const bool m_knownToBeOpaque;

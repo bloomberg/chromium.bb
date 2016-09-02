@@ -7,6 +7,7 @@
 
 #include "platform/graphics/Image.h"
 #include "third_party/khronos/GLES2/gl2.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace blink {
 
@@ -18,13 +19,13 @@ public:
 
     bool currentFrameIsComplete() override { return true; }
 
-    static PassRefPtr<StaticBitmapImage> create(PassRefPtr<SkImage>);
+    static PassRefPtr<StaticBitmapImage> create(sk_sp<SkImage>);
     void destroyDecodedData() override { }
     bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata) override;
     IntSize size() const override;
     void draw(SkCanvas*, const SkPaint&, const FloatRect& dstRect, const FloatRect& srcRect, RespectImageOrientationEnum, ImageClampingMode) override;
 
-    PassRefPtr<SkImage> imageForCurrentFrame() override;
+    sk_sp<SkImage> imageForCurrentFrame() override;
 
     bool originClean() const { return m_isOriginClean; }
     void setOriginClean(bool flag) { m_isOriginClean = flag; }
@@ -35,9 +36,9 @@ public:
     virtual bool hasMailbox() { return false; }
 
 protected:
-    StaticBitmapImage(PassRefPtr<SkImage>);
+    StaticBitmapImage(sk_sp<SkImage>);
     StaticBitmapImage() { } // empty constructor for derived class.
-    RefPtr<SkImage> m_image;
+    sk_sp<SkImage> m_image;
 
 private:
     bool m_isOriginClean = true;

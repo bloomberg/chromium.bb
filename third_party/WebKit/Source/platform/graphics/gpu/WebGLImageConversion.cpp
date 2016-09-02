@@ -2137,7 +2137,7 @@ void WebGLImageConversion::ImageExtractor::extractImage(bool premultiplyAlpha, b
     if (!m_image)
         return;
 
-    RefPtr<SkImage> skiaImage = m_image->imageForCurrentFrame();
+    sk_sp<SkImage> skiaImage = m_image->imageForCurrentFrame();
     SkImageInfo info = skiaImage
         ? SkImageInfo::MakeN32Premul(m_image->width(), m_image->height())
         : SkImageInfo::MakeUnknown();
@@ -2163,7 +2163,7 @@ void WebGLImageConversion::ImageExtractor::extractImage(bool premultiplyAlpha, b
         // only immutable/fully decoded frames make it through.  We could potentially relax this
         // and allow SkImage::NewFromBitmap to make a copy.
         ASSERT(bitmap.isImmutable());
-        skiaImage = fromSkSp(SkImage::MakeFromBitmap(bitmap));
+        skiaImage = SkImage::MakeFromBitmap(bitmap);
         info = bitmap.info();
 
         if (hasAlpha && premultiplyAlpha)
@@ -2191,7 +2191,7 @@ void WebGLImageConversion::ImageExtractor::extractImage(bool premultiplyAlpha, b
     if (m_imageWidth != (unsigned)m_image->width() || m_imageHeight != (unsigned)m_image->height())
         return;
 
-    m_imagePixelLocker.emplace(skiaImage, info.alphaType(), kN32_SkColorType);
+    m_imagePixelLocker.emplace(std::move(skiaImage), info.alphaType(), kN32_SkColorType);
 }
 
 unsigned WebGLImageConversion::getChannelBitsByFormat(GLenum format)

@@ -49,7 +49,7 @@ LayoutSVGResourceClipper::~LayoutSVGResourceClipper()
 void LayoutSVGResourceClipper::removeAllClientsFromCache(bool markForInvalidation)
 {
     m_clipContentPath.clear();
-    m_clipContentPicture.clear();
+    m_clipContentPicture.reset();
     m_localClipBounds = FloatRect();
     markAllClientsForInvalidation(markForInvalidation ? LayoutAndBoundariesInvalidation : ParentOnlyInvalidation);
 }
@@ -158,7 +158,7 @@ bool LayoutSVGResourceClipper::asPath(const AffineTransform& animatedLocalTransf
     return true;
 }
 
-PassRefPtr<const SkPicture> LayoutSVGResourceClipper::createContentPicture()
+sk_sp<const SkPicture> LayoutSVGResourceClipper::createContentPicture()
 {
     ASSERT(frame());
     if (m_clipContentPicture)

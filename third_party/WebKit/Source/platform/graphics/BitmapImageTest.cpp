@@ -76,7 +76,7 @@ public:
     // Accessors to BitmapImage's protected methods.
     void destroyDecodedData() { m_image->destroyDecodedData(); }
     size_t frameCount() { return m_image->frameCount(); }
-    PassRefPtr<SkImage> frameAtIndex(size_t index)
+    sk_sp<SkImage> frameAtIndex(size_t index)
     {
         return m_image->frameAtIndex(index);
     }

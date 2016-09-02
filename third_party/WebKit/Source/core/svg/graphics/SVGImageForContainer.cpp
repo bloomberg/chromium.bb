@@ -51,7 +51,7 @@ void SVGImageForContainer::drawPattern(GraphicsContext& context, const FloatRect
     m_image->drawPatternForContainer(context, m_containerSize, m_zoom, srcRect, scale, phase, op, dstRect, repeatSpacing, m_url);
 }
 
-PassRefPtr<SkImage> SVGImageForContainer::imageForCurrentFrame()
+sk_sp<SkImage> SVGImageForContainer::imageForCurrentFrame()
 {
     return m_image->imageForCurrentFrameForContainer(m_url, m_containerSize);
 }

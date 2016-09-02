@@ -244,7 +244,7 @@ std::unique_ptr<JSONObject> objectForBitmapData(const SkBitmap& bitmap)
 {
     Vector<unsigned char> output;
 
-    if (RefPtr<SkImage> image = fromSkSp(SkImage::MakeFromBitmap(bitmap))) {
+    if (sk_sp<SkImage> image = SkImage::MakeFromBitmap(bitmap)) {
         ImagePixelLocker pixelLocker(image, kUnpremul_SkAlphaType, kRGBA_8888_SkColorType);
         ImageDataBuffer imageData(IntSize(image->width(), image->height()),
             static_cast<const unsigned char*>(pixelLocker.pixels()));

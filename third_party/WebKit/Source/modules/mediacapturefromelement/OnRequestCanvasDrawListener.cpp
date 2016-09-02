@@ -22,10 +22,10 @@ OnRequestCanvasDrawListener* OnRequestCanvasDrawListener::create(std::unique_ptr
     return new OnRequestCanvasDrawListener(std::move(handler));
 }
 
-void OnRequestCanvasDrawListener::sendNewFrame(WTF::PassRefPtr<SkImage> image)
+void OnRequestCanvasDrawListener::sendNewFrame(sk_sp<SkImage> image)
 {
     m_frameCaptureRequested = false;
-    CanvasDrawListener::sendNewFrame(image);
+    CanvasDrawListener::sendNewFrame(std::move(image));
 }
 
 } // namespace blink

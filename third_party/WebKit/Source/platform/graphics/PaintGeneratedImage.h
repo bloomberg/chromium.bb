@@ -7,6 +7,7 @@
 
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/GeneratedImage.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 
 class SkPicture;
 
@@ -14,9 +15,9 @@ namespace blink {
 
 class PLATFORM_EXPORT PaintGeneratedImage : public GeneratedImage {
 public:
-    static PassRefPtr<PaintGeneratedImage> create(PassRefPtr<SkPicture> picture, const IntSize& size)
+    static PassRefPtr<PaintGeneratedImage> create(sk_sp<SkPicture> picture, const IntSize& size)
     {
-        return adoptRef(new PaintGeneratedImage(picture, size));
+        return adoptRef(new PaintGeneratedImage(std::move(picture), size));
     }
     ~PaintGeneratedImage() override { }
 
@@ -24,13 +25,13 @@ protected:
     void draw(SkCanvas*, const SkPaint&, const FloatRect&, const FloatRect&, RespectImageOrientationEnum, ImageClampingMode) override;
     void drawTile(GraphicsContext&, const FloatRect&) final;
 
-    PaintGeneratedImage(PassRefPtr<SkPicture> picture, const IntSize& size)
+    PaintGeneratedImage(sk_sp<SkPicture> picture, const IntSize& size)
         : GeneratedImage(size)
-        , m_picture(picture)
+        , m_picture(std::move(picture))
     {
     }
 
-    RefPtr<SkPicture> m_picture;
+    sk_sp<SkPicture> m_picture;
 };
 
 } // namespace blink

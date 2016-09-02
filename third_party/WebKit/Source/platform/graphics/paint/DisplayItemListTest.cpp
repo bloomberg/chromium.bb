@@ -35,13 +35,13 @@ public:
     FakeDisplayItemClient m_client;
 };
 
-static PassRefPtr<SkPicture> createRectPicture(const IntRect& bounds)
+static sk_sp<SkPicture> createRectPicture(const IntRect& bounds)
 {
     SkPictureRecorder recorder;
     SkCanvas* canvas = recorder.beginRecording(bounds.width(), bounds.height());
     canvas->drawRect(SkRect::MakeXYWH(bounds.x(), bounds.y(), bounds.width(), bounds.height()),
         SkPaint());
-    return fromSkSp(recorder.finishRecordingAsPicture());
+    return recorder.finishRecordingAsPicture();
 }
 
 TEST_F(DisplayItemListTest, AppendVisualRect_Simple)

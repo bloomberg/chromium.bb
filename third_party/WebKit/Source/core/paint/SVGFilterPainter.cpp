@@ -39,7 +39,7 @@ void SVGFilterRecordingContext::endContent(FilterData* filterData)
     m_paintController->commitNewDisplayItems();
     m_paintController->paintArtifact().replay(*m_context);
 
-    SkiaImageFilterBuilder::buildSourceGraphic(sourceGraphic, toSkSp(m_context->endRecording()));
+    SkiaImageFilterBuilder::buildSourceGraphic(sourceGraphic, m_context->endRecording());
 
     // Content is cached by the source graphic so temporaries can be freed.
     m_paintController = nullptr;

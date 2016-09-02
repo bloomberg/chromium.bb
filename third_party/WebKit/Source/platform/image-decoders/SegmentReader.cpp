@@ -87,14 +87,14 @@ sk_sp<SkData> DataSegmentReader::getAsSkData() const
 class ROBufferSegmentReader final : public SegmentReader {
     WTF_MAKE_NONCOPYABLE(ROBufferSegmentReader);
 public:
-    ROBufferSegmentReader(PassRefPtr<SkROBuffer>);
+    ROBufferSegmentReader(sk_sp<SkROBuffer>);
 
     size_t size() const override;
     size_t getSomeData(const char*& data, size_t position) const override;
     sk_sp<SkData> getAsSkData() const override;
 
 private:
-    RefPtr<SkROBuffer> m_roBuffer;
+    sk_sp<SkROBuffer> m_roBuffer;
     // Protects access to mutable fields.
     mutable Mutex m_readMutex;
     // Position of the first char in the current block of m_iter.
@@ -102,8 +102,8 @@ private:
     mutable SkROBuffer::Iter m_iter;
 };
 
-ROBufferSegmentReader::ROBufferSegmentReader(PassRefPtr<SkROBuffer> buffer)
-    : m_roBuffer(buffer)
+ROBufferSegmentReader::ROBufferSegmentReader(sk_sp<SkROBuffer> buffer)
+    : m_roBuffer(std::move(buffer))
     , m_positionOfBlock(0)
     , m_iter(m_roBuffer.get())
     {}
@@ -191,9 +191,9 @@ PassRefPtr<SegmentReader> SegmentReader::createFromSkData(sk_sp<SkData> data)
     return adoptRef(new DataSegmentReader(std::move(data)));
 }
 
-PassRefPtr<SegmentReader> SegmentReader::createFromSkROBuffer(PassRefPtr<SkROBuffer> buffer)
+PassRefPtr<SegmentReader> SegmentReader::createFromSkROBuffer(sk_sp<SkROBuffer> buffer)
 {
-    return adoptRef(new ROBufferSegmentReader(buffer));
+    return adoptRef(new ROBufferSegmentReader(std::move(buffer)));
 }
 
 } // namespace blink

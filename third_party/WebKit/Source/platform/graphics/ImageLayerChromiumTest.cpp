@@ -54,7 +54,7 @@ public:
         return m_size;
     }
 
-    PassRefPtr<SkImage> imageForCurrentFrame() override
+    sk_sp<SkImage> imageForCurrentFrame() override
     {
         return m_image;
     }
@@ -79,7 +79,7 @@ private:
             return;
 
         surface->getCanvas()->clear(SK_ColorTRANSPARENT);
-        m_image = fromSkSp(surface->makeImageSnapshot());
+        m_image = surface->makeImageSnapshot();
     }
 
     static sk_sp<SkSurface> createSkSurface(IntSize size, bool opaque)
@@ -88,7 +88,7 @@ private:
     }
 
     IntSize m_size;
-    RefPtr<SkImage> m_image;
+    sk_sp<SkImage> m_image;
 };
 
 } // anonymous namespace

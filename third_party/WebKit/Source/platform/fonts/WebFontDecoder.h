@@ -31,9 +31,9 @@
 #ifndef WebFontDecoder_h
 #define WebFontDecoder_h
 
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "wtf/Allocator.h"
-#include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -47,7 +47,7 @@ public:
     {
     }
 
-    PassRefPtr<SkTypeface> decode(SharedBuffer*);
+    sk_sp<SkTypeface> decode(SharedBuffer*);
 
     static bool supportsFormat(const String&);
     String getErrorString() const { return m_otsErrorString; }

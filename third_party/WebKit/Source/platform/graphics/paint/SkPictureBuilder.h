@@ -8,8 +8,8 @@
 #include "platform/PlatformExport.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/paint/DisplayItemClient.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/PassRefPtr.h"
 #include <memory>
 
 class SkMetaData;
@@ -36,7 +36,7 @@ public:
 
     // Returns a picture capturing all drawing performed on the builder's context since
     // construction.
-    PassRefPtr<SkPicture> endRecording();
+    sk_sp<SkPicture> endRecording();
 
     // DisplayItemClient methods
     String debugName() const final { return "SkPictureBuilder"; }

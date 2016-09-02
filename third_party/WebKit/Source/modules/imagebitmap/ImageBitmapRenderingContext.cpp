@@ -35,7 +35,7 @@ void ImageBitmapRenderingContext::transferFromImageBitmap(ImageBitmap* imageBitm
     if (!m_image)
         return;
 
-    RefPtr<SkImage> skImage = m_image->imageForCurrentFrame();
+    sk_sp<SkImage> skImage = m_image->imageForCurrentFrame();
     if (skImage->isTextureBacked()) {
         // TODO(junov): crbug.com/585607 Eliminate this readback and use an ExternalTextureLayer
         sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(skImage->width(), skImage->height());
@@ -44,8 +44,8 @@ void ImageBitmapRenderingContext::transferFromImageBitmap(ImageBitmap* imageBitm
             m_image.clear();
             return;
         }
-        surface->getCanvas()->drawImage(skImage.get(), 0, 0);
-        m_image = StaticBitmapImage::create(fromSkSp(surface->makeImageSnapshot()));
+        surface->getCanvas()->drawImage(skImage, 0, 0);
+        m_image = StaticBitmapImage::create(surface->makeImageSnapshot());
     }
     canvas()->didDraw(FloatRect(FloatPoint(), FloatSize(m_image->width(), m_image->height())));
 }

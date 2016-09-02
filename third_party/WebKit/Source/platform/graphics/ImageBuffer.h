@@ -38,6 +38,7 @@
 #include "platform/transforms/AffineTransform.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPicture.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
@@ -135,10 +136,10 @@ public:
 
     void notifySurfaceInvalid();
 
-    PassRefPtr<SkImage> newSkImageSnapshot(AccelerationHint, SnapshotReason) const;
+    sk_sp<SkImage> newSkImageSnapshot(AccelerationHint, SnapshotReason) const;
     PassRefPtr<Image> newImageSnapshot(AccelerationHint = PreferNoAcceleration, SnapshotReason = SnapshotReasonUnknown) const;
 
-    PassRefPtr<SkPicture> getPicture() { return m_surface->getPicture(); }
+    sk_sp<SkPicture> getPicture() { return m_surface->getPicture(); }
 
     void draw(GraphicsContext&, const FloatRect&, const FloatRect*, SkXfermode::Mode);
 

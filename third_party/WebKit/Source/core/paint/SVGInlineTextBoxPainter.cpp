@@ -352,7 +352,7 @@ bool SVGInlineTextBoxPainter::setupTextPaint(const PaintInfo& paintInfo, const C
 
     if (hasShadow(paintInfo, style)) {
         std::unique_ptr<DrawLooperBuilder> drawLooperBuilder = style.textShadow()->createDrawLooper(DrawLooperBuilder::ShadowRespectsAlpha, style.visitedDependentColor(CSSPropertyColor));
-        paint.setLooper(toSkSp(drawLooperBuilder->detachDrawLooper()));
+        paint.setLooper(drawLooperBuilder->detachDrawLooper());
     }
 
     if (resourceMode == ApplyToStrokeMode) {

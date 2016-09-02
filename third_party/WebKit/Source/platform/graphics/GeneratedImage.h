@@ -28,7 +28,7 @@
 
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/Image.h"
-#include "wtf/RefPtr.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace blink {
 
@@ -44,7 +44,7 @@ public:
     // Assume that generated content has no decoded data we need to worry about
     void destroyDecodedData() override { }
 
-    PassRefPtr<SkImage> imageForCurrentFrame() override;
+    sk_sp<SkImage> imageForCurrentFrame() override;
 
 protected:
     void drawPattern(GraphicsContext&, const FloatRect&,

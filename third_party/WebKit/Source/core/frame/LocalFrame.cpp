@@ -127,10 +127,10 @@ public:
     {
         context().getPaintController().endItem<EndTransformDisplayItem>(*m_pictureBuilder);
         // TODO(fmalita): endRecording() should return a non-const SKP.
-        sk_sp<SkPicture> recording(const_cast<SkPicture*>(m_pictureBuilder->endRecording().leakRef()));
-        RefPtr<SkImage> skImage = fromSkSp(SkImage::MakeFromPicture(std::move(recording),
-            SkISize::Make(m_bounds.width(), m_bounds.height()), nullptr, nullptr));
-        RefPtr<Image> image = StaticBitmapImage::create(skImage.release());
+        sk_sp<SkPicture> recording(const_cast<SkPicture*>(m_pictureBuilder->endRecording().release()));
+        sk_sp<SkImage> skImage = SkImage::MakeFromPicture(std::move(recording),
+            SkISize::Make(m_bounds.width(), m_bounds.height()), nullptr, nullptr);
+        RefPtr<Image> image = StaticBitmapImage::create(std::move(skImage));
         float screenDeviceScaleFactor = m_localFrame->page()->chromeClient().screenInfo().deviceScaleFactor;
 
         return DragImage::create(image.get(), imageOrientation, screenDeviceScaleFactor, InterpolationHigh, opacity);

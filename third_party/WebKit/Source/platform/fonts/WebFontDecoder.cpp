@@ -153,7 +153,7 @@ bool WebFontDecoder::supportsFormat(const String& format)
     return equalIgnoringCase(format, "woff") || equalIgnoringCase(format, "woff2");
 }
 
-PassRefPtr<SkTypeface> WebFontDecoder::decode(SharedBuffer* buffer)
+sk_sp<SkTypeface> WebFontDecoder::decode(SharedBuffer* buffer)
 {
     if (!buffer) {
         setErrorString("Empty Buffer");
@@ -190,16 +190,16 @@ PassRefPtr<SkTypeface> WebFontDecoder::decode(SharedBuffer* buffer)
     sk_sp<SkData> skData = SkData::MakeWithCopy(output.get(), decodedLength);
     SkMemoryStream* stream = new SkMemoryStream(skData);
 #if OS(WIN)
-    RefPtr<SkTypeface> typeface = adoptRef(FontCache::fontCache()->fontManager()->createFromStream(stream));
+    sk_sp<SkTypeface> typeface(FontCache::fontCache()->fontManager()->createFromStream(stream));
 #else
-    RefPtr<SkTypeface> typeface = fromSkSp(SkTypeface::MakeFromStream(stream));
+    sk_sp<SkTypeface> typeface = SkTypeface::MakeFromStream(stream);
 #endif
     if (!typeface) {
         setErrorString("Not a valid font data");
         return nullptr;
     }
 
-    return typeface.release();
+    return typeface;
 }
 
 } // namespace blink

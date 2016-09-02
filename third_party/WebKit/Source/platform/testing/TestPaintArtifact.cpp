@@ -25,20 +25,20 @@ public:
     DummyRectClient(const FloatRect& rect, Color color) : m_rect(rect), m_color(color) {}
     String debugName() const final { return "<dummy>"; }
     LayoutRect visualRect() const final { return enclosingLayoutRect(m_rect); }
-    PassRefPtr<SkPicture> makePicture() const;
+    sk_sp<SkPicture> makePicture() const;
 private:
     FloatRect m_rect;
     Color m_color;
 };
 
-PassRefPtr<SkPicture> TestPaintArtifact::DummyRectClient::makePicture() const
+sk_sp<SkPicture> TestPaintArtifact::DummyRectClient::makePicture() const
 {
     SkPictureRecorder recorder;
     SkCanvas* canvas = recorder.beginRecording(m_rect);
     SkPaint paint;
     paint.setColor(m_color.rgb());
     canvas->drawRect(m_rect, paint);
-    return fromSkSp(recorder.finishRecordingAsPicture());
+    return recorder.finishRecordingAsPicture();
 }
 
 TestPaintArtifact::TestPaintArtifact()

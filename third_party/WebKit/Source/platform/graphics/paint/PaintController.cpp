@@ -515,10 +515,10 @@ size_t PaintController::approximateUnsharedMemoryUsage() const
     return memoryUsage;
 }
 
-void PaintController::appendDebugDrawingAfterCommit(const DisplayItemClient& displayItemClient, PassRefPtr<SkPicture> picture, const LayoutSize& offsetFromLayoutObject)
+void PaintController::appendDebugDrawingAfterCommit(const DisplayItemClient& displayItemClient, sk_sp<SkPicture> picture, const LayoutSize& offsetFromLayoutObject)
 {
     DCHECK(m_newDisplayItemList.isEmpty());
-    DrawingDisplayItem& displayItem = m_currentPaintArtifact.getDisplayItemList().allocateAndConstruct<DrawingDisplayItem>(displayItemClient, DisplayItem::kDebugDrawing, picture);
+    DrawingDisplayItem& displayItem = m_currentPaintArtifact.getDisplayItemList().allocateAndConstruct<DrawingDisplayItem>(displayItemClient, DisplayItem::kDebugDrawing, std::move(picture));
     displayItem.setSkippedCache();
     // TODO(wkorman): Only compute and append visual rect for drawings.
     m_currentPaintArtifact.getDisplayItemList().appendVisualRect(visualRectForDisplayItem(displayItem, offsetFromLayoutObject));

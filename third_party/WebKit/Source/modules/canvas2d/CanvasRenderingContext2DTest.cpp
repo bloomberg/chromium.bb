@@ -64,8 +64,7 @@ FakeImageSource::FakeImageSource(IntSize size, BitmapOpacity opacity)
 {
     sk_sp<SkSurface> surface(SkSurface::MakeRasterN32Premul(m_size.width(), m_size.height()));
     surface->getCanvas()->clear(opacity == OpaqueBitmap ? SK_ColorWHITE : SK_ColorTRANSPARENT);
-    RefPtr<SkImage> image = fromSkSp(surface->makeImageSnapshot());
-    m_image = StaticBitmapImage::create(image);
+    m_image = StaticBitmapImage::create(surface->makeImageSnapshot());
 }
 
 PassRefPtr<Image> FakeImageSource::getSourceImageForCanvas(SourceImageStatus* status, AccelerationHint, SnapshotReason, const FloatSize&) const

@@ -44,7 +44,7 @@ BoxReflection boxReflectionForPaintLayer(const PaintLayer& layer, const Computed
         break;
     }
 
-    RefPtr<SkPicture> mask;
+    sk_sp<SkPicture> mask;
     const NinePieceImage& maskNinePiece = reflectStyle->mask();
     if (maskNinePiece.hasImage()) {
         LayoutRect maskRect(LayoutPoint(), frameLayoutRect.size());
@@ -65,7 +65,7 @@ BoxReflection boxReflectionForPaintLayer(const PaintLayer& layer, const Computed
         mask = recorder.endRecording();
     }
 
-    return BoxReflection(direction, offset, mask);
+    return BoxReflection(direction, offset, std::move(mask));
 }
 
 } // namespace blink

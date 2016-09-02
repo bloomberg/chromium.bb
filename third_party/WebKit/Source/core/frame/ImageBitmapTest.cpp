@@ -54,11 +54,11 @@ protected:
     {
         sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(10, 10);
         surface->getCanvas()->clear(0xFFFFFFFF);
-        m_image = fromSkSp(surface->makeImageSnapshot());
+        m_image = surface->makeImageSnapshot();
 
         sk_sp<SkSurface> surface2 = SkSurface::MakeRasterN32Premul(5, 5);
         surface2->getCanvas()->clear(0xAAAAAAAA);
-        m_image2 = fromSkSp(surface2->makeImageSnapshot());
+        m_image2 = surface2->makeImageSnapshot();
 
         // Save the global memory cache to restore it upon teardown.
         m_globalMemoryCache = replaceMemoryCacheForTesting(MemoryCache::create());
@@ -73,7 +73,7 @@ protected:
         replaceMemoryCacheForTesting(m_globalMemoryCache.release());
     }
 
-    RefPtr<SkImage> m_image, m_image2;
+    sk_sp<SkImage> m_image, m_image2;
     Persistent<MemoryCache> m_globalMemoryCache;
 };
 

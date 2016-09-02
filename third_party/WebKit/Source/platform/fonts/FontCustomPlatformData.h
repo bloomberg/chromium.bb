@@ -34,10 +34,10 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/fonts/FontOrientation.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
 #include <memory>
 
@@ -60,8 +60,8 @@ public:
     static bool supportsFormat(const String&);
 
 private:
-    explicit FontCustomPlatformData(PassRefPtr<SkTypeface>);
-    RefPtr<SkTypeface> m_typeface;
+    explicit FontCustomPlatformData(sk_sp<SkTypeface>);
+    sk_sp<SkTypeface> m_typeface;
 };
 
 } // namespace blink

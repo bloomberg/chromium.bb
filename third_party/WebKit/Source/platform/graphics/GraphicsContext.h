@@ -37,6 +37,7 @@
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "third_party/skia/include/core/SkMetaData.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "wtf/Allocator.h"
 #include "wtf/Forward.h"
@@ -151,7 +152,7 @@ public:
     void strokeRect(const FloatRect&, float lineWidth);
 
     void drawPicture(const SkPicture*);
-    void compositePicture(PassRefPtr<SkPicture>, const FloatRect& dest, const FloatRect& src, SkXfermode::Mode);
+    void compositePicture(sk_sp<SkPicture>, const FloatRect& dest, const FloatRect& src, SkXfermode::Mode);
 
     void drawImage(Image*, const FloatRect& destRect, const FloatRect* srcRect = nullptr,
         SkXfermode::Mode = SkXfermode::kSrcOver_Mode, RespectImageOrientationEnum = DoNotRespectImageOrientation);
@@ -206,7 +207,7 @@ public:
     // Returns a picture with any recorded draw commands since the prerequisite call to
     // beginRecording().  The picture is guaranteed to be non-null (but not necessarily non-empty),
     // even when the context is disabled.
-    PassRefPtr<SkPicture> endRecording();
+    sk_sp<SkPicture> endRecording();
 
     void setShadow(const FloatSize& offset, float blur, const Color&,
         DrawLooperBuilder::ShadowTransformMode = DrawLooperBuilder::ShadowRespectsTransforms,
@@ -275,7 +276,7 @@ public:
     void setInDrawingRecorder(bool);
 #endif
 
-    static PassRefPtr<SkColorFilter> WebCoreColorFilterToSkiaColorFilter(ColorFilter);
+    static sk_sp<SkColorFilter> WebCoreColorFilterToSkiaColorFilter(ColorFilter);
 
 private:
     const GraphicsContextState* immutableState() const { return m_paintState; }

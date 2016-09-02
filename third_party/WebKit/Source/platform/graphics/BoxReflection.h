@@ -7,8 +7,7 @@
 
 #include "platform/PlatformExport.h"
 #include "third_party/skia/include/core/SkPicture.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 
 class SkImageFilter;
 class SkMatrix;
@@ -33,8 +32,8 @@ public:
         HorizontalReflection,
     };
 
-    BoxReflection(ReflectionDirection direction, float offset, PassRefPtr<SkPicture> mask = nullptr)
-        : m_direction(direction), m_offset(offset), m_mask(mask) {}
+    BoxReflection(ReflectionDirection direction, float offset, sk_sp<SkPicture> mask = nullptr)
+        : m_direction(direction), m_offset(offset), m_mask(std::move(mask)) {}
 
     ReflectionDirection direction() const { return m_direction; }
     float offset() const { return m_offset; }
@@ -54,7 +53,7 @@ public:
 private:
     ReflectionDirection m_direction;
     float m_offset;
-    RefPtr<SkPicture> m_mask;
+    sk_sp<SkPicture> m_mask;
 };
 
 inline bool operator==(const BoxReflection& a, const BoxReflection& b)

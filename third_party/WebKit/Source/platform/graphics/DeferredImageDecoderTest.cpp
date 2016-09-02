@@ -176,7 +176,7 @@ protected:
 TEST_F(DeferredImageDecoderTest, drawIntoSkPicture)
 {
     m_lazyDecoder->setData(m_data, true);
-    RefPtr<SkImage> image = m_lazyDecoder->createFrameAtIndex(0);
+    sk_sp<SkImage> image = m_lazyDecoder->createFrameAtIndex(0);
     ASSERT_TRUE(image);
     EXPECT_EQ(1, image->width());
     EXPECT_EQ(1, image->height());
@@ -203,7 +203,7 @@ TEST_F(DeferredImageDecoderTest, drawIntoSkPictureProgressive)
 
     // Received only half the file.
     m_lazyDecoder->setData(partialData, false);
-    RefPtr<SkImage> image = m_lazyDecoder->createFrameAtIndex(0);
+    sk_sp<SkImage> image = m_lazyDecoder->createFrameAtIndex(0);
     ASSERT_TRUE(image);
     SkPictureRecorder recorder;
     SkCanvas* tempCanvas = recorder.beginRecording(100, 100, 0, 0);
@@ -233,7 +233,7 @@ static void rasterizeMain(SkCanvas* canvas, SkPicture* picture)
 TEST_F(DeferredImageDecoderTest, decodeOnOtherThread)
 {
     m_lazyDecoder->setData(m_data, true);
-    RefPtr<SkImage> image = m_lazyDecoder->createFrameAtIndex(0);
+    sk_sp<SkImage> image = m_lazyDecoder->createFrameAtIndex(0);
     ASSERT_TRUE(image);
     EXPECT_EQ(1, image->width());
     EXPECT_EQ(1, image->height());
@@ -262,7 +262,7 @@ TEST_F(DeferredImageDecoderTest, singleFrameImageLoading)
     m_status = ImageFrame::FramePartial;
     m_lazyDecoder->setData(m_data, false);
     EXPECT_FALSE(m_lazyDecoder->frameIsCompleteAtIndex(0));
-    RefPtr<SkImage> image = m_lazyDecoder->createFrameAtIndex(0);
+    sk_sp<SkImage> image = m_lazyDecoder->createFrameAtIndex(0);
     ASSERT_TRUE(image);
     unsigned firstId = image->uniqueID();
     EXPECT_FALSE(m_lazyDecoder->frameIsCompleteAtIndex(0));
@@ -289,7 +289,7 @@ TEST_F(DeferredImageDecoderTest, multiFrameImageLoading)
     m_status = ImageFrame::FramePartial;
     m_lazyDecoder->setData(m_data, false);
 
-    RefPtr<SkImage> image = m_lazyDecoder->createFrameAtIndex(0);
+    sk_sp<SkImage> image = m_lazyDecoder->createFrameAtIndex(0);
     ASSERT_TRUE(image);
     unsigned firstId = image->uniqueID();
     EXPECT_FALSE(m_lazyDecoder->frameIsCompleteAtIndex(0));
@@ -328,7 +328,7 @@ TEST_F(DeferredImageDecoderTest, decodedSize)
 {
     m_decodedSize = IntSize(22, 33);
     m_lazyDecoder->setData(m_data, true);
-    RefPtr<SkImage> image = m_lazyDecoder->createFrameAtIndex(0);
+    sk_sp<SkImage> image = m_lazyDecoder->createFrameAtIndex(0);
     ASSERT_TRUE(image);
     EXPECT_EQ(m_decodedSize.width(), image->width());
     EXPECT_EQ(m_decodedSize.height(), image->height());
@@ -372,7 +372,7 @@ TEST_F(DeferredImageDecoderTest, frameOpacity)
     SkPixmap pixmap(pixInfo, storage.get(), rowBytes);
 
     // Before decoding, the frame is not known to be opaque.
-    RefPtr<SkImage> frame = decoder->createFrameAtIndex(0);
+    sk_sp<SkImage> frame = decoder->createFrameAtIndex(0);
     ASSERT_TRUE(frame);
     EXPECT_FALSE(frame->isOpaque());
 

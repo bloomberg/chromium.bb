@@ -205,7 +205,7 @@ void Image::drawPattern(GraphicsContext& context, const FloatRect& floatSrcRect,
 {
     TRACE_EVENT0("skia", "Image::drawPattern");
 
-    RefPtr<SkImage> image = imageForCurrentFrame();
+    sk_sp<SkImage> image = imageForCurrentFrame();
     if (!image)
         return;
 
@@ -231,7 +231,7 @@ void Image::drawPattern(GraphicsContext& context, const FloatRect& floatSrcRect,
     // Fetch this now as subsetting may swap the image.
     auto imageID = image->uniqueID();
 
-    image = fromSkSp(image->makeSubset(enclosingIntRect(normSrcRect)));
+    image = image->makeSubset(enclosingIntRect(normSrcRect));
     if (!image)
         return;
 
@@ -259,14 +259,14 @@ PassRefPtr<Image> Image::imageForDefaultFrame()
 
 bool Image::isTextureBacked()
 {
-    RefPtr<SkImage> image = imageForCurrentFrame();
+    sk_sp<SkImage> image = imageForCurrentFrame();
     return image ? image->isTextureBacked() : false;
 }
 
 bool Image::applyShader(SkPaint& paint, const SkMatrix& localMatrix)
 {
     // Default shader impl: attempt to build a shader based on the current frame SkImage.
-    RefPtr<SkImage> image = imageForCurrentFrame();
+    sk_sp<SkImage> image = imageForCurrentFrame();
     if (!image)
         return false;
 

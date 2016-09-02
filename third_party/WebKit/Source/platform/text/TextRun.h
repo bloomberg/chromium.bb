@@ -31,6 +31,7 @@
 #include "platform/text/TabSize.h"
 #include "platform/text/TextDirection.h"
 #include "platform/text/TextPath.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "wtf/Allocator.h"
 #include "wtf/text/StringView.h"
 #include "wtf/text/WTFString.h"
@@ -249,7 +250,7 @@ public:
     unsigned from;
     unsigned to;
     FloatRect bounds;
-    RefPtr<const SkTextBlob>* cachedTextBlob;
+    sk_sp<const SkTextBlob>* cachedTextBlob;
 };
 
 } // namespace blink

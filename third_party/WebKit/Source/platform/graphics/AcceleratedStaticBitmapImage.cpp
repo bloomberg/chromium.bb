@@ -20,23 +20,23 @@
 
 namespace blink {
 
-PassRefPtr<AcceleratedStaticBitmapImage> AcceleratedStaticBitmapImage::create(PassRefPtr<SkImage> image)
+PassRefPtr<AcceleratedStaticBitmapImage> AcceleratedStaticBitmapImage::create(sk_sp<SkImage> image)
 {
-    return adoptRef(new AcceleratedStaticBitmapImage(image));
+    return adoptRef(new AcceleratedStaticBitmapImage(std::move(image)));
 }
 
-PassRefPtr<AcceleratedStaticBitmapImage> AcceleratedStaticBitmapImage::create(PassRefPtr<SkImage> image, sk_sp<GrContext> grContext, const gpu::Mailbox& mailbox, const gpu::SyncToken& syncToken)
+PassRefPtr<AcceleratedStaticBitmapImage> AcceleratedStaticBitmapImage::create(sk_sp<SkImage> image, sk_sp<GrContext> grContext, const gpu::Mailbox& mailbox, const gpu::SyncToken& syncToken)
 {
-    return adoptRef(new AcceleratedStaticBitmapImage(image, std::move(grContext), mailbox, syncToken));
+    return adoptRef(new AcceleratedStaticBitmapImage(std::move(image), std::move(grContext), mailbox, syncToken));
 }
 
-AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(PassRefPtr<SkImage> image)
+AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(sk_sp<SkImage> image)
     : StaticBitmapImage(std::move(image))
     , m_imageIsForSharedMainThreadContext(true)
 {
 }
 
-AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(PassRefPtr<SkImage> image, sk_sp<GrContext> grContext, const gpu::Mailbox& mailbox, const gpu::SyncToken& syncToken)
+AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(sk_sp<SkImage> image, sk_sp<GrContext> grContext, const gpu::Mailbox& mailbox, const gpu::SyncToken& syncToken)
     : StaticBitmapImage(std::move(image))
     , m_imageIsForSharedMainThreadContext(false) // TODO(danakj): Could be true though, caller would know.
     , m_grContext(std::move(grContext))
@@ -64,7 +64,7 @@ void AcceleratedStaticBitmapImage::copyToTexture(WebGraphicsContext3DProvider* d
     destGL->DeleteTextures(1, &sourceTextureId);
 }
 
-PassRefPtr<SkImage> AcceleratedStaticBitmapImage::imageForCurrentFrame()
+sk_sp<SkImage> AcceleratedStaticBitmapImage::imageForCurrentFrame()
 {
     // This must return an SkImage that can be used with the shared main thread context. If |m_image| satisfies that, we are done.
     if (m_imageIsForSharedMainThreadContext)
@@ -96,7 +96,7 @@ PassRefPtr<SkImage> AcceleratedStaticBitmapImage::imageForCurrentFrame()
     backendTexture.fConfig = kSkia8888_GrPixelConfig;
     backendTexture.fTextureHandle = skia::GrGLTextureInfoToGrBackendObject(textureInfo);
 
-    m_image = fromSkSp(SkImage::MakeFromAdoptedTexture(sharedGrContext, backendTexture));
+    m_image = SkImage::MakeFromAdoptedTexture(sharedGrContext, backendTexture);
     m_imageIsForSharedMainThreadContext = true;
     // Can drop the ref on the GrContext since m_image is now backed by a texture from the shared main thread context.
     m_grContext = nullptr;

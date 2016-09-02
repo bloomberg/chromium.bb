@@ -73,7 +73,7 @@ const float kDragLinkUrlFontSize = 10;
 
 } // anonymous namespace
 
-PassRefPtr<SkImage> DragImage::resizeAndOrientImage(PassRefPtr<SkImage> image, ImageOrientation orientation,
+sk_sp<SkImage> DragImage::resizeAndOrientImage(sk_sp<SkImage> image, ImageOrientation orientation,
     FloatSize imageScale, float opacity, InterpolationQuality interpolationQuality)
 {
     IntSize size(image->width(), image->height());
@@ -108,9 +108,9 @@ PassRefPtr<SkImage> DragImage::resizeAndOrientImage(PassRefPtr<SkImage> image, I
 
     SkCanvas* canvas = surface->getCanvas();
     canvas->concat(affineTransformToSkMatrix(transform));
-    canvas->drawImage(image.get(), 0, 0, &paint);
+    canvas->drawImage(image, 0, 0, &paint);
 
-    return fromSkSp(surface->makeImageSnapshot());
+    return surface->makeImageSnapshot();
 }
 
 FloatSize DragImage::clampedImageScale(const IntSize& imageSize, const IntSize& size,
@@ -138,7 +138,7 @@ std::unique_ptr<DragImage> DragImage::create(Image* image,
     if (!image)
         return nullptr;
 
-    RefPtr<SkImage> skImage = image->imageForCurrentFrame();
+    sk_sp<SkImage> skImage = image->imageForCurrentFrame();
     if (!skImage)
         return nullptr;
 
@@ -147,8 +147,8 @@ std::unique_ptr<DragImage> DragImage::create(Image* image,
         orientation = toBitmapImage(image)->currentFrameOrientation();
 
     SkBitmap bm;
-    RefPtr<SkImage> resizedImage =
-        resizeAndOrientImage(skImage.release(), orientation, imageScale, opacity, interpolationQuality);
+    sk_sp<SkImage> resizedImage =
+        resizeAndOrientImage(std::move(skImage), orientation, imageScale, opacity, interpolationQuality);
     if (!resizedImage || !resizedImage->asLegacyBitmap(&bm, SkImage::kRO_LegacyBitmapMode))
         return nullptr;
 

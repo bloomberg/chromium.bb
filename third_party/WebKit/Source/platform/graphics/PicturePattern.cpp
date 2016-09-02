@@ -10,15 +10,15 @@
 
 namespace blink {
 
-PassRefPtr<PicturePattern> PicturePattern::create(PassRefPtr<SkPicture> picture,
+PassRefPtr<PicturePattern> PicturePattern::create(sk_sp<SkPicture> picture,
     RepeatMode repeatMode)
 {
-    return adoptRef(new PicturePattern(picture, repeatMode));
+    return adoptRef(new PicturePattern(std::move(picture), repeatMode));
 }
 
-PicturePattern::PicturePattern(PassRefPtr<SkPicture> picture, RepeatMode mode)
+PicturePattern::PicturePattern(sk_sp<SkPicture> picture, RepeatMode mode)
     : Pattern(mode)
-    , m_tilePicture(toSkSp(picture))
+    , m_tilePicture(std::move(picture))
 {
     // All current clients use RepeatModeXY, so we only support this mode for now.
     ASSERT(isRepeatXY());

@@ -45,7 +45,7 @@
 
 namespace blink {
 
-HashMap<String, RefPtr<SkTypeface>>* FontCache::s_sideloadedFonts = 0;
+HashMap<String, sk_sp<SkTypeface>>* FontCache::s_sideloadedFonts = 0;
 
 // Cached system font metrics.
 AtomicString* FontCache::s_menuFontFamilyName = 0;
@@ -70,10 +70,10 @@ int32_t ensureMinimumFontHeightIfNeeded(int32_t fontHeight)
 void FontCache::addSideloadedFontForTesting(SkTypeface* typeface)
 {
     if (!s_sideloadedFonts)
-        s_sideloadedFonts = new HashMap<String, RefPtr<SkTypeface>>;
+        s_sideloadedFonts = new HashMap<String, sk_sp<SkTypeface>>;
     SkString name;
     typeface->getFamilyName(&name);
-    s_sideloadedFonts->set(name.c_str(), adoptRef(typeface));
+    s_sideloadedFonts->set(name.c_str(), sk_sp<SkTypeface>(typeface));
 }
 
 // static
@@ -100,9 +100,9 @@ void FontCache::setStatusFontMetrics(const wchar_t* familyName, int32_t fontHeig
 FontCache::FontCache()
     : m_purgePreventCount(0)
 {
-    m_fontManager = s_staticFontManager;
-    if (!m_fontManager.get())
-        m_fontManager = adoptRef(SkFontMgr_New_DirectWrite());
+    m_fontManager = sk_ref_sp(s_staticFontManager);
+    if (!m_fontManager)
+        m_fontManager.reset(SkFontMgr_New_DirectWrite());
     ASSERT(m_fontManager.get());
 }
 
@@ -360,7 +360,7 @@ std::unique_ptr<FontPlatformData> FontCache::createFontPlatformData(const FontDe
     ASSERT(creationParams.creationType() == CreateFontByFamily);
 
     CString name;
-    RefPtr<SkTypeface> tf = createTypeface(fontDescription, creationParams, name);
+    sk_sp<SkTypeface> tf = createTypeface(fontDescription, creationParams, name);
     // Windows will always give us a valid pointer here, even if the face name
     // is non-existent. We have to double-check and see if the family name was
     // really used.

@@ -115,7 +115,7 @@ size_t ImageSource::frameCount() const
     return m_decoder ? m_decoder->frameCount() : 0;
 }
 
-PassRefPtr<SkImage> ImageSource::createFrameAtIndex(size_t index)
+sk_sp<SkImage> ImageSource::createFrameAtIndex(size_t index)
 {
     if (!m_decoder)
         return nullptr;

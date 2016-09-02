@@ -31,6 +31,7 @@
 #include "platform/graphics/Image.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "wtf/Allocator.h"
 
 namespace blink {
@@ -66,7 +67,7 @@ public:
     void advanceAnimationForTesting() override;
     SVGImageChromeClient& chromeClientForTesting();
 
-    PassRefPtr<SkImage> imageForCurrentFrame() override;
+    sk_sp<SkImage> imageForCurrentFrame() override;
 
     // Does the SVG image/document contain any animations?
     bool hasAnimations() const;
@@ -110,7 +111,7 @@ private:
     void drawForContainer(SkCanvas*, const SkPaint&, const FloatSize, float, const FloatRect&, const FloatRect&, const KURL&);
     void drawPatternForContainer(GraphicsContext&, const FloatSize, float, const FloatRect&, const FloatSize&, const FloatPoint&,
         SkXfermode::Mode, const FloatRect&, const FloatSize& repeatSpacing, const KURL&);
-    PassRefPtr<SkImage> imageForCurrentFrameForContainer(const KURL&, const FloatSize& containerSize);
+    sk_sp<SkImage> imageForCurrentFrameForContainer(const KURL&, const FloatSize& containerSize);
     void drawInternal(SkCanvas*, const SkPaint&, const FloatRect& fromRect, const FloatRect& toRect, RespectImageOrientationEnum,
         ImageClampingMode, const KURL&);
 
