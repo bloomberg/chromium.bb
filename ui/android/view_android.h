@@ -75,7 +75,7 @@ class UI_ANDROID_EXPORT ViewAndroid {
   // Detaches this view from its parent.
   void RemoveFromParent();
 
-  void StartDragAndDrop(const base::android::JavaRef<jstring>& jtext,
+  bool StartDragAndDrop(const base::android::JavaRef<jstring>& jtext,
                         const base::android::JavaRef<jobject>& jimage);
 
   ScopedAnchorView AcquireAnchorView();

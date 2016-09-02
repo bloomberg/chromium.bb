@@ -251,8 +251,12 @@ void WebContentsViewAndroid::StartDragging(
   ScopedJavaLocalRef<jstring> jtext =
       ConvertUTF16ToJavaString(env, drop_data.text.string());
 
-  native_view->StartDragAndDrop(jtext,
-                                gfx::ConvertToJavaBitmap(image.bitmap()));
+  if (!native_view->StartDragAndDrop(
+          jtext, gfx::ConvertToJavaBitmap(image.bitmap()))) {
+    // Need to clear drag and drop state in blink.
+    OnDragEnded();
+    return;
+  }
 
   if (content_view_core_)
     content_view_core_->HidePopupsAndPreserveSelection();

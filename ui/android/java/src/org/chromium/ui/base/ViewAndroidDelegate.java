@@ -6,6 +6,7 @@ package org.chromium.ui.base;
 
 import android.content.ClipData;
 import android.graphics.Bitmap;
+import android.os.Build;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout.LayoutParams;
@@ -85,20 +86,22 @@ public abstract class ViewAndroidDelegate {
      * @param shadowImage The shadow image for the dragged text.
      */
     @SuppressWarnings("deprecation")
+    // TODO(hush): uncomment below when we build with API 24.
+    // @TargetApi(Build.VERSION_CODES.N)
     @CalledByNative
-    private void startDragAndDrop(String text, Bitmap shadowImage) {
-        ClipData data = ClipData.newPlainText(null, text);
+    private boolean startDragAndDrop(String text, Bitmap shadowImage) {
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) return false;
 
         ViewGroup containerView = getContainerView();
-        if (containerView == null) return;
+        if (containerView == null) return false;
 
         ImageView imageView = new ImageView(containerView.getContext());
         imageView.setImageBitmap(shadowImage);
         imageView.layout(0, 0, shadowImage.getWidth(), shadowImage.getHeight());
 
         // TODO(hush): use View#startDragAndDrop when Chromium starts to build with API 24.
-        containerView.startDrag(
-                data, new View.DragShadowBuilder(imageView), null, DRAG_FLAG_GLOBAL);
+        return containerView.startDrag(ClipData.newPlainText(null, text),
+                new View.DragShadowBuilder(imageView), null, DRAG_FLAG_GLOBAL);
     }
 
     /**

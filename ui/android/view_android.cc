@@ -164,13 +164,14 @@ void ViewAndroid::SetLayer(scoped_refptr<cc::Layer> layer) {
   layer_ = layer;
 }
 
-void ViewAndroid::StartDragAndDrop(const JavaRef<jstring>& jtext,
+bool ViewAndroid::StartDragAndDrop(const JavaRef<jstring>& jtext,
                                    const JavaRef<jobject>& jimage) {
   ScopedJavaLocalRef<jobject> delegate(GetViewAndroidDelegate());
   if (delegate.is_null())
-    return;
+    return false;
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_ViewAndroidDelegate_startDragAndDrop(env, delegate, jtext, jimage);
+  return Java_ViewAndroidDelegate_startDragAndDrop(env, delegate, jtext,
+                                                   jimage);
 }
 
 }  // namespace ui
