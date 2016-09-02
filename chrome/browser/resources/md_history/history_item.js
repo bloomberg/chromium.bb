@@ -129,8 +129,7 @@ cr.define('md_history', function() {
      * @private
      */
     showIcon_: function() {
-      this.$.icon.style.backgroundImage =
-          cr.icon.getFaviconImageSet(this.item.url);
+      this.$.icon.style.backgroundImage = cr.icon.getFavicon(this.item.url);
     },
 
     selectionNotAllowed_: function() {

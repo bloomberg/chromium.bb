@@ -176,8 +176,7 @@ Polymer({
    * @private
    */
   getWebsiteIconStyle_: function(domain) {
-    return 'background-image: ' +
-        cr.icon.getFaviconImageSet(domain.visits[0].url);
+    return 'background-image: ' + cr.icon.getFavicon(domain.visits[0].url);
   },
 
   /**

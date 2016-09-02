@@ -444,7 +444,7 @@ var SiteSettingsBehaviorImpl = {
    */
   computeSiteIcon: function(site) {
     var url = this.ensureUrlHasScheme(site);
-    return 'background-image: ' + cr.icon.getFaviconImageSet(url);
+    return 'background-image: ' + cr.icon.getFavicon(url);
   },
 
   /**

@@ -4,7 +4,7 @@
 <script>
 
 // Test the case where a non-favicon URL is passed.
-function testGetFaviconImageSet_NonFavicon() {
+function testGetFavicon_NonFavicon() {
   var url = 'http://foo.com';
   var expectedDesktop = '-webkit-image-set(' +
       'url("chrome://favicon/size/16@1x/http://foo.com") 1x, ' +
@@ -15,11 +15,11 @@ function testGetFaviconImageSet_NonFavicon() {
 
   var isDesktop = cr.isMac || cr.isChromeOS || cr.isWindows || cr.isLinux;
   var expected = isDesktop ? expectedDesktop : expectedOther;
-  assertEquals(expected, cr.icon.getFaviconImageSet(url));
+  assertEquals(expected, cr.icon.getFavicon(url));
 }
 
 // Test the case where the favicon URL is passed.
-function testGetFaviconImageSet_IconUrl() {
+function testGetFavicon_IconUrl() {
   var url = 'http://foo.com/foo.ico';
   var expectedDesktop = '-webkit-image-set(' +
       'url("chrome://favicon/size/16@1x/iconurl/http://foo.com/foo.ico") 1x, ' +
@@ -30,7 +30,7 @@ function testGetFaviconImageSet_IconUrl() {
 
   var isDesktop = cr.isMac || cr.isChromeOS || cr.isWindows || cr.isLinux;
   var expected = isDesktop ? expectedDesktop : expectedOther;
-  assertEquals(expected, cr.icon.getFaviconImageSet(url));
+  assertEquals(expected, cr.icon.getFavicon(url));
 }
 
 </script>

@@ -353,6 +353,6 @@ Polymer({
    * @private
    */
   getIconImageset_: function(iconUrl) {
-    return cr.icon.getProfileAvatarIcon(iconUrl);
+    return cr.icon.getImage(iconUrl);
   },
 });

@@ -83,8 +83,7 @@ Polymer({
       var icons = Polymer.dom(this.root).querySelectorAll('.website-icon');
 
       for (var i = 0; i < this.tabs.length; i++) {
-        icons[i].style.backgroundImage =
-            cr.icon.getFaviconImageSet(this.tabs[i].url);
+        icons[i].style.backgroundImage = cr.icon.getFavicon(this.tabs[i].url);
       }
     });
   },

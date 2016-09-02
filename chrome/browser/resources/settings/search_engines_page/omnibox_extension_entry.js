@@ -45,6 +45,6 @@ Polymer({
    * @private
    */
   getIconSet_: function(url) {
-    return cr.icon.getFaviconImageSet(url);
+    return cr.icon.getFavicon(url);
   },
 });

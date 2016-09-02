@@ -433,7 +433,7 @@ Visit.prototype.getVisitAttemptDOM_ = function() {
  * @private
  */
 Visit.prototype.addFaviconToElement_ = function(el) {
-  var url = cr.icon.getFaviconImageSet(this.url_, 32, 'touch-icon');
+  var url = cr.icon.getFavicon(this.url_, 32, 'touch-icon');
   el.style.backgroundImage = url;
   chrome.requestFavicon(el, url);
 };

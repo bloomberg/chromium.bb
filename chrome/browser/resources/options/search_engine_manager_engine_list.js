@@ -123,9 +123,9 @@ cr.define('options.search_engines', function() {
       var faviconDivEl = this.ownerDocument.createElement('div');
       faviconDivEl.className = 'favicon';
       if (!this.isPlaceholder) {
-        faviconDivEl.style.backgroundImage = cr.icon.getFaviconImageSet(
-            // Force default icon if no iconURL is available.
-            engine.iconURL || '');
+        // Force default icon if no iconURL is available.
+        faviconDivEl.style.backgroundImage =
+            cr.icon.getFavicon(engine.iconURL || '');
       }
 
       nameColEl.appendChild(faviconDivEl);
