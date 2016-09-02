@@ -39,6 +39,7 @@ const char kThrottledErrorDescription[] =
 class HeaderFlattener : public blink::WebHTTPHeaderVisitor {
  public:
   HeaderFlattener() {}
+  ~HeaderFlattener() override {}
 
   void visitHeader(const WebString& name, const WebString& value) override {
     // Headers are latin1.
@@ -55,7 +56,7 @@ class HeaderFlattener : public blink::WebHTTPHeaderVisitor {
     buffer_.append(name_latin1 + ": " + value_latin1);
   }
 
-  const std::string& GetBuffer() {
+  const std::string& GetBuffer() const {
     return buffer_;
   }
 

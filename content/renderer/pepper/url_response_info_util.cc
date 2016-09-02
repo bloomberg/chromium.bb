@@ -33,6 +33,9 @@ namespace {
 
 class HeaderFlattener : public WebHTTPHeaderVisitor {
  public:
+  HeaderFlattener() {}
+  ~HeaderFlattener() override {}
+
   const std::string& buffer() const { return buffer_; }
 
   void visitHeader(const WebString& name, const WebString& value) override {

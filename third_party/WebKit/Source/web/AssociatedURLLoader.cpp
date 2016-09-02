@@ -61,8 +61,9 @@ class HTTPRequestHeaderValidator : public WebHTTPHeaderVisitor {
     WTF_MAKE_NONCOPYABLE(HTTPRequestHeaderValidator);
 public:
     HTTPRequestHeaderValidator() : m_isSafe(true) { }
+    ~HTTPRequestHeaderValidator() override { }
 
-    void visitHeader(const WebString& name, const WebString& value);
+    void visitHeader(const WebString& name, const WebString& value) override;
     bool isSafe() const { return m_isSafe; }
 
 private:
