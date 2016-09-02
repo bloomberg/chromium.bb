@@ -663,10 +663,6 @@ void LocationBarViewMac::OnChanged() {
   UpdateLocationIcon();
 }
 
-void LocationBarViewMac::ShowURL() {
-  omnibox_view_->ShowURL();
-}
-
 ToolbarModel* LocationBarViewMac::GetToolbarModel() {
   return browser_->toolbar_model();
 }

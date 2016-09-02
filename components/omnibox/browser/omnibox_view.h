@@ -130,13 +130,6 @@ class OmniboxView {
   // avoid selecting the "phantom newline" at the end of the edit.
   virtual void SelectAll(bool reversed) = 0;
 
-  // Sets focus, disables search term replacement, reverts the omnibox, and
-  // selects all.
-  void ShowURL();
-
-  // Enables search term replacement and reverts the omnibox.
-  void HideURL();
-
   // Re-enables search term replacement on the ToolbarModel, and reverts the
   // edit and popup back to their unedited state (permanent text showing, popup
   // closed, no user input in progress).
@@ -285,7 +278,6 @@ class OmniboxView {
 
  private:
   friend class OmniboxViewMacTest;
-  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, ShowURL);
 
   // |model_| can be NULL in tests.
   std::unique_ptr<OmniboxEditModel> model_;

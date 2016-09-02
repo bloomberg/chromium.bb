@@ -93,7 +93,6 @@ class TestingOmniboxEditController : public ChromeOmniboxEditController {
   // Overridden from ChromeOmniboxEditController:
   void UpdateWithoutTabRestore() override {}
   void OnChanged() override {}
-  void ShowURL() override {}
   ToolbarModel* GetToolbarModel() override { return toolbar_model_; }
   const ToolbarModel* GetToolbarModel() const override {
     return toolbar_model_;

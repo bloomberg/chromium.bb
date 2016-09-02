@@ -250,7 +250,6 @@ class LocationBarView : public LocationBar,
 
   // ChromeOmniboxEditController:
   void UpdateWithoutTabRestore() override;
-  void ShowURL() override;
   ToolbarModel* GetToolbarModel() override;
   content::WebContents* GetWebContents() override;
 

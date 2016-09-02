@@ -32,9 +32,6 @@ class OmniboxEditController {
   // status of any keyword- or hint-related state.
   virtual void OnChanged() = 0;
 
-  // Shows the URL.
-  virtual void ShowURL() = 0;
-
   virtual ToolbarModel* GetToolbarModel() = 0;
   virtual const ToolbarModel* GetToolbarModel() const = 0;
 

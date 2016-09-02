@@ -819,10 +819,6 @@ void LocationBarView::UpdateWithoutTabRestore() {
   Update(nullptr);
 }
 
-void LocationBarView::ShowURL() {
-  omnibox_view_->ShowURL();
-}
-
 ToolbarModel* LocationBarView::GetToolbarModel() {
   return delegate_->GetToolbarModel();
 }
