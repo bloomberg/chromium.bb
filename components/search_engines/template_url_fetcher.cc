@@ -208,19 +208,20 @@ void TemplateURLFetcher::ScheduleDownload(
     return;
 
   // Make sure we aren't already downloading this request.
-  for (Requests::iterator i = requests_.begin(); i != requests_.end(); ++i) {
-    if (((*i)->url() == osdd_url) || ((*i)->keyword() == keyword))
+  for (const auto& request : requests_) {
+    if ((request->url() == osdd_url) || (request->keyword() == keyword))
       return;
   }
 
-  requests_.push_back(new RequestDelegate(
+  requests_.push_back(base::MakeUnique<RequestDelegate>(
       this, keyword, osdd_url, favicon_url, url_fetcher_customize_callback));
 }
 
 void TemplateURLFetcher::RequestCompleted(RequestDelegate* request) {
-  Requests::iterator i =
-      std::find(requests_.begin(), requests_.end(), request);
+  auto i = std::find_if(requests_.begin(), requests_.end(),
+                        [request](const std::unique_ptr<RequestDelegate>& ptr) {
+                          return ptr.get() == request;
+                        });
   DCHECK(i != requests_.end());
-  requests_.weak_erase(i);
-  delete request;
+  requests_.erase(i);
 }

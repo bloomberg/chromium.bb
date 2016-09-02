@@ -28,7 +28,7 @@ void UpdateSearchEngine(TemplateURLService* service) {
   DCHECK(service->loaded());
   std::vector<TemplateURL*> old_engines = service->GetTemplateURLs();
   size_t default_engine;
-  ScopedVector<TemplateURLData> new_engines =
+  std::vector<std::unique_ptr<TemplateURLData>> new_engines =
       TemplateURLPrepopulateData::GetPrepopulatedEngines(nullptr,
                                                          &default_engine);
   DCHECK(default_engine == 0);
@@ -39,8 +39,8 @@ void UpdateSearchEngine(TemplateURLService* service) {
   // It is not possible to add all the new ones first, because the service gets
   // confused when a prepopulated engine is there more than once.
   // Instead, this will in a first pass makes google as the default engine. In
-  // a second pass, it will remove all other search engine. At last, in a third
-  // pass, it will add all new engine but google.
+  // a second pass, it will remove all other search engines. At last, in a third
+  // pass, it will add all new engines but google.
   for (auto* engine : old_engines) {
     if (engine->prepopulate_id() == kGoogleEnginePrepopulatedId)
       service->SetUserSelectedDefaultSearchProvider(engine);
@@ -49,15 +49,9 @@ void UpdateSearchEngine(TemplateURLService* service) {
     if (engine->prepopulate_id() != kGoogleEnginePrepopulatedId)
       service->Remove(engine);
   }
-  ScopedVector<TemplateURLData>::iterator it = new_engines.begin();
-  while (it != new_engines.end()) {
-    if ((*it)->prepopulate_id != kGoogleEnginePrepopulatedId) {
-      // service->Add takes ownership on Added TemplateURL.
-      service->Add(base::MakeUnique<TemplateURL>(**it));
-      it = new_engines.weak_erase(it);
-    } else {
-      ++it;
-    }
+  for (const auto& engine : new_engines) {
+    if (engine->prepopulate_id != kGoogleEnginePrepopulatedId)
+      service->Add(base::MakeUnique<TemplateURL>(*engine));
   }
 }
 

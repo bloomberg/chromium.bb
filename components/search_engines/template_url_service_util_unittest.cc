@@ -5,7 +5,6 @@
 #include <stddef.h>
 
 #include "base/memory/ptr_util.h"
-#include "base/memory/scoped_vector.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/search_engines/search_terms_data.h"
@@ -41,7 +40,7 @@ std::unique_ptr<TemplateURL> CreatePrepopulateTemplateURL(
 };  // namespace
 
 TEST(TemplateURLServiceUtilTest, RemoveDuplicatePrepopulateIDs) {
-  ScopedVector<TemplateURLData> prepopulated_turls;
+  std::vector<std::unique_ptr<TemplateURLData>> prepopulated_turls;
   TemplateURLService::OwnedTemplateURLVector local_turls;
 
   prepopulated_turls.push_back(

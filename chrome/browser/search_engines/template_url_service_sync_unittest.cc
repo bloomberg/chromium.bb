@@ -1846,7 +1846,7 @@ TEST_F(TemplateURLServiceSyncTest, PreSyncUpdates) {
   const char* kNewKeyword = "somethingnew";
   // Fetch the prepopulate search engines so we know what they are.
   size_t default_search_provider_index = 0;
-  ScopedVector<TemplateURLData> prepop_turls =
+  std::vector<std::unique_ptr<TemplateURLData>> prepop_turls =
       TemplateURLPrepopulateData::GetPrepopulatedEngines(
           profile_a()->GetTestingPrefService(), &default_search_provider_index);
 

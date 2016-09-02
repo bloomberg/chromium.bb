@@ -14,7 +14,6 @@
 #include "base/guid.h"
 #include "base/i18n/case_conversion.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/scoped_vector.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_split.h"
@@ -665,7 +664,7 @@ void TemplateURLService::RepairPrepopulatedSearchEngines() {
   }
 
   size_t default_search_provider_index = 0;
-  ScopedVector<TemplateURLData> prepopulated_urls =
+  std::vector<std::unique_ptr<TemplateURLData>> prepopulated_urls =
       TemplateURLPrepopulateData::GetPrepopulatedEngines(
           prefs_, &default_search_provider_index);
   DCHECK(!prepopulated_urls.empty());
@@ -1737,14 +1736,14 @@ void TemplateURLService::UpdateTemplateURLIfPrepopulated(
     return;
 
   size_t default_search_index;
-  ScopedVector<TemplateURLData> prepopulated_urls =
-      TemplateURLPrepopulateData::GetPrepopulatedEngines(
-          prefs, &default_search_index);
+  std::vector<std::unique_ptr<TemplateURLData>> prepopulated_urls =
+      TemplateURLPrepopulateData::GetPrepopulatedEngines(prefs,
+                                                         &default_search_index);
 
-  for (size_t i = 0; i < prepopulated_urls.size(); ++i) {
-    if (prepopulated_urls[i]->prepopulate_id == prepopulate_id) {
-      MergeIntoPrepopulatedEngineData(template_url, prepopulated_urls[i]);
-      template_url->CopyFrom(TemplateURL(*prepopulated_urls[i]));
+  for (const auto& url : prepopulated_urls) {
+    if (url->prepopulate_id == prepopulate_id) {
+      MergeIntoPrepopulatedEngineData(template_url, url.get());
+      template_url->CopyFrom(TemplateURL(*url));
     }
   }
 }

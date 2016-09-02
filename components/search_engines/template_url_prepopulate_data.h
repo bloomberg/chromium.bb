@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
 #include "components/search_engines/search_engine_type.h"
 
@@ -39,7 +38,7 @@ int GetDataVersion(PrefService* prefs);
 // Loads the set of TemplateURLs from the prepopulate data. On return,
 // |default_search_provider_index| is set to the index of the default search
 // provider.
-ScopedVector<TemplateURLData> GetPrepopulatedEngines(
+std::vector<std::unique_ptr<TemplateURLData>> GetPrepopulatedEngines(
     PrefService* prefs,
     size_t* default_search_provider_index);
 

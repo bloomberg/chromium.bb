@@ -1016,9 +1016,9 @@ std::unique_ptr<TemplateURLData> MakePrepopulatedTemplateURLData(
   return data;
 }
 
-ScopedVector<TemplateURLData> GetPrepopulatedTemplateURLData(
+std::vector<std::unique_ptr<TemplateURLData>> GetPrepopulatedTemplateURLData(
     PrefService* prefs) {
-  ScopedVector<TemplateURLData> t_urls;
+  std::vector<std::unique_ptr<TemplateURLData>> t_urls;
   if (!prefs)
     return t_urls;
 
@@ -1069,12 +1069,12 @@ ScopedVector<TemplateURLData> GetPrepopulatedTemplateURLData(
       engine->GetList("alternate_urls", &alternate_urls);
       engine->GetString("search_terms_replacement_key",
           &search_terms_replacement_key);
-      t_urls.push_back(MakePrepopulatedTemplateURLData(name, keyword,
-          search_url, suggest_url, instant_url, image_url, new_tab_url,
-          contextual_search_url, search_url_post_params,
+      t_urls.push_back(MakePrepopulatedTemplateURLData(
+          name, keyword, search_url, suggest_url, instant_url, image_url,
+          new_tab_url, contextual_search_url, search_url_post_params,
           suggest_url_post_params, instant_url_post_params,
           image_url_post_params, favicon_url, encoding, *alternate_urls,
-          search_terms_replacement_key, id).release());
+          search_terms_replacement_key, id));
     }
   }
   return t_urls;
@@ -1104,13 +1104,14 @@ int GetDataVersion(PrefService* prefs) {
       kCurrentDataVersion;
 }
 
-ScopedVector<TemplateURLData> GetPrepopulatedEngines(
+std::vector<std::unique_ptr<TemplateURLData>> GetPrepopulatedEngines(
     PrefService* prefs,
     size_t* default_search_provider_index) {
   // If there is a set of search engines in the preferences file, it overrides
   // the built-in set.
   *default_search_provider_index = 0;
-  ScopedVector<TemplateURLData> t_urls = GetPrepopulatedTemplateURLData(prefs);
+  std::vector<std::unique_ptr<TemplateURLData>> t_urls =
+      GetPrepopulatedTemplateURLData(prefs);
   if (!t_urls.empty())
     return t_urls;
 
@@ -1118,8 +1119,7 @@ ScopedVector<TemplateURLData> GetPrepopulatedEngines(
   size_t num_engines;
   GetPrepopulationSetFromCountryID(prefs, &engines, &num_engines);
   for (size_t i = 0; i != num_engines; ++i) {
-    t_urls.push_back(
-        MakeTemplateURLDataFromPrepopulatedEngine(*engines[i]).release());
+    t_urls.push_back(MakeTemplateURLDataFromPrepopulatedEngine(*engines[i]));
   }
   return t_urls;
 }
@@ -1157,17 +1157,15 @@ void ClearPrepopulatedEnginesInPrefs(PrefService* prefs) {
 
 std::unique_ptr<TemplateURLData> GetPrepopulatedDefaultSearch(
     PrefService* prefs) {
-  std::unique_ptr<TemplateURLData> default_search_provider;
   size_t default_search_index;
   // This could be more efficient.  We are loading all the URLs to only keep
   // the first one.
-  ScopedVector<TemplateURLData> loaded_urls =
+  std::vector<std::unique_ptr<TemplateURLData>> loaded_urls =
       GetPrepopulatedEngines(prefs, &default_search_index);
-  if (default_search_index < loaded_urls.size()) {
-    default_search_provider.reset(loaded_urls[default_search_index]);
-    loaded_urls.weak_erase(loaded_urls.begin() + default_search_index);
-  }
-  return default_search_provider;
+
+  return (default_search_index < loaded_urls.size())
+             ? std::move(loaded_urls[default_search_index])
+             : nullptr;
 }
 
 SearchEngineType GetEngineType(const GURL& url) {

@@ -6,6 +6,7 @@
 #define COMPONENTS_SEARCH_ENGINES_UTIL_H_
 
 // This file contains utility functions for search engine functionality.
+
 #include <memory>
 #include <set>
 #include <string>
@@ -13,9 +14,6 @@
 
 #include "base/strings/string16.h"
 #include "components/search_engines/template_url_service.h"
-
-template <typename T>
-class ScopedVector;
 
 class KeywordWebDataService;
 class PrefService;
@@ -77,7 +75,7 @@ struct ActionsFromPrepopulateData {
 //
 // NOTE: Takes ownership of, and clears, |prepopulated_urls|.
 ActionsFromPrepopulateData CreateActionsFromCurrentPrepopulateData(
-    ScopedVector<TemplateURLData>* prepopulated_urls,
+    std::vector<std::unique_ptr<TemplateURLData>>* prepopulated_urls,
     const TemplateURLService::OwnedTemplateURLVector& existing_urls,
     const TemplateURL* default_search_provider);
 
@@ -131,7 +129,7 @@ bool DeDupeEncodings(std::vector<std::string>* encodings);
 // so it's accessible by unittests.
 void RemoveDuplicatePrepopulateIDs(
     KeywordWebDataService* service,
-    const ScopedVector<TemplateURLData>& prepopulated_urls,
+    const std::vector<std::unique_ptr<TemplateURLData>>& prepopulated_urls,
     TemplateURL* default_search_provider,
     TemplateURLService::OwnedTemplateURLVector* template_urls,
     const SearchTermsData& search_terms_data,

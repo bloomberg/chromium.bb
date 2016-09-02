@@ -192,12 +192,12 @@ TEST_F(DefaultSearchManagerTest, DefaultSearchSetByUserPref) {
   size_t default_search_index = 0;
   DefaultSearchManager manager(pref_service(),
                                DefaultSearchManager::ObserverCallback());
-  ScopedVector<TemplateURLData> prepopulated_urls =
+  std::vector<std::unique_ptr<TemplateURLData>> prepopulated_urls =
       TemplateURLPrepopulateData::GetPrepopulatedEngines(pref_service(),
                                                          &default_search_index);
   DefaultSearchManager::Source source = DefaultSearchManager::FROM_POLICY;
   // If no user pref is set, we should use the pre-populated values.
-  ExpectSimilar(prepopulated_urls[default_search_index],
+  ExpectSimilar(prepopulated_urls[default_search_index].get(),
                 manager.GetDefaultSearchEngine(&source));
   EXPECT_EQ(DefaultSearchManager::FROM_FALLBACK, source);
 
@@ -222,7 +222,7 @@ TEST_F(DefaultSearchManagerTest, DefaultSearchSetByUserPref) {
   // Clearing the user pref should cause the default search to revert to the
   // prepopulated vlaues.
   manager.ClearUserSelectedDefaultSearchEngine();
-  ExpectSimilar(prepopulated_urls[default_search_index],
+  ExpectSimilar(prepopulated_urls[default_search_index].get(),
                 manager.GetDefaultSearchEngine(&source));
   EXPECT_EQ(DefaultSearchManager::FROM_FALLBACK, source);
 }
@@ -233,13 +233,13 @@ TEST_F(DefaultSearchManagerTest, DefaultSearchSetByOverrides) {
   size_t default_search_index = 0;
   DefaultSearchManager manager(pref_service(),
                                DefaultSearchManager::ObserverCallback());
-  ScopedVector<TemplateURLData> prepopulated_urls =
+  std::vector<std::unique_ptr<TemplateURLData>> prepopulated_urls =
       TemplateURLPrepopulateData::GetPrepopulatedEngines(pref_service(),
                                                          &default_search_index);
 
   DefaultSearchManager::Source source = DefaultSearchManager::FROM_POLICY;
   TemplateURLData first_default(*manager.GetDefaultSearchEngine(&source));
-  ExpectSimilar(prepopulated_urls[default_search_index], &first_default);
+  ExpectSimilar(prepopulated_urls[default_search_index].get(), &first_default);
   EXPECT_EQ(DefaultSearchManager::FROM_FALLBACK, source);
 
   // Update the overrides:
@@ -248,7 +248,7 @@ TEST_F(DefaultSearchManagerTest, DefaultSearchSetByOverrides) {
       pref_service(), &default_search_index);
 
   // Make sure DefaultSearchManager updated:
-  ExpectSimilar(prepopulated_urls[default_search_index],
+  ExpectSimilar(prepopulated_urls[default_search_index].get(),
                 manager.GetDefaultSearchEngine(&source));
   EXPECT_EQ(DefaultSearchManager::FROM_FALLBACK, source);
   EXPECT_NE(manager.GetDefaultSearchEngine(NULL)->short_name(),

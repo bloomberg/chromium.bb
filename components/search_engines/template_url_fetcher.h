@@ -68,13 +68,11 @@ class TemplateURLFetcher : public KeyedService {
  private:
   friend class RequestDelegate;
 
-  typedef ScopedVector<RequestDelegate> Requests;
-
   TemplateURLService* template_url_service_;
   scoped_refptr<net::URLRequestContextGetter> request_context_;
 
   // In progress requests.
-  Requests requests_;
+  std::vector<std::unique_ptr<RequestDelegate>> requests_;
 
   DISALLOW_COPY_AND_ASSIGN(TemplateURLFetcher);
 };

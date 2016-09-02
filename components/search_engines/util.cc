@@ -15,7 +15,6 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url.h"
@@ -51,7 +50,7 @@ GURL GetDefaultSearchURLForSearchTerms(TemplateURLService* service,
 
 void RemoveDuplicatePrepopulateIDs(
     KeywordWebDataService* service,
-    const ScopedVector<TemplateURLData>& prepopulated_urls,
+    const std::vector<std::unique_ptr<TemplateURLData>>& prepopulated_urls,
     TemplateURL* default_search_provider,
     TemplateURLService::OwnedTemplateURLVector* template_urls,
     const SearchTermsData& search_terms_data,
@@ -60,11 +59,8 @@ void RemoveDuplicatePrepopulateIDs(
 
   // For convenience construct an ID->TemplateURL* map from |prepopulated_urls|.
   std::map<int, TemplateURLData*> prepopulated_url_map;
-  for (std::vector<TemplateURLData*>::const_iterator i(
-           prepopulated_urls.begin());
-       i != prepopulated_urls.end();
-       ++i)
-    prepopulated_url_map[(*i)->prepopulate_id] = *i;
+  for (const auto& url : prepopulated_urls)
+    prepopulated_url_map[url->prepopulate_id] = url.get();
 
   // Separate |template_urls| into prepopulated and non-prepopulated groups.
   std::multimap<int, std::unique_ptr<TemplateURL>> unchecked_urls;
@@ -189,7 +185,7 @@ ActionsFromPrepopulateData::~ActionsFromPrepopulateData() {}
 // ownership of |prepopulated_urls| and will clear the vector.
 void MergeEnginesFromPrepopulateData(
     KeywordWebDataService* service,
-    ScopedVector<TemplateURLData>* prepopulated_urls,
+    std::vector<std::unique_ptr<TemplateURLData>>* prepopulated_urls,
     size_t default_search_index,
     TemplateURLService::OwnedTemplateURLVector* template_urls,
     TemplateURL* default_search_provider,
@@ -232,13 +228,12 @@ void MergeEnginesFromPrepopulateData(
 }
 
 ActionsFromPrepopulateData CreateActionsFromCurrentPrepopulateData(
-    ScopedVector<TemplateURLData>* prepopulated_urls,
+    std::vector<std::unique_ptr<TemplateURLData>>* prepopulated_urls,
     const TemplateURLService::OwnedTemplateURLVector& existing_urls,
     const TemplateURL* default_search_provider) {
   // Create a map to hold all provided |template_urls| that originally came from
   // prepopulate data (i.e. have a non-zero prepopulate_id()).
-  typedef std::map<int, TemplateURL*> IDMap;
-  IDMap id_to_turl;
+  std::map<int, TemplateURL*> id_to_turl;
   for (auto& turl : existing_urls) {
     int prepopulate_id = turl->prepopulate_id();
     if (prepopulate_id > 0)
@@ -250,13 +245,11 @@ ActionsFromPrepopulateData CreateActionsFromCurrentPrepopulateData(
   // current data.  (If the passed-in URL was user-edited, we persist the user's
   // name and keyword.)  If not, add the prepopulated URL.
   ActionsFromPrepopulateData actions;
-  for (size_t i = 0; i < prepopulated_urls->size(); ++i) {
-    // We take ownership of |prepopulated_urls[i]|.
-    std::unique_ptr<TemplateURLData> prepopulated_url((*prepopulated_urls)[i]);
+  for (auto& prepopulated_url : *prepopulated_urls) {
     const int prepopulated_id = prepopulated_url->prepopulate_id;
     DCHECK_NE(0, prepopulated_id);
 
-    IDMap::iterator existing_url_iter(id_to_turl.find(prepopulated_id));
+    auto existing_url_iter = id_to_turl.find(prepopulated_id);
     if (existing_url_iter != id_to_turl.end()) {
       // Update the data store with the new prepopulated data. Preserve user
       // edits to the name and keyword.
@@ -273,10 +266,6 @@ ActionsFromPrepopulateData CreateActionsFromCurrentPrepopulateData(
       actions.added_engines.push_back(*prepopulated_url);
     }
   }
-  // The above loop takes ownership of all the contents of prepopulated_urls.
-  // Clear the pointers.
-  prepopulated_urls->weak_erase(prepopulated_urls->begin(),
-                                prepopulated_urls->end());
 
   // The block above removed all the URLs from the |id_to_turl| map that were
   // found in the prepopulate data.  Any remaining URLs that haven't been
@@ -284,7 +273,7 @@ ActionsFromPrepopulateData CreateActionsFromCurrentPrepopulateData(
   // We assume that this entry is equivalent to the DSE if its prepopulate ID
   // and keyword both match. If the prepopulate ID _does_ match all properties
   // will be replaced with those from |default_search_provider| anyway.
-  for (IDMap::iterator i(id_to_turl.begin()); i != id_to_turl.end(); ++i) {
+  for (auto i = id_to_turl.begin(); i != id_to_turl.end(); ++i) {
     TemplateURL* template_url = i->second;
     if ((template_url->safe_for_autoreplace()) &&
         (!default_search_provider ||
@@ -348,7 +337,7 @@ void GetSearchProvidersUsingLoadedEngines(
   DCHECK(template_urls);
   DCHECK(resource_keyword_version);
   size_t default_search_index;
-  ScopedVector<TemplateURLData> prepopulated_urls =
+  std::vector<std::unique_ptr<TemplateURLData>> prepopulated_urls =
       TemplateURLPrepopulateData::GetPrepopulatedEngines(prefs,
                                                          &default_search_index);
   RemoveDuplicatePrepopulateIDs(service, prepopulated_urls,

@@ -262,27 +262,26 @@ void DefaultSearchManager::MergePrefsDataWithPrepopulated() {
     return;
 
   size_t default_search_index;
-  ScopedVector<TemplateURLData> prepopulated_urls =
+  std::vector<std::unique_ptr<TemplateURLData>> prepopulated_urls =
       TemplateURLPrepopulateData::GetPrepopulatedEngines(pref_service_,
                                                          &default_search_index);
 
-  for (size_t i = 0; i < prepopulated_urls.size(); ++i) {
-    if (prepopulated_urls[i]->prepopulate_id ==
-        prefs_default_search_->prepopulate_id) {
-      if (!prefs_default_search_->safe_for_autoreplace) {
-        prepopulated_urls[i]->safe_for_autoreplace = false;
-        prepopulated_urls[i]->SetKeyword(prefs_default_search_->keyword());
-        prepopulated_urls[i]->SetShortName(prefs_default_search_->short_name());
-      }
-      prepopulated_urls[i]->id = prefs_default_search_->id;
-      prepopulated_urls[i]->sync_guid = prefs_default_search_->sync_guid;
-      prepopulated_urls[i]->date_created = prefs_default_search_->date_created;
-      prepopulated_urls[i]->last_modified =
-          prefs_default_search_->last_modified;
-      prefs_default_search_.reset(prepopulated_urls[i]);
-      prepopulated_urls.weak_erase(prepopulated_urls.begin() + i);
-      return;
+  for (auto& engine : prepopulated_urls) {
+    if (engine->prepopulate_id != prefs_default_search_->prepopulate_id)
+      continue;
+
+    if (!prefs_default_search_->safe_for_autoreplace) {
+      engine->safe_for_autoreplace = false;
+      engine->SetKeyword(prefs_default_search_->keyword());
+      engine->SetShortName(prefs_default_search_->short_name());
     }
+    engine->id = prefs_default_search_->id;
+    engine->sync_guid = prefs_default_search_->sync_guid;
+    engine->date_created = prefs_default_search_->date_created;
+    engine->last_modified = prefs_default_search_->last_modified;
+
+    prefs_default_search_ = std::move(engine);
+    return;
   }
 }
 

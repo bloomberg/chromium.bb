@@ -82,10 +82,9 @@ IN_PROC_BROWSER_TEST_F(TemplateURLScraperTest, ScrapeWithOnSubmit) {
   // We need to substract the default pre-populated engines that the profile is
   // set up with.
   size_t default_index = 0;
-  ScopedVector<TemplateURLData> prepopulate_urls =
+  std::vector<std::unique_ptr<TemplateURLData>> prepopulate_urls =
       TemplateURLPrepopulateData::GetPrepopulatedEngines(
-          browser()->profile()->GetPrefs(),
-          &default_index);
+          browser()->profile()->GetPrefs(), &default_index);
 
   EXPECT_EQ(prepopulate_urls.size(), all_urls.size());
 
