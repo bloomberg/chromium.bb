@@ -133,8 +133,6 @@ class ContentSuggestionsProvider {
   virtual void ClearDismissedSuggestionsForDebugging(Category category) = 0;
 
  protected:
-  friend class ContentSuggestionsProviderTest;
-
   ContentSuggestionsProvider(Observer* observer,
                              CategoryFactory* category_factory);
 
