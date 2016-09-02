@@ -9,6 +9,7 @@
 
 #include "ash/common/ash_constants.h"
 #include "ash/common/ash_switches.h"
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/chromeos/network/tray_network_state_observer.h"
 #include "ash/common/system/chromeos/network/vpn_list_view.h"
@@ -356,7 +357,7 @@ void NetworkStateListDetailedView::Init() {
 
   CreateScrollableList();
   CreateNetworkExtra();
-  CreateHeaderEntry();
+  CreateTitleRow(IDS_ASH_STATUS_TRAY_NETWORK);
 
   network_list_view_->set_container(scroll_content());
   Update();
@@ -370,10 +371,11 @@ NetworkStateListDetailedView::GetViewType() const {
   return STATE_LIST_VIEW;
 }
 
-// Views overrides
+void NetworkStateListDetailedView::HandleButtonPressed(views::Button* sender,
+                                                       const ui::Event& event) {
+  if (MaterialDesignController::IsSystemTrayMenuMaterial())
+    return;
 
-void NetworkStateListDetailedView::ButtonPressed(views::Button* sender,
-                                                 const ui::Event& event) {
   if (sender == info_icon_) {
     ToggleInfoBubble();
     return;
@@ -411,20 +413,15 @@ void NetworkStateListDetailedView::ButtonPressed(views::Button* sender,
   }
 }
 
-void NetworkStateListDetailedView::OnViewClicked(views::View* sender) {
+void NetworkStateListDetailedView::HandleViewClicked(views::View* view) {
   // If the info bubble was visible, close it when some other item is clicked.
   ResetInfoBubble();
-
-  if (sender == footer()->content()) {
-    TransitionToDefaultView();
-    return;
-  }
 
   if (login_ == LoginStatus::LOCKED)
     return;
 
   std::string service_path;
-  if (!network_list_view_->IsNetworkEntry(sender, &service_path))
+  if (!network_list_view_->IsNetworkEntry(view, &service_path))
     return;
 
   const NetworkState* network =
@@ -446,10 +443,9 @@ void NetworkStateListDetailedView::OnViewClicked(views::View* sender) {
   }
 }
 
-// Create UI components.
-
-void NetworkStateListDetailedView::CreateHeaderEntry() {
-  CreateSpecialRow(IDS_ASH_STATUS_TRAY_NETWORK, this);
+void NetworkStateListDetailedView::CreateExtraTitleRowButtons() {
+  if (MaterialDesignController::IsSystemTrayMenuMaterial())
+    return;
 
   if (list_type_ != LIST_TYPE_VPN) {
     NetworkStateHandler* network_state_handler =
@@ -462,7 +458,7 @@ void NetworkStateListDetailedView::CreateHeaderEntry() {
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_DISABLE_WIFI));
     button_wifi_->SetToggledTooltipText(
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ENABLE_WIFI));
-    footer()->AddButton(button_wifi_);
+    title_row()->AddButton(button_wifi_);
     if (network_state_handler->IsTechnologyProhibited(
             NetworkTypePattern::WiFi())) {
       button_wifi_->SetState(views::Button::STATE_DISABLED);
@@ -486,13 +482,13 @@ void NetworkStateListDetailedView::CreateHeaderEntry() {
       button_mobile_->SetToggledTooltipText(l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_NETWORK_TECHNOLOGY_ENFORCED_BY_POLICY));
     }
-    footer()->AddButton(button_mobile_);
+    title_row()->AddButton(button_mobile_);
   }
 
   views::View* info_throbber_container = new views::View();
   InfoThrobberLayout* info_throbber_layout = new InfoThrobberLayout;
   info_throbber_container->SetLayoutManager(info_throbber_layout);
-  footer()->AddView(info_throbber_container, true /* add_separator */);
+  title_row()->AddView(info_throbber_container, true /* add_separator */);
 
   if (list_type_ != LIST_TYPE_VPN) {
     // Place the throbber behind the info icon so that the icon receives
@@ -561,15 +557,12 @@ void NetworkStateListDetailedView::CreateNetworkExtra() {
   AddChildView(bottom_row);
 }
 
-// Update UI components.
-
 void NetworkStateListDetailedView::UpdateHeaderButtons() {
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
   if (button_wifi_)
     UpdateTechnologyButton(button_wifi_, NetworkTypePattern::WiFi());
-  if (button_mobile_) {
+  if (button_mobile_)
     UpdateTechnologyButton(button_mobile_, NetworkTypePattern::Mobile());
-  }
   if (proxy_settings_)
     proxy_settings_->SetEnabled(handler->DefaultNetwork() != nullptr);
 
@@ -578,7 +571,8 @@ void NetworkStateListDetailedView::UpdateHeaderButtons() {
     bool scanning =
         NetworkHandler::Get()->network_state_handler()->GetScanningByType(
             NetworkTypePattern::WiFi());
-    if (scanning != wifi_scanning_) {
+    if (scanning != wifi_scanning_ &&
+        !MaterialDesignController::IsSystemTrayMenuMaterial()) {
       wifi_scanning_ = scanning;
       if (list_type_ != LIST_TYPE_VPN) {
         SetScanningStateForThrobberView(true);
@@ -601,11 +595,14 @@ void NetworkStateListDetailedView::UpdateHeaderButtons() {
     }
   }
 
-  static_cast<views::View*>(footer())->Layout();
+  static_cast<views::View*>(title_row())->Layout();
 }
 
 void NetworkStateListDetailedView::SetScanningStateForThrobberView(
     bool is_scanning) {
+  if (MaterialDesignController::IsSystemTrayMenuMaterial())
+    return;
+
   // Hide the network info button if the device is scanning for Wi-Fi networks
   // and display the WiFi scanning indicator.
   info_icon_->SetVisible(!is_scanning);
@@ -923,6 +920,10 @@ views::Label* NetworkStateListDetailedView::CreateInfoLabel() {
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label->SetEnabledColor(SkColorSetARGB(192, 0, 0, 0));
   return label;
+}
+
+void NetworkStateListDetailedView::OnNetworkEntryClicked(views::View* sender) {
+  HandleViewClicked(sender);
 }
 
 void NetworkStateListDetailedView::RelayoutScrollList() {

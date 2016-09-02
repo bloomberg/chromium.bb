@@ -98,13 +98,9 @@ HoverHighlightView* AudioDetailedView::AddScrollListItem(
   return container;
 }
 
-void AudioDetailedView::CreateHeaderEntry() {
-  CreateSpecialRow(IDS_ASH_STATUS_TRAY_AUDIO, this);
-}
-
 void AudioDetailedView::CreateItems() {
   CreateScrollableList();
-  CreateHeaderEntry();
+  CreateTitleRow(IDS_ASH_STATUS_TRAY_AUDIO);
 }
 
 void AudioDetailedView::UpdateAudioDevices() {
@@ -154,17 +150,13 @@ void AudioDetailedView::UpdateScrollableList() {
   scroller()->Layout();
 }
 
-void AudioDetailedView::OnViewClicked(views::View* sender) {
-  if (sender == footer()->content()) {
-    TransitionToDefaultView();
-  } else {
-    AudioDeviceMap::iterator iter = device_map_.find(sender);
-    if (iter == device_map_.end())
-      return;
-    chromeos::AudioDevice device = iter->second;
-    CrasAudioHandler::Get()->SwitchToDevice(device, true,
-                                            CrasAudioHandler::ACTIVATE_BY_USER);
-  }
+void AudioDetailedView::HandleViewClicked(views::View* view) {
+  AudioDeviceMap::iterator iter = device_map_.find(view);
+  if (iter == device_map_.end())
+    return;
+  chromeos::AudioDevice device = iter->second;
+  CrasAudioHandler::Get()->SwitchToDevice(device, true,
+                                          CrasAudioHandler::ACTIVATE_BY_USER);
 }
 
 }  // namespace tray

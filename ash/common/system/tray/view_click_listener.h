@@ -5,13 +5,15 @@
 #ifndef ASH_COMMON_SYSTEM_TRAY_VIEW_CLICK_LISTENER_H_
 #define ASH_COMMON_SYSTEM_TRAY_VIEW_CLICK_LISTENER_H_
 
+#include "ash/ash_export.h"
+
 namespace views {
 class View;
 }
 
 namespace ash {
 
-class ViewClickListener {
+class ASH_EXPORT ViewClickListener {
  public:
   virtual void OnViewClicked(views::View* sender) = 0;
 
