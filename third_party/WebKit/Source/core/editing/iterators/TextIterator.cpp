@@ -1121,9 +1121,8 @@ PositionTemplate<Strategy> TextIteratorAlgorithm<Strategy>::endPositionInCurrent
 template<typename Strategy>
 int TextIteratorAlgorithm<Strategy>::rangeLength(const PositionTemplate<Strategy>& start, const PositionTemplate<Strategy>& end, bool forSelectionPreservation)
 {
-    // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
-    // see http://crbug.com/590369 for more details.
-    start.document()->updateStyleAndLayoutIgnorePendingStylesheets();
+    DCHECK(start.document());
+    DocumentLifecycle::DisallowTransitionScope disallowTransition(start.document()->lifecycle());
 
     int length = 0;
     TextIteratorBehaviorFlags behaviorFlags = TextIteratorEmitsObjectReplacementCharacter;
