@@ -240,6 +240,11 @@
           ['include', 'graphics/cpu/x86/WebGLImageConversionSSE\\.h$'],
         ],
       }],
+      ['target_arch == "mipsel" or target_arch == "mips64el"', {
+        'sources/': [
+          ['include', 'graphics/cpu/mips/WebGLImageConversionMSA\\.h$'],
+        ],
+      }],
       ['OS=="linux" or OS=="android"', {
         'sources/': [
           ['include', 'fonts/linux/FontPlatformDataLinux\\.cpp$'],

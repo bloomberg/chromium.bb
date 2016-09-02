@@ -180,6 +180,11 @@
 #define WTF_CPU_MIPS 1
 #endif
 
+#if defined(__mips_msa) && defined(__mips_isa_rev) && (__mips_isa_rev >= 5)
+// All MSA intrinsics usage can be disabled by this macro.
+#define HAVE_MIPS_MSA_INTRINSICS 1
+#endif
+
 #if !defined(WTF_CPU_64BIT)
 #define WTF_CPU_32BIT 1
 #endif

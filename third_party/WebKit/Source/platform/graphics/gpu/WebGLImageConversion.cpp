@@ -7,6 +7,7 @@
 #include "platform/CheckedInt.h"
 #include "platform/graphics/ImageObserver.h"
 #include "platform/graphics/cpu/arm/WebGLImageConversionNEON.h"
+#include "platform/graphics/cpu/mips/WebGLImageConversionMSA.h"
 #include "platform/graphics/cpu/x86/WebGLImageConversionSSE.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/image-decoders/ImageDecoder.h"
@@ -448,6 +449,10 @@ template<> void unpack<WebGLImageConversion::DataFormatRGBA5551, uint16_t, uint8
 #if HAVE(ARM_NEON_INTRINSICS)
     SIMD::unpackOneRowOfRGBA5551ToRGBA8(source, destination, pixelsPerRow);
 #endif
+#if HAVE(MIPS_MSA_INTRINSICS)
+    SIMD::unpackOneRowOfRGBA5551ToRGBA8MSA(source, destination, pixelsPerRow);
+#endif
+
     for (unsigned i = 0; i < pixelsPerRow; ++i) {
         uint16_t packedValue = source[0];
         uint8_t r = packedValue >> 11;

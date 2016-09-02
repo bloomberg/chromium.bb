@@ -17,6 +17,8 @@ visibility = [ ":*" ]
 
 blink_platform_neon_files = [ "graphics/cpu/arm/WebGLImageConversionNEON.h" ]
 
+blink_platform_msa_files = [ "graphics/cpu/mips/WebGLImageConversionMSA.h" ]
+
 blink_platform_sse_files = [ "graphics/cpu/x86/WebGLImageConversionSSE.h" ]
 
 component("blink_common") {
@@ -563,6 +565,7 @@ component("platform") {
     "clipboard/ClipboardUtilities.h",
     "clipboard/ClipboardUtilitiesPosix.cpp",
     "clipboard/ClipboardUtilitiesWin.cpp",
+    "cpu/mips/CommonMacrosMSA.h",
     "credentialmanager/PlatformCredential.cpp",
     "credentialmanager/PlatformCredential.h",
     "credentialmanager/PlatformFederatedCredential.cpp",
@@ -958,6 +961,7 @@ component("platform") {
     "graphics/compositing/PaintArtifactCompositor.cpp",
     "graphics/compositing/PaintArtifactCompositor.h",
     "graphics/cpu/arm/WebGLImageConversionNEON.h",
+    "graphics/cpu/mips/WebGLImageConversionMSA.h",
     "graphics/cpu/x86/WebGLImageConversionSSE.h",
     "graphics/filters/DistantLightSource.cpp",
     "graphics/filters/DistantLightSource.h",
@@ -1497,6 +1501,7 @@ component("platform") {
   ]
 
   sources -= blink_platform_neon_files
+  sources -= blink_platform_msa_files
   sources -= blink_platform_sse_files
 
   # Add in the generated files.
@@ -1640,6 +1645,10 @@ component("platform") {
 
   if (current_cpu == "arm") {
     deps += [ ":blink_arm_neon" ]
+  }
+
+  if (current_cpu == "mipsel" || current_cpu == "mips64el") {
+    deps += [ ":blink_mips_msa" ]
   }
 
   if (current_cpu == "x86" || current_cpu == "x64") {
@@ -1998,6 +2007,15 @@ if (current_cpu == "arm") {
     #      }],
     #    ],
 
+    deps = [
+      ":blink_common",
+    ]
+  }
+}
+
+if (current_cpu == "mipsel" || current_cpu == "mips64el") {
+  source_set("blink_mips_msa") {
+    sources = blink_platform_msa_files
     deps = [
       ":blink_common",
     ]
