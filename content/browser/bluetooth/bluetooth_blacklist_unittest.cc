@@ -411,9 +411,8 @@ TEST_F(BluetoothBlacklistTest, RemoveExcludedUuids_Matching) {
 }
 
 TEST_F(BluetoothBlacklistTest, VerifyDefaultBlacklistSize) {
-  // When adding items to the blacklist the new values should be added in the
-  // tests below for each exclusion type.
-  EXPECT_EQ(11u, list_.size());
+  // REMINDER: ADD new blacklist items to tests below for each exclusion type.
+  EXPECT_EQ(13u, list_.size());
 }
 
 TEST_F(BluetoothBlacklistTest, VerifyDefaultExcludeList) {
@@ -424,20 +423,38 @@ TEST_F(BluetoothBlacklistTest, VerifyDefaultExcludeList) {
       list_.IsExcluded(BluetoothUUID("00001530-1212-efde-1523-785feabcd123")));
   EXPECT_TRUE(
       list_.IsExcluded(BluetoothUUID("f000ffc0-0451-4000-b000-000000000000")));
+  EXPECT_TRUE(list_.IsExcluded(BluetoothUUID("00060000")));
+  EXPECT_TRUE(list_.IsExcluded(BluetoothUUID("fffd")));
+  EXPECT_FALSE(list_.IsExcluded(BluetoothUUID("2a02")));
   EXPECT_TRUE(list_.IsExcluded(BluetoothUUID("2a03")));
   EXPECT_TRUE(list_.IsExcluded(BluetoothUUID("2a25")));
+  EXPECT_FALSE(
+      list_.IsExcluded(BluetoothUUID("bad1c9a2-9a5b-4015-8b60-1579bbbf2135")));
+  EXPECT_FALSE(list_.IsExcluded(BluetoothUUID("2902")));
+  EXPECT_FALSE(list_.IsExcluded(BluetoothUUID("2903")));
   EXPECT_TRUE(
       list_.IsExcluded(BluetoothUUID("bad2ddcf-60db-45cd-bef9-fd72b153cf7c")));
+  EXPECT_FALSE(
+      list_.IsExcluded(BluetoothUUID("bad3ec61-3cc3-4954-9702-7977df514114")));
 }
 
 TEST_F(BluetoothBlacklistTest, VerifyDefaultExcludeReadList) {
   EXPECT_FALSE(list_.IsExcludedFromReads(BluetoothUUID("1800")));
   EXPECT_FALSE(list_.IsExcludedFromReads(BluetoothUUID("1801")));
   EXPECT_TRUE(list_.IsExcludedFromReads(BluetoothUUID("1812")));
+  EXPECT_TRUE(list_.IsExcludedFromReads(
+      BluetoothUUID("00001530-1212-efde-1523-785feabcd123")));
+  EXPECT_TRUE(list_.IsExcludedFromReads(
+      BluetoothUUID("f000ffc0-0451-4000-b000-000000000000")));
+  EXPECT_TRUE(list_.IsExcludedFromReads(BluetoothUUID("00060000")));
+  EXPECT_TRUE(list_.IsExcludedFromReads(BluetoothUUID("fffd")));
+  EXPECT_FALSE(list_.IsExcludedFromReads(BluetoothUUID("2a02")));
   EXPECT_TRUE(list_.IsExcludedFromReads(BluetoothUUID("2a03")));
   EXPECT_TRUE(list_.IsExcludedFromReads(BluetoothUUID("2a25")));
   EXPECT_TRUE(list_.IsExcludedFromReads(
       BluetoothUUID("bad1c9a2-9a5b-4015-8b60-1579bbbf2135")));
+  EXPECT_FALSE(list_.IsExcludedFromReads(BluetoothUUID("2902")));
+  EXPECT_FALSE(list_.IsExcludedFromReads(BluetoothUUID("2903")));
   EXPECT_TRUE(list_.IsExcludedFromReads(
       BluetoothUUID("bad2ddcf-60db-45cd-bef9-fd72b153cf7c")));
   EXPECT_TRUE(list_.IsExcludedFromReads(
@@ -448,13 +465,23 @@ TEST_F(BluetoothBlacklistTest, VerifyDefaultExcludeWriteList) {
   EXPECT_FALSE(list_.IsExcludedFromWrites(BluetoothUUID("1800")));
   EXPECT_FALSE(list_.IsExcludedFromWrites(BluetoothUUID("1801")));
   EXPECT_TRUE(list_.IsExcludedFromWrites(BluetoothUUID("1812")));
+  EXPECT_TRUE(list_.IsExcludedFromWrites(
+      BluetoothUUID("00001530-1212-efde-1523-785feabcd123")));
+  EXPECT_TRUE(list_.IsExcludedFromWrites(
+      BluetoothUUID("f000ffc0-0451-4000-b000-000000000000")));
+  EXPECT_TRUE(list_.IsExcludedFromWrites(BluetoothUUID("00060000")));
+  EXPECT_TRUE(list_.IsExcludedFromWrites(BluetoothUUID("fffd")));
   EXPECT_TRUE(list_.IsExcludedFromWrites(BluetoothUUID("2a02")));
   EXPECT_TRUE(list_.IsExcludedFromWrites(BluetoothUUID("2a03")));
   EXPECT_TRUE(list_.IsExcludedFromWrites(BluetoothUUID("2a25")));
+  EXPECT_FALSE(list_.IsExcludedFromWrites(
+      BluetoothUUID("bad1c9a2-9a5b-4015-8b60-1579bbbf2135")));
   EXPECT_TRUE(list_.IsExcludedFromWrites(BluetoothUUID("2902")));
   EXPECT_TRUE(list_.IsExcludedFromWrites(BluetoothUUID("2903")));
   EXPECT_TRUE(list_.IsExcludedFromWrites(
       BluetoothUUID("bad2ddcf-60db-45cd-bef9-fd72b153cf7c")));
+  EXPECT_FALSE(list_.IsExcludedFromWrites(
+      BluetoothUUID("bad3ec61-3cc3-4954-9702-7977df514114")));
 }
 
 }  // namespace content

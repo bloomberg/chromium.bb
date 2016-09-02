@@ -154,7 +154,7 @@ void BluetoothBlacklist::PopulateWithDefaultValues() {
   DCHECK(BluetoothUUID("00001800-0000-1000-8000-00805f9b34fb") ==
          BluetoothUUID("1800"));
 
-  // Blacklist UUIDs updated 2016-04-07 from:
+  // Blacklist UUIDs updated 2016-09-01 from:
   // https://github.com/WebBluetoothCG/registries/blob/master/gatt_blacklist.txt
   // Short UUIDs are used for readability of this list.
   //
@@ -162,6 +162,8 @@ void BluetoothBlacklist::PopulateWithDefaultValues() {
   Add(BluetoothUUID("1812"), Value::EXCLUDE);
   Add(BluetoothUUID("00001530-1212-efde-1523-785feabcd123"), Value::EXCLUDE);
   Add(BluetoothUUID("f000ffc0-0451-4000-b000-000000000000"), Value::EXCLUDE);
+  Add(BluetoothUUID("00060000"), Value::EXCLUDE);
+  Add(BluetoothUUID("fffd"), Value::EXCLUDE);
   // Characteristics:
   Add(BluetoothUUID("2a02"), Value::EXCLUDE_WRITES);
   Add(BluetoothUUID("2a03"), Value::EXCLUDE);
