@@ -17,6 +17,8 @@ source_set("compositor") {
     "blimp_image_decoder.cc",
     "blimp_image_decoder.h",
     "blimp_output_surface.h",
+    "blob_channel_feature.cc",
+    "blob_channel_feature.h",
     "blob_image_serialization_processor.cc",
     "blob_image_serialization_processor.h",
     "decoding_image_generator.cc",
@@ -55,6 +57,7 @@ source_set("unit_tests") {
     "blimp_client_picture_cache_unittest.cc",
     "blimp_compositor_manager_unittest.cc",
     "blimp_compositor_unittest.cc",
+    "blob_channel_feature_unittest.cc",
     "delegated_output_surface_unittest.cc",
   ]
 

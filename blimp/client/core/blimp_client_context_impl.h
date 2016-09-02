@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
+#include "blimp/client/core/compositor/blob_image_serialization_processor.h"
 #include "blimp/client/core/session/client_network_components.h"
 #include "blimp/client/core/session/identity_source.h"
 #include "blimp/client/core/session/network_event_observer.h"
@@ -27,6 +28,7 @@ namespace client {
 
 class BlimpCompositorDependencies;
 class BlimpContentsManager;
+class BlobChannelFeature;
 class CompositorDependencies;
 class GeolocationFeature;
 class ImeFeature;
@@ -37,8 +39,10 @@ class TabControlFeature;
 
 // BlimpClientContextImpl is the implementation of the main context-class for
 // the blimp client.
-class BlimpClientContextImpl : public BlimpClientContext,
-                               public NetworkEventObserver {
+class BlimpClientContextImpl
+    : public BlimpClientContext,
+      public BlobImageSerializationProcessor::ErrorDelegate,
+      public NetworkEventObserver {
  public:
   // The |io_thread_task_runner| must be the task runner to use for IO
   // operations.
@@ -83,6 +87,9 @@ class BlimpClientContextImpl : public BlimpClientContext,
   // service.
   void CreateIdentitySource();
 
+  // BlobImageSerializationProcessor::ErrorDelegate implementation.
+  void OnImageDecodeError() override;
+
   // Provides functionality from the embedder.
   BlimpClientContextDelegate* delegate_ = nullptr;
 
@@ -100,6 +107,7 @@ class BlimpClientContextImpl : public BlimpClientContext,
   std::unique_ptr<BlimpCompositorDependencies> blimp_compositor_dependencies_;
 
   // Features to handle all incoming and outgoing protobuf messages.
+  std::unique_ptr<BlobChannelFeature> blob_channel_feature_;
   std::unique_ptr<GeolocationFeature> geolocation_feature_;
   std::unique_ptr<ImeFeature> ime_feature_;
   std::unique_ptr<NavigationFeature> navigation_feature_;

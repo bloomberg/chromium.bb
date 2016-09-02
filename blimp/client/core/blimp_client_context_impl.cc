@@ -13,6 +13,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "blimp/client/core/blimp_client_switches.h"
 #include "blimp/client/core/compositor/blimp_compositor_dependencies.h"
+#include "blimp/client/core/compositor/blob_channel_feature.h"
 #include "blimp/client/core/contents/blimp_contents_impl.h"
 #include "blimp/client/core/contents/blimp_contents_manager.h"
 #include "blimp/client/core/contents/ime_feature.h"
@@ -70,6 +71,7 @@ BlimpClientContextImpl::BlimpClientContextImpl(
       blimp_compositor_dependencies_(
           base::MakeUnique<BlimpCompositorDependencies>(
               std::move(compositor_dependencies))),
+      blob_channel_feature_(new BlobChannelFeature(this)),
       geolocation_feature_(base::MakeUnique<GeolocationFeature>(
           base::MakeUnique<device::LocationArbitrator>(
               base::MakeUnique<device::GeolocationDelegate>()))),
@@ -178,6 +180,8 @@ void BlimpClientContextImpl::ConnectWithAssignment(
 
 void BlimpClientContextImpl::RegisterFeatures() {
   // Register features' message senders and receivers.
+  thread_pipe_manager_->RegisterFeature(BlimpMessage::kBlobChannel,
+                                        blob_channel_feature_.get());
   geolocation_feature_->set_outgoing_message_processor(
       thread_pipe_manager_->RegisterFeature(BlimpMessage::kGeolocation,
                                             geolocation_feature_.get()));
@@ -213,6 +217,15 @@ void BlimpClientContextImpl::CreateIdentitySource() {
   identity_source_ = base::MakeUnique<IdentitySource>(
       delegate_, base::Bind(&BlimpClientContextImpl::ConnectToAssignmentSource,
                             base::Unretained(this)));
+}
+
+void BlimpClientContextImpl::OnImageDecodeError() {
+  // Currently we just drop the connection on image decoding error.
+  io_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(
+          &BrowserConnectionHandler::DropCurrentConnection,
+          base::Unretained(net_components_->GetBrowserConnectionHandler())));
 }
 
 }  // namespace client

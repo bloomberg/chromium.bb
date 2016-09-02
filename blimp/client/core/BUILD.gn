@@ -99,6 +99,7 @@ source_set("context") {
 
   public_deps = [
     "//base",
+    "//blimp/client/core/compositor:compositor",
     "//blimp/client/core/contents",
     "//blimp/client/core/session",
     "//blimp/client/public:public_headers",
