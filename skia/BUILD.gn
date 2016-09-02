@@ -30,28 +30,6 @@ declare_args() {
   skia_build_no_opts = is_ios
 }
 
-# The list of Skia defines that are to be set for chromium.
-gypi_chromium_skia_defines =
-    exec_script("//build/gypi_to_gn.py",
-                [
-                  rebase_path("//skia/chromium_skia_defines.gypi"),
-                  "--replace=<(skia_include_path)=//third_party/skia/include",
-                  "--replace=<(skia_src_path)=//third_party/skia/src",
-                ],
-                "scope",
-                [ "//skia/chromium_skia_defines.gypi" ])
-
-# The list of Skia files is kept in skia_gn_files.gypi. Read it.
-gypi_values =
-    exec_script("//build/gypi_to_gn.py",
-                [
-                  rebase_path("skia_gn_files.gypi"),
-                  "--replace=<(skia_include_path)=//third_party/skia/include",
-                  "--replace=<(skia_src_path)=//third_party/skia/src",
-                ],
-                "scope",
-                [ "skia_gn_files.gypi" ])
-
 # External-facing config for dependent code.
 config("skia_config") {
   include_dirs = [
@@ -70,7 +48,7 @@ config("skia_config") {
     "//third_party/skia/include/utils",
   ]
 
-  defines = gypi_chromium_skia_defines.chromium_skia_defines
+  defines = [ "SK_IGNORE_DW_GRAY_FIX" ]
   defines += skia_for_chromium_defines
 
   defines += []
@@ -260,7 +238,39 @@ component("skia") {
   sources += skia_core_sources
   sources += skia_effects_sources
   sources += skia_utils_sources
-  sources += gypi_values.skia_library_sources
+  sources += [
+    "//third_party/skia/src/fonts/SkFontMgr_indirect.cpp",
+    "//third_party/skia/src/fonts/SkRemotableFontMgr.cpp",
+    "//third_party/skia/src/ports/SkFontConfigInterface_direct.cpp",
+    "//third_party/skia/src/ports/SkFontConfigInterface_direct_factory.cpp",
+    "//third_party/skia/src/ports/SkFontHost_FreeType.cpp",
+    "//third_party/skia/src/ports/SkFontHost_FreeType_common.cpp",
+    "//third_party/skia/src/ports/SkFontHost_mac.cpp",
+    "//third_party/skia/src/ports/SkFontHost_win.cpp",
+    "//third_party/skia/src/ports/SkFontMgr_FontConfigInterface.cpp",
+    "//third_party/skia/src/ports/SkFontMgr_FontConfigInterface_factory.cpp",
+    "//third_party/skia/src/ports/SkFontMgr_android.cpp",
+    "//third_party/skia/src/ports/SkFontMgr_android_factory.cpp",
+    "//third_party/skia/src/ports/SkFontMgr_android_parser.cpp",
+    "//third_party/skia/src/ports/SkFontMgr_win_dw.cpp",
+    "//third_party/skia/src/ports/SkGlobalInitialization_default.cpp",
+    "//third_party/skia/src/ports/SkImageEncoder_none.cpp",
+    "//third_party/skia/src/ports/SkImageGenerator_none.cpp",
+    "//third_party/skia/src/ports/SkOSFile_posix.cpp",
+    "//third_party/skia/src/ports/SkOSFile_stdio.cpp",
+    "//third_party/skia/src/ports/SkOSFile_win.cpp",
+    "//third_party/skia/src/ports/SkRemotableFontMgr_win_dw.cpp",
+    "//third_party/skia/src/ports/SkScalerContext_win_dw.cpp",
+    "//third_party/skia/src/ports/SkTLS_pthread.cpp",
+    "//third_party/skia/src/ports/SkTLS_win.cpp",
+    "//third_party/skia/src/ports/SkTypeface_win_dw.cpp",
+    "//third_party/skia/src/sfnt/SkOTTable_name.cpp",
+    "//third_party/skia/src/sfnt/SkOTUtils.cpp",
+  ]
+
+  if (is_mac) {
+    sources += [ "//third_party/skia/src/utils/mac/SkStream_mac.cpp" ]
+  }
 
   # This and skia_opts are really the same conceptual target so share headers.
   allow_circular_includes_from = [ ":skia_opts" ]
@@ -287,7 +297,7 @@ component("skia") {
     "//third_party/skia/src/utils/SkOSFile.cpp",
     "//third_party/skia/src/utils/SkParsePath.cpp",
 
-    #testing
+    # Testing.
     "//third_party/skia/src/fonts/SkGScalerContext.cpp",
   ]
 
