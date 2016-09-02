@@ -4,6 +4,7 @@
 
 #include "ash/common/system/tray/tray_details_view.h"
 
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/system/tray/hover_highlight_view.h"
 #include "ash/common/system/tray/special_popup_row.h"
 #include "ash/common/system/tray/system_tray.h"
@@ -24,21 +25,12 @@ namespace test {
 
 namespace {
 
-class TestDetailsView : public TrayDetailsView,
-                        public ViewClickListener,
-                        public views::ButtonListener {
+class TestDetailsView : public TrayDetailsView {
  public:
   explicit TestDetailsView(SystemTrayItem* owner) : TrayDetailsView(owner) {
     // Uses bluetooth label for testing purpose. It can be changed to any
     // string_id.
-    CreateSpecialRow(IDS_ASH_STATUS_TRAY_BLUETOOTH, this);
-    tray_popup_header_button_ =
-        new TrayPopupHeaderButton(this, IDR_AURA_UBER_TRAY_BLUETOOTH_ENABLED,
-                                  IDR_AURA_UBER_TRAY_BLUETOOTH_DISABLED,
-                                  IDR_AURA_UBER_TRAY_BLUETOOTH_ENABLED_HOVER,
-                                  IDR_AURA_UBER_TRAY_BLUETOOTH_DISABLED_HOVER,
-                                  IDS_ASH_STATUS_TRAY_BLUETOOTH);
-    footer()->AddButton(tray_popup_header_button_);
+    CreateTitleRow(IDS_ASH_STATUS_TRAY_BLUETOOTH);
   }
 
   ~TestDetailsView() override {}
@@ -47,13 +39,23 @@ class TestDetailsView : public TrayDetailsView,
     return tray_popup_header_button_;
   }
 
-  void FocusFooter() { footer()->content()->RequestFocus(); }
+  void FocusTitleRow() { title_row()->content()->RequestFocus(); }
 
-  // ViewClickListener:
-  void OnViewClicked(views::View* sender) override {}
+  // TrayDetailsView:
+  void CreateExtraTitleRowButtons() override {
+    // TODO(tdanderson): Add test coverage for material design buttons in the
+    // title row once they are implemented.
+    if (MaterialDesignController::IsSystemTrayMenuMaterial())
+      return;
 
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override {}
+    tray_popup_header_button_ =
+        new TrayPopupHeaderButton(this, IDR_AURA_UBER_TRAY_BLUETOOTH_ENABLED,
+                                  IDR_AURA_UBER_TRAY_BLUETOOTH_DISABLED,
+                                  IDR_AURA_UBER_TRAY_BLUETOOTH_ENABLED_HOVER,
+                                  IDR_AURA_UBER_TRAY_BLUETOOTH_DISABLED_HOVER,
+                                  IDS_ASH_STATUS_TRAY_BLUETOOTH);
+    title_row()->AddButton(tray_popup_header_button_);
+  }
 
  private:
   TrayPopupHeaderButton* tray_popup_header_button_;
@@ -117,7 +119,7 @@ class TrayDetailsViewTest : public AshTestBase {
     RunAllPendingInMessageLoop();
 
     return static_cast<HoverHighlightView*>(
-        test_item->detailed_view()->footer()->content());
+        test_item->detailed_view()->title_row()->content());
   }
 
   TrayPopupHeaderButton* CreateAndShowTrayPopupHeaderButton() {
@@ -130,6 +132,10 @@ class TrayDetailsViewTest : public AshTestBase {
     RunAllPendingInMessageLoop();
 
     return test_item->detailed_view()->tray_popup_header_button();
+  }
+
+  void TransitionFromDetailedToDefaultView(TestDetailsView* detailed) {
+    detailed->TransitionToDefaultView();
   }
 
  private:
@@ -161,8 +167,8 @@ TEST_F(TrayDetailsViewTest, TransitionToDefaultViewTest) {
 
   // Transition back to default view, the default view of item 2 should have
   // focus.
-  test_item_2->detailed_view()->FocusFooter();
-  test_item_2->detailed_view()->TransitionToDefaultView();
+  test_item_2->detailed_view()->FocusTitleRow();
+  TransitionFromDetailedToDefaultView(test_item_2->detailed_view());
   RunAllPendingInMessageLoop();
 
   EXPECT_TRUE(test_item_2->default_view());
@@ -177,7 +183,7 @@ TEST_F(TrayDetailsViewTest, TransitionToDefaultViewTest) {
 
   // Transition back to default view, the default view of item 2 should NOT have
   // focus.
-  test_item_2->detailed_view()->TransitionToDefaultView();
+  TransitionFromDetailedToDefaultView(test_item_2->detailed_view());
   RunAllPendingInMessageLoop();
 
   EXPECT_TRUE(test_item_2->default_view());
@@ -196,7 +202,6 @@ TEST_F(TrayDetailsViewTest, HoverHighlightViewTouchFeedback) {
   EXPECT_TRUE(view->hover());
 
   generator.ReleaseTouch();
-  EXPECT_FALSE(view->hover());
 }
 
 // Tests that touch events leaving HoverHighlightView cancel the hover state.
@@ -221,6 +226,10 @@ TEST_F(TrayDetailsViewTest, HoverHighlightViewTouchFeedbackCancellation) {
 
 // Tests that TrayPopupHeaderButton renders a background in response to touch.
 TEST_F(TrayDetailsViewTest, TrayPopupHeaderButtonTouchFeedback) {
+  // Material design detailed views will not use TrayPopupHeaderButton.
+  if (MaterialDesignController::IsSystemTrayMenuMaterial())
+    return;
+
   TrayPopupHeaderButton* button = CreateAndShowTrayPopupHeaderButton();
   EXPECT_FALSE(button->background());
 
@@ -236,6 +245,10 @@ TEST_F(TrayDetailsViewTest, TrayPopupHeaderButtonTouchFeedback) {
 // Tests that touch events leaving TrayPopupHeaderButton cancel the touch
 // feedback background.
 TEST_F(TrayDetailsViewTest, TrayPopupHeaderButtonTouchFeedbackCancellation) {
+  // Material design detailed views will not use TrayPopupHeaderButton.
+  if (MaterialDesignController::IsSystemTrayMenuMaterial())
+    return;
+
   TrayPopupHeaderButton* button = CreateAndShowTrayPopupHeaderButton();
   EXPECT_FALSE(button->background());
 
@@ -257,6 +270,10 @@ TEST_F(TrayDetailsViewTest, TrayPopupHeaderButtonTouchFeedbackCancellation) {
 // Tests that a mouse entering TrayPopupHeaderButton renders a background as
 // visual feedback.
 TEST_F(TrayDetailsViewTest, TrayPopupHeaderButtonMouseHoverFeedback) {
+  // Material design detailed views will not use TrayPopupHeaderButton.
+  if (MaterialDesignController::IsSystemTrayMenuMaterial())
+    return;
+
   TrayPopupHeaderButton* button = CreateAndShowTrayPopupHeaderButton();
   EXPECT_FALSE(button->background());
 

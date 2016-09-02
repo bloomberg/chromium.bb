@@ -14,7 +14,6 @@
 #include "ash/common/system/tray/tray_item_more.h"
 #include "ash/common/system/tray/tray_item_view.h"
 #include "ash/common/system/tray/tray_notification_view.h"
-#include "ash/common/system/tray/view_click_listener.h"
 #include "ash/common/wm_shell.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -190,8 +189,7 @@ class TraySms::SmsMessageView : public views::View,
   DISALLOW_COPY_AND_ASSIGN(SmsMessageView);
 };
 
-class TraySms::SmsDetailedView : public TrayDetailsView,
-                                 public ViewClickListener {
+class TraySms::SmsDetailedView : public TrayDetailsView {
  public:
   explicit SmsDetailedView(TraySms* owner) : TrayDetailsView(owner) {
     Init();
@@ -202,7 +200,7 @@ class TraySms::SmsDetailedView : public TrayDetailsView,
 
   void Init() {
     CreateScrollableList();
-    CreateSpecialRow(IDS_ASH_STATUS_TRAY_SMS, this);
+    CreateTitleRow(IDS_ASH_STATUS_TRAY_SMS);
   }
 
   void Update() {
@@ -241,12 +239,6 @@ class TraySms::SmsDetailedView : public TrayDetailsView,
       scroll_content()->AddChildView(msgview);
     }
     scroller()->Layout();
-  }
-
-  // Overridden from ViewClickListener.
-  void OnViewClicked(views::View* sender) override {
-    if (sender == footer()->content())
-      TransitionToDefaultView();
   }
 
   DISALLOW_COPY_AND_ASSIGN(SmsDetailedView);
