@@ -68,6 +68,7 @@ private:
     bool supportsFocus() const override;
     void childrenChanged(const ChildrenChange&) override;
     void resetImpl() override;
+    short tabIndex() const override;
 
     void valueWasSet() final;
 

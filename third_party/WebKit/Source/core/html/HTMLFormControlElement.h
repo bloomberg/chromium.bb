@@ -156,7 +156,7 @@ private:
     bool isFormControlElement() const final { return true; }
     bool alwaysCreateUserAgentShadowRoot() const override { return true; }
 
-    short tabIndex() const final;
+    short tabIndex() const;
 
     bool isValidElement() override;
     bool matchesValidityPseudoClasses() const override;

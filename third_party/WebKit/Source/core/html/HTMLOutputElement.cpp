@@ -145,6 +145,10 @@ void HTMLOutputElement::setDefaultValue(const String& value)
         setTextContent(value);
 }
 
+short HTMLOutputElement::tabIndex() const
+{
+    return HTMLElement::tabIndex();
+}
 
 DEFINE_TRACE(HTMLOutputElement)
 {

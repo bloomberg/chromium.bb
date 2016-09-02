@@ -53,6 +53,7 @@ private:
     LayoutObject* createLayoutObject(const ComputedStyle&) override;
     const AtomicString& formControlType() const override;
     bool recalcWillValidate() const override { return false; }
+    short tabIndex() const final;
     bool matchesValidityPseudoClasses() const final;
     bool isValidElement() final;
     void childrenChanged(const ChildrenChange&) override;

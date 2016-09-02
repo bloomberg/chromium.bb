@@ -153,4 +153,9 @@ const FormAssociatedElement::List& HTMLFieldSetElement::associatedElements() con
     return m_associatedElements;
 }
 
+short HTMLFieldSetElement::tabIndex() const
+{
+    return HTMLElement::tabIndex();
+}
+
 } // namespace blink
