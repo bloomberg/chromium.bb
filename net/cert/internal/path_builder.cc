@@ -621,6 +621,25 @@ CertPathBuilder::ResultPath::~ResultPath() = default;
 CertPathBuilder::Result::Result() = default;
 CertPathBuilder::Result::~Result() = default;
 
+const CertPathBuilder::ResultPath* CertPathBuilder::Result::GetBestValidPath()
+    const {
+  DCHECK((paths.empty() && best_result_index == 0) ||
+         best_result_index < paths.size());
+
+  if (best_result_index >= paths.size())
+    return nullptr;
+
+  const ResultPath* result_path = paths[best_result_index].get();
+  if (result_path->valid)
+    return result_path;
+
+  return nullptr;
+}
+
+bool CertPathBuilder::Result::HasValidPath() const {
+  return GetBestValidPath() != nullptr;
+}
+
 CertPathBuilder::CertPathBuilder(scoped_refptr<ParsedCertificate> cert,
                                  const TrustStore* trust_store,
                                  const SignaturePolicy* signature_policy,
@@ -695,15 +714,16 @@ CompletionStatus CertPathBuilder::DoGetNextPathComplete() {
     return CompletionStatus::SYNC;
   }
 
-  //  TODO(crbug.com/634443): Expose CertErrors on ResultPath.
-  CertErrors errors;
+  // Verify the entire certificate chain.
+  auto result_path = base::MakeUnique<ResultPath>();
   bool verify_result =
-      next_path_.trust_anchor.get() &&
       VerifyCertificateChain(next_path_.certs, next_path_.trust_anchor.get(),
-                             signature_policy_, time_, &errors);
+                             signature_policy_, time_, &result_path->errors);
   DVLOG(1) << "CertPathBuilder VerifyCertificateChain result = "
-           << verify_result;
-  AddResultPath(next_path_, verify_result);
+           << result_path->valid;
+  result_path->path = next_path_;
+  result_path->valid = verify_result;
+  AddResultPath(std::move(result_path));
 
   if (verify_result) {
     // Found a valid path, return immediately.
@@ -719,15 +739,11 @@ CompletionStatus CertPathBuilder::DoGetNextPathComplete() {
   return CompletionStatus::SYNC;
 }
 
-void CertPathBuilder::AddResultPath(const CertPath& path, bool is_success) {
-  std::unique_ptr<ResultPath> result_path(new ResultPath());
-  // TODO(mattm): better error reporting.
-  result_path->error = is_success ? OK : ERR_CERT_AUTHORITY_INVALID;
+void CertPathBuilder::AddResultPath(std::unique_ptr<ResultPath> result_path) {
   // TODO(mattm): set best_result_index based on number or severity of errors.
-  if (result_path->error == OK)
+  if (result_path->valid)
     out_result_->best_result_index = out_result_->paths.size();
   // TODO(mattm): add flag to only return a single path or all attempted paths?
-  result_path->path = path;
   out_result_->paths.push_back(std::move(result_path));
 }
 

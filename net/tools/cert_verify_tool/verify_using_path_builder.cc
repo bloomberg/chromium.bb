@@ -10,7 +10,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "crypto/sha2.h"
-#include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cert/internal/cert_issuer_source_aia.h"
 #include "net/cert/internal/cert_issuer_source_static.h"
@@ -114,6 +113,48 @@ std::string SubjectFromTrustAnchor(const net::TrustAnchor* trust_anchor) {
   return SubjectToString(parsed_subject);
 }
 
+void PrintCertErrors(const net::CertErrors& errors) {
+  // TODO(crbug.com/634443): Include more detailed error information. Also this
+  // should likely be extracted to a common location and used by unit-tests and
+  // other debugging needs.
+  for (const auto& error : errors.errors()) {
+    std::cout << " " << error.type;
+  }
+}
+
+// Dumps a ResultPath to std::cout.
+void PrintResultPath(const net::CertPathBuilder::ResultPath* result_path,
+                     size_t index,
+                     bool is_best) {
+  std::cout << "path " << index << " "
+            << (result_path->valid ? "valid" : "invalid")
+            << (is_best ? " (best)" : "") << "\n";
+
+  // Print the certificate chain.
+  for (const auto& cert : result_path->path.certs) {
+    std::cout << " " << FingerPrintParsedCertificate(cert.get()) << " "
+              << SubjectFromParsedCertificate(cert.get()) << "\n";
+  }
+
+  // Print the trust anchor (if there was one).
+  const auto& trust_anchor = result_path->path.trust_anchor;
+  if (trust_anchor) {
+    std::string trust_anchor_cert_fingerprint = "<no cert>";
+    if (trust_anchor->cert()) {
+      trust_anchor_cert_fingerprint =
+          FingerPrintParsedCertificate(trust_anchor->cert().get());
+    }
+    std::cout << " " << trust_anchor_cert_fingerprint << " "
+              << SubjectFromTrustAnchor(trust_anchor.get()) << "\n";
+  }
+
+  // Print the errors.
+  if (result_path->errors.errors().empty()) {
+    std::cout << "Errors:\n";
+    PrintCertErrors(result_path->errors);
+  }
+}
+
 }  // namespace
 
 // Verifies |target_der_cert| using CertPathBuilder.
@@ -197,29 +238,14 @@ bool VerifyUsingPathBuilder(
     DVLOG(1) << "async completed.";
   }
 
-  // TODO(crbug.com/634443): Display the full error information.
-  std::cout << "CertPathBuilder best result: "
-            << net::ErrorToShortString(result.error()) << "\n";
+  // TODO(crbug.com/634443): Display any errors/warnings associated with path
+  //                         building that were not part of a particular
+  //                         PathResult.
+  std::cout << "CertPathBuilder result: "
+            << (result.HasValidPath() ? "SUCCESS" : "FAILURE") << "\n";
 
   for (size_t i = 0; i < result.paths.size(); ++i) {
-    std::cout << "path " << i << " "
-              << net::ErrorToShortString(result.paths[i]->error)
-              << ((result.best_result_index == i) ? " (best)" : "") << "\n";
-    for (const auto& cert : result.paths[i]->path.certs) {
-      std::cout << " " << FingerPrintParsedCertificate(cert.get()) << " "
-                << SubjectFromParsedCertificate(cert.get()) << "\n";
-    }
-
-    const auto& trust_anchor = result.paths[i]->path.trust_anchor;
-    if (trust_anchor) {
-      std::string trust_anchor_cert_fingerprint = "<no cert>";
-      if (trust_anchor->cert()) {
-        trust_anchor_cert_fingerprint =
-            FingerPrintParsedCertificate(trust_anchor->cert().get());
-      }
-      std::cout << " " << trust_anchor_cert_fingerprint << " "
-                << SubjectFromTrustAnchor(trust_anchor.get()) << "\n";
-    }
+    PrintResultPath(result.paths[i].get(), i, i == result.best_result_index);
   }
 
   // TODO(mattm): add flag to dump all paths, not just the final one?
@@ -232,5 +258,5 @@ bool VerifyUsingPathBuilder(
     }
   }
 
-  return result.error() == net::OK;
+  return result.HasValidPath();
 }

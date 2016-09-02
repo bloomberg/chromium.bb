@@ -92,7 +92,7 @@ class PathBuilderPkitsTestDelegate {
     CompletionStatus rv = path_builder.Run(base::Closure());
     EXPECT_EQ(CompletionStatus::SYNC, rv);
 
-    return result.is_success();
+    return result.HasValidPath();
   }
 };
 

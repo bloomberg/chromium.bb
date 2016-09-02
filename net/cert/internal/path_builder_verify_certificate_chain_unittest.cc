@@ -39,7 +39,7 @@ class PathBuilderDelegate {
     CompletionStatus rv = path_builder.Run(base::Closure());
     EXPECT_EQ(CompletionStatus::SYNC, rv);
 
-    EXPECT_EQ(expected_result, result.is_success());
+    EXPECT_EQ(expected_result, result.HasValidPath());
   }
 };
 

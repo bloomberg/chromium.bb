@@ -145,9 +145,9 @@ bool VerifyCRL(const Crl& crl,
                                     &result);
   net::CompletionStatus rv = path_builder.Run(base::Closure());
   DCHECK_EQ(rv, net::CompletionStatus::SYNC);
-  if (!result.is_success() || result.paths.empty() ||
-      !result.paths[result.best_result_index]->is_success()) {
+  if (!result.HasValidPath()) {
     VLOG(2) << "CRL - Issuer certificate verification failed.";
+    // TODO(crbug.com/634443): Log the error information.
     return false;
   }
   // There are no requirements placed on the leaf certificate having any
@@ -174,7 +174,7 @@ bool VerifyCRL(const Crl& crl,
   // "expiration" of the trust anchor is handled instead by its
   // presence in the trust store.
   *overall_not_after = not_after;
-  for (const auto& cert : result.paths[result.best_result_index]->path.certs) {
+  for (const auto& cert : result.GetBestValidPath()->path.certs) {
     net::der::GeneralizedTime cert_not_after = cert->tbs().validity_not_after;
     if (cert_not_after < *overall_not_after)
       *overall_not_after = cert_not_after;

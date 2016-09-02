@@ -299,8 +299,10 @@ bool VerifyDeviceCert(const std::vector<std::string>& certs,
   path_builder.AddCertIssuerSource(&intermediate_cert_issuer_source);
   net::CompletionStatus rv = path_builder.Run(base::Closure());
   DCHECK_EQ(rv, net::CompletionStatus::SYNC);
-  if (!result.is_success())
+  if (!result.HasValidPath()) {
+    // TODO(crbug.com/634443): Log error information.
     return false;
+  }
 
   // Check properties of the leaf certificate (key usage, policy), and construct
   // a CertVerificationContext that uses its public key.
@@ -313,12 +315,7 @@ bool VerifyDeviceCert(const std::vector<std::string>& certs,
       return false;
     }
   } else {
-    if (result.paths.empty() ||
-        !result.paths[result.best_result_index]->is_success())
-      return false;
-
-    if (!crl->CheckRevocation(result.paths[result.best_result_index]->path,
-                              time)) {
+    if (!crl->CheckRevocation(result.GetBestValidPath()->path, time)) {
       return false;
     }
   }
