@@ -23,6 +23,10 @@ class Thread;
 class Value;
 }
 
+namespace content {
+class DevToolsSocketFactory;
+}
+
 namespace net {
 class IPEndPoint;
 class HttpServerRequestInfo;
@@ -40,24 +44,6 @@ class ServerWrapper;
 // this browser.
 class DevToolsHttpHandler {
  public:
-
-  // Factory of net::ServerSocket. This is to separate instantiating dev tools
-  // and instantiating server sockets.
-  // All methods including destructor are called on a separate thread
-  // different from any BrowserThread instance.
-  class ServerSocketFactory {
-   public:
-    virtual ~ServerSocketFactory() {}
-
-    // Returns a new instance of ServerSocket or nullptr if an error occurred.
-    virtual std::unique_ptr<net::ServerSocket> CreateForHttpServer();
-
-    // Creates a named socket for reversed tethering implementation (used with
-    // remote debugging, primarily for mobile).
-    virtual std::unique_ptr<net::ServerSocket> CreateForTethering(
-        std::string* out_name);
-  };
-
   // Takes ownership over |socket_factory| and |delegate|.
   // If |frontend_url| is empty, assumes it's bundled, and uses
   // |delegate->GetFrontendResource()|.
@@ -67,7 +53,7 @@ class DevToolsHttpHandler {
   // port selected by the OS will be written to a well-known file in
   // the output directory.
   DevToolsHttpHandler(
-      std::unique_ptr<ServerSocketFactory> server_socket_factory,
+      std::unique_ptr<content::DevToolsSocketFactory> server_socket_factory,
       const std::string& frontend_url,
       DevToolsHttpHandlerDelegate* delegate,
       const base::FilePath& active_port_output_directory,
@@ -76,21 +62,17 @@ class DevToolsHttpHandler {
       const std::string& user_agent);
   ~DevToolsHttpHandler();
 
-  // Returns the URL for the file at |path| in frontend.
-  GURL GetFrontendURL(const std::string& path);
-
  private:
   friend class ServerWrapper;
   friend void ServerStartedOnUI(
       base::WeakPtr<DevToolsHttpHandler> handler,
       base::Thread* thread,
       ServerWrapper* server_wrapper,
-      DevToolsHttpHandler::ServerSocketFactory* socket_factory,
+      content::DevToolsSocketFactory* socket_factory,
       std::unique_ptr<net::IPEndPoint> ip_address);
 
   void OnJsonRequest(int connection_id,
                      const net::HttpServerRequestInfo& info);
-  void OnThumbnailRequest(int connection_id, const std::string& target_id);
   void OnDiscoveryPageRequest(int connection_id);
   void OnFrontendResourceRequest(int connection_id, const std::string& path);
   void OnWebSocketRequest(int connection_id,
@@ -100,7 +82,7 @@ class DevToolsHttpHandler {
 
   void ServerStarted(base::Thread* thread,
                      ServerWrapper* server_wrapper,
-                     ServerSocketFactory* socket_factory,
+                     content::DevToolsSocketFactory* socket_factory,
                      std::unique_ptr<net::IPEndPoint> ip_address);
 
   scoped_refptr<content::DevToolsAgentHost> GetAgentHost(
@@ -137,7 +119,7 @@ class DevToolsHttpHandler {
   typedef std::map<int, DevToolsAgentHostClientImpl*> ConnectionToClientMap;
   ConnectionToClientMap connection_to_client_;
   const std::unique_ptr<DevToolsHttpHandlerDelegate> delegate_;
-  ServerSocketFactory* socket_factory_;
+  content::DevToolsSocketFactory* socket_factory_;
   using DescriptorMap =
       std::map<std::string, scoped_refptr<content::DevToolsAgentHost>>;
   DescriptorMap agent_host_map_;

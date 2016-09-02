@@ -19,6 +19,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/devtools_http_handler/devtools_http_handler_delegate.h"
+#include "content/public/browser/devtools_socket_factory.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/ip_address.h"
@@ -60,8 +61,7 @@ void QuitFromHandlerThread(const base::Closure& quit_closure) {
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, quit_closure);
 }
 
-class DummyServerSocketFactory
-    : public DevToolsHttpHandler::ServerSocketFactory {
+class DummyServerSocketFactory : public content::DevToolsSocketFactory {
  public:
   DummyServerSocketFactory(base::Closure quit_closure_1,
                            base::Closure quit_closure_2)
@@ -77,7 +77,12 @@ class DummyServerSocketFactory
   std::unique_ptr<net::ServerSocket> CreateForHttpServer() override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&QuitFromHandlerThread, quit_closure_1_));
-    return base::MakeUnique<DummyServerSocket>();
+    return base::WrapUnique(new DummyServerSocket());
+  }
+
+  std::unique_ptr<net::ServerSocket> CreateForTethering(
+      std::string* out_name) override {
+    return nullptr;
   }
 
   base::Closure quit_closure_1_;
@@ -106,15 +111,6 @@ class DummyDelegate : public DevToolsHttpHandlerDelegate {
   std::string GetFrontendResource(const std::string& path) override {
     return std::string();
   }
-
-  std::string GetPageThumbnailData(const GURL& url) override {
-    return std::string();
-  }
-
-  content::DevToolsExternalAgentProxyDelegate*
-      HandleWebSocketConnection(const std::string& path) override {
-    return nullptr;
-  }
 };
 
 }
@@ -129,7 +125,7 @@ class DevToolsHttpHandlerTest : public testing::Test {
 
 TEST_F(DevToolsHttpHandlerTest, TestStartStop) {
   base::RunLoop run_loop, run_loop_2;
-  std::unique_ptr<DevToolsHttpHandler::ServerSocketFactory> factory(
+  std::unique_ptr<content::DevToolsSocketFactory> factory(
       new DummyServerSocketFactory(run_loop.QuitClosure(),
                                    run_loop_2.QuitClosure()));
   std::unique_ptr<DevToolsHttpHandler> devtools_http_handler(
@@ -146,7 +142,7 @@ TEST_F(DevToolsHttpHandlerTest, TestStartStop) {
 
 TEST_F(DevToolsHttpHandlerTest, TestServerSocketFailed) {
   base::RunLoop run_loop, run_loop_2;
-  std::unique_ptr<DevToolsHttpHandler::ServerSocketFactory> factory(
+  std::unique_ptr<content::DevToolsSocketFactory> factory(
       new FailingServerSocketFactory(run_loop.QuitClosure(),
                                      run_loop_2.QuitClosure()));
   std::unique_ptr<DevToolsHttpHandler> devtools_http_handler(
@@ -170,7 +166,7 @@ TEST_F(DevToolsHttpHandlerTest, TestDevToolsActivePort) {
   base::RunLoop run_loop, run_loop_2;
   base::ScopedTempDir temp_dir;
   EXPECT_TRUE(temp_dir.CreateUniqueTempDir());
-  std::unique_ptr<DevToolsHttpHandler::ServerSocketFactory> factory(
+  std::unique_ptr<content::DevToolsSocketFactory> factory(
       new DummyServerSocketFactory(run_loop.QuitClosure(),
                                    run_loop_2.QuitClosure()));
   std::unique_ptr<DevToolsHttpHandler> devtools_http_handler(

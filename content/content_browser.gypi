@@ -175,6 +175,7 @@
       'public/browser/devtools_external_agent_proxy_delegate.h',
       'public/browser/devtools_frontend_host.h',
       'public/browser/devtools_manager_delegate.h',
+      'public/browser/devtools_socket_factory.h',
       'public/browser/dom_storage_context.h',
       'public/browser/download_danger_type.h',
       'public/browser/download_interrupt_reason_values.h',

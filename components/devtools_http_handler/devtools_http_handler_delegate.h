@@ -26,15 +26,6 @@ class DevToolsHttpHandlerDelegate {
   // Returns frontend resource data by |path|. Only used if
   // |BundlesFrontendResources| returns |true|.
   virtual std::string GetFrontendResource(const std::string& path) = 0;
-
-  // Get a thumbnail for a given page. Returns non-empty string iff we have the
-  // thumbnail.
-  virtual std::string GetPageThumbnailData(const GURL& url) = 0;
-
-  // Allows embedder to handle custom websocket-based protocol connection
-  // pointing remote debugging port. Returns ownership.
-  virtual content::DevToolsExternalAgentProxyDelegate*
-      HandleWebSocketConnection(const std::string& path) = 0;
 };
 
 }  // namespace devtools_http_handler

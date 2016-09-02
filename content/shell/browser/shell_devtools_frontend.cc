@@ -22,6 +22,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_switches.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_browser_main_parts.h"
@@ -97,6 +98,25 @@ int ResponseWriter::Finish(const net::CompletionCallback& callback) {
   return net::OK;
 }
 
+static GURL GetFrontendURL() {
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  uint16_t port = 0;
+  if (command_line.HasSwitch(switches::kRemoteDebuggingPort)) {
+    int temp_port;
+    std::string port_str =
+        command_line.GetSwitchValueASCII(switches::kRemoteDebuggingPort);
+    if (base::StringToInt(port_str, &temp_port) &&
+        temp_port >= 0 && temp_port < 65535) {
+      port = static_cast<uint16_t>(temp_port);
+    } else {
+      DLOG(WARNING) << "Invalid http debugger port number " << temp_port;
+    }
+  }
+  return GURL(
+      base::StringPrintf("http://127.0.0.1:%d/devtools/inspector.html", port));
+}
+
 }  // namespace
 
 // This constant should be in sync with
@@ -113,13 +133,7 @@ ShellDevToolsFrontend* ShellDevToolsFrontend::Show(
   ShellDevToolsFrontend* devtools_frontend = new ShellDevToolsFrontend(
       shell,
       inspected_contents);
-
-  devtools_http_handler::DevToolsHttpHandler* http_handler =
-      ShellContentBrowserClient::Get()
-          ->shell_browser_main_parts()
-          ->devtools_http_handler();
-  shell->LoadURL(http_handler->GetFrontendURL("/devtools/inspector.html"));
-
+  shell->LoadURL(GetFrontendURL());
   return devtools_frontend;
 }
 

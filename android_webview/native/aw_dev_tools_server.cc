@@ -18,6 +18,7 @@
 #include "components/devtools_http_handler/devtools_http_handler_delegate.h"
 #include "content/public/browser/android/devtools_auth.h"
 #include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/devtools_socket_factory.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/user_agent.h"
 #include "jni/AwDevToolsServer_jni.h"
@@ -52,9 +53,6 @@ class AwDevToolsServerDelegate :
   // devtools_http_handler::DevToolsHttpHandlerDelegate implementation.
   std::string GetDiscoveryPageHTML() override;
   std::string GetFrontendResource(const std::string& path) override;
-  std::string GetPageThumbnailData(const GURL&) override;
-  content::DevToolsExternalAgentProxyDelegate*
-      HandleWebSocketConnection(const std::string& path) override;
 
  private:
 
@@ -77,18 +75,8 @@ std::string AwDevToolsServerDelegate::GetFrontendResource(
   return std::string();
 }
 
-std::string AwDevToolsServerDelegate::GetPageThumbnailData(const GURL&) {
-  return std::string();
-}
-
-content::DevToolsExternalAgentProxyDelegate*
-AwDevToolsServerDelegate::HandleWebSocketConnection(const std::string& path) {
-  return nullptr;
-}
-
 // Factory for UnixDomainServerSocket.
-class UnixDomainServerSocketFactory
-    : public DevToolsHttpHandler::ServerSocketFactory {
+class UnixDomainServerSocketFactory : public content::DevToolsSocketFactory {
  public:
   explicit UnixDomainServerSocketFactory(const std::string& socket_name)
       : socket_name_(socket_name),
@@ -143,7 +131,7 @@ void AwDevToolsServer::Start() {
   if (devtools_http_handler_)
     return;
 
-  std::unique_ptr<DevToolsHttpHandler::ServerSocketFactory> factory(
+  std::unique_ptr<content::DevToolsSocketFactory> factory(
       new UnixDomainServerSocketFactory(
           base::StringPrintf(kSocketNameFormat, getpid())));
   devtools_http_handler_.reset(new DevToolsHttpHandler(

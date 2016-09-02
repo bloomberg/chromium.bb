@@ -27,6 +27,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_external_agent_proxy_delegate.h"
 #include "content/public/browser/devtools_manager_delegate.h"
+#include "content/public/browser/devtools_socket_factory.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/user_agent.h"
 #include "net/base/escape.h"
@@ -55,7 +56,6 @@ const base::FilePath::CharType kDevToolsActivePortFileName[] =
 
 const char kDevToolsHandlerThreadName[] = "Chrome_DevToolsHandlerThread";
 
-const char kThumbUrlPrefix[] = "/thumb/";
 const char kPageUrlPrefix[] = "/devtools/page/";
 
 const char kTargetIdField[] = "id";
@@ -64,7 +64,6 @@ const char kTargetTypeField[] = "type";
 const char kTargetTitleField[] = "title";
 const char kTargetDescriptionField[] = "description";
 const char kTargetUrlField[] = "url";
-const char kTargetThumbnailUrlField[] = "thumbnailUrl";
 const char kTargetFaviconUrlField[] = "faviconUrl";
 const char kTargetWebSocketDebuggerUrlField[] = "webSocketDebuggerUrl";
 const char kTargetDevtoolsFrontendUrlField[] = "devtoolsFrontendUrl";
@@ -172,7 +171,7 @@ void ServerWrapper::Close(int connection_id) {
 
 void TerminateOnUI(base::Thread* thread,
                    ServerWrapper* server_wrapper,
-                   DevToolsHttpHandler::ServerSocketFactory* socket_factory) {
+                   content::DevToolsSocketFactory* socket_factory) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (server_wrapper) {
     DCHECK(thread);
@@ -190,7 +189,7 @@ void TerminateOnUI(base::Thread* thread,
 void ServerStartedOnUI(base::WeakPtr<DevToolsHttpHandler> handler,
                        base::Thread* thread,
                        ServerWrapper* server_wrapper,
-                       DevToolsHttpHandler::ServerSocketFactory* socket_factory,
+                       content::DevToolsSocketFactory* socket_factory,
                        std::unique_ptr<net::IPEndPoint> ip_address) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (handler && thread && server_wrapper) {
@@ -204,14 +203,14 @@ void ServerStartedOnUI(base::WeakPtr<DevToolsHttpHandler> handler,
 void StartServerOnHandlerThread(
     base::WeakPtr<DevToolsHttpHandler> handler,
     base::Thread* thread,
-    DevToolsHttpHandler::ServerSocketFactory* server_socket_factory,
+    content::DevToolsSocketFactory* socket_factory,
     const base::FilePath& output_directory,
     const base::FilePath& frontend_dir,
     bool bundles_resources) {
   DCHECK(thread->task_runner()->BelongsToCurrentThread());
   ServerWrapper* server_wrapper = nullptr;
   std::unique_ptr<net::ServerSocket> server_socket =
-      server_socket_factory->CreateForHttpServer();
+      socket_factory->CreateForHttpServer();
   std::unique_ptr<net::IPEndPoint> ip_address(new net::IPEndPoint);
   if (server_socket) {
     server_wrapper = new ServerWrapper(handler, std::move(server_socket),
@@ -230,13 +229,13 @@ void StartServerOnHandlerThread(
                  handler,
                  thread,
                  server_wrapper,
-                 server_socket_factory,
+                 socket_factory,
                  base::Passed(&ip_address)));
 }
 
 void StartServerOnFile(
     base::WeakPtr<DevToolsHttpHandler> handler,
-    DevToolsHttpHandler::ServerSocketFactory* server_socket_factory,
+    content::DevToolsSocketFactory* socket_factory,
     const base::FilePath& output_directory,
     const base::FilePath& frontend_dir,
     bool bundles_resources) {
@@ -250,7 +249,7 @@ void StartServerOnFile(
     message_loop->task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&StartServerOnHandlerThread, handler,
-                   base::Unretained(thread.release()), server_socket_factory,
+                   base::Unretained(thread.release()), socket_factory,
                    output_directory, frontend_dir, bundles_resources));
   }
 }
@@ -325,30 +324,10 @@ static bool TimeComparator(scoped_refptr<DevToolsAgentHost> host1,
   return host1->GetLastActivityTime() > host2->GetLastActivityTime();
 }
 
-// DevToolsHttpHandler::ServerSocketFactory ----------------------------------
-
-std::unique_ptr<net::ServerSocket>
-DevToolsHttpHandler::ServerSocketFactory::CreateForHttpServer() {
-  return nullptr;
-}
-
-std::unique_ptr<net::ServerSocket>
-DevToolsHttpHandler::ServerSocketFactory::CreateForTethering(
-    std::string* name) {
-  return nullptr;
-}
-
 // DevToolsHttpHandler -------------------------------------------------------
 
 DevToolsHttpHandler::~DevToolsHttpHandler() {
   TerminateOnUI(thread_, server_wrapper_, socket_factory_);
-}
-
-GURL DevToolsHttpHandler::GetFrontendURL(const std::string& path) {
-  if (!server_ip_address_)
-    return GURL();
-  return GURL(std::string("http://") + server_ip_address_->ToString() +
-              (path.empty() ? frontend_url_ : path));
 }
 
 static std::string PathWithoutParams(const std::string& path) {
@@ -399,20 +378,6 @@ void ServerWrapper::OnHttpRequest(int connection_id,
                    handler_,
                    connection_id,
                    info));
-    return;
-  }
-
-  if (base::StartsWith(info.path, kThumbUrlPrefix,
-                       base::CompareCase::SENSITIVE)) {
-    // Thumbnail request.
-    const std::string target_id = info.path.substr(strlen(kThumbUrlPrefix));
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&DevToolsHttpHandler::OnThumbnailRequest,
-                   handler_,
-                   connection_id,
-                   target_id));
     return;
   }
 
@@ -661,19 +626,6 @@ scoped_refptr<DevToolsAgentHost> DevToolsHttpHandler::GetAgentHost(
   return it != agent_host_map_.end() ? it->second : nullptr;
 }
 
-void DevToolsHttpHandler::OnThumbnailRequest(
-    int connection_id, const std::string& target_id) {
-  scoped_refptr<DevToolsAgentHost> agent_host = GetAgentHost(target_id);
-  GURL page_url;
-  if (agent_host)
-    page_url = agent_host->GetURL();
-  std::string data = delegate_->GetPageThumbnailData(page_url);
-  if (!data.empty())
-    Send200(connection_id, data, "image/png");
-  else
-    Send404(connection_id);
-}
-
 void DevToolsHttpHandler::OnDiscoveryPageRequest(int connection_id) {
   std::string response = delegate_->GetDiscoveryPageHTML();
   Send200(connection_id, response, "text/html; charset=UTF-8");
@@ -698,22 +650,10 @@ void DevToolsHttpHandler::OnWebSocketRequest(
     scoped_refptr<DevToolsAgentHost> browser_agent =
         DevToolsAgentHost::CreateForBrowser(
             thread_->task_runner(),
-            base::Bind(&ServerSocketFactory::CreateForTethering,
+            base::Bind(&content::DevToolsSocketFactory::CreateForTethering,
                        base::Unretained(socket_factory_)));
     connection_to_client_[connection_id] = new DevToolsAgentHostClientImpl(
         thread_->message_loop(), server_wrapper_, connection_id, browser_agent);
-    AcceptWebSocket(connection_id, request);
-    return;
-  }
-
-  // Handle external connections (such as frontend api) on the embedder level.
-  content::DevToolsExternalAgentProxyDelegate* external_delegate =
-      delegate_->HandleWebSocketConnection(request.path);
-  if (external_delegate) {
-    scoped_refptr<DevToolsAgentHost> agent_host =
-        DevToolsAgentHost::Create(external_delegate);
-    connection_to_client_[connection_id] = new DevToolsAgentHostClientImpl(
-        thread_->message_loop(), server_wrapper_, connection_id, agent_host);
     AcceptWebSocket(connection_id, request);
     return;
   }
@@ -763,7 +703,7 @@ void DevToolsHttpHandler::OnClose(int connection_id) {
 }
 
 DevToolsHttpHandler::DevToolsHttpHandler(
-    std::unique_ptr<ServerSocketFactory> server_socket_factory,
+    std::unique_ptr<content::DevToolsSocketFactory> socket_factory,
     const std::string& frontend_url,
     DevToolsHttpHandlerDelegate* delegate,
     const base::FilePath& output_directory,
@@ -786,7 +726,7 @@ DevToolsHttpHandler::DevToolsHttpHandler(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&StartServerOnFile,
                  weak_factory_.GetWeakPtr(),
-                 server_socket_factory.release(),
+                 socket_factory.release(),
                  output_directory,
                  debug_frontend_dir,
                  bundles_resources));
@@ -795,7 +735,7 @@ DevToolsHttpHandler::DevToolsHttpHandler(
 void DevToolsHttpHandler::ServerStarted(
     base::Thread* thread,
     ServerWrapper* server_wrapper,
-    ServerSocketFactory* socket_factory,
+    content::DevToolsSocketFactory* socket_factory,
     std::unique_ptr<net::IPEndPoint> ip_address) {
   thread_ = thread;
   server_wrapper_ = server_wrapper;
@@ -908,11 +848,6 @@ std::unique_ptr<base::DictionaryValue> DevToolsHttpHandler::SerializeDescriptor(
   GURL favicon_url = agent_host->GetFaviconURL();
   if (favicon_url.is_valid())
     dictionary->SetString(kTargetFaviconUrlField, favicon_url.spec());
-
-  if (!delegate_->GetPageThumbnailData(url).empty()) {
-    dictionary->SetString(kTargetThumbnailUrlField,
-                          std::string(kThumbUrlPrefix) + id);
-  }
 
   if (!agent_host->IsAttached()) {
     dictionary->SetString(kTargetWebSocketDebuggerUrlField,

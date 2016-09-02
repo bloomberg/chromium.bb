@@ -22,7 +22,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
@@ -30,11 +29,11 @@
 #include "chrome/grit/browser_resources.h"
 #include "components/devtools_http_handler/devtools_http_handler.h"
 #include "components/devtools_http_handler/devtools_http_handler_delegate.h"
-#include "components/history/core/browser/top_sites.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/android/devtools_auth.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/devtools_socket_factory.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
@@ -92,12 +91,6 @@ class DevToolsServerDelegate :
   }
 
   std::string GetDiscoveryPageHTML() override {
-    // TopSites updates itself after a delay. Ask TopSites to update itself
-    // when we're about to show the remote debugging landing page.
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&DevToolsServerDelegate::PopulatePageThumbnails));
     return ResourceBundle::GetSharedInstance().GetRawDataResource(
         IDR_DEVTOOLS_DISCOVERY_PAGE_HTML).as_string();
   }
@@ -106,41 +99,14 @@ class DevToolsServerDelegate :
     return std::string();
   }
 
-  std::string GetPageThumbnailData(const GURL& url) override {
-    Profile* profile =
-        ProfileManager::GetLastUsedProfile()->GetOriginalProfile();
-    scoped_refptr<history::TopSites> top_sites =
-        TopSitesFactory::GetForProfile(profile);
-    if (top_sites) {
-      scoped_refptr<base::RefCountedMemory> data;
-      if (top_sites->GetPageThumbnail(url, false, &data))
-        return std::string(data->front_as<char>(), data->size());
-    }
-    return std::string();
-  }
-
-  content::DevToolsExternalAgentProxyDelegate*
-      HandleWebSocketConnection(const std::string& path) override {
-    return nullptr;
-  }
-
  private:
-  static void PopulatePageThumbnails() {
-    Profile* profile =
-        ProfileManager::GetLastUsedProfile()->GetOriginalProfile();
-    scoped_refptr<history::TopSites> top_sites =
-        TopSitesFactory::GetForProfile(profile);
-    if (top_sites)
-      top_sites->SyncWithHistory();
-  }
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsServerDelegate);
 };
 
 // Factory for UnixDomainServerSocket. It tries a fallback socket when
 // original socket doesn't work.
-class UnixDomainServerSocketFactory
-    : public DevToolsHttpHandler::ServerSocketFactory {
+class UnixDomainServerSocketFactory : public content::DevToolsSocketFactory {
  public:
   UnixDomainServerSocketFactory(
       const std::string& socket_name,
@@ -213,7 +179,7 @@ void DevToolsServer::Start(bool allow_debug_permission) {
       allow_debug_permission ?
           base::Bind(&AuthorizeSocketAccessWithDebugPermission) :
           base::Bind(&content::CanUserConnectToDevTools);
-  std::unique_ptr<DevToolsHttpHandler::ServerSocketFactory> factory(
+  std::unique_ptr<content::DevToolsSocketFactory> factory(
       new UnixDomainServerSocketFactory(socket_name_, auth_callback));
   devtools_http_handler_.reset(new DevToolsHttpHandler(
       std::move(factory),

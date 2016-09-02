@@ -19,6 +19,7 @@
 #include "components/devtools_http_handler/devtools_http_handler.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/devtools_socket_factory.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/user_agent.h"
 #include "net/base/net_errors.h"
@@ -43,14 +44,13 @@ const uint16_t kDefaultRemoteDebuggingPort = 9222;
 const int kBackLog = 10;
 
 #if defined(OS_ANDROID)
-class UnixDomainServerSocketFactory
-    : public DevToolsHttpHandler::ServerSocketFactory {
+class UnixDomainServerSocketFactory : public content::DevToolsSocketFactory {
  public:
   explicit UnixDomainServerSocketFactory(const std::string& socket_name)
       : socket_name_(socket_name) {}
 
  private:
-  // devtools_http_handler::DevToolsHttpHandler::ServerSocketFactory.
+  // content::DevToolsSocketFactory.
   std::unique_ptr<net::ServerSocket> CreateForHttpServer() override {
     std::unique_ptr<net::UnixDomainServerSocket> socket(
         new net::UnixDomainServerSocket(
@@ -62,19 +62,23 @@ class UnixDomainServerSocketFactory
     return std::move(socket);
   }
 
+  std::unique_ptr<net::ServerSocket> CreateForTethering(
+      std::string* name) override {
+    return nullptr;
+  }
+
   std::string socket_name_;
 
   DISALLOW_COPY_AND_ASSIGN(UnixDomainServerSocketFactory);
 };
 #else
-class TCPServerSocketFactory
-    : public DevToolsHttpHandler::ServerSocketFactory {
+class TCPServerSocketFactory : public content::DevToolsSocketFactory {
  public:
   TCPServerSocketFactory(const std::string& address, uint16_t port)
       : address_(address), port_(port) {}
 
  private:
-  // devtools_http_handler::DevToolsHttpHandler::ServerSocketFactory.
+  // content::DevToolsSocketFactory.
   std::unique_ptr<net::ServerSocket> CreateForHttpServer() override {
     std::unique_ptr<net::ServerSocket> socket(
         new net::TCPServerSocket(nullptr, net::NetLog::Source()));
@@ -84,6 +88,11 @@ class TCPServerSocketFactory
     return socket;
   }
 
+  std::unique_ptr<net::ServerSocket> CreateForTethering(
+      std::string* name) override {
+    return nullptr;
+  }
+
   std::string address_;
   uint16_t port_;
 
@@ -91,7 +100,7 @@ class TCPServerSocketFactory
 };
 #endif
 
-std::unique_ptr<DevToolsHttpHandler::ServerSocketFactory> CreateSocketFactory(
+std::unique_ptr<content::DevToolsSocketFactory> CreateSocketFactory(
     uint16_t port) {
 #if defined(OS_ANDROID)
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -100,10 +109,10 @@ std::unique_ptr<DevToolsHttpHandler::ServerSocketFactory> CreateSocketFactory(
     socket_name = command_line->GetSwitchValueASCII(
         switches::kRemoteDebuggingSocketName);
   }
-  return std::unique_ptr<DevToolsHttpHandler::ServerSocketFactory>(
+  return std::unique_ptr<content::DevToolsSocketFactory>(
       new UnixDomainServerSocketFactory(socket_name));
 #else
-  return std::unique_ptr<DevToolsHttpHandler::ServerSocketFactory>(
+  return std::unique_ptr<content::DevToolsSocketFactory>(
       new TCPServerSocketFactory("0.0.0.0", port));
 #endif
 }

@@ -920,6 +920,12 @@ GURL RenderFrameDevToolsAgentHost::GetURL() {
 }
 
 GURL RenderFrameDevToolsAgentHost::GetFaviconURL() {
+  WebContents* wc = web_contents();
+  if (!wc)
+    return GURL();
+  NavigationEntry* entry = wc->GetController().GetLastCommittedEntry();
+  if (entry)
+    return entry->GetFavicon().url;
   return GURL();
 }
 

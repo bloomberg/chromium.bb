@@ -12,6 +12,7 @@
 #include "components/devtools_http_handler/devtools_http_handler.h"
 #include "components/devtools_http_handler/devtools_http_handler_delegate.h"
 #include "content/public/browser/devtools_frontend_host.h"
+#include "content/public/browser/devtools_socket_factory.h"
 #include "content/public/browser/navigation_entry.h"
 #include "headless/grit/headless_lib_resources.h"
 #include "headless/public/headless_browser.h"
@@ -27,7 +28,7 @@ namespace {
 
 const int kBackLog = 10;
 
-class TCPServerSocketFactory : public DevToolsHttpHandler::ServerSocketFactory {
+class TCPServerSocketFactory : public content::DevToolsSocketFactory {
  public:
   explicit TCPServerSocketFactory(const net::IPEndPoint& endpoint)
       : endpoint_(endpoint) {
@@ -35,7 +36,7 @@ class TCPServerSocketFactory : public DevToolsHttpHandler::ServerSocketFactory {
   }
 
  private:
-  // DevToolsHttpHandler::ServerSocketFactory implementation:
+  // content::DevToolsSocketFactory implementation:
   std::unique_ptr<net::ServerSocket> CreateForHttpServer() override {
     std::unique_ptr<net::ServerSocket> socket(
         new net::TCPServerSocket(nullptr, net::NetLog::Source()));
@@ -43,6 +44,11 @@ class TCPServerSocketFactory : public DevToolsHttpHandler::ServerSocketFactory {
       return std::unique_ptr<net::ServerSocket>();
 
     return socket;
+  }
+
+  std::unique_ptr<net::ServerSocket> CreateForTethering(
+      std::string* out_name) override {
+    return nullptr;
   }
 
   net::IPEndPoint endpoint_;
@@ -59,9 +65,6 @@ class HeadlessDevToolsDelegate
   // devtools_http_handler::DevToolsHttpHandlerDelegate implementation:
   std::string GetDiscoveryPageHTML() override;
   std::string GetFrontendResource(const std::string& path) override;
-  std::string GetPageThumbnailData(const GURL& url) override;
-  content::DevToolsExternalAgentProxyDelegate* HandleWebSocketConnection(
-      const std::string& path) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HeadlessDevToolsDelegate);
@@ -81,21 +84,12 @@ std::string HeadlessDevToolsDelegate::GetFrontendResource(
   return content::DevToolsFrontendHost::GetFrontendResource(path).as_string();
 }
 
-std::string HeadlessDevToolsDelegate::GetPageThumbnailData(const GURL& url) {
-  return std::string();
-}
-
-content::DevToolsExternalAgentProxyDelegate*
-HeadlessDevToolsDelegate::HandleWebSocketConnection(const std::string& path) {
-  return nullptr;
-}
-
 }  // namespace
 
 std::unique_ptr<DevToolsHttpHandler> CreateLocalDevToolsHttpHandler(
     HeadlessBrowser::Options* options) {
   const net::IPEndPoint& endpoint = options->devtools_endpoint;
-  std::unique_ptr<DevToolsHttpHandler::ServerSocketFactory> socket_factory(
+  std::unique_ptr<content::DevToolsSocketFactory> socket_factory(
       new TCPServerSocketFactory(endpoint));
   return base::MakeUnique<DevToolsHttpHandler>(
       std::move(socket_factory), std::string(), new HeadlessDevToolsDelegate(),

@@ -13,7 +13,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/devtools/devtools_window.h"
-#include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -22,9 +21,9 @@
 #include "chrome/grit/browser_resources.h"
 #include "components/devtools_http_handler/devtools_http_handler.h"
 #include "components/devtools_http_handler/devtools_http_handler_delegate.h"
-#include "components/history/core/browser/top_sites.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/devtools_frontend_host.h"
+#include "content/public/browser/devtools_socket_factory.h"
 #include "net/base/net_errors.h"
 #include "net/socket/tcp_server_socket.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -38,7 +37,7 @@ const uint16_t kMaxTetheringPort = 9444;
 const int kBackLog = 10;
 
 class TCPServerSocketFactory
-    : public devtools_http_handler::DevToolsHttpHandler::ServerSocketFactory {
+    : public content::DevToolsSocketFactory {
  public:
   TCPServerSocketFactory(const std::string& address, uint16_t port)
       : address_(address),
@@ -57,7 +56,7 @@ class TCPServerSocketFactory
     return std::unique_ptr<net::ServerSocket>();
   }
 
-  // devtools_http_handler::DevToolsHttpHandler::ServerSocketFactory.
+  // content::DevToolsSocketFactory.
   std::unique_ptr<net::ServerSocket> CreateForHttpServer() override {
     std::unique_ptr<net::ServerSocket> socket(
         new net::TCPServerSocket(nullptr, net::NetLog::Source()));
@@ -96,9 +95,6 @@ class ChromeDevToolsHttpHandlerDelegate
   // devtools_http_handler::DevToolsHttpHandlerDelegate implementation.
   std::string GetDiscoveryPageHTML() override;
   std::string GetFrontendResource(const std::string& path) override;
-  std::string GetPageThumbnailData(const GURL& url) override;
-  content::DevToolsExternalAgentProxyDelegate*
-      HandleWebSocketConnection(const std::string& path) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeDevToolsHttpHandlerDelegate);
@@ -111,19 +107,6 @@ ChromeDevToolsHttpHandlerDelegate::~ChromeDevToolsHttpHandlerDelegate() {
 }
 
 std::string ChromeDevToolsHttpHandlerDelegate::GetDiscoveryPageHTML() {
-  std::set<Profile*> profiles;
-  for (auto* browser : *BrowserList::GetInstance())
-    profiles.insert(browser->profile());
-
-  for (std::set<Profile*>::iterator it = profiles.begin();
-       it != profiles.end(); ++it) {
-    scoped_refptr<history::TopSites> ts = TopSitesFactory::GetForProfile(*it);
-    if (ts) {
-      // TopSites updates itself after a delay. Ask TopSites to update itself
-      // when we're about to show the remote debugging landing page.
-      ts->SyncWithHistory();
-    }
-  }
   return ResourceBundle::GetSharedInstance().GetRawDataResource(
       IDR_DEVTOOLS_DISCOVERY_PAGE_HTML).as_string();
 }
@@ -131,27 +114,6 @@ std::string ChromeDevToolsHttpHandlerDelegate::GetDiscoveryPageHTML() {
 std::string ChromeDevToolsHttpHandlerDelegate::GetFrontendResource(
     const std::string& path) {
   return content::DevToolsFrontendHost::GetFrontendResource(path).as_string();
-}
-
-std::string ChromeDevToolsHttpHandlerDelegate::GetPageThumbnailData(
-    const GURL& url) {
-  for (auto* browser : *BrowserList::GetInstance()) {
-    Profile* profile = browser->profile();
-    scoped_refptr<history::TopSites> top_sites =
-        TopSitesFactory::GetForProfile(profile);
-    if (!top_sites)
-      continue;
-    scoped_refptr<base::RefCountedMemory> data;
-    if (top_sites->GetPageThumbnail(url, false, &data))
-      return std::string(data->front_as<char>(), data->size());
-  }
-  return std::string();
-}
-
-content::DevToolsExternalAgentProxyDelegate*
-ChromeDevToolsHttpHandlerDelegate::HandleWebSocketConnection(
-    const std::string& path) {
-  return nullptr;
 }
 
 }  // namespace

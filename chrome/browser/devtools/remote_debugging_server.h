@@ -23,7 +23,6 @@ class RemoteDebuggingServer {
   // Bind remote debugging service to the given |ip| and |port|.
   // Empty |ip| stands for 127.0.0.1 or ::1.
   RemoteDebuggingServer(const std::string& ip, uint16_t port);
-
   virtual ~RemoteDebuggingServer();
 
  private:

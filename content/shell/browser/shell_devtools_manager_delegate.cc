@@ -21,6 +21,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_frontend_host.h"
+#include "content/public/browser/devtools_socket_factory.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
@@ -54,14 +55,13 @@ const char kFrontEndURL[] =
 const int kBackLog = 10;
 
 #if defined(OS_ANDROID)
-class UnixDomainServerSocketFactory
-    : public DevToolsHttpHandler::ServerSocketFactory {
+class UnixDomainServerSocketFactory : public content::DevToolsSocketFactory {
  public:
   explicit UnixDomainServerSocketFactory(const std::string& socket_name)
       : socket_name_(socket_name) {}
 
  private:
-  // DevToolsHttpHandler::ServerSocketFactory.
+  // content::DevToolsSocketFactory.
   std::unique_ptr<net::ServerSocket> CreateForHttpServer() override {
     std::unique_ptr<net::UnixDomainServerSocket> socket(
         new net::UnixDomainServerSocket(base::Bind(&CanUserConnectToDevTools),
@@ -72,19 +72,23 @@ class UnixDomainServerSocketFactory
     return std::move(socket);
   }
 
+  std::unique_ptr<net::ServerSocket> CreateForTethering(
+      std::string* out_name) override {
+    return nullptr;
+  }
+
   std::string socket_name_;
 
   DISALLOW_COPY_AND_ASSIGN(UnixDomainServerSocketFactory);
 };
 #else
-class TCPServerSocketFactory
-    : public DevToolsHttpHandler::ServerSocketFactory {
+class TCPServerSocketFactory : public content::DevToolsSocketFactory {
  public:
   TCPServerSocketFactory(const std::string& address, uint16_t port)
       : address_(address), port_(port) {}
 
  private:
-  // DevToolsHttpHandler::ServerSocketFactory.
+  // content::DevToolsSocketFactory.
   std::unique_ptr<net::ServerSocket> CreateForHttpServer() override {
     std::unique_ptr<net::ServerSocket> socket(
         new net::TCPServerSocket(nullptr, net::NetLog::Source()));
@@ -94,6 +98,11 @@ class TCPServerSocketFactory
     return socket;
   }
 
+  std::unique_ptr<net::ServerSocket> CreateForTethering(
+      std::string* out_name) override {
+    return nullptr;
+  }
+
   std::string address_;
   uint16_t port_;
 
@@ -101,8 +110,7 @@ class TCPServerSocketFactory
 };
 #endif
 
-std::unique_ptr<DevToolsHttpHandler::ServerSocketFactory>
-CreateSocketFactory() {
+std::unique_ptr<content::DevToolsSocketFactory> CreateSocketFactory() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 #if defined(OS_ANDROID)
@@ -111,7 +119,7 @@ CreateSocketFactory() {
     socket_name = command_line.GetSwitchValueASCII(
         switches::kRemoteDebuggingSocketName);
   }
-  return std::unique_ptr<DevToolsHttpHandler::ServerSocketFactory>(
+  return std::unique_ptr<content::DevToolsSocketFactory>(
       new UnixDomainServerSocketFactory(socket_name));
 #else
   // See if the user specified a port on the command line (useful for
@@ -128,7 +136,7 @@ CreateSocketFactory() {
       DLOG(WARNING) << "Invalid http debugger port number " << temp_port;
     }
   }
-  return std::unique_ptr<DevToolsHttpHandler::ServerSocketFactory>(
+  return std::unique_ptr<content::DevToolsSocketFactory>(
       new TCPServerSocketFactory("127.0.0.1", port));
 #endif
 }
@@ -144,9 +152,6 @@ class ShellDevToolsDelegate :
   // devtools_http_handler::DevToolsHttpHandlerDelegate implementation.
   std::string GetDiscoveryPageHTML() override;
   std::string GetFrontendResource(const std::string& path) override;
-  std::string GetPageThumbnailData(const GURL& url) override;
-  DevToolsExternalAgentProxyDelegate*
-      HandleWebSocketConnection(const std::string& path) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellDevToolsDelegate);
@@ -170,15 +175,6 @@ std::string ShellDevToolsDelegate::GetDiscoveryPageHTML() {
 std::string ShellDevToolsDelegate::GetFrontendResource(
     const std::string& path) {
   return content::DevToolsFrontendHost::GetFrontendResource(path).as_string();
-}
-
-std::string ShellDevToolsDelegate::GetPageThumbnailData(const GURL& url) {
-  return std::string();
-}
-
-DevToolsExternalAgentProxyDelegate*
-ShellDevToolsDelegate::HandleWebSocketConnection(const std::string& path) {
-  return nullptr;
 }
 
 }  // namespace
