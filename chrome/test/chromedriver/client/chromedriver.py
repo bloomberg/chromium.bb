@@ -492,3 +492,12 @@ class ChromeDriver(object):
 
   def DeleteScreenOrientationLock(self):
     self.ExecuteCommand(Command.DELETE_SCREEN_ORIENTATION)
+
+  def SendKeys(self, *values):
+    typing = []
+    for value in values:
+      if isinstance(value, int):
+        value = str(value)
+      for i in range(len(value)):
+        typing.append(value[i])
+    self.ExecuteCommand(Command.SEND_KEYS_TO_ACTIVE_ELEMENT, {'value': typing})

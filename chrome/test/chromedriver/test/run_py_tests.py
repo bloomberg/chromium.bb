@@ -584,6 +584,19 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     value = self._driver.ExecuteScript('return arguments[0].value;', text)
     self.assertEquals('0123456789+-*/ Hi, there!', value)
 
+  def testSendingTabKeyMovesToNextInputElement(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/two_inputs.html'))
+    first = self._driver.FindElement('id', 'first')
+    second = self._driver.FindElement('id', 'second')
+    first.Click()
+    self._driver.SendKeys('snoopy')
+    self._driver.SendKeys(u'\uE004')
+    self._driver.SendKeys('prickly pete')
+    self.assertEquals('snoopy', self._driver.ExecuteScript(
+        'return arguments[0].value;', first))
+    self.assertEquals('prickly pete', self._driver.ExecuteScript(
+        'return arguments[0].value;', second))
+
   def testGetElementAttribute(self):
     self._driver.Load(self.GetHttpUrlForFile(
         '/chromedriver/attribute_colon_test.html'))
