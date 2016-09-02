@@ -518,7 +518,7 @@ static void blend_a64_mask_b12_w4_sse4_1(
                               src1_stride, mask, mask_stride, h, blend_4_b12);
 }
 
-static inline void blend_a64_mask_bn_w8n_sse4_1(
+static INLINE void blend_a64_mask_bn_w8n_sse4_1(
     uint16_t *dst, uint32_t dst_stride, const uint16_t *src0,
     uint32_t src0_stride, const uint16_t *src1, uint32_t src1_stride,
     const uint8_t *mask, uint32_t mask_stride, int h, int w,
