@@ -167,6 +167,9 @@ public class StripLayoutTab
 
     @Override
     public boolean checkClicked(float x, float y) {
+        // Since both the close button as well as the tab inhabit the same coordinates, the tab
+        // should not consider itself hit if the close button is also hit, since it is on top.
+        if (mShowingCloseButton && mCloseButton.checkClicked(x, y)) return false;
         return mTouchTarget.contains(x, y);
     }
 
