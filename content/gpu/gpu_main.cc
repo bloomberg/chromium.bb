@@ -10,7 +10,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"

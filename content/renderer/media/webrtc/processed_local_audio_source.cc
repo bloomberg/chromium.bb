@@ -5,7 +5,7 @@
 #include "content/renderer/media/webrtc/processed_local_audio_source.h"
 
 #include "base/logging.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/media/media_stream_audio_processor_options.h"

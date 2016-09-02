@@ -4,7 +4,7 @@
 
 #include "content/browser/media/capture/desktop_capture_device_uma_types.h"
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 
 namespace content {
 

@@ -5,7 +5,7 @@
 #include "content/renderer/pepper/plugin_instance_throttler_impl.h"
 
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/renderer/render_thread.h"

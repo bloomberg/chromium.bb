@@ -27,7 +27,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/shared_memory_handle.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/persistent_histogram_allocator.h"
 #include "base/metrics/persistent_memory_allocator.h"
 #include "base/process/process_handle.h"

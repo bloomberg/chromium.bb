@@ -9,7 +9,7 @@
 #include "base/command_line.h"
 #include "base/format_macros.h"
 #include "base/memory/shared_memory.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"

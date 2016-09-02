@@ -10,7 +10,7 @@
 #include "base/files/file.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_math.h"
 #include "base/process/process.h"
 #include "base/strings/string_number_conversions.h"

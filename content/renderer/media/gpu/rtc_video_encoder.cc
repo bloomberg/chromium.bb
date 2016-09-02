@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"

@@ -10,7 +10,7 @@
 #include "base/android/jni_android.h"
 #include "base/bind.h"
 #include "base/memory/singleton.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/DeviceSensors_jni.h"
 

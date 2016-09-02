@@ -4,7 +4,7 @@
 
 #include "content/common/gpu/client/command_buffer_metrics.h"
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 
 namespace content {
 namespace command_buffer_metrics {

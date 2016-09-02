@@ -4,7 +4,7 @@
 
 #include "content/browser/shared_worker/shared_worker_host.h"
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "content/browser/devtools/shared_worker_devtools_manager.h"
 #include "content/browser/message_port_message_filter.h"
 #include "content/browser/message_port_service.h"

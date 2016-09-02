@@ -5,7 +5,7 @@
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 
 #include "base/logging.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/windows_version.h"

@@ -5,7 +5,7 @@
 #include "content/browser/histogram_controller.h"
 
 #include "base/bind.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/process/process_handle.h"
 #include "content/browser/histogram_subscriber.h"
 #include "content/common/child_process_messages.h"

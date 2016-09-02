@@ -33,7 +33,7 @@
 #if defined(OS_LINUX)
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #endif
 
 namespace content {

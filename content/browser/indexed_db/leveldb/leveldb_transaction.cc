@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/leveldb/leveldb_database.h"

@@ -13,7 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/guid.h"
 #include "base/macros.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/browser/download/download_interrupt_reasons_impl.h"

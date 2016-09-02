@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
 #include "components/display_compositor/gl_helper.h"

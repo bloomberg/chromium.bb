@@ -5,7 +5,7 @@
 #include "content/renderer/stats_collection_controller.h"
 
 #include "base/json/json_writer.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/strings/string_util.h"
 #include "content/common/child_process_messages.h"

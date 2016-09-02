@@ -8,7 +8,7 @@
 
 #include "base/bits.h"
 #include "base/callback_helpers.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLLoader.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"

@@ -4,7 +4,7 @@
 
 #include "content/browser/renderer_host/media/media_stream_track_metrics_host.h"
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "content/common/media/media_stream_track_metrics_host_messages.h"
 
 // We use a histogram with a maximum bucket of 16 hours to infinity

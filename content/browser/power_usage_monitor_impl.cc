@@ -11,7 +11,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "content/public/browser/browser_thread.h"

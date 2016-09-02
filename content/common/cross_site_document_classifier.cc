@@ -8,7 +8,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/resource_response_info.h"

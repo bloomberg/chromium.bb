@@ -6,7 +6,7 @@
 
 #include <limits>
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "content/common/dom_storage/dom_storage_map.h"
 #include "content/renderer/dom_storage/dom_storage_proxy.h"

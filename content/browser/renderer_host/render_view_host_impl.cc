@@ -17,7 +17,7 @@
 #include "base/json/json_reader.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"

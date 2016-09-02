@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "build/build_config.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"

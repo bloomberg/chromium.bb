@@ -11,7 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/memory/shared_memory.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/process/process.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/browser_main_loop.h"

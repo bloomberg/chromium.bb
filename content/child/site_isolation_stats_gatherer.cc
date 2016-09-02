@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "content/public/common/resource_response_info.h"

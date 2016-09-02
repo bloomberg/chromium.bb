@@ -4,7 +4,7 @@
 
 #include "content/renderer/gamepad_shared_memory_reader.h"
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "content/common/gamepad_hardware_buffer.h"
 #include "content/public/renderer/render_thread.h"

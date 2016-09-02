@@ -4,7 +4,7 @@
 
 #include "content/browser/renderer_host/p2p/socket_host.h"
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/sys_byteorder.h"
 #include "content/browser/renderer_host/p2p/socket_host_tcp.h"
 #include "content/browser/renderer_host/p2p/socket_host_tcp_server.h"

@@ -5,7 +5,7 @@
 #include "content/browser/histogram_message_filter.h"
 
 #include "base/command_line.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/statistics_recorder.h"
 #include "content/browser/histogram_controller.h"
 #include "content/common/child_process_messages.h"

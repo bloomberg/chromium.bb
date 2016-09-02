@@ -5,7 +5,7 @@
 #include "content/renderer/dom_storage/webstoragearea_impl.h"
 
 #include "base/lazy_instance.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "content/common/dom_storage/dom_storage_messages.h"

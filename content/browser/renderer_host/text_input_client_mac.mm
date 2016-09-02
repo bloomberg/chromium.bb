@@ -5,7 +5,7 @@
 #import "content/browser/renderer_host/text_input_client_mac.h"
 
 #include "base/memory/singleton.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"

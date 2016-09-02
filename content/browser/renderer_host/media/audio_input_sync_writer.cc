@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "base/format_macros.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"

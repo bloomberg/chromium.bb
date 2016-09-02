@@ -4,7 +4,7 @@
 
 #include "content/renderer/manifest/manifest_uma_util.h"
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "content/public/common/manifest.h"
 
 namespace content {

@@ -5,7 +5,7 @@
 #include "content/browser/device_sensors/data_fetcher_shared_memory.h"
 
 #include "base/logging.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 
 namespace {
 
