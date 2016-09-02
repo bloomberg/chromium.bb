@@ -679,13 +679,17 @@ bool OmniboxViewViews::OnMousePressed(const ui::MouseEvent& event) {
 }
 
 bool OmniboxViewViews::OnMouseDragged(const ui::MouseEvent& event) {
-  if (ExceededDragThreshold(event.location() - last_click_location()))
-    select_all_on_mouse_release_ = false;
-
   if (HasTextBeingDragged())
     CloseOmniboxPopup();
 
-  return views::Textfield::OnMouseDragged(event);
+  bool handled = views::Textfield::OnMouseDragged(event);
+
+  if (HasSelection() ||
+      ExceededDragThreshold(event.location() - last_click_location())) {
+    select_all_on_mouse_release_ = false;
+  }
+
+  return handled;
 }
 
 void OmniboxViewViews::OnMouseReleased(const ui::MouseEvent& event) {

@@ -618,12 +618,9 @@ bool Textfield::OnMousePressed(const ui::MouseEvent& event) {
 bool Textfield::OnMouseDragged(const ui::MouseEvent& event) {
   last_drag_location_ = event.location();
 
-  // Don't adjust the cursor on a potential drag and drop, or if the mouse
-  // movement from the last mouse click does not exceed the drag threshold.
-  if (initiating_drag_ || !event.IsOnlyLeftMouseButton() ||
-      !ExceededDragThreshold(last_drag_location_ - last_click_location_)) {
+  // Don't adjust the cursor on a potential drag and drop.
+  if (initiating_drag_ || !event.IsOnlyLeftMouseButton())
     return true;
-  }
 
   // A timer is used to continuously scroll while selecting beyond side edges.
   const int x = event.location().x();
