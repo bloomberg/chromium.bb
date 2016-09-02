@@ -336,7 +336,7 @@ def main():
          '[optional, defaults to "%s"]' % default_histograms_path,
     metavar='FILE')
   parser.add_option(
-    '--exrta_histograms-file', dest='extra_histograms_file_location',
+    '--extra_histograms-file', dest='extra_histograms_file_location',
     default=default_extra_histograms_path,
     help='read additional histogram definitions from FILE (relative to '
          '--root-directory) [optional, defaults to "%s"]' %
