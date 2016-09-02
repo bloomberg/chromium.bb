@@ -5,11 +5,11 @@
 <dom-module id="network-summary">
   <template>
     <div id="summary" class="layout vertical">
-      <template is="dom-repeat" items="[[activeNetworkStates]]">
+      <template is="dom-repeat" items="[[activeNetworkStates_]]">
         <network-summary-item id="[[item.Type]]"
             active-network-state="[[item]]"
-            device-state="[[get(item.Type, deviceStates)]]"
-            network-state-list="[[get(item.Type, networkStateLists)]]"
+            device-state="[[get(item.Type, deviceStates_)]]"
+            network-state-list="[[get(item.Type, networkStateLists_)]]"
             on-expanded="onExpanded_"
             on-selected="onSelected_"
             on-device-enabled-toggled="onDeviceEnabledToggled_">

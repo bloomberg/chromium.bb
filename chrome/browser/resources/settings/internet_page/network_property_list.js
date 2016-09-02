@@ -100,67 +100,59 @@ Polymer({
   },
 
   /**
-   * @param {!Object} propertyDict
    * @param {string} key The property key.
    * @return {boolean} Whether or not the property exists in |propertyDict|.
    * @private
    */
-  hasPropertyValue_: function(propertyDict, key) {
-    var value = this.get(key, propertyDict);
+  hasPropertyValue_: function(key) {
+    var value = this.get(key, this.propertyDict);
     return value !== undefined && value !== '';
   },
 
   /**
    * Generates a filter function dependent on propertyDict and editFieldTypes.
-   * @param {!Object} propertyDict
-   * @param {!Object} editFieldTypes
    * @private
    */
-  computeFilter_(propertyDict, editFieldTypes) {
+  computeFilter_: function() {
     return function(key) {
-      return this.showProperty_(propertyDict, editFieldTypes, key);
+      return this.showProperty_(key);
     }.bind(this);
   },
 
   /**
-   * @param {!Object} propertyDict
-   * @param {!Object} editFieldTypes
    * @param {string} key The property key.
    * @return {boolean} Whether or not to show the property. Editable properties
    *     are always shown.
    * @private
    */
-  showProperty_: function(propertyDict, editFieldTypes, key) {
-    if (editFieldTypes.hasOwnProperty(key))
+  showProperty_: function(key) {
+    if (this.editFieldTypes.hasOwnProperty(key))
       return true;
-    return this.hasPropertyValue_(propertyDict, key);
+    return this.hasPropertyValue_(key);
   },
 
   /**
-   * @param {!Object} propertyDict
-   * @param {!Object} editFieldTypes The editFieldTypes object.
    * @param {string} key The property key.
    * @param {string} type The field type.
    * @return {boolean}
    * @private
    */
-  isEditable_: function(propertyDict, editFieldTypes, key, type) {
+  isEditable_: function(key, type) {
     var property = /** @type {!CrOnc.ManagedProperty|undefined} */ (
-        this.get(key, propertyDict));
+        this.get(key, this.propertyDict));
     if (this.isNetworkPolicyEnforced(property))
       return false;
-    var editType = editFieldTypes[key];
+    var editType = this.editFieldTypes[key];
     return editType !== undefined && (type == '' || editType == type);
   },
 
   /**
-   * @param {!Object} propertyDict
    * @param {string} key The property key.
    * @return {string} The text to display for the property value.
    * @private
    */
-  getPropertyValue_: function(propertyDict, key) {
-    var value = this.get(key, propertyDict);
+  getPropertyValue_: function(key) {
+    var value = this.get(key, this.propertyDict);
     if (value === undefined)
       return '';
     if (typeof value == 'object') {

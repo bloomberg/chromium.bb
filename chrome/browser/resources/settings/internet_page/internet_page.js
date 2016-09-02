@@ -11,17 +11,6 @@ Polymer({
   is: 'settings-internet-page',
 
   properties: {
-    /** The network type for the known networks subpage. */
-    knownNetworksType: {
-      type: String,
-    },
-
-    /** Whether the 'Add connection' section is expanded. */
-    addConnectionExpanded: {
-      type: Boolean,
-      value: false,
-    },
-
     /**
      * Interface for networkingPrivate calls. May be overriden by tests.
      * @type {NetworkingPrivate}
@@ -29,6 +18,21 @@ Polymer({
     networkingPrivate: {
       type: Object,
       value: chrome.networkingPrivate,
+    },
+
+    /**
+     * The network type for the known networks subpage.
+     * @private
+     */
+    knownNetworksType_: String,
+
+    /**
+     * Whether the 'Add connection' section is expanded.
+     * @private
+     */
+    addConnectionExpanded_: {
+      type: Boolean,
+      value: false,
     },
   },
 
@@ -47,7 +51,7 @@ Polymer({
    * @private
    */
   onShowKnownNetworks_: function(event) {
-    this.knownNetworksType = event.detail.type;
+    this.knownNetworksType_ = event.detail.type;
     settings.navigateTo(settings.Route.KNOWN_NETWORKS);
   },
 
@@ -59,7 +63,7 @@ Polymer({
   onExpandAddConnectionsTap_: function(event) {
     if (event.target.id == 'expandAddConnections')
       return;
-    this.addConnectionExpanded = !this.addConnectionExpanded;
+    this.addConnectionExpanded_ = !this.addConnectionExpanded_;
   },
 
   /*** @private */

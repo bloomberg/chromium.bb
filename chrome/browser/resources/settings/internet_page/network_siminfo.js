@@ -33,8 +33,17 @@ Polymer({
       observer: 'networkPropertiesChanged_',
     },
 
-    /** Set to true when a PUK is required to unlock the SIM. */
-    pukRequired: {
+    /**
+     * Interface for networkingPrivate calls, passed from internet_page.
+     * @type {NetworkingPrivate}
+     */
+    networkingPrivate: Object,
+
+    /**
+     * Set to true when a PUK is required to unlock the SIM.
+     * @private
+     */
+    pukRequired_: {
       type: Boolean,
       value: false,
       observer: 'pukRequiredChanged_',
@@ -42,19 +51,11 @@ Polymer({
 
     /**
      * Set to an ErrorType value after an incorrect PIN or PUK entry.
-     * @type {ErrorType}
+     * @private {ErrorType}
      */
-    error: {
+    error_: {
       type: Object,
       value: ErrorType.NONE,
-    },
-
-    /**
-     * Interface for networkingPrivate calls, passed from internet_page.
-     * @type {NetworkingPrivate}
-     */
-    networkingPrivate: {
-      type: Object,
     },
   },
 
@@ -64,20 +65,20 @@ Polymer({
     if (!this.networkProperties || !this.networkProperties.Cellular)
       return;
     var simLockStatus = this.networkProperties.Cellular.SIMLockStatus;
-    this.pukRequired =
+    this.pukRequired_ =
         !!simLockStatus && simLockStatus.LockType == CrOnc.LockType.PUK;
   },
 
   pukRequiredChanged_: function() {
     if (this.$.unlockPukDialog.open) {
-      if (this.pukRequired)
+      if (this.pukRequired_)
         this.$.unlockPuk.focus();
       else
         this.$.unlockPukDialog.close();
       return;
     }
 
-    if (!this.pukRequired)
+    if (!this.pukRequired_)
       return;
 
     // If the PUK was activated while attempting to enter or change a pin,
@@ -98,7 +99,7 @@ Polymer({
     if (!showUnlockPuk)
       return;
 
-    this.error = ErrorType.NONE;
+    this.error_ = ErrorType.NONE;
     this.$.unlockPukDialog.showModal();
   },
 
@@ -111,7 +112,7 @@ Polymer({
     if (!this.networkProperties || !this.networkProperties.Cellular)
       return;
     this.sendSimLockEnabled_ = event.target.checked;
-    this.error = ErrorType.NONE;
+    this.error_ = ErrorType.NONE;
     this.$.enterPinDialog.showModal();
     this.$.enterPin.value = '';
   },
@@ -136,10 +137,10 @@ Polymer({
     });
     this.networkingPrivate.setCellularSimState(guid, simState, function() {
       if (chrome.runtime.lastError) {
-        this.error = ErrorType.INCORRECT_PIN;
+        this.error_ = ErrorType.INCORRECT_PIN;
         this.$.enterPin.inputElement.select();
       } else {
-        this.error = ErrorType.NONE;
+        this.error_ = ErrorType.NONE;
         this.$.enterPinDialog.close();
       }
     }.bind(this));
@@ -153,7 +154,7 @@ Polymer({
   onChangePinTap_: function(event) {
     if (!this.networkProperties || !this.networkProperties.Cellular)
       return;
-    this.error = ErrorType.NONE;
+    this.error_ = ErrorType.NONE;
     this.$.changePinDialog.showModal();
     this.$.changePinOld.value = '';
     this.$.changePinNew1.value = '';
@@ -181,10 +182,10 @@ Polymer({
     });
     this.networkingPrivate.setCellularSimState(guid, simState, function() {
       if (chrome.runtime.lastError) {
-        this.error = ErrorType.INCORRECT_PIN;
+        this.error_ = ErrorType.INCORRECT_PIN;
         this.$.changePinOld.inputElement.select();
       } else {
-        this.error = ErrorType.NONE;
+        this.error_ = ErrorType.NONE;
         this.$.changePinDialog.close();
       }
     }.bind(this));
@@ -196,7 +197,7 @@ Polymer({
    * @private
    */
   onUnlockPinTap_: function(event) {
-    this.error = ErrorType.NONE;
+    this.error_ = ErrorType.NONE;
     this.$.unlockPinDialog.showModal();
     this.$.unlockPin.value = '';
   },
@@ -216,10 +217,10 @@ Polymer({
 
     this.networkingPrivate.unlockCellularSim(guid, pin, '', function() {
       if (chrome.runtime.lastError) {
-        this.error = ErrorType.INCORRECT_PIN;
+        this.error_ = ErrorType.INCORRECT_PIN;
         this.$.unlockPin.inputElement.select();
       } else {
-        this.error = ErrorType.NONE;
+        this.error_ = ErrorType.NONE;
         this.$.unlockPinDialog.close();
       }
     }.bind(this));
@@ -231,7 +232,7 @@ Polymer({
    * @private
    */
   unlockPuk_: function(event) {
-    this.error = ErrorType.NONE;
+    this.error_ = ErrorType.NONE;
     this.$.unlockPukDialog.showModal();
     this.$.unlockPuk.value = '';
     this.$.unlockPin1.value = '';
@@ -257,10 +258,10 @@ Polymer({
 
     this.networkingPrivate.unlockCellularSim(guid, pin, puk, function() {
       if (chrome.runtime.lastError) {
-        this.error = ErrorType.INCORRECT_PUK;
+        this.error_ = ErrorType.INCORRECT_PUK;
         this.$.unlockPuk.inputElement.select();
       } else {
-        this.error = ErrorType.NONE;
+        this.error_ = ErrorType.NONE;
         this.$.unlockPukDialog.close();
       }
     }.bind(this));
@@ -292,19 +293,19 @@ Polymer({
 
   /** @private */
   getErrorMsg_: function() {
-    if (this.error == ErrorType.NONE)
+    if (this.error_ == ErrorType.NONE)
       return '';
     // TODO(stevenjb): Translate
     var msg;
-    if (this.error == ErrorType.INCORRECT_PIN)
+    if (this.error_ == ErrorType.INCORRECT_PIN)
       msg = 'Incorrect PIN.';
-    else if (this.error == ErrorType.INCORRECT_PUK)
+    else if (this.error_ == ErrorType.INCORRECT_PUK)
       msg = 'Incorrect PUK.';
-    else if (this.error == ErrorType.MISMATCHED_PIN)
+    else if (this.error_ == ErrorType.MISMATCHED_PIN)
       msg = 'PIN values do not match.';
-    else if (this.error == ErrorType.INVALID_PIN)
+    else if (this.error_ == ErrorType.INVALID_PIN)
       msg = 'Invalid PIN.';
-    else if (this.error == ErrorType.INVALID_PUK)
+    else if (this.error_ == ErrorType.INVALID_PUK)
       msg = 'Invalid PUK.';
     else
       return 'UNKNOWN ERROR';
@@ -319,7 +320,7 @@ Polymer({
   /**
    * Checks whether |pin1| is of the proper length and if opt_pin2 is not
    * undefined, whether pin1 and opt_pin2 match. On any failure, sets
-   * |this.error| and returns false.
+   * |this.error_| and returns false.
    * @param {string} pin1
    * @param {string=} opt_pin2
    * @return {boolean} True if the pins match and are of minimum length.
@@ -327,18 +328,18 @@ Polymer({
    */
   validatePin_: function(pin1, opt_pin2) {
     if (pin1.length < PIN_MIN_LENGTH) {
-      this.error = ErrorType.INVALID_PIN;
+      this.error_ = ErrorType.INVALID_PIN;
       return false;
     }
     if (opt_pin2 != undefined && pin1 != opt_pin2) {
-      this.error = ErrorType.MISMATCHED_PIN;
+      this.error_ = ErrorType.MISMATCHED_PIN;
       return false;
     }
     return true;
   },
 
   /**
-   * Checks whether |puk| is of the proper length. If not, sets |this.error|
+   * Checks whether |puk| is of the proper length. If not, sets |this.error_|
    * and returns false.
    * @param {string} puk
    * @return {boolean} True if the puk is of minimum length.
@@ -346,7 +347,7 @@ Polymer({
    */
   validatePuk_: function(puk) {
     if (puk.length < PUK_MIN_LENGTH) {
-      this.error = ErrorType.INVALID_PUK;
+      this.error_ = ErrorType.INVALID_PUK;
       return false;
     }
     return true;

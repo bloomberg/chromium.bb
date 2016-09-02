@@ -64,7 +64,7 @@
 
     <!-- Autoconfiguration (PAC) -->
     <div class="settings-box continuation indented"
-        hidden$="[[!matches_(proxy.Type, ProxySettingsType.PAC)]]">
+        hidden$="[[!matches_(proxy.Type, ProxySettingsType_.PAC)]]">
       <div class="start">$i18n{networkProxyAutoConfig}</div>
       <paper-input  no-label-float class="flex" value="{{proxy.PAC}}"
           disabled="[[isNetworkPolicyEnforced(
@@ -75,18 +75,18 @@
 
     <!-- Web Proxy Auto Discovery (WPAD) -->
     <div class="settings-box continuation indented"
-        hidden$="[[!matches_(proxy.Type, ProxySettingsType.WPAD)]]">
+        hidden$="[[!matches_(proxy.Type, ProxySettingsType_.WPAD)]]">
       <div class="start">$i18n{networkSectionWpad}</div>
       <div>[[WPAD]]</div>
     </div>
 
     <!-- Manual -->
     <div id="proxyDiv" class="settings-box continuation single-column indented"
-        hidden$="[[!matches_(proxy.Type, ProxySettingsType.MANUAL)]]">
-      <paper-checkbox checked="{{useSameProxy}}">
+        hidden$="[[!matches_(proxy.Type, ProxySettingsType_.MANUAL)]]">
+      <paper-checkbox checked="{{useSameProxy_}}">
         $i18n{networkProxyUseSame}
       </paper-checkbox>
-      <div hidden$="[[!useSameProxy]]" class="layout vertical">
+      <div hidden$="[[!useSameProxy_]]" class="layout vertical">
         <network-proxy-input 
             on-proxy-change="onProxyInputChange_"
             editable="[[isPropertyEditable_(editable, networkProperties,
@@ -95,7 +95,7 @@
             label="$i18n{networkProxy}">
         </network-proxy-input>
       </div>
-      <div hidden$="[[useSameProxy]]" class="layout vertical">
+      <div hidden$="[[useSameProxy_]]" class="layout vertical">
         <network-proxy-input
             on-proxy-change="onProxyInputChange_"
             editable="[[isPropertyEditable_(editable, networkProperties,

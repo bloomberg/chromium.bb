@@ -41,14 +41,14 @@
           on-tap="onDetailsTap_">
         <cr-network-list-item class="flex" item="[[activeNetworkState]]">
         </cr-network-list-item>
-        <paper-spinner active="[[showScanning_(deviceState, expanded)]]">
+        <paper-spinner active="[[showScanning_(deviceState, expanded_)]]">
         </paper-spinner>
       </div>
       <div>
         <div id="buttons" class="layout horizontal">
           <template is="dom-if"
               if="[[expandIsVisible_(deviceState, networkStateList)]]">
-            <cr-expand-button id="expandListButton" expanded="{{expanded}}">
+            <cr-expand-button id="expandListButton" expanded="{{expanded_}}">
             </cr-expand-button>
           </template>
           <template is="dom-if" if="[[enableIsVisible_(deviceState)]]">
@@ -60,9 +60,10 @@
         </div>
       </div>
     </div>
-    <template is="dom-if" if="[[networksDomIfIsTrue_(expanded, wasExpanded)]]">
+    <template is="dom-if"
+        if="[[networksDomIfIsTrue_(expanded_, wasExpanded_)]]">
       <iron-collapse
-          opened="[[networksIronCollapseIsOpened_(expanded, wasExpanded)]]">
+          opened="[[networksIronCollapseIsOpened_(expanded_, wasExpanded_)]]">
         <div class="list-frame">
           <cr-network-list id="networkList" max-height="[[maxHeight]]"
               networks="[[networkStateList]]" show-buttons>

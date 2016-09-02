@@ -22,9 +22,7 @@ Polymer({
       observer: 'networkPropertiesChanged_',
     },
 
-    /**
-     * Whether or not the proxy values can be edited.
-     */
+    /** Whether or not the proxy values can be edited. */
     editable: {
       type: Boolean,
       value: false,
@@ -41,18 +39,17 @@ Polymer({
       },
     },
 
-    /**
-     * The Web Proxy Auto Discovery URL extracted from networkProperties.
-     */
+    /** The Web Proxy Auto Discovery URL extracted from networkProperties. */
     WPAD: {
       type: String,
       value: '',
     },
 
     /**
-     * Whetner or not to use the same manual proxy for all protocols.
+     * Whether or not to use the same manual proxy for all protocols.
+     * @private
      */
-    useSameProxy: {
+    useSameProxy_: {
       type: Boolean,
       value: false,
       observer: 'useSameProxyChanged_',
@@ -60,7 +57,7 @@ Polymer({
 
     /**
      * Array of proxy configuration types.
-     * @type {!Array<string>}
+     * @private {!Array<string>}
      * @const
      */
     proxyTypes_: {
@@ -76,10 +73,10 @@ Polymer({
 
     /**
      * Object providing proxy type values for data binding.
-     * @type {!Object}
+     * @private {!Object}
      * @const
      */
-    ProxySettingsType: {
+    ProxySettingsType_: {
       type: Object,
       value: {
         DIRECT: CrOnc.ProxySettingsType.DIRECT,
@@ -94,14 +91,14 @@ Polymer({
   /**
    * Saved Manual properties so that switching to another type does not loose
    * any set properties while the UI is open.
-   * @type {!CrOnc.ManualProxySettings|undefined}
+   * @private {!CrOnc.ManualProxySettings|undefined}
    */
   savedManual_: undefined,
 
   /**
    * Saved ExcludeDomains properties so that switching to a non-Manual type does
    * not loose any set exclusions while the UI is open.
-   * @type {!Array<string>|undefined}
+   * @private {!Array<string>|undefined}
    */
   savedExcludeDomains_: undefined,
 
@@ -184,15 +181,15 @@ Polymer({
       var defaultProxy = proxy.Manual.HTTPProxy;
       if (!defaultProxy || !defaultProxy.Host)
         return;
-      if (this.useSameProxy || !proxy.Manual.SecureHTTPProxy) {
+      if (this.useSameProxy_ || !proxy.Manual.SecureHTTPProxy) {
         proxy.Manual.SecureHTTPProxy = /** @type {!CrOnc.ProxyLocation} */ (
             Object.assign({}, defaultProxy));
       }
-      if (this.useSameProxy || !proxy.Manual.FTPProxy) {
+      if (this.useSameProxy_ || !proxy.Manual.FTPProxy) {
         proxy.Manual.FTPProxy = /** @type {!CrOnc.ProxyLocation} */ (
             Object.assign({}, defaultProxy));
       }
-      if (this.useSameProxy || !proxy.Manual.SOCKS) {
+      if (this.useSameProxy_ || !proxy.Manual.SOCKS) {
         proxy.Manual.SOCKS = /** @type {!CrOnc.ProxyLocation} */ (
             Object.assign({}, defaultProxy));
       }

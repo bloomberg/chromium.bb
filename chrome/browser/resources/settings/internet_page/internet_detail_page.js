@@ -32,32 +32,6 @@ Polymer({
     },
 
     /**
-     * The network AutoConnect state.
-     */
-    autoConnect: {
-      type: Boolean,
-      value: false,
-      observer: 'autoConnectChanged_',
-    },
-
-    /**
-     * The network preferred state.
-     */
-    preferNetwork: {
-      type: Boolean,
-      value: false,
-      observer: 'preferNetworkChanged_',
-    },
-
-    /**
-     * The network IP Address.
-     */
-    IPAddress: {
-      type: String,
-      value: '',
-    },
-
-    /**
      * Highest priority connected network or null.
      * @type {?CrOnc.NetworkStateProperties}
      */
@@ -66,13 +40,50 @@ Polymer({
       value: null,
     },
 
-    advancedExpanded: {type: Boolean},
+    /**
+     * Interface for networkingPrivate calls, passed from internet_page.
+     * @type {NetworkingPrivate}
+     */
+    networkingPrivate: Object,
+
+    /**
+     * The network AutoConnect state.
+     * @private
+     */
+    autoConnect_: {
+      type: Boolean,
+      value: false,
+      observer: 'autoConnectChanged_',
+    },
+
+    /**
+     * The network preferred state.
+     * @private
+     */
+    preferNetwork_: {
+      type: Boolean,
+      value: false,
+      observer: 'preferNetworkChanged_',
+    },
+
+    /**
+     * The network IP Address.
+     * @private
+     */
+    IPAddress_: {
+      type: String,
+      value: '',
+    },
+
+    /** @private */
+    advancedExpanded_: Boolean,
 
     /**
      * Object providing network type values for data binding.
      * @const
+     * @private
      */
-    NetworkType: {
+    NetworkType_: {
       type: Object,
       value: {
         CELLULAR: CrOnc.Type.CELLULAR,
@@ -83,12 +94,6 @@ Polymer({
       },
       readOnly: true
     },
-
-    /**
-     * Interface for networkingPrivate calls, passed from internet_page.
-     * @type {NetworkingPrivate}
-     */
-    networkingPrivate: {type: Object},
   },
 
   /**
@@ -142,20 +147,20 @@ Polymer({
 
     // Update autoConnect if it has changed. Default value is false.
     var autoConnect = CrOnc.getAutoConnect(this.networkProperties);
-    if (autoConnect != this.autoConnect)
-      this.autoConnect = autoConnect;
+    if (autoConnect != this.autoConnect_)
+      this.autoConnect_ = autoConnect;
 
     // Update preferNetwork if it has changed. Default value is false.
     var priority = /** @type {number} */ (
         CrOnc.getActiveValue(this.networkProperties.Priority) || 0);
     var preferNetwork = priority > 0;
-    if (preferNetwork != this.preferNetwork)
-      this.preferNetwork = preferNetwork;
+    if (preferNetwork != this.preferNetwork_)
+      this.preferNetwork_ = preferNetwork;
 
     // Set the IPAddress property to the IPV4 Address.
     var ipv4 =
         CrOnc.getIPConfigForType(this.networkProperties, CrOnc.IPType.IPV4);
-    this.IPAddress = (ipv4 && ipv4.IPAddress) || '';
+    this.IPAddress_ = (ipv4 && ipv4.IPAddress) || '';
 
     // Update the detail page title.
     this.parentNode.pageTitle =
@@ -167,7 +172,7 @@ Polymer({
     if (!this.networkProperties || !this.guid)
       return;
     var onc = this.getEmptyNetworkProperties_();
-    CrOnc.setTypeProperty(onc, 'AutoConnect', this.autoConnect);
+    CrOnc.setTypeProperty(onc, 'AutoConnect', this.autoConnect_);
     this.setNetworkProperties_(onc);
   },
 
@@ -176,7 +181,7 @@ Polymer({
     if (!this.networkProperties || !this.guid)
       return;
     var onc = this.getEmptyNetworkProperties_();
-    onc.Priority = this.preferNetwork ? 1 : 0;
+    onc.Priority = this.preferNetwork_ ? 1 : 0;
     this.setNetworkProperties_(onc);
   },
 
@@ -424,7 +429,7 @@ Polymer({
   toggleAdvancedExpanded_: function(event) {
     if (event.target.id == 'expandButton')
       return;  // Already handled.
-    this.advancedExpanded = !this.advancedExpanded;
+    this.advancedExpanded_ = !this.advancedExpanded_;
   },
 
   /**

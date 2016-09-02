@@ -47,10 +47,16 @@ Polymer({
     },
 
     /**
-     * The device state for each network device type.
-     * @type {DeviceStateObject}
+     * Interface for networkingPrivate calls, passed from internet_page.
+     * @type {NetworkingPrivate}
      */
-    deviceStates: {
+    networkingPrivate: Object,
+
+    /**
+     * The device state for each network device type.
+     * @private {DeviceStateObject}
+     */
+    deviceStates_: {
       type: Object,
       value: function() {
         return {};
@@ -59,9 +65,9 @@ Polymer({
 
     /**
      * Array of active network states, one per device type.
-     * @type {!Array<!CrOnc.NetworkStateProperties>}
+     * @private {!Array<!CrOnc.NetworkStateProperties>}
      */
-    activeNetworkStates: {
+    activeNetworkStates_: {
       type: Array,
       value: function() {
         return [];
@@ -70,21 +76,13 @@ Polymer({
 
     /**
      * List of network state data for each network type.
-     * @type {NetworkStateListObject}
+     * @private {NetworkStateListObject}
      */
-    networkStateLists: {
+    networkStateLists_: {
       type: Object,
       value: function() {
         return {};
       },
-    },
-
-    /**
-     * Interface for networkingPrivate calls, passed from internet_page.
-     * @type {NetworkingPrivate}
-     */
-    networkingPrivate: {
-      type: Object,
     },
   },
 
@@ -259,9 +257,9 @@ Polymer({
       return;
     }
     // Find the active state for the type and update it.
-    for (let i = 0; i < this.activeNetworkStates.length; ++i) {
-      if (this.activeNetworkStates[i].type == state.type) {
-        this.activeNetworkStates[i] = state;
+    for (let i = 0; i < this.activeNetworkStates_.length; ++i) {
+      if (this.activeNetworkStates_[i].type == state.type) {
+        this.activeNetworkStates_[i] = state;
         return;
       }
     }
@@ -337,7 +335,7 @@ Polymer({
       for (let state of opt_deviceStates)
         newDeviceStates[state.Type] = state;
     } else {
-      newDeviceStates = this.deviceStates;
+      newDeviceStates = this.deviceStates_;
     }
 
     // Clear any current networks.
@@ -393,9 +391,9 @@ Polymer({
       this.activeNetworkIds_.add(state.GUID);
     }
 
-    this.deviceStates = newDeviceStates;
-    this.networkStateLists = newNetworkStateLists;
+    this.deviceStates_ = newDeviceStates;
+    this.networkStateLists_ = newNetworkStateLists;
     // Set activeNetworkStates last to rebuild the dom-repeat.
-    this.activeNetworkStates = newActiveNetworkStates;
+    this.activeNetworkStates_ = newActiveNetworkStates;
   },
 });

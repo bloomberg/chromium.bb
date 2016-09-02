@@ -13,7 +13,7 @@
       <div class="start">$i18n{networkSectionNameservers}</div>
       <paper-dropdown-menu-light vertical-align="auto" no-label-float>
         <paper-listbox class="dropdown-content" on-iron-activate="onTypeChange_"
-            selected="[[nameserversType]]" attr-for-selected="value">
+            selected="[[nameserversType_]]" attr-for-selected="value">
           <template is="dom-repeat" items="[[nameserverTypeNames_]]">
             <button class="dropdown-item" role="option" value="[[item]]">
               [[nameserverTypeDesc_(item)]]
@@ -24,11 +24,11 @@
     </div>
 
     <div class="settings-box continuation single-column indented"
-        hidden$="[[!nameservers.length]]">
-      <template is="dom-repeat" items="[[nameservers]]">
+        hidden$="[[!nameservers_.length]]">
+      <template is="dom-repeat" items="[[nameservers_]]">
         <paper-input-container no-label-float>
           <input id="nameserver[[index]]" is="iron-input" value="[[item]]"
-              disabled="[[!canEdit_(editable, nameserversType)]]"
+              disabled="[[!canEdit_(editable, nameserversType_)]]"
               on-blur="onValueChange_">
         </paper-input-container>
       </template>

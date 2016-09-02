@@ -21,17 +21,17 @@
         <div>[[getPropertyLabel_(item, prefix)]]</div>
         <!-- Uneditable property value -->
         <div class="layout horizontal"
-            hidden$="[[isEditable_(propertyDict, editFieldTypes, item, '')]]">
-          <div class="secondary">[[getPropertyValue_(propertyDict, item)]]</div>
+            hidden$="[[isEditable_(item, '', propertyDict, editFieldTypes)]]">
+          <div class="secondary">[[getPropertyValue_(item, propertyDict)]]</div>
           <cr-policy-network-indicator property="[[propertyDict]]">
           </cr-policy-network-indicator>
         </div>
         <!-- Editable string property value -->
         <div class="layout horizontal" hidden$="[[!isEditable_(
-            propertyDict, editFieldTypes, item, 'String')]]">
+            item, 'String', propertyDict, editFieldTypes)]]">
           <paper-input-container no-label-float>
             <input class="embedded-input" id="[[item]]" is="iron-input"
-                value="[[getPropertyValue_(propertyDict, item)]]"
+                value="[[getPropertyValue_(item, propertyDict)]]"
                 on-blur="onValueChange_">
           </paper-input-container>
         </div>

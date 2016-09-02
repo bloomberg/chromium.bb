@@ -38,10 +38,10 @@
             <div>$i18n{internetAddConnection}</div>
           </div>
           <cr-expand-button
-              id="expandAddConnections" expanded="{{addConnectionExpanded}}">
+              id="expandAddConnections" expanded="{{addConnectionExpanded_}}">
           </cr-expand-button>
         </div>
-        <template is="dom-if" if="[[addConnectionExpanded]]">
+        <template is="dom-if" if="[[addConnectionExpanded_]]">
           <div actionable class="settings-box continuation center"
               on-tap="onAddWiFiTap_">
             <div class="start add-no-icon">$i18n{internetAddWiFi}</div>
@@ -63,7 +63,7 @@
       <template is="dom-if" route-path="/knownNetworks" no-search>
         <settings-subpage page-title="$i18n{internetKnownNetworksPageTitle}">
           <settings-internet-known-networks-page
-              network-type="[[knownNetworksType]]"
+              network-type="[[knownNetworksType_]]"
               on-show-detail="onShowDetail_"
               networking-private="[[networkingPrivate]]">
           </settings-internet-known-networks-page>

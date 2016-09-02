@@ -9,15 +9,16 @@
     <style include="internet-shared">
     </style>
     <div class="settings-box">
-      <paper-checkbox checked="{{automatic}}" disabled="[[!editable]]">
+      <paper-checkbox checked="{{automatic_}}" disabled="[[!editable]]">
         $i18n{networkIPConfigAuto}
       </paper-checkbox>
     </div>
     <div class="settings-box continuation"
-        hidden$="[[!showIPEditFields_(editable, automatic)]]">
+        hidden$="[[!showIPEditFields_(editable, automatic_)]]">
       <network-property-list
-          fields="[[ipConfigFields_]]" property-dict="[[ipConfig]]"
-          edit-field-types="[[getIPEditFields_(ipConfig, editable, automatic)]]"
+          fields="[[ipConfigFields_]]" property-dict="[[ipConfig_]]"
+          edit-field-types="[[getIPEditFields_(
+                              editable, ipConfig_, automatic_)]]"
           on-property-change="onIPChange_">
       </network-property-list>
     </div>

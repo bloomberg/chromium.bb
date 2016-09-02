@@ -113,7 +113,7 @@
       <!-- Prefer this network. -->
       <div class="settings-box embedded"
           hidden$="[[!showPreferNetwork_(networkProperties)]]">
-        <paper-checkbox checked="{{preferNetwork}}"
+        <paper-checkbox checked="{{preferNetwork_}}"
             disabled="[[isNetworkPolicyEnforced(networkProperties.Priority)]]">
           $i18n{networkPrefer}
         </paper-checkbox>
@@ -123,7 +123,7 @@
       <!-- Autoconnect. -->
       <div class="settings-box embedded"
           hidden$="[[!showAutoConnect_(networkProperties)]]">
-        <paper-checkbox checked="{{autoConnect}}">
+        <paper-checkbox checked="{{autoConnect_}}">
           $i18n{networkAutoConnect}
         </paper-checkbox>
         <cr-policy-network-indicator
@@ -141,9 +141,9 @@
     </network-siminfo>
 
     <!-- IP Address. -->
-    <div class="settings-box two-line single-column" hidden$="[[!IPAddress]]">
+    <div class="settings-box two-line single-column" hidden$="[[!IPAddress_]]">
       <div>$i18n{networkIPAddress}</div>
-      <div class="secondary">[[IPAddress]]</div>
+      <div class="secondary">[[IPAddress_]]</div>
     </div>
 
     <!-- Properties to always show if present. -->
@@ -156,12 +156,12 @@
     <div class="settings-box" actionable on-tap="toggleAdvancedExpanded_"
         hidden$="[[!hasAdvancedOrDeviceFields_(networkProperties)]]">
       <div class="start">$i18n{networkSectionAdvanced}</div>
-      <cr-expand-button id="expandButton" expanded="{{advancedExpanded}}">
+      <cr-expand-button id="expandButton" expanded="{{advancedExpanded_}}">
       </cr-expand-button>
     </div>
 
     <!-- Advanced section -->
-    <iron-collapse opened="[[advancedExpanded]]">
+    <iron-collapse opened="[[advancedExpanded_]]">
       <div class="layout vertical indented">
         <!-- Advanced properties -->
         <network-property-list
@@ -184,7 +184,7 @@
           <div class="subtitle">$i18n{networkSectionNetwork}</div>
           <!-- APN -->
           <network-apnlist editable on-apn-change="onNetworkPropertyChange_"
-              hidden$="[[!isType_(NetworkType.CELLULAR, networkProperties)]]"
+              hidden$="[[!isType_(NetworkType_.CELLULAR, networkProperties)]]"
               network-properties="[[networkProperties]]">
           </network-apnlist>
           <!-- IP Config -->

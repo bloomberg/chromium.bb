@@ -23,7 +23,6 @@ Polymer({
 
     /**
      * Whether or not the IP Address can be edited.
-     * TODO(stevenjb): Implement editing.
      */
     editable: {
       type: Boolean,
@@ -32,8 +31,9 @@ Polymer({
 
     /**
      * State of 'Configure IP Addresses Automatically'.
+     * @private
      */
-    automatic: {
+    automatic_: {
       type: Boolean,
       value: false,
       observer: 'automaticChanged_',
@@ -42,16 +42,16 @@ Polymer({
     /**
      * The currently visible IP Config property dictionary. The 'RoutingPrefix'
      * property is a human-readable mask instead of a prefix length.
-     * @type {!{
+     * @private {!{
      *   ipv4: !CrOnc.IPConfigUIProperties,
      *   ipv6: !CrOnc.IPConfigUIProperties
      * }|undefined}
      */
-    ipConfig: {type: Object},
+    ipConfig_: Object,
 
     /**
      * Array of properties to pass to the property list.
-     * @type {!Array<string>}
+     * @private {!Array<string>}
      */
     ipConfigFields_: {
       type: Array,
@@ -69,7 +69,7 @@ Polymer({
 
   /**
    * Saved static IP configuration properties when switching to 'automatic'.
-   * @type {!CrOnc.IPConfigUIProperties|undefined}
+   * @private {!CrOnc.IPConfigUIProperties|undefined}
    */
   savedStaticIp_: undefined,
 
@@ -86,14 +86,14 @@ Polymer({
     // Update the 'automatic' property.
     var ipConfigType =
         CrOnc.getActiveValue(this.networkProperties.IPAddressConfigType);
-    this.automatic = (ipConfigType != CrOnc.IPConfigType.STATIC);
+    this.automatic_ = (ipConfigType != CrOnc.IPConfigType.STATIC);
 
     // Update the 'ipConfig' property.
     var ipv4 =
         CrOnc.getIPConfigForType(this.networkProperties, CrOnc.IPType.IPV4);
     var ipv6 =
         CrOnc.getIPConfigForType(this.networkProperties, CrOnc.IPType.IPV6);
-    this.ipConfig = {
+    this.ipConfig_ = {
       ipv4: this.getIPConfigUIProperties_(ipv4),
       ipv6: this.getIPConfigUIProperties_(ipv6)
     };
@@ -103,13 +103,13 @@ Polymer({
    * Polymer automatic changed method.
    */
   automaticChanged_: function() {
-    if (!this.automatic || !this.ipConfig)
+    if (!this.automatic_ || !this.ipConfig_)
       return;
-    if (this.automatic || !this.savedStaticIp_) {
+    if (this.automatic_ || !this.savedStaticIp_) {
       // Save the static IP configuration when switching to automatic.
-      this.savedStaticIp_ = this.ipConfig.ipv4;
+      this.savedStaticIp_ = this.ipConfig_.ipv4;
       var configType =
-          this.automatic ? CrOnc.IPConfigType.DHCP : CrOnc.IPConfigType.STATIC;
+          this.automatic_ ? CrOnc.IPConfigType.DHCP : CrOnc.IPConfigType.STATIC;
       this.fire('ip-change', {
         field: 'IPAddressConfigType',
         value: configType,
@@ -172,16 +172,16 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showIPEditFields_: function(editable, automatic) {
-    return editable && !automatic;
+  showIPEditFields_: function() {
+    return this.editable && !this.automatic_;
   },
 
   /**
    * @return {Object} An object with the edit type for each editable field.
    * @private
    */
-  getIPEditFields_: function(ipConfig, editable, automatic) {
-    if (!editable || automatic)
+  getIPEditFields_: function() {
+    if (!this.editable || this.automatic__)
       return {};
     return {
       'ipv4.IPAddress': 'String',
@@ -192,12 +192,12 @@ Polymer({
 
   /**
    * Event triggered when the network property list changes.
-   * @param {!{detail: { field: string, value: string}}} event The
+   * @param {!{detail: {field: string, value: string}}} event The
    *     network-property-list change event.
    * @private
    */
   onIPChange_: function(event) {
-    if (!this.ipConfig)
+    if (!this.ipConfig_)
       return;
     var field = event.detail.field;
     var value = event.detail.value;
@@ -205,7 +205,7 @@ Polymer({
     this.set('ipConfig.' + field, value);
     this.fire('ip-change', {
       field: 'StaticIPConfig',
-      value: this.getIPConfigProperties_(this.ipConfig.ipv4)
+      value: this.getIPConfigProperties_(this.ipConfig_.ipv4)
     });
   },
 });

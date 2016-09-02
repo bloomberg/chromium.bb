@@ -29,22 +29,20 @@ Polymer({
     },
 
     /**
-     * List of all network state data for the network type.
-     * @type {!Array<!CrOnc.NetworkStateProperties>}
+     * Interface for networkingPrivate calls, passed from internet_page.
+     * @type {NetworkingPrivate}
      */
-    networkStateList: {
+    networkingPrivate: Object,
+
+    /**
+     * List of all network state data for the network type.
+     * @private {!Array<!CrOnc.NetworkStateProperties>}
+     */
+    networkStateList_: {
       type: Array,
       value: function() {
         return [];
       }
-    },
-
-    /**
-     * Interface for networkingPrivate calls, passed from internet_page.
-     * @type {NetworkingPrivate}
-     */
-    networkingPrivate: {
-      type: Object,
     },
   },
 
@@ -96,7 +94,7 @@ Polymer({
       configured: true
     };
     this.networkingPrivate.getNetworks(filter, function(states) {
-      this.networkStateList = states;
+      this.networkStateList_ = states;
     }.bind(this));
   },
 
@@ -124,7 +122,7 @@ Polymer({
    * @private
    */
   havePreferred_: function() {
-    return this.networkStateList.find(function(state) {
+    return this.networkStateList_.find(function(state) {
       return this.networkIsPreferred_(state);
     }.bind(this)) !== undefined;
   },
@@ -134,7 +132,7 @@ Polymer({
    * @private
    */
   haveNotPreferred_: function() {
-    return this.networkStateList.find(function(state) {
+    return this.networkStateList_.find(function(state) {
       return this.networkIsNotPreferred_(state);
     }.bind(this)) !== undefined;
   },

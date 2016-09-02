@@ -14,10 +14,10 @@
       <div class="settings-box first single-column self-stretch">
         <div class="secondary">$i18n{knownNetworksPreferred}</div>
         <div class="settings-box self-stretch start"
-            hidden$="[[havePreferred_(networkStateList)]]">
+            hidden$="[[havePreferred_(networkStateList_)]]">
           $i18n{knownNetworksNoPreferred}
         </div>
-        <template is="dom-repeat" items="[[networkStateList]]"
+        <template is="dom-repeat" items="[[networkStateList_]]"
             filter="networkIsPreferred_">
           <div class="settings-box self-stretch">
             <div class="start">[[item.Name]]</div>
@@ -27,9 +27,9 @@
         </template>
       </div>
       <div class="settings-box first single-column self-stretch"
-          hidden$="[[!haveNotPreferred_(networkStateList)]]">
+          hidden$="[[!haveNotPreferred_(networkStateList_)]]">
         <div class="secondary">$i18n{knownNetworksAll}</div>
-        <template is="dom-repeat" items="[[networkStateList]]"
+        <template is="dom-repeat" items="[[networkStateList_]]"
             filter="networkIsNotPreferred_">
           <div class="settings-box self-stretch">
             <div class="start">[[item.Name]]</div>

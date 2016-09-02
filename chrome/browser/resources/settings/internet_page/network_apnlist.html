@@ -14,8 +14,8 @@
       <paper-dropdown-menu-light vertical-align="auto" no-label-float>
         <paper-listbox id="selectApn"
             class="dropdown-content" on-iron-activate="onSelectApnChange_"
-            selected="{{selectedApn}}" attr-for-selected="value">
-          <template is="dom-repeat" items="[[apnSelectList]]">
+            selected="{{selectedApn_}}" attr-for-selected="value">
+          <template is="dom-repeat" items="[[apnSelectList_]]">
             <button class="dropdown-item" role="option"
                 value="[[item.AccessPointName]]">
               [[apnDesc_(item)]]
@@ -26,9 +26,9 @@
     </div>
 
     <div class="settings-box continuation single-column"
-        hidden$="[[!isOtherSelected_(networkProperties, selectedApn)]]">
+        hidden$="[[!isOtherSelected_(selectedApn_, networkProperties)]]">
       <network-property-list on-property-change="onOtherApnChange_"
-          fields="[[otherApnFields_]]" property-dict="[[otherApn]]"
+          fields="[[otherApnFields_]]" property-dict="[[otherApn_]]"
           edit-field-types="[[otherApnEditTypes_]]" prefix="Cellular.APN.">
       </network-property-list>
       <paper-button on-tap="onSaveOtherTap_">
