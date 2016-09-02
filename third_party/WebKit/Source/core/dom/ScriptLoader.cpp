@@ -388,9 +388,16 @@ bool ScriptLoader::executeScript(const ScriptSourceCode& sourceCode)
             }
 
             String mimetype = resource->httpContentType();
-            if (mimetype.startsWith("image/")) {
+            if (mimetype.startsWith("image/") || mimetype == "text/csv" || mimetype.startsWith("audio/") || mimetype.startsWith("video/")) {
                 contextDocument->addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Refused to execute script from '" + resource->url().elidedString() + "' because its MIME type ('" + mimetype + "') is not executable."));
-                UseCounter::count(frame, UseCounter::BlockedSniffingImageToScript);
+                if (mimetype.startsWith("image/"))
+                    UseCounter::count(frame, UseCounter::BlockedSniffingImageToScript);
+                else if (mimetype.startsWith("audio/"))
+                    UseCounter::count(frame, UseCounter::BlockedSniffingAudioToScript);
+                else if (mimetype.startsWith("video/"))
+                    UseCounter::count(frame, UseCounter::BlockedSniffingVideoToScript);
+                else if (mimetype == "text/csv")
+                    UseCounter::count(frame, UseCounter::BlockedSniffingCSVToScript);
                 return false;
             }
 

@@ -80403,6 +80403,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1541" label="PotentiallyInjectedScriptElementWithNonce"/>
   <int value="1542" label="PendingStylesheetAddedAfterBodyStarted"/>
   <int value="1543" label="UntrustedMouseDownEventDispatchedToSelect"/>
+  <int value="1544" label="BlockedSniffingAudioToScript"/>
+  <int value="1545" label="BlockedSniffingVideoToScript"/>
+  <int value="1546" label="BlockedSniffingCSVToScript"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">
