@@ -46,6 +46,9 @@ namespace {
 
 class BlobURLRegistry final : public URLRegistry {
 public:
+    // SecurityOrigin is passed together with KURL so that the registry can
+    // save it for entries from whose KURL the origin is not recoverable by
+    // using BlobURL::getOrigin().
     void registerURL(SecurityOrigin*, const KURL&, URLRegistrable*) override;
     void unregisterURL(const KURL&) override;
 

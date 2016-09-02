@@ -1488,12 +1488,12 @@ component("platform") {
     "weborigin/SchemeRegistry.h",
     "weborigin/SecurityOrigin.cpp",
     "weborigin/SecurityOrigin.h",
-    "weborigin/SecurityOriginCache.h",
     "weborigin/SecurityOriginHash.h",
     "weborigin/SecurityPolicy.cpp",
     "weborigin/SecurityPolicy.h",
     "weborigin/Suborigin.cpp",
     "weborigin/Suborigin.h",
+    "weborigin/URLSecurityOriginMap.h",
   ]
 
   sources -= blink_platform_neon_files

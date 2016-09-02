@@ -32,10 +32,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/URLSearchParams.h"
 #include "core/fetch/MemoryCache.h"
-#include "core/fileapi/Blob.h"
 #include "core/html/PublicURLManager.h"
-#include "platform/blob/BlobURL.h"
-#include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/AutoReset.h"
 
 namespace blink {
@@ -85,13 +82,7 @@ void DOMURL::setSearch(const String& value)
 
 String DOMURL::createPublicURL(ExecutionContext* executionContext, URLRegistrable* registrable, const String& uuid)
 {
-    KURL publicURL = BlobURL::createPublicURL(executionContext->getSecurityOrigin());
-    if (publicURL.isEmpty())
-        return String();
-
-    executionContext->publicURLManager().registerURL(executionContext->getSecurityOrigin(), publicURL, registrable, uuid);
-
-    return publicURL.getString();
+    return executionContext->publicURLManager().registerURL(executionContext, registrable, uuid);
 }
 
 void DOMURL::revokeObjectUUID(ExecutionContext* executionContext, const String& uuid)

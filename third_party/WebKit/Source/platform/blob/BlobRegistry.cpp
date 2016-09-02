@@ -34,7 +34,7 @@
 #include "platform/blob/BlobData.h"
 #include "platform/blob/BlobURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "platform/weborigin/SecurityOriginCache.h"
+#include "platform/weborigin/URLSecurityOriginMap.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebBlobData.h"
 #include "public/platform/WebBlobRegistry.h"
@@ -52,10 +52,10 @@
 
 namespace blink {
 
-class BlobOriginCache : public SecurityOriginCache {
+class BlobOriginMap : public URLSecurityOriginMap {
 public:
-    BlobOriginCache();
-    SecurityOrigin* cachedOrigin(const KURL&) override;
+    BlobOriginMap();
+    SecurityOrigin* getOrigin(const KURL&) override;
 };
 
 static WebBlobRegistry* blobRegistry()
@@ -66,9 +66,10 @@ static WebBlobRegistry* blobRegistry()
 typedef HashMap<String, RefPtr<SecurityOrigin>> BlobURLOriginMap;
 static ThreadSpecific<BlobURLOriginMap>& originMap()
 {
-    // We want to create the BlobOriginCache exactly once because it is shared by all the threads.
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(BlobOriginCache, cache, new BlobOriginCache);
-    (void)cache; // BlobOriginCache's constructor does the interesting work.
+    // We want to create the BlobOriginMap exactly once because it is shared by
+    // all the threads.
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(BlobOriginMap, cache, new BlobOriginMap);
+    (void)cache; // BlobOriginMap's constructor does the interesting work.
 
     DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<BlobURLOriginMap>, map, new ThreadSpecific<BlobURLOriginMap>);
     return map;
@@ -78,7 +79,9 @@ static void saveToOriginMap(SecurityOrigin* origin, const KURL& url)
 {
     // If the blob URL contains null origin, as in the context with unique
     // security origin or file URL, save the mapping between url and origin so
-    // that the origin can be retrived when doing security origin check.
+    // that the origin can be retrieved when doing security origin check.
+    //
+    // See the definition of the origin of a Blob URL in the File API spec.
     if (origin && BlobURL::getOrigin(url) == "null")
         originMap()->add(url.getString(), origin);
 }
@@ -218,12 +221,12 @@ void BlobRegistry::unregisterStreamURL(const KURL& url)
         Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, crossThreadBind(&unregisterStreamURLTask, url));
 }
 
-BlobOriginCache::BlobOriginCache()
+BlobOriginMap::BlobOriginMap()
 {
-    SecurityOrigin::setCache(this);
+    SecurityOrigin::setMap(this);
 }
 
-SecurityOrigin* BlobOriginCache::cachedOrigin(const KURL& url)
+SecurityOrigin* BlobOriginMap::getOrigin(const KURL& url)
 {
     if (url.protocolIs("blob"))
         return originMap()->get(url.getString());

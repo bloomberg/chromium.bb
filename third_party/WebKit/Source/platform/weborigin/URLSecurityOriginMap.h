@@ -28,8 +28,8 @@
 * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef SecurityOriginCache_h
-#define SecurityOriginCache_h
+#ifndef URLSecurityOriginMap_h
+#define URLSecurityOriginMap_h
 
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
@@ -39,15 +39,15 @@ namespace blink {
 class KURL;
 class SecurityOrigin;
 
-class SecurityOriginCache {
-    USING_FAST_MALLOC(SecurityOriginCache);
-    WTF_MAKE_NONCOPYABLE(SecurityOriginCache);
+class URLSecurityOriginMap {
+    USING_FAST_MALLOC(URLSecurityOriginMap);
+    WTF_MAKE_NONCOPYABLE(URLSecurityOriginMap);
 public:
-    SecurityOriginCache() { }
-    virtual ~SecurityOriginCache() { }
-    virtual SecurityOrigin* cachedOrigin(const KURL&) = 0;
+    URLSecurityOriginMap() { }
+    virtual ~URLSecurityOriginMap() { }
+    virtual SecurityOrigin* getOrigin(const KURL&) = 0;
 };
 
 } // namespace blink
 
-#endif // SecurityOriginCache_h
+#endif // URLSecurityOriginMap_h

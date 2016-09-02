@@ -26,13 +26,15 @@
 
 #include "core/html/PublicURLManager.h"
 
-#include "core/fetch/MemoryCache.h"
 #include "core/html/URLRegistry.h"
+#include "platform/blob/BlobURL.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/Vector.h"
 #include "wtf/text/StringHash.h"
 
 namespace blink {
+
+class SecurityOrigin;
 
 PublicURLManager* PublicURLManager::create(ExecutionContext* context)
 {
@@ -47,14 +49,22 @@ PublicURLManager::PublicURLManager(ExecutionContext* context)
 {
 }
 
-void PublicURLManager::registerURL(SecurityOrigin* origin, const KURL& url, URLRegistrable* registrable, const String& uuid)
+String PublicURLManager::registerURL(ExecutionContext* context, URLRegistrable* registrable, const String& uuid)
 {
-    if (m_isStopped)
-        return;
+    SecurityOrigin* origin = context->getSecurityOrigin();
+    const KURL& url = BlobURL::createPublicURL(origin);
+    if (url.isEmpty())
+        return String();
 
-    RegistryURLMap::ValueType* found = m_registryToURL.add(&registrable->registry(), URLMap()).storedValue;
-    found->key->registerURL(origin, url, registrable);
-    found->value.add(url.getString(), uuid);
+    const String& urlString = url.getString();
+
+    if (!m_isStopped) {
+        RegistryURLMap::ValueType* found = m_registryToURL.add(&registrable->registry(), URLMap()).storedValue;
+        found->key->registerURL(origin, url, registrable);
+        found->value.add(urlString, uuid);
+    }
+
+    return urlString;
 }
 
 void PublicURLManager::revoke(const KURL& url)

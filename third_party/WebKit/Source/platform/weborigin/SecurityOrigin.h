@@ -40,7 +40,7 @@
 namespace blink {
 
 class KURL;
-class SecurityOriginCache;
+class URLSecurityOriginMap;
 
 class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
     WTF_MAKE_NONCOPYABLE(SecurityOrigin);
@@ -51,7 +51,7 @@ public:
     static PassRefPtr<SecurityOrigin> createFromString(const String&);
     static PassRefPtr<SecurityOrigin> create(const String& protocol, const String& host, int port);
 
-    static void setCache(SecurityOriginCache*);
+    static void setMap(URLSecurityOriginMap*);
 
     // Some URL schemes use nested URLs for their security context. For example,
     // filesystem URLs look like the following:

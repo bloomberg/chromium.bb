@@ -32,8 +32,8 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/KnownPorts.h"
 #include "platform/weborigin/SchemeRegistry.h"
-#include "platform/weborigin/SecurityOriginCache.h"
 #include "platform/weborigin/SecurityPolicy.h"
+#include "platform/weborigin/URLSecurityOriginMap.h"
 #include "url/url_canon_ip.h"
 #include "wtf/HexNumber.h"
 #include "wtf/NotFound.h"
@@ -47,13 +47,13 @@ namespace blink {
 const int InvalidPort = 0;
 const int MaxAllowedPort = 65535;
 
-static SecurityOriginCache* s_originCache = 0;
+static URLSecurityOriginMap* s_urlOriginMap = 0;
 
-static SecurityOrigin* cachedOrigin(const KURL& url)
+static SecurityOrigin* getOriginFromMap(const KURL& url)
 {
-    if (s_originCache)
-        return s_originCache->cachedOrigin(url);
-    return 0;
+    if (s_urlOriginMap)
+        return s_urlOriginMap->getOrigin(url);
+    return nullptr;
 }
 
 bool SecurityOrigin::shouldUseInnerURL(const KURL& url)
@@ -78,9 +78,9 @@ KURL SecurityOrigin::extractInnerURL(const KURL& url)
     return KURL(ParsedURLString, url.path());
 }
 
-void SecurityOrigin::setCache(SecurityOriginCache* originCache)
+void SecurityOrigin::setMap(URLSecurityOriginMap* map)
 {
-    s_originCache = originCache;
+    s_urlOriginMap = map;
 }
 
 static bool shouldTreatAsUniqueOrigin(const KURL& url)
@@ -175,7 +175,7 @@ SecurityOrigin::SecurityOrigin(const SecurityOrigin* other)
 
 PassRefPtr<SecurityOrigin> SecurityOrigin::create(const KURL& url)
 {
-    if (RefPtr<SecurityOrigin> origin = cachedOrigin(url))
+    if (RefPtr<SecurityOrigin> origin = getOriginFromMap(url))
         return origin.release();
 
     if (shouldTreatAsUniqueOrigin(url)) {
@@ -281,7 +281,7 @@ bool SecurityOrigin::canRequest(const KURL& url) const
     if (m_universalAccess)
         return true;
 
-    if (cachedOrigin(url) == this)
+    if (getOriginFromMap(url) == this)
         return true;
 
     if (isUnique())
