@@ -762,7 +762,7 @@ inline Document& HTMLConstructionSite::ownerDocumentForCurrentNode()
 CustomElementDefinition* HTMLConstructionSite::lookUpCustomElementDefinition(Document& document, AtomicHTMLToken* token)
 {
     // "2. If document does not have a browsing context, return null."
-    LocalDOMWindow* window = document.domWindow();
+    LocalDOMWindow* window = document.executingWindow();
     if (!window)
         return nullptr;
 
