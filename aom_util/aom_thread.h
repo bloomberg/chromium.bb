@@ -12,8 +12,7 @@
 // Multi-threaded worker
 //
 // Original source:
-//  http://git.chromium.org/webm/libwebp.git
-//  100644 blob 7bd451b124ae3b81596abfbcc823e3cb129d3a38  src/utils/thread.h
+//  https://chromium.googlesource.com/webm/libwebp
 
 #ifndef AOM_THREAD_H_
 #define AOM_THREAD_H_
