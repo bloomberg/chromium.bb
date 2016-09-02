@@ -133,4 +133,33 @@ test(() => {
         'insertHTML <span style="color: green">green</span>',
         '<div contenteditable><p><span style="color: green">green|</span></p></div>');
 }, 'multiple spaces in function');
+
+test(() => {
+    assert_selection(
+        '<div contenteditable>|</div>',
+        selection => {
+            selection.setClipboardData('<b>foo</b>');
+            selection.document.execCommand('paste');
+        },
+        '<div contenteditable><b>foo|</b></div>',
+        'set HTML fragment to clipboard and paste');
+
+    assert_selection(
+        '<div contenteditable>|</div>',
+        selection => {
+            selection.setClipboardData('<b>foo</b>');
+            selection.document.execCommand('pasteAndMatchStyle');
+        },
+        '<div contenteditable>foo|</div>',
+        'set HTML fragment to clipboard and pasteAndMatchStyle');
+
+    assert_selection(
+        '<div contenteditable>|</div>',
+        selection => {
+            selection.setClipboardData('<b>foo</b>', 'FOO');
+            selection.document.execCommand('pasteAndMatchStyle');
+        },
+        '<div contenteditable>FOO|</div>',
+        'set HTML fragment and text to clipboard and pasteAndMatchStyle');
+}, 'selection.setClipboardData');
 </script>

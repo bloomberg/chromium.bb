@@ -508,6 +508,32 @@ class Serializer {
   }
 }
 
+/**
+ * @this {!DOMSelection}
+ * @param {string} html
+ * @param {string=} opt_text
+ */
+function setClipboardData(html, opt_text) {
+  assert_not_equals(window.internals, undefined,
+    'This test requests clipboard access from JavaScript.');
+  function computeTextData() {
+    if (opt_text !== undefined)
+      return opt_text;
+    const element = document.createElement('div');
+    element.innerHTML = html;
+    return element.textContent;
+  }
+  function copyHandler(event) {
+    const clipboardData = event.clipboardData;
+    clipboardData.setData('text/plain', computeTextData());
+    clipboardData.setData('text/html', html);
+    event.preventDefault();
+  }
+  document.addEventListener('copy', copyHandler);
+  document.execCommand('copy');
+  document.removeEventListener('copy', copyHandler);
+}
+
 class Sample {
   /**
    * @public
@@ -526,6 +552,7 @@ class Sample {
     this.selection_.document = this.document_;
     this.selection_.document.offsetLeft = this.iframe_.offsetLeft;
     this.selection_.document.offsetTop = this.iframe_.offsetTop;
+    this.selection_.setClipboardData = setClipboardData;
 
     this.load(sampleText);
   }
