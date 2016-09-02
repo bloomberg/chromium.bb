@@ -738,6 +738,12 @@ const SCAN_ORDER av1_scan_orders[TX_SIZES][TX_TYPES] = {
 };
 
 #if CONFIG_ADAPT_SCAN
+// TX_32X32 will has 1024 coefficients whose indexes can be represented in 10
+// bits
+#define COEFF_IDX_BITS 10
+#define COEFF_IDX_SIZE (1 << COEFF_IDX_BITS)
+#define COEFF_IDX_MASK (COEFF_IDX_SIZE - 1)
+
 int get_tx1d_size(TX_SIZE tx_size) { return 1 << (tx_size + 2); }
 
 int get_tx2d_size(TX_SIZE tx_size) { return 1 << ((tx_size + 2) * 2); }
@@ -793,8 +799,9 @@ void update_scan_prob(AV1_COMMON *cm, TX_SIZE tx_size, TX_TYPE tx_type,
   }
 }
 
-void update_scan_count(int16_t *scan, int max_scan, tran_low_t *dqcoeffs,
-                       uint32_t *non_zero_count) {
+static void update_scan_count(int16_t *scan, int max_scan,
+                              const tran_low_t *dqcoeffs,
+                              uint32_t *non_zero_count) {
   int i;
   for (i = 0; i < max_scan; ++i) {
     int coeff_idx = scan[i];
@@ -803,9 +810,109 @@ void update_scan_count(int16_t *scan, int max_scan, tran_low_t *dqcoeffs,
 }
 
 void update_scan_count_facade(AV1_COMMON *cm, TX_SIZE tx_size, TX_TYPE tx_type,
-                              tran_low_t *dqcoeffs, int max_scan) {
+                              const tran_low_t *dqcoeffs, int max_scan) {
   int16_t *scan = get_adapt_scan(cm->fc, tx_size, tx_type);
   uint32_t *non_zero_count = get_non_zero_counts(&cm->counts, tx_size, tx_type);
   update_scan_count(scan, max_scan, dqcoeffs, non_zero_count);
+}
+
+static int cmp_prob(const void *a, const void *b) {
+  return *(const uint32_t *)b > *(const uint32_t *)a ? 1 : -1;
+}
+
+void augment_prob(uint32_t *prob, int size, int tx1d_size) {
+  int r, c;
+  for (r = 0; r < size; r++) {
+    for (c = 0; c < size; c++) {
+      const int coeff_idx = r * tx1d_size + c;
+      const int idx = r * size + c;
+      const uint32_t mask_16 = ((1 << 16) - 1);
+      const uint32_t tie_breaker = ~(((r + c) << COEFF_IDX_BITS) | coeff_idx);
+      // prob[idx]: 16 bits  r+c: 6 bits  coeff_idx: 10 bits
+      prob[idx] = (prob[idx] << 16) | (mask_16 & tie_breaker);
+    }
+  }
+}
+
+// topological sort
+static void dfs_scan(int tx1d_size, int *scan_idx, int coeff_idx, int16_t *scan,
+                     int16_t *iscan) {
+  const int r = coeff_idx / tx1d_size;
+  const int c = coeff_idx % tx1d_size;
+
+  if (iscan[coeff_idx] != -1) return;
+
+  if (r > 0) dfs_scan(tx1d_size, scan_idx, coeff_idx - tx1d_size, scan, iscan);
+
+  if (c > 0) dfs_scan(tx1d_size, scan_idx, coeff_idx - 1, scan, iscan);
+
+  scan[*scan_idx] = coeff_idx;
+  iscan[coeff_idx] = *scan_idx;
+  ++(*scan_idx);
+}
+
+void update_neighbors(int tx_size, const int16_t *scan, const int16_t *iscan,
+                      int16_t *neighbors) {
+  const int tx1d_size = get_tx1d_size(tx_size);
+  const int tx2d_size = get_tx2d_size(tx_size);
+  int scan_idx;
+  for (scan_idx = 0; scan_idx < tx2d_size; ++scan_idx) {
+    const int coeff_idx = scan[scan_idx];
+    const int r = coeff_idx / tx1d_size;
+    const int c = coeff_idx % tx1d_size;
+    const int has_left = c > 0 && iscan[coeff_idx - 1] < scan_idx;
+    const int has_above = r > 0 && iscan[coeff_idx - tx1d_size] < scan_idx;
+
+    if (has_left && has_above) {
+      neighbors[scan_idx * MAX_NEIGHBORS + 0] = coeff_idx - 1;
+      neighbors[scan_idx * MAX_NEIGHBORS + 1] = coeff_idx - tx1d_size;
+    } else if (has_left) {
+      neighbors[scan_idx * MAX_NEIGHBORS + 0] = coeff_idx - 1;
+      neighbors[scan_idx * MAX_NEIGHBORS + 1] = coeff_idx - 1;
+    } else if (has_above) {
+      neighbors[scan_idx * MAX_NEIGHBORS + 0] = coeff_idx - tx1d_size;
+      neighbors[scan_idx * MAX_NEIGHBORS + 1] = coeff_idx - tx1d_size;
+    } else {
+      neighbors[scan_idx * MAX_NEIGHBORS + 0] = scan[0];
+      neighbors[scan_idx * MAX_NEIGHBORS + 1] = scan[0];
+    }
+  }
+  neighbors[tx2d_size * MAX_NEIGHBORS + 0] = scan[0];
+  neighbors[tx2d_size * MAX_NEIGHBORS + 1] = scan[0];
+}
+
+void update_sort_order(TX_SIZE tx_size, const uint32_t *non_zero_prob,
+                       int16_t *sort_order) {
+  uint32_t temp[COEFF_IDX_SIZE];
+  const int tx1d_size = get_tx1d_size(tx_size);
+  const int tx2d_size = get_tx2d_size(tx_size);
+  int sort_idx;
+  assert(tx2d_size <= COEFF_IDX_SIZE);
+  memcpy(temp, non_zero_prob, tx2d_size * sizeof(*non_zero_prob));
+  augment_prob(temp, tx1d_size, tx1d_size);
+  qsort(temp, tx2d_size, sizeof(*temp), cmp_prob);
+  for (sort_idx = 0; sort_idx < tx2d_size; ++sort_idx) {
+    const int coeff_idx = (temp[sort_idx] & COEFF_IDX_MASK) ^ COEFF_IDX_MASK;
+    sort_order[sort_idx] = coeff_idx;
+  }
+}
+
+void update_scan_order(TX_SIZE tx_size, int16_t *sort_order, int16_t *scan,
+                       int16_t *iscan) {
+  int coeff_idx;
+  int scan_idx;
+  int sort_idx;
+  const int tx1d_size = get_tx1d_size(tx_size);
+  const int tx2d_size = get_tx2d_size(tx_size);
+
+  for (coeff_idx = 0; coeff_idx < tx2d_size; ++coeff_idx) {
+    iscan[coeff_idx] = -1;
+  }
+
+  scan_idx = 0;
+  for (sort_idx = 0; sort_idx < tx2d_size; ++sort_idx) {
+    coeff_idx = sort_order[sort_idx];
+    dfs_scan(tx1d_size, &scan_idx, coeff_idx, scan, iscan);
+  }
 }
 #endif
