@@ -11,7 +11,6 @@ const wchar_t kChromeArchive[] = L"chrome.7z";
 const wchar_t kChromeCompressedArchive[] = L"chrome.packed.7z";
 const wchar_t kVisualElements[] = L"VisualElements";
 const wchar_t kVisualElementsManifest[] = L"chrome.VisualElementsManifest.xml";
-const wchar_t kWowHelperExe[] = L"wow_helper.exe";
 
 // Sub directory of install source package under install temporary directory.
 const wchar_t kInstallSourceDir[] = L"source";

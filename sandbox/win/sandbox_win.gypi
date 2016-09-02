@@ -178,19 +178,6 @@
       'include_dirs': [
         '../..',
       ],
-      'target_conditions': [
-        ['target_arch=="ia32"', {
-          'copies': [
-            {
-              'destination': '<(PRODUCT_DIR)',
-              'files': [
-                'wow_helper/wow_helper.exe',
-                'wow_helper/wow_helper.pdb',
-              ],
-            },
-          ],
-        }],
-      ],
     },
     {
       'target_name': 'sbox_integration_tests',

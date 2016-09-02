@@ -331,20 +331,6 @@ void AddChromeWorkItems(const InstallationState& original_state,
         new_chrome_exe.value());
   }
 
-  // Extra executable for 64 bit systems.
-  // NOTE: We check for "not disabled" so that if the API call fails, we play it
-  // safe and copy the executable anyway.
-  // NOTE: the file wow_helper.exe is only needed for Vista and below.
-  if (base::win::OSInfo::GetInstance()->wow64_status() !=
-      base::win::OSInfo::WOW64_DISABLED &&
-      base::win::GetVersion() <= base::win::VERSION_VISTA) {
-    install_list->AddMoveTreeWorkItem(
-        src_path.Append(installer::kWowHelperExe).value(),
-        target_path.Append(installer::kWowHelperExe).value(),
-        temp_path.value(),
-        WorkItem::ALWAYS_MOVE);
-  }
-
   // Install kVisualElementsManifest if it is present in |src_path|. No need to
   // make this a conditional work item as if the file is not there now, it will
   // never be.

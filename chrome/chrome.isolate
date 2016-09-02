@@ -93,13 +93,6 @@
         ],
       },
     }],
-    ['OS=="win" and target_arch=="ia32"', {
-      'variables': {
-        'files': [
-          '<(PRODUCT_DIR)/wow_helper.exe',
-        ],
-      },
-    }],
     ['disable_nacl==0 and OS=="win" and target_arch=="ia32"', {
       'variables': {
         'files': [

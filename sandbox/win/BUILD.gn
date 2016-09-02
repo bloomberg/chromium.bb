@@ -166,25 +166,6 @@ static_library("sandbox") {
     "//base",
     "//base:base_static",
   ]
-  if (current_cpu == "x86") {
-    deps += [ ":copy_wow_helper" ]
-  }
-}
-
-if (current_cpu == "x86") {
-  # Make a target that copies the wow_helper files to the out dir.
-  #
-  # TODO(brettw) we can probably just build this now that we have proper
-  # toolchain support.
-  copy("copy_wow_helper") {
-    sources = [
-      "wow_helper/wow_helper.exe",
-      "wow_helper/wow_helper.pdb",
-    ]
-    outputs = [
-      "$root_out_dir/{{source_file_part}}",
-    ]
-  }
 }
 
 test("sbox_integration_tests") {
