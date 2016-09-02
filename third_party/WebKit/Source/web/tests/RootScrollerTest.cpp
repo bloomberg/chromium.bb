@@ -15,10 +15,12 @@
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/web/WebCache.h"
 #include "public/web/WebConsoleMessage.h"
+#include "public/web/WebRemoteFrame.h"
 #include "public/web/WebScriptSource.h"
 #include "public/web/WebSettings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "web/WebLocalFrameImpl.h"
+#include "web/WebRemoteFrameImpl.h"
 #include "web/tests/FrameTestHelpers.h"
 #include "wtf/Vector.h"
 
@@ -28,11 +30,6 @@ using testing::Mock;
 namespace blink {
 
 namespace {
-
-class RootScrollerTestWebViewClient : public FrameTestHelpers::TestWebViewClient {
-public:
-    MOCK_METHOD4(didOverscroll, void(const WebFloatSize&, const WebFloatSize&, const WebFloatPoint&, const WebFloatSize&));
-};
 
 class RootScrollerTest : public ::testing::Test {
 public:
@@ -52,14 +49,13 @@ public:
         WebCache::clear();
     }
 
-    WebViewImpl* initialize(const std::string& pageName)
+    WebViewImpl* initialize(const std::string& pageName,
+        FrameTestHelpers::TestWebViewClient* client)
     {
         RuntimeEnabledFeatures::setSetRootScrollerEnabled(true);
 
-        // Load a page with large body and set viewport size to 400x400 to
-        // ensure main frame is scrollable.
         m_helper.initializeAndLoad(
-            m_baseURL + pageName, true, nullptr, &m_client, nullptr,
+            m_baseURL + pageName, true, nullptr, client, nullptr,
             &configureSettings);
 
         // Initialize top controls to be shown.
@@ -69,6 +65,11 @@ public:
         mainFrameView()->updateAllLifecyclePhases();
 
         return webViewImpl();
+    }
+
+    WebViewImpl* initialize(const std::string& pageName)
+    {
+        return initialize(pageName, &m_client);
     }
 
     static void configureSettings(WebSettings* settings)
@@ -95,31 +96,6 @@ public:
         mainWebFrame()->executeScript(WebScriptSource(code));
         mainWebFrame()->view()->updateAllLifecyclePhases();
         runPendingTasks();
-    }
-
-    WebGestureEvent generateEvent(
-        WebInputEvent::Type type, int deltaX = 0, int deltaY = 0)
-    {
-        WebGestureEvent event;
-        event.type = type;
-        event.sourceDevice = WebGestureDeviceTouchscreen;
-        event.x = 100;
-        event.y = 100;
-        if (type == WebInputEvent::GestureScrollUpdate) {
-            event.data.scrollUpdate.deltaX = deltaX;
-            event.data.scrollUpdate.deltaY = deltaY;
-        }
-        return event;
-    }
-
-    void verticalScroll(float deltaY)
-    {
-        webViewImpl()->handleInputEvent(
-            generateEvent(WebInputEvent::GestureScrollBegin));
-        webViewImpl()->handleInputEvent(
-            generateEvent(WebInputEvent::GestureScrollUpdate, 0, -deltaY));
-        webViewImpl()->handleInputEvent(
-            generateEvent(WebInputEvent::GestureScrollEnd));
     }
 
     WebViewImpl* webViewImpl() const
@@ -162,9 +138,45 @@ public:
         return doc->rootScrollerController()->effectiveRootScroller();
     }
 
+    WebGestureEvent generateTouchGestureEvent(
+        WebInputEvent::Type type,
+        int deltaX = 0,
+        int deltaY = 0)
+    {
+        return generateGestureEvent(
+            type, WebGestureDeviceTouchscreen, deltaX, deltaY);
+    }
+
+    WebGestureEvent generateWheelGestureEvent(
+        WebInputEvent::Type type,
+        int deltaX = 0,
+        int deltaY = 0)
+    {
+        return generateGestureEvent(
+            type, WebGestureDeviceTouchpad, deltaX, deltaY);
+    }
+
 protected:
+    WebGestureEvent generateGestureEvent(
+        WebInputEvent::Type type,
+        WebGestureDevice device,
+        int deltaX,
+        int deltaY)
+    {
+        WebGestureEvent event;
+        event.type = type;
+        event.sourceDevice = device;
+        event.x = 100;
+        event.y = 100;
+        if (type == WebInputEvent::GestureScrollUpdate) {
+            event.data.scrollUpdate.deltaX = deltaX;
+            event.data.scrollUpdate.deltaY = deltaY;
+        }
+        return event;
+    }
+
     std::string m_baseURL;
-    RootScrollerTestWebViewClient m_client;
+    FrameTestHelpers::TestWebViewClient m_client;
     FrameTestHelpers::WebViewHelper m_helper;
     RuntimeEnabledFeatures::Backup m_featuresBackup;
 };
@@ -182,11 +194,17 @@ TEST_F(RootScrollerTest, TestDefaultRootScroller)
     EXPECT_EQ(htmlElement, effectiveRootScroller(mainFrame()->document()));
 }
 
+class OverscrollTestWebViewClient : public FrameTestHelpers::TestWebViewClient {
+public:
+    MOCK_METHOD4(didOverscroll, void(const WebFloatSize&, const WebFloatSize&, const WebFloatPoint&, const WebFloatSize&));
+};
+
 // Tests that setting an element as the root scroller causes it to control url
 // bar hiding and overscroll.
 TEST_F(RootScrollerTest, TestSetRootScroller)
 {
-    initialize("root-scroller.html");
+    OverscrollTestWebViewClient client;
+    initialize("root-scroller.html", &client);
 
     Element* container = mainFrame()->document()->getElementById("container");
     TrackExceptionState exceptionState;
@@ -197,21 +215,21 @@ TEST_F(RootScrollerTest, TestSetRootScroller)
     double maximumScroll = 600;
 
     webViewImpl()->handleInputEvent(
-        generateEvent(WebInputEvent::GestureScrollBegin));
+        generateTouchGestureEvent(WebInputEvent::GestureScrollBegin));
 
     {
         // Scrolling over the #container DIV should cause the top controls to
         // hide.
         EXPECT_FLOAT_EQ(1, topControls().shownRatio());
-        webViewImpl()->handleInputEvent(generateEvent(
+        webViewImpl()->handleInputEvent(generateTouchGestureEvent(
             WebInputEvent::GestureScrollUpdate, 0, -topControls().height()));
         EXPECT_FLOAT_EQ(0, topControls().shownRatio());
     }
 
     {
         // Make sure we're actually scrolling the DIV and not the FrameView.
-        webViewImpl()->handleInputEvent(
-            generateEvent(WebInputEvent::GestureScrollUpdate, 0, -100));
+        webViewImpl()->handleInputEvent(generateTouchGestureEvent(
+            WebInputEvent::GestureScrollUpdate, 0, -100));
         EXPECT_FLOAT_EQ(100, container->scrollTop());
         EXPECT_FLOAT_EQ(0, mainFrameView()->scrollPositionDouble().y());
     }
@@ -219,72 +237,75 @@ TEST_F(RootScrollerTest, TestSetRootScroller)
     {
         // Scroll 50 pixels past the end. Ensure we report the 50 pixels as
         // overscroll.
-        EXPECT_CALL(m_client,
+        EXPECT_CALL(client,
             didOverscroll(
                 WebFloatSize(0, 50),
                 WebFloatSize(0, 50),
                 WebFloatPoint(100, 100),
                 WebFloatSize()));
-        webViewImpl()->handleInputEvent(
-            generateEvent(WebInputEvent::GestureScrollUpdate, 0, -550));
+        webViewImpl()->handleInputEvent(generateTouchGestureEvent(
+            WebInputEvent::GestureScrollUpdate, 0, -550));
         EXPECT_FLOAT_EQ(maximumScroll, container->scrollTop());
         EXPECT_FLOAT_EQ(0, mainFrameView()->scrollPositionDouble().y());
-        Mock::VerifyAndClearExpectations(&m_client);
+        Mock::VerifyAndClearExpectations(&client);
     }
 
     {
         // Continue the gesture overscroll.
-        EXPECT_CALL(m_client,
+        EXPECT_CALL(client,
             didOverscroll(
                 WebFloatSize(0, 20),
                 WebFloatSize(0, 70),
                 WebFloatPoint(100, 100),
                 WebFloatSize()));
-        webViewImpl()->handleInputEvent(
-            generateEvent(WebInputEvent::GestureScrollUpdate, 0, -20));
+        webViewImpl()->handleInputEvent(generateTouchGestureEvent(
+            WebInputEvent::GestureScrollUpdate, 0, -20));
         EXPECT_FLOAT_EQ(maximumScroll, container->scrollTop());
         EXPECT_FLOAT_EQ(0, mainFrameView()->scrollPositionDouble().y());
-        Mock::VerifyAndClearExpectations(&m_client);
+        Mock::VerifyAndClearExpectations(&client);
     }
 
-    webViewImpl()->handleInputEvent(
-        generateEvent(WebInputEvent::GestureScrollEnd));
+    webViewImpl()->handleInputEvent(generateTouchGestureEvent(
+        WebInputEvent::GestureScrollEnd));
 
     {
         // Make sure a new gesture scroll still won't scroll the frameview and
         // overscrolls.
-        webViewImpl()->handleInputEvent(
-            generateEvent(WebInputEvent::GestureScrollBegin));
+        webViewImpl()->handleInputEvent(generateTouchGestureEvent(
+            WebInputEvent::GestureScrollBegin));
 
-        EXPECT_CALL(m_client,
+        EXPECT_CALL(client,
             didOverscroll(
                 WebFloatSize(0, 30),
                 WebFloatSize(0, 30),
                 WebFloatPoint(100, 100),
                 WebFloatSize()));
-        webViewImpl()->handleInputEvent(
-            generateEvent(WebInputEvent::GestureScrollUpdate, 0, -30));
+        webViewImpl()->handleInputEvent(generateTouchGestureEvent(
+            WebInputEvent::GestureScrollUpdate, 0, -30));
         EXPECT_FLOAT_EQ(maximumScroll, container->scrollTop());
         EXPECT_FLOAT_EQ(0, mainFrameView()->scrollPositionDouble().y());
-        Mock::VerifyAndClearExpectations(&m_client);
+        Mock::VerifyAndClearExpectations(&client);
 
-        webViewImpl()->handleInputEvent(
-            generateEvent(WebInputEvent::GestureScrollEnd));
+        webViewImpl()->handleInputEvent(generateTouchGestureEvent(
+            WebInputEvent::GestureScrollEnd));
     }
 
     {
         // Scrolling up should show the top controls.
-        webViewImpl()->handleInputEvent(
-            generateEvent(WebInputEvent::GestureScrollBegin));
+        webViewImpl()->handleInputEvent(generateTouchGestureEvent(
+            WebInputEvent::GestureScrollBegin));
 
         EXPECT_FLOAT_EQ(0, topControls().shownRatio());
-        webViewImpl()->handleInputEvent(
-            generateEvent(WebInputEvent::GestureScrollUpdate, 0, 30));
+        webViewImpl()->handleInputEvent(generateTouchGestureEvent(
+            WebInputEvent::GestureScrollUpdate, 0, 30));
         EXPECT_FLOAT_EQ(0.6, topControls().shownRatio());
 
-        webViewImpl()->handleInputEvent(
-            generateEvent(WebInputEvent::GestureScrollEnd));
+        webViewImpl()->handleInputEvent(generateTouchGestureEvent(
+            WebInputEvent::GestureScrollEnd));
     }
+
+    // Reset manually to avoid lifetime issues with custom WebViewClient.
+    m_helper.reset();
 }
 
 // Tests that removing the element that is the root scroller from the DOM tree
@@ -502,6 +523,7 @@ TEST_F(RootScrollerTest, SetRootScrollerIframeBecomesEffective)
 // root scroller layer and that the viewport apply scroll is set on it.
 TEST_F(RootScrollerTest, SetRootScrollerIframeUsesCorrectLayerAndCallback)
 {
+    // TODO(bokan): The expectation and actual in the checks here are backwards.
     initialize("root-scroller-iframe.html");
     ASSERT_EQ(nullptr, mainFrame()->document()->rootScroller());
 
@@ -631,6 +653,107 @@ TEST_F(RootScrollerTest, DISABLED_TestSetRootScrollerOnElementFromOutsideIframe)
 
         EXPECT_EQ(body, iframe->contentDocument()->rootScroller());
     }
+}
+
+// Do a basic sanity check that setting as root scroller an iframe that's remote
+// doesn't crash or otherwise fail catastrophically.
+TEST_F(RootScrollerTest, RemoteIFrame)
+{
+    FrameTestHelpers::TestWebRemoteFrameClient remoteFrameClient;
+    initialize("root-scroller-iframe.html");
+
+    // Initialization: Replace the iframe with a remote frame.
+    {
+        WebRemoteFrame* remoteFrame = WebRemoteFrame::create(
+            WebTreeScopeType::Document, &remoteFrameClient);
+        WebFrame* childFrame = mainWebFrame()->firstChild();
+        childFrame->swap(remoteFrame);
+    }
+
+    // Set the root scroller in the local main frame to the iframe (which is
+    // remote).
+    {
+        Element* iframe = mainFrame()->document()->getElementById("iframe");
+        NonThrowableExceptionState nonThrow;
+        mainFrame()->document()->setRootScroller(iframe, nonThrow);
+        EXPECT_EQ(iframe, mainFrame()->document()->rootScroller());
+    }
+
+    // Reset explicitly to prevent lifetime issues with the RemoteFrameClient.
+    m_helper.reset();
+}
+
+// Do a basic sanity check that the scrolling and root scroller machinery
+// doesn't fail catastrophically in site isolation when the main frame is
+// remote. Setting a root scroller in OOPIF isn't implemented yet but we should
+// still scroll as before and not crash.
+TEST_F(RootScrollerTest, RemoteMainFrame)
+{
+    FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
+    FrameTestHelpers::TestWebWidgetClient webWidgetClient;
+    WebFrameWidget* widget;
+    WebLocalFrameImpl* localFrame;
+
+    initialize("root-scroller-iframe.html");
+
+    // Initialization: Set the main frame to be a RemoteFrame and add a local
+    // child.
+    {
+        webViewImpl()->setMainFrame(remoteClient.frame());
+        WebRemoteFrame* root = webViewImpl()->mainFrame()->toWebRemoteFrame();
+        root->setReplicatedOrigin(SecurityOrigin::createUnique());
+        WebFrameOwnerProperties properties;
+        localFrame = FrameTestHelpers::createLocalChild(
+            root, "frameName", nullptr, nullptr, nullptr, properties);
+
+        FrameTestHelpers::loadFrame(
+            localFrame, m_baseURL + "root-scroller-child.html");
+        widget = localFrame->frameWidget();
+        widget->resize(WebSize(400, 400));
+    }
+
+    Document* document = localFrame->frameView()->frame().document();
+    Element* container = document->getElementById("container");
+
+    // Try scrolling in the iframe.
+    {
+        widget->handleInputEvent(generateWheelGestureEvent(
+            WebInputEvent::GestureScrollBegin));
+        widget->handleInputEvent(generateWheelGestureEvent(
+            WebInputEvent::GestureScrollUpdate, 0, -100));
+        widget->handleInputEvent(generateWheelGestureEvent(
+            WebInputEvent::GestureScrollEnd));
+        EXPECT_EQ(100, container->scrollTop());
+    }
+
+    // Set the container Element as the root scroller.
+    {
+        NonThrowableExceptionState nonThrow;
+        document->setRootScroller(container, nonThrow);
+        EXPECT_EQ(container, document->rootScroller());
+    }
+
+    // Try scrolling in the iframe now that it has a root scroller set.
+    {
+        widget->handleInputEvent(generateWheelGestureEvent(
+            WebInputEvent::GestureScrollBegin));
+        widget->handleInputEvent(generateWheelGestureEvent(
+            WebInputEvent::GestureScrollUpdate, 0, -100));
+        widget->handleInputEvent(generateWheelGestureEvent(
+            WebInputEvent::GestureScrollEnd));
+
+        // TODO(bokan): This doesn't work right now because we notice in
+        // Element::nativeApplyScroll that the container is the
+        // effectiveRootScroller but the only way we expect to get to
+        // nativeApplyScroll is if the effective scroller had its applyScroll
+        // ViewportScrollCallback removed.  Keep the scrolls to guard crashes
+        // but the expectations on when a ViewportScrollCallback have changed
+        // and should be updated.
+        // EXPECT_EQ(200, container->scrollTop());
+    }
+
+    // Reset explicitly to prevent lifetime issues with the RemoteFrameClient.
+    m_helper.reset();
 }
 
 } // namespace
