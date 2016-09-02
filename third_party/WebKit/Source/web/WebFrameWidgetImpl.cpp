@@ -569,24 +569,19 @@ bool WebFrameWidgetImpl::confirmComposition(const WebString& text, ConfirmCompos
     return focused->inputMethodController().confirmCompositionOrInsertText(text, selectionBehavior == KeepSelection ? InputMethodController::KeepSelection : InputMethodController::DoNotKeepSelection);
 }
 
-bool WebFrameWidgetImpl::compositionRange(size_t* location, size_t* length)
+WebRange WebFrameWidgetImpl::compositionRange()
 {
     LocalFrame* focused = focusedLocalFrameAvailableForIme();
     if (!focused)
-        return false;
+        return WebRange();
 
     const EphemeralRange range = focused->inputMethodController().compositionEphemeralRange();
     if (range.isNull())
-        return false;
+        return WebRange();
 
     Element* editable = focused->selection().rootEditableElementOrDocumentElement();
     DCHECK(editable);
-    PlainTextRange plainTextRange(PlainTextRange::create(*editable, range));
-    if (plainTextRange.isNull())
-        return false;
-    *location = plainTextRange.start();
-    *length = plainTextRange.length();
-    return true;
+    return PlainTextRange::create(*editable, range);
 }
 
 WebTextInputInfo WebFrameWidgetImpl::textInputInfo()
@@ -859,12 +854,11 @@ void WebFrameWidgetImpl::didLosePointerLock()
 
 bool WebFrameWidgetImpl::getCompositionCharacterBounds(WebVector<WebRect>& bounds)
 {
-    size_t offset = 0;
-    size_t characterCount = 0;
-    if (!compositionRange(&offset, &characterCount))
+    WebRange range = compositionRange();
+    if (range.isNull())
         return false;
 
-    if (characterCount == 0)
+    if (range.length() == 0)
         return false;
 
     LocalFrame* frame = focusedLocalFrameInWidget();
@@ -872,6 +866,8 @@ bool WebFrameWidgetImpl::getCompositionCharacterBounds(WebVector<WebRect>& bound
         return false;
 
     WebLocalFrameImpl* webLocalFrame = WebLocalFrameImpl::fromFrame(frame);
+    size_t characterCount = range.length();
+    size_t offset = range.startOffset();
     WebVector<WebRect> result(characterCount);
     WebRect webrect;
     for (size_t i = 0; i < characterCount; ++i) {
@@ -881,6 +877,7 @@ bool WebFrameWidgetImpl::getCompositionCharacterBounds(WebVector<WebRect>& bound
         }
         result[i] = webrect;
     }
+
     bounds.swap(result);
     return true;
 }

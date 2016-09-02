@@ -1878,12 +1878,12 @@ void RenderWidget::GetCompositionRange(gfx::Range* range) {
   if (focused_pepper_plugin_)
     return;
 #endif
-  size_t location, length;
-  if (webwidget_->compositionRange(&location, &length)) {
-    range->set_start(location);
-    range->set_end(location + length);
+  WebRange web_range = webwidget_->compositionRange();
+  if (!web_range.isNull()) {
+    range->set_start(web_range.startOffset());
+    range->set_end(web_range.endOffset());
   } else {
-    WebRange web_range = webwidget_->caretOrSelectionRange();
+    web_range = webwidget_->caretOrSelectionRange();
     range->set_start(web_range.startOffset());
     range->set_end(web_range.endOffset());
   }

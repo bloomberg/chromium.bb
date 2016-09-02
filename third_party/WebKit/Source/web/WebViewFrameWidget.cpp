@@ -152,9 +152,9 @@ bool WebViewFrameWidget::confirmComposition(const WebString& text)
     return m_webView->confirmComposition(text);
 }
 
-bool WebViewFrameWidget::compositionRange(size_t* location, size_t* length)
+WebRange WebViewFrameWidget::compositionRange()
 {
-    return m_webView->compositionRange(location, length);
+    return m_webView->compositionRange();
 }
 
 WebTextInputInfo WebViewFrameWidget::textInputInfo()

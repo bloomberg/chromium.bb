@@ -2387,24 +2387,19 @@ bool WebViewImpl::confirmComposition(const WebString& text, ConfirmCompositionBe
     return focused->inputMethodController().confirmCompositionOrInsertText(text, selectionBehavior == KeepSelection ? InputMethodController::KeepSelection : InputMethodController::DoNotKeepSelection);
 }
 
-bool WebViewImpl::compositionRange(size_t* location, size_t* length)
+WebRange WebViewImpl::compositionRange()
 {
     LocalFrame* focused = focusedLocalFrameAvailableForIme();
     if (!focused)
-        return false;
+        return WebRange();
 
     const EphemeralRange range = focused->inputMethodController().compositionEphemeralRange();
     if (range.isNull())
-        return false;
+        return WebRange();
 
     Element* editable = focused->selection().rootEditableElementOrDocumentElement();
     DCHECK(editable);
-    PlainTextRange plainTextRange(PlainTextRange::create(*editable, range));
-    if (plainTextRange.isNull())
-        return false;
-    *location = plainTextRange.start();
-    *length = plainTextRange.length();
-    return true;
+    return PlainTextRange::create(*editable, range);
 }
 
 WebTextInputInfo WebViewImpl::textInputInfo()
@@ -2812,12 +2807,11 @@ void WebViewImpl::didChangeWindowResizerRect()
 
 bool WebViewImpl::getCompositionCharacterBounds(WebVector<WebRect>& bounds)
 {
-    size_t offset = 0;
-    size_t characterCount = 0;
-    if (!compositionRange(&offset, &characterCount))
+    WebRange range = compositionRange();
+    if (range.isNull())
         return false;
 
-    if (characterCount == 0)
+    if (range.length() == 0)
         return false;
 
     WebLocalFrame* frame = focusedFrame();
@@ -2828,6 +2822,8 @@ bool WebViewImpl::getCompositionCharacterBounds(WebVector<WebRect>& bounds)
     if (frame->localRoot() != mainFrameImpl())
         return false;
 
+    size_t characterCount = range.length();
+    size_t offset = range.startOffset();
     WebVector<WebRect> result(characterCount);
     WebRect webrect;
     for (size_t i = 0; i < characterCount; ++i) {

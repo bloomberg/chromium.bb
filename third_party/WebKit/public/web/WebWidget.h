@@ -169,9 +169,8 @@ public:
     virtual bool confirmComposition(const WebString& text) { return false; }
 
     // Fetches the character range of the current composition, also called the
-    // "marked range." Returns true and fills the out-paramters on success;
-    // returns false on failure.
-    virtual bool compositionRange(size_t* location, size_t* length) { return false; }
+    // "marked range."
+    virtual WebRange compositionRange() { return WebRange(); }
 
     // Returns information about the current text input of this WebWidget.
     // Note that this query can be expensive for long fields, as it returns the
