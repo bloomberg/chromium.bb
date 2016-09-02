@@ -2064,7 +2064,13 @@ LayoutRect PaintLayer::boxForClipPath() const
 {
     if (!layoutObject()->isBox()) {
         SECURITY_DCHECK(layoutObject()->isLayoutInline());
-        return toLayoutInline(layoutObject())->linesBoundingBox();
+        const LayoutInline& layoutInline = toLayoutInline(*layoutObject());
+        // This somewhat convoluted computation matches what Gecko does.
+        // See crbug.com/641907.
+        LayoutRect inlineBBox = layoutInline.linesBoundingBox();
+        const InlineFlowBox* flowBox = layoutInline.firstLineBox();
+        inlineBBox.setHeight(flowBox ? flowBox->frameRect().height() : LayoutUnit(0));
+        return inlineBBox;
     }
     return toLayoutBox(layoutObject())->borderBoxRect();
 }
