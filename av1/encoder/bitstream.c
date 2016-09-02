@@ -1238,7 +1238,7 @@ static void update_coef_probs(AV1_COMP *cpi, aom_writer *w) {
   const TX_MODE tx_mode = cpi->common.tx_mode;
   const TX_SIZE max_tx_size = tx_mode_to_biggest_tx_size[tx_mode];
   TX_SIZE tx_size;
-  for (tx_size = TX_4X4; tx_size <= max_tx_size; ++tx_size) {
+  for (tx_size = 0; tx_size <= max_tx_size; ++tx_size) {
     av1_coeff_stats frame_branch_ct[PLANE_TYPES];
     av1_coeff_probs_model frame_coef_probs[PLANE_TYPES];
     if (cpi->td.counts->tx.tx_totals[tx_size] <= 20 ||
@@ -1462,20 +1462,20 @@ static void update_txfm_probs(AV1_COMMON *cm, aom_writer *w,
 
     for (i = 0; i < TX_SIZE_CONTEXTS; i++) {
       av1_tx_counts_to_branch_counts_8x8(counts->tx.p8x8[i], ct_8x8p);
-      for (j = 0; j < TX_SIZES - 3; j++)
+      for (j = TX_4X4; j < TX_SIZES - 3; j++)
         av1_cond_prob_diff_update(w, &cm->fc->tx_probs.p8x8[i][j], ct_8x8p[j]);
     }
 
     for (i = 0; i < TX_SIZE_CONTEXTS; i++) {
       av1_tx_counts_to_branch_counts_16x16(counts->tx.p16x16[i], ct_16x16p);
-      for (j = 0; j < TX_SIZES - 2; j++)
+      for (j = TX_4X4; j < TX_SIZES - 2; j++)
         av1_cond_prob_diff_update(w, &cm->fc->tx_probs.p16x16[i][j],
                                   ct_16x16p[j]);
     }
 
     for (i = 0; i < TX_SIZE_CONTEXTS; i++) {
       av1_tx_counts_to_branch_counts_32x32(counts->tx.p32x32[i], ct_32x32p);
-      for (j = 0; j < TX_SIZES - 1; j++)
+      for (j = TX_4X4; j < TX_SIZES - 1; j++)
         av1_cond_prob_diff_update(w, &cm->fc->tx_probs.p32x32[i][j],
                                   ct_32x32p[j]);
     }

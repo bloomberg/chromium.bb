@@ -489,7 +489,7 @@ void av1_accumulate_frame_counts(AV1_COMMON *cm, FRAME_COUNTS *counts,
 
   if (is_dec) {
     int n;
-    for (i = 0; i < TX_SIZES; i++)
+    for (i = TX_4X4; i < TX_SIZES; i++)
       for (j = 0; j < PLANE_TYPES; j++)
         for (k = 0; k < REF_TYPES; k++)
           for (l = 0; l < COEF_BANDS; l++)
@@ -501,7 +501,7 @@ void av1_accumulate_frame_counts(AV1_COMMON *cm, FRAME_COUNTS *counts,
                     counts->coef[i][j][k][l][m][n];
             }
   } else {
-    for (i = 0; i < TX_SIZES; i++)
+    for (i = TX_4X4; i < TX_SIZES; i++)
       for (j = 0; j < PLANE_TYPES; j++)
         for (k = 0; k < REF_TYPES; k++)
           for (l = 0; l < COEF_BANDS; l++)
@@ -574,17 +574,17 @@ void av1_accumulate_frame_counts(AV1_COMMON *cm, FRAME_COUNTS *counts,
 #endif  // CONFIG_EXT_REFS
 
   for (i = 0; i < TX_SIZE_CONTEXTS; i++) {
-    for (j = 0; j < TX_SIZES; j++)
+    for (j = TX_4X4; j < TX_SIZES; j++)
       cm->counts.tx.p32x32[i][j] += counts->tx.p32x32[i][j];
 
-    for (j = 0; j < TX_SIZES - 1; j++)
+    for (j = TX_4X4; j < TX_SIZES - 1; j++)
       cm->counts.tx.p16x16[i][j] += counts->tx.p16x16[i][j];
 
-    for (j = 0; j < TX_SIZES - 2; j++)
+    for (j = TX_4X4; j < TX_SIZES - 2; j++)
       cm->counts.tx.p8x8[i][j] += counts->tx.p8x8[i][j];
   }
 
-  for (i = 0; i < TX_SIZES; i++)
+  for (i = TX_4X4; i < TX_SIZES; i++)
     cm->counts.tx.tx_totals[i] += counts->tx.tx_totals[i];
 
   for (i = 0; i < SKIP_CONTEXTS; i++)
