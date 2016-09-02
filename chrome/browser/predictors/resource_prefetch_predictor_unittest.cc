@@ -840,42 +840,6 @@ TEST_F(ResourcePrefetchPredictorTest, OnSubresourceResponse) {
       predictor_->inflight_navigations_[main_frame1.navigation_id]->at(2)));
 }
 
-TEST_F(ResourcePrefetchPredictorTest, GetCorrectPLT) {
-  // Single navigation but history count is low, so should not record.
-  AddUrlToHistory("http://www.google.com", 1);
-
-  URLRequestSummary main_frame = CreateURLRequestSummary(
-      1, 1, "http://www.google.com", "http://www.google.com",
-      content::RESOURCE_TYPE_MAIN_FRAME, net::MEDIUM, std::string(), false);
-  predictor_->RecordURLRequest(main_frame);
-  EXPECT_EQ(1U, predictor_->inflight_navigations_.size());
-
-  // Reset the creation time in |main_frame.navigation_id|. The correct creation
-  // time is stored in |inflight_navigations_| and should be used later.
-  main_frame.navigation_id.creation_time = base::TimeTicks();
-  EXPECT_TRUE(main_frame.navigation_id.creation_time.is_null());
-
-  // Now add a subresource.
-  URLRequestSummary resource1 = CreateURLRequestSummary(
-      1, 1, "http://www.google.com", "http://google.com/style1.css",
-      content::RESOURCE_TYPE_STYLESHEET, net::MEDIUM, "text/css", false);
-  predictor_->RecordURLResponse(resource1);
-
-  PrefetchData host_data(PREFETCH_KEY_TYPE_HOST, "www.google.com");
-  host_data.resources.push_back(ResourceRow(
-      "http://google.com/style1.css", content::RESOURCE_TYPE_STYLESHEET, 1, 0,
-      0, 1.0, net::MEDIUM, false, false));
-  EXPECT_CALL(*mock_tables_.get(), UpdateData(empty_url_data_, host_data));
-
-  // The page load time will be collected by RPP_HISTOGRAM_MEDIUM_TIMES, which
-  // has a upper bound of 3 minutes.
-  base::TimeDelta plt =
-      predictor_->OnNavigationComplete(main_frame.navigation_id);
-  EXPECT_LT(plt, base::TimeDelta::FromSeconds(180));
-
-  profile_->BlockUntilHistoryProcessesPendingRequests();
-}
-
 TEST_F(ResourcePrefetchPredictorTest, HandledResourceTypes) {
   EXPECT_TRUE(ResourcePrefetchPredictor::IsHandledResourceType(
       content::RESOURCE_TYPE_STYLESHEET, "bogus/mime-type"));

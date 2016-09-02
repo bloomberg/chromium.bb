@@ -214,10 +214,8 @@ class ResourcePrefetchPredictor
 
   // Called when onload completes for a navigation. We treat this point as the
   // "completion" of the navigation. The resources requested by the page up to
-  // this point are the only ones considered for prefetching. Return the page
-  // load time for testing.
-  base::TimeDelta OnNavigationComplete(
-      const NavigationID& nav_id_without_timing_info);
+  // this point are the only ones considered for prefetching.
+  void OnNavigationComplete(const NavigationID& nav_id_without_timing_info);
 
   // Returns true if there is PrefetchData that can be used for the
   // navigation and fills in the |prefetch_data| to resources that need to be

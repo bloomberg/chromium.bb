@@ -54,96 +54,12 @@ const char* kFontMimeTypes[] = {"font/woff2",
                                 "application/font-sfnt",
                                 "application/font-ttf"};
 
-// For reporting whether a subresource is handled or not, and for what reasons.
-enum ResourceStatus {
-  RESOURCE_STATUS_HANDLED = 0,
-  RESOURCE_STATUS_NOT_HTTP_OR_HTTPS_PAGE = 1,
-  RESOURCE_STATUS_NOT_HTTP_OR_HTTPS_RESOURCE = 2,
-  RESOURCE_STATUS_UNSUPPORTED_RESOURCE_TYPE = 4,
-  RESOURCE_STATUS_NOT_GET = 8,
-  RESOURCE_STATUS_URL_TOO_LONG = 16,
-  RESOURCE_STATUS_NO_STORE = 32,
-  RESOURCE_STATUS_HEADERS_MISSING = 64,
-  RESOURCE_STATUS_MAX = 128,
-};
-
-// For reporting various interesting events that occur during the loading of a
-// single main frame.
-enum NavigationEvent {
-  NAVIGATION_EVENT_REQUEST_STARTED = 0,
-  NAVIGATION_EVENT_REQUEST_REDIRECTED = 1,
-  NAVIGATION_EVENT_REQUEST_REDIRECTED_EMPTY_URL = 2,
-  NAVIGATION_EVENT_REQUEST_EXPIRED = 3,
-  NAVIGATION_EVENT_RESPONSE_STARTED = 4,
-  NAVIGATION_EVENT_ONLOAD = 5,
-  NAVIGATION_EVENT_ONLOAD_EMPTY_URL = 6,
-  NAVIGATION_EVENT_ONLOAD_UNTRACKED_URL = 7,
-  NAVIGATION_EVENT_ONLOAD_TRACKED_URL = 8,
-  NAVIGATION_EVENT_SHOULD_TRACK_URL = 9,
-  NAVIGATION_EVENT_SHOULD_NOT_TRACK_URL = 10,
-  NAVIGATION_EVENT_URL_TABLE_FULL = 11,
-  NAVIGATION_EVENT_HAVE_PREDICTIONS_FOR_URL = 12,
-  NAVIGATION_EVENT_NO_PREDICTIONS_FOR_URL = 13,
-  NAVIGATION_EVENT_MAIN_FRAME_URL_TOO_LONG = 14,
-  NAVIGATION_EVENT_HOST_TOO_LONG = 15,
-  NAVIGATION_EVENT_COUNT = 16,
-};
-
 // For reporting events of interest that are not tied to any navigation.
 enum ReportingEvent {
   REPORTING_EVENT_ALL_HISTORY_CLEARED = 0,
   REPORTING_EVENT_PARTIAL_HISTORY_CLEARED = 1,
   REPORTING_EVENT_COUNT = 2
 };
-
-void RecordNavigationEvent(NavigationEvent event) {
-  UMA_HISTOGRAM_ENUMERATION("ResourcePrefetchPredictor.NavigationEvent",
-                            event,
-                            NAVIGATION_EVENT_COUNT);
-}
-
-// These are additional connection types for
-// net::NetworkChangeNotifier::ConnectionType. They have negative values in case
-// the original network connection types expand.
-enum AdditionalConnectionType {
-  CONNECTION_ALL = -2,
-  CONNECTION_CELLULAR = -1
-};
-
-std::string GetNetTypeStr() {
-  switch (net::NetworkChangeNotifier::GetConnectionType()) {
-    case net::NetworkChangeNotifier::CONNECTION_ETHERNET:
-      return "Ethernet";
-    case net::NetworkChangeNotifier::CONNECTION_WIFI:
-      return "WiFi";
-    case net::NetworkChangeNotifier::CONNECTION_2G:
-      return "2G";
-    case net::NetworkChangeNotifier::CONNECTION_3G:
-      return "3G";
-    case net::NetworkChangeNotifier::CONNECTION_4G:
-      return "4G";
-    case net::NetworkChangeNotifier::CONNECTION_NONE:
-      return "None";
-    case net::NetworkChangeNotifier::CONNECTION_BLUETOOTH:
-      return "Bluetooth";
-    case net::NetworkChangeNotifier::CONNECTION_UNKNOWN:
-    default:
-      break;
-  }
-  return "Unknown";
-}
-
-void ReportPrefetchedNetworkType(int type) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY(
-      "ResourcePrefetchPredictor.NetworkType.Prefetched",
-      type);
-}
-
-void ReportNotPrefetchedNetworkType(int type) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY(
-      "ResourcePrefetchPredictor.NetworkType.NotPrefetched",
-      type);
-}
 
 }  // namespace
 
@@ -255,34 +171,27 @@ bool ResourcePrefetchPredictor::IsHandledMainPage(net::URLRequest* request) {
 bool ResourcePrefetchPredictor::IsHandledSubresource(
     net::URLRequest* response,
     content::ResourceType resource_type) {
-  int resource_status = 0;
-
-  if (!response->first_party_for_cookies().SchemeIsHTTPOrHTTPS())
-    resource_status |= RESOURCE_STATUS_NOT_HTTP_OR_HTTPS_PAGE;
-
-  if (!response->url().SchemeIsHTTPOrHTTPS())
-    resource_status |= RESOURCE_STATUS_NOT_HTTP_OR_HTTPS_RESOURCE;
+  if (!response->first_party_for_cookies().SchemeIsHTTPOrHTTPS() ||
+      !response->url().SchemeIsHTTPOrHTTPS())
+    return false;
 
   std::string mime_type;
   response->GetMimeType(&mime_type);
   if (!IsHandledResourceType(resource_type, mime_type))
-    resource_status |= RESOURCE_STATUS_UNSUPPORTED_RESOURCE_TYPE;
+    return false;
 
   if (response->method() != "GET")
-    resource_status |= RESOURCE_STATUS_NOT_GET;
+    return false;
 
   if (response->original_url().spec().length() >
       ResourcePrefetchPredictorTables::kMaxStringLength) {
-    resource_status |= RESOURCE_STATUS_URL_TOO_LONG;
+    return false;
   }
 
-  if (!response->response_info().headers.get())
-    resource_status |= RESOURCE_STATUS_HEADERS_MISSING;
+  if (!response->response_info().headers.get() || IsNoStore(response))
+    return false;
 
-  if (IsNoStore(response))
-    resource_status |= RESOURCE_STATUS_NO_STORE;
-
-  return resource_status == 0;
+  return true;
 }
 
 // static
@@ -484,16 +393,12 @@ void ResourcePrefetchPredictor::RecordMainFrameLoadComplete(
       break;
     case INITIALIZING:
       break;
-    case INITIALIZED: {
-      RecordNavigationEvent(NAVIGATION_EVENT_ONLOAD);
+    case INITIALIZED:
       // WebContents can return an empty URL if the navigation entry
       // corresponding to the navigation has not been created yet.
-      if (navigation_id.main_frame_url.is_empty())
-        RecordNavigationEvent(NAVIGATION_EVENT_ONLOAD_EMPTY_URL);
-      else
+      if (!navigation_id.main_frame_url.is_empty())
         OnNavigationComplete(navigation_id);
       break;
-    }
     default:
       NOTREACHED() << "Unexpected initialization_state_: "
                    << initialization_state_;
@@ -526,8 +431,6 @@ void ResourcePrefetchPredictor::OnMainFrameRequest(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(INITIALIZED, initialization_state_);
 
-  RecordNavigationEvent(NAVIGATION_EVENT_REQUEST_STARTED);
-
   StartPrefetching(request.navigation_id);
 
   // Cleanup older navigations.
@@ -545,16 +448,12 @@ void ResourcePrefetchPredictor::OnMainFrameResponse(
   if (initialization_state_ != INITIALIZED)
     return;
 
-  RecordNavigationEvent(NAVIGATION_EVENT_RESPONSE_STARTED);
-
   StopPrefetching(response.navigation_id);
 }
 
 void ResourcePrefetchPredictor::OnMainFrameRedirect(
     const URLRequestSummary& response) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  RecordNavigationEvent(NAVIGATION_EVENT_REQUEST_REDIRECTED);
 
   // TODO(shishir): There are significant gains to be had here if we can use the
   // start URL in a redirect chain as the key to start prefetching. We can save
@@ -568,11 +467,9 @@ void ResourcePrefetchPredictor::OnMainFrameRedirect(
   // A redirect will not lead to another OnMainFrameRequest call, so record the
   // redirect url as a new navigation.
 
-  // The redirect url may be empty if the url was invalid.
-  if (response.redirect_url.is_empty()) {
-    RecordNavigationEvent(NAVIGATION_EVENT_REQUEST_REDIRECTED_EMPTY_URL);
+  // The redirect url may be empty if the URL was invalid.
+  if (response.redirect_url.is_empty())
     return;
-  }
 
   NavigationID navigation_id(response.navigation_id);
   navigation_id.main_frame_url = response.redirect_url;
@@ -594,59 +491,16 @@ void ResourcePrefetchPredictor::OnSubresourceResponse(
   nav_it->second->push_back(response);
 }
 
-base::TimeDelta ResourcePrefetchPredictor::OnNavigationComplete(
+void ResourcePrefetchPredictor::OnNavigationComplete(
     const NavigationID& nav_id_without_timing_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   NavigationMap::iterator nav_it =
       inflight_navigations_.find(nav_id_without_timing_info);
-  if (nav_it == inflight_navigations_.end()) {
-    RecordNavigationEvent(NAVIGATION_EVENT_ONLOAD_UNTRACKED_URL);
-    return base::TimeDelta();
-  }
-  RecordNavigationEvent(NAVIGATION_EVENT_ONLOAD_TRACKED_URL);
+  if (nav_it == inflight_navigations_.end())
+    return;
 
-  // Get and use the navigation ID stored in |inflight_navigations_| because it
-  // has the timing infomation.
   const NavigationID navigation_id(nav_it->first);
-
-  // Report any stats.
-  base::TimeDelta plt = base::TimeTicks::Now() - navigation_id.creation_time;
-  ReportPageLoadTimeStats(plt);
-  if (prefetch_manager_.get()) {
-    ResultsMap::const_iterator results_it = results_map_.find(navigation_id);
-    bool have_prefetch_results = results_it != results_map_.end();
-    UMA_HISTOGRAM_BOOLEAN("ResourcePrefetchPredictor.HavePrefetchResults",
-                          have_prefetch_results);
-    if (have_prefetch_results) {
-      ReportAccuracyStats(results_it->second->key_type,
-                          *(nav_it->second),
-                          results_it->second->requests.get());
-      ReportPageLoadTimePrefetchStats(
-          plt,
-          true,
-          base::Bind(&ReportPrefetchedNetworkType),
-          results_it->second->key_type);
-    } else {
-      ReportPageLoadTimePrefetchStats(
-          plt,
-          false,
-          base::Bind(&ReportNotPrefetchedNetworkType),
-          PREFETCH_KEY_TYPE_URL);
-    }
-  } else {
-    std::unique_ptr<ResourcePrefetcher::RequestVector> requests(
-        new ResourcePrefetcher::RequestVector);
-    PrefetchKeyType key_type;
-    if (GetPrefetchData(navigation_id, requests.get(), &key_type)) {
-      RecordNavigationEvent(NAVIGATION_EVENT_HAVE_PREDICTIONS_FOR_URL);
-      ReportPredictedAccuracyStats(key_type,
-                                   *(nav_it->second),
-                                   *requests);
-    } else {
-      RecordNavigationEvent(NAVIGATION_EVENT_NO_PREDICTIONS_FOR_URL);
-    }
-  }
 
   // Remove the navigation from the inflight navigations.
   std::vector<URLRequestSummary>* requests = (nav_it->second).release();
@@ -663,8 +517,6 @@ base::TimeDelta ResourcePrefetchPredictor::OnNavigationComplete(
           base::Bind(&ResourcePrefetchPredictor::OnVisitCountLookup,
                      AsWeakPtr()))),
       &history_lookup_consumer_);
-
-  return plt;
 }
 
 bool ResourcePrefetchPredictor::GetPrefetchData(
@@ -819,7 +671,6 @@ void ResourcePrefetchPredictor::CleanupAbandonedNavigations(
     if (it->first.IsSameRenderer(navigation_id) ||
         (time_now - it->first.creation_time > max_navigation_age)) {
       inflight_navigations_.erase(it++);
-      RecordNavigationEvent(NAVIGATION_EVENT_REQUEST_EXPIRED);
     } else {
       ++it;
     }
@@ -913,15 +764,9 @@ void ResourcePrefetchPredictor::OnVisitCountLookup(
   bool should_track_url = already_tracking ||
       (visit_count >= config_.min_url_visit_count);
 
-  if (should_track_url) {
-    RecordNavigationEvent(NAVIGATION_EVENT_SHOULD_TRACK_URL);
-
-    if (config_.IsURLLearningEnabled()) {
-      LearnNavigation(url_spec, PREFETCH_KEY_TYPE_URL, requests,
-                      config_.max_urls_to_track, url_table_cache_.get());
-    }
-  } else {
-    RecordNavigationEvent(NAVIGATION_EVENT_SHOULD_NOT_TRACK_URL);
+  if (should_track_url && config_.IsURLLearningEnabled()) {
+    LearnNavigation(url_spec, PREFETCH_KEY_TYPE_URL, requests,
+                    config_.max_urls_to_track, url_table_cache_.get());
   }
 
   // Host level data - no cutoff, always learn the navigation if enabled.
@@ -946,13 +791,8 @@ void ResourcePrefetchPredictor::LearnNavigation(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // If the primary key is too long reject it.
-  if (key.length() > ResourcePrefetchPredictorTables::kMaxStringLength) {
-    if (key_type == PREFETCH_KEY_TYPE_HOST)
-      RecordNavigationEvent(NAVIGATION_EVENT_HOST_TOO_LONG);
-    else
-      RecordNavigationEvent(NAVIGATION_EVENT_MAIN_FRAME_URL_TOO_LONG);
+  if (key.length() > ResourcePrefetchPredictorTables::kMaxStringLength)
     return;
-  }
 
   PrefetchDataMap::iterator cache_entry = data_map->find(key);
   if (cache_entry == data_map->end()) {
@@ -1087,300 +927,6 @@ void ResourcePrefetchPredictor::LearnNavigation(
                    url_data,
                    host_data));
   }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Page load time and accuracy measurement.
-
-// This is essentially UMA_HISTOGRAM_MEDIUM_TIMES, but it avoids using the
-// STATIC_HISTOGRAM_POINTER_BLOCK in UMA_HISTOGRAM definitions.
-#define RPP_HISTOGRAM_MEDIUM_TIMES(name, page_load_time) \
-  do { \
-    base::HistogramBase* histogram = base::Histogram::FactoryTimeGet( \
-        name, \
-        base::TimeDelta::FromMilliseconds(10), \
-        base::TimeDelta::FromMinutes(3), \
-        50, \
-        base::HistogramBase::kUmaTargetedHistogramFlag); \
-    histogram->AddTime(page_load_time); \
-  } while (0)
-
-void ResourcePrefetchPredictor::ReportPageLoadTimeStats(
-    base::TimeDelta plt) const {
-  net::NetworkChangeNotifier::ConnectionType connection_type =
-      net::NetworkChangeNotifier::GetConnectionType();
-
-  RPP_HISTOGRAM_MEDIUM_TIMES("ResourcePrefetchPredictor.PLT", plt);
-  RPP_HISTOGRAM_MEDIUM_TIMES(
-      "ResourcePrefetchPredictor.PLT_" + GetNetTypeStr(), plt);
-  if (net::NetworkChangeNotifier::IsConnectionCellular(connection_type))
-    RPP_HISTOGRAM_MEDIUM_TIMES("ResourcePrefetchPredictor.PLT_Cellular", plt);
-}
-
-void ResourcePrefetchPredictor::ReportPageLoadTimePrefetchStats(
-    base::TimeDelta plt,
-    bool prefetched,
-    base::Callback<void(int)> report_network_type_callback,
-    PrefetchKeyType key_type) const {
-  net::NetworkChangeNotifier::ConnectionType connection_type =
-      net::NetworkChangeNotifier::GetConnectionType();
-  bool on_cellular =
-      net::NetworkChangeNotifier::IsConnectionCellular(connection_type);
-
-  report_network_type_callback.Run(CONNECTION_ALL);
-  report_network_type_callback.Run(connection_type);
-  if (on_cellular)
-    report_network_type_callback.Run(CONNECTION_CELLULAR);
-
-  std::string prefetched_str;
-  if (prefetched)
-    prefetched_str = "Prefetched";
-  else
-    prefetched_str = "NotPrefetched";
-
-  RPP_HISTOGRAM_MEDIUM_TIMES(
-      "ResourcePrefetchPredictor.PLT." + prefetched_str, plt);
-  RPP_HISTOGRAM_MEDIUM_TIMES(
-      "ResourcePrefetchPredictor.PLT." + prefetched_str + "_" + GetNetTypeStr(),
-      plt);
-  if (on_cellular) {
-    RPP_HISTOGRAM_MEDIUM_TIMES(
-        "ResourcePrefetchPredictor.PLT." + prefetched_str + "_Cellular", plt);
-  }
-
-  if (!prefetched)
-    return;
-
-  std::string type =
-      key_type == PREFETCH_KEY_TYPE_HOST ? "Host" : "Url";
-  RPP_HISTOGRAM_MEDIUM_TIMES(
-      "ResourcePrefetchPredictor.PLT.Prefetched." + type, plt);
-  RPP_HISTOGRAM_MEDIUM_TIMES(
-      "ResourcePrefetchPredictor.PLT.Prefetched." + type + "_"
-          + GetNetTypeStr(),
-      plt);
-  if (on_cellular) {
-    RPP_HISTOGRAM_MEDIUM_TIMES(
-        "ResourcePrefetchPredictor.PLT.Prefetched." + type + "_Cellular",
-        plt);
-  }
-}
-
-void ResourcePrefetchPredictor::ReportAccuracyStats(
-    PrefetchKeyType key_type,
-    const std::vector<URLRequestSummary>& actual,
-    ResourcePrefetcher::RequestVector* prefetched) const {
-  // Annotate the results.
-  std::map<GURL, bool> actual_resources;
-  for (std::vector<URLRequestSummary>::const_iterator it = actual.begin();
-       it != actual.end(); ++it) {
-    actual_resources[it->resource_url] = it->was_cached;
-  }
-
-  int prefetch_cancelled = 0, prefetch_failed = 0, prefetch_not_started = 0;
-  // 'a_' -> actual, 'p_' -> predicted.
-  int p_cache_a_cache = 0, p_cache_a_network = 0, p_cache_a_notused = 0,
-      p_network_a_cache = 0, p_network_a_network = 0, p_network_a_notused = 0;
-
-  for (ResourcePrefetcher::RequestVector::iterator it = prefetched->begin();
-       it != prefetched->end(); ++it) {
-    ResourcePrefetcher::Request* req = *it;
-
-    // Set the usage states if the resource was actually used.
-    std::map<GURL, bool>::const_iterator actual_it =
-        actual_resources.find(req->resource_url);
-    if (actual_it != actual_resources.end()) {
-      if (actual_it->second) {
-        req->usage_status =
-            ResourcePrefetcher::Request::USAGE_STATUS_FROM_CACHE;
-      } else {
-        req->usage_status =
-            ResourcePrefetcher::Request::USAGE_STATUS_FROM_NETWORK;
-      }
-    }
-
-    switch (req->prefetch_status) {
-      // TODO(shishir): Add histogram for each cancellation reason.
-      case ResourcePrefetcher::Request::PREFETCH_STATUS_REDIRECTED:
-      case ResourcePrefetcher::Request::PREFETCH_STATUS_AUTH_REQUIRED:
-      case ResourcePrefetcher::Request::PREFETCH_STATUS_CERT_REQUIRED:
-      case ResourcePrefetcher::Request::PREFETCH_STATUS_CERT_ERROR:
-      case ResourcePrefetcher::Request::PREFETCH_STATUS_CANCELLED:
-        ++prefetch_cancelled;
-        break;
-
-      case ResourcePrefetcher::Request::PREFETCH_STATUS_FAILED:
-        ++prefetch_failed;
-        break;
-
-      case ResourcePrefetcher::Request::PREFETCH_STATUS_FROM_CACHE:
-        if (req->usage_status ==
-            ResourcePrefetcher::Request::USAGE_STATUS_FROM_CACHE)
-          ++p_cache_a_cache;
-        else if (req->usage_status ==
-                 ResourcePrefetcher::Request::USAGE_STATUS_FROM_NETWORK)
-          ++p_cache_a_network;
-        else
-          ++p_cache_a_notused;
-        break;
-
-      case ResourcePrefetcher::Request::PREFETCH_STATUS_FROM_NETWORK:
-          if (req->usage_status ==
-              ResourcePrefetcher::Request::USAGE_STATUS_FROM_CACHE)
-            ++p_network_a_cache;
-          else if (req->usage_status ==
-                   ResourcePrefetcher::Request::USAGE_STATUS_FROM_NETWORK)
-            ++p_network_a_network;
-          else
-            ++p_network_a_notused;
-        break;
-
-      case ResourcePrefetcher::Request::PREFETCH_STATUS_NOT_STARTED:
-        ++prefetch_not_started;
-        break;
-
-      case ResourcePrefetcher::Request::PREFETCH_STATUS_STARTED:
-        DLOG(FATAL) << "Invalid prefetch status";
-        break;
-    }
-  }
-
-  int total_prefetched = p_cache_a_cache + p_cache_a_network + p_cache_a_notused
-      + p_network_a_cache + p_network_a_network + p_network_a_notused;
-
-  std::string histogram_type = key_type == PREFETCH_KEY_TYPE_HOST ? "Host." :
-      "Url.";
-
-  // Macros to avoid using the STATIC_HISTOGRAM_POINTER_BLOCK in UMA_HISTOGRAM
-  // definitions.
-#define RPP_HISTOGRAM_PERCENTAGE(suffix, value) \
-  { \
-    std::string name = "ResourcePrefetchPredictor." + histogram_type + suffix; \
-    std::string g_name = "ResourcePrefetchPredictor." + std::string(suffix); \
-    base::HistogramBase* histogram = base::LinearHistogram::FactoryGet( \
-        name, 1, 101, 102, base::Histogram::kUmaTargetedHistogramFlag); \
-    histogram->Add(value); \
-    UMA_HISTOGRAM_PERCENTAGE(g_name, value); \
-  }
-
-  RPP_HISTOGRAM_PERCENTAGE("PrefetchCancelled",
-                           prefetch_cancelled * 100.0 / total_prefetched);
-  RPP_HISTOGRAM_PERCENTAGE("PrefetchFailed",
-                           prefetch_failed * 100.0 / total_prefetched);
-  RPP_HISTOGRAM_PERCENTAGE("PrefetchFromCacheUsedFromCache",
-                           p_cache_a_cache * 100.0 / total_prefetched);
-  RPP_HISTOGRAM_PERCENTAGE("PrefetchFromCacheUsedFromNetwork",
-                           p_cache_a_network * 100.0 / total_prefetched);
-  RPP_HISTOGRAM_PERCENTAGE("PrefetchFromCacheNotUsed",
-                           p_cache_a_notused * 100.0 / total_prefetched);
-  RPP_HISTOGRAM_PERCENTAGE("PrefetchFromNetworkUsedFromCache",
-                           p_network_a_cache * 100.0 / total_prefetched);
-  RPP_HISTOGRAM_PERCENTAGE("PrefetchFromNetworkUsedFromNetwork",
-                           p_network_a_network * 100.0 / total_prefetched);
-  RPP_HISTOGRAM_PERCENTAGE("PrefetchFromNetworkNotUsed",
-                           p_network_a_notused * 100.0 / total_prefetched);
-
-  RPP_HISTOGRAM_PERCENTAGE(
-      "PrefetchNotStarted",
-      prefetch_not_started * 100.0 / (prefetch_not_started + total_prefetched));
-
-#undef RPP_HISTOGRAM_PERCENTAGE
-}
-
-void ResourcePrefetchPredictor::ReportPredictedAccuracyStats(
-    PrefetchKeyType key_type,
-    const std::vector<URLRequestSummary>& actual,
-    const ResourcePrefetcher::RequestVector& predicted) const {
-  std::map<GURL, bool> actual_resources;
-  int from_network = 0;
-  for (std::vector<URLRequestSummary>::const_iterator it = actual.begin();
-       it != actual.end(); ++it) {
-    actual_resources[it->resource_url] = it->was_cached;
-    if (!it->was_cached)
-      ++from_network;
-  }
-
-  // Measure the accuracy at 25, 50 predicted resources.
-  ReportPredictedAccuracyStatsHelper(key_type, predicted, actual_resources,
-                                     from_network, 25);
-  ReportPredictedAccuracyStatsHelper(key_type, predicted, actual_resources,
-                                     from_network, 50);
-}
-
-void ResourcePrefetchPredictor::ReportPredictedAccuracyStatsHelper(
-    PrefetchKeyType key_type,
-    const ResourcePrefetcher::RequestVector& predicted,
-    const std::map<GURL, bool>& actual,
-    size_t total_resources_fetched_from_network,
-    size_t max_assumed_prefetched) const {
-  int prefetch_cached = 0, prefetch_network = 0, prefetch_missed = 0;
-  int num_assumed_prefetched = std::min(predicted.size(),
-                                        max_assumed_prefetched);
-  if (num_assumed_prefetched == 0)
-    return;
-
-  for (int i = 0; i < num_assumed_prefetched; ++i) {
-    const ResourcePrefetcher::Request& row = *(predicted[i]);
-    std::map<GURL, bool>::const_iterator it = actual.find(row.resource_url);
-    if (it == actual.end()) {
-      ++prefetch_missed;
-    } else if (it->second) {
-      ++prefetch_cached;
-    } else {
-      ++prefetch_network;
-    }
-  }
-
-  std::string prefix = key_type == PREFETCH_KEY_TYPE_HOST ?
-      "ResourcePrefetchPredictor.Host.Predicted" :
-      "ResourcePrefetchPredictor.Url.Predicted";
-  std::string suffix = "_" + base::SizeTToString(max_assumed_prefetched);
-
-  // Macros to avoid using the STATIC_HISTOGRAM_POINTER_BLOCK in UMA_HISTOGRAM
-  // definitions.
-#define RPP_PREDICTED_HISTOGRAM_COUNTS(name, value) \
-  { \
-    std::string full_name = prefix + name + suffix; \
-    base::HistogramBase* histogram = base::Histogram::FactoryGet( \
-        full_name, 1, 1000000, 50, \
-        base::Histogram::kUmaTargetedHistogramFlag); \
-    histogram->Add(value); \
-  }
-
-#define RPP_PREDICTED_HISTOGRAM_PERCENTAGE(name, value) \
-  { \
-    std::string full_name = prefix + name + suffix; \
-    base::HistogramBase* histogram = base::LinearHistogram::FactoryGet( \
-        full_name, 1, 101, 102, base::Histogram::kUmaTargetedHistogramFlag); \
-    histogram->Add(value); \
-  }
-
-  RPP_PREDICTED_HISTOGRAM_COUNTS("PrefetchCount", num_assumed_prefetched);
-  RPP_PREDICTED_HISTOGRAM_COUNTS("PrefetchMisses_Count", prefetch_missed);
-  RPP_PREDICTED_HISTOGRAM_COUNTS("PrefetchFromCache_Count", prefetch_cached);
-  RPP_PREDICTED_HISTOGRAM_COUNTS("PrefetchFromNetwork_Count", prefetch_network);
-
-  RPP_PREDICTED_HISTOGRAM_PERCENTAGE(
-      "PrefetchMisses_PercentOfTotalPrefetched",
-      prefetch_missed * 100.0 / num_assumed_prefetched);
-  RPP_PREDICTED_HISTOGRAM_PERCENTAGE(
-      "PrefetchFromCache_PercentOfTotalPrefetched",
-      prefetch_cached * 100.0 / num_assumed_prefetched);
-  RPP_PREDICTED_HISTOGRAM_PERCENTAGE(
-      "PrefetchFromNetwork_PercentOfTotalPrefetched",
-      prefetch_network * 100.0 / num_assumed_prefetched);
-
-  // Measure the ratio of total number of resources prefetched from network vs
-  // the total number of resources fetched by the page from the network.
-  if (total_resources_fetched_from_network > 0) {
-    RPP_PREDICTED_HISTOGRAM_PERCENTAGE(
-        "PrefetchFromNetworkPercentOfTotalFromNetwork",
-        prefetch_network * 100.0 / total_resources_fetched_from_network);
-  }
-
-#undef RPP_HISTOGRAM_MEDIUM_TIMES
-#undef RPP_PREDICTED_HISTOGRAM_PERCENTAGE
-#undef RPP_PREDICTED_HISTOGRAM_COUNTS
 }
 
 void ResourcePrefetchPredictor::OnURLsDeleted(

@@ -48512,6 +48512,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ResourcePrefetchPredictor.HavePrefetchResults">
+  <obsolete>
+    Deprecated September 2016. No longer recorded.
+  </obsolete>
   <owner>zhenw@chromium.org</owner>
   <summary>
     A boolean that used to indicate a corner case when we may not have prefetch
@@ -48522,6 +48525,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ResourcePrefetchPredictor.HistoryVisitCountForUrl">
+  <obsolete>
+    Deprecated September 2016. No longer recorded.
+  </obsolete>
   <owner>zhenw@chromium.org</owner>
   <summary>
     The visit count of a URL in the history database, measured when the onload
@@ -48531,6 +48537,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ResourcePrefetchPredictor.Host.PredictedPrefetchCount">
+  <obsolete>
+    Deprecated September 2016. No longer recorded.
+  </obsolete>
   <owner>zhenw@chromium.org</owner>
   <summary>
     Assuming a fixed number (25 or 50) of URLs could be prefetched max, how many
@@ -48543,6 +48552,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ResourcePrefetchPredictor.Host.PredictedPrefetchFromCache">
+  <obsolete>
+    Deprecated September 2016. No longer recorded.
+  </obsolete>
   <owner>zhenw@chromium.org</owner>
   <summary>
     When we have predictions for a navigation, we measure the accuracy of the
@@ -48556,6 +48568,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ResourcePrefetchPredictor.Host.PredictedPrefetchFromNetwork">
+  <obsolete>
+    Deprecated September 2016. No longer recorded.
+  </obsolete>
   <owner>zhenw@chromium.org</owner>
   <summary>
     When we have predictions for a navigation, we measure the accuracy of the
@@ -48571,6 +48586,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram
     name="ResourcePrefetchPredictor.Host.PredictedPrefetchFromNetworkPercentOfTotalFromNetwork"
     units="%">
+  <obsolete>
+    Deprecated September 2016. No longer recorded.
+  </obsolete>
   <owner>zhenw@chromium.org</owner>
   <summary>
     Similar to ResourcePrefetchPredictor.Host.PredictedPrefetchFromNetwork but
@@ -48583,6 +48601,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ResourcePrefetchPredictor.Host.PredictedPrefetchMisses">
+  <obsolete>
+    Deprecated September 2016. No longer recorded.
+  </obsolete>
   <owner>zhenw@chromium.org</owner>
   <summary>
     When we have predictions for a navigation, we measure the accuracy of the
@@ -48596,6 +48617,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ResourcePrefetchPredictor.Host.PrefetchCancelled" units="%">
+  <obsolete>
+    Deprecated September 2016. No longer recorded.
+  </obsolete>
   <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on host of main frame URL, the percentage of
@@ -48605,6 +48629,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ResourcePrefetchPredictor.Host.PrefetchFailed" units="%">
+  <obsolete>
+    Deprecated September 2016. No longer recorded.
+  </obsolete>
   <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on host of main frame URL, the percentage of
@@ -48615,6 +48642,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="ResourcePrefetchPredictor.Host.PrefetchFromCacheNotUsed"
     units="%">
+  <obsolete>
+    Deprecated September 2016. No longer recorded.
+  </obsolete>
   <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on host of main frame URL, the percentage of
@@ -48626,6 +48656,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="ResourcePrefetchPredictor.Host.PrefetchFromCacheUsedFromCache"
     units="%">
+  <obsolete>
+    Deprecated September 2016. No longer recorded.
+  </obsolete>
   <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on host of main frame URL, the percentage of
@@ -48638,6 +48671,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram
     name="ResourcePrefetchPredictor.Host.PrefetchFromCacheUsedFromNetwork"
     units="%">
+  <obsolete>
+    Deprecated September 2016. No longer recorded.
+  </obsolete>
   <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on host of main frame URL, the percentage of
@@ -48649,6 +48685,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="ResourcePrefetchPredictor.Host.PrefetchFromNetworkNotUsed"
     units="%">
+  <obsolete>
+    Deprecated September 2016. No longer recorded.
+  </obsolete>
   <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on host of main frame URL, the percentage of
@@ -48661,6 +48700,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram
     name="ResourcePrefetchPredictor.Host.PrefetchFromNetworkUsedFromCache"
     units="%">
+  <obsolete>
+    Deprecated September 2016. No longer recorded.
+  </obsolete>
   <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on host of main frame URL, the percentage of
@@ -48673,6 +48715,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram
     name="ResourcePrefetchPredictor.Host.PrefetchFromNetworkUsedFromNetwork"
     units="%">
+  <obsolete>
+    Deprecated September 2016. No longer recorded.
+  </obsolete>
   <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on host of main frame URL, the percentage of
@@ -48683,6 +48728,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ResourcePrefetchPredictor.Host.PrefetchNotStarted" units="%">
+  <obsolete>
+    Deprecated September 2016. No longer recorded.
+  </obsolete>
   <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on host of main frame URL, the percentage of resources
@@ -48724,6 +48772,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="ResourcePrefetchPredictor.NavigationEvent"
     enum="ResourcePrefetchPredictorNavigationEvent">
+  <obsolete>
+    Deprecated September 2016. No longer recorded.
+  </obsolete>
   <owner>zhenw@chromium.org</owner>
   <summary>
     Records stats about various interesting events such as - request start,
@@ -48749,6 +48800,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="ResourcePrefetchPredictor.NetworkType"
     enum="ResourcePrefetchPredictorNetworkType">
+  <obsolete>
+    Deprecated September 2016. No longer recorded.
+  </obsolete>
   <owner>zhenw@chromium.org</owner>
   <summary>
     Records the number of pages on each type of network after a page is loaded.
@@ -48756,6 +48810,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ResourcePrefetchPredictor.PLT" units="ms">
+  <obsolete>
+    Deprecated September 2016. No longer recorded.
+  </obsolete>
   <owner>zhenw@chromium.org</owner>
   <summary>
     Page load time. It starts from when the main frame URL request is sent out
@@ -48865,6 +48922,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ResourcePrefetchPredictor.Url.PredictedPrefetchCount">
+  <obsolete>
+    Deprecated September 2016. No longer recorded.
+  </obsolete>
   <owner>zhenw@chromium.org</owner>
   <summary>
     Assuming a fixed number of URLs could be prefetched max (25 or 50), how many
@@ -48877,6 +48937,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ResourcePrefetchPredictor.Url.PredictedPrefetchFromCache">
+  <obsolete>
+    Deprecated September 2016. No longer recorded.
+  </obsolete>
   <owner>zhenw@chromium.org</owner>
   <summary>
     When we have predictions for a navigation, we measure the accuracy of the
@@ -48890,6 +48953,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ResourcePrefetchPredictor.Url.PredictedPrefetchFromNetwork">
+  <obsolete>
+    Deprecated September 2016. No longer recorded.
+  </obsolete>
   <owner>zhenw@chromium.org</owner>
   <summary>
     When we have predictions for a navigation, we measure the accuracy of the
@@ -48905,6 +48971,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram
     name="ResourcePrefetchPredictor.Url.PredictedPrefetchFromNetworkPercentOfTotalFromNetwork"
     units="%">
+  <obsolete>
+    Deprecated September 2016. No longer recorded.
+  </obsolete>
   <owner>zhenw@chromium.org</owner>
   <summary>
     Similar to ResourcePrefetchPredictor.Url.PredictedPrefetchFromNetwork but as
@@ -48917,6 +48986,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ResourcePrefetchPredictor.Url.PredictedPrefetchMisses">
+  <obsolete>
+    Deprecated September 2016. No longer recorded.
+  </obsolete>
   <owner>zhenw@chromium.org</owner>
   <summary>
     When we have predictions for a navigation, we measure the accuracy of the
@@ -48930,6 +49002,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ResourcePrefetchPredictor.Url.PrefetchCancelled" units="%">
+  <obsolete>
+    Deprecated September 2016. No longer recorded.
+  </obsolete>
   <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on the main frame URL, the percentage of prefetches
@@ -48939,6 +49014,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ResourcePrefetchPredictor.Url.PrefetchFailed" units="%">
+  <obsolete>
+    Deprecated September 2016. No longer recorded.
+  </obsolete>
   <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on the main frame URL, the percentage of prefetches
@@ -48949,6 +49027,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="ResourcePrefetchPredictor.Url.PrefetchFromCacheNotUsed"
     units="%">
+  <obsolete>
+    Deprecated September 2016. No longer recorded.
+  </obsolete>
   <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on the main frame URL, the percentage of successful
@@ -48960,6 +49041,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="ResourcePrefetchPredictor.Url.PrefetchFromCacheUsedFromCache"
     units="%">
+  <obsolete>
+    Deprecated September 2016. No longer recorded.
+  </obsolete>
   <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on the main frame URL, the percentage of successful
@@ -48972,6 +49056,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram
     name="ResourcePrefetchPredictor.Url.PrefetchFromCacheUsedFromNetwork"
     units="%">
+  <obsolete>
+    Deprecated September 2016. No longer recorded.
+  </obsolete>
   <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on the main frame URL, the percentage of successful
@@ -48983,6 +49070,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="ResourcePrefetchPredictor.Url.PrefetchFromNetworkNotUsed"
     units="%">
+  <obsolete>
+    Deprecated September 2016. No longer recorded.
+  </obsolete>
   <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on the main frame URL, the percentage of successful
@@ -48995,6 +49085,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram
     name="ResourcePrefetchPredictor.Url.PrefetchFromNetworkUsedFromCache"
     units="%">
+  <obsolete>
+    Deprecated September 2016. No longer recorded.
+  </obsolete>
   <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on the main frame URL, the percentage of successful
@@ -49007,6 +49100,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram
     name="ResourcePrefetchPredictor.Url.PrefetchFromNetworkUsedFromNetwork"
     units="%">
+  <obsolete>
+    Deprecated September 2016. No longer recorded.
+  </obsolete>
   <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on the main frame URL, the percentage of successful
@@ -49017,6 +49113,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ResourcePrefetchPredictor.Url.PrefetchNotStarted" units="%">
+  <obsolete>
+    Deprecated September 2016. No longer recorded.
+  </obsolete>
   <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on host of main frame URL, the percentage of resources
@@ -49026,6 +49125,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ResourcePrefetchPredictor.UrlTableMainFrameUrlCount">
+  <obsolete>
+    Deprecated September 2016. No longer recorded.
+  </obsolete>
   <owner>zhenw@chromium.org</owner>
   <summary>
     The count of number of unique main frame urls in the UrlTable, i.e. the
@@ -103914,6 +104016,9 @@ To add a new entry, add it with any value and run test to compute valid value.
 
 <histogram_suffixes name="ResourcePrefetchPredictorNetworkTypePrefetch"
     separator=".">
+  <obsolete>
+    Deprecated September 2016. No longer recorded.
+  </obsolete>
   <suffix name="NotPrefetched"
       label="Number of non-prefetched pages on each type of network."/>
   <suffix name="Prefetched"
@@ -103922,6 +104027,9 @@ To add a new entry, add it with any value and run test to compute valid value.
 </histogram_suffixes>
 
 <histogram_suffixes name="ResourcePrefetchPredictorPLTNetworkTypes">
+  <obsolete>
+    Deprecated September 2016. No longer recorded.
+  </obsolete>
   <suffix name="2G" label="Page load time in 2G network."/>
   <suffix name="3G" label="Page load time in 3G network."/>
   <suffix name="4G" label="Page load time in 4G network."/>
@@ -103967,6 +104075,9 @@ To add a new entry, add it with any value and run test to compute valid value.
       name="ResourcePrefetchPredictor.Host.PredictedPrefetchFromCache_Count"/>
   <affected-histogram
       name="ResourcePrefetchPredictor.Host.PredictedPrefetchFromCache_PercentOfTotalPrefetched"/>
+  <obsolete>
+    Deprecated September 2016. No longer recorded.
+  </obsolete>
   <affected-histogram
       name="ResourcePrefetchPredictor.Host.PredictedPrefetchFromNetwork_Count"/>
   <affected-histogram
@@ -103996,6 +104107,9 @@ To add a new entry, add it with any value and run test to compute valid value.
 </histogram_suffixes>
 
 <histogram_suffixes name="ResourcePrefetchPredictorPredictedStatTypes">
+  <obsolete>
+    Deprecated September 2016. No longer recorded.
+  </obsolete>
   <suffix name="Count" label="Predicted accuracy stats as the raw numbers."/>
   <suffix name="PercentOfTotalPrefetched"
       label="Predicted accuracy stats as percent of total resources
