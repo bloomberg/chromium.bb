@@ -62,7 +62,7 @@ if (is_android) {
   }
 
   webview_public_framework_jar =
-      "//third_party/android_platform/webview/frameworks_6.0.jar"
+      "//third_party/android_platform/webview/frameworks_7.0.0_r1.jar"
   if (!defined(webview_framework_jar)) {
     webview_framework_jar = webview_public_framework_jar
   }

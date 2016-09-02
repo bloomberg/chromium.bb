@@ -330,13 +330,20 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
     /**
      * @see AwContentsClient#shouldOverrideUrlLoading(AwContentsClient.AwWebResourceRequest)
      */
+    @TargetApi(Build.VERSION_CODES.N)
     @Override
     public boolean shouldOverrideUrlLoading(AwContentsClient.AwWebResourceRequest request) {
         try {
             TraceEvent.begin("WebViewContentsClientAdapter.shouldOverrideUrlLoading");
             if (TRACE) Log.d(TAG, "shouldOverrideUrlLoading=" + request.url);
             boolean result;
-            result = mWebViewClient.shouldOverrideUrlLoading(mWebView, request.url);
+            if (Build.VERSION.CODENAME.equals("N")
+                    || Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
+                result = mWebViewClient.shouldOverrideUrlLoading(
+                        mWebView, new WebResourceRequestImpl(request));
+            } else {
+                result = mWebViewClient.shouldOverrideUrlLoading(mWebView, request.url);
+            }
             return result;
         } finally {
             TraceEvent.end("WebViewContentsClientAdapter.shouldOverrideUrlLoading");

@@ -114,6 +114,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
     // init is ofter called right after and is NOT threadsafe.
     public WebViewChromium(WebViewChromiumFactoryProvider factory, WebView webView,
             WebView.PrivateAccess webViewPrivate, boolean shouldDisableThreadChecking) {
+        WebViewChromiumFactoryProvider.checkStorageIsNotDeviceProtected(webView.getContext());
         mWebView = webView;
         mWebViewPrivate = webViewPrivate;
         mHitTestResult = new WebView.HitTestResult();

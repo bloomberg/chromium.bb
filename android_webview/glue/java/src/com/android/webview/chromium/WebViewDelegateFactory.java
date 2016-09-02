@@ -152,7 +152,7 @@ class WebViewDelegateFactory {
         @Override
         public void callDrawGlFunction(
                 Canvas canvas, long nativeDrawGLFunctor, Runnable releasedRunnable) {
-            throw new RuntimeException("Call not supported");
+            mDelegate.callDrawGlFunction(canvas, nativeDrawGLFunctor, releasedRunnable);
         }
 
         @Override

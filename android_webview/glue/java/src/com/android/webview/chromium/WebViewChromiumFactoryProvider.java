@@ -18,9 +18,12 @@ import android.os.Build;
 import android.os.Looper;
 import android.os.Process;
 import android.os.StrictMode;
+import android.provider.Settings;
 import android.util.Log;
 import android.webkit.CookieManager;
 import android.webkit.GeolocationPermissions;
+import android.webkit.ServiceWorkerController;
+import android.webkit.TokenBindingService;
 import android.webkit.WebStorage;
 import android.webkit.WebView;
 import android.webkit.WebViewDatabase;
@@ -41,6 +44,7 @@ import org.chromium.android_webview.AwGeolocationPermissions;
 import org.chromium.android_webview.AwNetworkChangeNotifierRegistrationPolicy;
 import org.chromium.android_webview.AwQuotaManagerBridge;
 import org.chromium.android_webview.AwResource;
+import org.chromium.android_webview.AwServiceWorkerController;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.HttpAuthDatabase;
 import org.chromium.android_webview.R;
@@ -155,10 +159,12 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
     private Statics mStaticMethods;
     private GeolocationPermissionsAdapter mGeolocationPermissions;
     private CookieManagerAdapter mCookieManager;
+    private Object mTokenBindingManager;
     private WebIconDatabaseAdapter mWebIconDatabase;
     private WebStorageAdapter mWebStorage;
     private WebViewDatabaseAdapter mWebViewDatabase;
     private AwDevToolsServer mDevToolsServer;
+    private Object mServiceWorkerController;
 
     // Read/write protected by mLock.
     private boolean mStarted;
@@ -193,6 +199,8 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
     private void initialize(WebViewDelegate webViewDelegate) {
         mWebViewDelegate = webViewDelegate;
 
+        checkStorageIsNotDeviceProtected(mWebViewDelegate.getApplication());
+
         // WebView needs to make sure to always use the wrapped application context.
         ContextUtils.initApplicationContext(
                 ResourcesContextWrapperFactory.get(
@@ -205,6 +213,13 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
             StrictMode.setThreadPolicy(oldPolicy);
         } else {
             CommandLine.init(null);
+        }
+
+        if (Settings.Global.getInt(ContextUtils.getApplicationContext().getContentResolver(),
+                    Settings.Global.WEBVIEW_MULTIPROCESS, 0)
+                == 1) {
+            CommandLine cl = CommandLine.getInstance();
+            cl.appendSwitch("webview-sandboxed-renderer");
         }
 
         ThreadUtils.setWillOverrideUiThread();
@@ -236,6 +251,14 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         mShouldDisableThreadChecking =
                 shouldDisableThreadChecking(ContextUtils.getApplicationContext());
         // Now safe to use WebView data directory.
+    }
+
+    static void checkStorageIsNotDeviceProtected(Context context) {
+        if ((Build.VERSION.CODENAME.equals("N") || Build.VERSION.SDK_INT > Build.VERSION_CODES.M)
+                && context.isDeviceProtectedStorage()) {
+            throw new IllegalArgumentException(
+                    "WebView cannot be used with device protected storage");
+        }
     }
 
     private static boolean isBuildDebuggable() {
@@ -365,7 +388,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         ResourceBundle.initializeLocalePaks(context, R.array.locale_paks);
         initPlatSupportLibrary();
         initNetworkChangeNotifier(context);
-        final int extraBindFlags = 0;
+        final int extraBindFlags = Context.BIND_EXTERNAL_SERVICE;
         AwBrowserProcess.configureChildProcessLauncher(webViewPackageName, extraBindFlags);
         AwBrowserProcess.start();
 
@@ -545,6 +568,36 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
             }
         }
         return mCookieManager;
+    }
+
+    @Override
+    public ServiceWorkerController getServiceWorkerController() {
+        synchronized (mLock) {
+            if (mServiceWorkerController == null) {
+                ensureChromiumStartedLocked(true);
+                AwServiceWorkerController awServiceWorkerController =
+                        ThreadUtils.runningOnUiThread()
+                        ? getBrowserContextOnUiThread().getServiceWorkerController()
+                        : runOnUiThreadBlocking(new Callable<AwServiceWorkerController>() {
+                            @Override
+                            public AwServiceWorkerController call() {
+                                return getBrowserContextOnUiThread().getServiceWorkerController();
+                            }
+                        });
+                mServiceWorkerController =
+                        new ServiceWorkerControllerAdapter(awServiceWorkerController);
+            }
+        }
+        return (ServiceWorkerController) mServiceWorkerController;
+    }
+
+    public TokenBindingService getTokenBindingService() {
+       synchronized (mLock) {
+            if (mTokenBindingManager == null) {
+                mTokenBindingManager = new TokenBindingManagerAdapter(this);
+            }
+        }
+        return (TokenBindingService) mTokenBindingManager;
     }
 
     @Override
