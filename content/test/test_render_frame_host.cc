@@ -482,7 +482,9 @@ int32_t TestRenderFrameHost::ComputeNextPageID() {
 
 void TestRenderFrameHost::SimulateWillStartRequest(
     ui::PageTransition transition) {
-  if (!navigation_handle())
+  // PlzNavigate: NavigationHandle::WillStartRequest has already been called at
+  // this point.
+  if (!navigation_handle() || IsBrowserSideNavigationEnabled())
     return;
   navigation_handle()->CallWillStartRequestForTesting(
       false /* is_post */, Referrer(GURL(), blink::WebReferrerPolicyDefault),

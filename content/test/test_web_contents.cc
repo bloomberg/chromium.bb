@@ -74,11 +74,12 @@ void TestWebContents::StartNavigation(const GURL& url) {
   BrowserURLHandlerImpl::GetInstance()->RewriteURLIfNecessary(
       &loaded_url, GetBrowserContext(), &reverse_on_redirect);
 
+  if (GetMainFrame()->is_waiting_for_beforeunload_ack())
+    GetMainFrame()->SendBeforeUnloadACK(true);
+
   // This will simulate receiving the DidStartProvisionalLoad IPC from the
   // renderer.
   if (!IsBrowserSideNavigationEnabled()) {
-    if (GetMainFrame()->is_waiting_for_beforeunload_ack())
-      GetMainFrame()->SendBeforeUnloadACK(true);
     TestRenderFrameHost* rfh =
         GetPendingMainFrame() ? GetPendingMainFrame() : GetMainFrame();
     rfh->SimulateNavigationStart(url);
