@@ -38,8 +38,8 @@
 #define __builtin_prefetch(x)
 #endif
 
-/* Shift down with rounding */
-#define ROUND_POWER_OF_TWO(value, n) (((value) + (1 << ((n)-1))) >> (n))
+/* Shift down with rounding for use when n >= 0, value >= 0 */
+#define ROUND_POWER_OF_TWO(value, n) (((value) + (((1 << (n)) >> 1))) >> (n))
 
 /* Shift down with rounding for signed integers, for use when n >= 0 */
 #define ROUND_POWER_OF_TWO_SIGNED(value, n)           \
