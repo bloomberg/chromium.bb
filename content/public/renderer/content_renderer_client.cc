@@ -7,6 +7,7 @@
 #include "content/public/renderer/media_stream_renderer_factory.h"
 #include "media/base/renderer_factory.h"
 #include "third_party/WebKit/public/platform/modules/app_banner/WebAppBannerClient.h"
+#include "ui/gfx/icc_profile.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -182,6 +183,11 @@ ContentRendererClient::CreateMediaStreamRendererFactory() {
 
 cc::ImageSerializationProcessor*
 ContentRendererClient::GetImageSerializationProcessor() {
+  return nullptr;
+}
+
+std::unique_ptr<gfx::ICCProfile>
+ContentRendererClient::GetImageDecodeColorProfile() {
   return nullptr;
 }
 

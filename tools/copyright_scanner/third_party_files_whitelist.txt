@@ -242,10 +242,6 @@ content/browser/appcache/appcache_manifest_parser.cc
 content/browser/appcache/appcache_manifest_parser.h
 # String 'copyright' used in code.
 ui/webui/resources/js/cr/ui/array_data_model.js
-# Copyright The Chromium Authors and Apple Inc; BSD license. This third-party
-# code is taken from WebKit, the license for which we already pick up from
-# webkit/.
-components/test_runner/helper/layout_test_helper_mac.mm
 # Bundles of existing code.
 chrome/browser/resources/md_downloads/vulcanized.html
 chrome/browser/resources/md_history/app.vulcanized.html

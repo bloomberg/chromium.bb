@@ -203,17 +203,12 @@ group("resources") {
   }
 }
 
-if (is_mac || is_win) {
+if (is_win) {
   # GYP version: components/test_runner/test_runner.gyp:layout_test_helper
   executable("layout_test_helper") {
     sources = [
-      "helper/layout_test_helper_mac.mm",
       "helper/layout_test_helper_win.cc",
     ]
-
-    if (is_mac) {
-      libs = [ "AppKit.framework" ]
-    }
 
     deps = [
       "//build/config/sanitizers:deps",

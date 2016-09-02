@@ -532,7 +532,6 @@
             }],
             ['OS=="mac"', {
               'dependencies': [
-                '../components/test_runner/test_runner.gyp:layout_test_helper',
                 '../breakpad/breakpad.gyp:dump_syms#host',
               ],
             }],

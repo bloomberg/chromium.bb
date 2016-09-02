@@ -33,6 +33,7 @@
 #include "third_party/WebKit/public/web/WebPluginParams.h"
 #include "third_party/WebKit/public/web/WebTestingSupport.h"
 #include "third_party/WebKit/public/web/WebView.h"
+#include "ui/gfx/icc_profile.h"
 #include "v8/include/v8.h"
 
 using blink::WebAudioDevice;
@@ -223,6 +224,20 @@ LayoutTestContentRendererClient::CreateMediaStreamRendererFactory() {
       new TestMediaStreamRendererFactory());
 #else
   return nullptr;
+#endif
+}
+
+std::unique_ptr<gfx::ICCProfile>
+LayoutTestContentRendererClient::GetImageDecodeColorProfile() {
+  // TODO(ccameron): Make all platforms use the same color profile for layout
+  // tests.
+#if defined(OS_WIN)
+  return nullptr;
+#elif defined(OS_MACOSX)
+  return base::WrapUnique(new gfx::ICCProfile(gfx::ICCProfile::FromCGColorSpace(
+      CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB))));
+#else
+  return base::WrapUnique(new gfx::ICCProfile());
 #endif
 }
 

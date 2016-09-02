@@ -107,8 +107,7 @@ class MacPort(base.Port):
         return self._build_path_with_target(target, self.driver_name() + '.app', 'Contents', 'MacOS', self.driver_name())
 
     def _path_to_helper(self):
-        binary_name = 'layout_test_helper'
-        return self._build_path(binary_name)
+        return None
 
     def _path_to_wdiff(self):
         return 'wdiff'

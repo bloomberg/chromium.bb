@@ -60,6 +60,10 @@ namespace cc {
 class ImageSerializationProcessor;
 }
 
+namespace gfx {
+class ICCProfile;
+}
+
 namespace media {
 class GpuVideoAcceleratorFactories;
 class KeySystemProperties;
@@ -270,8 +274,11 @@ class CONTENT_EXPORT ContentRendererClient {
   virtual std::unique_ptr<MediaStreamRendererFactory>
   CreateMediaStreamRendererFactory();
 
-  // Allows an embedder to provde a cc::ImageSerializationProcessor.
+  // Allows an embedder to provide a cc::ImageSerializationProcessor.
   virtual cc::ImageSerializationProcessor* GetImageSerializationProcessor();
+
+  // Allows an embedder to provide a default image decode color space.
+  virtual std::unique_ptr<gfx::ICCProfile> GetImageDecodeColorProfile();
 
   // Gives the embedder a chance to register the key system(s) it supports by
   // populating |key_systems|.
