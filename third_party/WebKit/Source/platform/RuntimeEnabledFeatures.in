@@ -247,7 +247,7 @@ WakeLock status=experimental
 WebFontsInterventionV2With2G
 WebFontsInterventionV2WithSlow2G
 WebFontsInterventionTrigger
-WebShare status=experimental
+WebShare status=experimental, origin_trial_feature_name=WebShare
 Worklet status=experimental
 WeakMemoryCache
 DoNotUnlockSharedBuffer

@@ -614,6 +614,13 @@ void installOriginTrialsForModules(ScriptState* scriptState)
         }
     }
 
+    if (!originTrialContext->featureBindingsInstalled("WebShare") && (RuntimeEnabledFeatures::webShareEnabled() || originTrialContext->isFeatureEnabled("WebShare"))) {
+        if (executionContext->isDocument()) {
+            // For navigator interfaces e.g. navigator.share.
+            V8NavigatorPartial::installWebShare(scriptState);
+        }
+    }
+
     if (!originTrialContext->featureBindingsInstalled("WebUSB") && (RuntimeEnabledFeatures::webUSBEnabled() || originTrialContext->isFeatureEnabled("WebUSB"))) {
         if (executionContext->isDocument()) {
             // For global interfaces e.g. USBInterface.

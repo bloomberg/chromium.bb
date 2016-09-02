@@ -5,7 +5,7 @@
 // https://github.com/WICG/web-share/blob/master/docs/interface.md
 
 [
-  RuntimeEnabled=WebShare,
+  OriginTrialEnabled=WebShare,
 ] partial interface Navigator {
   [CallWith=ScriptState] Promise<void> share(ShareData data);
 };

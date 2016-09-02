@@ -847,6 +847,10 @@ void installOriginTrials(ScriptState* scriptState)
         originTrialContext->setFeatureBindingsInstalled("WebBluetooth");
     }
 
+    if (!originTrialContext->featureBindingsInstalled("WebShare") && (RuntimeEnabledFeatures::webShareEnabled() || originTrialContext->isFeatureEnabled("WebShare"))) {
+        originTrialContext->setFeatureBindingsInstalled("WebShare");
+    }
+
     if (!originTrialContext->featureBindingsInstalled("WebUSB") && (RuntimeEnabledFeatures::webUSBEnabled() || originTrialContext->isFeatureEnabled("WebUSB"))) {
         originTrialContext->setFeatureBindingsInstalled("WebUSB");
     }
