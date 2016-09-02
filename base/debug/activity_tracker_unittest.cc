@@ -13,9 +13,11 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
 #include "base/pending_task.h"
+#include "base/rand_util.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/spin_wait.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/simple_thread.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -72,8 +74,7 @@ class ActivityTrackerTest : public testing::Test {
     GlobalActivityTracker* global_tracker = GlobalActivityTracker::Get();
     if (!global_tracker)
       return 0;
-    return global_tracker->available_memories_count_.load(
-        std::memory_order_relaxed);
+    return global_tracker->available_memories_.used();
   }
 
   static void DoNothing() {}
