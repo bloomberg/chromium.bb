@@ -59,7 +59,8 @@
     var numberOfBytes = decoder.readUint32();
     var version = decoder.readUint32();
 {%- for byte in struct.bytes %}
-{%-   if byte.packed_fields|length > 1 %}
+{%-   if byte.packed_fields|length >= 1 and
+         byte.packed_fields[0].field|is_bool_field %}
     packed = decoder.readUint8();
 {%-     for packed_field in byte.packed_fields %}
     val.{{packed_field.field.name}} = (packed >> {{packed_field.bit}}) & 1 ? true : false;
@@ -82,7 +83,8 @@
     encoder.writeUint32({{struct.versions[-1].version}});
 
 {%- for byte in struct.bytes %}
-{%-   if byte.packed_fields|length > 1 %}
+{%-   if byte.packed_fields|length >= 1 and
+         byte.packed_fields[0].field|is_bool_field %}
     packed = 0;
 {%-     for packed_field in byte.packed_fields %}
     packed |= (val.{{packed_field.field.name}} & 1) << {{packed_field.bit}}

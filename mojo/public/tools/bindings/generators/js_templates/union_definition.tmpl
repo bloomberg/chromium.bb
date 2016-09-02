@@ -89,7 +89,11 @@ Object.defineProperty({{union.name}}.prototype, "{{field.name}}", {
   switch (val.$tag) {
 {%-   for field in union.fields %}
     case {{union.name}}.Tags.{{field.name}}:
+{%-     if field|is_bool_field %}
+      encoder.writeUint8(val.{{field.name}} ? 1 : 0);
+{%-     else %}
       encoder.{{field.kind|union_encode_snippet}}val.{{field.name}});
+{%-     endif %}
       break;
 {%-   endfor %}
   }
@@ -111,7 +115,11 @@ Object.defineProperty({{union.name}}.prototype, "{{field.name}}", {
   switch (tag) {
 {%-   for field in union.fields %}
     case {{union.name}}.Tags.{{field.name}}:
+{%-     if field|is_bool_field %}
+      result.{{field.name}} = decoder.readUint8() ? true : false;
+{%-     else %}
       result.{{field.name}} = decoder.{{field.kind|union_decode_snippet}};
+{%-     endif %}
       break;
 {%-   endfor %}
   }

@@ -12,6 +12,7 @@ define([
   testBar();
   testFoo();
   testNamedRegion();
+  testSingleBooleanStruct();
   testTypes();
   testAlign();
   testUtf8();
@@ -174,6 +175,23 @@ define([
     expect(result.name).toEqual("rectangle");
     expect(result.rects[0]).toEqual(createRect(1, 2, 3, 4));
     expect(result.rects[1]).toEqual(createRect(10, 20, 30, 40));
+  }
+
+  // Verify that a single boolean field in a struct is correctly decoded to
+  // boolean type.
+  function testSingleBooleanStruct() {
+    var single_bool = new structs.SingleBoolStruct();
+    single_bool.value = true;
+
+    var builder = new codec.MessageBuilder(
+        1, structs.SingleBoolStruct.encodedSize);
+    builder.encodeStruct(structs.SingleBoolStruct, single_bool);
+    var reader = new codec.MessageReader(builder.finish());
+    var result = reader.decodeStruct(structs.SingleBoolStruct);
+
+    // Use toEqual() instead of toBeTruthy() to make sure the field type is
+    // actually boolean.
+    expect(result.value).toEqual(true);
   }
 
   function testTypes() {

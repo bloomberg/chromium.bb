@@ -66,6 +66,16 @@ define([
     expect(decoded).toEqual(s);
 
     var s = new unions.WrapperStruct({
+      pod_union: new unions.PodUnion({
+        f_bool : true})});
+
+    var decoded = structEncodeDecode(s);
+    expect(decoded.pod_union.$tag).toEqual(unions.PodUnion.Tags.f_bool);
+    // Use toEqual() instead of toBeTruthy() to make sure the field type is
+    // actually boolean.
+    expect(decoded.pod_union.f_bool).toEqual(true);
+
+    var s = new unions.WrapperStruct({
       object_union: new unions.ObjectUnion({
         f_dummy: new unions.DummyStruct({
           f_int8: 8})})});

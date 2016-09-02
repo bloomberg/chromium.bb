@@ -380,3 +380,9 @@ struct ContainsOther {
 struct ContainsInterfaceRequest {
   SomeInterface& request;
 };
+
+// Used to verify that boolean fields are correctly serialized/deserialized.
+
+struct SingleBoolStruct {
+  bool value;
+};
