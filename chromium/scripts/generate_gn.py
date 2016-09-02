@@ -384,7 +384,7 @@ class SourceSet(object):
 
 
 def CreatePairwiseDisjointSets(sets):
-  """ Given a list of SourceSet objects, returns the pairwise disjoint sets.
+  """Given a list of SourceSet objects, returns the pairwise disjoint sets.
 
   NOTE: This isn't the most efficient algorithm, but given how infrequent we
   need to run this and how small the input size is we'll leave it as is.
@@ -425,7 +425,7 @@ def CreatePairwiseDisjointSets(sets):
 
 
 def GetAllMatchingConditions(conditions, condition_to_match):
-  """ Given a set of conditions, find those that match the condition_to_match.
+  """Given a set of conditions, find those that match the condition_to_match.
   Matches are found when all attributes of the condition have the same value as
   the condition_to_match, or value is accepted for wildcard attributes within
   condition_to_match.
@@ -456,8 +456,8 @@ def GetAllMatchingConditions(conditions, condition_to_match):
   return found_matches
 
 def GetAttributeValuesRange(attribute, condition):
-  """ Get the range of values for the given attribute considering the values
-      of all attributes in the given condition."""
+  """Get the range of values for the given attribute considering the values
+  of all attributes in the given condition."""
   if getattr(condition, attribute) == '*':
     values = copy.copy(SUPPORT_MATRIX[attribute])
   else:
@@ -663,11 +663,11 @@ RENAME_REGEX = re.compile('.*' + RENAME_PREFIX + '_.+');
 # Content for the rename file. #includes the original file to ensure the two
 # files stay in sync.
 RENAME_CONTENT = """// File automatically generated. See crbug.com/495833.
-#include "{0}"
+{0}include "{1}"
 """
 
 def GetIncludedSources(file_path, source_dir, include_set):
-  """ Recurse over include tree, accumulating absolute paths to all included
+  """Recurse over include tree, accumulating absolute paths to all included
   files (including the seed file) in include_set.
 
   Pass in the set returned from previous calls to avoid re-walking parts of the
@@ -774,20 +774,25 @@ def CheckLicensesForStaticLinking(sources_to_check, source_dir, print_licenses):
   return CheckLicensesForSources(sources_to_check, source_dir, print_licenses)
 
 
-def FixObjectBasenameCollisions(disjoint_sets, all_sources):
-  """ Mac libtool warns needlessly when it encounters two object files with
+def FixBasenameCollision(old_path, new_path, content):
+  with open(new_path, "w") as new_file:
+    new_file.write(content)
+
+
+def FixObjectBasenameCollisions(disjoint_sets, all_sources, do_rename_cb,
+                                log_renames = True):
+  """Mac libtool warns needlessly when it encounters two object files with
   the same basename in a given static library. See more at
   https://code.google.com/p/gyp/issues/detail?id=384#c7
 
-  Here we hack around the issue by copying and renaming source files with the
-  same base name to avoid the collision. The original is kept to keep things
-  simple when merging from upstream ffmpeg.
+  Here we hack around the issue by making a new source file with a different
+  base name, and #including the original file.
 
   If upstream changes the name such that the collision no longer exists, we
   detect the presence of a renamed file in all_sources which is overridden and
   warn that it should be removed."""
 
-  SourceRename = collections.namedtuple('SourceRename', 'old_name, new_name')
+  SourceRename = collections.namedtuple('SourceRename', 'old_path, new_path')
   known_basenames = set()
   all_renames = set()
 
@@ -795,41 +800,47 @@ def FixObjectBasenameCollisions(disjoint_sets, all_sources):
     # Track needed adjustments to change when we're done with each SourceSet.
     renames = set()
 
-    for source_name in source_set.sources:
-      folder, basename = os.path.split(source_name)
+    for source_path in source_set.sources:
+      folder, filename = os.path.split(source_path)
+      basename, _ = os.path.splitext(filename)
 
       # Sanity check: source set should not have any renames prior to this step.
       if RENAME_PREFIX in basename:
-        exit('Found unexpected renamed file in SourceSet: %s' % basename)
+        exit('Found unexpected renamed file in SourceSet: %s' % source_path)
 
       # Craft a new unique basename from the path of the colliding file
       if basename in known_basenames:
-        name_parts = source_name.split(os.sep)
+        name_parts = source_path.split(os.sep)
         name_parts.insert(0, RENAME_PREFIX)
-        new_basename = '_'.join(name_parts)
-        new_source_name = os.sep.join([folder, new_basename])
+        new_filename = '_'.join(name_parts)
+        new_source_path = (new_filename if folder == ''
+                           else os.sep.join([folder, new_filename]))
 
-        renames.add(SourceRename(source_name, new_source_name))
+        renames.add(SourceRename(source_path, new_source_path))
       else:
         known_basenames.add(basename)
 
     for rename in renames:
-      print 'Fixing basename collision: %s -> %s' % (rename.old_name,
-                                                     rename.new_name)
-      with open(rename.new_name, "w") as new_file:
-        _, basename = os.path.split(rename.old_name)
-        new_file.write(RENAME_CONTENT.format(basename))
+      if log_renames:
+        print 'Fixing basename collision: %s -> %s' % (rename.old_path,
+                                                       rename.new_path)
+      _, old_filename = os.path.split(rename.old_path)
+      _, file_extension = os.path.splitext(old_filename)
+      include_prefix = '%' if (file_extension == '.asm') else '#'
 
-      source_set.sources.remove(rename.old_name)
-      source_set.sources.add(rename.new_name)
-      all_renames.add(rename.new_name)
+      do_rename_cb(rename.old_path, rename.new_path,
+                   RENAME_CONTENT.format(include_prefix, old_filename))
+
+      source_set.sources.remove(rename.old_path)
+      source_set.sources.add(rename.new_path)
+      all_renames.add(rename.new_path)
 
   # Now, with all collisions handled, walk the set of known sources and warn
   # about any renames that were not replaced. This should indicate that an old
   # collision is now resolved by some external/upstream change.
-  for source_name in all_sources:
-    if RENAME_PREFIX in source_name and source_name not in all_renames:
-      print 'WARNING: %s no longer collides. DELETE ME!' % source_name
+  for source_path in all_sources:
+    if RENAME_PREFIX in source_path and source_path not in all_renames:
+      print 'WARNING: %s no longer collides. DELETE ME!' % source_path
 
 
 def UpdateCredits(sources_to_check, source_dir):
@@ -878,7 +889,7 @@ def main():
          'Are build_dir (%s) and/or source_dir (%s) options correct?' %
          (options.build_dir, options.source_dir))
 
-  FixObjectBasenameCollisions(sets, source_files)
+  FixObjectBasenameCollisions(sets, source_files, FixBasenameCollision)
 
   # Build up set of all sources and includes.
   sources_to_check = set()

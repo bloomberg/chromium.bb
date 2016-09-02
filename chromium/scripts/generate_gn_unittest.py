@@ -380,5 +380,37 @@ class SourceSetUnittest(unittest.TestCase):
     # OS is wild-card, so it should not be mentioned in the stanza.
     self.assertEqual(-1, string.find(stanza, 'OS =='))
 
+  def testFixObjectBasenameCollisions(self):
+    # Use callback to capture executed renames.
+    observed_renames = set()
+    def do_rename_cb(old_path, new_path, content):
+      observed_renames.add((old_path, new_path))
+
+    # Verify basic rename case - same basename in different directories.
+    a = SourceSet(set(['foo.c']),
+                  set([SourceListCondition('*', '*', '*')]))
+    b = SourceSet(set(['a/foo.c', 'b/foo.c']),
+                  set([SourceListCondition('*', '*', '*')]))
+    expected_renames = set([('a/foo.c', 'a/autorename_a_foo.c'),
+                            ('b/foo.c', 'b/autorename_b_foo.c')])
+    gg.FixObjectBasenameCollisions([a, b], [], do_rename_cb,
+                                   log_renames = False)
+    self.assertEqual(expected_renames, observed_renames)
+
+    # Verify renames file extensions in same and different directory.
+    observed_renames = set()
+    a = SourceSet(set(['foo.c']),
+                  set([SourceListCondition('*', '*', '*')]))
+    b = SourceSet(set(['foo.asm']),
+                  set([SourceListCondition('*', '*', '*')]))
+    c = SourceSet(set(['a/foo.S', 'b/foo.asm']),
+                  set([SourceListCondition('*', '*', '*')]))
+    expected_renames = set([('foo.asm', 'autorename_foo.asm'),
+                            ('a/foo.S', 'a/autorename_a_foo.S'),
+                            ('b/foo.asm', 'b/autorename_b_foo.asm')])
+    gg.FixObjectBasenameCollisions([a, b, c], [], do_rename_cb,
+                                   log_renames = False)
+    self.assertEqual(expected_renames, observed_renames)
+
 if __name__ == '__main__':
   unittest.main()
