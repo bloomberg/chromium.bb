@@ -27,6 +27,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -40,10 +41,13 @@
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "base/win/message_window.h"
+#include "base/win/windows_version.h"
 #include "device/usb/usb_ids.h"
+#include "media/midi/midi_manager_winrt.h"
 #include "media/midi/midi_message_queue.h"
 #include "media/midi/midi_message_util.h"
 #include "media/midi/midi_port_info.h"
+#include "media/midi/midi_switches.h"
 
 namespace media {
 namespace midi {
@@ -1189,6 +1193,10 @@ void MidiManagerWin::OnReceiveMidiData(uint32_t port_index,
 }
 
 MidiManager* MidiManager::Create() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseWinrtMidiApi) &&
+      base::win::GetVersion() >= base::win::VERSION_WIN10)
+    return new MidiManagerWinrt();
   return new MidiManagerWin();
 }
 

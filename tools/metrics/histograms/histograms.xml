@@ -85556,6 +85556,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2093235103" label="default-tile-width"/>
   <int value="2097048479" label="disable-auto-hiding-toolbar-threshold"/>
   <int value="2101151142" label="disable-direct-write"/>
+  <int value="2104788328" label="use-winrt-midi-api"/>
   <int value="2119964154" label="enable-download-resumption"/>
   <int value="2121776031" label="auto-virtual-keyboard"/>
   <int value="2122023503" label="enable-win32k-lockdown-mimetypes"/>

@@ -12,4 +12,9 @@ namespace switches {
 const char kUseAndroidMidiApi[] = "use-android-midi-api";
 #endif
 
+#if defined(OS_WIN)
+// Use Windows Runtime MIDI API for WebMIDI
+const char kUseWinrtMidiApi[] = "use-winrt-midi-api";
+#endif
+
 }  // namespace switches

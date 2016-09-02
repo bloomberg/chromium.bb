@@ -16,6 +16,10 @@ namespace switches {
 MIDI_EXPORT extern const char kUseAndroidMidiApi[];
 #endif
 
+#if defined(OS_WIN)
+MIDI_EXPORT extern const char kUseWinrtMidiApi[];
+#endif
+
 }  // namespace switches
 
 #endif  // MEDIA_MIDI_MIDI_SWITCHES_H_

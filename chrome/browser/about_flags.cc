@@ -1731,6 +1731,9 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_MERGE_KEY_CHAR_EVENTS_DESCRIPTION, kOsWin,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableMergeKeyCharEvents,
                                switches::kDisableMergeKeyCharEvents)},
+    {"use-winrt-midi-api", IDS_FLAGS_USE_WINRT_MIDI_API_NAME,
+     IDS_FLAGS_USE_WINRT_MIDI_API_DESCRIPTION, kOsWin,
+     SINGLE_VALUE_TYPE(switches::kUseWinrtMidiApi)},
 #endif  // defined(OS_WIN)
 #if BUILDFLAG(ENABLE_BACKGROUND)
     {"enable-push-api-background-mode", IDS_FLAGS_PUSH_API_BACKGROUND_MODE_NAME,

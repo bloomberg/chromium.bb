@@ -4,6 +4,17 @@
 
 #include "media/midi/midi_manager_winrt.h"
 
+// TODO(shaochuan): Remove this once clang supports uuid syntax in <robuffer.h>.
+// https://reviews.llvm.org/D23895
+namespace Windows {
+namespace Storage {
+namespace Streams {
+struct __declspec(uuid("905a0fef-bc53-11df-8c49-001e4fc686da"))
+    IBufferByteAccess;
+}
+}
+}
+
 #include <comdef.h>
 #include <robuffer.h>
 #include <windows.devices.enumeration.h>
@@ -22,7 +33,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "base/win/scoped_comptr.h"
-#include "base/win/windows_version.h"
 #include "media/midi/midi_scheduler.h"
 
 namespace media {
@@ -177,19 +187,11 @@ ScopedComPtr<InterfaceType> WrlStaticsFactory() {
   return com_ptr;
 }
 
-template <typename T, HRESULT (T::*method)(HSTRING*)>
-std::string GetStringFromObjectMethod(T* obj) {
-  HSTRING result;
-  HRESULT hr = (obj->*method)(&result);
-  if (FAILED(hr)) {
-    VLOG(1) << "GetStringFromObjectMethod failed: " << PrintHr(hr);
-    return std::string();
-  }
-
+std::string HStringToString(HSTRING hstr) {
   // Note: empty HSTRINGs are represent as nullptr, and instantiating
   // std::string with nullptr (in base::WideToUTF8) is undefined behavior.
   const base::char16* buffer =
-      g_combase_functions.Get().WindowsGetStringRawBuffer(result, nullptr);
+      g_combase_functions.Get().WindowsGetStringRawBuffer(hstr, nullptr);
   if (buffer)
     return base::WideToUTF8(buffer);
   return std::string();
@@ -197,17 +199,34 @@ std::string GetStringFromObjectMethod(T* obj) {
 
 template <typename T>
 std::string GetIdString(T* obj) {
-  return GetStringFromObjectMethod<T, &T::get_Id>(obj);
+  HSTRING result;
+  HRESULT hr = obj->get_Id(&result);
+  if (FAILED(hr)) {
+    VLOG(1) << "get_Id failed: " << PrintHr(hr);
+    return std::string();
+  }
+  return HStringToString(result);
 }
 
 template <typename T>
 std::string GetDeviceIdString(T* obj) {
-  return GetStringFromObjectMethod<T, &T::get_DeviceId>(obj);
+  HSTRING result;
+  HRESULT hr = obj->get_DeviceId(&result);
+  if (FAILED(hr)) {
+    VLOG(1) << "get_DeviceId failed: " << PrintHr(hr);
+    return std::string();
+  }
+  return HStringToString(result);
 }
 
 std::string GetNameString(IDeviceInformation* info) {
-  return GetStringFromObjectMethod<IDeviceInformation,
-                                   &IDeviceInformation::get_Name>(info);
+  HSTRING result;
+  HRESULT hr = info->get_Name(&result);
+  if (FAILED(hr)) {
+    VLOG(1) << "get_Name failed: " << PrintHr(hr);
+    return std::string();
+  }
+  return HStringToString(result);
 }
 
 HRESULT GetPointerToBufferData(IBuffer* buffer, uint8_t** out) {
@@ -810,12 +829,6 @@ MidiManagerWinrt::~MidiManagerWinrt() {
 }
 
 void MidiManagerWinrt::StartInitialization() {
-  if (base::win::GetVersion() < base::win::VERSION_WIN10) {
-    VLOG(1) << "WinRT MIDI backend is only supported on Windows 10 or later.";
-    CompleteInitialization(Result::INITIALIZATION_ERROR);
-    return;
-  }
-
   com_thread_.init_com_with_mta(true);
   com_thread_.Start();
 
@@ -941,10 +954,6 @@ void MidiManagerWinrt::OnPortManagerReady() {
 
   if (++port_manager_ready_count_ == 2)
     CompleteInitialization(Result::OK);
-}
-
-MidiManager* MidiManager::Create() {
-  return new MidiManagerWinrt();
 }
 
 }  // namespace midi
