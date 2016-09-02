@@ -78221,6 +78221,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1144" label="TABS_DISCARD"/>
   <int value="1145" label="LANGUAGESETTINGSPRIVATE_ENABLELANGUAGE"/>
   <int value="1146" label="LANGUAGESETTINGSPRIVATE_DISABLELANGUAGE"/>
+  <int value="1147" label="FILEMANAGERPRIVATEINTERNAL_GETDIRECTORYSIZE"/>
 </enum>
 
 <enum name="ExtensionIconState" type="int">

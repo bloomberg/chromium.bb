@@ -650,6 +650,14 @@ chrome.fileManagerPrivate.configureVolume = function(volumeId, callback) {};
 chrome.fileManagerPrivate.getCustomActions = function(entries, callback) {};
 
 /**
+ * Get the total size of a directory. |entry| Entry of the target directory.
+ * |callback|
+ * @param {!DirectoryEntry} entry
+ * @param {function(number)} callback
+ */
+chrome.fileManagerPrivate.getDirectorySize = function(entry, callback) {};
+
+/**
  * Executes the action on the specified set of entries. If not possible, then
  * returns an error via chrome.runtime.lastError.
  * @param {!Array<!Entry>} entries

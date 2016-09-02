@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/posix/eintr_wrapper.h"
@@ -800,7 +801,7 @@ bool FileManagerPrivateInternalComputeChecksumFunction::RunAsync() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   if (params->url.empty()) {
-    SetError("File URL must be provided");
+    SetError("File URL must be provided.");
     return false;
   }
 
@@ -953,6 +954,54 @@ void FileManagerPrivateInternalSetEntryTagFunction::OnSetEntryPropertyCompleted(
     drive::FileError result) {
   Respond(result == drive::FILE_ERROR_OK ? NoArguments()
                                          : Error("Failed to set a tag."));
+}
+
+bool FileManagerPrivateInternalGetDirectorySizeFunction::RunAsync() {
+  using extensions::api::file_manager_private_internal::GetDirectorySize::
+      Params;
+  const std::unique_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  if (params->url.empty()) {
+    SetError("File URL must be provided.");
+    return false;
+  }
+
+  scoped_refptr<storage::FileSystemContext> file_system_context =
+      file_manager::util::GetFileSystemContextForRenderFrameHost(
+          GetProfile(), render_frame_host());
+  const storage::FileSystemURL file_system_url(
+      file_system_context->CrackURL(GURL(params->url)));
+  if (!chromeos::FileSystemBackend::CanHandleURL(file_system_url)) {
+    SetError("FileSystemBackend failed to handle the entry's url.");
+    return false;
+  }
+  if (file_system_url.type() != storage::kFileSystemTypeNativeLocal) {
+    SetError("Only local directories are supported.");
+    return false;
+  }
+
+  const base::FilePath root_path = file_manager::util::GetLocalPathFromURL(
+      render_frame_host(), GetProfile(), GURL(params->url));
+  if (root_path.empty()) {
+    SetError("Failed to get a local path from the entry's url.");
+    return false;
+  }
+
+  base::PostTaskAndReplyWithResult(
+      BrowserThread::GetBlockingPool(), FROM_HERE,
+      base::Bind(&base::ComputeDirectorySize, root_path),
+      base::Bind(&FileManagerPrivateInternalGetDirectorySizeFunction::
+                     OnDirectorySizeRetrieved,
+                 this));
+  return true;
+}
+
+void FileManagerPrivateInternalGetDirectorySizeFunction::
+    OnDirectorySizeRetrieved(int64_t size) {
+  SetResult(
+      base::MakeUnique<base::FundamentalValue>(static_cast<double>(size)));
+  SendResponse(true);
 }
 
 }  // namespace extensions

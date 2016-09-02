@@ -650,6 +650,9 @@ callback GetProvidingExtensionsCallback = void(ProvidingExtension[] extensions);
 // |actions| List of actions.
 callback GetCustomActionsCallback = void(fileSystemProvider.Action[] actions);
 
+// |size| result size.
+callback GetDirectorySizeCallback = void(double size);
+
 interface Functions {
   // Logout the current user for navigating to the re-authentication screen for
   // the Google account.
@@ -969,6 +972,13 @@ interface Functions {
   static void executeCustomAction([instanceof=Entry] object[] entries,
                                   DOMString actionId,
                                   SimpleCallback callback);
+
+  // Get the total size of a directory.
+  // |entry| Entry of the target directory.
+  // |callback|
+  [nocompile]
+  static void getDirectorySize([instanceof=DirectoryEntry] object entry,
+                               GetDirectorySizeCallback callback);
 };
 
 interface Events {

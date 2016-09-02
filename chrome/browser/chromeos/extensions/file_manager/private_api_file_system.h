@@ -336,6 +336,22 @@ class FileManagerPrivateInternalSetEntryTagFunction
   DISALLOW_COPY_AND_ASSIGN(FileManagerPrivateInternalSetEntryTagFunction);
 };
 
+// Implements the chrome.fileManagerPrivate.getDirectorySize method.
+class FileManagerPrivateInternalGetDirectorySizeFunction
+    : public LoggedAsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.getDirectorySize",
+                             FILEMANAGERPRIVATEINTERNAL_GETDIRECTORYSIZE)
+
+ protected:
+  ~FileManagerPrivateInternalGetDirectorySizeFunction() override {}
+
+  void OnDirectorySizeRetrieved(int64_t size);
+
+  // AsyncExtensionFunction overrides
+  bool RunAsync() override;
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_FILE_SYSTEM_H_

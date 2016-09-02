@@ -30,6 +30,7 @@ namespace fileManagerPrivateInternal {
   callback StartCopyCallback = void(long copyId);
   callback ZipSelectionCallback = void(optional boolean success);
   callback ValidatePathNameLengthCallback = void(boolean result);
+  callback GetDirectorySizeCallback = void(double size);
 
   interface Functions {
     static void resolveIsolatedEntries(DOMString[] urls,
@@ -89,5 +90,7 @@ namespace fileManagerPrivateInternal {
         DOMString parentUrl,
         DOMString name,
         ValidatePathNameLengthCallback callback);
+    static void getDirectorySize(DOMString url,
+                                 GetDirectorySizeCallback callback);
   };
 };

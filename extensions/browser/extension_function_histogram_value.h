@@ -1205,6 +1205,7 @@ enum HistogramValue {
   TABS_DISCARD,
   LANGUAGESETTINGSPRIVATE_ENABLELANGUAGE,
   LANGUAGESETTINGSPRIVATE_DISABLELANGUAGE,
+  FILEMANAGERPRIVATEINTERNAL_GETDIRECTORYSIZE,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

@@ -195,6 +195,12 @@ binding.registerCustomHook(function(bindingsAPI) {
     var url = fileManagerPrivateNatives.GetEntryURL(entry);
     fileManagerPrivateInternal.validatePathNameLength(url, name, callback);
   });
+
+  apiFunctions.setHandleRequest('getDirectorySize', function(
+        entry, callback) {
+    var url = fileManagerPrivateNatives.GetEntryURL(entry);
+    fileManagerPrivateInternal.getDirectorySize(url, callback);
+  });
 });
 
 eventBindings.registerArgumentMassager(
