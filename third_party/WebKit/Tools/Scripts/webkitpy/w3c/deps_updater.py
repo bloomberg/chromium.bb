@@ -358,4 +358,4 @@ class DepsUpdater(object):
         self.run([self.host.executable, script_path])
         message = '\'Modifies TestExpectations and/or downloads new baselines for tests\''
         self.check_run(['git', 'commit', '-a', '-m', message])
-        self.git_cl(['upload', '-m', message, '--rietveld'])
+        self.git_cl.run(['upload', '-m', message, '--rietveld'])
