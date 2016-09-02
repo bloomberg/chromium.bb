@@ -82,11 +82,13 @@ UpdatePasswordInfoBarDelegate::GetIdentifier() const {
   return UPDATE_PASSWORD_INFOBAR_DELEGATE;
 }
 
+int UpdatePasswordInfoBarDelegate::GetButtons() const {
+  return BUTTON_OK;
+}
+
 base::string16 UpdatePasswordInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
-  return l10n_util::GetStringUTF16((button == BUTTON_OK)
-                                       ? IDS_PASSWORD_MANAGER_UPDATE_BUTTON
-                                       : IDS_PASSWORD_MANAGER_CANCEL_BUTTON);
+  return l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_UPDATE_BUTTON);
 }
 
 bool UpdatePasswordInfoBarDelegate::Accept() {
@@ -102,9 +104,5 @@ bool UpdatePasswordInfoBarDelegate::Accept() {
   } else {
     form_manager->Update(form_manager->pending_credentials());
   }
-  return true;
-}
-
-bool UpdatePasswordInfoBarDelegate::Cancel() {
   return true;
 }

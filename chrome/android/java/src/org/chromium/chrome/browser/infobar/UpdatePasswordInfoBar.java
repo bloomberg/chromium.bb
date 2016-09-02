@@ -27,16 +27,14 @@ public class UpdatePasswordInfoBar extends ConfirmInfoBar {
 
     @CalledByNative
     private static InfoBar show(int enumeratedIconId, String[] usernames, String message,
-            int titleLinkStart, int titleLinkEnd, String primaryButtonText,
-            String secondaryButtonText) {
+            int titleLinkStart, int titleLinkEnd, String primaryButtonText) {
         return new UpdatePasswordInfoBar(ResourceId.mapToDrawableId(enumeratedIconId), usernames,
-                message, titleLinkStart, titleLinkEnd, primaryButtonText, secondaryButtonText);
+                message, titleLinkStart, titleLinkEnd, primaryButtonText);
     }
 
     private UpdatePasswordInfoBar(int iconDrawbleId, String[] usernames, String message,
-            int titleLinkStart, int titleLinkEnd, String primaryButtonText,
-            String secondaryButtonText) {
-        super(iconDrawbleId, null, message, null, primaryButtonText, secondaryButtonText);
+            int titleLinkStart, int titleLinkEnd, String primaryButtonText) {
+        super(iconDrawbleId, null, message, null, primaryButtonText, null);
         mTitleLinkRangeStart = titleLinkStart;
         mTitleLinkRangeEnd = titleLinkEnd;
         mTitle = message;

@@ -59,9 +59,9 @@ class UpdatePasswordInfoBarDelegate : public PasswordManagerInfoBarDelegate {
 
   // ConfirmInfoBarDelegate:
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
+  int GetButtons() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
   bool Accept() override;
-  bool Cancel() override;
 
   ManagePasswordsState passwords_state_;
   base::string16 branding_;
