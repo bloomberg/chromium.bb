@@ -106,13 +106,13 @@ interface ProcessInstance {
 
   // Sets oom_score_adj of a process.
   [MinVersion=2]
-  SetOomScoreAdj@2(uint32 pid, int32 score);
+  DeprecatedSetOomScoreAdj@2(uint32 pid, int32 score);
 
   // Disables Android built-in oom_adj adjustment.
   [MinVersion=2]
-  DisableBuiltinOomAdjustment@3();
+  DeprecatedDisableBuiltinOomAdjustment@3();
 
   // Disables Android lowmemorykiller.
   [MinVersion=3]
-  DisableLowMemoryKiller@4();
+  DeprecatedDisableLowMemoryKiller@4();
 };
