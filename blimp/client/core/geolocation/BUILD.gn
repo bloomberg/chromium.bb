@@ -10,6 +10,7 @@ if (is_android) {
 source_set("geolocation") {
   visibility = [
     "//blimp/client/core/*",
+    "//blimp/client:session",
     "//blimp/engine:browser_tests",
   ]
 

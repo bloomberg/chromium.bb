@@ -9,6 +9,8 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "blimp/common/create_blimp_message.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/common/proto/geolocation.pb.h"
@@ -41,6 +43,7 @@ void SendMockLocationMessage(BlimpMessageProcessor* processor) {
   net::TestCompletionCallback cb;
   processor->ProcessMessage(std::move(message), cb.callback());
   EXPECT_EQ(net::OK, cb.WaitForResult());
+  base::RunLoop().RunUntilIdle();
 }
 
 void SendMockErrorMessage(BlimpMessageProcessor* processor,
@@ -57,6 +60,7 @@ void SendMockErrorMessage(BlimpMessageProcessor* processor,
   net::TestCompletionCallback cb;
   processor->ProcessMessage(std::move(message), cb.callback());
   EXPECT_EQ(net::OK, cb.WaitForResult());
+  base::RunLoop().RunUntilIdle();
 }
 
 void SendMalformedMessage(BlimpMessageProcessor* processor) {
@@ -116,6 +120,10 @@ class EngineGeolocationFeatureTest : public testing::Test {
  protected:
   // This is a raw pointer to a class that is owned by the GeolocationFeature.
   MockBlimpMessageProcessor* out_processor_;
+
+  // Processes tasks that were posted as a result of processing of incoming
+  // messages.
+  base::MessageLoop message_loop_;
 
   EngineGeolocationFeature feature_;
   std::unique_ptr<device::LocationProvider> location_provider_;

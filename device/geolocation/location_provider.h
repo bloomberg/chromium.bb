@@ -11,8 +11,6 @@
 
 namespace device {
 
-class LocationProvider;
-
 // The interface for providing location information.
 class DEVICE_GEOLOCATION_EXPORT LocationProvider {
  public:

@@ -9,6 +9,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "blimp/common/create_blimp_message.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/common/proto/geolocation.pb.h"
@@ -20,6 +21,7 @@
 namespace blimp {
 namespace engine {
 namespace {
+
 class BlimpGeolocationDelegate : public device::GeolocationDelegate {
  public:
   explicit BlimpGeolocationDelegate(
@@ -120,7 +122,8 @@ void EngineGeolocationFeature::ProcessMessage(
 
 void EngineGeolocationFeature::NotifyCallback(
     const device::Geoposition& position) {
-  geoposition_received_callback_.Run(position);
+  callback_task_runner_->PostTask(
+      FROM_HERE, base::Bind(geoposition_received_callback_, position));
 }
 
 void EngineGeolocationFeature::RequestAccuracy(
@@ -151,6 +154,9 @@ void EngineGeolocationFeature::OnPermissionGranted() {
 void EngineGeolocationFeature::SetUpdateCallback(
     const GeopositionReceivedCallback& callback) {
   geoposition_received_callback_ = callback;
+
+  // Set |callback_task_runner_| to run on the current thread.
+  callback_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 }
 
 }  // namespace engine

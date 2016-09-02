@@ -8,6 +8,7 @@ include_rules = [
   "+components/version_info",
   "+components/sync/android",
   "-content",
+  "+device/geolocation",
   "+google_apis/gaia",
   "+gpu",
   "+jni",

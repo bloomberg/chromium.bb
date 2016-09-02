@@ -21,7 +21,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "device/geolocation/fake_access_token_store.h"
-#include "device/geolocation/location_arbitrator_impl.h"
+#include "device/geolocation/location_arbitrator.h"
 #include "device/geolocation/wifi_data_provider.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -263,7 +263,7 @@ class GeolocationNetworkProviderTest : public testing::Test {
     // network provider url.
     bool is_default_url =
         UrlWithoutQuery(request_url) ==
-        UrlWithoutQuery(LocationArbitratorImpl::DefaultNetworkProviderURL());
+        UrlWithoutQuery(LocationArbitrator::DefaultNetworkProviderURL());
     EXPECT_EQ(is_default_url, !request_url.query().empty());
 
     const std::string& upload_data = request.upload_data();
@@ -341,7 +341,7 @@ TEST_F(GeolocationNetworkProviderTest, StartProvider) {
 }
 
 TEST_F(GeolocationNetworkProviderTest, StartProviderDefaultUrl) {
-  test_server_url_ = LocationArbitratorImpl::DefaultNetworkProviderURL();
+  test_server_url_ = LocationArbitrator::DefaultNetworkProviderURL();
   std::unique_ptr<LocationProvider> provider(CreateProvider(true));
   EXPECT_TRUE(provider->StartProvider(false));
   net::TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();

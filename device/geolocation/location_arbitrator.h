@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_GEOLOCATION_LOCATION_ARBITRATOR_IMPL_H_
-#define DEVICE_GEOLOCATION_LOCATION_ARBITRATOR_IMPL_H_
+#ifndef DEVICE_GEOLOCATION_LOCATION_ARBITRATOR_H_
+#define DEVICE_GEOLOCATION_LOCATION_ARBITRATOR_H_
 
 #include <stdint.h>
 #include <memory>
@@ -34,16 +34,15 @@ class LocationProvider;
 // This class is responsible for handling updates from multiple underlying
 // providers and resolving them to a single 'best' location fix at any given
 // moment.
-class DEVICE_GEOLOCATION_EXPORT LocationArbitratorImpl
-    : public LocationProvider {
+class DEVICE_GEOLOCATION_EXPORT LocationArbitrator : public LocationProvider {
  public:
   // Number of milliseconds newer a location provider has to be that it's worth
   // switching to this location provider on the basis of it being fresher
   // (regardles of relative accuracy). Public for tests.
   static const int64_t kFixStaleTimeoutMilliseconds;
 
-  explicit LocationArbitratorImpl(GeolocationDelegate* delegate);
-  ~LocationArbitratorImpl() override;
+  explicit LocationArbitrator(std::unique_ptr<GeolocationDelegate> delegate);
+  ~LocationArbitrator() override;
 
   static GURL DefaultNetworkProviderURL();
   bool HasPermissionBeenGrantedForTest() const;
@@ -94,7 +93,7 @@ class DEVICE_GEOLOCATION_EXPORT LocationArbitratorImpl
                            const Geoposition& new_position,
                            bool from_same_provider) const;
 
-  GeolocationDelegate* delegate_;
+  std::unique_ptr<GeolocationDelegate> delegate_;
 
   scoped_refptr<AccessTokenStore> access_token_store_;
   LocationProvider::LocationProviderUpdateCallback arbitrator_update_callback_;
@@ -116,7 +115,7 @@ class DEVICE_GEOLOCATION_EXPORT LocationArbitratorImpl
   // Tracks whether providers should be running.
   bool is_running_;
 
-  DISALLOW_COPY_AND_ASSIGN(LocationArbitratorImpl);
+  DISALLOW_COPY_AND_ASSIGN(LocationArbitrator);
 };
 
 // Factory functions for the various types of location provider to abstract
@@ -125,4 +124,4 @@ std::unique_ptr<LocationProvider> NewSystemLocationProvider();
 
 }  // namespace device
 
-#endif  // DEVICE_GEOLOCATION_LOCATION_ARBITRATOR_IMPL_H_
+#endif  // DEVICE_GEOLOCATION_LOCATION_ARBITRATOR_H_

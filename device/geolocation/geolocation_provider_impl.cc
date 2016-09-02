@@ -17,7 +17,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "device/geolocation/geolocation_delegate.h"
-#include "device/geolocation/location_arbitrator_impl.h"
+#include "device/geolocation/location_arbitrator.h"
 
 namespace device {
 
@@ -190,8 +190,8 @@ void GeolocationProviderImpl::Init() {
     if (!g_delegate.Get())
       g_delegate.Get().reset(new GeolocationDelegate);
 
-    arbitrator_ =
-        base::MakeUnique<LocationArbitratorImpl>(g_delegate.Get().get());
+    arbitrator_ = base::MakeUnique<LocationArbitrator>(
+        base::WrapUnique(g_delegate.Get().get()));
     arbitrator_->SetUpdateCallback(callback);
   }
 }

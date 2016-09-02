@@ -58,6 +58,8 @@ source_set("app") {
 
   public_deps = [
     ":app_metrics",
+    "//device/geolocation:device_geolocation",
+    "//device/geolocation/public/interfaces",
   ]
 
   deps = [

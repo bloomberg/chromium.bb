@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/geolocation/location_arbitrator_impl.h"
+#include "device/geolocation/location_arbitrator.h"
 
 #include <map>
 #include <memory>
@@ -26,33 +26,33 @@ const char* kDefaultNetworkProviderUrl =
 
 // To avoid oscillations, set this to twice the expected update interval of a
 // a GPS-type location provider (in case it misses a beat) plus a little.
-const int64_t LocationArbitratorImpl::kFixStaleTimeoutMilliseconds =
+const int64_t LocationArbitrator::kFixStaleTimeoutMilliseconds =
     11 * base::Time::kMillisecondsPerSecond;
 
-LocationArbitratorImpl::LocationArbitratorImpl(
-    GeolocationDelegate* delegate)
-    : delegate_(delegate),
+LocationArbitrator::LocationArbitrator(
+    std::unique_ptr<GeolocationDelegate> delegate)
+    : delegate_(std::move(delegate)),
       position_provider_(nullptr),
       is_permission_granted_(false),
       is_running_(false) {}
 
-LocationArbitratorImpl::~LocationArbitratorImpl() {}
+LocationArbitrator::~LocationArbitrator() {}
 
-GURL LocationArbitratorImpl::DefaultNetworkProviderURL() {
+GURL LocationArbitrator::DefaultNetworkProviderURL() {
   return GURL(kDefaultNetworkProviderUrl);
 }
 
-bool LocationArbitratorImpl::HasPermissionBeenGrantedForTest() const {
+bool LocationArbitrator::HasPermissionBeenGrantedForTest() const {
   return is_permission_granted_;
 }
 
-void LocationArbitratorImpl::OnPermissionGranted() {
+void LocationArbitrator::OnPermissionGranted() {
   is_permission_granted_ = true;
   for (const auto& provider : providers_)
     provider->OnPermissionGranted();
 }
 
-bool LocationArbitratorImpl::StartProvider(bool enable_high_accuracy) {
+bool LocationArbitrator::StartProvider(bool enable_high_accuracy) {
   // Stash options as OnAccessTokenStoresLoaded has not yet been called.
   is_running_ = true;
   enable_high_accuracy_ = enable_high_accuracy;
@@ -65,7 +65,7 @@ bool LocationArbitratorImpl::StartProvider(bool enable_high_accuracy) {
     if (access_token_store && delegate_->UseNetworkLocationProviders()) {
       DCHECK(DefaultNetworkProviderURL().is_valid());
       token_store_callback_.Reset(
-          base::Bind(&LocationArbitratorImpl::OnAccessTokenStoresLoaded,
+          base::Bind(&LocationArbitrator::OnAccessTokenStoresLoaded,
                      base::Unretained(this)));
       access_token_store->LoadAccessTokens(token_store_callback_.callback());
       return true;
@@ -74,7 +74,7 @@ bool LocationArbitratorImpl::StartProvider(bool enable_high_accuracy) {
   return DoStartProviders();
 }
 
-bool LocationArbitratorImpl::DoStartProviders() {
+bool LocationArbitrator::DoStartProviders() {
   if (providers_.empty()) {
     // If no providers are available, we report an error to avoid
     // callers waiting indefinitely for a reply.
@@ -90,7 +90,7 @@ bool LocationArbitratorImpl::DoStartProviders() {
   return started;
 }
 
-void LocationArbitratorImpl::StopProvider() {
+void LocationArbitrator::StopProvider() {
   // Reset the reference location state (provider+position)
   // so that future starts use fresh locations from
   // the newly constructed providers.
@@ -101,7 +101,7 @@ void LocationArbitratorImpl::StopProvider() {
   is_running_ = false;
 }
 
-void LocationArbitratorImpl::OnAccessTokenStoresLoaded(
+void LocationArbitrator::OnAccessTokenStoresLoaded(
     AccessTokenStore::AccessTokenMap access_token_map,
     const scoped_refptr<net::URLRequestContextGetter>& context_getter) {
   // If there are no access tokens, boot strap it with the default server URL.
@@ -114,18 +114,18 @@ void LocationArbitratorImpl::OnAccessTokenStoresLoaded(
   DoStartProviders();
 }
 
-void LocationArbitratorImpl::RegisterProvider(
+void LocationArbitrator::RegisterProvider(
     std::unique_ptr<LocationProvider> provider) {
   if (!provider)
     return;
-  provider->SetUpdateCallback(base::Bind(
-      &LocationArbitratorImpl::OnLocationUpdate, base::Unretained(this)));
+  provider->SetUpdateCallback(base::Bind(&LocationArbitrator::OnLocationUpdate,
+                                         base::Unretained(this)));
   if (is_permission_granted_)
     provider->OnPermissionGranted();
   providers_.push_back(std::move(provider));
 }
 
-void LocationArbitratorImpl::RegisterSystemProvider() {
+void LocationArbitrator::RegisterSystemProvider() {
   std::unique_ptr<LocationProvider> provider =
       delegate_->OverrideSystemLocationProvider();
   if (!provider)
@@ -133,8 +133,8 @@ void LocationArbitratorImpl::RegisterSystemProvider() {
   RegisterProvider(std::move(provider));
 }
 
-void LocationArbitratorImpl::OnLocationUpdate(const LocationProvider* provider,
-                                              const Geoposition& new_position) {
+void LocationArbitrator::OnLocationUpdate(const LocationProvider* provider,
+                                          const Geoposition& new_position) {
   DCHECK(new_position.Validate() ||
          new_position.error_code != Geoposition::ERROR_CODE_NONE);
   if (!IsNewPositionBetter(position_, new_position,
@@ -145,28 +145,28 @@ void LocationArbitratorImpl::OnLocationUpdate(const LocationProvider* provider,
   arbitrator_update_callback_.Run(this, position_);
 }
 
-const Geoposition& LocationArbitratorImpl::GetPosition() {
+const Geoposition& LocationArbitrator::GetPosition() {
   return position_;
 }
 
-void LocationArbitratorImpl::SetUpdateCallback(
+void LocationArbitrator::SetUpdateCallback(
     const LocationProviderUpdateCallback& callback) {
   DCHECK(!callback.is_null());
   arbitrator_update_callback_ = callback;
 }
 
-scoped_refptr<AccessTokenStore> LocationArbitratorImpl::NewAccessTokenStore() {
+scoped_refptr<AccessTokenStore> LocationArbitrator::NewAccessTokenStore() {
   return delegate_->CreateAccessTokenStore();
 }
 
-scoped_refptr<AccessTokenStore> LocationArbitratorImpl::GetAccessTokenStore() {
+scoped_refptr<AccessTokenStore> LocationArbitrator::GetAccessTokenStore() {
   if (!access_token_store_)
     access_token_store_ = NewAccessTokenStore();
   return access_token_store_;
 }
 
 std::unique_ptr<LocationProvider>
-LocationArbitratorImpl::NewNetworkLocationProvider(
+LocationArbitrator::NewNetworkLocationProvider(
     const scoped_refptr<AccessTokenStore>& access_token_store,
     const scoped_refptr<net::URLRequestContextGetter>& context,
     const GURL& url,
@@ -181,7 +181,7 @@ LocationArbitratorImpl::NewNetworkLocationProvider(
 }
 
 std::unique_ptr<LocationProvider>
-LocationArbitratorImpl::NewSystemLocationProvider() {
+LocationArbitrator::NewSystemLocationProvider() {
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
   return nullptr;
 #else
@@ -189,14 +189,13 @@ LocationArbitratorImpl::NewSystemLocationProvider() {
 #endif
 }
 
-base::Time LocationArbitratorImpl::GetTimeNow() const {
+base::Time LocationArbitrator::GetTimeNow() const {
   return base::Time::Now();
 }
 
-bool LocationArbitratorImpl::IsNewPositionBetter(
-    const Geoposition& old_position,
-    const Geoposition& new_position,
-    bool from_same_provider) const {
+bool LocationArbitrator::IsNewPositionBetter(const Geoposition& old_position,
+                                             const Geoposition& new_position,
+                                             bool from_same_provider) const {
   // Updates location_info if it's better than what we currently have,
   // or if it's a newer update from the same provider.
   if (!old_position.Validate()) {

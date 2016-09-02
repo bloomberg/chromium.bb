@@ -6,6 +6,7 @@
 #define BLIMP_CLIENT_CORE_BLIMP_CLIENT_CONTEXT_IMPL_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -27,6 +28,7 @@ namespace client {
 class BlimpCompositorDependencies;
 class BlimpContentsManager;
 class CompositorDependencies;
+class GeolocationFeature;
 class ImeFeature;
 class NavigationFeature;
 class RenderWidgetFeature;
@@ -98,6 +100,7 @@ class BlimpClientContextImpl : public BlimpClientContext,
   std::unique_ptr<BlimpCompositorDependencies> blimp_compositor_dependencies_;
 
   // Features to handle all incoming and outgoing protobuf messages.
+  std::unique_ptr<GeolocationFeature> geolocation_feature_;
   std::unique_ptr<ImeFeature> ime_feature_;
   std::unique_ptr<NavigationFeature> navigation_feature_;
   std::unique_ptr<RenderWidgetFeature> render_widget_feature_;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/geolocation/location_arbitrator_impl.h"
+#include "device/geolocation/location_arbitrator.h"
 
 #include <memory>
 #include <utility>
@@ -19,21 +19,24 @@
 using ::testing::NiceMock;
 
 namespace device {
+namespace {
 
 class MockLocationObserver {
  public:
-  // Need a vtable for GMock.
   virtual ~MockLocationObserver() {}
   void InvalidateLastPosition() {
     last_position_.latitude = 100;
     last_position_.error_code = Geoposition::ERROR_CODE_NONE;
     ASSERT_FALSE(last_position_.Validate());
   }
-  // Delegate
-  void OnLocationUpdate(const LocationProvider*, const Geoposition& position) {
+  void OnLocationUpdate(const LocationProvider* provider,
+                        const Geoposition& position) {
     last_position_ = position;
   }
 
+  Geoposition last_position() { return last_position_; }
+
+ private:
   Geoposition last_position_;
 };
 
@@ -67,7 +70,7 @@ void SetReferencePosition(FakeLocationProvider* provider) {
   SetPositionFix(provider, 51.0, -0.1, 400);
 }
 
-namespace {
+}  // namespace
 
 class FakeGeolocationDelegate : public GeolocationDelegate {
  public:
@@ -93,15 +96,13 @@ class FakeGeolocationDelegate : public GeolocationDelegate {
   DISALLOW_COPY_AND_ASSIGN(FakeGeolocationDelegate);
 };
 
-}  // namespace
-
-class TestingLocationArbitrator : public LocationArbitratorImpl {
+class TestingLocationArbitrator : public LocationArbitrator {
  public:
   TestingLocationArbitrator(
       const LocationProviderUpdateCallback& callback,
       const scoped_refptr<AccessTokenStore>& access_token_store,
-      GeolocationDelegate* delegate)
-      : LocationArbitratorImpl(delegate),
+      std::unique_ptr<GeolocationDelegate> delegate)
+      : LocationArbitrator(std::move(delegate)),
         cell_(nullptr),
         gps_(nullptr),
         access_token_store_(access_token_store) {
@@ -155,7 +156,7 @@ class GeolocationLocationArbitratorTest : public testing::Test {
         base::Bind(&MockLocationObserver::OnLocationUpdate,
                    base::Unretained(observer_.get()));
     arbitrator_.reset(new TestingLocationArbitrator(
-        callback, access_token_store_, delegate_.get()));
+        callback, access_token_store_, std::move(delegate_)));
   }
 
   // testing::Test
@@ -164,7 +165,7 @@ class GeolocationLocationArbitratorTest : public testing::Test {
   void CheckLastPositionInfo(double latitude,
                              double longitude,
                              double accuracy) {
-    Geoposition geoposition = observer_->last_position_;
+    Geoposition geoposition = observer_->last_position();
     EXPECT_TRUE(geoposition.Validate());
     EXPECT_DOUBLE_EQ(latitude, geoposition.latitude);
     EXPECT_DOUBLE_EQ(longitude, geoposition.longitude);
@@ -174,7 +175,7 @@ class GeolocationLocationArbitratorTest : public testing::Test {
   base::TimeDelta SwitchOnFreshnessCliff() {
     // Add 1, to ensure it meets any greater-than test.
     return base::TimeDelta::FromMilliseconds(
-        LocationArbitratorImpl::kFixStaleTimeoutMilliseconds + 1);
+        LocationArbitrator::kFixStaleTimeoutMilliseconds + 1);
   }
 
   FakeLocationProvider* cell() { return arbitrator_->cell_; }
@@ -223,15 +224,17 @@ TEST_F(GeolocationLocationArbitratorTest, NormalUsage) {
   EXPECT_TRUE(gps());
   EXPECT_EQ(FakeLocationProvider::LOW_ACCURACY, cell()->state_);
   EXPECT_EQ(FakeLocationProvider::LOW_ACCURACY, gps()->state_);
-  EXPECT_FALSE(observer_->last_position_.Validate());
-  EXPECT_EQ(Geoposition::ERROR_CODE_NONE, observer_->last_position_.error_code);
+  EXPECT_FALSE(observer_->last_position().Validate());
+  EXPECT_EQ(Geoposition::ERROR_CODE_NONE,
+            observer_->last_position().error_code);
 
   SetReferencePosition(cell());
 
-  EXPECT_TRUE(observer_->last_position_.Validate() ||
-              observer_->last_position_.error_code !=
+  EXPECT_TRUE(observer_->last_position().Validate() ||
+              observer_->last_position().error_code !=
                   Geoposition::ERROR_CODE_NONE);
-  EXPECT_EQ(cell()->GetPosition().latitude, observer_->last_position_.latitude);
+  EXPECT_EQ(cell()->GetPosition().latitude,
+            observer_->last_position().latitude);
 
   EXPECT_FALSE(cell()->is_permission_granted());
   EXPECT_FALSE(arbitrator_->HasPermissionBeenGrantedForTest());
@@ -257,16 +260,17 @@ TEST_F(GeolocationLocationArbitratorTest, CustomSystemProviderOnly) {
   ASSERT_TRUE(fake_delegate->mock_location_provider());
   EXPECT_EQ(FakeLocationProvider::LOW_ACCURACY,
             fake_delegate->mock_location_provider()->state_);
-  EXPECT_FALSE(observer_->last_position_.Validate());
-  EXPECT_EQ(Geoposition::ERROR_CODE_NONE, observer_->last_position_.error_code);
+  EXPECT_FALSE(observer_->last_position().Validate());
+  EXPECT_EQ(Geoposition::ERROR_CODE_NONE,
+            observer_->last_position().error_code);
 
   SetReferencePosition(fake_delegate->mock_location_provider());
 
-  EXPECT_TRUE(observer_->last_position_.Validate() ||
-              observer_->last_position_.error_code !=
+  EXPECT_TRUE(observer_->last_position().Validate() ||
+              observer_->last_position().error_code !=
                   Geoposition::ERROR_CODE_NONE);
   EXPECT_EQ(fake_delegate->mock_location_provider()->GetPosition().latitude,
-            observer_->last_position_.latitude);
+            observer_->last_position().latitude);
 
   EXPECT_FALSE(
       fake_delegate->mock_location_provider()->is_permission_granted());
@@ -299,15 +303,17 @@ TEST_F(GeolocationLocationArbitratorTest,
   EXPECT_EQ(FakeLocationProvider::LOW_ACCURACY,
             fake_delegate->mock_location_provider()->state_);
   EXPECT_EQ(FakeLocationProvider::LOW_ACCURACY, cell()->state_);
-  EXPECT_FALSE(observer_->last_position_.Validate());
-  EXPECT_EQ(Geoposition::ERROR_CODE_NONE, observer_->last_position_.error_code);
+  EXPECT_FALSE(observer_->last_position().Validate());
+  EXPECT_EQ(Geoposition::ERROR_CODE_NONE,
+            observer_->last_position().error_code);
 
   SetReferencePosition(cell());
 
-  EXPECT_TRUE(observer_->last_position_.Validate() ||
-              observer_->last_position_.error_code !=
+  EXPECT_TRUE(observer_->last_position().Validate() ||
+              observer_->last_position().error_code !=
                   Geoposition::ERROR_CODE_NONE);
-  EXPECT_EQ(cell()->GetPosition().latitude, observer_->last_position_.latitude);
+  EXPECT_EQ(cell()->GetPosition().latitude,
+            observer_->last_position().latitude);
 
   EXPECT_FALSE(cell()->is_permission_granted());
   EXPECT_FALSE(arbitrator_->HasPermissionBeenGrantedForTest());
@@ -342,7 +348,7 @@ TEST_F(GeolocationLocationArbitratorTest, Arbitration) {
   SetPositionFix(cell(), 1, 2, 150);
 
   // First position available
-  EXPECT_TRUE(observer_->last_position_.Validate());
+  EXPECT_TRUE(observer_->last_position().Validate());
   CheckLastPositionInfo(1, 2, 150);
 
   SetPositionFix(gps(), 3, 4, 50);

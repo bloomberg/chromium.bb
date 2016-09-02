@@ -102,11 +102,13 @@ source_set("context") {
     "//blimp/client/core/contents",
     "//blimp/client/core/session",
     "//blimp/client/public:public_headers",
+    "//device/geolocation:device_geolocation",
     "//url",
   ]
 
   deps = [
     ":switches",
+    "//blimp/client/core/geolocation",
     "//blimp/client/core/settings",
   ]
 
@@ -167,6 +169,7 @@ if (is_android) {
       ":switches_java",
       "//blimp/client/core/contents:contents_java",
       "//blimp/client/core/settings:settings_java",
+      "//device/geolocation:geolocation_java",
     ]
   }
 

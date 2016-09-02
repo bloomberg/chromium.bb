@@ -20,7 +20,7 @@ class MockLocationProvider : public device::LocationProvider {
                void(const LocationProviderUpdateCallback& callback));
   MOCK_METHOD1(StartProvider, bool(bool high_accuracy));
   MOCK_METHOD0(StopProvider, void());
-  MOCK_METHOD0(GetPosition, const device::Geoposition&());
+  MOCK_METHOD0(GetPosition, const Geoposition&());
   MOCK_METHOD0(OnPermissionGranted, void());
 
  private:

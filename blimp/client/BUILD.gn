@@ -18,7 +18,9 @@ source_set("session") {
   public_deps = [
     "//blimp/client/core",
     "//blimp/client/core:switches",
+    "//blimp/client/core/geolocation",
     "//blimp/common/proto",
+    "//device/geolocation:device_geolocation",
     "//ui/events",
   ]
 

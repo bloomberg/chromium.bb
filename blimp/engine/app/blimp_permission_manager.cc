@@ -23,7 +23,13 @@ int BlimpPermissionManager::RequestPermission(
     const GURL& origin,
     bool user_gesture,
     const base::Callback<void(blink::mojom::PermissionStatus)>& callback) {
-  callback.Run(blink::mojom::PermissionStatus::DENIED);
+  if (permission == content::PermissionType::GEOLOCATION) {
+    VLOG(1) << "Geolocation permission granted.";
+    callback.Run(blink::mojom::PermissionStatus::GRANTED);
+  } else {
+    VLOG(1) << "Permission denied.";
+    callback.Run(blink::mojom::PermissionStatus::DENIED);
+  }
   return kNoPendingOperation;
 }
 

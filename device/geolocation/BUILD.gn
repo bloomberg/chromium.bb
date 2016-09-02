@@ -31,8 +31,8 @@ component("device_geolocation") {
     "geoposition.h",
     "location_api_adapter_android.cc",
     "location_api_adapter_android.h",
-    "location_arbitrator_impl.cc",
-    "location_arbitrator_impl.h",
+    "location_arbitrator.cc",
+    "location_arbitrator.h",
     "location_provider.h",
     "location_provider_android.cc",
     "location_provider_android.h",
@@ -169,7 +169,7 @@ source_set("unittests") {
 
   sources = [
     "geolocation_provider_impl_unittest.cc",
-    "location_arbitrator_impl_unittest.cc",
+    "location_arbitrator_unittest.cc",
     "network_location_provider_unittest.cc",
     "wifi_data_provider_chromeos_unittest.cc",
     "wifi_data_provider_common_unittest.cc",

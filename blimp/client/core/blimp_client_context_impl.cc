@@ -4,6 +4,8 @@
 
 #include "blimp/client/core/blimp_client_context_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
@@ -16,11 +18,14 @@
 #include "blimp/client/core/contents/ime_feature.h"
 #include "blimp/client/core/contents/navigation_feature.h"
 #include "blimp/client/core/contents/tab_control_feature.h"
+#include "blimp/client/core/geolocation/geolocation_feature.h"
 #include "blimp/client/core/render_widget/render_widget_feature.h"
 #include "blimp/client/core/session/cross_thread_network_event_observer.h"
 #include "blimp/client/core/settings/settings_feature.h"
 #include "blimp/client/public/blimp_client_context_delegate.h"
 #include "blimp/client/public/compositor/compositor_dependencies.h"
+#include "device/geolocation/geolocation_delegate.h"
+#include "device/geolocation/location_arbitrator.h"
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_ANDROID)
@@ -65,6 +70,9 @@ BlimpClientContextImpl::BlimpClientContextImpl(
       blimp_compositor_dependencies_(
           base::MakeUnique<BlimpCompositorDependencies>(
               std::move(compositor_dependencies))),
+      geolocation_feature_(base::MakeUnique<GeolocationFeature>(
+          base::MakeUnique<device::LocationArbitrator>(
+              base::MakeUnique<device::GeolocationDelegate>()))),
       ime_feature_(new ImeFeature),
       navigation_feature_(new NavigationFeature),
       render_widget_feature_(new RenderWidgetFeature),
@@ -89,7 +97,7 @@ BlimpClientContextImpl::BlimpClientContextImpl(
   RegisterFeatures();
   InitializeSettings();
 
-  // Initialize must only be posted after the calls features have been
+  // Initialize must only be posted after the features have been
   // registered.
   io_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&ClientNetworkComponents::Initialize,
@@ -170,6 +178,9 @@ void BlimpClientContextImpl::ConnectWithAssignment(
 
 void BlimpClientContextImpl::RegisterFeatures() {
   // Register features' message senders and receivers.
+  geolocation_feature_->set_outgoing_message_processor(
+      thread_pipe_manager_->RegisterFeature(BlimpMessage::kGeolocation,
+                                            geolocation_feature_.get()));
   ime_feature_->set_outgoing_message_processor(
       thread_pipe_manager_->RegisterFeature(BlimpMessage::kIme,
                                             ime_feature_.get()));
