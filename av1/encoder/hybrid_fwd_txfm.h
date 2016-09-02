@@ -60,16 +60,6 @@ static INLINE void highbd_fdct32x32(int rd_transform, const int16_t *src,
 }
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
-static INLINE int get_tx1d_size(TX_SIZE tx_size) {
-  switch (tx_size) {
-    case TX_32X32: return 32;
-    case TX_16X16: return 16;
-    case TX_8X8: return 8;
-    case TX_4X4: return 4;
-    default: assert(0); return -1;
-  }
-}
-
 #ifdef __cplusplus
 }  // extern "C"
 #endif

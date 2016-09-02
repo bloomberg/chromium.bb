@@ -471,7 +471,7 @@ static int cost_coeffs(MACROBLOCK *x, int plane, int block, ENTROPY_CONTEXT *A,
 
 static void dist_block(MACROBLOCK *x, int plane, int block, TX_SIZE tx_size,
                        int64_t *out_dist, int64_t *out_sse) {
-  const int ss_txfrm_size = tx_size << 1;
+  const int ss_txfrm_size = 1 << (tx_size_1d_log2[tx_size] << 1);
   MACROBLOCKD *const xd = &x->e_mbd;
   const struct macroblock_plane *const p = &x->plane[plane];
   const struct macroblockd_plane *const pd = &xd->plane[plane];
@@ -481,12 +481,12 @@ static void dist_block(MACROBLOCK *x, int plane, int block, TX_SIZE tx_size,
   tran_low_t *const dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
 #if CONFIG_AOM_HIGHBITDEPTH
   const int bd = (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) ? xd->bd : 8;
-  *out_dist = av1_highbd_block_error(coeff, dqcoeff, 16 << ss_txfrm_size,
-                                     &this_sse, bd) >>
-              shift;
+  *out_dist =
+      av1_highbd_block_error(coeff, dqcoeff, ss_txfrm_size, &this_sse, bd) >>
+      shift;
 #else
   *out_dist =
-      av1_block_error(coeff, dqcoeff, 16 << ss_txfrm_size, &this_sse) >> shift;
+      av1_block_error(coeff, dqcoeff, ss_txfrm_size, &this_sse) >> shift;
 #endif  // CONFIG_AOM_HIGHBITDEPTH
   *out_sse = this_sse >> shift;
 }
@@ -517,19 +517,23 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
                            &b_args);
     dist_block(x, plane, block, tx_size, &dist, &sse);
   } else if (max_txsize_lookup[plane_bsize] == tx_size) {
-    if (x->skip_txfm[(plane << 2) + (block >> (tx_size << 1))] ==
+    if (x->skip_txfm[(plane << 2) +
+                     (block >> (tx_size_1d_in_unit_log2[tx_size] * 2))] ==
         SKIP_TXFM_NONE) {
       // full forward transform and quantization
       av1_xform_quant(x, plane, block, blk_row, blk_col, plane_bsize, tx_size);
       dist_block(x, plane, block, tx_size, &dist, &sse);
-    } else if (x->skip_txfm[(plane << 2) + (block >> (tx_size << 1))] ==
-               SKIP_TXFM_AC_ONLY) {
+    } else if (x->skip_txfm[(plane << 2) +
+                            (block >> (tx_size_1d_in_unit_log2[tx_size] *
+                                       2))] == SKIP_TXFM_AC_ONLY) {
       // compute DC coefficient
       tran_low_t *const coeff = BLOCK_OFFSET(x->plane[plane].coeff, block);
       tran_low_t *const dqcoeff = BLOCK_OFFSET(xd->plane[plane].dqcoeff, block);
       av1_xform_quant_dc(x, plane, block, blk_row, blk_col, plane_bsize,
                          tx_size);
-      sse = x->bsse[(plane << 2) + (block >> (tx_size << 1))] << 4;
+      sse = x->bsse[(plane << 2) +
+                    (block >> (tx_size_1d_in_unit_log2[tx_size] * 2))]
+            << 4;
       dist = sse;
       if (x->plane[plane].eobs[block]) {
         const int64_t orig_sse = (int64_t)coeff[0] * coeff[0];
@@ -546,7 +550,9 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
       // SKIP_TXFM_AC_DC
       // skip forward transform
       x->plane[plane].eobs[block] = 0;
-      sse = x->bsse[(plane << 2) + (block >> (tx_size << 1))] << 4;
+      sse = x->bsse[(plane << 2) +
+                    (block >> (tx_size_1d_in_unit_log2[tx_size] * 2))]
+            << 4;
       dist = sse;
     }
   } else {

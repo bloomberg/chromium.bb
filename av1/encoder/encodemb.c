@@ -928,7 +928,7 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
   const int src_stride = p->src.stride;
   const int dst_stride = pd->dst.stride;
 
-  int tx1d_size = get_tx1d_size(tx_size);
+  int tx1d_size = tx_size_1d[tx_size];
 
   FWD_TXFM_PARAM fwd_txfm_param;
   fwd_txfm_param.tx_type = tx_type;
