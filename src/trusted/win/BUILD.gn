@@ -56,7 +56,7 @@ template("nacl_win_as_toolchain") {
       ]
     }
 
-    toolchain_args() {
+    toolchain_args = {
       current_os = "win"
       current_cpu = invoker.toolchain_cpu
 
