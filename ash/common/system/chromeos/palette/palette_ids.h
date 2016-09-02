@@ -14,7 +14,8 @@ namespace ash {
 // Palette tools are grouped into different categories. Each tool corresponds to
 // exactly one group, and at most one tool can be active per group. Actions are
 // actions the user wants to do, such as take a screenshot, and modes generally
-// change OS behavior, like showing a laser pointer instead of a cursor.
+// change OS behavior, like showing a laser pointer instead of a cursor. A mode
+// is active until the user completes the action or disables it.
 enum class PaletteGroup { ACTION, MODE };
 
 enum class PaletteToolId {

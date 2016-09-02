@@ -11,6 +11,7 @@
 #include "ash/common/session/session_state_observer.h"
 #include "base/callback_list.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -43,6 +44,8 @@ class PaletteDelegateChromeOS : public ash::PaletteDelegate,
  private:
   PaletteDelegateChromeOS();
 
+  class ProxyScreenshotDelegate;
+
   // ash::PaletteDelegate:
   std::unique_ptr<EnableListenerSubscription> AddPaletteEnableListener(
       const EnableListener& on_state_changed) override;
@@ -54,7 +57,8 @@ class PaletteDelegateChromeOS : public ash::PaletteDelegate,
   bool ShouldAutoOpenPalette() override;
   bool ShouldShowPalette() override;
   void TakeScreenshot() override;
-  void TakePartialScreenshot() override;
+  void TakePartialScreenshot(const base::Closure& done) override;
+  void CancelPartialScreenshot() override;
 
   // ash::SessionStateObserver:
   void ActiveUserChanged(const AccountId& account_id) override;
@@ -71,15 +75,20 @@ class PaletteDelegateChromeOS : public ash::PaletteDelegate,
   void OnPaletteEnabledPrefChanged();
 
   void SetProfile(Profile* profile);
+  void OnPartialScreenshotDone(const base::Closure& then);
 
   base::CallbackList<void(bool)> palette_enabled_callback_list_;
   OnStylusStateChangedCallback on_stylus_state_changed_;
+
+  std::unique_ptr<ProxyScreenshotDelegate> proxy_screenshot_delegate_;
 
   // Unowned pointer to the active profile.
   Profile* profile_ = nullptr;
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
   std::unique_ptr<ash::ScopedSessionStateObserver> session_state_observer_;
   content::NotificationRegistrar registrar_;
+
+  base::WeakPtrFactory<PaletteDelegateChromeOS> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PaletteDelegateChromeOS);
 };

@@ -47,7 +47,7 @@ class ScreenshotControllerTest : public test::AshTestBase {
         GetScreenshotDelegate());
   }
 
-  void Cancel() { screenshot_controller()->Cancel(); }
+  void Cancel() { screenshot_controller()->CancelScreenshotSession(); }
 
   bool IsActive() {
     return screenshot_controller()->screenshot_delegate_ != nullptr;

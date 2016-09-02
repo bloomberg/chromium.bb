@@ -7,25 +7,32 @@
 
 #include "ash/ash_export.h"
 #include "ash/common/system/chromeos/palette/common_palette_tool.h"
+#include "base/memory/weak_ptr.h"
 
 namespace ash {
 
-class ASH_EXPORT CaptureRegionAction : public CommonPaletteTool {
+class ASH_EXPORT CaptureRegionMode : public CommonPaletteTool {
  public:
-  explicit CaptureRegionAction(Delegate* delegate);
-  ~CaptureRegionAction() override;
+  explicit CaptureRegionMode(Delegate* delegate);
+  ~CaptureRegionMode() override;
 
  private:
   // PaletteTool:
   PaletteGroup GetGroup() const override;
   PaletteToolId GetToolId() const override;
+  gfx::VectorIconId GetActiveTrayIcon() override;
   void OnEnable() override;
+  void OnDisable() override;
   views::View* CreateView() override;
 
   // CommonPaletteTool:
   gfx::VectorIconId GetPaletteIconId() override;
 
-  DISALLOW_COPY_AND_ASSIGN(CaptureRegionAction);
+  void OnScreenshotDone();
+
+  base::WeakPtrFactory<CaptureRegionMode> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(CaptureRegionMode);
 };
 
 }  // namespace ash

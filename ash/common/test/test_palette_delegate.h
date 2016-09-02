@@ -28,6 +28,10 @@ class TestPaletteDelegate : public PaletteDelegate {
     return take_partial_screenshot_count_;
   }
 
+  base::Closure partial_screenshot_done() const {
+    return partial_screenshot_done_;
+  }
+
   void set_has_note_app(bool has_note_app) { has_note_app_ = has_note_app; }
 
   void set_should_auto_open_palette(bool should_auto_open_palette) {
@@ -44,21 +48,23 @@ class TestPaletteDelegate : public PaletteDelegate {
       const EnableListener& on_state_changed) override;
   void CreateNote() override;
   bool HasNoteApp() override;
+  void OnLaserPointerEnabled() override;
+  void OnLaserPointerDisabled() override;
   void SetPartialMagnifierState(bool enabled) override;
   void SetStylusStateChangedCallback(
       const OnStylusStateChangedCallback& on_stylus_state_changed) override;
   bool ShouldAutoOpenPalette() override;
   bool ShouldShowPalette() override;
   void TakeScreenshot() override;
-  void TakePartialScreenshot() override;
-  void OnLaserPointerEnabled() override;
-  void OnLaserPointerDisabled() override;
+  void TakePartialScreenshot(const base::Closure& done) override;
+  void CancelPartialScreenshot() override;
 
   int create_note_count_ = 0;
   int has_note_app_count_ = 0;
   bool partial_magnifier_state_ = false;
   int take_screenshot_count_ = 0;
   int take_partial_screenshot_count_ = 0;
+  base::Closure partial_screenshot_done_;
   bool has_note_app_ = false;
   bool should_auto_open_palette_ = false;
   bool should_show_palette_ = false;

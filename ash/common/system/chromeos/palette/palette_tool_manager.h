@@ -67,9 +67,10 @@ class ASH_EXPORT PaletteToolManager : public PaletteTool::Delegate {
   // Deactivates the given tool.
   void DeactivateTool(PaletteToolId tool_id);
 
-  // Optional methods that are not likely to be needed, but will be
-  // implemented if necessary.
+  // Returns true if the given tool is active.
   bool IsToolActive(PaletteToolId tool_id);
+
+  // Returns the active tool for the given group.
   PaletteToolId GetActiveTool(PaletteGroup group);
 
   // Fetch the active tray icon for the given tool. Returns

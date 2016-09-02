@@ -245,7 +245,7 @@ ScreenshotController::ScreenshotController()
 
 ScreenshotController::~ScreenshotController() {
   if (screenshot_delegate_)
-    Cancel();
+    CancelScreenshotSession();
   Shell::GetInstance()->RemovePreTargetHandler(this);
 }
 
@@ -298,6 +298,18 @@ void ScreenshotController::StartPartialScreenshotSession(
   EnableMouseWarp(false);
 }
 
+void ScreenshotController::CancelScreenshotSession() {
+  mode_ = NONE;
+  pen_events_only_ = false;
+  root_window_ = nullptr;
+  SetSelectedWindow(nullptr);
+  screenshot_delegate_ = nullptr;
+  display::Screen::GetScreen()->RemoveObserver(this);
+  base::STLDeleteValues(&layers_);
+  cursor_setter_.reset();
+  EnableMouseWarp(true);
+}
+
 void ScreenshotController::MaybeStart(const ui::LocatedEvent& event) {
   aura::Window* current_root =
       static_cast<aura::Window*>(event.target())->GetRootWindow();
@@ -326,7 +338,7 @@ void ScreenshotController::MaybeStart(const ui::LocatedEvent& event) {
 void ScreenshotController::CompleteWindowScreenshot() {
   if (selected_)
     screenshot_delegate_->HandleTakeWindowScreenshot(selected_);
-  Cancel();
+  CancelScreenshotSession();
 }
 
 void ScreenshotController::CompletePartialScreenshot() {
@@ -347,19 +359,7 @@ void ScreenshotController::CompletePartialScreenshot() {
     screenshot_delegate_->HandleTakePartialScreenshot(
         root_window_, gfx::IntersectRects(root_window_->bounds(), region));
   }
-  Cancel();
-}
-
-void ScreenshotController::Cancel() {
-  mode_ = NONE;
-  pen_events_only_ = false;
-  root_window_ = nullptr;
-  SetSelectedWindow(nullptr);
-  screenshot_delegate_ = nullptr;
-  display::Screen::GetScreen()->RemoveObserver(this);
-  base::STLDeleteValues(&layers_);
-  cursor_setter_.reset();
-  EnableMouseWarp(true);
+  CancelScreenshotSession();
 }
 
 void ScreenshotController::Update(const ui::LocatedEvent& event) {
@@ -423,7 +423,7 @@ void ScreenshotController::OnKeyEvent(ui::KeyEvent* event) {
 
   if (event->type() == ui::ET_KEY_RELEASED) {
     if (event->key_code() == ui::VKEY_ESCAPE) {
-      Cancel();
+      CancelScreenshotSession();
       event->StopPropagation();
     } else if (event->key_code() == ui::VKEY_RETURN && mode_ == WINDOW) {
       CompleteWindowScreenshot();
@@ -522,14 +522,14 @@ void ScreenshotController::OnTouchEvent(ui::TouchEvent* event) {
 void ScreenshotController::OnDisplayAdded(const display::Display& new_display) {
   if (!screenshot_delegate_)
     return;
-  Cancel();
+  CancelScreenshotSession();
 }
 
 void ScreenshotController::OnDisplayRemoved(
     const display::Display& old_display) {
   if (!screenshot_delegate_)
     return;
-  Cancel();
+  CancelScreenshotSession();
 }
 
 void ScreenshotController::OnDisplayMetricsChanged(

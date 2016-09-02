@@ -92,15 +92,19 @@ class PaletteDelegateImpl : public PaletteDelegate {
   }
   void CreateNote() override {}
   bool HasNoteApp() override { return false; }
+  void OnLaserPointerEnabled() override {}
+  void OnLaserPointerDisabled() override {}
   void SetPartialMagnifierState(bool enabled) override {}
   void SetStylusStateChangedCallback(
       const OnStylusStateChangedCallback& on_stylus_state_changed) override {}
   bool ShouldAutoOpenPalette() override { return false; }
   bool ShouldShowPalette() override { return false; }
   void TakeScreenshot() override {}
-  void TakePartialScreenshot() override {}
-  void OnLaserPointerEnabled() override {}
-  void OnLaserPointerDisabled() override {}
+  void TakePartialScreenshot(const base::Closure& done) override {
+    if (done)
+      done.Run();
+  }
+  void CancelPartialScreenshot() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PaletteDelegateImpl);

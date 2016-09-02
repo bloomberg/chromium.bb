@@ -6,7 +6,7 @@
 
 #include "ash/common/system/chromeos/palette/palette_tool_manager.h"
 #include "ash/common/system/chromeos/palette/palette_utils.h"
-#include "ash/common/system/chromeos/palette/tools/capture_region_action.h"
+#include "ash/common/system/chromeos/palette/tools/capture_region_mode.h"
 #include "ash/common/system/chromeos/palette/tools/capture_screen_action.h"
 #include "ash/common/system/chromeos/palette/tools/create_note_action.h"
 #include "ash/common/system/chromeos/palette/tools/laser_pointer_mode.h"
@@ -18,7 +18,7 @@ namespace ash {
 
 // static
 void PaletteTool::RegisterToolInstances(PaletteToolManager* tool_manager) {
-  tool_manager->AddTool(base::MakeUnique<CaptureRegionAction>(tool_manager));
+  tool_manager->AddTool(base::MakeUnique<CaptureRegionMode>(tool_manager));
   tool_manager->AddTool(base::MakeUnique<CaptureScreenAction>(tool_manager));
   tool_manager->AddTool(base::MakeUnique<CreateNoteAction>(tool_manager));
   if (ArePaletteExperimentalFeaturesEnabled())

@@ -25,6 +25,41 @@
 
 namespace chromeos {
 
+class PaletteDelegateChromeOS::ProxyScreenshotDelegate
+    : public ash::ScreenshotDelegate {
+ public:
+  ProxyScreenshotDelegate(ash::ScreenshotDelegate* delegate,
+                          const base::Closure& on_partial_screenshot_taken)
+      : delegate_(delegate),
+        on_partial_screenshot_taken_(on_partial_screenshot_taken) {}
+  ~ProxyScreenshotDelegate() override {}
+
+ private:
+  // ash::ScreenshotDelegate:
+  void HandleTakeScreenshotForAllRootWindows() override {
+    return delegate_->HandleTakeScreenshotForAllRootWindows();
+  }
+  void HandleTakePartialScreenshot(aura::Window* window,
+                                   const gfx::Rect& rect) override {
+    delegate_->HandleTakePartialScreenshot(window, rect);
+
+    // Run the delegate last, as it may delete this object.
+    if (on_partial_screenshot_taken_)
+      on_partial_screenshot_taken_.Run();
+  }
+  void HandleTakeWindowScreenshot(aura::Window* window) override {
+    return delegate_->HandleTakeWindowScreenshot(window);
+  }
+  bool CanTakeScreenshot() override { return delegate_->CanTakeScreenshot(); }
+
+  // Not owned; delegate_ is expected to live beyond the lifetime of this
+  // object.
+  ash::ScreenshotDelegate* delegate_;
+  base::Closure on_partial_screenshot_taken_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProxyScreenshotDelegate);
+};
+
 // static
 std::unique_ptr<PaletteDelegateChromeOS> PaletteDelegateChromeOS::Create() {
   if (!ash::IsPaletteFeatureEnabled())
@@ -32,7 +67,7 @@ std::unique_ptr<PaletteDelegateChromeOS> PaletteDelegateChromeOS::Create() {
   return base::WrapUnique(new PaletteDelegateChromeOS());
 }
 
-PaletteDelegateChromeOS::PaletteDelegateChromeOS() {
+PaletteDelegateChromeOS::PaletteDelegateChromeOS() : weak_factory_(this) {
   registrar_.Add(this, chrome::NOTIFICATION_SESSION_STARTED,
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
@@ -124,6 +159,13 @@ void PaletteDelegateChromeOS::SetProfile(Profile* profile) {
   OnPaletteEnabledPrefChanged();
 }
 
+void PaletteDelegateChromeOS::OnPartialScreenshotDone(
+    const base::Closure& then) {
+  proxy_screenshot_delegate_.reset();
+  if (then)
+    then.Run();
+}
+
 void PaletteDelegateChromeOS::SetPartialMagnifierState(bool enabled) {
   ash::PartialMagnificationController* controller =
       ash::Shell::GetInstance()->partial_magnification_controller();
@@ -156,16 +198,25 @@ void PaletteDelegateChromeOS::TakeScreenshot() {
   screenshot_delegate->HandleTakeScreenshotForAllRootWindows();
 }
 
-void PaletteDelegateChromeOS::TakePartialScreenshot() {
+void PaletteDelegateChromeOS::TakePartialScreenshot(const base::Closure& done) {
   auto* screenshot_controller =
       ash::Shell::GetInstance()->screenshot_controller();
   auto* screenshot_delegate = ash::Shell::GetInstance()
                                   ->accelerator_controller_delegate()
                                   ->screenshot_delegate();
 
+  proxy_screenshot_delegate_ = base::MakeUnique<ProxyScreenshotDelegate>(
+      screenshot_delegate,
+      base::Bind(&PaletteDelegateChromeOS::OnPartialScreenshotDone,
+                 weak_factory_.GetWeakPtr(), done));
+
   screenshot_controller->set_pen_events_only(true);
   screenshot_controller->StartPartialScreenshotSession(
-      screenshot_delegate, false /* draw_overlay_immediately */);
+      proxy_screenshot_delegate_.get(), false /* draw_overlay_immediately */);
+}
+
+void PaletteDelegateChromeOS::CancelPartialScreenshot() {
+  ash::Shell::GetInstance()->screenshot_controller()->CancelScreenshotSession();
 }
 
 void PaletteDelegateChromeOS::OnStylusStateChanged(ui::StylusState state) {

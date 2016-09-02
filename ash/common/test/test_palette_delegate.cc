@@ -25,6 +25,10 @@ bool TestPaletteDelegate::HasNoteApp() {
   return has_note_app_;
 }
 
+void TestPaletteDelegate::OnLaserPointerEnabled() {}
+
+void TestPaletteDelegate::OnLaserPointerDisabled() {}
+
 void TestPaletteDelegate::SetPartialMagnifierState(bool enabled) {
   partial_magnifier_state_ = enabled;
 }
@@ -45,12 +49,11 @@ void TestPaletteDelegate::TakeScreenshot() {
   ++take_screenshot_count_;
 }
 
-void TestPaletteDelegate::TakePartialScreenshot() {
+void TestPaletteDelegate::TakePartialScreenshot(const base::Closure& done) {
   ++take_partial_screenshot_count_;
+  partial_screenshot_done_ = done;
 }
 
-void TestPaletteDelegate::OnLaserPointerEnabled() {}
-
-void TestPaletteDelegate::OnLaserPointerDisabled() {}
+void TestPaletteDelegate::CancelPartialScreenshot() {}
 
 }  // namespace ash
