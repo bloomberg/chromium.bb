@@ -194,6 +194,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Mac AMD failures
     self.Fail('conformance/extensions/webgl-draw-buffers.html',
         ['mac', 'amd'], bug=625365)
+    self.Fail('conformance/rendering/clipping-wide-points.html',
+        ['mac', 'amd'], bug=642822)
 
     # Mac Retina AMD failures
     self.Flaky('conformance/extensions/oes-texture-float-with-video.html',
@@ -244,6 +246,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # AMD
     self.Flaky('conformance/more/functions/uniformi.html',
                ['linux', 'amd'], bug=550989)
+    self.Fail('conformance/rendering/clipping-wide-points.html',
+        ['linux', 'amd'], bug=642822)
 
     # AMD Radeon 6450 and/or R7 240
     self.Fail('conformance/extensions/angle-instanced-arrays.html',
@@ -298,6 +302,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['linux', 'intel', 'opengl'], bug=598924)
     self.Skip('conformance/uniforms/gl-uniform-arrays.html',
         ['linux', 'debug', ('intel', 0x412)], bug=604140)
+    # Fixed on Mesa 12.0
+    self.Fail('conformance/rendering/clipping-wide-points.html',
+        ['linux', 'intel'], bug=642822)
 
     ####################
     # Android failures #

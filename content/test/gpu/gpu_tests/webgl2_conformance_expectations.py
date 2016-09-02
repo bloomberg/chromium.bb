@@ -362,8 +362,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', ('nvidia', 0xfe9)], bug=483282)
 
     # Mac AMD
-    self.Fail('deqp/functional/gles3/clipping.html',
-        ['mac', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/instancedrendering.html',
         ['mac', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/pixelbufferobject.html',
@@ -485,8 +483,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd', 'intel'], bug=483282)
     self.Skip('deqp/data/gles3/shaders/qualification_order.html',
         ['linux', 'amd', 'intel'], bug=483282)
-    self.Fail('deqp/functional/gles3/clipping.html',
-        ['linux', 'amd', 'intel'], bug=483282)
     self.Flaky('deqp/functional/gles3/texturespecification/' +
         'random_teximage2d_2d.html',
         ['linux', 'amd', 'intel'], bug=618447)
@@ -513,8 +509,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'opengl'], bug=483282)
 
     # Linux NVIDIA only.
-    # La la la la la la la la la la ...
-    self.Fail('conformance2/misc/getextension-while-pbo-bound-stability.html',
+    self.Flaky('conformance2/misc/getextension-while-pbo-bound-stability.html',
         ['linux', 'nvidia'], bug=483282)
 
     # Linux NVIDIA with ANGLE only
