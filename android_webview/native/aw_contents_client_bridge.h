@@ -29,7 +29,8 @@ namespace android_webview {
 // any references.
 class AwContentsClientBridge : public AwContentsClientBridgeBase {
  public:
-  AwContentsClientBridge(JNIEnv* env, jobject obj);
+  AwContentsClientBridge(JNIEnv* env,
+                         const base::android::JavaRef<jobject>& obj);
   ~AwContentsClientBridge() override;
 
   // AwContentsClientBridgeBase implementation

@@ -24,7 +24,7 @@ namespace android_webview {
 class AwPdfExporter {
  public:
   AwPdfExporter(JNIEnv* env,
-                jobject obj,
+                const base::android::JavaRef<jobject>& obj,
                 content::WebContents* web_contents);
 
   ~AwPdfExporter();
@@ -36,7 +36,7 @@ class AwPdfExporter {
 
  private:
   void InitPdfSettings(JNIEnv* env,
-                       jobject obj,
+                       const base::android::JavaRef<jobject>& obj,
                        printing::PrintSettings& settings);
   void DidExportPdf(int fd, bool success);
 

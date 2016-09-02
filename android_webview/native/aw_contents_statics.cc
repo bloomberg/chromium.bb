@@ -31,7 +31,7 @@ namespace {
 void ClientCertificatesCleared(ScopedJavaGlobalRef<jobject>* callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
-  Java_AwContentsStatics_clientCertificatesCleared(env, callback->obj());
+  Java_AwContentsStatics_clientCertificatesCleared(env, *callback);
 }
 
 void NotifyClientCertificatesChanged() {

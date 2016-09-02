@@ -273,7 +273,7 @@ void AwContents::InitAutofillIfNecessary(bool enabled) {
       AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
 }
 
-void AwContents::SetAwAutofillClient(jobject client) {
+void AwContents::SetAwAutofillClient(const JavaRef<jobject>& client) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
@@ -399,8 +399,7 @@ void GenerateMHTMLCallback(ScopedJavaGlobalRef<jobject>* callback,
   JNIEnv* env = AttachCurrentThread();
   // Android files are UTF8, so the path conversion below is safe.
   Java_AwContents_generateMHTMLCallback(
-      env, ConvertUTF8ToJavaString(env, path.AsUTF8Unsafe()), size,
-      callback->obj());
+      env, ConvertUTF8ToJavaString(env, path.AsUTF8Unsafe()), size, *callback);
 }
 }  // namespace
 
@@ -1147,8 +1146,7 @@ void InvokeVisualStateCallback(const JavaObjectWeakGlobalRef& java_ref,
   ScopedJavaLocalRef<jobject> obj = java_ref.get(env);
   if (obj.is_null())
      return;
-  Java_AwContents_invokeVisualStateCallback(env, obj, callback->obj(),
-                                            request_id);
+  Java_AwContents_invokeVisualStateCallback(env, obj, *callback, request_id);
 }
 }  // namespace
 

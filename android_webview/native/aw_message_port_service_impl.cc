@@ -215,7 +215,7 @@ void AwMessagePortServiceImpl::OnMessageChannelCreated(
   if (obj.is_null())
     return;
   Java_AwMessagePortService_onMessageChannelCreated(env, obj, *port1, *port2,
-                                                    ports->obj());
+                                                    *ports);
 }
 
 // Adds a new port to the message port service.

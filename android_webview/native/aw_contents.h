@@ -305,7 +305,7 @@ class AwContents : public FindHelper::Listener,
   void SetSaveFormData(bool enabled);
 
   // Sets the java client
-  void SetAwAutofillClient(jobject client);
+  void SetAwAutofillClient(const base::android::JavaRef<jobject>& client);
 
   void SetJsOnlineProperty(JNIEnv* env,
                            const base::android::JavaParamRef<jobject>& obj,

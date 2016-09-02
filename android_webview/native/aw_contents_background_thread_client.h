@@ -13,13 +13,13 @@ class AwContentsBackgroundThreadClient {
  public:
   static base::android::ScopedJavaLocalRef<jobject> shouldInterceptRequest(
       JNIEnv* env,
-      jobject obj,
-      jstring url,
+      const base::android::JavaRef<jobject>& obj,
+      const base::android::JavaRef<jstring>& url,
       jboolean isMainFrame,
       jboolean hasUserGesture,
-      jstring method,
-      jobjectArray requestHeaderNames,
-      jobjectArray requestHeaderValues);
+      const base::android::JavaRef<jstring>& method,
+      const base::android::JavaRef<jobjectArray>& requestHeaderNames,
+      const base::android::JavaRef<jobjectArray>& requestHeaderValues);
 };
 
 }

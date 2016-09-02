@@ -52,9 +52,10 @@ void RecordClientCertificateKey(
 
 }  // namespace
 
-AwContentsClientBridge::AwContentsClientBridge(JNIEnv* env, jobject obj)
+AwContentsClientBridge::AwContentsClientBridge(JNIEnv* env,
+                                               const JavaRef<jobject>& obj)
     : java_ref_(env, obj) {
-  DCHECK(obj);
+  DCHECK(!obj.is_null());
   Java_AwContentsClientBridge_setNativeContentsClientBridge(
       env, obj, reinterpret_cast<intptr_t>(this));
 }

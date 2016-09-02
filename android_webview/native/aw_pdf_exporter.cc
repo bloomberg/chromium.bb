@@ -12,16 +12,16 @@
 #include "printing/units.h"
 
 using base::android::JavaParamRef;
+using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 
 namespace android_webview {
 
 AwPdfExporter::AwPdfExporter(JNIEnv* env,
-                             jobject obj,
+                             const JavaRef<jobject>& obj,
                              content::WebContents* web_contents)
-    : java_ref_(env, obj),
-      web_contents_(web_contents) {
-  DCHECK(obj);
+    : java_ref_(env, obj), web_contents_(web_contents) {
+  DCHECK(!obj.is_null());
   Java_AwPdfExporter_setNativeAwPdfExporter(
       env, obj, reinterpret_cast<intptr_t>(this));
 }
@@ -59,7 +59,7 @@ int MilsToDots(int val, int dpi) {
 }  // anonymous namespace
 
 void AwPdfExporter::InitPdfSettings(JNIEnv* env,
-                                    jobject obj,
+                                    const JavaRef<jobject>& obj,
                                     printing::PrintSettings& settings) {
   int dpi = Java_AwPdfExporter_getDpi(env, obj);
   int width = Java_AwPdfExporter_getPageWidth(env, obj);

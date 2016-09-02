@@ -50,8 +50,8 @@ AwAutofillClient::AwAutofillClient(WebContents* contents)
       Java_AwAutofillClient_create(env, reinterpret_cast<intptr_t>(this)));
 
   AwContents* aw_contents = AwContents::FromWebContents(web_contents_);
-  aw_contents->SetAwAutofillClient(delegate.obj());
-  java_ref_ = JavaObjectWeakGlobalRef(env, delegate.obj());
+  aw_contents->SetAwAutofillClient(delegate);
+  java_ref_ = JavaObjectWeakGlobalRef(env, delegate);
 }
 
 AwAutofillClient::~AwAutofillClient() {

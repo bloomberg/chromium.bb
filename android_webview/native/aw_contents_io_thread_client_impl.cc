@@ -328,14 +328,10 @@ std::unique_ptr<AwWebResourceResponse> RunShouldInterceptRequest(
       "shouldInterceptRequest");
   ScopedJavaLocalRef<jobject> ret =
       AwContentsBackgroundThreadClient::shouldInterceptRequest(
-          env,
-          obj.obj(),
-          web_request.jstring_url.obj(),
-          web_request.is_main_frame,
-          web_request.has_user_gesture,
-          web_request.jstring_method.obj(),
-          web_request.jstringArray_header_names.obj(),
-          web_request.jstringArray_header_values.obj());
+          env, obj, web_request.jstring_url, web_request.is_main_frame,
+          web_request.has_user_gesture, web_request.jstring_method,
+          web_request.jstringArray_header_names,
+          web_request.jstringArray_header_values);
   return std::unique_ptr<AwWebResourceResponse>(
       ret.is_null() ? nullptr : new AwWebResourceResponseImpl(ret));
 }

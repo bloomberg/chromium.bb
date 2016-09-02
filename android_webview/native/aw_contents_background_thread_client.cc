@@ -6,19 +6,21 @@
 
 #include "jni/AwContentsBackgroundThreadClient_jni.h"
 
+using base::android::JavaRef;
+
 namespace android_webview {
 
 // static
 base::android::ScopedJavaLocalRef<jobject>
 AwContentsBackgroundThreadClient::shouldInterceptRequest(
     JNIEnv* env,
-    jobject obj,
-    jstring url,
+    const JavaRef<jobject>& obj,
+    const JavaRef<jstring>& url,
     jboolean isMainFrame,
     jboolean hasUserGesture,
-    jstring method,
-    jobjectArray requestHeaderNames,
-    jobjectArray requestHeaderValues) {
+    const JavaRef<jstring>& method,
+    const JavaRef<jobjectArray>& requestHeaderNames,
+    const JavaRef<jobjectArray>& requestHeaderValues) {
   return Java_AwContentsBackgroundThreadClient_shouldInterceptRequestFromNative(
       env, obj, url, isMainFrame, hasUserGesture, method, requestHeaderNames,
       requestHeaderValues);

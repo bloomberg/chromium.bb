@@ -116,17 +116,15 @@ void AwWebContentsDelegate::RunFileChooser(
     DCHECK_EQ(FileChooserParams::Open, params.mode);
   }
   Java_AwWebContentsDelegate_runFileChooser(
-      env, java_delegate.obj(), render_frame_host->GetProcess()->GetID(),
+      env, java_delegate, render_frame_host->GetProcess()->GetID(),
       render_frame_host->GetRoutingID(), mode_flags,
       ConvertUTF16ToJavaString(
-          env, base::JoinString(params.accept_types, base::ASCIIToUTF16(",")))
-          .obj(),
-      params.title.empty() ? NULL
-                           : ConvertUTF16ToJavaString(env, params.title).obj(),
+          env, base::JoinString(params.accept_types, base::ASCIIToUTF16(","))),
+      params.title.empty() ? nullptr
+                           : ConvertUTF16ToJavaString(env, params.title),
       params.default_file_name.empty()
-          ? NULL
-          : ConvertUTF8ToJavaString(env, params.default_file_name.value())
-                .obj(),
+          ? nullptr
+          : ConvertUTF8ToJavaString(env, params.default_file_name.value()),
       params.capture);
 }
 
