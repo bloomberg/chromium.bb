@@ -34,7 +34,8 @@ window.addEventListener('load', function init() {
     }
   });
 
-  extensionView.load('chrome-extension://' +
-      loadTimeData.getString('extensionId') + '/cast_setup/devices.html');
+  extensionView.load(
+      'chrome-extension://' + loadTimeData.getString('extensionId') +
+      '/cast_setup/index.html#' + window.location.hash.substr(1) || 'devices');
 });
 
