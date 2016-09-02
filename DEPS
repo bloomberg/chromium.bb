@@ -391,7 +391,7 @@ deps_os = {
 
     # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
     'src/third_party/chromite':
-     Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '19800a2aaeabde1d99cfd9fa667a512e1739667d',
+     Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '7381c2dc32165daee391e927c976bcf819831ec3',
 
     # Dependency of chromite.git and skia.
     'src/third_party/pyelftools':
