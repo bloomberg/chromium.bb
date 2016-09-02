@@ -12,6 +12,8 @@ component("views_examples_lib") {
     "bubble_example.h",
     "button_example.cc",
     "button_example.h",
+    "button_sticker_sheet.cc",
+    "button_sticker_sheet.h",
     "checkbox_example.cc",
     "checkbox_example.h",
     "combobox_example.cc",
