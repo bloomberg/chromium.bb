@@ -15,6 +15,11 @@ void GenHelper(GLsizei count, GLuint* objects) {
 
 }  // anonymous namespace
 
+GLStubApi::GLStubApi()
+    : version_("OpenGL ES 3.0"), extensions_("GL_EXT_framebuffer_object") {}
+
+GLStubApi::~GLStubApi() = default;
+
 GLenum GLStubApi::glCheckFramebufferStatusEXTFn(GLenum target) {
   return GL_FRAMEBUFFER_COMPLETE;
 }
@@ -114,6 +119,7 @@ void GLStubApi::glGetIntegervFn(GLenum pname, GLint* params) {
       *params = 8;
       break;
     case GL_MAX_TEXTURE_SIZE:
+    case GL_MAX_RECTANGLE_TEXTURE_SIZE_ARB:
       *params = 2048;
       break;
     case GL_MAX_CUBE_MAP_TEXTURE_SIZE:
@@ -205,9 +211,9 @@ const GLubyte* GLStubApi::glGetStringFn(GLenum name) {
     default:
       return reinterpret_cast<const GLubyte*>("");
     case GL_VERSION:
-      return reinterpret_cast<const GLubyte*>("OpenGL ES 3.0");
+      return reinterpret_cast<const GLubyte*>(version_.c_str());
     case GL_EXTENSIONS:
-      return reinterpret_cast<const GLubyte*>("GL_EXT_framebuffer_object");
+      return reinterpret_cast<const GLubyte*>(extensions_.c_str());
   }
 }
 

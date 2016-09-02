@@ -5,6 +5,8 @@
 #ifndef UI_GL_GL_STUB_API_H_
 #define UI_GL_GL_STUB_API_H_
 
+#include <string>
+
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_stub_api_base.h"
 
@@ -12,6 +14,15 @@ namespace gl {
 
 class GL_EXPORT GLStubApi: public GLStubApiBase {
  public:
+  GLStubApi();
+  ~GLStubApi() override;
+
+  void set_version(std::string version) { version_ = std::move(version); }
+
+  void set_extensions(std::string extensions) {
+    extensions_ = std::move(extensions);
+  }
+
   GLenum glCheckFramebufferStatusEXTFn(GLenum target) override;
   GLuint glCreateProgramFn(void) override;
   GLuint glCreateShaderFn(GLenum type) override;
@@ -54,6 +65,12 @@ class GL_EXPORT GLStubApi: public GLStubApiBase {
   GLenum glWaitSyncFn(GLsync sync,
                       GLbitfield flags,
                       GLuint64 timeout) override;
+
+ private:
+  std::string version_;
+  std::string extensions_;
+
+  DISALLOW_COPY_AND_ASSIGN(GLStubApi);
 };
 
 }  // namespace gl

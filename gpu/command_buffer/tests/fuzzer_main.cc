@@ -44,6 +44,41 @@ const size_t kTransferBufferSize = 16384;
 const size_t kSmallTransferBufferSize = 16;
 const size_t kTinyTransferBufferSize = 3;
 
+static const char kExtensions[] =
+    "GL_AMD_compressed_ATC_texture "
+    "GL_ANGLE_texture_compression_dxt3 "
+    "GL_ANGLE_texture_compression_dxt5 "
+    "GL_ANGLE_texture_usage "
+    "GL_APPLE_ycbcr_422 "
+    "GL_ARB_texture_rectangle "
+    "GL_EXT_blend_func_extended "
+    "GL_EXT_color_buffer_float "
+    "GL_EXT_disjoint_timer_query "
+    "GL_EXT_draw_buffers "
+    "GL_EXT_frag_depth "
+    "GL_EXT_multisample_compatibility "
+    "GL_EXT_multisampled_render_to_texture "
+    "GL_EXT_occlusion_query_boolean "
+    "GL_EXT_read_format_bgra "
+    "GL_EXT_shader_texture_lod "
+    "GL_EXT_texture_compression_s3tc "
+    "GL_EXT_texture_filter_anisotropic "
+    "GL_IMG_texture_compression_pvrtc "
+    "GL_KHR_blend_equation_advanced "
+    "GL_KHR_blend_equation_advanced_coherent "
+    "GL_KHR_texture_compression_astc_ldr "
+    "GL_NV_EGL_stream_consumer_external "
+    "GL_NV_framebuffer_mixed_samples "
+    "GL_NV_path_rendering "
+    "GL_OES_compressed_ETC1_RGB8_texture "
+    "GL_OES_depth24 "
+    "GL_OES_EGL_image_external "
+    "GL_OES_rgb8_rgba8 "
+    "GL_OES_texture_float "
+    "GL_OES_texture_float_linear "
+    "GL_OES_texture_half_float "
+    "GL_OES_texture_half_float_linear";
+
 class CommandBufferSetup {
  public:
   CommandBufferSetup()
@@ -62,6 +97,9 @@ class CommandBufferSetup {
     gpu_preferences_.enable_unsafe_es3_apis = true;
 
     gl::GLSurfaceTestSupport::InitializeOneOffWithMockBindings();
+
+    api_.set_version("OpenGL ES 3.0");
+    api_.set_extensions(kExtensions);
     gl::SetStubGLApi(&api_);
 
     sync_point_client_ = sync_point_manager_->CreateSyncPointClient(
