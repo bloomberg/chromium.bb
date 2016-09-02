@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SYNC_TEST_INTEGRATION_SEARCH_ENGINES_HELPER_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/strings/string16.h"
@@ -35,17 +36,18 @@ bool AwaitAllServicesMatch();
 // Returns true iff all TemplateURLServices match with the verifier.
 bool AllServicesMatch();
 
-// Create a TemplateURL with some test values based on |seed|. The caller owns
-// the returned TemplateURL*.
-TemplateURL* CreateTestTemplateURL(Profile* profile,
-                                   int seed,
-                                   const base::string16& keyword,
-                                   const std::string& sync_guid);
-TemplateURL* CreateTestTemplateURL(Profile* profile,
-                                   int seed,
-                                   const base::string16& keyword,
-                                   const std::string& url,
-                                   const std::string& sync_guid);
+// Create a TemplateURL with some test values based on |seed|.
+std::unique_ptr<TemplateURL> CreateTestTemplateURL(
+    Profile* profile,
+    int seed,
+    const base::string16& keyword,
+    const std::string& sync_guid);
+std::unique_ptr<TemplateURL> CreateTestTemplateURL(
+    Profile* profile,
+    int seed,
+    const base::string16& keyword,
+    const std::string& url,
+    const std::string& sync_guid);
 
 // Add a search engine based on a seed to the service at index |profile_index|
 // and the verifier if it is used.

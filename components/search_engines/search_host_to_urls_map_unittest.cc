@@ -9,8 +9,10 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url.h"
+#include "components/search_engines/template_url_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 typedef SearchHostToURLsMap::TemplateURLSet TemplateURLSet;
@@ -24,7 +26,7 @@ class SearchHostToURLsMapTest : public testing::Test {
 
  protected:
   std::unique_ptr<SearchHostToURLsMap> provider_map_;
-  std::unique_ptr<TemplateURL> t_urls_[2];
+  TemplateURLService::OwnedTemplateURLVector template_urls_;
   std::string host_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchHostToURLsMapTest);
@@ -35,15 +37,12 @@ void SearchHostToURLsMapTest::SetUp() {
   host_ = "www.unittest.com";
   TemplateURLData data;
   data.SetURL("http://" + host_ + "/path1");
-  t_urls_[0].reset(new TemplateURL(data));
+  template_urls_.push_back(base::MakeUnique<TemplateURL>(data));
   data.SetURL("http://" + host_ + "/path2");
-  t_urls_[1].reset(new TemplateURL(data));
-  std::vector<TemplateURL*> template_urls;
-  template_urls.push_back(t_urls_[0].get());
-  template_urls.push_back(t_urls_[1].get());
+  template_urls_.push_back(base::MakeUnique<TemplateURL>(data));
 
   provider_map_.reset(new SearchHostToURLsMap);
-  provider_map_->Init(template_urls, SearchTermsData());
+  provider_map_->Init(template_urls_, SearchTermsData());
 }
 
 TEST_F(SearchHostToURLsMapTest, Add) {
@@ -57,55 +56,44 @@ TEST_F(SearchHostToURLsMapTest, Add) {
 }
 
 TEST_F(SearchHostToURLsMapTest, Remove) {
-  provider_map_->Remove(t_urls_[0].get());
+  provider_map_->Remove(template_urls_[0].get());
 
   const TemplateURL* found_url = provider_map_->GetTemplateURLForHost(host_);
-  ASSERT_EQ(t_urls_[1].get(), found_url);
+  ASSERT_EQ(template_urls_[1].get(), found_url);
 
   const TemplateURLSet* urls = provider_map_->GetURLsForHost(host_);
-  ASSERT_TRUE(urls != NULL);
+  ASSERT_TRUE(urls != nullptr);
 
   int url_count = 0;
   for (TemplateURLSet::const_iterator i(urls->begin()); i != urls->end(); ++i) {
     url_count++;
-    ASSERT_EQ(t_urls_[1].get(), *i);
+    ASSERT_EQ(template_urls_[1].get(), *i);
   }
   ASSERT_EQ(1, url_count);
 }
 
 TEST_F(SearchHostToURLsMapTest, GetTemplateURLForKnownHost) {
   const TemplateURL* found_url = provider_map_->GetTemplateURLForHost(host_);
-  ASSERT_TRUE(found_url == t_urls_[0].get() || found_url == t_urls_[1].get());
+  ASSERT_TRUE(found_url == template_urls_[0].get() ||
+              found_url == template_urls_[1].get());
 }
 
 TEST_F(SearchHostToURLsMapTest, GetTemplateURLForUnknownHost) {
   const TemplateURL* found_url =
       provider_map_->GetTemplateURLForHost("a" + host_);
-  ASSERT_TRUE(found_url == NULL);
+  ASSERT_TRUE(found_url == nullptr);
 }
 
 TEST_F(SearchHostToURLsMapTest, GetURLsForKnownHost) {
   const TemplateURLSet* urls = provider_map_->GetURLsForHost(host_);
-  ASSERT_TRUE(urls != NULL);
+  ASSERT_TRUE(urls != nullptr);
 
-  bool found_urls[arraysize(t_urls_)] = { false };
-
-  for (TemplateURLSet::const_iterator i(urls->begin()); i != urls->end(); ++i) {
-    const TemplateURL* url = *i;
-    for (size_t i = 0; i < arraysize(found_urls); ++i) {
-      if (url == t_urls_[i].get()) {
-        found_urls[i] = true;
-        break;
-      }
-    }
-  }
-
-  for (size_t i = 0; i < arraysize(found_urls); ++i)
-    ASSERT_TRUE(found_urls[i]);
+  for (const auto& url : template_urls_)
+    EXPECT_NE(urls->end(), urls->find(url.get()));
 }
 
 TEST_F(SearchHostToURLsMapTest, GetURLsForUnknownHost) {
   const SearchHostToURLsMap::TemplateURLSet* urls =
       provider_map_->GetURLsForHost("a" + host_);
-  ASSERT_TRUE(urls == NULL);
+  ASSERT_TRUE(urls == nullptr);
 }

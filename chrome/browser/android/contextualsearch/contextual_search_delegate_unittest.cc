@@ -10,6 +10,7 @@
 
 #include "base/base64.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -68,10 +69,9 @@ class ContextualSearchDelegateTest : public testing::Test {
     data.SetURL("https://foobar.com/url?bar={searchTerms}");
     data.contextual_search_url = "https://foobar.com/_/contextualsearch?"
         "{google:contextualSearchVersion}{google:contextualSearchContextData}";
-    TemplateURL* template_url = new TemplateURL(data);
-    // Takes ownership of |template_url|.
     TemplateURLService* template_url_service = new TemplateURLService(NULL, 0);
-    template_url_service->Add(template_url);
+    TemplateURL* template_url =
+        template_url_service->Add(base::MakeUnique<TemplateURL>(data));
     template_url_service->SetUserSelectedDefaultSearchProvider(template_url);
     return template_url_service;
   }

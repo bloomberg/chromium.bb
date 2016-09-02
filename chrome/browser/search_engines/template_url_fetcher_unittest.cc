@@ -13,6 +13,7 @@
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -229,7 +230,7 @@ TEST_F(TemplateURLFetcherTest, DuplicateKeywordsTest) {
   data.SetShortName(keyword);
   data.SetKeyword(keyword);
   data.SetURL("http://example.com/");
-  test_util()->model()->Add(new TemplateURL(data));
+  test_util()->model()->Add(base::MakeUnique<TemplateURL>(data));
   test_util()->ChangeModelToLoadState();
 
   EXPECT_TRUE(test_util()->model()->GetTemplateURLForKeyword(keyword));

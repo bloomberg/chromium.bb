@@ -313,9 +313,8 @@ class InstantNTPURLRewriteTest : public BrowserWithTestWindowTest {
     data.SetShortName(base::ASCIIToUTF16("foo.com"));
     data.SetURL("http://foo.com/url?bar={searchTerms}");
     data.new_tab_url = new_tab_page_url.spec();
-    TemplateURL* template_url = new TemplateURL(data);
-    // Takes ownership.
-    template_url_service->Add(template_url);
+    TemplateURL* template_url =
+        template_url_service->Add(base::MakeUnique<TemplateURL>(data));
     template_url_service->SetUserSelectedDefaultSearchProvider(template_url);
   }
 

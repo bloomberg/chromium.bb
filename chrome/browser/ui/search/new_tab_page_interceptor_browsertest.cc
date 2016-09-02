@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/files/file_path.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/search/search.h"
@@ -57,9 +58,8 @@ class NewTabPageInterceptorTest : public InProcessBrowserTest {
     data.SetKeyword(base::UTF8ToUTF16(base_url));
     data.SetURL(base_url + "url?bar={searchTerms}");
     data.new_tab_url = base_url + new_tab_path;
-    TemplateURL* template_url = new TemplateURL(data);
-    // Takes ownership of |template_url|.
-    template_url_service->Add(template_url);
+    TemplateURL* template_url =
+        template_url_service->Add(base::MakeUnique<TemplateURL>(data));
     template_url_service->SetUserSelectedDefaultSearchProvider(template_url);
   }
 

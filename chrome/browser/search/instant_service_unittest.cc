@@ -9,6 +9,7 @@
 #include <tuple>
 #include <vector>
 
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -131,9 +132,8 @@ TEST_F(InstantServiceEnabledTest,
   TemplateURLData data;
   data.SetShortName(base::ASCIIToUTF16("foobar.com"));
   data.SetURL("https://foobar.com/url?bar={searchTerms}");
-  TemplateURL* template_url = new TemplateURL(data);
-  // Takes ownership of |template_url|.
-  template_url_service_->Add(template_url);
+  TemplateURL* template_url =
+      template_url_service_->Add(base::MakeUnique<TemplateURL>(data));
   template_url_service_->SetUserSelectedDefaultSearchProvider(template_url);
 
   EXPECT_EQ(static_cast<InstantSearchPrerenderer*>(NULL),

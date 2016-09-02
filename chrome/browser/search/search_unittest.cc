@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_samples.h"
@@ -73,9 +74,8 @@ class SearchTest : public BrowserWithTestWindowTest {
     data.alternate_urls.push_back("http://foo.com/alt#quux={searchTerms}");
     data.search_terms_replacement_key = "strk";
 
-    TemplateURL* template_url = new TemplateURL(data);
-    // Takes ownership of |template_url|.
-    template_url_service->Add(template_url);
+    TemplateURL* template_url =
+        template_url_service->Add(base::MakeUnique<TemplateURL>(data));
     template_url_service->SetUserSelectedDefaultSearchProvider(template_url);
   }
 
@@ -98,9 +98,8 @@ class SearchTest : public BrowserWithTestWindowTest {
         kInstantURLWithStrk : kInstantURLNoStrk);
     data.search_terms_replacement_key = "strk";
 
-    TemplateURL* template_url = new TemplateURL(data);
-    // Takes ownership of |template_url|.
-    template_url_service->Add(template_url);
+    TemplateURL* template_url =
+        template_url_service->Add(base::MakeUnique<TemplateURL>(data));
     template_url_service->SetUserSelectedDefaultSearchProvider(template_url);
   }
 
@@ -495,9 +494,8 @@ TEST_F(SearchTest, CommandLineOverrides) {
   data.SetURL("{google:baseURL}search?q={searchTerms}");
   data.instant_url = "{google:baseURL}webhp?strk";
   data.search_terms_replacement_key = "strk";
-  TemplateURL* template_url = new TemplateURL(data);
-  // Takes ownership of |template_url|.
-  template_url_service->Add(template_url);
+  TemplateURL* template_url =
+      template_url_service->Add(base::MakeUnique<TemplateURL>(data));
   template_url_service->SetUserSelectedDefaultSearchProvider(template_url);
 
   // By default, Instant Extended forces the instant URL to be HTTPS, so even if
@@ -628,8 +626,8 @@ TEST_F(SearchTest, SearchProviderWithPort) {
   data.alternate_urls.push_back("https://[::1]:1993/alt#quux={searchTerms}");
   data.search_terms_replacement_key = "strk";
 
-  TemplateURL* template_url = new TemplateURL(data);
-  template_url_service->Add(template_url); // Takes ownership of |template_url|.
+  TemplateURL* template_url =
+      template_url_service->Add(base::MakeUnique<TemplateURL>(data));
   template_url_service->SetUserSelectedDefaultSearchProvider(template_url);
 
   EXPECT_TRUE(ShouldAssignURLToInstantRenderer(
@@ -656,9 +654,8 @@ class SearchURLTest : public SearchTest {
     data.SetURL("{google:baseURL}search?"
                 "{google:instantExtendedEnabledParameter}q={searchTerms}");
     data.search_terms_replacement_key = "espv";
-    template_url_ = new TemplateURL(data);
-    // |template_url_service| takes ownership of |template_url_|.
-    template_url_service->Add(template_url_);
+    template_url_ =
+        template_url_service->Add(base::MakeUnique<TemplateURL>(data));
     template_url_service->SetUserSelectedDefaultSearchProvider(template_url_);
   }
 

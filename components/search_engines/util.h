@@ -78,7 +78,7 @@ struct ActionsFromPrepopulateData {
 // NOTE: Takes ownership of, and clears, |prepopulated_urls|.
 ActionsFromPrepopulateData CreateActionsFromCurrentPrepopulateData(
     ScopedVector<TemplateURLData>* prepopulated_urls,
-    const TemplateURLService::TemplateURLVector& existing_urls,
+    const TemplateURLService::OwnedTemplateURLVector& existing_urls,
     const TemplateURL* default_search_provider);
 
 // Processes the results of KeywordWebDataService::GetKeywords, combining it
@@ -97,7 +97,7 @@ void GetSearchProvidersUsingKeywordResult(
     const WDTypedResult& result,
     KeywordWebDataService* service,
     PrefService* prefs,
-    TemplateURLService::TemplateURLVector* template_urls,
+    TemplateURLService::OwnedTemplateURLVector* template_urls,
     TemplateURL* default_search_provider,
     const SearchTermsData& search_terms_data,
     int* new_resource_keyword_version,
@@ -113,7 +113,7 @@ void GetSearchProvidersUsingKeywordResult(
 void GetSearchProvidersUsingLoadedEngines(
     KeywordWebDataService* service,
     PrefService* prefs,
-    TemplateURLService::TemplateURLVector* template_urls,
+    TemplateURLService::OwnedTemplateURLVector* template_urls,
     TemplateURL* default_search_provider,
     const SearchTermsData& search_terms_data,
     int* resource_keyword_version,
@@ -133,8 +133,12 @@ void RemoveDuplicatePrepopulateIDs(
     KeywordWebDataService* service,
     const ScopedVector<TemplateURLData>& prepopulated_urls,
     TemplateURL* default_search_provider,
-    TemplateURLService::TemplateURLVector* template_urls,
+    TemplateURLService::OwnedTemplateURLVector* template_urls,
     const SearchTermsData& search_terms_data,
     std::set<std::string>* removed_keyword_guids);
+
+TemplateURLService::OwnedTemplateURLVector::iterator FindTemplateURL(
+    TemplateURLService::OwnedTemplateURLVector* urls,
+    const TemplateURL* url);
 
 #endif  // COMPONENTS_SEARCH_ENGINES_UTIL_H_

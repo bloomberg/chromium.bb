@@ -78,6 +78,7 @@ class TemplateURLService : public WebDataServiceConsumer,
  public:
   using QueryTerms = std::map<std::string, std::string>;
   using TemplateURLVector = std::vector<TemplateURL*>;
+  using OwnedTemplateURLVector = std::vector<std::unique_ptr<TemplateURL>>;
   using SyncDataMap = std::map<std::string, syncer::SyncData>;
   using Subscription = base::CallbackList<void(void)>::Subscription;
 
@@ -165,21 +166,21 @@ class TemplateURLService : public WebDataServiceConsumer,
   // or NULL if there are no such TemplateURLs
   TemplateURL* GetTemplateURLForHost(const std::string& host);
 
-  // Takes ownership of |template_url| and adds it to this model.  For obvious
-  // reasons, it is illegal to Add() the same |template_url| pointer twice.
-  // Returns true if the Add is successful.
-  bool Add(TemplateURL* template_url);
+  // Adds |template_url| to this model.  Returns a raw pointer to |template_url|
+  // if the addition succeeded, or null on failure.  (Many callers need still
+  // need a raw pointer to the TemplateURL so they can access it later.)
+  TemplateURL* Add(std::unique_ptr<TemplateURL> template_url);
 
   // Like Add(), but overwrites the |template_url|'s values with the provided
   // ones.
-  void AddWithOverrides(TemplateURL* template_url,
-                        const base::string16& short_name,
-                        const base::string16& keyword,
-                        const std::string& url);
+  TemplateURL* AddWithOverrides(std::unique_ptr<TemplateURL> template_url,
+                                const base::string16& short_name,
+                                const base::string16& keyword,
+                                const std::string& url);
 
   // Adds a search engine with the specified info.
-  void AddExtensionControlledTURL(
-      TemplateURL* template_url,
+  TemplateURL* AddExtensionControlledTURL(
+      std::unique_ptr<TemplateURL> template_url,
       std::unique_ptr<TemplateURL::AssociatedExtensionInfo> info);
 
   // Removes the keyword from the model. This deletes the supplied TemplateURL.
@@ -491,11 +492,7 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   // Sets the keywords. This is used once the keywords have been loaded.
   // This does NOT notify the delegate or the database.
-  //
-  // This transfers ownership of the elements in |urls| to |this|, and may
-  // delete some elements, so it's not safe for callers to access any elements
-  // after calling; to reinforce this, this function clears |urls| on exit.
-  void SetTemplateURLs(TemplateURLVector* urls);
+  void SetTemplateURLs(std::unique_ptr<OwnedTemplateURLVector> urls);
 
   // Transitions to the loaded state.
   void ChangeToLoadedState();
@@ -567,17 +564,19 @@ class TemplateURLService : public WebDataServiceConsumer,
   // {google:baseSuggestURL}.
   void GoogleBaseURLChanged();
 
-  // Adds a new TemplateURL to this model. TemplateURLService will own the
-  // reference, and delete it when the TemplateURL is removed.
+  // Adds a new TemplateURL to this model.
+  //
   // If |newly_adding| is false, we assume that this TemplateURL was already
   // part of the model in the past, and therefore we don't need to do things
   // like assign it an ID or notify sync.
-  // This function guarantees that on return the model will not have two
-  // non-extension TemplateURLs with the same keyword.  If that means that it
-  // cannot add the provided argument, it will delete it and return false.
-  // Caller is responsible for notifying observers if this function returns
-  // true.
-  bool AddNoNotify(TemplateURL* template_url, bool newly_adding);
+  //
+  // This function guarantees that on return the model will not have two non-
+  // extension TemplateURLs with the same keyword.  If that means that it cannot
+  // add the provided argument, it will return null.  Otherwise it will return
+  // the raw pointer to the TemplateURL.  The caller is responsible for
+  // notifying observers if this function succeeds.
+  TemplateURL* AddNoNotify(std::unique_ptr<TemplateURL> template_url,
+                           bool newly_adding);
 
   // Removes the keyword from the model. This deletes the supplied TemplateURL.
   // This fails if the supplied template_url is the default search provider.
@@ -599,7 +598,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   // |default_from_prefs|. |default_from_prefs| may be NULL if there is no
   // policy-defined DSE in effect.
   void UpdateProvidersCreatedByPolicy(
-      TemplateURLVector* template_urls,
+      OwnedTemplateURLVector* template_urls,
       const TemplateURLData* default_from_prefs);
 
   // Resets the sync GUID of the specified TemplateURL and persists the change
@@ -663,17 +662,9 @@ class TemplateURLService : public WebDataServiceConsumer,
   // Goes through a vector of TemplateURLs and ensure that both the in-memory
   // and database copies have valid sync_guids. This is to fix crbug.com/102038,
   // where old entries were being pushed to Sync without a sync_guid.
-  void PatchMissingSyncGUIDs(TemplateURLVector* template_urls);
+  void PatchMissingSyncGUIDs(OwnedTemplateURLVector* template_urls);
 
   void OnSyncedDefaultSearchProviderGUIDChanged();
-
-  // Adds |template_urls| to |template_urls_|.
-  //
-  // This transfers ownership of the elements in |template_urls| to |this|, and
-  // may delete some elements, so it's not safe for callers to access any
-  // elements after calling; to reinforce this, this function clears
-  // |template_urls| on exit.
-  void AddTemplateURLs(TemplateURLVector* template_urls);
 
   // Adds to |matches| all TemplateURLs stored in |keyword_to_turl_and_length|
   // whose keywords begin with |prefix|, sorted shortest-keyword-first.  If
@@ -743,7 +734,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   // Mapping from Sync GUIDs to the TemplateURL.
   GUIDToTURL guid_to_turl_;
 
-  TemplateURLVector template_urls_;
+  OwnedTemplateURLVector template_urls_;
 
   base::ObserverList<TemplateURLServiceObserver> model_observers_;
 

@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SEARCH_ENGINES_DEFAULT_SEARCH_POLICY_HANDLER_H_
 #define COMPONENTS_SEARCH_ENGINES_DEFAULT_SEARCH_POLICY_HANDLER_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
@@ -70,7 +71,7 @@ class DefaultSearchPolicyHandler : public ConfigurationPolicyHandler {
   void EnsureListPrefExists(PrefValueMap* prefs, const std::string& path);
 
   // The ConfigurationPolicyHandler handlers for each default search policy.
-  std::vector<TypeCheckingPolicyHandler*> handlers_;
+  std::vector<std::unique_ptr<TypeCheckingPolicyHandler>> handlers_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultSearchPolicyHandler);
 };

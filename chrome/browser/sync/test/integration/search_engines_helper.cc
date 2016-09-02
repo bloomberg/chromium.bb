@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -186,24 +187,26 @@ bool AllServicesMatch() {
   return true;
 }
 
-TemplateURL* CreateTestTemplateURL(Profile* profile, int seed) {
+std::unique_ptr<TemplateURL> CreateTestTemplateURL(Profile* profile, int seed) {
   return CreateTestTemplateURL(profile, seed, CreateKeyword(seed),
                                base::StringPrintf("0000-0000-0000-%04d", seed));
 }
 
-TemplateURL* CreateTestTemplateURL(Profile* profile,
-                                   int seed,
-                                   const base::string16& keyword,
-                                   const std::string& sync_guid) {
+std::unique_ptr<TemplateURL> CreateTestTemplateURL(
+    Profile* profile,
+    int seed,
+    const base::string16& keyword,
+    const std::string& sync_guid) {
   return CreateTestTemplateURL(profile, seed, keyword,
       base::StringPrintf("http://www.test%d.com/", seed), sync_guid);
 }
 
-TemplateURL* CreateTestTemplateURL(Profile* profile,
-                                   int seed,
-                                   const base::string16& keyword,
-                                   const std::string& url,
-                                   const std::string& sync_guid) {
+std::unique_ptr<TemplateURL> CreateTestTemplateURL(
+    Profile* profile,
+    int seed,
+    const base::string16& keyword,
+    const std::string& url,
+    const std::string& sync_guid) {
   TemplateURLData data;
   data.SetShortName(CreateKeyword(seed));
   data.SetKeyword(keyword);
@@ -214,7 +217,7 @@ TemplateURL* CreateTestTemplateURL(Profile* profile,
   data.last_modified = base::Time::FromTimeT(100);
   data.prepopulate_id = 999999;
   data.sync_guid = sync_guid;
-  return new TemplateURL(data);
+  return base::MakeUnique<TemplateURL>(data);
 }
 
 void AddSearchEngine(int profile_index, int seed) {

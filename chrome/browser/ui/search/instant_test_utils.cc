@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
@@ -63,8 +64,7 @@ void InstantTestBase::SetupInstant(Browser* browser) {
   data.alternate_urls.push_back(instant_url_.spec() + "#q={searchTerms}");
   data.search_terms_replacement_key = "strk";
 
-  TemplateURL* template_url = new TemplateURL(data);
-  service->Add(template_url);  // Takes ownership of |template_url|.
+  TemplateURL* template_url = service->Add(base::MakeUnique<TemplateURL>(data));
   service->SetUserSelectedDefaultSearchProvider(template_url);
 }
 
@@ -78,8 +78,7 @@ void InstantTestBase::SetInstantURL(const std::string& url) {
   data.SetURL(url);
   data.instant_url = url;
 
-  TemplateURL* template_url = new TemplateURL(data);
-  service->Add(template_url);  // Takes ownership of |template_url|.
+  TemplateURL* template_url = service->Add(base::MakeUnique<TemplateURL>(data));
   service->SetUserSelectedDefaultSearchProvider(template_url);
 }
 

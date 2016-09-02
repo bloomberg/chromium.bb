@@ -10,6 +10,7 @@
 #include <set>
 #include <string>
 
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -326,7 +327,7 @@ void ProfileWriter::AddKeywords(ScopedVector<TemplateURL> template_urls,
        i != template_urls.end(); ++i) {
     // TemplateURLService requires keywords to be unique. If there is already a
     // TemplateURL with this keyword, don't import it again.
-    if (model->GetTemplateURLForKeyword((*i)->keyword()) != NULL)
+    if (model->GetTemplateURLForKeyword((*i)->keyword()) != nullptr)
       continue;
 
     // For search engines if there is already a keyword with the same
@@ -341,8 +342,8 @@ void ProfileWriter::AddKeywords(ScopedVector<TemplateURL> template_urls,
 
     // Only add valid TemplateURLs to the model.
     if ((*i)->url_ref().IsValid(model->search_terms_data())) {
-      model->Add(*i);  // Takes ownership.
-      *i = NULL;  // Prevent the vector from deleting *i later.
+      model->Add(base::WrapUnique(*i));
+      *i = nullptr;  // Prevent the vector from deleting *i later.
     }
   }
 }

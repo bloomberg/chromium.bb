@@ -13,10 +13,10 @@
 #include "base/compiler_specific.h"
 #include "base/guid.h"
 #include "base/i18n/case_conversion.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/profiler/scoped_tracker.h"
-#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -183,7 +183,11 @@ size_t GetMeaningfulKeywordLength(const base::string16& keyword,
   // The meaningful keyword length is the length of any portion before the
   // registry ("co.uk") and its preceding dot.
   return keyword.length() - (registry_length ? (registry_length + 1) : 0);
+}
 
+bool Contains(TemplateURLService::OwnedTemplateURLVector* template_urls,
+              TemplateURL* turl) {
+  return FindTemplateURL(template_urls, turl) != template_urls->end();
 }
 
 }  // namespace
@@ -207,9 +211,9 @@ class TemplateURLService::LessWithPrefix {
   bool operator()(
       const KeywordToTURLAndMeaningfulLength::value_type& elem1,
       const KeywordToTURLAndMeaningfulLength::value_type& elem2) const {
-    return (elem1.second.first == NULL) ?
-        (elem2.first.compare(0, elem1.first.length(), elem1.first) > 0) :
-        (elem1.first < elem2.first);
+    return (elem1.second.first == nullptr)
+               ? (elem2.first.compare(0, elem1.first.length(), elem1.first) > 0)
+               : (elem1.first < elem2.first);
   }
 };
 
@@ -236,7 +240,7 @@ TemplateURLService::TemplateURLService(
       load_failed_(false),
       disable_load_(false),
       load_handle_(0),
-      default_search_provider_(NULL),
+      default_search_provider_(nullptr),
       next_id_(kInvalidTemplateURLID + 1),
       clock_(new base::DefaultClock),
       models_associated_(false),
@@ -247,22 +251,22 @@ TemplateURLService::TemplateURLService(
           base::Bind(&TemplateURLService::OnDefaultSearchChange,
                      base::Unretained(this))) {
   DCHECK(search_terms_data_);
-  Init(NULL, 0);
+  Init(nullptr, 0);
 }
 
 TemplateURLService::TemplateURLService(const Initializer* initializers,
                                        const int count)
-    : prefs_(NULL),
+    : prefs_(nullptr),
       search_terms_data_(new SearchTermsData),
-      web_data_service_(NULL),
-      google_url_tracker_(NULL),
-      rappor_service_(NULL),
+      web_data_service_(nullptr),
+      google_url_tracker_(nullptr),
+      rappor_service_(nullptr),
       provider_map_(new SearchHostToURLsMap),
       loaded_(false),
       load_failed_(false),
       disable_load_(false),
       load_handle_(0),
-      default_search_provider_(NULL),
+      default_search_provider_(nullptr),
       next_id_(kInvalidTemplateURLID + 1),
       clock_(new base::DefaultClock),
       models_associated_(false),
@@ -278,7 +282,6 @@ TemplateURLService::TemplateURLService(const Initializer* initializers,
 TemplateURLService::~TemplateURLService() {
   // |web_data_service_| should be deleted during Shutdown().
   DCHECK(!web_data_service_.get());
-  base::STLDeleteElements(&template_urls_);
 }
 
 // static
@@ -411,10 +414,10 @@ TemplateURL* TemplateURLService::GetTemplateURLForKeyword(
       keyword_to_turl_and_length_.find(keyword));
   if (elem != keyword_to_turl_and_length_.end())
     return elem->second.first;
-  return (!loaded_ &&
-      initial_default_search_provider_.get() &&
-      (initial_default_search_provider_->keyword() == keyword)) ?
-      initial_default_search_provider_.get() : NULL;
+  return (!loaded_ && initial_default_search_provider_ &&
+          (initial_default_search_provider_->keyword() == keyword))
+             ? initial_default_search_provider_.get()
+             : nullptr;
 }
 
 TemplateURL* TemplateURLService::GetTemplateURLForGUID(
@@ -422,10 +425,10 @@ TemplateURL* TemplateURLService::GetTemplateURLForGUID(
   GUIDToTURL::const_iterator elem(guid_to_turl_.find(sync_guid));
   if (elem != guid_to_turl_.end())
     return elem->second;
-  return (!loaded_ &&
-      initial_default_search_provider_.get() &&
-      (initial_default_search_provider_->sync_guid() == sync_guid)) ?
-      initial_default_search_provider_.get() : NULL;
+  return (!loaded_ && initial_default_search_provider_ &&
+          (initial_default_search_provider_->sync_guid() == sync_guid))
+             ? initial_default_search_provider_.get()
+             : nullptr;
 }
 
 TemplateURL* TemplateURLService::GetTemplateURLForHost(
@@ -433,35 +436,37 @@ TemplateURL* TemplateURLService::GetTemplateURLForHost(
   if (loaded_)
     return provider_map_->GetTemplateURLForHost(host);
   TemplateURL* initial_dsp = initial_default_search_provider_.get();
-  if (!initial_dsp)
-    return NULL;
-  return (initial_dsp->GenerateSearchURL(search_terms_data()).host() == host) ?
-      initial_dsp : NULL;
+  return (initial_dsp &&
+          (initial_dsp->GenerateSearchURL(search_terms_data()).host() == host))
+             ? initial_dsp
+             : nullptr;
 }
 
-bool TemplateURLService::Add(TemplateURL* template_url) {
+TemplateURL* TemplateURLService::Add(
+    std::unique_ptr<TemplateURL> template_url) {
   KeywordWebDataService::BatchModeScoper scoper(web_data_service_.get());
-  if (!AddNoNotify(template_url, true))
-    return false;
-  NotifyObservers();
-  return true;
+  TemplateURL* template_url_ptr = AddNoNotify(std::move(template_url), true);
+  if (template_url_ptr)
+    NotifyObservers();
+  return template_url_ptr;
 }
 
-void TemplateURLService::AddWithOverrides(TemplateURL* template_url,
-                                          const base::string16& short_name,
-                                          const base::string16& keyword,
-                                          const std::string& url) {
+TemplateURL* TemplateURLService::AddWithOverrides(
+    std::unique_ptr<TemplateURL> template_url,
+    const base::string16& short_name,
+    const base::string16& keyword,
+    const std::string& url) {
   DCHECK(!short_name.empty());
   DCHECK(!keyword.empty());
   DCHECK(!url.empty());
   template_url->data_.SetShortName(short_name);
   template_url->data_.SetKeyword(keyword);
   template_url->SetURL(url);
-  Add(template_url);
+  return Add(std::move(template_url));
 }
 
-void TemplateURLService::AddExtensionControlledTURL(
-    TemplateURL* template_url,
+TemplateURL* TemplateURLService::AddExtensionControlledTURL(
+    std::unique_ptr<TemplateURL> template_url,
     std::unique_ptr<TemplateURL::AssociatedExtensionInfo> info) {
   DCHECK(loaded_);
   DCHECK(template_url);
@@ -474,11 +479,15 @@ void TemplateURLService::AddExtensionControlledTURL(
   template_url->extension_info_.swap(info);
 
   KeywordWebDataService::BatchModeScoper scoper(web_data_service_.get());
-  if (AddNoNotify(template_url, true)) {
-    if (template_url->extension_info_->wants_to_be_default_engine)
+  TemplateURL* template_url_ptr = AddNoNotify(std::move(template_url), true);
+  if (template_url_ptr) {
+    if (template_url_ptr->extension_info_->wants_to_be_default_engine) {
       UpdateExtensionDefaultSearchEngine();
+    }
     NotifyObservers();
   }
+
+  return template_url_ptr;
 }
 
 void TemplateURLService::Remove(TemplateURL* template_url) {
@@ -496,7 +505,7 @@ void TemplateURLService::RemoveExtensionControlledTURL(
   // NULL this out so that we can call RemoveNoNotify.
   // UpdateExtensionDefaultSearchEngine will cause it to be reset.
   if (default_search_provider_ == url)
-    default_search_provider_ = NULL;
+    default_search_provider_ = nullptr;
   KeywordWebDataService::BatchModeScoper scoper(web_data_service_.get());
   RemoveNoNotify(url);
   UpdateExtensionDefaultSearchEngine();
@@ -523,11 +532,11 @@ void TemplateURLService::RemoveAutoGeneratedForUrlsBetween(
     if (template_urls_[i]->date_created() >= created_after &&
         (created_before.is_null() ||
          template_urls_[i]->date_created() < created_before) &&
-        CanReplace(template_urls_[i]) &&
+        CanReplace(template_urls_[i].get()) &&
         (url_filter.is_null() ||
          url_filter.Run(
              template_urls_[i]->GenerateSearchURL(search_terms_data())))) {
-      RemoveNoNotify(template_urls_[i]);
+      RemoveNoNotify(template_urls_[i].get());
       should_notify = true;
     } else {
       ++i;
@@ -552,15 +561,18 @@ void TemplateURLService::RegisterOmniboxKeyword(
   data.SetShortName(base::UTF8ToUTF16(extension_name));
   data.SetKeyword(base::UTF8ToUTF16(keyword));
   data.SetURL(template_url_string);
-  TemplateURL* url = new TemplateURL(data);
   std::unique_ptr<TemplateURL::AssociatedExtensionInfo> info(
       new TemplateURL::AssociatedExtensionInfo(
           TemplateURL::OMNIBOX_API_EXTENSION, extension_id));
-  AddExtensionControlledTURL(url, std::move(info));
+  AddExtensionControlledTURL(base::MakeUnique<TemplateURL>(data),
+                             std::move(info));
 }
 
 TemplateURLService::TemplateURLVector TemplateURLService::GetTemplateURLs() {
-  return template_urls_;
+  TemplateURLVector result;
+  for (const auto& turl : template_urls_)
+    result.push_back(turl.get());
+  return result;
 }
 
 void TemplateURLService::IncrementUsageCount(TemplateURL* url) {
@@ -568,8 +580,7 @@ void TemplateURLService::IncrementUsageCount(TemplateURL* url) {
   // Extension-controlled search engines are not persisted.
   if (url->GetType() != TemplateURL::NORMAL)
     return;
-  if (std::find(template_urls_.begin(), template_urls_.end(), url) ==
-      template_urls_.end())
+  if (!Contains(&template_urls_, url))
     return;
   ++url->data_.usage_count;
 
@@ -606,7 +617,7 @@ void TemplateURLService::SetUserSelectedDefaultSearchProvider(
     if ((default_search_provider_source_ == DefaultSearchManager::FROM_USER) ||
         (default_search_provider_source_ ==
          DefaultSearchManager::FROM_FALLBACK)) {
-      ApplyDefaultSearchChange(url ? &url->data() : NULL,
+      ApplyDefaultSearchChange(url ? &url->data() : nullptr,
                                DefaultSearchManager::FROM_USER);
     }
   } else {
@@ -650,7 +661,7 @@ void TemplateURLService::RepairPrepopulatedSearchEngines() {
           DefaultSearchManager::FROM_FALLBACK)) {
     // Clear |default_search_provider_| in case we want to remove the engine it
     // points to. This will get reset at the end of the function anyway.
-    default_search_provider_ = NULL;
+    default_search_provider_ = nullptr;
   }
 
   size_t default_search_provider_index = 0;
@@ -680,7 +691,7 @@ void TemplateURLService::RepairPrepopulatedSearchEngines() {
            actions.added_engines.begin();
        i < actions.added_engines.end();
        ++i) {
-    AddNoNotify(new TemplateURL(*i), true);
+    AddNoNotify(base::MakeUnique<TemplateURL>(*i), true);
   }
 
   base::AutoReset<DefaultSearchChangeOrigin> change_origin(
@@ -751,12 +762,13 @@ void TemplateURLService::OnWebDataServiceRequestDone(
     // Results are null if the database went away or (most likely) wasn't
     // loaded.
     load_failed_ = true;
-    web_data_service_ = NULL;
+    web_data_service_ = nullptr;
     ChangeToLoadedState();
     return;
   }
 
-  TemplateURLVector template_urls;
+  std::unique_ptr<OwnedTemplateURLVector> template_urls =
+      base::MakeUnique<OwnedTemplateURLVector>();
   int new_resource_keyword_version = 0;
   {
     // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460
@@ -766,10 +778,10 @@ void TemplateURLService::OnWebDataServiceRequestDone(
             "422460 TemplateURLService::OnWebDataServiceRequestDone 2"));
 
     GetSearchProvidersUsingKeywordResult(
-        *result, web_data_service_.get(), prefs_, &template_urls,
+        *result, web_data_service_.get(), prefs_, template_urls.get(),
         (default_search_provider_source_ == DefaultSearchManager::FROM_USER)
             ? initial_default_search_provider_.get()
-            : NULL,
+            : nullptr,
         search_terms_data(), &new_resource_keyword_version, &pre_sync_deletes_);
   }
 
@@ -782,7 +794,7 @@ void TemplateURLService::OnWebDataServiceRequestDone(
         FROM_HERE_WITH_EXPLICIT_FUNCTION(
             "422460 TemplateURLService::OnWebDataServiceRequestDone 4"));
 
-    PatchMissingSyncGUIDs(&template_urls);
+    PatchMissingSyncGUIDs(template_urls.get());
 
     // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460
     // is fixed.
@@ -790,7 +802,7 @@ void TemplateURLService::OnWebDataServiceRequestDone(
         FROM_HERE_WITH_EXPLICIT_FUNCTION(
             "422460 TemplateURLService::OnWebDataServiceRequestDone 41"));
 
-    SetTemplateURLs(&template_urls);
+    SetTemplateURLs(std::move(template_urls));
 
     // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460
     // is fixed.
@@ -880,7 +892,7 @@ void TemplateURLService::Shutdown() {
     DCHECK(web_data_service_.get());
     web_data_service_->CancelRequest(load_handle_);
   }
-  web_data_service_ = NULL;
+  web_data_service_ = nullptr;
 }
 
 syncer::SyncDataList TemplateURLService::GetAllSyncData(
@@ -888,15 +900,14 @@ syncer::SyncDataList TemplateURLService::GetAllSyncData(
   DCHECK_EQ(syncer::SEARCH_ENGINES, type);
 
   syncer::SyncDataList current_data;
-  for (TemplateURLVector::const_iterator iter = template_urls_.begin();
-      iter != template_urls_.end(); ++iter) {
+  for (const auto& turl : template_urls_) {
     // We don't sync keywords managed by policy.
-    if ((*iter)->created_by_policy())
+    if (turl->created_by_policy())
       continue;
     // We don't sync extension-controlled search engines.
-    if ((*iter)->GetType() != TemplateURL::NORMAL)
+    if (turl->GetType() != TemplateURL::NORMAL)
       continue;
-    current_data.push_back(CreateSyncDataFromTemplateURL(**iter));
+    current_data.push_back(CreateSyncDataFromTemplateURL(*turl));
   }
 
   return current_data;
@@ -1004,8 +1015,10 @@ syncer::SyncError TemplateURLService::ProcessSyncChanges(
       // Force the local ID to kInvalidTemplateURLID so we can add it.
       TemplateURLData data(turl->data());
       data.id = kInvalidTemplateURLID;
-      TemplateURL* added = new TemplateURL(data);
-      if (Add(added))
+      std::unique_ptr<TemplateURL> added_ptr =
+          base::MakeUnique<TemplateURL>(data);
+      TemplateURL* added = added_ptr.get();
+      if (Add(std::move(added_ptr)))
         MaybeUpdateDSEAfterSync(added);
     } else if (iter->change_type() == syncer::SyncChange::ACTION_UPDATE) {
       if (!existing_turl) {
@@ -1278,7 +1291,7 @@ TemplateURLService::CreateTemplateURLFromTemplateURLAndSyncData(
                            sync_data));
     UMA_HISTOGRAM_ENUMERATION(kDeleteSyncedEngineHistogramName,
         DELETE_ENGINE_EMPTY_FIELD, DELETE_ENGINE_MAX);
-    return NULL;
+    return nullptr;
   }
 
   TemplateURLData data(existing_turl ?
@@ -1340,7 +1353,7 @@ TemplateURLService::CreateTemplateURLFromTemplateURLAndSyncData(
   DCHECK(client);
   client->RestoreExtensionInfoIfNecessary(turl.get());
   if (turl->GetType() == TemplateURL::OMNIBOX_API_EXTENSION)
-    return NULL;
+    return nullptr;
 
   DCHECK_EQ(TemplateURL::NORMAL, turl->GetType());
   if (reset_keyword || deduped) {
@@ -1424,8 +1437,7 @@ void TemplateURLService::Init(const Initializer* initializers,
       data.SetShortName(base::UTF8ToUTF16(initializers[i].content));
       data.SetKeyword(base::UTF8ToUTF16(initializers[i].keyword));
       data.SetURL(initializers[i].url);
-      TemplateURL* template_url = new TemplateURL(data);
-      AddNoNotify(template_url, true);
+      AddNoNotify(base::MakeUnique<TemplateURL>(data), true);
 
       // Set the first provided identifier to be the default.
       if (i == 0)
@@ -1448,18 +1460,16 @@ void TemplateURLService::RemoveFromMaps(TemplateURL* template_url) {
     // In the case of more than one extension, we use the most recently
     // installed (which will be the most recently added, which will have the
     // highest ID).
-    TemplateURL* best_fallback = NULL;
-    for (TemplateURLVector::const_iterator i(template_urls_.begin());
-         i != template_urls_.end(); ++i) {
-      TemplateURL* turl = *i;
+    TemplateURL* best_fallback = nullptr;
+    for (const auto& turl : template_urls_) {
       // This next statement relies on the fact that there can only be one
       // non-Omnibox API TemplateURL with a given keyword.
-      if ((turl != template_url) && (turl->keyword() == keyword) &&
+      if ((turl.get() != template_url) && (turl->keyword() == keyword) &&
           (!best_fallback ||
            (best_fallback->GetType() != TemplateURL::OMNIBOX_API_EXTENSION) ||
            ((turl->GetType() == TemplateURL::OMNIBOX_API_EXTENSION) &&
             (turl->id() > best_fallback->id()))))
-        best_fallback = turl;
+        best_fallback = turl.get();
     }
     RemoveFromDomainMap(template_url);
     if (best_fallback) {
@@ -1551,37 +1561,29 @@ void TemplateURLService::AddToMap(TemplateURL* template_url) {
           template_url, GetMeaningfulKeywordLength(keyword, template_url));
 }
 
-// Helper for partition() call in next function.
-bool HasValidID(TemplateURL* t_url) {
-  return t_url->id() != kInvalidTemplateURLID;
-}
-
-void TemplateURLService::SetTemplateURLs(TemplateURLVector* urls) {
+void TemplateURLService::SetTemplateURLs(
+    std::unique_ptr<OwnedTemplateURLVector> urls) {
   // Partition the URLs first, instead of implementing the loops below by simply
   // scanning the input twice.  While it's not supposed to happen normally, it's
   // possible for corrupt databases to return multiple entries with the same
   // keyword.  In this case, the first loop may delete the first entry when
   // adding the second.  If this happens, the second loop must not attempt to
   // access the deleted entry.  Partitioning ensures this constraint.
-  TemplateURLVector::iterator first_invalid(
-      std::partition(urls->begin(), urls->end(), HasValidID));
+  auto first_invalid = std::partition(
+      urls->begin(), urls->end(), [](const std::unique_ptr<TemplateURL>& turl) {
+        return turl->id() != kInvalidTemplateURLID;
+      });
 
   // First, add the items that already have id's, so that the next_id_ gets
   // properly set.
-  for (TemplateURLVector::const_iterator i = urls->begin(); i != first_invalid;
-       ++i) {
+  for (auto i = urls->begin(); i != first_invalid; ++i) {
     next_id_ = std::max(next_id_, (*i)->id());
-    AddNoNotify(*i, false);
+    AddNoNotify(std::move(*i), false);
   }
 
   // Next add the new items that don't have id's.
-  for (TemplateURLVector::const_iterator i = first_invalid; i != urls->end();
-       ++i)
-    AddNoNotify(*i, true);
-
-  // Clear the input vector to reduce the chance callers will try to use a
-  // (possibly deleted) entry.
-  urls->clear();
+  for (auto i = first_invalid; i != urls->end(); ++i)
+    AddNoNotify(std::move(*i), true);
 }
 
 void TemplateURLService::ChangeToLoadedState() {
@@ -1604,8 +1606,9 @@ void TemplateURLService::ChangeToLoadedState() {
 
   // This will cause a call to NotifyObservers().
   ApplyDefaultSearchChangeNoMetrics(
-      initial_default_search_provider_ ?
-          &initial_default_search_provider_->data() : NULL,
+      initial_default_search_provider_
+          ? &initial_default_search_provider_->data()
+          : nullptr,
       default_search_provider_source_);
   initial_default_search_provider_.reset();
 
@@ -1642,20 +1645,18 @@ TemplateURL* TemplateURLService::FindNonExtensionTemplateURLForKeyword(
     return keyword_turl;
   // The extension keyword in the model may be hiding a replaceable
   // non-extension keyword.  Look for it.
-  for (TemplateURLVector::const_iterator i(template_urls_.begin());
-       i != template_urls_.end(); ++i) {
-    if (((*i)->GetType() == TemplateURL::NORMAL) &&
-        ((*i)->keyword() == keyword))
-      return *i;
+  for (const auto& turl : template_urls_) {
+    if ((turl->GetType() == TemplateURL::NORMAL) &&
+        (turl->keyword() == keyword))
+      return turl.get();
   }
-  return NULL;
+  return nullptr;
 }
 
 bool TemplateURLService::UpdateNoNotify(TemplateURL* existing_turl,
                                         const TemplateURL& new_values) {
   DCHECK(existing_turl);
-  if (std::find(template_urls_.begin(), template_urls_.end(), existing_turl) ==
-      template_urls_.end())
+  if (!Contains(&template_urls_, existing_turl))
     return false;
 
   DCHECK_NE(TemplateURL::OMNIBOX_API_EXTENSION, existing_turl->GetType());
@@ -1828,32 +1829,30 @@ void TemplateURLService::GoogleBaseURLChanged() {
 
   KeywordWebDataService::BatchModeScoper scoper(web_data_service_.get());
   bool something_changed = false;
-  for (TemplateURLVector::iterator i(template_urls_.begin());
-       i != template_urls_.end(); ++i) {
-    TemplateURL* t_url = *i;
-    if (t_url->HasGoogleBaseURLs(search_terms_data())) {
-      TemplateURL updated_turl(t_url->data());
+  for (const auto& turl : template_urls_) {
+    if (turl->HasGoogleBaseURLs(search_terms_data())) {
+      TemplateURL updated_turl(turl->data());
       updated_turl.ResetKeywordIfNecessary(search_terms_data(), false);
       KeywordToTURLAndMeaningfulLength::const_iterator existing_entry =
           keyword_to_turl_and_length_.find(updated_turl.keyword());
       if ((existing_entry != keyword_to_turl_and_length_.end()) &&
-          (existing_entry->second.first != t_url)) {
+          (existing_entry->second.first != turl.get())) {
         // The new autogenerated keyword conflicts with another TemplateURL.
-        // Overwrite it if it's replaceable; otherwise, leave |t_url| using its
-        // current keyword.  (This will not prevent |t_url| from auto-updating
+        // Overwrite it if it's replaceable; otherwise, leave |turl| using its
+        // current keyword.  (This will not prevent |turl| from auto-updating
         // the keyword in the future if the conflicting TemplateURL disappears.)
-        // Note that we must still update |t_url| in this case, or the
+        // Note that we must still update |turl| in this case, or the
         // |provider_map_| will not be updated correctly.
         if (CanReplace(existing_entry->second.first))
           RemoveNoNotify(existing_entry->second.first);
         else
-          updated_turl.data_.SetKeyword(t_url->keyword());
+          updated_turl.data_.SetKeyword(turl->keyword());
       }
       something_changed = true;
       // This will send the keyword change to sync.  Note that other clients
       // need to reset the keyword to an appropriate local value when this
       // change arrives; see CreateTemplateURLFromTemplateURLAndSyncData().
-      UpdateNoNotify(t_url, updated_turl);
+      UpdateNoNotify(turl.get(), updated_turl);
     }
   }
   if (something_changed)
@@ -1896,8 +1895,8 @@ bool TemplateURLService::ApplyDefaultSearchChangeNoMetrics(
     // default.
     bool changed = TemplateURL::MatchesData(
         initial_default_search_provider_.get(), data, search_terms_data());
-    initial_default_search_provider_.reset(
-        data ? new TemplateURL(*data) : NULL);
+    initial_default_search_provider_ =
+        data ? base::MakeUnique<TemplateURL>(*data) : nullptr;
     default_search_provider_source_ = source;
     return changed;
   }
@@ -1906,7 +1905,7 @@ bool TemplateURLService::ApplyDefaultSearchChangeNoMetrics(
   // Note that we exclude the case of data == NULL because that could cause a
   // false positive for recursion when the initial_default_search_provider_ is
   // NULL due to policy. We'll never actually get recursion with data == NULL.
-  if (source == default_search_provider_source_ && data != NULL &&
+  if (source == default_search_provider_source_ && data != nullptr &&
       TemplateURL::MatchesData(default_search_provider_, data,
                                search_terms_data()))
     return false;
@@ -1922,11 +1921,11 @@ bool TemplateURLService::ApplyDefaultSearchChangeNoMetrics(
     // well as to add the new one, if appropriate.
     UpdateProvidersCreatedByPolicy(
         &template_urls_,
-        source == DefaultSearchManager::FROM_POLICY ? data : NULL);
+        source == DefaultSearchManager::FROM_POLICY ? data : nullptr);
   }
 
   if (!data) {
-    default_search_provider_ = NULL;
+    default_search_provider_ = nullptr;
   } else if (source == DefaultSearchManager::FROM_EXTENSION) {
     default_search_provider_ = FindMatchingExtensionTemplateURL(
         *data, TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION);
@@ -1948,8 +1947,10 @@ bool TemplateURLService::ApplyDefaultSearchChangeNoMetrics(
       // (1) Tests that initialize the TemplateURLService in peculiar ways.
       // (2) If the user deleted the pre-populated default and we subsequently
       // lost their user-selected value.
-      TemplateURL* new_dse = new TemplateURL(*data);
-      if (AddNoNotify(new_dse, true))
+      std::unique_ptr<TemplateURL> new_dse_ptr =
+          base::MakeUnique<TemplateURL>(*data);
+      TemplateURL* new_dse = new_dse_ptr.get();
+      if (AddNoNotify(std::move(new_dse_ptr), true))
         default_search_provider_ = new_dse;
     }
   } else if (source == DefaultSearchManager::FROM_USER) {
@@ -1964,8 +1965,10 @@ bool TemplateURLService::ApplyDefaultSearchChangeNoMetrics(
       UpdateNoNotify(default_search_provider_, TemplateURL(new_data));
     } else {
       new_data.id = kInvalidTemplateURLID;
-      TemplateURL* new_dse = new TemplateURL(new_data);
-      if (AddNoNotify(new_dse, true))
+      std::unique_ptr<TemplateURL> new_dse_ptr =
+          base::MakeUnique<TemplateURL>(new_data);
+      TemplateURL* new_dse = new_dse_ptr.get();
+      if (AddNoNotify(std::move(new_dse_ptr), true))
         default_search_provider_ = new_dse;
     }
     if (default_search_provider_ && prefs_) {
@@ -1986,14 +1989,14 @@ bool TemplateURLService::ApplyDefaultSearchChangeNoMetrics(
   return changed;
 }
 
-bool TemplateURLService::AddNoNotify(TemplateURL* template_url,
-                                     bool newly_adding) {
+TemplateURL* TemplateURLService::AddNoNotify(
+    std::unique_ptr<TemplateURL> template_url,
+    bool newly_adding) {
   DCHECK(template_url);
 
   if (newly_adding) {
     DCHECK_EQ(kInvalidTemplateURLID, template_url->id());
-    DCHECK(std::find(template_urls_.begin(), template_urls_.end(),
-                     template_url) == template_urls_.end());
+    DCHECK(!Contains(&template_urls_, template_url.get()));
     template_url->data_.id = ++next_id_;
   }
 
@@ -2015,18 +2018,16 @@ bool TemplateURLService::AddNoNotify(TemplateURL* template_url,
   if (template_url->GetType() != TemplateURL::OMNIBOX_API_EXTENSION &&
       existing_keyword_turl &&
       existing_keyword_turl->GetType() != TemplateURL::OMNIBOX_API_EXTENSION &&
-      (std::find(template_urls_.begin(), template_urls_.end(),
-                 existing_keyword_turl) != template_urls_.end())) {
-    DCHECK_NE(existing_keyword_turl, template_url);
+      Contains(&template_urls_, existing_keyword_turl)) {
+    DCHECK_NE(existing_keyword_turl, template_url.get());
     // Only replace one of the TemplateURLs if they are either both extensions,
     // or both not extensions.
     bool are_same_type = existing_keyword_turl->GetType() ==
         template_url->GetType();
     if (CanReplace(existing_keyword_turl) && are_same_type) {
       RemoveNoNotify(existing_keyword_turl);
-    } else if (CanReplace(template_url) && are_same_type) {
-      delete template_url;
-      return false;
+    } else if (CanReplace(template_url.get()) && are_same_type) {
+      return nullptr;
     } else {
       base::string16 new_keyword =
           UniquifyKeyword(*existing_keyword_turl, false);
@@ -2035,35 +2036,34 @@ bool TemplateURLService::AddNoNotify(TemplateURL* template_url,
                                existing_keyword_turl->url());
     }
   }
-  template_urls_.push_back(template_url);
-  AddToMaps(template_url);
+  TemplateURL* template_url_ptr = template_url.get();
+  template_urls_.push_back(std::move(template_url));
+  AddToMaps(template_url_ptr);
 
-  if (newly_adding &&
-      (template_url->GetType() == TemplateURL::NORMAL)) {
+  if (newly_adding && (template_url_ptr->GetType() == TemplateURL::NORMAL)) {
     if (web_data_service_.get())
-      web_data_service_->AddKeyword(template_url->data());
+      web_data_service_->AddKeyword(template_url_ptr->data());
 
     // Inform sync of the addition. Note that this will assign a GUID to
     // template_url and add it to the guid_to_turl_.
-    ProcessTemplateURLChange(FROM_HERE,
-                             template_url,
+    ProcessTemplateURLChange(FROM_HERE, template_url_ptr,
                              syncer::SyncChange::ACTION_ADD);
   }
 
-  return true;
+  return template_url_ptr;
 }
 
 void TemplateURLService::RemoveNoNotify(TemplateURL* template_url) {
   DCHECK(template_url != default_search_provider_);
 
-  TemplateURLVector::iterator i =
-      std::find(template_urls_.begin(), template_urls_.end(), template_url);
+  auto i = FindTemplateURL(&template_urls_, template_url);
   if (i == template_urls_.end())
     return;
 
   RemoveFromMaps(template_url);
 
   // Remove it from the vector containing all TemplateURLs.
+  std::unique_ptr<TemplateURL> scoped_turl = std::move(*i);
   template_urls_.erase(i);
 
   if (template_url->GetType() == TemplateURL::NORMAL) {
@@ -2081,9 +2081,6 @@ void TemplateURLService::RemoveNoNotify(TemplateURL* template_url) {
 
   if (loaded_ && client_)
     client_->DeleteAllSearchTermsForKeyword(template_url->id());
-
-  // We own the TemplateURL and need to delete it.
-  delete template_url;
 }
 
 bool TemplateURLService::ResetTemplateURLNoNotify(
@@ -2122,13 +2119,12 @@ void TemplateURLService::NotifyObservers() {
 // that were set by policy, unless it is the current default search provider, in
 // which case it is updated with the data from prefs.
 void TemplateURLService::UpdateProvidersCreatedByPolicy(
-    TemplateURLVector* template_urls,
+    OwnedTemplateURLVector* template_urls,
     const TemplateURLData* default_from_prefs) {
   DCHECK(template_urls);
 
-  for (TemplateURLVector::iterator i = template_urls->begin();
-       i != template_urls->end(); ) {
-    TemplateURL* template_url = *i;
+  for (auto i = template_urls->begin(); i != template_urls->end();) {
+    TemplateURL* template_url = i->get();
     if (template_url->created_by_policy()) {
       if (default_from_prefs &&
           TemplateURL::MatchesData(template_url, default_from_prefs,
@@ -2139,30 +2135,32 @@ void TemplateURLService::UpdateProvidersCreatedByPolicy(
         // database and the |default_search_provider|.
         default_search_provider_ = template_url;
         // Prevent us from saving any other entries, or creating a new one.
-        default_from_prefs = NULL;
+        default_from_prefs = nullptr;
         ++i;
         continue;
       }
 
+      TemplateURLID id = template_url->id();
       RemoveFromMaps(template_url);
       i = template_urls->erase(i);
       if (web_data_service_.get())
-        web_data_service_->RemoveKeyword(template_url->id());
-      delete template_url;
+        web_data_service_->RemoveKeyword(id);
     } else {
       ++i;
     }
   }
 
   if (default_from_prefs) {
-    default_search_provider_ = NULL;
+    default_search_provider_ = nullptr;
     default_search_provider_source_ = DefaultSearchManager::FROM_POLICY;
     TemplateURLData new_data(*default_from_prefs);
     if (new_data.sync_guid.empty())
       new_data.sync_guid = base::GenerateGUID();
     new_data.created_by_policy = true;
-    TemplateURL* new_dse = new TemplateURL(new_data);
-    if (AddNoNotify(new_dse, true))
+    std::unique_ptr<TemplateURL> new_dse_ptr =
+        base::MakeUnique<TemplateURL>(new_data);
+    TemplateURL* new_dse = new_dse_ptr.get();
+    if (AddNoNotify(std::move(new_dse_ptr), true))
       default_search_provider_ = new_dse;
   }
 }
@@ -2352,22 +2350,21 @@ void TemplateURLService::MergeInSyncTemplateURL(
     // Force the local ID to kInvalidTemplateURLID so we can add it.
     TemplateURLData data(sync_turl->data());
     data.id = kInvalidTemplateURLID;
-    TemplateURL* added = new TemplateURL(data);
+    std::unique_ptr<TemplateURL> added_ptr =
+        base::MakeUnique<TemplateURL>(data);
+    TemplateURL* added = added_ptr.get();
     base::AutoReset<DefaultSearchChangeOrigin> change_origin(
         &dsp_change_origin_, DSP_CHANGE_SYNC_ADD);
-    if (Add(added))
+    if (Add(std::move(added_ptr)))
       MaybeUpdateDSEAfterSync(added);
-    merge_result->set_num_items_added(
-        merge_result->num_items_added() + 1);
+    merge_result->set_num_items_added(merge_result->num_items_added() + 1);
   }
 }
 
 void TemplateURLService::PatchMissingSyncGUIDs(
-    TemplateURLVector* template_urls) {
+    OwnedTemplateURLVector* template_urls) {
   DCHECK(template_urls);
-  for (TemplateURLVector::iterator i = template_urls->begin();
-       i != template_urls->end(); ++i) {
-    TemplateURL* template_url = *i;
+  for (auto& template_url : *template_urls) {
     DCHECK(template_url);
     if (template_url->sync_guid().empty() &&
         (template_url->GetType() == TemplateURL::NORMAL)) {
@@ -2425,51 +2422,46 @@ void TemplateURLService::AddMatchingKeywordsHelper(
 
 TemplateURL* TemplateURLService::FindPrepopulatedTemplateURL(
     int prepopulated_id) {
-  for (TemplateURLVector::const_iterator i = template_urls_.begin();
-       i != template_urls_.end(); ++i) {
-    if ((*i)->prepopulate_id() == prepopulated_id)
-      return *i;
+  for (const auto& turl : template_urls_) {
+    if (turl->prepopulate_id() == prepopulated_id)
+      return turl.get();
   }
-  return NULL;
+  return nullptr;
 }
 
 TemplateURL* TemplateURLService::FindTemplateURLForExtension(
     const std::string& extension_id,
     TemplateURL::Type type) {
   DCHECK_NE(TemplateURL::NORMAL, type);
-  for (TemplateURLVector::const_iterator i = template_urls_.begin();
-       i != template_urls_.end(); ++i) {
-    if ((*i)->GetType() == type &&
-        (*i)->GetExtensionId() == extension_id)
-      return *i;
+  for (const auto& turl : template_urls_) {
+    if (turl->GetType() == type && turl->GetExtensionId() == extension_id)
+      return turl.get();
   }
-  return NULL;
+  return nullptr;
 }
 
 TemplateURL* TemplateURLService::FindMatchingExtensionTemplateURL(
     const TemplateURLData& data,
     TemplateURL::Type type) {
   DCHECK_NE(TemplateURL::NORMAL, type);
-  for (TemplateURLVector::const_iterator i = template_urls_.begin();
-       i != template_urls_.end(); ++i) {
-    if ((*i)->GetType() == type &&
-        TemplateURL::MatchesData(*i, &data, search_terms_data()))
-      return *i;
+  for (const auto& turl : template_urls_) {
+    if (turl->GetType() == type &&
+        TemplateURL::MatchesData(turl.get(), &data, search_terms_data()))
+      return turl.get();
   }
-  return NULL;
+  return nullptr;
 }
 
 void TemplateURLService::UpdateExtensionDefaultSearchEngine() {
-  TemplateURL* most_recently_intalled_default = NULL;
-  for (TemplateURLVector::const_iterator i = template_urls_.begin();
-       i != template_urls_.end(); ++i) {
-    if (((*i)->GetType() == TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION) &&
-        (*i)->extension_info_->wants_to_be_default_engine &&
-        (*i)->SupportsReplacement(search_terms_data()) &&
+  TemplateURL* most_recently_intalled_default = nullptr;
+  for (const auto& turl : template_urls_) {
+    if ((turl->GetType() == TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION) &&
+        turl->extension_info_->wants_to_be_default_engine &&
+        turl->SupportsReplacement(search_terms_data()) &&
         (!most_recently_intalled_default ||
          (most_recently_intalled_default->extension_info_->install_time <
-             (*i)->extension_info_->install_time)))
-      most_recently_intalled_default = *i;
+          turl->extension_info_->install_time)))
+      most_recently_intalled_default = turl.get();
   }
 
   if (most_recently_intalled_default) {

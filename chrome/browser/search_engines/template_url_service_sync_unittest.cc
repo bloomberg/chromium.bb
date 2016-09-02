@@ -206,13 +206,14 @@ class TemplateURLServiceSyncTest : public testing::Test {
 
   // Creates a TemplateURL with some test values. The caller owns the returned
   // TemplateURL*.
-  TemplateURL* CreateTestTemplateURL(const base::string16& keyword,
-                                     const std::string& url,
-                                     const std::string& guid = std::string(),
-                                     time_t last_mod = 100,
-                                     bool safe_for_autoreplace = false,
-                                     bool created_by_policy = false,
-                                     int prepopulate_id = 999999) const;
+  std::unique_ptr<TemplateURL> CreateTestTemplateURL(
+      const base::string16& keyword,
+      const std::string& url,
+      const std::string& guid = std::string(),
+      time_t last_mod = 100,
+      bool safe_for_autoreplace = false,
+      bool created_by_policy = false,
+      int prepopulate_id = 999999) const;
 
   // Verifies the two TemplateURLs are equal.
   // TODO(stevet): Share this with TemplateURLServiceTest.
@@ -227,7 +228,7 @@ class TemplateURLServiceSyncTest : public testing::Test {
   // Convenience helper for creating SyncChanges. Takes ownership of |turl|.
   syncer::SyncChange CreateTestSyncChange(
       syncer::SyncChange::SyncChangeType type,
-      TemplateURL* turl) const;
+      std::unique_ptr<TemplateURL> turl) const;
 
   // Helper that creates some initial sync data. We cheat a little by specifying
   // GUIDs for easy identification later. We also make the last_modified times
@@ -240,11 +241,10 @@ class TemplateURLServiceSyncTest : public testing::Test {
 
   // Creates a new TemplateURL copying the fields of |turl| but replacing
   // the |url| and |guid| and initializing the date_created and last_modified
-  // timestamps to a default value of 100. The caller owns the returned
-  // TemplateURL*.
-  TemplateURL* CopyTemplateURL(const TemplateURLData* turl,
-                               const std::string& url,
-                               const std::string& guid);
+  // timestamps to a default value of 100.
+  std::unique_ptr<TemplateURL> CopyTemplateURL(const TemplateURLData* turl,
+                                               const std::string& url,
+                                               const std::string& guid);
 
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
@@ -293,7 +293,7 @@ TemplateURLServiceSyncTest::CreateAndPassSyncErrorFactory() {
       new syncer::SyncErrorFactoryMock());
 }
 
-TemplateURL* TemplateURLServiceSyncTest::CreateTestTemplateURL(
+std::unique_ptr<TemplateURL> TemplateURLServiceSyncTest::CreateTestTemplateURL(
     const base::string16& keyword,
     const std::string& url,
     const std::string& guid,
@@ -313,7 +313,7 @@ TemplateURL* TemplateURLServiceSyncTest::CreateTestTemplateURL(
   data.prepopulate_id = prepopulate_id;
   if (!guid.empty())
     data.sync_guid = guid;
-  return new TemplateURL(data);
+  return base::MakeUnique<TemplateURL>(data);
 }
 
 void TemplateURLServiceSyncTest::AssertEquals(const TemplateURL& expected,
@@ -350,28 +350,27 @@ void TemplateURLServiceSyncTest::AssertEquals(
 
 syncer::SyncChange TemplateURLServiceSyncTest::CreateTestSyncChange(
     syncer::SyncChange::SyncChangeType type,
-    TemplateURL* turl) const {
-  // We take control of the TemplateURL so make sure it's cleaned up after
-  // we create data out of it.
-  std::unique_ptr<TemplateURL> scoped_turl(turl);
+    std::unique_ptr<TemplateURL> turl) const {
   return syncer::SyncChange(
-      FROM_HERE,
-      type,
-      TemplateURLService::CreateSyncDataFromTemplateURL(*scoped_turl));
+      FROM_HERE, type,
+      TemplateURLService::CreateSyncDataFromTemplateURL(*turl));
 }
 
 syncer::SyncDataList TemplateURLServiceSyncTest::CreateInitialSyncData() const {
   syncer::SyncDataList list;
 
-  std::unique_ptr<TemplateURL> turl(CreateTestTemplateURL(
-      ASCIIToUTF16("key1"), "http://key1.com", "key1", 90));
-  list.push_back(TemplateURLService::CreateSyncDataFromTemplateURL(*turl));
-  turl.reset(CreateTestTemplateURL(ASCIIToUTF16("key2"), "http://key2.com",
-                                   "key2", 90));
-  list.push_back(TemplateURLService::CreateSyncDataFromTemplateURL(*turl));
-  turl.reset(CreateTestTemplateURL(ASCIIToUTF16("key3"), "http://key3.com",
-                                   "key3", 90));
-  list.push_back(TemplateURLService::CreateSyncDataFromTemplateURL(*turl));
+  std::unique_ptr<TemplateURL> turl = CreateTestTemplateURL(
+      ASCIIToUTF16("key1"), "http://key1.com", "key1", 90);
+  list.push_back(
+      TemplateURLService::CreateSyncDataFromTemplateURL(*turl.get()));
+  turl = CreateTestTemplateURL(ASCIIToUTF16("key2"), "http://key2.com", "key2",
+                               90);
+  list.push_back(
+      TemplateURLService::CreateSyncDataFromTemplateURL(*turl.get()));
+  turl = CreateTestTemplateURL(ASCIIToUTF16("key3"), "http://key3.com", "key3",
+                               90);
+  list.push_back(
+      TemplateURLService::CreateSyncDataFromTemplateURL(*turl.get()));
 
   return list;
 }
@@ -384,7 +383,7 @@ std::unique_ptr<TemplateURL> TemplateURLServiceSyncTest::Deserialize(
       &client, NULL, SearchTermsData(), NULL, sync_data, &dummy);
 }
 
-TemplateURL* TemplateURLServiceSyncTest::CopyTemplateURL(
+std::unique_ptr<TemplateURL> TemplateURLServiceSyncTest::CopyTemplateURL(
     const TemplateURLData* turl,
     const std::string& url,
     const std::string& guid) {
@@ -393,7 +392,7 @@ TemplateURL* TemplateURLServiceSyncTest::CopyTemplateURL(
   data.date_created = Time::FromTimeT(100);
   data.last_modified = Time::FromTimeT(100);
   data.sync_guid = guid;
-  return new TemplateURL(data);
+  return base::MakeUnique<TemplateURL>(data);
 }
 
 // Actual tests ---------------------------------------------------------------
@@ -452,9 +451,8 @@ TEST_F(TemplateURLServiceSyncTest, GetAllSyncDataWithExtension) {
 TEST_F(TemplateURLServiceSyncTest, GetAllSyncDataNoManagedEngines) {
   model()->Add(CreateTestTemplateURL(ASCIIToUTF16("key1"), "http://key1.com"));
   model()->Add(CreateTestTemplateURL(ASCIIToUTF16("key2"), "http://key2.com"));
-  TemplateURL* managed_turl = CreateTestTemplateURL(ASCIIToUTF16("key3"),
-      "http://key3.com", std::string(), 100, false, true);
-  model()->Add(managed_turl);
+  model()->Add(CreateTestTemplateURL(ASCIIToUTF16("key3"), "http://key3.com",
+                                     std::string(), 100, false, true));
   syncer::SyncDataList all_sync_data =
       model()->GetAllSyncData(syncer::SEARCH_ENGINES);
 
@@ -473,8 +471,8 @@ TEST_F(TemplateURLServiceSyncTest, GetAllSyncDataNoManagedEngines) {
 TEST_F(TemplateURLServiceSyncTest, UniquifyKeyword) {
   model()->Add(CreateTestTemplateURL(ASCIIToUTF16("key1"), "http://key1.com"));
   // Create a key that conflicts with something in the model.
-  std::unique_ptr<TemplateURL> turl(
-      CreateTestTemplateURL(ASCIIToUTF16("key1"), "http://new.com", "xyz"));
+  std::unique_ptr<TemplateURL> turl =
+      CreateTestTemplateURL(ASCIIToUTF16("key1"), "http://new.com", "xyz");
   base::string16 new_keyword = model()->UniquifyKeyword(*turl, false);
   EXPECT_EQ(ASCIIToUTF16("new.com"), new_keyword);
   EXPECT_EQ(NULL, model()->GetTemplateURLForKeyword(new_keyword));
@@ -484,7 +482,7 @@ TEST_F(TemplateURLServiceSyncTest, UniquifyKeyword) {
   // Test a second collision. This time it should be resolved by actually
   // modifying the original keyword, since the autogenerated keyword is already
   // used.
-  turl.reset(CreateTestTemplateURL(ASCIIToUTF16("key1"), "http://new.com"));
+  turl = CreateTestTemplateURL(ASCIIToUTF16("key1"), "http://new.com");
   new_keyword = model()->UniquifyKeyword(*turl, false);
   EXPECT_EQ(ASCIIToUTF16("key1_"), new_keyword);
   EXPECT_EQ(NULL, model()->GetTemplateURLForKeyword(new_keyword));
@@ -492,15 +490,14 @@ TEST_F(TemplateURLServiceSyncTest, UniquifyKeyword) {
 
   // Test a third collision. This should collide on both the autogenerated
   // keyword and the first uniquification attempt.
-  turl.reset(CreateTestTemplateURL(ASCIIToUTF16("key1"), "http://new.com"));
+  turl = CreateTestTemplateURL(ASCIIToUTF16("key1"), "http://new.com");
   new_keyword = model()->UniquifyKeyword(*turl, false);
   EXPECT_EQ(ASCIIToUTF16("key1__"), new_keyword);
   EXPECT_EQ(NULL, model()->GetTemplateURLForKeyword(new_keyword));
 
   // If we force the method, it should uniquify the keyword even if it is
   // currently unique, and skip the host-based autogenerated keyword.
-  turl.reset(
-      CreateTestTemplateURL(ASCIIToUTF16("unique"), "http://unique.com"));
+  turl = CreateTestTemplateURL(ASCIIToUTF16("unique"), "http://unique.com");
   new_keyword = model()->UniquifyKeyword(*turl, true);
   EXPECT_EQ(ASCIIToUTF16("unique_"), new_keyword);
   EXPECT_EQ(NULL, model()->GetTemplateURLForKeyword(new_keyword));
@@ -524,10 +521,9 @@ TEST_F(TemplateURLServiceSyncTest, IsLocalTemplateURLBetter) {
   };
 
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
-    TemplateURL* local_turl = CreateTestTemplateURL(
+    TemplateURL* local_turl = model()->Add(CreateTestTemplateURL(
         ASCIIToUTF16("localkey"), "www.local.com", "localguid",
-        test_cases[i].local_time, true, test_cases[i].local_created_by_policy);
-    model()->Add(local_turl);
+        test_cases[i].local_time, true, test_cases[i].local_created_by_policy));
     if (test_cases[i].local_is_default)
       model()->SetUserSelectedDefaultSearchProvider(local_turl);
 
@@ -551,9 +547,8 @@ TEST_F(TemplateURLServiceSyncTest, ResolveSyncKeywordConflict) {
   // Create a keyword that conflicts, and make it older.  Sync keyword is
   // uniquified, and a syncer::SyncChange is added.
   base::string16 original_turl_keyword = ASCIIToUTF16("key1");
-  TemplateURL* original_turl = CreateTestTemplateURL(original_turl_keyword,
-      "http://key1.com", std::string(), 9000);
-  model()->Add(original_turl);
+  TemplateURL* original_turl = model()->Add(CreateTestTemplateURL(
+      original_turl_keyword, "http://key1.com", std::string(), 9000));
   std::unique_ptr<TemplateURL> sync_turl(CreateTestTemplateURL(
       original_turl_keyword, "http://new.com", "remote", 8999));
   syncer::SyncChangeList changes;
@@ -571,12 +566,11 @@ TEST_F(TemplateURLServiceSyncTest, ResolveSyncKeywordConflict) {
   // the local GUID doesn't appear in the sync GUID list).  Also ensure that
   // this does not change the safe_for_autoreplace flag or the TemplateURLID in
   // the original.
-  original_turl = CreateTestTemplateURL(original_turl_keyword,
-                                        "http://key1.com", "local", 9000);
-  model()->Add(original_turl);
+  original_turl = model()->Add(CreateTestTemplateURL(
+      original_turl_keyword, "http://key1.com", "local", 9000));
   TemplateURLID original_id = original_turl->id();
-  sync_turl.reset(CreateTestTemplateURL(original_turl_keyword, "http://new.com",
-                                        std::string(), 9001));
+  sync_turl = CreateTestTemplateURL(original_turl_keyword, "http://new.com",
+                                    std::string(), 9001);
   model()->ResolveSyncKeywordConflict(sync_turl.get(), original_turl, &changes);
   EXPECT_EQ(original_turl_keyword, sync_turl->keyword());
   EXPECT_NE(original_turl_keyword, original_turl->keyword());
@@ -591,11 +585,10 @@ TEST_F(TemplateURLServiceSyncTest, ResolveSyncKeywordConflict) {
 
   // Equal times. Same result as above. Sync left alone, original uniquified so
   // sync_turl can fit.
-  original_turl = CreateTestTemplateURL(original_turl_keyword,
-                                        "http://key1.com", "local2", 9000);
-  model()->Add(original_turl);
-  sync_turl.reset(CreateTestTemplateURL(original_turl_keyword, "http://new.com",
-                                        std::string(), 9000));
+  original_turl = model()->Add(CreateTestTemplateURL(
+      original_turl_keyword, "http://key1.com", "local2", 9000));
+  sync_turl = CreateTestTemplateURL(original_turl_keyword, "http://new.com",
+                                    std::string(), 9000);
   model()->ResolveSyncKeywordConflict(sync_turl.get(), original_turl, &changes);
   EXPECT_EQ(original_turl_keyword, sync_turl->keyword());
   EXPECT_NE(original_turl_keyword, original_turl->keyword());
@@ -608,11 +601,11 @@ TEST_F(TemplateURLServiceSyncTest, ResolveSyncKeywordConflict) {
 
   // Sync is newer, but original TemplateURL is created by policy, so it wins.
   // Sync keyword is uniquified, and a syncer::SyncChange is added.
-  original_turl = CreateTestTemplateURL(original_turl_keyword,
-      "http://key1.com", std::string(), 9000, false, true);
-  model()->Add(original_turl);
-  sync_turl.reset(CreateTestTemplateURL(original_turl_keyword, "http://new.com",
-                                        "remote2", 9999));
+  original_turl = model()->Add(
+      CreateTestTemplateURL(original_turl_keyword, "http://key1.com",
+                            std::string(), 9000, false, true));
+  sync_turl = CreateTestTemplateURL(original_turl_keyword, "http://new.com",
+                                    "remote2", 9999);
   model()->ResolveSyncKeywordConflict(sync_turl.get(), original_turl, &changes);
   EXPECT_NE(original_turl_keyword, sync_turl->keyword());
   EXPECT_EQ(original_turl_keyword, original_turl->keyword());
@@ -710,8 +703,7 @@ TEST_F(TemplateURLServiceSyncTest, MergeSyncIsTheSame) {
   syncer::SyncDataList initial_data = CreateInitialSyncData();
   for (syncer::SyncDataList::const_iterator iter = initial_data.begin();
       iter != initial_data.end(); ++iter) {
-    std::unique_ptr<TemplateURL> converted(Deserialize(*iter));
-    model()->Add(converted.release());
+    model()->Add(Deserialize(*iter));
   }
 
   syncer::SyncMergeResult merge_result = model()->MergeDataAndStartSyncing(
@@ -738,20 +730,18 @@ TEST_F(TemplateURLServiceSyncTest, MergeUpdateFromSync) {
   // The local data is the same as the sync data merged in, but timestamps have
   // changed. Ensure the right fields are merged in.
   syncer::SyncDataList initial_data;
-  TemplateURL* turl1 = CreateTestTemplateURL(ASCIIToUTF16("abc.com"),
-                                             "http://abc.com", "abc", 9000);
-  model()->Add(turl1);
-  TemplateURL* turl2 = CreateTestTemplateURL(ASCIIToUTF16("xyz.com"),
-                                             "http://xyz.com", "xyz", 9000);
-  model()->Add(turl2);
+  TemplateURL* turl1 = model()->Add(CreateTestTemplateURL(
+      ASCIIToUTF16("abc.com"), "http://abc.com", "abc", 9000));
+  model()->Add(CreateTestTemplateURL(ASCIIToUTF16("xyz.com"), "http://xyz.com",
+                                     "xyz", 9000));
 
-  std::unique_ptr<TemplateURL> turl1_newer(CreateTestTemplateURL(
-      ASCIIToUTF16("abc.com"), "http://abc.ca", "abc", 9999));
+  std::unique_ptr<TemplateURL> turl1_newer = CreateTestTemplateURL(
+      ASCIIToUTF16("abc.com"), "http://abc.ca", "abc", 9999);
   initial_data.push_back(
       TemplateURLService::CreateSyncDataFromTemplateURL(*turl1_newer));
 
-  std::unique_ptr<TemplateURL> turl2_older(CreateTestTemplateURL(
-      ASCIIToUTF16("xyz.com"), "http://xyz.ca", "xyz", 8888));
+  std::unique_ptr<TemplateURL> turl2_older = CreateTestTemplateURL(
+      ASCIIToUTF16("xyz.com"), "http://xyz.ca", "xyz", 8888);
   initial_data.push_back(
       TemplateURLService::CreateSyncDataFromTemplateURL(*turl2_older));
 
@@ -1066,9 +1056,8 @@ TEST_F(TemplateURLServiceSyncTest, ProcessTemplateURLChange) {
                                     CreateAndPassSyncErrorFactory());
 
   // Add a new search engine.
-  TemplateURL* new_turl =
-      CreateTestTemplateURL(ASCIIToUTF16("baidu"), "http://baidu.cn", "new");
-  model()->Add(new_turl);
+  model()->Add(
+      CreateTestTemplateURL(ASCIIToUTF16("baidu"), "http://baidu.cn", "new"));
   EXPECT_EQ(1U, processor()->change_list_size());
   ASSERT_TRUE(processor()->contains_guid("new"));
   syncer::SyncChange change = processor()->change_for_guid("new");
@@ -1141,12 +1130,12 @@ TEST_F(TemplateURLServiceSyncTest, ProcessChangesWithLocalExtensions) {
 TEST_F(TemplateURLServiceSyncTest, AutogeneratedKeywordMigrated) {
   // Create a couple of sync entries with autogenerated keywords.
   syncer::SyncDataList initial_data;
-  std::unique_ptr<TemplateURL> turl(
-      CreateTestTemplateURL(ASCIIToUTF16("key1"), "http://key1.com", "key1"));
+  std::unique_ptr<TemplateURL> turl =
+      CreateTestTemplateURL(ASCIIToUTF16("key1"), "http://key1.com", "key1");
   initial_data.push_back(
       CreateCustomSyncData(*turl, true, turl->url(), turl->sync_guid()));
-  turl.reset(CreateTestTemplateURL(ASCIIToUTF16("key2"),
-      "{google:baseURL}search?q={searchTerms}", "key2"));
+  turl = CreateTestTemplateURL(
+      ASCIIToUTF16("key2"), "{google:baseURL}search?q={searchTerms}", "key2");
   initial_data.push_back(
       CreateCustomSyncData(*turl, true, turl->url(), turl->sync_guid(), 99));
 
@@ -1183,21 +1172,20 @@ TEST_F(TemplateURLServiceSyncTest, AutogeneratedKeywordConflicts) {
       model()->search_terms_data().GoogleBaseURLValue())));
   const std::string local_google_url =
       "{google:baseURL}1/search?q={searchTerms}";
-  TemplateURL* google = CreateTestTemplateURL(google_keyword, local_google_url);
-  model()->Add(google);
-  TemplateURL* other =
-      CreateTestTemplateURL(ASCIIToUTF16("other.com"), "http://other.com/foo");
-  model()->Add(other);
+  TemplateURL* google =
+      model()->Add(CreateTestTemplateURL(google_keyword, local_google_url));
+  TemplateURL* other = model()->Add(
+      CreateTestTemplateURL(ASCIIToUTF16("other.com"), "http://other.com/foo"));
   syncer::SyncDataList initial_data;
-  std::unique_ptr<TemplateURL> turl(CreateTestTemplateURL(
+  std::unique_ptr<TemplateURL> turl = CreateTestTemplateURL(
       ASCIIToUTF16("sync1"), "{google:baseURL}2/search?q={searchTerms}",
-      "sync1", 50));
+      "sync1", 50);
   initial_data.push_back(
       CreateCustomSyncData(*turl, true, turl->url(), turl->sync_guid()));
   const std::string synced_other_url =
       "http://other.com/search?q={searchTerms}";
-  turl.reset(CreateTestTemplateURL(ASCIIToUTF16("sync2"),
-      synced_other_url, "sync2", 150));
+  turl = CreateTestTemplateURL(ASCIIToUTF16("sync2"), synced_other_url, "sync2",
+                               150);
   initial_data.push_back(
       CreateCustomSyncData(*turl, true, turl->url(), turl->sync_guid()));
 
@@ -1241,13 +1229,13 @@ TEST_F(TemplateURLServiceSyncTest, TwoAutogeneratedKeywordsUsingGoogleBaseURL) {
   // We make the first older so that it will get renamed once before the second
   // and then again once after (when we resolve conflicts for the second).
   syncer::SyncDataList initial_data;
-  std::unique_ptr<TemplateURL> turl(CreateTestTemplateURL(
+  std::unique_ptr<TemplateURL> turl = CreateTestTemplateURL(
       ASCIIToUTF16("key1"), "{google:baseURL}1/search?q={searchTerms}", "key1",
-      50));
+      50);
   initial_data.push_back(
       CreateCustomSyncData(*turl, true, turl->url(), turl->sync_guid()));
-  turl.reset(CreateTestTemplateURL(ASCIIToUTF16("key2"),
-      "{google:baseURL}2/search?q={searchTerms}", "key2"));
+  turl = CreateTestTemplateURL(
+      ASCIIToUTF16("key2"), "{google:baseURL}2/search?q={searchTerms}", "key2");
   initial_data.push_back(
       CreateCustomSyncData(*turl, true, turl->url(), turl->sync_guid()));
   model()->MergeDataAndStartSyncing(syncer::SEARCH_ENGINES, initial_data,
@@ -1535,8 +1523,8 @@ TEST_F(TemplateURLServiceSyncTest, SyncedDefaultGUIDArrivesFirst) {
 TEST_F(TemplateURLServiceSyncTest, DefaultGuidDeletedBeforeNewDSPArrives) {
   syncer::SyncDataList initial_data;
   // The default search provider should support replacement.
-  std::unique_ptr<TemplateURL> turl1(CreateTestTemplateURL(
-      ASCIIToUTF16("key1"), "http://key1.com/{searchTerms}", "key1", 90));
+  std::unique_ptr<TemplateURL> turl1 = CreateTestTemplateURL(
+      ASCIIToUTF16("key1"), "http://key1.com/{searchTerms}", "key1", 90);
   // Create a second default search provider for the
   // FindNewDefaultSearchProvider method to find.
   TemplateURLData data;
@@ -1583,7 +1571,7 @@ TEST_F(TemplateURLServiceSyncTest, DefaultGuidDeletedBeforeNewDSPArrives) {
   // arrives, it can still be set as the default.
   syncer::SyncChangeList changes1;
   changes1.push_back(CreateTestSyncChange(syncer::SyncChange::ACTION_DELETE,
-                                          turl1.release()));
+                                          std::move(turl1)));
   model()->ProcessSyncChanges(FROM_HERE, changes1);
 
   EXPECT_TRUE(model()->GetTemplateURLForKeyword(ASCIIToUTF16("key1_")));
@@ -1736,9 +1724,9 @@ TEST_F(TemplateURLServiceSyncTest, SyncWithManagedDefaultSearch) {
 TEST_F(TemplateURLServiceSyncTest, SyncMergeDeletesDefault) {
   // If the value from Sync is a duplicate of the local default and is newer, it
   // should safely replace the local value and set as the new default.
-  TemplateURL* default_turl = CreateTestTemplateURL(ASCIIToUTF16("key1"),
-      "http://key1.com/{searchTerms}", "whateverguid", 10);
-  model()->Add(default_turl);
+  TemplateURL* default_turl = model()->Add(CreateTestTemplateURL(
+      ASCIIToUTF16("key1"), "http://key1.com/{searchTerms}", "whateverguid",
+      10));
   model()->SetUserSelectedDefaultSearchProvider(default_turl);
 
   syncer::SyncDataList initial_data = CreateInitialSyncData();
@@ -1760,18 +1748,15 @@ TEST_F(TemplateURLServiceSyncTest, LocalDefaultWinsConflict) {
   // We expect that the local default always wins keyword conflict resolution.
   const base::string16 keyword(ASCIIToUTF16("key1"));
   const std::string url("http://whatever.com/{searchTerms}");
-  TemplateURL* default_turl = CreateTestTemplateURL(keyword,
-                                                    url,
-                                                    "whateverguid",
-                                                    10);
-  model()->Add(default_turl);
+  TemplateURL* default_turl =
+      model()->Add(CreateTestTemplateURL(keyword, url, "whateverguid", 10));
   model()->SetUserSelectedDefaultSearchProvider(default_turl);
 
   syncer::SyncDataList initial_data = CreateInitialSyncData();
   // The key1 entry should be different from the default but conflict in the
   // keyword.
-  std::unique_ptr<TemplateURL> turl(CreateTestTemplateURL(
-      keyword, "http://key1.com/{searchTerms}", "key1", 90));
+  std::unique_ptr<TemplateURL> turl = CreateTestTemplateURL(
+      keyword, "http://key1.com/{searchTerms}", "key1", 90);
   initial_data[0] = TemplateURLService::CreateSyncDataFromTemplateURL(*turl);
 
   model()->MergeDataAndStartSyncing(syncer::SEARCH_ENGINES, initial_data,
@@ -1800,11 +1785,11 @@ TEST_F(TemplateURLServiceSyncTest, LocalDefaultWinsConflict) {
 TEST_F(TemplateURLServiceSyncTest, DeleteBogusData) {
   // Create a couple of bogus entries to sync.
   syncer::SyncDataList initial_data;
-  std::unique_ptr<TemplateURL> turl(
-      CreateTestTemplateURL(ASCIIToUTF16("key1"), "http://key1.com", "key1"));
+  std::unique_ptr<TemplateURL> turl =
+      CreateTestTemplateURL(ASCIIToUTF16("key1"), "http://key1.com", "key1");
   initial_data.push_back(
       CreateCustomSyncData(*turl, false, std::string(), turl->sync_guid()));
-  turl.reset(CreateTestTemplateURL(ASCIIToUTF16("key2"), "http://key2.com"));
+  turl = CreateTestTemplateURL(ASCIIToUTF16("key2"), "http://key2.com");
   initial_data.push_back(
       CreateCustomSyncData(*turl, false, turl->url(), std::string()));
 
@@ -1877,7 +1862,7 @@ TEST_F(TemplateURLServiceSyncTest, PreSyncUpdates) {
   data_copy.SetKeyword(ASCIIToUTF16(kNewKeyword));
   // Set safe_for_autoreplace to false so our keyword survives.
   data_copy.safe_for_autoreplace = false;
-  model()->Add(new TemplateURL(data_copy));
+  model()->Add(base::MakeUnique<TemplateURL>(data_copy));
 
   // Merge the prepopulate search engines.
   base::Time pre_merge_time = base::Time::Now();
@@ -2041,9 +2026,8 @@ TEST_F(TemplateURLServiceSyncTest, MergeInSyncTemplateURL) {
     base::string16 expected_sync_keyword = sync_keyword;
 
     // Create the data and run the actual test.
-    TemplateURL* local_turl = CreateTestTemplateURL(
-        local_keyword, local_url, local_guid, local_last_modified);
-    model()->Add(local_turl);
+    TemplateURL* local_turl = model()->Add(CreateTestTemplateURL(
+        local_keyword, local_url, local_guid, local_last_modified));
     std::unique_ptr<TemplateURL> sync_turl(CreateTestTemplateURL(
         sync_keyword, sync_url, sync_guid, sync_last_modified));
 
@@ -2130,8 +2114,8 @@ TEST_F(TemplateURLServiceSyncTest, MergePrepopulatedEngine) {
   // Merge with an initial list containing a prepopulated engine with a wrong
   // URL.
   syncer::SyncDataList list;
-  std::unique_ptr<TemplateURL> sync_turl(CopyTemplateURL(
-      default_turl.get(), "http://wrong.url.com?q={searchTerms}", "default"));
+  std::unique_ptr<TemplateURL> sync_turl = CopyTemplateURL(
+      default_turl.get(), "http://wrong.url.com?q={searchTerms}", "default");
   list.push_back(TemplateURLService::CreateSyncDataFromTemplateURL(*sync_turl));
   syncer::SyncMergeResult merge_result = model()->MergeDataAndStartSyncing(
       syncer::SEARCH_ENGINES, list, PassProcessor(),
@@ -2151,13 +2135,13 @@ TEST_F(TemplateURLServiceSyncTest, AddPrepopulatedEngine) {
 
   std::unique_ptr<TemplateURLData> default_turl(
       TemplateURLPrepopulateData::GetPrepopulatedDefaultSearch(NULL));
-  TemplateURL* sync_turl = CopyTemplateURL(default_turl.get(),
-      "http://wrong.url.com?q={searchTerms}", "default");
+  std::unique_ptr<TemplateURL> sync_turl = CopyTemplateURL(
+      default_turl.get(), "http://wrong.url.com?q={searchTerms}", "default");
 
   // Add a prepopulated engine with a wrong URL.
   syncer::SyncChangeList changes;
   changes.push_back(CreateTestSyncChange(syncer::SyncChange::ACTION_ADD,
-                                         sync_turl));
+                                         std::move(sync_turl)));
   model()->ProcessSyncChanges(FROM_HERE, changes);
 
   const TemplateURL* result_turl = model()->GetTemplateURLForGUID("default");
@@ -2174,20 +2158,21 @@ TEST_F(TemplateURLServiceSyncTest, UpdatePrepopulatedEngine) {
   TemplateURLData data = *default_turl;
   data.SetURL("http://old.wrong.url.com?q={searchTerms}");
   data.sync_guid = "default";
-  model()->Add(new TemplateURL(data));
+  model()->Add(base::MakeUnique<TemplateURL>(data));
 
   syncer::SyncMergeResult merge_result = model()->MergeDataAndStartSyncing(
       syncer::SEARCH_ENGINES, syncer::SyncDataList(), PassProcessor(),
       CreateAndPassSyncErrorFactory());
 
-  TemplateURL* sync_turl = CopyTemplateURL(default_turl.get(),
-      "http://new.wrong.url.com?q={searchTerms}", "default");
+  std::unique_ptr<TemplateURL> sync_turl =
+      CopyTemplateURL(default_turl.get(),
+                      "http://new.wrong.url.com?q={searchTerms}", "default");
 
   // Update the engine in the model, which is prepopulated, with a new one.
   // Both have wrong URLs, but it should still get corrected.
   syncer::SyncChangeList changes;
   changes.push_back(CreateTestSyncChange(syncer::SyncChange::ACTION_UPDATE,
-                                         sync_turl));
+                                         std::move(sync_turl)));
   model()->ProcessSyncChanges(FROM_HERE, changes);
 
   const TemplateURL* result_turl = model()->GetTemplateURLForGUID("default");
@@ -2209,7 +2194,7 @@ TEST_F(TemplateURLServiceSyncTest, MergeEditedPrepopulatedEngine) {
   data.date_created = Time::FromTimeT(50);
   data.last_modified = Time::FromTimeT(50);
   data.sync_guid = "default";
-  model()->Add(new TemplateURL(data));
+  model()->Add(base::MakeUnique<TemplateURL>(data));
 
   data.date_created = Time::FromTimeT(100);
   data.last_modified = Time::FromTimeT(100);
@@ -2240,7 +2225,7 @@ TEST_F(TemplateURLServiceSyncTest, MergeConflictingPrepopulatedEngine) {
   data.last_modified = Time::FromTimeT(50);
   data.prepopulate_id = 1;
   data.sync_guid = "default";
-  model()->Add(new TemplateURL(data));
+  model()->Add(base::MakeUnique<TemplateURL>(data));
 
   TemplateURLData new_data(*default_turl);
   new_data.SetKeyword(ASCIIToUTF16("new_kw"));
@@ -2277,7 +2262,7 @@ TEST_F(TemplateURLServiceSyncTest, MergeConflictingPrepopulatedEngine) {
   // Now test that a remote TemplateURL can override the attributes of the local
   // default search provider.
   TemplateURL* existing_default = new TemplateURL(data);
-  model()->Add(existing_default);
+  model()->Add(base::WrapUnique(existing_default));
   model()->SetUserSelectedDefaultSearchProvider(existing_default);
 
   merge_result = model()->MergeDataAndStartSyncing(
@@ -2303,7 +2288,7 @@ TEST_F(TemplateURLServiceSyncTest, MergeNonEditedPrepopulatedEngine) {
   data.date_created = Time::FromTimeT(50);
   data.last_modified = Time::FromTimeT(50);
   data.sync_guid = "default";
-  model()->Add(new TemplateURL(data));
+  model()->Add(base::MakeUnique<TemplateURL>(data));
 
   data.date_created = Time::FromTimeT(100);
   data.last_modified = Time::FromTimeT(100);

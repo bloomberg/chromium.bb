@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_fetcher_factory.h"
@@ -218,5 +219,5 @@ void SearchEngineTabHelper::GenerateKeywordIfNecessary(
       current_favicon : TemplateURL::GenerateFaviconURL(params.referrer.url);
   data.safe_for_autoreplace = true;
   data.input_encodings.push_back(params.searchable_form_encoding);
-  url_service->Add(new TemplateURL(data));
+  url_service->Add(base::MakeUnique<TemplateURL>(data));
 }

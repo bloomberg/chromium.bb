@@ -23,7 +23,7 @@ class SearchHostToURLsMap {
   ~SearchHostToURLsMap();
 
   // Initializes the map.
-  void Init(const TemplateURLService::TemplateURLVector& template_urls,
+  void Init(const TemplateURLService::OwnedTemplateURLVector& template_urls,
             const SearchTermsData& search_terms_data);
 
   // Adds a new TemplateURL to the map. Since |template_url| is owned
@@ -48,7 +48,7 @@ class SearchHostToURLsMap {
   typedef std::map<std::string, TemplateURLSet> HostToURLsMap;
 
   // Adds many URLs to the map.
-  void Add(const TemplateURLService::TemplateURLVector& template_urls,
+  void Add(const TemplateURLService::OwnedTemplateURLVector& template_urls,
            const SearchTermsData& search_terms_data);
 
   // Maps from host to set of TemplateURLs whose search url host is host.

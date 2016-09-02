@@ -42,65 +42,50 @@ std::unique_ptr<TemplateURL> CreatePrepopulateTemplateURL(
 
 TEST(TemplateURLServiceUtilTest, RemoveDuplicatePrepopulateIDs) {
   ScopedVector<TemplateURLData> prepopulated_turls;
-  TemplateURLService::TemplateURLVector local_turls;
-  base::STLElementDeleter<TemplateURLService::TemplateURLVector>
-      local_turls_deleter(&local_turls);
+  TemplateURLService::OwnedTemplateURLVector local_turls;
 
   prepopulated_turls.push_back(
-      CreatePrepopulateTemplateURLData(1, "winner4", 1).release());
-  prepopulated_turls.push_back(
-      CreatePrepopulateTemplateURLData(2, "xxx", 2).release());
-  prepopulated_turls.push_back(
-      CreatePrepopulateTemplateURLData(3, "yyy", 3).release());
+      CreatePrepopulateTemplateURLData(1, "winner4", 1));
+  prepopulated_turls.push_back(CreatePrepopulateTemplateURLData(2, "xxx", 2));
+  prepopulated_turls.push_back(CreatePrepopulateTemplateURLData(3, "yyy", 3));
 
   // Create a sets of different TURLs grouped by prepopulate ID. Each group
   // will test a different heuristic of RemoveDuplicatePrepopulateIDs.
   // Ignored set - These should be left alone as they do not have valid
   // prepopulate IDs.
-  local_turls.push_back(
-      CreatePrepopulateTemplateURL(0, "winner1", 4).release());
-  local_turls.push_back(
-      CreatePrepopulateTemplateURL(0, "winner2", 5).release());
-  local_turls.push_back(
-      CreatePrepopulateTemplateURL(0, "winner3", 6).release());
+  local_turls.push_back(CreatePrepopulateTemplateURL(0, "winner1", 4));
+  local_turls.push_back(CreatePrepopulateTemplateURL(0, "winner2", 5));
+  local_turls.push_back(CreatePrepopulateTemplateURL(0, "winner3", 6));
   size_t num_non_prepopulated_urls = local_turls.size();
 
   // Keyword match set - Prefer the one that matches the keyword of the
   // prepopulate ID.
-  local_turls.push_back(CreatePrepopulateTemplateURL(1, "loser1", 7).release());
-  local_turls.push_back(CreatePrepopulateTemplateURL(1, "loser2", 8).release());
-  local_turls.push_back(
-      CreatePrepopulateTemplateURL(1, "winner4", 9).release());
+  local_turls.push_back(CreatePrepopulateTemplateURL(1, "loser1", 7));
+  local_turls.push_back(CreatePrepopulateTemplateURL(1, "loser2", 8));
+  local_turls.push_back(CreatePrepopulateTemplateURL(1, "winner4", 9));
 
   // Default set - Prefer the default search engine over all other criteria.
   // The last one is the default. It will be passed as the
   // default_search_provider parameter to RemoveDuplicatePrepopulateIDs.
-  local_turls.push_back(
-      CreatePrepopulateTemplateURL(2, "loser3", 10).release());
-  local_turls.push_back(CreatePrepopulateTemplateURL(2, "xxx", 11).release());
-  TemplateURL* default_turl =
-      CreatePrepopulateTemplateURL(2, "winner5", 12).release();
-  local_turls.push_back(default_turl);
+  local_turls.push_back(CreatePrepopulateTemplateURL(2, "loser3", 10));
+  local_turls.push_back(CreatePrepopulateTemplateURL(2, "xxx", 11));
+  local_turls.push_back(CreatePrepopulateTemplateURL(2, "winner5", 12));
+  TemplateURL* default_turl = local_turls.back().get();
 
   // ID set - Prefer the lowest TemplateURLID if the keywords don't match and if
   // none are the default.
-  local_turls.push_back(
-      CreatePrepopulateTemplateURL(3, "winner6", 13).release());
-  local_turls.push_back(
-      CreatePrepopulateTemplateURL(3, "loser5", 14).release());
-  local_turls.push_back(
-      CreatePrepopulateTemplateURL(3, "loser6", 15).release());
+  local_turls.push_back(CreatePrepopulateTemplateURL(3, "winner6", 13));
+  local_turls.push_back(CreatePrepopulateTemplateURL(3, "loser5", 14));
+  local_turls.push_back(CreatePrepopulateTemplateURL(3, "loser6", 15));
 
-  RemoveDuplicatePrepopulateIDs(NULL, prepopulated_turls, default_turl,
-                                &local_turls, SearchTermsData(), NULL);
+  RemoveDuplicatePrepopulateIDs(nullptr, prepopulated_turls, default_turl,
+                                &local_turls, SearchTermsData(), nullptr);
 
   // Verify that the expected local TURLs survived the process.
   EXPECT_EQ(local_turls.size(),
             prepopulated_turls.size() + num_non_prepopulated_urls);
-  for (TemplateURLService::TemplateURLVector::const_iterator itr =
-       local_turls.begin(); itr != local_turls.end(); ++itr) {
-    EXPECT_TRUE(base::StartsWith((*itr)->keyword(),
-                                 base::ASCIIToUTF16("winner"),
+  for (const auto& turl : local_turls) {
+    EXPECT_TRUE(base::StartsWith(turl->keyword(), base::ASCIIToUTF16("winner"),
                                  base::CompareCase::SENSITIVE));
   }
 }

@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "components/policy/core/browser/policy_error_map.h"
@@ -186,19 +185,17 @@ DefaultSearchPolicyHandler::DefaultSearchPolicyHandler() {
   for (size_t i = 0; i < arraysize(kDefaultSearchPolicyMap); ++i) {
     const char* policy_name = kDefaultSearchPolicyMap[i].policy_name;
     if (policy_name == key::kDefaultSearchProviderEncodings) {
-      handlers_.push_back(new DefaultSearchEncodingsPolicyHandler());
+      handlers_.push_back(
+          base::MakeUnique<DefaultSearchEncodingsPolicyHandler>());
     } else {
-      handlers_.push_back(new SimplePolicyHandler(
-          policy_name,
-          kDefaultSearchPolicyMap[i].preference_path,
+      handlers_.push_back(base::MakeUnique<SimplePolicyHandler>(
+          policy_name, kDefaultSearchPolicyMap[i].preference_path,
           kDefaultSearchPolicyMap[i].value_type));
     }
   }
 }
 
-DefaultSearchPolicyHandler::~DefaultSearchPolicyHandler() {
-  base::STLDeleteElements(&handlers_);
-}
+DefaultSearchPolicyHandler::~DefaultSearchPolicyHandler() {}
 
 bool DefaultSearchPolicyHandler::CheckPolicySettings(const PolicyMap& policies,
                                                      PolicyErrorMap* errors) {
@@ -209,10 +206,8 @@ bool DefaultSearchPolicyHandler::CheckPolicySettings(const PolicyMap& policies,
     // Add an error for all specified default search policies except
     // DefaultSearchProviderEnabled.
 
-    for (std::vector<TypeCheckingPolicyHandler*>::const_iterator handler =
-             handlers_.begin();
-         handler != handlers_.end(); ++handler) {
-      const char* policy_name = (*handler)->policy_name();
+    for (const auto& handler : handlers_) {
+      const char* policy_name = handler->policy_name();
       if (policy_name != key::kDefaultSearchProviderEnabled &&
           HasDefaultSearchPolicy(policies, policy_name)) {
         errors->AddError(policy_name, IDS_POLICY_DEFAULT_SEARCH_DISABLED);
@@ -306,10 +301,8 @@ void DefaultSearchPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
 bool DefaultSearchPolicyHandler::CheckIndividualPolicies(
     const PolicyMap& policies,
     PolicyErrorMap* errors) {
-  for (std::vector<TypeCheckingPolicyHandler*>::const_iterator handler =
-           handlers_.begin();
-       handler != handlers_.end(); ++handler) {
-    if (!(*handler)->CheckPolicySettings(policies, errors))
+  for (const auto& handler : handlers_) {
+    if (!handler->CheckPolicySettings(policies, errors))
       return false;
   }
   return true;
@@ -323,10 +316,8 @@ bool DefaultSearchPolicyHandler::HasDefaultSearchPolicy(
 
 bool DefaultSearchPolicyHandler::AnyDefaultSearchPoliciesSpecified(
     const PolicyMap& policies) {
-  for (std::vector<TypeCheckingPolicyHandler*>::const_iterator handler =
-           handlers_.begin();
-       handler != handlers_.end(); ++handler) {
-    if (policies.Get((*handler)->policy_name()))
+  for (const auto& handler : handlers_) {
+    if (policies.Get(handler->policy_name()))
       return true;
   }
   return false;

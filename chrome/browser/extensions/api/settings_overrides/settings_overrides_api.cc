@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/preference/preference_api.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
@@ -277,7 +278,7 @@ void SettingsOverridesAPI::RegisterSearchProvider(
   TemplateURLData data = ConvertSearchProvider(
       profile_->GetPrefs(), *settings->search_engine, install_parameter);
   data.show_in_default_list = info->wants_to_be_default_engine;
-  url_service_->AddExtensionControlledTURL(new TemplateURL(data),
+  url_service_->AddExtensionControlledTURL(base::MakeUnique<TemplateURL>(data),
                                            std::move(info));
 }
 

@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/prefs/pref_service.h"
@@ -52,7 +53,7 @@ void UpdateSearchEngine(TemplateURLService* service) {
   while (it != new_engines.end()) {
     if ((*it)->prepopulate_id != kGoogleEnginePrepopulatedId) {
       // service->Add takes ownership on Added TemplateURL.
-      service->Add(new TemplateURL(**it));
+      service->Add(base::MakeUnique<TemplateURL>(**it));
       it = new_engines.weak_erase(it);
     } else {
       ++it;

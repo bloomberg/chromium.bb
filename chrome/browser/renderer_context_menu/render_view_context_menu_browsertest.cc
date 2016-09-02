@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
@@ -682,9 +683,8 @@ class SearchByImageBrowserTest : public InProcessBrowserTest {
     data.image_url = GetImageSearchURL().spec();
     data.image_url_post_params = kImageSearchPostParams;
 
-    // The model takes ownership of |template_url|.
-    TemplateURL* template_url = new TemplateURL(data);
-    ASSERT_TRUE(model->Add(template_url));
+    TemplateURL* template_url = model->Add(base::MakeUnique<TemplateURL>(data));
+    ASSERT_TRUE(template_url);
     model->SetUserSelectedDefaultSearchProvider(template_url);
   }
 

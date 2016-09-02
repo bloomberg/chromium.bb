@@ -168,7 +168,7 @@ void TemplateURLFetcher::RequestDelegate::AddSearchProvider() {
 
   // Mark the keyword as replaceable so it can be removed if necessary.
   data.safe_for_autoreplace = true;
-  model->Add(new TemplateURL(data));
+  model->Add(base::MakeUnique<TemplateURL>(data));
 
   fetcher_->RequestCompleted(this);
   // WARNING: RequestCompleted deletes us.

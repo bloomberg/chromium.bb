@@ -11,6 +11,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -327,10 +328,9 @@ TEST_F(InstantSearchPrerendererTest, PrerenderingAllowed) {
   data.SetURL("https://www.dummyurl.com/search?q=%s&img=1");
   data.SetShortName(ASCIIToUTF16("t"));
   data.SetKeyword(ASCIIToUTF16("k"));
-  TemplateURL* t_url = new TemplateURL(data);
   TemplateURLService* service =
       TemplateURLServiceFactory::GetForProfile(profile());
-  service->Add(t_url);
+  service->Add(base::MakeUnique<TemplateURL>(data));
   service->Load();
   AutocompleteMatch custom_search_type_match(
       NULL, 1100, false, AutocompleteMatchType::SEARCH_SUGGEST);
