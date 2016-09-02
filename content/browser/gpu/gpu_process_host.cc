@@ -1032,7 +1032,7 @@ bool GpuProcessHost::LaunchGpuProcess(gpu::GpuPreferences* gpu_preferences) {
     return false;
   }
 
-  UMA_HISTOGRAM_BOOLEAN("GPU.GPU.GPUProcessSoftwareRendering",
+  UMA_HISTOGRAM_BOOLEAN("GPU.GPUProcessSoftwareRendering",
                         swiftshader_rendering_);
 
   // If specified, prepend a launcher program to the command line.
