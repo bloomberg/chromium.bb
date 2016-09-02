@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/i18n/rtl.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"

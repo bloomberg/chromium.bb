@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/lazy_instance.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/signed_in_devices/signed_in_devices_api.h"
