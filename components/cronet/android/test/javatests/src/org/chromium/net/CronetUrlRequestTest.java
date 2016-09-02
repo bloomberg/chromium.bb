@@ -891,7 +891,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
                 }
             }
         };
-        callback.getExecutor().execute(startAndRead);
+        callback.getExecutor().submit(startAndRead).get();
         callback.waitForNextStep();
 
         assertEquals(callback.mResponseStep, ResponseStep.ON_RECEIVED_REDIRECT);
@@ -920,7 +920,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
                     }
                 }
             };
-            callback.getExecutor().execute(readTwice);
+            callback.getExecutor().submit(readTwice).get();
             callback.waitForNextStep();
         }
 

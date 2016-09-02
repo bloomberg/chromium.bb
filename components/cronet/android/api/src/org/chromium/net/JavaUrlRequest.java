@@ -290,7 +290,7 @@ final class JavaUrlRequest implements UrlRequest {
                 throw new IllegalStateException(
                         "Not expecting a read result, expecting: " + mSinkState.get());
             }
-            mExecutor.execute(errorSetting(State.STARTED, new CheckedRunnable() {
+            mExecutor.execute(errorSetting(new CheckedRunnable() {
                 @Override
                 public void run() throws Exception {
                     mBuffer.flip();
@@ -344,7 +344,7 @@ final class JavaUrlRequest implements UrlRequest {
         }
 
         void startRead() {
-            mExecutor.execute(errorSetting(State.STARTED, new CheckedRunnable() {
+            mExecutor.execute(errorSetting(new CheckedRunnable() {
                 @Override
                 public void run() throws Exception {
                     if (mOutputChannel == null) {
@@ -432,30 +432,49 @@ final class JavaUrlRequest implements UrlRequest {
         });
     }
 
-    private void enterErrorState(State previousState, final UrlRequestException error) {
-        if (mState.compareAndSet(previousState, State.ERROR)) {
+    private void enterErrorState(final UrlRequestException error) {
+        if (setTerminalState(State.ERROR)) {
             fireDisconnect();
             fireCloseUploadDataProvider();
             mCallbackAsync.onFailed(mUrlResponseInfo, error);
         }
     }
 
+    private boolean setTerminalState(State error) {
+        while (true) {
+            State oldState = mState.get();
+            switch (oldState) {
+                case NOT_STARTED:
+                    throw new IllegalStateException("Can't enter error state before start");
+                case ERROR: // fallthrough
+                case COMPLETE: // fallthrough
+                case CANCELLED:
+                    return false; // Already in a terminal state
+                default: {
+                    if (mState.compareAndSet(oldState, error)) {
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+
     /** Ends the request with an error, caused by an exception thrown from user code. */
-    private void enterUserErrorState(State previousState, final Throwable error) {
-        enterErrorState(previousState,
+    private void enterUserErrorState(final Throwable error) {
+        enterErrorState(
                 new UrlRequestException("Exception received from UrlRequest.Callback", error));
     }
 
     /** Ends the request with an error, caused by an exception thrown from user code. */
     private void enterUploadErrorState(final Throwable error) {
-        enterErrorState(State.STARTED,
+        enterErrorState(
                 new UrlRequestException("Exception received from UploadDataProvider", error));
     }
 
-    private void enterCronetErrorState(State previousState, final Throwable error) {
+    private void enterCronetErrorState(final Throwable error) {
         // TODO(clm) mapping from Java exception (UnknownHostException, for example) to net error
         // code goes here.
-        enterErrorState(previousState, new UrlRequestException("System error", error));
+        enterErrorState(new UrlRequestException("System error", error));
     }
 
     /**
@@ -490,7 +509,7 @@ final class JavaUrlRequest implements UrlRequest {
 
     private void fireGetHeaders() {
         mAdditionalStatusDetails = Status.WAITING_FOR_RESPONSE;
-        mExecutor.execute(errorSetting(State.STARTED, new CheckedRunnable() {
+        mExecutor.execute(errorSetting(new CheckedRunnable() {
             @Override
             public void run() throws Exception {
                 HttpURLConnection connection = mCurrentUrlConnection.get();
@@ -569,7 +588,7 @@ final class JavaUrlRequest implements UrlRequest {
     }
 
     private void fireOpenConnection() {
-        mExecutor.execute(errorSetting(State.STARTED, new CheckedRunnable() {
+        mExecutor.execute(errorSetting(new CheckedRunnable() {
             @Override
             public void run() throws Exception {
                 // If we're cancelled, then our old connection will be disconnected for us and
@@ -608,27 +627,27 @@ final class JavaUrlRequest implements UrlRequest {
         }));
     }
 
-    private Runnable errorSetting(final State expectedState, final CheckedRunnable delegate) {
+    private Runnable errorSetting(final CheckedRunnable delegate) {
         return new Runnable() {
             @Override
             public void run() {
                 try {
                     delegate.run();
                 } catch (Throwable t) {
-                    enterCronetErrorState(expectedState, t);
+                    enterCronetErrorState(t);
                 }
             }
         };
     }
 
-    private Runnable userErrorSetting(final State expectedState, final CheckedRunnable delegate) {
+    private Runnable userErrorSetting(final CheckedRunnable delegate) {
         return new Runnable() {
             @Override
             public void run() {
                 try {
                     delegate.run();
                 } catch (Throwable t) {
-                    enterUserErrorState(expectedState, t);
+                    enterUserErrorState(t);
                 }
             }
         };
@@ -656,7 +675,7 @@ final class JavaUrlRequest implements UrlRequest {
         transitionStates(State.AWAITING_READ, State.READING, new Runnable() {
             @Override
             public void run() {
-                mExecutor.execute(errorSetting(State.READING, new CheckedRunnable() {
+                mExecutor.execute(errorSetting(new CheckedRunnable() {
                     @Override
                     public void run() throws Exception {
                         int read = mResponseChannel.read(buffer);
@@ -781,17 +800,16 @@ final class JavaUrlRequest implements UrlRequest {
             });
         }
 
-        void execute(State currentState, CheckedRunnable runnable) {
+        void execute(CheckedRunnable runnable) {
             try {
-                mUserExecutor.execute(userErrorSetting(currentState, runnable));
+                mUserExecutor.execute(userErrorSetting(runnable));
             } catch (RejectedExecutionException e) {
-                enterErrorState(currentState,
-                        new UrlRequestException("Exception posting task to executor", e));
+                enterErrorState(new UrlRequestException("Exception posting task to executor", e));
             }
         }
 
         void onRedirectReceived(final UrlResponseInfo info, final String newLocationUrl) {
-            execute(State.AWAITING_FOLLOW_REDIRECT, new CheckedRunnable() {
+            execute(new CheckedRunnable() {
                 @Override
                 public void run() throws Exception {
                     mCallback.onRedirectReceived(JavaUrlRequest.this, info, newLocationUrl);
@@ -800,25 +818,25 @@ final class JavaUrlRequest implements UrlRequest {
         }
 
         void onResponseStarted(UrlResponseInfo info) {
-            if (mState.compareAndSet(State.STARTED, State.AWAITING_READ)) {
-                execute(State.AWAITING_READ, new CheckedRunnable() {
-                    @Override
-                    public void run() throws Exception {
+            execute(new CheckedRunnable() {
+                @Override
+                public void run() throws Exception {
+                    if (mState.compareAndSet(State.STARTED, State.AWAITING_READ)) {
                         mCallback.onResponseStarted(JavaUrlRequest.this, mUrlResponseInfo);
                     }
-                });
-            }
+                }
+            });
         }
 
         void onReadCompleted(final UrlResponseInfo info, final ByteBuffer byteBuffer) {
-            if (mState.compareAndSet(State.READING, State.AWAITING_READ)) {
-                execute(State.AWAITING_READ, new CheckedRunnable() {
-                    @Override
-                    public void run() throws Exception {
+            execute(new CheckedRunnable() {
+                @Override
+                public void run() throws Exception {
+                    if (mState.compareAndSet(State.READING, State.AWAITING_READ)) {
                         mCallback.onReadCompleted(JavaUrlRequest.this, info, byteBuffer);
                     }
-                });
-            }
+                }
+            });
         }
 
         void onCanceled(final UrlResponseInfo info) {

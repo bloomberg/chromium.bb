@@ -15,7 +15,6 @@ import static junit.framework.Assert.assertTrue;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -134,7 +133,7 @@ class TestUrlRequestCallback extends UrlRequest.Callback {
         mStepBlock.close();
     }
 
-    public Executor getExecutor() {
+    public ExecutorService getExecutor() {
         return mExecutorService;
     }
 
