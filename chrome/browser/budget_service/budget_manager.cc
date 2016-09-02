@@ -12,6 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
@@ -90,9 +91,15 @@ void SetBudgetDataInPrefs(Profile* profile,
 }  // namespace
 
 BudgetManager::BudgetManager(Profile* profile)
-    : clock_(base::WrapUnique(new base::DefaultClock)), profile_(profile) {
-  DCHECK(profile);
-}
+    : clock_(base::WrapUnique(new base::DefaultClock)),
+      profile_(profile),
+      db_(profile,
+          profile->GetPath().Append(FILE_PATH_LITERAL("BudgetDatabase")),
+          BrowserThread::GetBlockingPool()
+              ->GetSequencedTaskRunnerWithShutdownBehavior(
+                  base::SequencedWorkerPool::GetSequenceToken(),
+                  base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN)),
+      weak_ptr_factory_(this) {}
 
 BudgetManager::~BudgetManager() {}
 
@@ -188,6 +195,57 @@ void BudgetManager::StoreBudget(const GURL& origin,
   SetBudgetDataInPrefs(profile_, origin, time.ToDoubleT(), budget, ses_score);
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(closure));
+}
+
+void BudgetManager::Reserve(const GURL& origin,
+                            blink::mojom::BudgetOperationType type,
+                            const ReserveCallback& callback) {
+  DCHECK_EQ(origin, origin.GetOrigin());
+
+  BudgetDatabase::StoreBudgetCallback reserve_callback =
+      base::Bind(&BudgetManager::DidReserve, weak_ptr_factory_.GetWeakPtr(),
+                 origin, type, callback);
+  db_.SpendBudget(origin, GetCost(type), callback);
+}
+
+void BudgetManager::Consume(const GURL& origin,
+                            blink::mojom::BudgetOperationType type,
+                            const ConsumeCallback& callback) {
+  DCHECK_EQ(origin, origin.GetOrigin());
+  bool found_reservation = false;
+
+  // First, see if there is a reservation already.
+  auto count = reservation_map_.find(origin.spec());
+  if (count != reservation_map_.end()) {
+    if (count->second == 1)
+      reservation_map_.erase(origin.spec());
+    else
+      reservation_map_[origin.spec()]--;
+    found_reservation = true;
+  }
+
+  if (found_reservation) {
+    callback.Run(true);
+    return;
+  }
+
+  // If there wasn't a reservation already, try to directly consume budget.
+  // The callback will return directly to the caller.
+  db_.SpendBudget(origin, GetCost(type), callback);
+}
+
+void BudgetManager::DidReserve(const GURL& origin,
+                               blink::mojom::BudgetOperationType type,
+                               const ReserveCallback& callback,
+                               bool success) {
+  if (!success) {
+    callback.Run(false);
+    return;
+  }
+
+  // Write the new reservation into the map.
+  reservation_map_[origin.spec()]++;
+  callback.Run(true);
 }
 
 // Override the default clock with the specified clock. Only used for testing.

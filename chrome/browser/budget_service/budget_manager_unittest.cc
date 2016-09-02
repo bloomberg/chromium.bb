@@ -76,8 +76,25 @@ class BudgetManagerTest : public testing::Test {
     run_loop.Run();
   }
 
-  // Budget for callbacks to set.
+  void StatusCallback(base::Closure run_loop_closure, bool success) {
+    success_ = success;
+    run_loop_closure.Run();
+  }
+
+  bool ReserveBudget(blink::mojom::BudgetOperationType type) {
+    const GURL origin(kTestOrigin);
+    base::RunLoop run_loop;
+    GetManager()->Reserve(
+        origin, type,
+        base::Bind(&BudgetManagerTest::StatusCallback, base::Unretained(this),
+                   run_loop.QuitClosure()));
+    run_loop.Run();
+    return success_;
+  }
+
+  // Members for callbacks to set.
   double budget_;
+  bool success_;
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
@@ -246,4 +263,9 @@ TEST_F(BudgetManagerTest, GetBudgetNegativeTime) {
   // budget matches the budget of the most foward time.
   clock->SetNow(starting_time - base::TimeDelta::FromDays(1));
   EXPECT_NEAR(original_budget, GetBudget(), 0.01);
+}
+
+TEST_F(BudgetManagerTest, ReserveBudgetTest) {
+  // Reserve without any budget allocated should fail.
+  ASSERT_FALSE(ReserveBudget(blink::mojom::BudgetOperationType::SILENT_PUSH));
 }

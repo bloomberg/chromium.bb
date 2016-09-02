@@ -37,5 +37,6 @@ BudgetManagerFactory::BudgetManagerFactory()
 
 KeyedService* BudgetManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
+  DCHECK(profile);
   return new BudgetManager(static_cast<Profile*>(profile));
 }

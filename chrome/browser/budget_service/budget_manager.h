@@ -10,6 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
+#include "chrome/browser/budget_service/budget_database.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "third_party/WebKit/public/platform/modules/budget_service/budget_service.mojom.h"
 #include "url/gurl.h"
@@ -39,6 +40,8 @@ class BudgetManager : public KeyedService {
   static double GetCost(blink::mojom::BudgetOperationType type);
 
   using GetBudgetCallback = base::Callback<void(double budget)>;
+  using ReserveCallback = base::Callback<void(bool success)>;
+  using ConsumeCallback = base::Callback<void(bool success)>;
 
   // Get the budget associated with the origin. This is passed to the
   // callback. Budget will be a value between 0.0 and
@@ -52,8 +55,28 @@ class BudgetManager : public KeyedService {
                    double budget,
                    const base::Closure& closure);
 
+  // Spend enough budget to cover the cost of the desired action and create
+  // a reservation for that action. If this returns true to the callback, then
+  // the next action will consume that reservation and not cost any budget.
+  void Reserve(const GURL& origin,
+               blink::mojom::BudgetOperationType type,
+               const ReserveCallback& callback);
+
+  // Spend budget, first consuming a reservation if one exists, or spend
+  // directly from the budget.
+  void Consume(const GURL& origin,
+               blink::mojom::BudgetOperationType type,
+               const ConsumeCallback& callback);
+
  private:
   friend class BudgetManagerTest;
+
+  // Called as a callback from BudgetDatabase after it has made a reserve
+  // decision.
+  void DidReserve(const GURL& origin,
+                  blink::mojom::BudgetOperationType type,
+                  const ReserveCallback& callback,
+                  bool success);
 
   // Used to allow tests to fast forward/reverse time.
   void SetClockForTesting(std::unique_ptr<base::Clock> clock);
@@ -62,6 +85,11 @@ class BudgetManager : public KeyedService {
   std::unique_ptr<base::Clock> clock_;
 
   Profile* profile_;
+  BudgetDatabase db_;
+
+  std::unordered_map<std::string, int> reservation_map_;
+  base::WeakPtrFactory<BudgetManager> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(BudgetManager);
 };
 

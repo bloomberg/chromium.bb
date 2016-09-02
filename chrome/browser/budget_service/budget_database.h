@@ -25,6 +25,7 @@ class Budget;
 }
 
 class GURL;
+class Profile;
 
 // A class used to asynchronously read and write details of the budget
 // assigned to an origin. The class uses an underlying LevelDB.
@@ -56,7 +57,8 @@ class BudgetDatabase {
   // The database_dir specifies the location of the budget information on
   // disk. The task_runner is used by the ProtoDatabase to handle all blocking
   // calls and disk access.
-  BudgetDatabase(const base::FilePath& database_dir,
+  BudgetDatabase(Profile* profile,
+                 const base::FilePath& database_dir,
                  const scoped_refptr<base::SequencedTaskRunner>& task_runner);
   ~BudgetDatabase();
 
@@ -65,27 +67,10 @@ class BudgetDatabase {
   void GetBudgetDetails(const GURL& origin,
                         const GetBudgetDetailsCallback& callback);
 
-  // Add budget for an origin. The caller specifies the amount, and the method
-  // adds the amount to the cache with the correct expiration. Callback is
-  // invoked only after the newly cached value is written to storage. This
-  // should only be called after the budget has been read from the database.
-  void AddBudget(const GURL& origin,
-                 double amount,
-                 const StoreBudgetCallback& callback);
-
-  // Add budget based on engagement with an origin. The caller specifies the
-  // engagement score of the origin, and the method calculates when engagement
-  // budget was last awarded and awards a portion of the score based on that.
-  // Callback is invoked after the value is written to storage. This should
-  // only be called after the budget has been read from the database.
-  void AddEngagementBudget(const GURL& origin,
-                           double score,
-                           const StoreBudgetCallback& callback);
-
   // Spend a particular amount of budget for an origin. The callback takes
   // a boolean which indicates whether the origin had enough budget to spend.
   // If it returns success, then the budget was deducted and the result written
-  // to the database. This should only be called after the budget has been read.
+  // to the database.
   void SpendBudget(const GURL& origin,
                    double amount,
                    const StoreBudgetCallback& callback);
@@ -126,6 +111,7 @@ class BudgetDatabase {
   };
 
   using AddToCacheCallback = base::Callback<void(bool success)>;
+  using SyncCacheCallback = base::Callback<void(bool success)>;
 
   void OnDatabaseInit(bool success);
 
@@ -136,14 +122,32 @@ class BudgetDatabase {
                   bool success,
                   std::unique_ptr<budget_service::Budget> budget);
 
-  void DidGetBudget(const GURL& origin,
-                    const GetBudgetDetailsCallback& callback,
-                    bool success);
+  void GetBudgetAfterSync(const GURL& origin,
+                          const GetBudgetDetailsCallback& callback,
+                          bool success);
+
+  void SpendBudgetAfterSync(const GURL& origin,
+                            double amount,
+                            const StoreBudgetCallback& callback,
+                            bool success);
 
   void WriteCachedValuesToDatabase(const GURL& origin,
                                    const StoreBudgetCallback& callback);
 
-  void CleanupExpiredBudget(const GURL& origin);
+  void SyncCache(const GURL& origin, const SyncCacheCallback& callback);
+  void SyncLoadedCache(const GURL& origin,
+                       const SyncCacheCallback& callback,
+                       bool success);
+
+  // Add budget based on engagement with an origin. The method queries for the
+  // engagement score of the origin, and then calculates when engagement budget
+  // was last awarded and awards a portion of the score based on that.
+  // This only writes budget to the cache.
+  void AddEngagementBudget(const GURL& origin);
+
+  bool CleanupExpiredBudget(const GURL& origin);
+
+  Profile* profile_;
 
   // The database for storing budget information.
   std::unique_ptr<leveldb_proto::ProtoDatabase<budget_service::Budget>> db_;
