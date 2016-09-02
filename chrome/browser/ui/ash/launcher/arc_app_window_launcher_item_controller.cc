@@ -18,10 +18,7 @@
 ArcAppWindowLauncherItemController::ArcAppWindowLauncherItemController(
     const std::string& arc_app_id,
     ChromeLauncherController* controller)
-    : AppWindowLauncherItemController(TYPE_APP,
-                                      arc_app_id,
-                                      arc_app_id,
-                                      controller) {}
+    : AppWindowLauncherItemController(TYPE_APP, arc_app_id, "", controller) {}
 
 ArcAppWindowLauncherItemController::~ArcAppWindowLauncherItemController() {}
 

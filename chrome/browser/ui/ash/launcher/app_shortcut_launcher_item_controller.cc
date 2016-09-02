@@ -65,10 +65,11 @@ bool CanBrowserBeUsedForDirectActivation(Browser* browser,
 // static
 AppShortcutLauncherItemController* AppShortcutLauncherItemController::Create(
     const std::string& app_id,
+    const std::string& launch_id,
     ChromeLauncherController* controller) {
   if (app_id == ArcSupportHost::kHostAppId || app_id == arc::kPlayStoreAppId)
     return new ArcPlaystoreShortcutLauncherItemController(controller);
-  return new AppShortcutLauncherItemController(app_id, controller);
+  return new AppShortcutLauncherItemController(app_id, launch_id, controller);
 }
 
 // Item controller for an app shortcut. Shortcuts track app and launcher ids,
@@ -76,9 +77,12 @@ AppShortcutLauncherItemController* AppShortcutLauncherItemController::Create(
 // item with the appropriate LauncherItemController type).
 AppShortcutLauncherItemController::AppShortcutLauncherItemController(
     const std::string& app_id,
+    const std::string& launch_id,
     ChromeLauncherController* controller)
-    : LauncherItemController(TYPE_SHORTCUT, app_id, controller),
-      chrome_launcher_controller_(controller) {
+    : LauncherItemController(TYPE_SHORTCUT, app_id, launch_id, controller),
+      chrome_launcher_controller_(controller),
+      app_id_(app_id),
+      launch_id_(launch_id) {
   // To detect V1 applications we use their domain and match them against the
   // used URL. This will also work with applications like Google Drive.
   const Extension* extension =

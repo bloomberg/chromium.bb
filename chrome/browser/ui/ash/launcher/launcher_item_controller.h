@@ -42,6 +42,7 @@ class LauncherItemController : public ash::ShelfItemDelegate {
 
   LauncherItemController(Type type,
                          const std::string& app_id,
+                         const std::string& launch_id,
                          ChromeLauncherController* launcher_controller);
   ~LauncherItemController() override;
 
@@ -49,6 +50,7 @@ class LauncherItemController : public ash::ShelfItemDelegate {
   ash::ShelfID shelf_id() const { return shelf_id_; }
   void set_shelf_id(ash::ShelfID id) { shelf_id_ = id; }
   const std::string& app_id() const { return app_id_; }
+  const std::string& launch_id() const { return launch_id_; }
   ChromeLauncherController* launcher_controller() const {
     return launcher_controller_;
   }
@@ -90,6 +92,11 @@ class LauncherItemController : public ash::ShelfItemDelegate {
   const Type type_;
   // App id will be empty if there is no app associated with the window.
   const std::string app_id_;
+  // An id that can be passed to an app when launched in order to support
+  // multiple shelf items per app. This id is used together with the app_id to
+  // uniquely identify each shelf item that has the same app_id.
+  const std::string launch_id_;
+  // A unique id assigned by the shelf model for the shelf item.
   ash::ShelfID shelf_id_;
   ChromeLauncherController* launcher_controller_;
 

@@ -201,6 +201,12 @@ ShelfID ShelfDelegateMus::GetShelfIDForAppID(const std::string& app_id) {
   return 0;
 }
 
+ShelfID ShelfDelegateMus::GetShelfIDForAppIDAndLaunchID(
+    const std::string& app_id,
+    const std::string& launch_id) {
+  return ShelfDelegateMus::GetShelfIDForAppID(app_id);
+}
+
 bool ShelfDelegateMus::HasShelfIDToAppIDMapping(ShelfID id) const {
   return shelf_id_to_app_id_.count(id) != 0;
 }

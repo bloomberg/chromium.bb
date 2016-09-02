@@ -266,6 +266,11 @@ class TestShelfDelegateForShelfView : public ShelfDelegate {
     return id;
   }
 
+  ShelfID GetShelfIDForAppIDAndLaunchID(const std::string& app_id,
+                                        const std::string& launch_id) override {
+    return GetShelfIDForAppID(app_id);
+  }
+
   bool HasShelfIDToAppIDMapping(ShelfID id) const override { return true; }
 
   const std::string& GetAppIDForShelfID(ShelfID id) override {

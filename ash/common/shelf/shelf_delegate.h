@@ -42,6 +42,16 @@ class ASH_EXPORT ShelfDelegate {
   // Get the shelf ID from an application ID.
   virtual ShelfID GetShelfIDForAppID(const std::string& app_id) = 0;
 
+  // Get the shelf ID from an application ID and a launch ID.
+  // The launch ID can be passed to an app when launched in order to support
+  // multiple shelf items per app. This id is used together with the app_id to
+  // uniquely identify each shelf item that has the same app_id.
+  // For example, a single virtualization app might want to show different
+  // shelf icons for different remote apps.
+  virtual ShelfID GetShelfIDForAppIDAndLaunchID(
+      const std::string& app_id,
+      const std::string& launch_id) = 0;
+
   // Checks whether a mapping exists from the ShelfID |id| to an app id.
   virtual bool HasShelfIDToAppIDMapping(ShelfID id) const = 0;
 

@@ -105,6 +105,12 @@ ShelfID TestShelfDelegate::GetShelfIDForAppID(const std::string& app_id) {
   return 0;
 }
 
+ShelfID TestShelfDelegate::GetShelfIDForAppIDAndLaunchID(
+    const std::string& app_id,
+    const std::string& launch_id) {
+  return GetShelfIDForAppID(app_id);
+}
+
 bool TestShelfDelegate::HasShelfIDToAppIDMapping(ShelfID id) const {
   return shelf_id_to_app_id_map_.find(id) != shelf_id_to_app_id_map_.end();
 }

@@ -261,8 +261,8 @@ class TestV2AppLauncherItemController : public LauncherItemController {
                                   ChromeLauncherController* controller)
       : LauncherItemController(LauncherItemController::TYPE_APP,
                                app_id,
-                               controller) {
-  }
+                               "",
+                               controller) {}
 
   ~TestV2AppLauncherItemController() override {}
 
@@ -3210,7 +3210,7 @@ TEST_F(ChromeLauncherControllerImplTest, AppPanels) {
   // Test adding an app panel
   AppWindowLauncherItemController* app_panel_controller =
       new ExtensionAppWindowLauncherItemController(
-          LauncherItemController::TYPE_APP_PANEL, "id", app_id,
+          LauncherItemController::TYPE_APP_PANEL, app_id, "id",
           launcher_controller_.get());
   ash::ShelfID shelf_id1 = launcher_controller_->CreateAppLauncherItem(
       app_panel_controller, app_id, ash::STATUS_RUNNING);
@@ -3234,7 +3234,7 @@ TEST_F(ChromeLauncherControllerImplTest, AppPanels) {
   // one had, being added to the left of the existing panel.
   AppWindowLauncherItemController* app_panel_controller2 =
       new ExtensionAppWindowLauncherItemController(
-          LauncherItemController::TYPE_APP_PANEL, "id", app_id,
+          LauncherItemController::TYPE_APP_PANEL, app_id, "id",
           launcher_controller_.get());
 
   ash::ShelfID shelf_id2 = launcher_controller_->CreateAppLauncherItem(
@@ -3429,7 +3429,7 @@ TEST_F(ChromeLauncherControllerImplTest, MultipleAppIconLoaders) {
 
   AppWindowLauncherItemController* app_panel_controller3 =
       new ExtensionAppWindowLauncherItemController(
-          LauncherItemController::TYPE_APP_PANEL, "id", app_id3,
+          LauncherItemController::TYPE_APP_PANEL, app_id3, "id",
           launcher_controller_.get());
   const ash::ShelfID shelfId3 = launcher_controller_->CreateAppLauncherItem(
       app_panel_controller3, app_id3, ash::STATUS_RUNNING);
@@ -3440,7 +3440,7 @@ TEST_F(ChromeLauncherControllerImplTest, MultipleAppIconLoaders) {
 
   AppWindowLauncherItemController* app_panel_controller2 =
       new ExtensionAppWindowLauncherItemController(
-          LauncherItemController::TYPE_APP_PANEL, "id", app_id2,
+          LauncherItemController::TYPE_APP_PANEL, app_id2, "id",
           launcher_controller_.get());
   const ash::ShelfID shelfId2 = launcher_controller_->CreateAppLauncherItem(
       app_panel_controller2, app_id2, ash::STATUS_RUNNING);
@@ -3452,7 +3452,7 @@ TEST_F(ChromeLauncherControllerImplTest, MultipleAppIconLoaders) {
   // Test adding an app panel
   AppWindowLauncherItemController* app_panel_controller1 =
       new ExtensionAppWindowLauncherItemController(
-          LauncherItemController::TYPE_APP_PANEL, "id", app_id1,
+          LauncherItemController::TYPE_APP_PANEL, app_id1, "id",
           launcher_controller_.get());
 
   const ash::ShelfID shelfId1 = launcher_controller_->CreateAppLauncherItem(

@@ -24,19 +24,26 @@ using extensions::AppWindowRegistry;
 
 namespace {
 
-std::string GetAppShelfId(AppWindow* app_window) {
-  // Set app_shelf_id default value to extension_id. If showInShelf parameter
+std::string GetLaunchId(AppWindow* app_window) {
+  // Set launch_id default value to an empty string. If showInShelf parameter
   // is true or the window type is panel and the window key is not empty, its
-  // value is appended to the app_shelf_id. Otherwise, if the window key is
+  // value is appended to the launch_id. Otherwise, if the window key is
   // empty, the session_id is used.
-  std::string app_shelf_id = app_window->extension_id();
+  std::string launch_id;
   if (app_window->show_in_shelf() || app_window->window_type_is_panel()) {
     if (!app_window->window_key().empty())
-      app_shelf_id += app_window->window_key();
+      launch_id = app_window->window_key();
     else
-      app_shelf_id += base::StringPrintf("%d", app_window->session_id().id());
+      launch_id = base::StringPrintf("%d", app_window->session_id().id());
   }
-  return app_shelf_id;
+  return launch_id;
+}
+
+std::string GetAppShelfId(AppWindow* app_window) {
+  // Set app_shelf_id value to app_id and then append launch_id.
+  std::string app_id = app_window->extension_id();
+  std::string launch_id = GetLaunchId(app_window);
+  return app_id + launch_id;
 }
 
 }  // namespace
@@ -146,37 +153,16 @@ void ExtensionAppWindowLauncherController::RegisterApp(AppWindow* app_window) {
         app_window->window_type_is_panel()
             ? LauncherItemController::TYPE_APP_PANEL
             : LauncherItemController::TYPE_APP;
+    std::string launch_id = GetLaunchId(app_window);
     ExtensionAppWindowLauncherItemController* controller =
-        new ExtensionAppWindowLauncherItemController(type, app_shelf_id, app_id,
+        new ExtensionAppWindowLauncherItemController(type, app_id, launch_id,
                                                      owner());
     controller->AddAppWindow(app_window);
     // If there is already a shelf id mapped to this app_shelf_id (e.g. pinned),
     // use that shelf item.
-    AppShelfIdToShelfIdMap::iterator app_shelf_id_iter =
-        app_shelf_id_to_shelf_id_map_.find(app_shelf_id);
-    if (app_shelf_id_iter != app_shelf_id_to_shelf_id_map_.end()) {
-      if (owner()->IsPinned(app_shelf_id_iter->second)) {
-        shelf_id = app_shelf_id_iter->second;
-      } else {
-        app_shelf_id_to_shelf_id_map_.erase(app_shelf_id);
-      }
-    } else if (app_shelf_id == app_id) {
-      // show_in_shelf in false and not a panel
-      shelf_id =
-          ash::WmShell::Get()->shelf_delegate()->GetShelfIDForAppID(app_id);
-      // Check if the shelf_id corresponds to an already opened
-      // showInShelf=true window that has the same app_id. The current
-      // showInShelf=false window should not fold under this shelf item,
-      // so the shelf_id is set to 0 to get a new shelf_id.
-      auto&& id_map = app_shelf_id_to_shelf_id_map_;
-      if (std::find_if(
-              id_map.begin(), id_map.end(),
-              [shelf_id](const AppShelfIdToShelfIdMap::value_type& pair) {
-                return pair.second == shelf_id;
-              }) != id_map.end()) {
-        shelf_id = 0;
-      }
-    }
+    shelf_id =
+        ash::WmShell::Get()->shelf_delegate()->GetShelfIDForAppIDAndLaunchID(
+            app_id, launch_id);
 
     if (shelf_id == 0) {
       shelf_id = owner()->CreateAppLauncherItem(controller, app_id, status);
@@ -192,7 +178,6 @@ void ExtensionAppWindowLauncherController::RegisterApp(AppWindow* app_window) {
 
     // We need to change the controller associated with app_shelf_id.
     app_controller_map_[app_shelf_id] = controller;
-    app_shelf_id_to_shelf_id_map_[app_shelf_id] = shelf_id;
   }
   owner()->SetItemStatus(shelf_id, status);
   ash::SetShelfIDForWindow(shelf_id, window);
@@ -217,9 +202,6 @@ void ExtensionAppWindowLauncherController::UnregisterApp(aura::Window* window) {
     // If this is the last window associated with the app window shelf id,
     // close the shelf item.
     ash::ShelfID shelf_id = controller->shelf_id();
-    if (!owner()->IsPinned(shelf_id)) {
-      app_shelf_id_to_shelf_id_map_.erase(app_shelf_id);
-    }
     owner()->CloseLauncherItem(shelf_id);
     app_controller_map_.erase(app_controller_iter);
   }

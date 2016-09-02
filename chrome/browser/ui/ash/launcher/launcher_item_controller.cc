@@ -10,9 +10,11 @@
 LauncherItemController::LauncherItemController(
     Type type,
     const std::string& app_id,
+    const std::string& launch_id,
     ChromeLauncherController* launcher_controller)
     : type_(type),
       app_id_(app_id),
+      launch_id_(launch_id),
       shelf_id_(0),
       launcher_controller_(launcher_controller),
       locked_(0),

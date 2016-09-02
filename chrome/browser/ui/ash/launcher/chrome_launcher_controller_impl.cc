@@ -354,7 +354,9 @@ void ChromeLauncherControllerImpl::CloseLauncherItem(ash::ShelfID id) {
     CHECK(iter != id_to_item_controller_map_.end());
     SetItemStatus(id, ash::STATUS_CLOSED);
     std::string app_id = iter->second->app_id();
-    iter->second = AppShortcutLauncherItemController::Create(app_id, this);
+    std::string launch_id = iter->second->launch_id();
+    iter->second =
+        AppShortcutLauncherItemController::Create(app_id, launch_id, this);
     iter->second->set_shelf_id(id);
     // Existing controller is destroyed and replaced by registering again.
     SetShelfItemDelegate(id, iter->second);
@@ -506,7 +508,7 @@ void ChromeLauncherControllerImpl::ActivateApp(const std::string& app_id,
   // Create a temporary application launcher item and use it to see if there are
   // running instances.
   std::unique_ptr<AppShortcutLauncherItemController> app_controller(
-      AppShortcutLauncherItemController::Create(app_id, this));
+      AppShortcutLauncherItemController::Create(app_id, "", this));
   if (!app_controller->GetRunningApplications().empty())
     app_controller->Activate(source);
   else
@@ -901,13 +903,21 @@ void ChromeLauncherControllerImpl::OnShelfVisibilityStateChanged(
 
 ash::ShelfID ChromeLauncherControllerImpl::GetShelfIDForAppID(
     const std::string& app_id) {
-  for (IDToItemControllerMap::const_iterator i =
-           id_to_item_controller_map_.begin();
-       i != id_to_item_controller_map_.end(); ++i) {
-    if (i->second->type() == LauncherItemController::TYPE_APP_PANEL)
+  // Get shelf id for app_id and empty launch_id.
+  return GetShelfIDForAppIDAndLaunchID(app_id, "");
+}
+
+ash::ShelfID ChromeLauncherControllerImpl::GetShelfIDForAppIDAndLaunchID(
+    const std::string& app_id,
+    const std::string& launch_id) {
+  for (const auto& id_to_item_controller_pair : id_to_item_controller_map_) {
+    if (id_to_item_controller_pair.second->type() ==
+        LauncherItemController::TYPE_APP_PANEL)
       continue;  // Don't include panels
-    if (i->second->app_id() == app_id)
-      return i->first;
+    if (id_to_item_controller_pair.second->app_id() == app_id &&
+        id_to_item_controller_pair.second->launch_id() == launch_id) {
+      return id_to_item_controller_pair.first;
+    }
   }
   return 0;
 }
@@ -1071,7 +1081,7 @@ ChromeLauncherControllerImpl::CreateAppShortcutLauncherItemWithType(
     int index,
     ash::ShelfItemType shelf_item_type) {
   AppShortcutLauncherItemController* controller =
-      AppShortcutLauncherItemController::Create(app_id, this);
+      AppShortcutLauncherItemController::Create(app_id, "", this);
   ash::ShelfID shelf_id = InsertAppLauncherItem(
       controller, app_id, ash::STATUS_CLOSED, index, shelf_item_type);
   return shelf_id;

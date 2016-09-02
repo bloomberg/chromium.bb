@@ -17,11 +17,12 @@
 
 AppWindowLauncherItemController::AppWindowLauncherItemController(
     Type type,
-    const std::string& app_shelf_id,
     const std::string& app_id,
+    const std::string& launch_id,
     ChromeLauncherController* controller)
-    : LauncherItemController(type, app_id, controller),
-      app_shelf_id_(app_shelf_id),
+    : LauncherItemController(type, app_id, launch_id, controller),
+      app_id_(app_id),
+      launch_id_(launch_id),
       observed_windows_(this) {}
 
 AppWindowLauncherItemController::~AppWindowLauncherItemController() {}

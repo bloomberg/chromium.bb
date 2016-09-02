@@ -374,6 +374,10 @@ class TestShelfDelegate : public ShelfDelegate {
   void OnShelfAutoHideStateChanged(WmShelf* shelf) override {}
   void OnShelfVisibilityStateChanged(WmShelf* shelf) override {}
   ShelfID GetShelfIDForAppID(const std::string& app_id) override { return 0; }
+  ShelfID GetShelfIDForAppIDAndLaunchID(const std::string& app_id,
+                                        const std::string& launch_id) override {
+    return 0;
+  }
   bool HasShelfIDToAppIDMapping(ShelfID id) const override { return false; }
   const std::string& GetAppIDForShelfID(ShelfID id) override {
     return base::EmptyString();

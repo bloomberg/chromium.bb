@@ -64,6 +64,7 @@ BrowserShortcutLauncherItemController::BrowserShortcutLauncherItemController(
     ash::ShelfModel* shelf_model)
     : LauncherItemController(TYPE_SHORTCUT,
                              extension_misc::kChromeAppId,
+                             "",
                              launcher_controller),
       shelf_model_(shelf_model) {}
 

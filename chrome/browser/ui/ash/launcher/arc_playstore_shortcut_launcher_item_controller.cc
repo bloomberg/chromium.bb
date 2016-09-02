@@ -15,6 +15,7 @@ ArcPlaystoreShortcutLauncherItemController::
     ArcPlaystoreShortcutLauncherItemController(
         ChromeLauncherController* controller)
     : AppShortcutLauncherItemController(ArcSupportHost::kHostAppId,
+                                        "",
                                         controller) {}
 
 ArcPlaystoreShortcutLauncherItemController::

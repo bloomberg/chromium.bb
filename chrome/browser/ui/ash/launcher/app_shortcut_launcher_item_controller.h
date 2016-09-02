@@ -31,6 +31,7 @@ class AppShortcutLauncherItemController : public LauncherItemController {
 
   static AppShortcutLauncherItemController* Create(
       const std::string& app_id,
+      const std::string& launch_id,
       ChromeLauncherController* controller);
 
   std::vector<content::WebContents*> GetRunningApplications();
@@ -59,8 +60,13 @@ class AppShortcutLauncherItemController : public LauncherItemController {
 
   ChromeLauncherController* controller() { return chrome_launcher_controller_; }
 
+  const std::string& app_id() const { return app_id_; }
+
+  const std::string& launch_id() const { return launch_id_; }
+
  protected:
   AppShortcutLauncherItemController(const std::string& app_id,
+                                    const std::string& launch_id,
                                     ChromeLauncherController* controller);
 
  private:
@@ -99,6 +105,14 @@ class AppShortcutLauncherItemController : public LauncherItemController {
   base::Time last_launch_attempt_;
 
   ChromeLauncherController* chrome_launcher_controller_;
+
+  // The application id associated with this app shortcut.
+  const std::string app_id_;
+
+  // An id that can be passed to an app when launched in order to support
+  // multiple shelf items per app. This id is used together with the app_id to
+  // uniquely identify each shelf item that has the same app_id.
+  const std::string launch_id_;
 
   DISALLOW_COPY_AND_ASSIGN(AppShortcutLauncherItemController);
 };
