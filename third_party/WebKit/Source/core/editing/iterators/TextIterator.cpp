@@ -1210,6 +1210,12 @@ String plainText(const EphemeralRange& range, TextIteratorBehaviorFlags behavior
 
 String plainText(const EphemeralRangeInFlatTree& range, TextIteratorBehaviorFlags behavior)
 {
+    // TODO(xiaochengh): Move this check and the DisallowTransitionScope to
+    // |createPlainText| after we have ensured that both versions of |plainText|
+    // are called with clean layout.
+    if (range.isNull())
+        return emptyString();
+    DocumentLifecycle::DisallowTransitionScope disallowTransition(range.startPosition().document()->lifecycle());
     return createPlainText<EditingInFlatTreeStrategy>(range, behavior);
 }
 

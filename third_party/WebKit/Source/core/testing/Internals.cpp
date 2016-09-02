@@ -2476,8 +2476,11 @@ String Internals::selectedHTMLForClipboard()
 
 String Internals::selectedTextForClipboard()
 {
-    if (!frame())
+    if (!frame() || !frame()->document())
         return String();
+
+    // Clean layout is required for extracting plain text from selection.
+    frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
     return frame()->selection().selectedTextForClipboard();
 }

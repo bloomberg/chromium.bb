@@ -1071,6 +1071,13 @@ String FrameSelection::selectedHTMLForClipboard() const
 
 String FrameSelection::selectedText(TextIteratorBehavior behavior) const
 {
+    if (!isAvailable())
+        return emptyString();
+
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    m_document->updateStyleAndLayoutIgnorePendingStylesheets();
+
     return extractSelectedText(*this, behavior);
 }
 
@@ -1078,7 +1085,7 @@ String FrameSelection::selectedTextForClipboard() const
 {
     if (m_frame->settings() && m_frame->settings()->selectionIncludesAltImageText())
         return extractSelectedText(*this, TextIteratorEmitsImageAltText);
-    return selectedText();
+    return extractSelectedText(*this, TextIteratorDefaultBehavior);
 }
 
 LayoutRect FrameSelection::bounds() const
