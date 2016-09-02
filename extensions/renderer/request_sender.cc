@@ -48,17 +48,18 @@ RequestSender::RequestSender() : source_tab_id_(-1) {}
 
 RequestSender::~RequestSender() {}
 
-void RequestSender::InsertRequest(int request_id,
-                                  PendingRequest* pending_request) {
+void RequestSender::InsertRequest(
+    int request_id,
+    std::unique_ptr<PendingRequest> pending_request) {
   DCHECK_EQ(0u, pending_requests_.count(request_id));
-  pending_requests_[request_id].reset(pending_request);
+  pending_requests_[request_id] = std::move(pending_request);
 }
 
-linked_ptr<PendingRequest> RequestSender::RemoveRequest(int request_id) {
+std::unique_ptr<PendingRequest> RequestSender::RemoveRequest(int request_id) {
   PendingRequestMap::iterator i = pending_requests_.find(request_id);
   if (i == pending_requests_.end())
-    return linked_ptr<PendingRequest>();
-  linked_ptr<PendingRequest> result = i->second;
+    return std::unique_ptr<PendingRequest>();
+  std::unique_ptr<PendingRequest> result = std::move(i->second);
   pending_requests_.erase(i);
   return result;
 }
@@ -99,8 +100,10 @@ bool RequestSender::StartRequest(Source* source,
   if (blink::WebLocalFrame* webframe = context->web_frame())
     source_url = webframe->document().url();
 
-  InsertRequest(request_id, new PendingRequest(name, source,
-      blink::WebUserGestureIndicator::currentUserGestureToken()));
+  InsertRequest(request_id,
+                base::MakeUnique<PendingRequest>(
+                    name, source,
+                    blink::WebUserGestureIndicator::currentUserGestureToken()));
 
   ExtensionHostMsg_Request_Params params;
   params.name = name;
@@ -138,7 +141,7 @@ void RequestSender::HandleResponse(int request_id,
                                    const base::ListValue& response,
                                    const std::string& error) {
   base::ElapsedTimer timer;
-  linked_ptr<PendingRequest> request = RemoveRequest(request_id);
+  std::unique_ptr<PendingRequest> request = RemoveRequest(request_id);
 
   if (!request.get()) {
     // This can happen if a context is destroyed while a request is in flight.

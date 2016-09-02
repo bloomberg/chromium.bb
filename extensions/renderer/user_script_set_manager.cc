@@ -115,8 +115,10 @@ void UserScriptSetManager::OnUpdateUserScripts(
     // or just the owner.
     CHECK(changed_hosts.size() <= 1);
     if (programmatic_scripts_.find(host_id) == programmatic_scripts_.end()) {
-      scripts = new UserScriptSet();
-      programmatic_scripts_[host_id] = make_linked_ptr(scripts);
+      scripts = programmatic_scripts_
+                    .insert(std::make_pair(host_id,
+                                           base::MakeUnique<UserScriptSet>()))
+                    .first->second.get();
     } else {
       scripts = programmatic_scripts_[host_id].get();
     }

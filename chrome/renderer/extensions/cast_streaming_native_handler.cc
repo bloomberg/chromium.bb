@@ -401,18 +401,15 @@ void CastStreamingNativeHandler::CallCreateCallback(
   if (stream1) {
     const int stream1_id = last_transport_id_++;
     callback_args[0] = v8::Integer::New(isolate, stream1_id);
-    rtp_stream_map_[stream1_id] =
-        linked_ptr<CastRtpStream>(stream1.release());
+    rtp_stream_map_[stream1_id] = std::move(stream1);
   }
   if (stream2) {
     const int stream2_id = last_transport_id_++;
     callback_args[1] = v8::Integer::New(isolate, stream2_id);
-    rtp_stream_map_[stream2_id] =
-        linked_ptr<CastRtpStream>(stream2.release());
+    rtp_stream_map_[stream2_id] = std::move(stream2);
   }
   const int udp_id = last_transport_id_++;
-  udp_transport_map_[udp_id] =
-      linked_ptr<CastUdpTransport>(udp_transport.release());
+  udp_transport_map_[udp_id] = std::move(udp_transport);
   callback_args[2] = v8::Integer::New(isolate, udp_id);
   context()->CallFunction(
       v8::Local<v8::Function>::New(isolate, create_callback_), 3,
@@ -627,8 +624,8 @@ void CastStreamingNativeHandler::GetRawEvents(
   CHECK(args[2]->IsFunction());
 
   const int transport_id = args[0]->ToInt32(args.GetIsolate())->Value();
-  linked_ptr<v8::Global<v8::Function>> callback(new v8::Global<v8::Function>(
-      args.GetIsolate(), args[2].As<v8::Function>()));
+  v8::Global<v8::Function> callback(args.GetIsolate(),
+                                    args[2].As<v8::Function>());
   std::string extra_data;
   if (!args[1]->IsNull()) {
     extra_data = *v8::String::Utf8Value(args[1]);
@@ -638,7 +635,8 @@ void CastStreamingNativeHandler::GetRawEvents(
   if (!transport)
     return;
 
-  get_raw_events_callbacks_.insert(std::make_pair(transport_id, callback));
+  get_raw_events_callbacks_.insert(
+      std::make_pair(transport_id, std::move(callback)));
 
   transport->GetRawEvents(
       base::Bind(&CastStreamingNativeHandler::CallGetRawEventsCallback,
@@ -657,9 +655,10 @@ void CastStreamingNativeHandler::GetStats(
   if (!transport)
     return;
 
-  linked_ptr<v8::Global<v8::Function>> callback(new v8::Global<v8::Function>(
-      args.GetIsolate(), args[1].As<v8::Function>()));
-  get_stats_callbacks_.insert(std::make_pair(transport_id, callback));
+  v8::Global<v8::Function> callback(args.GetIsolate(),
+                                    args[1].As<v8::Function>());
+  get_stats_callbacks_.insert(
+      std::make_pair(transport_id, std::move(callback)));
 
   transport->GetStats(
       base::Bind(&CastStreamingNativeHandler::CallGetStatsCallback,
@@ -681,7 +680,7 @@ void CastStreamingNativeHandler::CallGetRawEventsCallback(
   std::unique_ptr<V8ValueConverter> converter(V8ValueConverter::create());
   v8::Local<v8::Value> callback_args[] = {
       converter->ToV8Value(raw_events.get(), context()->v8_context())};
-  context()->CallFunction(v8::Local<v8::Function>::New(isolate, *it->second),
+  context()->CallFunction(v8::Local<v8::Function>::New(isolate, it->second),
                           arraysize(callback_args), callback_args);
   get_raw_events_callbacks_.erase(it);
 }
@@ -700,7 +699,7 @@ void CastStreamingNativeHandler::CallGetStatsCallback(
   std::unique_ptr<V8ValueConverter> converter(V8ValueConverter::create());
   v8::Local<v8::Value> callback_args[] = {
       converter->ToV8Value(stats.get(), context()->v8_context())};
-  context()->CallFunction(v8::Local<v8::Function>::New(isolate, *it->second),
+  context()->CallFunction(v8::Local<v8::Function>::New(isolate, it->second),
                           arraysize(callback_args), callback_args);
   get_stats_callbacks_.erase(it);
 }

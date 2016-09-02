@@ -160,13 +160,13 @@ void GuestViewInternalCustomBindings::AttachGuest(
   // logical units.
   params->SetBoolean(guest_view::kElementSizeIsLogical, true);
 
-  linked_ptr<guest_view::GuestViewRequest> request(
+  std::unique_ptr<guest_view::GuestViewRequest> request(
       new guest_view::GuestViewAttachRequest(
           guest_view_container, guest_instance_id, std::move(params),
           args.Length() == 4 ? args[3].As<v8::Function>()
                              : v8::Local<v8::Function>(),
           args.GetIsolate()));
-  guest_view_container->IssueRequest(request);
+  guest_view_container->IssueRequest(std::move(request));
 
   args.GetReturnValue().Set(v8::Boolean::New(context()->isolate(), true));
 }
@@ -190,12 +190,12 @@ void GuestViewInternalCustomBindings::DetachGuest(
   if (!guest_view_container)
     return;
 
-  linked_ptr<guest_view::GuestViewRequest> request(
+  std::unique_ptr<guest_view::GuestViewRequest> request(
       new guest_view::GuestViewDetachRequest(
           guest_view_container, args.Length() == 2 ? args[1].As<v8::Function>()
                                                    : v8::Local<v8::Function>(),
           args.GetIsolate()));
-  guest_view_container->IssueRequest(request);
+  guest_view_container->IssueRequest(std::move(request));
 
   args.GetReturnValue().Set(v8::Boolean::New(context()->isolate(), true));
 }
@@ -258,14 +258,14 @@ void GuestViewInternalCustomBindings::AttachIframeGuest(
       new guest_view::IframeGuestViewContainer(embedder_parent_frame);
   guest_view_container->SetElementInstanceID(element_instance_id);
 
-  linked_ptr<guest_view::GuestViewRequest> request(
+  std::unique_ptr<guest_view::GuestViewRequest> request(
       new guest_view::GuestViewAttachIframeRequest(
           guest_view_container, render_frame->GetRoutingID(), guest_instance_id,
           std::move(params), args.Length() == (num_required_params + 1)
                                  ? args[num_required_params].As<v8::Function>()
                                  : v8::Local<v8::Function>(),
           args.GetIsolate()));
-  guest_view_container->IssueRequest(request);
+  guest_view_container->IssueRequest(std::move(request));
 
   args.GetReturnValue().Set(v8::Boolean::New(context()->isolate(), true));
 }

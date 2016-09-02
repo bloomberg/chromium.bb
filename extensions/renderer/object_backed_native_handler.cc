@@ -7,7 +7,6 @@
 #include <stddef.h>
 
 #include "base/logging.h"
-#include "base/memory/linked_ptr.h"
 #include "content/public/child/worker_thread.h"
 #include "extensions/common/extension_api.h"
 #include "extensions/renderer/console.h"

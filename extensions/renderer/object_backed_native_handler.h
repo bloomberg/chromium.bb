@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "extensions/renderer/native_handler.h"
 #include "v8/include/v8-util.h"
 #include "v8/include/v8.h"

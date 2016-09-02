@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/observer_list.h"
 #include "content/public/renderer/render_thread_observer.h"
@@ -86,7 +85,7 @@ class UserScriptSetManager : public content::RenderThreadObserver {
 
  private:
   // Map for per-extension sets that may be defined programmatically.
-  typedef std::map<HostID, linked_ptr<UserScriptSet> > UserScriptSetMap;
+  using UserScriptSetMap = std::map<HostID, std::unique_ptr<UserScriptSet>>;
 
   // content::RenderThreadObserver implementation.
   bool OnControlMessageReceived(const IPC::Message& message) override;

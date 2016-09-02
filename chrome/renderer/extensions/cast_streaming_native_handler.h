@@ -9,7 +9,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "extensions/renderer/object_backed_native_handler.h"
 #include "v8/include/v8.h"
@@ -132,16 +131,15 @@ class CastStreamingNativeHandler : public ObjectBackedNativeHandler {
 
   int last_transport_id_;
 
-  typedef std::map<int, linked_ptr<CastRtpStream> > RtpStreamMap;
+  using RtpStreamMap = std::map<int, std::unique_ptr<CastRtpStream>>;
   RtpStreamMap rtp_stream_map_;
 
-  typedef std::map<int, linked_ptr<CastUdpTransport> > UdpTransportMap;
+  using UdpTransportMap = std::map<int, std::unique_ptr<CastUdpTransport>>;
   UdpTransportMap udp_transport_map_;
 
   v8::Global<v8::Function> create_callback_;
 
-  typedef std::map<int, linked_ptr<v8::Global<v8::Function>>>
-      RtpStreamCallbackMap;
+  using RtpStreamCallbackMap = std::map<int, v8::Global<v8::Function>>;
   RtpStreamCallbackMap get_raw_events_callbacks_;
   RtpStreamCallbackMap get_stats_callbacks_;
 

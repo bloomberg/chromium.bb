@@ -103,7 +103,8 @@ void GuestViewContainer::Destroy(bool embedder_frame_destroyed) {
       pending_response_->ExecuteCallbackIfAvailable(0 /* argc */, nullptr);
 
     while (pending_requests_.size() > 0) {
-      linked_ptr<GuestViewRequest> pending_request = pending_requests_.front();
+      std::unique_ptr<GuestViewRequest> pending_request =
+          std::move(pending_requests_.front());
       pending_requests_.pop_front();
       // Call the JavaScript callbacks with no arguments which implies an error.
       pending_request->ExecuteCallbackIfAvailable(0 /* argc */, nullptr);
@@ -126,29 +127,33 @@ void GuestViewContainer::RenderFrameDestroyed() {
   Destroy(true /* embedder_frame_destroyed */);
 }
 
-void GuestViewContainer::IssueRequest(linked_ptr<GuestViewRequest> request) {
-  EnqueueRequest(request);
+void GuestViewContainer::IssueRequest(
+    std::unique_ptr<GuestViewRequest> request) {
+  EnqueueRequest(std::move(request));
   PerformPendingRequest();
 }
 
-void GuestViewContainer::EnqueueRequest(linked_ptr<GuestViewRequest> request) {
-  pending_requests_.push_back(request);
+void GuestViewContainer::EnqueueRequest(
+    std::unique_ptr<GuestViewRequest> request) {
+  pending_requests_.push_back(std::move(request));
 }
 
 void GuestViewContainer::PerformPendingRequest() {
   if (!ready_ || pending_requests_.empty() || pending_response_.get())
     return;
 
-  linked_ptr<GuestViewRequest> pending_request = pending_requests_.front();
+  std::unique_ptr<GuestViewRequest> pending_request =
+      std::move(pending_requests_.front());
   pending_requests_.pop_front();
   pending_request->PerformRequest();
-  pending_response_ = pending_request;
+  pending_response_ = std::move(pending_request);
 }
 
 void GuestViewContainer::HandlePendingResponseCallback(
     const IPC::Message& message) {
   CHECK(pending_response_.get());
-  linked_ptr<GuestViewRequest> pending_response(pending_response_.release());
+  std::unique_ptr<GuestViewRequest> pending_response =
+      std::move(pending_response_);
   pending_response->HandleResponse(message);
 }
 

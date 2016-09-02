@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "v8/include/v8.h"
 
 struct ExtensionHostMsg_Request_Params;
@@ -101,10 +100,11 @@ class RequestSender {
 
  private:
   friend class ScopedTabID;
-  typedef std::map<int, linked_ptr<PendingRequest> > PendingRequestMap;
+  using PendingRequestMap = std::map<int, std::unique_ptr<PendingRequest>>;
 
-  void InsertRequest(int request_id, PendingRequest* pending_request);
-  linked_ptr<PendingRequest> RemoveRequest(int request_id);
+  void InsertRequest(int request_id,
+                     std::unique_ptr<PendingRequest> pending_request);
+  std::unique_ptr<PendingRequest> RemoveRequest(int request_id);
 
   PendingRequestMap pending_requests_;
 

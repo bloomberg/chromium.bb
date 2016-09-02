@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/memory/linked_ptr.h"
 #include "extensions/renderer/module_system.h"
 #include "v8/include/v8.h"
 
