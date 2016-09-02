@@ -313,7 +313,6 @@ bool AsyncResourceHandler::OnRequestRedirected(
   reported_transfer_size_ = 0;
   response->head.request_start = request()->creation_time();
   response->head.response_start = TimeTicks::Now();
-  response->head.encoded_data_length = request()->GetTotalReceivedBytes();
   // TODO(davidben): Is it necessary to pass the new first party URL for
   // cookies? The only case where it can change is top-level navigation requests
   // and hopefully those will eventually all be owned by the browser. It's

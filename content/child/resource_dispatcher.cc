@@ -617,7 +617,6 @@ void ResourceDispatcher::StartSync(
   response->charset = result.charset;
   response->request_time = result.request_time;
   response->response_time = result.response_time;
-  response->encoded_data_length = result.encoded_data_length;
   response->load_timing = result.load_timing;
   response->devtools_info = result.devtools_info;
   response->data.swap(result.data);
