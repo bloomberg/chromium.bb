@@ -451,9 +451,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/shadertexturefunction/' +
         'textureprojgrad.html',
         ['mac', 'intel'], bug=483282)
-    self.Fail('deqp/functional/gles3/shadertexturefunction/' +
-        'texelfetchoffset.html',
-        ['mac', 'intel'], bug=483282)
 
     self.Fail('deqp/functional/gles3/framebufferblit/rect_02.html',
         ['mac', 'intel'], bug=483282)

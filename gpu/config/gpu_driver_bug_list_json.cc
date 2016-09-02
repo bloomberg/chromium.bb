@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.91",
+  "version": "8.92",
   "entries": [
     {
       "id": 1,
@@ -1995,6 +1995,18 @@ LONG_STRING_CONST(
       "vendor_id": "0x8086",
       "features": [
         "emulate_abs_int_function"
+      ]
+    },
+    {
+      "id": 184,
+      "description": "Rewrite texelFetchOffset to texelFetch for Intel Mac",
+      "cr_bugs": [642605],
+      "os": {
+        "type": "macosx"
+      },
+      "vendor_id": "0x8086",
+      "features": [
+        "rewrite_texelfetchoffset_to_texelfetch"
       ]
     }
   ]
