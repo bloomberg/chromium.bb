@@ -9,18 +9,22 @@ cr.define('cr.icon', function() {
    */
   function getSupportedScaleFactors() {
     var supportedScaleFactors = [];
-    if (cr.isMac || cr.isChromeOS || cr.isWindows || cr.isLinux) {
-      // All desktop platforms support zooming which also updates the
-      // renderer's device scale factors (a.k.a devicePixelRatio), and
-      // these platforms has high DPI assets for 2.0x. Use 1x and 2x in
-      // image-set on these platforms so that the renderer can pick the
-      // closest image for the current device scale factor.
+    if (!cr.isIOS) {
+      // This matches the code in ResourceBundle::InitSharedInstance() that
+      // supports SCALE_FACTOR_100P on all non-iOS platforms.
       supportedScaleFactors.push(1);
+    }
+    if (cr.isMac || cr.isChromeOS || cr.isWindows || cr.isLinux) {
+      // All desktop platforms support zooming which also updates the renderer's
+      // device scale factors (a.k.a devicePixelRatio), and these platforms have
+      // high DPI assets for 2x.  Let the renderer pick the closest image for
+      // the current device scale factor.
       supportedScaleFactors.push(2);
     } else {
       // For other platforms that use fixed device scale factor, use
       // the window's device pixel ratio.
-      // TODO(oshima): Investigate if Android/iOS need to use image-set.
+      // TODO(oshima): Investigate corresponding to
+      // ResourceBundle::InitSharedInstance() more closely.
       supportedScaleFactors.push(window.devicePixelRatio);
     }
     return supportedScaleFactors;
