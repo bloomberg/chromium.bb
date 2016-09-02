@@ -9,6 +9,7 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "components/metrics/proto/memory_leak_report.pb.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace metrics {
@@ -37,6 +38,17 @@ class TestLeakDetectorController : public LeakDetectorController {
   DISALLOW_COPY_AND_ASSIGN(TestLeakDetectorController);
 };
 
+class LeakDetectorControllerTest : public ::testing::Test {
+ public:
+  LeakDetectorControllerTest() {}
+
+ private:
+  // For supporting content::BrowserThread operations.
+  content::TestBrowserThreadBundle thread_bundle_;
+
+  DISALLOW_COPY_AND_ASSIGN(LeakDetectorControllerTest);
+};
+
 // Use a global instance of the test class because LeakDetectorController
 // initializes class LeakDetector, which can only be initialized once, enforced
 // by an internal CHECK. Multiple initializations of LeakDetectorController in
@@ -47,7 +59,7 @@ class TestLeakDetectorController : public LeakDetectorController {
 base::LazyInstance<TestLeakDetectorController> g_instance =
     LAZY_INSTANCE_INITIALIZER;
 
-TEST(LeakDetectorControllerTest, SingleReport) {
+TEST_F(LeakDetectorControllerTest, SingleReport) {
   MemoryLeakReportProto report;
   report.set_size_bytes(8);
   InitializeRepeatedField({1, 2, 3, 4}, report.mutable_call_stack());
@@ -80,7 +92,7 @@ TEST(LeakDetectorControllerTest, SingleReport) {
   ASSERT_EQ(0U, stored_reports.size());
 }
 
-TEST(LeakDetectorControllerTest, SingleReportHistory) {
+TEST_F(LeakDetectorControllerTest, SingleReportHistory) {
   MemoryLeakReportProto report;
 
   auto* entry = report.add_alloc_breakdown_history();
@@ -133,7 +145,7 @@ TEST(LeakDetectorControllerTest, SingleReportHistory) {
   ASSERT_EQ(0U, stored_reports.size());
 }
 
-TEST(LeakDetectorControllerTest, MultipleReportsSeparately) {
+TEST_F(LeakDetectorControllerTest, MultipleReportsSeparately) {
   TestLeakDetectorController* controller = &g_instance.Get();
   std::vector<MemoryLeakReportProto> stored_reports;
 
@@ -202,7 +214,7 @@ TEST(LeakDetectorControllerTest, MultipleReportsSeparately) {
   ASSERT_EQ(0U, stored_reports.size());
 }
 
-TEST(LeakDetectorControllerTest, MultipleReportsTogether) {
+TEST_F(LeakDetectorControllerTest, MultipleReportsTogether) {
   std::vector<MemoryLeakReportProto> reports(3);
   reports[0].set_size_bytes(8);
   InitializeRepeatedField({1, 2, 3, 4}, reports[0].mutable_call_stack());

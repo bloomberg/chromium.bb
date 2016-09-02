@@ -57,13 +57,13 @@ void LeakDetectorRemoteController::SendLeakReports(
 
     leak_detector::protobuf_to_mojo_converter::MojoToReport(*report, proto);
   }
-  DCHECK(g_local_controller);
-  g_local_controller->SendLeakReports(report_protos);
+  if (g_local_controller) {
+    g_local_controller->SendLeakReports(report_protos);
+  }
 }
 
 void LeakDetectorRemoteController::OnRemoteProcessShutdown() {
-  if (leak_detector_enabled_on_remote_process_) {
-    DCHECK(g_local_controller);
+  if (leak_detector_enabled_on_remote_process_ && g_local_controller) {
     g_local_controller->OnRemoteProcessShutdown();
   }
 }
@@ -80,6 +80,9 @@ LeakDetectorRemoteController::LeakDetectorRemoteController(
 // static
 void LeakDetectorRemoteController::SetLocalControllerInstance(
     LocalController* controller) {
+  // This must be on the same thread as the Mojo-based functions of this class,
+  // to avoid race conditions on |g_local_controller|.
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   g_local_controller = controller;
 }
 

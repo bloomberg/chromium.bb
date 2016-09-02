@@ -177,6 +177,7 @@ LeakDetectorController::LeakDetectorController()
 LeakDetectorController::~LeakDetectorController() {
   DCHECK(thread_checker_.CalledOnValidThread());
   LeakDetector::GetInstance()->RemoveObserver(this);
+  LeakDetectorRemoteController::SetLocalControllerInstance(nullptr);
 }
 
 void LeakDetectorController::GetLeakReports(
