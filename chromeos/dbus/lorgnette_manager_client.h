@@ -6,11 +6,10 @@
 #define CHROMEOS_DBUS_LORGNETTE_MANAGER_CLIENT_H_
 
 #include <map>
+#include <string>
 
 #include "base/callback.h"
-#include "base/files/file.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted_memory.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
 
@@ -28,10 +27,6 @@ class CHROMEOS_EXPORT LorgnetteManagerClient : public DBusClient {
   // a ScannerTableEntry for each available scanner.
   typedef base::Callback<void(
       bool succeeded, const ScannerTable&)> ListScannersCallback;
-
-  // Called once ScanImageToFile() is complete. Takes one parameter:
-  // - succeeded: was the scan completed successfully.
-  typedef base::Callback<void(bool succeeded)> ScanImageToFileCallback;
 
   // Called once ScanImageToString() is complete. Takes two parameters:
   // - succeeded: was the scan completed successfully.
@@ -51,13 +46,6 @@ class CHROMEOS_EXPORT LorgnetteManagerClient : public DBusClient {
 
   // Gets a list of scanners from the lorgnette manager.
   virtual void ListScanners(const ListScannersCallback& callback) = 0;
-
-  // Request a scanned image to be scanned to |file| and calls |callback|
-  // when completed.  Image data will be stored in the .png format.
-  virtual void ScanImageToFile(std::string device_name,
-                               const ScanProperties& properties,
-                               const ScanImageToFileCallback& callback,
-                               base::File* file) = 0;
 
   // Request a scanned image and calls |callback| when completed with a string
   // pointing at the scanned image data.  Image data will be stored in the .png

@@ -6,7 +6,6 @@
 
 #include <map>
 #include <string>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -27,15 +26,6 @@ void FakeLorgnetteManagerClient::ListScanners(
   std::map<std::string, ScannerTableEntry> scanners;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(callback, false, scanners));
-}
-
-void FakeLorgnetteManagerClient::ScanImageToFile(
-    std::string device_name,
-    const ScanProperties& properties,
-    const ScanImageToFileCallback& callback,
-    base::File* file) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::Bind(callback, false));
 }
 
 void FakeLorgnetteManagerClient::ScanImageToString(

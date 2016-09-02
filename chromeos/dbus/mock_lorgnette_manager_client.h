@@ -17,10 +17,6 @@ class MockLorgnetteManagerClient : public LorgnetteManagerClient {
   ~MockLorgnetteManagerClient() override;
 
   MOCK_METHOD1(ListScanners, void(const ListScannersCallback& callback));
-  MOCK_METHOD4(ScanImageToFile, void(std::string device_name,
-                                     const ScanProperties& properties,
-                                     const ScanImageToFileCallback& callback,
-                                     base::File* file));
   MOCK_METHOD3(ScanImageToString,
                void(std::string device_name,
                     const ScanProperties& properties,

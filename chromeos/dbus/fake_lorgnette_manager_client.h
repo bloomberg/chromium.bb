@@ -5,7 +5,6 @@
 #ifndef CHROMEOS_DBUS_FAKE_LORGNETTE_MANAGER_CLIENT_H_
 #define CHROMEOS_DBUS_FAKE_LORGNETTE_MANAGER_CLIENT_H_
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chromeos/dbus/lorgnette_manager_client.h"
 
@@ -22,11 +21,6 @@ class CHROMEOS_EXPORT FakeLorgnetteManagerClient
   void Init(dbus::Bus* bus) override;
 
   void ListScanners(const ListScannersCallback& callback) override;
-  void ScanImageToFile(
-      std::string device_name,
-      const ScanProperties& properties,
-      const ScanImageToFileCallback& callback,
-      base::File* file) override;
   void ScanImageToString(
       std::string device_name,
       const ScanProperties& properties,
