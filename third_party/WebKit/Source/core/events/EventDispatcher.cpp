@@ -244,6 +244,13 @@ inline void EventDispatcher::dispatchEventPostProcess(EventDispatchHandlingState
         if (m_event->defaultHandled() && !m_event->isTrusted() && !isClick)
             Deprecation::countDeprecation(m_node->document(), UseCounter::UntrustedEventDefaultHandled);
     }
+
+    // Track the usage of sending a mousedown event to a select element to force
+    // it to open. This measures a possible breakage of not allowing untrusted
+    // events to open select boxes.
+    if (!m_event->isTrusted() && m_event->isMouseEvent() && m_event->type() == EventTypeNames::mousedown && isHTMLSelectElement(*m_node)) {
+        UseCounter::count(m_node->document(), UseCounter::UntrustedMouseDownEventDispatchedToSelect);
+    }
 }
 
 } // namespace blink

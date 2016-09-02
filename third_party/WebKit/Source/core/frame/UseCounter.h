@@ -1277,6 +1277,7 @@ public:
         CleanScriptElementWithNonce = 1540,
         PotentiallyInjectedScriptElementWithNonce = 1541,
         PendingStylesheetAddedAfterBodyStarted = 1542,
+        UntrustedMouseDownEventDispatchedToSelect = 1543,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
