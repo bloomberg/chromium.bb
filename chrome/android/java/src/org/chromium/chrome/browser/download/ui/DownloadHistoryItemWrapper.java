@@ -25,6 +25,8 @@ import org.chromium.ui.widget.Toast;
 import java.io.File;
 import java.util.Locale;
 
+import javax.annotation.Nullable;
+
 /** Wraps different classes that contain information about downloads. */
 public abstract class DownloadHistoryItemWrapper implements TimedItem {
     private static final String TAG = "download_ui";
@@ -80,7 +82,7 @@ public abstract class DownloadHistoryItemWrapper implements TimedItem {
      * Called when the user wants to delete the file.
      * @param callback The Callback to be notified when the item is finished being deleted.
      */
-    abstract void delete(Callback<Void> callback);
+    abstract void delete(@Nullable Callback<Void> callback);
 
     /**
      * @return Whether the file associated with this item has been removed through an external
@@ -201,10 +203,19 @@ public abstract class DownloadHistoryItemWrapper implements TimedItem {
         }
 
         @Override
-        public void delete(final Callback<Void> callback) {
+        public void delete(@Nullable final Callback<Void> callback) {
             // Tell the DownloadManager to remove the file from history.
             mBackendProvider.getDownloadDelegate().removeDownload(getId(), mIsOffTheRecord);
 
+            // Return early if the file has already been deleted from storage.
+            if (hasBeenExternallyRemoved()) {
+                if (callback != null) callback.onResult(null);
+                return;
+            }
+
+            // TODO(twellington): implement batch deletion of files. If too many items are selected
+            //                    for deletion at once, we will exceed the ThreadPool's maximum
+            //                    queue capacity, causing a crash.
             // Delete the file from storage.
             new AsyncTask<Void, Void, Void>() {
                 @Override
@@ -326,9 +337,9 @@ public abstract class DownloadHistoryItemWrapper implements TimedItem {
         }
 
         @Override
-        public void delete(Callback<Void> callback) {
+        public void delete(@Nullable Callback<Void> callback) {
             mBackendProvider.getOfflinePageBridge().deleteItem(getId());
-            callback.onResult(null);
+            if (callback != null) callback.onResult(null);
         }
 
         @Override
