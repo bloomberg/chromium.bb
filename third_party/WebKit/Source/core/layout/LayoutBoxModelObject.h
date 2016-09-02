@@ -181,10 +181,6 @@ public:
     bool hasNonEmptyLayoutSize() const;
     bool usesCompositedScrolling() const;
 
-    // Checks if all of the background's layers can be painted as locally
-    // attached.
-    bool hasLocalEquivalentBackground() const;
-
     // These return the CSS computed padding values.
     LayoutUnit computedCSSPaddingTop() const { return computedCSSPadding(style()->paddingTop()); }
     LayoutUnit computedCSSPaddingBottom() const { return computedCSSPadding(style()->paddingBottom()); }

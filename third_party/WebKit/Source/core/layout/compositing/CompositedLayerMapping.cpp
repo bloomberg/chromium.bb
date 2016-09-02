@@ -2587,7 +2587,7 @@ bool CompositedLayerMapping::shouldPaintBackgroundOntoScrollingContentsLayer() c
 {
     return !m_owningLayer.isRootLayer()
         && m_owningLayer.scrollsOverflow()
-        && m_owningLayer.layoutObject()->hasLocalEquivalentBackground()
+        && m_owningLayer.layoutObject()->style()->hasEntirelyLocalBackground()
         && !m_owningLayer.stackingNode()->hasNegativeZOrderList();
 }
 

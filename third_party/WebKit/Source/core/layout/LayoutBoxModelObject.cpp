@@ -33,7 +33,6 @@
 #include "core/layout/LayoutFlexibleBox.h"
 #include "core/layout/LayoutGeometryMap.h"
 #include "core/layout/LayoutInline.h"
-#include "core/layout/LayoutTheme.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
@@ -114,64 +113,6 @@ LayoutBoxModelObject::LayoutBoxModelObject(ContainerNode* node)
 bool LayoutBoxModelObject::usesCompositedScrolling() const
 {
     return hasOverflowClip() && hasLayer() && layer()->getScrollableArea()->usesCompositedScrolling();
-}
-
-bool LayoutBoxModelObject::hasLocalEquivalentBackground() const
-{
-    int minBorderWidth = std::min(style()->borderTopWidth(),
-        std::min(style()->borderLeftWidth(),
-            std::min(style()->borderRightWidth(), style()->borderBottomWidth())));
-    bool outlineOverlapsPaddingBox = style()->outlineOffset() < -minBorderWidth;
-    bool hasCustomScrollbars = false;
-    // TODO(flackr): Detect opaque custom scrollbars which would cover up a border-box
-    // background.
-    if (PaintLayerScrollableArea* scrollableArea = getScrollableArea()) {
-        if ((scrollableArea->horizontalScrollbar() && scrollableArea->horizontalScrollbar()->isCustomScrollbar())
-            || (scrollableArea->verticalScrollbar() && scrollableArea->verticalScrollbar()->isCustomScrollbar())) {
-            hasCustomScrollbars = true;
-        }
-    }
-
-    const FillLayer* layer = &(style()->backgroundLayers());
-    for (; layer; layer = layer->next()) {
-        if (layer->attachment() == LocalBackgroundAttachment)
-            continue;
-
-        // If the outline draws inside the border, it intends to draw on top of the scroller's background,
-        // however because it is painted into a layer behind the scrolling contents layer we avoid auto
-        // promoting in this case to avoid obscuring the outline.
-        // TODO(flackr): Outlines should be drawn on top of the scrolling contents layer so that
-        // they cannot be covered up by composited scrolling contents.
-        if (outlineOverlapsPaddingBox)
-            return false;
-
-        // Solid color layers with an effective background clip of the padding box can be treated
-        // as local.
-        if (!layer->image() && !layer->next() && resolveColor(CSSPropertyBackgroundColor).alpha() > 0) {
-            EFillBox clip = layer->clip();
-            if (clip == PaddingFillBox)
-                continue;
-            // A border box can be treated as a padding box if the border is opaque or there is
-            // no border and we don't have custom scrollbars.
-            if (clip == BorderFillBox && !hasCustomScrollbars
-                && (style()->borderTopWidth() == 0 || !resolveColor(CSSPropertyBorderTopColor).hasAlpha())
-                && (style()->borderLeftWidth() == 0 || !resolveColor(CSSPropertyBorderLeftColor).hasAlpha())
-                && (style()->borderRightWidth() == 0 || !resolveColor(CSSPropertyBorderRightColor).hasAlpha())
-                && (style()->borderBottomWidth() == 0 || !resolveColor(CSSPropertyBorderBottomColor).hasAlpha())) {
-                continue;
-            }
-            // A content fill box can be treated as a padding fill box if there is no padding.
-            if (clip == ContentFillBox
-                && style()->paddingTop().isZero()
-                && style()->paddingLeft().isZero()
-                && style()->paddingRight().isZero()
-                && style()->paddingBottom().isZero()) {
-                continue;
-            }
-        }
-        return false;
-    }
-    return true;
 }
 
 LayoutBoxModelObject::~LayoutBoxModelObject()

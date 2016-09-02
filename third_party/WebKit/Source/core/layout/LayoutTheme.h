@@ -187,8 +187,6 @@ public:
 
     virtual bool shouldUseFallbackTheme(const ComputedStyle&) const;
 
-    virtual bool themeDrawsFocusRing(const ComputedStyle&) const = 0;
-
 protected:
     // The platform selection color.
     virtual Color platformActiveSelectionBackgroundColor() const;
@@ -200,6 +198,8 @@ protected:
     virtual Color platformInactiveListBoxSelectionBackgroundColor() const;
     virtual Color platformActiveListBoxSelectionForegroundColor() const;
     virtual Color platformInactiveListBoxSelectionForegroundColor() const;
+
+    virtual bool themeDrawsFocusRing(const ComputedStyle&) const = 0;
 
     // Methods for each appearance value.
     virtual void adjustCheckboxStyle(ComputedStyle&) const;
