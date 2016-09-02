@@ -125,4 +125,76 @@ IN_PROC_BROWSER_TEST_F(PermissionReporterBrowserTest,
   EXPECT_EQ(0, permission_report.num_prior_ignores());
 }
 
+IN_PROC_BROWSER_TEST_F(PermissionReporterBrowserTest,
+                       PermissionActionReportingPriorIgnoreCount) {
+  // Set up the Sync client.
+  ASSERT_TRUE(SetupSync());
+  Profile* profile = GetProfile(0);
+  Browser* browser = CreateBrowser(profile);
+
+  // Set up mock permission manager and prompt factory.
+  PermissionRequestManager* manager = GetPermissionRequestManager(browser);
+  std::unique_ptr<MockPermissionPromptFactory> mock_permission_prompt_factory =
+      base::MakeUnique<MockPermissionPromptFactory>(manager);
+  manager->DisplayPendingRequests();
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
+      browser, embedded_test_server()->GetURL("/permissions/request.html"),
+      1);
+
+  mock_permission_prompt_factory->WaitForPermissionBubble();
+  EXPECT_TRUE(mock_permission_prompt_factory->is_visible());
+
+  // Ignore this prompt and navigate away.
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
+      browser, embedded_test_server()->GetURL("/permissions/request.html"),
+      1);
+
+  mock_permission_prompt_factory->WaitForPermissionBubble();
+  EXPECT_TRUE(mock_permission_prompt_factory->is_visible());
+
+  // We don't need to call mock_report_sender()->WaitForReportSent() here
+  // because the report has already been sent during the second call to
+  // NavigateToURLBlockUntilNavigationsComplete().
+  EXPECT_EQ(1, mock_report_sender()->GetAndResetNumberOfReportsSent());
+
+  PermissionReport permission_report;
+  ASSERT_TRUE(
+      permission_report.ParseFromString(mock_report_sender()->latest_report()));
+  EXPECT_EQ(PermissionReport::GEOLOCATION, permission_report.permission());
+  EXPECT_EQ(PermissionReport::IGNORED, permission_report.action());
+  EXPECT_EQ(embedded_test_server()->base_url().spec(),
+            permission_report.origin());
+  EXPECT_EQ(PermissionReport::DESKTOP_PLATFORM,
+            permission_report.platform_type());
+  EXPECT_EQ(PermissionReport::NO_GESTURE, permission_report.gesture());
+  EXPECT_EQ(PermissionReport::PERSIST_DECISION_UNSPECIFIED,
+            permission_report.persisted());
+  EXPECT_EQ(0, permission_report.num_prior_dismissals());
+  EXPECT_EQ(0, permission_report.num_prior_ignores());
+
+  // Now accept the prompt.
+  AcceptBubble(browser);
+
+  EXPECT_FALSE(mock_permission_prompt_factory->is_visible());
+  mock_report_sender()->WaitForReportSent();
+  EXPECT_EQ(1, mock_report_sender()->GetAndResetNumberOfReportsSent());
+
+  ASSERT_TRUE(
+      permission_report.ParseFromString(mock_report_sender()->latest_report()));
+  EXPECT_EQ(PermissionReport::GEOLOCATION, permission_report.permission());
+  EXPECT_EQ(PermissionReport::GRANTED, permission_report.action());
+  EXPECT_EQ(embedded_test_server()->base_url().spec(),
+            permission_report.origin());
+  EXPECT_EQ(PermissionReport::DESKTOP_PLATFORM,
+            permission_report.platform_type());
+  EXPECT_EQ(PermissionReport::NO_GESTURE, permission_report.gesture());
+  EXPECT_EQ(PermissionReport::PERSIST_DECISION_UNSPECIFIED,
+            permission_report.persisted());
+  EXPECT_EQ(0, permission_report.num_prior_dismissals());
+  // Ensure that we correctly record one prior ignore.
+  EXPECT_EQ(1, permission_report.num_prior_ignores());
+}
+
 }  // namespace safe_browsing
