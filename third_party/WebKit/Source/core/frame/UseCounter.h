@@ -1281,6 +1281,10 @@ public:
         BlockedSniffingAudioToScript = 1544,
         BlockedSniffingVideoToScript = 1545,
         BlockedSniffingCSVToScript = 1546,
+        MetaSetCookie = 1547,
+        MetaRefresh = 1548,
+        MetaSetCookieWhenCSPBlocksInlineScript = 1549,
+        MetaRefreshWhenCSPBlocksInlineScript = 1550,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

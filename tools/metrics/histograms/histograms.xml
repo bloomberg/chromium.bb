@@ -80406,6 +80406,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1544" label="BlockedSniffingAudioToScript"/>
   <int value="1545" label="BlockedSniffingVideoToScript"/>
   <int value="1546" label="BlockedSniffingCSVToScript"/>
+  <int value="1547" label="MetaSetCookie"/>
+  <int value="1548" label="MetaRefresh"/>
+  <int value="1549" label="MetaSetCookieWhenCSPBlocksInlineScript"/>
+  <int value="1550" label="MetaRefreshWhenCSPBlocksInlineScript"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">
