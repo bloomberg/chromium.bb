@@ -116,6 +116,10 @@ void MockMediaStreamDispatcher::AddAudioInputDeviceToArray(
   if (matched_output) {
     audio.device.matched_output_device_id =
         kAudioOutputDeviceIdPrefix + base::IntToString(session_id_);
+    audio.device.group_id =
+        kAudioOutputDeviceIdPrefix + base::IntToString(session_id_);
+  } else {
+    audio.device.group_id = audio.device.id + "groupid";
   }
   audio.session_id = session_id_;
   audio.device.input.sample_rate = media::AudioParameters::kAudioCDSampleRate;
@@ -127,6 +131,8 @@ void MockMediaStreamDispatcher::AddAudioInputDeviceToArray(
 void MockMediaStreamDispatcher::AddAudioOutputDeviceToArray() {
   StreamDeviceInfo audio;
   audio.device.id = kAudioOutputDeviceIdPrefix + base::IntToString(session_id_);
+  audio.device.group_id =
+      kAudioOutputDeviceIdPrefix + base::IntToString(session_id_);
   audio.device.name = "speaker";
   audio.device.type = MEDIA_DEVICE_AUDIO_OUTPUT;
   audio.device.video_facing = MEDIA_VIDEO_FACING_NONE;
