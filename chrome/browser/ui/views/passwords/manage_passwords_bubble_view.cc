@@ -655,7 +655,7 @@ ManagePasswordsBubbleView::UpdatePendingView::UpdatePendingView(
   nope_button_ = views::MdTextButton::CreateSecondaryUiButton(
       this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_CANCEL_BUTTON));
 
-  update_button_ = new views::BlueButton(
+  update_button_ = views::MdTextButton::CreateSecondaryUiBlueButton(
       this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_UPDATE_BUTTON));
 
   // Title row.

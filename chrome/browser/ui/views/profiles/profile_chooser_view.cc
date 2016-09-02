@@ -1657,10 +1657,11 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
       layout->StartRow(1, 0);
       layout->AddView(promo);
 
-      signin_current_profile_button_ = new views::BlueButton(
-          this, l10n_util::GetStringFUTF16(
-                    IDS_SYNC_START_SYNC_BUTTON_LABEL,
-                    l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
+      signin_current_profile_button_ =
+          views::MdTextButton::CreateSecondaryUiBlueButton(
+              this, l10n_util::GetStringFUTF16(
+                        IDS_SYNC_START_SYNC_BUTTON_LABEL,
+                        l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
       layout->StartRowWithPadding(1, 0, 0,
                                   views::kRelatedControlVerticalSpacing);
       layout->StartRow(1, 0);
@@ -2153,7 +2154,7 @@ views::View* ProfileChooserView::CreateAccountRemovalView() {
 
   // Adds button.
   if (!is_primary_account) {
-    remove_account_button_ = new views::BlueButton(
+    remove_account_button_ = views::MdTextButton::CreateSecondaryUiBlueButton(
         this, l10n_util::GetStringUTF16(IDS_PROFILES_ACCOUNT_REMOVAL_BUTTON));
     remove_account_button_->SetHorizontalAlignment(
         gfx::ALIGN_CENTER);

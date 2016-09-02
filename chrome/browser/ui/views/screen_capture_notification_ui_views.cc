@@ -16,7 +16,7 @@
 #include "ui/display/screen.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
-#include "ui/views/controls/button/blue_button.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/link_listener.h"
@@ -119,7 +119,7 @@ class ScreenCaptureNotificationUIViews
   NotificationBarClientView* client_view_;
   views::ImageView* gripper_;
   views::Label* label_;
-  views::BlueButton* stop_button_;
+  views::Button* stop_button_;
   views::Link* hide_link_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenCaptureNotificationUIViews);
@@ -128,11 +128,11 @@ class ScreenCaptureNotificationUIViews
 ScreenCaptureNotificationUIViews::ScreenCaptureNotificationUIViews(
     const base::string16& text)
     : text_(text),
-      client_view_(NULL),
-      gripper_(NULL),
-      label_(NULL),
-      stop_button_(NULL),
-      hide_link_(NULL) {
+      client_view_(nullptr),
+      gripper_(nullptr),
+      label_(nullptr),
+      stop_button_(nullptr),
+      hide_link_(nullptr) {
   set_owned_by_client();
 
   gripper_ = new views::ImageView();
@@ -146,7 +146,8 @@ ScreenCaptureNotificationUIViews::ScreenCaptureNotificationUIViews(
 
   base::string16 stop_text =
       l10n_util::GetStringUTF16(IDS_MEDIA_SCREEN_CAPTURE_NOTIFICATION_STOP);
-  stop_button_ = new views::BlueButton(this, stop_text);
+  stop_button_ =
+      views::MdTextButton::CreateSecondaryUiBlueButton(this, stop_text);
   AddChildView(stop_button_);
 
   // TODO(jiayl): IDS_PASSWORDS_PAGE_VIEW_HIDE_BUTTON is used for the need to

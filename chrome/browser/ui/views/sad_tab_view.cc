@@ -24,7 +24,7 @@
 #include "ui/native_theme/common_theme.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
-#include "ui/views/controls/button/blue_button.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
@@ -185,7 +185,7 @@ SadTabView::SadTabView(WebContents* web_contents, chrome::SadTabKind kind)
     // replaces the 'Reload' button as primary action.
     int button_type = total_crashes_ > kCrashesBeforeFeedbackIsDisplayed ?
         SAD_TAB_BUTTON_FEEDBACK : SAD_TAB_BUTTON_RELOAD;
-    action_button_ = new views::BlueButton(this,
+    action_button_ = views::MdTextButton::CreateSecondaryUiBlueButton(this,
         l10n_util::GetStringUTF16(button_type == SAD_TAB_BUTTON_FEEDBACK
                                   ? IDS_CRASHED_TAB_FEEDBACK_LINK
                                   : IDS_SAD_TAB_RELOAD_LABEL));
