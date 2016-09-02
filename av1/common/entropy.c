@@ -14,6 +14,7 @@
 #include "av1/common/blockd.h"
 #include "av1/common/onyxc_int.h"
 #include "av1/common/entropymode.h"
+#include "av1/common/scan.h"
 #if CONFIG_RANS
 #include "aom_dsp/ans.h"
 #endif  // CONFIG_RANS
@@ -1633,6 +1634,10 @@ void av1_default_coef_probs(AV1_COMMON *cm) {
 #define COEF_COUNT_SAT_AFTER_KEY 24
 #define COEF_MAX_UPDATE_FACTOR_AFTER_KEY 128
 
+#if CONFIG_ADAPT_SCAN
+#define ADAPT_SCAN_UPDATE_RATE_16 (1 << 13)
+#endif
+
 static void adapt_coef_probs(AV1_COMMON *cm, TX_SIZE tx_size,
                              unsigned int count_sat,
                              unsigned int update_factor) {
@@ -1663,6 +1668,10 @@ static void adapt_coef_probs(AV1_COMMON *cm, TX_SIZE tx_size,
 }
 
 void av1_adapt_coef_probs(AV1_COMMON *cm) {
+#if CONFIG_ADAPT_SCAN
+  TX_TYPE tx_type;
+  TX_SIZE tx_size;
+#endif
   TX_SIZE t;
   unsigned int count_sat, update_factor;
 
@@ -1676,6 +1685,13 @@ void av1_adapt_coef_probs(AV1_COMMON *cm) {
     update_factor = COEF_MAX_UPDATE_FACTOR;
     count_sat = COEF_COUNT_SAT;
   }
+
+#if CONFIG_ADAPT_SCAN
+  for (tx_size = 0; tx_size < TX_SIZES; ++tx_size)
+    for (tx_type = 0; tx_type < TX_TYPES; ++tx_type)
+      update_scan_prob(cm, tx_size, tx_type, ADAPT_SCAN_UPDATE_RATE_16);
+#endif
+
   for (t = 0; t <= TX_32X32; t++)
     adapt_coef_probs(cm, t, count_sat, update_factor);
 #if CONFIG_RANS || CONFIG_DAALA_EC
