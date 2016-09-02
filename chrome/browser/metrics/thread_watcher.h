@@ -102,6 +102,8 @@ class ThreadWatcher {
           live_threads_threshold(live_threads_threshold_in) {}
   };
 
+  virtual ~ThreadWatcher();
+
   // This method starts performing health check on the given |thread_id|. It
   // will create ThreadWatcher object for the given |thread_id|, |thread_name|.
   // |sleep_time| is the wait time between ping messages. |unresponsive_time| is
@@ -143,8 +145,6 @@ class ThreadWatcher {
   // wait time between ping messages. |unresponsive_time| is the wait time after
   // ping message is sent, to check if we have received pong message or not.
   explicit ThreadWatcher(const WatchingParams& params);
-
-  virtual ~ThreadWatcher();
 
   // This method activates the thread watching which starts ping/pong messaging.
   virtual void ActivateThreadWatching();
@@ -394,10 +394,8 @@ class ThreadWatcherList {
   static void StopWatchingAll();
 
   // Register() stores a pointer to the given ThreadWatcher in a global map.
-  static void Register(ThreadWatcher* watcher);
-
-  // This method returns true if the ThreadWatcher object is registerd.
-  static bool IsRegistered(const content::BrowserThread::ID thread_id);
+  // Returns the pointer if it was successfully registered, null otherwise.
+  static ThreadWatcher* Register(std::unique_ptr<ThreadWatcher> watcher);
 
   // This method returns number of responsive and unresponsive watched threads.
   static void GetStatusOfThreads(uint32_t* responding_thread_count,

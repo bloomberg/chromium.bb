@@ -79,14 +79,14 @@ void ThreadWatcher::StartWatching(const WatchingParams& params) {
   DCHECK(WatchDogThread::CurrentlyOnWatchDogThread());
 
   // Create a new thread watcher object for the given thread and activate it.
-  ThreadWatcher* watcher = new ThreadWatcher(params);
+  std::unique_ptr<ThreadWatcher> watcher(new ThreadWatcher(params));
 
-  DCHECK(watcher);
   // If we couldn't register the thread watcher object, we are shutting down,
-  // then don't activate thread watching.
-  if (!ThreadWatcherList::IsRegistered(params.thread_id))
-    return;
-  watcher->ActivateThreadWatching();
+  // so don't activate thread watching.
+  ThreadWatcher* registered_watcher =
+      ThreadWatcherList::Register(std::move(watcher));
+  if (registered_watcher != nullptr)
+    registered_watcher->ActivateThreadWatching();
 }
 
 void ThreadWatcher::ActivateThreadWatching() {
@@ -224,7 +224,6 @@ void ThreadWatcher::OnCheckResponsiveness(uint64_t ping_sequence_number) {
 
 void ThreadWatcher::Initialize() {
   DCHECK(WatchDogThread::CurrentlyOnWatchDogThread());
-  ThreadWatcherList::Register(this);
 
   const std::string response_time_histogram_name =
       "ThreadWatcher.ResponseTime." + thread_name_;
@@ -382,18 +381,14 @@ void ThreadWatcherList::StopWatchingAll() {
 }
 
 // static
-void ThreadWatcherList::Register(ThreadWatcher* watcher) {
+ThreadWatcher* ThreadWatcherList::Register(
+    std::unique_ptr<ThreadWatcher> watcher) {
   DCHECK(WatchDogThread::CurrentlyOnWatchDogThread());
   if (!g_thread_watcher_list_)
-    return;
-  DCHECK(!g_thread_watcher_list_->Find(watcher->thread_id()));
-  g_thread_watcher_list_->registered_[watcher->thread_id()] = watcher;
-}
-
-// static
-bool ThreadWatcherList::IsRegistered(const BrowserThread::ID thread_id) {
-  DCHECK(WatchDogThread::CurrentlyOnWatchDogThread());
-  return nullptr != ThreadWatcherList::Find(thread_id);
+    return nullptr;
+  content::BrowserThread::ID thread_id = watcher->thread_id();
+  DCHECK(g_thread_watcher_list_->registered_.count(thread_id) == 0);
+  return g_thread_watcher_list_->registered_[thread_id] = watcher.release();
 }
 
 // static
