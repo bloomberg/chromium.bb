@@ -52,24 +52,19 @@ def ConvertProtoFileContents(contents):
   Args:
     contents: The contents of a protocol buffer definition file.
   """
-  # Remove the retain_unknown_fields option.
-  incompatible_option_regex = re.compile(
-      r'^\s*option\s+retain_unknown_fields\s*=.*;', re.MULTILINE)
-  pruned_contents = incompatible_option_regex.sub('', contents)
-
   # Add the java_multiple_files and java_package options. Options must be set
   # after the syntax declaration, so look for the declaration and place the
   # options immediately after it.
   # TODO(pvalenzuela): Set Java options via proto compiler flags instead of
   # modifying the files here.
   syntax_regex = re.compile(r'^\s*syntax\s*=.*;', re.MULTILINE)
-  syntax_end = syntax_regex.search(pruned_contents).end()
+  syntax_end = syntax_regex.search(contents).end()
   java_options = (
       'option java_multiple_files = true; '
       'option java_package = "org.chromium.components.sync.protocol";')
 
-  contents_to_join = (pruned_contents[:syntax_end], java_options,
-                      pruned_contents[syntax_end:])
+  contents_to_join = (contents[:syntax_end], java_options,
+                      contents[syntax_end:])
   return ''.join(contents_to_join)
 
 
