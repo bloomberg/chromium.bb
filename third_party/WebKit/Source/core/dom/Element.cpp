@@ -3137,12 +3137,12 @@ void Element::setContainsFullScreenElement(bool flag)
     pseudoStateChanged(CSSSelector::PseudoFullScreenAncestor);
 }
 
-// Unlike Node::parentNode, this can cross frame boundaries.
+// Unlike Node::parentOrShadowHostElement, this can cross frame boundaries.
 static Element* nextAncestorElement(Element* element)
 {
     DCHECK(element);
-    if (element->parentElement())
-        return element->parentElement();
+    if (element->parentOrShadowHostElement())
+        return element->parentOrShadowHostElement();
 
     Frame* frame = element->document().frame();
     if (!frame || !frame->owner())
