@@ -20,6 +20,11 @@ class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
  public:
   PersonalDataManagerAndroid(JNIEnv* env, jobject obj);
 
+  // Returns true if personal data manager has loaded the initial data.
+  jboolean IsDataLoaded(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& unused_obj) const;
+
   // These functions act on "web profiles" aka "LOCAL_PROFILE" profiles.
   // -------------------------
 

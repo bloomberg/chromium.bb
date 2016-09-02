@@ -326,18 +326,24 @@ public class AutofillTestHelper {
     }
 
     private void registerDataObserver() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                PersonalDataManager.getInstance().registerDataObserver(
-                        new PersonalDataManagerObserver() {
-                            @Override
-                            public void onPersonalDataChanged() {
-                                mOnPersonalDataChangedHelper.notifyCalled();
-                            }
-                        }
-                );
-            }
-        });
+        try {
+            int callCount = mOnPersonalDataChangedHelper.getCallCount();
+            boolean isDataLoaded = ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
+                @Override
+                public Boolean call() {
+                    return PersonalDataManager.getInstance().registerDataObserver(
+                            new PersonalDataManagerObserver() {
+                                @Override
+                                public void onPersonalDataChanged() {
+                                    mOnPersonalDataChangedHelper.notifyCalled();
+                                }
+                            });
+                }
+            });
+            if (isDataLoaded) return;
+            mOnPersonalDataChangedHelper.waitForCallback(callCount);
+        } catch (TimeoutException | InterruptedException | ExecutionException e) {
+            throw new AssertionError(e);
+        }
     }
 }

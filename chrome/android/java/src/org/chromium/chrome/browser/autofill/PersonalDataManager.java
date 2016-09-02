@@ -498,10 +498,11 @@ public class PersonalDataManager {
     /**
      * Registers a PersonalDataManagerObserver on the native side.
      */
-    public void registerDataObserver(PersonalDataManagerObserver observer) {
+    public boolean registerDataObserver(PersonalDataManagerObserver observer) {
         ThreadUtils.assertOnUiThread();
         assert !mDataObservers.contains(observer);
         mDataObservers.add(observer);
+        return nativeIsDataLoaded(mPersonalDataManagerAndroid);
     }
 
     /**
@@ -754,6 +755,7 @@ public class PersonalDataManager {
     }
 
     private native long nativeInit();
+    private native boolean nativeIsDataLoaded(long nativePersonalDataManagerAndroid);
     private native String[] nativeGetProfileGUIDsForSettings(long nativePersonalDataManagerAndroid);
     private native String[] nativeGetProfileGUIDsToSuggest(long nativePersonalDataManagerAndroid);
     private native String[] nativeGetProfileLabelsForSettings(

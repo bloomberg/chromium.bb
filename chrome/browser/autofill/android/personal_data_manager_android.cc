@@ -317,6 +317,12 @@ PersonalDataManagerAndroid::~PersonalDataManagerAndroid() {
   personal_data_manager_->RemoveObserver(this);
 }
 
+jboolean PersonalDataManagerAndroid::IsDataLoaded(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& unused_obj) const {
+  return personal_data_manager_->IsDataLoaded();
+}
+
 ScopedJavaLocalRef<jobjectArray>
 PersonalDataManagerAndroid::GetProfileGUIDsForSettings(
     JNIEnv* env,
