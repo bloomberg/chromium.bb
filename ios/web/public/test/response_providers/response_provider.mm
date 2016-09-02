@@ -50,11 +50,20 @@ ResponseProvider::GetDefaultResponseHeaders() {
 }
 
 // static
-scoped_refptr<net::HttpResponseHeaders>
-ResponseProvider::GetDefaultResponseHeaders(const std::string& cookie) {
-  scoped_refptr<net::HttpResponseHeaders> result = GetDefaultResponseHeaders();
-  result->AddCookie(cookie);
-  return result;
+std::map<GURL, scoped_refptr<net::HttpResponseHeaders>>
+ResponseProvider::GetDefaultResponseHeaders(
+    const std::map<GURL, std::pair<std::string, std::string>>& responses) {
+  std::map<GURL, scoped_refptr<net::HttpResponseHeaders>> headers;
+  for (const auto& pair : responses) {
+    std::string cookie = pair.second.first;
+    scoped_refptr<net::HttpResponseHeaders> result =
+        GetDefaultResponseHeaders();
+    if (!cookie.empty()) {
+      result->AddCookie(cookie);
+    }
+    headers.insert(std::make_pair(pair.first, result));
+  }
+  return headers;
 }
 
 // static

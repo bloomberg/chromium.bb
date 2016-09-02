@@ -17,10 +17,9 @@ void SetUpSimpleHttpServer(const std::map<GURL, std::string>& responses) {
   SetUpHttpServer(base::MakeUnique<HtmlResponseProvider>(responses));
 }
 
-void SetUpSimpleHttpServerWithSetCookie(
-    const std::map<GURL, std::string>& responses,
-    const std::string& cookie) {
-  SetUpHttpServer(base::MakeUnique<HtmlResponseProvider>(responses, cookie));
+void SetUpSimpleHttpServerWithSetCookies(
+    const std::map<GURL, std::pair<std::string, std::string>>& responses) {
+  SetUpHttpServer(base::MakeUnique<HtmlResponseProvider>(responses));
 }
 
 void SetUpFileBasedHttpServer() {

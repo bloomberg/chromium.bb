@@ -39,11 +39,11 @@ class HtmlResponseProviderImpl {
   // response to a URL based on the mapping present in |responses|.
   explicit HtmlResponseProviderImpl(
       const std::map<GURL, std::string>& responses);
-  // Constructs an HtmlResponseProviderImpl that generates a simple string
-  // response to a URL based on the mapping present in |responses| and |cookie|.
+  // Constructs an HtmlResponseProvider that generates a simple string response
+  // to a URL with set cookie in the headers based on the mapping present in
+  // |responses|.
   explicit HtmlResponseProviderImpl(
-      const std::map<GURL, std::string>& responses,
-      const std::string& cookie);
+      const std::map<GURL, std::pair<std::string, std::string>>& responses);
   // Constructs an HtmlResponseProviderImpl that generates a response to a URL
   // based on the mapping present in |responses|.
   explicit HtmlResponseProviderImpl(const std::map<GURL, Response>& responses);

@@ -15,10 +15,8 @@ HtmlResponseProvider::HtmlResponseProvider(
     : response_provider_impl_(new HtmlResponseProviderImpl(responses)) {}
 
 HtmlResponseProvider::HtmlResponseProvider(
-    const std::map<GURL, std::string>& responses,
-    const std::string& cookie)
-    : response_provider_impl_(new HtmlResponseProviderImpl(responses, cookie)) {
-}
+    const std::map<GURL, std::pair<std::string, std::string>>& responses)
+    : response_provider_impl_(new HtmlResponseProviderImpl(responses)) {}
 
 HtmlResponseProvider::HtmlResponseProvider(
     const std::map<GURL, HtmlResponseProviderImpl::Response>& responses)

@@ -20,11 +20,12 @@ namespace test {
 void SetUpSimpleHttpServer(const std::map<GURL, std::string>& responses);
 
 // Sets up a web::test::HttpServer with a simple HtmlResponseProvider. The
-// HtmlResponseProvider will use the |responses| map to resolve URLs and include
-// Set-Cookie:|cookie| in the header.
-void SetUpSimpleHttpServerWithSetCookie(
-    const std::map<GURL, std::string>& responses,
-    const std::string& cookie);
+// HtmlResponseProvider will use the |responses| map to resolve URLs. The value
+// of |responses| is the cookie and response body pair where the first string is
+// the cookie and the second string is the response body. Set the cookie string
+// as empty string if cookie is not needed in the response headers.
+void SetUpSimpleHttpServerWithSetCookies(
+    const std::map<GURL, std::pair<std::string, std::string>>& responses);
 
 // Sets up a web::test::HttpServer with a FileBasedResponseProvider. The
 // server will try to resolve URLs as file paths relative to the application
