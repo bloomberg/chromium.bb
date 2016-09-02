@@ -73,7 +73,7 @@ void ClientConnectionManager::SendAuthenticationMessage(
     std::unique_ptr<BlimpConnection> connection) {
   DVLOG(1) << "Sending authentication message.";
   connection->GetOutgoingMessageProcessor()->ProcessMessage(
-      CreateStartConnectionMessage(client_token_, kProtocolVersion),
+      CreateStartConnectionMessage(client_auth_token_, kProtocolVersion),
       base::Bind(&ClientConnectionManager::OnAuthenticationMessageSent,
                  weak_factory_.GetWeakPtr(),
                  base::Passed(std::move(connection))));

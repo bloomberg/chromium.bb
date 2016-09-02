@@ -58,7 +58,7 @@ struct Assignment {
   net::IPEndPoint engine_endpoint;
 
   // Used to authenticate to the specified engine.
-  std::string client_token;
+  std::string client_auth_token;
 
   // Specifies the engine's X.509 certificate.
   scoped_refptr<net::X509Certificate> cert;

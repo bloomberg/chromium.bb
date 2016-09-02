@@ -32,7 +32,7 @@ using testing::SaveArg;
 
 namespace blimp {
 namespace {
-const char client_token[] = "valid token";
+const char client_auth_token[] = "valid token";
 }  // namespace
 
 class EngineAuthenticationHandlerTest : public testing::Test {
@@ -41,7 +41,7 @@ class EngineAuthenticationHandlerTest : public testing::Test {
       : runner_(new base::TestMockTimeTaskRunner),
         runner_handle_(runner_),
         auth_handler_(new EngineAuthenticationHandler(&connection_handler_,
-                                                      client_token)),
+                                                      client_auth_token)),
         connection_(new testing::StrictMock<MockBlimpConnection>()) {}
 
   ~EngineAuthenticationHandlerTest() override {}
@@ -72,7 +72,7 @@ TEST_F(EngineAuthenticationHandlerTest, AuthenticationSucceeds) {
   EXPECT_NE(nullptr, incoming_message_processor_);
 
   std::unique_ptr<BlimpMessage> blimp_message =
-      CreateStartConnectionMessage(client_token, kProtocolVersion);
+      CreateStartConnectionMessage(client_auth_token, kProtocolVersion);
   net::TestCompletionCallback process_message_cb;
   incoming_message_processor_->ProcessMessage(std::move(blimp_message),
                                               process_message_cb.callback());
@@ -93,7 +93,7 @@ TEST_F(EngineAuthenticationHandlerTest, ProtocolMismatch) {
   auth_handler_->HandleConnection(std::move(connection_));
 
   std::unique_ptr<BlimpMessage> blimp_message =
-      CreateStartConnectionMessage(client_token, kInvalidProtocolVersion);
+      CreateStartConnectionMessage(client_auth_token, kInvalidProtocolVersion);
   net::TestCompletionCallback process_message_cb;
   incoming_message_processor_->ProcessMessage(std::move(blimp_message),
                                               process_message_cb.callback());
@@ -157,7 +157,7 @@ TEST_F(EngineAuthenticationHandlerTest, AuthHandlerDeletedFirst) {
   auth_handler_.reset();
 
   std::unique_ptr<BlimpMessage> blimp_message =
-      CreateStartConnectionMessage(client_token, kProtocolVersion);
+      CreateStartConnectionMessage(client_auth_token, kProtocolVersion);
   net::TestCompletionCallback process_message_cb;
   incoming_message_processor_->ProcessMessage(std::move(blimp_message),
                                               process_message_cb.callback());

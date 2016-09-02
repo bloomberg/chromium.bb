@@ -33,7 +33,7 @@ void ClientNetworkComponents::ConnectWithAssignment(
   DCHECK(io_thread_checker_.CalledOnValidThread());
   DCHECK(connection_manager_);
 
-  connection_manager_->set_client_token(assignment.client_token);
+  connection_manager_->set_client_auth_token(assignment.client_auth_token);
   const char* transport_type = "UNKNOWN";
   switch (assignment.transport_protocol) {
     case Assignment::SSL:

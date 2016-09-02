@@ -2,19 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "blimp/common/get_client_auth_token.h"
+
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/strings/string_util.h"
-#include "blimp/common/get_client_token.h"
 #include "blimp/common/switches.h"
 
 namespace blimp {
 
-std::string GetClientToken(const base::CommandLine& cmd_line) {
+std::string GetClientAuthToken(const base::CommandLine& cmd_line) {
   std::string file_contents;
-  const base::FilePath path = cmd_line.GetSwitchValuePath(kClientTokenPath);
+  const base::FilePath path = cmd_line.GetSwitchValuePath(kClientAuthTokenPath);
   if (!base::ReadFileToString(path, &file_contents)) {
-    LOG(ERROR) << "Could not read client token file at "
+    LOG(ERROR) << "Could not read client auth token file at "
                << (path.empty() ? "(not provided)" : path.AsUTF8Unsafe());
   }
   return base::CollapseWhitespaceASCII(file_contents, true);

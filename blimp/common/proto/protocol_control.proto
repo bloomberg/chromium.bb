@@ -15,7 +15,7 @@ message CheckpointAckMessage {
 
 // Contains Client->Engine information to establish an authenticated connection.
 message StartConnectionMessage {
-  optional string client_token = 1;
+  optional string client_auth_token = 1;
   optional int32 protocol_version = 2;
 }
 

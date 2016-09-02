@@ -227,7 +227,7 @@ TEST_F(LoggingTest, ProtocolControl) {
   start_connection_msg.mutable_protocol_control()->mutable_start_connection();
   start_connection_msg.mutable_protocol_control()
       ->mutable_start_connection()
-      ->set_client_token("token");
+      ->set_client_auth_token("token");
   start_connection_msg.mutable_protocol_control()
       ->mutable_start_connection()
       ->set_protocol_version(2);

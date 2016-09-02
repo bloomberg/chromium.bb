@@ -96,7 +96,7 @@ std::unique_ptr<BlimpMessage> CreateBlimpMessage(
 }
 
 std::unique_ptr<BlimpMessage> CreateStartConnectionMessage(
-    const std::string& client_token,
+    const std::string& client_auth_token,
     int protocol_version) {
   std::unique_ptr<BlimpMessage> output(new BlimpMessage);
 
@@ -105,7 +105,7 @@ std::unique_ptr<BlimpMessage> CreateStartConnectionMessage(
 
   StartConnectionMessage* start_connection_message =
       control_message->mutable_start_connection();
-  start_connection_message->set_client_token(client_token);
+  start_connection_message->set_client_auth_token(client_auth_token);
   start_connection_message->set_protocol_version(protocol_version);
 
   return output;

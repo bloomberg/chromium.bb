@@ -302,7 +302,7 @@ void BlimpEngineSession::Initialize() {
                  base::Unretained(net_components_.get()),
                  base::ThreadTaskRunnerHandle::Get(),
                  blob_channel_sender_weak_factory_->GetWeakPtr(),
-                 engine_config_->client_token()));
+                 engine_config_->client_auth_token()));
 }
 
 BlobChannelService* BlimpEngineSession::GetBlobChannelService() {

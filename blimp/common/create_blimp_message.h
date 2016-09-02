@@ -75,7 +75,7 @@ BLIMP_COMMON_EXPORT std::unique_ptr<BlimpMessage> CreateBlimpMessage(
     GeolocationMessage** geolocation_message);
 
 BLIMP_COMMON_EXPORT std::unique_ptr<BlimpMessage> CreateStartConnectionMessage(
-    const std::string& client_token,
+    const std::string& client_auth_token,
     int protocol_version);
 
 BLIMP_COMMON_EXPORT std::unique_ptr<BlimpMessage> CreateCheckpointAckMessage(

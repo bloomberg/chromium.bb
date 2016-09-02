@@ -42,15 +42,15 @@ class BlimpEngineConfig {
   // Creates a BlimpEngineConfig based on individual components. Should only
   // be used for testing.
   static std::unique_ptr<BlimpEngineConfig> CreateForTest(
-      const std::string& client_token);
+      const std::string& client_auth_token);
 
   // Returns the client token.
-  const std::string& client_token() const;
+  const std::string& client_auth_token() const;
 
  private:
-  explicit BlimpEngineConfig(const std::string& client_token);
+  explicit BlimpEngineConfig(const std::string& client_auth_token);
 
-  const std::string client_token_;
+  const std::string client_auth_token_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpEngineConfig);
 };

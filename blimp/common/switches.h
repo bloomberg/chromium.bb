@@ -10,7 +10,7 @@
 namespace blimp {
 
 // Path to the client token/shared secret between the Engine and the Client.
-extern BLIMP_COMMON_EXPORT const char kClientTokenPath[];
+extern BLIMP_COMMON_EXPORT const char kClientAuthTokenPath[];
 
 }  // namespace blimp
 

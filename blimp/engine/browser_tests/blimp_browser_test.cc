@@ -30,8 +30,8 @@
 namespace blimp {
 namespace {
 const char kTestDataFilePath[] = "blimp/test/data";
-const char kClientTokenFilePath[] = "blimp/test/data/test_client_token";
-const char kClientToken[] = "MyVoiceIsMyPassport";
+const char kClientAuthTokenFilePath[] = "blimp/test/data/test_client_token";
+const char kClientAuthToken[] = "MyVoiceIsMyPassport";
 }  // namespace
 
 
@@ -70,7 +70,7 @@ engine::BlimpEngineSession* BlimpBrowserTest::GetEngineSession() {
 
 client::Assignment BlimpBrowserTest::GetAssignment() {
   client::Assignment assignment;
-  assignment.client_token = kClientToken;
+  assignment.client_auth_token = kClientAuthToken;
   assignment.engine_endpoint =
       net::IPEndPoint(net::IPAddress::IPv4Localhost(), engine_port_);
   assignment.transport_protocol = client::Assignment::TransportProtocol::TCP;
@@ -89,8 +89,8 @@ void BlimpBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
 
   base::FilePath src_root;
   PathService::Get(base::DIR_SOURCE_ROOT, &src_root);
-  command_line->AppendSwitchASCII(kClientTokenPath,
-      src_root.Append(kClientTokenFilePath).value());
+  command_line->AppendSwitchASCII(
+      kClientAuthTokenPath, src_root.Append(kClientAuthTokenFilePath).value());
 }
 
 void BlimpBrowserTest::SetUpOnMainThread() {

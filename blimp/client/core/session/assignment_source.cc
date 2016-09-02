@@ -21,7 +21,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "blimp/client/core/blimp_client_switches.h"
-#include "blimp/common/get_client_token.h"
+#include "blimp/common/get_client_auth_token.h"
 #include "blimp/common/protocol_version.h"
 #include "components/safe_json/safe_json_parser.h"
 #include "net/base/ip_address.h"
@@ -45,7 +45,7 @@ namespace {
 const char kProtocolVersionKey[] = "protocol_version";
 
 // Assignment response JSON keys.
-const char kClientTokenKey[] = "clientToken";
+const char kClientAuthTokenKey[] = "clientToken";
 const char kHostKey[] = "host";
 const char kPortKey[] = "port";
 const char kCertificateKey[] = "certificate";
@@ -111,8 +111,9 @@ Assignment GetAssignmentFromCommandLine() {
   Assignment assignment;
 
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  assignment.client_token = GetClientToken(*cmd_line);
-  CHECK(!assignment.client_token.empty()) << "No client token provided.";
+  assignment.client_auth_token = GetClientAuthToken(*cmd_line);
+  CHECK(!assignment.client_auth_token.empty())
+      << "No client auth token provided.";
 
   unsigned port_parsed = 0;
   if (!base::StringToUint(
@@ -319,11 +320,11 @@ void AssignmentSource::OnJsonParsed(std::unique_ptr<base::Value> json) {
   }
 
   // Validate that all the expected fields are present.
-  std::string client_token;
+  std::string client_auth_token;
   std::string host;
   int port;
   std::string cert_str;
-  if (!(dict->GetString(kClientTokenKey, &client_token) &&
+  if (!(dict->GetString(kClientAuthTokenKey, &client_auth_token) &&
         dict->GetString(kHostKey, &host) && dict->GetInteger(kPortKey, &port) &&
         dict->GetString(kCertificateKey, &cert_str))) {
     LOG(WARNING) << "Not all fields present in assignment JSON data.";
@@ -362,7 +363,7 @@ void AssignmentSource::OnJsonParsed(std::unique_ptr<base::Value> json) {
   Assignment assignment;
   assignment.transport_protocol = Assignment::TransportProtocol::SSL;
   assignment.engine_endpoint = net::IPEndPoint(ip_address, port);
-  assignment.client_token = client_token;
+  assignment.client_auth_token = client_auth_token;
   assignment.cert = std::move(cert_list[0]);
 
   base::ResetAndReturn(&callback_)

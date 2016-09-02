@@ -28,7 +28,7 @@ using testing::SaveArg;
 
 namespace blimp {
 namespace {
-const char kDummyClientToken[] = "dummy-client-token";
+const char kDummyClientAuthToken[] = "dummy-client-token";
 }  // namespace
 
 class ClientConnectionManagerTest : public testing::Test {
@@ -40,8 +40,9 @@ class ClientConnectionManagerTest : public testing::Test {
         reader_(new testing::StrictMock<MockPacketReader>),
         writer_(new testing::StrictMock<MockPacketWriter>),
         start_connection_message_(
-            CreateStartConnectionMessage(kDummyClientToken, kProtocolVersion)) {
-    manager_->set_client_token(kDummyClientToken);
+            CreateStartConnectionMessage(kDummyClientAuthToken,
+                                         kProtocolVersion)) {
+    manager_->set_client_auth_token(kDummyClientAuthToken);
   }
 
   ~ClientConnectionManagerTest() override {}

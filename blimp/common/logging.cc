@@ -198,9 +198,10 @@ void ExtractProtocolControlMessageFields(const BlimpMessage& message,
   switch (message.protocol_control().connection_message_case()) {
     case ProtocolControlMessage::kStartConnection:
       AddField("subtype", "START_CONNECTION", output);
-      AddField("client_token",
-               message.protocol_control().start_connection().client_token(),
-               output);
+      AddField(
+          "client_token",
+          message.protocol_control().start_connection().client_auth_token(),
+          output);
       AddField("protocol_version",
                message.protocol_control().start_connection().protocol_version(),
                output);

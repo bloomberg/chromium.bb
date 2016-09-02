@@ -6,6 +6,6 @@
 
 namespace blimp {
 
-const char kClientTokenPath[] = "blimp-client-token-path";
+const char kClientAuthTokenPath[] = "blimp-client-token-path";
 
 }  // namespace blimp

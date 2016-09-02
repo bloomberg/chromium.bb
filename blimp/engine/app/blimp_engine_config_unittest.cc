@@ -20,7 +20,7 @@ namespace engine {
 namespace {
 
 // Reference client token.
-static const char kTestClientToken[] = "Reference client token";
+static const char kTestClientAuthToken[] = "Reference client token";
 
 class BlimpEngineConfigTest : public testing::Test {
  protected:
@@ -29,7 +29,7 @@ class BlimpEngineConfigTest : public testing::Test {
     // If a test requires a switch's file to be missing, call
     // RemoveFileForSwitch().
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    CreateFileForSwitch(kClientTokenPath, kTestClientToken);
+    CreateFileForSwitch(kClientAuthTokenPath, kTestClientAuthToken);
   }
 
   // Creates a file in the temp directory for a given filepath switch.
@@ -61,21 +61,22 @@ class BlimpEngineConfigTest : public testing::Test {
     return temp_dir_.path().Append(filepath_switch);
   }
 
-  const std::vector<std::string> all_filepath_switches_ = {kClientTokenPath};
+  const std::vector<std::string> all_filepath_switches_ = {
+      kClientAuthTokenPath};
 
   base::ScopedTempDir temp_dir_;
 };
 
-TEST_F(BlimpEngineConfigTest, ClientTokenCorrect) {
+TEST_F(BlimpEngineConfigTest, ClientAuthTokenCorrect) {
   auto cmd_line = CreateCommandLine(all_filepath_switches_);
   auto engine_config = BlimpEngineConfig::Create(cmd_line);
   EXPECT_NE(nullptr, engine_config);
-  EXPECT_EQ(kTestClientToken, engine_config->client_token());
+  EXPECT_EQ(kTestClientAuthToken, engine_config->client_auth_token());
 }
 
-TEST_F(BlimpEngineConfigTest, ClientTokenEmpty) {
-  RemoveFileForSwitch(kClientTokenPath);
-  CreateFileForSwitch(kClientTokenPath, " ");
+TEST_F(BlimpEngineConfigTest, ClientAuthTokenEmpty) {
+  RemoveFileForSwitch(kClientAuthTokenPath);
+  CreateFileForSwitch(kClientAuthTokenPath, " ");
   auto cmd_line = CreateCommandLine(all_filepath_switches_);
   auto engine_config = BlimpEngineConfig::Create(cmd_line);
   EXPECT_EQ(nullptr, engine_config);

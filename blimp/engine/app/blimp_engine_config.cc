@@ -13,7 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
-#include "blimp/common/get_client_token.h"
+#include "blimp/common/get_client_auth_token.h"
 #include "cc/base/switches.h"
 #include "content/public/common/content_switches.h"
 #include "ui/gl/gl_switches.h"
@@ -44,25 +44,25 @@ BlimpEngineConfig::~BlimpEngineConfig() {}
 // static
 std::unique_ptr<BlimpEngineConfig> BlimpEngineConfig::Create(
     const base::CommandLine& cmd_line) {
-  const std::string client_token = GetClientToken(cmd_line);
-  if (!client_token.empty()) {
-    return base::WrapUnique(new BlimpEngineConfig(client_token));
+  const std::string client_auth_token = GetClientAuthToken(cmd_line);
+  if (!client_auth_token.empty()) {
+    return base::WrapUnique(new BlimpEngineConfig(client_auth_token));
   }
   return nullptr;
 }
 
 // static
 std::unique_ptr<BlimpEngineConfig> BlimpEngineConfig::CreateForTest(
-    const std::string& client_token) {
-  return base::WrapUnique(new BlimpEngineConfig(client_token));
+    const std::string& client_auth_token) {
+  return base::WrapUnique(new BlimpEngineConfig(client_auth_token));
 }
 
-const std::string& BlimpEngineConfig::client_token() const {
-  return client_token_;
+const std::string& BlimpEngineConfig::client_auth_token() const {
+  return client_auth_token_;
 }
 
-BlimpEngineConfig::BlimpEngineConfig(const std::string& client_token)
-    : client_token_(client_token) {}
+BlimpEngineConfig::BlimpEngineConfig(const std::string& client_auth_token)
+    : client_auth_token_(client_auth_token) {}
 
 }  // namespace engine
 }  // namespace blimp

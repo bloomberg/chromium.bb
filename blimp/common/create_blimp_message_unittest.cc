@@ -72,15 +72,15 @@ TEST(CreateBlimpMessageTest, EngineSettingsMessage) {
 }
 
 TEST(CreateBlimpMessageTest, StartConnectionMessage) {
-  const char* client_token = "token";
+  const char* client_auth_token = "token";
   const int protocol_version = 1;
   std::unique_ptr<BlimpMessage> message =
-      CreateStartConnectionMessage(client_token, protocol_version);
+      CreateStartConnectionMessage(client_auth_token, protocol_version);
   EXPECT_EQ(BlimpMessage::kProtocolControl, message->feature_case());
   EXPECT_EQ(ProtocolControlMessage::kStartConnection,
             message->protocol_control().connection_message_case());
-  EXPECT_EQ(client_token,
-            message->protocol_control().start_connection().client_token());
+  EXPECT_EQ(client_auth_token,
+            message->protocol_control().start_connection().client_auth_token());
   EXPECT_EQ(protocol_version,
             message->protocol_control().start_connection().protocol_version());
 }

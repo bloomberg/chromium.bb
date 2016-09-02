@@ -46,9 +46,9 @@ class BLIMP_NET_EXPORT ClientConnectionManager
   // cases such as network switches, online/offline changes.
   void Connect();
 
-  // Sets the client token to use in the authentication message.
-  void set_client_token(const std::string& client_token) {
-    client_token_ = client_token;
+  // Sets the client auth token to use in the authentication message.
+  void set_client_auth_token(const std::string& client_auth_token) {
+    client_auth_token_ = client_auth_token;
   }
 
  private:
@@ -70,7 +70,7 @@ class BLIMP_NET_EXPORT ClientConnectionManager
   // ConnectionErrorObserver implementation.
   void OnConnectionError(int error) override;
 
-  std::string client_token_;
+  std::string client_auth_token_;
   ConnectionHandler* connection_handler_;
   std::vector<std::unique_ptr<BlimpTransport>> transports_;
   base::WeakPtrFactory<ClientConnectionManager> weak_factory_;

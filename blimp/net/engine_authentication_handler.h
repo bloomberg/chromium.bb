@@ -5,6 +5,8 @@
 #ifndef BLIMP_NET_ENGINE_AUTHENTICATION_HANDLER_H_
 #define BLIMP_NET_ENGINE_AUTHENTICATION_HANDLER_H_
 
+#include <memory>
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -21,11 +23,11 @@ class BlimpMessage;
 // to |connection_handler|.
 class BLIMP_NET_EXPORT EngineAuthenticationHandler : public ConnectionHandler {
  public:
-  // |client_token|: used to authenticate incoming connection.
+  // |client_auth_token|: used to authenticate incoming connection.
   // |connection_handler|: a new connection is passed on to it after the
   //    connection is authenticate this handler.
   EngineAuthenticationHandler(ConnectionHandler* connection_handler,
-                              const std::string& client_token);
+                              const std::string& client_auth_token);
 
   ~EngineAuthenticationHandler() override;
 
@@ -38,7 +40,7 @@ class BLIMP_NET_EXPORT EngineAuthenticationHandler : public ConnectionHandler {
 
   // Used to authenticate incoming connection. Engine is assigned to one client
   // only, and all connections from that client shall carry the same token.
-  const std::string client_token_;
+  const std::string client_auth_token_;
 
   DISALLOW_COPY_AND_ASSIGN(EngineAuthenticationHandler);
 };
