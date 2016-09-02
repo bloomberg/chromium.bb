@@ -1455,6 +1455,8 @@ TEST_F(SpdySessionTest, SendInitialDataOnNewSession) {
   };
 
   SettingsMap settings;
+  settings[SETTINGS_HEADER_TABLE_SIZE] =
+      SettingsFlagsAndValue(SETTINGS_FLAG_NONE, kMaxHeaderTableSize);
   settings[SETTINGS_MAX_CONCURRENT_STREAMS] =
       SettingsFlagsAndValue(SETTINGS_FLAG_NONE, kMaxConcurrentPushedStreams);
   SpdySerializedFrame settings_frame(

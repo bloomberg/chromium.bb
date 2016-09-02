@@ -84,6 +84,28 @@ public class BidirectionalStreamTest extends CronetTestBase {
         return urlResponseInfo;
     }
 
+    private void runSimpleGetWithExpectedReceivedBytesCount(int expectedReceivedBytes)
+            throws Exception {
+        String url = Http2TestServer.getEchoMethodUrl();
+        TestBidirectionalStreamCallback callback = new TestBidirectionalStreamCallback();
+        // Create stream.
+        BidirectionalStream stream = new BidirectionalStream
+                                             .Builder(url, callback, callback.getExecutor(),
+                                                     mTestFramework.mCronetEngine)
+                                             .setHttpMethod("GET")
+                                             .build();
+        stream.start();
+        callback.blockForDone();
+        assertTrue(stream.isDone());
+        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
+        // Default method is 'GET'.
+        assertEquals("GET", callback.mResponseAsString);
+        UrlResponseInfo urlResponseInfo = createUrlResponseInfo(
+                new String[] {url}, "", 200, expectedReceivedBytes, ":status", "200");
+        assertResponseEquals(urlResponseInfo, callback.mResponseInfo);
+        checkResponseInfo(callback.mResponseInfo, Http2TestServer.getEchoMethodUrl(), 200, "");
+    }
+
     @SmallTest
     @Feature({"Cronet"})
     public void testBuilderChecks() throws Exception {
@@ -163,24 +185,9 @@ public class BidirectionalStreamTest extends CronetTestBase {
     @Feature({"Cronet"})
     @OnlyRunNativeCronet
     public void testSimpleGet() throws Exception {
-        String url = Http2TestServer.getEchoMethodUrl();
-        TestBidirectionalStreamCallback callback = new TestBidirectionalStreamCallback();
-        // Create stream.
-        BidirectionalStream stream = new BidirectionalStream
-                                             .Builder(url, callback, callback.getExecutor(),
-                                                     mTestFramework.mCronetEngine)
-                                             .setHttpMethod("GET")
-                                             .build();
-        stream.start();
-        callback.blockForDone();
-        assertTrue(stream.isDone());
-        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
-        // Default method is 'GET'.
-        assertEquals("GET", callback.mResponseAsString);
-        UrlResponseInfo urlResponseInfo =
-                createUrlResponseInfo(new String[] {url}, "", 200, 27, ":status", "200");
-        assertResponseEquals(urlResponseInfo, callback.mResponseInfo);
-        checkResponseInfo(callback.mResponseInfo, Http2TestServer.getEchoMethodUrl(), 200, "");
+        // Since this is the first request on the connection, the expected received bytes count
+        // must account for an HPACK dynamic table size update.
+        runSimpleGetWithExpectedReceivedBytesCount(31);
     }
 
     @SmallTest
@@ -201,7 +208,7 @@ public class BidirectionalStreamTest extends CronetTestBase {
         assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
         assertEquals("HEAD", callback.mResponseAsString);
         UrlResponseInfo urlResponseInfo =
-                createUrlResponseInfo(new String[] {url}, "", 200, 28, ":status", "200");
+                createUrlResponseInfo(new String[] {url}, "", 200, 32, ":status", "200");
         assertResponseEquals(urlResponseInfo, callback.mResponseInfo);
         checkResponseInfo(callback.mResponseInfo, Http2TestServer.getEchoMethodUrl(), 200, "");
     }
@@ -1073,7 +1080,10 @@ public class BidirectionalStreamTest extends CronetTestBase {
 
         // Make sure there are no other pending messages, which would trigger
         // asserts in TestBidirectionalCallback.
-        testSimpleGet();
+        // The expected received bytes count is lower than it would be for the first request on the
+        // connection, because the server includes an HPACK dynamic table size update only in the
+        // first response HEADERS frame.
+        runSimpleGetWithExpectedReceivedBytesCount(27);
     }
 
     @SmallTest

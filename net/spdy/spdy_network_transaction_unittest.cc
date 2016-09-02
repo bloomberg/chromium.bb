@@ -5402,6 +5402,8 @@ TEST_F(SpdyNetworkTransactionTest, WindowUpdateSent) {
       stream_max_recv_window_size / 2 + kChunkSize;
 
   SettingsMap initial_settings;
+  initial_settings[SETTINGS_HEADER_TABLE_SIZE] =
+      SettingsFlagsAndValue(SETTINGS_FLAG_NONE, kMaxHeaderTableSize);
   initial_settings[SETTINGS_MAX_CONCURRENT_STREAMS] =
       SettingsFlagsAndValue(SETTINGS_FLAG_NONE, kMaxConcurrentPushedStreams);
   initial_settings[SETTINGS_INITIAL_WINDOW_SIZE] =
