@@ -308,12 +308,22 @@ static const aom_prob default_single_ref_p[REF_CONTEXTS][SINGLE_REFS - 1] = {
 #endif  // CONFIG_EXT_REFS
 };
 
+#if CONFIG_CB4X4
+static const struct tx_probs default_tx_probs = {
+  { { 1, 3, 136, 37 }, { 1, 5, 52, 13 } },
+
+  { { 1, 20, 152 }, { 1, 15, 101 } },
+
+  { { 1, 100 }, { 1, 66 } }
+};
+#else
 static const struct tx_probs default_tx_probs = { { { 3, 136, 37 },
                                                     { 5, 52, 13 } },
 
                                                   { { 20, 152 }, { 15, 101 } },
 
                                                   { { 100 }, { 66 } } };
+#endif
 
 #if CONFIG_PALETTE
 const aom_tree_index av1_palette_size_tree[TREE_SIZE(PALETTE_SIZES)] = {
@@ -773,27 +783,27 @@ int av1_get_palette_color_context(const uint8_t *color_map, int cols, int r,
 
 void av1_tx_counts_to_branch_counts_32x32(const unsigned int *tx_count_32x32p,
                                           unsigned int (*ct_32x32p)[2]) {
-  ct_32x32p[0][0] = tx_count_32x32p[TX_4X4];
-  ct_32x32p[0][1] = tx_count_32x32p[TX_8X8] + tx_count_32x32p[TX_16X16] +
-                    tx_count_32x32p[TX_32X32];
-  ct_32x32p[1][0] = tx_count_32x32p[TX_8X8];
-  ct_32x32p[1][1] = tx_count_32x32p[TX_16X16] + tx_count_32x32p[TX_32X32];
-  ct_32x32p[2][0] = tx_count_32x32p[TX_16X16];
-  ct_32x32p[2][1] = tx_count_32x32p[TX_32X32];
+  ct_32x32p[TX_4X4][0] = tx_count_32x32p[TX_4X4];
+  ct_32x32p[TX_4X4][1] = tx_count_32x32p[TX_8X8] + tx_count_32x32p[TX_16X16] +
+                         tx_count_32x32p[TX_32X32];
+  ct_32x32p[TX_8X8][0] = tx_count_32x32p[TX_8X8];
+  ct_32x32p[TX_8X8][1] = tx_count_32x32p[TX_16X16] + tx_count_32x32p[TX_32X32];
+  ct_32x32p[TX_16X16][0] = tx_count_32x32p[TX_16X16];
+  ct_32x32p[TX_16X16][1] = tx_count_32x32p[TX_32X32];
 }
 
 void av1_tx_counts_to_branch_counts_16x16(const unsigned int *tx_count_16x16p,
                                           unsigned int (*ct_16x16p)[2]) {
-  ct_16x16p[0][0] = tx_count_16x16p[TX_4X4];
-  ct_16x16p[0][1] = tx_count_16x16p[TX_8X8] + tx_count_16x16p[TX_16X16];
-  ct_16x16p[1][0] = tx_count_16x16p[TX_8X8];
-  ct_16x16p[1][1] = tx_count_16x16p[TX_16X16];
+  ct_16x16p[TX_4X4][0] = tx_count_16x16p[TX_4X4];
+  ct_16x16p[TX_4X4][1] = tx_count_16x16p[TX_8X8] + tx_count_16x16p[TX_16X16];
+  ct_16x16p[TX_8X8][0] = tx_count_16x16p[TX_8X8];
+  ct_16x16p[TX_8X8][1] = tx_count_16x16p[TX_16X16];
 }
 
 void av1_tx_counts_to_branch_counts_8x8(const unsigned int *tx_count_8x8p,
                                         unsigned int (*ct_8x8p)[2]) {
-  ct_8x8p[0][0] = tx_count_8x8p[TX_4X4];
-  ct_8x8p[0][1] = tx_count_8x8p[TX_8X8];
+  ct_8x8p[TX_4X4][0] = tx_count_8x8p[TX_4X4];
+  ct_8x8p[TX_4X4][1] = tx_count_8x8p[TX_8X8];
 }
 
 static const aom_prob default_skip_probs[SKIP_CONTEXTS] = { 192, 128, 64 };
@@ -839,13 +849,21 @@ int av1_ext_tx_inv[TX_TYPES];
 
 static const aom_prob
     default_intra_ext_tx_prob[EXT_TX_SIZES][TX_TYPES][TX_TYPES - 1] = {
+#if CONFIG_CB4X4
+      { { 240, 85, 128 }, { 4, 1, 248 }, { 4, 1, 8 }, { 4, 248, 128 } },
+#endif
       { { 240, 85, 128 }, { 4, 1, 248 }, { 4, 1, 8 }, { 4, 248, 128 } },
       { { 244, 85, 128 }, { 8, 2, 248 }, { 8, 2, 8 }, { 8, 248, 128 } },
       { { 248, 85, 128 }, { 16, 4, 248 }, { 16, 4, 8 }, { 16, 248, 128 } },
     };
 
 static const aom_prob default_inter_ext_tx_prob[EXT_TX_SIZES][TX_TYPES - 1] = {
-  { 160, 85, 128 }, { 176, 85, 128 }, { 192, 85, 128 },
+#if CONFIG_CB4X4
+  { 160, 85, 128 },
+#endif
+  { 160, 85, 128 },
+  { 176, 85, 128 },
+  { 192, 85, 128 },
 };
 
 static void init_mode_probs(FRAME_CONTEXT *fc) {

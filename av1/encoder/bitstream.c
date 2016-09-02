@@ -264,11 +264,11 @@ static void write_selected_tx_size(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   const TX_SIZE max_tx_size = max_txsize_lookup[bsize];
   const aom_prob *const tx_probs =
       get_tx_probs2(max_tx_size, xd, &cm->fc->tx_probs);
-  aom_write(w, tx_size != TX_4X4, tx_probs[0]);
+  aom_write(w, tx_size != TX_4X4, tx_probs[TX_4X4]);
   if (tx_size != TX_4X4 && max_tx_size >= TX_16X16) {
-    aom_write(w, tx_size != TX_8X8, tx_probs[1]);
+    aom_write(w, tx_size != TX_8X8, tx_probs[TX_8X8]);
     if (tx_size != TX_8X8 && max_tx_size >= TX_32X32)
-      aom_write(w, tx_size != TX_16X16, tx_probs[2]);
+      aom_write(w, tx_size != TX_16X16, tx_probs[TX_16X16]);
   }
 }
 
@@ -1374,7 +1374,7 @@ static void update_coef_probs(AV1_COMP *cpi, aom_writer *w) {
   const TX_MODE tx_mode = cpi->common.tx_mode;
   const TX_SIZE max_tx_size = tx_mode_to_biggest_tx_size[tx_mode];
   TX_SIZE tx_size;
-  for (tx_size = 0; tx_size <= max_tx_size; ++tx_size) {
+  for (tx_size = TX_4X4; tx_size <= max_tx_size; ++tx_size) {
     av1_coeff_stats frame_branch_ct[PLANE_TYPES];
     av1_coeff_probs_model frame_coef_probs[PLANE_TYPES];
     if (cpi->td.counts->tx.tx_totals[tx_size] <= 20 ||

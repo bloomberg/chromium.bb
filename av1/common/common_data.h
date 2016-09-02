@@ -112,6 +112,24 @@ static const BLOCK_SIZE subsize_lookup[PARTITION_TYPES][BLOCK_SIZES] = {
 };
 
 // transform block size in pixels
+#if CONFIG_CB4X4
+static const int tx_size_1d[TX_SIZES] = { 2, 4, 8, 16, 32 };
+
+static const uint8_t tx_size_1d_log2[TX_SIZES] = { 1, 2, 3, 4, 5 };
+
+static const int tx_size_1d_in_unit[TX_SIZES] = { 1, 1, 2, 4, 8 };
+
+// TODO(jingning): Temporary table during the construction.
+static const int tx_size_1d_in_unit_log2[TX_SIZES] = { 0, 0, 1, 2, 3 };
+
+static const BLOCK_SIZE txsize_to_bsize[TX_SIZES] = {
+  BLOCK_4X4,    // TODO(jingning): replace with BLOCK_2X2
+  BLOCK_4X4,    // TX_4X4
+  BLOCK_8X8,    // TX_8X8
+  BLOCK_16X16,  // TX_16X16
+  BLOCK_32X32,  // TX_32X32
+};
+#else
 static const int tx_size_1d[TX_SIZES] = { 4, 8, 16, 32 };
 
 static const uint8_t tx_size_1d_log2[TX_SIZES] = { 2, 3, 4, 5 };
@@ -121,16 +139,17 @@ static const int tx_size_1d_in_unit[TX_SIZES] = { 1, 2, 4, 8 };
 // TODO(jingning): Temporary table during the construction.
 static const int tx_size_1d_in_unit_log2[TX_SIZES] = { 0, 1, 2, 3 };
 
-static const TX_SIZE max_txsize_lookup[BLOCK_SIZES] = {
-  TX_4X4,   TX_4X4,   TX_4X4,   TX_8X8,   TX_8X8,   TX_8X8,  TX_16X16,
-  TX_16X16, TX_16X16, TX_32X32, TX_32X32, TX_32X32, TX_32X32
-};
-
 static const BLOCK_SIZE txsize_to_bsize[TX_SIZES] = {
   BLOCK_4X4,    // TX_4X4
   BLOCK_8X8,    // TX_8X8
   BLOCK_16X16,  // TX_16X16
   BLOCK_32X32,  // TX_32X32
+};
+#endif
+
+static const TX_SIZE max_txsize_lookup[BLOCK_SIZES] = {
+  TX_4X4,   TX_4X4,   TX_4X4,   TX_8X8,   TX_8X8,   TX_8X8,  TX_16X16,
+  TX_16X16, TX_16X16, TX_32X32, TX_32X32, TX_32X32, TX_32X32
 };
 
 static const TX_SIZE tx_mode_to_biggest_tx_size[TX_MODES] = {

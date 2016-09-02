@@ -1676,7 +1676,7 @@ void av1_adapt_coef_probs(AV1_COMMON *cm) {
     update_factor = COEF_MAX_UPDATE_FACTOR;
     count_sat = COEF_COUNT_SAT;
   }
-  for (t = TX_4X4; t <= TX_32X32; t++)
+  for (t = 0; t <= TX_32X32; t++)
     adapt_coef_probs(cm, t, count_sat, update_factor);
 #if CONFIG_RANS || CONFIG_DAALA_EC
   av1_coef_pareto_cdfs(cm->fc);

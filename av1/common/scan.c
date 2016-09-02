@@ -691,6 +691,10 @@ DECLARE_ALIGNED(16, static const int16_t, av1_default_iscan_32x32[1024]) = {
 };
 
 const SCAN_ORDER av1_default_scan_orders[TX_SIZES] = {
+#if CONFIG_CB4X4
+  // TODO(jingning): use 2x2 scan order
+  { default_scan_4x4, av1_default_iscan_4x4, default_scan_4x4_neighbors },
+#endif
   { default_scan_4x4, av1_default_iscan_4x4, default_scan_4x4_neighbors },
   { default_scan_8x8, av1_default_iscan_8x8, default_scan_8x8_neighbors },
   { default_scan_16x16, av1_default_iscan_16x16, default_scan_16x16_neighbors },
@@ -698,6 +702,13 @@ const SCAN_ORDER av1_default_scan_orders[TX_SIZES] = {
 };
 
 const SCAN_ORDER av1_scan_orders[TX_SIZES][TX_TYPES] = {
+#if CONFIG_CB4X4
+  { // TX_2X2
+    { default_scan_4x4, av1_default_iscan_4x4, default_scan_4x4_neighbors },
+    { row_scan_4x4, av1_row_iscan_4x4, row_scan_4x4_neighbors },
+    { col_scan_4x4, av1_col_iscan_4x4, col_scan_4x4_neighbors },
+    { default_scan_4x4, av1_default_iscan_4x4, default_scan_4x4_neighbors } },
+#endif
   { // TX_4X4
     { default_scan_4x4, av1_default_iscan_4x4, default_scan_4x4_neighbors },
     { row_scan_4x4, av1_row_iscan_4x4, row_scan_4x4_neighbors },

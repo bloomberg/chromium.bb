@@ -380,6 +380,11 @@ int64_t av1_highbd_block_error_c(const tran_low_t *coeff,
  * 16th coefficient in a 4x4 block or the 64th coefficient in a 8x8 block,
  * were non-zero). */
 static const int16_t band_counts[TX_SIZES][8] = {
+#if CONFIG_CB4X4
+  {
+      1, 2, 2, 3, 0, 0, 0,
+  },
+#endif
   { 1, 2, 3, 4, 3, 16 - 13, 0 },
   { 1, 2, 3, 4, 11, 64 - 21, 0 },
   { 1, 2, 3, 4, 11, 256 - 21, 0 },
@@ -744,7 +749,7 @@ static void choose_tx_size_from_rd(const AV1_COMP *const cpi, MACROBLOCK *x,
     last_rd = INT64_MAX;
     for (n = start_tx; n >= end_tx; --n) {
       int r_tx_size = 0;
-      for (m = 0; m <= n - (n == (int)max_tx_size); ++m) {
+      for (m = TX_4X4; m <= n - (n == (int)max_tx_size); ++m) {
         if (m == n)
           r_tx_size += av1_cost_zero(tx_probs[m]);
         else
@@ -3939,6 +3944,7 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
   }
   max_uv_tx_size = get_uv_tx_size_impl(
       xd->mi[0]->mbmi.tx_size, bsize, pd[1].subsampling_x, pd[1].subsampling_y);
+
   rd_pick_intra_sbuv_mode(cpi, x, &rate_uv, &rate_uv_tokenonly, &dist_uv,
                           &uv_skip, AOMMAX(BLOCK_8X8, bsize), max_uv_tx_size);
 

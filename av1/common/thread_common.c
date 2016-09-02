@@ -489,7 +489,7 @@ void av1_accumulate_frame_counts(AV1_COMMON *cm, FRAME_COUNTS *counts,
 
   if (is_dec) {
     int n;
-    for (i = TX_4X4; i < TX_SIZES; i++)
+    for (i = 0; i < TX_SIZES; i++)
       for (j = 0; j < PLANE_TYPES; j++)
         for (k = 0; k < REF_TYPES; k++)
           for (l = 0; l < COEF_BANDS; l++)
@@ -501,7 +501,7 @@ void av1_accumulate_frame_counts(AV1_COMMON *cm, FRAME_COUNTS *counts,
                     counts->coef[i][j][k][l][m][n];
             }
   } else {
-    for (i = TX_4X4; i < TX_SIZES; i++)
+    for (i = 0; i < TX_SIZES; i++)
       for (j = 0; j < PLANE_TYPES; j++)
         for (k = 0; k < REF_TYPES; k++)
           for (l = 0; l < COEF_BANDS; l++)

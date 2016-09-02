@@ -84,11 +84,20 @@ typedef char PARTITION_CONTEXT;
 
 // block transform size
 typedef uint8_t TX_SIZE;
+#if CONFIG_CB4X4
+#define TX_2X2 ((TX_SIZE)0)    // 2x2 transform
+#define TX_4X4 ((TX_SIZE)1)    // 4x4 transform
+#define TX_8X8 ((TX_SIZE)2)    // 8x8 transform
+#define TX_16X16 ((TX_SIZE)3)  // 16x16 transform
+#define TX_32X32 ((TX_SIZE)4)  // 32x32 transform
+#define TX_SIZES ((TX_SIZE)5)
+#else
 #define TX_4X4 ((TX_SIZE)0)    // 4x4 transform
 #define TX_8X8 ((TX_SIZE)1)    // 8x8 transform
 #define TX_16X16 ((TX_SIZE)2)  // 16x16 transform
 #define TX_32X32 ((TX_SIZE)3)  // 32x32 transform
 #define TX_SIZES ((TX_SIZE)4)
+#endif
 
 // frame transform mode
 typedef enum {
@@ -123,7 +132,11 @@ typedef enum {
   TX_TYPES = 4,
 } TX_TYPE;
 
+#if CONFIG_CB4X4
+#define EXT_TX_SIZES 4  // number of sizes that use extended transforms
+#else
 #define EXT_TX_SIZES 3  // number of sizes that use extended transforms
+#endif
 
 typedef enum {
   AOM_LAST_FLAG = 1 << 0,

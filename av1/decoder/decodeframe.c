@@ -762,7 +762,7 @@ static void read_coef_probs_common(av1_coeff_probs_model *coef_probs,
 static void read_coef_probs(FRAME_CONTEXT *fc, TX_MODE tx_mode, aom_reader *r) {
   const TX_SIZE max_tx_size = tx_mode_to_biggest_tx_size[tx_mode];
   TX_SIZE tx_size;
-  for (tx_size = 0; tx_size <= max_tx_size; ++tx_size)
+  for (tx_size = TX_4X4; tx_size <= max_tx_size; ++tx_size)
     read_coef_probs_common(fc->coef_probs[tx_size], r);
 #if CONFIG_RANS || CONFIG_DAALA_EC
   av1_coef_pareto_cdfs(fc);
