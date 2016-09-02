@@ -25,7 +25,6 @@ enum class Accelerator : uint32_t {
   NewChromeTab,
   NewChromeIncognitoWindow,
   ShowTaskManager,
-  ToggleTouchHud,
 };
 
 struct AcceleratorSpec {
@@ -45,8 +44,6 @@ AcceleratorSpec g_spec[] = {
      ui::mojom::kEventFlagControlDown | ui::mojom::kEventFlagShiftDown},
     {Accelerator::ShowTaskManager, ui::mojom::KeyboardCode::ESCAPE,
      ui::mojom::kEventFlagShiftDown},
-    {Accelerator::ToggleTouchHud, ui::mojom::KeyboardCode::P,
-     ui::mojom::kEventFlagControlDown | ui::mojom::kEventFlagAltDown},
 };
 
 void AssertTrue(bool success) {
@@ -119,8 +116,6 @@ void AppDriver::OnAccelerator(uint32_t id, std::unique_ptr<ui::Event> event) {
        {mojom::kIncognitoWindow, "exe:chrome", LaunchMode::MAKE_NEW}},
       {Accelerator::ShowTaskManager,
        {mojom::kWindow, "mojo:task_viewer", LaunchMode::DEFAULT}},
-      {Accelerator::ToggleTouchHud,
-       {mojom::kWindow, "mojo:touch_hud", LaunchMode::DEFAULT}},
   };
 
   const auto iter = options.find(static_cast<Accelerator>(id));

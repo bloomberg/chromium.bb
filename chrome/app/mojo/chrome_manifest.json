@@ -10,6 +10,11 @@
           "ash::mojom::ShelfController",
           "ash::mojom::WallpaperController"
         ]
+      },
+      "mojo:touch_hud": {
+        "interfaces": [
+          "mash::mojom::Launchable"
+        ]
       }
     },
     "provided": {

@@ -33,7 +33,7 @@ class TouchHudUI : public views::WidgetDelegateView,
       : window_manager_connection_(window_manager_connection),
         touch_hud_renderer_(new TouchHudRenderer(widget)) {
     window_manager_connection_->pointer_watcher_event_router()
-        ->AddPointerWatcher(this, false /* want_moves */);
+        ->AddPointerWatcher(this, true /* want_moves */);
   }
   ~TouchHudUI() override {
     window_manager_connection_->pointer_watcher_event_router()
@@ -108,6 +108,7 @@ void TouchHudApplication::Launch(uint32_t what, mash::mojom::LaunchMode how) {
 
 void TouchHudApplication::Create(const shell::Identity& remote_identity,
                                  mash::mojom::LaunchableRequest request) {
+  binding_.Close();
   binding_.Bind(std::move(request));
 }
 

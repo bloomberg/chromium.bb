@@ -16,6 +16,11 @@
           "ui::mojom::AccessibilityManager",
           "ui::mojom::WindowManagerWindowTreeFactory"
         ]
+      },
+      "mojo:touch_hud": {
+        "interfaces": [
+          "mash::mojom::Launchable"
+        ]
       }
     }
   }

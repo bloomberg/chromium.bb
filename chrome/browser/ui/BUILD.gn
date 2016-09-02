@@ -1140,6 +1140,7 @@ split_static_library("ui") {
       "//components/feedback/proto",
       "//components/proximity_auth/webui",
       "//device/bluetooth",
+      "//mash/public/interfaces",
     ]
   }
 

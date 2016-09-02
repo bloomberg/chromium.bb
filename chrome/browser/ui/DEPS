@@ -6,4 +6,5 @@ include_rules = [
   "+components/url_formatter",
   "+components/version_ui",
   "-chrome/browser/ui/views",
+  "+mash/public/interfaces",
 ]

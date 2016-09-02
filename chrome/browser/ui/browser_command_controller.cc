@@ -28,6 +28,7 @@
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -52,8 +53,11 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/mojo_shell_connection.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_system.h"
+#include "mash/public/interfaces/launchable.mojom.h"
+#include "services/shell/public/cpp/connector.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 #if defined(OS_MACOSX)
@@ -625,7 +629,16 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
       break;
 #if defined(OS_CHROMEOS)
     case IDC_TOUCH_HUD_PROJECTION_TOGGLE:
-      ash::accelerators::ToggleTouchHudProjection();
+      if (chrome::IsRunningInMash()) {
+        shell::Connector* connector =
+            content::MojoShellConnection::GetForProcess()->GetConnector();
+        mash::mojom::LaunchablePtr launchable;
+        connector->ConnectToInterface("mojo:touch_hud", &launchable);
+        launchable->Launch(mash::mojom::kWindow,
+                           mash::mojom::LaunchMode::DEFAULT);
+      } else {
+        ash::accelerators::ToggleTouchHudProjection();
+      }
       break;
 #endif
     case IDC_ROUTE_MEDIA:

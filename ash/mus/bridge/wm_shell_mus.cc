@@ -122,7 +122,8 @@ WmShellMus::WmShellMus(
       window_manager->GetNextAcceleratorNamespaceId(&accelerator_namespace_id);
   // WmShellMus is created early on, so that this should always succeed.
   DCHECK(add_result);
-  accelerator_controller_delegate_.reset(new AcceleratorControllerDelegateMus);
+  accelerator_controller_delegate_.reset(
+      new AcceleratorControllerDelegateMus(window_manager_->connector()));
   accelerator_controller_registrar_.reset(new AcceleratorControllerRegistrar(
       window_manager_, accelerator_namespace_id));
   SetAcceleratorController(base::MakeUnique<AcceleratorController>(

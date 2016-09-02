@@ -46,7 +46,6 @@ service("app_driver") {
 
   data_deps = [
     ":manifest",
-    "//ash/touch_hud/mus:touch_hud",
     "//mash/task_viewer",
   ]
 }

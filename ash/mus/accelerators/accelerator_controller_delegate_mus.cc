@@ -5,11 +5,20 @@
 #include "ash/mus/accelerators/accelerator_controller_delegate_mus.h"
 
 #include "base/logging.h"
+#include "mash/public/interfaces/launchable.mojom.h"
 
 namespace ash {
 namespace mus {
 
-AcceleratorControllerDelegateMus::AcceleratorControllerDelegateMus() {}
+AcceleratorControllerDelegateMus::AcceleratorControllerDelegateMus(
+    shell::Connector* connector)
+    : connector_(connector) {
+#if !defined(OS_CHROMEOS)
+  // To avoid trybot complaining that |connector_| is not being
+  // used in non-ChromeOS.
+  connector_ = nullptr;
+#endif
+}
 
 AcceleratorControllerDelegateMus::~AcceleratorControllerDelegateMus() {}
 
@@ -53,9 +62,15 @@ bool AcceleratorControllerDelegateMus::HandlesAction(AcceleratorAction action) {
     case TOGGLE_MIRROR_MODE:
     case TOUCH_HUD_CLEAR:
     case TOUCH_HUD_MODE_CHANGE:
-    case TOUCH_HUD_PROJECTION_TOGGLE:
       NOTIMPLEMENTED();
       return false;
+    case TOUCH_HUD_PROJECTION_TOGGLE: {
+      mash::mojom::LaunchablePtr launchable;
+      connector_->ConnectToInterface("mojo:touch_hud", &launchable);
+      launchable->Launch(mash::mojom::kWindow,
+                         mash::mojom::LaunchMode::DEFAULT);
+      return true;
+    }
 #endif
 
     default:

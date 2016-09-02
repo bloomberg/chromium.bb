@@ -92,6 +92,7 @@ source_set("lib") {
     "//ash",
     "//ash/public/interfaces",
     "//base",
+    "//mash/public/interfaces",
     "//mash/session/public/interfaces",
     "//mojo/common:common_base",
     "//services/shell/public/cpp",
@@ -109,6 +110,10 @@ source_set("lib") {
     "//ui/strings",
     "//ui/views",
     "//ui/views/mus:for_mojo_application",
+  ]
+
+  data_deps = [
+    "//ash/touch_hud/mus:touch_hud",
   ]
 
   if (is_chromeos) {
