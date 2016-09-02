@@ -1,0 +1,112 @@
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
+<script>
+test(() => {
+    assert_not_equals(window.internals, undefined,
+        'This test requires window.internals to access clipboard');
+
+    // TDOO(yosin): We should consolidate "paste-text-00[6-9].html" since
+    // they were commited in one patch.
+
+    assert_selection(
+        '<div contenteditable>foo ^bar| baz</div>',
+        selection => {
+            selection.document.execCommand('copy');
+            selection.collapseToEnd();
+            selection.document.execCommand('paste');
+        },
+        '<div contenteditable>foo barbar|\u{00A0}baz</div>',
+        '1 Paste text after text');
+
+    assert_selection(
+        [
+            '<div contenteditable>',
+                '<div>on^e</div>',
+                '<div>tw|o</div>',
+            '</div>',
+        ].join(''),
+        selection => {
+            selection.document.execCommand('copy');
+            selection.document.execCommand('paste');
+            selection.document.execCommand('paste');
+        },
+        [
+            '<div contenteditable>',
+                '<div>one</div>',
+                '<div>twe</div>',
+                '<div>tw|o</div>',
+            '</div>',
+        ].join(''),
+        '2 Paste DIV into DIV');
+
+    assert_selection(
+        [
+            '<div contenteditable>',
+                '<div>on^e',
+                    '<div>two',
+                        '<div>thre|e</div>',
+                    '</div>',
+                '</div>',
+            '</div>',
+        ].join(''),
+        selection => {
+            selection.document.execCommand('copy');
+            selection.document.execCommand('paste');
+            selection.document.execCommand('paste');
+        },
+        [
+            '<div contenteditable>',
+                'one',
+                '<div>two</div>',
+                '<div>',
+                    '<div>three</div>',
+                    '<div>two</div>',
+                    '<div>thre|e<br></div>',
+                '</div>',
+            '</div>',
+        ].join(''),
+        '3 Paste nested DIV into DIV');
+
+    assert_selection(
+        [
+            '<div contenteditable>',
+                '<div>a^bc</div>',
+                '<div>|def</div>',
+            '</div>',
+        ].join(''),
+        selection => {
+            selection.document.execCommand('copy');
+            selection.document.execCommand('paste');
+        },
+        [
+            '<div contenteditable>',
+                '<div>abc</div>',
+                '<div>|def</div>',
+            '</div>',
+        ].join(''),
+        '4 Paste with end of DIV');
+
+    assert_selection(
+        [
+            '<div contenteditable>',
+                '<div>a^bc</div>',
+                '<div>|def</div>',
+            '</div>',
+        ].join(''),
+        selection => {
+            selection.document.execCommand('copy');
+            selection.document.execCommand('paste');
+            selection.document.execCommand('paste');
+        },
+        [
+            '<div contenteditable>',
+                '<div>abc</div>',
+                '<div>bc</div>',
+                '<div>|def</div>',
+            '</div>',
+        ].join(''),
+        '5 Paste with end of DIV twice');
+}, 'Paste text');
+</script>
