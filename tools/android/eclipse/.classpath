@@ -108,7 +108,12 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="third_party/gif_player/src"/>
     <classpathentry kind="src" path="third_party/jmake/src"/>
     <classpathentry kind="src" path="third_party/junit/src/src/main/java"/>
-    <classpathentry kind="src" path="third_party/mockito/src/src"/>
+    <classpathentry kind="src" path="third_party/mockito/src/src/main/java"/>
+    <classpathentry kind="src" path="third_party/robolectric/robolectric/robolectric/src/main/java"/>
+    <classpathentry kind="src" path="third_party/robolectric/robolectric/robolectric/src/main/java"/>
+    <classpathentry kind="src" path="third_party/robolectric/robolectric/robolectric-annotations/src/main/java"/>
+    <classpathentry kind="src" path="third_party/robolectric/robolectric/robolectric-shadows/shadows-core/src/main/java"/>
+    <classpathentry kind="src" path="third_party/robolectric/robolectric/robolectric-utils/src/main/java"/>
     <classpathentry kind="src" path="tools/android/findbugs_plugin/src"/>
     <classpathentry kind="src" path="tools/android/findbugs_plugin/test/java/src"/>
     <classpathentry kind="src" path="tools/android/memconsumer/java/src"/>
@@ -217,7 +222,6 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="lib" path="third_party/findbugs/lib/findbugs.jar"/>
     <classpathentry kind="lib" path="third_party/junit/src/lib/hamcrest-core-1.1.jar"/>
     <classpathentry kind="lib" path="third_party/mockito/src/lib/repackaged/cglib-and-asm-1.0.jar" sourcepath="third_party/mockito/src/lib/sources/cglib-and-asm-1.0-sources.jar"/>
-    <classpathentry kind="lib" path="third_party/robolectric/lib/robolectric-2.4-jar-with-dependencies.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/cacheinvalidation_proto_java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/content_java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/jsr_305_javalib.jar"/>
