@@ -110,6 +110,13 @@ private:
     // change since the last layout.  It is recomputed in save(), and used to
     // suppress the adjustment in restore().  More at http://bit.ly/sanaclap.
     bool m_scrollAnchorDisablingStyleChanged;
+
+    // True iff save has been called, and restore has not been called since
+    // the call to save.  In this state, additional calls to save are ignored,
+    // to make things easier for multi-pass layout modes such as flexbox.
+    // TODO(skobes): explore anchoring at frame boundaries instead of layouts,
+    // which would allow this field to be removed.
+    bool m_saved;
 };
 
 } // namespace blink

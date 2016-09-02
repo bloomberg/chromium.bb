@@ -18,6 +18,7 @@ ScrollAnchor::ScrollAnchor()
     : m_anchorObject(nullptr)
     , m_corner(Corner::TopLeft)
     , m_scrollAnchorDisablingStyleChanged(false)
+    , m_saved(false)
 {
 }
 
@@ -205,6 +206,9 @@ bool ScrollAnchor::computeScrollAnchorDisablingStyleChanged()
 
 void ScrollAnchor::save()
 {
+    if (m_saved)
+        return;
+    m_saved = true;
     DCHECK(m_scroller);
     if (m_scroller->scrollPosition() == IntPoint::zero()) {
         clear();
@@ -242,6 +246,9 @@ IntSize ScrollAnchor::computeAdjustment() const
 
 void ScrollAnchor::restore()
 {
+    if (!m_saved)
+        return;
+    m_saved = false;
     DCHECK(m_scroller);
     if (!m_anchorObject)
         return;

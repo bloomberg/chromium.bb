@@ -533,6 +533,38 @@ TEST_F(ScrollAnchorTest, FlexboxDelayedClampingAlsoDelaysAdjustment)
     EXPECT_EQ(150, scrollerForElement(scroller)->scrollPosition().y());
 }
 
+TEST_F(ScrollAnchorTest, FlexboxDelayedAdjustmentRespectsSANACLAP)
+{
+    setBodyInnerHTML(
+        "<style>"
+        "    html { overflow: hidden; }"
+        "    body {"
+        "        position: absolute; display: flex;"
+        "        top: 0; bottom: 0; margin: 0;"
+        "    }"
+        "    #scroller { overflow: auto; }"
+        "    #spacer { width: 600px; height: 1200px; }"
+        "    #anchor {"
+        "        position: relative; top: 50px;"
+        "        width: 100px; height: 100px;"
+        "        background-color: #8f8;"
+        "    }"
+        "</style>"
+        "<div id='scroller'>"
+        "    <div id='spacer'>"
+        "        <div id='anchor'></div>"
+        "    </div>"
+        "</div>");
+
+    Element* scroller = document().getElementById("scroller");
+    scroller->setScrollTop(100);
+
+    document().getElementById("spacer")->setAttribute(
+        HTMLNames::styleAttr, "margin-top: 50px");
+    update();
+    EXPECT_EQ(100, scrollerForElement(scroller)->scrollPosition().y());
+}
+
 // Test then an element and its children are not selected as the anchor when
 // it has the overflow-anchor property set to none.
 TEST_F(ScrollAnchorTest, OptOutElement)
