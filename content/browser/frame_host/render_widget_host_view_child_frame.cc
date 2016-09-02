@@ -385,7 +385,7 @@ void RenderWidgetHostViewChildFrame::OnSwapCompositorFrame(
 
   if (!surface_factory_) {
     cc::SurfaceManager* manager = GetSurfaceManager();
-    surface_factory_ = base::WrapUnique(new cc::SurfaceFactory(manager, this));
+    surface_factory_ = base::MakeUnique<cc::SurfaceFactory>(manager, this);
   }
 
   if (surface_id_.is_null()) {
@@ -571,9 +571,9 @@ void RenderWidgetHostViewChildFrame::CopyFromCompositingSurface(
   if (!IsSurfaceAvailableForCopy()) {
     // Defer submitting the copy request until after a frame is drawn, at which
     // point we should be guaranteed that the surface is available.
-    RegisterFrameSwappedCallback(base::WrapUnique(new base::Closure(base::Bind(
+    RegisterFrameSwappedCallback(base::MakeUnique<base::Closure>(base::Bind(
         &RenderWidgetHostViewChildFrame::SubmitSurfaceCopyRequest, AsWeakPtr(),
-        src_subrect, output_size, callback, preferred_color_type))));
+        src_subrect, output_size, callback, preferred_color_type)));
     return;
   }
 

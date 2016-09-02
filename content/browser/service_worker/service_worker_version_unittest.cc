@@ -246,7 +246,7 @@ class ServiceWorkerVersionTest : public testing::Test {
   }
 
   virtual std::unique_ptr<MessageReceiver> GetMessageReceiver() {
-    return base::WrapUnique(new MessageReceiver());
+    return base::MakeUnique<MessageReceiver>();
   }
 
   void TearDown() override {
@@ -335,7 +335,7 @@ class ServiceWorkerFailToStartTest : public ServiceWorkerVersionTest {
   }
 
   std::unique_ptr<MessageReceiver> GetMessageReceiver() override {
-    return base::WrapUnique(new MessageReceiverDisallowStart());
+    return base::MakeUnique<MessageReceiverDisallowStart>();
   }
 
  private:
@@ -360,7 +360,7 @@ class ServiceWorkerStallInStoppingTest : public ServiceWorkerVersionTest {
   ServiceWorkerStallInStoppingTest() : ServiceWorkerVersionTest() {}
 
   std::unique_ptr<MessageReceiver> GetMessageReceiver() override {
-    return base::WrapUnique(new MessageReceiverDisallowStop());
+    return base::MakeUnique<MessageReceiverDisallowStop>();
   }
 
  private:
@@ -385,7 +385,7 @@ class ServiceWorkerVersionWithMojoTest : public ServiceWorkerVersionTest {
   ServiceWorkerVersionWithMojoTest() : ServiceWorkerVersionTest() {}
 
   std::unique_ptr<MessageReceiver> GetMessageReceiver() override {
-    return base::WrapUnique(new MessageReceiverMojoTestService());
+    return base::MakeUnique<MessageReceiverMojoTestService>();
   }
 
  private:

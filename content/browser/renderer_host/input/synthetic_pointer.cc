@@ -18,9 +18,9 @@ SyntheticPointer::~SyntheticPointer() {}
 std::unique_ptr<SyntheticPointer> SyntheticPointer::Create(
     SyntheticGestureParams::GestureSourceType gesture_source_type) {
   if (gesture_source_type == SyntheticGestureParams::TOUCH_INPUT) {
-    return base::WrapUnique(new SyntheticTouchPointer());
+    return base::MakeUnique<SyntheticTouchPointer>();
   } else if (gesture_source_type == SyntheticGestureParams::MOUSE_INPUT) {
-    return base::WrapUnique(new SyntheticMousePointer());
+    return base::MakeUnique<SyntheticMousePointer>();
   } else {
     NOTREACHED() << "Invalid gesture source type";
     return std::unique_ptr<SyntheticPointer>();

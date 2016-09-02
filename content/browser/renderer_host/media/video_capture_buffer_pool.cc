@@ -42,7 +42,7 @@ class VideoCaptureBufferPool::SharedMemTracker final : public Tracker {
   }
 
   std::unique_ptr<BufferHandle> GetBufferHandle() override {
-    return base::WrapUnique(new SharedMemBufferHandle(this));
+    return base::MakeUnique<SharedMemBufferHandle>(this);
   }
   bool ShareToProcess(base::ProcessHandle process_handle,
                       base::SharedMemoryHandle* new_handle) override {
@@ -144,7 +144,7 @@ class VideoCaptureBufferPool::GpuMemoryBufferTracker final : public Tracker {
   std::unique_ptr<BufferHandle> GetBufferHandle() override {
     DCHECK_EQ(gpu_memory_buffers_.size(),
               media::VideoFrame::NumPlanes(pixel_format()));
-    return base::WrapUnique(new GpuMemoryBufferBufferHandle(this));
+    return base::MakeUnique<GpuMemoryBufferBufferHandle>(this);
   }
 
   bool ShareToProcess(base::ProcessHandle process_handle,
@@ -232,9 +232,9 @@ VideoCaptureBufferPool::Tracker::CreateTracker(
     media::VideoPixelStorage storage) {
   switch (storage) {
     case media::PIXEL_STORAGE_GPUMEMORYBUFFER:
-      return base::WrapUnique(new GpuMemoryBufferTracker());
+      return base::MakeUnique<GpuMemoryBufferTracker>();
     case media::PIXEL_STORAGE_CPU:
-      return base::WrapUnique(new SharedMemTracker());
+      return base::MakeUnique<SharedMemTracker>();
   }
   NOTREACHED();
   return std::unique_ptr<VideoCaptureBufferPool::Tracker>();

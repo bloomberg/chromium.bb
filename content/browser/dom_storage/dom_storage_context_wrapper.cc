@@ -244,13 +244,13 @@ void DOMStorageContextWrapper::MojoState::BindLocalStorage(
 
   auto found = level_db_wrappers_.find(origin);
   if (found == level_db_wrappers_.end()) {
-    level_db_wrappers_[origin] = base::WrapUnique(new LevelDBWrapperImpl(
+    level_db_wrappers_[origin] = base::MakeUnique<LevelDBWrapperImpl>(
         database_.get(), origin.Serialize(),
         kPerStorageAreaQuota + kPerStorageAreaOverQuotaAllowance,
-        base::TimeDelta::FromSeconds(kCommitDefaultDelaySecs),
-        kMaxBytesPerHour, kMaxCommitsPerHour,
+        base::TimeDelta::FromSeconds(kCommitDefaultDelaySecs), kMaxBytesPerHour,
+        kMaxCommitsPerHour,
         base::Bind(&MojoState::OnLevelDDWrapperHasNoBindings,
-                   base::Unretained(this), origin)));
+                   base::Unretained(this), origin));
     found = level_db_wrappers_.find(origin);
   }
 

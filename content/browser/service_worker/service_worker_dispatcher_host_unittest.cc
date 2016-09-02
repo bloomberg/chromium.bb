@@ -99,8 +99,7 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
 
   void SetUp() override {
-    Initialize(
-        base::WrapUnique(new EmbeddedWorkerTestHelper(base::FilePath())));
+    Initialize(base::MakeUnique<EmbeddedWorkerTestHelper>(base::FilePath()));
   }
 
   void TearDown() override {

@@ -147,8 +147,8 @@ VideoCaptureController::GetWeakPtrForIOThread() {
 std::unique_ptr<media::VideoCaptureDevice::Client>
 VideoCaptureController::NewDeviceClient() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return base::WrapUnique(new VideoCaptureDeviceClient(
-      this->GetWeakPtrForIOThread(), buffer_pool_));
+  return base::MakeUnique<VideoCaptureDeviceClient>(
+      this->GetWeakPtrForIOThread(), buffer_pool_);
 }
 
 void VideoCaptureController::AddClient(

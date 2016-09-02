@@ -185,8 +185,7 @@ class FakeDatagramServerSocket : public net::DatagramServerSocket {
 std::unique_ptr<net::DatagramServerSocket> CreateFakeDatagramServerSocket(
     std::deque<FakeDatagramServerSocket::UDPPacket>* sent_packets,
     std::vector<uint16_t>* used_ports) {
-  return base::WrapUnique(
-      new FakeDatagramServerSocket(sent_packets, used_ports));
+  return base::MakeUnique<FakeDatagramServerSocket>(sent_packets, used_ports);
 }
 
 }  // namespace

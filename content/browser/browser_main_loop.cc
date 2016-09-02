@@ -785,12 +785,12 @@ void BrowserMainLoop::CreateStartupTasks() {
   // First time through, we really want to create all the tasks
   if (!startup_task_runner_.get()) {
 #if defined(OS_ANDROID)
-    startup_task_runner_ = base::WrapUnique(
-        new StartupTaskRunner(base::Bind(&BrowserStartupComplete),
-                              base::ThreadTaskRunnerHandle::Get()));
+    startup_task_runner_ = base::MakeUnique<StartupTaskRunner>(
+        base::Bind(&BrowserStartupComplete),
+        base::ThreadTaskRunnerHandle::Get());
 #else
-    startup_task_runner_ = base::WrapUnique(new StartupTaskRunner(
-        base::Callback<void(int)>(), base::ThreadTaskRunnerHandle::Get()));
+    startup_task_runner_ = base::MakeUnique<StartupTaskRunner>(
+        base::Callback<void(int)>(), base::ThreadTaskRunnerHandle::Get());
 #endif
     StartupTask pre_create_threads =
         base::Bind(&BrowserMainLoop::PreCreateThreads, base::Unretained(this));

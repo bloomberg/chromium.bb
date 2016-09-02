@@ -94,8 +94,8 @@ class FrameConnectedBluetoothDevicesTest
 
   std::unique_ptr<NiceMockBluetoothGattConnection> GetConnection(
       const std::string& address) {
-    return base::WrapUnique(
-        new NiceMockBluetoothGattConnection(adapter_.get(), address));
+    return base::MakeUnique<NiceMockBluetoothGattConnection>(adapter_.get(),
+                                                             address);
   }
 
   void ResetService0() {

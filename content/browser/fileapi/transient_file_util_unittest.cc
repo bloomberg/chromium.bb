@@ -60,8 +60,8 @@ class TransientFileUtilTest : public testing::Test {
   }
 
   std::unique_ptr<storage::FileSystemOperationContext> NewOperationContext() {
-    return base::WrapUnique(
-        new storage::FileSystemOperationContext(file_system_context_.get()));
+    return base::MakeUnique<storage::FileSystemOperationContext>(
+        file_system_context_.get());
   }
 
   storage::FileSystemFileUtil* file_util() {

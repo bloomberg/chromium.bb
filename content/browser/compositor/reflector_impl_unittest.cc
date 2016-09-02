@@ -153,8 +153,8 @@ class ReflectorImplTest : public testing::Test {
   }
 
   void SetUpReflector() {
-    reflector_ = base::WrapUnique(
-        new ReflectorImpl(compositor_.get(), mirroring_layer_.get()));
+    reflector_ = base::MakeUnique<ReflectorImpl>(compositor_.get(),
+                                                 mirroring_layer_.get());
     reflector_->OnSourceSurfaceReady(output_surface_.get());
   }
 

@@ -174,7 +174,7 @@ class BlobURLRequestJobTest : public testing::Test {
         disk_cache_backend_.get(), kTestDiskCacheKey1, kTestDiskCacheData1);
 
     url_request_job_factory_.SetProtocolHandler(
-        "blob", base::WrapUnique(new MockProtocolHandler(this)));
+        "blob", base::MakeUnique<MockProtocolHandler>(this));
     url_request_context_.set_job_factory(&url_request_job_factory_);
   }
 

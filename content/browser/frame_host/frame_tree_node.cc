@@ -199,7 +199,7 @@ void FrameTreeNode::SetOpener(FrameTreeNode* opener) {
 
   if (opener_) {
     if (!opener_observer_)
-      opener_observer_ = base::WrapUnique(new OpenerDestroyedObserver(this));
+      opener_observer_ = base::MakeUnique<OpenerDestroyedObserver>(this);
     opener_->AddObserver(opener_observer_.get());
   }
 }

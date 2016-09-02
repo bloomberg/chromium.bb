@@ -892,7 +892,7 @@ void CacheStorage::MatchAllCachesImpl(
     DCHECK(cache_handle);
 
     CacheStorageCache* cache_ptr = cache_handle->value();
-    cache_ptr->Match(base::WrapUnique(new ServiceWorkerFetchRequest(*request)),
+    cache_ptr->Match(base::MakeUnique<ServiceWorkerFetchRequest>(*request),
                      match_params,
                      base::Bind(&CacheStorage::MatchAllCachesDidMatch,
                                 weak_factory_.GetWeakPtr(),

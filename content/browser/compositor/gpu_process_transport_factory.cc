@@ -469,34 +469,34 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
   if (!display_output_surface) {
     if (!create_gpu_output_surface) {
       display_output_surface =
-          base::WrapUnique(new SoftwareBrowserCompositorOutputSurface(
+          base::MakeUnique<SoftwareBrowserCompositorOutputSurface>(
               CreateSoftwareOutputDevice(compositor.get()),
-              compositor->vsync_manager(), begin_frame_source.get()));
+              compositor->vsync_manager(), begin_frame_source.get());
     } else {
       DCHECK(context_provider);
       const auto& capabilities = context_provider->ContextCapabilities();
       if (data->surface_handle == gpu::kNullSurfaceHandle) {
         display_output_surface =
-            base::WrapUnique(new OffscreenBrowserCompositorOutputSurface(
+            base::MakeUnique<OffscreenBrowserCompositorOutputSurface>(
                 context_provider, compositor->vsync_manager(),
                 begin_frame_source.get(),
-                std::unique_ptr<display_compositor::
-                                    CompositorOverlayCandidateValidator>()));
+                std::unique_ptr<
+                    display_compositor::CompositorOverlayCandidateValidator>());
       } else if (capabilities.surfaceless) {
 #if defined(OS_MACOSX)
-        display_output_surface = base::WrapUnique(new GpuOutputSurfaceMac(
+        display_output_surface = base::MakeUnique<GpuOutputSurfaceMac>(
             context_provider, data->surface_handle, compositor->vsync_manager(),
             begin_frame_source.get(),
             CreateOverlayCandidateValidator(compositor->widget()),
-            GetGpuMemoryBufferManager()));
+            GetGpuMemoryBufferManager());
 #else
         display_output_surface =
-            base::WrapUnique(new GpuSurfacelessBrowserCompositorOutputSurface(
+            base::MakeUnique<GpuSurfacelessBrowserCompositorOutputSurface>(
                 context_provider, data->surface_handle,
                 compositor->vsync_manager(), begin_frame_source.get(),
                 CreateOverlayCandidateValidator(compositor->widget()),
                 GL_TEXTURE_2D, GL_RGB, ui::DisplaySnapshot::PrimaryFormat(),
-                GetGpuMemoryBufferManager()));
+                GetGpuMemoryBufferManager());
 #endif
       } else {
         std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
@@ -509,16 +509,16 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
 #endif
         if (!use_mus) {
           display_output_surface =
-              base::WrapUnique(new GpuBrowserCompositorOutputSurface(
+              base::MakeUnique<GpuBrowserCompositorOutputSurface>(
                   context_provider, compositor->vsync_manager(),
-                  begin_frame_source.get(), std::move(validator)));
+                  begin_frame_source.get(), std::move(validator));
         } else {
 #if defined(USE_AURA)
           display_output_surface =
-              base::WrapUnique(new MusBrowserCompositorOutputSurface(
+              base::MakeUnique<MusBrowserCompositorOutputSurface>(
                   compositor->window(), context_provider,
                   compositor->vsync_manager(), begin_frame_source.get(),
-                  std::move(validator)));
+                  std::move(validator));
 #else
           NOTREACHED();
 #endif

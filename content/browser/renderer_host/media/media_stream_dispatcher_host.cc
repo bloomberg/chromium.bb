@@ -291,7 +291,7 @@ MediaStreamDispatcherHost::CreateMediaStreamUIProxy() {
   if (use_fake_ui_ ||
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseFakeUIForMediaStream)) {
-    return base::WrapUnique(new FakeMediaStreamUIProxy());
+    return base::MakeUnique<FakeMediaStreamUIProxy>();
   }
 
   return MediaStreamUIProxy::Create();

@@ -528,8 +528,8 @@ void BackgroundSyncManager::RegisterDidAskForPermission(
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(callback, BACKGROUND_SYNC_STATUS_OK,
-                   base::Passed(base::WrapUnique(new BackgroundSyncRegistration(
-                       *existing_registration)))));
+                   base::Passed(base::MakeUnique<BackgroundSyncRegistration>(
+                       *existing_registration))));
     return;
   }
 
@@ -700,8 +700,8 @@ void BackgroundSyncManager::RegisterDidStore(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(callback, BACKGROUND_SYNC_STATUS_OK,
-                 base::Passed(base::WrapUnique(
-                     new BackgroundSyncRegistration(new_registration)))));
+                 base::Passed(base::MakeUnique<BackgroundSyncRegistration>(
+                     new_registration))));
 }
 
 void BackgroundSyncManager::RemoveActiveRegistration(int64_t sw_registration_id,

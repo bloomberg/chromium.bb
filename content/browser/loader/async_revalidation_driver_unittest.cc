@@ -78,7 +78,7 @@ CreateProtocolHandlerCallback BindCreateProtocolHandlerCallback() {
    public:
     static std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>
     Create() {
-      return base::WrapUnique(new TemplatedProtocolHandler());
+      return base::MakeUnique<TemplatedProtocolHandler>();
     }
 
     // URLRequestJobFactory::ProtocolHandler implementation:

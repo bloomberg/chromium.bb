@@ -471,8 +471,7 @@ void DelegatedFrameHost::SwapDelegatedFrame(uint32_t output_surface_id,
     ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
     cc::SurfaceManager* manager = factory->GetSurfaceManager();
     if (!surface_factory_) {
-      surface_factory_ =
-          base::WrapUnique(new cc::SurfaceFactory(manager, this));
+      surface_factory_ = base::MakeUnique<cc::SurfaceFactory>(manager, this);
     }
     if (surface_id_.is_null() || frame_size != current_surface_size_ ||
         frame_size_in_dip != current_frame_size_in_dip_) {

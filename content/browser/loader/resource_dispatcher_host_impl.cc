@@ -2461,7 +2461,7 @@ void ResourceDispatcherHostImpl::BlockRequestsForRoute(
          blocked_loaders_map_.end())
       << "BlockRequestsForRoute called  multiple time for the same RFH";
   blocked_loaders_map_[global_routing_id] =
-      base::WrapUnique(new BlockedLoadersList());
+      base::MakeUnique<BlockedLoadersList>();
 }
 
 void ResourceDispatcherHostImpl::ResumeBlockedRequestsForRoute(

@@ -123,9 +123,8 @@ std::unique_ptr<storage::BlobProtocolHandler> CreateMockBlobProtocolHandler(
     storage::BlobStorageContext* blob_storage_context) {
   // The FileSystemContext and task runner are not actually used but a
   // task runner is needed to avoid a DCHECK in BlobURLRequestJob ctor.
-  return base::WrapUnique(new storage::BlobProtocolHandler(
-      blob_storage_context, nullptr,
-      base::ThreadTaskRunnerHandle::Get().get()));
+  return base::MakeUnique<storage::BlobProtocolHandler>(
+      blob_storage_context, nullptr, base::ThreadTaskRunnerHandle::Get().get());
 }
 
 }  // namespace

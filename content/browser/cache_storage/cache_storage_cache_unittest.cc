@@ -427,9 +427,9 @@ class CacheStorageCacheTest : public testing::Test {
 
   std::unique_ptr<ServiceWorkerFetchRequest> CopyFetchRequest(
       const ServiceWorkerFetchRequest& request) {
-    return base::WrapUnique(new ServiceWorkerFetchRequest(
+    return base::MakeUnique<ServiceWorkerFetchRequest>(
         request.url, request.method, request.headers, request.referrer,
-        request.is_reload));
+        request.is_reload);
   }
 
   CacheStorageError BatchOperation(

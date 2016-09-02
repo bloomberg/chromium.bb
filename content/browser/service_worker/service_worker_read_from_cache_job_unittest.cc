@@ -194,10 +194,10 @@ TEST_F(ServiceWorkerReadFromCacheJobTest, ReadMainScript) {
       url_request_context_->CreateRequest(main_script_.url,
                                           net::DEFAULT_PRIORITY, &delegate_);
   test_job_interceptor_->set_main_intercept_job(
-      base::WrapUnique(new ServiceWorkerReadFromCacheJob(
+      base::MakeUnique<ServiceWorkerReadFromCacheJob>(
           request.get(), nullptr /* NetworkDelegate */,
           RESOURCE_TYPE_SERVICE_WORKER, context()->AsWeakPtr(), version_,
-          main_script_.resource_id)));
+          main_script_.resource_id));
   StartAndWaitForRequest(request.get());
 
   EXPECT_EQ(net::URLRequestStatus::SUCCESS, request->status().status());
@@ -212,9 +212,9 @@ TEST_F(ServiceWorkerReadFromCacheJobTest, ReadImportedScript) {
       url_request_context_->CreateRequest(imported_script_.url,
                                           net::DEFAULT_PRIORITY, &delegate_);
   test_job_interceptor_->set_main_intercept_job(
-      base::WrapUnique(new ServiceWorkerReadFromCacheJob(
+      base::MakeUnique<ServiceWorkerReadFromCacheJob>(
           request.get(), nullptr /* NetworkDelegate */, RESOURCE_TYPE_SCRIPT,
-          context()->AsWeakPtr(), version_, imported_script_.resource_id)));
+          context()->AsWeakPtr(), version_, imported_script_.resource_id));
   StartAndWaitForRequest(request.get());
 
   EXPECT_EQ(net::URLRequestStatus::SUCCESS, request->status().status());
@@ -233,10 +233,10 @@ TEST_F(ServiceWorkerReadFromCacheJobTest, ResourceNotFound) {
           &delegate_);
   const int64_t kNonexistentResourceId = 100;
   test_job_interceptor_->set_main_intercept_job(
-      base::WrapUnique(new ServiceWorkerReadFromCacheJob(
+      base::MakeUnique<ServiceWorkerReadFromCacheJob>(
           request.get(), nullptr /* NetworkDelegate */,
           RESOURCE_TYPE_SERVICE_WORKER, context()->AsWeakPtr(), version_,
-          kNonexistentResourceId)));
+          kNonexistentResourceId));
   StartAndWaitForRequest(request.get());
 
   EXPECT_EQ(net::URLRequestStatus::FAILED, request->status().status());

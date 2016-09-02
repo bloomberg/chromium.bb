@@ -110,7 +110,7 @@ class VideoCaptureBufferPoolTest
         gfx::BufferFormat format,
         gfx::BufferUsage usage,
         gpu::SurfaceHandle surface_handle) override {
-      return base::WrapUnique(new MockGpuMemoryBuffer(size));
+      return base::MakeUnique<MockGpuMemoryBuffer>(size);
     }
   };
 #endif

@@ -245,14 +245,14 @@ std::unique_ptr<ui::TouchSelectionController> CreateSelectionController(
   config.enable_longpress_drag_selection =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableLongpressDragSelection);
-  return base::WrapUnique(new ui::TouchSelectionController(client, config));
+  return base::MakeUnique<ui::TouchSelectionController>(client, config);
 }
 
 std::unique_ptr<OverscrollControllerAndroid> CreateOverscrollController(
     ContentViewCoreImpl* content_view_core,
     float dpi_scale) {
-  return base::WrapUnique(
-      new OverscrollControllerAndroid(content_view_core, dpi_scale));
+  return base::MakeUnique<OverscrollControllerAndroid>(content_view_core,
+                                                       dpi_scale);
 }
 
 gfx::RectF GetSelectionRect(const ui::TouchSelectionController& controller) {

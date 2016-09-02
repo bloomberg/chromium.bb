@@ -335,7 +335,7 @@ void GinJavaBridgeDispatcherHost::OnInvokeMethod(
   }
   scoped_refptr<GinJavaMethodInvocationHelper> result =
       new GinJavaMethodInvocationHelper(
-          base::WrapUnique(new GinJavaBoundObjectDelegate(object)), method_name,
+          base::MakeUnique<GinJavaBoundObjectDelegate>(object), method_name,
           arguments);
   result->Init(this);
   result->Invoke();

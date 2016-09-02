@@ -72,7 +72,7 @@ void URLProvisionFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
 std::unique_ptr<media::ProvisionFetcher> CreateProvisionFetcher(
     net::URLRequestContextGetter* context_getter) {
   DCHECK(context_getter);
-  return base::WrapUnique(new URLProvisionFetcher(context_getter));
+  return base::MakeUnique<URLProvisionFetcher>(context_getter);
 }
 
 }  // namespace content

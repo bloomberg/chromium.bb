@@ -293,7 +293,7 @@ void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
 
   if (!surface_factory_) {
     cc::SurfaceManager* manager = GetSurfaceManager();
-    surface_factory_ = base::WrapUnique(new cc::SurfaceFactory(manager, this));
+    surface_factory_ = base::MakeUnique<cc::SurfaceFactory>(manager, this);
   }
 
   if (surface_id_.is_null()) {

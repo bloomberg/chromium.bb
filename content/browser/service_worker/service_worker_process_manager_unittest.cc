@@ -55,7 +55,7 @@ class ServiceWorkerProcessManagerTest : public testing::Test {
   }
 
   std::unique_ptr<MockRenderProcessHost> CreateRenderProcessHost() {
-    return base::WrapUnique(new MockRenderProcessHost(browser_context_.get()));
+    return base::MakeUnique<MockRenderProcessHost>(browser_context_.get());
   }
 
  protected:

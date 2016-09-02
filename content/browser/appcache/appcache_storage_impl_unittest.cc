@@ -167,9 +167,9 @@ class IOThread : public base::Thread {
   void Init() override {
     std::unique_ptr<net::URLRequestJobFactoryImpl> factory(
         new net::URLRequestJobFactoryImpl());
-    factory->SetProtocolHandler(
-        "http", base::WrapUnique(new MockHttpServerJobFactory(
-                    base::WrapUnique(new AppCacheInterceptor()))));
+    factory->SetProtocolHandler("http",
+                                base::MakeUnique<MockHttpServerJobFactory>(
+                                    base::MakeUnique<AppCacheInterceptor>()));
     job_factory_ = std::move(factory);
     request_context_.reset(new net::TestURLRequestContext());
     request_context_->set_job_factory(job_factory_.get());

@@ -253,8 +253,8 @@ class DraggedFileUtilTest : public testing::Test {
   }
 
   std::unique_ptr<storage::FileSystemOperationContext> GetOperationContext() {
-    return base::WrapUnique(
-        new storage::FileSystemOperationContext(file_system_context()));
+    return base::MakeUnique<storage::FileSystemOperationContext>(
+        file_system_context());
   }
 
 

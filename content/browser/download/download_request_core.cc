@@ -136,8 +136,8 @@ std::unique_ptr<net::URLRequest> DownloadRequestCore::CreateRequestOnIOThread(
     DCHECK(params->prefer_cache());
     DCHECK_EQ("POST", params->method());
     std::vector<std::unique_ptr<net::UploadElementReader>> element_readers;
-    request->set_upload(base::WrapUnique(new net::ElementsUploadDataStream(
-        std::move(element_readers), params->post_id())));
+    request->set_upload(base::MakeUnique<net::ElementsUploadDataStream>(
+        std::move(element_readers), params->post_id()));
   }
 
   int load_flags = request->load_flags();

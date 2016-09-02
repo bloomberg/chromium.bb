@@ -155,7 +155,7 @@ void BrowserPpapiHostImpl::AddInstance(
     const PepperRendererInstanceData& renderer_instance_data) {
   DCHECK(!instance_map_.contains(instance));
   instance_map_.add(instance,
-                    base::WrapUnique(new InstanceData(renderer_instance_data)));
+                    base::MakeUnique<InstanceData>(renderer_instance_data));
 }
 
 void BrowserPpapiHostImpl::DeleteInstance(PP_Instance instance) {

@@ -327,9 +327,9 @@ class EmbeddedWorkerInstance::StartTask {
     // Notify the instance that a process is allocated.
     state_ = ProcessAllocationState::ALLOCATED;
     instance_->OnProcessAllocated(
-        base::WrapUnique(new WorkerProcessHandle(
-            instance_->context_, instance_->embedded_worker_id(), process_id,
-            is_new_process)),
+        base::MakeUnique<WorkerProcessHandle>(instance_->context_,
+                                              instance_->embedded_worker_id(),
+                                              process_id, is_new_process),
         start_situation);
 
     // TODO(bengr): Support changes to this setting while the worker

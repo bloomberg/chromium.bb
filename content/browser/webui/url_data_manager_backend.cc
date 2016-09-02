@@ -614,8 +614,8 @@ URLDataManagerBackend::CreateProtocolHandler(
     bool is_incognito,
     ChromeBlobStorageContext* blob_storage_context) {
   DCHECK(resource_context);
-  return base::WrapUnique(new ChromeProtocolHandler(
-      resource_context, is_incognito, blob_storage_context));
+  return base::MakeUnique<ChromeProtocolHandler>(resource_context, is_incognito,
+                                                 blob_storage_context);
 }
 
 void URLDataManagerBackend::AddDataSource(

@@ -229,7 +229,7 @@ std::unique_ptr<net::test_server::HttpResponse>
 VerifySaveDataHeaderNotInRequest(const net::test_server::HttpRequest& request) {
   auto it = request.headers.find("Save-Data");
   EXPECT_EQ(request.headers.end(), it);
-  return base::WrapUnique(new net::test_server::BasicHttpResponse());
+  return base::MakeUnique<net::test_server::BasicHttpResponse>();
 }
 
 std::unique_ptr<net::test_server::HttpResponse>

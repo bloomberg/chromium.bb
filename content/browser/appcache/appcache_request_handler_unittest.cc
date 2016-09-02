@@ -380,9 +380,9 @@ class AppCacheRequestHandlerTest : public testing::Test {
   }
 
   void SimulateResponseCode(int response_code) {
-    job_factory_->SetJob(base::WrapUnique(new MockURLRequestJob(
+    job_factory_->SetJob(base::MakeUnique<MockURLRequestJob>(
         request_.get(), request_->context()->network_delegate(),
-        response_code)));
+        response_code));
     request_->Start();
     // All our simulation needs  to satisfy are the following two DCHECKs
     DCHECK(request_->status().is_success());
@@ -390,8 +390,8 @@ class AppCacheRequestHandlerTest : public testing::Test {
   }
 
   void SimulateResponseInfo(const net::HttpResponseInfo& info) {
-    job_factory_->SetJob(base::WrapUnique(new MockURLRequestJob(
-        request_.get(), request_->context()->network_delegate(), info)));
+    job_factory_->SetJob(base::MakeUnique<MockURLRequestJob>(
+        request_.get(), request_->context()->network_delegate(), info));
     request_->Start();
   }
 

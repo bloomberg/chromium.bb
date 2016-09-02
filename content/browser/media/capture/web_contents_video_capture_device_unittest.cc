@@ -276,11 +276,11 @@ class CaptureTestRenderViewHost : public TestRenderViewHost {
                             bool swapped_out,
                             CaptureTestSourceController* controller)
       : TestRenderViewHost(instance,
-                           base::WrapUnique(new CaptureTestRenderWidgetHost(
+                           base::MakeUnique<CaptureTestRenderWidgetHost>(
                                widget_delegate,
                                instance->GetProcess(),
                                routing_id,
-                               controller)),
+                               controller),
                            delegate,
                            main_frame_routing_id,
                            swapped_out) {

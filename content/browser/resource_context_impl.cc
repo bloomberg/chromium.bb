@@ -47,8 +47,8 @@ void ResourceContext::CreateKeygenHandler(
     const std::string& challenge_string,
     const GURL& url,
     const base::Callback<void(std::unique_ptr<net::KeygenHandler>)>& callback) {
-  callback.Run(base::WrapUnique(
-      new net::KeygenHandler(key_size_in_bits, challenge_string, url)));
+  callback.Run(base::MakeUnique<net::KeygenHandler>(key_size_in_bits,
+                                                    challenge_string, url));
 }
 
 // static

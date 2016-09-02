@@ -142,8 +142,8 @@ void PluginPrivateDataByOriginChecker::OnFileSystemOpened(
   std::string root = storage::GetIsolatedFileSystemRootURIString(
       origin_, fsid_, ppapi::kPluginPrivateRootName);
   std::unique_ptr<storage::FileSystemOperationContext> operation_context =
-      base::WrapUnique(
-          new storage::FileSystemOperationContext(filesystem_context_));
+      base::MakeUnique<storage::FileSystemOperationContext>(
+          filesystem_context_);
   file_util->ReadDirectory(
       std::move(operation_context), filesystem_context_->CrackURL(GURL(root)),
       base::Bind(&PluginPrivateDataByOriginChecker::OnDirectoryRead,
@@ -177,8 +177,8 @@ void PluginPrivateDataByOriginChecker::OnDirectoryRead(
       DCHECK(!file.is_directory);  // Nested directories not implemented.
 
       std::unique_ptr<storage::FileSystemOperationContext> operation_context =
-          base::WrapUnique(
-              new storage::FileSystemOperationContext(filesystem_context_));
+          base::MakeUnique<storage::FileSystemOperationContext>(
+              filesystem_context_);
       storage::FileSystemURL file_url = filesystem_context_->CrackURL(
           GURL(root + StringTypeToString(file.name)));
       IncrementTaskCount();
