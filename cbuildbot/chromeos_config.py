@@ -605,7 +605,6 @@ _no_unittest_boards = frozenset((
 
 _no_vmtest_boards = _arm_boards | _brillo_boards | _cheets_boards | frozenset((
     'cave',
-    'cyan',
     'lulu',
     'reef',
     'samus',
