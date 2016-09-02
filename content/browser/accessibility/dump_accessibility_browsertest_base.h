@@ -107,6 +107,10 @@ class DumpAccessibilityTestBase : public ContentBrowserTest {
 
   // Whether we're doing a native pass or internal/blink tree pass.
   bool is_blink_pass_;
+
+  // Whether we should enable accessibility after navigating to the page,
+  // otherwise we enable it first.
+  bool enable_accessibility_after_navigating_;
 };
 
 }  // namespace content
