@@ -79,6 +79,17 @@ var FilesQuickView = Polymer({
   onOpenInNewButtonTap: function(event) {},
 
   /**
+   * @param {!Event} event tap event.
+   *
+   * @private
+   */
+  onMetadataButtonTap_: function(event) {
+    // Set focus back to innerContent panel so that pressing space key next
+    // closes Quick View.
+    this.$.innerContentPanel.focus();
+  },
+
+  /**
    * Close Quick View unless the clicked target or its ancestor contains
    * 'no-close-on-click' class.
    *

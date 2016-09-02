@@ -24,7 +24,7 @@
            <paper-button id="open-button" on-tap="onOpenInNewButtonTap" hidden$="[[isUnsupported_(type)]]" i18n-values="aria-label:QUICK_VIEW_OPEN_IN_NEW_BUTTON_LABEL" tabindex="0" has-tooltip>
              <iron-icon icon="files:open-in-new"></iron-icon>
            </paper-button>
-           <files-icon-button toggles id="metadata-button" active="{{metadataBoxActive}}" i18n-values="aria-label:QUICK_VIEW_TOGGLE_METADATA_BOX_BUTTON_LABEL" tabindex="0" has-tooltip>
+           <files-icon-button toggles id="metadata-button" on-tap="onMetadataButtonTap_" active="{{metadataBoxActive}}" i18n-values="aria-label:QUICK_VIEW_TOGGLE_METADATA_BOX_BUTTON_LABEL" tabindex="0" has-tooltip>
            </files-icon-button>
         </div>
       </paper-toolbar>
