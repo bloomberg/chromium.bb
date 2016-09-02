@@ -644,7 +644,7 @@ void ClientSideDetectionHost::MalwareFeatureExtractionDone(
   DVLOG(2) << "Malware Feature extraction done for URL: " << request->url()
            << ", with badip url count:" << request->bad_ip_url_info_size();
   UMA_HISTOGRAM_BOOLEAN(
-      "SBClientMalware.ResourceUrlMatchesBadIp",
+      "SBClientMalware.ResourceUrlMatchedBadIp",
       request->bad_ip_url_info_size() > 0);
   // Send ping if there is matching features.
   if (feature_extraction_success && request->bad_ip_url_info_size() > 0) {
