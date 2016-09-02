@@ -22,6 +22,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
+#include "components/omnibox/browser/test_scheme_classifier.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/ime/input_method.h"
@@ -317,10 +318,13 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, CloseOmniboxPopupOnTextDrag) {
   matches.push_back(match);
   match.destination_url = GURL("http://autocomplete-result2/");
   matches.push_back(match);
-  results.AppendMatches(AutocompleteInput(), matches);
+  const AutocompleteInput input(
+      base::ASCIIToUTF16("a"), base::string16::npos, std::string(), GURL(),
+      metrics::OmniboxEventProto::INVALID_SPEC, false, false, true, true, false,
+      TestSchemeClassifier());
+  results.AppendMatches(input, matches);
   results.SortAndCull(
-      AutocompleteInput(),
-      TemplateURLServiceFactory::GetForProfile(browser()->profile()));
+      input, TemplateURLServiceFactory::GetForProfile(browser()->profile()));
 
   // The omnibox popup should open with suggestions displayed.
   omnibox_view->model()->popup_model()->OnResultChanged();

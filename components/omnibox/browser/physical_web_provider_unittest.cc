@@ -91,7 +91,7 @@ class PhysicalWebProviderTest : public testing::Test {
 
   void SetUp() override {
     client_.reset(new FakeAutocompleteProviderClient());
-    provider_ = PhysicalWebProvider::Create(client_.get());
+    provider_ = PhysicalWebProvider::Create(client_.get(), nullptr);
   }
 
   void TearDown() override {
@@ -117,6 +117,24 @@ class PhysicalWebProviderTest : public testing::Test {
     return metadata_list;
   }
 
+  // Construct an AutocompleteInput to represent tapping the omnibox from the
+  // new tab page.
+  static AutocompleteInput CreateInputForNTP() {
+    return AutocompleteInput(
+        base::string16(), base::string16::npos, std::string(), GURL(),
+        metrics::OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS,
+        false, false, true, true, true, TestSchemeClassifier());
+  }
+
+  // Construct an AutocompleteInput to represent tapping the omnibox with |url|
+  // as the current web page.
+  static AutocompleteInput CreateInputWithCurrentUrl(const std::string& url) {
+    return AutocompleteInput(base::ASCIIToUTF16(url), base::string16::npos,
+                             std::string(), GURL(url),
+                             metrics::OmniboxEventProto::OTHER, false, false,
+                             true, true, true, TestSchemeClassifier());
+  }
+
   std::unique_ptr<FakeAutocompleteProviderClient> client_;
   scoped_refptr<PhysicalWebProvider> provider_;
 
@@ -131,15 +149,12 @@ TEST_F(PhysicalWebProviderTest, TestEmptyMetadataListCreatesNoMatches) {
 
   data_source->SetMetadata(CreateMetadata(0));
 
-  // Construct an AutocompleteInput representing a typical "zero-suggest"
-  // case. The provider will verify that the content of the omnibox input field
-  // was not entered by the user.
-  std::string url("http://www.cnn.com/");
-  const AutocompleteInput input(base::ASCIIToUTF16(url), base::string16::npos,
-      std::string(), GURL(url), metrics::OmniboxEventProto::OTHER,
-      true, false, true, true, true, TestSchemeClassifier());
-  provider_->Start(input, false);
+  // Run the test with no text in the omnibox input to simulate NTP.
+  provider_->Start(CreateInputForNTP(), false);
+  EXPECT_TRUE(provider_->matches().empty());
 
+  // Run the test again with a URL in the omnibox input.
+  provider_->Start(CreateInputWithCurrentUrl("http://www.cnn.com"), false);
   EXPECT_TRUE(provider_->matches().empty());
 }
 
@@ -160,14 +175,8 @@ TEST_F(PhysicalWebProviderTest, TestSingleMetadataItemCreatesOneMatch) {
 
   data_source->SetMetadata(std::move(metadata_list));
 
-  // Construct an AutocompleteInput representing a typical "zero-suggest"
-  // case. The provider will verify that the content of the omnibox input field
-  // was not entered by the user.
-  std::string url("http://www.cnn.com/");
-  const AutocompleteInput input(base::ASCIIToUTF16(url), base::string16::npos,
-      std::string(), GURL(url), metrics::OmniboxEventProto::OTHER,
-      true, false, true, true, true, TestSchemeClassifier());
-  provider_->Start(input, false);
+  // Run the test with no text in the omnibox input to simulate NTP.
+  provider_->Start(CreateInputForNTP(), false);
 
   // Check that there is only one match item and its fields are correct.
   EXPECT_EQ(1U, provider_->matches().size());
@@ -176,6 +185,29 @@ TEST_F(PhysicalWebProviderTest, TestSingleMetadataItemCreatesOneMatch) {
   EXPECT_EQ(resolved_url, metadata_match.destination_url.spec());
   EXPECT_EQ(resolved_url, base::UTF16ToASCII(metadata_match.contents));
   EXPECT_EQ(title, base::UTF16ToASCII(metadata_match.description));
+  EXPECT_FALSE(metadata_match.allowed_to_be_default_match);
+
+  // Run the test again with a URL in the omnibox input. An additional match
+  // should be added as a default match.
+  provider_->Start(CreateInputWithCurrentUrl("http://www.cnn.com"), false);
+
+  size_t metadata_match_count = 0;
+  size_t default_match_count = 0;
+  for (const auto& match : provider_->matches()) {
+    if (match.type == AutocompleteMatchType::PHYSICAL_WEB) {
+      EXPECT_EQ(resolved_url, match.destination_url.spec());
+      EXPECT_EQ(resolved_url, base::UTF16ToASCII(match.contents));
+      EXPECT_EQ(title, base::UTF16ToASCII(match.description));
+      EXPECT_FALSE(match.allowed_to_be_default_match);
+      ++metadata_match_count;
+    } else {
+      EXPECT_TRUE(match.allowed_to_be_default_match);
+      ++default_match_count;
+    }
+  }
+  EXPECT_EQ(2U, provider_->matches().size());
+  EXPECT_EQ(1U, metadata_match_count);
+  EXPECT_EQ(1U, default_match_count);
 }
 
 TEST_F(PhysicalWebProviderTest, TestManyMetadataItemsCreatesOverflowItem) {
@@ -192,28 +224,60 @@ TEST_F(PhysicalWebProviderTest, TestManyMetadataItemsCreatesOverflowItem) {
 
   data_source->SetMetadata(CreateMetadata(metadata_count));
 
-  // Construct an AutocompleteInput representing a typical "zero-suggest"
-  // case. The provider will verify that the content of the omnibox input field
-  // was not entered by the user.
-  std::string url("http://www.cnn.com/");
-  const AutocompleteInput input(base::ASCIIToUTF16(url), base::string16::npos,
-      std::string(), GURL(url), metrics::OmniboxEventProto::OTHER,
-      true, false, true, true, true, TestSchemeClassifier());
-  provider_->Start(input, false);
+  {
+    // Run the test with no text in the omnibox input to simulate NTP.
+    provider_->Start(CreateInputForNTP(), false);
 
-  const size_t match_count = provider_->matches().size();
-  EXPECT_LT(match_count, metadata_count);
+    const size_t match_count = provider_->matches().size();
+    EXPECT_LT(match_count, metadata_count);
 
-  // Check that the overflow item is at the end of the match list and its fields
-  // are correct.
-  const AutocompleteMatch& overflow_match = provider_->matches().back();
-  EXPECT_EQ(AutocompleteMatchType::PHYSICAL_WEB_OVERFLOW, overflow_match.type);
-  EXPECT_EQ("chrome://physical-web/", overflow_match.destination_url.spec());
-  EXPECT_EQ("chrome://physical-web/",
-      base::UTF16ToASCII(overflow_match.contents));
-  std::string description = l10n_util::GetPluralStringFUTF8(
-      IDS_PHYSICAL_WEB_OVERFLOW, metadata_count - match_count + 1);
-  EXPECT_EQ(description, base::UTF16ToASCII(overflow_match.description));
+    // Check that the overflow item is present and its fields are correct. There
+    // may be additional match items, but none should be marked as default.
+    size_t overflow_match_count = 0;
+    for (const auto& match : provider_->matches()) {
+      if (match.type == AutocompleteMatchType::PHYSICAL_WEB_OVERFLOW) {
+        EXPECT_EQ("chrome://physical-web/", match.destination_url.spec());
+        EXPECT_EQ("chrome://physical-web/", base::UTF16ToASCII(match.contents));
+        const size_t metadata_matches = match_count - 1;
+        std::string description = l10n_util::GetPluralStringFUTF8(
+            IDS_PHYSICAL_WEB_OVERFLOW, metadata_count - metadata_matches);
+        EXPECT_EQ(description, base::UTF16ToASCII(match.description));
+        ++overflow_match_count;
+      }
+      EXPECT_FALSE(match.allowed_to_be_default_match);
+    }
+    EXPECT_EQ(1U, overflow_match_count);
+  }
+
+  {
+    // Run the test again with a URL in the omnibox input. An additional match
+    // should be added as a default match.
+    provider_->Start(CreateInputWithCurrentUrl("http://www.cnn.com"), false);
+
+    const size_t match_count = provider_->matches().size();
+    EXPECT_LT(match_count - 1, metadata_count);
+
+    // Check that the overflow item and default match are present and their
+    // fields are correct.
+    size_t overflow_match_count = 0;
+    size_t default_match_count = 0;
+    for (const auto& match : provider_->matches()) {
+      if (match.type == AutocompleteMatchType::PHYSICAL_WEB_OVERFLOW) {
+        EXPECT_EQ("chrome://physical-web/", match.destination_url.spec());
+        EXPECT_EQ("chrome://physical-web/", base::UTF16ToASCII(match.contents));
+        const size_t metadata_matches = match_count - 2;
+        std::string description = l10n_util::GetPluralStringFUTF8(
+            IDS_PHYSICAL_WEB_OVERFLOW, metadata_count - metadata_matches);
+        EXPECT_EQ(description, base::UTF16ToASCII(match.description));
+        EXPECT_FALSE(match.allowed_to_be_default_match);
+        ++overflow_match_count;
+      } else if (match.allowed_to_be_default_match) {
+        ++default_match_count;
+      }
+    }
+    EXPECT_EQ(1U, overflow_match_count);
+    EXPECT_EQ(1U, default_match_count);
+  }
 }
 
 TEST_F(PhysicalWebProviderTest, TestNoMatchesWithUserInput) {

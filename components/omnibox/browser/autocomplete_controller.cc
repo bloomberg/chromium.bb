@@ -222,8 +222,8 @@ AutocompleteController::AutocompleteController(
     }
   }
   if (provider_types & AutocompleteProvider::TYPE_PHYSICAL_WEB) {
-    PhysicalWebProvider* physical_web_provider =
-        PhysicalWebProvider::Create(provider_client_.get());
+    PhysicalWebProvider* physical_web_provider = PhysicalWebProvider::Create(
+        provider_client_.get(), history_url_provider_);
     if (physical_web_provider)
       providers_.push_back(physical_web_provider);
   }

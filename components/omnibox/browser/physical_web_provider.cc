@@ -7,7 +7,9 @@
 #include "base/values.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
+#include "components/omnibox/browser/history_url_provider.h"
 #include "components/omnibox/browser/physical_web_provider.h"
+#include "components/omnibox/browser/verbatim_match.h"
 #include "components/physical_web/data_source/physical_web_data_source.h"
 #include "components/url_formatter/url_formatter.h"
 #include "grit/components_strings.h"
@@ -38,8 +40,9 @@ static const int kPhysicalWebUrlBaseRelevance = 700;
 
 // static
 PhysicalWebProvider* PhysicalWebProvider::Create(
-    AutocompleteProviderClient* client) {
-  return new PhysicalWebProvider(client);
+    AutocompleteProviderClient* client,
+    HistoryURLProvider* history_url_provider) {
+  return new PhysicalWebProvider(client, history_url_provider);
 }
 
 void PhysicalWebProvider::Start(const AutocompleteInput& input,
@@ -65,6 +68,16 @@ void PhysicalWebProvider::Start(const AutocompleteInput& input,
 
   ConstructMatches(data_source->GetMetadata().get());
 
+  // Physical Web matches should never be default. If the omnibox input is
+  // non-empty and we have at least one Physical Web match, add the current URL
+  // as the default so that hitting enter after focusing the omnibox causes the
+  // current page to reload. If the input field is empty, no default match is
+  // required.
+  if (!matches_.empty() && !input.text().empty()) {
+    matches_.push_back(VerbatimMatchForURL(client_, input, input.current_url(),
+                                           history_url_provider_, -1));
+  }
+
   done_ = true;
 }
 
@@ -73,16 +86,19 @@ void PhysicalWebProvider::Stop(bool clear_cached_results,
   done_ = true;
 }
 
-PhysicalWebProvider::PhysicalWebProvider(AutocompleteProviderClient* client)
+PhysicalWebProvider::PhysicalWebProvider(
+    AutocompleteProviderClient* client,
+    HistoryURLProvider* history_url_provider)
     : AutocompleteProvider(AutocompleteProvider::TYPE_PHYSICAL_WEB),
-      client_(client) {
-}
+      client_(client),
+      history_url_provider_(history_url_provider) {}
 
 PhysicalWebProvider::~PhysicalWebProvider() {
 }
 
 void PhysicalWebProvider::ConstructMatches(base::ListValue* metadata_list) {
   const size_t metadata_count = metadata_list->GetSize();
+  size_t used_slots = 0;
 
   for (size_t i = 0; i < metadata_count; ++i) {
     base::DictionaryValue* metadata_item = NULL;
@@ -99,11 +115,11 @@ void PhysicalWebProvider::ConstructMatches(base::ListValue* metadata_list) {
 
     // Add match items with decreasing relevance to preserve the ordering in
     // the metadata list.
-    int relevance = kPhysicalWebUrlBaseRelevance - matches_.size();
+    int relevance = kPhysicalWebUrlBaseRelevance - used_slots;
 
     // Append an overflow item if creating a match for each metadata item would
     // exceed the match limit.
-    const size_t remaining_slots = kPhysicalWebMaxMatches - matches_.size();
+    const size_t remaining_slots = kPhysicalWebMaxMatches - used_slots;
     const size_t remaining_metadata = metadata_count - i;
     if ((remaining_slots == 1) && (remaining_metadata > remaining_slots)) {
       AppendOverflowItem(remaining_metadata, relevance);
@@ -133,9 +149,8 @@ void PhysicalWebProvider::ConstructMatches(base::ListValue* metadata_list) {
     match.description_class.push_back(
         ACMatchClassification(0, ACMatchClassification::NONE));
 
-    match.allowed_to_be_default_match = matches_.empty();
-
     matches_.push_back(match);
+    ++used_slots;
   }
 }
 
@@ -163,8 +178,6 @@ void PhysicalWebProvider::AppendOverflowItem(int additional_url_count,
       IDS_PHYSICAL_WEB_OVERFLOW, additional_url_count);
   match.description_class.push_back(
       ACMatchClassification(0, ACMatchClassification::NONE));
-
-  match.allowed_to_be_default_match = matches_.empty();
 
   matches_.push_back(match);
 }

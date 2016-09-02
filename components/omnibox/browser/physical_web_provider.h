@@ -5,25 +5,29 @@
 #ifndef COMPONENTS_OMNIBOX_BROWSER_PHYSICAL_WEB_PROVIDER_H_
 #define COMPONENTS_OMNIBOX_BROWSER_PHYSICAL_WEB_PROVIDER_H_
 
+#include "base/macros.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
 
 class AutocompleteProviderClient;
+class HistoryURLProvider;
 
 namespace base {
 class ListValue;
 }
 
 class PhysicalWebProvider : public AutocompleteProvider {
-public:
-  static PhysicalWebProvider* Create(AutocompleteProviderClient* client);
+ public:
+  static PhysicalWebProvider* Create(AutocompleteProviderClient* client,
+                                     HistoryURLProvider* history_url_provider);
 
   // AutocompleteProvider:
   void Start(const AutocompleteInput& input, bool minimal_changes) override;
   void Stop(bool clear_cached_results, bool due_to_user_inactivity) override;
 
-private:
-  PhysicalWebProvider(AutocompleteProviderClient* client);
+ private:
+  PhysicalWebProvider(AutocompleteProviderClient* client,
+                      HistoryURLProvider* history_url_provider);
   ~PhysicalWebProvider() override;
 
   // Adds a separate match item to |matches_| for each nearby URL in
@@ -39,6 +43,11 @@ private:
   void AppendOverflowItem(int additional_url_count, int relevance);
 
   AutocompleteProviderClient* client_;
+
+  // Used for efficiency when creating the verbatim match. Can be null.
+  HistoryURLProvider* history_url_provider_;
+
+  DISALLOW_COPY_AND_ASSIGN(PhysicalWebProvider);
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_PHYSICAL_WEB_PROVIDER_H_

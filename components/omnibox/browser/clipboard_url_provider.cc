@@ -66,8 +66,5 @@ void ClipboardURLProvider::Start(const AutocompleteInput& input,
       base::string16::npos, 0, match.description.length(),
       ACMatchClassification::NONE, &match.description_class);
 
-  // At least one match must be default, so if verbatim_match was invalid,
-  // the clipboard match is allowed to be default.
-  match.allowed_to_be_default_match = matches_.empty();
   matches_.push_back(match);
 }
