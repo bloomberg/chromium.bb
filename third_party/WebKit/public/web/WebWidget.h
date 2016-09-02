@@ -250,8 +250,8 @@ public:
     // composition.
     virtual bool getCompositionCharacterBounds(WebVector<WebRect>& bounds) { return false; }
 
-    // Applies the range from |start| to |start + length| on the foucsed frame so that the text will later be replaced.
-    virtual void applyReplacementRange(int start, int length) {}
+    // Applies the range on the focused frame so that the text will later be replaced.
+    virtual void applyReplacementRange(const WebRange&) {}
 
 protected:
     ~WebWidget() { }

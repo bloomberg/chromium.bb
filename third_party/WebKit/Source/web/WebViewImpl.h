@@ -161,7 +161,7 @@ public:
     void didLosePointerLock() override;
     void didChangeWindowResizerRect() override;
     bool getCompositionCharacterBounds(WebVector<WebRect>& bounds) override;
-    void applyReplacementRange(int start, int length) override;
+    void applyReplacementRange(const WebRange&) override;
 
     // WebView methods:
     virtual bool isWebView() const { return true; }

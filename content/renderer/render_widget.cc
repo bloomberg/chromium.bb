@@ -1381,8 +1381,8 @@ void RenderWidget::OnImeSetComposition(
   }
 #endif
   if (replacement_range.IsValid()) {
-    webwidget_->applyReplacementRange(replacement_range.start(),
-                                      replacement_range.length());
+    webwidget_->applyReplacementRange(
+        WebRange(replacement_range.start(), replacement_range.length()));
   }
 
   if (!ShouldHandleImeEvent())
@@ -1410,8 +1410,8 @@ void RenderWidget::OnImeConfirmComposition(const base::string16& text,
   }
 #endif
   if (replacement_range.IsValid()) {
-    webwidget_->applyReplacementRange(replacement_range.start(),
-                                      replacement_range.length());
+    webwidget_->applyReplacementRange(
+        WebRange(replacement_range.start(), replacement_range.length()));
   }
 
   if (!ShouldHandleImeEvent())

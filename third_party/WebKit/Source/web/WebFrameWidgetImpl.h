@@ -117,7 +117,7 @@ public:
     void didNotAcquirePointerLock() override;
     void didLosePointerLock() override;
     bool getCompositionCharacterBounds(WebVector<WebRect>& bounds) override;
-    void applyReplacementRange(int start, int length) override;
+    void applyReplacementRange(const WebRange&) override;
 
     // WebFrameWidget implementation.
     WebLocalFrameImpl* localRoot() override { return m_localRoot; }

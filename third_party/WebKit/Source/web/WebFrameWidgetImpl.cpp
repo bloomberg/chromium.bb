@@ -885,12 +885,12 @@ bool WebFrameWidgetImpl::getCompositionCharacterBounds(WebVector<WebRect>& bound
     return true;
 }
 
-void WebFrameWidgetImpl::applyReplacementRange(int start, int length)
+void WebFrameWidgetImpl::applyReplacementRange(const WebRange& range)
 {
     if (LocalFrame* frame = focusedLocalFrameInWidget()) {
         // TODO(dglazkov): Going from LocalFrame to WebLocalFrameImpl seems
         // silly. What is going on here?
-        WebLocalFrameImpl::fromFrame(frame)->selectRange(WebRange(start, length));
+        WebLocalFrameImpl::fromFrame(frame)->selectRange(range);
     }
 }
 
