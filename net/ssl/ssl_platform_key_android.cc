@@ -2,31 +2,84 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/ssl/ssl_platform_key.h"
+#include "net/ssl/ssl_platform_key_android.h"
 
-#include <openssl/digest.h>
-#include <openssl/evp.h>
+#include <openssl/ecdsa.h>
+#include <openssl/rsa.h>
+#include <strings.h>
 
+#include <memory>
 #include <utility>
+#include <vector>
 
+#include "base/android/build_info.h"
+#include "base/android/scoped_java_ref.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "crypto/scoped_openssl_types.h"
+#include "net/android/keystore.h"
+#include "net/android/legacy_openssl.h"
 #include "net/base/net_errors.h"
 #include "net/ssl/openssl_client_key_store.h"
+#include "net/ssl/ssl_platform_key.h"
 #include "net/ssl/ssl_platform_key_task_runner.h"
-#include "net/ssl/ssl_private_key.h"
 #include "net/ssl/threaded_ssl_private_key.h"
+
+using base::android::JavaRef;
+using base::android::ScopedJavaGlobalRef;
+using base::android::ScopedJavaLocalRef;
 
 namespace net {
 
 namespace {
 
+// On Android < 4.2, the libkeystore.so ENGINE uses CRYPTO_EX_DATA and is not
+// added to the global engine list. If all references to it are dropped, OpenSSL
+// will dlclose the module, leaving a dangling function pointer in the RSA
+// CRYPTO_EX_DATA class. To work around this, leak an extra reference to the
+// ENGINE we extract in GetRsaLegacyKey.
+//
+// In 4.2, this change avoids the problem:
+// https://android.googlesource.com/platform/libcore/+/106a8928fb4249f2f3d4dba1dddbe73ca5cb3d61
+//
+// https://crbug.com/381465
+class KeystoreEngineWorkaround {
+ public:
+  KeystoreEngineWorkaround() {}
+
+  void LeakEngine(const JavaRef<jobject>& key) {
+    if (!engine_.is_null())
+      return;
+    ScopedJavaLocalRef<jobject> engine =
+        android::GetOpenSSLEngineForPrivateKey(key);
+    if (engine.is_null()) {
+      NOTREACHED();
+      return;
+    }
+    engine_.Reset(engine);
+  }
+
+ private:
+  ScopedJavaGlobalRef<jobject> engine_;
+};
+
+void LeakEngine(const JavaRef<jobject>& private_key) {
+  static base::LazyInstance<KeystoreEngineWorkaround>::Leaky s_instance =
+      LAZY_INSTANCE_INITIALIZER;
+  s_instance.Get().LeakEngine(private_key);
+}
+
 class SSLPlatformKeyAndroid : public ThreadedSSLPrivateKey::Delegate {
  public:
-  SSLPlatformKeyAndroid(crypto::ScopedEVP_PKEY key, SSLPrivateKey::Type type)
-      : key_(std::move(key)), type_(type) {}
+  SSLPlatformKeyAndroid(SSLPrivateKey::Type type,
+                        const JavaRef<jobject>& key,
+                        size_t max_length,
+                        android::AndroidRSA* legacy_rsa)
+      : type_(type), max_length_(max_length), legacy_rsa_(legacy_rsa) {
+    key_.Reset(key);
+  }
 
   ~SSLPlatformKeyAndroid() override {}
 
@@ -40,100 +93,176 @@ class SSLPlatformKeyAndroid : public ThreadedSSLPrivateKey::Delegate {
                                             kHashes + arraysize(kHashes));
   }
 
-  size_t GetMaxSignatureLengthInBytes() override {
-    return EVP_PKEY_size(key_.get());
-  }
+  size_t GetMaxSignatureLengthInBytes() override { return max_length_; }
 
   Error SignDigest(SSLPrivateKey::Hash hash,
-                   const base::StringPiece& input,
+                   const base::StringPiece& input_in,
                    std::vector<uint8_t>* signature) override {
-    crypto::ScopedEVP_PKEY_CTX ctx =
-        crypto::ScopedEVP_PKEY_CTX(EVP_PKEY_CTX_new(key_.get(), NULL));
-    if (!ctx)
-      return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
-    if (!EVP_PKEY_sign_init(ctx.get()))
-      return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
+    base::StringPiece input = input_in;
 
+    // Prepend the DigestInfo for RSA.
+    crypto::ScopedOpenSSLBytes digest_info_storage;
     if (type_ == SSLPrivateKey::Type::RSA) {
-      const EVP_MD* digest = nullptr;
+      int hash_nid = NID_undef;
       switch (hash) {
         case SSLPrivateKey::Hash::MD5_SHA1:
-          digest = EVP_md5_sha1();
+          hash_nid = NID_md5_sha1;
           break;
         case SSLPrivateKey::Hash::SHA1:
-          digest = EVP_sha1();
+          hash_nid = NID_sha1;
           break;
         case SSLPrivateKey::Hash::SHA256:
-          digest = EVP_sha256();
+          hash_nid = NID_sha256;
           break;
         case SSLPrivateKey::Hash::SHA384:
-          digest = EVP_sha384();
+          hash_nid = NID_sha384;
           break;
         case SSLPrivateKey::Hash::SHA512:
-          digest = EVP_sha512();
+          hash_nid = NID_sha512;
           break;
-        default:
-          return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
       }
-      DCHECK(digest);
-      if (!EVP_PKEY_CTX_set_rsa_padding(ctx.get(), RSA_PKCS1_PADDING))
+      DCHECK_NE(NID_undef, hash_nid);
+
+      uint8_t* digest_info;
+      size_t digest_info_len;
+      int is_alloced;
+      if (!RSA_add_pkcs1_prefix(
+              &digest_info, &digest_info_len, &is_alloced, hash_nid,
+              reinterpret_cast<const uint8_t*>(input.data()), input.size())) {
         return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
-      if (!EVP_PKEY_CTX_set_signature_md(ctx.get(), digest))
-        return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
+      }
+
+      if (is_alloced)
+        digest_info_storage.reset(digest_info);
+      input = base::StringPiece(reinterpret_cast<const char*>(digest_info),
+                                digest_info_len);
     }
 
-    const uint8_t* input_ptr = reinterpret_cast<const uint8_t*>(input.data());
-    size_t input_len = input.size();
-    size_t sig_len = 0;
-    if (!EVP_PKEY_sign(ctx.get(), NULL, &sig_len, input_ptr, input_len))
-      return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
-    signature->resize(sig_len);
-    if (!EVP_PKEY_sign(ctx.get(), signature->data(), &sig_len, input_ptr,
-                       input_len)) {
-      return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
+    // Pre-4.2 legacy codepath.
+    if (legacy_rsa_) {
+      signature->resize(max_length_);
+      int ret = legacy_rsa_->meth->rsa_priv_enc(
+          input.size(), reinterpret_cast<const uint8_t*>(input.data()),
+          signature->data(), legacy_rsa_, android::ANDROID_RSA_PKCS1_PADDING);
+      if (ret < 0) {
+        LOG(WARNING) << "Could not sign message with legacy RSA key!";
+        // System OpenSSL will use a separate error queue, so it is still
+        // necessary to push a new error.
+        //
+        // TODO(davidben): It would be good to also clear the system error queue
+        // if there were some way to convince Java to do it. (Without going
+        // through Java, it's difficult to get a handle on a system OpenSSL
+        // function; dlopen loads a second copy.)
+        return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
+      }
+      signature->resize(ret);
+      return OK;
     }
 
-    signature->resize(sig_len);
-
+    if (!android::RawSignDigestWithPrivateKey(key_, input, signature)) {
+      LOG(WARNING) << "Could not sign message with private key!";
+      return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
+    }
     return OK;
   }
 
  private:
-  crypto::ScopedEVP_PKEY key_;
   SSLPrivateKey::Type type_;
+  ScopedJavaGlobalRef<jobject> key_;
+  size_t max_length_;
+  android::AndroidRSA* legacy_rsa_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLPlatformKeyAndroid);
 };
 
-scoped_refptr<SSLPrivateKey> WrapOpenSSLPrivateKey(crypto::ScopedEVP_PKEY key) {
-  if (!key)
-    return nullptr;
-
-  SSLPrivateKey::Type type;
-  switch (EVP_PKEY_id(key.get())) {
-    case EVP_PKEY_RSA:
-      type = SSLPrivateKey::Type::RSA;
-      break;
-    case EVP_PKEY_EC:
-      type = SSLPrivateKey::Type::ECDSA;
-      break;
-    default:
-      LOG(ERROR) << "Unknown key type: " << EVP_PKEY_id(key.get());
-      return nullptr;
+// VectorBignumSize returns the number of bytes needed to represent the bignum
+// given in |v|, i.e. the length of |v| less any leading zero bytes.
+size_t VectorBignumSize(const std::vector<uint8_t>& v) {
+  size_t size = v.size();
+  // Ignore any leading zero bytes.
+  for (size_t i = 0; i < v.size() && v[i] == 0; i++) {
+    size--;
   }
-  return make_scoped_refptr(new ThreadedSSLPrivateKey(
-      base::WrapUnique(new SSLPlatformKeyAndroid(std::move(key), type)),
-      GetSSLPlatformKeyTaskRunner()));
+  return size;
+}
+
+std::unique_ptr<SSLPlatformKeyAndroid> CreateRsaKey(
+    const JavaRef<jobject>& key) {
+  android::AndroidRSA* sys_rsa = nullptr;
+  const int kAndroid42ApiLevel = 17;
+  if (base::android::BuildInfo::GetInstance()->sdk_int() < kAndroid42ApiLevel) {
+    // Route around platform limitations: if Android < 4.2, then
+    // base::android::RawSignDigestWithPrivateKey() cannot work, so try to get
+    // the system OpenSSL's EVP_PKEY backing this PrivateKey object.
+    android::AndroidEVP_PKEY* sys_pkey =
+        android::GetOpenSSLSystemHandleForPrivateKey(key);
+    if (!sys_pkey)
+      return nullptr;
+
+    if (sys_pkey->type != android::ANDROID_EVP_PKEY_RSA) {
+      LOG(ERROR) << "Private key has wrong type!";
+      return nullptr;
+    }
+
+    sys_rsa = sys_pkey->pkey.rsa;
+    if (sys_rsa->engine) {
+      // |private_key| may not have an engine if the PrivateKey did not come
+      // from the key store, such as in unit tests.
+      if (strcmp(sys_rsa->engine->id, "keystore") == 0) {
+        LeakEngine(key);
+      } else {
+        NOTREACHED();
+      }
+    }
+  }
+
+  std::vector<uint8_t> modulus;
+  if (!android::GetRSAKeyModulus(key, &modulus)) {
+    LOG(ERROR) << "Failed to get private key modulus";
+    return nullptr;
+  }
+
+  return base::MakeUnique<SSLPlatformKeyAndroid>(
+      SSLPrivateKey::Type::RSA, key, VectorBignumSize(modulus), sys_rsa);
+}
+
+std::unique_ptr<SSLPlatformKeyAndroid> CreateEcdsaKey(
+    const JavaRef<jobject>& key) {
+  std::vector<uint8_t> order;
+  if (!android::GetECKeyOrder(key, &order)) {
+    LOG(ERROR) << "Can't extract order parameter from EC private key";
+    return nullptr;
+  }
+
+  return base::MakeUnique<SSLPlatformKeyAndroid>(
+      SSLPrivateKey::Type::ECDSA, key,
+      ECDSA_SIG_max_len(VectorBignumSize(order)), nullptr);
 }
 
 }  // namespace
 
+scoped_refptr<SSLPrivateKey> WrapJavaPrivateKey(const JavaRef<jobject>& key) {
+  std::unique_ptr<SSLPlatformKeyAndroid> delegate;
+  switch (android::GetPrivateKeyType(key)) {
+    case android::PRIVATE_KEY_TYPE_RSA:
+      delegate = CreateRsaKey(key);
+      break;
+    case android::PRIVATE_KEY_TYPE_ECDSA:
+      delegate = CreateEcdsaKey(key);
+      break;
+    default:
+      LOG(WARNING) << "GetPrivateKeyType() returned invalid type";
+      return nullptr;
+  }
+
+  return make_scoped_refptr(new ThreadedSSLPrivateKey(
+      std::move(delegate), GetSSLPlatformKeyTaskRunner()));
+}
+
 scoped_refptr<SSLPrivateKey> FetchClientCertPrivateKey(
     X509Certificate* certificate) {
-  crypto::ScopedEVP_PKEY key =
-      OpenSSLClientKeyStore::GetInstance()->FetchClientCertPrivateKey(
-          certificate);
-  return WrapOpenSSLPrivateKey(std::move(key));
+  return OpenSSLClientKeyStore::GetInstance()->FetchClientCertPrivateKey(
+      certificate);
 }
 
 }  // namespace net

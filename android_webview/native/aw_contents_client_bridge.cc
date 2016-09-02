@@ -4,6 +4,8 @@
 
 #include "android_webview/native/aw_contents_client_bridge.h"
 
+#include <utility>
+
 #include "android_webview/common/devtools_instrumentation.h"
 #include "android_webview/native/aw_contents.h"
 #include "base/android/jni_android.h"
@@ -11,6 +13,7 @@
 #include "base/android/jni_string.h"
 #include "base/callback_helpers.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/render_process_host.h"
@@ -19,11 +22,12 @@
 #include "crypto/scoped_openssl_types.h"
 #include "grit/components_strings.h"
 #include "jni/AwContentsClientBridge_jni.h"
-#include "net/android/keystore_openssl.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/openssl_client_key_store.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_client_cert_type.h"
+#include "net/ssl/ssl_platform_key_android.h"
+#include "net/ssl/ssl_private_key.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -42,12 +46,11 @@ namespace {
 
 // Must be called on the I/O thread to record a client certificate
 // and its private key in the OpenSSLClientKeyStore.
-void RecordClientCertificateKey(
-    const scoped_refptr<net::X509Certificate>& client_cert,
-    crypto::ScopedEVP_PKEY private_key) {
+void RecordClientCertificateKey(net::X509Certificate* client_cert,
+                                scoped_refptr<net::SSLPrivateKey> private_key) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   net::OpenSSLClientKeyStore::GetInstance()->RecordClientCertPrivateKey(
-      client_cert.get(), private_key.get());
+      client_cert, std::move(private_key));
 }
 
 }  // namespace
@@ -238,10 +241,10 @@ void AwContentsClientBridge::ProvideClientCertificateResponse(
     return;
   }
 
-  // Create an EVP_PKEY wrapper for the private key JNI reference.
-  crypto::ScopedEVP_PKEY private_key(
-      net::android::GetOpenSSLPrivateKeyWrapper(private_key_ref));
-  if (!private_key.get()) {
+  // Create an SSLPrivateKey wrapper for the private key JNI reference.
+  scoped_refptr<net::SSLPrivateKey> private_key =
+      net::WrapJavaPrivateKey(private_key_ref);
+  if (!private_key) {
     LOG(ERROR) << "Could not create OpenSSL wrapper for private key";
     return;
   }
@@ -256,7 +259,7 @@ void AwContentsClientBridge::ProvideClientCertificateResponse(
   // the UI thread.
   content::BrowserThread::PostTaskAndReply(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&RecordClientCertificateKey, client_cert,
+      base::Bind(&RecordClientCertificateKey, base::RetainedRef(client_cert),
                  base::Passed(&private_key)),
       base::Bind(&content::ClientCertificateDelegate::ContinueWithCertificate,
                  base::Owned(delegate), base::RetainedRef(client_cert)));
