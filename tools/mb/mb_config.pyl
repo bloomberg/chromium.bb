@@ -510,6 +510,11 @@
       'Windows Unit (DrMemory)': 'none',
     },
 
+    'chromium.perf.fyi': {
+      'Win 10 Low-End 2 Core Perf': 'none',
+      'Win 10 Low-End 4 Core Perf': 'none',
+    },
+
     'chromium.perf': {
       'Android Builder': 'gn_official_goma_minimal_symbols_android',
       'Android Galaxy S5 Perf (1)': 'none',

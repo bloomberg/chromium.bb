@@ -2908,6 +2908,20 @@ group("telemetry_perf_unittests") {
   ]
 }
 
+group("telemetry_perf_tests") {
+  testonly = true
+  deps = [
+    "//tools/perf/:perf",
+  ]
+
+  data = [
+    # Needed for isolate script to execute.
+    "//testing/scripts/common.py",
+    "//testing/xvfb.py",
+    "//testing/scripts/run_telemetry_benchmark_as_googletest.py",
+  ]
+}
+
 js2gtest("unit_tests_js") {
   test_type = "unit"
   sources = rebase_path(

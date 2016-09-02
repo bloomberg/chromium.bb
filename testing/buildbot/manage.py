@@ -146,6 +146,7 @@ SKIP_GN_ISOLATE_MAP_TARGETS = {
   'telemetry_gpu_integration_test',
   'telemetry_gpu_test',
   'telemetry_gpu_unittests',
+  'telemetry_perf_tests',
   'telemetry_perf_unittests',
   'telemetry_unittests',
 }

@@ -14,6 +14,12 @@ group("perf") {
     # Field trial config
     "//tools/variations/",
     "//testing/variations/",
+
+    # For blink_perf benchmarks.
+    "//third_party/WebKit/PerformanceTests/",
+
+    # For blink_perf.BlinkPerfPywebsocket benchmark.
+    "//third_party/pywebsocket/",
   ]
 }
 
