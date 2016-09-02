@@ -94,6 +94,7 @@ component("gfx") {
     "icc_profile.h",
     "icc_profile_mac.mm",
     "icc_profile_win.cc",
+    "icc_profile_x11.cc",
     "icon_util.cc",
     "icon_util.h",
     "image/image.cc",
@@ -402,7 +403,10 @@ component("gfx") {
     deps += [ "//ui/gfx/x" ]
     configs += [ "//build/config/linux:x11" ]
   } else {
-    sources -= [ "path_x11.cc" ]
+    sources -= [
+      "icc_profile_x11.cc",
+      "path_x11.cc",
+    ]
   }
 
   if (use_cairo) {

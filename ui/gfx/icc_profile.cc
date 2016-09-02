@@ -76,7 +76,7 @@ ICCProfile ICCProfile::FromData(const char* data, size_t size) {
   return icc_profile;
 }
 
-#if !defined(OS_WIN) && !defined(OS_MACOSX)
+#if !defined(OS_WIN) && !defined(OS_MACOSX) && !defined(USE_X11)
 // static
 ICCProfile ICCProfile::FromBestMonitor() {
   return ICCProfile();
