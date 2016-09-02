@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/numerics/safe_math.h"
 #include "base/stl_util.h"
 #include "media/base/decrypt_config.h"
 #include "ui/gfx/geometry/rect.h"
@@ -947,10 +948,10 @@ H264Parser::Result H264Parser::ParseSPS(int* sps_id) {
   READ_UE_OR_RETURN(&sps->pic_order_cnt_type);
   TRUE_OR_RETURN(sps->pic_order_cnt_type < 3);
 
-  sps->expected_delta_per_pic_order_cnt_cycle = 0;
   if (sps->pic_order_cnt_type == 0) {
     READ_UE_OR_RETURN(&sps->log2_max_pic_order_cnt_lsb_minus4);
     TRUE_OR_RETURN(sps->log2_max_pic_order_cnt_lsb_minus4 < 13);
+    sps->expected_delta_per_pic_order_cnt_cycle = 0;
   } else if (sps->pic_order_cnt_type == 1) {
     READ_BOOL_OR_RETURN(&sps->delta_pic_order_always_zero_flag);
     READ_SE_OR_RETURN(&sps->offset_for_non_ref_pic);
@@ -958,11 +959,14 @@ H264Parser::Result H264Parser::ParseSPS(int* sps_id) {
     READ_UE_OR_RETURN(&sps->num_ref_frames_in_pic_order_cnt_cycle);
     TRUE_OR_RETURN(sps->num_ref_frames_in_pic_order_cnt_cycle < 255);
 
+    base::CheckedNumeric<int> offset_acc = 0;
     for (int i = 0; i < sps->num_ref_frames_in_pic_order_cnt_cycle; ++i) {
       READ_SE_OR_RETURN(&sps->offset_for_ref_frame[i]);
-      sps->expected_delta_per_pic_order_cnt_cycle +=
-          sps->offset_for_ref_frame[i];
+      offset_acc += sps->offset_for_ref_frame[i];
     }
+    if (!offset_acc.IsValid())
+      return kInvalidStream;
+    sps->expected_delta_per_pic_order_cnt_cycle = offset_acc.ValueOrDefault(0);
   }
 
   READ_UE_OR_RETURN(&sps->max_num_ref_frames);
