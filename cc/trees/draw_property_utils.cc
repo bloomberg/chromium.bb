@@ -468,12 +468,8 @@ void CalculateVisibleRects(const LayerImplList& visible_layer_list,
         continue;
       }
     } else {
-      if (clip_node->target_is_clipped) {
-        combined_clip_rect_in_target_space =
-            clip_node->combined_clip_in_target_space;
-      } else {
-        combined_clip_rect_in_target_space = clip_node->clip_in_target_space;
-      }
+      combined_clip_rect_in_target_space =
+          clip_node->combined_clip_in_target_space;
     }
 
     // The clip rect should be intersected with layer rect in target space.

@@ -3337,21 +3337,20 @@ TEST_F(LayerTreeHostCommonTest,
   parent->SetMasksToBounds(false);
 
   // Case 3: child1 and grand_child2 clip. In this case, descendants of these
-  // layers have their visible rects clipped by them; without surfaces, these
-  // rects are also clipped by the viewport. Similarly, descendants of these
-  // layers have their drawable content rects clipped by them.
+  // layers have their visible rects clipped by them; Similarly, descendants of
+  // these layers have their drawable content rects clipped by them.
   child1->SetMasksToBounds(true);
   grand_child2->SetMasksToBounds(true);
   host_impl()->active_tree()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawProperties(root);
   EXPECT_EQ(gfx::Rect(100, 100), root->visible_layer_rect());
   EXPECT_EQ(gfx::Rect(98, 98), parent->visible_layer_rect());
-  EXPECT_EQ(gfx::Rect(800, 800), child1->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(94, 94), child1->visible_layer_rect());
   EXPECT_EQ(gfx::Rect(800, 800), child2->visible_layer_rect());
-  EXPECT_EQ(gfx::Rect(792, 792), grand_child1->visible_layer_rect());
-  EXPECT_EQ(gfx::Rect(1500, 1500), grand_child2->visible_layer_rect());
-  EXPECT_EQ(gfx::Rect(776, 776), leaf_node1->visible_layer_rect());
-  EXPECT_EQ(gfx::Rect(1491, 1491), leaf_node2->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(86, 86), grand_child1->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(88, 88), grand_child2->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(70, 70), leaf_node1->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(79, 79), leaf_node2->visible_layer_rect());
 
   EXPECT_EQ(gfx::Rect(100, 100), root->drawable_content_rect());
   EXPECT_EQ(gfx::Rect(2, 2, 400, 400), parent->drawable_content_rect());
@@ -3793,7 +3792,7 @@ TEST_F(LayerTreeHostCommonTest,
   child1->SetMasksToBounds(true);
   child2->SetMasksToBounds(true);
   ExecuteCalculateDrawProperties(root);
-  EXPECT_EQ(gfx::Rect(500, 500), child1->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(100, 100), child1->visible_layer_rect());
   EXPECT_EQ(gfx::Rect(100, 100), render_surface2->visible_layer_rect());
 }
 
@@ -3966,7 +3965,7 @@ TEST_F(LayerTreeHostCommonTest, RootClipPropagationToClippedSurface) {
 
   ExecuteCalculateDrawProperties(root);
   EXPECT_EQ(gfx::Rect(50, 50), unclipped_surface->visible_layer_rect());
-  EXPECT_EQ(gfx::Rect(50, 50), unclipped_desc_surface->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(10, 10), unclipped_desc_surface->visible_layer_rect());
   EXPECT_EQ(gfx::Rect(10, 10), clipped_surface->visible_layer_rect());
 }
 
