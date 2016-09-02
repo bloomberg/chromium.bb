@@ -354,7 +354,7 @@ TEST_F(P2PSocketHostUdpTest, ThrottleAfterLimit) {
   EXPECT_CALL(
       sender_,
       Send(MatchMessage(static_cast<uint32_t>(P2PMsg_OnSendComplete::ID))))
-      .Times(2)
+      .Times(3)
       .WillRepeatedly(DoAll(DeleteArg<0>(), Return(true)));
 
   rtc::PacketOptions options;
@@ -384,7 +384,7 @@ TEST_F(P2PSocketHostUdpTest, ThrottleAfterLimitAfterReceive) {
   EXPECT_CALL(
       sender_,
       Send(MatchMessage(static_cast<uint32_t>(P2PMsg_OnSendComplete::ID))))
-      .Times(4)
+      .Times(6)
       .WillRepeatedly(DoAll(DeleteArg<0>(), Return(true)));
 
   rtc::PacketOptions options;
