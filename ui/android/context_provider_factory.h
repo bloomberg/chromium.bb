@@ -31,24 +31,8 @@ namespace ui {
 // This class is not thread-safe and should only be accessed from the UI thread.
 class UI_ANDROID_EXPORT ContextProviderFactory {
  public:
-  enum class ContextCreationResult {
-    FAILURE_GPU_PROCESS_INITIALIZATION_FAILED,
-
-    // Used when the factory is shutting down. No more requests should be made
-    // to the factory after this response is dispatched.
-    FAILURE_FACTORY_SHUTDOWN,
-
-    // The GpuSurfaceHandle for the request was lost before the context could be
-    // created. This is used for on-screen context requests only.
-    FAILURE_GPU_SURFACE_HANDLE_LOST,
-
-    // Set if the Context creation was successful.
-    SUCCESS,
-  };
-
   using ContextProviderCallback =
-      base::Callback<void(const scoped_refptr<cc::ContextProvider>&,
-                          ContextCreationResult)>;
+      base::Callback<void(const scoped_refptr<cc::ContextProvider>&)>;
 
   enum class ContextType {
     BLIMP_RENDER_COMPOSITOR_CONTEXT,
@@ -68,8 +52,8 @@ class UI_ANDROID_EXPORT ContextProviderFactory {
 
   // Creates an offscreen ContextProvider for the compositor. Any shared
   // contexts passed here *must* have been created using this factory.
-  // The callback may be triggered synchronously if possible. If the context
-  // creation fails, a null context is passed with the specified reason.
+  // The callback may be triggered synchronously if possible, and will always
+  // have the context provider.
   virtual void CreateOffscreenContextProvider(
       ContextType context_type,
       gpu::SharedMemoryLimits shared_memory_limits,

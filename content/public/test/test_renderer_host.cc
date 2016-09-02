@@ -30,7 +30,6 @@
 
 #if defined(OS_ANDROID)
 #include "content/browser/renderer_host/context_provider_factory_impl_android.h"
-#include "content/test/mock_gpu_channel_establish_factory.h"
 #endif
 
 #if defined(OS_WIN)
@@ -246,8 +245,6 @@ void RenderViewHostTestHarness::SetUp() {
   ImageTransportFactory::InitializeForUnitTests(
       base::WrapUnique(new NoTransportImageTransportFactory));
 #else
-  gpu_channel_factory_ = base::MakeUnique<MockGpuChannelEstablishFactory>();
-  ContextProviderFactoryImpl::Initialize(gpu_channel_factory_.get());
   ui::ContextProviderFactory::SetInstance(
       ContextProviderFactoryImpl::GetInstance());
 #endif
@@ -317,8 +314,6 @@ void RenderViewHostTestHarness::TearDown() {
     ImageTransportFactory::Terminate();
 #else
   ui::ContextProviderFactory::SetInstance(nullptr);
-  ContextProviderFactoryImpl::Terminate();
-  gpu_channel_factory_.reset();
 #endif
 }
 

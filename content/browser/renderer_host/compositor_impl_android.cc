@@ -649,46 +649,26 @@ void CompositorImpl::CreateVulkanOutputSurface() {
 #endif
 
 void CompositorImpl::CreateCompositorOutputSurface(
-    const scoped_refptr<cc::ContextProvider>& context_provider,
-    ui::ContextProviderFactory::ContextCreationResult result) {
+    const scoped_refptr<cc::ContextProvider>& context_provider) {
+  // This callback should run only if we have a pending output surface request,
+  // since that is when we should have queued a context request.
+  // In case the surface was invalidated after the context request was queued,
+  // the request should have been dropped by the ContextProviderFactory.
   DCHECK(output_surface_request_pending_);
+  DCHECK(host_->visible());
+  DCHECK(window_);
+  DCHECK_NE(surface_handle_, gpu::kNullSurfaceHandle);
+  DCHECK(context_provider);
 
-  switch (result) {
-    // Don't retry if we are shutting down or if the Gpu Surface handle was
-    // lost. The Gpu Surface handle loss should happen only if we are invisible
-    // or this was from a previous request and the current surface has changed,
-    // in which case we would have made another request with the factory.
-    case ui::ContextProviderFactory::ContextCreationResult::
-        FAILURE_FACTORY_SHUTDOWN:
-    case ui::ContextProviderFactory::ContextCreationResult::
-        FAILURE_GPU_SURFACE_HANDLE_LOST:
-      break;
-    case ui::ContextProviderFactory::ContextCreationResult::
-        FAILURE_GPU_PROCESS_INITIALIZATION_FAILED:
-      // Retry only if we are visible.
-      if (host_->visible()) {
-        HandlePendingOutputSurfaceRequest();
-      }
-      break;
-    case ui::ContextProviderFactory::ContextCreationResult::SUCCESS:
-      DCHECK(host_->visible());
-      DCHECK(window_);
-      DCHECK_NE(surface_handle_, gpu::kNullSurfaceHandle);
-      DCHECK(context_provider);
-
-      scoped_refptr<ContextProviderCommandBuffer>
-          context_provider_command_buffer =
-              static_cast<ContextProviderCommandBuffer*>(
-                  context_provider.get());
-      std::unique_ptr<cc::OutputSurface> display_output_surface(
-          new OutputSurfaceWithoutParent(
-              context_provider_command_buffer,
-              base::Bind(&CompositorImpl::PopulateGpuCapabilities,
-                         base::Unretained(this))));
-      InitializeDisplay(std::move(display_output_surface), nullptr,
-                        std::move(context_provider));
-      break;
-  }
+  scoped_refptr<ContextProviderCommandBuffer> context_provider_command_buffer =
+      static_cast<ContextProviderCommandBuffer*>(context_provider.get());
+  std::unique_ptr<cc::OutputSurface> display_output_surface(
+      new OutputSurfaceWithoutParent(
+          context_provider_command_buffer,
+          base::Bind(&CompositorImpl::PopulateGpuCapabilities,
+                     base::Unretained(this))));
+  InitializeDisplay(std::move(display_output_surface), nullptr,
+                    std::move(context_provider));
 }
 
 void CompositorImpl::InitializeDisplay(
