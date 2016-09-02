@@ -20,6 +20,8 @@ description("Verifies that pointer event parameters are correct when fired throu
 
 var checkKeyModifiers = false;
 
+var inputPointerType = "";
+
 var pointerType = "";
 var penId = 0;
 var penPressure = 0;
@@ -53,6 +55,33 @@ var numericAttributes = [
     "width",
     "height",
 ];
+
+function getExpectedNumericAttributeValueForPE(mouseEvent, attribute) {
+  var expectedValue = eval("mouseEvent." + attribute);
+
+  // Fix expectedValue for the cases where PE & ME differs
+  if (attribute == "button") {
+    if (mouseEvent.type != "mousedown" && mouseEvent.type != "mouseup")
+      expectedValue = -1;
+    else if (inputPointerType == "eraser")
+      expectedValue = 5;
+  } else if (attribute == "buttons") {
+    if (inputPointerType == "eraser" && mouseEvent.type == "mousedown")
+      expectedValue = 32;
+  } else if (attribute == "width" || attribute == "height") {
+    expectedValue = 1;
+  } else if (attribute == "pressure") {
+    if (pointerType == "mouse")
+      expectedValue = (mouseEvent.buttons == 0)? 0.0 : 0.5;
+    else
+      expectedValue = penPressure;
+  } else if (attribute == "tiltX") {
+    expectedValue = (pointerType == "mouse")? 0 : penTiltX;
+  } else if (attribute == "tiltY") {
+    expectedValue = (pointerType == "mouse")? 0 : penTiltY;
+  }
+  return expectedValue;
+}
 
 function init() {
   var targetDiv = document.getElementById("target");
@@ -89,24 +118,10 @@ function init() {
           shouldBeTrue("lastPointerEvents[0].isPrimary");
 
           numericAttributes.forEach(function(attribute) {
-            var expectedValue = eval("event." + attribute);
-            if (attribute == "button" && event.type != "mousedown" && event.type != "mouseup")
-              expectedValue = -1;
-            else if (attribute == "width" || attribute == "height")
-              expectedValue = 1;
-            else if (attribute == "pressure") {
-              if (pointerType == "mouse")
-                expectedValue = (event.buttons == 0)? 0.0 : 0.5;
-              else
-                expectedValue = penPressure;
-            }
-            else if (attribute == "tiltX")
-              expectedValue = (pointerType == "mouse")? 0 : penTiltX;
-            else if (attribute == "tiltY")
-              expectedValue = (pointerType == "mouse")? 0 : penTiltY;
-
+            var expectedValue = getExpectedNumericAttributeValueForPE(event, attribute);
             shouldBeEqualToNumber("lastPointerEvents[0]." + attribute, expectedValue);
           });
+
           shouldBeEqualToString("lastPointerEvents[0].view.name", "mainWindow");
 
         } else {
@@ -164,29 +179,30 @@ function runMouseTests(x, y) {
   debug("");
 }
 
-function runPenTests(x, y) {
-  debug("===== pen tests =====");
+function runPenTests(x, y, id, eraseMode) {
+  debug("===== pen tests " + (eraseMode? "(erase mode)" : "(draw mode)") + " =====");
   pointerType = "pen";
-  penId = 2;
+  inputPointerType = eraseMode? "eraser" : "pen";
+  penId = id;
   penPressure = 0.0;
   penTiltX = 0;
   penTiltY = 0;
 
   debug("--- move pen into target ---");
-  eventSender.mouseMoveTo(x + 5, y + 5, [], "pen", penId, penPressure, penTiltX, penTiltY);
+  eventSender.mouseMoveTo(x + 5, y + 5, [], inputPointerType, penId, penPressure, penTiltX, penTiltY);
   debug("");
 
   debug("--- move within target & tap ---");
   penTiltX = 45;
   penTiltY = -34;
-  eventSender.mouseMoveTo(x + 15, y + 15, [], "pen", penId, penPressure, penTiltX, penTiltY);
+  eventSender.mouseMoveTo(x + 15, y + 15, [], inputPointerType, penId, penPressure, penTiltX, penTiltY);
   penPressure = 0.75;
-  eventSender.mouseDown(0, [], "pen", penId, penPressure, penTiltX, penTiltY);
+  eventSender.mouseDown(0, [], inputPointerType, penId, penPressure, penTiltX, penTiltY);
   penPressure = 0.0;
-  eventSender.mouseUp(0, [], "pen", penId, penPressure, penTiltX, penTiltY);
+  eventSender.mouseUp(0, [], inputPointerType, penId, penPressure, penTiltX, penTiltY);
 
   debug("--- move pen out of target ---");
-  eventSender.mouseMoveTo(x - 5, y - 5, [], "pen", penId, penPressure, penTiltX, penTiltY);
+  eventSender.mouseMoveTo(x - 5, y - 5, [], inputPointerType, penId, penPressure, penTiltX, penTiltY);
 
   debug("");
 }
@@ -195,7 +211,8 @@ function runAllTests() {
   var rect = document.getElementById("target").getBoundingClientRect();
 
   runMouseTests(rect.left, rect.top);
-  runPenTests(rect.left, rect.top);
+  runPenTests(rect.left, rect.top, 2, false);
+  runPenTests(rect.left, rect.top, 3, true);
 }
 
 init();

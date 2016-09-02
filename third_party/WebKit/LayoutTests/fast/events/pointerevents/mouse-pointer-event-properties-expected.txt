@@ -697,7 +697,7 @@ PASS lastPointerEvents[0].width is 1
 PASS lastPointerEvents[0].height is 1
 PASS lastPointerEvents[0].view.name is "mainWindow"
 
-===== pen tests =====
+===== pen tests (draw mode) =====
 --- move pen into target ---
 Received pointerover
 Received pointerenter
@@ -926,6 +926,260 @@ PASS lastPointerEvents[0].type is "pointerleave"
 PASS lastPointerEvents[0].bubbles is false
 PASS lastPointerEvents[0].cancelable is false
 PASS lastPointerEvents[0].pointerId is 2
+PASS lastPointerEvents[0].pointerType is "pen"
+PASS lastPointerEvents[0].isPrimary is true
+PASS lastPointerEvents[0].clientX is 13
+PASS lastPointerEvents[0].clientY is 21
+PASS lastPointerEvents[0].layerX is 13
+PASS lastPointerEvents[0].layerY is 21
+PASS lastPointerEvents[0].movementX is 0
+PASS lastPointerEvents[0].movementY is 0
+PASS lastPointerEvents[0].offsetX is -5
+PASS lastPointerEvents[0].offsetY is -5
+PASS lastPointerEvents[0].pageX is 13
+PASS lastPointerEvents[0].pageY is 21
+PASS lastPointerEvents[0].screenX is 13
+PASS lastPointerEvents[0].screenY is 21
+PASS lastPointerEvents[0].x is 13
+PASS lastPointerEvents[0].y is 21
+PASS lastPointerEvents[0].button is -1
+PASS lastPointerEvents[0].buttons is 0
+PASS lastPointerEvents[0].pressure is 0
+PASS lastPointerEvents[0].tiltX is 45
+PASS lastPointerEvents[0].tiltY is -34
+PASS lastPointerEvents[0].width is 1
+PASS lastPointerEvents[0].height is 1
+PASS lastPointerEvents[0].view.name is "mainWindow"
+
+===== pen tests (erase mode) =====
+--- move pen into target ---
+Received pointerover
+Received pointerenter
+Received mouseover
+PASS lastPointerEvents.length is 2
+PASS lastPointerEvents[0].type is "pointerover"
+PASS lastPointerEvents[0].bubbles is true
+PASS lastPointerEvents[0].cancelable is true
+PASS lastPointerEvents[0].pointerId is 3
+PASS lastPointerEvents[0].pointerType is "pen"
+PASS lastPointerEvents[0].isPrimary is true
+PASS lastPointerEvents[0].clientX is 23
+PASS lastPointerEvents[0].clientY is 31
+PASS lastPointerEvents[0].layerX is 23
+PASS lastPointerEvents[0].layerY is 31
+PASS lastPointerEvents[0].movementX is 0
+PASS lastPointerEvents[0].movementY is 0
+PASS lastPointerEvents[0].offsetX is 5
+PASS lastPointerEvents[0].offsetY is 5
+PASS lastPointerEvents[0].pageX is 23
+PASS lastPointerEvents[0].pageY is 31
+PASS lastPointerEvents[0].screenX is 23
+PASS lastPointerEvents[0].screenY is 31
+PASS lastPointerEvents[0].x is 23
+PASS lastPointerEvents[0].y is 31
+PASS lastPointerEvents[0].button is -1
+PASS lastPointerEvents[0].buttons is 0
+PASS lastPointerEvents[0].pressure is 0
+PASS lastPointerEvents[0].tiltX is 0
+PASS lastPointerEvents[0].tiltY is 0
+PASS lastPointerEvents[0].width is 1
+PASS lastPointerEvents[0].height is 1
+PASS lastPointerEvents[0].view.name is "mainWindow"
+Received mouseenter
+PASS lastPointerEvents.length is 1
+PASS lastPointerEvents[0].type is "pointerenter"
+PASS lastPointerEvents[0].bubbles is false
+PASS lastPointerEvents[0].cancelable is false
+PASS lastPointerEvents[0].pointerId is 3
+PASS lastPointerEvents[0].pointerType is "pen"
+PASS lastPointerEvents[0].isPrimary is true
+PASS lastPointerEvents[0].clientX is 23
+PASS lastPointerEvents[0].clientY is 31
+PASS lastPointerEvents[0].layerX is 23
+PASS lastPointerEvents[0].layerY is 31
+PASS lastPointerEvents[0].movementX is 0
+PASS lastPointerEvents[0].movementY is 0
+PASS lastPointerEvents[0].offsetX is 5
+PASS lastPointerEvents[0].offsetY is 5
+PASS lastPointerEvents[0].pageX is 23
+PASS lastPointerEvents[0].pageY is 31
+PASS lastPointerEvents[0].screenX is 23
+PASS lastPointerEvents[0].screenY is 31
+PASS lastPointerEvents[0].x is 23
+PASS lastPointerEvents[0].y is 31
+PASS lastPointerEvents[0].button is -1
+PASS lastPointerEvents[0].buttons is 0
+PASS lastPointerEvents[0].pressure is 0
+PASS lastPointerEvents[0].tiltX is 0
+PASS lastPointerEvents[0].tiltY is 0
+PASS lastPointerEvents[0].width is 1
+PASS lastPointerEvents[0].height is 1
+PASS lastPointerEvents[0].view.name is "mainWindow"
+Received pointermove
+Received mousemove
+PASS lastPointerEvents.length is 1
+PASS lastPointerEvents[0].type is "pointermove"
+PASS lastPointerEvents[0].bubbles is true
+PASS lastPointerEvents[0].cancelable is true
+PASS lastPointerEvents[0].pointerId is 3
+PASS lastPointerEvents[0].pointerType is "pen"
+PASS lastPointerEvents[0].isPrimary is true
+PASS lastPointerEvents[0].clientX is 23
+PASS lastPointerEvents[0].clientY is 31
+PASS lastPointerEvents[0].layerX is 23
+PASS lastPointerEvents[0].layerY is 31
+PASS lastPointerEvents[0].movementX is 0
+PASS lastPointerEvents[0].movementY is 0
+PASS lastPointerEvents[0].offsetX is 5
+PASS lastPointerEvents[0].offsetY is 5
+PASS lastPointerEvents[0].pageX is 23
+PASS lastPointerEvents[0].pageY is 31
+PASS lastPointerEvents[0].screenX is 23
+PASS lastPointerEvents[0].screenY is 31
+PASS lastPointerEvents[0].x is 23
+PASS lastPointerEvents[0].y is 31
+PASS lastPointerEvents[0].button is -1
+PASS lastPointerEvents[0].buttons is 0
+PASS lastPointerEvents[0].pressure is 0
+PASS lastPointerEvents[0].tiltX is 0
+PASS lastPointerEvents[0].tiltY is 0
+PASS lastPointerEvents[0].width is 1
+PASS lastPointerEvents[0].height is 1
+PASS lastPointerEvents[0].view.name is "mainWindow"
+
+--- move within target & tap ---
+Received pointermove
+Received mousemove
+PASS lastPointerEvents.length is 1
+PASS lastPointerEvents[0].type is "pointermove"
+PASS lastPointerEvents[0].bubbles is true
+PASS lastPointerEvents[0].cancelable is true
+PASS lastPointerEvents[0].pointerId is 3
+PASS lastPointerEvents[0].pointerType is "pen"
+PASS lastPointerEvents[0].isPrimary is true
+PASS lastPointerEvents[0].clientX is 33
+PASS lastPointerEvents[0].clientY is 41
+PASS lastPointerEvents[0].layerX is 33
+PASS lastPointerEvents[0].layerY is 41
+PASS lastPointerEvents[0].movementX is 0
+PASS lastPointerEvents[0].movementY is 0
+PASS lastPointerEvents[0].offsetX is 15
+PASS lastPointerEvents[0].offsetY is 15
+PASS lastPointerEvents[0].pageX is 33
+PASS lastPointerEvents[0].pageY is 41
+PASS lastPointerEvents[0].screenX is 33
+PASS lastPointerEvents[0].screenY is 41
+PASS lastPointerEvents[0].x is 33
+PASS lastPointerEvents[0].y is 41
+PASS lastPointerEvents[0].button is -1
+PASS lastPointerEvents[0].buttons is 0
+PASS lastPointerEvents[0].pressure is 0
+PASS lastPointerEvents[0].tiltX is 45
+PASS lastPointerEvents[0].tiltY is -34
+PASS lastPointerEvents[0].width is 1
+PASS lastPointerEvents[0].height is 1
+PASS lastPointerEvents[0].view.name is "mainWindow"
+Received pointerdown
+Received mousedown
+PASS lastPointerEvents.length is 1
+PASS lastPointerEvents[0].type is "pointerdown"
+PASS lastPointerEvents[0].bubbles is true
+PASS lastPointerEvents[0].cancelable is true
+PASS lastPointerEvents[0].pointerId is 3
+PASS lastPointerEvents[0].pointerType is "pen"
+PASS lastPointerEvents[0].isPrimary is true
+PASS lastPointerEvents[0].clientX is 33
+PASS lastPointerEvents[0].clientY is 41
+PASS lastPointerEvents[0].layerX is 33
+PASS lastPointerEvents[0].layerY is 41
+PASS lastPointerEvents[0].movementX is 0
+PASS lastPointerEvents[0].movementY is 0
+PASS lastPointerEvents[0].offsetX is 15
+PASS lastPointerEvents[0].offsetY is 15
+PASS lastPointerEvents[0].pageX is 33
+PASS lastPointerEvents[0].pageY is 41
+PASS lastPointerEvents[0].screenX is 33
+PASS lastPointerEvents[0].screenY is 41
+PASS lastPointerEvents[0].x is 33
+PASS lastPointerEvents[0].y is 41
+PASS lastPointerEvents[0].button is 5
+PASS lastPointerEvents[0].buttons is 32
+PASS lastPointerEvents[0].pressure is 0.75
+PASS lastPointerEvents[0].tiltX is 45
+PASS lastPointerEvents[0].tiltY is -34
+PASS lastPointerEvents[0].width is 1
+PASS lastPointerEvents[0].height is 1
+PASS lastPointerEvents[0].view.name is "mainWindow"
+Received pointerup
+Received mouseup
+PASS lastPointerEvents.length is 1
+PASS lastPointerEvents[0].type is "pointerup"
+PASS lastPointerEvents[0].bubbles is true
+PASS lastPointerEvents[0].cancelable is true
+PASS lastPointerEvents[0].pointerId is 3
+PASS lastPointerEvents[0].pointerType is "pen"
+PASS lastPointerEvents[0].isPrimary is true
+PASS lastPointerEvents[0].clientX is 33
+PASS lastPointerEvents[0].clientY is 41
+PASS lastPointerEvents[0].layerX is 33
+PASS lastPointerEvents[0].layerY is 41
+PASS lastPointerEvents[0].movementX is 0
+PASS lastPointerEvents[0].movementY is 0
+PASS lastPointerEvents[0].offsetX is 15
+PASS lastPointerEvents[0].offsetY is 15
+PASS lastPointerEvents[0].pageX is 33
+PASS lastPointerEvents[0].pageY is 41
+PASS lastPointerEvents[0].screenX is 33
+PASS lastPointerEvents[0].screenY is 41
+PASS lastPointerEvents[0].x is 33
+PASS lastPointerEvents[0].y is 41
+PASS lastPointerEvents[0].button is 5
+PASS lastPointerEvents[0].buttons is 0
+PASS lastPointerEvents[0].pressure is 0
+PASS lastPointerEvents[0].tiltX is 45
+PASS lastPointerEvents[0].tiltY is -34
+PASS lastPointerEvents[0].width is 1
+PASS lastPointerEvents[0].height is 1
+PASS lastPointerEvents[0].view.name is "mainWindow"
+--- move pen out of target ---
+Received pointerout
+Received pointerleave
+Received mouseout
+PASS lastPointerEvents.length is 2
+PASS lastPointerEvents[0].type is "pointerout"
+PASS lastPointerEvents[0].bubbles is true
+PASS lastPointerEvents[0].cancelable is true
+PASS lastPointerEvents[0].pointerId is 3
+PASS lastPointerEvents[0].pointerType is "pen"
+PASS lastPointerEvents[0].isPrimary is true
+PASS lastPointerEvents[0].clientX is 13
+PASS lastPointerEvents[0].clientY is 21
+PASS lastPointerEvents[0].layerX is 13
+PASS lastPointerEvents[0].layerY is 21
+PASS lastPointerEvents[0].movementX is 0
+PASS lastPointerEvents[0].movementY is 0
+PASS lastPointerEvents[0].offsetX is -5
+PASS lastPointerEvents[0].offsetY is -5
+PASS lastPointerEvents[0].pageX is 13
+PASS lastPointerEvents[0].pageY is 21
+PASS lastPointerEvents[0].screenX is 13
+PASS lastPointerEvents[0].screenY is 21
+PASS lastPointerEvents[0].x is 13
+PASS lastPointerEvents[0].y is 21
+PASS lastPointerEvents[0].button is -1
+PASS lastPointerEvents[0].buttons is 0
+PASS lastPointerEvents[0].pressure is 0
+PASS lastPointerEvents[0].tiltX is 45
+PASS lastPointerEvents[0].tiltY is -34
+PASS lastPointerEvents[0].width is 1
+PASS lastPointerEvents[0].height is 1
+PASS lastPointerEvents[0].view.name is "mainWindow"
+Received mouseleave
+PASS lastPointerEvents.length is 1
+PASS lastPointerEvents[0].type is "pointerleave"
+PASS lastPointerEvents[0].bubbles is false
+PASS lastPointerEvents[0].cancelable is false
+PASS lastPointerEvents[0].pointerId is 3
 PASS lastPointerEvents[0].pointerType is "pen"
 PASS lastPointerEvents[0].isPrimary is true
 PASS lastPointerEvents[0].clientX is 13

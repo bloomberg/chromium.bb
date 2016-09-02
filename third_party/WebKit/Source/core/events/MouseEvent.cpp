@@ -150,11 +150,11 @@ unsigned short MouseEvent::platformModifiersToButtons(unsigned modifiers)
     unsigned short buttons = 0;
 
     if (modifiers & PlatformEvent::LeftButtonDown)
-        buttons |= static_cast<unsigned short>(Buttons::Left);
+        buttons |= static_cast<unsigned short>(WebPointerProperties::Buttons::Left);
     if (modifiers & PlatformEvent::RightButtonDown)
-        buttons |= static_cast<unsigned short>(Buttons::Right);
+        buttons |= static_cast<unsigned short>(WebPointerProperties::Buttons::Right);
     if (modifiers & PlatformEvent::MiddleButtonDown)
-        buttons |= static_cast<unsigned short>(Buttons::Middle);
+        buttons |= static_cast<unsigned short>(WebPointerProperties::Buttons::Middle);
 
     return buttons;
 }

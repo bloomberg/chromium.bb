@@ -31,7 +31,20 @@ public:
         NoButton = -1,
         Left,
         Middle,
-        Right
+        Right,
+        X1,
+        X2,
+        Eraser
+    };
+
+    enum class Buttons : unsigned {
+        NoButton = 0,
+        Left = 1 << 0,
+        Right = 1 << 1,
+        Middle = 1 << 2,
+        X1 = 1 << 3,
+        X2 = 1 << 4,
+        Eraser = 1 << 5
     };
 
     enum class PointerType {

@@ -92,13 +92,6 @@ public:
 
     EventDispatchMediator* createMediator() override;
 
-    enum class Buttons : unsigned {
-        None = 0,
-        Left = 1 << 0,
-        Right = 1 << 1,
-        Middle = 1 << 2
-    };
-
     DECLARE_VIRTUAL_TRACE();
 
 protected:

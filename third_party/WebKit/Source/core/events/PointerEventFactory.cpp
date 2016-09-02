@@ -22,8 +22,7 @@ const char* pointerTypeNameForWebPointPointerType(WebPointerProperties::PointerT
         return "touch";
     case WebPointerProperties::PointerType::Pen:
     case WebPointerProperties::PointerType::Eraser:
-        // TODO(mustaq): Continue eraser plumbing to web API.
-        // See crbug.com/642455
+        // TODO(mustaq): Fix when the spec starts supporting hovering erasers.
         return "pen";
     case WebPointerProperties::PointerType::Mouse:
         return "mouse";
@@ -57,16 +56,22 @@ const AtomicString& pointerEventNameForMouseEventName(
 
 unsigned short buttonToButtonsBitfield(WebPointerProperties::Button button)
 {
+#define CASE_BUTTON_TO_BUTTONS(enumLabel) \
+    case WebPointerProperties::Button::enumLabel:\
+        return static_cast<unsigned short>(WebPointerProperties::Buttons::enumLabel)
+
     switch (button) {
-    case WebPointerProperties::Button::NoButton:
-        return static_cast<unsigned short>(MouseEvent::Buttons::None);
-    case WebPointerProperties::Button::Left:
-        return static_cast<unsigned short>(MouseEvent::Buttons::Left);
-    case WebPointerProperties::Button::Right:
-        return static_cast<unsigned short>(MouseEvent::Buttons::Right);
-    case WebPointerProperties::Button::Middle:
-        return static_cast<unsigned short>(MouseEvent::Buttons::Middle);
+        CASE_BUTTON_TO_BUTTONS(NoButton);
+        CASE_BUTTON_TO_BUTTONS(Left);
+        CASE_BUTTON_TO_BUTTONS(Right);
+        CASE_BUTTON_TO_BUTTONS(Middle);
+        CASE_BUTTON_TO_BUTTONS(X1);
+        CASE_BUTTON_TO_BUTTONS(X2);
+        CASE_BUTTON_TO_BUTTONS(Eraser);
     }
+
+#undef CASE_BUTTON_TO_BUTTONS
+
     NOTREACHED();
     return 0;
 }
@@ -92,7 +97,15 @@ void PointerEventFactory::setIdTypeButtons(PointerEventInit& pointerEventInit,
     const IncomingId incomingId(pointerType, pointerProperties.id);
     int pointerId = addIdAndActiveButtons(incomingId, buttons != 0);
 
+    // Tweak the |buttons| to reflect pen eraser mode only if the pen is in
+    // active buttons state w/o even considering the eraser button.
+    // TODO(mustaq): Fix when the spec starts supporting hovering erasers.
+    if (pointerType == WebPointerProperties::PointerType::Eraser && buttons != 0) {
+        buttons |= static_cast<unsigned>(WebPointerProperties::Buttons::Eraser);
+        buttons &= ~static_cast<unsigned>(WebPointerProperties::Buttons::Left);
+    }
     pointerEventInit.setButtons(buttons);
+
     pointerEventInit.setPointerId(pointerId);
     pointerEventInit.setPointerType(pointerTypeNameForWebPointPointerType(pointerType));
     pointerEventInit.setIsPrimary(isPrimary(pointerId));
@@ -145,7 +158,12 @@ PointerEvent* PointerEventFactory::create(
 
     if (pointerEventName == EventTypeNames::pointerdown
         || pointerEventName == EventTypeNames::pointerup) {
-        pointerEventInit.setButton(static_cast<int>(mouseEvent.pointerProperties().button));
+        WebPointerProperties::Button button = mouseEvent.pointerProperties().button;
+        // TODO(mustaq): Fix when the spec starts supporting hovering erasers.
+        if (mouseEvent.pointerProperties().pointerType == WebPointerProperties::PointerType::Eraser
+            && button == WebPointerProperties::Button::Left)
+            button =  WebPointerProperties::Button::Eraser;
+        pointerEventInit.setButton(static_cast<int>(button));
     } else {
         DCHECK(pointerEventName == EventTypeNames::pointermove);
         pointerEventInit.setButton(static_cast<int>(WebPointerProperties::Button::NoButton));

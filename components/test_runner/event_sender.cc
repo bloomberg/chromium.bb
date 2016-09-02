@@ -63,10 +63,11 @@ namespace test_runner {
 namespace {
 
 const int kRawMousePointerId = -1;
-const char* kPointerTypeStringUnknown = "";
-const char* kPointerTypeStringMouse = "mouse";
-const char* kPointerTypeStringPen = "pen";
-const char* kPointerTypeStringTouch = "touch";
+const char* const kPointerTypeStringUnknown = "";
+const char* const kPointerTypeStringMouse = "mouse";
+const char* const kPointerTypeStringTouch = "touch";
+const char* const kPointerTypeStringPen = "pen";
+const char* const kPointerTypeStringEraser = "eraser";
 
 // Assigns |pointerType| from the provided |args|. Returns false if there was
 // any error.
@@ -90,10 +91,12 @@ bool getPointerType(gin::Arguments* args,
     pointerType = WebMouseEvent::PointerType::Unknown;
   } else if (pointer_type_string == kPointerTypeStringMouse) {
     pointerType = WebMouseEvent::PointerType::Mouse;
-  } else if (pointer_type_string == kPointerTypeStringPen) {
-    pointerType = WebMouseEvent::PointerType::Pen;
   } else if (pointer_type_string == kPointerTypeStringTouch) {
     pointerType = WebMouseEvent::PointerType::Touch;
+  } else if (pointer_type_string == kPointerTypeStringPen) {
+    pointerType = WebMouseEvent::PointerType::Pen;
+  } else if (pointer_type_string == kPointerTypeStringEraser) {
+    pointerType = WebMouseEvent::PointerType::Eraser;
   } else {
     args->ThrowError();
     return false;
@@ -175,6 +178,10 @@ int GetWebMouseEventModifierForButton(WebMouseEvent::Button button) {
       return WebMouseEvent::MiddleButtonDown;
     case WebMouseEvent::Button::Right:
       return WebMouseEvent::RightButtonDown;
+    case WebPointerProperties::Button::X1:
+    case WebPointerProperties::Button::X2:
+    case WebPointerProperties::Button::Eraser:
+      return 0; // Not implemented yet
   }
   NOTREACHED();
   return 0;
