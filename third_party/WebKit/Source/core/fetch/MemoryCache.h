@@ -56,9 +56,6 @@ class ExecutionContext;
 // -------|-----+++++++++++++++|
 // -------|-----+++++++++++++++|+++++
 
-// Enable this macro to periodically log information about the memory cache.
-#undef MEMORY_CACHE_STATS
-
 enum UpdateReason {
     UpdateForAccess,
     UpdateForPropertyChange
@@ -232,11 +229,6 @@ private:
 
     MemoryCacheLRUList* lruListFor(unsigned accessCount, size_t);
 
-#ifdef MEMORY_CACHE_STATS
-    void dumpStats(TimerBase*);
-    void dumpLRULists(bool includeLive) const;
-#endif
-
     // Calls to put the cached resource into and out of LRU lists.
     void insertInLRUList(MemoryCacheEntry*, MemoryCacheLRUList*);
     void removeFromLRUList(MemoryCacheEntry*, MemoryCacheLRUList*);
@@ -295,9 +287,6 @@ private:
     ResourceMapIndex m_resourceMaps;
 
     friend class MemoryCacheTest;
-#ifdef MEMORY_CACHE_STATS
-    Timer<MemoryCache> m_statsTimer;
-#endif
 };
 
 // Returns the global cache.

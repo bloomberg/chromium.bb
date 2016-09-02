@@ -99,17 +99,10 @@ inline MemoryCache::MemoryCache()
     , m_delayBeforeLiveDecodedPrune(cMinDelayBeforeLiveDecodedPrune)
     , m_liveSize(0)
     , m_deadSize(0)
-#ifdef MEMORY_CACHE_STATS
-    , m_statsTimer(this, &MemoryCache::dumpStats)
-#endif
 {
     MemoryCacheDumpProvider::instance()->setMemoryCache(this);
     if (ProcessHeap::isLowEndDevice())
         MemoryCoordinator::instance().registerClient(this);
-#ifdef MEMORY_CACHE_STATS
-    const double statsIntervalInSeconds = 15;
-    m_statsTimer.startRepeating(statsIntervalInSeconds, BLINK_FROM_HERE);
-#endif
 }
 
 MemoryCache* MemoryCache::create()
@@ -745,49 +738,5 @@ bool MemoryCache::isInSameLRUListForTest(const Resource* x, const Resource* y)
     ASSERT(ey);
     return lruListFor(ex->m_accessCount, x->size()) == lruListFor(ey->m_accessCount, y->size());
 }
-
-#ifdef MEMORY_CACHE_STATS
-
-void MemoryCache::dumpStats(TimerBase*)
-{
-    Statistics s = getStatistics();
-    printf("%-13s %-13s %-13s %-13s %-13s\n", "", "Count", "Size", "LiveSize", "DecodedSize");
-    printf("%-13s %-13s %-13s %-13s %-13s\n", "-------------", "-------------", "-------------", "-------------", "-------------");
-    printf("%-13s %13zu %13zu %13zu %13zu\n", "Images", s.images.count, s.images.size, s.images.liveSize, s.images.decodedSize);
-    printf("%-13s %13zu %13zu %13zu %13zu\n", "CSS", s.cssStyleSheets.count, s.cssStyleSheets.size, s.cssStyleSheets.liveSize, s.cssStyleSheets.decodedSize);
-    printf("%-13s %13zu %13zu %13zu %13zu\n", "XSL", s.xslStyleSheets.count, s.xslStyleSheets.size, s.xslStyleSheets.liveSize, s.xslStyleSheets.decodedSize);
-    printf("%-13s %13zu %13zu %13zu %13zu\n", "JavaScript", s.scripts.count, s.scripts.size, s.scripts.liveSize, s.scripts.decodedSize);
-    printf("%-13s %13zu %13zu %13zu %13zu\n", "Fonts", s.fonts.count, s.fonts.size, s.fonts.liveSize, s.fonts.decodedSize);
-    printf("%-13s %13zu %13zu %13zu %13zu\n", "Other", s.other.count, s.other.size, s.other.liveSize, s.other.decodedSize);
-    printf("%-13s %-13s %-13s %-13s %-13s\n\n", "-------------", "-------------", "-------------", "-------------", "-------------");
-
-    printf("Duplication of encoded data from data URLs\n");
-    printf("%-13s %13zu of %13zu\n", "Images",     s.images.encodedSizeDuplicatedInDataURLs,         s.images.encodedSize);
-    printf("%-13s %13zu of %13zu\n", "CSS",        s.cssStyleSheets.encodedSizeDuplicatedInDataURLs, s.cssStyleSheets.encodedSize);
-    printf("%-13s %13zu of %13zu\n", "XSL",        s.xslStyleSheets.encodedSizeDuplicatedInDataURLs, s.xslStyleSheets.encodedSize);
-    printf("%-13s %13zu of %13zu\n", "JavaScript", s.scripts.encodedSizeDuplicatedInDataURLs,        s.scripts.encodedSize);
-    printf("%-13s %13zu of %13zu\n", "Fonts",      s.fonts.encodedSizeDuplicatedInDataURLs,          s.fonts.encodedSize);
-    printf("%-13s %13zu of %13zu\n", "Other",      s.other.encodedSizeDuplicatedInDataURLs,          s.other.encodedSize);
-}
-
-void MemoryCache::dumpLRULists(bool includeLive) const
-{
-    printf("LRU-SP lists in eviction order (Kilobytes decoded, Kilobytes encoded, Access count, Referenced, isPurgeable):\n");
-
-    int size = m_allResources.size();
-    for (int i = size - 1; i >= 0; i--) {
-        printf("\n\nList %d: ", i);
-        MemoryCacheEntry* current = m_allResources[i].m_tail;
-        while (current) {
-            Resource* currentResource = current->resource();
-            if (includeLive || !currentResource->isAlive())
-                printf("(%.1fK, %.1fK, %uA, %dR); ", currentResource->decodedSize() / 1024.0f, (currentResource->encodedSize() + currentResource->overheadSize()) / 1024.0f, current->m_accessCount, currentResource->isAlive());
-
-            current = current->m_previousInAllResourcesList;
-        }
-    }
-}
-
-#endif // MEMORY_CACHE_STATS
 
 } // namespace blink
