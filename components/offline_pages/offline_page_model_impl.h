@@ -278,7 +278,7 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
 
   bool is_loaded_;
 
-  // In memory copy of the offline page metadata, keyed by bookmark IDs.
+  // In memory copy of the offline page metadata, keyed by offline IDs.
   std::map<int64_t, OfflinePageItem> offline_pages_;
 
   // Pending archivers owned by this model.

@@ -41,7 +41,6 @@ static_library("offline_pages") {
   deps = [
     ":switches",
     "//base",
-    "//components/bookmarks/browser",
     "//components/keyed_service/core",
     "//net",
     "//sql:sql",
