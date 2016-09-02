@@ -186,7 +186,7 @@ v8::Local<v8::FunctionTemplate> V8TestIntegerIndexedGlobal::domTemplateForNamedP
 {
     v8::Local<v8::FunctionTemplate> parentTemplate = V8None::domTemplate(isolate, world);
 
-    v8::Local<v8::FunctionTemplate> namedPropertiesObjectFunctionTemplate = v8::FunctionTemplate::New(isolate);
+    v8::Local<v8::FunctionTemplate> namedPropertiesObjectFunctionTemplate = v8::FunctionTemplate::New(isolate, V8ObjectConstructor::isValidConstructorMode);
     namedPropertiesObjectFunctionTemplate->SetClassName(v8AtomicString(isolate, "TestIntegerIndexedGlobalProperties"));
     namedPropertiesObjectFunctionTemplate->Inherit(parentTemplate);
 
