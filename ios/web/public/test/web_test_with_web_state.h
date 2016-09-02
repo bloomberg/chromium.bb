@@ -30,15 +30,12 @@ class WebTestWithWebState : public WebTest,
   void WillProcessTask(const base::PendingTask& pending_task) override;
   void DidProcessTask(const base::PendingTask& pending_task) override;
 
-  // Loads the specified HTML content into the WebController via public APIs.
+  // Loads the specified HTML content with URL into the WebState.
+  void LoadHtml(NSString* html, const GURL& url);
+  // Loads the specified HTML content into the WebState, using test url name.
   void LoadHtml(NSString* html);
-  // Loads the specified HTML content into the WebController via public APIs.
+  // Loads the specified HTML content into the WebState, using test url name.
   void LoadHtml(const std::string& html);
-  // Loads |url| into the WebController via public APIs.
-  // Note if anyone uses this to load web pages from the live internet, the
-  // tests can be flaky / dependent on content and behavior beyond our control.
-  // Use this only when it's impossible to test with static HTML using LoadHtml.
-  void LoadURL(const GURL& url);
   // Blocks until both known NSRunLoop-based and known message-loop-based
   // background tasks have completed
   void WaitForBackgroundTasks();

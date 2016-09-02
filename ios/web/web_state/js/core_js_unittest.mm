@@ -240,7 +240,7 @@ TEST_F(CoreJsTest, LinkOfImage) {
   LoadHtml(base::StringPrintf(image, "http://destination"));
   id result = ExecuteJavaScript(@"__gCrWeb['getElementFromPoint'](200, 200)");
   NSDictionary* expected_result = @{
-    @"src" : @"foo",
+    @"src" : [NSString stringWithFormat:@"%sfoo", BaseUrl().c_str()],
     @"referrerPolicy" : @"default",
     @"href" : @"http://destination/",
   };
@@ -250,7 +250,7 @@ TEST_F(CoreJsTest, LinkOfImage) {
   LoadHtml(base::StringPrintf(image, "javascript:console.log('whatever')"));
   result = ExecuteJavaScript(@"__gCrWeb['getElementFromPoint'](200, 200)");
   expected_result = @{
-    @"src" : @"foo",
+    @"src" : [NSString stringWithFormat:@"%sfoo", BaseUrl().c_str()],
     @"referrerPolicy" : @"default",
     @"href" : @"javascript:console.log(",
   };
@@ -268,7 +268,7 @@ TEST_F(CoreJsTest, LinkOfImage) {
     LoadHtml(base::StringPrintf(image, javascript.c_str()));
     result = ExecuteJavaScript(@"__gCrWeb['getElementFromPoint'](200, 200)");
     expected_result = @{
-      @"src" : @"foo",
+      @"src" : [NSString stringWithFormat:@"%sfoo", BaseUrl().c_str()],
       @"referrerPolicy" : @"default",
     };
     // Make sure the returned JSON does not have an 'href' key.

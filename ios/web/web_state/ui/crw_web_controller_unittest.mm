@@ -196,7 +196,12 @@ typedef BOOL (^openExternalURLBlockType)(const GURL&);
 - (web::BlockedPopupInfo*)blockedPopupInfo {
   return _blockedPopupInfo.get();
 }
-
+- (BOOL)webController:(CRWWebController*)webController
+        shouldOpenURL:(const GURL&)URL
+      mainDocumentURL:(const GURL&)mainDocumentURL
+          linkClicked:(BOOL)linkClicked {
+  return YES;
+}
 @end
 
 @interface CountingObserver : NSObject<CRWWebControllerObserver>
