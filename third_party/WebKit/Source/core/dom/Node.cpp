@@ -466,27 +466,31 @@ static Node* nodeOrStringToNode(const NodeOrString& nodeOrString, Document& docu
     return Text::create(document, nodeOrString.getAsString());
 }
 
-static Node* convertNodesIntoNode(const HeapVector<NodeOrString>& nodes, Document& document)
+// Returns nullptr if an exception was thrown.
+static Node* convertNodesIntoNode(const HeapVector<NodeOrString>& nodes, Document& document, ExceptionState& exceptionState)
 {
     if (nodes.size() == 1)
         return nodeOrStringToNode(nodes[0], document);
 
     Node* fragment = DocumentFragment::create(document);
-    for (const NodeOrString& nodeOrString : nodes)
-        fragment->appendChild(nodeOrStringToNode(nodeOrString, document), ASSERT_NO_EXCEPTION);
+    for (const NodeOrString& nodeOrString : nodes) {
+        fragment->appendChild(nodeOrStringToNode(nodeOrString, document), exceptionState);
+        if (exceptionState.hadException())
+            return nullptr;
+    }
     return fragment;
 }
 
 void Node::prepend(const HeapVector<NodeOrString>& nodes, ExceptionState& exceptionState)
 {
-    Node* node = convertNodesIntoNode(nodes, document());
-    insertBefore(node, firstChild(), exceptionState);
+    if (Node* node = convertNodesIntoNode(nodes, document(), exceptionState))
+        insertBefore(node, firstChild(), exceptionState);
 }
 
 void Node::append(const HeapVector<NodeOrString>& nodes, ExceptionState& exceptionState)
 {
-    Node* node = convertNodesIntoNode(nodes, document());
-    appendChild(node, exceptionState);
+    if (Node* node = convertNodesIntoNode(nodes, document(), exceptionState))
+        appendChild(node, exceptionState);
 }
 
 void Node::before(const HeapVector<NodeOrString>& nodes, ExceptionState& exceptionState)
@@ -495,8 +499,8 @@ void Node::before(const HeapVector<NodeOrString>& nodes, ExceptionState& excepti
     if (!parent)
         return;
     Node* viablePreviousSibling = findViablePreviousSibling(*this, nodes);
-    Node* node = convertNodesIntoNode(nodes, document());
-    parent->insertBefore(node, viablePreviousSibling ? viablePreviousSibling->nextSibling() : parent->firstChild(), exceptionState);
+    if (Node* node = convertNodesIntoNode(nodes, document(), exceptionState))
+        parent->insertBefore(node, viablePreviousSibling ? viablePreviousSibling->nextSibling() : parent->firstChild(), exceptionState);
 }
 
 void Node::after(const HeapVector<NodeOrString>& nodes, ExceptionState& exceptionState)
@@ -505,8 +509,8 @@ void Node::after(const HeapVector<NodeOrString>& nodes, ExceptionState& exceptio
     if (!parent)
         return;
     Node* viableNextSibling = findViableNextSibling(*this, nodes);
-    Node* node = convertNodesIntoNode(nodes, document());
-    parent->insertBefore(node, viableNextSibling, exceptionState);
+    if (Node* node = convertNodesIntoNode(nodes, document(), exceptionState))
+        parent->insertBefore(node, viableNextSibling, exceptionState);
 }
 
 void Node::replaceWith(const HeapVector<NodeOrString>& nodes, ExceptionState& exceptionState)
@@ -515,7 +519,9 @@ void Node::replaceWith(const HeapVector<NodeOrString>& nodes, ExceptionState& ex
     if (!parent)
         return;
     Node* viableNextSibling = findViableNextSibling(*this, nodes);
-    Node* node = convertNodesIntoNode(nodes, document());
+    Node* node = convertNodesIntoNode(nodes, document(), exceptionState);
+    if (exceptionState.hadException())
+        return;
     if (parent == parentNode())
         parent->replaceChild(node, this, exceptionState);
     else

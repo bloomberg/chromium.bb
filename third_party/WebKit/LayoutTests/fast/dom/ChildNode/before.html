@@ -139,6 +139,14 @@ function test_before(nodeName) {
         x.before(y);
         assert_equals(x.previousSibling, null);
     }, nodeName + '.before() on a child without any parent.');
+
+    test(function() {
+        var parent = document.createElement('div');
+        parent.appendChild(child);
+        var doc2 = document.implementation.createDocument("http://www.w3.org/1999/xhtml", "html");
+        assert_throws('HierarchyRequestError', () => { child.before(doc2, "foo") });
+        assert_equals(parent.firstChild, child);
+    }, nodeName + '.before() with a Document as an argument should throw.');
 }
 
 test_before('Comment');

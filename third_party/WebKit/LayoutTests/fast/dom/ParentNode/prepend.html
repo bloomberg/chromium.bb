@@ -79,6 +79,13 @@ function test_prepend(node, nodeName) {
         assert_equals(parent.childNodes[1].textContent, 'text');
         assert_equals(parent.childNodes[2], child);
     }, nodeName + '.prepend() with one element and text as argument, on a parent having a child.');
+
+    test(function() {
+        var parent = node.cloneNode();
+        var doc2 = document.implementation.createDocument("http://www.w3.org/1999/xhtml", "html");
+        assert_throws('HierarchyRequestError', () => { parent.prepend(doc2, "foo") });
+        assert_equals(parent.firstChild, null);
+    }, nodeName + '.prepend() with a Document as an argument should throw.');
 }
 
 test_prepend(document.createElement('div'), 'Element');

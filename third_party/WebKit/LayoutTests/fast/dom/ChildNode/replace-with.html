@@ -124,6 +124,14 @@ function test_replaceWith(nodeName) {
         child.replaceWith(x, y);
         assert_equals(parent.innerHTML, '<x></x><y></y>');
     }, nodeName + '.replaceWith() on a parenless child with two elements as arguments.');
+
+    test(function() {
+        var parent = document.createElement('div');
+        parent.appendChild(child);
+        var doc2 = document.implementation.createDocument("http://www.w3.org/1999/xhtml", "html");
+        assert_throws('HierarchyRequestError', () => { child.replaceWith(doc2, "foo") });
+        assert_equals(parent.firstChild, child);
+    }, nodeName + '.replaceWith() with a Document as an argument should throw.');
 }
 
 test_replaceWith('Comment');
