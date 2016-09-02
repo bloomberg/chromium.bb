@@ -803,7 +803,9 @@ TEST_F('BackgroundTest', 'EditText', function() {
 TEST_F('BackgroundTest', 'BackwardForwardSync', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
-    <div role="group" tabindex=0><input type="text"></input></div>
+    <div aria-label="Group" role="group" tabindex=0>
+      <input type="text"></input>
+    </div>
     <ul>
       <li tabindex=0>
         <button>ok</button>

@@ -186,7 +186,8 @@ Output.ROLE_INFO_ = {
     msgId: 'role_grid'
   },
   group: {
-    msgId: 'role_group'
+    msgId: 'role_group',
+    inherits: 'abstractContainer'
   },
   heading: {
     msgId: 'role_heading',
@@ -419,7 +420,8 @@ Output.RULES = {
       braille: ''
     },
     abstractContainer: {
-      enter: '$nameFromNode $role $description',
+      enter: '$nameFromNode $role $state $description',
+      speak: '$descendants $name $value $state $role $description',
       leave: '@exited_container($role)'
     },
     alert: {
@@ -439,6 +441,10 @@ Output.RULES = {
       speak: '$if($checked, $earcon(CHECK_ON), $earcon(CHECK_OFF)) ' +
              '$name $role $checked $description'
     },
+    date: {
+      enter: '$nameFromNode $role $description',
+      speak: '$name $value $state $role $description'
+    },
     dialog: {
       enter: '$nameFromNode $role $description'
     },
@@ -449,6 +455,11 @@ Output.RULES = {
     grid: {
       enter: '$nameFromNode $role $description'
     },
+    group: {
+      enter: '$nameFromNode $state $description',
+      speak: '$descendants $name $value $state $description',
+      leave: ''
+    },
     heading: {
       enter: '!relativePitch(hierarchicalLevel) ' +
           '$nameFromNode= @tag_h+$hierarchicalLevel',
@@ -457,6 +468,10 @@ Output.RULES = {
     },
     inlineTextBox: {
       speak: '$name='
+    },
+    inputTime: {
+      enter: '$nameFromNode $role $description',
+      speak: '$name $value $state $role $description'
     },
     link: {
       enter: '$nameFromNode= $if($visited, @visited_link, $role)',
