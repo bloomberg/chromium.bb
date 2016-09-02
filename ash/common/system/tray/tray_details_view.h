@@ -7,51 +7,27 @@
 
 #include "ash/ash_export.h"
 #include "ash/common/system/tray/special_popup_row.h"
-#include "ash/common/system/tray/view_click_listener.h"
 #include "base/macros.h"
-#include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
 namespace views {
 class ScrollView;
-}  // namespace views
+}
 
 namespace ash {
-namespace test {
-class TrayDetailsViewTest;
-}  // namespace test
-
 class FixedSizedScrollView;
 class ScrollBorder;
 class SystemTrayItem;
+class ViewClickListener;
 
-class ASH_EXPORT TrayDetailsView : public views::View,
-                                   public ViewClickListener,
-                                   public views::ButtonListener {
+class ASH_EXPORT TrayDetailsView : public views::View {
  public:
   explicit TrayDetailsView(SystemTrayItem* owner);
   ~TrayDetailsView() override;
 
-  // ViewClickListener:
-  void OnViewClicked(views::View* sender) override;
-
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
-  SystemTrayItem* owner() { return owner_; }
-  SpecialPopupRow* title_row() { return title_row_; }
-  FixedSizedScrollView* scroller() { return scroller_; }
-  views::View* scroll_content() { return scroll_content_; }
-
- protected:
-  // views::View:
-  void Layout() override;
-  void OnPaintBorder(gfx::Canvas* canvas) override;
-
-  // Creates the row containing the back button and title. For material design
-  // this appears at the top of the view, for non-material design it appears
-  // at the bottom.
-  void CreateTitleRow(int string_id);
+  // Creates a row with special highlighting etc. This is typically the
+  // bottom-most row in the popup.
+  void CreateSpecialRow(int string_id, ViewClickListener* listener);
 
   // Creates a scrollable list. The list has a border at the bottom if there is
   // any other view between the list and the footer row at the bottom.
@@ -63,26 +39,24 @@ class ASH_EXPORT TrayDetailsView : public views::View,
   // Removes (and destroys) all child views.
   void Reset();
 
- private:
-  friend class test::TrayDetailsViewTest;
-
-  // Overridden to handle clicks on subclass-specific views.
-  virtual void HandleViewClicked(views::View* view);
-
-  // Overridden to handle button presses on subclass-specific buttons.
-  virtual void HandleButtonPressed(views::Button* sender,
-                                   const ui::Event& event);
-
-  // Creates and adds subclass-specific buttons to the title row.
-  virtual void CreateExtraTitleRowButtons();
-
-  // Transition to default view from details view. If |title_row_| has focus
-  // before transition, the default view should focus on the owner of this
-  // details view.
+  // Transition to default view from details view. If |footer_| has focus before
+  // transition, the default view should focus on the owner of this details
+  // view.
   void TransitionToDefaultView();
 
+  SystemTrayItem* owner() const { return owner_; }
+  SpecialPopupRow* footer() const { return footer_; }
+  FixedSizedScrollView* scroller() const { return scroller_; }
+  views::View* scroll_content() const { return scroll_content_; }
+
+ protected:
+  // Overridden from views::View.
+  void Layout() override;
+  void OnPaintBorder(gfx::Canvas* canvas) override;
+
+ private:
   SystemTrayItem* owner_;
-  SpecialPopupRow* title_row_;
+  SpecialPopupRow* footer_;
   FixedSizedScrollView* scroller_;
   views::View* scroll_content_;
   ScrollBorder* scroll_border_;  // Weak reference

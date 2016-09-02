@@ -152,7 +152,7 @@ AccessibilityDetailedView::AccessibilityDetailedView(SystemTrayItem* owner,
 
   AppendAccessibilityList();
   AppendHelpEntries();
-  CreateTitleRow(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_TITLE);
+  CreateSpecialRow(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_TITLE, this);
 
   Layout();
 }
@@ -244,38 +244,40 @@ HoverHighlightView* AccessibilityDetailedView::AddScrollListItem(
   return container;
 }
 
-void AccessibilityDetailedView::HandleViewClicked(views::View* view) {
+void AccessibilityDetailedView::OnViewClicked(views::View* sender) {
   AccessibilityDelegate* delegate = WmShell::Get()->accessibility_delegate();
-  if (view == spoken_feedback_view_) {
+  if (sender == footer()->content()) {
+    TransitionToDefaultView();
+  } else if (sender == spoken_feedback_view_) {
     WmShell::Get()->RecordUserMetricsAction(
         delegate->IsSpokenFeedbackEnabled()
             ? ash::UMA_STATUS_AREA_DISABLE_SPOKEN_FEEDBACK
             : ash::UMA_STATUS_AREA_ENABLE_SPOKEN_FEEDBACK);
     delegate->ToggleSpokenFeedback(A11Y_NOTIFICATION_NONE);
-  } else if (view == high_contrast_view_) {
+  } else if (sender == high_contrast_view_) {
     WmShell::Get()->RecordUserMetricsAction(
         delegate->IsHighContrastEnabled()
             ? ash::UMA_STATUS_AREA_DISABLE_HIGH_CONTRAST
             : ash::UMA_STATUS_AREA_ENABLE_HIGH_CONTRAST);
     delegate->ToggleHighContrast();
-  } else if (view == screen_magnifier_view_) {
+  } else if (sender == screen_magnifier_view_) {
     WmShell::Get()->RecordUserMetricsAction(
         delegate->IsMagnifierEnabled() ? ash::UMA_STATUS_AREA_DISABLE_MAGNIFIER
                                        : ash::UMA_STATUS_AREA_ENABLE_MAGNIFIER);
     delegate->SetMagnifierEnabled(!delegate->IsMagnifierEnabled());
-  } else if (large_cursor_view_ && view == large_cursor_view_) {
+  } else if (large_cursor_view_ && sender == large_cursor_view_) {
     WmShell::Get()->RecordUserMetricsAction(
         delegate->IsLargeCursorEnabled()
             ? ash::UMA_STATUS_AREA_DISABLE_LARGE_CURSOR
             : ash::UMA_STATUS_AREA_ENABLE_LARGE_CURSOR);
     delegate->SetLargeCursorEnabled(!delegate->IsLargeCursorEnabled());
-  } else if (autoclick_view_ && view == autoclick_view_) {
+  } else if (autoclick_view_ && sender == autoclick_view_) {
     WmShell::Get()->RecordUserMetricsAction(
         delegate->IsAutoclickEnabled()
             ? ash::UMA_STATUS_AREA_DISABLE_AUTO_CLICK
             : ash::UMA_STATUS_AREA_ENABLE_AUTO_CLICK);
     delegate->SetAutoclickEnabled(!delegate->IsAutoclickEnabled());
-  } else if (virtual_keyboard_view_ && view == virtual_keyboard_view_) {
+  } else if (virtual_keyboard_view_ && sender == virtual_keyboard_view_) {
     WmShell::Get()->RecordUserMetricsAction(
         delegate->IsVirtualKeyboardEnabled()
             ? ash::UMA_STATUS_AREA_DISABLE_VIRTUAL_KEYBOARD
@@ -284,8 +286,8 @@ void AccessibilityDetailedView::HandleViewClicked(views::View* view) {
   }
 }
 
-void AccessibilityDetailedView::HandleButtonPressed(views::Button* sender,
-                                                    const ui::Event& event) {
+void AccessibilityDetailedView::ButtonPressed(views::Button* sender,
+                                              const ui::Event& event) {
   SystemTrayDelegate* tray_delegate = WmShell::Get()->system_tray_delegate();
   if (sender == help_view_)
     tray_delegate->ShowAccessibilityHelp();

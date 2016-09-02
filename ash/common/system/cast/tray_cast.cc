@@ -20,6 +20,7 @@
 #include "ash/common/system/tray/tray_item_more.h"
 #include "ash/common/system/tray/tray_item_view.h"
 #include "ash/common/system/tray/tray_popup_label_button.h"
+#include "ash/common/system/tray/view_click_listener.h"
 #include "ash/common/wm_shell.h"
 #include "base/bind.h"
 #include "grit/ash_resources.h"
@@ -384,7 +385,7 @@ void CastTrayView::UpdateAlignment(ShelfAlignment alignment) {
 // This view displays a list of cast receivers that can be clicked on and casted
 // to. It is activated by clicking on the chevron inside of
 // |CastSelectDefaultView|.
-class CastDetailedView : public TrayDetailsView {
+class CastDetailedView : public TrayDetailsView, public ViewClickListener {
  public:
   CastDetailedView(SystemTrayItem* owner,
                    LoginStatus login,
@@ -408,9 +409,10 @@ class CastDetailedView : public TrayDetailsView {
       const CastConfigDelegate::ReceiverAndActivity& receiverActivity);
 
   void AppendSettingsEntries();
+  void AppendHeaderEntry();
 
-  // TrayDetailsView:
-  void HandleViewClicked(views::View* view) override;
+  // Overridden from ViewClickListener.
+  void OnViewClicked(views::View* sender) override;
 
   LoginStatus login_;
   views::View* options_ = nullptr;
@@ -438,7 +440,7 @@ void CastDetailedView::SimulateViewClickedForTest(
     const std::string& receiver_id) {
   for (auto& it : receiver_activity_map_) {
     if (it.second == receiver_id) {
-      HandleViewClicked(it.first);
+      OnViewClicked(it.first);
       break;
     }
   }
@@ -448,7 +450,7 @@ void CastDetailedView::CreateItems() {
   CreateScrollableList();
   if (GetCastConfigDelegate()->HasOptions())
     AppendSettingsEntries();
-  CreateTitleRow(IDS_ASH_STATUS_TRAY_CAST);
+  AppendHeaderEntry();
 }
 
 void CastDetailedView::UpdateReceiverList(
@@ -531,18 +533,25 @@ void CastDetailedView::AppendSettingsEntries() {
   options_ = container;
 }
 
-void CastDetailedView::HandleViewClicked(views::View* view) {
-  if (view == options_) {
-    GetCastConfigDelegate()->LaunchCastOptions();
-    return;
-  }
+void CastDetailedView::AppendHeaderEntry() {
+  CreateSpecialRow(IDS_ASH_STATUS_TRAY_CAST, this);
+}
 
-  // Find the receiver we are going to cast to.
-  auto it = receiver_activity_map_.find(view);
-  if (it != receiver_activity_map_.end()) {
-    GetCastConfigDelegate()->CastToReceiver(it->second);
-    WmShell::Get()->RecordUserMetricsAction(
-        UMA_STATUS_AREA_DETAILED_CAST_VIEW_LAUNCH_CAST);
+void CastDetailedView::OnViewClicked(views::View* sender) {
+  CastConfigDelegate* cast_config_delegate = GetCastConfigDelegate();
+
+  if (sender == footer()->content()) {
+    TransitionToDefaultView();
+  } else if (sender == options_) {
+    cast_config_delegate->LaunchCastOptions();
+  } else {
+    // Find the receiver we are going to cast to
+    auto it = receiver_activity_map_.find(sender);
+    if (it != receiver_activity_map_.end()) {
+      cast_config_delegate->CastToReceiver(it->second);
+      WmShell::Get()->RecordUserMetricsAction(
+          UMA_STATUS_AREA_DETAILED_CAST_VIEW_LAUNCH_CAST);
+    }
   }
 }
 

@@ -353,7 +353,7 @@ void VPNListView::OnViewClicked(views::View* sender) {
   // If the user clicked on a network entry, let the |delegate_| trigger a
   // connection attempt (if the network is currently disconnected) or show a
   // configuration dialog (if the network is currently connected or connecting).
-  delegate_->OnNetworkEntryClicked(sender);
+  delegate_->OnViewClicked(sender);
 }
 
 void VPNListView::AddNetwork(const chromeos::NetworkState* network) {

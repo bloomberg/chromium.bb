@@ -13,6 +13,7 @@
 #include "ash/common/system/tray/tray_details_view.h"
 #include "ash/common/system/tray/tray_image_item.h"
 #include "ash/common/system/tray/tray_notification_view.h"
+#include "ash/common/system/tray/view_click_listener.h"
 #include "base/macros.h"
 #include "ui/gfx/font.h"
 #include "ui/views/controls/button/button.h"
@@ -49,17 +50,14 @@ class AccessibilityPopupView : public TrayNotificationView {
 };
 
 class AccessibilityDetailedView : public TrayDetailsView,
+                                  public ViewClickListener,
+                                  public views::ButtonListener,
                                   public ShellObserver {
  public:
   AccessibilityDetailedView(SystemTrayItem* owner, LoginStatus login);
   ~AccessibilityDetailedView() override {}
 
  private:
-  // TrayDetailsView:
-  void HandleViewClicked(views::View* view) override;
-  void HandleButtonPressed(views::Button* sender,
-                           const ui::Event& event) override;
-
   // Add the accessibility feature list.
   void AppendAccessibilityList();
 
@@ -69,6 +67,10 @@ class AccessibilityDetailedView : public TrayDetailsView,
   HoverHighlightView* AddScrollListItem(const base::string16& text,
                                         bool highlight,
                                         bool checked);
+  // Overridden from ViewClickListener.
+  void OnViewClicked(views::View* sender) override;
+  // Overridden from ButtonListener.
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   views::View* spoken_feedback_view_;
   views::View* high_contrast_view_;

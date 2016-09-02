@@ -129,28 +129,28 @@ void ImeListView::AppendKeyboardStatus() {
   keyboard_status_ = container;
 }
 
-void ImeListView::HandleViewClicked(views::View* view) {
-  if (view == keyboard_status_) {
-    WmShell::Get()->ToggleIgnoreExternalKeyboard();
-    return;
-  }
-
+void ImeListView::OnViewClicked(views::View* sender) {
   SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
-  std::map<views::View*, std::string>::const_iterator ime = ime_map_.find(view);
-  if (ime != ime_map_.end()) {
-    WmShell::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_IME_SWITCH_MODE);
-    std::string ime_id = ime->second;
-    delegate->SwitchIME(ime_id);
+  if (sender == keyboard_status_) {
+    WmShell::Get()->ToggleIgnoreExternalKeyboard();
   } else {
-    std::map<views::View*, std::string>::const_iterator property =
-        property_map_.find(view);
-    if (property == property_map_.end())
-      return;
-    const std::string key = property->second;
-    delegate->ActivateIMEProperty(key);
+    std::map<views::View*, std::string>::const_iterator ime_find;
+    ime_find = ime_map_.find(sender);
+    if (ime_find != ime_map_.end()) {
+      WmShell::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_IME_SWITCH_MODE);
+      std::string ime_id = ime_find->second;
+      delegate->SwitchIME(ime_id);
+      GetWidget()->Close();
+    } else {
+      std::map<views::View*, std::string>::const_iterator prop_find;
+      prop_find = property_map_.find(sender);
+      if (prop_find != property_map_.end()) {
+        const std::string key = prop_find->second;
+        delegate->ActivateIMEProperty(key);
+        GetWidget()->Close();
+      }
+    }
   }
-
-  GetWidget()->Close();
 }
 
 }  // namespace ash

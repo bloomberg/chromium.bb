@@ -7,10 +7,11 @@
 
 #include "ash/common/system/tray/ime_info.h"
 #include "ash/common/system/tray/tray_details_view.h"
+#include "ash/common/system/tray/view_click_listener.h"
 
 namespace ash {
 // The detailed view for showing IME list.
-class ImeListView : public TrayDetailsView {
+class ImeListView : public TrayDetailsView, public ViewClickListener {
  public:
   enum SingleImeBehavior {
     // Shows the IME menu if there's only one IME in system.
@@ -32,8 +33,8 @@ class ImeListView : public TrayDetailsView {
                       SingleImeBehavior single_ime_behavior);
 
  protected:
-  // TrayDetailsView:
-  void HandleViewClicked(views::View* view) override;
+  // ViewClickListener:
+  void OnViewClicked(views::View* sender) override;
 
  private:
   // To allow the test class to access |ime_map_|.

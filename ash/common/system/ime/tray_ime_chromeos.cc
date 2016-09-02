@@ -117,25 +117,26 @@ class IMEDetailedView : public ImeListView {
     ImeListView::Update(list, property_list, show_keyboard_toggle,
                         single_ime_behavior);
     if (login_ != LoginStatus::NOT_LOGGED_IN && login_ != LoginStatus::LOCKED &&
-        !WmShell::Get()
-             ->GetSessionStateDelegate()
-             ->IsInSecondaryLoginScreen()) {
+        !WmShell::Get()->GetSessionStateDelegate()->IsInSecondaryLoginScreen())
       AppendSettings();
-    }
-
-    CreateTitleRow(IDS_ASH_STATUS_TRAY_IME);
+    AppendHeaderEntry();
   }
 
  private:
   // ImeListView:
-  void HandleViewClicked(views::View* view) override {
-    ImeListView::HandleViewClicked(view);
-    if (view == settings_) {
+  void OnViewClicked(views::View* sender) override {
+    ImeListView::OnViewClicked(sender);
+    SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
+    if (sender == footer()->content()) {
+      TransitionToDefaultView();
+    } else if (sender == settings_) {
       WmShell::Get()->RecordUserMetricsAction(
           UMA_STATUS_AREA_IME_SHOW_DETAILED);
-      WmShell::Get()->system_tray_delegate()->ShowIMESettings();
+      delegate->ShowIMESettings();
     }
   }
+
+  void AppendHeaderEntry() { CreateSpecialRow(IDS_ASH_STATUS_TRAY_IME, this); }
 
   void AppendSettings() {
     HoverHighlightView* container = new HoverHighlightView(this);

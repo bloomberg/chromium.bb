@@ -4,7 +4,6 @@
 
 #include "ash/common/system/tray/tray_details_view.h"
 
-#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/system/tray/fixed_sized_scroll_view.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_item.h"
@@ -62,38 +61,22 @@ class ScrollBorder : public views::Border {
 
 TrayDetailsView::TrayDetailsView(SystemTrayItem* owner)
     : owner_(owner),
-      title_row_(nullptr),
-      scroller_(nullptr),
-      scroll_content_(nullptr),
-      scroll_border_(nullptr) {
+      footer_(NULL),
+      scroller_(NULL),
+      scroll_content_(NULL),
+      scroll_border_(NULL) {
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
   set_background(views::Background::CreateSolidBackground(kBackgroundColor));
 }
 
 TrayDetailsView::~TrayDetailsView() {}
 
-void TrayDetailsView::OnViewClicked(views::View* sender) {
-  if (sender == title_row_->content())
-    TransitionToDefaultView();
-  else
-    HandleViewClicked(sender);
-}
-
-void TrayDetailsView::ButtonPressed(views::Button* sender,
-                                    const ui::Event& event) {
-  // TODO(tdanderson): Handle presses for material design buttons common to all
-  // detailed views here (back and Settings). See crbug.com/642136.
-  HandleButtonPressed(sender, event);
-}
-
-void TrayDetailsView::CreateTitleRow(int string_id) {
-  DCHECK(!title_row_);
-  const int child_view_position =
-      MaterialDesignController::IsSystemTrayMenuMaterial() ? 0 : child_count();
-  title_row_ = new SpecialPopupRow();
-  title_row_->SetTextLabel(string_id, this);
-  AddChildViewAt(title_row_, child_view_position);
-  CreateExtraTitleRowButtons();
+void TrayDetailsView::CreateSpecialRow(int string_id,
+                                       ViewClickListener* listener) {
+  DCHECK(!footer_);
+  footer_ = new SpecialPopupRow();
+  footer_->SetTextLabel(string_id, listener);
+  AddChildViewAt(footer_, child_count());
 }
 
 void TrayDetailsView::CreateScrollableList() {
@@ -121,23 +104,16 @@ void TrayDetailsView::AddScrollSeparator() {
 
 void TrayDetailsView::Reset() {
   RemoveAllChildViews(true);
-  title_row_ = nullptr;
-  scroller_ = nullptr;
-  scroll_content_ = nullptr;
+  footer_ = NULL;
+  scroller_ = NULL;
+  scroll_content_ = NULL;
 }
-
-void TrayDetailsView::HandleViewClicked(views::View* view) {}
-
-void TrayDetailsView::HandleButtonPressed(views::Button* sender,
-                                          const ui::Event& event) {}
-
-void TrayDetailsView::CreateExtraTitleRowButtons() {}
 
 void TrayDetailsView::TransitionToDefaultView() {
   // Cache pointer to owner in this function scope. TrayDetailsView will be
   // deleted after called ShowDefaultView.
   SystemTrayItem* owner = owner_;
-  if (title_row_ && title_row_->content() && title_row_->content()->HasFocus())
+  if (footer_ && footer_->content() && footer_->content()->HasFocus())
     owner->set_restore_focus(true);
   owner->system_tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
   owner->set_restore_focus(false);
@@ -154,8 +130,7 @@ void TrayDetailsView::Layout() {
     gfx::Size size = GetPreferredSize();
 
     // Set the scroller to fill the space above the bottom row, so that the
-    // bottom row of the detailed view will always stay just above the title
-    // row.
+    // bottom row of the detailed view will always stay just above the footer.
     gfx::Size scroller_size = scroll_content_->GetPreferredSize();
     scroller_->set_fixed_size(
         gfx::Size(width() + scroller_->GetScrollBarWidth(),
@@ -164,18 +139,18 @@ void TrayDetailsView::Layout() {
 
   views::View::Layout();
 
-  if (title_row_ && !MaterialDesignController::IsSystemTrayMenuMaterial()) {
-    // Always make sure the title row is bottom-aligned in non-MD.
-    gfx::Rect fbounds = title_row_->bounds();
-    fbounds.set_y(height() - title_row_->height());
-    title_row_->SetBoundsRect(fbounds);
+  if (footer_) {
+    // Always make sure the footer element is bottom aligned.
+    gfx::Rect fbounds = footer_->bounds();
+    fbounds.set_y(height() - footer_->height());
+    footer_->SetBoundsRect(fbounds);
   }
 }
 
 void TrayDetailsView::OnPaintBorder(gfx::Canvas* canvas) {
   if (scroll_border_) {
     int index = GetIndexOf(scroller_);
-    if (index < child_count() - 1 && child_at(index + 1) != title_row_)
+    if (index < child_count() - 1 && child_at(index + 1) != footer_)
       scroll_border_->set_visible(true);
     else
       scroll_border_->set_visible(false);
