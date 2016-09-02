@@ -9,18 +9,11 @@
 and Anna, you can do your regular weekly report run, and I'll extract the key sections into this. Andrew and Mark, I'd like to include any new bits you
 </div>
 </body>
-<script src="../editing.js"></script>
 <script>
-function editingTest()
-{
-    execMoveSelectionForwardByLineCommand();
-    typeCharacterCommand(' ');
-    typeCharacterCommand('h');
-    typeCharacterCommand('a');
-    typeCharacterCommand('v');
-    typeCharacterCommand('e');
-}
-
-runEditingTest();
+const selection = getSelection();
+selection.collapse(document.getElementById('test'), 0);
+selection.modify('move', 'forward', 'line');
+// Inserts text at end of line.
+document.execCommand('insertText', false, ' have');
 </script>
 </html>
