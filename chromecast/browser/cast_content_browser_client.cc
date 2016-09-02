@@ -29,7 +29,6 @@
 #include "chromecast/browser/cast_network_delegate.h"
 #include "chromecast/browser/cast_quota_permission_context.h"
 #include "chromecast/browser/cast_resource_dispatcher_host_delegate.h"
-#include "chromecast/browser/media/cma_message_filter_host.h"
 #include "chromecast/browser/media/media_caps_impl.h"
 #include "chromecast/browser/service/cast_service_simple.h"
 #include "chromecast/browser/url_request_context_factory.h"
@@ -191,16 +190,6 @@ content::BrowserMainParts* CastContentBrowserClient::CreateBrowserMainParts(
 
 void CastContentBrowserClient::RenderProcessWillLaunch(
     content::RenderProcessHost* host) {
-#if !defined(OS_ANDROID)
-  scoped_refptr<media::CmaMessageFilterHost> cma_message_filter(
-      new media::CmaMessageFilterHost(
-          host->GetID(),
-          base::Bind(&CastContentBrowserClient::CreateMediaPipelineBackend,
-                     base::Unretained(this)),
-          GetMediaTaskRunner(), media_resource_tracker()));
-  host->AddFilter(cma_message_filter.get());
-#endif  // !defined(OS_ANDROID)
-
   // Forcibly trigger I/O-thread URLRequestContext initialization before
   // getting HostResolver.
   content::BrowserThread::PostTaskAndReplyWithResult(
@@ -273,9 +262,6 @@ void CastContentBrowserClient::AppendExtraCommandLineSwitches(
   if (process_type == switches::kRendererProcess) {
     // Any browser command-line switches that should be propagated to
     // the renderer go here.
-
-    if (browser_command_line->HasSwitch(switches::kEnableCmaMediaPipeline))
-      command_line->AppendSwitch(switches::kEnableCmaMediaPipeline);
     if (browser_command_line->HasSwitch(switches::kAllowHiddenMediaPlayback))
       command_line->AppendSwitch(switches::kAllowHiddenMediaPlayback);
   }
@@ -480,19 +466,11 @@ void CastContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
 
 std::unique_ptr<::media::CdmFactory>
 CastContentBrowserClient::CreateCdmFactory() {
-// This should return a CdmFactory when either of the following conditions is
-// true:
-//  (1) When we are using the CMA pipeline (by setting the cmdline switch).
-//  (2) When we are using Mojo browser-side CDM (by setting GN args)
-// If neither of these are true, this function should return nullptr.
-#if !defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableCmaMediaPipeline))
-    return nullptr;
-#endif  // !defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-
+#if defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
   return base::MakeUnique<media::CastBrowserCdmFactory>(
       GetMediaTaskRunner(), media_resource_tracker());
+#endif  // defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
+  return nullptr;
 }
 
 void CastContentBrowserClient::GetAdditionalMappedFilesForChildProcess(

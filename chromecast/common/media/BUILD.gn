@@ -5,31 +5,19 @@
 import("//chromecast/chromecast.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
-# CMA is not used on Android; exclude CMA-specific targets.
-enable_cma = !is_android
-
 # GYP target: chromecast.gyp:cast_shell_media
 source_set("media") {
   sources = [
     "cast_media_client.cc",
     "cast_media_client.h",
-    "shared_memory_chunk.cc",
-    "shared_memory_chunk.h",
   ]
 
   deps = [
     "//base",
     "//chromecast/media/base",
-    "//chromecast/media/cma/ipc",
     "//chromecast/public:public",
     "//media",
   ]
-
-  if (enable_cma) {
-    public_deps = [
-      ":cma_messages",
-    ]
-  }
 
   if (is_android) {
     sources += [
@@ -52,29 +40,4 @@ mojom("interfaces") {
   sources = [
     "media_caps.mojom",
   ]
-}
-
-if (enable_cma) {
-  # GYP target: chromecast.gyp:cast_shell_media
-  source_set("cma_messages") {
-    sources = [
-      "cma_ipc_common.h",
-      "cma_message_generator.cc",
-      "cma_message_generator.h",
-      "cma_messages.h",
-      "cma_param_traits.cc",
-      "cma_param_traits.h",
-      "cma_param_traits_macros.h",
-    ]
-
-    deps = [
-      "//chromecast/media/cma/pipeline",
-      "//content/public/common",
-      "//media",
-      "//media:shared_memory_support",
-      "//media/gpu/ipc/common",
-      "//ui/gfx/ipc",
-      "//ui/gfx/ipc/skia",
-    ]
-  }
 }

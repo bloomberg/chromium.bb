@@ -231,8 +231,6 @@ DefaultCommandLineSwitch g_default_switches[] = {
   // current Linux/NVidia OpenGL drivers.
   { switches::kIgnoreGpuBlacklist, ""},
 #elif defined(ARCH_CPU_ARM_FAMILY)
-  // On Linux arm, enable CMA pipeline by default.
-  { switches::kEnableCmaMediaPipeline, "" },
 #if !BUILDFLAG(IS_CAST_AUDIO_ONLY)
   { switches::kEnableHardwareOverlays, "" },
 #endif

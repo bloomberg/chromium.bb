@@ -1528,7 +1528,6 @@
       {
         "args": [
           "--enable-local-file-accesses",
-          "--enable-cma-media-pipeline",
           "--ozone-platform=cast",
           "--no-sandbox",
           "--test-launcher-jobs=1"

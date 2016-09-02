@@ -11,8 +11,6 @@ source_set("media") {
     "media_caps_impl.cc",
     "media_caps_impl.h",
     "media_pipeline_backend_factory.h",
-    "media_pipeline_host.cc",
-    "media_pipeline_host.h",
   ]
 
   if (mojo_media_host == "browser") {
@@ -45,8 +43,6 @@ source_set("media") {
 
   if (!is_android) {
     sources += [
-      "cma_message_filter_host.cc",
-      "cma_message_filter_host.h",
       "video_resolution_policy.cc",
       "video_resolution_policy.h",
     ]

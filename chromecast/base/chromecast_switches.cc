@@ -19,9 +19,6 @@ const char kSwitchValueFalse[] = "false";
 // Default is "http://clients2.google.com/cr/staging_report" for non prod.
 const char kCrashServerUrl[] = "crash-server-url";
 
-// Enable the CMA media pipeline.
-const char kEnableCmaMediaPipeline[] = "enable-cma-media-pipeline";
-
 // Enable file accesses. It should not be enabled for most Cast devices.
 const char kEnableLocalFileAccesses[] = "enable-local-file-accesses";
 

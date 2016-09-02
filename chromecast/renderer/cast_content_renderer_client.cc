@@ -14,9 +14,7 @@
 #include "chromecast/common/media/cast_media_client.h"
 #include "chromecast/crash/cast_crash_keys.h"
 #include "chromecast/renderer/cast_media_load_deferrer.h"
-#include "chromecast/renderer/cast_render_thread_observer.h"
 #include "chromecast/renderer/key_systems_cast.h"
-#include "chromecast/renderer/media/chromecast_media_renderer_factory.h"
 #include "chromecast/renderer/media/media_caps_observer_impl.h"
 #include "components/network_hints/renderer/prescient_networking_dispatcher.h"
 #include "content/public/common/content_switches.h"
@@ -76,8 +74,6 @@ void CastContentRendererClient::RenderThreadStarted() {
 
   chromecast::media::CastMediaClient::Initialize();
 
-  cast_observer_.reset(new CastRenderThreadObserver());
-
   prescient_networking_dispatcher_.reset(
       new network_hints::PrescientNetworkingDispatcher());
 
@@ -113,22 +109,6 @@ void CastContentRendererClient::AddSupportedKeySystems(
         key_systems_properties) {
   AddChromecastKeySystems(key_systems_properties, false);
 }
-
-#if !defined(OS_ANDROID)
-std::unique_ptr<::media::RendererFactory>
-CastContentRendererClient::CreateMediaRendererFactory(
-    ::content::RenderFrame* render_frame,
-    ::media::GpuVideoAcceleratorFactories* gpu_factories,
-    const scoped_refptr<::media::MediaLog>& media_log) {
-  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  if (!cmd_line->HasSwitch(switches::kEnableCmaMediaPipeline))
-    return nullptr;
-
-  return std::unique_ptr<::media::RendererFactory>(
-      new chromecast::media::ChromecastMediaRendererFactory(
-          gpu_factories, render_frame->GetRoutingID()));
-}
-#endif
 
 blink::WebPrescientNetworking*
 CastContentRendererClient::GetPrescientNetworking() {

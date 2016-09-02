@@ -25,7 +25,6 @@ class MediaCapsObserverImpl;
 }
 
 namespace shell {
-class CastRenderThreadObserver;
 
 class CastContentRendererClient : public content::ContentRendererClient {
  public:
@@ -41,12 +40,6 @@ class CastContentRendererClient : public content::ContentRendererClient {
   void AddSupportedKeySystems(
       std::vector<std::unique_ptr<::media::KeySystemProperties>>*
           key_systems_properties) override;
-#if !defined(OS_ANDROID)
-  std::unique_ptr<::media::RendererFactory> CreateMediaRendererFactory(
-      content::RenderFrame* render_frame,
-      ::media::GpuVideoAcceleratorFactories* gpu_factories,
-      const scoped_refptr<::media::MediaLog>& media_log) override;
-#endif
   blink::WebPrescientNetworking* GetPrescientNetworking() override;
   void DeferMediaLoad(content::RenderFrame* render_frame,
                       bool render_frame_has_played_media_before,
@@ -58,7 +51,6 @@ class CastContentRendererClient : public content::ContentRendererClient {
  private:
   std::unique_ptr<network_hints::PrescientNetworkingDispatcher>
       prescient_networking_dispatcher_;
-  std::unique_ptr<CastRenderThreadObserver> cast_observer_;
   std::unique_ptr<media::MediaCapsObserverImpl> media_caps_observer_;
   const bool allow_hidden_media_playback_;
 
