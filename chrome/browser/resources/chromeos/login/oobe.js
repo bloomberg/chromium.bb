@@ -90,6 +90,7 @@ cr.define('cr.ui.Oobe', function() {
      * be invoked to do final setup.
      */
     initialize: function() {
+      this.setMDMode_();
       cr.ui.login.DisplayManager.initialize();
       login.HIDDetectionScreen.register();
       login.WrongHWIDScreen.register();
@@ -307,28 +308,7 @@ cr.define('cr.ui.Oobe', function() {
       Oobe.setupSelect($('keyboard-select'), data.inputMethodsList);
       Oobe.setupSelect($('timezone-select'), data.timezoneList);
 
-      // ---------- MD OOBE screen
-      if (data.newOobeUI == 'on') {
-        // Welcome + etc...
-        var welcomeScreen = $('oobe-welcome-md');
-        welcomeScreen.currentLanguage =
-            Oobe.getSelectedTitle(data.languageList);
-        welcomeScreen.languages = data.languageList;
-
-        welcomeScreen.keyboards = data.inputMethodsList;
-
-        $('oobe-connect').hidden = true;
-        welcomeScreen.hidden = false;
-        welcomeScreen.enabled = true;
-        // EULA
-        $('oobe-poly-eula').hidden = false;
-        $('oobe-eula').hidden = true;
-        $('oobe').setAttribute('md-mode', 'true');
-      } else {
-        $('oobe-connect').hidden = false;
-        $('oobe-welcome-md').hidden = true;
-      }
-      // ----------
+      this.setMDMode_();
 
       // Update localized content of the screens.
       Oobe.updateLocalizedContent();
@@ -341,6 +321,18 @@ cr.define('cr.ui.Oobe', function() {
     updateLocalizedContent: function() {
       // Buttons, headers and links.
       Oobe.getInstance().updateLocalizedContent_();
+    },
+
+    /**
+     * This method takes care of switching to material-design OOBE.
+     * @private
+     */
+    setMDMode_: function() {
+      if (loadTimeData.getString('newOobeUI') == 'on') {
+        $('oobe').setAttribute('md-mode', 'true');
+      } else {
+        $('oobe').removeAttribute('md-mode');
+      }
     },
   };
 });

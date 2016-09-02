@@ -7,6 +7,11 @@
   padding: 70px 17px 21px;
 }
 
+#oobe[md-mode] #eula {
+  min-height: unset;
+  padding: unset;
+}
+
 #cros-eula,
 #oem-eula {
   border: 1px solid #d9d9d9;

@@ -73,6 +73,7 @@ login.createScreen('EulaScreen', 'eula', function() {
      * @param {object} data Screen init payload.
      */
     onBeforeShow: function() {
+      this.setMDMode_();
       $('eula').classList.add('eula-loading');
       $('cros-eula-frame').onload = this.onFrameLoad;
       $('accept-button').disabled = true;
@@ -134,9 +135,21 @@ login.createScreen('EulaScreen', 'eula', function() {
     },
 
     /**
+     * This method takes care of switching to material-design OOBE.
+     * @private
+     */
+    setMDMode_: function() {
+      var useMDOobe = (loadTimeData.getString('newOobeUI') == 'on');
+      $('oobe-eula-md').hidden = !useMDOobe;
+      $('oobe-eula').hidden = useMDOobe;
+    },
+
+    /**
      * Updates localized content of the screen that is not updated via template.
      */
     updateLocalizedContent: function() {
+      this.setMDMode_();
+
       $('oobe-eula-md').updateLocalizedContent();
 
       // Force iframes to refresh. It's only available method because we have
@@ -147,7 +160,7 @@ login.createScreen('EulaScreen', 'eula', function() {
       if ($('oem-eula-frame').src) {
         $('oem-eula-frame').src = $('oem-eula-frame').src;
       }
-    }
+    },
   };
 });
 
