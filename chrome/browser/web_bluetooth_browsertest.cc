@@ -132,16 +132,15 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothTest, BlacklistShouldBlock) {
   EXPECT_CALL(*adapter, IsPresent()).WillRepeatedly(Return(true));
   device::BluetoothAdapterFactory::SetAdapterForTesting(adapter);
 
-  std::map<std::string, std::string> params;
-  params["blacklist_additions"] = "ee01:e";
-  variations::AssociateVariationParams("WebBluetoothBlacklist", "TestGroup",
-                                       params);
-  base::FieldTrialList::CreateFieldTrial("WebBluetoothBlacklist", "TestGroup");
+  ASSERT_TRUE(base::FieldTrialList::TrialExists("WebBluetoothBlacklist"))
+      << "ERROR: testing/variations/fieldtrial_testing_config_*.json must\n"
+      << "include WebBluetoothBlacklist trial with the blacklist_additions\n"
+      << "parameter including this test's random UUID 'ed5f25a4'.\n";
 
   std::string rejection;
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       web_contents_,
-      "navigator.bluetooth.requestDevice({filters: [{services: [0xee01]}]})"
+      "navigator.bluetooth.requestDevice({filters: [{services: [0xed5f25a4]}]})"
       "  .then(() => { domAutomationController.send('Success'); },"
       "        reason => {"
       "      domAutomationController.send(reason.name + ': ' + reason.message);"
