@@ -113,8 +113,11 @@ void MatchedPropertiesCache::clearViewportDependent()
     m_cache.removeAll(toRemove);
 }
 
-bool MatchedPropertiesCache::isCacheable(const ComputedStyle& style, const ComputedStyle& parentStyle)
+bool MatchedPropertiesCache::isCacheable(const StyleResolverState& state)
 {
+    const ComputedStyle& style = *state.style();
+    const ComputedStyle& parentStyle = *state.parentStyle();
+
     if (style.unique() || (style.styleType() != PseudoIdNone && parentStyle.unique()))
         return false;
     if (style.zoom() != ComputedStyle::initialZoom())
@@ -122,7 +125,9 @@ bool MatchedPropertiesCache::isCacheable(const ComputedStyle& style, const Compu
     if (style.getWritingMode() != ComputedStyle::initialWritingMode() || style.direction() != ComputedStyle::initialDirection())
         return false;
     // The cache assumes static knowledge about which properties are inherited.
-    if (parentStyle.hasExplicitlyInheritedProperties())
+    // Without a flat tree parent, StyleBuilder::applyProperty will not
+    // setHasExplicitlyInheritedProperties on the parent style.
+    if (!state.parentNode() || parentStyle.hasExplicitlyInheritedProperties())
         return false;
     if (style.hasVariableReferenceFromNonInheritedProperty())
         return false;

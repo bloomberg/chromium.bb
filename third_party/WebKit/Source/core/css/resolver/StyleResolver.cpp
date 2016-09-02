@@ -1533,7 +1533,7 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
     bool applyInheritedOnly = false;
     const CachedMatchedProperties* cachedMatchedProperties = cacheHash ? m_matchedPropertiesCache.find(cacheHash, state, matchResult.matchedProperties()) : nullptr;
 
-    if (cachedMatchedProperties && MatchedPropertiesCache::isCacheable(*state.style(), *state.parentStyle())) {
+    if (cachedMatchedProperties && MatchedPropertiesCache::isCacheable(state)) {
         INCREMENT_STYLE_STATS_COUNTER(document().styleEngine(), matchedPropertyCacheHit, 1);
         // We can build up the style by copying non-inherited properties from an earlier style object built using the same exact
         // style declarations. We then only need to apply the inherited properties, if any, as their values can depend on the
@@ -1627,7 +1627,7 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
 
     loadPendingResources(state);
 
-    if (!cachedMatchedProperties && cacheHash && MatchedPropertiesCache::isCacheable(*state.style(), *state.parentStyle())) {
+    if (!cachedMatchedProperties && cacheHash && MatchedPropertiesCache::isCacheable(state)) {
         ASSERT(RuntimeEnabledFeatures::styleMatchedPropertiesCacheEnabled());
         INCREMENT_STYLE_STATS_COUNTER(document().styleEngine(), matchedPropertyCacheAdded, 1);
         m_matchedPropertiesCache.add(*state.style(), *state.parentStyle(), cacheHash, matchResult.matchedProperties());

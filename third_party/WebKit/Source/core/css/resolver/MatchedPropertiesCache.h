@@ -99,7 +99,7 @@ public:
     void clear();
     void clearViewportDependent();
 
-    static bool isCacheable(const ComputedStyle&, const ComputedStyle& parentStyle);
+    static bool isCacheable(const StyleResolverState&);
 
     DECLARE_TRACE();
 
