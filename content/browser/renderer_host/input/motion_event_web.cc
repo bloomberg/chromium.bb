@@ -205,6 +205,8 @@ ui::MotionEvent::ToolType MotionEventWeb::GetToolType(
       return TOOL_TYPE_MOUSE;
     case WebPointerProperties::PointerType::Pen:
       return TOOL_TYPE_STYLUS;
+    case WebPointerProperties::PointerType::Eraser:
+      return TOOL_TYPE_ERASER;
     case WebPointerProperties::PointerType::Touch:
       return TOOL_TYPE_FINGER;
   }

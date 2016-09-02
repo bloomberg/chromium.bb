@@ -119,6 +119,23 @@ PP_InputEvent_Type ConvertEventTypes(WebInputEvent::Type wetype) {
   }
 }
 
+// Converts WebInputEvent::Modifiers flags to PP_InputEvent_Modifier.
+int ConvertEventModifiers(int modifiers) {
+  return modifiers & (PP_INPUTEVENT_MODIFIER_SHIFTKEY |
+                      PP_INPUTEVENT_MODIFIER_CONTROLKEY |
+                      PP_INPUTEVENT_MODIFIER_ALTKEY |
+                      PP_INPUTEVENT_MODIFIER_METAKEY |
+                      PP_INPUTEVENT_MODIFIER_ISKEYPAD |
+                      PP_INPUTEVENT_MODIFIER_ISAUTOREPEAT |
+                      PP_INPUTEVENT_MODIFIER_LEFTBUTTONDOWN |
+                      PP_INPUTEVENT_MODIFIER_MIDDLEBUTTONDOWN |
+                      PP_INPUTEVENT_MODIFIER_RIGHTBUTTONDOWN |
+                      PP_INPUTEVENT_MODIFIER_CAPSLOCKKEY |
+                      PP_INPUTEVENT_MODIFIER_NUMLOCKKEY |
+                      PP_INPUTEVENT_MODIFIER_ISLEFT |
+                      PP_INPUTEVENT_MODIFIER_ISRIGHT);
+}
+
 // Generates a PP_InputEvent with the fields common to all events, as well as
 // the event type from the given web event. Event-specific fields will be zero
 // initialized.
@@ -134,7 +151,7 @@ void AppendKeyEvent(const WebInputEvent& event,
   const WebKeyboardEvent& key_event =
       static_cast<const WebKeyboardEvent&>(event);
   InputEventData result = GetEventWithCommonFieldsAndType(event);
-  result.event_modifiers = key_event.modifiers;
+  result.event_modifiers = ConvertEventModifiers(key_event.modifiers);
   result.key_code = key_event.windowsKeyCode;
   result.code = ui::KeycodeConverter::DomCodeToCodeString(
       static_cast<ui::DomCode>(key_event.domCode));
@@ -161,7 +178,7 @@ void AppendCharEvent(const WebInputEvent& event,
   base::i18n::UTF16CharIterator iter(key_event.text, utf16_char_count);
   while (!iter.end()) {
     InputEventData result = GetEventWithCommonFieldsAndType(event);
-    result.event_modifiers = key_event.modifiers;
+    result.event_modifiers = ConvertEventModifiers(key_event.modifiers);
     base::WriteUnicodeCharacter(iter.get(), &result.character_text);
 
     result_events->push_back(result);
@@ -186,7 +203,14 @@ void AppendMouseEvent(const WebInputEvent& event,
 
   const WebMouseEvent& mouse_event = static_cast<const WebMouseEvent&>(event);
   InputEventData result = GetEventWithCommonFieldsAndType(event);
-  result.event_modifiers = mouse_event.modifiers;
+  result.event_modifiers = ConvertEventModifiers(mouse_event.modifiers);
+  if (mouse_event.pointerType ==
+      blink::WebPointerProperties::PointerType::Pen) {
+    result.event_modifiers |= PP_INPUTEVENT_MODIFIER_ISPEN;
+  } else if (mouse_event.pointerType ==
+      blink::WebPointerProperties::PointerType::Eraser) {
+    result.event_modifiers |= PP_INPUTEVENT_MODIFIER_ISERASER;
+  }
   if (mouse_event.type == WebInputEvent::MouseDown ||
       mouse_event.type == WebInputEvent::MouseMove ||
       mouse_event.type == WebInputEvent::MouseUp) {
@@ -206,7 +230,7 @@ void AppendMouseWheelEvent(const WebInputEvent& event,
   const WebMouseWheelEvent& mouse_wheel_event =
       static_cast<const WebMouseWheelEvent&>(event);
   InputEventData result = GetEventWithCommonFieldsAndType(event);
-  result.event_modifiers = mouse_wheel_event.modifiers;
+  result.event_modifiers = ConvertEventModifiers(mouse_wheel_event.modifiers);
   result.wheel_delta.x = mouse_wheel_event.deltaX;
   result.wheel_delta.y = mouse_wheel_event.deltaY;
   result.wheel_ticks.x = mouse_wheel_event.wheelTicksX;

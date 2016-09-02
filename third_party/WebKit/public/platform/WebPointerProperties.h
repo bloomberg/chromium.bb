@@ -38,6 +38,7 @@ public:
         Unknown,
         Mouse,
         Pen,
+        Eraser,
         Touch,
         LastEntry = Touch // Must be the last entry in the list
     };

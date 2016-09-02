@@ -21,6 +21,9 @@ const char* pointerTypeNameForWebPointPointerType(WebPointerProperties::PointerT
     case WebPointerProperties::PointerType::Touch:
         return "touch";
     case WebPointerProperties::PointerType::Pen:
+    case WebPointerProperties::PointerType::Eraser:
+        // TODO(mustaq): Continue eraser plumbing to web API.
+        // See crbug.com/642455
         return "pen";
     case WebPointerProperties::PointerType::Mouse:
         return "mouse";

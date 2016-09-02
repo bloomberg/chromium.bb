@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_input_event.idl modified Thu Apr  3 14:52:10 2014. */
+/* From ppb_input_event.idl modified Thu Sep  1 12:40:05 2016. */
 
 #ifndef PPAPI_C_PPB_INPUT_EVENT_H_
 #define PPAPI_C_PPB_INPUT_EVENT_H_
@@ -95,9 +95,6 @@ typedef enum {
    * Notification that a key transitioned from "up" to "down".
    *
    * Register for this event using the PP_INPUTEVENT_CLASS_KEYBOARD class.
-   */
-  /*
-   * TODO(brettw) differentiate from KEYDOWN.
    */
   PP_INPUTEVENT_TYPE_RAWKEYDOWN = 6,
   /**
@@ -214,7 +211,9 @@ typedef enum {
   PP_INPUTEVENT_MODIFIER_CAPSLOCKKEY = 1 << 9,
   PP_INPUTEVENT_MODIFIER_NUMLOCKKEY = 1 << 10,
   PP_INPUTEVENT_MODIFIER_ISLEFT = 1 << 11,
-  PP_INPUTEVENT_MODIFIER_ISRIGHT = 1 << 12
+  PP_INPUTEVENT_MODIFIER_ISRIGHT = 1 << 12,
+  PP_INPUTEVENT_MODIFIER_ISPEN = 1 << 13,
+  PP_INPUTEVENT_MODIFIER_ISERASER = 1 << 14
 } PP_InputEvent_Modifier;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_InputEvent_Modifier, 4);
 
@@ -545,9 +544,6 @@ struct PPB_MouseInputEvent_1_1 {
    * mouse drags. The return value will be (0, 0) for non-mouse events.
    */
   struct PP_Point (*GetPosition)(PP_Resource mouse_event);
-  /*
-   * TODO(brettw) figure out exactly what this means.
-   */
   int32_t (*GetClickCount)(PP_Resource mouse_event);
   /**
    * Returns the change in position of the mouse. When the mouse is locked,

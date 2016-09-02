@@ -475,7 +475,7 @@ WebPointerProperties::PointerType ToWebPointerType(
     case MotionEvent::TOOL_TYPE_MOUSE:
       return WebPointerProperties::PointerType::Mouse;
     case MotionEvent::TOOL_TYPE_ERASER:
-      return WebPointerProperties::PointerType::Unknown;
+      return WebPointerProperties::PointerType::Eraser;
   }
   NOTREACHED() << "Invalid MotionEvent::ToolType = " << tool_type;
   return WebPointerProperties::PointerType::Unknown;

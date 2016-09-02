@@ -10,7 +10,8 @@
 label Chrome {
   M13 = 1.0,
   M14 = 1.1,
-  M34 = 1.2
+  M34 = 1.2,
+  M55 = 1.3
 };
 
 /**
@@ -67,10 +68,6 @@ enum PP_InputEvent_Type {
    * Notification that a key transitioned from "up" to "down".
    *
    * Register for this event using the PP_INPUTEVENT_CLASS_KEYBOARD class.
-   */
-
-  /*
-   * TODO(brettw) differentiate from KEYDOWN.
    */
   PP_INPUTEVENT_TYPE_RAWKEYDOWN = 6,
 
@@ -199,7 +196,11 @@ enum PP_InputEvent_Modifier {
   PP_INPUTEVENT_MODIFIER_CAPSLOCKKEY      = 1 << 9,
   PP_INPUTEVENT_MODIFIER_NUMLOCKKEY       = 1 << 10,
   PP_INPUTEVENT_MODIFIER_ISLEFT           = 1 << 11,
-  PP_INPUTEVENT_MODIFIER_ISRIGHT          = 1 << 12
+  PP_INPUTEVENT_MODIFIER_ISRIGHT          = 1 << 12,
+  [version=1.3]
+  PP_INPUTEVENT_MODIFIER_ISPEN            = 1 << 13,
+  [version=1.3]
+  PP_INPUTEVENT_MODIFIER_ISERASER         = 1 << 14
 };
 
 /**
@@ -573,9 +574,6 @@ interface PPB_MouseInputEvent {
    */
   [returnByValue] PP_Point GetPosition([in] PP_Resource mouse_event);
 
-  /*
-   * TODO(brettw) figure out exactly what this means.
-   */
   int32_t GetClickCount([in] PP_Resource mouse_event);
 
   /**
