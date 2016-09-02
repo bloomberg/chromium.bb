@@ -11,6 +11,9 @@
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image_skia_util_mac.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/resources/grit/ui_resources.h"
 
 namespace {
@@ -18,75 +21,6 @@ namespace {
 const CGFloat kVectorIconSize = 16;
 
 }  // namespace
-
-// A temporary class that draws the default favicon using vector commands.
-// This class will be removed once a more general solution that works for all
-// platforms is developed.
-@interface DefaultFaviconImageRep : NSCustomImageRep
-@property(retain, nonatomic) NSColor* strokeColor;
-
-+ (NSImage*)imageForColor:(SkColor)strokeColor;
-
-// NSCustomImageRep delegate method that performs the drawing.
-+ (void)drawDefaultFavicon:(DefaultFaviconImageRep*)imageRep;
-
-@end
-
-@implementation DefaultFaviconImageRep
-
-@synthesize strokeColor = strokeColor_;
-
-- (void)dealloc {
-  [strokeColor_ release];
-  [super dealloc];
-}
-
-+ (NSImage*)imageForColor:(SkColor)strokeColor {
-  base::scoped_nsobject<DefaultFaviconImageRep> imageRep(
-      [[DefaultFaviconImageRep alloc]
-          initWithDrawSelector:@selector(drawDefaultFavicon:)
-                      delegate:[DefaultFaviconImageRep class]]);
-  [imageRep setStrokeColor:skia::SkColorToSRGBNSColor(strokeColor)];
-
-  // Create the image from the image rep.
-  const NSSize imageSize = NSMakeSize(kVectorIconSize, kVectorIconSize);
-  NSImage* faviconImage =
-      [[[NSImage alloc] initWithSize:imageSize] autorelease];
-  [faviconImage setCacheMode:NSImageCacheAlways];
-  [faviconImage addRepresentation:imageRep];
-
-  [imageRep setSize:imageSize];
-
-  return faviconImage;
-}
-
-+ (void)drawDefaultFavicon:(DefaultFaviconImageRep*)imageRep {
-  // Translate by 1/2pt to ensure crisp lines.
-  CGContextRef context = static_cast<CGContextRef>(
-      [[NSGraphicsContext currentContext] graphicsPort]);
-  CGContextTranslateCTM(context, 0.5, 0.5);
-
-  NSBezierPath* iconPath = [NSBezierPath bezierPath];
-
-  // Create the horizontal and vertical parts of the shape.
-  [iconPath moveToPoint:NSMakePoint(3, 1)];
-  [iconPath relativeLineToPoint:NSMakePoint(0, 13)];
-  [iconPath relativeLineToPoint:NSMakePoint(5, 0)];
-  [iconPath relativeLineToPoint:NSMakePoint(0, -4)];
-  [iconPath relativeLineToPoint:NSMakePoint(4, 0)];
-  [iconPath relativeLineToPoint:NSMakePoint(0, -9)];
-  [iconPath closePath];
-
-  // Add the diagonal line.
-  [iconPath moveToPoint:NSMakePoint(8, 14)];
-  [iconPath relativeLineToPoint:NSMakePoint(4, -4)];
-
-  // Draw it in the desired color.
-  [[imageRep strokeColor] set];
-  [iconPath stroke];
-}
-
-@end
 
 namespace mac {
 
@@ -103,8 +37,10 @@ NSImage* FaviconForWebContents(content::WebContents* contents, SkColor color) {
     }
   }
 
-  if (ui::MaterialDesignController::IsModeMaterial())
-    return [DefaultFaviconImageRep imageForColor:color];
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    return NSImageFromImageSkia(gfx::CreateVectorIcon(
+        gfx::VectorIconId::DEFAULT_FAVICON, kVectorIconSize, color));
+  }
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   return rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON).ToNSImage();

@@ -33,6 +33,7 @@ action("aggregate_vector_icons") {
     "crashed_tab.icon",
     "credit_card.1x.icon",
     "credit_card.icon",
+    "default_favicon.icon",
     "eol.icon",
     "error_circle.icon",
     "extension.icon",
