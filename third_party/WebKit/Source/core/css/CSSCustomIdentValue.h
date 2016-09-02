@@ -12,7 +12,7 @@ namespace blink {
 
 class CSSCustomIdentValue : public CSSValue {
 public:
-    static CSSCustomIdentValue* create(const String& str)
+    static CSSCustomIdentValue* create(const AtomicString& str)
     {
         return new CSSCustomIdentValue(str);
     }
@@ -23,9 +23,9 @@ public:
         return new CSSCustomIdentValue(id);
     }
 
-    String value() const { ASSERT(!isKnownPropertyID()); return m_string; }
+    AtomicString value() const { DCHECK(!isKnownPropertyID()); return m_string; }
     bool isKnownPropertyID() const { return m_propertyId != CSSPropertyInvalid; }
-    CSSPropertyID valueAsPropertyID() const { ASSERT(isKnownPropertyID()); return m_propertyId; }
+    CSSPropertyID valueAsPropertyID() const { DCHECK(isKnownPropertyID()); return m_propertyId; }
 
     String customCSSText() const;
 
@@ -37,11 +37,10 @@ public:
     DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
-    CSSCustomIdentValue(const String&);
-    CSSCustomIdentValue(CSSPropertyID);
+    explicit CSSCustomIdentValue(const AtomicString&);
+    explicit CSSCustomIdentValue(CSSPropertyID);
 
-    // TODO(sashab): Change this to an AtomicString.
-    String m_string;
+    AtomicString m_string;
     CSSPropertyID m_propertyId;
 };
 

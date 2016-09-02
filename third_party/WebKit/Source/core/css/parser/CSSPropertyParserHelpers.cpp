@@ -313,7 +313,7 @@ CSSCustomIdentValue* consumeCustomIdent(CSSParserTokenRange& range)
 {
     if (range.peek().type() != IdentToken || isCSSWideKeyword(range.peek().id()))
         return nullptr;
-    return CSSCustomIdentValue::create(range.consumeIncludingWhitespace().value().toString());
+    return CSSCustomIdentValue::create(range.consumeIncludingWhitespace().value().toAtomicString());
 }
 
 CSSStringValue* consumeString(CSSParserTokenRange& range)

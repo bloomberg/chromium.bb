@@ -8,6 +8,7 @@
 #include "core/CSSValueKeywords.h"
 #include "core/CoreExport.h"
 #include "core/css/cssom/CSSStyleValue.h"
+#include "wtf/text/AtomicString.h"
 
 namespace blink {
 
@@ -17,19 +18,20 @@ class CORE_EXPORT CSSKeywordValue final : public CSSStyleValue {
     WTF_MAKE_NONCOPYABLE(CSSKeywordValue);
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static CSSKeywordValue* create(const String& keyword, ExceptionState&);
+    static CSSKeywordValue* create(const AtomicString& keyword, ExceptionState&);
 
     StyleValueType type() const override { return KeywordType; }
 
-    const String& keywordValue() const;
+    const AtomicString& keywordValue() const;
     CSSValueID keywordValueID() const;
 
     CSSValue* toCSSValue() const override;
 
 private:
-    CSSKeywordValue(const String& keyword) : m_keywordValue(keyword) {}
+    explicit CSSKeywordValue(const AtomicString& keyword)
+        : m_keywordValue(keyword) {}
 
-    String m_keywordValue;
+    AtomicString m_keywordValue;
 };
 
 DEFINE_TYPE_CASTS(CSSKeywordValue, CSSStyleValue, value,

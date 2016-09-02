@@ -10,7 +10,7 @@
 
 namespace blink {
 
-CSSCustomIdentValue::CSSCustomIdentValue(const String& str)
+CSSCustomIdentValue::CSSCustomIdentValue(const AtomicString& str)
     : CSSValue(CustomIdentClass)
     , m_string(str)
     , m_propertyId(CSSPropertyInvalid) { }

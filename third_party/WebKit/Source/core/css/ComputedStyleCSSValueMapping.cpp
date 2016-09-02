@@ -771,7 +771,7 @@ void OrderedNamedLinesCollector::appendLines(CSSGridLineNamesValue& lineNamesVal
         return;
 
     for (auto lineName : iter->value)
-        lineNamesValue.append(*CSSCustomIdentValue::create(lineName));
+        lineNamesValue.append(*CSSCustomIdentValue::create(AtomicString(lineName)));
 }
 
 void OrderedNamedLinesCollector::collectLineNamesForIndex(CSSGridLineNamesValue& lineNamesValue, size_t i) const
@@ -1202,7 +1202,7 @@ static CSSValue* createTransitionPropertyValue(const CSSTransitionData::Transiti
     if (property.propertyType == CSSTransitionData::TransitionUnknownProperty)
         return CSSCustomIdentValue::create(property.propertyString);
     ASSERT(property.propertyType == CSSTransitionData::TransitionKnownProperty);
-    return CSSCustomIdentValue::create(getPropertyNameString(property.unresolvedProperty));
+    return CSSCustomIdentValue::create(getPropertyNameAtomicString(property.unresolvedProperty));
 }
 
 static CSSValue* valueForTransitionProperty(const CSSTransitionData* transitionData)

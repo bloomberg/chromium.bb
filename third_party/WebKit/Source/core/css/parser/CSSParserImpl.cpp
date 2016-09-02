@@ -636,7 +636,7 @@ void CSSParserImpl::consumeApplyRule(CSSParserTokenRange prelude)
         return; // Parse error, expected a single custom property name
     m_parsedProperties.append(CSSProperty(
         CSSPropertyApplyAtRule,
-        *CSSCustomIdentValue::create(ident.value().toString())));
+        *CSSCustomIdentValue::create(ident.value().toAtomicString())));
 }
 
 StyleRuleKeyframe* CSSParserImpl::consumeKeyframeStyleRule(CSSParserTokenRange prelude, CSSParserTokenRange block)

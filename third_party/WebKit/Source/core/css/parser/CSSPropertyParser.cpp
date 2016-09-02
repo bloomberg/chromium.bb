@@ -1109,7 +1109,7 @@ static CSSValue* consumeAnimationName(CSSParserTokenRange& range, const CSSParse
         const CSSParserToken& token = range.consumeIncludingWhitespace();
         if (equalIgnoringASCIICase(token.value(), "none"))
             return CSSPrimitiveValue::createIdentifier(CSSValueNone);
-        return CSSCustomIdentValue::create(token.value().toString());
+        return CSSCustomIdentValue::create(token.value().toAtomicString());
     }
 
     return consumeCustomIdent(range);
@@ -1955,10 +1955,11 @@ static CSSValue* consumeAttr(CSSParserTokenRange args, CSSParserContext context)
     if (args.peek().type() != IdentToken)
         return nullptr;
 
-    String attrName = args.consumeIncludingWhitespace().value().toString();
+    AtomicString attrName = args.consumeIncludingWhitespace().value().toAtomicString();
     if (!args.atEnd())
         return nullptr;
 
+    // TODO(esprehn): This should be lowerASCII().
     if (context.isHTMLDocument())
         attrName = attrName.lower();
 

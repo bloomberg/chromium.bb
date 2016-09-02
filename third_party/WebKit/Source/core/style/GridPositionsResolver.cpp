@@ -147,9 +147,9 @@ static void initialAndFinalPositionsFromStyle(const ComputedStyle& gridContainer
 
     // If the grid item has an automatic position and a grid span for a named line in a given dimension, instead treat the grid span as one.
     if (initialPosition.isAuto() && finalPosition.isSpan() && !finalPosition.namedGridLine().isNull())
-        finalPosition.setSpanPosition(1, String());
+        finalPosition.setSpanPosition(1, nullAtom);
     if (finalPosition.isAuto() && initialPosition.isSpan() && !initialPosition.namedGridLine().isNull())
-        initialPosition.setSpanPosition(1, String());
+        initialPosition.setSpanPosition(1, nullAtom);
 }
 
 static size_t lookAheadForNamedGridLine(int start, size_t numberOfLines, size_t gridLastLine, NamedLineCollection& linesCollection)

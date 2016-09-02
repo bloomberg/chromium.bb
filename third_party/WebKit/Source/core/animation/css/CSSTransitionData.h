@@ -31,7 +31,7 @@ public:
             DCHECK_NE(id, CSSPropertyInvalid);
         }
 
-        TransitionProperty(const String& string)
+        TransitionProperty(const AtomicString& string)
             : propertyType(TransitionUnknownProperty)
             , unresolvedProperty(CSSPropertyInvalid)
             , propertyString(string)
@@ -49,7 +49,7 @@ public:
 
         TransitionPropertyType propertyType;
         CSSPropertyID unresolvedProperty;
-        String propertyString;
+        AtomicString propertyString;
     };
 
     static std::unique_ptr<CSSTransitionData> create()

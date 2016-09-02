@@ -504,7 +504,7 @@ GridPosition StyleBuilderConverter::convertGridPosition(StyleResolverState&, con
     bool isSpanPosition = false;
     // The specification makes the <integer> optional, in which case it default to '1'.
     int gridLineNumber = 1;
-    String gridLineName;
+    AtomicString gridLineName;
 
     auto it = values.begin();
     const CSSValue* currentValue = it->get();
