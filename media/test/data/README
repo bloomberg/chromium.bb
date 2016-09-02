@@ -248,3 +248,13 @@ media/test/data/bbb-320x240-2video-2audio.mp4
   ffmpeg -i bbb_sunflower_1080p_30fps_normal.mp4 -f lavfi -i "sine=frequency=500:sample_rate=48000" -map 0:v -map 1:a -c:v libx264 -crf 36 -vf scale=320:240,vflip -c:a libfdk_aac -ac 2 -t 24 bbb2.mp4
   // Combine the two files generated above into a single fragmented .mp4 file with 2 video and 2 audio tracks.
   ffmpeg -i bbb1.mp4 -i bbb2.mp4 -map 0:0 -map 0:1 -map 1:0 -map 1:1 -c:v copy -c:a copy -movflags frag_keyframe+omit_tfhd_offset+separate_moof bbb-320x240-2video-2audio.mp4
+
+// Multi-track WebM file
+media/test/data/multitrack-3video-2audio.webm
+    //Generated using following commands:
+    ffmpeg -f lavfi -i color=c=red:size=320x240 -t 5 -c:v libvpx red.webm
+    ffmpeg -f lavfi -i color=c=green:size=320x240 -t 5 -c:v libvpx green.webm
+    ffmpeg -f lavfi -i color=c=blue:size=160x120 -t 10 -c:v libvpx blue.webm
+    ffmpeg -f lavfi -i "sine=frequency=300:sample_rate=48000" -t 10 -c:v libvpx a300hz.webm
+    ffmpeg -f lavfi -i "sine=frequency=500:sample_rate=48000" -t 5 -c:v libvpx a500hz.webm
+    ffmpeg -i red.webm -i green.webm -i blue.webm -i a300hz.webm -i a500hz.webm -map 0 -map 1 -map 2 -map 3 -map 4  multitrack-3video-2audio.webm

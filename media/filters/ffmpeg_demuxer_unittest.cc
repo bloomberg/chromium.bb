@@ -1311,7 +1311,69 @@ TEST_F(FFmpegDemuxerTest, Read_Mp4_Media_Track_Info) {
   EXPECT_EQ(video_track.language(), "und");
 }
 
+TEST_F(FFmpegDemuxerTest, Read_Mp4_Multiple_Tracks) {
+  CreateDemuxer("bbb-320x240-2video-2audio.mp4");
+  InitializeDemuxer();
+
+  EXPECT_EQ(media_tracks_->tracks().size(), 4u);
+
+  const MediaTrack& video_track = *(media_tracks_->tracks()[0]);
+  EXPECT_EQ(video_track.type(), MediaTrack::Video);
+  EXPECT_EQ(video_track.bytestream_track_id(), 1);
+  EXPECT_EQ(video_track.kind(), "main");
+  EXPECT_EQ(video_track.label(), "VideoHandler");
+  EXPECT_EQ(video_track.language(), "und");
+
+  const MediaTrack& audio_track = *(media_tracks_->tracks()[1]);
+  EXPECT_EQ(audio_track.type(), MediaTrack::Audio);
+  EXPECT_EQ(audio_track.bytestream_track_id(), 2);
+  EXPECT_EQ(audio_track.kind(), "main");
+  EXPECT_EQ(audio_track.label(), "SoundHandler");
+  EXPECT_EQ(audio_track.language(), "und");
+
+  const MediaTrack& video_track2 = *(media_tracks_->tracks()[2]);
+  EXPECT_EQ(video_track2.type(), MediaTrack::Video);
+  EXPECT_EQ(video_track2.bytestream_track_id(), 3);
+  EXPECT_EQ(video_track2.kind(), "main");
+  EXPECT_EQ(video_track2.label(), "VideoHandler");
+  EXPECT_EQ(video_track2.language(), "und");
+
+  const MediaTrack& audio_track2 = *(media_tracks_->tracks()[3]);
+  EXPECT_EQ(audio_track2.type(), MediaTrack::Audio);
+  EXPECT_EQ(audio_track2.bytestream_track_id(), 4);
+  EXPECT_EQ(audio_track2.kind(), "main");
+  EXPECT_EQ(audio_track2.label(), "SoundHandler");
+  EXPECT_EQ(audio_track2.language(), "und");
+}
+
 #endif  // defined(USE_PROPRIETARY_CODECS)
+
+TEST_F(FFmpegDemuxerTest, Read_Webm_Multiple_Tracks) {
+  CreateDemuxer("multitrack-3video-2audio.webm");
+  InitializeDemuxer();
+
+  EXPECT_EQ(media_tracks_->tracks().size(), 5u);
+
+  const MediaTrack& video_track1 = *(media_tracks_->tracks()[0]);
+  EXPECT_EQ(video_track1.type(), MediaTrack::Video);
+  EXPECT_EQ(video_track1.bytestream_track_id(), 1);
+
+  const MediaTrack& video_track2 = *(media_tracks_->tracks()[1]);
+  EXPECT_EQ(video_track2.type(), MediaTrack::Video);
+  EXPECT_EQ(video_track2.bytestream_track_id(), 2);
+
+  const MediaTrack& video_track3 = *(media_tracks_->tracks()[2]);
+  EXPECT_EQ(video_track3.type(), MediaTrack::Video);
+  EXPECT_EQ(video_track3.bytestream_track_id(), 3);
+
+  const MediaTrack& audio_track1 = *(media_tracks_->tracks()[3]);
+  EXPECT_EQ(audio_track1.type(), MediaTrack::Audio);
+  EXPECT_EQ(audio_track1.bytestream_track_id(), 4);
+
+  const MediaTrack& audio_track2 = *(media_tracks_->tracks()[4]);
+  EXPECT_EQ(audio_track2.type(), MediaTrack::Audio);
+  EXPECT_EQ(audio_track2.bytestream_track_id(), 5);
+}
 
 TEST_F(FFmpegDemuxerTest, Read_Webm_Media_Track_Info) {
   CreateDemuxer("bear.webm");

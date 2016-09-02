@@ -32,7 +32,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/threading/thread.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/decoder_buffer.h"
@@ -45,6 +44,7 @@
 #include "media/filters/blocking_url_protocol.h"
 
 // FFmpeg forward declarations.
+struct AVFormatContext;
 struct AVPacket;
 struct AVRational;
 struct AVStream;
@@ -253,6 +253,8 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   void OnOpenContextDone(const PipelineStatusCB& status_cb, bool result);
   void OnFindStreamInfoDone(const PipelineStatusCB& status_cb, int result);
 
+  void LogMetadata(AVFormatContext* avctx, base::TimeDelta max_duration);
+
   // FFmpeg callbacks during seeking.
   void OnSeekFrameDone(int result);
 
@@ -309,7 +311,7 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   //
   // Once initialized, operations on FFmpegDemuxerStreams should be carried out
   // on the demuxer thread.
-  typedef ScopedVector<FFmpegDemuxerStream> StreamVector;
+  using StreamVector = std::vector<std::unique_ptr<FFmpegDemuxerStream>>;
   StreamVector streams_;
 
   // Provides asynchronous IO to this demuxer. Consumed by |url_protocol_| to
@@ -351,7 +353,7 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
 
   const MediaTracksUpdatedCB media_tracks_updated_cb_;
 
-  std::map<MediaTrack::Id, const DemuxerStream*> track_id_to_demux_stream_map_;
+  std::map<MediaTrack::Id, DemuxerStream*> track_id_to_demux_stream_map_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<FFmpegDemuxer> weak_factory_;
