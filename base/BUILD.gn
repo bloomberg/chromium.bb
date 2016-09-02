@@ -1447,7 +1447,7 @@ component("base") {
     ]
   }
 
-  if (is_asan || is_lsan || is_msan || is_tsan) {
+  if (using_sanitizer) {
     data += [ "//tools/valgrind/asan/" ]
     if (is_win) {
       data +=
