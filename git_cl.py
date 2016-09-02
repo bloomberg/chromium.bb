@@ -1347,7 +1347,7 @@ class Changelist(object):
       self.issue = None
       self.patchset = None
 
-  def GetChange(self, upstream_branch, author):
+  def GetChange(self, upstream_branch, author, local_description=False):
     if not self.GitSanityChecks(upstream_branch):
       DieWithError('\nGit sanity check failure')
 
@@ -1372,7 +1372,7 @@ class Changelist(object):
 
     issue = self.GetIssue()
     patchset = self.GetPatchset()
-    if issue:
+    if issue and not local_description:
       description = self.GetDescription()
     else:
       # If the change was never uploaded, use the log messages of all commits
@@ -3605,7 +3605,8 @@ def CMDdescription(parser, args):
   parser.add_option('-d', '--display', action='store_true',
                     help='Display the description instead of opening an editor')
   parser.add_option('-n', '--new-description',
-                    help='New description to set for this issue (- for stdin)')
+                    help='New description to set for this issue (- for stdin, '
+                         '+ to load from local commit HEAD)')
 
   _add_codereview_select_options(parser)
   auth.add_auth_options(parser)
@@ -3644,6 +3645,10 @@ def CMDdescription(parser, args):
     text = options.new_description
     if text == '-':
       text = '\n'.join(l.rstrip() for l in sys.stdin)
+    elif text == '+':
+      base_branch = cl.GetCommonAncestorWithUpstream()
+      change = cl.GetChange(base_branch, None, local_description=True)
+      text = change.FullDescriptionText()
 
     description.set_description(text)
   else:
