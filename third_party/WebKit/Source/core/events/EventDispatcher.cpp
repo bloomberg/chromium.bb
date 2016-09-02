@@ -35,6 +35,7 @@
 #include "core/frame/Deprecation.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "platform/EventDispatchForbiddenScope.h"
@@ -220,6 +221,16 @@ inline void EventDispatcher::dispatchEventPostProcess(EventDispatchHandlingState
     // The DOM Events spec says that events dispatched by JS (other than "click")
     // should not have their default handlers invoked.
     bool isTrustedOrClick = !RuntimeEnabledFeatures::trustedEventsDefaultActionEnabled() || m_event->isTrusted() || isClick;
+
+    // For Android WebView (distinguished by wideViewportQuirkEnabled)
+    // enable untrusted events for mouse down on select elements because
+    // fastclick.js seems to generate these. crbug.com/642698
+    // TODO(dtapuska): Change this to a target SDK quirk crbug.com/643705
+    if (!isTrustedOrClick && m_event->isMouseEvent() && m_event->type() == EventTypeNames::mousedown && isHTMLSelectElement(*m_node)) {
+        if (Settings* settings = m_node->document().settings()) {
+            isTrustedOrClick = settings->wideViewportQuirkEnabled();
+        }
+    }
 
     // Call default event handlers. While the DOM does have a concept of preventing
     // default handling, the detail of which handlers are called is an internal
