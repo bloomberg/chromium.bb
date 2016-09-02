@@ -61,6 +61,7 @@
     DOMMatrix skewY(optional unrestricted double sy = 0);
     DOMMatrix flipX();
     DOMMatrix flipY();
+    DOMMatrix inverse();
 
     Float32Array toFloat32Array();
     Float64Array toFloat64Array();

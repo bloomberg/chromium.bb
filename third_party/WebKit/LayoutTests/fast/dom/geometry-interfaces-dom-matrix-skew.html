@@ -7,8 +7,14 @@
 </head>
 <body>
 <script>
+
+// TODO(hs1217.lee): create the DOMMatrix directly when the sequence constructor is supported.
+function initMatrix(values) {
+  return new DOMMatrixReadOnly(values);
+}
+
 test(function() {
-    var matrix2d = new DOMMatrix(new DOMMatrixReadOnly([1, 2, 3, 3.1, 2, 1]));
+    var matrix2d = new DOMMatrix(initMatrix([1, 2, 3, 3.1, 2, 1]));
     matrix2d.skewXSelf();
     assert_true(matrix2d.is2D);
     assert_equals(matrix2d.a, 1);
@@ -20,7 +26,7 @@ test(function() {
 }, "DOMMatrix skewX() - 2D matrix");
 
 test(function() {
-    var matrix2d = new DOMMatrix(new DOMMatrixReadOnly([1, 2, 3, 3.1, 2, 1]));
+    var matrix2d = new DOMMatrix(initMatrix([1, 2, 3, 3.1, 2, 1]));
     matrix2d.skewXSelf(45);
     assert_true(matrix2d.is2D);
     assert_equals(matrix2d.a, 1);
@@ -32,7 +38,7 @@ test(function() {
 }, "DOMMatrix skewX(45) - 2D matrix");
 
 test(function() {
-    var matrix3d = new DOMMatrix(new DOMMatrixReadOnly([1, 2, 3, 4, 5, 6, 7, 8, 9, 10.1, 11, 12, 13, 14, 15, 16.6]));
+    var matrix3d = new DOMMatrix(initMatrix([1, 2, 3, 4, 5, 6, 7, 8, 9, 10.1, 11, 12, 13, 14, 15, 16.6]));
     matrix3d.skewXSelf();
     assert_false(matrix3d.is2D);
     assert_equals(matrix3d.m11, 1);
@@ -54,7 +60,7 @@ test(function() {
 }, "DOMMatrix skewX() - 3D matrix");
 
 test(function() {
-    var matrix3d = new DOMMatrix(new DOMMatrixReadOnly([1, 2, 3, 4, 5, 6, 7, 8, 9, 10.1, 11, 12, 13, 14, 15, 16.6]));
+    var matrix3d = new DOMMatrix(initMatrix([1, 2, 3, 4, 5, 6, 7, 8, 9, 10.1, 11, 12, 13, 14, 15, 16.6]));
     matrix3d.skewXSelf(45);
     assert_false(matrix3d.is2D);
     assert_equals(matrix3d.m11, 1);
@@ -76,7 +82,7 @@ test(function() {
 }, "DOMMatrix skewX(45) - 3D matrix");
 
 test(function() {
-    var matrix2d = new DOMMatrix(new DOMMatrixReadOnly([1, 2, 3, 3.1, 2, 1]));
+    var matrix2d = new DOMMatrix(initMatrix([1, 2, 3, 3.1, 2, 1]));
     matrix2d.skewYSelf();
     assert_true(matrix2d.is2D);
     assert_equals(matrix2d.a, 1);
@@ -88,7 +94,7 @@ test(function() {
 }, "DOMMatrix skewY() - 2D matrix");
 
 test(function() {
-    var matrix2d = new DOMMatrix(new DOMMatrixReadOnly([2, 2, 2, 2, 2, 2]));
+    var matrix2d = new DOMMatrix(initMatrix([2, 2, 2, 2, 2, 2]));
     matrix2d.skewYSelf(45);
     assert_true(matrix2d.is2D);
     assert_equals(matrix2d.a, 4);
@@ -100,7 +106,7 @@ test(function() {
 }, "DOMMatrix skewY(45) - 2D matrix");
 
 test(function() {
-    var matrix3d = new DOMMatrix(new DOMMatrixReadOnly([1, 2, 3, 4, 5, 6, 7, 8, 9, 10.1, 11, 12, 13, 14, 15, 16.6]));
+    var matrix3d = new DOMMatrix(initMatrix([1, 2, 3, 4, 5, 6, 7, 8, 9, 10.1, 11, 12, 13, 14, 15, 16.6]));
     matrix3d.skewYSelf();
     assert_false(matrix3d.is2D);
     assert_equals(matrix3d.m11, 1);
@@ -122,7 +128,7 @@ test(function() {
 }, "DOMMatrix skewY() - 3D matrix");
 
 test(function() {
-    var matrix3d = new DOMMatrix(new DOMMatrixReadOnly([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]));
+    var matrix3d = new DOMMatrix(initMatrix([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]));
     matrix3d.skewYSelf(45);
     assert_false(matrix3d.is2D);
     assert_equals(matrix3d.m11, 2);

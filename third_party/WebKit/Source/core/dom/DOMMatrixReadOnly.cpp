@@ -104,6 +104,11 @@ DOMMatrix* DOMMatrixReadOnly::flipY()
     return flipY;
 }
 
+DOMMatrix* DOMMatrixReadOnly::inverse()
+{
+    return DOMMatrix::create(this)->invertSelf();
+}
+
 DOMFloat32Array* DOMMatrixReadOnly::toFloat32Array() const
 {
     float array[] = {

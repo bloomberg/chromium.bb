@@ -59,6 +59,7 @@ public:
     DOMMatrix* skewY(double sy);
     DOMMatrix* flipX();
     DOMMatrix* flipY();
+    DOMMatrix* inverse();
 
     DOMFloat32Array* toFloat32Array() const;
     DOMFloat64Array* toFloat64Array() const;

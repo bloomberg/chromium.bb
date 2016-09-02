@@ -1,0 +1,85 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>Geometry Interfaces: DOMMatrix invert</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+</head>
+<body>
+<script>
+
+// TODO(hs1217.lee): create the DOMMatrix directly when the sequence constructor is supported.
+function initMatrix(values) {
+  return new DOMMatrixReadOnly(values);
+}
+
+test(function() {
+    var matrix2d = new DOMMatrix(initMatrix([1, 2, 3, 4, 5, 6]));
+    matrix2d.invertSelf();
+    assert_true(matrix2d.is2D);
+    assert_equals(matrix2d.a, -2);
+    assert_equals(matrix2d.b, 1);
+    assert_equals(matrix2d.c, 1.5);
+    assert_equals(matrix2d.d, -0.5);
+    assert_equals(matrix2d.e, 1);
+    assert_equals(matrix2d.f, -2);
+}, "DOMMatrix invertSelf() - invertible - 2D matrix");
+
+test(function() {
+    var matrix2d = new DOMMatrix(initMatrix([1, 1, 1, 1, 1, 1]));
+    matrix2d.invertSelf();
+    assert_false(matrix2d.is2D);
+    assert_equals(matrix2d.a, NaN);
+    assert_equals(matrix2d.b, NaN);
+    assert_equals(matrix2d.c, NaN);
+    assert_equals(matrix2d.d, NaN);
+    assert_equals(matrix2d.e, NaN);
+    assert_equals(matrix2d.f, NaN);
+}, "DOMMatrix invertSelf() - uninvertible - 2D matrix");
+
+test(function() {
+    var matrix3d = new DOMMatrix(initMatrix([10, 20, 30, 40, 40, 40, 30, 20, 10, 20, 40, 30, 20, 40, 50, 100]));
+    matrix3d.invertSelf();
+    assert_false(matrix3d.is2D);
+    assert_equals(matrix3d.m11, -1.6);
+    assert_equals(matrix3d.m12, 0.05);
+    assert_equals(matrix3d.m13, 0.6);
+    assert_equals(matrix3d.m14, 0.45);
+    assert_equals(matrix3d.m21, 2.05);
+    assert_equals(matrix3d.m22, -0.025);
+    assert_equals(matrix3d.m23, -0.8);
+    assert_equals(matrix3d.m24, -0.575);
+    assert_equals(matrix3d.m31, -0.4);
+    assert_equals(matrix3d.m32, 0);
+    assert_equals(matrix3d.m33, 0.2);
+    assert_equals(matrix3d.m34, 0.1);
+    assert_equals(matrix3d.m41, -0.3);
+    assert_equals(matrix3d.m42, -0);
+    assert_equals(matrix3d.m43, 0.1);
+    assert_equals(matrix3d.m44, 0.1);
+}, "DOMMatrix invertSelf() - 3D matrix");
+
+test(function() {
+    var matrix3d = new DOMMatrix(initMatrix([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]));
+    matrix3d.invertSelf();
+    assert_false(matrix3d.is2D);
+    assert_equals(matrix3d.m11, NaN);
+    assert_equals(matrix3d.m12, NaN);
+    assert_equals(matrix3d.m13, NaN);
+    assert_equals(matrix3d.m14, NaN);
+    assert_equals(matrix3d.m21, NaN);
+    assert_equals(matrix3d.m22, NaN);
+    assert_equals(matrix3d.m23, NaN);
+    assert_equals(matrix3d.m24, NaN);
+    assert_equals(matrix3d.m31, NaN);
+    assert_equals(matrix3d.m32, NaN);
+    assert_equals(matrix3d.m33, NaN);
+    assert_equals(matrix3d.m34, NaN);
+    assert_equals(matrix3d.m41, NaN);
+    assert_equals(matrix3d.m42, NaN);
+    assert_equals(matrix3d.m43, NaN);
+    assert_equals(matrix3d.m44, NaN);
+}, "DOMMatrix invertSelf() - uninvertible - 3D matrix");
+</script>
+</body>
+</html>

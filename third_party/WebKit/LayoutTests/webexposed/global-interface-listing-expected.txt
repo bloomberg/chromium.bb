@@ -993,6 +993,7 @@ interface DOMMatrix : DOMMatrixReadOnly
     getter m43
     getter m44
     method constructor
+    method invertSelf
     method multiplySelf
     method preMultiplySelf
     method scale3dSelf
@@ -1052,6 +1053,7 @@ interface DOMMatrixReadOnly
     method constructor
     method flipX
     method flipY
+    method inverse
     method multiply
     method scale
     method scale3d

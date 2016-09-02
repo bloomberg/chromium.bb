@@ -118,4 +118,30 @@ DOMMatrix* DOMMatrix::skewYSelf(double sy)
     return this;
 }
 
+DOMMatrix* DOMMatrix::invertSelf()
+{
+    if (m_matrix->isInvertible()) {
+        m_matrix = TransformationMatrix::create(m_matrix->inverse());
+    } else {
+        setM11(NAN);
+        setM12(NAN);
+        setM13(NAN);
+        setM14(NAN);
+        setM21(NAN);
+        setM22(NAN);
+        setM23(NAN);
+        setM24(NAN);
+        setM31(NAN);
+        setM32(NAN);
+        setM33(NAN);
+        setM34(NAN);
+        setM41(NAN);
+        setM42(NAN);
+        setM43(NAN);
+        setM44(NAN);
+        setIs2D(false);
+    }
+    return this;
+}
+
 } // namespace blink

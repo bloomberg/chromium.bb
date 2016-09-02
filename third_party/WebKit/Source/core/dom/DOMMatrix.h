@@ -49,6 +49,7 @@ public:
         double ox = 0, double oy = 0, double oz = 0);
     DOMMatrix* skewXSelf(double sx = 0);
     DOMMatrix* skewYSelf(double sy = 0);
+    DOMMatrix* invertSelf();
 
 private:
     DOMMatrix(const TransformationMatrix&, bool is2D = true);

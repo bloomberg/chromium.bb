@@ -58,4 +58,5 @@
                                   optional unrestricted double originZ = 0);
     DOMMatrix skewXSelf(optional unrestricted double sx = 0);
     DOMMatrix skewYSelf(optional unrestricted double sy = 0);
+    DOMMatrix invertSelf();
 };
