@@ -31,8 +31,7 @@ extern "C" {
     int dct_cost_rounding = DCT_CONST_ROUNDING;                                \
     int in = input;                                                            \
                                                                                \
-    __asm__ __volatile__(/* out = dct_const_round_shift(input_dc *             \
-                            cospi_16_64); */                                   \
+    __asm__ __volatile__(/* out = dct_const_round_shift(dc *  cospi_16_64); */ \
                          "mtlo     %[dct_cost_rounding],   $ac1              " \
                          "                \n\t"                                \
                          "mthi     $zero,                  $ac1              " \

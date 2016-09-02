@@ -258,9 +258,7 @@ static void Scale2D(
   int ratio_scalable = 1;
   int interpolation = 0;
 
-  unsigned char *source_base; /* = (unsigned char *) ((source_pitch >= 0) ?
-                                 source : (source + ((source_height-1) *
-                                 source_pitch))); */
+  unsigned char *source_base;
   unsigned char *line_src;
 
   source_base = (unsigned char *)source;
