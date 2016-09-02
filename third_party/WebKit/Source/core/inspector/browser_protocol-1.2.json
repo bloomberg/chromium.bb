@@ -3840,6 +3840,7 @@
     },
     {
         "domain": "Tracing",
+        "experimental": true,
         "types": [
             {
                 "id": "MemoryDumpConfig",
