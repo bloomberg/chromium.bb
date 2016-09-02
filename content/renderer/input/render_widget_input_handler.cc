@@ -514,10 +514,8 @@ void RenderWidgetInputHandler::DidOverscrollFromBlink(
       accumulatedOverscroll.width, accumulatedOverscroll.height);
   params->latest_overscroll_delta =
       gfx::Vector2dF(overscrollDelta.width, overscrollDelta.height);
-  // TODO(sataya.m): don't negate velocity once http://crbug.com/499743 is
-  // fixed.
   params->current_fling_velocity =
-      gfx::Vector2dF(-velocity.width, -velocity.height);
+      gfx::Vector2dF(velocity.width, velocity.height);
   params->causal_event_viewport_point = gfx::PointF(position.x, position.y);
 
   // If we're currently handling an event, stash the overscroll data such that
