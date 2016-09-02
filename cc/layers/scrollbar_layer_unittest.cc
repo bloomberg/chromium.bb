@@ -1007,9 +1007,13 @@ TEST_F(ScaledScrollbarLayerTestResourceCreation, ScaledResourceUpload) {
   // Try something extreme to be larger than max texture size, and make it a
   // non-integer for funsies.
   scoped_refptr<TestContextProvider> context = TestContextProvider::Create();
+  // Keep the max texture size reasonable so we don't OOM on low end devices
+  // (crbug.com/642333).
+  context->UnboundTestContext3d()->set_max_texture_size(512);
   context->BindToCurrentThread();
   int max_texture_size = 0;
   context->ContextGL()->GetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
+  EXPECT_EQ(512, max_texture_size);
   TestResourceUpload(max_texture_size / 9.9f);
 }
 
