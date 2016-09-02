@@ -185,8 +185,8 @@ void InitializeCrashReporter() {
 #endif
 
 bool UseMDOobe() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kEnableMdOobe);
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kDisableMdOobe);
 }
 
 }  // namespace
