@@ -12,8 +12,6 @@ source_set("mus_common") {
     "event_matcher_util.h",
     "generic_shared_memory_id_generator.cc",
     "generic_shared_memory_id_generator.h",
-    "gpu_type_converters.cc",
-    "gpu_type_converters.h",
     "switches.cc",
     "switches.h",
     "transient_window_utils.h",
@@ -56,28 +54,4 @@ source_set("run_all_shelltests") {
   if (use_ozone) {
     deps += [ "//ui/ozone" ]
   }
-}
-
-test("mus_common_unittests") {
-  sources = [
-    "gpu_type_converters_unittest.cc",
-  ]
-  public_deps = [
-    ":mus_common",
-  ]
-  deps = [
-    ":run_all_shelltests",
-    "//base",
-    "//base/test:test_config",
-    "//ipc:ipc",
-    "//services/ui/public/interfaces",
-    "//testing/gtest",
-    "//ui/gfx:test_support",
-    "//ui/gfx/ipc",
-  ]
-}
-
-service_manifest("mus_common_unittests_app_manifest") {
-  name = "mus_common_unittests_app"
-  source = "mus_common_unittests_app_manifest.json"
 }

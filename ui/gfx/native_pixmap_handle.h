@@ -2,14 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_NATIVE_PIXMAP_HANDLE_OZONE_H_
-#define UI_GFX_NATIVE_PIXMAP_HANDLE_OZONE_H_
+#ifndef UI_GFX_NATIVE_PIXMAP_HANDLE_H_
+#define UI_GFX_NATIVE_PIXMAP_HANDLE_H_
 
 #include <stdint.h>
 #include <vector>
 
-#include "base/file_descriptor_posix.h"
 #include "ui/gfx/gfx_export.h"
+
+#if defined(USE_OZONE)
+#include "base/file_descriptor_posix.h"
+#endif
 
 namespace gfx {
 
@@ -36,12 +39,14 @@ struct GFX_EXPORT NativePixmapHandle {
   NativePixmapHandle(const NativePixmapHandle& other);
 
   ~NativePixmapHandle();
+
+#if defined(USE_OZONE)
   // File descriptors for the underlying memory objects (usually dmabufs).
   std::vector<base::FileDescriptor> fds;
-
+#endif
   std::vector<NativePixmapPlane> planes;
 };
 
 }  // namespace gfx
 
-#endif  // UI_GFX_NATIVE_PIXMAP_HANDLE_OZONE_H_
+#endif  // UI_GFX_NATIVE_PIXMAP_HANDLE_H_

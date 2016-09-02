@@ -195,6 +195,74 @@ struct StructTraits<gfx::mojom::GpuMemoryBufferIdDataView,
   }
 };
 
+template <>
+struct StructTraits<gfx::mojom::NativePixmapPlaneDataView,
+                    gfx::NativePixmapPlane> {
+  static uint32_t stride(const gfx::NativePixmapPlane& plane) {
+    return plane.stride;
+  }
+  static int32_t offset(const gfx::NativePixmapPlane& plane) {
+    return plane.offset;
+  }
+  static uint64_t modifier(const gfx::NativePixmapPlane& plane) {
+    return plane.modifier;
+  }
+  static bool Read(gfx::mojom::NativePixmapPlaneDataView data,
+                   gfx::NativePixmapPlane* out) {
+    out->stride = data.stride();
+    out->offset = data.offset();
+    out->modifier = data.modifier();
+    return true;
+  }
+};
+
+template <>
+struct StructTraits<gfx::mojom::NativePixmapHandleDataView,
+                    gfx::NativePixmapHandle> {
+  static bool IsNull(const gfx::NativePixmapHandle& handle) {
+#if defined(USE_OZONE)
+    return false;
+#else
+    // NativePixmapHandle are not used on non-ozone platforms.
+    return true;
+#endif
+  }
+  static std::vector<mojo::ScopedHandle> fds(
+      const gfx::NativePixmapHandle& pixmap_handle);
+
+  static const std::vector<gfx::NativePixmapPlane>& planes(
+      const gfx::NativePixmapHandle& pixmap_handle) {
+    return pixmap_handle.planes;
+  }
+
+  static bool Read(gfx::mojom::NativePixmapHandleDataView data,
+                   gfx::NativePixmapHandle* out);
+};
+
+template <>
+struct StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
+                    gfx::GpuMemoryBufferHandle> {
+  static gfx::GpuMemoryBufferType type(
+      const gfx::GpuMemoryBufferHandle& handle) {
+    return handle.type;
+  }
+  static gfx::GpuMemoryBufferId id(const gfx::GpuMemoryBufferHandle& handle) {
+    return handle.id;
+  }
+  static mojo::ScopedHandle shared_memory_handle(
+      const gfx::GpuMemoryBufferHandle& handle);
+  static uint32_t offset(const gfx::GpuMemoryBufferHandle& handle) {
+    return handle.offset;
+  }
+  static uint32_t stride(const gfx::GpuMemoryBufferHandle& handle) {
+    return handle.stride;
+  }
+  static const gfx::NativePixmapHandle& native_pixmap_handle(
+      const gfx::GpuMemoryBufferHandle& handle);
+  static bool Read(gfx::mojom::GpuMemoryBufferHandleDataView data,
+                   gfx::GpuMemoryBufferHandle* handle);
+};
+
 }  // namespace mojo
 
 #endif  // UI_GFX_MOJO_BUFFER_TYPES_TRAITS_H_

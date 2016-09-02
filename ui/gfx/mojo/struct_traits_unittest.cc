@@ -49,6 +49,12 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
     callback.Run(t);
   }
 
+  void EchoGpuMemoryBufferHandle(
+      const GpuMemoryBufferHandle& handle,
+      const EchoGpuMemoryBufferHandleCallback& callback) override {
+    callback.Run(handle);
+  }
+
   base::MessageLoop loop_;
   mojo::BindingSet<TraitsTestService> traits_test_bindings_;
 
@@ -132,6 +138,35 @@ TEST_F(StructTraitsTest, MAYBE_AcceleratedWidget) {
   gfx::AcceleratedWidget output;
   proxy->EchoAcceleratedWidget(input, &output);
   EXPECT_EQ(input, output);
+}
+
+TEST_F(StructTraitsTest, GpuMemoryBufferHandle) {
+  const gfx::GpuMemoryBufferId kId(99);
+  const uint32_t kOffset = 126;
+  const int32_t kStride = 256;
+  base::SharedMemory shared_memory;
+  ASSERT_TRUE(shared_memory.CreateAnonymous(1024));
+  ASSERT_TRUE(shared_memory.Map(1024));
+
+  gfx::GpuMemoryBufferHandle handle;
+  handle.type = gfx::SHARED_MEMORY_BUFFER;
+  handle.id = kId;
+  handle.handle = base::SharedMemory::DuplicateHandle(shared_memory.handle());
+  handle.offset = kOffset;
+  handle.stride = kStride;
+
+  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  gfx::GpuMemoryBufferHandle output;
+  proxy->EchoGpuMemoryBufferHandle(handle, &output);
+  EXPECT_EQ(gfx::SHARED_MEMORY_BUFFER, output.type);
+  EXPECT_EQ(kId, output.id);
+  EXPECT_EQ(kOffset, output.offset);
+  EXPECT_EQ(kStride, output.stride);
+#if !defined(OS_MACOSX) && !defined(OS_IOS)
+  // TODO: Add support for mach_port on mac.
+  base::SharedMemory output_memory(output.handle, true);
+  EXPECT_TRUE(output_memory.Map(1024));
+#endif
 }
 
 }  // namespace gfx

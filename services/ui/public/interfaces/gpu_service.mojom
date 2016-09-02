@@ -25,7 +25,7 @@ interface GpuService {
                         gfx.mojom.BufferFormat format,
                         gfx.mojom.BufferUsage usage,
                         uint64 surface_id)
-      => (GpuMemoryBufferHandle buffer_handle);
+      => (gfx.mojom.GpuMemoryBufferHandle buffer_handle);
 
   // Tells the GPU process to destroy GPU memory buffer.
   DestroyGpuMemoryBuffer(gfx.mojom.GpuMemoryBufferId id,

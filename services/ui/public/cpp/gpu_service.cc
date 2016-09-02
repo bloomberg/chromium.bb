@@ -11,7 +11,6 @@
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/shell/public/cpp/connector.h"
-#include "services/ui/common/gpu_type_converters.h"
 #include "services/ui/common/switches.h"
 #include "services/ui/public/cpp/mojo_gpu_memory_buffer_manager.h"
 #include "services/ui/public/interfaces/gpu_service.mojom.h"

@@ -49,3 +49,29 @@ enum GpuMemoryBufferType {
 struct GpuMemoryBufferId {
   int32 id;
 };
+
+// gfx::NativePixmapPlane
+struct NativePixmapPlane {
+  uint32 stride;
+  int32 offset;
+  uint64 modifier;
+};
+
+// gfx::NativePixmapHandle
+struct NativePixmapHandle {
+  // A file descriptor for the underlying memory object (usually dmabuf).
+  array<handle> fds;
+
+  array<NativePixmapPlane> planes;
+};
+
+// gfx::GpuMemoryBufferHandle
+struct GpuMemoryBufferHandle {
+  GpuMemoryBufferType type;
+  GpuMemoryBufferId id;
+  handle shared_memory_handle;
+  uint32 offset;
+  uint32 stride;
+  NativePixmapHandle? native_pixmap_handle;
+  // TODO: Add support for mach_port on mac.
+};

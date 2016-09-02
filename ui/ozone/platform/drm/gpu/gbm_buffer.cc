@@ -15,7 +15,7 @@
 #include "base/trace_event/trace_event.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/geometry/size_conversions.h"
-#include "ui/gfx/native_pixmap_handle_ozone.h"
+#include "ui/gfx/native_pixmap_handle.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_window.h"
 #include "ui/ozone/platform/drm/gpu/gbm_device.h"

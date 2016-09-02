@@ -5,6 +5,7 @@
 module gfx.mojom;
 
 import "ui/gfx/mojo/accelerated_widget.mojom";
+import "ui/gfx/mojo/buffer_types.mojom";
 import "ui/gfx/mojo/selection_bound.mojom";
 import "ui/gfx/mojo/transform.mojom";
 
@@ -19,4 +20,8 @@ interface TraitsTestService {
 
   [Sync]
   EchoTransform(Transform t) => (Transform pass);
+
+  [Sync]
+  EchoGpuMemoryBufferHandle(GpuMemoryBufferHandle g)
+      => (GpuMemoryBufferHandle pass);
 };

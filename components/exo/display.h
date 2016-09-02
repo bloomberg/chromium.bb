@@ -17,7 +17,7 @@
 #include "base/files/scoped_file.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gfx/native_pixmap_handle_ozone.h"
+#include "ui/gfx/native_pixmap_handle.h"
 #endif
 
 namespace gfx {

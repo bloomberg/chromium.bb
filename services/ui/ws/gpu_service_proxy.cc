@@ -10,7 +10,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "services/shell/public/cpp/connection.h"
-#include "services/ui/common/gpu_type_converters.h"
 #include "services/ui/gpu/gpu_service_internal.h"
 #include "services/ui/ws/gpu_service_proxy_delegate.h"
 #include "services/ui/ws/mus_gpu_memory_buffer_manager.h"

@@ -8,7 +8,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "ui/gfx/native_pixmap_handle_ozone.h"
+#include "ui/gfx/native_pixmap_handle.h"
 #include "ui/ozone/platform/drm/common/client_native_pixmap_dmabuf.h"
 #include "ui/ozone/public/client_native_pixmap_factory.h"
 

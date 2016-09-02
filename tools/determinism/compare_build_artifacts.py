@@ -304,7 +304,6 @@ WHITELIST = {
     'mojo_public_system_unittests.exe',
     'mojo_system_unittests.exe',
     'mus_clipboard_unittests.exe',
-    'mus_common_unittests.exe',
     'mus_demo_library.dll',
     'mus_demo_unittests.exe',
     'mus_gpu_unittests.exe',

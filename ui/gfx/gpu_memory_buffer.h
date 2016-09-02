@@ -17,7 +17,7 @@
 #include "ui/gfx/gfx_export.h"
 
 #if defined(USE_OZONE)
-#include "ui/gfx/native_pixmap_handle_ozone.h"
+#include "ui/gfx/native_pixmap_handle.h"
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
 #include "ui/gfx/mac/io_surface.h"
 #endif

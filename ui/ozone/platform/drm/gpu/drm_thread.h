@@ -15,7 +15,7 @@
 #include "base/threading/thread.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/shell/public/cpp/connection.h"
-#include "ui/gfx/native_pixmap_handle_ozone.h"
+#include "ui/gfx/native_pixmap_handle.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/vsync_provider.h"
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
