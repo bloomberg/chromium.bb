@@ -1,118 +1,27 @@
 {
-  "Android GN": {
+  "Android Builder (dbg)": {
     "additional_compile_targets": [
-      "chrome_public_apk"
+      "all"
     ]
   },
-  "Android GN (dbg)": {
+  "Android Builder ARM64 (dbg)": {
     "additional_compile_targets": [
-      "chrome_public_apk"
+      "all"
     ]
   },
   "Linux Builder": {
     "additional_compile_targets": [
-      "browser_tests",
-      "capture_unittests",
-      "content_browsertests",
-      "content_unittests",
-      "frame_analyzer",
-      "media_unittests",
-      "midi_unittests",
-      "remoting_unittests",
-      "rgba_to_i420_converter"
+      "all"
     ]
-  },
-  "Linux Tester": {
-    "gtest_tests": []
   },
   "Mac Builder": {
     "additional_compile_targets": [
-      "browser_tests",
-      "capture_unittests",
-      "content_browsertests",
-      "content_unittests",
-      "frame_analyzer",
-      "media_unittests",
-      "midi_unittests",
-      "remoting_unittests",
-      "rgba_to_i420_converter"
+      "all"
     ]
-  },
-  "Mac GN": {
-    "additional_compile_targets": [
-      "browser_tests",
-      "capture_unittests",
-      "content_browsertests",
-      "content_unittests",
-      "frame_analyzer",
-      "media_unittests",
-      "midi_unittests",
-      "remoting_unittests",
-      "rgba_to_i420_converter"
-    ]
-  },
-  "Mac GN (dbg)": {
-    "additional_compile_targets": [
-      "browser_tests",
-      "capture_unittests",
-      "content_browsertests",
-      "content_unittests",
-      "frame_analyzer",
-      "media_unittests",
-      "midi_unittests",
-      "remoting_unittests",
-      "rgba_to_i420_converter"
-    ]
-  },
-  "Mac Tester": {
-    "gtest_tests": []
   },
   "Win Builder": {
     "additional_compile_targets": [
-      "browser_tests",
-      "capture_unittests",
-      "content_browsertests",
-      "content_unittests",
-      "frame_analyzer",
-      "media_unittests",
-      "midi_unittests",
-      "remoting_unittests",
-      "rgba_to_i420_converter"
+      "all"
     ]
-  },
-  "Win x64 GN": {
-    "additional_compile_targets": [
-      "browser_tests",
-      "capture_unittests",
-      "content_browsertests",
-      "content_unittests",
-      "frame_analyzer",
-      "media_unittests",
-      "midi_unittests",
-      "remoting_unittests",
-      "rgba_to_i420_converter"
-    ]
-  },
-  "Win x64 GN (dbg)": {
-    "additional_compile_targets": [
-      "browser_tests",
-      "capture_unittests",
-      "content_browsertests",
-      "content_unittests",
-      "frame_analyzer",
-      "media_unittests",
-      "midi_unittests",
-      "remoting_unittests",
-      "rgba_to_i420_converter"
-    ]
-  },
-  "Win10 Tester": {
-    "gtest_tests": []
-  },
-  "Win7 Tester": {
-    "gtest_tests": []
-  },
-  "WinXP Tester": {
-    "gtest_tests": []
   }
 }

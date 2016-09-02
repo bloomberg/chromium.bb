@@ -9,12 +9,8 @@
       "gpu_ipc_service_unittests",
       "media_unittests",
       "midi_unittests",
-      "remoting_unittests",
-      "rgba_to_i420_converter"
+      "remoting_unittests"
     ]
-  },
-  "Linux Tester": {
-    "gtest_tests": []
   },
   "Mac Builder": {
     "additional_compile_targets": [
@@ -26,12 +22,8 @@
       "gpu_ipc_service_unittests",
       "media_unittests",
       "midi_unittests",
-      "remoting_unittests",
-      "rgba_to_i420_converter"
+      "remoting_unittests"
     ]
-  },
-  "Mac Tester": {
-    "gtest_tests": []
   },
   "Win Builder": {
     "additional_compile_targets": [
@@ -43,20 +35,7 @@
       "gpu_ipc_service_unittests",
       "media_unittests",
       "midi_unittests",
-      "remoting_unittests",
-      "rgba_to_i420_converter"
+      "remoting_unittests"
     ]
-  },
-  "Win10 Tester": {
-    "gtest_tests": []
-  },
-  "Win7 Tester": {
-    "gtest_tests": []
-  },
-  "Win8 Tester": {
-    "gtest_tests": []
-  },
-  "WinXP Tester": {
-    "gtest_tests": []
   }
 }
