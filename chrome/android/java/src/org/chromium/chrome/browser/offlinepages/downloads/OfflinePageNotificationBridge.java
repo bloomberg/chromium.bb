@@ -139,7 +139,6 @@ public class OfflinePageNotificationBridge {
     }
 
     private static DownloadNotifier getDownloadNotifier(Context context) {
-        if (!DownloadManagerService.hasDownloadManagerService()) return null;
         return DownloadManagerService.getDownloadManagerService(context).getDownloadNotifier();
     }
 }
