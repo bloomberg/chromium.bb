@@ -616,6 +616,12 @@ WebTextInputInfo WebFrameWidgetImpl::textInputInfo()
     if (!focused->editor().canEdit())
         return info;
 
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
+    // see http://crbug.com/590369 for more details.
+    focused->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
+    DocumentLifecycle::DisallowTransitionScope disallowTransition(focused->document()->lifecycle());
+
     // Emits an object replacement character for each replaced element so that
     // it is exposed to IME and thus could be deleted by IME on android.
     info.value = plainText(EphemeralRange::rangeOfContents(*element), TextIteratorEmitsObjectReplacementCharacter);
