@@ -66,6 +66,9 @@ std::vector<const bookmarks::BookmarkNode*> GetRecentlyVisitedBookmarks(
 std::vector<const bookmarks::BookmarkNode*> GetDismissedBookmarksForDebugging(
     bookmarks::BookmarkModel* bookmark_model);
 
+// Removes last visited date metadata for all bookmarks.
+void RemoveAllLastVisitDates(bookmarks::BookmarkModel* bookmark_model);
+
 }  // namespace ntp_snippets
 
 #endif  // COMPONENTS_NTP_SNIPPETS_BOOKMARKS_BOOKMARK_LAST_VISIT_UTILS_H_

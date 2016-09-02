@@ -188,7 +188,11 @@ void BookmarkSuggestionsProvider::ClearHistory(
     base::Time begin,
     base::Time end,
     const base::Callback<bool(const GURL& url)>& filter) {
-  // TODO(vitaliii): Implement. See crbug.com/641321.
+  // TODO(vitaliii): Do not remove all dates, but only the ones matched by the
+  // time range and the filter.
+  RemoveAllLastVisitDates(bookmark_model_);
+  ClearDismissedSuggestionsForDebugging(provided_category_);
+  FetchBookmarks();
 }
 
 void BookmarkSuggestionsProvider::ClearCachedSuggestions(Category category) {

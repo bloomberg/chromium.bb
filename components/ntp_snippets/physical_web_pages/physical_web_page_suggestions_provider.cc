@@ -90,8 +90,7 @@ void PhysicalWebPageSuggestionsProvider::ClearHistory(
     base::Time begin,
     base::Time end,
     const base::Callback<bool(const GURL& url)>& filter) {
-  // TODO(vitaliii): Implement when dismissed suggestions are supported. See
-  // crbug.com/641321.
+  ClearDismissedSuggestionsForDebugging(provided_category_);
 }
 
 void PhysicalWebPageSuggestionsProvider::ClearCachedSuggestions(

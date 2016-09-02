@@ -154,7 +154,9 @@ void OfflinePageSuggestionsProvider::ClearHistory(
     base::Time begin,
     base::Time end,
     const base::Callback<bool(const GURL& url)>& filter) {
-  // TODO(vitaliii): Implement. See crbug.com/641321.
+  ClearDismissedSuggestionsForDebugging(recent_tabs_category_);
+  ClearDismissedSuggestionsForDebugging(downloads_category_);
+  FetchOfflinePages();
 }
 
 void OfflinePageSuggestionsProvider::ClearCachedSuggestions(Category category) {

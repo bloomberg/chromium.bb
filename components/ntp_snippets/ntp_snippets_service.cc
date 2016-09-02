@@ -339,7 +339,13 @@ void NTPSnippetsService::ClearHistory(
     base::Time begin,
     base::Time end,
     const base::Callback<bool(const GURL& url)>& filter) {
-  // TODO(vitaliii): Implement. See crbug.com/641321.
+  // Both time range and the filter are ignored and all suggestions are removed,
+  // because it is not known which history entries were used for the suggestions
+  // personalization.
+  if (!ready())
+    nuke_after_load_ = true;
+  else
+    NukeAllSnippets();
 }
 
 void NTPSnippetsService::ClearCachedSuggestions(Category category) {

@@ -161,6 +161,11 @@ class NTPSnippetsService : public ContentSuggestionsProvider,
     return snippets_;
   }
 
+  // Dismissed snippets, only for unit tests.
+  const NTPSnippet::PtrVector& GetDismissedSnippetsForTesting() const {
+    return dismissed_snippets_;
+  }
+
  private:
   friend class NTPSnippetsServiceTest;
   FRIEND_TEST_ALL_PREFIXES(NTPSnippetsServiceTest, StatusChanges);

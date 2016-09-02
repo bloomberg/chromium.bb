@@ -864,4 +864,26 @@ TEST_F(NTPSnippetsServiceTest, EmptyImageReturnedForNonExistentId) {
   EXPECT_TRUE(image.IsEmpty());
 }
 
+TEST_F(NTPSnippetsServiceTest, ClearHistoryRemovesAllSuggestions) {
+  auto service = MakeSnippetsService();
+
+  std::string first_snippet = GetSnippetWithUrl("http://url1.com");
+  std::string second_snippet = GetSnippetWithUrl("http://url2.com");
+  std::string json_str = GetTestJson({first_snippet, second_snippet});
+  LoadFromJSONString(service.get(), json_str);
+  ASSERT_THAT(service->GetSnippetsForTesting(), SizeIs(2));
+
+  service->DismissSuggestion(MakeUniqueID(*service, "http://url1.com"));
+  ASSERT_THAT(service->GetSnippetsForTesting(), SizeIs(1));
+  ASSERT_THAT(service->GetDismissedSnippetsForTesting(), SizeIs(1));
+
+  base::Time begin = base::Time::FromTimeT(123),
+             end = base::Time::FromTimeT(456);
+  base::Callback<bool(const GURL& url)> filter;
+  service->ClearHistory(begin, end, filter);
+
+  EXPECT_THAT(service->GetSnippetsForTesting(), IsEmpty());
+  EXPECT_THAT(service->GetDismissedSnippetsForTesting(), IsEmpty());
+}
+
 }  // namespace ntp_snippets

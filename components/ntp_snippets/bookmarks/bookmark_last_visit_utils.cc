@@ -232,4 +232,20 @@ std::vector<const BookmarkNode*> GetDismissedBookmarksForDebugging(
   return result;
 }
 
+void RemoveAllLastVisitDates(bookmarks::BookmarkModel* bookmark_model) {
+  // Get all the bookmark URLs.
+  std::vector<BookmarkModel::URLAndTitle> bookmark_urls;
+  bookmark_model->GetBookmarks(&bookmark_urls);
+
+  for (const BookmarkModel::URLAndTitle& url_and_title : bookmark_urls) {
+    // Get all bookmarks for the given URL.
+    std::vector<const BookmarkNode*> bookmarks_for_url;
+    bookmark_model->GetNodesByURL(url_and_title.url, &bookmarks_for_url);
+
+    for (const BookmarkNode* bookmark : bookmarks_for_url) {
+      bookmark_model->DeleteNodeMetaInfo(bookmark, kBookmarkLastVisitDateKey);
+    }
+  }
+}
+
 }  // namespace ntp_snippets
