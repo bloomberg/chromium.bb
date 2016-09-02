@@ -50,7 +50,7 @@
     "extension_types": ["extension"],
     "platforms": ["win"]
   }, {
-    "channel": "trunk",
+    "channel": "canary",
     "extension_types": ["extension"],
     "platforms": ["mac"]
   }],
