@@ -76,8 +76,7 @@ std::vector<base::FilePath> CollectChangedPaths(
 // Downloads directory.
 class ArcDownloadsWatcherService::DownloadsWatcher {
  public:
-  using Callback =
-      base::Callback<void(const std::vector<base::FilePath>& paths)>;
+  using Callback = base::Callback<void(mojo::Array<mojo::String> paths)>;
 
   explicit DownloadsWatcher(const Callback& callback);
   ~DownloadsWatcher();
@@ -147,7 +146,13 @@ void ArcDownloadsWatcherService::DownloadsWatcher::OnFilePathChanged(
 
   last_timestamp_map_ = std::move(current_timestamp_map);
 
-  callback_.Run(changed_paths);
+  mojo::Array<mojo::String> mojo_paths(changed_paths.size());
+  for (size_t i = 0; i < changed_paths.size(); ++i) {
+    mojo_paths[i] = changed_paths[i].value();
+  }
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(callback_, base::Passed(std::move(mojo_paths))));
 }
 
 TimestampMap ArcDownloadsWatcherService::DownloadsWatcher::BuildTimestampMap()
@@ -217,18 +222,13 @@ void ArcDownloadsWatcherService::StopWatchingDownloads() {
 }
 
 void ArcDownloadsWatcherService::OnDownloadsChanged(
-    const std::vector<base::FilePath>& paths) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+    mojo::Array<mojo::String> paths) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   auto* instance = arc_bridge_service()->file_system()->instance();
   if (!instance)
     return;
-
-  mojo::Array<mojo::String> mojo_paths(paths.size());
-  for (size_t i = 0; i < paths.size(); ++i) {
-    mojo_paths[i] = paths[i].value();
-  }
-  instance->RequestMediaScan(std::move(mojo_paths));
+  instance->RequestMediaScan(std::move(paths));
 }
 
 }  // namespace arc
