@@ -101283,8 +101283,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Navigation.TimeToURLJobStart"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="Net.BidirectionalStreamExperiment" separator="."
-    ordering="prefix">
+<histogram_suffixes name="Net.BidirectionalStreamExperiment" separator=".">
   <owner>xunjieli@chromium.org</owner>
   <suffix name="QUIC" label="Bidirectional streams that use QUIC protocol"/>
   <suffix name="HTTP2" label="Bidirectional stream that use HTTP2 protocol"/>

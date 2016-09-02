@@ -391,30 +391,30 @@ void BidirectionalStream::UpdateHistograms() {
     return;
   }
   if (GetProtocol() == kProtoHTTP2) {
-    UMA_HISTOGRAM_TIMES("Net.BidirectionalStream.HTTP2.TimeToReadStart",
+    UMA_HISTOGRAM_TIMES("Net.BidirectionalStream.TimeToReadStart.HTTP2",
                         read_start_time_ - start_time_);
-    UMA_HISTOGRAM_TIMES("Net.BidirectionalStream.HTTP2.TimeToReadEnd",
+    UMA_HISTOGRAM_TIMES("Net.BidirectionalStream.TimeToReadEnd.HTTP2",
                         read_end_time_ - start_time_);
-    UMA_HISTOGRAM_TIMES("Net.BidirectionalStream.HTTP2.TimeToSendStart",
+    UMA_HISTOGRAM_TIMES("Net.BidirectionalStream.TimeToSendStart.HTTP2",
                         send_start_time_ - start_time_);
-    UMA_HISTOGRAM_TIMES("Net.BidirectionalStream.HTTP2.TimeToSendEnd",
+    UMA_HISTOGRAM_TIMES("Net.BidirectionalStream.TimeToSendEnd.HTTP2",
                         send_end_time_ - start_time_);
-    UMA_HISTOGRAM_COUNTS("Net.BidirectionalStream.HTTP2.ReceivedBytes",
+    UMA_HISTOGRAM_COUNTS("Net.BidirectionalStream.ReceivedBytes.HTTP2",
                          stream_impl_->GetTotalReceivedBytes());
-    UMA_HISTOGRAM_COUNTS("Net.BidirectionalStream.HTTP2.SentBytes",
+    UMA_HISTOGRAM_COUNTS("Net.BidirectionalStream.SentBytes.HTTP2",
                          stream_impl_->GetTotalSentBytes());
   } else if (GetProtocol() == kProtoQUIC1SPDY3) {
-    UMA_HISTOGRAM_TIMES("Net.BidirectionalStream.QUIC.TimeToReadStart",
+    UMA_HISTOGRAM_TIMES("Net.BidirectionalStream.TimeToReadStart.QUIC",
                         read_start_time_ - start_time_);
-    UMA_HISTOGRAM_TIMES("Net.BidirectionalStream.QUIC.TimeToReadEnd",
+    UMA_HISTOGRAM_TIMES("Net.BidirectionalStream.TimeToReadEnd.QUIC",
                         read_end_time_ - start_time_);
-    UMA_HISTOGRAM_TIMES("Net.BidirectionalStream.QUIC.TimeToSendStart",
+    UMA_HISTOGRAM_TIMES("Net.BidirectionalStream.TimeToSendStart.QUIC",
                         send_start_time_ - start_time_);
-    UMA_HISTOGRAM_TIMES("Net.BidirectionalStream.QUIC.TimeToSendEnd",
+    UMA_HISTOGRAM_TIMES("Net.BidirectionalStream.TimeToSendEnd.QUIC",
                         send_end_time_ - start_time_);
-    UMA_HISTOGRAM_COUNTS("Net.BidirectionalStream.QUIC.ReceivedBytes",
+    UMA_HISTOGRAM_COUNTS("Net.BidirectionalStream.ReceivedBytes.QUIC",
                          stream_impl_->GetTotalReceivedBytes());
-    UMA_HISTOGRAM_COUNTS("Net.BidirectionalStream.QUIC.SentBytes",
+    UMA_HISTOGRAM_COUNTS("Net.BidirectionalStream.SentBytes.QUIC",
                          stream_impl_->GetTotalSentBytes());
   }
 }
