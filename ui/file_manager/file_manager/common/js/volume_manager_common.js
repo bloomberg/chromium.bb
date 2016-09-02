@@ -214,7 +214,7 @@ VolumeManagerCommon.VolumeInfoProvider.prototype.getVolumeInfo;
 /**
  * Fake entries for Google Drive's virtual folders.
  * (OFFLINE, RECENT, and SHARED_WITH_ME)
- * @typedef {?{
+ * @typedef {{
  *   isDirectory: boolean,
  *   rootType: VolumeManagerCommon.RootType,
  *   toURL: function(): string

@@ -154,7 +154,7 @@ FileBrowserBackground.prototype.ready = function(callback) {
  */
 FileBrowserBackground.prototype.handleViewEvent_ =
     function(event) {
-  VolumeManager.getInstance()
+  volumeManagerFactory.getInstance()
       .then(
           /**
            * Retrieves the root file entry of the volume on the requested
@@ -187,7 +187,7 @@ FileBrowserBackground.prototype.handleViewEvent_ =
  */
 FileBrowserBackground.prototype.navigateToVolumeWhenReady_ =
     function(volumeId, opt_directoryPath) {
-  VolumeManager.getInstance()
+  volumeManagerFactory.getInstance()
       .then(
           /**
            * Retrieves the root file entry of the volume on the requested

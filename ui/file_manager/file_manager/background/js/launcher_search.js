@@ -117,7 +117,7 @@ LauncherSearch.prototype.onQueryStarted_ = function(queryId, query, limit) {
   // initialized. In this method, chrome.fileManagerPrivate.searchDriveMetadata
   // resolves url internally, and it fails if filesystem of the url is not
   // initialized.
-  VolumeManager.getInstance().then(function() {
+  volumeManagerFactory.getInstance().then(function() {
     chrome.fileManagerPrivate.searchDriveMetadata(
         {
           query: query,
@@ -182,7 +182,7 @@ LauncherSearch.prototype.onOpenResult_ = function(itemId) {
   // Request an instance of volume manager to ensure that all volumes are
   // initialized. webkitResolveLocalFileSystemURL in util.urlToEntry fails if
   // filesystem of the url is not initialized.
-  VolumeManager.getInstance().then(function() {
+  volumeManagerFactory.getInstance().then(function() {
     util.urlToEntry(itemId).then(function(entry) {
       if (entry.isDirectory) {
         // If it's directory, open the directory with file manager.

@@ -19,5 +19,10 @@
 <include src="../../common/js/volume_manager_common.js">
 <include src="app_window_wrapper.js">
 <include src="background_base.js">
+<include src="entry_location_impl.js">
 <include src="test_util_base.js">
-<include src="volume_manager.js">
+<include src="volume_info_impl.js">
+<include src="volume_info_list_impl.js">
+<include src="volume_manager_factory.js">
+<include src="volume_manager_impl.js">
+<include src="volume_manager_util.js">

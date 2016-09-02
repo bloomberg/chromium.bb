@@ -564,7 +564,7 @@ test.util.async.getNotificationIDs = function(callback) {
  */
 test.util.async.getFilesUnderVolume = function(volumeType, names, callback) {
   var displayRootPromise =
-      VolumeManager.getInstance().then(function(volumeManager) {
+      volumeManagerFactory.getInstance().then(function(volumeManager) {
     var volumeInfo = volumeManager.getCurrentProfileVolumeInfo(volumeType);
     return volumeInfo.resolveDisplayRoot();
   });

@@ -407,7 +407,7 @@ DeviceHandler.prototype.onMount_ = function(event) {
   // If this is remounting, which happens when resuming Chrome OS, the device
   // has already inserted to the computer. So we suppress the notification.
   var metadata = event.volumeMetadata;
-  VolumeManager.getInstance()
+  volumeManagerFactory.getInstance()
       .then(
           /**
            * @param {!VolumeManager} volumeManager

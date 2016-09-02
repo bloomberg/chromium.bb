@@ -48,10 +48,11 @@ function VolumeManagerWrapper(allowedPaths, opt_backgroundPage) {
   }
 
   queue.run(function(callNextStep) {
-    this.backgroundPage_.VolumeManager.getInstance(function(volumeManager) {
-      this.onReady_(volumeManager);
-      callNextStep();
-    }.bind(this));
+    this.backgroundPage_.volumeManagerFactory.getInstance(
+        function(volumeManager) {
+          this.onReady_(volumeManager);
+          callNextStep();
+        }.bind(this));
   }.bind(this));
 }
 
@@ -159,11 +160,12 @@ VolumeManagerWrapper.prototype.onEvent_ = function(event) {
       eventVolumeType = VolumeManagerCommon.VolumeType.DRIVE;
       break;
     case 'externally-unmounted':
+      event = /** @type {!ExternallyUnmountedEvent} */ (event);
       eventVolumeType = event.volumeInfo.volumeType;
       break;
   }
 
-  if (this.isAllowedVolume_(eventVolumeType))
+  if (eventVolumeType && this.isAllowedVolume_(eventVolumeType))
     this.dispatchEvent(event);
 };
 
@@ -377,7 +379,7 @@ VolumeManagerWrapper.prototype.toString = function() {
   var initialized = this.isInitialized();
   var volumeManager = initialized ?
       this.volumeManager_ :
-      this.backgroundPage_.VolumeManager.getInstanceForDebug();
+      this.backgroundPage_.volumeManagerFactory.getInstanceForDebug();
 
   var str = 'VolumeManagerWrapper\n' +
       '- Initialized: ' + initialized + '\n';

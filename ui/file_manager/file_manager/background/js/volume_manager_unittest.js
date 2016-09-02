@@ -115,7 +115,7 @@ function setUp() {
 }
 
 function tearDown() {
-  VolumeManager.revokeInstanceForTesting();
+  volumeManagerFactory.revokeInstanceForTesting();
   chrome = null;
 }
 
@@ -134,35 +134,39 @@ function getMockProfile() {
 }
 
 function testGetVolumeInfo(callback) {
-  reportPromise(VolumeManager.getInstance().then(function(volumeManager) {
-    var entry = new MockFileEntry(new MockFileSystem('download:Downloads'),
-        '/foo/bar/bla.zip');
+  reportPromise(
+      volumeManagerFactory.getInstance().then(function(volumeManager) {
+        var entry = new MockFileEntry(new MockFileSystem('download:Downloads'),
+            '/foo/bar/bla.zip');
 
-    var volumeInfo = volumeManager.getVolumeInfo(entry);
-    assertEquals('download:Downloads', volumeInfo.volumeId);
-    assertEquals(VolumeManagerCommon.VolumeType.DOWNLOADS,
-        volumeInfo.volumeType);
-  }), callback);
+        var volumeInfo = volumeManager.getVolumeInfo(entry);
+        assertEquals('download:Downloads', volumeInfo.volumeId);
+        assertEquals(VolumeManagerCommon.VolumeType.DOWNLOADS,
+            volumeInfo.volumeType);
+      }),
+      callback);
 }
 
 function testGetDriveConnectionState(callback) {
-  reportPromise(VolumeManager.getInstance().then(function(volumeManager) {
-    // Default connection state is online
-    assertEquals(VolumeManagerCommon.DriveConnectionType.ONLINE,
-        volumeManager.getDriveConnectionState());
+  reportPromise(
+      volumeManagerFactory.getInstance().then(function(volumeManager) {
+        // Default connection state is online
+        assertEquals(VolumeManagerCommon.DriveConnectionType.ONLINE,
+            volumeManager.getDriveConnectionState());
 
-    // Sets it to offline.
-    chrome.fileManagerPrivate.driveConnectionState =
-        VolumeManagerCommon.DriveConnectionType.OFFLINE;
-    assertEquals(VolumeManagerCommon.DriveConnectionType.OFFLINE,
-        volumeManager.getDriveConnectionState());
+        // Sets it to offline.
+        chrome.fileManagerPrivate.driveConnectionState =
+            VolumeManagerCommon.DriveConnectionType.OFFLINE;
+        assertEquals(VolumeManagerCommon.DriveConnectionType.OFFLINE,
+            volumeManager.getDriveConnectionState());
 
-    // Sets it back to online
-    chrome.fileManagerPrivate.driveConnectionState =
-        VolumeManagerCommon.DriveConnectionType.ONLINE;
-    assertEquals(VolumeManagerCommon.DriveConnectionType.ONLINE,
-        volumeManager.getDriveConnectionState());
-  }), callback);
+        // Sets it back to online
+        chrome.fileManagerPrivate.driveConnectionState =
+            VolumeManagerCommon.DriveConnectionType.ONLINE;
+        assertEquals(VolumeManagerCommon.DriveConnectionType.ONLINE,
+            volumeManager.getDriveConnectionState());
+      }),
+      callback);
 }
 
 function testMountArchiveAndUnmount(callback) {
@@ -172,85 +176,94 @@ function testMountArchiveAndUnmount(callback) {
   chrome.fileManagerPrivate.fileSystemMap_['archive:foobar.zip'] =
       new MockFileSystem('archive:foobar.zip');
 
-  reportPromise(VolumeManager.getInstance().then(function(volumeManager) {
-    var numberOfVolumes = volumeManager.volumeInfoList.length;
+  reportPromise(
+      volumeManagerFactory.getInstance().then(function(volumeManager) {
+        var numberOfVolumes = volumeManager.volumeInfoList.length;
 
-    return new Promise(function(resolve, reject) {
-      // Mount an archieve
-      volumeManager.mountArchive(
-          'filesystem:chrome-extension://extensionid/external/Downloads-test/' +
-          'foobar.zip',
-          resolve, reject);
+        return new Promise(function(resolve, reject) {
+          // Mount an archieve
+          volumeManager.mountArchive(
+              'filesystem:chrome-extension://extensionid/external/' +
+              'Downloads-test/foobar.zip',
+              resolve, reject);
 
-      chrome.fileManagerPrivate.onMountCompleted.dispatchEvent({
-        eventType: 'mount',
-        status: 'success',
-        volumeMetadata: {
-          volumeId: 'archive:foobar.zip',
-          volumeLabel: 'foobar.zip',
-          volumeType: VolumeManagerCommon.VolumeType.ARCHIVE,
-          isReadOnly: true,
-          sourcePath: mountSourcePath,
-          profile: getMockProfile(),
-          configurable: false,
-          watchable: true,
-          source: VolumeManagerCommon.Source.FILE
-        }
-      });
-    }).then(function(result) {
-      assertEquals(numberOfVolumes + 1, volumeManager.volumeInfoList.length);
+          chrome.fileManagerPrivate.onMountCompleted.dispatchEvent({
+            eventType: 'mount',
+            status: 'success',
+            volumeMetadata: {
+              volumeId: 'archive:foobar.zip',
+              volumeLabel: 'foobar.zip',
+              volumeType: VolumeManagerCommon.VolumeType.ARCHIVE,
+              isReadOnly: true,
+              sourcePath: mountSourcePath,
+              profile: getMockProfile(),
+              configurable: false,
+              watchable: true,
+              source: VolumeManagerCommon.Source.FILE
+            }
+          });
+        }).then(function(result) {
+          assertEquals(numberOfVolumes + 1,
+                       volumeManager.volumeInfoList.length);
 
-      return new Promise(function(resolve, reject) {
-        // Unmount the mounted archievea
-        volumeManager.volumeInfoList.addEventListener('splice', function(e) {
-          assertEquals(numberOfVolumes, volumeManager.volumeInfoList.length);
-          resolve(true);
+          return new Promise(function(resolve, reject) {
+            // Unmount the mounted archievea
+            volumeManager.volumeInfoList.addEventListener('splice', function() {
+              assertEquals(numberOfVolumes,
+                  volumeManager.volumeInfoList.length);
+              resolve(true);
+            });
+            var entry = new MockFileEntry(
+                new MockFileSystem('archive:foobar.zip'),
+                '/foo.txt');
+            var volumeInfo = volumeManager.getVolumeInfo(entry);
+            volumeManager.unmount(volumeInfo);
+          });
         });
-        var entry = new MockFileEntry(
-            new MockFileSystem('archive:foobar.zip'),
-            '/foo.txt');
-        var volumeInfo = volumeManager.getVolumeInfo(entry);
-        volumeManager.unmount(volumeInfo);
-      });
-    });
-  }), callback);
+      }),
+      callback);
 }
 
 function testGetCurrentProfileVolumeInfo(callback) {
-  reportPromise(VolumeManager.getInstance().then(function(volumeManager) {
-    var volumeInfo = volumeManager.getCurrentProfileVolumeInfo(
-        VolumeManagerCommon.VolumeType.DRIVE);
+  reportPromise(
+      volumeManagerFactory.getInstance().then(function(volumeManager) {
+        var volumeInfo = volumeManager.getCurrentProfileVolumeInfo(
+            VolumeManagerCommon.VolumeType.DRIVE);
 
-    assertEquals('drive:drive-foobar%40chromium.org-hash',
-        volumeInfo.volumeId);
-    assertEquals(VolumeManagerCommon.VolumeType.DRIVE, volumeInfo.volumeType);
-  }), callback);
+        assertEquals('drive:drive-foobar%40chromium.org-hash',
+            volumeInfo.volumeId);
+        assertEquals(VolumeManagerCommon.VolumeType.DRIVE,
+            volumeInfo.volumeType);
+      }),
+      callback);
 }
 
 function testGetLocationInfo(callback) {
-  reportPromise(VolumeManager.getInstance().then(function(volumeManager) {
-    var downloadEntry = new MockFileEntry(
-        new MockFileSystem('download:Downloads'),
-        '/foo/bar/bla.zip');
-    var downloadLocationInfo = volumeManager.getLocationInfo(downloadEntry);
-    assertEquals(VolumeManagerCommon.VolumeType.DOWNLOADS,
-        downloadLocationInfo.rootType);
-    assertFalse(downloadLocationInfo.isReadOnly);
-    assertFalse(downloadLocationInfo.isRootEntry);
+  reportPromise(
+      volumeManagerFactory.getInstance().then(function(volumeManager) {
+        var downloadEntry = new MockFileEntry(
+            new MockFileSystem('download:Downloads'),
+            '/foo/bar/bla.zip');
+        var downloadLocationInfo = volumeManager.getLocationInfo(downloadEntry);
+        assertEquals(VolumeManagerCommon.VolumeType.DOWNLOADS,
+            downloadLocationInfo.rootType);
+        assertFalse(downloadLocationInfo.isReadOnly);
+        assertFalse(downloadLocationInfo.isRootEntry);
 
-    var driveEntry = new MockFileEntry(
-        new MockFileSystem('drive:drive-foobar%40chromium.org-hash'),
-        '/root');
-    var driveLocationInfo = volumeManager.getLocationInfo(driveEntry);
-    assertEquals(VolumeManagerCommon.VolumeType.DRIVE,
-        driveLocationInfo.rootType);
-    assertFalse(driveLocationInfo.isReadOnly);
-    assertTrue(driveLocationInfo.isRootEntry);
-  }), callback);
+        var driveEntry = new MockFileEntry(
+            new MockFileSystem('drive:drive-foobar%40chromium.org-hash'),
+            '/root');
+        var driveLocationInfo = volumeManager.getLocationInfo(driveEntry);
+        assertEquals(VolumeManagerCommon.VolumeType.DRIVE,
+            driveLocationInfo.rootType);
+        assertFalse(driveLocationInfo.isReadOnly);
+        assertTrue(driveLocationInfo.isRootEntry);
+      }),
+      callback);
 }
 
 function testVolumeInfoListWhenReady(callback) {
-  var list = new VolumeInfoList();
+  var list = new VolumeInfoListImpl();
   var promiseBeforeAdd = list.whenVolumeInfoReady('volumeId');
   var volumeInfo = new VolumeInfoImpl(
       /* volumeType */ null,
@@ -283,7 +296,7 @@ function testDriveMountedDuringInitialization(callback) {
   };
 
   // Start initialization.
-  var instancePromise = VolumeManager.getInstance();
+  var instancePromise = volumeManagerFactory.getInstance();
 
   // Drive is mounted during initialization.
   chrome.fileManagerPrivate.onMountCompleted.dispatchEvent({

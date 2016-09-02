@@ -124,7 +124,7 @@ importer.DriveDuplicateFinder.prototype.findByHash_ = function(hash) {
  */
 importer.DriveDuplicateFinder.prototype.getDriveId_ = function() {
   if (!this.driveIdPromise_) {
-    this.driveIdPromise_ = VolumeManager.getInstance()
+    this.driveIdPromise_ = volumeManagerFactory.getInstance()
         .then(
             /**
              * @param {!VolumeManager} volumeManager

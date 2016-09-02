@@ -242,14 +242,14 @@ function waitForEvents(fileOperationManager) {
  */
 var volumeManager;
 
-var VolumeManager = {};
+var volumeManagerFactory = {};
 
 /**
  * Provide VolumeManager.getInstande() for FileOperationManager using mocked
  * volume manager instance.
  * @type {!Promise<(FakeVolumeManager|{getVolumeInfo: function()}?)>}
  */
-VolumeManager.getInstance = function() {
+volumeManagerFactory.getInstance = function() {
   return Promise.resolve(volumeManager);
 };
 

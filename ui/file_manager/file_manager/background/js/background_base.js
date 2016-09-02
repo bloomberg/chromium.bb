@@ -72,7 +72,7 @@ BackgroundBase.prototype.onLaunched_ = function(launchData) {
     // Volume list needs to be initialized (more precisely,
     // chrome.fileSystem.requestFileSystem needs to be called to grant access)
     // before resolveIsolatedEntries().
-    return VolumeManager.getInstance();
+    return volumeManagerFactory.getInstance();
   }).then(function() {
     var isolatedEntries = launchData.items.map(function(item) {
       return item.entry;

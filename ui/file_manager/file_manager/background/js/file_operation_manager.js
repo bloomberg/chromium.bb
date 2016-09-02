@@ -251,7 +251,7 @@ FileOperationManager.prototype.serviceAllTasks_ = function() {
   }
 
   if (!this.volumeManager_) {
-    VolumeManager.getInstance().then(function(volumeManager) {
+    volumeManagerFactory.getInstance().then(function(volumeManager) {
       this.volumeManager_ = volumeManager;
       this.serviceAllTasks_();
     }.bind(this));
