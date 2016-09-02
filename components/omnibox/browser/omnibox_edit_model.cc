@@ -143,7 +143,6 @@ OmniboxEditModel::State::State(bool user_input_in_progress,
                                const base::string16& keyword,
                                bool is_keyword_hint,
                                KeywordModeEntryMethod keyword_mode_entry_method,
-                               bool url_replacement_enabled,
                                OmniboxFocusState focus_state,
                                FocusSource focus_source,
                                const AutocompleteInput& autocomplete_input)
@@ -153,7 +152,6 @@ OmniboxEditModel::State::State(bool user_input_in_progress,
       keyword(keyword),
       is_keyword_hint(is_keyword_hint),
       keyword_mode_entry_method(keyword_mode_entry_method),
-      url_replacement_enabled(url_replacement_enabled),
       focus_state(focus_state),
       focus_source(focus_source),
       autocomplete_input(autocomplete_input) {
@@ -213,20 +211,14 @@ const OmniboxEditModel::State OmniboxEditModel::GetStateForTabSwitch() {
   return State(
       user_input_in_progress_, user_text_, view_->GetGrayTextAutocompletion(),
       keyword_, is_keyword_hint_, keyword_mode_entry_method_,
-      controller_->GetToolbarModel()->url_replacement_enabled(),
       focus_state_, focus_source_, input_);
 }
 
 void OmniboxEditModel::RestoreState(const State* state) {
   // We need to update the permanent text correctly and revert the view
   // regardless of whether there is saved state.
-  bool url_replacement_enabled = !state || state->url_replacement_enabled;
-  controller_->GetToolbarModel()->set_url_replacement_enabled(
-      url_replacement_enabled);
   permanent_text_ = controller_->GetToolbarModel()->GetFormattedURL(nullptr);
-  // Don't muck with the search term replacement state, as we've just set it
-  // correctly.
-  view_->RevertWithoutResettingSearchTermReplacement();
+  view_->RevertAll();
   // Restore the autocomplete controller's input, or clear it if this is a new
   // tab.
   input_ = state ? state->autocomplete_input : AutocompleteInput();
@@ -286,11 +278,8 @@ bool OmniboxEditModel::UpdatePermanentText() {
   base::string16 gray_text = view_->GetGrayTextAutocompletion();
   const bool visibly_changed_permanent_text =
       (permanent_text_ != new_permanent_text) &&
-      (!has_focus() ||
-       (!user_input_in_progress_ && !PopupIsOpen() &&
-        controller_->GetToolbarModel()->url_replacement_enabled())) &&
-      (gray_text.empty() ||
-       new_permanent_text != user_text_ + gray_text);
+      (!has_focus() || (!user_input_in_progress_ && !PopupIsOpen())) &&
+      (gray_text.empty() || new_permanent_text != user_text_ + gray_text);
 
   permanent_text_ = new_permanent_text;
   return visibly_changed_permanent_text;

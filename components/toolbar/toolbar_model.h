@@ -23,7 +23,7 @@ enum class VectorIconId;
 // from the navigation controller returned by GetNavigationController().
 class ToolbarModel {
  public:
-  virtual ~ToolbarModel();
+  virtual ~ToolbarModel() = default;
 
   // Returns a formatted URL for display in the toolbar. The formatting
   // includes:
@@ -69,21 +69,11 @@ class ToolbarModel {
   }
   bool input_in_progress() const { return input_in_progress_; }
 
-  // Whether URL replacement should be enabled.
-  // TODO(treib,pkasting): Remove this. crbug.com/627747
-  void set_url_replacement_enabled(bool enabled) {
-    url_replacement_enabled_ = enabled;
-  }
-  bool url_replacement_enabled() const {
-    return url_replacement_enabled_;
-  }
-
  protected:
-  ToolbarModel();
+  ToolbarModel() : input_in_progress_(false) {}
 
  private:
   bool input_in_progress_;
-  bool url_replacement_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(ToolbarModel);
 };

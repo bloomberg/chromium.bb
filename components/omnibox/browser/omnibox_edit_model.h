@@ -64,7 +64,6 @@ class OmniboxEditModel {
           const base::string16& keyword,
           bool is_keyword_hint,
           KeywordModeEntryMethod keyword_mode_entry_method,
-          bool url_replacement_enabled,
           OmniboxFocusState focus_state,
           FocusSource focus_source,
           const AutocompleteInput& autocomplete_input);
@@ -77,7 +76,6 @@ class OmniboxEditModel {
     const base::string16 keyword;
     const bool is_keyword_hint;
     KeywordModeEntryMethod keyword_mode_entry_method;
-    bool url_replacement_enabled;
     OmniboxFocusState focus_state;
     FocusSource focus_source;
     const AutocompleteInput autocomplete_input;

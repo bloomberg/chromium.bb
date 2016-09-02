@@ -113,11 +113,6 @@ void OmniboxView::SetUserText(const base::string16& text,
 }
 
 void OmniboxView::RevertAll() {
-  controller_->GetToolbarModel()->set_url_replacement_enabled(true);
-  RevertWithoutResettingSearchTermReplacement();
-}
-
-void OmniboxView::RevertWithoutResettingSearchTermReplacement() {
   CloseOmniboxPopup();
   if (model_.get())
     model_->Revert();

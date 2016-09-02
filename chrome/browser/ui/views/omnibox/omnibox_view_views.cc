@@ -233,10 +233,6 @@ void OmniboxViewViews::Update() {
       security_level_;
   UpdateSecurityLevel();
   if (model()->UpdatePermanentText()) {
-    // Something visibly changed.  Re-enable URL replacement.
-    controller()->GetToolbarModel()->set_url_replacement_enabled(true);
-    model()->UpdatePermanentText();
-
     // Select all the new text if the user had all the old text selected, or if
     // there was no previous text (for new tab page URL replacement extensions).
     // This makes one particular case better: the user clicks in the box to

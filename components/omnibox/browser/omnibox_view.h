@@ -130,13 +130,9 @@ class OmniboxView {
   // avoid selecting the "phantom newline" at the end of the edit.
   virtual void SelectAll(bool reversed) = 0;
 
-  // Re-enables search term replacement on the ToolbarModel, and reverts the
-  // edit and popup back to their unedited state (permanent text showing, popup
-  // closed, no user input in progress).
+  // Reverts the edit and popup back to their unedited state (permanent text
+  // showing, popup closed, no user input in progress).
   virtual void RevertAll();
-
-  // Like RevertAll(), but does not touch the search term replacement state.
-  void RevertWithoutResettingSearchTermReplacement();
 
   // Updates the autocomplete popup and other state after the text has been
   // changed by the user.

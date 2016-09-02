@@ -283,10 +283,6 @@ void OmniboxViewMac::ResetTabState(WebContents* web_contents) {
 
 void OmniboxViewMac::Update() {
   if (model()->UpdatePermanentText()) {
-    // Something visibly changed.  Re-enable URL replacement.
-    controller()->GetToolbarModel()->set_url_replacement_enabled(true);
-    model()->UpdatePermanentText();
-
     const bool was_select_all = IsSelectAll();
     NSTextView* text_view =
         base::mac::ObjCCastStrict<NSTextView>([field_ currentEditor]);

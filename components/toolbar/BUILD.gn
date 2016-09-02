@@ -6,7 +6,6 @@ import("//build/config/ui.gni")
 
 static_library("toolbar") {
   sources = [
-    "toolbar_model.cc",
     "toolbar_model.h",
     "toolbar_model_delegate.h",
     "toolbar_model_impl.cc",
