@@ -212,20 +212,10 @@ FloatSize SVGImage::concreteObjectSize(const FloatSize& defaultObjectSize) const
         //  rectangle that has the object's intrinsic aspect ratio and additionally has neither
         //  width nor height larger than the constraint rectangle's width and height, respectively."
         float solutionWidth = resolveWidthForRatio(defaultObjectSize.height(), intrinsicSizingInfo.aspectRatio);
-        float solutionHeight = resolveHeightForRatio(defaultObjectSize.width(), intrinsicSizingInfo.aspectRatio);
-        if (solutionWidth <= defaultObjectSize.width()) {
-            if (solutionHeight <= defaultObjectSize.height()) {
-                float areaOne = solutionWidth * defaultObjectSize.height();
-                float areaTwo = defaultObjectSize.width() * solutionHeight;
-                if (areaOne < areaTwo)
-                    return FloatSize(defaultObjectSize.width(), solutionHeight);
-                return FloatSize(solutionWidth, defaultObjectSize.height());
-            }
-
+        if (solutionWidth <= defaultObjectSize.width())
             return FloatSize(solutionWidth, defaultObjectSize.height());
-        }
 
-        ASSERT(solutionHeight <= defaultObjectSize.height());
+        float solutionHeight = resolveHeightForRatio(defaultObjectSize.width(), intrinsicSizingInfo.aspectRatio);
         return FloatSize(defaultObjectSize.width(), solutionHeight);
     }
 
