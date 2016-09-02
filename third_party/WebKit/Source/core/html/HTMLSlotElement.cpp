@@ -154,7 +154,7 @@ void HTMLSlotElement::saveAndClearDistribution()
 void HTMLSlotElement::dispatchSlotChangeEvent()
 {
     m_slotchangeEventEnqueued = false;
-    Event* event = Event::create(EventTypeNames::slotchange);
+    Event* event = Event::createBubble(EventTypeNames::slotchange);
     event->setTarget(this);
     dispatchScopedEvent(event);
 }
