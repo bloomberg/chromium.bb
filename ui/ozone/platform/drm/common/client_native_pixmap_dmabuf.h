@@ -29,9 +29,13 @@ class ClientNativePixmapDmaBuf : public ClientNativePixmap {
   void GetStride(int* stride) const override;
 
  private:
-  ClientNativePixmapDmaBuf(int dmabuf_fd, const gfx::Size& size, int stride);
+  ClientNativePixmapDmaBuf(int dmabuf_fd,
+                           const gfx::Size& size,
+                           int stride,
+                           size_t map_size);
 
   base::ScopedFD dmabuf_fd_;
+  const size_t map_size_;
   const gfx::Size size_;
   const int stride_;
   void* data_;
