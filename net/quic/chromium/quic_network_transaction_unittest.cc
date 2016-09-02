@@ -35,6 +35,7 @@
 #include "net/proxy/proxy_resolver.h"
 #include "net/proxy/proxy_service.h"
 #include "net/quic/chromium/crypto/proof_verifier_chromium.h"
+#include "net/quic/chromium/mock_network_change_notifier.h"
 #include "net/quic/chromium/mock_quic_data.h"
 #include "net/quic/core/crypto/quic_decrypter.h"
 #include "net/quic/core/crypto/quic_encrypter.h"
@@ -2451,6 +2452,54 @@ TEST_P(QuicNetworkTransactionTest, QuicUpload) {
   int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_NE(OK, callback.WaitForResult());
+}
+
+TEST_P(QuicNetworkTransactionTest, QuicUploadWriteError) {
+  ScopedMockNetworkChangeNotifier network_change_notifier;
+  MockNetworkChangeNotifier* mock_ncn =
+      network_change_notifier.mock_network_change_notifier();
+  mock_ncn->ForceNetworkHandlesSupported();
+  mock_ncn->SetConnectedNetworksList(
+      {kDefaultNetworkForTests, kNewNetworkForTests});
+
+  params_.origins_to_force_quic_on.insert(
+      HostPortPair::FromString("mail.example.org:443"));
+  params_.quic_migrate_sessions_on_network_change = true;
+
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  QuicStreamOffset offset = 0;
+  socket_data.AddWrite(ConstructClientRequestHeadersPacket(
+      1, kClientDataStreamId1, true, false,
+      GetRequestHeaders("POST", "https", "/"), &offset));
+  socket_data.AddWrite(SYNCHRONOUS, ERR_FAILED);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
+
+  MockQuicData socket_data2;
+  socket_data2.AddConnect(SYNCHRONOUS, ERR_ADDRESS_INVALID);
+  socket_data2.AddSocketDataToFactory(&socket_factory_);
+
+  // The non-alternate protocol job needs to hang in order to guarantee that
+  // the alternate-protocol job will "win".
+  AddHangingNonAlternateProtocolSocketData();
+
+  CreateSession();
+  request_.method = "POST";
+  ChunkedUploadDataStream upload_data(0);
+
+  request_.upload_data_stream = &upload_data;
+
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
+  TestCompletionCallback callback;
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  base::RunLoop().RunUntilIdle();
+  upload_data.AppendData("1", 1, true);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_NE(OK, callback.WaitForResult());
+  session_.reset();
 }
 
 // Adds coverage to catch regression such as https://crbug.com/622043

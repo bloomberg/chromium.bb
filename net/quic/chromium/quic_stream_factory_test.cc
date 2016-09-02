@@ -22,6 +22,7 @@
 #include "net/http/http_util.h"
 #include "net/http/transport_security_state.h"
 #include "net/quic/chromium/crypto/proof_verifier_chromium.h"
+#include "net/quic/chromium/mock_network_change_notifier.h"
 #include "net/quic/chromium/mock_quic_data.h"
 #include "net/quic/core/crypto/crypto_handshake.h"
 #include "net/quic/core/crypto/properties_based_quic_server_info.h"
@@ -207,70 +208,6 @@ class MockQuicServerInfoFactory : public QuicServerInfoFactory {
   QuicServerInfo* GetForServer(const QuicServerId& server_id) override {
     return new MockQuicServerInfo(server_id);
   }
-};
-
-class MockNetworkChangeNotifier : public NetworkChangeNotifier {
- public:
-  MockNetworkChangeNotifier() : force_network_handles_supported_(false) {}
-
-  ConnectionType GetCurrentConnectionType() const override {
-    return CONNECTION_UNKNOWN;
-  }
-
-  void ForceNetworkHandlesSupported() {
-    force_network_handles_supported_ = true;
-  }
-
-  bool AreNetworkHandlesCurrentlySupported() const override {
-    return force_network_handles_supported_;
-  }
-
-  void SetConnectedNetworksList(const NetworkList& network_list) {
-    connected_networks_ = network_list;
-  }
-
-  void GetCurrentConnectedNetworks(NetworkList* network_list) const override {
-    network_list->clear();
-    *network_list = connected_networks_;
-  }
-
-  void NotifyNetworkMadeDefault(NetworkChangeNotifier::NetworkHandle network) {
-    NetworkChangeNotifier::NotifyObserversOfSpecificNetworkChange(
-        NetworkChangeNotifier::MADE_DEFAULT, network);
-    // Spin the message loop so the notification is delivered.
-    base::RunLoop().RunUntilIdle();
-  }
-
-  void NotifyNetworkDisconnected(NetworkChangeNotifier::NetworkHandle network) {
-    NetworkChangeNotifier::NotifyObserversOfSpecificNetworkChange(
-        NetworkChangeNotifier::DISCONNECTED, network);
-    // Spin the message loop so the notification is delivered.
-    base::RunLoop().RunUntilIdle();
-  }
-
- private:
-  bool force_network_handles_supported_;
-  NetworkChangeNotifier::NetworkList connected_networks_;
-};
-
-// Class to replace existing NetworkChangeNotifier singleton with a
-// MockNetworkChangeNotifier for a test. To use, simply create a
-// ScopedMockNetworkChangeNotifier object in the test.
-class ScopedMockNetworkChangeNotifier {
- public:
-  ScopedMockNetworkChangeNotifier()
-      : disable_network_change_notifier_for_tests_(
-            new NetworkChangeNotifier::DisableForTest()),
-        mock_network_change_notifier_(new MockNetworkChangeNotifier()) {}
-
-  MockNetworkChangeNotifier* mock_network_change_notifier() {
-    return mock_network_change_notifier_.get();
-  }
-
- private:
-  std::unique_ptr<NetworkChangeNotifier::DisableForTest>
-      disable_network_change_notifier_for_tests_;
-  std::unique_ptr<MockNetworkChangeNotifier> mock_network_change_notifier_;
 };
 
 class QuicStreamFactoryTestBase {

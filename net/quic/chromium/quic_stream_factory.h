@@ -311,6 +311,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // sent.
   void MigrateSessionToNewNetwork(QuicChromiumClientSession* session,
                                   NetworkChangeNotifier::NetworkHandle network,
+                                  bool close_session_on_error,
                                   const BoundNetLog& bound_net_log,
                                   scoped_refptr<StringIOBuffer> packet);
 
@@ -481,6 +482,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   void MigrateSession(QuicChromiumClientSession* session,
                       IPEndPoint peer_address,
                       NetworkChangeNotifier::NetworkHandle network,
+                      bool close_session_on_error,
                       const BoundNetLog& bound_net_log,
                       scoped_refptr<StringIOBuffer> packet);
 

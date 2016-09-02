@@ -1533,7 +1533,9 @@ void QuicStreamFactory::MaybeMigrateOrCloseSessions(
       continue;
     }
 
-    MigrateSessionToNewNetwork(session, new_network, bound_net_log, nullptr);
+    MigrateSessionToNewNetwork(session, new_network,
+                               /*close_session_on_error=*/true, bound_net_log,
+                               nullptr);
   }
 }
 
@@ -1563,8 +1565,9 @@ void QuicStreamFactory::MaybeMigrateSingleSession(
     return;
   }
   OnSessionGoingAway(session);
-  MigrateSessionToNewNetwork(session, new_network, scoped_event_log.net_log(),
-                             packet);
+  MigrateSessionToNewNetwork(session, new_network,
+                             migration_cause != WRITE_ERROR,
+                             scoped_event_log.net_log(), packet);
 }
 
 void QuicStreamFactory::MigrateSessionToNewPeerAddress(
@@ -1581,22 +1584,24 @@ void QuicStreamFactory::MigrateSessionToNewPeerAddress(
   // Specifying kInvalidNetworkHandle for the |network| parameter
   // causes the session to use the default network for the new socket.
   MigrateSession(session, peer_address,
-                 NetworkChangeNotifier::kInvalidNetworkHandle, bound_net_log,
-                 nullptr);
+                 NetworkChangeNotifier::kInvalidNetworkHandle,
+                 /*close_session_on_error=*/true, bound_net_log, nullptr);
 }
 
 void QuicStreamFactory::MigrateSessionToNewNetwork(
     QuicChromiumClientSession* session,
     NetworkHandle network,
+    bool close_session_on_error,
     const BoundNetLog& bound_net_log,
     scoped_refptr<StringIOBuffer> packet) {
   MigrateSession(session, session->connection()->peer_address(), network,
-                 bound_net_log, packet);
+                 close_session_on_error, bound_net_log, packet);
 }
 
 void QuicStreamFactory::MigrateSession(QuicChromiumClientSession* session,
                                        IPEndPoint peer_address,
                                        NetworkHandle network,
+                                       bool close_session_on_error,
                                        const BoundNetLog& bound_net_log,
                                        scoped_refptr<StringIOBuffer> packet) {
   // Use OS-specified port for socket (DEFAULT_BIND) instead of
@@ -1610,7 +1615,9 @@ void QuicStreamFactory::MigrateSession(QuicChromiumClientSession* session,
     HistogramAndLogMigrationFailure(
         bound_net_log, MIGRATION_STATUS_INTERNAL_ERROR,
         session->connection_id(), "Socket configuration failed");
-    session->CloseSessionOnError(ERR_NETWORK_CHANGED, QUIC_INTERNAL_ERROR);
+    if (close_session_on_error) {
+      session->CloseSessionOnError(ERR_NETWORK_CHANGED, QUIC_INTERNAL_ERROR);
+    }
     return;
   }
   std::unique_ptr<QuicChromiumPacketReader> new_reader(
@@ -1631,8 +1638,10 @@ void QuicStreamFactory::MigrateSession(QuicChromiumClientSession* session,
     HistogramAndLogMigrationFailure(
         bound_net_log, MIGRATION_STATUS_TOO_MANY_CHANGES,
         session->connection_id(), "Too many migrations");
-    session->CloseSessionOnError(ERR_NETWORK_CHANGED,
-                                 QUIC_CONNECTION_MIGRATION_TOO_MANY_CHANGES);
+    if (close_session_on_error) {
+      session->CloseSessionOnError(ERR_NETWORK_CHANGED,
+                                   QUIC_CONNECTION_MIGRATION_TOO_MANY_CHANGES);
+    }
     return;
   }
   HistogramMigrationStatus(MIGRATION_STATUS_SUCCESS);
