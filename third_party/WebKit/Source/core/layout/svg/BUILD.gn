@@ -4,9 +4,7 @@
 
 import("//third_party/WebKit/Source/core/core.gni")
 
-target(core_link_small_target_type, "svg") {
-  visibility = [ "//third_party/WebKit/Source/core/*" ]
-
+blink_core_sources("svg") {
   sources = [
     "LayoutSVGBlock.cpp",
     "LayoutSVGBlock.h",
@@ -98,14 +96,8 @@ target(core_link_small_target_type, "svg") {
     "SVGTextQuery.h",
   ]
 
-  configs -= core_config_remove
-  configs += core_config_add
   configs += [
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     "//build/config/compiler:no_size_t_to_int_warning",
-  ]
-
-  deps = [
-    "//third_party/WebKit/Source/core:prerequisites",
   ]
 }

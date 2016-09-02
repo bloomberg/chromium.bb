@@ -5,12 +5,8 @@
 import("//build/split_static_library.gni")
 import("//third_party/WebKit/Source/core/core.gni")
 
-target(core_link_large_target_type, "html") {
-  visibility = [ "//third_party/WebKit/Source/core/*" ]
-
-  if (core_link_large_target_type == "split_static_library") {
-    split_count = 5
-  }
+blink_core_sources("html") {
+  split_count = 5
 
   sources = [
     "AutoplayExperimentHelper.cpp",
@@ -507,14 +503,8 @@ target(core_link_large_target_type, "html") {
     "track/vtt/VTTTokenizer.h",
   ]
 
-  configs -= core_config_remove
-  configs += core_config_add
   configs += [
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     "//build/config/compiler:no_size_t_to_int_warning",
-  ]
-
-  deps = [
-    "//third_party/WebKit/Source/core:prerequisites",
   ]
 }
