@@ -39,7 +39,6 @@
 #include "chromecast/browser/pref_service_helper.h"
 #include "chromecast/browser/url_request_context_factory.h"
 #include "chromecast/chromecast_features.h"
-#include "chromecast/common/global_descriptors.h"
 #include "chromecast/common/platform_client_auth.h"
 #include "chromecast/media/base/key_systems_common.h"
 #include "chromecast/media/base/media_resource_tracker.h"
@@ -297,9 +296,6 @@ CastBrowserMainParts::~CastBrowserMainParts() {
     media_thread_->task_runner()->DeleteSoon(
         FROM_HERE, media_pipeline_backend_manager_.release());
   }
-#else
-  breakpad::CrashDumpObserver::GetInstance()->UnregisterClient(
-      crash_dump_manager_.get());
 #endif  // !defined(OS_ANDROID)
 }
 
@@ -393,10 +389,8 @@ int CastBrowserMainParts::PreCreateThreads() {
   if (!chromecast::CrashHandler::GetCrashDumpLocation(&crash_dumps_dir)) {
     LOG(ERROR) << "Could not find crash dump location.";
   }
-  crash_dump_manager_ = base::MakeUnique<breakpad::CrashDumpManager>(
-      crash_dumps_dir, kAndroidMinidumpDescriptor);
-  breakpad::CrashDumpObserver::GetInstance()->RegisterClient(
-      crash_dump_manager_.get());
+  cast_browser_process_->SetCrashDumpManager(
+      base::MakeUnique<breakpad::CrashDumpManager>(crash_dumps_dir));
 #else
   base::FilePath home_dir;
   CHECK(PathService::Get(DIR_CAST_HOME, &home_dir));

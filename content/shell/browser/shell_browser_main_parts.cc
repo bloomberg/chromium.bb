@@ -18,7 +18,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/url_constants.h"
-#include "content/shell/android/shell_descriptors.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_access_token_store.h"
 #include "content/shell/browser/shell_browser_context.h"
@@ -38,7 +37,6 @@
 #if defined(OS_ANDROID)
 #include "base/message_loop/message_loop.h"
 #include "components/crash/content/browser/crash_dump_manager_android.h"
-#include "components/crash/content/browser/crash_dump_observer_android.h"
 #include "net/android/network_change_notifier_factory_android.h"
 #include "net/base/network_change_notifier.h"
 #endif
@@ -118,10 +116,6 @@ ShellBrowserMainParts::ShellBrowserMainParts(
 
 ShellBrowserMainParts::~ShellBrowserMainParts() {
   DCHECK(!devtools_http_handler_);
-#if defined(OS_ANDROID)
-  breakpad::CrashDumpObserver::GetInstance()->UnregisterClient(
-      crash_dump_manager_.get());
-#endif
 }
 
 #if !defined(OS_MACOSX)
@@ -179,10 +173,7 @@ int ShellBrowserMainParts::PreCreateThreads() {
     base::FilePath crash_dumps_dir =
         base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
             switches::kCrashDumpsDir);
-    crash_dump_manager_ = base::MakeUnique<breakpad::CrashDumpManager>(
-        crash_dumps_dir, kAndroidMinidumpDescriptor);
-    breakpad::CrashDumpObserver::GetInstance()->RegisterClient(
-        crash_dump_manager_.get());
+    crash_dump_manager_.reset(new breakpad::CrashDumpManager(crash_dumps_dir));
   }
 
   return 0;

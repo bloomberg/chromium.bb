@@ -108,6 +108,14 @@ void CastBrowserProcess::SetResourceDispatcherHostDelegate(
   resource_dispatcher_host_delegate_.swap(delegate);
 }
 
+#if defined(OS_ANDROID)
+void CastBrowserProcess::SetCrashDumpManager(
+    std::unique_ptr<breakpad::CrashDumpManager> crash_dump_manager) {
+  DCHECK(!crash_dump_manager_);
+  crash_dump_manager_.swap(crash_dump_manager);
+}
+#endif  // defined(OS_ANDROID)
+
 void CastBrowserProcess::SetConnectivityChecker(
     scoped_refptr<ConnectivityChecker> connectivity_checker) {
   DCHECK(!connectivity_checker_);

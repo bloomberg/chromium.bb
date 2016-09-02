@@ -18,7 +18,6 @@ class MessageLoop;
 namespace android_webview {
 
 class AwBrowserContext;
-class AwBrowserTerminator;
 class AwContentBrowserClient;
 
 class AwBrowserMainParts : public content::BrowserMainParts {
@@ -35,7 +34,6 @@ class AwBrowserMainParts : public content::BrowserMainParts {
  private:
   // Android specific UI MessageLoop.
   std::unique_ptr<base::MessageLoop> main_message_loop_;
-  std::unique_ptr<AwBrowserTerminator> aw_browser_terminator_;
 
   AwContentBrowserClient* browser_client_;
 

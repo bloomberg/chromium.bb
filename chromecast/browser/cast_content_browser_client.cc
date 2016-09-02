@@ -456,8 +456,18 @@ void CastContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
       kAndroidPakDescriptor, base::GlobalDescriptors::GetInstance()->GetRegion(
                                  kAndroidPakDescriptor)));
 
-  breakpad::CrashDumpObserver::GetInstance()->BrowserChildProcessStarted(
-      child_process_id, mappings);
+  if (breakpad::IsCrashReporterEnabled()) {
+    base::File minidump_file(
+        breakpad::CrashDumpManager::GetInstance()->CreateMinidumpFile(
+            child_process_id));
+    if (!minidump_file.IsValid()) {
+      LOG(ERROR) << "Failed to create file for minidump, crash reporting will "
+                 << "be disabled for this process.";
+    } else {
+      mappings->Transfer(kAndroidMinidumpDescriptor,
+                         base::ScopedFD(minidump_file.TakePlatformFile()));
+    }
+  }
 }
 
 #else

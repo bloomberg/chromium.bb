@@ -17,12 +17,6 @@ class SingleThreadTaskRunner;
 class Thread;
 }  // namespace base
 
-#if defined(OS_ANDROID)
-namespace breakpad {
-class CrashDumpManager;
-}
-#endif
-
 namespace net {
 class NetLog;
 }
@@ -86,10 +80,6 @@ class CastBrowserMainParts : public content::BrowserMainParts {
       media_pipeline_backend_manager_;
 
   std::unique_ptr<CastMemoryPressureMonitor> memory_pressure_monitor_;
-#endif
-
-#if defined(OS_ANDROID)
-  std::unique_ptr<breakpad::CrashDumpManager> crash_dump_manager_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(CastBrowserMainParts);

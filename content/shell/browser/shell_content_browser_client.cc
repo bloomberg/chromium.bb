@@ -297,8 +297,18 @@ void ShellContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
   regions->insert(std::make_pair(
       kShellPakDescriptor,
       base::GlobalDescriptors::GetInstance()->GetRegion(kShellPakDescriptor)));
-  breakpad::CrashDumpObserver::GetInstance()->BrowserChildProcessStarted(
-      child_process_id, mappings);
+
+  if (breakpad::IsCrashReporterEnabled()) {
+    base::File f(breakpad::CrashDumpManager::GetInstance()->CreateMinidumpFile(
+        child_process_id));
+    if (!f.IsValid()) {
+      LOG(ERROR) << "Failed to create file for minidump, crash reporting will "
+                 << "be disabled for this process.";
+    } else {
+      mappings->Transfer(kAndroidMinidumpDescriptor,
+                         base::ScopedFD(f.TakePlatformFile()));
+    }
+  }
 }
 #elif defined(OS_POSIX) && !defined(OS_MACOSX)
 void ShellContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
