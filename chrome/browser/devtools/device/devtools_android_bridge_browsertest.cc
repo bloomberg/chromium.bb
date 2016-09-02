@@ -112,7 +112,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsAndroidBridgeTest, DefaultValues) {
     actual.insert(value);
   }
   EXPECT_STREQ("localhost:9222, localhost:9229", SetToString(actual).c_str());
-  EXPECT_FALSE(service->GetBoolean(prefs::kDevToolsDiscoverTCPTargetsEnabled));
+  EXPECT_TRUE(service->GetBoolean(prefs::kDevToolsDiscoverTCPTargetsEnabled));
 }
 
 IN_PROC_BROWSER_TEST_F(DevToolsAndroidBridgeTest, TCPEnableChange) {
@@ -130,7 +130,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsAndroidBridgeTest, TCPEnableChange) {
   bridge->set_tcp_provider_callback_for_test(
       base::Bind(assign_from_callback, &provider, &called));
 
-  EXPECT_EQ(nullptr, provider);
+  EXPECT_NE(nullptr, provider);
 
   service->SetBoolean(prefs::kDevToolsDiscoverTCPTargetsEnabled, true);
 
