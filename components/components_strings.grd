@@ -203,6 +203,7 @@
       <part file="pageinfo_strings.grdp" />
       <part file="password_manager_strings.grdp" />
       <part file="pdf_strings.grdp" />
+      <part file="physical_web_ui_strings.grdp" />
       <part file="policy_strings.grdp" />
       <part file="security_interstitials_strings.grdp" />
       <part file="ssl_errors_strings.grdp" />

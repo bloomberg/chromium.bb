@@ -12837,6 +12837,13 @@ should be able to be added at any place in this file.
   <description>A Physical Web URL was selected.</description>
 </action>
 
+<action name="PhysicalWeb.WebUI.Open">
+  <owner>cco3@chromium.org</owner>
+  <owner>mattreynolds@chromium.org</owner>
+  <owner>mmocny@chromium.org</owner>
+  <description>The Physical Web WebUI was opened or refreshed.</description>
+</action>
+
 <action name="PlatformVerificationAccepted">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

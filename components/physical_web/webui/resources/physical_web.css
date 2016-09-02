@@ -1,0 +1,50 @@
+/* Copyright (c) 2016 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+body {
+  font-family: Sans-Serif;
+  font-size: 12px;
+}
+.physicalWebTemplate {
+  display: flex;
+  width: 290px;
+  margin-bottom: 15px;
+  text-decoration: none;
+}
+
+.physicalWebIcon {
+  width: 32px;
+}
+.physicalWebText {
+  flex: 1;
+}
+.physicalWebIcon img {
+  padding-top: 1px;
+  width: 75%;
+}
+.physicalWebTemplate .title {
+  display: block;
+  color: #222;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 3px;
+}
+.physicalWebTemplate .resolvedUrl {
+  display: block;
+  font-size: 80%;
+  color: #888;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 4px;
+}
+.physicalWebTemplate .description {
+  display: block;
+  height: 2.5em;
+  font-size: 90%;
+  color: #444;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
