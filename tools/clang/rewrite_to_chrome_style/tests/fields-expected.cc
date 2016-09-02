@@ -75,13 +75,14 @@ struct IsGarbageCollectedMixin {
 namespace WTF {
 
 // We don't want to capitalize fields in type traits
-// (i.e. no |value| -> |kValue| rename is undesirable below).
+// (i.e. the |value| -> |kValue| rename is undesirable below).
 struct TypeTrait1 {
   static const bool value = true;
 };
 
 // Some type traits are implemented as classes, not structs
 // (e.g. WTF::IsGarbageCollectedType or WTF::IsAssignable).
+// We should not perform a |value| -> |kValue| rename in the type trait below.
 template <typename T>
 class TypeTrait2 {
  public:
@@ -91,6 +92,57 @@ template <>
 class TypeTrait2<void> {
  public:
   static const bool value = false;
+};
+
+// Some type traits have static methods.  We should not perform
+// a |value| -> |kValue| rename in the type trait below.
+template <typename T, typename U>
+struct IsSubclass {
+ private:
+  typedef char YesType;
+  struct NoType {
+    char padding[8];
+  };
+
+  static YesType SubclassCheck(U*);
+  static NoType SubclassCheck(...);
+  static T* t_;
+
+ public:
+  static const bool value = sizeof(SubclassCheck(t_)) == sizeof(YesType);
+};
+
+// Some type traits have deleted instance methods.  We should not perform
+// a |value| -> |kValue| rename in the type trait below.
+template <typename U = void>
+struct IsTraceableInCollection {
+  // Expanded from STATIC_ONLY(IsTraceableInCollection) macro:
+ private:
+  IsTraceableInCollection() = delete;
+  IsTraceableInCollection(const IsTraceableInCollection&) = delete;
+  IsTraceableInCollection& operator=(const IsTraceableInCollection&) = delete;
+  void* operator new(unsigned long) = delete;
+  void* operator new(unsigned long, void*) = delete;
+
+ public:
+  static const bool value = true;
+};
+
+// Some type traits have a non-boolean value.
+enum LifetimeManagementType {
+  kRefCountedLifetime,
+  kGarbageCollectedLifetime,
+};
+template <typename T>
+struct LifetimeOf {
+ private:
+  // Okay to rename |isGarbageCollected| to |kIsGarbageCollected|.
+  static const bool kIsGarbageCollected = true;
+
+ public:
+  // Expecting no rename of |value|.
+  static const LifetimeManagementType value =
+      !kIsGarbageCollected ? kRefCountedLifetime : kGarbageCollectedLifetime;
 };
 
 };  // namespace WTF

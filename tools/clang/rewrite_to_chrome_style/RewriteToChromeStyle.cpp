@@ -59,6 +59,10 @@ AST_MATCHER(clang::FunctionDecl, isOverloadedOperator) {
   return Node.isOverloadedOperator();
 }
 
+AST_MATCHER(clang::CXXMethodDecl, isInstanceMethod) {
+  return Node.isInstance();
+}
+
 AST_MATCHER_P(clang::FunctionTemplateDecl,
               templatedDecl,
               clang::ast_matchers::internal::Matcher<clang::FunctionDecl>,
@@ -642,8 +646,10 @@ int main(int argc, const char* argv[]) {
   auto field_decl_matcher = id("decl", fieldDecl(in_blink_namespace));
   auto is_type_trait_value =
       varDecl(hasName("value"), hasStaticStorageDuration(), isPublic(),
-              hasType(isConstQualified()), hasType(booleanType()),
-              unless(hasAncestor(recordDecl(has(functionDecl())))));
+              hasType(isConstQualified()), hasType(type(anyOf(
+                  booleanType(), enumType()))),
+              unless(hasAncestor(recordDecl(
+                  has(cxxMethodDecl(isUserProvided(), isInstanceMethod()))))));
   auto var_decl_matcher =
       id("decl", varDecl(in_blink_namespace, unless(is_type_trait_value)));
   auto enum_member_decl_matcher =
