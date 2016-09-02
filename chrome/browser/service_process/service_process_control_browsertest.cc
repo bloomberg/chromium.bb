@@ -18,6 +18,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/service_messages.h"
 #include "chrome/common/service_process_util.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/version_info/version_info.h"
@@ -42,7 +43,7 @@ class ServiceProcessControlBrowserTest
   MOCK_METHOD0(MockHistogramsCallback, void());
 
  protected:
-  void LaunchServiceProcessControl() {
+  void LaunchServiceProcessControl(bool wait) {
     // Launch the process asynchronously.
     ServiceProcessControl::GetInstance()->Launch(
         base::Bind(&ServiceProcessControlBrowserTest::ProcessControlLaunched,
@@ -52,7 +53,8 @@ class ServiceProcessControlBrowserTest
             base::Unretained(this)));
 
     // Then run the message loop to keep things running.
-    content::RunMessageLoop();
+    if (wait)
+      content::RunMessageLoop();
   }
 
   static void QuitMessageLoop() {
@@ -146,7 +148,7 @@ class RealServiceProcessControlBrowserTest
 // TODO(vitalybuka): Fix crbug.com/340563
 IN_PROC_BROWSER_TEST_F(RealServiceProcessControlBrowserTest,
                        DISABLED_LaunchAndIPC) {
-  LaunchServiceProcessControl();
+  LaunchServiceProcessControl(true);
 
   // Make sure we are connected to the service process.
   ASSERT_TRUE(ServiceProcessControl::GetInstance()->IsConnected());
@@ -159,12 +161,39 @@ IN_PROC_BROWSER_TEST_F(RealServiceProcessControlBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, LaunchAndIPC) {
-  LaunchServiceProcessControl();
+  LaunchServiceProcessControl(true);
 
   // Make sure we are connected to the service process.
   ASSERT_TRUE(ServiceProcessControl::GetInstance()->IsConnected());
   ServiceProcessControl::GetInstance()->GetCloudPrintProxyInfo(
         base::Bind(&ServiceProcessControlBrowserTest::CloudPrintInfoCallback));
+  content::RunMessageLoop();
+
+  // And then shutdown the service process.
+  EXPECT_TRUE(ServiceProcessControl::GetInstance()->Shutdown());
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, LaunchAndReconnect) {
+  LaunchServiceProcessControl(true);
+
+  // Make sure we are connected to the service process.
+  ASSERT_TRUE(ServiceProcessControl::GetInstance()->IsConnected());
+  // Send an IPC that will keep the service process alive after we disconnect.
+  ServiceProcessControl::GetInstance()->Send(
+      new ServiceMsg_EnableCloudPrintProxyWithRobot(
+          "", "", "", base::DictionaryValue()));
+  ServiceProcessControl::GetInstance()->GetCloudPrintProxyInfo(
+      base::Bind(&ServiceProcessControlBrowserTest::CloudPrintInfoCallback));
+  content::RunMessageLoop();
+  Disconnect();
+
+  LaunchServiceProcessControl(false);
+
+  ASSERT_TRUE(ServiceProcessControl::GetInstance()->IsConnected());
+  content::RunMessageLoop();
+
+  ServiceProcessControl::GetInstance()->GetCloudPrintProxyInfo(
+      base::Bind(&ServiceProcessControlBrowserTest::CloudPrintInfoCallback));
   content::RunMessageLoop();
 
   // And then shutdown the service process.
@@ -181,7 +210,7 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, LaunchAndIPC) {
 #endif
 IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, MAYBE_LaunchTwice) {
   // Launch the service process the first time.
-  LaunchServiceProcessControl();
+  LaunchServiceProcessControl(true);
 
   // Make sure we are connected to the service process.
   ASSERT_TRUE(ServiceProcessControl::GetInstance()->IsConnected());
@@ -190,7 +219,7 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, MAYBE_LaunchTwice) {
   content::RunMessageLoop();
 
   // Launch the service process again.
-  LaunchServiceProcessControl();
+  LaunchServiceProcessControl(true);
   ASSERT_TRUE(ServiceProcessControl::GetInstance()->IsConnected());
   EXPECT_TRUE(ServiceProcessControl::GetInstance()->GetCloudPrintProxyInfo(
         base::Bind(&ServiceProcessControlBrowserTest::CloudPrintInfoCallback)));
@@ -257,7 +286,7 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, MAYBE_SameLaunchTask) {
 IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
                        MAYBE_DieOnDisconnect) {
   // Launch the service process.
-  LaunchServiceProcessControl();
+  LaunchServiceProcessControl(true);
   // Make sure we are connected to the service process.
   ASSERT_TRUE(ServiceProcessControl::GetInstance()->IsConnected());
   Disconnect();
@@ -271,7 +300,7 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
 #endif
 IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, MAYBE_ForceShutdown) {
   // Launch the service process.
-  LaunchServiceProcessControl();
+  LaunchServiceProcessControl(true);
   // Make sure we are connected to the service process.
   ASSERT_TRUE(ServiceProcessControl::GetInstance()->IsConnected());
   base::ProcessId service_pid;
@@ -290,7 +319,7 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, MAYBE_CheckPid) {
   base::ProcessId service_pid;
   EXPECT_FALSE(GetServiceProcessData(NULL, &service_pid));
   // Launch the service process.
-  LaunchServiceProcessControl();
+  LaunchServiceProcessControl(true);
   EXPECT_TRUE(GetServiceProcessData(NULL, &service_pid));
   EXPECT_NE(static_cast<base::ProcessId>(0), service_pid);
   // Disconnect from service process.
@@ -316,7 +345,7 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, HistogramsNoService) {
 #endif
 IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
                        MAYBE_HistogramsTimeout) {
-  LaunchServiceProcessControl();
+  LaunchServiceProcessControl(true);
   ASSERT_TRUE(ServiceProcessControl::GetInstance()->IsConnected());
   // Callback should not be called during GetHistograms call.
   EXPECT_CALL(*this, MockHistogramsCallback()).Times(0);
@@ -330,7 +359,7 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, MAYBE_Histograms) {
-  LaunchServiceProcessControl();
+  LaunchServiceProcessControl(true);
   ASSERT_TRUE(ServiceProcessControl::GetInstance()->IsConnected());
   // Callback should not be called during GetHistograms call.
   EXPECT_CALL(*this, MockHistogramsCallback()).Times(0);

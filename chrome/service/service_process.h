@@ -13,6 +13,9 @@
 #include "base/threading/thread.h"
 #include "chrome/service/cloud_print/cloud_print_proxy.h"
 #include "chrome/service/service_ipc_server.h"
+#include "mojo/edk/embedder/named_platform_handle.h"
+#include "mojo/edk/embedder/scoped_platform_handle.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 
 class ServiceProcessPrefs;
 class ServiceURLRequestContextGetter;
@@ -82,6 +85,7 @@ class ServiceProcess : public ServiceIPCServer::Client,
   void OnShutdown() override;
   void OnUpdateAvailable() override;
   bool OnIPCClientDisconnect() override;
+  mojo::ScopedMessagePipeHandle CreateChannelMessagePipe() override;
 
   // CloudPrintProxy::Provider implementation.
   cloud_print::CloudPrintProxy* GetCloudPrintProxy() override;
@@ -136,6 +140,12 @@ class ServiceProcess : public ServiceIPCServer::Client,
   bool update_available_;
 
   scoped_refptr<ServiceURLRequestContextGetter> request_context_getter_;
+
+#if defined(OS_POSIX)
+  mojo::edk::ScopedPlatformHandle server_handle_;
+#elif defined(OS_WIN)
+  mojo::edk::NamedPlatformHandle server_handle_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ServiceProcess);
 };

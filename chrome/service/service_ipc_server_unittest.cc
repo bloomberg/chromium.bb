@@ -4,6 +4,8 @@
 
 #include "chrome/service/service_ipc_server.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
@@ -16,6 +18,8 @@
 #include "chrome/common/service_messages.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_handle.h"
+#include "ipc/ipc_channel_mojo.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -33,26 +37,35 @@ class FakeServiceIPCServerClient : public ServiceIPCServer::Client {
   void OnShutdown() override;
   void OnUpdateAvailable() override;
   bool OnIPCClientDisconnect() override;
+  mojo::ScopedMessagePipeHandle CreateChannelMessagePipe() override;
 
-  int shutdown_calls = 0;
-  int update_available_calls = 0;
-  int ipc_client_disconnect_calls = 0;
+  int shutdown_calls_ = 0;
+  int update_available_calls_ = 0;
+  int ipc_client_disconnect_calls_ = 0;
+  mojo::ScopedMessagePipeHandle channel_handle_;
 };
 
 void FakeServiceIPCServerClient::OnShutdown() {
-  shutdown_calls++;
+  shutdown_calls_++;
 }
 
 void FakeServiceIPCServerClient::OnUpdateAvailable() {
-  update_available_calls++;
+  update_available_calls_++;
 }
 
 bool FakeServiceIPCServerClient::OnIPCClientDisconnect() {
-  ipc_client_disconnect_calls++;
+  ipc_client_disconnect_calls_++;
 
   // Always return true to indicate the server must continue listening for new
   // connections.
   return true;
+}
+
+mojo::ScopedMessagePipeHandle
+FakeServiceIPCServerClient::CreateChannelMessagePipe() {
+  mojo::MessagePipe channel;
+  channel_handle_ = std::move(channel.handle0);
+  return std::move(channel.handle1);
 }
 
 class FakeChannelListener : public IPC::Listener {
@@ -104,7 +117,6 @@ class ServiceIPCServerTest : public ::testing::Test {
 
  protected:
   FakeServiceIPCServerClient service_process_client_;
-  IPC::ChannelHandle channel_handle_;
   base::MessageLoopForUI main_message_loop_;
   base::Thread io_thread_;
   base::WaitableEvent shutdown_event_;
@@ -114,19 +126,18 @@ class ServiceIPCServerTest : public ::testing::Test {
 };
 
 ServiceIPCServerTest::ServiceIPCServerTest()
-    : channel_handle_(IPC::Channel::GenerateUniqueRandomChannelID()),
-      io_thread_("ServiceIPCServerTest IO"),
+    : io_thread_("ServiceIPCServerTest IO"),
       shutdown_event_(base::WaitableEvent::ResetPolicy::MANUAL,
                       base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
 void ServiceIPCServerTest::SetUp() {
   base::Thread::Options options;
+  mojo::MessagePipe channel;
   options.message_loop_type = base::MessageLoop::TYPE_IO;
   ASSERT_TRUE(io_thread_.StartWithOptions(options));
 
   server_.reset(new ServiceIPCServer(&service_process_client_,
                                      io_thread_.task_runner(),
-                                     channel_handle_,
                                      &shutdown_event_));
   server_->Init();
 }
@@ -155,12 +166,11 @@ void ServiceIPCServerTest::PumpLoops() {
 
 void ServiceIPCServerTest::ConnectClientChannel() {
   client_process_channel_ = IPC::SyncChannel::Create(
-      channel_handle_,
-      IPC::Channel::MODE_NAMED_CLIENT,
-      &client_process_channel_listener_,
-      io_thread_.task_runner(),
-      true /* create_pipe_now */,
-      &shutdown_event_);
+      IPC::ChannelMojo::CreateClientFactory(
+          std::move(service_process_client_.channel_handle_),
+          io_thread_.task_runner()),
+      &client_process_channel_listener_, io_thread_.task_runner(),
+      true /* create_pipe_now */, &shutdown_event_);
   PumpLoops();
 }
 
@@ -186,19 +196,10 @@ TEST_F(ServiceIPCServerTest, ConnectDisconnectReconnect) {
   // In turn, the server notifies its service process client.
   DestroyClientChannel();
   ASSERT_FALSE(server_->is_ipc_client_connected());
-  ASSERT_EQ(1, service_process_client_.ipc_client_disconnect_calls);
+  ASSERT_EQ(1, service_process_client_.ipc_client_disconnect_calls_);
 
-  // On Windows only, the server recreates its channel in OnChannelError, if the
-  // service process client tells it to continue listening. On other platforms
-  // the channel is reused for subsequent reconnects by the client process. This
-  // means however that OnChannelConnected is not called again and the server is
-  // only aware of being connected once an IPC message is received.
   ConnectClientChannel();
-#if defined(OS_WIN)
   ASSERT_TRUE(server_->is_ipc_client_connected());
-#else
-  ASSERT_FALSE(server_->is_ipc_client_connected());
-#endif
   SendToServiceProcess(new ServiceMsg_UpdateAvailable());
   ASSERT_TRUE(server_->is_ipc_client_connected());
 
@@ -207,7 +208,7 @@ TEST_F(ServiceIPCServerTest, ConnectDisconnectReconnect) {
   // OnChannelConnected, OnChannelError is called more than once.
   DestroyClientChannel();
   ASSERT_FALSE(server_->is_ipc_client_connected());
-  ASSERT_EQ(2, service_process_client_.ipc_client_disconnect_calls);
+  ASSERT_EQ(2, service_process_client_.ipc_client_disconnect_calls_);
 }
 
 TEST_F(ServiceIPCServerTest, Shutdown) {
@@ -217,7 +218,7 @@ TEST_F(ServiceIPCServerTest, Shutdown) {
   // When a shutdown message is received, the ServiceIPCServer::Client is
   // notified.
   SendToServiceProcess(new ServiceMsg_Shutdown());
-  ASSERT_EQ(1, service_process_client_.shutdown_calls);
+  ASSERT_EQ(1, service_process_client_.shutdown_calls_);
 }
 
 TEST_F(ServiceIPCServerTest, UpdateAvailable) {
@@ -227,7 +228,7 @@ TEST_F(ServiceIPCServerTest, UpdateAvailable) {
   // When a product update message is received, the ServiceIPCServer::Client is
   // notified.
   SendToServiceProcess(new ServiceMsg_UpdateAvailable());
-  ASSERT_EQ(1, service_process_client_.update_available_calls);
+  ASSERT_EQ(1, service_process_client_.update_available_calls_);
 }
 
 TEST_F(ServiceIPCServerTest, SingleMessageHandler) {

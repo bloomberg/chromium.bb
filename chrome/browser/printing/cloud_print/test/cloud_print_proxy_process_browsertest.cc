@@ -49,10 +49,14 @@
 #include "content/public/common/content_paths.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
+#include "ipc/ipc_channel_mojo.h"
 #include "ipc/ipc_descriptors.h"
 #include "ipc/ipc_multiprocess_test.h"
 #include "ipc/ipc_switches.h"
 #include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/named_platform_handle.h"
+#include "mojo/edk/embedder/named_platform_handle_utils.h"
+#include "mojo/edk/embedder/scoped_ipc_support.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
@@ -101,6 +105,18 @@ class TestStartupClientChannelListener : public IPC::Listener {
   bool OnMessageReceived(const IPC::Message& message) override { return false; }
 };
 
+void ConnectOnBlockingPool(mojo::ScopedMessagePipeHandle handle,
+                           mojo::edk::NamedPlatformHandle os_pipe) {
+  mojo::edk::ScopedPlatformHandle os_pipe_handle =
+      mojo::edk::CreateClientHandle(os_pipe);
+  if (!os_pipe_handle.is_valid())
+    return;
+
+  mojo::FuseMessagePipes(
+      mojo::edk::ConnectToPeerProcess(std::move(os_pipe_handle)),
+      std::move(handle));
+}
+
 }  // namespace
 
 class TestServiceProcess : public ServiceProcess {
@@ -132,10 +148,9 @@ class MockServiceIPCServer : public ServiceIPCServer {
   MockServiceIPCServer(
       ServiceIPCServer::Client* client,
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
-      const IPC::ChannelHandle& handle,
       base::WaitableEvent* shutdown_event)
-      : ServiceIPCServer(client, io_task_runner, handle, shutdown_event),
-        enabled_(true) { }
+      : ServiceIPCServer(client, io_task_runner, shutdown_event),
+        enabled_(true) {}
 
   MOCK_METHOD1(OnMessageReceived, bool(const IPC::Message& message));
   MOCK_METHOD1(OnChannelConnected, void(int32_t peer_pid));
@@ -253,10 +268,10 @@ int CloudPrintMockService_Main(SetExpectationsCallback set_expectations) {
 
   // Needed for IPC.
   mojo::edk::Init();
+  mojo::edk::ScopedIPCSupport ipc_support(service_process.io_task_runner());
 
   MockServiceIPCServer server(&service_process,
                               service_process.io_task_runner(),
-                              state->GetServiceProcessChannel(),
                               service_process.GetShutdownEventForTesting());
 
   // Here is where the expectations/mock responses need to be set up.
@@ -475,11 +490,16 @@ void CloudPrintProxyPolicyStartupTest::WaitForConnect() {
   observer_.Wait();
   EXPECT_TRUE(CheckServiceProcessReady());
   EXPECT_TRUE(base::ThreadTaskRunnerHandle::Get().get());
+
+  mojo::MessagePipe pipe;
+  BrowserThread::PostBlockingPoolTask(
+      FROM_HERE, base::Bind(&ConnectOnBlockingPool, base::Passed(&pipe.handle1),
+                            mojo::edk::NamedPlatformHandle(
+                                GetServiceProcessChannel().name)));
   ServiceProcessControl::GetInstance()->SetChannel(
-      IPC::ChannelProxy::Create(GetServiceProcessChannel(),
-                                IPC::Channel::MODE_NAMED_CLIENT,
-                                ServiceProcessControl::GetInstance(),
-                                IOTaskRunner()));
+      IPC::ChannelProxy::Create(IPC::ChannelMojo::CreateClientFactory(
+                                    std::move(pipe.handle0), IOTaskRunner()),
+                                this, IOTaskRunner()));
 }
 
 bool CloudPrintProxyPolicyStartupTest::Send(IPC::Message* message) {
@@ -512,6 +532,11 @@ base::CommandLine CloudPrintProxyPolicyStartupTest::MakeCmdLine(
 }
 
 TEST_F(CloudPrintProxyPolicyStartupTest, StartAndShutdown) {
+  mojo::edk::Init();
+  mojo::edk::ScopedIPCSupport ipc_support(
+      BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::IO)
+          ->task_runner());
+
   TestingBrowserProcess* browser_process =
       TestingBrowserProcess::GetGlobal();
   TestingProfileManager profile_manager(browser_process);
@@ -526,5 +551,6 @@ TEST_F(CloudPrintProxyPolicyStartupTest, StartAndShutdown) {
       Launch("CloudPrintMockService_StartEnabledWaitForQuit");
   WaitForConnect();
   ShutdownAndWaitForExitWithTimeout(std::move(process));
+  ServiceProcessControl::GetInstance()->Disconnect();
   content::RunAllPendingInMessageLoop();
 }

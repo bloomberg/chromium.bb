@@ -7,18 +7,16 @@
 #include "base/metrics/histogram_delta_serialization.h"
 #include "build/build_config.h"
 #include "chrome/common/service_messages.h"
+#include "ipc/ipc_channel_mojo.h"
 #include "ipc/ipc_logging.h"
 
 ServiceIPCServer::ServiceIPCServer(
     Client* client,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
-    const IPC::ChannelHandle& channel_handle,
     base::WaitableEvent* shutdown_event)
     : client_(client),
       io_task_runner_(io_task_runner),
-      channel_handle_(channel_handle),
-      shutdown_event_(shutdown_event),
-      ipc_client_connected_(false) {
+      shutdown_event_(shutdown_event) {
   DCHECK(client);
   DCHECK(shutdown_event);
 }
@@ -34,11 +32,9 @@ bool ServiceIPCServer::Init() {
 void ServiceIPCServer::CreateChannel() {
   channel_.reset();  // Tear down the existing channel, if any.
   channel_ = IPC::SyncChannel::Create(
-      channel_handle_,
-      IPC::Channel::MODE_NAMED_SERVER,
-      this /* listener */,
-      io_task_runner_,
-      true /* create_pipe_now */,
+      IPC::ChannelMojo::CreateServerFactory(client_->CreateChannelMessagePipe(),
+                                            io_task_runner_),
+      this /* listener */, io_task_runner_, true /* create_pipe_now */,
       shutdown_event_);
 }
 
@@ -56,24 +52,15 @@ void ServiceIPCServer::OnChannelConnected(int32_t peer_pid) {
 void ServiceIPCServer::OnChannelError() {
   // When an IPC client (typically a browser process) disconnects, the pipe is
   // closed and we get an OnChannelError. If we want to keep servicing requests,
-  // we will recreate the channel if necessary.
+  // we will recreate the channel.
   bool client_was_connected = ipc_client_connected_;
   ipc_client_connected_ = false;
   if (client_was_connected) {
-    if (client_->OnIPCClientDisconnect()) {
-#if defined(OS_WIN)
-      // On Windows, once an error on a named pipe occurs, the named pipe is no
-      // longer valid and must be re-created. This is not the case on Mac or
-      // Linux.
+    if (client_->OnIPCClientDisconnect())
       CreateChannel();
-#endif
-    }
-  } else {
+  } else if (!ipc_client_connected_) {
     // If the client was never even connected we had an error connecting.
-    if (!ipc_client_connected_) {
-      LOG(ERROR) << "Unable to open service ipc channel "
-                 << "named: " << channel_handle_.name;
-    }
+    LOG(ERROR) << "Unable to open service ipc channel";
   }
 }
 
@@ -92,12 +79,8 @@ void ServiceIPCServer::AddMessageHandler(
 }
 
 bool ServiceIPCServer::OnMessageReceived(const IPC::Message& msg) {
+  DCHECK(ipc_client_connected_);
   bool handled = true;
-  // When we get a message, always mark the IPC client as connected. The
-  // ChannelProxy::Context is only letting OnChannelConnected get called once,
-  // so on Mac and Linux, we never would set ipc_client_connected_ to true
-  // again on subsequent connections.
-  ipc_client_connected_ = true;
   IPC_BEGIN_MESSAGE_MAP(ServiceIPCServer, msg)
     IPC_MESSAGE_HANDLER(ServiceMsg_GetHistograms, OnGetHistograms)
     IPC_MESSAGE_HANDLER(ServiceMsg_Shutdown, OnShutdown);

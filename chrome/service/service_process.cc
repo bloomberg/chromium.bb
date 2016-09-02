@@ -5,6 +5,7 @@
 #include "chrome/service/service_process.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/base_switches.h"
 #include "base/callback.h"
@@ -38,6 +39,9 @@
 #include "chrome/service/service_process_prefs.h"
 #include "components/prefs/json_pref_store.h"
 #include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/named_platform_handle.h"
+#include "mojo/edk/embedder/named_platform_handle_utils.h"
+#include "mojo/edk/embedder/platform_handle_utils.h"
 #include "mojo/edk/embedder/scoped_ipc_support.h"
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_fetcher.h"
@@ -117,6 +121,20 @@ void PrepareRestartOnCrashEnviroment(
 
   env->SetVar(env_vars::kRestartInfo, base::UTF16ToUTF8(dlg_strings));
 }
+
+#if defined(OS_POSIX)
+mojo::edk::ScopedPlatformHandle CreateServerHandle(
+    const IPC::ChannelHandle& channel_handle) {
+#if defined(OS_MACOSX)
+  mojo::edk::PlatformHandle platform_handle(channel_handle.socket.fd);
+  platform_handle.needs_connection = true;
+  return mojo::edk::ScopedPlatformHandle(platform_handle);
+#else
+  return mojo::edk::CreateServerHandle(
+      mojo::edk::NamedPlatformHandle(channel_handle.name), false);
+#endif
+}
+#endif
 
 }  // namespace
 
@@ -205,11 +223,9 @@ bool ServiceProcess::Initialize(base::MessageLoopForUI* message_loop,
   }
 
   VLOG(1) << "Starting Service Process IPC Server";
-  ipc_server_.reset(new ServiceIPCServer(
-      this /* client */,
-      io_task_runner(),
-      service_process_state_->GetServiceProcessChannel(),
-      &shutdown_event_));
+
+  ipc_server_.reset(new ServiceIPCServer(this /* client */, io_task_runner(),
+                                         &shutdown_event_));
   ipc_server_->AddMessageHandler(base::WrapUnique(
       new cloud_print::CloudPrintMessageHandler(ipc_server_.get(), this)));
   ipc_server_->Init();
@@ -299,6 +315,29 @@ bool ServiceProcess::OnIPCClientDisconnect() {
     return false;
   }
   return true;
+}
+
+mojo::ScopedMessagePipeHandle ServiceProcess::CreateChannelMessagePipe() {
+  if (!server_handle_.is_valid()) {
+#if defined(OS_POSIX)
+    server_handle_ =
+        CreateServerHandle(service_process_state_->GetServiceProcessChannel());
+#elif defined(OS_WIN)
+    server_handle_ = mojo::edk::NamedPlatformHandle(
+        service_process_state_->GetServiceProcessChannel().name);
+#endif
+    DCHECK(server_handle_.is_valid());
+  }
+
+  mojo::edk::ScopedPlatformHandle channel_handle;
+#if defined(OS_POSIX)
+  channel_handle = mojo::edk::DuplicatePlatformHandle(server_handle_.get());
+#elif defined(OS_WIN)
+  channel_handle = mojo::edk::CreateServerHandle(server_handle_, false);
+#endif
+  CHECK(channel_handle.is_valid());
+
+  return mojo::edk::ConnectToPeerProcess(std::move(channel_handle));
 }
 
 cloud_print::CloudPrintProxy* ServiceProcess::GetCloudPrintProxy() {

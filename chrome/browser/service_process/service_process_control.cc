@@ -28,8 +28,28 @@
 #include "chrome/common/service_process_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "ipc/ipc_channel_mojo.h"
+#include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/named_platform_handle.h"
+#include "mojo/edk/embedder/named_platform_handle_utils.h"
 
 using content::BrowserThread;
+
+namespace {
+
+void ConnectOnBlockingPool(mojo::ScopedMessagePipeHandle handle,
+                           mojo::edk::NamedPlatformHandle os_pipe) {
+  mojo::edk::ScopedPlatformHandle os_pipe_handle =
+      mojo::edk::CreateClientHandle(os_pipe);
+  if (!os_pipe_handle.is_valid())
+    return;
+
+  mojo::FuseMessagePipes(
+      mojo::edk::ConnectToPeerProcess(std::move(os_pipe_handle)),
+      std::move(handle));
+}
+
+}  // namespace
 
 // ServiceProcessControl implementation.
 ServiceProcessControl::ServiceProcessControl() {
@@ -49,11 +69,18 @@ void ServiceProcessControl::ConnectInternal() {
   // Actually going to connect.
   DVLOG(1) << "Connecting to Service Process IPC Server";
 
+  mojo::MessagePipe pipe;
+  BrowserThread::PostBlockingPoolTask(
+      FROM_HERE, base::Bind(&ConnectOnBlockingPool, base::Passed(&pipe.handle1),
+                            mojo::edk::NamedPlatformHandle(
+                                GetServiceProcessChannel().name)));
   // TODO(hclam): Handle error connecting to channel.
-  const IPC::ChannelHandle channel_id = GetServiceProcessChannel();
-  SetChannel(IPC::ChannelProxy::Create(
-      channel_id, IPC::Channel::MODE_NAMED_CLIENT, this,
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO).get()));
+  auto io_task_runner =
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
+  SetChannel(
+      IPC::ChannelProxy::Create(IPC::ChannelMojo::CreateClientFactory(
+                                    std::move(pipe.handle0), io_task_runner),
+                                this, io_task_runner));
 }
 
 void ServiceProcessControl::SetChannel(
