@@ -104,29 +104,40 @@ TEST(PaymentRequestTest, ParsingFullyPopulatedRequestDictionarySucceeds) {
 // Tests that serializing a default PaymentResponse yields an empty dictionary.
 TEST(PaymentRequestTest, EmptyResponseDictionary) {
   base::DictionaryValue expected_value;
-  base::DictionaryValue output_value;
+  std::unique_ptr<base::DictionaryValue> details(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> address(new base::DictionaryValue);
+  details->Set("billingAddress", std::move(address));
+  expected_value.Set("details", std::move(details));
 
   PaymentResponse payment_response;
-  payment_response.ToDictionaryValue(&output_value);
-  EXPECT_TRUE(expected_value.Equals(&output_value));
+  EXPECT_TRUE(
+      expected_value.Equals(payment_response.ToDictionaryValue().get()));
 }
 
 // Tests that serializing a populated PaymentResponse yields the expected
 // result.
 TEST(PaymentRequestTest, PopulatedResponseDictionary) {
   base::DictionaryValue expected_value;
-  base::DictionaryValue output_value;
+  std::unique_ptr<base::DictionaryValue> details(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> address(new base::DictionaryValue);
+  details->Set("billingAddress", std::move(address));
+  expected_value.Set("details", std::move(details));
 
   expected_value.SetString("methodName", "American Express");
   PaymentResponse payment_response;
   payment_response.method_name = base::ASCIIToUTF16("American Express");
-  payment_response.ToDictionaryValue(&output_value);
-  EXPECT_TRUE(expected_value.Equals(&output_value));
+  EXPECT_TRUE(
+      expected_value.Equals(payment_response.ToDictionaryValue().get()));
 
-  expected_value.SetString("details", "{cardSecurityCode: '123'}");
-  payment_response.details = base::ASCIIToUTF16("{cardSecurityCode: '123'}");
-  payment_response.ToDictionaryValue(&output_value);
-  EXPECT_TRUE(expected_value.Equals(&output_value));
+  details.reset(new base::DictionaryValue);
+  address.reset(new base::DictionaryValue);
+  address->SetString("postalCode", "90210");
+  details->Set("billingAddress", std::move(address));
+  expected_value.Set("details", std::move(details));
+  payment_response.details.billing_address.postal_code =
+      base::ASCIIToUTF16("90210");
+  EXPECT_TRUE(
+      expected_value.Equals(payment_response.ToDictionaryValue().get()));
 }
 
 // Value equality tests.
@@ -519,9 +530,66 @@ TEST(PaymentRequestTest, PaymentRequestEquality) {
   EXPECT_EQ(request1, request2);
 }
 
+// Tests that two credit card response objects are not equal if their property
+// values differ or one is missing a value present in the other, and equal
+// otherwise. Doesn't test all properties of child objects, relying instead on
+// their respective tests.
+TEST(PaymentRequestTest, BasicCardResponseEquality) {
+  BasicCardResponse card_response1;
+  BasicCardResponse card_response2;
+  EXPECT_EQ(card_response1, card_response2);
+
+  card_response1.cardholder_name = base::ASCIIToUTF16("Shadow Moon");
+  EXPECT_NE(card_response1, card_response2);
+  card_response2.cardholder_name = base::ASCIIToUTF16("Mad Sweeney");
+  EXPECT_NE(card_response1, card_response2);
+  card_response2.cardholder_name = base::ASCIIToUTF16("Shadow Moon");
+  EXPECT_EQ(card_response1, card_response2);
+
+  card_response1.card_number = base::ASCIIToUTF16("4111111111111111");
+  EXPECT_NE(card_response1, card_response2);
+  card_response2.card_number = base::ASCIIToUTF16("1111");
+  EXPECT_NE(card_response1, card_response2);
+  card_response2.card_number = base::ASCIIToUTF16("4111111111111111");
+  EXPECT_EQ(card_response1, card_response2);
+
+  card_response1.expiry_month = base::ASCIIToUTF16("01");
+  EXPECT_NE(card_response1, card_response2);
+  card_response2.expiry_month = base::ASCIIToUTF16("11");
+  EXPECT_NE(card_response1, card_response2);
+  card_response2.expiry_month = base::ASCIIToUTF16("01");
+  EXPECT_EQ(card_response1, card_response2);
+
+  card_response1.expiry_year = base::ASCIIToUTF16("27");
+  EXPECT_NE(card_response1, card_response2);
+  card_response2.expiry_year = base::ASCIIToUTF16("72");
+  EXPECT_NE(card_response1, card_response2);
+  card_response2.expiry_year = base::ASCIIToUTF16("27");
+  EXPECT_EQ(card_response1, card_response2);
+
+  card_response1.expiry_year = base::ASCIIToUTF16("123");
+  EXPECT_NE(card_response1, card_response2);
+  card_response2.expiry_year = base::ASCIIToUTF16("999");
+  EXPECT_NE(card_response1, card_response2);
+  card_response2.expiry_year = base::ASCIIToUTF16("123");
+  EXPECT_EQ(card_response1, card_response2);
+
+  PaymentAddress billing_address1;
+  billing_address1.postal_code = base::ASCIIToUTF16("90210");
+  PaymentAddress billing_address2;
+  billing_address2.postal_code = base::ASCIIToUTF16("01209");
+  card_response1.billing_address = billing_address1;
+  EXPECT_NE(card_response1, card_response2);
+  card_response2.billing_address = billing_address2;
+  EXPECT_NE(card_response1, card_response2);
+  card_response2.billing_address = billing_address1;
+  EXPECT_EQ(card_response1, card_response2);
+}
+
 // Tests that two payment response objects are not equal if their property
 // values differ or one is missing a value present in the other, and equal
-// otherwise.
+// otherwise. Doesn't test all properties of child objects, relying instead on
+// their respective tests.
 TEST(PaymentRequestTest, PaymentResponseEquality) {
   PaymentResponse response1;
   PaymentResponse response2;
@@ -534,11 +602,15 @@ TEST(PaymentRequestTest, PaymentResponseEquality) {
   response2.method_name = base::ASCIIToUTF16("Visa");
   EXPECT_EQ(response1, response2);
 
-  response1.details = base::ASCIIToUTF16("{cardSecurityCode: '123'}");
+  BasicCardResponse card_response1;
+  card_response1.card_number = base::ASCIIToUTF16("1234");
+  BasicCardResponse card_response2;
+  card_response2.card_number = base::ASCIIToUTF16("8888");
+  response1.details = card_response1;
   EXPECT_NE(response1, response2);
-  response2.details = base::ASCIIToUTF16("{cardSecurityCode: '---'}");
+  response2.details = card_response2;
   EXPECT_NE(response1, response2);
-  response2.details = base::ASCIIToUTF16("{cardSecurityCode: '123'}");
+  response2.details = card_response1;
   EXPECT_EQ(response1, response2);
 }
 

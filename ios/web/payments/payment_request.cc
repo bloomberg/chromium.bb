@@ -11,6 +11,18 @@ namespace {
 // All of these are defined here (even though most are only used once each) so
 // the format details are easy to locate and update or compare to the spec doc.
 // (https://w3c.github.io/browser-payment-api/).
+static const char kAddressCountry[] = "country";
+static const char kAddressAddressLine[] = "addressLine";
+static const char kAddressRegion[] = "region";
+static const char kAddressCity[] = "city";
+static const char kAddressDependentLocality[] = "dependentLocality";
+static const char kAddressPostalCode[] = "postalCode";
+static const char kAddressSortingCode[] = "sortingCode";
+static const char kAddressLanguageCode[] = "languageCode";
+static const char kAddressOrganization[] = "organization";
+static const char kAddressRecipient[] = "recipient";
+static const char kAddressCareOf[] = "careOf";
+static const char kAddressPhone[] = "phone";
 static const char kMethodData[] = "methodData";
 static const char kSupportedMethods[] = "supportedMethods";
 static const char kData[] = "data";
@@ -20,6 +32,12 @@ static const char kPaymentDetailsTotalAmount[] = "amount";
 static const char kPaymentDetailsTotalAmountCurrency[] = "currency";
 static const char kPaymentDetailsTotalAmountValue[] = "value";
 static const char kMethodName[] = "methodName";
+static const char kCardCardholderName[] = "cardholderName";
+static const char kCardCardNumber[] = "cardNumber";
+static const char kCardExpiryMonth[] = "expiryMonth";
+static const char kCardExpiryYear[] = "expiryYear";
+static const char kCardCardSecurityCode[] = "cardSecurityCode";
+static const char kCardBillingAddress[] = "billingAddress";
 
 }  // namespace
 
@@ -44,6 +62,45 @@ bool PaymentAddress::operator==(const PaymentAddress& other) const {
 
 bool PaymentAddress::operator!=(const PaymentAddress& other) const {
   return !(*this == other);
+}
+
+std::unique_ptr<base::DictionaryValue> PaymentAddress::ToDictionaryValue()
+    const {
+  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
+
+  if (!this->country.empty())
+    result->SetString(kAddressCountry, this->country);
+
+  if (!this->address_line.empty()) {
+    std::unique_ptr<base::ListValue> address_line(new base::ListValue);
+    for (base::string16 address_line_string : this->address_line) {
+      address_line->AppendString(address_line_string);
+    }
+    result->Set(kAddressAddressLine, std::move(address_line));
+  }
+
+  if (!this->region.empty())
+    result->SetString(kAddressRegion, this->region);
+  if (!this->city.empty())
+    result->SetString(kAddressCity, this->city);
+  if (!this->dependent_locality.empty())
+    result->SetString(kAddressDependentLocality, this->dependent_locality);
+  if (!this->postal_code.empty())
+    result->SetString(kAddressPostalCode, this->postal_code);
+  if (!this->sorting_code.empty())
+    result->SetString(kAddressSortingCode, this->sorting_code);
+  if (!this->language_code.empty())
+    result->SetString(kAddressLanguageCode, this->language_code);
+  if (!this->organization.empty())
+    result->SetString(kAddressOrganization, this->organization);
+  if (!this->recipient.empty())
+    result->SetString(kAddressRecipient, this->recipient);
+  if (!this->care_of.empty())
+    result->SetString(kAddressCareOf, this->care_of);
+  if (!this->phone.empty())
+    result->SetString(kAddressPhone, this->phone);
+
+  return result;
 }
 
 PaymentMethodData::PaymentMethodData() {}
@@ -217,7 +274,44 @@ bool PaymentRequest::FromDictionaryValue(const base::DictionaryValue& value) {
   return true;
 }
 
+BasicCardResponse::BasicCardResponse() {}
+BasicCardResponse::BasicCardResponse(const BasicCardResponse& other) = default;
+BasicCardResponse::~BasicCardResponse() = default;
+
+bool BasicCardResponse::operator==(const BasicCardResponse& other) const {
+  return this->cardholder_name == other.cardholder_name &&
+         this->card_number == other.card_number &&
+         this->expiry_month == other.expiry_month &&
+         this->expiry_year == other.expiry_year &&
+         this->card_security_code == other.card_security_code &&
+         this->billing_address == other.billing_address;
+}
+
+bool BasicCardResponse::operator!=(const BasicCardResponse& other) const {
+  return !(*this == other);
+}
+
+std::unique_ptr<base::DictionaryValue> BasicCardResponse::ToDictionaryValue()
+    const {
+  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
+
+  if (!this->cardholder_name.empty())
+    result->SetString(kCardCardholderName, this->cardholder_name);
+  if (!this->card_number.empty())
+    result->SetString(kCardCardNumber, this->card_number);
+  if (!this->expiry_month.empty())
+    result->SetString(kCardExpiryMonth, this->expiry_month);
+  if (!this->expiry_year.empty())
+    result->SetString(kCardExpiryYear, this->expiry_year);
+  if (!this->card_security_code.empty())
+    result->SetString(kCardCardSecurityCode, this->card_security_code);
+  result->Set(kCardBillingAddress, this->billing_address.ToDictionaryValue());
+
+  return result;
+}
+
 PaymentResponse::PaymentResponse() {}
+PaymentResponse::PaymentResponse(const PaymentResponse& other) = default;
 PaymentResponse::~PaymentResponse() = default;
 
 bool PaymentResponse::operator==(const PaymentResponse& other) const {
@@ -229,12 +323,19 @@ bool PaymentResponse::operator!=(const PaymentResponse& other) const {
   return !(*this == other);
 }
 
-void PaymentResponse::ToDictionaryValue(base::DictionaryValue* value) const {
-  DCHECK(value);
+std::unique_ptr<base::DictionaryValue> PaymentResponse::ToDictionaryValue()
+    const {
+  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
+
   if (!this->method_name.empty())
-    value->SetString(kMethodName, this->method_name);
-  if (!this->details.empty())
-    value->SetString(kPaymentDetails, this->details);
+    result->SetString(kMethodName, this->method_name);
+  result->Set(kPaymentDetails, this->details.ToDictionaryValue());
+
+  return result;
+}
+
+void PaymentResponse::ToDictionaryValue(base::DictionaryValue* value) const {
+  value->MergeDictionary(ToDictionaryValue().get());
 }
 
 }  // namespace web

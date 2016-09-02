@@ -18,6 +18,21 @@ namespace autofill {
 namespace data_util {
 
 namespace {
+// Mappings from Chrome card types to Payment Request API basic card payment
+// spec types and icons. Note that "generic" is not in the spec.
+// https://w3c.github.io/webpayments-methods-card/#method-id
+const PaymentRequestData kPaymentRequestData[]{
+    {"americanExpressCC", "amex", IDR_AUTOFILL_PR_AMEX},
+    {"dinersCC", "diners", IDR_AUTOFILL_PR_DINERS},
+    {"discoverCC", "discover", IDR_AUTOFILL_PR_DISCOVER},
+    {"jcbCC", "jcb", IDR_AUTOFILL_PR_JCB},
+    {"masterCardCC", "mastercard", IDR_AUTOFILL_PR_MASTERCARD},
+    {"unionPayCC", "unionpay", IDR_AUTOFILL_PR_UNIONPAY},
+    {"visaCC", "visa", IDR_AUTOFILL_PR_VISA},
+};
+const PaymentRequestData kGenericPaymentRequestData = {"genericCC", "generic",
+                                                       IDR_AUTOFILL_PR_GENERIC};
+
 const char* const name_prefixes[] = {
     "1lt",     "1st", "2lt", "2nd",    "3rd",  "admiral", "capt",
     "captain", "col", "cpt", "dr",     "gen",  "general", "lcdr",
@@ -381,6 +396,25 @@ bool ProfileMatchesFullName(const base::string16 full_name,
   }
 
   return false;
+}
+
+const PaymentRequestData& GetPaymentRequestData(const std::string& type) {
+  for (size_t i = 0; i < arraysize(kPaymentRequestData); ++i) {
+    if (type == kPaymentRequestData[i].card_type)
+      return kPaymentRequestData[i];
+  }
+  return kGenericPaymentRequestData;
+}
+
+const char* GetCardTypeForBasicCardPaymentType(
+    const std::string& basic_card_payment_type) {
+  for (size_t i = 0; i < arraysize(kPaymentRequestData); ++i) {
+    if (basic_card_payment_type ==
+        kPaymentRequestData[i].basic_card_payment_type) {
+      return kPaymentRequestData[i].card_type;
+    }
+  }
+  return kGenericPaymentRequestData.card_type;
 }
 
 }  // namespace data_util

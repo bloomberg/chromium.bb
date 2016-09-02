@@ -26,6 +26,7 @@
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_country.h"
+#include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/country_names.h"
 #include "components/autofill/core/browser/field_types.h"
@@ -131,41 +132,11 @@ void PopulateNativeProfileFromJava(
       Java_AutofillProfile_getLanguageCode(env, jprofile)));
 }
 
-// Mapping from Chrome card types to PaymentRequest basic card payment spec and
-// icons. Note that "generic" is not in the spec.
-// https://w3c.github.io/webpayments-methods-card/#method-id
-const struct PaymentRequestData {
-  const char* card_type;
-  const char* basic_card_payment_type;
-  const int icon_resource_id;
-} kPaymentRequestData[] {
-  {"genericCC", "generic", IDR_AUTOFILL_PR_GENERIC},
-
-  {"americanExpressCC", "amex", IDR_AUTOFILL_PR_AMEX},
-  {"dinersCC", "diners", IDR_AUTOFILL_PR_DINERS},
-  {"discoverCC", "discover", IDR_AUTOFILL_PR_DISCOVER},
-  {"jcbCC", "jcb", IDR_AUTOFILL_PR_JCB},
-  {"masterCardCC", "mastercard", IDR_AUTOFILL_PR_MASTERCARD},
-  {"unionPayCC", "unionpay", IDR_AUTOFILL_PR_UNIONPAY},
-  {"visaCC", "visa", IDR_AUTOFILL_PR_VISA},
-};
-
-// Converts the card type into PaymentRequest type according to the basic card
-// payment spec and an icon. Will set the type and the icon to "generic" for
-// unrecognized card type.
-const PaymentRequestData& GetPaymentRequestData(const std::string& type) {
-  for (size_t i = 0; i < arraysize(kPaymentRequestData); ++i) {
-    if (type == kPaymentRequestData[i].card_type)
-      return kPaymentRequestData[i];
-  }
-  return kPaymentRequestData[0];
-}
-
 ScopedJavaLocalRef<jobject> CreateJavaCreditCardFromNative(
     JNIEnv* env,
     const CreditCard& card) {
-  const PaymentRequestData& payment_request_data =
-      GetPaymentRequestData(card.type());
+  const data_util::PaymentRequestData& payment_request_data =
+      data_util::GetPaymentRequestData(card.type());
   return Java_CreditCard_create(
       env, ConvertUTF8ToJavaString(env, card.guid()),
       ConvertUTF8ToJavaString(env, card.origin()),
@@ -182,16 +153,6 @@ ScopedJavaLocalRef<jobject> CreateJavaCreditCardFromNative(
       ResourceMapper::MapFromChromiumId(payment_request_data.icon_resource_id),
       ConvertUTF8ToJavaString(env, card.billing_address_id()),
       ConvertUTF8ToJavaString(env, card.server_id()));
-}
-
-const char* GetCardTypeForBasicCardPaymentType(
-    const std::string& basic_card_payment_type) {
-  for (size_t i = 0; i < arraysize(kPaymentRequestData); ++i) {
-    if (basic_card_payment_type ==
-        kPaymentRequestData[i].basic_card_payment_type)
-      return kPaymentRequestData[i].card_type;
-  }
-  return kPaymentRequestData[0].card_type;
 }
 
 void PopulateNativeCreditCardFromJava(
@@ -225,9 +186,8 @@ void PopulateNativeCreditCardFromJava(
     } else {
       card->set_record_type(CreditCard::MASKED_SERVER_CARD);
       card->SetTypeForMaskedCard(
-          GetCardTypeForBasicCardPaymentType(
-              ConvertJavaStringToUTF8(
-                  env, Java_CreditCard_getBasicCardPaymentType(env, jcard))));
+          data_util::GetCardTypeForBasicCardPaymentType(ConvertJavaStringToUTF8(
+              env, Java_CreditCard_getBasicCardPaymentType(env, jcard))));
     }
   }
 }
@@ -489,11 +449,11 @@ PersonalDataManagerAndroid::GetBasicCardPaymentTypeIfValid(
     const JavaParamRef<jstring>& jcard_number) {
   base::string16 card_number = ConvertJavaStringToUTF16(env, jcard_number);
   return ConvertUTF8ToJavaString(
-      env,
-      IsValidCreditCardNumber(card_number)
-          ? GetPaymentRequestData(CreditCard::GetCreditCardType(card_number))
-                .basic_card_payment_type
-          : "");
+      env, IsValidCreditCardNumber(card_number)
+               ? data_util::GetPaymentRequestData(
+                     CreditCard::GetCreditCardType(card_number))
+                     .basic_card_payment_type
+               : "");
 }
 
 void PersonalDataManagerAndroid::AddServerCreditCardForTest(
