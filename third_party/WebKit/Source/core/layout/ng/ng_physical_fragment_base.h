@@ -18,7 +18,7 @@ namespace blink {
 // use by paint, hit-testing etc.
 //
 // Layout code should only access output layout information through the
-// NGFragmentBase classes which transforms infromation into the logical
+// NGFragmentBase classes which transforms information into the logical
 // coordinate system.
 class CORE_EXPORT NGPhysicalFragmentBase
     : public GarbageCollected<NGPhysicalFragmentBase> {

@@ -10,6 +10,7 @@
 #include "core/layout/ng/ng_physical_constraint_space.h"
 #include "core/layout/ng/ng_writing_mode.h"
 #include "platform/heap/Handle.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -61,7 +62,7 @@ class CORE_EXPORT NGConstraintSpace final
   // Size of the container. Used for the following three cases:
   // 1) Percentage resolution.
   // 2) Resolving absolute positions of children.
-  // 3) Defining the threashold that triggers the presence of a scrollbar. Only
+  // 3) Defining the threshold that triggers the presence of a scrollbar. Only
   //    applies if the corresponding scrollbarTrigger flag has been set for the
   //    direction.
   NGLogicalSize ContainerSize() const;
@@ -109,6 +110,8 @@ class CORE_EXPORT NGConstraintSpace final
   void SetFixedSize(bool inlineFixed, bool blockFixed);
   void SetFragmentationType(NGFragmentationType);
 
+  String toString() const;
+
  private:
   Member<NGPhysicalConstraintSpace> physical_space_;
   NGLogicalOffset offset_;
@@ -133,6 +136,11 @@ class CORE_EXPORT NGLayoutOpportunityIterator final {
   unsigned clear_;
   bool for_inline_or_bfc_;
 };
+
+inline std::ostream& operator<<(std::ostream& stream,
+                                const NGConstraintSpace& value) {
+  return stream << value.toString();
+}
 
 }  // namespace blink
 

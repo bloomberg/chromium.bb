@@ -22,6 +22,8 @@ class NGPhysicalFragment;
 class CORE_EXPORT NGBox final : public GarbageCollectedFinalized<NGBox> {
  public:
   explicit NGBox(LayoutObject*);
+
+  // TODO(layout-ng): make it private and declare a friend class to use in tests
   explicit NGBox(ComputedStyle*);
 
   // Returns true when done; when this function returns false, it has to be
@@ -32,9 +34,9 @@ class CORE_EXPORT NGBox final : public GarbageCollectedFinalized<NGBox> {
   bool Layout(const NGConstraintSpace*, NGFragment**);
   const ComputedStyle* Style() const;
 
-  NGBox* NextSibling() const;
+  NGBox* NextSibling();
 
-  NGBox* FirstChild() const;
+  NGBox* FirstChild();
 
   void SetNextSibling(NGBox*);
   void SetFirstChild(NGBox*);

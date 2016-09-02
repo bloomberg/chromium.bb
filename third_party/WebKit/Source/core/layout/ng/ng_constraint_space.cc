@@ -156,6 +156,12 @@ void NGConstraintSpace::SetFragmentationType(NGFragmentationType type) {
   }
 }
 
+String NGConstraintSpace::toString() const {
+  return String::format("Size: %s, %s",
+                        size_.inline_size.toString().ascii().data(),
+                        size_.block_size.toString().ascii().data());
+}
+
 NGConstraintSpace* NGLayoutOpportunityIterator::Next() {
   auto* exclusions = constraint_space_->PhysicalSpace()->Exclusions();
   if (!exclusions->head())

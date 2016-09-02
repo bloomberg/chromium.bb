@@ -4,6 +4,7 @@
 
 #include "core/layout/ng/ng_block_layout_algorithm.h"
 
+#include "core/layout/ng/ng_box.h"
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_physical_fragment.h"
 #include "core/layout/ng/ng_length_utils.h"

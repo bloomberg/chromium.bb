@@ -21,7 +21,7 @@ NGBox::NGBox(LayoutObject* layout_object)
   DCHECK(layout_box_);
 }
 
-NGBox::NGBox(ComputedStyle* style) : style_(style) {
+NGBox::NGBox(ComputedStyle* style) : layout_box_(nullptr), style_(style) {
   DCHECK(style_);
 }
 
@@ -95,31 +95,30 @@ const ComputedStyle* NGBox::Style() const {
   return layout_box_->style();
 }
 
-NGBox* NGBox::NextSibling() const {
-  if (style_)
-    return next_sibling_;
-  DCHECK(layout_box_);
-  LayoutObject* next_sibling = layout_box_->nextSibling();
-  return next_sibling ? new NGBox(next_sibling) : nullptr;
+NGBox* NGBox::NextSibling() {
+  if (!next_sibling_) {
+    LayoutObject* next_sibling =
+        layout_box_ ? layout_box_->nextSibling() : nullptr;
+    NGBox* box = next_sibling ? new NGBox(next_sibling) : nullptr;
+    SetNextSibling(box);
+  }
+  return next_sibling_;
 }
 
-NGBox* NGBox::FirstChild() const {
-  if (style_)
-    return first_child_;
-  DCHECK(layout_box_);
-  LayoutObject* child = layout_box_->slowFirstChild();
-  return child ? new NGBox(child) : nullptr;
+NGBox* NGBox::FirstChild() {
+  if (!first_child_) {
+    LayoutObject* child = layout_box_ ? layout_box_->slowFirstChild() : nullptr;
+    NGBox* box = child ? new NGBox(child) : nullptr;
+    SetFirstChild(box);
+  }
+  return first_child_;
 }
 
 void NGBox::SetNextSibling(NGBox* sibling) {
-  DCHECK(!layout_box_);
-  DCHECK(style_);
   next_sibling_ = sibling;
 }
 
 void NGBox::SetFirstChild(NGBox* child) {
-  DCHECK(!layout_box_);
-  DCHECK(style_);
   first_child_ = child;
 }
 
