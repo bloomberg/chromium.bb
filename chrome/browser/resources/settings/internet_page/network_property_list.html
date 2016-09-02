@@ -30,7 +30,7 @@
         <div class="layout horizontal" hidden$="[[!isEditable_(
             item, 'String', propertyDict, editFieldTypes)]]">
           <paper-input-container no-label-float>
-            <input class="embedded-input" id="[[item]]" is="iron-input"
+            <input id="[[item]]" is="iron-input"
                 value="[[getPropertyValue_(item, propertyDict)]]"
                 on-blur="onValueChange_">
           </paper-input-container>

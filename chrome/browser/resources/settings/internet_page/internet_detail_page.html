@@ -42,6 +42,18 @@
         margin: 10px;
       }
 
+      .settings-box.embedded {
+        -webkit-margin-start: 0;
+        align-items: stretch;
+        flex-direction: column;
+        justify-content: center;
+        padding: 0;
+      }
+
+      .settings-box.stretch {
+        align-items: stretch;
+      }
+
       .subtitle {
         -webkit-margin-start: 20px;
         font-weight: 500;
@@ -66,52 +78,54 @@
         max-width: 500px;
       }
     </style>
-    <div class="settings-box first single-column">
-      <!-- Title section: Icon + name + connection state. -->
-      <div class="settings-box embedded">
-        <div class="start layout horizontal center">
-          <cr-network-icon network-state="[[networkProperties]]">
-          </cr-network-icon>
-          <div id="networkState"
-              connected$="[[isConnectedState_(networkProperties)]]">
-            [[getStateText_(networkProperties)]]
-          </div>
-        </div>
-        <div id="buttonDiv" class="layout horizontal center">
-          <paper-button class="secondary-button" on-tap="onForgetTap_"
-              hidden$="[[!showForget_(networkProperties)]]">
-            $i18n{networkButtonForget}
-          </paper-button>
-          <paper-button class="secondary-button" on-tap="onViewAccountTap_"
-              hidden$="[[!showViewAccount_(networkProperties)]]">
-            $i18n{networkButtonViewAccount}
-          </paper-button>
-          <paper-button class="secondary-button" on-tap="onActivateTap_"
-              hidden$="[[!showActivate_(networkProperties)]]">
-            $i18n{networkButtonActivate}
-          </paper-button>
-          <paper-button class="secondary-button" on-tap="onConfigureTap_"
-              hidden$="[[!showConfigure_(networkProperties)]]">
-            $i18n{networkButtonConfigure}
-          </paper-button>
-          <paper-button class="primary-button" on-tap="onConnectTap_"
-              hidden$="[[!showConnect_(networkProperties)]]"
-              disabled="[[!enableConnect_(networkProperties, defaultNetwork)]]">
-            $i18n{networkButtonConnect}
-          </paper-button>
-          <paper-button class="primary-button" on-tap="onDisconnectTap_"
-              hidden$="[[!showDisconnect_(networkProperties)]]">
-            $i18n{networkButtonDisconnect}
-          </paper-button>
+    <!-- Title section: Icon + name + connection state. -->
+    <div class="settings-box first">
+      <div class="start layout horizontal center">
+        <cr-network-icon network-state="[[networkProperties]]">
+        </cr-network-icon>
+        <div id="networkState"
+            connected$="[[isConnectedState_(networkProperties)]]">
+          [[getStateText_(networkProperties)]]
         </div>
       </div>
-      <!-- Shared. -->
-      <div class="settings-box embedded"
-          hidden$="[[!showShared_(networkProperties)]]">
-        $i18n{networkShared}
+      <div id="buttonDiv" class="layout horizontal center">
+        <paper-button class="secondary-button" on-tap="onForgetTap_"
+            hidden$="[[!showForget_(networkProperties)]]">
+          $i18n{networkButtonForget}
+        </paper-button>
+        <paper-button class="secondary-button" on-tap="onViewAccountTap_"
+            hidden$="[[!showViewAccount_(networkProperties)]]">
+          $i18n{networkButtonViewAccount}
+        </paper-button>
+        <paper-button class="secondary-button" on-tap="onActivateTap_"
+            hidden$="[[!showActivate_(networkProperties)]]">
+          $i18n{networkButtonActivate}
+        </paper-button>
+        <paper-button class="secondary-button" on-tap="onConfigureTap_"
+            hidden$="[[!showConfigure_(networkProperties)]]">
+          $i18n{networkButtonConfigure}
+        </paper-button>
+        <paper-button class="primary-button" on-tap="onConnectTap_"
+            hidden$="[[!showConnect_(networkProperties)]]"
+            disabled="[[!enableConnect_(networkProperties, defaultNetwork)]]">
+          $i18n{networkButtonConnect}
+        </paper-button>
+        <paper-button class="primary-button" on-tap="onDisconnectTap_"
+            hidden$="[[!showDisconnect_(networkProperties)]]">
+          $i18n{networkButtonDisconnect}
+        </paper-button>
       </div>
+    </div>
+
+    <!-- Shared. -->
+    <div class="settings-box continuation"
+        hidden$="[[!showShared_(networkProperties)]]">
+      $i18n{networkShared}
+    </div>
+    <!-- Top level properties -->
+    <div class="settings-box continuation embedded">
       <!-- Prefer this network. -->
-      <div class="settings-box embedded"
+      <div class="settings-box"
           hidden$="[[!showPreferNetwork_(networkProperties)]]">
         <paper-checkbox checked="{{preferNetwork_}}"
             disabled="[[isNetworkPolicyEnforced(networkProperties.Priority)]]">
@@ -121,7 +135,7 @@
         </cr-policy-network-indicator>
       </div>
       <!-- Autoconnect. -->
-      <div class="settings-box embedded"
+      <div class="settings-box"
           hidden$="[[!showAutoConnect_(networkProperties)]]">
         <paper-checkbox checked="{{autoConnect_}}">
           $i18n{networkAutoConnect}
@@ -130,27 +144,27 @@
             property="[[getManagedAutoConnect_(networkProperties)]]">
         </cr-policy-network-indicator>
       </div>
+      <!-- SIM Info (Cellular only). -->
+      <div class="settings-box single-column stretch">
+        <network-siminfo
+            editable on-siminfo-change="onNetworkPropertyChange_"
+            hidden$="[[!showCellularSim_(networkProperties)]]"
+            network-properties="[[networkProperties]]"
+            networking-private="[[networkingPrivate]]">
+        </network-siminfo>
+      </div>
+      <!-- IP Address. -->
+      <div class="settings-box two-line single-column stretch"
+           hidden$="[[!IPAddress_]]">
+        <div>$i18n{networkIPAddress}</div>
+        <div class="secondary">[[IPAddress_]]</div>
+      </div>
+      <!-- Properties to always show if present. -->
+      <network-property-list hidden$="[[!hasInfoFields_(networkProperties)]]"
+          fields="[[getInfoFields_(networkProperties)]]"
+          property-dict="[[networkProperties]]">
+      </network-property-list>
     </div>
-
-    <!-- SIM Info (Cellular only). -->
-    <network-siminfo
-        editable on-siminfo-change="onNetworkPropertyChange_"
-        hidden$="[[!showCellularSim_(networkProperties)]]"
-        network-properties="[[networkProperties]]"
-        networking-private="[[networkingPrivate]]">
-    </network-siminfo>
-
-    <!-- IP Address. -->
-    <div class="settings-box two-line single-column" hidden$="[[!IPAddress_]]">
-      <div>$i18n{networkIPAddress}</div>
-      <div class="secondary">[[IPAddress_]]</div>
-    </div>
-
-    <!-- Properties to always show if present. -->
-    <network-property-list hidden$="[[!hasInfoFields_(networkProperties)]]"
-        fields="[[getInfoFields_(networkProperties)]]"
-        property-dict="[[networkProperties]]">
-    </network-property-list>
 
     <!-- Advanced toggle. -->
     <div class="settings-box" actionable on-tap="toggleAdvancedExpanded_"
