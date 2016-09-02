@@ -415,9 +415,6 @@ class SigninScreenHandler
   // Returns true if guest signin is allowed.
   bool IsGuestSigninAllowed() const;
 
-  // Returns true if offline login is allowed.
-  bool IsOfflineLoginAllowed() const;
-
   bool ShouldLoadGaia() const;
 
   // Shows signin.

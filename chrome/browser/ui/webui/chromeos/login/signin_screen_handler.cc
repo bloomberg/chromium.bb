@@ -831,7 +831,6 @@ void SigninScreenHandler::SetupAndShowOfflineMessage(
   network_error_model_->AllowGuestSignin(guest_signin_allowed);
 
   const bool offline_login_allowed =
-      IsOfflineLoginAllowed() &&
       IsSigninScreenError(network_error_model_->GetErrorState()) &&
       network_error_model_->GetErrorState() !=
           NetworkError::ERROR_STATE_AUTH_EXT_TIMEOUT;
@@ -1108,7 +1107,7 @@ void SigninScreenHandler::HandleLaunchPublicSession(
 }
 
 void SigninScreenHandler::HandleOfflineLogin(const base::ListValue* args) {
-  if (!delegate_ || delegate_->IsShowUsers()) {
+  if (!delegate_) {
     NOTREACHED();
     return;
   }
@@ -1472,17 +1471,6 @@ bool SigninScreenHandler::IsGuestSigninAllowed() const {
   bool allow_guest;
   cros_settings->GetBoolean(kAccountsPrefAllowGuest, &allow_guest);
   return allow_guest;
-}
-
-bool SigninScreenHandler::IsOfflineLoginAllowed() const {
-  CrosSettings* cros_settings = CrosSettings::Get();
-  if (!cros_settings)
-    return false;
-
-  // Offline login is allowed only when user pods are hidden.
-  bool show_pods;
-  cros_settings->GetBoolean(kAccountsPrefShowUserNamesOnSignIn, &show_pods);
-  return !show_pods;
 }
 
 void SigninScreenHandler::OnShowAddUser() {
