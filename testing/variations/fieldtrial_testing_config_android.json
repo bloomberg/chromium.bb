@@ -300,14 +300,6 @@
             "group_name": "EnabledAsBookmarks"
         }
     ],
-    "OverlayFullscreenVideo": [
-        {
-            "disable_features": [
-                "overlay-fullscreen-video"
-            ],
-            "group_name": "Disabled"
-        }
-    ],
     "PageRevisitInstrumentation": [
         {
             "group_name": "Enabled"
