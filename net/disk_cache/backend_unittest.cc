@@ -3753,6 +3753,8 @@ TEST_F(DiskCacheBackendTest, SimpleCacheEnumerationWhileDoomed) {
   EXPECT_TRUE(keys_to_match.empty());
 }
 
+// This test is flaky on Android Marshmallow crbug.com/638891.
+#if !defined(OS_ANDROID)
 // Tests that enumerations are not affected by corrupt files.
 TEST_F(DiskCacheBackendTest, SimpleCacheEnumerationCorruption) {
   SetSimpleCacheMode();
@@ -3790,6 +3792,7 @@ TEST_F(DiskCacheBackendTest, SimpleCacheEnumerationCorruption) {
   EXPECT_EQ(key_pool.size(), count);
   EXPECT_TRUE(keys_to_match.empty());
 }
+#endif
 
 // Tests that enumerations don't leak memory when the backend is destructed
 // mid-enumeration.
