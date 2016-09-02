@@ -1722,26 +1722,6 @@ def _check_parameter_name_against_text(parameter, text, error):
     return True
 
 
-def check_function_definition_and_pass_ptr(type_text, row, location_description, error):
-    """Check that function definitions for use Pass*Ptr instead of *Ptr.
-
-    Args:
-       type_text: A string containing the type. (For return values, it may contain more than the type.)
-       row: The row number of the type.
-       location_description: Used to indicate where the type is. This is either 'parameter' or 'return'.
-       error: The function to call with any errors found.
-    """
-    match_ref_or_own_ptr = '(?=\W|^)(Ref|Own)Ptr(WillBeRawPtr)?(?=\W)'
-    exceptions = '(?:&|\*|\*\s*=\s*(0|nullptr))$'
-    bad_type_usage = search(match_ref_or_own_ptr, type_text)
-    exception_usage = search(exceptions, type_text)
-    if not bad_type_usage or exception_usage:
-        return
-    type_name = bad_type_usage.group(0)
-    error(row, 'readability/pass_ptr', 5,
-          'The %s type should use Pass%s instead of %s.' % (location_description, type_name, type_name))
-
-
 def check_function_definition(filename, file_extension, clean_lines, line_number, function_state, error):
     """Check that function definitions for style issues.
 
@@ -1774,13 +1754,8 @@ def check_function_definition(filename, file_extension, clean_lines, line_number
             error(function_state.function_name_start_position.row, 'readability/webkit_export', 5,
                   'WEBKIT_EXPORT should not be used with a pure virtual function.')
 
-    check_function_definition_and_pass_ptr(
-        modifiers_and_return_type, function_state.function_name_start_position.row, 'return', error)
-
     parameter_list = function_state.parameter_list()
     for parameter in parameter_list:
-        check_function_definition_and_pass_ptr(parameter.type, parameter.row, 'parameter', error)
-
         # Do checks specific to function declarations and parameter names.
         if not function_state.is_declaration or not parameter.name:
             continue

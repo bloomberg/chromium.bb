@@ -3633,26 +3633,6 @@ class PassPtrTest(CppStyleTestBase):
         self.assert_pass_ptr_check(
             'OwnRefPtr<Type1> myFunction();\n',
             '')
-        self.assert_pass_ptr_check(
-            'RefPtr<Type1> myFunction(int)\n'
-            '{\n'
-            '}',
-            'The return type should use PassRefPtr instead of RefPtr.  [readability/pass_ptr] [5]')
-        self.assert_pass_ptr_check(
-            'OwnPtr<Type1> myFunction(int)\n'
-            '{\n'
-            '}',
-            'The return type should use PassOwnPtr instead of OwnPtr.  [readability/pass_ptr] [5]')
-        self.assert_pass_ptr_check(
-            'RefPtrWillBeRawPtr<Type1> myFunction(int)\n'
-            '{\n'
-            '}',
-            'The return type should use PassRefPtrWillBeRawPtr instead of RefPtrWillBeRawPtr.  [readability/pass_ptr] [5]')
-        self.assert_pass_ptr_check(
-            'OwnPtrWillBeRawPtr<Type1> myFunction(int)\n'
-            '{\n'
-            '}',
-            'The return type should use PassOwnPtrWillBeRawPtr instead of OwnPtrWillBeRawPtr.  [readability/pass_ptr] [5]')
 
     def test_ref_ptr_parameter_value(self):
         self.assert_pass_ptr_check(
@@ -3660,11 +3640,6 @@ class PassPtrTest(CppStyleTestBase):
             '{\n'
             '}',
             '')
-        self.assert_pass_ptr_check(
-            'int myFunction(RefPtr<Type1>)\n'
-            '{\n'
-            '}',
-            'The parameter type should use PassRefPtr instead of RefPtr.  [readability/pass_ptr] [5]')
         self.assert_pass_ptr_check(
             'int myFunction(RefPtr<Type1>&)\n'
             '{\n'
@@ -3702,11 +3677,6 @@ class PassPtrTest(CppStyleTestBase):
             '{\n'
             '}',
             '')
-        self.assert_pass_ptr_check(
-            'int myFunction(OwnPtr<Type1>)\n'
-            '{\n'
-            '}',
-            'The parameter type should use PassOwnPtr instead of OwnPtr.  [readability/pass_ptr] [5]')
         self.assert_pass_ptr_check(
             'int myFunction(OwnPtr<Type1>& simple)\n'
             '{\n'
