@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_CONTEXT_PROVIDER_FACTORY_IMPL_ANDROID_H_
 #define CONTENT_BROWSER_RENDERER_HOST_CONTEXT_PROVIDER_FACTORY_IMPL_ANDROID_H_
 
-#include <list>
+#include <queue>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -17,17 +17,13 @@
 #include "gpu/ipc/common/surface_handle.h"
 #include "ui/android/context_provider_factory.h"
 
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}
-
 namespace cc {
 class VulkanInProcessContextProvider;
 }
 
 namespace gpu {
 class GpuChannelHost;
+class GpuChannelEstablishFactory;
 }
 
 namespace content {
@@ -36,41 +32,46 @@ class ContextProviderCommandBuffer;
 class CONTENT_EXPORT ContextProviderFactoryImpl
     : public ui::ContextProviderFactory {
  public:
+  // The factory must outlive the ContextProviderFactoryImpl instance, which
+  // will be destroyed when terminate is called.
+  static void Initialize(gpu::GpuChannelEstablishFactory* gpu_channel_factory);
+
+  static void Terminate();
+
   static ContextProviderFactoryImpl* GetInstance();
 
   ~ContextProviderFactoryImpl() override;
 
-  // The callback may be triggered synchronously, if the Gpu Channel is already
-  // initialized. In case the surface_handle is invalidated before the context
-  // can be created, the request is dropped and the callback will *not* run.
-  void CreateDisplayContextProvider(
+  scoped_refptr<cc::ContextProvider> CreateDisplayContextProvider(
       gpu::SurfaceHandle surface_handle,
       gpu::SharedMemoryLimits shared_memory_limits,
       gpu::gles2::ContextCreationAttribHelper attributes,
       bool support_locking,
       bool automatic_flushes,
-      ContextProviderCallback result_callback);
+      scoped_refptr<gpu::GpuChannelHost> gpu_channel_host);
 
   // ContextProviderFactory implementation.
   scoped_refptr<cc::VulkanContextProvider> GetSharedVulkanContextProvider()
       override;
-  void CreateOffscreenContextProvider(
+  void RequestGpuChannelHost(GpuChannelHostCallback callback) override;
+  scoped_refptr<cc::ContextProvider> CreateOffscreenContextProvider(
       ContextType context_type,
       gpu::SharedMemoryLimits shared_memory_limits,
       gpu::gles2::ContextCreationAttribHelper attributes,
       bool support_locking,
       bool automatic_flushes,
       cc::ContextProvider* shared_context_provider,
-      ContextProviderCallback result_callback) override;
+      scoped_refptr<gpu::GpuChannelHost> gpu_channel_host) override;
   cc::SurfaceManager* GetSurfaceManager() override;
   uint32_t AllocateSurfaceClientId() override;
   cc::SharedBitmapManager* GetSharedBitmapManager() override;
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
 
  private:
-  friend struct base::DefaultSingletonTraits<ContextProviderFactoryImpl>;
+  ContextProviderFactoryImpl(
+      gpu::GpuChannelEstablishFactory* gpu_channel_factory);
 
-  void CreateContextProviderInternal(
+  scoped_refptr<cc::ContextProvider> CreateContextProviderInternal(
       command_buffer_metrics::ContextType context_type,
       gpu::SurfaceHandle surface_handle,
       gpu::SharedMemoryLimits shared_memory_limits,
@@ -78,39 +79,28 @@ class CONTENT_EXPORT ContextProviderFactoryImpl
       bool support_locking,
       bool automatic_flushes,
       cc::ContextProvider* shared_context_provider,
-      ContextProviderCallback result_callback);
-
-  struct ContextProvidersRequest {
-    ContextProvidersRequest();
-    ContextProvidersRequest(const ContextProvidersRequest& other);
-    ~ContextProvidersRequest();
-
-    command_buffer_metrics::ContextType context_type;
-    gpu::SurfaceHandle surface_handle;
-    gpu::SharedMemoryLimits shared_memory_limits;
-    gpu::gles2::ContextCreationAttribHelper attributes;
-    bool support_locking;
-    bool automatic_flushes;
-    cc::ContextProvider* shared_context_provider;
-    ContextProviderCallback result_callback;
-  };
-
-  ContextProviderFactoryImpl();
+      scoped_refptr<gpu::GpuChannelHost> gpu_channel_host);
 
   // Will return nullptr if the Gpu channel has not been established.
-  gpu::GpuChannelHost* EnsureGpuChannelEstablished();
+  void EstablishGpuChannel();
   void OnGpuChannelEstablished(scoped_refptr<gpu::GpuChannelHost> gpu_channel);
   void OnGpuChannelTimeout();
 
-  void HandlePendingRequests();
+  void HandlePendingRequests(
+      scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
+      GpuChannelHostResult result);
 
-  std::list<ContextProvidersRequest> context_provider_requests_;
+  gpu::GpuChannelEstablishFactory* gpu_channel_factory_;
+
+  std::queue<GpuChannelHostCallback> gpu_channel_requests_;
 
   scoped_refptr<ContextProviderCommandBuffer> shared_worker_context_provider_;
 
   scoped_refptr<cc::VulkanContextProvider> shared_vulkan_context_provider_;
 
   bool in_handle_pending_requests_;
+
+  bool in_shutdown_;
 
   base::OneShotTimer establish_gpu_channel_timeout_;
 

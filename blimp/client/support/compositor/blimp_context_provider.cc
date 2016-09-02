@@ -107,9 +107,7 @@ void BlimpContextProvider::InvalidateGrContext(uint32_t state) {
 }
 
 base::Lock* BlimpContextProvider::GetLock() {
-  // This context provider is not used on multiple threads.
-  NOTREACHED();
-  return nullptr;
+  return &context_lock_;
 }
 
 void BlimpContextProvider::SetLostContextCallback(

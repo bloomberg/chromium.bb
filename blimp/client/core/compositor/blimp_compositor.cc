@@ -72,7 +72,7 @@ BlimpCompositor::BlimpCompositor(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   surface_id_allocator_ = base::MakeUnique<cc::SurfaceIdAllocator>(
-      GetEmbedderDeps()->AllocateSurfaceId());
+      GetEmbedderDeps()->AllocateSurfaceClientId());
   GetEmbedderDeps()->GetSurfaceManager()->RegisterSurfaceClientId(
       surface_id_allocator_->client_id());
 }
@@ -104,8 +104,8 @@ void BlimpCompositor::RequestNewOutputSurface() {
   DCHECK(!output_surface_request_pending_);
 
   output_surface_request_pending_ = true;
-  GetEmbedderDeps()->GetContextProvider(
-      base::Bind(&BlimpCompositor::OnContextProviderCreated,
+  GetEmbedderDeps()->GetContextProviders(
+      base::Bind(&BlimpCompositor::OnContextProvidersCreated,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -157,8 +157,9 @@ void BlimpCompositor::OnCompositorMessageReceived(
   }
 }
 
-void BlimpCompositor::OnContextProviderCreated(
-    const scoped_refptr<cc::ContextProvider>& provider) {
+void BlimpCompositor::OnContextProvidersCreated(
+    const scoped_refptr<cc::ContextProvider>& compositor_context_provider,
+    const scoped_refptr<cc::ContextProvider>& worker_context_provider) {
   DCHECK(!surface_factory_)
       << "Any connection to the old output surface should have been destroyed";
 
@@ -168,15 +169,19 @@ void BlimpCompositor::OnContextProviderCreated(
   if (!output_surface_request_pending_)
     return;
 
-  // TODO(khushalsagar): Make a worker context and bind it to the current
-  // thread:
-  // Worker context is bound to the main thread in RenderThreadImpl. One day
-  // that will change and then this will have to be removed.
-  // worker_context_provider->BindToCurrentThread();
+  // Try again if the context creation failed.
+  if (!compositor_context_provider) {
+    GetEmbedderDeps()->GetContextProviders(
+        base::Bind(&BlimpCompositor::OnContextProvidersCreated,
+                   weak_ptr_factory_.GetWeakPtr()));
+    return;
+  }
+
   std::unique_ptr<DelegatedOutputSurface> delegated_output_surface =
       base::MakeUnique<DelegatedOutputSurface>(
-          provider, nullptr, base::ThreadTaskRunnerHandle::Get(),
-          weak_ptr_factory_.GetWeakPtr());
+          std::move(compositor_context_provider),
+          std::move(worker_context_provider),
+          base::ThreadTaskRunnerHandle::Get(), weak_ptr_factory_.GetWeakPtr());
 
   host_->SetOutputSurface(std::move(delegated_output_surface));
 }
@@ -275,7 +280,14 @@ void BlimpCompositor::CreateLayerTreeHost(
   params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
   params.image_serialization_processor =
       compositor_dependencies_->GetImageSerializationProcessor();
-  params.settings = GetEmbedderDeps()->GetLayerTreeSettings();
+
+  cc::LayerTreeSettings* settings =
+      compositor_dependencies_->GetLayerTreeSettings();
+  // TODO(khushalsagar): This is a hack. Remove when we move the split point
+  // out. For details on why this is needed, see crbug.com/586210.
+  settings->abort_commit_before_output_surface_creation = false;
+  params.settings = settings;
+
   params.animation_host = cc::AnimationHost::CreateMainInstance();
 
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner =

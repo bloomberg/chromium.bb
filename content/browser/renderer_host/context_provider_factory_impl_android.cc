@@ -7,11 +7,11 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/vulkan_in_process_context_provider.h"
 #include "cc/surfaces/surface_manager.h"
-#include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
@@ -39,32 +39,44 @@ command_buffer_metrics::ContextType ToCommandBufferContextType(
   return command_buffer_metrics::CONTEXT_TYPE_UNKNOWN;
 }
 
+ContextProviderFactoryImpl* instance = nullptr;
+
 }  // namespace
 
 // static
-ContextProviderFactoryImpl* ContextProviderFactoryImpl::GetInstance() {
-  return base::Singleton<ContextProviderFactoryImpl>::get();
+void ContextProviderFactoryImpl::Initialize(
+    gpu::GpuChannelEstablishFactory* gpu_channel_factory) {
+  DCHECK(!instance);
+  instance = new ContextProviderFactoryImpl(gpu_channel_factory);
 }
 
-ContextProviderFactoryImpl::ContextProviderFactoryImpl()
-    : in_handle_pending_requests_(false),
+void ContextProviderFactoryImpl::Terminate() {
+  DCHECK(instance);
+  delete instance;
+  instance = nullptr;
+}
+
+// static
+ContextProviderFactoryImpl* ContextProviderFactoryImpl::GetInstance() {
+  return instance;
+}
+
+ContextProviderFactoryImpl::ContextProviderFactoryImpl(
+    gpu::GpuChannelEstablishFactory* gpu_channel_factory)
+    : gpu_channel_factory_(gpu_channel_factory),
+      in_handle_pending_requests_(false),
+      in_shutdown_(false),
       surface_client_id_(0),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  DCHECK(gpu_channel_factory_);
+}
 
-ContextProviderFactoryImpl::~ContextProviderFactoryImpl() {}
-
-ContextProviderFactoryImpl::ContextProvidersRequest::ContextProvidersRequest()
-    : context_type(command_buffer_metrics::CONTEXT_TYPE_UNKNOWN),
-      surface_handle(gpu::kNullSurfaceHandle),
-      support_locking(false),
-      automatic_flushes(false),
-      shared_context_provider(nullptr) {}
-
-ContextProviderFactoryImpl::ContextProvidersRequest::ContextProvidersRequest(
-    const ContextProvidersRequest& other) = default;
-
-ContextProviderFactoryImpl::ContextProvidersRequest::
-    ~ContextProvidersRequest() = default;
+ContextProviderFactoryImpl::~ContextProviderFactoryImpl() {
+  in_shutdown_ = true;
+  if (!gpu_channel_requests_.empty())
+    HandlePendingRequests(nullptr,
+                          GpuChannelHostResult::FAILURE_FACTORY_SHUTDOWN);
+}
 
 scoped_refptr<cc::VulkanContextProvider>
 ContextProviderFactoryImpl::GetSharedVulkanContextProvider() {
@@ -75,32 +87,45 @@ ContextProviderFactoryImpl::GetSharedVulkanContextProvider() {
   return shared_vulkan_context_provider_.get();
 }
 
-void ContextProviderFactoryImpl::CreateDisplayContextProvider(
+void ContextProviderFactoryImpl::RequestGpuChannelHost(
+    GpuChannelHostCallback callback) {
+  DCHECK(!in_shutdown_)
+      << "The factory is shutting down, can't handle new requests";
+
+  gpu_channel_requests_.push(callback);
+  // If the channel is available, the factory will run the callback
+  // synchronously so we'll handle this request there.
+  EstablishGpuChannel();
+}
+
+scoped_refptr<cc::ContextProvider>
+ContextProviderFactoryImpl::CreateDisplayContextProvider(
     gpu::SurfaceHandle surface_handle,
     gpu::SharedMemoryLimits shared_memory_limits,
     gpu::gles2::ContextCreationAttribHelper attributes,
     bool support_locking,
     bool automatic_flushes,
-    ContextProviderCallback result_callback) {
+    scoped_refptr<gpu::GpuChannelHost> gpu_channel_host) {
   DCHECK(surface_handle != gpu::kNullSurfaceHandle);
-  CreateContextProviderInternal(
+  return CreateContextProviderInternal(
       command_buffer_metrics::DISPLAY_COMPOSITOR_ONSCREEN_CONTEXT,
       surface_handle, shared_memory_limits, attributes, support_locking,
-      automatic_flushes, nullptr, result_callback);
+      automatic_flushes, nullptr, std::move(gpu_channel_host));
 }
 
-void ContextProviderFactoryImpl::CreateOffscreenContextProvider(
+scoped_refptr<cc::ContextProvider>
+ContextProviderFactoryImpl::CreateOffscreenContextProvider(
     ContextType context_type,
     gpu::SharedMemoryLimits shared_memory_limits,
     gpu::gles2::ContextCreationAttribHelper attributes,
     bool support_locking,
     bool automatic_flushes,
     cc::ContextProvider* shared_context_provider,
-    ContextProviderCallback result_callback) {
-  CreateContextProviderInternal(ToCommandBufferContextType(context_type),
-                                gpu::kNullSurfaceHandle, shared_memory_limits,
-                                attributes, support_locking, automatic_flushes,
-                                shared_context_provider, result_callback);
+    scoped_refptr<gpu::GpuChannelHost> gpu_channel_host) {
+  return CreateContextProviderInternal(
+      ToCommandBufferContextType(context_type), gpu::kNullSurfaceHandle,
+      shared_memory_limits, attributes, support_locking, automatic_flushes,
+      shared_context_provider, std::move(gpu_channel_host));
 }
 
 cc::SurfaceManager* ContextProviderFactoryImpl::GetSurfaceManager() {
@@ -123,7 +148,8 @@ ContextProviderFactoryImpl::GetGpuMemoryBufferManager() {
   return BrowserGpuMemoryBufferManager::current();
 }
 
-void ContextProviderFactoryImpl::CreateContextProviderInternal(
+scoped_refptr<cc::ContextProvider>
+ContextProviderFactoryImpl::CreateContextProviderInternal(
     command_buffer_metrics::ContextType context_type,
     gpu::SurfaceHandle surface_handle,
     gpu::SharedMemoryLimits shared_memory_limits,
@@ -131,28 +157,25 @@ void ContextProviderFactoryImpl::CreateContextProviderInternal(
     bool support_locking,
     bool automatic_flushes,
     cc::ContextProvider* shared_context_provider,
-    ContextProviderCallback result_callback) {
-  DCHECK(!result_callback.is_null());
-
-  ContextProvidersRequest context_request;
-  context_request.context_type = context_type;
-  context_request.surface_handle = surface_handle;
-  context_request.shared_memory_limits = shared_memory_limits;
-  context_request.attributes = attributes;
-  context_request.support_locking = support_locking;
-  context_request.automatic_flushes = automatic_flushes;
-  context_request.shared_context_provider = shared_context_provider;
-  context_request.result_callback = result_callback;
-
-  context_provider_requests_.push_back(context_request);
-  HandlePendingRequests();
+    scoped_refptr<gpu::GpuChannelHost> gpu_channel_host) {
+  return make_scoped_refptr(new ContextProviderCommandBuffer(
+      std::move(gpu_channel_host), gpu::GPU_STREAM_DEFAULT,
+      gpu::GpuStreamPriority::NORMAL, surface_handle,
+      GURL(std::string("chrome://gpu/ContextProviderFactoryImpl::") +
+           std::string("CompositorContextProvider")),
+      automatic_flushes, support_locking, shared_memory_limits, attributes,
+      static_cast<ContextProviderCommandBuffer*>(shared_context_provider),
+      context_type));
 }
 
-void ContextProviderFactoryImpl::HandlePendingRequests() {
-  DCHECK(!context_provider_requests_.empty())
+void ContextProviderFactoryImpl::HandlePendingRequests(
+    scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
+    GpuChannelHostResult result) {
+  DCHECK(!gpu_channel_requests_.empty())
       << "We don't have any pending requests?";
+  DCHECK(gpu_channel_host || result != GpuChannelHostResult::SUCCESS);
 
-  // Failure to initialize the context could result in new requests. Handle
+  // Failure to initialize the channel could result in new requests. Handle
   // them after going through the current list.
   if (in_handle_pending_requests_)
     return;
@@ -161,53 +184,20 @@ void ContextProviderFactoryImpl::HandlePendingRequests() {
     base::AutoReset<bool> auto_reset_in_handle_requests(
         &in_handle_pending_requests_, true);
 
-    scoped_refptr<gpu::GpuChannelHost> gpu_channel_host(
-        EnsureGpuChannelEstablished());
+    std::queue<GpuChannelHostCallback> current_gpu_channel_requests;
+    current_gpu_channel_requests.swap(gpu_channel_requests_);
 
-    // If we don't have a Gpu Channel Host, we will come back here when the Gpu
-    // channel is established, since OnGpuChannelEstablished triggers handling
-    // of the requests we couldn't process right now.
-    if (!gpu_channel_host)
-      return;
-
-    std::list<ContextProvidersRequest> context_requests =
-        context_provider_requests_;
-    context_provider_requests_.clear();
-
-    for (ContextProvidersRequest& context_request : context_requests) {
-      scoped_refptr<cc::ContextProvider> context_provider;
-
-      const bool create_onscreen_context =
-          context_request.surface_handle != gpu::kNullSurfaceHandle;
-
-      // Is the request for an onscreen context? Make sure the surface is
-      // still valid in that case. DO NOT run the callback if we don't have a
-      // valid surface.
-      if (create_onscreen_context &&
-          !GpuSurfaceTracker::GetInstance()->IsValidSurfaceHandle(
-              context_request.surface_handle)) {
-        continue;
-      }
-
-      context_provider = new ContextProviderCommandBuffer(
-          gpu_channel_host, gpu::GPU_STREAM_DEFAULT,
-          gpu::GpuStreamPriority::NORMAL, context_request.surface_handle,
-          GURL(std::string("chrome://gpu/ContextProviderFactoryImpl::") +
-               std::string("CompositorContextProvider")),
-          context_request.automatic_flushes, context_request.support_locking,
-          context_request.shared_memory_limits, context_request.attributes,
-          static_cast<ContextProviderCommandBuffer*>(
-              context_request.shared_context_provider),
-          context_request.context_type);
-      context_request.result_callback.Run(context_provider);
+    while (!current_gpu_channel_requests.empty()) {
+      current_gpu_channel_requests.front().Run(gpu_channel_host, result);
+      current_gpu_channel_requests.pop();
     }
   }
 
-  if (!context_provider_requests_.empty())
-    HandlePendingRequests();
+  if (!gpu_channel_requests_.empty())
+    EstablishGpuChannel();
 }
 
-gpu::GpuChannelHost* ContextProviderFactoryImpl::EnsureGpuChannelEstablished() {
+void ContextProviderFactoryImpl::EstablishGpuChannel() {
 #if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER) || \
     defined(SYZYASAN) || defined(CYGPROFILE_INSTRUMENTATION)
   const int64_t kGpuChannelTimeoutInSeconds = 40;
@@ -215,36 +205,35 @@ gpu::GpuChannelHost* ContextProviderFactoryImpl::EnsureGpuChannelEstablished() {
   const int64_t kGpuChannelTimeoutInSeconds = 10;
 #endif
 
-  BrowserGpuChannelHostFactory* factory =
-      BrowserGpuChannelHostFactory::instance();
-
-  if (factory->GetGpuChannel())
-    return factory->GetGpuChannel();
-
-  factory->EstablishGpuChannel(
-      base::Bind(&ContextProviderFactoryImpl::OnGpuChannelEstablished,
-                 weak_factory_.GetWeakPtr()));
+  // Start the timer first, if the result comes synchronously, we want it to
+  // stop in the callback.
   establish_gpu_channel_timeout_.Start(
       FROM_HERE, base::TimeDelta::FromSeconds(kGpuChannelTimeoutInSeconds),
       this, &ContextProviderFactoryImpl::OnGpuChannelTimeout);
 
-  return nullptr;
+  gpu_channel_factory_->EstablishGpuChannel(
+      base::Bind(&ContextProviderFactoryImpl::OnGpuChannelEstablished,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void ContextProviderFactoryImpl::OnGpuChannelEstablished(
     scoped_refptr<gpu::GpuChannelHost> gpu_channel) {
   establish_gpu_channel_timeout_.Stop();
 
-  // This should happen only during shutdown. So early out instead of queuing
-  // more requests with the factory.
-  if (!gpu_channel)
-    return;
-
   // We can queue the Gpu Channel initialization requests multiple times as
   // we get context requests. So we might have already handled any pending
   // requests when this callback runs.
-  if (!context_provider_requests_.empty())
-    HandlePendingRequests();
+  if (gpu_channel_requests_.empty())
+    return;
+
+  if (gpu_channel) {
+    HandlePendingRequests(std::move(gpu_channel),
+                          GpuChannelHostResult::SUCCESS);
+  } else {
+    HandlePendingRequests(
+        nullptr,
+        GpuChannelHostResult::FAILURE_GPU_PROCESS_INITIALIZATION_FAILED);
+  }
 }
 
 void ContextProviderFactoryImpl::OnGpuChannelTimeout() {

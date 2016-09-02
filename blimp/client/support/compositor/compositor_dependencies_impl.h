@@ -24,14 +24,12 @@ class CompositorDependenciesImpl : public CompositorDependencies {
   ~CompositorDependenciesImpl() override;
 
   // CompositorDependencies implementation.
-  cc::LayerTreeSettings* GetLayerTreeSettings() override;
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
   cc::SurfaceManager* GetSurfaceManager() override;
-  uint32_t AllocateSurfaceId() override;
-  void GetContextProvider(const ContextProviderCallback& callback) override;
+  uint32_t AllocateSurfaceClientId() override;
+  void GetContextProviders(const ContextProviderCallback& callback) override;
 
  private:
-  std::unique_ptr<cc::LayerTreeSettings> settings_;
   std::unique_ptr<BlimpGpuMemoryBufferManager> gpu_memory_buffer_manager_;
   std::unique_ptr<cc::SurfaceManager> surface_manager_;
   uint32_t next_surface_id_;

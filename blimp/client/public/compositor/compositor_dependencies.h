@@ -10,7 +10,6 @@
 
 namespace cc {
 class ContextProvider;
-class LayerTreeSettings;
 class SurfaceManager;
 }  // namespace cc
 
@@ -25,20 +24,20 @@ namespace client {
 // is expected to outlive all BlimpContents instances.
 class CompositorDependencies {
  public:
-  using ContextProviderCallback =
-      base::Callback<void(const scoped_refptr<cc::ContextProvider>&)>;
+  using ContextProviderCallback = base::Callback<void(
+      const scoped_refptr<cc::ContextProvider>& compositor_context_provider,
+      const scoped_refptr<cc::ContextProvider>& worker_context_provider)>;
 
   virtual ~CompositorDependencies() = default;
 
   // Settings used to create all BlimpCompositor instances.
-  virtual cc::LayerTreeSettings* GetLayerTreeSettings() = 0;
   virtual gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() = 0;
   virtual cc::SurfaceManager* GetSurfaceManager() = 0;
-  virtual uint32_t AllocateSurfaceId() = 0;
+  virtual uint32_t AllocateSurfaceClientId() = 0;
 
   // This call may return synchronously if the ContextProvider has already been
   // created.
-  virtual void GetContextProvider(const ContextProviderCallback& callback) = 0;
+  virtual void GetContextProviders(const ContextProviderCallback& callback) = 0;
 };
 
 }  // namespace client

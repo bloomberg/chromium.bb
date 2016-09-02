@@ -9,11 +9,11 @@
 namespace blimp {
 namespace client {
 
-void MockCompositorDependencies::GetContextProvider(
+void MockCompositorDependencies::GetContextProviders(
     const ContextProviderCallback& callback) {
-  scoped_refptr<cc::ContextProvider> provider =
-      make_scoped_refptr(new cc::TestInProcessContextProvider(nullptr));
-  callback.Run(provider);
+  callback.Run(
+      make_scoped_refptr(new cc::TestInProcessContextProvider(nullptr)),
+      make_scoped_refptr(new cc::TestInProcessContextProvider(nullptr)));
 }
 
 }  // namespace client

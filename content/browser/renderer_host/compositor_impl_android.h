@@ -126,8 +126,9 @@ class CONTENT_EXPORT CompositorImpl
 #if defined(ENABLE_VULKAN)
   void CreateVulkanOutputSurface();
 #endif
-  void CreateCompositorOutputSurface(
-      const scoped_refptr<cc::ContextProvider>& context_provider);
+  void OnGpuChannelEstablished(
+      scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
+      ui::ContextProviderFactory::GpuChannelHostResult result);
   void InitializeDisplay(
       std::unique_ptr<cc::OutputSurface> display_output_surface,
       scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider,

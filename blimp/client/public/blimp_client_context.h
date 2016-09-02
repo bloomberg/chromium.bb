@@ -25,7 +25,6 @@ class SupportsUserData;
 
 namespace blimp {
 namespace client {
-
 class CompositorDependencies;
 
 // BlimpClientContext is the core class for the Blimp client. It provides hooks

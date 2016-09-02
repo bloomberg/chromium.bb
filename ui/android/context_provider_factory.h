@@ -23,6 +23,7 @@ struct ContextCreationAttribHelper;
 }  // namespace gles
 
 struct SharedMemoryLimits;
+class GpuChannelHost;
 class GpuMemoryBufferManager;
 }  // namespace gpu
 
@@ -31,8 +32,20 @@ namespace ui {
 // This class is not thread-safe and should only be accessed from the UI thread.
 class UI_ANDROID_EXPORT ContextProviderFactory {
  public:
-  using ContextProviderCallback =
-      base::Callback<void(const scoped_refptr<cc::ContextProvider>&)>;
+  enum class GpuChannelHostResult {
+    FAILURE_GPU_PROCESS_INITIALIZATION_FAILED,
+
+    // Used when the factory is shutting down. No more requests should be made
+    // to the factory after this response is dispatched.
+    FAILURE_FACTORY_SHUTDOWN,
+
+    // Set if the Context creation was successful.
+    SUCCESS,
+  };
+
+  using GpuChannelHostCallback =
+      base::Callback<void(scoped_refptr<gpu::GpuChannelHost>,
+                          GpuChannelHostResult)>;
 
   enum class ContextType {
     BLIMP_RENDER_COMPOSITOR_CONTEXT,
@@ -50,18 +63,20 @@ class UI_ANDROID_EXPORT ContextProviderFactory {
   virtual scoped_refptr<cc::VulkanContextProvider>
   GetSharedVulkanContextProvider() = 0;
 
+  // The callback may be triggered synchronously if possible. If the creation
+  // fails, a null host is passed with the specified reason.
+  virtual void RequestGpuChannelHost(GpuChannelHostCallback callback) = 0;
+
   // Creates an offscreen ContextProvider for the compositor. Any shared
   // contexts passed here *must* have been created using this factory.
-  // The callback may be triggered synchronously if possible, and will always
-  // have the context provider.
-  virtual void CreateOffscreenContextProvider(
+  virtual scoped_refptr<cc::ContextProvider> CreateOffscreenContextProvider(
       ContextType context_type,
       gpu::SharedMemoryLimits shared_memory_limits,
       gpu::gles2::ContextCreationAttribHelper attributes,
       bool support_locking,
       bool automatic_flushes,
       cc::ContextProvider* shared_context_provider,
-      ContextProviderCallback result_callback) = 0;
+      scoped_refptr<gpu::GpuChannelHost> gpu_channel_host) = 0;
 
   virtual cc::SurfaceManager* GetSurfaceManager() = 0;
 

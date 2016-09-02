@@ -11,7 +11,9 @@
 #include "base/threading/thread.h"
 #include "blimp/client/core/compositor/blob_image_serialization_processor.h"
 #include "blimp/client/public/compositor/compositor_dependencies.h"
+#include "blimp/client/support/compositor/blimp_layer_tree_settings.h"
 #include "cc/raster/single_thread_task_graph_runner.h"
+#include "cc/trees/layer_tree_settings.h"
 
 namespace blimp {
 namespace client {
@@ -77,6 +79,15 @@ BlimpCompositorDependencies::GetCompositorTaskRunner() {
 cc::ImageSerializationProcessor*
 BlimpCompositorDependencies::GetImageSerializationProcessor() {
   return BlobImageSerializationProcessor::current();
+}
+
+cc::LayerTreeSettings* BlimpCompositorDependencies::GetLayerTreeSettings() {
+  if (!settings_) {
+    settings_ = base::MakeUnique<cc::LayerTreeSettings>();
+    PopulateCommonLayerTreeSettings(settings_.get());
+  }
+
+  return settings_.get();
 }
 
 }  // namespace client

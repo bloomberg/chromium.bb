@@ -71,7 +71,7 @@ BrowserCompositor::BrowserCompositor(
     CompositorDependencies* compositor_dependencies)
     : compositor_dependencies_(compositor_dependencies),
       surface_id_allocator_(base::MakeUnique<cc::SurfaceIdAllocator>(
-          compositor_dependencies->AllocateSurfaceId())),
+          compositor_dependencies->AllocateSurfaceClientId())),
       widget_(gfx::kNullAcceleratedWidget),
       output_surface_request_pending_(false),
       root_layer_(cc::Layer::Create()) {

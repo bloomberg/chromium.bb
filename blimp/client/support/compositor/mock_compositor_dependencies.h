@@ -16,7 +16,7 @@ class MockCompositorDependencies : public CompositorDependenciesImpl {
   ~MockCompositorDependencies() override = default;
 
   // CompositorDependenciesImpl implementation.
-  void GetContextProvider(const ContextProviderCallback& callback) override;
+  void GetContextProviders(const ContextProviderCallback& callback) override;
 };
 
 }  // namespace client

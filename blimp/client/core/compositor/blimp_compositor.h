@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "blimp/client/core/compositor/blimp_output_surface.h"
 #include "blimp/client/core/input/blimp_input_manager.h"
+#include "blimp/client/public/compositor/compositor_dependencies.h"
 #include "cc/surfaces/surface_factory_client.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_client.h"
@@ -46,7 +47,6 @@ class BlimpMessage;
 namespace client {
 
 class BlimpCompositorDependencies;
-class CompositorDependencies;
 
 // The BlimpCompositorClient provides the BlimpCompositor with the necessary
 // dependencies for cc::LayerTreeHost owned by this compositor and for
@@ -103,12 +103,6 @@ class BlimpCompositor : public cc::LayerTreeHostClient,
   virtual void OnCompositorMessageReceived(
       std::unique_ptr<cc::proto::CompositorMessage> message);
 
-  // Called when the a ContextProvider has been created by the
-  // CompositorDependencies class.  If |host_| is waiting on an OutputSurface
-  // this will build one for it.
-  void OnContextProviderCreated(
-      const scoped_refptr<cc::ContextProvider>& provider);
-
   scoped_refptr<cc::Layer> layer() const { return layer_; }
 
   int render_widget_id() const { return render_widget_id_; }
@@ -154,6 +148,13 @@ class BlimpCompositor : public cc::LayerTreeHostClient,
   // SurfaceFactoryClient implementation.
   void ReturnResources(const cc::ReturnedResourceArray& resources) override;
   void SetBeginFrameSource(cc::BeginFrameSource* begin_frame_source) override {}
+
+  // Called when the a ContextProvider has been created by the
+  // CompositorDependencies class.  If |host_| is waiting on an OutputSurface
+  // this will build one for it.
+  void OnContextProvidersCreated(
+      const scoped_refptr<cc::ContextProvider>& compositor_context_provider,
+      const scoped_refptr<cc::ContextProvider>& worker_context_provider);
 
   // Helper method to get the embedder dependencies.
   CompositorDependencies* GetEmbedderDeps();

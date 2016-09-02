@@ -610,13 +610,8 @@ void CompositorImpl::HandlePendingOutputSurfaceRequest() {
 #endif
 
   DCHECK(surface_handle_ != gpu::kNullSurfaceHandle);
-
-  ContextProviderFactoryImpl::GetInstance()->CreateDisplayContextProvider(
-      surface_handle_, GetCompositorContextSharedMemoryLimits(),
-      GetCompositorContextAttributes(has_transparent_background_),
-      false /*support_locking*/, false /*automatic_flushes*/,
-      base::Bind(&CompositorImpl::CreateCompositorOutputSurface,
-                 weak_factory_.GetWeakPtr()));
+  ContextProviderFactoryImpl::GetInstance()->RequestGpuChannelHost(base::Bind(
+      &CompositorImpl::OnGpuChannelEstablished, weak_factory_.GetWeakPtr()));
 }
 
 #if defined(ENABLE_VULKAN)
@@ -648,27 +643,49 @@ void CompositorImpl::CreateVulkanOutputSurface() {
 }
 #endif
 
-void CompositorImpl::CreateCompositorOutputSurface(
-    const scoped_refptr<cc::ContextProvider>& context_provider) {
-  // This callback should run only if we have a pending output surface request,
-  // since that is when we should have queued a context request.
-  // In case the surface was invalidated after the context request was queued,
-  // the request should have been dropped by the ContextProviderFactory.
+void CompositorImpl::OnGpuChannelEstablished(
+    scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
+    ui::ContextProviderFactory::GpuChannelHostResult result) {
   DCHECK(output_surface_request_pending_);
-  DCHECK(host_->visible());
-  DCHECK(window_);
-  DCHECK_NE(surface_handle_, gpu::kNullSurfaceHandle);
-  DCHECK(context_provider);
 
-  scoped_refptr<ContextProviderCommandBuffer> context_provider_command_buffer =
-      static_cast<ContextProviderCommandBuffer*>(context_provider.get());
-  std::unique_ptr<cc::OutputSurface> display_output_surface(
-      new OutputSurfaceWithoutParent(
-          context_provider_command_buffer,
-          base::Bind(&CompositorImpl::PopulateGpuCapabilities,
-                     base::Unretained(this))));
-  InitializeDisplay(std::move(display_output_surface), nullptr,
-                    std::move(context_provider));
+  switch (result) {
+    // Don't retry if we are shutting down.
+    case ui::ContextProviderFactory::GpuChannelHostResult::
+        FAILURE_FACTORY_SHUTDOWN:
+      break;
+    case ui::ContextProviderFactory::GpuChannelHostResult::
+        FAILURE_GPU_PROCESS_INITIALIZATION_FAILED:
+      // TODO(khushalsagar): Retry or have a fallback path after
+      // crbug.com/643282 is resolved.
+      break;
+    case ui::ContextProviderFactory::GpuChannelHostResult::SUCCESS:
+      // We don't need the context anymore if we are invisible.
+      if (!host_->visible())
+        return;
+
+      DCHECK(window_);
+      DCHECK_NE(surface_handle_, gpu::kNullSurfaceHandle);
+      scoped_refptr<cc::ContextProvider> context_provider =
+          ContextProviderFactoryImpl::GetInstance()
+              ->CreateDisplayContextProvider(
+                  surface_handle_, GetCompositorContextSharedMemoryLimits(),
+                  GetCompositorContextAttributes(has_transparent_background_),
+                  false /*support_locking*/, false /*automatic_flushes*/,
+                  std::move(gpu_channel_host));
+
+      scoped_refptr<ContextProviderCommandBuffer>
+          context_provider_command_buffer =
+              static_cast<ContextProviderCommandBuffer*>(
+                  context_provider.get());
+      std::unique_ptr<cc::OutputSurface> display_output_surface(
+          new OutputSurfaceWithoutParent(
+              context_provider_command_buffer,
+              base::Bind(&CompositorImpl::PopulateGpuCapabilities,
+                         base::Unretained(this))));
+      InitializeDisplay(std::move(display_output_surface), nullptr,
+                        std::move(context_provider));
+      break;
+  }
 }
 
 void CompositorImpl::InitializeDisplay(

@@ -16,6 +16,7 @@ class Thread;
 
 namespace cc {
 class ImageSerializationProcessor;
+class LayerTreeSettings;
 class TaskGraphRunner;
 }
 
@@ -42,12 +43,17 @@ class BlimpCompositorDependencies {
 
   cc::ImageSerializationProcessor* GetImageSerializationProcessor();
 
+  // TODO(xingliu): Get from the embedder when crbug.com/577985.
+  cc::LayerTreeSettings* GetLayerTreeSettings();
+
  private:
   std::unique_ptr<CompositorDependencies> embedder_dependencies_;
 
   // Shared threads/task runners that will be used by all BlimpCompositors.
   std::unique_ptr<base::Thread> compositor_impl_thread_;
   std::unique_ptr<cc::TaskGraphRunner> task_graph_runner_;
+
+  std::unique_ptr<cc::LayerTreeSettings> settings_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpCompositorDependencies);
 };

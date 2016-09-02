@@ -60,6 +60,8 @@ class BlimpContextProvider : public cc::ContextProvider {
 
   LostContextCallback lost_context_callback_;
 
+  base::Lock context_lock_;
+
   DISALLOW_COPY_AND_ASSIGN(BlimpContextProvider);
 };
 

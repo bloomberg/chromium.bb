@@ -8,9 +8,11 @@
 #include "base/supports_user_data.h"
 #include "blimp/client/public/blimp_client_context.h"
 #include "blimp/client/public/compositor/compositor_dependencies.h"
+#include "chrome/browser/android/blimp/chrome_compositor_dependencies.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "ui/android/context_provider_factory.h"
 
 // static
 BlimpClientContextFactory* BlimpClientContextFactory::GetInstance() {
@@ -40,7 +42,8 @@ KeyedService* BlimpClientContextFactory::BuildServiceInstanceFor(
           content::BrowserThread::IO),
       content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::FILE),
-      nullptr);
+      base::MakeUnique<ChromeCompositorDependencies>(
+          ui::ContextProviderFactory::GetInstance()));
 }
 
 content::BrowserContext* BlimpClientContextFactory::GetBrowserContextToUse(

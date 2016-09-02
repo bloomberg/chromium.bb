@@ -976,7 +976,6 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
 
 #if defined(OS_ANDROID)
   g_browser_main_loop_shutting_down = true;
-  ui::ContextProviderFactory::SetInstance(nullptr);
 #endif
 
   if (RenderProcessHost::run_renderer_in_process())
@@ -1131,8 +1130,14 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   // it.
   {
     TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:GPUChannelFactory");
-    if (BrowserGpuChannelHostFactory::instance())
+    if (BrowserGpuChannelHostFactory::instance()) {
+#if defined(OS_ANDROID)
+      // Clean up the references to the factory before terminating it.
+      ui::ContextProviderFactory::SetInstance(nullptr);
+      ContextProviderFactoryImpl::Terminate();
+#endif
       BrowserGpuChannelHostFactory::Terminate();
+    }
   }
 
   // Must happen after the I/O thread is shutdown since this class lives on the
@@ -1213,6 +1218,8 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   established_gpu_channel = false;
   always_uses_gpu = ShouldStartGpuProcessOnBrowserStartup();
   BrowserGpuChannelHostFactory::Initialize(established_gpu_channel);
+  ContextProviderFactoryImpl::Initialize(
+      BrowserGpuChannelHostFactory::instance());
   ui::ContextProviderFactory::SetInstance(
       ContextProviderFactoryImpl::GetInstance());
 #elif defined(USE_AURA) || defined(OS_MACOSX)

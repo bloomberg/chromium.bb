@@ -33,6 +33,10 @@
 #include "ui/compositor/compositor.h"
 #include "ui/gfx/geometry/rect.h"
 
+#if defined(OS_ANDROID)
+#include "content/browser/renderer_host/context_provider_factory_impl_android.h"
+#endif
+
 namespace content {
 
 void InitNavigateParams(FrameHostMsg_DidCommitProvisionalLoad_Params* params,
@@ -63,10 +67,13 @@ TestRenderWidgetHostView::TestRenderWidgetHostView(RenderWidgetHost* rwh)
       is_occluded_(false),
       did_swap_compositor_frame_(false) {
 #if defined(OS_ANDROID)
-  surface_id_allocator_.reset(
-      new cc::SurfaceIdAllocator(AllocateSurfaceClientId()));
-  GetSurfaceManager()->RegisterSurfaceClientId(
-      surface_id_allocator_->client_id());
+  // Not all tests initialize or need a context provider factory.
+  if (ContextProviderFactoryImpl::GetInstance()) {
+    surface_id_allocator_.reset(
+        new cc::SurfaceIdAllocator(AllocateSurfaceClientId()));
+    GetSurfaceManager()->RegisterSurfaceClientId(
+        surface_id_allocator_->client_id());
+  }
 #else
   // Not all tests initialize or need an image transport factory.
   if (ImageTransportFactory::GetInstance()) {
@@ -81,9 +88,15 @@ TestRenderWidgetHostView::TestRenderWidgetHostView(RenderWidgetHost* rwh)
 }
 
 TestRenderWidgetHostView::~TestRenderWidgetHostView() {
-  if (GetSurfaceManager()) {
-    GetSurfaceManager()->InvalidateSurfaceClientId(
-        surface_id_allocator_->client_id());
+  cc::SurfaceManager* manager = nullptr;
+#if defined(OS_ANDROID)
+  if (ContextProviderFactoryImpl::GetInstance())
+    manager = GetSurfaceManager();
+#else
+  manager = GetSurfaceManager();
+#endif
+  if (manager) {
+    manager->InvalidateSurfaceClientId(surface_id_allocator_->client_id());
   }
 }
 

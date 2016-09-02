@@ -29,6 +29,7 @@ source_set("compositor") {
 
   deps = [
     "//blimp/client/public:public_headers",
+    "//blimp/client/support/compositor",
     "//blimp/net",
     "//cc/proto",
     "//cc/surfaces",
