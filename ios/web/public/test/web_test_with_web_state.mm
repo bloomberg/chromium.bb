@@ -73,43 +73,48 @@ void WebTestWithWebState::DidProcessTask(
   processed_a_task_ = true;
 }
 
-void WebTestWithWebState::LoadHtml(NSString* html, const GURL& url) {
-  ASSERT_FALSE(web_state()->IsLoading());
-
-  CRWWebController* web_controller = GetWebController(web_state());
-  [web_controller loadHTML:html forURL:url];
-
-  // Wait until the navigation is committed to update MIME type.
-  ASSERT_EQ(LOAD_REQUESTED, web_controller.loadPhase);
-  base::TimeDelta spin_delay = base::TimeDelta::FromMilliseconds(10);
-  while (web_controller.loadPhase != PAGE_LOADING)
-    base::test::ios::SpinRunLoopWithMaxDelay(spin_delay);
-
-  // loadHTML:forURL: does not notify web view delegate about received response,
-  // so web controller does not get a chance to properly update MIME type and it
-  // should be set manually after navigation is committed but before WebState
-  // signal load completion and clients will start checking if MIME type is in
-  // fact HTML.
-  [web_controller webStateImpl]->SetContentsMimeType("text/html");
-
-  // Wait until the page is loaded.
-  ASSERT_EQ(PAGE_LOADING, web_controller.loadPhase);
-  while (web_controller.loadPhase != PAGE_LOADED)
-    base::test::ios::SpinRunLoopWithMaxDelay(spin_delay);
-
-  // Wait until scripts execution becomes possible.
-  base::test::ios::WaitUntilCondition(^bool {
-    return [ExecuteJavaScript(@"0;") isEqual:@0];
-  });
-}
-
 void WebTestWithWebState::LoadHtml(NSString* html) {
-  GURL url("https://chromium.test/");
-  LoadHtml(html, url);
+  LoadHtml([html UTF8String]);
 }
 
 void WebTestWithWebState::LoadHtml(const std::string& html) {
-  LoadHtml(base::SysUTF8ToNSString(html));
+  NSString* load_check = CreateLoadCheck();
+  std::string marked_html = html + [load_check UTF8String];
+  std::string encoded_html;
+  base::Base64Encode(marked_html, &encoded_html);
+  GURL url("data:text/html;charset=utf8;base64," + encoded_html);
+  LoadURL(url);
+
+  if (ResetPageIfNavigationStalled(load_check)) {
+    LoadHtml(html);
+  }
+}
+
+void WebTestWithWebState::LoadURL(const GURL& url) {
+  // First step is to ensure that the web controller has finished any previous
+  // page loads so the new load is not confused.
+  while ([GetWebController(web_state()) loadPhase] != PAGE_LOADED)
+    WaitForBackgroundTasks();
+  id originalMockDelegate =
+      [OCMockObject niceMockForProtocol:@protocol(CRWWebDelegate)];
+  id mockDelegate =
+      [[WebDelegateMock alloc] initWithRepresentedObject:originalMockDelegate];
+  id existingDelegate = GetWebController(web_state()).delegate;
+  GetWebController(web_state()).delegate = mockDelegate;
+
+  web::NavigationManagerImpl& navManager =
+      [GetWebController(web_state()) webStateImpl]->GetNavigationManagerImpl();
+  navManager.InitializeSession(@"name", nil, NO, 0);
+  [navManager.GetSessionController() addPendingEntry:url
+                                            referrer:web::Referrer()
+                                          transition:ui::PAGE_TRANSITION_TYPED
+                                   rendererInitiated:NO];
+
+  [GetWebController(web_state()) loadCurrentURL];
+  while ([GetWebController(web_state()) loadPhase] != PAGE_LOADED)
+    WaitForBackgroundTasks();
+  GetWebController(web_state()).delegate = existingDelegate;
+  [web_state()->GetView() layoutIfNeeded];
 }
 
 void WebTestWithWebState::WaitForBackgroundTasks() {
@@ -170,6 +175,18 @@ web::WebState* WebTestWithWebState::web_state() {
 
 const web::WebState* WebTestWithWebState::web_state() const {
   return web_state_.get();
+}
+
+bool WebTestWithWebState::ResetPageIfNavigationStalled(NSString* load_check) {
+  id inner_html = ExecuteJavaScript(
+      @"(document && document.body && document.body.innerHTML) || 'undefined'");
+  if (![inner_html rangeOfString:load_check].length) {
+    web_state_->SetWebUsageEnabled(false);
+    web_state_->SetWebUsageEnabled(true);
+    [GetWebController(web_state()) triggerPendingLoad];
+    return true;
+  }
+  return false;
 }
 
 NSString* WebTestWithWebState::CreateLoadCheck() {

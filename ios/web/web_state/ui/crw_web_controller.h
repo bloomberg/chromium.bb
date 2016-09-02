@@ -314,9 +314,6 @@ class WebStateImpl;
 // Returns the header height.
 - (CGFloat)headerHeight;
 
-// Loads the HTML into the page at the given URL.
-- (void)loadHTML:(NSString*)HTML forURL:(const GURL&)URL;
-
 // Caches request POST data in the given session entry.  Exposed for testing.
 - (void)cachePOSTDataForRequest:(NSURLRequest*)request
                  inSessionEntry:(CRWSessionEntry*)currentSessionEntry;

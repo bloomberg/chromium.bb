@@ -4767,9 +4767,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // Remove the transient content view.
   [self clearTransientContentView];
 
+  DLOG_IF(WARNING, !_webView) << "_webView null while trying to load HTML";
   _loadPhase = web::LOAD_REQUESTED;
-  [self ensureWebViewCreated];
-  DCHECK(_webView) << "_webView null while trying to load HTML";
   [_webView loadHTMLString:HTML baseURL:net::NSURLWithGURL(URL)];
 }
 
@@ -4974,6 +4973,13 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     if (!allowLoad && action.targetFrame.mainFrame) {
       [_pendingNavigationInfo setCancelled:YES];
     }
+  }
+
+  if (!allowLoad && action.targetFrame.isMainFrame) {
+    // WKWebView will stop this navigation without calling any further
+    // callbacks, so change load phase to loaded now.
+    _loadPhase = web::PAGE_LOADED;
+    _webStateImpl->SetIsLoading(false);
   }
 
   decisionHandler(allowLoad ? WKNavigationActionPolicyAllow
