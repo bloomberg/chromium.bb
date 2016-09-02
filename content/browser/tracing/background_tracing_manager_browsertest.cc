@@ -354,22 +354,14 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
   EXPECT_TRUE(upload_config_wrapper.TraceHasMatchingString("user-agent"));
 }
 
-#if defined(OS_ANDROID) || defined(OS_LINUX)
-// Flaky on android: https://crbug.com/639706
-// Flaky on android, linux: https://crbug.com/639706
-#define MAYBE_CrashWhenSubprocessWithoutArgumentFilter \
-        DISABLED_CrashWhenSubprocessWithoutArgumentFilter
-#else
-#define MAYBE_CrashWhenSubprocessWithoutArgumentFilter \
-        CrashWhenSubprocessWithoutArgumentFilter
-#endif
-
+// Flaky on android, linux, and windows: https://crbug.com/639706 and
+// https://crbug.com/643415.
 // This tests subprocesses (like a navigating renderer) which gets told to
 // provide a argument-filtered trace and has no predicate in place to do the
 // filtering (in this case, only the browser process gets it set), will crash
 // rather than return potential PII.
 IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
-                       MAYBE_CrashWhenSubprocessWithoutArgumentFilter) {
+                       DISABLED_CrashWhenSubprocessWithoutArgumentFilter) {
   SetupBackgroundTracingManager();
 
   base::trace_event::TraceLog::GetInstance()->SetArgumentFilterPredicate(
