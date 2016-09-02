@@ -353,7 +353,7 @@ static INLINE void add_token_no_extra(TOKENEXTRA **t,
 
 static INLINE int get_tx_eob(const struct segmentation *seg, int segment_id,
                              TX_SIZE tx_size) {
-  const int eob_max = 16 << (tx_size << 1);
+  const int eob_max = 1 << (tx_size_1d_log2[tx_size] * 2);
   return segfeature_active(seg, segment_id, SEG_LVL_SKIP) ? 0 : eob_max;
 }
 
