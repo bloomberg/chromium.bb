@@ -315,19 +315,19 @@ static void BuildHostPathMap(TemplateURLService* model,
   }
 }
 
-void ProfileWriter::AddKeywords(ScopedVector<TemplateURL> template_urls,
-                                bool unique_on_host_and_path) {
+void ProfileWriter::AddKeywords(
+    TemplateURLService::OwnedTemplateURLVector template_urls,
+    bool unique_on_host_and_path) {
   TemplateURLService* model =
       TemplateURLServiceFactory::GetForProfile(profile_);
   HostPathMap host_path_map;
   if (unique_on_host_and_path)
     BuildHostPathMap(model, &host_path_map);
 
-  for (ScopedVector<TemplateURL>::iterator i = template_urls.begin();
-       i != template_urls.end(); ++i) {
+  for (auto& turl : template_urls) {
     // TemplateURLService requires keywords to be unique. If there is already a
     // TemplateURL with this keyword, don't import it again.
-    if (model->GetTemplateURLForKeyword((*i)->keyword()) != nullptr)
+    if (model->GetTemplateURLForKeyword(turl->keyword()) != nullptr)
       continue;
 
     // For search engines if there is already a keyword with the same
@@ -335,16 +335,14 @@ void ProfileWriter::AddKeywords(ScopedVector<TemplateURL> template_urls,
     // search providers (such as two Googles, or two Yahoos) as well as making
     // sure the search engines we provide aren't replaced by those from the
     // imported browser.
-    if (unique_on_host_and_path &&
-        (host_path_map.find(BuildHostPathKey(
-            *i, model->search_terms_data(), true)) != host_path_map.end()))
+    if (unique_on_host_and_path && (host_path_map.find(BuildHostPathKey(
+                                        turl.get(), model->search_terms_data(),
+                                        true)) != host_path_map.end()))
       continue;
 
     // Only add valid TemplateURLs to the model.
-    if ((*i)->url_ref().IsValid(model->search_terms_data())) {
-      model->Add(base::WrapUnique(*i));
-      *i = nullptr;  // Prevent the vector from deleting *i later.
-    }
+    if (turl->url_ref().IsValid(model->search_terms_data()))
+      model->Add(std::move(turl));
   }
 }
 

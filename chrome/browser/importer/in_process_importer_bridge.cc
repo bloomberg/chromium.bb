@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -96,53 +97,51 @@ class FirefoxURLParameterFilter : public TemplateURLParser::ParameterFilter {
 };
 
 // Attempts to create a TemplateURL from the provided data. |title| is optional.
-// If TemplateURL creation fails, returns NULL.
-// This function transfers ownership of the created TemplateURL to the caller.
-TemplateURL* CreateTemplateURL(const base::string16& url,
-                               const base::string16& keyword,
-                               const base::string16& title) {
+// If TemplateURL creation fails, returns null.
+std::unique_ptr<TemplateURL> CreateTemplateURL(const base::string16& url,
+                                               const base::string16& keyword,
+                                               const base::string16& title) {
   if (url.empty() || keyword.empty())
-    return NULL;
+    return nullptr;
   TemplateURLData data;
   data.SetKeyword(keyword);
   // We set short name by using the title if it exists.
   // Otherwise, we use the shortcut.
   data.SetShortName(title.empty() ? keyword : title);
   data.SetURL(TemplateURLRef::DisplayURLToURLRef(url));
-  return new TemplateURL(data);
+  return base::MakeUnique<TemplateURL>(data);
 }
 
 // Parses the OpenSearch XML files in |xml_files| and populates |search_engines|
 // with the resulting TemplateURLs.
 void ParseSearchEnginesFromFirefoxXMLData(
     const std::vector<std::string>& xml_data,
-    std::vector<TemplateURL*>* search_engines) {
+    TemplateURLService::OwnedTemplateURLVector* search_engines) {
   DCHECK(search_engines);
 
-  typedef std::map<std::string, TemplateURL*> SearchEnginesMap;
-  SearchEnginesMap search_engine_for_url;
+  std::map<std::string, std::unique_ptr<TemplateURL>> search_engine_for_url;
   FirefoxURLParameterFilter param_filter;
   // The first XML file represents the default search engine in Firefox 3, so we
   // need to keep it on top of the list.
-  SearchEnginesMap::const_iterator default_turl = search_engine_for_url.end();
+  auto default_turl = search_engine_for_url.end();
   for (std::vector<std::string>::const_iterator xml_iter =
            xml_data.begin(); xml_iter != xml_data.end(); ++xml_iter) {
-    TemplateURL* template_url = TemplateURLParser::Parse(
-        UIThreadSearchTermsData(NULL), true,
-        xml_iter->data(), xml_iter->length(), &param_filter);
+    std::unique_ptr<TemplateURL> template_url = TemplateURLParser::Parse(
+        UIThreadSearchTermsData(nullptr), true, xml_iter->data(),
+        xml_iter->length(), &param_filter);
     if (template_url) {
-      SearchEnginesMap::iterator iter =
-          search_engine_for_url.find(template_url->url());
+      auto iter = search_engine_for_url.find(template_url->url());
       if (iter == search_engine_for_url.end()) {
-        iter = search_engine_for_url.insert(
-            std::make_pair(template_url->url(), template_url)).first;
+        iter = search_engine_for_url
+                   .insert(std::make_pair(template_url->url(),
+                                          std::move(template_url)))
+                   .first;
       } else {
         // We have already found a search engine with the same URL.  We give
         // priority to the latest one found, as GetSearchEnginesXMLFiles()
         // returns a vector with first Firefox default search engines and then
         // the user's ones.  We want to give priority to the user ones.
-        delete iter->second;
-        iter->second = template_url;
+        iter->second = std::move(template_url);
       }
       if (default_turl == search_engine_for_url.end())
         default_turl = iter;
@@ -150,12 +149,13 @@ void ParseSearchEnginesFromFirefoxXMLData(
   }
 
   // Put the results in the |search_engines| vector.
-  for (SearchEnginesMap::iterator t_iter = search_engine_for_url.begin();
+  for (auto t_iter = search_engine_for_url.begin();
        t_iter != search_engine_for_url.end(); ++t_iter) {
     if (t_iter == default_turl)
-      search_engines->insert(search_engines->begin(), default_turl->second);
+      search_engines->insert(search_engines->begin(),
+                             std::move(default_turl->second));
     else
-      search_engines->push_back(t_iter->second);
+      search_engines->push_back(std::move(t_iter->second));
   }
 }
 
@@ -222,14 +222,12 @@ void InProcessImporterBridge::SetHistoryItems(
 void InProcessImporterBridge::SetKeywords(
     const std::vector<importer::SearchEngineInfo>& search_engines,
     bool unique_on_host_and_path) {
-  ScopedVector<TemplateURL> owned_template_urls;
+  TemplateURLService::OwnedTemplateURLVector owned_template_urls;
   for (const auto& search_engine : search_engines) {
-    TemplateURL* owned_template_url =
-        CreateTemplateURL(search_engine.url,
-                          search_engine.keyword,
-                          search_engine.display_name);
+    std::unique_ptr<TemplateURL> owned_template_url = CreateTemplateURL(
+        search_engine.url, search_engine.keyword, search_engine.display_name);
     if (owned_template_url)
-      owned_template_urls.push_back(owned_template_url);
+      owned_template_urls.push_back(std::move(owned_template_url));
   }
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
       base::Bind(&ProfileWriter::AddKeywords, writer_,
@@ -238,16 +236,12 @@ void InProcessImporterBridge::SetKeywords(
 
 void InProcessImporterBridge::SetFirefoxSearchEnginesXMLData(
     const std::vector<std::string>& search_engine_data) {
-  std::vector<TemplateURL*> search_engines;
+  TemplateURLService::OwnedTemplateURLVector search_engines;
   ParseSearchEnginesFromFirefoxXMLData(search_engine_data, &search_engines);
 
-  ScopedVector<TemplateURL> owned_template_urls;
-  std::copy(search_engines.begin(), search_engines.end(),
-            std::back_inserter(owned_template_urls));
-
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      base::Bind(&ProfileWriter::AddKeywords, writer_,
-                 base::Passed(&owned_template_urls), true));
+                          base::Bind(&ProfileWriter::AddKeywords, writer_,
+                                     base::Passed(&search_engines), true));
 }
 
 void InProcessImporterBridge::SetPasswordForm(

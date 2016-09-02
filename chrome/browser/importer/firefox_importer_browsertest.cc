@@ -218,20 +218,19 @@ class FirefoxObserver : public ProfileWriter,
     }
   }
 
-  void AddKeywords(ScopedVector<TemplateURL> template_urls,
+  void AddKeywords(TemplateURLService::OwnedTemplateURLVector template_urls,
                    bool unique_on_host_and_path) override {
-    for (size_t i = 0; i < template_urls.size(); ++i) {
+    for (const auto& turl : template_urls) {
       // The order might not be deterministic, look in the expected list for
       // that template URL.
       bool found = false;
-      const base::string16& imported_keyword = template_urls[i]->keyword();
-      for (size_t j = 0; j < arraysize(kFirefoxKeywords); ++j) {
-        const base::string16 expected_keyword = base::WideToUTF16(
-            use_keyword_in_json_ ?
-            kFirefoxKeywords[j].keyword_in_json :
-            kFirefoxKeywords[j].keyword_in_sqlite);
+      const base::string16& imported_keyword = turl->keyword();
+      for (const auto& keyword : kFirefoxKeywords) {
+        const base::string16 expected_keyword =
+            base::WideToUTF16(use_keyword_in_json_ ? keyword.keyword_in_json
+                                                   : keyword.keyword_in_sqlite);
         if (imported_keyword == expected_keyword) {
-          EXPECT_EQ(kFirefoxKeywords[j].url, template_urls[i]->url());
+          EXPECT_EQ(keyword.url, turl->url());
           found = true;
           break;
         }

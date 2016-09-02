@@ -9,17 +9,16 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/favicon_base/favicon_usage_data.h"
 #include "components/history/core/browser/history_types.h"
+#include "components/search_engines/template_url_service.h"
 #include "url/gurl.h"
 
 struct ImportedBookmarkEntry;
 class Profile;
-class TemplateURL;
 
 namespace autofill {
 struct PasswordForm;
@@ -78,16 +77,16 @@ class ProfileWriter : public base::RefCountedThreadSafe<ProfileWriter> {
 
   virtual void AddFavicons(const favicon_base::FaviconUsageDataList& favicons);
 
-  // Adds the TemplateURLs in |template_urls| to the local store.  The local
-  // store becomes the owner of the TemplateURLs.  Some TemplateURLs in
-  // |template_urls| may conflict (same keyword or same host name in the URL)
-  // with existing TemplateURLs in the local store, in which case the existing
-  // ones take precedence and the duplicates in |template_urls| are deleted.
-  // If |unique_on_host_and_path| is true, a TemplateURL is only added if there
-  // is not an existing TemplateURL that has a replaceable search url with the
-  // same host+path combination.
-  virtual void AddKeywords(ScopedVector<TemplateURL> template_urls,
-                           bool unique_on_host_and_path);
+  // Adds the TemplateURLs in |template_urls| to the local store.
+  // Some TemplateURLs in |template_urls| may conflict (same keyword or same
+  // host name in the URL) with existing TemplateURLs in the local store, in
+  // which case the existing ones take precedence and the duplicates in
+  // |template_urls| are deleted. If |unique_on_host_and_path| is true, a
+  // TemplateURL is only added if there is not an existing TemplateURL that has
+  // a replaceable search url with the same host+path combination.
+  virtual void AddKeywords(
+      TemplateURLService::OwnedTemplateURLVector template_urls,
+      bool unique_on_host_and_path);
 
   // Adds the imported autofill entries to the autofill database.
   virtual void AddAutofillFormDataEntries(

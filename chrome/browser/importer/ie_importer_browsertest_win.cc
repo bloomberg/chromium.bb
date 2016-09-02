@@ -402,7 +402,7 @@ class MalformedFavoritesRegistryTestObserver
   void AddPasswordForm(const autofill::PasswordForm& form) override {}
   void AddHistoryPage(const history::URLRows& page,
                       history::VisitSource visit_source) override {}
-  void AddKeywords(ScopedVector<TemplateURL> template_urls,
+  void AddKeywords(TemplateURLService::OwnedTemplateURLVector template_urls,
                    bool unique_on_host_and_path) override {}
   void AddBookmarks(const std::vector<ImportedBookmarkEntry>& bookmarks,
                     const base::string16& top_level_folder_name) override {

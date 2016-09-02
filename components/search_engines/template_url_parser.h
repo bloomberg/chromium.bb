@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -30,19 +31,19 @@ class TemplateURLParser {
   };
 
   // Decodes the chunk of data representing a TemplateURL, creates the
-  // TemplateURL, and returns it.  The caller owns the returned object.
-  // Returns NULL if data does not describe a valid TemplateURL, the
-  // URLs referenced do not point to valid http/https resources, or for some
-  // other reason we do not support the described TemplateURL.
-  // |parameter_filter| can be used if you want to filter some parameters out of
-  // the URL.  For example, when importing from another browser, we remove any
-  // parameter identifying that browser.  If set to NULL, the URL is not
-  // modified.
-  static TemplateURL* Parse(const SearchTermsData& search_terms_data,
-                            bool show_in_default_list,
-                            const char* data,
-                            size_t length,
-                            ParameterFilter* parameter_filter);
+  // TemplateURL, and returns it.  Returns null if the data does not describe a
+  // valid TemplateURL, the URLs referenced do not point to valid http/https
+  // resources, or for some other reason we do not support the described
+  // TemplateURL.  |parameter_filter| can be used if you want to filter some
+  // parameters out of the URL.  For example, when importing from another
+  // browser, we remove any parameter identifying that browser.  If set to null,
+  // the URL is not modified.
+  static std::unique_ptr<TemplateURL> Parse(
+      const SearchTermsData& search_terms_data,
+      bool show_in_default_list,
+      const char* data,
+      size_t length,
+      ParameterFilter* parameter_filter);
 
  private:
   // No one should create one of these.
