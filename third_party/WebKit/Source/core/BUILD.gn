@@ -915,6 +915,7 @@ target(core_link_small_target_type, "core_generated") {
 # Fuzzer for blink::TextResourceDecoder.
 fuzzer_test("text_resource_decoder_fuzzer") {
   sources = [
+    "html/parser/TextResourceDecoderForFuzzing.h",
     "html/parser/TextResourceDecoderFuzzer.cpp",
   ]
   deps = [
@@ -1231,4 +1232,17 @@ fuzzer_test("stylesheet_contents_fuzzer") {
   ]
   seed_corpus = "//third_party/WebKit/LayoutTests/fast/css/resources"
   libfuzzer_options = [ "max_len=2048" ]
+}
+
+# Fuzzer for blink::HTMLPreloadScanner.
+fuzzer_test("html_preload_scanner_fuzzer") {
+  sources = [
+    "html/parser/HTMLPreloadScannerFuzzer.cpp",
+    "html/parser/TextResourceDecoderForFuzzing.h",
+  ]
+  seed_corpus = "//third_party/WebKit/LayoutTests/fast/parser"
+  deps = [
+    ":core",
+    "../platform:blink_fuzzer_test_support",
+  ]
 }

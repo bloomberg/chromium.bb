@@ -64,6 +64,11 @@ public:
         return wrapUnique(new CachedDocumentParameters(document));
     }
 
+    static std::unique_ptr<CachedDocumentParameters> create()
+    {
+        return wrapUnique(new CachedDocumentParameters);
+    }
+
     bool doHtmlPreloadScanning;
     bool doDocumentWritePreloadScanning;
     Length defaultViewportMinWidth;
@@ -73,6 +78,7 @@ public:
 
 private:
     explicit CachedDocumentParameters(Document*);
+    CachedDocumentParameters() = default;
 };
 
 class TokenPreloadScanner {
