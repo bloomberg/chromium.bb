@@ -666,7 +666,6 @@ crbug.com/377696 printing/setPrinting.html [ Skip ]
 crbug.com/377696 printing/width-overflow.html [ Skip ]
 
 # Reftests that needs investigation.
-crbug.com/397255 [ Linux ] css3/masking/clip-path-reference-userSpaceOnUse.html [ Failure ]
 crbug.com/396940 ietestcenter/css3/multicolumn/column-containing-block-001.htm [ Failure ]
 crbug.com/396940 ietestcenter/css3/multicolumn/column-containing-block-002.htm [ Failure ]
 
