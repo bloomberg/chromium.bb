@@ -719,17 +719,49 @@ TEST(StringNumberConversionsTest, StringToDouble) {
     double output;
     bool success;
   } cases[] = {
+    // Test different forms of zero.
     {"0", 0.0, true},
+    {"+0", 0.0, true},
+    {"-0", 0.0, true},
+    {"0.0", 0.0, true},
+    {"000000000000000000000000000000.0", 0.0, true},
+    {"0.000000000000000000000000000", 0.0, true},
+
+    // Test the answer.
     {"42", 42.0, true},
     {"-42", -42.0, true},
+
+    // Test variances of an ordinary number.
     {"123.45", 123.45, true},
     {"-123.45", -123.45, true},
     {"+123.45", 123.45, true},
+
+    // Test different forms of representation.
     {"2.99792458e8", 299792458.0, true},
     {"149597870.691E+3", 149597870691.0, true},
     {"6.", 6.0, true},
+
+    // Test around the largest/smallest value that a double can represent.
+    {"9e307", 9e307, true},
+    {"1.7976e308", 1.7976e308, true},
+    {"1.7977e308", HUGE_VAL, false},
+    {"9e308", HUGE_VAL, false},
+    {"9e309", HUGE_VAL, false},
+    {"9e999", HUGE_VAL, false},
+    {"9e1999", HUGE_VAL, false},
+    {"9e19999", HUGE_VAL, false},
     {"9e99999999999999999999", HUGE_VAL, false},
+    {"-9e307", -9e307, true},
+    {"-1.7976e308", -1.7976e308, true},
+    {"-1.7977e308", -HUGE_VAL, false},
+    {"-9e308", -HUGE_VAL, false},
+    {"-9e309", -HUGE_VAL, false},
+    {"-9e999", -HUGE_VAL, false},
+    {"-9e1999", -HUGE_VAL, false},
+    {"-9e19999", -HUGE_VAL, false},
     {"-9e99999999999999999999", -HUGE_VAL, false},
+
+    // Test more exponents.
     {"1e-2", 0.01, true},
     {"42 ", 42.0, false},
     {" 1e-2", 0.01, false},
@@ -737,6 +769,8 @@ TEST(StringNumberConversionsTest, StringToDouble) {
     {"-1E-7", -0.0000001, true},
     {"01e02", 100, true},
     {"2.3e15", 2.3e15, true},
+
+    // Test some invalid cases.
     {"\t\n\v\f\r -123.45e2", -12345.0, false},
     {"+123 e4", 123.0, false},
     {"123e ", 123.0, false},
