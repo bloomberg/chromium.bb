@@ -102,6 +102,7 @@ if (is_android) {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "bookmarks/bookmark_last_visit_utils_unittest.cc",
     "category_factory_unittest.cc",
     "content_suggestions_service_unittest.cc",
     "mock_content_suggestions_provider_observer.cc",
@@ -122,6 +123,8 @@ source_set("unit_tests") {
     ":ntp_snippets",
     "//base",
     "//base/test:test_support",
+    "//components/bookmarks/browser",
+    "//components/bookmarks/test",
     "//components/image_fetcher",
     "//components/leveldb_proto:test_support",
     "//components/offline_pages",

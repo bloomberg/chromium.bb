@@ -187,6 +187,12 @@ std::vector<const BookmarkNode*> GetRecentlyVisitedBookmarks(
   // Insert the first |max_count| items from |bookmarks| into |result|.
   std::vector<const BookmarkNode*> result;
   for (const RecentBookmark& bookmark : bookmarks) {
+    if (!creation_date_fallback &&
+        GetLastVisitDateForBookmark(bookmark.node, creation_date_fallback) <
+            min_visit_time) {
+      break;
+    }
+
     result.push_back(bookmark.node);
     if (result.size() >= static_cast<size_t>(max_count))
       break;
