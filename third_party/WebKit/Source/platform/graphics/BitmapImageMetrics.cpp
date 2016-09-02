@@ -48,9 +48,6 @@ void BitmapImageMetrics::countGamma(SkColorSpace* colorSpace)
         case SkColorSpace::k2Dot2Curve_GammaNamed:
             gamma = Gamma2Dot2;
             break;
-        case SkColorSpace::kInvalid_GammaNamed:
-            gamma = GammaInvalid;
-            break;
         default:
             if (colorSpace->gammasAreMatching()) {
                 if (colorSpace->gammasAreValues()) {
