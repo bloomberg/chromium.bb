@@ -1279,8 +1279,6 @@ crbug.com/635909 [ Win7 Release ] inspector/sources/debugger-frameworks/framewor
 crbug.com/636424 [ Win7 Debug ] editing/selection/modify_move/move-by-word-visually-crash-test-5.html [ Pass Timeout ]
 crbug.com/638618 inspector/editor/text-editor-search-switch-editor.html [ Skip ]
 
-crbug.com/625533 editing/inserting/typing-at-end-of-line.html [ NeedsRebaseline ]
-
 # This test breaks when the feature introduced in the bug is enabled. We keep
 # this tested without the feature by using the virtual test. See
 # virtual/stable/http/tests/navigation/beacon-cross-origin-redirect-blob-expected.txt
