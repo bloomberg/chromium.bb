@@ -706,11 +706,9 @@ class TextureTestBase : public GpuServiceTest {
  protected:
   void SetUpBase(MemoryTracker* memory_tracker, const std::string& extensions) {
     GpuServiceTest::SetUp();
-    if (!extensions.empty()) {
-      TestHelper::SetupFeatureInfoInitExpectations(gl_.get(),
-                                                   extensions.c_str());
-      feature_info_->InitializeForTesting();
-    }
+    TestHelper::SetupFeatureInfoInitExpectations(gl_.get(),
+                                                 extensions.c_str());
+    feature_info_->InitializeForTesting();
 
     manager_.reset(new TextureManager(memory_tracker,
                                       feature_info_.get(),
@@ -1624,6 +1622,8 @@ TEST_F(TextureTest, ClearTexture) {
   EXPECT_TRUE(manager_->HaveUnsafeTextures());
   EXPECT_TRUE(manager_->HaveUnclearedMips());
   EXPECT_EQ(2, texture->num_uncleared_mips());
+  EXPECT_CALL(*decoder_.get(), GetFeatureInfo())
+     .WillRepeatedly(Return(feature_info_.get()));
   manager_->ClearRenderableLevels(decoder_.get(), texture_ref_.get());
   EXPECT_TRUE(texture->SafeToRenderFrom());
   EXPECT_FALSE(manager_->HaveUnsafeTextures());
@@ -2110,6 +2110,8 @@ TEST_F(ProduceConsumeTextureTest, ProduceConsumeClearRectangle) {
   // is covered best by the WebGL 2.0 conformance tests.
   EXPECT_CALL(*decoder_, IsCompressedTextureFormat(_))
       .WillRepeatedly(Return(false));
+  EXPECT_CALL(*decoder_.get(), GetFeatureInfo())
+     .WillRepeatedly(Return(feature_info_.get()));
   EXPECT_TRUE(manager_->ClearTextureLevel(
       decoder_.get(), restored_texture.get(), GL_TEXTURE_RECTANGLE_ARB, 0));
 }

@@ -198,8 +198,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/rendering/rgb-format-support.html',
         ['mac'], bug=483282)
 
-    self.Fail('conformance2/textures/misc/copy-texture-image-luma-format.html',
-        ['mac'], bug=638470)
     # This is due to "centroid out" / "in" mismatch.
     self.Fail('deqp/data/gles3/shaders/qualification_order.html',
         ['mac'], bug=483282)

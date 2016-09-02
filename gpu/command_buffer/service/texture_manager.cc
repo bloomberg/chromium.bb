@@ -1447,8 +1447,9 @@ bool Texture::ClearLevel(
     // For 3D textures, we always clear the entire texture.
     DCHECK(info.cleared_rect == gfx::Rect());
     bool cleared = decoder->ClearLevel3D(
-        this, info.target, info.level, info.format, info.type,
-        info.width, info.height, info.depth);
+        this, info.target, info.level,
+        TextureManager::AdjustTexFormat(decoder->GetFeatureInfo(), info.format),
+        info.type, info.width, info.height, info.depth);
     if (!cleared)
       return false;
   } else {
@@ -1486,8 +1487,10 @@ bool Texture::ClearLevel(
           // but only the decoder knows all the state (like unpack_alignment_)
           // that's needed to be able to call GL correctly.
           bool cleared = decoder->ClearLevel(
-              this, info.target, info.level, info.format, info.type,
-              rect.x(), rect.y(), rect.width(), rect.height());
+              this, info.target, info.level,
+              TextureManager::AdjustTexFormat(decoder->GetFeatureInfo(),
+                                              info.format),
+              info.type, rect.x(), rect.y(), rect.width(), rect.height());
           if (!cleared)
             return false;
         }
