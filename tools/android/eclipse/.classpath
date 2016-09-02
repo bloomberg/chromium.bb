@@ -52,6 +52,7 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="components/invalidation/impl/android/java/src"/>
     <classpathentry kind="src" path="components/invalidation/impl/android/javatests/src"/>
     <classpathentry kind="src" path="components/invalidation/impl/android/junit/src"/>
+    <classpathentry kind="src" path="components/location/android/java/src"/>
     <classpathentry kind="src" path="components/navigation_interception/android/java/src"/>
     <classpathentry kind="src" path="components/ntp_tiles/android/java/src"/>
     <classpathentry kind="src" path="components/policy/android/java/src"/>
@@ -108,6 +109,8 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="third_party/gif_player/src"/>
     <classpathentry kind="src" path="third_party/jmake/src"/>
     <classpathentry kind="src" path="third_party/junit/src/src/main/java"/>
+    <classpathentry kind="src" path="third_party/leakcanary/src/leakcanary-android/src/main/java"/>
+    <classpathentry kind="src" path="third_party/leakcanary/src/leakcanary-watcher/src/main/java"/>
     <classpathentry kind="src" path="third_party/mockito/src/src/main/java"/>
     <classpathentry kind="src" path="third_party/robolectric/robolectric/robolectric/src/main/java"/>
     <classpathentry kind="src" path="third_party/robolectric/robolectric/robolectric/src/main/java"/>
