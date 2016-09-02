@@ -94,14 +94,14 @@ var MainPageBehaviorImpl = {
       if (!currentRoute.isSubpage() || expandedSection != currentSection) {
         promise = this.collapseSection_(expandedSection);
         // Scroll to the collapsed section.
-        if (currentSection)
+        if (currentSection && !settings.lastRouteChangeWasPopstate())
           currentSection.scrollIntoView();
       }
     } else if (currentSection) {
       // Expand the section into a subpage or scroll to it on the main page.
       if (currentRoute.isSubpage())
         promise = this.expandSection_(currentSection);
-      else
+      else if (!settings.lastRouteChangeWasPopstate())
         currentSection.scrollIntoView();
     }
 
@@ -234,13 +234,7 @@ var MainPageBehaviorImpl = {
         var newSection = settings.getCurrentRoute().section &&
             this.getSection(settings.getCurrentRoute().section);
 
-        // Scroll to the section if indicated by the route. TODO(michaelpg): Is
-        // this the right behavior, or should we return to the previous scroll
-        // position?
-        if (newSection)
-          newSection.scrollIntoView();
-        else
-          this.scroller.scrollTop = this.origScrollTop_;
+        this.scroller.scrollTop = this.origScrollTop_;
 
         this.currentAnimation_ = section.animateCollapse(
             /** @type {!HTMLElement} */(this.scroller));

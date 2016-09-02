@@ -3,6 +3,42 @@
 // found in the LICENSE file.
 
 suite('route', function() {
+  /**
+   * Returns a new promise that resolves after a window 'popstate' event.
+   * @return {!Promise}
+   */
+  function whenPopState(causeEvent) {
+    var promise = new Promise(function(resolve) {
+      window.addEventListener('popstate', function callback() {
+        window.removeEventListener('popstate', callback);
+        resolve();
+      });
+    });
+
+    causeEvent();
+    return promise;
+  }
+
+  /**
+   * Tests a specific navigation situation.
+   * @param {!settings.Route} previousRoute
+   * @param {!settings.Route} currentRoute
+   * @param {!settings.Route} expectedNavigatePreviousResult
+   * @return {!Promise}
+   */
+  function testNavigateBackUsesHistory(previousRoute, currentRoute,
+                                       expectedNavigatePreviousResult) {
+    settings.navigateTo(previousRoute);
+    settings.navigateTo(currentRoute);
+
+    return whenPopState(function() {
+      settings.navigateToPreviousRoute();
+    }).then(function() {
+      assertEquals(expectedNavigatePreviousResult,
+                   settings.getCurrentRoute());
+    });
+  };
+
   test('tree structure', function() {
     // Set up root page routes.
     var BASIC = new settings.Route('/');
@@ -55,38 +91,6 @@ suite('route', function() {
     });
   });
 
-  /**
-   * Tests a specific navigation situation.
-   * @param {!settings.Route} previousRoute
-   * @param {!settings.Route} currentRoute
-   * @param {!settings.Route} expectedNavigatePreviousResult
-   * @return {!Promise}
-   */
-  function testNavigateBackUsesHistory(previousRoute, currentRoute,
-                                       expectedNavigatePreviousResult) {
-    /**
-     * Returns a new promise that resolves after a window 'popstate' event.
-     * @return {!Promise}
-     */
-    function whenPopState() {
-      return new Promise(function(resolve) {
-        window.addEventListener('popstate', function callback() {
-          window.removeEventListener('popstate', callback);
-          resolve();
-        });
-      });
-    }
-
-    settings.navigateTo(previousRoute);
-    settings.navigateTo(currentRoute);
-    settings.navigateToPreviousRoute();
-
-    return whenPopState().then(function() {
-      assertEquals(expectedNavigatePreviousResult,
-                   settings.getCurrentRoute());
-    });
-  };
-
   test('navigate back to parent previous route', function() {
     return testNavigateBackUsesHistory(
         settings.Route.BASIC,
@@ -120,5 +124,23 @@ suite('route', function() {
     settings.navigateTo(settings.Route.ADVANCED);
     settings.navigateToPreviousRoute();
     assertEquals(settings.Route.BASIC, settings.getCurrentRoute());
+  });
+
+  test('popstate flag works', function() {
+    settings.navigateTo(settings.Route.BASIC);
+    assertFalse(settings.lastRouteChangeWasPopstate());
+
+    settings.navigateTo(settings.Route.PEOPLE);
+    assertFalse(settings.lastRouteChangeWasPopstate());
+
+    return whenPopState(function() {
+      window.history.back();
+    }).then(function() {
+      assertEquals(settings.Route.BASIC, settings.getCurrentRoute());
+      assertTrue(settings.lastRouteChangeWasPopstate());
+
+      settings.navigateTo(settings.Route.ADVANCED);
+      assertFalse(settings.lastRouteChangeWasPopstate());
+    });
   });
 });

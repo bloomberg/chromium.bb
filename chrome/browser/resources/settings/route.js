@@ -253,6 +253,9 @@ cr.define('settings', function() {
    */
   var currentQueryParameters_ = new URLSearchParams();
 
+  /** @private {boolean} */
+  var lastRouteChangeWasPopstate_ = false;
+
   /** @private */
   var initializeRouteFromUrlCalled_ = false;
 
@@ -277,11 +280,13 @@ cr.define('settings', function() {
    * Helper function to set the current route and notify all observers.
    * @param {!settings.Route} route
    * @param {!URLSearchParams} queryParameters
+   * @param {boolean} isPopstate
    */
-  var setCurrentRoute = function(route, queryParameters) {
+  var setCurrentRoute = function(route, queryParameters, isPopstate) {
     var oldRoute = currentRoute_;
     currentRoute_ = route;
     currentQueryParameters_ = queryParameters;
+    lastRouteChangeWasPopstate_ = isPopstate;
     for (var observer of routeObservers_)
       observer.currentRouteChanged(currentRoute_, oldRoute);
   };
@@ -292,6 +297,11 @@ cr.define('settings', function() {
   /** @return {!URLSearchParams} */
   var getQueryParameters = function() {
     return new URLSearchParams(currentQueryParameters_);  // Defensive copy.
+  };
+
+  /** @return {boolean} */
+  var lastRouteChangeWasPopstate = function() {
+    return lastRouteChangeWasPopstate_;
   };
 
   /**
@@ -312,7 +322,7 @@ cr.define('settings', function() {
 
     // History serializes the state, so we don't push the actual route object.
     window.history.pushState(currentRoute_.path, '', url);
-    setCurrentRoute(route, params);
+    setCurrentRoute(route, params, false);
   };
 
   /**
@@ -334,7 +344,7 @@ cr.define('settings', function() {
   window.addEventListener('popstate', function(event) {
     // On pop state, do not push the state onto the window.history again.
     setCurrentRoute(getRouteForPath(window.location.pathname) || Route.BASIC,
-                    new URLSearchParams(window.location.search));
+                    new URLSearchParams(window.location.search), true);
   });
 
   return {
@@ -344,6 +354,7 @@ cr.define('settings', function() {
     initializeRouteFromUrl: initializeRouteFromUrl,
     getCurrentRoute: getCurrentRoute,
     getQueryParameters: getQueryParameters,
+    lastRouteChangeWasPopstate: lastRouteChangeWasPopstate,
     navigateTo: navigateTo,
     navigateToPreviousRoute: navigateToPreviousRoute,
   };
