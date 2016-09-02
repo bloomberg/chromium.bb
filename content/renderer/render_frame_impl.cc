@@ -1076,6 +1076,7 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
 #if defined(ENABLE_PLUGINS)
       focused_pepper_plugin_(nullptr),
       pepper_last_mouse_event_target_(nullptr),
+      is_plugin_initializing_(false),
 #endif
       frame_binding_(this),
       has_accessed_initial_document_(false),
@@ -1114,6 +1115,11 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
 }
 
 RenderFrameImpl::~RenderFrameImpl() {
+#if defined(ENABLE_PLUGINS)
+  if (is_plugin_initializing_)
+    base::debug::DumpWithoutCrashing();
+#endif
+
   // If file chooser is still waiting for answer, dispatch empty answer.
   while (!file_chooser_completions_.empty()) {
     if (file_chooser_completions_.front()->completion) {
@@ -2349,7 +2355,7 @@ blink::WebPlugin* RenderFrameImpl::CreatePlugin(
     const WebPluginInfo& info,
     const blink::WebPluginParams& params,
     std::unique_ptr<content::PluginInstanceThrottler> throttler) {
-  DCHECK_EQ(frame_, frame);
+  CHECK_EQ(frame_, frame);
 #if defined(ENABLE_PLUGINS)
   if (info.type == WebPluginInfo::PLUGIN_TYPE_BROWSER_PLUGIN) {
     return BrowserPluginManager::Get()->CreateBrowserPlugin(
@@ -2365,6 +2371,7 @@ blink::WebPlugin* RenderFrameImpl::CreatePlugin(
       this, info, &pepper_plugin_was_registered));
   if (pepper_plugin_was_registered) {
     if (pepper_module.get()) {
+      is_plugin_initializing_ = true;
       return new PepperWebPluginImpl(
           pepper_module.get(), params, this,
           base::WrapUnique(
@@ -2518,7 +2525,7 @@ void RenderFrameImpl::GetInterfaceProvider(
 blink::WebPlugin* RenderFrameImpl::createPlugin(
     blink::WebLocalFrame* frame,
     const blink::WebPluginParams& params) {
-  DCHECK_EQ(frame_, frame);
+  CHECK_EQ(frame_, frame);
   blink::WebPlugin* plugin = NULL;
   if (GetContentClient()->renderer()->OverrideCreatePlugin(
           this, frame, params, &plugin)) {
@@ -6251,6 +6258,7 @@ void RenderFrameImpl::SendFindReply(int request_id,
 #if defined(ENABLE_PLUGINS)
 void RenderFrameImpl::PepperInstanceCreated(
     PepperPluginInstanceImpl* instance) {
+  is_plugin_initializing_ = false;
   active_pepper_instances_.insert(instance);
 
   Send(new FrameHostMsg_PepperInstanceCreated(
