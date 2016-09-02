@@ -854,6 +854,10 @@ HTMLElement* HTMLConstructionSite::createHTMLElement(AtomicHTMLToken* token)
         // association to occur after construction to allow better
         // code sharing here.
         element = HTMLElementFactory::createHTMLElement(token->name(), document, form, getCreateElementFlags());
+        // Definition for the created element does not exist here and
+        // it cannot be custom or failed.
+        DCHECK_NE(element->getCustomElementState(), CustomElementState::Custom);
+        DCHECK_NE(element->getCustomElementState(), CustomElementState::Failed);
 
         // "8. Append each attribute in the given token to element."
         setAttributes(element, token, m_parserContentPolicy);
