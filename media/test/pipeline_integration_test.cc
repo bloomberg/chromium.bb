@@ -923,10 +923,6 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackHashed) {
   EXPECT_TRUE(demuxer_->GetTimelineOffset().is_null());
 }
 
-base::TimeDelta TimestampMs(int milliseconds) {
-  return base::TimeDelta::FromMilliseconds(milliseconds);
-}
-
 TEST_F(PipelineIntegrationTest, PlaybackWithAudioTrackDisabledThenEnabled) {
   ASSERT_EQ(PIPELINE_OK, Start("bear-320x240.webm", kHashed));
 
@@ -939,7 +935,7 @@ TEST_F(PipelineIntegrationTest, PlaybackWithAudioTrackDisabledThenEnabled) {
   ASSERT_TRUE(Seek(base::TimeDelta()));
 
   Play();
-  const base::TimeDelta k500ms = TimestampMs(500);
+  const base::TimeDelta k500ms = base::TimeDelta::FromMilliseconds(500);
   ASSERT_TRUE(WaitUntilCurrentTimeIsAfter(k500ms));
   Pause();
 
@@ -977,7 +973,7 @@ TEST_F(PipelineIntegrationTest, PlaybackWithVideoTrackDisabledThenEnabled) {
   ResetVideoHash();
 
   Play();
-  const base::TimeDelta k500ms = TimestampMs(500);
+  const base::TimeDelta k500ms = base::TimeDelta::FromMilliseconds(500);
   ASSERT_TRUE(WaitUntilCurrentTimeIsAfter(k500ms));
   Pause();
 
@@ -1002,64 +998,6 @@ TEST_F(PipelineIntegrationTest, PlaybackWithVideoTrackDisabledThenEnabled) {
 
   // Verify that video has been rendered after being enabled.
   EXPECT_HASH_EQ("fd59357dfd9c144ab4fb8181b2de32c3", GetVideoHash());
-}
-
-TEST_F(PipelineIntegrationTest, TrackStatusChangesAfterPipelineEnded) {
-  ASSERT_EQ(PIPELINE_OK, Start("bear-320x240.webm", kHashed));
-  Play();
-  ASSERT_TRUE(WaitUntilOnEnded());
-  std::vector<MediaTrack::Id> track_ids;
-  // Disable audio track.
-  pipeline_->OnEnabledAudioTracksChanged(track_ids);
-  // Re-enable audio track.
-  track_ids.push_back("2");
-  pipeline_->OnEnabledAudioTracksChanged(track_ids);
-  // Disable video track.
-  track_ids.clear();
-  pipeline_->OnSelectedVideoTrackChanged(track_ids);
-  // Re-enable video track.
-  track_ids.push_back("1");
-  pipeline_->OnSelectedVideoTrackChanged(track_ids);
-}
-
-TEST_F(PipelineIntegrationTest, TrackStatusChangesWhileSuspended) {
-  ASSERT_EQ(PIPELINE_OK, Start("bear-320x240.webm", kHashed));
-  Play();
-
-  ASSERT_TRUE(Suspend());
-
-  // These get triggered every time playback is resumed.
-  EXPECT_CALL(*this, OnVideoNaturalSizeChange(gfx::Size(320, 240)))
-      .Times(AnyNumber());
-  EXPECT_CALL(*this, OnVideoOpacityChange(true)).Times(AnyNumber());
-
-  std::vector<MediaTrack::Id> track_ids;
-
-  // Disable audio track.
-  pipeline_->OnEnabledAudioTracksChanged(track_ids);
-  ASSERT_TRUE(Resume(TimestampMs(100)));
-  ASSERT_TRUE(WaitUntilCurrentTimeIsAfter(TimestampMs(200)));
-  ASSERT_TRUE(Suspend());
-
-  // Re-enable audio track.
-  track_ids.push_back("2");
-  pipeline_->OnEnabledAudioTracksChanged(track_ids);
-  ASSERT_TRUE(Resume(TimestampMs(200)));
-  ASSERT_TRUE(WaitUntilCurrentTimeIsAfter(TimestampMs(300)));
-  ASSERT_TRUE(Suspend());
-
-  // Disable video track.
-  track_ids.clear();
-  pipeline_->OnSelectedVideoTrackChanged(track_ids);
-  ASSERT_TRUE(Resume(TimestampMs(300)));
-  ASSERT_TRUE(WaitUntilCurrentTimeIsAfter(TimestampMs(400)));
-  ASSERT_TRUE(Suspend());
-
-  // Re-enable video track.
-  track_ids.push_back("1");
-  pipeline_->OnSelectedVideoTrackChanged(track_ids);
-  ASSERT_TRUE(Resume(TimestampMs(400)));
-  ASSERT_TRUE(WaitUntilOnEnded());
 }
 
 TEST_F(PipelineIntegrationTest,

@@ -229,7 +229,7 @@ void RendererImpl::RestartStreamPlayback(DemuxerStream* stream,
   bool video = (stream->type() == DemuxerStream::VIDEO);
   DVLOG(1) << __func__ << (video ? " video" : " audio") << " stream=" << stream
            << " enabled=" << stream->enabled() << " time=" << time.InSecondsF();
-  if ((state_ != STATE_PLAYING) || (audio_ended_ && video_ended_))
+  if (state_ != STATE_PLAYING)
     return;
   if (stream->type() == DemuxerStream::VIDEO) {
     DCHECK(video_renderer_);
