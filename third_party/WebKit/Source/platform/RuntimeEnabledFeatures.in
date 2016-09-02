@@ -228,6 +228,7 @@ UnsandboxedAuxiliary status=stable
 UserSelectAll status=stable
 WebAnimationsAPI status=experimental
 WebAnimationsSVG status=experimental
+WebAssemblySerialization status=test
 WebBluetooth origin_trial_feature_name=WebBluetooth
 WebGLDraftExtensions status=experimental
 WebGLImageChromium

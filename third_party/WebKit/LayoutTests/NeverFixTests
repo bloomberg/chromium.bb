@@ -183,3 +183,6 @@ webkit.org/b/49629 compositing/lots-of-img-layers-with-opacity.html [ WontFix ]
 
 # Only Windows supports Symbol CMAP encoded fonts.
 crbug.com/627953 [ Android Linux Mac ] fast/text/symbol-cmap.html [ WontFix ]
+
+# wasm tests. Currently under virtual/enable_wasm
+crbug.com/642912 http/tests/wasm/ [ WontFix ]

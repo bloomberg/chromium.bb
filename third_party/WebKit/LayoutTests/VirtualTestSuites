@@ -288,5 +288,10 @@
     "prefix": "scalefactor150",
     "base": "fast/events/synthetic-events",
     "args": ["--force-device-scale-factor=1.5"]
+  },
+  {
+    "prefix": "enable_wasm",
+    "base": "http/tests/wasm",
+    "args": ["--enable-wasm"]
   }
 ]

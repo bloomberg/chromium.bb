@@ -114,6 +114,7 @@ public:
     BLINK_EXPORT static void enableUnsafeES3APIs(bool);
     BLINK_EXPORT static void enableV8IdleTasks(bool);
     BLINK_EXPORT static void enableWeakMemoryCache(bool);
+    BLINK_EXPORT static void enableWebAssemblySerialization(bool);
     BLINK_EXPORT static void enableWebBluetooth(bool);
     BLINK_EXPORT static void enableWebFontsInterventionV2With2G(bool);
     BLINK_EXPORT static void enableWebFontsInterventionV2WithSlow2G(bool);

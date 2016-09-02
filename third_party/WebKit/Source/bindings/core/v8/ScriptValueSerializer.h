@@ -417,6 +417,7 @@ private:
     StateBase* writeAndGreyImageBitmap(v8::Local<v8::Object>, StateBase* next);
     void writeRegExp(v8::Local<v8::Value>);
     StateBase* writeAndGreyArrayBufferView(v8::Local<v8::Object>, StateBase* next);
+    StateBase* writeWasmCompiledModule(v8::Local<v8::Object>, StateBase* next);
     StateBase* writeAndGreyArrayBuffer(v8::Local<v8::Object>, StateBase* next);
     StateBase* writeTransferredOffscreenCanvas(v8::Local<v8::Value>, uint32_t index, StateBase* next);
     StateBase* writeTransferredSharedArrayBuffer(v8::Local<v8::Value>, uint32_t index, StateBase* next);
@@ -525,6 +526,7 @@ private:
     DOMArrayBuffer* doReadArrayBuffer();
     bool readArrayBuffer(v8::Local<v8::Value>*);
     bool readArrayBufferView(v8::Local<v8::Value>*, ScriptValueDeserializer&);
+    bool readWasmCompiledModule(v8::Local<v8::Value>*);
     bool readRegExp(v8::Local<v8::Value>*);
     bool readBlob(v8::Local<v8::Value>*, bool isIndexed);
     bool readFile(v8::Local<v8::Value>*, bool isIndexed);

@@ -891,6 +891,9 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::doSerializeObject(v8::L
         return writeTransferredSharedArrayBuffer(object, index, next);
     }
 
+    if (object->IsWebAssemblyCompiledModule())
+        return writeWasmCompiledModule(object, next);
+
     // Transferable only objects
     if (V8MessagePort::hasInstance(object, isolate())) {
         uint32_t index;
@@ -1198,6 +1201,18 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::writeAndGreyArrayBuffer
     return nullptr;
 }
 
+ScriptValueSerializer::StateBase* ScriptValueSerializer::writeWasmCompiledModule(v8::Local<v8::Object> object, StateBase* next)
+{
+    CHECK(RuntimeEnabledFeatures::webAssemblySerializationEnabled());
+    // TODO (mtrofin): explore mechanism avoiding data copying / buffer resizing.
+    v8::Local<v8::WasmCompiledModule> wasmModule = object.As<v8::WasmCompiledModule>();
+    v8::WasmCompiledModule::SerializedModule data = wasmModule->Serialize();
+    m_writer.append(WasmModuleTag);
+    m_writer.doWriteUint32(static_cast<uint32_t>(data.second));
+    m_writer.append(data.first.get(), static_cast<int>(data.second));
+    return nullptr;
+}
+
 ScriptValueSerializer::StateBase* ScriptValueSerializer::writeAndGreyArrayBuffer(v8::Local<v8::Object> object, StateBase* next)
 {
     DOMArrayBuffer* arrayBuffer = V8ArrayBuffer::toImpl(object);
@@ -1494,6 +1509,12 @@ bool SerializedScriptValueReader::readWithTag(SerializationTag tag, v8::Local<v8
         if (!m_version)
             return false;
         if (!readArrayBufferView(value, deserializer))
+            return false;
+        deserializer.pushObjectReference(*value);
+        break;
+    }
+    case WasmModuleTag: {
+        if (!readWasmCompiledModule(value))
             return false;
         deserializer.pushObjectReference(*value);
         break;
@@ -1848,6 +1869,31 @@ DOMArrayBuffer* SerializedScriptValueReader::doReadArrayBuffer()
     const void* bufferStart = m_buffer + m_position;
     m_position += byteLength;
     return DOMArrayBuffer::create(bufferStart, byteLength);
+}
+
+bool SerializedScriptValueReader::readWasmCompiledModule(v8::Local<v8::Value>* value)
+{
+    CHECK(RuntimeEnabledFeatures::webAssemblySerializationEnabled());
+    uint32_t size = 0;
+    if (!doReadUint32(&size))
+        return false;
+    if (m_position + size > m_length)
+        return false;
+    const uint8_t* buf = m_buffer + m_position;
+    // TODO(mtrofin): simplify deserializer API. const uint8_t* + size_t should
+    // be sufficient.
+    v8::WasmCompiledModule::SerializedModule data = {
+        std::unique_ptr<const uint8_t[]>(buf),
+        static_cast<size_t>(size)
+    };
+    v8::MaybeLocal<v8::WasmCompiledModule> retval = v8::WasmCompiledModule::Deserialize(isolate(), data);
+    data.first.release();
+    m_position += size;
+
+    // TODO(mtrofin): right now, we'll return undefined if the deserialization
+    // fails, which is what may happen when v8's version changes. Update when
+    // spec settles. crbug.com/639090
+    return retval.ToLocal(value);
 }
 
 bool SerializedScriptValueReader::readArrayBuffer(v8::Local<v8::Value>* value)

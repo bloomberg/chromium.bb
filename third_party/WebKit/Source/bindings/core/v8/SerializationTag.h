@@ -51,11 +51,11 @@ enum SerializationTag {
     FileListIndexTag = 'L', // length:uint32_t, files:int32_t[length] -> FileList (ref)
     ImageDataTag = '#', // width:uint32_t, height:uint32_t, pixelDataLength:uint32_t, data:byte[pixelDataLength] -> ImageData (ref)
     ObjectTag = '{', // numProperties:uint32_t -> pops the last object from the open stack;
-        //                                        fills it with the last numProperties name,value pairs pushed onto the deserialization stack
+    //                                        fills it with the last numProperties name,value pairs pushed onto the deserialization stack
     SparseArrayTag = '@', // numProperties:uint32_t, length:uint32_t -> pops the last object from the open stack;
-        //                                                              fills it with the last numProperties name,value pairs pushed onto the deserialization stack
+    //                                                              fills it with the last numProperties name,value pairs pushed onto the deserialization stack
     DenseArrayTag = '$', // numProperties:uint32_t, length:uint32_t -> pops the last object from the open stack;
-        //                                                             fills it with the last length elements and numProperties name,value pairs pushed onto deserialization stack
+    //                                                             fills it with the last length elements and numProperties name,value pairs pushed onto deserialization stack
     RegExpTag = 'R', // pattern:RawString, flags:uint32_t -> RegExp (ref)
     ArrayBufferTag = 'B', // byteLength:uint32_t, data:byte[byteLength] -> ArrayBuffer (ref)
     ArrayBufferTransferTag = 't', // index:uint32_t -> ArrayBuffer. For ArrayBuffer transfer
@@ -64,15 +64,16 @@ enum SerializationTag {
     OffscreenCanvasTransferTag = 'H', // index, width, height, id:uint32_t -> OffscreenCanvas. For OffscreenCanvas transfer
     ArrayBufferViewTag = 'V', // subtag:byte, byteOffset:uint32_t, byteLength:uint32_t -> ArrayBufferView (ref). Consumes an ArrayBuffer from the top of the deserialization stack.
     SharedArrayBufferTransferTag = 'u', // index:uint32_t -> SharedArrayBuffer. For SharedArrayBuffer transfer
+    WasmModuleTag = 'W',
     CryptoKeyTag = 'K', // subtag:byte, props, usages:uint32_t, keyDataLength:uint32_t, keyData:byte[keyDataLength]
-        //                 If subtag=AesKeyTag:
-        //                     props = keyLengthBytes:uint32_t, algorithmId:uint32_t
-        //                 If subtag=HmacKeyTag:
-        //                     props = keyLengthBytes:uint32_t, hashId:uint32_t
-        //                 If subtag=RsaHashedKeyTag:
-        //                     props = algorithmId:uint32_t, type:uint32_t, modulusLengthBits:uint32_t, publicExponentLength:uint32_t, publicExponent:byte[publicExponentLength], hashId:uint32_t
-        //                 If subtag=EcKeyTag:
-        //                     props = algorithmId:uint32_t, type:uint32_t, namedCurve:uint32_t
+    //                 If subtag=AesKeyTag:
+    //                     props = keyLengthBytes:uint32_t, algorithmId:uint32_t
+    //                 If subtag=HmacKeyTag:
+    //                     props = keyLengthBytes:uint32_t, hashId:uint32_t
+    //                 If subtag=RsaHashedKeyTag:
+    //                     props = algorithmId:uint32_t, type:uint32_t, modulusLengthBits:uint32_t, publicExponentLength:uint32_t, publicExponent:byte[publicExponentLength], hashId:uint32_t
+    //                 If subtag=EcKeyTag:
+    //                     props = algorithmId:uint32_t, type:uint32_t, namedCurve:uint32_t
     RTCCertificateTag = 'k', // length:uint32_t, pemPrivateKey:WebCoreString, pemCertificate:WebCoreString
     ObjectReferenceTag = '^', // ref:uint32_t -> reference table[ref]
     GenerateFreshObjectTag = 'o', // -> empty object allocated an object ID and pushed onto the open stack (ref)
@@ -85,10 +86,10 @@ enum SerializationTag {
     FalseObjectTag = 'x', // new Boolean(false) (ref)
     CompositorProxyTag = 'C', // elementId:uint64_t, bitfields:uint32_t -> CompositorProxy (ref)
     MapTag = ':', // length:uint32_t -> pops the last object from the open stack (it will be a Map);
-        //                              fills it with the last length elements pushed onto the deserialization stack, treating them as key/value pairs and passing them to Map::Set;
-        //                              length must be an even number.
+    //                              fills it with the last length elements pushed onto the deserialization stack, treating them as key/value pairs and passing them to Map::Set;
+    //                              length must be an even number.
     SetTag = ',', // length:uint32_t -> pops the last object from the open stack (it will be a Set);
-        //                              fills it with the last length elements pushed onto the deserialization stack, using Set::Add
+    //                              fills it with the last length elements pushed onto the deserialization stack, using Set::Add
     GenerateFreshMapTag = ';', // -> empty Map allocated an object ID and pushed onto the open stack (ref)
     GenerateFreshSetTag = '\'', // -> empty Set allocated an object ID and pushed onto the open stack (ref)
     VersionTag = 0xFF // version:uint32_t -> Uses this as the file version.
