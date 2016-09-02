@@ -279,7 +279,7 @@ class TestUploadDataProvider extends UploadDataProvider {
     }
 
     public void assertClosed() {
-        mAwaitingClose.block();
+        mAwaitingClose.block(5000);
         if (!mClosed.get()) {
             throw new AssertionError("Was not closed");
         }

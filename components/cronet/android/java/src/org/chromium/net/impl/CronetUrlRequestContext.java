@@ -61,7 +61,15 @@ public class CronetUrlRequestContext extends CronetEngine {
     private final ConditionVariable mInitCompleted = new ConditionVariable(false);
     private final AtomicInteger mActiveRequestCount = new AtomicInteger(0);
 
+    @GuardedBy("mLock")
     private long mUrlRequestContextAdapter = 0;
+    /**
+     * This field is accessed without synchronization, but only for the purposes of reference
+     * equality comparison with other threads. If such a comparison is performed on the network
+     * thread, then there is a happens-before edge between the write of this field and the
+     * subsequent read; if it's performed on another thread, then observing a value of null won't
+     * change the result of the comparison.
+     */
     private Thread mNetworkThread;
 
     private boolean mNetworkQualityEstimatorEnabled;
@@ -182,7 +190,7 @@ public class CronetUrlRequestContext extends CronetEngine {
     @Override
     public UrlRequest createRequest(String url, UrlRequest.Callback callback, Executor executor,
             int priority, Collection<Object> requestAnnotations, boolean disableCache,
-            boolean disableConnectionMigration) {
+            boolean disableConnectionMigration, boolean allowDirectExecutor) {
         synchronized (mLock) {
             checkHaveAdapter();
             boolean metricsCollectionEnabled = false;
@@ -190,7 +198,8 @@ public class CronetUrlRequestContext extends CronetEngine {
                 metricsCollectionEnabled = !mFinishedListenerList.isEmpty();
             }
             return new CronetUrlRequest(this, url, priority, callback, executor, requestAnnotations,
-                    metricsCollectionEnabled, disableCache, disableConnectionMigration);
+                    metricsCollectionEnabled, disableCache, disableConnectionMigration,
+                    allowDirectExecutor);
         }
     }
 
@@ -320,7 +329,9 @@ public class CronetUrlRequestContext extends CronetEngine {
             throw new IllegalStateException("Network quality estimator must be enabled");
         }
         synchronized (mNetworkQualityLock) {
-            checkHaveAdapter();
+            synchronized (mLock) {
+                checkHaveAdapter();
+            }
             return mEffectiveConnectionType;
         }
     }
@@ -463,12 +474,14 @@ public class CronetUrlRequestContext extends CronetEngine {
         }
     }
 
+    @GuardedBy("mLock")
     private void checkHaveAdapter() throws IllegalStateException {
         if (!haveRequestContextAdapter()) {
             throw new IllegalStateException("Engine is shut down.");
         }
     }
 
+    @GuardedBy("mLock")
     private boolean haveRequestContextAdapter() {
         return mUrlRequestContextAdapter != 0;
     }
@@ -492,10 +505,8 @@ public class CronetUrlRequestContext extends CronetEngine {
     @SuppressWarnings("unused")
     @CalledByNative
     private void initNetworkThread() {
-        synchronized (mLock) {
-            mNetworkThread = Thread.currentThread();
-            mInitCompleted.open();
-        }
+        mNetworkThread = Thread.currentThread();
+        mInitCompleted.open();
         Thread.currentThread().setName("ChromiumNet");
         Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
     }
@@ -626,4 +637,8 @@ public class CronetUrlRequestContext extends CronetEngine {
 
     @NativeClassQualifiedName("CronetURLRequestContextAdapter")
     private native void nativeProvideThroughputObservations(long nativePtr, boolean should);
+
+    public boolean isNetworkThread(Thread thread) {
+        return thread == mNetworkThread;
+    }
 }

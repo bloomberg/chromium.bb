@@ -136,7 +136,6 @@ void CronetURLRequestAdapter::GetStatus(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller,
     const JavaParamRef<jobject>& jstatus_listener) const {
-  DCHECK(!context_->IsOnNetworkThread());
   base::android::ScopedJavaGlobalRef<jobject> status_listener_ref;
   status_listener_ref.Reset(env, jstatus_listener);
   context_->PostTaskToNetworkThread(
@@ -147,7 +146,6 @@ void CronetURLRequestAdapter::GetStatus(
 void CronetURLRequestAdapter::FollowDeferredRedirect(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller) {
-  DCHECK(!context_->IsOnNetworkThread());
   context_->PostTaskToNetworkThread(
       FROM_HERE,
       base::Bind(
@@ -161,7 +159,6 @@ jboolean CronetURLRequestAdapter::ReadData(
     const JavaParamRef<jobject>& jbyte_buffer,
     jint jposition,
     jint jlimit) {
-  DCHECK(!context_->IsOnNetworkThread());
   DCHECK_LT(jposition, jlimit);
 
   void* data = env->GetDirectBufferAddress(jbyte_buffer);

@@ -290,6 +290,7 @@ android_library("cronet_api") {
     "api/src/org/chromium/net/HttpUrlRequest.java",
     "api/src/org/chromium/net/HttpUrlRequestFactory.java",
     "api/src/org/chromium/net/HttpUrlRequestListener.java",
+    "api/src/org/chromium/net/InlineExecutionProhibitedException.java",
     "api/src/org/chromium/net/InputStreamChannel.java",
     "api/src/org/chromium/net/JavaCronetEngine.java",
     "api/src/org/chromium/net/JavaUrlRequest.java",

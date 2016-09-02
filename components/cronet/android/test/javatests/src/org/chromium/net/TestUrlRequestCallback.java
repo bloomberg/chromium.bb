@@ -49,6 +49,9 @@ class TestUrlRequestCallback extends UrlRequest.Callback {
     // Whether an exception is thrown by maybeThrowCancelOrPause().
     private boolean mListenerExceptionThrown;
 
+    // Whether to permit calls on the network thread.
+    private boolean mAllowDirectExecutor = false;
+
     // Conditionally fail on certain steps.
     private FailureType mFailureType = FailureType.NONE;
     private ResponseStep mFailureStep = ResponseStep.NOTHING;
@@ -113,6 +116,10 @@ class TestUrlRequestCallback extends UrlRequest.Callback {
         mAutoAdvance = autoAdvance;
     }
 
+    public void setAllowDirectExecutor(boolean allowed) {
+        mAllowDirectExecutor = allowed;
+    }
+
     public void setFailure(FailureType failureType, ResponseStep failureStep) {
         mFailureStep = failureStep;
         mFailureType = failureType;
@@ -153,7 +160,7 @@ class TestUrlRequestCallback extends UrlRequest.Callback {
     @Override
     public void onRedirectReceived(
             UrlRequest request, UrlResponseInfo info, String newLocationUrl) {
-        assertEquals(mExecutorThread, Thread.currentThread());
+        checkExecutorThread();
         assertFalse(request.isDone());
         assertTrue(mResponseStep == ResponseStep.NOTHING
                 || mResponseStep == ResponseStep.ON_RECEIVED_REDIRECT);
@@ -171,7 +178,7 @@ class TestUrlRequestCallback extends UrlRequest.Callback {
 
     @Override
     public void onResponseStarted(UrlRequest request, UrlResponseInfo info) {
-        assertEquals(mExecutorThread, Thread.currentThread());
+        checkExecutorThread();
         assertFalse(request.isDone());
         assertTrue(mResponseStep == ResponseStep.NOTHING
                 || mResponseStep == ResponseStep.ON_RECEIVED_REDIRECT);
@@ -187,7 +194,7 @@ class TestUrlRequestCallback extends UrlRequest.Callback {
 
     @Override
     public void onReadCompleted(UrlRequest request, UrlResponseInfo info, ByteBuffer byteBuffer) {
-        assertEquals(mExecutorThread, Thread.currentThread());
+        checkExecutorThread();
         assertFalse(request.isDone());
         assertTrue(mResponseStep == ResponseStep.ON_RESPONSE_STARTED
                 || mResponseStep == ResponseStep.ON_READ_COMPLETED);
@@ -214,7 +221,7 @@ class TestUrlRequestCallback extends UrlRequest.Callback {
 
     @Override
     public void onSucceeded(UrlRequest request, UrlResponseInfo info) {
-        assertEquals(mExecutorThread, Thread.currentThread());
+        checkExecutorThread();
         assertTrue(request.isDone());
         assertTrue(mResponseStep == ResponseStep.ON_RESPONSE_STARTED
                 || mResponseStep == ResponseStep.ON_READ_COMPLETED);
@@ -230,7 +237,12 @@ class TestUrlRequestCallback extends UrlRequest.Callback {
 
     @Override
     public void onFailed(UrlRequest request, UrlResponseInfo info, UrlRequestException error) {
-        assertEquals(mExecutorThread, Thread.currentThread());
+        // If the failure is because of prohibited direct execution, the test shouldn't fail
+        // since the request already did.
+        if (error.getCause() instanceof InlineExecutionProhibitedException) {
+            mAllowDirectExecutor = true;
+        }
+        checkExecutorThread();
         assertTrue(request.isDone());
         // Shouldn't happen after success.
         assertTrue(mResponseStep != ResponseStep.ON_SUCCEEDED);
@@ -257,7 +269,7 @@ class TestUrlRequestCallback extends UrlRequest.Callback {
 
     @Override
     public void onCanceled(UrlRequest request, UrlResponseInfo info) {
-        assertEquals(mExecutorThread, Thread.currentThread());
+        checkExecutorThread();
         assertTrue(request.isDone());
         // Should happen at most once for a single request.
         assertFalse(mOnCanceledCalled);
@@ -290,12 +302,18 @@ class TestUrlRequestCallback extends UrlRequest.Callback {
         mDone.open();
     }
 
+    private void checkExecutorThread() {
+        if (!mAllowDirectExecutor) {
+            assertEquals(mExecutorThread, Thread.currentThread());
+        }
+    }
+
     /**
      * Returns {@code false} if the listener should continue to advance the
      * request.
      */
     private boolean maybeThrowCancelOrPause(final UrlRequest request) {
-        assertEquals(mExecutorThread, Thread.currentThread());
+        checkExecutorThread();
         if (mResponseStep != mFailureStep || mFailureType == FailureType.NONE) {
             if (!mAutoAdvance) {
                 mStepBlock.open();

@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -1372,6 +1373,106 @@ public class CronetUrlRequestTest extends CronetTestBase {
         assertEquals("Exception received from UploadDataProvider", callback.mError.getMessage());
         assertEquals("Async read failure", callback.mError.getCause().getMessage());
         assertEquals(null, callback.mResponseInfo);
+    }
+
+    /** This test uses a direct executor for upload, and non direct for callbacks */
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testDirectExecutorUploadProhibitedByDefault() throws Exception {
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        Executor myExecutor = new Executor() {
+
+            @Override
+            public void execute(Runnable command) {
+                command.run();
+            }
+        };
+        UrlRequest.Builder builder = new UrlRequest.Builder(NativeTestServer.getEchoBodyURL(),
+                callback, callback.getExecutor(), mTestFramework.mCronetEngine);
+
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.SYNC, myExecutor);
+        // This will never be read, but if the length is 0, read may never be
+        // called.
+        dataProvider.addRead("test".getBytes());
+        builder.setUploadDataProvider(dataProvider, myExecutor);
+        builder.addHeader("Content-Type", "useless/string");
+        builder.build().start();
+        callback.blockForDone();
+
+        assertEquals(0, dataProvider.getNumReadCalls());
+        assertEquals(0, dataProvider.getNumRewindCalls());
+
+        assertEquals("Exception received from UploadDataProvider", callback.mError.getMessage());
+        assertEquals("Inline execution is prohibited for this request",
+                callback.mError.getCause().getMessage());
+        assertEquals(null, callback.mResponseInfo);
+    }
+
+    /** This test uses a direct executor for callbacks, and non direct for upload */
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testDirectExecutorProhibitedByDefault() throws Exception {
+        System.out.println("testing with " + mTestFramework.mCronetEngine);
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        Executor myExecutor = new Executor() {
+
+            @Override
+            public void execute(Runnable command) {
+                command.run();
+            }
+        };
+        UrlRequest.Builder builder = new UrlRequest.Builder(NativeTestServer.getEchoBodyURL(),
+                callback, myExecutor, mTestFramework.mCronetEngine);
+
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.SYNC, callback.getExecutor());
+        // This will never be read, but if the length is 0, read may never be
+        // called.
+        dataProvider.addRead("test".getBytes());
+        builder.setUploadDataProvider(dataProvider, callback.getExecutor());
+        builder.addHeader("Content-Type", "useless/string");
+        builder.build().start();
+        callback.blockForDone();
+
+        assertEquals(1, dataProvider.getNumReadCalls());
+        assertEquals(0, dataProvider.getNumRewindCalls());
+
+        callback.mError.printStackTrace();
+        assertEquals("Exception posting task to executor", callback.mError.getMessage());
+        assertEquals("Inline execution is prohibited for this request",
+                callback.mError.getCause().getMessage());
+        assertEquals(null, callback.mResponseInfo);
+        dataProvider.assertClosed();
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testDirectExecutorAllowed() throws Exception {
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        callback.setAllowDirectExecutor(true);
+        Executor myExecutor = new Executor() {
+
+            @Override
+            public void execute(Runnable command) {
+                command.run();
+            }
+        };
+        UrlRequest.Builder builder = new UrlRequest.Builder(NativeTestServer.getEchoBodyURL(),
+                callback, myExecutor, mTestFramework.mCronetEngine);
+        UploadDataProvider dataProvider = UploadDataProviders.create("test".getBytes("UTF-8"));
+        builder.setUploadDataProvider(dataProvider, myExecutor);
+        builder.addHeader("Content-Type", "useless/string");
+        builder.allowDirectExecutor();
+        builder.build().start();
+        callback.blockForDone();
+
+        if (callback.mOnErrorCalled) {
+            throw callback.mError;
+        }
+
+        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
+        assertEquals("test", callback.mResponseAsString);
     }
 
     @SmallTest

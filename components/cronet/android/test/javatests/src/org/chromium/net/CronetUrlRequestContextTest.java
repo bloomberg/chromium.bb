@@ -32,6 +32,7 @@ import java.util.NoSuchElementException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Test CronetEngine.
@@ -746,6 +747,62 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         assertFalse(netLogDir1.exists());
         FileUtils.recursivelyDeleteFile(netLogDir2);
         assertFalse(netLogDir2.exists());
+    }
+    @SmallTest
+    @Feature({"Cronet"})
+    @OnlyRunNativeCronet
+    // Tests that if CronetEngine is shut down on the network thread, an appropriate exception
+    // is thrown.
+    public void testShutDownEngineOnNetworkThread() throws Exception {
+        final CronetTestFramework testFramework =
+                startCronetTestFrameworkWithCacheEnabled(CronetEngine.Builder.HTTP_CACHE_DISK);
+        String url = NativeTestServer.getFileURL("/cacheable.txt");
+        // Make a request to a cacheable resource.
+        checkRequestCaching(testFramework.mCronetEngine, url, false);
+
+        final AtomicReference<Throwable> thrown = new AtomicReference<>();
+        // Shut down the server.
+        NativeTestServer.shutdownNativeTestServer();
+        class CancelUrlRequestCallback extends TestUrlRequestCallback {
+            @Override
+            public void onResponseStarted(UrlRequest request, UrlResponseInfo info) {
+                super.onResponseStarted(request, info);
+                request.cancel();
+                // Shut down CronetEngine immediately after request is destroyed.
+                try {
+                    testFramework.mCronetEngine.shutdown();
+                } catch (Exception e) {
+                    thrown.set(e);
+                }
+            }
+
+            @Override
+            public void onSucceeded(UrlRequest request, UrlResponseInfo info) {
+                // onSucceeded will not happen, because the request is canceled
+                // after sending first read and the executor is single threaded.
+                throw new RuntimeException("Unexpected");
+            }
+
+            @Override
+            public void onFailed(
+                    UrlRequest request, UrlResponseInfo info, UrlRequestException error) {
+                throw new RuntimeException("Unexpected");
+            }
+        }
+        Executor directExecutor = new Executor() {
+            @Override
+            public void execute(Runnable command) {
+                command.run();
+            }
+        };
+        CancelUrlRequestCallback callback = new CancelUrlRequestCallback();
+        callback.setAllowDirectExecutor(true);
+        UrlRequest.Builder urlRequestBuilder =
+                new UrlRequest.Builder(url, callback, directExecutor, testFramework.mCronetEngine);
+        urlRequestBuilder.allowDirectExecutor();
+        urlRequestBuilder.build().start();
+        callback.blockForDone();
+        assertTrue(thrown.get() instanceof RuntimeException);
     }
 
     @SmallTest

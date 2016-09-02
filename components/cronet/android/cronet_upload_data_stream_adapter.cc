@@ -81,7 +81,6 @@ void CronetUploadDataStreamAdapter::OnReadSucceeded(
     const JavaParamRef<jobject>& jcaller,
     int bytes_read,
     bool final_chunk) {
-  DCHECK(!network_task_runner_->BelongsToCurrentThread());
   DCHECK(bytes_read > 0 || (final_chunk && bytes_read == 0));
 
   buffer_ = nullptr;
@@ -93,7 +92,6 @@ void CronetUploadDataStreamAdapter::OnReadSucceeded(
 void CronetUploadDataStreamAdapter::OnRewindSucceeded(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller) {
-  DCHECK(!network_task_runner_->BelongsToCurrentThread());
 
   network_task_runner_->PostTask(
       FROM_HERE,

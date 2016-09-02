@@ -55,6 +55,7 @@ public final class CronetUploadDataStream implements UploadDataSink {
                 mInWhichUserCallback = UserCallback.READ;
             }
             try {
+                checkCallingThread();
                 mDataProvider.read(CronetUploadDataStream.this, mByteBuffer);
             } catch (Exception exception) {
                 onError(exception);
@@ -130,6 +131,7 @@ public final class CronetUploadDataStream implements UploadDataSink {
                     mInWhichUserCallback = UserCallback.REWIND;
                 }
                 try {
+                    checkCallingThread();
                     mDataProvider.rewind(CronetUploadDataStream.this);
                 } catch (Exception exception) {
                     onError(exception);
@@ -137,6 +139,12 @@ public final class CronetUploadDataStream implements UploadDataSink {
             }
         };
         postTaskToExecutor(task);
+    }
+
+    private void checkCallingThread() {
+        if (mRequest != null) {
+            mRequest.checkCallingThread();
+        }
     }
 
     @GuardedBy("mLock")
@@ -163,14 +171,26 @@ public final class CronetUploadDataStream implements UploadDataSink {
      * states and propagates the error to the request.
      */
     private void onError(Throwable exception) {
+        final boolean sendClose;
         synchronized (mLock) {
             if (mInWhichUserCallback == UserCallback.NOT_IN_CALLBACK) {
                 throw new IllegalStateException(
                         "There is no read or rewind or length check in progress.");
             }
+            sendClose = mInWhichUserCallback == UserCallback.GET_LENGTH;
             mInWhichUserCallback = UserCallback.NOT_IN_CALLBACK;
             mByteBuffer = null;
             destroyAdapterIfPostponed();
+        }
+        // Failure before length is obtained means that the request has failed before the
+        // adapter has been initialized. Close the UploadDataProvider. This is safe to call
+        // here since failure during getLength can only happen on the user's executor.
+        if (sendClose) {
+            try {
+                mDataProvider.close();
+            } catch (Exception e) {
+                Log.e(TAG, "Failure closing data provider", e);
+            }
         }
 
         // Just fail the request - simpler to fail directly, and
@@ -274,8 +294,9 @@ public final class CronetUploadDataStream implements UploadDataSink {
             @Override
             public void run() {
                 try {
+                    checkCallingThread();
                     mDataProvider.close();
-                } catch (IOException e) {
+                } catch (Exception e) {
                     Log.e(TAG, "Exception thrown when closing", e);
                 }
             }
@@ -300,8 +321,8 @@ public final class CronetUploadDataStream implements UploadDataSink {
     }
 
     /**
-     * Initializes upload length by getting it from data provider. Always called
-     * on executor thread to allow getLength() to block and/or report errors.
+     * Initializes upload length by getting it from data provider. Submits to
+     * the user's executor thread to allow getLength() to block and/or report errors.
      * If data provider throws an exception, then it is reported to the request.
      * No native calls to urlRequest are allowed as this is done before request
      * start, so native object may not exist.
@@ -312,6 +333,7 @@ public final class CronetUploadDataStream implements UploadDataSink {
             mInWhichUserCallback = UserCallback.GET_LENGTH;
         }
         try {
+            urlRequest.checkCallingThread();
             mLength = mDataProvider.getLength();
             mRemainingLength = mLength;
         } catch (Throwable t) {

@@ -13,6 +13,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNIAdditionalImport;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeClassQualifiedName;
+import org.chromium.net.InlineExecutionProhibitedException;
 import org.chromium.net.Preconditions;
 import org.chromium.net.QuicException;
 import org.chromium.net.RequestFinishedInfo;
@@ -49,6 +50,7 @@ import javax.annotation.concurrent.GuardedBy;
 public final class CronetUrlRequest implements UrlRequest {
     private static final RequestFinishedInfo.Metrics EMPTY_METRICS =
             new RequestFinishedInfo.Metrics(null, null, null, null);
+    private final boolean mAllowDirectExecutor;
 
     /* Native adapter object, owned by UrlRequest. */
     @GuardedBy("mUrlRequestAdapterLock")
@@ -109,6 +111,7 @@ public final class CronetUrlRequest implements UrlRequest {
 
         @Override
         public void run() {
+            checkCallingThread();
             // Null out mByteBuffer, to pass buffer ownership to callback or release if done.
             ByteBuffer buffer = mByteBuffer;
             mByteBuffer = null;
@@ -130,7 +133,7 @@ public final class CronetUrlRequest implements UrlRequest {
     CronetUrlRequest(CronetUrlRequestContext requestContext, String url, int priority,
             UrlRequest.Callback callback, Executor executor, Collection<Object> requestAnnotations,
             boolean metricsCollectionEnabled, boolean disableCache,
-            boolean disableConnectionMigration) {
+            boolean disableConnectionMigration, boolean allowDirectExecutor) {
         if (url == null) {
             throw new NullPointerException("URL is required");
         }
@@ -144,6 +147,7 @@ public final class CronetUrlRequest implements UrlRequest {
             throw new NullPointerException("requestAnnotations is required");
         }
 
+        mAllowDirectExecutor = allowDirectExecutor;
         mRequestContext = requestContext;
         mInitialUrl = url;
         mUrlChain.add(url);
@@ -367,9 +371,15 @@ public final class CronetUrlRequest implements UrlRequest {
         } catch (RejectedExecutionException failException) {
             Log.e(CronetUrlRequestContext.LOG_TAG, "Exception posting task to executor",
                     failException);
-            // If posting a task throws an exception, then there is no choice
-            // but to destroy the request without invoking the callback.
-            destroyRequestAdapter(false);
+            // If posting a task throws an exception, then we fail the request. This exception could
+            // be permanent (executor shutdown), transient (AbortPolicy, or CallerRunsPolicy with
+            // direct execution not permitted), or caused by the runnables we submit if
+            // mUserExecutor is a direct executor and direct execution is not permitted. In the
+            // latter two cases, there is at least have a chance to inform the embedder of the
+            // request's failure, since failWithException does not enforce that onFailed() is not
+            // executed inline.
+            failWithException(
+                    new UrlRequestException("Exception posting task to executor", failException));
         }
     }
 
@@ -437,19 +447,7 @@ public final class CronetUrlRequest implements UrlRequest {
         UrlRequestException requestError =
                 new UrlRequestException("Exception received from UrlRequest.Callback", e);
         Log.e(CronetUrlRequestContext.LOG_TAG, "Exception in CalledByNative method", e);
-        // Do not call into listener if request is finished.
-        synchronized (mUrlRequestAdapterLock) {
-            if (isDoneLocked()) {
-                return;
-            }
-            destroyRequestAdapter(false);
-        }
-        try {
-            mCallback.onFailed(this, mResponseInfo, requestError);
-        } catch (Exception failException) {
-            Log.e(CronetUrlRequestContext.LOG_TAG, "Exception notifying of failed request",
-                    failException);
-        }
+        failWithException(requestError);
     }
 
     /**
@@ -466,23 +464,27 @@ public final class CronetUrlRequest implements UrlRequest {
      * Fails the request with an exception. Can be called on any thread.
      */
     private void failWithException(final UrlRequestException exception) {
+        synchronized (mUrlRequestAdapterLock) {
+            if (isDoneLocked()) {
+                return;
+            }
+            destroyRequestAdapter(false);
+        }
         Runnable task = new Runnable() {
             @Override
             public void run() {
-                synchronized (mUrlRequestAdapterLock) {
-                    if (isDoneLocked()) {
-                        return;
-                    }
-                    destroyRequestAdapter(false);
-                }
                 try {
                     mCallback.onFailed(CronetUrlRequest.this, mResponseInfo, exception);
                 } catch (Exception e) {
-                    Log.e(CronetUrlRequestContext.LOG_TAG, "Exception in onError method", e);
+                    Log.e(CronetUrlRequestContext.LOG_TAG, "Exception in onFailed method", e);
                 }
             }
         };
-        postTaskToExecutor(task);
+        try {
+            mExecutor.execute(task);
+        } catch (RejectedExecutionException e) {
+            Log.e(CronetUrlRequestContext.LOG_TAG, "Exception posting task to executor", e);
+        }
     }
 
     ////////////////////////////////////////////////
@@ -517,6 +519,7 @@ public final class CronetUrlRequest implements UrlRequest {
         Runnable task = new Runnable() {
             @Override
             public void run() {
+                checkCallingThread();
                 synchronized (mUrlRequestAdapterLock) {
                     if (isDoneLocked()) {
                         return;
@@ -547,6 +550,7 @@ public final class CronetUrlRequest implements UrlRequest {
         Runnable task = new Runnable() {
             @Override
             public void run() {
+                checkCallingThread();
                 synchronized (mUrlRequestAdapterLock) {
                     if (isDoneLocked()) {
                         return;
@@ -733,6 +737,13 @@ public final class CronetUrlRequest implements UrlRequest {
             if (mRequestStartTime != null && mTtfbMs == null) {
                 mTtfbMs = SystemClock.elapsedRealtime() - mRequestStartTime;
             }
+        }
+    }
+
+    /** Enforces prohibition of direct execution. */
+    void checkCallingThread() {
+        if (!mAllowDirectExecutor && mRequestContext.isNetworkThread(Thread.currentThread())) {
+            throw new InlineExecutionProhibitedException();
         }
     }
 

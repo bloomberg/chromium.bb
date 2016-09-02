@@ -56,6 +56,7 @@ final class JavaUrlRequest implements UrlRequest {
      * exception), or cancellation.
      */
     private final AtomicReference<State> mState = new AtomicReference<>(State.NOT_STARTED);
+    private final AtomicBoolean mUploadProviderClosed = new AtomicBoolean(false);
 
     /**
      * Traffic stats tag to associate this requests' data use with. It's captured when the request
@@ -63,12 +64,12 @@ final class JavaUrlRequest implements UrlRequest {
      * that data use.
      */
     private final int mTrafficStatsTag;
+    private final boolean mAllowDirectExecutor;
 
     /* These don't change with redirects */
     private String mInitialMethod;
     private UploadDataProvider mUploadDataProvider;
     private Executor mUploadExecutor;
-    private AtomicBoolean mUploadProviderClosed = new AtomicBoolean(false);
 
     /**
      * Holds a subset of StatusValues - {@link State#STARTED} can represent
@@ -120,7 +121,7 @@ final class JavaUrlRequest implements UrlRequest {
      * @param userExecutor The executor used to dispatch to {@code callback}
      */
     JavaUrlRequest(Callback callback, final Executor executor, Executor userExecutor, String url,
-            String userAgent) {
+            String userAgent, boolean allowDirectExecutor) {
         if (url == null) {
             throw new NullPointerException("URL is required");
         }
@@ -133,6 +134,8 @@ final class JavaUrlRequest implements UrlRequest {
         if (userExecutor == null) {
             throw new NullPointerException("userExecutor is required");
         }
+
+        this.mAllowDirectExecutor = allowDirectExecutor;
         this.mCallbackAsync = new AsyncUrlRequestCallback(callback, userExecutor);
         this.mTrafficStatsTag = TrafficStats.getThreadStatsTag();
         this.mExecutor = new Executor() {
@@ -237,7 +240,11 @@ final class JavaUrlRequest implements UrlRequest {
             mInitialMethod = "POST";
         }
         this.mUploadDataProvider = uploadDataProvider;
-        this.mUploadExecutor = executor;
+        if (mAllowDirectExecutor) {
+            this.mUploadExecutor = executor;
+        } else {
+            this.mUploadExecutor = new DirectPreventingExecutor(executor);
+        }
     }
 
     private enum SinkState {
@@ -249,7 +256,7 @@ final class JavaUrlRequest implements UrlRequest {
 
     private final class OutputStreamDataSink implements UploadDataSink {
         final AtomicReference<SinkState> mSinkState = new AtomicReference<>(SinkState.NOT_STARTED);
-        final Executor mUserExecutor;
+        final Executor mUserUploadExecutor;
         final Executor mExecutor;
         final HttpURLConnection mUrlConnection;
         WritableByteChannel mOutputChannel;
@@ -262,7 +269,7 @@ final class JavaUrlRequest implements UrlRequest {
 
         OutputStreamDataSink(final Executor userExecutor, Executor executor,
                 HttpURLConnection urlConnection, UploadDataProvider provider) {
-            this.mUserExecutor = new Executor() {
+            this.mUserUploadExecutor = new Executor() {
                 @Override
                 public void execute(Runnable runnable) {
                     try {
@@ -299,12 +306,12 @@ final class JavaUrlRequest implements UrlRequest {
                     if (mWrittenBytes < mTotalBytes || (mTotalBytes == -1 && !finalChunk)) {
                         mBuffer.clear();
                         mSinkState.set(SinkState.AWAITING_READ_RESULT);
-                        mUserExecutor.execute(uploadErrorSetting(new CheckedRunnable() {
+                        executeOnUploadExecutor(new CheckedRunnable() {
                             @Override
                             public void run() throws Exception {
                                 mUploadProvider.read(OutputStreamDataSink.this, mBuffer);
                             }
-                        }));
+                        });
                     } else if (mTotalBytes == -1) {
                         finish();
                     } else if (mTotalBytes == mWrittenBytes) {
@@ -347,14 +354,22 @@ final class JavaUrlRequest implements UrlRequest {
                         mOutputChannel = Channels.newChannel(mUrlConnection.getOutputStream());
                     }
                     mSinkState.set(SinkState.AWAITING_READ_RESULT);
-                    mUserExecutor.execute(uploadErrorSetting(new CheckedRunnable() {
+                    executeOnUploadExecutor(new CheckedRunnable() {
                         @Override
                         public void run() throws Exception {
                             mUploadProvider.read(OutputStreamDataSink.this, mBuffer);
                         }
-                    }));
+                    });
                 }
             }));
+        }
+
+        private void executeOnUploadExecutor(CheckedRunnable runnable) {
+            try {
+                mUserUploadExecutor.execute(uploadErrorSetting(runnable));
+            } catch (RejectedExecutionException e) {
+                enterUploadErrorState(e);
+            }
         }
 
         void finish() throws IOException {
@@ -365,7 +380,7 @@ final class JavaUrlRequest implements UrlRequest {
         }
 
         void start(final boolean firstTime) {
-            mUserExecutor.execute(uploadErrorSetting(new CheckedRunnable() {
+            executeOnUploadExecutor(new CheckedRunnable() {
                 @Override
                 public void run() throws Exception {
                     mTotalBytes = mUploadProvider.getLength();
@@ -401,7 +416,7 @@ final class JavaUrlRequest implements UrlRequest {
                         }
                     }
                 }
-            }));
+            });
         }
     }
 
@@ -744,10 +759,17 @@ final class JavaUrlRequest implements UrlRequest {
     private final class AsyncUrlRequestCallback {
         final UrlRequest.Callback mCallback;
         final Executor mUserExecutor;
+        final Executor mFallbackExecutor;
 
         AsyncUrlRequestCallback(Callback callback, final Executor userExecutor) {
             this.mCallback = callback;
-            this.mUserExecutor = userExecutor;
+            if (mAllowDirectExecutor) {
+                this.mUserExecutor = userExecutor;
+                this.mFallbackExecutor = null;
+            } else {
+                mUserExecutor = new DirectPreventingExecutor(userExecutor);
+                mFallbackExecutor = userExecutor;
+            }
         }
 
         void sendStatus(final StatusListener listener, final int status) {
@@ -763,7 +785,8 @@ final class JavaUrlRequest implements UrlRequest {
             try {
                 mUserExecutor.execute(userErrorSetting(currentState, runnable));
             } catch (RejectedExecutionException e) {
-                enterUserErrorState(currentState, e);
+                enterErrorState(currentState,
+                        new UrlRequestException("Exception posting task to executor", e));
             }
         }
 
@@ -777,25 +800,25 @@ final class JavaUrlRequest implements UrlRequest {
         }
 
         void onResponseStarted(UrlResponseInfo info) {
-            execute(State.AWAITING_READ, new CheckedRunnable() {
-                @Override
-                public void run() throws Exception {
-                    if (mState.compareAndSet(State.STARTED, State.AWAITING_READ)) {
+            if (mState.compareAndSet(State.STARTED, State.AWAITING_READ)) {
+                execute(State.AWAITING_READ, new CheckedRunnable() {
+                    @Override
+                    public void run() throws Exception {
                         mCallback.onResponseStarted(JavaUrlRequest.this, mUrlResponseInfo);
                     }
-                }
-            });
+                });
+            }
         }
 
         void onReadCompleted(final UrlResponseInfo info, final ByteBuffer byteBuffer) {
-            execute(State.AWAITING_READ, new CheckedRunnable() {
-                @Override
-                public void run() throws Exception {
-                    if (mState.compareAndSet(State.READING, State.AWAITING_READ)) {
+            if (mState.compareAndSet(State.READING, State.AWAITING_READ)) {
+                execute(State.AWAITING_READ, new CheckedRunnable() {
+                    @Override
+                    public void run() throws Exception {
                         mCallback.onReadCompleted(JavaUrlRequest.this, info, byteBuffer);
                     }
-                }
-            });
+                });
+            }
         }
 
         void onCanceled(final UrlResponseInfo info) {
@@ -827,7 +850,7 @@ final class JavaUrlRequest implements UrlRequest {
 
         void onFailed(final UrlResponseInfo urlResponseInfo, final UrlRequestException e) {
             closeResponseChannel();
-            mUserExecutor.execute(new Runnable() {
+            Runnable runnable = new Runnable() {
                 @Override
                 public void run() {
                     try {
@@ -836,7 +859,14 @@ final class JavaUrlRequest implements UrlRequest {
                         Log.e(TAG, "Exception in onFailed method", exception);
                     }
                 }
-            });
+            };
+            try {
+                mUserExecutor.execute(runnable);
+            } catch (InlineExecutionProhibitedException wasDirect) {
+                if (mFallbackExecutor != null) {
+                    mFallbackExecutor.execute(runnable);
+                }
+            }
         }
     }
 
@@ -856,5 +886,55 @@ final class JavaUrlRequest implements UrlRequest {
                 }
             }
         });
+    }
+
+    /**
+     * Executor that detects and throws if its mDelegate runs a submitted runnable inline.
+     */
+    static final class DirectPreventingExecutor implements Executor {
+        private final Executor mDelegate;
+
+        DirectPreventingExecutor(Executor delegate) {
+            this.mDelegate = delegate;
+        }
+
+        @Override
+        public void execute(Runnable command) {
+            Thread currentThread = Thread.currentThread();
+            InlineCheckingRunnable runnable = new InlineCheckingRunnable(command, currentThread);
+            mDelegate.execute(runnable);
+            if (runnable.mExecutedInline != null) {
+                throw runnable.mExecutedInline;
+            } else {
+                // It's possible that this method is being called on an executor, and the runnable
+                // that
+                // was just queued will run on this thread after the current runnable returns. By
+                // nulling out the mCallingThread field, the InlineCheckingRunnable's current thread
+                // comparison will not fire.
+                runnable.mCallingThread = null;
+            }
+        }
+
+        private static final class InlineCheckingRunnable implements Runnable {
+            private final Runnable mCommand;
+            private Thread mCallingThread;
+            private InlineExecutionProhibitedException mExecutedInline = null;
+
+            private InlineCheckingRunnable(Runnable command, Thread callingThread) {
+                this.mCommand = command;
+                this.mCallingThread = callingThread;
+            }
+
+            @Override
+            public void run() {
+                if (Thread.currentThread() == mCallingThread) {
+                    // Can't throw directly from here, since the delegate executor could catch this
+                    // exception.
+                    mExecutedInline = new InlineExecutionProhibitedException();
+                    return;
+                }
+                mCommand.run();
+            }
+        }
     }
 }
