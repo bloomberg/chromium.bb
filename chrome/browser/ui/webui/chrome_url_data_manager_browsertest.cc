@@ -117,5 +117,5 @@ IN_PROC_BROWSER_TEST_F(ChromeURLDataManagerTest, LargeResourceScale) {
   observer.Reset();
   ui_test_utils::NavigateToURL(
       browser(), GURL("chrome://theme/IDR_SETTINGS_FAVICON@99999x"));
-  EXPECT_EQ(NavigationObserver::SUCCESS, observer.navigation_result());
+  EXPECT_EQ(NavigationObserver::ERROR_PAGE, observer.navigation_result());
 }

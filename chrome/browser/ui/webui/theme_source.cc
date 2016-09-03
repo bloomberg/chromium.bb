@@ -92,7 +92,6 @@ void ThemeSource::StartDataRequest(
   float scale = 1.0f;
   std::string parsed_path;
   webui::ParsePathAndScale(GetThemeUrl(path), &parsed_path, &scale);
-  scale = ui::GetScaleForScaleFactor(ui::GetSupportedScaleFactor(scale));
 
   if (IsNewTabCssPath(parsed_path)) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -131,13 +130,20 @@ void ThemeSource::StartDataRequest(
     resource_id = ResourcesUtil::GetThemeResourceId(parsed_path);
   }
 
+  // Limit the maximum scale we'll respond to.  Very large scale factors can
+  // take significant time to serve or, at worst, crash the browser due to OOM.
+  // We don't want to clamp to the max scale factor, though, for devices that
+  // use 2x scale without 2x data packs, as well as omnibox requests for larger
+  // (but still reasonable) scales (see below).
   const float max_scale = ui::GetScaleForScaleFactor(
       ResourceBundle::GetSharedInstance().GetMaxScaleFactor());
-  if (resource_id == -1) {
-    // We have no data to send back.  This shouldn't happen normally, as
-    // chrome://theme/ URLs are only used by WebUI pages and component
-    // extensions.  However, the user can also enter these into the omnibox, so
-    // we need to fail gracefully.
+  const float unreasonable_scale = max_scale * 32;
+  if ((resource_id == -1) || (scale >= unreasonable_scale)) {
+    // Either we have no data to send back, or the requested scale is
+    // unreasonably large.  This shouldn't happen normally, as chrome://theme/
+    // URLs are only used by WebUI pages and component extensions.  However, the
+    // user can also enter these into the omnibox, so we need to fail
+    // gracefully.
     callback.Run(nullptr);
   } else if ((GetMimeType(path) == "image/png") && (scale > max_scale)) {
     SendThemeImage(callback, resource_id, scale);
