@@ -2,6 +2,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/html/promise_resolver.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="/about_page/about_page.html">
 <link rel="import" href="/advanced_page/advanced_page.html">
 <link rel="import" href="/basic_page/basic_page.html">
@@ -13,6 +14,9 @@
   <template>
     <style>
       #advancedToggle {
+        --paper-button: {
+          text-transform: none;
+        }
         @apply(--settings-actionable);
         align-items: center;
         display: flex;
@@ -69,10 +73,10 @@
           showPages_.basic, hasExpandedSection_, previousShowPages_)]]">
         <div id="toggleSpacer"></div>
         <div id="toggleContainer">
-          <div id="advancedToggle" on-tap="toggleAdvancedPage_">
+          <paper-button id="advancedToggle" on-tap="toggleAdvancedPage_">
             <span>$i18n{advancedPageTitle}</span>
             <iron-icon icon="[[arrowState_(showPages_.advanced)]]"></iron-icon>
-          </div>
+          </paper-button>
         </div>
       </template>
       <template is="dom-if" if="[[showPages_.advanced]]">
