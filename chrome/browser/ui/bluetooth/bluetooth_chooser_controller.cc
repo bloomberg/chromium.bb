@@ -239,6 +239,7 @@ void BluetoothChooserController::RemoveDevice(const std::string& device_id) {
                    });
 
   if (device_it != devices_.end()) {
+    size_t index = device_it - devices_.begin();
     devices_.erase(device_it);
 
     const auto& it = device_name_counts_.find(name_it->second);
@@ -251,7 +252,7 @@ void BluetoothChooserController::RemoveDevice(const std::string& device_id) {
     device_id_to_name_map_.erase(name_it);
 
     if (view())
-      view()->OnOptionRemoved(device_it - devices_.begin());
+      view()->OnOptionRemoved(index);
   }
 }
 

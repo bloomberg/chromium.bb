@@ -379,6 +379,7 @@
       'browser/renderer_context_menu/render_view_context_menu_test_util.h',
       'browser/ui/autofill/country_combobox_model_unittest.cc',
       'browser/ui/autofill/save_card_bubble_controller_impl_unittest.cc',
+      'browser/ui/bluetooth/bluetooth_chooser_controller_unittest.cc',
       'browser/ui/passwords/manage_passwords_ui_controller_unittest.cc',
     ],
     'chrome_unit_tests_spellchecker_sources': [
