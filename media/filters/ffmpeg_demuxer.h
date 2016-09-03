@@ -356,6 +356,8 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   std::map<MediaTrack::Id, DemuxerStream*> track_id_to_demux_stream_map_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
+  base::WeakPtr<FFmpegDemuxer> weak_this_;
+  base::WeakPtrFactory<FFmpegDemuxer> cancel_pending_seek_factory_;
   base::WeakPtrFactory<FFmpegDemuxer> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FFmpegDemuxer);

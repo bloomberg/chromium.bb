@@ -838,6 +838,7 @@ FFmpegDemuxer::FFmpegDemuxer(
       duration_known_(false),
       encrypted_media_init_data_cb_(encrypted_media_init_data_cb),
       media_tracks_updated_cb_(media_tracks_updated_cb),
+      cancel_pending_seek_factory_(this),
       weak_factory_(this) {
   DCHECK(task_runner_.get());
   DCHECK(data_source_);
@@ -860,6 +861,7 @@ void FFmpegDemuxer::Initialize(DemuxerHost* host,
   DCHECK(task_runner_->BelongsToCurrentThread());
   host_ = host;
   text_enabled_ = enable_text_tracks;
+  weak_this_ = cancel_pending_seek_factory_.GetWeakPtr();
 
   url_protocol_.reset(new BlockingUrlProtocol(
       data_source_,
@@ -946,6 +948,7 @@ void FFmpegDemuxer::Stop() {
   // Invalidate WeakPtrs on |task_runner_|, destruction may happen on another
   // thread.
   weak_factory_.InvalidateWeakPtrs();
+  cancel_pending_seek_factory_.InvalidateWeakPtrs();
 }
 
 void FFmpegDemuxer::StartWaitingForSeek(base::TimeDelta seek_time) {}
@@ -954,9 +957,9 @@ void FFmpegDemuxer::CancelPendingSeek(base::TimeDelta seek_time) {
   if (task_runner_->BelongsToCurrentThread()) {
     AbortPendingReads();
   } else {
-    task_runner_->PostTask(FROM_HERE,
-                           base::Bind(&FFmpegDemuxer::AbortPendingReads,
-                                      weak_factory_.GetWeakPtr()));
+    // Don't use GetWeakPtr() here since we are on the wrong thread.
+    task_runner_->PostTask(
+        FROM_HERE, base::Bind(&FFmpegDemuxer::AbortPendingReads, weak_this_));
   }
 }
 
