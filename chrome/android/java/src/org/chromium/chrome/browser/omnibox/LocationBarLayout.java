@@ -333,6 +333,11 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
                         return true;
                     }
                 }
+            } else if (keyCode == KeyEvent.KEYCODE_ESCAPE) {
+                if (event.getAction() == KeyEvent.ACTION_DOWN && event.getRepeatCount() == 0) {
+                    revertChanges();
+                    return true;
+                }
             }
             return false;
         }
@@ -899,11 +904,14 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         } else {
             Tab tab = mToolbarDataProvider.getTab();
             if (NativePageFactory.isNativePageUrl(tab.getUrl(), tab.isIncognito())) {
-                mUrlBar.setUrl("", null);
+                setUrlBarText("", null);
             } else {
-                mUrlBar.setUrl(
+                setUrlBarText(
                         mToolbarDataProvider.getText(), getCurrentTabUrl());
+                selectAll();
             }
+            hideSuggestions();
+            UiUtils.hideKeyboard(mUrlBar);
         }
     }
 

@@ -72,8 +72,9 @@ public class KeyboardShortcuts {
                 return true;
             case KeyEvent.KEYCODE_ESCAPE:
                 if (event.getAction() == KeyEvent.ACTION_DOWN && event.getRepeatCount() == 0) {
-                    return activity.exitFullscreenIfShowing();
+                    if (activity.exitFullscreenIfShowing()) return true;
                 }
+                break;
             case KeyEvent.KEYCODE_TV:
             case KeyEvent.KEYCODE_GUIDE:
             case KeyEvent.KEYCODE_DVR:
