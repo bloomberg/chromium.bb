@@ -259,7 +259,7 @@ vector<TestParams> GetTestParams() {
                     // Run version negotiation tests tests with no options, or
                     // all the options enabled to avoid a combinatorial
                     // explosion.
-                    if (enabled_options > 0 &&
+                    if (enabled_options > 1 &&
                         enabled_options < kMaxEnabledOptions) {
                       continue;
                     }
@@ -498,6 +498,9 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     FLAGS_quic_buffer_packet_till_chlo = GetParam().buffer_packet_till_chlo;
     FLAGS_quic_use_cheap_stateless_rejects =
         GetParam().use_cheap_stateless_reject;
+    if (!FLAGS_quic_buffer_packet_till_chlo) {
+      FLAGS_quic_limit_num_new_sessions_per_epoll_loop = false;
+    }
     auto test_server =
         new QuicTestServer(CryptoTestUtils::ProofSourceForTesting(),
                            server_config_, server_supported_versions_);

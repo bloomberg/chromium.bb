@@ -548,8 +548,13 @@ void QuicConnection::OnVersionNegotiationPacket(
   }
 
   if (!SelectMutualVersion(packet.versions)) {
-    CloseConnection(QUIC_INVALID_VERSION, "No common version found.",
-                    ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
+    CloseConnection(
+        QUIC_INVALID_VERSION,
+        "No common version found. Supported versions: {" +
+            QuicVersionVectorToString(framer_.supported_versions()) +
+            "}, peer supported versions: {" +
+            QuicVersionVectorToString(packet.versions) + "}",
+        ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
     return;
   }
 

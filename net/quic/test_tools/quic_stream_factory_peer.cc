@@ -197,7 +197,7 @@ void QuicStreamFactoryPeer::CacheDummyServerConfig(
       crypto_config->LookupOrCreate(quic_server_id);
   QuicClock clock;
   cached->Initialize(server_config, source_address_token, certs, "", "",
-                     signature, clock.WallNow());
+                     signature, clock.WallNow(), QuicWallTime::Zero());
   DCHECK(!cached->certs().empty());
 }
 

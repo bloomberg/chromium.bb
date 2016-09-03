@@ -50,7 +50,7 @@ namespace net {
 namespace test {
 
 static const QuicConnectionId kTestConnectionId = 42;
-static const uint16_t kTestPort = 123;
+static const uint16_t kTestPort = 12345;
 static const uint32_t kInitialStreamFlowControlWindowForTest =
     1024 * 1024;  // 1 MB
 static const uint32_t kInitialSessionFlowControlWindowForTest =

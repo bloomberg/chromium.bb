@@ -90,14 +90,10 @@ QUIC_FLAG(bool, FLAGS_quic_enable_version_35, true)
 QUIC_FLAG(bool, FLAGS_quic_enable_version_36, true)
 
 // If true, enables QUIC_VERSION_36.
-QUIC_FLAG(bool, FLAGS_quic_enable_version_36_v2, false)
+QUIC_FLAG(bool, FLAGS_quic_enable_version_36_v2, true)
 
 // If true, use async codepaths to invoke ProofSource::GetProof.
 QUIC_FLAG(bool, FLAGS_enable_async_get_proof, false)
-
-// If true, neuter null encrypted packets before sending the next handshake
-// message.
-QUIC_FLAG(bool, FLAGS_quic_neuter_unencrypted_when_sending, true)
 
 // If true, QuicAlarm::Update will call a faster UpdateImpl implementation
 // instead of canceling and reregistering the alarm.
@@ -133,10 +129,10 @@ QUIC_FLAG(bool, FLAGS_quic_remove_v33_hacks, true)
 
 // If true, use the CHLO packet size, not message size when determining how
 // large a REJ can be.
-QUIC_FLAG(bool, FLAGS_quic_use_chlo_packet_size, false)
+QUIC_FLAG(bool, FLAGS_quic_use_chlo_packet_size, true)
 
 // If true, defer creation of new connection till its CHLO arrives.
-QUIC_FLAG(bool, FLAGS_quic_buffer_packet_till_chlo, false)
+QUIC_FLAG(bool, FLAGS_quic_buffer_packet_till_chlo, true)
 
 // If true, the connection will check whether it is application-limited, and
 // notify the congestion controller about it.
@@ -168,3 +164,12 @@ QUIC_FLAG(bool, FLAGS_quic_postpone_multipath_flag_validation, true)
 // the first packet sent after receiving a packet, even if the sent packet is
 // a retransmission
 QUIC_FLAG(bool, FLAGS_quic_better_last_send_for_timeout, true)
+
+// If true, send an explicit TTL in QUIC REJ messages to mitigate client clock
+// skew.
+QUIC_FLAG(bool, FLAGS_quic_send_scfg_ttl, true)
+
+// If true, only open limited number of quic sessions per epoll event. Leave the
+// rest to next event. This flag can be turned on only if
+// --quic_buffer_packet_till_chlo is true.
+QUIC_FLAG(bool, FLAGS_quic_limit_num_new_sessions_per_epoll_loop, false)

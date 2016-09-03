@@ -7,6 +7,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/strings/stringprintf.h"
 #include "net/quic/core/crypto/crypto_handshake_message.h"
 #include "net/quic/core/crypto/proof_source.h"
 #include "net/quic/core/quic_utils.h"
@@ -28,15 +29,29 @@ const QuicConnectionId kServerDesignateConnectionId = 24;
 // All four combinations of the two flags involved.
 enum FlagsMode { ENABLED, STATELESS_DISABLED, CHEAP_DISABLED, BOTH_DISABLED };
 
+const char* FlagsModeToString(FlagsMode mode) {
+  switch (mode) {
+    case ENABLED:
+      return "ENABLED";
+    case STATELESS_DISABLED:
+      return "STATELESS_DISABLED";
+    case CHEAP_DISABLED:
+      return "CHEAP_DISABLED";
+    case BOTH_DISABLED:
+      return "BOTH_DISABLED";
+  }
+}
+
 // Test various combinations of QUIC version and flag state.
 struct TestParams {
   QuicVersion version;
   FlagsMode flags;
-  friend ostream& operator<<(ostream& os, const TestParams& p) {
-    os << "{ version: " << p.version << " flags: " << p.flags << " }";
-    return os;
-  }
 };
+
+string TestParamToString(const testing::TestParamInfo<TestParams>& params) {
+  return base::StringPrintf("v%i_%s", params.param.version,
+                            FlagsModeToString(params.param.flags));
+}
 
 vector<TestParams> GetTestParams() {
   vector<TestParams> params;
@@ -131,7 +146,8 @@ class StatelessRejectorTest : public ::testing::TestWithParam<TestParams> {
 
 INSTANTIATE_TEST_CASE_P(Flags,
                         StatelessRejectorTest,
-                        ::testing::ValuesIn(GetTestParams()));
+                        ::testing::ValuesIn(GetTestParams()),
+                        TestParamToString);
 
 TEST_P(StatelessRejectorTest, InvalidChlo) {
   // clang-format off
