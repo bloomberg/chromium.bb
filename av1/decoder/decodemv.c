@@ -175,7 +175,7 @@ static TX_SIZE read_selected_tx_size(AV1_COMMON *cm, MACROBLOCKD *xd,
   FRAME_COUNTS *counts = xd->counts;
   const int ctx = get_tx_size_context(xd);
   const aom_prob *tx_probs = get_tx_probs(max_tx_size, ctx, &cm->fc->tx_probs);
-  int tx_size = aom_read(r, tx_probs[0]);
+  TX_SIZE tx_size = aom_read(r, tx_probs[0]) ? TX_8X8 : TX_4X4;
   if (tx_size != TX_4X4 && max_tx_size >= TX_16X16) {
     tx_size += aom_read(r, tx_probs[1]);
     if (tx_size != TX_8X8 && max_tx_size >= TX_32X32)
@@ -183,7 +183,7 @@ static TX_SIZE read_selected_tx_size(AV1_COMMON *cm, MACROBLOCKD *xd,
   }
 
   if (counts) ++get_tx_counts(max_tx_size, ctx, &counts->tx)[tx_size];
-  return (TX_SIZE)tx_size;
+  return tx_size;
 }
 
 static TX_SIZE read_tx_size(AV1_COMMON *cm, MACROBLOCKD *xd, int allow_select,
