@@ -769,6 +769,26 @@ int16_t *get_adapt_scan(FRAME_CONTEXT *fc, TX_SIZE tx_size, TX_TYPE tx_type) {
   }
 }
 
+int16_t *get_adapt_iscan(FRAME_CONTEXT *fc, TX_SIZE tx_size, TX_TYPE tx_type) {
+  switch (tx_size) {
+    case TX_4X4: return fc->iscan_4X4[tx_type];
+    case TX_8X8: return fc->iscan_8X8[tx_type];
+    case TX_16X16: return fc->iscan_16X16[tx_type];
+    case TX_32X32: return fc->iscan_32X32[tx_type];
+    default: assert(0); return NULL;
+  }
+}
+
+int16_t *get_adapt_nb(FRAME_CONTEXT *fc, TX_SIZE tx_size, TX_TYPE tx_type) {
+  switch (tx_size) {
+    case TX_4X4: return fc->nb_4X4[tx_type];
+    case TX_8X8: return fc->nb_8X8[tx_type];
+    case TX_16X16: return fc->nb_16X16[tx_type];
+    case TX_32X32: return fc->nb_32X32[tx_type];
+    default: assert(0); return NULL;
+  }
+}
+
 uint32_t *get_non_zero_counts(FRAME_COUNTS *counts, TX_SIZE tx_size,
                               TX_TYPE tx_type) {
   switch (tx_size) {
@@ -915,4 +935,19 @@ void update_scan_order(TX_SIZE tx_size, int16_t *sort_order, int16_t *scan,
     dfs_scan(tx1d_size, &scan_idx, coeff_idx, scan, iscan);
   }
 }
+
+void update_scan_order_facade(AV1_COMMON *cm, TX_SIZE tx_size,
+                              TX_TYPE tx_type) {
+  int16_t sort_order[1024];
+  uint32_t *non_zero_prob = get_non_zero_prob(cm->fc, tx_size, tx_type);
+  int16_t *scan = get_adapt_scan(cm->fc, tx_size, tx_type);
+  int16_t *iscan = get_adapt_iscan(cm->fc, tx_size, tx_type);
+  int16_t *nb = get_adapt_nb(cm->fc, tx_size, tx_type);
+  int tx2d_size = get_tx2d_size(tx_size);
+  assert(tx2d_size <= 1024);
+  update_sort_order(tx_size, non_zero_prob, sort_order);
+  update_scan_order(tx_size, sort_order, scan, iscan);
+  update_neighbors(tx_size, scan, iscan, nb);
+}
+
 #endif
