@@ -21,10 +21,10 @@
 void av1_iht4x4_16_add_c(const tran_low_t *input, uint8_t *dest, int stride,
                          int tx_type) {
   const transform_2d IHT_4[] = {
-    { idct4_c, idct4_c },   // DCT_DCT  = 0
-    { iadst4_c, idct4_c },  // ADST_DCT = 1
-    { idct4_c, iadst4_c },  // DCT_ADST = 2
-    { iadst4_c, iadst4_c }  // ADST_ADST = 3
+    { aom_idct4_c, aom_idct4_c },   // DCT_DCT  = 0
+    { aom_iadst4_c, aom_idct4_c },  // ADST_DCT = 1
+    { aom_idct4_c, aom_iadst4_c },  // DCT_ADST = 2
+    { aom_iadst4_c, aom_iadst4_c }  // ADST_ADST = 3
   };
 
   int i, j;
@@ -51,10 +51,10 @@ void av1_iht4x4_16_add_c(const tran_low_t *input, uint8_t *dest, int stride,
 }
 
 static const transform_2d IHT_8[] = {
-  { idct8_c, idct8_c },   // DCT_DCT  = 0
-  { iadst8_c, idct8_c },  // ADST_DCT = 1
-  { idct8_c, iadst8_c },  // DCT_ADST = 2
-  { iadst8_c, iadst8_c }  // ADST_ADST = 3
+  { aom_idct8_c, aom_idct8_c },   // DCT_DCT  = 0
+  { aom_iadst8_c, aom_idct8_c },  // ADST_DCT = 1
+  { aom_idct8_c, aom_iadst8_c },  // DCT_ADST = 2
+  { aom_iadst8_c, aom_iadst8_c }  // ADST_ADST = 3
 };
 
 void av1_iht8x8_64_add_c(const tran_low_t *input, uint8_t *dest, int stride,
@@ -84,10 +84,10 @@ void av1_iht8x8_64_add_c(const tran_low_t *input, uint8_t *dest, int stride,
 }
 
 static const transform_2d IHT_16[] = {
-  { idct16_c, idct16_c },   // DCT_DCT  = 0
-  { iadst16_c, idct16_c },  // ADST_DCT = 1
-  { idct16_c, iadst16_c },  // DCT_ADST = 2
-  { iadst16_c, iadst16_c }  // ADST_ADST = 3
+  { aom_idct16_c, aom_idct16_c },   // DCT_DCT  = 0
+  { aom_iadst16_c, aom_idct16_c },  // ADST_DCT = 1
+  { aom_idct16_c, aom_iadst16_c },  // DCT_ADST = 2
+  { aom_iadst16_c, aom_iadst16_c }  // ADST_ADST = 3
 };
 
 void av1_iht16x16_256_add_c(const tran_low_t *input, uint8_t *dest, int stride,
