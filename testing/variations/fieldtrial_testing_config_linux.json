@@ -111,14 +111,6 @@
             "group_name": "Enabled"
         }
     ],
-    "MainFrameBeforeActivation": [
-        {
-            "enable_features": [
-                "MainFrameBeforeActivation"
-            ],
-            "group_name": "Enabled"
-        }
-    ],
     "MaterialDesignDownloads": [
         {
             "group_name": "Enabled"

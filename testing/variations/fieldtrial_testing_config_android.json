@@ -198,14 +198,6 @@
             }
         }
     ],
-    "MainFrameBeforeActivation": [
-        {
-            "enable_features": [
-                "MainFrameBeforeActivation"
-            ],
-            "group_name": "Enabled"
-        }
-    ],
     "ModerateBindingOnBackgroundTabCreation": [
         {
             "group_name": "Enabled"

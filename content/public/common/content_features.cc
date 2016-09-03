@@ -49,12 +49,6 @@ const base::Feature kFeaturePolicy{"FeaturePolicy",
 const base::Feature kFontCacheScaling{"FontCacheScaling",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Can main thread be pipelined with activation. Always disabled for devices
-// with fewer than 4 cores irrespective of this flag. Can also be overridden by
-// --enable(disable)-main-frame-before-activation command line flag.
-const base::Feature kMainFrameBeforeActivation{
-    "MainFrameBeforeActivation", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // FeatureList definition for trials to enable the download button on
 // MediaDocument.
 const base::Feature kMediaDocumentDownloadButton{
