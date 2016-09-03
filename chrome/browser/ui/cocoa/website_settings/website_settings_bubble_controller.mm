@@ -58,30 +58,28 @@ using ChosenObjectDeleteCallback =
 
 namespace {
 
+/**************** General ****************/
+
 // The default width of the window, in view coordinates. It may be larger to
 // fit the content.
-const CGFloat kDefaultWindowWidth = 310;
+const CGFloat kDefaultWindowWidth = 320;
 
-// Padding between the window frame and content.
-const CGFloat kFramePadding = 20;
-
-// Padding between the window frame and content.
-const CGFloat kVerticalSectionMargin = 16;
-
-// Padding between the window frame and content for the internal page bubble.
-const CGFloat kInternalPageFramePadding = 10;
+// Padding around each section
+const CGFloat kSectionVerticalPadding = 20;
+const CGFloat kSectionHorizontalPadding = 16;
 
 // Spacing between the identity field and the security summary.
 const CGFloat kSpacingBeforeSecuritySummary = 2;
 
+/**************** Security Section ****************/
+
 // Spacing between the security summary and the reset decisions button.
 const CGFloat kSpacingBeforeResetDecisionsButton = 8;
 
+/**************** Site Settings Section ****************/
+
 // Spacing between parts of the site settings section.
 const CGFloat kSiteSettingsSectionSpacing = 2;
-
-// Spacing between the image and text for internal pages.
-const CGFloat kInternalPageImageSpacing = 10;
 
 // Square size of the permission images.
 const CGFloat kPermissionImageSize = 19;
@@ -108,6 +106,16 @@ const CGFloat kPermissionPopUpXSpacing = 3;
 // The amount of padding to *remove* when placing
 // |IDS_WEBSITE_SETTINGS_{FIRST,THIRD}_PARTY_SITE_DATA| next to each other.
 const CGFloat kTextLabelXPadding = 5;
+
+/**************** Internal Page Bubble ****************/
+
+// Padding between the window frame and content for the internal page bubble.
+const CGFloat kInternalPageFramePadding = 10;
+
+// Spacing between the image and text for internal pages.
+const CGFloat kInternalPageImageSpacing = 10;
+
+/********************************/
 
 // NOTE: This assumes that there will never be more than one website settings
 // popup shown, and that the one that is shown is associated with the current
@@ -316,7 +324,7 @@ bool IsInternalURL(const GURL& url) {
 
   // Create a controlOrigin to place the text fields. The y value doesn't
   // matter, because the correct value is calculated in -performLayout.
-  NSPoint controlOrigin = NSMakePoint(kFramePadding, 0);
+  NSPoint controlOrigin = NSMakePoint(kSectionHorizontalPadding, 0);
 
   // Create a text field (empty for now) to show the site identity.
   identityField_ = [self addText:base::string16()
@@ -460,20 +468,17 @@ bool IsInternalURL(const GURL& url) {
   [self setWidthOfView:securitySectionView_ to:contentWidth];
   [self setWidthOfView:siteSettingsSectionView_ to:contentWidth];
 
-  CGFloat yPos = info_bubble::kBubbleArrowHeight;
+  CGFloat yPos = 0;
 
   [self layoutSecuritySection];
-  yPos = [self setYPositionOfView:securitySectionView_ to:yPos + kFramePadding];
+  yPos = [self setYPositionOfView:securitySectionView_ to:yPos];
 
-  yPos = [self setYPositionOfView:separatorAfterSecuritySection_
-                               to:yPos + kVerticalSectionMargin];
+  yPos = [self setYPositionOfView:separatorAfterSecuritySection_ to:yPos];
 
   [self layoutSiteSettingsSection];
-  yPos = [self setYPositionOfView:siteSettingsSectionView_
-                               to:yPos + kVerticalSectionMargin];
+  yPos = [self setYPositionOfView:siteSettingsSectionView_ to:yPos];
 
-  [contentView_ setFrame:NSMakeRect(0, 0, NSWidth([contentView_ frame]),
-                                    yPos + kFramePadding)];
+  [contentView_ setFrame:NSMakeRect(0, 0, NSWidth([contentView_ frame]), yPos)];
 
   [self sizeAndPositionWindow];
 }
@@ -483,7 +488,8 @@ bool IsInternalURL(const GURL& url) {
   CGFloat yPos = 0;
 
   [self sizeTextFieldHeightToFit:identityField_];
-  yPos = [self setYPositionOfView:identityField_ to:yPos];
+  yPos = [self setYPositionOfView:identityField_
+                               to:yPos + kSectionVerticalPadding];
 
   [self sizeTextFieldHeightToFit:securitySummaryField_];
   yPos = [self setYPositionOfView:securitySummaryField_
@@ -504,14 +510,15 @@ bool IsInternalURL(const GURL& url) {
   }
 
   // Resize the height based on contents.
-  [self setHeightOfView:securitySectionView_ to:yPos];
+  [self setHeightOfView:securitySectionView_ to:yPos + kSectionVerticalPadding];
 }
 
 - (void)layoutSiteSettingsSection {
   // Start the layout with the first element. Margins are handled by the caller.
   CGFloat yPos = 0;
 
-  yPos = [self setYPositionOfView:cookiesView_ to:yPos];
+  yPos =
+      [self setYPositionOfView:cookiesView_ to:yPos + kSectionVerticalPadding];
 
   if (permissionsPresent_) {
     // Put the permission info just below the link button.
@@ -523,11 +530,13 @@ bool IsInternalURL(const GURL& url) {
   // TODO(lgarron): set the position of this based on RTL/LTR.
   // http://code.google.com/p/chromium/issues/detail?id=525304
   yPos += kSiteSettingsSectionSpacing;
-  [siteSettingsButton_ setFrameOrigin:NSMakePoint(kFramePadding, yPos)];
+  [siteSettingsButton_
+      setFrameOrigin:NSMakePoint(kSectionHorizontalPadding, yPos)];
   yPos = NSMaxY([siteSettingsButton_ frame]);
 
   // Resize the height based on contents.
-  [self setHeightOfView:siteSettingsSectionView_ to:yPos];
+  [self setHeightOfView:siteSettingsSectionView_
+                     to:yPos + kSectionVerticalPadding];
 }
 
 // Adjust the size of the window to match the size of the content, and position
@@ -578,7 +587,7 @@ bool IsInternalURL(const GURL& url) {
                 atPoint:(NSPoint)point {
   // Size the text to take up the full available width, with some padding.
   // The height is arbitrary as it will be adjusted later.
-  CGFloat width = NSWidth([view frame]) - point.x - kFramePadding;
+  CGFloat width = NSWidth([view frame]) - point.x - kSectionHorizontalPadding;
   NSRect frame = NSMakeRect(point.x, point.y, width, 100);
   base::scoped_nsobject<NSTextField> textField(
       [[NSTextField alloc] initWithFrame:frame]);
@@ -618,7 +627,7 @@ bool IsInternalURL(const GURL& url) {
 // Add a link button with the given text to |view|.
 - (NSButton*)addLinkButtonWithText:(NSString*)text toView:(NSView*)view {
   // Frame size is arbitrary; it will be adjusted by the layout tweaker.
-  NSRect frame = NSMakeRect(kFramePadding, 0, 100, 10);
+  NSRect frame = NSMakeRect(kSectionHorizontalPadding, 0, 100, 10);
   base::scoped_nsobject<NSButton> button(
       [[NSButton alloc] initWithFrame:frame]);
   base::scoped_nsobject<HyperlinkButtonCell> cell(
@@ -638,7 +647,7 @@ bool IsInternalURL(const GURL& url) {
 - (NSButton*)addButtonWithText:(NSString*)text toView:(NSView*)view {
   NSRect containerFrame = [view frame];
   // Frame size is arbitrary; it will be adjusted by the layout tweaker.
-  NSRect frame = NSMakeRect(kFramePadding, 0, 100, 10);
+  NSRect frame = NSMakeRect(kSectionHorizontalPadding, 0, 100, 10);
   base::scoped_nsobject<NSButton> button(
       [[NSButton alloc] initWithFrame:frame]);
 
@@ -646,7 +655,8 @@ bool IsInternalURL(const GURL& url) {
   // of the connection section minus the padding on both sides minus the
   // connection image size and spacing.
   // TODO(lgarron): handle this sizing in -performLayout.
-  CGFloat maxTitleWidth = containerFrame.size.width - kFramePadding * 2;
+  CGFloat maxTitleWidth =
+      containerFrame.size.width - kSectionHorizontalPadding * 2;
 
   base::scoped_nsobject<NSButtonCell> cell(
       [[NSButtonCell alloc] initTextCell:text]);
@@ -711,8 +721,9 @@ bool IsInternalURL(const GURL& url) {
   // Ensure the containing view is large enough to contain the button with its
   // widest possible title.
   NSRect containerFrame = [view frame];
-  containerFrame.size.width = std::max(
-      NSWidth(containerFrame), point.x + maxTitleWidth + kFramePadding);
+  containerFrame.size.width =
+      std::max(NSWidth(containerFrame),
+               point.x + maxTitleWidth + kSectionHorizontalPadding);
   [view setFrame:containerFrame];
   [view addSubview:button.get()];
   return button.get();
@@ -736,8 +747,8 @@ bool IsInternalURL(const GURL& url) {
   // Ensure the containing view is large enough to contain the button.
   NSRect containerFrame = [view frame];
   containerFrame.size.width =
-      std::max(NSWidth(containerFrame),
-               point.x + kPermissionDeleteImageSize + kFramePadding);
+      std::max(NSWidth(containerFrame), point.x + kPermissionDeleteImageSize +
+                                            kSectionHorizontalPadding);
   [view setFrame:containerFrame];
   [view addSubview:button.get()];
   return button.get();
@@ -781,7 +792,7 @@ bool IsInternalURL(const GURL& url) {
 
   if (isRTL) {
     point.x = NSWidth([view frame]) - kPermissionImageSize -
-              kPermissionImageSpacing - kFramePadding;
+              kPermissionImageSpacing - kSectionHorizontalPadding;
     imageView = [self addImageWithSize:[image size] toView:view atPoint:point];
     [imageView setImage:image];
     point.x -= kPermissionImageSpacing;
@@ -871,7 +882,7 @@ bool IsInternalURL(const GURL& url) {
 
   if (isRTL) {
     point.x = NSWidth([view frame]) - kPermissionImageSize -
-              kPermissionImageSpacing - kFramePadding;
+              kPermissionImageSpacing - kSectionHorizontalPadding;
     imageView = [self addImageWithSize:[image size] toView:view atPoint:point];
     [imageView setImage:image];
     point.x -= kPermissionImageSpacing;
@@ -973,7 +984,7 @@ bool IsInternalURL(const GURL& url) {
                base::i18n::GetStringDirection(firstPartyLabelText);
 
   [cookiesView_ setSubviews:[NSArray array]];
-  NSPoint controlOrigin = NSMakePoint(kFramePadding, 0);
+  NSPoint controlOrigin = NSMakePoint(kSectionHorizontalPadding, 0);
 
   NSTextField* label;
 
@@ -987,7 +998,8 @@ bool IsInternalURL(const GURL& url) {
   [header sizeToFit];
 
   if (isRTL) {
-    controlOrigin.x = viewWidth - kFramePadding - NSWidth([header frame]);
+    controlOrigin.x =
+        viewWidth - kSectionHorizontalPadding - NSWidth([header frame]);
     [header setFrameOrigin:controlOrigin];
   }
   controlOrigin.y += NSHeight([header frame]) + kPermissionsHeadlineSpacing;
@@ -996,7 +1008,7 @@ bool IsInternalURL(const GURL& url) {
   // Reset X for the cookie image.
   if (isRTL) {
     controlOrigin.x = viewWidth - kPermissionImageSize -
-                      kPermissionImageSpacing - kFramePadding;
+                      kPermissionImageSpacing - kSectionHorizontalPadding;
   }
 
   WebsiteSettingsUI::PermissionInfo info;
@@ -1062,7 +1074,7 @@ bool IsInternalURL(const GURL& url) {
 - (void)setPermissionInfo:(const PermissionInfoList&)permissionInfoList
          andChosenObjects:(const ChosenObjectInfoList&)chosenObjectInfoList {
   [permissionsView_ setSubviews:[NSArray array]];
-  NSPoint controlOrigin = NSMakePoint(kFramePadding, 0);
+  NSPoint controlOrigin = NSMakePoint(kSectionHorizontalPadding, 0);
 
   permissionsPresent_ = YES;
 
@@ -1078,8 +1090,8 @@ bool IsInternalURL(const GURL& url) {
                                 atPoint:controlOrigin];
     [header sizeToFit];
     if (isRTL) {
-      controlOrigin.x = NSWidth([permissionsView_ frame]) - kFramePadding -
-                        NSWidth([header frame]);
+      controlOrigin.x = NSWidth([permissionsView_ frame]) -
+                        kSectionHorizontalPadding - NSWidth([header frame]);
       [header setFrameOrigin:controlOrigin];
     }
     controlOrigin.y += NSHeight([header frame]) + kPermissionsHeadlineSpacing;
@@ -1100,7 +1112,7 @@ bool IsInternalURL(const GURL& url) {
       controlOrigin.y = rowBottomRight.y;
     }
 
-    controlOrigin.y += kFramePadding;
+    controlOrigin.y += kPermissionsTabSpacing;
   }
 
   [permissionsView_ setFrameSize:
