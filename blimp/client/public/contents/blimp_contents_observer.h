@@ -22,6 +22,9 @@ class BlimpContentsObserver {
   // Invoked when the navigation state of the BlimpContents has changed.
   virtual void OnNavigationStateChanged() {}
 
+  // Invoked when the BlimpContents starts or stops loading.
+  virtual void OnLoadingStateChanged(bool loading) {}
+
   // Called by BlimpContentsDying().
   virtual void OnContentsDestroyed() {}
 

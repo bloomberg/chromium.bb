@@ -15,4 +15,10 @@ public interface BlimpContentsObserver {
      * Invoked when the BlimpContents's navigation state is changed.
      */
     void onNavigationStateChanged();
+
+    /**
+     * Invoked when the BlimpContents starts or stops loading.
+     * @param loading Whether or not the BlimpContents is currently loading.
+     */
+    void onLoadingStateChanged(boolean loading);
 }

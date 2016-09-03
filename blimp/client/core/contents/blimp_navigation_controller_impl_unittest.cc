@@ -25,6 +25,7 @@ class MockBlimpNavigationControllerDelegate
   ~MockBlimpNavigationControllerDelegate() override = default;
 
   MOCK_METHOD0(OnNavigationStateChanged, void());
+  MOCK_METHOD1(OnLoadingStateChanged, void(bool loading));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockBlimpNavigationControllerDelegate);
@@ -53,6 +54,28 @@ TEST(BlimpNavigationControllerImplTest, BackForwardNavigation) {
   navigation_controller.Reload();
 
   base::RunLoop().RunUntilIdle();
+}
+
+TEST(BlimpNavigationControllerImplTest, Loading) {
+  testing::InSequence s;
+  base::MessageLoop loop;
+
+  testing::StrictMock<MockBlimpNavigationControllerDelegate> delegate;
+  testing::StrictMock<FakeNavigationFeature> feature;
+  BlimpNavigationControllerImpl navigation_controller(&delegate, &feature);
+  feature.SetDelegate(1, &navigation_controller);
+
+  EXPECT_CALL(delegate, OnNavigationStateChanged());
+  EXPECT_CALL(delegate, OnLoadingStateChanged(true));
+  EXPECT_CALL(delegate, OnNavigationStateChanged());
+  EXPECT_CALL(delegate, OnLoadingStateChanged(false));
+
+  NavigationFeature::NavigationFeatureDelegate* feature_delegate =
+      static_cast<NavigationFeature::NavigationFeatureDelegate*>(
+          &navigation_controller);
+
+  feature_delegate->OnLoadingChanged(1, true);
+  feature_delegate->OnLoadingChanged(1, false);
 }
 
 }  // namespace

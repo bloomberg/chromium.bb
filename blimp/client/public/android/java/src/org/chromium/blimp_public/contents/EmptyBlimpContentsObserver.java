@@ -12,4 +12,7 @@ package org.chromium.blimp_public.contents;
 public class EmptyBlimpContentsObserver implements BlimpContentsObserver {
     @Override
     public void onNavigationStateChanged() {}
+
+    @Override
+    public void onLoadingStateChanged(boolean loading) {}
 }

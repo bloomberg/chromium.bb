@@ -17,8 +17,13 @@ class BlimpNavigationControllerDelegate {
  public:
   virtual ~BlimpNavigationControllerDelegate() = default;
 
+  // TODO(dtrainor): Pull apart this method into more fine grained notifications
+  // or add an enum to detect exactly which state changed.
   // Informs the delegate that navigation state has changed.
   virtual void OnNavigationStateChanged() = 0;
+
+  // Informs the delegate that navigation loading has started or stopped.
+  virtual void OnLoadingStateChanged(bool loading) = 0;
 
  protected:
   BlimpNavigationControllerDelegate() {}

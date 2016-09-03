@@ -105,6 +105,11 @@ void BlimpContentsImpl::OnNavigationStateChanged() {
                     OnNavigationStateChanged());
 }
 
+void BlimpContentsImpl::OnLoadingStateChanged(bool loading) {
+  FOR_EACH_OBSERVER(BlimpContentsObserver, observers_,
+                    OnLoadingStateChanged(loading));
+}
+
 void BlimpContentsImpl::SetSizeAndScale(const gfx::Size& size,
                                         float device_pixel_ratio) {
   tab_control_feature_->SetSizeAndScale(size, device_pixel_ratio);

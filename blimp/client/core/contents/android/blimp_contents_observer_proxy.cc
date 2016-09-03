@@ -52,5 +52,11 @@ void BlimpContentsObserverProxy::OnNavigationStateChanged() {
   Java_BlimpContentsObserverProxy_onNavigationStateChanged(env, java_obj_);
 }
 
+void BlimpContentsObserverProxy::OnLoadingStateChanged(bool loading) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_BlimpContentsObserverProxy_onLoadingStateChanged(env, java_obj_,
+                                                        loading);
+}
+
 }  // namespace client
 }  // namespace blimp

@@ -70,6 +70,7 @@ class BlimpContentsImpl : public BlimpContents,
 
   // BlimpNavigationControllerDelegate implementation.
   void OnNavigationStateChanged() override;
+  void OnLoadingStateChanged(bool loading) override;
 
   // Pushes the size and scale information to the engine, which will affect the
   // web content display area for all tabs.

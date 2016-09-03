@@ -78,6 +78,7 @@ void BlimpNavigationControllerImpl::OnTitleChanged(int tab_id,
 
 void BlimpNavigationControllerImpl::OnLoadingChanged(int tab_id, bool loading) {
   delegate_->OnNavigationStateChanged();
+  delegate_->OnLoadingStateChanged(loading);
 }
 
 void BlimpNavigationControllerImpl::OnPageLoadStatusUpdate(int tab_id,
