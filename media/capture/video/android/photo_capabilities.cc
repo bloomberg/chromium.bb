@@ -119,4 +119,11 @@ PhotoCapabilities::AndroidMeteringMode PhotoCapabilities::getWhiteBalanceMode()
                                                  object_));
 }
 
+PhotoCapabilities::AndroidFillLightMode PhotoCapabilities::getFillLightMode()
+    const {
+  DCHECK(!object_.is_null());
+  return static_cast<AndroidFillLightMode>(
+      Java_PhotoCapabilities_getFillLightMode(AttachCurrentThread(), object_));
+}
+
 }  // namespace media

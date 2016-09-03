@@ -65,12 +65,13 @@ public abstract class VideoCapture {
     * @param iso Sensitivity to light. 0, which would be invalid, means ignore.
     * @param hasRedEyeReduction Indicates if |redEyeReduction| is set.
     * @param redEyeReduction Value of red eye reduction for the auto flash setting.
+    * @param fillLightMode Flash/Torch setting, following AndroidFillLightMode enum.
     */
     @CalledByNative
     public abstract void setPhotoOptions(int zoom, int focusMode, int exposureMode, int width,
             int height, float[] pointsOfInterest2D, boolean hasExposureCompensation,
             int exposureCompensation, int whiteBalanceMode, int iso, boolean hasRedEyeReduction,
-            boolean redEyeReduction);
+            boolean redEyeReduction, int fillLightMode);
 
     @CalledByNative
     public abstract boolean takePhoto(final long callbackId);

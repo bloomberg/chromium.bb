@@ -342,7 +342,7 @@ public abstract class VideoCaptureCamera
 
         // Classify the Focus capabilities. In CONTINUOUS and SINGLE_SHOT, we can call
         // autoFocus(AutoFocusCallback) to configure region(s) to focus onto.
-        int jniFocusMode = AndroidMeteringMode.UNAVAILABLE;
+        int jniFocusMode = AndroidMeteringMode.NONE;
         if (focusMode.equals(android.hardware.Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)
                 || focusMode.equals(
                            android.hardware.Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)
@@ -360,7 +360,7 @@ public abstract class VideoCaptureCamera
         // Exposure is usually continuously updated except it not available at all, or if the
         // exposure compensation is locked, in which case we consider it as FIXED.
         int jniExposureMode = parameters.getMaxNumMeteringAreas() == 0
-                ? AndroidMeteringMode.UNAVAILABLE
+                ? AndroidMeteringMode.NONE
                 : AndroidMeteringMode.CONTINUOUS;
         if (parameters.isAutoExposureLockSupported() && parameters.getAutoExposureLock()) {
             jniExposureMode = AndroidMeteringMode.FIXED;
@@ -375,7 +375,7 @@ public abstract class VideoCaptureCamera
         builder.setCurrentExposureCompensation(
                 Math.round(parameters.getExposureCompensation() * step * 100));
 
-        int jniWhiteBalanceMode = AndroidMeteringMode.UNAVAILABLE;
+        int jniWhiteBalanceMode = AndroidMeteringMode.NONE;
         if (parameters.isAutoWhiteBalanceLockSupported()
                 && parameters.getSupportedWhiteBalance() != null) {
             jniWhiteBalanceMode = parameters.getWhiteBalance()
@@ -385,13 +385,36 @@ public abstract class VideoCaptureCamera
         }
         builder.setWhiteBalanceMode(jniExposureMode);
 
+        if (parameters.getSupportedFlashModes() == null) {
+            builder.setFillLightMode(AndroidFillLightMode.NONE);
+        } else {
+            switch (parameters.getFlashMode()) {
+                case android.hardware.Camera.Parameters.FLASH_MODE_OFF:
+                    builder.setFillLightMode(AndroidFillLightMode.OFF);
+                    break;
+                case android.hardware.Camera.Parameters.FLASH_MODE_AUTO:
+                case android.hardware.Camera.Parameters.FLASH_MODE_RED_EYE:
+                    builder.setFillLightMode(AndroidFillLightMode.AUTO);
+                    break;
+                case android.hardware.Camera.Parameters.FLASH_MODE_ON:
+                    builder.setFillLightMode(AndroidFillLightMode.FLASH);
+                    break;
+                case android.hardware.Camera.Parameters.FLASH_MODE_TORCH:
+                    builder.setFillLightMode(AndroidFillLightMode.TORCH);
+                    break;
+                default:
+                    builder.setFillLightMode(AndroidFillLightMode.NONE);
+            }
+        }
+
         return builder.build();
     }
 
     @Override
     public void setPhotoOptions(int zoom, int focusMode, int exposureMode, int width, int height,
             float[] pointsOfInterest2D, boolean hasExposureCompensation, int exposureCompensation,
-            int whiteBalanceMode, int iso, boolean hasRedEyeReduction, boolean redEyeReduction) {
+            int whiteBalanceMode, int iso, boolean hasRedEyeReduction, boolean redEyeReduction,
+            int fillLightMode) {
         android.hardware.Camera.Parameters parameters = getCameraParameters(mCamera);
 
         if (parameters.isZoomSupported() && zoom > 0) {
@@ -418,7 +441,7 @@ public abstract class VideoCaptureCamera
         if (parameters.isAutoExposureLockSupported()) {
             if (exposureMode == AndroidMeteringMode.FIXED) {
                 parameters.setAutoExposureLock(true);
-            } else if (exposureMode != AndroidMeteringMode.UNAVAILABLE) {
+            } else if (exposureMode != AndroidMeteringMode.NONE) {
                 parameters.setAutoExposureLock(false);
             }
         }
@@ -429,9 +452,8 @@ public abstract class VideoCaptureCamera
         if (mAreaOfInterest != null && !mAreaOfInterest.rect.isEmpty() && zoom > 0) {
             mAreaOfInterest = null;
         }
-        // Also clear |mAreaOfInterest| if the user sets it as UNAVAILABLE.
-        if (focusMode == AndroidMeteringMode.UNAVAILABLE
-                || exposureMode == AndroidMeteringMode.UNAVAILABLE) {
+        // Also clear |mAreaOfInterest| if the user sets it as NONE.
+        if (focusMode == AndroidMeteringMode.NONE || exposureMode == AndroidMeteringMode.NONE) {
             mAreaOfInterest = null;
         }
 
@@ -471,13 +493,6 @@ public abstract class VideoCaptureCamera
 
         // |iso| setting is not supported, see explanation in getPhotoCapabilities().
 
-        if (hasRedEyeReduction) {
-            // TODO(mcasas): Factor the flash settings when wired.
-            parameters.setFlashMode(redEyeReduction
-                            ? android.hardware.Camera.Parameters.FLASH_MODE_RED_EYE
-                            : android.hardware.Camera.Parameters.FLASH_MODE_AUTO);
-        }
-
         // White Balance mode AndroidMeteringMode.SINGLE_SHOT is not supported.
         // TODO(mcasas): support FIXED mode, i.e. the scene mode.
         if (whiteBalanceMode == AndroidMeteringMode.CONTINUOUS
@@ -487,6 +502,29 @@ public abstract class VideoCaptureCamera
         } else if (whiteBalanceMode == AndroidMeteringMode.FIXED
                 && parameters.isAutoWhiteBalanceLockSupported()) {
             parameters.setAutoWhiteBalanceLock(true);
+        }
+
+        // NONE is only used for getting capabilities, to signify "no flash unit". Ignore it.
+        if (parameters.getSupportedFlashModes() != null
+                && fillLightMode != AndroidFillLightMode.NOT_SET
+                && fillLightMode != AndroidFillLightMode.NONE) {
+            switch (fillLightMode) {
+                case AndroidFillLightMode.OFF:
+                    parameters.setFlashMode(android.hardware.Camera.Parameters.FLASH_MODE_OFF);
+                    break;
+                case AndroidFillLightMode.AUTO:
+                    parameters.setFlashMode(hasRedEyeReduction && redEyeReduction
+                                    ? android.hardware.Camera.Parameters.FLASH_MODE_RED_EYE
+                                    : android.hardware.Camera.Parameters.FLASH_MODE_AUTO);
+                    break;
+                case AndroidFillLightMode.FLASH:
+                    parameters.setFlashMode(android.hardware.Camera.Parameters.FLASH_MODE_ON);
+                    break;
+                case AndroidFillLightMode.TORCH:
+                    parameters.setFlashMode(android.hardware.Camera.Parameters.FLASH_MODE_TORCH);
+                    break;
+                default:
+            }
         }
 
         try {

@@ -5,10 +5,18 @@
 // https://w3c.github.io/mediacapture-image/index.html#idl-def-PhotoCapabilities
 
 enum MeteringMode {
-    "unavailable",
+    "none",
     "manual",
     "single-shot",
     "continuous",
+};
+
+enum FillLightMode {
+    "none",
+    "off",
+    "auto",
+    "flash",
+    "torch",
 };
 
 [
@@ -22,7 +30,7 @@ enum MeteringMode {
     readonly attribute MeteringMode exposureMode;
     readonly attribute MediaSettingsRange exposureCompensation;
     readonly attribute MeteringMode whiteBalanceMode;
-
+    readonly attribute FillLightMode fillLightMode;
     // TODO(mcasas): Implement all other PhotoCapabilities fields
     // https://crbug.com/518807
 };

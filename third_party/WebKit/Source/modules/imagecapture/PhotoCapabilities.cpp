@@ -11,8 +11,8 @@ namespace {
 String meteringModeToString(media::mojom::blink::MeteringMode mode)
 {
     switch (mode) {
-    case media::mojom::blink::MeteringMode::UNAVAILABLE:
-        return "unavailable";
+    case media::mojom::blink::MeteringMode::NONE:
+        return "none";
     case media::mojom::blink::MeteringMode::MANUAL:
         return "manual";
     case media::mojom::blink::MeteringMode::SINGLE_SHOT:
@@ -46,6 +46,25 @@ String PhotoCapabilities::exposureMode() const
 String PhotoCapabilities::whiteBalanceMode() const
 {
     return meteringModeToString(m_whiteBalanceMode);
+}
+
+String PhotoCapabilities::fillLightMode() const
+{
+    switch (m_fillLightMode) {
+    case media::mojom::blink::FillLightMode::NONE:
+        return "none";
+    case media::mojom::blink::FillLightMode::OFF:
+        return "off";
+    case media::mojom::blink::FillLightMode::AUTO:
+        return "auto";
+    case media::mojom::blink::FillLightMode::FLASH:
+        return "flash";
+    case media::mojom::blink::FillLightMode::TORCH:
+        return "torch";
+    default:
+        NOTREACHED();
+    }
+    return emptyString();
 }
 
 DEFINE_TRACE(PhotoCapabilities)

@@ -8,7 +8,8 @@
 </body>
 <script>
 
-const meteringModeNames = ["unavailable", "manual", "single-shot", "continuous"];
+const meteringModeNames = ["none", "manual", "single-shot", "continuous"];
+const fillLightModeNames = ["none", "off", "auto", "flash", "torch"];
 
 // This test verifies that ImageCapture can call setOptions()s, with a mock Mojo
 // interface implementation.
@@ -31,6 +32,7 @@ async_test(function(t) {
                         whiteBalanceMode : "manual",
                         iso : 120,
                         redEyeReduction : true,
+                        fillLightMode : "flash",
                       };
   mockImageCaptureReady
     .then(mock => {
@@ -89,6 +91,10 @@ async_test(function(t) {
       // TODO(mcasas): Revert to assert_equals() when yzshen@ has sorted it out.
       assert_true(optionsDict.redEyeReduction == theMock.options().red_eye_reduction,
                     'red_eye_reduction value');
+      assert_equals(true, theMock.options().has_fill_light_mode, 'has_fill_light_mode must be true');
+      assert_equals(optionsDict.fillLightMode,
+                    fillLightModeNames[theMock.options().fill_light_mode],
+                    'fillLightMode value');
 
       t.done();
     })

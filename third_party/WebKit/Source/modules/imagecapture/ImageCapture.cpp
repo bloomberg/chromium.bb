@@ -43,7 +43,20 @@ media::mojom::blink::MeteringMode parseMeteringMode(const String& blinkMode)
         return media::mojom::blink::MeteringMode::SINGLE_SHOT;
     if (blinkMode == "continuous")
         return media::mojom::blink::MeteringMode::CONTINUOUS;
-    return media::mojom::blink::MeteringMode::UNAVAILABLE;
+    return media::mojom::blink::MeteringMode::NONE;
+}
+
+media::mojom::blink::FillLightMode parseFillLightMode(const String& blinkMode)
+{
+    if (blinkMode == "off")
+        return media::mojom::blink::FillLightMode::OFF;
+    if (blinkMode == "auto")
+        return media::mojom::blink::FillLightMode::AUTO;
+    if (blinkMode == "flash")
+        return media::mojom::blink::FillLightMode::FLASH;
+    if (blinkMode == "torch")
+        return media::mojom::blink::FillLightMode::TORCH;
+    return media::mojom::blink::FillLightMode::NONE;
 }
 
 } // anonymous namespace
@@ -153,6 +166,9 @@ ScriptPromise ImageCapture::setOptions(ScriptState* scriptState, const PhotoSett
     settings->has_red_eye_reduction = photoSettings.hasRedEyeReduction();
     if (settings->has_red_eye_reduction)
         settings->red_eye_reduction = photoSettings.redEyeReduction();
+    settings->has_fill_light_mode = photoSettings.hasExposureMode();
+    if (settings->has_fill_light_mode)
+        settings->fill_light_mode = parseFillLightMode(photoSettings.fillLightMode());
     if (photoSettings.hasPointsOfInterest()) {
         for (const auto& point : photoSettings.pointsOfInterest()) {
             auto mojoPoint = media::mojom::blink::Point2D::New();
@@ -254,6 +270,7 @@ void ImageCapture::onCapabilities(ScriptPromiseResolver* resolver, media::mojom:
         caps->setExposureMode(capabilities->exposure_mode);
         caps->setExposureCompensation(exposureCompensation);
         caps->setWhiteBalanceMode(capabilities->white_balance_mode);
+        caps->setFillLightMode(capabilities->fill_light_mode);
         resolver->resolve(caps);
     }
     m_serviceRequests.remove(resolver);

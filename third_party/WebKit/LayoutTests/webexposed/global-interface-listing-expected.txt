@@ -4500,6 +4500,7 @@ interface PhotoCapabilities
     attribute @@toStringTag
     getter exposureCompensation
     getter exposureMode
+    getter fillLightMode
     getter focusMode
     getter imageHeight
     getter imageWidth

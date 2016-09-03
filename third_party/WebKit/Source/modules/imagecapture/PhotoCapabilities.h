@@ -44,6 +44,9 @@ public:
     String whiteBalanceMode() const;
     void setWhiteBalanceMode(media::mojom::blink::MeteringMode whiteBalanceMode) { m_whiteBalanceMode = whiteBalanceMode; }
 
+    String fillLightMode() const;
+    void setFillLightMode(media::mojom::blink::FillLightMode fillLightMode) { m_fillLightMode = fillLightMode; }
+
     DECLARE_VIRTUAL_TRACE();
 
 private:
@@ -53,10 +56,11 @@ private:
     Member<MediaSettingsRange> m_imageHeight;
     Member<MediaSettingsRange> m_imageWidth;
     Member<MediaSettingsRange> m_zoom;
-    media::mojom::blink::MeteringMode m_focusMode = media::mojom::blink::MeteringMode::UNAVAILABLE;
-    media::mojom::blink::MeteringMode m_exposureMode = media::mojom::blink::MeteringMode::UNAVAILABLE;
+    media::mojom::blink::MeteringMode m_focusMode = media::mojom::blink::MeteringMode::NONE;
+    media::mojom::blink::MeteringMode m_exposureMode = media::mojom::blink::MeteringMode::NONE;
     Member<MediaSettingsRange> m_exposureCompensation;
-    media::mojom::blink::MeteringMode m_whiteBalanceMode = media::mojom::blink::MeteringMode::UNAVAILABLE;
+    media::mojom::blink::MeteringMode m_whiteBalanceMode = media::mojom::blink::MeteringMode::NONE;
+    media::mojom::blink::FillLightMode m_fillLightMode = media::mojom::blink::FillLightMode::NONE;
 };
 
 } // namespace blink

@@ -8,7 +8,8 @@
 </body>
 <script>
 
-const meteringModeNames = ["unavailable", "manual", "single-shot", "continuous"];
+const meteringModeNames = ["none", "manual", "single-shot", "continuous"];
+const fillLightModeNames = ["none", "off", "auto", "flash", "torch"];
 
 // This test verifies that ImageCapture can get PhotoCapabilities(), with a mock
 // Mojo interface implementation.
@@ -82,6 +83,10 @@ async_test(function(t) {
       assert_equals(capabilities.whiteBalanceMode,
           meteringModeNames[mock_capabilities.white_balance_mode],
           'whiteBalanceMode');
+
+      assert_equals(capabilities.fillLightMode,
+          fillLightModeNames[mock_capabilities.fill_light_mode],
+          'fillLightMode');
 
       t.done();
     })

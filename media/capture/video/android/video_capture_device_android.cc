@@ -40,12 +40,12 @@ mojom::MeteringMode ToMojomMeteringMode(
       return mojom::MeteringMode::SINGLE_SHOT;
     case PhotoCapabilities::AndroidMeteringMode::CONTINUOUS:
       return mojom::MeteringMode::CONTINUOUS;
-    case PhotoCapabilities::AndroidMeteringMode::UNAVAILABLE:
-      return mojom::MeteringMode::UNAVAILABLE;
+    case PhotoCapabilities::AndroidMeteringMode::NONE:
+      return mojom::MeteringMode::NONE;
     case PhotoCapabilities::AndroidMeteringMode::NOT_SET:
       NOTREACHED();
   }
-  return mojom::MeteringMode::UNAVAILABLE;
+  return mojom::MeteringMode::NONE;
 }
 
 PhotoCapabilities::AndroidMeteringMode ToAndroidMeteringMode(
@@ -57,11 +57,48 @@ PhotoCapabilities::AndroidMeteringMode ToAndroidMeteringMode(
       return PhotoCapabilities::AndroidMeteringMode::SINGLE_SHOT;
     case mojom::MeteringMode::CONTINUOUS:
       return PhotoCapabilities::AndroidMeteringMode::CONTINUOUS;
-    case mojom::MeteringMode::UNAVAILABLE:
-      return PhotoCapabilities::AndroidMeteringMode::UNAVAILABLE;
+    case mojom::MeteringMode::NONE:
+      return PhotoCapabilities::AndroidMeteringMode::NONE;
   }
   NOTREACHED();
   return PhotoCapabilities::AndroidMeteringMode::NOT_SET;
+}
+
+mojom::FillLightMode ToMojomFillLightMode(
+    PhotoCapabilities::AndroidFillLightMode android_mode) {
+  switch (android_mode) {
+    case PhotoCapabilities::AndroidFillLightMode::TORCH:
+      return mojom::FillLightMode::TORCH;
+    case PhotoCapabilities::AndroidFillLightMode::FLASH:
+      return mojom::FillLightMode::FLASH;
+    case PhotoCapabilities::AndroidFillLightMode::AUTO:
+      return mojom::FillLightMode::AUTO;
+    case PhotoCapabilities::AndroidFillLightMode::OFF:
+      return mojom::FillLightMode::OFF;
+    case PhotoCapabilities::AndroidFillLightMode::NONE:
+      return mojom::FillLightMode::NONE;
+    case PhotoCapabilities::AndroidFillLightMode::NOT_SET:
+      NOTREACHED();
+  }
+  return mojom::FillLightMode::NONE;
+}
+
+PhotoCapabilities::AndroidFillLightMode ToAndroidFillLightMode(
+    mojom::FillLightMode mojom_mode) {
+  switch (mojom_mode) {
+    case mojom::FillLightMode::TORCH:
+      return PhotoCapabilities::AndroidFillLightMode::TORCH;
+    case mojom::FillLightMode::FLASH:
+      return PhotoCapabilities::AndroidFillLightMode::FLASH;
+    case mojom::FillLightMode::AUTO:
+      return PhotoCapabilities::AndroidFillLightMode::AUTO;
+    case mojom::FillLightMode::OFF:
+      return PhotoCapabilities::AndroidFillLightMode::OFF;
+    case mojom::FillLightMode::NONE:
+      return PhotoCapabilities::AndroidFillLightMode::NONE;
+  }
+  NOTREACHED();
+  return PhotoCapabilities::AndroidFillLightMode::NOT_SET;
 }
 
 }  // anonymous namespace
@@ -483,6 +520,8 @@ void VideoCaptureDeviceAndroid::DoGetPhotoCapabilities(
       caps.getMinExposureCompensation();
   photo_capabilities->white_balance_mode =
       ToMojomMeteringMode(caps.getWhiteBalanceMode());
+  photo_capabilities->fill_light_mode =
+      ToMojomFillLightMode(caps.getFillLightMode());
 
   callback.Run(std::move(photo_capabilities));
 }
@@ -532,12 +571,18 @@ void VideoCaptureDeviceAndroid::DoSetPhotoOptions(
 
   const int iso = settings->has_iso ? settings->iso : 0;
 
+  const PhotoCapabilities::AndroidFillLightMode fill_light_mode =
+      settings->has_fill_light_mode
+          ? ToAndroidFillLightMode(settings->fill_light_mode)
+          : PhotoCapabilities::AndroidFillLightMode::NOT_SET;
+
   Java_VideoCapture_setPhotoOptions(
       env, j_capture_, zoom, static_cast<int>(focus_mode),
       static_cast<int>(exposure_mode), width, height, points_of_interest,
       settings->has_exposure_compensation, exposure_compensation,
       static_cast<int>(white_balance_mode), iso,
-      settings->has_red_eye_reduction, settings->red_eye_reduction);
+      settings->has_red_eye_reduction, settings->red_eye_reduction,
+      static_cast<int>(fill_light_mode));
 
   callback.Run(true);
 }
