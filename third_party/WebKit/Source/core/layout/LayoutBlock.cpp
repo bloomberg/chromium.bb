@@ -226,15 +226,6 @@ void LayoutBlock::styleDidChange(StyleDifference diff, const ComputedStyle* oldS
     m_heightAvailableToChildrenChanged |= oldStyle && diff.needsFullLayout() && needsLayout() && borderOrPaddingLogicalDimensionChanged(*oldStyle, newStyle, LogicalHeight);
 }
 
-void LayoutBlock::invalidateCaret() const
-{
-    if (hasCaret()) {
-        ObjectPaintInvalidator(*this).slowSetPaintingLayerNeedsRepaint();
-        frame()->selection().setCaretRectNeedsUpdate();
-        frame()->selection().invalidateCaretRect(true);
-    }
-}
-
 void LayoutBlock::updateFromStyle()
 {
     LayoutBox::updateFromStyle();
@@ -937,8 +928,10 @@ void LayoutBlock::removePositionedObject(LayoutBox* o)
 PaintInvalidationReason LayoutBlock::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState)
 {
     PaintInvalidationReason reason = LayoutBox::invalidatePaintIfNeeded(paintInvalidationState);
-    if (reason != PaintInvalidationNone)
-        invalidateCaret();
+    if (reason != PaintInvalidationNone && hasCaret()) {
+        frame()->selection().setCaretRectNeedsUpdate();
+        frame()->selection().invalidateCaretRect(true);
+    }
     return reason;
 }
 
