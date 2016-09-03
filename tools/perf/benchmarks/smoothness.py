@@ -459,6 +459,12 @@ class SmoothnessToughAdCases(_Smoothness):
   def ShouldDisable(cls, possible_browser):
     return cls.IsSvelte(possible_browser)  # http://crbug.com/555089
 
+  @classmethod
+  def ValueCanBeAddedPredicate(cls, value, is_first_result):
+    del is_first_result  # unused
+    # These pages don't scroll so it's not necessary to measure input latency.
+    return value.name != 'first_gesture_scroll_update_latency'
+
 
 # http://crbug.com/522619 (mac/win)
 @benchmark.Disabled('win', 'mac')
