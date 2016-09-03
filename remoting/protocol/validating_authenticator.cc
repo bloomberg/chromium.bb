@@ -91,18 +91,16 @@ void ValidatingAuthenticator::OnValidateComplete(
     const buzz::XmlElement* message,
     const base::Closure& resume_callback,
     Result validation_result) {
-  if (validation_result == Result::SUCCESS) {
-    current_authenticator_->ProcessMessage(
-        message, base::Bind(&ValidatingAuthenticator::UpdateState,
-                            weak_factory_.GetWeakPtr(), resume_callback));
-    return;
-  }
-
-  // |validation_result| represents a rejected state so map the result to a
-  // rejection reason and call the callback to let the caller know the result.
-  state_ = Authenticator::REJECTED;
-
+  // Process the original message in the success case, otherwise map
+  // |rejection_reason_| to a known reason, set |state_| to REJECTED and notify
+  // the listener of the connection error via the callback.
   switch (validation_result) {
+    case Result::SUCCESS:
+      current_authenticator_->ProcessMessage(
+          message, base::Bind(&ValidatingAuthenticator::UpdateState,
+                              weak_factory_.GetWeakPtr(), resume_callback));
+      return;
+
     case Result::ERROR_INVALID_CREDENTIALS:
       rejection_reason_ = Authenticator::INVALID_CREDENTIALS;
       break;
@@ -114,13 +112,9 @@ void ValidatingAuthenticator::OnValidateComplete(
     case Result::ERROR_REJECTED_BY_USER:
       rejection_reason_ = Authenticator::REJECTED_BY_USER;
       break;
-
-    default:
-      // Log an error and fail to prevent logging a misleading error value.
-      CHECK(false) << "Unknown validation result value: "
-                   << static_cast<unsigned int>(validation_result);
   }
 
+  state_ = Authenticator::REJECTED;
   resume_callback.Run();
 }
 
