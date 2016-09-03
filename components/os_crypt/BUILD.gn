@@ -81,10 +81,13 @@ static_library("os_crypt") {
 
     if (use_gnome_keyring) {
       sources += [
+        "key_storage_keyring.cc",
+        "key_storage_keyring.h",
         "keyring_util_linux.cc",
         "keyring_util_linux.h",
       ]
       configs += [ ":gnome_keyring" ]
+      defines += [ "USE_KEYRING" ]
     }
     if (use_glib) {
       sources += [
@@ -127,6 +130,9 @@ static_library("test_support") {
       "os_crypt_mocker_linux.h",
     ]
     defines = []
+    if (use_gnome_keyring) {
+      defines += [ "USE_KEYRING" ]
+    }
     if (use_glib) {
       defines += [ "USE_LIBSECRET" ]
     }
@@ -156,6 +162,12 @@ source_set("unit_tests") {
     sources += [ "os_crypt_linux_unittest.cc" ]
     defines = []
 
+    if (use_gnome_keyring) {
+      sources += [ "key_storage_keyring_unittest.cc" ]
+      configs += [ ":gnome_keyring" ]
+      deps += [ "//base/test:test_support" ]
+      defines += [ "USE_KEYRING" ]
+    }
     if (use_glib) {
       sources += [ "key_storage_libsecret_unittest.cc" ]
       deps += [ "//third_party/libsecret" ]

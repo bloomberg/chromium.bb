@@ -10,7 +10,10 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/single_thread_task_runner.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}  // namespace base
 
 // An API for retrieving OSCrypt's password from the system's password storage
 // service.

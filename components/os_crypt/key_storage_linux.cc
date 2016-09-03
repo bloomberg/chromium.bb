@@ -8,12 +8,15 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/nix/xdg_util.h"
+#include "base/single_thread_task_runner.h"
 #include "components/os_crypt/key_storage_util_linux.h"
 
 #if defined(USE_LIBSECRET)
 #include "components/os_crypt/key_storage_libsecret.h"
 #endif
-
+#if defined(USE_KEYRING)
+#include "components/os_crypt/key_storage_keyring.h"
+#endif
 #if defined(USE_KWALLET)
 #include "components/os_crypt/key_storage_kwallet.h"
 #endif
@@ -67,19 +70,34 @@ std::unique_ptr<KeyStorageLinux> KeyStorageLinux::CreateService() {
       os_crypt::SelectBackend(g_config.Get().store, desktop_env);
 
   // Try initializing the selected backend.
+  // In case of GNOME_ANY, prefer Libsecret
   std::unique_ptr<KeyStorageLinux> key_storage;
+
+#if defined(USE_LIBSECRET)
   if (selected_backend == os_crypt::SelectedLinuxBackend::GNOME_ANY ||
       selected_backend == os_crypt::SelectedLinuxBackend::GNOME_LIBSECRET) {
-#if defined(USE_LIBSECRET)
     key_storage.reset(new KeyStorageLibsecret());
     if (key_storage->Init()) {
       VLOG(1) << "OSCrypt using Libsecret as backend.";
       return key_storage;
     }
+  }
 #endif
-  } else if (selected_backend == os_crypt::SelectedLinuxBackend::KWALLET ||
-             selected_backend == os_crypt::SelectedLinuxBackend::KWALLET5) {
+
+#if defined(USE_KEYRING)
+  if (selected_backend == os_crypt::SelectedLinuxBackend::GNOME_ANY ||
+      selected_backend == os_crypt::SelectedLinuxBackend::GNOME_KEYRING) {
+    key_storage.reset(new KeyStorageKeyring(g_config.Get().main_thread_runner));
+    if (key_storage->Init()) {
+      VLOG(1) << "OSCrypt using Keyring as backend.";
+      return key_storage;
+    }
+  }
+#endif
+
 #if defined(USE_KWALLET)
+  if (selected_backend == os_crypt::SelectedLinuxBackend::KWALLET ||
+      selected_backend == os_crypt::SelectedLinuxBackend::KWALLET5) {
     DCHECK(!g_config.Get().product_name.empty());
     base::nix::DesktopEnvironment used_desktop_env =
         selected_backend == os_crypt::SelectedLinuxBackend::KWALLET
@@ -91,8 +109,8 @@ std::unique_ptr<KeyStorageLinux> KeyStorageLinux::CreateService() {
       VLOG(1) << "OSCrypt using KWallet as backend.";
       return key_storage;
     }
-#endif
   }
+#endif
 
   // The appropriate store was not available.
   VLOG(1) << "OSCrypt could not initialize a backend.";

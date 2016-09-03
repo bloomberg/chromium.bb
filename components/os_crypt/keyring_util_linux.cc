@@ -16,6 +16,11 @@ decltype(&::gnome_keyring_delete_password)
     GnomeKeyringLoader::gnome_keyring_delete_password_ptr;
 decltype(&::gnome_keyring_find_items)
     GnomeKeyringLoader::gnome_keyring_find_items_ptr;
+decltype(&::gnome_keyring_find_password_sync)
+    GnomeKeyringLoader::gnome_keyring_find_password_sync_ptr;
+decltype(&::gnome_keyring_store_password_sync)
+    GnomeKeyringLoader::gnome_keyring_store_password_sync_ptr;
+
 decltype(&::gnome_keyring_result_to_message)
     GnomeKeyringLoader::gnome_keyring_result_to_message_ptr;
 decltype(&::gnome_keyring_attribute_list_free)
@@ -26,6 +31,8 @@ decltype(&::gnome_keyring_attribute_list_append_string)
     GnomeKeyringLoader::gnome_keyring_attribute_list_append_string_ptr;
 decltype(&::gnome_keyring_attribute_list_append_uint32)
     GnomeKeyringLoader::gnome_keyring_attribute_list_append_uint32_ptr;
+decltype(&::gnome_keyring_free_password)
+    GnomeKeyringLoader::gnome_keyring_free_password_ptr;
 
 bool GnomeKeyringLoader::keyring_loaded = false;
 
@@ -38,6 +45,11 @@ const GnomeKeyringLoader::FunctionInfo GnomeKeyringLoader::functions[] = {
      reinterpret_cast<void**>(&gnome_keyring_delete_password_ptr)},
     {"gnome_keyring_find_items",
      reinterpret_cast<void**>(&gnome_keyring_find_items_ptr)},
+    {"gnome_keyring_find_password_sync",
+     reinterpret_cast<void**>(&gnome_keyring_find_password_sync_ptr)},
+    {"gnome_keyring_store_password_sync",
+     reinterpret_cast<void**>(&gnome_keyring_store_password_sync_ptr)},
+
     {"gnome_keyring_result_to_message",
      reinterpret_cast<void**>(&gnome_keyring_result_to_message_ptr)},
     {"gnome_keyring_attribute_list_free",
@@ -47,8 +59,9 @@ const GnomeKeyringLoader::FunctionInfo GnomeKeyringLoader::functions[] = {
     {"gnome_keyring_attribute_list_append_string",
      reinterpret_cast<void**>(&gnome_keyring_attribute_list_append_string_ptr)},
     {"gnome_keyring_attribute_list_append_uint32",
-     reinterpret_cast<void**>(
-         &gnome_keyring_attribute_list_append_uint32_ptr)}};
+     reinterpret_cast<void**>(&gnome_keyring_attribute_list_append_uint32_ptr)},
+    {"gnome_keyring_free_password",
+     reinterpret_cast<void**>(&gnome_keyring_free_password_ptr)}};
 
 /* Load the library and initialize the function pointers. */
 bool GnomeKeyringLoader::LoadGnomeKeyring() {

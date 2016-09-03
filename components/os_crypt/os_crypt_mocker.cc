@@ -14,7 +14,7 @@
 void OSCryptMocker::SetUpWithSingleton() {
 #if defined(OS_MACOSX)
   OSCrypt::UseMockKeychain(true);
-#elif defined(USE_LIBSECRET)
+#elif defined(USE_LIBSECRET) || defined(USE_KEYRING) || defined(USE_KWALLET)
   OSCryptMockerLinux::SetUpWithSingleton();
 #endif
 }
@@ -23,7 +23,7 @@ void OSCryptMocker::SetUpWithSingleton() {
 void OSCryptMocker::TearDown() {
 #if defined(OS_MACOSX)
   OSCrypt::UseMockKeychain(false);
-#elif defined(USE_LIBSECRET)
+#elif defined(USE_LIBSECRET) || defined(USE_KEYRING) || defined(USE_KWALLET)
   OSCryptMockerLinux::TearDown();
 #endif
 }

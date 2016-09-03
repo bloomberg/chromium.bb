@@ -27,16 +27,23 @@
 // from GnomeKeyringLoader will use its versions of the gnome_keyring_*
 // functions. Note that it has only static fields.
 class GnomeKeyringLoader {
- protected:
+ public:
   static bool LoadGnomeKeyring();
 
   // Declare the actual function pointers that we'll use in client code.
+  // These functions will contact the service.
   static decltype(&::gnome_keyring_is_available) gnome_keyring_is_available_ptr;
   static decltype(
       &::gnome_keyring_store_password) gnome_keyring_store_password_ptr;
   static decltype(
       &::gnome_keyring_delete_password) gnome_keyring_delete_password_ptr;
   static decltype(&::gnome_keyring_find_items) gnome_keyring_find_items_ptr;
+  static decltype(
+      &::gnome_keyring_find_password_sync) gnome_keyring_find_password_sync_ptr;
+  static decltype(&::gnome_keyring_store_password_sync)
+      gnome_keyring_store_password_sync_ptr;
+
+  // These functions do not contact the service.
   static decltype(
       &::gnome_keyring_result_to_message) gnome_keyring_result_to_message_ptr;
   static decltype(&::gnome_keyring_attribute_list_free)
@@ -47,9 +54,12 @@ class GnomeKeyringLoader {
       gnome_keyring_attribute_list_append_string_ptr;
   static decltype(&::gnome_keyring_attribute_list_append_uint32)
       gnome_keyring_attribute_list_append_uint32_ptr;
+  static decltype(
+      &::gnome_keyring_free_password) gnome_keyring_free_password_ptr;
   // We also use gnome_keyring_attribute_list_index(), which is a macro and
   // can't be referenced.
 
+ protected:
   // Set to true if LoadGnomeKeyring() has already succeeded.
   static bool keyring_loaded;
 
