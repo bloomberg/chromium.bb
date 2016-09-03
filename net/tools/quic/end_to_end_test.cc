@@ -630,6 +630,7 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     stream_factory_ = factory;
   }
 
+  QuicFlagSaver flags_;  // Save/restore all QUIC flag values.
   bool initialized_;
   IPEndPoint server_address_;
   string server_hostname_;

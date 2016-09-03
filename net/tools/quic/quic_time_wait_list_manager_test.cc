@@ -152,6 +152,7 @@ class QuicTimeWaitListManagerTest : public ::testing::Test {
                                                packet_number, "data");
   }
 
+  QuicFlagSaver flags_;  // Save/restore all QUIC flag values.
   NiceMock<MockFakeTimeEpollServer> epoll_server_;
   QuicEpollConnectionHelper helper_;
   QuicEpollAlarmFactory alarm_factory_;

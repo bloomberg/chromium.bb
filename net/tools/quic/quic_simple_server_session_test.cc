@@ -206,6 +206,7 @@ class QuicSimpleServerSessionTest
     session_->OnConfigNegotiated();
   }
 
+  QuicFlagSaver flags_;  // Save/restore all QUIC flag values.
   StrictMock<MockQuicServerSessionVisitor> owner_;
   StrictMock<MockQuicServerSessionHelper> session_helper_;
   MockQuicConnectionHelper helper_;

@@ -112,6 +112,7 @@ class StatelessRejectorTest : public ::testing::TestWithParam<TestParams> {
   }
 
  protected:
+  QuicFlagSaver flags_;  // Save/restore all QUIC flag values.
   std::unique_ptr<ProofSource> proof_source_;
   MockClock clock_;
   QuicCryptoServerConfig config_;

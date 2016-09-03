@@ -304,6 +304,7 @@ class QuicDispatcherTest : public ::testing::Test {
     return client_hello.GetSerialized().AsStringPiece().as_string();
   }
 
+  QuicFlagSaver flags_;  // Save/restore all QUIC flag values.
   EpollServer eps_;
   QuicEpollConnectionHelper helper_;
   MockQuicConnectionHelper mock_helper_;
