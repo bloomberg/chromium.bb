@@ -19,7 +19,6 @@
 #include "components/sync/protocol/sync_protocol_error.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/entry.h"
-#include "components/sync/syncable/syncable-inl.h"
 #include "components/sync/syncable/syncable_proto_util.h"
 #include "google_apis/google_api_keys.h"
 

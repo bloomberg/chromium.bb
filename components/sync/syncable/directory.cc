@@ -15,7 +15,6 @@
 #include "base/guid.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "components/sync/base/attachment_id_proto.h"
@@ -28,7 +27,6 @@
 #include "components/sync/syncable/on_disk_directory_backing_store.h"
 #include "components/sync/syncable/scoped_kernel_lock.h"
 #include "components/sync/syncable/scoped_parent_child_index_updater.h"
-#include "components/sync/syncable/syncable-inl.h"
 #include "components/sync/syncable/syncable_base_transaction.h"
 #include "components/sync/syncable/syncable_changes_version.h"
 #include "components/sync/syncable/syncable_read_transaction.h"
@@ -76,10 +74,7 @@ bool Directory::PersistedKernelInfo::HasEmptyDownloadProgress(
 Directory::SaveChangesSnapshot::SaveChangesSnapshot()
     : kernel_info_status(KERNEL_SHARE_INFO_INVALID) {}
 
-Directory::SaveChangesSnapshot::~SaveChangesSnapshot() {
-  base::STLDeleteElements(&dirty_metas);
-  base::STLDeleteElements(&delete_journals);
-}
+Directory::SaveChangesSnapshot::~SaveChangesSnapshot() {}
 
 bool Directory::SaveChangesSnapshot::HasUnsavedMetahandleChanges() const {
   return !dirty_metas.empty() || !metahandles_to_purge.empty() ||
@@ -183,10 +178,11 @@ DirOpenResult Directory::OpenImpl(
   // swap these later.
   Directory::MetahandlesMap tmp_handles_map;
 
-  JournalIndex delete_journals;
+  std::unique_ptr<JournalIndex> delete_journals =
+      base::MakeUnique<JournalIndex>();
   MetahandleSet metahandles_to_purge;
 
-  DirOpenResult result = store_->Load(&tmp_handles_map, &delete_journals,
+  DirOpenResult result = store_->Load(&tmp_handles_map, delete_journals.get(),
                                       &metahandles_to_purge, &info);
   if (OPENED != result)
     return result;
@@ -194,7 +190,7 @@ DirOpenResult Directory::OpenImpl(
   DCHECK(!kernel_);
   kernel_ = new Kernel(name, info, delegate, transaction_observer);
   kernel_->metahandles_to_purge.swap(metahandles_to_purge);
-  delete_journal_.reset(new DeleteJournal(&delete_journals));
+  delete_journal_ = base::MakeUnique<DeleteJournal>(std::move(delete_journals));
   InitializeIndices(&tmp_handles_map);
 
   // Save changes back in case there are any metahandles to purge.
@@ -541,7 +537,7 @@ void Directory::TakeSnapshotForSaveChanges(SaveChangesSnapshot* snapshot) {
     if (!entry->is_dirty())
       continue;
     snapshot->dirty_metas.insert(snapshot->dirty_metas.end(),
-                                 new EntryKernel(*entry));
+                                 base::MakeUnique<EntryKernel>(*entry));
     DCHECK_EQ(1U, kernel_->dirty_metahandles.count(*i));
     // We don't bother removing from the index here as we blow the entire thing
     // in a moment, and it unnecessarily complicates iteration.
@@ -589,8 +585,8 @@ bool Directory::VacuumAfterSaveChanges(const SaveChangesSnapshot& snapshot) {
   WriteTransaction trans(FROM_HERE, VACUUM_AFTER_SAVE, this);
   ScopedKernelLock lock(this);
   // Now drop everything we can out of memory.
-  for (EntryKernelSet::const_iterator i = snapshot.dirty_metas.begin();
-       i != snapshot.dirty_metas.end(); ++i) {
+  for (auto i = snapshot.dirty_metas.begin(); i != snapshot.dirty_metas.end();
+       ++i) {
     MetahandlesMap::iterator found =
         kernel_->metahandles_map.find((*i)->ref(META_HANDLE));
     EntryKernel* entry =
@@ -686,7 +682,7 @@ void Directory::UnapplyEntry(EntryKernel* entry) {
 void Directory::DeleteEntry(const ScopedKernelLock& lock,
                             bool save_to_journal,
                             EntryKernel* entry,
-                            EntryKernelSet* entries_to_journal) {
+                            OwnedEntryKernelSet* entries_to_journal) {
   int64_t handle = entry->ref(META_HANDLE);
   ModelType server_type =
       GetModelTypeFromSpecifics(entry->ref(SERVER_SPECIFICS));
@@ -719,7 +715,7 @@ void Directory::DeleteEntry(const ScopedKernelLock& lock,
   RemoveFromAttachmentIndex(lock, handle, entry->ref(ATTACHMENT_METADATA));
 
   if (save_to_journal) {
-    entries_to_journal->insert(entry_ptr.release());
+    entries_to_journal->insert(std::move(entry_ptr));
   }
 }
 
@@ -734,9 +730,7 @@ bool Directory::PurgeEntriesWithTypeIn(ModelTypeSet disabled_types,
   {
     WriteTransaction trans(FROM_HERE, PURGE_ENTRIES, this);
 
-    EntryKernelSet entries_to_journal;
-    base::STLElementDeleter<EntryKernelSet> journal_deleter(
-        &entries_to_journal);
+    OwnedEntryKernelSet entries_to_journal;
 
     {
       ScopedKernelLock lock(this);
@@ -857,8 +851,8 @@ void Directory::HandleSaveChangesFailure(const SaveChangesSnapshot& snapshot) {
   // cause lost data, if no other changes are made to the in-memory entries
   // that would cause the dirty bit to get set again. Setting the bit ensures
   // that SaveChanges will at least try again later.
-  for (EntryKernelSet::const_iterator i = snapshot.dirty_metas.begin();
-       i != snapshot.dirty_metas.end(); ++i) {
+  for (auto i = snapshot.dirty_metas.begin(); i != snapshot.dirty_metas.end();
+       ++i) {
     MetahandlesMap::iterator found =
         kernel_->metahandles_map.find((*i)->ref(META_HANDLE));
     if (found != kernel_->metahandles_map.end()) {

@@ -12,7 +12,6 @@
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/scoped_kernel_lock.h"
 #include "components/sync/syncable/scoped_parent_child_index_updater.h"
-#include "components/sync/syncable/syncable-inl.h"
 #include "components/sync/syncable/syncable_changes_version.h"
 #include "components/sync/syncable/syncable_util.h"
 #include "components/sync/syncable/syncable_write_transaction.h"

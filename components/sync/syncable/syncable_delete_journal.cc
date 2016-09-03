@@ -7,20 +7,18 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/stl_util.h"
+#include "base/memory/ptr_util.h"
 #include "components/sync/base/model_type.h"
 
 namespace syncer {
 namespace syncable {
 
-DeleteJournal::DeleteJournal(JournalIndex* initial_journal) {
+DeleteJournal::DeleteJournal(std::unique_ptr<JournalIndex> initial_journal) {
   CHECK(initial_journal);
   delete_journals_.swap(*initial_journal);
 }
 
-DeleteJournal::~DeleteJournal() {
-  base::STLDeleteElements(&delete_journals_);
-}
+DeleteJournal::~DeleteJournal() {}
 
 size_t DeleteJournal::GetDeleteJournalSize(BaseTransaction* trans) const {
   DCHECK(trans);
@@ -46,9 +44,10 @@ void DeleteJournal::UpdateDeleteJournalForServerDelete(
   if (entry.ref(SERVER_IS_DEL)) {
     if (it == delete_journals_.end()) {
       // New delete.
-      EntryKernel* t = new EntryKernel(entry);
-      delete_journals_.insert(t);
+      std::unique_ptr<EntryKernel> t_ptr = base::MakeUnique<EntryKernel>(entry);
+      EntryKernel* t = t_ptr.get();
       delete_journals_to_purge_.erase(t->ref(META_HANDLE));
+      delete_journals_[t] = std::move(t_ptr);
     }
   } else {
     // Undelete. This could happen in two cases:
@@ -60,8 +59,7 @@ void DeleteJournal::UpdateDeleteJournalForServerDelete(
     //   UpdateDeleteJournals() to remove live entries from delete journals,
     //   thus only deleted entries remain in journals.
     if (it != delete_journals_.end()) {
-      delete_journals_to_purge_.insert((*it)->ref(META_HANDLE));
-      delete *it;
+      delete_journals_to_purge_.insert((*it).first->ref(META_HANDLE));
       delete_journals_.erase(it);
     } else if (was_deleted) {
       delete_journals_to_purge_.insert(entry.ref(META_HANDLE));
@@ -73,11 +71,10 @@ void DeleteJournal::GetDeleteJournals(BaseTransaction* trans,
                                       ModelType type,
                                       EntryKernelSet* deleted_entries) {
   DCHECK(trans);
-  for (JournalIndex::const_iterator it = delete_journals_.begin();
-       it != delete_journals_.end(); ++it) {
-    if ((*it)->GetServerModelType() == type ||
-        GetModelTypeFromSpecifics((*it)->ref(SPECIFICS)) == type) {
-      deleted_entries->insert(*it);
+  for (auto it = delete_journals_.begin(); it != delete_journals_.end(); ++it) {
+    if ((*it).first->GetServerModelType() == type ||
+        GetModelTypeFromSpecifics((*it).first->ref(SPECIFICS)) == type) {
+      deleted_entries->insert((*it).first);
     }
   }
   passive_delete_journal_types_.Put(type);
@@ -86,11 +83,10 @@ void DeleteJournal::GetDeleteJournals(BaseTransaction* trans,
 void DeleteJournal::PurgeDeleteJournals(BaseTransaction* trans,
                                         const MetahandleSet& to_purge) {
   DCHECK(trans);
-  JournalIndex::iterator it = delete_journals_.begin();
+  auto it = delete_journals_.begin();
   while (it != delete_journals_.end()) {
-    int64_t handle = (*it)->ref(META_HANDLE);
+    int64_t handle = (*it).first->ref(META_HANDLE);
     if (to_purge.count(handle)) {
-      delete *it;
       delete_journals_.erase(it++);
     } else {
       ++it;
@@ -100,17 +96,17 @@ void DeleteJournal::PurgeDeleteJournals(BaseTransaction* trans,
 }
 
 void DeleteJournal::TakeSnapshotAndClear(BaseTransaction* trans,
-                                         EntryKernelSet* journal_entries,
+                                         OwnedEntryKernelSet* journal_entries,
                                          MetahandleSet* journals_to_purge) {
   DCHECK(trans);
   // Move passive delete journals to snapshot. Will copy back if snapshot fails
   // to save.
-  JournalIndex::iterator it = delete_journals_.begin();
+  auto it = delete_journals_.begin();
   while (it != delete_journals_.end()) {
-    if (passive_delete_journal_types_.Has((*it)->GetServerModelType()) ||
+    if (passive_delete_journal_types_.Has((*it).first->GetServerModelType()) ||
         passive_delete_journal_types_.Has(
-            GetModelTypeFromSpecifics((*it)->ref(SPECIFICS)))) {
-      journal_entries->insert(*it);
+            GetModelTypeFromSpecifics((*it).first->ref(SPECIFICS)))) {
+      journal_entries->insert(std::move((*it).second));
       delete_journals_.erase(it++);
     } else {
       ++it;
@@ -121,16 +117,18 @@ void DeleteJournal::TakeSnapshotAndClear(BaseTransaction* trans,
 }
 
 void DeleteJournal::AddJournalBatch(BaseTransaction* trans,
-                                    const EntryKernelSet& entries) {
+                                    const OwnedEntryKernelSet& entries) {
   DCHECK(trans);
   EntryKernel needle;
-  for (EntryKernelSet::const_iterator i = entries.begin(); i != entries.end();
-       ++i) {
-    needle.put(ID, (*i)->ref(ID));
+  for (auto& entry : entries) {
+    needle.put(ID, entry->ref(ID));
     if (delete_journals_.find(&needle) == delete_journals_.end()) {
-      delete_journals_.insert(new EntryKernel(**i));
+      std::unique_ptr<EntryKernel> t_ptr =
+          base::MakeUnique<EntryKernel>(*entry);
+      EntryKernel* t = t_ptr.get();
+      delete_journals_[t] = std::move(t_ptr);
     }
-    delete_journals_to_purge_.erase((*i)->ref(META_HANDLE));
+    delete_journals_to_purge_.erase(entry->ref(META_HANDLE));
   }
 }
 

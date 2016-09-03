@@ -24,7 +24,6 @@
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/on_disk_directory_backing_store.h"
-#include "components/sync/syncable/syncable-inl.h"
 #include "components/sync/test/directory_backing_store_corruption_testing.h"
 #include "components/sync/test/test_directory_backing_store.h"
 #include "sql/connection.h"
@@ -4192,7 +4191,7 @@ TEST_F(DirectoryBackingStoreTest,
     ASSERT_TRUE(LoadAndIgnoreReturnedData(dbs.get()));
     ASSERT_FALSE(dbs->DidFailFirstOpenAttempt());
     Directory::SaveChangesSnapshot snapshot;
-    snapshot.dirty_metas.insert(CreateEntry(2, "").release());
+    snapshot.dirty_metas.insert(CreateEntry(2, ""));
     ASSERT_TRUE(dbs->SaveChanges(snapshot));
   }
 
@@ -4241,8 +4240,7 @@ TEST_F(DirectoryBackingStoreTest,
   const std::string suffix(400, 'o');
   for (int i = 0; i < corruption_testing::kNumEntriesRequiredForCorruption;
        ++i) {
-    std::unique_ptr<EntryKernel> large_entry = CreateEntry(i, suffix);
-    snapshot.dirty_metas.insert(large_entry.release());
+    snapshot.dirty_metas.insert(CreateEntry(i, suffix));
   }
   ASSERT_TRUE(dbs->SaveChanges(snapshot));
   // Corrupt it.

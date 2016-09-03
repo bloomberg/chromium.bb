@@ -28,7 +28,6 @@
 #include "components/sync/engine_impl/syncer_types.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/mutable_entry.h"
-#include "components/sync/syncable/syncable-inl.h"
 
 using base::Time;
 using base::TimeDelta;

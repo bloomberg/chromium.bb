@@ -6,8 +6,6 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
-#include "components/sync/syncable/syncable-inl.h"
 
 namespace syncer {
 namespace syncable {
@@ -78,7 +76,7 @@ DirOpenResult OnDiskDirectoryBackingStore::Load(
   // The fallback: delete the current database and return a fresh one.  We can
   // fetch the user's data from the cloud.
   handles_map->clear();
-  base::STLDeleteElements(delete_journals);
+  delete_journals->clear();
 
   ResetAndCreateConnection();
 

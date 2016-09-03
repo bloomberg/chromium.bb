@@ -136,9 +136,9 @@ class Directory {
 
     KernelShareInfoStatus kernel_info_status;
     PersistedKernelInfo kernel_info;
-    EntryKernelSet dirty_metas;
+    OwnedEntryKernelSet dirty_metas;
     MetahandleSet metahandles_to_purge;
-    EntryKernelSet delete_journals;
+    OwnedEntryKernelSet delete_journals;
     MetahandleSet delete_journals_to_purge;
   };
 
@@ -609,7 +609,7 @@ class Directory {
   void DeleteEntry(const ScopedKernelLock& lock,
                    bool save_to_journal,
                    EntryKernel* entry,
-                   EntryKernelSet* entries_to_journal);
+                   OwnedEntryKernelSet* entries_to_journal);
 
   // A private version of the public GetMetaHandlesOfType for when you already
   // have a ScopedKernelLock.

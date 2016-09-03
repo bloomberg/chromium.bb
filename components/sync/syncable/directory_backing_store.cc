@@ -26,7 +26,6 @@
 #include "components/sync/base/time.h"
 #include "components/sync/protocol/bookmark_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
-#include "components/sync/syncable/syncable-inl.h"
 #include "components/sync/syncable/syncable_columns.h"
 #include "components/sync/syncable/syncable_util.h"
 #include "sql/connection.h"
@@ -331,8 +330,8 @@ bool DirectoryBackingStore::SaveChanges(
     return false;
 
   PrepareSaveEntryStatement(METAS_TABLE, &save_meta_statement_);
-  for (EntryKernelSet::const_iterator i = snapshot.dirty_metas.begin();
-       i != snapshot.dirty_metas.end(); ++i) {
+  for (auto i = snapshot.dirty_metas.begin(); i != snapshot.dirty_metas.end();
+       ++i) {
     DCHECK((*i)->is_dirty());
     if (!SaveEntryToDB(&save_meta_statement_, **i))
       return false;
@@ -343,7 +342,7 @@ bool DirectoryBackingStore::SaveChanges(
 
   PrepareSaveEntryStatement(DELETE_JOURNAL_TABLE,
                             &save_delete_journal_statement_);
-  for (EntryKernelSet::const_iterator i = snapshot.delete_journals.begin();
+  for (auto i = snapshot.delete_journals.begin();
        i != snapshot.delete_journals.end(); ++i) {
     if (!SaveEntryToDB(&save_delete_journal_statement_, **i))
       return false;
@@ -701,8 +700,7 @@ bool DirectoryBackingStore::SafeToPurgeOnLoading(
   return false;
 }
 
-bool DirectoryBackingStore::LoadDeleteJournals(
-    JournalIndex* delete_journals) {
+bool DirectoryBackingStore::LoadDeleteJournals(JournalIndex* delete_journals) {
   string select;
   select.reserve(kUpdateStatementBufferSize);
   select.append("SELECT ");
@@ -713,11 +711,13 @@ bool DirectoryBackingStore::LoadDeleteJournals(
 
   while (s.Step()) {
     int total_entry_copies;
-    std::unique_ptr<EntryKernel> kernel = UnpackEntry(&s, &total_entry_copies);
+    std::unique_ptr<EntryKernel> kernel_ptr =
+        UnpackEntry(&s, &total_entry_copies);
     // A null kernel is evidence of external data corruption.
-    if (!kernel)
+    if (!kernel_ptr)
       return false;
-    delete_journals->insert(kernel.release());
+    EntryKernel* kernel = kernel_ptr.get();
+    (*delete_journals)[kernel] = std::move(kernel_ptr);
   }
   return s.Succeeded();
 }

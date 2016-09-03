@@ -382,15 +382,22 @@ struct EntryKernel {
   bool dirty_;
 };
 
+template <typename T>
 class EntryKernelLessByMetaHandle {
  public:
-  inline bool operator()(const EntryKernel* a, const EntryKernel* b) const {
+  inline bool operator()(T a, T b) const {
     return a->ref(META_HANDLE) < b->ref(META_HANDLE);
   }
 };
 
-typedef std::set<const EntryKernel*, EntryKernelLessByMetaHandle>
+typedef std::set<const EntryKernel*,
+                 EntryKernelLessByMetaHandle<const EntryKernel*>>
     EntryKernelSet;
+
+typedef std::set<
+    std::unique_ptr<EntryKernel>,
+    EntryKernelLessByMetaHandle<const std::unique_ptr<EntryKernel>&>>
+    OwnedEntryKernelSet;
 
 struct EntryKernelMutation {
   EntryKernel original, mutated;
