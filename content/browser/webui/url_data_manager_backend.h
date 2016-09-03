@@ -52,7 +52,8 @@ class URLDataManagerBackend : public base::SupportsUserData::Data {
   // Adds a DataSource to the collection of data sources.
   void AddDataSource(URLDataSourceImpl* source);
 
-  // DataSource invokes this. Sends the data to the URLRequest.
+  // DataSource invokes this. Sends the data to the URLRequest. |bytes| may be
+  // null, which signals an error handling the request.
   void DataAvailable(RequestID request_id, base::RefCountedMemory* bytes);
 
   static net::URLRequestJob* Factory(net::URLRequest* request,

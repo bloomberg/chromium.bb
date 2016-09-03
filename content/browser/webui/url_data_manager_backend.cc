@@ -148,7 +148,7 @@ class URLRequestChromeJob : public net::URLRequestJob {
   void MimeTypeAvailable(const std::string& mime_type);
 
   // Called by ChromeURLDataManager to notify us that the data blob is ready
-  // for us.
+  // for us.  |bytes| may be null, indicating an error.
   void DataAvailable(base::RefCountedMemory* bytes);
 
   // Returns a weak pointer to the job.
@@ -232,9 +232,14 @@ class URLRequestChromeJob : public net::URLRequestJob {
 
   // The actual data we're serving.  NULL until it's been fetched.
   scoped_refptr<base::RefCountedMemory> data_;
+
   // The current offset into the data that we're handing off to our
   // callers via the Read interfaces.
   int data_offset_;
+
+  // When DataAvailable() is called with a null argument, indicating an error,
+  // this is set accordingly to a code for ReadRawData() to return.
+  net::Error data_available_status_;
 
   // For async reads, we keep around a pointer to the buffer that
   // we're reading into.
@@ -286,6 +291,7 @@ URLRequestChromeJob::URLRequestChromeJob(net::URLRequest* request,
                                          bool is_incognito)
     : net::URLRequestJob(request, network_delegate),
       data_offset_(0),
+      data_available_status_(net::OK),
       pending_buf_size_(0),
       allow_caching_(true),
       add_content_security_policy_(true),
@@ -399,17 +405,15 @@ void URLRequestChromeJob::DataAvailable(base::RefCountedMemory* bytes) {
   TRACE_EVENT_ASYNC_END0("browser", "DataManager:Request", this);
   DCHECK(!data_);
 
-  // A passed-in nullptr signals an error.
-  if (!bytes) {
-    ReadRawDataComplete(net::ERR_FAILED);
-    return;
-  }
-
   // All further requests will be satisfied from the passed-in data.
   data_ = bytes;
+  if (!bytes)
+    data_available_status_ = net::ERR_FAILED;
 
   if (pending_buf_) {
-    int result = PostReadTask(pending_buf_, pending_buf_size_);
+    // The request has already been marked async.
+    int result = bytes ? PostReadTask(pending_buf_, pending_buf_size_)
+                       : data_available_status_;
     pending_buf_ = nullptr;
     if (result != net::ERR_IO_PENDING)
       ReadRawDataComplete(result);
@@ -423,14 +427,16 @@ base::WeakPtr<URLRequestChromeJob> URLRequestChromeJob::AsWeakPtr() {
 int URLRequestChromeJob::ReadRawData(net::IOBuffer* buf, int buf_size) {
   DCHECK(!pending_buf_.get());
 
-  // If data isn't available yet, mark this as asynchronous.
-  if (!data_.get()) {
-    pending_buf_ = buf;
-    pending_buf_size_ = buf_size;
-    return net::ERR_IO_PENDING;
-  }
+  // Handle the cases when DataAvailable() has already been called.
+  if (data_available_status_ != net::OK)
+    return data_available_status_;
+  if (data_)
+    return PostReadTask(buf, buf_size);
 
-  return PostReadTask(buf, buf_size);
+  // DataAvailable() has not been called yet.  Mark the request as async.
+  pending_buf_ = buf;
+  pending_buf_size_ = buf_size;
+  return net::ERR_IO_PENDING;
 }
 
 int URLRequestChromeJob::PostReadTask(scoped_refptr<net::IOBuffer> buf,
