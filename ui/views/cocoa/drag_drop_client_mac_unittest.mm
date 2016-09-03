@@ -61,7 +61,7 @@ using base::ASCIIToUTF16;
 }
 
 - (NSDragOperation)draggingSourceOperationMask {
-  return NSDragOperationNone;
+  return NSDragOperationEvery;
 }
 
 - (NSWindow*)draggingDestinationWindow {

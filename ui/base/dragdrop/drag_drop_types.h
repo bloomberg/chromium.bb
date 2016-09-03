@@ -35,6 +35,7 @@ class UI_BASE_EXPORT DragDropTypes {
 
 #if defined(OS_MACOSX)
   static uint64_t DragOperationToNSDragOperation(int drag_operation);
+  static int NSDragOperationToDragOperation(uint64_t ns_drag_operation);
 #endif
 };
 

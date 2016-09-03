@@ -21,4 +21,18 @@ uint64_t ui::DragDropTypes::DragOperationToNSDragOperation(int drag_operation) {
   return ns_drag_operation;
 }
 
+int ui::DragDropTypes::NSDragOperationToDragOperation(
+    uint64_t ns_drag_operation) {
+  NSUInteger drag_operation = DRAG_NONE;
+
+  if (ns_drag_operation & NSDragOperationLink)
+    drag_operation |= DRAG_LINK;
+  if (ns_drag_operation & NSDragOperationCopy)
+    drag_operation |= DRAG_COPY;
+  if (ns_drag_operation & NSDragOperationMove)
+    drag_operation |= DRAG_MOVE;
+
+  return drag_operation;
+}
+
 }  // namespace ui

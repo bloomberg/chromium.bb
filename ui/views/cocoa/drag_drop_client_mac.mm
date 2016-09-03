@@ -132,6 +132,8 @@ NSDragOperation DragDropClientMac::DragUpdate(id<NSDraggingInfo> sender) {
   if (!data_source_.get()) {
     data_source_.reset([[CocoaDragDropDataProvider alloc]
         initWithPasteboard:[sender draggingPasteboard]]);
+    operation_ = ui::DragDropTypes::NSDragOperationToDragOperation(
+        [sender draggingSourceOperationMask]);
   }
 
   drag_operation = drop_helper_.OnDragOver(
@@ -144,6 +146,8 @@ NSDragOperation DragDropClientMac::Drop(id<NSDraggingInfo> sender) {
   int drag_operation = drop_helper_.OnDrop(
       *[data_source_ data], LocationInView([sender draggingLocation]),
       operation_);
+  data_source_.reset();
+  operation_ = 0;
   return ui::DragDropTypes::DragOperationToNSDragOperation(drag_operation);
 }
 
