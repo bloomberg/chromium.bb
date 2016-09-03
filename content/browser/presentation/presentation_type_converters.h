@@ -31,7 +31,8 @@ struct TypeConverter<blink::mojom::PresentationSessionInfoPtr,
       const content::PresentationSessionInfo& input) {
     blink::mojom::PresentationSessionInfoPtr output(
         blink::mojom::PresentationSessionInfo::New());
-    output->url = input.presentation_url;
+    // TODO(crbug.com/632623): Convert downstream APIs to use GURL
+    output->url = GURL(input.presentation_url);
     output->id = input.presentation_id;
     return output;
   }
@@ -42,7 +43,8 @@ struct TypeConverter<content::PresentationSessionInfo,
                      blink::mojom::PresentationSessionInfoPtr> {
   static content::PresentationSessionInfo Convert(
       const blink::mojom::PresentationSessionInfoPtr& input) {
-    return content::PresentationSessionInfo(input->url, input->id);
+    // TODO(crbug.com/632623): Convert downstream APIs to use GURL
+    return content::PresentationSessionInfo(input->url.spec(), input->id);
   }
 };
 

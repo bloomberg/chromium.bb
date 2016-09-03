@@ -9,6 +9,7 @@
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/modules/presentation/WebPresentationConnectionClient.h"
 #include "third_party/WebKit/public/platform/modules/presentation/presentation.mojom.h"
+#include "url/gurl.h"
 
 namespace content {
 
@@ -19,8 +20,8 @@ class CONTENT_EXPORT PresentationConnectionClient
  public:
   explicit PresentationConnectionClient(
       blink::mojom::PresentationSessionInfoPtr session_info);
-  explicit PresentationConnectionClient(const mojo::String& url,
-                                     const mojo::String& id);
+  explicit PresentationConnectionClient(const GURL& url,
+                                        const mojo::String& id);
   ~PresentationConnectionClient() override;
 
   // WebPresentationConnectionClient implementation.

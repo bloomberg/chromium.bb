@@ -17,6 +17,8 @@ class WebPresentationController;
 class WebPresentationConnectionClient;
 class WebString;
 struct WebPresentationError;
+template <typename T>
+class WebVector;
 
 // If session was created, callback's onSuccess() is invoked with the information about the
 // presentation session created by the embedder. Otherwise, onError() is invoked with the error code
@@ -27,6 +29,7 @@ using WebPresentationConnectionClientCallbacks = WebCallbacks<std::unique_ptr<We
 using WebPresentationAvailabilityCallbacks = WebCallbacks<bool, const WebPresentationError&>;
 
 // The implementation the embedder has to provide for the Presentation API to work.
+// TODO(crbug.com/632623): Use WebURL instead of WebString in this API.
 class WebPresentationClient {
 public:
     virtual ~WebPresentationClient() { }
@@ -36,13 +39,14 @@ public:
 
     // Called when the frame requests to start a new session.
     // The ownership of the |callbacks| argument is transferred to the embedder.
-    virtual void startSession(const WebString& presentationUrl, WebPresentationConnectionClientCallbacks*) = 0;
+    virtual void startSession(const WebVector<WebString>& presentationUrls, WebPresentationConnectionClientCallbacks*) = 0;
 
     // Called when the frame requests to join an existing session.
     // The ownership of the |callbacks| argument is transferred to the embedder.
-    virtual void joinSession(const WebString& presentationUrl, const WebString& presentationId, WebPresentationConnectionClientCallbacks*) = 0;
+    virtual void joinSession(const WebVector<WebString>& presentationUrls, const WebString& presentationId, WebPresentationConnectionClientCallbacks*) = 0;
 
     // Called when the frame requests to send String message to an existing session.
+
     virtual void sendString(const WebString& presentationUrl, const WebString& presentationId, const WebString& message) = 0;
 
     // Called when the frame requests to send ArrayBuffer/View data to an existing session.
@@ -75,7 +79,7 @@ public:
 
     // Called when a defaultRequest has been set. It sends the url associated
     // with it for the embedder.
-    virtual void setDefaultPresentationUrl(const WebString&) = 0;
+    virtual void setDefaultPresentationUrls(const WebVector<WebString>&) = 0;
 };
 
 } // namespace blink

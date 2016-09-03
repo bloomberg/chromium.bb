@@ -11,15 +11,14 @@ namespace content {
 
 PresentationConnectionClient::PresentationConnectionClient(
     blink::mojom::PresentationSessionInfoPtr session_info)
-    : url_(blink::WebString::fromUTF8(session_info->url)),
+    : url_(blink::WebString::fromUTF8(session_info->url.spec())),
       id_(blink::WebString::fromUTF8(session_info->id)) {}
 
 PresentationConnectionClient::PresentationConnectionClient(
-    const mojo::String& url,
+    const GURL& url,
     const mojo::String& id)
-    : url_(blink::WebString::fromUTF8(url)),
-      id_(blink::WebString::fromUTF8(id)) {
-}
+    : url_(blink::WebString::fromUTF8(url.spec())),
+      id_(blink::WebString::fromUTF8(id)) {}
 
 PresentationConnectionClient::~PresentationConnectionClient() {
 }

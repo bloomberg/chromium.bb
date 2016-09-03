@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -89,21 +90,21 @@ class PresentationServiceDelegateImpl
       int render_frame_id,
       content::PresentationScreenAvailabilityListener* listener) override;
   void Reset(int render_process_id, int render_frame_id) override;
-  void SetDefaultPresentationUrl(
+  void SetDefaultPresentationUrls(
       int render_process_id,
       int render_frame_id,
-      const std::string& default_presentation_url,
+      const std::vector<std::string>& default_presentation_urls,
       const content::PresentationSessionStartedCallback& callback) override;
   void StartSession(
       int render_process_id,
       int render_frame_id,
-      const std::string& presentation_url,
+      const std::vector<std::string>& presentation_urls,
       const content::PresentationSessionStartedCallback& success_cb,
       const content::PresentationSessionErrorCallback& error_cb) override;
   void JoinSession(
       int render_process_id,
       int render_frame_id,
-      const std::string& presentation_url,
+      const std::vector<std::string>& presentation_urls,
       const std::string& presentation_id,
       const content::PresentationSessionStartedCallback& success_cb,
       const content::PresentationSessionErrorCallback& error_cb) override;

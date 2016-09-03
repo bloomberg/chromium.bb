@@ -108,6 +108,7 @@ static_library("test_support") {
     "//ui/resources",
     "//ui/surface",
     "//url",
+    "//url/mojo:url_mojom_gurl",
     "//v8",
   ]
 

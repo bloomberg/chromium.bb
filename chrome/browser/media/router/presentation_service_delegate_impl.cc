@@ -712,14 +712,20 @@ void PresentationServiceDelegateImpl::Reset(int render_process_id,
   frame_manager_->Reset(render_frame_host_id);
 }
 
-void PresentationServiceDelegateImpl::SetDefaultPresentationUrl(
+void PresentationServiceDelegateImpl::SetDefaultPresentationUrls(
     int render_process_id,
     int render_frame_id,
-    const std::string& default_presentation_url,
+    const std::vector<std::string>& default_presentation_urls,
     const content::PresentationSessionStartedCallback& callback) {
   RenderFrameHostId render_frame_host_id(render_process_id, render_frame_id);
-  frame_manager_->SetDefaultPresentationUrl(render_frame_host_id,
-                                            default_presentation_url, callback);
+  if (default_presentation_urls.empty()) {
+    frame_manager_->SetDefaultPresentationUrl(render_frame_host_id,
+                                              std::string(), callback);
+  } else {
+    // TODO(crbug.com/627655): Handle multiple URLs.
+    frame_manager_->SetDefaultPresentationUrl(
+        render_frame_host_id, default_presentation_urls[0], callback);
+  }
 }
 
 void PresentationServiceDelegateImpl::OnJoinRouteResponse(
@@ -764,9 +770,17 @@ void PresentationServiceDelegateImpl::OnStartSessionSucceeded(
 void PresentationServiceDelegateImpl::StartSession(
     int render_process_id,
     int render_frame_id,
-    const std::string& presentation_url,
+    const std::vector<std::string>& presentation_urls,
     const content::PresentationSessionStartedCallback& success_cb,
     const content::PresentationSessionErrorCallback& error_cb) {
+  if (presentation_urls.empty()) {
+    error_cb.Run(content::PresentationError(content::PRESENTATION_ERROR_UNKNOWN,
+                                            "Invalid presentation arguments."));
+    return;
+  }
+
+  // TODO(crbug.com/627655): Handle multiple URLs.
+  const std::string& presentation_url = presentation_urls[0];
   if (presentation_url.empty() || !IsValidPresentationUrl(presentation_url)) {
     error_cb.Run(content::PresentationError(content::PRESENTATION_ERROR_UNKNOWN,
                                             "Invalid presentation arguments."));
@@ -795,10 +809,18 @@ void PresentationServiceDelegateImpl::StartSession(
 void PresentationServiceDelegateImpl::JoinSession(
     int render_process_id,
     int render_frame_id,
-    const std::string& presentation_url,
+    const std::vector<std::string>& presentation_urls,
     const std::string& presentation_id,
     const content::PresentationSessionStartedCallback& success_cb,
     const content::PresentationSessionErrorCallback& error_cb) {
+  if (presentation_urls.empty()) {
+    error_cb.Run(content::PresentationError(
+        content::PRESENTATION_ERROR_NO_PRESENTATION_FOUND,
+        "Invalid presentation arguments."));
+  }
+
+  // TODO(crbug.com/627655): Handle multiple URLs.
+  const std::string& presentation_url = presentation_urls[0];
   bool incognito = web_contents_->GetBrowserContext()->IsOffTheRecord();
   std::vector<MediaRouteResponseCallback> route_response_callbacks;
   route_response_callbacks.push_back(base::Bind(

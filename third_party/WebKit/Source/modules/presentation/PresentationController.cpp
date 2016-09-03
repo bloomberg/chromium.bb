@@ -120,10 +120,12 @@ void PresentationController::setDefaultRequestUrl(const KURL& url)
     if (!m_client)
         return;
 
+    // TODO(crbug.com/627655): Accept multiple URLs per PresentationRequest.
+    WebVector<WebString> presentationUrls(static_cast<size_t>(1));
     if (url.isValid())
-        m_client->setDefaultPresentationUrl(url.getString());
-    else
-        m_client->setDefaultPresentationUrl(blink::WebString());
+        presentationUrls[0] = url.getString();
+
+    m_client->setDefaultPresentationUrls(presentationUrls);
 }
 
 void PresentationController::registerConnection(PresentationConnection* connection)

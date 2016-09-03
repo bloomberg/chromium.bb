@@ -16,7 +16,7 @@
 #include "content/renderer/presentation/presentation_connection_client.h"
 #include "services/shell/public/cpp/interface_provider.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/WebURL.h"
+#include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/platform/modules/presentation/WebPresentationAvailabilityObserver.h"
 #include "third_party/WebKit/public/platform/modules/presentation/WebPresentationController.h"
 #include "third_party/WebKit/public/platform/modules/presentation/WebPresentationError.h"
@@ -100,37 +100,41 @@ void PresentationDispatcher::setController(
 }
 
 void PresentationDispatcher::startSession(
-    const blink::WebString& presentationUrl,
+    const blink::WebVector<blink::WebString>& presentationUrls,
     blink::WebPresentationConnectionClientCallbacks* callback) {
   DCHECK(callback);
   ConnectToPresentationServiceIfNeeded();
+
+  std::vector<GURL> urls(presentationUrls.size());
+  std::transform(presentationUrls.begin(), presentationUrls.end(), urls.begin(),
+                 [](const blink::WebString& url) { return GURL(url.utf8()); });
 
   // The dispatcher owns the service so |this| will be valid when
   // OnSessionCreated() is called. |callback| needs to be alive and also needs
   // to be destroyed so we transfer its ownership to the mojo callback.
   presentation_service_->StartSession(
-      presentationUrl.utf8(),
-      base::Bind(&PresentationDispatcher::OnSessionCreated,
-          base::Unretained(this),
-          base::Owned(callback)));
+      urls, base::Bind(&PresentationDispatcher::OnSessionCreated,
+                       base::Unretained(this), base::Owned(callback)));
 }
 
 void PresentationDispatcher::joinSession(
-    const blink::WebString& presentationUrl,
+    const blink::WebVector<blink::WebString>& presentationUrls,
     const blink::WebString& presentationId,
     blink::WebPresentationConnectionClientCallbacks* callback) {
   DCHECK(callback);
   ConnectToPresentationServiceIfNeeded();
 
+  std::vector<GURL> urls(presentationUrls.size());
+  std::transform(presentationUrls.begin(), presentationUrls.end(), urls.begin(),
+                 [](const blink::WebString& url) { return GURL(url.utf8()); });
+
   // The dispatcher owns the service so |this| will be valid when
   // OnSessionCreated() is called. |callback| needs to be alive and also needs
   // to be destroyed so we transfer its ownership to the mojo callback.
   presentation_service_->JoinSession(
-      presentationUrl.utf8(),
-      presentationId.utf8(),
+      urls, presentationId.utf8(),
       base::Bind(&PresentationDispatcher::OnSessionCreated,
-          base::Unretained(this),
-          base::Owned(callback)));
+                 base::Unretained(this), base::Owned(callback)));
 }
 
 void PresentationDispatcher::sendString(
@@ -226,8 +230,7 @@ void PresentationDispatcher::closeSession(
     const blink::WebString& presentationUrl,
     const blink::WebString& presentationId) {
   ConnectToPresentationServiceIfNeeded();
-
-  presentation_service_->CloseConnection(presentationUrl.utf8(),
+  presentation_service_->CloseConnection(GURL(presentationUrl.utf8()),
                                          presentationId.utf8());
 }
 
@@ -235,8 +238,7 @@ void PresentationDispatcher::terminateSession(
     const blink::WebString& presentationUrl,
     const blink::WebString& presentationId) {
   ConnectToPresentationServiceIfNeeded();
-
-  presentation_service_->Terminate(presentationUrl.utf8(),
+  presentation_service_->Terminate(GURL(presentationUrl.utf8()),
                                    presentationId.utf8());
 }
 
@@ -290,10 +292,14 @@ void PresentationDispatcher::stopListening(
   UpdateListeningState(status_it->second.get());
 }
 
-void PresentationDispatcher::setDefaultPresentationUrl(
-    const blink::WebString& url) {
+void PresentationDispatcher::setDefaultPresentationUrls(
+    const blink::WebVector<blink::WebString>& presentationUrls) {
   ConnectToPresentationServiceIfNeeded();
-  presentation_service_->SetDefaultPresentationURL(url.utf8());
+
+  std::vector<GURL> urls(presentationUrls.size());
+  std::transform(presentationUrls.begin(), presentationUrls.end(), urls.begin(),
+                 [](const blink::WebString& url) { return GURL(url.utf8()); });
+  presentation_service_->SetDefaultPresentationUrls(urls);
 }
 
 void PresentationDispatcher::DidCommitProvisionalLoad(
@@ -313,9 +319,9 @@ void PresentationDispatcher::OnDestruct() {
   delete this;
 }
 
-void PresentationDispatcher::OnScreenAvailabilityUpdated(const std::string& url,
+void PresentationDispatcher::OnScreenAvailabilityUpdated(const GURL& url,
                                                          bool available) {
-  auto status_it = availability_status_.find(url);
+  auto status_it = availability_status_.find(url.spec());
   if (status_it == availability_status_.end())
     return;
   AvailabilityStatus* status = status_it->second.get();
@@ -336,9 +342,8 @@ void PresentationDispatcher::OnScreenAvailabilityUpdated(const std::string& url,
   UpdateListeningState(status);
 }
 
-void PresentationDispatcher::OnScreenAvailabilityNotSupported(
-    const std::string& url) {
-  auto status_it = availability_status_.find(url);
+void PresentationDispatcher::OnScreenAvailabilityNotSupported(const GURL& url) {
+  auto status_it = availability_status_.find(url.spec());
   if (status_it == availability_status_.end())
     return;
   AvailabilityStatus* status = status_it->second.get();
@@ -470,10 +475,11 @@ void PresentationDispatcher::UpdateListeningState(AvailabilityStatus* status) {
   ConnectToPresentationServiceIfNeeded();
   if (should_listen) {
     status->listening_state = ListeningState::WAITING;
-    presentation_service_->ListenForScreenAvailability(status->url);
+    presentation_service_->ListenForScreenAvailability(GURL(status->url));
   } else {
     status->listening_state = ListeningState::INACTIVE;
-    presentation_service_->StopListeningForScreenAvailability(status->url);
+    presentation_service_->StopListeningForScreenAvailability(
+        GURL(status->url));
   }
 }
 
@@ -492,7 +498,7 @@ PresentationDispatcher::CreateSendTextMessageRequest(
     const blink::WebString& message) {
   blink::mojom::PresentationSessionInfoPtr session_info =
       blink::mojom::PresentationSessionInfo::New();
-  session_info->url = presentationUrl.utf8();
+  session_info->url = GURL(presentationUrl.utf8());
   session_info->id = presentationId.utf8();
 
   blink::mojom::SessionMessagePtr session_message =
@@ -513,7 +519,7 @@ PresentationDispatcher::CreateSendBinaryMessageRequest(
     size_t length) {
   blink::mojom::PresentationSessionInfoPtr session_info =
       blink::mojom::PresentationSessionInfo::New();
-  session_info->url = presentationUrl.utf8();
+  session_info->url = GURL(presentationUrl.utf8());
   session_info->id = presentationId.utf8();
 
   blink::mojom::SessionMessagePtr session_message =

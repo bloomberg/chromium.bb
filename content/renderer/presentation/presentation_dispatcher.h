@@ -24,6 +24,8 @@
 namespace blink {
 class WebPresentationAvailabilityObserver;
 class WebString;
+template <typename T>
+class WebVector;
 }  // namespace blink
 
 namespace content {
@@ -62,10 +64,10 @@ class CONTENT_EXPORT PresentationDispatcher
   // WebPresentationClient implementation.
   void setController(blink::WebPresentationController* controller) override;
   void startSession(
-      const blink::WebString& presentationUrl,
+      const blink::WebVector<blink::WebString>& presentationUrls,
       blink::WebPresentationConnectionClientCallbacks* callback) override;
   void joinSession(
-      const blink::WebString& presentationUrl,
+      const blink::WebVector<blink::WebString>& presentationUrls,
       const blink::WebString& presentationId,
       blink::WebPresentationConnectionClientCallbacks* callback) override;
   void sendString(const blink::WebString& presentationUrl,
@@ -88,7 +90,8 @@ class CONTENT_EXPORT PresentationDispatcher
       blink::WebPresentationAvailabilityCallbacks* callbacks) override;
   void startListening(blink::WebPresentationAvailabilityObserver*) override;
   void stopListening(blink::WebPresentationAvailabilityObserver*) override;
-  void setDefaultPresentationUrl(const blink::WebString& url) override;
+  void setDefaultPresentationUrls(
+      const blink::WebVector<blink::WebString>& presentationUrls) override;
 
   // RenderFrameObserver implementation.
   void DidCommitProvisionalLoad(
@@ -97,9 +100,8 @@ class CONTENT_EXPORT PresentationDispatcher
   void OnDestruct() override;
 
   // blink::mojom::PresentationServiceClient
-  void OnScreenAvailabilityNotSupported(const std::string& url) override;
-  void OnScreenAvailabilityUpdated(const std::string& url,
-                                   bool available) override;
+  void OnScreenAvailabilityNotSupported(const GURL& url) override;
+  void OnScreenAvailabilityUpdated(const GURL& url, bool available) override;
   void OnConnectionStateChanged(
       blink::mojom::PresentationSessionInfoPtr connection,
       blink::mojom::PresentationConnectionState state) override;

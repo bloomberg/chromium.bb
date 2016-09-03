@@ -7,9 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <algorithm>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "base/logging.h"
 #include "base/stl_util.h"
@@ -182,36 +180,35 @@ void PresentationServiceImpl::SetClient(
   client_ = std::move(client);
 }
 
-void PresentationServiceImpl::ListenForScreenAvailability(
-    const std::string& url) {
+void PresentationServiceImpl::ListenForScreenAvailability(const GURL& url) {
   DVLOG(2) << "ListenForScreenAvailability " << url;
   if (!delegate_) {
     client_->OnScreenAvailabilityUpdated(url, false);
     return;
   }
 
-  if (screen_availability_listeners_.count(url))
+  if (screen_availability_listeners_.count(url.spec()))
     return;
 
   std::unique_ptr<ScreenAvailabilityListenerImpl> listener(
-      new ScreenAvailabilityListenerImpl(url, this));
+      new ScreenAvailabilityListenerImpl(url.spec(), this));
   if (delegate_->AddScreenAvailabilityListener(
       render_process_id_,
       render_frame_id_,
       listener.get())) {
-    screen_availability_listeners_[url] = std::move(listener);
+    screen_availability_listeners_[url.spec()] = std::move(listener);
   } else {
     DVLOG(1) << "AddScreenAvailabilityListener failed. Ignoring request.";
   }
 }
 
 void PresentationServiceImpl::StopListeningForScreenAvailability(
-    const std::string& url) {
-  DVLOG(2) << "StopListeningForScreenAvailability " << url;
+    const GURL& url) {
+  DVLOG(2) << "StopListeningForScreenAvailability " << url.spec();
   if (!delegate_)
     return;
 
-  auto listener_it = screen_availability_listeners_.find(url);
+  auto listener_it = screen_availability_listeners_.find(url.spec());
   if (listener_it == screen_availability_listeners_.end())
     return;
 
@@ -220,8 +217,9 @@ void PresentationServiceImpl::StopListeningForScreenAvailability(
   screen_availability_listeners_.erase(listener_it);
 }
 
-void PresentationServiceImpl::StartSession(const std::string& presentation_url,
-                                           const NewSessionCallback& callback) {
+void PresentationServiceImpl::StartSession(
+    const std::vector<GURL>& presentation_urls,
+    const NewSessionCallback& callback) {
   DVLOG(2) << "StartSession";
   if (!delegate_) {
     callback.Run(
@@ -238,10 +236,16 @@ void PresentationServiceImpl::StartSession(const std::string& presentation_url,
     return;
   }
 
+  std::vector<std::string> presentation_urls_for_delegate(
+      presentation_urls.size());
+  std::transform(presentation_urls.begin(), presentation_urls.end(),
+                 presentation_urls_for_delegate.begin(),
+                 [](const GURL& url) { return url.spec(); });
+
   start_session_request_id_ = GetNextRequestSessionId();
   pending_start_session_cb_.reset(new NewSessionCallbackWrapper(callback));
   delegate_->StartSession(
-      render_process_id_, render_frame_id_, presentation_url,
+      render_process_id_, render_frame_id_, presentation_urls_for_delegate,
       base::Bind(&PresentationServiceImpl::OnStartSessionSucceeded,
                  weak_factory_.GetWeakPtr(), start_session_request_id_),
       base::Bind(&PresentationServiceImpl::OnStartSessionError,
@@ -249,7 +253,7 @@ void PresentationServiceImpl::StartSession(const std::string& presentation_url,
 }
 
 void PresentationServiceImpl::JoinSession(
-    const std::string& presentation_url,
+    const std::vector<GURL>& presentation_urls,
     const base::Optional<std::string>& presentation_id,
     const NewSessionCallback& callback) {
   DVLOG(2) << "JoinSession";
@@ -261,13 +265,19 @@ void PresentationServiceImpl::JoinSession(
     return;
   }
 
+  std::vector<std::string> presentation_urls_for_delegate(
+      presentation_urls.size());
+  std::transform(presentation_urls.begin(), presentation_urls.end(),
+                 presentation_urls_for_delegate.begin(),
+                 [](const GURL& url) { return url.spec(); });
+
   int request_session_id = RegisterJoinSessionCallback(callback);
   if (request_session_id == kInvalidRequestSessionId) {
     InvokeNewSessionCallbackWithError(callback);
     return;
   }
   delegate_->JoinSession(
-      render_process_id_, render_frame_id_, presentation_url,
+      render_process_id_, render_frame_id_, presentation_urls_for_delegate,
       presentation_id.value_or(std::string()),
       base::Bind(&PresentationServiceImpl::OnJoinSessionSucceeded,
                  weak_factory_.GetWeakPtr(), request_session_id),
@@ -357,18 +367,24 @@ bool PresentationServiceImpl::RunAndEraseJoinSessionMojoCallback(
   return true;
 }
 
-void PresentationServiceImpl::SetDefaultPresentationURL(
-    const std::string& url) {
-  DVLOG(2) << "SetDefaultPresentationURL";
+void PresentationServiceImpl::SetDefaultPresentationUrls(
+    const std::vector<GURL>& presentation_urls) {
+  DVLOG(2) << "SetDefaultPresentationUrls";
   if (!delegate_)
     return;
 
-  if (default_presentation_url_ == url)
+  std::vector<std::string> presentation_urls_for_delegate(
+      presentation_urls.size());
+  std::transform(presentation_urls.begin(), presentation_urls.end(),
+                 presentation_urls_for_delegate.begin(),
+                 [](const GURL& url) { return url.spec(); });
+
+  if (default_presentation_urls_ == presentation_urls_for_delegate)
     return;
 
-  default_presentation_url_ = url;
-  delegate_->SetDefaultPresentationUrl(
-      render_process_id_, render_frame_id_, url,
+  default_presentation_urls_ = presentation_urls_for_delegate;
+  delegate_->SetDefaultPresentationUrls(
+      render_process_id_, render_frame_id_, presentation_urls_for_delegate,
       base::Bind(&PresentationServiceImpl::OnDefaultPresentationStarted,
                  weak_factory_.GetWeakPtr()));
 }
@@ -405,7 +421,7 @@ void PresentationServiceImpl::OnSendMessageCallback(bool sent) {
 }
 
 void PresentationServiceImpl::CloseConnection(
-    const std::string& presentation_url,
+    const GURL& presentation_url,
     const std::string& presentation_id) {
   DVLOG(2) << "CloseConnection " << presentation_id;
   if (delegate_)
@@ -413,7 +429,7 @@ void PresentationServiceImpl::CloseConnection(
                                presentation_id);
 }
 
-void PresentationServiceImpl::Terminate(const std::string& presentation_url,
+void PresentationServiceImpl::Terminate(const GURL& presentation_url,
                                         const std::string& presentation_id) {
   DVLOG(2) << "Terminate " << presentation_id;
   if (delegate_)
@@ -524,7 +540,7 @@ void PresentationServiceImpl::Reset() {
   if (delegate_)
     delegate_->Reset(render_process_id_, render_frame_id_);
 
-  default_presentation_url_.clear();
+  default_presentation_urls_.clear();
 
   screen_availability_listeners_.clear();
 
@@ -582,12 +598,13 @@ std::string PresentationServiceImpl::ScreenAvailabilityListenerImpl
 
 void PresentationServiceImpl::ScreenAvailabilityListenerImpl
 ::OnScreenAvailabilityChanged(bool available) {
-  service_->client_->OnScreenAvailabilityUpdated(availability_url_, available);
+  service_->client_->OnScreenAvailabilityUpdated(GURL(availability_url_),
+                                                 available);
 }
 
 void PresentationServiceImpl::ScreenAvailabilityListenerImpl
 ::OnScreenAvailabilityNotSupported() {
-  service_->client_->OnScreenAvailabilityNotSupported(availability_url_);
+  service_->client_->OnScreenAvailabilityNotSupported(GURL(availability_url_));
 }
 
 PresentationServiceImpl::NewSessionCallbackWrapper
