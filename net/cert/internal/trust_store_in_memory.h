@@ -32,7 +32,7 @@ class NET_EXPORT TrustStoreInMemory : public TrustStore {
 
   // TrustStore implementation:
   void FindTrustAnchorsForCert(
-      const ParsedCertificate* cert,
+      const scoped_refptr<ParsedCertificate>& cert,
       const TrustAnchorsCallback& callback,
       TrustAnchors* synchronous_matches,
       std::unique_ptr<Request>* out_req) const override;

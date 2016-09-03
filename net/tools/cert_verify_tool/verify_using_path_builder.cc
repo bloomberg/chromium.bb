@@ -17,11 +17,17 @@
 #include "net/cert/internal/parsed_certificate.h"
 #include "net/cert/internal/path_builder.h"
 #include "net/cert/internal/signature_policy.h"
+#include "net/cert/internal/trust_store_collection.h"
 #include "net/cert/internal/trust_store_in_memory.h"
 #include "net/cert_net/cert_net_fetcher_impl.h"
 #include "net/tools/cert_verify_tool/cert_verify_tool_util.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
+
+#if defined(USE_NSS_CERTS)
+#include "base/threading/thread_task_runner_handle.h"
+#include "net/cert/internal/trust_store_nss.h"
+#endif
 
 #if defined(OS_LINUX)
 #include "net/proxy/proxy_config.h"
@@ -164,15 +170,16 @@ bool VerifyUsingPathBuilder(
     const std::vector<CertInput>& root_der_certs,
     const base::Time at_time,
     const base::FilePath& dump_prefix_path) {
-  std::cout << "NOTE: CertPathBuilder does not currently use OS trust settings "
-               "(--roots must be specified).\n";
   std::cerr << "WARNING: --hostname is not yet verified with CertPathBuilder\n";
 
   base::Time::Exploded exploded_time;
   at_time.UTCExplode(&exploded_time);
   net::der::GeneralizedTime time = ConvertExplodedTime(exploded_time);
 
-  net::TrustStoreInMemory trust_store;
+  net::TrustStoreCollection trust_store;
+
+  net::TrustStoreInMemory trust_store_in_memory;
+  trust_store.AddTrustStoreSynchronousOnly(&trust_store_in_memory);
   for (const auto& der_cert : root_der_certs) {
     scoped_refptr<net::ParsedCertificate> cert =
         net::ParsedCertificate::CreateFromCertificateCopy(der_cert.der_cert,
@@ -180,10 +187,19 @@ bool VerifyUsingPathBuilder(
     if (!cert)
       PrintCertError("ERROR: ParsedCertificate failed:", der_cert);
     else {
-      trust_store.AddTrustAnchor(
+      trust_store_in_memory.AddTrustAnchor(
           net::TrustAnchor::CreateFromCertificateNoConstraints(cert));
     }
   }
+
+#if defined(USE_NSS_CERTS)
+  net::TrustStoreNSS trust_store_nss(trustSSL,
+                                     base::ThreadTaskRunnerHandle::Get());
+  trust_store.SetPrimaryTrustStore(&trust_store_nss);
+#else
+  std::cout << "NOTE: CertPathBuilder does not currently use OS trust settings "
+               "(--roots must be specified).\n";
+#endif
 
   net::CertIssuerSourceStatic intermediate_cert_issuer_source;
   for (const auto& der_cert : intermediate_der_certs) {

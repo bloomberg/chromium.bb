@@ -17,7 +17,7 @@ namespace net {
 // deleting the Request during the request callback.
 void TrustStoreRequestDeleter(std::unique_ptr<TrustStore::Request>* req_owner,
                               const base::Closure& done_callback,
-                              std::unique_ptr<TrustAnchors> anchors);
+                              TrustAnchors anchors);
 
 // Helper to record async results from a FindTrustAnchorsForCert call.
 class TrustAnchorResultRecorder {
@@ -53,7 +53,7 @@ class TrustStoreInMemoryAsync : public TrustStore {
 
   // TrustStore implementation:
   void FindTrustAnchorsForCert(
-      const ParsedCertificate* cert,
+      const scoped_refptr<ParsedCertificate>& cert,
       const TrustAnchorsCallback& callback,
       TrustAnchors* synchronous_matches,
       std::unique_ptr<Request>* out_req) const override;

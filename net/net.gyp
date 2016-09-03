@@ -212,6 +212,7 @@
         }],
         [ 'use_nss_certs != 1', {
           'sources!': [
+            'cert/internal/trust_store_nss_unittest.cc',
             'cert/nss_cert_database_chromeos_unittest.cc',
             'cert/nss_cert_database_unittest.cc',
             'cert/nss_profile_filter_chromeos_unittest.cc',

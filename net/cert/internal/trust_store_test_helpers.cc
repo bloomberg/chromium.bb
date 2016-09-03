@@ -41,7 +41,7 @@ class TrustStoreInMemoryAsyncRequest : public TrustStore::Request {
 
 void TrustStoreRequestDeleter(std::unique_ptr<TrustStore::Request>* req_owner,
                               const base::Closure& done_callback,
-                              std::unique_ptr<TrustAnchors> anchors) {
+                              TrustAnchors anchors) {
   req_owner->reset();
   done_callback.Run();
 }
@@ -73,7 +73,7 @@ void TrustStoreInMemoryAsync::AddAsyncTrustAnchor(
 }
 
 void TrustStoreInMemoryAsync::FindTrustAnchorsForCert(
-    const ParsedCertificate* cert,
+    const scoped_refptr<ParsedCertificate>& cert,
     const TrustAnchorsCallback& callback,
     TrustAnchors* synchronous_matches,
     std::unique_ptr<Request>* out_req) const {

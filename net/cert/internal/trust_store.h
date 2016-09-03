@@ -140,7 +140,7 @@ class NET_EXPORT TrustStore {
   // when results are available. The Request may be destroyed to cancel
   // the callback if it has not occurred yet.
   virtual void FindTrustAnchorsForCert(
-      const ParsedCertificate* cert,
+      const scoped_refptr<ParsedCertificate>& cert,
       const TrustAnchorsCallback& callback,
       TrustAnchors* synchronous_matches,
       std::unique_ptr<Request>* out_req) const = 0;

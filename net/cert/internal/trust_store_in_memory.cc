@@ -20,7 +20,7 @@ void TrustStoreInMemory::AddTrustAnchor(scoped_refptr<TrustAnchor> anchor) {
 }
 
 void TrustStoreInMemory::FindTrustAnchorsForCert(
-    const ParsedCertificate* cert,
+    const scoped_refptr<ParsedCertificate>& cert,
     const TrustAnchorsCallback& callback,
     TrustAnchors* synchronous_matches,
     std::unique_ptr<Request>* out_req) const {

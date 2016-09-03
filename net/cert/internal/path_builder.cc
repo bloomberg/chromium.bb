@@ -153,7 +153,7 @@ CompletionStatus CertIssuersIter::GetNextIssuer(CertificateOrTrustAnchor* out,
   if (!did_initial_query_) {
     did_initial_query_ = true;
     trust_store_->FindTrustAnchorsForCert(
-        cert_.get(),
+        cert_,
         callback.is_null() ? TrustStore::TrustAnchorsCallback()
                            : base::Bind(&CertIssuersIter::GotAsyncAnchors,
                                         base::Unretained(this)),
