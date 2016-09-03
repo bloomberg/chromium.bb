@@ -195,6 +195,15 @@ cr.define('offlineInternals', function() {
       $('request-status').textContent = enabled ? 'On' : 'Off';
     }
 
+    var incognito = loadTimeData.getBoolean('isIncognito');
+    $('clear-all').disabled = incognito;
+    $('clear-selected').disabled = incognito;
+    $('log-model-on').disabled = incognito;
+    $('log-model-off').disabled = incognito;
+    $('log-request-on').disabled = incognito;
+    $('log-request-off').disabled = incognito;
+    $('refresh').disabled = incognito;
+
     $('clear-all').onclick = deleteAllPages;
     $('clear-selected').onclick = deleteSelectedPages;
     $('refresh').onclick = refreshAll;
@@ -226,8 +235,8 @@ cr.define('offlineInternals', function() {
             });
       }
     };
-
-    refreshAll();
+    if (!incognito)
+      refreshAll();
   }
 
   // Return an object with all of the exports.

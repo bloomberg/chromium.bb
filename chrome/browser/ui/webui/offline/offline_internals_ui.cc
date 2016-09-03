@@ -29,7 +29,10 @@ OfflineInternalsUI::OfflineInternalsUI(content::WebUI* web_ui)
                                IDR_OFFLINE_INTERNALS_BROWSER_PROXY_JS);
   html_source->SetDefaultResource(IDR_OFFLINE_INTERNALS_HTML);
 
-  content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), html_source);
+  Profile* profile = Profile::FromWebUI(web_ui);
+  html_source->AddBoolean("isIncognito", profile->IsOffTheRecord());
+
+  content::WebUIDataSource::Add(profile, html_source);
 
   web_ui->AddMessageHandler(
       new offline_internals::OfflineInternalsUIMessageHandler());

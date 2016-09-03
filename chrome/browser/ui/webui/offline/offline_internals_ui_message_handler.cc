@@ -173,7 +173,8 @@ void OfflineInternalsUIMessageHandler::HandleSetRecordPageModel(
     const base::ListValue* args) {
   bool should_record;
   CHECK(args->GetBoolean(0, &should_record));
-  offline_page_model_->GetLogger()->SetIsLogging(should_record);
+  if (offline_page_model_)
+    offline_page_model_->GetLogger()->SetIsLogging(should_record);
 }
 
 void OfflineInternalsUIMessageHandler::HandleGetNetworkStatus(
@@ -191,7 +192,8 @@ void OfflineInternalsUIMessageHandler::HandleSetRecordRequestQueue(
     const base::ListValue* args) {
   bool should_record;
   CHECK(args->GetBoolean(0, &should_record));
-  request_coordinator_->GetLogger()->SetIsLogging(should_record);
+  if (request_coordinator_)
+    request_coordinator_->GetLogger()->SetIsLogging(should_record);
 }
 
 void OfflineInternalsUIMessageHandler::HandleGetLoggingState(
@@ -202,9 +204,13 @@ void OfflineInternalsUIMessageHandler::HandleGetLoggingState(
 
   base::DictionaryValue result;
   result.SetBoolean("modelIsLogging",
-                    offline_page_model_->GetLogger()->GetIsLogging());
+                    offline_page_model_
+                        ? offline_page_model_->GetLogger()->GetIsLogging()
+                        : false);
   result.SetBoolean("queueIsLogging",
-                    request_coordinator_->GetLogger()->GetIsLogging());
+                    request_coordinator_
+                        ? request_coordinator_->GetLogger()->GetIsLogging()
+                        : false);
   ResolveJavascriptCallback(*callback_id, result);
 }
 
@@ -215,8 +221,10 @@ void OfflineInternalsUIMessageHandler::HandleGetEventLogs(
   CHECK(args->Get(0, &callback_id));
 
   std::vector<std::string> logs;
-  offline_page_model_->GetLogger()->GetLogs(&logs);
-  request_coordinator_->GetLogger()->GetLogs(&logs);
+  if (offline_page_model_)
+    offline_page_model_->GetLogger()->GetLogs(&logs);
+  if (request_coordinator_)
+    request_coordinator_->GetLogger()->GetLogs(&logs);
   std::sort(logs.begin(), logs.end());
 
   base::ListValue result;
@@ -230,20 +238,24 @@ void OfflineInternalsUIMessageHandler::HandleAddToRequestQueue(
   const base::Value* callback_id;
   CHECK(args->Get(0, &callback_id));
 
-  std::string url;
-  CHECK(args->GetString(1, &url));
+  if (request_coordinator_) {
+    std::string url;
+    CHECK(args->GetString(1, &url));
 
-  // To be visible in Downloads UI, these items need a well-formed GUID
-  // and AsyncNamespace in their ClientId.
-  std::ostringstream id_stream;
-  id_stream << base::GenerateGUID();
+    // To be visible in Downloads UI, these items need a well-formed GUID
+    // and AsyncNamespace in their ClientId.
+    std::ostringstream id_stream;
+    id_stream << base::GenerateGUID();
 
-  ResolveJavascriptCallback(
-      *callback_id,
-      base::FundamentalValue(request_coordinator_->SavePageLater(
-          GURL(url), offline_pages::ClientId(offline_pages::kAsyncNamespace,
-                                             id_stream.str()),
-          true)));
+    ResolveJavascriptCallback(
+        *callback_id,
+        base::FundamentalValue(request_coordinator_->SavePageLater(
+            GURL(url), offline_pages::ClientId(offline_pages::kAsyncNamespace,
+                                               id_stream.str()),
+            true)));
+  } else {
+    ResolveJavascriptCallback(*callback_id, base::FundamentalValue(false));
+  }
 }
 
 void OfflineInternalsUIMessageHandler::RegisterMessages() {
