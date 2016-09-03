@@ -149,16 +149,14 @@ component("core") {
     "//v8",
   ]
   deps = [
+    ":html",
     ":remaining",
     ":rendering",
+    ":svg",
     "//third_party/WebKit/Source/core/dom",
     "//third_party/WebKit/Source/core/events",
-    "//third_party/WebKit/Source/core/html",
     "//third_party/WebKit/Source/core/input",
-    "//third_party/WebKit/Source/core/layout/svg",
     "//third_party/WebKit/Source/core/observer",
-    "//third_party/WebKit/Source/core/style:svg",
-    "//third_party/WebKit/Source/core/svg",
   ]
 
   if (is_win && is_debug && is_component_build) {
@@ -169,6 +167,30 @@ component("core") {
   }
 
   public_configs = [ ":core_include_dirs" ]
+}
+
+target(core_link_large_target_type, "html") {
+  sources = rebase_path(webcore_html_files, ".", "//")
+
+  configs -= core_config_remove
+  configs += core_config_add
+
+  deps = [
+    ":core_generated",
+    ":prerequisites",
+  ]
+}
+
+target(core_link_large_target_type, "svg") {
+  sources = rebase_path(webcore_svg_files, ".", "//")
+
+  configs -= core_config_remove
+  configs += core_config_add
+
+  deps = [
+    ":core_generated",
+    ":prerequisites",
+  ]
 }
 
 target(core_link_large_target_type, "remaining") {
