@@ -6,8 +6,6 @@ import("//build/config/ui.gni")
 import("//chrome/chrome_tests.gni")
 import("//testing/test.gni")
 
-# GYP version: chrome/chrome_tests.gypi:automation_client_lib
-#              (embed_js_in_cpp action)
 action("embed_js_in_cpp") {
   script = "embed_js_in_cpp.py"
 
@@ -33,8 +31,6 @@ action("embed_js_in_cpp") {
   args += rebase_path(js_files, root_build_dir)
 }
 
-# GYP version: chrome/chrome_tests.gypi:automation_client_lib
-#              (embed_user_data_dir_in_cpp action)
 action("embed_user_data_dir_in_cpp") {
   script = "embed_user_data_dir_in_cpp.py"
 
@@ -56,8 +52,6 @@ action("embed_user_data_dir_in_cpp") {
   args += rebase_path(files, root_build_dir)
 }
 
-# GYP version: chrome/chrome_tests.gypi:automation_client_lib
-#              (embed_extension_in_cpp action)
 action("embed_extension_in_cpp") {
   script = "embed_extension_in_cpp.py"
 
@@ -79,7 +73,6 @@ action("embed_extension_in_cpp") {
   args += rebase_path(files, root_build_dir)
 }
 
-# GYP version: chrome/chrome_tests.gypi:automation_client_lib
 source_set("automation_client_lib") {
   sources = [
     "chrome/adb.h",
@@ -200,8 +193,6 @@ source_set("automation_client_lib") {
   ]
 }
 
-# GYP version: chrome/chrome_tests.gypi:chromedriver_lib
-#              (embed_version_in_cpp action)
 action("embed_version_in_cpp") {
   script = "embed_version_in_cpp.py"
   inputs = [

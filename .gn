@@ -241,15 +241,9 @@ exec_script_whitelist = [
   "//build/toolchain/win/BUILD.gn",
   "//build/util/branding.gni",
   "//build/util/version.gni",
-  "//chrome/android/BUILD.gn",
   "//chrome/browser/chromeos/BUILD.gn",
-  "//chrome/browser/extensions/BUILD.gn",
-  "//chrome/browser/resources/chromeos/chromevox/BUILD.gn",
-  "//chrome/browser/media/router/BUILD.gn",
   "//chrome/chrome_tests.gni",
   "//chrome/common/extensions/api/schemas.gni",
-  "//chrome/renderer/BUILD.gn",
-  "//chrome/test/BUILD.gn",
   "//chromeos/BUILD.gn",
 
   # TODO(dgn): Layer violation but breaks the build otherwise, see

@@ -334,39 +334,101 @@ template("run_jsbundler") {
   }
 }
 
-chromevox_assets_gypi_values =
-    exec_script("//build/gypi_to_gn.py",
-                [ rebase_path("chromevox_assets.gypi") ],
-                "scope",
-                [ "chromevox_assets.gypi" ])
-
-chromevox_vars_gypi_values = exec_script("//build/gypi_to_gn.py",
-                                         [ rebase_path("chromevox_vars.gypi") ],
-                                         "scope",
-                                         [ "chromevox_vars.gypi" ])
+chromevox_background_script_loader_file = "cvox2/background/loader.js"
+chromevox_content_script_loader_file = "chromevox/injected/loader.js"
+chromevox_kbexplorer_loader_file = "chromevox/background/kbexplorer_loader.js"
+chromevox_min_content_script_loader_file = "cvox2/injected/loader.js"
+chromevox_options_script_loader_file = "chromevox/background/options_loader.js"
+chromevox_panel_script_loader_file = "cvox2/background/panel_loader.js"
 
 # Instead of setting up one copy target for each subdirectory, use a script
 # to copy all files.
 run_jsbundler("chromevox_copied_files") {
   mode = "copy"
   dest_dir = chromevox_out_dir
-  sources = chromevox_assets_gypi_values.chromevox_assets_images
-  sources +=
-      chromevox_assets_gypi_values.chromevox_assets_chromevox_background_earcons
-  sources +=
-      chromevox_assets_gypi_values.chromevox_assets_chromevox_background_keymaps
-  sources += chromevox_assets_gypi_values.chromevox_assets_chromevox_background_mathmaps_functions
-  sources += chromevox_assets_gypi_values.chromevox_assets_chromevox_background_mathmaps_symbols
-  sources +=
-      chromevox_assets_gypi_values.chromevox_assets_cvox2_background_earcons
-  sources += [
+  sources = [
     "chromevox/background/background.html",
+    "chromevox/background/earcons/alert_modal.ogg",
+    "chromevox/background/earcons/alert_nonmodal.ogg",
+    "chromevox/background/earcons/button.ogg",
+    "chromevox/background/earcons/check_off.ogg",
+    "chromevox/background/earcons/check_on.ogg",
+    "chromevox/background/earcons/editable_text.ogg",
+    "chromevox/background/earcons/invalid_keypress.ogg",
+    "chromevox/background/earcons/link.ogg",
+    "chromevox/background/earcons/list_item.ogg",
+    "chromevox/background/earcons/listbox.ogg",
+    "chromevox/background/earcons/long_desc.ogg",
+    "chromevox/background/earcons/math.ogg",
+    "chromevox/background/earcons/object_close.ogg",
+    "chromevox/background/earcons/object_enter.ogg",
+    "chromevox/background/earcons/object_exit.ogg",
+    "chromevox/background/earcons/object_open.ogg",
+    "chromevox/background/earcons/object_select.ogg",
+    "chromevox/background/earcons/page_finish_loading.ogg",
+    "chromevox/background/earcons/page_start_loading.ogg",
+    "chromevox/background/earcons/recover_focus.ogg",
+    "chromevox/background/earcons/selection.ogg",
+    "chromevox/background/earcons/selection_reverse.ogg",
+    "chromevox/background/earcons/skip.ogg",
+    "chromevox/background/earcons/wrap.ogg",
+    "chromevox/background/earcons/wrap_edge.ogg",
     "chromevox/background/kbexplorer.html",
+    "chromevox/background/keymaps/classic_keymap.json",
+    "chromevox/background/keymaps/experimental.json",
+    "chromevox/background/keymaps/flat_keymap.json",
+    "chromevox/background/keymaps/next_keymap.json",
+    "chromevox/background/mathmaps/functions/algebra.json",
+    "chromevox/background/mathmaps/functions/elementary.json",
+    "chromevox/background/mathmaps/functions/hyperbolic.json",
+    "chromevox/background/mathmaps/functions/trigonometry.json",
+    "chromevox/background/mathmaps/symbols/greek-capital.json",
+    "chromevox/background/mathmaps/symbols/greek-mathfonts.json",
+    "chromevox/background/mathmaps/symbols/greek-scripts.json",
+    "chromevox/background/mathmaps/symbols/greek-small.json",
+    "chromevox/background/mathmaps/symbols/greek-symbols.json",
+    "chromevox/background/mathmaps/symbols/hebrew_letters.json",
+    "chromevox/background/mathmaps/symbols/latin-lower-double-accent.json",
+    "chromevox/background/mathmaps/symbols/latin-lower-normal.json",
+    "chromevox/background/mathmaps/symbols/latin-lower-phonetic.json",
+    "chromevox/background/mathmaps/symbols/latin-lower-single-accent.json",
+    "chromevox/background/mathmaps/symbols/latin-mathfonts.json",
+    "chromevox/background/mathmaps/symbols/latin-rest.json",
+    "chromevox/background/mathmaps/symbols/latin-upper-double-accent.json",
+    "chromevox/background/mathmaps/symbols/latin-upper-normal.json",
+    "chromevox/background/mathmaps/symbols/latin-upper-single-accent.json",
+    "chromevox/background/mathmaps/symbols/math_angles.json",
+    "chromevox/background/mathmaps/symbols/math_arrows.json",
+    "chromevox/background/mathmaps/symbols/math_characters.json",
+    "chromevox/background/mathmaps/symbols/math_delimiters.json",
+    "chromevox/background/mathmaps/symbols/math_digits.json",
+    "chromevox/background/mathmaps/symbols/math_geometry.json",
+    "chromevox/background/mathmaps/symbols/math_harpoons.json",
+    "chromevox/background/mathmaps/symbols/math_non_characters.json",
+    "chromevox/background/mathmaps/symbols/math_symbols.json",
+    "chromevox/background/mathmaps/symbols/math_whitespace.json",
+    "chromevox/background/mathmaps/symbols/other_stars.json",
     "chromevox/background/options.html",
     "chromevox/injected/api.js",
     "cvox2/background/background.html",
+    "cvox2/background/earcons/control.wav",
+    "cvox2/background/earcons/selection.wav",
+    "cvox2/background/earcons/selection_reverse.wav",
+    "cvox2/background/earcons/skim.wav",
+    "cvox2/background/earcons/small_room_2.wav",
+    "cvox2/background/earcons/static.wav",
     "cvox2/background/panel.css",
     "cvox2/background/panel.html",
+    "images/chromevox-128.png",
+    "images/chromevox-16.png",
+    "images/chromevox-19.png",
+    "images/chromevox-48.png",
+    "images/chromevox.svg",
+    "images/close-19.png",
+    "images/close-hover-19.png",
+    "images/options-19.png",
+    "images/options-hover-19.png",
+    "images/triangle-6.png",
   ]
   if (chromevox_compress_js) {
     sources += [ "chromevox/injected/api_util.js" ]
@@ -374,12 +436,12 @@ run_jsbundler("chromevox_copied_files") {
     sources += chromevox_modules
     sources += [
       "closure/closure_preinit.js",
-      chromevox_vars_gypi_values.chromevox_content_script_loader_file,
-      chromevox_vars_gypi_values.chromevox_kbexplorer_loader_file,
-      chromevox_vars_gypi_values.chromevox_options_script_loader_file,
-      chromevox_vars_gypi_values.chromevox_background_script_loader_file,
-      chromevox_vars_gypi_values.chromevox_min_content_script_loader_file,
-      chromevox_vars_gypi_values.chromevox_panel_script_loader_file,
+      chromevox_background_script_loader_file,
+      chromevox_content_script_loader_file,
+      chromevox_kbexplorer_loader_file,
+      chromevox_min_content_script_loader_file,
+      chromevox_options_script_loader_file,
+      chromevox_panel_script_loader_file,
     ]
   }
   if (!chromevox_compress_js) {
@@ -396,7 +458,7 @@ template("manifest") {
   version_script = "//build/util/version.py"
   template_file = "manifest.json.jinja2"
   output_file = invoker.output_file
-  key = chromevox_vars_gypi_values.chromevox_extension_key
+  key = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDltVl1k15pjRzuZfMc3B69inxwm2bZeZ2O8/zFO+NluHnBm3GJ3fzdOoFGJd+M16I8p7zxxQyHeDMfWYASyCeB8XnUEDKjqNLQfCnncsANzHsYoEbYj2nEUML2P13b9q+AAvpCBpAJ4cZp81e9n1y/vbSXHE4385cgkKueItzikQIDAQAB"
   action(target_name) {
     script = "tools/generate_manifest.py"
     inputs = [
@@ -479,42 +541,42 @@ if (chromevox_compress_js) {
 
   compress_js("chromevox_content_script") {
     sources = [
-      chromevox_vars_gypi_values.chromevox_content_script_loader_file,
+      chromevox_content_script_loader_file,
     ]
     output_file = "$chromevox_out_dir/chromeVoxChromePageScript.js"
   }
 
   compress_js("chromevox_kbexplorer_script") {
     sources = [
-      chromevox_vars_gypi_values.chromevox_kbexplorer_loader_file,
+      chromevox_kbexplorer_loader_file,
     ]
     output_file = "$chromevox_out_dir/chromeVoxKbExplorerScript.js"
   }
 
   compress_js("chromevox_options_script") {
     sources = [
-      chromevox_vars_gypi_values.chromevox_options_script_loader_file,
+      chromevox_options_script_loader_file,
     ]
     output_file = "$chromevox_out_dir/chromeVoxChromeOptionsScript.js"
   }
 
   compress_js("chromevox_background_script") {
     sources = [
-      chromevox_vars_gypi_values.chromevox_background_script_loader_file,
+      chromevox_background_script_loader_file,
     ]
     output_file = "$chromevox_out_dir/chromeVox2ChromeBackgroundScript.js"
   }
 
   compress_js("chromevox_min_content_script") {
     sources = [
-      chromevox_vars_gypi_values.chromevox_min_content_script_loader_file,
+      chromevox_min_content_script_loader_file,
     ]
     output_file = "$chromevox_out_dir/chromeVox2ChromePageScript.js"
   }
 
   compress_js("chromevox_panel_script") {
     sources = [
-      chromevox_vars_gypi_values.chromevox_panel_script_loader_file,
+      chromevox_panel_script_loader_file,
     ]
     output_file = "$chromevox_out_dir/chromeVoxPanelScript.js"
   }
@@ -529,14 +591,23 @@ if (chromevox_compress_js) {
   }
 }
 
-chromevox_tests_gypi_values =
-    exec_script("//build/gypi_to_gn.py",
-                [ rebase_path("chromevox_tests.gypi") ],
-                "scope",
-                [ "chromevox_tests.gypi" ])
-
 test("chromevox_tests") {
-  sources = chromevox_tests_gypi_values.chromevox_tests_sources
+  sources = [
+    "//chrome/browser/extensions/browsertest_util.cc",
+    "//chrome/browser/extensions/browsertest_util.h",
+    "//chrome/browser/ui/webui/web_ui_test_handler.cc",
+    "//chrome/browser/ui/webui/web_ui_test_handler.h",
+    "//chrome/test/base/extension_js_browser_test.cc",
+    "//chrome/test/base/extension_js_browser_test.h",
+    "//chrome/test/base/extension_load_waiter_one_shot.cc",
+    "//chrome/test/base/extension_load_waiter_one_shot.h",
+    "//chrome/test/base/javascript_browser_test.cc",
+    "//chrome/test/base/javascript_browser_test.h",
+    "//chrome/test/base/test_chrome_web_ui_controller_factory.cc",
+    "//chrome/test/base/test_chrome_web_ui_controller_factory.h",
+    "//chrome/test/base/web_ui_browser_test.cc",
+    "//chrome/test/base/web_ui_browser_test.h",
+  ]
 
   deps = [
     ":chromevox_extjs_tests",
@@ -624,9 +695,49 @@ generate_deps_js("chromevox_test_deps_js") {
 
 js2gtest("chromevox_unitjs_tests") {
   test_type = "webui"
-  sources = chromevox_tests_gypi_values.chromevox_tests_unitjs_sources
-  gen_include_files =
-      chromevox_tests_gypi_values.chromevox_tests_unit_gen_include_sources
+  sources = [
+    "braille/braille_display_manager_test.unitjs",
+    "braille/braille_input_handler_test.unitjs",
+    "braille/expanding_braille_translator_test.unitjs",
+    "braille/pan_strategy_test.unitjs",
+    "chromevox/injected/event_watcher_test.unitjs",
+    "chromevox/injected/live_regions_test.unitjs",
+    "chromevox/injected/navigation_manager_test.unitjs",
+    "chromevox/injected/user_commands_test.unitjs",
+    "common/aria_util_test.unitjs",
+    "common/braille_text_handler_test.unitjs",
+    "common/braille_util_test.unitjs",
+    "common/command_store_test.unitjs",
+    "common/content_editable_extractor_test.unitjs",
+    "common/cursor_selection_test.unitjs",
+    "common/dom_util_test.unitjs",
+    "common/editable_text_area_shadow_test.unitjs",
+    "common/editable_text_test.unitjs",
+    "common/find_util_test.unitjs",
+    "common/key_sequence_test.unitjs",
+    "common/math_semantic_tree_test.unitjs",
+    "common/page_selection_test.unitjs",
+    "common/selection_util_test.unitjs",
+    "common/spannable_test.unitjs",
+    "common/string_util_test.unitjs",
+    "host/chrome/braille_integration_test.unitjs",
+    "testing/mock_feedback_test.unitjs",
+    "walkers/character_walker_test.unitjs",
+    "walkers/group_walker_test.unitjs",
+    "walkers/layout_line_walker_test.unitjs",
+    "walkers/math_shifter_test.unitjs",
+    "walkers/object_walker_test.unitjs",
+    "walkers/sentence_walker_test.unitjs",
+    "walkers/structural_line_walker_test.unitjs",
+    "walkers/table_walker_test.unitjs",
+    "walkers/word_walker_test.unitjs",
+  ]
+  gen_include_files = [
+    "testing/assert_additions.js",
+    "testing/callback_helper.js",
+    "testing/chromevox_unittest_base.js",
+    "testing/mock_feedback.js",
+  ]
   test_deps_js_outputs = get_target_outputs(":chromevox_test_deps_js")
   deps_js = test_deps_js_outputs[0]
   deps = [
@@ -637,8 +748,26 @@ js2gtest("chromevox_unitjs_tests") {
 
 js2gtest("chromevox_extjs_tests") {
   test_type = "extension"
-  sources = chromevox_tests_gypi_values.chromevox_tests_extjs_sources
-  gen_include_files =
-      chromevox_tests_gypi_values.chromevox_tests_ext_gen_include_sources
+  sources = [
+    "braille/braille_table_test.extjs",
+    "braille/braille_translator_manager_test.extjs",
+    "braille/liblouis_test.extjs",
+    "cvox2/background/automation_util_test.extjs",
+    "cvox2/background/background_test.extjs",
+    "cvox2/background/cursors_test.extjs",
+    "cvox2/background/editing_test.extjs",
+    "cvox2/background/i_search_test.extjs",
+    "cvox2/background/live_regions_test.extjs",
+    "cvox2/background/output_test.extjs",
+    "cvox2/background/tree_walker_test.extjs",
+    "host/chrome/tts_background_test.extjs",
+  ]
+  gen_include_files = [
+    "testing/assert_additions.js",
+    "testing/callback_helper.js",
+    "testing/chromevox_e2e_test_base.js",
+    "testing/chromevox_next_e2e_test_base.js",
+    "testing/mock_feedback.js",
+  ]
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 }
