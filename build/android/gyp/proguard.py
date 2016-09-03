@@ -70,7 +70,6 @@ def main(args):
   proguard.injars(options.input_paths)
   proguard.configs(options.proguard_configs)
   proguard.outjar(options.output_path)
-  print options.proguard_configs
 
   if options.mapping:
     proguard.mapping(options.mapping)

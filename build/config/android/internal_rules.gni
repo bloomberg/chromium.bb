@@ -1807,12 +1807,6 @@ if (enable_java_templates) {
         visibility += [ ":$_dex_target_name" ]
       }
 
-      # TODO(agrieve): Delete proguard_config once all usages are move to
-      #     proguard_preprocess_config.
-      if (defined(invoker.proguard_config)) {
-        proguard_preprocess_config = invoker.proguard_config
-      }
-
       build_config = _build_config
       input_jar_path = invoker.jar_path
       output_jar_path = _jar_path
@@ -2097,11 +2091,6 @@ if (enable_java_templates) {
       input_jar_path = _javac_jar_path
       output_jar_path = _process_prebuilt_jar_path
 
-      # TODO(agrieve): Delete proguard_config once all usages are move to
-      #     proguard_preprocess_config.
-      if (defined(invoker.proguard_config)) {
-        proguard_preprocess_config = invoker.proguard_config
-      }
       deps = [
         ":$_javac_target_name",
       ]

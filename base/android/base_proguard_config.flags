@@ -43,13 +43,10 @@
 }
 
 # Don't obfuscate Parcelables as they might be marshalled outside Chrome.
+# If we annotated all Parcelables that get put into Bundles other than
+# for saveInstanceState (e.g. PendingIntents), then we could actually keep the
+# names of just those ones. For now, we'll just keep them all.
 -keepnames class * implements android.os.Parcelable
-
-# Keep all Parcelables, since Play Services has some that are used only by
-# reflection.
-# TODO(agrieve): Remove this once proguard flags provided by play services via
-#     .aars are used.  https://crbug.com/640836
--keep class * implements android.os.Parcelable
 
 # Remove methods annotated with this if their return value is unused
 -assumenosideeffects class ** {
