@@ -182,10 +182,10 @@ TEST_F(RendererWebMediaPlayerDelegateTest, IdleDelegatesAreSuspended) {
   delegate_manager_->SetIdleCleanupParamsForTesting(kIdleTimeout, &tick_clock);
   EXPECT_FALSE(delegate_manager_->IsIdleCleanupTimerRunningForTesting());
 
-  // Just adding an observer should not start the idle timer.
+  // Just adding an observer should start the idle timer.
   testing::StrictMock<MockWebMediaPlayerDelegateObserver> observer_1;
   const int delegate_id_1 = delegate_manager_->AddObserver(&observer_1);
-  EXPECT_FALSE(delegate_manager_->IsIdleCleanupTimerRunningForTesting());
+  EXPECT_TRUE(delegate_manager_->IsIdleCleanupTimerRunningForTesting());
 
   // Starting playback should not have an idle timer.
   delegate_manager_->DidPlay(delegate_id_1, true, true, false,
@@ -269,14 +269,14 @@ TEST_F(RendererWebMediaPlayerDelegateTest, IdleDelegatesIgnoresSuspendRequest) {
 
   testing::StrictMock<MockWebMediaPlayerDelegateObserver> observer_1;
   const int delegate_id_1 = delegate_manager_->AddObserver(&observer_1);
-  EXPECT_FALSE(delegate_manager_->IsIdleCleanupTimerRunningForTesting());
+  EXPECT_TRUE(delegate_manager_->IsIdleCleanupTimerRunningForTesting());
 
   // Calling DidPause() should instantly queue the timeout task.
   delegate_manager_->DidPause(delegate_id_1, false);
   EXPECT_TRUE(delegate_manager_->IsIdleCleanupTimerRunningForTesting());
 
   // Wait for the suspend request, but don't call PlayerGone().
-  EXPECT_CALL(observer_1, OnSuspendRequested(false));
+  EXPECT_CALL(observer_1, OnSuspendRequested(false)).Times(testing::AtLeast(1));
   base::RunLoop run_loop;
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                 run_loop.QuitClosure());
@@ -338,7 +338,7 @@ TEST_F(RendererWebMediaPlayerDelegateTest, PlayingVideosSet) {
 }
 
 TEST_F(RendererWebMediaPlayerDelegateTest, IsPlayingBackgroundVideo) {
-  MockWebMediaPlayerDelegateObserver observer;
+  testing::NiceMock<MockWebMediaPlayerDelegateObserver> observer;
   int delegate_id = delegate_manager_->AddObserver(&observer);
   EXPECT_FALSE(delegate_manager_->IsPlayingBackgroundVideo());
 
@@ -376,7 +376,7 @@ TEST_F(RendererWebMediaPlayerDelegateTest, IsPlayingBackgroundVideo) {
 #if defined(OS_ANDROID)
 
 TEST_F(RendererWebMediaPlayerDelegateTest, Histograms) {
-  MockWebMediaPlayerDelegateObserver observer;
+  testing::NiceMock<MockWebMediaPlayerDelegateObserver> observer;
   int delegate_id = delegate_manager_->AddObserver(&observer);
   base::HistogramTester histogram_tester;
   histogram_tester.ExpectTotalCount("Media.Android.BackgroundVideoTime", 0);

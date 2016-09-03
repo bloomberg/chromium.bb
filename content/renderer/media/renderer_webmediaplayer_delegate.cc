@@ -36,7 +36,11 @@ RendererWebMediaPlayerDelegate::RendererWebMediaPlayerDelegate(
 RendererWebMediaPlayerDelegate::~RendererWebMediaPlayerDelegate() {}
 
 int RendererWebMediaPlayerDelegate::AddObserver(Observer* observer) {
-  return id_map_.Add(observer);
+  const int delegate_id = id_map_.Add(observer);
+  // Start players in the idle state to ensure we capture players which are
+  // consuming resources, but which have never played.
+  AddIdleDelegate(delegate_id);
+  return delegate_id;
 }
 
 void RendererWebMediaPlayerDelegate::RemoveObserver(int delegate_id) {

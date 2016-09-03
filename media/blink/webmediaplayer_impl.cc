@@ -754,9 +754,23 @@ blink::WebTimeRanges WebMediaPlayerImpl::seekable() const {
 
 bool WebMediaPlayerImpl::didLoadingProgress() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  bool pipeline_progress = pipeline_.DidLoadingProgress();
-  bool data_progress = buffered_data_source_host_.DidLoadingProgress();
-  return pipeline_progress || data_progress;
+
+  // Note: Separate variables used to ensure both methods are called every time.
+  const bool pipeline_progress = pipeline_.DidLoadingProgress();
+  const bool data_progress = buffered_data_source_host_.DidLoadingProgress();
+  const bool did_loading_progress = pipeline_progress || data_progress;
+
+  // If we've idle suspended before reaching kHaveFutureData and loading has
+  // progressed we need to spin up the renderer and figure out if we have enough
+  // data yet; |client_| may be waiting on this signal to trigger playback. The
+  // idle timeout is long enough that this is a low-cost operation.
+  if (highest_ready_state_ < ReadyState::ReadyStateHaveFutureData &&
+      pipeline_controller_.IsSuspended() && did_loading_progress && is_idle_) {
+    is_idle_ = false;
+    UpdatePlayState();
+  }
+
+  return did_loading_progress;
 }
 
 void WebMediaPlayerImpl::paint(blink::WebCanvas* canvas,
@@ -1240,14 +1254,10 @@ void WebMediaPlayerImpl::OnShown() {
 void WebMediaPlayerImpl::OnSuspendRequested(bool must_suspend) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
-  if (must_suspend) {
+  if (must_suspend)
     must_suspend_ = true;
-  } else {
-    // TODO(sandersd): Remove this when idleness is separate from play state.
-    if (delegate_state_ == DelegateState::PAUSED_BUT_NOT_IDLE)
-      return;
+  else
     is_idle_ = true;
-  }
 
   UpdatePlayState();
 }
@@ -1567,7 +1577,13 @@ void WebMediaPlayerImpl::UpdatePlayState() {
 }
 
 void WebMediaPlayerImpl::SetDelegateState(DelegateState new_state) {
-  if (!delegate_ || delegate_state_ == new_state)
+  if (!delegate_)
+    return;
+
+  // Dedupe state changes in the general case, but make an exception for gone
+  // since the delegate will use that information to decide when the idle timer
+  // should be fired.
+  if (delegate_state_ == new_state && new_state != DelegateState::GONE)
     return;
 
   delegate_state_ = new_state;
@@ -1582,14 +1598,6 @@ void WebMediaPlayerImpl::SetDelegateState(DelegateState new_state) {
           media::DurationToMediaContentType(pipeline_.GetMediaDuration()));
       break;
     case DelegateState::PAUSED:
-      delegate_->DidPause(delegate_id_, false);
-      break;
-    case DelegateState::PAUSED_BUT_NOT_IDLE:
-      // It doesn't really matter what happens when we enter this state, only
-      // that we reset the idle timer when leaving it.
-      //
-      // TODO(sandersd): Ideally the delegate would consider idleness and play
-      // state as orthogonal properties so that we could avoid this.
       delegate_->DidPause(delegate_id_, false);
       break;
     case DelegateState::ENDED:
@@ -1678,29 +1686,22 @@ WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_remote,
       delegate_ && delegate_->IsPlayingBackgroundVideo();
   bool background_suspended = is_backgrounded_video &&
                               !(can_play_backgrounded && is_background_playing);
+  bool background_pause_suspended = is_backgrounded && paused_;
 
-  // The |paused_| state is not reliable until we |have_future_data|.
-  bool background_pause_suspended =
-      is_backgrounded && have_future_data && paused_;
-
-  // Idle suspend is enabled once there is future data. We don't want to idle
-  // suspend before that because play() may never be triggered to leave the idle
-  // state. There could be other theoretical problems if the page is waiting for
-  // other events before actually calling play(), but at least we don't break
-  // Blink.
-  //
   // TODO(sandersd): Make the delegate suspend idle players immediately when
   // hidden.
-  // TODO(sandersd): If Blink told us the paused state sooner, we could
-  // idle suspend sooner.
-  bool idle_suspended = is_idle_ && have_future_data;
+  bool idle_suspended = is_idle_ && paused_ && !seeking_ && !overlay_enabled_;
+
+  // If we're already suspended, see if we can wait for user interaction. Prior
+  // to HaveFutureData, we require |is_idle_| to remain suspended. |is_idle_|
+  // will be cleared when we receive data which may take us to HaveFutureData.
+  bool can_stay_suspended =
+      (is_idle_ || have_future_data) && is_suspended && paused_ && !seeking_;
 
   // Combined suspend state.
-  result.is_suspended =
-      is_remote || must_suspend_ || idle_suspended || background_suspended ||
-      background_pause_suspended ||
-      // If we're already suspended, see if we can wait for user interaction.
-      (is_suspended && have_future_data && paused_ && !seeking_);
+  result.is_suspended = is_remote || must_suspend_ || idle_suspended ||
+                        background_suspended || background_pause_suspended ||
+                        can_stay_suspended;
 
   // We do not treat |playback_rate_| == 0 as paused. For the media session,
   // being paused implies displaying a play button, which is incorrect in this
@@ -1736,13 +1737,8 @@ WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_remote,
   if (!has_session) {
     result.delegate_state = DelegateState::GONE;
   } else if (paused_ || has_session_suspended) {
-    if (seeking() || overlay_enabled_) {
-      result.delegate_state = DelegateState::PAUSED_BUT_NOT_IDLE;
-    } else if (ended_) {
-      result.delegate_state = DelegateState::ENDED;
-    } else {
-      result.delegate_state = DelegateState::PAUSED;
-    }
+    result.delegate_state =
+        ended_ ? DelegateState::ENDED : DelegateState::PAUSED;
   } else {
     result.delegate_state = DelegateState::PLAYING;
   }
@@ -1796,10 +1792,8 @@ void WebMediaPlayerImpl::FinishMemoryUsageReport(int64_t demuxer_memory_usage) {
 }
 
 void WebMediaPlayerImpl::ScheduleIdlePauseTimer() {
-  // Only schedule the pause timer if we're playing and are suspended. We use
-  // delegate state as a proxy for suspended here since the suspension may be in
-  // flight at the time of this call.
-  if (paused_ || delegate_state_ != DelegateState::GONE)
+  // Only schedule the pause timer if we're playing and are suspended.
+  if (paused_ || !pipeline_controller_.IsSuspended())
     return;
 
 #if defined(OS_ANDROID)
