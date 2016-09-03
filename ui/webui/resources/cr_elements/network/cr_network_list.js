@@ -70,9 +70,16 @@ Polymer({
 
   behaviors: [CrScrollableBehavior],
 
+  observers: ['listChanged_(networks, customItems)'],
+
   /** @private */
   maxHeightChanged_: function() {
     this.$.container.style.maxHeight = this.maxHeight + 'px';
+  },
+
+  /** @private */
+  listChanged_: function() {
+    this.updateScrollableContents();
   },
 
   /**
