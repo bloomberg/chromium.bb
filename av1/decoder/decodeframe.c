@@ -423,13 +423,6 @@ static int reconstruct_inter_block(MACROBLOCKD *const xd, aom_reader *r,
   return eob;
 }
 
-static INLINE TX_SIZE dec_get_uv_tx_size(const MB_MODE_INFO *mbmi, int n4_wl,
-                                         int n4_hl) {
-  // get minimum log2 num4x4s dimension
-  const int x = AOMMIN(n4_wl, n4_hl);
-  return AOMMIN(mbmi->tx_size, x);
-}
-
 static INLINE void dec_reset_skip_context(MACROBLOCKD *xd) {
   int i;
   for (i = 0; i < MAX_MB_PLANE; i++) {
@@ -503,9 +496,7 @@ static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 #endif  // CONFIG_PALETTE
     for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
       const struct macroblockd_plane *const pd = &xd->plane[plane];
-      const TX_SIZE tx_size =
-          plane ? dec_get_uv_tx_size(mbmi, pd->n4_wl, pd->n4_hl)
-                : mbmi->tx_size;
+      const TX_SIZE tx_size = plane ? get_uv_tx_size(mbmi, pd) : mbmi->tx_size;
       const int num_4x4_w = pd->n4_w;
       const int num_4x4_h = pd->n4_h;
       const int step = tx_size_1d_in_unit[tx_size];
@@ -539,8 +530,7 @@ static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
       for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
         const struct macroblockd_plane *const pd = &xd->plane[plane];
         const TX_SIZE tx_size =
-            plane ? dec_get_uv_tx_size(mbmi, pd->n4_wl, pd->n4_hl)
-                  : mbmi->tx_size;
+            plane ? get_uv_tx_size(mbmi, pd) : mbmi->tx_size;
         const int num_4x4_w = pd->n4_w;
         const int num_4x4_h = pd->n4_h;
         const int step = tx_size_1d_in_unit[tx_size];
