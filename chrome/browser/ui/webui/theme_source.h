@@ -37,19 +37,17 @@ class ThemeSource : public content::URLDataSource {
   bool ShouldServiceRequest(const net::URLRequest* request) const override;
 
  private:
-  // Fetch and send the theme bitmap.
+  // Fetches and sends the theme bitmap.
   void SendThemeBitmap(const content::URLDataSource::GotDataCallback& callback,
                        int resource_id,
-                       float scale_factor);
+                       float scale);
 
-  // Similar to SendThemeBitmap but treat the responded data as image; if the
-  // resource bundle does not contain the data for |scale_factor|, the resource
-  // bundle falls back to the data of a lower scale, which means smaller images
-  // will be served and webui handles the image incorrectly.
-  // See crbug.com/442384.
+  // Used in place of SendThemeBitmap when the desired scale is larger than
+  // what the resource bundle supports.  This can rescale the provided bitmap up
+  // to the desired size.
   void SendThemeImage(const content::URLDataSource::GotDataCallback& callback,
                       int resource_id,
-                      float scale_factor);
+                      float scale);
 
   // The original profile (never an OTR profile).
   Profile* profile_;

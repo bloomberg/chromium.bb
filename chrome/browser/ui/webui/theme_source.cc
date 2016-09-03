@@ -30,35 +30,36 @@
 #include "ui/gfx/image/image_skia_rep.h"
 #include "url/gurl.h"
 
-using content::BrowserThread;
-
 namespace {
 
-GURL GetThemePath(const std::string& path) {
+GURL GetThemeUrl(const std::string& path) {
   return GURL(std::string(content::kChromeUIScheme) + "://" +
               std::string(chrome::kChromeUIThemeHost) + "/" + path);
 }
 
-// use a resource map rather than hard-coded strings.
-static const char* kNewTabCSSPath = "css/new_tab_theme.css";
-static const char* kNewIncognitoTabCSSPath = "css/incognito_new_tab_theme.css";
+bool IsNewTabCssPath(const std::string& path) {
+  static const char kNewTabCSSPath[] = "css/new_tab_theme.css";
+  static const char kIncognitoNewTabCSSPath[] =
+      "css/incognito_new_tab_theme.css";
+  return (path == kNewTabCSSPath) || (path == kIncognitoNewTabCSSPath);
+}
 
 void ProcessImageOnUIThread(const gfx::ImageSkia& image,
-                            float scale_factor,
+                            float scale,
                             scoped_refptr<base::RefCountedBytes> data) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  const gfx::ImageSkiaRep& rep = image.GetRepresentation(scale_factor);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  const gfx::ImageSkiaRep& rep = image.GetRepresentation(scale);
   gfx::PNGCodec::EncodeBGRASkBitmap(
       rep.sk_bitmap(), false /* discard transparency */, &data->data());
 }
 
 void ProcessResourceOnUIThread(int resource_id,
-                               float scale_factor,
+                               float scale,
                                scoped_refptr<base::RefCountedBytes> data) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   ProcessImageOnUIThread(
       *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id),
-      scale_factor, data);
+      scale, data);
 }
 
 }  // namespace
@@ -69,8 +70,8 @@ void ProcessResourceOnUIThread(int resource_id,
 ThemeSource::ThemeSource(Profile* profile)
     : profile_(profile->GetOriginalProfile()) {
   // NB: it's important that this is |profile| and not |profile_|.
-  NTPResourceCache::WindowType win_type = NTPResourceCache::GetWindowType(
-      profile, NULL);
+  NTPResourceCache::WindowType win_type =
+      NTPResourceCache::GetWindowType(profile, nullptr);
   css_bytes_ =
       NTPResourceCacheFactory::GetForProfile(profile)->GetNewTabCSS(win_type);
 }
@@ -88,22 +89,19 @@ void ThemeSource::StartDataRequest(
     int render_frame_id,
     const content::URLDataSource::GotDataCallback& callback) {
   // Default scale factor if not specified.
-  float scale_factor = 1.0f;
-  std::string uncached_path;
-  webui::ParsePathAndScale(GetThemePath(path), &uncached_path, &scale_factor);
-  scale_factor =
-      ui::GetScaleForScaleFactor(ui::GetSupportedScaleFactor(scale_factor));
+  float scale = 1.0f;
+  std::string parsed_path;
+  webui::ParsePathAndScale(GetThemeUrl(path), &parsed_path, &scale);
+  scale = ui::GetScaleForScaleFactor(ui::GetSupportedScaleFactor(scale));
 
-  if (uncached_path == kNewTabCSSPath ||
-      uncached_path == kNewIncognitoTabCSSPath) {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
+  if (IsNewTabCssPath(parsed_path)) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     callback.Run(css_bytes_.get());
     return;
   }
 
   int resource_id = -1;
-  if (uncached_path == "current-channel-logo") {
+  if (parsed_path == "current-channel-logo") {
     switch (chrome::GetChannel()) {
 #if defined(GOOGLE_CHROME_BUILD)
       case version_info::Channel::CANARY:
@@ -130,55 +128,45 @@ void ThemeSource::StartDataRequest(
         break;
     }
   } else {
-    resource_id = ResourcesUtil::GetThemeResourceId(uncached_path);
-  }
-  if (resource_id != -1) {
-    if (GetMimeType(path) == "image/png")
-      SendThemeImage(callback, resource_id, scale_factor);
-    else
-      SendThemeBitmap(callback, resource_id, scale_factor);
-    return;
+    resource_id = ResourcesUtil::GetThemeResourceId(parsed_path);
   }
 
-  // We don't have any data to send back. This shouldn't happen normally, as
-  // chrome://theme/ data source is used only by chrome WebUI pages and
-  // component extensions. We don't want to crash in Release build though, as
-  // it is possible that a user has entered an unexisting chrome://theme URL
-  // into the address bar.
-  NOTREACHED() << path << " not found.";
-  callback.Run(NULL);
+  const float max_scale = ui::GetScaleForScaleFactor(
+      ResourceBundle::GetSharedInstance().GetMaxScaleFactor());
+  if (resource_id == -1) {
+    // We have no data to send back.  This shouldn't happen normally, as
+    // chrome://theme/ URLs are only used by WebUI pages and component
+    // extensions.  However, the user can also enter these into the omnibox, so
+    // we need to fail gracefully.
+    callback.Run(nullptr);
+  } else if ((GetMimeType(path) == "image/png") && (scale > max_scale)) {
+    SendThemeImage(callback, resource_id, scale);
+  } else {
+    SendThemeBitmap(callback, resource_id, scale);
+  }
 }
 
 std::string ThemeSource::GetMimeType(const std::string& path) const {
-  std::string uncached_path;
-  webui::ParsePathAndScale(GetThemePath(path), &uncached_path, NULL);
-
-  if (uncached_path == kNewTabCSSPath ||
-      uncached_path == kNewIncognitoTabCSSPath) {
-    return "text/css";
-  }
-
-  return "image/png";
+  std::string parsed_path;
+  webui::ParsePathAndScale(GetThemeUrl(path), &parsed_path, nullptr);
+  return IsNewTabCssPath(parsed_path) ? "text/css" : "image/png";
 }
 
 base::MessageLoop* ThemeSource::MessageLoopForRequestPath(
     const std::string& path) const {
-  std::string uncached_path;
-  webui::ParsePathAndScale(GetThemePath(path), &uncached_path, NULL);
+  std::string parsed_path;
+  webui::ParsePathAndScale(GetThemeUrl(path), &parsed_path, nullptr);
 
-  if (uncached_path == kNewTabCSSPath ||
-      uncached_path == kNewIncognitoTabCSSPath) {
+  if (IsNewTabCssPath(parsed_path)) {
     // We generated and cached this when we initialized the object.  We don't
     // have to go back to the UI thread to send the data.
-    return NULL;
+    return nullptr;
   }
 
   // If it's not a themeable image, we don't need to go to the UI thread.
-  int resource_id = ResourcesUtil::GetThemeResourceId(uncached_path);
-  if (!BrowserThemePack::IsPersistentImageID(resource_id))
-    return NULL;
-
-  return content::URLDataSource::MessageLoopForRequestPath(path);
+  int resource_id = ResourcesUtil::GetThemeResourceId(parsed_path);
+  return BrowserThemePack::IsPersistentImageID(resource_id) ?
+      content::URLDataSource::MessageLoopForRequestPath(path) : nullptr;
 }
 
 bool ThemeSource::ShouldReplaceExistingSource() const {
@@ -188,9 +176,9 @@ bool ThemeSource::ShouldReplaceExistingSource() const {
 }
 
 bool ThemeSource::ShouldServiceRequest(const net::URLRequest* request) const {
-  if (request->url().SchemeIs(chrome::kChromeSearchScheme))
-    return InstantIOContext::ShouldServiceRequest(request);
-  return URLDataSource::ShouldServiceRequest(request);
+  return request->url().SchemeIs(chrome::kChromeSearchScheme) ?
+      InstantIOContext::ShouldServiceRequest(request) :
+      URLDataSource::ShouldServiceRequest(request);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -199,57 +187,39 @@ bool ThemeSource::ShouldServiceRequest(const net::URLRequest* request) const {
 void ThemeSource::SendThemeBitmap(
     const content::URLDataSource::GotDataCallback& callback,
     int resource_id,
-    float scale_factor) {
-  ui::ScaleFactor resource_scale_factor =
-      ui::GetSupportedScaleFactor(scale_factor);
+    float scale) {
+  ui::ScaleFactor scale_factor = ui::GetSupportedScaleFactor(scale);
   if (BrowserThemePack::IsPersistentImageID(resource_id)) {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    const ui::ThemeProvider& tp =
-        ThemeService::GetThemeProviderForProfile(profile_);
-
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     scoped_refptr<base::RefCountedMemory> image_data(
-        tp.GetRawData(resource_id, resource_scale_factor));
+        ThemeService::GetThemeProviderForProfile(profile_).GetRawData(
+            resource_id, scale_factor));
     callback.Run(image_data.get());
   } else {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     const ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    callback.Run(
-        rb.LoadDataResourceBytesForScale(resource_id, resource_scale_factor));
+    callback.Run(rb.LoadDataResourceBytesForScale(resource_id, scale_factor));
   }
 }
 
 void ThemeSource::SendThemeImage(
     const content::URLDataSource::GotDataCallback& callback,
     int resource_id,
-    float scale_factor) {
-  // If the resource bundle contains the data pack for |scale_factor|, we can
-  // safely fallback to SendThemeBitmap().
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  if (ui::GetScaleForScaleFactor(rb.GetMaxScaleFactor()) >= scale_factor) {
-    SendThemeBitmap(callback, resource_id, scale_factor);
-    return;
-  }
-
-  // Otherwise, we should use gfx::ImageSkia to obtain the data. ImageSkia can
-  // rescale the bitmap if its backend doesn't contain the representation for
-  // the specified scale factor. This is the fallback path in case chrome is
-  // shipped without 2x resource pack but needs to use HighDPI display, which
-  // can happen in ChromeOS or Linux.
+    float scale) {
   scoped_refptr<base::RefCountedBytes> data(new base::RefCountedBytes());
   if (BrowserThemePack::IsPersistentImageID(resource_id)) {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     const ui::ThemeProvider& tp =
         ThemeService::GetThemeProviderForProfile(profile_);
-    ProcessImageOnUIThread(*tp.GetImageSkiaNamed(resource_id), scale_factor,
-                           data);
+    ProcessImageOnUIThread(*tp.GetImageSkiaNamed(resource_id), scale, data);
     callback.Run(data.get());
   } else {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     // Fetching image data in ResourceBundle should happen on the UI thread. See
     // crbug.com/449277
     content::BrowserThread::PostTaskAndReply(
         content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&ProcessResourceOnUIThread, resource_id, scale_factor, data),
+        base::Bind(&ProcessResourceOnUIThread, resource_id, scale, data),
         base::Bind(callback, data));
   }
 }

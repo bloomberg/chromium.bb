@@ -44,17 +44,52 @@ list > * > * {
   box-sizing: border-box;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: pre; /* Don't collapse whitespace */
+  white-space: pre;
 }
 
-list > * > .label {
-  -webkit-transition: all 150ms;
+list .label {
   color: black;
-  display: inline-block; /* We need to use inline-block here due to RTL. */
+  display: inline-block; /* Makes the image start-align in RTL. */
 }
 
-list > * > .url {
-  direction: ltr; /* URLs always read LTR */
+html[dir=rtl] list .label {
+  background-position: 100% 50%;
+}
+
+<if expr="is_macosx">
+list > .folder > .label,
+.tree-label,
+.tree-row[may-have-children] > .tree-label,
+.tree-item[expanded] > .tree-row > .tree-label {
+  background-image: -webkit-image-set(
+      url(../../../../app/theme/default_100_percent/mac/bookmark_bar_folder.png) 1x,
+      url(../../../../app/theme/default_200_percent/mac/bookmark_bar_folder.png) 2x);
+}
+</if>
+
+<if expr="not is_macosx">
+list > .folder > .label {
+  background-image: -webkit-image-set(
+      url(../../../../../ui/resources/default_100_percent/common/folder_closed.png) 1x,
+      url(../../../../../ui/resources/default_200_percent/common/folder_closed.png) 2x);
+}
+
+html[dir=rtl] list > .folder > .label {
+  background-image: -webkit-image-set(
+      url(../../../../../ui/resources/default_100_percent/common/folder_closed_rtl.png) 1x,
+      url(../../../../../ui/resources/default_200_percent/common/folder_closed_rtl.png) 2x);
+}
+</if>
+
+/* We need to ensure that even empty labels take up space, or the row could be
+ * the wrong height. */
+list .label:empty::after {
+  content: ' ';
+  white-space: pre;
+}
+
+list .url {
+  direction: ltr;
   display: none;
   flex: 1;
 }
@@ -68,31 +103,10 @@ list > [selected] > .url {
  * |div.url||div.label| - so we need padding at the right of URL, not at the
  * left. And since url is always LTR, that is padding at the end, not the start.
  */
-html[dir=rtl] .url {
+html[dir=rtl] list .url {
   -webkit-padding-end: 20px;
   -webkit-padding-start: 0;
   text-align: right;
-}
-
-html[dir=rtl] list .label {
-  background-position: 100% 50%;
-}
-
-list > .folder > .label {
-  background-image: -webkit-image-set(
-      url(../../../../../ui/resources/default_100_percent/common/folder_closed.png) 1x,
-      url(../../../../../ui/resources/default_200_percent/common/folder_closed.png) 2x);
-}
-
-/* We need to ensure that even empty labels take up space */
-list > * > .label:empty::after,
-list > * > .url:empty::after {
-  content: ' ';
-  white-space: pre;
-}
-
-list > .folder > .url:empty::after {
-  content: '';
 }
 
 list > * > button {
@@ -183,23 +197,6 @@ list [editing] input {
 }
 
 /* end editing */
-
-html[dir=rtl] list > .folder > .label {
-  background-image: -webkit-image-set(
-      url(../../../../../ui/resources/default_100_percent/common/folder_closed_rtl.png) 1x,
-      url(../../../../../ui/resources/default_200_percent/common/folder_closed_rtl.png) 2x);
-}
-
-<if expr="is_macosx">
-list > .folder > .label,
-.tree-label,
-.tree-row[may-have-children] > .tree-label,
-.tree-item[expanded] > .tree-row > .tree-label {
-  background-image: -webkit-image-set(
-      url(../../../../app/theme/default_100_percent/mac/bookmark_bar_folder.png) 1x,
-      url(../../../../app/theme/default_200_percent/mac/bookmark_bar_folder.png) 2x);
-}
-</if>
 
 .main {
   border-top: 1px solid rgb(156, 194, 239);
