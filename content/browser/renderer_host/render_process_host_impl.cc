@@ -103,6 +103,7 @@
 #include "content/browser/renderer_host/media/media_stream_dispatcher_host.h"
 #include "content/browser/renderer_host/media/peer_connection_tracker_host.h"
 #include "content/browser/renderer_host/media/video_capture_host.h"
+#include "content/browser/renderer_host/offscreen_canvas_frame_receiver_impl.h"
 #include "content/browser/renderer_host/offscreen_canvas_surface_impl.h"
 #include "content/browser/renderer_host/pepper/pepper_message_filter.h"
 #include "content/browser/renderer_host/pepper/pepper_renderer_connection.h"
@@ -1208,6 +1209,8 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
                  base::Unretained(permission_service_context_.get())));
   // TODO(mcasas): finalize arguments.
   AddUIThreadInterface(registry.get(), base::Bind(&ImageCaptureImpl::Create));
+  AddUIThreadInterface(registry.get(),
+                       base::Bind(&OffscreenCanvasFrameReceiverImpl::Create));
   AddUIThreadInterface(registry.get(),
                        base::Bind(&OffscreenCanvasSurfaceImpl::Create));
   AddUIThreadInterface(
