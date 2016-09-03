@@ -41,6 +41,7 @@ template("remoting_android_client_java_tmpl") {
       "OAuthTokenConsumer.java",
       "Preconditions.java",
       "RenderData.java",
+      "RenderStub.java",
       "ScaleEventParameter.java",
       "SessionAuthenticator.java",
       "SessionConnector.java",

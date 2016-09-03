@@ -17,49 +17,37 @@ import org.chromium.chromoting.jni.GlDisplay;
  */
 public class GlDesktopView extends DesktopView implements SurfaceHolder.Callback {
     private final GlDisplay mDisplay;
-    private final InputFeedbackRadiusMapper mInputFeedbackMapper;
 
     private Object mOnHostSizeChangedListenerKey;
     private Object mOnCanvasRenderedListenerKey;
-
-    private float mScaleFactor;
 
     public GlDesktopView(GlDisplay display, Desktop desktop, Client client) {
         super(desktop, client);
         Preconditions.notNull(display);
         mDisplay = display;
-
-        mInputFeedbackMapper = new InputFeedbackRadiusMapper(this);
+        display.setDesktopView(this);
 
         getHolder().addCallback(this);
     }
 
     @Override
-    public void showInputFeedback(InputFeedbackType feedbackToShow, PointF pos) {
-        float diameter =
-                mInputFeedbackMapper.getFeedbackRadius(feedbackToShow, mScaleFactor) * 2.0f;
-        if (diameter <= 0.0f) {
-            return;
-        }
-        mDisplay.showCursorInputFeedback(pos.x, pos.y, diameter);
+    public void showInputFeedback(RenderStub.InputFeedbackType feedbackToShow, PointF pos) {
+        mDisplay.showInputFeedback(feedbackToShow, pos);
     }
 
     @Override
     public void transformationChanged(Matrix matrix) {
-        float[] matrixArray = new float[9];
-        matrix.getValues(matrixArray);
-        mDisplay.pixelTransformationChanged(matrixArray);
-        mScaleFactor = matrix.mapRadius(1);
+        mDisplay.setTransformation(matrix);
     }
 
     @Override
     public void cursorMoved(PointF position) {
-        mDisplay.cursorPixelPositionChanged(position.x, position.y);
+        mDisplay.moveCursor(position);
     }
 
     @Override
     public void cursorVisibilityChanged(boolean visible) {
-        mDisplay.cursorVisibilityChanged(visible);
+        mDisplay.setCursorVisibility(visible);
     }
 
     @Override
@@ -80,12 +68,12 @@ public class GlDesktopView extends DesktopView implements SurfaceHolder.Callback
                     }
                 });
 
-        mDisplay.surfaceCreated(holder.getSurface());
+        mDisplay.surfaceCreated(holder);
     }
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        mDisplay.surfaceChanged(width, height);
+        mDisplay.surfaceChanged(holder, format, width, height);
         mOnClientSizeChanged.raise(new SizeChangedEventParameter(width, height));
     }
 
@@ -100,6 +88,6 @@ public class GlDesktopView extends DesktopView implements SurfaceHolder.Callback
         if (mOnCanvasRenderedListenerKey != null) {
             mDisplay.onCanvasRendered().remove(mOnCanvasRenderedListenerKey);
         }
-        mDisplay.surfaceDestroyed();
+        mDisplay.surfaceDestroyed(holder);
     }
 }

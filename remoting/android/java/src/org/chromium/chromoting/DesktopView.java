@@ -21,13 +21,6 @@ import org.chromium.chromoting.jni.Client;
  * for touch input and render data.
  */
 public abstract class DesktopView extends SurfaceView {
-    /** Used to define the animation feedback shown when a user touches the screen. */
-    public enum InputFeedbackType {
-        NONE,
-        SHORT_TOUCH_ANIMATION,
-        LONG_TOUCH_ANIMATION,
-        LONG_TRACKPAD_ANIMATION
-    }
 
     protected final TouchInputHandler mInputHandler;
 
@@ -126,7 +119,7 @@ public abstract class DesktopView extends SurfaceView {
     }
 
     /** Triggers a brief animation to indicate the existence and location of an input event. */
-    public abstract void showInputFeedback(InputFeedbackType feedbackToShow, PointF pos);
+    public abstract void showInputFeedback(RenderStub.InputFeedbackType feedbackToShow, PointF pos);
 
     /**
      * Informs the view that its transformation matrix (for rendering the remote desktop bitmap)

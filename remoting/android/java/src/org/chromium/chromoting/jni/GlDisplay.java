@@ -4,7 +4,10 @@
 
 package org.chromium.chromoting.jni;
 
+import android.graphics.Matrix;
+import android.graphics.PointF;
 import android.view.Surface;
+import android.view.SurfaceHolder;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -13,6 +16,8 @@ import org.chromium.chromoting.DesktopView;
 import org.chromium.chromoting.DesktopViewFactory;
 import org.chromium.chromoting.Event;
 import org.chromium.chromoting.GlDesktopView;
+import org.chromium.chromoting.InputFeedbackRadiusMapper;
+import org.chromium.chromoting.RenderStub;
 import org.chromium.chromoting.SizeChangedEventParameter;
 
 /**
@@ -24,12 +29,16 @@ import org.chromium.chromoting.SizeChangedEventParameter;
  *  Events will only be triggered on UI.
  */
 @JNINamespace("remoting")
-public class GlDisplay {
+public class GlDisplay implements SurfaceHolder.Callback, RenderStub {
     private volatile long mNativeJniGlDisplay;
+    private final Event.Raisable<SizeChangedEventParameter> mOnClientSizeChanged =
+            new Event.Raisable<>();
     private final Event.Raisable<SizeChangedEventParameter> mOnHostSizeChanged =
             new Event.Raisable<>();
     private final Event.Raisable<Void> mOnCanvasRendered =
             new Event.Raisable<>();
+    private InputFeedbackRadiusMapper mFeedbackRadiusMapper;
+    private float mScaleFactor = 0;
 
     private GlDisplay(long nativeJniGlDisplay) {
         mNativeJniGlDisplay = nativeJniGlDisplay;
@@ -46,11 +55,12 @@ public class GlDisplay {
 
     /**
      * Notifies the OpenGL renderer that a surface for OpenGL to draw is created.
-     * @param surface the surface to be drawn on
+     * @param holder the surface holder that holds the surface.
      */
-    public void surfaceCreated(Surface surface) {
+    @Override
+    public void surfaceCreated(SurfaceHolder holder) {
         if (mNativeJniGlDisplay != 0) {
-            nativeOnSurfaceCreated(mNativeJniGlDisplay, surface);
+            nativeOnSurfaceCreated(mNativeJniGlDisplay, holder.getSurface());
         }
     }
 
@@ -60,7 +70,9 @@ public class GlDisplay {
      * @param width the width of the surface
      * @param height the height of the surface
      */
-    public void surfaceChanged(int width, int height) {
+    @Override
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+        mOnClientSizeChanged.raise(new SizeChangedEventParameter(width, height));
         if (mNativeJniGlDisplay != 0) {
             nativeOnSurfaceChanged(mNativeJniGlDisplay, width, height);
         }
@@ -69,36 +81,80 @@ public class GlDisplay {
     /**
      * Notifies the OpenGL renderer that the current surface being used is about to be destroyed.
      */
-    public void surfaceDestroyed() {
+    @Override
+    public void surfaceDestroyed(SurfaceHolder holder) {
         if (mNativeJniGlDisplay != 0) {
             nativeOnSurfaceDestroyed(mNativeJniGlDisplay);
         }
+    }
+
+    @Override
+    public void setDesktopView(DesktopView view) {
+        mFeedbackRadiusMapper = new InputFeedbackRadiusMapper(view);
     }
 
     /**
      * Sets the transformation matrix (in pixel coordinates).
      * @param matrix the transformation matrix
      */
-    public void pixelTransformationChanged(float[] matrix) {
+    @Override
+    public void setTransformation(Matrix matrix) {
         if (mNativeJniGlDisplay != 0) {
-            nativeOnPixelTransformationChanged(mNativeJniGlDisplay, matrix);
+            float[] matrixArray = new float[9];
+            matrix.getValues(matrixArray);
+            nativeOnPixelTransformationChanged(mNativeJniGlDisplay, matrixArray);
+            mScaleFactor = matrix.mapRadius(1);
         }
     }
 
     /** Moves the cursor to the corresponding location on the desktop. */
-    public void cursorPixelPositionChanged(float x, float y) {
+    @Override
+    public void moveCursor(PointF position) {
         if (mNativeJniGlDisplay != 0) {
-            nativeOnCursorPixelPositionChanged(mNativeJniGlDisplay, x, y);
+            nativeOnCursorPixelPositionChanged(mNativeJniGlDisplay, position.x, position.y);
         }
     }
 
     /**
      * Decides whether the cursor should be shown on the canvas.
      */
-    public void cursorVisibilityChanged(boolean visible) {
+    @Override
+    public void setCursorVisibility(boolean visible) {
         if (mNativeJniGlDisplay != 0) {
             nativeOnCursorVisibilityChanged(mNativeJniGlDisplay, visible);
         }
+    }
+
+    /**
+     * Shows the cursor input feedback animation with the given diameter at the given desktop
+     * location.
+     */
+    @Override
+    public void showInputFeedback(InputFeedbackType feedbackToShow, PointF pos) {
+        if (mNativeJniGlDisplay == 0 || feedbackToShow.equals(InputFeedbackType.NONE)) {
+            return;
+        }
+        float diameter = mFeedbackRadiusMapper
+                .getFeedbackRadius(feedbackToShow, mScaleFactor) * 2.0f;
+        if (diameter <= 0.0f) {
+            return;
+        }
+        nativeOnCursorInputFeedback(mNativeJniGlDisplay, pos.x, pos.y, diameter);
+    }
+
+    @Override
+    public Event<SizeChangedEventParameter> onClientSizeChanged() {
+        return mOnClientSizeChanged;
+    }
+
+    @Override
+    public Event<SizeChangedEventParameter> onHostSizeChanged() {
+        return mOnHostSizeChanged;
+    }
+
+    @Override
+    public Event<Void> onCanvasRendered() {
+        return mOnCanvasRendered;
     }
 
     /**
@@ -113,37 +169,12 @@ public class GlDisplay {
     }
 
     /**
-     * An {@link Event} triggered when the size of the host desktop is changed.
-     */
-    public Event<SizeChangedEventParameter> onHostSizeChanged() {
-        return mOnHostSizeChanged;
-    }
-
-    /**
      * Called by native code when a render request has been done by the OpenGL renderer. This
      * will only be called when the render event callback is enabled.
      */
     @CalledByNative
     private void canvasRendered() {
         mOnCanvasRendered.raise(null);
-    }
-
-    /**
-     * An {@link} triggered when render event callback is enabled and a render request has been done
-     * by the OpenGL renderer.
-     */
-    public Event<Void> onCanvasRendered() {
-        return mOnCanvasRendered;
-    }
-
-    /**
-     * Shows the cursor input feedback animation with the given diameter at the given desktop
-     * location.
-     */
-    public void showCursorInputFeedback(float x, float y, float diameter) {
-        if (mNativeJniGlDisplay != 0) {
-            nativeOnCursorInputFeedback(mNativeJniGlDisplay, x, y, diameter);
-        }
     }
 
     @CalledByNative

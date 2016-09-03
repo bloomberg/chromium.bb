@@ -31,7 +31,7 @@ public final class InputFeedbackRadiusMapper {
      * @return the radius of the given feedback type. It may be 0, in which case nothing needs to
      *         be shown.
      */
-    public float getFeedbackRadius(DesktopView.InputFeedbackType feedbackToShow,
+    public float getFeedbackRadius(RenderStub.InputFeedbackType feedbackToShow,
                                    float scaleFactor) {
         switch (feedbackToShow) {
             case NONE:

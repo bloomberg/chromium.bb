@@ -165,13 +165,13 @@ public class TouchInputHandler {
         }
 
         @Override
-        public DesktopView.InputFeedbackType getShortPressFeedbackType() {
-            return DesktopView.InputFeedbackType.NONE;
+        public RenderStub.InputFeedbackType getShortPressFeedbackType() {
+            return RenderStub.InputFeedbackType.NONE;
         }
 
         @Override
-        public DesktopView.InputFeedbackType getLongPressFeedbackType() {
-            return DesktopView.InputFeedbackType.NONE;
+        public RenderStub.InputFeedbackType getLongPressFeedbackType() {
+            return RenderStub.InputFeedbackType.NONE;
         }
 
         @Override
