@@ -41,12 +41,14 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
 #include "components/zoom/page_zoom.h"
+#include "content/public/browser/cert_store.h"
 #include "content/public/browser/devtools_external_agent_proxy.h"
 #include "content/public/browser/devtools_external_agent_proxy_delegate.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
@@ -58,6 +60,7 @@
 #include "ipc/ipc_channel.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/cert/x509_certificate.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_response_writer.h"
@@ -673,6 +676,40 @@ void DevToolsUIBindings::SearchInPath(int search_request_id,
 
 void DevToolsUIBindings::SetWhitelistedShortcuts(const std::string& message) {
   delegate_->SetWhitelistedShortcuts(message);
+}
+
+void DevToolsUIBindings::ShowCertificateViewer(const std::string& cert_chain) {
+  std::unique_ptr<base::Value> value =
+      base::JSONReader::Read(cert_chain);
+  if (!value || value->GetType() != base::Value::TYPE_LIST)
+    return;
+
+  std::unique_ptr<base::ListValue> list =
+      base::ListValue::From(std::move(value));
+  std::vector<base::StringPiece> cert_string_piece;
+  for (size_t i = 0; i < list->GetSize(); ++i) {
+    base::Value* item;
+    if (!list->Get(i, &item) || item->GetType() != base::Value::TYPE_STRING)
+      return;
+    cert_string_piece.push_back(
+        *static_cast<base::StringValue*>(item)->GetString());
+  }
+  scoped_refptr<net::X509Certificate> cert =
+       net::X509Certificate::CreateFromDERCertChain(cert_string_piece);
+  if (!cert)
+    return;
+
+  // TODO(jam): temporarily add the certificate to the cert store to get an ID
+  // so that we don't have to change the WCD method signature
+  // (will be done in followups).
+  if (!agent_host_ || !agent_host_->GetWebContents())
+    return;
+  content::WebContents* inspected_wc = agent_host_->GetWebContents();
+  content::RenderProcessHost* rph = inspected_wc->GetRenderProcessHost();
+  int cert_id = content::CertStore::GetInstance()->StoreCert(
+      cert.get(), rph->GetID());
+  web_contents_->GetDelegate()->ShowCertificateViewerInDevTools(
+      web_contents_, cert_id);
 }
 
 void DevToolsUIBindings::ZoomIn() {
