@@ -95,7 +95,6 @@ X11EventSource::X11EventSource(X11EventSourceDelegate* delegate,
                                XDisplay* display)
     : delegate_(delegate),
       display_(display),
-      last_seen_server_time_(CurrentTime),
       event_timestamp_(CurrentTime),
       dummy_initialized_(false),
       continue_stream_(true) {
@@ -153,9 +152,7 @@ void X11EventSource::BlockUntilWindowUnmapped(XID window) {
   BlockOnWindowStructureEvent(window, UnmapNotify);
 }
 
-Time X11EventSource::UpdateLastSeenServerTime() {
-  base::TimeTicks start = base::TimeTicks::Now();
-
+Time X11EventSource::GetCurrentServerTime() {
   DCHECK(display_);
 
   if (!dummy_initialized_) {
@@ -167,6 +164,8 @@ Time X11EventSource::UpdateLastSeenServerTime() {
     dummy_initialized_ = true;
   }
 
+  base::TimeTicks start = base::TimeTicks::Now();
+
   // Make a no-op property change on |dummy_window_|.
   XChangeProperty(display_, dummy_window_, dummy_atom_, XA_STRING, 8,
                   PropModeAppend, nullptr, 0);
@@ -176,25 +175,10 @@ Time X11EventSource::UpdateLastSeenServerTime() {
   XIfEvent(display_, &event, IsPropertyNotifyForTimestamp,
            reinterpret_cast<XPointer>(&dummy_window_));
 
-  last_seen_server_time_ = event.xproperty.time;
-
   UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "Event.Latency.X11EventSource.UpdateServerTime",
-      (base::TimeTicks::Now() - start).InMicroseconds(), 1,
-      base::TimeDelta::FromMilliseconds(1).InMicroseconds(), 50);
-  return last_seen_server_time_;
-}
-
-void X11EventSource::SetLastSeenServerTime(Time time) {
-  if (time != CurrentTime) {
-    int64_t event_time_64 = time;
-    int64_t time_difference = last_seen_server_time_ - event_time_64;
-    // Ignore timestamps that go backwards. However, X server time is a 32-bit
-    // millisecond counter, so if the time goes backwards by more than half the
-    // range of the 32-bit counter, treat it as a rollover.
-    if (time_difference < 0 || time_difference > (UINT32_MAX >> 1))
-      last_seen_server_time_ = time;
-  }
+      "Linux.X11.ServerRTT", (base::TimeTicks::Now() - start).InMicroseconds(),
+      1, base::TimeDelta::FromMilliseconds(50).InMicroseconds(), 50);
+  return event.xproperty.time;
 }
 
 Time X11EventSource::GetTimestamp() {
@@ -202,7 +186,7 @@ Time X11EventSource::GetTimestamp() {
     return event_timestamp_;
   }
   DVLOG(1) << "Making a round trip to get a recent server timestamp.";
-  return UpdateLastSeenServerTime();
+  return GetCurrentServerTime();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -216,7 +200,6 @@ void X11EventSource::ExtractCookieDataDispatchEvent(XEvent* xevent) {
   }
 
   event_timestamp_ = ExtractTimeFromXEvent(*xevent);
-  SetLastSeenServerTime(event_timestamp_);
 
   delegate_->ProcessXEvent(xevent);
   PostDispatchEvent(xevent);

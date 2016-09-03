@@ -70,19 +70,10 @@ class EVENTS_EXPORT X11EventSource {
   void BlockUntilWindowUnmapped(XID window);
 
   XDisplay* display() { return display_; }
-  Time last_seen_server_time() const { return last_seen_server_time_; }
-
-  // Explicitly asks the X11 server for the current timestamp, and updates
-  // |last_seen_server_time_| with this value.
-  Time UpdateLastSeenServerTime();
-
-  // Sets |last_seen_server_time_| to |time| if this would cause the time to
-  // move forward.
-  void SetLastSeenServerTime(Time time);
 
   // Returns the timestamp of the event currently being dispatched.  Falls back
-  // on UpdateLastSeenServerTime() if there's no event being dispatched, or if
-  // the current event does not have a timestamp.
+  // on GetCurrentServerTime() if there's no event being dispatched, or if the
+  // current event does not have a timestamp.
   Time GetTimestamp();
 
   void StopCurrentEventStream();
@@ -101,6 +92,10 @@ class EVENTS_EXPORT X11EventSource {
   // Dispatch all encountered events prior to the one we're blocking on.
   void BlockOnWindowStructureEvent(XID window, int type);
 
+  // Explicitly asks the X11 server for the current timestamp, and updates
+  // |last_seen_server_time_| with this value.
+  Time GetCurrentServerTime();
+
  private:
   static X11EventSource* instance_;
 
@@ -108,9 +103,6 @@ class EVENTS_EXPORT X11EventSource {
 
   // The connection to the X11 server used to receive the events.
   XDisplay* display_;
-
-  // The last timestamp seen in an XEvent.
-  Time last_seen_server_time_;
 
   // The timestamp of the event being dispatched.
   Time event_timestamp_;

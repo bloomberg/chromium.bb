@@ -5,19 +5,15 @@
 #include "chrome/browser/chrome_browser_main_extra_parts_x11.h"
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/debug/debugger.h"
 #include "base/location.h"
 #include "base/sequenced_task_runner.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/common/chrome_result_codes.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/base/x/x11_util_internal.h"
-#include "ui/events/platform/x11/x11_event_source.h"
 
 using content::BrowserThread;
 
@@ -97,21 +93,6 @@ void ChromeBrowserMainExtraPartsX11::PostMainMessageLoopStart() {
   // main message loop has started. This will allow us to exit cleanly
   // if X exits before us.
   ui::SetX11ErrorHandlers(BrowserX11ErrorHandler, BrowserX11IOErrorHandler);
-
-#if !defined(OS_CHROMEOS)
-  // It is possible for X11EventSource to not have been created (e.g. when
-  // running as a mus client).
-  if (ui::X11EventSource::HasInstance()) {
-    // Get a timestamp from the X server.  This makes our requests to the server
-    // less likely to be thrown away by the window manager.  Put the timestamp
-    // in a command line flag so we can forward it to an existing browser
-    // process if necessary.
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kWmUserTimeMs,
-        base::Uint64ToString(
-            ui::X11EventSource::GetInstance()->UpdateLastSeenServerTime()));
-  }
-#endif
 }
 
 void ChromeBrowserMainExtraPartsX11::PostMainMessageLoopRun() {

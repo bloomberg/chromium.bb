@@ -13406,6 +13406,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Event.Latency.X11EventSource.UpdateServerTime"
     units="microseconds">
+  <obsolete>
+    Deprecated 08/2016, and replaced by Linux.X11.ServerRTT.
+  </obsolete>
   <owner>thomasanderson@chromium.org</owner>
   <summary>Time to request a timestamp from the X server.</summary>
 </histogram>
@@ -21250,6 +21253,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>pkotwicz@chromium.org</owner>
   <summary>
     The window manager used. (Linux only) Logged on each start up.
+  </summary>
+</histogram>
+
+<histogram name="Linux.X11.ServerRTT" units="microseconds">
+  <owner>thomasanderson@chromium.org</owner>
+  <summary>
+    RTT between Chrome and the X11 server.  Tracked in X11EventSource by
+    measuring the latency to receive a property event after changing a property.
   </summary>
 </histogram>
 

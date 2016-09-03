@@ -102,10 +102,6 @@
 #include "chrome/browser/metrics/jumplist_metrics_win.h"
 #endif
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-#include "ui/events/platform/x11/x11_event_source.h"
-#endif
-
 #if defined(ENABLE_PRINT_PREVIEW)
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
@@ -702,22 +698,6 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
         command_line.GetSwitchValueASCII(switches::kWinJumplistAction));
   }
 #endif  // defined(OS_WIN)
-
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  // Our request to Activate may be discarded on some linux window
-  // managers unless given a recent timestamp, so update the timestamp if
-  // we were given one.
-  if (command_line.HasSwitch(switches::kWmUserTimeMs)) {
-    uint64_t time;
-    std::string switch_value =
-        command_line.GetSwitchValueASCII(switches::kWmUserTimeMs);
-    if (base::StringToUint64(switch_value, &time) &&
-        ui::X11EventSource::HasInstance()) {
-      ui::X11EventSource::GetInstance()->SetLastSeenServerTime(
-          static_cast<Time>(time));
-    }
-  }
-#endif
 
   chrome::startup::IsProcessStartup is_process_startup = process_startup ?
       chrome::startup::IS_PROCESS_STARTUP :

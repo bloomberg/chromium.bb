@@ -1117,9 +1117,6 @@ const char kPasswordStore[]                 = "password-store";
 // The same as the --class argument in X applications.  Overrides the WM_CLASS
 // window property with the given value.
 const char kWmClass[]                       = "class";
-
-// Updates X11DesktopHandler::wm_user_time_ms with the latest X server time.
-const char kWmUserTimeMs[]              = "wm-user-time-ms";
 #endif
 
 #if defined(OS_MACOSX)

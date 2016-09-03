@@ -118,13 +118,9 @@ void SelectionOwner::RetrieveTargets(std::vector<XAtom>* targets) {
 
 void SelectionOwner::TakeOwnershipOfSelection(
     const SelectionFormatMap& data) {
-  // Save the last server timestamp seen from X, to satisfy requests for the
-  // TIMESTAMP target later…
-  acquired_selection_timestamp_ =
-      X11EventSource::GetInstance()->last_seen_server_time();
-  // …but always pass CurrentTime to XSetSelectionOwner to increase the chances
-  // of this succeeding.
-  XSetSelectionOwner(x_display_, selection_name_, x_window_, CurrentTime);
+  acquired_selection_timestamp_ = X11EventSource::GetInstance()->GetTimestamp();
+  XSetSelectionOwner(x_display_, selection_name_, x_window_,
+                     acquired_selection_timestamp_);
 
   if (XGetSelectionOwner(x_display_, selection_name_) == x_window_) {
     // The X server agrees that we are the selection owner. Commit our data.
