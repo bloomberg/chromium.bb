@@ -113,6 +113,7 @@ public:
 
 private:
     friend class ScriptValueSerializer;
+    friend class V8ScriptValueSerializer;
 
     enum StringDataMode {
         StringValue,

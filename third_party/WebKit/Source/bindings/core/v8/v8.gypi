@@ -189,6 +189,10 @@
             'WorkerOrWorkletScriptController.h',
             'WrapperTypeInfo.cpp',
             'WrapperTypeInfo.h',
+            'serialization/V8ScriptValueDeserializer.cpp',
+            'serialization/V8ScriptValueDeserializer.h',
+            'serialization/V8ScriptValueSerializer.cpp',
+            'serialization/V8ScriptValueSerializer.h',
         ],
         'bindings_core_v8_unittest_files': [
             'DocumentWriteEvaluatorTest.cpp',

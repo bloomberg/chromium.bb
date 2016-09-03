@@ -484,14 +484,10 @@ public:
     bool readVersion(uint32_t& version);
     void setVersion(uint32_t);
 
-    // Used to extract the underlying buffer, in order to bypass
-    // SerializedScriptValueReader.
-    const uint8_t* buffer() const { return m_buffer; }
-    unsigned length() const { return m_length; }
-
 protected:
     v8::Isolate* isolate() const { return m_scriptState->isolate(); }
     v8::Local<v8::Context> context() const { return m_scriptState->context(); }
+    unsigned length() const { return m_length; }
     unsigned position() const { return m_position; }
 
     const uint8_t* allocate(uint32_t size)

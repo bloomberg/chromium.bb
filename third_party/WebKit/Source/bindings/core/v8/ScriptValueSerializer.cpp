@@ -735,29 +735,6 @@ static void recordValueCounts(int primitiveCount, int jsObjectCount, int domWrap
 
 PassRefPtr<SerializedScriptValue> ScriptValueSerializer::serialize(v8::Local<v8::Value> value, Transferables* transferables, ExceptionState& exceptionState)
 {
-    if (RuntimeEnabledFeatures::v8BasedStructuredCloneEnabled()) {
-        v8::HandleScope scope(isolate());
-        v8::ValueSerializer serializer(isolate());
-        serializer.WriteHeader();
-        bool wroteValue;
-        if (!serializer.WriteValue(context(), value).To(&wroteValue)) {
-            // TODO(jbroman): Revisit how DataCloneError is thrown.
-            // https://crbug.com/641964
-            if (m_tryCatch.HasCaught()) {
-                exceptionState.rethrowV8Exception(m_tryCatch.Exception());
-            } else {
-                exceptionState.throwDOMException(DataCloneError, "An object could not be cloned.");
-            }
-            return nullptr;
-        }
-        DCHECK(wroteValue);
-        std::vector<uint8_t> buffer = serializer.ReleaseBuffer();
-        // TODO(jbroman): Remove this old conversion to WTF::String.
-        if (buffer.size() % 2)
-            buffer.push_back(0);
-        return SerializedScriptValue::create(String(reinterpret_cast<const UChar*>(&buffer[0]), buffer.size() / 2));
-    }
-
     m_primitiveCount = m_jsObjectCount = m_domWrapperCount = 0;
 
     DCHECK(!m_blobDataHandles);
@@ -2196,23 +2173,6 @@ PassRefPtr<BlobDataHandle> SerializedScriptValueReader::getOrCreateBlobDataHandl
 v8::Local<v8::Value> ScriptValueDeserializer::deserialize()
 {
     v8::Isolate* isolate = m_reader.getScriptState()->isolate();
-
-    if (RuntimeEnabledFeatures::v8BasedStructuredCloneEnabled()) {
-        v8::EscapableHandleScope scope(isolate);
-        v8::TryCatch tryCatch(isolate);
-        v8::ValueDeserializer deserializer(isolate, m_reader.buffer(), m_reader.length());
-        deserializer.SetSupportsLegacyWireFormat(true);
-        bool readHeader;
-        if (!deserializer.ReadHeader().To(&readHeader))
-            return v8::Null(isolate);
-        DCHECK(readHeader);
-        v8::Local<v8::Context> context = m_reader.getScriptState()->context();
-        v8::Local<v8::Value> value;
-        if (!deserializer.ReadValue(context).ToLocal(&value))
-            return v8::Null(isolate);
-        return scope.Escape(value);
-    }
-
     if (!m_reader.readVersion(m_version) || m_version > SerializedScriptValue::wireFormatVersion)
         return v8::Null(isolate);
     m_reader.setVersion(m_version);
