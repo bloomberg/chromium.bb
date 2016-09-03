@@ -58,6 +58,10 @@ class SynchronousCompositorHost : public SynchronousCompositor {
       const gfx::Size& viewport_size,
       const gfx::Rect& viewport_rect_for_tile_priority,
       const gfx::Transform& transform_for_tile_priority) override;
+  void DemandDrawHwAsync(
+      const gfx::Size& viewport_size,
+      const gfx::Rect& viewport_rect_for_tile_priority,
+      const gfx::Transform& transform_for_tile_priority) override;
   bool DemandDrawSw(SkCanvas* canvas) override;
   void ReturnResources(uint32_t output_surface_id,
                        const cc::ReturnedResourceArray& resources) override;
@@ -91,6 +95,10 @@ class SynchronousCompositorHost : public SynchronousCompositor {
   bool DemandDrawSwInProc(SkCanvas* canvas);
   void SetSoftwareDrawSharedMemoryIfNeeded(size_t stride, size_t buffer_size);
   void SendZeroMemory();
+  SynchronousCompositor::Frame ProcessHardwareFrame(
+      uint32_t output_surface_id,
+      cc::CompositorFrame compositor_frame);
+  bool DemandDrawHwReceiveFrame(const IPC::Message& message);
 
   RenderWidgetHostViewAndroid* const rwhva_;
   SynchronousCompositorClient* const client_;

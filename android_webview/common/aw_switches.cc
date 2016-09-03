@@ -6,6 +6,7 @@
 
 namespace switches {
 
+const char kAsyncOnDrawHardware[] = "async-on-draw-hardware";
 const char kWebViewSandboxedRenderer[] = "webview-sandboxed-renderer";
 
 }  // namespace switches

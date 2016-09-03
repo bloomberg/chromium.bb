@@ -35,6 +35,7 @@ SynchronousCompositorProxy::SynchronousCompositorProxy(
       inside_receive_(false),
       hardware_draw_reply_(nullptr),
       software_draw_reply_(nullptr),
+      hardware_draw_reply_async_(false),
       version_(0u),
       page_scale_factor_(0.f),
       min_page_scale_factor_(0.f),
@@ -135,6 +136,7 @@ void SynchronousCompositorProxy::OnMessageReceived(
     IPC_MESSAGE_HANDLER(SyncCompositorMsg_ComputeScroll, OnComputeScroll)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(SyncCompositorMsg_DemandDrawHw,
                                     DemandDrawHw)
+    IPC_MESSAGE_HANDLER(SyncCompositorMsg_DemandDrawHwAsync, DemandDrawHwAsync)
     IPC_MESSAGE_HANDLER(SyncCompositorMsg_SetSharedMemory, SetSharedMemory)
     IPC_MESSAGE_HANDLER(SyncCompositorMsg_ZeroSharedMemory, ZeroSharedMemory)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(SyncCompositorMsg_DemandDrawSw,
@@ -148,27 +150,57 @@ bool SynchronousCompositorProxy::Send(IPC::Message* message) {
   return sender_->Send(message);
 }
 
+void SynchronousCompositorProxy::DemandDrawHwAsync(
+    const SyncCompositorDemandDrawHwParams& params) {
+  DoDemandDrawHw(params, nullptr);
+}
+
 void SynchronousCompositorProxy::DemandDrawHw(
     const SyncCompositorDemandDrawHwParams& params,
     IPC::Message* reply_message) {
-  DCHECK(!inside_receive_);
   DCHECK(reply_message);
+  DoDemandDrawHw(params, reply_message);
+}
 
+void SynchronousCompositorProxy::DoDemandDrawHw(
+    const SyncCompositorDemandDrawHwParams& params,
+    IPC::Message* reply_message) {
+  DCHECK(!inside_receive_);
   inside_receive_ = true;
 
   if (output_surface_) {
-    base::AutoReset<IPC::Message*> scoped_hardware_draw_reply(
-        &hardware_draw_reply_, reply_message);
-    output_surface_->DemandDrawHw(params.viewport_size,
-                                  params.viewport_rect_for_tile_priority,
-                                  params.transform_for_tile_priority);
+    if (!reply_message) {
+      base::AutoReset<bool> scoped_hardware_draw_reply_async(
+          &hardware_draw_reply_async_, true);
+      output_surface_->DemandDrawHw(params.viewport_size,
+                                    params.viewport_rect_for_tile_priority,
+                                    params.transform_for_tile_priority);
+    } else {
+      base::AutoReset<IPC::Message*> scoped_hardware_draw_reply(
+          &hardware_draw_reply_, reply_message);
+      output_surface_->DemandDrawHw(params.viewport_size,
+                                    params.viewport_rect_for_tile_priority,
+                                    params.transform_for_tile_priority);
+    }
   }
 
   if (inside_receive_) {
     // Did not swap.
-    SendDemandDrawHwReply(cc::CompositorFrame(), 0u, reply_message);
+    if (!reply_message) {
+      SendDemandDrawHwReplyAsync(cc::CompositorFrame(), 0u);
+    } else {
+      SendDemandDrawHwReply(cc::CompositorFrame(), 0u, reply_message);
+    }
     inside_receive_ = false;
   }
+}
+
+void SynchronousCompositorProxy::SwapBuffersHwAsync(uint32_t output_surface_id,
+                                                    cc::CompositorFrame frame) {
+  DCHECK(inside_receive_);
+  DCHECK(hardware_draw_reply_async_);
+  SendDemandDrawHwReplyAsync(std::move(frame), output_surface_id);
+  inside_receive_ = false;
 }
 
 void SynchronousCompositorProxy::SwapBuffersHw(uint32_t output_surface_id,
@@ -178,6 +210,13 @@ void SynchronousCompositorProxy::SwapBuffersHw(uint32_t output_surface_id,
   SendDemandDrawHwReply(std::move(frame), output_surface_id,
                         hardware_draw_reply_);
   inside_receive_ = false;
+}
+
+void SynchronousCompositorProxy::SendDemandDrawHwReplyAsync(
+    cc::CompositorFrame frame,
+    uint32_t output_surface_id) {
+  Send(new SyncCompositorHostMsg_ReturnFrame(routing_id_, output_surface_id,
+                                             frame));
 }
 
 void SynchronousCompositorProxy::SendDemandDrawHwReply(
@@ -297,9 +336,15 @@ void SynchronousCompositorProxy::SendDemandDrawSwReply(
 
 void SynchronousCompositorProxy::SwapBuffers(uint32_t output_surface_id,
                                              cc::CompositorFrame frame) {
-  DCHECK(hardware_draw_reply_ || software_draw_reply_);
-  DCHECK(!(hardware_draw_reply_ && software_draw_reply_));
-  if (hardware_draw_reply_) {
+  // Verify that exactly one of these is true.
+  DCHECK(hardware_draw_reply_async_ || hardware_draw_reply_ ||
+         software_draw_reply_);
+  DCHECK(!((hardware_draw_reply_ && software_draw_reply_) ||
+           (hardware_draw_reply_ && hardware_draw_reply_async_) ||
+           (software_draw_reply_ && hardware_draw_reply_async_)));
+  if (hardware_draw_reply_async_) {
+    SwapBuffersHwAsync(output_surface_id, std::move(frame));
+  } else if (hardware_draw_reply_) {
     SwapBuffersHw(output_surface_id, std::move(frame));
   } else if (software_draw_reply_) {
     SwapBuffersSw(std::move(frame));

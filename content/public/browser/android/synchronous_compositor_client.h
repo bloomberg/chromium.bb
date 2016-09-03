@@ -55,6 +55,9 @@ class SynchronousCompositorClient {
 
   virtual ui::TouchHandleDrawable* CreateDrawable() = 0;
 
+  virtual void OnDrawHardwareProcessFrame(
+      content::SynchronousCompositor::Frame frame) = 0;
+
  protected:
   SynchronousCompositorClient() {}
   virtual ~SynchronousCompositorClient() {}

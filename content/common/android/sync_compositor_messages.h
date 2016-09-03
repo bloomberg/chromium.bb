@@ -124,6 +124,9 @@ IPC_SYNC_MESSAGE_CONTROL1_1(
 IPC_MESSAGE_ROUTED1(SyncCompositorMsg_ComputeScroll,
                     base::TimeTicks);
 
+IPC_MESSAGE_ROUTED1(SyncCompositorMsg_DemandDrawHwAsync,
+                    content::SyncCompositorDemandDrawHwParams)
+
 IPC_SYNC_MESSAGE_ROUTED1_3(SyncCompositorMsg_DemandDrawHw,
                            content::SyncCompositorDemandDrawHwParams,
                            content::SyncCompositorCommonRendererParams,
@@ -164,3 +167,7 @@ IPC_MESSAGE_ROUTED0(SyncCompositorHostMsg_OutputSurfaceCreated);
 
 IPC_MESSAGE_ROUTED1(SyncCompositorHostMsg_UpdateState,
                     content::SyncCompositorCommonRendererParams)
+
+IPC_MESSAGE_ROUTED2(SyncCompositorHostMsg_ReturnFrame,
+                    uint32_t /* output_surface_id */,
+                    cc::CompositorFrame);

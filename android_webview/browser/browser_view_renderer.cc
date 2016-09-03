@@ -9,6 +9,7 @@
 #include "android_webview/browser/browser_view_renderer_client.h"
 #include "android_webview/browser/child_frame.h"
 #include "android_webview/browser/compositor_frame_consumer.h"
+#include "android_webview/common/aw_switches.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -93,6 +94,8 @@ BrowserViewRenderer::BrowserViewRenderer(
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner)
     : client_(client),
       ui_task_runner_(ui_task_runner),
+      async_on_draw_hardware_(base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAsyncOnDrawHardware)),
       current_compositor_frame_consumer_(nullptr),
       compositor_(nullptr),
       is_paused_(false),
@@ -226,24 +229,38 @@ bool BrowserViewRenderer::OnDrawHardware() {
   gfx::Transform transform_for_tile_priority =
       external_draw_constraints_.transform;
 
-  // If the WebView is on a layer, WebView does not know what transform is
-  // applied onto the layer so global visible rect does not make sense here.
-  // In this case, just use the surface rect for tiling.
-  gfx::Rect viewport_rect_for_tile_priority;
+  gfx::Rect viewport_rect_for_tile_priority =
+      ComputeViewportRectForTilePriority();
 
-  // Leave viewport_rect_for_tile_priority empty if offscreen_pre_raster_ is on.
-  if (!offscreen_pre_raster_ && !external_draw_constraints_.is_layer) {
-    viewport_rect_for_tile_priority = last_on_draw_global_visible_rect_;
+  if (async_on_draw_hardware_) {
+    compositor_->DemandDrawHwAsync(size_, viewport_rect_for_tile_priority,
+                                   transform_for_tile_priority);
+    return current_compositor_frame_consumer_->HasFrameOnUI();
   }
 
   content::SynchronousCompositor::Frame frame = compositor_->DemandDrawHw(
       size_, viewport_rect_for_tile_priority, transform_for_tile_priority);
-  if (!frame.frame.get()) {
+  if (!frame.frame) {
     TRACE_EVENT_INSTANT0("android_webview", "NoNewFrame",
                          TRACE_EVENT_SCOPE_THREAD);
     return current_compositor_frame_consumer_->HasFrameOnUI();
   }
 
+  OnDrawHardwareProcessFrame(std::move(frame));
+  return true;
+}
+
+void BrowserViewRenderer::OnDrawHardwareProcessFrame(
+    content::SynchronousCompositor::Frame frame) {
+  TRACE_EVENT0("android_webview",
+               "BrowserViewRenderer::OnDrawHardwareProcessFrame");
+  if (!frame.frame)
+    return;
+
+  gfx::Transform transform_for_tile_priority =
+      external_draw_constraints_.transform;
+  gfx::Rect viewport_rect_for_tile_priority =
+      ComputeViewportRectForTilePriority();
   std::unique_ptr<ChildFrame> child_frame = base::MakeUnique<ChildFrame>(
       frame.output_surface_id, std::move(frame.frame), compositor_id_,
       viewport_rect_for_tile_priority.IsEmpty(), transform_for_tile_priority,
@@ -252,7 +269,19 @@ bool BrowserViewRenderer::OnDrawHardware() {
   ReturnUnusedResource(
       current_compositor_frame_consumer_->PassUncommittedFrameOnUI());
   current_compositor_frame_consumer_->SetFrameOnUI(std::move(child_frame));
-  return true;
+}
+
+gfx::Rect BrowserViewRenderer::ComputeViewportRectForTilePriority() {
+  // If the WebView is on a layer, WebView does not know what transform is
+  // applied onto the layer so global visible rect does not make sense here.
+  // In this case, just use the surface rect for tiling.
+  // Leave viewport_rect_for_tile_priority empty if offscreen_pre_raster_ is on.
+  gfx::Rect viewport_rect_for_tile_priority;
+
+  if (!offscreen_pre_raster_ && !external_draw_constraints_.is_layer) {
+    viewport_rect_for_tile_priority = last_on_draw_global_visible_rect_;
+  }
+  return viewport_rect_for_tile_priority;
 }
 
 void BrowserViewRenderer::OnParentDrawConstraintsUpdated(

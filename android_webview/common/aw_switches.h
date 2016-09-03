@@ -7,6 +7,7 @@
 
 namespace switches {
 
+extern const char kAsyncOnDrawHardware[];
 extern const char kWebViewSandboxedRenderer[];
 
 // Please note that if you are adding a flag that is intended for a renderer,

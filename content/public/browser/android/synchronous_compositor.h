@@ -68,6 +68,14 @@ class CONTENT_EXPORT SynchronousCompositor {
       const gfx::Rect& viewport_rect_for_tile_priority,
       const gfx::Transform& transform_for_tile_priority) = 0;
 
+  // Same as DemandDrawHw, but uses asynchronous IPC messages. Calls
+  // SynchronousCompositorClient::OnDrawHardwareProcessFrame to return the
+  // frame.
+  virtual void DemandDrawHwAsync(
+      const gfx::Size& viewport_size,
+      const gfx::Rect& viewport_rect_for_tile_priority,
+      const gfx::Transform& transform_for_tile_priority) = 0;
+
   // For delegated rendering, return resources from parent compositor to this.
   // Note that all resources must be returned before ReleaseHwDraw.
   virtual void ReturnResources(uint32_t output_surface_id,

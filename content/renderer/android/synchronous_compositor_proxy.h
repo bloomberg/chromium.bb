@@ -73,6 +73,7 @@ class SynchronousCompositorProxy
 
   // IPC handlers.
   void OnComputeScroll(base::TimeTicks animation_time);
+  void DemandDrawHwAsync(const SyncCompositorDemandDrawHwParams& params);
   void DemandDrawHw(const SyncCompositorDemandDrawHwParams& params,
                     IPC::Message* reply_message);
   void SetSharedMemory(
@@ -88,16 +89,22 @@ class SynchronousCompositorProxy
       SyncCompositorCommonRendererParams* common_renderer_params);
   void SetScroll(const gfx::ScrollOffset& total_scroll_offset);
 
+  void SwapBuffersHwAsync(uint32_t output_surface_id,
+                          cc::CompositorFrame frame);
   void SwapBuffersHw(uint32_t output_surface_id, cc::CompositorFrame frame);
   void SendDemandDrawHwReply(cc::CompositorFrame frame,
                              uint32_t output_surface_id,
                              IPC::Message* reply_message);
+  void SendDemandDrawHwReplyAsync(cc::CompositorFrame frame,
+                                  uint32_t output_surface_id);
   void DoDemandDrawSw(const SyncCompositorDemandDrawSwParams& params);
   void SwapBuffersSw(cc::CompositorFrame frame);
   void SendDemandDrawSwReply(bool success,
                              cc::CompositorFrame frame,
                              IPC::Message* reply_message);
   void SendAsyncRendererStateIfNeeded();
+  void DoDemandDrawHw(const SyncCompositorDemandDrawHwParams& params,
+                      IPC::Message* reply_message);
 
   const int routing_id_;
   IPC::Sender* const sender_;
@@ -107,6 +114,7 @@ class SynchronousCompositorProxy
   bool inside_receive_;
   IPC::Message* hardware_draw_reply_;
   IPC::Message* software_draw_reply_;
+  bool hardware_draw_reply_async_;
 
   // From browser.
   std::unique_ptr<SharedMemoryWithSize> software_draw_shm_;

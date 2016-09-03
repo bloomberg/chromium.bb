@@ -91,9 +91,21 @@ bool SynchronousCompositorHost::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(SyncCompositorHostMsg_OutputSurfaceCreated,
                         OutputSurfaceCreated)
     IPC_MESSAGE_HANDLER(SyncCompositorHostMsg_UpdateState, ProcessCommonParams)
+    IPC_MESSAGE_HANDLER_GENERIC(SyncCompositorHostMsg_ReturnFrame,
+                                DemandDrawHwReceiveFrame(message))
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+void SynchronousCompositorHost::DemandDrawHwAsync(
+    const gfx::Size& viewport_size,
+    const gfx::Rect& viewport_rect_for_tile_priority,
+    const gfx::Transform& transform_for_tile_priority) {
+  SyncCompositorDemandDrawHwParams params(viewport_size,
+                                          viewport_rect_for_tile_priority,
+                                          transform_for_tile_priority);
+  sender_->Send(new SyncCompositorMsg_DemandDrawHwAsync(routing_id_, params));
 }
 
 SynchronousCompositor::Frame SynchronousCompositorHost::DemandDrawHw(
@@ -103,15 +115,40 @@ SynchronousCompositor::Frame SynchronousCompositorHost::DemandDrawHw(
   SyncCompositorDemandDrawHwParams params(viewport_size,
                                           viewport_rect_for_tile_priority,
                                           transform_for_tile_priority);
-  SynchronousCompositor::Frame frame;
-  frame.frame.reset(new cc::CompositorFrame);
+  uint32_t output_surface_id;
+  cc::CompositorFrame compositor_frame;
   SyncCompositorCommonRendererParams common_renderer_params;
+
   if (!sender_->Send(new SyncCompositorMsg_DemandDrawHw(
-          routing_id_, params, &common_renderer_params,
-          &frame.output_surface_id, frame.frame.get()))) {
+          routing_id_, params, &common_renderer_params, &output_surface_id,
+          &compositor_frame))) {
     return SynchronousCompositor::Frame();
   }
+
   ProcessCommonParams(common_renderer_params);
+
+  return ProcessHardwareFrame(output_surface_id, std::move(compositor_frame));
+}
+
+bool SynchronousCompositorHost::DemandDrawHwReceiveFrame(
+    const IPC::Message& message) {
+  SyncCompositorHostMsg_ReturnFrame::Param param;
+  if (!SyncCompositorHostMsg_ReturnFrame::Read(&message, &param))
+    return false;
+  uint32_t output_surface_id = std::get<0>(param);
+  cc::CompositorFrame compositor_frame = std::move(std::get<1>(param));
+  client_->OnDrawHardwareProcessFrame(
+      ProcessHardwareFrame(output_surface_id, std::move(compositor_frame)));
+  return true;
+}
+
+SynchronousCompositor::Frame SynchronousCompositorHost::ProcessHardwareFrame(
+    uint32_t output_surface_id,
+    cc::CompositorFrame compositor_frame) {
+  SynchronousCompositor::Frame frame;
+  frame.frame.reset(new cc::CompositorFrame);
+  frame.output_surface_id = output_surface_id;
+  *frame.frame = std::move(compositor_frame);
   if (!frame.frame->delegated_frame_data) {
     // This can happen if compositor did not swap in this draw.
     frame.frame.reset();

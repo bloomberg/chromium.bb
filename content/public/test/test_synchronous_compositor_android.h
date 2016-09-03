@@ -28,6 +28,10 @@ class CONTENT_EXPORT TestSynchronousCompositor : public SynchronousCompositor {
       const gfx::Size& viewport_size,
       const gfx::Rect& viewport_rect_for_tile_priority,
       const gfx::Transform& transform_for_tile_priority) override;
+  void DemandDrawHwAsync(
+      const gfx::Size& viewport_size,
+      const gfx::Rect& viewport_rect_for_tile_priority,
+      const gfx::Transform& transform_for_tile_priority) override;
   void ReturnResources(uint32_t output_surface_id,
                        const cc::ReturnedResourceArray& resources) override;
   bool DemandDrawSw(SkCanvas* canvas) override;

@@ -130,6 +130,8 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
                      const gfx::Vector2dF& latest_overscroll_delta,
                      const gfx::Vector2dF& current_fling_velocity) override;
   ui::TouchHandleDrawable* CreateDrawable() override;
+  void OnDrawHardwareProcessFrame(
+      content::SynchronousCompositor::Frame frame) override;
 
   // CompositorFrameProducer overrides
   void OnParentDrawConstraintsUpdated(
@@ -156,6 +158,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   void ReturnResourceFromParent(
       CompositorFrameConsumer* compositor_frame_consumer);
   void ReleaseHardware();
+  gfx::Rect ComputeViewportRectForTilePriority();
 
   gfx::Vector2d max_scroll_offset() const;
 
@@ -169,6 +172,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
 
   BrowserViewRendererClient* const client_;
   const scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
+  const bool async_on_draw_hardware_;
   CompositorFrameConsumer* current_compositor_frame_consumer_;
   std::set<CompositorFrameConsumer*> compositor_frame_consumers_;
 
