@@ -2082,10 +2082,11 @@ bool PaintLayer::hitTestClippedOutByClipPath(PaintLayer* rootLayer, const HitTes
     DCHECK(isSelfPaintingLayer());
     DCHECK(rootLayer);
 
-    LayoutPoint offsetToRootLayer;
-    convertToLayerCoords(rootLayer, offsetToRootLayer);
     LayoutRect referenceBox(boxForClipPath());
-    referenceBox.moveBy(offsetToRootLayer);
+    if (enclosingPaginationLayer())
+        convertFromFlowThreadToVisualBoundingBoxInAncestor(rootLayer, referenceBox);
+    else
+        convertToLayerCoords(rootLayer, referenceBox);
 
     FloatPoint point(hitTestLocation.point());
 
@@ -2106,7 +2107,7 @@ bool PaintLayer::hitTestClippedOutByClipPath(PaintLayer* rootLayer, const HitTes
     // the coordinate system is the top-left of the reference box, so adjust
     // the point accordingly.
     if (clipper->clipPathUnits() == SVGUnitTypes::kSvgUnitTypeUserspaceonuse)
-        point.moveBy(-offsetToRootLayer);
+        point.moveBy(-referenceBox.location());
     return !clipper->hitTestClipContent(FloatRect(referenceBox), point);
 }
 

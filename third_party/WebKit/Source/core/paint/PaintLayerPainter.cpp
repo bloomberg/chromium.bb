@@ -268,9 +268,14 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(GraphicsCon
         paintingInfo.ancestorHasClipPathClipping = true;
 
         LayoutRect referenceBox(m_paintLayer.boxForClipPath());
-        referenceBox.moveBy(offsetFromRoot);
+        // Note that this isn't going to work correctly if crossing a column boundary. The reference box should be
+        // determined per-fragment, and hence this ought to be performed after fragmentation.
+        if (m_paintLayer.enclosingPaginationLayer())
+            m_paintLayer.convertFromFlowThreadToVisualBoundingBoxInAncestor(paintingInfo.rootLayer, referenceBox);
+        else
+            referenceBox.moveBy(offsetFromRoot);
         clipPathClipper.emplace(
-            context, *m_paintLayer.layoutObject(), FloatRect(referenceBox), FloatPoint(offsetFromRoot));
+            context, *m_paintLayer.layoutObject(), FloatRect(referenceBox), FloatPoint(referenceBox.location()));
     }
 
     Optional<CompositingRecorder> compositingRecorder;
