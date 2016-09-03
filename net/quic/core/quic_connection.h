@@ -483,11 +483,13 @@ class NET_EXPORT_PRIVATE QuicConnection
     debug_visitor_ = debug_visitor;
     sent_packet_manager_->SetDebugDelegate(debug_visitor);
   }
+  // Used in Chromium, but not internally.
+  // Must only be called before ping_alarm_ is set.
   void set_ping_timeout(QuicTime::Delta ping_timeout) {
+    DCHECK(!ping_alarm_->IsSet());
     ping_timeout_ = ping_timeout;
   }
   const QuicTime::Delta ping_timeout() { return ping_timeout_; }
-  // Used in Chromium, but not internally.
   void set_creator_debug_delegate(QuicPacketCreator::DebugDelegate* visitor) {
     packet_generator_.set_debug_delegate(visitor);
   }
