@@ -4,7 +4,9 @@
 
 import("//third_party/WebKit/Source/core/core.gni")
 
-blink_core_sources("observer") {
+target(core_link_small_target_type, "observer") {
+  visibility = [ "//third_party/WebKit/Source/core/*" ]
+
   sources = [
     "ResizeObservation.cpp",
     "ResizeObservation.h",
@@ -17,8 +19,14 @@ blink_core_sources("observer") {
     "ResizeObserverEntry.h",
   ]
 
+  configs -= core_config_remove
+  configs += core_config_add
   configs += [
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     "//build/config/compiler:no_size_t_to_int_warning",
+  ]
+
+  deps = [
+    "//third_party/WebKit/Source/core:prerequisites",
   ]
 }

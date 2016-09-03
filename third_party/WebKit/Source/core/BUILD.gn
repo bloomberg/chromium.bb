@@ -150,21 +150,13 @@ component("core") {
   ]
   deps = [
     ":remaining",
-    "//third_party/WebKit/Source/core/animation",
-    "//third_party/WebKit/Source/core/clipboard",
-    "//third_party/WebKit/Source/core/css",
+    ":rendering",
     "//third_party/WebKit/Source/core/dom",
-    "//third_party/WebKit/Source/core/editing",
     "//third_party/WebKit/Source/core/events",
-    "//third_party/WebKit/Source/core/fetch",
-    "//third_party/WebKit/Source/core/fileapi",
-    "//third_party/WebKit/Source/core/frame",
     "//third_party/WebKit/Source/core/html",
     "//third_party/WebKit/Source/core/input",
-    "//third_party/WebKit/Source/core/layout",
     "//third_party/WebKit/Source/core/layout/svg",
     "//third_party/WebKit/Source/core/observer",
-    "//third_party/WebKit/Source/core/style:rendering",
     "//third_party/WebKit/Source/core/style:svg",
     "//third_party/WebKit/Source/core/svg",
   ]
@@ -192,6 +184,7 @@ target(core_link_large_target_type, "remaining") {
   # the path starts with "rendering/" or not. We should tweak the .gypis a bit
   # to separate out the rendering files.
   sources = rebase_path(webcore_non_rendering_files, ".", "//")
+  sources += rebase_path(webcore_rendering_files, ".", "//")
 
   configs -= core_config_remove
   configs += core_config_add + [
@@ -207,12 +200,43 @@ target(core_link_large_target_type, "remaining") {
     ":prerequisites",
   ]
 
+  if (is_win) {
+    cflags += [ "/wd4334" ]
+    sources -= [ "layout/LayoutThemeFontProviderDefault.cpp" ]
+  } else {  # !is_win
+    sources -= [
+      "layout/LayoutThemeFontProviderWin.cpp",
+      "layout/LayoutThemeWin.cpp",
+      "layout/LayoutThemeWin.h",
+    ]
+  }
+
+  if (!is_linux) {
+    sources -= [
+      "layout/LayoutThemeLinux.cpp",
+      "layout/LayoutThemeLinux.h",
+    ]
+  }
+
+  if (!is_android) {
+    sources -= [
+      "layout/LayoutThemeAndroid.cpp",
+      "layout/LayoutThemeAndroid.h",
+    ]
+  }
+
   if (is_mac) {
     libs += [
       "AppKit.framework",
       "Carbon.framework",
     ]
+  } else {  # !is_mac
+    sources -= [ "editing/commands/SmartReplaceCF.cpp" ]
   }
+}
+
+source_set("rendering") {
+  # The files that go here are currently in "remaining".
 }
 
 source_set("testing") {

@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//build/config/chrome_build.gni")
-import("//build/split_static_library.gni")
 import("//third_party/WebKit/Source/config.gni")
 
 blink_core_output_dir = "$root_gen_dir/blink/core"
@@ -47,75 +46,6 @@ if (is_component_build) {
   core_link_small_target_type = "static_library"
 }
 
-# Use this to generate a static library or source set that gets linked into
-# "core". This will either be a source_set (component build), a static library
-# (split_count undefined) or a split static library (split_count defined).
-#
-# Special values. All unlisted values are forwarded to the underlying library.
-#
-#   configs
-#      Normal meaning. The set_defaults call below will make the default value
-#      of configs in the calling code take into account the core_config_add and
-#      core_config_remove lists above. So you don't need to manually take these
-#      into account: just modify the configs as normal for target-specific
-#      overrides (or don't touch it).
-#
-#   split_count
-#      If defined, non-component builds will generate this number of static
-#      libraries by splitting the sources. This is for use on Windows where the
-#      maximum static library size is 2GB, and 64-bit builds with full symbols
-#      can exceed this if there are many sources.
-#
-#   deps
-#      Normal meaning but "core:prerequisites" target is always added. Callers
-#      shouldn'y list prerequisites as a dependency.
-#
-#   visibility
-#      Normal meaning if defined. If undefined, defaults to everything in core.
-template("blink_core_sources") {
-  if (is_component_build) {
-    target_type = "source_set"
-
-    # This assert avoids an unused variable warning.
-    assert(!defined(invoker.split_count) || invoker.split_count != 0)
-  } else if (!defined(invoker.split_count)) {
-    target_type = "static_library"
-  } else {
-    target_type = "split_static_library"
-  }
-
-  target(target_type, target_name) {
-    # The visibility will get overridden by forward_variables_from below if the
-    # invoker defined it.
-    visibility = [ "//third_party/WebKit/Source/core/*" ]
-
-    if (target_type == "split_static_library") {
-      split_count = invoker.split_count
-    }
-
-    deps = [
-      "//third_party/WebKit/Source/core:prerequisites",
-    ]
-    if (defined(invoker.deps)) {
-      deps += invoker.deps
-    }
-
-    # Take everything else not handled above from the invoker.
-    forward_variables_from(invoker,
-                           "*",
-                           [
-                             "deps",
-                             "split_count",
-                           ])
-  }
-}
-set_defaults("blink_core_sources") {
-  # This sets the default list of configs when the blink_core_sources target
-  # is defined. The default_compiler_configs comes from BUILDCONFIG.gn and
-  # is the list normally applied to static libraries and source sets.
-  configs = default_compiler_configs - core_config_remove + core_config_add
-}
-
 # This file is the GN version of core.gypi. We rebase most paths to be absolute
 # so these lists can be used by BUILD files in different directories without
 # worrying about the base directory.
@@ -153,6 +83,8 @@ core_typedefs_enums_only_idl_files =
 
 webcore_non_rendering_files =
     get_path_info(_gypi.webcore_non_rendering_files, "abspath")
+webcore_rendering_files =
+    get_path_info(_gypi.webcore_rendering_files, "abspath")
 webcore_testing_idl_files =
     get_path_info(_gypi.webcore_testing_idl_files, "abspath")
 webcore_testing_idl_with_modules_dependency_files =
