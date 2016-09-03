@@ -80,6 +80,7 @@ class PipelineControllerTest : public ::testing::Test, public Pipeline::Client {
     EXPECT_CALL(pipeline_, Suspend(_)).WillOnce(SaveArg<0>(&suspend_cb));
     pipeline_controller_.Suspend();
     Mock::VerifyAndClear(&pipeline_);
+    EXPECT_TRUE(pipeline_controller_.IsSuspended());
     EXPECT_FALSE(pipeline_controller_.IsStable());
     EXPECT_FALSE(pipeline_controller_.IsPipelineSuspended());
     return suspend_cb;
@@ -95,6 +96,7 @@ class PipelineControllerTest : public ::testing::Test, public Pipeline::Client {
         .WillRepeatedly(Return(base::TimeDelta()));
     pipeline_controller_.Resume();
     Mock::VerifyAndClear(&pipeline_);
+    EXPECT_FALSE(pipeline_controller_.IsSuspended());
     EXPECT_FALSE(pipeline_controller_.IsStable());
     EXPECT_FALSE(pipeline_controller_.IsPipelineSuspended());
     return resume_cb;

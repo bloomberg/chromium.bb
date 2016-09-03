@@ -104,7 +104,9 @@ bool PipelineController::IsStable() {
 
 bool PipelineController::IsSuspended() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return (pending_suspend_ || state_ == State::SUSPENDED) && !pending_resume_;
+  return (pending_suspend_ || state_ == State::SUSPENDING ||
+          state_ == State::SUSPENDED) &&
+         !pending_resume_;
 }
 
 bool PipelineController::IsPipelineSuspended() {
