@@ -9,6 +9,7 @@
 namespace Windows {
 namespace Storage {
 namespace Streams {
+#pragma warning(disable : 4467)
 struct __declspec(uuid("905a0fef-bc53-11df-8c49-001e4fc686da"))
     IBufferByteAccess;
 }
