@@ -45,6 +45,16 @@ config("core_include_dirs") {
   }
 }
 
+if (!is_component_build) {
+  if (is_win && is_official_build) {
+    # Shard this target into parts to work around linker limitations
+    # on link time code generation builds.
+    split_count = 5
+  } else {
+    split_count = 1
+  }
+}
+
 source_set("generated") {
   deps = [
     ":core_generated",
@@ -184,18 +194,11 @@ target(core_link_large_target_type, "svg") {
 }
 
 target(core_link_large_target_type, "remaining") {
-  if (core_link_large_target_type == "split_static_library") {
+  if (is_win && is_official_build &&
+      core_link_large_target_type == "split_static_library") {
     # Shard this target into parts to work around linker limitations
     # on link time code generation builds.
-    if (is_win) {
-      if (is_official_build) {
-        split_count = 19
-      } else {
-        split_count = 5
-      }
-    } else {
-      split_count = 1
-    }
+    split_count = 19
   }
 
   # This is currently a mashup of "webcore_rendering" and "webcore_remaining"
