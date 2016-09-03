@@ -45,4 +45,8 @@ void BluetoothServiceRecordBlueZ::AddRecordEntry(
       std::pair<uint16_t, BluetoothServiceAttributeValueBlueZ>(id, value));
 }
 
+bool BluetoothServiceRecordBlueZ::IsAttributePresented(uint16_t id) {
+  return attributes_.find(id) != attributes_.end();
+}
+
 }  // namespace bluez
