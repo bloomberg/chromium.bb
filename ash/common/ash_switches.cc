@@ -58,8 +58,13 @@ const char kAshEnableUnifiedDesktop[] = "ash-enable-unified-desktop";
 const char kAshEnablePalette[] = "ash-enable-palette";
 
 // Enables experimental ash palette tools.
-const char kAshEnableExperimentalPaletteFeatures[] =
-    "ash-enable-experimental-palette-features";
+const char kAshEnablePaletteExperimentalFeatures[] =
+    "ash-enable-palette-experimental-features";
+
+// Enables the palette on every display, instead of only the internal one.
+const char kAshEnablePaletteOnAllDisplays[] =
+    "ash-enable-palette-on-all-displays";
+
 #endif
 
 // Enables the observation of accelerometer events to enter touch-view mode.

@@ -16,7 +16,12 @@ bool IsPaletteFeatureEnabled() {
 
 bool ArePaletteExperimentalFeaturesEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kAshEnableExperimentalPaletteFeatures);
+      switches::kAshEnablePaletteExperimentalFeatures);
+}
+
+bool IsPaletteEnabledOnEveryDisplay() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kAshEnablePaletteOnAllDisplays);
 }
 
 }  // namespace ash

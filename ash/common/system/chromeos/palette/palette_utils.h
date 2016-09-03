@@ -16,6 +16,9 @@ ASH_EXPORT bool IsPaletteFeatureEnabled();
 // Are experimental palette features enabled?
 ASH_EXPORT bool ArePaletteExperimentalFeaturesEnabled();
 
+// Returns true if the palette should be shown on every display.
+ASH_EXPORT bool IsPaletteEnabledOnEveryDisplay();
+
 }  // namespace ash
 
 #endif  // ASH_COMMON_SYSTEM_CHROMEOS_PALETTE_PALETTE_UTILS_H_

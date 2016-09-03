@@ -25,6 +25,7 @@
 #include "ash/common/system/chromeos/palette/palette_utils.h"
 #include "ash/common/system/chromeos/session/logout_button_tray.h"
 #include "ash/common/system/chromeos/virtual_keyboard/virtual_keyboard_tray.h"
+#include "ui/display/display.h"
 #endif
 
 namespace ash {
@@ -251,7 +252,16 @@ void StatusAreaWidget::AddLogoutButtonTray() {
 }
 
 void StatusAreaWidget::AddPaletteTray() {
-  if (IsPaletteFeatureEnabled()) {
+  if (!IsPaletteFeatureEnabled())
+    return;
+
+  const display::Display& display =
+      WmLookup::Get()->GetWindowForWidget(this)->GetDisplayNearestWindow();
+
+  // Create the palette only on the internal display, where the stylus is
+  // available. We also create a palette on every display if requested from the
+  // command line.
+  if (display.IsInternal() || IsPaletteEnabledOnEveryDisplay()) {
     palette_tray_ = new PaletteTray(wm_shelf_);
     status_area_widget_delegate_->AddTray(palette_tray_);
   }
