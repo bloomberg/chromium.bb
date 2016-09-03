@@ -2977,6 +2977,51 @@ TEST_P(QuicConnectionTest, ReducedPingTimeout) {
   EXPECT_FALSE(connection_.GetPingAlarm()->IsSet());
 }
 
+TEST_P(QuicConnectionTest, ReducedPingTimeout) {
+  EXPECT_TRUE(connection_.connected());
+  EXPECT_CALL(visitor_, HasOpenDynamicStreams()).WillRepeatedly(Return(true));
+  EXPECT_FALSE(connection_.GetPingAlarm()->IsSet());
+
+  // Use a reduced ping timeout for this connection.
+  connection_.set_ping_timeout(QuicTime::Delta::FromSeconds(10));
+
+  // Advance to 5ms, and send a packet to the peer, which will set
+  // the ping alarm.
+  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(5));
+  EXPECT_FALSE(connection_.GetRetransmissionAlarm()->IsSet());
+  SendStreamDataToPeer(kHeadersStreamId, "GET /", 0, kFin, nullptr);
+  EXPECT_TRUE(connection_.GetPingAlarm()->IsSet());
+  EXPECT_EQ(clock_.ApproximateNow() + QuicTime::Delta::FromSeconds(10),
+            connection_.GetPingAlarm()->deadline());
+
+  // Now recevie and ACK of the previous packet, which will move the
+  // ping alarm forward.
+  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(5));
+  QuicAckFrame frame = InitAckFrame(1);
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _));
+  ProcessAckPacket(&frame);
+  EXPECT_TRUE(connection_.GetPingAlarm()->IsSet());
+  // The ping timer is set slightly less than 10 seconds in the future, because
+  // of the 1s ping timer alarm granularity.
+  EXPECT_EQ(clock_.ApproximateNow() + QuicTime::Delta::FromSeconds(10) -
+                QuicTime::Delta::FromMilliseconds(5),
+            connection_.GetPingAlarm()->deadline());
+
+  writer_->Reset();
+  clock_.AdvanceTime(QuicTime::Delta::FromSeconds(10));
+  connection_.GetPingAlarm()->Fire();
+  EXPECT_EQ(1u, writer_->frame_count());
+  ASSERT_EQ(1u, writer_->ping_frames().size());
+  writer_->Reset();
+
+  EXPECT_CALL(visitor_, HasOpenDynamicStreams()).WillRepeatedly(Return(false));
+  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(5));
+  SendAckPacketToPeer();
+
+  EXPECT_FALSE(connection_.GetPingAlarm()->IsSet());
+}
+
 // Tests whether sending an MTU discovery packet to peer successfully causes the
 // maximum packet size to increase.
 TEST_P(QuicConnectionTest, SendMtuDiscoveryPacket) {
