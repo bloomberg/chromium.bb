@@ -215,19 +215,12 @@ QuicPacket* BuildUnsizedDataPacket(QuicFramer* framer,
                                    const QuicFrames& frames,
                                    size_t packet_size);
 
-template <typename SaveType>
-class ValueRestore {
+// When constructed, checks that all QUIC flags have their correct default
+// values and when destructed, restores those values.
+class QuicFlagSaver {
  public:
-  ValueRestore(SaveType* name, SaveType value) : name_(name), value_(*name) {
-    *name_ = value;
-  }
-  ~ValueRestore() { *name_ = value_; }
-
- private:
-  SaveType* name_;
-  SaveType value_;
-
-  DISALLOW_COPY_AND_ASSIGN(ValueRestore);
+  QuicFlagSaver();
+  ~QuicFlagSaver();
 };
 
 // Simple random number generator used to compute random numbers suitable

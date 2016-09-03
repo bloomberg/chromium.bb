@@ -309,6 +309,8 @@ class QuicCryptoClientStreamStatelessTest : public ::testing::Test {
     FLAGS_enable_quic_stateless_reject_support = true;
   }
 
+  QuicFlagSaver flags_;  // Save/restore all QUIC flag values.
+
   MockQuicConnectionHelper helper_;
   MockAlarmFactory alarm_factory_;
 
@@ -326,8 +328,7 @@ class QuicCryptoClientStreamStatelessTest : public ::testing::Test {
 };
 
 TEST_F(QuicCryptoClientStreamStatelessTest, StatelessReject) {
-  ValueRestore<bool> old_flag(&FLAGS_enable_quic_stateless_reject_support,
-                              true);
+  FLAGS_enable_quic_stateless_reject_support = true;
 
   QuicCryptoClientConfig::CachedState* client_state =
       client_crypto_config_.LookupOrCreate(server_id_);

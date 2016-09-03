@@ -1062,6 +1062,8 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
                                    InvertPerspective(perspective));
   }
 
+  QuicFlagSaver flags_;  // Save/restore all QUIC flag values.
+
   QuicConnectionId connection_id_;
   QuicFramer framer_;
   MockEntropyCalculator entropy_calculator_;
@@ -5074,7 +5076,7 @@ TEST_P(QuicConnectionTest, SendingUnencryptedStreamDataFails) {
 TEST_P(QuicConnectionTest, EnableMultipathNegotiation) {
   // Test multipath negotiation during crypto handshake. Multipath is enabled
   // when both endpoints enable multipath.
-  ValueRestore<bool> old_flag(&FLAGS_quic_enable_multipath, true);
+  FLAGS_quic_enable_multipath = true;
   EXPECT_TRUE(connection_.connected());
   EXPECT_FALSE(QuicConnectionPeer::IsMultipathEnabled(&connection_));
   EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));

@@ -30,7 +30,6 @@ using net::test::BuildUnsizedDataPacket;
 using net::test::NoOpFramerVisitor;
 using net::test::QuicVersionMax;
 using net::test::QuicVersionMin;
-using net::test::ValueRestore;
 using net::test::MockPacketWriter;
 
 using testing::Args;
