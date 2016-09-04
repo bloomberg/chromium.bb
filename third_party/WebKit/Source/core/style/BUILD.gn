@@ -4,22 +4,83 @@
 
 import("//third_party/WebKit/Source/core/core.gni")
 
-target(core_link_small_target_type, "svg") {
+blink_core_sources("rendering") {
   visibility = [ "//third_party/WebKit/Source/core/*" ]
 
   sources = [
-    "SVGComputedStyle.cpp",
-    "SVGComputedStyleDefs.cpp",
+    "AppliedTextDecoration.cpp",
+    "BasicShapes.cpp",
+    "BorderEdge.cpp",
+    "BorderEdge.h",
+    "BorderImageLength.h",
+    "BorderImageLengthBox.h",
+    "CachedUAStyle.h",
+    "ClipPathOperation.h",
+    "ComputedStyle.cpp",
+    "ComputedStyle.h",
+    "ContentData.cpp",
+    "CounterDirectives.cpp",
+    "DataEquivalency.h",
+    "DataPersistent.h",
+    "DataRef.h",
+    "FillLayer.cpp",
+    "GridArea.h",
+    "GridPositionsResolver.cpp",
+    "GridPositionsResolver.h",
+    "NinePieceImage.cpp",
+    "QuotesData.cpp",
+    "QuotesData.h",
+    "ShadowData.cpp",
+    "ShadowData.h",
+    "ShadowList.cpp",
+    "ShadowList.h",
+    "StyleBackgroundData.cpp",
+    "StyleBoxData.cpp",
+    "StyleContentAlignmentData.h",
+    "StyleDeprecatedFlexibleBoxData.cpp",
+    "StyleFetchedImage.cpp",
+    "StyleFetchedImageSet.cpp",
+    "StyleFilterData.cpp",
+    "StyleFlexibleBoxData.cpp",
+    "StyleGeneratedImage.cpp",
+    "StyleGridData.cpp",
+    "StyleGridItemData.cpp",
+    "StyleImage.cpp",
+    "StyleInheritedData.cpp",
+    "StyleInvalidImage.h",
+    "StyleMotionData.cpp",
+    "StyleMotionData.h",
+    "StyleMotionRotation.h",
+    "StyleMultiColData.cpp",
+    "StylePath.cpp",
+    "StylePath.h",
+    "StylePendingImage.h",
+    "StyleRareInheritedData.cpp",
+    "StyleRareNonInheritedData.cpp",
+    "StyleScrollSnapData.cpp",
+    "StyleScrollSnapData.h",
+    "StyleSelfAlignmentData.h",
+    "StyleSurroundData.cpp",
+    "StyleTransformData.cpp",
+    "StyleVariableData.cpp",
+    "StyleVariableData.h",
+    "StyleVisualData.cpp",
+    "StyleWillChangeData.cpp",
+    "TextSizeAdjust.h",
   ]
-
-  configs -= core_config_remove
-  configs += core_config_add
   configs += [
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     "//build/config/compiler:no_size_t_to_int_warning",
   ]
+}
 
-  deps = [
-    "//third_party/WebKit/Source/core:prerequisites",
+blink_core_sources("svg") {
+  sources = [
+    "SVGComputedStyle.cpp",
+    "SVGComputedStyleDefs.cpp",
+  ]
+  configs += [
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    "//build/config/compiler:no_size_t_to_int_warning",
   ]
 }

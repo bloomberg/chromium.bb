@@ -2,15 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/split_static_library.gni")
 import("//third_party/WebKit/Source/core/core.gni")
 
-target(core_link_large_target_type, "dom") {
-  visibility = [ "//third_party/WebKit/Source/core/*" ]
-
-  if (core_link_large_target_type == "split_static_library") {
-    split_count = 5
-  }
+blink_core_sources("dom") {
+  split_count = 5
 
   sources = [
     "AXObjectCache.cpp",
@@ -392,14 +387,8 @@ target(core_link_large_target_type, "dom") {
     "shadow/SlotScopedTraversal.h",
   ]
 
-  configs -= core_config_remove
-  configs += core_config_add
   configs += [
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     "//build/config/compiler:no_size_t_to_int_warning",
-  ]
-
-  deps = [
-    "//third_party/WebKit/Source/core:prerequisites",
   ]
 }
