@@ -10,7 +10,6 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
-#include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/AtomicStringHash.h"
@@ -83,9 +82,9 @@ private:
         const CustomElementDescriptor&,
         HeapVector<Member<Element>>*);
 
-    class NameIsBeingDefined;
+    class ElementDefinitionIsRunning;
+    bool m_elementDefinitionIsRunning;
 
-    HashSet<AtomicString> m_namesBeingDefined;
     using DefinitionMap =
         HeapHashMap<AtomicString, Member<CustomElementDefinition>>;
     DefinitionMap m_definitions;

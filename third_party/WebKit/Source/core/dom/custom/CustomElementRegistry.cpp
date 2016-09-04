@@ -39,28 +39,25 @@ static bool throwIfInvalidName(
 }
 
 
-class CustomElementRegistry::NameIsBeingDefined final {
+class CustomElementRegistry::ElementDefinitionIsRunning final {
     STACK_ALLOCATED();
-    DISALLOW_IMPLICIT_CONSTRUCTORS(NameIsBeingDefined);
+    DISALLOW_IMPLICIT_CONSTRUCTORS(ElementDefinitionIsRunning);
 public:
-    NameIsBeingDefined(
-        CustomElementRegistry* registry,
-        const AtomicString& name)
-        : m_registry(registry)
-        , m_name(name)
+    ElementDefinitionIsRunning(bool& flag)
+        : m_flag(flag)
     {
-        DCHECK(!m_registry->m_namesBeingDefined.contains(name));
-        m_registry->m_namesBeingDefined.add(name);
+        DCHECK(!m_flag);
+        m_flag = true;
     }
 
-    ~NameIsBeingDefined()
+    ~ElementDefinitionIsRunning()
     {
-        m_registry->m_namesBeingDefined.remove(m_name);
+        DCHECK(m_flag);
+        m_flag = false;
     }
 
 private:
-    Member<CustomElementRegistry> m_registry;
-    const AtomicString& m_name;
+    bool& m_flag;
 };
 
 CustomElementRegistry* CustomElementRegistry::create(
@@ -75,7 +72,8 @@ CustomElementRegistry* CustomElementRegistry::create(
 }
 
 CustomElementRegistry::CustomElementRegistry(const LocalDOMWindow* owner)
-    : m_owner(owner)
+    : m_elementDefinitionIsRunning(false)
+    , m_owner(owner)
     , m_v0 (new V0RegistrySet())
     , m_upgradeCandidates(new UpgradeCandidateMap())
 {
@@ -118,14 +116,6 @@ void CustomElementRegistry::define(
     if (throwIfInvalidName(name, exceptionState))
         return;
 
-    if (m_namesBeingDefined.contains(name)) {
-        exceptionState.throwDOMException(
-            NotSupportedError,
-            "this name is already being defined in this registry");
-        return;
-    }
-    NameIsBeingDefined defining(this, name);
-
     if (nameIsDefined(name) || v0NameIsDefined(name)) {
         exceptionState.throwDOMException(
             NotSupportedError,
@@ -136,30 +126,40 @@ void CustomElementRegistry::define(
     if (!builder.checkConstructorNotRegistered())
         return;
 
-    // TODO(dominicc): Implement steps:
-    // 5: localName
-    // 6-7: extends processing
-
-    // 8-9: observed attributes caching is done below, together with callbacks.
-    // TODO(kojii): https://github.com/whatwg/html/issues/1373 for the ordering.
-    // When it's resolved, revisit if this code needs changes.
+    // TODO(dominicc): Implement steps 6-7 for customized built-in elements
 
     // TODO(dominicc): Add a test where the prototype getter destroys
     // the context.
 
-    if (!builder.checkPrototype())
+    // 8. If this CustomElementRegistry's element definition is
+    // running flag is set, then throw a "NotSupportedError"
+    // DOMException and abort these steps.
+    if (m_elementDefinitionIsRunning) {
+        exceptionState.throwDOMException(
+            NotSupportedError,
+            "an element definition is already being processed");
         return;
+    }
 
-    // 8-9: observed attributes caching
-    // 12-13: connected callback
-    // 14-15: disconnected callback
-    // 16-17: attribute changed callback
+    {
+        // 9. Set this CustomElementRegistry's element definition is
+        // running flag.
+        ElementDefinitionIsRunning defining(m_elementDefinitionIsRunning);
 
-    if (!builder.rememberOriginalProperties())
-        return;
+        // 10.1-2
+        if (!builder.checkPrototype())
+            return;
 
-    // TODO(dominicc): Add a test where retrieving the prototype
-    // recursively calls define with the same name.
+        // 10.3-6
+        if (!builder.rememberOriginalProperties())
+            return;
+
+        // "Then, perform the following substep, regardless of whether
+        // the above steps threw an exception or not: Unset this
+        // CustomElementRegistry's element definition is running
+        // flag."
+        // (ElementDefinitionIsRunning destructor does this.)
+    }
 
     CustomElementDescriptor descriptor(name, name);
     CustomElementDefinition* definition = builder.build(descriptor);
@@ -174,7 +174,7 @@ void CustomElementRegistry::define(
     for (Element* candidate : candidates)
         definition->enqueueUpgradeReaction(candidate);
 
-    // 19: when-defined promise processing
+    // 16: when-defined promise processing
     const auto& entry = m_whenDefinedPromiseMap.find(name);
     if (entry == m_whenDefinedPromiseMap.end())
         return;
