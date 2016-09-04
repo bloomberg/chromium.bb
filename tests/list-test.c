@@ -57,6 +57,19 @@ TEST(list_insert)
 	assert(e.link.prev == &list);
 }
 
+TEST(list_length)
+{
+	struct wl_list list;
+	struct element e;
+
+	wl_list_init(&list);
+	assert(wl_list_length(&list) == 0);
+	wl_list_insert(&list, &e.link);
+	assert(wl_list_length(&list) == 1);
+	wl_list_remove(&e.link);
+	assert(wl_list_length(&list) == 0);
+}
+
 TEST(list_iterator)
 {
 	struct wl_list list;
