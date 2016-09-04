@@ -334,22 +334,6 @@ static INLINE void add_token(TOKENEXTRA **t, const aom_prob *context_tree,
   ++counts[token];
 }
 
-static INLINE void add_token_no_extra(
-    TOKENEXTRA **t, const aom_prob *context_tree,
-#if CONFIG_RANS || CONFIG_DAALA_EC
-    const aom_cdf_prob (*token_cdf)[ENTROPY_TOKENS],
-#endif  // CONFIG_RANS
-    uint8_t token, uint8_t skip_eob_node, unsigned int *counts) {
-  (*t)->token = token;
-  (*t)->context_tree = context_tree;
-#if CONFIG_RANS || CONFIG_DAALA_EC
-  (*t)->token_cdf = token_cdf;
-#endif  // CONFIG_RANS
-  (*t)->skip_eob_node = skip_eob_node;
-  (*t)++;
-  ++counts[token];
-}
-
 static INLINE int get_tx_eob(const struct segmentation *seg, int segment_id,
                              TX_SIZE tx_size) {
   const int eob_max = 1 << (tx_size_1d_log2[tx_size] * 2);
@@ -445,12 +429,12 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
     v = qcoeff[scan[c]];
 
     while (!v) {
-      add_token_no_extra(
+      add_token(
           &t, coef_probs[band[c]][pt],
 #if CONFIG_RANS || CONFIG_DAALA_EC
           (const aom_cdf_prob(*)[ENTROPY_TOKENS]) & coef_cdfs[band[c]][pt],
 #endif
-          ZERO_TOKEN, skip_eob, counts[band[c]][pt]);
+          0, ZERO_TOKEN, skip_eob, counts[band[c]][pt]);
       eob_branch[band[c]][pt] += !skip_eob;
 
       skip_eob = 1;
@@ -474,11 +458,11 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
     pt = get_coef_context(nb, token_cache, c);
   }
   if (c < seg_eob) {
-    add_token_no_extra(&t, coef_probs[band[c]][pt],
+    add_token(&t, coef_probs[band[c]][pt],
 #if CONFIG_RANS || CONFIG_DAALA_EC
-                       NULL,
+              NULL,
 #endif
-                       EOB_TOKEN, 0, counts[band[c]][pt]);
+              0, EOB_TOKEN, 0, counts[band[c]][pt]);
     ++eob_branch[band[c]][pt];
   }
 
