@@ -15,6 +15,8 @@ public:
     DECLARE_NODE_FACTORY(HTMLPictureElement);
 
     void sourceOrMediaChanged();
+    void removeListenerFromSourceChildren();
+    void addListenerToSourceChildren();
 
 protected:
     explicit HTMLPictureElement(Document&);

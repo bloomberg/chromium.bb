@@ -8,6 +8,7 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLImageElement.h"
+#include "core/html/HTMLSourceElement.h"
 #include "core/loader/ImageLoader.h"
 
 namespace blink {
@@ -27,6 +28,21 @@ void HTMLPictureElement::sourceOrMediaChanged()
         imageElement->selectSourceURL(ImageLoader::UpdateNormal);
     }
 }
+
+void HTMLPictureElement::removeListenerFromSourceChildren()
+{
+    for (HTMLSourceElement* sourceElement = Traversal<HTMLSourceElement>::firstChild(*this); sourceElement; sourceElement = Traversal<HTMLSourceElement>::nextSibling(*sourceElement)) {
+        sourceElement->removeMediaQueryListListener();
+    }
+}
+
+void HTMLPictureElement::addListenerToSourceChildren()
+{
+    for (HTMLSourceElement* sourceElement = Traversal<HTMLSourceElement>::firstChild(*this); sourceElement; sourceElement = Traversal<HTMLSourceElement>::nextSibling(*sourceElement)) {
+        sourceElement->addMediaQueryListListener();
+    }
+}
+
 
 Node::InsertionNotificationRequest HTMLPictureElement::insertedInto(ContainerNode* insertionPoint)
 {

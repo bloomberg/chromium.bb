@@ -54,6 +54,9 @@ public:
 
     bool mediaQueryMatches() const;
 
+    void removeMediaQueryListListener();
+    void addMediaQueryListListener();
+
     DECLARE_VIRTUAL_TRACE();
 
 private:

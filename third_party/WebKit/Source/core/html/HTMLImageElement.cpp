@@ -40,6 +40,7 @@
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLImageFallbackHelper.h"
+#include "core/html/HTMLPictureElement.h"
 #include "core/html/HTMLSourceElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/parser/HTMLSrcsetParser.h"
@@ -382,6 +383,9 @@ Node::InsertionNotificationRequest HTMLImageElement::insertedInto(ContainerNode*
         resetFormOwner();
     if (m_listener)
         document().mediaQueryMatcher().addViewportListener(m_listener);
+    Node* parent = parentNode();
+    if (parent && isHTMLPictureElement(*parent))
+        toHTMLPictureElement(parent)->addListenerToSourceChildren();
 
     bool imageWasModified = false;
     if (document().isActive()) {
@@ -404,8 +408,12 @@ void HTMLImageElement::removedFrom(ContainerNode* insertionPoint)
 {
     if (!m_form || NodeTraversal::highestAncestorOrSelf(*m_form.get()) != NodeTraversal::highestAncestorOrSelf(*this))
         resetFormOwner();
-    if (m_listener)
+    if (m_listener) {
         document().mediaQueryMatcher().removeViewportListener(m_listener);
+        Node* parent = parentNode();
+        if (parent && isHTMLPictureElement(*parent))
+            toHTMLPictureElement(parent)->removeListenerFromSourceChildren();
+    }
     HTMLElement::removedFrom(insertionPoint);
 }
 

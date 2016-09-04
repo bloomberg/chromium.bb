@@ -84,11 +84,10 @@ void HTMLSourceElement::createMediaQueryList(const AtomicString& media)
     if (media.isEmpty())
         return;
 
-    if (m_mediaQueryList)
-        m_mediaQueryList->removeListener(m_listener);
+    removeMediaQueryListListener();
     MediaQuerySet* set = MediaQuerySet::create(media);
     m_mediaQueryList = MediaQueryList::create(&document(), &document().mediaQueryMatcher(), set);
-    m_mediaQueryList->addListener(m_listener);
+    addMediaQueryListListener();
 }
 
 void HTMLSourceElement::didMoveToNewDocument(Document& oldDocument)
@@ -115,9 +114,23 @@ void HTMLSourceElement::removedFrom(ContainerNode* removalRoot)
         parent = toElement(removalRoot);
     if (isHTMLMediaElement(parent))
         toHTMLMediaElement(parent)->sourceWasRemoved(this);
-    if (isHTMLPictureElement(parent))
+    if (isHTMLPictureElement(parent)) {
+        removeMediaQueryListListener();
         toHTMLPictureElement(parent)->sourceOrMediaChanged();
+    }
     HTMLElement::removedFrom(removalRoot);
+}
+
+void HTMLSourceElement::removeMediaQueryListListener()
+{
+    if (m_mediaQueryList)
+        m_mediaQueryList->removeListener(m_listener);
+}
+
+void HTMLSourceElement::addMediaQueryListListener()
+{
+    if (m_mediaQueryList)
+        m_mediaQueryList->addListener(m_listener);
 }
 
 void HTMLSourceElement::setSrc(const String& url)
