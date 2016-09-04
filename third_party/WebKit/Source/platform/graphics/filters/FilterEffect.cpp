@@ -33,10 +33,6 @@ namespace blink {
 
 FilterEffect::FilterEffect(Filter* filter)
     : m_filter(filter)
-    , m_hasX(false)
-    , m_hasY(false)
-    , m_hasWidth(false)
-    , m_hasHeight(false)
     , m_clipsToBounds(true)
     , m_originTainted(false)
     , m_operatingColorSpace(ColorSpaceLinearRGB)
@@ -133,58 +129,44 @@ TextStream& FilterEffect::externalRepresentation(TextStream& ts, int) const
     return ts;
 }
 
-FloatRect FilterEffect::applyEffectBoundaries(const FloatRect& rect) const
+FloatRect FilterEffect::determineMaximumEffectRect(DetermineMaxEffectRectFlags flags)
 {
-    FloatRect clippedRect = rect;
-    if (hasX())
-        clippedRect.setX(effectBoundaries().x());
-    if (hasY())
-        clippedRect.setY(effectBoundaries().y());
-    if (hasWidth())
-        clippedRect.setWidth(effectBoundaries().width());
-    if (hasHeight())
-        clippedRect.setHeight(effectBoundaries().height());
-    return clippedRect;
-}
+    DCHECK(getFilter());
+    Filter* filter = getFilter();
 
-FloatRect FilterEffect::determineFilterPrimitiveSubregion(DetermineSubregionFlags flags)
-{
-    Filter* filter = this->getFilter();
-    ASSERT(filter);
+    // Compute the union of the inputs. Always do this because it has
+    // side-effects. (It computes the maximum effect rect of the input.)
+    FloatRect absoluteInputUnion;
+    for (auto& effect : m_inputEffects)
+        absoluteInputUnion.unite(effect->determineMaximumEffectRect(flags));
 
-    // FETile, FETurbulence, FEFlood don't have input effects, take the filter region as unite rect.
-    FloatRect subregion;
-    if (unsigned numberOfInputEffects = inputEffects().size()) {
-        subregion = inputEffect(0)->determineFilterPrimitiveSubregion(flags);
-        for (unsigned i = 1; i < numberOfInputEffects; ++i)
-            subregion.unite(inputEffect(i)->determineFilterPrimitiveSubregion(flags));
-    } else {
-        subregion = filter->filterRegion();
+    FloatRect absoluteSubregion;
+    switch (getFilterEffectType()) {
+    default:
+        if (m_inputEffects.size()) {
+            absoluteSubregion = absoluteInputUnion;
+            if (clipsToBounds())
+                absoluteSubregion.intersect(filter->mapLocalRectToAbsoluteRect(filterPrimitiveSubregion()));
+            break;
+        }
+        // Else fall-through and use the primitive region. (FETurbulence/FEFlood/FEImage)
+    case FilterEffectTypeTile:
+        absoluteSubregion = filter->mapLocalRectToAbsoluteRect(filterPrimitiveSubregion());
+        break;
+    case FilterEffectTypeSourceInput:
+        absoluteSubregion = filter->absoluteFilterRegion();
+        break;
     }
 
-    // After calling determineFilterPrimitiveSubregion on the target effect, reset the subregion again for <feTile>.
-    if (getFilterEffectType() == FilterEffectTypeTile)
-        subregion = filter->filterRegion();
-
-    if (flags & MapRectForward) {
-        // mapRect works on absolute rectangles.
-        subregion = filter->mapAbsoluteRectToLocalRect(mapRect(
-            filter->mapLocalRectToAbsoluteRect(subregion)));
-    }
-
-    subregion = applyEffectBoundaries(subregion);
-
-    setFilterPrimitiveSubregion(subregion);
-
-    FloatRect absoluteSubregion = filter->mapLocalRectToAbsoluteRect(subregion);
+    if (flags & MapRectForward)
+        absoluteSubregion = mapRect(absoluteSubregion);
 
     // Clip every filter effect to the filter region.
-    if (flags & ClipToFilterRegion) {
+    if (flags & ClipToFilterRegion)
         absoluteSubregion.intersect(filter->absoluteFilterRegion());
-    }
 
-    setMaxEffectRect(absoluteSubregion);
-    return subregion;
+    m_maxEffectRect = absoluteSubregion;
+    return absoluteSubregion;
 }
 
 sk_sp<SkImageFilter> FilterEffect::createImageFilter()
@@ -216,8 +198,7 @@ sk_sp<SkImageFilter> FilterEffect::createTransparentBlack() const
 SkImageFilter::CropRect FilterEffect::getCropRect() const
 {
     if (!filterPrimitiveSubregion().isEmpty()) {
-        FloatRect rect = filterPrimitiveSubregion();
-        rect.scale(getFilter()->scale());
+        FloatRect rect = getFilter()->mapLocalRectToAbsoluteRect(filterPrimitiveSubregion());
         return SkImageFilter::CropRect(rect);
     } else {
         return SkImageFilter::CropRect(SkRect::MakeEmpty(), 0);

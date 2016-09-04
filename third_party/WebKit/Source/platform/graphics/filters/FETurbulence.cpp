@@ -128,7 +128,9 @@ bool FETurbulence::setStitchTiles(bool stitch)
 
 sk_sp<SkShader> FETurbulence::createShader() const
 {
-    const SkISize size = SkISize::Make(effectBoundaries().width(), effectBoundaries().height());
+    const SkISize size = SkISize::Make(
+        filterPrimitiveSubregion().width(),
+        filterPrimitiveSubregion().height());
     // Frequency should be scaled by page zoom, but not by primitiveUnits.
     // So we apply only the transform scale (as Filter::apply*Scale() do)
     // and not the target bounding box scale (as SVGFilter::apply*Scale()

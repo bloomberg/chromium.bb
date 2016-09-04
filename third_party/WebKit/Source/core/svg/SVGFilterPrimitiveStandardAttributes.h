@@ -24,9 +24,8 @@
 #include "core/svg/SVGAnimatedLength.h"
 #include "core/svg/SVGAnimatedString.h"
 #include "core/svg/SVGElement.h"
+#include "core/svg/SVGUnitTypes.h"
 #include "platform/heap/Handle.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 
@@ -39,7 +38,8 @@ class SVGFilterPrimitiveStandardAttributes : public SVGElement {
     // instantiated, and b) we don't generate corresponding V8T.h or V8T.cpp.
     // The subclasses must write DEFINE_WRAPPERTYPEINFO().
 public:
-    void setStandardAttributes(FilterEffect*) const;
+    void setStandardAttributes(
+        FilterEffect*, SVGUnitTypes::SVGUnitType, const FloatRect& referenceBox) const;
 
     virtual FilterEffect* build(SVGFilterBuilder*, Filter*) = 0;
     // Returns true, if the new value is different from the old one.
