@@ -9,7 +9,7 @@ include::_git-retry_desc.helper.txt[]
 SYNOPSIS
 --------
 [verse]
-'git retry' [-v] [-c COUNT] [-d DELAY] [-e] -- _<git_subcommand>_
+'git retry' [-v] [-c COUNT] [-d DELAY] [-D DELAY_FACTOR] -- _<git_subcommand>_
 
 DESCRIPTION
 -----------
