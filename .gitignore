@@ -305,7 +305,6 @@ vs-chromium-project.txt
 /third_party/apache-win32/bin/iconv/*.so
 /third_party/apache-win32/modules/*.so
 /third_party/apache-win32/modules/*.dll
-/third_party/appurify-python/src
 /third_party/asan
 /third_party/bidichecker
 /third_party/bison

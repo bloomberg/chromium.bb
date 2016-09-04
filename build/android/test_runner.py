@@ -576,7 +576,6 @@ def AddPerfTestOptions(parser):
       help='Cache the chartjson output from each step for later use.')
   group.add_argument(
       '--output-chartjson-data',
-      default='',
       type=os.path.realpath,
       help='Write out chartjson into the given file.')
   # TODO(rnephew): Remove this when everything moves to new option in platform
