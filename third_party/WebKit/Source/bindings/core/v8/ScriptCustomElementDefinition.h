@@ -53,7 +53,8 @@ public:
 
     void runConnectedCallback(Element*) override;
     void runDisconnectedCallback(Element*) override;
-    void runAdoptedCallback(Element*) override;
+    void runAdoptedCallback(
+        Element*, Document* oldOwner, Document* newOwner) override;
     void runAttributeChangedCallback(Element*, const QualifiedName&,
         const AtomicString& oldValue, const AtomicString& newValue) override;
 

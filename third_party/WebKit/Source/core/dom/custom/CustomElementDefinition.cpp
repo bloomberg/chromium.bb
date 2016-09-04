@@ -11,6 +11,7 @@
 #include "core/dom/custom/CustomElementAttributeChangedCallbackReaction.h"
 #include "core/dom/custom/CustomElementConnectedCallbackReaction.h"
 #include "core/dom/custom/CustomElementDisconnectedCallbackReaction.h"
+#include "core/dom/custom/CustomElementReaction.h"
 #include "core/dom/custom/CustomElementUpgradeReaction.h"
 #include "core/html/HTMLElement.h"
 
@@ -189,10 +190,12 @@ void CustomElementDefinition::enqueueDisconnectedCallback(Element* element)
         new CustomElementDisconnectedCallbackReaction(this));
 }
 
-void CustomElementDefinition::enqueueAdoptedCallback(Element* element)
+void CustomElementDefinition::enqueueAdoptedCallback(
+    Element* element, Document* oldDocument, Document* newDocument)
 {
-    CustomElement::enqueue(element,
-        new CustomElementAdoptedCallbackReaction(this));
+    CustomElementReaction* reaction =
+        new CustomElementAdoptedCallbackReaction(this, oldDocument, newDocument);
+    CustomElement::enqueue(element, reaction);
 }
 
 void CustomElementDefinition::enqueueAttributeChangedCallback(Element* element,

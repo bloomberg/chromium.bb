@@ -18,12 +18,12 @@ promise_test((t) => {
     .then(([w1, w2]) => {
       let invocations = [];
       class X extends w1.HTMLElement {
-        adoptedCallback() { invocations.push(['adopted', this, []]); }
+        adoptedCallback() { invocations.push(['adopted', this, arguments]); }
       }
       w1.customElements.define('a-a', X);
       let a = w1.document.createElement('a-a');
       w2.document.adoptNode(a);
-      assert_array_equals_callback_invocations(invocations, [ ['adopted', a, []] ]);
+      assert_array_equals_callback_invocations(invocations, [ ['adopted', a, [w1.document, w2.document]] ]);
     });
 }, 'adopting a custom element to the different document should enqueue an adoptedCallback reaction');
 

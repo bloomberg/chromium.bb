@@ -246,6 +246,7 @@ public:
     {
         TestCustomElementDefinition::trace(visitor);
         visitor->trace(m_element);
+        visitor->trace(m_adopted);
     }
 
     // TODO(dominicc): Make this class collect a vector of what's
@@ -266,6 +267,22 @@ public:
         AtomicString newValue;
     };
     Vector<AttributeChanged> m_attributeChanged;
+
+    struct Adopted : public GarbageCollected<Adopted> {
+        Adopted(Document* oldOwner, Document* newOwner)
+            : m_oldOwner(oldOwner)
+            , m_newOwner(newOwner) { }
+
+        Member<Document> m_oldOwner;
+        Member<Document> m_newOwner;
+
+        DEFINE_INLINE_TRACE()
+        {
+            visitor->trace(m_oldOwner);
+            visitor->trace(m_newOwner);
+        }
+    };
+    HeapVector<Member<Adopted>> m_adopted;
 
     void clear()
     {
@@ -296,10 +313,12 @@ public:
         EXPECT_EQ(element, m_element);
     }
 
-    void runAdoptedCallback(Element* element) override
+    void runAdoptedCallback(
+        Element* element, Document* oldOwner, Document* newOwner) override
     {
         m_logs.append(AdoptedCallback);
         EXPECT_EQ(element, m_element);
+        m_adopted.append(new Adopted(oldOwner, newOwner));
     }
 
     void runAttributeChangedCallback(Element* element, const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue) override
@@ -473,6 +492,11 @@ TEST_F(CustomElementRegistryTest, adoptedCallback)
 
     EXPECT_EQ(LogUpgradeDefinition::AdoptedCallback, definition->m_logs[1])
         << "adoptNode() should invoke adoptedCallback";
+
+    EXPECT_EQ(&document(), definition->m_adopted[0]->m_oldOwner.get())
+        << "adoptedCallback should have been passed the old owner document";
+    EXPECT_EQ(otherDocument, definition->m_adopted[0]->m_newOwner.get())
+        << "adoptedCallback should have been passed the new owner document";
 
     EXPECT_EQ(2u, definition->m_logs.size())
         << "adoptNode() should not invoke other callbacks";

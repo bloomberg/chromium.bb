@@ -356,13 +356,19 @@ void ScriptCustomElementDefinition::runDisconnectedCallback(Element* element)
     runCallback(m_disconnectedCallback.newLocal(isolate), element);
 }
 
-void ScriptCustomElementDefinition::runAdoptedCallback(Element* element)
+void ScriptCustomElementDefinition::runAdoptedCallback(
+    Element* element, Document* oldOwner, Document *newOwner)
 {
     if (!m_scriptState->contextIsValid())
         return;
     ScriptState::Scope scope(m_scriptState.get());
     v8::Isolate* isolate = m_scriptState->isolate();
-    runCallback(m_adoptedCallback.newLocal(isolate), element);
+    v8::Local<v8::Value> argv[] = {
+        toV8(oldOwner, m_scriptState->context()->Global(), isolate),
+        toV8(newOwner, m_scriptState->context()->Global(), isolate)
+    };
+    runCallback(m_adoptedCallback.newLocal(isolate), element,
+        WTF_ARRAY_LENGTH(argv), argv);
 }
 
 void ScriptCustomElementDefinition::runAttributeChangedCallback(
@@ -373,15 +379,14 @@ void ScriptCustomElementDefinition::runAttributeChangedCallback(
         return;
     ScriptState::Scope scope(m_scriptState.get());
     v8::Isolate* isolate = m_scriptState->isolate();
-    const int argc = 4;
-    v8::Local<v8::Value> argv[argc] = {
+    v8::Local<v8::Value> argv[] = {
         v8String(isolate, name.localName()),
         v8StringOrNull(isolate, oldValue),
         v8StringOrNull(isolate, newValue),
         v8StringOrNull(isolate, name.namespaceURI()),
     };
     runCallback(m_attributeChangedCallback.newLocal(isolate), element,
-        argc, argv);
+        WTF_ARRAY_LENGTH(argv), argv);
 }
 
 } // namespace blink

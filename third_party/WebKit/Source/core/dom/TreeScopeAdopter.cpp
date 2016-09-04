@@ -132,7 +132,7 @@ inline void TreeScopeAdopter::moveNodeToNewDocument(Node& node, Document& oldDoc
 
     if (node.getCustomElementState() == CustomElementState::Custom) {
         Element& element = toElement(node);
-        CustomElement::enqueueAdoptedCallback(&element);
+        CustomElement::enqueueAdoptedCallback(&element, &oldDocument, &newDocument);
     }
 
     if (node.isShadowRoot())

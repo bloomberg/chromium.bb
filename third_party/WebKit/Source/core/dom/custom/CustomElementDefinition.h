@@ -16,6 +16,7 @@
 
 namespace blink {
 
+class Document;
 class Element;
 class ExceptionState;
 class HTMLElement;
@@ -63,14 +64,16 @@ public:
 
     virtual void runConnectedCallback(Element*) = 0;
     virtual void runDisconnectedCallback(Element*) = 0;
-    virtual void runAdoptedCallback(Element*) = 0;
+    virtual void runAdoptedCallback(
+        Element*, Document* oldOwner, Document* newOwner) = 0;
     virtual void runAttributeChangedCallback(Element*, const QualifiedName&,
         const AtomicString& oldValue, const AtomicString& newValue) = 0;
 
     void enqueueUpgradeReaction(Element*);
     void enqueueConnectedCallback(Element*);
     void enqueueDisconnectedCallback(Element*);
-    void enqueueAdoptedCallback(Element*);
+    void enqueueAdoptedCallback(
+        Element*, Document* oldOwner, Document* newOwner);
     void enqueueAttributeChangedCallback(Element*, const QualifiedName&,
         const AtomicString& oldValue, const AtomicString& newValue);
 

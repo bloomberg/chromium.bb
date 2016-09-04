@@ -214,12 +214,13 @@ void CustomElement::enqueueDisconnectedCallback(Element* element)
         definition->enqueueDisconnectedCallback(element);
 }
 
-void CustomElement::enqueueAdoptedCallback(Element* element)
+void CustomElement::enqueueAdoptedCallback(
+    Element* element, Document* oldOwner, Document* newOwner)
 {
     DCHECK_EQ(element->getCustomElementState(), CustomElementState::Custom);
     CustomElementDefinition* definition = definitionForElementWithoutCheck(*element);
     if (definition->hasAdoptedCallback())
-        definition->enqueueAdoptedCallback(element);
+        definition->enqueueAdoptedCallback(element, oldOwner, newOwner);
 }
 
 void CustomElement::enqueueAttributeChangedCallback(Element* element,

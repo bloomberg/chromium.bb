@@ -47,7 +47,8 @@ public:
     static void enqueue(Element*, CustomElementReaction*);
     static void enqueueConnectedCallback(Element*);
     static void enqueueDisconnectedCallback(Element*);
-    static void enqueueAdoptedCallback(Element*);
+    static void enqueueAdoptedCallback(
+        Element*, Document* oldOwner, Document* newOwner);
     static void enqueueAttributeChangedCallback(Element*, const QualifiedName&,
         const AtomicString& oldValue, const AtomicString& newValue);
 
