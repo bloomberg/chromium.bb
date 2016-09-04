@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//build/config/ui.gni")
-import("//chrome/chrome_tests.gni")
 import("//testing/test.gni")
 
 action("embed_js_in_cpp") {
