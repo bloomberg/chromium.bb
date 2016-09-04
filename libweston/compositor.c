@@ -1192,6 +1192,15 @@ weston_view_update_transform_enable(struct weston_view *view)
 		return -1;
 	}
 
+	if (view->alpha == 1.0 &&
+	    matrix->type == WESTON_MATRIX_TRANSFORM_TRANSLATE) {
+		pixman_region32_copy(&view->transform.opaque,
+				     &view->surface->opaque);
+		pixman_region32_translate(&view->transform.opaque,
+					  matrix->d[12],
+					  matrix->d[13]);
+	}
+
 	pixman_region32_init_rect(&surfregion, 0, 0,
 				  view->surface->width, view->surface->height);
 	if (view->geometry.scissor_enabled)
