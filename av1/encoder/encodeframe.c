@@ -3068,7 +3068,8 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
     int plane;
     mbmi->skip = 1;
     for (plane = 0; plane < MAX_MB_PLANE; ++plane)
-      av1_encode_intra_block_plane(x, AOMMAX(bsize, BLOCK_8X8), plane);
+      av1_encode_intra_block_plane((AV1_COMMON *)cm, x,
+                                   AOMMAX(bsize, BLOCK_8X8), plane);
 #if CONFIG_PALETTE
     if (bsize >= BLOCK_8X8 && output_enabled) {
       for (plane = 0; plane <= 1; ++plane) {
@@ -3105,7 +3106,7 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
       av1_build_obmc_inter_predictors_sb(cm, xd, mi_row, mi_col);
 #endif  // CONFIG_MOTION_VAR
 
-    av1_encode_sb(x, AOMMAX(bsize, BLOCK_8X8));
+    av1_encode_sb((AV1_COMMON *)cm, x, AOMMAX(bsize, BLOCK_8X8));
     av1_tokenize_sb(cpi, td, t, !output_enabled, AOMMAX(bsize, BLOCK_8X8));
   }
 
