@@ -239,11 +239,17 @@ def DoInline(
           rewrite_function,
           filename_expansion_function=filename_expansion_function))
       return ""
-
-    return pattern % InlineToString(
-        filepath, grd_node, allow_external_script=allow_external_script,
+    # To recursively save inlined files, we need InlinedData instance returned
+    # by DoInline.
+    inlined_data_inst=DoInline(filepath, grd_node,
+        allow_external_script=allow_external_script,
         strip_whitespace=strip_whitespace,
         filename_expansion_function=filename_expansion_function)
+
+    inlined_files.update(inlined_data_inst.inlined_files)
+
+    return pattern % inlined_data_inst.inlined_data;
+
 
   def InlineIncludeFiles(src_match):
     """Helper function to directly inline generic external files (without
@@ -286,10 +292,15 @@ def DoInline(
     # Even if names_only is set, the CSS file needs to be opened, because it
     # can link to images that need to be added to the file set.
     inlined_files.add(filepath)
+
+    # Inline stylesheets included in this css file.
+    text = _INCLUDE_RE.sub(InlineIncludeFiles,
+                           util.ReadFile(filepath, util.BINARY))
     # When resolving CSS files we need to pass in the path so that relative URLs
     # can be resolved.
-    return pattern % InlineCSSText(util.ReadFile(filepath, util.BINARY),
-                                   filepath)
+
+    return pattern % InlineCSSText(text, filepath)
+
 
   def InlineCSSImages(text, filepath=input_filepath):
     """Helper function that inlines external images in CSS backgrounds."""
