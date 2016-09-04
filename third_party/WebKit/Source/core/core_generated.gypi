@@ -104,12 +104,6 @@
       # Additional .cpp files from the make_core_generated rules.
       '<(blink_core_output_dir)/XPathGrammar.cpp',
 
-      # Additional .cpp files from the inspector:instrumentation_sources list.
-      '<(blink_core_output_dir)/InspectorInstrumentationInl.h',
-      '<(blink_core_output_dir)/InspectorOverridesInl.h',
-      '<(blink_core_output_dir)/InstrumentingAgents.h',
-      '<(blink_core_output_dir)/InspectorInstrumentationImpl.cpp',
-
       # Additional .cpp files from the inspector:protocol_sources list.
       '<(blink_core_output_dir)/inspector/protocol/Accessibility.cpp',
       '<(blink_core_output_dir)/inspector/protocol/Animation.cpp',
