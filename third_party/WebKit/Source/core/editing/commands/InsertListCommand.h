@@ -33,7 +33,7 @@ namespace blink {
 class HTMLElement;
 class HTMLUListElement;
 
-class InsertListCommand final : public CompositeEditCommand {
+class CORE_EXPORT InsertListCommand final : public CompositeEditCommand {
 public:
     enum Type { OrderedList, UnorderedList };
 

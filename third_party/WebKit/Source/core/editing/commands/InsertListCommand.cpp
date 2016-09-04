@@ -206,6 +206,9 @@ void InsertListCommand::doApply(EditingState* editingState)
             setEndingSelection(endOfSelection);
         }
         doApplyForSingleParagraph(forceListCreation, listTag, *currentSelection, editingState);
+
+        document().updateStyleAndLayoutIgnorePendingStylesheets();
+
         if (editingState->isAborted())
             return;
         // Fetch the end of the selection, for the reason mentioned above.
