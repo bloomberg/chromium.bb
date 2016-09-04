@@ -15,6 +15,7 @@
 #include "modules/vr/VRPose.h"
 #include "modules/vr/VRStageParameters.h"
 #include "modules/webgl/WebGLRenderingContextBase.h"
+#include "platform/UserGestureIndicator.h"
 #include "public/platform/Platform.h"
 
 namespace blink {
@@ -133,14 +134,26 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* scriptState, const HeapVect
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
-    m_isPresenting = false;
-
+    // If the VRDisplay does not advertise the ability to present reject the request.
     if (!m_capabilities->canPresent()) {
-        DOMException* exception = DOMException::create(InvalidStateError, "VRDisplay cannot present");
+        DOMException* exception = DOMException::create(InvalidStateError, "VRDisplay cannot present.");
         resolver->reject(exception);
         return promise;
     }
 
+    // Initiating VR presentation is only allowed in response to a user gesture.
+    // If the VRDisplay is already presenting, however, repeated calls are
+    // allowed outside a user gesture so that the presented content may be
+    // updated.
+    if (!m_isPresenting && !UserGestureIndicator::utilizeUserGesture()) {
+        DOMException* exception = DOMException::create(InvalidStateError, "API can only be initiated by a user gesture.");
+        resolver->reject(exception);
+        return promise;
+    }
+
+    m_isPresenting = false;
+
+    // A valid number of layers must be provided in order to present.
     if (layers.size() == 0 || layers.size() > m_capabilities->maxLayers()) {
         DOMException* exception = DOMException::create(InvalidStateError, "Invalid number of layers.");
         if (m_isPresenting) {
@@ -169,11 +182,11 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* scriptState, const HeapVect
             // element once per second.
             m_fullscreenCheckTimer.startRepeating(1.0, BLINK_FROM_HERE);
         } else {
-            DOMException* exception = DOMException::create(InvalidStateError, "VR Presentation not implemented for this VRDisplay");
+            DOMException* exception = DOMException::create(InvalidStateError, "VR Presentation not implemented for this VRDisplay.");
             resolver->reject(exception);
         }
     } else {
-        DOMException* exception = DOMException::create(InvalidStateError, "Invalid layer source");
+        DOMException* exception = DOMException::create(InvalidStateError, "Invalid layer source.");
         resolver->reject(exception);
     }
 
@@ -187,7 +200,7 @@ ScriptPromise VRDisplay::exitPresent(ScriptState* scriptState)
 
     if (!m_isPresenting) {
         // Can't stop presenting if we're not presenting.
-        DOMException* exception = DOMException::create(InvalidStateError, "VRDisplay is not presenting");
+        DOMException* exception = DOMException::create(InvalidStateError, "VRDisplay is not presenting.");
         resolver->reject(exception);
         return promise;
     }
