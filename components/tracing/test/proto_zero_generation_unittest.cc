@@ -24,6 +24,7 @@ using tracing::v2::ProtoZeroMessage;
 using tracing::v2::ScatteredStreamWriter;
 using tracing::v2::ProtoZeroMessageHandle;
 using tracing::v2::ProtoZeroMessageHandleBase;
+using tracing::v2::proto::ProtoFieldDescriptor;
 
 constexpr size_t kChunkSize = 42;
 
@@ -155,7 +156,7 @@ TEST(ProtoZeroTest, Simple) {
   EXPECT_LE(0u, sizeof(pbtest::TrickyPublicImport));
 }
 
-TEST(ProtoZeroTest, FieldNumbers) {
+TEST(ProtoZeroTest, Reflection) {
   // Tests camel case conversion as well.
   EXPECT_EQ(1, pbtest::CamelCaseFields::kFooBarBazFieldNumber);
   EXPECT_EQ(2, pbtest::CamelCaseFields::kBarBazFieldNumber);
@@ -166,6 +167,17 @@ TEST(ProtoZeroTest, FieldNumbers) {
   EXPECT_EQ(7, pbtest::CamelCaseFields::kBigBangFieldNumber);
   EXPECT_EQ(8, pbtest::CamelCaseFields::kU2FieldNumber);
   EXPECT_EQ(9, pbtest::CamelCaseFields::kBangBigFieldNumber);
+
+  const ProtoFieldDescriptor* reflection =
+       pbtest::EveryField::GetFieldDescriptor(
+           pbtest::EveryField::kFieldInt32FieldNumber);
+  EXPECT_STREQ("field_int32", reflection->name());
+  EXPECT_EQ(ProtoFieldDescriptor::Type::TYPE_INT32, reflection->type());
+  EXPECT_EQ(1u, reflection->number());
+  EXPECT_FALSE(reflection->is_repeated());
+  EXPECT_TRUE(reflection->is_valid());
+
+  EXPECT_FALSE(pbtest::TransgalacticParcel::GetFieldDescriptor(42)->is_valid());
 }
 
 }  // namespace proto

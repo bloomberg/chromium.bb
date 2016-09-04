@@ -43,9 +43,8 @@ class GeneratorJob {
   GeneratorJob(const FileDescriptor *file,
                Printer* stub_h_printer,
                Printer* stub_cc_printer)
-    : source_(file),
-      stub_h_(stub_h_printer),
-      stub_cc_(stub_cc_printer) {}
+      : source_(file), stub_h_(stub_h_printer), stub_cc_(stub_cc_printer) {
+  }
 
   bool GenerateStubs() {
     Preprocess();
@@ -98,6 +97,18 @@ class GeneratorJob {
     StripString(&name, ".", '_');
     if (full)
       name = full_namespace_prefix_ + name;
+    return name;
+  }
+
+  inline std::string GetFieldNumberConstant(const FieldDescriptor* field) {
+    std::string name = field->camelcase_name();
+    if (!name.empty()) {
+      name.at(0) = toupper(name.at(0));
+      name = "k" + name + "FieldNumber";
+    } else {
+      // Protoc allows fields like 'bool _ = 1'.
+      Abort("Empty field name in camel case notation.");
+    }
     return name;
   }
 
@@ -262,6 +273,16 @@ class GeneratorJob {
          "name", ProtoStubName(dependency));
     }
     stub_cc_->Print("\n");
+
+    if (messages_.size() > 0) {
+      stub_cc_->Print(
+          "namespace {\n"
+          "  static const ::tracing::v2::proto::ProtoFieldDescriptor "
+          "kInvalidField = {\"\", "
+          "::tracing::v2::proto::ProtoFieldDescriptor::Type::TYPE_INVALID, "
+          "0, false};\n"
+          "}\n\n");
+    }
 
     // Print namespaces.
     for (const std::string& ns : namespaces_) {
@@ -435,12 +456,92 @@ class GeneratorJob {
         "outer_class", outer_class);
   }
 
+  void GenerateReflectionForMessageFields(const Descriptor* message) {
+    const bool has_fields = (message->field_count() > 0);
+
+    // Field number constants.
+    if (has_fields) {
+      stub_h_->Print("enum : int32_t {\n");
+      stub_h_->Indent();
+
+      for (int i = 0; i < message->field_count(); ++i) {
+        const FieldDescriptor* field = message->field(i);
+        stub_h_->Print(
+            "$name$ = $id$,\n",
+            "name", GetFieldNumberConstant(field),
+            "id", std::to_string(field->number()));
+      }
+      stub_h_->Outdent();
+      stub_h_->Print("};\n");
+    }
+
+    // Fields reflection table.
+    stub_h_->Print(
+        "static const ::tracing::v2::proto::ProtoFieldDescriptor* "
+        "GetFieldDescriptor(uint32_t field_id);\n");
+
+    std::string class_name = GetCppClassName(message);
+    if (has_fields) {
+      stub_cc_->Print(
+          "static const ::tracing::v2::proto::ProtoFieldDescriptor "
+          "kFields_$class$[] = {\n",
+          "class", class_name);
+      stub_cc_->Indent();
+      for (int i = 0; i < message->field_count(); ++i) {
+        const FieldDescriptor* field = message->field(i);
+        std::string type_const =
+            std::string("TYPE_") + FieldDescriptor::TypeName(field->type());
+        UpperString(&type_const);
+        stub_cc_->Print(
+            "{\"$name$\", "
+            "::tracing::v2::proto::ProtoFieldDescriptor::Type::$type$, "
+            "$number$, $is_repeated$},\n",
+            "name", field->name(),
+            "type", type_const,
+            "number", std::to_string(field->number()),
+            "is_repeated", std::to_string(field->is_repeated()));
+      }
+      stub_cc_->Outdent();
+      stub_cc_->Print("};\n\n");
+    }
+
+    // Fields reflection getter.
+    stub_cc_->Print(
+        "const ::tracing::v2::proto::ProtoFieldDescriptor* "
+        "$class$::GetFieldDescriptor(uint32_t field_id) {\n",
+        "class", class_name);
+    stub_cc_->Indent();
+    if (has_fields) {
+      stub_cc_->Print("switch (field_id) {\n");
+      stub_cc_->Indent();
+      for (int i = 0; i < message->field_count(); ++i) {
+        stub_cc_->Print(
+            "case $field$:\n"
+            "  return &kFields_$class$[$id$];\n",
+            "class", class_name,
+            "field", GetFieldNumberConstant(message->field(i)),
+            "id", std::to_string(i));
+      }
+      stub_cc_->Print(
+          "default:\n"
+          "  return &kInvalidField;\n");
+      stub_cc_->Outdent();
+      stub_cc_->Print("}\n");
+    } else {
+      stub_cc_->Print("return &kInvalidField;\n");
+    }
+    stub_cc_->Outdent();
+    stub_cc_->Print("}\n\n");
+  }
+
   void GenerateMessageDescriptor(const Descriptor* message) {
     stub_h_->Print(
         "class $name$ : public ::tracing::v2::ProtoZeroMessage {\n"
         " public:\n",
         "name", GetCppClassName(message));
     stub_h_->Indent();
+
+    GenerateReflectionForMessageFields(message);
 
     // Using statements for nested messages.
     for (int i = 0; i < message->nested_type_count(); ++i) {
@@ -473,30 +574,6 @@ class GeneratorJob {
             "name", value->name(),
             "full_name", value_name_prefix + value->name());
       }
-    }
-
-    // Field numbers.
-    if (message->field_count() > 0) {
-      stub_h_->Print("enum : int32_t {\n");
-      stub_h_->Indent();
-
-      for (int i = 0; i < message->field_count(); ++i) {
-        const FieldDescriptor* field = message->field(i);
-        std::string name = field->camelcase_name();
-        if (!name.empty()) {
-          name.at(0) = toupper(name.at(0));
-        } else {
-          // Protoc allows fields like 'bool _ = 1'.
-          Abort("Empty field name in camel case notation.");
-        }
-
-        stub_h_->Print(
-            "k$name$FieldNumber = $id$,\n",
-            "name", name,
-            "id", std::to_string(field->number()));
-      }
-      stub_h_->Outdent();
-      stub_h_->Print("};\n");
     }
 
     // Field descriptors.

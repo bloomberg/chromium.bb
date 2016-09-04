@@ -24,6 +24,66 @@ enum : uint32_t {
   kFieldTypeFixed32 = 5,
 };
 
+class ProtoFieldDescriptor {
+ public:
+  enum Type {
+    TYPE_INVALID = 0,
+    TYPE_DOUBLE = 1,
+    TYPE_FLOAT = 2,
+    TYPE_INT64 = 3,
+    TYPE_UINT64 = 4,
+    TYPE_INT32 = 5,
+    TYPE_FIXED64 = 6,
+    TYPE_FIXED32 = 7,
+    TYPE_BOOL = 8,
+    TYPE_STRING = 9,
+    TYPE_MESSAGE = 11,
+    // TYPE_GROUP = 10 is not supported.
+    TYPE_BYTES = 12,
+    TYPE_UINT32 = 13,
+    TYPE_ENUM = 14,
+    TYPE_SFIXED32 = 15,
+    TYPE_SFIXED64 = 16,
+    TYPE_SINT32 = 17,
+    TYPE_SINT64 = 18,
+  };
+
+  ProtoFieldDescriptor(const char* name,
+                       Type type,
+                       uint32_t number,
+                       bool is_repeated)
+      : name_(name), type_(type), number_(number), is_repeated_(is_repeated) {
+  }
+
+  const char* name() const {
+    return name_;
+  }
+
+  Type type() const {
+    return type_;
+  }
+
+  uint32_t number() const {
+    return number_;
+  }
+
+  bool is_repeated() const {
+    return is_repeated_;
+  }
+
+  bool is_valid() const {
+    return type_ != Type::TYPE_INVALID;
+  }
+
+ private:
+  const char* const name_;
+  const Type type_;
+  const uint32_t number_;
+  const bool is_repeated_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProtoFieldDescriptor);
+};
+
 // Maximum message size supported: 256 MiB (4 x 7-bit due to varint encoding).
 constexpr size_t kMessageLengthFieldSize = 4;
 constexpr size_t kMaxMessageLength = (1u << (kMessageLengthFieldSize * 7)) - 1;
