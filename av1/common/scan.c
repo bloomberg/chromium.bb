@@ -950,4 +950,20 @@ void update_scan_order_facade(AV1_COMMON *cm, TX_SIZE tx_size,
   update_neighbors(tx_size, scan, iscan, nb);
 }
 
+void init_scan_order(AV1_COMMON *cm) {
+  TX_SIZE tx_size;
+  TX_TYPE tx_type;
+  for (tx_size = TX_4X4; tx_size < TX_SIZES; ++tx_size) {
+    for (tx_type = DCT_DCT; tx_type < TX_TYPES; ++tx_type) {
+      uint32_t *non_zero_prob = get_non_zero_prob(cm->fc, tx_size, tx_type);
+      int tx2d_size = get_tx2d_size(tx_size);
+      int i;
+      for (i = 0; i < tx2d_size; ++i) {
+        non_zero_prob[i] = (1 << 16) / 2;  // init non_zero_prob to 0.5
+      }
+      update_scan_order_facade(cm, tx_size, tx_type);
+    }
+  }
+}
+
 #endif
