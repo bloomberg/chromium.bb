@@ -9,9 +9,9 @@
 
 'use strict'
 
-// 6. If C non-conformantly uses an API decorated with the [CEReactions] extended attribute, 
-// then the reactions enqueued at the beginning of upgrade will execute during this step, 
-// before C finishes and control returns to this algorithm. 
+// 6. If C non-conformantly uses an API decorated with the [CEReactions] extended attribute,
+// then the reactions enqueued at the beginning of upgrade will execute during this step,
+// before C finishes and control returns to this algorithm.
 test_with_window((w) => {
   let invocations = [];
   let changedCallbackArgs = [];
@@ -19,14 +19,14 @@ test_with_window((w) => {
   w.document.body.appendChild(a);
   a.setAttribute('x', '1');
   class X extends w.HTMLElement {
-    constructor() { 
-      super(); 
+    constructor() {
+      super();
       this.setAttribute('y', '2');
-      invocations.push(['constructor', this]); 
+      invocations.push(['constructor', this]);
     }
     connectedCallback() { invocations.push(['connected', this]); }
     static get observedAttributes() { return ['x', 'y']; }
-    attributeChangedCallback() { 
+    attributeChangedCallback() {
       invocations.push(['attributeChanged', this]);
       changedCallbackArgs.push(arguments);
     }
@@ -39,7 +39,7 @@ test_with_window((w) => {
   assert_equals(changedCallbackArgs.length, 1, 'attributeChangedCallback should only be invoked once');
   assert_array_equals(invocations[0], ['constructor', a], 'constructor should execute first');
   assert_array_equals(invocations[1], ['attributeChanged', a], 'attributeChangedCallback should execute after constructor');
-  assert_array_equals(changedCallbackArgs[0], ['x', null, '1', ''], 'attributeChangedCallback should execute for setAttribute outside of the constructor');
+  assert_array_equals(changedCallbackArgs[0], ['x', null, '1', null], 'attributeChangedCallback should execute for setAttribute outside of the constructor');
   assert_array_equals(invocations[2], ['connected', a], 'connectedCallback should execute after the constrcutor');
 }, 'The constructor non-conformatly uses API decorated with the [CEReactions] when constuctor is invoked during upgrade');
 
@@ -48,14 +48,14 @@ test_with_window((w) => {
   let invocations = [];
   let changedCallbackArgs = [];
   class X extends w.HTMLElement {
-    constructor() { 
-      super(); 
+    constructor() {
+      super();
       this.setAttribute('y', '2');
-      invocations.push(['constructor', this]); 
+      invocations.push(['constructor', this]);
     }
     connectedCallback() { invocations.push(['connected', this]); }
     static get observedAttributes() { return ['x', 'y']; }
-    attributeChangedCallback() { 
+    attributeChangedCallback() {
       invocations.push(['attributeChanged', this]);
       changedCallbackArgs.push(arguments);
     }
@@ -68,12 +68,12 @@ test_with_window((w) => {
   assert_array_equals(invocations[0], ['attributeChanged', a], 'attributeChangedCallback for "a" should execute before the constructor is finished');
   assert_array_equals(invocations[1], ['constructor', a], 'constructor executes second');
   assert_array_equals(invocations[2], ['attributeChanged', a], 'setAttribute outside of the constructorshould be invoked');
-  assert_array_equals(changedCallbackArgs[0], ['y', null, '2', '']);
-  assert_array_equals(changedCallbackArgs[1], ['x', null, '1', '']);
-}, 'The constructor non-conformatly uses API decorated with the [CEReactions] when consturctor is invoked with new');
+  assert_array_equals(changedCallbackArgs[0], ['y', null, '2', null]);
+  assert_array_equals(changedCallbackArgs[1], ['x', null, '1', null]);
+}, 'The constructor non-conformatly uses API decorated with the [CEReactions] when constructor is invoked with new');
 
 
-// 8. If constructResult is an abrupt completion, then return constructResult 
+// 8. If constructResult is an abrupt completion, then return constructResult
 // (i.e., rethrow the exception).
 test_with_window((w) => {
   let error_log = [];
@@ -84,17 +84,17 @@ test_with_window((w) => {
     return true;
   };
   class X extends w.HTMLElement {
-    constructor() { 
+    constructor() {
       super();
       assert_false(this.matches(':defined'), 'calling super() with non-empty construction stack should not define the element');
-      throw { name: 'constructor throws' }; 
+      throw { name: 'constructor throws' };
     }
   }
   w.customElements.define('a-a', X);
   assert_array_equals(error_log, ['constructor throws'], 'rethrow any exception thrown from constructor');
 }, 'Upgrading an element with a throwing constructor should rethrow that exception');
 
-// 9. If SameValue(constructResult.[[value]], element) is false, then throw an 
+// 9. If SameValue(constructResult.[[value]], element) is false, then throw an
 // "InvalidStateError" DOMException and terminate these steps.
 test_with_window((w) => {
   let error_log = [];

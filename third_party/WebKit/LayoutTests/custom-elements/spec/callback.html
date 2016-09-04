@@ -66,8 +66,8 @@
     document.body.appendChild(element);
     let logs = define_logger(w, ['x', 'y']);
     assert_log_is_type(logs, 0, constructor, element);
-    assert_log_is_type(logs, 1, attributeChanged, element, ['x', null, '1', '']);
-    assert_log_is_type(logs, 2, attributeChanged, element, ['y', null, '2', '']);
+    assert_log_is_type(logs, 1, attributeChanged, element, ['x', null, '1', null]);
+    assert_log_is_type(logs, 2, attributeChanged, element, ['y', null, '2', null]);
     assert_log_is_type(logs, 3, connected, element);
     assert_equals(logs.length, 4);
   }, 'upgrade should enqueue attributeChangedCallback and connectedCallback');
@@ -83,8 +83,8 @@
     element.setAttribute('z', '0');
     element.setAttribute('y', '2');
     element.setAttribute('x', '9');
-    assert_log_is_type(logs, 0, attributeChanged, element, ['y', null, '2', '']);
-    assert_log_is_type(logs, 1, attributeChanged, element, ['x', '1', '9', '']);
+    assert_log_is_type(logs, 0, attributeChanged, element, ['y', null, '2', null]);
+    assert_log_is_type(logs, 1, attributeChanged, element, ['x', '1', '9', null]);
     assert_equals(logs.length, 2);
   }, 'setAttribute should enqueue attributeChangedCallback');
 
@@ -97,15 +97,15 @@
     logs.length = 0;
     element.style.color = 'red';
     assert_equals(logs.length, 1);
-    assert_log_is_type(logs, 0, attributeChanged, element, ['style', null, 'color: red;', '']);
+    assert_log_is_type(logs, 0, attributeChanged, element, ['style', null, 'color: red;', null]);
 
     element.style.color = 'green';
     assert_equals(logs.length, 2);
-    assert_log_is_type(logs, 1, attributeChanged, element, ['style', 'color: red;', 'color: green;', '']);
+    assert_log_is_type(logs, 1, attributeChanged, element, ['style', 'color: red;', 'color: green;', null]);
 
     element.style.color = '';
     assert_equals(logs.length, 3);
-    assert_log_is_type(logs, 2, attributeChanged, element, ['style', 'color: green;', null, '']);
+    assert_log_is_type(logs, 2, attributeChanged, element, ['style', 'color: green;', null, null]);
   }, 'style.color should enqueue attributeChangedCallback for style attribute');
 
   test_with_window(w => {
@@ -117,7 +117,7 @@
     logs.length = 0;
     element.style.cssText = 'color: red';
     assert_equals(logs.length, 1);
-    assert_log_is_type(logs, 0, attributeChanged, element, ['style', null, 'color: red;', '']);
+    assert_log_is_type(logs, 0, attributeChanged, element, ['style', null, 'color: red;', null]);
   }, 'style.cssText should enqueue attributeChangedCallback for style attribute');
 
   test_with_window(w => {
@@ -129,11 +129,11 @@
     logs.length = 0;
     element.style.setProperty('color', 'red');
     assert_equals(logs.length, 1);
-    assert_log_is_type(logs, 0, attributeChanged, element, ['style', null, 'color: red;', '']);
+    assert_log_is_type(logs, 0, attributeChanged, element, ['style', null, 'color: red;', null]);
 
     element.style.removeProperty('color', 'red');
     assert_equals(logs.length, 2);
-    assert_log_is_type(logs, 1, attributeChanged, element, ['style', 'color: red;', null, '']);
+    assert_log_is_type(logs, 1, attributeChanged, element, ['style', 'color: red;', null, null]);
   }, 'style.setProperty/removeProperty should enqueue attributeChangedCallback for style attribute');
 
   test_with_window(w => {
@@ -145,7 +145,7 @@
     logs.length = 0;
     element.style.cssFloat = 'left';
     assert_equals(logs.length, 1);
-    assert_log_is_type(logs, 0, attributeChanged, element, ['style', null, 'float: left;', '']);
+    assert_log_is_type(logs, 0, attributeChanged, element, ['style', null, 'float: left;', null]);
   }, 'style.cssFloat should enqueue attributeChangedCallback for style attribute');
 
   test_with_window(w => {
@@ -157,7 +157,7 @@
     logs.length = 0;
     element.lang = 'ja-jp';
     assert_equals(logs.length, 1);
-    assert_log_is_type(logs, 0, attributeChanged, element, ['lang', null, 'ja-jp', '']);
+    assert_log_is_type(logs, 0, attributeChanged, element, ['lang', null, 'ja-jp', null]);
   }, 'lang property setter should enqueue attributeChangedCallback for lang attribute');
 
   test_with_window(w => {
@@ -169,9 +169,25 @@
 
     logs.length = 0;
     element.removeAttribute('x');
-    assert_log_is_type(logs, 0, attributeChanged, element, ['x', '1', null, '']);
+    assert_log_is_type(logs, 0, attributeChanged, element, ['x', '1', null, null]);
     assert_equals(logs.length, 1);
   }, 'removeAttribute should enqueue attributeChangedCallback');
+
+  test_with_window(w => {
+    let document = w.document;
+    let element = document.createElement('a-a');
+    document.body.appendChild(element);
+    let logs = define_logger(w, ['x']);
+    logs.length = 0;
+
+    element.setAttributeNS('urn:foo', 'x', '1');
+    assert_log_is_type(logs, 0, attributeChanged, element, ['x', null, '1', 'urn:foo']);
+    assert_equals(logs.length, 1);
+
+    element.removeAttributeNS('urn:foo', 'x');
+    assert_log_is_type(logs, 1, attributeChanged, element, ['x', '1', null, 'urn:foo']);
+    assert_equals(logs.length, 2);
+  }, 'attributeChangedCallback should transmit namespaces');
 
   test_with_window(w => {
     let document = w.document;

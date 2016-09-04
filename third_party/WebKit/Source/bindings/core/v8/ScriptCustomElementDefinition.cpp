@@ -378,7 +378,7 @@ void ScriptCustomElementDefinition::runAttributeChangedCallback(
         v8String(isolate, name.localName()),
         v8StringOrNull(isolate, oldValue),
         v8StringOrNull(isolate, newValue),
-        v8String(isolate, name.namespaceURI()),
+        v8StringOrNull(isolate, name.namespaceURI()),
     };
     runCallback(m_attributeChangedCallback.newLocal(isolate), element,
         argc, argv);
