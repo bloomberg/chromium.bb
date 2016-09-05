@@ -303,8 +303,10 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
 
   // Called when the existence of the other renderer process which is connected
   // to the Worker in this renderer process has changed.
-  virtual void IncrementWorkerRefCount() = 0;
-  virtual void DecrementWorkerRefCount() = 0;
+  virtual void IncrementServiceWorkerRefCount() = 0;
+  virtual void DecrementServiceWorkerRefCount() = 0;
+  virtual void IncrementSharedWorkerRefCount() = 0;
+  virtual void DecrementSharedWorkerRefCount() = 0;
 
   // Purges and suspends the renderer process.
   virtual void PurgeAndSuspend() = 0;

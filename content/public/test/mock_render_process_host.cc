@@ -289,11 +289,19 @@ bool MockRenderProcessHost::IsProcessBackgrounded() const {
   return is_process_backgrounded_;
 }
 
-void MockRenderProcessHost::IncrementWorkerRefCount() {
+void MockRenderProcessHost::IncrementServiceWorkerRefCount() {
   ++worker_ref_count_;
 }
 
-void MockRenderProcessHost::DecrementWorkerRefCount() {
+void MockRenderProcessHost::DecrementServiceWorkerRefCount() {
+  --worker_ref_count_;
+}
+
+void MockRenderProcessHost::IncrementSharedWorkerRefCount() {
+  ++worker_ref_count_;
+}
+
+void MockRenderProcessHost::DecrementSharedWorkerRefCount() {
   --worker_ref_count_;
 }
 

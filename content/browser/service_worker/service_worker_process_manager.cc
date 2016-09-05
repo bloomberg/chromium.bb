@@ -80,7 +80,8 @@ void ServiceWorkerProcessManager::Shutdown() {
   for (std::map<int, ProcessInfo>::const_iterator it = instance_info_.begin();
        it != instance_info_.end();
        ++it) {
-    RenderProcessHost::FromID(it->second.process_id)->DecrementWorkerRefCount();
+    RenderProcessHost::FromID(it->second.process_id)
+        ->DecrementServiceWorkerRefCount();
   }
   instance_info_.clear();
 }
@@ -198,7 +199,7 @@ void ServiceWorkerProcessManager::AllocateWorkerProcess(
   if (can_use_existing_process) {
     int process_id = FindAvailableProcess(pattern);
     if (process_id != ChildProcessHost::kInvalidUniqueID) {
-      RenderProcessHost::FromID(process_id)->IncrementWorkerRefCount();
+      RenderProcessHost::FromID(process_id)->IncrementServiceWorkerRefCount();
       instance_info_.insert(
           std::make_pair(embedded_worker_id, ProcessInfo(process_id)));
       BrowserThread::PostTask(
@@ -230,7 +231,7 @@ void ServiceWorkerProcessManager::AllocateWorkerProcess(
   instance_info_.insert(
       std::make_pair(embedded_worker_id, ProcessInfo(site_instance)));
 
-  rph->IncrementWorkerRefCount();
+  rph->IncrementServiceWorkerRefCount();
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(callback, SERVICE_WORKER_OK, rph->GetID(),
                                      true /* is_new_process */, settings));
@@ -279,7 +280,7 @@ void ServiceWorkerProcessManager::ReleaseWorkerProcess(int embedded_worker_id) {
         << "Process " << info->second.process_id
         << " was destroyed unexpectedly. Did we actually hold a reference?";
   }
-  rph->DecrementWorkerRefCount();
+  rph->DecrementServiceWorkerRefCount();
   instance_info_.erase(info);
 }
 

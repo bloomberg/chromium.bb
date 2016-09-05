@@ -103,8 +103,10 @@ class MockRenderProcessHost : public RenderProcessHost {
                                          int cdm_id) const override;
 #endif
   bool IsProcessBackgrounded() const override;
-  void IncrementWorkerRefCount() override;
-  void DecrementWorkerRefCount() override;
+  void IncrementServiceWorkerRefCount() override;
+  void DecrementServiceWorkerRefCount() override;
+  void IncrementSharedWorkerRefCount() override;
+  void DecrementSharedWorkerRefCount() override;
   void PurgeAndSuspend() override;
 
   // IPC::Sender via RenderProcessHost.

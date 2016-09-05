@@ -59,14 +59,14 @@ void UpdateWorkerDependencyOnUI(const std::vector<int>& added_ids,
         static_cast<RenderProcessHostImpl*>(RenderProcessHost::FromID(id));
     if (!render_process_host_impl)
       continue;
-    render_process_host_impl->IncrementWorkerRefCount();
+    render_process_host_impl->IncrementSharedWorkerRefCount();
   }
   for (int id : removed_ids) {
     RenderProcessHostImpl* render_process_host_impl =
         static_cast<RenderProcessHostImpl*>(RenderProcessHost::FromID(id));
     if (!render_process_host_impl)
       continue;
-    render_process_host_impl->DecrementWorkerRefCount();
+    render_process_host_impl->DecrementSharedWorkerRefCount();
   }
 }
 
@@ -89,7 +89,7 @@ void DecrementWorkerRefCount(int process_id) {
       static_cast<RenderProcessHostImpl*>(
           RenderProcessHost::FromID(process_id));
   if (render_process_host_impl)
-    render_process_host_impl->DecrementWorkerRefCount();
+    render_process_host_impl->DecrementSharedWorkerRefCount();
 }
 
 bool TryIncrementWorkerRefCount(int worker_process_id) {
@@ -97,7 +97,7 @@ bool TryIncrementWorkerRefCount(int worker_process_id) {
       RenderProcessHost::FromID(worker_process_id));
   if (!render_process || render_process->FastShutdownStarted())
     return false;
-  render_process->IncrementWorkerRefCount();
+  render_process->IncrementSharedWorkerRefCount();
   return true;
 }
 

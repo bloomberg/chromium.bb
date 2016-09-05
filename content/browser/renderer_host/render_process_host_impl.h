@@ -173,8 +173,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
                                          int cdm_id) const override;
 #endif
   bool IsProcessBackgrounded() const override;
-  void IncrementWorkerRefCount() override;
-  void DecrementWorkerRefCount() override;
+  void IncrementServiceWorkerRefCount() override;
+  void DecrementServiceWorkerRefCount() override;
+  void IncrementSharedWorkerRefCount() override;
+  void DecrementSharedWorkerRefCount() override;
   void PurgeAndSuspend() override;
 
   // IPC::Sender via RenderProcessHost.
@@ -312,6 +314,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
   class ConnectionFilterController;
   class ConnectionFilterImpl;
 
+  size_t worker_ref_count() {
+    return service_worker_ref_count_ + shared_worker_ref_count_;
+  }
+
   std::unique_ptr<IPC::ChannelProxy> CreateChannelProxy(
       const std::string& channel_id);
 
@@ -416,6 +422,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
 #if defined(OS_ANDROID)
   std::unique_ptr<InterfaceRegistryAndroid> interface_registry_android_;
 #endif
+
+  size_t service_worker_ref_count_;
+  size_t shared_worker_ref_count_;
 
   // The registered IPC listener objects. When this list is empty, we should
   // delete ourselves.
@@ -538,14 +547,12 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // defined below it so it is destructed first.
   scoped_refptr<PeerConnectionTrackerHost> peer_connection_tracker_host_;
 
-  int worker_ref_count_;
-
   // Records the time when the process starts surviving for workers for UMA.
   base::TimeTicks survive_for_worker_start_time_;
 
   // Records the maximum # of workers simultaneously hosted in this process
   // for UMA.
-  int max_worker_count_;
+  size_t max_worker_count_;
 
   // Context shared for each mojom::PermissionService instance created for this
   // RPH.
