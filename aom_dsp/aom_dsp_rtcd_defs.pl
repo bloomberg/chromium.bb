@@ -1022,17 +1022,25 @@ if (aom_config("CONFIG_AOM_QM") eq "yes") {
 } else {
   if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
     add_proto qw/void aom_quantize_b/, "const tran_low_t *coeff_ptr, intptr_t n_coeffs, int skip_block, const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr, const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr, const int16_t *scan, const int16_t *iscan";
-    specialize qw/aom_quantize_b sse2/, "$ssse3_x86_64_x86inc", "$avx_x86_64_x86inc";
+    if (aom_config("CONFIG_ADAPT_SCAN") ne "yes") {
+      specialize qw/aom_quantize_b sse2/, "$ssse3_x86_64_x86inc", "$avx_x86_64_x86inc";
+    }
 
     add_proto qw/void aom_quantize_b_32x32/, "const tran_low_t *coeff_ptr, intptr_t n_coeffs, int skip_block, const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr, const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr, const int16_t *scan, const int16_t *iscan";
-    specialize qw/aom_quantize_b_32x32/, "$ssse3_x86_64_x86inc", "$avx_x86_64_x86inc";
+    if (aom_config("CONFIG_ADAPT_SCAN") ne "yes") {
+      specialize qw/aom_quantize_b_32x32/, "$ssse3_x86_64_x86inc", "$avx_x86_64_x86inc";
+    }
 
     if (aom_config("CONFIG_AOM_HIGHBITDEPTH") eq "yes") {
       add_proto qw/void aom_highbd_quantize_b/, "const tran_low_t *coeff_ptr, intptr_t n_coeffs, int skip_block, const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr, const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr, const int16_t *scan, const int16_t *iscan";
-      specialize qw/aom_highbd_quantize_b sse2/;
+      if (aom_config("CONFIG_ADAPT_SCAN") ne "yes") {
+        specialize qw/aom_highbd_quantize_b sse2/;
+      }
 
       add_proto qw/void aom_highbd_quantize_b_32x32/, "const tran_low_t *coeff_ptr, intptr_t n_coeffs, int skip_block, const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr, const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr, const int16_t *scan, const int16_t *iscan";
-      specialize qw/aom_highbd_quantize_b_32x32 sse2/;
+      if (aom_config("CONFIG_ADAPT_SCAN") ne "yes") {
+        specialize qw/aom_highbd_quantize_b_32x32 sse2/;
+      }
     }  # CONFIG_AOM_HIGHBITDEPTH
   }  # CONFIG_AV1_ENCODER
 } # CONFIG_AOM_QM

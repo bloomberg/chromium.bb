@@ -324,13 +324,16 @@ static void inverse_transform_block_inter(MACROBLOCKD *xd, int plane,
     if (eob == 1) {
       dqcoeff[0] = 0;
     } else {
+#if CONFIG_ADAPT_SCAN
+      memset(dqcoeff, 0, tx_size_2d[tx_size] * sizeof(dqcoeff[0]));
+#else   // CONFIG_ADAPT_SCAN
       if (tx_type == DCT_DCT && tx_size <= TX_16X16 && eob <= 10)
         memset(dqcoeff, 0, 4 * tx_size_1d[tx_size] * sizeof(dqcoeff[0]));
       else if (tx_size == TX_32X32 && eob <= 34)
         memset(dqcoeff, 0, 256 * sizeof(dqcoeff[0]));
       else
-        memset(dqcoeff, 0,
-               (1 << (tx_size_1d_log2[tx_size] * 2)) * sizeof(dqcoeff[0]));
+        memset(dqcoeff, 0, tx_size_2d[tx_size] * sizeof(dqcoeff[0]));
+#endif  // CONFIG_ADAPT_SCAN
     }
   }
 }
@@ -389,13 +392,16 @@ static void inverse_transform_block_intra(MACROBLOCKD *xd, int plane,
     if (eob == 1) {
       dqcoeff[0] = 0;
     } else {
+#if CONFIG_ADAPT_SCAN
+      memset(dqcoeff, 0, tx_size_2d[tx_size] * sizeof(dqcoeff[0]));
+#else   // CONFIG_ADAPT_SCAN
       if (tx_type == DCT_DCT && tx_size <= TX_16X16 && eob <= 10)
         memset(dqcoeff, 0, 4 * tx_size_1d[tx_size] * sizeof(dqcoeff[0]));
       else if (tx_size == TX_32X32 && eob <= 34)
         memset(dqcoeff, 0, 256 * sizeof(dqcoeff[0]));
       else
-        memset(dqcoeff, 0,
-               (1 << (tx_size_1d_log2[tx_size] * 2)) * sizeof(dqcoeff[0]));
+        memset(dqcoeff, 0, tx_size_2d[tx_size] * sizeof(dqcoeff[0]));
+#endif  // CONFIG_ADAPT_SCAN
     }
   }
 }

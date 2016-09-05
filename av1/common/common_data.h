@@ -132,6 +132,8 @@ static const BLOCK_SIZE txsize_to_bsize[TX_SIZES] = {
 #else
 static const int tx_size_1d[TX_SIZES] = { 4, 8, 16, 32 };
 
+static const int tx_size_2d[TX_SIZES] = { 16, 64, 256, 1024 };
+
 static const uint8_t tx_size_1d_log2[TX_SIZES] = { 2, 3, 4, 5 };
 
 static const int tx_size_1d_in_unit[TX_SIZES] = { 1, 2, 4, 8 };
