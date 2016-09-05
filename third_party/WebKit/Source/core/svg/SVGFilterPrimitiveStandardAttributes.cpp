@@ -96,18 +96,55 @@ void SVGFilterPrimitiveStandardAttributes::childrenChanged(const ChildrenChange&
         invalidate();
 }
 
-void SVGFilterPrimitiveStandardAttributes::setStandardAttributes(FilterEffect* filterEffect) const
+static FloatRect defaultFilterPrimitiveSubregion(FilterEffect* filterEffect)
+{
+    // https://drafts.fxtf.org/filters/#FilterPrimitiveSubRegion
+    DCHECK(filterEffect->getFilter());
+
+    // <feTurbulence>, <feFlood> and <feImage> don't have input effects, so use
+    // the filter region as default subregion. <feTile> does have an input
+    // reference, but due to its function (and special-cases) its default
+    // resolves to the filter region.
+    if (filterEffect->getFilterEffectType() == FilterEffectTypeTile
+        || !filterEffect->numberOfEffectInputs())
+        return filterEffect->getFilter()->filterRegion();
+
+    // "x, y, width and height default to the union (i.e., tightest fitting
+    // bounding box) of the subregions defined for all referenced nodes."
+    FloatRect subregionUnion;
+    for (const auto& inputEffect : filterEffect->inputEffects()) {
+        // "If ... one or more of the referenced nodes is a standard input
+        // ... the default subregion is 0%, 0%, 100%, 100%, where as a
+        // special-case the percentages are relative to the dimensions of the
+        // filter region..."
+        if (inputEffect->getFilterEffectType() == FilterEffectTypeSourceInput)
+            return filterEffect->getFilter()->filterRegion();
+        subregionUnion.unite(inputEffect->filterPrimitiveSubregion());
+    }
+    return subregionUnion;
+}
+
+void SVGFilterPrimitiveStandardAttributes::setStandardAttributes(
+    FilterEffect* filterEffect,
+    SVGUnitTypes::SVGUnitType primitiveUnits,
+    const FloatRect& referenceBox) const
 {
     DCHECK(filterEffect);
 
+    FloatRect subregion = defaultFilterPrimitiveSubregion(filterEffect);
+    FloatRect primitiveBoundaries =
+        SVGLengthContext::resolveRectangle(this, primitiveUnits, referenceBox);
+
     if (x()->isSpecified())
-        filterEffect->setHasX(true);
+        subregion.setX(primitiveBoundaries.x());
     if (y()->isSpecified())
-        filterEffect->setHasY(true);
+        subregion.setY(primitiveBoundaries.y());
     if (width()->isSpecified())
-        filterEffect->setHasWidth(true);
+        subregion.setWidth(primitiveBoundaries.width());
     if (height()->isSpecified())
-        filterEffect->setHasHeight(true);
+        subregion.setHeight(primitiveBoundaries.height());
+
+    filterEffect->setFilterPrimitiveSubregion(subregion);
 }
 
 LayoutObject* SVGFilterPrimitiveStandardAttributes::createLayoutObject(const ComputedStyle&)

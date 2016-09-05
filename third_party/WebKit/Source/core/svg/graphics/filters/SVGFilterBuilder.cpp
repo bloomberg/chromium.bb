@@ -166,6 +166,7 @@ ColorSpace SVGFilterBuilder::resolveColorSpace(EColorInterpolation colorInterpol
 void SVGFilterBuilder::buildGraph(Filter* filter, SVGFilterElement& filterElement, const FloatRect& referenceBox)
 {
     EColorInterpolation filterColorInterpolation = colorInterpolationForElement(filterElement, CI_AUTO);
+    SVGUnitTypes::SVGUnitType primitiveUnits = filterElement.primitiveUnits()->currentValue()->enumValue();
 
     for (SVGElement* element = Traversal<SVGElement>::firstChild(filterElement); element; element = Traversal<SVGElement>::nextSibling(*element)) {
         if (!element->isFilterEffect())
@@ -179,8 +180,7 @@ void SVGFilterBuilder::buildGraph(Filter* filter, SVGFilterElement& filterElemen
         if (m_nodeMap)
             m_nodeMap->addPrimitive(effectElement->layoutObject(), effect);
 
-        effectElement->setStandardAttributes(effect);
-        effect->setEffectBoundaries(SVGLengthContext::resolveRectangle<SVGFilterPrimitiveStandardAttributes>(effectElement, filterElement.primitiveUnits()->currentValue()->enumValue(), referenceBox));
+        effectElement->setStandardAttributes(effect, primitiveUnits, referenceBox);
         EColorInterpolation colorInterpolation = colorInterpolationForElement(*effectElement, filterColorInterpolation);
         effect->setOperatingColorSpace(resolveColorSpace(colorInterpolation));
         if (effectElement->taintsOrigin(effect->inputsTaintOrigin()))
