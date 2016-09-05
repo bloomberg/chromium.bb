@@ -4,19 +4,42 @@
 
 #include "components/ntp_snippets/ntp_snippets_status_service.h"
 
+#include <string>
+
+#include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/variations/variations_associated_data.h"
 
 namespace ntp_snippets {
+
+namespace {
+
+const char kFetchingRequiresSignin[] = "fetching_requires_signin";
+const char kFetchingRequiresSigninEnabled[] = "true";
+const char kFetchingRequiresSigninDisabled[] = "false";
+
+}  // namespace
 
 NTPSnippetsStatusService::NTPSnippetsStatusService(
     SigninManagerBase* signin_manager,
     PrefService* pref_service)
     : disabled_reason_(DisabledReason::EXPLICITLY_DISABLED),
+      require_signin_(true),
       signin_manager_(signin_manager),
       pref_service_(pref_service),
-      signin_observer_(this) {}
+      signin_observer_(this) {
+  std::string param_value_str = variations::GetVariationParamValueByFeature(
+      kArticleSuggestionsFeature, kFetchingRequiresSignin);
+  if (param_value_str == kFetchingRequiresSigninDisabled) {
+    require_signin_ = false;
+  } else if (!param_value_str.empty() &&
+             param_value_str != kFetchingRequiresSigninEnabled) {
+    DLOG(WARNING) << "Unknow value for the variations parameter "
+                  << kFetchingRequiresSignin << ": " << param_value_str;
+  }
+}
 
 NTPSnippetsStatusService::~NTPSnippetsStatusService() {}
 
@@ -74,7 +97,8 @@ DisabledReason NTPSnippetsStatusService::GetDisabledReasonFromDeps() const {
     return DisabledReason::EXPLICITLY_DISABLED;
   }
 
-  if (!signin_manager_ || !signin_manager_->IsAuthenticated()) {
+  if (require_signin_ &&
+      (!signin_manager_ || !signin_manager_->IsAuthenticated())) {
     DVLOG(1) << "[GetNewDisabledReason] Signed out";
     return DisabledReason::SIGNED_OUT;
   }

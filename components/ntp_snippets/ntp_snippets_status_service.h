@@ -64,6 +64,7 @@ class NTPSnippetsStatusService : public SigninManagerBase::Observer {
   DisabledReason disabled_reason_;
   DisabledReasonChangeCallback disabled_reason_change_callback_;
 
+  bool require_signin_;
   SigninManagerBase* signin_manager_;
   PrefService* pref_service_;
 
