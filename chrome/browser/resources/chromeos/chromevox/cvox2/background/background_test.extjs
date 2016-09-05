@@ -354,7 +354,8 @@ TEST_F('BackgroundTest', 'FocusInputElement', function() {
     }.bind(this));
 });
 
-TEST_F('BackgroundTest', 'UseEditableState', function() {
+// Flaky, see http://crbug.com/643902.
+TEST_F('BackgroundTest', 'DISABLED_UseEditableState', function() {
   this.runWithLoadedTree(
     function() {/*!
       <input type="text"></input>
