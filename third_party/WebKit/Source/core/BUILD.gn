@@ -939,6 +939,7 @@ source_set("unit_tests") {
     "animation/animatable/AnimatableValueTestHelper.h",
     "animation/animatable/AnimatableValueTestHelperTest.cpp",
     "clipboard/DataObjectTest.cpp",
+    "css/ActiveStyleSheetsTest.cpp",
     "css/AffectedByFocusTest.cpp",
     "css/CSSCalculationValueTest.cpp",
     "css/CSSFontFaceSourceTest.cpp",
