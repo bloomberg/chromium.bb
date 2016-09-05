@@ -2701,7 +2701,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <template is="dom-if" if="[[itemsSelected_]]">
         <div id="overlay-wrapper" hidden$="[[!itemsSelected_]]">
           <div id="overlay-buttons">
-            <paper-icon-button icon="cr:clear" id="cancel-icon-button" on-tap="onClearSelectionTap_"></paper-icon-button>
+            <paper-icon-button icon="cr:clear" id="cancel-icon-button" on-tap="onClearSelectionTap_" title="$i18n{cancel}">
+            </paper-icon-button>
             <div id="number-selected">[[numberOfItemsSelected_(count)]]</div>
             <paper-button id="cancel-button" on-tap="onClearSelectionTap_">
               $i18n{cancel}
@@ -3443,7 +3444,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           [[cardTitle_(numberOfItems, item.dateRelativeDay, searchTerm)]]
         </div>
         <div id="item-container">
-          <paper-checkbox id="checkbox" on-mousedown="onCheckboxMousedown_" on-click="onCheckboxSelected_" checked="{{selected}}" disabled="[[selectionNotAllowed_()]]">
+          <paper-checkbox id="checkbox" on-mousedown="onCheckboxMousedown_" on-click="onCheckboxSelected_" checked="{{selected}}" disabled="[[selectionNotAllowed_()]]" aria-label$="[[getEntrySummary_(item)]]">
           </paper-checkbox>
           <span id="time-accessed">[[item.readableTimestamp]]</span>
           <div class="website-icon" id="icon"></div>

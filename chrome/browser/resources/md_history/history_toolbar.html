@@ -135,7 +135,8 @@
         <div id="overlay-wrapper" hidden$="[[!itemsSelected_]]">
           <div id="overlay-buttons">
             <paper-icon-button icon="cr:clear" id="cancel-icon-button"
-                on-tap="onClearSelectionTap_"></paper-icon-button>
+                on-tap="onClearSelectionTap_" title="$i18n{cancel}">
+            </paper-icon-button>
             <div id="number-selected">[[numberOfItemsSelected_(count)]]</div>
             <paper-button id="cancel-button" on-tap="onClearSelectionTap_">
               $i18n{cancel}

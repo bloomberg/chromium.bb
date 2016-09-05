@@ -149,7 +149,8 @@
         <div id="item-container">
           <paper-checkbox id="checkbox" on-mousedown="onCheckboxMousedown_"
               on-click="onCheckboxSelected_" checked="{{selected}}"
-              disabled="[[selectionNotAllowed_()]]">
+              disabled="[[selectionNotAllowed_()]]"
+              aria-label$="[[getEntrySummary_(item)]]">
           </paper-checkbox>
           <span id="time-accessed">[[item.readableTimestamp]]</span>
           <div class="website-icon" id="icon"></div>

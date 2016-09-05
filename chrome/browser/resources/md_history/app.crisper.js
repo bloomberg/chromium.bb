@@ -6809,6 +6809,10 @@ cr.define('md_history', function() {
     onCheckboxMousedown_: function(e) {
       if (e.shiftKey) e.preventDefault();
     },
+    getEntrySummary_: function() {
+      var item = this.item;
+      return loadTimeData.getStringF('entrySummary', item.dateTimeOfDay, item.starred ? loadTimeData.getString('bookmarked') : '', item.title, item.domain);
+    },
     onRemoveBookmarkTap_: function() {
       if (!this.item.starred) return;
       if (this.$$('#bookmark-star') == this.root.activeElement) this.$['menu-button'].focus();

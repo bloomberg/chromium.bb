@@ -62,6 +62,18 @@ cr.define('md_history', function() {
     },
 
     /**
+     * @private
+     * @return {string}
+     */
+    getEntrySummary_: function() {
+      var item = this.item;
+      return loadTimeData.getStringF(
+          'entrySummary', item.dateTimeOfDay,
+          item.starred ? loadTimeData.getString('bookmarked') : '', item.title,
+          item.domain);
+    },
+
+    /**
      * Remove bookmark of current item when bookmark-star is clicked.
      * @private
      */
