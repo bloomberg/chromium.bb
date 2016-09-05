@@ -25,22 +25,19 @@ function shouldBeType(expression, className)
     shouldBe("jsWrapperClass(" + expression + ")", "'" + className + "'");
 }
 
-function shouldBeOpaque(x, y) {
-    d = ctx.getImageData(x, y, 1, 1).data;
-    shouldBe("d[3]", "255");
-}
-
-function shouldBeClear(x, y) {
+function shouldBeClear(canvas, x, y) {
     // should be transparent black pixels
+    var ctx = canvas.getContext('2d');
     d = ctx.getImageData(x, y, 1, 1).data;
-    shouldBe("d[0]", "0");
-    shouldBe("d[1]", "0");
-    shouldBe("d[2]", "0");
-    shouldBe("d[3]", "0");
+    if (d[0] != 0 || d[1] != 0 || d[2] != 0 || d[3] != 0) {
+        testFailed("This pixel must be clear, but it is" + d);
+        finishJSTest();
+    }
 }
 
-function clearContext() {
+function clearContext(ctx, ctx1) {
     ctx.clearRect(0, 0, 500, 500);
+    ctx1.clearRect(0, 0, 500, 500);
 }
 
 var bitmap;
@@ -49,7 +46,10 @@ var video;
 var canvas = document.createElement("canvas");
 canvas.setAttribute("width", "500");
 canvas.setAttribute("height", "500");
-var ctx = canvas.getContext("2d");
+
+var canvas1 = document.createElement("canvas");
+canvas1.setAttribute("width", "500");
+canvas1.setAttribute("height", "500");
 
 video = document.createElement("video");
 video.addEventListener("canplaythrough", videoLoaded, false);
@@ -58,9 +58,9 @@ video.src = "../../compositing/resources/video.ogv";
 function videoLoaded() {
     var imageBitmaps = {};
     var p1 = createImageBitmap(video).then(function (image) { imageBitmaps.noCrop = image });
-    var p2 = createImageBitmap(video,  0, 0, 100, 100).then(function (image) { imageBitmaps.crop = image });
-    var p3 = createImageBitmap(video,  50, 50, 100, 100).then(function (image) { imageBitmaps.cropRight = image });
-    var p4 = createImageBitmap(video,  100, 100, 100, 100).then(function (image) { imageBitmaps.cropCenter = image });
+    var p2 = createImageBitmap(video, 0, 0, 100, 100).then(function (image) { imageBitmaps.crop = image });
+    var p3 = createImageBitmap(video, 50, 50, 100, 100).then(function (image) { imageBitmaps.cropRight = image });
+    var p4 = createImageBitmap(video, 100, 100, 100, 100).then(function (image) { imageBitmaps.cropCenter = image });
     var p5 = createImageBitmap(video, -100, -100, 600, 600).then(function (image) { imageBitmaps.overCrop = image });
     var p6 = createImageBitmap(video, 100, 100, 500, 500).then(function (image) { imageBitmaps.overCropRight = image });
     var p7 = createImageBitmap(video, 100, 100, -100, -100).then(function (image) { imageBitmaps.negativeCrop = image });
@@ -69,12 +69,12 @@ function videoLoaded() {
     var p10 = createImageBitmap(video, 0, 0, Math.pow(10, 6), Math.pow(10, 6)).then(function(image) { imageBitmaps.hugeCrop = image });
     Promise.all([p1, p2, p3, p4, p5, p6, p7, p8, p9]).then(function() {
         checkNoCrop(imageBitmaps.noCrop);
-        checkCrop(imageBitmaps.crop);
-        checkCrop(imageBitmaps.cropRight);
-        checkCrop(imageBitmaps.cropCenter);
+        checkCrop(imageBitmaps.crop, 0, 0, 100, 100);
+        checkCrop(imageBitmaps.cropRight, 50, 50, 100, 100);
+        checkCrop(imageBitmaps.cropCenter, 100, 100, 100, 100);
         checkOverCrop(imageBitmaps.overCrop);
         checkOverCropRight(imageBitmaps.overCropRight);
-        checkCrop(imageBitmaps.negativeCrop);
+        checkCrop(imageBitmaps.negativeCrop, 0, 0, 100, 100);
         checkEmpty(imageBitmaps.empty);
         checkEmpty(imageBitmaps.emptyTwo);
         createImageBitmap(video, 0, 0, 0x8000, 0x8000).then(function() {
@@ -90,127 +90,122 @@ function videoLoaded() {
     });
 }
 
+function compareTwoCanvases(sx, sy, sw, sh, ctx, ctx1)
+{
+    var data = ctx.getImageData(sx, sy, sw, sh).data;
+    var data1 = ctx1.getImageData(sx, sy, sw, sh).data;
+    var dataMatched = true;
+    for (var i = 0; i < data.length; i++) {
+        // data and data1 are strictly the same under software rendering, 
+        // but significantly different on GPU.
+        if (Math.abs(data[i] - data1[i]) > 80) {
+            dataMatched = false;
+            break;
+        }
+    }
+    if (!dataMatched) {
+        testFailed("The imageBitmap doesn't match the original video.");
+        finishJSTest();
+    }
+}
+
 function checkNoCrop(imageBitmap) {
     bitmap = imageBitmap;
     shouldBeType("bitmap", "ImageBitmap");
 
+    var ctx = canvas.getContext("2d");
+    var ctx1 = canvas1.getContext("2d");
     // should be drawn to (0, 0), (352, 288)
-    clearContext();
+    clearContext(ctx, ctx1);
     ctx.drawImage(imageBitmap, 0, 0);
-    shouldBeOpaque(10, 10);
-    shouldBeOpaque(100, 100);
-    shouldBeOpaque(300, 50);
-    shouldBeOpaque(350, 280);
-    shouldBeClear(360, 40);
-    shouldBeClear(80, 290);
+    ctx1.drawImage(video, 0, 0);
+    compareTwoCanvases(0, 0, 352, 288, ctx, ctx1);
 
     // shrunk to (0, 0), (100, 100)
-    clearContext(ctx);
+    clearContext(ctx, ctx1);
     ctx.drawImage(imageBitmap, 0, 0, 100, 100);
-    shouldBeOpaque(40, 40);
-    shouldBeOpaque(90, 90);
-    shouldBeClear(10, 110);
-    shouldBeClear(110, 10);
-    shouldBeClear(110, 110);
+    ctx1.drawImage(video, 0, 0, 100, 100);
+    compareTwoCanvases(0, 0, 100, 100, ctx, ctx1);
 
     // shrunk to (100, 100), (250, 200)
-    clearContext(ctx);
+    clearContext(ctx, ctx1);
     ctx.drawImage(imageBitmap, 100, 100, 150, 100);
-    shouldBeClear(90, 90);
-    shouldBeOpaque(110, 110);
-    shouldBeOpaque(240, 190);
-    shouldBeClear(110, 210);
-    shouldBeClear(260, 110);
-    shouldBeClear(260, 210);
+    ctx1.drawImage(video, 100, 100, 150, 100);
+    compareTwoCanvases(100, 100, 150, 100, ctx, ctx1); 
 
     // black should be drawn to (100, 100), (200, 200)
-    clearContext(ctx);
+    clearContext(ctx, ctx1);
     ctx.drawImage(imageBitmap, 100, 100, 100, 100, 100, 100, 100, 100);
-    shouldBeClear(90, 90);
-    shouldBeOpaque(110, 110);
-    shouldBeOpaque(190, 190);
-    shouldBeClear(10, 210);
-    shouldBeClear(210, 10);
-    shouldBeClear(210, 210);
+    ctx1.drawImage(video, 100, 100, 100, 100, 100, 100, 100, 100);
+    compareTwoCanvases(100, 100, 100, 100, ctx, ctx1);
 
     // nothing should be drawn
-    clearContext(ctx);
+    clearContext(ctx, ctx1);
     ctx.drawImage(imageBitmap, 400, 300, 200, 200, 100, 100, 100, 100);
-    shouldBeClear(10, 10);
-    shouldBeClear(80, 80);
-    shouldBeClear(150, 150);
-    shouldBeClear(210, 210);
+    shouldBeClear(canvas, 10, 10);
+    shouldBeClear(canvas, 80, 80);
+    shouldBeClear(canvas, 150, 150);
+    shouldBeClear(canvas, 210, 210);
 }
 
-function checkCrop(imageBitmap) {
+function checkCrop(imageBitmap, sx, sy, sw, sh) {
     bitmap = imageBitmap;
     shouldBeType("bitmap", "ImageBitmap");
 
+    var ctx = canvas.getContext("2d");
+    var ctx1 = canvas1.getContext("2d");
     // should be drawn to (0, 0), (100, 100)
-    clearContext();
+    clearContext(ctx, ctx1);
     ctx.drawImage(imageBitmap, 0, 0);
-    shouldBeOpaque(10, 10);
-    shouldBeOpaque(90, 90);
-    shouldBeClear(110, 110);
-    shouldBeClear(210, 210);
+    ctx1.drawImage(video, sx, sy, sw, sh, 0, 0, sw, sh);
+    compareTwoCanvases(0, 0, 100, 100, ctx, ctx1);
 }
 
 function checkOverCrop(imageBitmap) {
     bitmap = imageBitmap;
     shouldBeType("bitmap", "ImageBitmap");
 
+    var ctx = canvas.getContext("2d");
+    var ctx1 = canvas1.getContext("2d");
     // should be drawn to (100, 100), (452, 388)
-    clearContext();
+    clearContext(ctx, ctx1);
     ctx.drawImage(imageBitmap, 0, 0);
-    shouldBeClear(10, 10);
-    shouldBeClear(90, 90);
-    shouldBeOpaque(110, 110);
-    shouldBeOpaque(300, 200);
-    shouldBeOpaque(450, 380);
-    shouldBeClear(500, 50);
-    shouldBeClear(50, 350);
-    shouldBeClear(460, 390);
+    ctx1.drawImage(video, 100, 100, 352, 288);
+    compareTwoCanvases(0, 0, 500, 500, ctx, ctx1);
 
     // should be drawn to (50, 50), (226, 194)
-    clearContext();
+    clearContext(ctx, ctx1);
     ctx.drawImage(imageBitmap, 0, 0, 300, 300);
-    shouldBeClear(10, 10);
-    shouldBeClear(40, 40);
-    shouldBeOpaque(60, 60);
-    shouldBeOpaque(220, 190);
-    shouldBeClear(230, 50);
-    shouldBeClear(50, 200);
-    shouldBeClear(230, 200);
+    ctx1.drawImage(video, 0, 0, 352, 288, 50, 50, 176, 144);
+    compareTwoCanvases(0, 0, 300, 300, ctx, ctx1);
 }
 
 function checkOverCropRight(imageBitmap) {
     bitmap = imageBitmap;
     shouldBeType("bitmap", "ImageBitmap");
 
+    var ctx = canvas.getContext("2d");
+    var ctx1 = canvas1.getContext("2d");
     // should be drawn to (0, 0), (252, 188)
-    clearContext();
+    clearContext(ctx, ctx1);
     ctx.drawImage(imageBitmap, 0, 0);
-    shouldBeOpaque(10, 10);
-    shouldBeOpaque(100, 100);
-    shouldBeOpaque(200, 50);
-    shouldBeOpaque(50, 150);
-    shouldBeOpaque(250, 180);
-    shouldBeClear(360, 40);
-    shouldBeClear(80, 190);
-    shouldBeClear(260, 190);
+    ctx1.drawImage(video, 100, 100, 252, 188, 0, 0, 252, 188);
+    compareTwoCanvases(0, 0, 252, 188, ctx, ctx1);
 }
 
 function checkEmpty(imageBitmap) {
     bitmap = imageBitmap;
     shouldBeType("bitmap", "ImageBitmap");
 
+    var ctx = canvas.getContext("2d");
+    var ctx1 = canvas1.getContext("2d");
     // nothing should be drawn
-    clearContext();
+    clearContext(ctx, ctx1);
     ctx.drawImage(imageBitmap, 0, 0);
-    shouldBeClear(10, 10);
-    shouldBeClear(90, 90);
-    shouldBeClear(110, 110);
-    shouldBeClear(210, 210);
+    shouldBeClear(canvas, 10, 10);
+    shouldBeClear(canvas, 90, 90);
+    shouldBeClear(canvas, 110, 110);
+    shouldBeClear(canvas, 210, 210);
 }
 
 </script>

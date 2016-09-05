@@ -20,9 +20,9 @@ var blackColor = [0, 0, 0];
 var darkRed = [128, 0, 0];
 var darkGreen = [0, 128, 0];
 
-function generateTest()
+function testImageBitmap()
 {
-    var bitmaps = [];
+    var bitmaps = {};
 
     var canvas = document.createElement('canvas');
     canvas.width = 32;
@@ -57,8 +57,8 @@ var t = async_test('createImageBitmap(HTMLVideoElement) with resize and other op
 
 var video = document.createElement("video");
 video.oncanplaythrough = t.step_func(function() {
-    return generateTest();
-})
+    testImageBitmap();
+});
 video.src = "resources/red-green.ogv";
 </script>
 </body>
