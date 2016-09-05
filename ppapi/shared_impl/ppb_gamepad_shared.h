@@ -21,6 +21,7 @@ namespace ppapi {
 
 struct WebKitGamepadButton {
   bool pressed;
+  bool touched;
   double value;
 };
 

@@ -54,6 +54,7 @@ void Gamepad::setButtons(unsigned count, const WebGamepadButton* data)
     for (unsigned i = 0; i < count; ++i) {
         m_buttons[i]->setValue(data[i].value);
         m_buttons[i]->setPressed(data[i].pressed);
+        m_buttons[i]->setTouched(data[i].touched || data[i].pressed || (data[i].value > 0.0f));
     }
 }
 

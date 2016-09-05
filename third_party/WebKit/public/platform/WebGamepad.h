@@ -34,15 +34,18 @@ class WebGamepadButton {
 public:
     WebGamepadButton()
         : pressed(false)
+        , touched(false)
         , value(0.)
     {
     }
-    WebGamepadButton(bool pressed, double value)
+    WebGamepadButton(bool pressed, bool touched, double value)
         : pressed(pressed)
+        , touched(touched)
         , value(value)
     {
     }
     bool pressed;
+    bool touched;
     double value;
 };
 
@@ -92,7 +95,7 @@ public:
     WebUChar mapping[mappingLengthCap];
 };
 
-static_assert(sizeof(WebGamepad) == 721, "WebGamepad has wrong size");
+static_assert(sizeof(WebGamepad) == 753, "WebGamepad has wrong size");
 
 #pragma pack(pop)
 

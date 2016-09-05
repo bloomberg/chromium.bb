@@ -14,6 +14,7 @@ GamepadButton* GamepadButton::create()
 GamepadButton::GamepadButton()
     : m_value(0.)
     , m_pressed(false)
+    , m_touched(false)
 {
 }
 
