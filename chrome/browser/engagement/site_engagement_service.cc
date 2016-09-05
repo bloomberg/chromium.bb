@@ -253,6 +253,9 @@ SiteEngagementService::SiteEngagementService(Profile* profile,
 }
 
 void SiteEngagementService::AddPoints(const GURL& url, double points) {
+  if (points == 0)
+    return;
+
   // Trigger a cleanup and date adjustment if it has been a substantial length
   // of time since *any* engagement was recorded by the service. This will
   // ensure that we do not decay scores when the user did not use the browser.

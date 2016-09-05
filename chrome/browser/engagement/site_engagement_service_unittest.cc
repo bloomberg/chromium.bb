@@ -1459,9 +1459,17 @@ TEST_F(SiteEngagementServiceTest, LastEngagementTime) {
   EXPECT_EQ(rebased_time, last_engagement_time);
   EXPECT_EQ(rebased_time, service->GetLastEngagementTime());
 
-  // Add some more points and ensure the value is persisted.
+  // Adding 0 points shouldn't update the last engagement time.
   base::Time later_in_day = current_day + base::TimeDelta::FromSeconds(30);
   clock->SetNow(later_in_day);
+  service->AddPoints(origin, 0);
+
+  last_engagement_time = base::Time::FromInternalValue(
+      profile()->GetPrefs()->GetInt64(prefs::kSiteEngagementLastUpdateTime));
+  EXPECT_EQ(rebased_time, last_engagement_time);
+  EXPECT_EQ(rebased_time, service->GetLastEngagementTime());
+
+  // Add some more points and ensure the value is persisted.
   service->AddPoints(origin, 3);
 
   last_engagement_time = base::Time::FromInternalValue(
