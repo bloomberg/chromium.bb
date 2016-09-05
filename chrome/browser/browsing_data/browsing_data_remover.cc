@@ -689,9 +689,10 @@ void BrowsingDataRemover::RemoveImpl(
     // registered webapps. The webapp_registry makes a JNI call into a Java-side
     // AsyncTask, so don't wait for the reply.
     waiting_for_clear_webapp_history_ = true;
-    webapp_registry_->ClearWebappHistory(
+    webapp_registry_->ClearWebappHistoryForUrls(
+        filter,
         base::Bind(&BrowsingDataRemover::OnClearedWebappHistory,
-          weak_ptr_factory_.GetWeakPtr()));
+                   weak_ptr_factory_.GetWeakPtr()));
 #endif
 
     data_reduction_proxy::DataReductionProxySettings*

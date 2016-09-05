@@ -30,9 +30,11 @@ class WebappRegistry {
       const base::Callback<bool(const GURL&)>& url_filter,
       const base::Closure& callback);
 
-  // Removes history data (last used time and URLs) stored by web apps, whilst
-  // leaving other data intact.
-  virtual void ClearWebappHistory(const base::Closure& callback);
+  // Removes history data (last used time and URLs) stored by web apps with
+  // URLs matching |url_filter|, whilst leaving other data intact.
+  virtual void ClearWebappHistoryForUrls(
+      const base::Callback<bool(const GURL&)>& url_filter,
+      const base::Closure& callback);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebappRegistry);

@@ -330,7 +330,9 @@ class TestWebappRegistry : public WebappRegistry {
                                    base::TimeDelta::FromMilliseconds(10));
   }
 
-  void ClearWebappHistory(const base::Closure& callback) override {
+  void ClearWebappHistoryForUrls(
+      const base::Callback<bool(const GURL&)>& url_filter,
+      const base::Closure& callback) override {
     // Mocks out a JNI call and runs the callback as a delayed task.
     BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE, callback,
                                    base::TimeDelta::FromMilliseconds(10));

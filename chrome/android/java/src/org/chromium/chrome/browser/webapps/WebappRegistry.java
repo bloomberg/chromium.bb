@@ -288,16 +288,20 @@ public class WebappRegistry {
     }
 
     /**
-     * Deletes the URL and scope, and sets the last used time to 0 for all web apps.
+     * Deletes the URL and scope, and sets the last used time to 0 for all web apps whose url
+     * matches |urlFilter|.
      */
     @VisibleForTesting
-    static void clearWebappHistory(final Context context, final Runnable callback) {
+    static void clearWebappHistoryForUrls(
+            final Context context, final UrlFilter urlFilter, final Runnable callback) {
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected final Void doInBackground(Void... nothing) {
                 SharedPreferences preferences = openSharedPreferences(context);
                 for (String id : getRegisteredWebappIds(preferences)) {
-                    WebappDataStorage.clearHistory(context, id);
+                    if (urlFilter.matchesUrl(WebappDataStorage.open(context, id).getUrl())) {
+                        WebappDataStorage.clearHistory(context, id);
+                    }
                 }
                 return null;
             }
@@ -311,10 +315,12 @@ public class WebappRegistry {
     }
 
     @CalledByNative
-    static void clearWebappHistory(Context context, final long callbackPointer) {
-        clearWebappHistory(context, new Runnable() {
+    static void clearWebappHistoryForUrls(
+            Context context, final UrlFilterBridge urlFilter, final long callbackPointer) {
+        clearWebappHistoryForUrls(context, urlFilter, new Runnable() {
             @Override
             public void run() {
+                urlFilter.destroy();
                 nativeOnClearedWebappHistory(callbackPointer);
             }
         });

@@ -512,7 +512,8 @@ public class WebappRegistryTest {
     @Feature({"Webapp"})
     public void testClearWebappHistoryRunsCallback() throws Exception {
         CallbackRunner callback = new CallbackRunner();
-        WebappRegistry.clearWebappHistory(RuntimeEnvironment.application, callback);
+        WebappRegistry.clearWebappHistoryForUrls(
+                RuntimeEnvironment.application, new UrlFilters.AllUrls(), callback);
         BackgroundShadowAsyncTask.runBackgroundTasks();
         ShadowLooper.runUiThreadTasks();
 
@@ -544,8 +545,17 @@ public class WebappRegistryTest {
         SharedPreferences webapp2Prefs = RuntimeEnvironment.application.getSharedPreferences(
                 WebappDataStorage.SHARED_PREFS_FILE_PREFIX + "webapp2", Context.MODE_PRIVATE);
 
+        long webapp1OriginalLastUsed = webapp2Prefs.getLong(
+                WebappDataStorage.KEY_LAST_USED, WebappDataStorage.LAST_USED_UNSET);
+        long webapp2OriginalLastUsed = webapp2Prefs.getLong(
+                WebappDataStorage.KEY_LAST_USED, WebappDataStorage.LAST_USED_UNSET);
+        assertTrue(webapp1OriginalLastUsed != WebappDataStorage.LAST_USED_UNSET);
+        assertTrue(webapp2OriginalLastUsed != WebappDataStorage.LAST_USED_UNSET);
+
+        // Clear data for |webapp1Url|.
         CallbackRunner callback = new CallbackRunner();
-        WebappRegistry.clearWebappHistory(RuntimeEnvironment.application, callback);
+        WebappRegistry.clearWebappHistoryForUrls(
+                RuntimeEnvironment.application, new UrlFilters.OneUrl(webapp1Url), callback);
         BackgroundShadowAsyncTask.runBackgroundTasks();
         ShadowLooper.runUiThreadTasks();
         assertTrue(callback.getCallbackCalled());
@@ -556,8 +566,40 @@ public class WebappRegistryTest {
         assertTrue(actual.contains("webapp1"));
         assertTrue(actual.contains("webapp2"));
 
-        // Verify that the last used time for both web apps is WebappDataStorage.LAST_USED_UNSET.
+        // Verify that the last used time for the first web app is
+        // WebappDataStorage.LAST_USED_UNSET, while for the second one it's unchanged.
         long actualLastUsed = webapp1Prefs.getLong(
+                WebappDataStorage.KEY_LAST_USED, WebappDataStorage.LAST_USED_UNSET);
+        assertEquals(WebappDataStorage.LAST_USED_UNSET, actualLastUsed);
+        actualLastUsed = webapp2Prefs.getLong(
+                WebappDataStorage.KEY_LAST_USED, WebappDataStorage.LAST_USED_UNSET);
+        assertEquals(webapp2OriginalLastUsed, actualLastUsed);
+
+        // Verify that the URL and scope for the first web app is WebappDataStorage.URL_INVALID,
+        // while for the second one it's unchanged.
+        String actualScope = webapp1Prefs.getString(
+                WebappDataStorage.KEY_SCOPE, WebappDataStorage.URL_INVALID);
+        assertEquals(WebappDataStorage.URL_INVALID, actualScope);
+        String actualUrl = webapp1Prefs.getString(
+                WebappDataStorage.KEY_URL, WebappDataStorage.URL_INVALID);
+        assertEquals(WebappDataStorage.URL_INVALID, actualUrl);
+        actualScope = webapp2Prefs.getString(
+                WebappDataStorage.KEY_SCOPE, WebappDataStorage.URL_INVALID);
+        assertEquals(webapp2Url + "/", actualScope);
+        actualUrl = webapp2Prefs.getString(
+                WebappDataStorage.KEY_URL, WebappDataStorage.URL_INVALID);
+        assertEquals(webapp2Url, actualUrl);
+
+        // Clear data for all urls.
+        callback = new CallbackRunner();
+        WebappRegistry.clearWebappHistoryForUrls(
+                RuntimeEnvironment.application, new UrlFilters.AllUrls(), callback);
+        BackgroundShadowAsyncTask.runBackgroundTasks();
+        ShadowLooper.runUiThreadTasks();
+        assertTrue(callback.getCallbackCalled());
+
+        // Verify that the last used time for both web apps is WebappDataStorage.LAST_USED_UNSET.
+        actualLastUsed = webapp1Prefs.getLong(
                 WebappDataStorage.KEY_LAST_USED, WebappDataStorage.LAST_USED_UNSET);
         assertEquals(WebappDataStorage.LAST_USED_UNSET, actualLastUsed);
         actualLastUsed = webapp2Prefs.getLong(
@@ -565,10 +607,10 @@ public class WebappRegistryTest {
         assertEquals(WebappDataStorage.LAST_USED_UNSET, actualLastUsed);
 
         // Verify that the URL and scope for both web apps is WebappDataStorage.URL_INVALID.
-        String actualScope = webapp1Prefs.getString(
+        actualScope = webapp1Prefs.getString(
                 WebappDataStorage.KEY_SCOPE, WebappDataStorage.URL_INVALID);
         assertEquals(WebappDataStorage.URL_INVALID, actualScope);
-        String actualUrl = webapp1Prefs.getString(
+        actualUrl = webapp1Prefs.getString(
                 WebappDataStorage.KEY_URL, WebappDataStorage.URL_INVALID);
         assertEquals(WebappDataStorage.URL_INVALID, actualUrl);
         actualScope = webapp2Prefs.getString(
@@ -588,7 +630,8 @@ public class WebappRegistryTest {
         SharedPreferences webappPrefs = RuntimeEnvironment.application.getSharedPreferences(
                 WebappDataStorage.SHARED_PREFS_FILE_PREFIX + "webapp", Context.MODE_PRIVATE);
         CallbackRunner callback = new CallbackRunner();
-        WebappRegistry.clearWebappHistory(RuntimeEnvironment.application, callback);
+        WebappRegistry.clearWebappHistoryForUrls(
+                RuntimeEnvironment.application, new UrlFilters.AllUrls(), callback);
         BackgroundShadowAsyncTask.runBackgroundTasks();
         ShadowLooper.runUiThreadTasks();
         assertTrue(callback.getCallbackCalled());
@@ -630,7 +673,8 @@ public class WebappRegistryTest {
                 WebappDataStorage.KEY_SCOPE, WebappDataStorage.URL_INVALID);
         assertEquals(webappScope, actualScope);
 
-        WebappRegistry.clearWebappHistory(RuntimeEnvironment.application, new CallbackRunner());
+        WebappRegistry.clearWebappHistoryForUrls(
+                RuntimeEnvironment.application, new UrlFilters.AllUrls(), new CallbackRunner());
         BackgroundShadowAsyncTask.runBackgroundTasks();
         ShadowLooper.runUiThreadTasks();
 

@@ -35,14 +35,19 @@ void WebappRegistry::UnregisterWebappsForUrls(
       callback_pointer);
 }
 
-void WebappRegistry::ClearWebappHistory(const base::Closure& callback) {
+void WebappRegistry::ClearWebappHistoryForUrls(
+    const base::Callback<bool(const GURL&)>& url_filter,
+    const base::Closure& callback) {
   JNIEnv* env = base::android::AttachCurrentThread();
   uintptr_t callback_pointer = reinterpret_cast<uintptr_t>(
       new base::Closure(callback));
 
-  Java_WebappRegistry_clearWebappHistory(
-      env,
-      base::android::GetApplicationContext(),
+  // We will destroy |filter_bridge| from its Java counterpart before calling
+  // back OnClearedWebappHistory().
+  UrlFilterBridge* filter_bridge = new UrlFilterBridge(url_filter);
+
+  Java_WebappRegistry_clearWebappHistoryForUrls(
+      env, base::android::GetApplicationContext(), filter_bridge->j_bridge(),
       callback_pointer);
 }
 
