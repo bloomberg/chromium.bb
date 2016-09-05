@@ -131,6 +131,13 @@ template("lipo_binary") {
 #   product_type
 #       string, product type for the generated Xcode project.
 #
+#   bundle_deps
+#       (optional) list of additional dependencies
+#
+#   bundle_deps_filter
+#       (optional) list of dependencies to filter (for more information
+#       see "gn help bundle_deps_filter")
+#
 #   bundle_extension
 #       string, extension of the bundle, used to generate bundle name.
 #
@@ -184,6 +191,7 @@ template("create_signed_bundle") {
   create_bundle(_target_name) {
     forward_variables_from(invoker,
                            [
+                             "bundle_deps_filter",
                              "data_deps",
                              "deps",
                              "product_type",
@@ -562,6 +570,7 @@ template("ios_app_bundle") {
       forward_variables_from(invoker,
                              [
                                "bundle_deps",
+                               "bundle_deps_filter",
                                "bundle_extension",
                                "data_deps",
                                "deps",
@@ -1125,6 +1134,7 @@ template("ios_framework_bundle") {
       forward_variables_from(invoker,
                              [
                                "bundle_deps",
+                               "bundle_deps_filter",
                                "data_deps",
                                "deps",
                                "enable_code_signing",
