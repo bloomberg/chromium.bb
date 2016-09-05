@@ -645,6 +645,7 @@ public:
 
     bool isFinishedParsingChildren() const { return getFlag(IsFinishedParsingChildrenFlag); }
 
+    void checkSlotChange();
     void checkSlotChangeAfterInserted() { checkSlotChange(); }
     void checkSlotChangeBeforeRemoved() { checkSlotChange(); }
 
@@ -769,7 +770,6 @@ private:
     // per-thread.
     virtual String debugNodeName() const;
 
-    void checkSlotChange();
 
     bool isUserActionElementActive() const;
     bool isUserActionElementInActiveChain() const;

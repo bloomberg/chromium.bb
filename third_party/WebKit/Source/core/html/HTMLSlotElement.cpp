@@ -321,11 +321,8 @@ void HTMLSlotElement::enqueueSlotChangeEvent()
     DCHECK(root);
     DCHECK(root->isV1());
     root->owner()->setNeedsDistributionRecalc();
-
-    if (ShadowRoot* parentShadowRoot = v1ShadowRootOfParent()) {
-        if (HTMLSlotElement* next = parentShadowRoot->ensureSlotAssignment().findSlot(*this))
-            next->enqueueSlotChangeEvent();
-    }
+    // Check slotchange recursively since this slotchange may cause another slotchange.
+    checkSlotChange();
 }
 
 bool HTMLSlotElement::hasAssignedNodesSlow() const

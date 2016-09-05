@@ -17,6 +17,8 @@ function doneIfSlotChange(slots, test) {
   let fired = new Set();
   for (let slot of slots) {
     slot.addEventListener('slotchange', test.step_func((e) => {
+      if (e.target != slot)
+        return;
       assert_false(fired.has(slot.id));
       fired.add(slot.id);
       if (fired.size == slots.length) {
@@ -280,4 +282,32 @@ async_test((test) => {
 
   n.s1.remove();
 }, "slotchange event: Even if distributed nodes do not change, slotchange should be fired if assigned nodes are changed.");
+</script>
+
+<div id="test7">
+  <div id="host1">
+    <template data-mode="open">
+      <div id="host2">
+        <template data-mode="open">
+          <slot id="s3" name="slot3"></slot>
+        </template>
+        <slot id="s2" slot="slot3">
+          <slot id="s1" name=slot1></slot>
+        </slot>
+      </div>
+    </template>
+    <div id="c1" slot="slot1"></div>
+  </div>
+</div>
+
+<script>
+async_test((test) => {
+  let n = createTestTree(test7);
+  removeWhiteSpaceOnlyTextNodes(n.test7);
+
+  document.body.offsetLeft;
+  doneIfSlotChange([n.s1, n.s2, n.s3], test);
+
+  n.c1.remove();
+}, "slotchange event: Fallback slot's parant slot is assinged to another slot.");
 </script>
