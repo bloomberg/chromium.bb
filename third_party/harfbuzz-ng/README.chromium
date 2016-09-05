@@ -23,3 +23,6 @@ Applied a local fix for an infinite recursion crash in hb-coretext on OS X 10.9,
 skipping the font cascade list reconfiguration on this OS version.
 
 Updated said local fix to not reconfigure the cascade list for the emoji font.
+
+Locally added blacklisting for GDEF tables of Padauk font in version 2.8 and 3.0
+regular and bold versions. See https://crbug.com/637464
