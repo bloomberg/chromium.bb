@@ -37,7 +37,7 @@ protected:
 
     int numCachedNewItems() const { return m_paintController->m_numCachedNewItems; }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
     int numSequentialMatches() const { return m_paintController->m_numSequentialMatches; }
     int numOutOfOrderMatches() const { return m_paintController->m_numOutOfOrderMatches; }
     int numIndexedItems() const { return m_paintController->m_numIndexedItems; }
@@ -104,8 +104,10 @@ void drawClippedRect(GraphicsContext& context, const FakeDisplayItemClient& clie
 enum TestConfigurations {
     SPv1,
     SPv2,
+#if DCHECK_IS_ON()
     UnderInvalidationCheckingSPv1,
     UnderInvalidationCheckingSPv2,
+#endif
 };
 
 // Tests using this class will be tested with under-invalidation-checking enabled and disabled.
@@ -125,13 +127,15 @@ protected:
         case SPv2:
             RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(true);
             break;
+#if DCHECK_IS_ON()
         case UnderInvalidationCheckingSPv1:
-            RuntimeEnabledFeatures::setPaintUnderInvalidationCheckingEnabled(true);
+            RuntimeEnabledFeatures::setSlimmingPaintUnderInvalidationCheckingEnabled(true);
             break;
         case UnderInvalidationCheckingSPv2:
             RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(true);
-            RuntimeEnabledFeatures::setPaintUnderInvalidationCheckingEnabled(true);
+            RuntimeEnabledFeatures::setSlimmingPaintUnderInvalidationCheckingEnabled(true);
             break;
+#endif
         }
     }
 
@@ -139,7 +143,11 @@ protected:
     PaintChunk::Id m_rootPaintChunkId;
 };
 
+#if DCHECK_IS_ON()
 INSTANTIATE_TEST_CASE_P(All, PaintControllerTest, ::testing::Values(SPv1, SPv2, UnderInvalidationCheckingSPv1, UnderInvalidationCheckingSPv2));
+#else
+INSTANTIATE_TEST_CASE_P(All, PaintControllerTest, ::testing::Values(SPv1, SPv2));
+#endif
 
 TEST_P(PaintControllerTest, NestedRecorders)
 {
@@ -196,7 +204,7 @@ TEST_P(PaintControllerTest, UpdateBasic)
     drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 300, 300));
 
     EXPECT_EQ(2, numCachedNewItems());
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
     EXPECT_EQ(2, numSequentialMatches());
     EXPECT_EQ(0, numOutOfOrderMatches());
     EXPECT_EQ(1, numIndexedItems());
@@ -250,7 +258,7 @@ TEST_P(PaintControllerTest, UpdateSwapOrder)
     drawRect(context, unaffected, foregroundDrawingType, FloatRect(300, 300, 10, 10));
 
     EXPECT_EQ(6, numCachedNewItems());
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
     EXPECT_EQ(5, numSequentialMatches()); // second, first foreground, unaffected
     EXPECT_EQ(1, numOutOfOrderMatches()); // first
     EXPECT_EQ(2, numIndexedItems()); // first
@@ -311,7 +319,7 @@ TEST_P(PaintControllerTest, UpdateSwapOrderWithInvalidation)
     drawRect(context, unaffected, foregroundDrawingType, FloatRect(300, 300, 10, 10));
 
     EXPECT_EQ(4, numCachedNewItems());
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
     EXPECT_EQ(4, numSequentialMatches()); // second, unaffected
     EXPECT_EQ(0, numOutOfOrderMatches());
     EXPECT_EQ(2, numIndexedItems());
@@ -360,7 +368,7 @@ TEST_P(PaintControllerTest, UpdateNewItemInMiddle)
     drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 50, 200));
 
     EXPECT_EQ(2, numCachedNewItems());
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
     EXPECT_EQ(2, numSequentialMatches()); // first, second
     EXPECT_EQ(0, numOutOfOrderMatches());
     EXPECT_EQ(0, numIndexedItems());
@@ -417,7 +425,7 @@ TEST_P(PaintControllerTest, UpdateInvalidationWithPhases)
     drawRect(context, third, foregroundDrawingType, FloatRect(300, 100, 50, 50));
 
     EXPECT_EQ(4, numCachedNewItems());
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
     EXPECT_EQ(4, numSequentialMatches());
     EXPECT_EQ(0, numOutOfOrderMatches());
     EXPECT_EQ(2, numIndexedItems());
@@ -490,7 +498,7 @@ TEST_P(PaintControllerTest, UpdateAddFirstOverlap)
     drawRect(context, second, foregroundDrawingType, FloatRect(150, 150, 100, 100));
 
     EXPECT_EQ(2, numCachedNewItems());
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
     EXPECT_EQ(2, numSequentialMatches());
     EXPECT_EQ(0, numOutOfOrderMatches());
     EXPECT_EQ(2, numIndexedItems());
@@ -608,7 +616,7 @@ TEST_P(PaintControllerTest, UpdateClip)
     drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 200, 200));
 
     EXPECT_EQ(1, numCachedNewItems());
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
     EXPECT_EQ(1, numSequentialMatches());
     EXPECT_EQ(0, numOutOfOrderMatches());
     EXPECT_EQ(1, numIndexedItems());
@@ -689,7 +697,7 @@ TEST_P(PaintControllerTest, CachedDisplayItems)
     // The first display item should be updated.
     EXPECT_NE(firstPicture, static_cast<const DrawingDisplayItem&>(getPaintController().getDisplayItemList()[0]).picture());
     // The second display item should be cached.
-    if (!RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled())
+    if (!RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled())
         EXPECT_EQ(secondPicture, static_cast<const DrawingDisplayItem&>(getPaintController().getDisplayItemList()[1]).picture());
     EXPECT_TRUE(getPaintController().clientCacheIsValid(first));
     EXPECT_TRUE(getPaintController().clientCacheIsValid(second));
@@ -827,7 +835,7 @@ TEST_P(PaintControllerTest, CachedSubsequenceSwapOrder)
     }
 
     // Simulate the situation when container1 e.g. gets a z-index that is now greater than container2.
-    if (RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled()) {
+    if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled()) {
         // When under-invalidation-checking is enabled, useCachedSubsequenceIfPossible is forced off,
         // and the client is expected to create the same painting as in the previous paint.
         EXPECT_FALSE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, container2));
@@ -860,7 +868,7 @@ TEST_P(PaintControllerTest, CachedSubsequenceSwapOrder)
     }
 
     EXPECT_EQ(12, numCachedNewItems());
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
     EXPECT_EQ(1, numSequentialMatches());
     EXPECT_EQ(1, numOutOfOrderMatches());
     EXPECT_EQ(5, numIndexedItems());
@@ -1036,7 +1044,7 @@ TEST_P(PaintControllerTest, CachedNestedSubsequenceUpdate)
         EXPECT_FALSE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, container1));
         SubsequenceRecorder r(context, container1);
         // Use cached subsequence of content1.
-        if (RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled()) {
+        if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled()) {
             // When under-invalidation-checking is enabled, useCachedSubsequenceIfPossible is forced off,
             // and the client is expected to create the same painting as in the previous paint.
             EXPECT_FALSE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, content1));
@@ -1058,7 +1066,7 @@ TEST_P(PaintControllerTest, CachedNestedSubsequenceUpdate)
     }
 
     EXPECT_EQ(4, numCachedNewItems());
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
     EXPECT_EQ(1, numSequentialMatches());
     EXPECT_EQ(0, numOutOfOrderMatches());
     EXPECT_EQ(2, numIndexedItems());
@@ -1146,7 +1154,7 @@ TEST_P(PaintControllerTest, SkipCache)
     getPaintController().endSkippingCache();
 
     EXPECT_EQ(1, numCachedNewItems());
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
     EXPECT_EQ(1, numSequentialMatches());
     EXPECT_EQ(0, numOutOfOrderMatches());
     EXPECT_EQ(0, numIndexedItems());
@@ -1239,7 +1247,7 @@ TEST_P(PaintControllerTest, PartialSkipCache)
     drawRect(context, content, foregroundDrawingType, rect3);
 
     EXPECT_EQ(0, numCachedNewItems());
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
     EXPECT_EQ(0, numSequentialMatches());
     EXPECT_EQ(0, numOutOfOrderMatches());
     EXPECT_EQ(0, numIndexedItems());
@@ -1475,15 +1483,16 @@ TEST_F(PaintControllerTestBase, DISABLED_IsNotSuitableForGpuRasterizationConcave
     }
 }
 
+// Under-invalidation checking is only available when DCHECK_IS_ON().
 // Death tests don't work properly on Android.
-#if defined(GTEST_HAS_DEATH_TEST) && !OS(ANDROID)
+#if DCHECK_IS_ON() && defined(GTEST_HAS_DEATH_TEST) && !OS(ANDROID)
 
 class PaintControllerUnderInvalidationTest : public PaintControllerTestBase {
 protected:
     void SetUp() override
     {
         PaintControllerTestBase::SetUp();
-        RuntimeEnabledFeatures::setPaintUnderInvalidationCheckingEnabled(true);
+        RuntimeEnabledFeatures::setSlimmingPaintUnderInvalidationCheckingEnabled(true);
     }
 
     void testChangeDrawing()
@@ -1752,6 +1761,6 @@ TEST_F(PaintControllerUnderInvalidationTest, FoldCompositingDrawingInSubsequence
     testFoldCompositingDrawingInSubsequence();
 }
 
-#endif // defined(GTEST_HAS_DEATH_TEST) && !OS(ANDROID)
+#endif // DCHECK_IS_ON() && defined(GTEST_HAS_DEATH_TEST) && !OS(ANDROID)
 
 } // namespace blink

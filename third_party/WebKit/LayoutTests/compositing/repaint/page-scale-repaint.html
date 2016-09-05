@@ -13,7 +13,7 @@
 <script>
 // Under-invalidation checking is too slow for this test.
 if (window.internals)
-    internals.runtimeFlags.paintUnderInvalidationCheckingEnabled = false;
+    internals.runtimeFlags.slimmingPaintUnderInvalidationCheckingEnabled = false;
 
 function runTest() {
     if (window.testRunner)

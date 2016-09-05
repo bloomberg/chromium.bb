@@ -24,16 +24,17 @@ public:
     void analyzeForGpuRasterization(SkPictureGpuAnalyzer&) const override;
 
 private:
+    const SkPath m_clipPath;
 #ifndef NDEBUG
     void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
 #endif
+#if ENABLE(ASSERT)
     bool equals(const DisplayItem& other) const final
     {
         return DisplayItem::equals(other)
             && m_clipPath == static_cast<const BeginClipPathDisplayItem&>(other).m_clipPath;
     }
-
-    const SkPath m_clipPath;
+#endif
 };
 
 class PLATFORM_EXPORT EndClipPathDisplayItem final : public PairedEndDisplayItem {

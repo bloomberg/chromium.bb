@@ -46,11 +46,13 @@ bool ForeignLayerDisplayItem::drawsContent() const
     return true;
 }
 
+#if ENABLE(ASSERT)
 bool ForeignLayerDisplayItem::equals(const DisplayItem& other) const
 {
     return DisplayItem::equals(other)
         && m_layer == static_cast<const ForeignLayerDisplayItem&>(other).m_layer;
 }
+#endif // ENABLE(ASSERT)
 
 #ifndef NDEBUG
 void ForeignLayerDisplayItem::dumpPropertiesAsDebugString(StringBuilder& stringBuilder) const

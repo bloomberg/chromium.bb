@@ -146,7 +146,6 @@ compositing/geometry/fixed-position-transform-composited-page-scale.html [ Crash
 compositing/geometry/fixed-position.html [ Failure ]
 compositing/geometry/flipped-writing-mode.html [ Failure ]
 compositing/geometry/foreground-layer.html [ Failure ]
-compositing/geometry/foreground-offset-change.html [ Crash ]
 compositing/geometry/horizontal-scroll-composited.html [ Failure ]
 compositing/geometry/layer-due-to-layer-children-deep-switch.html [ Failure ]
 compositing/geometry/layer-due-to-layer-children-switch.html [ Failure ]

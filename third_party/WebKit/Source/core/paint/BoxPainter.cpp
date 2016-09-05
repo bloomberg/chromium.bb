@@ -106,7 +106,7 @@ void BoxPainter::paintBoxDecorationBackgroundWithRect(const PaintInfo& paintInfo
     Optional<DisplayItemCacheSkipper> cacheSkipper;
     // Disable cache in under-invalidation checking mode for MediaSliderPart because we always paint using the
     // latest data (buffered ranges, current time and duration) which may be different from the cached data.
-    if ((RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled() && style.appearance() == MediaSliderPart)
+    if ((RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled() && style.appearance() == MediaSliderPart)
         // We may paint a delayed-invalidation object before it's actually invalidated. Note this would be handled for
         // us by LayoutObjectDrawingRecorder but we have to use DrawingRecorder as we may use the scrolling contents
         // layer as DisplayItemClient below.
