@@ -38,6 +38,12 @@ extern "C" {
 
 struct AV1Common;
 
+typedef struct {
+  const int16_t *scan;
+  const int16_t *iscan;
+  const int16_t *neighbors;
+} SCAN_ORDER;
+
 struct tx_probs {
   aom_prob p32x32[TX_SIZE_CONTEXTS][TX_SIZES - 1];
   aom_prob p16x16[TX_SIZE_CONTEXTS][TX_SIZES - 2];
@@ -89,6 +95,8 @@ typedef struct frame_contexts {
   int16_t nb_8X8[TX_TYPES][(64 + 1) * 2];
   int16_t nb_16X16[TX_TYPES][(256 + 1) * 2];
   int16_t nb_32X32[TX_TYPES][(1024 + 1) * 2];
+
+  SCAN_ORDER sc[TX_SIZES][TX_TYPES];
 #endif
 
 #if CONFIG_REF_MV

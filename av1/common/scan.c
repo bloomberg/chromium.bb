@@ -963,10 +963,14 @@ void av1_init_scan_order(AV1_COMMON *cm) {
       uint32_t *non_zero_prob = get_non_zero_prob(cm->fc, tx_size, tx_type);
       int tx2d_size = get_tx2d_size(tx_size);
       int i;
+      SCAN_ORDER *sc = &cm->fc->sc[tx_size][tx_type];
       for (i = 0; i < tx2d_size; ++i) {
         non_zero_prob[i] = (1 << 16) / 2;  // init non_zero_prob to 0.5
       }
       av1_update_scan_order_facade(cm, tx_size, tx_type);
+      sc->scan = get_adapt_scan(cm->fc, tx_size, tx_type);
+      sc->iscan = get_adapt_iscan(cm->fc, tx_size, tx_type);
+      sc->neighbors = get_adapt_nb(cm->fc, tx_size, tx_type);
     }
   }
 }

@@ -16,6 +16,7 @@
 #include "aom_ports/mem.h"
 
 #include "av1/common/blockd.h"
+#include "av1/common/entropymode.h"
 #include "av1/common/enums.h"
 #include "av1/common/onyxc_int.h"
 
@@ -24,12 +25,6 @@ extern "C" {
 #endif
 
 #define MAX_NEIGHBORS 2
-
-typedef struct {
-  const int16_t *scan;
-  const int16_t *iscan;
-  const int16_t *neighbors;
-} SCAN_ORDER;
 
 extern const SCAN_ORDER av1_default_scan_orders[TX_SIZES];
 extern const SCAN_ORDER av1_scan_orders[TX_SIZES][TX_TYPES];
@@ -74,6 +69,9 @@ static INLINE int get_coef_context(const int16_t *neighbors,
 
 static INLINE const SCAN_ORDER *get_scan(const AV1_COMMON *const cm,
                                          TX_SIZE tx_size, TX_TYPE tx_type) {
+#if CONFIG_ADAPT_SCAN
+  return &cm->fc->sc[tx_size][tx_type];
+#endif
   (void)cm;
   return &av1_scan_orders[tx_size][tx_type];
 }
