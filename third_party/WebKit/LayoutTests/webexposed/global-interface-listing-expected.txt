@@ -7663,6 +7663,7 @@ interface webkitURL
     attribute accessibilityController
     attribute animationWorklet
     attribute applicationCache
+    attribute audioWorklet
     attribute caches
     attribute chrome
     attribute clientInformation

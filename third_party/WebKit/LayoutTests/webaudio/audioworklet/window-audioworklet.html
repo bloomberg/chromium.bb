@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Checking window.audioWorklet</title>
+  <script src="../../resources/testharness.js"></script>
+  <script src="../../resources/testharnessreport.js"></script>
+  <script src="../resources/audio-testing.js"></script>
+  <script src="audioworklet-testing.js"></script>
+</head>
+<body>
+  <script>
+    var audit = Audit.createTaskRunner();
+
+    audit.defineTask('window-audioworklet', function (taskDone) {
+
+      // TODO: remove this check if AudioWorklet ships to the stable.
+      if (!checkInternalsAndAudioWorkletRuntimeFlag(taskDone))
+        return;
+
+      Should('window.audioWorklet is an instance of Worklet',
+        window.audioWorklet instanceof Worklet).beEqualTo(true);
+
+      taskDone();
+    });
+
+
+    audit.runTasks();
+  </script>
+</body>
+</html>

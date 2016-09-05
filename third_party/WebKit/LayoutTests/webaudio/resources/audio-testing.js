@@ -597,6 +597,22 @@ var Should = (function () {
         throw failureMessage;
     };
 
+    // Check if |target| exists.
+    //
+    // Example:
+    // Should('Object', {}).exist();
+    // Result:
+    // "PASS Object exists."
+    ShouldModel.prototype.exist = function () {
+        if (this.target !== null && this.target !== undefined) {
+            this._testPassed('exists');
+        } else {
+            this._testFailed('does not exist');
+        }
+
+        return this._success;
+    };
+
     // Check if |target| is equal to |value|.
     //
     // Example:

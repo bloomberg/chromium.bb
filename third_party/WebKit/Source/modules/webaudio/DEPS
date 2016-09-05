@@ -8,6 +8,7 @@ include_rules = [
     "+modules/ModulesExport.h",
     "+modules/mediastream",
     "+modules/webaudio",
+    "+modules/worklet",
     "+platform",
     "+public/platform",
     "-web",
