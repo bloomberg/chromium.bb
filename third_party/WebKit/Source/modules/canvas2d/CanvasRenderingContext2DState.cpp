@@ -322,14 +322,15 @@ SkImageFilter* CanvasRenderingContext2DState::getFilter(Element* styleResolution
         const double effectiveZoom = 1.0; // Deliberately ignore zoom on the canvas element
         filterEffectBuilder->build(styleResolutionHost, filterStyle->filter(), effectiveZoom, &floatCanvasSize, &fillPaintForFilter, &strokePaintForFilter);
 
-        if (FilterEffect* lastEffect = filterEffectBuilder->lastEffect()) {
-            lastEffect->determineMaximumEffectRect(DetermineMaxEffectRectNone);
-            m_resolvedFilter = SkiaImageFilterBuilder::build(lastEffect, ColorSpaceDeviceRGB);
-            if (m_resolvedFilter) {
-                updateFilterReferences(toHTMLCanvasElement(styleResolutionHost), context, filterStyle->filter());
-                if (lastEffect->originTainted())
-                    context->setOriginTainted();
-            }
+        FilterEffect* lastEffect = filterEffectBuilder->lastEffect();
+        if (lastEffect) {
+            lastEffect->determineFilterPrimitiveSubregion();
+        }
+        m_resolvedFilter = SkiaImageFilterBuilder::build(lastEffect, ColorSpaceDeviceRGB);
+        if (m_resolvedFilter) {
+            updateFilterReferences(toHTMLCanvasElement(styleResolutionHost), context, filterStyle->filter());
+            if (lastEffect->originTainted())
+                context->setOriginTainted();
         }
     }
 

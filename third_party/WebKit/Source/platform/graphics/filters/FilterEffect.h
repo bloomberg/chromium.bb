@@ -50,13 +50,13 @@ enum FilterEffectType {
     FilterEffectTypeSourceInput
 };
 
-enum DetermineMaxEffectRectFlag {
-    DetermineMaxEffectRectNone = 0,
+enum DetermineSubregionFlag {
+    DetermineSubregionNone = 0,
     MapRectForward = 1,
     ClipToFilterRegion = 1 << 1
 };
 
-typedef int DetermineMaxEffectRectFlags;
+typedef int DetermineSubregionFlags;
 
 class PLATFORM_EXPORT FilterEffect : public GarbageCollectedFinalized<FilterEffect> {
     WTF_MAKE_NONCOPYABLE(FilterEffect);
@@ -78,6 +78,7 @@ public:
     IntRect absolutePaintRect() const { return m_absolutePaintRect; }
 
     FloatRect maxEffectRect() const { return m_maxEffectRect; }
+    void setMaxEffectRect(const FloatRect& maxEffectRect) { m_maxEffectRect = maxEffectRect; }
 
     virtual sk_sp<SkImageFilter> createImageFilter();
     virtual sk_sp<SkImageFilter> createImageFilterWithoutValidation();
@@ -103,8 +104,26 @@ public:
 
     virtual TextStream& externalRepresentation(TextStream&, int indention = 0) const;
 
+    // The following functions are SVG specific and will move to LayoutSVGResourceFilterPrimitive.
+    // See bug https://bugs.webkit.org/show_bug.cgi?id=45614.
+    bool hasX() const { return m_hasX; }
+    void setHasX(bool value) { m_hasX = value; }
+
+    bool hasY() const { return m_hasY; }
+    void setHasY(bool value) { m_hasY = value; }
+
+    bool hasWidth() const { return m_hasWidth; }
+    void setHasWidth(bool value) { m_hasWidth = value; }
+
+    bool hasHeight() const { return m_hasHeight; }
+    void setHasHeight(bool value) { m_hasHeight = value; }
+
     FloatRect filterPrimitiveSubregion() const { return m_filterPrimitiveSubregion; }
     void setFilterPrimitiveSubregion(const FloatRect& filterPrimitiveSubregion) { m_filterPrimitiveSubregion = filterPrimitiveSubregion; }
+
+    const FloatRect& effectBoundaries() const { return m_effectBoundaries; }
+    void setEffectBoundaries(const FloatRect& effectBoundaries) { m_effectBoundaries = effectBoundaries; }
+    FloatRect applyEffectBoundaries(const FloatRect&) const;
 
     Filter* getFilter() { return m_filter; }
     const Filter* getFilter() const { return m_filter; }
@@ -115,7 +134,7 @@ public:
     ColorSpace operatingColorSpace() const { return m_operatingColorSpace; }
     virtual void setOperatingColorSpace(ColorSpace colorSpace) { m_operatingColorSpace = colorSpace; }
 
-    FloatRect determineMaximumEffectRect(DetermineMaxEffectRectFlags);
+    FloatRect determineFilterPrimitiveSubregion(DetermineSubregionFlags = DetermineSubregionNone);
 
     virtual FloatRect determineAbsolutePaintRect(const FloatRect& requestedAbsoluteRect);
     virtual bool affectsTransparentPixels() { return false; }
@@ -159,6 +178,14 @@ private:
     // The subregion of a filter primitive according to the SVG Filter specification in local coordinates.
     // This is SVG specific and needs to move to LayoutSVGResourceFilterPrimitive.
     FloatRect m_filterPrimitiveSubregion;
+
+    // x, y, width and height of the actual SVGFE*Element. Is needed to determine the subregion of the
+    // filter primitive on a later step.
+    FloatRect m_effectBoundaries;
+    bool m_hasX;
+    bool m_hasY;
+    bool m_hasWidth;
+    bool m_hasHeight;
 
     // Should the effect clip to its primitive region, or expand to use the combined region of its inputs.
     bool m_clipsToBounds;

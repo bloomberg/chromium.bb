@@ -95,7 +95,7 @@ GraphicsContext* SVGFilterPainter::prepareEffect(const LayoutObject& object, SVG
 
     IntRect sourceRegion = enclosingIntRect(intersection(filter->filterRegion(), object.strokeBoundingBox()));
     filter->getSourceGraphic()->setSourceRect(sourceRegion);
-    filter->lastEffect()->determineMaximumEffectRect(ClipToFilterRegion);
+    filter->lastEffect()->determineFilterPrimitiveSubregion(ClipToFilterRegion);
 
     FilterData* filterData = FilterData::create();
     filterData->filter = filter;

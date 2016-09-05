@@ -46,12 +46,8 @@ FloatRect FETile::mapPaintRect(const FloatRect& rect, bool forward) const
 sk_sp<SkImageFilter> FETile::createImageFilter()
 {
     sk_sp<SkImageFilter> input(SkiaImageFilterBuilder::build(inputEffect(0), operatingColorSpace()));
-    FloatRect srcRect;
-    if (inputEffect(0)->getFilterEffectType() == FilterEffectTypeSourceInput)
-        srcRect = getFilter()->filterRegion();
-    else
-        srcRect = inputEffect(0)->filterPrimitiveSubregion();
-    FloatRect dstRect = filterPrimitiveSubregion();
+    FloatRect srcRect = inputEffect(0)->filterPrimitiveSubregion();
+    FloatRect dstRect = applyEffectBoundaries(getFilter()->filterRegion());
     return SkTileImageFilter::Make(srcRect, dstRect, std::move(input));
 }
 

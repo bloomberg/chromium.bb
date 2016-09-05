@@ -34,7 +34,7 @@ FilterPainter::FilterPainter(PaintLayer& layer, GraphicsContext& context, const 
 
     DCHECK(layer.filterInfo());
 
-    lastEffect->determineMaximumEffectRect(MapRectForward);
+    lastEffect->determineFilterPrimitiveSubregion(MapRectForward);
     sk_sp<SkImageFilter> imageFilter = SkiaImageFilterBuilder::build(lastEffect, ColorSpaceDeviceRGB);
     if (!imageFilter)
         return;
