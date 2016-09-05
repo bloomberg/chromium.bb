@@ -7,6 +7,97 @@ import("//third_party/WebKit/Source/core/core.gni")
 import(
     "//third_party/WebKit/Source/platform/inspector_protocol/inspector_protocol.gni")
 
+blink_core_sources("inspector") {
+  sources = [
+    "ConsoleMessage.cpp",
+    "ConsoleMessage.h",
+    "ConsoleMessageStorage.cpp",
+    "ConsoleMessageStorage.h",
+    "ConsoleTypes.h",
+    "DOMEditor.cpp",
+    "DOMEditor.h",
+    "DOMPatchSupport.cpp",
+    "DOMPatchSupport.h",
+    "DevToolsHost.cpp",
+    "DevToolsHost.h",
+    "IdentifiersFactory.cpp",
+    "IdentifiersFactory.h",
+    "InspectedFrames.cpp",
+    "InspectedFrames.h",
+    "InspectorAnimationAgent.cpp",
+    "InspectorAnimationAgent.h",
+    "InspectorApplicationCacheAgent.cpp",
+    "InspectorApplicationCacheAgent.h",
+    "InspectorBaseAgent.h",
+    "InspectorCSSAgent.cpp",
+    "InspectorCSSAgent.h",
+    "InspectorDOMAgent.cpp",
+    "InspectorDOMDebuggerAgent.cpp",
+    "InspectorDOMDebuggerAgent.h",
+    "InspectorHighlight.cpp",
+    "InspectorHighlight.h",
+    "InspectorHistory.cpp",
+    "InspectorHistory.h",
+    "InspectorInputAgent.cpp",
+    "InspectorInputAgent.h",
+    "InspectorInstrumentation.cpp",
+    "InspectorInstrumentation.h",
+    "InspectorInstrumentationCustomInl.h",
+    "InspectorLayerTreeAgent.cpp",
+    "InspectorLayerTreeAgent.h",
+    "InspectorLogAgent.cpp",
+    "InspectorLogAgent.h",
+    "InspectorMemoryAgent.cpp",
+    "InspectorMemoryAgent.h",
+    "InspectorNetworkAgent.cpp",
+    "InspectorNetworkAgent.h",
+    "InspectorOverlayHost.cpp",
+    "InspectorOverlayHost.h",
+    "InspectorPageAgent.cpp",
+    "InspectorPageAgent.h",
+    "InspectorResourceContainer.cpp",
+    "InspectorResourceContainer.h",
+    "InspectorResourceContentLoader.cpp",
+    "InspectorResourceContentLoader.h",
+    "InspectorSession.cpp",
+    "InspectorSession.h",
+    "InspectorStyleSheet.cpp",
+    "InspectorStyleSheet.h",
+    "InspectorTaskRunner.cpp",
+    "InspectorTaskRunner.h",
+    "InspectorTraceEvents.cpp",
+    "InspectorTraceEvents.h",
+    "InspectorTracingAgent.cpp",
+    "InspectorTracingAgent.h",
+    "InspectorWebPerfAgent.cpp",
+    "InspectorWebPerfAgent.h",
+    "InspectorWorkerAgent.cpp",
+    "InspectorWorkerAgent.h",
+    "InstanceCounters.cpp",
+    "InstanceCounters.h",
+    "LayoutEditor.cpp",
+    "LayoutEditor.h",
+    "MainThreadDebugger.cpp",
+    "MainThreadDebugger.h",
+    "NetworkResourcesData.cpp",
+    "NetworkResourcesData.h",
+    "ProtocolPlatform.h",
+    "ThreadDebugger.cpp",
+    "ThreadDebugger.h",
+    "V8InspectorString.cpp",
+    "V8InspectorString.h",
+    "WorkerInspectorController.cpp",
+    "WorkerInspectorController.h",
+    "WorkerThreadDebugger.cpp",
+    "WorkerThreadDebugger.h",
+  ]
+
+  configs += [
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    "//build/config/compiler:no_size_t_to_int_warning",
+  ]
+}
+
 action("instrumentation_sources") {
   visibility = [ ":*" ]
   script = "CodeGeneratorInstrumentation.py"
@@ -109,7 +200,7 @@ inspector_protocol_generate("protocol_sources") {
 }
 
 # Compiles the sources generated above.
-source_set("inspector") {
+source_set("generated") {
   sources = get_target_outputs(":protocol_sources") +
             get_target_outputs(":instrumentation_sources")
 

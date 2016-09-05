@@ -51,7 +51,7 @@ source_set("generated") {
     "//gin",
     "//skia",
     "//third_party/WebKit/Source/bindings/core/v8:bindings_core_v8_generated",
-    "//third_party/WebKit/Source/core/inspector",
+    "//third_party/WebKit/Source/core/inspector:generated",
     "//third_party/iccjpeg",
     "//third_party/libpng",
     "//third_party/libwebp",
@@ -74,7 +74,7 @@ source_set("prerequisites") {
   public_deps = [
     "//gpu/command_buffer/client:gles2_c_lib",
     "//skia",
-    "//third_party/WebKit/Source/core/inspector",
+    "//third_party/WebKit/Source/core/inspector:generated",
     "//third_party/WebKit/Source/wtf",
     "//third_party/angle:translator",
     "//third_party/iccjpeg",
@@ -125,6 +125,13 @@ component("core") {
   visibility = []  # Allow re-assignment of list.
   visibility = [ "//third_party/WebKit/*" ]
 
+  # If you create a new subdirectory, make a new BUILD file for that directory
+  # and reference it in the deps below rather than adding the sources here.
+  sources = [
+    "CoreInitializer.cpp",
+    "CoreInitializer.h",
+  ]
+
   configs -= core_config_remove
   configs += core_config_add
 
@@ -138,7 +145,6 @@ component("core") {
     "//v8",
   ]
   deps = [
-    ":remaining",
     "//third_party/WebKit/Source/core/animation",
     "//third_party/WebKit/Source/core/clipboard",
     "//third_party/WebKit/Source/core/css",
@@ -149,13 +155,26 @@ component("core") {
     "//third_party/WebKit/Source/core/fileapi",
     "//third_party/WebKit/Source/core/frame",
     "//third_party/WebKit/Source/core/html",
+    "//third_party/WebKit/Source/core/imagebitmap",
     "//third_party/WebKit/Source/core/input",
+    "//third_party/WebKit/Source/core/inspector",
     "//third_party/WebKit/Source/core/layout",
     "//third_party/WebKit/Source/core/layout/svg",
+    "//third_party/WebKit/Source/core/loader",
     "//third_party/WebKit/Source/core/observer",
+    "//third_party/WebKit/Source/core/offscreencanvas",
+    "//third_party/WebKit/Source/core/origin_trials",
+    "//third_party/WebKit/Source/core/page",
+    "//third_party/WebKit/Source/core/paint",
+    "//third_party/WebKit/Source/core/plugins",
+    "//third_party/WebKit/Source/core/streams",
     "//third_party/WebKit/Source/core/style:rendering",
     "//third_party/WebKit/Source/core/style:svg",
     "//third_party/WebKit/Source/core/svg",
+    "//third_party/WebKit/Source/core/timing",
+    "//third_party/WebKit/Source/core/workers",
+    "//third_party/WebKit/Source/core/xml",
+    "//third_party/WebKit/Source/core/xmlhttprequest",
   ]
 
   if (is_win && is_debug && is_component_build) {
@@ -166,37 +185,9 @@ component("core") {
   }
 
   public_configs = [ ":core_include_dirs" ]
-}
-
-target(core_link_large_target_type, "remaining") {
-  if (core_link_large_target_type == "split_static_library") {
-    # Shard this target into parts to work around linker limitations
-    # on link time code generation builds.
-    split_count = 19
-  }
-
-  # This is currently a mashup of "webcore_rendering" and "webcore_remaining"
-  # in GYP. The file list variable is the same and then GYP filters on wether
-  # the path starts with "rendering/" or not. We should tweak the .gypis a bit
-  # to separate out the rendering files.
-  sources = rebase_path(webcore_non_rendering_files, ".", "//")
-
-  configs -= core_config_remove
-  configs += core_config_add + [
-               # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-               "//build/config/compiler:no_size_t_to_int_warning",
-             ]
-
-  cflags = []
-  libs = []
-
-  deps = [
-    ":core_generated",
-    ":prerequisites",
-  ]
 
   if (is_mac) {
-    libs += [
+    libs = [
       "AppKit.framework",
       "Carbon.framework",
     ]

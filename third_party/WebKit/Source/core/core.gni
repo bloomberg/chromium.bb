@@ -129,6 +129,4 @@ _gypi =
                 "scope",
                 [ "core.gypi" ])
 
-webcore_non_rendering_files =
-    get_path_info(_gypi.webcore_non_rendering_files, "abspath")
 webcore_testing_files = get_path_info(_gypi.webcore_testing_files, "abspath")
