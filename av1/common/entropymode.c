@@ -227,6 +227,11 @@ int av1_intra_mode_inv[INTRA_MODES];
 int av1_inter_mode_ind[INTER_MODES];
 int av1_inter_mode_inv[INTER_MODES];
 
+#if CONFIG_DELTA_Q
+static const aom_prob default_delta_q_probs[DELTA_Q_CONTEXTS] = { 220, 220,
+                                                                  220 };
+#endif
+
 /* Array indices are identical to previously-existing INTRAMODECONTEXTNODES. */
 const aom_tree_index av1_intra_mode_tree[TREE_SIZE(INTRA_MODES)] = {
   -DC_PRED,   2,          /* 0 = DC_NODE */
@@ -888,6 +893,9 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_tree_to_cdf(av1_segment_tree, fc->seg.tree_probs, fc->seg.tree_cdf);
 #endif
 #endif
+#if CONFIG_DELTA_Q
+  av1_copy(fc->delta_q_prob, default_delta_q_probs);
+#endif
 }
 
 #if CONFIG_DAALA_EC
@@ -994,6 +1002,12 @@ void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
           av1_switchable_interp_tree, pre_fc->switchable_interp_prob[i],
           counts->switchable_interp[i], fc->switchable_interp_prob[i]);
   }
+
+#if CONFIG_DELTA_Q
+  for (i = 0; i < DELTA_Q_CONTEXTS; ++i)
+    fc->delta_q_prob[i] =
+        mode_mv_merge_probs(pre_fc->delta_q_prob[i], counts->delta_q[i]);
+#endif
 }
 
 void av1_adapt_intra_frame_probs(AV1_COMMON *cm) {
@@ -1078,6 +1092,12 @@ void av1_adapt_intra_frame_probs(AV1_COMMON *cm) {
                     fc->partition_cdf[i]);
 #endif
   }
+#endif
+
+#if CONFIG_DELTA_Q
+  for (i = 0; i < DELTA_Q_CONTEXTS; ++i)
+    fc->delta_q_prob[i] =
+        mode_mv_merge_probs(pre_fc->delta_q_prob[i], counts->delta_q[i]);
 #endif
 }
 

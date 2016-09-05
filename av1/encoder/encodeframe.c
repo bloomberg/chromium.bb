@@ -1181,8 +1181,13 @@ static void update_stats(const AV1_COMP *const cpi, ThreadData *td,
                          PICK_MODE_CONTEXT *ctx, int mi_row, int mi_col,
                          BLOCK_SIZE bsize) {
   const AV1_COMMON *const cm = &cpi->common;
+#if CONFIG_DELTA_Q
+  MACROBLOCK *x = &td->mb;
+  MACROBLOCKD *const xd = &x->e_mbd;
+#else
   const MACROBLOCK *x = &td->mb;
   const MACROBLOCKD *const xd = &x->e_mbd;
+#endif
   MODE_INFO **mi_8x8 = xd->mi;
   const MODE_INFO *const mi = xd->mi[0];
   const MB_MODE_INFO *const mbmi = &mi->mbmi;
@@ -1211,6 +1216,23 @@ static void update_stats(const AV1_COMP *const cpi, ThreadData *td,
       // Note how often each mode chosen as best
       ++mode_chosen_counts[ctx->best_mode_index];
     }
+  }
+#endif
+
+#if CONFIG_DELTA_Q
+  // delta quant applies to both intra and inter
+  const int super_block_upper_left = ((mi_row & 7) == 0) && ((mi_col & 7) == 0);
+
+  if (cm->delta_q_present_flag && (bsize != BLOCK_64X64 || !mbmi->skip) &&
+      super_block_upper_left) {
+    const int dq = (mbmi->current_q_index - xd->prev_qindex) / cm->delta_q_res;
+    const int absdq = abs(dq);
+    int i;
+    for (i = 0; i < absdq; ++i) {
+      td->counts->delta_q[i][1]++;
+    }
+    if (absdq < DELTA_Q_SMALL) td->counts->delta_q[absdq][0]++;
+    xd->prev_qindex = mbmi->current_q_index;
   }
 #endif
 
@@ -2531,6 +2553,12 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
   memset(&xd->left_context, 0, sizeof(xd->left_context));
   memset(xd->left_seg_context, 0, sizeof(xd->left_seg_context));
 
+#if CONFIG_DELTA_Q
+  // Reset delta for every tile
+  if (cm->delta_q_present_flag)
+    if (mi_row == tile_info->mi_row_start) xd->prev_qindex = cm->base_qindex;
+#endif
+
   // Code each SB in the row
   for (mi_col = tile_info->mi_col_start; mi_col < tile_info->mi_col_end;
        mi_col += MAX_MIB_SIZE) {
@@ -2567,12 +2595,21 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
 
 #if CONFIG_DELTA_Q
     if (cpi->oxcf.aq_mode == DELTA_AQ) {
+      // Test mode for delta quantization
       int sb_row = mi_row >> 3;
       int sb_col = mi_col >> 3;
       int sb_stride = (cm->width + MAX_SB_SIZE - 1) >> MAX_SB_SIZE_LOG2;
       int index = ((sb_row * sb_stride + sb_col + 8) & 31) - 16;
-      int offset_qindex = index < 0 ? -index - 8 : index - 8;
-      int current_qindex = clamp(cm->base_qindex + offset_qindex, 1, 255);
+
+      // Ensure divisibility of delta_qindex by delta_q_res
+      int offset_qindex = (index < 0 ? -index - 8 : index - 8);
+      int qmask = ~(cm->delta_q_res - 1);
+      int current_qindex = clamp(cm->base_qindex + offset_qindex,
+                                 cm->delta_q_res, 256 - cm->delta_q_res);
+      current_qindex =
+          ((current_qindex - cm->base_qindex + cm->delta_q_res / 2) & qmask) +
+          cm->base_qindex;
+
       xd->delta_qindex = current_qindex - cm->base_qindex;
       set_offsets(cpi, tile_info, x, mi_row, mi_col, BLOCK_64X64);
       xd->mi[0]->mbmi.current_q_index = current_qindex;
@@ -2812,6 +2849,12 @@ static void encode_frame_internal(AV1_COMP *cpi) {
       !cm->error_resilient_mode && cm->width == cm->last_width &&
       cm->height == cm->last_height && !cm->intra_only && cm->last_show_frame &&
       (cm->last_frame_type != KEY_FRAME);
+
+#if CONFIG_DELTA_Q
+  // Fix delta q resolution for the moment
+  cm->delta_q_res = DEFAULT_DELTA_Q_RES;
+#endif
+
 #if CONFIG_EXT_REFS
   // NOTE(zoeliu): As cm->prev_frame can take neither a frame of
   //               show_exisiting_frame=1, nor can it take a frame not used as

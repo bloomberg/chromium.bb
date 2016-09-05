@@ -30,6 +30,7 @@
 #include "av1/common/entropymode.h"
 #include "av1/common/entropymv.h"
 #include "av1/common/mvref_common.h"
+#include "av1/common/odintrin.h"
 #include "av1/common/pred_common.h"
 #include "av1/common/reconinter.h"
 #include "av1/common/seg_common.h"
@@ -299,17 +300,36 @@ static int write_skip(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 }
 
 #if CONFIG_DELTA_Q
-static void write_delta_qindex(int delta_qindex, aom_writer *w) {
+static void write_delta_qindex(const AV1_COMMON *cm, int delta_qindex,
+                               aom_writer *w) {
   int sign = delta_qindex < 0;
   int abs = sign ? -delta_qindex : delta_qindex;
-  if (abs < 3) {
-    aom_write_literal(w, 1, abs + 1);
-  } else {
-    aom_write_literal(w, 0, 3);
-    aom_write_literal(w, abs, 6);
+  int rem_bits, thr, i = 0;
+  int smallval = abs < DELTA_Q_SMALL ? 1 : 0;
+
+  while (i < DELTA_Q_SMALL && i <= abs) {
+    int bit = (i < abs);
+    aom_write(w, bit, cm->fc->delta_q_prob[i]);
+    i++;
+  }
+
+  if (!smallval) {
+    rem_bits = OD_ILOG_NZ(abs - 1) - 1;
+    thr = (1 << rem_bits) + 1;
+    aom_write_literal(w, rem_bits, 3);
+    aom_write_literal(w, abs - thr, rem_bits);
   }
   if (abs > 0) {
     aom_write_bit(w, sign);
+  }
+}
+
+static void update_delta_q_probs(AV1_COMMON *cm, aom_writer *w,
+                                 FRAME_COUNTS *counts) {
+  int k;
+
+  for (k = 0; k < DELTA_Q_CONTEXTS; ++k) {
+    av1_cond_prob_diff_update(w, &cm->fc->delta_q_prob[k], counts->delta_q[k]);
   }
 }
 #endif
@@ -747,12 +767,14 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
 
 #if CONFIG_DELTA_Q
   if (cm->delta_q_present_flag) {
-    int mi_row = (-xd->mb_to_top_edge) >> 6;
-    int mi_col = (-xd->mb_to_left_edge) >> 6;
-    int super_block_upper_left = ((mi_row & 7) == 0) && ((mi_col & 7) == 0);
+    int mi_row = (-xd->mb_to_top_edge) >> (MI_SIZE_LOG2 + 3);
+    int mi_col = (-xd->mb_to_left_edge) >> (MI_SIZE_LOG2 + 3);
+    int super_block_upper_left =
+        ((mi_row & MAX_MIB_MASK) == 0) && ((mi_col & MAX_MIB_MASK) == 0);
     if ((bsize != BLOCK_64X64 || skip == 0) && super_block_upper_left) {
-      int delta_qindex = mbmi->current_q_index - xd->prev_qindex;
-      write_delta_qindex(delta_qindex, w);
+      int reduced_delta_qindex =
+          (mbmi->current_q_index - xd->prev_qindex) / cm->delta_q_res;
+      write_delta_qindex(cm, reduced_delta_qindex, w);
       xd->prev_qindex = mbmi->current_q_index;
     }
   }
@@ -943,8 +965,9 @@ static void write_mb_modes_kf(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     int mi_col = (-xd->mb_to_left_edge) >> 6;
     int super_block_upper_left = ((mi_row & 7) == 0) && ((mi_col & 7) == 0);
     if ((bsize != BLOCK_64X64 || skip == 0) && super_block_upper_left) {
-      int delta_qindex = mbmi->current_q_index - xd->prev_qindex;
-      write_delta_qindex(delta_qindex, w);
+      int reduced_delta_qindex =
+          (mbmi->current_q_index - xd->prev_qindex) / cm->delta_q_res;
+      write_delta_qindex(cm, reduced_delta_qindex, w);
       xd->prev_qindex = mbmi->current_q_index;
     }
   }
@@ -2021,6 +2044,7 @@ static void write_uncompressed_header(AV1_COMP *cpi,
       cm->delta_q_present_flag = cpi->oxcf.aq_mode == DELTA_AQ;
       aom_wb_write_bit(wb, cm->delta_q_present_flag);
       if (cm->delta_q_present_flag) {
+        aom_wb_write_literal(wb, OD_ILOG_NZ(cm->delta_q_res) - 1, 2);
         xd->prev_qindex = cm->base_qindex;
       }
     }
@@ -2074,6 +2098,9 @@ static size_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
 #endif
   update_coef_probs(cpi, header_bc);
   update_skip_probs(cm, header_bc, counts);
+#if CONFIG_DELTA_Q
+  update_delta_q_probs(cm, header_bc, counts);
+#endif
 #if CONFIG_MISC_FIXES
   update_seg_probs(cpi, header_bc);
 
