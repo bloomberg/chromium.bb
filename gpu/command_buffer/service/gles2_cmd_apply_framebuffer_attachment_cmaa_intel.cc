@@ -28,8 +28,6 @@ ApplyFramebufferAttachmentCMAAINTELResourceManager::
       frame_id_(0),
       width_(0),
       height_(0),
-      copy_to_framebuffer_shader_(0),
-      copy_to_image_shader_(0),
       edges0_shader_(0),
       edges1_shader_(0),
       edges_combine_shader_(0),
@@ -47,8 +45,7 @@ ApplyFramebufferAttachmentCMAAINTELResourceManager::
       edges1_shader_result_texture_(0),
       edges_combine_shader_result_texture_float4_slot1_(0),
       process_and_apply_shader_result_texture_float4_slot1_(0),
-      edges_combine_shader_result_texture_slot2_(0),
-      copy_to_image_shader_outTexture_(0) {}
+      edges_combine_shader_result_texture_slot2_(0) {}
 
 ApplyFramebufferAttachmentCMAAINTELResourceManager::
     ~ApplyFramebufferAttachmentCMAAINTELResourceManager() {
@@ -60,10 +57,6 @@ void ApplyFramebufferAttachmentCMAAINTELResourceManager::Initialize(
   DCHECK(decoder);
   is_gles31_compatible_ =
       decoder->GetGLContext()->GetVersionInfo()->IsAtLeastGLES(3, 1);
-
-  copy_to_image_shader_ = CreateProgram("", vert_str_, copy_frag_str_);
-  copy_to_framebuffer_shader_ =
-      CreateProgram("#define OUT_FBO 1\n", vert_str_, copy_frag_str_);
 
   // Check if RGBA8UI is supported as an FBO colour target with depth.
   // If not supported, GLSL needs to convert the data to/from float so there is
@@ -190,8 +183,6 @@ void ApplyFramebufferAttachmentCMAAINTELResourceManager::Initialize(
       glGetUniformLocation(edges_combine_shader_, "g_resultTextureSlot2");
   process_and_apply_shader_result_texture_float4_slot1_ = glGetUniformLocation(
       process_and_apply_shader_, "g_resultTextureFlt4Slot1");
-  copy_to_image_shader_outTexture_ =
-      glGetUniformLocation(copy_to_image_shader_, "outTexture");
 
   initialized_ = true;
 }
@@ -202,8 +193,6 @@ void ApplyFramebufferAttachmentCMAAINTELResourceManager::Destroy() {
 
   ReleaseTextures();
 
-  glDeleteProgram(copy_to_image_shader_);
-  glDeleteProgram(copy_to_framebuffer_shader_);
   glDeleteProgram(process_and_apply_shader_);
   glDeleteProgram(edges_combine_shader_);
   glDeleteProgram(edges1_shader_);
@@ -224,7 +213,10 @@ void ApplyFramebufferAttachmentCMAAINTELResourceManager::
   if (!framebuffer)
     return;
 
-  GLuint last_framebuffer = framebuffer->service_id();
+  glDisable(GL_SCISSOR_TEST);
+  glDisable(GL_STENCIL_TEST);
+  glDisable(GL_CULL_FACE);
+  glDisable(GL_BLEND);
 
   // Process each color attachment of the current draw framebuffer.
   uint32_t max_draw_buffers = decoder->GetContextGroup()->max_draw_buffers();
@@ -251,11 +243,13 @@ void ApplyFramebufferAttachmentCMAAINTELResourceManager::
 
       // Copy source_texture to rgba8_texture_
       if (do_copy) {
-        CopyTexture(source_texture, rgba8_texture_, false);
+        glBindFramebufferEXT(GL_FRAMEBUFFER, copy_framebuffer_);
+        glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                  GL_TEXTURE_2D, source_texture, 0);
+        CopyTexture(rgba8_texture_);
       }
 
       // CMAA Effect
-      glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, last_framebuffer);
       if (do_copy) {
         ApplyCMAAEffectTexture(rgba8_texture_, rgba8_texture_);
       } else {
@@ -264,24 +258,12 @@ void ApplyFramebufferAttachmentCMAAINTELResourceManager::
 
       // Copy rgba8_texture_ to source_texture
       if (do_copy) {
-        // Move source_texture to the first color attachment of the copy fbo.
-        glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, last_framebuffer);
-        glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i,
-                                  GL_TEXTURE_2D, 0, 0);
-        glBindFramebufferEXT(GL_FRAMEBUFFER, copy_framebuffer_);
-        glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                                  GL_TEXTURE_2D, source_texture, 0);
-
-        CopyTexture(rgba8_texture_, source_texture, true);
-
-        // Restore color attachments
         glBindFramebufferEXT(GL_FRAMEBUFFER, copy_framebuffer_);
         glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                                   GL_TEXTURE_2D, rgba8_texture_, 0);
-        glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, last_framebuffer);
-        glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i,
-                                  GL_TEXTURE_2D, source_texture, 0);
+        CopyTexture(source_texture);
       }
+      decoder->RestoreTextureState(source_texture);
     }
   }
 
@@ -565,32 +547,15 @@ void ApplyFramebufferAttachmentCMAAINTELResourceManager::ReleaseTextures() {
 }
 
 void ApplyFramebufferAttachmentCMAAINTELResourceManager::CopyTexture(
-    GLint source,
-    GLint dest,
-    bool via_fbo) {
-  glViewport(0, 0, width_, height_);
+    GLint dest) {
   glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, source);
+  glBindTexture(GL_TEXTURE_2D, dest);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
-  if (!via_fbo) {
-    glUseProgram(copy_to_image_shader_);
-    if (!is_gles31_compatible_) {
-      glUniform1i(copy_to_image_shader_outTexture_, 0);
-    }
-    glBindImageTextureEXT(0, dest, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
-  } else {
-    glDisable(GL_DEPTH_TEST);
-    glDisable(GL_STENCIL_TEST);
-    glDisable(GL_CULL_FACE);
-    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-    glDepthMask(GL_FALSE);
-    glDisable(GL_BLEND);
-    glUseProgram(copy_to_framebuffer_shader_);
-  }
-
-  glDrawArrays(GL_TRIANGLES, 0, 3);
-  glUseProgram(0);
-  glBindTexture(GL_TEXTURE_2D, 0);
+  glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, width_, height_);
 }
 
 GLuint ApplyFramebufferAttachmentCMAAINTELResourceManager::CreateProgram(
@@ -1882,30 +1847,6 @@ const char ApplyFramebufferAttachmentCMAAINTELResourceManager::cmaa_frag_s2_[] =
     \n#endif\n
     }
   );
-
-const char
-  ApplyFramebufferAttachmentCMAAINTELResourceManager::copy_frag_str_[] =
-    SHADER(
-      precision highp float;
-      layout(binding = 0) uniform highp sampler2D inTexture;
-      layout(location = 0) out vec4 outColor;
-      \n#ifdef GL_ES\n
-      layout(binding = 0, rgba8) restrict writeonly uniform highp
-                                                     image2D outTexture;
-      \n#else\n
-      layout(rgba8) restrict writeonly uniform highp image2D outTexture;
-      \n#endif\n
-
-      void main() {
-        ivec2 screenPosI = ivec2( gl_FragCoord.xy );
-        vec4 pixel = texelFetch(inTexture, screenPosI, 0);
-      \n#ifdef OUT_FBO\n
-        outColor = pixel;
-      \n#else\n
-        imageStore(outTexture, screenPosI, pixel);
-      \n#endif\n
-      }
-    );
 /* clang-format on */
 
 }  // namespace gles2

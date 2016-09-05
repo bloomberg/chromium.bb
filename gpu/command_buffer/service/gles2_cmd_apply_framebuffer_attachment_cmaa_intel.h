@@ -44,7 +44,7 @@ class GPU_EXPORT ApplyFramebufferAttachmentCMAAINTELResourceManager {
   void OnSize(GLint width, GLint height);
   void ReleaseTextures();
 
-  void CopyTexture(GLint source, GLint dest, bool via_fbo);
+  void CopyTexture(GLint dest);
   GLuint CreateProgram(const char* defines,
                        const char* vs_source,
                        const char* fs_source);
@@ -63,8 +63,6 @@ class GPU_EXPORT ApplyFramebufferAttachmentCMAAINTELResourceManager {
   GLint width_;
   GLint height_;
 
-  GLuint copy_to_framebuffer_shader_;
-  GLuint copy_to_image_shader_;
   GLuint edges0_shader_;
   GLuint edges1_shader_;
   GLuint edges_combine_shader_;
@@ -86,12 +84,10 @@ class GPU_EXPORT ApplyFramebufferAttachmentCMAAINTELResourceManager {
   GLuint edges_combine_shader_result_texture_float4_slot1_;
   GLuint process_and_apply_shader_result_texture_float4_slot1_;
   GLuint edges_combine_shader_result_texture_slot2_;
-  GLuint copy_to_image_shader_outTexture_;
 
   static const char vert_str_[];
   static const char cmaa_frag_s1_[];
   static const char cmaa_frag_s2_[];
-  static const char copy_frag_str_[];
 
   DISALLOW_COPY_AND_ASSIGN(ApplyFramebufferAttachmentCMAAINTELResourceManager);
 };
