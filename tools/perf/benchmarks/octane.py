@@ -80,9 +80,8 @@ class _OctaneMeasurement(legacy_page_test.LegacyPageTest):
     self._power_metric = power.PowerMetric(platform)
 
   def WillNavigateToPage(self, page, tab):
-    memory_stats = tab.browser.memory_stats
-    if ('SystemTotalPhysicalMemory' in memory_stats and
-        memory_stats['SystemTotalPhysicalMemory'] < 1 * _GB):
+    total_memory = tab.browser.platform.GetSystemTotalPhysicalMemory()
+    if total_memory is not None and total_memory < 1 * _GB:
       skipBenchmarks = '"zlib"'
     else:
       skipBenchmarks = ''
