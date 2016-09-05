@@ -54,7 +54,7 @@ static void hrefAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8SetReturnValueString(info, impl->href(), info.GetIsolate());
 }
 
-static void hrefAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void hrefAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestNodeV8Internal::hrefAttributeGetter(info);
 }
@@ -69,7 +69,7 @@ static void hrefAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Function
     impl->setHref(cppValue);
 }
 
-static void hrefAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void hrefAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestNodeV8Internal::hrefAttributeSetter(v8Value, info);
@@ -82,7 +82,7 @@ static void hrefThrowsAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>&
     v8SetReturnValueString(info, impl->hrefThrows(), info.GetIsolate());
 }
 
-static void hrefThrowsAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void hrefThrowsAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestNodeV8Internal::hrefThrowsAttributeGetter(info);
 }
@@ -98,7 +98,7 @@ static void hrefThrowsAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Fu
     impl->setHrefThrows(cppValue, exceptionState);
 }
 
-static void hrefThrowsAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void hrefThrowsAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestNodeV8Internal::hrefThrowsAttributeSetter(v8Value, info);
@@ -111,7 +111,7 @@ static void hrefCallWithAttributeGetter(const v8::FunctionCallbackInfo<v8::Value
     v8SetReturnValueString(info, impl->hrefCallWith(), info.GetIsolate());
 }
 
-static void hrefCallWithAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void hrefCallWithAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestNodeV8Internal::hrefCallWithAttributeGetter(info);
 }
@@ -127,7 +127,7 @@ static void hrefCallWithAttributeSetter(v8::Local<v8::Value> v8Value, const v8::
     impl->setHrefCallWith(executionContext, currentDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()), cppValue);
 }
 
-static void hrefCallWithAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void hrefCallWithAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestNodeV8Internal::hrefCallWithAttributeSetter(v8Value, info);
@@ -140,7 +140,7 @@ static void hrefByteStringAttributeGetter(const v8::FunctionCallbackInfo<v8::Val
     v8SetReturnValueString(info, impl->hrefByteString(), info.GetIsolate());
 }
 
-static void hrefByteStringAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void hrefByteStringAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestNodeV8Internal::hrefByteStringAttributeGetter(info);
 }
@@ -156,7 +156,7 @@ static void hrefByteStringAttributeSetter(v8::Local<v8::Value> v8Value, const v8
     impl->setHrefByteString(cppValue);
 }
 
-static void hrefByteStringAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void hrefByteStringAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestNodeV8Internal::hrefByteStringAttributeSetter(v8Value, info);

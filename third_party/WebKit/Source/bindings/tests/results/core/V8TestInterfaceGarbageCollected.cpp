@@ -58,7 +58,7 @@ static void attr1AttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info
     v8SetReturnValueFast(info, WTF::getPtr(impl->attr1()), impl);
 }
 
-static void attr1AttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void attr1AttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceGarbageCollectedV8Internal::attr1AttributeGetter(info);
 }
@@ -76,7 +76,7 @@ static void attr1AttributeSetter(v8::Local<v8::Value> v8Value, const v8::Functio
     impl->setAttr1(cppValue);
 }
 
-static void attr1AttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void attr1AttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestInterfaceGarbageCollectedV8Internal::attr1AttributeSetter(v8Value, info);

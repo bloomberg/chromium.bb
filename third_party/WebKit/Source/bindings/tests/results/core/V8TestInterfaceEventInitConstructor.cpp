@@ -55,7 +55,7 @@ static void readonlyStringAttributeAttributeGetter(const v8::FunctionCallbackInf
     v8SetReturnValueString(info, impl->readonlyStringAttribute(), info.GetIsolate());
 }
 
-static void readonlyStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void readonlyStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceEventInitConstructorV8Internal::readonlyStringAttributeAttributeGetter(info);
 }
@@ -67,7 +67,7 @@ static void isTrustedAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& 
     v8SetReturnValueBool(info, impl->isTrusted());
 }
 
-static void isTrustedAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void isTrustedAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceEventInitConstructorV8Internal::isTrustedAttributeGetter(info);
 }

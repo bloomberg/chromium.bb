@@ -55,7 +55,7 @@ static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo
     v8SetReturnValueString(info, result, info.GetIsolate());
 }
 
-static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
+void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestSpecialOperationsNotEnumerableV8Internal::indexedPropertyGetter(index, info);
 }
@@ -71,7 +71,7 @@ static void namedPropertyGetter(v8::Local<v8::Name> name, const v8::PropertyCall
     v8SetReturnValueString(info, result, info.GetIsolate());
 }
 
-static void namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+void namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     if (!name->IsString())
         return;

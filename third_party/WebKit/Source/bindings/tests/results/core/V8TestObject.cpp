@@ -114,13 +114,13 @@ static_assert(
 
 namespace TestObjectV8Internal {
 
-static void DEPRECATED_CONSTANTConstantGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info)
+void DEPRECATED_CONSTANTConstantGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     Deprecation::countDeprecationIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::Constant);
     v8SetReturnValueInt(info, 1);
 }
 
-static void MEASURED_CONSTANTConstantGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info)
+void MEASURED_CONSTANTConstantGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::Constant);
     v8SetReturnValueInt(info, 1);
@@ -133,7 +133,7 @@ static void stringifierAttributeAttributeGetter(const v8::FunctionCallbackInfo<v
     v8SetReturnValueString(info, impl->stringifierAttribute(), info.GetIsolate());
 }
 
-static void stringifierAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void stringifierAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::stringifierAttributeAttributeGetter(info);
 }
@@ -148,7 +148,7 @@ static void stringifierAttributeAttributeSetter(v8::Local<v8::Value> v8Value, co
     impl->setStringifierAttribute(cppValue);
 }
 
-static void stringifierAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void stringifierAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::stringifierAttributeAttributeSetter(v8Value, info);
@@ -161,7 +161,7 @@ static void readonlyStringAttributeAttributeGetter(const v8::FunctionCallbackInf
     v8SetReturnValueString(info, impl->readonlyStringAttribute(), info.GetIsolate());
 }
 
-static void readonlyStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void readonlyStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::readonlyStringAttributeAttributeGetter(info);
 }
@@ -178,7 +178,7 @@ static void readonlyTestInterfaceEmptyAttributeAttributeGetter(const v8::Functio
     v8SetReturnValue(info, v8Value);
 }
 
-static void readonlyTestInterfaceEmptyAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void readonlyTestInterfaceEmptyAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::readonlyTestInterfaceEmptyAttributeAttributeGetter(info);
 }
@@ -190,7 +190,7 @@ static void readonlyLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<
     v8SetReturnValueInt(info, impl->readonlyLongAttribute());
 }
 
-static void readonlyLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void readonlyLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::readonlyLongAttributeAttributeGetter(info);
 }
@@ -202,7 +202,7 @@ static void dateAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Valu
     v8SetReturnValue(info, v8DateOrNaN(info.GetIsolate(), impl->dateAttribute()));
 }
 
-static void dateAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void dateAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::dateAttributeAttributeGetter(info);
 }
@@ -218,7 +218,7 @@ static void dateAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8:
     impl->setDateAttribute(cppValue);
 }
 
-static void dateAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void dateAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::dateAttributeAttributeSetter(v8Value, info);
@@ -231,7 +231,7 @@ static void stringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Va
     v8SetReturnValueString(info, impl->stringAttribute(), info.GetIsolate());
 }
 
-static void stringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void stringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::stringAttributeAttributeGetter(info);
 }
@@ -246,7 +246,7 @@ static void stringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v
     impl->setStringAttribute(cppValue);
 }
 
-static void stringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void stringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::stringAttributeAttributeSetter(v8Value, info);
@@ -259,7 +259,7 @@ static void byteStringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8
     v8SetReturnValueString(info, impl->byteStringAttribute(), info.GetIsolate());
 }
 
-static void byteStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void byteStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::byteStringAttributeAttributeGetter(info);
 }
@@ -275,7 +275,7 @@ static void byteStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, con
     impl->setByteStringAttribute(cppValue);
 }
 
-static void byteStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void byteStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::byteStringAttributeAttributeSetter(v8Value, info);
@@ -288,7 +288,7 @@ static void usvStringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8:
     v8SetReturnValueString(info, impl->usvStringAttribute(), info.GetIsolate());
 }
 
-static void usvStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void usvStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::usvStringAttributeAttributeGetter(info);
 }
@@ -304,7 +304,7 @@ static void usvStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, cons
     impl->setUsvStringAttribute(cppValue);
 }
 
-static void usvStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void usvStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::usvStringAttributeAttributeSetter(v8Value, info);
@@ -317,7 +317,7 @@ static void domTimeStampAttributeAttributeGetter(const v8::FunctionCallbackInfo<
     v8SetReturnValue(info, static_cast<double>(impl->domTimeStampAttribute()));
 }
 
-static void domTimeStampAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void domTimeStampAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::domTimeStampAttributeAttributeGetter(info);
 }
@@ -333,7 +333,7 @@ static void domTimeStampAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
     impl->setDomTimeStampAttribute(cppValue);
 }
 
-static void domTimeStampAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void domTimeStampAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::domTimeStampAttributeAttributeSetter(v8Value, info);
@@ -346,7 +346,7 @@ static void booleanAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::V
     v8SetReturnValueBool(info, impl->booleanAttribute());
 }
 
-static void booleanAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void booleanAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::booleanAttributeAttributeGetter(info);
 }
@@ -362,7 +362,7 @@ static void booleanAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const 
     impl->setBooleanAttribute(cppValue);
 }
 
-static void booleanAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void booleanAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::booleanAttributeAttributeSetter(v8Value, info);
@@ -375,7 +375,7 @@ static void byteAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Valu
     v8SetReturnValueInt(info, impl->byteAttribute());
 }
 
-static void byteAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void byteAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::byteAttributeAttributeGetter(info);
 }
@@ -391,7 +391,7 @@ static void byteAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8:
     impl->setByteAttribute(cppValue);
 }
 
-static void byteAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void byteAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::byteAttributeAttributeSetter(v8Value, info);
@@ -404,7 +404,7 @@ static void doubleAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Va
     v8SetReturnValue(info, impl->doubleAttribute());
 }
 
-static void doubleAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void doubleAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::doubleAttributeAttributeGetter(info);
 }
@@ -420,7 +420,7 @@ static void doubleAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v
     impl->setDoubleAttribute(cppValue);
 }
 
-static void doubleAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void doubleAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::doubleAttributeAttributeSetter(v8Value, info);
@@ -433,7 +433,7 @@ static void floatAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Val
     v8SetReturnValue(info, impl->floatAttribute());
 }
 
-static void floatAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void floatAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::floatAttributeAttributeGetter(info);
 }
@@ -449,7 +449,7 @@ static void floatAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8
     impl->setFloatAttribute(cppValue);
 }
 
-static void floatAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void floatAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::floatAttributeAttributeSetter(v8Value, info);
@@ -462,7 +462,7 @@ static void longAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Valu
     v8SetReturnValueInt(info, impl->longAttribute());
 }
 
-static void longAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void longAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::longAttributeAttributeGetter(info);
 }
@@ -478,7 +478,7 @@ static void longAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8:
     impl->setLongAttribute(cppValue);
 }
 
-static void longAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void longAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::longAttributeAttributeSetter(v8Value, info);
@@ -491,7 +491,7 @@ static void longLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::
     v8SetReturnValue(info, static_cast<double>(impl->longLongAttribute()));
 }
 
-static void longLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void longLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::longLongAttributeAttributeGetter(info);
 }
@@ -507,7 +507,7 @@ static void longLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const
     impl->setLongLongAttribute(cppValue);
 }
 
-static void longLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void longLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::longLongAttributeAttributeSetter(v8Value, info);
@@ -520,7 +520,7 @@ static void octetAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Val
     v8SetReturnValueUnsigned(info, impl->octetAttribute());
 }
 
-static void octetAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void octetAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::octetAttributeAttributeGetter(info);
 }
@@ -536,7 +536,7 @@ static void octetAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8
     impl->setOctetAttribute(cppValue);
 }
 
-static void octetAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void octetAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::octetAttributeAttributeSetter(v8Value, info);
@@ -549,7 +549,7 @@ static void shortAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Val
     v8SetReturnValueInt(info, impl->shortAttribute());
 }
 
-static void shortAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void shortAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::shortAttributeAttributeGetter(info);
 }
@@ -565,7 +565,7 @@ static void shortAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8
     impl->setShortAttribute(cppValue);
 }
 
-static void shortAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void shortAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::shortAttributeAttributeSetter(v8Value, info);
@@ -578,7 +578,7 @@ static void unrestrictedDoubleAttributeAttributeGetter(const v8::FunctionCallbac
     v8SetReturnValue(info, impl->unrestrictedDoubleAttribute());
 }
 
-static void unrestrictedDoubleAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void unrestrictedDoubleAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::unrestrictedDoubleAttributeAttributeGetter(info);
 }
@@ -594,7 +594,7 @@ static void unrestrictedDoubleAttributeAttributeSetter(v8::Local<v8::Value> v8Va
     impl->setUnrestrictedDoubleAttribute(cppValue);
 }
 
-static void unrestrictedDoubleAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void unrestrictedDoubleAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::unrestrictedDoubleAttributeAttributeSetter(v8Value, info);
@@ -607,7 +607,7 @@ static void unrestrictedFloatAttributeAttributeGetter(const v8::FunctionCallback
     v8SetReturnValue(info, impl->unrestrictedFloatAttribute());
 }
 
-static void unrestrictedFloatAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void unrestrictedFloatAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::unrestrictedFloatAttributeAttributeGetter(info);
 }
@@ -623,7 +623,7 @@ static void unrestrictedFloatAttributeAttributeSetter(v8::Local<v8::Value> v8Val
     impl->setUnrestrictedFloatAttribute(cppValue);
 }
 
-static void unrestrictedFloatAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void unrestrictedFloatAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::unrestrictedFloatAttributeAttributeSetter(v8Value, info);
@@ -636,7 +636,7 @@ static void unsignedLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<
     v8SetReturnValueUnsigned(info, impl->unsignedLongAttribute());
 }
 
-static void unsignedLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void unsignedLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::unsignedLongAttributeAttributeGetter(info);
 }
@@ -652,7 +652,7 @@ static void unsignedLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
     impl->setUnsignedLongAttribute(cppValue);
 }
 
-static void unsignedLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void unsignedLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::unsignedLongAttributeAttributeSetter(v8Value, info);
@@ -665,7 +665,7 @@ static void unsignedLongLongAttributeAttributeGetter(const v8::FunctionCallbackI
     v8SetReturnValue(info, static_cast<double>(impl->unsignedLongLongAttribute()));
 }
 
-static void unsignedLongLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void unsignedLongLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::unsignedLongLongAttributeAttributeGetter(info);
 }
@@ -681,7 +681,7 @@ static void unsignedLongLongAttributeAttributeSetter(v8::Local<v8::Value> v8Valu
     impl->setUnsignedLongLongAttribute(cppValue);
 }
 
-static void unsignedLongLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void unsignedLongLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::unsignedLongLongAttributeAttributeSetter(v8Value, info);
@@ -694,7 +694,7 @@ static void unsignedShortAttributeAttributeGetter(const v8::FunctionCallbackInfo
     v8SetReturnValueUnsigned(info, impl->unsignedShortAttribute());
 }
 
-static void unsignedShortAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void unsignedShortAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::unsignedShortAttributeAttributeGetter(info);
 }
@@ -710,7 +710,7 @@ static void unsignedShortAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
     impl->setUnsignedShortAttribute(cppValue);
 }
 
-static void unsignedShortAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void unsignedShortAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::unsignedShortAttributeAttributeSetter(v8Value, info);
@@ -723,7 +723,7 @@ static void testInterfaceEmptyAttributeAttributeGetter(const v8::FunctionCallbac
     v8SetReturnValueFast(info, WTF::getPtr(impl->testInterfaceEmptyAttribute()), impl);
 }
 
-static void testInterfaceEmptyAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void testInterfaceEmptyAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::testInterfaceEmptyAttributeAttributeGetter(info);
 }
@@ -741,7 +741,7 @@ static void testInterfaceEmptyAttributeAttributeSetter(v8::Local<v8::Value> v8Va
     impl->setTestInterfaceEmptyAttribute(cppValue);
 }
 
-static void testInterfaceEmptyAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void testInterfaceEmptyAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::testInterfaceEmptyAttributeAttributeSetter(v8Value, info);
@@ -754,7 +754,7 @@ static void testObjectAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8
     v8SetReturnValueFast(info, WTF::getPtr(impl->testObjectAttribute()), impl);
 }
 
-static void testObjectAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void testObjectAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::testObjectAttributeAttributeGetter(info);
 }
@@ -772,7 +772,7 @@ static void testObjectAttributeAttributeSetter(v8::Local<v8::Value> v8Value, con
     impl->setTestObjectAttribute(cppValue);
 }
 
-static void testObjectAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void testObjectAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::testObjectAttributeAttributeSetter(v8Value, info);
@@ -785,7 +785,7 @@ static void voidCallbackFunctionAttributeAttributeGetter(const v8::FunctionCallb
     v8SetReturnValue(info, impl->voidCallbackFunctionAttribute().v8Value());
 }
 
-static void voidCallbackFunctionAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void voidCallbackFunctionAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::voidCallbackFunctionAttributeAttributeGetter(info);
 }
@@ -798,7 +798,7 @@ static void voidCallbackFunctionAttributeAttributeSetter(v8::Local<v8::Value> v8
     impl->setVoidCallbackFunctionAttribute(cppValue);
 }
 
-static void voidCallbackFunctionAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void voidCallbackFunctionAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::voidCallbackFunctionAttributeAttributeSetter(v8Value, info);
@@ -811,7 +811,7 @@ static void anyCallbackFunctionOptionalAnyArgAttributeAttributeGetter(const v8::
     v8SetReturnValue(info, impl->anyCallbackFunctionOptionalAnyArgAttribute().v8Value());
 }
 
-static void anyCallbackFunctionOptionalAnyArgAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void anyCallbackFunctionOptionalAnyArgAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::anyCallbackFunctionOptionalAnyArgAttributeAttributeGetter(info);
 }
@@ -824,7 +824,7 @@ static void anyCallbackFunctionOptionalAnyArgAttributeAttributeSetter(v8::Local<
     impl->setAnyCallbackFunctionOptionalAnyArgAttribute(cppValue);
 }
 
-static void anyCallbackFunctionOptionalAnyArgAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void anyCallbackFunctionOptionalAnyArgAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::anyCallbackFunctionOptionalAnyArgAttributeAttributeSetter(v8Value, info);
@@ -837,7 +837,7 @@ static void cssAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value
     v8SetReturnValueInt(info, impl->cssAttribute());
 }
 
-static void cssAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void cssAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::cssAttributeAttributeGetter(info);
 }
@@ -853,7 +853,7 @@ static void cssAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::
     impl->setCSSAttribute(cppValue);
 }
 
-static void cssAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void cssAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::cssAttributeAttributeSetter(v8Value, info);
@@ -866,7 +866,7 @@ static void imeAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value
     v8SetReturnValueInt(info, impl->imeAttribute());
 }
 
-static void imeAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void imeAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::imeAttributeAttributeGetter(info);
 }
@@ -882,7 +882,7 @@ static void imeAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::
     impl->setIMEAttribute(cppValue);
 }
 
-static void imeAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void imeAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::imeAttributeAttributeSetter(v8Value, info);
@@ -895,7 +895,7 @@ static void svgAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value
     v8SetReturnValueInt(info, impl->svgAttribute());
 }
 
-static void svgAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void svgAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::svgAttributeAttributeGetter(info);
 }
@@ -911,7 +911,7 @@ static void svgAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::
     impl->setSVGAttribute(cppValue);
 }
 
-static void svgAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void svgAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::svgAttributeAttributeSetter(v8Value, info);
@@ -924,7 +924,7 @@ static void xmlAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value
     v8SetReturnValueInt(info, impl->xmlAttribute());
 }
 
-static void xmlAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void xmlAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::xmlAttributeAttributeGetter(info);
 }
@@ -940,7 +940,7 @@ static void xmlAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::
     impl->setXMLAttribute(cppValue);
 }
 
-static void xmlAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void xmlAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::xmlAttributeAttributeSetter(v8Value, info);
@@ -953,7 +953,7 @@ static void nodeFilterAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8
     v8SetReturnValueFast(info, WTF::getPtr(impl->nodeFilterAttribute()), impl);
 }
 
-static void nodeFilterAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void nodeFilterAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::nodeFilterAttributeAttributeGetter(info);
 }
@@ -966,7 +966,7 @@ static void nodeFilterAttributeAttributeSetter(v8::Local<v8::Value> v8Value, con
     impl->setNodeFilterAttribute(cppValue);
 }
 
-static void nodeFilterAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void nodeFilterAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::nodeFilterAttributeAttributeSetter(v8Value, info);
@@ -979,7 +979,7 @@ static void serializedScriptValueAttributeAttributeGetter(const v8::FunctionCall
     v8SetReturnValue(info, v8Deserialize(info.GetIsolate(), WTF::getPtr(impl->serializedScriptValueAttribute())));
 }
 
-static void serializedScriptValueAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void serializedScriptValueAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::serializedScriptValueAttributeAttributeGetter(info);
 }
@@ -995,7 +995,7 @@ static void serializedScriptValueAttributeAttributeSetter(v8::Local<v8::Value> v
     impl->setSerializedScriptValueAttribute(cppValue);
 }
 
-static void serializedScriptValueAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void serializedScriptValueAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::serializedScriptValueAttributeAttributeSetter(v8Value, info);
@@ -1008,7 +1008,7 @@ static void anyAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value
     v8SetReturnValue(info, impl->anyAttribute().v8Value());
 }
 
-static void anyAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void anyAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::anyAttributeAttributeGetter(info);
 }
@@ -1021,7 +1021,7 @@ static void anyAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::
     impl->setAnyAttribute(cppValue);
 }
 
-static void anyAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void anyAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::anyAttributeAttributeSetter(v8Value, info);
@@ -1034,7 +1034,7 @@ static void promiseAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::V
     v8SetReturnValue(info, impl->promiseAttribute().v8Value());
 }
 
-static void promiseAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void promiseAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::promiseAttributeAttributeGetter(info);
 }
@@ -1047,7 +1047,7 @@ static void promiseAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const 
     impl->setPromiseAttribute(cppValue);
 }
 
-static void promiseAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void promiseAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::promiseAttributeAttributeSetter(v8Value, info);
@@ -1060,7 +1060,7 @@ static void windowAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Va
     v8SetReturnValueFast(info, WTF::getPtr(impl->windowAttribute()), impl);
 }
 
-static void windowAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void windowAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::windowAttributeAttributeGetter(info);
 }
@@ -1078,7 +1078,7 @@ static void windowAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v
     impl->setWindowAttribute(cppValue);
 }
 
-static void windowAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void windowAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::windowAttributeAttributeSetter(v8Value, info);
@@ -1091,7 +1091,7 @@ static void documentAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::
     v8SetReturnValueFast(info, WTF::getPtr(impl->documentAttribute()), impl);
 }
 
-static void documentAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void documentAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::documentAttributeAttributeGetter(info);
 }
@@ -1109,7 +1109,7 @@ static void documentAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const
     impl->setDocumentAttribute(cppValue);
 }
 
-static void documentAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void documentAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::documentAttributeAttributeSetter(v8Value, info);
@@ -1122,7 +1122,7 @@ static void documentFragmentAttributeAttributeGetter(const v8::FunctionCallbackI
     v8SetReturnValueFast(info, WTF::getPtr(impl->documentFragmentAttribute()), impl);
 }
 
-static void documentFragmentAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void documentFragmentAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::documentFragmentAttributeAttributeGetter(info);
 }
@@ -1140,7 +1140,7 @@ static void documentFragmentAttributeAttributeSetter(v8::Local<v8::Value> v8Valu
     impl->setDocumentFragmentAttribute(cppValue);
 }
 
-static void documentFragmentAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void documentFragmentAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::documentFragmentAttributeAttributeSetter(v8Value, info);
@@ -1153,7 +1153,7 @@ static void documentTypeAttributeAttributeGetter(const v8::FunctionCallbackInfo<
     v8SetReturnValueFast(info, WTF::getPtr(impl->documentTypeAttribute()), impl);
 }
 
-static void documentTypeAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void documentTypeAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::documentTypeAttributeAttributeGetter(info);
 }
@@ -1171,7 +1171,7 @@ static void documentTypeAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
     impl->setDocumentTypeAttribute(cppValue);
 }
 
-static void documentTypeAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void documentTypeAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::documentTypeAttributeAttributeSetter(v8Value, info);
@@ -1184,7 +1184,7 @@ static void elementAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::V
     v8SetReturnValueFast(info, WTF::getPtr(impl->elementAttribute()), impl);
 }
 
-static void elementAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void elementAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::elementAttributeAttributeGetter(info);
 }
@@ -1202,7 +1202,7 @@ static void elementAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const 
     impl->setElementAttribute(cppValue);
 }
 
-static void elementAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void elementAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::elementAttributeAttributeSetter(v8Value, info);
@@ -1215,7 +1215,7 @@ static void nodeAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Valu
     v8SetReturnValueFast(info, WTF::getPtr(impl->nodeAttribute()), impl);
 }
 
-static void nodeAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void nodeAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::nodeAttributeAttributeGetter(info);
 }
@@ -1233,7 +1233,7 @@ static void nodeAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8:
     impl->setNodeAttribute(cppValue);
 }
 
-static void nodeAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void nodeAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::nodeAttributeAttributeSetter(v8Value, info);
@@ -1246,7 +1246,7 @@ static void shadowRootAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8
     v8SetReturnValueFast(info, WTF::getPtr(impl->shadowRootAttribute()), impl);
 }
 
-static void shadowRootAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void shadowRootAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::shadowRootAttributeAttributeGetter(info);
 }
@@ -1264,7 +1264,7 @@ static void shadowRootAttributeAttributeSetter(v8::Local<v8::Value> v8Value, con
     impl->setShadowRootAttribute(cppValue);
 }
 
-static void shadowRootAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void shadowRootAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::shadowRootAttributeAttributeSetter(v8Value, info);
@@ -1277,7 +1277,7 @@ static void arrayBufferAttributeAttributeGetter(const v8::FunctionCallbackInfo<v
     v8SetReturnValueFast(info, WTF::getPtr(impl->arrayBufferAttribute()), impl);
 }
 
-static void arrayBufferAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void arrayBufferAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::arrayBufferAttributeAttributeGetter(info);
 }
@@ -1295,7 +1295,7 @@ static void arrayBufferAttributeAttributeSetter(v8::Local<v8::Value> v8Value, co
     impl->setArrayBufferAttribute(cppValue);
 }
 
-static void arrayBufferAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void arrayBufferAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::arrayBufferAttributeAttributeSetter(v8Value, info);
@@ -1308,7 +1308,7 @@ static void float32ArrayAttributeAttributeGetter(const v8::FunctionCallbackInfo<
     v8SetReturnValueFast(info, WTF::getPtr(impl->float32ArrayAttribute()), impl);
 }
 
-static void float32ArrayAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void float32ArrayAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::float32ArrayAttributeAttributeGetter(info);
 }
@@ -1326,7 +1326,7 @@ static void float32ArrayAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
     impl->setFloat32ArrayAttribute(cppValue);
 }
 
-static void float32ArrayAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void float32ArrayAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::float32ArrayAttributeAttributeSetter(v8Value, info);
@@ -1339,7 +1339,7 @@ static void uint8ArrayAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8
     v8SetReturnValueFast(info, WTF::getPtr(impl->uint8ArrayAttribute()), impl);
 }
 
-static void uint8ArrayAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void uint8ArrayAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::uint8ArrayAttributeAttributeGetter(info);
 }
@@ -1357,7 +1357,7 @@ static void uint8ArrayAttributeAttributeSetter(v8::Local<v8::Value> v8Value, con
     impl->setUint8ArrayAttribute(cppValue);
 }
 
-static void uint8ArrayAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void uint8ArrayAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::uint8ArrayAttributeAttributeSetter(v8Value, info);
@@ -1370,7 +1370,7 @@ static void selfAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8SetReturnValueFast(info, WTF::getPtr(impl->self()), impl);
 }
 
-static void selfAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void selfAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::selfAttributeGetter(info);
 }
@@ -1382,7 +1382,7 @@ static void readonlyEventTargetAttributeAttributeGetter(const v8::FunctionCallba
     v8SetReturnValueFast(info, WTF::getPtr(impl->readonlyEventTargetAttribute()), impl);
 }
 
-static void readonlyEventTargetAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void readonlyEventTargetAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::readonlyEventTargetAttributeAttributeGetter(info);
 }
@@ -1394,7 +1394,7 @@ static void readonlyEventTargetOrNullAttributeAttributeGetter(const v8::Function
     v8SetReturnValueFast(info, WTF::getPtr(impl->readonlyEventTargetOrNullAttribute()), impl);
 }
 
-static void readonlyEventTargetOrNullAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void readonlyEventTargetOrNullAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::readonlyEventTargetOrNullAttributeAttributeGetter(info);
 }
@@ -1406,7 +1406,7 @@ static void readonlyWindowAttributeAttributeGetter(const v8::FunctionCallbackInf
     v8SetReturnValueFast(info, WTF::getPtr(impl->readonlyWindowAttribute()), impl);
 }
 
-static void readonlyWindowAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void readonlyWindowAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::readonlyWindowAttributeAttributeGetter(info);
 }
@@ -1418,7 +1418,7 @@ static void htmlCollectionAttributeAttributeGetter(const v8::FunctionCallbackInf
     v8SetReturnValueFast(info, WTF::getPtr(impl->htmlCollectionAttribute()), impl);
 }
 
-static void htmlCollectionAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void htmlCollectionAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::htmlCollectionAttributeAttributeGetter(info);
 }
@@ -1430,7 +1430,7 @@ static void htmlElementAttributeAttributeGetter(const v8::FunctionCallbackInfo<v
     v8SetReturnValueFast(info, WTF::getPtr(impl->htmlElementAttribute()), impl);
 }
 
-static void htmlElementAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void htmlElementAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::htmlElementAttributeAttributeGetter(info);
 }
@@ -1442,7 +1442,7 @@ static void stringArrayAttributeAttributeGetter(const v8::FunctionCallbackInfo<v
     v8SetReturnValue(info, toV8(impl->stringArrayAttribute(), info.Holder(), info.GetIsolate()));
 }
 
-static void stringArrayAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void stringArrayAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::stringArrayAttributeAttributeGetter(info);
 }
@@ -1458,7 +1458,7 @@ static void stringArrayAttributeAttributeSetter(v8::Local<v8::Value> v8Value, co
     impl->setStringArrayAttribute(cppValue);
 }
 
-static void stringArrayAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void stringArrayAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::stringArrayAttributeAttributeSetter(v8Value, info);
@@ -1471,7 +1471,7 @@ static void testInterfaceEmptyArrayAttributeAttributeGetter(const v8::FunctionCa
     v8SetReturnValue(info, toV8(impl->testInterfaceEmptyArrayAttribute(), info.Holder(), info.GetIsolate()));
 }
 
-static void testInterfaceEmptyArrayAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void testInterfaceEmptyArrayAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::testInterfaceEmptyArrayAttributeAttributeGetter(info);
 }
@@ -1487,7 +1487,7 @@ static void testInterfaceEmptyArrayAttributeAttributeSetter(v8::Local<v8::Value>
     impl->setTestInterfaceEmptyArrayAttribute(cppValue);
 }
 
-static void testInterfaceEmptyArrayAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void testInterfaceEmptyArrayAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::testInterfaceEmptyArrayAttributeAttributeSetter(v8Value, info);
@@ -1500,7 +1500,7 @@ static void floatArrayAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8
     v8SetReturnValue(info, toV8(impl->floatArrayAttribute(), info.Holder(), info.GetIsolate()));
 }
 
-static void floatArrayAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void floatArrayAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::floatArrayAttributeAttributeGetter(info);
 }
@@ -1516,7 +1516,7 @@ static void floatArrayAttributeAttributeSetter(v8::Local<v8::Value> v8Value, con
     impl->setFloatArrayAttribute(cppValue);
 }
 
-static void floatArrayAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void floatArrayAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::floatArrayAttributeAttributeSetter(v8Value, info);
@@ -1529,7 +1529,7 @@ static void stringFrozenArrayAttributeAttributeGetter(const v8::FunctionCallback
     v8SetReturnValue(info, freezeV8Object(toV8(impl->stringFrozenArrayAttribute(), info.Holder(), info.GetIsolate()), info.GetIsolate()));
 }
 
-static void stringFrozenArrayAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void stringFrozenArrayAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::stringFrozenArrayAttributeAttributeGetter(info);
 }
@@ -1545,7 +1545,7 @@ static void stringFrozenArrayAttributeAttributeSetter(v8::Local<v8::Value> v8Val
     impl->setStringFrozenArrayAttribute(cppValue);
 }
 
-static void stringFrozenArrayAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void stringFrozenArrayAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::stringFrozenArrayAttributeAttributeSetter(v8Value, info);
@@ -1558,7 +1558,7 @@ static void testInterfaceEmptyFrozenArrayAttributeAttributeGetter(const v8::Func
     v8SetReturnValue(info, freezeV8Object(toV8(impl->testInterfaceEmptyFrozenArrayAttribute(), info.Holder(), info.GetIsolate()), info.GetIsolate()));
 }
 
-static void testInterfaceEmptyFrozenArrayAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void testInterfaceEmptyFrozenArrayAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::testInterfaceEmptyFrozenArrayAttributeAttributeGetter(info);
 }
@@ -1574,7 +1574,7 @@ static void testInterfaceEmptyFrozenArrayAttributeAttributeSetter(v8::Local<v8::
     impl->setTestInterfaceEmptyFrozenArrayAttribute(cppValue);
 }
 
-static void testInterfaceEmptyFrozenArrayAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void testInterfaceEmptyFrozenArrayAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::testInterfaceEmptyFrozenArrayAttributeAttributeSetter(v8Value, info);
@@ -1587,7 +1587,7 @@ static void stringOrNullAttributeAttributeGetter(const v8::FunctionCallbackInfo<
     v8SetReturnValueStringOrNull(info, impl->stringOrNullAttribute(), info.GetIsolate());
 }
 
-static void stringOrNullAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void stringOrNullAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::stringOrNullAttributeAttributeGetter(info);
 }
@@ -1602,7 +1602,7 @@ static void stringOrNullAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
     impl->setStringOrNullAttribute(cppValue);
 }
 
-static void stringOrNullAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void stringOrNullAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::stringOrNullAttributeAttributeSetter(v8Value, info);
@@ -1621,7 +1621,7 @@ static void longOrNullAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8
     v8SetReturnValueInt(info, cppValue);
 }
 
-static void longOrNullAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void longOrNullAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::longOrNullAttributeAttributeGetter(info);
 }
@@ -1637,7 +1637,7 @@ static void longOrNullAttributeAttributeSetter(v8::Local<v8::Value> v8Value, con
     impl->setLongOrNullAttribute(cppValue);
 }
 
-static void longOrNullAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void longOrNullAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::longOrNullAttributeAttributeSetter(v8Value, info);
@@ -1650,7 +1650,7 @@ static void testInterfaceOrNullAttributeAttributeGetter(const v8::FunctionCallba
     v8SetReturnValueFast(info, WTF::getPtr(impl->testInterfaceOrNullAttribute()), impl);
 }
 
-static void testInterfaceOrNullAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void testInterfaceOrNullAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::testInterfaceOrNullAttributeAttributeGetter(info);
 }
@@ -1668,7 +1668,7 @@ static void testInterfaceOrNullAttributeAttributeSetter(v8::Local<v8::Value> v8V
     impl->setTestInterfaceOrNullAttribute(cppValue);
 }
 
-static void testInterfaceOrNullAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void testInterfaceOrNullAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::testInterfaceOrNullAttributeAttributeSetter(v8Value, info);
@@ -1681,7 +1681,7 @@ static void testEnumAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::
     v8SetReturnValueString(info, impl->testEnumAttribute(), info.GetIsolate());
 }
 
-static void testEnumAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void testEnumAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::testEnumAttributeAttributeGetter(info);
 }
@@ -1712,7 +1712,7 @@ static void testEnumAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const
     impl->setTestEnumAttribute(cppValue);
 }
 
-static void testEnumAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void testEnumAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::testEnumAttributeAttributeSetter(v8Value, info);
@@ -1725,7 +1725,7 @@ static void testEnumOrNullAttributeAttributeGetter(const v8::FunctionCallbackInf
     v8SetReturnValueStringOrNull(info, impl->testEnumOrNullAttribute(), info.GetIsolate());
 }
 
-static void testEnumOrNullAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void testEnumOrNullAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::testEnumOrNullAttributeAttributeGetter(info);
 }
@@ -1756,7 +1756,7 @@ static void testEnumOrNullAttributeAttributeSetter(v8::Local<v8::Value> v8Value,
     impl->setTestEnumOrNullAttribute(cppValue);
 }
 
-static void testEnumOrNullAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void testEnumOrNullAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::testEnumOrNullAttributeAttributeSetter(v8Value, info);
@@ -1767,7 +1767,7 @@ static void staticStringAttributeAttributeGetter(const v8::FunctionCallbackInfo<
     v8SetReturnValueString(info, TestObject::staticStringAttribute(), info.GetIsolate());
 }
 
-static void staticStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void staticStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::staticStringAttributeAttributeGetter(info);
 }
@@ -1780,7 +1780,7 @@ static void staticStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
     TestObject::setStaticStringAttribute(cppValue);
 }
 
-static void staticStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void staticStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::staticStringAttributeAttributeSetter(v8Value, info);
@@ -1791,7 +1791,7 @@ static void staticLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8
     v8SetReturnValueInt(info, TestObject::staticLongAttribute());
 }
 
-static void staticLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void staticLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::staticLongAttributeAttributeGetter(info);
 }
@@ -1806,7 +1806,7 @@ static void staticLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, con
     TestObject::setStaticLongAttribute(cppValue);
 }
 
-static void staticLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void staticLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::staticLongAttributeAttributeSetter(v8Value, info);
@@ -1820,7 +1820,7 @@ static void eventHandlerAttributeAttributeGetter(const v8::FunctionCallbackInfo<
     v8SetReturnValue(info, cppValue ? V8AbstractEventListener::cast(cppValue)->getListenerOrNull(info.GetIsolate(), impl->getExecutionContext()) : v8::Null(info.GetIsolate()).As<v8::Value>());
 }
 
-static void eventHandlerAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void eventHandlerAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::eventHandlerAttributeAttributeGetter(info);
 }
@@ -1833,7 +1833,7 @@ static void eventHandlerAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
     impl->setEventHandlerAttribute(V8EventListenerList::getEventListener(ScriptState::current(info.GetIsolate()), v8Value, true, ListenerFindOrCreate));
 }
 
-static void eventHandlerAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void eventHandlerAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::eventHandlerAttributeAttributeSetter(v8Value, info);
@@ -1848,7 +1848,7 @@ static void doubleOrStringAttributeAttributeGetter(const v8::FunctionCallbackInf
     v8SetReturnValue(info, result);
 }
 
-static void doubleOrStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void doubleOrStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::doubleOrStringAttributeAttributeGetter(info);
 }
@@ -1865,7 +1865,7 @@ static void doubleOrStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value,
     impl->setDoubleOrStringAttribute(cppValue);
 }
 
-static void doubleOrStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void doubleOrStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::doubleOrStringAttributeAttributeSetter(v8Value, info);
@@ -1880,7 +1880,7 @@ static void doubleOrStringOrNullAttributeAttributeGetter(const v8::FunctionCallb
     v8SetReturnValue(info, result);
 }
 
-static void doubleOrStringOrNullAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void doubleOrStringOrNullAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::doubleOrStringOrNullAttributeAttributeGetter(info);
 }
@@ -1897,7 +1897,7 @@ static void doubleOrStringOrNullAttributeAttributeSetter(v8::Local<v8::Value> v8
     impl->setDoubleOrStringOrNullAttribute(cppValue);
 }
 
-static void doubleOrStringOrNullAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void doubleOrStringOrNullAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::doubleOrStringOrNullAttributeAttributeSetter(v8Value, info);
@@ -1912,7 +1912,7 @@ static void doubleOrNullStringAttributeAttributeGetter(const v8::FunctionCallbac
     v8SetReturnValue(info, result);
 }
 
-static void doubleOrNullStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void doubleOrNullStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::doubleOrNullStringAttributeAttributeGetter(info);
 }
@@ -1929,7 +1929,7 @@ static void doubleOrNullStringAttributeAttributeSetter(v8::Local<v8::Value> v8Va
     impl->setDoubleOrNullStringAttribute(cppValue);
 }
 
-static void doubleOrNullStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void doubleOrNullStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::doubleOrNullStringAttributeAttributeSetter(v8Value, info);
@@ -1944,7 +1944,7 @@ static void stringOrStringSequenceAttributeAttributeGetter(const v8::FunctionCal
     v8SetReturnValue(info, result);
 }
 
-static void stringOrStringSequenceAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void stringOrStringSequenceAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::stringOrStringSequenceAttributeAttributeGetter(info);
 }
@@ -1961,7 +1961,7 @@ static void stringOrStringSequenceAttributeAttributeSetter(v8::Local<v8::Value> 
     impl->setStringOrStringSequenceAttribute(cppValue);
 }
 
-static void stringOrStringSequenceAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void stringOrStringSequenceAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::stringOrStringSequenceAttributeAttributeSetter(v8Value, info);
@@ -1976,7 +1976,7 @@ static void testEnumOrDoubleAttributeAttributeGetter(const v8::FunctionCallbackI
     v8SetReturnValue(info, result);
 }
 
-static void testEnumOrDoubleAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void testEnumOrDoubleAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::testEnumOrDoubleAttributeAttributeGetter(info);
 }
@@ -1993,7 +1993,7 @@ static void testEnumOrDoubleAttributeAttributeSetter(v8::Local<v8::Value> v8Valu
     impl->setTestEnumOrDoubleAttribute(cppValue);
 }
 
-static void testEnumOrDoubleAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void testEnumOrDoubleAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::testEnumOrDoubleAttributeAttributeSetter(v8Value, info);
@@ -2008,7 +2008,7 @@ static void unrestrictedDoubleOrStringAttributeAttributeGetter(const v8::Functio
     v8SetReturnValue(info, result);
 }
 
-static void unrestrictedDoubleOrStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void unrestrictedDoubleOrStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::unrestrictedDoubleOrStringAttributeAttributeGetter(info);
 }
@@ -2025,7 +2025,7 @@ static void unrestrictedDoubleOrStringAttributeAttributeSetter(v8::Local<v8::Val
     impl->setUnrestrictedDoubleOrStringAttribute(cppValue);
 }
 
-static void unrestrictedDoubleOrStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void unrestrictedDoubleOrStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::unrestrictedDoubleOrStringAttributeAttributeSetter(v8Value, info);
@@ -2038,7 +2038,7 @@ static void activityLoggingAccessForAllWorldsLongAttributeAttributeGetter(const 
     v8SetReturnValueInt(info, impl->activityLoggingAccessForAllWorldsLongAttribute());
 }
 
-static void activityLoggingAccessForAllWorldsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void activityLoggingAccessForAllWorldsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
     V8PerContextData* contextData = scriptState->perContextData();
@@ -2058,7 +2058,7 @@ static void activityLoggingAccessForAllWorldsLongAttributeAttributeSetter(v8::Lo
     impl->setActivityLoggingAccessForAllWorldsLongAttribute(cppValue);
 }
 
-static void activityLoggingAccessForAllWorldsLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void activityLoggingAccessForAllWorldsLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
@@ -2076,7 +2076,7 @@ static void activityLoggingGetterForAllWorldsLongAttributeAttributeGetter(const 
     v8SetReturnValueInt(info, impl->activityLoggingGetterForAllWorldsLongAttribute());
 }
 
-static void activityLoggingGetterForAllWorldsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void activityLoggingGetterForAllWorldsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
     V8PerContextData* contextData = scriptState->perContextData();
@@ -2096,7 +2096,7 @@ static void activityLoggingGetterForAllWorldsLongAttributeAttributeSetter(v8::Lo
     impl->setActivityLoggingGetterForAllWorldsLongAttribute(cppValue);
 }
 
-static void activityLoggingGetterForAllWorldsLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void activityLoggingGetterForAllWorldsLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::activityLoggingGetterForAllWorldsLongAttributeAttributeSetter(v8Value, info);
@@ -2109,7 +2109,7 @@ static void activityLoggingSetterForAllWorldsLongAttributeAttributeGetter(const 
     v8SetReturnValueInt(info, impl->activityLoggingSetterForAllWorldsLongAttribute());
 }
 
-static void activityLoggingSetterForAllWorldsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void activityLoggingSetterForAllWorldsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::activityLoggingSetterForAllWorldsLongAttributeAttributeGetter(info);
 }
@@ -2125,7 +2125,7 @@ static void activityLoggingSetterForAllWorldsLongAttributeAttributeSetter(v8::Lo
     impl->setActivityLoggingSetterForAllWorldsLongAttribute(cppValue);
 }
 
-static void activityLoggingSetterForAllWorldsLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void activityLoggingSetterForAllWorldsLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
@@ -2154,7 +2154,7 @@ static void cachedAttributeAnyAttributeAttributeGetter(const v8::FunctionCallbac
     v8SetReturnValue(info, v8Value);
 }
 
-static void cachedAttributeAnyAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void cachedAttributeAnyAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::cachedAttributeAnyAttributeAttributeGetter(info);
 }
@@ -2168,7 +2168,7 @@ static void cachedAttributeAnyAttributeAttributeSetter(v8::Local<v8::Value> v8Va
     V8HiddenValue::deleteHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), "cachedAttributeAnyAttribute")); // Invalidate the cached value.
 }
 
-static void cachedAttributeAnyAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void cachedAttributeAnyAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::cachedAttributeAnyAttributeAttributeSetter(v8Value, info);
@@ -2192,7 +2192,7 @@ static void cachedArrayAttributeAttributeGetter(const v8::FunctionCallbackInfo<v
     v8SetReturnValue(info, v8Value);
 }
 
-static void cachedArrayAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void cachedArrayAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::cachedArrayAttributeAttributeGetter(info);
 }
@@ -2209,7 +2209,7 @@ static void cachedArrayAttributeAttributeSetter(v8::Local<v8::Value> v8Value, co
     V8HiddenValue::deleteHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), "cachedArrayAttribute")); // Invalidate the cached value.
 }
 
-static void cachedArrayAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void cachedArrayAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::cachedArrayAttributeAttributeSetter(v8Value, info);
@@ -2233,7 +2233,7 @@ static void cachedStringOrNoneAttributeAttributeGetter(const v8::FunctionCallbac
     v8SetReturnValue(info, v8Value);
 }
 
-static void cachedStringOrNoneAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void cachedStringOrNoneAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::cachedStringOrNoneAttributeAttributeGetter(info);
 }
@@ -2249,7 +2249,7 @@ static void cachedStringOrNoneAttributeAttributeSetter(v8::Local<v8::Value> v8Va
     V8HiddenValue::deleteHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), "cachedStringOrNoneAttribute")); // Invalidate the cached value.
 }
 
-static void cachedStringOrNoneAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void cachedStringOrNoneAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::cachedStringOrNoneAttributeAttributeSetter(v8Value, info);
@@ -2263,7 +2263,7 @@ static void callWithExecutionContextAnyAttributeAttributeGetter(const v8::Functi
     v8SetReturnValue(info, impl->callWithExecutionContextAnyAttribute(executionContext).v8Value());
 }
 
-static void callWithExecutionContextAnyAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void callWithExecutionContextAnyAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::callWithExecutionContextAnyAttributeAttributeGetter(info);
 }
@@ -2277,7 +2277,7 @@ static void callWithExecutionContextAnyAttributeAttributeSetter(v8::Local<v8::Va
     impl->setCallWithExecutionContextAnyAttribute(executionContext, cppValue);
 }
 
-static void callWithExecutionContextAnyAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void callWithExecutionContextAnyAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::callWithExecutionContextAnyAttributeAttributeSetter(v8Value, info);
@@ -2291,7 +2291,7 @@ static void callWithScriptStateAnyAttributeAttributeGetter(const v8::FunctionCal
     v8SetReturnValue(info, impl->callWithScriptStateAnyAttribute(scriptState).v8Value());
 }
 
-static void callWithScriptStateAnyAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void callWithScriptStateAnyAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::callWithScriptStateAnyAttributeAttributeGetter(info);
 }
@@ -2305,7 +2305,7 @@ static void callWithScriptStateAnyAttributeAttributeSetter(v8::Local<v8::Value> 
     impl->setCallWithScriptStateAnyAttribute(scriptState, cppValue);
 }
 
-static void callWithScriptStateAnyAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void callWithScriptStateAnyAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::callWithScriptStateAnyAttributeAttributeSetter(v8Value, info);
@@ -2320,7 +2320,7 @@ static void callWithExecutionContextAndScriptStateAnyAttributeAttributeGetter(co
     v8SetReturnValue(info, impl->callWithExecutionContextAndScriptStateAnyAttribute(scriptState, executionContext).v8Value());
 }
 
-static void callWithExecutionContextAndScriptStateAnyAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void callWithExecutionContextAndScriptStateAnyAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::callWithExecutionContextAndScriptStateAnyAttributeAttributeGetter(info);
 }
@@ -2335,7 +2335,7 @@ static void callWithExecutionContextAndScriptStateAnyAttributeAttributeSetter(v8
     impl->setCallWithExecutionContextAndScriptStateAnyAttribute(scriptState, executionContext, cppValue);
 }
 
-static void callWithExecutionContextAndScriptStateAnyAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void callWithExecutionContextAndScriptStateAnyAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::callWithExecutionContextAndScriptStateAnyAttributeAttributeSetter(v8Value, info);
@@ -2353,35 +2353,35 @@ static void checkSecurityForNodeReadonlyDocumentAttributeAttributeGetter(const v
     v8SetReturnValueFast(info, WTF::getPtr(impl->checkSecurityForNodeReadonlyDocumentAttribute()), impl);
 }
 
-static void checkSecurityForNodeReadonlyDocumentAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void checkSecurityForNodeReadonlyDocumentAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::checkSecurityForNodeReadonlyDocumentAttributeAttributeGetter(info);
 }
 
-static void testInterfaceEmptyConstructorAttributeConstructorGetterCallback(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info)
+void testInterfaceEmptyConstructorAttributeConstructorGetterCallback(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     Deprecation::countDeprecationIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::deprecatedTestInterfaceEmptyConstructorAttribute);
     v8ConstructorAttributeGetter(property, info);
 }
 
-static void measureAsFeatureNameTestInterfaceEmptyConstructorAttributeConstructorGetterCallback(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info)
+void measureAsFeatureNameTestInterfaceEmptyConstructorAttributeConstructorGetterCallback(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::FeatureName);
     v8ConstructorAttributeGetter(property, info);
 }
 
-static void customObjectAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void customObjectAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     V8TestObject::customObjectAttributeAttributeGetterCustom(info);
 }
 
-static void customObjectAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void customObjectAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     V8TestObject::customObjectAttributeAttributeSetterCustom(v8Value, info);
 }
 
-static void customGetterLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void customGetterLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     V8TestObject::customGetterLongAttributeAttributeGetterCustom(info);
 }
@@ -2397,13 +2397,13 @@ static void customGetterLongAttributeAttributeSetter(v8::Local<v8::Value> v8Valu
     impl->setCustomGetterLongAttribute(cppValue);
 }
 
-static void customGetterLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void customGetterLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::customGetterLongAttributeAttributeSetter(v8Value, info);
 }
 
-static void customGetterReadonlyObjectAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void customGetterReadonlyObjectAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     V8TestObject::customGetterReadonlyObjectAttributeAttributeGetterCustom(info);
 }
@@ -2415,12 +2415,12 @@ static void customSetterLongAttributeAttributeGetter(const v8::FunctionCallbackI
     v8SetReturnValueInt(info, impl->customSetterLongAttribute());
 }
 
-static void customSetterLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void customSetterLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::customSetterLongAttributeAttributeGetter(info);
 }
 
-static void customSetterLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void customSetterLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     V8TestObject::customSetterLongAttributeAttributeSetterCustom(v8Value, info);
@@ -2433,7 +2433,7 @@ static void customElementsCallbacksReadonlyLongAttributeAttributeGetter(const v8
     v8SetReturnValueInt(info, impl->customElementsCallbacksReadonlyLongAttribute());
 }
 
-static void customElementsCallbacksReadonlyLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void customElementsCallbacksReadonlyLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::customElementsCallbacksReadonlyLongAttributeAttributeGetter(info);
 }
@@ -2445,7 +2445,7 @@ static void deprecatedLongAttributeAttributeGetter(const v8::FunctionCallbackInf
     v8SetReturnValueInt(info, impl->deprecatedLongAttribute());
 }
 
-static void deprecatedLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void deprecatedLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     Deprecation::countDeprecationIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::LongAttribute);
     TestObjectV8Internal::deprecatedLongAttributeAttributeGetter(info);
@@ -2462,7 +2462,7 @@ static void deprecatedLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value,
     impl->setDeprecatedLongAttribute(cppValue);
 }
 
-static void deprecatedLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void deprecatedLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     Deprecation::countDeprecationIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::LongAttribute);
@@ -2476,7 +2476,7 @@ static void enforceRangeLongAttributeAttributeGetter(const v8::FunctionCallbackI
     v8SetReturnValueInt(info, impl->enforceRangeLongAttribute());
 }
 
-static void enforceRangeLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void enforceRangeLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::enforceRangeLongAttributeAttributeGetter(info);
 }
@@ -2492,7 +2492,7 @@ static void enforceRangeLongAttributeAttributeSetter(v8::Local<v8::Value> v8Valu
     impl->setEnforceRangeLongAttribute(cppValue);
 }
 
-static void enforceRangeLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void enforceRangeLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::enforceRangeLongAttributeAttributeSetter(v8Value, info);
@@ -2505,7 +2505,7 @@ static void implementedAsLongAttributeAttributeGetter(const v8::FunctionCallback
     v8SetReturnValueInt(info, impl->implementedAsName());
 }
 
-static void implementedAsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void implementedAsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::implementedAsLongAttributeAttributeGetter(info);
 }
@@ -2521,24 +2521,24 @@ static void implementedAsLongAttributeAttributeSetter(v8::Local<v8::Value> v8Val
     impl->setImplementedAsName(cppValue);
 }
 
-static void implementedAsLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void implementedAsLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::implementedAsLongAttributeAttributeSetter(v8Value, info);
 }
 
-static void customImplementedAsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void customImplementedAsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     V8TestObject::customImplementedAsLongAttributeAttributeGetterCustom(info);
 }
 
-static void customImplementedAsLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void customImplementedAsLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     V8TestObject::customImplementedAsLongAttributeAttributeSetterCustom(v8Value, info);
 }
 
-static void customGetterImplementedAsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void customGetterImplementedAsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     V8TestObject::customGetterImplementedAsLongAttributeAttributeGetterCustom(info);
 }
@@ -2554,7 +2554,7 @@ static void customGetterImplementedAsLongAttributeAttributeSetter(v8::Local<v8::
     impl->setImplementedAsNameWithCustomGetter(cppValue);
 }
 
-static void customGetterImplementedAsLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void customGetterImplementedAsLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::customGetterImplementedAsLongAttributeAttributeSetter(v8Value, info);
@@ -2567,12 +2567,12 @@ static void customSetterImplementedAsLongAttributeAttributeGetter(const v8::Func
     v8SetReturnValueInt(info, impl->implementedAsNameWithCustomGetter());
 }
 
-static void customSetterImplementedAsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void customSetterImplementedAsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::customSetterImplementedAsLongAttributeAttributeGetter(info);
 }
 
-static void customSetterImplementedAsLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void customSetterImplementedAsLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     V8TestObject::customSetterImplementedAsLongAttributeAttributeSetterCustom(v8Value, info);
@@ -2585,7 +2585,7 @@ static void measureAsLongAttributeAttributeGetter(const v8::FunctionCallbackInfo
     v8SetReturnValueInt(info, impl->measureAsLongAttribute());
 }
 
-static void measureAsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void measureAsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
     TestObjectV8Internal::measureAsLongAttributeAttributeGetter(info);
@@ -2602,7 +2602,7 @@ static void measureAsLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
     impl->setMeasureAsLongAttribute(cppValue);
 }
 
-static void measureAsLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void measureAsLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
@@ -2616,7 +2616,7 @@ static void notEnumerableLongAttributeAttributeGetter(const v8::FunctionCallback
     v8SetReturnValueInt(info, impl->notEnumerableLongAttribute());
 }
 
-static void notEnumerableLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void notEnumerableLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::notEnumerableLongAttributeAttributeGetter(info);
 }
@@ -2632,7 +2632,7 @@ static void notEnumerableLongAttributeAttributeSetter(v8::Local<v8::Value> v8Val
     impl->setNotEnumerableLongAttribute(cppValue);
 }
 
-static void notEnumerableLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void notEnumerableLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::notEnumerableLongAttributeAttributeSetter(v8Value, info);
@@ -2645,7 +2645,7 @@ static void originTrialEnabledLongAttributeAttributeGetter(const v8::FunctionCal
     v8SetReturnValueInt(info, impl->originTrialEnabledLongAttribute());
 }
 
-static void originTrialEnabledLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void originTrialEnabledLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::originTrialEnabledLongAttributeAttributeGetter(info);
 }
@@ -2661,7 +2661,7 @@ static void originTrialEnabledLongAttributeAttributeSetter(v8::Local<v8::Value> 
     impl->setOriginTrialEnabledLongAttribute(cppValue);
 }
 
-static void originTrialEnabledLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void originTrialEnabledLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::originTrialEnabledLongAttributeAttributeSetter(v8Value, info);
@@ -2679,7 +2679,7 @@ static void perWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetter(c
     v8SetReturnValue(info, v8Value);
 }
 
-static void perWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void perWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::perWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetter(info);
 }
@@ -2696,7 +2696,7 @@ static void perWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetterFo
     v8SetReturnValue(info, v8Value);
 }
 
-static void perWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetterCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
+void perWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetterCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::perWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetterForMainWorld(info);
 }
@@ -2708,7 +2708,7 @@ static void activityLoggingAccessPerWorldBindingsLongAttributeAttributeGetter(co
     v8SetReturnValueInt(info, impl->activityLoggingAccessPerWorldBindingsLongAttribute());
 }
 
-static void activityLoggingAccessPerWorldBindingsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void activityLoggingAccessPerWorldBindingsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
     V8PerContextData* contextData = scriptState->perContextData();
@@ -2728,7 +2728,7 @@ static void activityLoggingAccessPerWorldBindingsLongAttributeAttributeSetter(v8
     impl->setActivityLoggingAccessPerWorldBindingsLongAttribute(cppValue);
 }
 
-static void activityLoggingAccessPerWorldBindingsLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void activityLoggingAccessPerWorldBindingsLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
@@ -2746,7 +2746,7 @@ static void activityLoggingAccessPerWorldBindingsLongAttributeAttributeGetterFor
     v8SetReturnValueInt(info, impl->activityLoggingAccessPerWorldBindingsLongAttribute());
 }
 
-static void activityLoggingAccessPerWorldBindingsLongAttributeAttributeGetterCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
+void activityLoggingAccessPerWorldBindingsLongAttributeAttributeGetterCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
     V8PerContextData* contextData = scriptState->perContextData();
@@ -2766,7 +2766,7 @@ static void activityLoggingAccessPerWorldBindingsLongAttributeAttributeSetterFor
     impl->setActivityLoggingAccessPerWorldBindingsLongAttribute(cppValue);
 }
 
-static void activityLoggingAccessPerWorldBindingsLongAttributeAttributeSetterCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
+void activityLoggingAccessPerWorldBindingsLongAttributeAttributeSetterCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
@@ -2784,7 +2784,7 @@ static void activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeA
     v8SetReturnValueInt(info, impl->activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttribute());
 }
 
-static void activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
     V8PerContextData* contextData = scriptState->perContextData();
@@ -2804,7 +2804,7 @@ static void activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeA
     impl->setActivityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttribute(cppValue);
 }
 
-static void activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
@@ -2822,7 +2822,7 @@ static void activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeA
     v8SetReturnValueInt(info, impl->activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttribute());
 }
 
-static void activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeAttributeGetterCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
+void activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeAttributeGetterCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeAttributeGetterForMainWorld(info);
 }
@@ -2838,7 +2838,7 @@ static void activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeA
     impl->setActivityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttribute(cppValue);
 }
 
-static void activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeAttributeSetterCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
+void activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeAttributeSetterCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeAttributeSetterForMainWorld(v8Value, info);
@@ -2851,7 +2851,7 @@ static void activityLoggingGetterPerWorldBindingsLongAttributeAttributeGetter(co
     v8SetReturnValueInt(info, impl->activityLoggingGetterPerWorldBindingsLongAttribute());
 }
 
-static void activityLoggingGetterPerWorldBindingsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void activityLoggingGetterPerWorldBindingsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
     V8PerContextData* contextData = scriptState->perContextData();
@@ -2871,7 +2871,7 @@ static void activityLoggingGetterPerWorldBindingsLongAttributeAttributeSetter(v8
     impl->setActivityLoggingGetterPerWorldBindingsLongAttribute(cppValue);
 }
 
-static void activityLoggingGetterPerWorldBindingsLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void activityLoggingGetterPerWorldBindingsLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::activityLoggingGetterPerWorldBindingsLongAttributeAttributeSetter(v8Value, info);
@@ -2884,7 +2884,7 @@ static void activityLoggingGetterPerWorldBindingsLongAttributeAttributeGetterFor
     v8SetReturnValueInt(info, impl->activityLoggingGetterPerWorldBindingsLongAttribute());
 }
 
-static void activityLoggingGetterPerWorldBindingsLongAttributeAttributeGetterCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
+void activityLoggingGetterPerWorldBindingsLongAttributeAttributeGetterCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
     V8PerContextData* contextData = scriptState->perContextData();
@@ -2904,7 +2904,7 @@ static void activityLoggingGetterPerWorldBindingsLongAttributeAttributeSetterFor
     impl->setActivityLoggingGetterPerWorldBindingsLongAttribute(cppValue);
 }
 
-static void activityLoggingGetterPerWorldBindingsLongAttributeAttributeSetterCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
+void activityLoggingGetterPerWorldBindingsLongAttributeAttributeSetterCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::activityLoggingGetterPerWorldBindingsLongAttributeAttributeSetterForMainWorld(v8Value, info);
@@ -2917,7 +2917,7 @@ static void activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeA
     v8SetReturnValueInt(info, impl->activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttribute());
 }
 
-static void activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
     V8PerContextData* contextData = scriptState->perContextData();
@@ -2937,7 +2937,7 @@ static void activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeA
     impl->setActivityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttribute(cppValue);
 }
 
-static void activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeAttributeSetter(v8Value, info);
@@ -2950,7 +2950,7 @@ static void activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeA
     v8SetReturnValueInt(info, impl->activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttribute());
 }
 
-static void activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeAttributeGetterCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
+void activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeAttributeGetterCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeAttributeGetterForMainWorld(info);
 }
@@ -2966,7 +2966,7 @@ static void activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeA
     impl->setActivityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttribute(cppValue);
 }
 
-static void activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeAttributeSetterCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
+void activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeAttributeSetterCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeAttributeSetterForMainWorld(v8Value, info);
@@ -2979,7 +2979,7 @@ static void locationAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& i
     v8SetReturnValueFast(info, WTF::getPtr(impl->location()), impl);
 }
 
-static void locationAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void locationAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::locationAttributeGetter(info);
 }
@@ -2997,7 +2997,7 @@ static void locationAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Func
     impl->setHref(cppValue);
 }
 
-static void locationAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void locationAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::locationAttributeSetter(v8Value, info);
@@ -3010,7 +3010,7 @@ static void locationWithExceptionAttributeGetter(const v8::FunctionCallbackInfo<
     v8SetReturnValueFast(info, WTF::getPtr(impl->locationWithException()), impl);
 }
 
-static void locationWithExceptionAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void locationWithExceptionAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::locationWithExceptionAttributeGetter(info);
 }
@@ -3029,7 +3029,7 @@ static void locationWithExceptionAttributeSetter(v8::Local<v8::Value> v8Value, c
     impl->setHrefThrows(cppValue, exceptionState);
 }
 
-static void locationWithExceptionAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void locationWithExceptionAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::locationWithExceptionAttributeSetter(v8Value, info);
@@ -3042,7 +3042,7 @@ static void locationWithCallWithAttributeGetter(const v8::FunctionCallbackInfo<v
     v8SetReturnValueFast(info, WTF::getPtr(impl->locationWithCallWith()), impl);
 }
 
-static void locationWithCallWithAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void locationWithCallWithAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::locationWithCallWithAttributeGetter(info);
 }
@@ -3061,7 +3061,7 @@ static void locationWithCallWithAttributeSetter(v8::Local<v8::Value> v8Value, co
     impl->setHrefCallWith(executionContext, currentDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()), cppValue);
 }
 
-static void locationWithCallWithAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void locationWithCallWithAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::locationWithCallWithAttributeSetter(v8Value, info);
@@ -3074,7 +3074,7 @@ static void locationByteStringAttributeGetter(const v8::FunctionCallbackInfo<v8:
     v8SetReturnValueFast(info, WTF::getPtr(impl->locationByteString()), impl);
 }
 
-static void locationByteStringAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void locationByteStringAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::locationByteStringAttributeGetter(info);
 }
@@ -3093,7 +3093,7 @@ static void locationByteStringAttributeSetter(v8::Local<v8::Value> v8Value, cons
     impl->setHrefByteString(cppValue);
 }
 
-static void locationByteStringAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void locationByteStringAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::locationByteStringAttributeSetter(v8Value, info);
@@ -3106,7 +3106,7 @@ static void locationWithPerWorldBindingsAttributeGetter(const v8::FunctionCallba
     v8SetReturnValueFast(info, WTF::getPtr(impl->locationWithPerWorldBindings()), impl);
 }
 
-static void locationWithPerWorldBindingsAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void locationWithPerWorldBindingsAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::locationWithPerWorldBindingsAttributeGetter(info);
 }
@@ -3124,7 +3124,7 @@ static void locationWithPerWorldBindingsAttributeSetter(v8::Local<v8::Value> v8V
     impl->setHref(cppValue);
 }
 
-static void locationWithPerWorldBindingsAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void locationWithPerWorldBindingsAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::locationWithPerWorldBindingsAttributeSetter(v8Value, info);
@@ -3137,7 +3137,7 @@ static void locationWithPerWorldBindingsAttributeGetterForMainWorld(const v8::Fu
     v8SetReturnValueForMainWorld(info, WTF::getPtr(impl->locationWithPerWorldBindings()));
 }
 
-static void locationWithPerWorldBindingsAttributeGetterCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
+void locationWithPerWorldBindingsAttributeGetterCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::locationWithPerWorldBindingsAttributeGetterForMainWorld(info);
 }
@@ -3155,7 +3155,7 @@ static void locationWithPerWorldBindingsAttributeSetterForMainWorld(v8::Local<v8
     impl->setHref(cppValue);
 }
 
-static void locationWithPerWorldBindingsAttributeSetterCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
+void locationWithPerWorldBindingsAttributeSetterCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::locationWithPerWorldBindingsAttributeSetterForMainWorld(v8Value, info);
@@ -3168,7 +3168,7 @@ static void locationLegacyInterfaceTypeCheckingAttributeGetter(const v8::Functio
     v8SetReturnValueFast(info, WTF::getPtr(impl->locationLegacyInterfaceTypeChecking()), impl);
 }
 
-static void locationLegacyInterfaceTypeCheckingAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void locationLegacyInterfaceTypeCheckingAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::locationLegacyInterfaceTypeCheckingAttributeGetter(info);
 }
@@ -3186,7 +3186,7 @@ static void locationLegacyInterfaceTypeCheckingAttributeSetter(v8::Local<v8::Val
     impl->setHref(cppValue);
 }
 
-static void locationLegacyInterfaceTypeCheckingAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void locationLegacyInterfaceTypeCheckingAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::locationLegacyInterfaceTypeCheckingAttributeSetter(v8Value, info);
@@ -3204,7 +3204,7 @@ static void locationGarbageCollectedAttributeGetter(const v8::FunctionCallbackIn
     v8SetReturnValue(info, v8Value);
 }
 
-static void locationGarbageCollectedAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void locationGarbageCollectedAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::locationGarbageCollectedAttributeGetter(info);
 }
@@ -3225,7 +3225,7 @@ static void locationGarbageCollectedAttributeSetter(v8::Local<v8::Value> v8Value
     impl->setAttr1(cppValue);
 }
 
-static void locationGarbageCollectedAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void locationGarbageCollectedAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::locationGarbageCollectedAttributeSetter(v8Value, info);
@@ -3242,7 +3242,7 @@ static void raisesExceptionLongAttributeAttributeGetter(const v8::FunctionCallba
     v8SetReturnValueInt(info, cppValue);
 }
 
-static void raisesExceptionLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void raisesExceptionLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::raisesExceptionLongAttributeAttributeGetter(info);
 }
@@ -3258,7 +3258,7 @@ static void raisesExceptionLongAttributeAttributeSetter(v8::Local<v8::Value> v8V
     impl->setRaisesExceptionLongAttribute(cppValue, exceptionState);
 }
 
-static void raisesExceptionLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void raisesExceptionLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::raisesExceptionLongAttributeAttributeSetter(v8Value, info);
@@ -3275,7 +3275,7 @@ static void raisesExceptionGetterLongAttributeAttributeGetter(const v8::Function
     v8SetReturnValueInt(info, cppValue);
 }
 
-static void raisesExceptionGetterLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void raisesExceptionGetterLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::raisesExceptionGetterLongAttributeAttributeGetter(info);
 }
@@ -3291,7 +3291,7 @@ static void raisesExceptionGetterLongAttributeAttributeSetter(v8::Local<v8::Valu
     impl->setRaisesExceptionGetterLongAttribute(cppValue);
 }
 
-static void raisesExceptionGetterLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void raisesExceptionGetterLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::raisesExceptionGetterLongAttributeAttributeSetter(v8Value, info);
@@ -3304,7 +3304,7 @@ static void setterRaisesExceptionLongAttributeAttributeGetter(const v8::Function
     v8SetReturnValueInt(info, impl->setterRaisesExceptionLongAttribute());
 }
 
-static void setterRaisesExceptionLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void setterRaisesExceptionLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::setterRaisesExceptionLongAttributeAttributeGetter(info);
 }
@@ -3320,7 +3320,7 @@ static void setterRaisesExceptionLongAttributeAttributeSetter(v8::Local<v8::Valu
     impl->setSetterRaisesExceptionLongAttribute(cppValue, exceptionState);
 }
 
-static void setterRaisesExceptionLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void setterRaisesExceptionLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::setterRaisesExceptionLongAttributeAttributeSetter(v8Value, info);
@@ -3337,7 +3337,7 @@ static void raisesExceptionTestInterfaceEmptyAttributeAttributeGetter(const v8::
     v8SetReturnValueFast(info, cppValue, impl);
 }
 
-static void raisesExceptionTestInterfaceEmptyAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void raisesExceptionTestInterfaceEmptyAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::raisesExceptionTestInterfaceEmptyAttributeAttributeGetter(info);
 }
@@ -3355,7 +3355,7 @@ static void raisesExceptionTestInterfaceEmptyAttributeAttributeSetter(v8::Local<
     impl->setRaisesExceptionTestInterfaceEmptyAttribute(cppValue, exceptionState);
 }
 
-static void raisesExceptionTestInterfaceEmptyAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void raisesExceptionTestInterfaceEmptyAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::raisesExceptionTestInterfaceEmptyAttributeAttributeSetter(v8Value, info);
@@ -3382,7 +3382,7 @@ static void cachedAttributeRaisesExceptionGetterAnyAttributeAttributeGetter(cons
     v8SetReturnValue(info, v8Value);
 }
 
-static void cachedAttributeRaisesExceptionGetterAnyAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void cachedAttributeRaisesExceptionGetterAnyAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::cachedAttributeRaisesExceptionGetterAnyAttributeAttributeGetter(info);
 }
@@ -3397,7 +3397,7 @@ static void cachedAttributeRaisesExceptionGetterAnyAttributeAttributeSetter(v8::
     V8HiddenValue::deleteHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), "cachedAttributeRaisesExceptionGetterAnyAttribute")); // Invalidate the cached value.
 }
 
-static void cachedAttributeRaisesExceptionGetterAnyAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void cachedAttributeRaisesExceptionGetterAnyAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::cachedAttributeRaisesExceptionGetterAnyAttributeAttributeSetter(v8Value, info);
@@ -3410,7 +3410,7 @@ static void reflectTestInterfaceAttributeAttributeGetter(const v8::FunctionCallb
     v8SetReturnValueFast(info, impl->fastGetAttribute(HTMLNames::reflecttestinterfaceattributeAttr), impl);
 }
 
-static void reflectTestInterfaceAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void reflectTestInterfaceAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::reflectTestInterfaceAttributeAttributeGetter(info);
 }
@@ -3429,7 +3429,7 @@ static void reflectTestInterfaceAttributeAttributeSetter(v8::Local<v8::Value> v8
     impl->setAttribute(HTMLNames::reflecttestinterfaceattributeAttr, cppValue);
 }
 
-static void reflectTestInterfaceAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void reflectTestInterfaceAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
@@ -3443,7 +3443,7 @@ static void reflectReflectedNameAttributeTestAttributeAttributeGetter(const v8::
     v8SetReturnValueFast(info, impl->fastGetAttribute(HTMLNames::reflectedNameAttributeAttr), impl);
 }
 
-static void reflectReflectedNameAttributeTestAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void reflectReflectedNameAttributeTestAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::reflectReflectedNameAttributeTestAttributeAttributeGetter(info);
 }
@@ -3462,7 +3462,7 @@ static void reflectReflectedNameAttributeTestAttributeAttributeSetter(v8::Local<
     impl->setAttribute(HTMLNames::reflectedNameAttributeAttr, cppValue);
 }
 
-static void reflectReflectedNameAttributeTestAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void reflectReflectedNameAttributeTestAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
@@ -3476,7 +3476,7 @@ static void reflectBooleanAttributeAttributeGetter(const v8::FunctionCallbackInf
     v8SetReturnValueBool(info, impl->fastHasAttribute(HTMLNames::reflectbooleanattributeAttr));
 }
 
-static void reflectBooleanAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void reflectBooleanAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::reflectBooleanAttributeAttributeGetter(info);
 }
@@ -3493,7 +3493,7 @@ static void reflectBooleanAttributeAttributeSetter(v8::Local<v8::Value> v8Value,
     impl->setBooleanAttribute(HTMLNames::reflectbooleanattributeAttr, cppValue);
 }
 
-static void reflectBooleanAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void reflectBooleanAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
@@ -3507,7 +3507,7 @@ static void reflectLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v
     v8SetReturnValueInt(info, impl->getIntegralAttribute(HTMLNames::reflectlongattributeAttr));
 }
 
-static void reflectLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void reflectLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::reflectLongAttributeAttributeGetter(info);
 }
@@ -3524,7 +3524,7 @@ static void reflectLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, co
     impl->setIntegralAttribute(HTMLNames::reflectlongattributeAttr, cppValue);
 }
 
-static void reflectLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void reflectLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
@@ -3538,7 +3538,7 @@ static void reflectUnsignedShortAttributeAttributeGetter(const v8::FunctionCallb
     v8SetReturnValueUnsigned(info, std::max(0, static_cast<int>(impl->fastGetAttribute(HTMLNames::reflectunsignedshortattributeAttr))));
 }
 
-static void reflectUnsignedShortAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void reflectUnsignedShortAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::reflectUnsignedShortAttributeAttributeGetter(info);
 }
@@ -3555,7 +3555,7 @@ static void reflectUnsignedShortAttributeAttributeSetter(v8::Local<v8::Value> v8
     impl->setAttribute(HTMLNames::reflectunsignedshortattributeAttr, cppValue);
 }
 
-static void reflectUnsignedShortAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void reflectUnsignedShortAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
@@ -3569,7 +3569,7 @@ static void reflectUnsignedLongAttributeAttributeGetter(const v8::FunctionCallba
     v8SetReturnValueUnsigned(info, std::max(0, static_cast<int>(impl->getIntegralAttribute(HTMLNames::reflectunsignedlongattributeAttr))));
 }
 
-static void reflectUnsignedLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void reflectUnsignedLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::reflectUnsignedLongAttributeAttributeGetter(info);
 }
@@ -3586,7 +3586,7 @@ static void reflectUnsignedLongAttributeAttributeSetter(v8::Local<v8::Value> v8V
     impl->setUnsignedIntegralAttribute(HTMLNames::reflectunsignedlongattributeAttr, cppValue);
 }
 
-static void reflectUnsignedLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void reflectUnsignedLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
@@ -3600,7 +3600,7 @@ static void idAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8SetReturnValueString(info, impl->getIdAttribute(), info.GetIsolate());
 }
 
-static void idAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void idAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::idAttributeGetter(info);
 }
@@ -3616,7 +3616,7 @@ static void idAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCa
     impl->setAttribute(HTMLNames::idAttr, cppValue);
 }
 
-static void idAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void idAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
@@ -3630,7 +3630,7 @@ static void nameAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8SetReturnValueString(info, impl->getNameAttribute(), info.GetIsolate());
 }
 
-static void nameAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void nameAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::nameAttributeGetter(info);
 }
@@ -3646,7 +3646,7 @@ static void nameAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Function
     impl->setAttribute(HTMLNames::nameAttr, cppValue);
 }
 
-static void nameAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void nameAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
@@ -3660,7 +3660,7 @@ static void classAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info
     v8SetReturnValueString(info, impl->getClassAttribute(), info.GetIsolate());
 }
 
-static void classAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void classAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::classAttributeGetter(info);
 }
@@ -3676,7 +3676,7 @@ static void classAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Functio
     impl->setAttribute(HTMLNames::classAttr, cppValue);
 }
 
-static void classAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void classAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
@@ -3690,7 +3690,7 @@ static void reflectedIdAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>
     v8SetReturnValueString(info, impl->getIdAttribute(), info.GetIsolate());
 }
 
-static void reflectedIdAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void reflectedIdAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::reflectedIdAttributeGetter(info);
 }
@@ -3706,7 +3706,7 @@ static void reflectedIdAttributeSetter(v8::Local<v8::Value> v8Value, const v8::F
     impl->setAttribute(HTMLNames::idAttr, cppValue);
 }
 
-static void reflectedIdAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void reflectedIdAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
@@ -3720,7 +3720,7 @@ static void reflectedNameAttributeGetter(const v8::FunctionCallbackInfo<v8::Valu
     v8SetReturnValueString(info, impl->getNameAttribute(), info.GetIsolate());
 }
 
-static void reflectedNameAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void reflectedNameAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::reflectedNameAttributeGetter(info);
 }
@@ -3736,7 +3736,7 @@ static void reflectedNameAttributeSetter(v8::Local<v8::Value> v8Value, const v8:
     impl->setAttribute(HTMLNames::nameAttr, cppValue);
 }
 
-static void reflectedNameAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void reflectedNameAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
@@ -3750,7 +3750,7 @@ static void reflectedClassAttributeGetter(const v8::FunctionCallbackInfo<v8::Val
     v8SetReturnValueString(info, impl->getClassAttribute(), info.GetIsolate());
 }
 
-static void reflectedClassAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void reflectedClassAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::reflectedClassAttributeGetter(info);
 }
@@ -3766,7 +3766,7 @@ static void reflectedClassAttributeSetter(v8::Local<v8::Value> v8Value, const v8
     impl->setAttribute(HTMLNames::classAttr, cppValue);
 }
 
-static void reflectedClassAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void reflectedClassAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
@@ -3788,7 +3788,7 @@ static void limitedToOnlyOneAttributeAttributeGetter(const v8::FunctionCallbackI
     v8SetReturnValueString(info, cppValue, info.GetIsolate());
 }
 
-static void limitedToOnlyOneAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void limitedToOnlyOneAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::limitedToOnlyOneAttributeAttributeGetter(info);
 }
@@ -3804,7 +3804,7 @@ static void limitedToOnlyOneAttributeAttributeSetter(v8::Local<v8::Value> v8Valu
     impl->setAttribute(HTMLNames::limitedtoonlyoneattributeAttr, cppValue);
 }
 
-static void limitedToOnlyOneAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void limitedToOnlyOneAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
@@ -3830,7 +3830,7 @@ static void limitedToOnlyAttributeAttributeGetter(const v8::FunctionCallbackInfo
     v8SetReturnValueString(info, cppValue, info.GetIsolate());
 }
 
-static void limitedToOnlyAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void limitedToOnlyAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::limitedToOnlyAttributeAttributeGetter(info);
 }
@@ -3846,7 +3846,7 @@ static void limitedToOnlyAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
     impl->setAttribute(HTMLNames::limitedtoonlyattributeAttr, cppValue);
 }
 
-static void limitedToOnlyAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void limitedToOnlyAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
@@ -3870,7 +3870,7 @@ static void limitedToOnlyOtherAttributeAttributeGetter(const v8::FunctionCallbac
     v8SetReturnValueString(info, cppValue, info.GetIsolate());
 }
 
-static void limitedToOnlyOtherAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void limitedToOnlyOtherAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::limitedToOnlyOtherAttributeAttributeGetter(info);
 }
@@ -3886,7 +3886,7 @@ static void limitedToOnlyOtherAttributeAttributeSetter(v8::Local<v8::Value> v8Va
     impl->setAttribute(HTMLNames::otherAttr, cppValue);
 }
 
-static void limitedToOnlyOtherAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void limitedToOnlyOtherAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
@@ -3910,7 +3910,7 @@ static void limitedWithMissingDefaultAttributeAttributeGetter(const v8::Function
     v8SetReturnValueString(info, cppValue, info.GetIsolate());
 }
 
-static void limitedWithMissingDefaultAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void limitedWithMissingDefaultAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::limitedWithMissingDefaultAttributeAttributeGetter(info);
 }
@@ -3926,7 +3926,7 @@ static void limitedWithMissingDefaultAttributeAttributeSetter(v8::Local<v8::Valu
     impl->setAttribute(HTMLNames::limitedwithmissingdefaultattributeAttr, cppValue);
 }
 
-static void limitedWithMissingDefaultAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void limitedWithMissingDefaultAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
@@ -3952,7 +3952,7 @@ static void limitedWithInvalidMissingDefaultAttributeAttributeGetter(const v8::F
     v8SetReturnValueString(info, cppValue, info.GetIsolate());
 }
 
-static void limitedWithInvalidMissingDefaultAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void limitedWithInvalidMissingDefaultAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::limitedWithInvalidMissingDefaultAttributeAttributeGetter(info);
 }
@@ -3968,7 +3968,7 @@ static void limitedWithInvalidMissingDefaultAttributeAttributeSetter(v8::Local<v
     impl->setAttribute(HTMLNames::limitedwithinvalidmissingdefaultattributeAttr, cppValue);
 }
 
-static void limitedWithInvalidMissingDefaultAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void limitedWithInvalidMissingDefaultAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
@@ -3994,7 +3994,7 @@ static void corsSettingAttributeAttributeGetter(const v8::FunctionCallbackInfo<v
     v8SetReturnValueString(info, cppValue, info.GetIsolate());
 }
 
-static void corsSettingAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void corsSettingAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::corsSettingAttributeAttributeGetter(info);
 }
@@ -4022,7 +4022,7 @@ static void limitedWithEmptyMissingInvalidAttributeAttributeGetter(const v8::Fun
     v8SetReturnValueString(info, cppValue, info.GetIsolate());
 }
 
-static void limitedWithEmptyMissingInvalidAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void limitedWithEmptyMissingInvalidAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::limitedWithEmptyMissingInvalidAttributeAttributeGetter(info);
 }
@@ -4034,7 +4034,7 @@ static void replaceableReadonlyLongAttributeAttributeGetter(const v8::FunctionCa
     v8SetReturnValueInt(info, impl->replaceableReadonlyLongAttribute());
 }
 
-static void replaceableReadonlyLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void replaceableReadonlyLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::replaceableReadonlyLongAttributeAttributeGetter(info);
 }
@@ -4045,7 +4045,7 @@ static void replaceableReadonlyLongAttributeAttributeSetter(v8::Local<v8::Value>
     v8CallBoolean(info.Holder()->CreateDataProperty(info.GetIsolate()->GetCurrentContext(), propertyName, v8Value));
 }
 
-static void replaceableReadonlyLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void replaceableReadonlyLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::replaceableReadonlyLongAttributeAttributeSetter(v8Value, info);
@@ -4058,7 +4058,7 @@ static void locationPutForwardsAttributeGetter(const v8::FunctionCallbackInfo<v8
     v8SetReturnValueFast(info, WTF::getPtr(impl->locationPutForwards()), impl);
 }
 
-static void locationPutForwardsAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void locationPutForwardsAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::locationPutForwardsAttributeGetter(info);
 }
@@ -4076,7 +4076,7 @@ static void locationPutForwardsAttributeSetter(v8::Local<v8::Value> v8Value, con
     impl->setHref(cppValue);
 }
 
-static void locationPutForwardsAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void locationPutForwardsAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::locationPutForwardsAttributeSetter(v8Value, info);
@@ -4089,7 +4089,7 @@ static void runtimeEnabledLongAttributeAttributeGetter(const v8::FunctionCallbac
     v8SetReturnValueInt(info, impl->runtimeEnabledLongAttribute());
 }
 
-static void runtimeEnabledLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void runtimeEnabledLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::runtimeEnabledLongAttributeAttributeGetter(info);
 }
@@ -4105,7 +4105,7 @@ static void runtimeEnabledLongAttributeAttributeSetter(v8::Local<v8::Value> v8Va
     impl->setRuntimeEnabledLongAttribute(cppValue);
 }
 
-static void runtimeEnabledLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void runtimeEnabledLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::runtimeEnabledLongAttributeAttributeSetter(v8Value, info);
@@ -4118,7 +4118,7 @@ static void setterCallWithCurrentWindowAndEnteredWindowStringAttributeAttributeG
     v8SetReturnValueString(info, impl->setterCallWithCurrentWindowAndEnteredWindowStringAttribute(), info.GetIsolate());
 }
 
-static void setterCallWithCurrentWindowAndEnteredWindowStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void setterCallWithCurrentWindowAndEnteredWindowStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::setterCallWithCurrentWindowAndEnteredWindowStringAttributeAttributeGetter(info);
 }
@@ -4133,7 +4133,7 @@ static void setterCallWithCurrentWindowAndEnteredWindowStringAttributeAttributeS
     impl->setSetterCallWithCurrentWindowAndEnteredWindowStringAttribute(currentDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()), cppValue);
 }
 
-static void setterCallWithCurrentWindowAndEnteredWindowStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void setterCallWithCurrentWindowAndEnteredWindowStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::setterCallWithCurrentWindowAndEnteredWindowStringAttributeAttributeSetter(v8Value, info);
@@ -4146,7 +4146,7 @@ static void setterCallWithExecutionContextStringAttributeAttributeGetter(const v
     v8SetReturnValueString(info, impl->setterCallWithExecutionContextStringAttribute(), info.GetIsolate());
 }
 
-static void setterCallWithExecutionContextStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void setterCallWithExecutionContextStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::setterCallWithExecutionContextStringAttributeAttributeGetter(info);
 }
@@ -4162,7 +4162,7 @@ static void setterCallWithExecutionContextStringAttributeAttributeSetter(v8::Loc
     impl->setSetterCallWithExecutionContextStringAttribute(executionContext, cppValue);
 }
 
-static void setterCallWithExecutionContextStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void setterCallWithExecutionContextStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::setterCallWithExecutionContextStringAttributeAttributeSetter(v8Value, info);
@@ -4175,7 +4175,7 @@ static void treatNullAsEmptyStringStringAttributeAttributeGetter(const v8::Funct
     v8SetReturnValueString(info, impl->treatNullAsEmptyStringStringAttribute(), info.GetIsolate());
 }
 
-static void treatNullAsEmptyStringStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void treatNullAsEmptyStringStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::treatNullAsEmptyStringStringAttributeAttributeGetter(info);
 }
@@ -4190,7 +4190,7 @@ static void treatNullAsEmptyStringStringAttributeAttributeSetter(v8::Local<v8::V
     impl->setTreatNullAsEmptyStringStringAttribute(cppValue);
 }
 
-static void treatNullAsEmptyStringStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void treatNullAsEmptyStringStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::treatNullAsEmptyStringStringAttributeAttributeSetter(v8Value, info);
@@ -4203,7 +4203,7 @@ static void treatNullAsNullStringStringAttributeAttributeGetter(const v8::Functi
     v8SetReturnValueString(info, impl->treatNullAsNullStringStringAttribute(), info.GetIsolate());
 }
 
-static void treatNullAsNullStringStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void treatNullAsNullStringStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::treatNullAsNullStringStringAttributeAttributeGetter(info);
 }
@@ -4218,7 +4218,7 @@ static void treatNullAsNullStringStringAttributeAttributeSetter(v8::Local<v8::Va
     impl->setTreatNullAsNullStringStringAttribute(cppValue);
 }
 
-static void treatNullAsNullStringStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void treatNullAsNullStringStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::treatNullAsNullStringStringAttributeAttributeSetter(v8Value, info);
@@ -4231,7 +4231,7 @@ static void legacyInterfaceTypeCheckingFloatAttributeAttributeGetter(const v8::F
     v8SetReturnValue(info, impl->legacyInterfaceTypeCheckingFloatAttribute());
 }
 
-static void legacyInterfaceTypeCheckingFloatAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void legacyInterfaceTypeCheckingFloatAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::legacyInterfaceTypeCheckingFloatAttributeAttributeGetter(info);
 }
@@ -4247,7 +4247,7 @@ static void legacyInterfaceTypeCheckingFloatAttributeAttributeSetter(v8::Local<v
     impl->setLegacyInterfaceTypeCheckingFloatAttribute(cppValue);
 }
 
-static void legacyInterfaceTypeCheckingFloatAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void legacyInterfaceTypeCheckingFloatAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::legacyInterfaceTypeCheckingFloatAttributeAttributeSetter(v8Value, info);
@@ -4260,7 +4260,7 @@ static void legacyInterfaceTypeCheckingTestInterfaceAttributeAttributeGetter(con
     v8SetReturnValueFast(info, WTF::getPtr(impl->legacyInterfaceTypeCheckingTestInterfaceAttribute()), impl);
 }
 
-static void legacyInterfaceTypeCheckingTestInterfaceAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void legacyInterfaceTypeCheckingTestInterfaceAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::legacyInterfaceTypeCheckingTestInterfaceAttributeAttributeGetter(info);
 }
@@ -4273,7 +4273,7 @@ static void legacyInterfaceTypeCheckingTestInterfaceAttributeAttributeSetter(v8:
     impl->setLegacyInterfaceTypeCheckingTestInterfaceAttribute(cppValue);
 }
 
-static void legacyInterfaceTypeCheckingTestInterfaceAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void legacyInterfaceTypeCheckingTestInterfaceAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::legacyInterfaceTypeCheckingTestInterfaceAttributeAttributeSetter(v8Value, info);
@@ -4286,7 +4286,7 @@ static void legacyInterfaceTypeCheckingTestInterfaceOrNullAttributeAttributeGett
     v8SetReturnValueFast(info, WTF::getPtr(impl->legacyInterfaceTypeCheckingTestInterfaceOrNullAttribute()), impl);
 }
 
-static void legacyInterfaceTypeCheckingTestInterfaceOrNullAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void legacyInterfaceTypeCheckingTestInterfaceOrNullAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::legacyInterfaceTypeCheckingTestInterfaceOrNullAttributeAttributeGetter(info);
 }
@@ -4299,7 +4299,7 @@ static void legacyInterfaceTypeCheckingTestInterfaceOrNullAttributeAttributeSett
     impl->setLegacyInterfaceTypeCheckingTestInterfaceOrNullAttribute(cppValue);
 }
 
-static void legacyInterfaceTypeCheckingTestInterfaceOrNullAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void legacyInterfaceTypeCheckingTestInterfaceOrNullAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::legacyInterfaceTypeCheckingTestInterfaceOrNullAttributeAttributeSetter(v8Value, info);
@@ -4312,7 +4312,7 @@ static void urlStringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8:
     v8SetReturnValueString(info, impl->getURLAttribute(HTMLNames::urlstringattributeAttr), info.GetIsolate());
 }
 
-static void urlStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void urlStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::urlStringAttributeAttributeGetter(info);
 }
@@ -4328,7 +4328,7 @@ static void urlStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, cons
     impl->setAttribute(HTMLNames::urlstringattributeAttr, cppValue);
 }
 
-static void urlStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void urlStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
@@ -4342,7 +4342,7 @@ static void urlStringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8:
     v8SetReturnValueString(info, impl->getURLAttribute(HTMLNames::reflectUrlAttributeAttr), info.GetIsolate());
 }
 
-static void urlStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void urlStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::urlStringAttributeAttributeGetter(info);
 }
@@ -4358,7 +4358,7 @@ static void urlStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, cons
     impl->setAttribute(HTMLNames::reflectUrlAttributeAttr, cppValue);
 }
 
-static void urlStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void urlStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
@@ -4372,7 +4372,7 @@ static void unforgeableLongAttributeAttributeGetter(const v8::FunctionCallbackIn
     v8SetReturnValueInt(info, impl->unforgeableLongAttribute());
 }
 
-static void unforgeableLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void unforgeableLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::unforgeableLongAttributeAttributeGetter(info);
 }
@@ -4388,7 +4388,7 @@ static void unforgeableLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value
     impl->setUnforgeableLongAttribute(cppValue);
 }
 
-static void unforgeableLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void unforgeableLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::unforgeableLongAttributeAttributeSetter(v8Value, info);
@@ -4401,7 +4401,7 @@ static void measuredLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<
     v8SetReturnValueInt(info, impl->measuredLongAttribute());
 }
 
-static void measuredLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void measuredLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::V8TestObject_MeasuredLongAttribute_AttributeGetter);
     TestObjectV8Internal::measuredLongAttributeAttributeGetter(info);
@@ -4418,7 +4418,7 @@ static void measuredLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
     impl->setMeasuredLongAttribute(cppValue);
 }
 
-static void measuredLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void measuredLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::V8TestObject_MeasuredLongAttribute_AttributeSetter);
@@ -4437,7 +4437,7 @@ static void sameObjectAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8
     v8SetReturnValue(info, v8Value);
 }
 
-static void sameObjectAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void sameObjectAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::sameObjectAttributeAttributeGetter(info);
 }
@@ -4468,7 +4468,7 @@ static void saveSameObjectAttributeAttributeGetter(const v8::FunctionCallbackInf
     privateSameObject.set(info.GetIsolate()->GetCurrentContext(), holder, info.GetReturnValue().Get());
 }
 
-static void saveSameObjectAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void saveSameObjectAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::saveSameObjectAttributeAttributeGetter(info);
 }
@@ -4480,7 +4480,7 @@ static void unscopeableLongAttributeAttributeGetter(const v8::FunctionCallbackIn
     v8SetReturnValueInt(info, impl->unscopeableLongAttribute());
 }
 
-static void unscopeableLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void unscopeableLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::unscopeableLongAttributeAttributeGetter(info);
 }
@@ -4496,7 +4496,7 @@ static void unscopeableLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value
     impl->setUnscopeableLongAttribute(cppValue);
 }
 
-static void unscopeableLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void unscopeableLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::unscopeableLongAttributeAttributeSetter(v8Value, info);
@@ -4509,7 +4509,7 @@ static void unscopeableOriginTrialEnabledLongAttributeAttributeGetter(const v8::
     v8SetReturnValueInt(info, impl->unscopeableOriginTrialEnabledLongAttribute());
 }
 
-static void unscopeableOriginTrialEnabledLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void unscopeableOriginTrialEnabledLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::unscopeableOriginTrialEnabledLongAttributeAttributeGetter(info);
 }
@@ -4525,7 +4525,7 @@ static void unscopeableOriginTrialEnabledLongAttributeAttributeSetter(v8::Local<
     impl->setUnscopeableOriginTrialEnabledLongAttribute(cppValue);
 }
 
-static void unscopeableOriginTrialEnabledLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void unscopeableOriginTrialEnabledLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::unscopeableOriginTrialEnabledLongAttributeAttributeSetter(v8Value, info);
@@ -4538,7 +4538,7 @@ static void unscopeableRuntimeEnabledLongAttributeAttributeGetter(const v8::Func
     v8SetReturnValueInt(info, impl->unscopeableRuntimeEnabledLongAttribute());
 }
 
-static void unscopeableRuntimeEnabledLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void unscopeableRuntimeEnabledLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::unscopeableRuntimeEnabledLongAttributeAttributeGetter(info);
 }
@@ -4554,7 +4554,7 @@ static void unscopeableRuntimeEnabledLongAttributeAttributeSetter(v8::Local<v8::
     impl->setUnscopeableRuntimeEnabledLongAttribute(cppValue);
 }
 
-static void unscopeableRuntimeEnabledLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void unscopeableRuntimeEnabledLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::unscopeableRuntimeEnabledLongAttributeAttributeSetter(v8Value, info);
@@ -4567,7 +4567,7 @@ static void testInterfaceAttributeAttributeGetter(const v8::FunctionCallbackInfo
     v8SetReturnValueFast(info, WTF::getPtr(impl->testInterfaceAttribute()), impl);
 }
 
-static void testInterfaceAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void testInterfaceAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::testInterfaceAttributeAttributeGetter(info);
 }
@@ -4585,7 +4585,7 @@ static void testInterfaceAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
     impl->setTestInterfaceAttribute(cppValue);
 }
 
-static void testInterfaceAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void testInterfaceAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::testInterfaceAttributeAttributeSetter(v8Value, info);
@@ -4598,7 +4598,7 @@ static void testInterfaceGarbageCollectedAttributeAttributeGetter(const v8::Func
     v8SetReturnValueFast(info, WTF::getPtr(impl->testInterfaceGarbageCollectedAttribute()), impl);
 }
 
-static void testInterfaceGarbageCollectedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void testInterfaceGarbageCollectedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::testInterfaceGarbageCollectedAttributeAttributeGetter(info);
 }
@@ -4616,7 +4616,7 @@ static void testInterfaceGarbageCollectedAttributeAttributeSetter(v8::Local<v8::
     impl->setTestInterfaceGarbageCollectedAttribute(cppValue);
 }
 
-static void testInterfaceGarbageCollectedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void testInterfaceGarbageCollectedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::testInterfaceGarbageCollectedAttributeAttributeSetter(v8Value, info);
@@ -4629,7 +4629,7 @@ static void testInterfaceGarbageCollectedOrNullAttributeAttributeGetter(const v8
     v8SetReturnValueFast(info, WTF::getPtr(impl->testInterfaceGarbageCollectedOrNullAttribute()), impl);
 }
 
-static void testInterfaceGarbageCollectedOrNullAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void testInterfaceGarbageCollectedOrNullAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::testInterfaceGarbageCollectedOrNullAttributeAttributeGetter(info);
 }
@@ -4647,7 +4647,7 @@ static void testInterfaceGarbageCollectedOrNullAttributeAttributeSetter(v8::Loca
     impl->setTestInterfaceGarbageCollectedOrNullAttribute(cppValue);
 }
 
-static void testInterfaceGarbageCollectedOrNullAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void testInterfaceGarbageCollectedOrNullAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::testInterfaceGarbageCollectedOrNullAttributeAttributeSetter(v8Value, info);
@@ -4663,7 +4663,7 @@ static void readonlyShortAttributeAttributeGetter(const v8::FunctionCallbackInfo
     v8SetReturnValueInt(info, result);
 }
 
-static void readonlyShortAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void readonlyShortAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::readonlyShortAttributeAttributeGetter(info);
 }
@@ -4678,7 +4678,7 @@ static void shortAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Val
     v8SetReturnValueInt(info, result);
 }
 
-static void shortAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void shortAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::shortAttributeAttributeGetter(info);
 }
@@ -4694,7 +4694,7 @@ static void shortAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8
     V8TestObject::PrivateScript::shortAttributeAttributeSetter(toLocalFrame(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext())), impl, cppValue);
 }
 
-static void shortAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void shortAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::shortAttributeAttributeSetter(v8Value, info);
@@ -4710,7 +4710,7 @@ static void stringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Va
     v8SetReturnValueString(info, result, info.GetIsolate());
 }
 
-static void stringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void stringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::stringAttributeAttributeGetter(info);
 }
@@ -4725,7 +4725,7 @@ static void stringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v
     V8TestObject::PrivateScript::stringAttributeAttributeSetter(toLocalFrame(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext())), impl, cppValue);
 }
 
-static void stringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void stringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::stringAttributeAttributeSetter(v8Value, info);
@@ -4741,7 +4741,7 @@ static void nodeAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Valu
     v8SetReturnValueFast(info, result, impl);
 }
 
-static void nodeAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void nodeAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::nodeAttributeAttributeGetter(info);
 }
@@ -4759,7 +4759,7 @@ static void nodeAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8:
     V8TestObject::PrivateScript::nodeAttributeAttributeSetter(toLocalFrame(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext())), impl, cppValue);
 }
 
-static void nodeAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void nodeAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::nodeAttributeAttributeSetter(v8Value, info);
@@ -4772,7 +4772,7 @@ static void attributeImplementedInCPPForPrivateScriptOnlyAttributeGetter(const v
     v8SetReturnValueString(info, impl->attributeImplementedInCPPForPrivateScriptOnly(), info.GetIsolate());
 }
 
-static void attributeImplementedInCPPForPrivateScriptOnlyAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void attributeImplementedInCPPForPrivateScriptOnlyAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::attributeImplementedInCPPForPrivateScriptOnlyAttributeGetter(info);
 }
@@ -4787,7 +4787,7 @@ static void attributeImplementedInCPPForPrivateScriptOnlyAttributeSetter(v8::Loc
     impl->setAttributeImplementedInCPPForPrivateScriptOnly(cppValue);
 }
 
-static void attributeImplementedInCPPForPrivateScriptOnlyAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void attributeImplementedInCPPForPrivateScriptOnlyAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::attributeImplementedInCPPForPrivateScriptOnlyAttributeSetter(v8Value, info);
@@ -4803,7 +4803,7 @@ static void enumForPrivateScriptAttributeGetter(const v8::FunctionCallbackInfo<v
     v8SetReturnValueString(info, result, info.GetIsolate());
 }
 
-static void enumForPrivateScriptAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void enumForPrivateScriptAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::enumForPrivateScriptAttributeGetter(info);
 }
@@ -4834,7 +4834,7 @@ static void enumForPrivateScriptAttributeSetter(v8::Local<v8::Value> v8Value, co
     V8TestObject::PrivateScript::enumForPrivateScriptAttributeSetter(toLocalFrame(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext())), impl, cppValue);
 }
 
-static void enumForPrivateScriptAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void enumForPrivateScriptAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::enumForPrivateScriptAttributeSetter(v8Value, info);
@@ -10968,7 +10968,7 @@ static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo
     v8SetReturnValue(info, result.v8Value());
 }
 
-static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
+void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::indexedPropertyGetter(index, info);
 }
@@ -10986,7 +10986,7 @@ static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> v8Value, 
     v8SetReturnValue(info, v8Value);
 }
 
-static void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
+void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::indexedPropertySetter(index, v8Value, info);
 }
@@ -11003,7 +11003,7 @@ static void indexedPropertyDeleter(uint32_t index, const v8::PropertyCallbackInf
         return v8SetReturnValueBool(info, result == DeleteSuccess);
 }
 
-static void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info)
+void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
     TestObjectV8Internal::indexedPropertyDeleter(index, info);
 }
@@ -11020,7 +11020,7 @@ static void namedPropertyGetter(v8::Local<v8::Name> name, const v8::PropertyCall
     v8SetReturnValue(info, result.v8Value());
 }
 
-static void namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+void namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     if (!name->IsString())
         return;
@@ -11044,7 +11044,7 @@ static void namedPropertySetter(v8::Local<v8::Name> name, v8::Local<v8::Value> v
     v8SetReturnValue(info, v8Value);
 }
 
-static void namedPropertySetterCallback(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
+void namedPropertySetterCallback(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     if (!name->IsString())
         return;
@@ -11066,7 +11066,7 @@ static void namedPropertyQuery(v8::Local<v8::Name> name, const v8::PropertyCallb
     v8SetReturnValueInt(info, v8::None);
 }
 
-static void namedPropertyQueryCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
+void namedPropertyQueryCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
     if (!name->IsString())
         return;
@@ -11083,7 +11083,7 @@ static void namedPropertyDeleter(v8::Local<v8::Name> name, const v8::PropertyCal
         return v8SetReturnValueBool(info, result == DeleteSuccess);
 }
 
-static void namedPropertyDeleterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
+void namedPropertyDeleterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
     if (!name->IsString())
         return;
@@ -11106,7 +11106,7 @@ static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& i
     v8SetReturnValue(info, v8names);
 }
 
-static void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& info)
+void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
     TestObjectV8Internal::namedPropertyEnumerator(info);
 }

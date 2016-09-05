@@ -54,7 +54,7 @@ static void readonlyUnsignedShortAttributeAttributeGetter(const v8::FunctionCall
     v8SetReturnValueUnsigned(info, impl->readonlyUnsignedShortAttribute());
 }
 
-static void readonlyUnsignedShortAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void readonlyUnsignedShortAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestExceptionV8Internal::readonlyUnsignedShortAttributeAttributeGetter(info);
 }
@@ -66,7 +66,7 @@ static void readonlyStringAttributeAttributeGetter(const v8::FunctionCallbackInf
     v8SetReturnValueString(info, impl->readonlyStringAttribute(), info.GetIsolate());
 }
 
-static void readonlyStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void readonlyStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestExceptionV8Internal::readonlyStringAttributeAttributeGetter(info);
 }

@@ -59,7 +59,7 @@ static void uLongLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8:
     v8SetReturnValue(info, static_cast<double>(impl->uLongLongAttribute()));
 }
 
-static void uLongLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void uLongLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestTypedefsV8Internal::uLongLongAttributeAttributeGetter(info);
 }
@@ -75,7 +75,7 @@ static void uLongLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, cons
     impl->setULongLongAttribute(cppValue);
 }
 
-static void uLongLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void uLongLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestTypedefsV8Internal::uLongLongAttributeAttributeSetter(v8Value, info);
@@ -90,7 +90,7 @@ static void domStringOrDoubleOrNullAttributeAttributeGetter(const v8::FunctionCa
     v8SetReturnValue(info, result);
 }
 
-static void domStringOrDoubleOrNullAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void domStringOrDoubleOrNullAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestTypedefsV8Internal::domStringOrDoubleOrNullAttributeAttributeGetter(info);
 }
@@ -107,7 +107,7 @@ static void domStringOrDoubleOrNullAttributeAttributeSetter(v8::Local<v8::Value>
     impl->setDomStringOrDoubleOrNullAttribute(cppValue);
 }
 
-static void domStringOrDoubleOrNullAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void domStringOrDoubleOrNullAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestTypedefsV8Internal::domStringOrDoubleOrNullAttributeAttributeSetter(v8Value, info);

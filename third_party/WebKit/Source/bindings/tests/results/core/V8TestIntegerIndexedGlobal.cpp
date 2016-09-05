@@ -55,7 +55,7 @@ static void lengthAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& inf
     v8SetReturnValue(info, static_cast<double>(impl->length()));
 }
 
-static void lengthAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void lengthAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestIntegerIndexedGlobalV8Internal::lengthAttributeGetter(info);
 }
@@ -71,7 +71,7 @@ static void lengthAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Functi
     impl->setLength(cppValue);
 }
 
-static void lengthAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void lengthAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestIntegerIndexedGlobalV8Internal::lengthAttributeSetter(v8Value, info);
@@ -100,50 +100,50 @@ static void voidMethodDocumentMethodCallback(const v8::FunctionCallbackInfo<v8::
     TestIntegerIndexedGlobalV8Internal::voidMethodDocumentMethod(info);
 }
 
-static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
+void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     V8TestIntegerIndexedGlobal::indexedPropertyGetterCustom(index, info);
 }
 
-static void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
+void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     V8TestIntegerIndexedGlobal::indexedPropertySetterCustom(index, v8Value, info);
 }
 
-static void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info)
+void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
     V8TestIntegerIndexedGlobal::indexedPropertyDeleterCustom(index, info);
 }
 
-static void namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+void namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     if (!name->IsString())
         return;
     V8TestIntegerIndexedGlobal::namedPropertyGetterCustom(name, info);
 }
 
-static void namedPropertySetterCallback(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
+void namedPropertySetterCallback(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     if (!name->IsString())
         return;
     V8TestIntegerIndexedGlobal::namedPropertySetterCustom(name, v8Value, info);
 }
 
-static void namedPropertyQueryCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
+void namedPropertyQueryCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
     if (!name->IsString())
         return;
     V8TestIntegerIndexedGlobal::namedPropertyQueryCustom(name, info);
 }
 
-static void namedPropertyDeleterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
+void namedPropertyDeleterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
     if (!name->IsString())
         return;
     V8TestIntegerIndexedGlobal::namedPropertyDeleterCustom(name, info);
 }
 
-static void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& info)
+void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
     V8TestIntegerIndexedGlobal::namedPropertyEnumeratorCustom(info);
 }
