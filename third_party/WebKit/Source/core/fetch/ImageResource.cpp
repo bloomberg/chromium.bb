@@ -393,11 +393,12 @@ void ImageResource::updateImage(bool allDataReceived)
     if (sizeAvailable == Image::SizeUnavailable && !allDataReceived)
         return;
     if (!m_image || m_image->isNull()) {
+        size_t size = encodedSize();
+        clear();
         if (!errorOccurred())
             setStatus(DecodeError);
         if (!allDataReceived && loader())
-            loader()->didFinishLoading(nullptr, monotonicallyIncreasingTime(), encodedSize());
-        clear();
+            loader()->didFinishLoading(nullptr, monotonicallyIncreasingTime(), size);
         memoryCache()->remove(this);
     }
 
