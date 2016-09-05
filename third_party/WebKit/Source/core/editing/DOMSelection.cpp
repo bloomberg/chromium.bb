@@ -533,6 +533,12 @@ String DOMSelection::toString()
     if (!isAvailable())
         return String();
 
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    m_frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
+    DocumentLifecycle::DisallowTransitionScope disallowTransition(m_frame->document()->lifecycle());
+
     const EphemeralRange range = m_frame->selection().selection().toNormalizedEphemeralRange();
     return plainText(range, TextIteratorForSelectionToString);
 }
