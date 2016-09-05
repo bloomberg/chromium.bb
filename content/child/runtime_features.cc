@@ -287,6 +287,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (base::FeatureList::IsEnabled(features::kSpeculativeLaunchServiceWorker))
     WebRuntimeFeatures::enableSpeculativeLaunchServiceWorker(true);
 
+  if (base::FeatureList::IsEnabled(features::kGamepadExtensions))
+    WebRuntimeFeatures::enableGamepadExtensions(true);
+
   // Enable explicitly enabled features, and then disable explicitly disabled
   // ones.
   if (command_line.HasSwitch(switches::kEnableBlinkFeatures)) {

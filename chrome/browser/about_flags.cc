@@ -2064,6 +2064,9 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ENABLE_EHV_INPUT_NAME, IDS_FLAGS_ENABLE_EHV_INPUT_DESCRIPTION,
      kOsCrOS, FEATURE_VALUE_TYPE(features::kEHVInputOnImeMenu)},
 #endif
+    {"enable-gamepad-extensions", IDS_FLAGS_GAMEPAD_EXTENSIONS_NAME,
+     IDS_FLAGS_GAMEPAD_EXTENSIONS_DESCRIPTION, kOsAll,
+     FEATURE_VALUE_TYPE(features::kGamepadExtensions)},
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

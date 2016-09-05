@@ -5630,6 +5630,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_WEBVR_DESCRIPTION" desc="Description for the flag to enable WebVR APIs.">
         Enabling this option allows web applications to access experimental Virtual Reality APIs.
       </message>
+      <message name="IDS_FLAGS_GAMEPAD_EXTENSIONS_NAME" desc="Name of the flag which allows users to enable experimental extensions to the Gamepad API.">
+        Gamepad Extensions
+      </message>
+      <message name="IDS_FLAGS_GAMEPAD_EXTENSIONS_DESCRIPTION" desc="Description for the flag which allows users to enable experimental extensions to the Gamepad API.">
+        Enabling this option allows web applications to access experimental extensions to the Gamepad APIs.
+      </message>
       <if expr="is_android">
         <message name="IDS_FLAGS_ENABLE_OSK_OVERSCROLL_NAME" desc="Name of about:flags option to turn on the overscrolling for the OSK.">
           Enable OSK Overscroll

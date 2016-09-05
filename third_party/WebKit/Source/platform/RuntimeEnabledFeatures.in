@@ -97,6 +97,7 @@ FileSystem status=stable
 ForeignFetch status=experimental, origin_trial_feature_name=ForeignFetch
 FullscreenUnprefixed status=test
 FrameTimingSupport status=experimental
+GamepadExtensions
 GeometryInterfaces status=test
 GetUserMedia status=stable
 GlobalCacheStorage status=stable

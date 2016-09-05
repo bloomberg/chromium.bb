@@ -155,6 +155,11 @@ void WebRuntimeFeatures::enableFileSystem(bool enable)
     RuntimeEnabledFeatures::setFileSystemEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableGamepadExtensions(bool enable)
+{
+    RuntimeEnabledFeatures::setGamepadExtensionsEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableInputMultipleFieldsUI(bool enable)
 {
     RuntimeEnabledFeatures::setInputMultipleFieldsUIEnabled(enable);

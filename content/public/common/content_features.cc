@@ -49,6 +49,10 @@ const base::Feature kFeaturePolicy{"FeaturePolicy",
 const base::Feature kFontCacheScaling{"FontCacheScaling",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables extended Gamepad API features like motion tracking and haptics.
+const base::Feature kGamepadExtensions{"GamepadExtensions",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
 // FeatureList definition for trials to enable the download button on
 // MediaDocument.
 const base::Feature kMediaDocumentDownloadButton{
