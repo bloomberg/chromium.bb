@@ -127,7 +127,7 @@ void WorkerWebSocketChannel::send(const DOMArrayBuffer& binaryData, unsigned byt
 void WorkerWebSocketChannel::send(PassRefPtr<BlobDataHandle> blobData)
 {
     ASSERT(m_bridge);
-    m_bridge->send(blobData);
+    m_bridge->send(std::move(blobData));
 }
 
 void WorkerWebSocketChannel::close(int code, const String& reason)
@@ -218,7 +218,7 @@ void Peer::sendBlob(PassRefPtr<BlobDataHandle> blobData)
 {
     ASSERT(isMainThread());
     if (m_mainWebSocketChannel)
-        m_mainWebSocketChannel->send(blobData);
+        m_mainWebSocketChannel->send(std::move(blobData));
 }
 
 void Peer::close(int code, const String& reason)

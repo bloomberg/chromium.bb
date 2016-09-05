@@ -82,7 +82,7 @@ class StatementCallback final : public SQLStatementCallback {
 public:
     static StatementCallback* create(PassRefPtr<ExecuteSQLCallbackWrapper> requestCallback)
     {
-        return new StatementCallback(requestCallback);
+        return new StatementCallback(std::move(requestCallback));
     }
 
     ~StatementCallback() override { }
@@ -124,7 +124,7 @@ class StatementErrorCallback final : public SQLStatementErrorCallback {
 public:
     static StatementErrorCallback* create(PassRefPtr<ExecuteSQLCallbackWrapper> requestCallback)
     {
-        return new StatementErrorCallback(requestCallback);
+        return new StatementErrorCallback(std::move(requestCallback));
     }
 
     ~StatementErrorCallback() override { }
@@ -149,7 +149,7 @@ class TransactionCallback final : public SQLTransactionCallback {
 public:
     static TransactionCallback* create(const String& sqlStatement, PassRefPtr<ExecuteSQLCallbackWrapper> requestCallback)
     {
-        return new TransactionCallback(sqlStatement, requestCallback);
+        return new TransactionCallback(sqlStatement, std::move(requestCallback));
     }
 
     ~TransactionCallback() override { }
@@ -179,7 +179,7 @@ class TransactionErrorCallback final : public SQLTransactionErrorCallback {
 public:
     static TransactionErrorCallback* create(PassRefPtr<ExecuteSQLCallbackWrapper> requestCallback)
     {
-        return new TransactionErrorCallback(requestCallback);
+        return new TransactionErrorCallback(std::move(requestCallback));
     }
 
     ~TransactionErrorCallback() override { }

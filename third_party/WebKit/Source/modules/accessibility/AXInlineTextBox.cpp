@@ -47,7 +47,7 @@ AXInlineTextBox::AXInlineTextBox(PassRefPtr<AbstractInlineTextBox> inlineTextBox
 
 AXInlineTextBox* AXInlineTextBox::create(PassRefPtr<AbstractInlineTextBox> inlineTextBox, AXObjectCacheImpl& axObjectCache)
 {
-    return new AXInlineTextBox(inlineTextBox, axObjectCache);
+    return new AXInlineTextBox(std::move(inlineTextBox), axObjectCache);
 }
 
 void AXInlineTextBox::init()

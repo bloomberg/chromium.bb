@@ -54,7 +54,7 @@ public:
     public:
         static v8::Local<v8::Function> createFunction(ScriptState* scriptState, PassRefPtr<ReadingContext> context)
         {
-            return (new OnFulfilled(scriptState, context))->bindToV8Function();
+            return (new OnFulfilled(scriptState, std::move(context)))->bindToV8Function();
         }
 
         ScriptValue call(ScriptValue v) override
@@ -94,7 +94,7 @@ public:
     public:
         static v8::Local<v8::Function> createFunction(ScriptState* scriptState, PassRefPtr<ReadingContext> context)
         {
-            return (new OnRejected(scriptState, context))->bindToV8Function();
+            return (new OnRejected(scriptState, std::move(context)))->bindToV8Function();
         }
 
         ScriptValue call(ScriptValue v) override

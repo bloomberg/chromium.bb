@@ -55,7 +55,7 @@ void CompositorWorkerGlobalScope::postMessage(ExecutionContext* executionContext
     std::unique_ptr<MessagePortChannelArray> channels = MessagePort::disentanglePorts(executionContext, ports, exceptionState);
     if (exceptionState.hadException())
         return;
-    thread()->workerObjectProxy().postMessageToWorkerObject(message, std::move(channels));
+    thread()->workerObjectProxy().postMessageToWorkerObject(std::move(message), std::move(channels));
 }
 
 int CompositorWorkerGlobalScope::requestAnimationFrame(FrameRequestCallback* callback)

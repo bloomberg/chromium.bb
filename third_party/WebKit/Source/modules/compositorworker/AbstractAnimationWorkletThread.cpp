@@ -102,7 +102,7 @@ BackingThreadHolder* BackingThreadHolder::s_instance = nullptr;
 } // namespace
 
 AbstractAnimationWorkletThread::AbstractAnimationWorkletThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerReportingProxy& workerReportingProxy)
-    : WorkerThread(workerLoaderProxy, workerReportingProxy)
+    : WorkerThread(std::move(workerLoaderProxy), workerReportingProxy)
 {
 }
 

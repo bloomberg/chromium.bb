@@ -47,7 +47,7 @@ class FetchFormDataConsumerHandle::SimpleContext final : public Context {
 public:
     static PassRefPtr<SimpleContext> create(const String& body) { return adoptRef(new SimpleContext(body)); }
     static PassRefPtr<SimpleContext> create(const void* data, size_t size) { return adoptRef(new SimpleContext(data, size)); }
-    static PassRefPtr<SimpleContext> create(PassRefPtr<EncodedFormData> body) { return adoptRef(new SimpleContext(body)); }
+    static PassRefPtr<SimpleContext> create(PassRefPtr<EncodedFormData> body) { return adoptRef(new SimpleContext(std::move(body))); }
 
     std::unique_ptr<Reader> obtainReader(Client* client) override
     {
@@ -122,7 +122,7 @@ private:
     class ReaderImpl final : public FetchDataConsumerHandle::Reader {
         WTF_MAKE_NONCOPYABLE(ReaderImpl);
     public:
-        static std::unique_ptr<ReaderImpl> create(PassRefPtr<SimpleContext> context, Client* client) { return wrapUnique(new ReaderImpl(context, client)); }
+        static std::unique_ptr<ReaderImpl> create(PassRefPtr<SimpleContext> context, Client* client) { return wrapUnique(new ReaderImpl(std::move(context), client)); }
         Result read(void* data, size_t size, Flags flags, size_t* readSize) override
         {
             return m_context->read(data, size, flags, readSize);
@@ -182,7 +182,7 @@ public:
         PassRefPtr<EncodedFormData> formData,
         FetchBlobDataConsumerHandle::LoaderFactory* factory)
     {
-        return adoptRef(new ComplexContext(executionContext, formData, factory));
+        return adoptRef(new ComplexContext(executionContext, std::move(formData), factory));
     }
 
     std::unique_ptr<FetchFormDataConsumerHandle::Reader> obtainReader(Client* client) override
@@ -197,7 +197,7 @@ private:
     class ReaderImpl final : public FetchDataConsumerHandle::Reader {
         WTF_MAKE_NONCOPYABLE(ReaderImpl);
     public:
-        static std::unique_ptr<ReaderImpl> create(PassRefPtr<ComplexContext> context, Client* client) { return wrapUnique(new ReaderImpl(context, client)); }
+        static std::unique_ptr<ReaderImpl> create(PassRefPtr<ComplexContext> context, Client* client) { return wrapUnique(new ReaderImpl(std::move(context), client)); }
         Result read(void* data, size_t size, Flags flags, size_t* readSize) override
         {
             Result r = m_reader->read(data, size, flags, readSize);
@@ -306,14 +306,14 @@ std::unique_ptr<FetchDataConsumerHandle> FetchFormDataConsumerHandle::create(con
 }
 std::unique_ptr<FetchDataConsumerHandle> FetchFormDataConsumerHandle::create(ExecutionContext* executionContext, PassRefPtr<EncodedFormData> body)
 {
-    return wrapUnique(new FetchFormDataConsumerHandle(executionContext, body));
+    return wrapUnique(new FetchFormDataConsumerHandle(executionContext, std::move(body)));
 }
 std::unique_ptr<FetchDataConsumerHandle> FetchFormDataConsumerHandle::createForTest(
     ExecutionContext* executionContext,
     PassRefPtr<EncodedFormData> body,
     FetchBlobDataConsumerHandle::LoaderFactory* loaderFactory)
 {
-    return wrapUnique(new FetchFormDataConsumerHandle(executionContext, body, loaderFactory));
+    return wrapUnique(new FetchFormDataConsumerHandle(executionContext, std::move(body), loaderFactory));
 }
 
 FetchFormDataConsumerHandle::FetchFormDataConsumerHandle(const String& body) : m_context(SimpleContext::create(body)) {}
@@ -323,9 +323,9 @@ FetchFormDataConsumerHandle::FetchFormDataConsumerHandle(ExecutionContext* execu
     FetchBlobDataConsumerHandle::LoaderFactory* loaderFactory)
 {
     if (isSimple(body.get())) {
-        m_context = SimpleContext::create(body);
+        m_context = SimpleContext::create(std::move(body));
     } else {
-        m_context = ComplexContext::create(executionContext, body, loaderFactory);
+        m_context = ComplexContext::create(executionContext, std::move(body), loaderFactory);
     }
 }
 FetchFormDataConsumerHandle::~FetchFormDataConsumerHandle() {}

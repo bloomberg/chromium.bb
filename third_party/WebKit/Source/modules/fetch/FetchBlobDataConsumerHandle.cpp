@@ -287,7 +287,7 @@ private:
 };
 
 FetchBlobDataConsumerHandle::FetchBlobDataConsumerHandle(ExecutionContext* executionContext, PassRefPtr<BlobDataHandle> blobDataHandle, LoaderFactory* loaderFactory)
-    : m_readerContext(adoptRef(new ReaderContext(executionContext, blobDataHandle, loaderFactory)))
+    : m_readerContext(adoptRef(new ReaderContext(executionContext, std::move(blobDataHandle), loaderFactory)))
 {
 }
 
@@ -300,7 +300,7 @@ std::unique_ptr<FetchDataConsumerHandle> FetchBlobDataConsumerHandle::create(Exe
     if (!blobDataHandle)
         return createFetchDataConsumerHandleFromWebHandle(createDoneDataConsumerHandle());
 
-    return wrapUnique(new FetchBlobDataConsumerHandle(executionContext, blobDataHandle, loaderFactory));
+    return wrapUnique(new FetchBlobDataConsumerHandle(executionContext, std::move(blobDataHandle), loaderFactory));
 }
 
 std::unique_ptr<FetchDataConsumerHandle> FetchBlobDataConsumerHandle::create(ExecutionContext* executionContext, PassRefPtr<BlobDataHandle> blobDataHandle)
@@ -308,7 +308,7 @@ std::unique_ptr<FetchDataConsumerHandle> FetchBlobDataConsumerHandle::create(Exe
     if (!blobDataHandle)
         return createFetchDataConsumerHandleFromWebHandle(createDoneDataConsumerHandle());
 
-    return wrapUnique(new FetchBlobDataConsumerHandle(executionContext, blobDataHandle, new DefaultLoaderFactory));
+    return wrapUnique(new FetchBlobDataConsumerHandle(executionContext, std::move(blobDataHandle), new DefaultLoaderFactory));
 }
 
 std::unique_ptr<FetchDataConsumerHandle::Reader> FetchBlobDataConsumerHandle::obtainFetchDataReader(Client* client)

@@ -108,7 +108,7 @@ private:
 
 class DestinationTracker final : public ThreadSafeRefCounted<DestinationTracker> {
 public:
-    static PassRefPtr<DestinationTracker> create(PassRefPtr<TeeRootObject> root) { return adoptRef(new DestinationTracker(root)); }
+    static PassRefPtr<DestinationTracker> create(PassRefPtr<TeeRootObject> root) { return adoptRef(new DestinationTracker(std::move(root))); }
     ~DestinationTracker()
     {
         m_root->stop();
@@ -126,7 +126,7 @@ public:
     public:
         static PassRefPtr<Proxy> create(PassRefPtr<DestinationContext> context, PassRefPtr<DestinationTracker> tracker)
         {
-            return adoptRef(new Proxy(context, tracker));
+            return adoptRef(new Proxy(std::move(context), std::move(tracker)));
         }
         ~Proxy()
         {
@@ -314,7 +314,7 @@ class DestinationHandle final : public WebDataConsumerHandle {
 public:
     static std::unique_ptr<WebDataConsumerHandle> create(PassRefPtr<DestinationContext::Proxy> contextProxy)
     {
-        return wrapUnique(new DestinationHandle(contextProxy));
+        return wrapUnique(new DestinationHandle(std::move(contextProxy)));
     }
 
     std::unique_ptr<Reader> obtainReader(Client* client)

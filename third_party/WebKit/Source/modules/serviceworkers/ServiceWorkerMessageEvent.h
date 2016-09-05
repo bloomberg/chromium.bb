@@ -23,7 +23,7 @@ public:
 
     static ServiceWorkerMessageEvent* create(MessagePortArray* ports, PassRefPtr<SerializedScriptValue> data, ServiceWorker* source, const String& origin)
     {
-        return new ServiceWorkerMessageEvent(data, origin, String(), source, ports);
+        return new ServiceWorkerMessageEvent(std::move(data), origin, String(), source, ports);
     }
 
     ~ServiceWorkerMessageEvent() override;

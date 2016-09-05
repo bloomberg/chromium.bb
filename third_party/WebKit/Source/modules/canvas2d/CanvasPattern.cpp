@@ -51,7 +51,7 @@ Pattern::RepeatMode CanvasPattern::parseRepetitionType(const String& type,
 }
 
 CanvasPattern::CanvasPattern(PassRefPtr<Image> image, Pattern::RepeatMode repeat, bool originClean)
-    : m_pattern(Pattern::createImagePattern(image, repeat))
+    : m_pattern(Pattern::createImagePattern(std::move(image), repeat))
     , m_originClean(originClean)
 {
 }

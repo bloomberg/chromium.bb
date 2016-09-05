@@ -17,14 +17,14 @@ namespace blink {
 // static
 PaintWorkletGlobalScope* PaintWorkletGlobalScope::create(LocalFrame* frame, const KURL& url, const String& userAgent, PassRefPtr<SecurityOrigin> securityOrigin, v8::Isolate* isolate)
 {
-    PaintWorkletGlobalScope* paintWorkletGlobalScope = new PaintWorkletGlobalScope(frame, url, userAgent, securityOrigin, isolate);
+    PaintWorkletGlobalScope* paintWorkletGlobalScope = new PaintWorkletGlobalScope(frame, url, userAgent, std::move(securityOrigin), isolate);
     paintWorkletGlobalScope->scriptController()->initializeContextIfNeeded();
     MainThreadDebugger::instance()->contextCreated(paintWorkletGlobalScope->scriptController()->getScriptState(), paintWorkletGlobalScope->frame(), paintWorkletGlobalScope->getSecurityOrigin());
     return paintWorkletGlobalScope;
 }
 
 PaintWorkletGlobalScope::PaintWorkletGlobalScope(LocalFrame* frame, const KURL& url, const String& userAgent, PassRefPtr<SecurityOrigin> securityOrigin, v8::Isolate* isolate)
-    : MainThreadWorkletGlobalScope(frame, url, userAgent, securityOrigin, isolate)
+    : MainThreadWorkletGlobalScope(frame, url, userAgent, std::move(securityOrigin), isolate)
 {
 }
 

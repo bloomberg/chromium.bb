@@ -16,11 +16,11 @@ std::unique_ptr<AnimationWorkletThread> AnimationWorkletThread::create(PassRefPt
 {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("animation-worklet"), "AnimationWorkletThread::create");
     DCHECK(isMainThread());
-    return wrapUnique(new AnimationWorkletThread(workerLoaderProxy, workerReportingProxy));
+    return wrapUnique(new AnimationWorkletThread(std::move(workerLoaderProxy), workerReportingProxy));
 }
 
 AnimationWorkletThread::AnimationWorkletThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerReportingProxy& workerReportingProxy)
-    : AbstractAnimationWorkletThread(workerLoaderProxy, workerReportingProxy)
+    : AbstractAnimationWorkletThread(std::move(workerLoaderProxy), workerReportingProxy)
 {
 }
 

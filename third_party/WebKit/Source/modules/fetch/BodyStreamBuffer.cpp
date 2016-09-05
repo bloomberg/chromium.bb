@@ -53,7 +53,7 @@ public:
     void didFetchDataLoadedBlobHandle(PassRefPtr<BlobDataHandle> blobDataHandle) override
     {
         m_buffer->endLoading();
-        m_client->didFetchDataLoadedBlobHandle(blobDataHandle);
+        m_client->didFetchDataLoadedBlobHandle(std::move(blobDataHandle));
     }
 
     void didFetchDataLoadedArrayBuffer(DOMArrayBuffer* arrayBuffer) override

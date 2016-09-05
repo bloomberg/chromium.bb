@@ -107,7 +107,7 @@ DocumentWebSocketChannel::BlobLoader::BlobLoader(PassRefPtr<BlobDataHandle> blob
     : m_channel(channel)
     , m_loader(FileReaderLoader::create(FileReaderLoader::ReadAsArrayBuffer, this))
 {
-    m_loader->start(channel->getExecutionContext(), blobDataHandle);
+    m_loader->start(channel->getExecutionContext(), std::move(blobDataHandle));
 }
 
 void DocumentWebSocketChannel::BlobLoader::cancel()
@@ -207,7 +207,7 @@ void DocumentWebSocketChannel::send(PassRefPtr<BlobDataHandle> blobDataHandle)
     // Since Binary data are not displayed in Inspector, this does not
     // affect actual behavior.
     InspectorInstrumentation::didSendWebSocketFrame(document(), m_identifier, WebSocketFrame::OpCodeBinary, true, "", 0);
-    m_messages.append(new Message(blobDataHandle));
+    m_messages.append(new Message(std::move(blobDataHandle)));
     processSendQueue();
 }
 

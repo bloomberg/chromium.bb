@@ -18,19 +18,19 @@ ExtendableMessageEvent* ExtendableMessageEvent::create(const AtomicString& type,
 
 ExtendableMessageEvent* ExtendableMessageEvent::create(PassRefPtr<SerializedScriptValue> data, const String& origin, MessagePortArray* ports, WaitUntilObserver* observer)
 {
-    return new ExtendableMessageEvent(data, origin, ports, observer);
+    return new ExtendableMessageEvent(std::move(data), origin, ports, observer);
 }
 
 ExtendableMessageEvent* ExtendableMessageEvent::create(PassRefPtr<SerializedScriptValue> data, const String& origin, MessagePortArray* ports, ServiceWorkerClient* source, WaitUntilObserver* observer)
 {
-    ExtendableMessageEvent* event = new ExtendableMessageEvent(data, origin, ports, observer);
+    ExtendableMessageEvent* event = new ExtendableMessageEvent(std::move(data), origin, ports, observer);
     event->m_sourceAsClient = source;
     return event;
 }
 
 ExtendableMessageEvent* ExtendableMessageEvent::create(PassRefPtr<SerializedScriptValue> data, const String& origin, MessagePortArray* ports, ServiceWorker* source, WaitUntilObserver* observer)
 {
-    ExtendableMessageEvent* event = new ExtendableMessageEvent(data, origin, ports, observer);
+    ExtendableMessageEvent* event = new ExtendableMessageEvent(std::move(data), origin, ports, observer);
     event->m_sourceAsServiceWorker = source;
     return event;
 }

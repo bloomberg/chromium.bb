@@ -51,7 +51,7 @@ public:
 
     static IDBKey* createBinary(PassRefPtr<SharedBuffer> binary)
     {
-        return new IDBKey(binary);
+        return new IDBKey(std::move(binary));
     }
 
     static IDBKey* createString(const String& string)

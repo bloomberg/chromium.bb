@@ -125,7 +125,7 @@ public:
         : m_PresentationConnection(PresentationConnection)
         , m_loader(FileReaderLoader::create(FileReaderLoader::ReadAsArrayBuffer, this))
     {
-        m_loader->start(m_PresentationConnection->getExecutionContext(), blobDataHandle);
+        m_loader->start(m_PresentationConnection->getExecutionContext(), std::move(blobDataHandle));
     }
     ~BlobLoader() override { }
 

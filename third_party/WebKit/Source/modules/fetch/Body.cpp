@@ -52,7 +52,7 @@ public:
 
     void didFetchDataLoadedBlobHandle(PassRefPtr<BlobDataHandle> blobDataHandle) override
     {
-        resolver()->resolve(Blob::create(blobDataHandle));
+        resolver()->resolve(Blob::create(std::move(blobDataHandle)));
     }
 };
 

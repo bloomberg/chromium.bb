@@ -11,7 +11,7 @@ namespace blink {
 
 ForeignFetchRespondWithObserver* ForeignFetchRespondWithObserver::create(ExecutionContext* context, int eventID, const KURL& requestURL, WebURLRequest::FetchRequestMode requestMode, WebURLRequest::FrameType frameType, WebURLRequest::RequestContext requestContext, PassRefPtr<SecurityOrigin> requestOrigin, WaitUntilObserver* observer)
 {
-    return new ForeignFetchRespondWithObserver(context, eventID, requestURL, requestMode, frameType, requestContext, requestOrigin, observer);
+    return new ForeignFetchRespondWithObserver(context, eventID, requestURL, requestMode, frameType, requestContext, std::move(requestOrigin), observer);
 }
 
 void ForeignFetchRespondWithObserver::responseWasFulfilled(const ScriptValue& value)

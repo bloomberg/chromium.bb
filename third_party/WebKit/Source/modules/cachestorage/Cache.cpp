@@ -328,7 +328,7 @@ public:
         batchOperation.operationType = WebServiceWorkerCache::OperationTypePut;
         batchOperation.request = m_webRequest;
         batchOperation.response = m_webResponse;
-        batchOperation.response.setBlobDataHandle(handle);
+        batchOperation.response.setBlobDataHandle(std::move(handle));
         m_barrierCallback->onSuccess(m_index, batchOperation);
     }
 

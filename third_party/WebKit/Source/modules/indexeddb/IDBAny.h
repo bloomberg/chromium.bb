@@ -70,7 +70,7 @@ public:
     }
     static IDBAny* create(PassRefPtr<IDBValue> value)
     {
-        return new IDBAny(value);
+        return new IDBAny(std::move(value));
     }
     static IDBAny* create(const Vector<RefPtr<IDBValue>>& values)
     {

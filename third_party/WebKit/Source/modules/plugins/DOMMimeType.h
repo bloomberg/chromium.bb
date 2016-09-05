@@ -38,7 +38,7 @@ class DOMMimeType final : public GarbageCollectedFinalized<DOMMimeType>, public 
 public:
     static DOMMimeType* create(PassRefPtr<PluginData> pluginData, LocalFrame* frame, unsigned index)
     {
-        return new DOMMimeType(pluginData, frame, index);
+        return new DOMMimeType(std::move(pluginData), frame, index);
     }
     virtual ~DOMMimeType();
 

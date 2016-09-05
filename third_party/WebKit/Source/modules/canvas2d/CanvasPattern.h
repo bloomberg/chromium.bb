@@ -43,7 +43,7 @@ public:
 
     static CanvasPattern* create(PassRefPtr<Image> image, Pattern::RepeatMode repeat, bool originClean)
     {
-        return new CanvasPattern(image, repeat, originClean);
+        return new CanvasPattern(std::move(image), repeat, originClean);
     }
 
     Pattern* getPattern() const { return m_pattern.get(); }

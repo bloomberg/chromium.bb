@@ -268,7 +268,7 @@ void IDBRequest::onSuccess(std::unique_ptr<WebIDBCursor> backend, IDBKey* key, I
     default:
         ASSERT_NOT_REACHED();
     }
-    setResultCursor(cursor, key, primaryKey, value);
+    setResultCursor(cursor, key, primaryKey, std::move(value));
 }
 
 void IDBRequest::onSuccess(IDBKey* idbKey)
@@ -370,7 +370,7 @@ void IDBRequest::onSuccess(IDBKey* key, IDBKey* primaryKey, PassRefPtr<IDBValue>
         return;
 
     ASSERT(m_pendingCursor);
-    setResultCursor(m_pendingCursor.release(), key, primaryKey, value);
+    setResultCursor(m_pendingCursor.release(), key, primaryKey, std::move(value));
 }
 
 bool IDBRequest::hasPendingActivity() const
