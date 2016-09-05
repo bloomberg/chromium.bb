@@ -397,7 +397,7 @@ void FrameSerializer::addToResources(const Resource& resource, PassRefPtr<Shared
     }
 
     String mimeType = resource.response().mimeType();
-    m_resources->append(SerializedResource(url, mimeType, data));
+    m_resources->append(SerializedResource(url, mimeType, std::move(data)));
     m_resourceURLs.add(url);
 }
 

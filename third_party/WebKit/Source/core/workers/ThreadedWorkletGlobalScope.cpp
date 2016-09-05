@@ -18,7 +18,7 @@
 namespace blink {
 
 ThreadedWorkletGlobalScope::ThreadedWorkletGlobalScope(const KURL& url, const String& userAgent, PassRefPtr<SecurityOrigin> securityOrigin, v8::Isolate* isolate, WorkerThread* thread)
-    : WorkletGlobalScope(url, userAgent, securityOrigin, isolate)
+    : WorkletGlobalScope(url, userAgent, std::move(securityOrigin), isolate)
     , m_thread(thread)
 {
 }

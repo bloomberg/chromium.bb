@@ -189,7 +189,7 @@ bool InspectorPageAgent::sharedBufferContent(PassRefPtr<SharedBuffer> buffer, co
         textContent = encoding.decode(buffer->data(), buffer->size());
     }
 
-    maybeEncodeTextContent(textContent, buffer, result, base64Encoded);
+    maybeEncodeTextContent(textContent, std::move(buffer), result, base64Encoded);
     return true;
 }
 

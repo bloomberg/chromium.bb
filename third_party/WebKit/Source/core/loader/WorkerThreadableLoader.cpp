@@ -431,7 +431,7 @@ void WorkerThreadableLoader::MainThreadLoaderHolder::createAndStart(
     TaskForwarder* forwarder;
     RefPtr<WorkerLoaderProxy> loaderProxy = passLoaderProxy;
     if (eventWithTasks)
-        forwarder = new SyncTaskForwarder(eventWithTasks);
+        forwarder = new SyncTaskForwarder(std::move(eventWithTasks));
     else
         forwarder = new AsyncTaskForwarder(loaderProxy);
 

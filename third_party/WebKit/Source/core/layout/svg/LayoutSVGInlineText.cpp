@@ -52,14 +52,14 @@ static PassRefPtr<StringImpl> normalizeWhitespace(PassRefPtr<StringImpl> string)
 }
 
 LayoutSVGInlineText::LayoutSVGInlineText(Node* n, PassRefPtr<StringImpl> string)
-    : LayoutText(n, normalizeWhitespace(string))
+    : LayoutText(n, normalizeWhitespace(std::move(string)))
     , m_scalingFactor(1)
 {
 }
 
 void LayoutSVGInlineText::setTextInternal(PassRefPtr<StringImpl> text)
 {
-    LayoutText::setTextInternal(text);
+    LayoutText::setTextInternal(std::move(text));
     if (LayoutSVGText* textLayoutObject = LayoutSVGText::locateLayoutSVGTextAncestor(this))
         textLayoutObject->subtreeTextDidChange();
 }

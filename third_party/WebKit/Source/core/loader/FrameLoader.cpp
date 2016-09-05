@@ -730,7 +730,7 @@ void FrameLoader::updateForSameDocumentNavigation(const KURL& newURL, SameDocume
 
     setHistoryItemStateForCommit(type, historyCommitType, sameDocumentNavigationSource == SameDocumentNavigationHistoryApi ? HistoryNavigationType::HistoryApi : HistoryNavigationType::Fragment);
     if (sameDocumentNavigationSource == SameDocumentNavigationHistoryApi) {
-        m_currentItem->setStateObject(data);
+        m_currentItem->setStateObject(std::move(data));
         m_currentItem->setScrollRestorationType(scrollRestorationType);
     }
     client()->dispatchDidNavigateWithinPage(m_currentItem.get(), historyCommitType, !!initiatingDocument);
@@ -775,7 +775,7 @@ void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScrip
 
     checkCompleted();
 
-    m_frame->localDOMWindow()->statePopped(stateObject ? stateObject : SerializedScriptValue::nullValue());
+    m_frame->localDOMWindow()->statePopped(stateObject ? std::move(stateObject) : SerializedScriptValue::nullValue());
 
     if (historyLoadType == HistorySameDocumentLoad)
         restoreScrollPositionAndViewState();

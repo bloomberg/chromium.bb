@@ -145,7 +145,7 @@ void FontBuilder::setLocale(PassRefPtr<const LayoutLocale> locale)
 {
     set(PropertySetFlag::Locale);
 
-    m_fontDescription.setLocale(locale);
+    m_fontDescription.setLocale(std::move(locale));
 }
 
 void FontBuilder::setStyle(FontStyle italic)
@@ -201,7 +201,7 @@ void FontBuilder::setFeatureSettings(PassRefPtr<FontFeatureSettings> settings)
 {
     set(PropertySetFlag::FeatureSettings);
 
-    m_fontDescription.setFeatureSettings(settings);
+    m_fontDescription.setFeatureSettings(std::move(settings));
 }
 
 void FontBuilder::setFamilyDescription(FontDescription& fontDescription, const FontDescription::FamilyDescription& familyDescription)

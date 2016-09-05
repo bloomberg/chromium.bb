@@ -60,12 +60,12 @@ public:
 
     void pushState(PassRefPtr<SerializedScriptValue> data, const String& title, const String& url, ExceptionState& exceptionState)
     {
-        stateObjectAdded(data, title, url, scrollRestorationInternal(), FrameLoadTypeStandard, exceptionState);
+        stateObjectAdded(std::move(data), title, url, scrollRestorationInternal(), FrameLoadTypeStandard, exceptionState);
     }
 
     void replaceState(PassRefPtr<SerializedScriptValue> data, const String& title, const String& url, ExceptionState& exceptionState)
     {
-        stateObjectAdded(data, title, url, scrollRestorationInternal(), FrameLoadTypeReplaceCurrentItem, exceptionState);
+        stateObjectAdded(std::move(data), title, url, scrollRestorationInternal(), FrameLoadTypeReplaceCurrentItem, exceptionState);
     }
 
     void setScrollRestoration(const String& value);

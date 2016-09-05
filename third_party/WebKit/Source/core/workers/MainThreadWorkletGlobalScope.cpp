@@ -13,7 +13,7 @@
 namespace blink {
 
 MainThreadWorkletGlobalScope::MainThreadWorkletGlobalScope(LocalFrame* frame, const KURL& url, const String& userAgent, PassRefPtr<SecurityOrigin> securityOrigin, v8::Isolate* isolate)
-    : WorkletGlobalScope(url, userAgent, securityOrigin, isolate)
+    : WorkletGlobalScope(url, userAgent, std::move(securityOrigin), isolate)
     , DOMWindowProperty(frame)
 {
 }

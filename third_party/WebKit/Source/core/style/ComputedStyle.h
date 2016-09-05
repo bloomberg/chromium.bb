@@ -1665,7 +1665,7 @@ public:
     void setCy(const Length& cy) { accessSVGStyle().setCy(cy); }
 
     // d
-    void setD(PassRefPtr<StylePath> d) { accessSVGStyle().setD(d); }
+    void setD(PassRefPtr<StylePath> d) { accessSVGStyle().setD(std::move(d)); }
 
     // x
     void setX(const Length& x) { accessSVGStyle().setX(x); }
@@ -1713,7 +1713,7 @@ public:
 
     // stroke-dasharray
     SVGDashArray* strokeDashArray() const { return svgStyle().strokeDashArray(); }
-    void setStrokeDashArray(PassRefPtr<SVGDashArray> array) { accessSVGStyle().setStrokeDashArray(array); }
+    void setStrokeDashArray(PassRefPtr<SVGDashArray> array) { accessSVGStyle().setStrokeDashArray(std::move(array)); }
 
     // stroke-dashoffset
     const Length& strokeDashOffset() const { return svgStyle().strokeDashOffset(); }

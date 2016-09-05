@@ -64,7 +64,7 @@ PopStateEvent* PopStateEvent::create()
 
 PopStateEvent* PopStateEvent::create(PassRefPtr<SerializedScriptValue> serializedState, History* history)
 {
-    return new PopStateEvent(serializedState, history);
+    return new PopStateEvent(std::move(serializedState), history);
 }
 
 PopStateEvent* PopStateEvent::create(const AtomicString& type, const PopStateEventInit& initializer)

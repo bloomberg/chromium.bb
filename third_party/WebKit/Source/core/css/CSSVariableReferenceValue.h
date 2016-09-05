@@ -15,7 +15,7 @@ class CSSVariableReferenceValue : public CSSValue {
 public:
     static CSSVariableReferenceValue* create(PassRefPtr<CSSVariableData> data)
     {
-        return new CSSVariableReferenceValue(data);
+        return new CSSVariableReferenceValue(std::move(data));
     }
 
     CSSVariableData* variableDataValue() const

@@ -96,7 +96,7 @@ class ShapeClipPathOperation final : public ClipPathOperation {
 public:
     static PassRefPtr<ShapeClipPathOperation> create(PassRefPtr<BasicShape> shape)
     {
-        return adoptRef(new ShapeClipPathOperation(shape));
+        return adoptRef(new ShapeClipPathOperation(std::move(shape)));
     }
 
     const BasicShape* basicShape() const { return m_shape.get(); }

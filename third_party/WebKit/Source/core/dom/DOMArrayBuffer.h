@@ -16,7 +16,7 @@ class CORE_EXPORT DOMArrayBuffer final : public DOMArrayBufferBase {
 public:
     static DOMArrayBuffer* create(PassRefPtr<WTF::ArrayBuffer> buffer)
     {
-        return new DOMArrayBuffer(buffer);
+        return new DOMArrayBuffer(std::move(buffer));
     }
     static DOMArrayBuffer* create(unsigned numElements, unsigned elementByteSize)
     {
@@ -51,7 +51,7 @@ public:
 
 private:
     explicit DOMArrayBuffer(PassRefPtr<WTF::ArrayBuffer> buffer)
-        : DOMArrayBufferBase(buffer)
+        : DOMArrayBufferBase(std::move(buffer))
     {
     }
 };

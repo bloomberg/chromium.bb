@@ -192,7 +192,7 @@ public:
 
     void setStyle(PassRefPtr<ComputedStyle> style)
     {
-        m_layoutObject->setStyle(style);
+        m_layoutObject->setStyle(std::move(style));
     }
 
     LayoutSize offsetFromContainer(const LayoutItem& item) const

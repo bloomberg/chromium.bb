@@ -433,7 +433,7 @@ void LocalDOMWindow::enqueueHashchangeEvent(const String& oldURL, const String& 
 void LocalDOMWindow::enqueuePopstateEvent(PassRefPtr<SerializedScriptValue> stateObject)
 {
     // FIXME: https://bugs.webkit.org/show_bug.cgi?id=36202 Popstate event needs to fire asynchronously
-    dispatchEvent(PopStateEvent::create(stateObject, history()));
+    dispatchEvent(PopStateEvent::create(std::move(stateObject), history()));
 }
 
 void LocalDOMWindow::statePopped(PassRefPtr<SerializedScriptValue> stateObject)
@@ -444,7 +444,7 @@ void LocalDOMWindow::statePopped(PassRefPtr<SerializedScriptValue> stateObject)
     // Per step 11 of section 6.5.9 (history traversal) of the HTML5 spec, we
     // defer firing of popstate until we're in the complete state.
     if (document()->isLoadCompleted())
-        enqueuePopstateEvent(stateObject);
+        enqueuePopstateEvent(std::move(stateObject));
     else
         m_pendingStateObject = stateObject;
 }
@@ -656,7 +656,7 @@ void LocalDOMWindow::schedulePostMessage(MessageEvent* event, PassRefPtr<Securit
     // Allowing unbounded amounts of messages to build up for a suspended context
     // is problematic; consider imposing a limit or other restriction if this
     // surfaces often as a problem (see crbug.com/587012).
-    PostMessageTimer* timer = new PostMessageTimer(*this, event, target, SourceLocation::capture(source), UserGestureIndicator::currentToken());
+    PostMessageTimer* timer = new PostMessageTimer(*this, event, std::move(target), SourceLocation::capture(source), UserGestureIndicator::currentToken());
     timer->startOneShot(0, BLINK_FROM_HERE);
     timer->suspendIfNeeded();
     m_postMessageTimers.add(timer);

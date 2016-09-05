@@ -68,7 +68,7 @@ DEFINE_TRACE(FEImage)
 
 FEImage* FEImage::createWithImage(Filter* filter, PassRefPtr<Image> image, SVGPreserveAspectRatio* preserveAspectRatio)
 {
-    return new FEImage(filter, image, preserveAspectRatio);
+    return new FEImage(filter, std::move(image), preserveAspectRatio);
 }
 
 FEImage* FEImage::createWithIRIReference(Filter* filter, TreeScope& treeScope, const String& href, SVGPreserveAspectRatio* preserveAspectRatio)

@@ -221,7 +221,7 @@ void DataObject::addFilename(const String& filename, const String& displayName)
 
 void DataObject::addSharedBuffer(const String& name, PassRefPtr<SharedBuffer> buffer)
 {
-    internalAddFileItem(DataObjectItem::createFromSharedBuffer(name, buffer));
+    internalAddFileItem(DataObjectItem::createFromSharedBuffer(name, std::move(buffer)));
 }
 
 DataObject::DataObject()

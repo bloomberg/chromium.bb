@@ -471,7 +471,7 @@ void PingLoader::sendViolationReport(LocalFrame* frame, const KURL& reportURL, P
     ResourceRequest request(reportURL);
     request.setHTTPMethod(HTTPNames::POST);
     request.setHTTPContentType(type == ContentSecurityPolicyViolationReport ? "application/csp-report" : "application/json");
-    request.setHTTPBody(report);
+    request.setHTTPBody(std::move(report));
     finishPingRequestInitialization(request, frame, WebURLRequest::RequestContextPing);
 
     StoredCredentials credentialsAllowed = SecurityOrigin::create(reportURL)->isSameSchemeHostPort(frame->document()->getSecurityOrigin()) ? AllowStoredCredentials : DoNotAllowStoredCredentials;

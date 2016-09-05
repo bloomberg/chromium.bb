@@ -146,7 +146,7 @@ File::File(const String& path, const String& name, ContentTypeLookupPolicy polic
 }
 
 File::File(const String& path, const String& name, const String& relativePath, UserVisibility userVisibility, bool hasSnapshotData, uint64_t size, double lastModified, PassRefPtr<BlobDataHandle> blobDataHandle)
-    : Blob(blobDataHandle)
+    : Blob(std::move(blobDataHandle))
     , m_hasBackingFile(!path.isEmpty() || !relativePath.isEmpty())
     , m_userVisibility(userVisibility)
     , m_path(path)
@@ -158,7 +158,7 @@ File::File(const String& path, const String& name, const String& relativePath, U
 }
 
 File::File(const String& name, double modificationTimeMS, PassRefPtr<BlobDataHandle> blobDataHandle)
-    : Blob(blobDataHandle)
+    : Blob(std::move(blobDataHandle))
     , m_hasBackingFile(false)
     , m_userVisibility(File::IsNotUserVisible)
     , m_name(name)

@@ -347,7 +347,7 @@ void RemoteDOMWindow::frameDetached()
 
 void RemoteDOMWindow::schedulePostMessage(MessageEvent* event, PassRefPtr<SecurityOrigin> target, Document* source)
 {
-    m_frame->client()->forwardPostMessage(event, target, source->frame());
+    m_frame->client()->forwardPostMessage(event, std::move(target), source->frame());
 }
 
 } // namespace blink

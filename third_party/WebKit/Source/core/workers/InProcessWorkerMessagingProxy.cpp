@@ -64,7 +64,7 @@ void processMessageOnWorkerGlobalScope(PassRefPtr<SerializedScriptValue> message
 {
     WorkerGlobalScope* globalScope = toWorkerGlobalScope(scriptContext);
     MessagePortArray* ports = MessagePort::entanglePorts(*scriptContext, std::move(channels));
-    globalScope->dispatchEvent(MessageEvent::create(ports, message));
+    globalScope->dispatchEvent(MessageEvent::create(ports, std::move(message)));
     workerObjectProxy->confirmMessageFromWorkerObject();
     workerObjectProxy->startPendingActivityTimer();
 }
@@ -128,7 +128,7 @@ void InProcessWorkerMessagingProxy::postMessageToWorkerObject(PassRefPtr<Seriali
         return;
 
     MessagePortArray* ports = MessagePort::entanglePorts(*getExecutionContext(), std::move(channels));
-    m_workerObject->dispatchEvent(MessageEvent::create(ports, message));
+    m_workerObject->dispatchEvent(MessageEvent::create(ports, std::move(message)));
 }
 
 void InProcessWorkerMessagingProxy::postMessageToWorkerGlobalScope(PassRefPtr<SerializedScriptValue> message, std::unique_ptr<MessagePortChannelArray> channels)

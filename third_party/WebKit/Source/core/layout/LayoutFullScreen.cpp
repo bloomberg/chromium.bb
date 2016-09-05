@@ -200,13 +200,13 @@ void LayoutFullScreen::createPlaceholder(PassRefPtr<ComputedStyle> style, const 
 
     if (!m_placeholder) {
         m_placeholder = new LayoutFullScreenPlaceholder(this);
-        m_placeholder->setStyleWithWritingModeOfParent(style);
+        m_placeholder->setStyleWithWritingModeOfParent(std::move(style));
         if (parent()) {
             parent()->addChildWithWritingModeOfParent(m_placeholder, this);
             parent()->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::Fullscreen);
         }
     } else {
-        m_placeholder->setStyle(style);
-        m_placeholder->setStyleWithWritingModeOfParent(style);
+        m_placeholder->setStyle(std::move(style));
+        m_placeholder->setStyleWithWritingModeOfParent(std::move(style));
     }
 }

@@ -79,7 +79,7 @@ void DedicatedWorkerGlobalScope::postMessage(ExecutionContext* context, PassRefP
     std::unique_ptr<MessagePortChannelArray> channels = MessagePort::disentanglePorts(context, ports, exceptionState);
     if (exceptionState.hadException())
         return;
-    thread()->workerObjectProxy().postMessageToWorkerObject(message, std::move(channels));
+    thread()->workerObjectProxy().postMessageToWorkerObject(std::move(message), std::move(channels));
 }
 
 DedicatedWorkerThread* DedicatedWorkerGlobalScope::thread() const

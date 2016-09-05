@@ -1457,7 +1457,7 @@ void ComputedStyle::setVariable(const AtomicString& name, PassRefPtr<CSSVariable
         variables = StyleVariableData::create();
     else if (!variables->hasOneRef())
         variables = variables->copy();
-    variables->setVariable(name, value);
+    variables->setVariable(name, std::move(value));
 }
 
 void ComputedStyle::removeVariable(const AtomicString& name)

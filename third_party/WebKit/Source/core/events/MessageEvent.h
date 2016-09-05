@@ -54,11 +54,11 @@ public:
     }
     static MessageEvent* create(MessagePortArray* ports, PassRefPtr<SerializedScriptValue> data, const String& origin = String(), const String& lastEventId = String(), EventTarget* source = nullptr, const String& suborigin = String())
     {
-        return new MessageEvent(data, origin, lastEventId, source, ports, suborigin);
+        return new MessageEvent(std::move(data), origin, lastEventId, source, ports, suborigin);
     }
     static MessageEvent* create(std::unique_ptr<MessagePortChannelArray> channels, PassRefPtr<SerializedScriptValue> data, const String& origin = String(), const String& lastEventId = String(), EventTarget* source = nullptr, const String& suborigin = String())
     {
-        return new MessageEvent(data, origin, lastEventId, source, std::move(channels), suborigin);
+        return new MessageEvent(std::move(data), origin, lastEventId, source, std::move(channels), suborigin);
     }
     static MessageEvent* create(const String& data, const String& origin = String(), const String& suborigin = String())
     {

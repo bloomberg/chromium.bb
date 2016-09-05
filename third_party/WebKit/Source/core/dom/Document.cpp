@@ -5126,7 +5126,7 @@ void Document::enforceSandboxFlags(SandboxFlags mask)
 
 void Document::updateSecurityOrigin(PassRefPtr<SecurityOrigin> origin)
 {
-    setSecurityOrigin(origin);
+    setSecurityOrigin(std::move(origin));
     didUpdateSecurityOrigin();
 }
 

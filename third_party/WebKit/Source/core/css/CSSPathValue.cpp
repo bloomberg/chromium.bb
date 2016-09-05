@@ -12,7 +12,7 @@ namespace blink {
 
 CSSPathValue* CSSPathValue::create(PassRefPtr<StylePath> stylePath)
 {
-    return new CSSPathValue(stylePath);
+    return new CSSPathValue(std::move(stylePath));
 }
 
 CSSPathValue* CSSPathValue::create(std::unique_ptr<SVGPathByteStream> pathByteStream)

@@ -1497,7 +1497,7 @@ void LayoutObject::setPseudoStyle(PassRefPtr<ComputedStyle> pseudoStyle)
         return;
     }
 
-    setStyle(pseudoStyle);
+    setStyle(std::move(pseudoStyle));
 }
 
 void LayoutObject::firstLineStyleDidChange(const ComputedStyle& oldStyle, const ComputedStyle& newStyle)
@@ -1567,7 +1567,7 @@ void LayoutObject::setStyle(PassRefPtr<ComputedStyle> style)
     styleWillChange(diff, *style);
 
     RefPtr<ComputedStyle> oldStyle = m_style.release();
-    setStyleInternal(style);
+    setStyleInternal(std::move(style));
 
     updateFillImages(oldStyle ? &oldStyle->backgroundLayers() : 0, m_style->backgroundLayers());
     updateFillImages(oldStyle ? &oldStyle->maskLayers() : 0, m_style->maskLayers());
@@ -1784,12 +1784,12 @@ void LayoutObject::setStyleWithWritingModeOf(PassRefPtr<ComputedStyle> style, La
 {
     if (parent)
         style->setWritingMode(parent->styleRef().getWritingMode());
-    setStyle(style);
+    setStyle(std::move(style));
 }
 
 void LayoutObject::setStyleWithWritingModeOfParent(PassRefPtr<ComputedStyle> style)
 {
-    setStyleWithWritingModeOf(style, parent());
+    setStyleWithWritingModeOf(std::move(style), parent());
 }
 
 void LayoutObject::addChildWithWritingModeOfParent(LayoutObject* newChild, LayoutObject* beforeChild)

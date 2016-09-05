@@ -209,7 +209,7 @@ class CORE_EXPORT SiblingInvalidationSet final : public InvalidationSet {
 public:
     static PassRefPtr<SiblingInvalidationSet> create(PassRefPtr<DescendantInvalidationSet> descendants)
     {
-        return adoptRef(new SiblingInvalidationSet(descendants));
+        return adoptRef(new SiblingInvalidationSet(std::move(descendants)));
     }
 
     unsigned maxDirectAdjacentSelectors() const { return m_maxDirectAdjacentSelectors; }

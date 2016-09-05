@@ -164,7 +164,7 @@ class XMLHttpRequest::BlobLoader final : public GarbageCollectedFinalized<XMLHtt
 public:
     static BlobLoader* create(XMLHttpRequest* xhr, PassRefPtr<BlobDataHandle> handle)
     {
-        return new BlobLoader(xhr, handle);
+        return new BlobLoader(xhr, std::move(handle));
     }
 
     // FileReaderLoaderClient functions.
@@ -198,7 +198,7 @@ private:
         : m_xhr(xhr)
         , m_loader(FileReaderLoader::create(FileReaderLoader::ReadByClient, this))
     {
-        m_loader->start(m_xhr->getExecutionContext(), handle);
+        m_loader->start(m_xhr->getExecutionContext(), std::move(handle));
     }
 
     Member<XMLHttpRequest> m_xhr;
@@ -912,7 +912,7 @@ void XMLHttpRequest::createRequest(PassRefPtr<EncodedFormData> httpBody, Excepti
     if (httpBody) {
         ASSERT(m_method != HTTPNames::GET);
         ASSERT(m_method != HTTPNames::HEAD);
-        request.setHTTPBody(httpBody);
+        request.setHTTPBody(std::move(httpBody));
     }
 
     if (m_requestHeaders.size() > 0)

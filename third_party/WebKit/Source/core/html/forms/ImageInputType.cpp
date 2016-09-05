@@ -290,7 +290,7 @@ PassRefPtr<ComputedStyle> ImageInputType::customStyleForLayoutObject(PassRefPtr<
     if (!m_useFallbackContent)
         return newStyle;
 
-    return HTMLImageFallbackHelper::customStyleForAltText(element(), newStyle);
+    return HTMLImageFallbackHelper::customStyleForAltText(element(), std::move(newStyle));
 }
 
 } // namespace blink

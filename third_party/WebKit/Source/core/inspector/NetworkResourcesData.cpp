@@ -43,7 +43,7 @@ static bool isErrorStatusCode(int statusCode)
 
 XHRReplayData* XHRReplayData::create(ExecutionContext* executionContext, const AtomicString& method, const KURL& url, bool async, PassRefPtr<EncodedFormData> formData, bool includeCredentials)
 {
-    return new XHRReplayData(executionContext, method, url, async, formData, includeCredentials);
+    return new XHRReplayData(executionContext, method, url, async, std::move(formData), includeCredentials);
 }
 
 void XHRReplayData::addHeader(const AtomicString& key, const AtomicString& value)

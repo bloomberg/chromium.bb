@@ -17,7 +17,7 @@ public:
     static DOMSharedArrayBuffer* create(PassRefPtr<WTF::ArrayBuffer> buffer)
     {
         DCHECK(buffer->isShared());
-        return new DOMSharedArrayBuffer(buffer);
+        return new DOMSharedArrayBuffer(std::move(buffer));
     }
     static DOMSharedArrayBuffer* create(unsigned numElements, unsigned elementByteSize)
     {
@@ -37,7 +37,7 @@ public:
 
 private:
     explicit DOMSharedArrayBuffer(PassRefPtr<WTF::ArrayBuffer> buffer)
-        : DOMArrayBufferBase(buffer)
+        : DOMArrayBufferBase(std::move(buffer))
     {
     }
 };

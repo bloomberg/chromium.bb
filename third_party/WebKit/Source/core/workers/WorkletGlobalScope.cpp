@@ -17,7 +17,7 @@ WorkletGlobalScope::WorkletGlobalScope(const KURL& url, const String& userAgent,
     , m_userAgent(userAgent)
     , m_scriptController(WorkerOrWorkletScriptController::create(this, isolate))
 {
-    setSecurityOrigin(securityOrigin);
+    setSecurityOrigin(std::move(securityOrigin));
 }
 
 WorkletGlobalScope::~WorkletGlobalScope()

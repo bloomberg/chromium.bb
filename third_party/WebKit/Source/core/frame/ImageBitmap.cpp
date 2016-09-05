@@ -624,12 +624,12 @@ ImageBitmap* ImageBitmap::create(ImageBitmap* bitmap, Optional<IntRect> cropRect
 
 ImageBitmap* ImageBitmap::create(PassRefPtr<StaticBitmapImage> image, Optional<IntRect> cropRect, const ImageBitmapOptions& options)
 {
-    return new ImageBitmap(image, cropRect, options);
+    return new ImageBitmap(std::move(image), cropRect, options);
 }
 
 ImageBitmap* ImageBitmap::create(PassRefPtr<StaticBitmapImage> image)
 {
-    return new ImageBitmap(image);
+    return new ImageBitmap(std::move(image));
 }
 
 ImageBitmap* ImageBitmap::create(std::unique_ptr<uint8_t[]> data, uint32_t width, uint32_t height, bool isImageBitmapPremultiplied, bool isImageBitmapOriginClean)

@@ -148,7 +148,7 @@ LayoutText::LayoutText(Node* node, PassRefPtr<StringImpl> str)
     , m_maxWidth(-1)
     , m_firstLineMinWidth(0)
     , m_lastLineLineMinWidth(0)
-    , m_text(str)
+    , m_text(std::move(str))
     , m_firstTextBox(nullptr)
     , m_lastTextBox(nullptr)
 {
@@ -1345,7 +1345,7 @@ void LayoutText::setTextWithOffset(PassRefPtr<StringImpl> text, unsigned offset,
     }
 
     m_linesDirty = dirtiedLines;
-    setText(text, force || dirtiedLines);
+    setText(std::move(text), force || dirtiedLines);
 }
 
 void LayoutText::transformText()
@@ -1407,7 +1407,7 @@ void applyTextTransform(const ComputedStyle* style, String& text, UChar previous
 void LayoutText::setTextInternal(PassRefPtr<StringImpl> text)
 {
     ASSERT(text);
-    m_text = text;
+    m_text = std::move(text);
 
     if (style()) {
         applyTextTransform(style(), m_text, previousCharacter());
@@ -1463,7 +1463,7 @@ void LayoutText::setText(PassRefPtr<StringImpl> text, bool force)
     if (!force && equal(m_text.impl(), text.get()))
         return;
 
-    setTextInternal(text);
+    setTextInternal(std::move(text));
     // If preferredLogicalWidthsDirty() of an orphan child is true, LayoutObjectChildList::
     // insertChildNode() fails to set true to owner. To avoid that, we call
     // setNeedsLayoutAndPrefWidthsRecalc() only if this LayoutText has parent.

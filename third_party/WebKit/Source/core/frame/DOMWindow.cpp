@@ -227,7 +227,7 @@ void DOMWindow::postMessage(PassRefPtr<SerializedScriptValue> message, const Mes
     else if (MixedContentChecker::isMixedContent(frame()->securityContext()->getSecurityOrigin(), sourceDocument->url()))
         UseCounter::count(frame(), UseCounter::PostMessageFromInsecureToSecure);
 
-    MessageEvent* event = MessageEvent::create(std::move(channels), message, sourceOrigin, String(), source, sourceSuborigin);
+    MessageEvent* event = MessageEvent::create(std::move(channels), std::move(message), sourceOrigin, String(), source, sourceSuborigin);
 
     schedulePostMessage(event, std::move(target), sourceDocument);
 }

@@ -31,7 +31,7 @@ public:
 
     static ThisType* create(PassRefPtr<WTFTypedArray> bufferView)
     {
-        return new ThisType(bufferView);
+        return new ThisType(std::move(bufferView));
     }
     static ThisType* create(unsigned length)
     {
@@ -43,7 +43,7 @@ public:
     }
     static ThisType* create(PassRefPtr<WTF::ArrayBuffer> buffer, unsigned byteOffset, unsigned length)
     {
-        return create(WTFTypedArray::create(buffer, byteOffset, length));
+        return create(WTFTypedArray::create(std::move(buffer), byteOffset, length));
     }
     static ThisType* create(DOMArrayBufferBase *buffer, unsigned byteOffset, unsigned length)
     {

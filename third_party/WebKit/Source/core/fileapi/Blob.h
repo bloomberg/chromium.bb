@@ -61,7 +61,7 @@ public:
 
     static Blob* create(PassRefPtr<BlobDataHandle> blobDataHandle)
     {
-        return new Blob(blobDataHandle);
+        return new Blob(std::move(blobDataHandle));
     }
 
     static Blob* create(const unsigned char* data, size_t bytes, const String& contentType);

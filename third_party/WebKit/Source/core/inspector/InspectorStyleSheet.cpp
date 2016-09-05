@@ -754,7 +754,7 @@ std::unique_ptr<protocol::CSS::SourceRange> InspectorStyleSheetBase::buildSource
 
 InspectorStyle* InspectorStyle::create(CSSStyleDeclaration* style, PassRefPtr<CSSRuleSourceData> sourceData, InspectorStyleSheetBase* parentStyleSheet)
 {
-    return new InspectorStyle(style, sourceData, parentStyleSheet);
+    return new InspectorStyle(style, std::move(sourceData), parentStyleSheet);
 }
 
 InspectorStyle::InspectorStyle(CSSStyleDeclaration* style, PassRefPtr<CSSRuleSourceData> sourceData, InspectorStyleSheetBase* parentStyleSheet)

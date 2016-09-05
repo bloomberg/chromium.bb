@@ -50,7 +50,7 @@ public:
 
     static ShapeValue* createShapeValue(PassRefPtr<BasicShape> shape, CSSBoxType cssBox)
     {
-        return new ShapeValue(shape, cssBox);
+        return new ShapeValue(std::move(shape), cssBox);
     }
 
     static ShapeValue* createBoxShapeValue(CSSBoxType cssBox)

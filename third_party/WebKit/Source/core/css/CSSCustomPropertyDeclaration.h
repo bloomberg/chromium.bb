@@ -16,7 +16,7 @@ class CSSCustomPropertyDeclaration : public CSSValue {
 public:
     static CSSCustomPropertyDeclaration* create(const AtomicString& name, PassRefPtr<CSSVariableData> value)
     {
-        return new CSSCustomPropertyDeclaration(name, value);
+        return new CSSCustomPropertyDeclaration(name, std::move(value));
     }
 
     static CSSCustomPropertyDeclaration* create(const AtomicString& name, CSSValueID id)

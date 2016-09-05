@@ -92,7 +92,7 @@ void FileReaderLoader::startInternal(ExecutionContext& executionContext, const S
 
     if (blobData) {
         ASSERT(!stream);
-        BlobRegistry::registerPublicBlobURL(executionContext.getSecurityOrigin(), m_urlForReading, blobData);
+        BlobRegistry::registerPublicBlobURL(executionContext.getSecurityOrigin(), m_urlForReading, std::move(blobData));
     } else {
         ASSERT(stream);
         BlobRegistry::registerStreamURL(executionContext.getSecurityOrigin(), m_urlForReading, stream->url());
@@ -132,7 +132,7 @@ void FileReaderLoader::start(ExecutionContext* executionContext, PassRefPtr<Blob
 {
     ASSERT(executionContext);
     m_urlForReadingIsStream = false;
-    startInternal(*executionContext, 0, blobData);
+    startInternal(*executionContext, 0, std::move(blobData));
 }
 
 void FileReaderLoader::start(ExecutionContext* executionContext, const Stream& stream, unsigned readSize)

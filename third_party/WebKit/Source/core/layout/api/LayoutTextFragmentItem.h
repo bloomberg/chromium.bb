@@ -31,7 +31,7 @@ public:
 
     void setTextFragment(PassRefPtr<StringImpl> text, unsigned start, unsigned length)
     {
-        toTextFragment()->setTextFragment(text, start, length);
+        toTextFragment()->setTextFragment(std::move(text), start, length);
     }
 
     FirstLetterPseudoElement* firstLetterPseudoElement() const

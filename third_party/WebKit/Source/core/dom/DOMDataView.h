@@ -21,7 +21,7 @@ public:
 
 private:
     DOMDataView(PassRefPtr<WTF::ArrayBufferView> dataView, DOMArrayBufferBase* domArrayBuffer)
-        : DOMArrayBufferView(dataView, domArrayBuffer) { }
+        : DOMArrayBufferView(std::move(dataView), domArrayBuffer) { }
 };
 
 } // namespace blink

@@ -40,7 +40,7 @@ void InProcessWorkerBase::postMessage(ExecutionContext* context, PassRefPtr<Seri
     std::unique_ptr<MessagePortChannelArray> channels = MessagePort::disentanglePorts(context, ports, exceptionState);
     if (exceptionState.hadException())
         return;
-    m_contextProxy->postMessageToWorkerGlobalScope(message, std::move(channels));
+    m_contextProxy->postMessageToWorkerGlobalScope(std::move(message), std::move(channels));
 }
 
 bool InProcessWorkerBase::initialize(ExecutionContext* context, const String& url, ExceptionState& exceptionState)

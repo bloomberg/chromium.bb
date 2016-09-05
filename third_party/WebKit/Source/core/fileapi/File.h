@@ -65,17 +65,17 @@ public:
 
     static File* create(const String& name, double modificationTime, PassRefPtr<BlobDataHandle> blobDataHandle)
     {
-        return new File(name, modificationTime, blobDataHandle);
+        return new File(name, modificationTime, std::move(blobDataHandle));
     }
 
     // For deserialization.
     static File* createFromSerialization(const String& path, const String& name, const String& relativePath, UserVisibility userVisibility, bool hasSnapshotData, uint64_t size, double lastModified, PassRefPtr<BlobDataHandle> blobDataHandle)
     {
-        return new File(path, name, relativePath, userVisibility, hasSnapshotData, size, lastModified, blobDataHandle);
+        return new File(path, name, relativePath, userVisibility, hasSnapshotData, size, lastModified, std::move(blobDataHandle));
     }
     static File* createFromIndexedSerialization(const String& path, const String& name, uint64_t size, double lastModified, PassRefPtr<BlobDataHandle> blobDataHandle)
     {
-        return new File(path, name, String(), IsNotUserVisible, true, size, lastModified, blobDataHandle);
+        return new File(path, name, String(), IsNotUserVisible, true, size, lastModified, std::move(blobDataHandle));
     }
 
     static File* createWithRelativePath(const String& path, const String& relativePath);
