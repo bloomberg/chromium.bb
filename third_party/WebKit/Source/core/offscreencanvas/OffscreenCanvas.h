@@ -11,7 +11,6 @@
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/canvas/CanvasImageSource.h"
 #include "platform/geometry/IntSize.h"
-#include "platform/graphics/OffscreenCanvasFrameDispatcher.h"
 #include "platform/heap/Handle.h"
 #include <memory>
 
@@ -51,8 +50,6 @@ public:
     // TODO(crbug.com/630356): apply the flag to WebGL context as well
     void setDisableReadingFromCanvasTrue() { m_disableReadingFromCanvas = true; }
 
-    OffscreenCanvasFrameDispatcher* getOrCreateFrameDispatcher();
-
     void setSurfaceId(uint32_t clientId, uint32_t localId, uint64_t nonce)
     {
         m_clientId = clientId;
@@ -91,7 +88,6 @@ private:
 
     bool isPaintable() const;
 
-    std::unique_ptr<OffscreenCanvasFrameDispatcher> m_frameDispatcher;
     // cc::SurfaceId is broken into three integer components as this can be used
     // in transfer of OffscreenCanvas across threads
     // If this object is not created via HTMLCanvasElement.transferControlToOffscreen(),

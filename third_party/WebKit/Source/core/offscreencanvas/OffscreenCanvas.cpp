@@ -9,7 +9,6 @@
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/canvas/CanvasRenderingContextFactory.h"
 #include "platform/graphics/ImageBuffer.h"
-#include "platform/graphics/OffscreenCanvasFrameDispatcherImpl.h"
 #include "wtf/MathExtras.h"
 #include <memory>
 
@@ -28,18 +27,11 @@ OffscreenCanvas* OffscreenCanvas::create(unsigned width, unsigned height)
 
 void OffscreenCanvas::setWidth(unsigned width)
 {
-    // If this OffscreenCanvas is transferred control by an html canvas,
-    // its size is determined by html canvas's size and cannot be resized.
-    if (m_canvasId >= 0)
-        return;
     m_size.setWidth(clampTo<int>(width));
 }
 
 void OffscreenCanvas::setHeight(unsigned height)
 {
-    // Same comment as above.
-    if (m_canvasId >= 0)
-        return;
     m_size.setHeight(clampTo<int>(height));
 }
 
@@ -140,13 +132,6 @@ bool OffscreenCanvas::isPaintable() const
     if (!m_context)
         return ImageBuffer::canCreateImageBuffer(m_size);
     return m_context->isPaintable();
-}
-
-OffscreenCanvasFrameDispatcher* OffscreenCanvas::getOrCreateFrameDispatcher()
-{
-    if (!m_frameDispatcher)
-        m_frameDispatcher = wrapUnique(new OffscreenCanvasFrameDispatcherImpl(m_clientId, m_localId, m_nonce, width(), height()));
-    return m_frameDispatcher.get();
 }
 
 DEFINE_TRACE(OffscreenCanvas)

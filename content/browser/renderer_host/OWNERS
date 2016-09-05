@@ -31,5 +31,5 @@ per-file database_*=jsbell@chromium.org
 per-file database_*=michaeln@chromium.org
 
 # Offscreen Canvas
-per-file offscreen_canvas*_impl.*=junov@chromium.org
-per-file offscreen_canvas*_impl.*=xlai@chromium.org
+per-file offscreen_canvas_surface_impl.*=junov@chromium.org
+per-file offscreen_canvas_surface_impl.*=xlai@chromium.org

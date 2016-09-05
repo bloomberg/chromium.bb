@@ -4239,7 +4239,6 @@ interface OffscreenCanvasRenderingContext2D
     method clearRect
     method clip
     method closePath
-    method commit
     method constructor
     method createImageData
     method createLinearGradient

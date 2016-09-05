@@ -33,8 +33,6 @@ public:
         }
     };
 
-    void commit(ExecutionContext*);
-
     // CanvasRenderingContext implementation
     ~OffscreenCanvasRenderingContext2D() override;
     ContextType getContextType() const override { return Context2d; }
