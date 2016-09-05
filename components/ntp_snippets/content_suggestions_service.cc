@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <iterator>
+#include <set>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -15,8 +16,14 @@
 
 namespace ntp_snippets {
 
-ContentSuggestionsService::ContentSuggestionsService(State state)
-    : state_(state) {}
+ContentSuggestionsService::ContentSuggestionsService(
+    State state,
+    history::HistoryService* history_service)
+    : state_(state), history_service_observer_(this) {
+  // Can be null in tests.
+  if (history_service)
+    history_service_observer_.Add(history_service);
+}
 
 ContentSuggestionsService::~ContentSuggestionsService() {}
 
@@ -228,6 +235,52 @@ void ContentSuggestionsService::OnSuggestionInvalidated(
   RemoveSuggestionByID(category, suggestion_id);
   FOR_EACH_OBSERVER(Observer, observers_,
                     OnSuggestionInvalidated(category, suggestion_id));
+}
+
+// history::HistoryServiceObserver implementation.
+void ContentSuggestionsService::OnURLsDeleted(
+    history::HistoryService* history_service,
+    bool all_history,
+    bool expired,
+    const history::URLRows& deleted_rows,
+    const std::set<GURL>& favicon_urls) {
+  // We don't care about expired entries.
+  if (expired)
+    return;
+
+  // Redirect to ClearHistory().
+  if (all_history) {
+    base::Time begin = base::Time();
+    base::Time end = base::Time::Max();
+    base::Callback<bool(const GURL& url)> filter =
+        base::Bind([](const GURL& url) { return true; });
+    ClearHistory(begin, end, filter);
+  } else {
+    if (deleted_rows.empty())
+      return;
+
+    base::Time begin = deleted_rows[0].last_visit();
+    base::Time end = deleted_rows[0].last_visit();
+    std::set<GURL> deleted_urls;
+    for (const history::URLRow& row : deleted_rows) {
+      if (row.last_visit() < begin)
+        begin = row.last_visit();
+      if (row.last_visit() > end)
+        end = row.last_visit();
+      deleted_urls.insert(row.url());
+    }
+    base::Callback<bool(const GURL& url)> filter = base::Bind(
+        [](const std::set<GURL>& set, const GURL& url) {
+          return set.count(url) != 0;
+        },
+        deleted_urls);
+    ClearHistory(begin, end, filter);
+  }
+}
+
+void ContentSuggestionsService::HistoryServiceBeingDeleted(
+    history::HistoryService* history_service) {
+  history_service_observer_.RemoveAll();
 }
 
 bool ContentSuggestionsService::RegisterCategoryIfRequired(

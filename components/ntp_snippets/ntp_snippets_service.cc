@@ -191,7 +191,6 @@ NTPSnippetsService::NTPSnippetsService(
     Observer* observer,
     CategoryFactory* category_factory,
     PrefService* pref_service,
-    history::HistoryService* history_service,
     SuggestionsService* suggestions_service,
     const std::string& application_language_code,
     NTPSnippetsScheduler* scheduler,
@@ -207,7 +206,6 @@ NTPSnippetsService::NTPSnippetsService(
       suggestions_service_(suggestions_service),
       application_language_code_(application_language_code),
       scheduler_(scheduler),
-      history_service_observer_(this),
       snippets_fetcher_(std::move(snippets_fetcher)),
       image_fetcher_(std::move(image_fetcher)),
       image_decoder_(std::move(image_decoder)),
@@ -225,10 +223,6 @@ NTPSnippetsService::NTPSnippetsService(
     EnterState(State::ERROR_OCCURRED, CategoryStatus::LOADING_ERROR);
     return;
   }
-
-  // Can be null in tests.
-  if (history_service)
-    history_service_observer_.Add(history_service);
 
   database_->SetErrorCallback(base::Bind(&NTPSnippetsService::OnDatabaseError,
                                          base::Unretained(this)));
@@ -415,28 +409,6 @@ int NTPSnippetsService::GetMaxSnippetCountForTesting() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Private methods
-
-// history::HistoryServiceObserver implementation.
-void NTPSnippetsService::OnURLsDeleted(
-    history::HistoryService* history_service,
-    bool all_history,
-    bool expired,
-    const history::URLRows& deleted_rows,
-    const std::set<GURL>& favicon_urls) {
-  // We don't care about expired entries.
-  if (expired)
-    return;
-
-  if (!ready())
-    nuke_after_load_ = true;
-  else
-    NukeAllSnippets();
-}
-
-void NTPSnippetsService::HistoryServiceBeingDeleted(
-    history::HistoryService* history_service) {
-  history_service_observer_.RemoveAll();
-}
 
 // image_fetcher::ImageFetcherDelegate implementation.
 void NTPSnippetsService::OnImageDataFetched(const std::string& snippet_id,

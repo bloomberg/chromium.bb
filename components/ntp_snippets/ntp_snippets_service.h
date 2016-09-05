@@ -17,7 +17,6 @@
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "base/timer/timer.h"
-#include "components/history/core/browser/history_service_observer.h"
 #include "components/image_fetcher/image_fetcher_delegate.h"
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/category_factory.h"
@@ -74,8 +73,7 @@ class NTPSnippetsServiceObserver;
 // a CachedImageFetcher class that handles the caching aspects and looks like an
 // image fetcher to the NTPSnippetService.
 class NTPSnippetsService : public ContentSuggestionsProvider,
-                           public image_fetcher::ImageFetcherDelegate,
-                           public history::HistoryServiceObserver {
+                           public image_fetcher::ImageFetcherDelegate {
  public:
   // |application_language_code| should be a ISO 639-1 compliant string, e.g.
   // 'en' or 'en-US'. Note that this code should only specify the language, not
@@ -84,7 +82,6 @@ class NTPSnippetsService : public ContentSuggestionsProvider,
   NTPSnippetsService(Observer* observer,
                      CategoryFactory* category_factory,
                      PrefService* pref_service,
-                     history::HistoryService* history_service,
                      suggestions::SuggestionsService* suggestions_service,
                      const std::string& application_language_code,
                      NTPSnippetsScheduler* scheduler,
@@ -207,15 +204,6 @@ class NTPSnippetsService : public ContentSuggestionsProvider,
     ERROR_OCCURRED
   };
 
-  // history::HistoryServiceObserver implementation.
-  void OnURLsDeleted(history::HistoryService* history_service,
-                     bool all_history,
-                     bool expired,
-                     const history::URLRows& deleted_rows,
-                     const std::set<GURL>& favicon_urls) override;
-  void HistoryServiceBeingDeleted(
-      history::HistoryService* history_service) override;
-
   // image_fetcher::ImageFetcherDelegate implementation.
   void OnImageDataFetched(const std::string& snippet_id,
                           const std::string& image_data) override;
@@ -311,11 +299,6 @@ class NTPSnippetsService : public ContentSuggestionsProvider,
 
   // Scheduler for fetching snippets. Not owned.
   NTPSnippetsScheduler* scheduler_;
-
-  // Observer for the HistoryService. We clear all cached suggestions when
-  // history gets deleted.
-  ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
-        history_service_observer_;
 
   // The subscription to the SuggestionsService. When the suggestions change,
   // SuggestionsService will call |OnSuggestionsChanged|, which triggers an

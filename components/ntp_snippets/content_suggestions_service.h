@@ -13,7 +13,10 @@
 #include "base/callback_forward.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
+#include "base/scoped_observer.h"
 #include "base/time/time.h"
+#include "components/history/core/browser/history_service.h"
+#include "components/history/core/browser/history_service_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/ntp_snippets/category_factory.h"
 #include "components/ntp_snippets/category_status.h"
@@ -30,7 +33,8 @@ class NTPSnippetsService;
 // Retrieves suggestions from a number of ContentSuggestionsProviders and serves
 // them grouped into categories. There can be at most one provider per category.
 class ContentSuggestionsService : public KeyedService,
-                                  public ContentSuggestionsProvider::Observer {
+                                  public ContentSuggestionsProvider::Observer,
+                                  public history::HistoryServiceObserver {
  public:
   using ImageFetchedCallback = base::Callback<void(const gfx::Image&)>;
   using DismissedSuggestionsCallback = base::Callback<void(
@@ -76,7 +80,8 @@ class ContentSuggestionsService : public KeyedService,
     DISABLED,
   };
 
-  ContentSuggestionsService(State state);
+  ContentSuggestionsService(State state,
+                            history::HistoryService* history_service);
   ~ContentSuggestionsService() override;
 
   // Inherited from KeyedService.
@@ -181,6 +186,15 @@ class ContentSuggestionsService : public KeyedService,
                                Category category,
                                const std::string& suggestion_id) override;
 
+  // history::HistoryServiceObserver implementation.
+  void OnURLsDeleted(history::HistoryService* history_service,
+                     bool all_history,
+                     bool expired,
+                     const history::URLRows& deleted_rows,
+                     const std::set<GURL>& favicon_urls) override;
+  void HistoryServiceBeingDeleted(
+      history::HistoryService* history_service) override;
+
   // Registers the given |provider| for the given |category|, unless it is
   // already registered. Returns true if the category was newly registered or
   // false if it was present before.
@@ -230,6 +244,11 @@ class ContentSuggestionsService : public KeyedService,
   // is available). This also determines the provider that delivered the
   // suggestion.
   std::map<std::string, Category> id_category_map_;
+
+  // Observer for the HistoryService. All providers are notified when history is
+  // deleted.
+  ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
+      history_service_observer_;
 
   base::ObserverList<Observer> observers_;
 

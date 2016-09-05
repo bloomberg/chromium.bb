@@ -126,7 +126,6 @@ void RegisterPhysicalWebPageProvider(ContentSuggestionsService* service,
 
 void RegisterArticleProvider(SigninManagerBase* signin_manager,
                              OAuth2TokenService* token_service,
-                             HistoryService* history_service,
                              SuggestionsService* suggestions_service,
                              ContentSuggestionsService* service,
                              CategoryFactory* category_factory,
@@ -151,7 +150,7 @@ void RegisterArticleProvider(SigninManagerBase* signin_manager,
       chrome::GetChannel() == version_info::Channel::STABLE;
   std::unique_ptr<NTPSnippetsService> ntp_snippets_service =
       base::MakeUnique<NTPSnippetsService>(
-          service, service->category_factory(), pref_service, history_service,
+          service, service->category_factory(), pref_service,
           suggestions_service, g_browser_process->GetApplicationLocale(),
           scheduler,
           base::MakeUnique<NTPSnippetsFetcher>(
@@ -210,7 +209,10 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
       base::FeatureList::IsEnabled(ntp_snippets::kContentSuggestionsFeature)
           ? State::ENABLED
           : State::DISABLED;
-  ContentSuggestionsService* service = new ContentSuggestionsService(state);
+  HistoryService* history_service = HistoryServiceFactory::GetForProfile(
+      profile, ServiceAccessType::EXPLICIT_ACCESS);
+  ContentSuggestionsService* service =
+      new ContentSuggestionsService(state, history_service);
   if (state == State::DISABLED) {
     // Since we won't initialise the services, they won't get a chance to
     // unschedule their tasks. We do it explicitly here instead.
@@ -230,8 +232,6 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
       SigninManagerFactory::GetForProfile(profile);
   OAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-  HistoryService* history_service = HistoryServiceFactory::GetForProfile(
-      profile, ServiceAccessType::EXPLICIT_ACCESS);
   SuggestionsService* suggestions_service =
       SuggestionsServiceFactory::GetForProfile(profile);
 
@@ -261,9 +261,8 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
 #endif  // OS_ANDROID
 
   if (base::FeatureList::IsEnabled(ntp_snippets::kArticleSuggestionsFeature)) {
-    RegisterArticleProvider(signin_manager, token_service, history_service,
-                            suggestions_service, service, category_factory,
-                            pref_service, profile);
+    RegisterArticleProvider(signin_manager, token_service, suggestions_service,
+                            service, category_factory, pref_service, profile);
   }
 
   return service;

@@ -117,8 +117,11 @@ IOSChromeContentSuggestionsServiceFactory::BuildServiceInstanceFor(
       base::FeatureList::IsEnabled(ntp_snippets::kContentSuggestionsFeature)
           ? State::ENABLED
           : State::DISABLED;
+  HistoryService* history_service =
+      ios::HistoryServiceFactory::GetForBrowserState(
+          chrome_browser_state, ServiceAccessType::EXPLICIT_ACCESS);
   std::unique_ptr<ContentSuggestionsService> service =
-      base::MakeUnique<ContentSuggestionsService>(state);
+      base::MakeUnique<ContentSuggestionsService>(state, history_service);
   if (state == State::DISABLED)
     return std::move(service);
 
@@ -140,9 +143,6 @@ IOSChromeContentSuggestionsServiceFactory::BuildServiceInstanceFor(
         OAuth2TokenServiceFactory::GetForBrowserState(chrome_browser_state);
     scoped_refptr<net::URLRequestContextGetter> request_context =
         browser_state->GetRequestContext();
-    HistoryService* history_service =
-        ios::HistoryServiceFactory::GetForBrowserState(
-            chrome_browser_state, ServiceAccessType::EXPLICIT_ACCESS);
     SuggestionsService* suggestions_service =
         SuggestionsServiceFactory::GetForBrowserState(chrome_browser_state);
     NTPSnippetsScheduler* scheduler = nullptr;
@@ -155,7 +155,7 @@ IOSChromeContentSuggestionsServiceFactory::BuildServiceInstanceFor(
                 base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
     std::unique_ptr<NTPSnippetsService> ntp_snippets_service =
         base::MakeUnique<NTPSnippetsService>(
-            service.get(), service->category_factory(), prefs, history_service,
+            service.get(), service->category_factory(), prefs,
             suggestions_service,
             GetApplicationContext()->GetApplicationLocale(), scheduler,
             base::MakeUnique<NTPSnippetsFetcher>(

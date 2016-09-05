@@ -365,7 +365,7 @@ class NTPSnippetsServiceTest : public ::testing::Test {
 
     auto service = base::MakeUnique<NTPSnippetsService>(
         observer_.get(), &category_factory_, utils_.pref_service(), nullptr,
-        nullptr, "fr", &scheduler_, std::move(snippets_fetcher),
+        "fr", &scheduler_, std::move(snippets_fetcher),
         std::move(image_fetcher), /*image_decoder=*/nullptr,
         base::MakeUnique<NTPSnippetsDatabase>(database_dir_.path(),
                                               task_runner),

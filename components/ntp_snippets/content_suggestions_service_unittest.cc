@@ -205,7 +205,8 @@ class ContentSuggestionsServiceTest : public testing::Test {
   void CreateContentSuggestionsService(
       ContentSuggestionsService::State enabled) {
     ASSERT_FALSE(service_);
-    service_.reset(new ContentSuggestionsService(enabled));
+    service_.reset(
+        new ContentSuggestionsService(enabled, /*history_service=*/nullptr));
   }
 
   ContentSuggestionsService* service() { return service_.get(); }
