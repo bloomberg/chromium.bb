@@ -1137,6 +1137,11 @@ WebString WebLocalFrameImpl::selectionAsMarkup() const
 void WebLocalFrameImpl::selectWordAroundPosition(LocalFrame* frame, VisiblePosition position)
 {
     TRACE_EVENT0("blink", "WebLocalFrameImpl::selectWordAroundPosition");
+
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
+    // see http://crbug.com/590369 for more details.
+    frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
     frame->selection().selectWordAroundPosition(position);
 }
 
@@ -1146,6 +1151,11 @@ bool WebLocalFrameImpl::selectWordAroundCaret()
     FrameSelection& selection = frame()->selection();
     if (selection.isNone() || selection.isRange())
         return false;
+
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
+    // see http://crbug.com/590369 for more details.
+    frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
     return frame()->selection().selectWordAroundPosition(selection.selection().visibleStart());
 }
 
