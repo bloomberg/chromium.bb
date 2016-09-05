@@ -14,9 +14,9 @@
 #include "chrome/browser/apps/app_shim/app_shim_handler_mac.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
+#include "mojo/edk/embedder/scoped_platform_handle.h"
 
 namespace IPC {
-struct ChannelHandle;
 class ChannelProxy;
 class Message;
 }  // namespace IPC
@@ -36,7 +36,7 @@ class AppShimHost : public IPC::Listener,
   // Creates a new server-side IPC channel at |handle|, which should contain a
   // file descriptor of a channel created by an UnixDomainSocketAcceptor,
   // and begins listening for messages on it.
-  void ServeChannel(const IPC::ChannelHandle& handle);
+  void ServeChannel(mojo::edk::ScopedPlatformHandle handle);
 
  protected:
   // IPC::Listener implementation.

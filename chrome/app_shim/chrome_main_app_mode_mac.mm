@@ -34,9 +34,15 @@
 #include "chrome/common/mac/app_mode_common.h"
 #include "chrome/common/mac/app_shim_messages.h"
 #include "chrome/grit/generated_resources.h"
+#include "ipc/ipc_channel_mojo.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
+#include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/named_platform_handle.h"
+#include "mojo/edk/embedder/named_platform_handle_utils.h"
+#include "mojo/edk/embedder/scoped_ipc_support.h"
+#include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -212,9 +218,12 @@ void AppShimController::Init() {
 
 void AppShimController::CreateChannelAndSendLaunchApp(
     const base::FilePath& socket_path) {
-  IPC::ChannelHandle handle(socket_path.value());
-  channel_ = IPC::ChannelProxy::Create(handle, IPC::Channel::MODE_NAMED_CLIENT,
-                                       this, g_io_thread->task_runner().get());
+  channel_ = IPC::ChannelProxy::Create(
+      IPC::ChannelMojo::CreateClientFactory(
+          mojo::edk::ConnectToPeerProcess(mojo::edk::CreateClientHandle(
+              mojo::edk::NamedPlatformHandle(socket_path.value()))),
+          g_io_thread->task_runner().get()),
+      this, g_io_thread->task_runner().get());
 
   bool launched_by_chrome = base::CommandLine::ForCurrentProcess()->HasSwitch(
       app_mode::kLaunchedByChromeProcessId);
@@ -628,6 +637,9 @@ int ChromeAppModeStart_v4(const app_mode::ChromeAppModeInfo* info) {
   base::Thread *io_thread = new base::Thread("CrAppShimIO");
   io_thread->StartWithOptions(io_thread_options);
   g_io_thread = io_thread;
+
+  mojo::edk::Init();
+  mojo::edk::ScopedIPCSupport ipc_support(io_thread->task_runner());
 
   // Find already running instances of Chrome.
   pid_t pid = -1;

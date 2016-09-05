@@ -4,70 +4,56 @@
 
 #include "chrome/browser/apps/app_shim/unix_domain_socket_acceptor.h"
 
-#include "base/files/file_util.h"
-#include "base/files/scoped_file.h"
+#include <utility>
+
 #include "base/logging.h"
-#include "ipc/unix_domain_socket_util.h"
+#include "mojo/edk/embedder/named_platform_handle_utils.h"
+#include "mojo/edk/embedder/platform_channel_utils_posix.h"
 
 namespace apps {
 
 UnixDomainSocketAcceptor::UnixDomainSocketAcceptor(const base::FilePath& path,
                                                    Delegate* delegate)
-    : path_(path), delegate_(delegate), listen_fd_(-1) {
+    : named_pipe_(path.value()),
+      delegate_(delegate),
+      listen_handle_(mojo::edk::CreateServerHandle(named_pipe_, false)) {
   DCHECK(delegate_);
-  CreateSocket();
 }
 
 UnixDomainSocketAcceptor::~UnixDomainSocketAcceptor() {
   Close();
 }
 
-bool UnixDomainSocketAcceptor::CreateSocket() {
-  DCHECK(listen_fd_ < 0);
-
-  // Create the socket.
-  return IPC::CreateServerUnixDomainSocket(path_, &listen_fd_);
-}
-
 bool UnixDomainSocketAcceptor::Listen() {
-  if (listen_fd_ < 0)
+  if (!listen_handle_.is_valid())
     return false;
 
   // Watch the fd for connections, and turn any connections into
   // active sockets.
   base::MessageLoopForIO::current()->WatchFileDescriptor(
-      listen_fd_,
-      true,
-      base::MessageLoopForIO::WATCH_READ,
-      &server_listen_connection_watcher_,
-      this);
+      listen_handle_.get().handle, true, base::MessageLoopForIO::WATCH_READ,
+      &server_listen_connection_watcher_, this);
   return true;
 }
 
 // Called by libevent when we can read from the fd without blocking.
 void UnixDomainSocketAcceptor::OnFileCanReadWithoutBlocking(int fd) {
-  DCHECK(fd == listen_fd_);
-  int new_fd = -1;
-  if (!IPC::ServerOnConnect(listen_fd_, &new_fd)) {
+  DCHECK(fd == listen_handle_.get().handle);
+  mojo::edk::ScopedPlatformHandle connection_handle;
+  if (!mojo::edk::ServerAcceptConnection(listen_handle_.get(),
+                                         &connection_handle)) {
     Close();
     delegate_->OnListenError();
     return;
   }
-  base::ScopedFD scoped_fd(new_fd);
 
-  if (!scoped_fd.is_valid()) {
+  if (!connection_handle.is_valid()) {
     // The accept() failed, but not in such a way that the factory needs to be
     // shut down.
     return;
   }
 
-  // Verify that the IPC channel peer is running as the same user.
-  if (!IPC::IsPeerAuthorized(scoped_fd.get()))
-    return;
-
-  IPC::ChannelHandle handle(std::string(),
-                            base::FileDescriptor(scoped_fd.release(), true));
-  delegate_->OnClientConnected(handle);
+  delegate_->OnClientConnected(std::move(connection_handle));
 }
 
 void UnixDomainSocketAcceptor::OnFileCanWriteWithoutBlocking(int fd) {
@@ -75,12 +61,10 @@ void UnixDomainSocketAcceptor::OnFileCanWriteWithoutBlocking(int fd) {
 }
 
 void UnixDomainSocketAcceptor::Close() {
-  if (listen_fd_ < 0)
+  if (!listen_handle_.is_valid())
     return;
-  if (IGNORE_EINTR(close(listen_fd_)) < 0)
-    PLOG(ERROR) << "close";
-  listen_fd_ = -1;
-  if (unlink(path_.value().c_str()) < 0)
+  listen_handle_.reset();
+  if (unlink(named_pipe_.name.c_str()) < 0)
     PLOG(ERROR) << "unlink";
 
   // Unregister libevent for the listening socket and close it.

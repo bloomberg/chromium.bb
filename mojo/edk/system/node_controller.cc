@@ -1269,9 +1269,13 @@ void NodeController::OnAcceptPeer(const ports::NodeName& from_node,
   pending_peers_.erase(it);
   DCHECK(channel);
 
-  DVLOG(1) << "Node " << name_ << " accepted peer " << peer_name;
+  // If the peer connection is a self connection (which is used in tests),
+  // drop the channel to it and skip straight to merging the ports.
+  if (name_ != peer_name) {
+    DVLOG(1) << "Node " << name_ << " accepted peer " << peer_name;
 
-  AddPeer(peer_name, channel, false /* start_channel */);
+    AddPeer(peer_name, channel, false /* start_channel */);
+  }
 
   // We need to choose one side to initiate the port merge. It doesn't matter
   // who does it as long as they don't both try. Simple solution: pick the one

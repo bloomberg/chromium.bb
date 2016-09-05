@@ -75,8 +75,9 @@ PlatformChannelRecvmsg(PlatformHandle h,
 // Returns true if it's valid to keep listening on |server_handle|. In this
 // case, it's possible that a connection wasn't successfully established; then,
 // |connection_handle| will be invalid.
-bool ServerAcceptConnection(PlatformHandle server_handle,
-                            ScopedPlatformHandle* connection_handle);
+MOJO_SYSTEM_IMPL_EXPORT bool ServerAcceptConnection(
+    PlatformHandle server_handle,
+    ScopedPlatformHandle* connection_handle);
 
 }  // namespace edk
 }  // namespace mojo

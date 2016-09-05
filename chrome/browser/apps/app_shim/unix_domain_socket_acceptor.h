@@ -8,7 +8,8 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
-#include "ipc/ipc_channel_handle.h"
+#include "mojo/edk/embedder/named_platform_handle.h"
+#include "mojo/edk/embedder/scoped_platform_handle.h"
 
 namespace apps {
 
@@ -23,7 +24,7 @@ class UnixDomainSocketAcceptor : public base::MessageLoopForIO::Watcher {
     // Called when a client connects to the factory. It is the delegate's
     // responsibility to create an IPC::Channel for the handle, or else close
     // the file descriptor contained therein.
-    virtual void OnClientConnected(const IPC::ChannelHandle& handle) = 0;
+    virtual void OnClientConnected(mojo::edk::ScopedPlatformHandle handle) = 0;
 
     // Called when an error occurs and the channel is closed.
     virtual void OnListenError() = 0;
@@ -40,15 +41,14 @@ class UnixDomainSocketAcceptor : public base::MessageLoopForIO::Watcher {
   void Close();
 
  private:
-  bool CreateSocket();
   void OnFileCanReadWithoutBlocking(int fd) override;
   void OnFileCanWriteWithoutBlocking(int fd) override;
 
   base::MessageLoopForIO::FileDescriptorWatcher
       server_listen_connection_watcher_;
-  base::FilePath path_;
+  mojo::edk::NamedPlatformHandle named_pipe_;
   Delegate* delegate_;
-  int listen_fd_;
+  mojo::edk::ScopedPlatformHandle listen_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(UnixDomainSocketAcceptor);
 };

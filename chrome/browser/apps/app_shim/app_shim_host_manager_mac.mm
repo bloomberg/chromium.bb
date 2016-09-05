@@ -28,9 +28,9 @@ using content::BrowserThread;
 
 namespace {
 
-void CreateAppShimHost(const IPC::ChannelHandle& handle) {
+void CreateAppShimHost(mojo::edk::ScopedPlatformHandle handle) {
   // AppShimHost takes ownership of itself.
-  (new AppShimHost)->ServeChannel(handle);
+  (new AppShimHost)->ServeChannel(std::move(handle));
 }
 
 base::FilePath GetDirectoryInTmpTemplate(const base::FilePath& user_data_dir) {
@@ -158,11 +158,11 @@ void AppShimHostManager::ListenOnIOThread() {
 }
 
 void AppShimHostManager::OnClientConnected(
-    const IPC::ChannelHandle& handle) {
+    mojo::edk::ScopedPlatformHandle handle) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&CreateAppShimHost, handle));
+      base::Bind(&CreateAppShimHost, base::Passed(&handle)));
 }
 
 void AppShimHostManager::OnListenError() {
