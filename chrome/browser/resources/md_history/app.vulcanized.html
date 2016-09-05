@@ -3798,7 +3798,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </dom-module>
 <dom-module id="history-synced-device-manager" assetpath="chrome://history/">
   <template>
-    <style include="shared-style">
+    <style include="shared-style cr-shared-style">
       :host {
         display: block;
         overflow: auto;
@@ -3840,10 +3840,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       #sign-in-button {
-        background-color: var(--google-blue-500);
-        color: white;
-        font-weight: 500;
-        margin-top: 24px;
+        margin: 24px 0;
         padding-left: 12px;
         padding-right: 12px;
       }
@@ -3866,7 +3863,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <div id="illustration"></div>
       <div id="sign-in-promo">$i18n{signInPromo}</div>
       <div id="sign-in-promo-desc">$i18n{signInPromoDesc}</div>
-      <paper-button id="sign-in-button" on-tap="onSignInTap_">
+      <paper-button id="sign-in-button" class="action-button" on-tap="onSignInTap_">
         $i18n{signInButton}
       </paper-button>
     </div>
