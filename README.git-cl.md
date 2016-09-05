@@ -6,15 +6,15 @@ git but unfamiliar with the code review process supported by Rietveld and
 Gerrit.
 
 
-## Reitveld concepts and terms
+## Rietveld concepts and terms
 
 A Rietveld review is for discussion of a single change or patch. You upload a
 proposed change, the reviewer comments on your change, and then you can upload a
 revised version of your change. Rietveld stores the history of uploaded patches
 as well as the comments, and can compute diffs in between these patches. The
 history of a patch is very much like a small branch in git, but since Rietveld
-is VCS-agnostic the concepts don't map perfectly. The identifier for a single
-review+patches+comments in Rietveld is called an `issue`.
+is VCS-agnostic, the concepts don't map perfectly. The identifier for a single
+review thread including patches and comments in Rietveld is called an **issue**.
 
 Rietveld provides a basic uploader that understands git. This program is used by
 git-cl, and is included in the git-cl repo as upload.py.
@@ -29,9 +29,9 @@ different ways you can handle this workflow with git:
 
 1. Rewriting a single commit. Say the origin commit is O, and you commit your
    initial work in a commit A, making your history like O--A. After review
-   comments, you commit --amend, effectively erasing A and making a new commit
-   A', so history is now O--A'. (Equivalently, you can use git reset --soft or
-   git rebase -i.)
+   comments, you `git commit --amend`, effectively erasing A and making a new
+   commit A', so history is now O--A'. (Equivalently, you can use
+   `git reset --soft` or `git rebase -i`.)
 2. Writing follow-up commits. Initial work is again in A, and after review
    comments, you write a new commit B so your history looks like O--A--B. When
    you upload the revised patch, you upload the diff of O..B, not A..B; you
@@ -78,9 +78,10 @@ that as a single review, everything works just as above.
 But what if you upload each of A, B, and C as separate reviews? What if you
 then need to change A?
 
-1. One option is rewriting history: write a new commit A', then use git rebase
-   -i to insert that diff in as O--A--A'--B--C as well as squash it. This is
-   sometimes not possible if B and C have touched some lines affected by A'.
+1. One option is rewriting history: write a new commit A', then use
+   `git rebase -i` to insert that diff in as O--A--A'--B--C as well as squash
+   it. This is sometimes not possible if B and C have touched some lines
+   affected by A'.
 2. Another option, and the one espoused by software like topgit, is for you to
    have separate branches for A, B, and C, and after writing A' you merge it
    into each of those branches. (topgit automates this merging process.)  This
@@ -98,15 +99,15 @@ then need to change A?
 In practice, this comes up pretty rarely. Suggestions for better workflows are
 welcome.
 
-## Bash auto complition
+## Bash auto completion
 
 1. Ensure that your base git commands are autocompleted
 [doc](https://git-scm.com/book/en/v1/Git-Basics-Tips-and-Tricks).
 2. Add this to your .bashrc:
-    
+
         # The next line enables bash completion for git cl.
         if [ -f "$HOME/bin/depot_tools/git_cl_completion.sh" ]; then
           . "$HOME/bin/depot_tools/git_cl_completion.sh"
         fi
-        
+
 3. Profit.
