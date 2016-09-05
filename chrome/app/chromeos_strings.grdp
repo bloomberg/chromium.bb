@@ -6312,4 +6312,10 @@ All users must sign out to continue.
   <message name="IDS_LOW_DISK_NOTIFICATION_BUTTON" desc="Button on the low disk notification to open storage management.">
     Manage storage
   </message>
+  <message name="IDS_FLAGS_ENABLE_EHV_INPUT_NAME" desc="Name of the about: flag for enabling emoji, handwriting and voice input on opt-in IME menu.">
+    Emoji, handwriting and voice input on opt-in IME menu
+    </message>
+  <message name="IDS_FLAGS_ENABLE_EHV_INPUT_DESCRIPTION" desc="Description of the about: flag enabling emoji, handwriting and voice input on opt-in IME menu.">
+    Enable access to emoji, handwriting and voice input form opt-in IME menu.
+  </message>
 </grit-part>
