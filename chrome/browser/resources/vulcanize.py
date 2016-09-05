@@ -92,6 +92,7 @@ def _vulcanize(directory, host, html_in_file, html_out_file='vulcanized.html',
                          '--beautify', 'indent-level=2,quote_style=3',
                          '--comments', '/Copyright|license|LICENSE|\<\/?if/',
                          '--output', js_out_path])
+    _run_cmd(['polymer-css-build', html_out_path])
   finally:
     os.remove(tmp.name)
 

@@ -46,357 +46,131 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   }
 </style>
 
-<style is="custom-style">
-  :root {
+<style is="custom-style" css-build="shadow">html {
+  --layout_-_display:  flex;;
 
-    --layout: {
-      display: -ms-flexbox;
-      display: -webkit-flex;
-      display: flex;
-    };
+    --layout-inline_-_display:  inline-flex;;
 
-    --layout-inline: {
-      display: -ms-inline-flexbox;
-      display: -webkit-inline-flex;
-      display: inline-flex;
-    };
+    --layout-horizontal_-_display:  var(--layout_-_display); --layout-horizontal_-_-ms-flex-direction:  row; --layout-horizontal_-_-webkit-flex-direction:  row; --layout-horizontal_-_flex-direction:  row;;
 
-    --layout-horizontal: {
-      @apply(--layout);
+    --layout-horizontal-reverse_-_display:  var(--layout_-_display); --layout-horizontal-reverse_-_-ms-flex-direction:  row-reverse; --layout-horizontal-reverse_-_-webkit-flex-direction:  row-reverse; --layout-horizontal-reverse_-_flex-direction:  row-reverse;;
 
-      -ms-flex-direction: row;
-      -webkit-flex-direction: row;
-      flex-direction: row;
-    };
+    --layout-vertical_-_display:  var(--layout_-_display); --layout-vertical_-_-ms-flex-direction:  column; --layout-vertical_-_-webkit-flex-direction:  column; --layout-vertical_-_flex-direction:  column;;
 
-    --layout-horizontal-reverse: {
-      @apply(--layout);
+    --layout-vertical-reverse_-_display:  var(--layout_-_display); --layout-vertical-reverse_-_-ms-flex-direction:  column-reverse; --layout-vertical-reverse_-_-webkit-flex-direction:  column-reverse; --layout-vertical-reverse_-_flex-direction:  column-reverse;;
 
-      -ms-flex-direction: row-reverse;
-      -webkit-flex-direction: row-reverse;
-      flex-direction: row-reverse;
-    };
+    --layout-wrap_-_-ms-flex-wrap:  wrap; --layout-wrap_-_-webkit-flex-wrap:  wrap; --layout-wrap_-_flex-wrap:  wrap;;
 
-    --layout-vertical: {
-      @apply(--layout);
+    --layout-wrap-reverse_-_-ms-flex-wrap:  wrap-reverse; --layout-wrap-reverse_-_-webkit-flex-wrap:  wrap-reverse; --layout-wrap-reverse_-_flex-wrap:  wrap-reverse;;
 
-      -ms-flex-direction: column;
-      -webkit-flex-direction: column;
-      flex-direction: column;
-    };
+    --layout-flex-auto_-_-ms-flex:  1 1 auto; --layout-flex-auto_-_-webkit-flex:  1 1 auto; --layout-flex-auto_-_flex:  1 1 auto;;
 
-    --layout-vertical-reverse: {
-      @apply(--layout);
+    --layout-flex-none_-_-ms-flex:  none; --layout-flex-none_-_-webkit-flex:  none; --layout-flex-none_-_flex:  none;;
 
-      -ms-flex-direction: column-reverse;
-      -webkit-flex-direction: column-reverse;
-      flex-direction: column-reverse;
-    };
+    --layout-flex_-_-ms-flex:  1 1 0.000000001px; --layout-flex_-_-webkit-flex:  1; --layout-flex_-_flex:  1; --layout-flex_-_-webkit-flex-basis:  0.000000001px; --layout-flex_-_flex-basis:  0.000000001px;;
 
-    --layout-wrap: {
-      -ms-flex-wrap: wrap;
-      -webkit-flex-wrap: wrap;
-      flex-wrap: wrap;
-    };
+    --layout-flex-2_-_-ms-flex:  2; --layout-flex-2_-_-webkit-flex:  2; --layout-flex-2_-_flex:  2;;
 
-    --layout-wrap-reverse: {
-      -ms-flex-wrap: wrap-reverse;
-      -webkit-flex-wrap: wrap-reverse;
-      flex-wrap: wrap-reverse;
-    };
+    --layout-flex-3_-_-ms-flex:  3; --layout-flex-3_-_-webkit-flex:  3; --layout-flex-3_-_flex:  3;;
 
-    --layout-flex-auto: {
-      -ms-flex: 1 1 auto;
-      -webkit-flex: 1 1 auto;
-      flex: 1 1 auto;
-    };
+    --layout-flex-4_-_-ms-flex:  4; --layout-flex-4_-_-webkit-flex:  4; --layout-flex-4_-_flex:  4;;
 
-    --layout-flex-none: {
-      -ms-flex: none;
-      -webkit-flex: none;
-      flex: none;
-    };
+    --layout-flex-5_-_-ms-flex:  5; --layout-flex-5_-_-webkit-flex:  5; --layout-flex-5_-_flex:  5;;
 
-    --layout-flex: {
-      -ms-flex: 1 1 0.000000001px;
-      -webkit-flex: 1;
-      flex: 1;
-      -webkit-flex-basis: 0.000000001px;
-      flex-basis: 0.000000001px;
-    };
+    --layout-flex-6_-_-ms-flex:  6; --layout-flex-6_-_-webkit-flex:  6; --layout-flex-6_-_flex:  6;;
 
-    --layout-flex-2: {
-      -ms-flex: 2;
-      -webkit-flex: 2;
-      flex: 2;
-    };
+    --layout-flex-7_-_-ms-flex:  7; --layout-flex-7_-_-webkit-flex:  7; --layout-flex-7_-_flex:  7;;
 
-    --layout-flex-3: {
-      -ms-flex: 3;
-      -webkit-flex: 3;
-      flex: 3;
-    };
+    --layout-flex-8_-_-ms-flex:  8; --layout-flex-8_-_-webkit-flex:  8; --layout-flex-8_-_flex:  8;;
 
-    --layout-flex-4: {
-      -ms-flex: 4;
-      -webkit-flex: 4;
-      flex: 4;
-    };
+    --layout-flex-9_-_-ms-flex:  9; --layout-flex-9_-_-webkit-flex:  9; --layout-flex-9_-_flex:  9;;
 
-    --layout-flex-5: {
-      -ms-flex: 5;
-      -webkit-flex: 5;
-      flex: 5;
-    };
+    --layout-flex-10_-_-ms-flex:  10; --layout-flex-10_-_-webkit-flex:  10; --layout-flex-10_-_flex:  10;;
 
-    --layout-flex-6: {
-      -ms-flex: 6;
-      -webkit-flex: 6;
-      flex: 6;
-    };
+    --layout-flex-11_-_-ms-flex:  11; --layout-flex-11_-_-webkit-flex:  11; --layout-flex-11_-_flex:  11;;
 
-    --layout-flex-7: {
-      -ms-flex: 7;
-      -webkit-flex: 7;
-      flex: 7;
-    };
+    --layout-flex-12_-_-ms-flex:  12; --layout-flex-12_-_-webkit-flex:  12; --layout-flex-12_-_flex:  12;;
 
-    --layout-flex-8: {
-      -ms-flex: 8;
-      -webkit-flex: 8;
-      flex: 8;
-    };
+    
 
-    --layout-flex-9: {
-      -ms-flex: 9;
-      -webkit-flex: 9;
-      flex: 9;
-    };
+    --layout-start_-_-ms-flex-align:  start; --layout-start_-_-webkit-align-items:  flex-start; --layout-start_-_align-items:  flex-start;;
 
-    --layout-flex-10: {
-      -ms-flex: 10;
-      -webkit-flex: 10;
-      flex: 10;
-    };
+    --layout-center_-_-ms-flex-align:  center; --layout-center_-_-webkit-align-items:  center; --layout-center_-_align-items:  center;;
 
-    --layout-flex-11: {
-      -ms-flex: 11;
-      -webkit-flex: 11;
-      flex: 11;
-    };
+    --layout-end_-_-ms-flex-align:  end; --layout-end_-_-webkit-align-items:  flex-end; --layout-end_-_align-items:  flex-end;;
 
-    --layout-flex-12: {
-      -ms-flex: 12;
-      -webkit-flex: 12;
-      flex: 12;
-    };
+    --layout-baseline_-_-ms-flex-align:  baseline; --layout-baseline_-_-webkit-align-items:  baseline; --layout-baseline_-_align-items:  baseline;;
 
-    /* alignment in cross axis */
+    
 
-    --layout-start: {
-      -ms-flex-align: start;
-      -webkit-align-items: flex-start;
-      align-items: flex-start;
-    };
+    --layout-start-justified_-_-ms-flex-pack:  start; --layout-start-justified_-_-webkit-justify-content:  flex-start; --layout-start-justified_-_justify-content:  flex-start;;
 
-    --layout-center: {
-      -ms-flex-align: center;
-      -webkit-align-items: center;
-      align-items: center;
-    };
+    --layout-center-justified_-_-ms-flex-pack:  center; --layout-center-justified_-_-webkit-justify-content:  center; --layout-center-justified_-_justify-content:  center;;
 
-    --layout-end: {
-      -ms-flex-align: end;
-      -webkit-align-items: flex-end;
-      align-items: flex-end;
-    };
+    --layout-end-justified_-_-ms-flex-pack:  end; --layout-end-justified_-_-webkit-justify-content:  flex-end; --layout-end-justified_-_justify-content:  flex-end;;
 
-    --layout-baseline: {
-      -ms-flex-align: baseline;
-      -webkit-align-items: baseline;
-      align-items: baseline;
-    };
+    --layout-around-justified_-_-ms-flex-pack:  distribute; --layout-around-justified_-_-webkit-justify-content:  space-around; --layout-around-justified_-_justify-content:  space-around;;
 
-    /* alignment in main axis */
+    --layout-justified_-_-ms-flex-pack:  justify; --layout-justified_-_-webkit-justify-content:  space-between; --layout-justified_-_justify-content:  space-between;;
 
-    --layout-start-justified: {
-      -ms-flex-pack: start;
-      -webkit-justify-content: flex-start;
-      justify-content: flex-start;
-    };
+    --layout-center-center_-_-ms-flex-align:  var(--layout-center_-_-ms-flex-align); --layout-center-center_-_-webkit-align-items:  var(--layout-center_-_-webkit-align-items); --layout-center-center_-_align-items:  var(--layout-center_-_align-items); --layout-center-center_-_-ms-flex-pack:  var(--layout-center-justified_-_-ms-flex-pack); --layout-center-center_-_-webkit-justify-content:  var(--layout-center-justified_-_-webkit-justify-content); --layout-center-center_-_justify-content:  var(--layout-center-justified_-_justify-content);;
 
-    --layout-center-justified: {
-      -ms-flex-pack: center;
-      -webkit-justify-content: center;
-      justify-content: center;
-    };
+    
 
-    --layout-end-justified: {
-      -ms-flex-pack: end;
-      -webkit-justify-content: flex-end;
-      justify-content: flex-end;
-    };
+    --layout-self-start_-_-ms-align-self:  flex-start; --layout-self-start_-_-webkit-align-self:  flex-start; --layout-self-start_-_align-self:  flex-start;;
 
-    --layout-around-justified: {
-      -ms-flex-pack: distribute;
-      -webkit-justify-content: space-around;
-      justify-content: space-around;
-    };
+    --layout-self-center_-_-ms-align-self:  center; --layout-self-center_-_-webkit-align-self:  center; --layout-self-center_-_align-self:  center;;
 
-    --layout-justified: {
-      -ms-flex-pack: justify;
-      -webkit-justify-content: space-between;
-      justify-content: space-between;
-    };
+    --layout-self-end_-_-ms-align-self:  flex-end; --layout-self-end_-_-webkit-align-self:  flex-end; --layout-self-end_-_align-self:  flex-end;;
 
-    --layout-center-center: {
-      @apply(--layout-center);
-      @apply(--layout-center-justified);
-    };
+    --layout-self-stretch_-_-ms-align-self:  stretch; --layout-self-stretch_-_-webkit-align-self:  stretch; --layout-self-stretch_-_align-self:  stretch;;
 
-    /* self alignment */
+    --layout-self-baseline_-_-ms-align-self:  baseline; --layout-self-baseline_-_-webkit-align-self:  baseline; --layout-self-baseline_-_align-self:  baseline;;
 
-    --layout-self-start: {
-      -ms-align-self: flex-start;
-      -webkit-align-self: flex-start;
-      align-self: flex-start;
-    };
+    
 
-    --layout-self-center: {
-      -ms-align-self: center;
-      -webkit-align-self: center;
-      align-self: center;
-    };
+    --layout-start-aligned_-_-ms-flex-line-pack:  start; --layout-start-aligned_-_-ms-align-content:  flex-start; --layout-start-aligned_-_-webkit-align-content:  flex-start; --layout-start-aligned_-_align-content:  flex-start;;
 
-    --layout-self-end: {
-      -ms-align-self: flex-end;
-      -webkit-align-self: flex-end;
-      align-self: flex-end;
-    };
+    --layout-end-aligned_-_-ms-flex-line-pack:  end; --layout-end-aligned_-_-ms-align-content:  flex-end; --layout-end-aligned_-_-webkit-align-content:  flex-end; --layout-end-aligned_-_align-content:  flex-end;;
 
-    --layout-self-stretch: {
-      -ms-align-self: stretch;
-      -webkit-align-self: stretch;
-      align-self: stretch;
-    };
+    --layout-center-aligned_-_-ms-flex-line-pack:  center; --layout-center-aligned_-_-ms-align-content:  center; --layout-center-aligned_-_-webkit-align-content:  center; --layout-center-aligned_-_align-content:  center;;
 
-    --layout-self-baseline: {
-      -ms-align-self: baseline;
-      -webkit-align-self: baseline;
-      align-self: baseline;
-    };
+    --layout-between-aligned_-_-ms-flex-line-pack:  justify; --layout-between-aligned_-_-ms-align-content:  space-between; --layout-between-aligned_-_-webkit-align-content:  space-between; --layout-between-aligned_-_align-content:  space-between;;
 
-    /* multi-line alignment in main axis */
+    --layout-around-aligned_-_-ms-flex-line-pack:  distribute; --layout-around-aligned_-_-ms-align-content:  space-around; --layout-around-aligned_-_-webkit-align-content:  space-around; --layout-around-aligned_-_align-content:  space-around;;
 
-    --layout-start-aligned: {
-      -ms-flex-line-pack: start;  /* IE10 */
-      -ms-align-content: flex-start;
-      -webkit-align-content: flex-start;
-      align-content: flex-start;
-    };
+    
 
-    --layout-end-aligned: {
-      -ms-flex-line-pack: end;  /* IE10 */
-      -ms-align-content: flex-end;
-      -webkit-align-content: flex-end;
-      align-content: flex-end;
-    };
+    --layout-block_-_display:  block;;
 
-    --layout-center-aligned: {
-      -ms-flex-line-pack: center;  /* IE10 */
-      -ms-align-content: center;
-      -webkit-align-content: center;
-      align-content: center;
-    };
+    --layout-invisible_-_visibility:  hidden !important;;
 
-    --layout-between-aligned: {
-      -ms-flex-line-pack: justify;  /* IE10 */
-      -ms-align-content: space-between;
-      -webkit-align-content: space-between;
-      align-content: space-between;
-    };
+    --layout-relative_-_position:  relative;;
 
-    --layout-around-aligned: {
-      -ms-flex-line-pack: distribute;  /* IE10 */
-      -ms-align-content: space-around;
-      -webkit-align-content: space-around;
-      align-content: space-around;
-    };
+    --layout-fit_-_position:  absolute; --layout-fit_-_top:  0; --layout-fit_-_right:  0; --layout-fit_-_bottom:  0; --layout-fit_-_left:  0;;
 
-    /*******************************
-              Other Layout
-    *******************************/
+    --layout-scroll_-_-webkit-overflow-scrolling:  touch; --layout-scroll_-_overflow:  auto;;
 
-    --layout-block: {
-      display: block;
-    };
+    --layout-fullbleed_-_margin:  0; --layout-fullbleed_-_height:  100vh;;
 
-    --layout-invisible: {
-      visibility: hidden !important;
-    };
+    
 
-    --layout-relative: {
-      position: relative;
-    };
+    --layout-fixed-top_-_position:  fixed; --layout-fixed-top_-_top:  0; --layout-fixed-top_-_left:  0; --layout-fixed-top_-_right:  0;;
 
-    --layout-fit: {
-      position: absolute;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      left: 0;
-    };
+    --layout-fixed-right_-_position:  fixed; --layout-fixed-right_-_top:  0; --layout-fixed-right_-_right:  0; --layout-fixed-right_-_bottom:  0;;
 
-    --layout-scroll: {
-      -webkit-overflow-scrolling: touch;
-      overflow: auto;
-    };
+    --layout-fixed-bottom_-_position:  fixed; --layout-fixed-bottom_-_right:  0; --layout-fixed-bottom_-_bottom:  0; --layout-fixed-bottom_-_left:  0;;
 
-    --layout-fullbleed: {
-      margin: 0;
-      height: 100vh;
-    };
-
-    /* fixed position */
-
-    --layout-fixed-top: {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-    };
-
-    --layout-fixed-right: {
-      position: fixed;
-      top: 0;
-      right: 0;
-      bottom: 0;
-    };
-
-    --layout-fixed-bottom: {
-      position: fixed;
-      right: 0;
-      bottom: 0;
-      left: 0;
-    };
-
-    --layout-fixed-left: {
-      position: fixed;
-      top: 0;
-      bottom: 0;
-      left: 0;
-    };
-
-  }
+    --layout-fixed-left_-_position:  fixed; --layout-fixed-left_-_top:  0; --layout-fixed-left_-_bottom:  0; --layout-fixed-left_-_left:  0;;
+}
 
 </style>
 
 
-<dom-module id="app-drawer" assetpath="chrome://resources/polymer/v1_0/app-layout/app-drawer/">
+<dom-module id="app-drawer" assetpath="chrome://resources/polymer/v1_0/app-layout/app-drawer/" css-build="shadow">
   <template>
-    <style>
-      :host {
-        position: fixed;
+    <style scope="app-drawer">:host {
+  position: fixed;
         top: -120px;
         right: 0;
         bottom: -120px;
@@ -405,26 +179,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         visibility: hidden;
 
         transition: visibility 0.2s ease;
-      }
+}
 
-      :host([opened]) {
-        visibility: visible;
-      }
+:host([opened]) {
+  visibility: visible;
+}
 
-      :host([persistent]) {
-        width: var(--app-drawer-width, 256px);
-      }
+:host([persistent]) {
+  width: var(--app-drawer-width, 256px);
+}
 
-      :host([persistent][position=left]) {
-        right: auto;
-      }
+:host([persistent][position=left]) {
+  right: auto;
+}
 
-      :host([persistent][position=right]) {
-        left: auto;
-      }
+:host([persistent][position=right]) {
+  left: auto;
+}
 
-      #contentContainer {
-        position: absolute;
+#contentContainer {
+  position: absolute;
         top: 0;
         bottom: 0;
         left: 0;
@@ -440,19 +214,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         background-color: #FFF;
 
-        @apply(--app-drawer-content-container);
-      }
+        ;
+}
 
-      :host([position=right]) > #contentContainer {
-        right: 0;
+:host([position=right]) > #contentContainer {
+  right: 0;
         left: auto;
 
         -webkit-transform: translate3d(100%, 0, 0);
         transform: translate3d(100%, 0, 0);
-      }
+}
 
-      :host([swipe-open]) > #contentContainer::after {
-        position: fixed;
+:host([swipe-open]) > #contentContainer::after {
+  position: fixed;
         top: 0;
         bottom: 0;
         left: 100%;
@@ -462,20 +236,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         width: 20px;
 
         content: '';
-      }
+}
 
-      :host([swipe-open][position=right]) > #contentContainer::after {
-        right: 100%;
+:host([swipe-open][position=right]) > #contentContainer::after {
+  right: 100%;
         left: auto;
-      }
+}
 
-      :host([opened]) > #contentContainer {
-        -webkit-transform: translate3d(0, 0, 0);
+:host([opened]) > #contentContainer {
+  -webkit-transform: translate3d(0, 0, 0);
         transform: translate3d(0, 0, 0);
-      }
+}
 
-      #scrim {
-        position: absolute;
+#scrim {
+  position: absolute;
         top: 0;
         right: 0;
         bottom: 0;
@@ -487,22 +261,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         opacity: 0;
         background: var(--app-drawer-scrim-background, rgba(0, 0, 0, 0.5));
-      }
+}
 
-      :host([opened]) > #scrim {
-        opacity: 1;
-      }
+:host([opened]) > #scrim {
+  opacity: 1;
+}
 
-      :host([opened][persistent]) > #scrim {
-        visibility: hidden;
-        /**
-         * NOTE(keanulee): Keep both opacity: 0 and visibility: hidden to prevent the
-         * scrim from showing when toggling between closed and opened/persistent.
-         */
+:host([opened][persistent]) > #scrim {
+  visibility: hidden;
+        
 
         opacity: 0;
-      }
-    </style>
+}
+
+</style>
 
     <div id="scrim" on-tap="close"></div>
 
@@ -512,7 +284,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </template>
 
   </dom-module>
-<dom-module id="app-location" assetpath="chrome://resources/polymer/v1_0/app-route/">
+<dom-module id="app-location" assetpath="chrome://resources/polymer/v1_0/app-route/" css-build="shadow">
   <template>
     <iron-location path="{{__path}}" query="{{__query}}" hash="{{__hash}}" url-space-regex="{{urlSpaceRegex}}">
     </iron-location>
@@ -520,29 +292,28 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </iron-query-params>
   </template>
   </dom-module>
-<dom-module id="iron-pages" assetpath="chrome://resources/polymer/v1_0/iron-pages/">
+<dom-module id="iron-pages" assetpath="chrome://resources/polymer/v1_0/iron-pages/" css-build="shadow">
 
   <template>
-    <style>
-      :host {
-        display: block;
-      }
+    <style scope="iron-pages">:host {
+  display: block;
+}
 
-      :host > ::content > :not(.iron-selected) {
-        display: none !important;
-      }
-    </style>
+:host > ::content > :not(.iron-selected) {
+  display: none !important;
+}
+
+</style>
 
     <content></content>
   </template>
 
   </dom-module>
-<dom-module id="paper-ripple" assetpath="chrome://resources/polymer/v1_0/paper-ripple/">
+<dom-module id="paper-ripple" assetpath="chrome://resources/polymer/v1_0/paper-ripple/" css-build="shadow">
 
   <template>
-    <style>
-      :host {
-        display: block;
+    <style scope="paper-ripple">:host {
+  display: block;
         position: absolute;
         border-radius: inherit;
         overflow: hidden;
@@ -551,163 +322,149 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         right: 0;
         bottom: 0;
 
-        /* See PolymerElements/paper-behaviors/issues/34. On non-Chrome browsers,
-         * creating a node (with a position:absolute) in the middle of an event
-         * handler "interrupts" that event handler (which happens when the
-         * ripple is created on demand) */
+        
         pointer-events: none;
-      }
+}
 
-      :host([animating]) {
-        /* This resolves a rendering issue in Chrome (as of 40) where the
-           ripple is not properly clipped by its parent (which may have
-           rounded corners). See: http://jsbin.com/temexa/4
-
-           Note: We only apply this style conditionally. Otherwise, the browser
-           will create a new compositing layer for every ripple element on the
-           page, and that would be bad. */
-        -webkit-transform: translate(0, 0);
+:host([animating]) {
+  -webkit-transform: translate(0, 0);
         transform: translate3d(0, 0, 0);
-      }
+}
 
-      #background,
-      #waves,
-      .wave-container,
-      .wave {
-        pointer-events: none;
+#background, #waves, .wave-container, .wave {
+  pointer-events: none;
         position: absolute;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-      }
+}
 
-      #background,
-      .wave {
-        opacity: 0;
-      }
+#background, .wave {
+  opacity: 0;
+}
 
-      #waves,
-      .wave {
-        overflow: hidden;
-      }
+#waves, .wave {
+  overflow: hidden;
+}
 
-      .wave-container,
-      .wave {
-        border-radius: 50%;
-      }
+.wave-container, .wave {
+  border-radius: 50%;
+}
 
-      :host(.circle) #background,
-      :host(.circle) #waves {
-        border-radius: 50%;
-      }
+:host(.circle) #background, :host(.circle) #waves {
+  border-radius: 50%;
+}
 
-      :host(.circle) .wave-container {
-        overflow: hidden;
-      }
-    </style>
+:host(.circle) .wave-container {
+  overflow: hidden;
+}
+
+</style>
 
     <div id="background"></div>
     <div id="waves"></div>
   </template>
 </dom-module>
-<style is="custom-style">
+<style is="custom-style" css-build="shadow">html {
+  --shadow-transition_-_transition:  box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1);;
 
-  :root {
+    --shadow-none_-_box-shadow:  none;;
 
-    --shadow-transition: {
-      transition: box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-    };
+    
 
-    --shadow-none: {
-      box-shadow: none;
-    };
-
-    /* from http://codepen.io/shyndman/pen/c5394ddf2e8b2a5c9185904b57421cdb */
-
-    --shadow-elevation-2dp: {
-      box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14),
+    --shadow-elevation-2dp_-_box-shadow:  0 2px 2px 0 rgba(0, 0, 0, 0.14),
                   0 1px 5px 0 rgba(0, 0, 0, 0.12),
-                  0 3px 1px -2px rgba(0, 0, 0, 0.2);
-    };
+                  0 3px 1px -2px rgba(0, 0, 0, 0.2);;
 
-    --shadow-elevation-3dp: {
-      box-shadow: 0 3px 4px 0 rgba(0, 0, 0, 0.14),
+    --shadow-elevation-3dp_-_box-shadow:  0 3px 4px 0 rgba(0, 0, 0, 0.14),
                   0 1px 8px 0 rgba(0, 0, 0, 0.12),
-                  0 3px 3px -2px rgba(0, 0, 0, 0.4);
-    };
+                  0 3px 3px -2px rgba(0, 0, 0, 0.4);;
 
-    --shadow-elevation-4dp: {
-      box-shadow: 0 4px 5px 0 rgba(0, 0, 0, 0.14),
+    --shadow-elevation-4dp_-_box-shadow:  0 4px 5px 0 rgba(0, 0, 0, 0.14),
                   0 1px 10px 0 rgba(0, 0, 0, 0.12),
-                  0 2px 4px -1px rgba(0, 0, 0, 0.4);
-    };
+                  0 2px 4px -1px rgba(0, 0, 0, 0.4);;
 
-    --shadow-elevation-6dp: {
-      box-shadow: 0 6px 10px 0 rgba(0, 0, 0, 0.14),
+    --shadow-elevation-6dp_-_box-shadow:  0 6px 10px 0 rgba(0, 0, 0, 0.14),
                   0 1px 18px 0 rgba(0, 0, 0, 0.12),
-                  0 3px 5px -1px rgba(0, 0, 0, 0.4);
-    };
+                  0 3px 5px -1px rgba(0, 0, 0, 0.4);;
 
-    --shadow-elevation-8dp: {
-      box-shadow: 0 8px 10px 1px rgba(0, 0, 0, 0.14),
+    --shadow-elevation-8dp_-_box-shadow:  0 8px 10px 1px rgba(0, 0, 0, 0.14),
                   0 3px 14px 2px rgba(0, 0, 0, 0.12),
-                  0 5px 5px -3px rgba(0, 0, 0, 0.4);
-    };
+                  0 5px 5px -3px rgba(0, 0, 0, 0.4);;
 
-    --shadow-elevation-12dp: {
-      box-shadow: 0 12px 16px 1px rgba(0, 0, 0, 0.14),
+    --shadow-elevation-12dp_-_box-shadow:  0 12px 16px 1px rgba(0, 0, 0, 0.14),
                   0 4px 22px 3px rgba(0, 0, 0, 0.12),
-                  0 6px 7px -4px rgba(0, 0, 0, 0.4);
-    };
+                  0 6px 7px -4px rgba(0, 0, 0, 0.4);;
 
-    --shadow-elevation-16dp: {
-      box-shadow: 0 16px 24px 2px rgba(0, 0, 0, 0.14),
+    --shadow-elevation-16dp_-_box-shadow:  0 16px 24px 2px rgba(0, 0, 0, 0.14),
                   0  6px 30px 5px rgba(0, 0, 0, 0.12),
-                  0  8px 10px -5px rgba(0, 0, 0, 0.4);
-    };
-
-  }
+                  0  8px 10px -5px rgba(0, 0, 0, 0.4);;
+}
 
 </style>
-<dom-module id="paper-material-shared-styles" assetpath="chrome://resources/polymer/v1_0/paper-material/">
+<dom-module id="paper-material-shared-styles" assetpath="chrome://resources/polymer/v1_0/paper-material/" css-build="shadow">
   <template>
-    <style>
-      :host {
-        display: block;
+    <style scope="paper-material-shared-styles">:host {
+  display: block;
         position: relative;
-      }
+}
 
-      :host([elevation="1"]) {
-        @apply(--shadow-elevation-2dp);
-      }
+:host([elevation="1"]) {
+  box-shadow: var(--shadow-elevation-2dp_-_box-shadow);
+}
 
-      :host([elevation="2"]) {
-        @apply(--shadow-elevation-4dp);
-      }
+:host([elevation="2"]) {
+  box-shadow: var(--shadow-elevation-4dp_-_box-shadow);
+}
 
-      :host([elevation="3"]) {
-        @apply(--shadow-elevation-6dp);
-      }
+:host([elevation="3"]) {
+  box-shadow: var(--shadow-elevation-6dp_-_box-shadow);
+}
 
-      :host([elevation="4"]) {
-        @apply(--shadow-elevation-8dp);
-      }
+:host([elevation="4"]) {
+  box-shadow: var(--shadow-elevation-8dp_-_box-shadow);
+}
 
-      :host([elevation="5"]) {
-        @apply(--shadow-elevation-16dp);
-      }
-    </style>
+:host([elevation="5"]) {
+  box-shadow: var(--shadow-elevation-16dp_-_box-shadow);
+}
+
+</style>
   </template>
 </dom-module>
 
 
-<dom-module id="paper-button" assetpath="chrome://resources/polymer/v1_0/paper-button/">
+<dom-module id="paper-button" assetpath="chrome://resources/polymer/v1_0/paper-button/" css-build="shadow">
   <template strip-whitespace="">
-    <style include="paper-material-shared-styles">
-      :host {
-        @apply(--layout-inline);
-        @apply(--layout-center-center);
+    <style scope="paper-button">:host {
+  display: block;
+        position: relative;
+}
+
+:host([elevation="1"]) {
+  box-shadow: var(--shadow-elevation-2dp_-_box-shadow);
+}
+
+:host([elevation="2"]) {
+  box-shadow: var(--shadow-elevation-4dp_-_box-shadow);
+}
+
+:host([elevation="3"]) {
+  box-shadow: var(--shadow-elevation-6dp_-_box-shadow);
+}
+
+:host([elevation="4"]) {
+  box-shadow: var(--shadow-elevation-8dp_-_box-shadow);
+}
+
+:host([elevation="5"]) {
+  box-shadow: var(--shadow-elevation-16dp_-_box-shadow);
+}
+
+:host {
+  display: var(--layout-inline_-_display);
+        -ms-flex-align: var(--layout-center-center_-_-ms-flex-align); -webkit-align-items: var(--layout-center-center_-_-webkit-align-items); align-items: var(--layout-center-center_-_align-items); -ms-flex-pack: var(--layout-center-center_-_-ms-flex-pack); -webkit-justify-content: var(--layout-center-center_-_-webkit-justify-content); justify-content: var(--layout-center-center_-_justify-content);
         position: relative;
         box-sizing: border-box;
         min-width: 5.14em;
@@ -727,52 +484,52 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         z-index: 0;
         padding: 0.7em 0.57em;
 
-        @apply(--paper-font-common-base);
-        @apply(--paper-button);
-      }
+        font-family: var(--paper-font-common-base_-_font-family); -webkit-font-smoothing: var(--paper-font-common-base_-_-webkit-font-smoothing);
+        ;
+}
 
-      :host([hidden]) {
-        display: none !important;
-      }
+:host([hidden]) {
+  display: none !important;
+}
 
-      :host([raised].keyboard-focus) {
-        font-weight: bold;
-        @apply(--paper-button-raised-keyboard-focus);
-      }
+:host([raised].keyboard-focus) {
+  font-weight: bold;
+        ;
+}
 
-      :host(:not([raised]).keyboard-focus) {
-        font-weight: bold;
-        @apply(--paper-button-flat-keyboard-focus);
-      }
+:host(:not([raised]).keyboard-focus) {
+  font-weight: bold;
+        background: var(--paper-button-flat-keyboard-focus_-_background);
+}
 
-      :host([disabled]) {
-        background: #eaeaea;
+:host([disabled]) {
+  background: #eaeaea;
         color: #a8a8a8;
         cursor: auto;
         pointer-events: none;
 
-        @apply(--paper-button-disabled);
-      }
+        ;
+}
 
-      :host([animated]) {
-        @apply(--shadow-transition);
-      }
+:host([animated]) {
+  transition: var(--shadow-transition_-_transition);
+}
 
-      paper-ripple {
-        color: var(--paper-button-ink-color);
-      }
-    </style>
+paper-ripple {
+  color: var(--paper-button-ink-color);
+}
+
+</style>
 
     <content></content>
   </template>
 
   </dom-module>
-<dom-module id="iron-icon" assetpath="chrome://resources/polymer/v1_0/iron-icon/">
+<dom-module id="iron-icon" assetpath="chrome://resources/polymer/v1_0/iron-icon/" css-build="shadow">
   <template>
-    <style>
-      :host {
-        @apply(--layout-inline);
-        @apply(--layout-center-center);
+    <style scope="iron-icon">:host {
+  display: var(--layout-inline_-_display);
+        -ms-flex-align: var(--layout-center-center_-_-ms-flex-align); -webkit-align-items: var(--layout-center-center_-_-webkit-align-items); align-items: var(--layout-center-center_-_align-items); -ms-flex-pack: var(--layout-center-center_-_-ms-flex-pack); -webkit-justify-content: var(--layout-center-center_-_-webkit-justify-content); justify-content: var(--layout-center-center_-_justify-content);
         position: relative;
 
         vertical-align: middle;
@@ -782,18 +539,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         width: var(--iron-icon-width, 24px);
         height: var(--iron-icon-height, 24px);
-      }
-    </style>
+}
+
+</style>
   </template>
 
   </dom-module>
-<style is="custom-style">
-
-  :root {
-
-    /* Material Design color palette for Google products */
-
-    --google-red-100: #f4c7c3;
+<style is="custom-style" css-build="shadow">html {
+  --google-red-100: #f4c7c3;
     --google-red-300: #e67c73;
     --google-red-500: #db4437;
     --google-red-700: #c53929;
@@ -818,7 +571,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     --google-grey-500: #9e9e9e;
     --google-grey-700: #616161;
     
-    /* Material Design color palette from online spec document */
+    
 
     --paper-red-50: #ffebee;
     --paper-red-100: #ffcdd2;
@@ -1093,42 +846,31 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     --paper-blue-grey-800: #37474f;
     --paper-blue-grey-900: #263238;
 
-    /* opacity for dark text on a light background */
+    
     --dark-divider-opacity: 0.12;
-    --dark-disabled-opacity: 0.38; /* or hint text or icon */
+    --dark-disabled-opacity: 0.38; 
     --dark-secondary-opacity: 0.54;
     --dark-primary-opacity: 0.87;
 
-    /* opacity for light text on a dark background */
+    
     --light-divider-opacity: 0.12;
-    --light-disabled-opacity: 0.3; /* or hint text or icon */
+    --light-disabled-opacity: 0.3; 
     --light-secondary-opacity: 0.7;
     --light-primary-opacity: 1.0;
-
-  }
+}
 
 </style>
 
 
-<style is="custom-style">
-
-  :root {
-    /*
-     * You can use these generic variables in your elements for easy theming.
-     * For example, if all your elements use `--primary-text-color` as its main
-     * color, then switching from a light to a dark theme is just a matter of
-     * changing the value of `--primary-text-color` in your application.
-     */
-    --primary-text-color: var(--light-theme-text-color);
+<style is="custom-style" css-build="shadow">html {
+  --primary-text-color: var(--light-theme-text-color);
     --primary-background-color: var(--light-theme-background-color);
     --secondary-text-color: var(--light-theme-secondary-color);
     --disabled-text-color: var(--light-theme-disabled-color);
     --divider-color: var(--light-theme-divider-color);
     --error-color: var(--paper-deep-orange-a700);
 
-    /*
-     * Primary and accent colors. Also see color.html for more colors.
-     */
+    
     --primary-color: var(--paper-indigo-500);
     --light-primary-color: var(--paper-indigo-100);
     --dark-primary-color: var(--paper-indigo-700);
@@ -1138,42 +880,34 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     --dark-accent-color: var(--paper-pink-a400);
 
 
-    /*
-     * Material Design Light background theme
-     */
+    
     --light-theme-background-color: #ffffff;
     --light-theme-base-color: #000000;
     --light-theme-text-color: var(--paper-grey-900);
-    --light-theme-secondary-color: #737373;  /* for secondary text and icons */
-    --light-theme-disabled-color: #9b9b9b;  /* disabled/hint text */
+    --light-theme-secondary-color: #737373;  
+    --light-theme-disabled-color: #9b9b9b;  
     --light-theme-divider-color: #dbdbdb;
 
-    /*
-     * Material Design Dark background theme
-     */
+    
     --dark-theme-background-color: var(--paper-grey-900);
     --dark-theme-base-color: #ffffff;
     --dark-theme-text-color: #ffffff;
-    --dark-theme-secondary-color: #bcbcbc;  /* for secondary text and icons */
-    --dark-theme-disabled-color: #646464;  /* disabled/hint text */
+    --dark-theme-secondary-color: #bcbcbc;  
+    --dark-theme-disabled-color: #646464;  
     --dark-theme-divider-color: #3c3c3c;
 
-    /*
-     * Deprecated values because of their confusing names.
-     */
+    
     --text-primary-color: var(--dark-theme-text-color);
     --default-primary-color: var(--primary-color);
-
-  }
+}
 
 </style>
 
 
-<dom-module id="paper-icon-button" assetpath="chrome://resources/polymer/v1_0/paper-icon-button/">
+<dom-module id="paper-icon-button" assetpath="chrome://resources/polymer/v1_0/paper-icon-button/" css-build="shadow">
   <template strip-whitespace="">
-    <style>
-      :host {
-        display: inline-block;
+    <style scope="paper-icon-button">:host {
+  display: inline-block;
         position: relative;
         padding: 8px;
         outline: none;
@@ -1188,51 +922,51 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         width: 40px;
         height: 40px;
 
-        /* NOTE: Both values are needed, since some phones require the value to be `transparent`. */
+        
         -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
         -webkit-tap-highlight-color: transparent;
 
-        /* Because of polymer/2558, this style has lower specificity than * */
+        
         box-sizing: border-box !important;
 
-        @apply(--paper-icon-button);
-      }
+        height: var(--paper-icon-button_-_height, 40px); width: var(--paper-icon-button_-_width, 40px);
+}
 
-      :host #ink {
-        color: var(--paper-icon-button-ink-color, --primary-text-color);
+:host #ink {
+  color: var(--paper-icon-button-ink-color,var(--primary-text-color));;
         opacity: 0.6;
-      }
+}
 
-      :host([disabled]) {
-        color: var(--paper-icon-button-disabled-text, --disabled-text-color);
+:host([disabled]) {
+  color: var(--paper-icon-button-disabled-text,var(--disabled-text-color));;
         pointer-events: none;
         cursor: auto;
 
-        @apply(--paper-icon-button-disabled);
-      }
+        ;
+}
 
-      :host(:hover) {
-        @apply(--paper-icon-button-hover);
-      }
+:host(:hover) {
+  ;
+}
 
-      iron-icon {
-        --iron-icon-width: 100%;
+iron-icon {
+  --iron-icon-width: 100%;
         --iron-icon-height: 100%;
-      }
-    </style>
+}
+
+</style>
 
     <iron-icon id="icon" src="[[src]]" icon="[[icon]]" alt$="[[alt]]"></iron-icon>
   </template>
 
   </dom-module>
-<dom-module id="paper-tab" assetpath="chrome://resources/polymer/v1_0/paper-tabs/">
+<dom-module id="paper-tab" assetpath="chrome://resources/polymer/v1_0/paper-tabs/" css-build="shadow">
   <template>
-    <style>
-      :host {
-        @apply(--layout-inline);
-        @apply(--layout-center);
-        @apply(--layout-center-justified);
-        @apply(--layout-flex-auto);
+    <style scope="paper-tab">:host {
+  display: var(--layout-inline_-_display);
+        -ms-flex-align: var(--layout-center_-_-ms-flex-align); -webkit-align-items: var(--layout-center_-_-webkit-align-items); align-items: var(--layout-center_-_align-items);
+        -ms-flex-pack: var(--layout-center-justified_-_-ms-flex-pack); -webkit-justify-content: var(--layout-center-justified_-_-webkit-justify-content); justify-content: var(--layout-center-justified_-_justify-content);
+        -ms-flex: var(--layout-flex-auto_-_-ms-flex); -webkit-flex: var(--layout-flex-auto_-_-webkit-flex); flex: var(--layout-flex-auto_-_flex);
 
         position: relative;
         padding: 0 12px;
@@ -1240,50 +974,51 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         cursor: pointer;
         vertical-align: middle;
 
-        @apply(--paper-font-common-base);
-        @apply(--paper-tab);
-      }
+        font-family: var(--paper-font-common-base_-_font-family); -webkit-font-smoothing: var(--paper-font-common-base_-_-webkit-font-smoothing);
+        ;
+}
 
-      :host(:focus) {
-        outline: none;
-      }
+:host(:focus) {
+  outline: none;
+}
 
-      :host([link]) {
-        padding: 0;
-      }
+:host([link]) {
+  padding: 0;
+}
 
-      .tab-content {
-        height: 100%;
+.tab-content {
+  height: 100%;
         transform: translateZ(0);
           -webkit-transform: translateZ(0);
         transition: opacity 0.1s cubic-bezier(0.4, 0.0, 1, 1);
-        @apply(--layout-horizontal);
-        @apply(--layout-center-center);
-        @apply(--layout-flex-auto);
-        @apply(--paper-tab-content);
-      }
+        display: var(--layout-horizontal_-_display); -ms-flex-direction: var(--layout-horizontal_-_-ms-flex-direction); -webkit-flex-direction: var(--layout-horizontal_-_-webkit-flex-direction); flex-direction: var(--layout-horizontal_-_flex-direction);
+        -ms-flex-align: var(--layout-center-center_-_-ms-flex-align); -webkit-align-items: var(--layout-center-center_-_-webkit-align-items); align-items: var(--layout-center-center_-_align-items); -ms-flex-pack: var(--layout-center-center_-_-ms-flex-pack); -webkit-justify-content: var(--layout-center-center_-_-webkit-justify-content); justify-content: var(--layout-center-center_-_justify-content);
+        -ms-flex: var(--layout-flex-auto_-_-ms-flex); -webkit-flex: var(--layout-flex-auto_-_-webkit-flex); flex: var(--layout-flex-auto_-_flex);
+        ;
+}
 
-      :host(:not(.iron-selected)) > .tab-content {
-        opacity: 0.8;
+:host(:not(.iron-selected)) > .tab-content {
+  opacity: 0.8;
 
-        @apply(--paper-tab-content-unselected);
-      }
+        ;
+}
 
-      :host(:focus) .tab-content {
-        opacity: 1;
+:host(:focus) .tab-content {
+  opacity: 1;
         font-weight: 700;
-      }
+}
 
-      paper-ripple {
-        color: var(--paper-tab-ink, --paper-yellow-a100);
-      }
+paper-ripple {
+  color: var(--paper-tab-ink,var(--paper-yellow-a100));;
+}
 
-      .tab-content > ::content > a {
-        @apply(--layout-flex-auto);
+.tab-content > ::content > a {
+  -ms-flex: var(--layout-flex-auto_-_-ms-flex); -webkit-flex: var(--layout-flex-auto_-_-webkit-flex); flex: var(--layout-flex-auto_-_flex);
 
         height: 100%;
-      }
-    </style>
+}
+
+</style>
 
     <div class="tab-content">
       <content></content>
@@ -1299,12 +1034,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 </iron-iconset-svg>
 
 
-<dom-module id="paper-tabs" assetpath="chrome://resources/polymer/v1_0/paper-tabs/">
+<dom-module id="paper-tabs" assetpath="chrome://resources/polymer/v1_0/paper-tabs/" css-build="shadow">
   <template>
-    <style>
-      :host {
-        @apply(--layout);
-        @apply(--layout-center);
+    <style scope="paper-tabs">:host {
+  display: var(--layout_-_display);
+        -ms-flex-align: var(--layout-center_-_-ms-flex-align); -webkit-align-items: var(--layout-center_-_-webkit-align-items); align-items: var(--layout-center_-_align-items);
 
         height: 48px;
         font-size: 14px;
@@ -1315,76 +1049,74 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         -webkit-user-select: none;
         user-select: none;
 
-        /* NOTE: Both values are needed, since some phones require the value to be `transparent`. */
+        
         -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
         -webkit-tap-highlight-color: transparent;
 
-        @apply(--paper-tabs);
-      }
+        ;
+}
 
-      :host-context([dir=rtl]) {
-        @apply(--layout-horizontal-reverse);
-      }
+:host-context([dir=rtl]) {
+  display: var(--layout-horizontal-reverse_-_display); -ms-flex-direction: var(--layout-horizontal-reverse_-_-ms-flex-direction); -webkit-flex-direction: var(--layout-horizontal-reverse_-_-webkit-flex-direction); flex-direction: var(--layout-horizontal-reverse_-_flex-direction);
+}
 
-      #tabsContainer {
-        position: relative;
+#tabsContainer {
+  position: relative;
         height: 100%;
         white-space: nowrap;
         overflow: hidden;
-        @apply(--layout-flex-auto);
-      }
+        -ms-flex: var(--layout-flex-auto_-_-ms-flex); -webkit-flex: var(--layout-flex-auto_-_-webkit-flex); flex: var(--layout-flex-auto_-_flex);
+}
 
-      #tabsContent {
-        height: 100%;
+#tabsContent {
+  height: 100%;
         -moz-flex-basis: auto;
         -ms-flex-basis: auto;
         flex-basis: auto;
-      }
+}
 
-      #tabsContent.scrollable {
-        position: absolute;
+#tabsContent.scrollable {
+  position: absolute;
         white-space: nowrap;
-      }
+}
 
-      #tabsContent:not(.scrollable),
-      #tabsContent.scrollable.fit-container {
-        @apply(--layout-horizontal);
-      }
+#tabsContent:not(.scrollable), #tabsContent.scrollable.fit-container {
+  display: var(--layout-horizontal_-_display); -ms-flex-direction: var(--layout-horizontal_-_-ms-flex-direction); -webkit-flex-direction: var(--layout-horizontal_-_-webkit-flex-direction); flex-direction: var(--layout-horizontal_-_flex-direction);
+}
 
-      #tabsContent.scrollable.fit-container {
-        min-width: 100%;
-      }
+#tabsContent.scrollable.fit-container {
+  min-width: 100%;
+}
 
-      #tabsContent.scrollable.fit-container > ::content > * {
-        /* IE - prevent tabs from compressing when they should scroll. */
-        -ms-flex: 1 0 auto;
+#tabsContent.scrollable.fit-container > ::content > * {
+  -ms-flex: 1 0 auto;
         -webkit-flex: 1 0 auto;
         flex: 1 0 auto;
-      }
+}
 
-      .hidden {
-        display: none;
-      }
+.hidden {
+  display: none;
+}
 
-      .not-visible {
-        opacity: 0;
+.not-visible {
+  opacity: 0;
         cursor: default;
-      }
+}
 
-      paper-icon-button {
-        width: 48px;
+paper-icon-button {
+  width: 48px;
         height: 48px;
         padding: 12px;
         margin: 0 4px;
-      }
+}
 
-      #selectionBar {
-        position: absolute;
+#selectionBar {
+  position: absolute;
         height: 2px;
         bottom: 0;
         left: 0;
         right: 0;
-        background-color: var(--paper-tabs-selection-bar-color, --paper-yellow-a100);
+        background-color: var(--paper-tabs-selection-bar-color,var(--paper-yellow-a100));;
           -webkit-transform: scale(0);
         transform: scale(0);
           -webkit-transform-origin: left center;
@@ -1392,28 +1124,29 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           transition: -webkit-transform;
         transition: transform;
 
-        @apply(--paper-tabs-selection-bar);
-      }
+        ;
+}
 
-      #selectionBar.align-bottom {
-        top: 0;
+#selectionBar.align-bottom {
+  top: 0;
         bottom: auto;
-      }
+}
 
-      #selectionBar.expand {
-        transition-duration: 0.15s;
+#selectionBar.expand {
+  transition-duration: 0.15s;
         transition-timing-function: cubic-bezier(0.4, 0.0, 1, 1);
-      }
+}
 
-      #selectionBar.contract {
-        transition-duration: 0.18s;
+#selectionBar.contract {
+  transition-duration: 0.18s;
         transition-timing-function: cubic-bezier(0.0, 0.0, 0.2, 1);
-      }
+}
 
-      #tabsContent > ::content > *:not(#selectionBar) {
-        height: 100%;
-      }
-    </style>
+#tabsContent > ::content > *:not(#selectionBar) {
+  height: 100%;
+}
+
+</style>
 
     <paper-icon-button icon="paper-tabs:chevron-left" class$="[[_computeScrollButtonClass(_leftHidden, scrollable, hideScrollButtons)]]" on-up="_onScrollButtonUp" on-down="_onLeftScrollButtonDown" tabindex="-1"></paper-icon-button>
 
@@ -1462,15 +1195,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 </iron-iconset-svg>
 
 
-<dom-module id="iron-a11y-announcer" assetpath="chrome://resources/polymer/v1_0/iron-a11y-announcer/">
+<dom-module id="iron-a11y-announcer" assetpath="chrome://resources/polymer/v1_0/iron-a11y-announcer/" css-build="shadow">
   <template>
-    <style>
-      :host {
-        display: inline-block;
+    <style scope="iron-a11y-announcer">:host {
+  display: inline-block;
         position: fixed;
         clip: rect(0px,0px,0px,0px);
-      }
-    </style>
+}
+
+</style>
     <div aria-live$="[[mode]]">[[_text]]</div>
   </template>
 
@@ -1507,201 +1240,85 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 </if>
 
 </style>
-<style is="custom-style">
+<style is="custom-style" css-build="shadow">html {
+  --paper-font-common-base_-_font-family:  'Roboto', 'Noto', sans-serif; --paper-font-common-base_-_-webkit-font-smoothing:  antialiased;;
 
-  :root {
+    --paper-font-common-code_-_font-family:  'Roboto Mono', 'Consolas', 'Menlo', monospace; --paper-font-common-code_-_-webkit-font-smoothing:  antialiased;;
 
-    /* Shared Styles */
-    --paper-font-common-base: {
-      font-family: 'Roboto', 'Noto', sans-serif;
-      -webkit-font-smoothing: antialiased;
-    };
+    --paper-font-common-expensive-kerning_-_text-rendering:  optimizeLegibility;;
 
-    --paper-font-common-code: {
-      font-family: 'Roboto Mono', 'Consolas', 'Menlo', monospace;
-      -webkit-font-smoothing: antialiased;
-    };
+    --paper-font-common-nowrap_-_white-space:  nowrap; --paper-font-common-nowrap_-_overflow:  hidden; --paper-font-common-nowrap_-_text-overflow:  ellipsis;;
 
-    --paper-font-common-expensive-kerning: {
-      text-rendering: optimizeLegibility;
-    };
+    
 
-    --paper-font-common-nowrap: {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    };
+    --paper-font-display4_-_font-family:  var(--paper-font-common-base_-_font-family); --paper-font-display4_-_-webkit-font-smoothing:  var(--paper-font-common-base_-_-webkit-font-smoothing); --paper-font-display4_-_white-space:  var(--paper-font-common-nowrap_-_white-space); --paper-font-display4_-_overflow:  var(--paper-font-common-nowrap_-_overflow); --paper-font-display4_-_text-overflow:  var(--paper-font-common-nowrap_-_text-overflow); --paper-font-display4_-_font-size:  112px; --paper-font-display4_-_font-weight:  300; --paper-font-display4_-_letter-spacing:  -.044em; --paper-font-display4_-_line-height:  120px;;
 
-    /* Material Font Styles */
+    --paper-font-display3_-_font-family:  var(--paper-font-common-base_-_font-family); --paper-font-display3_-_-webkit-font-smoothing:  var(--paper-font-common-base_-_-webkit-font-smoothing); --paper-font-display3_-_white-space:  var(--paper-font-common-nowrap_-_white-space); --paper-font-display3_-_overflow:  var(--paper-font-common-nowrap_-_overflow); --paper-font-display3_-_text-overflow:  var(--paper-font-common-nowrap_-_text-overflow); --paper-font-display3_-_font-size:  56px; --paper-font-display3_-_font-weight:  400; --paper-font-display3_-_letter-spacing:  -.026em; --paper-font-display3_-_line-height:  60px;;
 
-    --paper-font-display4: {
-      @apply(--paper-font-common-base);
-      @apply(--paper-font-common-nowrap);
+    --paper-font-display2_-_font-family:  var(--paper-font-common-base_-_font-family); --paper-font-display2_-_-webkit-font-smoothing:  var(--paper-font-common-base_-_-webkit-font-smoothing); --paper-font-display2_-_font-size:  45px; --paper-font-display2_-_font-weight:  400; --paper-font-display2_-_letter-spacing:  -.018em; --paper-font-display2_-_line-height:  48px;;
 
-      font-size: 112px;
-      font-weight: 300;
-      letter-spacing: -.044em;
-      line-height: 120px;
-    };
+    --paper-font-display1_-_font-family:  var(--paper-font-common-base_-_font-family); --paper-font-display1_-_-webkit-font-smoothing:  var(--paper-font-common-base_-_-webkit-font-smoothing); --paper-font-display1_-_font-size:  34px; --paper-font-display1_-_font-weight:  400; --paper-font-display1_-_letter-spacing:  -.01em; --paper-font-display1_-_line-height:  40px;;
 
-    --paper-font-display3: {
-      @apply(--paper-font-common-base);
-      @apply(--paper-font-common-nowrap);
+    --paper-font-headline_-_font-family:  var(--paper-font-common-base_-_font-family); --paper-font-headline_-_-webkit-font-smoothing:  var(--paper-font-common-base_-_-webkit-font-smoothing); --paper-font-headline_-_font-size:  24px; --paper-font-headline_-_font-weight:  400; --paper-font-headline_-_letter-spacing:  -.012em; --paper-font-headline_-_line-height:  32px;;
 
-      font-size: 56px;
-      font-weight: 400;
-      letter-spacing: -.026em;
-      line-height: 60px;
-    };
+    --paper-font-title_-_font-family:  var(--paper-font-common-base_-_font-family); --paper-font-title_-_-webkit-font-smoothing:  var(--paper-font-common-base_-_-webkit-font-smoothing); --paper-font-title_-_white-space:  var(--paper-font-common-nowrap_-_white-space); --paper-font-title_-_overflow:  var(--paper-font-common-nowrap_-_overflow); --paper-font-title_-_text-overflow:  var(--paper-font-common-nowrap_-_text-overflow); --paper-font-title_-_font-size:  20px; --paper-font-title_-_font-weight:  500; --paper-font-title_-_line-height:  28px;;
 
-    --paper-font-display2: {
-      @apply(--paper-font-common-base);
+    --paper-font-subhead_-_font-family:  var(--paper-font-common-base_-_font-family); --paper-font-subhead_-_-webkit-font-smoothing:  var(--paper-font-common-base_-_-webkit-font-smoothing); --paper-font-subhead_-_font-size:  16px; --paper-font-subhead_-_font-weight:  400; --paper-font-subhead_-_line-height:  24px;;
 
-      font-size: 45px;
-      font-weight: 400;
-      letter-spacing: -.018em;
-      line-height: 48px;
-    };
+    --paper-font-body2_-_font-family:  var(--paper-font-common-base_-_font-family); --paper-font-body2_-_-webkit-font-smoothing:  var(--paper-font-common-base_-_-webkit-font-smoothing); --paper-font-body2_-_font-size:  14px; --paper-font-body2_-_font-weight:  500; --paper-font-body2_-_line-height:  24px;;
 
-    --paper-font-display1: {
-      @apply(--paper-font-common-base);
+    --paper-font-body1_-_font-family:  var(--paper-font-common-base_-_font-family); --paper-font-body1_-_-webkit-font-smoothing:  var(--paper-font-common-base_-_-webkit-font-smoothing); --paper-font-body1_-_font-size:  14px; --paper-font-body1_-_font-weight:  400; --paper-font-body1_-_line-height:  20px;;
 
-      font-size: 34px;
-      font-weight: 400;
-      letter-spacing: -.01em;
-      line-height: 40px;
-    };
+    --paper-font-caption_-_font-family:  var(--paper-font-common-base_-_font-family); --paper-font-caption_-_-webkit-font-smoothing:  var(--paper-font-common-base_-_-webkit-font-smoothing); --paper-font-caption_-_white-space:  var(--paper-font-common-nowrap_-_white-space); --paper-font-caption_-_overflow:  var(--paper-font-common-nowrap_-_overflow); --paper-font-caption_-_text-overflow:  var(--paper-font-common-nowrap_-_text-overflow); --paper-font-caption_-_font-size:  12px; --paper-font-caption_-_font-weight:  400; --paper-font-caption_-_letter-spacing:  0.011em; --paper-font-caption_-_line-height:  20px;;
 
-    --paper-font-headline: {
-      @apply(--paper-font-common-base);
+    --paper-font-menu_-_font-family:  var(--paper-font-common-base_-_font-family); --paper-font-menu_-_-webkit-font-smoothing:  var(--paper-font-common-base_-_-webkit-font-smoothing); --paper-font-menu_-_white-space:  var(--paper-font-common-nowrap_-_white-space); --paper-font-menu_-_overflow:  var(--paper-font-common-nowrap_-_overflow); --paper-font-menu_-_text-overflow:  var(--paper-font-common-nowrap_-_text-overflow); --paper-font-menu_-_font-size:  13px; --paper-font-menu_-_font-weight:  500; --paper-font-menu_-_line-height:  24px;;
 
-      font-size: 24px;
-      font-weight: 400;
-      letter-spacing: -.012em;
-      line-height: 32px;
-    };
+    --paper-font-button_-_font-family:  var(--paper-font-common-base_-_font-family); --paper-font-button_-_-webkit-font-smoothing:  var(--paper-font-common-base_-_-webkit-font-smoothing); --paper-font-button_-_white-space:  var(--paper-font-common-nowrap_-_white-space); --paper-font-button_-_overflow:  var(--paper-font-common-nowrap_-_overflow); --paper-font-button_-_text-overflow:  var(--paper-font-common-nowrap_-_text-overflow); --paper-font-button_-_font-size:  14px; --paper-font-button_-_font-weight:  500; --paper-font-button_-_letter-spacing:  0.018em; --paper-font-button_-_line-height:  24px; --paper-font-button_-_text-transform:  uppercase;;
 
-    --paper-font-title: {
-      @apply(--paper-font-common-base);
-      @apply(--paper-font-common-nowrap);
+    --paper-font-code2_-_font-family:  var(--paper-font-common-code_-_font-family); --paper-font-code2_-_-webkit-font-smoothing:  var(--paper-font-common-code_-_-webkit-font-smoothing); --paper-font-code2_-_font-size:  14px; --paper-font-code2_-_font-weight:  700; --paper-font-code2_-_line-height:  20px;;
 
-      font-size: 20px;
-      font-weight: 500;
-      line-height: 28px;
-    };
-
-    --paper-font-subhead: {
-      @apply(--paper-font-common-base);
-
-      font-size: 16px;
-      font-weight: 400;
-      line-height: 24px;
-    };
-
-    --paper-font-body2: {
-      @apply(--paper-font-common-base);
-
-      font-size: 14px;
-      font-weight: 500;
-      line-height: 24px;
-    };
-
-    --paper-font-body1: {
-      @apply(--paper-font-common-base);
-
-      font-size: 14px;
-      font-weight: 400;
-      line-height: 20px;
-    };
-
-    --paper-font-caption: {
-      @apply(--paper-font-common-base);
-      @apply(--paper-font-common-nowrap);
-
-      font-size: 12px;
-      font-weight: 400;
-      letter-spacing: 0.011em;
-      line-height: 20px;
-    };
-
-    --paper-font-menu: {
-      @apply(--paper-font-common-base);
-      @apply(--paper-font-common-nowrap);
-
-      font-size: 13px;
-      font-weight: 500;
-      line-height: 24px;
-    };
-
-    --paper-font-button: {
-      @apply(--paper-font-common-base);
-      @apply(--paper-font-common-nowrap);
-
-      font-size: 14px;
-      font-weight: 500;
-      letter-spacing: 0.018em;
-      line-height: 24px;
-      text-transform: uppercase;
-    };
-
-    --paper-font-code2: {
-      @apply(--paper-font-common-code);
-
-      font-size: 14px;
-      font-weight: 700;
-      line-height: 20px;
-    };
-
-    --paper-font-code1: {
-      @apply(--paper-font-common-code);
-
-      font-size: 14px;
-      font-weight: 500;
-      line-height: 20px;
-    };
-
-  }
+    --paper-font-code1_-_font-family:  var(--paper-font-common-code_-_font-family); --paper-font-code1_-_-webkit-font-smoothing:  var(--paper-font-common-code_-_-webkit-font-smoothing); --paper-font-code1_-_font-size:  14px; --paper-font-code1_-_font-weight:  500; --paper-font-code1_-_line-height:  20px;;
+}
 
 </style>
 
 
-<dom-module id="paper-input-container" assetpath="chrome://resources/polymer/v1_0/paper-input/">
+<dom-module id="paper-input-container" assetpath="chrome://resources/polymer/v1_0/paper-input/" css-build="shadow">
   <template>
-    <style>
-      :host {
-        display: block;
+    <style scope="paper-input-container">:host {
+  display: block;
         padding: 8px 0;
 
-        @apply(--paper-input-container);
-      }
+        ;
+}
 
-      :host([inline]) {
-        display: inline-block;
-      }
+:host([inline]) {
+  display: inline-block;
+}
 
-      :host([disabled]) {
-        pointer-events: none;
+:host([disabled]) {
+  pointer-events: none;
         opacity: 0.33;
 
-        @apply(--paper-input-container-disabled);
-      }
+        ;
+}
 
-      :host([hidden]) {
-        display: none !important;
-      }
+:host([hidden]) {
+  display: none !important;
+}
 
-      .floated-label-placeholder {
-        @apply(--paper-font-caption);
-      }
+.floated-label-placeholder {
+  font-family: var(--paper-font-caption_-_font-family); -webkit-font-smoothing: var(--paper-font-caption_-_-webkit-font-smoothing); white-space: var(--paper-font-caption_-_white-space); overflow: var(--paper-font-caption_-_overflow); text-overflow: var(--paper-font-caption_-_text-overflow); font-size: var(--paper-font-caption_-_font-size); font-weight: var(--paper-font-caption_-_font-weight); letter-spacing: var(--paper-font-caption_-_letter-spacing); line-height: var(--paper-font-caption_-_line-height);
+}
 
-      .underline {
-        position: relative;
-      }
+.underline {
+  position: relative;
+}
 
-      .focused-line {
-        @apply(--layout-fit);
+.focused-line {
+  position: var(--layout-fit_-_position); top: var(--layout-fit_-_top); right: var(--layout-fit_-_right); bottom: var(--layout-fit_-_bottom); left: var(--layout-fit_-_left);
 
-        background: var(--paper-input-container-focus-color, --primary-color);
+        background: var(--paper-input-container-focus-color,var(--primary-color));;
         height: 2px;
 
         -webkit-transform-origin: center center;
@@ -1709,124 +1326,111 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         -webkit-transform: scale3d(0,1,1);
         transform: scale3d(0,1,1);
 
-        @apply(--paper-input-container-underline-focus);
-      }
+        display: var(--paper-input-container-underline-focus_-_display);
+}
 
-      .underline.is-highlighted .focused-line {
+.underline.is-highlighted .focused-line {
+  -webkit-transform: none;
+        transform: none;
+        -webkit-transition: -webkit-transform 0.25s;
+        transition: transform 0.25s;
+
+        ;
+}
+
+.underline.is-invalid .focused-line {
+  background: var(--paper-input-container-invalid-color,var(--error-color));;
         -webkit-transform: none;
         transform: none;
         -webkit-transition: -webkit-transform 0.25s;
         transition: transform 0.25s;
 
-        @apply(--paper-transition-easing);
-      }
+        ;
+}
 
-      .underline.is-invalid .focused-line {
-        background: var(--paper-input-container-invalid-color, --error-color);
-        -webkit-transform: none;
-        transform: none;
-        -webkit-transition: -webkit-transform 0.25s;
-        transition: transform 0.25s;
+.unfocused-line {
+  position: var(--layout-fit_-_position); top: var(--layout-fit_-_top); right: var(--layout-fit_-_right); bottom: var(--layout-fit_-_bottom); left: var(--layout-fit_-_left);
 
-        @apply(--paper-transition-easing);
-      }
-
-      .unfocused-line {
-        @apply(--layout-fit);
-
-        background: var(--paper-input-container-color, --secondary-text-color);
+        background: var(--paper-input-container-color,var(--secondary-text-color));;
         height: 1px;
 
-        @apply(--paper-input-container-underline);
-      }
+        display: var(--paper-input-container-underline_-_display);
+}
 
-      :host([disabled]) .unfocused-line {
-        border-bottom: 1px dashed;
-        border-color: var(--paper-input-container-color, --secondary-text-color);
+:host([disabled]) .unfocused-line {
+  border-bottom: 1px dashed;
+        border-color: var(--paper-input-container-color,var(--secondary-text-color));;
         background: transparent;
 
-        @apply(--paper-input-container-underline-disabled);
-      }
+        ;
+}
 
-      .label-and-input-container {
-        @apply(--layout-flex-auto);
-        @apply(--layout-relative);
+.label-and-input-container {
+  -ms-flex: var(--layout-flex-auto_-_-ms-flex); -webkit-flex: var(--layout-flex-auto_-_-webkit-flex); flex: var(--layout-flex-auto_-_flex);
+        position: var(--layout-relative_-_position);
 
         width: 100%;
         max-width: 100%;
-      }
+}
 
-      .input-content {
-        @apply(--layout-horizontal);
-        @apply(--layout-center);
+.input-content {
+  display: var(--layout-horizontal_-_display); -ms-flex-direction: var(--layout-horizontal_-_-ms-flex-direction); -webkit-flex-direction: var(--layout-horizontal_-_-webkit-flex-direction); flex-direction: var(--layout-horizontal_-_flex-direction);
+        -ms-flex-align: var(--layout-center_-_-ms-flex-align); -webkit-align-items: var(--layout-center_-_-webkit-align-items); align-items: var(--layout-center_-_align-items);
 
         position: relative;
-      }
+}
 
-      .input-content ::content label,
-      .input-content ::content .paper-input-label {
-        position: absolute;
+.input-content ::content label, .input-content ::content .paper-input-label {
+  position: absolute;
         top: 0;
         right: 0;
         left: 0;
         width: 100%;
         font: inherit;
-        color: var(--paper-input-container-color, --secondary-text-color);
+        color: var(--paper-input-container-color,var(--secondary-text-color));;
         -webkit-transition: -webkit-transform 0.25s, width 0.25s;
         transition: transform 0.25s, width 0.25s;
         -webkit-transform-origin: left top;
         transform-origin: left top;
 
-        @apply(--paper-font-common-nowrap);
-        @apply(--paper-font-subhead);
-        @apply(--paper-input-container-label);
-        @apply(--paper-transition-easing);
-      }
+        white-space: var(--paper-font-common-nowrap_-_white-space); overflow: var(--paper-font-common-nowrap_-_overflow); text-overflow: var(--paper-font-common-nowrap_-_text-overflow);
+        font-family: var(--paper-font-subhead_-_font-family); -webkit-font-smoothing: var(--paper-font-subhead_-_-webkit-font-smoothing); font-size: var(--paper-font-subhead_-_font-size); font-weight: var(--paper-font-subhead_-_font-weight); line-height: var(--paper-font-subhead_-_line-height);
+        color: var(--paper-input-container-label_-_color, var(--paper-input-container-color,var(--secondary-text-color))); font-size: var(--paper-input-container-label_-_font-size, var(--paper-font-subhead_-_font-size));
+        ;
+}
 
-      .input-content.label-is-floating ::content label,
-      .input-content.label-is-floating ::content .paper-input-label {
-        -webkit-transform: translateY(-75%) scale(0.75);
+.input-content.label-is-floating ::content label, .input-content.label-is-floating ::content .paper-input-label {
+  -webkit-transform: translateY(-75%) scale(0.75);
         transform: translateY(-75%) scale(0.75);
 
-        /* Since we scale to 75/100 of the size, we actually have 100/75 of the
-        original space now available */
+        
         width: 133%;
 
-        @apply(--paper-input-container-label-floating);
-      }
+        ;
+}
 
-      :host-context([dir="rtl"]) .input-content.label-is-floating ::content label,
-      :host-context([dir="rtl"]) .input-content.label-is-floating ::content .paper-input-label {
-        /* TODO(noms): Figure out why leaving the width at 133% before the animation
-         * actually makes
-         * it wider on the right side, not left side, as you would expect in RTL */
-        width: 100%;
+:host-context([dir="rtl"]) .input-content.label-is-floating ::content label, :host-context([dir="rtl"]) .input-content.label-is-floating ::content .paper-input-label {
+  width: 100%;
         -webkit-transform-origin: right top;
         transform-origin: right top;
-      }
+}
 
-      .input-content.label-is-highlighted ::content label,
-      .input-content.label-is-highlighted ::content .paper-input-label {
-        color: var(--paper-input-container-focus-color, --primary-color);
+.input-content.label-is-highlighted ::content label, .input-content.label-is-highlighted ::content .paper-input-label {
+  color: var(--paper-input-container-focus-color,var(--primary-color));;
 
-        @apply(--paper-input-container-label-focus);
-      }
+        ;
+}
 
-      .input-content.is-invalid ::content label,
-      .input-content.is-invalid ::content .paper-input-label {
-        color: var(--paper-input-container-invalid-color, --error-color);
-      }
+.input-content.is-invalid ::content label, .input-content.is-invalid ::content .paper-input-label {
+  color: var(--paper-input-container-invalid-color,var(--error-color));;
+}
 
-      .input-content.label-is-hidden ::content label,
-      .input-content.label-is-hidden ::content .paper-input-label {
-        visibility: hidden;
-      }
+.input-content.label-is-hidden ::content label, .input-content.label-is-hidden ::content .paper-input-label {
+  visibility: hidden;
+}
 
-      .input-content ::content input,
-      .input-content ::content textarea,
-      .input-content ::content iron-autogrow-textarea,
-      .input-content ::content .paper-input-input {
-        position: relative; /* to make a stacking context */
+.input-content ::content input, .input-content ::content textarea, .input-content ::content iron-autogrow-textarea, .input-content ::content .paper-input-input {
+  position: relative; 
         outline: none;
         box-shadow: none;
         padding: 0;
@@ -1834,49 +1438,49 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         max-width: 100%;
         background: transparent;
         border: none;
-        color: var(--paper-input-container-input-color, --primary-text-color);
+        color: var(--paper-input-container-input-color,var(--primary-text-color));;
         -webkit-appearance: none;
         text-align: inherit;
 
-        @apply(--paper-font-subhead);
-        @apply(--paper-input-container-input);
-      }
+        font-family: var(--paper-font-subhead_-_font-family); -webkit-font-smoothing: var(--paper-font-subhead_-_-webkit-font-smoothing); font-size: var(--paper-font-subhead_-_font-size); font-weight: var(--paper-font-subhead_-_font-weight); line-height: var(--paper-font-subhead_-_line-height);
+        ;
+}
 
-      ::content [prefix] {
-        @apply(--paper-font-subhead);
+::content [prefix] {
+  font-family: var(--paper-font-subhead_-_font-family); -webkit-font-smoothing: var(--paper-font-subhead_-_-webkit-font-smoothing); font-size: var(--paper-font-subhead_-_font-size); font-weight: var(--paper-font-subhead_-_font-weight); line-height: var(--paper-font-subhead_-_line-height);
 
-        @apply(--paper-input-prefix);
-        @apply(--layout-flex-none);
-      }
+        ;
+        -ms-flex: var(--layout-flex-none_-_-ms-flex); -webkit-flex: var(--layout-flex-none_-_-webkit-flex); flex: var(--layout-flex-none_-_flex);
+}
 
-      ::content [suffix] {
-        @apply(--paper-font-subhead);
+::content [suffix] {
+  font-family: var(--paper-font-subhead_-_font-family); -webkit-font-smoothing: var(--paper-font-subhead_-_-webkit-font-smoothing); font-size: var(--paper-font-subhead_-_font-size); font-weight: var(--paper-font-subhead_-_font-weight); line-height: var(--paper-font-subhead_-_line-height);
 
-        @apply(--paper-input-suffix);
-        @apply(--layout-flex-none);
-      }
+        ;
+        -ms-flex: var(--layout-flex-none_-_-ms-flex); -webkit-flex: var(--layout-flex-none_-_-webkit-flex); flex: var(--layout-flex-none_-_flex);
+}
 
-      /* Firefox sets a min-width on the input, which can cause layout issues */
-      .input-content ::content input {
-        min-width: 0;
-      }
+.input-content ::content input {
+  min-width: 0;
+}
 
-      .input-content ::content textarea {
-        resize: none;
-      }
+.input-content ::content textarea {
+  resize: none;
+}
 
-      .add-on-content {
-        position: relative;
-      }
+.add-on-content {
+  position: relative;
+}
 
-      .add-on-content.is-invalid ::content * {
-        color: var(--paper-input-container-invalid-color, --error-color);
-      }
+.add-on-content.is-invalid ::content * {
+  color: var(--paper-input-container-invalid-color,var(--error-color));;
+}
 
-      .add-on-content.is-highlighted ::content * {
-        color: var(--paper-input-container-focus-color, --primary-color);
-      }
-    </style>
+.add-on-content.is-highlighted ::content * {
+  color: var(--paper-input-container-focus-color,var(--primary-color));;
+}
+
+</style>
 
     <template is="dom-if" if="[[!noLabelFloat]]">
       <div class="floated-label-placeholder" aria-hidden="true">&nbsp;</div>
@@ -1903,103 +1507,81 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </template>
 </dom-module>
 
-<dom-module id="paper-spinner-styles" assetpath="chrome://resources/polymer/v1_0/paper-spinner/">
+<dom-module id="paper-spinner-styles" assetpath="chrome://resources/polymer/v1_0/paper-spinner/" css-build="shadow">
   <template>
-    <style>
-      /*
-      /**************************/
-      /* STYLES FOR THE SPINNER */
-      /**************************/
-
-      /*
-       * Constants:
-       *      ARCSIZE     = 270 degrees (amount of circle the arc takes up)
-       *      ARCTIME     = 1333ms (time it takes to expand and contract arc)
-       *      ARCSTARTROT = 216 degrees (how much the start location of the arc
-       *                                should rotate each time, 216 gives us a
-       *                                5 pointed star shape (it's 360/5 * 3).
-       *                                For a 7 pointed star, we might do
-       *                                360/7 * 3 = 154.286)
-       *      SHRINK_TIME = 400ms
-       */
-
-      :host {
-        display: inline-block;
+    <style scope="paper-spinner-styles">:host {
+  display: inline-block;
         position: relative;
         width: 28px;
         height: 28px;
 
-        /* 360 * ARCTIME / (ARCSTARTROT + (360-ARCSIZE)) */
+        
         --paper-spinner-container-rotation-duration: 1568ms;
 
-        /* ARCTIME */
+        
         --paper-spinner-expand-contract-duration: 1333ms;
 
-        /* 4 * ARCTIME */
+        
         --paper-spinner-full-cycle-duration: 5332ms;
 
-        /* SHRINK_TIME */
+        
         --paper-spinner-cooldown-duration: 400ms;
-      }
+}
 
-      #spinnerContainer {
-        width: 100%;
+#spinnerContainer {
+  width: 100%;
         height: 100%;
 
-        /* The spinner does not have any contents that would have to be
-         * flipped if the direction changes. Always use ltr so that the
-         * style works out correctly in both cases. */
+        
         direction: ltr;
-      }
+}
 
-      #spinnerContainer.active {
-        -webkit-animation: container-rotate var(--paper-spinner-container-rotation-duration) linear infinite;
+#spinnerContainer.active {
+  -webkit-animation: container-rotate var(--paper-spinner-container-rotation-duration) linear infinite;
         animation: container-rotate var(--paper-spinner-container-rotation-duration) linear infinite;
-      }
+}
 
-      @-webkit-keyframes container-rotate {
-        to { -webkit-transform: rotate(360deg) }
-      }
+@-webkit-keyframes container-rotate {
+to {
+  -webkit-transform: rotate(360deg)
+}
 
-      @keyframes container-rotate {
-        to { transform: rotate(360deg) }
-      }
+}
 
-      .spinner-layer {
-        position: absolute;
+@keyframes container-rotate {
+to {
+  transform: rotate(360deg)
+}
+
+}
+
+.spinner-layer {
+  position: absolute;
         width: 100%;
         height: 100%;
         opacity: 0;
         white-space: nowrap;
-        border-color: var(--paper-spinner-color, --google-blue-500);
-      }
+        border-color: var(--paper-spinner-color,var(--google-blue-500));;
+}
 
-      .layer-1 {
-        border-color: var(--paper-spinner-layer-1-color, --google-blue-500);
-      }
+.layer-1 {
+  border-color: var(--paper-spinner-layer-1-color,var(--google-blue-500));;
+}
 
-      .layer-2 {
-        border-color: var(--paper-spinner-layer-2-color, --google-red-500);
-      }
+.layer-2 {
+  border-color: var(--paper-spinner-layer-2-color,var(--google-red-500));;
+}
 
-      .layer-3 {
-        border-color: var(--paper-spinner-layer-3-color, --google-yellow-500);
-      }
+.layer-3 {
+  border-color: var(--paper-spinner-layer-3-color,var(--google-yellow-500));;
+}
 
-      .layer-4 {
-        border-color: var(--paper-spinner-layer-4-color, --google-green-500);
-      }
+.layer-4 {
+  border-color: var(--paper-spinner-layer-4-color,var(--google-green-500));;
+}
 
-      /**
-       * IMPORTANT NOTE ABOUT CSS ANIMATION PROPERTIES (keanulee):
-       *
-       * iOS Safari (tested on iOS 8.1) does not handle animation-delay very well - it doesn't
-       * guarantee that the animation will start _exactly_ after that value. So we avoid using
-       * animation-delay and instead set custom keyframes for each color (as layer-2undant as it
-       * seems).
-       */
-      .active .spinner-layer {
-        -webkit-animation-name: fill-unfill-rotate;
+.active .spinner-layer {
+  -webkit-animation-name: fill-unfill-rotate;
         -webkit-animation-duration: var(--paper-spinner-full-cycle-duration);
         -webkit-animation-timing-function: cubic-bezier(0.4, 0.0, 0.2, 1);
         -webkit-animation-iteration-count: infinite;
@@ -2008,237 +1590,999 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         animation-timing-function: cubic-bezier(0.4, 0.0, 0.2, 1);
         animation-iteration-count: infinite;
         opacity: 1;
-      }
+}
 
-      .active .spinner-layer.layer-1 {
-        -webkit-animation-name: fill-unfill-rotate, layer-1-fade-in-out;
+.active .spinner-layer.layer-1 {
+  -webkit-animation-name: fill-unfill-rotate, layer-1-fade-in-out;
         animation-name: fill-unfill-rotate, layer-1-fade-in-out;
-      }
+}
 
-      .active .spinner-layer.layer-2 {
-        -webkit-animation-name: fill-unfill-rotate, layer-2-fade-in-out;
+.active .spinner-layer.layer-2 {
+  -webkit-animation-name: fill-unfill-rotate, layer-2-fade-in-out;
         animation-name: fill-unfill-rotate, layer-2-fade-in-out;
-      }
+}
 
-      .active .spinner-layer.layer-3 {
-        -webkit-animation-name: fill-unfill-rotate, layer-3-fade-in-out;
+.active .spinner-layer.layer-3 {
+  -webkit-animation-name: fill-unfill-rotate, layer-3-fade-in-out;
         animation-name: fill-unfill-rotate, layer-3-fade-in-out;
-      }
+}
 
-      .active .spinner-layer.layer-4 {
-        -webkit-animation-name: fill-unfill-rotate, layer-4-fade-in-out;
+.active .spinner-layer.layer-4 {
+  -webkit-animation-name: fill-unfill-rotate, layer-4-fade-in-out;
         animation-name: fill-unfill-rotate, layer-4-fade-in-out;
-      }
+}
 
-      @-webkit-keyframes fill-unfill-rotate {
-        12.5% { -webkit-transform: rotate(135deg) } /* 0.5 * ARCSIZE */
-        25%   { -webkit-transform: rotate(270deg) } /* 1   * ARCSIZE */
-        37.5% { -webkit-transform: rotate(405deg) } /* 1.5 * ARCSIZE */
-        50%   { -webkit-transform: rotate(540deg) } /* 2   * ARCSIZE */
-        62.5% { -webkit-transform: rotate(675deg) } /* 2.5 * ARCSIZE */
-        75%   { -webkit-transform: rotate(810deg) } /* 3   * ARCSIZE */
-        87.5% { -webkit-transform: rotate(945deg) } /* 3.5 * ARCSIZE */
-        to    { -webkit-transform: rotate(1080deg) } /* 4   * ARCSIZE */
-      }
+@-webkit-keyframes fill-unfill-rotate {
+12.5% {
+  -webkit-transform: rotate(135deg)
+}
 
-      @keyframes fill-unfill-rotate {
-        12.5% { transform: rotate(135deg) } /* 0.5 * ARCSIZE */
-        25%   { transform: rotate(270deg) } /* 1   * ARCSIZE */
-        37.5% { transform: rotate(405deg) } /* 1.5 * ARCSIZE */
-        50%   { transform: rotate(540deg) } /* 2   * ARCSIZE */
-        62.5% { transform: rotate(675deg) } /* 2.5 * ARCSIZE */
-        75%   { transform: rotate(810deg) } /* 3   * ARCSIZE */
-        87.5% { transform: rotate(945deg) } /* 3.5 * ARCSIZE */
-        to    { transform: rotate(1080deg) } /* 4   * ARCSIZE */
-      }
+25% {
+  -webkit-transform: rotate(270deg)
+}
 
-      @-webkit-keyframes layer-1-fade-in-out {
-        0% { opacity: 1 }
-        25% { opacity: 1 }
-        26% { opacity: 0 }
-        89% { opacity: 0 }
-        90% { opacity: 1 }
-        to { opacity: 1 }
-      }
+37.5% {
+  -webkit-transform: rotate(405deg)
+}
 
-      @keyframes layer-1-fade-in-out {
-        0% { opacity: 1 }
-        25% { opacity: 1 }
-        26% { opacity: 0 }
-        89% { opacity: 0 }
-        90% { opacity: 1 }
-        to { opacity: 1 }
-      }
+50% {
+  -webkit-transform: rotate(540deg)
+}
 
-      @-webkit-keyframes layer-2-fade-in-out {
-        0% { opacity: 0 }
-        15% { opacity: 0 }
-        25% { opacity: 1 }
-        50% { opacity: 1 }
-        51% { opacity: 0 }
-        to { opacity: 0 }
-      }
+62.5% {
+  -webkit-transform: rotate(675deg)
+}
 
-      @keyframes layer-2-fade-in-out {
-        0% { opacity: 0 }
-        15% { opacity: 0 }
-        25% { opacity: 1 }
-        50% { opacity: 1 }
-        51% { opacity: 0 }
-        to { opacity: 0 }
-      }
+75% {
+  -webkit-transform: rotate(810deg)
+}
 
-      @-webkit-keyframes layer-3-fade-in-out {
-        0% { opacity: 0 }
-        40% { opacity: 0 }
-        50% { opacity: 1 }
-        75% { opacity: 1 }
-        76% { opacity: 0 }
-        to { opacity: 0 }
-      }
+87.5% {
+  -webkit-transform: rotate(945deg)
+}
 
-      @keyframes layer-3-fade-in-out {
-        0% { opacity: 0 }
-        40% { opacity: 0 }
-        50% { opacity: 1 }
-        75% { opacity: 1 }
-        76% { opacity: 0 }
-        to { opacity: 0 }
-      }
+to {
+  -webkit-transform: rotate(1080deg)
+}
 
-      @-webkit-keyframes layer-4-fade-in-out {
-        0% { opacity: 0 }
-        65% { opacity: 0 }
-        75% { opacity: 1 }
-        90% { opacity: 1 }
-        to { opacity: 0 }
-      }
+}
 
-      @keyframes layer-4-fade-in-out {
-        0% { opacity: 0 }
-        65% { opacity: 0 }
-        75% { opacity: 1 }
-        90% { opacity: 1 }
-        to { opacity: 0 }
-      }
+@keyframes fill-unfill-rotate {
+12.5% {
+  transform: rotate(135deg)
+}
 
-      .circle-clipper {
-        display: inline-block;
+25% {
+  transform: rotate(270deg)
+}
+
+37.5% {
+  transform: rotate(405deg)
+}
+
+50% {
+  transform: rotate(540deg)
+}
+
+62.5% {
+  transform: rotate(675deg)
+}
+
+75% {
+  transform: rotate(810deg)
+}
+
+87.5% {
+  transform: rotate(945deg)
+}
+
+to {
+  transform: rotate(1080deg)
+}
+
+}
+
+@-webkit-keyframes layer-1-fade-in-out {
+0% {
+  opacity: 1
+}
+
+25% {
+  opacity: 1
+}
+
+26% {
+  opacity: 0
+}
+
+89% {
+  opacity: 0
+}
+
+90% {
+  opacity: 1
+}
+
+to {
+  opacity: 1
+}
+
+}
+
+@keyframes layer-1-fade-in-out {
+0% {
+  opacity: 1
+}
+
+25% {
+  opacity: 1
+}
+
+26% {
+  opacity: 0
+}
+
+89% {
+  opacity: 0
+}
+
+90% {
+  opacity: 1
+}
+
+to {
+  opacity: 1
+}
+
+}
+
+@-webkit-keyframes layer-2-fade-in-out {
+0% {
+  opacity: 0
+}
+
+15% {
+  opacity: 0
+}
+
+25% {
+  opacity: 1
+}
+
+50% {
+  opacity: 1
+}
+
+51% {
+  opacity: 0
+}
+
+to {
+  opacity: 0
+}
+
+}
+
+@keyframes layer-2-fade-in-out {
+0% {
+  opacity: 0
+}
+
+15% {
+  opacity: 0
+}
+
+25% {
+  opacity: 1
+}
+
+50% {
+  opacity: 1
+}
+
+51% {
+  opacity: 0
+}
+
+to {
+  opacity: 0
+}
+
+}
+
+@-webkit-keyframes layer-3-fade-in-out {
+0% {
+  opacity: 0
+}
+
+40% {
+  opacity: 0
+}
+
+50% {
+  opacity: 1
+}
+
+75% {
+  opacity: 1
+}
+
+76% {
+  opacity: 0
+}
+
+to {
+  opacity: 0
+}
+
+}
+
+@keyframes layer-3-fade-in-out {
+0% {
+  opacity: 0
+}
+
+40% {
+  opacity: 0
+}
+
+50% {
+  opacity: 1
+}
+
+75% {
+  opacity: 1
+}
+
+76% {
+  opacity: 0
+}
+
+to {
+  opacity: 0
+}
+
+}
+
+@-webkit-keyframes layer-4-fade-in-out {
+0% {
+  opacity: 0
+}
+
+65% {
+  opacity: 0
+}
+
+75% {
+  opacity: 1
+}
+
+90% {
+  opacity: 1
+}
+
+to {
+  opacity: 0
+}
+
+}
+
+@keyframes layer-4-fade-in-out {
+0% {
+  opacity: 0
+}
+
+65% {
+  opacity: 0
+}
+
+75% {
+  opacity: 1
+}
+
+90% {
+  opacity: 1
+}
+
+to {
+  opacity: 0
+}
+
+}
+
+.circle-clipper {
+  display: inline-block;
         position: relative;
         width: 50%;
         height: 100%;
         overflow: hidden;
         border-color: inherit;
-      }
+}
 
-      /**
-       * Patch the gap that appear between the two adjacent div.circle-clipper while the
-       * spinner is rotating (appears on Chrome 50, Safari 9.1.1, and Edge).
-       */
-      .spinner-layer::after {
-        left: 45%;
+.spinner-layer::after {
+  left: 45%;
         width: 10%;
         border-top-style: solid;
-      }
+}
 
-      .spinner-layer::after,
-      .circle-clipper::after {
-        content: '';
+.spinner-layer::after, .circle-clipper::after {
+  content: '';
         box-sizing: border-box;
         position: absolute;
         top: 0;
         border-width: var(--paper-spinner-stroke-width, 3px);
         border-color: inherit;
         border-radius: 50%;
-      }
+}
 
-      .circle-clipper::after {
-        bottom: 0;
+.circle-clipper::after {
+  bottom: 0;
         width: 200%;
         border-style: solid;
         border-bottom-color: transparent !important;
-      }
+}
 
-      .circle-clipper.left::after {
-        left: 0;
+.circle-clipper.left::after {
+  left: 0;
         border-right-color: transparent !important;
         -webkit-transform: rotate(129deg);
         transform: rotate(129deg);
-      }
+}
 
-      .circle-clipper.right::after {
-        left: -100%;
+.circle-clipper.right::after {
+  left: -100%;
         border-left-color: transparent !important;
         -webkit-transform: rotate(-129deg);
         transform: rotate(-129deg);
-      }
+}
 
-      .active .gap-patch::after,
-      .active .circle-clipper::after {
-        -webkit-animation-duration: var(--paper-spinner-expand-contract-duration);
+.active .gap-patch::after, .active .circle-clipper::after {
+  -webkit-animation-duration: var(--paper-spinner-expand-contract-duration);
         -webkit-animation-timing-function: cubic-bezier(0.4, 0.0, 0.2, 1);
         -webkit-animation-iteration-count: infinite;
         animation-duration: var(--paper-spinner-expand-contract-duration);
         animation-timing-function: cubic-bezier(0.4, 0.0, 0.2, 1);
         animation-iteration-count: infinite;
-      }
+}
 
-      .active .circle-clipper.left::after {
-        -webkit-animation-name: left-spin;
+.active .circle-clipper.left::after {
+  -webkit-animation-name: left-spin;
         animation-name: left-spin;
-      }
+}
 
-      .active .circle-clipper.right::after {
-        -webkit-animation-name: right-spin;
+.active .circle-clipper.right::after {
+  -webkit-animation-name: right-spin;
         animation-name: right-spin;
-      }
+}
 
-      @-webkit-keyframes left-spin {
-        0% { -webkit-transform: rotate(130deg) }
-        50% { -webkit-transform: rotate(-5deg) }
-        to { -webkit-transform: rotate(130deg) }
-      }
+@-webkit-keyframes left-spin {
+0% {
+  -webkit-transform: rotate(130deg)
+}
 
-      @keyframes left-spin {
-        0% { transform: rotate(130deg) }
-        50% { transform: rotate(-5deg) }
-        to { transform: rotate(130deg) }
-      }
+50% {
+  -webkit-transform: rotate(-5deg)
+}
 
-      @-webkit-keyframes right-spin {
-        0% { -webkit-transform: rotate(-130deg) }
-        50% { -webkit-transform: rotate(5deg) }
-        to { -webkit-transform: rotate(-130deg) }
-      }
+to {
+  -webkit-transform: rotate(130deg)
+}
 
-      @keyframes right-spin {
-        0% { transform: rotate(-130deg) }
-        50% { transform: rotate(5deg) }
-        to { transform: rotate(-130deg) }
-      }
+}
 
-      #spinnerContainer.cooldown {
-        -webkit-animation: container-rotate var(--paper-spinner-container-rotation-duration) linear infinite, fade-out var(--paper-spinner-cooldown-duration) cubic-bezier(0.4, 0.0, 0.2, 1);
+@keyframes left-spin {
+0% {
+  transform: rotate(130deg)
+}
+
+50% {
+  transform: rotate(-5deg)
+}
+
+to {
+  transform: rotate(130deg)
+}
+
+}
+
+@-webkit-keyframes right-spin {
+0% {
+  -webkit-transform: rotate(-130deg)
+}
+
+50% {
+  -webkit-transform: rotate(5deg)
+}
+
+to {
+  -webkit-transform: rotate(-130deg)
+}
+
+}
+
+@keyframes right-spin {
+0% {
+  transform: rotate(-130deg)
+}
+
+50% {
+  transform: rotate(5deg)
+}
+
+to {
+  transform: rotate(-130deg)
+}
+
+}
+
+#spinnerContainer.cooldown {
+  -webkit-animation: container-rotate var(--paper-spinner-container-rotation-duration) linear infinite, fade-out var(--paper-spinner-cooldown-duration) cubic-bezier(0.4, 0.0, 0.2, 1);
         animation: container-rotate var(--paper-spinner-container-rotation-duration) linear infinite, fade-out var(--paper-spinner-cooldown-duration) cubic-bezier(0.4, 0.0, 0.2, 1);
-      }
+}
 
-      @-webkit-keyframes fade-out {
-        0% { opacity: 1 }
-        to { opacity: 0 }
-      }
+@-webkit-keyframes fade-out {
+0% {
+  opacity: 1
+}
 
-      @keyframes fade-out {
-        0% { opacity: 1 }
-        to { opacity: 0 }
-      }
-    </style>
+to {
+  opacity: 0
+}
+
+}
+
+@keyframes fade-out {
+0% {
+  opacity: 1
+}
+
+to {
+  opacity: 0
+}
+
+}
+
+</style>
   </template>
 </dom-module>
 
 
-<dom-module id="paper-spinner-lite" assetpath="chrome://resources/polymer/v1_0/paper-spinner/">
+<dom-module id="paper-spinner-lite" assetpath="chrome://resources/polymer/v1_0/paper-spinner/" css-build="shadow">
   <template strip-whitespace="">
-    <style include="paper-spinner-styles"></style>
+    <style scope="paper-spinner-lite">:host {
+  display: inline-block;
+        position: relative;
+        width: 28px;
+        height: 28px;
+
+        
+        --paper-spinner-container-rotation-duration: 1568ms;
+
+        
+        --paper-spinner-expand-contract-duration: 1333ms;
+
+        
+        --paper-spinner-full-cycle-duration: 5332ms;
+
+        
+        --paper-spinner-cooldown-duration: 400ms;
+}
+
+#spinnerContainer {
+  width: 100%;
+        height: 100%;
+
+        
+        direction: ltr;
+}
+
+#spinnerContainer.active {
+  -webkit-animation: container-rotate var(--paper-spinner-container-rotation-duration) linear infinite;
+        animation: container-rotate var(--paper-spinner-container-rotation-duration) linear infinite;
+}
+
+@-webkit-keyframes container-rotate {
+to {
+  -webkit-transform: rotate(360deg)
+}
+
+}
+
+@keyframes container-rotate {
+to {
+  transform: rotate(360deg)
+}
+
+}
+
+.spinner-layer {
+  position: absolute;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        white-space: nowrap;
+        border-color: var(--paper-spinner-color,var(--google-blue-500));;
+}
+
+.layer-1 {
+  border-color: var(--paper-spinner-layer-1-color,var(--google-blue-500));;
+}
+
+.layer-2 {
+  border-color: var(--paper-spinner-layer-2-color,var(--google-red-500));;
+}
+
+.layer-3 {
+  border-color: var(--paper-spinner-layer-3-color,var(--google-yellow-500));;
+}
+
+.layer-4 {
+  border-color: var(--paper-spinner-layer-4-color,var(--google-green-500));;
+}
+
+.active .spinner-layer {
+  -webkit-animation-name: fill-unfill-rotate;
+        -webkit-animation-duration: var(--paper-spinner-full-cycle-duration);
+        -webkit-animation-timing-function: cubic-bezier(0.4, 0.0, 0.2, 1);
+        -webkit-animation-iteration-count: infinite;
+        animation-name: fill-unfill-rotate;
+        animation-duration: var(--paper-spinner-full-cycle-duration);
+        animation-timing-function: cubic-bezier(0.4, 0.0, 0.2, 1);
+        animation-iteration-count: infinite;
+        opacity: 1;
+}
+
+.active .spinner-layer.layer-1 {
+  -webkit-animation-name: fill-unfill-rotate, layer-1-fade-in-out;
+        animation-name: fill-unfill-rotate, layer-1-fade-in-out;
+}
+
+.active .spinner-layer.layer-2 {
+  -webkit-animation-name: fill-unfill-rotate, layer-2-fade-in-out;
+        animation-name: fill-unfill-rotate, layer-2-fade-in-out;
+}
+
+.active .spinner-layer.layer-3 {
+  -webkit-animation-name: fill-unfill-rotate, layer-3-fade-in-out;
+        animation-name: fill-unfill-rotate, layer-3-fade-in-out;
+}
+
+.active .spinner-layer.layer-4 {
+  -webkit-animation-name: fill-unfill-rotate, layer-4-fade-in-out;
+        animation-name: fill-unfill-rotate, layer-4-fade-in-out;
+}
+
+@-webkit-keyframes fill-unfill-rotate {
+12.5% {
+  -webkit-transform: rotate(135deg)
+}
+
+25% {
+  -webkit-transform: rotate(270deg)
+}
+
+37.5% {
+  -webkit-transform: rotate(405deg)
+}
+
+50% {
+  -webkit-transform: rotate(540deg)
+}
+
+62.5% {
+  -webkit-transform: rotate(675deg)
+}
+
+75% {
+  -webkit-transform: rotate(810deg)
+}
+
+87.5% {
+  -webkit-transform: rotate(945deg)
+}
+
+to {
+  -webkit-transform: rotate(1080deg)
+}
+
+}
+
+@keyframes fill-unfill-rotate {
+12.5% {
+  transform: rotate(135deg)
+}
+
+25% {
+  transform: rotate(270deg)
+}
+
+37.5% {
+  transform: rotate(405deg)
+}
+
+50% {
+  transform: rotate(540deg)
+}
+
+62.5% {
+  transform: rotate(675deg)
+}
+
+75% {
+  transform: rotate(810deg)
+}
+
+87.5% {
+  transform: rotate(945deg)
+}
+
+to {
+  transform: rotate(1080deg)
+}
+
+}
+
+@-webkit-keyframes layer-1-fade-in-out {
+0% {
+  opacity: 1
+}
+
+25% {
+  opacity: 1
+}
+
+26% {
+  opacity: 0
+}
+
+89% {
+  opacity: 0
+}
+
+90% {
+  opacity: 1
+}
+
+to {
+  opacity: 1
+}
+
+}
+
+@keyframes layer-1-fade-in-out {
+0% {
+  opacity: 1
+}
+
+25% {
+  opacity: 1
+}
+
+26% {
+  opacity: 0
+}
+
+89% {
+  opacity: 0
+}
+
+90% {
+  opacity: 1
+}
+
+to {
+  opacity: 1
+}
+
+}
+
+@-webkit-keyframes layer-2-fade-in-out {
+0% {
+  opacity: 0
+}
+
+15% {
+  opacity: 0
+}
+
+25% {
+  opacity: 1
+}
+
+50% {
+  opacity: 1
+}
+
+51% {
+  opacity: 0
+}
+
+to {
+  opacity: 0
+}
+
+}
+
+@keyframes layer-2-fade-in-out {
+0% {
+  opacity: 0
+}
+
+15% {
+  opacity: 0
+}
+
+25% {
+  opacity: 1
+}
+
+50% {
+  opacity: 1
+}
+
+51% {
+  opacity: 0
+}
+
+to {
+  opacity: 0
+}
+
+}
+
+@-webkit-keyframes layer-3-fade-in-out {
+0% {
+  opacity: 0
+}
+
+40% {
+  opacity: 0
+}
+
+50% {
+  opacity: 1
+}
+
+75% {
+  opacity: 1
+}
+
+76% {
+  opacity: 0
+}
+
+to {
+  opacity: 0
+}
+
+}
+
+@keyframes layer-3-fade-in-out {
+0% {
+  opacity: 0
+}
+
+40% {
+  opacity: 0
+}
+
+50% {
+  opacity: 1
+}
+
+75% {
+  opacity: 1
+}
+
+76% {
+  opacity: 0
+}
+
+to {
+  opacity: 0
+}
+
+}
+
+@-webkit-keyframes layer-4-fade-in-out {
+0% {
+  opacity: 0
+}
+
+65% {
+  opacity: 0
+}
+
+75% {
+  opacity: 1
+}
+
+90% {
+  opacity: 1
+}
+
+to {
+  opacity: 0
+}
+
+}
+
+@keyframes layer-4-fade-in-out {
+0% {
+  opacity: 0
+}
+
+65% {
+  opacity: 0
+}
+
+75% {
+  opacity: 1
+}
+
+90% {
+  opacity: 1
+}
+
+to {
+  opacity: 0
+}
+
+}
+
+.circle-clipper {
+  display: inline-block;
+        position: relative;
+        width: 50%;
+        height: 100%;
+        overflow: hidden;
+        border-color: inherit;
+}
+
+.spinner-layer::after {
+  left: 45%;
+        width: 10%;
+        border-top-style: solid;
+}
+
+.spinner-layer::after, .circle-clipper::after {
+  content: '';
+        box-sizing: border-box;
+        position: absolute;
+        top: 0;
+        border-width: var(--paper-spinner-stroke-width, 3px);
+        border-color: inherit;
+        border-radius: 50%;
+}
+
+.circle-clipper::after {
+  bottom: 0;
+        width: 200%;
+        border-style: solid;
+        border-bottom-color: transparent !important;
+}
+
+.circle-clipper.left::after {
+  left: 0;
+        border-right-color: transparent !important;
+        -webkit-transform: rotate(129deg);
+        transform: rotate(129deg);
+}
+
+.circle-clipper.right::after {
+  left: -100%;
+        border-left-color: transparent !important;
+        -webkit-transform: rotate(-129deg);
+        transform: rotate(-129deg);
+}
+
+.active .gap-patch::after, .active .circle-clipper::after {
+  -webkit-animation-duration: var(--paper-spinner-expand-contract-duration);
+        -webkit-animation-timing-function: cubic-bezier(0.4, 0.0, 0.2, 1);
+        -webkit-animation-iteration-count: infinite;
+        animation-duration: var(--paper-spinner-expand-contract-duration);
+        animation-timing-function: cubic-bezier(0.4, 0.0, 0.2, 1);
+        animation-iteration-count: infinite;
+}
+
+.active .circle-clipper.left::after {
+  -webkit-animation-name: left-spin;
+        animation-name: left-spin;
+}
+
+.active .circle-clipper.right::after {
+  -webkit-animation-name: right-spin;
+        animation-name: right-spin;
+}
+
+@-webkit-keyframes left-spin {
+0% {
+  -webkit-transform: rotate(130deg)
+}
+
+50% {
+  -webkit-transform: rotate(-5deg)
+}
+
+to {
+  -webkit-transform: rotate(130deg)
+}
+
+}
+
+@keyframes left-spin {
+0% {
+  transform: rotate(130deg)
+}
+
+50% {
+  transform: rotate(-5deg)
+}
+
+to {
+  transform: rotate(130deg)
+}
+
+}
+
+@-webkit-keyframes right-spin {
+0% {
+  -webkit-transform: rotate(-130deg)
+}
+
+50% {
+  -webkit-transform: rotate(5deg)
+}
+
+to {
+  -webkit-transform: rotate(-130deg)
+}
+
+}
+
+@keyframes right-spin {
+0% {
+  transform: rotate(-130deg)
+}
+
+50% {
+  transform: rotate(5deg)
+}
+
+to {
+  transform: rotate(-130deg)
+}
+
+}
+
+#spinnerContainer.cooldown {
+  -webkit-animation: container-rotate var(--paper-spinner-container-rotation-duration) linear infinite, fade-out var(--paper-spinner-cooldown-duration) cubic-bezier(0.4, 0.0, 0.2, 1);
+        animation: container-rotate var(--paper-spinner-container-rotation-duration) linear infinite, fade-out var(--paper-spinner-cooldown-duration) cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+@-webkit-keyframes fade-out {
+0% {
+  opacity: 1
+}
+
+to {
+  opacity: 0
+}
+
+}
+
+@keyframes fade-out {
+0% {
+  opacity: 1
+}
+
+to {
+  opacity: 0
+}
+
+}
+
+</style>
 
     <div id="spinnerContainer" class-name="[[__computeContainerClasses(active, __coolingDown)]]">
       <div class="spinner-layer">
@@ -2249,112 +2593,98 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </template>
 
   </dom-module>
-<dom-module id="cr-toolbar-search-field" assetpath="chrome://resources/cr_elements/cr_toolbar/">
+<dom-module id="cr-toolbar-search-field" assetpath="chrome://resources/cr_elements/cr_toolbar/" css-build="shadow">
   <template>
-    <style>
-      :host {
-        align-items: center;
+    <style scope="cr-toolbar-search-field">:host {
+  align-items: center;
         display: flex;
         height: 40px;
         transition: background-color 150ms cubic-bezier(0.4, 0, 0.2, 1),
             width 150ms cubic-bezier(0.4, 0, 0.2, 1);
         width: 44px;
-      }
+}
 
-      [hidden] {
-        display: none !important;
-      }
+[hidden] {
+  display: none !important;
+}
 
-      paper-icon-button {
-        height: 32px;
+paper-icon-button {
+  height: 32px;
         margin: 6px;
         min-width: 32px;
         padding: 6px;
         width: 32px;
-      }
+}
 
-      #icon {
-        --paper-icon-button-ink-color: white;
+#icon {
+  --paper-icon-button-ink-color: white;
         transition: margin 150ms, opacity 200ms;
-      }
+}
 
-      #prompt {
-        opacity: 0;
-      }
+#prompt {
+  opacity: 0;
+}
 
-      paper-spinner-lite {
-        --paper-spinner-color: white;
+paper-spinner-lite {
+  --paper-spinner-color: white;
         height: 20px;
         margin: 0 6px;
         opacity: 0;
         padding: 6px;
         position: absolute;
         width: 20px;
-      }
+}
 
-      paper-spinner-lite[active] {
-        opacity: 1;
-      }
+paper-spinner-lite[active] {
+  opacity: 1;
+}
 
-      #prompt,
-      paper-spinner-lite {
-        transition: opacity 200ms;
-      }
+#prompt, paper-spinner-lite {
+  transition: opacity 200ms;
+}
 
-      paper-input-container {
-        --paper-input-container-input-color: white;
-        --paper-input-container-underline: {
-          display: none;
-        };
-        --paper-input-container-underline-focus: {
-          display: none;
-        };
-        --paper-input-container-label: {
-          color: inherit;
-          font-size: inherit;
-        };
+paper-input-container {
+  --paper-input-container-input-color: white;
+        --paper-input-container-underline_-_display:  none;;
+        --paper-input-container-underline-focus_-_display:  none;;
+        --paper-input-container-label_-_color: apply-shim-inherit; --paper-input-container-label_-_font-size: apply-shim-inherit;;
         -webkit-padding-start: 2px;
         flex: 1;
-      }
+}
 
-      input[type='search']::-webkit-search-decoration,
-      input[type='search']::-webkit-search-cancel-button,
-      input[type='search']::-webkit-search-results-button {
-        -webkit-appearance: none;
-      }
+input[type='search']::-webkit-search-decoration, input[type='search']::-webkit-search-cancel-button, input[type='search']::-webkit-search-results-button {
+  -webkit-appearance: none;
+}
 
-      /** Wide layout. */
-      :host(:not([narrow])) {
-        -webkit-padding-end: 0;
+:host(:not([narrow])) {
+  -webkit-padding-end: 0;
         background: rgba(0, 0, 0, 0.22);
         border-radius: 2px;
         cursor: text;
         width: var(--cr-toolbar-field-width);
-      }
+}
 
-      :host(:not([narrow]):not([showing-search])) #icon,
-      :host(:not([narrow])) #prompt {
-        opacity: 0.6;
-      }
+:host(:not([narrow]):not([showing-search])) #icon, :host(:not([narrow])) #prompt {
+  opacity: 0.6;
+}
 
-      :host([narrow]:not([showing-search])) paper-input-container {
-        display: none;
-      }
+:host([narrow]:not([showing-search])) paper-input-container {
+  display: none;
+}
 
-      /* Search open. */
-      :host([showing-search][spinner-active]) #icon {
-        opacity: 0;
-      }
+:host([showing-search][spinner-active]) #icon {
+  opacity: 0;
+}
 
-      :host([narrow][showing-search]) {
-        width: 100%;
-      }
+:host([narrow][showing-search]) {
+  width: 100%;
+}
 
-      :host([narrow][showing-search]) #icon,
-      :host([narrow][showing-search]) paper-spinner-lite {
-        -webkit-margin-start: 18px;
-      }
-    </style>
+:host([narrow][showing-search]) #icon, :host([narrow][showing-search]) paper-spinner-lite {
+  -webkit-margin-start: 18px;
+}
+
+</style>
     <paper-spinner-lite active="[[isSpinnerShown_(spinnerActive, showingSearch)]]">
     </paper-spinner-lite>
     <paper-icon-button id="icon" icon="cr:search" title="[[label]]" tabindex$="[[computeIconTabIndex_(narrow)]]">
@@ -2367,75 +2697,75 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </paper-icon-button>
   </template>
   </dom-module>
-<dom-module id="cr-toolbar" assetpath="chrome://resources/cr_elements/cr_toolbar/">
+<dom-module id="cr-toolbar" assetpath="chrome://resources/cr_elements/cr_toolbar/" css-build="shadow">
   <template>
-    <style>
-      :host {
-        --cr-toolbar-field-width: 580px;
+    <style scope="cr-toolbar">:host {
+  --cr-toolbar-field-width: 580px;
         color: #fff;
         display: flex;
         height: 56px;
-      }
+}
 
-      h1 {
-        -webkit-margin-start: 6px;
+h1 {
+  -webkit-margin-start: 6px;
         flex: 1;
         font-size: 123%;
         font-weight: 400;
         text-overflow: ellipsis;
         overflow: hidden;
         white-space: nowrap;
-      }
+}
 
-      #leftContent {
-        -webkit-margin-start: 18px;
+#leftContent {
+  -webkit-margin-start: 18px;
         align-items: center;
         display: flex;
         position: absolute;
         transition: opacity 100ms;
-      }
+}
 
-      #menuButton {
-        height: 32px;
+#menuButton {
+  height: 32px;
         margin-bottom: 6px;
         margin-top: 6px;
         min-width: 32px;
         padding: 6px;
         width: 32px;
-      }
+}
 
-      #centeredContent {
-        -webkit-margin-start: var(--cr-toolbar-field-margin, 0);
+#centeredContent {
+  -webkit-margin-start: var(--cr-toolbar-field-margin, 0);
         display: flex;
         flex: 1 1 0;
         justify-content: center;
-      }
+}
 
-      :host([narrow_]) #centeredContent {
-        -webkit-padding-end: var(--cr-toolbar-field-end-padding, 12px);
-      }
+:host([narrow_]) #centeredContent {
+  -webkit-padding-end: var(--cr-toolbar-field-end-padding, 12px);
+}
 
-      :host(:not([narrow_])) h1 {
-        @apply(--cr-toolbar-header-wide);
-      }
+:host(:not([narrow_])) h1 {
+  ;
+}
 
-      :host(:not([narrow_])) #leftContent {
-        max-width: calc((100% - var(--cr-toolbar-field-width) - 18px) / 2);
-        @apply(--cr-toolbar-left-content-wide);
-      }
+:host(:not([narrow_])) #leftContent {
+  max-width: calc((100% - var(--cr-toolbar-field-width) - 18px) / 2);
+        ;
+}
 
-      :host(:not([narrow_])) #rightContent {
-        @apply(--cr-toolbar-right-content-wide);
-      }
+:host(:not([narrow_])) #rightContent {
+  ;
+}
 
-      :host([narrow_]) #centeredContent {
-        justify-content: flex-end;
-      }
+:host([narrow_]) #centeredContent {
+  justify-content: flex-end;
+}
 
-      :host([narrow_][showing-search_]) #leftContent {
-        opacity: 0;
-      }
-    </style>
+:host([narrow_][showing-search_]) #leftContent {
+  opacity: 0;
+}
+
+</style>
     <div id="leftContent">
       <template is="dom-if" if="[[showMenu]]">
         <paper-icon-button id="menuButton" icon="cr:menu" on-tap="onMenuTap_" title="[[menuLabel]]">
@@ -2465,31 +2795,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </defs>
   </svg>
 </iron-iconset-svg>
-<style is="custom-style">
-  :root {
-    --card-border-color: rgba(0, 0, 0, 0.14);
-    --card-box-shadow: {
-      box-shadow: 0 2px 2px rgba(0, 0, 0, .05),
+<style is="custom-style" css-build="shadow">html {
+  --card-border-color: rgba(0, 0, 0, 0.14);
+    --card-box-shadow_-_box-shadow:  0 2px 2px rgba(0, 0, 0, .05),
                   0 1px 4px rgba(0, 0, 0, .08),
                   0 1px 1px rgba(0, 0, 0, .2);;
-    };
-    --card-container-filter: {
-      filter: drop-shadow(0 2px 1px rgba(0, 0, 0, .05))
+    --card-container-filter_-_filter:  drop-shadow(0 2px 1px rgba(0, 0, 0, .05))
               drop-shadow(0 1px 0px rgba(0, 0, 0, .08))
-              drop-shadow(0 1px 1px rgba(0, 0, 0, .2));
-    };
+              drop-shadow(0 1px 1px rgba(0, 0, 0, .2));;
     --card-first-last-item-padding: 8px;
     --card-max-width: 960px;
     --card-min-width: 550px;
     --card-padding-between: 20px;
     --card-padding-side: 24px;
-    --card-sizing: {
-      margin: 0 auto;
-      max-width: var(--card-max-width);
-      min-width: var(--card-min-width);
-      padding: 0 var(--card-padding-side);
-      width: calc(100% - 2 * var(--card-padding-side));
-    };
+    --card-sizing_-_margin:  0 auto; --card-sizing_-_max-width:  var(--card-max-width); --card-sizing_-_min-width:  var(--card-min-width); --card-sizing_-_padding:  0 var(--card-padding-side); --card-sizing_-_width:  calc(100% - 2 * var(--card-padding-side));;
     --first-card-padding-top: 24px;
     --item-height: 44px;
     --primary-text-color: #333;
@@ -2497,17 +2816,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     --side-bar-width: 256px;
     --toolbar-grouped-height: 101px;
     --toolbar-height: 56px;
-  }
-</style>
-<dom-module id="shared-style" assetpath="chrome://history/">
-  <template>
-    <style>
-      [hidden] {
-        display: none !important;
-      }
+}
 
-      .card-title {
-        -webkit-padding-start: 20px;
+</style>
+<dom-module id="shared-style" assetpath="chrome://history/" css-build="shadow">
+  <template>
+    <style scope="shared-style">[hidden] {
+  display: none !important;
+}
+
+.card-title {
+  -webkit-padding-start: 20px;
         align-items: center;
         border-bottom: 1px solid var(--card-border-color);
         border-radius: 2px 2px 0 0;
@@ -2516,10 +2835,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         font-size: 14px;
         font-weight: 500;
         height: 48px;
-      }
+}
 
-      .centered-message {
-        align-items: center;
+.centered-message {
+  align-items: center;
         color: #b4b4b4;
         display: flex;
         flex: 1;
@@ -2527,174 +2846,247 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         font-weight: 500;
         height: 100%;
         justify-content: center;
-      }
+}
 
-      .menu-item {
-        -webkit-user-select: none;
+.menu-item {
+  -webkit-user-select: none;
         cursor: pointer;
         font: inherit;
         white-space: nowrap;
-      }
+}
 
-      .website-icon {
-        -webkit-margin-end: 16px;
+.website-icon {
+  -webkit-margin-end: 16px;
         background-repeat: no-repeat;
         background-size: 16px;
         height: 16px;
         width: 16px;
-      }
+}
 
-      .website-title {
-        color: var(--primary-text-color);
+.website-title {
+  color: var(--primary-text-color);
         overflow: hidden;
         text-decoration: none;
         text-overflow: ellipsis;
         white-space: nowrap;
-      }
+}
 
-      button.icon-button {
-        height: 36px;
+button.icon-button {
+  height: 36px;
         width: 36px;
-      }
+}
 
-      button.icon-button iron-icon {
-        color: var(--secondary-text-color);
+button.icon-button iron-icon {
+  color: var(--secondary-text-color);
         height: 20px;
         width: 20px;
-      }
+}
 
-      button.more-vert-button {
-        height: 36px;
+button.more-vert-button {
+  height: 36px;
         padding: 6px;
         width: 36px;
-      }
+}
 
-      button.more-vert-button div {
-        border: 2px solid var(--secondary-text-color);
+button.more-vert-button div {
+  border: 2px solid var(--secondary-text-color);
         border-radius: 2px;
         margin: 1px 10px;
         pointer-events: none;
         transform: scale(0.8);
-      }
-    </style>
+}
+
+</style>
   </template>
 </dom-module>
-<dom-module id="history-toolbar" assetpath="chrome://history/">
+<dom-module id="history-toolbar" assetpath="chrome://history/" css-build="shadow">
   <template>
-    <style include="shared-style">
-      :host {
-        color: #fff;
+    <style scope="history-toolbar">[hidden] {
+  display: none !important;
+}
+
+.card-title {
+  -webkit-padding-start: 20px;
+        align-items: center;
+        border-bottom: 1px solid var(--card-border-color);
+        border-radius: 2px 2px 0 0;
+        color: var(--primary-text-color);
+        display: flex;
+        font-size: 14px;
+        font-weight: 500;
+        height: 48px;
+}
+
+.centered-message {
+  align-items: center;
+        color: #b4b4b4;
+        display: flex;
+        flex: 1;
+        font-size: 14px;
+        font-weight: 500;
+        height: 100%;
+        justify-content: center;
+}
+
+.menu-item {
+  -webkit-user-select: none;
+        cursor: pointer;
+        font: inherit;
+        white-space: nowrap;
+}
+
+.website-icon {
+  -webkit-margin-end: 16px;
+        background-repeat: no-repeat;
+        background-size: 16px;
+        height: 16px;
+        width: 16px;
+}
+
+.website-title {
+  color: var(--primary-text-color);
+        overflow: hidden;
+        text-decoration: none;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+}
+
+button.icon-button {
+  height: 36px;
+        width: 36px;
+}
+
+button.icon-button iron-icon {
+  color: var(--secondary-text-color);
+        height: 20px;
+        width: 20px;
+}
+
+button.more-vert-button {
+  height: 36px;
+        padding: 6px;
+        width: 36px;
+}
+
+button.more-vert-button div {
+  border: 2px solid var(--secondary-text-color);
+        border-radius: 2px;
+        margin: 1px 10px;
+        pointer-events: none;
+        transform: scale(0.8);
+}
+
+:host {
+  color: #fff;
         display: block;
         transition: background-color 150ms;
         width: 100%;
-      }
+}
 
-      cr-toolbar,
-      #overlay-buttons,
-      #overlay-wrapper,
-      #toolbar-container {
-        align-items: center;
+cr-toolbar, #overlay-buttons, #overlay-wrapper, #toolbar-container {
+  align-items: center;
         display: flex;
         width: 100%;
-      }
+}
 
-      :host([items-selected_]) {
-        background: rgb(68, 136, 255);
-      }
+:host([items-selected_]) {
+  background: rgb(68, 136, 255);
+}
 
-      #toolbar-container {
-        height: var(--toolbar-height);
-      }
+#toolbar-container {
+  height: var(--toolbar-height);
+}
 
-      cr-toolbar {
-        --cr-toolbar-field-margin: var(--side-bar-width);
-      }
+cr-toolbar {
+  --cr-toolbar-field-margin: var(--side-bar-width);
+}
 
-      :host([has-drawer]) cr-toolbar {
-        --cr-toolbar-field-margin: 0;
-      }
+:host([has-drawer]) cr-toolbar {
+  --cr-toolbar-field-margin: 0;
+}
 
-      :host(:not([has-drawer])) #overlay-wrapper {
-        -webkit-margin-start: var(--side-bar-width);
-      }
+:host(:not([has-drawer])) #overlay-wrapper {
+  -webkit-margin-start: var(--side-bar-width);
+}
 
-      #overlay-buttons {
-        margin: 0 auto;
+#overlay-buttons {
+  margin: 0 auto;
         max-width: var(--card-max-width);
         padding: 0 var(--card-padding-side);
-      }
+}
 
-      paper-button {
-        font-weight: 500;
-      }
+paper-button {
+  font-weight: 500;
+}
 
-      #number-selected {
-        flex: 1;
-      }
+#number-selected {
+  flex: 1;
+}
 
-      #cancel-icon-button {
-        -webkit-margin-end: 24px;
+#cancel-icon-button {
+  -webkit-margin-end: 24px;
         -webkit-margin-start: 2px;
         height: 36px;
         min-width: 36px;
         width: 36px;
-      }
+}
 
-      #grouped-nav-container paper-icon-button {
-        --paper-icon-button-ink-color: rgba(255, 255, 255, 0.4);
+#grouped-nav-container paper-icon-button {
+  --paper-icon-button-ink-color: rgba(255, 255, 255, 0.4);
         -webkit-margin-start: 24px;
         flex: 0 0 auto;
-      }
+}
 
-      paper-tab {
-        --paper-tab-ink: rgba(255, 255, 255, 0.4);
+paper-tab {
+  --paper-tab-ink: rgba(255, 255, 255, 0.4);
         font-size: 13px;
         text-transform: uppercase;
-      }
+}
 
-      paper-tabs {
-        --paper-tabs-selection-bar-color: var(--google-blue-500);
+paper-tabs {
+  --paper-tabs-selection-bar-color: var(--google-blue-500);
         height: calc(var(--toolbar-grouped-height) - var(--toolbar-height));
         min-width: 300px;
-      }
+}
 
-      #grouped-buttons-container {
-        align-items: center;
+#grouped-buttons-container {
+  align-items: center;
         display: flex;
-      }
+}
 
-      #grouped-range-buttons {
-        -webkit-margin-start: 32px;
-      }
+#grouped-range-buttons {
+  -webkit-margin-start: 32px;
+}
 
-      #grouped-nav-container {
-        -webkit-margin-end: 24px;
+#grouped-nav-container {
+  -webkit-margin-end: 24px;
         align-items: center;
         display: flex;
         flex: 1;
         justify-content: flex-end;
         overflow: hidden;
         transition: opacity 150ms;
-      }
+}
 
-      :host([grouped-range='0']) #grouped-nav-container {
-        opacity: 0;
+:host([grouped-range='0']) #grouped-nav-container {
+  opacity: 0;
         pointer-events: none;
-      }
+}
 
-      #grouped-date {
-        flex: 0 1 auto;
+#grouped-date {
+  flex: 0 1 auto;
         opacity: 0.7;
         overflow: hidden;
         text-align: right;
         text-overflow: ellipsis;
         white-space: nowrap;
-      }
+}
 
-      :host-context([dir=rtl]) .rtl-reversible {
-        transform: rotate(180deg);
-      }
-    </style>
+:host-context([dir=rtl]) .rtl-reversible {
+  transform: rotate(180deg);
+}
+
+</style>
     <div id="toolbar-container">
       <cr-toolbar id="main-toolbar" page-name="$i18n{title}" clear-label="$i18n{clearSearch}" search-prompt="$i18n{searchPrompt}" hidden$="[[itemsSelected_]]" spinner-active="[[spinnerActive]]" show-menu="[[hasDrawer]]" menu-label="$i18n{historyMenuButton}" on-search-changed="onSearchChanged_">
       </cr-toolbar>
@@ -2733,92 +3125,87 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </template>
   </template>
   </dom-module>
-<dom-module id="cr-dialog" assetpath="chrome://resources/cr_elements/cr_dialog/">
+<dom-module id="cr-dialog" assetpath="chrome://resources/cr_elements/cr_dialog/" css-build="shadow">
   <template>
-    <style>
-      :host {
-        border: 0;
+    <style scope="cr-dialog">:host {
+  border: 0;
         border-radius: 2px;
         bottom: 0;
         color: inherit;
         padding: 0;
         top: 0;
-      }
+}
 
-      :host::backdrop {
-        background-color: rgba(0, 0, 0, 0.6);
+:host::backdrop {
+  background-color: rgba(0, 0, 0, 0.6);
         bottom: 0;
         left: 0;
         position: fixed;
         right: 0;
         top: 0;
-      }
+}
 
-      .title-container {
-        align-items: center;
-        /* TODO(dbeam): should this be a --settings-separator-line? */
+.title-container {
+  align-items: center;
+        
         border-bottom: 1px solid rgba(0, 0, 0, 0.14);
         display: flex;
         min-height: 52px;
-      }
+}
 
-      :host ::content .title {
-        font-size: 123.07%; /* (16px / 13px) * 100 */
-      }
+:host ::content .title {
+  font-size: 123.07%;
+}
 
-      #close {
-        --paper-icon-button: {
-          height: 40px;
-          width: 40px;
-        };
+#close {
+  --paper-icon-button_-_height:  40px; --paper-icon-button_-_width:  40px;;
         -webkit-margin-end: 6px;
-        /* <paper-icon-button> overrides --iron-icon-{height,width}, so this
-         * padding essentially reduces 40x40 to 20x20. */
+        
         padding: 10px;
-      }
+}
 
-      .body-container {
-        display: flex;
+.body-container {
+  display: flex;
         flex-direction: column;
         max-width: 800px;
         min-width: 512px;
-        /* TODO(dbeam): use <paper-dialog-scrollable> to get dividers? */
+        
         overflow: auto;
-      }
+}
 
-      :host ::content .body {
-        margin: 12px 0;
-      }
+:host ::content .body {
+  margin: 12px 0;
+}
 
-      :host ::content .body,
-      :host ::content .title {
-        -webkit-padding-end: 24px;
+:host ::content .body, :host ::content .title {
+  -webkit-padding-end: 24px;
         -webkit-padding-start: 24px;
         flex: 1;
-      }
+}
 
-      :host ::content .button-container {
-        -webkit-padding-end: 16px;
+:host ::content .button-container {
+  -webkit-padding-end: 16px;
         -webkit-padding-start: 16px;
         display: flex;
         justify-content: flex-end;
         margin-bottom: 12px;
         margin-top: 12px;
-      }
+}
 
-      :host ::content .button-container .cancel-button {
-        -webkit-margin-end: 8px;
+:host ::content .button-container .cancel-button {
+  -webkit-margin-end: 8px;
         color: var(--paper-grey-600);
-      }
+}
 
-      :host ::content .footer {
-        background-color: var(--paper-grey-200);
+:host ::content .footer {
+  background-color: var(--paper-grey-200);
         border-bottom-left-radius: inherit;
         border-bottom-right-radius: inherit;
         margin: 0;
         padding: 12px 20px;
-      }
-    </style>
+}
+
+</style>
     <div class="title-container">
       <content select=".title"></content>
       <paper-icon-button icon="cr:clear" on-tap="cancel" id="close">
@@ -2831,12 +3218,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <content select=".footer"></content>
   </template>
   </dom-module>
-<dom-module id="iron-overlay-backdrop" assetpath="chrome://resources/polymer/v1_0/iron-overlay-behavior/">
+<dom-module id="iron-overlay-backdrop" assetpath="chrome://resources/polymer/v1_0/iron-overlay-behavior/" css-build="shadow">
 
   <template>
-    <style>
-      :host {
-        position: fixed;
+    <style scope="iron-overlay-backdrop">:host {
+  position: fixed;
         top: 0;
         left: 0;
         width: 100%;
@@ -2845,15 +3231,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         opacity: 0;
         transition: opacity 0.2s;
         pointer-events: none;
-        @apply(--iron-overlay-backdrop);
-      }
+        ;
+}
 
-      :host(.opened) {
-        opacity: var(--iron-overlay-backdrop-opacity, 0.6);
+:host(.opened) {
+  opacity: var(--iron-overlay-backdrop-opacity, 0.6);
         pointer-events: auto;
-        @apply(--iron-overlay-backdrop-opened);
-      }
-    </style>
+        ;
+}
+
+</style>
 
     <content></content>
   </template>
@@ -2863,21 +3250,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <script src="chrome://resources/polymer/v1_0/web-animations-js/web-animations-next-lite.min.js"></script>
 
 
-<dom-module id="iron-dropdown" assetpath="chrome://resources/polymer/v1_0/iron-dropdown/">
+<dom-module id="iron-dropdown" assetpath="chrome://resources/polymer/v1_0/iron-dropdown/" css-build="shadow">
   <template>
-    <style>
-      :host {
-        position: fixed;
-      }
+    <style scope="iron-dropdown">:host {
+  position: fixed;
+}
 
-      #contentWrapper ::content > * {
-        overflow: auto;
-      }
+#contentWrapper ::content > * {
+  overflow: auto;
+}
 
-      #contentWrapper.animating ::content > * {
-        overflow: hidden;
-      }
-    </style>
+#contentWrapper.animating ::content > * {
+  overflow: hidden;
+}
+
+</style>
 
     <div id="contentWrapper">
       <content id="content" select=".dropdown-content"></content>
@@ -2886,17 +3273,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   </dom-module>
 <link rel="import" href="chrome://resources/html/util.html">
-<dom-module id="cr-shared-menu" assetpath="chrome://resources/cr_elements/cr_shared_menu/">
+<dom-module id="cr-shared-menu" assetpath="chrome://resources/cr_elements/cr_shared_menu/" css-build="shadow">
   <template>
-    <style>
-      #menu {
-        @apply(--shadow-elevation-2dp);
+    <style scope="cr-shared-menu">#menu {
+  box-shadow: var(--shadow-elevation-2dp_-_box-shadow);
         background-color: white;
         overflow: hidden;
         padding: 8px 0;
         position: relative;
-      }
-    </style>
+}
+
+</style>
     <iron-dropdown id="dropdown" allow-outside-scroll="" restore-focus-on-close="" vertical-align="auto" horizontal-align="right" opened="{{menuOpen}}" open-animation-config="[[openAnimationConfig]]" close-animation-config="[[closeAnimationConfig]]">
       <div id="menu" class="dropdown-content" role="menu">
         <content></content>
@@ -2905,183 +3292,227 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </template>
   </dom-module>
 
-<style is="custom-style">
-  :root {
-    --cr-actionable: {
-      cursor: pointer;
-    };
+<style is="custom-style" css-build="shadow">html {
+  --cr-actionable_-_cursor:  pointer;;
     --cr-focused-item-color: var(--google-grey-300);
-    --cr-selectable-focus: {
-      background-color: var(--cr-focused-item-color);
-      outline: none;
-    }
+    --cr-selectable-focus_-_background-color:  var(--cr-focused-item-color); --cr-selectable-focus_-_outline:  none;
     --cr-separator-line: 1px solid rgba(0, 0, 0, 0.06);
-  }
+}
+
 </style>
 
-<dom-module id="cr-shared-style" assetpath="chrome://resources/cr_elements/">
+<dom-module id="cr-shared-style" assetpath="chrome://resources/cr_elements/" css-build="shadow">
   <template>
-    <style>
-      /* Chrome spinners should be blue. */
-      paper-spinner {
-        --paper-spinner-layer-1-color: var(--google-blue-500);
+    <style scope="cr-shared-style">paper-spinner {
+  --paper-spinner-layer-1-color: var(--google-blue-500);
         --paper-spinner-layer-2-color: var(--google-blue-500);
         --paper-spinner-layer-3-color: var(--google-blue-500);
         --paper-spinner-layer-4-color: var(--google-blue-500);
-      }
+}
 
-      .action-button {
-        background: var(--google-blue-500);
+.action-button {
+  background: var(--google-blue-500);
         color: white;
-        --paper-button-flat-keyboard-focus: {
-          background: rgb(58, 117, 215);  /* 88% of --google-blue-500 */
-        };
-      }
+        --paper-button-flat-keyboard-focus_-_background:  rgb(58, 117, 215);;
+}
 
-      .action-button[disabled] {
-        opacity: .25;  /* TODO(dbeam): check this value with bettes. */
-      }
+.action-button[disabled] {
+  opacity: .25;
+}
 
-      .cancel-button {
-        --paper-button-flat-keyboard-focus: {
-          background: rgba(0, 0, 0, .12);
-        };
-      }
+.cancel-button {
+  --paper-button-flat-keyboard-focus_-_background:  rgba(0, 0, 0, .12);;
+}
 
-      .action-button,
-      .cancel-button {
-        font-weight: 500;
-      }
+.action-button, .cancel-button {
+  font-weight: 500;
+}
 
-      [actionable] {
-        @apply(--cr-actionable);
-      }
+[actionable] {
+  cursor: var(--cr-actionable_-_cursor);
+}
 
-      [scrollable] {
-        border-color: transparent;
+[scrollable] {
+  border-color: transparent;
         border-style: solid;
         border-width: 1px 0;
         overflow-y: auto;
-      }
-      [scrollable].is-scrolled {
-        border-top-color: var(--google-grey-300);
-      }
-      [scrollable].can-scroll:not(.scrolled-to-bottom) {
-        border-bottom-color: var(--google-grey-300);
-      }
-      [scrollable] :focus {
-        @apply(--cr-list-item-focus);
-        @apply(--cr-selectable-focus);
-      }
-      [scrollable] iron-list > * {
-        @apply(--cr-actionable);
-      }
+}
 
-      [selectable] :focus {
-        @apply(--cr-selectable-focus);
-      }
-      [selectable] > * {
-        @apply(--cr-actionable);
-      }
-    </style>
+[scrollable].is-scrolled {
+  border-top-color: var(--google-grey-300);
+}
+
+[scrollable].can-scroll:not(.scrolled-to-bottom) {
+  border-bottom-color: var(--google-grey-300);
+}
+
+[scrollable] :focus {
+  ;
+        background-color: var(--cr-selectable-focus_-_background-color); outline: var(--cr-selectable-focus_-_outline);
+}
+
+[scrollable] iron-list > * {
+  cursor: var(--cr-actionable_-_cursor);
+}
+
+[selectable] :focus {
+  background-color: var(--cr-selectable-focus_-_background-color); outline: var(--cr-selectable-focus_-_outline);
+}
+
+[selectable] > * {
+  cursor: var(--cr-actionable_-_cursor);
+}
+
+</style>
   </template>
 </dom-module>
 
 
-<dom-module id="paper-item-shared-styles" assetpath="chrome://resources/polymer/v1_0/paper-item/">
+<dom-module id="paper-item-shared-styles" assetpath="chrome://resources/polymer/v1_0/paper-item/" css-build="shadow">
   <template>
-    <style>
-      :host, .paper-item {
-        display: block;
+    <style scope="paper-item-shared-styles">:host, .paper-item {
+  display: block;
         position: relative;
         min-height: var(--paper-item-min-height, 48px);
         padding: 0px 16px;
-      }
+}
 
-      .paper-item {
-        @apply(--paper-font-subhead);
+.paper-item {
+  font-family: var(--paper-font-subhead_-_font-family); -webkit-font-smoothing: var(--paper-font-subhead_-_-webkit-font-smoothing); font-size: var(--paper-font-subhead_-_font-size); font-weight: var(--paper-font-subhead_-_font-weight); line-height: var(--paper-font-subhead_-_line-height);
         border:none;
         outline: none;
         background: white;
         width: 100%;
         text-align: left;
-      }
+}
 
-      :host([hidden]), .paper-item[hidden] {
-        display: none !important;
-      }
+:host([hidden]), .paper-item[hidden] {
+  display: none !important;
+}
 
-      :host(.iron-selected), .paper-item.iron-selected {
-        font-weight: var(--paper-item-selected-weight, bold);
+:host(.iron-selected), .paper-item.iron-selected {
+  font-weight: var(--paper-item-selected-weight, bold);
 
-        @apply(--paper-item-selected);
-      }
+        ;
+}
 
-      :host([disabled]), .paper-item[disabled] {
-        color: var(--paper-item-disabled-color, --disabled-text-color);
+:host([disabled]), .paper-item[disabled] {
+  color: var(--paper-item-disabled-color,var(--disabled-text-color));;
 
-        @apply(--paper-item-disabled);
-      }
+        ;
+}
 
-      :host(:focus), .paper-item:focus {
-        position: relative;
+:host(:focus), .paper-item:focus {
+  position: relative;
         outline: 0;
 
-        @apply(--paper-item-focused);
-      }
+        ;
+}
 
-      :host(:focus):before, .paper-item:focus:before {
-        @apply(--layout-fit);
+:host(:focus):before, .paper-item:focus:before {
+  position: var(--layout-fit_-_position); top: var(--layout-fit_-_top); right: var(--layout-fit_-_right); bottom: var(--layout-fit_-_bottom); left: var(--layout-fit_-_left);
 
         background: currentColor;
         content: '';
         opacity: var(--dark-divider-opacity);
         pointer-events: none;
 
-        @apply(--paper-item-focused-before);
-      }
-    </style>
+        ;
+}
+
+</style>
   </template>
 </dom-module>
 
 
-<dom-module id="paper-item" assetpath="chrome://resources/polymer/v1_0/paper-item/">
+<dom-module id="paper-item" assetpath="chrome://resources/polymer/v1_0/paper-item/" css-build="shadow">
   <template>
-    <style include="paper-item-shared-styles"></style>
-    <style>
-      :host {
-        @apply(--layout-horizontal);
-        @apply(--layout-center);
-        @apply(--paper-font-subhead);
+    
+    <style scope="paper-item">:host, .paper-item {
+  display: block;
+        position: relative;
+        min-height: var(--paper-item-min-height, 48px);
+        padding: 0px 16px;
+}
 
-        @apply(--paper-item);
-      }
-    </style>
+.paper-item {
+  font-family: var(--paper-font-subhead_-_font-family); -webkit-font-smoothing: var(--paper-font-subhead_-_-webkit-font-smoothing); font-size: var(--paper-font-subhead_-_font-size); font-weight: var(--paper-font-subhead_-_font-weight); line-height: var(--paper-font-subhead_-_line-height);
+        border:none;
+        outline: none;
+        background: white;
+        width: 100%;
+        text-align: left;
+}
+
+:host([hidden]), .paper-item[hidden] {
+  display: none !important;
+}
+
+:host(.iron-selected), .paper-item.iron-selected {
+  font-weight: var(--paper-item-selected-weight, bold);
+
+        ;
+}
+
+:host([disabled]), .paper-item[disabled] {
+  color: var(--paper-item-disabled-color,var(--disabled-text-color));;
+
+        ;
+}
+
+:host(:focus), .paper-item:focus {
+  position: relative;
+        outline: 0;
+
+        ;
+}
+
+:host(:focus):before, .paper-item:focus:before {
+  position: var(--layout-fit_-_position); top: var(--layout-fit_-_top); right: var(--layout-fit_-_right); bottom: var(--layout-fit_-_bottom); left: var(--layout-fit_-_left);
+
+        background: currentColor;
+        content: '';
+        opacity: var(--dark-divider-opacity);
+        pointer-events: none;
+
+        ;
+}
+
+:host {
+  display: var(--layout-horizontal_-_display); -ms-flex-direction: var(--layout-horizontal_-_-ms-flex-direction); -webkit-flex-direction: var(--layout-horizontal_-_-webkit-flex-direction); flex-direction: var(--layout-horizontal_-_flex-direction);
+        -ms-flex-align: var(--layout-center_-_-ms-flex-align); -webkit-align-items: var(--layout-center_-_-webkit-align-items); align-items: var(--layout-center_-_align-items);
+        font-family: var(--paper-font-subhead_-_font-family); -webkit-font-smoothing: var(--paper-font-subhead_-_-webkit-font-smoothing); font-size: var(--paper-font-subhead_-_font-size); font-weight: var(--paper-font-subhead_-_font-weight); line-height: var(--paper-font-subhead_-_line-height);
+
+        ;
+}
+
+</style>
 
     <content></content>
   </template>
 
   </dom-module>
 <link rel="import" href="chrome://history/constants.html">
-<dom-module id="iron-collapse" assetpath="chrome://resources/polymer/v1_0/iron-collapse/">
+<dom-module id="iron-collapse" assetpath="chrome://resources/polymer/v1_0/iron-collapse/" css-build="shadow">
 
   <template>
 
-    <style>
-      :host {
-        display: block;
+    <style scope="iron-collapse">:host {
+  display: block;
         transition-duration: var(--iron-collapse-transition-duration, 300ms);
         overflow: visible;
-      }
+}
 
-      :host(.iron-collapse-closed) {
-        display: none;
-      }
+:host(.iron-collapse-closed) {
+  display: none;
+}
 
-      :host(:not(.iron-collapse-opened)) {
-        overflow: hidden;
-      }
-    </style>
+:host(:not(.iron-collapse-opened)) {
+  overflow: hidden;
+}
+
+</style>
 
     <content></content>
 
@@ -3089,33 +3520,32 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 </dom-module>
 
-<dom-module id="paper-checkbox" assetpath="chrome://resources/polymer/v1_0/paper-checkbox/">
+<dom-module id="paper-checkbox" assetpath="chrome://resources/polymer/v1_0/paper-checkbox/" css-build="shadow">
   <template strip-whitespace="">
-    <style>
-      :host {
-        display: inline-block;
+    <style scope="paper-checkbox">:host {
+  display: inline-block;
         white-space: nowrap;
         cursor: pointer;
         --calculated-paper-checkbox-size: var(--paper-checkbox-size, 18px);
-        @apply(--paper-font-common-base);
+        font-family: var(--paper-font-common-base_-_font-family); -webkit-font-smoothing: var(--paper-font-common-base_-_-webkit-font-smoothing);
         line-height: 0;
         -webkit-tap-highlight-color: transparent;
-      }
+}
 
-      :host([hidden]) {
-        display: none !important;
-      }
+:host([hidden]) {
+  display: none !important;
+}
 
-      :host(:focus) {
-        outline: none;
-      }
+:host(:focus) {
+  outline: none;
+}
 
-      .hidden {
-        display: none;
-      }
+.hidden {
+  display: none;
+}
 
-      #checkboxContainer {
-        display: inline-block;
+#checkboxContainer {
+  display: inline-block;
         position: relative;
         width: var(--calculated-paper-checkbox-size);
         height: var(--calculated-paper-checkbox-size);
@@ -3123,74 +3553,76 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         margin: var(--paper-checkbox-margin, initial);
         vertical-align: var(--paper-checkbox-vertical-align, middle);
         background-color: var(--paper-checkbox-unchecked-background-color, transparent);
-      }
+}
 
-      #ink {
-        position: absolute;
+#ink {
+  position: absolute;
 
-        /* Center the ripple in the checkbox by negative offsetting it by
-         * (inkWidth - rippleWidth) / 2 */
+        
         top: calc(0px - (2.66 * var(--calculated-paper-checkbox-size) - var(--calculated-paper-checkbox-size)) / 2);
         left: calc(0px - (2.66 * var(--calculated-paper-checkbox-size) - var(--calculated-paper-checkbox-size)) / 2);
         width: calc(2.66 * var(--calculated-paper-checkbox-size));
         height: calc(2.66 * var(--calculated-paper-checkbox-size));
-        color: var(--paper-checkbox-unchecked-ink-color, --primary-text-color);
+        color: var(--paper-checkbox-unchecked-ink-color,var(--primary-text-color));;
         opacity: 0.6;
         pointer-events: none;
-      }
+}
 
-      :host-context([dir="rtl"]) #ink {
-        right: calc(0px - (2.66 * var(--calculated-paper-checkbox-size) - var(--calculated-paper-checkbox-size)) / 2);
+:host-context([dir="rtl"]) #ink {
+  right: calc(0px - (2.66 * var(--calculated-paper-checkbox-size) - var(--calculated-paper-checkbox-size)) / 2);
         left: auto;
-      }
+}
 
-      #ink[checked] {
-        color: var(--paper-checkbox-checked-ink-color, --primary-color);
-      }
+#ink[checked] {
+  color: var(--paper-checkbox-checked-ink-color,var(--primary-color));;
+}
 
-      #checkbox {
-        position: relative;
+#checkbox {
+  position: relative;
         box-sizing: border-box;
         height: 100%;
         border: solid 2px;
-        border-color: var(--paper-checkbox-unchecked-color, --primary-text-color);
+        border-color: var(--paper-checkbox-unchecked-color,var(--primary-text-color));;
         border-radius: 2px;
         pointer-events: none;
         -webkit-transition: background-color 140ms, border-color 140ms;
         transition: background-color 140ms, border-color 140ms;
-      }
+}
 
-      /* checkbox checked animations */
-      #checkbox.checked #checkmark {
-        -webkit-animation: checkmark-expand 140ms ease-out forwards;
+#checkbox.checked #checkmark {
+  -webkit-animation: checkmark-expand 140ms ease-out forwards;
         animation: checkmark-expand 140ms ease-out forwards;
-      }
+}
 
-      @-webkit-keyframes checkmark-expand {
-        0% {
-          -webkit-transform: scale(0, 0) rotate(45deg);
-        }
-        100% {
-          -webkit-transform: scale(1, 1) rotate(45deg);
-        }
-      }
+@-webkit-keyframes checkmark-expand {
+0% {
+  -webkit-transform: scale(0, 0) rotate(45deg);
+}
 
-      @keyframes checkmark-expand {
-        0% {
-          transform: scale(0, 0) rotate(45deg);
-        }
-        100% {
-          transform: scale(1, 1) rotate(45deg);
-        }
-      }
+100% {
+  -webkit-transform: scale(1, 1) rotate(45deg);
+}
 
-      #checkbox.checked {
-        background-color: var(--paper-checkbox-checked-color, --primary-color);
-        border-color: var(--paper-checkbox-checked-color, --primary-color);
-      }
+}
 
-      #checkmark {
-        position: absolute;
+@keyframes checkmark-expand {
+0% {
+  transform: scale(0, 0) rotate(45deg);
+}
+
+100% {
+  transform: scale(1, 1) rotate(45deg);
+}
+
+}
+
+#checkbox.checked {
+  background-color: var(--paper-checkbox-checked-color,var(--primary-color));;
+        border-color: var(--paper-checkbox-checked-color,var(--primary-color));;
+}
+
+#checkmark {
+  position: absolute;
         width: 36%;
         height: 70%;
         border-style: solid;
@@ -3201,61 +3633,58 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         border-color: var(--paper-checkbox-checkmark-color, white);
         -webkit-transform-origin: 97% 86%;
         transform-origin: 97% 86%;
-        box-sizing: content-box; /* protect against page-level box-sizing */
-      }
+        box-sizing: content-box;
+}
 
-      :host-context([dir="rtl"]) #checkmark {
-        -webkit-transform-origin: 50% 14%;
+:host-context([dir="rtl"]) #checkmark {
+  -webkit-transform-origin: 50% 14%;
         transform-origin: 50% 14%;
-      }
+}
 
-      /* label */
-      #checkboxLabel {
-        position: relative;
+#checkboxLabel {
+  position: relative;
         display: inline-block;
         vertical-align: middle;
         padding-left: var(--paper-checkbox-label-spacing, 8px);
         white-space: normal;
         line-height: normal;
-        color: var(--paper-checkbox-label-color, --primary-text-color);
-        @apply(--paper-checkbox-label);
-      }
+        color: var(--paper-checkbox-label-color,var(--primary-text-color));;
+        ;
+}
 
-      :host([checked]) #checkboxLabel {
-        color: var(--paper-checkbox-label-checked-color, --paper-checkbox-label-color);
-        @apply(--paper-checkbox-label-checked);
-      }
+:host([checked]) #checkboxLabel {
+  color: var(--paper-checkbox-label-checked-color,var(--paper-checkbox-label-color));;
+        ;
+}
 
-      :host-context([dir="rtl"]) #checkboxLabel {
-        padding-right: var(--paper-checkbox-label-spacing, 8px);
+:host-context([dir="rtl"]) #checkboxLabel {
+  padding-right: var(--paper-checkbox-label-spacing, 8px);
         padding-left: 0;
-      }
+}
 
-      #checkboxLabel[hidden] {
-        display: none;
-      }
+#checkboxLabel[hidden] {
+  display: none;
+}
 
-      /* disabled state */
+:host([disabled]) #checkbox {
+  opacity: 0.5;
+        border-color: var(--paper-checkbox-unchecked-color,var(--primary-text-color));;
+}
 
-      :host([disabled]) #checkbox {
+:host([disabled][checked]) #checkbox {
+  background-color: var(--paper-checkbox-unchecked-color,var(--primary-text-color));;
         opacity: 0.5;
-        border-color: var(--paper-checkbox-unchecked-color, --primary-text-color);
-      }
+}
 
-      :host([disabled][checked]) #checkbox {
-        background-color: var(--paper-checkbox-unchecked-color, --primary-text-color);
-        opacity: 0.5;
-      }
+:host([disabled]) #checkboxLabel {
+  opacity: 0.65;
+}
 
-      :host([disabled]) #checkboxLabel  {
-        opacity: 0.65;
-      }
+#checkbox.invalid:not(.checked) {
+  border-color: var(--paper-checkbox-error-color,var(--error-color));;
+}
 
-      /* invalid state */
-      #checkbox.invalid:not(.checked) {
-        border-color: var(--paper-checkbox-error-color, --error-color);
-      }
-    </style>
+</style>
 
     <div id="checkboxContainer">
       <div id="checkbox" class$="[[_computeCheckboxClass(checked, invalid)]]">
@@ -3267,11 +3696,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </template>
 
   </dom-module>
-<dom-module id="paper-icon-button-light" assetpath="chrome://resources/polymer/v1_0/paper-icon-button/">
+<dom-module id="paper-icon-button-light" assetpath="chrome://resources/polymer/v1_0/paper-icon-button/" css-build="shadow">
   <template strip-whitespace="">
-    <style>
-      :host {
-        vertical-align: middle;
+    <style scope="paper-icon-button-light">:host {
+  vertical-align: middle;
         color: inherit;
         outline: none;
         width: 24px;
@@ -3284,158 +3712,234 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         position: relative;
         cursor: pointer;
 
-        /* NOTE: Both values are needed, since some phones require the value to be `transparent`. */
+        
         -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
         -webkit-tap-highlight-color: transparent;
-      }
+}
 
-      :host([disabled]) {
-        color: #9b9b9b;
+:host([disabled]) {
+  color: #9b9b9b;
         pointer-events: none;
         cursor: auto;
-      }
+}
 
-      paper-ripple {
-        opacity: 0.6;
+paper-ripple {
+  opacity: 0.6;
         color: currentColor;
-      }
-    </style>
+}
+
+</style>
     <content></content>
   </template>
   </dom-module>
-<dom-module id="history-searched-label" assetpath="chrome://history/">
+<dom-module id="history-searched-label" assetpath="chrome://history/" css-build="shadow">
   <template>
     <span id="container"></span>
   </template>
   </dom-module>
-<dom-module id="history-item" assetpath="chrome://history/">
+<dom-module id="history-item" assetpath="chrome://history/" css-build="shadow">
   <template>
-    <style include="shared-style">
-      :host {
-        display: block;
-      }
+    <style scope="history-item">[hidden] {
+  display: none !important;
+}
 
-      :host(:not([embedded])) #main-container {
-        position: relative;
-      }
-
-      :host(:not([embedded])) #sizing-container {
-        @apply(--card-sizing);
-      }
-
-      :host([is-first-item]) #main-container {
-        margin-top: var(--first-card-padding-top);
-      }
-
-      :host([is-card-end]) #main-container {
-        margin-bottom: var(--card-padding-between);
-      }
-
-      :host([is-card-start][is-card-end]) #main-container {
-        border-radius: 2px;
-      }
-
-      #date-accessed {
-        display: none;
-      }
-
-      :host([is-card-start]) #date-accessed {
-        display: flex;
-      }
-
-      #item-container {
+.card-title {
+  -webkit-padding-start: 20px;
         align-items: center;
+        border-bottom: 1px solid var(--card-border-color);
+        border-radius: 2px 2px 0 0;
+        color: var(--primary-text-color);
+        display: flex;
+        font-size: 14px;
+        font-weight: 500;
+        height: 48px;
+}
+
+.centered-message {
+  align-items: center;
+        color: #b4b4b4;
+        display: flex;
+        flex: 1;
+        font-size: 14px;
+        font-weight: 500;
+        height: 100%;
+        justify-content: center;
+}
+
+.menu-item {
+  -webkit-user-select: none;
+        cursor: pointer;
+        font: inherit;
+        white-space: nowrap;
+}
+
+.website-icon {
+  -webkit-margin-end: 16px;
+        background-repeat: no-repeat;
+        background-size: 16px;
+        height: 16px;
+        width: 16px;
+}
+
+.website-title {
+  color: var(--primary-text-color);
+        overflow: hidden;
+        text-decoration: none;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+}
+
+button.icon-button {
+  height: 36px;
+        width: 36px;
+}
+
+button.icon-button iron-icon {
+  color: var(--secondary-text-color);
+        height: 20px;
+        width: 20px;
+}
+
+button.more-vert-button {
+  height: 36px;
+        padding: 6px;
+        width: 36px;
+}
+
+button.more-vert-button div {
+  border: 2px solid var(--secondary-text-color);
+        border-radius: 2px;
+        margin: 1px 10px;
+        pointer-events: none;
+        transform: scale(0.8);
+}
+
+:host {
+  display: block;
+}
+
+:host(:not([embedded])) #main-container {
+  position: relative;
+}
+
+:host(:not([embedded])) #sizing-container {
+  margin: var(--card-sizing_-_margin); max-width: var(--card-sizing_-_max-width); min-width: var(--card-sizing_-_min-width); padding: var(--card-sizing_-_padding); width: var(--card-sizing_-_width);
+}
+
+:host([is-first-item]) #main-container {
+  margin-top: var(--first-card-padding-top);
+}
+
+:host([is-card-end]) #main-container {
+  margin-bottom: var(--card-padding-between);
+}
+
+:host([is-card-start][is-card-end]) #main-container {
+  border-radius: 2px;
+}
+
+#date-accessed {
+  display: none;
+}
+
+:host([is-card-start]) #date-accessed {
+  display: flex;
+}
+
+#item-container {
+  align-items: center;
         display: flex;
         min-height: var(--item-height);
-      }
+}
 
-      :host([is-card-start]) #item-container {
-        padding-top: var(--card-first-last-item-padding);
-      }
+:host([is-card-start]) #item-container {
+  padding-top: var(--card-first-last-item-padding);
+}
 
-      :host([is-card-end]) #item-container {
-        padding-bottom: var(--card-first-last-item-padding);
-      }
+:host([is-card-end]) #item-container {
+  padding-bottom: var(--card-first-last-item-padding);
+}
 
-      #title-and-domain {
-        align-items: center;
+#title-and-domain {
+  align-items: center;
         display: flex;
         flex: 1;
         height: var(--item-height);
         overflow: hidden;
-      }
+}
 
-      paper-checkbox {
-        --paper-checkbox-checked-color: rgb(68, 136, 255);
+paper-checkbox {
+  --paper-checkbox-checked-color: rgb(68, 136, 255);
         --paper-checkbox-size: 16px;
         --paper-checkbox-unchecked-color: var(--secondary-text-color);
         height: 16px;
         margin: 0 16px 0 20px;
         padding: 2px;
         width: 16px;
-      }
+}
 
-      #time-accessed {
-        color: #646464;
+#time-accessed {
+  color: #646464;
         min-width: 96px;
-      }
+}
 
-      #domain {
-        -webkit-margin-start: 16px;
+#domain {
+  -webkit-margin-start: 16px;
         color: var(--secondary-text-color);
         flex-shrink: 0;
-      }
+}
 
-      #menu-button {
-        -webkit-margin-end: 12px;
-      }
+#menu-button {
+  -webkit-margin-end: 12px;
+}
 
-      #star-container {
-        -webkit-margin-end: 4px;
+#star-container {
+  -webkit-margin-end: 4px;
         -webkit-margin-start: 12px;
         width: 32px;
-      }
+}
 
-      #bookmark-star {
-        color: rgb(68, 136, 255);
+#bookmark-star {
+  color: rgb(68, 136, 255);
         height: 32px;
         width: 32px;
-      }
+}
 
-      #bookmark-star iron-icon {
-        height: 16px;
+#bookmark-star iron-icon {
+  height: 16px;
         width: 16px;
-      }
+}
 
-      #time-gap-separator {
-        -webkit-border-start: 1px solid #888;
+#time-gap-separator {
+  -webkit-border-start: 1px solid #888;
         -webkit-margin-start: 77px;
         height: 15px;
-      }
+}
 
-      #background {
-        background: #fff;
-        bottom: -1px;  /* Prevents shadow artifacts when zoomed */
+#background {
+  background: #fff;
+        bottom: -1px;  
         left: 0;
         position: absolute;
         right: 0;
         top: 0;
         z-index: -1;
-      }
+}
 
-      :host([embedded]) #background {
-        display: none;
-      }
+:host([embedded]) #background {
+  display: none;
+}
 
-      :host([is-card-start]) #background {
-        border-radius: 2px 2px 0 0;
-      }
+:host([is-card-start]) #background {
+  border-radius: 2px 2px 0 0;
+}
 
-      :host([is-card-end]) #background {
-        border-radius: 0 0 2px 2px;
+:host([is-card-end]) #background {
+  border-radius: 0 0 2px 2px;
         bottom: 0;
-      }
-    </style>
+}
+
+</style>
 
     <div id="sizing-container">
       <div id="main-container">
@@ -3472,65 +3976,140 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </div>
   </template>
   </dom-module>
-<dom-module id="history-grouped-list" assetpath="chrome://history/">
+<dom-module id="history-grouped-list" assetpath="chrome://history/" css-build="shadow">
   <template>
-    <style include="shared-style">
-      :host {
-        display: block;
+    <style scope="history-grouped-list">[hidden] {
+  display: none !important;
+}
+
+.card-title {
+  -webkit-padding-start: 20px;
+        align-items: center;
+        border-bottom: 1px solid var(--card-border-color);
+        border-radius: 2px 2px 0 0;
+        color: var(--primary-text-color);
+        display: flex;
+        font-size: 14px;
+        font-weight: 500;
+        height: 48px;
+}
+
+.centered-message {
+  align-items: center;
+        color: #b4b4b4;
+        display: flex;
+        flex: 1;
+        font-size: 14px;
+        font-weight: 500;
+        height: 100%;
+        justify-content: center;
+}
+
+.menu-item {
+  -webkit-user-select: none;
+        cursor: pointer;
+        font: inherit;
+        white-space: nowrap;
+}
+
+.website-icon {
+  -webkit-margin-end: 16px;
+        background-repeat: no-repeat;
+        background-size: 16px;
+        height: 16px;
+        width: 16px;
+}
+
+.website-title {
+  color: var(--primary-text-color);
+        overflow: hidden;
+        text-decoration: none;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+}
+
+button.icon-button {
+  height: 36px;
+        width: 36px;
+}
+
+button.icon-button iron-icon {
+  color: var(--secondary-text-color);
+        height: 20px;
+        width: 20px;
+}
+
+button.more-vert-button {
+  height: 36px;
+        padding: 6px;
+        width: 36px;
+}
+
+button.more-vert-button div {
+  border: 2px solid var(--secondary-text-color);
+        border-radius: 2px;
+        margin: 1px 10px;
+        pointer-events: none;
+        transform: scale(0.8);
+}
+
+:host {
+  display: block;
         overflow: auto;
         position: relative;
-      }
+}
 
-      #main-container {
-        @apply(--card-sizing);
+#main-container {
+  margin: var(--card-sizing_-_margin); max-width: var(--card-sizing_-_max-width); min-width: var(--card-sizing_-_min-width); padding: var(--card-sizing_-_padding); width: var(--card-sizing_-_width);
         align-items: center;
         display: flex;
         flex-direction: column;
         padding-top: var(--first-card-padding-top);
-      }
+}
 
-      .domain-heading {
-        align-items: center;
+.domain-heading {
+  align-items: center;
         display: flex;
         height: var(--item-height);
         padding: 0 20px;
-      }
+}
 
-      .domain-count {
-        color: rgb(151, 156, 160);
+.domain-count {
+  color: rgb(151, 156, 160);
         padding-left: 10px;
-      }
+}
 
-      .domain-heading-text {
-        display: flex;
-      }
+.domain-heading-text {
+  display: flex;
+}
 
-      .group-container {
-        @apply(--card-box-shadow);
+.group-container {
+  box-shadow: var(--card-box-shadow_-_box-shadow);
         background: #fff;
         border-radius: 2px;
         margin-bottom: var(--card-padding-between);
         max-width: var(--card-max-width);
         min-width: var(--card-min-width);
         width: 100%;
-      }
+}
 
-      .card-title {
-        margin-bottom: var(--card-first-last-item-padding);
-      }
+.card-title {
+  margin-bottom: var(--card-first-last-item-padding);
+}
 
-      .domain-heading-text {
-        flex: 1 1 0;
-      }
+.domain-heading-text {
+  flex: 1 1 0;
+}
 
-      .dropdown-indicator {
-        max-width: 16px;
-      }
+.dropdown-indicator {
+  max-width: 16px;
+}
 
-      history-item {
-        padding-left: 20px;
-      }
-    </style>
+history-item {
+  padding-left: 20px;
+}
+
+</style>
     <div id="no-results" class="centered-message" hidden$="[[hasResults(groupedHistoryData_.length)]]">
       [[noResultsMessage(searchedTerm, querying)]]
     </div>
@@ -3570,37 +4149,38 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </dom-module>
 
 
-<dom-module id="iron-list" assetpath="chrome://resources/polymer/v1_0/iron-list/">
+<dom-module id="iron-list" assetpath="chrome://resources/polymer/v1_0/iron-list/" css-build="shadow">
   <template>
-    <style>
-      :host {
-        display: block;
+    <style scope="iron-list">:host {
+  display: block;
         position: relative;
-      }
+}
 
-      @media only screen and (-webkit-max-device-pixel-ratio: 1) {
-        :host {
-          will-change: transform;
-        }
-      }
+@media only screen and (-webkit-max-device-pixel-ratio: 1) {
+:host {
+  will-change: transform;
+}
 
-      #items {
-        @apply(--iron-list-items-container);
+}
+
+#items {
+  ;
         position: relative;
-      }
+}
 
-      :host(:not([grid])) #items > ::content > * {
-        width: 100%;
-      };
+:host(:not([grid])) #items > ::content > * {
+  width: 100%;
+}
 
-      #items > ::content > * {
-        box-sizing: border-box;
+#items > ::content > * {
+  box-sizing: border-box;
         margin: 0;
         position: absolute;
         top: 0;
         will-change: transform;
-      }
-    </style>
+}
+
+</style>
 
     <array-selector id="selector" items="{{items}}" selected="{{selectedItems}}" selected-item="{{selectedItem}}">
     </array-selector>
@@ -3612,35 +4192,110 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </template>
 </dom-module>
 
-<dom-module id="iron-scroll-threshold" assetpath="chrome://resources/polymer/v1_0/iron-scroll-threshold/">
+<dom-module id="iron-scroll-threshold" assetpath="chrome://resources/polymer/v1_0/iron-scroll-threshold/" css-build="shadow">
   <template>
-    <style>
-      :host {
-        display: block;
-      }
-    </style>
+    <style scope="iron-scroll-threshold">:host {
+  display: block;
+}
+
+</style>
 
     <content></content>
 
   </template>
 </dom-module>
 
-<dom-module id="history-list" assetpath="chrome://history/">
+<dom-module id="history-list" assetpath="chrome://history/" css-build="shadow">
   <template>
-    <style include="shared-style">
-      :host {
-        display: block;
+    <style scope="history-list">[hidden] {
+  display: none !important;
+}
+
+.card-title {
+  -webkit-padding-start: 20px;
+        align-items: center;
+        border-bottom: 1px solid var(--card-border-color);
+        border-radius: 2px 2px 0 0;
+        color: var(--primary-text-color);
+        display: flex;
+        font-size: 14px;
+        font-weight: 500;
+        height: 48px;
+}
+
+.centered-message {
+  align-items: center;
+        color: #b4b4b4;
+        display: flex;
+        flex: 1;
+        font-size: 14px;
+        font-weight: 500;
+        height: 100%;
+        justify-content: center;
+}
+
+.menu-item {
+  -webkit-user-select: none;
+        cursor: pointer;
+        font: inherit;
+        white-space: nowrap;
+}
+
+.website-icon {
+  -webkit-margin-end: 16px;
+        background-repeat: no-repeat;
+        background-size: 16px;
+        height: 16px;
+        width: 16px;
+}
+
+.website-title {
+  color: var(--primary-text-color);
+        overflow: hidden;
+        text-decoration: none;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+}
+
+button.icon-button {
+  height: 36px;
+        width: 36px;
+}
+
+button.icon-button iron-icon {
+  color: var(--secondary-text-color);
+        height: 20px;
+        width: 20px;
+}
+
+button.more-vert-button {
+  height: 36px;
+        padding: 6px;
+        width: 36px;
+}
+
+button.more-vert-button div {
+  border: 2px solid var(--secondary-text-color);
+        border-radius: 2px;
+        margin: 1px 10px;
+        pointer-events: none;
+        transform: scale(0.8);
+}
+
+:host {
+  display: block;
         overflow: auto;
-      }
+}
 
-      #infinite-list {
-        @apply(--card-container-filter);
-      }
+#infinite-list {
+  filter: var(--card-container-filter_-_filter);
+}
 
-      history-item {
-        --history-item-padding-side: var(--card-padding-side);
-      }
-    </style>
+history-item {
+  --history-item-padding-side: var(--card-padding-side);
+}
+
+</style>
     <div id="no-results" class="centered-message" hidden$="[[hasResults(historyData_.length)]]">
       {{noResultsMessage(searchedTerm, querying)}}
     </div>
@@ -3654,24 +4309,159 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </iron-scroll-threshold>
   </template>
   </dom-module>
-<dom-module id="history-list-container" assetpath="chrome://history/">
+<dom-module id="history-list-container" assetpath="chrome://history/" css-build="shadow">
   <template>
-    <style include="shared-style cr-shared-style">
-      :host {
-        display: block;
+    <style scope="history-list-container">[hidden] {
+  display: none !important;
+}
+
+.card-title {
+  -webkit-padding-start: 20px;
+        align-items: center;
+        border-bottom: 1px solid var(--card-border-color);
+        border-radius: 2px 2px 0 0;
+        color: var(--primary-text-color);
+        display: flex;
+        font-size: 14px;
+        font-weight: 500;
+        height: 48px;
+}
+
+.centered-message {
+  align-items: center;
+        color: #b4b4b4;
+        display: flex;
+        flex: 1;
+        font-size: 14px;
+        font-weight: 500;
+        height: 100%;
+        justify-content: center;
+}
+
+.menu-item {
+  -webkit-user-select: none;
+        cursor: pointer;
+        font: inherit;
+        white-space: nowrap;
+}
+
+.website-icon {
+  -webkit-margin-end: 16px;
+        background-repeat: no-repeat;
+        background-size: 16px;
+        height: 16px;
+        width: 16px;
+}
+
+.website-title {
+  color: var(--primary-text-color);
+        overflow: hidden;
+        text-decoration: none;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+}
+
+button.icon-button {
+  height: 36px;
+        width: 36px;
+}
+
+button.icon-button iron-icon {
+  color: var(--secondary-text-color);
+        height: 20px;
+        width: 20px;
+}
+
+button.more-vert-button {
+  height: 36px;
+        padding: 6px;
+        width: 36px;
+}
+
+button.more-vert-button div {
+  border: 2px solid var(--secondary-text-color);
+        border-radius: 2px;
+        margin: 1px 10px;
+        pointer-events: none;
+        transform: scale(0.8);
+}
+
+paper-spinner {
+  --paper-spinner-layer-1-color: var(--google-blue-500);
+        --paper-spinner-layer-2-color: var(--google-blue-500);
+        --paper-spinner-layer-3-color: var(--google-blue-500);
+        --paper-spinner-layer-4-color: var(--google-blue-500);
+}
+
+.action-button {
+  background: var(--google-blue-500);
+        color: white;
+        --paper-button-flat-keyboard-focus_-_background:  rgb(58, 117, 215);;
+}
+
+.action-button[disabled] {
+  opacity: .25;
+}
+
+.cancel-button {
+  --paper-button-flat-keyboard-focus_-_background:  rgba(0, 0, 0, .12);;
+}
+
+.action-button, .cancel-button {
+  font-weight: 500;
+}
+
+[actionable] {
+  cursor: var(--cr-actionable_-_cursor);
+}
+
+[scrollable] {
+  border-color: transparent;
+        border-style: solid;
+        border-width: 1px 0;
+        overflow-y: auto;
+}
+
+[scrollable].is-scrolled {
+  border-top-color: var(--google-grey-300);
+}
+
+[scrollable].can-scroll:not(.scrolled-to-bottom) {
+  border-bottom-color: var(--google-grey-300);
+}
+
+[scrollable] :focus {
+  ;
+        background-color: var(--cr-selectable-focus_-_background-color); outline: var(--cr-selectable-focus_-_outline);
+}
+
+[scrollable] iron-list > * {
+  cursor: var(--cr-actionable_-_cursor);
+}
+
+[selectable] :focus {
+  background-color: var(--cr-selectable-focus_-_background-color); outline: var(--cr-selectable-focus_-_outline);
+}
+
+[selectable] > * {
+  cursor: var(--cr-actionable_-_cursor);
+}
+
+:host {
+  display: block;
         height: 100%;
         overflow: hidden;
-      }
+}
 
-      #content,
-      #content > * {
-        height: 100%;
-      }
+#content, #content > * {
+  height: 100%;
+}
 
-      dialog .body {
-        white-space: pre-wrap;
-      }
-    </style>
+dialog .body {
+  white-space: pre-wrap;
+}
+
+</style>
     <iron-pages id="content" attr-for-selected="id" selected="[[selectedPage_]]">
       <history-list id="infinite-list" querying="[[queryState.querying]]" searched-term="[[queryResult.info.term]]"></history-list>
       <template is="dom-if" if="[[grouped]]">
@@ -3707,60 +4497,135 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </template>
   </template>
   </dom-module>
-<dom-module id="history-synced-device-card" assetpath="chrome://history/">
+<dom-module id="history-synced-device-card" assetpath="chrome://history/" css-build="shadow">
   <template>
-    <style include="shared-style">
-      :host {
-        @apply(--card-sizing);
+    <style scope="history-synced-device-card">[hidden] {
+  display: none !important;
+}
+
+.card-title {
+  -webkit-padding-start: 20px;
+        align-items: center;
+        border-bottom: 1px solid var(--card-border-color);
+        border-radius: 2px 2px 0 0;
+        color: var(--primary-text-color);
+        display: flex;
+        font-size: 14px;
+        font-weight: 500;
+        height: 48px;
+}
+
+.centered-message {
+  align-items: center;
+        color: #b4b4b4;
+        display: flex;
+        flex: 1;
+        font-size: 14px;
+        font-weight: 500;
+        height: 100%;
+        justify-content: center;
+}
+
+.menu-item {
+  -webkit-user-select: none;
+        cursor: pointer;
+        font: inherit;
+        white-space: nowrap;
+}
+
+.website-icon {
+  -webkit-margin-end: 16px;
+        background-repeat: no-repeat;
+        background-size: 16px;
+        height: 16px;
+        width: 16px;
+}
+
+.website-title {
+  color: var(--primary-text-color);
+        overflow: hidden;
+        text-decoration: none;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+}
+
+button.icon-button {
+  height: 36px;
+        width: 36px;
+}
+
+button.icon-button iron-icon {
+  color: var(--secondary-text-color);
+        height: 20px;
+        width: 20px;
+}
+
+button.more-vert-button {
+  height: 36px;
+        padding: 6px;
+        width: 36px;
+}
+
+button.more-vert-button div {
+  border: 2px solid var(--secondary-text-color);
+        border-radius: 2px;
+        margin: 1px 10px;
+        pointer-events: none;
+        transform: scale(0.8);
+}
+
+:host {
+  margin: var(--card-sizing_-_margin); max-width: var(--card-sizing_-_max-width); min-width: var(--card-sizing_-_min-width); padding: var(--card-sizing_-_padding); width: var(--card-sizing_-_width);
         display: block;
         padding-bottom: var(--card-padding-between);
-      }
+}
 
-      #card-heading {
-        cursor: pointer;
+#card-heading {
+  cursor: pointer;
         justify-content: space-between;
-      }
+}
 
-      #tab-item-list {
-        padding: 8px 0;
-      }
+#tab-item-list {
+  padding: 8px 0;
+}
 
-      #last-update-time {
-        color: var(--secondary-text-color);
-      }
+#last-update-time {
+  color: var(--secondary-text-color);
+}
 
-      #right-buttons {
-        -webkit-margin-end: 4px;
-      }
+#right-buttons {
+  -webkit-margin-end: 4px;
+}
 
-      #menu-button {
-        -webkit-margin-end: 8px;
-      }
+#menu-button {
+  -webkit-margin-end: 8px;
+}
 
-      #collapse {
-        overflow: hidden;
-      }
+#collapse {
+  overflow: hidden;
+}
 
-      #history-item-container {
-        @apply(--card-box-shadow);
+#history-item-container {
+  box-shadow: var(--card-box-shadow_-_box-shadow);
         background: #fff;
         border-radius: 2px;
-      }
+}
 
-      #item-container {
-        align-items: center;
+#item-container {
+  align-items: center;
         display: flex;
         margin: 0 20px;
         min-height: var(--item-height);
-      }
+}
 
-      #window-separator {
-        background-color: var(--card-border-color);
+#window-separator {
+  background-color: var(--card-border-color);
         height: 1px;
         margin: 5px auto;
         width: 80%;
-      }
-    </style>
+}
+
+</style>
     <div id="history-item-container">
       <div class="card-title" id="card-heading" aria-expanded$="[[opened]]" aria-controls="collapse" on-tap="toggleTabCard">
         <div>
@@ -3797,59 +4662,195 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </div>
   </template>
   </dom-module>
-<dom-module id="history-synced-device-manager" assetpath="chrome://history/">
+<dom-module id="history-synced-device-manager" assetpath="chrome://history/" css-build="shadow">
   <template>
-    <style include="shared-style cr-shared-style">
-      :host {
-        display: block;
-        overflow: auto;
-      }
+    <style scope="history-synced-device-manager">[hidden] {
+  display: none !important;
+}
 
-      #illustration {
-        background: -webkit-image-set(
+.card-title {
+  -webkit-padding-start: 20px;
+        align-items: center;
+        border-bottom: 1px solid var(--card-border-color);
+        border-radius: 2px 2px 0 0;
+        color: var(--primary-text-color);
+        display: flex;
+        font-size: 14px;
+        font-weight: 500;
+        height: 48px;
+}
+
+.centered-message {
+  align-items: center;
+        color: #b4b4b4;
+        display: flex;
+        flex: 1;
+        font-size: 14px;
+        font-weight: 500;
+        height: 100%;
+        justify-content: center;
+}
+
+.menu-item {
+  -webkit-user-select: none;
+        cursor: pointer;
+        font: inherit;
+        white-space: nowrap;
+}
+
+.website-icon {
+  -webkit-margin-end: 16px;
+        background-repeat: no-repeat;
+        background-size: 16px;
+        height: 16px;
+        width: 16px;
+}
+
+.website-title {
+  color: var(--primary-text-color);
+        overflow: hidden;
+        text-decoration: none;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+}
+
+button.icon-button {
+  height: 36px;
+        width: 36px;
+}
+
+button.icon-button iron-icon {
+  color: var(--secondary-text-color);
+        height: 20px;
+        width: 20px;
+}
+
+button.more-vert-button {
+  height: 36px;
+        padding: 6px;
+        width: 36px;
+}
+
+button.more-vert-button div {
+  border: 2px solid var(--secondary-text-color);
+        border-radius: 2px;
+        margin: 1px 10px;
+        pointer-events: none;
+        transform: scale(0.8);
+}
+
+paper-spinner {
+  --paper-spinner-layer-1-color: var(--google-blue-500);
+        --paper-spinner-layer-2-color: var(--google-blue-500);
+        --paper-spinner-layer-3-color: var(--google-blue-500);
+        --paper-spinner-layer-4-color: var(--google-blue-500);
+}
+
+.action-button {
+  background: var(--google-blue-500);
+        color: white;
+        --paper-button-flat-keyboard-focus_-_background:  rgb(58, 117, 215);;
+}
+
+.action-button[disabled] {
+  opacity: .25;
+}
+
+.cancel-button {
+  --paper-button-flat-keyboard-focus_-_background:  rgba(0, 0, 0, .12);;
+}
+
+.action-button, .cancel-button {
+  font-weight: 500;
+}
+
+[actionable] {
+  cursor: var(--cr-actionable_-_cursor);
+}
+
+[scrollable] {
+  border-color: transparent;
+        border-style: solid;
+        border-width: 1px 0;
+        overflow-y: auto;
+}
+
+[scrollable].is-scrolled {
+  border-top-color: var(--google-grey-300);
+}
+
+[scrollable].can-scroll:not(.scrolled-to-bottom) {
+  border-bottom-color: var(--google-grey-300);
+}
+
+[scrollable] :focus {
+  ;
+        background-color: var(--cr-selectable-focus_-_background-color); outline: var(--cr-selectable-focus_-_outline);
+}
+
+[scrollable] iron-list > * {
+  cursor: var(--cr-actionable_-_cursor);
+}
+
+[selectable] :focus {
+  background-color: var(--cr-selectable-focus_-_background-color); outline: var(--cr-selectable-focus_-_outline);
+}
+
+[selectable] > * {
+  cursor: var(--cr-actionable_-_cursor);
+}
+
+:host {
+  display: block;
+        overflow: auto;
+}
+
+#illustration {
+  background: -webkit-image-set(
             url("chrome://history/images/100/sign_in_promo.png") 1x,
             url("chrome://history/images/200/sign_in_promo.png") 2x)
                 no-repeat center center;
         height: 222px;
         margin-top: 100px;
         width: 594px;
-      }
+}
 
-      #no-synced-tabs {
-        height: 100%;
-      }
+#no-synced-tabs {
+  height: 100%;
+}
 
-      #sign-in-guide {
-        align-items: center;
+#sign-in-guide {
+  align-items: center;
         display: flex;
         flex-direction: column;
         justify-content: center;
         overflow-x: hidden;
         text-align: center;
-      }
+}
 
-      #sign-in-promo {
-        color: var(--primary-text-color);
+#sign-in-promo {
+  color: var(--primary-text-color);
         font-size: 215%;
         margin-top: 40px;
-      }
+}
 
-      #sign-in-promo-desc {
-        color: #848484;
+#sign-in-promo-desc {
+  color: #848484;
         font-size: 123%;
         margin-top: 10px;
-      }
+}
 
-      #sign-in-button {
-        margin: 24px 0;
+#sign-in-button {
+  margin: 24px 0;
         padding-left: 12px;
         padding-right: 12px;
-      }
+}
 
-      #synced-device-list {
-        padding-top: var(--first-card-padding-top);
-      }
-    </style>
+#synced-device-list {
+  padding-top: var(--first-card-padding-top);
+}
+
+</style>
     <div id="synced-device-list" hidden="[[!syncedDevices_.length]]">
       <template is="dom-repeat" items="[[syncedDevices_]]" as="syncedDevice">
         <history-synced-device-card device="[[syncedDevice.device]]" last-update-time="[[syncedDevice.lastUpdateTime]]" tabs="[[syncedDevice.tabs]]" separator-indexes="[[syncedDevice.separatorIndexes]]" search-term="[[searchTerm]]" session-tag="[[syncedDevice.tag]]" opened="{{syncedDevice.opened}}">
@@ -3881,34 +4882,108 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </template>
   </template>
   </dom-module>
-<dom-module id="history-side-bar" assetpath="chrome://history/">
+<dom-module id="history-side-bar" assetpath="chrome://history/" css-build="shadow">
   <template>
-    <style include="shared-style">
-      :host {
-        display: block;
+    <style scope="history-side-bar">[hidden] {
+  display: none !important;
+}
+
+.card-title {
+  -webkit-padding-start: 20px;
+        align-items: center;
+        border-bottom: 1px solid var(--card-border-color);
+        border-radius: 2px 2px 0 0;
+        color: var(--primary-text-color);
+        display: flex;
+        font-size: 14px;
+        font-weight: 500;
+        height: 48px;
+}
+
+.centered-message {
+  align-items: center;
+        color: #b4b4b4;
+        display: flex;
+        flex: 1;
+        font-size: 14px;
+        font-weight: 500;
+        height: 100%;
+        justify-content: center;
+}
+
+.menu-item {
+  -webkit-user-select: none;
+        cursor: pointer;
+        font: inherit;
+        white-space: nowrap;
+}
+
+.website-icon {
+  -webkit-margin-end: 16px;
+        background-repeat: no-repeat;
+        background-size: 16px;
+        height: 16px;
+        width: 16px;
+}
+
+.website-title {
+  color: var(--primary-text-color);
+        overflow: hidden;
+        text-decoration: none;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+}
+
+button.icon-button {
+  height: 36px;
+        width: 36px;
+}
+
+button.icon-button iron-icon {
+  color: var(--secondary-text-color);
+        height: 20px;
+        width: 20px;
+}
+
+button.more-vert-button {
+  height: 36px;
+        padding: 6px;
+        width: 36px;
+}
+
+button.more-vert-button div {
+  border: 2px solid var(--secondary-text-color);
+        border-radius: 2px;
+        margin: 1px 10px;
+        pointer-events: none;
+        transform: scale(0.8);
+}
+
+:host {
+  display: block;
         height: 100%;
         padding-top: 5px;
         width: var(--side-bar-width);
-      }
+}
 
-      div.separator {
-        background-color: rgba(0, 0, 0, 0.08);
+div.separator {
+  background-color: rgba(0, 0, 0, 0.08);
         height: 1px;
         margin: 8px 0;
-      }
+}
 
-      #clear-browsing-data {
-        text-transform: uppercase;
-      }
+#clear-browsing-data {
+  text-transform: uppercase;
+}
 
-      iron-selector {
-        -webkit-user-select: none;
+iron-selector {
+  -webkit-user-select: none;
         background-color: transparent;
         color: #5a5a5a;
-      }
+}
 
-      iron-selector > a {
-        @apply(--paper-font-subhead);
+iron-selector > a {
+  font-family: var(--paper-font-subhead_-_font-family); -webkit-font-smoothing: var(--paper-font-subhead_-_-webkit-font-smoothing); font-size: var(--paper-font-subhead_-_font-size); font-weight: var(--paper-font-subhead_-_font-weight); line-height: var(--paper-font-subhead_-_line-height);
         -webkit-padding-start: 24px;
         align-items: center;
         box-sizing: border-box;
@@ -3920,38 +4995,37 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         min-height: 48px;
         position: relative;
         text-decoration: none;
-      }
+}
 
-      iron-selector > a.iron-selected {
-        color: var(--google-blue-500);
+iron-selector > a.iron-selected {
+  color: var(--google-blue-500);
         font-weight: 500;
-      }
+}
 
-      #footer {
-        bottom: 0;
+#footer {
+  bottom: 0;
         color: var(--paper-grey-600);
         position: absolute;
         width: var(--side-bar-width);
-      }
+}
 
-      :host([drawer]) #footer {
-        /* This compensates the 120px by which app-drawer protrudes under
-         * the viewport. */
-        bottom: 120px;
-      }
+:host([drawer]) #footer {
+  bottom: 120px;
+}
 
-      #footer-text {
-        -webkit-padding-end: 16px;
+#footer-text {
+  -webkit-padding-end: 16px;
         -webkit-padding-start: 24px;
         line-height: 20px;
         margin: 24px 0;
-      }
+}
 
-      #footer a {
-        color: var(--google-blue-700);
+#footer a {
+  color: var(--google-blue-700);
         text-decoration: none;
-      }
-    </style>
+}
+
+</style>
 
     <iron-selector id="menu" selected="[[selectedPage]]" selectable=".page-item" attr-for-selected="path" fallback-selection="history" on-iron-activate="onSelectorActivate_">
       <a href="/[[getQueryString_(route)]]" class="page-item" path="history">
@@ -3974,61 +5048,132 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </iron-selector>
   </template>
   </dom-module>
-</div><dom-module id="history-app">
+</div><dom-module id="history-app" css-build="shadow">
   <template>
-    <style no-process="">
-      history-toolbar {
-        background: var(--md-toolbar-color);
-      }
-    </style>
-    <style include="shared-style">
-      :host {
-        display: block;
+    
+    <style scope="history-app">history-toolbar {
+  background: var(--md-toolbar-color);
+}
+
+[hidden] {
+  display: none !important;
+}
+
+.card-title {
+  -webkit-padding-start: 20px;
+        align-items: center;
+        border-bottom: 1px solid var(--card-border-color);
+        border-radius: 2px 2px 0 0;
+        color: var(--primary-text-color);
+        display: flex;
+        font-size: 14px;
+        font-weight: 500;
+        height: 48px;
+}
+
+.centered-message {
+  align-items: center;
+        color: #b4b4b4;
+        display: flex;
+        flex: 1;
+        font-size: 14px;
+        font-weight: 500;
+        height: 100%;
+        justify-content: center;
+}
+
+.menu-item {
+  -webkit-user-select: none;
+        cursor: pointer;
+        font: inherit;
+        white-space: nowrap;
+}
+
+.website-icon {
+  -webkit-margin-end: 16px;
+        background-repeat: no-repeat;
+        background-size: 16px;
+        height: 16px;
+        width: 16px;
+}
+
+.website-title {
+  color: var(--primary-text-color);
+        overflow: hidden;
+        text-decoration: none;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+}
+
+button.icon-button {
+  height: 36px;
+        width: 36px;
+}
+
+button.icon-button iron-icon {
+  color: var(--secondary-text-color);
+        height: 20px;
+        width: 20px;
+}
+
+button.more-vert-button {
+  height: 36px;
+        padding: 6px;
+        width: 36px;
+}
+
+button.more-vert-button div {
+  border: 2px solid var(--secondary-text-color);
+        border-radius: 2px;
+        margin: 1px 10px;
+        pointer-events: none;
+        transform: scale(0.8);
+}
+
+:host {
+  display: block;
         height: 100%;
         overflow: hidden;
-      }
+}
 
-      /* Sizing this with flex causes slow load performance, see
-       * crbug.com/618153. TODO(dbeam): is this still an issue? */
-      #main-container {
-        height: calc(100% - var(--toolbar-height));
+#main-container {
+  height: calc(100% - var(--toolbar-height));
         position: relative;
-      }
+}
 
-      :host([grouped_]) #main-container {
-        height: calc(100% - var(--toolbar-grouped-height));
-      }
+:host([grouped_]) #main-container {
+  height: calc(100% - var(--toolbar-grouped-height));
+}
 
-      #content-side-bar {
-        float: left;
-      }
+#content-side-bar {
+  float: left;
+}
 
-      :host-context([dir='rtl']) #content-side-bar {
-        float: right;
-      }
+:host-context([dir='rtl']) #content-side-bar {
+  float: right;
+}
 
-      #content,
-      #content > * {
-        height: 100%;
-      }
+#content, #content > * {
+  height: 100%;
+}
 
-      #drawer-header {
-        align-items: center;
+#drawer-header {
+  align-items: center;
         border-bottom: 1px solid rgba(0, 0, 0, 0.08);
         display: flex;
         height: var(--toolbar-height);
         margin-bottom: 5px;
-      }
+}
 
-      h1 {
-        -webkit-padding-start: 24px;
+h1 {
+  -webkit-padding-start: 24px;
         color: rgb(66, 66, 66);
         font-size: 123%;
         font-weight: 400;
-      }
+}
 
-      #drop-shadow {
-        box-shadow: inset 0 5px 6px -3px rgba(0, 0, 0, 0.4);
+#drop-shadow {
+  box-shadow: inset 0 5px 6px -3px rgba(0, 0, 0, 0.4);
         height: 6px;
         left: 0;
         opacity: 0;
@@ -4037,12 +5182,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         right: 0;
         top: 0;
         transition: opacity 500ms;
-      }
+}
 
-      :host([toolbar-shadow_]) #drop-shadow {
-        opacity: 1;
-      }
-    </style>
+:host([toolbar-shadow_]) #drop-shadow {
+  opacity: 1;
+}
+
+</style>
     <app-location route="{{route_}}"></app-location>
     <app-route route="{{route_}}" pattern="/:page" data="{{routeData_}}" query-params="{{queryParams_}}">
     </app-route>

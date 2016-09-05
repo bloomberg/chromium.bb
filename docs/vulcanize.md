@@ -13,6 +13,7 @@ Vulcanization currently requires:
 - vulcanize: 1.14.8 (can be found with `vulcanize --version`)
 - crisper: 2.0.1 (can be found with `npm list -g crisper`)
 - uglifyjs: 2.4.10 (can be found with `uglifyjs --version`)
+- polymer-css-build: 0.0.6 (can be found with `npm list -g polymer-css-build`)
 
 ## Installing required software
 
@@ -28,11 +29,11 @@ $ npm config set -g prefix "$HOME/node_modules"
 Then install the required modules:
 
 ```bash
-$ npm install -g crisper vulcanize
+$ npm install -g crisper vulcanize uglifyjs polymer-css-build
 ```
 
-Ultimately, all that is required to run this script is that `crisper`, 'uglify'
-and `vulcanize` are on your `$PATH`.
+Ultimately, all that is required to run this script is that the node binaries
+listed above are on your $PATH.
 
 ## Combining resources with vulcanize
 
