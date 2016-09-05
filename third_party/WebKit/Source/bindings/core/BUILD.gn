@@ -9,10 +9,20 @@ import("//third_party/WebKit/Source/core/core_idl_files.gni")
 
 visibility = [ "//third_party/WebKit/*" ]
 
-# GYP version: Source/bindings/core/generated.gyp:interfaces_info_individual_core
+# Static IDL files / Generated IDL files
+#
+# In GYP, paths needed to be passed separately for static and generated files, as
+# static files are listed in a temporary file (b/c too long for command line),
+# but generated files must be passed at the command line, as their paths are
+# not fixed at GYP time, when the temporary file is generated, because their
+# paths depend on the build directory, which varies.
+#
+# FIXME: GN does not have this restriction and we can combine them.
 compute_interfaces_info_individual("interfaces_info_individual_core") {
-  sources_static = core_static_idl_files
-  sources_generated = core_generated_idl_files
+  sources_static =
+      core_static_interface_idl_files + core_static_dependency_idl_files
+  sources_generated =
+      core_generated_interface_idl_files + core_generated_dependency_idl_files
   interfaces_info_file =
       "$bindings_core_output_dir/InterfacesInfoCoreIndividual.pickle"
   component_info_file = "$bindings_core_output_dir/ComponentInfoCore.pickle"
@@ -23,7 +33,6 @@ compute_interfaces_info_individual("interfaces_info_individual_core") {
   ]
 }
 
-# GYP version: Source/bindings/core/generated.gyp:core_global_objects
 compute_global_objects("core_global_objects") {
   sources = core_idl_files + core_idl_with_modules_dependency_files
   sources_generated = []
@@ -31,7 +40,6 @@ compute_global_objects("core_global_objects") {
   deps = []
 }
 
-# GYP version: Source/bindings/core/generated.gyp:core_global_constructors_idls
 generate_global_constructors("core_global_constructors_idls") {
   sources = core_idl_files + core_idl_with_modules_dependency_files
   global_objects_file = "$bindings_core_output_dir/GlobalObjectsCore.pickle"

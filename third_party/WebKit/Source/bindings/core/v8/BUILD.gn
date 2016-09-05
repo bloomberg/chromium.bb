@@ -295,8 +295,11 @@ aggregate_generated_bindings("bindings_core_v8_generated_aggregate") {
   outputs = bindings_core_generated_aggregate_files
 }
 
+# IDL file lists; see: http://www.chromium.org/developers/web-idl-interfaces
+# Interface IDL files: generate individual bindings (includes testing)
 idl_compiler("bindings_core_v8_generated_individual") {
-  sources = core_interface_idl_files
+  sources = core_definition_idl_files + core_testing_definition_idl_files +
+            generated_webcore_testing_idl_files
   output_dir = bindings_core_v8_output_dir
   output_name_suffix = ""
   target_component = "core"

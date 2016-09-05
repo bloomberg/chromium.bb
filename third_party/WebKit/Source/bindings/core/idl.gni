@@ -16,12 +16,6 @@ core_testing_definition_idl_files =
     core_testing_dictionary_idl_files + webcore_testing_idl_files +
     webcore_testing_idl_with_modules_dependency_files
 
-# IDL file lists; see: http://www.chromium.org/developers/web-idl-interfaces
-# Interface IDL files: generate individual bindings (includes testing)
-core_interface_idl_files =
-    core_definition_idl_files + core_testing_definition_idl_files +
-    generated_webcore_testing_idl_files
-
 # Static IDL files
 core_static_interface_idl_files =
     core_definition_idl_files + core_testing_definition_idl_files +
@@ -34,22 +28,6 @@ core_static_dependency_idl_files =
 core_generated_interface_idl_files = generated_webcore_testing_idl_files  # interfaces
 core_generated_dependency_idl_files =
     core_global_constructors_generated_idl_files  # partial interfaces
-
-# Static IDL files / Generated IDL files
-#
-# In GYP, paths need to be passed separately for static and generated files, as
-# static files are listed in a temporary file (b/c too long for command line),
-# but generated files must be passed at the command line, as their paths are
-# not fixed at GYP time, when the temporary file is generated, because their
-# paths depend on the build directory, which varies.
-#
-# FIXME: GN does not have this restriction and we can combine them. While GYP
-# is still supported, we match its behavior for easier maintenance but this can
-# be simplified.
-core_static_idl_files =
-    core_static_interface_idl_files + core_static_dependency_idl_files
-core_generated_idl_files =
-    core_generated_interface_idl_files + core_generated_dependency_idl_files
 
 # Dependency IDL files: don't generate individual bindings, but do process
 # in IDL dependency computation, and count as build dependencies

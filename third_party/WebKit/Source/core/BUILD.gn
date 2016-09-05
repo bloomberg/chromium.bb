@@ -206,41 +206,52 @@ source_set("testing") {
     "//third_party/WebKit/Source/bindings/core/v8:testing",
   ]
 
-  sources = webcore_testing_files
-  sources += [
-    "$bindings_core_v8_output_dir/V8DictionaryTest.cpp",
-    "$bindings_core_v8_output_dir/V8DictionaryTest.h",
-    "$bindings_core_v8_output_dir/V8GCObservation.cpp",
-    "$bindings_core_v8_output_dir/V8GCObservation.h",
-    "$bindings_core_v8_output_dir/V8GarbageCollectedScriptWrappable.cpp",
-    "$bindings_core_v8_output_dir/V8GarbageCollectedScriptWrappable.h",
-    "$bindings_core_v8_output_dir/V8InternalDictionary.cpp",
-    "$bindings_core_v8_output_dir/V8InternalDictionary.h",
-    "$bindings_core_v8_output_dir/V8InternalDictionaryDerived.cpp",
-    "$bindings_core_v8_output_dir/V8InternalDictionaryDerived.h",
-    "$bindings_core_v8_output_dir/V8InternalDictionaryDerivedDerived.cpp",
-    "$bindings_core_v8_output_dir/V8InternalDictionaryDerivedDerived.h",
-    "$bindings_core_v8_output_dir/V8InternalRuntimeFlags.cpp",
-    "$bindings_core_v8_output_dir/V8InternalRuntimeFlags.h",
-    "$bindings_core_v8_output_dir/V8InternalSettings.cpp",
-    "$bindings_core_v8_output_dir/V8InternalSettings.h",
-    "$bindings_core_v8_output_dir/V8InternalSettingsGenerated.cpp",
-    "$bindings_core_v8_output_dir/V8InternalSettingsGenerated.h",
-    "$bindings_core_v8_output_dir/V8Internals.cpp",
-    "$bindings_core_v8_output_dir/V8Internals.h",
-    "$bindings_core_v8_output_dir/V8LayerRect.cpp",
-    "$bindings_core_v8_output_dir/V8LayerRect.h",
-    "$bindings_core_v8_output_dir/V8LayerRectList.cpp",
-    "$bindings_core_v8_output_dir/V8LayerRectList.h",
-    "$bindings_core_v8_output_dir/V8PrivateScriptTest.cpp",
-    "$bindings_core_v8_output_dir/V8PrivateScriptTest.h",
-    "$bindings_core_v8_output_dir/V8TypeConversions.cpp",
-    "$bindings_core_v8_output_dir/V8TypeConversions.h",
-    "$bindings_core_v8_output_dir/V8UnionTypesTest.cpp",
-    "$bindings_core_v8_output_dir/V8UnionTypesTest.h",
-    "$bindings_core_v8_output_dir/V8WorkerInternals.cpp",
-    "$bindings_core_v8_output_dir/V8WorkerInternals.h",
+  sources = [
+    "$blink_core_output_dir/testing/InternalSettingsGenerated.cpp",
+    "$blink_core_output_dir/testing/InternalSettingsGenerated.h",
+    "origin_trials/testing/InternalsFrobulate.cpp",
+    "origin_trials/testing/InternalsFrobulate.h",
+    "origin_trials/testing/InternalsFrobulateInterfaceBindings.h",
+    "origin_trials/testing/WorkerInternalsFrobulate.h",
+    "testing/DictionaryTest.cpp",
+    "testing/DictionaryTest.h",
+    "testing/DummyPageHolder.cpp",
+    "testing/DummyPageHolder.h",
+    "testing/GCObservation.cpp",
+    "testing/GCObservation.h",
+    "testing/GarbageCollectedScriptWrappable.cpp",
+    "testing/GarbageCollectedScriptWrappable.h",
+    "testing/InternalSettings.cpp",
+    "testing/InternalSettings.h",
+    "testing/Internals.cpp",
+    "testing/Internals.h",
+    "testing/LayerRect.h",
+    "testing/LayerRectList.cpp",
+    "testing/LayerRectList.h",
+    "testing/MockHyphenation.cpp",
+    "testing/MockHyphenation.h",
+    "testing/NullExecutionContext.cpp",
+    "testing/NullExecutionContext.h",
+    "testing/PrivateScriptTest.cpp",
+    "testing/PrivateScriptTest.h",
+    "testing/TypeConversions.h",
+    "testing/UnionTypesTest.cpp",
+    "testing/UnionTypesTest.h",
+    "testing/WorkerInternals.cpp",
+    "testing/WorkerInternals.h",
+    "testing/v8/WebCoreTestSupport.cpp",
+    "testing/v8/WebCoreTestSupport.h",
   ]
+
+  # Compile the sources produced by these IDL file lists.
+  sources += process_file_template(
+          webcore_testing_idl_files + core_testing_dictionary_idl_files +
+              generated_webcore_testing_idl_files +
+              webcore_testing_idl_with_modules_dependency_files,
+          [
+            "$bindings_core_v8_output_dir/V8{{source_name_part}}.cpp",
+            "$bindings_core_v8_output_dir/V8{{source_name_part}}.h",
+          ])
 }
 
 # core_bindings_generated ------------------------------------------------------
