@@ -58,7 +58,6 @@ class SingleThreadIdleTaskRunner
   // literals). They may not include " chars.
   SingleThreadIdleTaskRunner(
       scoped_refptr<base::SingleThreadTaskRunner> idle_priority_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> after_wakeup_task_runner,
       Delegate* Delegate,
       const char* tracing_category);
 
@@ -66,10 +65,6 @@ class SingleThreadIdleTaskRunner
                             const IdleTask& idle_task);
 
   virtual void PostNonNestableIdleTask(
-      const tracked_objects::Location& from_here,
-      const IdleTask& idle_task);
-
-  virtual void PostIdleTaskAfterWakeup(
       const tracked_objects::Location& from_here,
       const IdleTask& idle_task);
 
@@ -86,7 +81,6 @@ class SingleThreadIdleTaskRunner
   void RunTask(IdleTask idle_task);
 
   scoped_refptr<base::SingleThreadTaskRunner> idle_priority_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> after_wakeup_task_runner_;
   Delegate* delegate_;  // NOT OWNED
   const char* tracing_category_;
   base::trace_event::BlameContext* blame_context_;  // Not owned.

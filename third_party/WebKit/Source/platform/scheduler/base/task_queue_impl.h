@@ -149,31 +149,22 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
   bool IsQueueEnabled() const override;
   bool IsEmpty() const override;
   bool HasPendingImmediateWork() const override;
-  bool NeedsPumping() const override;
   void SetQueuePriority(QueuePriority priority) override;
   QueuePriority GetQueuePriority() const override;
-  void PumpQueue(LazyNow* lazy_now, bool may_post_dowork) override;
-  void SetPumpPolicy(PumpPolicy pump_policy) override;
-  PumpPolicy GetPumpPolicy() const override;
   void AddTaskObserver(base::MessageLoop::TaskObserver* task_observer) override;
   void RemoveTaskObserver(
       base::MessageLoop::TaskObserver* task_observer) override;
   void SetTimeDomain(TimeDomain* time_domain) override;
   TimeDomain* GetTimeDomain() const override;
   void SetBlameContext(base::trace_event::BlameContext* blame_context) override;
+  void InsertFence() override;
+  void RemoveFence() override;
+  bool BlockedByFence() const override;
 
   bool IsTaskPending(const TaskHandle& handle) const;
 
-  void UpdateImmediateWorkQueue(bool should_trigger_wakeup,
-                                const Task* previous_task);
-  void UpdateDelayedWorkQueue(LazyNow* lazy_now,
-                              bool should_trigger_wakeup,
-                              const Task* previous_task);
-
-  WakeupPolicy wakeup_policy() const {
-    DCHECK(main_thread_checker_.CalledOnValidThread());
-    return wakeup_policy_;
-  }
+  void UpdateImmediateWorkQueue();
+  void UpdateDelayedWorkQueue(LazyNow* lazy_now);
 
   const char* GetName() const override;
 
@@ -184,13 +175,6 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
 
   void NotifyWillProcessTask(const base::PendingTask& pending_task);
   void NotifyDidProcessTask(const base::PendingTask& pending_task);
-
-  // Can be called on any thread.
-  static const char* PumpPolicyToString(TaskQueue::PumpPolicy pump_policy);
-
-  // Can be called on any thread.
-  static const char* WakeupPolicyToString(
-      TaskQueue::WakeupPolicy wakeup_policy);
 
   // Can be called on any thread.
   static const char* PriorityToString(TaskQueue::QueuePriority priority);
@@ -217,6 +201,7 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
 
  private:
   friend class WorkQueue;
+  friend class WorkQueueTest;
 
   // Note both DelayedRunTimeQueue and ComparatorQueue are sets for fast task
   // cancellation. Typically queue sizes are well under 200 so the overhead of
@@ -232,15 +217,13 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
 
   struct AnyThread {
     AnyThread(TaskQueueManager* task_queue_manager,
-              PumpPolicy pump_policy,
               TimeDomain* time_domain);
     ~AnyThread();
 
-    // TaskQueueManager, PumpPolicy and TimeDomain are maintained in two copies:
+    // TaskQueueManager and TimeDomain are maintained in two copies:
     // inside AnyThread and inside MainThreadOnly. They can be changed only from
     // main thread, so it should be locked before accessing from other threads.
     TaskQueueManager* task_queue_manager;
-    PumpPolicy pump_policy;
     TimeDomain* time_domain;
 
     ComparatorQueue immediate_incoming_queue;
@@ -248,16 +231,13 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
 
   struct MainThreadOnly {
     MainThreadOnly(TaskQueueManager* task_queue_manager,
-                   PumpPolicy pump_policy,
                    TaskQueueImpl* task_queue,
                    TimeDomain* time_domain);
     ~MainThreadOnly();
 
-    // Another copy of TaskQueueManager, PumpPolicy and TimeDomain for lock-free
-    // access from the main thread. See description inside struct AnyThread for
-    // details.
+    // Another copy of TaskQueueManager and TimeDomain for lock-free access from
+    // the main thread. See description inside struct AnyThread for details.
     TaskQueueManager* task_queue_manager;
-    PumpPolicy pump_policy;
     TimeDomain* time_domain;
 
     std::unique_ptr<WorkQueue> delayed_work_queue;
@@ -267,6 +247,7 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
     size_t set_index;
     bool is_enabled;
     base::trace_event::BlameContext* blame_context;  // Not owned.
+    EnqueueOrder current_fence;
   };
 
   ~TaskQueueImpl() override;
@@ -296,29 +277,13 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
 
   void MoveReadyImmediateTasksToImmediateWorkQueueLocked();
 
-  // Note this does nothing if its not called from the main thread.
-  void PumpQueueLocked(LazyNow* lazy_now, bool may_post_dowork);
-
-  // Returns true if |task| is older than the oldest incoming immediate task.
-  // NOTE |any_thread_lock_| must be locked.
-  bool TaskIsOlderThanQueuedImmediateTasksLocked(const Task* task);
-
-  // Returns true if |task| is older than the oldest delayed task.  Must be
-  // called from the main thread.
-  bool TaskIsOlderThanQueuedDelayedTasks(const Task* task);
-
-  // NOTE |any_thread_lock_| must be locked.
-  bool ShouldAutoPumpImmediateQueueLocked(bool should_trigger_wakeup,
-                                          const Task* previous_task);
-
-  //  Must be called from the main thread.
-  bool ShouldAutoPumpDelayedQueue(bool should_trigger_wakeup,
-                                  const Task* previous_task);
-
   // Push the task onto the |immediate_incoming_queue| and for auto pumped
   // queues it calls MaybePostDoWorkOnMainRunner if the Incoming queue was
   // empty.
   void PushOntoImmediateIncomingQueueLocked(Task pending_task);
+
+  // As BlockedByFence but safe to be called while locked.
+  bool BlockedByFenceLocked() const;
 
   void TraceQueueSize(bool is_locked) const;
   static void QueueAsValueInto(const ComparatorQueue& queue,
@@ -356,7 +321,6 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
     return main_thread_only_;
   }
 
-  const WakeupPolicy wakeup_policy_;
   const bool should_monitor_quiescence_;
   const bool should_notify_observers_;
   const bool should_report_when_execution_blocked_;

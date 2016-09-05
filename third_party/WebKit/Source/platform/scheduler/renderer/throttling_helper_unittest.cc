@@ -14,6 +14,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "cc/test/ordered_simple_task_runner.h"
 #include "platform/scheduler/base/test_time_source.h"
+#include "platform/scheduler/base/real_time_domain.h"
 #include "platform/scheduler/child/scheduler_tqm_delegate_for_test.h"
 #include "platform/scheduler/renderer/auto_advancing_virtual_time_domain.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
@@ -28,10 +29,10 @@ namespace blink {
 namespace scheduler {
 
 namespace {
-void CountingTask(size_t* count, scoped_refptr<TaskQueue> timer_queue) {
+void RunTenTimesTask(size_t* count, scoped_refptr<TaskQueue> timer_queue) {
   if (++(*count) < 10) {
     timer_queue->PostTask(FROM_HERE,
-                          base::Bind(&CountingTask, count, timer_queue));
+                          base::Bind(&RunTenTimesTask, count, timer_queue));
   }
 }
 }
@@ -61,20 +62,23 @@ class ThrottlingHelperTest : public testing::Test {
   void ExpectThrottled(scoped_refptr<TaskQueue> timer_queue) {
     size_t count = 0;
     timer_queue->PostTask(FROM_HERE,
-                          base::Bind(&CountingTask, &count, timer_queue));
+                          base::Bind(&RunTenTimesTask, &count, timer_queue));
 
     mock_task_runner_->RunForPeriod(base::TimeDelta::FromSeconds(1));
-    EXPECT_LT(count, 10u);
-    mock_task_runner_->RunUntilIdle();
+    EXPECT_LE(count, 1u);
+
+    // Make sure the rest of the tasks run or we risk a UAF on |count|.
+    mock_task_runner_->RunForPeriod(base::TimeDelta::FromSeconds(10));
+    EXPECT_EQ(10u, count);
   }
 
   void ExpectUnthrottled(scoped_refptr<TaskQueue> timer_queue) {
     size_t count = 0;
     timer_queue->PostTask(FROM_HERE,
-                          base::Bind(&CountingTask, &count, timer_queue));
+                          base::Bind(&RunTenTimesTask, &count, timer_queue));
 
     mock_task_runner_->RunForPeriod(base::TimeDelta::FromSeconds(1));
-    EXPECT_EQ(count, 10u);
+    EXPECT_EQ(10u, count);
     mock_task_runner_->RunUntilIdle();
   }
 
@@ -274,6 +278,10 @@ bool MessageLoopTaskCounter(size_t* count) {
 
 void NopTask() {}
 
+void AddOneTask(size_t* count) {
+  (*count)++;
+}
+
 }  // namespace
 
 TEST_F(ThrottlingHelperTest,
@@ -287,7 +295,9 @@ TEST_F(ThrottlingHelperTest,
   mock_task_runner_->RunTasksWhile(
       base::Bind(&MessageLoopTaskCounter, &task_count));
 
-  EXPECT_EQ(1u, task_count);
+  // Run the task.
+  // TODO(alexclarke): Add a base::RunLoop observer and fix this.
+  EXPECT_EQ(2u, task_count);
 }
 
 TEST_F(ThrottlingHelperTest,
@@ -301,7 +311,9 @@ TEST_F(ThrottlingHelperTest,
   mock_task_runner_->RunTasksWhile(
       base::Bind(&MessageLoopTaskCounter, &task_count));
 
-  EXPECT_EQ(1u, task_count);
+  // Run the delayed task.
+  // TODO(alexclarke): Add a base::RunLoop observer and fix this.
+  EXPECT_EQ(2u, task_count);
 }
 
 TEST_F(ThrottlingHelperTest,
@@ -321,8 +333,9 @@ TEST_F(ThrottlingHelperTest,
   mock_task_runner_->RunTasksWhile(
       base::Bind(&MessageLoopTaskCounter, &task_count));
 
-  EXPECT_EQ(2u, task_count);  // There are two since the cancelled task runs in
-  // the same DoWork batch.
+  // Run both delayed tasks.
+  // TODO(alexclarke): Add a base::RunLoop observer and fix this.
+  EXPECT_EQ(4u, task_count);
 
   EXPECT_THAT(
       run_times,
@@ -373,13 +386,15 @@ TEST_F(ThrottlingHelperTest, ThrottledTasksReportRealTime) {
 }
 
 TEST_F(ThrottlingHelperTest, TaskQueueDisabledTillPump) {
-  timer_queue_->PostTask(FROM_HERE, base::Bind(&NopTask));
+  size_t count = 0;
+  timer_queue_->PostTask(FROM_HERE, base::Bind(&AddOneTask, &count));
 
   EXPECT_TRUE(timer_queue_->IsQueueEnabled());
   throttling_helper_->IncreaseThrottleRefCount(timer_queue_.get());
   EXPECT_FALSE(timer_queue_->IsQueueEnabled());
 
   mock_task_runner_->RunUntilIdle();  // Wait until the pump.
+  EXPECT_EQ(1u, count);               // The task got run
   EXPECT_TRUE(timer_queue_->IsQueueEnabled());
 }
 
@@ -427,13 +442,15 @@ TEST_F(ThrottlingHelperTest, SetQueueEnabled_DisabledWhileThrottled) {
 }
 
 TEST_F(ThrottlingHelperTest, TaskQueueDisabledTillPump_ThenManuallyDisabled) {
-  timer_queue_->PostTask(FROM_HERE, base::Bind(&NopTask));
+  size_t count = 0;
+  timer_queue_->PostTask(FROM_HERE, base::Bind(&AddOneTask, &count));
 
   EXPECT_TRUE(timer_queue_->IsQueueEnabled());
   throttling_helper_->IncreaseThrottleRefCount(timer_queue_.get());
   EXPECT_FALSE(timer_queue_->IsQueueEnabled());
 
   mock_task_runner_->RunUntilIdle();  // Wait until the pump.
+  EXPECT_EQ(1u, count);               // Task ran
   EXPECT_TRUE(timer_queue_->IsQueueEnabled());
 
   throttling_helper_->SetQueueEnabled(timer_queue_.get(), false);

@@ -50,17 +50,13 @@ TaskQueueImpl::TaskQueueImpl(
     const char* disabled_by_default_tracing_category,
     const char* disabled_by_default_verbose_tracing_category)
     : thread_id_(base::PlatformThread::CurrentId()),
-      any_thread_(task_queue_manager, spec.pump_policy, time_domain),
+      any_thread_(task_queue_manager, time_domain),
       name_(spec.name),
       disabled_by_default_tracing_category_(
           disabled_by_default_tracing_category),
       disabled_by_default_verbose_tracing_category_(
           disabled_by_default_verbose_tracing_category),
-      main_thread_only_(task_queue_manager,
-                        spec.pump_policy,
-                        this,
-                        time_domain),
-      wakeup_policy_(spec.wakeup_policy),
+      main_thread_only_(task_queue_manager, this, time_domain),
       should_monitor_quiescence_(spec.should_monitor_quiescence),
       should_notify_observers_(spec.should_notify_observers),
       should_report_when_execution_blocked_(
@@ -171,10 +167,8 @@ bool TaskQueueImpl::Task::DelayedRunTimeComparatorFn(const Task& a,
 }
 
 TaskQueueImpl::AnyThread::AnyThread(TaskQueueManager* task_queue_manager,
-                                    PumpPolicy pump_policy,
                                     TimeDomain* time_domain)
     : task_queue_manager(task_queue_manager),
-      pump_policy(pump_policy),
       time_domain(time_domain),
       immediate_incoming_queue(&TaskQueueImpl::Task::EnqueueOrderComparatorFn) {
 }
@@ -183,11 +177,9 @@ TaskQueueImpl::AnyThread::~AnyThread() {}
 
 TaskQueueImpl::MainThreadOnly::MainThreadOnly(
     TaskQueueManager* task_queue_manager,
-    PumpPolicy pump_policy,
     TaskQueueImpl* task_queue,
     TimeDomain* time_domain)
     : task_queue_manager(task_queue_manager),
-      pump_policy(pump_policy),
       time_domain(time_domain),
       delayed_work_queue(
           new WorkQueue(task_queue,
@@ -199,7 +191,8 @@ TaskQueueImpl::MainThreadOnly::MainThreadOnly(
                         &TaskQueueImpl::Task::EnqueueOrderComparatorFn)),
       set_index(0),
       is_enabled(true),
-      blame_context(nullptr) {}
+      blame_context(nullptr),
+      current_fence(0) {}
 
 TaskQueueImpl::MainThreadOnly::~MainThreadOnly() {}
 
@@ -449,9 +442,17 @@ void TaskQueueImpl::PushOntoDelayedIncomingQueueLocked(Task pending_task) {
 void TaskQueueImpl::PushOntoImmediateIncomingQueueLocked(Task pending_task) {
   if (any_thread().immediate_incoming_queue.empty())
     any_thread().time_domain->RegisterAsUpdatableTaskQueue(this);
-  if (any_thread().pump_policy == PumpPolicy::AUTO &&
-      any_thread().immediate_incoming_queue.empty()) {
-    any_thread().task_queue_manager->MaybeScheduleImmediateWork(FROM_HERE);
+  // If the |immediate_incoming_queue| is empty we need a DoWork posted to make
+  // it run.
+  if (any_thread().immediate_incoming_queue.empty()) {
+    // There's no point posting a DoWork for a disabled queue, however we can
+    // only tell if it's disabled from the main thread.
+    if (base::PlatformThread::CurrentId() == thread_id_) {
+      if (main_thread_only().is_enabled && !BlockedByFenceLocked())
+        any_thread().task_queue_manager->MaybeScheduleImmediateWork(FROM_HERE);
+    } else {
+      any_thread().task_queue_manager->MaybeScheduleImmediateWork(FROM_HERE);
+    }
   }
   any_thread().task_queue_manager->DidQueueTask(pending_task);
   // We expect |pending_task| to be inserted at the end. Amoritized O(1).
@@ -489,6 +490,8 @@ void TaskQueueImpl::SetQueueEnabled(bool enabled) {
   if (!main_thread_only().task_queue_manager)
     return;
   if (enabled) {
+    // Note it's the job of the selector to tell the TaskQueueManager if
+    // a DoWork needs posting.
     main_thread_only().task_queue_manager->selector_.EnableQueue(this);
   } else {
     main_thread_only().task_queue_manager->selector_.DisableQueue(this);
@@ -511,86 +514,23 @@ bool TaskQueueImpl::IsEmpty() const {
 }
 
 bool TaskQueueImpl::HasPendingImmediateWork() const {
+  // Any work queue tasks count as immediate work.
   if (!main_thread_only().delayed_work_queue->Empty() ||
       !main_thread_only().immediate_work_queue->Empty()) {
     return true;
   }
 
-  return NeedsPumping();
-}
+  // Tasks on |delayed_incoming_queue| that could run now, count as
+  // immediate work.
+  if (!main_thread_only().delayed_incoming_queue.empty() &&
+      main_thread_only().delayed_incoming_queue.begin()->delayed_run_time <=
+          main_thread_only().time_domain->CreateLazyNow().Now()) {
+    return true;
+  }
 
-bool TaskQueueImpl::NeedsPumping() const {
-  if (!main_thread_only().immediate_work_queue->Empty())
-    return false;
-
+  // Finally tasks on |immediate_incoming_queue| count as immediate work.
   base::AutoLock lock(any_thread_lock_);
-  if (!any_thread().immediate_incoming_queue.empty())
-    return true;
-
-  // If there's no immediate Incoming work then we only need pumping if there
-  // is a delayed task that should be running now.
-  if (main_thread_only().delayed_incoming_queue.empty())
-    return false;
-
-  return main_thread_only().delayed_incoming_queue.begin()->delayed_run_time <=
-         main_thread_only().time_domain->CreateLazyNow().Now();
-}
-
-bool TaskQueueImpl::TaskIsOlderThanQueuedImmediateTasksLocked(
-    const Task* task) {
-  // A null task is passed when UpdateQueue is called before any task is run.
-  // In this case we don't want to pump an after_wakeup queue, so return true
-  // here.
-  if (!task)
-    return true;
-
-  // Return false if task is newer than the oldest immediate task.
-  if (!any_thread().immediate_incoming_queue.empty() &&
-      task->enqueue_order() >
-          any_thread().immediate_incoming_queue.begin()->enqueue_order()) {
-    return false;
-  }
-  return true;
-}
-
-bool TaskQueueImpl::TaskIsOlderThanQueuedDelayedTasks(const Task* task) {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
-  // A null task is passed when UpdateQueue is called before any task is run.
-  // In this case we don't want to pump an after_wakeup queue, so return true
-  // here.
-  if (!task)
-    return true;
-
-  EnqueueOrder enqueue_order;
-  if (!main_thread_only().delayed_work_queue->GetFrontTaskEnqueueOrder(
-          &enqueue_order)) {
-    return true;
-  }
-
-  return task->enqueue_order() < enqueue_order;
-}
-
-bool TaskQueueImpl::ShouldAutoPumpImmediateQueueLocked(
-    bool should_trigger_wakeup,
-    const Task* previous_task) {
-  if (main_thread_only().pump_policy == PumpPolicy::MANUAL)
-    return false;
-  if (main_thread_only().pump_policy == PumpPolicy::AFTER_WAKEUP &&
-      (!should_trigger_wakeup ||
-       TaskIsOlderThanQueuedImmediateTasksLocked(previous_task)))
-    return false;
-  return true;
-}
-
-bool TaskQueueImpl::ShouldAutoPumpDelayedQueue(bool should_trigger_wakeup,
-                                               const Task* previous_task) {
-  if (main_thread_only().pump_policy == PumpPolicy::MANUAL)
-    return false;
-  if (main_thread_only().pump_policy == PumpPolicy::AFTER_WAKEUP &&
-      (!should_trigger_wakeup ||
-       TaskIsOlderThanQueuedDelayedTasks(previous_task)))
-    return false;
-  return true;
+  return !any_thread().immediate_incoming_queue.empty();
 }
 
 void TaskQueueImpl::MoveReadyDelayedTasksToDelayedWorkQueue(LazyNow* lazy_now) {
@@ -609,24 +549,17 @@ void TaskQueueImpl::MoveReadyDelayedTasksToDelayedWorkQueue(LazyNow* lazy_now) {
   }
 }
 
-void TaskQueueImpl::UpdateDelayedWorkQueue(LazyNow* lazy_now,
-                                           bool should_trigger_wakeup,
-                                           const Task* previous_task) {
+void TaskQueueImpl::UpdateDelayedWorkQueue(LazyNow* lazy_now) {
   if (!main_thread_only().task_queue_manager)
-    return;
-  if (!ShouldAutoPumpDelayedQueue(should_trigger_wakeup, previous_task))
     return;
   MoveReadyDelayedTasksToDelayedWorkQueue(lazy_now);
   TraceQueueSize(false);
 }
 
-void TaskQueueImpl::UpdateImmediateWorkQueue(bool should_trigger_wakeup,
-                                             const Task* previous_task) {
+void TaskQueueImpl::UpdateImmediateWorkQueue() {
   DCHECK(main_thread_only().immediate_work_queue->Empty());
   base::AutoLock lock(any_thread_lock_);
   if (!main_thread_only().task_queue_manager)
-    return;
-  if (!ShouldAutoPumpImmediateQueueLocked(should_trigger_wakeup, previous_task))
     return;
 
   main_thread_only().immediate_work_queue->SwapLocked(
@@ -663,56 +596,6 @@ void TaskQueueImpl::TraceQueueSize(bool is_locked) const {
     any_thread_lock_.Release();
 }
 
-void TaskQueueImpl::SetPumpPolicy(PumpPolicy pump_policy) {
-  base::AutoLock lock(any_thread_lock_);
-  if (pump_policy == PumpPolicy::AUTO &&
-      any_thread().pump_policy != PumpPolicy::AUTO) {
-    LazyNow lazy_now(main_thread_only().time_domain->CreateLazyNow());
-    PumpQueueLocked(&lazy_now, true);
-  }
-  any_thread().pump_policy = pump_policy;
-  main_thread_only().pump_policy = pump_policy;
-}
-
-TaskQueue::PumpPolicy TaskQueueImpl::GetPumpPolicy() const {
-  return main_thread_only().pump_policy;
-}
-
-void TaskQueueImpl::PumpQueueLocked(LazyNow* lazy_now, bool may_post_dowork) {
-  TRACE_EVENT1(disabled_by_default_tracing_category_,
-               "TaskQueueImpl::PumpQueueLocked", "queue", name_);
-  TaskQueueManager* task_queue_manager = any_thread().task_queue_manager;
-  if (!task_queue_manager)
-    return;
-
-  MoveReadyDelayedTasksToDelayedWorkQueue(lazy_now);
-
-  while (!any_thread().immediate_incoming_queue.empty()) {
-    ComparatorQueue::iterator it =
-        any_thread().immediate_incoming_queue.begin();
-    main_thread_only().immediate_work_queue->Push(
-        std::move(const_cast<Task&>(*it)));
-    any_thread().immediate_incoming_queue.erase(it);
-  }
-
-  // |immediate_incoming_queue| is now empty so TimeDomain::UpdateQueues no
-  // longer needs to consider this queue for reloading.
-  main_thread_only().time_domain->UnregisterAsUpdatableTaskQueue(this);
-
-  if (main_thread_only().immediate_work_queue->Empty() &&
-      main_thread_only().delayed_work_queue->Empty()) {
-    return;
-  }
-
-  if (may_post_dowork)
-    task_queue_manager->MaybeScheduleImmediateWork(FROM_HERE);
-}
-
-void TaskQueueImpl::PumpQueue(LazyNow* lazy_now, bool may_post_dowork) {
-  base::AutoLock lock(any_thread_lock_);
-  PumpQueueLocked(lazy_now, may_post_dowork);
-}
-
 const char* TaskQueueImpl::GetName() const {
   return name_;
 }
@@ -728,36 +611,6 @@ TaskQueueImpl::QueuePriority TaskQueueImpl::GetQueuePriority() const {
   size_t set_index = immediate_work_queue()->work_queue_set_index();
   DCHECK_EQ(set_index, delayed_work_queue()->work_queue_set_index());
   return static_cast<TaskQueue::QueuePriority>(set_index);
-}
-
-// static
-const char* TaskQueueImpl::PumpPolicyToString(
-    TaskQueue::PumpPolicy pump_policy) {
-  switch (pump_policy) {
-    case TaskQueue::PumpPolicy::AUTO:
-      return "auto";
-    case TaskQueue::PumpPolicy::AFTER_WAKEUP:
-      return "after_wakeup";
-    case TaskQueue::PumpPolicy::MANUAL:
-      return "manual";
-    default:
-      NOTREACHED();
-      return nullptr;
-  }
-}
-
-// static
-const char* TaskQueueImpl::WakeupPolicyToString(
-    TaskQueue::WakeupPolicy wakeup_policy) {
-  switch (wakeup_policy) {
-    case TaskQueue::WakeupPolicy::CAN_WAKE_OTHER_QUEUES:
-      return "can_wake_other_queues";
-    case TaskQueue::WakeupPolicy::DONT_WAKE_OTHER_QUEUES:
-      return "dont_wake_other_queues";
-    default:
-      NOTREACHED();
-      return nullptr;
-  }
 }
 
 // static
@@ -784,8 +637,6 @@ void TaskQueueImpl::AsValueInto(base::trace_event::TracedValue* state) const {
   state->SetBoolean("enabled", main_thread_only().is_enabled);
   state->SetString("time_domain_name",
                    main_thread_only().time_domain->GetName());
-  state->SetString("pump_policy", PumpPolicyToString(any_thread().pump_policy));
-  state->SetString("wakeup_policy", WakeupPolicyToString(wakeup_policy_));
   bool verbose_tracing_enabled = false;
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(
       disabled_by_default_verbose_tracing_category_, &verbose_tracing_enabled);
@@ -882,6 +733,96 @@ TimeDomain* TaskQueueImpl::GetTimeDomain() const {
 void TaskQueueImpl::SetBlameContext(
     base::trace_event::BlameContext* blame_context) {
   main_thread_only().blame_context = blame_context;
+}
+
+void TaskQueueImpl::InsertFence() {
+  if (!main_thread_only().task_queue_manager)
+    return;
+
+  EnqueueOrder previous_fence = main_thread_only().current_fence;
+  main_thread_only().current_fence =
+      main_thread_only().task_queue_manager->GetNextSequenceNumber();
+
+  // Tasks posted after this point will have a strictly higher enqueue order
+  // and will be blocked from running.
+  bool task_unblocked = main_thread_only().immediate_work_queue->InsertFence(
+      main_thread_only().current_fence);
+  task_unblocked |= main_thread_only().delayed_work_queue->InsertFence(
+      main_thread_only().current_fence);
+
+  if (!task_unblocked && previous_fence) {
+    base::AutoLock lock(any_thread_lock_);
+    if (!any_thread().immediate_incoming_queue.empty() &&
+        any_thread().immediate_incoming_queue.begin()->enqueue_order() >
+            previous_fence &&
+        any_thread().immediate_incoming_queue.begin()->enqueue_order() <
+            main_thread_only().current_fence) {
+      task_unblocked = true;
+    }
+  }
+
+  if (main_thread_only().is_enabled && task_unblocked) {
+    main_thread_only().task_queue_manager->MaybeScheduleImmediateWork(
+        FROM_HERE);
+  }
+}
+
+void TaskQueueImpl::RemoveFence() {
+  if (!main_thread_only().task_queue_manager)
+    return;
+
+  EnqueueOrder previous_fence = main_thread_only().current_fence;
+  main_thread_only().current_fence = 0;
+
+  bool task_unblocked = main_thread_only().immediate_work_queue->RemoveFence();
+  task_unblocked |= main_thread_only().delayed_work_queue->RemoveFence();
+
+  if (!task_unblocked && previous_fence) {
+    base::AutoLock lock(any_thread_lock_);
+    if (!any_thread().immediate_incoming_queue.empty() &&
+        any_thread().immediate_incoming_queue.begin()->enqueue_order() >
+            previous_fence) {
+      task_unblocked = true;
+    }
+  }
+
+  if (main_thread_only().is_enabled && task_unblocked) {
+    main_thread_only().task_queue_manager->MaybeScheduleImmediateWork(
+        FROM_HERE);
+  }
+}
+
+bool TaskQueueImpl::BlockedByFence() const {
+  if (!main_thread_only().current_fence)
+    return false;
+
+  if (!main_thread_only().immediate_work_queue->BlockedByFence() ||
+      !main_thread_only().delayed_work_queue->BlockedByFence()) {
+    return false;
+  }
+
+  base::AutoLock lock(any_thread_lock_);
+  if (any_thread().immediate_incoming_queue.empty())
+    return true;
+
+  return any_thread().immediate_incoming_queue.begin()->enqueue_order() >
+         main_thread_only().current_fence;
+}
+
+bool TaskQueueImpl::BlockedByFenceLocked() const {
+  if (!main_thread_only().current_fence)
+    return false;
+
+  if (!main_thread_only().immediate_work_queue->BlockedByFence() ||
+      !main_thread_only().delayed_work_queue->BlockedByFence()) {
+    return false;
+  }
+
+  if (any_thread().immediate_incoming_queue.empty())
+    return true;
+
+  return any_thread().immediate_incoming_queue.begin()->enqueue_order() >
+         main_thread_only().current_fence;
 }
 
 // static

@@ -65,6 +65,35 @@ class WebThread;
 class TestingCompositorSupport : public WebCompositorSupport {
 };
 
+class TestingPlatformMockScheduler : public WebScheduler {
+    WTF_MAKE_NONCOPYABLE(TestingPlatformMockScheduler);
+public:
+    TestingPlatformMockScheduler();
+    ~TestingPlatformMockScheduler() override;
+
+    void runSingleTask();
+    void runAllTasks();
+
+    // WebScheduler implementation:
+    WebTaskRunner* loadingTaskRunner() override;
+    WebTaskRunner* timerTaskRunner() override;
+    void shutdown() override {}
+    bool shouldYieldForHighPriorityWork() override { return false; }
+    bool canExceedIdleDeadlineIfRequired() override { return false; }
+    void postIdleTask(const WebTraceLocation&, WebThread::IdleTask*) override { }
+    void postNonNestableIdleTask(const WebTraceLocation&, WebThread::IdleTask*) override { }
+    std::unique_ptr<WebViewScheduler> createWebViewScheduler(InterventionReporter*) override { return nullptr; }
+    void suspendTimerQueue() override { }
+    void resumeTimerQueue() override { }
+    void addPendingNavigation(WebScheduler::NavigatingFrameType) override { }
+    void removePendingNavigation(WebScheduler::NavigatingFrameType) override { }
+    void onNavigationStarted() override { }
+
+private:
+    WTF::Deque<std::unique_ptr<WebTaskRunner::Task>> m_tasks;
+    std::unique_ptr<TestingPlatformMockWebTaskRunner> m_mockWebTaskRunner;
+};
+
 class TestingPlatformSupport : public Platform {
     WTF_MAKE_NONCOPYABLE(TestingPlatformSupport);
 public:

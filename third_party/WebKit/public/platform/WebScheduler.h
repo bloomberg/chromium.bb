@@ -66,12 +66,6 @@ public:
     // run earlier than it normally would.
     virtual void postNonNestableIdleTask(const WebTraceLocation&, WebThread::IdleTask*) = 0;
 
-    // Like postIdleTask but does not run the idle task until after some other
-    // task has run. This enables posting of a task which won't stop the Blink
-    // main thread from sleeping, but will start running after it wakes up.
-    // Takes ownership of |IdleTask|. Can be called from any thread.
-    virtual void postIdleTaskAfterWakeup(const WebTraceLocation&, WebThread::IdleTask*) = 0;
-
     // Returns a WebTaskRunner for loading tasks. Can be called from any thread.
     virtual WebTaskRunner* loadingTaskRunner() = 0;
 
@@ -111,7 +105,6 @@ public:
 
     void postIdleTask(const WebTraceLocation&, std::unique_ptr<IdleTask>);
     void postNonNestableIdleTask(const WebTraceLocation&, std::unique_ptr<IdleTask>);
-    void postIdleTaskAfterWakeup(const WebTraceLocation&, std::unique_ptr<IdleTask>);
 #endif
 };
 

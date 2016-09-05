@@ -57,6 +57,15 @@ class CompositorWorkerTaskRunnerWrapper : public TaskQueue {
 
   void SetQueueEnabled(bool enabled) override { NOTREACHED(); }
 
+  void InsertFence() override { NOTREACHED(); }
+
+  void RemoveFence() override { NOTREACHED(); }
+
+  bool BlockedByFence() const override {
+    NOTREACHED();
+    return false;
+  }
+
   bool IsQueueEnabled() const override {
     NOTREACHED();
     return true;
@@ -72,11 +81,6 @@ class CompositorWorkerTaskRunnerWrapper : public TaskQueue {
     return false;
   };
 
-  bool NeedsPumping() const override {
-    NOTREACHED();
-    return false;
-  };
-
   const char* GetName() const override {
     NOTREACHED();
     return nullptr;
@@ -88,15 +92,6 @@ class CompositorWorkerTaskRunnerWrapper : public TaskQueue {
     NOTREACHED();
     return QueuePriority::NORMAL_PRIORITY;
   };
-
-  void SetPumpPolicy(PumpPolicy pump_policy) override { NOTREACHED(); }
-
-  PumpPolicy GetPumpPolicy() const override {
-    NOTREACHED();
-    return PumpPolicy::AUTO;
-  };
-
-  void PumpQueue(LazyNow*, bool may_post_dowork) override { NOTREACHED(); }
 
   void AddTaskObserver(
       base::MessageLoop::TaskObserver* task_observer) override {
@@ -146,8 +141,7 @@ CompositorWorkerScheduler::IdleTaskRunner() {
   // which runs them after the current frame has been drawn before the next
   // vsync. https://crbug.com/609532
   return make_scoped_refptr(new SingleThreadIdleTaskRunner(
-      thread_->task_runner(), thread_->task_runner(), this,
-      "compositor.scheduler"));
+      thread_->task_runner(), this, "compositor.scheduler"));
 }
 
 bool CompositorWorkerScheduler::CanExceedIdleDeadlineIfRequired() const {

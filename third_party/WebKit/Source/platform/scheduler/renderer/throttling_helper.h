@@ -19,6 +19,22 @@ class RendererSchedulerImpl;
 class ThrottledTimeDomain;
 class WebFrameSchedulerImpl;
 
+// The job of the ThrottlingHelper is to run tasks posted on throttled queues at
+// most once per second. This is done by disabling throttled queues and running
+// a special "heart beat" function |PumpThrottledTasks| which when run
+// temporarily enables throttled queues and inserts a fence to ensure tasks
+// posted from a throttled task run next time the queue is pumped.
+//
+// Of course the ThrottlingHelper isn't the only sub-system that wants to enable
+// or disable queues. E.g. RendererSchedulerImpl also does this for policy
+// reasons.  To prevent the systems from fighting, clients of ThrottlingHelper
+// must use SetQueueEnabled rather than calling the function directly on the
+// queue.
+//
+// There may be more than one system that wishes to throttle a queue (e.g.
+// renderer suspension vs tab level suspension) so the ThrottlingHelper keeps a
+// count of the number of systems that wish a queue to be throttled.
+// See IncreaseThrottleRefCount & DecreaseThrottleRefCount.
 class BLINK_PLATFORM_EXPORT ThrottlingHelper : public TimeDomain::Observer {
  public:
   ThrottlingHelper(RendererSchedulerImpl* renderer_scheduler,
@@ -49,6 +65,9 @@ class BLINK_PLATFORM_EXPORT ThrottlingHelper : public TimeDomain::Observer {
 
   // Removes |task_queue| from |throttled_queues_|.
   void UnregisterTaskQueue(TaskQueue* task_queue);
+
+  // Returns true if the |task_queue| is throttled.
+  bool IsThrottled(TaskQueue* task_queue) const;
 
   // Tells the ThrottlingHelper we're using virtual time, which disables all
   // throttling.

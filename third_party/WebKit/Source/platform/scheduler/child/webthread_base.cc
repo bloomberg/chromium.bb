@@ -95,14 +95,6 @@ void WebThreadBase::postIdleTask(const blink::WebTraceLocation& location,
                            base::Passed(base::WrapUnique(idle_task))));
 }
 
-void WebThreadBase::postIdleTaskAfterWakeup(
-    const blink::WebTraceLocation& location,
-    IdleTask* idle_task) {
-  GetIdleTaskRunner()->PostIdleTaskAfterWakeup(
-      location, base::Bind(&WebThreadBase::RunWebThreadIdleTask,
-                           base::Passed(base::WrapUnique(idle_task))));
-}
-
 bool WebThreadBase::isCurrentThread() const {
   return GetTaskRunner()->BelongsToCurrentThread();
 }

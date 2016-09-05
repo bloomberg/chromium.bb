@@ -28,8 +28,6 @@ class BLINK_PLATFORM_EXPORT WebThreadBase : public WebThread {
 
   virtual void postIdleTask(const WebTraceLocation& location,
                             IdleTask* idle_task);
-  virtual void postIdleTaskAfterWakeup(const WebTraceLocation& location,
-                                       IdleTask* idle_task);
 
   void addTaskObserver(TaskObserver* observer) override;
   void removeTaskObserver(TaskObserver* observer) override;

@@ -25,9 +25,7 @@ IdleHelper::IdleHelper(
     base::TimeDelta required_quiescence_duration_before_long_idle_period)
     : helper_(helper),
       delegate_(delegate),
-      idle_queue_(
-          helper_->NewTaskQueue(TaskQueue::Spec("idle_tq").SetPumpPolicy(
-              TaskQueue::PumpPolicy::MANUAL))),
+      idle_queue_(helper_->NewTaskQueue(TaskQueue::Spec("idle_tq"))),
       state_(helper,
              delegate,
              tracing_category,
@@ -44,9 +42,8 @@ IdleHelper::IdleHelper(
   on_idle_task_posted_closure_.Reset(base::Bind(
       &IdleHelper::OnIdleTaskPostedOnMainThread, weak_idle_helper_ptr_));
 
-  idle_task_runner_ = make_scoped_refptr(new SingleThreadIdleTaskRunner(
-      idle_queue_, helper_->ControlAfterWakeUpTaskRunner(), this,
-      tracing_category));
+  idle_task_runner_ = make_scoped_refptr(
+      new SingleThreadIdleTaskRunner(idle_queue_, this, tracing_category));
 
   idle_queue_->SetQueueEnabled(false);
   idle_queue_->SetQueuePriority(TaskQueue::BEST_EFFORT_PRIORITY);
@@ -115,8 +112,9 @@ bool IdleHelper::ShouldWaitForQuiescence() {
     return false;
 
   if (required_quiescence_duration_before_long_idle_period_ ==
-      base::TimeDelta())
+      base::TimeDelta()) {
     return false;
+  }
 
   bool system_is_quiescent = helper_->GetAndClearSystemIsQuiescentBit();
   TRACE_EVENT1(disabled_by_default_tracing_category_, "ShouldWaitForQuiescence",
@@ -175,8 +173,9 @@ void IdleHelper::StartIdlePeriod(IdlePeriodState new_state,
 
   TRACE_EVENT0(disabled_by_default_tracing_category_, "StartIdlePeriod");
   idle_queue_->SetQueueEnabled(true);
-  LazyNow lazy_now(now);
-  idle_queue_->PumpQueue(&lazy_now, true);
+  // Use a fence to make sure any idle tasks posted after this point do not run
+  // until the next idle period.
+  idle_queue_->InsertFence();
 
   state_.UpdateState(new_state, idle_period_deadline, now);
 }
@@ -230,7 +229,7 @@ void IdleHelper::UpdateLongIdlePeriodStateAfterIdleTask() {
     // new idle task is posted.
     state_.UpdateState(IdlePeriodState::IN_LONG_IDLE_PERIOD_PAUSED,
                        state_.idle_period_deadline(), base::TimeTicks());
-  } else if (idle_queue_->NeedsPumping()) {
+  } else if (idle_queue_->BlockedByFence()) {
     // If there is still idle work to do then just start the next idle period.
     base::TimeDelta next_long_idle_period_delay;
     if (state_.idle_period_state() ==

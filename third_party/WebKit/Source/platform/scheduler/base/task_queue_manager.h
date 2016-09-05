@@ -164,14 +164,9 @@ class BLINK_PLATFORM_EXPORT TaskQueueManager
   // Use the selector to choose a pending task and run it.
   void DoWork(base::TimeTicks run_time, bool from_main_thread);
 
-  // Delayed Tasks with run_times <= Now() are enqueued onto the work queue.
-  // Reloads any empty work queues which have automatic pumping enabled and
-  // which are eligible to be auto pumped based on the |previous_task| which was
-  // run and |should_trigger_wakeup|. Call with an empty |previous_task| if no
-  // task was just run.
-  void UpdateWorkQueues(bool should_trigger_wakeup,
-                        const internal::TaskQueueImpl::Task* previous_task,
-                        LazyNow lazy_now);
+  // Delayed Tasks with run_times <= Now() are enqueued onto the work queue and
+  // reloads any empty work queues.
+  void UpdateWorkQueues(LazyNow lazy_now);
 
   // Chooses the next work queue to service. Returns true if |out_queue|
   // indicates the queue from which the next task should be run, false to
@@ -186,9 +181,7 @@ class BLINK_PLATFORM_EXPORT TaskQueueManager
     EXECUTED,
     TASK_QUEUE_MANAGER_DELETED
   };
-  ProcessTaskResult ProcessTaskFromWorkQueue(
-      internal::WorkQueue* work_queue,
-      internal::TaskQueueImpl::Task* out_previous_task);
+  ProcessTaskResult ProcessTaskFromWorkQueue(internal::WorkQueue* work_queue);
 
   bool RunsTasksOnCurrentThread() const;
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,

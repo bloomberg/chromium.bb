@@ -25,14 +25,7 @@ SchedulerHelper::SchedulerHelper(
                                disabled_by_default_tracing_category,
                                disabled_by_default_verbose_tracing_category)),
       control_task_runner_(NewTaskQueue(
-          TaskQueue::Spec("control_tq")
-              .SetWakeupPolicy(TaskQueue::WakeupPolicy::DONT_WAKE_OTHER_QUEUES)
-              .SetShouldNotifyObservers(false))),
-      control_after_wakeup_task_runner_(NewTaskQueue(
-          TaskQueue::Spec("control_after_wakeup_tq")
-              .SetPumpPolicy(TaskQueue::PumpPolicy::AFTER_WAKEUP)
-              .SetWakeupPolicy(TaskQueue::WakeupPolicy::DONT_WAKE_OTHER_QUEUES)
-              .SetShouldNotifyObservers(false))),
+          TaskQueue::Spec("control_tq").SetShouldNotifyObservers(false))),
       default_task_runner_(NewTaskQueue(
           TaskQueue::Spec("default_tq").SetShouldMonitorQuiescence(true))),
       observer_(nullptr),
@@ -40,8 +33,6 @@ SchedulerHelper::SchedulerHelper(
       disabled_by_default_tracing_category_(
           disabled_by_default_tracing_category) {
   control_task_runner_->SetQueuePriority(TaskQueue::CONTROL_PRIORITY);
-  control_after_wakeup_task_runner_->SetQueuePriority(
-      TaskQueue::CONTROL_PRIORITY);
 
   task_queue_manager_->SetWorkBatchSize(4);
 
@@ -77,9 +68,6 @@ scoped_refptr<TaskQueue> SchedulerHelper::ControlTaskRunner() {
   return control_task_runner_;
 }
 
-scoped_refptr<TaskQueue> SchedulerHelper::ControlAfterWakeUpTaskRunner() {
-  return control_after_wakeup_task_runner_;
-}
 
 void SchedulerHelper::SetWorkBatchSizeForTesting(size_t work_batch_size) {
   CheckOnValidThread();

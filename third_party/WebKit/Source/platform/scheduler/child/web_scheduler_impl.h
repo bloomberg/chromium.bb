@@ -37,8 +37,6 @@ class BLINK_PLATFORM_EXPORT WebSchedulerImpl : public WebScheduler {
                     WebThread::IdleTask* task) override;
   void postNonNestableIdleTask(const WebTraceLocation& location,
                                WebThread::IdleTask* task) override;
-  void postIdleTaskAfterWakeup(const WebTraceLocation& location,
-                               WebThread::IdleTask* task) override;
   WebTaskRunner* loadingTaskRunner() override;
   WebTaskRunner* timerTaskRunner() override;
   std::unique_ptr<WebViewScheduler> createWebViewScheduler(

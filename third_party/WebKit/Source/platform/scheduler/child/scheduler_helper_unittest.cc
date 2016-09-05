@@ -171,21 +171,6 @@ TEST_F(SchedulerHelperTest, ObserversNotNotifiedFor_ControlTaskRunner) {
   RunUntilIdle();
 }
 
-TEST_F(SchedulerHelperTest,
-       ObserversNotNotifiedFor_ControlAfterWakeUpTaskRunner) {
-  MockTaskObserver observer;
-  scheduler_helper_->AddTaskObserver(&observer);
-
-  scheduler_helper_->ControlAfterWakeUpTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&NopTask));
-
-  EXPECT_CALL(observer, WillProcessTask(_)).Times(0);
-  EXPECT_CALL(observer, DidProcessTask(_)).Times(0);
-  LazyNow lazy_now(clock_.get());
-  scheduler_helper_->ControlAfterWakeUpTaskRunner()->PumpQueue(&lazy_now, true);
-  RunUntilIdle();
-}
-
 namespace {
 
 class MockObserver : public SchedulerHelper::Observer {
@@ -219,6 +204,11 @@ TEST_F(SchedulerHelperTest, OnTriedToExecuteBlockedTask) {
       TaskQueue::Spec("test_queue").SetShouldReportWhenExecutionBlocked(true));
   task_queue->SetQueueEnabled(false);
   task_queue->PostTask(FROM_HERE, base::Bind(&NopTask));
+
+  // Trick |task_queue| into posting a DoWork. By default PostTask with a
+  // disabled queue won't post a DoWork until we enable the queue.
+  task_queue->SetQueueEnabled(true);
+  task_queue->SetQueueEnabled(false);
 
   EXPECT_CALL(observer, OnTriedToExecuteBlockedTask(_, _)).Times(1);
   RunUntilIdle();

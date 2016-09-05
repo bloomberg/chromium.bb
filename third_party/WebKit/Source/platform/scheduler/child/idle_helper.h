@@ -18,7 +18,25 @@ namespace scheduler {
 
 class SchedulerHelper;
 
-// Common scheduler functionality for Idle tasks.
+// The job of the IdleHelper is to run idle tasks when the system is otherwise
+// idle. Idle tasks should be optional work, with no guarantee they will be run
+// at all. Idle tasks are subject to three levels of throttling:
+//
+//   1. Both idle queues are run a BEST_EFFORT priority (i.e. only selected if
+//      there is nothing else to do.
+//   2. The idle queues are only enabled during an idle period.
+//   3. Idle tasks posted from within an idle task run in the next idle period.
+//      This is achieved by inserting a fence into the queue.
+//
+// There are two types of idle periods:
+//   1. Short idle period - typically less than 10ms run after begin main frame
+//      has finished, with the idle period ending at the compositor provided
+//      deadline.
+//   2. Long idle periods - typically up to 50ms when no frames are being
+//      produced.
+//
+// Idle tasks are supplied a deadline, and should endeavor to finished before it
+// ends to avoid jank.
 class BLINK_PLATFORM_EXPORT IdleHelper
     : public base::MessageLoop::TaskObserver,
       public SingleThreadIdleTaskRunner::Delegate {

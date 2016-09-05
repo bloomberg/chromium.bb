@@ -131,10 +131,7 @@ void TaskQueueManager::UnregisterTaskQueue(
   selector_.RemoveQueue(task_queue.get());
 }
 
-void TaskQueueManager::UpdateWorkQueues(
-    bool should_trigger_wakeup,
-    const internal::TaskQueueImpl::Task* previous_task,
-    LazyNow lazy_now) {
+void TaskQueueManager::UpdateWorkQueues(LazyNow lazy_now) {
   TRACE_EVENT0(disabled_by_default_tracing_category_,
                "TaskQueueManager::UpdateWorkQueues");
 
@@ -142,8 +139,7 @@ void TaskQueueManager::UpdateWorkQueues(
     LazyNow lazy_now_in_domain = time_domain == real_time_domain_.get()
                                      ? lazy_now
                                      : time_domain->CreateLazyNow();
-    time_domain->UpdateWorkQueues(should_trigger_wakeup, previous_task,
-                                  lazy_now_in_domain);
+    time_domain->UpdateWorkQueues(lazy_now_in_domain);
   }
 }
 
@@ -194,6 +190,11 @@ void TaskQueueManager::DoWork(base::TimeTicks run_time, bool from_main_thread) {
     other_thread_pending_wakeups_.erase(run_time);
   }
 
+  // TODO(alexclarke): Add a base::RunLoop observer and prevent
+  // MaybeScheduleImmediateWork posting MaybeScheduleImmediateWork while DoWork
+  // is running.  We'll need to post a DoWork on entering and leaving a nested
+  // run loop.
+
   if (!delegate_->IsNested())
     queues_to_delete_.clear();
 
@@ -203,26 +204,17 @@ void TaskQueueManager::DoWork(base::TimeTicks run_time, bool from_main_thread) {
   if (!delegate_->IsNested() && task_time_observers_.might_have_observers())
     task_start_time = lazy_now.Now();
 
-  // Pass false and nullptr to UpdateWorkQueues here to prevent waking up a
-  // pump-after-wakeup queue.
-  UpdateWorkQueues(false, nullptr, lazy_now);
-
-  internal::TaskQueueImpl::Task previous_task;
+  // TODO(alexclarke): Get rid of this and call once per loop iteration.
+  UpdateWorkQueues(lazy_now);
 
   for (int i = 0; i < work_batch_size_; i++) {
     internal::WorkQueue* work_queue;
-    if (!SelectWorkQueueToService(&work_queue)) {
+    if (!SelectWorkQueueToService(&work_queue))
       break;
-    }
 
-    bool should_trigger_wakeup = work_queue->task_queue()->wakeup_policy() ==
-                                 TaskQueue::WakeupPolicy::CAN_WAKE_OTHER_QUEUES;
-
-    switch (ProcessTaskFromWorkQueue(work_queue, &previous_task)) {
+    switch (ProcessTaskFromWorkQueue(work_queue)) {
       case ProcessTaskResult::DEFERRED:
-        // If a task was deferred, try again with another task. Note that this
-        // means deferred tasks (i.e. non-nestable tasks) will never trigger
-        // queue wake-ups.
+        // If a task was deferred, try again with another task.
         continue;
       case ProcessTaskResult::EXECUTED:
         break;
@@ -242,7 +234,7 @@ void TaskQueueManager::DoWork(base::TimeTicks run_time, bool from_main_thread) {
 
     work_queue = nullptr;  // The queue may have been unregistered.
 
-    UpdateWorkQueues(should_trigger_wakeup, &previous_task, lazy_now);
+    UpdateWorkQueues(lazy_now);
 
     // Only run a single task per batch in nested run loops so that we can
     // properly exit the nested loop when someone calls RunLoop::Quit().
@@ -280,8 +272,7 @@ void TaskQueueManager::DidQueueTask(
 }
 
 TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
-    internal::WorkQueue* work_queue,
-    internal::TaskQueueImpl::Task* out_previous_task) {
+    internal::WorkQueue* work_queue) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   scoped_refptr<DeletionSentinel> protect(deletion_sentinel_);
   internal::TaskQueueImpl* queue = work_queue->task_queue();
@@ -318,7 +309,6 @@ TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
       currently_executing_task_queue_;
   currently_executing_task_queue_ = queue;
   task_annotator_.RunTask("TaskQueueManager::PostTask", pending_task);
-
   // Detect if the TaskQueueManager just got deleted.  If this happens we must
   // not access any member variables after this point.
   if (protect->HasOneRef())
@@ -332,8 +322,6 @@ TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
     queue->NotifyDidProcessTask(pending_task);
   }
 
-  pending_task.task.Reset();
-  *out_previous_task = std::move(pending_task);
   return ProcessTaskResult::EXECUTED;
 }
 
@@ -343,17 +331,13 @@ void TaskQueueManager::MaybeRecordTaskDelayHistograms(
   if ((task_count_++ % kRecordRecordTaskDelayHistogramsEveryNTasks) != 0)
     return;
 
-  // Record delayed task lateness and immediate task queueing durations, but
-  // only for auto-pumped queues.  Manually pumped and after wakeup queues can
-  // have arbitarially large delayes, which would cloud any analysis.
-  if (queue->GetPumpPolicy() == TaskQueue::PumpPolicy::AUTO) {
-    if (!pending_task.delayed_run_time.is_null()) {
-      RecordDelayedTaskLateness(delegate_->NowTicks() -
-                                pending_task.delayed_run_time);
-    } else if (!pending_task.time_posted.is_null()) {
-      RecordImmediateTaskQueueingDuration(tracked_objects::TrackedTime::Now() -
-                                          pending_task.time_posted);
-    }
+  // Record delayed task lateness and immediate task queuing durations.
+  if (!pending_task.delayed_run_time.is_null()) {
+    RecordDelayedTaskLateness(delegate_->NowTicks() -
+                              pending_task.delayed_run_time);
+  } else if (!pending_task.time_posted.is_null()) {
+    RecordImmediateTaskQueueingDuration(tracked_objects::TrackedTime::Now() -
+                                        pending_task.time_posted);
   }
 }
 
@@ -439,10 +423,8 @@ TaskQueueManager::AsValueWithSelectorResult(
 void TaskQueueManager::OnTaskQueueEnabled(internal::TaskQueueImpl* queue) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   // Only schedule DoWork if there's something to do.
-  if (!queue->immediate_work_queue()->Empty() ||
-      !queue->delayed_work_queue()->Empty()) {
+  if (queue->HasPendingImmediateWork())
     MaybeScheduleImmediateWork(FROM_HERE);
-  }
 }
 
 void TaskQueueManager::OnTriedToSelectBlockedWorkQueue(

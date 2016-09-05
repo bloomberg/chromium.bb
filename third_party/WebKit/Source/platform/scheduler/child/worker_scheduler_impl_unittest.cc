@@ -328,6 +328,16 @@ TEST_F(WorkerSchedulerImplTest, TestPostIdleTaskAfterRunningUntilIdle) {
                                    std::string("I2")));
 }
 
+void PostIdleTask(std::vector<std::string>* timeline,
+                  base::SimpleTestTickClock* clock,
+                  SingleThreadIdleTaskRunner* idle_task_runner) {
+  timeline->push_back(base::StringPrintf("run PostIdleTask @ %d",
+                                         TimeTicksToIntMs(clock->NowTicks())));
+
+  idle_task_runner->PostIdleTask(FROM_HERE,
+                                 base::Bind(&TimelineIdleTestTask, timeline));
+}
+
 TEST_F(WorkerSchedulerImplTest, TestLongIdlePeriodTimeline) {
   Init();
 
@@ -347,31 +357,43 @@ TEST_F(WorkerSchedulerImplTest, TestLongIdlePeriodTimeline) {
       scheduler_->CurrentIdleTaskDeadlineForTesting();
   EXPECT_EQ(idle_period_deadline, new_idle_period_deadline);
 
-  // Posting a after-wakeup idle task also shouldn't wake the scheduler or
-  // initiate the next long idle period.
-  timeline.push_back("PostIdleTaskAfterWakeup");
-  idle_task_runner_->PostIdleTaskAfterWakeup(
-      FROM_HERE, base::Bind(&TimelineIdleTestTask, &timeline));
+  // Post a task to post an idle task. Because the system is non-quiescent a
+  // 300ms pause will occur before the next long idle period is initiated and
+  // the idle task run.
+  default_task_runner_->PostDelayedTask(
+      FROM_HERE, base::Bind(&PostIdleTask, base::Unretained(&timeline),
+                            base::Unretained(clock_.get()),
+                            base::Unretained(idle_task_runner_.get())),
+      base::TimeDelta::FromMilliseconds(30));
+
+  timeline.push_back("PostFirstIdleTask");
+  idle_task_runner_->PostIdleTask(FROM_HERE,
+                                  base::Bind(&TimelineIdleTestTask, &timeline));
   RunUntilIdle();
   new_idle_period_deadline = scheduler_->CurrentIdleTaskDeadlineForTesting();
 
-  // Running a normal task should initiate a new long idle period after waiting
-  // 300ms for quiescence.
+  // Running a normal task will mark the system as non-quiescent.
   timeline.push_back("Post RecordTimelineTask");
   default_task_runner_->PostTask(
       FROM_HERE, base::Bind(&RecordTimelineTask, base::Unretained(&timeline),
                             base::Unretained(clock_.get())));
   RunUntilIdle();
 
-  std::string expected_timeline[] = {
-      "RunUntilIdle begin @ 55",      "RunUntilIdle end @ 55",
-      "PostIdleTaskAfterWakeup",
-      "RunUntilIdle begin @ 55",  // NOTE idle task doesn't run till later.
-      "RunUntilIdle end @ 55",        "Post RecordTimelineTask",
-      "RunUntilIdle begin @ 55",      "run RecordTimelineTask @ 55",
-      "IsNotQuiescent @ 55",  // NOTE we have to wait for quiescence.
-      "CanEnterLongIdlePeriod @ 355", "run TimelineIdleTestTask deadline 405",
-      "RunUntilIdle end @ 355"};
+  std::string expected_timeline[] = {"RunUntilIdle begin @ 55",
+                                     "RunUntilIdle end @ 55",
+                                     "PostFirstIdleTask",
+                                     "RunUntilIdle begin @ 55",
+                                     "CanEnterLongIdlePeriod @ 55",
+                                     "run TimelineIdleTestTask deadline 85",
+                                     "run PostIdleTask @ 85",
+                                     "IsNotQuiescent @ 85",
+                                     "CanEnterLongIdlePeriod @ 385",
+                                     "run TimelineIdleTestTask deadline 435",
+                                     "RunUntilIdle end @ 385",
+                                     "Post RecordTimelineTask",
+                                     "RunUntilIdle begin @ 385",
+                                     "run RecordTimelineTask @ 385",
+                                     "RunUntilIdle end @ 385"};
 
   EXPECT_THAT(timeline, ElementsAreArray(expected_timeline));
 }

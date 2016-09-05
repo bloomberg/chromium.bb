@@ -67,7 +67,6 @@ class BLINK_PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
   RendererSchedulerImpl* renderer_scheduler_;        // NOT OWNED
   WebViewSchedulerImpl* parent_web_view_scheduler_;  // NOT OWNED
   base::trace_event::BlameContext* blame_context_;   // NOT OWNED
-  TaskQueue::PumpPolicy virtual_time_pump_policy_;
   bool frame_visible_;
   bool page_visible_;
   bool cross_origin_;

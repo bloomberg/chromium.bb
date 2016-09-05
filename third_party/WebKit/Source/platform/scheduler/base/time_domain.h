@@ -112,9 +112,7 @@ class BLINK_PLATFORM_EXPORT TimeDomain {
   void UnregisterQueue(internal::TaskQueueImpl* queue);
 
   // Updates active queues associated with this TimeDomain.
-  void UpdateWorkQueues(bool should_trigger_wakeup,
-                        const internal::TaskQueueImpl::Task* previous_task,
-                        LazyNow lazy_now);
+  void UpdateWorkQueues(LazyNow lazy_now);
 
   // Called by the TaskQueueManager when the TimeDomain is registered.
   virtual void OnRegisterWithTaskQueueManager(
@@ -133,15 +131,12 @@ class BLINK_PLATFORM_EXPORT TimeDomain {
 
   // Call TaskQueueImpl::UpdateDelayedWorkQueue for each queue where the delay
   // has elapsed.
-  void WakeupReadyDelayedQueues(
-      LazyNow* lazy_now,
-      bool should_trigger_wakeup,
-      const internal::TaskQueueImpl::Task* previous_task);
+  void WakeupReadyDelayedQueues(LazyNow* lazy_now);
 
  protected:
   // Clears expired entries from |delayed_wakeup_multimap_|. Caution needs to be
-  // taken to ensure TaskQueueImpl::UpdateDelayedWorkQueue or
-  // TaskQueueImpl::Pump is called on the affected queues.
+  // taken to ensure TaskQueueImpl::UpdateDelayedWorkQueue is called on the
+  // affected queues.
   void ClearExpiredWakeups();
 
  private:

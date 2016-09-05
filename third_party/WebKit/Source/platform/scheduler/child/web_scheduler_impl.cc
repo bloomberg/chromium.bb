@@ -63,15 +63,6 @@ void WebSchedulerImpl::postNonNestableIdleTask(
                            base::Passed(base::WrapUnique(task))));
 }
 
-void WebSchedulerImpl::postIdleTaskAfterWakeup(
-    const blink::WebTraceLocation& location,
-    blink::WebThread::IdleTask* task) {
-  DCHECK(idle_task_runner_);
-  idle_task_runner_->PostIdleTaskAfterWakeup(
-      location, base::Bind(&WebSchedulerImpl::runIdleTask,
-                           base::Passed(base::WrapUnique(task))));
-}
-
 blink::WebTaskRunner* WebSchedulerImpl::loadingTaskRunner() {
   return loading_web_task_runner_.get();
 }

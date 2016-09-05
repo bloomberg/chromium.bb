@@ -104,6 +104,10 @@ class TaskQueueManagerTest : public testing::Test {
       runners_.push_back(manager_->NewTaskQueue(TaskQueue::Spec("test_queue")));
   }
 
+  void UpdateWorkQueues(LazyNow lazy_now) {
+    manager_->UpdateWorkQueues(lazy_now);
+  }
+
   std::unique_ptr<base::MessageLoop> message_loop_;
   std::unique_ptr<base::SimpleTestTickClock> now_src_;
   scoped_refptr<TaskQueueManagerDelegateForTest> main_task_runner_;
@@ -431,9 +435,9 @@ TEST_F(TaskQueueManagerTest, PendingDelayedTasksRemovedOnShutdown) {
   EXPECT_EQ(2, TestObject::destructor_count_);
 }
 
-TEST_F(TaskQueueManagerTest, ManualPumping) {
+TEST_F(TaskQueueManagerTest, InsertAndRemoveFence) {
   Initialize(1u);
-  runners_[0]->SetPumpPolicy(TaskQueue::PumpPolicy::MANUAL);
+  runners_[0]->InsertFence();
 
   std::vector<EnqueueOrder> run_order;
   // Posting a task when pumping is disabled doesn't result in work getting
@@ -444,26 +448,8 @@ TEST_F(TaskQueueManagerTest, ManualPumping) {
   // However polling still works.
   EXPECT_TRUE(runners_[0]->HasPendingImmediateWork());
 
-  // After pumping the task runs normally.
-  LazyNow lazy_now(now_src_.get());
-  runners_[0]->PumpQueue(&lazy_now, true);
-  EXPECT_TRUE(test_task_runner_->HasPendingTasks());
-  test_task_runner_->RunUntilIdle();
-  EXPECT_THAT(run_order, ElementsAre(1));
-}
-
-TEST_F(TaskQueueManagerTest, ManualPumpingToggle) {
-  Initialize(1u);
-  runners_[0]->SetPumpPolicy(TaskQueue::PumpPolicy::MANUAL);
-
-  std::vector<EnqueueOrder> run_order;
-  // Posting a task when pumping is disabled doesn't result in work getting
-  // posted.
-  runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
-  EXPECT_FALSE(test_task_runner_->HasPendingTasks());
-
-  // When pumping is enabled the task runs normally.
-  runners_[0]->SetPumpPolicy(TaskQueue::PumpPolicy::AUTO);
+  // After removing the fence the task runs normally.
+  runners_[0]->RemoveFence();
   EXPECT_TRUE(test_task_runner_->HasPendingTasks());
   test_task_runner_->RunUntilIdle();
   EXPECT_THAT(run_order, ElementsAre(1));
@@ -499,55 +485,51 @@ TEST_F(TaskQueueManagerTest, DenyRunning_AfterPosting) {
   EXPECT_THAT(run_order, ElementsAre(1));
 }
 
-TEST_F(TaskQueueManagerTest, DenyRunning_ManuallyPumpedTransitionsToAuto) {
+TEST_F(TaskQueueManagerTest, DenyRunning_AfterRemovingFence) {
   Initialize(1u);
 
   std::vector<EnqueueOrder> run_order;
-  runners_[0]->SetPumpPolicy(TaskQueue::PumpPolicy::MANUAL);
+  runners_[0]->InsertFence();
   runners_[0]->SetQueueEnabled(false);
   runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
 
   test_task_runner_->RunUntilIdle();
   EXPECT_TRUE(run_order.empty());
 
-  runners_[0]->SetPumpPolicy(TaskQueue::PumpPolicy::AUTO);
+  runners_[0]->RemoveFence();
   runners_[0]->SetQueueEnabled(true);
   test_task_runner_->RunUntilIdle();
   EXPECT_THAT(run_order, ElementsAre(1));
 }
 
-TEST_F(TaskQueueManagerTest, ManualPumpingWithDelayedTask) {
+TEST_F(TaskQueueManagerTest, RemovingFenceWithDelayedTask) {
   Initialize(1u);
-  runners_[0]->SetPumpPolicy(TaskQueue::PumpPolicy::MANUAL);
+  runners_[0]->InsertFence();
 
   std::vector<EnqueueOrder> run_order;
-  // Posting a delayed task when pumping will apply the delay, but won't cause
+  // Posting a delayed task when fenced will apply the delay, but won't cause
   // work to executed afterwards.
   base::TimeDelta delay(base::TimeDelta::FromMilliseconds(10));
   runners_[0]->PostDelayedTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order),
                                delay);
 
-  // After pumping but before the delay period has expired, task does not run.
-  LazyNow lazy_now1(now_src_.get());
-  runners_[0]->PumpQueue(&lazy_now1, true);
-  test_task_runner_->RunForPeriod(base::TimeDelta::FromMilliseconds(5));
+  // The task does not run even though it's delay is up.
+  test_task_runner_->RunForPeriod(base::TimeDelta::FromMilliseconds(10));
   EXPECT_TRUE(run_order.empty());
 
-  // Once the delay has expired, pumping causes the task to run.
-  now_src_->Advance(base::TimeDelta::FromMilliseconds(5));
-  LazyNow lazy_now2(now_src_.get());
-  runners_[0]->PumpQueue(&lazy_now2, true);
+  // Removing the fence causes the task to run.
+  runners_[0]->RemoveFence();
   EXPECT_TRUE(test_task_runner_->HasPendingTasks());
   test_task_runner_->RunPendingTasks();
   EXPECT_THAT(run_order, ElementsAre(1));
 }
 
-TEST_F(TaskQueueManagerTest, ManualPumpingWithMultipleDelayedTasks) {
+TEST_F(TaskQueueManagerTest, RemovingFenceWithMultipleDelayedTasks) {
   Initialize(1u);
-  runners_[0]->SetPumpPolicy(TaskQueue::PumpPolicy::MANUAL);
+  runners_[0]->InsertFence();
 
   std::vector<EnqueueOrder> run_order;
-  // Posting a delayed task when pumping will apply the delay, but won't cause
+  // Posting a delayed task when fenced will apply the delay, but won't cause
   // work to executed afterwards.
   base::TimeDelta delay1(base::TimeDelta::FromMilliseconds(1));
   base::TimeDelta delay2(base::TimeDelta::FromMilliseconds(10));
@@ -563,16 +545,15 @@ TEST_F(TaskQueueManagerTest, ManualPumpingWithMultipleDelayedTasks) {
   test_task_runner_->RunUntilIdle();
   EXPECT_TRUE(run_order.empty());
 
-  // Once the delay has expired, pumping causes the task to run.
-  LazyNow lazy_now(now_src_.get());
-  runners_[0]->PumpQueue(&lazy_now, true);
+  // Removing the fence causes the ready tasks to run.
+  runners_[0]->RemoveFence();
   test_task_runner_->RunUntilIdle();
   EXPECT_THAT(run_order, ElementsAre(1, 2));
 }
 
-TEST_F(TaskQueueManagerTest, DelayedTasksDontAutoRunWithManualPumping) {
+TEST_F(TaskQueueManagerTest, InsertFencePreventsDelayedTasksFromRunning) {
   Initialize(1u);
-  runners_[0]->SetPumpPolicy(TaskQueue::PumpPolicy::MANUAL);
+  runners_[0]->InsertFence();
 
   std::vector<EnqueueOrder> run_order;
   base::TimeDelta delay(base::TimeDelta::FromMilliseconds(10));
@@ -583,20 +564,80 @@ TEST_F(TaskQueueManagerTest, DelayedTasksDontAutoRunWithManualPumping) {
   EXPECT_TRUE(run_order.empty());
 }
 
-TEST_F(TaskQueueManagerTest, ManualPumpingWithNonEmptyWorkQueue) {
+TEST_F(TaskQueueManagerTest, MultipleFences) {
   Initialize(1u);
-  runners_[0]->SetPumpPolicy(TaskQueue::PumpPolicy::MANUAL);
 
   std::vector<EnqueueOrder> run_order;
-  // Posting two tasks and pumping twice should result in two tasks in the work
-  // queue.
-  LazyNow lazy_now(now_src_.get());
   runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
-  runners_[0]->PumpQueue(&lazy_now, true);
   runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 2, &run_order));
-  runners_[0]->PumpQueue(&lazy_now, true);
+  runners_[0]->InsertFence();
 
-  EXPECT_EQ(2u, runners_[0]->immediate_work_queue()->Size());
+  runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 3, &run_order));
+  test_task_runner_->RunUntilIdle();
+  EXPECT_THAT(run_order, ElementsAre(1, 2));
+
+  runners_[0]->InsertFence();
+  test_task_runner_->RunUntilIdle();
+  EXPECT_THAT(run_order, ElementsAre(1, 2, 3));
+}
+
+TEST_F(TaskQueueManagerTest, InsertFenceThenImmediatlyRemoveDoesNotBlock) {
+  Initialize(1u);
+  runners_[0]->InsertFence();
+  runners_[0]->RemoveFence();
+
+  std::vector<EnqueueOrder> run_order;
+  runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
+  runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 2, &run_order));
+
+  test_task_runner_->RunUntilIdle();
+  EXPECT_THAT(run_order, ElementsAre(1, 2));
+}
+
+TEST_F(TaskQueueManagerTest, InsertFencePostThenRemoveDoesNotBlock) {
+  Initialize(1u);
+  runners_[0]->InsertFence();
+
+  std::vector<EnqueueOrder> run_order;
+  runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
+  runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 2, &run_order));
+  runners_[0]->RemoveFence();
+
+  test_task_runner_->RunUntilIdle();
+  EXPECT_THAT(run_order, ElementsAre(1, 2));
+}
+
+TEST_F(TaskQueueManagerTest, MultipleFencesWithInitiallyEmptyQueue) {
+  Initialize(1u);
+  runners_[0]->InsertFence();
+
+  std::vector<EnqueueOrder> run_order;
+  runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
+  runners_[0]->InsertFence();
+  runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 2, &run_order));
+  test_task_runner_->RunUntilIdle();
+  EXPECT_THAT(run_order, ElementsAre(1));
+}
+
+TEST_F(TaskQueueManagerTest, BlockedByFence) {
+  Initialize(1u);
+  EXPECT_FALSE(runners_[0]->BlockedByFence());
+
+  runners_[0]->InsertFence();
+  EXPECT_TRUE(runners_[0]->BlockedByFence());
+
+  runners_[0]->RemoveFence();
+  EXPECT_FALSE(runners_[0]->BlockedByFence());
+
+  runners_[0]->PostTask(FROM_HERE, base::Bind(&NopTask));
+  runners_[0]->InsertFence();
+  EXPECT_FALSE(runners_[0]->BlockedByFence());
+
+  test_task_runner_->RunUntilIdle();
+  EXPECT_TRUE(runners_[0]->BlockedByFence());
+
+  runners_[0]->RemoveFence();
+  EXPECT_FALSE(runners_[0]->BlockedByFence());
 }
 
 void ReentrantTestTask(scoped_refptr<base::SingleThreadTaskRunner> runner,
@@ -713,150 +754,6 @@ TEST_F(TaskQueueManagerTest, WorkBatching) {
   EXPECT_EQ(test_task_runner_->NumPendingTasks(), 1u);
   test_task_runner_->RunPendingTasks();
   EXPECT_THAT(run_order, ElementsAre(1, 2, 3, 4));
-}
-
-TEST_F(TaskQueueManagerTest, AutoPumpAfterWakeup) {
-  Initialize(2u);
-  runners_[0]->SetPumpPolicy(TaskQueue::PumpPolicy::AFTER_WAKEUP);
-
-  std::vector<EnqueueOrder> run_order;
-  runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
-  test_task_runner_->RunUntilIdle();
-  EXPECT_TRUE(run_order.empty());  // Shouldn't run - no other task to wake TQM.
-
-  runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 2, &run_order));
-  test_task_runner_->RunUntilIdle();
-  EXPECT_TRUE(run_order.empty());  // Still shouldn't wake TQM.
-
-  runners_[1]->PostTask(FROM_HERE, base::Bind(&TestTask, 3, &run_order));
-  test_task_runner_->RunUntilIdle();
-  // Executing a task on an auto pumped queue should wake the TQM.
-  EXPECT_THAT(run_order, ElementsAre(3, 1, 2));
-}
-
-TEST_F(TaskQueueManagerTest, AutoPumpAfterWakeupWhenAlreadyAwake) {
-  Initialize(2u);
-  runners_[0]->SetPumpPolicy(TaskQueue::PumpPolicy::AFTER_WAKEUP);
-
-  std::vector<EnqueueOrder> run_order;
-  runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
-  runners_[1]->PostTask(FROM_HERE, base::Bind(&TestTask, 2, &run_order));
-  test_task_runner_->RunUntilIdle();
-  EXPECT_THAT(run_order, ElementsAre(2, 1));  // TQM was already awake.
-}
-
-TEST_F(TaskQueueManagerTest,
-       AutoPumpAfterWakeupTriggeredByManuallyPumpedQueue) {
-  Initialize(2u);
-  runners_[0]->SetPumpPolicy(TaskQueue::PumpPolicy::AFTER_WAKEUP);
-  runners_[1]->SetPumpPolicy(TaskQueue::PumpPolicy::MANUAL);
-
-  std::vector<EnqueueOrder> run_order;
-  runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
-  test_task_runner_->RunUntilIdle();
-  EXPECT_TRUE(run_order.empty());  // Shouldn't run - no other task to wake TQM.
-
-  runners_[1]->PostTask(FROM_HERE, base::Bind(&TestTask, 2, &run_order));
-  test_task_runner_->RunUntilIdle();
-  // This still shouldn't wake TQM as manual queue was not pumped.
-  EXPECT_TRUE(run_order.empty());
-
-  LazyNow lazy_now(now_src_.get());
-  runners_[1]->PumpQueue(&lazy_now, true);
-  test_task_runner_->RunUntilIdle();
-  // Executing a task on an auto pumped queue should wake the TQM.
-  EXPECT_THAT(run_order, ElementsAre(2, 1));
-}
-
-void TestPostingTask(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-                     base::Closure task) {
-  task_runner->PostTask(FROM_HERE, task);
-}
-
-TEST_F(TaskQueueManagerTest, AutoPumpAfterWakeupFromTask) {
-  Initialize(2u);
-  runners_[0]->SetPumpPolicy(TaskQueue::PumpPolicy::AFTER_WAKEUP);
-
-  std::vector<EnqueueOrder> run_order;
-  // Check that a task which posts a task to an auto pump after wakeup queue
-  // doesn't cause the queue to wake up.
-  base::Closure after_wakeup_task = base::Bind(&TestTask, 1, &run_order);
-  runners_[1]->PostTask(
-      FROM_HERE, base::Bind(&TestPostingTask, runners_[0], after_wakeup_task));
-  test_task_runner_->RunUntilIdle();
-  EXPECT_TRUE(run_order.empty());
-
-  // Wake up the queue.
-  runners_[1]->PostTask(FROM_HERE, base::Bind(&TestTask, 2, &run_order));
-  test_task_runner_->RunUntilIdle();
-  EXPECT_THAT(run_order, ElementsAre(2, 1));
-}
-
-TEST_F(TaskQueueManagerTest, AutoPumpAfterWakeupFromMultipleTasks) {
-  Initialize(2u);
-  runners_[0]->SetPumpPolicy(TaskQueue::PumpPolicy::AFTER_WAKEUP);
-
-  std::vector<EnqueueOrder> run_order;
-  // Check that a task which posts a task to an auto pump after wakeup queue
-  // doesn't cause the queue to wake up.
-  base::Closure after_wakeup_task_1 = base::Bind(&TestTask, 1, &run_order);
-  base::Closure after_wakeup_task_2 = base::Bind(&TestTask, 2, &run_order);
-  runners_[1]->PostTask(FROM_HERE, base::Bind(&TestPostingTask, runners_[0],
-                                              after_wakeup_task_1));
-  runners_[1]->PostTask(FROM_HERE, base::Bind(&TestPostingTask, runners_[0],
-                                              after_wakeup_task_2));
-  test_task_runner_->RunUntilIdle();
-  EXPECT_TRUE(run_order.empty());
-
-  // Wake up the queue.
-  runners_[1]->PostTask(FROM_HERE, base::Bind(&TestTask, 3, &run_order));
-  test_task_runner_->RunUntilIdle();
-  EXPECT_THAT(run_order, ElementsAre(3, 1, 2));
-}
-
-TEST_F(TaskQueueManagerTest, AutoPumpAfterWakeupBecomesQuiescent) {
-  Initialize(2u);
-  runners_[0]->SetPumpPolicy(TaskQueue::PumpPolicy::AFTER_WAKEUP);
-
-  int run_count = 0;
-  // Check that if multiple tasks reposts themselves onto a pump-after-wakeup
-  // queue they don't wake each other and will eventually stop when no other
-  // tasks execute.
-  runners_[0]->PostTask(
-      FROM_HERE, base::Bind(&RePostingTestTask, runners_[0], &run_count));
-  runners_[0]->PostTask(
-      FROM_HERE, base::Bind(&RePostingTestTask, runners_[0], &run_count));
-  runners_[1]->PostTask(FROM_HERE, base::Bind(&NopTask));
-  test_task_runner_->RunUntilIdle();
-  // The reposting tasks posted to the after wakeup queue shouldn't have woken
-  // each other up.
-  EXPECT_EQ(2, run_count);
-}
-
-TEST_F(TaskQueueManagerTest, AutoPumpAfterWakeupWithDontWakeQueue) {
-  Initialize(1u);
-
-  scoped_refptr<internal::TaskQueueImpl> queue0 = manager_->NewTaskQueue(
-      TaskQueue::Spec("test_queue 0")
-          .SetPumpPolicy(TaskQueue::PumpPolicy::AFTER_WAKEUP));
-  scoped_refptr<internal::TaskQueueImpl> queue1 = manager_->NewTaskQueue(
-      TaskQueue::Spec("test_queue 0")
-          .SetWakeupPolicy(TaskQueue::WakeupPolicy::DONT_WAKE_OTHER_QUEUES));
-  scoped_refptr<internal::TaskQueueImpl> queue2 = runners_[0];
-
-  std::vector<EnqueueOrder> run_order;
-  queue0->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
-  queue1->PostTask(FROM_HERE, base::Bind(&TestTask, 2, &run_order));
-  test_task_runner_->RunUntilIdle();
-  // Executing a DONT_WAKE_OTHER_QUEUES queue shouldn't wake the autopump after
-  // wakeup queue.
-  EXPECT_THAT(run_order, ElementsAre(2));
-
-  queue2->PostTask(FROM_HERE, base::Bind(&TestTask, 3, &run_order));
-  test_task_runner_->RunUntilIdle();
-  // Executing a CAN_WAKE_OTHER_QUEUES queue should wake the autopump after
-  // wakeup queue.
-  EXPECT_THAT(run_order, ElementsAre(2, 3, 1));
 }
 
 class MockTaskObserver : public base::MessageLoop::TaskObserver {
@@ -1077,80 +974,36 @@ TEST_F(TaskQueueManagerTest, GetAndClearSystemIsQuiescentBit) {
 }
 
 TEST_F(TaskQueueManagerTest, HasPendingImmediateWork) {
-  Initialize(2u);
-  internal::TaskQueueImpl* queue0 = runners_[0].get();
-  internal::TaskQueueImpl* queue1 = runners_[1].get();
-  queue0->SetPumpPolicy(TaskQueue::PumpPolicy::AUTO);
-  queue1->SetPumpPolicy(TaskQueue::PumpPolicy::MANUAL);
+  Initialize(1u);
 
-  EXPECT_FALSE(queue0->HasPendingImmediateWork());
-  EXPECT_FALSE(queue1->HasPendingImmediateWork());
-
-  queue0->PostTask(FROM_HERE, base::Bind(NullTask));
-  queue1->PostTask(FROM_HERE, base::Bind(NullTask));
-  EXPECT_TRUE(queue0->HasPendingImmediateWork());
-  EXPECT_TRUE(queue1->HasPendingImmediateWork());
+  EXPECT_FALSE(runners_[0]->HasPendingImmediateWork());
+  runners_[0]->PostTask(FROM_HERE, base::Bind(NullTask));
+  EXPECT_TRUE(runners_[0]->HasPendingImmediateWork());
 
   test_task_runner_->RunUntilIdle();
-  EXPECT_FALSE(queue0->HasPendingImmediateWork());
-  EXPECT_TRUE(queue1->HasPendingImmediateWork());
-
-  LazyNow lazy_now(now_src_.get());
-  queue1->PumpQueue(&lazy_now, true);
-  EXPECT_FALSE(queue0->HasPendingImmediateWork());
-  EXPECT_TRUE(queue1->HasPendingImmediateWork());
-
-  test_task_runner_->RunUntilIdle();
-  EXPECT_FALSE(queue0->HasPendingImmediateWork());
-  EXPECT_FALSE(queue1->HasPendingImmediateWork());
+  EXPECT_FALSE(runners_[0]->HasPendingImmediateWork());
 }
 
-TEST_F(TaskQueueManagerTest, HasPendingImmediateWorkAndNeedsPumping) {
-  Initialize(2u);
-  internal::TaskQueueImpl* queue0 = runners_[0].get();
-  internal::TaskQueueImpl* queue1 = runners_[1].get();
-  queue0->SetPumpPolicy(TaskQueue::PumpPolicy::AUTO);
-  queue1->SetPumpPolicy(TaskQueue::PumpPolicy::MANUAL);
+TEST_F(TaskQueueManagerTest, HasPendingImmediateWork_DelayedTasks) {
+  Initialize(1u);
 
-  EXPECT_FALSE(queue0->HasPendingImmediateWork());
-  EXPECT_FALSE(queue0->NeedsPumping());
-  EXPECT_FALSE(queue1->HasPendingImmediateWork());
-  EXPECT_FALSE(queue1->NeedsPumping());
+  EXPECT_FALSE(runners_[0]->HasPendingImmediateWork());
+  runners_[0]->PostDelayedTask(FROM_HERE, base::Bind(NullTask),
+                               base::TimeDelta::FromMilliseconds(12));
+  EXPECT_FALSE(runners_[0]->HasPendingImmediateWork());
 
-  queue0->PostTask(FROM_HERE, base::Bind(NullTask));
-  queue0->PostTask(FROM_HERE, base::Bind(NullTask));
-  queue1->PostTask(FROM_HERE, base::Bind(NullTask));
-  EXPECT_TRUE(queue0->HasPendingImmediateWork());
-  EXPECT_TRUE(queue0->NeedsPumping());
-  EXPECT_TRUE(queue1->HasPendingImmediateWork());
-  EXPECT_TRUE(queue1->NeedsPumping());
+  // Move time forwards until just before the delayed task should run.
+  now_src_->Advance(base::TimeDelta::FromMilliseconds(10));
+  UpdateWorkQueues(LazyNow(now_src_.get()));
+  EXPECT_FALSE(runners_[0]->HasPendingImmediateWork());
 
-  test_task_runner_->SetRunTaskLimit(1);
-  test_task_runner_->RunPendingTasks();
-  EXPECT_TRUE(queue0->HasPendingImmediateWork());
-  EXPECT_FALSE(queue0->NeedsPumping());
-  EXPECT_TRUE(queue1->HasPendingImmediateWork());
-  EXPECT_TRUE(queue1->NeedsPumping());
-
-  test_task_runner_->ClearRunTaskLimit();
-  test_task_runner_->RunUntilIdle();
-  EXPECT_FALSE(queue0->HasPendingImmediateWork());
-  EXPECT_FALSE(queue0->NeedsPumping());
-  EXPECT_TRUE(queue1->HasPendingImmediateWork());
-  EXPECT_TRUE(queue1->NeedsPumping());
-
-  LazyNow lazy_now(now_src_.get());
-  queue1->PumpQueue(&lazy_now, true);
-  EXPECT_FALSE(queue0->HasPendingImmediateWork());
-  EXPECT_FALSE(queue0->NeedsPumping());
-  EXPECT_TRUE(queue1->HasPendingImmediateWork());
-  EXPECT_FALSE(queue1->NeedsPumping());
+  // Force the delayed task onto the work queue.
+  now_src_->Advance(base::TimeDelta::FromMilliseconds(2));
+  UpdateWorkQueues(LazyNow(now_src_.get()));
+  EXPECT_TRUE(runners_[0]->HasPendingImmediateWork());
 
   test_task_runner_->RunUntilIdle();
-  EXPECT_FALSE(queue0->HasPendingImmediateWork());
-  EXPECT_FALSE(queue0->NeedsPumping());
-  EXPECT_FALSE(queue1->HasPendingImmediateWork());
-  EXPECT_FALSE(queue1->NeedsPumping());
+  EXPECT_FALSE(runners_[0]->HasPendingImmediateWork());
 }
 
 void ExpensiveTestTask(int value,
@@ -1401,35 +1254,6 @@ TEST_F(TaskQueueManagerTest, UnregisterTaskQueue_InTasks) {
   ASSERT_THAT(run_order, ElementsAre(1));
 }
 
-void PostTestTasksFromNestedMessageLoop(
-    base::MessageLoop* message_loop,
-    scoped_refptr<base::SingleThreadTaskRunner> main_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> wake_up_runner,
-    std::vector<EnqueueOrder>* run_order) {
-  base::MessageLoop::ScopedNestableTaskAllower allow(message_loop);
-  main_runner->PostNonNestableTask(FROM_HERE,
-                                   base::Bind(&TestTask, 1, run_order));
-  // The following should never get executed.
-  wake_up_runner->PostTask(FROM_HERE, base::Bind(&TestTask, 2, run_order));
-  base::RunLoop().RunUntilIdle();
-}
-
-TEST_F(TaskQueueManagerTest, DeferredNonNestableTaskDoesNotTriggerWakeUp) {
-  // This test checks that running (i.e., deferring) a non-nestable task in a
-  // nested run loop does not trigger the pumping of an on-wakeup queue.
-  InitializeWithRealMessageLoop(2u);
-  runners_[1]->SetPumpPolicy(TaskQueue::PumpPolicy::AFTER_WAKEUP);
-
-  std::vector<EnqueueOrder> run_order;
-  runners_[0]->PostTask(
-      FROM_HERE,
-      base::Bind(&PostTestTasksFromNestedMessageLoop, message_loop_.get(),
-                 runners_[0], runners_[1], base::Unretained(&run_order)));
-
-  base::RunLoop().RunUntilIdle();
-  ASSERT_THAT(run_order, ElementsAre(1));
-}
-
 namespace {
 
 class MockObserver : public TaskQueueManager::Observer {
@@ -1467,6 +1291,11 @@ TEST_F(TaskQueueManagerTest, OnTriedToExecuteBlockedTask) {
       TaskQueue::Spec("test_queue").SetShouldReportWhenExecutionBlocked(true));
   task_queue->SetQueueEnabled(false);
   task_queue->PostTask(FROM_HERE, base::Bind(&NopTask));
+
+  // Trick |task_queue| into posting a DoWork. By default PostTask with a
+  // disabled queue won't post a DoWork until we enable the queue.
+  task_queue->SetQueueEnabled(true);
+  task_queue->SetQueueEnabled(false);
 
   EXPECT_CALL(observer, OnTriedToExecuteBlockedTask(_, _)).Times(1);
   test_task_runner_->RunPendingTasks();
@@ -1994,8 +1823,7 @@ TEST_F(TaskQueueManagerTest, PostCancellableTask_AndCancel_OnWorkQueue) {
   EXPECT_TRUE(handle);
 
   // Force the task onto the work queue.
-  LazyNow lazy_now(now_src_.get());
-  runners_[0]->PumpQueue(&lazy_now, true);
+  UpdateWorkQueues(LazyNow(now_src_.get()));
 
   EXPECT_TRUE(runners_[0]->IsTaskPending(handle));
   EXPECT_TRUE(runners_[0]->CancelTask(handle));
@@ -2019,8 +1847,7 @@ TEST_F(TaskQueueManagerTest, PostThreeTasks_AndCancelOne_OnWorkQueue) {
       FROM_HERE, base::Bind(&TestTask, 3, &run_order), base::TimeDelta());
 
   // Force the tasks onto the work queue.
-  LazyNow lazy_now(now_src_.get());
-  runners_[0]->PumpQueue(&lazy_now, true);
+  UpdateWorkQueues(LazyNow(now_src_.get()));
 
   EXPECT_TRUE(runners_[0]->IsTaskPending(handle));
   EXPECT_TRUE(runners_[0]->CancelTask(handle));
@@ -2044,10 +1871,7 @@ TEST_F(TaskQueueManagerTest, PostThreeTasksOnDifferentQueues_AndCancelOne) {
       FROM_HERE, base::Bind(&TestTask, 3, &run_order), base::TimeDelta());
 
   // Force the tasks onto the work queues.
-  LazyNow lazy_now(now_src_.get());
-  runners_[0]->PumpQueue(&lazy_now, true);
-  runners_[1]->PumpQueue(&lazy_now, true);
-  runners_[2]->PumpQueue(&lazy_now, true);
+  UpdateWorkQueues(LazyNow(now_src_.get()));
 
   EXPECT_TRUE(runners_[1]->IsTaskPending(handle));
   EXPECT_TRUE(runners_[1]->CancelTask(handle));
@@ -2225,8 +2049,7 @@ TEST_F(TaskQueueManagerTest, PostDelayedCancellableTask_AndCancel_OnWorkQueue) {
 
   // Force the task onto the work queue.
   now_src_->Advance(base::TimeDelta::FromMilliseconds(10));
-  LazyNow lazy_now(now_src_.get());
-  runners_[0]->PumpQueue(&lazy_now, true);
+  UpdateWorkQueues(LazyNow(now_src_.get()));
 
   EXPECT_TRUE(runners_[0]->IsTaskPending(handle));
   EXPECT_TRUE(runners_[0]->CancelTask(handle));
@@ -2254,8 +2077,7 @@ TEST_F(TaskQueueManagerTest, PostThreeDelayedTasks_AndCancelOne_OnWorkQueue) {
 
   // Force the tasks onto the work queue.
   now_src_->Advance(base::TimeDelta::FromMilliseconds(10));
-  LazyNow lazy_now(now_src_.get());
-  runners_[0]->PumpQueue(&lazy_now, true);
+  UpdateWorkQueues(LazyNow(now_src_.get()));
 
   EXPECT_TRUE(runners_[0]->IsTaskPending(handle));
   EXPECT_TRUE(runners_[0]->CancelTask(handle));
@@ -2282,8 +2104,7 @@ TEST_F(TaskQueueManagerTest, BulkPostingDelayedTasks_AndCancelOnWorkQueue) {
 
   // Force the tasks onto the work queue.
   now_src_->Advance(base::TimeDelta::FromMilliseconds(2000));
-  LazyNow lazy_now(now_src_.get());
-  runners_[0]->PumpQueue(&lazy_now, true);
+  UpdateWorkQueues(LazyNow(now_src_.get()));
 
   // Cancel three timers.
   EXPECT_TRUE(runners_[0]->CancelTask(handles[123]));

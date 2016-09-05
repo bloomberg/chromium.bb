@@ -17,7 +17,8 @@ WorkQueue::WorkQueue(TaskQueueImpl* task_queue,
       work_queue_sets_(nullptr),
       task_queue_(task_queue),
       work_queue_set_index_(0),
-      name_(name) {}
+      name_(name),
+      fence_(0) {}
 
 void WorkQueue::AsValueInto(base::trace_event::TracedValue* state) const {
   for (const TaskQueueImpl::Task& task : work_queue_) {
@@ -36,8 +37,24 @@ const TaskQueueImpl::Task* WorkQueue::GetFrontTask() const {
   return &*work_queue_.begin();
 }
 
-bool WorkQueue::GetFrontTaskEnqueueOrder(EnqueueOrder* enqueue_order) const {
+const TaskQueueImpl::Task* WorkQueue::GetBackTask() const {
   if (work_queue_.empty())
+    return nullptr;
+  return &*work_queue_.rbegin();
+}
+
+bool WorkQueue::BlockedByFence() const {
+  if (!fence_)
+    return false;
+
+  // If the queue is empty then any future tasks will have a higher enqueue
+  // order and will be blocked. The queue is also blocked if the head is past
+  // the fence.
+  return work_queue_.empty() || work_queue_.begin()->enqueue_order() > fence_;
+}
+
+bool WorkQueue::GetFrontTaskEnqueueOrder(EnqueueOrder* enqueue_order) const {
+  if (work_queue_.empty() || BlockedByFence())
     return false;
   // Quick sanity check.
   DCHECK_LE(work_queue_.begin()->enqueue_order(),
@@ -64,9 +81,12 @@ void WorkQueue::Push(TaskQueueImpl::Task task) {
       "] rbegin() [" << work_queue_.rbegin()->delayed_run_time << ", "
       << work_queue_.rbegin()->sequence_num << "]";
 
-  if (was_empty && work_queue_sets_) {
+  if (!was_empty)
+    return;
+
+  // If we hit the fence, pretend to WorkQueueSets that we're empty.
+  if (work_queue_sets_ && !BlockedByFence())
     work_queue_sets_->OnPushQueue(this);
-  }
 }
 
 bool WorkQueue::CancelTask(const TaskQueueImpl::Task& key) {
@@ -80,7 +100,8 @@ bool WorkQueue::CancelTask(const TaskQueueImpl::Task& key) {
     // We can't guarantee this WorkQueue is the lowest value in the WorkQueueSet
     // so we need to use OnQueueHeadChanged instead of OnPopQueue for
     // correctness.
-    work_queue_sets_->OnQueueHeadChanged(this, erased_task_enqueue_order);
+    if (!BlockedByFence())
+      work_queue_sets_->OnQueueHeadChanged(this, erased_task_enqueue_order);
   } else {
     work_queue_.erase(it);
   }
@@ -101,9 +122,11 @@ void WorkQueue::PopTaskForTest() {
 void WorkQueue::SwapLocked(TaskQueueImpl::ComparatorQueue& incoming_queue) {
   DCHECK(work_queue_.empty());
   std::swap(work_queue_, incoming_queue);
-  if (!work_queue_.empty() && work_queue_sets_)
+  if (work_queue_.empty())
+    return;
+  // If we hit the fence, pretend to WorkQueueSets that we're empty.
+  if (work_queue_sets_ && !BlockedByFence())
     work_queue_sets_->OnPushQueue(this);
-  task_queue_->TraceQueueSize(true);
 }
 
 TaskQueueImpl::Task WorkQueue::TakeTaskFromWorkQueue() {
@@ -124,6 +147,30 @@ void WorkQueue::AssignToWorkQueueSets(WorkQueueSets* work_queue_sets) {
 
 void WorkQueue::AssignSetIndex(size_t work_queue_set_index) {
   work_queue_set_index_ = work_queue_set_index;
+}
+
+bool WorkQueue::InsertFence(EnqueueOrder fence) {
+  DCHECK_NE(fence, 0u);
+  DCHECK_GE(fence, fence_);
+  bool was_blocked_by_fence = BlockedByFence();
+  fence_ = fence;
+  // Moving the fence forward may unblock some tasks.
+  if (work_queue_sets_ && !work_queue_.empty() && was_blocked_by_fence &&
+      !BlockedByFence()) {
+    work_queue_sets_->OnPushQueue(this);
+    return true;
+  }
+  return false;
+}
+
+bool WorkQueue::RemoveFence() {
+  bool was_blocked_by_fence = BlockedByFence();
+  fence_ = 0;
+  if (work_queue_sets_ && !work_queue_.empty() && was_blocked_by_fence) {
+    work_queue_sets_->OnPushQueue(this);
+    return true;
+  }
+  return false;
 }
 
 bool WorkQueue::ShouldRunBefore(const WorkQueue* other_queue) const {

@@ -151,14 +151,11 @@ bool TimeDomain::UnregisterAsUpdatableTaskQueue(
   return was_updatable;
 }
 
-void TimeDomain::UpdateWorkQueues(
-    bool should_trigger_wakeup,
-    const internal::TaskQueueImpl::Task* previous_task,
-    LazyNow lazy_now) {
+void TimeDomain::UpdateWorkQueues(LazyNow lazy_now) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
   // Move any ready delayed tasks into the Incoming queues.
-  WakeupReadyDelayedQueues(&lazy_now, should_trigger_wakeup, previous_task);
+  WakeupReadyDelayedQueues(&lazy_now);
 
   MoveNewlyUpdatableQueuesIntoUpdatableQueueSet();
 
@@ -169,7 +166,7 @@ void TimeDomain::UpdateWorkQueues(
     // This is fine, erasing an element won't invalidate any interator, as long
     // as the iterator isn't the element being delated.
     if (queue->immediate_work_queue()->Empty())
-      queue->UpdateImmediateWorkQueue(should_trigger_wakeup, previous_task);
+      queue->UpdateImmediateWorkQueue();
   }
 }
 
@@ -182,10 +179,7 @@ void TimeDomain::MoveNewlyUpdatableQueuesIntoUpdatableQueueSet() {
   }
 }
 
-void TimeDomain::WakeupReadyDelayedQueues(
-    LazyNow* lazy_now,
-    bool should_trigger_wakeup,
-    const internal::TaskQueueImpl::Task* previous_task) {
+void TimeDomain::WakeupReadyDelayedQueues(LazyNow* lazy_now) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   // Wake up any queues with pending delayed work.  Note std::multipmap stores
   // the elements sorted by key, so the begin() iterator points to the earliest
@@ -202,8 +196,7 @@ void TimeDomain::WakeupReadyDelayedQueues(
     // in which EnqueueTaskLocks is called is respected when choosing which
     // queue to execute a task from.
     if (dedup_set.insert(next_wakeup->second).second) {
-      next_wakeup->second->UpdateDelayedWorkQueue(
-          lazy_now, should_trigger_wakeup, previous_task);
+      next_wakeup->second->UpdateDelayedWorkQueue(lazy_now);
     }
     delayed_wakeup_multimap_.erase(next_wakeup);
   }

@@ -161,13 +161,13 @@ TEST_F(TimeDomainTest, UpdateWorkQueues) {
   EXPECT_EQ(delayed_runtime, next_run_time);
 
   LazyNow lazy_now = time_domain_->CreateLazyNow();
-  time_domain_->UpdateWorkQueues(false, nullptr, lazy_now);
+  time_domain_->UpdateWorkQueues(lazy_now);
   ASSERT_TRUE(time_domain_->NextScheduledRunTime(&next_run_time));
   EXPECT_EQ(delayed_runtime, next_run_time);
 
   time_domain_->SetNow(delayed_runtime);
   lazy_now = time_domain_->CreateLazyNow();
-  time_domain_->UpdateWorkQueues(false, nullptr, lazy_now);
+  time_domain_->UpdateWorkQueues(lazy_now);
   ASSERT_FALSE(time_domain_->NextScheduledRunTime(&next_run_time));
 }
 
@@ -270,7 +270,7 @@ TEST_F(TimeDomainTest, CancelDelayedWorkTwoWakeUpsCancelSecond) {
 
   time_domain_->SetNow(delayed_runtime1);
   LazyNow lazy_now = time_domain_->CreateLazyNow();
-  time_domain_->UpdateWorkQueues(false, nullptr, lazy_now);
+  time_domain_->UpdateWorkQueues(lazy_now);
   ASSERT_FALSE(time_domain_->NextScheduledRunTime(&next_run_time));
 }
 

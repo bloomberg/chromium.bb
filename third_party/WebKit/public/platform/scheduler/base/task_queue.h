@@ -52,65 +52,19 @@ class BLINK_PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
     FIRST_QUEUE_PRIORITY = CONTROL_PRIORITY,
   };
 
-  // Keep TaskQueue::PumpPolicyToString in sync with this enum.
-  enum class PumpPolicy {
-    // Tasks posted to an incoming queue with an AUTO pump policy will be
-    // automatically scheduled for execution or transferred to the work queue
-    // automatically.
-    AUTO,
-    // Tasks posted to an incoming queue with an AFTER_WAKEUP pump policy
-    // will be scheduled for execution or transferred to the work queue
-    // automatically but only after another queue has executed a task.
-    AFTER_WAKEUP,
-    // Tasks posted to an incoming queue with a MANUAL will not be
-    // automatically scheduled for execution or transferred to the work queue.
-    // Instead, the selector should call PumpQueue() when necessary to bring
-    // in new tasks for execution.
-    MANUAL,
-    // Must be last entry.
-    PUMP_POLICY_COUNT,
-    FIRST_PUMP_POLICY = AUTO,
-  };
-
-  // Keep TaskQueue::WakeupPolicyToString in sync with this enum.
-  enum class WakeupPolicy {
-    // Tasks run on a queue with CAN_WAKE_OTHER_QUEUES wakeup policy can
-    // cause queues with the AFTER_WAKEUP PumpPolicy to be woken up.
-    CAN_WAKE_OTHER_QUEUES,
-    // Tasks run on a queue with DONT_WAKE_OTHER_QUEUES won't cause queues
-    // with the AFTER_WAKEUP PumpPolicy to be woken up.
-    DONT_WAKE_OTHER_QUEUES,
-    // Must be last entry.
-    WAKEUP_POLICY_COUNT,
-    FIRST_WAKEUP_POLICY = CAN_WAKE_OTHER_QUEUES,
-  };
-
-  // Options for constructing a TaskQueue. Once set the |name|,
-  // |should_monitor_quiescence| and |wakeup_policy| are immutable. The
-  // |pump_policy| can be mutated with |SetPumpPolicy()|.
+  // Options for constructing a TaskQueue. Once set the |name| and
+  // |should_monitor_quiescence| are immutable.
   struct Spec {
     // Note |name| must have application lifetime.
     explicit Spec(const char* name)
         : name(name),
           should_monitor_quiescence(false),
-          pump_policy(TaskQueue::PumpPolicy::AUTO),
-          wakeup_policy(TaskQueue::WakeupPolicy::CAN_WAKE_OTHER_QUEUES),
           time_domain(nullptr),
           should_notify_observers(true),
           should_report_when_execution_blocked(false) {}
 
     Spec SetShouldMonitorQuiescence(bool should_monitor) {
       should_monitor_quiescence = should_monitor;
-      return *this;
-    }
-
-    Spec SetPumpPolicy(PumpPolicy policy) {
-      pump_policy = policy;
-      return *this;
-    }
-
-    Spec SetWakeupPolicy(WakeupPolicy policy) {
-      wakeup_policy = policy;
       return *this;
     }
 
@@ -132,8 +86,6 @@ class BLINK_PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
 
     const char* name;
     bool should_monitor_quiescence;
-    TaskQueue::PumpPolicy pump_policy;
-    TaskQueue::WakeupPolicy wakeup_policy;
     TimeDomain* time_domain;
     bool should_notify_observers;
     bool should_report_when_execution_blocked;
@@ -192,13 +144,9 @@ class BLINK_PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
   // Returns true if the queue is completely empty.
   virtual bool IsEmpty() const = 0;
 
-  // Returns true if the queue has work that's ready to execute now, or if it
-  // would have if the queue was pumped. NOTE this must be called on the thread
-  // this TaskQueue was created by.
+  // Returns true if the queue has work that's ready to execute now. NOTE this
+  // must be called on the thread this TaskQueue was created by.
   virtual bool HasPendingImmediateWork() const = 0;
-
-  // Returns true if tasks can't run now but could if the queue was pumped.
-  virtual bool NeedsPumping() const = 0;
 
   // Can be called on any thread.
   virtual const char* GetName() const = 0;
@@ -209,28 +157,6 @@ class BLINK_PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
 
   // Returns the current queue priority.
   virtual QueuePriority GetQueuePriority() const = 0;
-
-  // Set the pumping policy of the queue to |pump_policy|. NOTE this must be
-  // called on the thread this TaskQueue was created by.
-  virtual void SetPumpPolicy(PumpPolicy pump_policy) = 0;
-
-  // Returns the current PumpPolicy. NOTE this must be called on the thread this
-  // TaskQueue was created by.
-  virtual PumpPolicy GetPumpPolicy() const = 0;
-
-  // Reloads new tasks from the incoming queue into the work queue, regardless
-  // of whether the work queue is empty or not. After this, the function ensures
-  // that the tasks in the work queue, if any, are scheduled for execution.
-  //
-  // This function only needs to be called if automatic pumping is disabled.
-  // By default automatic pumping is enabled for all queues. NOTE this must be
-  // called on the thread this TaskQueue was created by.
-  //
-  // The |may_post_dowork| parameter controls whether or not PumpQueue calls
-  // TaskQueueManager::MaybeScheduleImmediateWork.
-  // TODO(alexclarke): Add a base::RunLoop observer so we can get rid of
-  // |may_post_dowork|.
-  virtual void PumpQueue(LazyNow* lazy_now, bool may_post_dowork) = 0;
 
   // These functions can only be called on the same thread that the task queue
   // manager executes its tasks on.
@@ -251,6 +177,19 @@ class BLINK_PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
 
   // Returns the queue's current TimeDomain.  Can be called from any thread.
   virtual TimeDomain* GetTimeDomain() const = 0;
+
+  // Inserts a barrier into the task queue which inhibits non-delayed tasks
+  // posted after this point, or delayed tasks which are not yet ready to run,
+  // from being executed until the fence is cleared.  If a fence already existed
+  // the one supersedes it and previously blocked tasks will now run up until
+  // the new fence is hit.
+  virtual void InsertFence() = 0;
+
+  // Removes any previously added fence and unblocks execution of any tasks
+  // blocked by it.
+  virtual void RemoveFence() = 0;
+
+  virtual bool BlockedByFence() const = 0;
 
  protected:
   ~TaskQueue() override {}

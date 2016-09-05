@@ -396,82 +396,6 @@ TEST_F(IdleHelperTest, TestIdleTaskExceedsDeadline) {
   EXPECT_EQ(2, run_count);
 }
 
-TEST_F(IdleHelperTest, TestPostIdleTaskAfterWakeup) {
-  base::TimeTicks deadline_in_task;
-  int run_count = 0;
-
-  idle_task_runner_->PostIdleTaskAfterWakeup(
-      FROM_HERE, base::Bind(&IdleTestTask, &run_count, &deadline_in_task));
-
-  idle_helper_->StartIdlePeriod(
-      IdleHelper::IdlePeriodState::IN_SHORT_IDLE_PERIOD, clock_->NowTicks(),
-      clock_->NowTicks() + base::TimeDelta::FromMilliseconds(10));
-  RunUntilIdle();
-  // Shouldn't run yet as no other task woke up the scheduler.
-  EXPECT_EQ(0, run_count);
-
-  // Must start a new idle period before idle task runs.
-  idle_task_runner_->PostIdleTaskAfterWakeup(
-      FROM_HERE, base::Bind(&IdleTestTask, &run_count, &deadline_in_task));
-
-  idle_helper_->StartIdlePeriod(
-      IdleHelper::IdlePeriodState::IN_SHORT_IDLE_PERIOD, clock_->NowTicks(),
-      clock_->NowTicks() + base::TimeDelta::FromMilliseconds(10));
-  RunUntilIdle();
-  // Another after wakeup idle task shouldn't wake the scheduler.
-  EXPECT_EQ(0, run_count);
-
-  default_task_runner_->PostTask(FROM_HERE, base::Bind(&NullTask));
-
-  RunUntilIdle();
-  idle_helper_->StartIdlePeriod(
-      IdleHelper::IdlePeriodState::IN_SHORT_IDLE_PERIOD, clock_->NowTicks(),
-      clock_->NowTicks() + base::TimeDelta::FromMilliseconds(10));
-  RunUntilIdle();
-  // Execution of default task queue task should trigger execution of idle task.
-  EXPECT_EQ(2, run_count);
-}
-
-TEST_F(IdleHelperTest, TestPostIdleTaskAfterWakeupWhileAwake) {
-  base::TimeTicks deadline_in_task;
-  int run_count = 0;
-
-  idle_task_runner_->PostIdleTaskAfterWakeup(
-      FROM_HERE, base::Bind(&IdleTestTask, &run_count, &deadline_in_task));
-  default_task_runner_->PostTask(FROM_HERE, base::Bind(&NullTask));
-
-  RunUntilIdle();
-  // Must start a new idle period before idle task runs.
-  idle_helper_->StartIdlePeriod(
-      IdleHelper::IdlePeriodState::IN_SHORT_IDLE_PERIOD, clock_->NowTicks(),
-      clock_->NowTicks() + base::TimeDelta::FromMilliseconds(10));
-  RunUntilIdle();
-  // Should run as the scheduler was already awakened by the normal task.
-  EXPECT_EQ(1, run_count);
-}
-
-TEST_F(IdleHelperTest, TestPostIdleTaskWakesAfterWakeupIdleTask) {
-  base::TimeTicks deadline_in_task;
-  int run_count = 0;
-
-  idle_task_runner_->PostIdleTaskAfterWakeup(
-      FROM_HERE, base::Bind(&IdleTestTask, &run_count, &deadline_in_task));
-  idle_task_runner_->PostIdleTask(
-      FROM_HERE, base::Bind(&IdleTestTask, &run_count, &deadline_in_task));
-
-  idle_helper_->StartIdlePeriod(
-      IdleHelper::IdlePeriodState::IN_SHORT_IDLE_PERIOD, clock_->NowTicks(),
-      clock_->NowTicks() + base::TimeDelta::FromMilliseconds(10));
-  RunUntilIdle();
-  // Must start a new idle period before after-wakeup idle task runs.
-  idle_helper_->StartIdlePeriod(
-      IdleHelper::IdlePeriodState::IN_SHORT_IDLE_PERIOD, clock_->NowTicks(),
-      clock_->NowTicks() + base::TimeDelta::FromMilliseconds(10));
-  RunUntilIdle();
-  // Normal idle task should wake up after-wakeup idle task.
-  EXPECT_EQ(2, run_count);
-}
-
 class IdleHelperTestWithIdlePeriodObserver : public BaseIdleHelperTest {
  public:
   IdleHelperTestWithIdlePeriodObserver()
@@ -703,42 +627,6 @@ TEST_F(IdleHelperTestWithIdlePeriodObserver, TestLongIdlePeriodRepeating) {
   // Ensure that reposting tasks stop after EndIdlePeriod is called.
   RunUntilIdle();
   EXPECT_EQ(4, run_count);
-}
-
-TEST_F(IdleHelperTest, TestLongIdlePeriodDoesNotWakeScheduler) {
-  base::TimeTicks deadline_in_task;
-  int run_count = 0;
-
-  // Start a long idle period and get the time it should end.
-  idle_helper_->EnableLongIdlePeriod();
-  // The scheduler should not run the enable_next_long_idle_period task if
-  // there are no idle tasks and no other task woke up the scheduler, thus
-  // the idle period deadline shouldn't update at the end of the current long
-  // idle period.
-  base::TimeTicks idle_period_deadline = CurrentIdleTaskDeadline();
-  clock_->Advance(maximum_idle_period_duration());
-  RunUntilIdle();
-
-  base::TimeTicks new_idle_period_deadline = CurrentIdleTaskDeadline();
-  EXPECT_EQ(idle_period_deadline, new_idle_period_deadline);
-
-  // Posting a after-wakeup idle task also shouldn't wake the scheduler or
-  // initiate the next long idle period.
-  idle_task_runner_->PostIdleTaskAfterWakeup(
-      FROM_HERE, base::Bind(&IdleTestTask, &run_count, &deadline_in_task));
-  RunUntilIdle();
-  new_idle_period_deadline = CurrentIdleTaskDeadline();
-  EXPECT_EQ(idle_period_deadline, new_idle_period_deadline);
-  EXPECT_EQ(0, run_count);
-
-  // Running a normal task should initiate a new long idle period though.
-  default_task_runner_->PostTask(FROM_HERE, base::Bind(&NullTask));
-  RunUntilIdle();
-  new_idle_period_deadline = CurrentIdleTaskDeadline();
-  EXPECT_EQ(idle_period_deadline + maximum_idle_period_duration(),
-            new_idle_period_deadline);
-
-  EXPECT_EQ(1, run_count);
 }
 
 TEST_F(IdleHelperTestWithIdlePeriodObserver,

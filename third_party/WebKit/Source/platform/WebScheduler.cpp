@@ -48,9 +48,4 @@ void WebScheduler::postNonNestableIdleTask(const WebTraceLocation& location, std
     postNonNestableIdleTask(location, new IdleTaskRunner(std::move(idleTask)));
 }
 
-void WebScheduler::postIdleTaskAfterWakeup(const WebTraceLocation& location, std::unique_ptr<IdleTask> idleTask)
-{
-    postIdleTaskAfterWakeup(location, new IdleTaskRunner(std::move(idleTask)));
-}
-
 } // namespace blink

@@ -741,68 +741,6 @@ TEST_F(RendererSchedulerImplTest, TestIdleTaskExceedsDeadline) {
   EXPECT_EQ(2, run_count);
 }
 
-TEST_F(RendererSchedulerImplTest, TestPostIdleTaskAfterWakeup) {
-  base::TimeTicks deadline_in_task;
-  int run_count = 0;
-
-  idle_task_runner_->PostIdleTaskAfterWakeup(
-      FROM_HERE, base::Bind(&IdleTestTask, &run_count, &deadline_in_task));
-
-  EnableIdleTasks();
-  RunUntilIdle();
-  // Shouldn't run yet as no other task woke up the scheduler.
-  EXPECT_EQ(0, run_count);
-
-  idle_task_runner_->PostIdleTaskAfterWakeup(
-      FROM_HERE, base::Bind(&IdleTestTask, &run_count, &deadline_in_task));
-
-  EnableIdleTasks();
-  RunUntilIdle();
-  // Another after wakeup idle task shouldn't wake the scheduler.
-  EXPECT_EQ(0, run_count);
-
-  default_task_runner_->PostTask(FROM_HERE, base::Bind(&NullTask));
-
-  RunUntilIdle();
-  EnableIdleTasks();  // Must start a new idle period before idle task runs.
-  RunUntilIdle();
-  // Execution of default task queue task should trigger execution of idle task.
-  EXPECT_EQ(2, run_count);
-}
-
-TEST_F(RendererSchedulerImplTest, TestPostIdleTaskAfterWakeupWhileAwake) {
-  base::TimeTicks deadline_in_task;
-  int run_count = 0;
-
-  idle_task_runner_->PostIdleTaskAfterWakeup(
-      FROM_HERE, base::Bind(&IdleTestTask, &run_count, &deadline_in_task));
-  default_task_runner_->PostTask(FROM_HERE, base::Bind(&NullTask));
-
-  RunUntilIdle();
-  EnableIdleTasks();  // Must start a new idle period before idle task runs.
-  RunUntilIdle();
-  // Should run as the scheduler was already awakened by the normal task.
-  EXPECT_EQ(1, run_count);
-}
-
-TEST_F(RendererSchedulerImplTest, TestPostIdleTaskWakesAfterWakeupIdleTask) {
-  base::TimeTicks deadline_in_task;
-  int run_count = 0;
-
-  idle_task_runner_->PostIdleTaskAfterWakeup(
-      FROM_HERE, base::Bind(&IdleTestTask, &run_count, &deadline_in_task));
-  idle_task_runner_->PostIdleTask(
-      FROM_HERE, base::Bind(&IdleTestTask, &run_count, &deadline_in_task));
-
-  EnableIdleTasks();
-  RunUntilIdle();
-  // Must start a new idle period before after-wakeup idle task runs.
-  EnableIdleTasks();
-  RunUntilIdle();
-  // Normal idle task should wake up after-wakeup idle task.
-  EXPECT_EQ(2, run_count);
-}
-
 TEST_F(RendererSchedulerImplTest, TestDelayedEndIdlePeriodCanceled) {
   int run_count = 0;
 
@@ -2051,43 +1989,6 @@ TEST_F(RendererSchedulerImplTest, TestLongIdlePeriodRepeating) {
   EXPECT_EQ(4, run_count);
 }
 
-TEST_F(RendererSchedulerImplTest, TestLongIdlePeriodDoesNotWakeScheduler) {
-  base::TimeTicks deadline_in_task;
-  int run_count = 0;
-
-  // Start a long idle period and get the time it should end.
-  scheduler_->BeginFrameNotExpectedSoon();
-  // The scheduler should not run the initiate_next_long_idle_period task if
-  // there are no idle tasks and no other task woke up the scheduler, thus
-  // the idle period deadline shouldn't update at the end of the current long
-  // idle period.
-  base::TimeTicks idle_period_deadline =
-      scheduler_->CurrentIdleTaskDeadlineForTesting();
-  clock_->Advance(maximum_idle_period_duration());
-  RunUntilIdle();
-
-  base::TimeTicks new_idle_period_deadline =
-      scheduler_->CurrentIdleTaskDeadlineForTesting();
-  EXPECT_EQ(idle_period_deadline, new_idle_period_deadline);
-
-  // Posting a after-wakeup idle task also shouldn't wake the scheduler or
-  // initiate the next long idle period.
-  idle_task_runner_->PostIdleTaskAfterWakeup(
-      FROM_HERE, base::Bind(&IdleTestTask, &run_count, &deadline_in_task));
-  RunUntilIdle();
-  new_idle_period_deadline = scheduler_->CurrentIdleTaskDeadlineForTesting();
-  EXPECT_EQ(idle_period_deadline, new_idle_period_deadline);
-  EXPECT_EQ(0, run_count);
-
-  // Running a normal task should initiate a new long idle period though.
-  default_task_runner_->PostTask(FROM_HERE, base::Bind(&NullTask));
-  RunUntilIdle();
-  new_idle_period_deadline = scheduler_->CurrentIdleTaskDeadlineForTesting();
-  EXPECT_EQ(idle_period_deadline + maximum_idle_period_duration(),
-            new_idle_period_deadline);
-
-  EXPECT_EQ(1, run_count);
-}
 
 TEST_F(RendererSchedulerImplTest, TestLongIdlePeriodInTouchStartPolicy) {
   base::TimeTicks deadline_in_task;
@@ -3041,13 +2942,26 @@ TEST_F(RendererSchedulerImplTest,
                    base::Unretained(this)));
     EXPECT_EQ(UseCase::SYNCHRONIZED_GESTURE, CurrentUseCase()) << "i = " << i;
 
-    // Before the policy is updated the queue will be enabled. Subsequently it
-    // will be disabled until the throttled queue is pumped.
-    bool expect_queue_enabled =
-        (i == 0) || (clock_->NowTicks() > first_throttled_run_time);
-    EXPECT_EQ(expect_queue_enabled,
-              scheduler_->TimerTaskRunner()->IsQueueEnabled())
+    // We expect the queue to get throttled on the second iteration which is
+    // when the system realizes the task is expensive.
+    bool expect_queue_throttled = (i > 0);
+    EXPECT_EQ(expect_queue_throttled,
+              scheduler_->throttling_helper()->IsThrottled(
+                  scheduler_->TimerTaskRunner().get()))
         << "i = " << i;
+
+    if (expect_queue_throttled) {
+      EXPECT_GE(count, 2u);
+    } else {
+      EXPECT_LE(count, 2u);
+    }
+
+    // The task runs twice before the system realizes it's too expensive.
+    bool throttled_task_has_run = count > 2;
+    bool throttled_task_expected_to_have_run =
+        (clock_->NowTicks() > first_throttled_run_time);
+    EXPECT_EQ(throttled_task_expected_to_have_run, throttled_task_has_run)
+        << "i = " << i << " count = " << count;
   }
 
   // Task is throttled but not completely blocked.

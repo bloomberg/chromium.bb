@@ -1860,6 +1860,7 @@ test("blink_platform_unittests") {
     "scheduler/base/thread_load_tracker_unittest.cc",
     "scheduler/base/time_domain_unittest.cc",
     "scheduler/base/work_queue_sets_unittest.cc",
+    "scheduler/base/work_queue_unittest.cc",
     "scheduler/child/idle_helper_unittest.cc",
     "scheduler/child/scheduler_helper_unittest.cc",
     "scheduler/child/scheduler_tqm_delegate_impl_unittest.cc",
