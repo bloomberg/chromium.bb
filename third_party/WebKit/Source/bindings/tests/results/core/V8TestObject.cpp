@@ -9826,7 +9826,7 @@ static void perWorldBindingsVoidMethodTestInterfaceEmptyArgMethodCallbackForMain
     TestObjectV8Internal::perWorldBindingsVoidMethodTestInterfaceEmptyArgMethodForMainWorld(info);
 }
 
-void postMessageImpl(const char* interfaceName, TestObject* instance, const v8::FunctionCallbackInfo<v8::Value>& info)
+static void postMessageImpl(const char* interfaceName, TestObject* instance, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "postMessage", interfaceName, info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {

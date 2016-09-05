@@ -454,7 +454,7 @@ static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackI
 
 {##############################################################################}
 {% macro generate_post_message_impl() %}
-void postMessageImpl(const char* interfaceName, {{cpp_class}}* instance, const v8::FunctionCallbackInfo<v8::Value>& info)
+static void postMessageImpl(const char* interfaceName, {{cpp_class}}* instance, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "postMessage", interfaceName, info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
