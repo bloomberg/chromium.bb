@@ -968,6 +968,11 @@ void RenderThreadImpl::Shutdown() {
 
   ChildThreadImpl::ShutdownDiscardableSharedMemoryManager();
 
+  if (main_message_loop_)
+    base::RunLoop().RunUntilIdle();
+
+  main_message_loop_.reset();
+
   lazy_tls.Pointer()->Set(nullptr);
 }
 
