@@ -150,7 +150,7 @@ class ProtocolHandlerUtilTest : public testing::Test,
     EXPECT_TRUE([response isMemberOfClass:[NSURLResponse class]]);
   }
 
-  void OnResponseStarted(URLRequest* request) override {}
+  void OnResponseStarted(URLRequest* request, int net_error) override {}
   void OnReadCompleted(URLRequest* request, int bytes_read) override {}
 
  protected:

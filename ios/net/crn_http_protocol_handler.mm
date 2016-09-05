@@ -150,7 +150,7 @@ class HttpProtocolHandlerCore
   void OnSSLCertificateError(URLRequest* request,
                              const SSLInfo& ssl_info,
                              bool fatal) override;
-  void OnResponseStarted(URLRequest* request) override;
+  void OnResponseStarted(URLRequest* request, int net_error) override;
   void OnReadCompleted(URLRequest* request, int bytes_read) override;
 
  private:
@@ -453,16 +453,16 @@ void HttpProtocolHandlerCore::OnSSLCertificateError(URLRequest* request,
   }
 }
 
-void HttpProtocolHandlerCore::OnResponseStarted(URLRequest* request) {
+void HttpProtocolHandlerCore::OnResponseStarted(URLRequest* request,
+                                                int net_error) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_NE(net::ERR_IO_PENDING, net_error);
 
   if (net_request_ == nullptr)
     return;
 
-  const URLRequestStatus& status = request->status();
-  if (!status.is_success()) {
-    int error = status.error();
-    StopRequestWithError(IOSErrorCode(error), error);
+  if (net_error != net::OK) {
+    StopRequestWithError(IOSErrorCode(net_error), net_error);
     return;
   }
 
@@ -507,18 +507,21 @@ void HttpProtocolHandlerCore::StartReading() {
   // using it and the object is not re-entrant.
   [top_level_client_ didReceiveResponse:response];
 
-  int bytes_read = 0;
+  int bytes_read = net_request_->Read(buffer_.get(), kIOBufferSize);
+  if (bytes_read == net::ERR_IO_PENDING)
+    return;
 
-  if (net_request_->Read(buffer_.get(), kIOBufferSize, &bytes_read)) {
+  if (bytes_read >= 0) {
     OnReadCompleted(net_request_, bytes_read);
-  } else if (!net_request_->status().is_success()) {
-    int error = net_request_->status().error();
+  } else {
+    int error = bytes_read;
     StopRequestWithError(IOSErrorCode(error), error);
   }
 }
 
 void HttpProtocolHandlerCore::OnReadCompleted(URLRequest* request,
                                               int bytes_read) {
+  DCHECK_NE(net::ERR_IO_PENDING, bytes_read);
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (net_request_ == nullptr)
@@ -530,25 +533,21 @@ void HttpProtocolHandlerCore::OnReadCompleted(URLRequest* request,
   // TODO(droger): It may be possible to avoid some of the copies (using
   // WrappedIOBuffer for example).
   NSUInteger data_length;
-  bool loop = (bytes_read > 0);
-  bool io_pending = false;
-  uint64_t total_byte_read = loop ? bytes_read : 0;
-  while (loop) {
+  uint64_t total_byte_read = 0;
+  while (bytes_read > 0) {
+    total_byte_read += bytes_read;
     data_length = [data length];  // Assumes that getting the length is fast.
     [data increaseLengthBy:bytes_read];
     memcpy(reinterpret_cast<char*>([data mutableBytes]) + data_length,
            buffer_->data(), bytes_read);
-    io_pending = !request->Read(buffer_.get(), kIOBufferSize, &bytes_read);
-    loop = !io_pending && (bytes_read > 0);
-    total_byte_read += bytes_read;
+    request->Read(buffer_.get(), kIOBufferSize, &bytes_read);
   }
 
   if (tracker_)
     tracker_->CaptureReceivedBytes(request, total_byte_read);
 
   // Notify the client.
-  const URLRequestStatus& status = request->status();
-  if (status.is_success()) {
+  if (bytes_read == net::OK || bytes_read == net::ERR_IO_PENDING) {
     if ([data length] > 0) {
       // If the data is not encoded in UTF8, the NSString is nil.
       DVLOG(3) << "To client:" << std::endl
@@ -557,7 +556,7 @@ void HttpProtocolHandlerCore::OnReadCompleted(URLRequest* request,
                           encoding:NSUTF8StringEncoding] autorelease]);
       [top_level_client_ didLoadData:data];
     }
-    if (bytes_read == 0 && !io_pending) {
+    if (bytes_read == 0) {
       DCHECK_EQ(net_request_, request);
       // There is nothing more to read.
       StopNetRequest();
@@ -565,7 +564,7 @@ void HttpProtocolHandlerCore::OnReadCompleted(URLRequest* request,
     }
   } else {
     // Request failed (not canceled).
-    int error = status.error();
+    int error = bytes_read;
     StopRequestWithError(IOSErrorCode(error), error);
   }
 }

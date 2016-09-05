@@ -45,11 +45,12 @@ void ShellNetworkDelegate::OnBeforeRedirect(net::URLRequest* request,
                                             const GURL& new_location) {
 }
 
-void ShellNetworkDelegate::OnResponseStarted(net::URLRequest* request) {
-}
+void ShellNetworkDelegate::OnResponseStarted(net::URLRequest* request,
+                                             int net_error) {}
 
-void ShellNetworkDelegate::OnCompleted(net::URLRequest* request, bool started) {
-}
+void ShellNetworkDelegate::OnCompleted(net::URLRequest* request,
+                                       bool started,
+                                       int net_error) {}
 
 void ShellNetworkDelegate::OnURLRequestDestroyed(net::URLRequest* request) {
 }

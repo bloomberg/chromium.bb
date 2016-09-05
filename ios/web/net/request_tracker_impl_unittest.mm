@@ -129,7 +129,7 @@ class DummyURLRequestDelegate : public net::URLRequest::Delegate {
   DummyURLRequestDelegate() {}
   ~DummyURLRequestDelegate() override {}
 
-  void OnResponseStarted(net::URLRequest* request) override {}
+  void OnResponseStarted(net::URLRequest* request, int net_error) override {}
   void OnReadCompleted(net::URLRequest* request, int bytes_read) override {}
 
  private:
