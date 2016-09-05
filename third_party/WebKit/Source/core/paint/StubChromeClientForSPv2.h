@@ -16,8 +16,7 @@ namespace blink {
 // simple analysis of the results.
 class StubChromeClientForSPv2 : public EmptyChromeClient {
 public:
-    StubChromeClientForSPv2(WebLayerTreeViewImplForTesting::LayerListPolicy layerListPolicy)
-        : m_layerTreeView(layerListPolicy)
+    StubChromeClientForSPv2() : m_layerTreeView()
     {
         m_layerTreeView.setRootLayer(*m_paintArtifactCompositor.getWebLayer());
     }

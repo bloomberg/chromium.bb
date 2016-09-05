@@ -24,12 +24,12 @@
 
 namespace blink {
 
-class HTMLCanvasPainterTestForSPv2 : public ::testing::TestWithParam<WebLayerTreeViewImplForTesting::LayerListPolicy> {
+class HTMLCanvasPainterTestForSPv2 : public ::testing::Test {
 protected:
     void SetUp() override
     {
         RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(true);
-        m_chromeClient = new StubChromeClientForSPv2(GetParam());
+        m_chromeClient = new StubChromeClientForSPv2();
         Page::PageClients clients;
         fillWithEmptyClients(clients);
         clients.chromeClient = m_chromeClient.get();
@@ -67,11 +67,7 @@ private:
     std::unique_ptr<DummyPageHolder> m_pageHolder;
 };
 
-INSTANTIATE_TEST_CASE_P(, HTMLCanvasPainterTestForSPv2, ::testing::Values(
-    WebLayerTreeViewImplForTesting::DontUseLayerLists,
-    WebLayerTreeViewImplForTesting::UseLayerLists));
-
-TEST_P(HTMLCanvasPainterTestForSPv2, Canvas2DLayerAppearsInLayerTree)
+TEST_F(HTMLCanvasPainterTestForSPv2, Canvas2DLayerAppearsInLayerTree)
 {
     // Insert a <canvas> and force it into accelerated mode.
     document().body()->setInnerHTML("<canvas width=300 height=200>", ASSERT_NO_EXCEPTION);

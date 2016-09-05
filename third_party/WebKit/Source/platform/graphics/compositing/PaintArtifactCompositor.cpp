@@ -123,100 +123,6 @@ static scoped_refptr<cc::DisplayItemList> recordPaintChunk(const PaintArtifact& 
     return list;
 }
 
-static gfx::Transform transformToTransformSpace(const TransformPaintPropertyNode* currentSpace, const TransformPaintPropertyNode* targetSpace)
-{
-    TransformationMatrix matrix;
-    while (currentSpace != targetSpace) {
-        TransformationMatrix localMatrix = currentSpace->matrix();
-        localMatrix.applyTransformOrigin(currentSpace->origin());
-        matrix = localMatrix * matrix;
-        currentSpace = currentSpace->parent();
-    }
-    return gfx::Transform(TransformationMatrix::toSkMatrix44(matrix));
-}
-
-const TransformPaintPropertyNode* localTransformSpace(const ClipPaintPropertyNode* clip)
-{
-    return clip ? clip->localTransformSpace() : nullptr;
-}
-
-scoped_refptr<cc::Layer> createClipLayer(const ClipPaintPropertyNode* node)
-{
-    // TODO(jbroman): Handle rounded-rect clips.
-    // TODO(jbroman): Handle clips of non-integer size.
-    gfx::RectF clipRect = node->clipRect().rect();
-
-    // TODO(jbroman): This, and the similar logic in
-    // PaintArtifactCompositor::update, will need to be updated to account for
-    // other kinds of intermediate layers, such as those that apply effects.
-    // TODO(jbroman): This assumes that the transform space of this node's
-    // parent is an ancestor of this node's transform space. That's not
-    // necessarily true, and this should be fixed. crbug.com/597156
-    gfx::Transform transform = transformToTransformSpace(localTransformSpace(node), localTransformSpace(node->parent()));
-    gfx::Vector2dF offset = clipRect.OffsetFromOrigin();
-    transform.Translate(offset.x(), offset.y());
-    if (node->parent()) {
-        FloatPoint offsetDueToParentClipOffset = node->parent()->clipRect().rect().location();
-        gfx::Transform undoClipOffset;
-        undoClipOffset.Translate(-offsetDueToParentClipOffset.x(), -offsetDueToParentClipOffset.y());
-        transform.ConcatTransform(undoClipOffset);
-    }
-
-    scoped_refptr<cc::Layer> layer = cc::Layer::Create();
-    layer->SetIsDrawable(false);
-    layer->SetMasksToBounds(true);
-    layer->SetPosition(gfx::PointF());
-    layer->SetBounds(gfx::ToRoundedSize(clipRect.size()));
-    layer->SetTransform(transform);
-    return layer;
-}
-
-class ClipLayerManager {
-public:
-    ClipLayerManager(cc::Layer* rootLayer)
-    {
-        m_clipLayers.append(NodeLayerPair(nullptr, rootLayer));
-    }
-
-    cc::Layer* switchToNewClipLayer(const ClipPaintPropertyNode* clip)
-    {
-        // Walk up to the nearest common ancestor.
-        const auto* ancestor = propertyTreeNearestCommonAncestor<ClipPaintPropertyNode>(clip, m_clipLayers.last().first);
-        while (m_clipLayers.last().first != ancestor)
-            m_clipLayers.removeLast();
-
-        // If the new one was an ancestor, we're done.
-        cc::Layer* ancestorClipLayer = m_clipLayers.last().second;
-        if (ancestor == clip)
-            return ancestorClipLayer;
-
-        // Otherwise, we need to build new clip layers.
-        // We do this from the bottom up.
-        size_t numExistingClipLayers = m_clipLayers.size();
-        scoped_refptr<cc::Layer> childLayer;
-        do {
-            scoped_refptr<cc::Layer> clipLayer = createClipLayer(clip);
-            m_clipLayers.append(NodeLayerPair(clip, clipLayer.get()));
-            if (childLayer)
-                clipLayer->AddChild(std::move(childLayer));
-            childLayer = std::move(clipLayer);
-            clip = clip->parent();
-        } while (ancestor != clip);
-        ancestorClipLayer->AddChild(std::move(childLayer));
-
-        // Rearrange the new clip layers to be in top-down order, like they
-        // should be.
-        std::reverse(m_clipLayers.begin() + numExistingClipLayers, m_clipLayers.end());
-
-        // Return the last (bottom-most) clip layer.
-        return m_clipLayers.last().second;
-    }
-
-private:
-    using NodeLayerPair = std::pair<const ClipPaintPropertyNode*, cc::Layer*>;
-    Vector<NodeLayerPair, 16> m_clipLayers;
-};
-
 scoped_refptr<cc::Layer> foreignLayerForPaintChunk(const PaintArtifact& paintArtifact, const PaintChunk& paintChunk, gfx::Vector2dF& layerOffset)
 {
     if (paintChunk.size() != 1)
@@ -272,55 +178,6 @@ void setMinimalPropertyTrees(cc::PropertyTrees* propertyTrees, int ownerId)
 }
 
 } // namespace
-
-void PaintArtifactCompositor::update(const PaintArtifact& paintArtifact)
-{
-    DCHECK(m_rootLayer);
-
-    if (m_extraDataForTestingEnabled)
-        m_extraDataForTesting = wrapUnique(new ExtraDataForTesting);
-
-    // If the compositor is configured to expect using flat layer lists plus
-    // property trees, then we should provide that format.
-    cc::LayerTreeHost* host = m_rootLayer->layer_tree_host();
-    const bool useLayerLists = host && host->settings().use_layer_lists;
-    if (useLayerLists) {
-        updateInLayerListMode(paintArtifact);
-        return;
-    }
-
-    // TODO(jbroman): This should be incremental.
-    m_rootLayer->RemoveAllChildren();
-    m_contentLayerClients.clear();
-
-    m_contentLayerClients.reserveCapacity(paintArtifact.paintChunks().size());
-    ClipLayerManager clipLayerManager(m_rootLayer.get());
-    for (const PaintChunk& paintChunk : paintArtifact.paintChunks()) {
-        cc::Layer* parent = clipLayerManager.switchToNewClipLayer(paintChunk.properties.clip.get());
-
-        gfx::Vector2dF layerOffset;
-        scoped_refptr<cc::Layer> layer = layerForPaintChunk(paintArtifact, paintChunk, layerOffset);
-        // TODO(jbroman): Same as above. This assumes the transform space of the current clip is
-        // an ancestor of the chunk. It is not necessarily true. crbug.com/597156
-        gfx::Transform transform = transformToTransformSpace(paintChunk.properties.transform.get(), localTransformSpace(paintChunk.properties.clip.get()));
-        transform.Translate(layerOffset.x(), layerOffset.y());
-        // If a clip was applied, its origin needs to be cancelled out in
-        // this transform.
-        if (const auto* clip = paintChunk.properties.clip.get()) {
-            FloatPoint offsetDueToClipOffset = clip->clipRect().rect().location();
-            gfx::Transform undoClipOffset;
-            undoClipOffset.Translate(-offsetDueToClipOffset.x(), -offsetDueToClipOffset.y());
-            transform.ConcatTransform(undoClipOffset);
-        }
-        layer->SetTransform(transform);
-        layer->SetDoubleSided(!paintChunk.properties.backfaceHidden);
-        layer->SetNeedsDisplay();
-        parent->AddChild(layer);
-
-        if (m_extraDataForTestingEnabled)
-            m_extraDataForTesting->contentLayers.append(layer);
-    }
-}
 
 scoped_refptr<cc::Layer> PaintArtifactCompositor::layerForPaintChunk(const PaintArtifact& paintArtifact, const PaintChunk& paintChunk, gfx::Vector2dF& layerOffset)
 {
@@ -562,9 +419,19 @@ void PropertyTreeManager::buildEffectNodesRecursively(const EffectPaintPropertyN
 
 } // namespace
 
-void PaintArtifactCompositor::updateInLayerListMode(const PaintArtifact& paintArtifact)
+void PaintArtifactCompositor::update(const PaintArtifact& paintArtifact)
 {
+    DCHECK(m_rootLayer);
+
     cc::LayerTreeHost* host = m_rootLayer->layer_tree_host();
+
+    // The host will be null after detaching and this update can be ignored.
+    // See: WebViewImpl::detachPaintArtifactCompositor().
+    if (!host)
+        return;
+
+    if (m_extraDataForTestingEnabled)
+        m_extraDataForTesting = wrapUnique(new ExtraDataForTesting);
 
     setMinimalPropertyTrees(host->GetLayerTree()->property_trees(), m_rootLayer->id());
     m_rootLayer->RemoveAllChildren();

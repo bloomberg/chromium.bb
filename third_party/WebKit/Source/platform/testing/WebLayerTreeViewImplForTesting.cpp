@@ -22,18 +22,6 @@ WebLayerTreeViewImplForTesting::WebLayerTreeViewImplForTesting()
 {
 }
 
-static cc::LayerTreeSettings settingsForLayerListPolicy(WebLayerTreeViewImplForTesting::LayerListPolicy policy)
-{
-    cc::LayerTreeSettings settings = WebLayerTreeViewImplForTesting::defaultLayerTreeSettings();
-    settings.use_layer_lists = policy == WebLayerTreeViewImplForTesting::UseLayerLists;
-    return settings;
-}
-
-WebLayerTreeViewImplForTesting::WebLayerTreeViewImplForTesting(LayerListPolicy policy)
-    : WebLayerTreeViewImplForTesting(settingsForLayerListPolicy(policy))
-{
-}
-
 WebLayerTreeViewImplForTesting::WebLayerTreeViewImplForTesting(const cc::LayerTreeSettings& settings)
 {
     cc::LayerTreeHost::InitParams params;

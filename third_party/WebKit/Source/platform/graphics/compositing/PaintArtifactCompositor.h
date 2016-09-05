@@ -62,8 +62,6 @@ public:
 private:
     class ContentLayerClientImpl;
 
-    void updateInLayerListMode(const PaintArtifact&);
-
     // Builds a leaf layer that represents a single paint chunk.
     // Note: cc::Layer API assumes the layer bounds to start at (0, 0) but the bounding box of
     // a paint chunk does not necessarily start at (0, 0) and could even be negative. Internally

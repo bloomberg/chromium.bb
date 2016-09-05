@@ -28,8 +28,6 @@ class WebLayerTreeViewImplForTesting : public blink::WebLayerTreeView,
     WTF_MAKE_NONCOPYABLE(WebLayerTreeViewImplForTesting);
 public:
     WebLayerTreeViewImplForTesting();
-    enum LayerListPolicy { DontUseLayerLists, UseLayerLists };
-    explicit WebLayerTreeViewImplForTesting(LayerListPolicy);
     explicit WebLayerTreeViewImplForTesting(const cc::LayerTreeSettings&);
     ~WebLayerTreeViewImplForTesting() override;
 

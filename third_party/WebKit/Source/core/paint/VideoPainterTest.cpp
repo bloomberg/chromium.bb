@@ -85,12 +85,12 @@ public:
     }
 };
 
-class VideoPainterTestForSPv2 : public ::testing::TestWithParam<WebLayerTreeViewImplForTesting::LayerListPolicy> {
+class VideoPainterTestForSPv2 : public ::testing::Test {
 protected:
     void SetUp() override
     {
         RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(true);
-        m_chromeClient = new StubChromeClientForSPv2(GetParam());
+        m_chromeClient = new StubChromeClientForSPv2();
         m_frameLoaderClient = new StubFrameLoaderClient;
         Page::PageClients clients;
         fillWithEmptyClients(clients);
@@ -117,11 +117,7 @@ private:
     std::unique_ptr<DummyPageHolder> m_pageHolder;
 };
 
-INSTANTIATE_TEST_CASE_P(, VideoPainterTestForSPv2, ::testing::Values(
-    WebLayerTreeViewImplForTesting::DontUseLayerLists,
-    WebLayerTreeViewImplForTesting::UseLayerLists));
-
-TEST_P(VideoPainterTestForSPv2, VideoLayerAppearsInLayerTree)
+TEST_F(VideoPainterTestForSPv2, VideoLayerAppearsInLayerTree)
 {
     // Insert a <video> and allow it to begin loading.
     document().body()->setInnerHTML("<video width=300 height=200 src=test.ogv>", ASSERT_NO_EXCEPTION);
