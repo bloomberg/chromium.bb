@@ -70,9 +70,9 @@ bool V8SQLStatementErrorCallback::handleEvent(SQLTransaction* transaction, SQLEr
     // Jump to the last step in the overall steps.
     if (!V8ScriptRunner::callFunction(m_callback.newLocal(isolate), getExecutionContext(), m_scriptState->context()->Global(), WTF_ARRAY_LENGTH(argv), argv, isolate).ToLocal(&result))
         return true;
-
     bool value;
-    V8_CALL(value, result, BooleanValue(isolate->GetCurrentContext()), return true);
+    if (!result->BooleanValue(isolate->GetCurrentContext()).To(&value))
+        return true;
     return value;
 }
 

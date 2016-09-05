@@ -91,13 +91,6 @@ inline bool v8Call(v8::MaybeLocal<T> maybeLocal, v8::Local<T>& outVariable, v8::
     return success;
 }
 
-#define V8_CALL(outVariable, handle, methodCall, failureExpression) \
-    do { \
-        if (handle.IsEmpty() || !v8Call(handle->methodCall, outVariable)) { \
-            failureExpression; \
-        } \
-    } while (0)
-
 } // namespace blink
 
 #endif // V8BindingMacros_h
