@@ -120,15 +120,35 @@ class DumpAccessibilityTreeTest : public DumpAccessibilityTestBase {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityCSSColor) {
+// Flaky on Windows: crbug.com/643954.
+#if defined(OS_WIN)
+#define MAYBE_AccessibilityCSSColor DISABLED_AccessibilityCSSColor
+#else
+#define MAYBE_AccessibilityCSSColor AccessibilityCSSColor
+#endif
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, MAYBE_AccessibilityCSSColor) {
   RunCSSTest(FILE_PATH_LITERAL("color.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityCSSFontStyle) {
+// Flaky on Windows: crbug.com/643954.
+#if defined(OS_WIN)
+#define MAYBE_AccessibilityCSSFontStyle DISABLED_AccessibilityCSSFontStyle
+#else
+#define MAYBE_AccessibilityCSSFontStyle AccessibilityCSSFontStyle
+#endif
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       MAYBE_AccessibilityCSSFontStyle) {
   RunCSSTest(FILE_PATH_LITERAL("font-style.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityCSSLanguage) {
+// Flaky on Windows: crbug.com/643954.
+#if defined(OS_WIN)
+#define MAYBE_AccessibilityCSSLanguage DISABLED_AccessibilityCSSLanguage
+#else
+#define MAYBE_AccessibilityCSSLanguage AccessibilityCSSLanguage
+#endif
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       MAYBE_AccessibilityCSSLanguage) {
   RunCSSTest(FILE_PATH_LITERAL("language.html"));
 }
 
@@ -1227,7 +1247,13 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("output.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityP) {
+// Flaky on Windows: crbug.com/643954.
+#if defined(OS_WIN)
+#define MAYBE_AccessibilityP DISABLED_AccessibilityP
+#else
+#define MAYBE_AccessibilityP AccessibilityP
+#endif
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, MAYBE_AccessibilityP) {
   RunHtmlTest(FILE_PATH_LITERAL("p.html"));
 }
 
