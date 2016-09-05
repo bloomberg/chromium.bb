@@ -30,13 +30,13 @@ TEST_F(SearchDelegateTest, SearchModel) {
   browser()->tab_strip_model()->ActivateTabAt(1, true);
   web_contents = browser()->tab_strip_model()->GetWebContentsAt(1);
   SearchTabHelper::FromWebContents(web_contents)->model()->
-      SetMode(SearchMode(SearchMode::MODE_SEARCH_RESULTS,
+      SetMode(SearchMode(SearchMode::MODE_SEARCH_SUGGESTIONS,
                          SearchMode::ORIGIN_DEFAULT));
-  EXPECT_TRUE(browser()->search_model()->mode().is_search());
+  EXPECT_TRUE(browser()->search_model()->mode().is_search_suggestions());
 
   // The first tab is not active so changes should not propagate.
   web_contents = browser()->tab_strip_model()->GetWebContentsAt(0);
   SearchTabHelper::FromWebContents(web_contents)->model()->
       SetMode(SearchMode(SearchMode::MODE_NTP, SearchMode::ORIGIN_NTP));
-  EXPECT_TRUE(browser()->search_model()->mode().is_search());
+  EXPECT_TRUE(browser()->search_model()->mode().is_search_suggestions());
 }

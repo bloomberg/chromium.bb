@@ -18,10 +18,6 @@ struct SearchMode {
 
     // The Omnibox is modified in some way, either on the NTP or not.
     MODE_SEARCH_SUGGESTIONS,
-
-    // On a search results page.
-    // TODO(treib): Remove this; it's not used anymore. crbug.com/627747
-    MODE_SEARCH_RESULTS,
   };
 
   // The kind of page from which the user initiated the current search.
@@ -31,10 +27,6 @@ struct SearchMode {
 
     // The user is searching from the NTP.
     ORIGIN_NTP,
-
-    // The user is searching from a search results page.
-    // TODO(treib): Remove this; it's not used anymore. crbug.com/627747
-    ORIGIN_SEARCH,
   };
 
   SearchMode() : mode(MODE_DEFAULT), origin(ORIGIN_DEFAULT) {
@@ -61,24 +53,12 @@ struct SearchMode {
     return mode == MODE_NTP;
   }
 
-  bool is_search() const {
-    return mode == MODE_SEARCH_SUGGESTIONS || mode == MODE_SEARCH_RESULTS;
-  }
-
-  bool is_search_results() const {
-    return mode == MODE_SEARCH_RESULTS;
-  }
-
   bool is_search_suggestions() const {
     return mode == MODE_SEARCH_SUGGESTIONS;
   }
 
   bool is_origin_default() const {
     return origin == ORIGIN_DEFAULT;
-  }
-
-  bool is_origin_search() const {
-    return origin == ORIGIN_SEARCH;
   }
 
   bool is_origin_ntp() const {

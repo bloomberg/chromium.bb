@@ -125,7 +125,7 @@ TEST_F(SearchModelTest, UpdateSearchModelMode) {
   mock_observer.VerifySearchModelStates(expected_old_state, expected_new_state);
   mock_observer.VerifyNotificationCount(1);
 
-  search_mode.mode = SearchMode::MODE_SEARCH_RESULTS;
+  search_mode.mode = SearchMode::MODE_SEARCH_SUGGESTIONS;
   expected_old_state = expected_new_state;
   expected_new_state.mode = search_mode;
   model->SetMode(search_mode);

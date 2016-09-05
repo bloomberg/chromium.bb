@@ -507,9 +507,9 @@ void OpenCurrentURL(Browser* browser) {
                                     ui::PAGE_TRANSITION_TYPED) &&
       !ui::PageTransitionCoreTypeIs(page_transition,
                                     ui::PAGE_TRANSITION_RELOAD) &&
-      browser->instant_controller() &&
-      browser->instant_controller()->OpenInstant(open_disposition, url))
-    return;
+      browser->instant_controller()) {
+    browser->instant_controller()->OpenInstant(open_disposition, url);
+  }
 
   NavigateParams params(browser, url, page_transition);
   params.disposition = open_disposition;

@@ -14,13 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
-#include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
-#include "chrome/browser/ui/search/instant_tab.h"
-#include "chrome/browser/ui/search/search_tab_helper.h"
-#include "components/sessions/core/serialized_navigation_entry.h"
-#include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
@@ -32,29 +26,6 @@ bool IsContentsFrom(const InstantTab* page,
   return page && (page->web_contents() == contents);
 }
 
-// Adds a transient NavigationEntry to the supplied |contents|'s
-// NavigationController if the page's URL has not already been updated with the
-// supplied |search_terms|.
-// TODO(treib): Is it safe to completely remove this? crbug.com/627747
-void EnsureSearchTermsAreSet(content::WebContents* contents,
-                             const base::string16& search_terms) {
-  content::NavigationController* controller = &contents->GetController();
-
-  // If search terms are already correct or there is already a transient entry
-  // (there shouldn't be), bail out early.
-  if (search_terms.empty() || controller->GetTransientEntry())
-    return;
-
-  const content::NavigationEntry* entry = controller->GetLastCommittedEntry();
-  std::unique_ptr<content::NavigationEntry> transient =
-      controller->CreateNavigationEntry(
-          entry->GetURL(), entry->GetReferrer(), entry->GetTransitionType(),
-          false, std::string(), contents->GetBrowserContext());
-  controller->SetTransientEntry(std::move(transient));
-
-  SearchTabHelper::FromWebContents(contents)->NavigationEntryUpdated();
-}
-
 }  // namespace
 
 InstantController::InstantController(BrowserInstantController* browser)
@@ -62,24 +33,6 @@ InstantController::InstantController(BrowserInstantController* browser)
 }
 
 InstantController::~InstantController() {
-}
-
-bool InstantController::SubmitQuery(const base::string16& search_terms,
-                                    const EmbeddedSearchRequestParams& params) {
-  if (!instant_tab_ || !instant_tab_->web_contents())
-    return false;
-
-  SearchTabHelper* search_tab =
-      SearchTabHelper::FromWebContents(instant_tab_->web_contents());
-  if (!search_tab->SupportsInstant() || !search_mode_.is_origin_search())
-    return false;
-
-  // Use |instant_tab_| to run the query if we're already on a search results
-  // page. (NOTE: in particular, we do not send the query to NTPs.)
-  search_tab->Submit(search_terms, params);
-  instant_tab_->web_contents()->Focus();
-  EnsureSearchTermsAreSet(instant_tab_->web_contents(), search_terms);
-  return true;
 }
 
 void InstantController::SearchModeChanged(const SearchMode& old_mode,
