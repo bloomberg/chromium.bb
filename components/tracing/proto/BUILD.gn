@@ -4,15 +4,17 @@
 
 import("//third_party/protobuf/proto_library.gni")
 
+tracing_proto_sources = [
+  "event.proto",
+  "events_chunk.proto",
+]
+
 # Stubs generated using custom plugin.
 proto_library("protos") {
   visibility = [ "//components/tracing/*" ]
 
   proto_in_dir = "."
-  sources = [
-    "event.proto",
-    "events_chunk.proto",
-  ]
+  sources = tracing_proto_sources
 
   generator_plugin_label =
       "//components/tracing/tools/proto_zero_plugin:proto_zero_plugin"
@@ -29,9 +31,7 @@ proto_library("golden_protos_for_tests") {
 
   proto_in_dir = "."
   proto_out_dir = "components/tracing/test/golden_protos"
-  sources = [
-    "events_chunk.proto",
-  ]
+  sources = tracing_proto_sources
 
   generate_python = false
 }

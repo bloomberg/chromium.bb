@@ -7,6 +7,29 @@ option optimize_for = LITE_RUNTIME;
 
 package tracing.proto;
 
+// Note on field numbers: fields in the range [1, 15] can be encoded using a
+// single byte preamble. Hence they should be used only for the most commonly
+// used fields (to save trace size). Use the range 16+ for fields that are not
+// expected to be used frequently.
 message Event {
-  // TODO(kraynov): Make proto definitions.
+  // Using ASCII codes as enum values, according to the legacy phase arguments
+  // ("ph") of the Trace Event Format doc (https://goo.gl/mSXylN).
+  enum EventType {
+    METADATA = 77;  // = 'M'.
+    COMPLETE = 88;  // = 'X'.
+  };
+
+  optional EventType type = 1;
+
+  oneof name {
+    int64 name_id = 2;
+    string name_str = 16;
+  }
+
+  optional int64 category_id = 4;
+
+  optional uint64 timestamp = 5;
+  optional uint64 thread_timestamp = 6;
+
+  // TODO(primiano,kraynov): Add args and further fields in next CLs.
 }

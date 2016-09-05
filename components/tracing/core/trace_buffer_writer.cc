@@ -7,6 +7,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "components/tracing/core/proto_utils.h"
+#include "components/tracing/proto/event.pbzero.h"
 #include "components/tracing/proto/events_chunk.pbzero.h"
 
 namespace tracing {
@@ -76,7 +77,7 @@ TraceEventHandle TraceBufferWriter::AddEvent() {
   WriteEventPreambleForNewChunk(
       stream_writer_.ReserveBytesUnsafe(kEventPreambleSize));
   DCHECK_EQ(stream_writer_.write_ptr(), event_data_start_in_current_chunk_);
-  return TraceEventHandle(static_cast<::tracing::proto::Event*>(&event_));
+  return TraceEventHandle(static_cast<pbzero::tracing::proto::Event*>(&event_));
 }
 
 // This is invoked by the ProtoZeroMessage write methods when reaching the
@@ -150,10 +151,9 @@ ContiguousMemoryRange TraceBufferWriter::AcquireNewChunk(
       proto::MakeTagVarInt(ChunkProto::kWriterIdFieldNumber));
   chunk_proto = proto::WriteVarInt(writer_id_, chunk_proto);
 
-  proto::StaticAssertSingleBytePreamble<
-      ChunkProto::kSeqIdFieldNumber>();
-  *chunk_proto++ = static_cast<uint8_t>(
-      proto::MakeTagVarInt(ChunkProto::kSeqIdFieldNumber));
+  proto::StaticAssertSingleBytePreamble<ChunkProto::kSeqIdFieldNumber>();
+  *chunk_proto++ =
+      static_cast<uint8_t>(proto::MakeTagVarInt(ChunkProto::kSeqIdFieldNumber));
   chunk_proto = proto::WriteVarInt(chunk_seq_id_, chunk_proto);
 
   if (is_fragmenting_event) {
@@ -194,6 +194,8 @@ uint8_t* TraceBufferWriter::WriteEventPreambleForNewChunk(uint8_t* begin) {
 }
 
 void TraceBufferWriter::Flush() {
+  if (!chunk_)
+    return;
   FinalizeCurrentEvent();
   FinalizeCurrentChunk(false /* is_fragmenting_event */);
   trace_ring_buffer_->ReturnChunk(chunk_);

@@ -34,8 +34,11 @@ component("tracing") {
 
   deps = [
     "//base",
-    "//components/tracing/proto:protos",
     "//ipc",
+  ]
+
+  public_deps = [
+    "//components/tracing/proto:protos",
   ]
 
   if (is_nacl) {

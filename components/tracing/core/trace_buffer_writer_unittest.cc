@@ -7,6 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/tracing/core/trace_ring_buffer.h"
+#include "components/tracing/proto/event.pbzero.h"
 #include "components/tracing/test/golden_protos/events_chunk.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -14,7 +15,7 @@ namespace tracing {
 namespace v2 {
 namespace {
 
-class MockEvent : public ::tracing::proto::Event {
+class MockEvent : public pbzero::tracing::proto::Event {
  public:
   static TraceEventHandle Add(TraceBufferWriter* writer, size_t event_size) {
     TraceEventHandle handle = writer->AddEvent();
