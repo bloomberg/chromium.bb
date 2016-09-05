@@ -651,6 +651,7 @@ void NTPSnippetsFetcher::FetchFinished(OptionalSnippets snippets,
                             static_cast<int>(result),
                             static_cast<int>(FetchResult::RESULT_MAX));
 
+  DVLOG(1) << "Fetch finished: " << last_status_;
   if (!snippets_available_callback_.is_null())
     snippets_available_callback_.Run(std::move(snippets));
 }

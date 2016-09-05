@@ -70,6 +70,10 @@ MATCHER_P(IdEq, value, "") {
   return arg->id() == value;
 }
 
+MATCHER_P(IsCategory, id, "") {
+  return arg.id() == static_cast<int>(id);
+}
+
 const base::Time::Exploded kDefaultCreationTime = {2015, 11, 4, 25, 13, 46, 45};
 const char kTestContentSuggestionsServerEndpoint[] =
     "https://localunittest-chromecontentsuggestions-pa.googleapis.com/v1/"
@@ -107,6 +111,24 @@ std::string GetTestJson(const std::vector<std::string>& snippets) {
       "  }]\n"
       "}\n",
       base::JoinString(snippets, ", ").c_str());
+}
+
+std::string GetMultiCategoryJson(const std::vector<std::string>& articles,
+                                 const std::vector<std::string>& others) {
+  return base::StringPrintf(
+      "{\n"
+      "  \"categories\": [{\n"
+      "    \"id\": 1,\n"
+      "    \"localizedTitle\": \"Articles for You\",\n"
+      "    \"suggestions\": [%s]\n"
+      "  }, {\n"
+      "    \"id\": 2,\n"
+      "    \"localizedTitle\": \"Other Things\",\n"
+      "    \"suggestions\": [%s]\n"
+      "  }]\n"
+      "}\n",
+      base::JoinString(articles, ", ").c_str(),
+      base::JoinString(others, ", ").c_str());
 }
 
 std::string FormatTime(const base::Time& t) {
@@ -172,6 +194,12 @@ std::string GetSnippetWithUrl(const std::string& url) {
 
 std::string GetSnippet() {
   return GetSnippetWithUrlAndTimes(kSnippetUrl, GetDefaultCreationTime(),
+                                   GetDefaultExpirationTime());
+}
+
+std::string GetSnippetN(int n) {
+  return GetSnippetWithUrlAndTimes(base::StringPrintf("%s/%d", kSnippetUrl, n),
+                                   GetDefaultCreationTime(),
                                    GetDefaultExpirationTime());
 }
 
@@ -274,6 +302,11 @@ class FakeContentSuggestionsProviderObserver
   void OnSuggestionInvalidated(ContentSuggestionsProvider* provider,
                                Category category,
                                const std::string& suggestion_id) override {}
+
+  const std::map<Category, CategoryStatus, Category::CompareByID>& statuses()
+      const {
+    return statuses_;
+  }
 
   CategoryStatus StatusForCategory(Category category) const {
     auto it = statuses_.find(category);
@@ -383,14 +416,21 @@ class NTPSnippetsServiceTest : public ::testing::Test {
     *service = MakeSnippetsService();
   }
 
-  std::string MakeUniqueID(const NTPSnippetsService& service,
-                           const std::string& within_category_id) {
+  std::string MakeArticleID(const NTPSnippetsService& service,
+                            const std::string& within_category_id) {
     return service.MakeUniqueID(articles_category(), within_category_id);
   }
 
   Category articles_category() {
     return category_factory_.FromKnownCategory(KnownCategories::ARTICLES);
   }
+
+  std::string MakeOtherID(const NTPSnippetsService& service,
+                          const std::string& within_category_id) {
+    return service.MakeUniqueID(other_category(), within_category_id);
+  }
+
+  Category other_category() { return category_factory_.FromRemoteCategory(2); }
 
  protected:
   const GURL& test_url() { return test_url_; }
@@ -446,19 +486,71 @@ TEST_F(NTPSnippetsServiceTest, Full) {
   auto service = MakeSnippetsService();
 
   LoadFromJSONString(service.get(), json_str);
+
   ASSERT_THAT(observer().SuggestionsForCategory(articles_category()),
               SizeIs(1));
-  ASSERT_THAT(service->GetSnippetsForTesting(), SizeIs(1));
+  ASSERT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
+
   const ContentSuggestion& suggestion =
       observer().SuggestionsForCategory(articles_category()).front();
 
-  EXPECT_EQ(MakeUniqueID(*service, kSnippetUrl), suggestion.id());
+  EXPECT_EQ(MakeArticleID(*service, kSnippetUrl), suggestion.id());
   EXPECT_EQ(kSnippetTitle, base::UTF16ToUTF8(suggestion.title()));
   EXPECT_EQ(kSnippetText, base::UTF16ToUTF8(suggestion.snippet_text()));
   EXPECT_EQ(GetDefaultCreationTime(), suggestion.publish_date());
   EXPECT_EQ(kSnippetPublisherName,
             base::UTF16ToUTF8(suggestion.publisher_name()));
   EXPECT_EQ(GURL(kSnippetAmpUrl), suggestion.amp_url());
+}
+
+TEST_F(NTPSnippetsServiceTest, MultipleCategories) {
+  std::string json_str(
+      GetMultiCategoryJson({GetSnippetN(0)}, {GetSnippetN(1)}));
+
+  EXPECT_CALL(mock_scheduler(), Schedule(_, _, _, _));
+  auto service = MakeSnippetsService();
+
+  LoadFromJSONString(service.get(), json_str);
+
+  ASSERT_THAT(observer().statuses(),
+              Eq(std::map<Category, CategoryStatus, Category::CompareByID>{
+                  {articles_category(), CategoryStatus::AVAILABLE},
+                  {other_category(), CategoryStatus::AVAILABLE},
+              }));
+
+  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
+  EXPECT_THAT(service->GetSnippetsForTesting(other_category()), SizeIs(1));
+
+  ASSERT_THAT(observer().SuggestionsForCategory(articles_category()),
+              SizeIs(1));
+
+  ASSERT_THAT(observer().SuggestionsForCategory(other_category()), SizeIs(1));
+
+  {
+    const ContentSuggestion& suggestion =
+        observer().SuggestionsForCategory(articles_category()).front();
+    EXPECT_EQ(MakeArticleID(*service, std::string(kSnippetUrl) + "/0"),
+              suggestion.id());
+    EXPECT_EQ(kSnippetTitle, base::UTF16ToUTF8(suggestion.title()));
+    EXPECT_EQ(kSnippetText, base::UTF16ToUTF8(suggestion.snippet_text()));
+    EXPECT_EQ(GetDefaultCreationTime(), suggestion.publish_date());
+    EXPECT_EQ(kSnippetPublisherName,
+              base::UTF16ToUTF8(suggestion.publisher_name()));
+    EXPECT_EQ(GURL(kSnippetAmpUrl), suggestion.amp_url());
+  }
+
+  {
+    const ContentSuggestion& suggestion =
+        observer().SuggestionsForCategory(other_category()).front();
+    EXPECT_EQ(MakeOtherID(*service, std::string(kSnippetUrl) + "/1"),
+              suggestion.id());
+    EXPECT_EQ(kSnippetTitle, base::UTF16ToUTF8(suggestion.title()));
+    EXPECT_EQ(kSnippetText, base::UTF16ToUTF8(suggestion.snippet_text()));
+    EXPECT_EQ(GetDefaultCreationTime(), suggestion.publish_date());
+    EXPECT_EQ(kSnippetPublisherName,
+              base::UTF16ToUTF8(suggestion.publisher_name()));
+    EXPECT_EQ(GURL(kSnippetAmpUrl), suggestion.amp_url());
+  }
 }
 
 TEST_F(NTPSnippetsServiceTest, Clear) {
@@ -468,10 +560,10 @@ TEST_F(NTPSnippetsServiceTest, Clear) {
   std::string json_str(GetTestJson({GetSnippet()}));
 
   LoadFromJSONString(service.get(), json_str);
-  EXPECT_THAT(service->GetSnippetsForTesting(), SizeIs(1));
+  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
 
   service->ClearCachedSuggestions(articles_category());
-  EXPECT_THAT(service->GetSnippetsForTesting(), IsEmpty());
+  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), IsEmpty());
 }
 
 TEST_F(NTPSnippetsServiceTest, InsertAtFront) {
@@ -480,12 +572,13 @@ TEST_F(NTPSnippetsServiceTest, InsertAtFront) {
 
   std::string first("http://first");
   LoadFromJSONString(service.get(), GetTestJson({GetSnippetWithUrl(first)}));
-  EXPECT_THAT(service->GetSnippetsForTesting(), ElementsAre(IdEq(first)));
+  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()),
+              ElementsAre(IdEq(first)));
 
   std::string second("http://second");
   LoadFromJSONString(service.get(), GetTestJson({GetSnippetWithUrl(second)}));
   // The snippet loaded last should be at the first position in the list now.
-  EXPECT_THAT(service->GetSnippetsForTesting(),
+  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()),
               ElementsAre(IdEq(second), IdEq(first)));
 }
 
@@ -505,10 +598,12 @@ TEST_F(NTPSnippetsServiceTest, LimitNumSnippets) {
   }
 
   LoadFromJSONString(service.get(), GetTestJson(snippets1));
-  ASSERT_THAT(service->GetSnippetsForTesting(), SizeIs(snippets1.size()));
+  ASSERT_THAT(service->GetSnippetsForTesting(articles_category()),
+              SizeIs(snippets1.size()));
 
   LoadFromJSONString(service.get(), GetTestJson(snippets2));
-  EXPECT_THAT(service->GetSnippetsForTesting(), SizeIs(max_snippet_count));
+  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()),
+              SizeIs(max_snippet_count));
 }
 
 TEST_F(NTPSnippetsServiceTest, LoadInvalidJson) {
@@ -517,21 +612,21 @@ TEST_F(NTPSnippetsServiceTest, LoadInvalidJson) {
   LoadFromJSONString(service.get(), GetTestJson({GetInvalidSnippet()}));
   EXPECT_THAT(service->snippets_fetcher()->last_status(),
               StartsWith("Received invalid JSON"));
-  EXPECT_THAT(service->GetSnippetsForTesting(), IsEmpty());
+  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), IsEmpty());
 }
 
 TEST_F(NTPSnippetsServiceTest, LoadInvalidJsonWithExistingSnippets) {
   auto service = MakeSnippetsService();
 
   LoadFromJSONString(service.get(), GetTestJson({GetSnippet()}));
-  ASSERT_THAT(service->GetSnippetsForTesting(), SizeIs(1));
+  ASSERT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
   ASSERT_EQ("OK", service->snippets_fetcher()->last_status());
 
   LoadFromJSONString(service.get(), GetTestJson({GetInvalidSnippet()}));
   EXPECT_THAT(service->snippets_fetcher()->last_status(),
               StartsWith("Received invalid JSON"));
   // This should not have changed the existing snippets.
-  EXPECT_THAT(service->GetSnippetsForTesting(), SizeIs(1));
+  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
 }
 
 TEST_F(NTPSnippetsServiceTest, LoadIncompleteJson) {
@@ -540,20 +635,20 @@ TEST_F(NTPSnippetsServiceTest, LoadIncompleteJson) {
   LoadFromJSONString(service.get(), GetTestJson({GetIncompleteSnippet()}));
   EXPECT_EQ("Invalid / empty list.",
             service->snippets_fetcher()->last_status());
-  EXPECT_THAT(service->GetSnippetsForTesting(), IsEmpty());
+  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), IsEmpty());
 }
 
 TEST_F(NTPSnippetsServiceTest, LoadIncompleteJsonWithExistingSnippets) {
   auto service = MakeSnippetsService();
 
   LoadFromJSONString(service.get(), GetTestJson({GetSnippet()}));
-  ASSERT_THAT(service->GetSnippetsForTesting(), SizeIs(1));
+  ASSERT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
 
   LoadFromJSONString(service.get(), GetTestJson({GetIncompleteSnippet()}));
   EXPECT_EQ("Invalid / empty list.",
             service->snippets_fetcher()->last_status());
   // This should not have changed the existing snippets.
-  EXPECT_THAT(service->GetSnippetsForTesting(), SizeIs(1));
+  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
 }
 
 TEST_F(NTPSnippetsServiceTest, Dismiss) {
@@ -565,30 +660,30 @@ TEST_F(NTPSnippetsServiceTest, Dismiss) {
 
   LoadFromJSONString(service.get(), json_str);
 
-  ASSERT_THAT(service->GetSnippetsForTesting(), SizeIs(1));
+  ASSERT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
 
   // Dismissing a non-existent snippet shouldn't do anything.
-  service->DismissSuggestion(MakeUniqueID(*service, "http://othersite.com"));
-  EXPECT_THAT(service->GetSnippetsForTesting(), SizeIs(1));
+  service->DismissSuggestion(MakeArticleID(*service, "http://othersite.com"));
+  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
 
   // Dismiss the snippet.
-  service->DismissSuggestion(MakeUniqueID(*service, kSnippetUrl));
-  EXPECT_THAT(service->GetSnippetsForTesting(), IsEmpty());
+  service->DismissSuggestion(MakeArticleID(*service, kSnippetUrl));
+  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), IsEmpty());
 
   // Make sure that fetching the same snippet again does not re-add it.
   LoadFromJSONString(service.get(), json_str);
-  EXPECT_THAT(service->GetSnippetsForTesting(), IsEmpty());
+  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), IsEmpty());
 
   // The snippet should stay dismissed even after re-creating the service.
   ResetSnippetsService(&service);
   LoadFromJSONString(service.get(), json_str);
-  EXPECT_THAT(service->GetSnippetsForTesting(), IsEmpty());
+  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), IsEmpty());
 
   // The snippet can be added again after clearing dismissed snippets.
   service->ClearDismissedSuggestionsForDebugging(articles_category());
-  EXPECT_THAT(service->GetSnippetsForTesting(), IsEmpty());
+  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), IsEmpty());
   LoadFromJSONString(service.get(), json_str);
-  EXPECT_THAT(service->GetSnippetsForTesting(), SizeIs(1));
+  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
 }
 
 TEST_F(NTPSnippetsServiceTest, GetDismissed) {
@@ -596,7 +691,7 @@ TEST_F(NTPSnippetsServiceTest, GetDismissed) {
 
   LoadFromJSONString(service.get(), GetTestJson({GetSnippet()}));
 
-  service->DismissSuggestion(MakeUniqueID(*service, kSnippetUrl));
+  service->DismissSuggestion(MakeArticleID(*service, kSnippetUrl));
 
   service->GetDismissedSuggestionsForDebugging(
       articles_category(),
@@ -605,7 +700,7 @@ TEST_F(NTPSnippetsServiceTest, GetDismissed) {
              std::vector<ContentSuggestion> dismissed_suggestions) {
             EXPECT_EQ(1u, dismissed_suggestions.size());
             for (auto& suggestion : dismissed_suggestions) {
-              EXPECT_EQ(test->MakeUniqueID(*service, kSnippetUrl),
+              EXPECT_EQ(test->MakeArticleID(*service, kSnippetUrl),
                         suggestion.id());
             }
           },
@@ -635,7 +730,7 @@ TEST_F(NTPSnippetsServiceTest, CreationTimestampParseFail) {
   std::string json_str(GetTestJson({json}));
 
   LoadFromJSONString(service.get(), json_str);
-  EXPECT_THAT(service->GetSnippetsForTesting(), IsEmpty());
+  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), IsEmpty());
 }
 
 TEST_F(NTPSnippetsServiceTest, RemoveExpiredContent) {
@@ -644,7 +739,7 @@ TEST_F(NTPSnippetsServiceTest, RemoveExpiredContent) {
   std::string json_str(GetTestJson({GetExpiredSnippet()}));
 
   LoadFromJSONString(service.get(), json_str);
-  EXPECT_THAT(service->GetSnippetsForTesting(), IsEmpty());
+  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), IsEmpty());
 }
 
 TEST_F(NTPSnippetsServiceTest, TestSingleSource) {
@@ -654,8 +749,9 @@ TEST_F(NTPSnippetsServiceTest, TestSingleSource) {
       "http://source1.com", "Source 1", "http://source1.amp.com")}));
 
   LoadFromJSONString(service.get(), json_str);
-  ASSERT_THAT(service->GetSnippetsForTesting(), SizeIs(1));
-  const NTPSnippet& snippet = *service->GetSnippetsForTesting().front();
+  ASSERT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
+  const NTPSnippet& snippet =
+      *service->GetSnippetsForTesting(articles_category()).front();
   EXPECT_EQ(snippet.sources().size(), 1u);
   EXPECT_EQ(snippet.id(), kSnippetUrl);
   EXPECT_EQ(snippet.best_source().url, GURL("http://source1.com"));
@@ -670,7 +766,7 @@ TEST_F(NTPSnippetsServiceTest, TestSingleSourceWithMalformedUrl) {
       "ceci n'est pas un url", "Source 1", "http://source1.amp.com")}));
 
   LoadFromJSONString(service.get(), json_str);
-  EXPECT_THAT(service->GetSnippetsForTesting(), IsEmpty());
+  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), IsEmpty());
 }
 
 TEST_F(NTPSnippetsServiceTest, TestSingleSourceWithMissingData) {
@@ -680,7 +776,7 @@ TEST_F(NTPSnippetsServiceTest, TestSingleSourceWithMissingData) {
       GetTestJson({GetSnippetWithSources("http://source1.com", "", "")}));
 
   LoadFromJSONString(service.get(), json_str);
-  EXPECT_THAT(service->GetSnippetsForTesting(), IsEmpty());
+  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), IsEmpty());
 }
 
 TEST_F(NTPSnippetsServiceTest, LogNumArticlesHistogram) {
@@ -726,7 +822,7 @@ TEST_F(NTPSnippetsServiceTest, LogNumArticlesHistogram) {
 
   // Dismissing a snippet should decrease the list size. This will only be
   // logged after the next fetch.
-  service->DismissSuggestion(MakeUniqueID(*service, kSnippetUrl));
+  service->DismissSuggestion(MakeArticleID(*service, kSnippetUrl));
   LoadFromJSONString(service.get(), GetTestJson({GetSnippet()}));
   EXPECT_THAT(tester.GetAllSamples("NewTabPage.Snippets.NumArticles"),
               ElementsAre(base::Bucket(/*min=*/0, /*count=*/3),
@@ -778,17 +874,17 @@ TEST_F(NTPSnippetsServiceTest, DismissShouldRespectAllKnownUrls) {
                      GetTestJson({GetSnippetWithUrlAndTimesAndSource(
                          source_urls, source_urls[0], creation, expiry,
                          publishers[0], amp_urls[0])}));
-  ASSERT_THAT(service->GetSnippetsForTesting(), SizeIs(1));
+  ASSERT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
   // Dismiss the snippet via the mashable source corpus ID.
-  service->DismissSuggestion(MakeUniqueID(*service, source_urls[0]));
-  EXPECT_THAT(service->GetSnippetsForTesting(), IsEmpty());
+  service->DismissSuggestion(MakeArticleID(*service, source_urls[0]));
+  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), IsEmpty());
 
   // The same article from the AOL domain should now be detected as dismissed.
   LoadFromJSONString(service.get(),
                      GetTestJson({GetSnippetWithUrlAndTimesAndSource(
                          source_urls, source_urls[1], creation, expiry,
                          publishers[1], amp_urls[1])}));
-  EXPECT_THAT(service->GetSnippetsForTesting(), IsEmpty());
+  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), IsEmpty());
 }
 
 TEST_F(NTPSnippetsServiceTest, StatusChanges) {
@@ -808,7 +904,7 @@ TEST_F(NTPSnippetsServiceTest, StatusChanges) {
   EXPECT_THAT(observer().StatusForCategory(articles_category()),
               Eq(CategoryStatus::SIGNED_OUT));
   EXPECT_THAT(NTPSnippetsService::State::DISABLED, Eq(service->state_));
-  EXPECT_THAT(service->GetSnippetsForTesting(),
+  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()),
               IsEmpty());  // No fetch should be made.
 
   // Simulate user sign in. The service should be ready again and load snippets.
@@ -821,7 +917,7 @@ TEST_F(NTPSnippetsServiceTest, StatusChanges) {
   EXPECT_THAT(observer().StatusForCategory(articles_category()),
               Eq(CategoryStatus::AVAILABLE));
   EXPECT_THAT(NTPSnippetsService::State::READY, Eq(service->state_));
-  EXPECT_FALSE(service->GetSnippetsForTesting().empty());
+  EXPECT_FALSE(service->GetSnippetsForTesting(articles_category()).empty());
 }
 
 TEST_F(NTPSnippetsServiceTest, ImageReturnedWithTheSameId) {
@@ -839,7 +935,7 @@ TEST_F(NTPSnippetsServiceTest, ImageReturnedWithTheSameId) {
   }
 
   service->FetchSuggestionImage(
-      MakeUniqueID(*service, kSnippetUrl),
+      MakeArticleID(*service, kSnippetUrl),
       base::Bind(&MockFunction<void(const gfx::Image&)>::Call,
                  base::Unretained(&image_fetched)));
   base::RunLoop().RunUntilIdle();
@@ -856,7 +952,7 @@ TEST_F(NTPSnippetsServiceTest, EmptyImageReturnedForNonExistentId) {
   EXPECT_CALL(image_fetched, Call(_)).WillOnce(SaveArg<0>(&image));
 
   service->FetchSuggestionImage(
-      MakeUniqueID(*service, kSnippetUrl2),
+      MakeArticleID(*service, kSnippetUrl2),
       base::Bind(&MockFunction<void(const gfx::Image&)>::Call,
                  base::Unretained(&image_fetched)));
 
@@ -871,19 +967,21 @@ TEST_F(NTPSnippetsServiceTest, ClearHistoryRemovesAllSuggestions) {
   std::string second_snippet = GetSnippetWithUrl("http://url2.com");
   std::string json_str = GetTestJson({first_snippet, second_snippet});
   LoadFromJSONString(service.get(), json_str);
-  ASSERT_THAT(service->GetSnippetsForTesting(), SizeIs(2));
+  ASSERT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(2));
 
-  service->DismissSuggestion(MakeUniqueID(*service, "http://url1.com"));
-  ASSERT_THAT(service->GetSnippetsForTesting(), SizeIs(1));
-  ASSERT_THAT(service->GetDismissedSnippetsForTesting(), SizeIs(1));
+  service->DismissSuggestion(MakeArticleID(*service, "http://url1.com"));
+  ASSERT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
+  ASSERT_THAT(service->GetDismissedSnippetsForTesting(articles_category()),
+              SizeIs(1));
 
   base::Time begin = base::Time::FromTimeT(123),
              end = base::Time::FromTimeT(456);
   base::Callback<bool(const GURL& url)> filter;
   service->ClearHistory(begin, end, filter);
 
-  EXPECT_THAT(service->GetSnippetsForTesting(), IsEmpty());
-  EXPECT_THAT(service->GetDismissedSnippetsForTesting(), IsEmpty());
+  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), IsEmpty());
+  EXPECT_THAT(service->GetDismissedSnippetsForTesting(articles_category()),
+              IsEmpty());
 }
 
 }  // namespace ntp_snippets
