@@ -3,11 +3,12 @@
 # found in the LICENSE file.
 
 mojom = "//device/generic_sensor/public/interfaces/sensor.mojom"
-public_headers = [ "//device/generic_sensor/platform_sensor_configuration.h" ]
-traits_headers =
-    [ "//device/generic_sensor/public/interfaces/sensor_struct_traits.h" ]
+public_headers =
+    [ "//device/generic_sensor/public/cpp/platform_sensor_configuration.h" ]
+traits_headers = [ "//device/generic_sensor/public/cpp/sensor_struct_traits.h" ]
 sources = [
-  "//device/generic_sensor/public/interfaces/sensor_struct_traits.cc",
+  "//device/generic_sensor/public/cpp/platform_sensor_configuration.cc",
+  "//device/generic_sensor/public/cpp/sensor_struct_traits.cc",
 ]
 type_mappings =
     [ "device.mojom.SensorConfiguration=device::PlatformSensorConfiguration" ]

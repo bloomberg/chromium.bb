@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include "device/generic_sensor/platform_sensor_configuration.h"
 #include "device/generic_sensor/platform_sensor_provider.h"
+#include "device/generic_sensor/public/cpp/platform_sensor_configuration.h"
 
 namespace device {
 

@@ -5,7 +5,7 @@
 #ifndef DEVICE_GENERIC_SENSOR_PUBLIC_INTERFACES_SENSOR_STRUCT_TRAITS_H_
 #define DEVICE_GENERIC_SENSOR_PUBLIC_INTERFACES_SENSOR_STRUCT_TRAITS_H_
 
-#include "device/generic_sensor/platform_sensor_configuration.h"
+#include "device/generic_sensor/public/cpp/platform_sensor_configuration.h"
 #include "device/generic_sensor/public/interfaces/sensor.mojom.h"
 
 namespace mojo {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/generic_sensor/public/interfaces/sensor_struct_traits.h"
+#include "device/generic_sensor/public/cpp/sensor_struct_traits.h"
 
 namespace mojo {
 

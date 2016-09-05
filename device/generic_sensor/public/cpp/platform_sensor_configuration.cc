@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/generic_sensor/platform_sensor_configuration.h"
+#include "device/generic_sensor/public/cpp/platform_sensor_configuration.h"
 
 namespace device {
 
