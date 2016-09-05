@@ -472,6 +472,7 @@ Range* InputMethodController::compositionRange() const
 
 String InputMethodController::composingText() const
 {
+    DocumentLifecycle::DisallowTransitionScope disallowTransition(frame().document()->lifecycle());
     return plainText(compositionEphemeralRange(), TextIteratorEmitsOriginalText);
 }
 

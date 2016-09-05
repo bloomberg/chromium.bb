@@ -945,10 +945,15 @@ void WebLocalFrameImpl::replaceSelection(const WebString& text)
 
 void WebLocalFrameImpl::insertText(const WebString& text)
 {
-    if (frame()->inputMethodController().hasComposition())
+    if (frame()->inputMethodController().hasComposition()) {
+        // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+        // needs to be audited.  See http://crbug.com/590369 for more details.
+        frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
         frame()->inputMethodController().confirmComposition(text);
-    else
+    } else {
         frame()->editor().insertText(text, 0);
+    }
 }
 
 void WebLocalFrameImpl::setMarkedText(const WebString& text, unsigned location, unsigned length)

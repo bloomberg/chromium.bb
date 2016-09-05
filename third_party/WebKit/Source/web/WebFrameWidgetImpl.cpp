@@ -478,6 +478,10 @@ void WebFrameWidgetImpl::setFocus(bool enable)
                 if (autofillClient)
                     autofillClient->setIgnoreTextChanges(true);
 
+                // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+                // needs to be audited.  See http://crbug.com/590369 for more details.
+                focusedFrame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
                 focusedFrame->inputMethodController().confirmComposition();
 
                 if (autofillClient)
@@ -565,6 +569,10 @@ bool WebFrameWidgetImpl::confirmComposition(const WebString& text, ConfirmCompos
 
     if (WebPlugin* plugin = focusedPluginIfInputMethodSupported(focused))
         return plugin->confirmComposition(text, selectionBehavior);
+
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    focused->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
     return focused->inputMethodController().confirmCompositionOrInsertText(text, selectionBehavior == KeepSelection ? InputMethodController::KeepSelection : InputMethodController::DoNotKeepSelection);
 }
