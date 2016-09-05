@@ -253,16 +253,16 @@ std::unique_ptr<ChannelMojo> ChannelMojo::Create(
 std::unique_ptr<ChannelFactory> ChannelMojo::CreateServerFactory(
     mojo::ScopedMessagePipeHandle handle,
     const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner) {
-  return base::WrapUnique(new MojoChannelFactory(
-      std::move(handle), Channel::MODE_SERVER, ipc_task_runner));
+  return base::MakeUnique<MojoChannelFactory>(
+      std::move(handle), Channel::MODE_SERVER, ipc_task_runner);
 }
 
 // static
 std::unique_ptr<ChannelFactory> ChannelMojo::CreateClientFactory(
     mojo::ScopedMessagePipeHandle handle,
     const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner) {
-  return base::WrapUnique(new MojoChannelFactory(
-      std::move(handle), Channel::MODE_CLIENT, ipc_task_runner));
+  return base::MakeUnique<MojoChannelFactory>(
+      std::move(handle), Channel::MODE_CLIENT, ipc_task_runner);
 }
 
 ChannelMojo::ChannelMojo(

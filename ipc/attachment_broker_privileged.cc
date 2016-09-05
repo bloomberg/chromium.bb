@@ -58,8 +58,7 @@ std::unique_ptr<AttachmentBrokerPrivileged> CreateBroker() {
 #if defined(OS_WIN)
   return base::WrapUnique(new IPC::AttachmentBrokerPrivilegedWin);
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
-  return base::WrapUnique(
-      new IPC::AttachmentBrokerPrivilegedMac(g_port_provider));
+  return base::MakeUnique<IPC::AttachmentBrokerPrivilegedMac>(g_port_provider);
 #else
   return nullptr;
 #endif

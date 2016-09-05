@@ -289,7 +289,7 @@ void IPCChannelPerfTestBase::RunTestChannelProxyPingPong(
     const std::vector<PingPongTestParams>& params) {
   io_thread_.reset(new base::TestIOThread(base::TestIOThread::kAutoStart));
   InitWithCustomMessageLoop("PerformanceClient",
-                            base::WrapUnique(new base::MessageLoop()));
+                            base::MakeUnique<base::MessageLoop>());
 
   // Set up IPC channel and start client.
   PerformanceChannelListener listener("ChannelProxy");

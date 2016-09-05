@@ -38,7 +38,7 @@ void IPCTestBase::TearDown() {
 
 void IPCTestBase::Init(const std::string& test_client_name) {
   InitWithCustomMessageLoop(test_client_name,
-                            base::WrapUnique(new base::MessageLoopForIO()));
+                            base::MakeUnique<base::MessageLoopForIO>());
 }
 
 void IPCTestBase::InitWithCustomMessageLoop(
