@@ -11,6 +11,8 @@
 #include "chrome/browser/storage/storage_info_fetcher.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class HostContentSettingsMap;
 class Profile;
@@ -23,7 +25,8 @@ namespace settings {
 
 // Chrome "ContentSettings" settings page UI handler.
 class SiteSettingsHandler : public SettingsPageUIHandler,
-                            public content_settings::Observer {
+                            public content_settings::Observer,
+                            public content::NotificationObserver  {
  public:
   explicit SiteSettingsHandler(Profile* profile);
   ~SiteSettingsHandler() override;
@@ -42,11 +45,18 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
                                const ContentSettingsPattern& secondary_pattern,
                                ContentSettingsType content_type,
                                std::string resource_identifier) override;
+
+  // content::NotificationObserver:
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
+
  private:
   friend class SiteSettingsHandlerTest;
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, GetAndSetDefault);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, Origins);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, Patterns);
+  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, Incognito);
 
   // Asynchronously fetches the usage for a given origin. Replies back with
   // OnGetUsageInfo above.
@@ -75,7 +85,15 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
   // Returns whether a given pattern is valid.
   void HandleIsPatternValid(const base::ListValue* args);
 
+  // Looks up whether an incognito session is active.
+  void HandleUpdateIncognitoStatus(const base::ListValue* args);
+
+  // Notifies the JS side whether incognito is enabled.
+  void SendIncognitoStatus(Profile* profile, bool was_destroyed);
+
   Profile* profile_;
+
+  content::NotificationRegistrar notification_registrar_;
 
   // The host for which to fetch usage.
   std::string usage_host_;

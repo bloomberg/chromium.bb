@@ -77,6 +77,15 @@ Polymer({
     showSessionOnlyAction_: Boolean,
 
     /**
+     * Keeps track of the incognito status of the current profile (whether one
+     * exists).
+     */
+    incognitoProfileActive_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
      * All possible actions in the action menu.
      */
     actions_: {
@@ -98,6 +107,8 @@ Polymer({
   ready: function() {
     this.addWebUIListener('contentSettingSitePermissionChanged',
         this.siteWithinCategoryChanged_.bind(this));
+    this.addWebUIListener('onIncognitoStatusChanged',
+        this.onIncognitoStatusChanged_.bind(this));
   },
 
   /**
@@ -109,6 +120,20 @@ Polymer({
   siteWithinCategoryChanged_: function(category, site) {
     if (category == this.category)
       this.configureWidget_();
+  },
+
+  onIncognitoStatusChanged_: function(incognitoEnabled) {
+    // A change notification is not sent for each site that is deleted during
+    // incognito profile destruction. Therefore, we reconfigure the list when
+    // the incognito profile is destroyed, except for SESSION_ONLY, which won't
+    // have any incognito exceptions.
+    if (this.categorySubtype == settings.PermissionValues.SESSION_ONLY)
+      return;
+
+    if (this.incognitoProfileActive_)
+      this.configureWidget_();  // The incognito profile is being destroyed.
+
+    this.incognitoProfileActive_ = incognitoEnabled;
   },
 
   /**
@@ -341,7 +366,7 @@ Polymer({
       }
       return comparison;
     });
-    var results = [];
+    var results = /** @type {!Array<SiteException>} */ [];
     var lastOrigin = '';
     var lastEmbeddingOrigin = '';
     for (var i = 0; i < sites.length; ++i) {
@@ -366,6 +391,7 @@ Polymer({
          originForDisplay: originForDisplay,
          embeddingOrigin: embeddingOrigin,
          embeddingOriginForDisplay: embeddingOriginForDisplay,
+         incognito: sites[i].incognito,
          source: sites[i].source,
       });
 
@@ -390,6 +416,21 @@ Polymer({
   },
 
   /**
+   * Whether to show the Session Only menu item for a given site.
+   * @param {SiteException} site The site in question.
+   * @return {boolean} Whether to show the menu item.
+   */
+  showSessionOnlyActionForSite_: function(site) {
+    // It makes no sense to show "clear on exit" for exceptions that only apply
+    // to incognito. It gives the impression that they might under some
+    // circumstances not be cleared on exit, which isn't true.
+    if (site.incognito)
+      return false;
+
+    return this.showSessionOnlyAction_;
+  },
+
+  /**
    * A handler for selecting a site (by clicking on the origin).
    * @private
    */
@@ -409,14 +450,15 @@ Polymer({
    */
   onActionMenuIronActivate_: function(event) {
     var origin = event.model.item.origin;
+    var incognito = event.model.item.incognito;
     var embeddingOrigin = event.model.item.embeddingOrigin;
     var action = event.detail.selected;
     if (action == settings.PermissionValues.DEFAULT) {
-      this.resetCategoryPermissionForOrigin(
-          origin, embeddingOrigin, this.category);
+      this.browserProxy.resetCategoryPermissionForOrigin(
+          origin, embeddingOrigin, this.category, incognito);
     } else {
-      this.setCategoryPermissionForOrigin(
-          origin, embeddingOrigin, this.category, action);
+      this.browserProxy.setCategoryPermissionForOrigin(
+          origin, embeddingOrigin, this.category, action, incognito);
     }
   },
 
@@ -441,6 +483,24 @@ Polymer({
       return title;
     }
     return loadTimeData.getStringF('titleAndCount', title, siteList.length);
+  },
+
+  /**
+   * Returns the appropriate site description to display. This can, for example,
+   * be blank, an 'embedded on <site>' or 'Current incognito session' (or a
+   * mix of the last two).
+   * @param {SiteException} item The site exception entry.
+   * @return {string} The site description.
+   */
+  computeSiteDescription_: function(item) {
+    if (item.incognito && item.embeddingOriginForDisplay.length > 0) {
+      return loadTimeData.getStringF('embeddedIncognitoSite',
+          item.embeddingOriginForDisplay);
+    }
+
+    if (item.incognito)
+      return loadTimeData.getString('incognitoSite');
+    return item.embeddingOriginForDisplay;
   },
 
   /**

@@ -33,37 +33,6 @@ var SiteSettingsBehaviorImpl = {
   },
 
   /**
-   * Re-sets the category permission for a given origin.
-   * @param {string} primaryPattern The primary pattern to reset the permission
-   *     for.
-   * @param {string} secondaryPattern The secondary pattern to reset the
-   *     permission for.
-   * @param {string} category The category permission to change.
-   * @protected
-   */
-  resetCategoryPermissionForOrigin: function(
-        primaryPattern, secondaryPattern, category) {
-    this.browserProxy.resetCategoryPermissionForOrigin(
-        primaryPattern, secondaryPattern, category);
-  },
-
-  /**
-   * Sets the category permission for a given origin.
-   * @param {string} primaryPattern The primary pattern to change the permission
-   *     for.
-   * @param {string} secondaryPattern The secondary pattern to change the
-   *     permission for.
-   * @param {string} category The category permission to change.
-   * @param {string} value What value to set the permission to.
-   * @protected
-   */
-  setCategoryPermissionForOrigin: function(
-        primaryPattern, secondaryPattern, category, value) {
-    this.browserProxy.setCategoryPermissionForOrigin(
-        primaryPattern, secondaryPattern, category, value);
-  },
-
-  /**
    * A utility function to lookup a category name from its enum. Note: The
    * category name is visible to the user as part of the URL.
    * @param {string} category The category ID to look up.

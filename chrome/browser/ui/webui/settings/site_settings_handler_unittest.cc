@@ -6,10 +6,12 @@
 
 #include <memory>
 
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/webui/site_settings_helper.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_web_ui.h"
@@ -130,9 +132,40 @@ class SiteSettingsHandlerTest : public testing::Test {
     EXPECT_EQ(expected_validity, valid);
   }
 
+  void ValidateIncognitoExists(
+      bool expected_incognito, size_t expected_total_calls) {
+    EXPECT_EQ(expected_total_calls, web_ui()->call_data().size());
+
+    const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
+    EXPECT_EQ("cr.webUIListenerCallback", data.function_name());
+
+    std::string callback_id;
+    ASSERT_TRUE(data.arg1()->GetAsString(&callback_id));
+    EXPECT_EQ("onIncognitoStatusChanged", callback_id);
+
+    bool incognito;
+    ASSERT_TRUE(data.arg2()->GetAsBoolean(&incognito));
+    EXPECT_EQ(expected_incognito, incognito);
+  }
+
+  void CreateIncognitoProfile() {
+    incognito_profile_ = TestingProfile::Builder().BuildIncognito(&profile_);
+  }
+
+  void DestroyIncognitoProfile() {
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_PROFILE_DESTROYED,
+        content::Source<Profile>(static_cast<Profile*>(incognito_profile_)),
+        content::NotificationService::NoDetails());
+    profile_.SetOffTheRecordProfile(nullptr);
+    ASSERT_FALSE(profile_.HasOffTheRecordProfile());
+    incognito_profile_ = nullptr;
+  }
+
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
+  TestingProfile* incognito_profile_;
   content::TestWebUI web_ui_;
   SiteSettingsHandler handler_;
 };
@@ -167,6 +200,7 @@ TEST_F(SiteSettingsHandlerTest, Origins) {
   setArgs.AppendString(google);  // Secondary pattern.
   setArgs.AppendString("notifications");
   setArgs.AppendString("block");
+  setArgs.AppendBoolean(false);  // Incognito.
   handler()->HandleSetCategoryPermissionForOrigin(&setArgs);
   EXPECT_EQ(1U, web_ui()->call_data().size());
 
@@ -182,6 +216,7 @@ TEST_F(SiteSettingsHandlerTest, Origins) {
   resetArgs.AppendString(google);
   resetArgs.AppendString(google);
   resetArgs.AppendString("notifications");
+  resetArgs.AppendBoolean(false);  // Incognito.
   handler()->HandleResetCategoryPermissionForOrigin(&resetArgs);
   EXPECT_EQ(3U, web_ui()->call_data().size());
 
@@ -204,6 +239,18 @@ TEST_F(SiteSettingsHandlerTest, Patterns) {
   invalid.AppendString(bad_pattern);
   handler()->HandleIsPatternValid(&invalid);
   ValidatePattern(false, 2U);
+}
+
+TEST_F(SiteSettingsHandlerTest, Incognito) {
+  base::ListValue args;
+  handler()->HandleUpdateIncognitoStatus(&args);
+  ValidateIncognitoExists(false, 1U);
+
+  CreateIncognitoProfile();
+  ValidateIncognitoExists(true, 2U);
+
+  DestroyIncognitoProfile();
+  ValidateIncognitoExists(false, 3U);
 }
 
 }  // namespace settings

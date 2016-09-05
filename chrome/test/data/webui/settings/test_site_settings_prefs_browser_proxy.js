@@ -172,15 +172,15 @@ TestSiteSettingsPrefsBrowserProxy.prototype = {
 
   /** @override */
   resetCategoryPermissionForOrigin: function(
-      primaryPattern, secondaryPattern, contentType) {
+      primaryPattern, secondaryPattern, contentType, incognito) {
     this.methodCalled('resetCategoryPermissionForOrigin',
-        [primaryPattern, secondaryPattern, contentType]);
+        [primaryPattern, secondaryPattern, contentType, incognito]);
     return Promise.resolve();
   },
 
   /** @override */
   setCategoryPermissionForOrigin: function(
-      primaryPattern, secondaryPattern, contentType, value) {
+      primaryPattern, secondaryPattern, contentType, value, incognito) {
     this.methodCalled('setCategoryPermissionForOrigin',
         [primaryPattern, secondaryPattern, contentType, value]);
     return Promise.resolve();

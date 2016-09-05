@@ -1369,6 +1369,9 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source) {
       {"handlerRemove", IDS_SETTINGS_SITE_SETTINGS_REMOVE},
       {"adobeFlashStorage", IDS_SETTINGS_SITE_SETTINGS_ADOBE_FLASH_SETTINGS},
       {"learnMore", IDS_SETTINGS_SITE_SETTINGS_LEARN_MORE},
+      {"incognitoSite", IDS_SETTINGS_SITE_SETTINGS_INCOGNITO},
+      {"incognitoSiteOnly", IDS_SETTINGS_SITE_SETTINGS_INCOGNITO_ONLY},
+      {"embeddedIncognitoSite", IDS_SETTINGS_SITE_SETTINGS_INCOGNITO_EMBEDDED},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));

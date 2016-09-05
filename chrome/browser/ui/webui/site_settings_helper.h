@@ -58,6 +58,7 @@ void GetExceptionsFromHostContentSettingsMap(
     const HostContentSettingsMap* map,
     ContentSettingsType type,
     content::WebUI* web_ui,
+    bool incognito,
     base::ListValue* exceptions);
 
 // Returns exceptions constructed from the policy-set allowed URLs
@@ -65,7 +66,8 @@ void GetExceptionsFromHostContentSettingsMap(
 void GetPolicyAllowedUrls(
     ContentSettingsType type,
     std::vector<std::unique_ptr<base::DictionaryValue>>* exceptions,
-    content::WebUI* web_ui);
+    content::WebUI* web_ui,
+    bool incognito);
 
 // This struct facilitates lookup of a chooser context factory function by name
 // for a given content settings type and is declared early so that it can used

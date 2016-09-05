@@ -86,8 +86,9 @@ Polymer({
    * Resets the category permission for this origin.
    */
   resetPermission: function() {
-    this.resetCategoryPermissionForOrigin(
-        this.site.origin, this.site.embeddingOrigin, this.category);
+    this.browserProxy.resetCategoryPermissionForOrigin(
+        this.site.origin, this.site.embeddingOrigin, this.category,
+        this.site.incognito);
     this.$.details.hidden = true;
   },
 
@@ -97,7 +98,8 @@ Polymer({
    */
   onPermissionMenuIronActivate_: function(event) {
     var value = event.detail.item.dataset.permissionValue;
-    this.setCategoryPermissionForOrigin(
-        this.site.origin, this.site.embeddingOrigin, this.category, value);
+    this.browserProxy.setCategoryPermissionForOrigin(
+        this.site.origin, this.site.embeddingOrigin, this.category, value,
+        this.site.incognito);
   },
 });

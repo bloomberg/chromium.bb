@@ -50,7 +50,7 @@
               <div class="middle">
                 <div class="selectable">[[item.originForDisplay]]</div>
                 <div class="selectable secondary">
-                  [[item.embeddingOriginForDisplay]]
+                  [[computeSiteDescription_(item)]]
                 </div>
               </div>
             </div>
@@ -76,7 +76,7 @@
                   $i18n{siteSettingsActionBlock}
                 </paper-item>
                 <paper-item
-                    hidden="[[!showSessionOnlyAction_]]"
+                    hidden="[[!showSessionOnlyActionForSite_(item)]]"
                     menu-value$="[[PermissionValues.SESSION_ONLY]]">
                   $i18n{siteSettingsActionSessionOnly}
                 </paper-item>

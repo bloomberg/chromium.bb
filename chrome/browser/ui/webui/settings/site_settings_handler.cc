@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/values.h"
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/chooser_context_base.h"
 #include "chrome/browser/profiles/profile.h"
@@ -20,6 +21,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_ui.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/permissions/api_permission.h"
@@ -27,7 +29,6 @@
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/common/quota/quota_status_code.h"
 #include "ui/base/text/bytes_formatting.h"
-
 
 namespace settings {
 
@@ -153,6 +154,10 @@ void SiteSettingsHandler::RegisterMessages() {
       "isPatternValid",
       base::Bind(&SiteSettingsHandler::HandleIsPatternValid,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "updateIncognitoStatus",
+      base::Bind(&SiteSettingsHandler::HandleUpdateIncognitoStatus,
+                 base::Unretained(this)));
 }
 
 void SiteSettingsHandler::OnJavascriptAllowed() {
@@ -163,10 +168,18 @@ void SiteSettingsHandler::OnJavascriptAllowed() {
     if (!observer_.IsObserving(map))
       observer_.Add(map);
   }
+
+  notification_registrar_.Add(
+      this, chrome::NOTIFICATION_PROFILE_CREATED,
+      content::NotificationService::AllSources());
+  notification_registrar_.Add(
+      this, chrome::NOTIFICATION_PROFILE_DESTROYED,
+      content::NotificationService::AllSources());
 }
 
 void SiteSettingsHandler::OnJavascriptDisallowed() {
   observer_.RemoveAll();
+  notification_registrar_.RemoveAll();
 }
 
 void SiteSettingsHandler::OnGetUsageInfo(
@@ -216,6 +229,39 @@ void SiteSettingsHandler::OnContentSettingChanged(
         base::StringValue(
             secondary_pattern == ContentSettingsPattern::Wildcard() ?
             "" : secondary_pattern.ToString()));
+  }
+}
+
+void SiteSettingsHandler::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  switch (type) {
+    case chrome::NOTIFICATION_PROFILE_DESTROYED: {
+      Profile* profile = content::Source<Profile>(source).ptr();
+      if (!profile_->IsSameProfile(profile))
+        break;
+      SendIncognitoStatus(profile, /*was_destroyed=*/ true);
+
+      HostContentSettingsMap* settings_map =
+          HostContentSettingsMapFactory::GetForProfile(profile);
+      if (profile->IsOffTheRecord() &&
+          observer_.IsObserving(settings_map)) {
+        observer_.Remove(settings_map);
+      }
+
+      break;
+    }
+
+    case chrome::NOTIFICATION_PROFILE_CREATED: {
+      Profile* profile = content::Source<Profile>(source).ptr();
+      if (!profile_->IsSameProfile(profile))
+        break;
+      SendIncognitoStatus(profile, /*was_destroyed=*/ false);
+
+      observer_.Add(HostContentSettingsMapFactory::GetForProfile(profile));
+      break;
+    }
   }
 }
 
@@ -353,34 +399,52 @@ void SiteSettingsHandler::HandleGetExceptionList(const base::ListValue* args) {
       static_cast<ContentSettingsType>(static_cast<int>(
           site_settings::ContentSettingsTypeFromGroupName(type)));
 
-  HostContentSettingsMap* map =
-      HostContentSettingsMapFactory::GetForProfile(profile_);
   std::unique_ptr<base::ListValue> exceptions(new base::ListValue);
 
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(profile_);
   AddExceptionsGrantedByHostedApps(profile_, APIPermissionFromGroupName(type),
       exceptions.get());
-
   site_settings::GetExceptionsFromHostContentSettingsMap(
-      map, content_type, web_ui(), exceptions.get());
+      map, content_type, web_ui(), false, exceptions.get());
+
+  if (profile_->HasOffTheRecordProfile()) {
+    Profile* incognito = profile_->GetOffTheRecordProfile();
+    map = HostContentSettingsMapFactory::GetForProfile(incognito);
+    site_settings::GetExceptionsFromHostContentSettingsMap(
+        map, content_type, web_ui(), true, exceptions.get());
+  }
+
   ResolveJavascriptCallback(*callback_id, *exceptions.get());
 }
 
 void SiteSettingsHandler::HandleResetCategoryPermissionForOrigin(
     const base::ListValue* args) {
-  CHECK_EQ(3U, args->GetSize());
+  CHECK_EQ(4U, args->GetSize());
   std::string primary_pattern;
   CHECK(args->GetString(0, &primary_pattern));
   std::string secondary_pattern;
   CHECK(args->GetString(1, &secondary_pattern));
   std::string type;
   CHECK(args->GetString(2, &type));
+  bool incognito;
+  CHECK(args->GetBoolean(3, &incognito));
 
   ContentSettingsType content_type =
       static_cast<ContentSettingsType>(static_cast<int>(
           site_settings::ContentSettingsTypeFromGroupName(type)));
 
+  Profile* profile = nullptr;
+  if (incognito) {
+    if (!profile_->HasOffTheRecordProfile())
+      return;
+    profile = profile_->GetOffTheRecordProfile();
+  } else {
+    profile = profile_;
+  }
+
   HostContentSettingsMap* map =
-      HostContentSettingsMapFactory::GetForProfile(profile_);
+      HostContentSettingsMapFactory::GetForProfile(profile);
   map->SetContentSettingCustomScope(
       ContentSettingsPattern::FromString(primary_pattern),
       secondary_pattern.empty() ?
@@ -391,7 +455,7 @@ void SiteSettingsHandler::HandleResetCategoryPermissionForOrigin(
 
 void SiteSettingsHandler::HandleSetCategoryPermissionForOrigin(
     const base::ListValue* args) {
-  CHECK_EQ(4U, args->GetSize());
+  CHECK_EQ(5U, args->GetSize());
   std::string primary_pattern;
   CHECK(args->GetString(0, &primary_pattern));
   std::string secondary_pattern;
@@ -400,6 +464,8 @@ void SiteSettingsHandler::HandleSetCategoryPermissionForOrigin(
   CHECK(args->GetString(2, &type));
   std::string value;
   CHECK(args->GetString(3, &value));
+  bool incognito;
+  CHECK(args->GetBoolean(4, &incognito));
 
   ContentSettingsType content_type =
       static_cast<ContentSettingsType>(static_cast<int>(
@@ -407,8 +473,17 @@ void SiteSettingsHandler::HandleSetCategoryPermissionForOrigin(
   ContentSetting setting;
   CHECK(content_settings::ContentSettingFromString(value, &setting));
 
+  Profile* profile = nullptr;
+  if (incognito) {
+    if (!profile_->HasOffTheRecordProfile())
+      return;
+    profile = profile_->GetOffTheRecordProfile();
+  } else {
+    profile = profile_;
+  }
+
   HostContentSettingsMap* map =
-      HostContentSettingsMapFactory::GetForProfile(profile_);
+      HostContentSettingsMapFactory::GetForProfile(profile);
   map->SetContentSettingCustomScope(
       ContentSettingsPattern::FromString(primary_pattern),
       secondary_pattern.empty() ?
@@ -429,6 +504,28 @@ void SiteSettingsHandler::HandleIsPatternValid(
       ContentSettingsPattern::FromString(pattern_string);
   ResolveJavascriptCallback(
       *callback_id, base::FundamentalValue(pattern.IsValid()));
+}
+
+void SiteSettingsHandler::HandleUpdateIncognitoStatus(
+    const base::ListValue* args) {
+  AllowJavascript();
+  SendIncognitoStatus(profile_, /*was_destroyed=*/ false);
+}
+
+void SiteSettingsHandler::SendIncognitoStatus(
+    Profile* profile, bool was_destroyed) {
+  if (!IsJavascriptAllowed())
+    return;
+
+  // When an incognito profile is destroyed, it sends out the destruction
+  // message before destroying, so HasOffTheRecordProfile for profile_ won't
+  // return false until after the profile actually been destroyed.
+  bool incognito_enabled = profile_->HasOffTheRecordProfile() &&
+      !(was_destroyed && profile == profile_->GetOffTheRecordProfile());
+
+  CallJavascriptFunction("cr.webUIListenerCallback",
+                         base::StringValue("onIncognitoStatusChanged"),
+                         base::FundamentalValue(incognito_enabled));
 }
 
 }  // namespace settings

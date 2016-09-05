@@ -247,6 +247,41 @@ cr.define('site_list', function() {
         }
       };
 
+      /**
+       * An example Cookies pref with mixed incognito and regular settings.
+       * @type {SiteSettingsPref}
+       */
+      var prefsIncognito = {
+        exceptions: {
+          cookies: [
+            // foo.com is blocked for regular sessions.
+            {
+              embeddingOrigin: 'http://foo.com',
+              incognito: false,
+              origin: 'http://foo.com',
+              setting: 'block',
+              source: 'preference',
+            },
+            // foo.com is allowed in incognito (overridden).
+            {
+              embeddingOrigin: 'http://foo.com',
+              incognito: true,
+              origin: 'http://foo.com',
+              setting: 'allow',
+              source: 'preference',
+            },
+            // bar.com is an allowed incognito item without an embedder.
+            {
+              embeddingOrigin: '',
+              incognito: true,
+              origin: 'http://bar.com',
+              setting: 'allow',
+              source: 'preference',
+            },
+          ]
+        }
+      };
+
       // Import necessary html before running suite.
       suiteSetup(function() {
         CrSettingsPrefs.setInitialized();
@@ -270,9 +305,11 @@ cr.define('site_list', function() {
       /**
        * Fetch the non-hidden menu items from the list.
        * @param {!HTMLElement} parentElement
+       * @param {number} index The index of the child element (which site) to
+       *     fetch.
        */
-      function getMenuItems(listContainer) {
-        return listContainer.children[0].querySelectorAll(
+      function getMenuItems(listContainer, index) {
+        return listContainer.children[index].querySelectorAll(
             'paper-menu-button paper-item:not([hidden])');
       }
 
@@ -283,7 +320,7 @@ cr.define('site_list', function() {
        *     in.
        */
       function assertMenu(items, parentElement) {
-        var menuItems = getMenuItems(parentElement.$.listContainer);
+        var menuItems = getMenuItems(parentElement.$.listContainer, 0);
         assertEquals(items.length, menuItems.length);
         for (var i = 0; i < items.length; i++)
           assertEquals(items[i], menuItems[i].textContent.trim());
@@ -434,6 +471,75 @@ cr.define('site_list', function() {
             }).then(function(contentType) {
               assertFalse(testElement.$.category.hidden);
               assertEquals('Clear on exit - 1', testElement.$.header.innerText);
+            });
+      });
+
+      test('initial INCOGNITO BLOCK state is correct', function() {
+        setupCategory(settings.ContentSettingsTypes.COOKIES,
+            settings.PermissionValues.BLOCK, prefsIncognito);
+        return browserProxy.whenCalled('getExceptionList').then(
+            function(contentType) {
+              assertEquals(settings.ContentSettingsTypes.COOKIES, contentType);
+
+              assertEquals(1, testElement.sites.length);
+              assertEquals(prefsIncognito.exceptions.cookies[0].origin,
+                  testElement.sites[0].origin);
+
+              assertEquals(settings.PermissionValues.BLOCK,
+                  testElement.categorySubtype);
+              Polymer.dom.flush();  // Populates action menu.
+              // 'Clear on exit' is visible as this is not an incognito item.
+              assertMenu(['Allow', 'Clear on exit', 'Remove'], testElement);
+              assertEquals('Block - 1',
+                  testElement.$.header.innerText.trim());
+
+              // Select 'Remove from menu'.
+              var menuItems = getMenuItems(testElement.$.listContainer, 0);
+              assertTrue(!!menuItems);
+              MockInteractions.tap(menuItems[2]);
+              return browserProxy.whenCalled(
+                  'resetCategoryPermissionForOrigin');
+            }).then(function(arguments) {
+              assertEquals('http://foo.com', arguments[0]);
+              assertEquals('http://foo.com', arguments[1]);
+              assertEquals(settings.ContentSettingsTypes.COOKIES, arguments[2]);
+              assertFalse(arguments[3]);  // Incognito.
+            });
+      });
+
+      test('initial INCOGNITO ALLOW state is correct', function() {
+        setupCategory(settings.ContentSettingsTypes.COOKIES,
+            settings.PermissionValues.ALLOW, prefsIncognito);
+        return browserProxy.whenCalled('getExceptionList').then(
+            function(contentType) {
+              assertEquals(
+                  settings.ContentSettingsTypes.COOKIES, contentType);
+
+              assertEquals(2, testElement.sites.length);
+              assertEquals(prefsIncognito.exceptions.cookies[2].origin,
+                  testElement.sites[0].origin);
+              assertEquals(prefsIncognito.exceptions.cookies[1].origin,
+                  testElement.sites[1].origin);
+
+              assertEquals(settings.PermissionValues.ALLOW,
+                  testElement.categorySubtype);
+              Polymer.dom.flush();  // Populates action menu.
+              // 'Clear on exit' is hidden for incognito items.
+              assertMenu(['Block', 'Remove'], testElement);
+              assertEquals('Allow - 2',
+                  testElement.$.header.innerText.trim());
+
+              // Select 'Remove' from menu on 'foo.com'.
+              var menuItems = getMenuItems(testElement.$.listContainer, 1);
+              assertTrue(!!menuItems);
+              MockInteractions.tap(menuItems[1]);
+              return browserProxy.whenCalled(
+                  'resetCategoryPermissionForOrigin');
+            }).then(function(arguments) {
+              assertEquals('http://foo.com', arguments[0]);
+              assertEquals('http://foo.com', arguments[1]);
+              assertEquals(settings.ContentSettingsTypes.COOKIES, arguments[2]);
+              assertTrue(arguments[3]);  // Incognito.
             });
       });
 
@@ -656,7 +762,7 @@ cr.define('site_list', function() {
         return browserProxy.whenCalled('getExceptionList').then(function(
             contentType) {
           Polymer.dom.flush();
-          var menuItems = getMenuItems(testElement.$.listContainer);
+          var menuItems = getMenuItems(testElement.$.listContainer, 0);
           assertTrue(!!menuItems);
           MockInteractions.tap(menuItems[0]);
           return browserProxy.whenCalled('setCategoryPermissionForOrigin');

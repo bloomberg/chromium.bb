@@ -948,7 +948,7 @@ void ContentSettingsHandler::CompareMediaExceptionsWithFlash(
 
   base::ListValue exceptions;
   site_settings::GetExceptionsFromHostContentSettingsMap(settings_map, type,
-                                                         web_ui(), &exceptions);
+      web_ui(), /*incognito=*/ false, &exceptions);
 
   settings.exceptions.clear();
   for (base::ListValue::const_iterator entry = exceptions.begin();
@@ -1093,11 +1093,10 @@ void ContentSettingsHandler::UpdateExceptionsViewFromHostContentSettingsMap(
   HostContentSettingsMap* settings_map =
       HostContentSettingsMapFactory::GetForProfile(GetProfile());
   site_settings::GetExceptionsFromHostContentSettingsMap(settings_map, type,
-                                                         web_ui(), &exceptions);
+      web_ui(), /*incognito=*/ false, &exceptions);
   base::StringValue type_string(
       site_settings::ContentSettingsTypeToGroupName(type));
   web_ui()->CallJavascriptFunctionUnsafe("ContentSettings.setExceptions",
-
                                          type_string, exceptions);
 
   UpdateExceptionsViewFromOTRHostContentSettingsMap(type);
@@ -1128,8 +1127,8 @@ void ContentSettingsHandler::UpdateExceptionsViewFromOTRHostContentSettingsMap(
   if (!otr_settings_map)
     return;
   base::ListValue exceptions;
-  site_settings::GetExceptionsFromHostContentSettingsMap(
-      otr_settings_map, type, web_ui(), &exceptions);
+  site_settings::GetExceptionsFromHostContentSettingsMap(otr_settings_map, type,
+      web_ui(), /*incognito=*/ true, &exceptions);
   base::StringValue type_string(
       site_settings::ContentSettingsTypeToGroupName(type));
   web_ui()->CallJavascriptFunctionUnsafe("ContentSettings.setOTRExceptions",
