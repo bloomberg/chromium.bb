@@ -136,7 +136,7 @@ class URLFetcherCore : public base::RefCountedThreadSafe<URLFetcherCore>,
   void OnReceivedRedirect(URLRequest* request,
                           const RedirectInfo& redirect_info,
                           bool* defer_redirect) override;
-  void OnResponseStarted(URLRequest* request) override;
+  void OnResponseStarted(URLRequest* request, int net_error) override;
   void OnReadCompleted(URLRequest* request, int bytes_read) override;
   void OnCertificateRequested(URLRequest* request,
                               SSLCertRequestInfo* cert_request_info) override;

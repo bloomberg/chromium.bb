@@ -102,14 +102,14 @@ class SpawnerCommunicator : public URLRequest::Delegate {
                                              std::string* data_received);
 
   // URLRequest::Delegate methods. Called on the IO thread.
-  void OnResponseStarted(URLRequest* request) override;
+  void OnResponseStarted(URLRequest* request, int net_error) override;
   void OnReadCompleted(URLRequest* request, int num_bytes) override;
 
   // Reads Result from the response. Called on the IO thread.
   void ReadResult(URLRequest* request);
 
   // Called on the IO thread upon completion of the spawner command.
-  void OnSpawnerCommandCompleted(URLRequest* request);
+  void OnSpawnerCommandCompleted(URLRequest* request, int net_error);
 
   // Callback on the IO thread for time-out task of request with id |id|.
   void OnTimeout(int id);

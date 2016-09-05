@@ -228,12 +228,14 @@ void SpawnerCommunicator::OnTimeout(int id) {
   if (!data->DoesRequestIdMatch(id))
     return;
   // Set the result code and cancel the timed-out task.
-  data->SetResultCode(ERR_TIMED_OUT);
-  cur_request_->Cancel();
-  OnSpawnerCommandCompleted(cur_request_.get());
+  int result = cur_request_->CancelWithError(ERR_TIMED_OUT);
+  OnSpawnerCommandCompleted(cur_request_.get(), result);
 }
 
-void SpawnerCommunicator::OnSpawnerCommandCompleted(URLRequest* request) {
+void SpawnerCommunicator::OnSpawnerCommandCompleted(URLRequest* request,
+                                                    int net_error) {
+  DCHECK_NE(ERR_IO_PENDING, net_error);
+
   if (!cur_request_.get())
     return;
   DCHECK_EQ(request, cur_request_.get());
@@ -242,13 +244,11 @@ void SpawnerCommunicator::OnSpawnerCommandCompleted(URLRequest* request) {
   DCHECK(data);
 
   // If request is faild,return the error code.
-  if (!cur_request_->status().is_success())
-    data->SetResultCode(cur_request_->status().error());
+  if (net_error != OK)
+    data->SetResultCode(net_error);
 
   if (!data->IsResultOK()) {
-    LOG(ERROR) << "request failed, status: "
-               << static_cast<int>(request->status().status())
-               << ", error: " << request->status().error();
+    LOG(ERROR) << "request failed, error: " << net_error;
     // Clear the buffer of received data if any net error happened.
     data->ClearReceivedData();
   } else {
@@ -275,30 +275,35 @@ void SpawnerCommunicator::ReadResult(URLRequest* request) {
   IOBuffer* buf = data->buf();
   // Read as many bytes as are available synchronously.
   while (true) {
-    int num_bytes;
-    if (!request->Read(buf, kBufferSize, &num_bytes)) {
-      // Check whether the read failed synchronously.
-      if (!request->status().is_io_pending())
-        OnSpawnerCommandCompleted(request);
+    int rv = request->Read(buf, kBufferSize);
+    if (rv == ERR_IO_PENDING)
+      return;
+
+    if (rv < 0) {
+      OnSpawnerCommandCompleted(request, rv);
       return;
     }
-    if (!data->ConsumeBytesRead(num_bytes)) {
-      OnSpawnerCommandCompleted(request);
+
+    if (!data->ConsumeBytesRead(rv)) {
+      OnSpawnerCommandCompleted(request, rv);
       return;
     }
   }
 }
 
-void SpawnerCommunicator::OnResponseStarted(URLRequest* request) {
+void SpawnerCommunicator::OnResponseStarted(URLRequest* request,
+                                            int net_error) {
   DCHECK_EQ(request, cur_request_.get());
+  DCHECK_NE(ERR_IO_PENDING, net_error);
+
   SpawnerRequestData* data =
       static_cast<SpawnerRequestData*>(cur_request_->GetUserData(this));
   DCHECK(data);
 
   data->IncreaseResponseStartedCount();
 
-  if (!request->status().is_success()) {
-    OnSpawnerCommandCompleted(request);
+  if (net_error != OK) {
+    OnSpawnerCommandCompleted(request, net_error);
     return;
   }
 
@@ -308,7 +313,7 @@ void SpawnerCommunicator::OnResponseStarted(URLRequest* request) {
                << request->response_headers()->GetStatusLine();
     data->SetResultCode(ERR_FAILED);
     request->Cancel();
-    OnSpawnerCommandCompleted(request);
+    OnSpawnerCommandCompleted(request, ERR_ABORTED);
     return;
   }
 
@@ -316,6 +321,8 @@ void SpawnerCommunicator::OnResponseStarted(URLRequest* request) {
 }
 
 void SpawnerCommunicator::OnReadCompleted(URLRequest* request, int num_bytes) {
+  DCHECK_NE(ERR_IO_PENDING, num_bytes);
+
   if (!cur_request_.get())
     return;
   DCHECK_EQ(request, cur_request_.get());
@@ -327,7 +334,9 @@ void SpawnerCommunicator::OnReadCompleted(URLRequest* request, int num_bytes) {
     // Keep reading.
     ReadResult(request);
   } else {
-    OnSpawnerCommandCompleted(request);
+    // |bytes_read| < 0
+    int net_error = num_bytes;
+    OnSpawnerCommandCompleted(request, net_error);
   }
 }
 

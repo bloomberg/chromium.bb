@@ -94,9 +94,9 @@ class BasicNetworkDelegate : public NetworkDelegateImpl {
   void OnBeforeRedirect(URLRequest* request,
                         const GURL& new_location) override {}
 
-  void OnResponseStarted(URLRequest* request) override {}
+  void OnResponseStarted(URLRequest* request, int net_error) override {}
 
-  void OnCompleted(URLRequest* request, bool started) override {}
+  void OnCompleted(URLRequest* request, bool started, int net_error) override {}
 
   void OnURLRequestDestroyed(URLRequest* request) override {}
 

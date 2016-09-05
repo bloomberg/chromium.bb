@@ -58,7 +58,7 @@ class NET_EXPORT ReportSender
   void SetErrorCallback(const ErrorCallback& error_callback) override;
 
   // net::URLRequest::Delegate implementation.
-  void OnResponseStarted(URLRequest* request) override;
+  void OnResponseStarted(URLRequest* request, int net_error) override;
   void OnReadCompleted(URLRequest* request, int bytes_read) override;
 
  private:
