@@ -122,6 +122,17 @@ public class ImeTest extends ContentShellTestBase {
         assertWaitForKeyboardStatus(false);
     }
 
+    // crbug.com/643519
+    @SmallTest
+    @Feature({"TextInput", "Main"})
+    public void testCompositionWithNullTextNotCrash() throws Throwable {
+        commitText(null, 1);
+        assertTextsAroundCursor("", null, "");
+
+        setComposingText(null, 1);
+        assertTextsAroundCursor("", null, "");
+    }
+
     @SmallTest
     @Feature({"TextInput", "Main"})
     public void testDeleteSurroundingTextWithZeroValue() throws Throwable {

@@ -274,6 +274,7 @@ public class ThreadedInputConnection extends BaseInputConnection
     @Override
     public boolean setComposingText(final CharSequence text, final int newCursorPosition) {
         if (DEBUG_LOGS) Log.w(TAG, "setComposingText [%s] [%d]", text, newCursorPosition);
+        if (text == null) return false;
         return updateComposingText(text, newCursorPosition, false);
     }
 
@@ -303,6 +304,7 @@ public class ThreadedInputConnection extends BaseInputConnection
     @Override
     public boolean commitText(final CharSequence text, final int newCursorPosition) {
         if (DEBUG_LOGS) Log.w(TAG, "commitText [%s] [%d]", text, newCursorPosition);
+        if (text == null) return false;
         assertOnImeThread();
         cancelCombiningAccent();
         ThreadUtils.postOnUiThread(new Runnable() {
