@@ -80,16 +80,17 @@ class CancelAfterFirstReadURLRequestDelegate : public TestDelegate {
 
   ~CancelAfterFirstReadURLRequestDelegate() override {}
 
-  void OnResponseStarted(URLRequest* request) override {
+  void OnResponseStarted(URLRequest* request, int net_error) override {
+    DCHECK_NE(ERR_IO_PENDING, net_error);
     // net::TestDelegate will start the first read.
-    TestDelegate::OnResponseStarted(request);
+    TestDelegate::OnResponseStarted(request, net_error);
     request->Cancel();
     run_loop_->Quit();
   }
 
   void OnReadCompleted(URLRequest* request, int bytes_read) override {
     // Read should have been cancelled.
-    EXPECT_EQ(-1, bytes_read);
+    EXPECT_EQ(ERR_ABORTED, bytes_read);
   }
 
   void WaitUntilHeadersReceived() const { run_loop_->Run(); }

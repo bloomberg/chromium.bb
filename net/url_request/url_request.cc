@@ -159,6 +159,15 @@ void URLRequest::Delegate::OnSSLCertificateError(URLRequest* request,
   request->Cancel();
 }
 
+void URLRequest::Delegate::OnResponseStarted(URLRequest* request,
+                                             int net_error) {
+  OnResponseStarted(request);
+}
+
+void URLRequest::Delegate::OnResponseStarted(URLRequest* request) {
+  NOTREACHED();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // URLRequest
 
@@ -496,6 +505,9 @@ void URLRequest::set_delegate(Delegate* delegate) {
 void URLRequest::Start() {
   DCHECK(delegate_);
 
+  if (!status_.is_success())
+    return;
+
   // TODO(pkasting): Remove ScopedTracker below once crbug.com/456327 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION("456327 URLRequest::Start"));
@@ -555,6 +567,7 @@ URLRequest::URLRequest(const GURL& url,
       first_party_url_policy_(NEVER_CHANGE_FIRST_PARTY_URL),
       load_flags_(LOAD_NORMAL),
       delegate_(delegate),
+      status_(URLRequestStatus::FromError(OK)),
       is_pending_(false),
       is_redirecting_(false),
       redirect_limit_(kMaxRedirects),
@@ -672,12 +685,12 @@ void URLRequest::RestartWithJob(URLRequestJob *job) {
   StartJob(job);
 }
 
-void URLRequest::Cancel() {
-  DoCancel(ERR_ABORTED, SSLInfo());
+int URLRequest::Cancel() {
+  return DoCancel(ERR_ABORTED, SSLInfo());
 }
 
-void URLRequest::CancelWithError(int error) {
-  DoCancel(error, SSLInfo());
+int URLRequest::CancelWithError(int error) {
+  return DoCancel(error, SSLInfo());
 }
 
 void URLRequest::CancelWithSSLError(int error, const SSLInfo& ssl_info) {
@@ -689,7 +702,7 @@ void URLRequest::CancelWithSSLError(int error, const SSLInfo& ssl_info) {
   DoCancel(error, ssl_info);
 }
 
-void URLRequest::DoCancel(int error, const SSLInfo& ssl_info) {
+int URLRequest::DoCancel(int error, const SSLInfo& ssl_info) {
   DCHECK(error < 0);
   // If cancelled while calling a delegate, clear delegate info.
   if (calling_delegate_) {
@@ -722,58 +735,59 @@ void URLRequest::DoCancel(int error, const SSLInfo& ssl_info) {
   // The Job will call our NotifyDone method asynchronously.  This is done so
   // that the Delegate implementation can call Cancel without having to worry
   // about being called recursively.
+
+  return status_.error();
 }
 
-bool URLRequest::Read(IOBuffer* dest, int dest_size, int* bytes_read) {
+int URLRequest::Read(IOBuffer* dest, int dest_size) {
   DCHECK(job_.get());
-  DCHECK(bytes_read);
-  *bytes_read = 0;
 
   // If this is the first read, end the delegate call that may have started in
   // OnResponseStarted.
   OnCallToDelegateComplete();
 
-  // This handles a cancel that happens while paused.
+  // If the request has failed, Read() will return actual network error code.
+  if (!status_.is_success())
+    return status_.error();
+
+  // This handles reads after the request already completed successfully.
   // TODO(ahendrickson): DCHECK() that it is not done after
   // http://crbug.com/115705 is fixed.
   if (job_->is_done())
-    return false;
+    return status_.error();
 
   if (dest_size == 0) {
     // Caller is not too bright.  I guess we've done what they asked.
-    return true;
+    return OK;
   }
 
-  // Once the request fails or is cancelled, read will just return 0 bytes
-  // to indicate end of stream.
-  if (!status_.is_success()) {
-    return true;
-  }
+  int rv = job_->Read(dest, dest_size);
+  if (rv == ERR_IO_PENDING)
+    set_status(URLRequestStatus::FromError(ERR_IO_PENDING));
 
-  bool rv = job_->Read(dest, dest_size, bytes_read);
-  if (*bytes_read < 0) {
-    if (*bytes_read == ERR_IO_PENDING) {
-      set_status(URLRequestStatus::FromError(ERR_IO_PENDING));
-      // Check the status was set correctly.
-      DCHECK_EQ(*bytes_read, status_.error());
-      // Adjust to the previous behavior. If the error is ERR_IO_PENDING,
-      // |*bytes_read| should be 0.
-      *bytes_read = 0;
-    } else {
-      // Check the status was set correctly.
-      DCHECK_EQ(*bytes_read, status_.error());
-      // Adjust to the previous behavior. If the error is other than
-      // ERR_IO_PENDING, |*bytes_read| should be -1.
-      *bytes_read = -1;
-    }
-  }
+  // If rv is not 0 or actual bytes read, the status cannot be success.
+  DCHECK(rv >= 0 || status_.status() != URLRequestStatus::SUCCESS);
 
-  // If rv is false, the status cannot be success.
-  DCHECK(rv || status_.status() != URLRequestStatus::SUCCESS);
-
-  if (rv && *bytes_read <= 0 && status_.is_success())
+  if (rv == 0 && status_.is_success())
     NotifyRequestCompleted();
   return rv;
+}
+
+// Deprecated.
+bool URLRequest::Read(IOBuffer* dest, int dest_size, int* bytes_read) {
+  int result = Read(dest, dest_size);
+  if (result >= 0) {
+    *bytes_read = result;
+    return true;
+  }
+
+  if (result == ERR_IO_PENDING) {
+    *bytes_read = 0;
+  } else {
+    *bytes_read = -1;
+  }
+
+  return false;
 }
 
 void URLRequest::StopCaching() {
@@ -826,7 +840,7 @@ void URLRequest::NotifyResponseStarted(const URLRequestStatus& status) {
     // completion event and receive a NotifyResponseStarted() later.
     if (!has_notified_completion_ && status_.is_success()) {
       if (network_delegate_)
-        network_delegate_->NotifyResponseStarted(this);
+        network_delegate_->NotifyResponseStarted(this, net_error);
     }
 
     // Notify in case the entire URL Request has been finished.
@@ -834,7 +848,7 @@ void URLRequest::NotifyResponseStarted(const URLRequestStatus& status) {
       NotifyRequestCompleted();
 
     OnCallToDelegate();
-    delegate_->OnResponseStarted(this);
+    delegate_->OnResponseStarted(this, net_error);
     // Nothing may appear below this line as OnResponseStarted may delete
     // |this|.
   }
@@ -1140,6 +1154,14 @@ void URLRequest::NotifyReadCompleted(int bytes_read) {
   if (bytes_read <= 0)
     NotifyRequestCompleted();
 
+  // When URLRequestJob notices there was an error in URLRequest's |status_|,
+  // it calls this method with |bytes_read| set to -1. Set it to a real error
+  // here.
+  // TODO(maksims): NotifyReadCompleted take the error code as an argument on
+  // failure, rather than -1.
+  if (bytes_read == -1)
+    bytes_read = status_.error();
+
   // Notify NetworkChangeNotifier that we just received network data.
   // This is to identify cases where the NetworkChangeNotifier thinks we
   // are off-line but we are still receiving network data (crbug.com/124069),
@@ -1184,7 +1206,8 @@ void URLRequest::NotifyRequestCompleted() {
   is_redirecting_ = false;
   has_notified_completion_ = true;
   if (network_delegate_)
-    network_delegate_->NotifyCompleted(this, job_.get() != NULL);
+    network_delegate_->NotifyCompleted(this, job_.get() != NULL,
+                                       status_.error());
 }
 
 void URLRequest::OnCallToDelegate() {

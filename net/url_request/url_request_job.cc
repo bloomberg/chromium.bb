@@ -160,43 +160,42 @@ void URLRequestJob::Kill() {
 // This function calls ReadRawData to get stream data. If a filter exists, it
 // passes the data to the attached filter. It then returns the output from
 // filter back to the caller.
-bool URLRequestJob::Read(IOBuffer* buf, int buf_size, int *bytes_read) {
+int URLRequestJob::Read(IOBuffer* buf, int buf_size) {
   DCHECK_LT(buf_size, 1000000);  // Sanity check.
   DCHECK(buf);
-  DCHECK(bytes_read);
   DCHECK(!filtered_read_buffer_);
   DCHECK_EQ(0, filtered_read_buffer_len_);
 
   Error error = OK;
-  *bytes_read = 0;
+  int bytes_read = 0;
 
   // Skip Filter if not present.
   if (!filter_) {
-    error = ReadRawDataHelper(buf, buf_size, bytes_read);
+    error = ReadRawDataHelper(buf, buf_size, &bytes_read);
   } else {
     // Save the caller's buffers while we do IO
     // in the filter's buffers.
     filtered_read_buffer_ = buf;
     filtered_read_buffer_len_ = buf_size;
 
-    error = ReadFilteredData(bytes_read);
+    error = ReadFilteredData(&bytes_read);
 
     // Synchronous EOF from the filter.
-    if (error == OK && *bytes_read == 0)
+    if (error == OK && bytes_read == 0)
       DoneReading();
   }
 
-  if (error == OK) {
-    // If URLRequestJob read zero bytes, the job is at EOF.
-    if (*bytes_read == 0)
-      NotifyDone(URLRequestStatus());
-  } else if (error == ERR_IO_PENDING) {
-    *bytes_read = ERR_IO_PENDING;
-  } else {
+  if (error == ERR_IO_PENDING)
+    return ERR_IO_PENDING;
+
+  if (error < 0) {
     NotifyDone(URLRequestStatus::FromError(error));
-    *bytes_read = error;
+    return error;
   }
-  return error == OK;
+
+  if (bytes_read == 0)
+    NotifyDone(URLRequestStatus());
+  return bytes_read;
 }
 
 void URLRequestJob::StopCaching() {

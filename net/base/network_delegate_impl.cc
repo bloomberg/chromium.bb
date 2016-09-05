@@ -41,11 +41,15 @@ int NetworkDelegateImpl::OnHeadersReceived(
 }
 
 void NetworkDelegateImpl::OnBeforeRedirect(URLRequest* request,
-                                           const GURL& new_location) {
+                                           const GURL& new_location) {}
+
+void NetworkDelegateImpl::OnResponseStarted(URLRequest* request,
+                                            int net_error) {
+  OnResponseStarted(request);
 }
 
-void NetworkDelegateImpl::OnResponseStarted(URLRequest* request) {
-}
+// Deprecated.
+void NetworkDelegateImpl::OnResponseStarted(URLRequest* request) {}
 
 void NetworkDelegateImpl::OnNetworkBytesReceived(URLRequest* request,
                                                  int64_t bytes_received) {}
@@ -53,8 +57,14 @@ void NetworkDelegateImpl::OnNetworkBytesReceived(URLRequest* request,
 void NetworkDelegateImpl::OnNetworkBytesSent(URLRequest* request,
                                              int64_t bytes_sent) {}
 
-void NetworkDelegateImpl::OnCompleted(URLRequest* request, bool started) {
+void NetworkDelegateImpl::OnCompleted(URLRequest* request,
+                                      bool started,
+                                      int net_error) {
+  OnCompleted(request, started);
 }
+
+// Deprecated.
+void NetworkDelegateImpl::OnCompleted(URLRequest* request, bool started) {}
 
 void NetworkDelegateImpl::OnURLRequestDestroyed(URLRequest* request) {
 }

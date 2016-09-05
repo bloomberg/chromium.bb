@@ -389,8 +389,8 @@ class CancelRequestDelegate : public TestDelegate {
   CancelRequestDelegate() {}
   ~CancelRequestDelegate() override {}
 
-  void OnResponseStarted(URLRequest* request) override {
-    TestDelegate::OnResponseStarted(request);
+  void OnResponseStarted(URLRequest* request, int net_error) override {
+    TestDelegate::OnResponseStarted(request, net_error);
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, run_loop_.QuitClosure(), base::TimeDelta::FromSeconds(1));
   }

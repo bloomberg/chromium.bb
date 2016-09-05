@@ -193,8 +193,8 @@ TestDelegate::TestDelegate()
       certificate_errors_are_fatal_(false),
       auth_required_(false),
       have_full_request_headers_(false),
-      buf_(new IOBuffer(kBufferSize)) {
-}
+      request_status_(ERR_IO_PENDING),
+      buf_(new IOBuffer(kBufferSize)) {}
 
 TestDelegate::~TestDelegate() {}
 
@@ -250,36 +250,35 @@ void TestDelegate::OnSSLCertificateError(URLRequest* request,
     request->Cancel();
 }
 
-void TestDelegate::OnResponseStarted(URLRequest* request) {
+void TestDelegate::OnResponseStarted(URLRequest* request, int net_error) {
   // It doesn't make sense for the request to have IO pending at this point.
-  DCHECK(!request->status().is_io_pending());
+  DCHECK_NE(ERR_IO_PENDING, net_error);
   EXPECT_FALSE(request->is_redirecting());
 
   have_full_request_headers_ =
       request->GetFullRequestHeaders(&full_request_headers_);
 
   response_started_count_++;
+  request_status_ = net_error;
   if (cancel_in_rs_) {
-    request->Cancel();
+    request_status_ = request->Cancel();
     OnResponseCompleted(request);
-  } else if (!request->status().is_success()) {
-    DCHECK(request->status().status() == URLRequestStatus::FAILED ||
-           request->status().status() == URLRequestStatus::CANCELED);
+  } else if (net_error != OK) {
     request_failed_ = true;
     OnResponseCompleted(request);
   } else {
     // Initiate the first read.
-    int bytes_read = 0;
-    if (request->Read(buf_.get(), kBufferSize, &bytes_read))
+    int bytes_read = request->Read(buf_.get(), kBufferSize);
+    if (bytes_read >= 0)
       OnReadCompleted(request, bytes_read);
-    else if (!request->status().is_io_pending())
+    else if (bytes_read != ERR_IO_PENDING)
       OnResponseCompleted(request);
   }
 }
 
 void TestDelegate::OnReadCompleted(URLRequest* request, int bytes_read) {
   // It doesn't make sense for the request to have IO pending at this point.
-  DCHECK(!request->status().is_io_pending());
+  DCHECK_NE(bytes_read, ERR_IO_PENDING);
 
   // If the request was cancelled in a redirect, it should not signal
   // OnReadCompleted. Note that |cancel_in_rs_| may be true due to
@@ -290,7 +289,7 @@ void TestDelegate::OnReadCompleted(URLRequest* request, int bytes_read) {
     received_data_before_response_ = true;
 
   if (cancel_in_rd_)
-    request->Cancel();
+    request_status_ = request->Cancel();
 
   if (bytes_read >= 0) {
     // There is data to read.
@@ -301,21 +300,19 @@ void TestDelegate::OnReadCompleted(URLRequest* request, int bytes_read) {
   }
 
   // If it was not end of stream, request to read more.
-  if (request->status().is_success() && bytes_read > 0) {
-    bytes_read = 0;
-    while (request->Read(buf_.get(), kBufferSize, &bytes_read)) {
-      if (bytes_read > 0) {
-        data_received_.append(buf_->data(), bytes_read);
-        received_bytes_count_ += bytes_read;
-      } else {
-        break;
-      }
+  while (bytes_read > 0) {
+    bytes_read = request->Read(buf_.get(), kBufferSize);
+    if (bytes_read > 0) {
+      data_received_.append(buf_->data(), bytes_read);
+      received_bytes_count_ += bytes_read;
     }
   }
-  if (!request->status().is_io_pending())
+
+  request_status_ = bytes_read;
+  if (request_status_ != ERR_IO_PENDING)
     OnResponseCompleted(request);
   else if (cancel_in_rd_pending_)
-    request->Cancel();
+    request_status_ = request->Cancel();
 }
 
 void TestDelegate::OnResponseCompleted(URLRequest* request) {
@@ -505,7 +502,10 @@ void TestNetworkDelegate::OnBeforeRedirect(URLRequest* request,
   next_states_[req_id] |= kStageResponseStarted;
 }
 
-void TestNetworkDelegate::OnResponseStarted(URLRequest* request) {
+void TestNetworkDelegate::OnResponseStarted(URLRequest* request,
+                                            int net_error) {
+  DCHECK_NE(ERR_IO_PENDING, net_error);
+
   LoadTimingInfo load_timing_info;
   request->GetLoadTimingInfo(&load_timing_info);
   EXPECT_FALSE(load_timing_info.request_start_time.is_null());
@@ -514,12 +514,15 @@ void TestNetworkDelegate::OnResponseStarted(URLRequest* request) {
   int req_id = request->identifier();
   InitRequestStatesIfNew(req_id);
   event_order_[req_id] += "OnResponseStarted\n";
-  EXPECT_TRUE(next_states_[req_id] & kStageResponseStarted) <<
-      event_order_[req_id];
+  EXPECT_TRUE(next_states_[req_id] & kStageResponseStarted)
+      << event_order_[req_id];
   next_states_[req_id] = kStageCompletedSuccess | kStageCompletedError;
-  if (request->status().status() == URLRequestStatus::FAILED) {
+  if (net_error == ERR_ABORTED)
+    return;
+
+  if (net_error != OK) {
     error_count_++;
-    last_error_ = request->status().error();
+    last_error_ = net_error;
   }
 }
 
@@ -535,28 +538,31 @@ void TestNetworkDelegate::OnNetworkBytesSent(URLRequest* request,
   total_network_bytes_sent_ += bytes_sent;
 }
 
-void TestNetworkDelegate::OnCompleted(URLRequest* request, bool started) {
+void TestNetworkDelegate::OnCompleted(URLRequest* request,
+                                      bool started,
+                                      int net_error) {
+  DCHECK_NE(net_error, net::ERR_IO_PENDING);
+
   int req_id = request->identifier();
   InitRequestStatesIfNew(req_id);
   event_order_[req_id] += "OnCompleted\n";
   // Expect "Success -> (next_states_ & kStageCompletedSuccess)"
   // is logically identical to
   // Expect "!(Success) || (next_states_ & kStageCompletedSuccess)"
-  EXPECT_TRUE(!request->status().is_success() ||
-              (next_states_[req_id] & kStageCompletedSuccess)) <<
-      event_order_[req_id];
-  EXPECT_TRUE(request->status().is_success() ||
-              (next_states_[req_id] & kStageCompletedError)) <<
-      event_order_[req_id];
+  EXPECT_TRUE(net_error != OK ||
+              (next_states_[req_id] & kStageCompletedSuccess))
+      << event_order_[req_id];
+  EXPECT_TRUE(net_error == OK || (next_states_[req_id] & kStageCompletedError))
+      << event_order_[req_id];
   next_states_[req_id] = kStageURLRequestDestroyed;
   completed_requests_++;
-  if (request->status().status() == URLRequestStatus::FAILED) {
-    error_count_++;
-    last_error_ = request->status().error();
-  } else if (request->status().status() == URLRequestStatus::CANCELED) {
+  if (net_error == ERR_ABORTED) {
     canceled_requests_++;
+  } else if (net_error != OK) {
+    error_count_++;
+    last_error_ = net_error;
   } else {
-    DCHECK_EQ(URLRequestStatus::SUCCESS, request->status().status());
+    DCHECK_EQ(OK, net_error);
   }
 }
 

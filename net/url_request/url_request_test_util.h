@@ -180,6 +180,7 @@ class TestDelegate : public URLRequest::Delegate {
     return full_request_headers_;
   }
   void ClearFullRequestHeaders();
+  int request_status() const { return request_status_; }
 
   // URLRequest::Delegate:
   void OnReceivedRedirect(URLRequest* request,
@@ -193,7 +194,7 @@ class TestDelegate : public URLRequest::Delegate {
   void OnSSLCertificateError(URLRequest* request,
                              const SSLInfo& ssl_info,
                              bool fatal) override;
-  void OnResponseStarted(URLRequest* request) override;
+  void OnResponseStarted(URLRequest* request, int net_error) override;
   void OnReadCompleted(URLRequest* request, int bytes_read) override;
 
  private:
@@ -224,6 +225,9 @@ class TestDelegate : public URLRequest::Delegate {
   std::string data_received_;
   bool have_full_request_headers_;
   HttpRequestHeaders full_request_headers_;
+
+  // tracks status of request
+  int request_status_;
 
   // our read buffer
   scoped_refptr<IOBuffer> buf_;
@@ -327,11 +331,11 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
       scoped_refptr<HttpResponseHeaders>* override_response_headers,
       GURL* allowed_unsafe_redirect_url) override;
   void OnBeforeRedirect(URLRequest* request, const GURL& new_location) override;
-  void OnResponseStarted(URLRequest* request) override;
+  void OnResponseStarted(URLRequest* request, int net_error) override;
   void OnNetworkBytesReceived(URLRequest* request,
                               int64_t bytes_received) override;
   void OnNetworkBytesSent(URLRequest* request, int64_t bytes_sent) override;
-  void OnCompleted(URLRequest* request, bool started) override;
+  void OnCompleted(URLRequest* request, bool started, int net_error) override;
   void OnURLRequestDestroyed(URLRequest* request) override;
   void OnPACScriptError(int line_number, const base::string16& error) override;
   NetworkDelegate::AuthRequiredResponse OnAuthRequired(

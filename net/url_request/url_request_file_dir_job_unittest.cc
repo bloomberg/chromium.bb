@@ -82,7 +82,7 @@ class TestDirectoryURLRequestDelegate : public TestDelegate {
 
   ~TestDirectoryURLRequestDelegate() override {}
 
-  void OnResponseStarted(URLRequest* request) override {
+  void OnResponseStarted(URLRequest* request, int net_error) override {
     got_response_started_ = true;
   }
 

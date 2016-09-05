@@ -80,7 +80,7 @@ class TestNetworkDelegateImpl : public NetworkDelegateImpl {
     IncrementAndCompareCounter("on_before_redirect_count");
   }
 
-  void OnResponseStarted(URLRequest* request) override {
+  void OnResponseStarted(URLRequest* request, int net_error) override {
     IncrementAndCompareCounter("on_response_started_count");
   }
 
@@ -93,7 +93,7 @@ class TestNetworkDelegateImpl : public NetworkDelegateImpl {
     IncrementAndCompareCounter("on_network_bytes_sent_count");
   }
 
-  void OnCompleted(URLRequest* request, bool started) override {
+  void OnCompleted(URLRequest* request, bool started, int net_error) override {
     IncrementAndCompareCounter("on_completed_count");
   }
 
@@ -194,9 +194,9 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
     OnNetworkBytesSent(request.get(), 42);
     EXPECT_EQ(OK, OnHeadersReceived(NULL, completion_callback.callback(),
                                     response_headers.get(), NULL, NULL));
-    OnResponseStarted(request.get());
+    OnResponseStarted(request.get(), net::OK);
     OnNetworkBytesReceived(request.get(), 42);
-    OnCompleted(request.get(), false);
+    OnCompleted(request.get(), false, net::OK);
     OnURLRequestDestroyed(request.get());
     OnPACScriptError(0, base::string16());
     EXPECT_EQ(

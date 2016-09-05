@@ -5006,15 +5006,13 @@ class AsyncLoggingUrlRequestDelegate : public TestDelegate {
             base::Unretained(this), request, redirect_info));
   }
 
-  void OnResponseStarted(URLRequest* request) override {
+  void OnResponseStarted(URLRequest* request, int net_error) override {
     AsyncDelegateLogger::Run(
-      request,
-      LOAD_STATE_WAITING_FOR_DELEGATE,
-      LOAD_STATE_WAITING_FOR_DELEGATE,
-      LOAD_STATE_WAITING_FOR_DELEGATE,
-      base::Bind(
-          &AsyncLoggingUrlRequestDelegate::OnResponseStartedLoggingComplete,
-          base::Unretained(this), request));
+        request, LOAD_STATE_WAITING_FOR_DELEGATE,
+        LOAD_STATE_WAITING_FOR_DELEGATE, LOAD_STATE_WAITING_FOR_DELEGATE,
+        base::Bind(
+            &AsyncLoggingUrlRequestDelegate::OnResponseStartedLoggingComplete,
+            base::Unretained(this), request, net_error));
   }
 
   void OnReadCompleted(URLRequest* request, int bytes_read) override {
@@ -5040,9 +5038,9 @@ class AsyncLoggingUrlRequestDelegate : public TestDelegate {
       request->FollowDeferredRedirect();
   }
 
-  void OnResponseStartedLoggingComplete(URLRequest* request) {
+  void OnResponseStartedLoggingComplete(URLRequest* request, int net_error) {
     // The parent class continues the request.
-    TestDelegate::OnResponseStarted(request);
+    TestDelegate::OnResponseStarted(request, net_error);
   }
 
   void AfterReadCompletedLoggingComplete(URLRequest* request, int bytes_read) {
