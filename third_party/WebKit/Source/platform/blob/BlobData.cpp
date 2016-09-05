@@ -101,7 +101,7 @@ void BlobData::setContentType(const String& contentType)
 
 void BlobData::appendData(PassRefPtr<RawData> data, long long offset, long long length)
 {
-    m_items.append(BlobDataItem(data, offset, length));
+    m_items.append(BlobDataItem(std::move(data), offset, length));
 }
 
 void BlobData::appendFile(const String& path)
@@ -116,7 +116,7 @@ void BlobData::appendFile(const String& path, long long offset, long long length
 
 void BlobData::appendBlob(PassRefPtr<BlobDataHandle> dataHandle, long long offset, long long length)
 {
-    m_items.append(BlobDataItem(dataHandle, offset, length));
+    m_items.append(BlobDataItem(std::move(dataHandle), offset, length));
 }
 
 void BlobData::appendFileSystemURL(const KURL& url, long long offset, long long length, double expectedModificationTime)

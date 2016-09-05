@@ -73,7 +73,7 @@ class PLATFORM_EXPORT FontDataForRangeSetFromCache : public FontDataForRangeSet 
 public:
     explicit FontDataForRangeSetFromCache(PassRefPtr<SimpleFontData> fontData,
         PassRefPtr<UnicodeRangeSet> rangeSet = nullptr)
-        : FontDataForRangeSet(fontData, rangeSet)
+        : FontDataForRangeSet(std::move(fontData), std::move(rangeSet))
     {
     }
     virtual ~FontDataForRangeSetFromCache();

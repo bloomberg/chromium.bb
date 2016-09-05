@@ -28,7 +28,7 @@ public:
         bool flattensInheritedTransform = false,
         unsigned renderingContextID = 0)
     {
-        return adoptRef(new TransformPaintPropertyNode(matrix, origin, parent, flattensInheritedTransform, renderingContextID));
+        return adoptRef(new TransformPaintPropertyNode(matrix, origin, std::move(parent), flattensInheritedTransform, renderingContextID));
     }
 
     void update(PassRefPtr<const TransformPaintPropertyNode> parent, const TransformationMatrix& matrix, const FloatPoint3D& origin, bool flattensInheritedTransform = false, unsigned renderingContextID = 0)

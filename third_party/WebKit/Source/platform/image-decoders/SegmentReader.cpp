@@ -183,7 +183,7 @@ sk_sp<SkData> ROBufferSegmentReader::getAsSkData() const
 
 PassRefPtr<SegmentReader> SegmentReader::createFromSharedBuffer(PassRefPtr<SharedBuffer> buffer)
 {
-    return adoptRef(new SharedBufferSegmentReader(buffer));
+    return adoptRef(new SharedBufferSegmentReader(std::move(buffer)));
 }
 
 PassRefPtr<SegmentReader> SegmentReader::createFromSkData(sk_sp<SkData> data)

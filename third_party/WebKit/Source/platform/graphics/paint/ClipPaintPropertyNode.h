@@ -26,7 +26,7 @@ public:
         PassRefPtr<const TransformPaintPropertyNode> localTransformSpace,
         const FloatRoundedRect& clipRect)
     {
-        return adoptRef(new ClipPaintPropertyNode(parent, localTransformSpace, clipRect));
+        return adoptRef(new ClipPaintPropertyNode(std::move(parent), std::move(localTransformSpace), clipRect));
     }
 
     void update(PassRefPtr<const ClipPaintPropertyNode> parent, PassRefPtr<const TransformPaintPropertyNode> localTransformSpace, const FloatRoundedRect& clipRect)

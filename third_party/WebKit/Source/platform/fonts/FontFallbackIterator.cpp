@@ -18,7 +18,7 @@ PassRefPtr<FontFallbackIterator> FontFallbackIterator::create(
     FontFallbackPriority fontFallbackPriority)
 {
     return adoptRef(new FontFallbackIterator(
-        description, fallbackList, fontFallbackPriority));
+        description, std::move(fallbackList), fontFallbackPriority));
 }
 
 FontFallbackIterator::FontFallbackIterator(const FontDescription& description,

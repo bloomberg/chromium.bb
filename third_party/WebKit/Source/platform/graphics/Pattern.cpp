@@ -39,7 +39,7 @@ namespace blink {
 
 PassRefPtr<Pattern> Pattern::createImagePattern(PassRefPtr<Image> tileImage, RepeatMode repeatMode)
 {
-    return ImagePattern::create(tileImage, repeatMode);
+    return ImagePattern::create(std::move(tileImage), repeatMode);
 }
 
 PassRefPtr<Pattern> Pattern::createPicturePattern(sk_sp<SkPicture> picture,

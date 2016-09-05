@@ -56,7 +56,7 @@ ArchiveResource* ArchiveResource::create(
     const AtomicString& mimeType,
     const AtomicString& textEncoding)
 {
-    return new ArchiveResource(data, url, contentID, mimeType, textEncoding);
+    return new ArchiveResource(std::move(data), url, contentID, mimeType, textEncoding);
 }
 
 } // namespace blink

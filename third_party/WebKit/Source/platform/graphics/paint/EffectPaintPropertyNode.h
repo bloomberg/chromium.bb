@@ -21,7 +21,7 @@ class PLATFORM_EXPORT EffectPaintPropertyNode : public RefCounted<EffectPaintPro
 public:
     static PassRefPtr<EffectPaintPropertyNode> create(PassRefPtr<const EffectPaintPropertyNode> parent, float opacity)
     {
-        return adoptRef(new EffectPaintPropertyNode(parent, opacity));
+        return adoptRef(new EffectPaintPropertyNode(std::move(parent), opacity));
     }
 
     void update(PassRefPtr<const EffectPaintPropertyNode> parent, float opacity)

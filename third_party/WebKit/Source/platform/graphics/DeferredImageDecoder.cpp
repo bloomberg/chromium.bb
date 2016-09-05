@@ -143,7 +143,7 @@ PassRefPtr<SharedBuffer> DeferredImageDecoder::data()
 
 void DeferredImageDecoder::setData(PassRefPtr<SharedBuffer> data, bool allDataReceived)
 {
-    setDataInternal(data, allDataReceived, true);
+    setDataInternal(std::move(data), allDataReceived, true);
 }
 
 void DeferredImageDecoder::setDataInternal(PassRefPtr<SharedBuffer> passData, bool allDataReceived, bool pushDataToDecoder)

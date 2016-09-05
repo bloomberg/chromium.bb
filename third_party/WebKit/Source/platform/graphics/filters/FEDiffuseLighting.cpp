@@ -29,14 +29,14 @@ namespace blink {
 
 FEDiffuseLighting::FEDiffuseLighting(Filter* filter, const Color& lightingColor, float surfaceScale,
     float diffuseConstant, PassRefPtr<LightSource> lightSource)
-    : FELighting(filter, DiffuseLighting, lightingColor, surfaceScale, diffuseConstant, 0, 0, lightSource)
+    : FELighting(filter, DiffuseLighting, lightingColor, surfaceScale, diffuseConstant, 0, 0, std::move(lightSource))
 {
 }
 
 FEDiffuseLighting* FEDiffuseLighting::create(Filter* filter, const Color& lightingColor,
     float surfaceScale, float diffuseConstant, PassRefPtr<LightSource> lightSource)
 {
-    return new FEDiffuseLighting(filter, lightingColor, surfaceScale, diffuseConstant, lightSource);
+    return new FEDiffuseLighting(filter, lightingColor, surfaceScale, diffuseConstant, std::move(lightSource));
 }
 
 FEDiffuseLighting::~FEDiffuseLighting()

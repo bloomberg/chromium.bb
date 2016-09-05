@@ -54,7 +54,7 @@ public:
     // Used to create platform fonts.
     static PassRefPtr<SimpleFontData> create(const FontPlatformData& platformData, PassRefPtr<CustomFontData> customData = nullptr, bool isTextOrientationFallback = false)
     {
-        return adoptRef(new SimpleFontData(platformData, customData, isTextOrientationFallback));
+        return adoptRef(new SimpleFontData(platformData, std::move(customData), isTextOrientationFallback));
     }
 
     ~SimpleFontData() override;

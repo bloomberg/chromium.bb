@@ -200,7 +200,7 @@ Image::SizeAvailability BitmapImage::setData(PassRefPtr<SharedBuffer> data, bool
 
     // If ImageSource::setData() fails, we know that this is a decode error.
     // Report size available so that it gets registered as such in ImageResource.
-    if (!m_source.setData(data, allDataReceived))
+    if (!m_source.setData(std::move(data), allDataReceived))
         return SizeAvailable;
 
     return dataChanged(allDataReceived);

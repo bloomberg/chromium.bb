@@ -158,7 +158,7 @@ static void addDataToStreamTask(const KURL& url, PassRefPtr<RawData> streamData)
 void BlobRegistry::addDataToStream(const KURL& url, PassRefPtr<RawData> streamData)
 {
     if (isMainThread())
-        addDataToStreamTask(url, streamData);
+        addDataToStreamTask(url, std::move(streamData));
     else
         Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, crossThreadBind(&addDataToStreamTask, url, streamData));
 }

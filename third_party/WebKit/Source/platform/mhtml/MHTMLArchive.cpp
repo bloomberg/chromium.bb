@@ -74,7 +74,7 @@ MHTMLArchive* MHTMLArchive::create(const KURL& url, PassRefPtr<SharedBuffer> dat
     if (!canLoadArchive(url))
         return nullptr;
 
-    MHTMLParser parser(data);
+    MHTMLParser parser(std::move(data));
     HeapVector<Member<ArchiveResource>> resources = parser.parseArchive();
     if (resources.isEmpty())
         return nullptr; // Invalid MHTML file.

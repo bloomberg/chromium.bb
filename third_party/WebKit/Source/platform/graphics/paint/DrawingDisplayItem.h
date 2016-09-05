@@ -18,7 +18,7 @@ class PLATFORM_EXPORT DrawingDisplayItem final : public DisplayItem {
 public:
     DrawingDisplayItem(const DisplayItemClient& client, Type type, sk_sp<const SkPicture> picture, bool knownToBeOpaque = false)
         : DisplayItem(client, type, sizeof(*this))
-        , m_picture(picture && picture->approximateOpCount() ? picture : nullptr)
+        , m_picture(picture && picture->approximateOpCount() ? std::move(picture) : nullptr)
         , m_knownToBeOpaque(knownToBeOpaque)
     {
         DCHECK(isDrawingType(type));

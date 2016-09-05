@@ -88,7 +88,7 @@ private:
         : m_arena(PODArena::create()), m_freeList(0) { }
 
     explicit PODFreeListArena(PassRefPtr<PODArena::Allocator> allocator)
-        : m_arena(PODArena::create(allocator)), m_freeList(0) { }
+        : m_arena(PODArena::create(std::move(allocator))), m_freeList(0) { }
 
     ~PODFreeListArena() { }
 

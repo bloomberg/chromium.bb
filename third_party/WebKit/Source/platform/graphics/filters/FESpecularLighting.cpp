@@ -31,7 +31,7 @@ namespace blink {
 
 FESpecularLighting::FESpecularLighting(Filter* filter, const Color& lightingColor, float surfaceScale,
     float specularConstant, float specularExponent, PassRefPtr<LightSource> lightSource)
-    : FELighting(filter, SpecularLighting, lightingColor, surfaceScale, 0, specularConstant, specularExponent, lightSource)
+    : FELighting(filter, SpecularLighting, lightingColor, surfaceScale, 0, specularConstant, specularExponent, std::move(lightSource))
 {
 }
 
@@ -39,7 +39,7 @@ FESpecularLighting* FESpecularLighting::create(Filter* filter, const Color& ligh
     float surfaceScale, float specularConstant, float specularExponent, PassRefPtr<LightSource> lightSource)
 {
     return new FESpecularLighting(filter, lightingColor, surfaceScale, specularConstant, specularExponent,
-        lightSource);
+        std::move(lightSource));
 }
 
 FESpecularLighting::~FESpecularLighting()

@@ -95,7 +95,7 @@ Length::Length(PassRefPtr<CalculationValue> calc)
     , m_type(Calculated)
     , m_isFloat(false)
 {
-    m_intValue = calcHandles().insert(calc);
+    m_intValue = calcHandles().insert(std::move(calc));
 }
 
 Length Length::blendMixedTypes(const Length& from, double progress, ValueRange range) const

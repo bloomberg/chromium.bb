@@ -105,7 +105,7 @@ public:
     static std::unique_ptr<ImageDecoder> create(PassRefPtr<SharedBuffer> data, bool dataComplete,
         AlphaOption alphaoption, GammaAndColorProfileOption colorOptions)
     {
-        return create(SegmentReader::createFromSharedBuffer(data), dataComplete, alphaoption, colorOptions);
+        return create(SegmentReader::createFromSharedBuffer(std::move(data)), dataComplete, alphaoption, colorOptions);
     }
 
 
@@ -129,7 +129,7 @@ public:
 
     void setData(PassRefPtr<SharedBuffer> data, bool allDataReceived)
     {
-        setData(SegmentReader::createFromSharedBuffer(data), allDataReceived);
+        setData(SegmentReader::createFromSharedBuffer(std::move(data)), allDataReceived);
     }
 
     virtual void onSetData(SegmentReader* data) { }

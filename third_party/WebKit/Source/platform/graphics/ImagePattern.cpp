@@ -15,7 +15,7 @@ namespace blink {
 
 PassRefPtr<ImagePattern> ImagePattern::create(PassRefPtr<Image> image, RepeatMode repeatMode)
 {
-    return adoptRef(new ImagePattern(image, repeatMode));
+    return adoptRef(new ImagePattern(std::move(image), repeatMode));
 }
 
 ImagePattern::ImagePattern(PassRefPtr<Image> image, RepeatMode repeatMode)

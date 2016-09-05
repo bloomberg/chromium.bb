@@ -81,7 +81,7 @@ public:
     // Creates a new PODArena configured with the given Allocator.
     static PassRefPtr<PODArena> create(PassRefPtr<Allocator> allocator)
     {
-        return adoptRef(new PODArena(allocator));
+        return adoptRef(new PODArena(std::move(allocator)));
     }
 
     // Allocates an object from the arena.

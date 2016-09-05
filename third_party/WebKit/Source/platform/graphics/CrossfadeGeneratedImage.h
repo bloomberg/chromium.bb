@@ -38,7 +38,7 @@ class PLATFORM_EXPORT CrossfadeGeneratedImage final : public GeneratedImage {
 public:
     static PassRefPtr<CrossfadeGeneratedImage> create(PassRefPtr<Image> fromImage, PassRefPtr<Image> toImage, float percentage, IntSize crossfadeSize, const IntSize& size)
     {
-        return adoptRef(new CrossfadeGeneratedImage(fromImage, toImage, percentage, crossfadeSize, size));
+        return adoptRef(new CrossfadeGeneratedImage(std::move(fromImage), std::move(toImage), percentage, crossfadeSize, size));
     }
 
     bool usesContainerSize() const override { return false; }

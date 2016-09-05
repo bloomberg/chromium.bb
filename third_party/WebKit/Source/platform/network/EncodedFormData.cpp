@@ -136,7 +136,7 @@ void EncodedFormData::appendFileRange(const String& filename, long long start, l
 
 void EncodedFormData::appendBlob(const String& uuid, PassRefPtr<BlobDataHandle> optionalHandle)
 {
-    m_elements.append(FormDataElement(uuid, optionalHandle));
+    m_elements.append(FormDataElement(uuid, std::move(optionalHandle)));
 }
 
 void EncodedFormData::appendFileSystemURL(const KURL& url)
