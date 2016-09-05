@@ -83,4 +83,9 @@ void shutdown()
     s_shutdown = true;
 }
 
+bool isShutdown()
+{
+    return s_shutdown;
+}
+
 } // namespace WTF
