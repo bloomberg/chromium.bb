@@ -113,8 +113,6 @@ crbug.com/639147 svg/wicd/test-rightsizing-b.xhtml [ Failure Pass ]
 
 # ====== Paint team owned tests to here ======
 
-crbug.com/642035 [ Mac10.11 Retina Win10 ] css3/filters/effect-reference-hw.html [ NeedsManualRebaseline ]
-
 # Run these tests with under virtual/scalefactor... only.
 crbug.com/567837 fast/hidpi/static [ Skip ]
 
