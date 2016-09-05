@@ -333,6 +333,10 @@ class PasswordFormManager : public PasswordStoreConsumer,
   // Trigger filling of HTTP auth dialog and update |manager_action_|.
   void ProcessLoginPrompt();
 
+  // Given all non-blacklisted |matches|, computes their score and populates
+  // |best_matches_|, |preferred_match_| and |non_best_matches_| accordingly.
+  void ScoreMatches(const std::vector<const autofill::PasswordForm*>& matches);
+
   // FormFetcher::Consumer:
   void ProcessMatches(
       const std::vector<const autofill::PasswordForm*>& non_federated,
@@ -348,7 +352,10 @@ class PasswordFormManager : public PasswordStoreConsumer,
   // against the observed_form_.
   uint32_t ScoreResult(const autofill::PasswordForm& candidate) const;
 
-  // For the blacklisted |form| returns true iff it blacklists |observed_form_|.
+  // Returns true iff |form| is a non-blacklisted match for |observed_form_|.
+  bool IsMatch(const autofill::PasswordForm& form) const;
+
+  // Returns true iff |form| blacklists |observed_form_|.
   bool IsBlacklistMatch(const autofill::PasswordForm& form) const;
 
   // Helper for Save in the case there is at least one match for the pending
