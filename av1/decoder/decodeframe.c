@@ -400,11 +400,9 @@ static void inverse_transform_block_intra(MACROBLOCKD *xd, int plane,
   }
 }
 
-static void predict_and_reconstruct_intra_block(MACROBLOCKD *const xd,
-                                                aom_reader *r,
-                                                MB_MODE_INFO *const mbmi,
-                                                int plane, int row, int col,
-                                                TX_SIZE tx_size) {
+static void predict_and_reconstruct_intra_block(
+    AV1_COMMON *cm, MACROBLOCKD *const xd, aom_reader *r,
+    MB_MODE_INFO *const mbmi, int plane, int row, int col, TX_SIZE tx_size) {
   struct macroblockd_plane *const pd = &xd->plane[plane];
   PREDICTION_MODE mode = (plane == 0) ? mbmi->mode : mbmi->uv_mode;
   PLANE_TYPE plane_type = (plane == 0) ? PLANE_TYPE_Y : PLANE_TYPE_UV;
@@ -420,7 +418,7 @@ static void predict_and_reconstruct_intra_block(MACROBLOCKD *const xd,
 
   if (!mbmi->skip) {
     TX_TYPE tx_type = get_tx_type(plane_type, xd, block_idx);
-    const SCAN_ORDER *scan_order = get_scan(tx_size, tx_type);
+    const SCAN_ORDER *scan_order = get_scan(cm, tx_size, tx_type);
     const int eob = av1_decode_block_tokens(xd, plane, scan_order, col, row,
                                             tx_size, r, mbmi->segment_id);
     inverse_transform_block_intra(xd, plane, tx_type, tx_size, dst,
@@ -428,14 +426,15 @@ static void predict_and_reconstruct_intra_block(MACROBLOCKD *const xd,
   }
 }
 
-static int reconstruct_inter_block(MACROBLOCKD *const xd, aom_reader *r,
-                                   MB_MODE_INFO *const mbmi, int plane, int row,
-                                   int col, TX_SIZE tx_size) {
+static int reconstruct_inter_block(AV1_COMMON *cm, MACROBLOCKD *const xd,
+                                   aom_reader *r, MB_MODE_INFO *const mbmi,
+                                   int plane, int row, int col,
+                                   TX_SIZE tx_size) {
   struct macroblockd_plane *const pd = &xd->plane[plane];
   PLANE_TYPE plane_type = (plane == 0) ? PLANE_TYPE_Y : PLANE_TYPE_UV;
   int block_idx = (row << 1) + col;
   TX_TYPE tx_type = get_tx_type(plane_type, xd, block_idx);
-  const SCAN_ORDER *scan_order = get_scan(tx_size, tx_type);
+  const SCAN_ORDER *scan_order = get_scan(cm, tx_size, tx_type);
   const int eob = av1_decode_block_tokens(xd, plane, scan_order, col, row,
                                           tx_size, r, mbmi->segment_id);
 
@@ -557,7 +556,7 @@ static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 
       for (row = 0; row < max_blocks_high; row += step)
         for (col = 0; col < max_blocks_wide; col += step)
-          predict_and_reconstruct_intra_block(xd, r, mbmi, plane, row, col,
+          predict_and_reconstruct_intra_block(cm, xd, r, mbmi, plane, row, col,
                                               tx_size);
     }
   } else {
@@ -591,8 +590,8 @@ static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 
         for (row = 0; row < max_blocks_high; row += step)
           for (col = 0; col < max_blocks_wide; col += step)
-            eobtotal +=
-                reconstruct_inter_block(xd, r, mbmi, plane, row, col, tx_size);
+            eobtotal += reconstruct_inter_block(cm, xd, r, mbmi, plane, row,
+                                                col, tx_size);
       }
 
       if (!less8x8 && eobtotal == 0)

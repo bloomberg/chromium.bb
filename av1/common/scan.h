@@ -72,7 +72,9 @@ static INLINE int get_coef_context(const int16_t *neighbors,
          1;
 }
 
-static INLINE const SCAN_ORDER *get_scan(TX_SIZE tx_size, TX_TYPE tx_type) {
+static INLINE const SCAN_ORDER *get_scan(const AV1_COMMON *const cm,
+                                         TX_SIZE tx_size, TX_TYPE tx_type) {
+  (void)cm;
   return &av1_scan_orders[tx_size][tx_type];
 }
 
