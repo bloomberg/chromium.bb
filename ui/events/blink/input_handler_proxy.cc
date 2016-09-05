@@ -503,7 +503,6 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::ScrollByMouseWheel(
     RecordMainThreadScrollingReasons(
         blink::WebGestureDeviceTouchpad,
         cc::MainThreadScrollingReason::kPageBasedScrolling);
-
   } else {
     DCHECK(!ShouldAnimate(wheel_event.hasPreciseScrollingDeltas));
     cc::ScrollStateData scroll_state_begin_data;
@@ -621,7 +620,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollBegin(
 
 InputHandlerProxy::EventDisposition
 InputHandlerProxy::HandleGestureScrollUpdate(
-  const WebGestureEvent& gesture_event) {
+    const WebGestureEvent& gesture_event) {
 #ifndef NDEBUG
   DCHECK(expect_scroll_update_end_);
 #endif
@@ -636,7 +635,12 @@ InputHandlerProxy::HandleGestureScrollUpdate(
   if (ShouldAnimate(gesture_event.data.scrollUpdate.deltaUnits !=
                     blink::WebGestureEvent::ScrollUnits::Pixels)) {
     DCHECK(!scroll_state.is_in_inertial_phase());
-    switch (input_handler_->ScrollAnimated(scroll_point, scroll_delta).thread) {
+    base::TimeTicks event_time =
+        base::TimeTicks() +
+        base::TimeDelta::FromSecondsD(gesture_event.timeStampSeconds);
+    base::TimeDelta delay = base::TimeTicks::Now() - event_time;
+    switch (input_handler_->ScrollAnimated(scroll_point, scroll_delta, delay)
+                .thread) {
       case cc::InputHandler::SCROLL_ON_IMPL_THREAD:
         return DID_HANDLE;
       case cc::InputHandler::SCROLL_IGNORED:

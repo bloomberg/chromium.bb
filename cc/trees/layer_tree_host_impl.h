@@ -169,7 +169,8 @@ class CC_EXPORT LayerTreeHostImpl
   ScrollStatus ScrollAnimatedBegin(const gfx::Point& viewport_point) override;
   InputHandler::ScrollStatus ScrollAnimated(
       const gfx::Point& viewport_point,
-      const gfx::Vector2dF& scroll_delta) override;
+      const gfx::Vector2dF& scroll_delta,
+      base::TimeDelta delayed_by = base::TimeDelta()) override;
   void ApplyScroll(ScrollNode* scroll_node, ScrollState* scroll_state);
   InputHandlerScrollResult ScrollBy(ScrollState* scroll_state) override;
   bool ScrollVerticallyByPage(const gfx::Point& viewport_point,
@@ -598,7 +599,8 @@ class CC_EXPORT LayerTreeHostImpl
   // Returns true if a scroll offset animation is created and false if we scroll
   // by the desired amount without an animation.
   bool ScrollAnimationCreate(ScrollNode* scroll_node,
-                             const gfx::Vector2dF& scroll_amount);
+                             const gfx::Vector2dF& scroll_amount,
+                             base::TimeDelta delayed_by);
 
   void SetLayerTreeMutator(std::unique_ptr<LayerTreeMutator> mutator);
   LayerTreeMutator* mutator() { return mutator_.get(); }
@@ -708,7 +710,8 @@ class CC_EXPORT LayerTreeHostImpl
   void ScrollAnimationAbort(LayerImpl* layer_impl);
 
   bool ScrollAnimationUpdateTarget(ScrollNode* scroll_node,
-                                   const gfx::Vector2dF& scroll_delta);
+                                   const gfx::Vector2dF& scroll_delta,
+                                   base::TimeDelta delayed_by);
 
   void SetCompositorContextVisibility(bool is_visible);
   void SetWorkerContextVisibility(bool is_visible);

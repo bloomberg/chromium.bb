@@ -11,6 +11,7 @@
 
 const double kConstantDuration = 9.0;
 const double kDurationDivisor = 60.0;
+const double kInverseDeltaMaxDuration = 12.0;
 
 namespace cc {
 namespace {
@@ -188,17 +189,72 @@ TEST(ScrollOffsetAnimationCurveTest, InverseDeltaDuration) {
   curve->SetInitialValue(gfx::ScrollOffset());
   double smallDeltaDuration = curve->Duration().InSecondsF();
 
-  curve->UpdateTarget(0.f, gfx::ScrollOffset(0.f, 300.f));
+  curve->UpdateTarget(0.01f, gfx::ScrollOffset(0.f, 300.f));
   double mediumDeltaDuration = curve->Duration().InSecondsF();
 
-  curve->UpdateTarget(0.f, gfx::ScrollOffset(0.f, 500.f));
+  curve->UpdateTarget(0.01f, gfx::ScrollOffset(0.f, 500.f));
   double largeDeltaDuration = curve->Duration().InSecondsF();
 
   EXPECT_GT(smallDeltaDuration, mediumDeltaDuration);
   EXPECT_GT(mediumDeltaDuration, largeDeltaDuration);
 
-  curve->UpdateTarget(0.f, gfx::ScrollOffset(0.f, 5000.f));
+  curve->UpdateTarget(0.01f, gfx::ScrollOffset(0.f, 5000.f));
   EXPECT_EQ(largeDeltaDuration, curve->Duration().InSecondsF());
+}
+
+TEST(ScrollOffsetAnimationCurveTest, CurveWithDelay) {
+  std::unique_ptr<ScrollOffsetAnimationCurve> curve(
+      ScrollOffsetAnimationCurve::Create(
+          gfx::ScrollOffset(0.f, 100.f),
+          CubicBezierTimingFunction::CreatePreset(
+              CubicBezierTimingFunction::EaseType::EASE_IN_OUT),
+          ScrollOffsetAnimationCurve::DurationBehavior::INVERSE_DELTA));
+  double duration_in_seconds = kInverseDeltaMaxDuration / kDurationDivisor;
+  double delay_in_seconds = 0.02;
+  double curve_duration = duration_in_seconds - delay_in_seconds;
+
+  curve->SetInitialValue(gfx::ScrollOffset(),
+                         base::TimeDelta::FromSecondsD(delay_in_seconds));
+  EXPECT_NEAR(curve_duration, curve->Duration().InSecondsF(), 0.0002f);
+
+  curve->UpdateTarget(0.01f, gfx::ScrollOffset(0.f, 500.f));
+  EXPECT_GT(curve_duration, curve->Duration().InSecondsF());
+  EXPECT_EQ(gfx::ScrollOffset(0.f, 500.f), curve->target_value());
+}
+
+TEST(ScrollOffsetAnimationCurveTest, CurveWithLargeDelay) {
+  std::unique_ptr<ScrollOffsetAnimationCurve> curve(
+      ScrollOffsetAnimationCurve::Create(
+          gfx::ScrollOffset(0.f, 100.f),
+          CubicBezierTimingFunction::CreatePreset(
+              CubicBezierTimingFunction::EaseType::EASE_IN_OUT),
+          ScrollOffsetAnimationCurve::DurationBehavior::INVERSE_DELTA));
+  curve->SetInitialValue(gfx::ScrollOffset(),
+                         base::TimeDelta::FromSecondsD(0.2));
+  EXPECT_EQ(0.f, curve->Duration().InSecondsF());
+
+  // Re-targeting when animation duration is 0.
+  curve->UpdateTarget(-0.01, gfx::ScrollOffset(0.f, 300.f));
+  double duration =
+      ScrollOffsetAnimationCurve::SegmentDuration(
+          gfx::Vector2dF(0.f, 300.f),
+          ScrollOffsetAnimationCurve::DurationBehavior::INVERSE_DELTA,
+          base::TimeDelta::FromSecondsD(0.01))
+          .InSecondsF();
+  EXPECT_EQ(duration, curve->Duration().InSecondsF());
+
+  // Re-targeting before last_retarget_, the  difference should be accounted for
+  // in duration.
+  curve->UpdateTarget(-0.01, gfx::ScrollOffset(0.f, 500.f));
+  duration = ScrollOffsetAnimationCurve::SegmentDuration(
+                 gfx::Vector2dF(0.f, 500.f),
+                 ScrollOffsetAnimationCurve::DurationBehavior::INVERSE_DELTA,
+                 base::TimeDelta::FromSecondsD(0.01))
+                 .InSecondsF();
+  EXPECT_EQ(duration, curve->Duration().InSecondsF());
+
+  EXPECT_VECTOR2DF_EQ(gfx::ScrollOffset(0.f, 500.f),
+                      curve->GetValue(base::TimeDelta::FromSecondsD(1.0)));
 }
 
 }  // namespace

@@ -801,7 +801,7 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationTakeover
     if (host_impl->sync_tree()->source_frame_number() == 0) {
       host_impl->animation_host()->ImplOnlyScrollAnimationCreate(
           scroll_layer_->element_id(), gfx::ScrollOffset(650.f, 750.f),
-          gfx::ScrollOffset(10, 20));
+          gfx::ScrollOffset(10, 20), base::TimeDelta());
     }
   }
 
@@ -891,7 +891,7 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationAdjusted
     if (host_impl->sync_tree()->source_frame_number() == 0) {
       host_impl->animation_host()->ImplOnlyScrollAnimationCreate(
           scroll_layer_->element_id(), gfx::ScrollOffset(650.f, 750.f),
-          gfx::ScrollOffset(10, 20));
+          gfx::ScrollOffset(10, 20), base::TimeDelta());
     }
   }
 

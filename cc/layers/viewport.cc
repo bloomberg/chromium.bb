@@ -77,7 +77,8 @@ bool Viewport::ShouldAnimateViewport(const gfx::Vector2dF& viewport_delta,
   return max_dim_viewport_delta > max_dim_pending_delta;
 }
 
-gfx::Vector2dF Viewport::ScrollAnimated(const gfx::Vector2dF& delta) {
+gfx::Vector2dF Viewport::ScrollAnimated(const gfx::Vector2dF& delta,
+                                        base::TimeDelta delayed_by) {
   if (!OuterScrollLayer())
     return gfx::Vector2dF(0, 0);
 
@@ -111,10 +112,12 @@ gfx::Vector2dF Viewport::ScrollAnimated(const gfx::Vector2dF& delta) {
   bool will_animate = false;
   if (ShouldAnimateViewport(inner_delta, outer_delta)) {
     scroll_tree.ScrollBy(outer_node, outer_delta, host_impl_->active_tree());
-    will_animate = host_impl_->ScrollAnimationCreate(inner_node, inner_delta);
+    will_animate =
+        host_impl_->ScrollAnimationCreate(inner_node, inner_delta, delayed_by);
   } else {
     scroll_tree.ScrollBy(inner_node, inner_delta, host_impl_->active_tree());
-    will_animate = host_impl_->ScrollAnimationCreate(outer_node, outer_delta);
+    will_animate =
+        host_impl_->ScrollAnimationCreate(outer_node, outer_delta, delayed_by);
   }
 
   if (will_animate) {

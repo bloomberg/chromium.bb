@@ -2735,7 +2735,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimatedBegin(
   if (scroll_node) {
     gfx::Vector2dF delta;
 
-    if (ScrollAnimationUpdateTarget(scroll_node, delta)) {
+    if (ScrollAnimationUpdateTarget(scroll_node, delta, base::TimeDelta())) {
       scroll_status.thread = SCROLL_ON_IMPL_THREAD;
     } else {
       scroll_status.thread = SCROLL_IGNORED;
@@ -2791,7 +2791,8 @@ gfx::Vector2dF LayerTreeHostImpl::ComputeScrollDelta(
 }
 
 bool LayerTreeHostImpl::ScrollAnimationCreate(ScrollNode* scroll_node,
-                                              const gfx::Vector2dF& delta) {
+                                              const gfx::Vector2dF& delta,
+                                              base::TimeDelta delayed_by) {
   ScrollTree& scroll_tree = active_tree_->property_trees()->scroll_tree;
 
   const float kEpsilon = 0.1f;
@@ -2812,8 +2813,8 @@ bool LayerTreeHostImpl::ScrollAnimationCreate(ScrollNode* scroll_node,
       ElementId(active_tree()->LayerById(scroll_node->owner_id)->element_id()),
       scroll_node->element_id);
 
-  animation_host_->ImplOnlyScrollAnimationCreate(scroll_node->element_id,
-                                                 target_offset, current_offset);
+  animation_host_->ImplOnlyScrollAnimationCreate(
+      scroll_node->element_id, target_offset, current_offset, delayed_by);
 
   SetNeedsOneBeginImplFrame();
 
@@ -2822,7 +2823,8 @@ bool LayerTreeHostImpl::ScrollAnimationCreate(ScrollNode* scroll_node,
 
 InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
     const gfx::Point& viewport_point,
-    const gfx::Vector2dF& scroll_delta) {
+    const gfx::Vector2dF& scroll_delta,
+    base::TimeDelta delayed_by) {
   InputHandler::ScrollStatus scroll_status;
   scroll_status.main_thread_scrolling_reasons =
       MainThreadScrollingReason::kNotScrollingOnMain;
@@ -2835,7 +2837,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
     if (!scroll_node->user_scrollable_vertical)
       delta.set_y(0);
 
-    if (ScrollAnimationUpdateTarget(scroll_node, delta)) {
+    if (ScrollAnimationUpdateTarget(scroll_node, delta, delayed_by)) {
       scroll_status.thread = SCROLL_ON_IMPL_THREAD;
     } else {
       scroll_status.thread = SCROLL_IGNORED;
@@ -2866,7 +2868,8 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
           continue;
 
         if (scroll_node->is_inner_viewport_scroll_layer) {
-          gfx::Vector2dF scrolled = viewport()->ScrollAnimated(pending_delta);
+          gfx::Vector2dF scrolled =
+              viewport()->ScrollAnimated(pending_delta, delayed_by);
           // Viewport::ScrollAnimated returns pending_delta as long as it
           // starts an animation.
           if (scrolled == pending_delta)
@@ -2877,7 +2880,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
 
         gfx::Vector2dF scroll_delta =
             ComputeScrollDelta(scroll_node, pending_delta);
-        if (ScrollAnimationCreate(scroll_node, scroll_delta))
+        if (ScrollAnimationCreate(scroll_node, scroll_delta, delayed_by))
           return scroll_status;
 
         pending_delta -= scroll_delta;
@@ -3898,7 +3901,8 @@ void LayerTreeHostImpl::ScrollAnimationAbort(LayerImpl* layer_impl) {
 
 bool LayerTreeHostImpl::ScrollAnimationUpdateTarget(
     ScrollNode* scroll_node,
-    const gfx::Vector2dF& scroll_delta) {
+    const gfx::Vector2dF& scroll_delta,
+    base::TimeDelta delayed_by) {
   DCHECK_EQ(
       ElementId(active_tree()->LayerById(scroll_node->owner_id)->element_id()),
       scroll_node->element_id);
@@ -3907,7 +3911,7 @@ bool LayerTreeHostImpl::ScrollAnimationUpdateTarget(
       scroll_node->element_id, scroll_delta,
       active_tree_->property_trees()->scroll_tree.MaxScrollOffset(
           scroll_node->id),
-      CurrentBeginFrameArgs().frame_time);
+      CurrentBeginFrameArgs().frame_time, delayed_by);
 }
 
 bool LayerTreeHostImpl::IsElementInList(ElementId element_id,

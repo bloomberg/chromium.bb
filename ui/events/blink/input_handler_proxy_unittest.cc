@@ -108,9 +108,10 @@ class MockInputHandler : public cc::InputHandler {
                             cc::InputHandler::ScrollInputType type));
   MOCK_METHOD1(ScrollAnimatedBegin,
                ScrollStatus(const gfx::Point& viewport_point));
-  MOCK_METHOD2(ScrollAnimated,
+  MOCK_METHOD3(ScrollAnimated,
                ScrollStatus(const gfx::Point& viewport_point,
-                            const gfx::Vector2dF& scroll_delta));
+                            const gfx::Vector2dF& scroll_delta,
+                            base::TimeDelta));
   MOCK_METHOD1(ScrollBy, cc::InputHandlerScrollResult(cc::ScrollState*));
   MOCK_METHOD2(ScrollVerticallyByPage,
                bool(const gfx::Point& viewport_point,
@@ -595,7 +596,8 @@ TEST_P(InputHandlerProxyTest, DISABLED_GestureScrollByCoarsePixels) {
   gesture_.type = WebInputEvent::GestureScrollUpdate;
   gesture_.data.scrollUpdate.deltaUnits = WebGestureEvent::ScrollUnits::Pixels;
 
-  EXPECT_CALL(mock_input_handler_, ScrollAnimated(::testing::_, ::testing::_))
+  EXPECT_CALL(mock_input_handler_,
+              ScrollAnimated(::testing::_, ::testing::_, ::testing::_))
       .WillOnce(testing::Return(kImplThreadScrollState));
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 

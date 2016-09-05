@@ -505,20 +505,23 @@ bool AnimationHost::HasActiveAnimationForTesting(ElementId element_id) const {
 void AnimationHost::ImplOnlyScrollAnimationCreate(
     ElementId element_id,
     const gfx::ScrollOffset& target_offset,
-    const gfx::ScrollOffset& current_offset) {
+    const gfx::ScrollOffset& current_offset,
+    base::TimeDelta delayed_by) {
   DCHECK(scroll_offset_animations_impl_);
   scroll_offset_animations_impl_->ScrollAnimationCreate(
-      element_id, target_offset, current_offset);
+      element_id, target_offset, current_offset, delayed_by);
 }
 
 bool AnimationHost::ImplOnlyScrollAnimationUpdateTarget(
     ElementId element_id,
     const gfx::Vector2dF& scroll_delta,
     const gfx::ScrollOffset& max_scroll_offset,
-    base::TimeTicks frame_monotonic_time) {
+    base::TimeTicks frame_monotonic_time,
+    base::TimeDelta delayed_by) {
   DCHECK(scroll_offset_animations_impl_);
   return scroll_offset_animations_impl_->ScrollAnimationUpdateTarget(
-      element_id, scroll_delta, max_scroll_offset, frame_monotonic_time);
+      element_id, scroll_delta, max_scroll_offset, frame_monotonic_time,
+      delayed_by);
 }
 
 ScrollOffsetAnimations& AnimationHost::scroll_offset_animations() const {

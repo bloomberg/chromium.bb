@@ -10066,6 +10066,59 @@ TEST_F(LayerTreeHostImplTest, AnimatedScrollUpdateTargetBeforeStarting) {
   EXPECT_TRUE(y > 1 && y < 49);
 }
 
+TEST_F(LayerTreeHostImplTest, ScrollAnimatedWithDelay) {
+  const gfx::Size content_size(1000, 1000);
+  const gfx::Size viewport_size(50, 100);
+  CreateBasicVirtualViewportLayers(viewport_size, content_size);
+
+  DrawFrame();
+
+  base::TimeTicks start_time =
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(100);
+  BeginFrameArgs begin_frame_args =
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE);
+
+  // Create animation with a 100ms delay.
+  EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
+            host_impl_
+                ->ScrollAnimated(gfx::Point(), gfx::Vector2d(0, 100),
+                                 base::TimeDelta::FromMilliseconds(100))
+                .thread);
+  LayerImpl* scrolling_layer = host_impl_->CurrentlyScrollingLayer();
+  EXPECT_EQ(host_impl_->OuterViewportScrollLayer(), scrolling_layer);
+
+  // First tick, animation is started.
+  begin_frame_args.frame_time = start_time;
+  host_impl_->WillBeginImplFrame(begin_frame_args);
+  host_impl_->UpdateAnimationState(true);
+  EXPECT_EQ(gfx::ScrollOffset(), scrolling_layer->CurrentScrollOffset());
+  host_impl_->DidFinishImplFrame();
+
+  // Second tick after 50ms, animation should be half way done since
+  // the duration due to delay is 100ms.
+  begin_frame_args.frame_time =
+      start_time + base::TimeDelta::FromMilliseconds(50);
+  host_impl_->WillBeginImplFrame(begin_frame_args);
+  host_impl_->UpdateAnimationState(true);
+  EXPECT_EQ(50, scrolling_layer->CurrentScrollOffset().y());
+  host_impl_->DidFinishImplFrame();
+
+  // Update target.
+  EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
+            host_impl_
+                ->ScrollAnimated(gfx::Point(), gfx::Vector2d(0, 100),
+                                 base::TimeDelta::FromMilliseconds(150))
+                .thread);
+
+  // Third tick after 100ms, should be at the target position since update
+  // target was called with a large value of jank.
+  begin_frame_args.frame_time =
+      start_time + base::TimeDelta::FromMilliseconds(100);
+  host_impl_->WillBeginImplFrame(begin_frame_args);
+  host_impl_->UpdateAnimationState(true);
+  EXPECT_LT(100, scrolling_layer->CurrentScrollOffset().y());
+}
+
 // Test that a smooth scroll offset animation is aborted when followed by a
 // non-smooth scroll offset animation.
 TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimatedAborted) {

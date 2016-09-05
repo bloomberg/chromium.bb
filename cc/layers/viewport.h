@@ -50,7 +50,8 @@ class CC_EXPORT Viewport {
 
   // Scrolls the viewport, bubbling the delta between the inner and outer
   // viewport. Only animates either of the two viewports.
-  gfx::Vector2dF ScrollAnimated(const gfx::Vector2dF& delta);
+  gfx::Vector2dF ScrollAnimated(const gfx::Vector2dF& delta,
+                                base::TimeDelta delayed_by);
 
   void PinchUpdate(float magnify_delta, const gfx::Point& anchor);
   void PinchEnd();

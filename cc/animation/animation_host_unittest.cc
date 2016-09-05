@@ -87,7 +87,7 @@ TEST_F(AnimationHostTest, ImplOnlyScrollAnimationUpdateTargetIfDetached) {
   gfx::ScrollOffset target_offset(0., 2.);
   gfx::ScrollOffset current_offset(0., 1.);
   host_impl_->ImplOnlyScrollAnimationCreate(element_id_, target_offset,
-                                            current_offset);
+                                            current_offset, base::TimeDelta());
 
   gfx::Vector2dF scroll_delta(0, 0.5);
   gfx::ScrollOffset max_scroll_offset(0., 3.);
@@ -96,14 +96,14 @@ TEST_F(AnimationHostTest, ImplOnlyScrollAnimationUpdateTargetIfDetached) {
 
   time += base::TimeDelta::FromSecondsD(0.1);
   EXPECT_TRUE(host_impl_->ImplOnlyScrollAnimationUpdateTarget(
-      element_id_, scroll_delta, max_scroll_offset, time));
+      element_id_, scroll_delta, max_scroll_offset, time, base::TimeDelta()));
 
   // Detach all players from layers and timelines.
   host_impl_->ClearTimelines();
 
   time += base::TimeDelta::FromSecondsD(0.1);
   EXPECT_FALSE(host_impl_->ImplOnlyScrollAnimationUpdateTarget(
-      element_id_, scroll_delta, max_scroll_offset, time));
+      element_id_, scroll_delta, max_scroll_offset, time, base::TimeDelta()));
 }
 
 }  // namespace

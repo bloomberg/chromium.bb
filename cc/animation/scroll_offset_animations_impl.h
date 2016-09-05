@@ -33,12 +33,14 @@ class CC_EXPORT ScrollOffsetAnimationsImpl : public AnimationDelegate {
 
   void ScrollAnimationCreate(ElementId element_id,
                              const gfx::ScrollOffset& target_offset,
-                             const gfx::ScrollOffset& current_offset);
+                             const gfx::ScrollOffset& current_offset,
+                             base::TimeDelta delayed_by);
 
   bool ScrollAnimationUpdateTarget(ElementId element_id,
                                    const gfx::Vector2dF& scroll_delta,
                                    const gfx::ScrollOffset& max_scroll_offset,
-                                   base::TimeTicks frame_monotonic_time);
+                                   base::TimeTicks frame_monotonic_time,
+                                   base::TimeDelta delayed_by);
 
   // Aborts the currently running scroll offset animation on an element and
   // starts a new one offsetted by adjustment.
