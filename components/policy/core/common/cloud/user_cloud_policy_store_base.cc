@@ -37,7 +37,8 @@ UserCloudPolicyStoreBase::CreateValidator(
   validator->ValidateAgainstCurrentPolicy(
       policy_.get(),
       timestamp_option,
-      CloudPolicyValidatorBase::DM_TOKEN_REQUIRED);
+      CloudPolicyValidatorBase::DM_TOKEN_REQUIRED,
+      CloudPolicyValidatorBase::DEVICE_ID_REQUIRED);
   validator->ValidatePayload();
   return std::unique_ptr<UserCloudPolicyValidator>(validator);
 }

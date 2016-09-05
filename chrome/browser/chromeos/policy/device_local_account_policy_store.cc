@@ -163,11 +163,16 @@ void DeviceLocalAccountPolicyStore::Validate(
       valid_timestamp_required
           ? CloudPolicyValidatorBase::TIMESTAMP_FULLY_VALIDATED
           : CloudPolicyValidatorBase::TIMESTAMP_NOT_VALIDATED,
-      CloudPolicyValidatorBase::DM_TOKEN_NOT_REQUIRED);
+      CloudPolicyValidatorBase::DM_TOKEN_NOT_REQUIRED,
+      CloudPolicyValidatorBase::DEVICE_ID_NOT_REQUIRED);
 
   // Validate the DMToken to match what device policy has.
   validator->ValidateDMToken(device_policy_data->request_token(),
                              CloudPolicyValidatorBase::DM_TOKEN_REQUIRED);
+
+  // Validate the device id to match what device policy has.
+  validator->ValidateDeviceId(device_policy_data->device_id(),
+                              CloudPolicyValidatorBase::DEVICE_ID_REQUIRED);
 
   validator->ValidatePayload();
   policy::BrowserPolicyConnectorChromeOS* connector =

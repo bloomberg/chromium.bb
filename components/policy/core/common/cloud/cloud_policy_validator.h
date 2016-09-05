@@ -73,6 +73,8 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
     VALIDATION_BAD_TIMESTAMP,
     // DM token is empty or doesn't match.
     VALIDATION_BAD_DM_TOKEN,
+    // Device id is empty or doesn't match.
+    VALIDATION_BAD_DEVICE_ID,
     // Username doesn't match.
     VALIDATION_BAD_USERNAME,
     // Policy payload protobuf parse error.
@@ -92,6 +94,17 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
     // The DM token from policy must match the expected DM token unless the
     // expected DM token is empty.
     DM_TOKEN_NOT_REQUIRED,
+  };
+
+  enum ValidateDeviceIdOption {
+    // The device id from policy must match the expected device id unless the
+    // expected device id is empty. In addition, the device id from policy must
+    // not be empty.
+    DEVICE_ID_REQUIRED,
+
+    // The device id from policy must match the expected device id unless the
+    // expected device id is empty.
+    DEVICE_ID_NOT_REQUIRED,
   };
 
   enum ValidateTimestampOption {
@@ -148,6 +161,13 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
   void ValidateDMToken(const std::string& expected_dm_token,
                        ValidateDMTokenOption dm_token_option);
 
+  // Instruct the validator to check that the device id from policy matches
+  // |expected_device_id| unless |expected_device_id| is empty. In addition, the
+  // device id from policy must not be empty if |device_id_option| is
+  // DEVICE_ID_REQUIRED.
+  void ValidateDeviceId(const std::string& expected_device_id,
+                        ValidateDeviceIdOption device_id_option);
+
   // Instruct the validator to check the policy type.
   void ValidatePolicyType(const std::string& policy_type);
 
@@ -186,16 +206,18 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
   void ValidateInitialKey(const std::string& verification_key,
                           const std::string& owning_domain);
 
-  // Convenience helper that instructs the validator to check timestamp and DM
-  // token based on the current policy blob. |policy_data| may be nullptr, in
-  // which case the timestamp lower bound check is waived and the DM token is
-  // checked against an empty string. |dm_token_option| and |timestamp_option|
-  // have the same effect as the corresponding parameters for
-  // ValidateTimestamp() and ValidateDMToken().
+  // Convenience helper that instructs the validator to check timestamp, DM
+  // token and device id based on the current policy blob. |policy_data| may be
+  // nullptr, in which case the timestamp lower bound check is waived and the DM
+  // token as well as the device id are checked against empty strings.
+  // |timestamp_option|, |dm_token_option| and |device_id_option| have the same
+  // effect as the corresponding parameters for ValidateTimestamp(),
+  // ValidateDMToken() and ValidateDeviceId().
   void ValidateAgainstCurrentPolicy(
       const enterprise_management::PolicyData* policy_data,
       ValidateTimestampOption timestamp_option,
-      ValidateDMTokenOption dm_token_option);
+      ValidateDMTokenOption dm_token_option,
+      ValidateDeviceIdOption device_id_option);
 
   // Immediately performs validation on the current thread.
   void RunValidation();
@@ -227,6 +249,7 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
     VALIDATE_SIGNATURE   = 1 << 7,
     VALIDATE_INITIAL_KEY = 1 << 8,
     VALIDATE_CACHED_KEY  = 1 << 9,
+    VALIDATE_DEVICE_ID   = 1 << 10,
   };
 
   enum SignatureType {
@@ -272,6 +295,7 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
   Status CheckUsername();
   Status CheckDomain();
   Status CheckDMToken();
+  Status CheckDeviceId();
   Status CheckPolicyType();
   Status CheckEntityId();
   Status CheckPayload();
@@ -296,10 +320,12 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
   int64_t timestamp_not_after_;
   ValidateTimestampOption timestamp_option_;
   ValidateDMTokenOption dm_token_option_;
+  ValidateDeviceIdOption device_id_option_;
   std::string user_;
   bool canonicalize_user_;
   std::string domain_;
   std::string dm_token_;
+  std::string device_id_;
   std::string policy_type_;
   std::string settings_entity_id_;
   std::string key_;

@@ -168,13 +168,19 @@ void SessionManagerOperation::ValidateDeviceSettings(
   // is back online, but the network configuration may come from device ONC.
   //
   // To prevent all of these issues the timestamp is just not verified when
-  // loading the device policy from the cache. Note that the timestamp is still
-  // verified during enrollment and when a new policy is fetched from the
+  // loading the device policy from session manager. Note that the timestamp is
+  // still verified during enrollment and when a new policy is fetched from the
   // server.
+  //
+  // The two *_NOT_REQUIRED options are necessary because both the DM token and
+  // the device id are empty for a user logging in on an actual Chrome OS device
+  // that is not enterprise-managed. Note for devs: The strings are not empty
+  // when you test Chrome with target_os = "chromeos" on Linux!
   validator->ValidateAgainstCurrentPolicy(
       policy_data_.get(),
       policy::CloudPolicyValidatorBase::TIMESTAMP_NOT_VALIDATED,
-      policy::CloudPolicyValidatorBase::DM_TOKEN_NOT_REQUIRED);
+      policy::CloudPolicyValidatorBase::DM_TOKEN_NOT_REQUIRED,
+      policy::CloudPolicyValidatorBase::DEVICE_ID_NOT_REQUIRED);
   validator->ValidatePolicyType(policy::dm_protocol::kChromeDevicePolicyType);
   validator->ValidatePayload();
   // We don't check the DMServer verification key below, because the signing

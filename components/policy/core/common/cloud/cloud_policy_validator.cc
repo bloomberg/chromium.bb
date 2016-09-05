@@ -86,6 +86,14 @@ void CloudPolicyValidatorBase::ValidateDMToken(
   dm_token_option_ = dm_token_option;
 }
 
+void CloudPolicyValidatorBase::ValidateDeviceId(
+    const std::string& expected_device_id,
+    ValidateDeviceIdOption device_id_option) {
+  validation_flags_ |= VALIDATE_DEVICE_ID;
+  device_id_ = expected_device_id;
+  device_id_option_ = device_id_option;
+}
+
 void CloudPolicyValidatorBase::ValidatePolicyType(
     const std::string& policy_type) {
   validation_flags_ |= VALIDATE_POLICY_TYPE;
@@ -135,18 +143,22 @@ void CloudPolicyValidatorBase::ValidateInitialKey(
 void CloudPolicyValidatorBase::ValidateAgainstCurrentPolicy(
     const em::PolicyData* policy_data,
     ValidateTimestampOption timestamp_option,
-    ValidateDMTokenOption dm_token_option) {
+    ValidateDMTokenOption dm_token_option,
+    ValidateDeviceIdOption device_id_option) {
   base::Time last_policy_timestamp;
   std::string expected_dm_token;
+  std::string expected_device_id;
   if (policy_data) {
     last_policy_timestamp =
         base::Time::UnixEpoch() +
         base::TimeDelta::FromMilliseconds(policy_data->timestamp());
     expected_dm_token = policy_data->request_token();
+    expected_device_id = policy_data->device_id();
   }
   ValidateTimestamp(last_policy_timestamp, base::Time::NowFromSystemTime(),
                     timestamp_option);
   ValidateDMToken(expected_dm_token, dm_token_option);
+  ValidateDeviceId(expected_device_id, device_id_option);
 }
 
 CloudPolicyValidatorBase::CloudPolicyValidatorBase(
@@ -161,6 +173,7 @@ CloudPolicyValidatorBase::CloudPolicyValidatorBase(
       timestamp_not_after_(0),
       timestamp_option_(TIMESTAMP_FULLY_VALIDATED),
       dm_token_option_(DM_TOKEN_REQUIRED),
+      device_id_option_(DEVICE_ID_REQUIRED),
       canonicalize_user_(false),
       allow_key_rotation_(false),
       background_task_runner_(background_task_runner) {}
@@ -233,6 +246,7 @@ void CloudPolicyValidatorBase::RunChecks() {
       { VALIDATE_POLICY_TYPE, &CloudPolicyValidatorBase::CheckPolicyType },
       { VALIDATE_ENTITY_ID,   &CloudPolicyValidatorBase::CheckEntityId },
       { VALIDATE_DM_TOKEN,    &CloudPolicyValidatorBase::CheckDMToken },
+      { VALIDATE_DEVICE_ID,   &CloudPolicyValidatorBase::CheckDeviceId },
       { VALIDATE_USERNAME,    &CloudPolicyValidatorBase::CheckUsername },
       { VALIDATE_DOMAIN,      &CloudPolicyValidatorBase::CheckDomain },
       { VALIDATE_TIMESTAMP,   &CloudPolicyValidatorBase::CheckTimestamp },
@@ -450,6 +464,21 @@ CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckDMToken() {
     return VALIDATION_BAD_DM_TOKEN;
   }
 
+  return VALIDATION_OK;
+}
+
+CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckDeviceId() {
+  if (device_id_option_ == DEVICE_ID_REQUIRED &&
+      (!policy_data_->has_device_id() ||
+       policy_data_->device_id().empty())) {
+    LOG(ERROR) << "Empty device id encountered - expected: " << device_id_;
+    return VALIDATION_BAD_DEVICE_ID;
+  }
+  if (!device_id_.empty() && policy_data_->device_id() != device_id_) {
+    LOG(ERROR) << "Invalid device id: " << policy_data_->device_id()
+               << " - expected: " << device_id_;
+    return VALIDATION_BAD_DEVICE_ID;
+  }
   return VALIDATION_OK;
 }
 
