@@ -35,25 +35,22 @@ namespace test_runner {
 
 namespace {
 
-class MockWebRTCStats : public blink::WebRTCStats {
+class MockWebRTCLegacyStats : public blink::WebRTCLegacyStats {
  public:
-  class MemberIterator : public blink::WebRTCStatsMemberIterator {
+  class MemberIterator : public blink::WebRTCLegacyStatsMemberIterator {
    public:
     MemberIterator(
         const std::vector<std::pair<std::string, std::string>>* values)
         : values_(values) {}
 
-    // blink::WebRTCStatsMemberIterator
+    // blink::WebRTCLegacyStatsMemberIterator
     bool isEnd() const override { return i >= values_->size(); }
     void next() override { ++i; }
-    blink::WebRTCStatsMemberName name() const override {
-      return blink::WebRTCStatsMemberNameUnknown;
-    }
-    blink::WebString displayName() const override {
+    blink::WebString name() const override {
       return blink::WebString::fromUTF8((*values_)[i].first);
     }
-    blink::WebRTCStatsMemberType type() const override {
-      return blink::WebRTCStatsMemberTypeString;
+    blink::WebRTCLegacyStatsMemberType type() const override {
+      return blink::WebRTCLegacyStatsMemberTypeString;
     }
     int valueInt() const override {
       NOTREACHED();
@@ -83,23 +80,20 @@ class MockWebRTCStats : public blink::WebRTCStats {
     const std::vector<std::pair<std::string, std::string>>* values_;
   };
 
-  MockWebRTCStats(const char* id, const char* type_name, double timestamp)
+  MockWebRTCLegacyStats(const char* id, const char* type_name, double timestamp)
       : id_(id), type_name_(type_name), timestamp_(timestamp) {}
 
-  // blink::WebRTCStats
+  // blink::WebRTCLegacyStats
   blink::WebString id() const override {
     return blink::WebString::fromUTF8(id_);
   }
-  blink::WebRTCStatsType type() const override {
-    return blink::WebRTCStatsTypeUnknown;
-  }
-  blink::WebString typeToString() const override {
+  blink::WebString type() const override {
     return blink::WebString::fromUTF8(type_name_);
   }
   double timestamp() const override {
     return timestamp_;
   }
-  blink::WebRTCStatsMemberIterator* iterator() const override {
+  blink::WebRTCLegacyStatsMemberIterator* iterator() const override {
     return new MemberIterator(&values_);
   }
 
@@ -379,16 +373,16 @@ void MockWebRTCPeerConnectionHandler::getStats(
       interfaces_->GetDelegate()->GetCurrentTimeInMillisecond();
   if (request.hasSelector()) {
     // FIXME: There is no check that the fetched values are valid.
-    MockWebRTCStats stats("Mock video", "ssrc", current_date);
+    MockWebRTCLegacyStats stats("Mock video", "ssrc", current_date);
     stats.addStatistic("type", "video");
     response.addStats(stats);
   } else {
     for (int i = 0; i < stream_count_; ++i) {
-      MockWebRTCStats audio_stats("Mock audio", "ssrc", current_date);
+      MockWebRTCLegacyStats audio_stats("Mock audio", "ssrc", current_date);
       audio_stats.addStatistic("type", "audio");
       response.addStats(audio_stats);
 
-      MockWebRTCStats video_stats("Mock video", "ssrc", current_date);
+      MockWebRTCLegacyStats video_stats("Mock video", "ssrc", current_date);
       video_stats.addStatistic("type", "video");
       response.addStats(video_stats);
     }

@@ -40,10 +40,10 @@
 #include "third_party/WebKit/public/platform/WebRTCConfiguration.h"
 #include "third_party/WebKit/public/platform/WebRTCDataChannelInit.h"
 #include "third_party/WebKit/public/platform/WebRTCICECandidate.h"
+#include "third_party/WebKit/public/platform/WebRTCLegacyStats.h"
 #include "third_party/WebKit/public/platform/WebRTCOfferOptions.h"
 #include "third_party/WebKit/public/platform/WebRTCSessionDescription.h"
 #include "third_party/WebKit/public/platform/WebRTCSessionDescriptionRequest.h"
-#include "third_party/WebKit/public/platform/WebRTCStats.h"
 #include "third_party/WebKit/public/platform/WebRTCVoidRequest.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/webrtc/pc/mediasession.h"
@@ -460,38 +460,26 @@ class SetSessionDescriptionRequest
   SessionDescriptionRequestTracker tracker_;
 };
 
-blink::WebRTCStatsType WebRTCStatsTypeFromStatsType(
-    webrtc::StatsReport::StatsType name) {
-  // TODO(hbos): Translate StatsType -> WebRTCStatsType. crbug.com/627816
-  return blink::WebRTCStatsTypeUnknown;
-}
-
-blink::WebRTCStatsMemberName WebRTCStatsMemberNameFromStatsValueName(
-    webrtc::StatsReport::StatsValueName name) {
-  // TODO(hbos): Translate StatsValueName -> WebRTCStatsMemberName.
-  // crbug.com/627816
-  return blink::WebRTCStatsMemberNameUnknown;
-}
-
-blink::WebRTCStatsMemberType WebRTCStatsMemberTypeFromStatsValueType(
+blink::WebRTCLegacyStatsMemberType
+WebRTCLegacyStatsMemberTypeFromStatsValueType(
     webrtc::StatsReport::Value::Type type) {
   switch (type) {
     case StatsReport::Value::kInt:
-      return blink::WebRTCStatsMemberTypeInt;
+      return blink::WebRTCLegacyStatsMemberTypeInt;
     case StatsReport::Value::kInt64:
-      return blink::WebRTCStatsMemberTypeInt64;
+      return blink::WebRTCLegacyStatsMemberTypeInt64;
     case StatsReport::Value::kFloat:
-      return blink::WebRTCStatsMemberTypeFloat;
+      return blink::WebRTCLegacyStatsMemberTypeFloat;
     case StatsReport::Value::kString:
     case StatsReport::Value::kStaticString:
-      return blink::WebRTCStatsMemberTypeString;
+      return blink::WebRTCLegacyStatsMemberTypeString;
     case StatsReport::Value::kBool:
-      return blink::WebRTCStatsMemberTypeBool;
+      return blink::WebRTCLegacyStatsMemberTypeBool;
     case StatsReport::Value::kId:
-      return blink::WebRTCStatsMemberTypeId;
+      return blink::WebRTCLegacyStatsMemberTypeId;
   }
   NOTREACHED();
-  return blink::WebRTCStatsMemberTypeInt;
+  return blink::WebRTCLegacyStatsMemberTypeInt;
 }
 
 // Class mapping responses from calls to libjingle
@@ -524,25 +512,23 @@ class StatsResponse : public webrtc::StatsObserver {
   }
 
  private:
-  class Report : public blink::WebRTCStats {
+  class Report : public blink::WebRTCLegacyStats {
    public:
-    class MemberIterator : public blink::WebRTCStatsMemberIterator {
+    class MemberIterator : public blink::WebRTCLegacyStatsMemberIterator {
      public:
       MemberIterator(const StatsReport::Values::const_iterator& it,
                      const StatsReport::Values::const_iterator& end)
           : it_(it), end_(end) {}
 
-      // blink::WebRTCStatsMemberIterator
+      // blink::WebRTCLegacyStatsMemberIterator
       bool isEnd() const override { return it_ == end_; }
       void next() override { ++it_; }
-      blink::WebRTCStatsMemberName name() const override {
-        return WebRTCStatsMemberNameFromStatsValueName(it_->second->name);
-      }
-      blink::WebString displayName() const override {
+      blink::WebString name() const override {
         return blink::WebString::fromUTF8(it_->second->display_name());
       }
-      blink::WebRTCStatsMemberType type() const override {
-        return WebRTCStatsMemberTypeFromStatsValueType(it_->second->type());
+      blink::WebRTCLegacyStatsMemberType type() const override {
+        return WebRTCLegacyStatsMemberTypeFromStatsValueType(
+            it_->second->type());
       }
       int valueInt() const override {
         return it_->second->int_val();
@@ -591,20 +577,17 @@ class StatsResponse : public webrtc::StatsObserver {
       DCHECK(thread_checker_.CalledOnValidThread());
     }
 
-    // blink::WebRTCStats
+    // blink::WebRTCLegacyStats
     blink::WebString id() const override {
       return blink::WebString::fromUTF8(id_);
     }
-    blink::WebRTCStatsType type() const override {
-      return WebRTCStatsTypeFromStatsType(type_);
-    }
-    blink::WebString typeToString() const override {
+    blink::WebString type() const override {
       return blink::WebString::fromUTF8(type_name_);
     }
     double timestamp() const override {
       return timestamp_;
     }
-    blink::WebRTCStatsMemberIterator* iterator() const override {
+    blink::WebRTCLegacyStatsMemberIterator* iterator() const override {
       return new MemberIterator(values_.cbegin(), values_.cend());
     }
 
@@ -864,7 +847,7 @@ blink::WebRTCStatsResponse LocalRTCStatsResponse::webKitStatsResponse() const {
   return impl_;
 }
 
-void LocalRTCStatsResponse::addStats(const blink::WebRTCStats& stats) {
+void LocalRTCStatsResponse::addStats(const blink::WebRTCLegacyStats& stats) {
   impl_.addStats(stats);
 }
 

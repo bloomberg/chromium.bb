@@ -42,14 +42,14 @@ RTCLegacyStatsReport* RTCStatsResponse::namedItem(const AtomicString& name)
     return nullptr;
 }
 
-void RTCStatsResponse::addStats(const WebRTCStats& stats)
+void RTCStatsResponse::addStats(const WebRTCLegacyStats& stats)
 {
-    m_result.append(RTCLegacyStatsReport::create(stats.id(), stats.typeToString(), stats.timestamp()));
+    m_result.append(RTCLegacyStatsReport::create(stats.id(), stats.type(), stats.timestamp()));
     m_idmap.add(stats.id(), m_result.size() - 1);
     RTCLegacyStatsReport* report = m_result[m_result.size() - 1].get();
 
-    for (std::unique_ptr<WebRTCStatsMemberIterator> member(stats.iterator()); !member->isEnd(); member->next()) {
-        report->addStatistic(member->displayName(), member->valueToString());
+    for (std::unique_ptr<WebRTCLegacyStatsMemberIterator> member(stats.iterator()); !member->isEnd(); member->next()) {
+        report->addStatistic(member->name(), member->valueToString());
     }
 }
 

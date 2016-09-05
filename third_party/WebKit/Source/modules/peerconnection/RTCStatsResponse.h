@@ -43,7 +43,7 @@ public:
     const HeapVector<Member<RTCLegacyStatsReport>>& result() const { return m_result; }
     RTCLegacyStatsReport* namedItem(const AtomicString& name);
 
-    void addStats(const WebRTCStats&) override;
+    void addStats(const WebRTCLegacyStats&) override;
 
     DECLARE_VIRTUAL_TRACE();
 

@@ -30,9 +30,9 @@ namespace blink {
 class WebFrame;
 class WebRTCAnswerOptions;
 class WebRTCDataChannelHandler;
+class WebRTCLegacyStats;
 class WebRTCOfferOptions;
 class WebRTCPeerConnectionHandlerClient;
-class WebRTCStats;
 }
 
 namespace content {
@@ -52,7 +52,7 @@ class CONTENT_EXPORT LocalRTCStatsResponse
   }
 
   virtual blink::WebRTCStatsResponse webKitStatsResponse() const;
-  virtual void addStats(const blink::WebRTCStats& stats);
+  virtual void addStats(const blink::WebRTCLegacyStats& stats);
 
  protected:
   ~LocalRTCStatsResponse() override {}

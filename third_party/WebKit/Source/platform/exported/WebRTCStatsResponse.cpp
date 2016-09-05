@@ -49,7 +49,7 @@ WebRTCStatsResponse::operator RTCStatsResponseBase*() const
     return m_private.get();
 }
 
-void WebRTCStatsResponse::addStats(const WebRTCStats& stats)
+void WebRTCStatsResponse::addStats(const WebRTCLegacyStats& stats)
 {
     ASSERT(!m_private.isNull());
     m_private->addStats(stats);
