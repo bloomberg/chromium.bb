@@ -1163,12 +1163,19 @@ void LayoutBlockFlow::layoutBlockChildren(bool relayoutChildren, SubtreeLayoutSc
 
     LayoutObject* childToExclude = layoutSpecialExcludedChild(relayoutChildren, layoutScope);
 
-    LayoutBox* next = firstChildBox();
+    // TODO(foolip): Speculative CHECKs to crash if any non-LayoutBox
+    // children ever appear, the childrenInline() check at the call site
+    // should make this impossible. crbug.com/632848
+    LayoutObject* firstChild = this->firstChild();
+    CHECK(!firstChild || firstChild->isBox());
+    LayoutBox* next = toLayoutBox(firstChild);
     LayoutBox* lastNormalFlowChild = nullptr;
 
     while (next) {
         LayoutBox* child = next;
-        next = child->nextSiblingBox();
+        LayoutObject* nextSibling = child->nextSibling();
+        CHECK(!nextSibling || nextSibling->isBox());
+        next = toLayoutBox(nextSibling);
 
         child->setMayNeedPaintInvalidation();
 
