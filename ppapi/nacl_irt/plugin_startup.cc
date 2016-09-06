@@ -12,7 +12,6 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "ipc/ipc_channel_handle.h"
-#include "mojo/edk/embedder/embedder.h"
 #include "ppapi/nacl_irt/manifest_service.h"
 #include "ppapi/shared_impl/ppb_audio_shared.h"
 
@@ -69,9 +68,6 @@ void StartUpPlugin() {
   // The start up must be called only once.
   DCHECK(!g_shutdown_event);
   DCHECK(!g_io_thread);
-
-  // The Mojo EDK must be initialized before using IPC.
-  mojo::edk::Init();
 
   g_shutdown_event =
       new base::WaitableEvent(base::WaitableEvent::ResetPolicy::MANUAL,
