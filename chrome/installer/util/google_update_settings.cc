@@ -14,6 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -75,7 +76,7 @@ bool ReadGoogleUpdateStrKey(const wchar_t* const name, base::string16* value) {
 bool WriteGoogleUpdateAggregateNumKeyInternal(
     const AppRegistrationData& app_reg_data,
     const wchar_t* const name,
-    size_t value,
+    uint32_t value,
     const wchar_t* const aggregate) {
   DCHECK(aggregate);
   DCHECK(GoogleUpdateSettings::IsSystemInstall());
@@ -96,10 +97,7 @@ bool WriteGoogleUpdateAggregateNumKeyInternal(
   RegKey key(HKEY_LOCAL_MACHINE, reg_path.c_str(), kAccess);
   key.WriteValue(google_update::kRegAggregateMethod, aggregate);
 
-  DWORD dword_value = (value > std::numeric_limits<DWORD>::max() ?
-      std::numeric_limits<DWORD>::max() :
-      static_cast<DWORD>(value));
-  return (key.WriteValue(uniquename.c_str(), dword_value) == ERROR_SUCCESS);
+  return (key.WriteValue(uniquename.c_str(), value) == ERROR_SUCCESS);
 }
 
 // Updates a registry key |name| to be |value| for the given |app_reg_data|.
@@ -109,6 +107,24 @@ bool WriteGoogleUpdateStrKeyInternal(const AppRegistrationData& app_reg_data,
   const REGSAM kAccess = KEY_SET_VALUE | KEY_WOW64_32KEY;
   RegKey key(HKEY_CURRENT_USER, app_reg_data.GetStateKey().c_str(), kAccess);
   return (key.WriteValue(name, value.c_str()) == ERROR_SUCCESS);
+}
+
+// Writes the per-user stat |value_name|=|value| either in ClientStateMedium
+// using summation as the aggregation function or in ClientState directly,
+// depending on whether this is is a per-machine or a per-user install.
+void WritePerUserStat(const AppRegistrationData& app_reg_data,
+                      bool is_system_install,
+                      const wchar_t* value_name,
+                      uint32_t value) {
+  if (is_system_install) {
+    // Write |value| as a DWORD in a per-user value of subkey |value_name|.
+    WriteGoogleUpdateAggregateNumKeyInternal(app_reg_data, value_name, value,
+                                             L"sum()");
+  } else {
+    // Write |value| as a string in value |value_name|.
+    WriteGoogleUpdateStrKeyInternal(app_reg_data, value_name,
+                                    base::UintToString16(value));
+  }
 }
 
 bool WriteGoogleUpdateStrKey(const wchar_t* const name,
@@ -614,32 +630,15 @@ bool GoogleUpdateSettings::UpdateGoogleUpdateApKey(
 
 void GoogleUpdateSettings::UpdateProfileCounts(size_t profiles_active,
                                                size_t profiles_signedin) {
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  // System-level installs must write into the ClientStateMedium key shared by
-  // all users. Special treatment is used to aggregate across those users.
-  if (IsSystemInstall()) {
-    // Write the counts as ints that get aggregated across all users via
-    // summation for system-level installs.
-    WriteGoogleUpdateAggregateNumKeyInternal(
-        dist->GetAppRegistrationData(),
-        google_update::kRegProfilesActive,
-        profiles_active,
-        L"sum()");
-    WriteGoogleUpdateAggregateNumKeyInternal(
-        dist->GetAppRegistrationData(),
-        google_update::kRegProfilesSignedIn,
-        profiles_signedin,
-        L"sum()");
-  } else {
-    // Write the counts as strings since no aggregation function is needed for
-    // user-level installs.
-    WriteGoogleUpdateStrKeyInternal(dist->GetAppRegistrationData(),
-                                    google_update::kRegProfilesActive,
-                                    base::SizeTToString16(profiles_active));
-    WriteGoogleUpdateStrKeyInternal(dist->GetAppRegistrationData(),
-                                    google_update::kRegProfilesSignedIn,
-                                    base::SizeTToString16(profiles_signedin));
-  }
+  const auto& app_reg_data =
+      BrowserDistribution::GetDistribution()->GetAppRegistrationData();
+  const bool is_system_install = IsSystemInstall();
+  WritePerUserStat(app_reg_data, is_system_install,
+                   google_update::kRegProfilesActive,
+                   base::saturated_cast<uint32_t>(profiles_active));
+  WritePerUserStat(app_reg_data, is_system_install,
+                   google_update::kRegProfilesSignedIn,
+                   base::saturated_cast<uint32_t>(profiles_signedin));
 }
 
 int GoogleUpdateSettings::DuplicateGoogleUpdateSystemClientKey() {
