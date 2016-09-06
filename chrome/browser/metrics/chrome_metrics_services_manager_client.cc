@@ -23,6 +23,7 @@
 #include "components/rappor/rappor_service.h"
 #include "components/variations/service/variations_service.h"
 #include "components/variations/variations_associated_data.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 
 #if defined(OS_WIN)
@@ -116,6 +117,7 @@ ChromeMetricsServicesManagerClient::~ChromeMetricsServicesManagerClient() {}
 
 // static
 void ChromeMetricsServicesManagerClient::CreateFallbackSamplingTrial(
+    version_info::Channel channel,
     base::FeatureList* feature_list) {
   // The trial name must be kept in sync with the server config controlling
   // sampling. If they don't match, then clients will be shuffled into different
@@ -126,16 +128,25 @@ void ChromeMetricsServicesManagerClient::CreateFallbackSamplingTrial(
           kTrialName, 1000, "Default", base::FieldTrialList::kNoExpirationYear,
           1, 1, base::FieldTrial::ONE_TIME_RANDOMIZED, nullptr));
 
+  // On all channels except stable, we sample out at a minimal rate to ensure
+  // the code paths are exercised in the wild before hitting stable.
+  int sampled_in_rate = 990;
+  int sampled_out_rate = 10;
+  if (channel == version_info::Channel::STABLE) {
+    sampled_in_rate = 100;
+    sampled_out_rate = 900;
+  }
+
   // Like the trial name, the order that these two groups are added to the trial
   // must be kept in sync with the order that they appear in the server config.
 
   // 100 per-mille sampling rate group.
   static const char kInSampleGroup[] = "InReportingSample";
-  AppendSamplingTrialGroup(kInSampleGroup, 100, trial.get());
+  AppendSamplingTrialGroup(kInSampleGroup, sampled_in_rate, trial.get());
 
   // 900 per-mille sampled out.
   static const char kSampledOutGroup[] = "OutOfReportingSample";
-  AppendSamplingTrialGroup(kSampledOutGroup, 900, trial.get());
+  AppendSamplingTrialGroup(kSampledOutGroup, sampled_out_rate, trial.get());
 
   // Setup the feature.
   const std::string& group_name = trial->GetGroupNameWithoutActivation();

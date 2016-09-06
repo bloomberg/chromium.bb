@@ -25,7 +25,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/variations/variations_associated_data.h"
-#include "components/version_info/version_info.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/chrome_browser_field_trials_mobile.h"
@@ -127,11 +126,8 @@ void CreateFallbackSamplingTrialIfNeeded(bool has_seed,
   if (has_seed)
     return;
 
-  // Sampling is only supported on Stable.
-  if (chrome::GetChannel() != version_info::Channel::STABLE)
-    return;
-
-  ChromeMetricsServicesManagerClient::CreateFallbackSamplingTrial(feature_list);
+  ChromeMetricsServicesManagerClient::CreateFallbackSamplingTrial(
+      chrome::GetChannel(), feature_list);
 #endif  // defined(OS_WIN) || defined(OS_ANDROID)
 }
 
