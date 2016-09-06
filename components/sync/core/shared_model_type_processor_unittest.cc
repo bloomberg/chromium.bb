@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -16,12 +17,12 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "components/sync/api/data_type_error_handler_mock.h"
 #include "components/sync/api/fake_model_type_service.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/time.h"
 #include "components/sync/core/activation_context.h"
 #include "components/sync/core/simple_metadata_change_list.h"
-#include "components/sync/core/test/data_type_error_handler_mock.h"
 #include "components/sync/engine/commit_queue.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/test/engine/mock_model_type_worker.h"
@@ -111,8 +112,11 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
   }
 
   void OnSyncStarting() {
+    std::unique_ptr<syncer::DataTypeErrorHandlerMock> error_handler =
+        base::MakeUnique<syncer::DataTypeErrorHandlerMock>();
+    error_handler_ = error_handler.get();
     type_processor()->OnSyncStarting(
-        &error_handler_,
+        std::move(error_handler),
         base::Bind(&SharedModelTypeProcessorTest::OnReadyToConnect,
                    base::Unretained(this)));
   }
@@ -210,7 +214,10 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
     return static_cast<SharedModelTypeProcessor*>(change_processor());
   }
 
-  syncer::DataTypeErrorHandlerMock* error_handler() { return &error_handler_; }
+  syncer::DataTypeErrorHandlerMock* error_handler() {
+    DCHECK(error_handler_);
+    return error_handler_;
+  }
 
  private:
   void CheckPostConditions() override {
@@ -273,7 +280,7 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
   base::Closure data_callback_;
 
   // The processor's error handler.
-  syncer::DataTypeErrorHandlerMock error_handler_;
+  syncer::DataTypeErrorHandlerMock* error_handler_;
 
   // The error to expect in OnReadyToConnect().
   syncer::SyncError::ErrorType expected_start_error_ = syncer::SyncError::UNSET;

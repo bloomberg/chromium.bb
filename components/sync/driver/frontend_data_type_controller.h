@@ -10,12 +10,10 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/threading/thread_checker.h"
-#include "components/sync/core/data_type_error_handler.h"
+#include "components/sync/api/data_type_error_handler.h"
 #include "components/sync/driver/directory_data_type_controller.h"
 
 namespace base {
-class SingleThreadTaskRunner;
 class TimeDelta;
 }
 
@@ -44,30 +42,25 @@ namespace browser_sync {
 class FrontendDataTypeController
     : public sync_driver::DirectoryDataTypeController {
  public:
-  FrontendDataTypeController(
-      const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
-      const base::Closure& error_callback,
-      sync_driver::SyncClient* sync_client);
+  // |dump_stack| is called when an unrecoverable error occurs.
+  FrontendDataTypeController(syncer::ModelType type,
+                             const base::Closure& dump_stack,
+                             sync_driver::SyncClient* sync_client);
+  ~FrontendDataTypeController() override;
 
   // DataTypeController interface.
   void LoadModels(const ModelLoadCallback& model_load_callback) override;
   void StartAssociating(const StartCallback& start_callback) override;
   void Stop() override;
-  syncer::ModelType type() const override = 0;
   syncer::ModelSafeGroup model_safe_group() const override;
   std::string name() const override;
   State state() const override;
-
-  // DataTypeErrorHandler interface.
-  void OnSingleDataTypeUnrecoverableError(
-      const syncer::SyncError& error) override;
 
  protected:
   friend class FrontendDataTypeControllerMock;
 
   // For testing only.
   FrontendDataTypeController();
-  ~FrontendDataTypeController() override;
 
   // Kick off any dependent services that need to be running before we can
   // associate models. The default implementation is a no-op.
@@ -100,17 +93,12 @@ class FrontendDataTypeController
   sync_driver::ChangeProcessor* GetChangeProcessor() const override;
   virtual void set_change_processor(sync_driver::ChangeProcessor* processor);
 
-  // Handles the reporting of unrecoverable error. It records stuff in
-  // UMA and reports to breakpad.
-  // Virtual for testing purpose.
-  virtual void RecordUnrecoverableError(
-      const tracked_objects::Location& from_here,
-      const std::string& message);
-
   // If the DTC is waiting for models to load, once the models are
   // loaded the datatype service will call this function on DTC to let
   // us know that it is safe to start associating.
   void OnModelLoaded();
+
+  std::unique_ptr<syncer::DataTypeErrorHandler> CreateErrorHandler() override;
 
   State state_;
 
@@ -132,7 +120,8 @@ class FrontendDataTypeController
   // to a failure or abort or stop.
   void CleanUp();
 
-  base::ThreadChecker thread_checker_;
+  // Handle an unrecoverable error.
+  void OnUnrecoverableError(const syncer::SyncError& error);
 
   DISALLOW_COPY_AND_ASSIGN(FrontendDataTypeController);
 };

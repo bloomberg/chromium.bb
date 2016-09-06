@@ -4,6 +4,8 @@
 
 #include "components/history/core/browser/typed_url_data_type_controller.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/metrics/histogram.h"
@@ -21,16 +23,11 @@ namespace {
 // the tasks we want to run.
 class RunTaskOnHistoryThread : public history::HistoryDBTask {
  public:
-  explicit RunTaskOnHistoryThread(const base::Closure& task,
-                                  TypedUrlDataTypeController* dtc)
-      : task_(new base::Closure(task)), dtc_(dtc) {}
+  explicit RunTaskOnHistoryThread(const base::Closure& task)
+      : task_(new base::Closure(task)) {}
 
   bool RunOnDBThread(history::HistoryBackend* backend,
                      history::HistoryDatabase* db) override {
-    // Set the backend, then release our reference before executing the task.
-    dtc_->SetBackend(backend);
-    dtc_ = NULL;
-
     // Invoke the task, then free it immediately so we don't keep a reference
     // around all the way until DoneRunOnMainThread() is invoked back on the
     // main thread - we want to release references as soon as possible to avoid
@@ -46,30 +43,23 @@ class RunTaskOnHistoryThread : public history::HistoryDBTask {
   ~RunTaskOnHistoryThread() override {}
 
   std::unique_ptr<base::Closure> task_;
-  scoped_refptr<TypedUrlDataTypeController> dtc_;
 };
 
 }  // namespace
 
 TypedUrlDataTypeController::TypedUrlDataTypeController(
-    const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
-    const base::Closure& error_callback,
+    const base::Closure& dump_stack,
     sync_driver::SyncClient* sync_client,
     const char* history_disabled_pref_name)
-    : NonUIDataTypeController(ui_thread, error_callback, sync_client),
+    : NonUIDataTypeController(syncer::TYPED_URLS, dump_stack, sync_client),
       history_disabled_pref_name_(history_disabled_pref_name),
-      backend_(NULL),
       sync_client_(sync_client) {
   pref_registrar_.Init(sync_client->GetPrefService());
   pref_registrar_.Add(
       history_disabled_pref_name_,
       base::Bind(
           &TypedUrlDataTypeController::OnSavingBrowserHistoryDisabledChanged,
-          base::Unretained(this)));
-}
-
-syncer::ModelType TypedUrlDataTypeController::type() const {
-  return syncer::TYPED_URLS;
+          base::AsWeakPtr(this)));
 }
 
 syncer::ModelSafeGroup TypedUrlDataTypeController::model_safe_group() const {
@@ -77,18 +67,13 @@ syncer::ModelSafeGroup TypedUrlDataTypeController::model_safe_group() const {
 }
 
 bool TypedUrlDataTypeController::ReadyForStart() const {
-  DCHECK(ui_thread()->BelongsToCurrentThread());
+  DCHECK(CalledOnValidThread());
   return !sync_client_->GetPrefService()->GetBoolean(
       history_disabled_pref_name_);
 }
 
-void TypedUrlDataTypeController::SetBackend(history::HistoryBackend* backend) {
-  DCHECK(!ui_thread()->BelongsToCurrentThread());
-  backend_ = backend;
-}
-
 void TypedUrlDataTypeController::OnSavingBrowserHistoryDisabledChanged() {
-  DCHECK(ui_thread()->BelongsToCurrentThread());
+  DCHECK(CalledOnValidThread());
   if (sync_client_->GetPrefService()->GetBoolean(history_disabled_pref_name_)) {
     // We've turned off history persistence, so if we are running,
     // generate an unrecoverable error. This can be fixed by restarting
@@ -96,8 +81,8 @@ void TypedUrlDataTypeController::OnSavingBrowserHistoryDisabledChanged() {
     if (state() != NOT_RUNNING && state() != STOPPING) {
       PostTaskOnBackendThread(
           FROM_HERE,
-          base::Bind(&DataTypeController::OnSingleDataTypeUnrecoverableError,
-                     this,
+          base::Bind(&syncer::DataTypeErrorHandler::OnUnrecoverableError,
+                     base::Passed(CreateErrorHandler()),
                      syncer::SyncError(
                          FROM_HERE, syncer::SyncError::DATATYPE_POLICY_ERROR,
                          "History saving is now disabled by policy.", type())));
@@ -108,11 +93,11 @@ void TypedUrlDataTypeController::OnSavingBrowserHistoryDisabledChanged() {
 bool TypedUrlDataTypeController::PostTaskOnBackendThread(
     const tracked_objects::Location& from_here,
     const base::Closure& task) {
-  DCHECK(ui_thread()->BelongsToCurrentThread());
+  DCHECK(CalledOnValidThread());
   history::HistoryService* history = sync_client_->GetHistoryService();
   if (history) {
     history->ScheduleDBTask(std::unique_ptr<history::HistoryDBTask>(
-                                new RunTaskOnHistoryThread(task, this)),
+                                new RunTaskOnHistoryThread(task)),
                             &task_tracker_);
     return true;
   } else {

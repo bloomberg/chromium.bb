@@ -40,7 +40,7 @@ void FakeModelTypeChangeProcessor::OnMetadataLoaded(
     std::unique_ptr<MetadataBatch> batch) {}
 
 void FakeModelTypeChangeProcessor::OnSyncStarting(
-    syncer::DataTypeErrorHandler* error_handler,
+    std::unique_ptr<syncer::DataTypeErrorHandler> error_handler,
     const StartCallback& callback) {
   if (!callback.is_null()) {
     callback.Run(syncer::SyncError(), nullptr);

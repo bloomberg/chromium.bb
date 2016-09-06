@@ -2,24 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_CORE_DATA_TYPE_ERROR_HANDLER_H__
-#define COMPONENTS_SYNC_CORE_DATA_TYPE_ERROR_HANDLER_H__
+#ifndef COMPONENTS_SYNC_API_DATA_TYPE_ERROR_HANDLER_H__
+#define COMPONENTS_SYNC_API_DATA_TYPE_ERROR_HANDLER_H__
 
+#include <memory>
 #include <string>
 
+#include "base/callback.h"
 #include "base/location.h"
-
 #include "components/sync/api/sync_error.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/unrecoverable_error_handler.h"
 
 namespace syncer {
 
 class DataTypeErrorHandler {
  public:
+  typedef base::Callback<void(const syncer::SyncError&)> ErrorCallback;
+
+  virtual ~DataTypeErrorHandler() {}
+
   // Call this to disable a datatype while it is running. This is usually
   // called for a runtime failure that is specific to a datatype.
-  virtual void OnSingleDataTypeUnrecoverableError(const SyncError& error) = 0;
+  virtual void OnUnrecoverableError(const SyncError& error) = 0;
 
   // This will create a SyncError object. This will also upload a breakpad call
   // stack to crash server. A sync error usually means that sync has to be
@@ -29,10 +33,10 @@ class DataTypeErrorHandler {
       const std::string& message,
       ModelType type) = 0;
 
- protected:
-  virtual ~DataTypeErrorHandler() {}
+  // Create a copy of this error handler.
+  virtual std::unique_ptr<DataTypeErrorHandler> Copy() const = 0;
 };
 
 }  // namespace syncer
 
-#endif  // COMPONENTS_SYNC_CORE_DATA_TYPE_ERROR_HANDLER_H__
+#endif  // COMPONENTS_SYNC_API_DATA_TYPE_ERROR_HANDLER_H__

@@ -20,15 +20,15 @@ namespace browser_sync {
 // both actually handle the APP datatypes as well.
 class ExtensionDataTypeController : public sync_driver::UIDataTypeController {
  public:
+  // |dump_stack| is called when an unrecoverable error occurs.
   ExtensionDataTypeController(
       syncer::ModelType type,  // Either EXTENSIONS or APPS.
-      const base::Closure& error_callback,
+      const base::Closure& dump_stack,
       sync_driver::SyncClient* sync_client,
       Profile* profile);
-
- private:
   ~ExtensionDataTypeController() override;
 
+ private:
   // DataTypeController implementations.
   bool StartModels() override;
 

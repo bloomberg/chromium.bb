@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SYNC_API_FAKE_MODEL_TYPE_CHANGE_PROCESSOR_H_
 #define COMPONENTS_SYNC_API_FAKE_MODEL_TYPE_CHANGE_PROCESSOR_H_
 
+#include <memory>
 #include <string>
 
 #include "components/sync/api/metadata_change_list.h"
@@ -33,8 +34,9 @@ class FakeModelTypeChangeProcessor : public ModelTypeChangeProcessor {
               MetadataChangeList* metadata_change_list) override;
   void OnMetadataLoaded(syncer::SyncError error,
                         std::unique_ptr<MetadataBatch> batch) override;
-  void OnSyncStarting(syncer::DataTypeErrorHandler* error_handler,
-                      const StartCallback& callback) override;
+  void OnSyncStarting(
+      std::unique_ptr<syncer::DataTypeErrorHandler> error_handler,
+      const StartCallback& callback) override;
   void DisableSync() override;
   syncer::SyncError CreateAndUploadError(
       const tracked_objects::Location& location,

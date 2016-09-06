@@ -44,20 +44,18 @@ class FrontendDataTypeControllerFake : public FrontendDataTypeController {
  public:
   FrontendDataTypeControllerFake(sync_driver::SyncClient* sync_client,
                                  FrontendDataTypeControllerMock* mock)
-      : FrontendDataTypeController(base::ThreadTaskRunnerHandle::Get(),
+      : FrontendDataTypeController(syncer::BOOKMARKS,
                                    base::Closure(),
                                    sync_client),
         mock_(mock),
         sync_client_(sync_client) {}
-  syncer::ModelType type() const override { return syncer::BOOKMARKS; }
-
- private:
   ~FrontendDataTypeControllerFake() override {}
 
+ private:
   void CreateSyncComponents() override {
     sync_driver::SyncApiComponentFactory::SyncComponents sync_components =
         sync_client_->GetSyncApiComponentFactory()
-            ->CreateBookmarkSyncComponents(nullptr, this);
+            ->CreateBookmarkSyncComponents(nullptr, CreateErrorHandler());
     model_associator_.reset(sync_components.model_associator);
     change_processor_.reset(sync_components.change_processor);
   }
@@ -66,10 +64,6 @@ class FrontendDataTypeControllerFake : public FrontendDataTypeController {
   // nothing, but we still want to make sure they're called appropriately.
   bool StartModels() override { return mock_->StartModels(); }
   void CleanUpState() override { mock_->CleanUpState(); }
-  void RecordUnrecoverableError(const tracked_objects::Location& from_here,
-                                const std::string& message) override {
-    mock_->RecordUnrecoverableError(from_here, message);
-  }
   void RecordAssociationTime(base::TimeDelta time) override {
     mock_->RecordAssociationTime(time);
   }
@@ -81,29 +75,24 @@ class FrontendDataTypeControllerFake : public FrontendDataTypeController {
   sync_driver::SyncClient* sync_client_;
 };
 
-class SyncFrontendDataTypeControllerTest : public testing::Test,
-                                           public sync_driver::FakeSyncClient {
+class SyncFrontendDataTypeControllerTest : public testing::Test {
  public:
   SyncFrontendDataTypeControllerTest()
-      : sync_driver::FakeSyncClient(&profile_sync_factory_), service_() {}
-
-  // FakeSyncClient overrides.
-  sync_driver::SyncService* GetSyncService() override { return &service_; }
+      : model_associator_(new ModelAssociatorMock()),
+        change_processor_(new ChangeProcessorMock()),
+        components_factory_(model_associator_, change_processor_),
+        sync_client_(&components_factory_) {}
 
   void SetUp() override {
-    dtc_mock_ = new StrictMock<FrontendDataTypeControllerMock>();
-    frontend_dtc_ = new FrontendDataTypeControllerFake(this, dtc_mock_.get());
+    dtc_mock_.reset(new StrictMock<FrontendDataTypeControllerMock>());
+    frontend_dtc_.reset(
+        new FrontendDataTypeControllerFake(&sync_client_, dtc_mock_.get()));
   }
 
  protected:
   void SetStartExpectations() {
     EXPECT_CALL(*dtc_mock_.get(), StartModels()).WillOnce(Return(true));
     EXPECT_CALL(model_load_callback_, Run(_, _));
-    model_associator_ = new ModelAssociatorMock();
-    change_processor_ = new ChangeProcessorMock();
-    EXPECT_CALL(profile_sync_factory_, CreateBookmarkSyncComponents(_, _))
-        .WillOnce(Return(sync_driver::SyncApiComponentFactory::SyncComponents(
-            model_associator_, change_processor_)));
   }
 
   void SetAssociateExpectations() {
@@ -127,8 +116,6 @@ class SyncFrontendDataTypeControllerTest : public testing::Test,
   }
 
   void SetStartFailExpectations(DataTypeController::ConfigureResult result) {
-    if (DataTypeController::IsUnrecoverableResult(result))
-      EXPECT_CALL(*dtc_mock_.get(), RecordUnrecoverableError(_, _));
     EXPECT_CALL(*dtc_mock_.get(), CleanUpState());
     EXPECT_CALL(*dtc_mock_.get(), RecordStartFailure(result));
     EXPECT_CALL(start_callback_, Run(result, _, _));
@@ -145,12 +132,12 @@ class SyncFrontendDataTypeControllerTest : public testing::Test,
   void PumpLoop() { base::RunLoop().RunUntilIdle(); }
 
   base::MessageLoop message_loop_;
-  scoped_refptr<FrontendDataTypeControllerFake> frontend_dtc_;
-  SyncApiComponentFactoryMock profile_sync_factory_;
-  scoped_refptr<FrontendDataTypeControllerMock> dtc_mock_;
-  sync_driver::FakeSyncService service_;
   ModelAssociatorMock* model_associator_;
   ChangeProcessorMock* change_processor_;
+  SyncApiComponentFactoryMock components_factory_;
+  sync_driver::FakeSyncClient sync_client_;
+  std::unique_ptr<FrontendDataTypeControllerFake> frontend_dtc_;
+  std::unique_ptr<FrontendDataTypeControllerMock> dtc_mock_;
   StartCallbackMock start_callback_;
   ModelLoadCallbackMock model_load_callback_;
 };
@@ -185,7 +172,8 @@ TEST_F(SyncFrontendDataTypeControllerTest, StartStopBeforeAssociation) {
   EXPECT_CALL(model_load_callback_, Run(_, _));
   EXPECT_EQ(DataTypeController::NOT_RUNNING, frontend_dtc_->state());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&FrontendDataTypeController::Stop, frontend_dtc_));
+      FROM_HERE, base::Bind(&FrontendDataTypeController::Stop,
+                            base::AsWeakPtr(frontend_dtc_.get())));
   Start();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, frontend_dtc_->state());
 }

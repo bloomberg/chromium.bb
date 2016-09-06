@@ -7,18 +7,18 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
+#include "components/sync/api/data_type_error_handler.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/unrecoverable_error_handler.h"
-#include "components/sync/core/data_type_error_handler.h"
 #include "components/sync/driver/change_processor.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace sync_driver {
 
-class ChangeProcessorMock : public ChangeProcessor,
-                            public syncer::DataTypeErrorHandler {
+class ChangeProcessorMock : public ChangeProcessor {
  public:
   ChangeProcessorMock();
   virtual ~ChangeProcessorMock();
@@ -31,12 +31,6 @@ class ChangeProcessorMock : public ChangeProcessor,
   MOCK_CONST_METHOD0(IsRunning, bool());
   MOCK_METHOD2(OnUnrecoverableError,
                void(const tracked_objects::Location&, const std::string&));
-  MOCK_METHOD1(OnSingleDataTypeUnrecoverableError,
-               void(const syncer::SyncError&));
-  MOCK_METHOD3(CreateAndUploadError,
-               syncer::SyncError(const tracked_objects::Location&,
-                                 const std::string&,
-                                 syncer::ModelType));
 };
 
 }  // namespace sync_driver

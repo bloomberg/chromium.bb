@@ -249,7 +249,8 @@ class ProfileSyncServiceTest : public ::testing::Test {
 
     service_.reset(new ProfileSyncService(std::move(init_params)));
     service_->RegisterDataTypeController(
-        new sync_driver::FakeDataTypeController(syncer::BOOKMARKS));
+        base::MakeUnique<sync_driver::FakeDataTypeController>(
+            syncer::BOOKMARKS));
   }
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || \

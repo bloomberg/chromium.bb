@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "components/sync/api/attachments/attachment_store.h"
+#include "components/sync/api/data_type_error_handler.h"
 #include "components/sync/api/sync_change_processor.h"
 #include "components/sync/api/sync_merge_result.h"
 #include "components/sync/core/attachments/attachment_service.h"
@@ -23,7 +24,6 @@
 #include "components/sync/driver/change_processor.h"
 
 namespace syncer {
-class DataTypeErrorHandler;
 class SyncData;
 class SyncableService;
 class WriteNode;
@@ -55,7 +55,7 @@ class GenericChangeProcessor : public ChangeProcessor,
   // attachments.
   GenericChangeProcessor(
       syncer::ModelType type,
-      syncer::DataTypeErrorHandler* error_handler,
+      std::unique_ptr<syncer::DataTypeErrorHandler> error_handler,
       const base::WeakPtr<syncer::SyncableService>& local_service,
       const base::WeakPtr<syncer::SyncMergeResult>& merge_result,
       syncer::UserShare* user_share,

@@ -30,15 +30,11 @@ namespace sync_driver_v2 {
 // - RunOnUIThread
 class NonBlockingDataTypeController : public sync_driver::DataTypeController {
  public:
-  NonBlockingDataTypeController(
-      const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
-      const base::Closure& error_callback,
-      syncer::ModelType model_type,
-      sync_driver::SyncClient* sync_client);
-
-  // DataTypeErrorHandler interface.
-  void OnSingleDataTypeUnrecoverableError(
-      const syncer::SyncError& error) override;
+  // |dump_stack| is called when an unrecoverable error occurs.
+  NonBlockingDataTypeController(syncer::ModelType type,
+                                const base::Closure& dump_stack,
+                                sync_driver::SyncClient* sync_client);
+  ~NonBlockingDataTypeController() override;
 
   // DataTypeController interface.
   bool ShouldLoadModelBeforeConfigure() const override;
@@ -58,31 +54,19 @@ class NonBlockingDataTypeController : public sync_driver::DataTypeController {
   void Stop() override;
   std::string name() const override;
   State state() const override;
-  syncer::ModelType type() const override;
 
  protected:
-  // DataTypeController is RefCounted.
-  ~NonBlockingDataTypeController() override;
-
-  // Returns true if the call is made on UI thread.
-  bool BelongsToUIThread() const;
-
   // Posts the given task to the model thread, i.e. the thread the
   // datatype lives on.  Return value: True if task posted successfully,
   // false otherwise.
   virtual bool RunOnModelThread(const tracked_objects::Location& from_here,
                                 const base::Closure& task) = 0;
 
-  // Post the given task on the UI thread. If the call is made on UI thread
-  // already, make a direct call without posting.
-  virtual void RunOnUIThread(const tracked_objects::Location& from_here,
-                             const base::Closure& task) = 0;
+  std::unique_ptr<syncer::DataTypeErrorHandler> CreateErrorHandler() override;
 
  private:
   void RecordStartFailure(ConfigureResult result) const;
-  void RecordUnrecoverableError();
-  void ReportLoadModelError(ConfigureResult result,
-                            const syncer::SyncError& error);
+  void ReportLoadModelError(const syncer::SyncError& error);
 
   // If the DataType controller is waiting for models to load, once the models
   // are loaded this function should be called to let the base class
@@ -95,9 +79,6 @@ class NonBlockingDataTypeController : public sync_driver::DataTypeController {
   void OnProcessorStarted(
       syncer::SyncError error,
       std::unique_ptr<syncer_v2::ActivationContext> activation_context);
-
-  // Model Type for this controller
-  syncer::ModelType model_type_;
 
   // Sync client
   sync_driver::SyncClient* const sync_client_;

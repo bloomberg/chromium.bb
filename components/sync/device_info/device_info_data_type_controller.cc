@@ -10,35 +10,35 @@
 namespace sync_driver {
 
 DeviceInfoDataTypeController::DeviceInfoDataTypeController(
-    const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
-    const base::Closure& error_callback,
+    const base::Closure& dump_stack,
     SyncClient* sync_client,
     LocalDeviceInfoProvider* local_device_info_provider)
-    : UIDataTypeController(ui_thread,
-                           error_callback,
-                           syncer::DEVICE_INFO,
-                           sync_client),
+    : UIDataTypeController(syncer::DEVICE_INFO, dump_stack, sync_client),
       local_device_info_provider_(local_device_info_provider) {}
 
 DeviceInfoDataTypeController::~DeviceInfoDataTypeController() {}
 
 bool DeviceInfoDataTypeController::StartModels() {
+  DCHECK(CalledOnValidThread());
   // Start the data type as soon as the local device info gets available.
   if (local_device_info_provider_->GetLocalDeviceInfo()) {
     return true;
   }
 
   subscription_ = local_device_info_provider_->RegisterOnInitializedCallback(
-      base::Bind(&DeviceInfoDataTypeController::OnLocalDeviceInfoLoaded, this));
+      base::Bind(&DeviceInfoDataTypeController::OnLocalDeviceInfoLoaded,
+                 base::AsWeakPtr(this)));
 
   return false;
 }
 
 void DeviceInfoDataTypeController::StopModels() {
+  DCHECK(CalledOnValidThread());
   subscription_.reset();
 }
 
 void DeviceInfoDataTypeController::OnLocalDeviceInfoLoaded() {
+  DCHECK(CalledOnValidThread());
   DCHECK_EQ(state_, MODEL_STARTING);
   DCHECK(local_device_info_provider_->GetLocalDeviceInfo());
 

@@ -17,35 +17,27 @@
 namespace browser_sync {
 
 AutofillWalletDataTypeController::AutofillWalletDataTypeController(
-    const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
+    syncer::ModelType type,
     const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
-    const base::Closure& error_callback,
+    const base::Closure& dump_stack,
     sync_driver::SyncClient* sync_client,
-    syncer::ModelType model_type,
     const scoped_refptr<autofill::AutofillWebDataService>& web_data_service)
-    : NonUIDataTypeController(ui_thread, error_callback, sync_client),
-      ui_thread_(ui_thread),
+    : NonUIDataTypeController(type, dump_stack, sync_client),
       db_thread_(db_thread),
       sync_client_(sync_client),
       callback_registered_(false),
-      model_type_(model_type),
       web_data_service_(web_data_service),
       currently_enabled_(IsEnabled()) {
-  DCHECK(ui_thread_->BelongsToCurrentThread());
-  DCHECK(model_type_ == syncer::AUTOFILL_WALLET_DATA ||
-         model_type_ == syncer::AUTOFILL_WALLET_METADATA);
+  DCHECK(type == syncer::AUTOFILL_WALLET_DATA ||
+         type == syncer::AUTOFILL_WALLET_METADATA);
   pref_registrar_.Init(sync_client_->GetPrefService());
   pref_registrar_.Add(
       autofill::prefs::kAutofillWalletImportEnabled,
       base::Bind(&AutofillWalletDataTypeController::OnUserPrefChanged,
-                 base::Unretained(this)));
+                 base::AsWeakPtr(this)));
 }
 
 AutofillWalletDataTypeController::~AutofillWalletDataTypeController() {}
-
-syncer::ModelType AutofillWalletDataTypeController::type() const {
-  return model_type_;
-}
 
 syncer::ModelSafeGroup AutofillWalletDataTypeController::model_safe_group()
     const {
@@ -55,12 +47,12 @@ syncer::ModelSafeGroup AutofillWalletDataTypeController::model_safe_group()
 bool AutofillWalletDataTypeController::PostTaskOnBackendThread(
     const tracked_objects::Location& from_here,
     const base::Closure& task) {
-  DCHECK(ui_thread_->BelongsToCurrentThread());
+  DCHECK(CalledOnValidThread());
   return db_thread_->PostTask(from_here, task);
 }
 
 bool AutofillWalletDataTypeController::StartModels() {
-  DCHECK(ui_thread_->BelongsToCurrentThread());
+  DCHECK(CalledOnValidThread());
   DCHECK_EQ(state(), MODEL_STARTING);
 
   if (!web_data_service_)
@@ -71,7 +63,8 @@ bool AutofillWalletDataTypeController::StartModels() {
 
   if (!callback_registered_) {
     web_data_service_->RegisterDBLoadedCallback(
-        base::Bind(&AutofillWalletDataTypeController::OnModelLoaded, this));
+        base::Bind(&AutofillWalletDataTypeController::OnModelLoaded,
+                   base::AsWeakPtr(this)));
     callback_registered_ = true;
   }
 
@@ -79,7 +72,7 @@ bool AutofillWalletDataTypeController::StartModels() {
 }
 
 void AutofillWalletDataTypeController::StopModels() {
-  DCHECK(ui_thread_->BelongsToCurrentThread());
+  DCHECK(CalledOnValidThread());
 
   // This function is called when shutting down (nothing is changing), when
   // sync is disabled completely, or when wallet sync is disabled. In the
@@ -102,12 +95,12 @@ void AutofillWalletDataTypeController::StopModels() {
 }
 
 bool AutofillWalletDataTypeController::ReadyForStart() const {
-  DCHECK(ui_thread_->BelongsToCurrentThread());
+  DCHECK(CalledOnValidThread());
   return currently_enabled_;
 }
 
 void AutofillWalletDataTypeController::OnUserPrefChanged() {
-  DCHECK(ui_thread_->BelongsToCurrentThread());
+  DCHECK(CalledOnValidThread());
 
   bool new_enabled = IsEnabled();
   if (currently_enabled_ == new_enabled)
@@ -120,21 +113,17 @@ void AutofillWalletDataTypeController::OnUserPrefChanged() {
     sync_driver::SyncService* sync_service = sync_client_->GetSyncService();
     sync_service->ReenableDatatype(type());
   } else {
-    // Post a task to the backend thread to stop the datatype.
+    // Report the error (which will stop the datatype asynchronously).
     if (state() != NOT_RUNNING && state() != STOPPING) {
-      PostTaskOnBackendThread(
-          FROM_HERE,
-          base::Bind(&DataTypeController::OnSingleDataTypeUnrecoverableError,
-                     this,
-                     syncer::SyncError(
-                         FROM_HERE, syncer::SyncError::DATATYPE_POLICY_ERROR,
-                         "Wallet syncing is disabled by policy.", type())));
+      CreateErrorHandler()->OnUnrecoverableError(
+          syncer::SyncError(FROM_HERE, syncer::SyncError::DATATYPE_POLICY_ERROR,
+                            "Wallet syncing is disabled by policy.", type()));
     }
   }
 }
 
 bool AutofillWalletDataTypeController::IsEnabled() {
-  DCHECK(ui_thread_->BelongsToCurrentThread());
+  DCHECK(CalledOnValidThread());
 
   // Require the user-visible pref to be enabled to sync Wallet data/metadata.
   PrefService* ps = sync_client_->GetPrefService();

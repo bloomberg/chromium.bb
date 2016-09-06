@@ -21,17 +21,16 @@ class Profile;
 class ArcPackageSyncDataTypeController
     : public sync_driver::UIDataTypeController {
  public:
+  // |dump_stack| is called when an unrecoverable error occurs.
   ArcPackageSyncDataTypeController(syncer::ModelType type,
-                                   const base::Closure& error_callback,
+                                   const base::Closure& dump_stack,
                                    sync_driver::SyncClient* sync_client,
                                    Profile* profile);
+  ~ArcPackageSyncDataTypeController() override;
 
   bool ReadyForStart() const override;
 
  private:
-  // DataTypeController is RefCounted.
-  ~ArcPackageSyncDataTypeController() override;
-
   void OnArcAppsSyncPrefChanged();
 
   void OnArcEnabledPrefChanged();

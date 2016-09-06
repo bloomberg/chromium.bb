@@ -32,9 +32,8 @@ class DeviceInfoDataTypeControllerTest : public testing::Test {
         "cache_guid", "Wayne Gretzky's Hacking Box", "Chromium 10k",
         "Chrome 10k", sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id"));
 
-    controller_ = new DeviceInfoDataTypeController(
-        base::ThreadTaskRunnerHandle::Get(), base::Closure(), &sync_client_,
-        local_device_.get());
+    controller_.reset(new DeviceInfoDataTypeController(
+        base::Closure(), &sync_client_, local_device_.get()));
 
     load_finished_ = false;
     last_type_ = syncer::UNSPECIFIED;
@@ -52,7 +51,7 @@ class DeviceInfoDataTypeControllerTest : public testing::Test {
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
-  void OnLoadFinished(syncer::ModelType type, syncer::SyncError error) {
+  void OnLoadFinished(syncer::ModelType type, const syncer::SyncError& error) {
     load_finished_ = true;
     last_type_ = type;
     last_error_ = error;
@@ -79,7 +78,7 @@ class DeviceInfoDataTypeControllerTest : public testing::Test {
   }
 
  protected:
-  scoped_refptr<DeviceInfoDataTypeController> controller_;
+  std::unique_ptr<DeviceInfoDataTypeController> controller_;
   std::unique_ptr<LocalDeviceInfoProviderMock> local_device_;
   bool load_finished_;
 

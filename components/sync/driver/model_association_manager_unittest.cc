@@ -5,7 +5,9 @@
 #include "components/sync/driver/model_association_manager.h"
 
 #include "base/callback.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "components/sync/driver/fake_data_type_controller.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -58,8 +60,9 @@ class SyncModelAssociationManagerTest : public testing::Test {
 // method and calls the callback when it is done.
 TEST_F(SyncModelAssociationManagerTest, SimpleModelStart) {
   controllers_[syncer::BOOKMARKS] =
-      new FakeDataTypeController(syncer::BOOKMARKS);
-  controllers_[syncer::APPS] = new FakeDataTypeController(syncer::APPS);
+      base::MakeUnique<FakeDataTypeController>(syncer::BOOKMARKS);
+  controllers_[syncer::APPS] =
+      base::MakeUnique<FakeDataTypeController>(syncer::APPS);
   ModelAssociationManager model_association_manager(&controllers_, &delegate_);
   syncer::ModelTypeSet types(syncer::BOOKMARKS, syncer::APPS);
   DataTypeManager::ConfigureResult expected_result(DataTypeManager::OK, types);
@@ -95,7 +98,7 @@ TEST_F(SyncModelAssociationManagerTest, SimpleModelStart) {
 // Start a type and call stop before it finishes associating.
 TEST_F(SyncModelAssociationManagerTest, StopModelBeforeFinish) {
   controllers_[syncer::BOOKMARKS] =
-      new FakeDataTypeController(syncer::BOOKMARKS);
+      base::MakeUnique<FakeDataTypeController>(syncer::BOOKMARKS);
   ModelAssociationManager model_association_manager(&controllers_, &delegate_);
 
   syncer::ModelTypeSet types;
@@ -121,7 +124,7 @@ TEST_F(SyncModelAssociationManagerTest, StopModelBeforeFinish) {
 // Start a type, let it finish and then call stop.
 TEST_F(SyncModelAssociationManagerTest, StopAfterFinish) {
   controllers_[syncer::BOOKMARKS] =
-      new FakeDataTypeController(syncer::BOOKMARKS);
+      base::MakeUnique<FakeDataTypeController>(syncer::BOOKMARKS);
   ModelAssociationManager model_association_manager(&controllers_, &delegate_);
   syncer::ModelTypeSet types;
   types.Put(syncer::BOOKMARKS);
@@ -146,7 +149,7 @@ TEST_F(SyncModelAssociationManagerTest, StopAfterFinish) {
 // Make a type fail model association and verify correctness.
 TEST_F(SyncModelAssociationManagerTest, TypeFailModelAssociation) {
   controllers_[syncer::BOOKMARKS] =
-      new FakeDataTypeController(syncer::BOOKMARKS);
+      base::MakeUnique<FakeDataTypeController>(syncer::BOOKMARKS);
   ModelAssociationManager model_association_manager(&controllers_, &delegate_);
   syncer::ModelTypeSet types;
   types.Put(syncer::BOOKMARKS);
@@ -169,7 +172,7 @@ TEST_F(SyncModelAssociationManagerTest, TypeFailModelAssociation) {
 // Ensure configuring stops when a type returns a unrecoverable error.
 TEST_F(SyncModelAssociationManagerTest, TypeReturnUnrecoverableError) {
   controllers_[syncer::BOOKMARKS] =
-      new FakeDataTypeController(syncer::BOOKMARKS);
+      base::MakeUnique<FakeDataTypeController>(syncer::BOOKMARKS);
   ModelAssociationManager model_association_manager(&controllers_, &delegate_);
   syncer::ModelTypeSet types;
   types.Put(syncer::BOOKMARKS);
@@ -191,8 +194,9 @@ TEST_F(SyncModelAssociationManagerTest, TypeReturnUnrecoverableError) {
 
 TEST_F(SyncModelAssociationManagerTest, SlowTypeAsFailedType) {
   controllers_[syncer::BOOKMARKS] =
-      new FakeDataTypeController(syncer::BOOKMARKS);
-  controllers_[syncer::APPS] = new FakeDataTypeController(syncer::APPS);
+      base::MakeUnique<FakeDataTypeController>(syncer::BOOKMARKS);
+  controllers_[syncer::APPS] =
+      base::MakeUnique<FakeDataTypeController>(syncer::APPS);
   GetController(controllers_, syncer::BOOKMARKS)->SetDelayModelLoad();
   ModelAssociationManager model_association_manager(&controllers_, &delegate_);
   syncer::ModelTypeSet types;
@@ -219,8 +223,9 @@ TEST_F(SyncModelAssociationManagerTest, SlowTypeAsFailedType) {
 
 TEST_F(SyncModelAssociationManagerTest, StartMultipleTimes) {
   controllers_[syncer::BOOKMARKS] =
-      new FakeDataTypeController(syncer::BOOKMARKS);
-  controllers_[syncer::APPS] = new FakeDataTypeController(syncer::APPS);
+      base::MakeUnique<FakeDataTypeController>(syncer::BOOKMARKS);
+  controllers_[syncer::APPS] =
+      base::MakeUnique<FakeDataTypeController>(syncer::APPS);
   ModelAssociationManager model_association_manager(&controllers_, &delegate_);
   syncer::ModelTypeSet types;
   types.Put(syncer::BOOKMARKS);
@@ -268,7 +273,7 @@ TEST_F(SyncModelAssociationManagerTest, StartMultipleTimes) {
 // is reported and stopped properly.
 TEST_F(SyncModelAssociationManagerTest, ModelLoadFailBeforeAssociationStart) {
   controllers_[syncer::BOOKMARKS] =
-      new FakeDataTypeController(syncer::BOOKMARKS);
+      base::MakeUnique<FakeDataTypeController>(syncer::BOOKMARKS);
   GetController(controllers_, syncer::BOOKMARKS)
       ->SetModelLoadError(syncer::SyncError(
           FROM_HERE, syncer::SyncError::DATATYPE_ERROR, "", syncer::BOOKMARKS));
@@ -291,7 +296,7 @@ TEST_F(SyncModelAssociationManagerTest, ModelLoadFailBeforeAssociationStart) {
 // Test that a runtime error is handled by stopping the type.
 TEST_F(SyncModelAssociationManagerTest, StopAfterConfiguration) {
   controllers_[syncer::BOOKMARKS] =
-      new FakeDataTypeController(syncer::BOOKMARKS);
+      base::MakeUnique<FakeDataTypeController>(syncer::BOOKMARKS);
   ModelAssociationManager model_association_manager(&controllers_, &delegate_);
   syncer::ModelTypeSet types;
   types.Put(syncer::BOOKMARKS);
@@ -314,13 +319,16 @@ TEST_F(SyncModelAssociationManagerTest, StopAfterConfiguration) {
   syncer::SyncError error(FROM_HERE, syncer::SyncError::DATATYPE_ERROR, "error",
                           syncer::BOOKMARKS);
   GetController(controllers_, syncer::BOOKMARKS)
-      ->OnSingleDataTypeUnrecoverableError(error);
+      ->CreateErrorHandler()
+      ->OnUnrecoverableError(error);
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(SyncModelAssociationManagerTest, AbortDuringAssociation) {
   controllers_[syncer::BOOKMARKS] =
-      new FakeDataTypeController(syncer::BOOKMARKS);
-  controllers_[syncer::APPS] = new FakeDataTypeController(syncer::APPS);
+      base::MakeUnique<FakeDataTypeController>(syncer::BOOKMARKS);
+  controllers_[syncer::APPS] =
+      base::MakeUnique<FakeDataTypeController>(syncer::APPS);
   ModelAssociationManager model_association_manager(&controllers_, &delegate_);
   syncer::ModelTypeSet types;
   types.Put(syncer::BOOKMARKS);
@@ -355,8 +363,9 @@ TEST_F(SyncModelAssociationManagerTest, AbortDuringAssociation) {
 TEST_F(SyncModelAssociationManagerTest, OnAllDataTypesReadyForConfigure) {
   // Create two controllers with delayed model load.
   controllers_[syncer::BOOKMARKS] =
-      new FakeDataTypeController(syncer::BOOKMARKS);
-  controllers_[syncer::APPS] = new FakeDataTypeController(syncer::APPS);
+      base::MakeUnique<FakeDataTypeController>(syncer::BOOKMARKS);
+  controllers_[syncer::APPS] =
+      base::MakeUnique<FakeDataTypeController>(syncer::APPS);
   GetController(controllers_, syncer::BOOKMARKS)->SetDelayModelLoad();
   GetController(controllers_, syncer::APPS)->SetDelayModelLoad();
 
@@ -403,7 +412,8 @@ TEST_F(SyncModelAssociationManagerTest, OnAllDataTypesReadyForConfigure) {
 // LoadModels fails for one of datatypes.
 TEST_F(SyncModelAssociationManagerTest,
        OnAllDataTypesReadyForConfigure_FailedLoadModels) {
-  controllers_[syncer::APPS] = new FakeDataTypeController(syncer::APPS);
+  controllers_[syncer::APPS] =
+      base::MakeUnique<FakeDataTypeController>(syncer::APPS);
   GetController(controllers_, syncer::APPS)->SetDelayModelLoad();
 
   // APPS controller requires LoadModels complete before configure.
@@ -442,8 +452,9 @@ TEST_F(SyncModelAssociationManagerTest,
   // Create two controllers with delayed model load. Both should block
   // configuration.
   controllers_[syncer::BOOKMARKS] =
-      new FakeDataTypeController(syncer::BOOKMARKS);
-  controllers_[syncer::APPS] = new FakeDataTypeController(syncer::APPS);
+      base::MakeUnique<FakeDataTypeController>(syncer::BOOKMARKS);
+  controllers_[syncer::APPS] =
+      base::MakeUnique<FakeDataTypeController>(syncer::APPS);
   GetController(controllers_, syncer::BOOKMARKS)->SetDelayModelLoad();
   GetController(controllers_, syncer::APPS)->SetDelayModelLoad();
 
@@ -478,7 +489,9 @@ TEST_F(SyncModelAssociationManagerTest,
   syncer::SyncError error(FROM_HERE, syncer::SyncError::DATATYPE_ERROR, "error",
                           syncer::APPS);
   GetController(controllers_, syncer::APPS)
-      ->OnSingleDataTypeUnrecoverableError(error);
+      ->CreateErrorHandler()
+      ->OnUnrecoverableError(error);
+  base::RunLoop().RunUntilIdle();
 
   testing::Mock::VerifyAndClearExpectations(&delegate_);
 

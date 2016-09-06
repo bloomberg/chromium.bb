@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <stack>
 #include <string>
@@ -21,8 +22,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/threading/thread_checker.h"
+#include "components/sync/api/data_type_error_handler.h"
 #include "components/sync/base/unrecoverable_error_handler.h"
-#include "components/sync/core/data_type_error_handler.h"
 #include "components/sync/driver/model_associator.h"
 
 class GURL;
@@ -61,7 +62,7 @@ class BookmarkModelAssociator
       bookmarks::BookmarkModel* bookmark_model,
       sync_driver::SyncClient* sync_client,
       syncer::UserShare* user_share,
-      syncer::DataTypeErrorHandler* unrecoverable_error_handler,
+      std::unique_ptr<syncer::DataTypeErrorHandler> unrecoverable_error_handler,
       bool expect_mobile_bookmarks_folder);
   ~BookmarkModelAssociator() override;
 
@@ -294,7 +295,7 @@ class BookmarkModelAssociator
   bookmarks::BookmarkModel* bookmark_model_;
   sync_driver::SyncClient* sync_client_;
   syncer::UserShare* user_share_;
-  syncer::DataTypeErrorHandler* unrecoverable_error_handler_;
+  std::unique_ptr<syncer::DataTypeErrorHandler> unrecoverable_error_handler_;
   const bool expect_mobile_bookmarks_folder_;
   BookmarkIdToSyncIdMap id_map_;
   SyncIdToBookmarkNodeMap id_map_inverse_;

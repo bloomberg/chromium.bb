@@ -126,6 +126,7 @@ source_set("unit_tests") {
     ":prepopulated_engines",
     ":test_support",
     "//base",
+    "//base/test:test_support",
     "//components/google/core/browser",
     "//components/pref_registry:test_support",
     "//components/prefs",

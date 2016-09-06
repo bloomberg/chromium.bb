@@ -7,15 +7,10 @@
 namespace browser_sync {
 
 SearchEngineDataTypeController::SearchEngineDataTypeController(
-    const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
-    const base::Closure& error_callback,
+    const base::Closure& dump_stack,
     sync_driver::SyncClient* sync_client,
     TemplateURLService* template_url_service)
-    : UIDataTypeController(ui_thread,
-                           error_callback,
-                           syncer::SEARCH_ENGINES,
-                           sync_client),
-      ui_thread_(ui_thread),
+    : UIDataTypeController(syncer::SEARCH_ENGINES, dump_stack, sync_client),
       template_url_service_(template_url_service) {}
 
 TemplateURLService::Subscription*
@@ -27,6 +22,7 @@ SearchEngineDataTypeController::~SearchEngineDataTypeController() {}
 
 // We want to start the TemplateURLService before we begin associating.
 bool SearchEngineDataTypeController::StartModels() {
+  DCHECK(CalledOnValidThread());
   // If the TemplateURLService is loaded, continue with association. We force
   // a load here to prevent the rest of Sync from waiting on
   // TemplateURLService's lazy load.
@@ -37,19 +33,20 @@ bool SearchEngineDataTypeController::StartModels() {
   }
 
   // Register a callback and continue when the TemplateURLService is loaded.
-  template_url_subscription_ =
-      template_url_service_->RegisterOnLoadedCallback(base::Bind(
-          &SearchEngineDataTypeController::OnTemplateURLServiceLoaded, this));
+  template_url_subscription_ = template_url_service_->RegisterOnLoadedCallback(
+      base::Bind(&SearchEngineDataTypeController::OnTemplateURLServiceLoaded,
+                 base::AsWeakPtr(this)));
 
   return false;  // Don't continue Start.
 }
 
 void SearchEngineDataTypeController::StopModels() {
+  DCHECK(CalledOnValidThread());
   template_url_subscription_.reset();
 }
 
 void SearchEngineDataTypeController::OnTemplateURLServiceLoaded() {
-  DCHECK(ui_thread_->BelongsToCurrentThread());
+  DCHECK(CalledOnValidThread());
   DCHECK_EQ(MODEL_STARTING, state_);
   template_url_subscription_.reset();
   OnModelLoaded();

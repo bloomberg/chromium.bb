@@ -16,6 +16,7 @@ namespace browser_sync {
 class FrontendDataTypeControllerMock : public FrontendDataTypeController {
  public:
   FrontendDataTypeControllerMock();
+  virtual ~FrontendDataTypeControllerMock();
 
   // DataTypeController mocks.
   MOCK_METHOD1(StartAssociating, void(const StartCallback& start_callback));
@@ -27,8 +28,6 @@ class FrontendDataTypeControllerMock : public FrontendDataTypeController {
   MOCK_CONST_METHOD0(name, std::string());
   MOCK_CONST_METHOD0(model_safe_group, syncer::ModelSafeGroup());
   MOCK_CONST_METHOD0(state, State());
-  MOCK_METHOD2(OnUnrecoverableError,
-               void(const tracked_objects::Location&, const std::string&));
 
   // FrontendDataTypeController mocks.
   MOCK_METHOD0(StartModels, bool());
@@ -44,13 +43,8 @@ class FrontendDataTypeControllerMock : public FrontendDataTypeController {
   MOCK_CONST_METHOD0(change_processor, sync_driver::ChangeProcessor*());
   MOCK_METHOD1(set_change_processor,
                void(sync_driver::ChangeProcessor* processor));
-  MOCK_METHOD2(RecordUnrecoverableError,
-               void(const tracked_objects::Location&, const std::string&));
   MOCK_METHOD1(RecordAssociationTime, void(base::TimeDelta time));
   MOCK_METHOD1(RecordStartFailure, void(ConfigureResult result));
-
- protected:
-  virtual ~FrontendDataTypeControllerMock();
 };
 
 }  // namespace browser_sync

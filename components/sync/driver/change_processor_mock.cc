@@ -8,7 +8,7 @@
 
 namespace sync_driver {
 
-ChangeProcessorMock::ChangeProcessorMock() : ChangeProcessor(this) {}
+ChangeProcessorMock::ChangeProcessorMock() : ChangeProcessor(nullptr) {}
 
 ChangeProcessorMock::~ChangeProcessorMock() {}
 

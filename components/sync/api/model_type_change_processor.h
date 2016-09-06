@@ -8,12 +8,12 @@
 #include <memory>
 #include <string>
 
+#include "components/sync/api/data_type_error_handler.h"
 #include "components/sync/api/entity_data.h"
 #include "components/sync/api/sync_error_factory.h"
 #include "components/sync/core/activation_context.h"
 
 namespace syncer {
-class DataTypeErrorHandler;
 class SyncError;
 }  // namespace syncer
 
@@ -56,8 +56,9 @@ class ModelTypeChangeProcessor : public syncer::SyncErrorFactory {
   // inform sync of any unrecoverable errors after calling |callback|, and it is
   // guaranteed to outlive the processor. StartCallback takes a SyncError and an
   // ActivationContext; the context should be nullptr iff the error is set.
-  virtual void OnSyncStarting(syncer::DataTypeErrorHandler* error_handler,
-                              const StartCallback& callback) = 0;
+  virtual void OnSyncStarting(
+      std::unique_ptr<syncer::DataTypeErrorHandler> error_handler,
+      const StartCallback& callback) = 0;
 
   // Indicates that sync is being disabled permanently for this data type. All
   // metadata should be erased from storage.

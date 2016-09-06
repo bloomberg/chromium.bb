@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/memory/weak_ptr.h"
+#include "components/sync/api/data_type_error_handler.h"
 #include "components/sync/api/syncable_service.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/core/attachments/attachment_service.h"
@@ -32,7 +33,6 @@ class InvalidationService;
 
 namespace syncer {
 class DataTypeDebugInfoListener;
-class DataTypeErrorHandler;
 class SyncableService;
 
 struct UserShare;
@@ -117,7 +117,7 @@ class SyncApiComponentFactory {
   // Legacy datatypes that need to be converted to the SyncableService API.
   virtual SyncComponents CreateBookmarkSyncComponents(
       sync_driver::SyncService* sync_service,
-      syncer::DataTypeErrorHandler* error_handler) = 0;
+      std::unique_ptr<syncer::DataTypeErrorHandler> error_handler) = 0;
 
   // Creates attachment service.
   // Note: Should only be called from the model type thread.

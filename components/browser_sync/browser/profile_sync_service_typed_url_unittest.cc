@@ -32,9 +32,9 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/typed_url_data_type_controller.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/sync/api/data_type_error_handler_mock.h"
 #include "components/sync/core/read_node.h"
 #include "components/sync/core/read_transaction.h"
-#include "components/sync/core/test/data_type_error_handler_mock.h"
 #include "components/sync/core/write_node.h"
 #include "components/sync/core/write_transaction.h"
 #include "components/sync/driver/data_type_manager_impl.h"
@@ -246,9 +246,6 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
           profile_sync_service_bundle()->signin_manager();
       signin->SetAuthenticatedAccountInfo("gaia_id", "test");
       CreateSyncService(std::move(sync_client_), callback);
-      data_type_controller = new TypedUrlDataTypeController(
-          base::ThreadTaskRunnerHandle::Get(), base::Bind(&base::DoNothing),
-          sync_service()->GetSyncClient(), kDummySavingBrowserHistoryDisabled);
       EXPECT_CALL(*profile_sync_service_bundle()->component_factory(),
                   CreateDataTypeManager(_, _, _, _, _))
           .WillOnce(ReturnNewDataTypeManager());
@@ -256,7 +253,10 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
       profile_sync_service_bundle()->auth_service()->UpdateCredentials(
           account_id, "oauth2_login_token");
 
-      sync_service()->RegisterDataTypeController(data_type_controller);
+      sync_service()->RegisterDataTypeController(
+          base::MakeUnique<TypedUrlDataTypeController>(
+              base::Bind(&base::DoNothing), sync_service()->GetSyncClient(),
+              kDummySavingBrowserHistoryDisabled));
 
       sync_service()->Initialize();
       base::RunLoop().Run();
@@ -383,7 +383,6 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
   scoped_refptr<HistoryBackendMock> history_backend_;
   std::unique_ptr<HistoryServiceMock> history_service_;
   syncer::DataTypeErrorHandlerMock error_handler_;
-  TypedUrlDataTypeController* data_type_controller;
   std::unique_ptr<TestTypedUrlSyncableService> syncable_service_;
   std::unique_ptr<sync_driver::FakeSyncClient> sync_client_;
 

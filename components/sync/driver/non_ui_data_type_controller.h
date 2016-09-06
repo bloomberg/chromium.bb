@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SYNC_DRIVER_NON_UI_DATA_TYPE_CONTROLLER_H_
 #define COMPONENTS_SYNC_DRIVER_NON_UI_DATA_TYPE_CONTROLLER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
@@ -24,28 +25,24 @@ class SyncClient;
 
 class NonUIDataTypeController : public DirectoryDataTypeController {
  public:
-  NonUIDataTypeController(
-      const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
-      const base::Closure& error_callback,
-      SyncClient* sync_client);
+  // |dump_stack| is called when an unrecoverable error occurs.
+  NonUIDataTypeController(syncer::ModelType type,
+                          const base::Closure& dump_stack,
+                          SyncClient* sync_client);
+  ~NonUIDataTypeController() override;
 
   // DataTypeController interface.
   void LoadModels(const ModelLoadCallback& model_load_callback) override;
   void StartAssociating(const StartCallback& start_callback) override;
   void Stop() override;
-  syncer::ModelType type() const override = 0;
   syncer::ModelSafeGroup model_safe_group() const override = 0;
   ChangeProcessor* GetChangeProcessor() const override;
   std::string name() const override;
   State state() const override;
-  void OnSingleDataTypeUnrecoverableError(
-      const syncer::SyncError& error) override;
 
  protected:
   // For testing only.
   NonUIDataTypeController();
-  // DataTypeController is RefCounted.
-  ~NonUIDataTypeController() override;
 
   // Start any dependent services that need to be running before we can
   // associate models. The default implementation is a no-op.
@@ -87,6 +84,8 @@ class NonUIDataTypeController : public DirectoryDataTypeController {
   // loaded the datatype service will call this function on DTC to let
   // us know that it is safe to start associating.
   void OnModelLoaded();
+
+  std::unique_ptr<syncer::DataTypeErrorHandler> CreateErrorHandler() override;
 
  private:
   // Posted on the backend thread by StartAssociationAsync().
@@ -132,8 +131,6 @@ class NonUIDataTypeController : public DirectoryDataTypeController {
   // since we call Disconnect() before releasing the UI thread
   // reference).
   scoped_refptr<SharedChangeProcessor> shared_change_processor_;
-
-  scoped_refptr<base::SingleThreadTaskRunner> ui_thread_;
 };
 
 }  // namespace sync_driver

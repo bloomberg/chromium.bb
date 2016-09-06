@@ -19,21 +19,12 @@ namespace browser_sync {
 
 ExtensionSettingDataTypeController::ExtensionSettingDataTypeController(
     syncer::ModelType type,
-    const base::Closure& error_callback,
+    const base::Closure& dump_stack,
     sync_driver::SyncClient* sync_client,
     Profile* profile)
-    : NonUIDataTypeController(
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
-          error_callback,
-          sync_client),
-      type_(type),
+    : NonUIDataTypeController(type, dump_stack, sync_client),
       profile_(profile) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(type == syncer::EXTENSION_SETTINGS || type == syncer::APP_SETTINGS);
-}
-
-syncer::ModelType ExtensionSettingDataTypeController::type() const {
-  return type_;
 }
 
 syncer::ModelSafeGroup
@@ -46,12 +37,12 @@ ExtensionSettingDataTypeController::~ExtensionSettingDataTypeController() {}
 bool ExtensionSettingDataTypeController::PostTaskOnBackendThread(
     const tracked_objects::Location& from_here,
     const base::Closure& task) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(CalledOnValidThread());
   return BrowserThread::PostTask(BrowserThread::FILE, from_here, task);
 }
 
 bool ExtensionSettingDataTypeController::StartModels() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(CalledOnValidThread());
   extensions::ExtensionSystem::Get(profile_)->InitForRegularProfile(true);
   return true;
 }

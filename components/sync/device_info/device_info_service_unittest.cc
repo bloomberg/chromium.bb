@@ -16,12 +16,12 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "components/sync/api/data_batch.h"
+#include "components/sync/api/data_type_error_handler_mock.h"
 #include "components/sync/api/entity_data.h"
 #include "components/sync/api/fake_model_type_change_processor.h"
 #include "components/sync/api/metadata_batch.h"
 #include "components/sync/api/model_type_store.h"
 #include "components/sync/base/time.h"
-#include "components/sync/core/test/data_type_error_handler_mock.h"
 #include "components/sync/core/test/model_type_store_test_util.h"
 #include "components/sync/device_info/local_device_info_provider_mock.h"
 #include "components/sync/protocol/data_type_state.pb.h"
@@ -217,7 +217,8 @@ class DeviceInfoServiceTest : public testing::Test,
   }
 
   void OnSyncStarting() {
-    service()->OnSyncStarting(&error_handler_, StartCallback());
+    service()->OnSyncStarting(
+        base::MakeUnique<syncer::DataTypeErrorHandlerMock>(), StartCallback());
   }
 
   // Creates the service and runs any outstanding tasks. This will typically
@@ -322,9 +323,6 @@ class DeviceInfoServiceTest : public testing::Test,
   std::unique_ptr<ModelTypeStore> store_;
 
   std::unique_ptr<LocalDeviceInfoProviderMock> local_device_;
-
-  // Mock error handler passed to the processor.
-  syncer::DataTypeErrorHandlerMock error_handler_;
 
   // Not initialized immediately (upon test's constructor). This allows each
   // test case to modify the dependencies the service will be constructed with.

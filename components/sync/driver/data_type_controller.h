@@ -6,20 +6,16 @@
 #define COMPONENTS_SYNC_DRIVER_DATA_TYPE_CONTROLLER_H__
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/location.h"
-#include "base/memory/ref_counted.h"
-#include "base/memory/ref_counted_delete_on_message_loop.h"
-#include "base/sequenced_task_runner_helpers.h"
+#include "base/memory/weak_ptr.h"
+#include "base/threading/thread_checker.h"
+#include "components/sync/api/data_type_error_handler.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/unrecoverable_error_handler.h"
-#include "components/sync/core/data_type_error_handler.h"
-
-namespace base {
-class SingleThreadTaskRunner;
-}
 
 namespace syncer {
 class SyncError;
@@ -29,11 +25,9 @@ class SyncMergeResult;
 namespace sync_driver {
 class BackendDataTypeConfigurer;
 
-// Data type controllers need to be refcounted threadsafe, as they may
-// need to run model associator or change processor on other threads.
-class DataTypeController
-    : public base::RefCountedDeleteOnMessageLoop<DataTypeController>,
-      public syncer::DataTypeErrorHandler {
+// DataTypeControllers are responsible for managing the state of a single data
+// type. They are not thread safe and should only be used on the UI thread.
+class DataTypeController : public base::SupportsWeakPtr<DataTypeController> {
  public:
   enum State {
     NOT_RUNNING,     // The controller has never been started or has previously
@@ -73,14 +67,14 @@ class DataTypeController
                               const syncer::SyncMergeResult&)>
       StartCallback;
 
-  typedef base::Callback<void(syncer::ModelType, syncer::SyncError)>
+  typedef base::Callback<void(syncer::ModelType, const syncer::SyncError&)>
       ModelLoadCallback;
 
   typedef base::Callback<void(const syncer::ModelType,
                               std::unique_ptr<base::ListValue>)>
       AllNodesCallback;
 
-  typedef std::map<syncer::ModelType, scoped_refptr<DataTypeController>>
+  typedef std::map<syncer::ModelType, std::unique_ptr<DataTypeController>>
       TypeMap;
   typedef std::map<syncer::ModelType, DataTypeController::State> StateMap;
 
@@ -90,6 +84,8 @@ class DataTypeController
 
   // Returns true if the datatype started successfully.
   static bool IsSuccessfulResult(ConfigureResult result);
+
+  virtual ~DataTypeController();
 
   // Returns true if DataTypeManager should wait for LoadModels to complete
   // successfully before starting configuration. Directory based types should
@@ -134,21 +130,14 @@ class DataTypeController
   // propagate from sync again from point where Stop() is called.
   virtual void Stop() = 0;
 
-  // Unique model type for this data type controller.
-  virtual syncer::ModelType type() const = 0;
-
   // Name of this data type.  For logging purposes only.
   virtual std::string name() const = 0;
 
   // Current state of the data type controller.
   virtual State state() const = 0;
 
-  // Partial implementation of DataTypeErrorHandler.
-  // This is thread safe.
-  syncer::SyncError CreateAndUploadError(
-      const tracked_objects::Location& location,
-      const std::string& message,
-      syncer::ModelType type) override;
+  // Unique model type for this data type controller.
+  syncer::ModelType type() const { return type_; }
 
   // Whether the DataTypeController is ready to start. This is useful if the
   // datatype itself must make the decision about whether it should be enabled
@@ -163,25 +152,24 @@ class DataTypeController
   virtual void GetAllNodes(const AllNodesCallback& callback) = 0;
 
  protected:
-  friend class base::RefCountedDeleteOnMessageLoop<DataTypeController>;
-  friend class base::DeleteHelper<DataTypeController>;
+  DataTypeController(syncer::ModelType type, const base::Closure& dump_stack);
 
-  DataTypeController(
-      const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
-      const base::Closure& error_callback);
+  // Create an error handler that reports back to this controller.
+  virtual std::unique_ptr<syncer::DataTypeErrorHandler>
+  CreateErrorHandler() = 0;
 
-  ~DataTypeController() override;
+  // Allows subclasses to DCHECK that they're on the correct thread.
+  bool CalledOnValidThread() const;
 
-  const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread() const {
-    return ui_thread_;
-  }
-
-  // The callback that will be invoked when an unrecoverable error occurs.
-  // TODO(sync): protected for use by legacy controllers.
-  base::Closure error_callback_;
+  // Callback to dump and upload a stack trace when an error occurs.
+  base::Closure dump_stack_;
 
  private:
-  const scoped_refptr<base::SingleThreadTaskRunner> ui_thread_;
+  // The type this object is responsible for controlling.
+  const syncer::ModelType type_;
+
+  // Used to check that functions are called on the correct thread.
+  base::ThreadChecker thread_checker_;
 };
 
 }  // namespace sync_driver

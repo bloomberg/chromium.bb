@@ -16,6 +16,7 @@ namespace sync_driver {
 class NonUIDataTypeControllerMock : public NonUIDataTypeController {
  public:
   NonUIDataTypeControllerMock();
+  virtual ~NonUIDataTypeControllerMock();
 
   // DataTypeController mocks.
   MOCK_METHOD1(StartAssociating, void(const StartCallback& start_callback));
@@ -25,8 +26,6 @@ class NonUIDataTypeControllerMock : public NonUIDataTypeController {
   MOCK_CONST_METHOD0(name, std::string());
   MOCK_CONST_METHOD0(model_safe_group, syncer::ModelSafeGroup());
   MOCK_CONST_METHOD0(state, State());
-  MOCK_METHOD1(OnSingleDataTypeUnrecoverableError,
-               void(const syncer::SyncError& error));
 
   // NonUIDataTypeController mocks.
   MOCK_METHOD0(StartModels, bool());
@@ -38,9 +37,6 @@ class NonUIDataTypeControllerMock : public NonUIDataTypeController {
                     const syncer::SyncMergeResult& local_merge_result,
                     const syncer::SyncMergeResult& syncer_merge_result));
   MOCK_METHOD1(RecordStartFailure, void(ConfigureResult result));
-
- protected:
-  virtual ~NonUIDataTypeControllerMock();
 };
 
 }  // namespace sync_driver

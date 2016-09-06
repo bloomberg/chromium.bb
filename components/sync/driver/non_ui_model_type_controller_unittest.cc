@@ -34,16 +34,13 @@ namespace {
 class TestNonUIModelTypeController : public NonUIModelTypeController {
  public:
   TestNonUIModelTypeController(
-      const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
-      const scoped_refptr<base::TaskRunner>& model_task_runner,
-      const base::Closure& error_callback,
       syncer::ModelType model_type,
+      const scoped_refptr<base::TaskRunner>& model_task_runner,
+      const base::Closure& dump_stack,
       sync_driver::SyncClient* sync_client)
-      : NonUIModelTypeController(ui_thread,
-                                 error_callback,
-                                 model_type,
-                                 sync_client),
+      : NonUIModelTypeController(model_type, dump_stack, sync_client),
         model_task_runner_(model_task_runner) {}
+  ~TestNonUIModelTypeController() override {}
 
   bool RunOnModelThread(const tracked_objects::Location& from_here,
                         const base::Closure& task) override {
@@ -52,8 +49,6 @@ class TestNonUIModelTypeController : public NonUIModelTypeController {
   }
 
  private:
-  ~TestNonUIModelTypeController() override {}
-
   scoped_refptr<base::TaskRunner> model_task_runner_;
 };
 
@@ -159,14 +154,12 @@ class NonUIModelTypeControllerTest : public testing::Test,
     model_thread_.Start();
     model_thread_runner_ = model_thread_.task_runner();
     InitializeModelTypeService();
-    controller_ = new TestNonUIModelTypeController(
-        ui_loop_.task_runner(), model_thread_runner_, base::Closure(),
-        syncer::DICTIONARY, this);
+    controller_.reset(new TestNonUIModelTypeController(
+        syncer::DICTIONARY, model_thread_runner_, base::Closure(), this));
   }
 
   void TearDown() override {
     ClearModelTypeService();
-    controller_ = NULL;
     RunQueuedUIThreadTasks();
   }
 
@@ -295,7 +288,7 @@ class NonUIModelTypeControllerTest : public testing::Test,
     auto_run_tasks_ = auto_run_tasks;
   }
 
-  void LoadModelsDone(syncer::ModelType type, syncer::SyncError error) {
+  void LoadModelsDone(syncer::ModelType type, const syncer::SyncError& error) {
     load_models_callback_called_ = true;
     load_models_error_ = error;
   }
@@ -308,7 +301,7 @@ class NonUIModelTypeControllerTest : public testing::Test,
   }
 
   syncer_v2::SharedModelTypeProcessor* type_processor_;
-  scoped_refptr<TestNonUIModelTypeController> controller_;
+  std::unique_ptr<TestNonUIModelTypeController> controller_;
 
   bool auto_run_tasks_;
   bool load_models_callback_called_;

@@ -612,17 +612,15 @@ class ProfileSyncServiceAutofillTest
     EXPECT_CALL(autofill_table_, UpdateAutofillEntries(Not(empty))).Times(0);
   }
 
-  sync_driver::DataTypeController* CreateDataTypeController(
+  std::unique_ptr<sync_driver::DataTypeController> CreateDataTypeController(
       syncer::ModelType type) {
     DCHECK(type == AUTOFILL || type == AUTOFILL_PROFILE);
     if (type == AUTOFILL) {
-      return new AutofillDataTypeController(base::ThreadTaskRunnerHandle::Get(),
-                                            data_type_thread()->task_runner(),
-                                            base::Bind(&base::DoNothing),
-                                            sync_client_, web_data_service_);
+      return base::MakeUnique<AutofillDataTypeController>(
+          data_type_thread()->task_runner(), base::Bind(&base::DoNothing),
+          sync_client_, web_data_service_);
     } else {
-      return new AutofillProfileDataTypeController(
-          base::ThreadTaskRunnerHandle::Get(),
+      return base::MakeUnique<AutofillProfileDataTypeController>(
           data_type_thread()->task_runner(), base::Bind(&base::DoNothing),
           sync_client_, web_data_service_);
     }

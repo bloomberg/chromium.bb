@@ -27,9 +27,6 @@ SyncApiComponentFactoryMock::SyncApiComponentFactoryMock(
     : model_associator_(model_associator),
       change_processor_(change_processor),
       local_device_(new sync_driver::LocalDeviceInfoProviderMock()) {
-  ON_CALL(*this, CreateBookmarkSyncComponents(_, _))
-      .WillByDefault(InvokeWithoutArgs(
-          this, &SyncApiComponentFactoryMock::MakeSyncComponents));
 }
 
 SyncApiComponentFactoryMock::~SyncApiComponentFactoryMock() {}
@@ -42,6 +39,13 @@ SyncApiComponentFactoryMock::CreateAttachmentService(
     syncer::ModelType model_type,
     syncer::AttachmentService::Delegate* delegate) {
   return syncer::AttachmentServiceImpl::CreateForTest();
+}
+
+sync_driver::SyncApiComponentFactory::SyncComponents
+SyncApiComponentFactoryMock::CreateBookmarkSyncComponents(
+    sync_driver::SyncService* sync_service,
+    std::unique_ptr<syncer::DataTypeErrorHandler> error_handler) {
+  return MakeSyncComponents();
 }
 
 sync_driver::SyncApiComponentFactory::SyncComponents

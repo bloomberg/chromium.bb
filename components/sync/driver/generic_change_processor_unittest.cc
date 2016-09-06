@@ -16,6 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "components/sync/api/attachments/attachment_id.h"
 #include "components/sync/api/attachments/attachment_store.h"
+#include "components/sync/api/data_type_error_handler_mock.h"
 #include "components/sync/api/fake_syncable_service.h"
 #include "components/sync/api/sync_change.h"
 #include "components/sync/api/sync_merge_result.h"
@@ -26,7 +27,6 @@
 #include "components/sync/core/read_node.h"
 #include "components/sync/core/read_transaction.h"
 #include "components/sync/core/sync_encryption_handler.h"
-#include "components/sync/core/test/data_type_error_handler_mock.h"
 #include "components/sync/core/test/test_user_share.h"
 #include "components/sync/core/user_share.h"
 #include "components/sync/core/write_node.h"
@@ -111,7 +111,7 @@ class MockSyncApiComponentFactory : public SyncApiComponentFactory {
   }
   SyncComponents CreateBookmarkSyncComponents(
       sync_driver::SyncService* sync_service,
-      syncer::DataTypeErrorHandler* error_handler) override {
+      std::unique_ptr<syncer::DataTypeErrorHandler> error_handler) override {
     return SyncComponents(nullptr, nullptr);
   }
 
@@ -189,7 +189,7 @@ class SyncGenericChangeProcessorTest : public testing::Test {
     std::unique_ptr<syncer::AttachmentStore> attachment_store =
         syncer::AttachmentStore::CreateInMemoryStore();
     change_processor_.reset(new GenericChangeProcessor(
-        type, &data_type_error_handler_,
+        type, base::MakeUnique<syncer::DataTypeErrorHandlerMock>(),
         syncable_service_ptr_factory_.GetWeakPtr(),
         merge_result_ptr_factory_->GetWeakPtr(), test_user_share_->user_share(),
         &sync_client_, attachment_store->CreateAttachmentStoreForSync()));
@@ -228,7 +228,6 @@ class SyncGenericChangeProcessorTest : public testing::Test {
   base::WeakPtrFactory<syncer::FakeSyncableService>
       syncable_service_ptr_factory_;
 
-  syncer::DataTypeErrorHandlerMock data_type_error_handler_;
   std::unique_ptr<syncer::TestUserShare> test_user_share_;
   MockAttachmentService* mock_attachment_service_;
   FakeSyncClient sync_client_;

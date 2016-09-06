@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -28,6 +29,18 @@ using testing::Return;
 namespace sync_driver {
 namespace {
 
+class UIDataTypeControllerFake : public UIDataTypeController {
+ public:
+  UIDataTypeControllerFake(syncer::ModelType type,
+                           const base::Closure& dump_stack,
+                           SyncClient* sync_client)
+      : UIDataTypeController(type, dump_stack, sync_client) {}
+
+  void OnUnrecoverableError(const syncer::SyncError& error) {
+    CreateErrorHandler()->OnUnrecoverableError(error);
+  }
+};
+
 // TODO(zea): Expand this to make the dtc type paramterizable. This will let us
 // test the basic functionality of all UIDataTypeControllers. We'll need to have
 // intelligent default values for the methods queried in the dependent services
@@ -45,8 +58,8 @@ class SyncUIDataTypeControllerTest : public testing::Test,
   }
 
   void SetUp() override {
-    preference_dtc_ = new UIDataTypeController(
-        base::ThreadTaskRunnerHandle::Get(), base::Closure(), type_, this);
+    preference_dtc_ = base::MakeUnique<UIDataTypeControllerFake>(
+        type_, base::Closure(), this);
     SetStartExpectations();
   }
 
@@ -78,13 +91,13 @@ class SyncUIDataTypeControllerTest : public testing::Test,
 
   void PumpLoop() { base::RunLoop().RunUntilIdle(); }
 
-  base::MessageLoopForUI message_loop_;
+  base::MessageLoop message_loop_;
   const syncer::ModelType type_;
   StartCallbackMock start_callback_;
   ModelLoadCallbackMock model_load_callback_;
-  scoped_refptr<UIDataTypeController> preference_dtc_;
   FakeGenericChangeProcessor* change_processor_;
   syncer::FakeSyncableService syncable_service_;
+  std::unique_ptr<UIDataTypeControllerFake> preference_dtc_;
 };
 
 // Start the DTC. Verify that the callback is called with OK, the
@@ -121,7 +134,8 @@ TEST_F(SyncUIDataTypeControllerTest, StartStopBeforeAssociation) {
   EXPECT_EQ(DataTypeController::NOT_RUNNING, preference_dtc_->state());
   EXPECT_FALSE(syncable_service_.syncing());
   message_loop_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&UIDataTypeController::Stop, preference_dtc_));
+      FROM_HERE, base::Bind(&UIDataTypeController::Stop,
+                            base::AsWeakPtr(preference_dtc_.get())));
   Start();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, preference_dtc_->state());
   EXPECT_FALSE(syncable_service_.syncing());
@@ -192,7 +206,8 @@ TEST_F(SyncUIDataTypeControllerTest, OnSingleDatatypeUnrecoverableError) {
   EXPECT_CALL(model_load_callback_, Run(_, _));
   syncer::SyncError error(FROM_HERE, syncer::SyncError::DATATYPE_ERROR, "error",
                           syncer::PREFERENCES);
-  preference_dtc_->OnSingleDataTypeUnrecoverableError(error);
+  preference_dtc_->OnUnrecoverableError(error);
+  PumpLoop();
 }
 
 }  // namespace

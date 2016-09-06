@@ -17,6 +17,8 @@ class ChangeProcessor;
 // Base class for Directory based Data type controllers.
 class DirectoryDataTypeController : public DataTypeController {
  public:
+  ~DirectoryDataTypeController() override;
+
   // DataTypeController implementation.
   bool ShouldLoadModelBeforeConfigure() const override;
   void GetAllNodes(const AllNodesCallback& callback) override;
@@ -47,6 +49,11 @@ class DirectoryDataTypeController : public DataTypeController {
       syncer::syncable::Directory* directory);
 
  protected:
+  // |dump_stack| is called when an unrecoverable error occurs.
+  DirectoryDataTypeController(syncer::ModelType type,
+                              const base::Closure& dump_stack,
+                              SyncClient* sync_client);
+
   // The model safe group of this data type.  This should reflect the
   // thread that should be used to modify the data type's native
   // model.
@@ -55,13 +62,6 @@ class DirectoryDataTypeController : public DataTypeController {
   // Access to the ChangeProcessor for the type being controlled by |this|.
   // Returns NULL if the ChangeProcessor isn't created or connected.
   virtual ChangeProcessor* GetChangeProcessor() const = 0;
-
-  DirectoryDataTypeController(
-      const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
-      const base::Closure& error_callback,
-      SyncClient* sync_client);
-
-  ~DirectoryDataTypeController() override;
 
   SyncClient* const sync_client_;
 };

@@ -262,8 +262,9 @@ void ModelAssociationManager::Stop() {
   }
 }
 
-void ModelAssociationManager::ModelLoadCallback(syncer::ModelType type,
-                                                syncer::SyncError error) {
+void ModelAssociationManager::ModelLoadCallback(
+    syncer::ModelType type,
+    const syncer::SyncError& error) {
   DVLOG(1) << "ModelAssociationManager: ModelLoadCallback for "
            << syncer::ModelTypeToString(type);
 

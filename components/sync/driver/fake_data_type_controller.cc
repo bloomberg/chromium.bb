@@ -4,7 +4,10 @@
 
 #include "components/sync/driver/fake_data_type_controller.h"
 
+#include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/sync/api/data_type_error_handler_impl.h"
 #include "components/sync/api/sync_merge_result.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -14,12 +17,9 @@ using syncer::ModelType;
 namespace sync_driver {
 
 FakeDataTypeController::FakeDataTypeController(ModelType type)
-    : DirectoryDataTypeController(base::ThreadTaskRunnerHandle::Get(),
-                                  base::Closure(),
-                                  nullptr),
+    : DirectoryDataTypeController(type, base::Closure(), nullptr),
       state_(NOT_RUNNING),
       model_load_delayed_(false),
-      type_(type),
       ready_for_start_(true),
       should_load_model_before_configure_(false),
       register_with_backend_call_count_(0) {}
@@ -33,6 +33,7 @@ bool FakeDataTypeController::ShouldLoadModelBeforeConfigure() const {
 // NOT_RUNNING ->MODEL_LOADED |MODEL_STARTING.
 void FakeDataTypeController::LoadModels(
     const ModelLoadCallback& model_load_callback) {
+  DCHECK(CalledOnValidThread());
   model_load_callback_ = model_load_callback;
   if (state_ != NOT_RUNNING) {
     ADD_FAILURE();
@@ -58,6 +59,7 @@ void FakeDataTypeController::RegisterWithBackend(
 // MODEL_LOADED -> MODEL_STARTING.
 void FakeDataTypeController::StartAssociating(
     const StartCallback& start_callback) {
+  DCHECK(CalledOnValidThread());
   last_start_callback_ = start_callback;
   state_ = ASSOCIATING;
 }
@@ -65,6 +67,7 @@ void FakeDataTypeController::StartAssociating(
 // MODEL_STARTING | ASSOCIATING -> RUNNING | DISABLED | NOT_RUNNING
 // (depending on |result|)
 void FakeDataTypeController::FinishStart(ConfigureResult result) {
+  DCHECK(CalledOnValidThread());
   // We should have a callback from Start().
   if (last_start_callback_.is_null()) {
     ADD_FAILURE();
@@ -98,6 +101,7 @@ void FakeDataTypeController::FinishStart(ConfigureResult result) {
 
 // * -> NOT_RUNNING
 void FakeDataTypeController::Stop() {
+  DCHECK(CalledOnValidThread());
   if (!model_load_callback_.is_null()) {
     // Real data type controllers run the callback and specify "ABORTED" as an
     // error.  We should probably find a way to use the real code and mock out
@@ -107,12 +111,8 @@ void FakeDataTypeController::Stop() {
   state_ = NOT_RUNNING;
 }
 
-ModelType FakeDataTypeController::type() const {
-  return type_;
-}
-
 std::string FakeDataTypeController::name() const {
-  return ModelTypeToString(type_);
+  return ModelTypeToString(type());
 }
 
 syncer::ModelSafeGroup FakeDataTypeController::model_safe_group() const {
@@ -125,12 +125,6 @@ ChangeProcessor* FakeDataTypeController::GetChangeProcessor() const {
 
 DataTypeController::State FakeDataTypeController::state() const {
   return state_;
-}
-
-void FakeDataTypeController::OnSingleDataTypeUnrecoverableError(
-    const syncer::SyncError& error) {
-  if (!model_load_callback_.is_null())
-    model_load_callback_.Run(type(), error);
 }
 
 bool FakeDataTypeController::ReadyForStart() const {
@@ -159,6 +153,14 @@ void FakeDataTypeController::SetReadyForStart(bool ready) {
 
 void FakeDataTypeController::SetShouldLoadModelBeforeConfigure(bool value) {
   should_load_model_before_configure_ = value;
+}
+
+std::unique_ptr<syncer::DataTypeErrorHandler>
+FakeDataTypeController::CreateErrorHandler() {
+  DCHECK(CalledOnValidThread());
+  return base::MakeUnique<syncer::DataTypeErrorHandlerImpl>(
+      base::ThreadTaskRunnerHandle::Get(), base::Closure(),
+      base::Bind(model_load_callback_, type()));
 }
 
 }  // namespace sync_driver

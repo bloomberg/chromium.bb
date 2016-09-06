@@ -6,9 +6,10 @@
 #define COMPONENTS_SYNC_DRIVER_SYNC_API_COMPONENT_FACTORY_MOCK_H__
 
 #include <memory>
+#include <string>
 
+#include "components/sync/api/data_type_error_handler.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/core/data_type_error_handler.h"
 #include "components/sync/driver/data_type_controller.h"
 #include "components/sync/driver/sync_api_component_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -58,13 +59,9 @@ class SyncApiComponentFactoryMock
       const std::string& store_birthday,
       syncer::ModelType model_type,
       syncer::AttachmentService::Delegate* delegate) override;
-  MOCK_METHOD2(CreateBookmarkSyncComponents,
-               SyncComponents(sync_driver::SyncService* sync_service,
-                              syncer::DataTypeErrorHandler* error_handler));
-  MOCK_METHOD3(CreateTypedUrlSyncComponents,
-               SyncComponents(sync_driver::SyncService* sync_service,
-                              history::HistoryBackend* history_backend,
-                              syncer::DataTypeErrorHandler* error_handler));
+  SyncComponents CreateBookmarkSyncComponents(
+      sync_driver::SyncService* sync_service,
+      std::unique_ptr<syncer::DataTypeErrorHandler> error_handler) override;
 
  private:
   sync_driver::SyncApiComponentFactory::SyncComponents MakeSyncComponents();

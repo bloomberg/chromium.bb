@@ -13,30 +13,19 @@ namespace sync_driver_v2 {
 
 using sync_driver::SyncClient;
 
-UIModelTypeController::UIModelTypeController(
-    const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
-    const base::Closure& error_callback,
-    syncer::ModelType model_type,
-    SyncClient* sync_client)
-    : NonBlockingDataTypeController(ui_thread,
-                                    error_callback,
-                                    model_type,
-                                    sync_client) {}
+UIModelTypeController::UIModelTypeController(syncer::ModelType type,
+                                             const base::Closure& dump_stack,
+                                             SyncClient* sync_client)
+    : NonBlockingDataTypeController(type, dump_stack, sync_client) {}
 
 UIModelTypeController::~UIModelTypeController() {}
 
 bool UIModelTypeController::RunOnModelThread(
     const tracked_objects::Location& from_here,
     const base::Closure& task) {
-  RunOnUIThread(from_here, task);
-  return true;
-}
-
-void UIModelTypeController::RunOnUIThread(
-    const tracked_objects::Location& from_here,
-    const base::Closure& task) {
-  DCHECK(BelongsToUIThread());
+  DCHECK(CalledOnValidThread());
   task.Run();
+  return true;
 }
 
 }  // namespace sync_driver_v2

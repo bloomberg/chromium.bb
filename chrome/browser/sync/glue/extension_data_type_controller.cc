@@ -6,30 +6,23 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/profiles/profile.h"
-#include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_system.h"
-
-using content::BrowserThread;
 
 namespace browser_sync {
 
 ExtensionDataTypeController::ExtensionDataTypeController(
     syncer::ModelType type,
-    const base::Closure& error_callback,
+    const base::Closure& dump_stack,
     sync_driver::SyncClient* sync_client,
     Profile* profile)
-    : UIDataTypeController(
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
-          error_callback,
-          type,
-          sync_client),
-      profile_(profile) {
+    : UIDataTypeController(type, dump_stack, sync_client), profile_(profile) {
   DCHECK(type == syncer::EXTENSIONS || type == syncer::APPS);
 }
 
 ExtensionDataTypeController::~ExtensionDataTypeController() {}
 
 bool ExtensionDataTypeController::StartModels() {
+  DCHECK(CalledOnValidThread());
   extensions::ExtensionSystem::Get(profile_)->InitForRegularProfile(true);
   return true;
 }

@@ -54,7 +54,6 @@ class ExtensionSessionsTest;
 
 namespace browser_sync {
 
-class DataTypeErrorHandler;
 class SyncedTabDelegate;
 class SyncedWindowDelegatesGetter;
 

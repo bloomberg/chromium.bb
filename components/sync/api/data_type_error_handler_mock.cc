@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/core/test/data_type_error_handler_mock.h"
+#include "components/sync/api/data_type_error_handler_mock.h"
 
 namespace syncer {
 
@@ -12,8 +12,7 @@ DataTypeErrorHandlerMock::~DataTypeErrorHandlerMock() {
   DCHECK_EQ(SyncError::UNSET, expected_error_type_);
 }
 
-void DataTypeErrorHandlerMock::OnSingleDataTypeUnrecoverableError(
-    const SyncError& error) {
+void DataTypeErrorHandlerMock::OnUnrecoverableError(const SyncError& error) {
   DCHECK_NE(SyncError::UNSET, expected_error_type_);
   DCHECK(error.IsSet());
   DCHECK_EQ(expected_error_type_, error.error_type());
@@ -30,6 +29,10 @@ SyncError DataTypeErrorHandlerMock::CreateAndUploadError(
 void DataTypeErrorHandlerMock::ExpectError(SyncError::ErrorType error_type) {
   DCHECK_EQ(SyncError::UNSET, expected_error_type_);
   expected_error_type_ = error_type;
+}
+
+std::unique_ptr<DataTypeErrorHandler> DataTypeErrorHandlerMock::Copy() const {
+  return nullptr;
 }
 
 }  // namespace syncer

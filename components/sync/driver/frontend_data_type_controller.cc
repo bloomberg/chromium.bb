@@ -5,7 +5,9 @@
 #include "components/sync/driver/frontend_data_type_controller.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/sync/api/data_type_error_handler_impl.h"
 #include "components/sync/api/sync_error.h"
 #include "components/sync/api/sync_merge_result.h"
 #include "components/sync/base/data_type_histogram.h"
@@ -18,18 +20,18 @@
 namespace browser_sync {
 
 FrontendDataTypeController::FrontendDataTypeController(
-    const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
-    const base::Closure& error_callback,
+    syncer::ModelType type,
+    const base::Closure& dump_stack,
     sync_driver::SyncClient* sync_client)
-    : DirectoryDataTypeController(ui_thread, error_callback, sync_client),
+    : DirectoryDataTypeController(type, dump_stack, sync_client),
       state_(NOT_RUNNING) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   DCHECK(sync_client);
 }
 
 void FrontendDataTypeController::LoadModels(
     const ModelLoadCallback& model_load_callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   model_load_callback_ = model_load_callback;
 
   if (state_ != NOT_RUNNING) {
@@ -52,7 +54,7 @@ void FrontendDataTypeController::LoadModels(
 }
 
 void FrontendDataTypeController::OnModelLoaded() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   DCHECK_EQ(state_, MODEL_STARTING);
 
   state_ = MODEL_LOADED;
@@ -61,7 +63,7 @@ void FrontendDataTypeController::OnModelLoaded() {
 
 void FrontendDataTypeController::StartAssociating(
     const StartCallback& start_callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   DCHECK(!start_callback.is_null());
   DCHECK_EQ(state_, MODEL_LOADED);
 
@@ -69,11 +71,12 @@ void FrontendDataTypeController::StartAssociating(
   state_ = ASSOCIATING;
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&FrontendDataTypeController::Associate, this));
+      FROM_HERE, base::Bind(&FrontendDataTypeController::Associate,
+                            base::AsWeakPtr(this)));
 }
 
 void FrontendDataTypeController::Stop() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
 
   if (state_ == NOT_RUNNING)
     return;
@@ -117,50 +120,24 @@ sync_driver::DataTypeController::State FrontendDataTypeController::state()
   return state_;
 }
 
-void FrontendDataTypeController::OnSingleDataTypeUnrecoverableError(
-    const syncer::SyncError& error) {
-  DCHECK_EQ(type(), error.model_type());
-  RecordUnrecoverableError(error.location(), error.message());
-  if (!model_load_callback_.is_null()) {
-    syncer::SyncMergeResult local_merge_result(type());
-    local_merge_result.set_error(error);
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(model_load_callback_, type(), error));
-  }
-}
-
 FrontendDataTypeController::FrontendDataTypeController()
-    : DirectoryDataTypeController(base::ThreadTaskRunnerHandle::Get(),
+    : DirectoryDataTypeController(syncer::UNSPECIFIED,
                                   base::Closure(),
                                   nullptr),
       state_(NOT_RUNNING) {}
 
-FrontendDataTypeController::~FrontendDataTypeController() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-}
+FrontendDataTypeController::~FrontendDataTypeController() {}
 
 bool FrontendDataTypeController::StartModels() {
+  DCHECK(CalledOnValidThread());
   DCHECK_EQ(state_, MODEL_STARTING);
   // By default, no additional services need to be started before we can proceed
   // with model association.
   return true;
 }
 
-void FrontendDataTypeController::RecordUnrecoverableError(
-    const tracked_objects::Location& from_here,
-    const std::string& message) {
-  DVLOG(1) << "Datatype Controller failed for type "
-           << ModelTypeToString(type()) << "  " << message << " at location "
-           << from_here.ToString();
-  UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeRunFailures",
-                            ModelTypeToHistogramInt(type()),
-                            syncer::MODEL_TYPE_COUNT);
-
-  if (!error_callback_.is_null())
-    error_callback_.Run();
-}
-
 void FrontendDataTypeController::Associate() {
+  DCHECK(CalledOnValidThread());
   if (state_ != ASSOCIATING) {
     // Stop() must have been called while Associate() task have been waiting.
     DCHECK_EQ(state_, NOT_RUNNING);
@@ -216,7 +193,7 @@ void FrontendDataTypeController::CleanUp() {
 }
 
 void FrontendDataTypeController::AbortModelLoad() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   CleanUp();
   state_ = NOT_RUNNING;
 }
@@ -225,11 +202,8 @@ void FrontendDataTypeController::StartDone(
     ConfigureResult start_result,
     const syncer::SyncMergeResult& local_merge_result,
     const syncer::SyncMergeResult& syncer_merge_result) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   if (!IsSuccessfulResult(start_result)) {
-    if (IsUnrecoverableResult(start_result))
-      RecordUnrecoverableError(FROM_HERE, "StartFailed");
-
     CleanUp();
     if (start_result == ASSOCIATION_FAILED) {
       state_ = DISABLED;
@@ -242,8 +216,25 @@ void FrontendDataTypeController::StartDone(
   start_callback_.Run(start_result, local_merge_result, syncer_merge_result);
 }
 
+std::unique_ptr<syncer::DataTypeErrorHandler>
+FrontendDataTypeController::CreateErrorHandler() {
+  return base::MakeUnique<syncer::DataTypeErrorHandlerImpl>(
+      base::ThreadTaskRunnerHandle::Get(), dump_stack_,
+      base::Bind(&FrontendDataTypeController::OnUnrecoverableError,
+                 base::AsWeakPtr(this)));
+}
+
+void FrontendDataTypeController::OnUnrecoverableError(
+    const syncer::SyncError& error) {
+  DCHECK(CalledOnValidThread());
+  DCHECK_EQ(type(), error.model_type());
+  if (!model_load_callback_.is_null()) {
+    model_load_callback_.Run(type(), error);
+  }
+}
+
 void FrontendDataTypeController::RecordAssociationTime(base::TimeDelta time) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
 #define PER_DATA_TYPE_MACRO(type_str) \
   UMA_HISTOGRAM_TIMES("Sync." type_str "AssociationTime", time);
   SYNC_DATA_TYPE_HISTOGRAM(type());
@@ -251,7 +242,7 @@ void FrontendDataTypeController::RecordAssociationTime(base::TimeDelta time) {
 }
 
 void FrontendDataTypeController::RecordStartFailure(ConfigureResult result) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeStartFailures",
                             ModelTypeToHistogramInt(type()),
                             syncer::MODEL_TYPE_COUNT);

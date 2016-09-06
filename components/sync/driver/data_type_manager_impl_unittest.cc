@@ -4,8 +4,12 @@
 
 #include "components/sync/driver/data_type_manager_impl.h"
 
+#include <memory>
+
 #include "base/compiler_specific.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/core/activation_context.h"
 #include "components/sync/core/configure_reason.h"
@@ -306,20 +310,19 @@ class SyncDataTypeManagerImplTest : public testing::Test {
   // Adds a fake controller for the given type to |controllers_|.
   // Should be called only before setting up the DTM.
   void AddController(ModelType model_type) {
-    controllers_[model_type] = new FakeDataTypeController(model_type);
+    controllers_[model_type] =
+        base::MakeUnique<FakeDataTypeController>(model_type);
   }
 
   // Gets the fake controller for the given type, which should have
   // been previously added via AddController().
-  scoped_refptr<FakeDataTypeController> GetController(
-      ModelType model_type) const {
+  FakeDataTypeController* GetController(ModelType model_type) const {
     DataTypeController::TypeMap::const_iterator it =
         controllers_.find(model_type);
     if (it == controllers_.end()) {
       return NULL;
     }
-    return make_scoped_refptr(
-        static_cast<FakeDataTypeController*>(it->second.get()));
+    return static_cast<FakeDataTypeController*>(it->second.get());
   }
 
   void FailEncryptionFor(ModelTypeSet encrypted_types) {
@@ -1365,9 +1368,10 @@ TEST_F(SyncDataTypeManagerImplTest, ErrorBeforeAssociation) {
                        ModelTypeSet()));
   Configure(dtm_.get(), ModelTypeSet(BOOKMARKS));
   FinishDownload(*dtm_, ModelTypeSet(), ModelTypeSet());
-  GetController(BOOKMARKS)->OnSingleDataTypeUnrecoverableError(
+  GetController(BOOKMARKS)->CreateErrorHandler()->OnUnrecoverableError(
       syncer::SyncError(FROM_HERE, SyncError::DATATYPE_ERROR, "bookmarks error",
                         BOOKMARKS));
+  base::RunLoop().RunUntilIdle();
   FinishDownload(*dtm_, ModelTypeSet(BOOKMARKS), ModelTypeSet());
   FinishDownload(*dtm_, ModelTypeSet(), ModelTypeSet());  // Reconfig for error.
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());

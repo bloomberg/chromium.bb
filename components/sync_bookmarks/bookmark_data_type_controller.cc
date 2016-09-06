@@ -15,21 +15,16 @@ using bookmarks::BookmarkModel;
 namespace browser_sync {
 
 BookmarkDataTypeController::BookmarkDataTypeController(
-    const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
-    const base::Closure& error_callback,
+    const base::Closure& dump_stack,
     sync_driver::SyncClient* sync_client)
-    : FrontendDataTypeController(ui_thread, error_callback, sync_client),
+    : FrontendDataTypeController(syncer::BOOKMARKS, dump_stack, sync_client),
       history_service_observer_(this),
       bookmark_model_observer_(this) {}
 
-syncer::ModelType BookmarkDataTypeController::type() const {
-  return syncer::BOOKMARKS;
-}
-
-BookmarkDataTypeController::~BookmarkDataTypeController() {
-}
+BookmarkDataTypeController::~BookmarkDataTypeController() {}
 
 bool BookmarkDataTypeController::StartModels() {
+  DCHECK(CalledOnValidThread());
   if (!DependentsLoaded()) {
     BookmarkModel* bookmark_model = sync_client_->GetBookmarkModel();
     bookmark_model_observer_.Add(bookmark_model);
@@ -42,14 +37,16 @@ bool BookmarkDataTypeController::StartModels() {
 }
 
 void BookmarkDataTypeController::CleanUpState() {
+  DCHECK(CalledOnValidThread());
   history_service_observer_.RemoveAll();
   bookmark_model_observer_.RemoveAll();
 }
 
 void BookmarkDataTypeController::CreateSyncComponents() {
+  DCHECK(CalledOnValidThread());
   sync_driver::SyncApiComponentFactory::SyncComponents sync_components =
       sync_client_->GetSyncApiComponentFactory()->CreateBookmarkSyncComponents(
-          sync_client_->GetSyncService(), this);
+          sync_client_->GetSyncService(), CreateErrorHandler());
   set_model_associator(sync_components.model_associator);
   set_change_processor(sync_components.change_processor);
 }
@@ -59,6 +56,7 @@ void BookmarkDataTypeController::BookmarkModelChanged() {
 
 void BookmarkDataTypeController::BookmarkModelLoaded(BookmarkModel* model,
                                                      bool ids_reassigned) {
+  DCHECK(CalledOnValidThread());
   DCHECK(model->loaded());
   bookmark_model_observer_.RemoveAll();
 
@@ -77,6 +75,7 @@ void BookmarkDataTypeController::BookmarkModelBeingDeleted(
 // Check that both the bookmark model and the history service (for favicons)
 // are loaded.
 bool BookmarkDataTypeController::DependentsLoaded() {
+  DCHECK(CalledOnValidThread());
   BookmarkModel* bookmark_model = sync_client_->GetBookmarkModel();
   if (!bookmark_model || !bookmark_model->loaded())
     return false;
@@ -91,6 +90,7 @@ bool BookmarkDataTypeController::DependentsLoaded() {
 
 void BookmarkDataTypeController::OnHistoryServiceLoaded(
     history::HistoryService* service) {
+  DCHECK(CalledOnValidThread());
   DCHECK_EQ(state_, MODEL_STARTING);
   history_service_observer_.RemoveAll();
 

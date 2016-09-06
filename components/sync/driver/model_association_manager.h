@@ -119,7 +119,8 @@ class ModelAssociationManager {
 
   // Callback that will be invoked when the models finish loading. This callback
   // will be passed to |LoadModels| function.
-  void ModelLoadCallback(syncer::ModelType type, syncer::SyncError error);
+  void ModelLoadCallback(syncer::ModelType type,
+                         const syncer::SyncError& error);
 
   // Called when all requested types are associated or association times out.
   // Will clean up any unfinished types, and update |state_| to be |new_state|

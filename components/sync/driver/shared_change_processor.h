@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SYNC_DRIVER_SHARED_CHANGE_PROCESSOR_H_
 #define COMPONENTS_SYNC_DRIVER_SHARED_CHANGE_PROCESSOR_H_
 
+#include <memory>
 #include <string>
 
 #include "base/location.h"
@@ -13,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
+#include "components/sync/api/data_type_error_handler.h"
 #include "components/sync/api/sync_change_processor.h"
 #include "components/sync/api/sync_data.h"
 #include "components/sync/api/sync_error.h"
@@ -22,7 +24,6 @@
 #include "components/sync/engine/model_safe_worker.h"
 
 namespace syncer {
-class DataTypeErrorHandler;
 class SyncableService;
 struct UserShare;
 }  // namespace syncer
@@ -63,10 +64,11 @@ class SharedChangeProcessor
   // Create an uninitialized SharedChangeProcessor.
   explicit SharedChangeProcessor(syncer::ModelType type);
 
-  void StartAssociation(StartDoneCallback start_done,
-                        SyncClient* const sync_client,
-                        syncer::UserShare* user_share,
-                        syncer::DataTypeErrorHandler* error_handler);
+  void StartAssociation(
+      StartDoneCallback start_done,
+      SyncClient* const sync_client,
+      syncer::UserShare* user_share,
+      std::unique_ptr<syncer::DataTypeErrorHandler> error_handler);
 
   // Connect to the Syncer and prepare to handle changes for |type|. Will
   // create and store a new GenericChangeProcessor and return a weak pointer to
@@ -77,7 +79,7 @@ class SharedChangeProcessor
       SyncClient* sync_client,
       GenericChangeProcessorFactory* processor_factory,
       syncer::UserShare* user_share,
-      syncer::DataTypeErrorHandler* error_handler,
+      std::unique_ptr<syncer::DataTypeErrorHandler> error_handler,
       const base::WeakPtr<syncer::SyncMergeResult>& merge_result);
 
   // Disconnects from the generic change processor. May be called from any
@@ -151,7 +153,7 @@ class SharedChangeProcessor
   // Used only on |backend_loop_|.
   GenericChangeProcessor* generic_change_processor_;
 
-  syncer::DataTypeErrorHandler* error_handler_;
+  std::unique_ptr<syncer::DataTypeErrorHandler> error_handler_;
 
   // The local service for this type. Only set if the DTC for the type uses
   // SharedChangeProcessor::StartAssociation().

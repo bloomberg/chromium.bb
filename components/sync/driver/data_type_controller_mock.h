@@ -28,7 +28,7 @@ class ModelLoadCallbackMock {
   ModelLoadCallbackMock();
   virtual ~ModelLoadCallbackMock();
 
-  MOCK_METHOD2(Run, void(syncer::ModelType, syncer::SyncError));
+  MOCK_METHOD2(Run, void(syncer::ModelType, const syncer::SyncError&));
 };
 
 }  // namespace sync_driver

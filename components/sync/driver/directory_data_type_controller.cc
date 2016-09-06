@@ -12,11 +12,10 @@
 namespace sync_driver {
 
 DirectoryDataTypeController::DirectoryDataTypeController(
-    const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
-    const base::Closure& error_callback,
+    syncer::ModelType type,
+    const base::Closure& dump_stack,
     SyncClient* sync_client)
-    : DataTypeController(ui_thread, error_callback),
-      sync_client_(sync_client) {}
+    : DataTypeController(type, dump_stack), sync_client_(sync_client) {}
 
 DirectoryDataTypeController::~DirectoryDataTypeController() {}
 
@@ -39,6 +38,7 @@ void DirectoryDataTypeController::RegisterWithBackend(
 
 void DirectoryDataTypeController::ActivateDataType(
     BackendDataTypeConfigurer* configurer) {
+  DCHECK(CalledOnValidThread());
   // Tell the backend about the change processor for this type so it can
   // begin routing changes to it.
   configurer->ActivateDirectoryDataType(type(), model_safe_group(),
@@ -47,6 +47,7 @@ void DirectoryDataTypeController::ActivateDataType(
 
 void DirectoryDataTypeController::DeactivateDataType(
     BackendDataTypeConfigurer* configurer) {
+  DCHECK(CalledOnValidThread());
   configurer->DeactivateDirectoryDataType(type());
 }
 

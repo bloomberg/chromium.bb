@@ -424,9 +424,10 @@ void ProfileSyncService::UnregisterAuthNotifications() {
 }
 
 void ProfileSyncService::RegisterDataTypeController(
-    sync_driver::DataTypeController* data_type_controller) {
+    std::unique_ptr<sync_driver::DataTypeController> data_type_controller) {
   DCHECK_EQ(data_type_controllers_.count(data_type_controller->type()), 0U);
-  data_type_controllers_[data_type_controller->type()] = data_type_controller;
+  data_type_controllers_[data_type_controller->type()] =
+      std::move(data_type_controller);
 }
 
 bool ProfileSyncService::IsDataTypeControllerRunning(

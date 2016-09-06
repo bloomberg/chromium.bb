@@ -2,28 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-#ifndef COMPONENTS_SYNC_CORE_TEST_DATA_TYPE_ERROR_HANDLER_MOCK_H__
-#define COMPONENTS_SYNC_CORE_TEST_DATA_TYPE_ERROR_HANDLER_MOCK_H__
+#ifndef COMPONENTS_SYNC_API_DATA_TYPE_ERROR_HANDLER_MOCK_H__
+#define COMPONENTS_SYNC_API_DATA_TYPE_ERROR_HANDLER_MOCK_H__
 
+#include <memory>
 #include <string>
 
+#include "components/sync/api/data_type_error_handler.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/core/data_type_error_handler.h"
 
 namespace syncer {
 
 // A mock DataTypeErrorHandler for testing. Set the expected error type with
-// ExpectError and OnSingleDataTypeUnrecoverableError will pass. If the error is
-// not called this object's destructor will DCHECK.
+// ExpectError and OnUnrecoverableError will pass. If the error is not called
+// this object's destructor will DCHECK.
 class DataTypeErrorHandlerMock : public DataTypeErrorHandler {
  public:
   DataTypeErrorHandlerMock();
   ~DataTypeErrorHandlerMock() override;
 
-  void OnSingleDataTypeUnrecoverableError(const SyncError& error) override;
+  void OnUnrecoverableError(const SyncError& error) override;
   SyncError CreateAndUploadError(const tracked_objects::Location& location,
                                  const std::string& message,
                                  ModelType type) override;
+  std::unique_ptr<DataTypeErrorHandler> Copy() const override;
 
   // Set the |error_type| to expect.
   void ExpectError(SyncError::ErrorType error_type);
@@ -35,4 +37,4 @@ class DataTypeErrorHandlerMock : public DataTypeErrorHandler {
 
 }  // namespace syncer
 
-#endif  // COMPONENTS_SYNC_CORE_TEST_DATA_TYPE_ERROR_HANDLER_MOCK_H__
+#endif  // COMPONENTS_SYNC_API_DATA_TYPE_ERROR_HANDLER_MOCK_H__

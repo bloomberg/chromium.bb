@@ -27,6 +27,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/test_message_loop.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
@@ -36,13 +37,13 @@
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
 #include "components/browser_sync/browser/profile_sync_test_util.h"
+#include "components/sync/api/data_type_error_handler.h"
+#include "components/sync/api/data_type_error_handler_mock.h"
 #include "components/sync/api/sync_error.h"
 #include "components/sync/api/sync_merge_result.h"
 #include "components/sync/core/change_record.h"
-#include "components/sync/core/data_type_error_handler.h"
 #include "components/sync/core/read_node.h"
 #include "components/sync/core/read_transaction.h"
-#include "components/sync/core/test/data_type_error_handler_mock.h"
 #include "components/sync/core/test/test_user_share.h"
 #include "components/sync/core/write_node.h"
 #include "components/sync/core/write_transaction.h"
@@ -545,7 +546,8 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
     // Set up model associator.
     model_associator_.reset(new BookmarkModelAssociator(
         model_.get(), sync_client_.get(), test_user_share_.user_share(),
-        &mock_error_handler_, kExpectMobileBookmarks));
+        base::MakeUnique<syncer::DataTypeErrorHandlerMock>(),
+        kExpectMobileBookmarks));
 
     local_merge_result_ = syncer::SyncMergeResult(syncer::BOOKMARKS);
     syncer_merge_result_ = syncer::SyncMergeResult(syncer::BOOKMARKS);
@@ -787,12 +789,15 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
   void delete_change_processor() { change_processor_.reset(); }
 
   void ResetChangeProcessor() {
+    std::unique_ptr<syncer::DataTypeErrorHandlerMock> error_handler =
+        base::MakeUnique<syncer::DataTypeErrorHandlerMock>();
+    mock_error_handler_ = error_handler.get();
     change_processor_ = base::MakeUnique<BookmarkChangeProcessor>(
-        sync_client_.get(), model_associator_.get(), &mock_error_handler_);
+        sync_client_.get(), model_associator_.get(), std::move(error_handler));
   }
 
   syncer::DataTypeErrorHandlerMock* mock_error_handler() {
-    return &mock_error_handler_;
+    return mock_error_handler_;
   }
 
   void delete_model_associator() { model_associator_.reset(); }
@@ -806,15 +811,15 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
   }
 
  private:
+  base::TestMessageLoop message_loop_;
   base::ScopedTempDir data_dir_;
-  base::MessageLoop message_loop_;
   browser_sync::ProfileSyncServiceBundle profile_sync_service_bundle_;
 
   std::unique_ptr<sync_driver::FakeSyncClient> sync_client_;
   std::unique_ptr<BookmarkModel> model_;
   syncer::TestUserShare test_user_share_;
   std::unique_ptr<BookmarkChangeProcessor> change_processor_;
-  StrictMock<syncer::DataTypeErrorHandlerMock> mock_error_handler_;
+  syncer::DataTypeErrorHandlerMock* mock_error_handler_;
   std::unique_ptr<BookmarkModelAssociator> model_associator_;
   std::unique_ptr<bookmarks::ManagedBookmarkService> managed_bookmark_service_;
 

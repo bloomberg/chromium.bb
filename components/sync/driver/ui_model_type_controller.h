@@ -17,17 +17,11 @@ namespace sync_driver_v2 {
 // thread.
 class UIModelTypeController : public NonBlockingDataTypeController {
  public:
-  UIModelTypeController(
-      const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
-      const base::Closure& error_callback,
-      syncer::ModelType model_type,
-      sync_driver::SyncClient* sync_client);
-
- protected:
+  // |dump_stack| is called when an unrecoverable error occurs.
+  UIModelTypeController(syncer::ModelType type,
+                        const base::Closure& dump_stack,
+                        sync_driver::SyncClient* sync_client);
   ~UIModelTypeController() override;
-
-  void RunOnUIThread(const tracked_objects::Location& from_here,
-                     const base::Closure& task) override;
 
  private:
   // NonBlockingDataTypeController implementations.

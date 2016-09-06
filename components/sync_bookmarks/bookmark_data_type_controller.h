@@ -21,17 +21,12 @@ class BookmarkDataTypeController : public FrontendDataTypeController,
                                    public bookmarks::BaseBookmarkModelObserver,
                                    public history::HistoryServiceObserver {
  public:
-  BookmarkDataTypeController(
-      const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
-      const base::Closure& error_callback,
-      sync_driver::SyncClient* sync_client);
-
-  // FrontendDataTypeController:
-  syncer::ModelType type() const override;
-
- private:
+  // |dump_stack| is called when an unrecoverable error occurs.
+  BookmarkDataTypeController(const base::Closure& dump_stack,
+                             sync_driver::SyncClient* sync_client);
   ~BookmarkDataTypeController() override;
 
+ private:
   // FrontendDataTypeController:
   bool StartModels() override;
   void CleanUpState() override;

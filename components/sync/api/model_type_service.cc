@@ -4,8 +4,10 @@
 
 #include "components/sync/api/model_type_service.h"
 
+#include <utility>
+
+#include "components/sync/api/data_type_error_handler.h"
 #include "components/sync/api/model_type_change_processor.h"
-#include "components/sync/core/data_type_error_handler.h"
 
 namespace syncer_v2 {
 
@@ -28,10 +30,10 @@ ConflictResolution ModelTypeService::ResolveConflict(
 }
 
 void ModelTypeService::OnSyncStarting(
-    syncer::DataTypeErrorHandler* error_handler,
+    std::unique_ptr<syncer::DataTypeErrorHandler> error_handler,
     const ModelTypeChangeProcessor::StartCallback& start_callback) {
   CreateChangeProcessor();
-  change_processor_->OnSyncStarting(error_handler, start_callback);
+  change_processor_->OnSyncStarting(std::move(error_handler), start_callback);
 }
 
 void ModelTypeService::DisableSync() {

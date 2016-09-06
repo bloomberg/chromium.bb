@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <set>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -15,7 +16,7 @@
 #include "base/threading/thread_checker.h"
 #include "components/bookmarks/browser/bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_node.h"
-#include "components/sync/core/data_type_error_handler.h"
+#include "components/sync/api/data_type_error_handler.h"
 #include "components/sync/driver/change_processor.h"
 #include "components/sync_bookmarks/bookmark_model_associator.h"
 
@@ -43,9 +44,10 @@ namespace browser_sync {
 class BookmarkChangeProcessor : public bookmarks::BookmarkModelObserver,
                                 public sync_driver::ChangeProcessor {
  public:
-  BookmarkChangeProcessor(sync_driver::SyncClient* sync_client,
-                          BookmarkModelAssociator* model_associator,
-                          syncer::DataTypeErrorHandler* error_handler);
+  BookmarkChangeProcessor(
+      sync_driver::SyncClient* sync_client,
+      BookmarkModelAssociator* model_associator,
+      std::unique_ptr<syncer::DataTypeErrorHandler> error_handler);
   ~BookmarkChangeProcessor() override;
 
   // bookmarks::BookmarkModelObserver:

@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_BROWSER_SYNC_BROWSER_PROFILE_SYNC_COMPONENTS_FACTORY_IMPL_H__
 #define COMPONENTS_BROWSER_SYNC_BROWSER_PROFILE_SYNC_COMPONENTS_FACTORY_IMPL_H__
 
+#include <memory>
 #include <string>
 
 #include "base/command_line.h"
@@ -85,7 +86,7 @@ class ProfileSyncComponentsFactoryImpl
   sync_driver::SyncApiComponentFactory::SyncComponents
   CreateBookmarkSyncComponents(
       sync_driver::SyncService* sync_service,
-      syncer::DataTypeErrorHandler* error_handler) override;
+      std::unique_ptr<syncer::DataTypeErrorHandler> error_handler) override;
 
  private:
   // Register data types which are enabled on both desktop and mobile.

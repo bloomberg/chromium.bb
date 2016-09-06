@@ -97,7 +97,8 @@ class ProfileSyncServiceStartupTest : public testing::Test {
 
     sync_service_.reset(new ProfileSyncService(std::move(init_params)));
     sync_service_->RegisterDataTypeController(
-        new sync_driver::FakeDataTypeController(syncer::BOOKMARKS));
+        base::MakeUnique<sync_driver::FakeDataTypeController>(
+            syncer::BOOKMARKS));
     sync_service_->AddObserver(&observer_);
   }
 

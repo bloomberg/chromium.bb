@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "components/sync/driver/non_ui_data_type_controller.h"
 #include "components/sync/driver/sync_service_observer.h"
 
@@ -26,20 +25,18 @@ namespace browser_sync {
 class PasswordDataTypeController : public sync_driver::NonUIDataTypeController,
                                    public sync_driver::SyncServiceObserver {
  public:
+  // |dump_stack| is called when an unrecoverable error occurs.
   PasswordDataTypeController(
-      const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
-      const base::Closure& error_callback,
+      const base::Closure& dump_stack,
       sync_driver::SyncClient* sync_client,
       const base::Closure& state_changed_callback,
       const scoped_refptr<password_manager::PasswordStore>& password_store);
+  ~PasswordDataTypeController() override;
 
   // NonFrontendDataTypeController implementation
-  syncer::ModelType type() const override;
   syncer::ModelSafeGroup model_safe_group() const override;
 
  protected:
-  ~PasswordDataTypeController() override;
-
   // NonUIDataTypeController interface.
   bool PostTaskOnBackendThread(const tracked_objects::Location& from_here,
                                const base::Closure& task) override;

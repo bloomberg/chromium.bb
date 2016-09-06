@@ -14,13 +14,13 @@ namespace browser_sync {
 
 class ThemeDataTypeController : public sync_driver::UIDataTypeController {
  public:
-  ThemeDataTypeController(const base::Closure& error_callback,
+  // |dump_stack| is called when an unrecoverable error occurs.
+  ThemeDataTypeController(const base::Closure& dump_stack,
                           sync_driver::SyncClient* sync_client,
                           Profile* profile);
-
- private:
   ~ThemeDataTypeController() override;
 
+ private:
   // UIDataTypeController implementations.
   bool StartModels() override;
 

@@ -61,7 +61,6 @@ using browser_sync::SessionDataTypeController;
 using browser_sync::SyncBackendHost;
 using browser_sync::TypedUrlDataTypeController;
 using sync_driver::DataTypeController;
-using syncer::DataTypeErrorHandler;
 using sync_driver::DataTypeManager;
 using sync_driver::DataTypeManagerImpl;
 using sync_driver::DataTypeManagerObserver;
@@ -153,29 +152,30 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   // TODO(stanisc): can DEVICE_INFO be one of disabled datatypes?
   if (channel_ == version_info::Channel::UNKNOWN &&
       command_line_.HasSwitch(switches::kSyncEnableUSSDeviceInfo)) {
-    sync_service->RegisterDataTypeController(new UIModelTypeController(
-        ui_thread_, error_callback, syncer::DEVICE_INFO, sync_client_));
+    sync_service->RegisterDataTypeController(
+        base::MakeUnique<UIModelTypeController>(syncer::DEVICE_INFO,
+                                                error_callback, sync_client_));
   } else {
-    sync_service->RegisterDataTypeController(new DeviceInfoDataTypeController(
-        ui_thread_, error_callback, sync_client_,
-        sync_service->GetLocalDeviceInfoProvider()));
+    sync_service->RegisterDataTypeController(
+        base::MakeUnique<DeviceInfoDataTypeController>(
+            error_callback, sync_client_,
+            sync_service->GetLocalDeviceInfoProvider()));
   }
 
   // Autofill sync is enabled by default.  Register unless explicitly
   // disabled.
   if (!disabled_types.Has(syncer::AUTOFILL)) {
     sync_service->RegisterDataTypeController(
-        new AutofillDataTypeController(ui_thread_, db_thread_, error_callback,
-                                       sync_client_, web_data_service_));
+        base::MakeUnique<AutofillDataTypeController>(
+            db_thread_, error_callback, sync_client_, web_data_service_));
   }
 
   // Autofill profile sync is enabled by default.  Register unless explicitly
   // disabled.
   if (!disabled_types.Has(syncer::AUTOFILL_PROFILE)) {
     sync_service->RegisterDataTypeController(
-        new AutofillProfileDataTypeController(ui_thread_, db_thread_,
-                                              error_callback, sync_client_,
-                                              web_data_service_));
+        base::MakeUnique<AutofillProfileDataTypeController>(
+            db_thread_, error_callback, sync_client_, web_data_service_));
   }
 
   // Wallet data sync is enabled by default, but behind a syncer experiment
@@ -183,9 +183,9 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   bool wallet_disabled = disabled_types.Has(syncer::AUTOFILL_WALLET_DATA);
   if (!wallet_disabled) {
     sync_service->RegisterDataTypeController(
-        new browser_sync::AutofillWalletDataTypeController(
-            ui_thread_, db_thread_, error_callback, sync_client_,
-            syncer::AUTOFILL_WALLET_DATA, web_data_service_));
+        base::MakeUnique<browser_sync::AutofillWalletDataTypeController>(
+            syncer::AUTOFILL_WALLET_DATA, db_thread_, error_callback,
+            sync_client_, web_data_service_));
   }
 
   // Wallet metadata sync depends on Wallet data sync. Register if Wallet data
@@ -193,16 +193,17 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   if (!wallet_disabled &&
       !disabled_types.Has(syncer::AUTOFILL_WALLET_METADATA)) {
     sync_service->RegisterDataTypeController(
-        new browser_sync::AutofillWalletDataTypeController(
-            ui_thread_, db_thread_, error_callback, sync_client_,
-            syncer::AUTOFILL_WALLET_METADATA, web_data_service_));
+        base::MakeUnique<browser_sync::AutofillWalletDataTypeController>(
+            syncer::AUTOFILL_WALLET_METADATA, db_thread_, error_callback,
+            sync_client_, web_data_service_));
   }
 
   // Bookmark sync is enabled by default.  Register unless explicitly
   // disabled.
   if (!disabled_types.Has(syncer::BOOKMARKS)) {
-    sync_service->RegisterDataTypeController(new BookmarkDataTypeController(
-        ui_thread_, error_callback, sync_client_));
+    sync_service->RegisterDataTypeController(
+        base::MakeUnique<BookmarkDataTypeController>(error_callback,
+                                                     sync_client_));
   }
 
   const bool history_disabled =
@@ -210,8 +211,9 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   // TypedUrl sync is enabled by default.  Register unless explicitly disabled,
   // or if saving history is disabled.
   if (!disabled_types.Has(syncer::TYPED_URLS) && !history_disabled) {
-    sync_service->RegisterDataTypeController(new TypedUrlDataTypeController(
-        ui_thread_, error_callback, sync_client_, history_disabled_pref_));
+    sync_service->RegisterDataTypeController(
+        base::MakeUnique<TypedUrlDataTypeController>(
+            error_callback, sync_client_, history_disabled_pref_));
   }
 
   // Delete directive sync is enabled by default.  Register unless full history
@@ -219,8 +221,8 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   if (!disabled_types.Has(syncer::HISTORY_DELETE_DIRECTIVES) &&
       !history_disabled) {
     sync_service->RegisterDataTypeController(
-        new HistoryDeleteDirectivesDataTypeController(
-            ui_thread_, error_callback, sync_client_));
+        base::MakeUnique<HistoryDeleteDirectivesDataTypeController>(
+            error_callback, sync_client_));
   }
 
   // Session sync is enabled by default.  Register unless explicitly disabled.
@@ -228,46 +230,53 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   // tab sync data is added to the web history on the server.
   if (!disabled_types.Has(syncer::PROXY_TABS) && !history_disabled) {
     sync_service->RegisterDataTypeController(
-        new ProxyDataTypeController(ui_thread_, syncer::PROXY_TABS));
-    sync_service->RegisterDataTypeController(new SessionDataTypeController(
-        ui_thread_, error_callback, sync_client_,
-        sync_service->GetLocalDeviceInfoProvider(), history_disabled_pref_));
+        base::MakeUnique<ProxyDataTypeController>(syncer::PROXY_TABS));
+    sync_service->RegisterDataTypeController(
+        base::MakeUnique<SessionDataTypeController>(
+            error_callback, sync_client_,
+            sync_service->GetLocalDeviceInfoProvider(),
+            history_disabled_pref_));
   }
 
   // Favicon sync is enabled by default. Register unless explicitly disabled.
   if (!disabled_types.Has(syncer::FAVICON_IMAGES) &&
       !disabled_types.Has(syncer::FAVICON_TRACKING) && !history_disabled) {
     // crbug/384552. We disable error uploading for this data types for now.
-    sync_service->RegisterDataTypeController(new UIDataTypeController(
-        ui_thread_, base::Closure(), syncer::FAVICON_IMAGES, sync_client_));
-    sync_service->RegisterDataTypeController(new UIDataTypeController(
-        ui_thread_, base::Closure(), syncer::FAVICON_TRACKING, sync_client_));
+    sync_service->RegisterDataTypeController(
+        base::MakeUnique<UIDataTypeController>(syncer::FAVICON_IMAGES,
+                                               base::Closure(), sync_client_));
+    sync_service->RegisterDataTypeController(
+        base::MakeUnique<UIDataTypeController>(syncer::FAVICON_TRACKING,
+                                               base::Closure(), sync_client_));
   }
 
   // Password sync is enabled by default.  Register unless explicitly
   // disabled.
   if (!disabled_types.Has(syncer::PASSWORDS)) {
-    sync_service->RegisterDataTypeController(new PasswordDataTypeController(
-        ui_thread_, error_callback, sync_client_,
-        sync_client_->GetPasswordStateChangedCallback(), password_store_));
+    sync_service->RegisterDataTypeController(
+        base::MakeUnique<PasswordDataTypeController>(
+            error_callback, sync_client_,
+            sync_client_->GetPasswordStateChangedCallback(), password_store_));
   }
 
   if (!disabled_types.Has(syncer::PREFERENCES) &&
       base::FeatureList::IsEnabled(kSyncPreferencesFeature)) {
-    sync_service->RegisterDataTypeController(new UIDataTypeController(
-        ui_thread_, error_callback, syncer::PREFERENCES, sync_client_));
+    sync_service->RegisterDataTypeController(
+        base::MakeUnique<UIDataTypeController>(syncer::PREFERENCES,
+                                               error_callback, sync_client_));
   }
 
   if (!disabled_types.Has(syncer::PRIORITY_PREFERENCES)) {
     sync_service->RegisterDataTypeController(
-        new UIDataTypeController(ui_thread_, error_callback,
-                                 syncer::PRIORITY_PREFERENCES, sync_client_));
+        base::MakeUnique<UIDataTypeController>(syncer::PRIORITY_PREFERENCES,
+                                               error_callback, sync_client_));
   }
 
   // Article sync is disabled by default.  Register only if explicitly enabled.
   if (dom_distiller::IsEnableSyncArticlesSet()) {
-    sync_service->RegisterDataTypeController(new UIDataTypeController(
-        ui_thread_, error_callback, syncer::ARTICLES, sync_client_));
+    sync_service->RegisterDataTypeController(
+        base::MakeUnique<UIDataTypeController>(syncer::ARTICLES, error_callback,
+                                               sync_client_));
   }
 }
 
@@ -386,7 +395,7 @@ ProfileSyncComponentsFactoryImpl::CreateAttachmentService(
 sync_driver::SyncApiComponentFactory::SyncComponents
 ProfileSyncComponentsFactoryImpl::CreateBookmarkSyncComponents(
     sync_driver::SyncService* sync_service,
-    syncer::DataTypeErrorHandler* error_handler) {
+    std::unique_ptr<syncer::DataTypeErrorHandler> error_handler) {
   BookmarkModel* bookmark_model =
       sync_service->GetSyncClient()->GetBookmarkModel();
   syncer::UserShare* user_share = sync_service->GetUserShare();
@@ -397,9 +406,10 @@ ProfileSyncComponentsFactoryImpl::CreateBookmarkSyncComponents(
   const bool kExpectMobileBookmarksFolder = false;
 #endif
   BookmarkModelAssociator* model_associator = new BookmarkModelAssociator(
-      bookmark_model, sync_service->GetSyncClient(), user_share, error_handler,
-      kExpectMobileBookmarksFolder);
-  BookmarkChangeProcessor* change_processor = new BookmarkChangeProcessor(
-      sync_service->GetSyncClient(), model_associator, error_handler);
+      bookmark_model, sync_service->GetSyncClient(), user_share,
+      error_handler->Copy(), kExpectMobileBookmarksFolder);
+  BookmarkChangeProcessor* change_processor =
+      new BookmarkChangeProcessor(sync_service->GetSyncClient(),
+                                  model_associator, std::move(error_handler));
   return SyncComponents(model_associator, change_processor);
 }

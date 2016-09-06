@@ -13,13 +13,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "components/sync/api/data_batch.h"
+#include "components/sync/api/data_type_error_handler.h"
 #include "components/sync/api/metadata_batch.h"
 #include "components/sync/api/metadata_change_list.h"
 #include "components/sync/api/model_type_change_processor.h"
 #include "components/sync/api/model_type_service.h"
 #include "components/sync/api/sync_error.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/core/data_type_error_handler.h"
 #include "components/sync/core/model_type_processor.h"
 #include "components/sync/core/non_blocking_sync_common.h"
 #include "components/sync/protocol/data_type_state.pb.h"
@@ -59,8 +59,9 @@ class SharedModelTypeProcessor : public ModelTypeProcessor,
               MetadataChangeList* metadata_change_list) override;
   void OnMetadataLoaded(syncer::SyncError error,
                         std::unique_ptr<MetadataBatch> batch) override;
-  void OnSyncStarting(syncer::DataTypeErrorHandler* error_handler,
-                      const StartCallback& callback) override;
+  void OnSyncStarting(
+      std::unique_ptr<syncer::DataTypeErrorHandler> error_handler,
+      const StartCallback& callback) override;
   void DisableSync() override;
   syncer::SyncError CreateAndUploadError(
       const tracked_objects::Location& location,
@@ -183,7 +184,7 @@ class SharedModelTypeProcessor : public ModelTypeProcessor,
 
   // The object used for informing sync of errors; will be non-null after
   // OnSyncStarting has been called. This pointer is not owned.
-  syncer::DataTypeErrorHandler* error_handler_;
+  std::unique_ptr<syncer::DataTypeErrorHandler> error_handler_;
 
   // WeakPtrFactory for this processor which will be sent to sync thread.
   base::WeakPtrFactory<SharedModelTypeProcessor> weak_ptr_factory_;

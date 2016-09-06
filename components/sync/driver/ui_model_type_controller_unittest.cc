@@ -4,6 +4,9 @@
 
 #include "components/sync/driver/ui_model_type_controller.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
@@ -26,23 +29,6 @@
 namespace sync_driver_v2 {
 
 namespace {
-
-// Test controller derived from UIModelTypeController.
-class TestUIModelTypeController : public UIModelTypeController {
- public:
-  TestUIModelTypeController(
-      const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
-      const base::Closure& error_callback,
-      syncer::ModelType model_type,
-      sync_driver::SyncClient* sync_client)
-      : UIModelTypeController(ui_thread,
-                              error_callback,
-                              model_type,
-                              sync_client) {}
-
- private:
-  ~TestUIModelTypeController() override {}
-};
 
 // A no-op instance of CommitQueue.
 class NullCommitQueue : public syncer_v2::CommitQueue {
@@ -142,10 +128,10 @@ class UIModelTypeControllerTest : public testing::Test,
   ~UIModelTypeControllerTest() override {}
 
   void SetUp() override {
-    controller_ = new TestUIModelTypeController(
-        ui_loop_.task_runner(), base::Closure(), syncer::DEVICE_INFO, this);
-    service_.reset(new syncer_v2::StubModelTypeService(base::Bind(
-        &UIModelTypeControllerTest::CreateProcessor, base::Unretained(this))));
+    controller_ = base::MakeUnique<UIModelTypeController>(
+        syncer::DEVICE_INFO, base::Closure(), this);
+    service_ = base::MakeUnique<syncer_v2::StubModelTypeService>(base::Bind(
+        &UIModelTypeControllerTest::CreateProcessor, base::Unretained(this)));
   }
 
   void TearDown() override {
@@ -215,7 +201,7 @@ class UIModelTypeControllerTest : public testing::Test,
     auto_run_tasks_ = auto_run_tasks;
   }
 
-  void LoadModelsDone(syncer::ModelType type, syncer::SyncError error) {
+  void LoadModelsDone(syncer::ModelType type, const syncer::SyncError& error) {
     load_models_callback_called_ = true;
     load_models_error_ = error;
   }
@@ -228,7 +214,7 @@ class UIModelTypeControllerTest : public testing::Test,
   }
 
   syncer_v2::SharedModelTypeProcessor* type_processor_;
-  scoped_refptr<TestUIModelTypeController> controller_;
+  std::unique_ptr<UIModelTypeController> controller_;
 
   bool auto_run_tasks_;
   bool load_models_callback_called_;

@@ -4,6 +4,8 @@
 
 #include "components/autofill/core/browser/webdata/autofill_data_type_controller.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -119,9 +121,9 @@ class SyncAutofillDataTypeControllerTest : public testing::Test {
     db_thread_.Start();
     web_data_service_ = new FakeWebDataService(
         base::ThreadTaskRunnerHandle::Get(), db_thread_.task_runner());
-    autofill_dtc_ = new AutofillDataTypeController(
-        base::ThreadTaskRunnerHandle::Get(), db_thread_.task_runner(),
-        base::Bind(&base::DoNothing), &sync_client_, web_data_service_);
+    autofill_dtc_ = base::MakeUnique<AutofillDataTypeController>(
+        db_thread_.task_runner(), base::Bind(&base::DoNothing), &sync_client_,
+        web_data_service_);
   }
 
   void TearDown() override {
@@ -143,7 +145,7 @@ class SyncAutofillDataTypeControllerTest : public testing::Test {
     last_start_error_ = local_merge_result.error();
   }
 
-  void OnLoadFinished(syncer::ModelType type, syncer::SyncError error) {
+  void OnLoadFinished(syncer::ModelType type, const syncer::SyncError& error) {
     EXPECT_FALSE(error.IsSet());
     EXPECT_EQ(type, syncer::AUTOFILL);
   }
@@ -159,7 +161,7 @@ class SyncAutofillDataTypeControllerTest : public testing::Test {
   base::MessageLoop message_loop_;
   base::Thread db_thread_;
   sync_driver::FakeSyncClient sync_client_;
-  scoped_refptr<AutofillDataTypeController> autofill_dtc_;
+  std::unique_ptr<AutofillDataTypeController> autofill_dtc_;
   scoped_refptr<FakeWebDataService> web_data_service_;
 
   // Stores arguments of most recent call of OnStartFinished().

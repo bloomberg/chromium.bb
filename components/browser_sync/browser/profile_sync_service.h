@@ -309,7 +309,8 @@ class ProfileSyncService : public sync_driver::SyncService,
   bool HasObserver(
       const sync_driver::SyncServiceObserver* observer) const override;
   void RegisterDataTypeController(
-      sync_driver::DataTypeController* data_type_controller) override;
+      std::unique_ptr<sync_driver::DataTypeController> data_type_controller)
+      override;
   void ReenableDatatype(syncer::ModelType type) override;
   SyncTokenStatus GetSyncTokenStatus() const override;
   std::string QuerySyncStatusSummaryString() override;

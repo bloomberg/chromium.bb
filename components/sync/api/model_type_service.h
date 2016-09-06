@@ -12,15 +12,12 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "components/sync/api/conflict_resolution.h"
+#include "components/sync/api/data_type_error_handler.h"
 #include "components/sync/api/entity_change.h"
 #include "components/sync/api/entity_data.h"
 #include "components/sync/api/model_type_change_processor.h"
 #include "components/sync/api/sync_error.h"
 #include "components/sync/core/activation_context.h"
-
-namespace syncer {
-class DataTypeErrorHandler;
-}  // namespace syncer
 
 namespace syncer_v2 {
 
@@ -113,8 +110,9 @@ class ModelTypeService : public base::SupportsWeakPtr<ModelTypeService> {
   // Called by the DataTypeController to gather additional information needed
   // before the processor can be connected to a sync worker. Once the
   // metadata has been loaded, the info is collected and given to |callback|.
-  void OnSyncStarting(syncer::DataTypeErrorHandler* error_handler,
-                      const ModelTypeChangeProcessor::StartCallback& callback);
+  void OnSyncStarting(
+      std::unique_ptr<syncer::DataTypeErrorHandler> error_handler,
+      const ModelTypeChangeProcessor::StartCallback& callback);
 
   // Indicates that we no longer want to do any sync-related things for this
   // data type. Severs all ties to the sync thread, deletes all local sync

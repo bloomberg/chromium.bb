@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_DRIVER_GLUE_AUTOFILL_WALLET_DATA_TYPE_CONTROLLER_H_
-#define COMPONENTS_SYNC_DRIVER_GLUE_AUTOFILL_WALLET_DATA_TYPE_CONTROLLER_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_WALLET_DATA_TYPE_CONTROLLER_H_
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_WALLET_DATA_TYPE_CONTROLLER_H_
 
 #include "base/macros.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -19,21 +19,18 @@ namespace browser_sync {
 class AutofillWalletDataTypeController
     : public sync_driver::NonUIDataTypeController {
  public:
-  // |model_type| should be either AUTOFILL_WALLET or AUTOFILL_WALLET_METADATA.
+  // |type| should be either AUTOFILL_WALLET or AUTOFILL_WALLET_METADATA.
+  // |dump_stack| is called when an unrecoverable error occurs.
   AutofillWalletDataTypeController(
-      const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
+      syncer::ModelType type,
       const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
-      const base::Closure& error_callback,
+      const base::Closure& dump_stack,
       sync_driver::SyncClient* sync_client,
-      syncer::ModelType model_type,
       const scoped_refptr<autofill::AutofillWebDataService>& web_data_service);
+  ~AutofillWalletDataTypeController() override;
 
   // NonUIDataTypeController implementation.
-  syncer::ModelType type() const override;
   syncer::ModelSafeGroup model_safe_group() const override;
-
- protected:
-  ~AutofillWalletDataTypeController() override;
 
  private:
   // NonUIDataTypeController implementation.
@@ -49,9 +46,6 @@ class AutofillWalletDataTypeController
   // Returns true if the prefs are set such that wallet sync should be enabled.
   bool IsEnabled();
 
-  // A reference to the UI thread's task runner.
-  const scoped_refptr<base::SingleThreadTaskRunner> ui_thread_;
-
   // A reference to the DB thread's task runner.
   const scoped_refptr<base::SingleThreadTaskRunner> db_thread_;
 
@@ -60,9 +54,6 @@ class AutofillWalletDataTypeController
 
   // Whether the database loaded callback has been registered.
   bool callback_registered_;
-
-  // The model type for this DTC; can be AUTOFILL_WALLET_DATA or _METADATA.
-  syncer::ModelType model_type_;
 
   // A reference to the AutofillWebDataService for this controller.
   scoped_refptr<autofill::AutofillWebDataService> web_data_service_;
@@ -79,4 +70,4 @@ class AutofillWalletDataTypeController
 
 }  // namespace browser_sync
 
-#endif  // COMPONENTS_SYNC_DRIVER_GLUE_AUTOFILL_WALLET_DATA_TYPE_CONTROLLER_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_WALLET_DATA_TYPE_CONTROLLER_H_

@@ -19,12 +19,12 @@ namespace browser_sync {
 // device info to become available.
 class SessionDataTypeController : public sync_driver::UIDataTypeController {
  public:
-  SessionDataTypeController(
-      const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
-      const base::Closure& error_callback,
-      sync_driver::SyncClient* sync_client,
-      sync_driver::LocalDeviceInfoProvider* local_device,
-      const char* history_disabled_pref_name);
+  // |dump_stack| is called when an unrecoverable error occurs.
+  SessionDataTypeController(const base::Closure& dump_stack,
+                            sync_driver::SyncClient* sync_client,
+                            sync_driver::LocalDeviceInfoProvider* local_device,
+                            const char* history_disabled_pref_name);
+  ~SessionDataTypeController() override;
 
   // UIDataTypeController interface.
   bool StartModels() override;
@@ -33,9 +33,6 @@ class SessionDataTypeController : public sync_driver::UIDataTypeController {
 
   // Called when asynchronous session restore has completed.
   void OnSessionRestoreComplete();
-
- protected:
-  ~SessionDataTypeController() override;
 
  private:
   bool IsWaiting();

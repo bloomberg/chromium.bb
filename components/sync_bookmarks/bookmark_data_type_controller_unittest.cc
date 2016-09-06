@@ -77,9 +77,8 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test,
     profile_sync_factory_.reset(
         new SyncApiComponentFactoryMock(model_associator_,
                                              change_processor_));
-    bookmark_dtc_ =
-        new BookmarkDataTypeController(base::ThreadTaskRunnerHandle::Get(),
-                                       base::Bind(&base::DoNothing), this);
+    bookmark_dtc_.reset(
+        new BookmarkDataTypeController(base::Bind(&base::DoNothing), this));
   }
 
  protected:
@@ -109,7 +108,6 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test,
   void SetAssociateExpectations() {
     EXPECT_CALL(*model_associator_, CryptoReadyIfNecessary()).
         WillRepeatedly(Return(true));
-    EXPECT_CALL(*profile_sync_factory_, CreateBookmarkSyncComponents(_, _));
     EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
         WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
     EXPECT_CALL(*model_associator_, AssociateModels(_, _)).
@@ -136,10 +134,10 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test,
   }
 
   base::MessageLoop message_loop_;
-  scoped_refptr<BookmarkDataTypeController> bookmark_dtc_;
   std::unique_ptr<SyncApiComponentFactoryMock> profile_sync_factory_;
   std::unique_ptr<BookmarkModel> bookmark_model_;
   std::unique_ptr<HistoryMock> history_service_;
+  std::unique_ptr<BookmarkDataTypeController> bookmark_dtc_;
   sync_driver::FakeSyncService service_;
   ModelAssociatorMock* model_associator_;
   ChangeProcessorMock* change_processor_;
@@ -244,7 +242,6 @@ TEST_F(SyncBookmarkDataTypeControllerTest, StartAssociationFailed) {
   CreateBookmarkModel(LOAD_MODEL);
   SetStartExpectations();
   // Set up association to fail.
-  EXPECT_CALL(*profile_sync_factory_, CreateBookmarkSyncComponents(_, _));
   EXPECT_CALL(*model_associator_, CryptoReadyIfNecessary()).
       WillRepeatedly(Return(true));
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
@@ -266,7 +263,6 @@ TEST_F(SyncBookmarkDataTypeControllerTest,
   CreateBookmarkModel(LOAD_MODEL);
   SetStartExpectations();
   // Set up association to fail with an unrecoverable error.
-  EXPECT_CALL(*profile_sync_factory_, CreateBookmarkSyncComponents(_, _));
   EXPECT_CALL(*model_associator_, CryptoReadyIfNecessary()).
       WillRepeatedly(Return(true));
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).

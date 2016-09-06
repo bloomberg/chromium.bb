@@ -268,7 +268,7 @@ class SyncService : public DataTypeEncryptionHandler {
   // enable or activate the synchronization of the data type (see
   // ActivateDataType).  Takes ownership of the pointer.
   virtual void RegisterDataTypeController(
-      DataTypeController* data_type_controller) = 0;
+      std::unique_ptr<DataTypeController> data_type_controller) = 0;
 
   // Called to re-enable a type disabled by DisableDatatype(..). Note, this does
   // not change the preferred state of a datatype, and is not persisted across

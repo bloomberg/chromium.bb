@@ -18,10 +18,11 @@ class HistoryDeleteDirectivesDataTypeController
     : public sync_driver::UIDataTypeController,
       public sync_driver::SyncServiceObserver {
  public:
+  // |dump_stack| is called when an unrecoverable error occurs.
   HistoryDeleteDirectivesDataTypeController(
-      const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
-      const base::Closure& error_callback,
+      const base::Closure& dump_stack,
       sync_driver::SyncClient* sync_client);
+  ~HistoryDeleteDirectivesDataTypeController() override;
 
   // UIDataTypeController override.
   bool ReadyForStart() const override;
@@ -32,9 +33,6 @@ class HistoryDeleteDirectivesDataTypeController
   void OnStateChanged() override;
 
  private:
-  // Refcounted.
-  ~HistoryDeleteDirectivesDataTypeController() override;
-
   // Triggers a SingleDataTypeUnrecoverable error and returns true if the
   // type is no longer ready, else does nothing and returns false.
   bool DisableTypeIfNecessary();

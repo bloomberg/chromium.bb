@@ -8,6 +8,7 @@
 #include "base/values.h"
 #include "components/sync/core/base_transaction.h"
 #include "components/sync/core/user_share.h"
+#include "components/sync/driver/data_type_controller.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 
 namespace sync_driver {
@@ -140,7 +141,7 @@ LocalDeviceInfoProvider* FakeSyncService::GetLocalDeviceInfoProvider() const {
 }
 
 void FakeSyncService::RegisterDataTypeController(
-    sync_driver::DataTypeController* data_type_controller) {}
+    std::unique_ptr<sync_driver::DataTypeController> data_type_controller) {}
 
 void FakeSyncService::ReenableDatatype(syncer::ModelType type) {}
 

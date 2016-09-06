@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SYNC_DRIVER_FAKE_SYNC_SERVICE_H_
 #define COMPONENTS_SYNC_DRIVER_FAKE_SYNC_SERVICE_H_
 
+#include <memory>
 #include <string>
 
 #include "components/sync/driver/sync_service.h"
@@ -66,7 +67,8 @@ class FakeSyncService : public sync_driver::SyncService {
   syncer::UserShare* GetUserShare() const override;
   LocalDeviceInfoProvider* GetLocalDeviceInfoProvider() const override;
   void RegisterDataTypeController(
-      sync_driver::DataTypeController* data_type_controller) override;
+      std::unique_ptr<sync_driver::DataTypeController> data_type_controller)
+      override;
   void ReenableDatatype(syncer::ModelType type) override;
   SyncTokenStatus GetSyncTokenStatus() const override;
   std::string QuerySyncStatusSummaryString() override;

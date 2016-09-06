@@ -98,7 +98,7 @@ SharedModelTypeProcessor::CreateAsChangeProcessor(syncer::ModelType type,
 }
 
 void SharedModelTypeProcessor::OnSyncStarting(
-    syncer::DataTypeErrorHandler* error_handler,
+    std::unique_ptr<syncer::DataTypeErrorHandler> error_handler,
     const StartCallback& start_callback) {
   DCHECK(CalledOnValidThread());
   DCHECK(start_callback_.is_null());
@@ -106,7 +106,7 @@ void SharedModelTypeProcessor::OnSyncStarting(
   DCHECK(error_handler);
   DVLOG(1) << "Sync is starting for " << ModelTypeToString(type_);
 
-  error_handler_ = error_handler;
+  error_handler_ = std::move(error_handler);
   start_callback_ = start_callback;
   ConnectIfReady();
 }
@@ -357,7 +357,7 @@ void SharedModelTypeProcessor::OnCommitCompleted(
   syncer::SyncError error =
       service_->ApplySyncChanges(std::move(change_list), EntityChangeList());
   if (error.IsSet()) {
-    error_handler_->OnSingleDataTypeUnrecoverableError(error);
+    error_handler_->OnUnrecoverableError(error);
   }
 }
 
@@ -414,7 +414,7 @@ void SharedModelTypeProcessor::OnUpdateReceived(
       service_->ApplySyncChanges(std::move(metadata_changes), entity_changes);
 
   if (error.IsSet()) {
-    error_handler_->OnSingleDataTypeUnrecoverableError(error);
+    error_handler_->OnUnrecoverableError(error);
   } else {
     // There may be new reasons to commit by the time this function is done.
     FlushPendingCommitRequests();
@@ -607,7 +607,7 @@ void SharedModelTypeProcessor::OnInitialUpdateReceived(
       service_->MergeSyncData(std::move(metadata_changes), data_map);
 
   if (error.IsSet()) {
-    error_handler_->OnSingleDataTypeUnrecoverableError(error);
+    error_handler_->OnUnrecoverableError(error);
   } else {
     // We may have new reasons to commit by the time this function is done.
     FlushPendingCommitRequests();
@@ -635,7 +635,7 @@ void SharedModelTypeProcessor::OnDataLoadedForReEncryption(
   DCHECK(is_initial_pending_data_loaded_);
 
   if (error.IsSet()) {
-    error_handler_->OnSingleDataTypeUnrecoverableError(error);
+    error_handler_->OnUnrecoverableError(error);
     return;
   }
 

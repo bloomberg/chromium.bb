@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SYNC_DRIVER_FAKE_GENERIC_CHANGE_PROCESSOR_H_
 #define COMPONENTS_SYNC_DRIVER_FAKE_GENERIC_CHANGE_PROCESSOR_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -51,7 +52,7 @@ class FakeGenericChangeProcessorFactory : public GenericChangeProcessorFactory {
   std::unique_ptr<GenericChangeProcessor> CreateGenericChangeProcessor(
       syncer::ModelType type,
       syncer::UserShare* user_share,
-      syncer::DataTypeErrorHandler* error_handler,
+      std::unique_ptr<syncer::DataTypeErrorHandler> error_handler,
       const base::WeakPtr<syncer::SyncableService>& local_service,
       const base::WeakPtr<syncer::SyncMergeResult>& merge_result,
       SyncClient* sync_client) override;

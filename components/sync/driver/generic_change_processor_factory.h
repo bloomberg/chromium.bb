@@ -9,11 +9,11 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/sync/api/data_type_error_handler.h"
 #include "components/sync/base/model_type.h"
 
 namespace syncer {
 class AttachmentService;
-class DataTypeErrorHandler;
 class SyncableService;
 class SyncMergeResult;
 struct UserShare;
@@ -40,7 +40,7 @@ class GenericChangeProcessorFactory {
   virtual std::unique_ptr<GenericChangeProcessor> CreateGenericChangeProcessor(
       syncer::ModelType type,
       syncer::UserShare* user_share,
-      syncer::DataTypeErrorHandler* error_handler,
+      std::unique_ptr<syncer::DataTypeErrorHandler> error_handler,
       const base::WeakPtr<syncer::SyncableService>& local_service,
       const base::WeakPtr<syncer::SyncMergeResult>& merge_result,
       SyncClient* sync_client);

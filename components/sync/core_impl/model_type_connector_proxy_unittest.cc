@@ -13,12 +13,12 @@
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/sync/api/data_type_error_handler_mock.h"
 #include "components/sync/api/stub_model_type_service.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/core/activation_context.h"
 #include "components/sync/core/model_type_connector.h"
 #include "components/sync/core/shared_model_type_processor.h"
-#include "components/sync/core/test/data_type_error_handler_mock.h"
 #include "components/sync/engine_impl/model_type_registry.h"
 #include "components/sync/test/engine/mock_nudge_handler.h"
 #include "components/sync/test/engine/test_directory_setter_upper.h"
@@ -53,7 +53,7 @@ class ModelTypeConnectorProxyTest : public ::testing::Test,
 
   void OnSyncStarting(SharedModelTypeProcessor* processor) {
     processor->OnSyncStarting(
-        &error_handler_,
+        base::MakeUnique<syncer::DataTypeErrorHandlerMock>(),
         base::Bind(&ModelTypeConnectorProxyTest::OnReadyToConnect,
                    base::Unretained(this)));
   }
@@ -80,7 +80,6 @@ class ModelTypeConnectorProxyTest : public ::testing::Test,
   syncer::TestDirectorySetterUpper dir_maker_;
   syncer::MockNudgeHandler nudge_handler_;
   std::unique_ptr<syncer::ModelTypeRegistry> registry_;
-  syncer::DataTypeErrorHandlerMock error_handler_;
 
   std::unique_ptr<ModelTypeConnectorProxy> connector_proxy_;
 };

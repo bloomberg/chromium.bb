@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SYNC_DRIVER_FAKE_DATA_TYPE_CONTROLLER_H__
 #define COMPONENTS_SYNC_DRIVER_FAKE_DATA_TYPE_CONTROLLER_H__
 
+#include <memory>
 #include <string>
 
 #include "components/sync/driver/data_type_manager.h"
@@ -24,6 +25,7 @@ namespace sync_driver {
 class FakeDataTypeController : public DirectoryDataTypeController {
  public:
   explicit FakeDataTypeController(syncer::ModelType type);
+  ~FakeDataTypeController() override;
 
   // DirectoryDataTypeController implementation.
   bool ShouldLoadModelBeforeConfigure() const override;
@@ -31,14 +33,12 @@ class FakeDataTypeController : public DirectoryDataTypeController {
   void RegisterWithBackend(BackendDataTypeConfigurer* configurer) override;
   void StartAssociating(const StartCallback& start_callback) override;
   void Stop() override;
-  syncer::ModelType type() const override;
   std::string name() const override;
   syncer::ModelSafeGroup model_safe_group() const override;
   ChangeProcessor* GetChangeProcessor() const override;
   State state() const override;
-  void OnSingleDataTypeUnrecoverableError(
-      const syncer::SyncError& error) override;
   bool ReadyForStart() const override;
+  std::unique_ptr<syncer::DataTypeErrorHandler> CreateErrorHandler() override;
 
   void FinishStart(ConfigureResult result);
 
@@ -56,13 +56,9 @@ class FakeDataTypeController : public DirectoryDataTypeController {
     return register_with_backend_call_count_;
   }
 
- protected:
-  ~FakeDataTypeController() override;
-
  private:
   DataTypeController::State state_;
   bool model_load_delayed_;
-  syncer::ModelType type_;
   StartCallback last_start_callback_;
   ModelLoadCallback model_load_callback_;
   syncer::SyncError load_error_;

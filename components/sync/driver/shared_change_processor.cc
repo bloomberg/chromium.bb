@@ -8,10 +8,10 @@
 #include <utility>
 
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/sync/api/data_type_error_handler.h"
 #include "components/sync/api/sync_change.h"
 #include "components/sync/api/syncable_service.h"
 #include "components/sync/base/data_type_histogram.h"
-#include "components/sync/core/data_type_error_handler.h"
 #include "components/sync/driver/generic_change_processor.h"
 #include "components/sync/driver/generic_change_processor_factory.h"
 #include "components/sync/driver/shared_change_processor_ref.h"
@@ -29,8 +29,7 @@ SharedChangeProcessor::SharedChangeProcessor(syncer::ModelType type)
     : disconnected_(false),
       type_(type),
       frontend_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      generic_change_processor_(NULL),
-      error_handler_(NULL) {
+      generic_change_processor_(NULL) {
   DCHECK_NE(type_, syncer::UNSPECIFIED);
 }
 
@@ -58,7 +57,7 @@ void SharedChangeProcessor::StartAssociation(
     StartDoneCallback start_done,
     SyncClient* const sync_client,
     syncer::UserShare* user_share,
-    syncer::DataTypeErrorHandler* error_handler) {
+    std::unique_ptr<syncer::DataTypeErrorHandler> error_handler) {
   DCHECK(user_share);
   syncer::SyncMergeResult local_merge_result(type_);
   syncer::SyncMergeResult syncer_merge_result(type_);
@@ -71,8 +70,9 @@ void SharedChangeProcessor::StartAssociation(
   // disconnected at this point, so all our accesses to the syncer from this
   // point on are through it.
   GenericChangeProcessorFactory factory;
-  local_service_ = Connect(sync_client, &factory, user_share, error_handler,
-                           weak_ptr_factory.GetWeakPtr());
+  local_service_ =
+      Connect(sync_client, &factory, user_share, std::move(error_handler),
+              weak_ptr_factory.GetWeakPtr());
   if (!local_service_.get()) {
     syncer::SyncError error(FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
                             "Failed to connect to syncer.", type_);
@@ -149,7 +149,7 @@ base::WeakPtr<syncer::SyncableService> SharedChangeProcessor::Connect(
     SyncClient* sync_client,
     GenericChangeProcessorFactory* processor_factory,
     syncer::UserShare* user_share,
-    syncer::DataTypeErrorHandler* error_handler,
+    std::unique_ptr<syncer::DataTypeErrorHandler> error_handler,
     const base::WeakPtr<syncer::SyncMergeResult>& merge_result) {
   DCHECK(sync_client);
   DCHECK(error_handler);
@@ -157,7 +157,7 @@ base::WeakPtr<syncer::SyncableService> SharedChangeProcessor::Connect(
   AutoLock lock(monitor_lock_);
   if (disconnected_)
     return base::WeakPtr<syncer::SyncableService>();
-  error_handler_ = error_handler;
+  error_handler_ = std::move(error_handler);
   base::WeakPtr<syncer::SyncableService> local_service =
       sync_client->GetSyncableServiceForType(type_);
   if (!local_service.get()) {
@@ -168,7 +168,7 @@ base::WeakPtr<syncer::SyncableService> SharedChangeProcessor::Connect(
 
   generic_change_processor_ = processor_factory
                                   ->CreateGenericChangeProcessor(
-                                      type_, user_share, error_handler,
+                                      type_, user_share, error_handler_->Copy(),
                                       local_service, merge_result, sync_client)
                                   .release();
   // If available, propagate attachment service to the syncable service.
@@ -186,7 +186,7 @@ bool SharedChangeProcessor::Disconnect() {
   AutoLock lock(monitor_lock_);
   bool was_connected = !disconnected_;
   disconnected_ = true;
-  error_handler_ = NULL;
+  error_handler_.reset();
   return was_connected;
 }
 

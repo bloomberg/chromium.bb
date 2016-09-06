@@ -10,12 +10,9 @@
 
 namespace sync_driver {
 
-DataTypeController::DataTypeController(
-    const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
-    const base::Closure& error_callback)
-    : base::RefCountedDeleteOnMessageLoop<DataTypeController>(ui_thread),
-      error_callback_(error_callback),
-      ui_thread_(ui_thread) {}
+DataTypeController::DataTypeController(syncer::ModelType type,
+                                       const base::Closure& dump_stack)
+    : dump_stack_(dump_stack), type_(type) {}
 
 DataTypeController::~DataTypeController() {}
 
@@ -27,18 +24,12 @@ bool DataTypeController::IsSuccessfulResult(ConfigureResult result) {
   return (result == OK || result == OK_FIRST_RUN);
 }
 
-syncer::SyncError DataTypeController::CreateAndUploadError(
-    const tracked_objects::Location& location,
-    const std::string& message,
-    syncer::ModelType type) {
-  if (!error_callback_.is_null())
-    error_callback_.Run();
-  return syncer::SyncError(location, syncer::SyncError::DATATYPE_ERROR, message,
-                           type);
-}
-
 bool DataTypeController::ReadyForStart() const {
   return true;
+}
+
+bool DataTypeController::CalledOnValidThread() const {
+  return thread_checker_.CalledOnValidThread();
 }
 
 }  // namespace sync_driver

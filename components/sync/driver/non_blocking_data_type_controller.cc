@@ -11,6 +11,8 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "components/sync/api/data_type_error_handler_impl.h"
 #include "components/sync/api/model_type_change_processor.h"
 #include "components/sync/api/model_type_service.h"
 #include "components/sync/api/sync_error.h"
@@ -24,17 +26,13 @@
 namespace sync_driver_v2 {
 
 NonBlockingDataTypeController::NonBlockingDataTypeController(
-    const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
-    const base::Closure& error_callback,
-    syncer::ModelType model_type,
+    syncer::ModelType type,
+    const base::Closure& dump_stack,
     sync_driver::SyncClient* sync_client)
-    : sync_driver::DataTypeController(ui_thread, error_callback),
-      model_type_(model_type),
+    : sync_driver::DataTypeController(type, dump_stack),
       sync_client_(sync_client),
       sync_prefs_(sync_client->GetPrefService()),
-      state_(NOT_RUNNING) {
-  DCHECK(BelongsToUIThread());
-}
+      state_(NOT_RUNNING) {}
 
 NonBlockingDataTypeController::~NonBlockingDataTypeController() {}
 
@@ -46,7 +44,7 @@ bool NonBlockingDataTypeController::ShouldLoadModelBeforeConfigure() const {
 
 void NonBlockingDataTypeController::LoadModels(
     const ModelLoadCallback& model_load_callback) {
-  DCHECK(BelongsToUIThread());
+  DCHECK(CalledOnValidThread());
   DCHECK(!model_load_callback.is_null());
   model_load_callback_ = model_load_callback;
 
@@ -62,16 +60,16 @@ void NonBlockingDataTypeController::LoadModels(
 
   // Callback that posts back to the UI thread.
   syncer_v2::ModelTypeChangeProcessor::StartCallback callback =
-      syncer::BindToTaskRunner(
-          ui_thread(),
-          base::Bind(&NonBlockingDataTypeController::OnProcessorStarted, this));
+      syncer::BindToCurrentThread(
+          base::Bind(&NonBlockingDataTypeController::OnProcessorStarted,
+                     base::AsWeakPtr(this)));
 
   // Start the type processor on the model thread.
   if (!RunOnModelThread(
           FROM_HERE,
           base::Bind(&syncer_v2::ModelTypeService::OnSyncStarting,
                      sync_client_->GetModelTypeServiceForType(type()),
-                     base::Unretained(this), callback))) {
+                     base::Passed(CreateErrorHandler()), callback))) {
     LoadModelsDone(
         UNRECOVERABLE_ERROR,
         syncer::SyncError(FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
@@ -87,7 +85,7 @@ void NonBlockingDataTypeController::GetAllNodes(
 void NonBlockingDataTypeController::LoadModelsDone(
     ConfigureResult result,
     const syncer::SyncError& error) {
-  DCHECK(BelongsToUIThread());
+  DCHECK(CalledOnValidThread());
 
   if (state_ == NOT_RUNNING) {
     // The callback arrived on the UI thread after the type has been already
@@ -111,7 +109,7 @@ void NonBlockingDataTypeController::LoadModelsDone(
 void NonBlockingDataTypeController::OnProcessorStarted(
     syncer::SyncError error,
     std::unique_ptr<syncer_v2::ActivationContext> activation_context) {
-  DCHECK(BelongsToUIThread());
+  DCHECK(CalledOnValidThread());
   // Hold on to the activation context until ActivateDataType is called.
   if (state_ == MODEL_STARTING) {
     activation_context_ = std::move(activation_context);
@@ -123,7 +121,7 @@ void NonBlockingDataTypeController::OnProcessorStarted(
 
 void NonBlockingDataTypeController::RegisterWithBackend(
     sync_driver::BackendDataTypeConfigurer* configurer) {
-  DCHECK(BelongsToUIThread());
+  DCHECK(CalledOnValidThread());
   DCHECK(configurer);
   DCHECK(activation_context_);
   DCHECK_EQ(MODEL_LOADED, state_);
@@ -133,7 +131,7 @@ void NonBlockingDataTypeController::RegisterWithBackend(
 
 void NonBlockingDataTypeController::StartAssociating(
     const StartCallback& start_callback) {
-  DCHECK(BelongsToUIThread());
+  DCHECK(CalledOnValidThread());
   DCHECK(!start_callback.is_null());
 
   state_ = RUNNING;
@@ -145,7 +143,7 @@ void NonBlockingDataTypeController::StartAssociating(
 
 void NonBlockingDataTypeController::ActivateDataType(
     sync_driver::BackendDataTypeConfigurer* configurer) {
-  DCHECK(BelongsToUIThread());
+  DCHECK(CalledOnValidThread());
   DCHECK(configurer);
   DCHECK_EQ(RUNNING, state_);
   // In contrast with directory datatypes, non-blocking data types should be
@@ -156,13 +154,13 @@ void NonBlockingDataTypeController::ActivateDataType(
 
 void NonBlockingDataTypeController::DeactivateDataType(
     sync_driver::BackendDataTypeConfigurer* configurer) {
-  DCHECK(BelongsToUIThread());
+  DCHECK(CalledOnValidThread());
   DCHECK(configurer);
   configurer->DeactivateNonBlockingDataType(type());
 }
 
 void NonBlockingDataTypeController::Stop() {
-  DCHECK(BelongsToUIThread());
+  DCHECK(CalledOnValidThread());
 
   if (state() == NOT_RUNNING)
     return;
@@ -193,39 +191,27 @@ sync_driver::DataTypeController::State NonBlockingDataTypeController::state()
   return state_;
 }
 
-bool NonBlockingDataTypeController::BelongsToUIThread() const {
-  return ui_thread()->BelongsToCurrentThread();
-}
-
-void NonBlockingDataTypeController::OnSingleDataTypeUnrecoverableError(
-    const syncer::SyncError& error) {
-  RecordUnrecoverableError();
-  if (!error_callback_.is_null())
-    error_callback_.Run();
-
-  ReportLoadModelError(UNRECOVERABLE_ERROR, error);
+std::unique_ptr<syncer::DataTypeErrorHandler>
+NonBlockingDataTypeController::CreateErrorHandler() {
+  DCHECK(CalledOnValidThread());
+  return base::MakeUnique<syncer::DataTypeErrorHandlerImpl>(
+      base::ThreadTaskRunnerHandle::Get(), dump_stack_,
+      base::Bind(&NonBlockingDataTypeController::ReportLoadModelError,
+                 base::AsWeakPtr(this)));
 }
 
 void NonBlockingDataTypeController::ReportLoadModelError(
-    ConfigureResult result,
     const syncer::SyncError& error) {
-  DCHECK(!IsSuccessfulResult(result));
-  if (BelongsToUIThread()) {
-    // Report the error only if the model is starting.
-    if (state_ == MODEL_STARTING) {
-      LoadModelsDone(result, error);
-    }
-  } else {
-    RunOnUIThread(
-        error.location(),
-        base::Bind(&NonBlockingDataTypeController::ReportLoadModelError, this,
-                   result, error));
+  DCHECK(CalledOnValidThread());
+  // Report the error only if the model is starting.
+  if (state_ == MODEL_STARTING) {
+    LoadModelsDone(UNRECOVERABLE_ERROR, error);
   }
 }
 
 void NonBlockingDataTypeController::RecordStartFailure(
     ConfigureResult result) const {
-  DCHECK(BelongsToUIThread());
+  DCHECK(CalledOnValidThread());
   UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeStartFailures",
                             ModelTypeToHistogramInt(type()),
                             syncer::MODEL_TYPE_COUNT);
@@ -234,16 +220,6 @@ void NonBlockingDataTypeController::RecordStartFailure(
                             MAX_CONFIGURE_RESULT);
   SYNC_DATA_TYPE_HISTOGRAM(type());
 #undef PER_DATA_TYPE_MACRO
-}
-
-void NonBlockingDataTypeController::RecordUnrecoverableError() {
-  UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeRunFailures",
-                            ModelTypeToHistogramInt(type()),
-                            syncer::MODEL_TYPE_COUNT);
-}
-
-syncer::ModelType NonBlockingDataTypeController::type() const {
-  return model_type_;
 }
 
 }  // namespace sync_driver_v2

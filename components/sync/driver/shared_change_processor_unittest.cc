@@ -17,10 +17,10 @@
 #include "base/threading/thread.h"
 #include "components/sync/api/attachments/attachment_id.h"
 #include "components/sync/api/attachments/attachment_store.h"
+#include "components/sync/api/data_type_error_handler_mock.h"
 #include "components/sync/api/fake_syncable_service.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/core/attachments/attachment_service_impl.h"
-#include "components/sync/core/test/data_type_error_handler_mock.h"
 #include "components/sync/core/test/test_user_share.h"
 #include "components/sync/device_info/local_device_info_provider.h"
 #include "components/sync/driver/fake_sync_client.h"
@@ -68,7 +68,7 @@ class TestSyncApiComponentFactory : public SyncApiComponentFactory {
   }
   SyncApiComponentFactory::SyncComponents CreateBookmarkSyncComponents(
       sync_driver::SyncService* sync_service,
-      syncer::DataTypeErrorHandler* error_handler) override {
+      std::unique_ptr<syncer::DataTypeErrorHandler> error_handler) override {
     return SyncApiComponentFactory::SyncComponents(nullptr, nullptr);
   }
   std::unique_ptr<syncer::AttachmentService> CreateAttachmentService(
@@ -190,7 +190,8 @@ class SyncSharedChangeProcessorTest : public testing::Test,
     DCHECK(backend_thread_.task_runner()->BelongsToCurrentThread());
     EXPECT_TRUE(shared_change_processor->Connect(
         this, &processor_factory_, test_user_share_.user_share(),
-        &error_handler_, base::WeakPtr<syncer::SyncMergeResult>()));
+        base::MakeUnique<syncer::DataTypeErrorHandlerMock>(),
+        base::WeakPtr<syncer::SyncMergeResult>()));
     did_connect_ = true;
   }
 
@@ -207,7 +208,6 @@ class SyncSharedChangeProcessorTest : public testing::Test,
   TestSyncApiComponentFactory factory_;
 
   scoped_refptr<SharedChangeProcessor> shared_change_processor_;
-  StrictMock<syncer::DataTypeErrorHandlerMock> error_handler_;
 
   GenericChangeProcessorFactory processor_factory_;
   bool did_connect_;

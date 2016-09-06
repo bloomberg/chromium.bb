@@ -4,10 +4,13 @@
 
 #include "components/sync/driver/change_processor.h"
 
+#include <utility>
+
 namespace sync_driver {
 
-ChangeProcessor::ChangeProcessor(syncer::DataTypeErrorHandler* error_handler)
-    : error_handler_(error_handler), share_handle_(NULL) {}
+ChangeProcessor::ChangeProcessor(
+    std::unique_ptr<syncer::DataTypeErrorHandler> error_handler)
+    : error_handler_(std::move(error_handler)), share_handle_(NULL) {}
 
 ChangeProcessor::~ChangeProcessor() {}
 
@@ -21,7 +24,7 @@ void ChangeProcessor::Start(syncer::UserShare* share_handle) {
 void ChangeProcessor::CommitChangesFromSyncModel() {}
 
 syncer::DataTypeErrorHandler* ChangeProcessor::error_handler() const {
-  return error_handler_;
+  return error_handler_.get();
 }
 
 syncer::UserShare* ChangeProcessor::share_handle() const {

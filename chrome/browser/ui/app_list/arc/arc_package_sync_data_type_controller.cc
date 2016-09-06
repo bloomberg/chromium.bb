@@ -13,21 +13,15 @@
 #include "components/sync/driver/sync_client.h"
 #include "components/sync/driver/sync_prefs.h"
 #include "components/sync/driver/sync_service.h"
-#include "content/public/browser/browser_thread.h"
 
 // ArcPackage sync service is controlled by apps checkbox in sync settings. Arc
 // apps and regular Chrome apps have same user control.
 ArcPackageSyncDataTypeController::ArcPackageSyncDataTypeController(
     syncer::ModelType type,
-    const base::Closure& error_callback,
+    const base::Closure& dump_stack,
     sync_driver::SyncClient* sync_client,
     Profile* profile)
-    : sync_driver::UIDataTypeController(
-          content::BrowserThread::GetTaskRunnerForThread(
-              content::BrowserThread::UI),
-          error_callback,
-          type,
-          sync_client),
+    : sync_driver::UIDataTypeController(type, dump_stack, sync_client),
       profile_(profile),
       sync_client_(sync_client) {
   pref_registrar_.Init(profile_->GetPrefs());
@@ -44,6 +38,7 @@ ArcPackageSyncDataTypeController::ArcPackageSyncDataTypeController(
 ArcPackageSyncDataTypeController::~ArcPackageSyncDataTypeController() {}
 
 bool ArcPackageSyncDataTypeController::ReadyForStart() const {
+  DCHECK(CalledOnValidThread());
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
   return profile_->GetPrefs()->GetBoolean(
              sync_driver::SyncPrefs::GetPrefNameForDataType(type())) &&
@@ -51,7 +46,7 @@ bool ArcPackageSyncDataTypeController::ReadyForStart() const {
 }
 
 void ArcPackageSyncDataTypeController::OnArcAppsSyncPrefChanged() {
-  DCHECK(ui_thread()->BelongsToCurrentThread());
+  DCHECK(CalledOnValidThread());
 
   if (!ReadyForStart()) {
     // If apps sync in advanced sync settings is turned off then generate an
@@ -60,7 +55,7 @@ void ArcPackageSyncDataTypeController::OnArcAppsSyncPrefChanged() {
       syncer::SyncError error(
           FROM_HERE, syncer::SyncError::DATATYPE_POLICY_ERROR,
           "Arc package sync is now disabled by user.", type());
-      OnSingleDataTypeUnrecoverableError(error);
+      CreateErrorHandler()->OnUnrecoverableError(error);
     }
     return;
   }
@@ -70,6 +65,7 @@ void ArcPackageSyncDataTypeController::OnArcAppsSyncPrefChanged() {
 }
 
 void ArcPackageSyncDataTypeController::OnArcEnabledPrefChanged() {
+  DCHECK(CalledOnValidThread());
   if (!profile_->GetPrefs()->GetBoolean(prefs::kArcEnabled)) {
     // If enable Arc in settings is turned off then generate an unrecoverable
     // error.
@@ -78,7 +74,7 @@ void ArcPackageSyncDataTypeController::OnArcEnabledPrefChanged() {
           FROM_HERE, syncer::SyncError::DATATYPE_POLICY_ERROR,
           "Arc package sync is now disabled because user disables Arc.",
           type());
-      OnSingleDataTypeUnrecoverableError(error);
+      CreateErrorHandler()->OnUnrecoverableError(error);
     }
   }
 }
