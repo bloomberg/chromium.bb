@@ -1022,7 +1022,8 @@ GpuImageDecodeController::CreateImageData(const DrawImage& draw_image) {
   DecodedDataMode mode;
   int upload_scale_mip_level = CalculateUploadScaleMipLevel(draw_image);
   auto params = SkImage::DeferredTextureImageUsageParams(
-      draw_image.matrix(), draw_image.filter_quality(), upload_scale_mip_level);
+      draw_image.matrix(), CalculateUploadScaleFilterQuality(draw_image),
+      upload_scale_mip_level);
   size_t data_size = draw_image.image()->getDeferredTextureImageData(
       *context_threadsafe_proxy_.get(), &params, 1, nullptr);
 
