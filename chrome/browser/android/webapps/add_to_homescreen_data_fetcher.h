@@ -43,6 +43,10 @@ class AddToHomescreenDataFetcher
  public:
   class Observer {
    public:
+    // Callded when the installable check is compelte.
+    virtual void OnDidDetermineWebApkCompatibility(
+        bool is_webapk_compatible) = 0;
+
     // Called when the title of the page is available.
     virtual void OnUserTitleAvailable(const base::string16& title) = 0;
 
@@ -56,6 +60,9 @@ class AddToHomescreenDataFetcher
     // Called when all the data needed to create a shortcut is available.
     virtual void OnDataAvailable(const ShortcutInfo& info,
                                  const SkBitmap& icon) = 0;
+
+    protected:
+     virtual ~Observer() {}
   };
 
   // Initialize the fetcher by requesting the information about the page from
@@ -66,6 +73,7 @@ class AddToHomescreenDataFetcher
                              int minimum_icon_size_in_dp,
                              int ideal_splash_image_size_in_dp,
                              int minimum_splash_image_size_in_dp,
+                             bool check_installable,
                              Observer* observer);
 
   // Returns a callback which fetches the splash screen image to be stored for
@@ -123,6 +131,10 @@ class AddToHomescreenDataFetcher
   const int minimum_icon_size_in_dp_;
   const int ideal_splash_image_size_in_dp_;
   const int minimum_splash_image_size_in_dp_;
+
+  // Indicates whether to check WebAPK compatibility.
+  bool check_installable_;
+  bool is_waiting_for_installable_check_;
   bool is_waiting_for_web_application_info_;
   bool is_icon_saved_;
   bool is_ready_;

@@ -55,12 +55,12 @@ GURL GetShortcutUrl(content::BrowserContext* browser_context,
 }
 
 InstallableParams ParamsToPerformInstallableCheck(int ideal_icon_size_in_dp,
-                                                  int minimum_icon_size_in_dp) {
-  // TODO(hanxi): change check_installable to true for WebAPKs.
+                                                  int minimum_icon_size_in_dp,
+                                                  bool check_installable) {
   InstallableParams params;
   params.ideal_icon_size_in_dp = ideal_icon_size_in_dp;
   params.minimum_icon_size_in_dp = minimum_icon_size_in_dp;
-  params.check_installable = false;
+  params.check_installable = check_installable;
   params.fetch_valid_icon = true;
   return params;
 }
@@ -73,6 +73,7 @@ AddToHomescreenDataFetcher::AddToHomescreenDataFetcher(
     int minimum_icon_size_in_dp,
     int ideal_splash_image_size_in_dp,
     int minimum_splash_image_size_in_dp,
+    bool check_installable,
     Observer* observer)
     : WebContentsObserver(web_contents),
       weak_observer_(observer),
@@ -83,6 +84,8 @@ AddToHomescreenDataFetcher::AddToHomescreenDataFetcher(
       minimum_icon_size_in_dp_(minimum_icon_size_in_dp),
       ideal_splash_image_size_in_dp_(ideal_splash_image_size_in_dp),
       minimum_splash_image_size_in_dp_(minimum_splash_image_size_in_dp),
+      check_installable_(check_installable),
+      is_waiting_for_installable_check_(check_installable),
       is_waiting_for_web_application_info_(true),
       is_icon_saved_(false),
       is_ready_(false) {
@@ -148,7 +151,8 @@ void AddToHomescreenDataFetcher::OnDidGetWebApplicationInfo(
 
   manager->GetData(
       ParamsToPerformInstallableCheck(ideal_icon_size_in_dp_,
-                                      minimum_icon_size_in_dp_),
+                                      minimum_icon_size_in_dp_,
+                                      check_installable_),
       base::Bind(&AddToHomescreenDataFetcher::OnDidPerformInstallableCheck,
                  this));
 }
@@ -157,6 +161,11 @@ void AddToHomescreenDataFetcher::OnDidPerformInstallableCheck(
     const InstallableData& data) {
   if (!web_contents() || !weak_observer_)
     return;
+
+  if (check_installable_) {
+    is_waiting_for_installable_check_ = false;
+    weak_observer_->OnDidDetermineWebApkCompatibility(data.is_installable);
+  }
 
   if (!data.manifest.IsEmpty()) {
     content::RecordAction(
@@ -173,8 +182,6 @@ void AddToHomescreenDataFetcher::OnDidPerformInstallableCheck(
   weak_observer_->OnUserTitleAvailable(shortcut_info_.user_title);
 
   if (data.icon) {
-    // TODO(hanxi): implement WebAPK path if shortcut_info_.url has a secure
-    // scheme and data.is_installable is true.
     shortcut_info_.icon_url = data.icon_url;
 
     // base::Bind copies the arguments internally, so it is safe to pass it
@@ -222,6 +229,11 @@ base::Closure AddToHomescreenDataFetcher::FetchSplashScreenImageCallback(
 void AddToHomescreenDataFetcher::FetchFavicon() {
   if (!web_contents() || !weak_observer_)
     return;
+
+  if (check_installable_ && is_waiting_for_installable_check_) {
+    is_waiting_for_installable_check_ = false;
+    weak_observer_->OnDidDetermineWebApkCompatibility(false);
+  }
 
   // Grab the best, largest icon we can find to represent this bookmark.
   // TODO(dfalcantara): Try combining with the new BookmarksHandler once its

@@ -121,7 +121,7 @@ import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
-import org.chromium.chrome.browser.webapps.AddToHomescreenDialog;
+import org.chromium.chrome.browser.webapps.AddToHomescreenManager;
 import org.chromium.chrome.browser.widget.ControlContainer;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.content.browser.ContentVideoView;
@@ -1597,7 +1597,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                 RecordUserAction.record("MobileMenuPrint");
             }
         } else if (id == R.id.add_to_homescreen_id) {
-            AddToHomescreenDialog.show(this, currentTab);
+            AddToHomescreenManager addToHomescreenManager =
+                    new AddToHomescreenManager(this, currentTab);
+            addToHomescreenManager.start();
             RecordUserAction.record("MobileMenuAddToHomescreen");
         } else if (id == R.id.request_desktop_site_id) {
             final boolean reloadOnChange = !currentTab.isNativePage();
