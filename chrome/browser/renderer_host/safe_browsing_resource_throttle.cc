@@ -169,6 +169,24 @@ void SafeBrowsingResourceThrottle::WillProcessResponse(bool* defer) {
   }
 }
 
+bool SafeBrowsingResourceThrottle::MustProcessResponseBeforeReadingBody() {
+  // On Android, SafeBrowsing may only decide to cancel the request when the
+  // response has been received. Therefore, no part of it should be cached
+  // until this ResourceThrottle has been able to check the response. This
+  // prevents the following scenario:
+  //   1) A request is made for foo.com which has been hacked.
+  //   2) The request is only canceled at WillProcessResponse stage, but part of
+  //   it has been cached.
+  //   3) foo.com is no longer hacked and removed from the SafeBrowsing list.
+  //   4) The user requests foo.com, which is not on the SafeBrowsing list. This
+  //   is deemed safe. However, the resource is actually served from cache,
+  //   using the version that was previously stored.
+  //   5) This results in the  user accessing an unsafe resource without being
+  //   notified that it's dangerous.
+  // TODO(clamy): Add a browser test that checks this specific scenario.
+  return true;
+}
+
 void SafeBrowsingResourceThrottle::WillRedirectRequest(
     const net::RedirectInfo& redirect_info,
     bool* defer) {

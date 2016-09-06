@@ -47,8 +47,9 @@
 #include "content/browser/loader/async_revalidation_manager.h"
 #include "content/browser/loader/cross_site_resource_handler.h"
 #include "content/browser/loader/detachable_resource_handler.h"
+#include "content/browser/loader/intercepting_resource_handler.h"
 #include "content/browser/loader/loader_delegate.h"
-#include "content/browser/loader/mime_type_resource_handler.h"
+#include "content/browser/loader/mime_sniffing_resource_handler.h"
 #include "content/browser/loader/mojo_async_resource_handler.h"
 #include "content/browser/loader/navigation_resource_handler.h"
 #include "content/browser/loader/navigation_resource_throttle.h"
@@ -1643,13 +1644,12 @@ ResourceDispatcherHostImpl::AddStandardHandlers(
     return handler;
   }
 
-  PluginService* plugin_service = nullptr;
-#if defined(ENABLE_PLUGINS)
-  plugin_service = PluginService::GetInstance();
-#endif
-  // Insert a buffered event handler before the actual one.
-  handler.reset(new MimeTypeResourceHandler(std::move(handler), this,
-                                            plugin_service, request));
+  // The InterceptingResourceHandler will replace its next handler with an
+  // appropriate one based on the MIME type of the response if needed. It
+  // should be placed at the end of the chain, just before |handler|.
+  handler.reset(new InterceptingResourceHandler(std::move(handler), request));
+  InterceptingResourceHandler* intercepting_handler =
+      static_cast<InterceptingResourceHandler*>(handler.get());
 
   ScopedVector<ResourceThrottle> throttles;
 
@@ -1682,8 +1682,40 @@ ResourceDispatcherHostImpl::AddStandardHandlers(
   throttles.push_back(scheduler_->ScheduleRequest(child_id, route_id,
                                                   info->IsAsync(), request));
 
-  handler.reset(new ThrottlingResourceHandler(std::move(handler), request,
-                                              std::move(throttles)));
+  // Split the handler in two groups: the ones that need to execute
+  // WillProcessResponse before mime sniffing and the others.
+  // TODO(clamy): ScopedVector is deprecated. The interface should be changed
+  // to use vectors instead.
+  ScopedVector<ResourceThrottle> pre_mime_sniffing_throttles;
+  ScopedVector<ResourceThrottle> post_mime_sniffing_throttles;
+  for (auto throttle : throttles) {
+    if (throttle->MustProcessResponseBeforeReadingBody()) {
+      pre_mime_sniffing_throttles.push_back(throttle);
+    } else {
+      post_mime_sniffing_throttles.push_back(throttle);
+    }
+  }
+  throttles.weak_clear();
+
+  // Add the post mime sniffing throttles.
+  handler.reset(new ThrottlingResourceHandler(
+      std::move(handler), request, std::move(post_mime_sniffing_throttles)));
+
+  PluginService* plugin_service = nullptr;
+#if defined(ENABLE_PLUGINS)
+  plugin_service = PluginService::GetInstance();
+#endif
+
+  // Insert a buffered event handler to sniff the mime type.
+  // Note: all ResourceHandler following the MimeSniffingResourceHandler should
+  // expect OnWillRead to be called *before* OnResponseStarted as part of the
+  // mime sniffing process.
+  handler.reset(new MimeSniffingResourceHandler(
+      std::move(handler), this, plugin_service, intercepting_handler, request));
+
+  // Add the pre mime sniffing throttles.
+  handler.reset(new ThrottlingResourceHandler(
+      std::move(handler), request, std::move(pre_mime_sniffing_throttles)));
 
   return handler;
 }

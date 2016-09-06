@@ -78,6 +78,7 @@ class SafeBrowsingResourceThrottle
   void WillRedirectRequest(const net::RedirectInfo& redirect_info,
                            bool* defer) override;
   void WillProcessResponse(bool* defer) override;
+  bool MustProcessResponseBeforeReadingBody() override;
 
   const char* GetNameForLogging() const override;
 

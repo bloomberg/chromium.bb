@@ -430,6 +430,27 @@ class URLRequestTestDelayedCompletionJob : public net::URLRequestTestJob {
   bool NextReadAsync() override { return true; }
 };
 
+// This class is a variation on URLRequestTestJob that ensures that no read is
+// asked of this job.
+class URLRequestMustNotReadTestJob : public net::URLRequestTestJob {
+ public:
+  URLRequestMustNotReadTestJob(net::URLRequest* request,
+                               net::NetworkDelegate* network_delegate,
+                               const std::string& response_headers,
+                               const std::string& response_data)
+      : net::URLRequestTestJob(request,
+                               network_delegate,
+                               response_headers,
+                               response_data,
+                               false) {}
+
+  int ReadRawData(net::IOBuffer* buf, int buf_size) override {
+    EXPECT_TRUE(false) << "The job should have been cancelled before trying to "
+                          "read the response body.";
+    return 0;
+  }
+};
+
 class URLRequestBigJob : public net::URLRequestSimpleJob {
  public:
   URLRequestBigJob(net::URLRequest* request,
@@ -525,8 +546,8 @@ class TestURLRequestJobFactory : public net::URLRequestJobFactory {
         hang_after_start_(false),
         delay_start_(false),
         delay_complete_(false),
-        url_request_jobs_created_count_(0) {
-  }
+        must_not_read_(false),
+        url_request_jobs_created_count_(0) {}
 
   void HandleScheme(const std::string& scheme) {
     supported_schemes_.insert(scheme);
@@ -547,6 +568,10 @@ class TestURLRequestJobFactory : public net::URLRequestJobFactory {
 
   void SetDelayedCompleteJobGeneration(bool delay_job_complete) {
     delay_complete_ = delay_job_complete;
+  }
+
+  void SetMustNotReadJobGeneration(bool must_not_read) {
+    must_not_read_ = must_not_read;
   }
 
   net::URLRequestJob* MaybeCreateJobWithProtocolHandler(
@@ -580,6 +605,7 @@ class TestURLRequestJobFactory : public net::URLRequestJobFactory {
   bool hang_after_start_;
   bool delay_start_;
   bool delay_complete_;
+  bool must_not_read_;
   mutable int url_request_jobs_created_count_;
   std::set<std::string> supported_schemes_;
 
@@ -610,10 +636,12 @@ class TransfersAllNavigationsContentBrowserClient
 };
 
 enum GenericResourceThrottleFlags {
-  NONE                      = 0,
-  DEFER_STARTING_REQUEST    = 1 << 0,
-  DEFER_PROCESSING_RESPONSE = 1 << 1,
-  CANCEL_BEFORE_START       = 1 << 2
+  NONE                       = 0,
+  DEFER_STARTING_REQUEST     = 1 << 0,
+  DEFER_PROCESSING_RESPONSE  = 1 << 1,
+  CANCEL_BEFORE_START        = 1 << 2,
+  CANCEL_PROCESSING_RESPONSE = 1 << 3,
+  MUST_NOT_CACHE_BODY        = 1 << 4,
 };
 
 // Throttle that tracks the current throttle blocking a request.  Only one
@@ -658,6 +686,14 @@ class GenericResourceThrottle : public ResourceThrottle {
       active_throttle_ = this;
       *defer = true;
     }
+
+    if (flags_ & CANCEL_PROCESSING_RESPONSE) {
+      if (error_code_for_cancellation_ == USE_DEFAULT_CANCEL_ERROR_CODE) {
+        controller()->Cancel();
+      } else {
+        controller()->CancelWithError(error_code_for_cancellation_);
+      }
+    }
   }
 
   const char* GetNameForLogging() const override {
@@ -672,6 +708,10 @@ class GenericResourceThrottle : public ResourceThrottle {
 
   static GenericResourceThrottle* active_throttle() {
     return active_throttle_;
+  }
+
+  bool MustProcessResponseBeforeReadingBody() override {
+    return flags_ & MUST_NOT_CACHE_BODY;
   }
 
  private:
@@ -2505,6 +2545,7 @@ TEST_P(ResourceDispatcherHostTest, IgnoreCancelForDownloads) {
   // Return some data so that the request is identified as a download
   // and the proper resource handlers are created.
   EXPECT_TRUE(net::URLRequestTestJob::ProcessOnePendingMessage());
+  base::RunLoop().RunUntilIdle();
 
   // And now simulate a cancellation coming from the renderer.
   ResourceHostMsg_CancelRequest msg(request_id);
@@ -2516,6 +2557,7 @@ TEST_P(ResourceDispatcherHostTest, IgnoreCancelForDownloads) {
   EXPECT_EQ(1, host_.pending_requests());
 
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_P(ResourceDispatcherHostTest, CancelRequestsForContext) {
@@ -2576,6 +2618,7 @@ TEST_P(ResourceDispatcherHostTest, CancelRequestsForContext) {
     // Return some data so that the request is identified as a download
     // and the proper resource handlers are created.
     EXPECT_TRUE(net::URLRequestTestJob::ProcessOnePendingMessage());
+    base::RunLoop().RunUntilIdle();
 
     // And now simulate a cancellation coming from the renderer.
     ResourceHostMsg_CancelRequest msg(request_id);
@@ -2593,6 +2636,10 @@ TEST_P(ResourceDispatcherHostTest, CancelRequestsForContext) {
     // Cancelling by context should work.
     host_.CancelRequestsForContext(filter_->resource_context());
     EXPECT_EQ(0, host_.pending_requests());
+
+    while (net::URLRequestTestJob::ProcessOnePendingMessage()) {
+    }
+    base::RunLoop().RunUntilIdle();
   }
 }
 
@@ -2964,6 +3011,7 @@ TEST_P(ResourceDispatcherHostTest, TransferNavigationText) {
   // Flush all the pending requests to get the response through the
   // MimeTypeResourceHandler.
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
+  base::RunLoop().RunUntilIdle();
 
   // Restore, now that we've set up a transfer.
   SetBrowserClientForTesting(old_client);
@@ -3132,6 +3180,7 @@ TEST_P(ResourceDispatcherHostTest, TransferNavigationWithTwoRedirects) {
   // Flush all the pending requests to get the response through the
   // MimeTypeResourceHandler.
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
+  base::RunLoop().RunUntilIdle();
 
   // Restore.
   SetBrowserClientForTesting(old_client);
@@ -3738,6 +3787,38 @@ TEST_P(ResourceDispatcherHostTest, TransferRequestRedirectedDownload) {
             web_contents_observer_->resource_request_redirect_count());
 }
 
+// Tests that a ResourceThrottle that needs to process the response before any
+// part of the body is read can do so.
+TEST_P(ResourceDispatcherHostTest, ThrottleMustProcessResponseBeforeRead) {
+  // Ensure all jobs will check that no read operation is called.
+  job_factory_->SetMustNotReadJobGeneration(true);
+  HandleScheme("http");
+
+  // Create a ResourceThrottle that must process the response before any part of
+  // the body is read. This throttle will also cancel the request in
+  // WillProcessResponse.
+  TestResourceDispatcherHostDelegate delegate;
+  int throttle_flags = CANCEL_PROCESSING_RESPONSE | MUST_NOT_CACHE_BODY;
+  delegate.set_flags(throttle_flags);
+  host_.SetDelegate(&delegate);
+
+  // This response should normally result in the MIME type being sniffed, which
+  // requires reading the body.
+  std::string raw_headers(
+      "HTTP/1.1 200 OK\n"
+      "Content-Type: text/plain; charset=utf-8\n\n");
+  std::string response_data("p { text-align: center; }");
+  SetResponse(raw_headers, response_data);
+
+  MakeTestRequestWithResourceType(filter_.get(), filter_->child_id(), 1,
+                                  GURL("http://example.com/blah"),
+                                  RESOURCE_TYPE_STYLESHEET);
+
+  while (net::URLRequestTestJob::ProcessOnePendingMessage()) {
+  }
+  base::RunLoop().RunUntilIdle();
+}
+
 // A URLRequestTestJob that sets a test certificate on the |ssl_info|
 // field of the response.
 class TestHTTPSURLRequestJob : public net::URLRequestTestJob {
@@ -3801,6 +3882,10 @@ net::URLRequestJob* TestURLRequestJobFactory::MaybeCreateJobWithProtocolHandler(
           request, network_delegate,
           test_fixture_->response_headers_, test_fixture_->response_data_,
           false);
+    } else if (must_not_read_) {
+      return new URLRequestMustNotReadTestJob(request, network_delegate,
+                                              test_fixture_->response_headers_,
+                                              test_fixture_->response_data_);
     } else if (test_fixture_->use_test_ssl_certificate_) {
       return new TestHTTPSURLRequestJob(request, network_delegate,
                                         test_fixture_->response_headers_,
