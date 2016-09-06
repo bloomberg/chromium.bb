@@ -4095,6 +4095,20 @@ TEST_P(GLES2DecoderManualInitTest, GetNoCompressedTextureFormats) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
+TEST_P(GLES2DecoderManualInitTest, TexStorageInvalidLevels) {
+  InitState init;
+  init.gl_version = "OpenGL 4.2";
+  init.extensions = "GL_ARB_texture_rectangle GL_ARB_texture_storage";
+  init.bind_generates_resource = true;
+  InitDecoder(init);
+  DoBindTexture(GL_TEXTURE_RECTANGLE_ARB, client_texture_id_,
+                kServiceTextureId);
+  TexStorage2DEXT cmd;
+  cmd.Init(GL_TEXTURE_RECTANGLE_ARB, 2, GL_RGBA8, 4, 4);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+}
+
 TEST_P(GLES3DecoderTest, TexStorage3DValidArgs) {
   DoBindTexture(GL_TEXTURE_3D, client_texture_id_, kServiceTextureId);
   EXPECT_CALL(*gl_, TexStorage3D(GL_TEXTURE_3D, 2, GL_RGB565, 4, 5, 6))

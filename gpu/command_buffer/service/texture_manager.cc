@@ -2104,6 +2104,7 @@ GLsizei TextureManager::ComputeMipMapCount(GLenum target,
                                            GLsizei depth) {
   switch (target) {
     case GL_TEXTURE_EXTERNAL_OES:
+    case GL_TEXTURE_RECTANGLE_ARB:
       return 1;
     case GL_TEXTURE_3D:
       return 1 +
