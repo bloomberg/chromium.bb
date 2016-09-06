@@ -1571,6 +1571,8 @@
       'log/write_to_file_net_log_observer_unittest.cc',
       'log/bounded_file_net_log_observer_unittest.cc',
       'nqe/effective_connection_type_unittest.cc',
+      'nqe/network_quality_estimator_test_util.cc',
+      'nqe/network_quality_estimator_test_util.h',
       'nqe/network_quality_estimator_unittest.cc',
       'nqe/network_quality_observation_unittest.cc',
       'nqe/network_quality_store_unittest.cc',
