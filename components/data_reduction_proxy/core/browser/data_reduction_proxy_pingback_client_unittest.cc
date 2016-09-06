@@ -83,15 +83,20 @@ class TestDataReductionProxyPingbackClient
 class DataReductionProxyPingbackClientTest : public testing::Test {
  public:
   DataReductionProxyPingbackClientTest()
-      : timing_(base::Time::FromJsTime(1500),
-                base::Optional<base::TimeDelta>(
-                    base::TimeDelta::FromMilliseconds(1600)),
-                base::Optional<base::TimeDelta>(
-                    base::TimeDelta::FromMilliseconds(1700)),
-                base::Optional<base::TimeDelta>(
-                    base::TimeDelta::FromMilliseconds(1800)),
-                base::Optional<base::TimeDelta>(
-                    base::TimeDelta::FromMilliseconds(1900))) {}
+      : timing_(
+            base::Time::FromJsTime(1500) /* navigation_start */,
+            base::Optional<base::TimeDelta>(
+                base::TimeDelta::FromMilliseconds(1600)) /* response_start */,
+            base::Optional<base::TimeDelta>(
+                base::TimeDelta::FromMilliseconds(1700)) /* load_event_start */,
+            base::Optional<base::TimeDelta>(base::TimeDelta::FromMilliseconds(
+                1800)) /* first_image_paint */,
+            base::Optional<base::TimeDelta>(base::TimeDelta::FromMilliseconds(
+                1900)) /* first_contentful_paint */,
+            base::Optional<base::TimeDelta>(base::TimeDelta::FromMilliseconds(
+                100)) /* parse_blocked_on_script_load_duration */,
+            base::Optional<base::TimeDelta>(
+                base::TimeDelta::FromMilliseconds(2000)) /* parse_stop */) {}
 
   TestDataReductionProxyPingbackClient* pingback_client() const {
     return pingback_client_.get();
@@ -162,6 +167,11 @@ TEST_F(DataReductionProxyPingbackClientTest, VerifyPingbackContent) {
   EXPECT_EQ(timing().first_contentful_paint.value(),
             protobuf_parser::DurationToTimeDelta(
                 pageload_metrics.time_to_first_contentful_paint()));
+  EXPECT_EQ(timing().parse_blocked_on_script_load_duration.value(),
+            protobuf_parser::DurationToTimeDelta(
+                pageload_metrics.parse_blocked_on_script_load_duration()));
+  EXPECT_EQ(timing().parse_stop.value(), protobuf_parser::DurationToTimeDelta(
+                                             pageload_metrics.parse_stop()));
 
   EXPECT_EQ(kSessionKey, pageload_metrics.session_key());
   EXPECT_EQ(kFakeURL, pageload_metrics.first_request_url());
@@ -222,6 +232,11 @@ TEST_F(DataReductionProxyPingbackClientTest, VerifyTwoPingbacksBatchedContent) {
     EXPECT_EQ(timing().first_contentful_paint.value(),
               protobuf_parser::DurationToTimeDelta(
                   pageload_metrics.time_to_first_contentful_paint()));
+    EXPECT_EQ(timing().parse_blocked_on_script_load_duration.value(),
+              protobuf_parser::DurationToTimeDelta(
+                  pageload_metrics.parse_blocked_on_script_load_duration()));
+    EXPECT_EQ(timing().parse_stop.value(), protobuf_parser::DurationToTimeDelta(
+                                               pageload_metrics.parse_stop()));
 
     EXPECT_EQ(kSessionKey, pageload_metrics.session_key());
     EXPECT_EQ(kFakeURL, pageload_metrics.first_request_url());

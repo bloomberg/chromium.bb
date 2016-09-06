@@ -66,6 +66,17 @@ void AddDataToPageloadMetrics(const DataReductionProxyData& request_data,
             timing.load_event_start.value())
             .release());
   }
+  if (timing.parse_blocked_on_script_load_duration) {
+    request->set_allocated_parse_blocked_on_script_load_duration(
+        protobuf_parser::CreateDurationFromTimeDelta(
+            timing.parse_blocked_on_script_load_duration.value())
+            .release());
+  }
+  if (timing.parse_stop) {
+    request->set_allocated_parse_stop(
+        protobuf_parser::CreateDurationFromTimeDelta(timing.parse_stop.value())
+            .release());
+  }
 
   request->set_effective_connection_type(
       protobuf_parser::ProtoEffectiveConnectionTypeFromEffectiveConnectionType(

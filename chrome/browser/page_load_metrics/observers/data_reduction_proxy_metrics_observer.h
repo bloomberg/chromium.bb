@@ -37,6 +37,8 @@ extern const char kHistogramFirstImagePaintSuffix[];
 extern const char kHistogramFirstPaintSuffix[];
 extern const char kHistogramFirstTextPaintSuffix[];
 extern const char kHistogramParseStartSuffix[];
+extern const char kHistogramParseBlockedOnScriptLoadSuffix[];
+extern const char kHistogramParseDurationSuffix[];
 
 }  // namespace internal
 
@@ -73,6 +75,8 @@ class DataReductionProxyMetricsObserver
       const page_load_metrics::PageLoadExtraInfo& info) override;
   void OnParseStart(const page_load_metrics::PageLoadTiming& timing,
                     const page_load_metrics::PageLoadExtraInfo& info) override;
+  void OnParseStop(const page_load_metrics::PageLoadTiming& timing,
+                   const page_load_metrics::PageLoadExtraInfo& info) override;
 
  private:
   // Gets the default DataReductionProxyPingbackClient. Overridden in testing.

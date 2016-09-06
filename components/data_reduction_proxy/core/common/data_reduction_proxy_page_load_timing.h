@@ -17,7 +17,10 @@ struct DataReductionProxyPageLoadTiming {
       const base::Optional<base::TimeDelta>& response_start,
       const base::Optional<base::TimeDelta>& load_event_start,
       const base::Optional<base::TimeDelta>& first_image_paint,
-      const base::Optional<base::TimeDelta>& first_contentful_paint);
+      const base::Optional<base::TimeDelta>& first_contentful_paint,
+      const base::Optional<base::TimeDelta>&
+          parse_blocked_on_script_load_duration,
+      const base::Optional<base::TimeDelta>& parse_stop);
 
   DataReductionProxyPageLoadTiming(
       const DataReductionProxyPageLoadTiming& other);
@@ -25,7 +28,7 @@ struct DataReductionProxyPageLoadTiming {
   // Time that the navigation for the associated page was initiated.
   const base::Time navigation_start;
 
-  // All TimeDeltas are relative to navigation_start
+  // All TimeDeltas are relative to navigation_start.
 
   // Time that the first byte of the response is received.
   const base::Optional<base::TimeDelta> response_start;
@@ -37,6 +40,10 @@ struct DataReductionProxyPageLoadTiming {
   const base::Optional<base::TimeDelta> first_image_paint;
   // Time when the first contentful thing (image, text, etc.) is painted.
   const base::Optional<base::TimeDelta> first_contentful_paint;
+  // Time that parsing was blocked by loading script.
+  const base::Optional<base::TimeDelta> parse_blocked_on_script_load_duration;
+  // Time when parsing completed.
+  const base::Optional<base::TimeDelta> parse_stop;
 };
 
 }  // namespace data_reduction_proxy

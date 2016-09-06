@@ -20,6 +20,8 @@ message RecordPageloadMetricsRequest {
 
 // Metrics for a single pageload.
 message PageloadMetrics {
+  reserved 3;
+
   // The possible effective connection type values.
   // See //net/nqe/effective_connection_type.h for the detailed description of
   // each of the enum values.
@@ -37,9 +39,6 @@ message PageloadMetrics {
   // The time at which the first request of the pageload was made, according to
   // the client's clock.
   optional Timestamp first_request_time = 2;
-  // The time at which the last request of the pageload was made, according to
-  // the client's clock.
-  optional Timestamp last_request_time = 3;
   // The URL of the main page request.
   optional string first_request_url = 4;
   // The URL of the last request.
@@ -63,4 +62,10 @@ message PageloadMetrics {
 
   // The effective connection type at the start of the navigation.
   optional EffectiveConnectionType effective_connection_type = 12;
+
+  // The amount of time the parser was blocked by loading script.
+  optional Duration parse_blocked_on_script_load_duration = 13;
+
+  // Time until parsing finished.
+  optional Duration parse_stop = 14;
 }

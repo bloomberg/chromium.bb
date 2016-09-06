@@ -138,6 +138,9 @@ class DataReductionProxyMetricsObserverTest
     timing_.first_image_paint = base::TimeDelta::FromSeconds(5);
     timing_.first_text_paint = base::TimeDelta::FromSeconds(6);
     timing_.load_event_start = base::TimeDelta::FromSeconds(7);
+    timing_.parse_stop = base::TimeDelta::FromSeconds(4);
+    timing_.parse_blocked_on_script_load_duration =
+        base::TimeDelta::FromSeconds(1);
     PopulateRequiredTimingFields(&timing_);
   }
 
@@ -197,6 +200,12 @@ class DataReductionProxyMetricsObserverTest
                                 timing_.first_text_paint);
     ValidateHistogramsForSuffix(internal::kHistogramParseStartSuffix,
                                 timing_.parse_start);
+    ValidateHistogramsForSuffix(
+        internal::kHistogramParseBlockedOnScriptLoadSuffix,
+        timing_.parse_blocked_on_script_load_duration);
+    ValidateHistogramsForSuffix(
+        internal::kHistogramParseDurationSuffix,
+        timing_.parse_stop.value() - timing_.parse_start.value());
   }
 
   void ValidateHistogramsForSuffix(
