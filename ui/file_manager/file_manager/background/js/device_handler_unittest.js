@@ -29,6 +29,7 @@ loadTimeData.data = {
   REMOVABLE_DEVICE_IMPORT_BUTTON_LABEL: '',
   DEVICE_UNKNOWN_BUTTON_LABEL: 'DEVICE_UNKNOWN_BUTTON_LABEL',
   DEVICE_UNKNOWN_MESSAGE: 'DEVICE_UNKNOWN: $1',
+  DEVICE_UNKNOWN_DEFAULT_MESSAGE: 'DEVICE_UNKNOWN_DEFAULT_MESSAGE',
   DEVICE_UNSUPPORTED_MESSAGE: 'DEVICE_UNSUPPORTED: $1',
   DEVICE_HARD_UNPLUGGED_TITLE: 'DEVICE_HARD_UNPLUGGED_TITLE',
   DEVICE_HARD_UNPLUGGED_MESSAGE: 'DEVICE_HARD_UNPLUGGED_MESSAGE',
@@ -278,6 +279,56 @@ function testUnsupportedDevice(callback) {
         assertEquals(
             'DEVICE_UNSUPPORTED: label',
             chrome.notifications.items['deviceFail:/device/path'].message);
+      });
+
+  reportPromise(promise, callback);
+}
+
+function testUnknownDevice(callback) {
+  // Emulate adding a device which has unknown filesystem.
+  chrome.fileManagerPrivate.onMountCompleted.dispatch({
+    eventType: 'mount',
+    status: 'error_unknown_filesystem',
+    volumeMetadata: {
+      isParentDevice: false,
+      isReadOnly: false,
+      deviceType: 'usb',
+      devicePath: '/device/path',
+    },
+    shouldNotify: true
+  });
+  var promise = chrome.notifications.resolver.promise.then(
+      function(notifications) {
+        assertFalse(!!chrome.notifications.items['device:/device/path']);
+        var item = chrome.notifications.items['deviceFail:/device/path'];
+        assertEquals('DEVICE_UNKNOWN_DEFAULT_MESSAGE', item.message);
+        // "Format device" button should appear.
+        assertEquals('DEVICE_UNKNOWN_BUTTON_LABEL', item.buttons[0].title);
+      });
+
+  reportPromise(promise, callback);
+}
+
+function testUnknownReadonlyDevice(callback) {
+  // Emulate adding a device which has unknown filesystem but is read-only.
+  chrome.fileManagerPrivate.onMountCompleted.dispatch({
+    eventType: 'mount',
+    status: 'error_unknown_filesystem',
+    volumeMetadata: {
+      isParentDevice: true,
+      isReadOnly: true,
+      deviceType: 'sd',
+      devicePath: '/device/path',
+    },
+    shouldNotify: true
+  });
+  var promise = chrome.notifications.resolver.promise.then(
+      function(notifications) {
+        assertFalse(!!chrome.notifications.items['device:/device/path']);
+        var item = chrome.notifications.items['deviceFail:/device/path'];
+        assertEquals('DEVICE_UNKNOWN_DEFAULT_MESSAGE', item.message);
+        // "Format device" button should not appear.
+        assertFalse(!!item.buttons);
       });
 
   reportPromise(promise, callback);
