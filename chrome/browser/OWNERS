@@ -3,6 +3,10 @@
 per-file about_flags.cc=*
 
 per-file *_android.*=file://chrome/browser/android/OWNERS
+# These are for the common case of adding or renaming Android files. If
+# you're doing structural changes, please get a thorough review from
+# another owner (see //chrome/OWNERS).
+per-file BUILD.gn=file://chrome/browser/android/OWNERS
 
 per-file browser_resources.grd=bauerb@chromium.org
 per-file browser_resources.grd=calamity@chromium.org
