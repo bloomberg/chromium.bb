@@ -881,6 +881,7 @@ template("ios_framework_bundle") {
     _framework_headers_target = _target_name + "_framework_headers"
     _framework_headers_config = _target_name + "_framework_headers_config"
     _headers_map_config = _target_name + "_headers_map"
+    _install_name_config = _target_name + "_install_name"
   }
 
   _arch_shared_library_source = _target_name + "_arch_shared_library_sources"
@@ -962,6 +963,7 @@ template("ios_framework_bundle") {
         deps += [ ":$_framework_headers_target($default_toolchain)" ]
       }
     }
+    configs += [ ":$_install_name_config($default_toolchain)" ]
 
     output_extension = ""
     output_name = _output_name
@@ -1056,6 +1058,10 @@ template("ios_framework_bundle") {
       config(_headers_map_config) {
         visibility = [ ":$_target_name" ]
         include_dirs = [ _header_map_filename ]
+      }
+
+      config(_install_name_config) {
+        visibility = [ ":$_target_name" ]
         ldflags = [
           "-install_name",
           "@rpath/$_output_name.framework/$_output_name",
