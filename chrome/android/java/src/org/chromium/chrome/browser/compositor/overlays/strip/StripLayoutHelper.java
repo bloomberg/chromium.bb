@@ -1625,6 +1625,8 @@ public class StripLayoutHelper {
                                        * mContext.getResources().getDisplayMetrics().density)
                 - mTabMenu.getWidth()
                 - ((MarginLayoutParams) tabView.getLayoutParams()).leftMargin;
+        // Cap the horizontal offset so that the tab menu doesn't get drawn off screen.
+        horizontalOffset = Math.max(horizontalOffset, 0);
         mTabMenu.setHorizontalOffset(horizontalOffset);
 
         mTabMenu.show();
