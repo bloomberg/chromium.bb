@@ -646,7 +646,11 @@ void CompositorImpl::CreateVulkanOutputSurface() {
 void CompositorImpl::OnGpuChannelEstablished(
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
     ui::ContextProviderFactory::GpuChannelHostResult result) {
-  DCHECK(output_surface_request_pending_);
+  // We might end up queing multiple GpuChannel requests for the same
+  // OutputSurface request as the visibility of the compositor changes, so the
+  // OutputSurface request could have been handled already.
+  if (!output_surface_request_pending_)
+    return;
 
   switch (result) {
     // Don't retry if we are shutting down.
