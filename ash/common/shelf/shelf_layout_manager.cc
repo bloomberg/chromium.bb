@@ -198,10 +198,9 @@ ShelfVisibilityState ShelfLayoutManager::CalculateShelfVisibility() {
 }
 
 void ShelfLayoutManager::UpdateVisibilityState() {
-  WmWindow* shelf_window = WmLookup::Get()->GetWindowForWidget(shelf_widget_);
-  WmRootWindowController* controller = shelf_window->GetRootWindowController();
   // Bail out early before the shelf is initialized or after it is destroyed.
-  if (!controller || !wm_shelf_->IsShelfInitialized() || in_shutdown_)
+  WmWindow* shelf_window = WmLookup::Get()->GetWindowForWidget(shelf_widget_);
+  if (in_shutdown_ || !wm_shelf_->IsShelfInitialized() || !shelf_window)
     return;
   bool was_invisible_auto_hide_shelf = invisible_auto_hide_shelf_;
   // Always reset to be safe.
@@ -214,7 +213,7 @@ void ShelfLayoutManager::UpdateVisibilityState() {
     // TODO(zelidrag): Verify shelf drag animation still shows on the device
     // when we are in SHELF_AUTO_HIDE_ALWAYS_HIDDEN.
     wm::WorkspaceWindowState window_state(
-        controller->GetWorkspaceWindowState());
+        shelf_window->GetRootWindowController()->GetWorkspaceWindowState());
     switch (window_state) {
       case wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN: {
         switch (GetShelfModeForFullscreen()) {

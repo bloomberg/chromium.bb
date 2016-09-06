@@ -22,6 +22,7 @@ WmShelfMus::WmShelfMus(WmWindow* root_window) {
 }
 
 WmShelfMus::~WmShelfMus() {
+  ShutdownShelfWidget();
   DestroyShelfWidget();
   ShutdownShelf();
 }

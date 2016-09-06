@@ -497,6 +497,8 @@ void ShelfWidget::Shutdown() {
     status_area_widget_->Shutdown();
     status_area_widget_ = nullptr;
   }
+
+  CloseNow();
 }
 
 void ShelfWidget::ForceUndimming(bool force) {
