@@ -59,8 +59,6 @@ bool FindBadConstructsAction::ParseArgs(const CompilerInstance& instance,
       options_.check_ipc = true;
     } else if (args[i] == "check-auto-raw-pointer") {
       options_.check_auto_raw_pointer = true;
-    } else if (args[i] == "check-implicit-copy-ctors") {
-      // This is deprecated and will be removed once the flag is not used.
     } else {
       parsed = false;
       llvm::errs() << "Unknown clang plugin argument: " << args[i] << "\n";
