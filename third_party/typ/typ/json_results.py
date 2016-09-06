@@ -91,11 +91,12 @@ def make_full_results(metadata, seconds_since_epoch, all_test_names, results):
 
     for test_name in all_test_names:
         value = OrderedDict()
-        value['actual'] = _actual_results_for_test(test_name, results)
         if test_name in skipped_tests:
             value['expected'] = 'SKIP'
+            value['actual'] = 'SKIP'
         else:
             value['expected'] = 'PASS'
+            value['actual'] = _actual_results_for_test(test_name, results)
             if value['actual'].endswith('FAIL'):
                 value['is_unexpected'] = True
         _add_path_to_trie(full_results['tests'], test_name, value)
@@ -126,13 +127,7 @@ def failed_test_names(results):
     for r in results.results:
         if r.actual == ResultType.Failure:
             names.add(r.name)
-        elif ((r.actual == ResultType.Pass or r.actual == ResultType.Skip)
-              and r.name in names):
-            # This check indicates that a test failed, and then either passed
-            # or was skipped on a retry. It is somewhat counterintuitive
-            # that a test that failed and then skipped wouldn't be considered
-            # failed, but that's at least consistent with a test that is
-            # skipped every time.
+        elif r.actual == ResultType.Pass and r.name in names:
             names.remove(r.name)
     return names
 
@@ -149,10 +144,8 @@ def _actual_results_for_test(test_name, results):
                 actuals.append('FAIL')
             elif r.actual == ResultType.Pass:
                 actuals.append('PASS')
-            elif r.actual == ResultType.Skip:
-                actuals.append('SKIP')
-    if not actuals:
-        actuals.append('SKIP')
+
+    assert actuals, 'We did not find any result data for %s.' % test_name
     return ' '.join(actuals)
 
 

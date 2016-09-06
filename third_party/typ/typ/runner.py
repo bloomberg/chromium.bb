@@ -407,11 +407,6 @@ class Runner(object):
                     add_tests(suite)
             else:
                 add_tests(loader.loadTestsFromName(name))
-        if hasattr(loader, 'errors') and loader.errors:
-            # In Python3's version of unittest, loader failures get converted
-            # into failed test cases, rather than raising exceptions. However,
-            # the errors also get recorded so you can err out immediately.
-            raise ImportError(loader.errors)
 
     def _run_tests(self, result_set, test_set):
         h = self.host
