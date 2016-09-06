@@ -43,6 +43,13 @@ class FakeDevToolsClient : public StubDevToolsClient {
       const std::string& method,
       const base::DictionaryValue& params,
       std::unique_ptr<base::DictionaryValue>* result) override {
+    if (method == "Log.enable") {
+      // FakeDevToolsClient emulates Chrome 53 and earlier versions, which do
+      // not implement the Log.enable command. ConsoleLogger functionality for
+      // Chrome 54+ is tested by end-to-end tests in run_py_tests.py.
+      return Status(kUnknownError, "unhandled inspector error: "
+          "{\"code\":-32601,\"message\":\"'Log.enable' wasn't found\"}");
+    }
     sent_command_queue_.push_back(method);
     return Status(kOk);
   }

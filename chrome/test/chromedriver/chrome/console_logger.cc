@@ -17,20 +17,19 @@
 
 namespace {
 
-// Translates Console.messageAdded.message.level into Log::Level.
+// Translates DevTools log level strings into Log::Level.
 bool ConsoleLevelToLogLevel(const std::string& name, Log::Level *out_level) {
-  const char* const kConsoleLevelNames[] = {
-    "debug", "log", "warning", "error"
-  };
-
-  for (size_t i = 0; i < arraysize(kConsoleLevelNames); ++i) {
-    if (name == kConsoleLevelNames[i]) {
-      CHECK_LE(Log::kDebug + i, static_cast<size_t>(Log::kError));
-      *out_level = static_cast<Log::Level>(Log::kDebug + i);
-      return true;
-    }
-  }
-  return false;
+  if (name == "debug")
+    *out_level = Log::kDebug;
+  else if (name == "log" || name == "info")
+    *out_level = Log::kInfo;
+  else if (name == "warning")
+    *out_level = Log::kWarning;
+  else if (name == "error")
+    *out_level = Log::kError;
+  else
+    return false;
+  return true;
 }
 
 }  // namespace
@@ -40,19 +39,42 @@ ConsoleLogger::ConsoleLogger(Log* log)
 
 Status ConsoleLogger::OnConnected(DevToolsClient* client) {
   base::DictionaryValue params;
-  return client->SendCommand("Console.enable", params);
+  Status status = client->SendCommand("Log.enable", params);
+  if (status.IsError()) {
+    std::string message = status.message();
+    if (message.find("'Log.enable' wasn't found") != std::string::npos) {
+      // If the Log.enable command doesn't exist, then we're on Chrome 53 or
+      // earlier. Enable the Console domain so we can listen for
+      // Console.messageAdded events.
+      return client->SendCommand("Console.enable", params);
+    } else {
+      return status;
+    }
+  }
+  // Otherwise, we're on Chrome 54+. Enable the Log and Runtime domains so we
+  // can listen for Log.entryAdded and Runtime.exceptionThrown events.
+  return client->SendCommand("Runtime.enable", params);
 }
 
 Status ConsoleLogger::OnEvent(
     DevToolsClient* client,
     const std::string& method,
     const base::DictionaryValue& params) {
-  if (method != "Console.messageAdded")
+  if (method == "Console.messageAdded")
+    return OnConsoleMessageAdded(params);
+  else if (method == "Log.entryAdded")
+    return OnLogEntryAdded(params);
+  else if (method == "Runtime.exceptionThrown")
+    return OnRuntimeExceptionThrown(params);
+  else
     return Status(kOk);
+}
 
+Status ConsoleLogger::OnConsoleMessageAdded(
+    const base::DictionaryValue& params) {
   // If the event has proper structure and fields, log formatted.
   // Else it's a weird message that we don't know how to format, log full JSON.
-  const base::DictionaryValue *message_dict = NULL;
+  const base::DictionaryValue* message_dict = nullptr;
   if (params.GetDictionary("message", &message_dict)) {
     std::string text;
     std::string level_name;
@@ -98,5 +120,110 @@ Status ConsoleLogger::OnEvent(
   std::string message_json;
   base::JSONWriter::Write(params, &message_json);
   log_->AddEntry(Log::kWarning, message_json);
+  return Status(kOk);
+}
+
+Status ConsoleLogger::OnLogEntryAdded(const base::DictionaryValue& params) {
+  const base::DictionaryValue* entry = nullptr;
+  if (!params.GetDictionary("entry", &entry))
+    return Status(kUnknownError, "missing or invalid 'entry'");
+
+  std::string level_name;
+  Log::Level level;
+  if (!entry->GetString("level", &level_name) ||
+      !ConsoleLevelToLogLevel(level_name, &level))
+    return Status(kUnknownError, "missing or invalid 'entry.level'");
+
+  std::string source;
+  if (!entry->GetString("source", &source))
+    return Status(kUnknownError, "missing or invalid 'entry.source'");
+
+  std::string origin;
+  if (!entry->GetString("url", &origin))
+    origin = source;
+
+  std::string line_number;
+  int line = -1;
+  if (entry->GetInteger("lineNumber", &line)) {
+    line_number = base::StringPrintf("%d", line);
+  } else {
+    // No line number, but print anyway, just to maintain the number of fields
+    // in the formatted message in case someone wants to parse it.
+    line_number = "-";
+  }
+
+  std::string text;
+  if (!entry->GetString("text", &text))
+    return Status(kUnknownError, "missing or invalid 'entry.text'");
+
+  log_->AddEntry(level, source, base::StringPrintf("%s %s %s",
+                                                   origin.c_str(),
+                                                   line_number.c_str(),
+                                                   text.c_str()));
+  return Status(kOk);
+}
+
+Status ConsoleLogger::OnRuntimeExceptionThrown(
+    const base::DictionaryValue& params) {
+  const base::DictionaryValue* exception_details = nullptr;
+  // In Chrome 54, |url|, |lineNumber| and |columnNumber| are properties of the
+  // |details| dictionary. In Chrome 55+, they are inside the |exceptionDetails|
+  // dictionary.
+  // TODO(samuong): Stop looking at |details| once we stop supporting Chrome 54.
+  if (!params.GetDictionary("exceptionDetails", &exception_details))
+    if (!params.GetDictionary("details", &exception_details))
+      return Status(kUnknownError, "missing or invalid exception details");
+
+  std::string origin;
+  if (!exception_details->GetString("url", &origin))
+    origin = "javascript";
+
+  int line = -1;
+  if (!exception_details->GetInteger("lineNumber", &line))
+    return Status(kUnknownError, "missing or invalid lineNumber");
+  int column = -1;
+  if (!exception_details->GetInteger("columnNumber", &column))
+    return Status(kUnknownError, "missing or invalid columnNumber");
+  std::string line_column = base::StringPrintf("%d:%d", line, column);
+
+  // In Chrome 54, the exception object is serialized as a dictionary called
+  // |exception|. In Chrome 55+, the exception object properties are in the
+  // |exceptionDetails| object.
+  // TODO(samuong): Delete this once we stop supporting Chrome 54.
+  if (!params.GetDictionary("exceptionDetails", &exception_details))
+    exception_details = &params;
+
+  std::string text;
+  const base::DictionaryValue* exception = nullptr;
+  const base::DictionaryValue* preview = nullptr;
+  const base::ListValue* properties = nullptr;
+  if (exception_details->GetDictionary("exception", &exception) &&
+      exception->GetDictionary("preview", &preview) &&
+      preview->GetList("properties", &properties)) {
+    // If the event contains an object which is an instance of the JS Error
+    // class, attempt to get the message property for the exception.
+    for (size_t i = 0; i < properties->GetSize(); i++) {
+      const base::DictionaryValue* property = nullptr;
+      if (properties->GetDictionary(i, &property)) {
+        std::string name;
+        if (property->GetString("name", &name) && name == "message") {
+          if (property->GetString("value", &text)) {
+            std::string class_name;
+            if (exception->GetString("className", &class_name))
+              text = "Uncaught " + class_name + ": " + text;
+            break;
+          }
+        }
+      }
+    }
+  } else {
+    // Since |exception.preview.properties| is optional, fall back to |text|
+    // (which is required) if we don't find anything.
+    if (!exception_details->GetString("text", &text))
+      return Status(kUnknownError, "missing or invalid exception message text");
+  }
+
+  log_->AddEntry(Log::kError, "javascript", base::StringPrintf(
+      "%s %s %s", origin.c_str(), line_column.c_str(), text.c_str()));
   return Status(kOk);
 }
