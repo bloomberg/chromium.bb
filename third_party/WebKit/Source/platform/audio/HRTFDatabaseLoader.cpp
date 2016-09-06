@@ -39,9 +39,9 @@ namespace blink {
 
 using LoaderMap = HashMap<double, HRTFDatabaseLoader*>;
 
-// loaderMap() returns the static hash map that contains the mapping between the
+// getLoaderMap() returns the static hash map that contains the mapping between the
 // sample rate and the corresponding HRTF database.
-static LoaderMap& loaderMap()
+static LoaderMap& getLoaderMap()
 {
     DEFINE_STATIC_LOCAL(LoaderMap*, map, (new LoaderMap));
     return *map;
@@ -51,14 +51,14 @@ PassRefPtr<HRTFDatabaseLoader> HRTFDatabaseLoader::createAndLoadAsynchronouslyIf
 {
     ASSERT(isMainThread());
 
-    RefPtr<HRTFDatabaseLoader> loader = loaderMap().get(sampleRate);
+    RefPtr<HRTFDatabaseLoader> loader = getLoaderMap().get(sampleRate);
     if (loader) {
         ASSERT(sampleRate == loader->databaseSampleRate());
         return loader.release();
     }
 
     loader = adoptRef(new HRTFDatabaseLoader(sampleRate));
-    loaderMap().add(sampleRate, loader.get());
+    getLoaderMap().add(sampleRate, loader.get());
     loader->loadAsynchronously();
     return loader.release();
 }
@@ -73,7 +73,7 @@ HRTFDatabaseLoader::~HRTFDatabaseLoader()
 {
     ASSERT(isMainThread());
     ASSERT(!m_thread);
-    loaderMap().remove(m_databaseSampleRate);
+    getLoaderMap().remove(m_databaseSampleRate);
 }
 
 void HRTFDatabaseLoader::loadTask()
