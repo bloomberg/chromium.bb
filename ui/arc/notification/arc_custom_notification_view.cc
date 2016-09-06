@@ -4,6 +4,7 @@
 
 #include "ui/arc/notification/arc_custom_notification_view.h"
 
+#include "base/auto_reset.h"
 #include "components/exo/notification_surface.h"
 #include "components/exo/surface.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -315,30 +316,36 @@ void ArcCustomNotificationView::ViewHierarchyChanged(
 }
 
 void ArcCustomNotificationView::Layout() {
+  base::AutoReset<bool> auto_reset_in_layout(&in_layout_, true);
+
   views::NativeViewHost::Layout();
 
   if (!surface_ || !GetWidget())
     return;
 
+  const gfx::Rect contents_bounds = GetContentsBounds();
+
   // Scale notification surface if necessary.
   gfx::Transform transform;
   const gfx::Size surface_size = surface_->GetSize();
-  const gfx::Size contents_size = GetContentsBounds().size();
+  const gfx::Size contents_size = contents_bounds.size();
   if (!surface_size.IsEmpty() && !contents_size.IsEmpty()) {
     transform.Scale(
         static_cast<float>(contents_size.width()) / surface_size.width(),
         static_cast<float>(contents_size.height()) / surface_size.height());
   }
-  surface_->window()->SetTransform(transform);
+
+  // Apply the transform to the surface content so that close button can
+  // be positioned without the need to consider the transform.
+  surface_->window()->children()[0]->SetTransform(transform);
 
   if (!floating_close_button_widget_)
     return;
 
-  gfx::Rect surface_local_bounds(surface_->GetSize());
   gfx::Rect close_button_bounds(floating_close_button_->GetPreferredSize());
-  close_button_bounds.set_x(surface_local_bounds.right() -
+  close_button_bounds.set_x(contents_bounds.right() -
                             close_button_bounds.width());
-  close_button_bounds.set_y(surface_local_bounds.y());
+  close_button_bounds.set_y(contents_bounds.y());
   floating_close_button_widget_->SetBounds(close_button_bounds);
 
   UpdateCloseButtonVisiblity();
@@ -387,7 +394,11 @@ void ArcCustomNotificationView::OnWindowBoundsChanged(
     aura::Window* window,
     const gfx::Rect& old_bounds,
     const gfx::Rect& new_bounds) {
+  if (in_layout_)
+    return;
+
   UpdatePreferredSize();
+  Layout();
 }
 
 void ArcCustomNotificationView::OnWindowDestroying(aura::Window* window) {

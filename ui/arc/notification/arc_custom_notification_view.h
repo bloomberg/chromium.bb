@@ -99,6 +99,9 @@ class ArcCustomNotificationView
 
   views::ImageButton* floating_close_button_ = nullptr;
 
+  // Protects from call loops between Layout and OnWindowBoundsChanged.
+  bool in_layout_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(ArcCustomNotificationView);
 };
 
