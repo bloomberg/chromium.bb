@@ -56,8 +56,7 @@ static WebFallbackThemeEngine::State getWebFallbackThemeState(const LayoutObject
     return WebFallbackThemeEngine::StateNormal;
 }
 
-ThemePainter::ThemePainter(Theme* platformTheme)
-    : m_platformTheme(platformTheme)
+ThemePainter::ThemePainter()
 {
 }
 
@@ -78,21 +77,6 @@ bool ThemePainter::paint(const LayoutObject& o, const PaintInfo& paintInfo, cons
             // Text buttons (type=button, reset, submit) has
             // -webkit-appearance:push-button by default.
             UseCounter::count(o.node()->document(), UseCounter::CSSValueAppearanceButtonForOtherButtons);
-        }
-    }
-
-    if (m_platformTheme) {
-        switch (part) {
-        case CheckboxPart:
-        case RadioPart:
-        case PushButtonPart:
-        case SquareButtonPart:
-        case ButtonPart:
-        case InnerSpinButtonPart:
-            m_platformTheme->paint(part, LayoutTheme::controlStatesForLayoutObject(o), const_cast<GraphicsContext&>(paintInfo.context), r, o.styleRef().effectiveZoom(), o.view()->frameView());
-            return false;
-        default:
-            break;
         }
     }
 

@@ -132,7 +132,7 @@ using namespace HTMLNames;
 LayoutThemeMac::LayoutThemeMac()
     : LayoutTheme(platformTheme())
     , m_notificationObserver(AdoptNS, [[BlinkLayoutThemeNotificationObserver alloc] initWithTheme:this])
-    , m_painter(*this, platformTheme())
+    , m_painter(*this)
 {
     [[NSNotificationCenter defaultCenter] addObserver:m_notificationObserver.get()
                                              selector:@selector(systemColorsDidChange:)

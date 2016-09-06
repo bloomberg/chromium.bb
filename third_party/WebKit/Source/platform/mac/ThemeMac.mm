@@ -95,7 +95,7 @@ static LengthSize sizeFromFont(const FontDescription& fontDescription, const Len
     return sizeFromNSControlSize(controlSizeForFont(fontDescription), zoomedSize, zoomFactor, sizes);
 }
 
-static ControlSize controlSizeFromPixelSize(const IntSize* sizes, const IntSize& minZoomedSize, float zoomFactor)
+NSControlSize ThemeMac::controlSizeFromPixelSize(const IntSize* sizes, const IntSize& minZoomedSize, float zoomFactor)
 {
     if (minZoomedSize.width() >= static_cast<int>(sizes[NSRegularControlSize].width() * zoomFactor) &&
         minZoomedSize.height() >= static_cast<int>(sizes[NSRegularControlSize].height() * zoomFactor))
@@ -108,7 +108,7 @@ static ControlSize controlSizeFromPixelSize(const IntSize* sizes, const IntSize&
 
 static void setControlSize(NSCell* cell, const IntSize* sizes, const IntSize& minZoomedSize, float zoomFactor)
 {
-    ControlSize size = controlSizeFromPixelSize(sizes, minZoomedSize, zoomFactor);
+    ControlSize size = ThemeMac::controlSizeFromPixelSize(sizes, minZoomedSize, zoomFactor);
     if (size != [cell controlSize]) // Only update if we have to, since AppKit does work even if the size is the same.
         [cell setControlSize:(NSControlSize)size];
 }
@@ -141,24 +141,8 @@ static void updateStates(NSCell* cell, ControlStates states)
     // a view in a window whose key state can be detected.
 }
 
-static ThemeDrawState convertControlStatesToThemeDrawState(ThemeButtonKind kind, ControlStates states)
-{
-    if (states & ReadOnlyControlState)
-        return kThemeStateUnavailableInactive;
-    if (!(states & EnabledControlState))
-        return kThemeStateUnavailableInactive;
-
-    // Do not process PressedState if !EnabledControlState or ReadOnlyControlState.
-    if (states & PressedControlState) {
-        if (kind == kThemeIncDecButton || kind == kThemeIncDecButtonSmall || kind == kThemeIncDecButtonMini)
-            return states & SpinUpControlState ? kThemeStatePressedUp : kThemeStatePressedDown;
-        return kThemeStatePressed;
-    }
-    return kThemeStateActive;
-}
-
 // Return a fake NSView whose sole purpose is to tell AppKit that it's flipped.
-static NSView* ensuredView(ScrollableArea* scrollableArea)
+NSView* ThemeMac::ensuredView(ScrollableArea* scrollableArea)
 {
     // Use a fake flipped view.
     static NSView *flippedView = [[BlinkFlippedControl alloc] init];
@@ -208,13 +192,13 @@ IntRect ThemeMac::inflateRectForFocusRing(const IntRect& rect) {
 
 // Checkboxes
 
-static const IntSize* checkboxSizes()
+const IntSize* ThemeMac::checkboxSizes()
 {
     static const IntSize sizes[3] = { IntSize(14, 14), IntSize(12, 12), IntSize(10, 10) };
     return sizes;
 }
 
-static const int* checkboxMargins(NSControlSize controlSize)
+const int* ThemeMac::checkboxMargins(NSControlSize controlSize)
 {
     static const int margins[3][4] =
     {
@@ -225,7 +209,7 @@ static const int* checkboxMargins(NSControlSize controlSize)
     return margins[controlSize];
 }
 
-static LengthSize checkboxSize(const FontDescription& fontDescription, const LengthSize& zoomedSize, float zoomFactor)
+LengthSize ThemeMac::checkboxSize(const FontDescription& fontDescription, const LengthSize& zoomedSize, float zoomFactor)
 {
     // If the width and height are both specified, then we have nothing to do.
     if (!zoomedSize.width().isIntrinsicOrAuto() && !zoomedSize.height().isIntrinsicOrAuto())
@@ -235,7 +219,7 @@ static LengthSize checkboxSize(const FontDescription& fontDescription, const Len
     return sizeFromFont(fontDescription, zoomedSize, zoomFactor, checkboxSizes());
 }
 
-static NSButtonCell *checkbox(ControlStates states, const IntRect& zoomedRect, float zoomFactor)
+NSButtonCell *ThemeMac::checkbox(ControlStates states, const IntRect& zoomedRect, float zoomFactor)
 {
     static NSButtonCell *checkboxCell;
     if (!checkboxCell) {
@@ -255,48 +239,13 @@ static NSButtonCell *checkbox(ControlStates states, const IntRect& zoomedRect, f
     return checkboxCell;
 }
 
-// FIXME: Share more code with radio buttons.
-static void paintCheckbox(ControlStates states, GraphicsContext& context, const IntRect& zoomedRect, float zoomFactor, ScrollableArea* scrollableArea)
-{
-    BEGIN_BLOCK_OBJC_EXCEPTIONS
-
-    // Determine the width and height needed for the control and prepare the cell for painting.
-    NSButtonCell *checkboxCell = checkbox(states, zoomedRect, zoomFactor);
-    GraphicsContextStateSaver stateSaver(context);
-
-    NSControlSize controlSize = [checkboxCell controlSize];
-    IntSize zoomedSize = checkboxSizes()[controlSize];
-    zoomedSize.setWidth(zoomedSize.width() * zoomFactor);
-    zoomedSize.setHeight(zoomedSize.height() * zoomFactor);
-    IntRect inflatedRect = ThemeMac::inflateRect(zoomedRect, zoomedSize, checkboxMargins(controlSize), zoomFactor);
-
-    if (zoomFactor != 1.0f) {
-        inflatedRect.setWidth(inflatedRect.width() / zoomFactor);
-        inflatedRect.setHeight(inflatedRect.height() / zoomFactor);
-        context.translate(inflatedRect.x(), inflatedRect.y());
-        context.scale(zoomFactor, zoomFactor);
-        context.translate(-inflatedRect.x(), -inflatedRect.y());
-    }
-
-    LocalCurrentGraphicsContext localContext(context, ThemeMac::inflateRectForFocusRing(inflatedRect));
-    NSView* view = ensuredView(scrollableArea);
-    [checkboxCell drawWithFrame:NSRect(inflatedRect) inView:view];
-    if (states & FocusControlState)
-        [checkboxCell cr_drawFocusRingWithFrame:NSRect(inflatedRect) inView:view];
-    [checkboxCell setControlView:nil];
-
-    END_BLOCK_OBJC_EXCEPTIONS
-}
-
-// Radio Buttons
-
-static const IntSize* radioSizes()
+const IntSize* ThemeMac::radioSizes()
 {
     static const IntSize sizes[3] = { IntSize(14, 15), IntSize(12, 13), IntSize(10, 10) };
     return sizes;
 }
 
-static const int* radioMargins(NSControlSize controlSize)
+const int* ThemeMac::radioMargins(NSControlSize controlSize)
 {
     static const int margins[3][4] =
     {
@@ -307,7 +256,7 @@ static const int* radioMargins(NSControlSize controlSize)
     return margins[controlSize];
 }
 
-static LengthSize radioSize(const FontDescription& fontDescription, const LengthSize& zoomedSize, float zoomFactor)
+LengthSize ThemeMac::radioSize(const FontDescription& fontDescription, const LengthSize& zoomedSize, float zoomFactor)
 {
     // If the width and height are both specified, then we have nothing to do.
     if (!zoomedSize.width().isIntrinsicOrAuto() && !zoomedSize.height().isIntrinsicOrAuto())
@@ -317,7 +266,7 @@ static LengthSize radioSize(const FontDescription& fontDescription, const Length
     return sizeFromFont(fontDescription, zoomedSize, zoomFactor, radioSizes());
 }
 
-static NSButtonCell *radio(ControlStates states, const IntRect& zoomedRect, float zoomFactor)
+NSButtonCell *ThemeMac::radio(ControlStates states, const IntRect& zoomedRect, float zoomFactor)
 {
     static NSButtonCell *radioCell;
     if (!radioCell) {
@@ -338,46 +287,14 @@ static NSButtonCell *radio(ControlStates states, const IntRect& zoomedRect, floa
     return radioCell;
 }
 
-static void paintRadio(ControlStates states, GraphicsContext& context, const IntRect& zoomedRect, float zoomFactor, ScrollableArea* scrollableArea)
-{
-    // Determine the width and height needed for the control and prepare the cell for painting.
-    NSButtonCell *radioCell = radio(states, zoomedRect, zoomFactor);
-    GraphicsContextStateSaver stateSaver(context);
-
-    NSControlSize controlSize = [radioCell controlSize];
-    IntSize zoomedSize = radioSizes()[controlSize];
-    zoomedSize.setWidth(zoomedSize.width() * zoomFactor);
-    zoomedSize.setHeight(zoomedSize.height() * zoomFactor);
-    IntRect inflatedRect = ThemeMac::inflateRect(zoomedRect, zoomedSize, radioMargins(controlSize), zoomFactor);
-
-    if (zoomFactor != 1.0f) {
-        inflatedRect.setWidth(inflatedRect.width() / zoomFactor);
-        inflatedRect.setHeight(inflatedRect.height() / zoomFactor);
-        context.translate(inflatedRect.x(), inflatedRect.y());
-        context.scale(zoomFactor, zoomFactor);
-        context.translate(-inflatedRect.x(), -inflatedRect.y());
-    }
-
-    LocalCurrentGraphicsContext localContext(context, ThemeMac::inflateRectForFocusRing(inflatedRect));
-    BEGIN_BLOCK_OBJC_EXCEPTIONS
-    NSView* view = ensuredView(scrollableArea);
-    [radioCell drawWithFrame:NSRect(inflatedRect) inView:view];
-    if (states & FocusControlState)
-        [radioCell cr_drawFocusRingWithFrame:NSRect(inflatedRect) inView:view];
-    [radioCell setControlView:nil];
-    END_BLOCK_OBJC_EXCEPTIONS
-}
-
-// Buttons
-
 // Buttons really only constrain height. They respect width.
-static const IntSize* buttonSizes()
+const IntSize* ThemeMac::buttonSizes()
 {
     static const IntSize sizes[3] = { IntSize(0, 21), IntSize(0, 18), IntSize(0, 15) };
     return sizes;
 }
 
-static const int* buttonMargins(NSControlSize controlSize)
+const int* ThemeMac::buttonMargins(NSControlSize controlSize)
 {
     static const int margins[3][4] =
     {
@@ -391,8 +308,8 @@ static const int* buttonMargins(NSControlSize controlSize)
 static void setUpButtonCell(NSButtonCell *cell, ControlPart part, ControlStates states, const IntRect& zoomedRect, float zoomFactor)
 {
     // Set the control size based off the rectangle we're painting into.
-    const IntSize* sizes = buttonSizes();
-    if (part == SquareButtonPart || zoomedRect.height() > buttonSizes()[NSRegularControlSize].height() * zoomFactor) {
+    const IntSize* sizes = ThemeMac::buttonSizes();
+    if (part == SquareButtonPart || zoomedRect.height() > ThemeMac::buttonSizes()[NSRegularControlSize].height() * zoomFactor) {
         // Use the square button
         if ([cell bezelStyle] != NSShadowlessSquareBezelStyle)
             [cell setBezelStyle:NSShadowlessSquareBezelStyle];
@@ -405,7 +322,7 @@ static void setUpButtonCell(NSButtonCell *cell, ControlPart part, ControlStates 
     updateStates(cell, states);
 }
 
-static NSButtonCell *button(ControlPart part, ControlStates states, const IntRect& zoomedRect, float zoomFactor)
+NSButtonCell *ThemeMac::button(ControlPart part, ControlStates states, const IntRect& zoomedRect, float zoomFactor)
 {
     static NSButtonCell *cell = nil;
     if (!cell) {
@@ -417,52 +334,7 @@ static NSButtonCell *button(ControlPart part, ControlStates states, const IntRec
     return cell;
 }
 
-static void paintButton(ControlPart part, ControlStates states, GraphicsContext& context, const IntRect& zoomedRect, float zoomFactor, ScrollableArea* scrollableArea)
-{
-    BEGIN_BLOCK_OBJC_EXCEPTIONS
-
-    // Determine the width and height needed for the control and prepare the cell for painting.
-    NSButtonCell *buttonCell = button(part, states, zoomedRect, zoomFactor);
-    GraphicsContextStateSaver stateSaver(context);
-
-    NSControlSize controlSize = [buttonCell controlSize];
-    IntSize zoomedSize = buttonSizes()[controlSize];
-    zoomedSize.setWidth(zoomedRect.width()); // Buttons don't ever constrain width, so the zoomed width can just be honored.
-    zoomedSize.setHeight(zoomedSize.height() * zoomFactor);
-    IntRect inflatedRect = zoomedRect;
-    if ([buttonCell bezelStyle] == NSRoundedBezelStyle) {
-        // Center the button within the available space.
-        if (inflatedRect.height() > zoomedSize.height()) {
-            inflatedRect.setY(inflatedRect.y() + (inflatedRect.height() - zoomedSize.height()) / 2);
-            inflatedRect.setHeight(zoomedSize.height());
-        }
-
-        // Now inflate it to account for the shadow.
-        inflatedRect = ThemeMac::inflateRect(inflatedRect, zoomedSize, buttonMargins(controlSize), zoomFactor);
-
-        if (zoomFactor != 1.0f) {
-            inflatedRect.setWidth(inflatedRect.width() / zoomFactor);
-            inflatedRect.setHeight(inflatedRect.height() / zoomFactor);
-            context.translate(inflatedRect.x(), inflatedRect.y());
-            context.scale(zoomFactor, zoomFactor);
-            context.translate(-inflatedRect.x(), -inflatedRect.y());
-        }
-    }
-
-    LocalCurrentGraphicsContext localContext(context, ThemeMac::inflateRectForFocusRing(inflatedRect));
-    NSView* view = ensuredView(scrollableArea);
-
-    [buttonCell drawWithFrame:NSRect(inflatedRect) inView:view];
-    if (states & FocusControlState)
-        [buttonCell cr_drawFocusRingWithFrame:NSRect(inflatedRect) inView:view];
-    [buttonCell setControlView:nil];
-
-    END_BLOCK_OBJC_EXCEPTIONS
-}
-
-// Stepper
-
-static const IntSize* stepperSizes()
+const IntSize* ThemeMac::stepperSizes()
 {
     static const IntSize sizes[3] = { IntSize(19, 27), IntSize(15, 22), IntSize(13, 15) };
     return sizes;
@@ -478,46 +350,6 @@ static NSControlSize stepperControlSizeForFont(const FontDescription& fontDescri
     if (fontSize >= 22)
         return NSSmallControlSize;
     return NSMiniControlSize;
-}
-
-static void paintStepper(ControlStates states, GraphicsContext& context, const IntRect& zoomedRect, float zoomFactor, ScrollableArea*)
-{
-    // We don't use NSStepperCell because there are no ways to draw an
-    // NSStepperCell with the up button highlighted.
-
-    HIThemeButtonDrawInfo drawInfo;
-    drawInfo.version = 0;
-    drawInfo.state = convertControlStatesToThemeDrawState(kThemeIncDecButton, states);
-    drawInfo.adornment = kThemeAdornmentDefault;
-    ControlSize controlSize = controlSizeFromPixelSize(stepperSizes(), zoomedRect.size(), zoomFactor);
-    if (controlSize == NSSmallControlSize)
-        drawInfo.kind = kThemeIncDecButtonSmall;
-    else if (controlSize == NSMiniControlSize)
-        drawInfo.kind = kThemeIncDecButtonMini;
-    else
-        drawInfo.kind = kThemeIncDecButton;
-
-    IntRect rect(zoomedRect);
-    GraphicsContextStateSaver stateSaver(context);
-    if (zoomFactor != 1.0f) {
-        rect.setWidth(rect.width() / zoomFactor);
-        rect.setHeight(rect.height() / zoomFactor);
-        context.translate(rect.x(), rect.y());
-        context.scale(zoomFactor, zoomFactor);
-        context.translate(-rect.x(), -rect.y());
-    }
-    CGRect bounds(rect);
-    CGRect backgroundBounds;
-    HIThemeGetButtonBackgroundBounds(&bounds, &drawInfo, &backgroundBounds);
-    // Center the stepper rectangle in the specified area.
-    backgroundBounds.origin.x = bounds.origin.x + (bounds.size.width - backgroundBounds.size.width) / 2;
-    if (backgroundBounds.size.height < bounds.size.height) {
-        int heightDiff = clampTo<int>(bounds.size.height - backgroundBounds.size.height);
-        backgroundBounds.origin.y = bounds.origin.y + (heightDiff / 2) + 1;
-    }
-
-    LocalCurrentGraphicsContext localContext(context, rect);
-    HIThemeDrawButton(&backgroundBounds, &drawInfo, localContext.cgContext(), kHIThemeOrientationNormal, 0);
 }
 
 // Theme overrides
@@ -664,28 +496,6 @@ void ThemeMac::addVisualOverflow(ControlPart part, ControlStates states, float z
             break;
     }
     END_BLOCK_OBJC_EXCEPTIONS
-}
-
-void ThemeMac::paint(ControlPart part, ControlStates states, GraphicsContext& context, const IntRect& zoomedRect, float zoomFactor, ScrollableArea* scrollableArea) const
-{
-    switch (part) {
-        case CheckboxPart:
-            paintCheckbox(states, context, zoomedRect, zoomFactor, scrollableArea);
-            break;
-        case RadioPart:
-            paintRadio(states, context, zoomedRect, zoomFactor, scrollableArea);
-            break;
-        case PushButtonPart:
-        case ButtonPart:
-        case SquareButtonPart:
-            paintButton(part, states, context, zoomedRect, zoomFactor, scrollableArea);
-            break;
-        case InnerSpinButtonPart:
-            paintStepper(states, context, zoomedRect, zoomFactor, scrollableArea);
-            break;
-        default:
-            break;
-    }
 }
 
 }

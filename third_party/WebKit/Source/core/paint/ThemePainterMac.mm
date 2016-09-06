@@ -20,6 +20,7 @@
 
 #import "core/paint/ThemePainterMac.h"
 
+#import "core/frame/FrameView.h"
 #import "core/layout/LayoutProgress.h"
 #import "core/layout/LayoutThemeMac.h"
 #import "core/layout/LayoutView.h"
@@ -29,6 +30,7 @@
 #import "platform/graphics/GraphicsContextStateSaver.h"
 #import "platform/graphics/Image.h"
 #import "platform/graphics/ImageBuffer.h"
+#import "platform/mac/BlockExceptions.h"
 #import "platform/mac/ColorMac.h"
 #import "platform/mac/LocalCurrentGraphicsContext.h"
 #import "platform/mac/ThemeMac.h"
@@ -49,8 +51,8 @@ void _NSDrawCarbonThemeListBox(NSRect frame, BOOL enabled, BOOL flipped, BOOL al
 
 namespace blink {
 
-ThemePainterMac::ThemePainterMac(LayoutThemeMac& layoutTheme, Theme* platformTheme)
-    : ThemePainter(platformTheme)
+ThemePainterMac::ThemePainterMac(LayoutThemeMac& layoutTheme)
+    : ThemePainter()
     , m_layoutTheme(layoutTheme)
 {
 }
@@ -553,5 +555,185 @@ bool ThemePainterMac::paintSearchFieldCancelButton(const LayoutObject& o, const 
 
     return false;
 }
+
+// FIXME: Share more code with radio buttons.
+bool ThemePainterMac::paintCheckbox(const LayoutObject& object, const PaintInfo& paintInfo, const IntRect& zoomedRect)
+{
+    BEGIN_BLOCK_OBJC_EXCEPTIONS
+
+    ControlStates states = LayoutTheme::controlStatesForLayoutObject(object);
+    float zoomFactor = object.styleRef().effectiveZoom();
+
+    // Determine the width and height needed for the control and prepare the cell for painting.
+    NSButtonCell *checkboxCell = ThemeMac::checkbox(states, zoomedRect, zoomFactor);
+    GraphicsContextStateSaver stateSaver(paintInfo.context);
+
+    NSControlSize controlSize = [checkboxCell controlSize];
+    IntSize zoomedSize = ThemeMac::checkboxSizes()[controlSize];
+    zoomedSize.setWidth(zoomedSize.width() * zoomFactor);
+    zoomedSize.setHeight(zoomedSize.height() * zoomFactor);
+    IntRect inflatedRect = ThemeMac::inflateRect(zoomedRect, zoomedSize, ThemeMac::checkboxMargins(controlSize), zoomFactor);
+
+    if (zoomFactor != 1.0f) {
+        inflatedRect.setWidth(inflatedRect.width() / zoomFactor);
+        inflatedRect.setHeight(inflatedRect.height() / zoomFactor);
+        paintInfo.context.translate(inflatedRect.x(), inflatedRect.y());
+        paintInfo.context.scale(zoomFactor, zoomFactor);
+        paintInfo.context.translate(-inflatedRect.x(), -inflatedRect.y());
+    }
+
+    LocalCurrentGraphicsContext localContext(paintInfo.context, ThemeMac::inflateRectForFocusRing(inflatedRect));
+    NSView* view = ThemeMac::ensuredView(object.view()->frameView());
+    [checkboxCell drawWithFrame:NSRect(inflatedRect) inView:view];
+    if (states & FocusControlState)
+        [checkboxCell cr_drawFocusRingWithFrame:NSRect(inflatedRect) inView:view];
+    [checkboxCell setControlView:nil];
+
+    END_BLOCK_OBJC_EXCEPTIONS
+    return false;
+}
+
+bool ThemePainterMac::paintRadio(const LayoutObject& object, const PaintInfo& paintInfo, const IntRect& zoomedRect)
+{
+    ControlStates states = LayoutTheme::controlStatesForLayoutObject(object);
+    float zoomFactor = object.styleRef().effectiveZoom();
+
+    // Determine the width and height needed for the control and prepare the cell for painting.
+    NSButtonCell *radioCell = ThemeMac::radio(states, zoomedRect, zoomFactor);
+    GraphicsContextStateSaver stateSaver(paintInfo.context);
+
+    NSControlSize controlSize = [radioCell controlSize];
+    IntSize zoomedSize = ThemeMac::radioSizes()[controlSize];
+    zoomedSize.setWidth(zoomedSize.width() * zoomFactor);
+    zoomedSize.setHeight(zoomedSize.height() * zoomFactor);
+    IntRect inflatedRect = ThemeMac::inflateRect(zoomedRect, zoomedSize, ThemeMac::radioMargins(controlSize), zoomFactor);
+
+    if (zoomFactor != 1.0f) {
+        inflatedRect.setWidth(inflatedRect.width() / zoomFactor);
+        inflatedRect.setHeight(inflatedRect.height() / zoomFactor);
+        paintInfo.context.translate(inflatedRect.x(), inflatedRect.y());
+        paintInfo.context.scale(zoomFactor, zoomFactor);
+        paintInfo.context.translate(-inflatedRect.x(), -inflatedRect.y());
+    }
+
+    LocalCurrentGraphicsContext localContext(paintInfo.context, ThemeMac::inflateRectForFocusRing(inflatedRect));
+    BEGIN_BLOCK_OBJC_EXCEPTIONS
+    NSView* view = ThemeMac::ensuredView(object.view()->frameView());
+    [radioCell drawWithFrame:NSRect(inflatedRect) inView:view];
+    if (states & FocusControlState)
+        [radioCell cr_drawFocusRingWithFrame:NSRect(inflatedRect) inView:view];
+    [radioCell setControlView:nil];
+    END_BLOCK_OBJC_EXCEPTIONS
+
+    return false;
+}
+
+bool ThemePainterMac::paintButton(const LayoutObject& object, const PaintInfo& paintInfo, const IntRect& zoomedRect)
+{
+    BEGIN_BLOCK_OBJC_EXCEPTIONS
+
+    ControlStates states = LayoutTheme::controlStatesForLayoutObject(object);
+    float zoomFactor = object.styleRef().effectiveZoom();
+
+    // Determine the width and height needed for the control and prepare the cell for painting.
+    NSButtonCell *buttonCell = ThemeMac::button(object.styleRef().appearance(), states, zoomedRect, zoomFactor);
+    GraphicsContextStateSaver stateSaver(paintInfo.context);
+
+    NSControlSize controlSize = [buttonCell controlSize];
+    IntSize zoomedSize = ThemeMac::buttonSizes()[controlSize];
+    zoomedSize.setWidth(zoomedRect.width()); // Buttons don't ever constrain width, so the zoomed width can just be honored.
+    zoomedSize.setHeight(zoomedSize.height() * zoomFactor);
+    IntRect inflatedRect = zoomedRect;
+    if ([buttonCell bezelStyle] == NSRoundedBezelStyle) {
+        // Center the button within the available space.
+        if (inflatedRect.height() > zoomedSize.height()) {
+            inflatedRect.setY(inflatedRect.y() + (inflatedRect.height() - zoomedSize.height()) / 2);
+            inflatedRect.setHeight(zoomedSize.height());
+        }
+
+        // Now inflate it to account for the shadow.
+        inflatedRect = ThemeMac::inflateRect(inflatedRect, zoomedSize, ThemeMac::buttonMargins(controlSize), zoomFactor);
+
+        if (zoomFactor != 1.0f) {
+            inflatedRect.setWidth(inflatedRect.width() / zoomFactor);
+            inflatedRect.setHeight(inflatedRect.height() / zoomFactor);
+            paintInfo.context.translate(inflatedRect.x(), inflatedRect.y());
+            paintInfo.context.scale(zoomFactor, zoomFactor);
+            paintInfo.context.translate(-inflatedRect.x(), -inflatedRect.y());
+        }
+    }
+
+    LocalCurrentGraphicsContext localContext(paintInfo.context, ThemeMac::inflateRectForFocusRing(inflatedRect));
+    NSView* view = ThemeMac::ensuredView(object.view()->frameView());
+
+    [buttonCell drawWithFrame:NSRect(inflatedRect) inView:view];
+    if (states & FocusControlState)
+        [buttonCell cr_drawFocusRingWithFrame:NSRect(inflatedRect) inView:view];
+    [buttonCell setControlView:nil];
+
+    END_BLOCK_OBJC_EXCEPTIONS
+    return false;
+}
+
+static ThemeDrawState convertControlStatesToThemeDrawState(ThemeButtonKind kind, ControlStates states)
+{
+    if (states & ReadOnlyControlState)
+        return kThemeStateUnavailableInactive;
+    if (!(states & EnabledControlState))
+        return kThemeStateUnavailableInactive;
+
+    // Do not process PressedState if !EnabledControlState or ReadOnlyControlState.
+    if (states & PressedControlState) {
+        if (kind == kThemeIncDecButton || kind == kThemeIncDecButtonSmall || kind == kThemeIncDecButtonMini)
+            return states & SpinUpControlState ? kThemeStatePressedUp : kThemeStatePressedDown;
+        return kThemeStatePressed;
+    }
+    return kThemeStateActive;
+}
+
+bool ThemePainterMac::paintInnerSpinButton(const LayoutObject& object, const PaintInfo& paintInfo, const IntRect& zoomedRect)
+{
+    ControlStates states = LayoutTheme::controlStatesForLayoutObject(object);
+    float zoomFactor = object.styleRef().effectiveZoom();
+
+    // We don't use NSStepperCell because there are no ways to draw an
+    // NSStepperCell with the up button highlighted.
+
+    HIThemeButtonDrawInfo drawInfo;
+    drawInfo.version = 0;
+    drawInfo.state = convertControlStatesToThemeDrawState(kThemeIncDecButton, states);
+    drawInfo.adornment = kThemeAdornmentDefault;
+    ControlSize controlSize = ThemeMac::controlSizeFromPixelSize(ThemeMac::stepperSizes(), zoomedRect.size(), zoomFactor);
+    if (controlSize == NSSmallControlSize)
+        drawInfo.kind = kThemeIncDecButtonSmall;
+    else if (controlSize == NSMiniControlSize)
+        drawInfo.kind = kThemeIncDecButtonMini;
+    else
+        drawInfo.kind = kThemeIncDecButton;
+
+    IntRect rect(zoomedRect);
+    GraphicsContextStateSaver stateSaver(paintInfo.context);
+    if (zoomFactor != 1.0f) {
+        rect.setWidth(rect.width() / zoomFactor);
+        rect.setHeight(rect.height() / zoomFactor);
+        paintInfo.context.translate(rect.x(), rect.y());
+        paintInfo.context.scale(zoomFactor, zoomFactor);
+        paintInfo.context.translate(-rect.x(), -rect.y());
+    }
+    CGRect bounds(rect);
+    CGRect backgroundBounds;
+    HIThemeGetButtonBackgroundBounds(&bounds, &drawInfo, &backgroundBounds);
+    // Center the stepper rectangle in the specified area.
+    backgroundBounds.origin.x = bounds.origin.x + (bounds.size.width - backgroundBounds.size.width) / 2;
+    if (backgroundBounds.size.height < bounds.size.height) {
+        int heightDiff = clampTo<int>(bounds.size.height - backgroundBounds.size.height);
+        backgroundBounds.origin.y = bounds.origin.y + (heightDiff / 2) + 1;
+    }
+
+    LocalCurrentGraphicsContext localContext(paintInfo.context, rect);
+    HIThemeDrawButton(&backgroundBounds, &drawInfo, localContext.cgContext(), kHIThemeOrientationNormal, 0);
+    return false;
+}
+
 
 } // namespace blink

@@ -134,7 +134,7 @@ IntRect convertToPaintingRect(const LayoutObject& inputLayoutObject, const Layou
 } // namespace
 
 ThemePainterDefault::ThemePainterDefault()
-    : ThemePainter(nullptr)
+    : ThemePainter()
 {
 }
 

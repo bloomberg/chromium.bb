@@ -30,14 +30,13 @@ namespace blink {
 
 class IntRect;
 class LayoutObject;
-class Theme;
 
 struct PaintInfo;
 
 class ThemePainter {
     DISALLOW_NEW();
 public:
-    explicit ThemePainter(Theme*);
+    explicit ThemePainter();
 
     // This method is called to paint the widget as a background of the LayoutObject.  A widget's foreground, e.g., the
     // text of a button, is always rendered by the engine itself.  The boolean return value indicates
@@ -67,9 +66,6 @@ protected:
     bool paintUsingFallbackTheme(const LayoutObject&, const PaintInfo&, const IntRect&);
     bool paintCheckboxUsingFallbackTheme(const LayoutObject&, const PaintInfo&, const IntRect&);
     bool paintRadioUsingFallbackTheme(const LayoutObject&, const PaintInfo&, const IntRect&);
-
-private:
-    Theme* m_platformTheme; // The platform-specific theme.
 };
 
 } // namespace blink
