@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/threading/thread_checker.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/events/gesture_detection/filtered_gesture_provider.h"
 #include "ui/events/gesture_detection/motion_event.h"
@@ -34,19 +35,7 @@ class BlimpInputManagerClient {
 // to the compositor to be handled on the compositor thread. If the event can
 // not be handled locally by the compositor, it is given to the
 // BlimpInputManagerClient to be sent to the engine.
-//
-// The BlimpInputManager is created and destroyed on the main thread but can be
-// called from the main or compositor thread. It is safe for the
-// BlimpInputManager to be called on the compositor thread because:
-// 1) The only compositor threaded callers of the BlimpInputManager are the
-// BlimpInputManager itself.
-// 2) BlimpInputManager blocks the main thread in its dtor to ensure that all
-// tasks queued to call it on the compositor thread have been run before it is
-// destroyed on the main thread.
-//
-// It is *important* to destroy the cc::InputHandler on the compositor thread
-// before destroying the BlimpInputManager.
-
+// The class is created on and lives on the main thread.
 class BlimpInputManager : public ui::GestureProviderClient {
  public:
   static std::unique_ptr<BlimpInputManager> Create(
@@ -68,6 +57,9 @@ class BlimpInputManager : public ui::GestureProviderClient {
   void DidHandleWebGestureEvent(const blink::WebGestureEvent& gesture_event,
                                 bool consumed);
 
+  void OnInputHandlerWrapperInitialized(
+      base::WeakPtr<BlimpInputHandlerWrapper> input_handler_wrapper_weak_ptr);
+
  private:
   BlimpInputManager(
       BlimpInputManagerClient* client,
@@ -75,33 +67,26 @@ class BlimpInputManager : public ui::GestureProviderClient {
       scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
       const base::WeakPtr<cc::InputHandler>& input_handler);
 
+  static void CreateInputHandlerWrapperOnCompositorThread(
+      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+      const base::WeakPtr<BlimpInputManager>& input_manager_weak_ptr,
+      const base::WeakPtr<cc::InputHandler>& input_handler);
+
   // ui::GestureProviderClient implementation.
   void OnGestureEvent(const ui::GestureEventData& gesture) override;
-
-  // Called on the compositor thread.
-  void CreateInputHandlerWrapperOnCompositorThread(
-      base::WeakPtr<BlimpInputManager> input_manager_weak_ptr,
-      const base::WeakPtr<cc::InputHandler>& input_handler);
-  void HandleWebGestureEventOnCompositorThread(
-      const blink::WebGestureEvent& gesture_event);
-  void ShutdownOnCompositorThread(base::WaitableEvent* shutdown_event);
-
-  bool IsMainThread() const;
-  bool IsCompositorThread() const;
 
   BlimpInputManagerClient* client_;
 
   ui::FilteredGestureProvider gesture_provider_;
 
-  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
 
-  // Used for debug assertions to ensure that the main thread is blocked during
-  // shutdown. Set in the destructor before the main thread is blocked and
-  // read in ShutdownOnCompositorThread.
-  bool main_thread_blocked_;
-
   std::unique_ptr<BlimpInputHandlerWrapper> input_handler_wrapper_;
+
+  // WeakPtr used to post tasks to the wrapper on the compositor thread.
+  base::WeakPtr<BlimpInputHandlerWrapper> input_handler_wrapper_weak_ptr_;
+
+  base::ThreadChecker thread_checker_;
 
   base::WeakPtrFactory<BlimpInputManager> weak_factory_;
 

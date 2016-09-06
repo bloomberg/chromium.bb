@@ -4,7 +4,6 @@
 
 #include "blimp/client/core/input/blimp_input_manager.h"
 
-#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
@@ -33,36 +32,20 @@ BlimpInputManager::BlimpInputManager(
       gesture_provider_(ui::GetGestureProviderConfig(
                             ui::GestureProviderConfigType::CURRENT_PLATFORM),
                         this),
-      main_task_runner_(main_task_runner),
-      compositor_task_runner_(compositor_task_runner),
-      main_thread_blocked_(false),
+      compositor_task_runner_(std::move(compositor_task_runner)),
       weak_factory_(this) {
-  DCHECK(IsMainThread());
-  compositor_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(
-          &BlimpInputManager::CreateInputHandlerWrapperOnCompositorThread,
-          base::Unretained(this), weak_factory_.GetWeakPtr(), input_handler));
+  DCHECK(thread_checker_.CalledOnValidThread());
+  input_handler_wrapper_ = base::MakeUnique<BlimpInputHandlerWrapper>(
+      main_task_runner, compositor_task_runner_.get(),
+      weak_factory_.GetWeakPtr(), input_handler);
 }
 
 BlimpInputManager::~BlimpInputManager() {
-  DCHECK(IsMainThread());
-
-  base::WaitableEvent shutdown_event(
-      base::WaitableEvent::ResetPolicy::AUTOMATIC,
-      base::WaitableEvent::InitialState::NOT_SIGNALED);
-  {
-    base::AutoReset<bool> auto_reset_main_thread_blocked(&main_thread_blocked_,
-                                                         true);
-    compositor_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&BlimpInputManager::ShutdownOnCompositorThread,
-                              base::Unretained(this), &shutdown_event));
-    shutdown_event.Wait();
-  }
+  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
 bool BlimpInputManager::OnTouchEvent(const ui::MotionEvent& motion_event) {
-  DCHECK(IsMainThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   ui::FilteredGestureProvider::TouchHandlingResult result =
       gesture_provider_.OnTouchEvent(motion_event);
@@ -81,8 +64,14 @@ bool BlimpInputManager::OnTouchEvent(const ui::MotionEvent& motion_event) {
   return true;
 }
 
+void BlimpInputManager::OnInputHandlerWrapperInitialized(
+    base::WeakPtr<BlimpInputHandlerWrapper> input_handler_wrapper_weak_ptr) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  input_handler_wrapper_weak_ptr_ = input_handler_wrapper_weak_ptr;
+}
+
 void BlimpInputManager::OnGestureEvent(const ui::GestureEventData& gesture) {
-  DCHECK(IsMainThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   blink::WebGestureEvent web_gesture =
       ui::CreateWebGestureEventFromGestureEventData(gesture);
@@ -96,57 +85,17 @@ void BlimpInputManager::OnGestureEvent(const ui::GestureEventData& gesture) {
   }
 
   compositor_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&BlimpInputManager::HandleWebGestureEventOnCompositorThread,
-                 base::Unretained(this), web_gesture));
-}
-
-void BlimpInputManager::CreateInputHandlerWrapperOnCompositorThread(
-    base::WeakPtr<BlimpInputManager> input_manager_weak_ptr,
-    const base::WeakPtr<cc::InputHandler>& input_handler) {
-  DCHECK(IsCompositorThread());
-
-  // The input_handler might have been destroyed at this point.
-  if (!input_handler)
-    return;
-
-  DCHECK(!input_handler_wrapper_);
-  input_handler_wrapper_ = base::MakeUnique<BlimpInputHandlerWrapper>(
-      main_task_runner_, input_manager_weak_ptr, input_handler.get());
-}
-
-void BlimpInputManager::HandleWebGestureEventOnCompositorThread(
-    const blink::WebGestureEvent& gesture_event) {
-  DCHECK(IsCompositorThread());
-
-  if (input_handler_wrapper_)
-    input_handler_wrapper_->HandleWebGestureEvent(gesture_event);
-}
-
-void BlimpInputManager::ShutdownOnCompositorThread(
-    base::WaitableEvent* shutdown_event) {
-  DCHECK(IsCompositorThread());
-  DCHECK(main_thread_blocked_);
-
-  input_handler_wrapper_.reset();
-  shutdown_event->Signal();
+      FROM_HERE, base::Bind(&BlimpInputHandlerWrapper::HandleWebGestureEvent,
+                            input_handler_wrapper_weak_ptr_, web_gesture));
 }
 
 void BlimpInputManager::DidHandleWebGestureEvent(
     const blink::WebGestureEvent& gesture_event,
     bool consumed) {
-  DCHECK(IsMainThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!consumed)
     client_->SendWebGestureEvent(gesture_event);
-}
-
-bool BlimpInputManager::IsMainThread() const {
-  return main_task_runner_->BelongsToCurrentThread();
-}
-
-bool BlimpInputManager::IsCompositorThread() const {
-  return compositor_task_runner_->BelongsToCurrentThread();
 }
 
 }  // namespace client

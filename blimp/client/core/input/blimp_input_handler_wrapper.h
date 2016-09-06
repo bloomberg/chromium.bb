@@ -6,6 +6,7 @@
 #define BLIMP_CLIENT_CORE_INPUT_BLIMP_INPUT_HANDLER_WRAPPER_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "ui/events/blink/input_handler_proxy.h"
@@ -23,13 +24,21 @@ class BlimpInputManager;
 // The BlimpInputHandlerWrapper isolates all input handling processing done on
 // the compositor thread from the BlimpInputManager. It takes web gesture events
 // from the BlimpInputManager and sends them to the ui::InputHandlerProxy.
-// The class is created and lives on the compositor thread.
+// The class is created on the main thread, but becomes bound to the compositor
+// thread when it binds to the ui::InputHandlerProxy, and should only be called
+// on the compositor thread.
+// The creater of this class ensures that the cc::InputHandler is destroyed
+// before this class is destroyed. This is necessary to ensure that the
+// compositor thread components of this class, i.e., the ui::InputHandlerProxy
+// and any weak ptrs dispensed for posting tasks to the class on the compositor
+// thread, are destroyed before the class is destroyed on the main thread.
 class BlimpInputHandlerWrapper : public ui::InputHandlerProxyClient {
  public:
   BlimpInputHandlerWrapper(
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+      base::SingleThreadTaskRunner* compositor_task_runner,
       const base::WeakPtr<BlimpInputManager> input_manager_weak_ptr,
-      cc::InputHandler* input_handler);
+      const base::WeakPtr<cc::InputHandler>& input_handler_weak_ptr);
 
   ~BlimpInputHandlerWrapper() override;
 
@@ -37,6 +46,8 @@ class BlimpInputHandlerWrapper : public ui::InputHandlerProxyClient {
   // call BlimpInputManager::HandleWebGestureEvent with the result on the main
   // thread.
   void HandleWebGestureEvent(const blink::WebGestureEvent& gesture_event);
+
+  void InitOnCompositorThread(cc::InputHandler* input_handler);
 
  private:
   // InputHandlerProxyClient implementation.
@@ -65,6 +76,13 @@ class BlimpInputHandlerWrapper : public ui::InputHandlerProxyClient {
   base::WeakPtr<BlimpInputManager> input_manager_weak_ptr_;
 
   std::unique_ptr<ui::InputHandlerProxy> input_handler_proxy_;
+
+  // Used to dispense weak ptrs to post tasks to the wrapper on the compositor
+  // thread. The weak ptrs created using this factory will be invalidated in
+  // WillShutdown. This method is called on the compositor thread when the
+  // InputHandlerProxy is being terminated. The wrapper does not need to be used
+  // beyond this point.
+  base::WeakPtrFactory<BlimpInputHandlerWrapper> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpInputHandlerWrapper);
 };

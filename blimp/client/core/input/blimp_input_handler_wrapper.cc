@@ -7,30 +7,47 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "blimp/client/core/input/blimp_input_manager.h"
 #include "ui/events/gestures/blink/web_gesture_curve_impl.h"
 
 namespace blimp {
 namespace client {
+namespace {
+
+void CreateProxyOnCompositorThread(
+    BlimpInputHandlerWrapper* input_handler_wrapper,
+    const base::WeakPtr<cc::InputHandler>& input_handler_weak_ptr) {
+  if (!input_handler_weak_ptr)
+    return;
+
+  // If we have the input handler, the wrapper must be alive. So its safe to
+  // access it.
+  input_handler_wrapper->InitOnCompositorThread(input_handler_weak_ptr.get());
+}
+
+}  // namespace
 
 BlimpInputHandlerWrapper::BlimpInputHandlerWrapper(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+    base::SingleThreadTaskRunner* compositor_task_runner,
     const base::WeakPtr<BlimpInputManager> input_manager_weak_ptr,
-    cc::InputHandler* input_handler)
+    const base::WeakPtr<cc::InputHandler>& input_handler_weak_ptr)
     : main_task_runner_(main_task_runner),
-      input_manager_weak_ptr_(input_manager_weak_ptr) {
-  DCHECK(compositor_thread_checker_.CalledOnValidThread());
-  DCHECK(input_handler);
-  input_handler_proxy_.reset(new ui::InputHandlerProxy(input_handler, this));
+      input_manager_weak_ptr_(input_manager_weak_ptr),
+      weak_factory_(this) {
+  DCHECK(main_task_runner->BelongsToCurrentThread());
+
+  // Since the object is created on the main thread, detach the thread checker
+  // so it can be bound to the compositor thread, in InitOnCompositorThread.
+  compositor_thread_checker_.DetachFromThread();
+
+  compositor_task_runner->PostTask(
+      FROM_HERE,
+      base::Bind(&CreateProxyOnCompositorThread, this, input_handler_weak_ptr));
 }
 
-BlimpInputHandlerWrapper::~BlimpInputHandlerWrapper() {
-  DCHECK(compositor_thread_checker_.CalledOnValidThread());
-
-  // The input handler proxy must have been shutdown by the cc::InputHandler
-  // before the InputHandlerWrapper is destroyed.
-  DCHECK(!input_handler_proxy_);
-}
+BlimpInputHandlerWrapper::~BlimpInputHandlerWrapper() = default;
 
 void BlimpInputHandlerWrapper::HandleWebGestureEvent(
     const blink::WebGestureEvent& gesture_event) {
@@ -65,6 +82,7 @@ void BlimpInputHandlerWrapper::WillShutdown() {
   DCHECK(compositor_thread_checker_.CalledOnValidThread());
 
   input_handler_proxy_.reset();
+  weak_factory_.InvalidateWeakPtrs();
 }
 
 void BlimpInputHandlerWrapper::TransferActiveWheelFlingAnimation(
@@ -106,6 +124,18 @@ void BlimpInputHandlerWrapper::DidStopFlinging() {
 
 void BlimpInputHandlerWrapper::DidAnimateForInput() {
   DCHECK(compositor_thread_checker_.CalledOnValidThread());
+}
+
+void BlimpInputHandlerWrapper::InitOnCompositorThread(
+    cc::InputHandler* input_handler) {
+  DCHECK(compositor_thread_checker_.CalledOnValidThread());
+
+  input_handler_proxy_ =
+      base::MakeUnique<ui::InputHandlerProxy>(input_handler, this);
+  main_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&BlimpInputManager::OnInputHandlerWrapperInitialized,
+                 input_manager_weak_ptr_, weak_factory_.GetWeakPtr()));
 }
 
 }  // namespace client
