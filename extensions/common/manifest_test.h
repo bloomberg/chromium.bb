@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -51,7 +52,7 @@ class ManifestTest : public testing::Test {
 
     ~ManifestData();
 
-    const std::string& name() const { return name_; };
+    const std::string& name() const { return name_; }
 
     base::DictionaryValue* GetManifest(const base::FilePath& manifest_path,
                                        std::string* error) const;
@@ -136,7 +137,7 @@ class ManifestTest : public testing::Test {
 
   struct Testcase {
     const std::string manifest_filename_;
-    std::string expected_error_; // only used for ExpectedError tests
+    std::string expected_error_;  // only used for ExpectedError tests
     extensions::Manifest::Location location_;
     int flags_;
 
