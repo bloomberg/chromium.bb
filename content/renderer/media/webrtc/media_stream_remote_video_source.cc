@@ -98,7 +98,7 @@ void DoNothing(const scoped_refptr<rtc::RefCountInterface>& ref) {}
 void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
     const cricket::VideoFrame& incoming_frame) {
   const base::TimeDelta incoming_timestamp = base::TimeDelta::FromMicroseconds(
-      incoming_frame.GetTimeStamp() / rtc::kNumNanosecsPerMicrosec);
+      incoming_frame.timestamp_us());
   const base::TimeTicks render_time =
       base::TimeTicks() + incoming_timestamp + time_diff_;
 
