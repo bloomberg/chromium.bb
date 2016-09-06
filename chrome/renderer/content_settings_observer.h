@@ -7,6 +7,9 @@
 
 #include <map>
 #include <set>
+#include <string>
+#include <unordered_map>
+#include <utility>
 
 #include "base/gtest_prod_util.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -14,8 +17,7 @@
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
 #include "third_party/WebKit/public/web/WebContentSettingsClient.h"
-
-class GURL;
+#include "url/gurl.h"
 
 namespace blink {
 class WebFrame;
@@ -127,7 +129,7 @@ class ContentSettingsObserver
 
 #if defined(ENABLE_EXTENSIONS)
   // Owned by ChromeContentRendererClient and outlive us.
-  extensions::Dispatcher* extension_dispatcher_;
+  extensions::Dispatcher* const extension_dispatcher_;
 #endif
 
   // Insecure content may be permitted for the duration of this render view.
@@ -144,17 +146,18 @@ class ContentSettingsObserver
   std::map<ContentSettingsType, bool> content_blocked_;
 
   // Caches the result of AllowStorage.
-  typedef std::pair<GURL, bool> StoragePermissionsKey;
+  using StoragePermissionsKey = std::pair<GURL, bool>;
   std::map<StoragePermissionsKey, bool> cached_storage_permissions_;
 
   // Caches the result of AllowScript.
-  std::map<blink::WebFrame*, bool> cached_script_permissions_;
+  std::unordered_map<blink::WebFrame*, bool> cached_script_permissions_;
 
   std::set<std::string> temporarily_allowed_plugins_;
   bool is_interstitial_page_;
 
   int current_request_id_;
-  typedef std::map<int, blink::WebContentSettingCallbacks> PermissionRequestMap;
+  using PermissionRequestMap =
+      std::unordered_map<int, blink::WebContentSettingCallbacks>;
   PermissionRequestMap permission_requests_;
 
   // If true, IsWhitelistedForContentSettings will always return true.

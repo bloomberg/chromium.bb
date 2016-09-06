@@ -289,8 +289,7 @@ bool ContentSettingsObserver::allowScript(bool enabled_per_settings) {
     return true;
 
   WebFrame* frame = render_frame()->GetWebFrame();
-  std::map<WebFrame*, bool>::const_iterator it =
-      cached_script_permissions_.find(frame);
+  const auto it = cached_script_permissions_.find(frame);
   if (it != cached_script_permissions_.end())
     return it->second;
 
@@ -335,16 +334,15 @@ bool ContentSettingsObserver::allowStorage(bool local) {
   if (frame->getSecurityOrigin().isUnique() ||
       frame->top()->getSecurityOrigin().isUnique())
     return false;
-  bool result = false;
 
   StoragePermissionsKey key(
       blink::WebStringToGURL(frame->document().getSecurityOrigin().toString()),
       local);
-  std::map<StoragePermissionsKey, bool>::const_iterator permissions =
-      cached_storage_permissions_.find(key);
+  const auto permissions = cached_storage_permissions_.find(key);
   if (permissions != cached_storage_permissions_.end())
     return permissions->second;
 
+  bool result = false;
   Send(new ChromeViewHostMsg_AllowDOMStorage(
       routing_id(),
       blink::WebStringToGURL(frame->getSecurityOrigin().toString()),
