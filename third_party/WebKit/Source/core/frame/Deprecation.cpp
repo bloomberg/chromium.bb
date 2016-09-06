@@ -378,6 +378,9 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature)
     case UseCounter::V8SVGSVGElement_Viewport_AttributeGetter:
         return willBeRemoved("SVGSVGElement.viewport", 55, "5686865248124928");
 
+    case UseCounter::V8SVGViewElement_ViewTarget_AttributeGetter:
+        return willBeRemoved("SVGViewElement.viewTarget", 56, "5665473114931200");
+
     case UseCounter::NavigatorPointerEnabled:
         return "Navigator.pointerEnabled is a non-standard API added for experiments only. It will be removed in near future.";
 
