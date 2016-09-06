@@ -14,7 +14,7 @@ div {
   background: green;
 }
 @keyframes test {
-  to { -webkit-filter: opacity(0.5); }
+  to { -webkit-filter: opacity(0); }
 }
 </style>
 <div id="green"></div>
@@ -23,13 +23,14 @@ div {
 if (window.testRunner)
   testRunner.waitUntilDone();
 
-requestAnimationFrame(() => {
-  requestAnimationFrame(() => {
-    target.style.webkitFilter = 'opacity(0)';
-    requestAnimationFrame(() => {
-      if (window.testRunner)
-        testRunner.notifyDone();
-    });
-  });
+function waitForCompositor() {
+  return target.animate({transform: ['none', 'none']}, 1).ready;
+}
+
+waitForCompositor().then(() => {
+  target.style.webkitFilter = 'opacity(0)';
+}).then(() => waitForCompositor()).then(() => {
+  if (window.testRunner)
+    testRunner.notifyDone();
 });
 </script>
