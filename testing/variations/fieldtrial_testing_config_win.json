@@ -72,6 +72,11 @@
             "group_name": "Enabled"
         }
     ],
+    "DataReductionProxyUseQuic": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "DefaultBrowserInfobar": [
         {
             "group_name": "SettingsTextNotNow"

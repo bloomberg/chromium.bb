@@ -51,6 +51,11 @@
             "group_name": "Enabled"
         }
     ],
+    "DataReductionProxyUseQuic": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "DisallowFetchForDocWrittenScriptsInMainFrame": [
         {
             "disable_features": [
