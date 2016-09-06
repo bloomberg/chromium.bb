@@ -22,6 +22,10 @@ if HAVE_TEGRA
 SUBDIRS += tegra
 endif
 
+if HAVE_ETNAVIV
+SUBDIRS += etnaviv
+endif
+
 AM_CFLAGS = \
 	$(WARN_CFLAGS)\
 	-I $(top_srcdir)/include/drm \

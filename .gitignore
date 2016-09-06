@@ -102,4 +102,7 @@ tests/radeon/radeon_ttm
 tests/exynos/exynos_fimg2d_event
 tests/exynos/exynos_fimg2d_perf
 tests/exynos/exynos_fimg2d_test
+tests/etnaviv/etnaviv_2d_test
+tests/etnaviv/etnaviv_cmd_stream_test
+tests/etnaviv/etnaviv_bo_cache_test
 man/*.3

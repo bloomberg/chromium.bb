@@ -551,6 +551,7 @@ AC_CONFIG_FILES([
 	tests/exynos/Makefile
 	tests/tegra/Makefile
 	tests/nouveau/Makefile
+	tests/etnaviv/Makefile
 	tests/util/Makefile
 	man/Makefile
 	libdrm.pc])
