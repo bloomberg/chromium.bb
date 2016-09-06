@@ -403,6 +403,9 @@ public:
     // Returns the visual rect of a node's LayoutObject.
     ClientRect* visualRect(Node*);
 
+    // Intentional crash.
+    void crash();
+
 private:
     explicit Internals(ScriptState*);
     Document* contextDocument() const;

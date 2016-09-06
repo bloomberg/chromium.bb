@@ -1,3 +1,8 @@
+# Intentional failures to test the layout test system.
+Bug(intentional) [ Android Linux Win Mac10.10 Mac10.11 ] harness-tests/crash.html [ Crash ]
+crbug.com/644303 [ Mac10.9 ] harness-tests/crash.html [ Crash Timeout ]
+Bug(intentional) harness-tests/timeout.html [ Timeout ]
+
 # ====== Oilpan-only failures from here ======
 # Most of these actually cause the tests to report success, rather than
 # failure. Expected outputs will be adjusted for the better once Oilpan

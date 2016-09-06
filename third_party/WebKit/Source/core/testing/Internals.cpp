@@ -2627,4 +2627,9 @@ ClientRect* Internals::visualRect(Node* node)
     return ClientRect::create(FloatRect(node->layoutObject()->visualRect()));
 }
 
+void Internals::crash()
+{
+    CHECK(false) << "Intentional crash";
+}
+
 } // namespace blink
