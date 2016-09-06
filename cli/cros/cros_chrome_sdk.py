@@ -515,10 +515,13 @@ class ChromeSDKCommand(command.CliCommand):
              'pull toolchain components from.')
     parser.add_argument(
         '--nogoma', action='store_false', default=True, dest='goma',
-        help="Disables Goma in the shell by removing it from the PATH.")
+        help='Disables Goma in the shell by removing it from the PATH.')
+    parser.add_argument(
+        '--nostart-goma', action='store_false', default=True, dest='start_goma',
+        help='Skip starting goma and hope somebody else starts goma later.')
     parser.add_argument(
         '--gomadir', type='path',
-        help="Use the goma installation at the specified PATH.")
+        help='Use the goma installation at the specified PATH.')
     parser.add_argument(
         '--version', default=None, type=cls.ValidateVersion,
         help="Specify version of SDK to use, in the format '3912.0.0'.  "
@@ -694,6 +697,7 @@ class ChromeSDKCommand(command.CliCommand):
     # Export Goma information.
     if goma_dir:
       env[self.SDK_GOMA_DIR_ENV] = goma_dir
+    if goma_port:
       env[self.SDK_GOMA_PORT_ENV] = goma_port
 
     # SYSROOT is necessary for Goma and the sysroot wrapper.
@@ -909,13 +913,15 @@ class ChromeSDKCommand(command.CliCommand):
           ref.SetDefault(goma_dir)
       goma_dir = ref.path
 
-    Log('Starting Goma.', silent=self.silent)
-    cros_build_lib.DebugRunCommand(
-        ['python2', 'goma_ctl.py', 'ensure_start'], cwd=goma_dir)
-    port = self._GomaPort(goma_dir)
-    Log('Goma is started on port %s', port, silent=self.silent)
-    if not port:
-      raise GomaError('No Goma port detected')
+    port = None
+    if self.options.start_goma:
+      Log('Starting Goma.', silent=self.silent)
+      cros_build_lib.DebugRunCommand(
+          ['python2', 'goma_ctl.py', 'ensure_start'], cwd=goma_dir)
+      port = self._GomaPort(goma_dir)
+      Log('Goma is started on port %s', port, silent=self.silent)
+      if not port:
+        raise GomaError('No Goma port detected')
 
     return goma_dir, port
 
