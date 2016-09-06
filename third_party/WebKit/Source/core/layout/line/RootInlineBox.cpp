@@ -656,7 +656,7 @@ LayoutUnit RootInlineBox::verticalPositionForBox(InlineBox* box, VerticalPositio
         } else if (verticalAlign == VerticalAlignLength) {
             LayoutUnit lineHeight;
             // Per http://www.w3.org/TR/CSS21/visudet.html#propdef-vertical-align: 'Percentages: refer to the 'line-height' of the element itself'.
-            if (boxModel.style()->getVerticalAlignLength().hasPercent())
+            if (boxModel.style()->getVerticalAlignLength().isPercentOrCalc())
                 lineHeight = LayoutUnit(boxModel.style()->computedLineHeight());
             else
                 lineHeight = boxModel.lineHeight(firstLine, lineDirection);

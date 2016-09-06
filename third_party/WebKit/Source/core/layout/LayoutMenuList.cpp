@@ -256,7 +256,7 @@ void LayoutMenuList::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, 
 
     maxLogicalWidth = std::max(m_optionsWidth, LayoutTheme::theme().minimumMenuListSize(styleRef()))
         + m_innerBlock->paddingLeft() + m_innerBlock->paddingRight();
-    if (!style()->width().hasPercent())
+    if (!style()->width().isPercentOrCalc())
         minLogicalWidth = maxLogicalWidth;
     else
         minLogicalWidth = LayoutUnit();

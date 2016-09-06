@@ -118,7 +118,7 @@ int TableLayoutAlgorithmFixed::calcWidthArray()
                 spanInCurrentEffectiveColumn = m_table->spanOfEffectiveColumn(currentEffectiveColumn);
             }
             // TODO(alancutter): Make this work correctly for calc lengths.
-            if ((colStyleLogicalWidth.isFixed() || colStyleLogicalWidth.hasPercent()) && colStyleLogicalWidth.isPositive()) {
+            if ((colStyleLogicalWidth.isFixed() || colStyleLogicalWidth.isPercentOrCalc()) && colStyleLogicalWidth.isPositive()) {
                 m_width[currentEffectiveColumn] = colStyleLogicalWidth;
                 m_width[currentEffectiveColumn] *= spanInCurrentEffectiveColumn;
                 usedWidth += effectiveColWidth * spanInCurrentEffectiveColumn;
@@ -199,7 +199,7 @@ void TableLayoutAlgorithmFixed::applyPreferredLogicalWidthQuirks(LayoutUnit& min
     // In this example, the two inner tables should be as large as the outer table.
     // We can achieve this effect by making the maxwidth of fixed tables with percentage
     // widths be infinite.
-    if (m_table->style()->logicalWidth().hasPercent() && maxWidth < tableMaxWidth)
+    if (m_table->style()->logicalWidth().isPercentOrCalc() && maxWidth < tableMaxWidth)
         maxWidth = LayoutUnit(tableMaxWidth);
 }
 
@@ -232,7 +232,7 @@ void TableLayoutAlgorithmFixed::layout()
         if (m_width[i].isFixed()) {
             calcWidth[i] = m_width[i].value();
             totalFixedWidth += calcWidth[i];
-        } else if (m_width[i].hasPercent()) {
+        } else if (m_width[i].isPercentOrCalc()) {
             // TODO(alancutter): Make this work correctly for calc lengths.
             calcWidth[i] = valueForLength(m_width[i], LayoutUnit(tableLogicalWidth)).toInt();
             totalPercentWidth += calcWidth[i];
@@ -263,7 +263,7 @@ void TableLayoutAlgorithmFixed::layout()
                 totalPercentWidth = 0;
                 for (unsigned i = 0; i < nEffCols; i++) {
                     // TODO(alancutter): Make this work correctly for calc lengths.
-                    if (m_width[i].hasPercent()) {
+                    if (m_width[i].isPercentOrCalc()) {
                         calcWidth[i] = m_width[i].percent() * (tableLogicalWidth - totalFixedWidth) / totalPercent;
                         totalPercentWidth += calcWidth[i];
                     }

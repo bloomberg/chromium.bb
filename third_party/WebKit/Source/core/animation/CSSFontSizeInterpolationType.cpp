@@ -119,7 +119,7 @@ void CSSFontSizeInterpolationType::apply(const InterpolableValue& interpolableVa
     const FontDescription& parentFont = environment.state().parentFontDescription();
     Length fontSizeLength = CSSLengthInterpolationType::resolveInterpolableLength(interpolableValue, nullptr, environment.state().fontSizeConversionData(), ValueRangeNonNegative);
     float fontSize = floatValueForLength(fontSizeLength, parentFont.getSize().value);
-    environment.state().fontBuilder().setSize(FontDescription::Size(0, fontSize, !fontSizeLength.hasPercent() || parentFont.isAbsoluteSize()));
+    environment.state().fontBuilder().setSize(FontDescription::Size(0, fontSize, !fontSizeLength.isPercentOrCalc() || parentFont.isAbsoluteSize()));
 }
 
 } // namespace blink

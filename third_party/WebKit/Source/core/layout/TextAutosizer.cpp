@@ -880,7 +880,7 @@ float TextAutosizer::widthFromBlock(const LayoutBlock* block) const
             if ((width = specifiedWidth.value()) > 0)
                 return width;
         }
-        if (specifiedWidth.hasPercent()) {
+        if (specifiedWidth.isPercentOrCalc()) {
             if (float containerWidth = block->containingBlock()->contentLogicalWidth().toFloat()) {
                 if ((width = floatValueForLength(specifiedWidth, containerWidth)) > 0)
                     return width;

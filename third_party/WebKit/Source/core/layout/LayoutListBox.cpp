@@ -121,7 +121,7 @@ void LayoutListBox::stopAutoscroll()
 void LayoutListBox::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
 {
     LayoutBlockFlow::computeIntrinsicLogicalWidths(minLogicalWidth, maxLogicalWidth);
-    if (style()->width().hasPercent())
+    if (style()->width().isPercentOrCalc())
         minLogicalWidth = LayoutUnit();
 }
 

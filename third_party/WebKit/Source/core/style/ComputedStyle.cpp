@@ -1514,7 +1514,7 @@ int ComputedStyle::computedLineHeight() const
     if (lh.isNegative() && font().primaryFont())
         return getFontMetrics().lineSpacing();
 
-    if (lh.hasPercent())
+    if (lh.isPercentOrCalc())
         return minimumValueForLength(lh, LayoutUnit(computedFontSize())).toInt();
 
     return std::min(lh.value(), LayoutUnit::max().toFloat());

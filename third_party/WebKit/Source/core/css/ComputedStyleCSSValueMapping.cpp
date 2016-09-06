@@ -191,7 +191,7 @@ static CSSValue* valueForPositionOffset(const ComputedStyle& style, CSSPropertyI
         return nullptr;
     }
 
-    if (offset.hasPercent() && layoutObject && layoutObject->isBox() && layoutObject->isPositioned()) {
+    if (offset.isPercentOrCalc() && layoutObject && layoutObject->isBox() && layoutObject->isPositioned()) {
         LayoutUnit containingBlockSize = (propertyID == CSSPropertyLeft || propertyID == CSSPropertyRight) ?
             toLayoutBox(layoutObject)->containingBlockLogicalWidthForContent() :
             toLayoutBox(layoutObject)->containingBlockLogicalHeightForGetComputedStyle();
@@ -207,7 +207,7 @@ static CSSValue* valueForPositionOffset(const ComputedStyle& style, CSSPropertyI
             if (opposite.isAuto())
                 return CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::Pixels);
 
-            if (opposite.hasPercent() || opposite.isCalculated()) {
+            if (opposite.isPercentOrCalc() || opposite.isCalculated()) {
                 if (layoutObject->isBox()) {
                     LayoutUnit containingBlockSize =
                         (propertyID == CSSPropertyLeft || propertyID == CSSPropertyRight) ?
@@ -273,7 +273,7 @@ static CSSBorderImageSliceValue* valueForNinePieceImageSlice(const NinePieceImag
     CSSPrimitiveValue* left = nullptr;
 
     // TODO(alancutter): Make this code aware of calc lengths.
-    if (image.imageSlices().top().hasPercent())
+    if (image.imageSlices().top().isPercentOrCalc())
         top = CSSPrimitiveValue::create(image.imageSlices().top().value(), CSSPrimitiveValue::UnitType::Percentage);
     else
         top = CSSPrimitiveValue::create(image.imageSlices().top().value(), CSSPrimitiveValue::UnitType::Number);
@@ -284,7 +284,7 @@ static CSSBorderImageSliceValue* valueForNinePieceImageSlice(const NinePieceImag
         bottom = top;
         left = top;
     } else {
-        if (image.imageSlices().right().hasPercent())
+        if (image.imageSlices().right().isPercentOrCalc())
             right = CSSPrimitiveValue::create(image.imageSlices().right().value(), CSSPrimitiveValue::UnitType::Percentage);
         else
             right = CSSPrimitiveValue::create(image.imageSlices().right().value(), CSSPrimitiveValue::UnitType::Number);
@@ -293,7 +293,7 @@ static CSSBorderImageSliceValue* valueForNinePieceImageSlice(const NinePieceImag
             bottom = top;
             left = right;
         } else {
-            if (image.imageSlices().bottom().hasPercent())
+            if (image.imageSlices().bottom().isPercentOrCalc())
                 bottom = CSSPrimitiveValue::create(image.imageSlices().bottom().value(), CSSPrimitiveValue::UnitType::Percentage);
             else
                 bottom = CSSPrimitiveValue::create(image.imageSlices().bottom().value(), CSSPrimitiveValue::UnitType::Number);
@@ -301,7 +301,7 @@ static CSSBorderImageSliceValue* valueForNinePieceImageSlice(const NinePieceImag
             if (image.imageSlices().left() == image.imageSlices().right()) {
                 left = right;
             } else {
-                if (image.imageSlices().left().hasPercent())
+                if (image.imageSlices().left().isPercentOrCalc())
                     left = CSSPrimitiveValue::create(image.imageSlices().left().value(), CSSPrimitiveValue::UnitType::Percentage);
                 else
                     left = CSSPrimitiveValue::create(image.imageSlices().left().value(), CSSPrimitiveValue::UnitType::Number);
@@ -417,7 +417,7 @@ static CSSValue* valueForReflection(const StyleReflection* reflection, const Com
 
     CSSPrimitiveValue* offset = nullptr;
     // TODO(alancutter): Make this work correctly for calc lengths.
-    if (reflection->offset().hasPercent())
+    if (reflection->offset().isPercentOrCalc())
         offset = CSSPrimitiveValue::create(reflection->offset().percent(), CSSPrimitiveValue::UnitType::Percentage);
     else
         offset = zoomAdjustedPixelValue(reflection->offset().value(), style);
@@ -2082,7 +2082,7 @@ const CSSValue* ComputedStyleCSSValueMapping::get(CSSPropertyID propertyID, cons
         if (marginRight.isFixed() || !layoutObject || !layoutObject->isBox())
             return zoomAdjustedPixelValueForLength(marginRight, style);
         float value;
-        if (marginRight.hasPercent()) {
+        if (marginRight.isPercentOrCalc()) {
             // LayoutBox gives a marginRight() that is the distance between the right-edge of the child box
             // and the right-edge of the containing box, when display == BLOCK. Let's calculate the absolute
             // value of the specified margin-right % instead of relying on LayoutBox's marginRight() value.

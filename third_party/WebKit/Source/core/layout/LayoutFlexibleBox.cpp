@@ -769,7 +769,7 @@ LayoutUnit LayoutFlexibleBox::computeMainSizeFromAspectRatioUsing(const LayoutBo
     if (crossSizeLength.isFixed()) {
         crossSize = LayoutUnit(crossSizeLength.value());
     } else {
-        DCHECK(crossSizeLength.hasPercent());
+        DCHECK(crossSizeLength.isPercentOrCalc());
         crossSize = hasOrthogonalFlow(child) ?
             adjustBorderBoxLogicalWidthForBoxSizing(valueForLength(crossSizeLength, contentWidth())) :
             child.computePercentageLogicalHeight(crossSizeLength);
@@ -794,7 +794,7 @@ bool LayoutFlexibleBox::mainAxisLengthIsDefinite(const LayoutBox& child, const L
 {
     if (flexBasis.isAuto())
         return false;
-    if (flexBasis.hasPercent()) {
+    if (flexBasis.isPercentOrCalc()) {
         if (!isColumnFlow() || m_hasDefiniteHeight == SizeDefiniteness::Definite)
             return true;
         if (m_hasDefiniteHeight == SizeDefiniteness::Indefinite)
@@ -810,7 +810,7 @@ bool LayoutFlexibleBox::crossAxisLengthIsDefinite(const LayoutBox& child, const 
 {
     if (length.isAuto())
         return false;
-    if (length.hasPercent()) {
+    if (length.isPercentOrCalc()) {
         if (hasOrthogonalFlow(child) || m_hasDefiniteHeight == SizeDefiniteness::Definite)
             return true;
         if (m_hasDefiniteHeight == SizeDefiniteness::Indefinite)
@@ -1186,7 +1186,7 @@ LayoutUnit LayoutFlexibleBox::mainSizeForPercentageResolution(const LayoutBox& c
     const Length& flexBasis = flexBasisForChild(child);
     if (!mainAxisLengthIsDefinite(child, flexBasis))
         return LayoutUnit(-1);
-    if (!flexBasis.hasPercent()) {
+    if (!flexBasis.isPercentOrCalc()) {
         // If flex basis had a percentage, our size is guaranteed to be definite or the flex item's
         // size could not be definite.
         // Otherwise, we make up a percentage to check whether we have a definite size.

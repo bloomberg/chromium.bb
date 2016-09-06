@@ -288,7 +288,7 @@ PassRefPtr<ComputedStyle> LayoutTextControlSingleLine::createInnerEditorStyle(co
     // in which we don't want to remove line-height with percent or calculated
     // length.
     // TODO(tkent): This should be done during layout.
-    if (logicalHeight.hasPercent() || (logicalHeight.isFixed() && logicalHeight.getFloatValue() > computedLineHeight))
+    if (logicalHeight.isPercentOrCalc() || (logicalHeight.isFixed() && logicalHeight.getFloatValue() > computedLineHeight))
         textBlockStyle->setLineHeight(ComputedStyle::initialLineHeight());
 
     textBlockStyle->setDisplay(BLOCK);

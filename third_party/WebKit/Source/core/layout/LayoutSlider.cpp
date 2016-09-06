@@ -54,7 +54,7 @@ int LayoutSlider::baselinePosition(FontBaseline, bool /*firstLine*/, LineDirecti
 void LayoutSlider::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
 {
     maxLogicalWidth = LayoutUnit(defaultTrackLength * style()->effectiveZoom());
-    if (!style()->width().hasPercent())
+    if (!style()->width().isPercentOrCalc())
         minLogicalWidth = maxLogicalWidth;
 }
 

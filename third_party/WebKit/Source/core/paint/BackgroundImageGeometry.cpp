@@ -63,12 +63,12 @@ LayoutSize calculateFillTileSize(const LayoutBoxModelObject& obj, const FillLaye
 
         if (layerWidth.isFixed())
             tileSize.setWidth(LayoutUnit(layerWidth.value()));
-        else if (layerWidth.hasPercent())
+        else if (layerWidth.isPercentOrCalc())
             tileSize.setWidth(valueForLength(layerWidth, positioningAreaSize.width()));
 
         if (layerHeight.isFixed())
             tileSize.setHeight(LayoutUnit(layerHeight.value()));
-        else if (layerHeight.hasPercent())
+        else if (layerHeight.isPercentOrCalc())
             tileSize.setHeight(valueForLength(layerHeight, positioningAreaSize.height()));
 
         // If one of the values is auto we have to use the appropriate

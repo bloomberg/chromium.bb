@@ -445,7 +445,7 @@ void LayoutDeprecatedFlexibleBox::layoutHorizontalBox(bool relayoutChildren)
             SubtreeLayoutScope layoutScope(*child);
             // TODO(jchaffraix): It seems incorrect to check isAtomicInlineLevel in this file.
             // We probably want to check if the element is replaced.
-            if (relayoutChildren || (child->isAtomicInlineLevel() && (child->style()->width().hasPercent() || child->style()->height().hasPercent())))
+            if (relayoutChildren || (child->isAtomicInlineLevel() && (child->style()->width().isPercentOrCalc() || child->style()->height().isPercentOrCalc())))
                 layoutScope.setChildNeedsLayout(child);
 
             // Compute the child's vertical margins.
@@ -745,7 +745,7 @@ void LayoutDeprecatedFlexibleBox::layoutVerticalBox(bool relayoutChildren)
             }
 
             SubtreeLayoutScope layoutScope(*child);
-            if (!haveLineClamp && (relayoutChildren || (child->isAtomicInlineLevel() && (child->style()->width().hasPercent() || child->style()->height().hasPercent()))))
+            if (!haveLineClamp && (relayoutChildren || (child->isAtomicInlineLevel() && (child->style()->width().isPercentOrCalc() || child->style()->height().isPercentOrCalc()))))
                 layoutScope.setChildNeedsLayout(child);
 
             if (child->style()->visibility() == EVisibility::Collapse) {
@@ -957,7 +957,7 @@ void LayoutDeprecatedFlexibleBox::applyLineClamp(FlexBoxIterator& iterator, bool
             continue;
 
         child->clearOverrideSize();
-        if (relayoutChildren || (child->isAtomicInlineLevel() && (child->style()->width().hasPercent() || child->style()->height().hasPercent()))
+        if (relayoutChildren || (child->isAtomicInlineLevel() && (child->style()->width().isPercentOrCalc() || child->style()->height().isPercentOrCalc()))
             || (child->style()->height().isAuto() && child->isLayoutBlock())) {
             child->setChildNeedsLayout(MarkOnlyThis);
 
@@ -1045,7 +1045,7 @@ void LayoutDeprecatedFlexibleBox::clearLineClamp()
             continue;
 
         child->clearOverrideSize();
-        if ((child->isAtomicInlineLevel() && (child->style()->width().hasPercent() || child->style()->height().hasPercent()))
+        if ((child->isAtomicInlineLevel() && (child->style()->width().isPercentOrCalc() || child->style()->height().isPercentOrCalc()))
             || (child->style()->height().isAuto() && child->isLayoutBlock())) {
             child->setChildNeedsLayout();
 

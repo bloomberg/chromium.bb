@@ -50,7 +50,7 @@ LayoutUnit resolveBlockLength(const NGConstraintSpace& constraintSpace,
 
   // Make sure that indefinite percentages resolve to NGSizeIndefinite, not to
   // a random negative number.
-  if (length.hasPercent() &&
+  if (length.isPercentOrCalc() &&
       constraintSpace.ContainerSize().block_size == NGSizeIndefinite)
     return contentSize;
 

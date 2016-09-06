@@ -1045,7 +1045,7 @@ void LayoutBlock::dirtyForLayoutFromPercentageHeightDescendants(SubtreeLayoutSco
 LayoutUnit LayoutBlock::textIndentOffset() const
 {
     LayoutUnit cw;
-    if (style()->textIndent().hasPercent())
+    if (style()->textIndent().isPercentOrCalc())
         cw = containingBlock()->availableLogicalWidth();
     return minimumValueForLength(style()->textIndent(), cw);
 }
@@ -1918,7 +1918,7 @@ LayoutUnit LayoutBlock::availableLogicalHeightForPercentageComputation() const
     } else if (style.logicalHeight().isFixed()) {
         LayoutUnit contentBoxHeight = adjustContentBoxLogicalHeightForBoxSizing(style.logicalHeight().value());
         availableHeight = std::max(LayoutUnit(), constrainContentBoxLogicalHeightByMinMax(contentBoxHeight - scrollbarLogicalHeight(), LayoutUnit(-1)));
-    } else if (style.logicalHeight().hasPercent() && !isOutOfFlowPositionedWithSpecifiedHeight) {
+    } else if (style.logicalHeight().isPercentOrCalc() && !isOutOfFlowPositionedWithSpecifiedHeight) {
         LayoutUnit heightWithScrollbar = computePercentageLogicalHeight(style.logicalHeight());
         if (heightWithScrollbar != -1) {
             LayoutUnit contentBoxHeightWithScrollbar = adjustContentBoxLogicalHeightForBoxSizing(heightWithScrollbar);

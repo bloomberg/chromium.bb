@@ -262,7 +262,8 @@ public:
     bool isMaxContent() const { return type() == MaxContent; }
     bool isFillAvailable() const { return type() == FillAvailable; }
     bool isFitContent() const { return type() == FitContent; }
-    bool hasPercent() const { return type() == Percent || type() == Calculated; }
+    bool isPercent() const { return type() == Percent; }
+    bool isPercentOrCalc() const { return type() == Percent || type() == Calculated; }
 
     Length blend(const Length& from, double progress, ValueRange range) const
     {

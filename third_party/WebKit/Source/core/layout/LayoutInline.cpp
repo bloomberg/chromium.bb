@@ -718,7 +718,7 @@ static LayoutUnit computeMargin(const LayoutInline* layoutObject, const Length& 
 {
     if (margin.isFixed())
         return LayoutUnit(margin.value());
-    if (margin.hasPercent())
+    if (margin.isPercentOrCalc())
         return minimumValueForLength(margin, std::max(LayoutUnit(), layoutObject->containingBlock()->availableLogicalWidth()));
     return LayoutUnit();
 }

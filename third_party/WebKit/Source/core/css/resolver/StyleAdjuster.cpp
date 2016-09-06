@@ -322,9 +322,9 @@ static void adjustStyleForDisplay(ComputedStyle& style, const ComputedStyle& par
 
         // We want to count vertical percentage paddings/margins on flex items because our current
         // behavior is different from the spec and we want to gather compatibility data.
-        if (style.paddingBefore().hasPercent() || style.paddingAfter().hasPercent())
+        if (style.paddingBefore().isPercentOrCalc() || style.paddingAfter().isPercentOrCalc())
             UseCounter::count(document, UseCounter::FlexboxPercentagePaddingVertical);
-        if (style.marginBefore().hasPercent() || style.marginAfter().hasPercent())
+        if (style.marginBefore().isPercentOrCalc() || style.marginAfter().isPercentOrCalc())
             UseCounter::count(document, UseCounter::FlexboxPercentageMarginVertical);
     }
 }

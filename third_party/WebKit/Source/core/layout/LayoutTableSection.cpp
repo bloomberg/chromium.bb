@@ -63,8 +63,8 @@ row, const LayoutTableCell* cell)
         switch (logicalHeight.type()) {
         case Percent:
             // TODO(alancutter): Make this work correctly for calc lengths.
-            if (!(cRowLogicalHeight.hasPercent())
-                || (cRowLogicalHeight.hasPercent() && cRowLogicalHeight.percent() < logicalHeight.percent()))
+            if (!(cRowLogicalHeight.isPercentOrCalc())
+                || (cRowLogicalHeight.isPercent() && cRowLogicalHeight.percent() < logicalHeight.percent()))
                 row.logicalHeight = logicalHeight;
             break;
         case Fixed:
@@ -366,7 +366,7 @@ void LayoutTableSection::distributeExtraRowSpanHeightToPercentRows(LayoutTableCe
     for (unsigned row = rowIndex; row < (rowIndex + rowSpan); row++) {
         if (percent > 0 && extraRowSpanningHeight > 0) {
             // TODO(alancutter): Make this work correctly for calc lengths.
-            if (m_grid[row].logicalHeight.hasPercent()) {
+            if (m_grid[row].logicalHeight.isPercent()) {
                 int toAdd = (tableHeight * std::min(m_grid[row].logicalHeight.percent(), percent) / 100) - rowsHeight[row - rowIndex];
 
                 toAdd = std::max(std::min(toAdd, extraRowSpanningHeight), 0);
@@ -409,7 +409,7 @@ void LayoutTableSection::distributeWholeExtraRowSpanHeightToPercentRows(LayoutTa
     int accumulatedPositionIncrease = 0;
     for (unsigned row = rowIndex; row < (rowIndex + rowSpan); row++) {
         // TODO(alancutter): Make this work correctly for calc lengths.
-        if (m_grid[row].logicalHeight.hasPercent()) {
+        if (m_grid[row].logicalHeight.isPercent()) {
             updatePositionIncreasedWithRowHeight(extraRowSpanningHeight, m_grid[row].logicalHeight.percent(), totalPercent, accumulatedPositionIncrease, remainder);
         }
         m_rowPos[row + 1] += accumulatedPositionIncrease;
@@ -457,7 +457,7 @@ void LayoutTableSection::distributeExtraRowSpanHeightToRemainingRows(LayoutTable
     // Aspect ratios of the rows should not change otherwise table may look different than user expected.
     // So extra height distribution in remaining spanning rows based on their weight in spanning cell.
     for (unsigned row = rowIndex; row < (rowIndex + rowSpan); row++) {
-        if (!m_grid[row].logicalHeight.hasPercent()) {
+        if (!m_grid[row].logicalHeight.isPercentOrCalc()) {
             updatePositionIncreasedWithRowHeight(extraRowSpanningHeight, rowsHeight[row - rowIndex], totalRemainingRowsHeight, accumulatedPositionIncrease, remainder);
         }
         m_rowPos[row + 1] += accumulatedPositionIncrease;
@@ -661,7 +661,7 @@ void LayoutTableSection::distributeRowSpanHeightToRows(SpanningLayoutTableCells&
         // Calculate total percentage, total auto rows height and total rows height except percent rows.
         for (unsigned row = rowIndex; row < spanningCellEndIndex; row++) {
             // TODO(alancutter): Make this work correctly for calc lengths.
-            if (m_grid[row].logicalHeight.hasPercent()) {
+            if (m_grid[row].logicalHeight.isPercent()) {
                 totalPercent += m_grid[row].logicalHeight.percent();
                 totalRemainingRowsHeight -= spanningRowsHeight.rowHeight[row - rowIndex];
             } else if (m_grid[row].logicalHeight.isAuto()) {
@@ -869,7 +869,7 @@ void LayoutTableSection::distributeExtraLogicalHeightToPercentRows(int& extraLog
     int rowHeight = m_rowPos[1] - m_rowPos[0];
     for (unsigned r = 0; r < totalRows; ++r) {
         // TODO(alancutter): Make this work correctly for calc lengths.
-        if (totalPercent > 0 && m_grid[r].logicalHeight.hasPercent()) {
+        if (totalPercent > 0 && m_grid[r].logicalHeight.isPercent()) {
             int toAdd = std::min<int>(extraLogicalHeight, (totalHeight * m_grid[r].logicalHeight.percent() / 100) - rowHeight);
             // If toAdd is negative, then we don't want to shrink the row (this bug
             // affected Outlook Web Access).
@@ -941,7 +941,7 @@ int LayoutTableSection::distributeExtraLogicalHeightToRows(int extraLogicalHeigh
     for (unsigned r = 0; r < totalRows; r++) {
         if (m_grid[r].logicalHeight.isAuto())
             ++autoRowsCount;
-        else if (m_grid[r].logicalHeight.hasPercent())
+        else if (m_grid[r].logicalHeight.isPercent())
             totalPercent += m_grid[r].logicalHeight.percent();
     }
 
@@ -1044,7 +1044,7 @@ void LayoutTableSection::layoutRows()
                 || (!table()->style()->logicalHeight().isAuto() && rHeight != cell->logicalHeight());
 
             for (LayoutObject* child = cell->firstChild(); child; child = child->nextSibling()) {
-                if (!child->isText() && child->style()->logicalHeight().hasPercent()
+                if (!child->isText() && child->style()->logicalHeight().isPercentOrCalc()
                     && (flexAllChildren || shouldFlexCellChild(child))
                     && (!child->isTable() || toLayoutTable(child)->hasSections())) {
                     cellChildrenFlex = true;

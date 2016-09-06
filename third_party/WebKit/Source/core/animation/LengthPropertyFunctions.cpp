@@ -277,7 +277,7 @@ bool LengthPropertyFunctions::getLength(CSSPropertyID property, const ComputedSt
         return true;
     case CSSPropertyLineHeight:
         // Percent Lengths are used to represent numbers on line-height.
-        if (style.specifiedLineHeight().hasPercent())
+        if (style.specifiedLineHeight().isPercentOrCalc())
             return false;
         result = style.specifiedLineHeight();
         return true;
@@ -414,7 +414,7 @@ bool LengthPropertyFunctions::setLength(CSSPropertyID property, ComputedStyle& s
 
     case CSSPropertyLineHeight:
         // Percent Lengths are used to represent numbers on line-height.
-        if (value.hasPercent())
+        if (value.isPercentOrCalc())
             return false;
         style.setLineHeight(value);
         return true;

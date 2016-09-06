@@ -705,7 +705,7 @@ static inline bool objectIsRelayoutBoundary(const LayoutObject* object)
     if (!object->hasOverflowClip())
         return false;
 
-    if (object->style()->width().isIntrinsicOrAuto() || object->style()->height().isIntrinsicOrAuto() || object->style()->height().hasPercent())
+    if (object->style()->width().isIntrinsicOrAuto() || object->style()->height().isIntrinsicOrAuto() || object->style()->height().isPercentOrCalc())
         return false;
 
     // Scrollbar parts can be removed during layout. Avoid the complexity of having to deal with that.

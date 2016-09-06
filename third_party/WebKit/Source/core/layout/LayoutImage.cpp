@@ -151,7 +151,7 @@ void LayoutImage::invalidatePaintAndMarkForLayoutIfNeeded()
     // FIXME: We only need to recompute the containing block's preferred size if the containing block's size
     // depends on the image's size (i.e., the container uses shrink-to-fit sizing).
     // There's no easy way to detect that shrink-to-fit is needed, always force a layout.
-    bool containingBlockNeedsToRecomputePreferredSize = style()->logicalWidth().hasPercent() || style()->logicalMaxWidth().hasPercent()  || style()->logicalMinWidth().hasPercent();
+    bool containingBlockNeedsToRecomputePreferredSize = style()->logicalWidth().isPercentOrCalc() || style()->logicalMaxWidth().isPercentOrCalc()  || style()->logicalMinWidth().isPercentOrCalc();
 
     if (imageSourceHasChangedSize && (!imageSizeIsConstrained || containingBlockNeedsToRecomputePreferredSize)) {
         setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::SizeChanged);

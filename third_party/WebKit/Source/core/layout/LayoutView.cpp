@@ -242,9 +242,9 @@ void LayoutView::layout()
                 continue;
 
             if ((child->isBox() && toLayoutBox(child)->hasRelativeLogicalHeight())
-                || child->style()->logicalHeight().hasPercent()
-                || child->style()->logicalMinHeight().hasPercent()
-                || child->style()->logicalMaxHeight().hasPercent())
+                || child->style()->logicalHeight().isPercentOrCalc()
+                || child->style()->logicalMinHeight().isPercentOrCalc()
+                || child->style()->logicalMaxHeight().isPercentOrCalc())
                 layoutScope.setChildNeedsLayout(child);
         }
 

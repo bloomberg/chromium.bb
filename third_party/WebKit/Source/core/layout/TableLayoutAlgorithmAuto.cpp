@@ -90,7 +90,7 @@ void TableLayoutAlgorithmAuto::recalcColumn(unsigned effCol)
                     switch (cellLogicalWidth.type()) {
                     case Fixed:
                         // ignore width=0
-                        if (cellLogicalWidth.isPositive() && !columnLayout.logicalWidth.hasPercent()) {
+                        if (cellLogicalWidth.isPositive() && !columnLayout.logicalWidth.isPercentOrCalc()) {
                             int logicalWidth = cell->adjustBorderBoxLogicalWidthForBoxSizing(cellLogicalWidth.value()).toInt();
                             if (columnLayout.logicalWidth.isFixed()) {
                                 // Nav/IE weirdness
@@ -108,7 +108,7 @@ void TableLayoutAlgorithmAuto::recalcColumn(unsigned effCol)
                     case Percent:
                         m_hasPercent = true;
                         // TODO(alancutter): Make this work correctly for calc lengths.
-                        if (cellLogicalWidth.isPositive() && (!columnLayout.logicalWidth.hasPercent() || cellLogicalWidth.value() > columnLayout.logicalWidth.value()))
+                        if (cellLogicalWidth.isPositive() && (!columnLayout.logicalWidth.isPercentOrCalc() || cellLogicalWidth.value() > columnLayout.logicalWidth.value()))
                             columnLayout.logicalWidth = cellLogicalWidth;
                         break;
                     default:
@@ -157,7 +157,7 @@ void TableLayoutAlgorithmAuto::fullRecalc()
             if (colLogicalWidth.isCalculated() || colLogicalWidth.isAuto())
                 colLogicalWidth = groupLogicalWidth;
             // TODO(alancutter): Make this work correctly for calc lengths.
-            if ((colLogicalWidth.isFixed() || colLogicalWidth.hasPercent()) && colLogicalWidth.isZero())
+            if ((colLogicalWidth.isFixed() || colLogicalWidth.isPercentOrCalc()) && colLogicalWidth.isZero())
                 colLogicalWidth = Length();
             unsigned effCol = m_table->absoluteColumnToEffectiveColumn(currentColumn);
             unsigned span = column->span();
@@ -203,7 +203,7 @@ static bool shouldScaleColumnsForSelf(LayoutTable* table)
     // a cell, then don't bloat the maxwidth by examining percentage growth.
     while (true) {
         Length tw = table->style()->width();
-        if ((!tw.isAuto() && !tw.hasPercent()) || table->isOutOfFlowPositioned())
+        if ((!tw.isAuto() && !tw.isPercentOrCalc()) || table->isOutOfFlowPositioned())
             return true;
         LayoutBlock* cb = table->containingBlock();
 
@@ -213,7 +213,7 @@ static bool shouldScaleColumnsForSelf(LayoutTable* table)
 
         // TODO(dgrogan): Should the second clause check for isFixed() instead?
         if (!cb->isTableCell()
-            || (!cb->style()->width().isAuto() && !cb->style()->width().hasPercent()))
+            || (!cb->style()->width().isAuto() && !cb->style()->width().isPercentOrCalc()))
             return true;
 
         LayoutTableCell* cell = toLayoutTableCell(cb);
@@ -247,7 +247,7 @@ void TableLayoutAlgorithmAuto::computeIntrinsicLogicalWidths(LayoutUnit& minWidt
         minWidth += m_layoutStruct[i].effectiveMinLogicalWidth;
         maxWidth += m_layoutStruct[i].effectiveMaxLogicalWidth;
         if (scaleColumnsForSelf) {
-            if (m_layoutStruct[i].effectiveLogicalWidth.hasPercent()) {
+            if (m_layoutStruct[i].effectiveLogicalWidth.isPercentOrCalc()) {
                 float percent = std::min(static_cast<float>(m_layoutStruct[i].effectiveLogicalWidth.percent()), remainingPercent);
                 float logicalWidth = static_cast<float>(m_layoutStruct[i].effectiveMaxLogicalWidth) * 100 / std::max(percent, epsilon);
                 maxPercent = std::max(logicalWidth,  maxPercent);
@@ -359,7 +359,7 @@ int TableLayoutAlgorithmAuto::calcEffectiveLogicalWidth()
                 //   <tr><td>1</td><td colspan=2 width=100%>2-3</td></tr>
                 // </table>
                 // TODO(alancutter): Make this work correctly for calc lengths.
-                if (!columnLayout.effectiveLogicalWidth.hasPercent()) {
+                if (!columnLayout.effectiveLogicalWidth.isPercentOrCalc()) {
                     columnLayout.effectiveLogicalWidth = Length();
                     allColsArePercent = false;
                 } else {
@@ -378,7 +378,7 @@ int TableLayoutAlgorithmAuto::calcEffectiveLogicalWidth()
         }
 
         // adjust table max width if needed
-        if (cellLogicalWidth.hasPercent()) {
+        if (cellLogicalWidth.isPercentOrCalc()) {
             if (totalPercent > cellLogicalWidth.percent() || allColsArePercent) {
                 // can't satify this condition, treat as variable
                 cellLogicalWidth = Length();
@@ -389,12 +389,12 @@ int TableLayoutAlgorithmAuto::calcEffectiveLogicalWidth()
                 float percentMissing = cellLogicalWidth.percent() - totalPercent;
                 int totalWidth = 0;
                 for (unsigned pos = effCol; pos < lastCol; ++pos) {
-                    if (!m_layoutStruct[pos].effectiveLogicalWidth.hasPercent())
+                    if (!m_layoutStruct[pos].effectiveLogicalWidth.isPercentOrCalc())
                         totalWidth += m_layoutStruct[pos].clampedEffectiveMaxLogicalWidth();
                 }
 
                 for (unsigned pos = effCol; pos < lastCol && totalWidth > 0; ++pos) {
-                    if (!m_layoutStruct[pos].effectiveLogicalWidth.hasPercent()) {
+                    if (!m_layoutStruct[pos].effectiveLogicalWidth.isPercentOrCalc()) {
                         float percent = percentMissing * static_cast<float>(m_layoutStruct[pos].effectiveMaxLogicalWidth) / totalWidth;
                         totalWidth -= m_layoutStruct[pos].clampedEffectiveMaxLogicalWidth();
                         percentMissing -= percent;
@@ -422,9 +422,9 @@ int TableLayoutAlgorithmAuto::calcEffectiveLogicalWidth()
                 int allocatedMaxLogicalWidth = 0;
                 for (unsigned pos = effCol; pos < lastCol; ++pos) {
                     // TODO(alancutter): Make this work correctly for calc lengths.
-                    ASSERT(m_layoutStruct[pos].logicalWidth.hasPercent() || m_layoutStruct[pos].effectiveLogicalWidth.hasPercent());
+                    DCHECK(m_layoutStruct[pos].logicalWidth.isPercentOrCalc() || m_layoutStruct[pos].effectiveLogicalWidth.isPercentOrCalc());
                     // |allColsArePercent| means that either the logicalWidth *or* the effectiveLogicalWidth are percents, handle both of them here.
-                    float percent = m_layoutStruct[pos].logicalWidth.hasPercent() ? m_layoutStruct[pos].logicalWidth.percent() : m_layoutStruct[pos].effectiveLogicalWidth.percent();
+                    float percent = m_layoutStruct[pos].logicalWidth.isPercentOrCalc() ? m_layoutStruct[pos].logicalWidth.percent() : m_layoutStruct[pos].effectiveLogicalWidth.percent();
                     int columnMinLogicalWidth = static_cast<int>(percent * cellMinLogicalWidth / totalPercent);
                     int columnMaxLogicalWidth = static_cast<int>(percent * cellMaxLogicalWidth / totalPercent);
                     m_layoutStruct[pos].effectiveMinLogicalWidth = std::max(m_layoutStruct[pos].effectiveMinLogicalWidth, columnMinLogicalWidth);
@@ -464,7 +464,7 @@ int TableLayoutAlgorithmAuto::calcEffectiveLogicalWidth()
                 }
             }
         }
-        if (!cellLogicalWidth.hasPercent()) {
+        if (!cellLogicalWidth.isPercentOrCalc()) {
             if (cellMaxLogicalWidth > spanMaxLogicalWidth) {
                 for (unsigned pos = effCol; spanMaxLogicalWidth >= 0 && pos < lastCol; ++pos) {
                     int colMaxLogicalWidth = std::max(m_layoutStruct[pos].effectiveMaxLogicalWidth, static_cast<int>(spanMaxLogicalWidth ? cellMaxLogicalWidth * static_cast<float>(m_layoutStruct[pos].effectiveMaxLogicalWidth) / spanMaxLogicalWidth : cellMaxLogicalWidth));
@@ -578,7 +578,7 @@ void TableLayoutAlgorithmAuto::layout()
     if (available > 0 && havePercent) {
         for (size_t i = 0; i < nEffCols; ++i) {
             Length& logicalWidth = m_layoutStruct[i].effectiveLogicalWidth;
-            if (logicalWidth.hasPercent()) {
+            if (logicalWidth.isPercentOrCalc()) {
                 int cellLogicalWidth = std::max<int>(m_layoutStruct[i].effectiveMinLogicalWidth,
                     minimumValueForLength(logicalWidth, LayoutUnit(tableLogicalWidth)).toInt());
                 available += m_layoutStruct[i].computedLogicalWidth - cellLogicalWidth;
@@ -590,7 +590,7 @@ void TableLayoutAlgorithmAuto::layout()
             int excess = tableLogicalWidth * (totalPercent - 100) / 100;
             for (unsigned i = nEffCols; i; ) {
                 --i;
-                if (m_layoutStruct[i].effectiveLogicalWidth.hasPercent()) {
+                if (m_layoutStruct[i].effectiveLogicalWidth.isPercentOrCalc()) {
                     int cellLogicalWidth = m_layoutStruct[i].computedLogicalWidth;
                     int reduction = std::min(cellLogicalWidth,  excess);
                     // the lines below might look inconsistent, but that's the way it's handled in mozilla

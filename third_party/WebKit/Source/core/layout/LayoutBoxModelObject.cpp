@@ -374,8 +374,8 @@ static bool hasPercentageTransform(const ComputedStyle& style)
             return true;
     }
     return style.transform().dependsOnBoxSize()
-        || (style.transformOriginX() != Length(50, Percent) && style.transformOriginX().hasPercent())
-        || (style.transformOriginY() != Length(50, Percent) && style.transformOriginY().hasPercent());
+        || (style.transformOriginX() != Length(50, Percent) && style.transformOriginX().isPercentOrCalc())
+        || (style.transformOriginY() != Length(50, Percent) && style.transformOriginY().isPercentOrCalc());
 }
 
 void LayoutBoxModelObject::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)
@@ -503,7 +503,7 @@ LayoutBlock* LayoutBoxModelObject::containingBlockForAutoHeightDetection(Length 
     // containing block. If the height of the containing block is not specified explicitly (i.e., it depends
     // on content height), and this element is not absolutely positioned,  the used height is calculated
     // as if 'auto' was specified.
-    if (!logicalHeight.hasPercent() || isOutOfFlowPositioned())
+    if (!logicalHeight.isPercentOrCalc() || isOutOfFlowPositioned())
         return nullptr;
 
     // Anonymous block boxes are ignored when resolving percentage values that would refer to it:
@@ -536,7 +536,7 @@ bool LayoutBoxModelObject::hasAutoHeightOrContainingBlockWithAutoHeight(bool che
     const LayoutBox* thisBox = isBox() ? toLayoutBox(this) : nullptr;
     Length logicalHeightLength = style()->logicalHeight();
     LayoutBlock* cb = containingBlockForAutoHeightDetection(logicalHeightLength);
-    if (logicalHeightLength.hasPercent() && cb && isBox())
+    if (logicalHeightLength.isPercentOrCalc() && cb && isBox())
         cb->addPercentHeightDescendant(const_cast<LayoutBox*>(toLayoutBox(this)));
     if (thisBox && thisBox->isFlexItem()) {
         LayoutFlexibleBox& flexBox = toLayoutFlexibleBox(*parent());
@@ -593,13 +593,13 @@ LayoutSize LayoutBoxModelObject::relativePositionOffset() const
     // See <https://bugs.webkit.org/show_bug.cgi?id=26396>.
     if (!style()->top().isAuto()
         && (!containingBlock->hasAutoHeightOrContainingBlockWithAutoHeight()
-            || !style()->top().hasPercent()
+            || !style()->top().isPercentOrCalc()
             || containingBlock->stretchesToViewport()))
         offset.expand(LayoutUnit(), valueForLength(style()->top(), containingBlock->availableHeight()));
 
     else if (!style()->bottom().isAuto()
         && (!containingBlock->hasAutoHeightOrContainingBlockWithAutoHeight()
-            || !style()->bottom().hasPercent()
+            || !style()->bottom().isPercentOrCalc()
             || containingBlock->stretchesToViewport()))
         offset.expand(LayoutUnit(), -valueForLength(style()->bottom(), containingBlock->availableHeight()));
 
@@ -823,7 +823,7 @@ int LayoutBoxModelObject::pixelSnappedOffsetHeight(const Element* parent) const
 LayoutUnit LayoutBoxModelObject::computedCSSPadding(const Length& padding) const
 {
     LayoutUnit w;
-    if (padding.hasPercent())
+    if (padding.isPercentOrCalc())
         w = containingBlockLogicalWidthForContent();
     return minimumValueForLength(padding, w);
 }

@@ -62,7 +62,7 @@ public:
 
     double flex() const { ASSERT(isFlex()); return m_flex; }
 
-    bool hasPercentage() const { return m_type == LengthType && m_length.hasPercent(); }
+    bool hasPercentage() const { return m_type == LengthType && m_length.isPercentOrCalc(); }
 
     bool operator==(const GridLength& o) const
     {

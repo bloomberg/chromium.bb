@@ -352,7 +352,7 @@ bool LayoutBlockFlow::checkIfIsSelfCollapsingBlock() const
 
     Length logicalHeightLength = style()->logicalHeight();
     bool hasAutoHeight = logicalHeightLength.isAuto();
-    if (logicalHeightLength.hasPercent() && !document().inQuirksMode()) {
+    if (logicalHeightLength.isPercentOrCalc() && !document().inQuirksMode()) {
         hasAutoHeight = true;
         for (LayoutBlock* cb = containingBlock(); !cb->isLayoutView(); cb = cb->containingBlock()) {
             if (cb->style()->logicalHeight().isFixed() || cb->isTableCell())
@@ -363,7 +363,7 @@ bool LayoutBlockFlow::checkIfIsSelfCollapsingBlock() const
     // If the height is 0 or auto, then whether or not we are a self-collapsing block depends
     // on whether we have content that is all self-collapsing or not.
     // TODO(alancutter): Make this work correctly for calc lengths.
-    if (hasAutoHeight || ((logicalHeightLength.isFixed() || logicalHeightLength.hasPercent()) && logicalHeightLength.isZero())) {
+    if (hasAutoHeight || ((logicalHeightLength.isFixed() || logicalHeightLength.isPercentOrCalc()) && logicalHeightLength.isZero())) {
         // If the block has inline children, see if we generated any line boxes.  If we have any
         // line boxes, then we can't be self-collapsing, since we have content.
         if (childrenInline())

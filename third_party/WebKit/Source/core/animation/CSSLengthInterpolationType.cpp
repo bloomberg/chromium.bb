@@ -78,7 +78,7 @@ InterpolationValue CSSLengthInterpolationType::maybeConvertLength(const Length& 
     values->set(CSSPrimitiveValue::UnitTypePixels, InterpolableNumber::create(pixelsAndPercent.pixels / zoom));
     values->set(CSSPrimitiveValue::UnitTypePercentage, InterpolableNumber::create(pixelsAndPercent.percent));
 
-    return InterpolationValue(std::move(values), CSSLengthNonInterpolableValue::create(length.hasPercent()));
+    return InterpolationValue(std::move(values), CSSLengthNonInterpolableValue::create(length.isPercentOrCalc()));
 }
 
 std::unique_ptr<InterpolableList> CSSLengthInterpolationType::createNeutralInterpolableValue()
