@@ -59,7 +59,7 @@ shared_library("remoting_client_jni") {
     "OpenSLES",
     "EGL",
   ]
-  configs += [ "//remoting:enable_webrtc_remoting_client" ]
+  configs += [ "//remoting/build/config:enable_webrtc_remoting_client" ]
 }
 
 _raw_resources_base_dir = "$target_gen_dir/remoting_android_raw_resources/res"

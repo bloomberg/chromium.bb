@@ -2,16 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/features.gni")
-import("//build/config/ui.gni")
-import("//build/config/win/manifest.gni")
-import("//build/util/version.gni")
-import("//chrome/version.gni")
-import("//remoting/remoting_enable.gni")
-import("//remoting/remoting_locales.gni")
-import("//remoting/remoting_options.gni")
-import("//remoting/remoting_version.gni")
-import("//remoting/tools/build/remoting_localize.gni")
+import("//remoting/build/config/remoting_build.gni")
 
 process_version("remoting_version") {
   template_file = "//remoting/host/version.h.in"
@@ -28,50 +19,51 @@ if (is_win) {
   import("//third_party/icu/config.gni")
 }
 
-# Reference this manifest to indicate that a process is per-monitor DPI aware.
-dpi_aware_manifest = "//remoting/host/win/dpi_aware.manifest"
+if (is_win) {
+  # Reference this manifest to indicate that a process is per-monitor DPI aware.
+  dpi_aware_manifest = "//remoting/host/win/dpi_aware.manifest"
 
-# Reference this manifest to give the binary the uiAccess privilege.
-enable_uiaccess_manifest = "//remoting/host/win/enable_uiaccess.manifest"
+  # Reference this manifest to give the binary the uiAccess privilege.
+  enable_uiaccess_manifest = "//remoting/host/win/enable_uiaccess.manifest"
 
-# Depending on this target gives the executable a default manifest with the
-# addition of the DPI aware tag.
-windows_manifest("dpi_aware_exe_manifest") {
-  sources = [
-    as_invoker_manifest,
-    common_controls_manifest,
-    default_compatibility_manifest,
-    dpi_aware_manifest,
-  ]
-  type = "exe"
+  # Depending on this target gives the executable a default manifest with the
+  # addition of the DPI aware tag.
+  windows_manifest("dpi_aware_exe_manifest") {
+    sources = [
+      as_invoker_manifest,
+      common_controls_manifest,
+      default_compatibility_manifest,
+      dpi_aware_manifest,
+    ]
+    type = "exe"
+  }
+
+  # Depending on this target gives the executable a default manifest with the
+  # addition of the DPI aware tag and requestedExecutionLevel of
+  # requireAdministrator.
+  windows_manifest("dpi_aware_elevated_exe_manifest") {
+    sources = [
+      common_controls_manifest,
+      default_compatibility_manifest,
+      dpi_aware_manifest,
+      require_administrator_manifest,
+    ]
+    type = "exe"
+  }
+
+  # Depending on this target gives the executable a default manifest with the
+  # addition of the DPI aware tag and enables uiAccess.
+  windows_manifest("dpi_aware_uiaccess_exe_manifest") {
+    sources = [
+      common_controls_manifest,
+      default_compatibility_manifest,
+      dpi_aware_manifest,
+      enable_uiaccess_manifest,
+    ]
+    type = "exe"
+  }
 }
 
-# Depending on this target gives the executable a default manifest with the
-# addition of the DPI aware tag and requestedExecutionLevel of
-# requireAdministrator.
-windows_manifest("dpi_aware_elevated_exe_manifest") {
-  sources = [
-    common_controls_manifest,
-    default_compatibility_manifest,
-    dpi_aware_manifest,
-    require_administrator_manifest,
-  ]
-  type = "exe"
-}
-
-# Depending on this target gives the executable a default manifest with the
-# addition of the DPI aware tag and enables uiAccess.
-windows_manifest("dpi_aware_uiaccess_exe_manifest") {
-  sources = [
-    common_controls_manifest,
-    default_compatibility_manifest,
-    dpi_aware_manifest,
-    enable_uiaccess_manifest,
-  ]
-  type = "exe"
-}
-
-# GYP version: remoting/remoting_host:remoting_host_credits
 action("credits") {
   # We put this in $root_build_dir/gen/remoting instead of
   # $root_build_dir/gen/remoting/host (target_gen_dir) for
@@ -324,33 +316,6 @@ static_library("host") {
     "screen_controls.h",
     "screen_resolution.cc",
     "screen_resolution.h",
-    "security_key/security_key_auth_handler.h",
-    "security_key/security_key_auth_handler_posix.cc",
-    "security_key/security_key_auth_handler_win.cc",
-    "security_key/security_key_extension.cc",
-    "security_key/security_key_extension.h",
-    "security_key/security_key_extension_session.cc",
-    "security_key/security_key_extension_session.h",
-    "security_key/security_key_ipc_client.cc",
-    "security_key/security_key_ipc_client.h",
-    "security_key/security_key_ipc_constants.cc",
-    "security_key/security_key_ipc_constants.h",
-    "security_key/security_key_ipc_server.cc",
-    "security_key/security_key_ipc_server.h",
-    "security_key/security_key_ipc_server_impl.cc",
-    "security_key/security_key_ipc_server_impl.h",
-    "security_key/security_key_message.cc",
-    "security_key/security_key_message.h",
-    "security_key/security_key_message_handler.cc",
-    "security_key/security_key_message_handler.h",
-    "security_key/security_key_message_reader.h",
-    "security_key/security_key_message_reader_impl.cc",
-    "security_key/security_key_message_reader_impl.h",
-    "security_key/security_key_message_writer.h",
-    "security_key/security_key_message_writer_impl.cc",
-    "security_key/security_key_message_writer_impl.h",
-    "security_key/security_key_socket.cc",
-    "security_key/security_key_socket.h",
     "server_log_entry_host.cc",
     "server_log_entry_host.h",
     "service_urls.cc",
@@ -412,7 +377,7 @@ static_library("host") {
 
   configs += [
     "//build/config/compiler:wexit_time_destructors",
-    "//remoting:version",
+    "//remoting/build/config:version",
   ]
 
   defines = [ "WEBRTC_CHROMIUM_BUILD" ]
@@ -420,11 +385,13 @@ static_library("host") {
   deps = [
     "//base:i18n",
     "//components/policy/core/common",
+    "//content/public/common",
     "//crypto",
     "//device/power_save_blocker",
     "//google_apis",
     "//ipc",
     "//remoting/base",
+    "//remoting/host/security_key",
     "//remoting/protocol",
     "//remoting/resources",
     "//ui/base",
@@ -564,21 +531,11 @@ static_library("test_support") {
     "fake_oauth_token_getter.h",
     "host_mock_objects.cc",
     "host_mock_objects.h",
-    "security_key/fake_ipc_security_key_auth_handler.cc",
-    "security_key/fake_ipc_security_key_auth_handler.h",
-    "security_key/fake_security_key_ipc_client.cc",
-    "security_key/fake_security_key_ipc_client.h",
-    "security_key/fake_security_key_ipc_server.cc",
-    "security_key/fake_security_key_ipc_server.h",
-    "security_key/fake_security_key_message_reader.cc",
-    "security_key/fake_security_key_message_reader.h",
-    "security_key/fake_security_key_message_writer.cc",
-    "security_key/fake_security_key_message_writer.h",
     "setup/mock_oauth_client.cc",
     "setup/mock_oauth_client.h",
   ]
 
-  configs += [ "//remoting:version" ]
+  configs += [ "//remoting/build/config:version" ]
 
   deps = [
     "//remoting/proto",
@@ -646,14 +603,6 @@ source_set("unit_tests") {
     "resizing_host_observer_unittest.cc",
     "resources_unittest.cc",
     "screen_resolution_unittest.cc",
-    "security_key/security_key_auth_handler_posix_unittest.cc",
-    "security_key/security_key_auth_handler_win_unittest.cc",
-    "security_key/security_key_extension_session_unittest.cc",
-    "security_key/security_key_ipc_client_unittest.cc",
-    "security_key/security_key_ipc_server_unittest.cc",
-    "security_key/security_key_message_handler_unittest.cc",
-    "security_key/security_key_message_reader_impl_unittest.cc",
-    "security_key/security_key_message_writer_impl_unittest.cc",
     "server_log_entry_host_unittest.cc",
     "setup/me2me_native_messaging_host_unittest.cc",
     "setup/oauth_helper_unittest.cc",
@@ -686,13 +635,14 @@ source_set("unit_tests") {
     ]
   }
 
-  configs += [ "//remoting:version" ]
+  configs += [ "//remoting/build/config:version" ]
 
   deps = [
     ":host",
     ":test_support",
     "//remoting/host/it2me:common",
     "//remoting/host/native_messaging",
+    "//remoting/host/security_key:unit_tests",
     "//remoting/host/setup",
     "//remoting/proto",
     "//remoting/resources",
@@ -770,7 +720,6 @@ if (is_win) {
     }
   }
 
-  # GYP version: remoting/remoting_host_win.gypi:remoting_lib_ps
   static_library("remoting_lib_ps") {
     configs += [ ":MIDL_config" ]
 
@@ -817,7 +766,6 @@ if (is_win) {
     ]
   }
 
-  # GYP version: remoting/remoting_host_win.gypi:remoting_console
   executable("remoting_console") {
     configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
@@ -840,7 +788,6 @@ if (is_win) {
     ]
   }
 
-  # GYP version: //remoting/remoting_host_win.gypi:remoting_core
   shared_library("remoting_core") {
     configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
@@ -885,6 +832,7 @@ if (is_win) {
       "//remoting/codec",
       "//remoting/host/it2me:common",
       "//remoting/host/native_messaging",
+      "//remoting/host/security_key:main",
       "//remoting/host/setup",
       "//remoting/protocol",
       "//sandbox/win:sandbox",  # Should always use Windows version
@@ -900,8 +848,6 @@ if (is_win) {
       "host_main.h",
       "it2me/it2me_native_messaging_host_main.cc",
       "it2me/it2me_native_messaging_host_main.h",
-      "security_key/remote_security_key_main.cc",
-      "security_key/remote_security_key_main.h",
       "setup/host_starter.cc",
       "setup/host_starter.h",
       "setup/me2me_native_messaging_host_main.cc",
@@ -951,7 +897,6 @@ if (is_win) {
     }
   }
 
-  # GYP version: //remoting/remoting_host_win.gypi:remoting_desktop
   executable("remoting_desktop") {
     configs += [
       "//build/config/compiler:wexit_time_destructors",
@@ -982,26 +927,6 @@ if (is_win) {
     ]
   }
 
-  # GYP version: //remoting/remoting_host_win.gypi:remote_security_key
-  executable("remote_security_key") {
-    configs += [ "//build/config/compiler:wexit_time_destructors" ]
-
-    defines = host_predefines + [ "BINARY=BINARY_REMOTE_SECURITY_KEY" ]
-
-    deps = [
-      ":remoting_core",
-      ":remoting_windows_resources",
-      "//build/win:default_exe_manifest",
-    ]
-
-    sources = [
-      "$root_gen_dir/remoting/version.rc",
-      "security_key/remote_security_key_entry_point.cc",
-    ]
-  }
-
-  # GYP version:
-  # //remoting/remoting_host_win.gypi:remoting_me2me_native_messaging_host
   executable("remoting_native_messaging_host") {
     configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
@@ -1032,7 +957,6 @@ if (is_win) {
     ]
   }
 
-  # GYP version: //remoting/remoting_host_win.gypi:remoting_windows_resources
   remoting_localize("remoting_windows_resources") {
     deps = [
       "//remoting/resources",
@@ -1207,7 +1131,7 @@ if (enable_me2me_host) {
     ]
     defines = []
 
-    configs += [ "//remoting:version" ]
+    configs += [ "//remoting/build/config:version" ]
 
     deps = [
       "//base",
@@ -1254,7 +1178,6 @@ if (enable_me2me_host) {
   }
 
   if (is_win) {
-    # GYP version: //remoting/remoting_host_win.gypi:remoting_me2me_host
     executable("remoting_me2me_host") {
       configs += [
         "//build/config/compiler:wexit_time_destructors",
@@ -1333,7 +1256,7 @@ if (enable_me2me_host) {
 
     target(app_target_type, "remoting_me2me_host") {
       if (is_mac) {
-        extra_configs = [ "//remoting:version" ]
+        extra_configs = [ "//remoting/build/config:version" ]
         info_plist = "remoting_me2me_host-Info.plist"
         extra_substitutions = [
           "BUNDLE_ID=$host_bundle_id",
@@ -1342,7 +1265,7 @@ if (enable_me2me_host) {
           "MACOSX_DEPLOYMENT_TARGET=10.7",
         ]
       } else {
-        configs += [ "//remoting:version" ]
+        configs += [ "//remoting/build/config:version" ]
       }
 
       sources = [
@@ -1562,13 +1485,11 @@ if (enable_me2me_host) {
       ]
     }
   } else if (is_win) {
-    # GYP version: //remoting/remoting_host_win.gypi:remoting_me2me_host_archive
     action("remoting_me2me_host_archive") {
       script = "//remoting/host/installer/build-installer-archive.py"
 
       deps = [
         ":credits",
-        ":remote_security_key",
         ":remoting_core",
         ":remoting_desktop",
         ":remoting_me2me_host",
@@ -1577,6 +1498,7 @@ if (enable_me2me_host) {
         ":remoting_start_host",
         "it2me:remote_assistance_host",
         "it2me:remote_assistance_host_uiaccess",
+        "//remoting/host/security_key:remote_security_key",
         "//third_party/icu:icudata",
       ]
 
@@ -1963,7 +1885,6 @@ if (enable_me2me_host) {
       # The script uses "ia32" instead of "x86".
       msi_script_arch = "ia32"
 
-      # GYP version: remoting/remoting_host_win.gyp:remoting_host_installation
       action("remoting_host_installation") {
         deps = [
           "//remoting/host:remoting_me2me_host_archive",

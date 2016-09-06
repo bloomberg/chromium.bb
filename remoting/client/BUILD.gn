@@ -49,8 +49,8 @@ static_library("client") {
 
   configs += [
     "//build/config/compiler:wexit_time_destructors",
-    "//remoting:version",
-    "//remoting:enable_webrtc_remoting_client",
+    "//remoting/build/config:version",
+    "//remoting/build/config:enable_webrtc_remoting_client",
   ]
 
   deps = [
@@ -160,8 +160,8 @@ source_set("unit_tests") {
   set_sources_assignment_filter(sources_assignment_filter)
 
   configs += [
-    "//remoting:version",
-    "//remoting:enable_webrtc_remoting_client",
+    "//remoting/build/config:version",
+    "//remoting/build/config:enable_webrtc_remoting_client",
   ]
 
   deps = [

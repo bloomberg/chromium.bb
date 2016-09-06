@@ -37,7 +37,7 @@ source_set("common") {
 
   configs += [
     "//build/config/compiler:wexit_time_destructors",
-    "//remoting:version",
+    "//remoting/build/config:version",
   ]
 
   deps = [
@@ -165,12 +165,12 @@ if (!is_chromeos && !is_android && enable_remoting_host) {
         ]
         extra_configs = [
           "//build/config/compiler:wexit_time_destructors",
-          "//remoting:version",
+          "//remoting/build/config:version",
         ]
       } else {
         configs += [
           "//build/config/compiler:wexit_time_destructors",
-          "//remoting:version",
+          "//remoting/build/config:version",
         ]
       }
 
