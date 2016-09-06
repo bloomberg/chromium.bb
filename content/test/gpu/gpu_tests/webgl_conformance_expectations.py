@@ -179,6 +179,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
     self.Fail('conformance/glsl/misc/struct-nesting-of-variable-names.html',
         ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('conformance/rendering/clipping-wide-points.html',
+        ['win', 'amd', 'opengl'], bug=1506) # angle bug ID
 
     # Win / OpenGL / Intel failures
     self.Fail('conformance/glsl/functions/glsl-function-normalize.html',

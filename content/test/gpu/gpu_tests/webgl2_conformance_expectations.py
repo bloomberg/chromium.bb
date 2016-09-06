@@ -596,6 +596,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'intel', 'opengl'], bug=635528)
     self.Fail('deqp/functional/gles3/fragmentoutput/*.html',
         ['linux', 'intel', 'opengl'], bug=598902)
+    self.Fail('conformance2/textures/misc/copy-texture-image-luma-format.html',
+        ['linux', 'intel', 'opengl'], bug=1492) # ANGLE bug id
 
     # Linux Intel without ANGLE only
     self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
@@ -653,6 +655,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/renderbuffers/framebuffer-texture-layer.html',
         ['linux', 'amd'], bug=295792)
     self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('conformance2/textures/misc/copy-texture-image-luma-format.html',
         ['linux', 'amd'], bug=483282)
 
     self.Fail('deqp/functional/gles3/texturespecification/' +
