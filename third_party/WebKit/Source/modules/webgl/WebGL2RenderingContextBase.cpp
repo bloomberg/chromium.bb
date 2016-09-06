@@ -392,7 +392,7 @@ bool WebGL2RenderingContextBase::validateTexFuncLayer(const char* functionName, 
     return true;
 }
 
-void WebGL2RenderingContextBase::framebufferTextureLayer(ScriptState* scriptState, GLenum target, GLenum attachment, WebGLTexture* texture, GLint level, GLint layer)
+void WebGL2RenderingContextBase::framebufferTextureLayer(GLenum target, GLenum attachment, WebGLTexture* texture, GLint level, GLint layer)
 {
     if (isContextLost() || !validateFramebufferFuncParameters("framebufferTextureLayer", target, attachment))
         return;
@@ -428,11 +428,8 @@ void WebGL2RenderingContextBase::framebufferTextureLayer(ScriptState* scriptStat
         // We divide it here so in WebGLFramebuffer, we don't have to handle DEPTH_STENCIL_ATTACHMENT in WebGL 2.
         framebufferBinding->setAttachmentForBoundFramebuffer(target, GL_DEPTH_ATTACHMENT, textarget, texture, level, layer);
         framebufferBinding->setAttachmentForBoundFramebuffer(target, GL_STENCIL_ATTACHMENT, textarget, texture, level, layer);
-        preserveObjectWrapper(scriptState, framebufferBinding, V8HiddenValue::webglAttachments(scriptState->isolate()), framebufferBinding->getPersistentCache(), GL_DEPTH_ATTACHMENT, texture);
-        preserveObjectWrapper(scriptState, framebufferBinding, V8HiddenValue::webglAttachments(scriptState->isolate()), framebufferBinding->getPersistentCache(), GL_STENCIL_ATTACHMENT, texture);
     } else {
         framebufferBinding->setAttachmentForBoundFramebuffer(target, attachment, textarget, texture, level, layer);
-        preserveObjectWrapper(scriptState, framebufferBinding, V8HiddenValue::webglAttachments(scriptState->isolate()), framebufferBinding->getPersistentCache(), attachment, texture);
     }
     applyStencilTest();
 }
@@ -1826,7 +1823,7 @@ GLboolean WebGL2RenderingContextBase::isQuery(WebGLQuery* query)
     return contextGL()->IsQueryEXT(query->object());
 }
 
-void WebGL2RenderingContextBase::beginQuery(ScriptState* scriptState, GLenum target, WebGLQuery* query)
+void WebGL2RenderingContextBase::beginQuery(GLenum target, WebGLQuery* query)
 {
     bool deleted;
     if (!query) {
@@ -1875,7 +1872,6 @@ void WebGL2RenderingContextBase::beginQuery(ScriptState* scriptState, GLenum tar
         query->setTarget(target);
 
     contextGL()->BeginQueryEXT(target, query->object());
-    preserveObjectWrapper(scriptState, this, V8HiddenValue::webglQueries(scriptState->isolate()), &m_queryWrappers, static_cast<uint32_t>(target), query);
 }
 
 void WebGL2RenderingContextBase::endQuery(GLenum target)
@@ -2013,7 +2009,7 @@ GLboolean WebGL2RenderingContextBase::isSampler(WebGLSampler* sampler)
     return contextGL()->IsSampler(sampler->object());
 }
 
-void WebGL2RenderingContextBase::bindSampler(ScriptState* scriptState, GLuint unit, WebGLSampler* sampler)
+void WebGL2RenderingContextBase::bindSampler(GLuint unit, WebGLSampler* sampler)
 {
     if (isContextLost())
         return;
@@ -2034,8 +2030,6 @@ void WebGL2RenderingContextBase::bindSampler(ScriptState* scriptState, GLuint un
     m_samplerUnits[unit] = sampler;
 
     contextGL()->BindSampler(unit, objectOrZero(sampler));
-
-    preserveObjectWrapper(scriptState, this, V8HiddenValue::webglSamplers(scriptState->isolate()), &m_samplerWrappers, static_cast<uint32_t>(unit), sampler);
 }
 
 void WebGL2RenderingContextBase::samplerParameter(WebGLSampler* sampler, GLenum pname, GLfloat paramf, GLint parami, bool isFloat)
@@ -2265,7 +2259,7 @@ GLboolean WebGL2RenderingContextBase::isTransformFeedback(WebGLTransformFeedback
     return contextGL()->IsTransformFeedback(feedback->object());
 }
 
-void WebGL2RenderingContextBase::bindTransformFeedback(ScriptState* scriptState, GLenum target, WebGLTransformFeedback* feedback)
+void WebGL2RenderingContextBase::bindTransformFeedback(GLenum target, WebGLTransformFeedback* feedback)
 {
     bool deleted;
     if (!checkObjectToBeBound("bindTransformFeedback", feedback, deleted))
@@ -2285,7 +2279,6 @@ void WebGL2RenderingContextBase::bindTransformFeedback(ScriptState* scriptState,
     contextGL()->BindTransformFeedback(target, objectOrZero(feedback));
     if (feedback) {
         feedback->setTarget(target);
-        preserveObjectWrapper(scriptState, this, V8HiddenValue::webglMisc(scriptState->isolate()), &m_miscWrappers, static_cast<uint32_t>(PreservedTransformFeedback), feedback);
     }
 
 }
@@ -2689,13 +2682,13 @@ WebGLVertexArrayObject* WebGL2RenderingContextBase::createVertexArray()
     return o;
 }
 
-void WebGL2RenderingContextBase::deleteVertexArray(ScriptState* scriptState, WebGLVertexArrayObject* vertexArray)
+void WebGL2RenderingContextBase::deleteVertexArray(WebGLVertexArrayObject* vertexArray)
 {
     if (isContextLost() || !vertexArray)
         return;
 
     if (!vertexArray->isDefaultObject() && vertexArray == m_boundVertexArrayObject)
-        setBoundVertexArrayObject(scriptState, nullptr);
+        setBoundVertexArrayObject(nullptr);
 
     vertexArray->deleteObject(contextGL());
 }
@@ -2711,7 +2704,7 @@ GLboolean WebGL2RenderingContextBase::isVertexArray(WebGLVertexArrayObject* vert
     return contextGL()->IsVertexArrayOES(vertexArray->object());
 }
 
-void WebGL2RenderingContextBase::bindVertexArray(ScriptState* scriptState, WebGLVertexArrayObject* vertexArray)
+void WebGL2RenderingContextBase::bindVertexArray(WebGLVertexArrayObject* vertexArray)
 {
     if (isContextLost())
         return;
@@ -2725,14 +2718,14 @@ void WebGL2RenderingContextBase::bindVertexArray(ScriptState* scriptState, WebGL
         contextGL()->BindVertexArrayOES(objectOrZero(vertexArray));
 
         vertexArray->setHasEverBeenBound();
-        setBoundVertexArrayObject(scriptState, vertexArray);
+        setBoundVertexArrayObject(vertexArray);
     } else {
         contextGL()->BindVertexArrayOES(0);
-        setBoundVertexArrayObject(scriptState, nullptr);
+        setBoundVertexArrayObject(nullptr);
     }
 }
 
-void WebGL2RenderingContextBase::bindFramebuffer(ScriptState* scriptState, GLenum target, WebGLFramebuffer* buffer)
+void WebGL2RenderingContextBase::bindFramebuffer(GLenum target, WebGLFramebuffer* buffer)
 {
     bool deleted;
     if (!checkObjectToBeBound("bindFramebuffer", buffer, deleted))
@@ -2754,9 +2747,6 @@ void WebGL2RenderingContextBase::bindFramebuffer(ScriptState* scriptState, GLenu
     }
 
     setFramebuffer(target, buffer);
-    if (scriptState) {
-        preserveObjectWrapper(scriptState, this, V8HiddenValue::webglMisc(scriptState->isolate()), &m_miscWrappers, static_cast<uint32_t>(PreservedFramebuffer), buffer);
-    }
 }
 
 void WebGL2RenderingContextBase::deleteFramebuffer(WebGLFramebuffer* framebuffer)
@@ -3598,8 +3588,42 @@ void WebGL2RenderingContextBase::removeBoundBuffer(WebGLBuffer* buffer)
 
 void WebGL2RenderingContextBase::restoreCurrentFramebuffer()
 {
-    bindFramebuffer(nullptr, GL_DRAW_FRAMEBUFFER, m_framebufferBinding.get());
-    bindFramebuffer(nullptr, GL_READ_FRAMEBUFFER, m_readFramebufferBinding.get());
+    bindFramebuffer(GL_DRAW_FRAMEBUFFER, m_framebufferBinding.get());
+    bindFramebuffer(GL_READ_FRAMEBUFFER, m_readFramebufferBinding.get());
+}
+
+void WebGL2RenderingContextBase::visitChildDOMWrappers(v8::Isolate* isolate, const v8::Persistent<v8::Object>& wrapper)
+{
+    if (isContextLost()) {
+        return;
+    }
+
+    WebGLRenderingContextBase::visitChildDOMWrappers(isolate, wrapper);
+
+    DOMWrapperWorld::setWrapperReferencesInAllWorlds(wrapper, m_transformFeedbackBinding, isolate);
+    DOMWrapperWorld::setWrapperReferencesInAllWorlds(wrapper, m_readFramebufferBinding, isolate);
+
+    DOMWrapperWorld::setWrapperReferencesInAllWorlds(wrapper, m_boundCopyReadBuffer, isolate);
+    DOMWrapperWorld::setWrapperReferencesInAllWorlds(wrapper, m_boundCopyWriteBuffer, isolate);
+    DOMWrapperWorld::setWrapperReferencesInAllWorlds(wrapper, m_boundPixelPackBuffer, isolate);
+    DOMWrapperWorld::setWrapperReferencesInAllWorlds(wrapper, m_boundPixelUnpackBuffer, isolate);
+    DOMWrapperWorld::setWrapperReferencesInAllWorlds(wrapper, m_boundTransformFeedbackBuffer, isolate);
+    DOMWrapperWorld::setWrapperReferencesInAllWorlds(wrapper, m_boundUniformBuffer, isolate);
+
+    for (auto& buf : m_boundIndexedTransformFeedbackBuffers) {
+        DOMWrapperWorld::setWrapperReferencesInAllWorlds(wrapper, buf, isolate);
+    }
+
+    for (auto& buf : m_boundIndexedUniformBuffers) {
+        DOMWrapperWorld::setWrapperReferencesInAllWorlds(wrapper, buf, isolate);
+    }
+
+    DOMWrapperWorld::setWrapperReferencesInAllWorlds(wrapper, m_currentBooleanOcclusionQuery, isolate);
+    DOMWrapperWorld::setWrapperReferencesInAllWorlds(wrapper, m_currentTransformFeedbackPrimitivesWrittenQuery, isolate);
+
+    for (auto& unit : m_samplerUnits) {
+        DOMWrapperWorld::setWrapperReferencesInAllWorlds(wrapper, unit, isolate);
+    }
 }
 
 WebGLImageConversion::PixelStoreParams WebGL2RenderingContextBase::getPackPixelStoreParams()

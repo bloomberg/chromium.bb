@@ -297,7 +297,7 @@ typedef long long      GLint64;
 
     /* Framebuffer objects */
     void blitFramebuffer(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter);
-    [CallWith=ScriptState] void framebufferTextureLayer(GLenum target, GLenum attachment, WebGLTexture? texture, GLint level, GLint layer);
+    void framebufferTextureLayer(GLenum target, GLenum attachment, WebGLTexture? texture, GLint level, GLint layer);
     [CallWith=ScriptState] any getInternalformatParameter(GLenum target, GLenum internalformat, GLenum pname);
     void invalidateFramebuffer(GLenum target, sequence<GLenum> attachments);
     void invalidateSubFramebuffer (GLenum target, sequence<GLenum> attachments, GLint x, GLint y, GLsizei width, GLsizei height);
@@ -407,7 +407,7 @@ typedef long long      GLint64;
     WebGLQuery createQuery();
     void deleteQuery(WebGLQuery? query);
     GLboolean isQuery(WebGLQuery? query);
-    [CallWith=ScriptState] void beginQuery(GLenum target, WebGLQuery? query);
+    void beginQuery(GLenum target, WebGLQuery? query);
     void endQuery(GLenum target);
     WebGLQuery getQuery(GLenum target, GLenum pname);
     [CallWith=ScriptState] any getQueryParameter(WebGLQuery? query, GLenum pname);
@@ -416,7 +416,7 @@ typedef long long      GLint64;
     WebGLSampler createSampler();
     void deleteSampler(WebGLSampler? sampler);
     GLboolean isSampler(WebGLSampler? sampler);
-    [CallWith=ScriptState] void bindSampler(GLuint unit, WebGLSampler? sampler);
+    void bindSampler(GLuint unit, WebGLSampler? sampler);
     void samplerParameteri(WebGLSampler? sampler, GLenum pname, GLint param);
     void samplerParameterf(WebGLSampler? sampler, GLenum pname, GLfloat param);
     [CallWith=ScriptState] any getSamplerParameter(WebGLSampler? sampler, GLenum pname);
@@ -434,7 +434,7 @@ typedef long long      GLint64;
     WebGLTransformFeedback createTransformFeedback();
     void deleteTransformFeedback(WebGLTransformFeedback? feedback);
     GLboolean isTransformFeedback(WebGLTransformFeedback? feedback);
-    [CallWith=ScriptState] void bindTransformFeedback (GLenum target, WebGLTransformFeedback? feedback);
+    void bindTransformFeedback (GLenum target, WebGLTransformFeedback? feedback);
     void beginTransformFeedback(GLenum primitiveMode);
     void endTransformFeedback();
     void transformFeedbackVaryings(WebGLProgram? program, sequence<DOMString> varyings, GLenum bufferMode);
@@ -455,9 +455,9 @@ typedef long long      GLint64;
 
     /* Vertex Array Objects */
     WebGLVertexArrayObject createVertexArray();
-    [CallWith=ScriptState] void deleteVertexArray(WebGLVertexArrayObject? vertexArray);
+    void deleteVertexArray(WebGLVertexArrayObject? vertexArray);
     GLboolean isVertexArray(WebGLVertexArrayObject? vertexArray);
-    [CallWith=ScriptState] void bindVertexArray(WebGLVertexArrayObject? vertexArray);
+    void bindVertexArray(WebGLVertexArrayObject? vertexArray);
 
     /* Reading */
     void readPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLintptr offset);

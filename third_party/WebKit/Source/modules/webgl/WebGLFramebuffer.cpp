@@ -422,9 +422,11 @@ GLenum WebGLFramebuffer::getDrawBuffer(GLenum drawBuffer)
     return GL_NONE;
 }
 
-ScopedPersistent<v8::Array>* WebGLFramebuffer::getPersistentCache()
+void WebGLFramebuffer::visitChildDOMWrappers(v8::Isolate* isolate, const v8::Persistent<v8::Object>& wrapper)
 {
-    return &m_attachmentWrappers;
+    for (const auto& attachment : m_attachments) {
+        DOMWrapperWorld::setWrapperReferencesInAllWorlds(wrapper, attachment.value->object(), isolate);
+    }
 }
 
 DEFINE_TRACE(WebGLFramebuffer)

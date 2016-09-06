@@ -63,14 +63,14 @@ WebGLVertexArrayObjectOES* OESVertexArrayObject::createVertexArrayOES()
     return o;
 }
 
-void OESVertexArrayObject::deleteVertexArrayOES(ScriptState* scriptState, WebGLVertexArrayObjectOES* arrayObject)
+void OESVertexArrayObject::deleteVertexArrayOES(WebGLVertexArrayObjectOES* arrayObject)
 {
     WebGLExtensionScopedContext scoped(this);
     if (!arrayObject || scoped.isLost())
         return;
 
     if (!arrayObject->isDefaultObject() && arrayObject == scoped.context()->m_boundVertexArrayObject)
-        scoped.context()->setBoundVertexArrayObject(scriptState, nullptr);
+        scoped.context()->setBoundVertexArrayObject(nullptr);
 
     arrayObject->deleteObject(scoped.context()->contextGL());
 }
@@ -87,7 +87,7 @@ GLboolean OESVertexArrayObject::isVertexArrayOES(WebGLVertexArrayObjectOES* arra
     return scoped.context()->contextGL()->IsVertexArrayOES(arrayObject->object());
 }
 
-void OESVertexArrayObject::bindVertexArrayOES(ScriptState* scriptState, WebGLVertexArrayObjectOES* arrayObject)
+void OESVertexArrayObject::bindVertexArrayOES(WebGLVertexArrayObjectOES* arrayObject)
 {
     WebGLExtensionScopedContext scoped(this);
     if (scoped.isLost())
@@ -102,10 +102,10 @@ void OESVertexArrayObject::bindVertexArrayOES(ScriptState* scriptState, WebGLVer
         scoped.context()->contextGL()->BindVertexArrayOES(arrayObject->object());
 
         arrayObject->setHasEverBeenBound();
-        scoped.context()->setBoundVertexArrayObject(scriptState, arrayObject);
+        scoped.context()->setBoundVertexArrayObject(arrayObject);
     } else {
         scoped.context()->contextGL()->BindVertexArrayOES(0);
-        scoped.context()->setBoundVertexArrayObject(scriptState, nullptr);
+        scoped.context()->setBoundVertexArrayObject(nullptr);
     }
 }
 

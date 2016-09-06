@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 [
+    DependentLifetime,
     RuntimeEnabled=UnsafeES3APIs,
 ] interface WebGLSampler {
 };

@@ -11,6 +11,8 @@
             'V8ExtendableMessageEventCustom.cpp',
             'V8IDBObserverCustom.cpp',
             'V8ServiceWorkerMessageEventCustom.cpp',
+            'V8WebGLRenderingContextCustom.cpp',
+            'V8WebGL2RenderingContextCustom.cpp',
         ],
     },
 }

@@ -26,6 +26,7 @@
 #ifndef WebGLObject_h
 #define WebGLObject_h
 
+#include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -80,6 +81,10 @@ public:
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 
 protected:
+    // To allow WebGL[2]RenderingContextBase to call visitChildDOMWrappers.
+    friend class WebGLRenderingContextBase;
+    friend class WebGL2RenderingContextBase;
+
     explicit WebGLObject(WebGLRenderingContextBase*);
 
     // deleteObjectImpl should be only called once to delete the OpenGL resource.
@@ -92,6 +97,8 @@ protected:
     void detachAndDeleteObject();
 
     virtual gpu::gles2::GLES2Interface* getAGLInterface() const = 0;
+
+    virtual void visitChildDOMWrappers(v8::Isolate*, const v8::Persistent<v8::Object>&) { }
 
 private:
     unsigned m_attachmentCount;

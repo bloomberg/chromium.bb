@@ -140,9 +140,12 @@ void WebGLVertexArrayObjectBase::unbindBuffer(WebGLBuffer* buffer)
     updateAttribBufferBoundStatus();
 }
 
-ScopedPersistent<v8::Array>* WebGLVertexArrayObjectBase::getPersistentCache()
+void WebGLVertexArrayObjectBase::visitChildDOMWrappers(v8::Isolate* isolate, const v8::Persistent<v8::Object>& wrapper)
 {
-    return &m_arrayBufferWrappers;
+    DOMWrapperWorld::setWrapperReferencesInAllWorlds(wrapper, m_boundElementArrayBuffer, isolate);
+    for (size_t i = 0; i < m_arrayBufferList.size(); ++i) {
+        DOMWrapperWorld::setWrapperReferencesInAllWorlds(wrapper, m_arrayBufferList[i], isolate);
+    }
 }
 
 DEFINE_TRACE(WebGLVertexArrayObjectBase)

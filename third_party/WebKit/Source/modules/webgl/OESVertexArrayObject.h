@@ -44,9 +44,9 @@ public:
     WebGLExtensionName name() const override;
 
     WebGLVertexArrayObjectOES* createVertexArrayOES();
-    void deleteVertexArrayOES(ScriptState*, WebGLVertexArrayObjectOES*);
+    void deleteVertexArrayOES(WebGLVertexArrayObjectOES*);
     GLboolean isVertexArrayOES(WebGLVertexArrayObjectOES*);
-    void bindVertexArrayOES(ScriptState*, WebGLVertexArrayObjectOES*);
+    void bindVertexArrayOES(WebGLVertexArrayObjectOES*);
 
 private:
     explicit OESVertexArrayObject(WebGLRenderingContextBase*);

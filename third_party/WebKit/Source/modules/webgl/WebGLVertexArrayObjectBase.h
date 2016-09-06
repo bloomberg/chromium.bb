@@ -5,7 +5,6 @@
 #ifndef WebGLVertexArrayObjectBase_h
 #define WebGLVertexArrayObjectBase_h
 
-#include "bindings/core/v8/ScopedPersistent.h"
 #include "modules/webgl/WebGLBuffer.h"
 #include "modules/webgl/WebGLContextObject.h"
 #include "platform/heap/Handle.h"
@@ -38,7 +37,7 @@ public:
     bool isAllEnabledAttribBufferBound() const { return m_isAllEnabledAttribBufferBound; }
     void unbindBuffer(WebGLBuffer*);
 
-    ScopedPersistent<v8::Array>* getPersistentCache();
+    virtual void visitChildDOMWrappers(v8::Isolate*, const v8::Persistent<v8::Object>&);
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -61,10 +60,6 @@ private:
     HeapVector<Member<WebGLBuffer>> m_arrayBufferList;
     Vector<bool> m_attribEnabled;
     bool m_isAllEnabledAttribBufferBound;
-
-    // For preserving the wrappers of WebGLBuffer objects latched in
-    // via vertexAttribPointer calls.
-    ScopedPersistent<v8::Array> m_arrayBufferWrappers;
 };
 
 } // namespace blink

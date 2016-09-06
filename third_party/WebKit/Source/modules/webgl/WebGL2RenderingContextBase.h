@@ -46,7 +46,7 @@ public:
     /* Framebuffer objects */
     bool validateTexFuncLayer(const char*, GLenum texTarget, GLint layer);
     void blitFramebuffer(GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLbitfield, GLenum);
-    void framebufferTextureLayer(ScriptState*, GLenum, GLenum, WebGLTexture*, GLint, GLint);
+    void framebufferTextureLayer(GLenum, GLenum, WebGLTexture*, GLint, GLint);
     ScriptValue getInternalformatParameter(ScriptState*, GLenum, GLenum, GLenum);
     void invalidateFramebuffer(GLenum, const Vector<GLenum>&);
     void invalidateSubFramebuffer(GLenum, const Vector<GLenum>&, GLint, GLint, GLsizei, GLsizei);
@@ -173,7 +173,7 @@ public:
     WebGLQuery* createQuery();
     void deleteQuery(WebGLQuery*);
     GLboolean isQuery(WebGLQuery*);
-    void beginQuery(ScriptState*, GLenum, WebGLQuery*);
+    void beginQuery(GLenum, WebGLQuery*);
     void endQuery(GLenum);
     WebGLQuery* getQuery(GLenum, GLenum);
     ScriptValue getQueryParameter(ScriptState*, WebGLQuery*, GLenum);
@@ -182,7 +182,7 @@ public:
     WebGLSampler* createSampler();
     void deleteSampler(WebGLSampler*);
     GLboolean isSampler(WebGLSampler*);
-    void bindSampler(ScriptState*, GLuint, WebGLSampler*);
+    void bindSampler(GLuint, WebGLSampler*);
     void samplerParameteri(WebGLSampler*, GLenum, GLint);
     void samplerParameterf(WebGLSampler*, GLenum, GLfloat);
     ScriptValue getSamplerParameter(ScriptState*, WebGLSampler*, GLenum);
@@ -200,7 +200,7 @@ public:
     WebGLTransformFeedback* createTransformFeedback();
     void deleteTransformFeedback(WebGLTransformFeedback*);
     GLboolean isTransformFeedback(WebGLTransformFeedback*);
-    void bindTransformFeedback(ScriptState*, GLenum, WebGLTransformFeedback*);
+    void bindTransformFeedback(GLenum, WebGLTransformFeedback*);
     void beginTransformFeedback(GLenum);
     void endTransformFeedback();
     void transformFeedbackVaryings(WebGLProgram*, const Vector<String>&, GLenum);
@@ -222,16 +222,16 @@ public:
 
     /* Vertex Array Objects */
     WebGLVertexArrayObject* createVertexArray();
-    void deleteVertexArray(ScriptState*, WebGLVertexArrayObject*);
+    void deleteVertexArray(WebGLVertexArrayObject*);
     GLboolean isVertexArray(WebGLVertexArrayObject*);
-    void bindVertexArray(ScriptState*, WebGLVertexArrayObject*);
+    void bindVertexArray(WebGLVertexArrayObject*);
 
     /* Reading */
     void readPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, long long offset);
 
     /* WebGLRenderingContextBase overrides */
     void initializeNewContext() override;
-    void bindFramebuffer(ScriptState*, GLenum target, WebGLFramebuffer*) override;
+    void bindFramebuffer(GLenum target, WebGLFramebuffer*) override;
     void deleteFramebuffer(WebGLFramebuffer*) override;
     ScriptValue getParameter(ScriptState*, GLenum pname) override;
     ScriptValue getTexParameter(ScriptState*, GLenum target, GLenum pname) override;
@@ -244,6 +244,8 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 protected:
+    friend class V8WebGL2RenderingContext;
+
     WebGL2RenderingContextBase(HTMLCanvasElement*, std::unique_ptr<WebGraphicsContext3DProvider>, const CanvasContextCreationAttributes& requestedAttributes);
 
     // Helper function to validate target and the attachment combination for getFramebufferAttachmentParameters.
@@ -305,6 +307,8 @@ protected:
     void resetUnpackParameters() override;
     void restoreUnpackParameters() override;
 
+    void visitChildDOMWrappers(v8::Isolate*, const v8::Persistent<v8::Object>&) override;
+
     void renderbufferStorageHelper(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height, const char* functionName);
 
     Member<WebGLFramebuffer> m_readFramebufferBinding;
@@ -337,9 +341,6 @@ protected:
     GLint m_unpackSkipPixels;
     GLint m_unpackSkipRows;
     GLint m_unpackSkipImages;
-
-    ScopedPersistent<v8::Array> m_samplerWrappers;
-    ScopedPersistent<v8::Array> m_queryWrappers;
 };
 
 DEFINE_TYPE_CASTS(WebGL2RenderingContextBase, CanvasRenderingContext, context,

@@ -161,6 +161,8 @@ void DOMWrapperWorld::markWrappersInAllWorlds(ScriptWrappable* scriptWrappable, 
 
 void DOMWrapperWorld::setWrapperReferencesInAllWorlds(const v8::Persistent<v8::Object>& parent, ScriptWrappable* scriptWrappable, v8::Isolate* isolate)
 {
+    if (!scriptWrappable)
+        return;
     // Marking for the main world
     if (scriptWrappable->containsWrapper())
         scriptWrappable->setReference(parent, isolate);
