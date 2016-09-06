@@ -18,10 +18,6 @@ assert(is_win)
 # "environment.x86" and "environment.x64" to the build directory and return a
 # list to us.
 
-# TODO bug 642014 remove this when all users of the script have been removed.
-gyp_win_tool_path =
-    rebase_path("//tools/gyp/pylib/gyp/win_tool.py", root_build_dir)
-
 # This tool will is used as a wrapper for various commands below.
 tool_wrapper_path = rebase_path("tool_wrapper.py", root_build_dir)
 
@@ -318,7 +314,6 @@ if (target_cpu == "x86") {
   x86_toolchain_data = exec_script("setup_toolchain.py",
                                    [
                                      visual_studio_path,
-                                     gyp_win_tool_path,
                                      windows_sdk_path,
                                      visual_studio_runtime_dirs,
                                      "x86",
@@ -352,7 +347,6 @@ if (target_cpu == "x86") {
 x64_toolchain_data = exec_script("setup_toolchain.py",
                                  [
                                    visual_studio_path,
-                                   gyp_win_tool_path,
                                    windows_sdk_path,
                                    visual_studio_runtime_dirs,
                                    "x64",
