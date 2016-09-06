@@ -232,8 +232,9 @@ void BodyStreamBuffer::tee(BodyStreamBuffer** branch1, BodyStreamBuffer** branch
 
 ScriptPromise BodyStreamBuffer::pull(ScriptState* scriptState)
 {
-    ASSERT(!m_streamNeedsMore);
     ASSERT(scriptState == m_scriptState.get());
+    if (m_streamNeedsMore)
+        return ScriptPromise::castUndefined(scriptState);
     m_streamNeedsMore = true;
     processData();
     return ScriptPromise::castUndefined(scriptState);
@@ -355,9 +356,15 @@ void BodyStreamBuffer::processData()
         switch (result) {
         case WebDataConsumerHandle::Ok: {
             DOMUint8Array* array = DOMUint8Array::create(static_cast<const unsigned char*>(buffer), available);
-            controller()->enqueue(array);
-            m_streamNeedsMore = controller()->desiredSize() > 0;
             m_reader->endRead(available);
+            // Clear m_streamNeedsMore in order to detect a pull call.
+            m_streamNeedsMore = false;
+            controller()->enqueue(array);
+            // If m_streamNeedsMore is true, it means that pull is called and
+            // the stream needs more data even if the desired size is not
+            // positive.
+            if (!m_streamNeedsMore)
+                m_streamNeedsMore = controller()->desiredSize() > 0;
             break;
         }
         case WebDataConsumerHandle::Done:

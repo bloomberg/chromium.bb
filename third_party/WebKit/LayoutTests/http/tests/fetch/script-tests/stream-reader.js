@@ -37,6 +37,17 @@ promise_test(function(t) {
       });
   }, 'read contents with ReadableStreamReader');
 
+promise_test(() => {
+    let reader;
+    return fetch('/fetch/resources/progressive.php').then(res => {
+        reader = res.body.getReader();
+        return Promise.all([reader.read(), reader.read(), reader.read()]);
+      }).then(() => {
+        reader.releaseLock();
+        // We expect the test finishes without crashing.
+      });
+  }, 'parallel read');
+
 promise_test(function(t) {
     return fetch('/fetch/resources/progressive.php').then(function(res) {
         assert_false(res.bodyUsed);
