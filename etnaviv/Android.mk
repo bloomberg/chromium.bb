@@ -1,0 +1,18 @@
+LOCAL_PATH := $(call my-dir)
+include $(CLEAR_VARS)
+
+# Import variables LIBDRM_ETNAVIV_FILES, LIBDRM_ETNAVIV_H_FILES
+include $(LOCAL_PATH)/Makefile.sources
+
+LOCAL_MODULE := libdrm_etnaviv
+LOCAL_MODULE_TAGS := optional
+
+LOCAL_SHARED_LIBRARIES := libdrm
+
+LOCAL_SRC_FILES := $(patsubst %.h, , $(LIBDRM_ETNAVIV_FILES))
+LOCAL_EXPORT_C_INCLUDE_DIRS := $(LOCAL_PATH)
+
+LOCAL_CFLAGS := \
+	-DHAVE_LIBDRM_ATOMIC_PRIMITIVES=1
+
+include $(BUILD_SHARED_LIBRARY)
