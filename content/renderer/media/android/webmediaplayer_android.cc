@@ -861,7 +861,10 @@ void WebMediaPlayerAndroid::OnPlaybackComplete() {
 }
 
 void WebMediaPlayerAndroid::OnBufferingUpdate(int percentage) {
-  buffered_[0].end = duration() * percentage / 100;
+  // inf * 0 == nan which is not an acceptable WebTimeRange.
+  const double d = duration();
+  buffered_[0].end =
+      d == std::numeric_limits<double>::infinity() ? d : d * percentage / 100;
   did_loading_progress_ = true;
 
   if (percentage == 100 && network_state_ < WebMediaPlayer::NetworkStateLoaded)
