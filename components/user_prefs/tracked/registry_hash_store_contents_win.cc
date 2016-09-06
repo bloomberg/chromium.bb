@@ -68,9 +68,8 @@ bool ClearSplitMac(const base::string16& reg_key_name,
 
 RegistryHashStoreContentsWin::RegistryHashStoreContentsWin(
     const base::string16& registry_path,
-    const base::string16& profile_name)
-    : preference_key_name_(registry_path + L"\\PreferenceMACs\\" +
-                           profile_name) {}
+    const base::string16& store_key)
+    : preference_key_name_(registry_path + L"\\PreferenceMACs\\" + store_key) {}
 
 void RegistryHashStoreContentsWin::Reset() {
   base::win::RegKey key;

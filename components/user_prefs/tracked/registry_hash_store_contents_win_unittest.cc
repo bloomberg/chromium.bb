@@ -13,8 +13,8 @@
 
 namespace {
 
-constexpr base::char16 kProfileName[] = L"test_profile";
-constexpr base::char16 kStoreKeyName[] = L"Foo\\TestStore";
+constexpr base::char16 kRegistryPath[] = L"Foo\\TestStore";
+constexpr base::char16 kStoreKey[] = L"test_store_key";
 
 // MACs are 32 characters long.
 constexpr char kTestStringA[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
@@ -30,8 +30,7 @@ class RegistryHashStoreContentsWinTest : public testing::Test {
   void SetUp() override {
     registry_override_manager_.OverrideRegistry(HKEY_CURRENT_USER);
 
-    contents.reset(
-        new RegistryHashStoreContentsWin(kStoreKeyName, kProfileName));
+    contents.reset(new RegistryHashStoreContentsWin(kRegistryPath, kStoreKey));
   }
 
   std::unique_ptr<HashStoreContents> contents;

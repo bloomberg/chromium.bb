@@ -13,9 +13,9 @@
 class RegistryHashStoreContentsWin : public HashStoreContents {
  public:
   // Constructs a RegistryHashStoreContents which acts on a registry entry
-  // defined by |registry_path| and |profile_name|.
+  // defined by |registry_path| and |store_key|.
   explicit RegistryHashStoreContentsWin(const base::string16& registry_path,
-                                        const base::string16& profile_name);
+                                        const base::string16& store_key);
 
   // HashStoreContents overrides:
   void Reset() override;
