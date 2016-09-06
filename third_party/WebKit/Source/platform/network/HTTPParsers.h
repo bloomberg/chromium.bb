@@ -96,6 +96,12 @@ struct CacheControlHeader {
 PLATFORM_EXPORT ContentDispositionType getContentDispositionType(const String&);
 PLATFORM_EXPORT bool isValidHTTPHeaderValue(const String&);
 PLATFORM_EXPORT bool isValidHTTPFieldContentRFC7230(const String&);
+// Checks whether the given string conforms to the |token| ABNF production
+// defined in the RFC 7230 or not.
+//
+// The ABNF is for validating octets, but this method takes a String instance
+// for convenience which consists of Unicode code points. When this method sees
+// non-ASCII characters, it just returns false.
 PLATFORM_EXPORT bool isValidHTTPToken(const String&);
 // |matcher| specifies a function to check a whitespace character. if |nullptr|
 // is specified, ' ' and '\t' are treated as whitespace characters.

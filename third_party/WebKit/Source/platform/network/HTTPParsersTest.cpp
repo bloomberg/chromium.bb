@@ -136,6 +136,28 @@ TEST(HTTPParsersTest, HTTPFieldContent)
     EXPECT_FALSE(blink::isValidHTTPFieldContentRFC7230(String(hiraganaA)));
 }
 
+TEST(HTTPParsersTest, HTTPToken)
+{
+    const UChar hiraganaA[2] = { 0x3042, 0 };
+    const UChar latinCapitalAWithMacron[2] = { 0x100, 0 };
+
+    EXPECT_TRUE(blink::isValidHTTPToken("gzip"));
+    EXPECT_TRUE(blink::isValidHTTPToken("no-cache"));
+    EXPECT_TRUE(blink::isValidHTTPToken("86400"));
+    EXPECT_TRUE(blink::isValidHTTPToken("~"));
+    EXPECT_FALSE(blink::isValidHTTPToken(""));
+    EXPECT_FALSE(blink::isValidHTTPToken(" "));
+    EXPECT_FALSE(blink::isValidHTTPToken("\t"));
+    EXPECT_FALSE(blink::isValidHTTPToken("\x7f"));
+    EXPECT_FALSE(blink::isValidHTTPToken("\xff"));
+    EXPECT_FALSE(blink::isValidHTTPToken(String(latinCapitalAWithMacron)));
+    EXPECT_FALSE(blink::isValidHTTPToken("t a"));
+    EXPECT_FALSE(blink::isValidHTTPToken("()"));
+    EXPECT_FALSE(blink::isValidHTTPToken("(foobar)"));
+    EXPECT_FALSE(blink::isValidHTTPToken(String("\0", 1)));
+    EXPECT_FALSE(blink::isValidHTTPToken(String(hiraganaA)));
+}
+
 TEST(HTTPParsersTest, ExtractMIMETypeFromMediaType)
 {
     const AtomicString textHtml("text/html");

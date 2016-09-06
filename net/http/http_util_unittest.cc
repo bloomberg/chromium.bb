@@ -1394,10 +1394,18 @@ TEST(HttpUtilTest, IsValidHeaderValue) {
 
 TEST(HttpUtilTest, IsToken) {
   EXPECT_TRUE(HttpUtil::IsToken("valid"));
+  EXPECT_TRUE(HttpUtil::IsToken("!"));
+  EXPECT_TRUE(HttpUtil::IsToken("~"));
+
   EXPECT_FALSE(HttpUtil::IsToken(""));
   EXPECT_FALSE(HttpUtil::IsToken(base::StringPiece()));
   EXPECT_FALSE(HttpUtil::IsToken("hello, world"));
+  EXPECT_FALSE(HttpUtil::IsToken(" "));
+  EXPECT_FALSE(HttpUtil::IsToken(base::StringPiece("\0", 1)));
+  EXPECT_FALSE(HttpUtil::IsToken("\x01"));
   EXPECT_FALSE(HttpUtil::IsToken("\x7F"));
+  EXPECT_FALSE(HttpUtil::IsToken("\x80"));
+  EXPECT_FALSE(HttpUtil::IsToken("\xff"));
 }
 
 }  // namespace net

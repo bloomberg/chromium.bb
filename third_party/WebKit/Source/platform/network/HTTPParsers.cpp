@@ -32,6 +32,7 @@
 
 #include "platform/network/HTTPParsers.h"
 
+#include "net/http/http_util.h"
 #include "platform/weborigin/Suborigin.h"
 #include "wtf/DateMath.h"
 #include "wtf/MathExtras.h"
@@ -225,12 +226,8 @@ bool isValidHTTPToken(const String& characters)
         return false;
     for (unsigned i = 0; i < characters.length(); ++i) {
         UChar c = characters[i];
-        if (c <= 0x20 || c >= 0x7F
-            || c == '(' || c == ')' || c == '<' || c == '>' || c == '@'
-            || c == ',' || c == ';' || c == ':' || c == '\\' || c == '"'
-            || c == '/' || c == '[' || c == ']' || c == '?' || c == '='
-            || c == '{' || c == '}')
-        return false;
+        if (c > 0x7F || !net::HttpUtil::IsTokenChar(c))
+            return false;
     }
     return true;
 }
