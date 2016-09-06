@@ -863,9 +863,6 @@ static VisiblePositionTemplate<Strategy> nextBoundary(const VisiblePositionTempl
     if (it.atEnd() && next == string.size()) {
         pos = it.startPositionInCurrentContainer();
     } else if (next != invalidOffset && next != prefixLength) {
-        // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
-        // see http://crbug.com/590369 for more details.
-        searchStart.document()->updateStyleAndLayoutIgnorePendingStylesheets();
         // Use the character iterator to translate the next value into a DOM
         // position.
         CharacterIteratorAlgorithm<Strategy> charIt(searchStart, searchEnd, TextIteratorEmitsCharactersBetweenAllVisiblePositions);
