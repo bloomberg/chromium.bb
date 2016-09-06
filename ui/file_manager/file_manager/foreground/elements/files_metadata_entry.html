@@ -42,12 +42,38 @@
       vertical-align: bottom;
       width: 128px;
     }
+
+    #value[loading] {
+      font-size: 30px;
+    }
+
+    #value[loading]:after {
+      -webkit-animation: ellipsis steps(4,end) 900ms infinite;
+      animation: ellipsis steps(4,end) 900ms infinite;
+      content: "\2026"; /* ascii code for the ellipsis character */
+      display: inline-block;
+      overflow: hidden;
+      vertical-align: bottom;
+      width: 0px;
+    }
+
+    @keyframes ellipsis {
+      to {
+        width: 1.25em;
+      }
+    }
+
+    @-webkit-keyframes ellipsis {
+      to {
+        width: 1.25em;
+      }
+    }
   </style>
   <template>
     <div id="box" hidden="[[!value]]">
       <div id="padding"></div>
       <div id="key">[[key]]</div>
-      <div id="value">[[value]]</div>
+      <div id="value" loading$="{{loading}}"><div hidden="[[loading]]">[[value]]</div></div>
     </div>
   </template>
 </dom-module>

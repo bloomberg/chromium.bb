@@ -18,6 +18,9 @@ var FilesMetadataBox = Polymer({
     imageHeight: Number,
     mediaTitle: String,
     mediaArtist: String,
+
+    // Whether the size is the middle of loading.
+    isSizeLoading: Boolean,
   },
 
   // Clears fields.
@@ -32,6 +35,8 @@ var FilesMetadataBox = Polymer({
     this.imageHeight = 0;
     this.mediaTitle = '';
     this.mediaArtist = '';
+
+    this.isSizeLoading = false;
   },
 
   /**

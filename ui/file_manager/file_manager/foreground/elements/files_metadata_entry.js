@@ -16,6 +16,12 @@ var FilesMetadataBox = Polymer({
       type: String,
       reflectToAttribtue: true,
     },
+
+    loading: {
+      type: Boolean,
+      reflectToAttribtue: true,
+      value: false,
+    },
   },
 
 });

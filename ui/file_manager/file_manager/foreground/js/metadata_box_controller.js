@@ -90,7 +90,7 @@ MetadataBoxController.prototype.updateView_ = function() {
  * Update metadata box with general file information.
  * Then retrieve file specific metadata if any.
  *
- * @param {!FileEntry} entry
+ * @param {!Entry} entry
  * @param {!Array<!MetadataItem>} items
  *
  * @private
@@ -104,6 +104,9 @@ MetadataBoxController.prototype.onGeneralMetadataLoaded_ = function(
   if (item.size) {
     this.metadataBox_.size =
         this.fileMetadataFormatter_.formatSize(item.size, item.hosted);
+  }
+  if (entry.isDirectory) {
+    this.setDirectorySize_( /** @type {!DirectoryEntry} */ (entry));
   }
   if (item.modificationTime) {
     this.metadataBox_.modificationTime =
@@ -146,4 +149,32 @@ MetadataBoxController.prototype.onGeneralMetadataLoaded_ = function(
           }.bind(this));
     }
   }
+};
+
+/**
+ * Set a current directory's size in metadata box.
+ *
+ * @param {!DirectoryEntry} entry
+ *
+ * @private
+ */
+MetadataBoxController.prototype.setDirectorySize_ = function(entry) {
+  if (!entry.isDirectory)
+    return;
+
+  this.metadataBox_.isSizeLoading = true;
+  chrome.fileManagerPrivate.getDirectorySize(entry,
+      function(size) {
+        if(this.quickViewModel_.getSelectedEntry() != entry) {
+          return;
+        }
+        if(chrome.runtime.lastError) {
+          this.metadataBox_.isSizeLoading = false;
+          return;
+        }
+
+        this.metadataBox_.isSizeLoading = false;
+        this.metadataBox_.size =
+        this.fileMetadataFormatter_.formatSize(size, true);
+      }.bind(this));
 };
