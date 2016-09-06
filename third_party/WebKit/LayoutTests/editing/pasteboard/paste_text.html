@@ -108,5 +108,84 @@ test(() => {
             '</div>',
         ].join(''),
         '5 Paste with end of DIV twice');
+
+    assert_selection(
+        [
+            '<div contenteditable>',
+                '<div>^one</div>',
+                '<div>|two</div>',
+                '<div>three</div>',
+            '</div>',
+        ].join(''),
+        selection => {
+            selection.document.execCommand('copy');
+            selection.document.execCommand('paste');
+            selection.document.execCommand('paste');
+        },
+        [
+            '<div contenteditable>',
+                '<div>one</div>',
+                '<div>one</div>',
+                '<div>|two</div>',
+                '<div>three</div>',
+            '</div>',
+        ].join(''),
+        '6 Paste with start of DIV twice');
+
+    assert_selection(
+        [
+            '<div contenteditable>',
+                '<div>',
+                    '^one',
+                    '<div>',
+                        '|two',
+                        '<div>three</div>',
+                    '</div>',
+                '</div>',
+            '</div>',
+        ].join(''),
+        selection => {
+            selection.document.execCommand('copy');
+            selection.document.execCommand('paste');
+            selection.document.execCommand('paste');
+        },
+        [
+            '<div contenteditable>',
+                '<div>',
+                    'one<br>',
+                    'one',
+                    '<div>',
+                        '|two',
+                        '<div>three</div>',
+                    '</div>',
+                '</div>',
+            '</div>',
+        ].join(''),
+        '7 Paste with start of DIV twice in nested DIV');
+
+    assert_selection(
+        [
+            '<div contenteditable>',
+                '<div>',
+                    'one',
+                    '<div>tw^o</div>',
+                    'th|ree',
+                '</div>',
+            '</div>',
+        ].join(''),
+        selection => {
+            selection.document.execCommand('copy');
+            selection.document.execCommand('paste');
+            selection.document.execCommand('paste');
+        },
+        [
+            '<div contenteditable>',
+                'one',
+                '<div>two</div>',
+                'tho<br>',
+                'th|ree<br>',
+            '</div>',
+        ].join(''),
+        '8 Paste with text crossing DIV twice');
 }, 'Paste text');
 </script>
