@@ -6,6 +6,8 @@ import("//build/config/chromecast_build.gni")
 
 assert(is_chromecast)
 
+is_arm_chromecast_device = current_cpu == "arm" && !is_android
+
 config("static_config") {
   ldflags = [
     # We want to statically link libstdc++/libgcc.
@@ -34,10 +36,10 @@ config("ldconfig") {
   ]
 }
 
-config("executable_config") {
-  configs = [ ":ldconfig" ]
-
-  if (current_cpu == "arm") {
+# Whole archiving libgcc.a and libstdc++ is needed if dynamic shared libs are
+# used, see b/25566835.
+config("executable_whole_archive_config") {
+  if (is_arm_chromecast_device) {
     ldflags = [
       # Export stdlibc++ and libgcc symbols to force shlibs to refer to these
       # symbols from the executable.
@@ -45,25 +47,33 @@ config("executable_config") {
 
       "-lm",  # stdlibc++ requires math.h
 
-      # In case we redefined stdlibc++ symbols (e.g. tc_malloc)
+      # In case we redefined stdlibc++ symbols (e.g. tc_malloc).
       "-Wl,--allow-multiple-definition",
 
+      # Adding all symbols from libgcc and libstdc++.
       "-Wl,--whole-archive",
       "-l:libstdc++.a",
       "-l:libgcc.a",
       "-Wl,--no-whole-archive",
     ]
+  }
+}
 
-    # Despite including libstdc++/libgcc archives, we still need to specify
-    # static linking for them in order to prevent the executable from having a
-    # dynamic dependency on them.
+# Statically linking against libstdc++/libgcc should happen for arm chromecast
+# devices, and is not needed for Android builds.
+config("executable_config") {
+  configs = [ ":ldconfig" ]
+
+  if (is_arm_chromecast_device) {
+    # Statically link libstdc++ and libgcc to avoid having a dynamic dependency
+    # on them.
     configs += [ ":static_config" ]
   }
 }
 
 config("shared_library_config") {
   configs = [ ":ldconfig" ]
-  if (current_cpu == "arm") {
+  if (is_arm_chromecast_device) {
     configs += [ ":static_config" ]
   }
 }

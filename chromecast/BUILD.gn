@@ -223,6 +223,10 @@ executable("cast_shell") {
   if (chromecast_branding != "public") {
     deps += [ "//chromecast/internal:cast_shell_internal" ]
   }
+
+  # Whole archiving libgcc.a and libstdc++ is needed if dynamic share libs are
+  # used, see b/25566835.
+  configs += [ "//build/config/chromecast:executable_whole_archive_config" ]
 }
 
 repack("cast_shell_pak") {
