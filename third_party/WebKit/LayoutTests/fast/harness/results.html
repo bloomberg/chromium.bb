@@ -430,6 +430,8 @@ function shouldUseTracLinks()
 
 function testLinkTarget(test)
 {
+    var virtualMatch = /virtual\/[^\/]+\/(.*)/.exec(test);
+    var devirtualTest = virtualMatch ? virtualMatch[1] : test;
     var target;
     if (shouldUseTracLinks()) {
         var revision = globalState().results.chromium_revision;
@@ -437,9 +439,9 @@ function testLinkTarget(test)
             target = 'https://crrev.com/' + revision;
         else
             target = 'https://chromium.googlesource.com/chromium/src/+/master';
-        target += '/third_party/WebKit/LayoutTests/' + test;
+        target += '/third_party/WebKit/LayoutTests/' + devirtualTest;
     } else
-        target = globalState().results.layout_tests_dir + '/' + test;
+        target = globalState().results.layout_tests_dir + '/' + devirtualTest;
     return target;
 }
 
