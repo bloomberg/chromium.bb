@@ -1073,6 +1073,15 @@ const char kFontCacheSharedHandle[] = "font-cache-shared-handle";
 // See base/win/memory_pressure_monitor.cc for defaults.
 const char kMemoryPressureThresholdsMb[] = "memory-pressure-thresholds-mb";
 
+// The boolean value (0/1) of FontRenderParams::antialiasing to be passed to
+// Ppapi processes.
+const char kPpapiAntialiasedTextEnabled[] = "ppapi-antialiased-text-enabled";
+
+// The enum value of FontRenderParams::subpixel_rendering to be passed to Ppapi
+// processes.
+const char kPpapiSubpixelRenderingSetting[] =
+    "ppapi-subpixel-rendering-setting";
+
 // Enables the exporting of the tracing events to ETW. This is only supported on
 // Windows Vista and later.
 const char kTraceExportEventsToETW[] = "trace-export-events-to-etw";

@@ -48,6 +48,7 @@
 #include "sandbox/win/src/process_mitigations.h"
 #include "sandbox/win/src/sandbox_policy.h"
 #include "ui/display/win/dpi.h"
+#include "ui/gfx/font_render_params.h"
 #endif
 
 namespace content {
@@ -439,6 +440,13 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
   cmd_line->AppendSwitchASCII(
       switches::kDeviceScaleFactor,
       base::DoubleToString(display::win::GetDPIScale()));
+  const gfx::FontRenderParams font_params =
+      gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), nullptr);
+  cmd_line->AppendSwitchASCII(switches::kPpapiAntialiasedTextEnabled,
+                              base::IntToString(font_params.antialiasing));
+  cmd_line->AppendSwitchASCII(
+      switches::kPpapiSubpixelRenderingSetting,
+      base::IntToString(font_params.subpixel_rendering));
 #endif
 
   if (!plugin_launcher.empty())
