@@ -21,7 +21,9 @@ namespace blink {
 
 static bool supportsCachedOffsets(const LayoutObject& object)
 {
-    return !object.hasTransformRelatedProperty()
+    // Can't compute paint offsets across objects with transforms, but if they are paint invalidation containers, we don't actually need
+    // to compute *across* the container, just up to it. (Also, such objects are the containing block for all children.)
+    return !(object.hasTransformRelatedProperty() && !object.isPaintInvalidationContainer())
         && !object.hasReflection()
         && !object.hasFilterInducingProperty()
         && !object.isLayoutFlowThread()
