@@ -318,9 +318,7 @@ void PaintInvalidationState::updateForNormalChildren()
 
     // Do not clip or scroll for the paint invalidation container, because the semantics of visual rects do not include clipping or
     // scrolling on that object.
-    if (box == m_paintInvalidationContainer) {
-        DCHECK(!m_clipped); // The box establishes paint invalidation container, so no m_clipped inherited.
-    } else {
+    if (box != m_paintInvalidationContainer) {
         // This won't work fully correctly for fixed-position elements, who should receive CSS clip but for whom the current object
         // is not in the containing block chain.
         addClipRectRelativeToPaintOffset(box.clippingRect());
