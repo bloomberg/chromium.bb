@@ -49,7 +49,8 @@
       <div class="settings-box first">
         <h2>$i18n{searchEnginesExtension}</h2>
       </div>
-      <iron-list items="[[extensions]]" class="extension-engines" selectable>
+      <iron-list id="extensions" class="extension-engines" selectable
+          items="[[extensions]]">
         <template>
           <settings-omnibox-extension-entry engine="[[item]]"
               tabindex$="[[tabIndex]]">
