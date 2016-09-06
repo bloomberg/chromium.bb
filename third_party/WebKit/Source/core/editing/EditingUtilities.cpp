@@ -1706,10 +1706,9 @@ int indexForVisiblePosition(const VisiblePosition& visiblePosition, ContainerNod
     // needs to be audited.  See http://crbug.com/590369 for more details.
     document.updateStyleAndLayoutIgnorePendingStylesheets();
 
-    // TODO(xiaochengh): We should use EphemeralRange here.
-    Range* range = Range::create(document, Position::firstPositionInNode(scope), p.parentAnchoredEquivalent());
+    EphemeralRange range(Position::firstPositionInNode(scope), p.parentAnchoredEquivalent());
 
-    return TextIterator::rangeLength(range->startPosition(), range->endPosition(), true);
+    return TextIterator::rangeLength(range.startPosition(), range.endPosition(), true);
 }
 
 EphemeralRange makeRange(const VisiblePosition &start, const VisiblePosition &end)
