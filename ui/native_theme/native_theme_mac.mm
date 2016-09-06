@@ -126,28 +126,25 @@ SkColor NativeThemeMac::ApplySystemControlTint(SkColor color) {
 }
 
 SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial())
+    return ApplySystemControlTint(GetAuraColor(color_id, this));
+
   // TODO(tapted): Add caching for these, and listen for
   // NSSystemColorsDidChangeNotification.
   switch (color_id) {
     case kColorId_WindowBackground:
       return NSSystemColorToSkColor([NSColor windowBackgroundColor]);
     case kColorId_DialogBackground:
-      return ui::MaterialDesignController::IsSecondaryUiMaterial()
-                ? GetAuraColorWithSystemTint(color_id, this)
-                : kDialogBackgroundColor;
+      return kDialogBackgroundColor;
     case kColorId_BubbleBackground:
       return SK_ColorWHITE;
 
     case kColorId_FocusedBorderColor:
-      return ui::MaterialDesignController::IsSecondaryUiMaterial()
-                ? GetAuraColorWithSystemTint(color_id, this)
-                : NSSystemColorToSkColor([NSColor keyboardFocusIndicatorColor]);
+      return NSSystemColorToSkColor([NSColor keyboardFocusIndicatorColor]);
     case kColorId_FocusedMenuButtonBorderColor:
       return NSSystemColorToSkColor([NSColor keyboardFocusIndicatorColor]);
     case kColorId_UnfocusedBorderColor:
-      return ui::MaterialDesignController::IsSecondaryUiMaterial()
-                ? GetAuraColorWithSystemTint(color_id, this)
-                : NSSystemColorToSkColor([NSColor controlColor]);
+      return NSSystemColorToSkColor([NSColor controlColor]);
 
     // Buttons and labels.
     case kColorId_ButtonBackgroundColor:
@@ -158,11 +155,8 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
     case kColorId_ButtonEnabledColor:
     case kColorId_EnabledMenuButtonBorderColor:
     case kColorId_LabelEnabledColor:
-      return NSSystemColorToSkColor([NSColor controlTextColor]);
     case kColorId_CallToActionColor:
-      return ui::MaterialDesignController::IsSecondaryUiMaterial()
-                ? GetAuraColorWithSystemTint(color_id, this)
-                : NSSystemColorToSkColor([NSColor controlTextColor]);
+      return NSSystemColorToSkColor([NSColor controlTextColor]);
     case kColorId_ButtonDisabledColor:
     case kColorId_LabelDisabledColor:
       return NSSystemColorToSkColor([NSColor disabledControlTextColor]);
@@ -425,12 +419,6 @@ void NativeThemeMac::PaintStyledGradientButton(SkCanvas* canvas,
   paint.setShader(nullptr);
   paint.setColor(kFocusRingColor);
   canvas->drawDRRect(outer_shape, shape, paint);
-}
-
-SkColor NativeThemeMac::GetAuraColorWithSystemTint(
-    NativeTheme::ColorId color_id,
-    const NativeTheme* base_theme) const {
-  return ApplySystemControlTint(GetAuraColor(color_id, base_theme));
 }
 
 NativeThemeMac::NativeThemeMac() {
