@@ -124,7 +124,7 @@ void PrintCertErrors(const net::CertErrors& errors) {
   // should likely be extracted to a common location and used by unit-tests and
   // other debugging needs.
   for (const auto& error : errors.errors()) {
-    std::cout << " " << error.type;
+    std::cout << " " << error.type << "\n";
   }
 }
 
@@ -155,7 +155,7 @@ void PrintResultPath(const net::CertPathBuilder::ResultPath* result_path,
   }
 
   // Print the errors.
-  if (result_path->errors.errors().empty()) {
+  if (!result_path->errors.errors().empty()) {
     std::cout << "Errors:\n";
     PrintCertErrors(result_path->errors);
   }
@@ -170,8 +170,6 @@ bool VerifyUsingPathBuilder(
     const std::vector<CertInput>& root_der_certs,
     const base::Time at_time,
     const base::FilePath& dump_prefix_path) {
-  std::cerr << "WARNING: --hostname is not yet verified with CertPathBuilder\n";
-
   base::Time::Exploded exploded_time;
   at_time.UTCExplode(&exploded_time);
   net::der::GeneralizedTime time = ConvertExplodedTime(exploded_time);
@@ -197,8 +195,10 @@ bool VerifyUsingPathBuilder(
                                      base::ThreadTaskRunnerHandle::Get());
   trust_store.SetPrimaryTrustStore(&trust_store_nss);
 #else
-  std::cout << "NOTE: CertPathBuilder does not currently use OS trust settings "
-               "(--roots must be specified).\n";
+  if (root_der_certs.empty()) {
+    std::cerr << "NOTE: CertPathBuilder does not currently use OS trust "
+                 "settings (--roots must be specified).\n";
+  }
 #endif
 
   net::CertIssuerSourceStatic intermediate_cert_issuer_source;

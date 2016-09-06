@@ -32,8 +32,10 @@ bool ReadCertificatesFromFile(const base::FilePath& file_path,
 
 // Parses |file_path| as a DER cert or PEM chain. If more than one cert is
 // present, the first will be used as the target certificate and the rest will
-// be used as intermediates.
-void ReadChainFromFile(const base::FilePath& file_path,
+// be used as intermediates. Returns true on success. Note if the input
+// contains no certificates then the return value is true however
+// nothing is written to |target| or |intermediates|.
+bool ReadChainFromFile(const base::FilePath& file_path,
                        CertInput* target,
                        std::vector<CertInput>* intermediates);
 

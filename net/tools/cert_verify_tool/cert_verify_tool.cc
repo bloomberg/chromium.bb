@@ -15,26 +15,50 @@
 
 namespace {
 
+const char kUsage[] =
+    " [flags] <target/chain>\n"
+    "\n"
+    " <target/chain> is a file containing certificates [1]. Minimally it\n"
+    " contains the target certificate. Optionally it may subsequently list\n"
+    " additional certificates needed to build a chain (this is equivalent to\n"
+    " specifying them through --intermediates)\n"
+    "\n"
+    "Flags:\n"
+    "\n"
+    " --hostname=<hostname>\n"
+    "      The hostname required to match the end-entity certificate.\n"
+    "      Required for the CertVerifyProc implementation.\n"
+    "\n"
+    " --roots=<certs path>\n"
+    "      <certs path> is a file containing certificates [1] to interpret as\n"
+    "      trust anchors (without any anchor constraints).\n"
+    "\n"
+    " --intermediates=<certs path>\n"
+    "      <certs path> is a file containing certificates [1] for use when\n"
+    "      path building is looking for intermediates.\n"
+    "\n"
+    " --time=<time>\n"
+    "      Use <time> instead of the current system time. <time> is\n"
+    "      interpreted in local time if a timezone is not specified.\n"
+    "      Many common formats are supported, including:\n"
+    "        1994-11-15 12:45:26 GMT\n"
+    "        Tue, 15 Nov 1994 12:45:26 GMT\n"
+    "        Nov 15 12:45:26 1994 GMT\n"
+    "\n"
+    " --dump=<file prefix>\n"
+    "      Dumps the verified chain to PEM files starting with\n"
+    "      <file prefix>.\n"
+    "\n"
+    "\n"
+    "[1] A \"file containing certificates\" means a path to a file that can\n"
+    "    either be:\n"
+    "    * A binary file containing a single DER-encoded RFC 5280 Certificate\n"
+    "    * A PEM file containing one or more CERTIFICATE blocks (DER-encoded\n"
+    "      RFC 5280 Certificate)\n";
+
 void PrintUsage(const char* argv0) {
-  std::cerr << "Usage: " << argv0 << " [flags] <target/chain>\n";
-  std::cerr << " <target/chain> should be a file containing a single DER cert "
-               "or a PEM certificate chain (target first).\n";
-  std::cerr << "Flags:\n";
-  std::cerr << " --hostname=<hostname>\n";
-  std::cerr << " --roots=<certs path>\n";
-  std::cerr << " --intermediates=<certs path>\n";
-  std::cerr << " <certs path> should be a file containing a single DER cert or "
-               "one or more PEM CERTIFICATE blocks.\n";
-  std::cerr << " --time=<time>\n";
-  std::cerr << " Use <time> instead of the current system time. <time> is "
-               "interpreted in local time if a timezone is not specified.\n";
-  std::cerr << " Many common formats are supported, such as:\n";
-  std::cerr << "  1994-11-15 12:45:26 GMT\n";
-  std::cerr << "  Tue, 15 Nov 1994 12:45:26 GMT\n";
-  std::cerr << "  Nov 15 12:45:26 1994 GMT\n";
-  std::cerr << " --dump=<file prefix>\n";
-  std::cerr << " Dumps the verified chain to PEM files starting with <file "
-               "prefix>.\n";
+  std::cerr << "Usage: " << argv0 << kUsage;
+
   // TODO(mattm): allow <certs path> to be a directory containing DER/PEM files?
   // TODO(mattm): allow target to specify an HTTPS URL to check the cert of?
   // TODO(mattm): allow target to be a verify_certificate_chain_unittest PEM
@@ -62,10 +86,6 @@ int main(int argc, char** argv) {
   }
 
   std::string hostname = command_line.GetSwitchValueASCII("hostname");
-  if (hostname.empty()) {
-    std::cerr << "ERROR: --hostname is required\n";
-    return 1;
-  }
 
   base::Time verify_time;
   std::string time_flag = command_line.GetSwitchValueASCII("time");
@@ -93,7 +113,12 @@ int main(int argc, char** argv) {
     ReadCertificatesFromFile(roots_path, &root_der_certs);
   if (!intermediates_path.empty())
     ReadCertificatesFromFile(intermediates_path, &intermediate_der_certs);
-  ReadChainFromFile(target_path, &target_der_cert, &intermediate_der_certs);
+
+  if (!ReadChainFromFile(target_path, &target_der_cert,
+                         &intermediate_der_certs)) {
+    std::cerr << "ERROR: Couldn't read certificate chain\n";
+    return 1;
+  }
 
   if (target_der_cert.der_cert.empty()) {
     std::cerr << "ERROR: no target cert\n";
@@ -105,6 +130,8 @@ int main(int argc, char** argv) {
   if (!time_flag.empty()) {
     std::cerr << "ERROR: --time is not supported with CertVerifyProc, "
                  "skipping.\n";
+  } else if (hostname.empty()) {
+    std::cerr << "ERROR: --hostname is required for CertVerifyProc, skipping\n";
   } else {
     cert_verify_proc_ok = VerifyUsingCertVerifyProc(
         target_der_cert, hostname, intermediate_der_certs, root_der_certs,
@@ -112,6 +139,12 @@ int main(int argc, char** argv) {
   }
 
   std::cout << "\nCertPathBuilder:\n";
+
+  if (!hostname.empty()) {
+    std::cerr
+        << "WARNING: --hostname is not yet verified with CertPathBuilder\n";
+  }
+
   bool path_builder_ok =
       VerifyUsingPathBuilder(target_der_cert, intermediate_der_certs,
                              root_der_certs, verify_time, dump_prefix_path);

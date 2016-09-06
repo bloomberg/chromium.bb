@@ -60,17 +60,21 @@ bool ReadCertificatesFromFile(const base::FilePath& file_path,
   return true;
 }
 
-void ReadChainFromFile(const base::FilePath& file_path,
+bool ReadChainFromFile(const base::FilePath& file_path,
                        CertInput* target,
                        std::vector<CertInput>* intermediates) {
   std::vector<CertInput> tmp_certs;
   if (!ReadCertificatesFromFile(file_path, &tmp_certs))
-    return;
+    return false;
+
+  if (tmp_certs.empty())
+    return true;
 
   *target = tmp_certs.front();
 
   intermediates->insert(intermediates->end(), ++tmp_certs.begin(),
                         tmp_certs.end());
+  return true;
 }
 
 bool WriteToFile(const base::FilePath& file_path, const std::string& data) {
