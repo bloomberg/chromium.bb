@@ -17,17 +17,23 @@ import android.test.suitebuilder.annotation.MediumTest;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.notifications.NotificationTestBase;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.test.util.InfoBarUtil;
 import org.chromium.chrome.test.util.browser.TabTitleObserver;
 import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy.NotificationEntry;
 import org.chromium.components.gcm_driver.FakeGoogleCloudMessagingSubscriber;
 import org.chromium.components.gcm_driver.GCMDriver;
 import org.chromium.content.browser.test.util.CallbackHelper;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
+import org.chromium.content_public.browser.WebContents;
 
+import java.util.List;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -77,6 +83,43 @@ public class PushMessagingTest
     @Override
     public void onMessageHandled() {
         mMessageHandledHelper.notifyCalled();
+    }
+
+    /**
+     * Verifies that PushManager.subscribe() requests permission successfully.
+     */
+    @MediumTest
+    @Feature({"Browser", "PushMessaging"})
+    public void testPushPermissionInfobar() throws InterruptedException, TimeoutException {
+        FakeGoogleCloudMessagingSubscriber subscriber = new FakeGoogleCloudMessagingSubscriber();
+        GCMDriver.overrideSubscriberForTesting(subscriber);
+
+        loadUrl(mPushTestPage);
+        WebContents webContents = getActivity().getActivityTab().getWebContents();
+        assertEquals(0, getInfoBars().size());
+
+        // Notifications permission should not yet be granted.
+        assertEquals("\"default\"", JavaScriptUtils.executeJavaScriptAndWaitForResult(
+                                           webContents, "Notification.permission"));
+
+        // PushManager.subscribePush() should show the notifications infobar.
+        JavaScriptUtils.executeJavaScript(webContents, "subscribePush()");
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return !getInfoBars().isEmpty();
+            }
+        });
+        List<InfoBar> infoBars = getInfoBars();
+        assertEquals(1, infoBars.size());
+
+        // Accepting the infobar should cause subscribe() to succeed.
+        assertTrue(InfoBarUtil.clickPrimaryButton(infoBars.get(0)));
+        waitForTitle(getActivity().getActivityTab(), "subscribe ok");
+
+        // This should have caused notifications permission to become granted.
+        assertEquals("\"granted\"", JavaScriptUtils.executeJavaScriptAndWaitForResult(
+                                            webContents, "Notification.permission"));
     }
 
     /**

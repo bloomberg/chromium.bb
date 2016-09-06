@@ -131,6 +131,7 @@ void PermissionQueueController::PendingInfobarRequest::CreateInfoBar(
       break;
 #if defined(ENABLE_NOTIFICATIONS)
     case content::PermissionType::NOTIFICATIONS:
+    case content::PermissionType::PUSH_MESSAGING:
       infobar_ = NotificationPermissionInfoBarDelegate::Create(
           GetInfoBarService(id_), requesting_frame_, user_gesture_, profile_,
           callback);
