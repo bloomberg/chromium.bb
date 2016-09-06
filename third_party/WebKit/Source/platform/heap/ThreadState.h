@@ -421,11 +421,13 @@ public:
 
     void registerTraceDOMWrappers(v8::Isolate* isolate,
         void (*traceDOMWrappers)(v8::Isolate*, Visitor*),
-        void (*invalidateDeadObjectsInWrappersMarkingDeque)(v8::Isolate*))
+        void (*invalidateDeadObjectsInWrappersMarkingDeque)(v8::Isolate*),
+        void (*performCleanup)(v8::Isolate*))
     {
         m_isolate = isolate;
         m_traceDOMWrappers = traceDOMWrappers;
         m_invalidateDeadObjectsInWrappersMarkingDeque = invalidateDeadObjectsInWrappersMarkingDeque;
+        m_performCleanup = performCleanup;
     }
 
     // By entering a gc-forbidden scope, conservative GCs will not
@@ -661,6 +663,7 @@ private:
     v8::Isolate* m_isolate;
     void (*m_traceDOMWrappers)(v8::Isolate*, Visitor*);
     void (*m_invalidateDeadObjectsInWrappersMarkingDeque)(v8::Isolate*);
+    void (*m_performCleanup)(v8::Isolate*);
 
 #if defined(ADDRESS_SANITIZER)
     void* m_asanFakeStack;

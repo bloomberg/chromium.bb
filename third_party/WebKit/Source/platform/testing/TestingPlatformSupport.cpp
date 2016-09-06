@@ -253,7 +253,7 @@ ScopedUnittestsEnvironmentSetup::ScopedUnittestsEnvironmentSetup(int argc, char*
 
     ProcessHeap::init();
     ThreadState::attachMainThread();
-    ThreadState::current()->registerTraceDOMWrappers(nullptr, nullptr, nullptr);
+    ThreadState::current()->registerTraceDOMWrappers(nullptr, nullptr, nullptr, nullptr);
     EventTracer::initialize();
     HTTPNames::init();
 }

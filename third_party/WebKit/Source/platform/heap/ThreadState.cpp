@@ -940,6 +940,9 @@ void ThreadState::makeConsistentForMutator()
 
 void ThreadState::preGC()
 {
+    if (RuntimeEnabledFeatures::traceWrappablesEnabled() && m_performCleanup)
+        m_performCleanup(m_isolate);
+
     ASSERT(!isInGC());
     setGCState(GCRunning);
     makeConsistentForGC();

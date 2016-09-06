@@ -17,6 +17,8 @@
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/html/imports/HTMLImportsController.h"
 #include "platform/heap/HeapPage.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebScheduler.h"
 #include "wtf/AutoReset.h"
 
 namespace blink {
@@ -27,6 +29,10 @@ ScriptWrappableVisitor::~ScriptWrappableVisitor()
 
 void ScriptWrappableVisitor::TracePrologue()
 {
+    performCleanup();
+
+    DCHECK(!m_tracingInProgress);
+    DCHECK(!m_shouldCleanup);
     DCHECK(m_headersToUnmark.isEmpty());
     DCHECK(m_markingDeque.isEmpty());
     DCHECK(m_verifierDeque.isEmpty());
@@ -47,11 +53,14 @@ void ScriptWrappableVisitor::TraceEpilogue()
         markingData.traceWrappers(&verifier);
     }
 #endif
-    performCleanup();
+
+    m_shouldCleanup = true;
+    scheduleIdleLazyCleanup();
 }
 
 void ScriptWrappableVisitor::AbortTracing()
 {
+    m_shouldCleanup = true;
     performCleanup();
 }
 
@@ -62,6 +71,9 @@ size_t ScriptWrappableVisitor::NumberOfWrappersToTrace()
 
 void ScriptWrappableVisitor::performCleanup()
 {
+    if (!m_shouldCleanup)
+        return;
+
     for (auto header : m_headersToUnmark) {
         // Dead objects residing in the marking deque may become invalid due to
         // minor garbage collections and are therefore set to nullptr. We have
@@ -73,6 +85,59 @@ void ScriptWrappableVisitor::performCleanup()
     m_headersToUnmark.clear();
     m_markingDeque.clear();
     m_verifierDeque.clear();
+    m_shouldCleanup = false;
+    m_tracingInProgress = false;
+}
+
+void ScriptWrappableVisitor::scheduleIdleLazyCleanup()
+{
+    // Some threads (e.g. PPAPI thread) don't have a scheduler.
+    if (!Platform::current()->currentThread()->scheduler())
+        return;
+
+    if (m_idleCleanupTaskScheduled)
+        return;
+
+    Platform::current()->currentThread()->scheduler()->postIdleTask(BLINK_FROM_HERE, WTF::bind(&ScriptWrappableVisitor::performLazyCleanup, WTF::unretained(this)));
+    m_idleCleanupTaskScheduled = true;
+}
+
+void ScriptWrappableVisitor::performLazyCleanup(double deadlineSeconds)
+{
+    m_idleCleanupTaskScheduled = false;
+
+    if (!m_shouldCleanup)
+        return;
+
+    TRACE_EVENT1("blink_gc,devtools.timeline", "ScriptWrappableVisitor::performLazyCleanup", "idleDeltaInSeconds", deadlineSeconds - monotonicallyIncreasingTime());
+
+    const int kDeadlineCheckInterval = 2500;
+    int processedWrapperCount = 0;
+    for (auto it = m_headersToUnmark.rbegin(); it != m_headersToUnmark.rend();) {
+        auto header = *it;
+        // Dead objects residing in the marking deque may become invalid due to
+        // minor garbage collections and are therefore set to nullptr. We have
+        // to skip over such objects.
+        if (header)
+            header->unmarkWrapperHeader();
+
+        ++it;
+        m_headersToUnmark.removeLast();
+
+        processedWrapperCount++;
+        if (processedWrapperCount % kDeadlineCheckInterval == 0) {
+            if (deadlineSeconds <= monotonicallyIncreasingTime()) {
+                scheduleIdleLazyCleanup();
+                return;
+            }
+        }
+    }
+
+    // Unmarked all headers.
+    CHECK(m_headersToUnmark.isEmpty());
+    m_markingDeque.clear();
+    m_verifierDeque.clear();
+    m_shouldCleanup = false;
     m_tracingInProgress = false;
 }
 
@@ -193,9 +258,15 @@ void ScriptWrappableVisitor::invalidateDeadObjectsInMarkingDeque()
 void ScriptWrappableVisitor::invalidateDeadObjectsInMarkingDeque(v8::Isolate* isolate)
 {
     ScriptWrappableVisitor* scriptWrappableVisitor = V8PerIsolateData::from(isolate)->scriptWrappableVisitor();
-    if (scriptWrappableVisitor) {
+    if (scriptWrappableVisitor)
         scriptWrappableVisitor->invalidateDeadObjectsInMarkingDeque();
-    }
+}
+
+void ScriptWrappableVisitor::performCleanup(v8::Isolate* isolate)
+{
+    ScriptWrappableVisitor* scriptWrappableVisitor = V8PerIsolateData::from(isolate)->scriptWrappableVisitor();
+    if (scriptWrappableVisitor)
+        scriptWrappableVisitor->performCleanup();
 }
 
 } // namespace blink

@@ -77,6 +77,7 @@ void WorkerBackingThread::initialize()
     ThreadState::current()->addInterruptor(std::move(interruptor));
     ThreadState::current()->registerTraceDOMWrappers(m_isolate,
         V8GCController::traceDOMWrappers,
+        nullptr,
         nullptr);
     if (RuntimeEnabledFeatures::v8IdleTasksEnabled())
         V8PerIsolateData::enableIdleTasks(m_isolate, wrapUnique(new V8IdleTaskRunner(backingThread().platformThread().scheduler())));

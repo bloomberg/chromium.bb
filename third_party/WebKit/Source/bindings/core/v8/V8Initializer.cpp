@@ -30,6 +30,7 @@
 #include "bindings/core/v8/RetainedDOMInfo.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptValue.h"
+#include "bindings/core/v8/ScriptWrappableVisitor.h"
 #include "bindings/core/v8/SourceLocation.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8DOMException.h"
@@ -383,10 +384,12 @@ void V8Initializer::initializeMainThread()
     if (RuntimeEnabledFeatures::traceWrappablesEnabled()) {
         ThreadState::mainThreadState()->registerTraceDOMWrappers(isolate,
             V8GCController::traceDOMWrappers,
-            ScriptWrappableVisitor::invalidateDeadObjectsInMarkingDeque);
+            ScriptWrappableVisitor::invalidateDeadObjectsInMarkingDeque,
+            ScriptWrappableVisitor::performCleanup);
     } else {
         ThreadState::mainThreadState()->registerTraceDOMWrappers(isolate,
             V8GCController::traceDOMWrappers,
+            nullptr,
             nullptr);
     }
 
