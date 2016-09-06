@@ -134,6 +134,9 @@ public class SigninHelper {
     public void validateAccountSettings(boolean accountsChanged) {
         // Ensure System accounts have been seeded.
         mAccountTrackerService.checkAndSeedSystemAccounts();
+        if (!accountsChanged) {
+            mAccountTrackerService.validateSystemAccounts();
+        }
 
         Account syncAccount = mChromeSigninController.getSignedInUser();
         if (syncAccount == null) {

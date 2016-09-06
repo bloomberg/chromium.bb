@@ -39,6 +39,35 @@ void SeedAccountsInfo(JNIEnv* env,
   }
 }
 
+jboolean AreAccountsSeeded(JNIEnv* env,
+                           const JavaParamRef<jclass>& jcaller,
+                           const JavaParamRef<jobjectArray>& accountNames) {
+  std::vector<std::string> account_names;
+  base::android::AppendJavaStringArrayToStringVector(env, accountNames,
+                                                     &account_names);
+
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  AccountTrackerService* account_tracker_service =
+      AccountTrackerServiceFactory::GetForProfile(profile);
+  bool migrated =
+      account_tracker_service->GetMigrationState() ==
+              AccountTrackerService::AccountIdMigrationState::MIGRATION_DONE
+          ? true
+          : false;
+
+  for (size_t i = 0; i < account_names.size(); i++) {
+    AccountInfo info =
+        account_tracker_service->FindAccountInfoByEmail(account_names[i]);
+    if (info.account_id.empty()) {
+      return false;
+    }
+    if (migrated && info.gaia.empty()) {
+      return false;
+    }
+  }
+  return true;
+}
+
 bool RegisterAccountTrackerService(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
