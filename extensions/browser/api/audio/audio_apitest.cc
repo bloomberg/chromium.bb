@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "build/build_config.h"
 #include "extensions/shell/test/shell_apitest.h"
 #if defined(OS_CHROMEOS)
@@ -106,14 +107,14 @@ class AudioApiTest : public ShellApiTest {
         audio_nodes);
     cras_audio_handler_ = chromeos::CrasAudioHandler::Get();
     DCHECK(cras_audio_handler_);
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void ChangeAudioNodes(const AudioNodeList& audio_nodes) {
     DCHECK(fake_cras_audio_client_);
     fake_cras_audio_client_->SetAudioNodesAndNotifyObserversForTesting(
         audio_nodes);
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
  protected:
