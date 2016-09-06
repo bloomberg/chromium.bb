@@ -540,7 +540,7 @@ void HttpProtocolHandlerCore::OnReadCompleted(URLRequest* request,
     [data increaseLengthBy:bytes_read];
     memcpy(reinterpret_cast<char*>([data mutableBytes]) + data_length,
            buffer_->data(), bytes_read);
-    request->Read(buffer_.get(), kIOBufferSize, &bytes_read);
+    bytes_read = request->Read(buffer_.get(), kIOBufferSize);
   }
 
   if (tracker_)
