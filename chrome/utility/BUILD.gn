@@ -9,7 +9,10 @@ import("//build/config/sysroot.gni")
 # Provides a way for the utility library to push ldflags to dependents.
 config("utility_ldflags") {
   if (is_mac && safe_browsing_mode == 1) {
-    libs = [ "bz2" ]
+    libs = [
+      "bz2",
+      "CoreFoundation.framework",
+    ]
   }
 }
 
