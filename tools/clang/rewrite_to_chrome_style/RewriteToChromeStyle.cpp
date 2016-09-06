@@ -182,8 +182,8 @@ bool IsBlacklistedMethod(const clang::CXXMethodDecl& decl) {
   clang::StringRef name = decl.getName();
 
   // These methods should never be renamed.
-  static const char* kBlacklistMethods[] = {"trace", "lock", "unlock",
-                                            "try_lock"};
+  static const char* kBlacklistMethods[] = {"trace", "traceImpl", "lock",
+                                            "unlock", "try_lock"};
   for (const auto& b : kBlacklistMethods) {
     if (name == b)
       return true;
