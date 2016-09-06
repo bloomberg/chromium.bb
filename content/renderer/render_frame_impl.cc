@@ -2272,15 +2272,22 @@ bool RenderFrameImpl::ScheduleFileChooser(
 void RenderFrameImpl::LoadNavigationErrorPage(
     const WebURLRequest& failed_request,
     const WebURLError& error,
-    bool replace) {
+    bool replace,
+    HistoryEntry* entry) {
   std::string error_html;
   GetContentClient()->renderer()->GetNavigationErrorStrings(
       this, failed_request, error, &error_html, nullptr);
 
-  frame_->loadHTMLString(error_html,
-                         GURL(kUnreachableWebDataURL),
-                         error.unreachableURL,
-                         replace);
+  blink::WebFrameLoadType frame_load_type =
+      entry ? blink::WebFrameLoadType::BackForward
+            : blink::WebFrameLoadType::Standard;
+  const blink::WebHistoryItem& history_item =
+      entry ? entry->root() : blink::WebHistoryItem();
+
+  frame_->loadData(error_html, WebString::fromUTF8("text/html"),
+                   WebString::fromUTF8("UTF-8"), GURL(kUnreachableWebDataURL),
+                   error.unreachableURL, replace, frame_load_type, history_item,
+                   blink::WebHistoryDifferentDocumentLoad, false);
 }
 
 void RenderFrameImpl::DidMeaningfulLayout(
@@ -3299,7 +3306,7 @@ void RenderFrameImpl::didFailProvisionalLoad(
   }
 
   // Load an error page.
-  LoadNavigationErrorPage(failed_request, error, replace);
+  LoadNavigationErrorPage(failed_request, error, replace, nullptr);
 }
 
 void RenderFrameImpl::didCommitProvisionalLoad(
@@ -3650,7 +3657,8 @@ void RenderFrameImpl::runScriptsAtDocumentReady(blink::WebLocalFrame* frame,
     error.domain = WebString::fromUTF8(error_domain);
     error.reason = http_status_code;
     // This call may run scripts, e.g. via the beforeunload event.
-    LoadNavigationErrorPage(frame->dataSource()->request(), error, true);
+    LoadNavigationErrorPage(frame->dataSource()->request(), error, true,
+                            nullptr);
   }
   // Do not use |this| or |frame| here without checking |weak_self|.
 }
@@ -4883,7 +4891,10 @@ void RenderFrameImpl::OnFailedNavigation(
   // separately.
   bool replace = is_reload || common_params.url == GetLoadingUrl() ||
                  common_params.should_replace_current_entry;
-  LoadNavigationErrorPage(failed_request, error, replace);
+  std::unique_ptr<HistoryEntry> history_entry;
+  if (request_params.page_state.IsValid())
+    history_entry = PageStateToHistoryEntry(request_params.page_state);
+  LoadNavigationErrorPage(failed_request, error, replace, history_entry.get());
 }
 
 WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(

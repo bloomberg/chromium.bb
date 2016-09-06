@@ -126,6 +126,7 @@ class CompositorDependencies;
 class DevToolsAgent;
 class DocumentState;
 class ExternalPopupMenu;
+class HistoryEntry;
 class ManifestManager;
 class MediaInterfaceProvider;
 class MediaStreamDispatcher;
@@ -926,9 +927,11 @@ class CONTENT_EXPORT RenderFrameImpl
                            blink::WebFileChooserCompletion* completion);
 
   // Loads the appropriate error page for the specified failure into the frame.
+  // |entry| is only used by PlzNavigate when navigating to a history item.
   void LoadNavigationErrorPage(const blink::WebURLRequest& failed_request,
                                const blink::WebURLError& error,
-                               bool replace);
+                               bool replace,
+                               HistoryEntry* entry);
 
   void HandleJavascriptExecutionResult(const base::string16& javascript,
                                        int id,
