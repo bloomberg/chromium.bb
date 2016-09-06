@@ -81,9 +81,11 @@ void WebTestWithWebState::LoadHtml(NSString* html, const GURL& url) {
 
   // Wait until the navigation is committed to update MIME type.
   ASSERT_EQ(LOAD_REQUESTED, web_controller.loadPhase);
-  base::TimeDelta spin_delay = base::TimeDelta::FromMilliseconds(10);
-  while (web_controller.loadPhase != PAGE_LOADING)
+  base::TimeDelta spin_delay = base::TimeDelta::FromMilliseconds(1);
+  while (web_controller.loadPhase != PAGE_LOADING) {
+    ASSERT_NE(PAGE_LOADED, web_controller.loadPhase);
     base::test::ios::SpinRunLoopWithMaxDelay(spin_delay);
+  }
 
   // loadHTML:forURL: does not notify web view delegate about received response,
   // so web controller does not get a chance to properly update MIME type and it
