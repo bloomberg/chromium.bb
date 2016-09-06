@@ -13,7 +13,7 @@
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/sync/api/fake_model_type_service.h"
+#include "components/sync/api/stub_model_type_service.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/core/activation_context.h"
 #include "components/sync/core/model_type_connector.h"
@@ -27,7 +27,7 @@
 namespace syncer_v2 {
 
 class ModelTypeConnectorProxyTest : public ::testing::Test,
-                                    FakeModelTypeService {
+                                    StubModelTypeService {
  public:
   ModelTypeConnectorProxyTest()
       : sync_task_runner_(base::ThreadTaskRunnerHandle::Get()),

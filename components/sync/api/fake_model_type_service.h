@@ -8,19 +8,98 @@
 #include <memory>
 #include <string>
 
+#include "components/sync/api/entity_data.h"
+#include "components/sync/api/metadata_batch.h"
 #include "components/sync/api/model_type_service.h"
+#include "components/sync/core/non_blocking_sync_common.h"
+#include "components/sync/protocol/data_type_state.pb.h"
+#include "components/sync/protocol/entity_metadata.pb.h"
 
 namespace syncer_v2 {
 
-// A non-functional implementation of ModelTypeService for
-// testing purposes.
+// A basic, functional implementation of ModelTypeService for testing purposes.
+// It uses the PREFERENCES type to provide a simple key/value interface, and
+// uses its own simple in-memory Store class.
 class FakeModelTypeService : public ModelTypeService {
  public:
-  FakeModelTypeService();
+  // Generate a client tag with the given key.
+  static std::string ClientTagFromKey(const std::string& key);
+
+  // Generates the tag hash for a given key.
+  static std::string TagHashFromKey(const std::string& key);
+
+  // Generates entity specifics for the given key and value.
+  static sync_pb::EntitySpecifics GenerateSpecifics(const std::string& key,
+                                                    const std::string& value);
+
+  // Generates an EntityData for the given key and value.
+  static std::unique_ptr<EntityData> GenerateEntityData(
+      const std::string& key,
+      const std::string& value);
+
+  // A basic in-memory storage mechanism for data and metadata. This makes it
+  // easier to test more complex behaviors involving when entities are written,
+  // committed, etc. Having a separate class helps keep the main one cleaner.
+  class Store {
+   public:
+    Store();
+    virtual ~Store();
+
+    void PutData(const std::string& key, const EntityData& data);
+    void PutMetadata(const std::string& key,
+                     const sync_pb::EntityMetadata& metadata);
+    void RemoveData(const std::string& key);
+    void RemoveMetadata(const std::string& key);
+    bool HasData(const std::string& key) const;
+    bool HasMetadata(const std::string& key) const;
+    const EntityData& GetData(const std::string& key) const;
+    const std::string& GetValue(const std::string& key) const;
+    const sync_pb::EntityMetadata& GetMetadata(const std::string& key) const;
+
+    const std::map<std::string, std::unique_ptr<EntityData>>& all_data() const {
+      return data_store_;
+    }
+
+    size_t data_count() const { return data_store_.size(); }
+    size_t metadata_count() const { return metadata_store_.size(); }
+    size_t data_change_count() const { return data_change_count_; }
+    size_t metadata_change_count() const { return metadata_change_count_; }
+
+    const sync_pb::DataTypeState& data_type_state() const {
+      return data_type_state_;
+    }
+
+    void set_data_type_state(const sync_pb::DataTypeState& data_type_state) {
+      data_type_state_ = data_type_state;
+    }
+
+    std::unique_ptr<MetadataBatch> CreateMetadataBatch() const;
+    void Reset();
+
+   private:
+    size_t data_change_count_ = 0;
+    size_t metadata_change_count_ = 0;
+    std::map<std::string, std::unique_ptr<EntityData>> data_store_;
+    std::map<std::string, sync_pb::EntityMetadata> metadata_store_;
+    sync_pb::DataTypeState data_type_state_;
+  };
+
   explicit FakeModelTypeService(
       const ChangeProcessorFactory& change_processor_factory);
   ~FakeModelTypeService() override;
 
+  // Local data modification. Emulates signals from the model thread.
+  sync_pb::EntitySpecifics WriteItem(const std::string& key,
+                                     const std::string& value);
+
+  // Overloaded form to allow passing of custom entity data.
+  void WriteItem(const std::string& key,
+                 std::unique_ptr<EntityData> entity_data);
+
+  // Local data deletion.
+  void DeleteItem(const std::string& key);
+
+  // ModelTypeService implementation
   std::unique_ptr<MetadataChangeList> CreateMetadataChangeList() override;
   syncer::SyncError MergeSyncData(
       std::unique_ptr<MetadataChangeList> metadata_change_list,
@@ -34,7 +113,24 @@ class FakeModelTypeService : public ModelTypeService {
   std::string GetStorageKey(const EntityData& entity_data) override;
   void OnChangeProcessorSet() override;
 
-  bool HasChangeProcessor() const;
+  // Sets the error that the next fallible call to the service will generate.
+  void SetServiceError(syncer::SyncError::ErrorType error_type);
+
+  const Store& db() const { return db_; }
+
+ protected:
+  // Used to verify conditions upon destruction.
+  virtual void CheckPostConditions();
+
+  // Contains all of the data and metadata state.
+  Store db_;
+
+ private:
+  // Applies |change_list| to the metadata store.
+  void ApplyMetadataChangeList(std::unique_ptr<MetadataChangeList> change_list);
+
+  // The error to produce on the next service call.
+  syncer::SyncError service_error_;
 };
 
 }  // namespace syncer_v2

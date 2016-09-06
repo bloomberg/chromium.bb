@@ -15,7 +15,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread.h"
-#include "components/sync/api/fake_model_type_service.h"
+#include "components/sync/api/stub_model_type_service.h"
 #include "components/sync/core/activation_context.h"
 #include "components/sync/core/shared_model_type_processor.h"
 #include "components/sync/driver/backend_data_type_configurer.h"
@@ -144,7 +144,7 @@ class UIModelTypeControllerTest : public testing::Test,
   void SetUp() override {
     controller_ = new TestUIModelTypeController(
         ui_loop_.task_runner(), base::Closure(), syncer::DEVICE_INFO, this);
-    service_.reset(new syncer_v2::FakeModelTypeService(base::Bind(
+    service_.reset(new syncer_v2::StubModelTypeService(base::Bind(
         &UIModelTypeControllerTest::CreateProcessor, base::Unretained(this))));
   }
 
@@ -237,7 +237,7 @@ class UIModelTypeControllerTest : public testing::Test,
   base::MessageLoopForUI ui_loop_;
   MockSyncBackend backend_;
   MockBackendDataTypeConfigurer configurer_;
-  std::unique_ptr<syncer_v2::FakeModelTypeService> service_;
+  std::unique_ptr<syncer_v2::StubModelTypeService> service_;
 };
 
 TEST_F(UIModelTypeControllerTest, InitialState) {

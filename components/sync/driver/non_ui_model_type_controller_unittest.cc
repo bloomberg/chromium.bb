@@ -18,7 +18,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread.h"
-#include "components/sync/api/fake_model_type_service.h"
+#include "components/sync/api/stub_model_type_service.h"
 #include "components/sync/core/activation_context.h"
 #include "components/sync/core/shared_model_type_processor.h"
 #include "components/sync/driver/backend_data_type_configurer.h"
@@ -188,7 +188,7 @@ class NonUIModelTypeControllerTest : public testing::Test,
   void InitializeModelTypeService() {
     if (!model_thread_runner_ ||
         model_thread_runner_->BelongsToCurrentThread()) {
-      service_.reset(new syncer_v2::FakeModelTypeService(
+      service_.reset(new syncer_v2::StubModelTypeService(
           base::Bind(&NonUIModelTypeControllerTest::CreateProcessor,
                      base::Unretained(this))));
     } else {
@@ -319,7 +319,7 @@ class NonUIModelTypeControllerTest : public testing::Test,
   scoped_refptr<base::SingleThreadTaskRunner> model_thread_runner_;
   MockSyncBackend backend_;
   MockBackendDataTypeConfigurer configurer_;
-  std::unique_ptr<syncer_v2::FakeModelTypeService> service_;
+  std::unique_ptr<syncer_v2::StubModelTypeService> service_;
 };
 
 TEST_F(NonUIModelTypeControllerTest, InitialState) {

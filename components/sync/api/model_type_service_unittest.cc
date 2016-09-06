@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "components/sync/api/fake_model_type_change_processor.h"
-#include "components/sync/api/fake_model_type_service.h"
+#include "components/sync/api/stub_model_type_service.h"
 #include "components/sync/core/test/data_type_error_handler_mock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -26,10 +26,10 @@ class MockModelTypeChangeProcessor : public FakeModelTypeChangeProcessor {
   base::Closure disabled_callback_;
 };
 
-class MockModelTypeService : public FakeModelTypeService {
+class MockModelTypeService : public StubModelTypeService {
  public:
   MockModelTypeService()
-      : FakeModelTypeService(base::Bind(&MockModelTypeService::CreateProcessor,
+      : StubModelTypeService(base::Bind(&MockModelTypeService::CreateProcessor,
                                         base::Unretained(this))) {}
   ~MockModelTypeService() override {}
 

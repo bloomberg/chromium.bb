@@ -14,7 +14,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "components/sync/api/fake_model_type_change_processor.h"
-#include "components/sync/api/fake_model_type_service.h"
+#include "components/sync/api/stub_model_type_service.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/fake_sync_client.h"
 #include "components/sync/driver/sync_prefs.h"
@@ -132,7 +132,7 @@ class NonBlockingDataTypeControllerTest : public testing::Test {
   sync_driver::FakeSyncClient sync_client_;
   sync_driver::SyncPrefs sync_prefs_;
   MockModelTypeChangeProcessor* processor_;
-  syncer_v2::FakeModelTypeService model_type_service_;
+  syncer_v2::StubModelTypeService model_type_service_;
   scoped_refptr<TestDataTypeController> controller_;
 };
 

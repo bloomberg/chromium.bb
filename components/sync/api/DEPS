@@ -2,4 +2,6 @@ include_rules = [
   "+components/sync/base",
   "+components/sync/core",
   "+components/sync/protocol",
+  # TODO(maxbogue): Move GenerateSyncableHash to base.
+  "+components/sync/syncable",
 ]

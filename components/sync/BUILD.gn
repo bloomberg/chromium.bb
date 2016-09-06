@@ -716,6 +716,8 @@ static_library("test_support_sync_api") {
     "api/fake_syncable_service.h",
     "api/mock_model_type_store.cc",
     "api/mock_model_type_store.h",
+    "api/stub_model_type_service.cc",
+    "api/stub_model_type_service.h",
     "api/sync_change_processor_wrapper_for_test.cc",
     "api/sync_change_processor_wrapper_for_test.h",
     "api/sync_error_factory_mock.cc",
@@ -728,6 +730,7 @@ static_library("test_support_sync_api") {
     "//base",
     "//components/sync",
     "//testing/gmock",
+    "//testing/gtest",
   ]
 }
 
