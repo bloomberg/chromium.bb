@@ -193,7 +193,9 @@ void ServiceWorkerProcessManager::AllocateWorkerProcess(
     return;
   }
 
-  DCHECK(!base::ContainsKey(instance_info_, embedded_worker_id))
+  // TODO(falken): Revert to DCHECK. Temporary check for debugging
+  // crbug.com/639193
+  CHECK(!base::ContainsKey(instance_info_, embedded_worker_id))
       << embedded_worker_id << " already has a process allocated";
 
   if (can_use_existing_process) {
@@ -256,7 +258,9 @@ void ServiceWorkerProcessManager::ReleaseWorkerProcess(int embedded_worker_id) {
 
   if (IsShutdown()) {
     // Shutdown already released all instances.
-    DCHECK(instance_info_.empty());
+    // TODO(falken): Revert to DCHECK. Temporary check for debugging
+    // crbug.com/639193
+    CHECK(instance_info_.empty());
     return;
   }
 
@@ -271,12 +275,16 @@ void ServiceWorkerProcessManager::ReleaseWorkerProcess(int embedded_worker_id) {
   RenderProcessHost* rph = NULL;
   if (info->second.site_instance.get()) {
     rph = info->second.site_instance->GetProcess();
-    DCHECK_EQ(info->second.process_id, rph->GetID())
+    // TODO(falken): Revert to DCHECK. Temporary check for debugging
+    // crbug.com/639193
+    CHECK_EQ(info->second.process_id, rph->GetID())
         << "A SiteInstance's process shouldn't get destroyed while we're "
            "holding a reference to it. Was the reference actually held?";
   } else {
+    // TODO(falken): Revert to DCHECK. Temporary check for debugging
+    // crbug.com/639193
     rph = RenderProcessHost::FromID(info->second.process_id);
-    DCHECK(rph)
+    CHECK(rph)
         << "Process " << info->second.process_id
         << " was destroyed unexpectedly. Did we actually hold a reference?";
   }
