@@ -54,9 +54,14 @@ class VideoCaptureDeviceFactoryImpl : public mojom::VideoCaptureDeviceFactory {
     void Bind(mojom::VideoCaptureDeviceProxyRequest request);
     void Unbind();
 
+    void OnConnectionErrorOrClose();
+
    private:
     mojom::VideoCaptureDeviceDescriptorPtr descriptor_;
     std::unique_ptr<VideoCaptureDeviceProxyImpl> device_proxy_;
+    // TODO(chfremer) Use mojo::Binding<> directly instead of unique_ptr<> when
+    // mojo::Binding<> supports move operators.
+    // https://crbug.com/644314
     std::unique_ptr<mojo::Binding<mojom::VideoCaptureDeviceProxy>> binding_;
 
     DISALLOW_COPY_AND_ASSIGN(DeviceEntry);

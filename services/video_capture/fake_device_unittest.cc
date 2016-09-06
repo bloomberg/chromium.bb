@@ -4,7 +4,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
-#include "services/video_capture/fake_device_video_capture_service_test.h"
+#include "services/video_capture/fake_device_test.h"
 #include "services/video_capture/mock_video_capture_device_client.h"
 #include "services/video_capture/public/interfaces/video_capture_device_factory.mojom.h"
 #include "services/video_capture/video_capture_service_test.h"
@@ -14,7 +14,7 @@ using testing::InvokeWithoutArgs;
 
 namespace video_capture {
 
-TEST_F(FakeDeviceVideoCaptureServiceTest, FrameCallbacksArrive) {
+TEST_F(FakeDeviceTest, FrameCallbacksArrive) {
   auto arbitrary_requested_format = mojom::VideoCaptureFormat::New();
   arbitrary_requested_format->frame_size.SetSize(640, 480);
   arbitrary_requested_format->frame_rate = 15;

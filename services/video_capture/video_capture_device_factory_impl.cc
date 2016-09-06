@@ -46,10 +46,18 @@ bool VideoCaptureDeviceFactoryImpl::DeviceEntry::is_bound() const {
 void VideoCaptureDeviceFactoryImpl::DeviceEntry::Bind(
     mojom::VideoCaptureDeviceProxyRequest request) {
   binding_->Bind(std::move(request));
+  binding_->set_connection_error_handler(base::Bind(
+      &VideoCaptureDeviceFactoryImpl::DeviceEntry::OnConnectionErrorOrClose,
+      base::Unretained(this)));
 }
 
 void VideoCaptureDeviceFactoryImpl::DeviceEntry::Unbind() {
   binding_->Unbind();
+  device_proxy_->Stop();
+}
+
+void VideoCaptureDeviceFactoryImpl::DeviceEntry::OnConnectionErrorOrClose() {
+  Unbind();
 }
 
 VideoCaptureDeviceFactoryImpl::VideoCaptureDeviceFactoryImpl() = default;

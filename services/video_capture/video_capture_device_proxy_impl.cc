@@ -12,7 +12,10 @@ VideoCaptureDeviceProxyImpl::VideoCaptureDeviceProxyImpl(
     std::unique_ptr<media::VideoCaptureDevice> device)
     : device_(std::move(device)) {}
 
-VideoCaptureDeviceProxyImpl::~VideoCaptureDeviceProxyImpl() = default;
+VideoCaptureDeviceProxyImpl::~VideoCaptureDeviceProxyImpl() {
+  if (device_running_)
+    device_->StopAndDeAllocate();
+}
 
 void VideoCaptureDeviceProxyImpl::Start(
     mojom::VideoCaptureFormatPtr requested_format,
@@ -27,6 +30,12 @@ void VideoCaptureDeviceProxyImpl::Start(
   auto media_client =
       base::WrapUnique(new DeviceClientMojoToMediaAdapter(std::move(client)));
   device_->AllocateAndStart(params, std::move(media_client));
+  device_running_ = true;
+}
+
+void VideoCaptureDeviceProxyImpl::Stop() {
+  device_->StopAndDeAllocate();
+  device_running_ = false;
 }
 
 // static

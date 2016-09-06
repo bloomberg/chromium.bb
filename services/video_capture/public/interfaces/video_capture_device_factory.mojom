@@ -58,6 +58,9 @@ interface VideoCaptureDeviceFactory {
       => (array<VideoCaptureFormat> supported_formats);
 
   // Provides exclusive access to the device identified by |device_descriptor|.
+  // The access is valid until either the message pipe associated with
+  // |proxy_request| is closed by the client, or a subsequent call to
+  // CreateDeviceProxy() is made.
   CreateDeviceProxy(VideoCaptureDeviceDescriptor device_descriptor,
                     VideoCaptureDeviceProxy& proxy_request)
       => (DeviceAccessResultCode result_code);

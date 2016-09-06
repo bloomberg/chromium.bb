@@ -24,6 +24,8 @@ class VideoCaptureDeviceProxyImpl : public mojom::VideoCaptureDeviceProxy {
              mojom::PowerLineFrequency power_line_frequency,
              mojom::VideoCaptureDeviceClientPtr client) override;
 
+  void Stop();
+
   // TODO(chfremer): Consider using Mojo type mapping instead of conversion
   // methods.
   // https://crbug.com/642387
@@ -40,6 +42,7 @@ class VideoCaptureDeviceProxyImpl : public mojom::VideoCaptureDeviceProxy {
 
  private:
   std::unique_ptr<media::VideoCaptureDevice> device_;
+  bool device_running_ = false;
 };
 
 }  // namespace video_capture

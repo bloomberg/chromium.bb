@@ -53,9 +53,12 @@ source_set("lib") {
 
 test("video_capture_unittests") {
   sources = [
-    "fake_device_video_capture_service_test.cc",
-    "fake_device_video_capture_service_test.h",
-    "fake_device_video_capture_service_unittest.cc",
+    "fake_device_descriptor_test.cc",
+    "fake_device_descriptor_test.h",
+    "fake_device_descriptor_unittest.cc",
+    "fake_device_test.cc",
+    "fake_device_test.h",
+    "fake_device_unittest.cc",
     "mock_device_descriptor_receiver.cc",
     "mock_device_descriptor_receiver.h",
     "mock_video_capture_device_client.cc",

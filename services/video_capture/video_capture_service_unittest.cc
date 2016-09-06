@@ -14,6 +14,11 @@ using testing::InvokeWithoutArgs;
 
 namespace video_capture {
 
+class MockCreateDeviceProxyCallback {
+ public:
+  MOCK_METHOD1(Run, void(mojom::DeviceAccessResultCode result_code));
+};
+
 // Tests that an answer arrives from the service when calling
 // EnumerateDeviceDescriptors().
 TEST_F(VideoCaptureServiceTest, EnumerateDeviceDescriptorsCallbackArrives) {
@@ -55,18 +60,16 @@ TEST_F(VideoCaptureServiceTest, ErrorCodeOnCreateDeviceForInvalidDescriptor) {
   invalid_descriptor->model_id = "invalid";
   base::RunLoop wait_loop;
   mojom::VideoCaptureDeviceProxyPtr fake_device_proxy;
-  mojom::DeviceAccessResultCode result_code;
+  MockCreateDeviceProxyCallback create_device_proxy_callback;
+  EXPECT_CALL(create_device_proxy_callback,
+              Run(mojom::DeviceAccessResultCode::ERROR_DEVICE_NOT_FOUND))
+      .Times(1)
+      .WillOnce(InvokeWithoutArgs([&wait_loop]() { wait_loop.Quit(); }));
   factory_->CreateDeviceProxy(
       std::move(invalid_descriptor), mojo::GetProxy(&fake_device_proxy),
-      base::Bind(
-          [](base::RunLoop* wait_loop, mojom::DeviceAccessResultCode* target,
-             mojom::DeviceAccessResultCode result_code) {
-            *target = result_code;
-            wait_loop->Quit();
-          },
-          &wait_loop, &result_code));
+      base::Bind(&MockCreateDeviceProxyCallback::Run,
+                 base::Unretained(&create_device_proxy_callback)));
   wait_loop.Run();
-  ASSERT_EQ(mojom::DeviceAccessResultCode::ERROR_DEVICE_NOT_FOUND, result_code);
 }
 
 }  // namespace video_capture
