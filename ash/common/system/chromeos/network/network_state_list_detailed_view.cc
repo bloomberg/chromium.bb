@@ -309,7 +309,7 @@ NetworkStateListDetailedView::NetworkStateListDetailedView(
     : NetworkDetailedView(owner),
       list_type_(list_type),
       login_(login),
-      wifi_scanning_(false),
+      prev_wifi_scanning_state_(false),
       info_icon_(nullptr),
       button_wifi_(nullptr),
       button_mobile_(nullptr),
@@ -566,15 +566,15 @@ void NetworkStateListDetailedView::UpdateHeaderButtons() {
   if (proxy_settings_)
     proxy_settings_->SetEnabled(handler->DefaultNetwork() != nullptr);
 
-  if (list_type_ != LIST_TYPE_VPN) {
+  if (list_type_ != LIST_TYPE_VPN &&
+      !MaterialDesignController::IsSystemTrayMenuMaterial()) {
     // Update Wifi Scanning throbber.
     bool scanning =
         NetworkHandler::Get()->network_state_handler()->GetScanningByType(
             NetworkTypePattern::WiFi());
-    if (scanning != wifi_scanning_ &&
-        !MaterialDesignController::IsSystemTrayMenuMaterial()) {
-      wifi_scanning_ = scanning;
-      if (list_type_ != LIST_TYPE_VPN) {
+    if (scanning != prev_wifi_scanning_state_) {
+      prev_wifi_scanning_state_ = scanning;
+      if (scanning) {
         SetScanningStateForThrobberView(true);
 
         // Start animation on the |scanning_throbber_| indicator.

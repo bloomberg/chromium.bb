@@ -121,8 +121,10 @@ class NetworkStateListDetailedView
   // Track login state.
   LoginStatus login_;
 
-  // Track WiFi scanning state.
-  bool wifi_scanning_;
+  // Tracks the WiFi scanning state to help detect if the state has changed. Use
+  // NetworkHandler::GetScanningByType() if you require the current wifi
+  // scanning state.
+  bool prev_wifi_scanning_state_;
 
   views::ImageButton* info_icon_;
 
