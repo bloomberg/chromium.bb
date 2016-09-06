@@ -874,7 +874,7 @@ TEST_F(WebMediaPlayerMSTest, HiddenPlayerTests) {
   EXPECT_FALSE(player_->paused());
   EXPECT_CALL(*this, DoSetWebLayer(false));
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 #endif
 
