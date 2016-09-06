@@ -1,0 +1,18 @@
+<!doctype html>
+<script>
+
+window.onload = function() {
+  var input = document.getElementById('input');
+
+  input.oninput = function() {
+    document.title = this.value;
+  };
+
+  // Should trigger IME dialog on a tap event.
+  document.onclick = function() {
+    input.focus();
+  };
+};
+
+</script>
+<input type="text" id="input">

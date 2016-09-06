@@ -19,10 +19,15 @@
 #include "net/base/ip_endpoint.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
+using ::testing::_;
+using ::testing::AtLeast;
+using ::testing::DoAll;
 using ::testing::InvokeWithoutArgs;
+using ::testing::SaveArg;
 
 namespace blimp {
 namespace {
@@ -30,6 +35,7 @@ namespace {
 const int kDummyTabId = 0;
 const char kPage1Path[] = "/page1.html";
 const char kPage2Path[] = "/page2.html";
+const char kInputPagePath[] = "/input.html";
 const char kPage1Title[] = "page1";
 const char kPage2Title[] = "page2";
 
@@ -64,9 +70,8 @@ class EngineBrowserTest : public BlimpBrowserTest {
     // involve multiple title changes in transition, including the requested
     // URL. When a page is done loading, the last title should be the one from
     // the <title> tag.
-    ON_CALL(client_nav_feature_delegate_,
-            OnTitleChanged(kDummyTabId, testing::_))
-        .WillByDefault(testing::SaveArg<1>(&last_page_title_));
+    ON_CALL(client_nav_feature_delegate_, OnTitleChanged(kDummyTabId, _))
+        .WillByDefault(SaveArg<1>(&last_page_title_));
 
     EXPECT_TRUE(embedded_test_server()->Start());
   }
@@ -88,7 +93,7 @@ class EngineBrowserTest : public BlimpBrowserTest {
     // so allow more than one.
     EXPECT_CALL(client_nav_feature_delegate_,
                 OnLoadingChanged(kDummyTabId, true))
-        .Times(testing::AtLeast(1));
+        .Times(AtLeast(1));
     EXPECT_CALL(client_nav_feature_delegate_,
                 OnLoadingChanged(kDummyTabId, false))
         .WillOnce(
@@ -99,6 +104,15 @@ class EngineBrowserTest : public BlimpBrowserTest {
     RunUntilCompletion();
     testing::Mock::VerifyAndClearExpectations(&client_rw_feature_delegate_);
     testing::Mock::VerifyAndClearExpectations(&client_nav_feature_delegate_);
+    testing::Mock::VerifyAndClearExpectations(&client_ime_feature_delegate_);
+  }
+
+  // Tell the client to navigate to a URL on the local server, and then wait
+  // for the page to load.
+  void LoadPage(const std::string& path) {
+    ExpectPageLoad();
+    NavigateToLocalUrl(path);
+    RunAndVerify();
   }
 
   client::MockNavigationFeatureDelegate client_nav_feature_delegate_;
@@ -120,9 +134,7 @@ IN_PROC_BROWSER_TEST_F(EngineBrowserTest, LoadUrl) {
 }
 
 IN_PROC_BROWSER_TEST_F(EngineBrowserTest, Reload) {
-  ExpectPageLoad();
-  NavigateToLocalUrl(kPage1Path);
-  RunAndVerify();
+  LoadPage(kPage1Path);
   EXPECT_EQ(kPage1Title, last_page_title_);
 
   ExpectPageLoad();
@@ -132,9 +144,7 @@ IN_PROC_BROWSER_TEST_F(EngineBrowserTest, Reload) {
 }
 
 IN_PROC_BROWSER_TEST_F(EngineBrowserTest, GoBackAndGoForward) {
-  ExpectPageLoad();
-  NavigateToLocalUrl(kPage1Path);
-  RunAndVerify();
+  LoadPage(kPage1Path);
   EXPECT_EQ(kPage1Title, last_page_title_);
 
   ExpectPageLoad();
@@ -164,9 +174,7 @@ IN_PROC_BROWSER_TEST_F(EngineBrowserTest, InvalidGoBack) {
 }
 
 IN_PROC_BROWSER_TEST_F(EngineBrowserTest, InvalidGoForward) {
-  ExpectPageLoad();
-  NavigateToLocalUrl(kPage1Path);
-  RunAndVerify();
+  LoadPage(kPage1Path);
   EXPECT_EQ(kPage1Title, last_page_title_);
 
   // Try an invalid GoForward before loading a different page, and
@@ -176,6 +184,31 @@ IN_PROC_BROWSER_TEST_F(EngineBrowserTest, InvalidGoForward) {
   NavigateToLocalUrl(kPage2Path);
   RunAndVerify();
   EXPECT_EQ(kPage2Title, last_page_title_);
+}
+
+IN_PROC_BROWSER_TEST_F(EngineBrowserTest, InputText) {
+  LoadPage(kInputPagePath);
+
+  blink::WebGestureEvent event;
+  event.type = blink::WebInputEvent::Type::GestureTap;
+  client::ImeFeature::ShowImeCallback callback;
+
+  // Send a tap event from the client and expect the IME dialog to show.
+  EXPECT_CALL(client_ime_feature_delegate_, OnShowImeRequested(_, "", _))
+      .Times(AtLeast(1))
+      .WillOnce(
+          DoAll(InvokeWithoutArgs(this, &EngineBrowserTest::SignalCompletion),
+                SaveArg<2>(&callback)));
+  client_session_->GetRenderWidgetFeature()->SendWebGestureEvent(kDummyTabId, 1,
+                                                                 event);
+  RunAndVerify();
+
+  // Enter text from the client and expect the input.html JavaScript to update
+  // the page title.
+  EXPECT_CALL(client_nav_feature_delegate_, OnTitleChanged(kDummyTabId, "test"))
+      .WillOnce(InvokeWithoutArgs(this, &EngineBrowserTest::SignalCompletion));
+  callback.Run("test");
+  RunAndVerify();
 }
 
 }  // namespace
