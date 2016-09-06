@@ -71,6 +71,7 @@
         <structure name="IDR_CUSTOM_ELEMENTS_PIN_KEYBOARD_JS" file="resources\chromeos\quick_unlock\pin_keyboard.js" type="chrome_html" />
       </if>
       <structure name="IDR_READER_OUT_OF_DATE_HTML" file="resources\reader_out_of_date.html" flattenhtml="true" type="chrome_html" />
+      <structure name="IDR_SIGNIN_SHARED_CSS_HTML" file="resources\signin\signin_shared_css.html" preprocess="true" allowexternalscript="true" type="chrome_html" />
     </structures>
     <includes>
       <if expr="is_win">
@@ -380,9 +381,11 @@
       <include name="IDR_SITE_ENGAGEMENT_JS" file="resources\engagement\site_engagement.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_SITE_ENGAGEMENT_MOJO_JS" file="${root_gen_dir}\chrome\browser\ui\webui\engagement\site_engagement.mojom.js" use_base_dir="false" type="BINDATA"/>
       <include name="IDR_URL_MOJO_JS" file="${root_gen_dir}\url\mojo\url.mojom.js" use_base_dir="false" type="BINDATA"/>
-      <include name="IDR_SYNC_CONFIRMATION_CSS" file="resources\sync_confirmation\sync_confirmation.css" type="BINDATA" />
-      <include name="IDR_SYNC_CONFIRMATION_HTML" file="resources\sync_confirmation\sync_confirmation.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-      <include name="IDR_SYNC_CONFIRMATION_JS" file="resources\sync_confirmation\sync_confirmation.js" type="BINDATA" />
+      <include name="IDR_SYNC_CONFIRMATION_CSS" file="resources\signin\sync_confirmation\sync_confirmation.css" type="BINDATA" />
+      <include name="IDR_SYNC_CONFIRMATION_HTML" file="resources\signin\sync_confirmation\sync_confirmation.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+      <include name="IDR_SYNC_CONFIRMATION_JS" file="resources\signin\sync_confirmation\sync_confirmation.js" type="BINDATA" />
+      <include name="IDR_SIGNIN_ERROR_HTML" file="resources\signin\signin_error\signin_error.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+      <include name="IDR_SIGNIN_ERROR_JS" file="resources\signin\signin_error\signin_error.js" type="BINDATA" />
       <include name="IDR_UBER_HTML" file="resources\uber\uber.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_UBER_JS" file="resources\uber\uber.js" type="BINDATA" />
       <include name="IDR_UBER_FRAME_HTML" file="resources\uber\uber_frame.html" flattenhtml="true" type="BINDATA" />

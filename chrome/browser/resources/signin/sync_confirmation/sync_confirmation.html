@@ -5,41 +5,11 @@
     <link rel="import" href="chrome://resources/html/polymer.html">
     <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
     <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
+    <link rel="import" href="signin_shared_css.html">
     <link rel="stylesheet" href="chrome://resources/css/text_defaults_md.css">
     <link rel="stylesheet" href="sync_confirmation.css"></link>
-    <style is="custom-style">
-      a {
-        color: var(--google-blue-700);
-        text-decoration: none;
-      }
-
-      #confirmButton {
-        --paper-button: {
-          background: var(--google-blue-500);
-          color: white;
-          font-weight: 500;
-        };
-        --paper-button-flat-keyboard-focus: {
-          background: rgb(58, 117, 215);
-        };
-      }
-
-      #undoButton {
-        --paper-button: {
-          color: var(--paper-grey-600);
-          font-weight: 500;
-        };
-        --paper-button-flat-keyboard-focus: {
-          background: rgba(0, 0, 0, .12);
-        };
-      }
-
+    <style is="custom-style" include="signin-dialog-shared">
 <if expr="is_macosx or is_linux">
-      .action-container {
-        flex-flow: row-reverse;
-        justify-content: flex-start;
-      }
-
       #undoButton {
         -webkit-margin-end: 8px;
         -webkit-margin-start: 0;
@@ -104,10 +74,10 @@
         </div>
       </div>
       <div class="action-container">
-        <paper-button id="confirmButton">
+        <paper-button class="primary-action" id="confirmButton">
           $i18n{syncConfirmationConfirmLabel}
         </paper-button>
-        <paper-button id="undoButton">
+        <paper-button class="secondary-action" id="undoButton">
           $i18n{syncConfirmationUndoLabel}
         </paper-button>
       </div>

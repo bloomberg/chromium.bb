@@ -27,6 +27,7 @@ SyncConfirmationUI::SyncConfirmationUI(
   source->SetDefaultResource(IDR_SYNC_CONFIRMATION_HTML);
   source->AddResourcePath("sync_confirmation.css", IDR_SYNC_CONFIRMATION_CSS);
   source->AddResourcePath("sync_confirmation.js", IDR_SYNC_CONFIRMATION_JS);
+  source->AddResourcePath("signin_shared_css.html", IDR_SIGNIN_SHARED_CSS_HTML);
 
   source->AddLocalizedString("syncConfirmationTitle",
       IDS_SYNC_CONFIRMATION_TITLE);

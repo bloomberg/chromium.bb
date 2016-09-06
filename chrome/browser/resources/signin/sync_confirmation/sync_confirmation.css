@@ -2,31 +2,10 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-body {
-  margin: 0;
-  padding: 0;
-}
-
 .picture img {
   border-radius: 50%;
   max-height: 100%;
   max-width: 100%;
-}
-
-.container {
-  background-color: white;
-  color: #333;
-  overflow: hidden;
-  width: 448px;
-}
-
-.top-title-bar {
-  align-items: center;
-  border-bottom: 1px solid lightgray;
-  display: flex;
-  font-size: 16px;
-  height: 52px;
-  padding: 0 24px;
 }
 
 .details {
@@ -73,11 +52,11 @@ body {
 }
 
 #chrome-logo {
-  background-image: url(../../../../ui/webui/resources/images/200-logo_chrome.png);
+  background-image: url(../../../../../ui/webui/resources/images/200-logo_chrome.png);
 }
 
 #googleg-logo {
-  background-image: url(../../../../ui/webui/resources/images/200-logo_googleg.png);
+  background-image: url(../../../../../ui/webui/resources/images/200-logo_googleg.png);
 }
 
 .message-container .title {
@@ -95,19 +74,6 @@ body {
 
 .message-container #activityControlsCheckbox {
   -webkit-margin-start: 40px;
-}
-
-.action-container {
-  display: flex;
-  justify-content: flex-end;
-  padding: 16px;
-}
-
-#confirmButton,
-#undoButton {
-  line-height: 16px;
-  margin: 0;
-  padding: 8px 16px;
 }
 
 #undoButton {
@@ -174,7 +140,7 @@ body {
 }
 
 #icon-bookmarks {
-  background: url(../../../../ui/webui/resources/images/icon_bookmarks.svg);
+  background: url(../../../../../ui/webui/resources/images/icon_bookmarks.svg);
   height: 36px;
   left: 58px;
   top: 0;
@@ -182,7 +148,7 @@ body {
 }
 
 #icon-extensions {
-  background: url(../../../../ui/webui/resources/images/icon_extensions.svg);
+  background: url(../../../../../ui/webui/resources/images/icon_extensions.svg);
   height: 24px;
   left: 30px;
   top: 30px;
@@ -191,7 +157,7 @@ body {
 
 
 #icon-passwords {
-  background: url(../../../../ui/webui/resources/images/icon_passwords.svg);
+  background: url(../../../../../ui/webui/resources/images/icon_passwords.svg);
   height: 30px;
   left: 38px;
   top: 66px;
@@ -199,7 +165,7 @@ body {
 }
 
 #icon-history {
-  background: url(../../../../ui/webui/resources/images/icon_history.svg);
+  background: url(../../../../../ui/webui/resources/images/icon_history.svg);
   height: 36px;
   left: 190px;
   top: 6px;
@@ -207,7 +173,7 @@ body {
 }
 
 #icon-tabs {
-  background: url(../../../../ui/webui/resources/images/icon_tabs.svg);
+  background: url(../../../../../ui/webui/resources/images/icon_tabs.svg);
   height: 24px;
   left: 222px;
   top: 44px;
@@ -215,7 +181,7 @@ body {
 }
 
 #icon-themes {
-  background: url(../../../../ui/webui/resources/images/icon_themes.svg);
+  background: url(../../../../../ui/webui/resources/images/icon_themes.svg);
   height: 30px;
   left: 184px;
   top: 62px;
