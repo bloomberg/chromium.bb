@@ -91,6 +91,7 @@
 #include "third_party/WebKit/public/web/WebTestingSupport.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/icc_profile.h"
 
 using blink::Platform;
 using blink::WebArrayBufferView;
@@ -507,7 +508,7 @@ bool BlinkTestRunner::IsUseZoomForDSFEnabled() {
 }
 
 void BlinkTestRunner::SetDeviceColorProfile(const std::string& name) {
-  content::SetDeviceColorProfile(render_view(), name);
+  content::SetDeviceColorProfile(render_view(), GetTestingICCProfile(name));
 }
 
 void BlinkTestRunner::SetBluetoothFakeAdapter(const std::string& adapter_name,

@@ -33,6 +33,10 @@ namespace device {
 class BluetoothAdapter;
 }
 
+namespace gfx {
+class ICCProfile;
+}
+
 namespace test_runner {
 class WebFrameTestProxyBase;
 class WebViewTestProxyBase;
@@ -127,8 +131,13 @@ void SetDeviceScaleFactor(RenderView* render_view, float factor);
 // Get the window to viewport scale.
 float GetWindowToViewportScale(RenderView* render_view);
 
+// Get the ICC profile for a given name string. This is not in the ICCProfile
+// class to avoid bloating the shipping build.
+gfx::ICCProfile GetTestingICCProfile(const std::string& name);
+
 // Set the device color profile associated with the profile |name|.
-void SetDeviceColorProfile(RenderView* render_view, const std::string& name);
+void SetDeviceColorProfile(
+    RenderView* render_view, const gfx::ICCProfile& icc_profile);
 
 // Sets the scan duration to 0.
 void SetTestBluetoothScanDuration();

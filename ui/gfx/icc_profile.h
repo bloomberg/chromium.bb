@@ -46,6 +46,9 @@ class GFX_EXPORT ICCProfile {
   // to the one that created |color_space|, but this is not guaranteed.
   static ICCProfile FromColorSpace(const gfx::ColorSpace& color_space);
 
+  // Create directly from profile data.
+  static ICCProfile FromData(const char* icc_profile, size_t size);
+
   // This will perform a potentially-lossy conversion to a more compact color
   // space representation.
   ColorSpace GetColorSpace() const;
@@ -60,7 +63,6 @@ class GFX_EXPORT ICCProfile {
 #endif
 
  private:
-  static ICCProfile FromData(const char* icc_profile, size_t size);
   static bool IsValidProfileLength(size_t length);
 
   bool valid_ = false;
