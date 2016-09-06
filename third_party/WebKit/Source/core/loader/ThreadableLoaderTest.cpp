@@ -256,6 +256,9 @@ public:
     void onTearDown() override
     {
         postTaskToWorkerGlobalScope(BLINK_FROM_HERE, createCrossThreadTask(&WorkerThreadableLoaderTestHelper::clearLoader, crossThreadUnretained(this)));
+        WaitableEvent event;
+        postTaskToWorkerGlobalScope(BLINK_FROM_HERE, createCrossThreadTask(&WaitableEvent::signal, crossThreadUnretained(&event)));
+        event.wait();
         m_workerThread->terminateAndWait();
 
         // Needed to clean up the things on the main thread side and

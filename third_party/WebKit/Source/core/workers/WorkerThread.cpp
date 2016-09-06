@@ -128,13 +128,19 @@ public:
     {
         Microtask::performCheckpoint(m_workerThread->isolate());
         if (WorkerOrWorkletGlobalScope* global = m_workerThread->globalScope()) {
-            if (WorkerOrWorkletScriptController* scriptController = global->scriptController())
+            WorkerOrWorkletScriptController* scriptController = global->scriptController();
+            if (scriptController)
                 scriptController->getRejectedPromises()->processQueue();
             if (global->isClosing()) {
                 // |m_workerThread| will eventually be requested to terminate.
                 m_workerThread->workerReportingProxy().workerGlobalScopeClosed();
 
                 // Stop further worker tasks to run after this point.
+                m_workerThread->prepareForShutdownOnWorkerThread();
+            } else if (scriptController && scriptController->isExecutionTerminating()) {
+                // The script has been terminated forcibly, which means we need
+                // to ask objects in the thread to stop working as soon as
+                // possible.
                 m_workerThread->prepareForShutdownOnWorkerThread();
             }
         }
