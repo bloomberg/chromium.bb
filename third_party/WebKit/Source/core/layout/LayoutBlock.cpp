@@ -406,6 +406,7 @@ bool LayoutBlock::widthAvailableToChildrenHasChanged()
     return widthAvailableToChildrenHasChanged;
 }
 
+DISABLE_CFI_PERF
 bool LayoutBlock::updateLogicalWidthAndColumnWidth()
 {
     LayoutUnit oldWidth = logicalWidth();
@@ -427,6 +428,7 @@ void LayoutBlock::addOverflowFromChildren()
         addOverflowFromBlockChildren();
 }
 
+DISABLE_CFI_PERF
 void LayoutBlock::computeOverflow(LayoutUnit oldClientAfterEdge, bool)
 {
     m_overflow.reset();
@@ -492,6 +494,7 @@ void LayoutBlock::addVisualOverflowFromTheme()
     addSelfVisualOverflow(LayoutRect(inflatedRect));
 }
 
+DISABLE_CFI_PERF
 bool LayoutBlock::createsNewFormattingContext() const
 {
     return isInlineBlockOrInlineTable() || isFloatingOrOutOfFlowPositioned() || hasOverflowClip() || isFlexItemIncludingDeprecated()
@@ -1265,6 +1268,7 @@ void LayoutBlock::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, Lay
     minLogicalWidth += scrollbarWidth;
 }
 
+DISABLE_CFI_PERF
 void LayoutBlock::computePreferredLogicalWidths()
 {
     ASSERT(preferredLogicalWidthsDirty());
@@ -1396,6 +1400,7 @@ void LayoutBlock::computeBlockPreferredLogicalWidths(LayoutUnit& minLogicalWidth
     maxLogicalWidth = std::max(floatLeftWidth + floatRightWidth, maxLogicalWidth);
 }
 
+DISABLE_CFI_PERF
 void LayoutBlock::computeChildPreferredLogicalWidths(LayoutObject& child, LayoutUnit& minPreferredLogicalWidth, LayoutUnit& maxPreferredLogicalWidth) const
 {
     if (child.isBox() && child.isHorizontalWritingMode() != isHorizontalWritingMode()) {

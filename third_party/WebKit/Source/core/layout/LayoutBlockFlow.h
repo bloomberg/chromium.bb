@@ -262,6 +262,7 @@ public:
         return child.x() + marginBeforeForChild(*child.layoutObject());
     }
 
+    DISABLE_CFI_PERF
     LayoutUnit yPositionForFloatIncludingMargin(const FloatingObject& child) const
     {
         if (isHorizontalWritingMode())

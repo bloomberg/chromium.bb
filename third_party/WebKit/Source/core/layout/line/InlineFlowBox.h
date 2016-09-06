@@ -96,6 +96,7 @@ public:
     typedef void (*CustomInlineBoxRangeReverse)(Vector<InlineBox*>::iterator first, Vector<InlineBox*>::iterator last);
     void collectLeafBoxesInLogicalOrder(Vector<InlineBox*>&, CustomInlineBoxRangeReverse customReverseImplementation = 0) const;
 
+    DISABLE_CFI_PERF
     void setConstructed() final
     {
         InlineBox::setConstructed();

@@ -1284,6 +1284,7 @@ static inline void adjustMarginForInlineReplaced(LayoutObject* child,
 
 // FIXME: This function should be broken into something less monolithic.
 // FIXME: The main loop here is very similar to LineBreaker::nextSegmentBreak. They can probably reuse code.
+DISABLE_CFI_PERF
 void LayoutBlockFlow::computeInlinePreferredLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth)
 {
     LayoutUnit inlineMax;
@@ -1585,6 +1586,7 @@ static inline bool shouldTruncateOverflowingText(const LayoutBlockFlow* block)
     return objectToCheck->hasOverflowClip() && objectToCheck->style()->getTextOverflow();
 }
 
+DISABLE_CFI_PERF
 void LayoutBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit afterEdge)
 {
     // Figure out if we should clear out our line boxes.

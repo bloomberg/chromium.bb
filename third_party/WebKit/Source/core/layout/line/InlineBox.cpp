@@ -60,6 +60,7 @@ InlineBox::~InlineBox()
 
 #endif
 
+DISABLE_CFI_PERF
 void InlineBox::destroy()
 {
     // We do not need to issue invalidations if the page is being destroyed

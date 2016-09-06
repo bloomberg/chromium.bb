@@ -83,7 +83,7 @@ public:
     // The implementation should update the position of the whole subtree (e.g. position of descendants and overflow etc.
     // should also be moved accordingly).
     virtual void move(const LayoutSize& delta);
-    void moveInLogicalDirection(const LayoutSize& deltaInLogicalDirection) { move(isHorizontal() ? deltaInLogicalDirection : deltaInLogicalDirection.transposedSize()); }
+    DISABLE_CFI_PERF void moveInLogicalDirection(const LayoutSize& deltaInLogicalDirection) { move(isHorizontal() ? deltaInLogicalDirection : deltaInLogicalDirection.transposedSize()); }
     void moveInInlineDirection(LayoutUnit delta) { moveInLogicalDirection(LayoutSize(delta, LayoutUnit())); }
     void moveInBlockDirection(LayoutUnit delta) { moveInLogicalDirection(LayoutSize(LayoutUnit(), delta)); }
 

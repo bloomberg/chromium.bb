@@ -415,6 +415,7 @@ void LayoutBlockFlow::layoutBlock(bool relayoutChildren)
     m_isSelfCollapsing = checkIfIsSelfCollapsingBlock();
 }
 
+DISABLE_CFI_PERF
 inline bool LayoutBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &pageLogicalHeight, SubtreeLayoutScope& layoutScope)
 {
     LayoutUnit oldLeft = logicalLeft();
@@ -564,6 +565,7 @@ void LayoutBlockFlow::addLowestFloatFromChildren(LayoutBlockFlow* block)
     newFloatingObject->setIsLowestNonOverhangingFloatInChild(true);
 }
 
+DISABLE_CFI_PERF
 void LayoutBlockFlow::determineLogicalLeftPositionForChild(LayoutBox& child)
 {
     LayoutUnit startPosition = borderStart() + paddingStart();
@@ -1019,6 +1021,7 @@ LayoutUnit LayoutBlockFlow::adjustForUnsplittableChild(LayoutBox& child, LayoutU
     return logicalOffset + paginationStrut;
 }
 
+DISABLE_CFI_PERF
 void LayoutBlockFlow::rebuildFloatsFromIntruding()
 {
     if (m_floatingObjects)
@@ -1576,6 +1579,7 @@ void LayoutBlockFlow::setCollapsedBottomMargin(const MarginInfo& marginInfo)
     }
 }
 
+DISABLE_CFI_PERF
 void LayoutBlockFlow::marginBeforeEstimateForChild(LayoutBox& child, LayoutUnit& positiveMarginBefore, LayoutUnit& negativeMarginBefore, bool& discardMarginBefore) const
 {
     // Give up if in quirks mode and we're a body/table cell and the top margin of the child box is quirky.
@@ -2261,6 +2265,7 @@ void LayoutBlockFlow::styleWillChange(StyleDifference diff, const ComputedStyle&
     LayoutBlock::styleWillChange(diff, newStyle);
 }
 
+DISABLE_CFI_PERF
 void LayoutBlockFlow::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
 {
     bool hadSelfPaintingLayer = hasSelfPaintingLayer();
