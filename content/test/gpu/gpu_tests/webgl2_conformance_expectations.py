@@ -399,6 +399,11 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/shaderoperator/geometric.html',
         ['mac', 'amd'], bug=483282)
 
+    self.Flaky('deqp/functional/gles3/shaderindexing/mat_02.html',
+        ['mac', 'amd'], bug=644360)
+    self.Flaky('conformance2/textures/misc/tex-mipmap-levels.html',
+        ['mac', 'amd'], bug=644360)
+
     # Mac Pro with AMD GPU
     self.Flaky('deqp/functional/gles3/shaderindexing/mat_01.html',
         ['mac', ('amd', 0x679e)], bug=636648)
@@ -507,8 +512,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'opengl'], bug=483282)
 
     # Linux NVIDIA only.
-    self.Flaky('conformance2/misc/getextension-while-pbo-bound-stability.html',
-        ['linux', 'nvidia'], bug=483282)
+    self.Fail('conformance2/misc/getextension-while-pbo-bound-stability.html',
+        ['linux', 'nvidia'], bug=641643)
 
     # Linux NVIDIA with ANGLE only
     self.Fail('conformance/attribs/gl-disabled-vertex-attrib.html',
