@@ -579,6 +579,7 @@ void WorkerThread::prepareForShutdownOnWorkerThread()
         m_workerInspectorController->dispose();
         m_workerInspectorController.clear();
     }
+    globalScope()->notifyContextDestroyed();
     m_consoleMessageStorage.clear();
     workerBackingThread().backingThread().removeTaskObserver(m_microtaskRunner.get());
 }
@@ -599,7 +600,6 @@ void WorkerThread::performShutdownOnWorkerThread()
     // because no other thread will run GC or otherwise destroy them. If Oilpan
     // is enabled, we detach of the context/global scope, with the final heap
     // cleanup below sweeping it out.
-    globalScope()->notifyContextDestroyed();
     m_globalScope = nullptr;
 
     if (isOwningBackingThread())
