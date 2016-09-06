@@ -5,6 +5,7 @@
 #include "ui/base/touch/touch_device.h"
 
 #include "base/android/context_utils.h"
+#include "base/android/jni_array.h"
 #include "base/logging.h"
 #include "jni/TouchDevice_jni.h"
 
@@ -22,13 +23,19 @@ int MaxTouchPoints() {
                                          GetApplicationContext());
 }
 
-int GetAvailablePointerTypes() {
-  return Java_TouchDevice_availablePointerTypes(AttachCurrentThread(),
-                                                GetApplicationContext());
+std::pair<int, int> GetAvailablePointerAndHoverTypes() {
+  JNIEnv* env = AttachCurrentThread();
+  std::vector<int> pointer_and_hover_types;
+  base::android::JavaIntArrayToIntVector(
+      env, Java_TouchDevice_availablePointerAndHoverTypes(
+               env, GetApplicationContext())
+               .obj(),
+      &pointer_and_hover_types);
+  DCHECK_EQ(pointer_and_hover_types.size(), 2u);
+  return std::make_pair(pointer_and_hover_types[0], pointer_and_hover_types[1]);
 }
 
-PointerType GetPrimaryPointerType() {
-  int available_pointer_types = GetAvailablePointerTypes();
+PointerType GetPrimaryPointerType(int available_pointer_types) {
   if (available_pointer_types & POINTER_TYPE_COARSE)
     return POINTER_TYPE_COARSE;
   if (available_pointer_types & POINTER_TYPE_FINE)
@@ -37,13 +44,7 @@ PointerType GetPrimaryPointerType() {
   return POINTER_TYPE_NONE;
 }
 
-int GetAvailableHoverTypes() {
-  return Java_TouchDevice_availableHoverTypes(AttachCurrentThread(),
-                                              GetApplicationContext());
-}
-
-HoverType GetPrimaryHoverType() {
-  int available_hover_types = GetAvailableHoverTypes();
+HoverType GetPrimaryHoverType(int available_hover_types) {
   if (available_hover_types & HOVER_TYPE_ON_DEMAND)
     return HOVER_TYPE_ON_DEMAND;
   if (available_hover_types & HOVER_TYPE_HOVER)

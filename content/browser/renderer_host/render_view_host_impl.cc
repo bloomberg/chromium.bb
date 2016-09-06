@@ -499,10 +499,12 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
   prefs.device_supports_touch = prefs.touch_enabled &&
       ui::GetTouchScreensAvailability() ==
           ui::TouchScreensAvailability::ENABLED;
-  prefs.available_pointer_types = ui::GetAvailablePointerTypes();
-  prefs.primary_pointer_type = ui::GetPrimaryPointerType();
-  prefs.available_hover_types = ui::GetAvailableHoverTypes();
-  prefs.primary_hover_type = ui::GetPrimaryHoverType();
+  std::tie(prefs.available_pointer_types, prefs.available_hover_types) =
+      ui::GetAvailablePointerAndHoverTypes();
+  prefs.primary_pointer_type =
+      ui::GetPrimaryPointerType(prefs.available_pointer_types);
+  prefs.primary_hover_type =
+      ui::GetPrimaryHoverType(prefs.available_hover_types);
 
 #if defined(OS_ANDROID)
   prefs.device_supports_mouse = false;

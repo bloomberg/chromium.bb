@@ -5,6 +5,8 @@
 #ifndef UI_BASE_TOUCH_TOUCH_DEVICE_H_
 #define UI_BASE_TOUCH_TOUCH_DEVICE_H_
 
+#include <tuple>
+
 #include "build/build_config.h"
 #include "ui/base/ui_base_export.h"
 
@@ -60,10 +62,9 @@ enum HoverType {
   HOVER_TYPE_LAST = HOVER_TYPE_HOVER
 };
 
-UI_BASE_EXPORT int GetAvailablePointerTypes();
-UI_BASE_EXPORT PointerType GetPrimaryPointerType();
-UI_BASE_EXPORT int GetAvailableHoverTypes();
-UI_BASE_EXPORT HoverType GetPrimaryHoverType();
+UI_BASE_EXPORT std::pair<int, int> GetAvailablePointerAndHoverTypes();
+UI_BASE_EXPORT PointerType GetPrimaryPointerType(int available_pointer_types);
+UI_BASE_EXPORT HoverType GetPrimaryHoverType(int available_hover_types);
 
 }  // namespace ui
 

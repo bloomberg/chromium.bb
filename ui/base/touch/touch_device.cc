@@ -16,22 +16,17 @@ int MaxTouchPoints() {
   return 0;
 }
 
-int GetAvailablePointerTypes() {
+std::pair<int, int> GetAvailablePointerAndHoverTypes() {
+  // Assume a non-touch-device with a mouse
+  return std::make_pair(POINTER_TYPE_FINE, HOVER_TYPE_HOVER);
+}
+
+PointerType GetPrimaryPointerType(int available_pointer_types) {
   // Assume a non-touch-device with a mouse
   return POINTER_TYPE_FINE;
 }
 
-PointerType GetPrimaryPointerType() {
-  // Assume a non-touch-device with a mouse
-  return POINTER_TYPE_FINE;
-}
-
-int GetAvailableHoverTypes() {
-  // Assume a non-touch-device with a mouse
-  return HOVER_TYPE_HOVER;
-}
-
-HoverType GetPrimaryHoverType() {
+HoverType GetPrimaryHoverType(int available_hover_types) {
   // Assume a non-touch-device with a mouse
   return HOVER_TYPE_HOVER;
 }
