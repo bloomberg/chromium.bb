@@ -105,14 +105,17 @@ class GpuProcessTransportFactory
   scoped_refptr<cc::VulkanInProcessContextProvider>
   SharedVulkanContextProvider();
 
+  std::unique_ptr<cc::SurfaceManager> surface_manager_;
+  uint32_t next_surface_client_id_ = 1u;
+
+  // Depends on SurfaceManager.
   typedef std::map<ui::Compositor*, std::unique_ptr<PerCompositorData>>
       PerCompositorDataMap;
   PerCompositorDataMap per_compositor_data_;
+
   scoped_refptr<ContextProviderCommandBuffer> shared_main_thread_contexts_;
   std::unique_ptr<display_compositor::GLHelper> gl_helper_;
   base::ObserverList<ui::ContextFactoryObserver> observer_list_;
-  std::unique_ptr<cc::SurfaceManager> surface_manager_;
-  uint32_t next_surface_client_id_;
   std::unique_ptr<cc::SingleThreadTaskGraphRunner> task_graph_runner_;
   scoped_refptr<ContextProviderCommandBuffer> shared_worker_context_provider_;
 

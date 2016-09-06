@@ -173,8 +173,7 @@ struct GpuProcessTransportFactory::PerCompositorData {
 };
 
 GpuProcessTransportFactory::GpuProcessTransportFactory()
-    : next_surface_client_id_(1u),
-      task_graph_runner_(new cc::SingleThreadTaskGraphRunner),
+    : task_graph_runner_(new cc::SingleThreadTaskGraphRunner),
       callback_factory_(this) {
   cc::SetClientNameForMetrics("Browser");
 
