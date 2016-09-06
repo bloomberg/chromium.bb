@@ -11,6 +11,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -162,10 +163,10 @@ TEST_F(DemuxerStreamAdapterTest, NoDelay) {
 
   std::unique_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
   Initialize(demuxer_stream_.get());
-  message_loop->PostTask(
+  message_loop->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&DemuxerStreamAdapterTest::Start, base::Unretained(this)));
-  message_loop->Run();
+  base::RunLoop().Run();
 }
 
 TEST_F(DemuxerStreamAdapterTest, AllDelayed) {
@@ -182,10 +183,10 @@ TEST_F(DemuxerStreamAdapterTest, AllDelayed) {
 
   std::unique_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
   Initialize(demuxer_stream_.get());
-  message_loop->PostTask(
+  message_loop->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&DemuxerStreamAdapterTest::Start, base::Unretained(this)));
-  message_loop->Run();
+  base::RunLoop().Run();
 }
 
 TEST_F(DemuxerStreamAdapterTest, AllDelayedEarlyFlush) {
@@ -203,10 +204,10 @@ TEST_F(DemuxerStreamAdapterTest, AllDelayedEarlyFlush) {
 
   std::unique_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
   Initialize(demuxer_stream_.get());
-  message_loop->PostTask(
+  message_loop->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&DemuxerStreamAdapterTest::Start, base::Unretained(this)));
-  message_loop->Run();
+  base::RunLoop().Run();
 }
 
 }  // namespace media

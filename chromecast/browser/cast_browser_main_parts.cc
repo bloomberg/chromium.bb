@@ -16,6 +16,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -506,8 +507,8 @@ bool CastBrowserMainParts::MainMessageLoopRun(int* result_code) {
   // If parameters_.ui_task is not NULL, we are running browser tests.
   if (parameters_.ui_task) {
     base::MessageLoop* message_loop = base::MessageLoopForUI::current();
-    message_loop->PostTask(FROM_HERE, *parameters_.ui_task);
-    message_loop->PostTask(FROM_HERE, quit_closure);
+    message_loop->task_runner()->PostTask(FROM_HERE, *parameters_.ui_task);
+    message_loop->task_runner()->PostTask(FROM_HERE, quit_closure);
   }
 
   run_loop.Run();

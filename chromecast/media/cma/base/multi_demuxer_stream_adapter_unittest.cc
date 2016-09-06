@@ -9,6 +9,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
+#include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -159,10 +161,10 @@ TEST_F(MultiDemuxerStreamAdaptersTest, EarlyEos) {
   total_expected_frames_ = frame_count_short + frame_count_long;
 
   std::unique_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
-  message_loop->PostTask(FROM_HERE,
-                         base::Bind(&MultiDemuxerStreamAdaptersTest::Start,
-                                    base::Unretained(this)));
-  message_loop->Run();
+  message_loop->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&MultiDemuxerStreamAdaptersTest::Start,
+                            base::Unretained(this)));
+  base::RunLoop().Run();
 }
 }  // namespace media
 }  // namespace chromecast

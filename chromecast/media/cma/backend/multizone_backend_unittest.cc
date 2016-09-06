@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -348,7 +349,7 @@ TEST_P(MultizoneBackendTest, RenderingDelay) {
   Initialize(GetParam());
   AddEffectsStreams();
   Start();
-  message_loop->Run();
+  base::RunLoop().Run();
 }
 
 INSTANTIATE_TEST_CASE_P(Required,

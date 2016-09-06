@@ -14,6 +14,8 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "chromecast/media/cma/test/frame_generator_for_test.h"
@@ -127,10 +129,10 @@ TEST_F(BufferingFrameProviderTest, FastProviderSlowConsumer) {
           consumer_delayed_pattern + arraysize(consumer_delayed_pattern)));
 
   std::unique_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
-  message_loop->PostTask(
+  message_loop->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&BufferingFrameProviderTest::Start, base::Unretained(this)));
-  message_loop->Run();
+  base::RunLoop().Run();
 }
 
 TEST_F(BufferingFrameProviderTest, SlowProviderFastConsumer) {
@@ -148,10 +150,10 @@ TEST_F(BufferingFrameProviderTest, SlowProviderFastConsumer) {
           consumer_delayed_pattern + arraysize(consumer_delayed_pattern)));
 
   std::unique_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
-  message_loop->PostTask(
+  message_loop->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&BufferingFrameProviderTest::Start, base::Unretained(this)));
-  message_loop->Run();
+  base::RunLoop().Run();
 }
 
 TEST_F(BufferingFrameProviderTest, SlowFastProducerConsumer) {
@@ -176,10 +178,10 @@ TEST_F(BufferingFrameProviderTest, SlowFastProducerConsumer) {
           consumer_delayed_pattern + arraysize(consumer_delayed_pattern)));
 
   std::unique_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
-  message_loop->PostTask(
+  message_loop->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&BufferingFrameProviderTest::Start, base::Unretained(this)));
-  message_loop->Run();
+  base::RunLoop().Run();
 }
 
 }  // namespace media

@@ -8,6 +8,8 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "chromecast/media/base/decrypt_context_impl.h"
 #include "chromecast/media/cdm/cast_cdm_context.h"
 #include "chromecast/media/cma/backend/audio_decoder_default.h"
@@ -232,11 +234,11 @@ static void VerifyPlay(PipelineHelper* pipeline_helper) {
 TEST_P(AudioVideoPipelineImplTest, Play) {
   base::Closure verify_task =
       base::Bind(&VerifyPlay, base::Unretained(pipeline_helper_.get()));
-  message_loop_.PostTask(
+  message_loop_.task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&PipelineHelper::Start,
                  base::Unretained(pipeline_helper_.get()), verify_task));
-  message_loop_.Run();
+  base::RunLoop().Run();
 }
 
 static void VerifyFlush(PipelineHelper* pipeline_helper) {
@@ -263,16 +265,16 @@ static void VerifyNotReached() {
 TEST_P(AudioVideoPipelineImplTest, Flush) {
   base::Closure verify_task =
       base::Bind(&VerifyFlush, base::Unretained(pipeline_helper_.get()));
-  message_loop_.PostTask(FROM_HERE,
-                         base::Bind(&PipelineHelper::Start,
-                                    base::Unretained(pipeline_helper_.get()),
-                                    base::Bind(&VerifyNotReached)));
-  message_loop_.PostTask(
+  message_loop_.task_runner()->PostTask(
+      FROM_HERE, base::Bind(&PipelineHelper::Start,
+                            base::Unretained(pipeline_helper_.get()),
+                            base::Bind(&VerifyNotReached)));
+  message_loop_.task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&PipelineHelper::Flush,
                  base::Unretained(pipeline_helper_.get()), verify_task));
 
-  message_loop_.Run();
+  base::RunLoop().Run();
 }
 
 TEST_P(AudioVideoPipelineImplTest, FullCycle) {
@@ -282,10 +284,10 @@ TEST_P(AudioVideoPipelineImplTest, FullCycle) {
       base::Bind(&PipelineHelper::Flush,
                  base::Unretained(pipeline_helper_.get()), stop_task);
 
-  message_loop_.PostTask(
+  message_loop_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&PipelineHelper::Start,
                             base::Unretained(pipeline_helper_.get()), eos_cb));
-  message_loop_.Run();
+  base::RunLoop().Run();
 };
 
 // Test all three types of pipeline: audio-only, video-only, audio-video.
@@ -319,55 +321,55 @@ class EncryptedAVPipelineImplTest : public ::testing::Test {
 TEST_F(EncryptedAVPipelineImplTest, SetCdmWithLicenseBeforeStart) {
   base::Closure verify_task =
       base::Bind(&VerifyPlay, base::Unretained(pipeline_helper_.get()));
-  message_loop_.PostTask(FROM_HERE,
-                         base::Bind(&PipelineHelper::SetCdm,
-                                    base::Unretained(pipeline_helper_.get())));
-  message_loop_.PostTask(FROM_HERE,
-                         base::Bind(&PipelineHelper::SetCdmLicenseInstalled,
-                                    base::Unretained(pipeline_helper_.get())));
-  message_loop_.PostTask(
+  message_loop_.task_runner()->PostTask(
+      FROM_HERE, base::Bind(&PipelineHelper::SetCdm,
+                            base::Unretained(pipeline_helper_.get())));
+  message_loop_.task_runner()->PostTask(
+      FROM_HERE, base::Bind(&PipelineHelper::SetCdmLicenseInstalled,
+                            base::Unretained(pipeline_helper_.get())));
+  message_loop_.task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&PipelineHelper::Start,
                  base::Unretained(pipeline_helper_.get()), verify_task));
-  message_loop_.Run();
+  base::RunLoop().Run();
 }
 
 // Start the pipeline, then set a CDM with existing license.
 TEST_F(EncryptedAVPipelineImplTest, SetCdmWithLicenseAfterStart) {
   base::Closure verify_task =
       base::Bind(&VerifyPlay, base::Unretained(pipeline_helper_.get()));
-  message_loop_.PostTask(
+  message_loop_.task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&PipelineHelper::Start,
                  base::Unretained(pipeline_helper_.get()), verify_task));
 
-  message_loop_.RunUntilIdle();
-  message_loop_.PostTask(FROM_HERE,
-                         base::Bind(&PipelineHelper::SetCdmLicenseInstalled,
-                                    base::Unretained(pipeline_helper_.get())));
-  message_loop_.PostTask(FROM_HERE,
-                         base::Bind(&PipelineHelper::SetCdm,
-                                    base::Unretained(pipeline_helper_.get())));
-  message_loop_.Run();
+  base::RunLoop().RunUntilIdle();
+  message_loop_.task_runner()->PostTask(
+      FROM_HERE, base::Bind(&PipelineHelper::SetCdmLicenseInstalled,
+                            base::Unretained(pipeline_helper_.get())));
+  message_loop_.task_runner()->PostTask(
+      FROM_HERE, base::Bind(&PipelineHelper::SetCdm,
+                            base::Unretained(pipeline_helper_.get())));
+  base::RunLoop().Run();
 }
 
 // Start the pipeline, set a CDM, and then install the license.
 TEST_F(EncryptedAVPipelineImplTest, SetCdmAndInstallLicenseAfterStart) {
   base::Closure verify_task =
       base::Bind(&VerifyPlay, base::Unretained(pipeline_helper_.get()));
-  message_loop_.PostTask(
+  message_loop_.task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&PipelineHelper::Start,
                  base::Unretained(pipeline_helper_.get()), verify_task));
-  message_loop_.PostTask(FROM_HERE,
-                         base::Bind(&PipelineHelper::SetCdm,
-                                    base::Unretained(pipeline_helper_.get())));
+  message_loop_.task_runner()->PostTask(
+      FROM_HERE, base::Bind(&PipelineHelper::SetCdm,
+                            base::Unretained(pipeline_helper_.get())));
 
-  message_loop_.RunUntilIdle();
-  message_loop_.PostTask(FROM_HERE,
-                         base::Bind(&PipelineHelper::SetCdmLicenseInstalled,
-                                    base::Unretained(pipeline_helper_.get())));
-  message_loop_.Run();
+  base::RunLoop().RunUntilIdle();
+  message_loop_.task_runner()->PostTask(
+      FROM_HERE, base::Bind(&PipelineHelper::SetCdmLicenseInstalled,
+                            base::Unretained(pipeline_helper_.get())));
+  base::RunLoop().Run();
 }
 
 }  // namespace media

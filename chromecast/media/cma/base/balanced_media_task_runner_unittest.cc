@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -231,7 +232,7 @@ TEST_F(BalancedMediaTaskRunnerTest, OneTaskRunner) {
             scheduling_pattern,
             expected_timestamps_ms);
   ProcessAllTasks();
-  message_loop->Run();
+  base::RunLoop().Run();
   EXPECT_TRUE(expected_task_timestamps_.empty());
 }
 
@@ -264,7 +265,7 @@ TEST_F(BalancedMediaTaskRunnerTest, TwoTaskRunnerUnbalanced) {
             scheduling_pattern,
             expected_timestamps_ms);
   ProcessAllTasks();
-  message_loop->Run();
+  base::RunLoop().Run();
   EXPECT_TRUE(expected_task_timestamps_.empty());
 }
 
@@ -288,7 +289,7 @@ TEST_F(BalancedMediaTaskRunnerTest, TwoStreamsOfDifferentLength) {
   SetupTest(base::TimeDelta::FromMilliseconds(30), timestamps,
             scheduling_pattern, expected_timestamps);
   ProcessAllTasks();
-  message_loop->Run();
+  base::RunLoop().Run();
   EXPECT_TRUE(expected_task_timestamps_.empty());
 }
 
