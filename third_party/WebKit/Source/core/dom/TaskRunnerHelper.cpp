@@ -56,44 +56,4 @@ WebTaskRunner* TaskRunnerHelper::get(TaskType type, ScriptState* scriptState)
     return get(type, scriptState ? scriptState->getExecutionContext() : nullptr);
 }
 
-WebTaskRunner* TaskRunnerHelper::getUnthrottledTaskRunner(LocalFrame* frame)
-{
-    return frame ? frame->frameScheduler()->unthrottledTaskRunner() : Platform::current()->currentThread()->getWebTaskRunner();
-}
-
-WebTaskRunner* TaskRunnerHelper::getTimerTaskRunner(LocalFrame* frame)
-{
-    return frame ? frame->frameScheduler()->timerTaskRunner() : Platform::current()->currentThread()->getWebTaskRunner();
-}
-
-WebTaskRunner* TaskRunnerHelper::getLoadingTaskRunner(LocalFrame* frame)
-{
-    return frame ? frame->frameScheduler()->loadingTaskRunner() : Platform::current()->currentThread()->getWebTaskRunner();
-}
-
-WebTaskRunner* TaskRunnerHelper::getUnthrottledTaskRunner(Document* document)
-{
-    return getUnthrottledTaskRunner(document ? document->frame() : nullptr);
-}
-
-WebTaskRunner* TaskRunnerHelper::getTimerTaskRunner(Document* document)
-{
-    return getTimerTaskRunner(document ? document->frame() : nullptr);
-}
-
-WebTaskRunner* TaskRunnerHelper::getLoadingTaskRunner(Document* document)
-{
-    return getLoadingTaskRunner(document ? document->frame() : nullptr);
-}
-
-WebTaskRunner* TaskRunnerHelper::getUnthrottledTaskRunner(ExecutionContext* executionContext)
-{
-    return getUnthrottledTaskRunner(executionContext && executionContext->isDocument() ? static_cast<Document*>(executionContext) : nullptr);
-}
-
-WebTaskRunner* TaskRunnerHelper::getUnthrottledTaskRunner(ScriptState* scriptState)
-{
-    return getUnthrottledTaskRunner(scriptState ? scriptState->getExecutionContext() : nullptr);
-}
-
 } // namespace blink

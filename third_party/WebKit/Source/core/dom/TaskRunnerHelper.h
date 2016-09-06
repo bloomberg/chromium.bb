@@ -59,16 +59,6 @@ public:
     static WebTaskRunner* get(TaskType, Document*);
     static WebTaskRunner* get(TaskType, ExecutionContext*);
     static WebTaskRunner* get(TaskType, ScriptState*);
-
-    // TODO(haraken): Remove the following APIs.
-    static WebTaskRunner* getUnthrottledTaskRunner(LocalFrame*);
-    static WebTaskRunner* getTimerTaskRunner(LocalFrame*);
-    static WebTaskRunner* getLoadingTaskRunner(LocalFrame*);
-    static WebTaskRunner* getUnthrottledTaskRunner(Document*);
-    static WebTaskRunner* getTimerTaskRunner(Document*);
-    static WebTaskRunner* getLoadingTaskRunner(Document*);
-    static WebTaskRunner* getUnthrottledTaskRunner(ExecutionContext*);
-    static WebTaskRunner* getUnthrottledTaskRunner(ScriptState*);
 };
 
 } // namespace blink
