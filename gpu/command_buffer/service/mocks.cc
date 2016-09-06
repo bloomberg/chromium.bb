@@ -25,7 +25,7 @@ AsyncAPIMock::AsyncAPIMock(bool default_do_commands) {
 AsyncAPIMock::~AsyncAPIMock() {}
 
 error::Error AsyncAPIMock::FakeDoCommands(unsigned int num_commands,
-                                          const void* buffer,
+                                          const volatile void* buffer,
                                           int num_entries,
                                           int* entries_processed) {
   return AsyncAPIInterface::DoCommands(
@@ -34,12 +34,12 @@ error::Error AsyncAPIMock::FakeDoCommands(unsigned int num_commands,
 
 void AsyncAPIMock::SetToken(unsigned int command,
                             unsigned int arg_count,
-                            const void* _args) {
+                            const volatile void* _args) {
   DCHECK(engine_);
   DCHECK_EQ(1u, command);
   DCHECK_EQ(1u, arg_count);
-  const cmd::SetToken* args =
-      static_cast<const cmd::SetToken*>(_args);
+  const volatile cmd::SetToken* args =
+      static_cast<const volatile cmd::SetToken*>(_args);
   engine_->set_token(args->token);
 }
 

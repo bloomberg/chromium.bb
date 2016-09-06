@@ -1209,7 +1209,7 @@ struct ClientWaitSync {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  GLuint64 timeout() const {
+  GLuint64 timeout() const volatile {
     return static_cast<GLuint64>(
         GLES2Util::MapTwoUint32ToUint64(timeout_0, timeout_1));
   }
@@ -10768,7 +10768,7 @@ struct WaitSync {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  GLuint64 timeout() const {
+  GLuint64 timeout() const volatile {
     return static_cast<GLuint64>(
         GLES2Util::MapTwoUint32ToUint64(timeout_0, timeout_1));
   }
@@ -13215,7 +13215,7 @@ struct InsertFenceSyncCHROMIUM {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  GLuint64 release_count() const {
+  GLuint64 release_count() const volatile {
     return static_cast<GLuint64>(
         GLES2Util::MapTwoUint32ToUint64(release_count_0, release_count_1));
   }
@@ -13266,12 +13266,12 @@ struct WaitSyncTokenCHROMIUM {
     return NextCmdAddress<ValueType>(cmd);
   }
 
-  GLuint64 command_buffer_id() const {
+  GLuint64 command_buffer_id() const volatile {
     return static_cast<GLuint64>(GLES2Util::MapTwoUint32ToUint64(
         command_buffer_id_0, command_buffer_id_1));
   }
 
-  GLuint64 release_count() const {
+  GLuint64 release_count() const volatile {
     return static_cast<GLuint64>(
         GLES2Util::MapTwoUint32ToUint64(release_count_0, release_count_1));
   }

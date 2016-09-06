@@ -78,7 +78,7 @@ class GPU_EXPORT CommonDecoder : NON_EXPORTED_BASE(public AsyncAPIInterface) {
 
     // Sets a part of the bucket.
     // Returns false if offset or size is out of range.
-    bool SetData(const void* src, size_t offset, size_t size);
+    bool SetData(const volatile void* src, size_t offset, size_t size);
 
     // Sets the bucket data from a string. Strings are passed NULL terminated to
     // distinguish between empty string and no string.
@@ -175,10 +175,9 @@ class GPU_EXPORT CommonDecoder : NON_EXPORTED_BASE(public AsyncAPIInterface) {
   // Returns:
   //   error::kNoError if no error was found, one of
   //   error::Error otherwise.
-  error::Error DoCommonCommand(
-      unsigned int command,
-      unsigned int arg_count,
-      const void* cmd_data);
+  error::Error DoCommonCommand(unsigned int command,
+                               unsigned int arg_count,
+                               const volatile void* cmd_data);
 
   // Gets an name for a common command.
   const char* GetCommonCommandName(cmd::CommandId command_id) const;
@@ -186,8 +185,9 @@ class GPU_EXPORT CommonDecoder : NON_EXPORTED_BASE(public AsyncAPIInterface) {
  private:
   // Generate a member function prototype for each command in an automated and
   // typesafe way.
-#define COMMON_COMMAND_BUFFER_CMD_OP(name) \
-  error::Error Handle##name(uint32_t immediate_data_size, const void* data);
+#define COMMON_COMMAND_BUFFER_CMD_OP(name)                \
+  error::Error Handle##name(uint32_t immediate_data_size, \
+                            const volatile void* data);
 
   COMMON_COMMAND_BUFFER_CMDS(COMMON_COMMAND_BUFFER_CMD_OP)
 
@@ -200,7 +200,7 @@ class GPU_EXPORT CommonDecoder : NON_EXPORTED_BASE(public AsyncAPIInterface) {
   BucketMap buckets_;
 
   typedef Error (CommonDecoder::*CmdHandler)(uint32_t immediate_data_size,
-                                             const void* data);
+                                             const volatile void* data);
 
   // A struct to hold info about each command.
   struct CommandInfo {

@@ -22,13 +22,13 @@ GLES2DecoderPassthroughImpl::~GLES2DecoderPassthroughImpl() {}
 
 GLES2Decoder::Error GLES2DecoderPassthroughImpl::DoCommands(
     unsigned int num_commands,
-    const void* buffer,
+    const volatile void* buffer,
     int num_entries,
     int* entries_processed) {
   commands_to_process_ = num_commands;
   error::Error result = error::kNoError;
-  const CommandBufferEntry* cmd_data =
-      static_cast<const CommandBufferEntry*>(buffer);
+  const volatile CommandBufferEntry* cmd_data =
+      static_cast<const volatile CommandBufferEntry*>(buffer);
   int process_pos = 0;
   unsigned int command = 0;
 

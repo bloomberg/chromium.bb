@@ -342,7 +342,7 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
   // individual commands.
   error::Error DoCommand(unsigned int command,
                          unsigned int arg_count,
-                         const void* cmd_data) override;
+                         const volatile void* cmd_data) override;
 
  private:
   bool initialized_;

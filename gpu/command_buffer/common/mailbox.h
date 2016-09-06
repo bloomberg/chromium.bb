@@ -28,6 +28,12 @@ struct GPU_EXPORT Mailbox {
   using Name = int8_t[GL_MAILBOX_SIZE_CHROMIUM];
 
   Mailbox();
+
+  static Mailbox FromVolatile(const volatile Mailbox& other) {
+    // Because the copy constructor is trivial, const_cast is safe.
+    return const_cast<const Mailbox&>(other);
+  }
+
   bool IsZero() const;
   void SetZero();
   void SetName(const int8_t* name);

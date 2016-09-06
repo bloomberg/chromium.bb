@@ -76,18 +76,18 @@ error::Error CommandParser::ProcessAllCommands() {
 // changed by a (malicious) client at any time, so if validation has to happen,
 // it should operate on a copy of them.
 error::Error AsyncAPIInterface::DoCommands(unsigned int num_commands,
-                                           const void* buffer,
+                                           const volatile void* buffer,
                                            int num_entries,
                                            int* entries_processed) {
   int commands_to_process = num_commands;
   error::Error result = error::kNoError;
-  const CommandBufferEntry* cmd_data =
-      static_cast<const CommandBufferEntry*>(buffer);
+  const volatile CommandBufferEntry* cmd_data =
+      static_cast<const volatile CommandBufferEntry*>(buffer);
   int process_pos = 0;
 
   while (process_pos < num_entries && result == error::kNoError &&
          commands_to_process--) {
-    CommandHeader header = cmd_data->value_header;
+    CommandHeader header = CommandHeader::FromVolatile(cmd_data->value_header);
     if (header.size == 0) {
       DVLOG(1) << "Error: zero sized command in command buffer";
       return error::kInvalidSize;

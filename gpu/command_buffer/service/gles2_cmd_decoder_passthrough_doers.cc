@@ -136,20 +136,21 @@ error::Error GLES2DecoderPassthroughImpl::DoClearBufferfi(GLenum buffer,
 error::Error GLES2DecoderPassthroughImpl::DoClearBufferfv(
     GLenum buffer,
     GLint drawbuffers,
-    const GLfloat* value) {
+    const volatile GLfloat* value) {
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::DoClearBufferiv(GLenum buffer,
-                                                          GLint drawbuffers,
-                                                          const GLint* value) {
+error::Error GLES2DecoderPassthroughImpl::DoClearBufferiv(
+    GLenum buffer,
+    GLint drawbuffers,
+    const volatile GLint* value) {
   return error::kNoError;
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoClearBufferuiv(
     GLenum buffer,
     GLint drawbuffers,
-    const GLuint* value) {
+    const volatile GLuint* value) {
   return error::kNoError;
 }
 
@@ -298,13 +299,13 @@ error::Error GLES2DecoderPassthroughImpl::DoCullFace(GLenum mode) {
 
 error::Error GLES2DecoderPassthroughImpl::DoDeleteBuffers(
     GLsizei n,
-    const GLuint* buffers) {
+    const volatile GLuint* buffers) {
   return error::kNoError;
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoDeleteFramebuffers(
     GLsizei n,
-    const GLuint* framebuffers) {
+    const volatile GLuint* framebuffers) {
   return error::kNoError;
 }
 
@@ -314,13 +315,13 @@ error::Error GLES2DecoderPassthroughImpl::DoDeleteProgram(GLuint program) {
 
 error::Error GLES2DecoderPassthroughImpl::DoDeleteRenderbuffers(
     GLsizei n,
-    const GLuint* renderbuffers) {
+    const volatile GLuint* renderbuffers) {
   return error::kNoError;
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoDeleteSamplers(
     GLsizei n,
-    const GLuint* samplers) {
+    const volatile GLuint* samplers) {
   return error::kNoError;
 }
 
@@ -334,13 +335,13 @@ error::Error GLES2DecoderPassthroughImpl::DoDeleteShader(GLuint shader) {
 
 error::Error GLES2DecoderPassthroughImpl::DoDeleteTextures(
     GLsizei n,
-    const GLuint* textures) {
+    const volatile GLuint* textures) {
   return error::kNoError;
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoDeleteTransformFeedbacks(
     GLsizei n,
-    const GLuint* ids) {
+    const volatile GLuint* ids) {
   return error::kNoError;
 }
 
@@ -437,8 +438,9 @@ error::Error GLES2DecoderPassthroughImpl::DoFrontFace(GLenum mode) {
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::DoGenBuffers(GLsizei n,
-                                                       GLuint* buffers) {
+error::Error GLES2DecoderPassthroughImpl::DoGenBuffers(
+    GLsizei n,
+    volatile GLuint* buffers) {
   return error::kNoError;
 }
 
@@ -448,28 +450,31 @@ error::Error GLES2DecoderPassthroughImpl::DoGenerateMipmap(GLenum target) {
 
 error::Error GLES2DecoderPassthroughImpl::DoGenFramebuffers(
     GLsizei n,
-    GLuint* framebuffers) {
+    volatile GLuint* framebuffers) {
   return error::kNoError;
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoGenRenderbuffers(
     GLsizei n,
-    GLuint* renderbuffers) {
+    volatile GLuint* renderbuffers) {
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::DoGenSamplers(GLsizei n,
-                                                        GLuint* samplers) {
+error::Error GLES2DecoderPassthroughImpl::DoGenSamplers(
+    GLsizei n,
+    volatile GLuint* samplers) {
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::DoGenTextures(GLsizei n,
-                                                        GLuint* textures) {
+error::Error GLES2DecoderPassthroughImpl::DoGenTextures(
+    GLsizei n,
+    volatile GLuint* textures) {
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::DoGenTransformFeedbacks(GLsizei n,
-                                                                  GLuint* ids) {
+error::Error GLES2DecoderPassthroughImpl::DoGenTransformFeedbacks(
+    GLsizei n,
+    volatile GLuint* ids) {
   return error::kNoError;
 }
 
@@ -828,14 +833,14 @@ error::Error GLES2DecoderPassthroughImpl::DoHint(GLenum target, GLenum mode) {
 error::Error GLES2DecoderPassthroughImpl::DoInvalidateFramebuffer(
     GLenum target,
     GLsizei count,
-    const GLenum* attachments) {
+    const volatile GLenum* attachments) {
   return error::kNoError;
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoInvalidateSubFramebuffer(
     GLenum target,
     GLsizei count,
-    const GLenum* attachments,
+    const volatile GLenum* attachments,
     GLint x,
     GLint y,
     GLsizei width,
@@ -962,7 +967,7 @@ error::Error GLES2DecoderPassthroughImpl::DoSamplerParameterf(GLuint sampler,
 error::Error GLES2DecoderPassthroughImpl::DoSamplerParameterfv(
     GLuint sampler,
     GLenum pname,
-    const GLfloat* params) {
+    const volatile GLfloat* params) {
   return error::kNoError;
 }
 
@@ -975,7 +980,7 @@ error::Error GLES2DecoderPassthroughImpl::DoSamplerParameteri(GLuint sampler,
 error::Error GLES2DecoderPassthroughImpl::DoSamplerParameteriv(
     GLuint sampler,
     GLenum pname,
-    const GLint* params) {
+    const volatile GLint* params) {
   return error::kNoError;
 }
 
@@ -1073,7 +1078,7 @@ error::Error GLES2DecoderPassthroughImpl::DoTexParameterf(GLenum target,
 error::Error GLES2DecoderPassthroughImpl::DoTexParameterfv(
     GLenum target,
     GLenum pname,
-    const GLfloat* params) {
+    const volatile GLfloat* params) {
   return error::kNoError;
 }
 
@@ -1087,7 +1092,7 @@ error::Error GLES2DecoderPassthroughImpl::DoTexParameteri(GLenum target,
 error::Error GLES2DecoderPassthroughImpl::DoTexParameteriv(
     GLenum target,
     GLenum pname,
-    const GLint* params) {
+    const volatile GLint* params) {
   return error::kNoError;
 }
 
@@ -1141,9 +1146,10 @@ error::Error GLES2DecoderPassthroughImpl::DoUniform1f(GLint location,
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::DoUniform1fv(GLint location,
-                                                       GLsizei count,
-                                                       const GLfloat* v) {
+error::Error GLES2DecoderPassthroughImpl::DoUniform1fv(
+    GLint location,
+    GLsizei count,
+    const volatile GLfloat* v) {
   return error::kNoError;
 }
 
@@ -1151,9 +1157,10 @@ error::Error GLES2DecoderPassthroughImpl::DoUniform1i(GLint location, GLint x) {
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::DoUniform1iv(GLint location,
-                                                       GLsizei count,
-                                                       const GLint* v) {
+error::Error GLES2DecoderPassthroughImpl::DoUniform1iv(
+    GLint location,
+    GLsizei count,
+    const volatile GLint* v) {
   return error::kNoError;
 }
 
@@ -1162,9 +1169,10 @@ error::Error GLES2DecoderPassthroughImpl::DoUniform1ui(GLint location,
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::DoUniform1uiv(GLint location,
-                                                        GLsizei count,
-                                                        const GLuint* v) {
+error::Error GLES2DecoderPassthroughImpl::DoUniform1uiv(
+    GLint location,
+    GLsizei count,
+    const volatile GLuint* v) {
   return error::kNoError;
 }
 
@@ -1174,9 +1182,10 @@ error::Error GLES2DecoderPassthroughImpl::DoUniform2f(GLint location,
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::DoUniform2fv(GLint location,
-                                                       GLsizei count,
-                                                       const GLfloat* v) {
+error::Error GLES2DecoderPassthroughImpl::DoUniform2fv(
+    GLint location,
+    GLsizei count,
+    const volatile GLfloat* v) {
   return error::kNoError;
 }
 
@@ -1186,9 +1195,10 @@ error::Error GLES2DecoderPassthroughImpl::DoUniform2i(GLint location,
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::DoUniform2iv(GLint location,
-                                                       GLsizei count,
-                                                       const GLint* v) {
+error::Error GLES2DecoderPassthroughImpl::DoUniform2iv(
+    GLint location,
+    GLsizei count,
+    const volatile GLint* v) {
   return error::kNoError;
 }
 
@@ -1198,9 +1208,10 @@ error::Error GLES2DecoderPassthroughImpl::DoUniform2ui(GLint location,
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::DoUniform2uiv(GLint location,
-                                                        GLsizei count,
-                                                        const GLuint* v) {
+error::Error GLES2DecoderPassthroughImpl::DoUniform2uiv(
+    GLint location,
+    GLsizei count,
+    const volatile GLuint* v) {
   return error::kNoError;
 }
 
@@ -1211,9 +1222,10 @@ error::Error GLES2DecoderPassthroughImpl::DoUniform3f(GLint location,
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::DoUniform3fv(GLint location,
-                                                       GLsizei count,
-                                                       const GLfloat* v) {
+error::Error GLES2DecoderPassthroughImpl::DoUniform3fv(
+    GLint location,
+    GLsizei count,
+    const volatile GLfloat* v) {
   return error::kNoError;
 }
 
@@ -1224,9 +1236,10 @@ error::Error GLES2DecoderPassthroughImpl::DoUniform3i(GLint location,
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::DoUniform3iv(GLint location,
-                                                       GLsizei count,
-                                                       const GLint* v) {
+error::Error GLES2DecoderPassthroughImpl::DoUniform3iv(
+    GLint location,
+    GLsizei count,
+    const volatile GLint* v) {
   return error::kNoError;
 }
 
@@ -1237,9 +1250,10 @@ error::Error GLES2DecoderPassthroughImpl::DoUniform3ui(GLint location,
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::DoUniform3uiv(GLint location,
-                                                        GLsizei count,
-                                                        const GLuint* v) {
+error::Error GLES2DecoderPassthroughImpl::DoUniform3uiv(
+    GLint location,
+    GLsizei count,
+    const volatile GLuint* v) {
   return error::kNoError;
 }
 
@@ -1251,9 +1265,10 @@ error::Error GLES2DecoderPassthroughImpl::DoUniform4f(GLint location,
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::DoUniform4fv(GLint location,
-                                                       GLsizei count,
-                                                       const GLfloat* v) {
+error::Error GLES2DecoderPassthroughImpl::DoUniform4fv(
+    GLint location,
+    GLsizei count,
+    const volatile GLfloat* v) {
   return error::kNoError;
 }
 
@@ -1265,9 +1280,10 @@ error::Error GLES2DecoderPassthroughImpl::DoUniform4i(GLint location,
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::DoUniform4iv(GLint location,
-                                                       GLsizei count,
-                                                       const GLint* v) {
+error::Error GLES2DecoderPassthroughImpl::DoUniform4iv(
+    GLint location,
+    GLsizei count,
+    const volatile GLint* v) {
   return error::kNoError;
 }
 
@@ -1279,9 +1295,10 @@ error::Error GLES2DecoderPassthroughImpl::DoUniform4ui(GLint location,
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::DoUniform4uiv(GLint location,
-                                                        GLsizei count,
-                                                        const GLuint* v) {
+error::Error GLES2DecoderPassthroughImpl::DoUniform4uiv(
+    GLint location,
+    GLsizei count,
+    const volatile GLuint* v) {
   return error::kNoError;
 }
 
@@ -1296,7 +1313,7 @@ error::Error GLES2DecoderPassthroughImpl::DoUniformMatrix2fv(
     GLint location,
     GLsizei count,
     GLboolean transpose,
-    const GLfloat* value) {
+    const volatile GLfloat* value) {
   return error::kNoError;
 }
 
@@ -1304,7 +1321,7 @@ error::Error GLES2DecoderPassthroughImpl::DoUniformMatrix2x3fv(
     GLint location,
     GLsizei count,
     GLboolean transpose,
-    const GLfloat* value) {
+    const volatile GLfloat* value) {
   return error::kNoError;
 }
 
@@ -1312,7 +1329,7 @@ error::Error GLES2DecoderPassthroughImpl::DoUniformMatrix2x4fv(
     GLint location,
     GLsizei count,
     GLboolean transpose,
-    const GLfloat* value) {
+    const volatile GLfloat* value) {
   return error::kNoError;
 }
 
@@ -1320,7 +1337,7 @@ error::Error GLES2DecoderPassthroughImpl::DoUniformMatrix3fv(
     GLint location,
     GLsizei count,
     GLboolean transpose,
-    const GLfloat* value) {
+    const volatile GLfloat* value) {
   return error::kNoError;
 }
 
@@ -1328,7 +1345,7 @@ error::Error GLES2DecoderPassthroughImpl::DoUniformMatrix3x2fv(
     GLint location,
     GLsizei count,
     GLboolean transpose,
-    const GLfloat* value) {
+    const volatile GLfloat* value) {
   return error::kNoError;
 }
 
@@ -1336,7 +1353,7 @@ error::Error GLES2DecoderPassthroughImpl::DoUniformMatrix3x4fv(
     GLint location,
     GLsizei count,
     GLboolean transpose,
-    const GLfloat* value) {
+    const volatile GLfloat* value) {
   return error::kNoError;
 }
 
@@ -1344,7 +1361,7 @@ error::Error GLES2DecoderPassthroughImpl::DoUniformMatrix4fv(
     GLint location,
     GLsizei count,
     GLboolean transpose,
-    const GLfloat* value) {
+    const volatile GLfloat* value) {
   return error::kNoError;
 }
 
@@ -1352,7 +1369,7 @@ error::Error GLES2DecoderPassthroughImpl::DoUniformMatrix4x2fv(
     GLint location,
     GLsizei count,
     GLboolean transpose,
-    const GLfloat* value) {
+    const volatile GLfloat* value) {
   return error::kNoError;
 }
 
@@ -1360,7 +1377,7 @@ error::Error GLES2DecoderPassthroughImpl::DoUniformMatrix4x3fv(
     GLint location,
     GLsizei count,
     GLboolean transpose,
-    const GLfloat* value) {
+    const volatile GLfloat* value) {
   return error::kNoError;
 }
 
@@ -1379,7 +1396,7 @@ error::Error GLES2DecoderPassthroughImpl::DoVertexAttrib1f(GLuint indx,
 
 error::Error GLES2DecoderPassthroughImpl::DoVertexAttrib1fv(
     GLuint indx,
-    const GLfloat* values) {
+    const volatile GLfloat* values) {
   return error::kNoError;
 }
 
@@ -1391,7 +1408,7 @@ error::Error GLES2DecoderPassthroughImpl::DoVertexAttrib2f(GLuint indx,
 
 error::Error GLES2DecoderPassthroughImpl::DoVertexAttrib2fv(
     GLuint indx,
-    const GLfloat* values) {
+    const volatile GLfloat* values) {
   return error::kNoError;
 }
 
@@ -1404,7 +1421,7 @@ error::Error GLES2DecoderPassthroughImpl::DoVertexAttrib3f(GLuint indx,
 
 error::Error GLES2DecoderPassthroughImpl::DoVertexAttrib3fv(
     GLuint indx,
-    const GLfloat* values) {
+    const volatile GLfloat* values) {
   return error::kNoError;
 }
 
@@ -1418,7 +1435,7 @@ error::Error GLES2DecoderPassthroughImpl::DoVertexAttrib4f(GLuint indx,
 
 error::Error GLES2DecoderPassthroughImpl::DoVertexAttrib4fv(
     GLuint indx,
-    const GLfloat* values) {
+    const volatile GLfloat* values) {
   return error::kNoError;
 }
 
@@ -1432,7 +1449,7 @@ error::Error GLES2DecoderPassthroughImpl::DoVertexAttribI4i(GLuint indx,
 
 error::Error GLES2DecoderPassthroughImpl::DoVertexAttribI4iv(
     GLuint indx,
-    const GLint* values) {
+    const volatile GLint* values) {
   return error::kNoError;
 }
 
@@ -1446,7 +1463,7 @@ error::Error GLES2DecoderPassthroughImpl::DoVertexAttribI4ui(GLuint indx,
 
 error::Error GLES2DecoderPassthroughImpl::DoVertexAttribI4uiv(
     GLuint indx,
-    const GLuint* values) {
+    const volatile GLuint* values) {
   return error::kNoError;
 }
 
@@ -1535,14 +1552,15 @@ error::Error GLES2DecoderPassthroughImpl::DoTexStorage2DEXT(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::DoGenQueriesEXT(GLsizei n,
-                                                          GLuint* queries) {
+error::Error GLES2DecoderPassthroughImpl::DoGenQueriesEXT(
+    GLsizei n,
+    volatile GLuint* queries) {
   return error::kNoError;
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoDeleteQueriesEXT(
     GLsizei n,
-    const GLuint* queries) {
+    const volatile GLuint* queries) {
   return error::kNoError;
 }
 
@@ -1590,14 +1608,15 @@ error::Error GLES2DecoderPassthroughImpl::DoPopGroupMarkerEXT() {
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::DoGenVertexArraysOES(GLsizei n,
-                                                               GLuint* arrays) {
+error::Error GLES2DecoderPassthroughImpl::DoGenVertexArraysOES(
+    GLsizei n,
+    volatile GLuint* arrays) {
   return error::kNoError;
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoDeleteVertexArraysOES(
     GLsizei n,
-    const GLuint* arrays) {
+    const volatile GLuint* arrays) {
   return error::kNoError;
 }
 
@@ -1753,27 +1772,27 @@ error::Error GLES2DecoderPassthroughImpl::DoVertexAttribDivisorANGLE(
 
 error::Error GLES2DecoderPassthroughImpl::DoProduceTextureCHROMIUM(
     GLenum target,
-    const GLbyte* mailbox) {
+    const volatile GLbyte* mailbox) {
   return error::kNoError;
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoProduceTextureDirectCHROMIUM(
     GLuint texture,
     GLenum target,
-    const GLbyte* mailbox) {
+    const volatile GLbyte* mailbox) {
   return error::kNoError;
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoConsumeTextureCHROMIUM(
     GLenum target,
-    const GLbyte* mailbox) {
+    const volatile GLbyte* mailbox) {
   return error::kNoError;
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoCreateAndConsumeTextureINTERNAL(
     GLenum target,
     GLuint texture,
-    const GLbyte* mailbox) {
+    const volatile GLbyte* mailbox) {
   return error::kNoError;
 }
 
@@ -1809,7 +1828,7 @@ error::Error GLES2DecoderPassthroughImpl::DoTraceEndCHROMIUM() {
 error::Error GLES2DecoderPassthroughImpl::DoDiscardFramebufferEXT(
     GLenum target,
     GLsizei count,
-    const GLenum* attachments) {
+    const volatile GLenum* attachments) {
   return error::kNoError;
 }
 
@@ -1834,8 +1853,9 @@ error::Error GLES2DecoderPassthroughImpl::DoWaitSyncTokenCHROMIUM(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::DoDrawBuffersEXT(GLsizei count,
-                                                           const GLenum* bufs) {
+error::Error GLES2DecoderPassthroughImpl::DoDrawBuffersEXT(
+    GLsizei count,
+    const volatile GLenum* bufs) {
   return error::kNoError;
 }
 
@@ -1878,7 +1898,7 @@ error::Error GLES2DecoderPassthroughImpl::DoScheduleCALayerCHROMIUM(
 
 error::Error GLES2DecoderPassthroughImpl::DoScheduleCALayerInUseQueryCHROMIUM(
     GLuint n,
-    const GLuint* textures) {
+    const volatile GLuint* textures) {
   return error::kNoError;
 }
 
@@ -1896,7 +1916,7 @@ error::Error GLES2DecoderPassthroughImpl::DoFlushDriverCachesCHROMIUM() {
 
 error::Error GLES2DecoderPassthroughImpl::DoMatrixLoadfCHROMIUM(
     GLenum matrixMode,
-    const GLfloat* m) {
+    const volatile GLfloat* m) {
   return error::kNoError;
 }
 
@@ -2137,7 +2157,7 @@ error::Error
 GLES2DecoderPassthroughImpl::DoUniformMatrix4fvStreamTextureMatrixCHROMIUM(
     GLint location,
     GLboolean transpose,
-    const GLfloat* defaultValue) {
+    const volatile GLfloat* defaultValue) {
   return error::kNoError;
 }
 

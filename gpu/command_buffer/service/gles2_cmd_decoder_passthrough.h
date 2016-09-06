@@ -32,7 +32,7 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
   ~GLES2DecoderPassthroughImpl() override;
 
   Error DoCommands(unsigned int num_commands,
-                   const void* buffer,
+                   const volatile void* buffer,
                    int num_entries,
                    int* entries_processed) override;
 
@@ -217,14 +217,14 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
   Logger logger_;
 
 #define GLES2_CMD_OP(name) \
-  Error Handle##name(uint32_t immediate_data_size, const void* data);
+  Error Handle##name(uint32_t immediate_data_size, const volatile void* data);
 
   GLES2_COMMAND_LIST(GLES2_CMD_OP)
 #undef GLES2_CMD_OP
 
   using CmdHandler =
       Error (GLES2DecoderPassthroughImpl::*)(uint32_t immediate_data_size,
-                                             const void* data);
+                                             const volatile void* data);
 
   // A struct to hold info about each command.
   struct CommandInfo {

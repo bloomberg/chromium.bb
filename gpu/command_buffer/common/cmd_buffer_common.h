@@ -79,6 +79,11 @@ struct CommandHeader {
     DCHECK_GE(size_in_bytes, sizeof(T));  // NOLINT
     Init(T::kCmdId, ComputeNumEntries(size_in_bytes));
   }
+
+  static CommandHeader FromVolatile(const volatile CommandHeader& other) {
+    // const_cast is safe because the copy constructor is trivial.
+    return const_cast<const CommandHeader&>(other);
+  }
 };
 
 static_assert(sizeof(CommandHeader) == 4,

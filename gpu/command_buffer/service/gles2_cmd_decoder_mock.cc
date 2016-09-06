@@ -20,7 +20,7 @@ MockGLES2Decoder::MockGLES2Decoder()
 MockGLES2Decoder::~MockGLES2Decoder() {}
 
 error::Error MockGLES2Decoder::FakeDoCommands(unsigned int num_commands,
-                                              const void* buffer,
+                                              const volatile void* buffer,
                                               int num_entries,
                                               int* entries_processed) {
   return AsyncAPIInterface::DoCommands(

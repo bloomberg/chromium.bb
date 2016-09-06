@@ -4877,16 +4877,16 @@ static_assert(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
   def WriteServiceHandlerFunctionHeader(self, func, f):
     """Writes function header for service implementation handlers."""
     f.write("""error::Error GLES2DecoderImpl::Handle%(name)s(
-        uint32_t immediate_data_size, const void* cmd_data) {
+        uint32_t immediate_data_size, const volatile void* cmd_data) {
       """ % {'name': func.name})
     if func.IsUnsafe():
       f.write("""if (!unsafe_es3_apis_enabled())
           return error::kUnknownCommand;
         """)
-    f.write("""const gles2::cmds::%(name)s& c =
-          *static_cast<const gles2::cmds::%(name)s*>(cmd_data);
-      (void)c;
-      """ % {'name': func.name})
+    if func.GetCmdArgs():
+      f.write("""const volatile gles2::cmds::%(name)s& c =
+            *static_cast<const volatile gles2::cmds::%(name)s*>(cmd_data);
+        """ % {'name': func.name})
 
   def WriteServiceHandlerArgGetCode(self, func, f):
     """Writes the argument unpack code for service handlers."""
@@ -4953,12 +4953,12 @@ static_assert(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
   def WritePassthroughServiceFunctionHeader(self, func, f):
     """Writes function header for service passthrough handlers."""
     f.write("""error::Error GLES2DecoderPassthroughImpl::Handle%(name)s(
-        uint32_t immediate_data_size, const void* cmd_data) {
+        uint32_t immediate_data_size, const volatile void* cmd_data) {
       """ % {'name': func.name})
-    f.write("""const gles2::cmds::%(name)s& c =
-          *static_cast<const gles2::cmds::%(name)s*>(cmd_data);
-      (void)c;
-      """ % {'name': func.name})
+    if func.GetCmdArgs():
+      f.write("""const volatile gles2::cmds::%(name)s& c =
+            *static_cast<const volatile gles2::cmds::%(name)s*>(cmd_data);
+        """ % {'name': func.name})
 
   def WritePassthroughServiceFunctionDoerCall(self, func, f):
     """Writes the function call to the passthrough service doer."""
@@ -8998,7 +8998,7 @@ class ImmediatePointerArgument(Argument):
 
   def WriteGetCode(self, f):
     """Overridden from Argument."""
-    f.write("  %s %s = GetImmediateDataAs<%s>(\n" %
+    f.write("  volatile %s %s = GetImmediateDataAs<volatile %s>(\n" %
             (self.type, self.name, self.type))
     f.write("      c, data_size, immediate_data_size);\n")
 
@@ -9283,7 +9283,7 @@ class Int64Argument(Argument):
 
   def WriteArgAccessor(self, f):
     """Writes specialized accessor for compound members."""
-    f.write("  %s %s() const {\n" % (self.type, self.name))
+    f.write("  %s %s() const volatile {\n" % (self.type, self.name))
     f.write("    return static_cast<%s>(\n" % self.type)
     f.write("        GLES2Util::MapTwoUint32ToUint64(\n")
     f.write("            %s_0,\n" % self.name)

@@ -63,7 +63,7 @@ class TestCommonDecoder : public CommonDecoder {
   // Overridden from AsyncAPIInterface
   error::Error DoCommand(unsigned int command,
                          unsigned int arg_count,
-                         const void* cmd_data) override {
+                         const volatile void* cmd_data) override {
     return DoCommonCommand(command, arg_count, cmd_data);
   }
 

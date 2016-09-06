@@ -68,7 +68,7 @@ class GPU_EXPORT CommandParser {
  private:
   CommandBufferOffset get_;
   CommandBufferOffset put_;
-  CommandBufferEntry* buffer_;
+  volatile CommandBufferEntry* buffer_;
   int32_t entry_count_;
   AsyncAPIInterface* handler_;
 };
@@ -88,10 +88,9 @@ class GPU_EXPORT AsyncAPIInterface {
   // Returns:
   //   error::kNoError if no error was found, one of
   //   error::Error otherwise.
-  virtual error::Error DoCommand(
-      unsigned int command,
-      unsigned int arg_count,
-      const void* cmd_data) = 0;
+  virtual error::Error DoCommand(unsigned int command,
+                                 unsigned int arg_count,
+                                 const volatile void* cmd_data) = 0;
 
   // Executes multiple commands.
   // Parameters:
@@ -100,7 +99,7 @@ class GPU_EXPORT AsyncAPIInterface {
   //    num_entries: number of sequential command buffer entries in buffer.
   //    entries_processed: if not 0, is set to the number of entries processed.
   virtual error::Error DoCommands(unsigned int num_commands,
-                                  const void* buffer,
+                                  const volatile void* buffer,
                                   int num_entries,
                                   int* entries_processed);
 
