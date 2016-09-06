@@ -29,6 +29,11 @@ Polymer({
 
     /** @private */
     hasSearchText_: Boolean,
+
+    isSpinnerShown_: {
+      type: Boolean,
+      computed: 'computeIsSpinnerShown_(spinnerActive, showingSearch)'
+    }
   },
 
   listeners: {
@@ -56,13 +61,11 @@ Polymer({
   },
 
   /**
-   * @param {boolean} spinnerActive
-   * @param {boolean} showingSearch
    * @return {boolean}
    * @private
    */
-  isSpinnerShown_: function(spinnerActive, showingSearch) {
-    return spinnerActive && showingSearch;
+  computeIsSpinnerShown_: function() {
+    return this.spinnerActive && this.showingSearch;
   },
 
   /** @private */

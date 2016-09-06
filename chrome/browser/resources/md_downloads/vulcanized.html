@@ -3258,16 +3258,20 @@ input[type='search']::-webkit-search-decoration, input[type='search']::-webkit-s
 }
 
 </style>
-    <paper-spinner-lite active="[[isSpinnerShown_(spinnerActive, showingSearch)]]">
-    </paper-spinner-lite>
+    <template is="dom-if" if="[[isSpinnerShown_]]">
+      <paper-spinner-lite active="">
+      </paper-spinner-lite>
+    </template>
     <paper-icon-button id="icon" icon="cr:search" title="[[label]]" tabindex$="[[computeIconTabIndex_(narrow)]]">
     </paper-icon-button>
     <paper-input-container id="searchTerm" on-search="onSearchTermSearch" on-keydown="onSearchTermKeydown" no-label-float="">
       <label id="prompt" for="searchInput">[[label]]</label>
       <input is="iron-input" id="searchInput" type="search" on-blur="onInputBlur_" incremental="" autofocus="">
     </paper-input-container>
-    <paper-icon-button icon="cr:cancel" id="clearSearch" title="[[clearLabel]]" hidden$="[[!hasSearchText_]]" on-tap="hideSearch_">
-    </paper-icon-button>
+    <template is="dom-if" if="[[hasSearchText_]]">
+      <paper-icon-button icon="cr:cancel" id="clearSearch" title="[[clearLabel]]" on-tap="hideSearch_">
+      </paper-icon-button>
+    </template>
   </template>
   </dom-module>
 <dom-module id="cr-toolbar" assetpath="chrome://resources/cr_elements/cr_toolbar/" css-build="shadow">

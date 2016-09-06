@@ -55,9 +55,10 @@ cr.define('cr_toolbar_search_field', function() {
       test('notifies on new searches', function() {
         MockInteractions.tap(field);
         simulateSearch('query1');
+        Polymer.dom.flush();
         assertEquals('query1', field.getValue());
 
-        MockInteractions.tap(field.$.clearSearch);
+        MockInteractions.tap(field.$$('#clearSearch'));
         assertFalse(field.showingSearch);
         assertEquals('', field.getValue());
 
@@ -92,11 +93,13 @@ cr.define('cr_toolbar_search_field', function() {
         // Similar to what happens when pasting or dragging into the input
         // field.
         simulateSearch('test');
+        Polymer.dom.flush();
 
-        assertFalse(field.$.clearSearch.hidden);
+        var clearSearch = field.$$('#clearSearch');
+        assertFalse(clearSearch.hidden);
         assertTrue(field.showingSearch);
 
-        MockInteractions.tap(field.$.clearSearch);
+        MockInteractions.tap(clearSearch);
         assertFalse(field.showingSearch);
       });
     });

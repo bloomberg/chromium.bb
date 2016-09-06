@@ -112,9 +112,10 @@
         -webkit-margin-start: 18px;
       }
     </style>
-    <paper-spinner-lite
-        active="[[isSpinnerShown_(spinnerActive, showingSearch)]]">
-    </paper-spinner-lite>
+    <template is="dom-if" if="[[isSpinnerShown_]]">
+      <paper-spinner-lite active>
+      </paper-spinner-lite>
+    </template>
     <paper-icon-button id="icon" icon="cr:search" title="[[label]]"
         tabindex$="[[computeIconTabIndex_(narrow)]]">
     </paper-icon-button>
@@ -124,10 +125,11 @@
       <input is="iron-input" id="searchInput" type="search"
           on-blur="onInputBlur_" incremental autofocus></input>
     </paper-input-container>
-    <paper-icon-button icon="cr:cancel" id="clearSearch"
-        title="[[clearLabel]]" hidden$="[[!hasSearchText_]]"
-        on-tap="hideSearch_">
-    </paper-icon-button>
+    <template is="dom-if" if="[[hasSearchText_]]">
+      <paper-icon-button icon="cr:cancel" id="clearSearch"
+          title="[[clearLabel]]" on-tap="hideSearch_">
+      </paper-icon-button>
+    </template>
   </template>
   <script src="cr_toolbar_search_field.js"></script>
 </dom-module>

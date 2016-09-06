@@ -6679,7 +6679,11 @@ Polymer({
       type: Boolean,
       reflectToAttribute: true
     },
-    hasSearchText_: Boolean
+    hasSearchText_: Boolean,
+    isSpinnerShown_: {
+      type: Boolean,
+      computed: 'computeIsSpinnerShown_(spinnerActive, showingSearch)'
+    }
   },
   listeners: {
     tap: 'showSearch_',
@@ -6694,8 +6698,8 @@ Polymer({
   computeIconTabIndex_: function(narrow) {
     return narrow ? 0 : -1;
   },
-  isSpinnerShown_: function(spinnerActive, showingSearch) {
-    return spinnerActive && showingSearch;
+  computeIsSpinnerShown_: function() {
+    return this.spinnerActive && this.showingSearch;
   },
   onInputBlur_: function() {
     if (!this.hasSearchText_) this.showingSearch = false;
