@@ -198,8 +198,19 @@ TopHostsList HistoryDatabase::TopHosts(size_t num_hosts) {
       std::max(base::Time::Now() - base::TimeDelta::FromDays(30), base::Time());
 
   sql::Statement url_sql(db_.GetUniqueStatement(
-      "SELECT url, visit_count FROM urls WHERE last_visit_time > ?"));
+      "SELECT u.url, u.visit_count "
+      "FROM urls u JOIN visits v ON u.id = v.url "
+      "WHERE last_visit_time > ? "
+      "AND (v.transition & ?) != 0 "              // CHAIN_END
+      "AND (transition & ?) NOT IN (?, ?, ?)"));  // NO SUBFRAME or
+                                                  // KEYWORD_GENERATED
+
   url_sql.BindInt64(0, one_month_ago.ToInternalValue());
+  url_sql.BindInt(1, ui::PAGE_TRANSITION_CHAIN_END);
+  url_sql.BindInt(2, ui::PAGE_TRANSITION_CORE_MASK);
+  url_sql.BindInt(3, ui::PAGE_TRANSITION_AUTO_SUBFRAME);
+  url_sql.BindInt(4, ui::PAGE_TRANSITION_MANUAL_SUBFRAME);
+  url_sql.BindInt(5, ui::PAGE_TRANSITION_KEYWORD_GENERATED);
 
   // Collect a map from host to visit count.
   base::hash_map<std::string, int> host_count;

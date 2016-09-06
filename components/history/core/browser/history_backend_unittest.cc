@@ -3021,8 +3021,12 @@ TEST_F(HistoryBackendTest, TopHosts) {
   urls.push_back(GURL("http://cnn.com/intl"));
   urls.push_back(GURL("http://dogtopia.com/"));
   for (const GURL& url : urls) {
-    backend_->AddPageVisit(url, base::Time::Now(), 0, ui::PAGE_TRANSITION_LINK,
-                           history::SOURCE_BROWSED);
+    backend_->AddPageVisit(
+        url, base::Time::Now(), 0,
+        ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
+                                  ui::PAGE_TRANSITION_CHAIN_START |
+                                  ui::PAGE_TRANSITION_CHAIN_END),
+        history::SOURCE_BROWSED);
   }
 
   EXPECT_THAT(backend_->TopHosts(3),
@@ -3036,8 +3040,12 @@ TEST_F(HistoryBackendTest, TopHosts_ElidePortAndScheme) {
   urls.push_back(GURL("https://cnn.com/intl"));
   urls.push_back(GURL("http://cnn.com:567/sports"));
   for (const GURL& url : urls) {
-    backend_->AddPageVisit(url, base::Time::Now(), 0, ui::PAGE_TRANSITION_LINK,
-                           history::SOURCE_BROWSED);
+    backend_->AddPageVisit(
+        url, base::Time::Now(), 0,
+        ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
+                                  ui::PAGE_TRANSITION_CHAIN_START |
+                                  ui::PAGE_TRANSITION_CHAIN_END),
+        history::SOURCE_BROWSED);
   }
 
   EXPECT_THAT(backend_->TopHosts(3), ElementsAre(std::make_pair("cnn.com", 3)));
@@ -3049,8 +3057,12 @@ TEST_F(HistoryBackendTest, TopHosts_ElideWWW) {
   urls.push_back(GURL("http://cnn.com/intl"));
   urls.push_back(GURL("http://www.dogtopia.com/"));
   for (const GURL& url : urls) {
-    backend_->AddPageVisit(url, base::Time::Now(), 0, ui::PAGE_TRANSITION_LINK,
-                           history::SOURCE_BROWSED);
+    backend_->AddPageVisit(
+        url, base::Time::Now(), 0,
+        ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
+                                  ui::PAGE_TRANSITION_CHAIN_START |
+                                  ui::PAGE_TRANSITION_CHAIN_END),
+        history::SOURCE_BROWSED);
   }
 
   EXPECT_THAT(backend_->TopHosts(3),
@@ -3064,12 +3076,20 @@ TEST_F(HistoryBackendTest, TopHosts_OnlyLast30Days) {
   urls.push_back(GURL("http://cnn.com/intl"));
   urls.push_back(GURL("http://dogtopia.com/"));
   for (const GURL& url : urls) {
-    backend_->AddPageVisit(url, base::Time::Now(), 0, ui::PAGE_TRANSITION_LINK,
-                           history::SOURCE_BROWSED);
+    backend_->AddPageVisit(
+        url, base::Time::Now(), 0,
+        ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
+                                  ui::PAGE_TRANSITION_CHAIN_START |
+                                  ui::PAGE_TRANSITION_CHAIN_END),
+        history::SOURCE_BROWSED);
   }
-  backend_->AddPageVisit(GURL("http://www.oracle.com/"),
-                         base::Time::Now() - base::TimeDelta::FromDays(31), 0,
-                         ui::PAGE_TRANSITION_LINK, history::SOURCE_BROWSED);
+  backend_->AddPageVisit(
+      GURL("http://www.oracle.com/"),
+      base::Time::Now() - base::TimeDelta::FromDays(31), 0,
+      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
+                                ui::PAGE_TRANSITION_CHAIN_START |
+                                ui::PAGE_TRANSITION_CHAIN_END),
+      history::SOURCE_BROWSED);
 
   EXPECT_THAT(backend_->TopHosts(3),
               ElementsAre(std::make_pair("cnn.com", 2),
@@ -3085,8 +3105,12 @@ TEST_F(HistoryBackendTest, TopHosts_MaxNumHosts) {
   urls.push_back(GURL("http://dogtopia.com/webcam"));
   urls.push_back(GURL("http://www.gardenweb.com/"));
   for (const GURL& url : urls) {
-    backend_->AddPageVisit(url, base::Time::Now(), 0, ui::PAGE_TRANSITION_LINK,
-                           history::SOURCE_BROWSED);
+    backend_->AddPageVisit(
+        url, base::Time::Now(), 0,
+        ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
+                                  ui::PAGE_TRANSITION_CHAIN_START |
+                                  ui::PAGE_TRANSITION_CHAIN_END),
+        history::SOURCE_BROWSED);
   }
 
   EXPECT_THAT(backend_->TopHosts(2),
@@ -3106,11 +3130,28 @@ TEST_F(HistoryBackendTest, TopHosts_IgnoreUnusualURLs) {
   urls.push_back(GURL("chrome://version"));
   urls.push_back(GURL("about:mammon"));
   for (const GURL& url : urls) {
-    backend_->AddPageVisit(url, base::Time::Now(), 0, ui::PAGE_TRANSITION_LINK,
-                           history::SOURCE_BROWSED);
+    backend_->AddPageVisit(
+        url, base::Time::Now(), 0,
+        ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
+                                  ui::PAGE_TRANSITION_CHAIN_START |
+                                  ui::PAGE_TRANSITION_CHAIN_END),
+        history::SOURCE_BROWSED);
   }
 
   EXPECT_THAT(backend_->TopHosts(5), ElementsAre(std::make_pair("cnn.com", 3)));
+}
+
+TEST_F(HistoryBackendTest, TopHosts_IgnoreRedirects) {
+  const char* redirect1[] = {"http://foo.com/page1.html",
+                             "http://mobile.foo.com/page1.html", NULL};
+  const char* redirect2[] = {"http://bar.com/page1.html",
+                             "https://bar.com/page1.html",
+                             "https://mobile.bar.com/page1.html", NULL};
+  AddRedirectChain(redirect1, 0);
+  AddRedirectChain(redirect2, 1);
+  EXPECT_THAT(backend_->TopHosts(5),
+              ElementsAre(std::make_pair("mobile.bar.com", 1),
+                          std::make_pair("mobile.foo.com", 1)));
 }
 
 TEST_F(HistoryBackendTest, HostRankIfAvailable) {
@@ -3119,8 +3160,12 @@ TEST_F(HistoryBackendTest, HostRankIfAvailable) {
   urls.push_back(GURL("http://cnn.com/intl"));
   urls.push_back(GURL("http://dogtopia.com/"));
   for (const GURL& url : urls) {
-    backend_->AddPageVisit(url, base::Time::Now(), 0, ui::PAGE_TRANSITION_LINK,
-                           history::SOURCE_BROWSED);
+    backend_->AddPageVisit(
+        url, base::Time::Now(), 0,
+        ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
+                                  ui::PAGE_TRANSITION_CHAIN_START |
+                                  ui::PAGE_TRANSITION_CHAIN_END),
+        history::SOURCE_BROWSED);
   }
 
   EXPECT_EQ(kMaxTopHosts,
@@ -3143,8 +3188,12 @@ TEST_F(HistoryBackendTest, RecordTopHostsMetrics) {
   urls.push_back(GURL("http://cnn.com/intl"));
   urls.push_back(GURL("http://dogtopia.com/"));
   for (const GURL& url : urls) {
-    backend_->AddPageVisit(url, base::Time::Now(), 0, ui::PAGE_TRANSITION_LINK,
-                           history::SOURCE_BROWSED);
+    backend_->AddPageVisit(
+        url, base::Time::Now(), 0,
+        ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
+                                  ui::PAGE_TRANSITION_CHAIN_START |
+                                  ui::PAGE_TRANSITION_CHAIN_END),
+        history::SOURCE_BROWSED);
   }
 
   // Compute host_ranks_ for RecordTopHostsMetrics.
