@@ -19,7 +19,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task_scheduler/scheduler_lock.h"
-#include "base/task_scheduler/sequence.h"
 #include "base/task_scheduler/task.h"
 #include "base/task_scheduler/task_traits.h"
 #include "base/test/gtest_util.h"
@@ -37,12 +36,6 @@ namespace internal {
 namespace {
 
 constexpr size_t kLoadTestNumIterations = 100;
-
-scoped_refptr<Sequence> CreateSequenceWithTask(std::unique_ptr<Task> task) {
-  scoped_refptr<Sequence> sequence(new Sequence);
-  sequence->PushTask(std::move(task));
-  return sequence;
-}
 
 // Calls TaskTracker::Shutdown() asynchronously.
 class ThreadCallingShutdown : public SimpleThread {
@@ -77,12 +70,12 @@ class ThreadPostingAndRunningTask : public SimpleThread {
   };
 
   ThreadPostingAndRunningTask(TaskTracker* tracker,
-                              scoped_refptr<Sequence> sequence,
+                              Task* task,
                               Action action,
                               bool expect_post_succeeds)
       : SimpleThread("ThreadPostingAndRunningTask"),
         tracker_(tracker),
-        sequence_(std::move(sequence)),
+        task_(task),
         action_(action),
         expect_post_succeeds_(expect_post_succeeds) {}
 
@@ -90,17 +83,17 @@ class ThreadPostingAndRunningTask : public SimpleThread {
   void Run() override {
     bool post_succeeded = true;
     if (action_ == Action::WILL_POST || action_ == Action::WILL_POST_AND_RUN) {
-      post_succeeded = tracker_->WillPostTask(sequence_->PeekTask());
+      post_succeeded = tracker_->WillPostTask(task_);
       EXPECT_EQ(expect_post_succeeds_, post_succeeded);
     }
     if (post_succeeded &&
         (action_ == Action::RUN || action_ == Action::WILL_POST_AND_RUN)) {
-      tracker_->RunNextTaskInSequence(sequence_.get());
+      tracker_->RunTask(task_, SequenceToken::Create());
     }
   }
 
   TaskTracker* const tracker_;
-  const scoped_refptr<Sequence> sequence_;
+  Task* const task_;
   const Action action_;
   const bool expect_post_succeeds_;
 
@@ -203,7 +196,7 @@ TEST_P(TaskSchedulerTaskTrackerTest, WillPostAndRunBeforeShutdown) {
 
   // Run the task.
   EXPECT_EQ(0U, NumTasksExecuted());
-  tracker_.RunNextTaskInSequence(CreateSequenceWithTask(std::move(task)).get());
+  EXPECT_TRUE(tracker_.RunTask(task.get(), SequenceToken::Create()));
   EXPECT_EQ(1U, NumTasksExecuted());
 
   // Shutdown() shouldn't block.
@@ -214,17 +207,16 @@ TEST_P(TaskSchedulerTaskTrackerTest, WillPostAndRunLongTaskBeforeShutdown) {
   // Create a task that will block until |event| is signaled.
   WaitableEvent event(WaitableEvent::ResetPolicy::AUTOMATIC,
                       WaitableEvent::InitialState::NOT_SIGNALED);
-  std::unique_ptr<Task> blocked_task(
-      new Task(FROM_HERE, Bind(&WaitableEvent::Wait, Unretained(&event)),
-               TaskTraits().WithShutdownBehavior(GetParam()), TimeDelta()));
+  Task blocked_task(FROM_HERE, Bind(&WaitableEvent::Wait, Unretained(&event)),
+                    TaskTraits().WithShutdownBehavior(GetParam()), TimeDelta());
 
   // Inform |task_tracker_| that |blocked_task| will be posted.
-  EXPECT_TRUE(tracker_.WillPostTask(blocked_task.get()));
+  EXPECT_TRUE(tracker_.WillPostTask(&blocked_task));
 
   // Run the task asynchronouly.
   ThreadPostingAndRunningTask thread_running_task(
-      &tracker_, CreateSequenceWithTask(std::move(blocked_task)),
-      ThreadPostingAndRunningTask::Action::RUN, false);
+      &tracker_, &blocked_task, ThreadPostingAndRunningTask::Action::RUN,
+      false);
   thread_running_task.Start();
 
   // Initiate shutdown while the task is running.
@@ -265,16 +257,15 @@ TEST_P(TaskSchedulerTaskTrackerTest, WillPostBeforeShutdownRunDuringShutdown) {
   // Try to run |task|. It should only run it it's BLOCK_SHUTDOWN. Otherwise it
   // should be discarded.
   EXPECT_EQ(0U, NumTasksExecuted());
-  tracker_.RunNextTaskInSequence(CreateSequenceWithTask(std::move(task)).get());
-  EXPECT_EQ(GetParam() == TaskShutdownBehavior::BLOCK_SHUTDOWN ? 1U : 0U,
-            NumTasksExecuted());
+  const bool should_run = GetParam() == TaskShutdownBehavior::BLOCK_SHUTDOWN;
+  EXPECT_EQ(should_run, tracker_.RunTask(task.get(), SequenceToken::Create()));
+  EXPECT_EQ(should_run ? 1U : 0U, NumTasksExecuted());
   VERIFY_ASYNC_SHUTDOWN_IN_PROGRESS();
 
   // Unblock shutdown by running the remaining BLOCK_SHUTDOWN task.
-  tracker_.RunNextTaskInSequence(
-      CreateSequenceWithTask(std::move(block_shutdown_task)).get());
-  EXPECT_EQ(GetParam() == TaskShutdownBehavior::BLOCK_SHUTDOWN ? 2U : 1U,
-            NumTasksExecuted());
+  EXPECT_TRUE(
+      tracker_.RunTask(block_shutdown_task.get(), SequenceToken::Create()));
+  EXPECT_EQ(should_run ? 2U : 1U, NumTasksExecuted());
   WAIT_FOR_ASYNC_SHUTDOWN_COMPLETED();
 }
 
@@ -291,8 +282,7 @@ TEST_P(TaskSchedulerTaskTrackerTest, WillPostBeforeShutdownRunAfterShutdown) {
     VERIFY_ASYNC_SHUTDOWN_IN_PROGRESS();
 
     // Run the task to unblock shutdown.
-    tracker_.RunNextTaskInSequence(
-        CreateSequenceWithTask(std::move(task)).get());
+    EXPECT_TRUE(tracker_.RunTask(task.get(), SequenceToken::Create()));
     EXPECT_EQ(1U, NumTasksExecuted());
     WAIT_FOR_ASYNC_SHUTDOWN_COMPLETED();
 
@@ -303,8 +293,7 @@ TEST_P(TaskSchedulerTaskTrackerTest, WillPostBeforeShutdownRunAfterShutdown) {
     WAIT_FOR_ASYNC_SHUTDOWN_COMPLETED();
 
     // The task shouldn't be allowed to run after shutdown.
-    tracker_.RunNextTaskInSequence(
-        CreateSequenceWithTask(std::move(task)).get());
+    EXPECT_FALSE(tracker_.RunTask(task.get(), SequenceToken::Create()));
     EXPECT_EQ(0U, NumTasksExecuted());
   }
 }
@@ -327,8 +316,7 @@ TEST_P(TaskSchedulerTaskTrackerTest, WillPostAndRunDuringShutdown) {
 
     // Run the BLOCK_SHUTDOWN task.
     EXPECT_EQ(0U, NumTasksExecuted());
-    tracker_.RunNextTaskInSequence(
-        CreateSequenceWithTask(std::move(task)).get());
+    EXPECT_TRUE(tracker_.RunTask(task.get(), SequenceToken::Create()));
     EXPECT_EQ(1U, NumTasksExecuted());
   } else {
     // It shouldn't be allowed to post a non BLOCK_SHUTDOWN task.
@@ -340,8 +328,8 @@ TEST_P(TaskSchedulerTaskTrackerTest, WillPostAndRunDuringShutdown) {
 
   // Unblock shutdown by running |block_shutdown_task|.
   VERIFY_ASYNC_SHUTDOWN_IN_PROGRESS();
-  tracker_.RunNextTaskInSequence(
-      CreateSequenceWithTask(std::move(block_shutdown_task)).get());
+  EXPECT_TRUE(
+      tracker_.RunTask(block_shutdown_task.get(), SequenceToken::Create()));
   EXPECT_EQ(GetParam() == TaskShutdownBehavior::BLOCK_SHUTDOWN ? 2U : 1U,
             NumTasksExecuted());
   WAIT_FOR_ASYNC_SHUTDOWN_COMPLETED();
@@ -379,14 +367,10 @@ TEST_P(TaskSchedulerTaskTrackerTest, SingletonAllowed) {
 
   // Running the task should fail iff the task isn't allowed to use singletons.
   if (can_use_singletons) {
-    tracker.RunNextTaskInSequence(
-        CreateSequenceWithTask(std::move(task)).get());
+    EXPECT_TRUE(tracker.RunTask(task.get(), SequenceToken::Create()));
   } else {
     EXPECT_DCHECK_DEATH(
-        {
-          tracker.RunNextTaskInSequence(
-              CreateSequenceWithTask(std::move(task)).get());
-        });
+        { tracker.RunTask(task.get(), SequenceToken::Create()); });
   }
 }
 
@@ -401,8 +385,7 @@ static void RunTaskRunnerHandleVerificationTask(
   EXPECT_FALSE(ThreadTaskRunnerHandle::IsSet());
   EXPECT_FALSE(SequencedTaskRunnerHandle::IsSet());
 
-  tracker->RunNextTaskInSequence(
-      CreateSequenceWithTask(std::move(verify_task)).get());
+  EXPECT_TRUE(tracker->RunTask(verify_task.get(), SequenceToken::Create()));
 
   // TaskRunnerHandle state is reset outside of task's scope.
   EXPECT_FALSE(ThreadTaskRunnerHandle::IsSet());
@@ -496,37 +479,37 @@ void ExpectSequenceToken(SequenceToken sequence_token) {
 // Verify that SequenceToken::GetForCurrentThread() returns the Sequence's token
 // when a Task runs.
 TEST_F(TaskSchedulerTaskTrackerTest, CurrentSequenceToken) {
-  scoped_refptr<Sequence> sequence(new Sequence);
-  sequence->PushTask(WrapUnique(
-      new Task(FROM_HERE, Bind(&ExpectSequenceToken, sequence->token()),
-               TaskTraits(), TimeDelta())));
-  tracker_.WillPostTask(sequence->PeekTask());
+  const SequenceToken sequence_token(SequenceToken::Create());
+  Task task(FROM_HERE, Bind(&ExpectSequenceToken, sequence_token), TaskTraits(),
+            TimeDelta());
+  tracker_.WillPostTask(&task);
 
   EXPECT_FALSE(SequenceToken::GetForCurrentThread().IsValid());
-  tracker_.RunNextTaskInSequence(sequence.get());
+  EXPECT_TRUE(tracker_.RunTask(&task, sequence_token));
   EXPECT_FALSE(SequenceToken::GetForCurrentThread().IsValid());
 }
 
 TEST_F(TaskSchedulerTaskTrackerTest, LoadWillPostAndRunBeforeShutdown) {
   // Post and run tasks asynchronously.
+  std::vector<std::unique_ptr<Task>> tasks;
   std::vector<std::unique_ptr<ThreadPostingAndRunningTask>> threads;
 
   for (size_t i = 0; i < kLoadTestNumIterations; ++i) {
+    tasks.push_back(CreateTask(TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN));
     threads.push_back(WrapUnique(new ThreadPostingAndRunningTask(
-        &tracker_, CreateSequenceWithTask(
-                       CreateTask(TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)),
+        &tracker_, tasks.back().get(),
         ThreadPostingAndRunningTask::Action::WILL_POST_AND_RUN, true)));
     threads.back()->Start();
 
+    tasks.push_back(CreateTask(TaskShutdownBehavior::SKIP_ON_SHUTDOWN));
     threads.push_back(WrapUnique(new ThreadPostingAndRunningTask(
-        &tracker_, CreateSequenceWithTask(
-                       CreateTask(TaskShutdownBehavior::SKIP_ON_SHUTDOWN)),
+        &tracker_, tasks.back().get(),
         ThreadPostingAndRunningTask::Action::WILL_POST_AND_RUN, true)));
     threads.back()->Start();
 
+    tasks.push_back(CreateTask(TaskShutdownBehavior::BLOCK_SHUTDOWN));
     threads.push_back(WrapUnique(new ThreadPostingAndRunningTask(
-        &tracker_, CreateSequenceWithTask(
-                       CreateTask(TaskShutdownBehavior::BLOCK_SHUTDOWN)),
+        &tracker_, tasks.back().get(),
         ThreadPostingAndRunningTask::Action::WILL_POST_AND_RUN, true)));
     threads.back()->Start();
   }
@@ -544,28 +527,25 @@ TEST_F(TaskSchedulerTaskTrackerTest, LoadWillPostAndRunBeforeShutdown) {
 TEST_F(TaskSchedulerTaskTrackerTest,
        LoadWillPostBeforeShutdownAndRunDuringShutdown) {
   // Post tasks asynchronously.
-  std::vector<scoped_refptr<Sequence>> sequences;
+  std::vector<std::unique_ptr<Task>> tasks;
   std::vector<std::unique_ptr<ThreadPostingAndRunningTask>> post_threads;
 
   for (size_t i = 0; i < kLoadTestNumIterations; ++i) {
-    sequences.push_back(CreateSequenceWithTask(
-        CreateTask(TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)));
+    tasks.push_back(CreateTask(TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN));
     post_threads.push_back(WrapUnique(new ThreadPostingAndRunningTask(
-        &tracker_, sequences.back(),
+        &tracker_, tasks.back().get(),
         ThreadPostingAndRunningTask::Action::WILL_POST, true)));
     post_threads.back()->Start();
 
-    sequences.push_back(CreateSequenceWithTask(
-        CreateTask(TaskShutdownBehavior::SKIP_ON_SHUTDOWN)));
+    tasks.push_back(CreateTask(TaskShutdownBehavior::SKIP_ON_SHUTDOWN));
     post_threads.push_back(WrapUnique(new ThreadPostingAndRunningTask(
-        &tracker_, sequences.back(),
+        &tracker_, tasks.back().get(),
         ThreadPostingAndRunningTask::Action::WILL_POST, true)));
     post_threads.back()->Start();
 
-    sequences.push_back(CreateSequenceWithTask(
-        CreateTask(TaskShutdownBehavior::BLOCK_SHUTDOWN)));
+    tasks.push_back(CreateTask(TaskShutdownBehavior::BLOCK_SHUTDOWN));
     post_threads.push_back(WrapUnique(new ThreadPostingAndRunningTask(
-        &tracker_, sequences.back(),
+        &tracker_, tasks.back().get(),
         ThreadPostingAndRunningTask::Action::WILL_POST, true)));
     post_threads.back()->Start();
   }
@@ -579,9 +559,10 @@ TEST_F(TaskSchedulerTaskTrackerTest,
   // Run tasks asynchronously.
   std::vector<std::unique_ptr<ThreadPostingAndRunningTask>> run_threads;
 
-  for (const auto& sequence : sequences) {
+  for (const auto& task : tasks) {
     run_threads.push_back(WrapUnique(new ThreadPostingAndRunningTask(
-        &tracker_, sequence, ThreadPostingAndRunningTask::Action::RUN, false)));
+        &tracker_, task.get(), ThreadPostingAndRunningTask::Action::RUN,
+        false)));
     run_threads.back()->Start();
   }
 
@@ -605,24 +586,25 @@ TEST_F(TaskSchedulerTaskTrackerTest, LoadWillPostAndRunDuringShutdown) {
   CallShutdownAsync();
 
   // Post and run tasks asynchronously.
+  std::vector<std::unique_ptr<Task>> tasks;
   std::vector<std::unique_ptr<ThreadPostingAndRunningTask>> threads;
 
   for (size_t i = 0; i < kLoadTestNumIterations; ++i) {
+    tasks.push_back(CreateTask(TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN));
     threads.push_back(WrapUnique(new ThreadPostingAndRunningTask(
-        &tracker_, CreateSequenceWithTask(
-                       CreateTask(TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)),
+        &tracker_, tasks.back().get(),
         ThreadPostingAndRunningTask::Action::WILL_POST_AND_RUN, false)));
     threads.back()->Start();
 
+    tasks.push_back(CreateTask(TaskShutdownBehavior::SKIP_ON_SHUTDOWN));
     threads.push_back(WrapUnique(new ThreadPostingAndRunningTask(
-        &tracker_, CreateSequenceWithTask(
-                       CreateTask(TaskShutdownBehavior::SKIP_ON_SHUTDOWN)),
+        &tracker_, tasks.back().get(),
         ThreadPostingAndRunningTask::Action::WILL_POST_AND_RUN, false)));
     threads.back()->Start();
 
+    tasks.push_back(CreateTask(TaskShutdownBehavior::BLOCK_SHUTDOWN));
     threads.push_back(WrapUnique(new ThreadPostingAndRunningTask(
-        &tracker_, CreateSequenceWithTask(
-                       CreateTask(TaskShutdownBehavior::BLOCK_SHUTDOWN)),
+        &tracker_, tasks.back().get(),
         ThreadPostingAndRunningTask::Action::WILL_POST_AND_RUN, true)));
     threads.back()->Start();
   }
@@ -637,8 +619,8 @@ TEST_F(TaskSchedulerTaskTrackerTest, LoadWillPostAndRunDuringShutdown) {
   VERIFY_ASYNC_SHUTDOWN_IN_PROGRESS();
 
   // Unblock shutdown by running |block_shutdown_task|.
-  tracker_.RunNextTaskInSequence(
-      CreateSequenceWithTask(std::move(block_shutdown_task)).get());
+  EXPECT_TRUE(
+      tracker_.RunTask(block_shutdown_task.get(), SequenceToken::Create()));
   EXPECT_EQ(kLoadTestNumIterations + 1, NumTasksExecuted());
   WAIT_FOR_ASYNC_SHUTDOWN_COMPLETED();
 }

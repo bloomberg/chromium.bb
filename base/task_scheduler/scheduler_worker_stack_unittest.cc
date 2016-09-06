@@ -27,8 +27,11 @@ class MockSchedulerWorkerDelegate : public SchedulerWorker::Delegate {
   scoped_refptr<Sequence> GetWork(SchedulerWorker* worker) override {
     return nullptr;
   }
+  void DidRunTask(const Task* task, const TimeDelta& task_latency) override {
+    ADD_FAILURE() << "Unexpected call to DidRunTask()";
+  }
   void ReEnqueueSequence(scoped_refptr<Sequence> sequence) override {
-    ADD_FAILURE() << "This delegate not expect to have sequences to reenqueue.";
+    ADD_FAILURE() << "Unexpected call to ReEnqueueSequence()";
   }
   TimeDelta GetSleepTimeout() override {
     return TimeDelta::Max();

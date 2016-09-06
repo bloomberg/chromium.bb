@@ -46,6 +46,9 @@ class SchedulerWorkerDefaultDelegate : public SchedulerWorker::Delegate {
   scoped_refptr<Sequence> GetWork(SchedulerWorker* worker) override {
     return nullptr;
   }
+  void DidRunTask(const Task* task, const TimeDelta& task_latency) override {
+    ADD_FAILURE() << "Unexpected call to DidRunTask()";
+  }
   void ReEnqueueSequence(scoped_refptr<Sequence> sequence) override {
     ADD_FAILURE() << "Unexpected call to ReEnqueueSequence()";
   }
@@ -124,11 +127,16 @@ class TaskSchedulerWorkerTest : public testing::TestWithParam<size_t> {
     TestSchedulerWorkerDelegate(TaskSchedulerWorkerTest* outer)
         : outer_(outer) {}
 
+    ~TestSchedulerWorkerDelegate() override {
+      EXPECT_FALSE(IsCallToDidRunTaskExpected());
+    }
+
     // SchedulerWorker::Delegate:
     void OnMainEntry(SchedulerWorker* worker,
                      const TimeDelta& detach_duration) override {
       outer_->worker_set_.Wait();
       EXPECT_EQ(outer_->worker_.get(), worker);
+      EXPECT_FALSE(IsCallToDidRunTaskExpected());
 
       // Without synchronization, OnMainEntry() could be called twice without
       // generating an error.
@@ -138,6 +146,7 @@ class TaskSchedulerWorkerTest : public testing::TestWithParam<size_t> {
     }
 
     scoped_refptr<Sequence> GetWork(SchedulerWorker* worker) override {
+      EXPECT_FALSE(IsCallToDidRunTaskExpected());
       EXPECT_EQ(outer_->worker_.get(), worker);
 
       {
@@ -167,6 +176,8 @@ class TaskSchedulerWorkerTest : public testing::TestWithParam<size_t> {
         sequence->PushTask(std::move(task));
       }
 
+      ExpectCallToDidRunTask(sequence->PeekTask());
+
       {
         // Add the Sequence to the vector of created Sequences.
         AutoSchedulerLock auto_lock(outer_->lock_);
@@ -176,11 +187,19 @@ class TaskSchedulerWorkerTest : public testing::TestWithParam<size_t> {
       return sequence;
     }
 
+    void DidRunTask(const Task* task, const TimeDelta& task_latency) override {
+      AutoSchedulerLock auto_lock(expect_did_run_task_lock_);
+      EXPECT_EQ(expect_did_run_task_, task);
+      expect_did_run_task_ = nullptr;
+      EXPECT_FALSE(task_latency.is_max());
+    }
+
     // This override verifies that |sequence| contains the expected number of
     // Tasks and adds it to |enqueued_sequences_|. Unlike a normal
     // EnqueueSequence implementation, it doesn't reinsert |sequence| into a
     // queue for further execution.
     void ReEnqueueSequence(scoped_refptr<Sequence> sequence) override {
+      EXPECT_FALSE(IsCallToDidRunTaskExpected());
       EXPECT_GT(outer_->TasksPerSequence(), 1U);
 
       // Verify that |sequence| contains TasksPerSequence() - 1 Tasks.
@@ -198,7 +217,27 @@ class TaskSchedulerWorkerTest : public testing::TestWithParam<size_t> {
     }
 
    private:
+    // Expect a call to DidRunTask() with |task| as argument before the next
+    // call to any other method of this delegate.
+    void ExpectCallToDidRunTask(const Task* task) {
+      AutoSchedulerLock auto_lock(expect_did_run_task_lock_);
+      expect_did_run_task_ = task;
+    }
+
+    bool IsCallToDidRunTaskExpected() const {
+      AutoSchedulerLock auto_lock(expect_did_run_task_lock_);
+      return expect_did_run_task_ != nullptr;
+    }
+
     TaskSchedulerWorkerTest* outer_;
+
+    // Synchronizes access to |expect_did_run_task_|.
+    mutable SchedulerLock expect_did_run_task_lock_;
+
+    // Expected task for the next call to DidRunTask(). DidRunTask() should not
+    // be called when this is nullptr. No method other than DidRunTask() should
+    // be called on this delegate when this is not nullptr.
+    const Task* expect_did_run_task_ = nullptr;
   };
 
   void RunTaskCallback() {
@@ -342,6 +381,8 @@ class ControllableDetachDelegate : public SchedulerWorkerDefaultDelegate {
     sequence->PushTask(std::move(task));
     return sequence;
   }
+
+  void DidRunTask(const Task* task, const TimeDelta& task_latency) override {}
 
   bool CanDetach(SchedulerWorker* worker) override {
     detach_requested_.Signal();
