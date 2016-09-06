@@ -491,7 +491,8 @@ DXVAVideoDecodeAccelerator::DXVAVideoDecodeAccelerator(
       pending_flush_(false),
       share_nv12_textures_(gpu_preferences.enable_zero_copy_dxgi_video &&
                            !workarounds.disable_dxgi_zero_copy_video),
-      copy_nv12_textures_(gpu_preferences.enable_nv12_dxgi_video),
+      copy_nv12_textures_(gpu_preferences.enable_nv12_dxgi_video &&
+                          !workarounds.disable_nv12_dxgi_video),
       use_dx11_(false),
       use_keyed_mutex_(false),
       dx11_video_format_converter_media_type_needs_init_(true),

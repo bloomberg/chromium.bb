@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.92",
+  "version": "8.93",
   "entries": [
     {
       "id": 1,
@@ -1810,14 +1810,15 @@ LONG_STRING_CONST(
     },
     {
       "id": 171,
-      "description": "Zero copy DXGI video hangs on AMD drivers",
-      "cr_bugs": [623029],
+      "description": "NV12 DXGI video hangs or displays incorrect colors on AMD drivers",
+      "cr_bugs": [623029, 644293],
       "os": {
         "type": "win"
       },
       "vendor_id": "0x1002",
       "features": [
-        "disable_dxgi_zero_copy_video"
+        "disable_dxgi_zero_copy_video",
+        "disable_nv12_dxgi_video"
       ]
     },
     {

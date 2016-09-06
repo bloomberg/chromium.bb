@@ -45,6 +45,8 @@
          disable_discard_framebuffer)                        \
   GPU_OP(DISABLE_DXGI_ZERO_COPY_VIDEO,                       \
          disable_dxgi_zero_copy_video)                       \
+  GPU_OP(DISABLE_NV12_DXGI_VIDEO,                            \
+         disable_nv12_dxgi_video)                            \
   GPU_OP(DISABLE_EXT_DRAW_BUFFERS,                           \
          disable_ext_draw_buffers)                           \
   GPU_OP(DISABLE_FRAMEBUFFER_CMAA,                           \
