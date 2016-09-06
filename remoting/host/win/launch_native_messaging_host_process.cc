@@ -12,6 +12,7 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
@@ -66,6 +67,11 @@ ProcessLaunchResult LaunchNativeMessagingHostProcess(
     base::win::ScopedHandle* write_handle) {
   DCHECK(read_handle);
   DCHECK(write_handle);
+
+  if (!base::PathExists(binary_path)) {
+    LOG(ERROR) << "Cannot find binary: " << binary_path.value();
+    return PROCESS_LAUNCH_RESULT_FAILED;
+  }
 
   // presubmit: allow wstring
   std::wstring user_sid;

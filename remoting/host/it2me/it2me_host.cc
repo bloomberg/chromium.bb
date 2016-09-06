@@ -68,12 +68,8 @@ It2MeHost::It2MeHost(
       observer_(observer),
       xmpp_server_config_(xmpp_server_config),
       directory_bot_jid_(directory_bot_jid),
-      state_(kDisconnected),
-      failed_login_attempts_(0),
       policy_watcher_(std::move(policy_watcher)),
-      confirmation_dialog_factory_(std::move(confirmation_dialog_factory)),
-      nat_traversal_enabled_(false),
-      policy_received_(false) {
+      confirmation_dialog_factory_(std::move(confirmation_dialog_factory)) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 }
 
@@ -548,20 +544,13 @@ void It2MeHost::ValidateConnectionDetails(
   result_callback.Run(ValidationResult::SUCCESS);
 }
 
-It2MeHostFactory::It2MeHostFactory() : policy_service_(nullptr) {
-}
+It2MeHostFactory::It2MeHostFactory() {}
 
 It2MeHostFactory::~It2MeHostFactory() {}
 
-void It2MeHostFactory::set_policy_service(
-    policy::PolicyService* policy_service) {
-  DCHECK(policy_service);
-  DCHECK(!policy_service_) << "|policy_service| can only be set once.";
-  policy_service_ = policy_service;
-}
-
 scoped_refptr<It2MeHost> It2MeHostFactory::CreateIt2MeHost(
     std::unique_ptr<ChromotingHostContext> context,
+    policy::PolicyService* policy_service,
     base::WeakPtr<It2MeHost::Observer> observer,
     const XmppSignalStrategy::XmppServerConfig& xmpp_server_config,
     const std::string& directory_bot_jid) {
@@ -570,7 +559,7 @@ scoped_refptr<It2MeHost> It2MeHostFactory::CreateIt2MeHost(
   std::unique_ptr<It2MeConfirmationDialogFactory> confirmation_dialog_factory(
       new It2MeConfirmationDialogFactory());
   std::unique_ptr<PolicyWatcher> policy_watcher =
-      PolicyWatcher::Create(policy_service_, context->file_task_runner());
+      PolicyWatcher::Create(policy_service, context->file_task_runner());
   return new It2MeHost(std::move(context), std::move(policy_watcher),
                        std::move(confirmation_dialog_factory), observer,
                        xmpp_server_config, directory_bot_jid);

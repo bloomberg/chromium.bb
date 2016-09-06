@@ -28,12 +28,16 @@ class SingleThreadTaskRunner;
 namespace remoting {
 
 class ChromotingHostContext;
+class ElevatedNativeMessagingHost;
+class PolicyWatcher;
 
 // Implementation of the native messaging host process.
 class It2MeNativeMessagingHost : public It2MeHost::Observer,
                                  public extensions::NativeMessageHost {
  public:
-  It2MeNativeMessagingHost(std::unique_ptr<ChromotingHostContext> host_context,
+  It2MeNativeMessagingHost(bool needs_elevation,
+                           policy::PolicyService* policy_service,
+                           std::unique_ptr<ChromotingHostContext> host_context,
                            std::unique_ptr<It2MeHostFactory> host_factory);
   ~It2MeNativeMessagingHost() override;
 
@@ -57,17 +61,33 @@ class It2MeNativeMessagingHost : public It2MeHost::Observer,
   // These "Process.." methods handle specific request types. The |response|
   // dictionary is pre-filled by ProcessMessage() with the parts of the
   // response already known ("id" and "type" fields).
-  void ProcessHello(const base::DictionaryValue& message,
+  void ProcessHello(std::unique_ptr<base::DictionaryValue> message,
                     std::unique_ptr<base::DictionaryValue> response) const;
-  void ProcessConnect(const base::DictionaryValue& message,
+  void ProcessConnect(std::unique_ptr<base::DictionaryValue> message,
                       std::unique_ptr<base::DictionaryValue> response);
-  void ProcessDisconnect(const base::DictionaryValue& message,
+  void ProcessDisconnect(std::unique_ptr<base::DictionaryValue> message,
                          std::unique_ptr<base::DictionaryValue> response);
   void SendErrorAndExit(std::unique_ptr<base::DictionaryValue> response,
                         const std::string& description) const;
   void SendMessageToClient(std::unique_ptr<base::Value> message) const;
 
-  Client* client_;
+  // Called when initial policies are read.
+  void OnPolicyUpdate(std::unique_ptr<base::DictionaryValue> policies);
+
+  // Returns whether the request was successfully sent to the elevated host.
+  bool DelegateToElevatedHost(std::unique_ptr<base::DictionaryValue> message);
+
+  // Used to determine whether to create and pass messages to an elevated host.
+  bool needs_elevation_ = false;
+
+#if defined(OS_WIN)
+  // Controls the lifetime of the elevated native messaging host process.
+  // Note: 'elevated' in this instance means having the UiAccess privilege, not
+  // being run as a higher privilege user.
+  std::unique_ptr<ElevatedNativeMessagingHost> elevated_host_;
+#endif  // defined(OS_WIN)
+
+  Client* client_ = nullptr;
   std::unique_ptr<ChromotingHostContext> host_context_;
   std::unique_ptr<It2MeHostFactory> factory_;
   scoped_refptr<It2MeHost> it2me_host_;
@@ -89,6 +109,22 @@ class It2MeNativeMessagingHost : public It2MeHost::Observer,
 
   // Chromoting Bot JID used by |it2me_host_| to register the host.
   std::string directory_bot_jid_;
+
+  // Indicates whether or not a policy has ever been read. This is to ensure
+  // that on startup, we do not accidentally start a connection before we have
+  // queried our policy restrictions.
+  bool policy_received_ = false;
+
+  policy::PolicyService* policy_service_ = nullptr;
+
+  // Used to retrieve Chrome policies set for the local machine.
+  std::unique_ptr<PolicyWatcher> policy_watcher_;
+
+  // On startup, it is possible to have Connect() called before the policy read
+  // is completed.  Rather than just failing, we thunk the connection call so
+  // it can be executed after at least one successful policy read. This
+  // variable contains the thunk if it is necessary.
+  base::Closure pending_connect_;
 
   base::WeakPtr<It2MeNativeMessagingHost> weak_ptr_;
   base::WeakPtrFactory<It2MeNativeMessagingHost> weak_factory_;

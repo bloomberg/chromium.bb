@@ -87,7 +87,8 @@ void JniHost::Connect(JNIEnv* env,
       ServiceUrls::GetInstance()->directory_bot_jid();
 
   // Create the It2Me host and start connecting.
-  it2me_host_ = factory_->CreateIt2MeHost(host_context_->Copy(), weak_ptr_,
+  it2me_host_ = factory_->CreateIt2MeHost(host_context_->Copy(),
+                                          /*policy_service=*/nullptr, weak_ptr_,
                                           xmpp_config, directory_bot_jid);
   it2me_host_->Connect();
 }

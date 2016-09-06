@@ -10,6 +10,9 @@ namespace remoting {
 // Determines whether the current process is elevated.
 bool IsProcessElevated();
 
+// Determines whether the current process has the UiAccess privilege.
+bool CurrentProcessHasUiAccess();
+
 }  // namespace remoting
 
 #endif  // REMOTING_HOST_WIN_ELEVATION_HELPERS_H

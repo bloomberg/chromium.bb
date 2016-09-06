@@ -95,7 +95,6 @@ struct BuiltInHost {
 std::unique_ptr<NativeMessageHost> CreateIt2MeHost() {
   std::unique_ptr<remoting::It2MeHostFactory> host_factory(
       new remoting::It2MeHostFactory());
-  host_factory->set_policy_service(g_browser_process->policy_service());
   std::unique_ptr<remoting::ChromotingHostContext> context =
       remoting::ChromotingHostContext::CreateForChromeOS(
           make_scoped_refptr(g_browser_process->system_request_context()),
@@ -106,8 +105,9 @@ std::unique_ptr<NativeMessageHost> CreateIt2MeHost() {
           content::BrowserThread::GetTaskRunnerForThread(
               content::BrowserThread::FILE));
   std::unique_ptr<NativeMessageHost> host(
-      new remoting::It2MeNativeMessagingHost(std::move(context),
-                                             std::move(host_factory)));
+      new remoting::It2MeNativeMessagingHost(
+          /*needs_elevation=*/false, g_browser_process->policy_service(),
+          std::move(context), std::move(host_factory)));
   return host;
 }
 

@@ -6,6 +6,7 @@
 #define REMOTING_HOST_IT2ME_IT2ME_HOST_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -165,7 +166,7 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   XmppSignalStrategy::XmppServerConfig xmpp_server_config_;
   std::string directory_bot_jid_;
 
-  It2MeHostState state_;
+  It2MeHostState state_ = kDisconnected;
 
   scoped_refptr<RsaKeyPair> host_key_pair_;
   std::unique_ptr<SignalStrategy> signal_strategy_;
@@ -175,14 +176,14 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   std::unique_ptr<HostEventLogger> host_event_logger_;
 
   std::unique_ptr<ChromotingHost> host_;
-  int failed_login_attempts_;
+  int failed_login_attempts_ = 0;
 
   std::unique_ptr<PolicyWatcher> policy_watcher_;
   std::unique_ptr<It2MeConfirmationDialogFactory> confirmation_dialog_factory_;
   std::unique_ptr<It2MeConfirmationDialogProxy> confirmation_dialog_proxy_;
 
   // Host the current nat traversal policy setting.
-  bool nat_traversal_enabled_;
+  bool nat_traversal_enabled_ = false;
 
   // The client and host domain policy setting.
   std::string required_client_domain_;
@@ -191,7 +192,7 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   // Indicates whether or not a policy has ever been read. This is to ensure
   // that on startup, we do not accidentally start a connection before we have
   // queried our policy restrictions.
-  bool policy_received_;
+  bool policy_received_ = false;
 
   // On startup, it is possible to have Connect() called before the policy read
   // is completed.  Rather than just failing, we thunk the connection call so
@@ -215,19 +216,17 @@ class It2MeHostFactory {
 
   // |policy_service| is used for creating the policy watcher for new
   // instances of It2MeHost on ChromeOS.  The caller must ensure that
-  // |policy_service| is valid throughout the lifetime of the It2MeHostFactory
-  // and each created It2MeHost object.  This is currently possible because
-  // |policy_service| is a global singleton available from the browser process.
-  virtual void set_policy_service(policy::PolicyService* policy_service);
-
+  // |policy_service| is valid throughout the lifetime of each created It2MeHost
+  // object.  This is currently possible because |policy_service| is a global
+  // singleton available from the browser process.
   virtual scoped_refptr<It2MeHost> CreateIt2MeHost(
       std::unique_ptr<ChromotingHostContext> context,
+      policy::PolicyService* policy_service,
       base::WeakPtr<It2MeHost::Observer> observer,
       const XmppSignalStrategy::XmppServerConfig& xmpp_server_config,
       const std::string& directory_bot_jid);
 
  private:
-  policy::PolicyService* policy_service_;
   DISALLOW_COPY_AND_ASSIGN(It2MeHostFactory);
 };
 

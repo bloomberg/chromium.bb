@@ -9,16 +9,20 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/stringize_macros.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "components/policy/core/common/mock_policy_service.h"
 #include "net/base/file_stream.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/chromoting_host_context.h"
@@ -71,7 +75,52 @@ void VerifyCommonProperties(std::unique_ptr<base::DictionaryValue> response,
   EXPECT_EQ(id, int_value);
 }
 
-}  // namespace
+class FakePolicyService : public policy::PolicyService {
+ public:
+  FakePolicyService();
+  ~FakePolicyService() override;
+
+  // policy::PolicyService overrides.
+  void AddObserver(policy::PolicyDomain domain,
+                   policy::PolicyService::Observer* observer) override;
+  void RemoveObserver(policy::PolicyDomain domain,
+                      policy::PolicyService::Observer* observer) override;
+  const policy::PolicyMap& GetPolicies(
+      const policy::PolicyNamespace& ns) const override;
+  bool IsInitializationComplete(policy::PolicyDomain domain) const override;
+  void RefreshPolicies(const base::Closure& callback) override;
+
+ private:
+  policy::PolicyMap policy_map_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakePolicyService);
+};
+
+FakePolicyService::FakePolicyService() {}
+
+FakePolicyService::~FakePolicyService() {}
+
+void FakePolicyService::AddObserver(policy::PolicyDomain domain,
+                                    policy::PolicyService::Observer* observer) {
+}
+
+void FakePolicyService::RemoveObserver(
+    policy::PolicyDomain domain,
+    policy::PolicyService::Observer* observer) {}
+
+const policy::PolicyMap& FakePolicyService::GetPolicies(
+    const policy::PolicyNamespace& ns) const {
+  return policy_map_;
+}
+
+bool FakePolicyService::IsInitializationComplete(
+    policy::PolicyDomain domain) const {
+  return true;
+}
+
+void FakePolicyService::RefreshPolicies(const base::Closure& callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
+}
 
 class MockIt2MeHost : public It2MeHost {
  public:
@@ -156,20 +205,36 @@ void MockIt2MeHost::RunSetState(It2MeHostState state) {
 
 class MockIt2MeHostFactory : public It2MeHostFactory {
  public:
-  MockIt2MeHostFactory() : It2MeHostFactory() {}
+  MockIt2MeHostFactory();
+  ~MockIt2MeHostFactory() override;
+
   scoped_refptr<It2MeHost> CreateIt2MeHost(
       std::unique_ptr<ChromotingHostContext> context,
+      policy::PolicyService* policy_service,
       base::WeakPtr<It2MeHost::Observer> observer,
       const XmppSignalStrategy::XmppServerConfig& xmpp_server_config,
-      const std::string& directory_bot_jid) override {
-    return new MockIt2MeHost(std::move(context),
-                             /*confirmation_dialog_factory=*/nullptr, observer,
-                             xmpp_server_config, directory_bot_jid);
-  }
+      const std::string& directory_bot_jid) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockIt2MeHostFactory);
-};  // MockIt2MeHostFactory
+};
+
+MockIt2MeHostFactory::MockIt2MeHostFactory() : It2MeHostFactory() {}
+
+MockIt2MeHostFactory::~MockIt2MeHostFactory() {}
+
+scoped_refptr<It2MeHost> MockIt2MeHostFactory::CreateIt2MeHost(
+    std::unique_ptr<ChromotingHostContext> context,
+    policy::PolicyService* policy_service,
+    base::WeakPtr<It2MeHost::Observer> observer,
+    const XmppSignalStrategy::XmppServerConfig& xmpp_server_config,
+    const std::string& directory_bot_jid) {
+  return new MockIt2MeHost(std::move(context),
+                           /*policy_watcher=*/nullptr, observer,
+                           xmpp_server_config, directory_bot_jid);
+}
+
+}  // namespace
 
 class It2MeNativeMessagingHostTest : public testing::Test {
  public:
@@ -219,12 +284,19 @@ class It2MeNativeMessagingHostTest : public testing::Test {
   scoped_refptr<AutoThreadTaskRunner> host_task_runner_;
   std::unique_ptr<remoting::NativeMessagingPipe> pipe_;
 
+  std::unique_ptr<policy::PolicyService> fake_policy_service_;
+
   DISALLOW_COPY_AND_ASSIGN(It2MeNativeMessagingHostTest);
 };
 
 void It2MeNativeMessagingHostTest::SetUp() {
   test_message_loop_.reset(new base::MessageLoop());
   test_run_loop_.reset(new base::RunLoop());
+
+#if defined(OS_CHROMEOS)
+  // On Chrome OS, the browser owns the PolicyService so simulate that here.
+  fake_policy_service_.reset(new FakePolicyService());
+#endif  // defined(OS_CHROMEOS)
 
   // Run the host on a dedicated thread.
   host_thread_.reset(new base::Thread("host_thread"));
@@ -453,6 +525,7 @@ void It2MeNativeMessagingHostTest::StartHost() {
   // Creating a native messaging host with a mock It2MeHostFactory.
   std::unique_ptr<extensions::NativeMessageHost> it2me_host(
       new It2MeNativeMessagingHost(
+          /*needs_elevation=*/false, fake_policy_service_.get(),
           ChromotingHostContext::Create(host_task_runner_),
           base::WrapUnique(new MockIt2MeHostFactory())));
   it2me_host->Start(pipe_.get());
