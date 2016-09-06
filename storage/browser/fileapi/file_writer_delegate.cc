@@ -92,9 +92,12 @@ void FileWriterDelegate::OnSSLCertificateError(net::URLRequest* request,
   OnError(base::File::FILE_ERROR_SECURITY);
 }
 
-void FileWriterDelegate::OnResponseStarted(net::URLRequest* request) {
+void FileWriterDelegate::OnResponseStarted(net::URLRequest* request,
+                                           int net_error) {
+  DCHECK_NE(net::ERR_IO_PENDING, net_error);
   DCHECK_EQ(request_.get(), request);
-  if (!request->status().is_success() || request->GetResponseCode() != 200) {
+
+  if (net_error != net::OK || request->GetResponseCode() != 200) {
     OnError(base::File::FILE_ERROR_FAILED);
     return;
   }
@@ -103,8 +106,10 @@ void FileWriterDelegate::OnResponseStarted(net::URLRequest* request) {
 
 void FileWriterDelegate::OnReadCompleted(net::URLRequest* request,
                                          int bytes_read) {
+  DCHECK_NE(net::ERR_IO_PENDING, bytes_read);
   DCHECK_EQ(request_.get(), request);
-  if (!request->status().is_success()) {
+
+  if (bytes_read < 0) {
     OnError(base::File::FILE_ERROR_FAILED);
     return;
   }
@@ -113,19 +118,22 @@ void FileWriterDelegate::OnReadCompleted(net::URLRequest* request,
 
 void FileWriterDelegate::Read() {
   bytes_written_ = 0;
-  bytes_read_ = 0;
-  if (request_->Read(io_buffer_.get(), io_buffer_->size(), &bytes_read_)) {
+  bytes_read_ = request_->Read(io_buffer_.get(), io_buffer_->size());
+  if (bytes_read_ == net::ERR_IO_PENDING)
+    return;
+
+  if (bytes_read_ >= 0) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&FileWriterDelegate::OnDataReceived,
                               weak_factory_.GetWeakPtr(), bytes_read_));
-  } else if (!request_->status().is_io_pending()) {
+  } else {
     OnError(base::File::FILE_ERROR_FAILED);
   }
 }
 
 void FileWriterDelegate::OnDataReceived(int bytes_read) {
   bytes_read_ = bytes_read;
-  if (!bytes_read_) {  // We're done.
+  if (bytes_read == 0) {  // We're done.
     OnProgress(0, true);
   } else {
     // This could easily be optimized to rotate between a pool of buffers, so
