@@ -8,6 +8,8 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "ui/events/event.h"
+#include "ui/events/gestures/motion_event_aura.h"
 #include "ui/platform_window/platform_window_delegate.h"
 
 namespace gfx {
@@ -54,6 +56,22 @@ class BlimpDisplayManager : public ui::PlatformWindowDelegate {
   void OnActivationChanged(bool active) override {}
 
  private:
+  // Dispatch a given mouse event as a touch event.
+  void DispatchMouseEvent(ui::MouseEvent* mouse_event);
+
+  // Dispatch a given mousewheel scroll event as a pinch/zoom touch event.
+  void DispatchMouseWheelEvent(ui::MouseWheelEvent* mouse_event);
+
+  // Dispatch a given touch event as part of a stream of touch events.
+  void DispatchMotionEventAura(ui::MotionEventAura* touch_event_stream,
+                               ui::EventType event_type,
+                               int pointer_id,
+                               int pointer_x,
+                               int pointer_y);
+
+  // Simulate a pinch/zoom touch event.
+  void Zoom(int pointer_x, int pointer_y, int y_offset, bool zoom_out);
+
   float device_pixel_ratio_;
 
   BlimpDisplayManagerDelegate* delegate_;
