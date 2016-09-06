@@ -129,13 +129,15 @@ views::View* ChooserBubbleUiViewDelegate::CreateFootnoteView() {
 
 bool ChooserBubbleUiViewDelegate::Accept() {
   chooser_content_view_->Accept();
-  bubble_reference_->CloseBubble(BUBBLE_CLOSE_ACCEPTED);
+  if (bubble_reference_)
+    bubble_reference_->CloseBubble(BUBBLE_CLOSE_ACCEPTED);
   return true;
 }
 
 bool ChooserBubbleUiViewDelegate::Cancel() {
   chooser_content_view_->Cancel();
-  bubble_reference_->CloseBubble(BUBBLE_CLOSE_CANCELED);
+  if (bubble_reference_)
+    bubble_reference_->CloseBubble(BUBBLE_CLOSE_CANCELED);
   return true;
 }
 

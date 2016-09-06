@@ -266,14 +266,16 @@ std::unique_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
 - (void)onConnect:(id)sender {
   buttonPressed_ = true;
   [chooserContentView_ accept];
-  self.bubbleReference->CloseBubble(BUBBLE_CLOSE_ACCEPTED);
+  if (self.bubbleReference)
+    self.bubbleReference->CloseBubble(BUBBLE_CLOSE_ACCEPTED);
   [self close];
 }
 
 - (void)onCancel:(id)sender {
   buttonPressed_ = true;
   [chooserContentView_ cancel];
-  self.bubbleReference->CloseBubble(BUBBLE_CLOSE_CANCELED);
+  if (self.bubbleReference)
+    self.bubbleReference->CloseBubble(BUBBLE_CLOSE_CANCELED);
   [self close];
 }
 
