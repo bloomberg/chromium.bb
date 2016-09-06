@@ -22,6 +22,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/events/blink/did_overscroll_params.h"
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/gfx/geometry/vector2d_f.h"
@@ -169,6 +170,13 @@ bool InputEventFilter::OnMessageReceived(const IPC::Message& message) {
   if (!RequiresThreadBounce(message))
     return false;
 
+  // If TimeTicks is not consistent across processes we cannot use the event's
+  // platform timestamp in this process. Instead the time that the event is
+  // received on the IO thread is used as the event's timestamp.
+  base::TimeTicks received_time;
+  if (!base::TimeTicks::IsConsistentAcrossProcesses())
+    received_time = base::TimeTicks::Now();
+
   TRACE_EVENT0("input", "InputEventFilter::OnMessageReceived::InputMessage");
 
   {
@@ -178,8 +186,8 @@ bool InputEventFilter::OnMessageReceived(const IPC::Message& message) {
   }
 
   target_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&InputEventFilter::ForwardToHandler, this, message));
+      FROM_HERE, base::Bind(&InputEventFilter::ForwardToHandler, this, message,
+                            received_time));
   return true;
 }
 
@@ -187,7 +195,8 @@ InputEventFilter::~InputEventFilter() {
   DCHECK(!current_overscroll_params_);
 }
 
-void InputEventFilter::ForwardToHandler(const IPC::Message& message) {
+void InputEventFilter::ForwardToHandler(const IPC::Message& message,
+                                        base::TimeTicks received_time) {
   DCHECK(input_handler_manager_);
   DCHECK(target_task_runner_->BelongsToCurrentThread());
   TRACE_EVENT1("input", "InputEventFilter::ForwardToHandler",
@@ -213,6 +222,9 @@ void InputEventFilter::ForwardToHandler(const IPC::Message& message) {
   DCHECK(event);
   DCHECK(dispatch_type == DISPATCH_TYPE_BLOCKING ||
          dispatch_type == DISPATCH_TYPE_NON_BLOCKING);
+
+  if (!received_time.is_null())
+    event->timeStampSeconds = ui::EventTimeStampToSeconds(received_time);
 
   bool send_ack = dispatch_type == DISPATCH_TYPE_BLOCKING;
 

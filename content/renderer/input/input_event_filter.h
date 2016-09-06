@@ -98,7 +98,8 @@ class CONTENT_EXPORT InputEventFilter : public InputHandlerManagerClient,
  private:
   ~InputEventFilter() override;
 
-  void ForwardToHandler(const IPC::Message& message);
+  void ForwardToHandler(const IPC::Message& message,
+                        base::TimeTicks received_time);
   void SendMessage(std::unique_ptr<IPC::Message> message);
   void SendMessageOnIOThread(std::unique_ptr<IPC::Message> message);
   void SetIsFlingingInMainThreadEventQueue(int routing_id, bool is_flinging);
