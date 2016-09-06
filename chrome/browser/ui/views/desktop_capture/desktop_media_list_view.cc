@@ -118,6 +118,14 @@ void DesktopMediaListView::Layout() {
 
     x += active_style_->item_size.width();
   }
+
+  // TODO(qiangchen): Bounded ScrollView has a bug to display horizontal bar
+  // always, and then display vertical bar when the content just fit the
+  // container. See crbug/644463.
+  // Fix the underlying issue and remove the following code.
+  gfx::Size preferred_size = GetPreferredSize();
+  preferred_size.SetToMax(parent()->GetContentsBounds().size());
+  SetSize(preferred_size);
 }
 
 bool DesktopMediaListView::OnKeyPressed(const ui::KeyEvent& event) {
