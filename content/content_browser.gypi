@@ -1282,6 +1282,8 @@
       'browser/renderer_host/media/video_capture_manager.h',
       'browser/renderer_host/native_web_keyboard_event_aura.cc',
       'browser/renderer_host/native_web_keyboard_event_mac.mm',
+      'browser/renderer_host/offscreen_canvas_frame_receiver_impl.cc',
+      'browser/renderer_host/offscreen_canvas_frame_receiver_impl.h',
       'browser/renderer_host/offscreen_canvas_surface_impl.cc',
       'browser/renderer_host/offscreen_canvas_surface_impl.h',
       'browser/renderer_host/overscroll_configuration.cc',

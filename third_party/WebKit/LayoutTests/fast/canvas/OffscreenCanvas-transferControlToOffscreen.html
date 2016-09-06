@@ -1,14 +1,11 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html>
 <head>
-<script src="../../resources/js-test.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 </head>
 <body>
 <script>
-
-description("Test transferControlToOffscreen.");
-window.jsTestIsAsync = true;
-
 function createCanvas(width, height) {
     var canvas = document.createElement("canvas");
     canvas.width = width;
@@ -16,32 +13,41 @@ function createCanvas(width, height) {
     return canvas;
 }
 
-// Tests whether transferControlToOffscreen can be run correctly.
-var width = 50;
-var height = 50;
-var canvas1 = createCanvas(width, height);
-var offscreenCanvas1;
-try {
-    offscreenCanvas1 = canvas1.transferControlToOffscreen();
-    testPassed("Successfully created layer for offscreencanvas");
-    shouldBe("offscreenCanvas1.width", "width");
-    shouldBe("offscreenCanvas1.height", "height");
-} catch (ex) {
-    testFailed(ex.message);
-}
+test(function() {
+    var width = 50;
+    var height = 50;
+    var canvas1 = createCanvas(width, height);
+    var offscreenCanvas1;
+    try {
+        offscreenCanvas1 = canvas1.transferControlToOffscreen();
+        assert_equals(offscreenCanvas1.width, width);
+        assert_equals(offscreenCanvas1.height, height);
+    } catch (ex) {
+        assert_false(ex.message);
+    }
+}, "Tests whether transferControlToOffscreen can be run correctly.");
 
-// Tests whether transferControlToOffscreen throws exception correctly. 
-var canvas2 = createCanvas(50, 50);
-var offscreenCanvas2;
-var ctx = canvas2.getContext("2d");
-try {
-    offscreenCanvas2 = canvas2.transferControlToOffscreen();
-    testFailed("transferControlToOffscreen from a canvas with context didn't throw an exception.");
-} catch (ex) {
-    testPassed("transferControlToOffscreen from a canvas with context throws an exception: " + ex);
-}
+test(function() {
+    var canvas2 = createCanvas(50, 50);
+    var offscreenCanvas2;
+    var ctx = canvas2.getContext("2d");
+    assert_throws("InvalidStateError", function() {
+        offscreenCanvas2 = canvas2.transferControlToOffscreen();
+        assert_false("transferControlToOffscreen from a canvas with context didn't throw an exception.");
+    }, "transferControlToOffscreen from a canvas with context throws an exception");
+}, "Tests whether transferControlToOffscreen throws exception correctly."); 
 
-finishJSTest();
+test(function() {
+    var canvas3 = createCanvas(10, 10);
+    var offscreenCanvas3 = canvas3.transferControlToOffscreen();
+    assert_equals(offscreenCanvas3.width, 10);
+    assert_equals(offscreenCanvas3.height, 10);
+    offscreenCanvas3.width = 20;
+    offscreenCanvas3.height = 20;
+    assert_equals(offscreenCanvas3.width, 10);
+    assert_equals(offscreenCanvas3.height, 10);
+}, "Test if resizing on offscreencanvas transferred from html canvas has no effect");
+
 </script>
 </body>
 </html>

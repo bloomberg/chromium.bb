@@ -44,6 +44,16 @@ DEFINE_TRACE(OffscreenCanvasRenderingContext2D)
     BaseRenderingContext2D::trace(visitor);
 }
 
+void OffscreenCanvasRenderingContext2D::commit(ExecutionContext* executionContext)
+{
+    if (executionContext->isWorkerGlobalScope()) {
+        // TODO(xlai): implement commit() on worker thread; currently, do
+        // nothing for worker thread. See crbug.com/563858.
+        return;
+    }
+    getOffscreenCanvas()->getOrCreateFrameDispatcher()->dispatchFrame();
+}
+
 // BaseRenderingContext2D implementation
 bool OffscreenCanvasRenderingContext2D::originClean() const
 {
