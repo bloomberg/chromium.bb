@@ -136,11 +136,6 @@ def GenTests(api):
       slavename='somehost',
       no_shallow=1
   )
-  yield api.test('off') + api.properties(
-      mastername='experimental',
-      buildername='Experimental Builder',
-      slavename='somehost',
-  )
   yield api.test('clobber') + api.properties(
       mastername='experimental',
       buildername='Experimental Builder',

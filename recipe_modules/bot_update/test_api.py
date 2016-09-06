@@ -8,10 +8,6 @@ import struct
 import sys
 from recipe_engine import recipe_test_api
 
-# TODO(phajdan.jr): Clean up this somewhat ugly import.
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'resources'))
-import bot_update
-
 
 class BotUpdateTestApi(recipe_test_api.RecipeTestApi):
   def output_json(self, master, builder, slave, root, first_sln,
@@ -20,7 +16,7 @@ class BotUpdateTestApi(recipe_test_api.RecipeTestApi):
     """Deterministically synthesize json.output test data for gclient's
     --output-json option.
     """
-    active = bot_update.check_valid_host(master, builder, slave) or force
+    active = True
 
     output = {
         'did_run': active,

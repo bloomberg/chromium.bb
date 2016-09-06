@@ -1698,10 +1698,9 @@ def main():
   slave = options.slave_name
   master = options.master
 
-  if not master:
-    # bot_update activation whitelist is checked only on buildbot masters.
-    # If there is no master, bot_update is always active.
-    options.force = True
+  # Always run. This option will be removed in a later CL, but for now make sure
+  # that bot_update is ALWAYS set to run, no matter what.
+  options.force = True
 
   # Check if this script should activate or not.
   active = options.force or check_valid_host(master, builder, slave)
