@@ -17,6 +17,7 @@
 #include "base/mac/bind_objc_block.h"
 #include "base/mac/foundation_util.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
@@ -27,8 +28,11 @@
 #include "components/prefs/pref_filter.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_change_notifier.h"
-#include "net/cert/cert_verify_result.h"
+#include "net/cert/cert_verifier.h"
+#include "net/cert/ct_known_logs.h"
+#include "net/cert/ct_log_verifier.h"
 #include "net/cert/ct_policy_enforcer.h"
+#include "net/cert/ct_verifier.h"
 #include "net/cert/multi_log_ct_verifier.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/mapped_host_resolver.h"
@@ -266,7 +270,10 @@ void CronetEnvironment::InitializeOnNetworkThread() {
     cert_verifier_ = net::CertVerifier::CreateDefault();
   main_context_->set_cert_verifier(cert_verifier_.get());
 
-  main_context_->set_cert_transparency_verifier(new net::MultiLogCTVerifier());
+  std::unique_ptr<net::MultiLogCTVerifier> ct_verifier =
+      base::MakeUnique<net::MultiLogCTVerifier>();
+  ct_verifier->AddLogs(net::ct::CreateLogVerifiersForKnownLogs());
+  main_context_->set_cert_transparency_verifier(ct_verifier.release());
   main_context_->set_ct_policy_enforcer(new net::CTPolicyEnforcer());
 
   main_context_->set_http_auth_handler_factory(

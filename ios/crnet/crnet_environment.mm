@@ -39,7 +39,10 @@
 #include "net/base/network_change_notifier.h"
 #include "net/base/sdch_manager.h"
 #include "net/cert/cert_verifier.h"
+#include "net/cert/ct_known_logs.h"
+#include "net/cert/ct_log_verifier.h"
 #include "net/cert/ct_policy_enforcer.h"
+#include "net/cert/ct_verifier.h"
 #include "net/cert/multi_log_ct_verifier.h"
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_auth_handler_factory.h"
@@ -400,14 +403,17 @@ void CrNetEnvironment::InitializeOnNetworkThread() {
   main_context_->set_ssl_config_service(new net::SSLConfigServiceDefaults);
   main_context_->set_transport_security_state(
       new net::TransportSecurityState());
-  main_context_->set_cert_transparency_verifier(new net::MultiLogCTVerifier());
-  main_context_->set_ct_policy_enforcer(new net::CTPolicyEnforcer());
-  http_server_properties_.reset(new net::HttpServerPropertiesImpl());
-  main_context_->set_http_server_properties(http_server_properties_.get());
-  // TODO(rdsmith): Note that the ".release()" calls below are leaking
+  std::unique_ptr<net::MultiLogCTVerifier> ct_verifier =
+      base::MakeUnique<net::MultiLogCTVerifier>();
+  ct_verifier->AddLogs(net::ct::CreateLogVerifiersForKnownLogs());
+  // TODO(mef): Note that the ".release()" calls below are leaking
   // the objects in question; this should be fixed by having an object
   // corresponding to URLRequestContextStorage that actually owns those
   // objects.  See http://crbug.com/523858.
+  main_context_->set_cert_transparency_verifier(ct_verifier.release());
+  main_context_->set_ct_policy_enforcer(new net::CTPolicyEnforcer());
+  http_server_properties_.reset(new net::HttpServerPropertiesImpl());
+  main_context_->set_http_server_properties(http_server_properties_.get());
   main_context_->set_host_resolver(
       net::HostResolver::CreateDefaultResolver(nullptr).release());
   main_context_->set_cert_verifier(
