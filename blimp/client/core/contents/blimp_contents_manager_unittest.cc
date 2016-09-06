@@ -6,6 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "blimp/client/core/compositor/blimp_compositor_dependencies.h"
 #include "blimp/client/core/contents/blimp_contents_impl.h"
 #include "blimp/client/core/contents/ime_feature.h"
@@ -119,7 +120,7 @@ TEST_F(BlimpContentsManagerTest, GetDestroyedBlimpContents) {
   EXPECT_CALL(tab_control_feature, CloseTab(id)).Times(1);
   blimp_contents.reset();
 
-  loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(nullptr, blimp_contents_manager.GetBlimpContents(id));
 }
 

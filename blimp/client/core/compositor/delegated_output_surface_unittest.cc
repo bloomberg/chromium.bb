@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/output/compositor_frame.h"
@@ -122,7 +123,7 @@ class DelegatedOutputSurfaceTest : public testing::Test {
 
     // Run all tasks so the registration of the BlimpOutputSurface on the main
     // thread completes.
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void DoSwapBuffers() {
@@ -154,7 +155,7 @@ class DelegatedOutputSurfaceTest : public testing::Test {
 
     // Run all tasks so the unregistration of the BlimpOutputSurface on the main
     // thread completes.
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void InitOnCompositorThread(base::WaitableEvent* event) {
@@ -168,7 +169,7 @@ class DelegatedOutputSurfaceTest : public testing::Test {
   }
 
   void ShutdownOnCompositorThread(base::WaitableEvent* event) {
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     if (bound_) {
       output_surface_->DetachFromClient();
       bound_ = false;
@@ -204,7 +205,7 @@ TEST_F(DelegatedOutputSurfaceTest, BindSucceedsSwapBuffers) {
 
   // Run all tasks so the swap buffer calls to the BlimpOutputSurface on the
   // main thread complete.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(3, blimp_output_surface_client_->swap_count());
 
   EndTest();
