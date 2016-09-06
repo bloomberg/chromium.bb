@@ -38,8 +38,8 @@ static inline FloatSize outsetSizeForBlur(float stdDeviation)
     IntSize kernelSize = FEGaussianBlur::calculateUnscaledKernelSize(FloatPoint(stdDeviation, stdDeviation));
     FloatSize outset;
     // We take the half kernel size and multiply it with three, because we run box blur three times.
-    outset.setWidth(3 * kernelSize.width() * 0.5f);
-    outset.setHeight(3 * kernelSize.height() * 0.5f);
+    outset.setWidth(3.0f * kernelSize.width() * 0.5f);
+    outset.setHeight(3.0f * kernelSize.height() * 0.5f);
     return outset;
 }
 
