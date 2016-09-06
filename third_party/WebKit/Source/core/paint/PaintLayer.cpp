@@ -2407,6 +2407,9 @@ bool PaintLayer::paintsWithTransform(GlobalPaintFlags globalPaintFlags) const
 
 bool PaintLayer::backgroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect) const
 {
+    if (!isSelfPaintingLayer() && !hasSelfPaintingLayerDescendant())
+        return false;
+
     if (paintsWithTransparency(GlobalPaintNormalPhase))
         return false;
 
@@ -2422,12 +2425,14 @@ bool PaintLayer::backgroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect) 
     if (paintsWithTransform(GlobalPaintNormalPhase))
         return false;
 
+    // FIXME: Remove this check.
     // This function should not be called when layer-lists are dirty.
-    DCHECK(!m_stackingNode->zOrderListsDirty());
+    // It is somehow getting triggered during style update.
+    if (m_stackingNode->zOrderListsDirty())
+        return false;
 
     // FIXME: We currently only check the immediate layoutObject,
-    // which will miss many cases where additional layout objects paint
-    // into this layer.
+    // which will miss many cases.
     if (layoutObject()->backgroundIsKnownToBeOpaqueInRect(localRect))
         return true;
 
@@ -2436,17 +2441,13 @@ bool PaintLayer::backgroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect) 
     if (layoutObject()->hasClipRelatedProperty())
         return false;
 
-    // TODO(schenney): This could be improved by unioning the opaque regions of all the children.
-    // That would require a refactoring because currently children just check they at least
-    // cover the given rect, but a unioning method would require children to compute and report
-    // their rects.
     return childBackgroundIsKnownToBeOpaqueInRect(localRect);
 }
 
 bool PaintLayer::childBackgroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect) const
 {
-    PaintLayerStackingNodeReverseIterator reverseIterator(*m_stackingNode, PositiveZOrderChildren | NormalFlowChildren | NegativeZOrderChildren);
-    while (PaintLayerStackingNode* child = reverseIterator.next()) {
+    PaintLayerStackingNodeReverseIterator revertseIterator(*m_stackingNode, PositiveZOrderChildren | NormalFlowChildren | NegativeZOrderChildren);
+    while (PaintLayerStackingNode* child = revertseIterator.next()) {
         const PaintLayer* childLayer = child->layer();
         // Stop at composited paint boundaries.
         if (childLayer->isPaintInvalidationContainer())
