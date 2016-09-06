@@ -21,6 +21,17 @@ if (!is_component_build && is_win && is_official_build) {
   modules_target_type = "component"
 }
 
+config("modules_implementation") {
+  defines = [ "BLINK_MODULES_IMPLEMENTATION=1" ]
+
+  if (is_chromecast) {
+    defines += [
+      "BLINK_MSLOG=VLOG(2)",
+      "BLINK_SBLOG=VLOG(2)",
+    ]
+  }
+}
+
 target(modules_target_type, "modules") {
   output_name = "blink_modules"
 
@@ -42,14 +53,9 @@ target(modules_target_type, "modules") {
                   ".",
                   "//")
 
-  if (!is_win) {
-    sources -= [ "webdatabase/sqlite/SQLiteFileSystemWin.cpp" ]
-  }
-  if (!is_posix) {
-    sources -= [ "webdatabase/sqlite/SQLiteFileSystemPosix.cpp" ]
-  }
-
   configs += [
+    ":modules_implementation",
+
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     "//build/config/compiler:no_size_t_to_int_warning",
     "//third_party/WebKit/Source:config",
@@ -57,25 +63,28 @@ target(modules_target_type, "modules") {
     "//third_party/WebKit/Source:inside_blink",
   ]
 
-  defines = [ "BLINK_MODULES_IMPLEMENTATION=1" ]
-
-  if (is_chromecast) {
-    defines += [
-      "BLINK_MSLOG=VLOG(2)",
-      "BLINK_SBLOG=VLOG(2)",
-    ]
-  }
-
   deps = [
     ":make_modules_generated",
     "//device/battery:mojo_bindings_blink",
     "//device/geolocation/public/interfaces:interfaces_blink",
     "//device/nfc:mojo_bindings_blink",
-    "//device/usb/public/interfaces:interfaces_blink",
-    "//device/vibration:mojo_bindings_blink",
-    "//device/vr:mojo_bindings_blink",
     "//media/mojo/interfaces:image_capture_blink",
     "//third_party/WebKit/Source/core",
+    "//third_party/WebKit/Source/modules/sensor",
+    "//third_party/WebKit/Source/modules/serviceworkers",
+    "//third_party/WebKit/Source/modules/speech",
+    "//third_party/WebKit/Source/modules/srcobject",
+    "//third_party/WebKit/Source/modules/storage",
+    "//third_party/WebKit/Source/modules/vibration",
+    "//third_party/WebKit/Source/modules/vr",
+    "//third_party/WebKit/Source/modules/wake_lock",
+    "//third_party/WebKit/Source/modules/webaudio",
+    "//third_party/WebKit/Source/modules/webdatabase",
+    "//third_party/WebKit/Source/modules/webgl",
+    "//third_party/WebKit/Source/modules/webmidi",
+    "//third_party/WebKit/Source/modules/webshare",
+    "//third_party/WebKit/Source/modules/websockets",
+    "//third_party/WebKit/Source/modules/webusb",
     "//third_party/icu",
     "//third_party/sqlite",
     "//third_party/zlib",
