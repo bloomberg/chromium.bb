@@ -435,10 +435,6 @@ enum NotificationType {
   // menu has been created and shown.
   NOTIFICATION_RENDER_VIEW_CONTEXT_MENU_SHOWN,
 
-  // Sent when the Instant Controller determines whether an Instant tab supports
-  // the Instant API or not.
-  NOTIFICATION_INSTANT_TAB_SUPPORT_DETERMINED,
-
   // Sent when the CaptivePortalService checks if we're behind a captive portal.
   // The Source is the Profile the CaptivePortalService belongs to, and the
   // Details are a Details<CaptivePortalService::CheckResults>.

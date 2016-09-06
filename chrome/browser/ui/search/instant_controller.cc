@@ -10,12 +10,10 @@
 #include "base/location.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
 
@@ -80,14 +78,10 @@ void InstantController::InstantSupportDetermined(
     bool supports_instant) {
   DCHECK(IsContentsFrom(instant_tab_.get(), contents));
 
-  if (!supports_instant)
+  if (!supports_instant) {
     base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE,
                                                     instant_tab_.release());
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_INSTANT_TAB_SUPPORT_DETERMINED,
-      content::Source<InstantController>(this),
-      content::NotificationService::NoDetails());
+  }
 }
 
 void InstantController::InstantTabAboutToNavigateMainFrame(
