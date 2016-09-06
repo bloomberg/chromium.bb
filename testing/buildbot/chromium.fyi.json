@@ -11357,81 +11357,81 @@
     "gtest_tests": [
       {
         "args": [
-          "--isolate-extensions"
+          "--site-per-process"
         ],
         "test": "app_shell_unittests"
       },
       {
         "args": [
-          "--isolate-extensions",
-          "--test-launcher-filter-file=src/testing/buildbot/filters/isolate-extensions.browser_tests.filter"
+          "--site-per-process",
+          "--test-launcher-filter-file=src/testing/buildbot/filters/site-per-process.browser_tests.filter"
         ],
         "test": "browser_tests"
       },
       {
         "args": [
-          "--isolate-extensions"
+          "--site-per-process"
         ],
         "test": "components_browsertests"
       },
       {
         "args": [
-          "--isolate-extensions"
+          "--site-per-process"
         ],
         "test": "components_unittests"
       },
       {
         "args": [
-          "--isolate-sites-for-testing=*.is",
-          "--test-launcher-filter-file=src/testing/buildbot/filters/isolate-extensions.content_browsertests.filter"
+          "--site-per-process",
+          "--test-launcher-filter-file=src/testing/buildbot/filters/site-per-process.content_browsertests.filter"
         ],
         "test": "content_browsertests"
       },
       {
         "args": [
-          "--isolate-sites-for-testing=*.is"
+          "--site-per-process"
         ],
         "test": "content_unittests"
       },
       {
         "args": [
-          "--isolate-sites-for-testing=chrome-extension://*"
+          "--site-per-process"
         ],
         "test": "extensions_browsertests"
       },
       {
         "args": [
-          "--isolate-sites-for-testing=chrome-extension://*"
+          "--site-per-process"
         ],
         "test": "extensions_unittests"
       },
       {
         "args": [
-          "--isolate-extensions"
+          "--site-per-process"
         ],
         "test": "installer_util_unittests"
       },
       {
         "args": [
-          "--isolate-extensions"
+          "--site-per-process"
         ],
         "test": "interactive_ui_tests"
       },
       {
         "args": [
-          "--isolate-extensions"
+          "--site-per-process"
         ],
         "test": "nacl_loader_unittests"
       },
       {
         "args": [
-          "--isolate-extensions"
+          "--site-per-process"
         ],
         "test": "sync_integration_tests"
       },
       {
         "args": [
-          "--isolate-extensions"
+          "--site-per-process"
         ],
         "test": "unit_tests"
       }
