@@ -1,13 +1,17 @@
-<!-- This test was derived from a real case inside the Mail application, bug 4598149-->
-
-<div id="mydiv">01234</div>
-
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../editing/assert_selection.js"></script>
 <script>
-
-var txt = document.getElementById("mydiv").firstChild;
-window.getSelection().setBaseAndExtent(txt, 0, txt, 5)
-var r = window.getSelection().getRangeAt(0);
-r.deleteContents();
-r.insertNode(document.createElement("div"));
-
+// Deleting the contents of a DOMRange and then inserting a node into it crashes
+// in WebCore::Font::canUseGlyphCache
+test(() => assert_selection(
+    '<div id="mydiv">^01234|</div>',
+    selection => {
+        const range = selection.getRangeAt(0);
+        range.deleteContents();
+        range.insertNode(selection.document.createElement('div'));
+    },
+    '<div id="mydiv">|<div></div></div>'),
+    'Range#deleteContents() then Range#insertNode() should not crash');
 </script>
