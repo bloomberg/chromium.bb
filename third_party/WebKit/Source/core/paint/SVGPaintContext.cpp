@@ -232,7 +232,7 @@ bool SVGPaintContext::paintForLayoutObject(const PaintInfo& paintInfo, const Com
     // something down the paint pipe may want to farther tweak the color
     // filter, which could yield incorrect results. (Consider just using
     // saveLayer() w/ this color filter explicitly instead.)
-    paint.setColorFilter(sk_ref_sp(paintInfo.context.colorFilter()));
+    paint.setColorFilter(sk_ref_sp(paintInfo.context.getColorFilter()));
     return true;
 }
 

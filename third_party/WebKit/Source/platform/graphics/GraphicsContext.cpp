@@ -203,9 +203,9 @@ void GraphicsContext::setDrawLooper(std::unique_ptr<DrawLooperBuilder> drawLoope
     mutableState()->setDrawLooper(drawLooperBuilder ? drawLooperBuilder->detachDrawLooper() : nullptr);
 }
 
-SkColorFilter* GraphicsContext::colorFilter() const
+SkColorFilter* GraphicsContext::getColorFilter() const
 {
-    return immutableState()->colorFilter();
+    return immutableState()->getColorFilter();
 }
 
 void GraphicsContext::setColorFilter(ColorFilter colorFilter)
@@ -214,7 +214,7 @@ void GraphicsContext::setColorFilter(ColorFilter colorFilter)
 
     // We only support one active color filter at the moment. If (when) this becomes a problem,
     // we should switch to using color filter chains (Skia work in progress).
-    ASSERT(!stateToSet->colorFilter());
+    DCHECK(!stateToSet->getColorFilter());
     stateToSet->setColorFilter(WebCoreColorFilterToSkiaColorFilter(colorFilter));
 }
 

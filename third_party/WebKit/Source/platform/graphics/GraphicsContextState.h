@@ -96,7 +96,7 @@ public:
     TextDrawingModeFlags textDrawingMode() const { return m_textDrawingMode; }
     void setTextDrawingMode(TextDrawingModeFlags mode) { m_textDrawingMode = mode; }
 
-    SkColorFilter* colorFilter() const
+    SkColorFilter* getColorFilter() const
     {
         DCHECK_EQ(m_fillPaint.getColorFilter(), m_strokePaint.getColorFilter());
         return m_fillPaint.getColorFilter();

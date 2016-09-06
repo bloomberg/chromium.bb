@@ -127,7 +127,7 @@ public:
     bool printing() const { return m_printing; }
     void setPrinting(bool printing) { m_printing = printing; }
 
-    SkColorFilter* colorFilter() const;
+    SkColorFilter* getColorFilter() const;
     void setColorFilter(ColorFilter);
     // ---------- End state management methods -----------------
 
