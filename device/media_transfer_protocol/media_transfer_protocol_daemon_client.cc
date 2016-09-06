@@ -224,14 +224,11 @@ class MediaTransferProtocolDaemonClientImpl
                          const std::string& file_name,
                          const CopyFileFromLocalCallback& callback,
                          const ErrorCallback& error_callback) override {
-    dbus::FileDescriptor file_descriptor(source_file_descriptor);
-    file_descriptor.CheckValidity();
-
     dbus::MethodCall method_call(mtpd::kMtpdInterface,
                                  mtpd::kCopyFileFromLocal);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(handle);
-    writer.AppendFileDescriptor(file_descriptor);
+    writer.AppendFileDescriptor(source_file_descriptor);
     writer.AppendUint32(parent_id);
     writer.AppendString(file_name);
     proxy_->CallMethod(
