@@ -120,13 +120,13 @@ TEST_F(ClipboardAuraTest, MonitorClipboardChanges) {
                                             Eq("Test data.")))).Times(1);
 
   base::RunLoop run_loop;
-  message_loop_.PostDelayedTask(
+  message_loop_.task_runner()->PostDelayedTask(
       FROM_HERE, base::Bind(&ClipboardAuraTest_MonitorClipboardChanges_Test::
                                 StopAndResetClipboard,
                             base::Unretained(this)),
       TestTimeouts::tiny_timeout());
-  message_loop_.PostDelayedTask(FROM_HERE, run_loop.QuitClosure(),
-                                TestTimeouts::tiny_timeout());
+  message_loop_.task_runner()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
   run_loop.Run();
 }
 
