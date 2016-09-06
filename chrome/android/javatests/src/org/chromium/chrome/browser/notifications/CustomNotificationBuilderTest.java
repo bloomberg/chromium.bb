@@ -4,12 +4,12 @@
 
 package org.chromium.chrome.browser.notifications;
 
-import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
@@ -31,8 +31,6 @@ import java.util.Arrays;
 /**
  * Instrumentation unit tests for CustomNotificationBuilder.
  */
-@SuppressLint("NewApi") // For the |extras| property of Notification.
-@SuppressWarnings("deprecation") // For the |icon| and |largeIcon| properties of Notification.
 public class CustomNotificationBuilderTest extends NativeLibraryTestBase {
 
     @Override
@@ -48,6 +46,9 @@ public class CustomNotificationBuilderTest extends NativeLibraryTestBase {
 
         PendingIntent contentIntent = createIntent(context, "Content");
         PendingIntent deleteIntent = createIntent(context, "Delete");
+
+        Bitmap smallIcon =
+                BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_chrome);
 
         Bitmap largeIcon = Bitmap.createBitmap(
                 new int[] {Color.RED}, 1 /* width */, 1 /* height */, Bitmap.Config.ARGB_8888);
@@ -77,16 +78,22 @@ public class CustomNotificationBuilderTest extends NativeLibraryTestBase {
         View compactView = notification.contentView.apply(context, new LinearLayout(context));
         View bigView = notification.bigContentView.apply(context, new LinearLayout(context));
 
-        assertEquals(R.drawable.ic_chrome, notification.icon);
         assertNotNull(((ImageView) compactView.findViewById(R.id.icon)).getDrawable());
         assertNotNull(((ImageView) bigView.findViewById(R.id.icon)).getDrawable());
-        assertNotNull(notification.largeIcon);
+
+        assertTrue(smallIcon.sameAs(
+                NotificationTestUtil.getSmallIconFromNotification(context, notification)));
+        assertTrue(largeIcon.sameAs(
+                NotificationTestUtil.getLargeIconFromNotification(context, notification)));
+
         assertEquals("title", getIdenticalText(R.id.title, compactView, bigView));
-        assertEquals("title", notification.extras.getString(Notification.EXTRA_TITLE));
         assertEquals("body", getIdenticalText(R.id.body, compactView, bigView));
-        assertEquals("body", notification.extras.getString(Notification.EXTRA_TEXT));
         assertEquals("origin", getIdenticalText(R.id.origin, compactView, bigView));
-        assertEquals("origin", notification.extras.getString(Notification.EXTRA_SUB_TEXT));
+
+        assertEquals("title", NotificationTestUtil.getExtraTitle(notification));
+        assertEquals("body", NotificationTestUtil.getExtraText(notification));
+        assertEquals("origin", NotificationTestUtil.getExtraSubText(notification));
+
         assertEquals("ticker", notification.tickerText.toString());
         assertEquals(Notification.DEFAULT_ALL, notification.defaults);
         assertEquals(1, notification.vibrate.length);
@@ -96,7 +103,8 @@ public class CustomNotificationBuilderTest extends NativeLibraryTestBase {
 
         // The regular actions and the settings action are added together in the notification
         // actions array, so they can be exposed on e.g. Wear and custom lockscreens.
-        assertEquals(3, notification.actions.length);
+        assertEquals(3, NotificationTestUtil.getActions(notification).length);
+
         ArrayList<View> buttons = new ArrayList<>();
         bigView.findViewsWithText(buttons, "button", View.FIND_VIEWS_WITH_TEXT);
         assertEquals(2, buttons.size());
@@ -168,12 +176,15 @@ public class CustomNotificationBuilderTest extends NativeLibraryTestBase {
                         .build();
 
         // The large icon should not be painted white.
-        assertNotNull(notification.largeIcon);
-        assertEquals(Color.RED, notification.largeIcon.getPixel(0, 0));
+        Bitmap notificationLargeIcon =
+                NotificationTestUtil.getLargeIconFromNotification(context, notification);
+        assertNotNull(notificationLargeIcon);
+        assertEquals(Color.RED, notificationLargeIcon.getPixel(0, 0));
 
         View bigView = notification.bigContentView.apply(context, new LinearLayout(context));
 
         // Small icons should be painted white.
+        // Check the small icon view's bitmap is correctly rendered.
         int smallIconId = CustomNotificationBuilder.useMaterial() ? R.id.small_icon_overlay
                                                                   : R.id.small_icon_footer;
         ImageView smallIconView = (ImageView) bigView.findViewById(smallIconId);
@@ -181,14 +192,14 @@ public class CustomNotificationBuilderTest extends NativeLibraryTestBase {
         assertEquals(Color.WHITE, smallIconBitmap.getPixel(0, 0));
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            // For M+ we can also check the notification's member bitmap.
             assertEquals(Color.WHITE,
-                    ((BitmapDrawable) notification.getSmallIcon().loadDrawable(context))
-                            .getBitmap()
+                    NotificationTestUtil.getBitmapFromIcon(context, notification.getSmallIcon())
                             .getPixel(0, 0));
         }
 
         // Action icons should be painted white.
-        assertEquals(1, notification.actions.length);
+        assertEquals(1, NotificationTestUtil.getActions(notification).length);
         ImageView actionIconView = (ImageView) bigView.findViewById(R.id.button_icon);
         Bitmap actionIconBitmap = ((BitmapDrawable) actionIconView.getDrawable()).getBitmap();
         assertEquals(Color.WHITE, actionIconBitmap.getPixel(0, 0));

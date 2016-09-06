@@ -4,12 +4,12 @@
 
 package org.chromium.chrome.browser.notifications;
 
-import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Build;
 import android.test.InstrumentationTestCase;
@@ -22,9 +22,6 @@ import org.chromium.chrome.R;
 /**
  * Instrumentation unit tests for StandardNotificationBuilder.
  */
-// TODO(peter): remove @SuppressLint once crbug.com/501900 is fixed.
-@SuppressLint("NewApi")
-@SuppressWarnings("deprecation") // For |icon| and |largeIcon| properties of Notification.
 public class StandardNotificationBuilderTest extends InstrumentationTestCase {
     private NotificationBuilderBase createAllOptionsBuilder(
             PendingIntent[] outContentAndDeleteIntents) {
@@ -77,29 +74,36 @@ public class StandardNotificationBuilderTest extends InstrumentationTestCase {
         NotificationBuilderBase builder = createAllOptionsBuilder(contentAndDeleteIntents);
         Notification notification = builder.build();
 
-        assertEquals("title", notification.extras.getString(Notification.EXTRA_TITLE));
-        assertEquals("body", notification.extras.getString(Notification.EXTRA_TEXT));
-        assertEquals("origin", notification.extras.getString(Notification.EXTRA_SUB_TEXT));
+        assertEquals("title", NotificationTestUtil.getExtraTitle(notification));
+        assertEquals("body", NotificationTestUtil.getExtraText(notification));
+        assertEquals("origin", NotificationTestUtil.getExtraSubText(notification));
         assertEquals("ticker", notification.tickerText.toString());
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             // EXTRA_TEMPLATE was added in Android L; style cannot be verified in earlier versions.
             assertEquals("android.app.Notification$BigPictureStyle",
                     notification.extras.getString(Notification.EXTRA_TEMPLATE));
         }
-        Bitmap picture = (Bitmap) notification.extras.get(Notification.EXTRA_PICTURE);
+        Bitmap picture = NotificationTestUtil.getExtraPicture(notification);
         assertNotNull(picture);
         assertTrue(picture.getWidth() > 0 && picture.getHeight() > 0);
-        assertNotNull(notification.largeIcon);
-        assertEquals(R.drawable.ic_chrome, notification.icon);
+
+        Context context = getInstrumentation().getTargetContext();
+        Bitmap smallIcon =
+                BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_chrome);
+        assertTrue(smallIcon.sameAs(
+                NotificationTestUtil.getSmallIconFromNotification(context, notification)));
+        assertNotNull(NotificationTestUtil.getLargeIconFromNotification(context, notification));
+
         assertEquals(Notification.DEFAULT_ALL, notification.defaults);
         assertEquals(1, notification.vibrate.length);
         assertEquals(100L, notification.vibrate[0]);
         assertEquals(contentAndDeleteIntents[0], notification.contentIntent);
         assertEquals(contentAndDeleteIntents[1], notification.deleteIntent);
-        assertEquals(3, notification.actions.length);
-        assertEquals("button 1", notification.actions[0].title);
-        assertEquals("button 2", notification.actions[1].title);
-        assertEquals("settings", notification.actions[2].title);
+        Notification.Action[] actions = NotificationTestUtil.getActions(notification);
+        assertEquals(3, actions.length);
+        assertEquals("button 1", NotificationTestUtil.getActionTitle(actions[0]));
+        assertEquals("button 2", NotificationTestUtil.getActionTitle(actions[1]));
+        assertEquals("settings", NotificationTestUtil.getActionTitle(actions[2]));
     }
 
     @SmallTest

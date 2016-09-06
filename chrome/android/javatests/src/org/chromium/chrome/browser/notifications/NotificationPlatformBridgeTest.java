@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.notifications;
 
-import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.content.Context;
 import android.content.res.Resources;
@@ -30,10 +29,6 @@ import java.util.List;
  *
  * Web Notifications are only supported on Android JellyBean and beyond.
  */
-// TODO(peter): remove @SuppressLint once crbug.com/501900 is fixed.
-@SuppressLint("NewApi")
-// TODO(peter): fix deprecation warnings crbug.com/528076
-@SuppressWarnings("deprecation")
 public class NotificationPlatformBridgeTest extends NotificationTestBase {
     private static final String NOTIFICATION_TEST_PAGE =
             "/chrome/test/data/notifications/android_test.html";
@@ -51,10 +46,10 @@ public class NotificationPlatformBridgeTest extends NotificationTestBase {
         Notification notification = showAndGetNotification("MyNotification", "{ body: 'Hello' }");
 
         // Validate the contents of the notification.
-        assertEquals("MyNotification", notification.extras.getString(Notification.EXTRA_TITLE));
-        assertEquals("Hello", notification.extras.getString(Notification.EXTRA_TEXT));
+        assertEquals("MyNotification", NotificationTestUtil.getExtraTitle(notification));
+        assertEquals("Hello", NotificationTestUtil.getExtraText(notification));
         assertEquals(UrlFormatter.formatUrlForSecurityDisplay(getOrigin(), false /* showScheme */),
-                notification.extras.getString(Notification.EXTRA_SUB_TEXT));
+                NotificationTestUtil.getExtraSubText(notification));
 
         // Verify that the ticker text contains the notification's title and body.
         String tickerText = notification.tickerText.toString();
@@ -67,7 +62,8 @@ public class NotificationPlatformBridgeTest extends NotificationTestBase {
         // renderer process on notification creation.
         assertTrue(Math.abs(System.currentTimeMillis() - notification.when) < 60 * 1000);
 
-        assertNotNull(notification.largeIcon);
+        Context context = getInstrumentation().getTargetContext();
+        assertNotNull(NotificationTestUtil.getLargeIconFromNotification(context, notification));
 
         // Validate the notification's behavior.
         assertEquals(Notification.DEFAULT_ALL, notification.defaults);
@@ -191,8 +187,10 @@ public class NotificationPlatformBridgeTest extends NotificationTestBase {
 
         Notification notification = showAndGetNotification("MyNotification", "{icon: 'icon.png'}");
 
-        assertEquals("MyNotification", notification.extras.getString(Notification.EXTRA_TITLE));
-        assertNotNull(notification.largeIcon);
+        assertEquals("MyNotification", NotificationTestUtil.getExtraTitle(notification));
+
+        Context context = getInstrumentation().getTargetContext();
+        assertNotNull(NotificationTestUtil.getLargeIconFromNotification(context, notification));
 
         // TODO(peter): Do some more sensible checking that |icon.png| could actually be loaded.
         // One option might be to give that icon a solid color and check for it in the Bitmap, but
@@ -212,8 +210,10 @@ public class NotificationPlatformBridgeTest extends NotificationTestBase {
 
         Notification notification = showAndGetNotification("NoIconNotification", "{}");
 
-        assertEquals("NoIconNotification", notification.extras.getString(Notification.EXTRA_TITLE));
-        assertNotNull(notification.largeIcon);
+        assertEquals("NoIconNotification", NotificationTestUtil.getExtraTitle(notification));
+
+        Context context = getInstrumentation().getTargetContext();
+        assertNotNull(NotificationTestUtil.getLargeIconFromNotification(context, notification));
 
         NotificationPlatformBridge notificationBridge =
                 NotificationPlatformBridge.getInstanceForTests();
@@ -226,9 +226,8 @@ public class NotificationPlatformBridgeTest extends NotificationTestBase {
 
         Bitmap generatedIcon = generator.generateIconForUrl(getOrigin());
         assertNotNull(generatedIcon);
-
-        assertEquals(generatedIcon.getWidth(), notification.largeIcon.getWidth());
-        assertEquals(generatedIcon.getHeight(), notification.largeIcon.getHeight());
+        assertTrue(generatedIcon.sameAs(
+                NotificationTestUtil.getLargeIconFromNotification(context, notification)));
     }
 
     /**
@@ -363,7 +362,7 @@ public class NotificationPlatformBridgeTest extends NotificationTestBase {
         notifications = getNotificationEntries();
         assertEquals(1, notifications.size());
         assertEquals("SecondNotification",
-                notifications.get(0).notification.extras.getString(Notification.EXTRA_TITLE));
+                NotificationTestUtil.getExtraTitle(notifications.get(0).notification));
 
         // Verify that for replaced notifications their tag was the same.
         assertEquals(tag, notifications.get(0).tag);
@@ -389,7 +388,7 @@ public class NotificationPlatformBridgeTest extends NotificationTestBase {
         List<NotificationEntry> notifications = getNotificationEntries();
         assertEquals(1, notifications.size());
         Notification notificationOne = notifications.get(0).notification;
-        assertEquals("One", notificationOne.extras.getString(Notification.EXTRA_TITLE));
+        assertEquals("One", NotificationTestUtil.getExtraTitle(notificationOne));
 
         // Open the second notification and verify it is displayed.
         runJavaScriptCodeInCurrentTab("showNotification('Two');");
@@ -397,7 +396,7 @@ public class NotificationPlatformBridgeTest extends NotificationTestBase {
         notifications = getNotificationEntries();
         assertEquals(2, notifications.size());
         Notification notificationTwo = notifications.get(1).notification;
-        assertEquals("Two", notificationTwo.extras.getString(Notification.EXTRA_TITLE));
+        assertEquals("Two", NotificationTestUtil.getExtraTitle(notificationTwo));
 
         // The same integer id is always used as it is not needed for uniqueness, we rely on the tag
         // for uniqueness when the replacement behavior is not needed.
@@ -420,8 +419,7 @@ public class NotificationPlatformBridgeTest extends NotificationTestBase {
         waitForNotificationManagerMutation();
         notifications = getNotificationEntries();
         assertEquals(1, notifications.size());
-        assertEquals("Two",
-                notifications.get(0).notification.extras.getString(Notification.EXTRA_TITLE));
+        assertEquals("Two", NotificationTestUtil.getExtraTitle(notifications.get(0).notification));
 
         // Close the last notification and verify that none remain.
         notifications.get(0).notification.contentIntent.send();
