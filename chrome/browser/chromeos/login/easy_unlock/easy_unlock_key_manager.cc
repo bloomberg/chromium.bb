@@ -36,11 +36,7 @@ const char kPermitTypeLicence[] = "licence";
 
 }  // namespace
 
-EasyUnlockKeyManager::EasyUnlockKeyManager()
-    : write_queue_deleter_(&write_operation_queue_),
-      read_queue_deleter_(&read_operation_queue_),
-      weak_ptr_factory_(this) {
-}
+EasyUnlockKeyManager::EasyUnlockKeyManager() : weak_ptr_factory_(this) {}
 
 EasyUnlockKeyManager::~EasyUnlockKeyManager() {
 }
@@ -94,17 +90,18 @@ void EasyUnlockKeyManager::RefreshKeysWithTpmKeyPresent(
   if (!RemoteDeviceListToDeviceDataList(*remote_devices, &devices))
     devices.clear();
 
-  write_operation_queue_.push_back(new EasyUnlockRefreshKeysOperation(
-      user_context, tpm_public_key, devices,
-      base::Bind(&EasyUnlockKeyManager::OnKeysRefreshed,
-                 weak_ptr_factory_.GetWeakPtr(), callback)));
+  write_operation_queue_.push_back(
+      base::MakeUnique<EasyUnlockRefreshKeysOperation>(
+          user_context, tpm_public_key, devices,
+          base::Bind(&EasyUnlockKeyManager::OnKeysRefreshed,
+                     weak_ptr_factory_.GetWeakPtr(), callback)));
   RunNextOperation();
 }
 
 void EasyUnlockKeyManager::GetDeviceDataList(
     const UserContext& user_context,
     const GetDeviceDataListCallback& callback) {
-  read_operation_queue_.push_back(new EasyUnlockGetKeysOperation(
+  read_operation_queue_.push_back(base::MakeUnique<EasyUnlockGetKeysOperation>(
       user_context, base::Bind(&EasyUnlockKeyManager::OnKeysFetched,
                                weak_ptr_factory_.GetWeakPtr(), callback)));
   RunNextOperation();
@@ -210,11 +207,11 @@ void EasyUnlockKeyManager::RunNextOperation() {
     return;
 
   if (!write_operation_queue_.empty()) {
-    pending_write_operation_ = base::WrapUnique(write_operation_queue_.front());
+    pending_write_operation_ = std::move(write_operation_queue_.front());
     write_operation_queue_.pop_front();
     pending_write_operation_->Start();
   } else if (!read_operation_queue_.empty()) {
-    pending_read_operation_ = base::WrapUnique(read_operation_queue_.front());
+    pending_read_operation_ = std::move(read_operation_queue_.front());
     read_operation_queue_.pop_front();
     pending_read_operation_->Start();
   }

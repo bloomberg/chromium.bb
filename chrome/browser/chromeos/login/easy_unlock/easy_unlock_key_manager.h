@@ -9,12 +9,12 @@
 
 #include <deque>
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/stl_util.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_get_keys_operation.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_refresh_keys_operation.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_types.h"
@@ -102,16 +102,9 @@ class EasyUnlockKeyManager {
                      bool fetch_success,
                      const EasyUnlockDeviceKeyDataList& fetched_data);
 
-  // Queued operations are stored as raw pointers, as scoped_ptrs may not behave
-  // nicely with std::deque.
-  using WriteOperationQueue = std::deque<EasyUnlockRefreshKeysOperation*>;
-  using ReadOperationQueue = std::deque<EasyUnlockGetKeysOperation*>;
-  WriteOperationQueue write_operation_queue_;
-  ReadOperationQueue read_operation_queue_;
-
-  // Scopes the raw operation pointers to the lifetime of this object.
-  base::STLElementDeleter<WriteOperationQueue> write_queue_deleter_;
-  base::STLElementDeleter<ReadOperationQueue> read_queue_deleter_;
+  std::deque<std::unique_ptr<EasyUnlockRefreshKeysOperation>>
+      write_operation_queue_;
+  std::deque<std::unique_ptr<EasyUnlockGetKeysOperation>> read_operation_queue_;
 
   // Stores the current operation in progress. At most one of these variables
   // can be non-null at any time.
