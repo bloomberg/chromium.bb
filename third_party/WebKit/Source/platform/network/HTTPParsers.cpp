@@ -338,14 +338,25 @@ double parseDate(const String& value)
 
 AtomicString extractMIMETypeFromMediaType(const AtomicString& mediaType)
 {
-    StringBuilder mimeType;
     unsigned length = mediaType.length();
-    mimeType.reserveCapacity(length);
-    for (unsigned i = 0; i < length; i++) {
-        UChar c = mediaType[i];
 
-        if (c == ';')
+    unsigned pos = 0;
+
+    while (pos < length) {
+        UChar c = mediaType[pos];
+        if (c != '\t' && c != ' ')
             break;
+        ++pos;
+    }
+
+    if (pos == length)
+        return mediaType;
+
+    unsigned typeStart = pos;
+
+    unsigned typeEnd = pos;
+    while (pos < length) {
+        UChar c = mediaType[pos];
 
         // While RFC 2616 does not allow it, other browsers allow multiple values in the HTTP media
         // type header field, Content-Type. In such cases, the media type string passed here may contain
@@ -353,22 +364,16 @@ AtomicString extractMIMETypeFromMediaType(const AtomicString& mediaType)
         // which prevents it from simply failing to parse such types altogether. Later for better
         // compatibility we could consider using the first or last valid MIME type instead.
         // See https://bugs.webkit.org/show_bug.cgi?id=25352 for more discussion.
-        if (c == ',')
+        if (c == ',' || c == ';')
             break;
 
-        // FIXME: The following is not correct. RFC 2616 allows linear white space before and
-        // after the MIME type, but not within the MIME type itself. And linear white space
-        // includes only a few specific ASCII characters; a small subset of isSpaceOrNewline.
-        // See https://bugs.webkit.org/show_bug.cgi?id=8644 for a bug tracking part of this.
-        if (isSpaceOrNewline(c))
-            continue;
+        if (c != '\t' && c != ' ')
+            typeEnd = pos + 1;
 
-        mimeType.append(c);
+        ++pos;
     }
 
-    if (mimeType.length() == length)
-        return mediaType;
-    return mimeType.toAtomicString();
+    return AtomicString(mediaType.getString().substring(typeStart, typeEnd - typeStart));
 }
 
 String extractCharsetFromMediaType(const String& mediaType)

@@ -139,33 +139,68 @@ TEST(HTTPParsersTest, HTTPFieldContent)
 TEST(HTTPParsersTest, ExtractMIMETypeFromMediaType)
 {
     const AtomicString textHtml("text/html");
+
+    EXPECT_EQ(textHtml, extractMIMETypeFromMediaType(AtomicString("text/html")));
     EXPECT_EQ(textHtml, extractMIMETypeFromMediaType(AtomicString("text/html; charset=iso-8859-1")));
+
+    // Quoted charset parameter
+    EXPECT_EQ(textHtml, extractMIMETypeFromMediaType(AtomicString("text/html; charset=\"quoted\"")));
+
+    // Multiple parameters
+    EXPECT_EQ(textHtml, extractMIMETypeFromMediaType(AtomicString("text/html; charset=x; foo=bar")));
+
+    // OWSes are trimmed.
+    EXPECT_EQ(textHtml, extractMIMETypeFromMediaType(AtomicString(" text/html   ")));
+    EXPECT_EQ(textHtml, extractMIMETypeFromMediaType(AtomicString("\ttext/html \t")));
     EXPECT_EQ(textHtml, extractMIMETypeFromMediaType(AtomicString("text/html ; charset=iso-8859-1")));
+
+    // Non-standard multiple type/subtype listing using a comma as a separator
+    // is accepted.
     EXPECT_EQ(textHtml, extractMIMETypeFromMediaType(AtomicString("text/html,text/plain")));
     EXPECT_EQ(textHtml, extractMIMETypeFromMediaType(AtomicString("text/html , text/plain")));
     EXPECT_EQ(textHtml, extractMIMETypeFromMediaType(AtomicString("text/html\t,\ttext/plain")));
-    EXPECT_EQ(textHtml, extractMIMETypeFromMediaType(AtomicString(" text/html   ")));
-    EXPECT_EQ(textHtml, extractMIMETypeFromMediaType(AtomicString("\ttext/html \t")));
-    EXPECT_EQ(textHtml, extractMIMETypeFromMediaType(AtomicString("\r\ntext/html\r\n")));
     EXPECT_EQ(textHtml, extractMIMETypeFromMediaType(AtomicString("text/html,text/plain;charset=iso-8859-1")));
-    EXPECT_EQ(emptyString(), extractMIMETypeFromMediaType(AtomicString(", text/html")));
-    EXPECT_EQ(emptyString(), extractMIMETypeFromMediaType(AtomicString("; text/html")));
 
     // Preserves case.
     EXPECT_EQ("tExt/hTMl", extractMIMETypeFromMediaType(AtomicString("tExt/hTMl")));
 
+    EXPECT_EQ(emptyString(), extractMIMETypeFromMediaType(AtomicString(", text/html")));
+    EXPECT_EQ(emptyString(), extractMIMETypeFromMediaType(AtomicString("; text/html")));
+
     // If no normalization is required, the same AtomicString should be returned.
     const AtomicString& passthrough = extractMIMETypeFromMediaType(textHtml);
     EXPECT_EQ(textHtml.impl(), passthrough.impl());
+}
 
-    // These tests cover current behavior, but are not necessarily
-    // expected/wanted behavior. (See FIXME in implementation.)
-    EXPECT_EQ(textHtml, extractMIMETypeFromMediaType(AtomicString("text / html")));
-    // U+2003, EM SPACE (UTF-8: E2 80 83)
-    EXPECT_EQ(textHtml, extractMIMETypeFromMediaType(AtomicString::fromUTF8("text\xE2\x80\x83/ html")));
-    EXPECT_EQ(textHtml, extractMIMETypeFromMediaType(AtomicString("text\r\n/\nhtml")));
-    EXPECT_EQ(textHtml, extractMIMETypeFromMediaType(AtomicString("text\n/\nhtml")));
-    EXPECT_EQ(textHtml, extractMIMETypeFromMediaType(AtomicString("t e x t / h t m l")));
+TEST(HTTPParsersTest, ExtractMIMETypeFromMediaTypeInvalidInput)
+{
+    // extractMIMETypeFromMediaType() returns the string before the first
+    // semicolon after trimming OWSes at the head and the tail even if the
+    // string doesn't conform to the media-type ABNF defined in the RFC 7231.
+
+    // These behaviors could be fixed later when ready.
+
+    // Non-OWS characters meaning space are not trimmed.
+    EXPECT_EQ(AtomicString("\r\ntext/html\r\n"), extractMIMETypeFromMediaType(AtomicString("\r\ntext/html\r\n")));
+    // U+2003, EM SPACE (UTF-8: E2 80 83).
+    EXPECT_EQ(AtomicString::fromUTF8("\xE2\x80\x83text/html"), extractMIMETypeFromMediaType(AtomicString::fromUTF8("\xE2\x80\x83text/html")));
+
+    // Invalid type/subtype.
+    EXPECT_EQ(AtomicString("a"), extractMIMETypeFromMediaType(AtomicString("a")));
+
+    // Invalid parameters.
+    EXPECT_EQ(AtomicString("text/html"), extractMIMETypeFromMediaType(AtomicString("text/html;wow")));
+    EXPECT_EQ(AtomicString("text/html"), extractMIMETypeFromMediaType(AtomicString("text/html;;;;;;")));
+    EXPECT_EQ(AtomicString("text/html"), extractMIMETypeFromMediaType(AtomicString("text/html; = = = ")));
+
+    // Only OWSes at either the beginning or the end of the type/subtype
+    // portion.
+    EXPECT_EQ(AtomicString("text / html"), extractMIMETypeFromMediaType(AtomicString("text / html")));
+    EXPECT_EQ(AtomicString("t e x t / h t m l"), extractMIMETypeFromMediaType(AtomicString("t e x t / h t m l")));
+
+    EXPECT_EQ(AtomicString("text\r\n/\nhtml"), extractMIMETypeFromMediaType(AtomicString("text\r\n/\nhtml")));
+    EXPECT_EQ(AtomicString("text\n/\nhtml"), extractMIMETypeFromMediaType(AtomicString("text\n/\nhtml")));
+    EXPECT_EQ(AtomicString::fromUTF8("text\xE2\x80\x83/html"), extractMIMETypeFromMediaType(AtomicString::fromUTF8("text\xE2\x80\x83/html")));
 }
 
 void expectParseNamePass(const char* message, String header, String expectedName)

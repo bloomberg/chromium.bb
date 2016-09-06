@@ -105,8 +105,12 @@ PLATFORM_EXPORT double parseDate(const String&);
 // Given a Media Type (like "foo/bar; baz=gazonk" - usually from the
 // 'Content-Type' HTTP header), extract and return the "type/subtype" portion
 // ("foo/bar").
-// Note: This function does not in any way check that the "type/subtype" pair
-// is well-formed.
+//
+// Note:
+// - This function does not in any way check that the "type/subtype" pair
+//   is well-formed.
+// - OWSes at the head and the tail of the region before the first semicolon
+//   are trimmed.
 PLATFORM_EXPORT AtomicString extractMIMETypeFromMediaType(const AtomicString&);
 PLATFORM_EXPORT String extractCharsetFromMediaType(const String&);
 PLATFORM_EXPORT void findCharsetInMediaType(const String& mediaType, unsigned& charsetPos, unsigned& charsetLen, unsigned start = 0);
