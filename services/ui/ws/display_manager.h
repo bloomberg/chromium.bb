@@ -54,6 +54,10 @@ class DisplayManager : public UserIdTrackerObserver,
   Display* GetDisplayContaining(ServerWindow* window);
   const Display* GetDisplayContaining(const ServerWindow* window) const;
 
+  // Returns the display with the specified display id, or null if there is no
+  // display with that id.
+  Display* GetDisplayById(int64_t display_id);
+
   const WindowManagerDisplayRoot* GetWindowManagerDisplayRoot(
       const ServerWindow* window) const;
   // TODO(sky): constness here is wrong! fix!

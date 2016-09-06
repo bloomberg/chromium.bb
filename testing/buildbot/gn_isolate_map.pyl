@@ -282,6 +282,10 @@
     "label": "//ui/display:display_unittests",
     "type": "console_test_launcher",
   },
+  "display_service_unittests": {
+    "label": "//services/ui/display:display_service_unittests",
+    "type": "console_test_launcher",
+  },
   "events_unittests": {
     "label": "//ui/events:events_unittests",
     "type": "windowed_test_launcher",

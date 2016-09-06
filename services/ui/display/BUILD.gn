@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/ui.gni")
+import("//testing/test.gni")
 
 source_set("display") {
   sources = [
@@ -30,6 +31,27 @@ source_set("display") {
     sources += [
       "platform_screen_impl.cc",
       "platform_screen_impl.h",
+    ]
+  }
+}
+
+if (use_ozone) {
+  test("display_service_unittests") {
+    sources = [
+      "platform_screen_ozone_unittests.cc",
+    ]
+
+    deps = [
+      ":display",
+      "//base",
+      "//base/test:run_all_unittests",
+      "//base/test:test_support",
+      "//testing/gmock",
+      "//testing/gtest",
+      "//ui/display",
+      "//ui/gfx",
+      "//ui/gfx:test_support",
+      "//ui/ozone",
     ]
   }
 }

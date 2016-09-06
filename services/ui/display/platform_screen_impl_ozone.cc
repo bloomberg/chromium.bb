@@ -64,40 +64,115 @@ int64_t PlatformScreenImplOzone::GetPrimaryDisplayId() const {
   return primary_display_id_;
 }
 
-void PlatformScreenImplOzone::OnDisplayModeChanged(
-    const ui::DisplayConfigurator::DisplayStateList& displays) {
-  if (displays.size() > 1) {
-    LOG(ERROR)
-        << "Mus doesn't really support multiple displays, expect it to crash";
+void PlatformScreenImplOzone::ProcessRemovedDisplays(
+    const ui::DisplayConfigurator::DisplayStateList& snapshots) {
+  std::vector<int64_t> current_ids;
+  for (ui::DisplaySnapshot* snapshot : snapshots)
+    current_ids.push_back(snapshot->display_id());
+
+  // Find cached displays with no matching snapshot and mark as removed.
+  for (DisplayInfo& display : cached_displays_) {
+    if (std::find(current_ids.begin(), current_ids.end(), display.id) ==
+        current_ids.end()) {
+      display.removed = true;
+      if (primary_display_id_ == display.id)
+        primary_display_id_ = display::Display::kInvalidDisplayID;
+    }
   }
 
-  // TODO(kylechar): Use DisplayLayout/DisplayLayoutStore here when possible.
-  std::set<uint64_t> all_displays;
-  for (ui::DisplaySnapshot* display : displays) {
-    const int64_t id = display->display_id();
+  // If the primary display was removed find a new primary display id.
+  if (primary_display_id_ == display::Display::kInvalidDisplayID) {
+    for (const DisplayInfo& display : cached_displays_) {
+      if (!display.removed) {
+        primary_display_id_ = display.id;
+        break;
+      }
+    }
+  }
+}
 
-    all_displays.insert(id);
+void PlatformScreenImplOzone::ProcessModifiedDisplays(
+    const ui::DisplayConfigurator::DisplayStateList& snapshots) {
+  for (ui::DisplaySnapshot* snapshot : snapshots) {
+    auto iter = GetCachedDisplayIterator(snapshot->display_id());
+    if (iter != cached_displays_.end()) {
+      DisplayInfo& display_info = *iter;
+      const ui::DisplayMode* current_mode = snapshot->current_mode();
+      if (current_mode->size() != display_info.bounds.size()) {
+        display_info.bounds.set_size(current_mode->size());
+        display_info.modified = true;
+      }
+    }
+  }
+}
 
-    if (displays_.find(id) != displays_.end())
+void PlatformScreenImplOzone::UpdateCachedDisplays() {
+  // Walk through cached displays after processing the snapshots to find any
+  // removed or modified displays. This ensures that we only send one update per
+  // display to the delegate.
+  next_display_origin_.SetPoint(0, 0);
+  for (auto iter = cached_displays_.begin(); iter != cached_displays_.end();) {
+    DisplayInfo& display_info = *iter;
+    if (display_info.removed) {
+      // Update delegate and remove from cache.
+      delegate_->OnDisplayRemoved(display_info.id);
+      iter = cached_displays_.erase(iter);
+    } else {
+      // Check if the display origin needs to be updated.
+      if (next_display_origin_ != display_info.bounds.origin()) {
+        display_info.bounds.set_origin(next_display_origin_);
+        display_info.modified = true;
+      }
+      next_display_origin_.Offset(display_info.bounds.width(), 0);
+
+      // Check if the window bounds have changed and update delegate.
+      if (display_info.modified) {
+        display_info.modified = false;
+        delegate_->OnDisplayModified(display_info.id, display_info.bounds);
+      }
+      ++iter;
+    }
+  }
+}
+
+void PlatformScreenImplOzone::AddNewDisplays(
+    const ui::DisplayConfigurator::DisplayStateList& snapshots) {
+  for (ui::DisplaySnapshot* snapshot : snapshots) {
+    const int64_t id = snapshot->display_id();
+
+    // Check if display already exists and skip.
+    if (GetCachedDisplayIterator(id) != cached_displays_.end())
       continue;
 
-    const ui::DisplayMode* current_mode = display->current_mode();
+    const ui::DisplayMode* current_mode = snapshot->current_mode();
     gfx::Rect bounds(next_display_origin_, current_mode->size());
 
     // Move the origin so that next display is to the right of current display.
     next_display_origin_.Offset(current_mode->size().width(), 0);
 
-    // The first display added will be our primary display.
-    if (displays_.empty())
+    // If we have no primary display then this one should be it.
+    if (primary_display_id_ == display::Display::kInvalidDisplayID)
       primary_display_id_ = id;
 
-    // Keep track of what displays have already been added.
-    displays_.insert(display->display_id());
-
+    cached_displays_.push_back(DisplayInfo(id, bounds));
     delegate_->OnDisplayAdded(this, id, bounds);
   }
+}
 
-  DCHECK(displays_ == all_displays) << "Removing displays is not supported.";
+PlatformScreenImplOzone::CachedDisplayIterator
+PlatformScreenImplOzone::GetCachedDisplayIterator(int64_t display_id) {
+  return std::find_if(cached_displays_.begin(), cached_displays_.end(),
+                      [display_id](const DisplayInfo& display_info) {
+                        return display_info.id == display_id;
+                      });
+}
+
+void PlatformScreenImplOzone::OnDisplayModeChanged(
+    const ui::DisplayConfigurator::DisplayStateList& displays) {
+  ProcessRemovedDisplays(displays);
+  ProcessModifiedDisplays(displays);
+  UpdateCachedDisplays();
+  AddNewDisplays(displays);
 }
 
 void PlatformScreenImplOzone::OnDisplayModeChangeFailed(

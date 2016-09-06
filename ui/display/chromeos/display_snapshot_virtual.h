@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "ui/display/display_export.h"
 #include "ui/display/types/display_mode.h"
 #include "ui/display/types/display_snapshot.h"
 
@@ -17,7 +18,7 @@ namespace ui {
 
 // This class represents a virtual display to be enabled on demand. The display
 // is constructed for the desired pixel resolution.
-class DisplaySnapshotVirtual : public DisplaySnapshot {
+class DISPLAY_EXPORT DisplaySnapshotVirtual : public DisplaySnapshot {
  public:
   // |display_id| is the numerical identifier for the virtual display,
   // |display_size| is the pixel dimensions for the display.

@@ -104,6 +104,14 @@ const Display* DisplayManager::GetDisplayContaining(
   return nullptr;
 }
 
+Display* DisplayManager::GetDisplayById(int64_t display_id) {
+  for (Display* display : displays_) {
+    if (display->GetId() == display_id)
+      return display;
+  }
+  return nullptr;
+}
+
 const WindowManagerDisplayRoot* DisplayManager::GetWindowManagerDisplayRoot(
     const ServerWindow* window) const {
   const ServerWindow* last = window;
@@ -175,8 +183,10 @@ void DisplayManager::OnDisplayAdded(display::PlatformScreen* platform_screen,
 }
 
 void DisplayManager::OnDisplayRemoved(int64_t id) {
-  // TODO(kylechar): Implement.
-  NOTREACHED();
+  Display* display = GetDisplayById(id);
+  if (display)
+    DestroyDisplay(display);
+  // TODO(kylechar): What if the display is still pending?
 }
 
 void DisplayManager::OnDisplayModified(int64_t id, const gfx::Rect& bounds) {
