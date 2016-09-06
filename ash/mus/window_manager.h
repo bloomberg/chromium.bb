@@ -53,11 +53,13 @@ class WindowManager : public ui::WindowManagerDelegate,
   explicit WindowManager(shell::Connector* connector);
   ~WindowManager() override;
 
-  void Init(ui::WindowTreeClient* window_tree_client);
+  void Init(std::unique_ptr<ui::WindowTreeClient> window_tree_client);
 
   WmShellMus* shell() { return shell_.get(); }
 
-  ui::WindowTreeClient* window_tree_client() { return window_tree_client_; }
+  ui::WindowTreeClient* window_tree_client() {
+    return window_tree_client_.get();
+  }
 
   ui::WindowManagerClient* window_manager_client() {
     return window_manager_client_;
@@ -90,13 +92,16 @@ class WindowManager : public ui::WindowManagerDelegate,
       ui::Window* window,
       const display::Display& display);
 
+  void Shutdown();
+
   // ui::WindowObserver:
   void OnWindowDestroying(ui::Window* window) override;
   void OnWindowDestroyed(ui::Window* window) override;
 
   // WindowTreeClientDelegate:
   void OnEmbed(ui::Window* root) override;
-  void OnDidDestroyClient(ui::WindowTreeClient* client) override;
+  void OnEmbedRootDestroyed(ui::Window* root) override;
+  void OnLostConnection(ui::WindowTreeClient* client) override;
   void OnPointerEventObserved(const ui::PointerEvent& event,
                               ui::Window* target) override;
 
@@ -123,7 +128,7 @@ class WindowManager : public ui::WindowManagerDelegate,
 
   shell::Connector* connector_;
 
-  ui::WindowTreeClient* window_tree_client_ = nullptr;
+  std::unique_ptr<ui::WindowTreeClient> window_tree_client_;
 
   ui::WindowManagerClient* window_manager_client_ = nullptr;
 

@@ -4,6 +4,7 @@
 
 #include "services/navigation/view_impl.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/interstitial_page.h"
@@ -112,7 +113,8 @@ void ViewImpl::Stop() {
 }
 
 void ViewImpl::GetWindowTreeClient(ui::mojom::WindowTreeClientRequest request) {
-  new ui::WindowTreeClient(this, nullptr, std::move(request));
+  window_tree_client_ =
+      base::MakeUnique<ui::WindowTreeClient>(this, nullptr, std::move(request));
 }
 
 void ViewImpl::ShowInterstitial(const mojo::String& html) {
@@ -280,7 +282,14 @@ void ViewImpl::OnEmbed(ui::Window* root) {
   widget_->Show();
 }
 
-void ViewImpl::OnDidDestroyClient(ui::WindowTreeClient* client) {}
+void ViewImpl::OnEmbedRootDestroyed(ui::Window* root) {
+  window_tree_client_.reset();
+}
+
+void ViewImpl::OnLostConnection(ui::WindowTreeClient* client) {
+  window_tree_client_.reset();
+}
+
 void ViewImpl::OnPointerEventObserved(const ui::PointerEvent& event,
                                       ui::Window* target) {}
 

@@ -5,9 +5,12 @@
 #ifndef CONTENT_RENDERER_MUS_COMPOSITOR_MUS_CONNECTION_H_
 #define CONTENT_RENDERER_MUS_COMPOSITOR_MUS_CONNECTION_H_
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
 #include "services/ui/public/cpp/input_event_handler.h"
 #include "services/ui/public/cpp/window.h"
@@ -72,9 +75,12 @@ class CONTENT_EXPORT CompositorMusConnection
 
   std::unique_ptr<blink::WebInputEvent> Convert(const ui::Event& event);
 
+  void DeleteWindowTreeClient();
+
   // WindowTreeClientDelegate implementation:
-  void OnDidDestroyClient(ui::WindowTreeClient* client) override;
   void OnEmbed(ui::Window* root) override;
+  void OnEmbedRootDestroyed(ui::Window* root) override;
+  void OnLostConnection(ui::WindowTreeClient* client) override;
   void OnPointerEventObserved(const ui::PointerEvent& event,
                               ui::Window* target) override;
 
@@ -86,6 +92,10 @@ class CONTENT_EXPORT CompositorMusConnection
           ack_callback) override;
 
   const int routing_id_;
+  // Use this lock when accessing |window_tree_client_|. Lock exists solely for
+  // DCHECK in destructor.
+  base::Lock window_tree_client_lock_;
+  std::unique_ptr<ui::WindowTreeClient> window_tree_client_;
   ui::Window* root_;
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;

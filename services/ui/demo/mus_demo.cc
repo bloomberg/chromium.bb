@@ -4,6 +4,7 @@
 
 #include "services/ui/demo/mus_demo.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "services/shell/public/cpp/connector.h"
 #include "services/ui/demo/bitmap_uploader.h"
@@ -60,13 +61,11 @@ void DrawSquare(const gfx::Rect& bounds, double angle, SkCanvas* canvas) {
 
 MusDemo::MusDemo() {}
 
-MusDemo::~MusDemo() {
-  delete window_tree_client_;
-}
+MusDemo::~MusDemo() {}
 
 void MusDemo::OnStart(const shell::Identity& identity) {
   gpu_service_ = GpuService::Create(connector());
-  window_tree_client_ = new WindowTreeClient(this, this, nullptr);
+  window_tree_client_ = base::MakeUnique<WindowTreeClient>(this, this);
   window_tree_client_->ConnectAsWindowManager(connector());
 }
 
@@ -80,8 +79,14 @@ void MusDemo::OnEmbed(Window* window) {
   NOTREACHED();
 }
 
-void MusDemo::OnDidDestroyClient(WindowTreeClient* client) {
-  window_tree_client_ = nullptr;
+void MusDemo::OnEmbedRootDestroyed(Window* root) {
+  // Not called for the WindowManager.
+  NOTREACHED();
+}
+
+void MusDemo::OnLostConnection(WindowTreeClient* client) {
+  window_ = nullptr;
+  window_tree_client_.reset();
   timer_.Stop();
 }
 
@@ -116,7 +121,7 @@ void MusDemo::OnWmNewDisplay(Window* window, const display::Display& display) {
   window_ = window;
 
   // Initialize bitmap uploader for sending frames to MUS.
-  uploader_.reset(new ui::BitmapUploader(window_));
+  uploader_.reset(new BitmapUploader(window_));
   uploader_->Init(gpu_service_.get());
 
   // Draw initial frame and start the timer to regularly draw frames.
@@ -177,7 +182,7 @@ void MusDemo::DrawFrame() {
 
   // Send frame to MUS via BitmapUploader.
   uploader_->SetBitmap(bounds.width(), bounds.height(), std::move(data),
-                       ui::BitmapUploader::BGRA);
+                       BitmapUploader::BGRA);
 }
 
 }  // namespace demo

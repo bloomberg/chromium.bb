@@ -29,8 +29,6 @@
 
 namespace ui {
 
-void DeleteWindowTreeClient(WindowTreeClient* client) { delete client; }
-
 Id MakeTransportId(ClientSpecificId client_id, ClientSpecificId local_id) {
   return (client_id << 16) | local_id;
 }
@@ -97,7 +95,6 @@ WindowTreeClient::WindowTreeClient(
       focused_window_(nullptr),
       binding_(this),
       tree_(nullptr),
-      delete_on_no_roots_(!window_manager_delegate),
       in_destructor_(false),
       weak_factory_(this) {
   // Allow for a null request in tests.
@@ -134,15 +131,10 @@ WindowTreeClient::~WindowTreeClient() {
 
   FOR_EACH_OBSERVER(WindowTreeClientObserver, observers_,
                     OnDidDestroyClient(this));
-
-  delegate_->OnDidDestroyClient(this);
 }
 
 void WindowTreeClient::ConnectViaWindowTreeFactory(
     shell::Connector* connector) {
-  // Clients created with no root shouldn't delete automatically.
-  delete_on_no_roots_ = false;
-
   // The client id doesn't really matter, we use 101 purely for debugging.
   client_id_ = 101;
 
@@ -446,10 +438,9 @@ void WindowTreeClient::OnWindowDestroyed(Window* window) {
   for (auto change_id : in_flight_change_ids_to_remove)
     in_flight_map_.erase(change_id);
 
-  if (roots_.erase(window) > 0 && roots_.empty() && delete_on_no_roots_ &&
-      !in_destructor_) {
-    delete this;
-  }
+  const bool was_root = roots_.erase(window) > 0;
+  if (!in_destructor_ && was_root && roots_.empty() && is_from_embed_)
+    delegate_->OnEmbedRootDestroyed(window);
 }
 
 Window* WindowTreeClient::GetWindowByServerId(Id id) {
@@ -537,7 +528,7 @@ void WindowTreeClient::SetWindowTree(mojom::WindowTreePtr window_tree_ptr) {
 }
 
 void WindowTreeClient::OnConnectionLost() {
-  delete this;
+  delegate_->OnLostConnection(this);
 }
 
 void WindowTreeClient::OnEmbedImpl(mojom::WindowTree* window_tree,
@@ -600,10 +591,6 @@ void WindowTreeClient::OnWmMoveLoopCompleted(uint32_t change_id,
 
 ////////////////////////////////////////////////////////////////////////////////
 // WindowTreeClient, WindowTreeClient implementation:
-
-void WindowTreeClient::SetDeleteOnNoRoots(bool value) {
-  delete_on_no_roots_ = value;
-}
 
 const std::set<Window*>& WindowTreeClient::GetRoots() {
   return roots_;
@@ -718,15 +705,15 @@ void WindowTreeClient::SetCanAcceptEvents(Id window_id,
 }
 
 void WindowTreeClient::OnEmbed(ClientSpecificId client_id,
-                                   mojom::WindowDataPtr root_data,
-                                   mojom::WindowTreePtr tree,
-                                   int64_t display_id,
-                                   Id focused_window_id,
-                                   bool drawn) {
+                               mojom::WindowDataPtr root_data,
+                               mojom::WindowTreePtr tree,
+                               int64_t display_id,
+                               Id focused_window_id,
+                               bool drawn) {
   DCHECK(!tree_ptr_);
   tree_ptr_ = std::move(tree);
-  tree_ptr_.set_connection_error_handler(
-      base::Bind(&DeleteWindowTreeClient, this));
+
+  is_from_embed_ = true;
 
   if (window_manager_delegate_) {
     tree_ptr_->GetWindowManagerClient(GetProxy(&window_manager_internal_client_,

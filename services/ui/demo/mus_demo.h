@@ -43,7 +43,8 @@ class MusDemo : public shell::Service,
 
   // WindowTreeClientDelegate:
   void OnEmbed(Window* root) override;
-  void OnDidDestroyClient(WindowTreeClient* client) override;
+  void OnEmbedRootDestroyed(Window* root) override;
+  void OnLostConnection(WindowTreeClient* client) override;
   void OnPointerEventObserved(const PointerEvent& event,
                               Window* target) override;
 
@@ -72,11 +73,11 @@ class MusDemo : public shell::Service,
   void DrawFrame();
 
   Window* window_ = nullptr;
-  WindowTreeClient* window_tree_client_ = nullptr;
+  std::unique_ptr<WindowTreeClient> window_tree_client_;
   std::unique_ptr<GpuService> gpu_service_;
 
   // Used to send frames to mus.
-  std::unique_ptr<ui::BitmapUploader> uploader_;
+  std::unique_ptr<BitmapUploader> uploader_;
 
   // Bitmap that is the same size as our client window area.
   SkBitmap bitmap_;

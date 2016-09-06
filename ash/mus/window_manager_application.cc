@@ -96,7 +96,7 @@ void WindowManagerApplication::OnAcceleratorRegistrarDestroyed(
 }
 
 void WindowManagerApplication::InitWindowManager(
-    ui::WindowTreeClient* window_tree_client) {
+    std::unique_ptr<ui::WindowTreeClient> window_tree_client) {
   InitializeComponents();
 #if defined(OS_CHROMEOS)
   // TODO(jamescook): Refactor StatisticsProvider so we can get just the data
@@ -107,7 +107,7 @@ void WindowManagerApplication::InitWindowManager(
   statistics_provider_->SetMachineStatistic("initial_locale", "en-US");
   statistics_provider_->SetMachineStatistic("keyboard_layout", "");
 #endif
-  window_manager_->Init(window_tree_client);
+  window_manager_->Init(std::move(window_tree_client));
 }
 
 void WindowManagerApplication::OnStart(const shell::Identity& identity) {
@@ -123,14 +123,15 @@ void WindowManagerApplication::OnStart(const shell::Identity& identity) {
 
   tracing_.Initialize(connector(), identity.name());
 
-  ui::WindowTreeClient* window_tree_client = new ui::WindowTreeClient(
-      window_manager_.get(), window_manager_.get(), nullptr);
+  std::unique_ptr<ui::WindowTreeClient> window_tree_client =
+      base::MakeUnique<ui::WindowTreeClient>(window_manager_.get(),
+                                             window_manager_.get());
   window_tree_client->ConnectAsWindowManager(connector());
 
   native_widget_factory_mus_.reset(
       new NativeWidgetFactoryMus(window_manager_.get()));
 
-  InitWindowManager(window_tree_client);
+  InitWindowManager(std::move(window_tree_client));
 }
 
 bool WindowManagerApplication::OnConnect(const shell::Identity& remote_identity,

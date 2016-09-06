@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <utility>
 
 #include "mojo/public/cpp/bindings/binding.h"
@@ -23,12 +24,12 @@ class TestWM : public shell::Service,
                public ui::WindowManagerDelegate {
  public:
   TestWM() {}
-  ~TestWM() override { delete window_tree_client_; }
+  ~TestWM() override {}
 
  private:
   // shell::Service:
   void OnStart(const shell::Identity& identity) override {
-    window_tree_client_ = new ui::WindowTreeClient(this, this, nullptr);
+    window_tree_client_.reset(new ui::WindowTreeClient(this, this));
     window_tree_client_->ConnectAsWindowManager(connector());
   }
 
@@ -38,8 +39,13 @@ class TestWM : public shell::Service,
     // OnEmbed().
     NOTREACHED();
   }
-  void OnDidDestroyClient(ui::WindowTreeClient* client) override {
-    window_tree_client_ = nullptr;
+  void OnLostConnection(WindowTreeClient* client) override {
+    window_tree_client_.reset();
+  }
+  void OnEmbedRootDestroyed(ui::Window* root) override {
+    // WindowTreeClients configured as the window manager should never get
+    // OnEmbedRootDestroyed().
+    NOTREACHED();
   }
   void OnPointerEventObserved(const ui::PointerEvent& event,
                               ui::Window* target) override {
@@ -93,8 +99,7 @@ class TestWM : public shell::Service,
 
   ui::Window* root_ = nullptr;
   ui::WindowManagerClient* window_manager_client_ = nullptr;
-  // See WindowTreeClient for details on ownership.
-  ui::WindowTreeClient* window_tree_client_ = nullptr;
+  std::unique_ptr<ui::WindowTreeClient> window_tree_client_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWM);
 };

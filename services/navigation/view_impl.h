@@ -81,7 +81,8 @@ class ViewImpl : public mojom::View,
 
   // ui::WindowTreeClientDelegate:
   void OnEmbed(ui::Window* root) override;
-  void OnDidDestroyClient(ui::WindowTreeClient* client) override;
+  void OnEmbedRootDestroyed(ui::Window* root) override;
+  void OnLostConnection(ui::WindowTreeClient* client) override;
   void OnPointerEventObserved(const ui::PointerEvent& event,
                               ui::Window* target) override;
 
@@ -94,6 +95,8 @@ class ViewImpl : public mojom::View,
   mojo::StrongBinding<mojom::View> binding_;
   mojom::ViewClientPtr client_;
   std::unique_ptr<shell::ServiceContextRef> ref_;
+
+  std::unique_ptr<ui::WindowTreeClient> window_tree_client_;
 
   views::WebView* web_view_;
 

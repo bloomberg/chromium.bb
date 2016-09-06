@@ -23,7 +23,8 @@ class WindowTreeClientDelegate : public ui::WindowTreeClientDelegate {
  private:
   // ui::WindowTreeClientDelegate:
   void OnEmbed(ui::Window* root) override {}
-  void OnDidDestroyClient(ui::WindowTreeClient* client) override {}
+  void OnEmbedRootDestroyed(ui::Window* root) override {}
+  void OnLostConnection(ui::WindowTreeClient* client) override {}
   void OnPointerEventObserved(const ui::PointerEvent& event,
                               ui::Window* target) override {}
 
@@ -51,7 +52,7 @@ TEST_F(WindowManagerTest, OpenWindow) {
   // Connect to mus and create a new top level window. The request goes to
   // |ash|, but is async.
   std::unique_ptr<ui::WindowTreeClient> client(
-      new ui::WindowTreeClient(&window_tree_delegate, nullptr, nullptr));
+      new ui::WindowTreeClient(&window_tree_delegate));
   client->ConnectViaWindowTreeFactory(connector());
   ui::Window* top_level_window = client->NewTopLevelWindow(nullptr);
   ASSERT_TRUE(top_level_window);

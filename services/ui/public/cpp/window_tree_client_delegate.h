@@ -29,15 +29,22 @@ class WindowTreeClientDelegate {
   virtual void OnEmbed(Window* root) = 0;
 
   // Sent when another app is embedded in |root| (one of the roots of the
-  // connection). Afer this call |root| is deleted. If |root| is the only root
-  // and the connection is configured to delete when there are no roots (the
-  // default), then after |root| is destroyed the connection is destroyed as
-  // well.
+  // connection). Afer this call |root| is deleted. If the associated
+  // WindowTreeClient was created from a WindowTreeClientRequest then
+  // OnEmbedRootDestroyed() is called after the window is deleted.
   virtual void OnUnembed(Window* root);
 
-  // Called from the destructor of WindowTreeClient after all the Windows have
-  // been destroyed. |client| is no longer valid after this call.
-  virtual void OnDidDestroyClient(WindowTreeClient* client) = 0;
+  // Called when the embed root has been destroyed on the server side (or
+  // another client was embedded in the same window). This is only called if the
+  // WindowTreeClient was created from an InterfaceRequest. Generally when this
+  // is called the delegate should delete the WindowTreeClient.
+  virtual void OnEmbedRootDestroyed(Window* root) = 0;
+
+  // Called when the connection to the window server has been lost. After this
+  // call the windows are still valid, and you can still do things, but they
+  // have no real effect. Generally when this is called clients should delete
+  // the corresponding WindowTreeClient.
+  virtual void OnLostConnection(WindowTreeClient* client) = 0;
 
   // Called when the WindowTreeClient receives an input event observed via
   // StartPointerWatcher(). |target| may be null for events that were sent to

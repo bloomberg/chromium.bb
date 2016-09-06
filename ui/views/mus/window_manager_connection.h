@@ -89,7 +89,8 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
 
   // ui::WindowTreeClientDelegate:
   void OnEmbed(ui::Window* root) override;
-  void OnDidDestroyClient(ui::WindowTreeClient* client) override;
+  void OnLostConnection(ui::WindowTreeClient* client) override;
+  void OnEmbedRootDestroyed(ui::Window* root) override;
   void OnPointerEventObserved(const ui::PointerEvent& event,
                               ui::Window* target) override;
 

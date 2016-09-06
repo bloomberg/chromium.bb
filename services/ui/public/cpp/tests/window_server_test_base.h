@@ -6,6 +6,7 @@
 #define SERVICES_UI_PUBLIC_CPP_TESTS_WINDOW_SERVER_TEST_BASE_H_
 
 #include <memory>
+#include <set>
 
 #include "base/macros.h"
 #include "services/shell/public/cpp/interface_factory.h"
@@ -30,9 +31,9 @@ class WindowServerTestBase
   WindowServerTestBase();
   ~WindowServerTestBase() override;
 
-  // True if WindowTreeClientDelegate::OnDidDestroyClient() was called.
-  bool window_tree_client_destroyed() const {
-    return window_tree_client_destroyed_;
+  // True if WindowTreeClientDelegate::OnLostConnection() was called.
+  bool window_tree_client_lost_connection() const {
+    return window_tree_client_lost_connection_;
   }
 
   // Runs the MessageLoop until QuitRunLoop() is called, or a timeout occurs.
@@ -59,6 +60,9 @@ class WindowServerTestBase
     window_manager_delegate_ = delegate;
   }
 
+  // Cleans up internal state then deletes |client|.
+  void DeleteWindowTreeClient(ui::WindowTreeClient* client);
+
   // testing::Test:
   void SetUp() override;
 
@@ -68,7 +72,8 @@ class WindowServerTestBase
 
   // WindowTreeClientDelegate:
   void OnEmbed(Window* root) override;
-  void OnDidDestroyClient(WindowTreeClient* client) override;
+  void OnLostConnection(WindowTreeClient* client) override;
+  void OnEmbedRootDestroyed(Window* root) override;
   void OnPointerEventObserved(const ui::PointerEvent& event,
                               Window* target) override;
 
@@ -103,6 +108,8 @@ class WindowServerTestBase
  private:
   mojom::WindowTreeHostPtr host_;
 
+  std::set<std::unique_ptr<WindowTreeClient>> window_tree_clients_;
+
   // The window server connection held by the window manager (app running at
   // the root window).
   WindowTreeClient* window_manager_;
@@ -113,7 +120,7 @@ class WindowServerTestBase
 
   WindowManagerClient* window_manager_client_;
 
-  bool window_tree_client_destroyed_;
+  bool window_tree_client_lost_connection_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WindowServerTestBase);
 };

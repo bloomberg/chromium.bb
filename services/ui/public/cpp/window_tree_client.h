@@ -46,25 +46,20 @@ enum class ChangeType;
 
 // Manages the connection with mus.
 //
-// WindowTreeClient is deleted by any of the following:
-// . If all the roots of the connection are destroyed and the connection is
-//   configured to delete when there are no roots (true if the WindowTreeClient
-//   is created with a mojom::WindowTreeClientRequest). This happens
-//   if the owner of the roots Embed()s another app in all the roots, or all
-//   the roots are explicitly deleted.
-// . The connection to mus is lost.
-// . Explicitly by way of calling delete.
+// WindowTreeClient is owned by the creator. Generally when the delegate gets
+// one of OnEmbedRootDestroyed() or OnLostConnection() it should delete the
+// WindowTreeClient.
 //
 // When WindowTreeClient is deleted all windows are deleted (and observers
-// notified). This is followed by calling
-// WindowTreeClientDelegate::OnDidDestroyClient().
+// notified).
 class WindowTreeClient : public mojom::WindowTreeClient,
                          public mojom::WindowManager,
                          public WindowManagerClient {
  public:
-  WindowTreeClient(WindowTreeClientDelegate* delegate,
-                   WindowManagerDelegate* window_manager_delegate,
-                   mojom::WindowTreeClientRequest request);
+  explicit WindowTreeClient(
+      WindowTreeClientDelegate* delegate,
+      WindowManagerDelegate* window_manager_delegate = nullptr,
+      mojom::WindowTreeClientRequest request = nullptr);
   ~WindowTreeClient() override;
 
   // Establishes the connection by way of the WindowTreeFactory.
@@ -155,10 +150,6 @@ class WindowTreeClient : public mojom::WindowTreeClient,
   void OnWindowDestroyed(Window* window);
 
   Window* GetWindowByServerId(Id id);
-
-  // Sets whether this is deleted when there are no roots. The default is to
-  // delete when there are no roots.
-  void SetDeleteOnNoRoots(bool value);
 
   // Returns the root of this connection.
   const std::set<Window*>& GetRoots();
@@ -402,7 +393,8 @@ class WindowTreeClient : public mojom::WindowTreeClient,
   // directly set this.
   mojom::WindowTree* tree_;
 
-  bool delete_on_no_roots_;
+  // Set to true if OnEmbed() was received.
+  bool is_from_embed_ = false;
 
   bool in_destructor_;
 

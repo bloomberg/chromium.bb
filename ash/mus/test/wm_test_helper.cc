@@ -57,12 +57,14 @@ void WmTestHelper::Init() {
       window_manager_app_->window_manager_.get(), display);
 
   window_manager_app_->InitWindowManager(
-      window_tree_client_setup_.window_tree_client());
+      window_tree_client_setup_.OwnWindowTreeClient());
+  ui::WindowTreeClient* window_tree_client =
+      window_manager_app_->window_manager()->window_tree_client();
 
   screen_->display_list()->AddDisplay(display,
                                       views::DisplayList::Type::PRIMARY);
 
-  ui::WindowTreeClientPrivate(window_tree_client_setup_.window_tree_client())
+  ui::WindowTreeClientPrivate(window_tree_client)
       .CallWmNewDisplayAdded(display);
 }
 

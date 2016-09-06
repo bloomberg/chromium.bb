@@ -70,18 +70,18 @@ WindowManager::WindowManager(shell::Connector* connector)
     : connector_(connector) {}
 
 WindowManager::~WindowManager() {
-  // NOTE: |window_tree_client_| may already be null.
-  delete window_tree_client_;
+  Shutdown();
 }
 
-void WindowManager::Init(ui::WindowTreeClient* window_tree_client) {
+void WindowManager::Init(
+    std::unique_ptr<ui::WindowTreeClient> window_tree_client) {
   DCHECK(!window_tree_client_);
-  window_tree_client_ = window_tree_client;
+  window_tree_client_ = std::move(window_tree_client);
 
   pointer_watcher_event_router_.reset(
-      new views::PointerWatcherEventRouter(window_tree_client));
+      new views::PointerWatcherEventRouter(window_tree_client_.get()));
 
-  shadow_controller_.reset(new ShadowController(window_tree_client));
+  shadow_controller_.reset(new ShadowController(window_tree_client_.get()));
 
   // The insets are roughly what is needed by CustomFrameView. The expectation
   // is at some point we'll write our own NonClientFrameView and get the insets
@@ -180,6 +180,31 @@ RootWindowController* WindowManager::CreateRootWindowController(
   return root_window_controller;
 }
 
+void WindowManager::Shutdown() {
+  if (!window_tree_client_)
+    return;
+
+  // Observers can rely on WmShell from the callback. So notify the observers
+  // before destroying it.
+  FOR_EACH_OBSERVER(WindowManagerObserver, observers_,
+                    OnWindowTreeClientDestroyed());
+
+  // Destroy the roots of the RootWindowControllers, which triggers removal
+  // in OnWindowDestroyed().
+  while (!root_window_controllers_.empty())
+    (*root_window_controllers_.begin())->root()->Destroy();
+
+  lookup_.reset();
+  shell_->Shutdown();
+  shell_.reset();
+  shadow_controller_.reset();
+
+  pointer_watcher_event_router_.reset();
+
+  window_tree_client_.reset();
+  window_manager_client_ = nullptr;
+}
+
 void WindowManager::OnWindowDestroying(ui::Window* window) {
   for (auto it = root_window_controllers_.begin();
        it != root_window_controllers_.end(); ++it) {
@@ -209,25 +234,16 @@ void WindowManager::OnEmbed(ui::Window* root) {
   NOTREACHED();
 }
 
-void WindowManager::OnDidDestroyClient(ui::WindowTreeClient* client) {
-  // Destroying the roots should result in removal from
-  // |root_window_controllers_|.
-  DCHECK(root_window_controllers_.empty());
+void WindowManager::OnEmbedRootDestroyed(ui::Window* root) {
+  // WindowManager should never see this.
+  NOTREACHED();
+}
 
-  // Observers can rely on WmShell from the callback. So notify the observers
-  // before destroying it.
-  FOR_EACH_OBSERVER(WindowManagerObserver, observers_,
-                    OnWindowTreeClientDestroyed());
-
-  lookup_.reset();
-  shell_->Shutdown();
-  shell_.reset();
-  shadow_controller_.reset();
-
-  pointer_watcher_event_router_.reset();
-
-  window_tree_client_ = nullptr;
-  window_manager_client_ = nullptr;
+void WindowManager::OnLostConnection(ui::WindowTreeClient* client) {
+  DCHECK_EQ(client, window_tree_client_.get());
+  Shutdown();
+  // TODO(sky): this case should trigger shutting down WindowManagerApplication
+  // too.
 }
 
 void WindowManager::OnPointerEventObserved(const ui::PointerEvent& event,

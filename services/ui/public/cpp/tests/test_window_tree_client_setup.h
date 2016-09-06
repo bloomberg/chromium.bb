@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "services/ui/public/cpp/window_tree_client_observer.h"
 
 namespace display {
 class Display;
@@ -23,10 +22,10 @@ class WindowTreeClientDelegate;
 
 // TestWindowTreeClientSetup is used to create a WindowTreeClient that is not
 // connected to mus.
-class TestWindowTreeClientSetup : public ui::WindowTreeClientObserver {
+class TestWindowTreeClientSetup {
  public:
   TestWindowTreeClientSetup();
-  ~TestWindowTreeClientSetup() override;
+  ~TestWindowTreeClientSetup();
 
   // Initializes the WindowTreeClient.
   void Init(WindowTreeClientDelegate* window_tree_delegate);
@@ -37,6 +36,9 @@ class TestWindowTreeClientSetup : public ui::WindowTreeClientObserver {
   // The WindowTree that WindowTreeClient talks to.
   TestWindowTree* window_tree() { return window_tree_.get(); }
 
+  // Returns ownership of WindowTreeClient to the caller.
+  std::unique_ptr<WindowTreeClient> OwnWindowTreeClient();
+
   WindowTreeClient* window_tree_client();
 
  private:
@@ -44,14 +46,8 @@ class TestWindowTreeClientSetup : public ui::WindowTreeClientObserver {
   void CommonInit(WindowTreeClientDelegate* window_tree_delegate,
                   WindowManagerDelegate* window_manager_delegate);
 
-  // ui::WindowTreeClientObserver:
-  void OnDidDestroyClient(ui::WindowTreeClient* client) override;
-
   std::unique_ptr<TestWindowTree> window_tree_;
 
-  // See description of WindowTreeClientDelegate for details on ownership. The
-  // WindowTreeClient may be deleted during shutdown by the test. If not,
-  // we own it and must delete it.
   std::unique_ptr<WindowTreeClient> window_tree_client_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowTreeClientSetup);

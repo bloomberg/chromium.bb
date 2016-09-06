@@ -931,10 +931,8 @@ namespace {
 
 class DestroyedChangedObserver : public WindowObserver {
  public:
-  DestroyedChangedObserver(WindowServerTestBase* test,
-                           Window* window,
-                           bool* got_destroy)
-      : test_(test), window_(window), got_destroy_(got_destroy) {
+  DestroyedChangedObserver(Window* window, bool* got_destroy)
+      : window_(window), got_destroy_(got_destroy) {
     window_->AddObserver(this);
   }
   ~DestroyedChangedObserver() override {
@@ -949,13 +947,8 @@ class DestroyedChangedObserver : public WindowObserver {
     window_->RemoveObserver(this);
     *got_destroy_ = true;
     window_ = nullptr;
-
-    // We should always get OnWindowDestroyed() before
-    // OnDidDestroyClient().
-    EXPECT_FALSE(test_->window_tree_client_destroyed());
   }
 
-  WindowServerTestBase* test_;
   Window* window_;
   bool* got_destroy_;
 
@@ -973,29 +966,9 @@ TEST_F(WindowServerTest, DeleteWindowServer) {
   WindowTreeClient* client = Embed(window).client;
   ASSERT_TRUE(client);
   bool got_destroy = false;
-  DestroyedChangedObserver observer(this, GetFirstRoot(client),
-                                    &got_destroy);
-  delete client;
-  EXPECT_TRUE(window_tree_client_destroyed());
+  DestroyedChangedObserver observer(GetFirstRoot(client), &got_destroy);
+  DeleteWindowTreeClient(client);
   EXPECT_TRUE(got_destroy);
-}
-
-// Verifies two Embed()s in the same window trigger deletion of the first
-// WindowServer.
-TEST_F(WindowServerTest, DisconnectTriggersDelete) {
-  Window* window = window_manager()->NewWindow();
-  ASSERT_NE(nullptr, window);
-  window->SetVisible(true);
-  GetFirstWMRoot()->AddChild(window);
-  WindowTreeClient* client = Embed(window).client;
-  EXPECT_NE(client, window_manager());
-  Window* embedded_window = client->NewWindow();
-  // Embed again, this should trigger disconnect and deletion of client.
-  bool got_destroy;
-  DestroyedChangedObserver observer(this, embedded_window, &got_destroy);
-  EXPECT_FALSE(window_tree_client_destroyed());
-  Embed(window);
-  EXPECT_TRUE(window_tree_client_destroyed());
 }
 
 class WindowRemovedFromParentObserver : public WindowObserver {
@@ -1043,10 +1016,8 @@ namespace {
 
 class DestroyObserver : public WindowObserver {
  public:
-  DestroyObserver(WindowServerTestBase* test,
-                  WindowTreeClient* client,
-                  bool* got_destroy)
-      : test_(test), got_destroy_(got_destroy) {
+  DestroyObserver(WindowTreeClient* client, bool* got_destroy)
+      : got_destroy_(got_destroy) {
     GetFirstRoot(client)->AddObserver(this);
   }
   ~DestroyObserver() override {}
@@ -1057,14 +1028,9 @@ class DestroyObserver : public WindowObserver {
     *got_destroy_ = true;
     window->RemoveObserver(this);
 
-    // We should always get OnWindowDestroyed() before
-    // OnWindowManagerDestroyed().
-    EXPECT_FALSE(test_->window_tree_client_destroyed());
-
     EXPECT_TRUE(WindowServerTestBase::QuitRunLoop());
   }
 
-  WindowServerTestBase* test_;
   bool* got_destroy_;
 
   DISALLOW_COPY_AND_ASSIGN(DestroyObserver);
@@ -1082,7 +1048,7 @@ TEST_F(WindowServerTest, WindowServerDestroyedAfterRootObserver) {
   WindowTreeClient* embedded_client = Embed(embed_window).client;
 
   bool got_destroy = false;
-  DestroyObserver observer(this, embedded_client, &got_destroy);
+  DestroyObserver observer(embedded_client, &got_destroy);
   // Delete the window |embedded_client| is embedded in. This is async,
   // but will eventually trigger deleting |embedded_client|.
   embed_window->Destroy();
@@ -1151,14 +1117,11 @@ class EstablishConnectionViaFactoryDelegate : public TestWindowManagerDelegate {
 TEST_F(WindowServerTest, EstablishConnectionViaFactory) {
   EstablishConnectionViaFactoryDelegate delegate(window_manager());
   set_window_manager_delegate(&delegate);
-  std::unique_ptr<WindowTreeClient> second_client(
-      new WindowTreeClient(this, nullptr, nullptr));
-  second_client->ConnectViaWindowTreeFactory(connector());
-  Window* window_in_second_client =
-      second_client->NewTopLevelWindow(nullptr);
+  WindowTreeClient second_client(this, nullptr, nullptr);
+  second_client.ConnectViaWindowTreeFactory(connector());
+  Window* window_in_second_client = second_client.NewTopLevelWindow(nullptr);
   ASSERT_TRUE(window_in_second_client);
-  ASSERT_TRUE(second_client->GetRoots().count(window_in_second_client) >
-              0);
+  ASSERT_TRUE(second_client.GetRoots().count(window_in_second_client) > 0);
   // Wait for the window to appear in the wm.
   ASSERT_TRUE(delegate.QuitOnCreate());
 

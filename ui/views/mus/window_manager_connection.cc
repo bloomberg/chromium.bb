@@ -140,12 +140,15 @@ WindowManagerConnection::WindowManagerConnection(
 
 void WindowManagerConnection::OnEmbed(ui::Window* root) {}
 
-void WindowManagerConnection::OnDidDestroyClient(ui::WindowTreeClient* client) {
-  if (client_.get() == client) {
-    client_.release();
-  } else {
-    DCHECK(!client_);
-  }
+void WindowManagerConnection::OnLostConnection(ui::WindowTreeClient* client) {
+  DCHECK_EQ(client, client_.get());
+  client_.reset();
+}
+
+void WindowManagerConnection::OnEmbedRootDestroyed(ui::Window* root) {
+  // Not called for WindowManagerConnection as WindowTreeClient isn't created by
+  // way of an Embed().
+  NOTREACHED();
 }
 
 void WindowManagerConnection::OnPointerEventObserved(

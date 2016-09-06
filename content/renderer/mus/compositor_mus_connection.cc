@@ -55,7 +55,11 @@ void CompositorMusConnection::AttachSurfaceOnMainThread(
                  this, base::Passed(std::move(surface_binding))));
 }
 
-CompositorMusConnection::~CompositorMusConnection() {}
+CompositorMusConnection::~CompositorMusConnection() {
+  base::AutoLock auto_lock(window_tree_client_lock_);
+  // Destruction must happen on the compositor task runner.
+  DCHECK(!window_tree_client_);
+}
 
 void CompositorMusConnection::AttachSurfaceOnCompositorThread(
     std::unique_ptr<ui::WindowSurfaceBinding> surface_binding) {
@@ -70,7 +74,11 @@ void CompositorMusConnection::AttachSurfaceOnCompositorThread(
 void CompositorMusConnection::CreateWindowTreeClientOnCompositorThread(
     mojo::InterfaceRequest<ui::mojom::WindowTreeClient> request) {
   DCHECK(compositor_task_runner_->BelongsToCurrentThread());
-  new ui::WindowTreeClient(this, nullptr, std::move(request));
+  DCHECK(!window_tree_client_);
+  std::unique_ptr<ui::WindowTreeClient> window_tree_client =
+      base::MakeUnique<ui::WindowTreeClient>(this, nullptr, std::move(request));
+  base::AutoLock auto_lock(window_tree_client_lock_);
+  window_tree_client_ = std::move(window_tree_client);
 }
 
 void CompositorMusConnection::OnConnectionLostOnMainThread() {
@@ -128,8 +136,13 @@ std::unique_ptr<blink::WebInputEvent> CompositorMusConnection::Convert(
   return nullptr;
 }
 
-void CompositorMusConnection::OnDidDestroyClient(ui::WindowTreeClient* client) {
+void CompositorMusConnection::DeleteWindowTreeClient() {
   DCHECK(compositor_task_runner_->BelongsToCurrentThread());
+  std::unique_ptr<ui::WindowTreeClient> window_tree_client;
+  {
+    base::AutoLock auto_lock(window_tree_client_lock_);
+    window_tree_client = std::move(window_tree_client_);
+  }
   main_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&CompositorMusConnection::OnConnectionLostOnMainThread, this));
@@ -143,6 +156,14 @@ void CompositorMusConnection::OnEmbed(ui::Window* root) {
     root->AttachSurface(ui::mojom::SurfaceType::DEFAULT,
                         std::move(window_surface_binding_));
   }
+}
+
+void CompositorMusConnection::OnEmbedRootDestroyed(ui::Window* window) {
+  DeleteWindowTreeClient();
+}
+
+void CompositorMusConnection::OnLostConnection(ui::WindowTreeClient* client) {
+  DeleteWindowTreeClient();
 }
 
 void CompositorMusConnection::OnPointerEventObserved(

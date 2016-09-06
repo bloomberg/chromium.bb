@@ -65,7 +65,8 @@ class WindowManagerApplication
 
   void OnAcceleratorRegistrarDestroyed(AcceleratorRegistrarImpl* registrar);
 
-  void InitWindowManager(ui::WindowTreeClient* window_tree_client);
+  void InitWindowManager(
+      std::unique_ptr<ui::WindowTreeClient> window_tree_client);
 
   // shell::Service:
   void OnStart(const shell::Identity& identity) override;
