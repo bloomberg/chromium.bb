@@ -379,13 +379,14 @@ var renderTile = function(data) {
     html.push('<div class="mv-favicon"></div>');
   }
   html.push('<div class="mv-title"></div><div class="mv-thumb"></div>');
-  html.push('<div class="mv-x"></div>');
+  html.push('<div class="mv-x" role="button"></div>');
   tile.innerHTML = html.join('');
   tile.lastElementChild.title = queryArgs['removeTooltip'] || '';
 
   if (isSchemeAllowed(data.url)) {
     tile.href = data.url;
   }
+  tile.setAttribute('aria-label', data.title);
   tile.title = data.title;
   if (data.impressionUrl) {
     impressionUrl = data.impressionUrl;
