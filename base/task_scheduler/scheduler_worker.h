@@ -43,11 +43,7 @@ class BASE_EXPORT SchedulerWorker {
     virtual ~Delegate() = default;
 
     // Called by a thread managed by |worker| when it enters its main function.
-    // If a thread is recreated after detachment, |detach_duration| is the time
-    // elapsed since detachment. Otherwise, if this is the first thread created
-    // for |worker|, |detach_duration| is TimeDelta::Max().
-    virtual void OnMainEntry(SchedulerWorker* worker,
-                             const TimeDelta& detach_duration) = 0;
+    virtual void OnMainEntry(SchedulerWorker* worker) = 0;
 
     // Called by a thread managed by |worker| to get a Sequence from which to
     // run a Task.
@@ -67,8 +63,8 @@ class BASE_EXPORT SchedulerWorker {
     // worker's WakeUp() method is called.
     virtual TimeDelta GetSleepTimeout() = 0;
 
-    // Called by a thread if it is allowed to detach if the last call to
-    // GetWork() returned nullptr.
+    // Called by a thread after GetWork() returned nullptr to know whether it is
+    // allowed to detach.
     //
     // It is the responsibility of the delegate to determine if detachment is
     // safe. If the delegate is responsible for thread-affine work, detachment
@@ -81,6 +77,9 @@ class BASE_EXPORT SchedulerWorker {
     // This MUST return false if SchedulerWorker::JoinForTesting() is in
     // progress.
     virtual bool CanDetach(SchedulerWorker* worker) = 0;
+
+    // Called by the SchedulerWorker just after detaching.
+    virtual void DidDetach() = 0;
   };
 
   enum class InitialState { ALIVE, DETACHED };
@@ -142,10 +141,6 @@ class BASE_EXPORT SchedulerWorker {
 
   // The underlying thread for this SchedulerWorker.
   std::unique_ptr<Thread> thread_;
-
-  // Time of the last successful Detach(). Is only accessed from the thread
-  // managed by this SchedulerWorker.
-  TimeTicks last_detach_time_;
 
   const ThreadPriority priority_hint_;
   const std::unique_ptr<Delegate> delegate_;

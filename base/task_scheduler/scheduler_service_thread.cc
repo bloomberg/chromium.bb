@@ -25,10 +25,7 @@ class ServiceThreadDelegate : public SchedulerWorker::Delegate {
       : delayed_task_manager_(delayed_task_manager) {}
 
   // SchedulerWorker::Delegate:
-  void OnMainEntry(SchedulerWorker* worker,
-                   const TimeDelta& detach_duration) override {
-    DCHECK(detach_duration.is_max());
-  }
+  void OnMainEntry(SchedulerWorker* worker) override {}
 
   scoped_refptr<Sequence> GetWork(SchedulerWorker* worker) override {
     delayed_task_manager_->PostReadyTasks();
@@ -61,6 +58,10 @@ class ServiceThreadDelegate : public SchedulerWorker::Delegate {
 
   bool CanDetach(SchedulerWorker* worker) override {
     return false;
+  }
+
+  void DidDetach() override {
+    NOTREACHED() << "SchedulerServiceThread should never detach.";
   }
 
  private:

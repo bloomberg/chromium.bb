@@ -41,8 +41,7 @@ class SchedulerWorkerDefaultDelegate : public SchedulerWorker::Delegate {
   SchedulerWorkerDefaultDelegate() = default;
 
   // SchedulerWorker::Delegate:
-  void OnMainEntry(SchedulerWorker* worker,
-                   const TimeDelta& detach_duration) override {}
+  void OnMainEntry(SchedulerWorker* worker) override {}
   scoped_refptr<Sequence> GetWork(SchedulerWorker* worker) override {
     return nullptr;
   }
@@ -54,6 +53,9 @@ class SchedulerWorkerDefaultDelegate : public SchedulerWorker::Delegate {
   }
   TimeDelta GetSleepTimeout() override { return TimeDelta::Max(); }
   bool CanDetach(SchedulerWorker* worker) override { return false; }
+  void DidDetach() override {
+    ADD_FAILURE() << "Unexpected call to DidDetach()";
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SchedulerWorkerDefaultDelegate);
@@ -132,8 +134,7 @@ class TaskSchedulerWorkerTest : public testing::TestWithParam<size_t> {
     }
 
     // SchedulerWorker::Delegate:
-    void OnMainEntry(SchedulerWorker* worker,
-                     const TimeDelta& detach_duration) override {
+    void OnMainEntry(SchedulerWorker* worker) override {
       outer_->worker_set_.Wait();
       EXPECT_EQ(outer_->worker_.get(), worker);
       EXPECT_FALSE(IsCallToDidRunTaskExpected());
@@ -363,8 +364,7 @@ class ControllableDetachDelegate : public SchedulerWorkerDefaultDelegate {
   ~ControllableDetachDelegate() override = default;
 
   // SchedulerWorker::Delegate:
-  MOCK_METHOD2(OnMainEntry,
-               void(SchedulerWorker* worker, const TimeDelta& detach_duration));
+  MOCK_METHOD1(OnMainEntry, void(SchedulerWorker* worker));
 
   scoped_refptr<Sequence> GetWork(SchedulerWorker* worker)
       override {
@@ -386,8 +386,12 @@ class ControllableDetachDelegate : public SchedulerWorkerDefaultDelegate {
 
   bool CanDetach(SchedulerWorker* worker) override {
     detach_requested_.Signal();
+    if (can_detach_)
+      EXPECT_CALL(*this, DidDetach());
     return can_detach_;
   }
+
+  MOCK_METHOD0(DidDetach, void());
 
   void WaitForWorkToRun() {
     work_processed_.Wait();
@@ -422,7 +426,7 @@ TEST(TaskSchedulerWorkerTest, WorkerDetaches) {
   ControllableDetachDelegate* delegate =
       new StrictMock<ControllableDetachDelegate>;
   delegate->set_can_detach(true);
-  EXPECT_CALL(*delegate, OnMainEntry(_, TimeDelta::Max()));
+  EXPECT_CALL(*delegate, OnMainEntry(_));
   std::unique_ptr<SchedulerWorker> worker =
       SchedulerWorker::Create(
           ThreadPriority::NORMAL, WrapUnique(delegate), &task_tracker,
@@ -442,7 +446,7 @@ TEST(TaskSchedulerWorkerTest, WorkerDetachesAndWakes) {
   ControllableDetachDelegate* delegate =
       new StrictMock<ControllableDetachDelegate>;
   delegate->set_can_detach(true);
-  EXPECT_CALL(*delegate, OnMainEntry(_, TimeDelta::Max()));
+  EXPECT_CALL(*delegate, OnMainEntry(_));
   std::unique_ptr<SchedulerWorker> worker =
       SchedulerWorker::Create(
           ThreadPriority::NORMAL, WrapUnique(delegate), &task_tracker,
@@ -457,9 +461,7 @@ TEST(TaskSchedulerWorkerTest, WorkerDetachesAndWakes) {
 
   delegate->ResetState();
   delegate->set_can_detach(false);
-  // When SchedulerWorker recreates its thread, expect OnMainEntry() to be
-  // called with a detach duration which is not TimeDelta::Max().
-  EXPECT_CALL(*delegate, OnMainEntry(worker.get(), Ne(TimeDelta::Max())));
+  EXPECT_CALL(*delegate, OnMainEntry(worker.get()));
   worker->WakeUp();
   delegate->WaitForWorkToRun();
   Mock::VerifyAndClear(delegate);
@@ -479,7 +481,7 @@ TEST(TaskSchedulerWorkerTest, CreateDetached) {
           ThreadPriority::NORMAL, WrapUnique(delegate), &task_tracker,
           SchedulerWorker::InitialState::DETACHED);
   ASSERT_FALSE(worker->ThreadAliveForTesting());
-  EXPECT_CALL(*delegate, OnMainEntry(worker.get(), TimeDelta::Max()));
+  EXPECT_CALL(*delegate, OnMainEntry(worker.get()));
   worker->WakeUp();
   delegate->WaitForWorkToRun();
   Mock::VerifyAndClear(delegate);
@@ -507,10 +509,7 @@ class ExpectThreadPriorityDelegate : public SchedulerWorkerDefaultDelegate {
   }
 
   // SchedulerWorker::Delegate:
-  void OnMainEntry(SchedulerWorker* worker,
-                   const TimeDelta& detach_duration) override {
-    VerifyThreadPriority();
-  }
+  void OnMainEntry(SchedulerWorker* worker) override { VerifyThreadPriority(); }
   scoped_refptr<Sequence> GetWork(SchedulerWorker* worker) override {
     VerifyThreadPriority();
     priority_verified_in_get_work_event_.Signal();

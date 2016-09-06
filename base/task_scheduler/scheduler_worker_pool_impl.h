@@ -177,6 +177,10 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // leaked.
   HistogramBase* const detach_duration_histogram_;
 
+  // TaskScheduler.TasksExecutedBeforeDetach.[worker pool name] histogram.
+  // Intentionally leaked.
+  HistogramBase* const tasks_executed_before_detach_histogram_;
+
   // TaskScheduler.TaskLatency.[worker pool name].[task priority] histograms.
   // Indexed by task priority. Histograms are allocated on demand to reduce
   // memory usage (some task priorities might never run in this

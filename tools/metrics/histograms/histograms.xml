@@ -61771,6 +61771,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="TaskScheduler.TasksExecutedBeforeDetach" units="tasks">
+  <owner>fdoray@chromium.org</owner>
+  <owner>gab@chromium.org</owner>
+  <owner>robliao@chromium.org</owner>
+  <summary>
+    Number of tasks executed by a thread before it detaches. Recorded when a
+    thread detaches.
+  </summary>
+</histogram>
+
 <histogram name="ThirdPartyModules.Modules.Signed" units="modules">
   <owner>chrisha@chromium.org</owner>
   <summary>
@@ -105093,6 +105103,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="ForegroundPool" label="Applies to the Foreground worker pool."/>
   <affected-histogram name="TaskScheduler.DetachDuration"/>
   <affected-histogram name="TaskScheduler.TaskLatency"/>
+  <affected-histogram name="TaskScheduler.TasksExecutedBeforeDetach"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ThreadWatcher" separator=".">
