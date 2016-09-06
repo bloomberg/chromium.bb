@@ -141,7 +141,7 @@ MojoResult MessagePipeDispatcher::WriteMessage(
   size_t num_bytes = message->num_bytes();
   int rv = node_controller_->SendMessage(port_, message->TakePortsMessage());
 
-  DVLOG(2) << "Sent message on pipe " << pipe_id_ << " endpoint " << endpoint_
+  DVLOG(4) << "Sent message on pipe " << pipe_id_ << " endpoint " << endpoint_
            << " [port=" << port_.name() << "; rv=" << rv
            << "; num_bytes=" << num_bytes << "]";
 
@@ -536,7 +536,7 @@ void MessagePipeDispatcher::OnPortStatusChanged() {
             message_size = message.num_payload_bytes();
             return false;
           }, &unused);
-      DVLOG(2) << "New message detected on message pipe " << pipe_id_
+      DVLOG(4) << "New message detected on message pipe " << pipe_id_
                << " endpoint " << endpoint_ << " [port=" << port_.name()
                << "; size=" << message_size << "]";
     }
