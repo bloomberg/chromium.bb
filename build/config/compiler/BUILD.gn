@@ -1525,6 +1525,14 @@ config("symbols") {
         # dump_syms, so this is still required (https://crbug.com/622406).
         cflags += [ "-fno-standalone-debug" ]
       }
+    } else if (is_android) {
+      # Breakpad can't handle DWARF 4 symbols properly yet, so use DWARF 3
+      # explicitly on android where we are hitting https://crbug.com/638485.
+      # The arguments MUST be in this order because of a gcc arg parsing bug.
+      cflags = [
+        "-gdwarf-3",
+        "-g2",
+      ]
     } else {
       cflags = [ "-g2" ]
     }
@@ -1550,7 +1558,17 @@ config("minimal_symbols") {
       ldflags = [ "/DEBUG" ]
     }
   } else {
-    cflags = [ "-g1" ]
+    if (is_android) {
+      # Breakpad can't handle DWARF 4 symbols properly yet, so use DWARF 3
+      # explicitly on android where we are hitting https://crbug.com/638485.
+      # The arguments MUST be in this order because of a gcc arg parsing bug.
+      cflags = [
+        "-gdwarf-3",
+        "-g1",
+      ]
+    } else {
+      cflags = [ "-g1" ]
+    }
     if (use_debug_fission) {
       cflags += [ "-gsplit-dwarf" ]
     }
