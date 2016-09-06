@@ -6,12 +6,13 @@
 
 #include <string.h>
 
+#include <algorithm>
+
 #include "base/logging.h"
-#include "base/macros.h"
 
 namespace {
 
-const float EPSILON = 4.0f / 32768.0f;
+const float kEpsilon = 4.0f / 32768.0f;
 
 }  // namespace
 
@@ -121,7 +122,7 @@ bool AudioRepetitionDetector::State::EqualsConstant(const float* frame,
   DCHECK(is_constant_);
   for (size_t channel = 0; channel < num_channels; ++channel) {
     const float diff = frame[channel] - constant_[channel];
-    if (diff < -EPSILON || diff > EPSILON)
+    if (diff < -kEpsilon || diff > kEpsilon)
       return false;
   }
   return true;
@@ -163,13 +164,9 @@ bool AudioRepetitionDetector::Equal(const float* frame,
   DCHECK(processing_thread_checker_.CalledOnValidThread());
   const size_t look_back_index =
       (buffer_end_index_ + buffer_size_frames_ - look_back_frames) %
-      buffer_size_frames_ ;
-  auto it = audio_buffer_.begin() + look_back_index * num_channels_;
-  for (size_t channel = 0; channel < num_channels_; ++channel, ++frame, ++it) {
-    if (*frame != *it)
-      return false;
-  }
-  return true;
+      buffer_size_frames_;
+  const float* buffer = &audio_buffer_[look_back_index * num_channels_];
+  return memcmp(buffer, frame, num_channels_ * sizeof(audio_buffer_[0])) == 0;
 }
 
 bool AudioRepetitionDetector::HasValidReport(const State* state) const {
