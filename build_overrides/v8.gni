@@ -19,3 +19,5 @@ v8_extra_library_files = [
   "../third_party/WebKit/Source/core/streams/ReadableStream.js",
 ]
 v8_experimental_extra_library_files = []
+
+v8_enable_inspector_override = false
