@@ -1,40 +1,13 @@
-<html> 
-<head>
-
-<style>
-.editing { 
-    border: 2px solid red; 
-    padding: 12px; 
-    font-size: 24px; 
-}
-</style>
-<script src=../editing.js language="JavaScript" type="text/JavaScript" ></script>
-
+<!doctype html>
+<div contenteditable id="sample">a</div>
 <script>
 if (window.testRunner)
     testRunner.setMockSpellCheckerEnabled(true);
 
-function editingTest() {
-    typeCharacterCommand('a');
-    insertParagraphCommand();
-    typeCharacterCommand('z');
-    typeCharacterCommand('z');
-    typeCharacterCommand(' ');
-}
-
+const sample = document.getElementById('sample');
+const selection = window.getSelection();
+selection.collapse(sample, 0);
+document.execCommand('insertText', false, 'x');
+document.execCommand('insertParagraph');
+document.execCommand('insertText', false, 'zz ');
 </script>
-
-<title>Editing Test</title> 
-</head> 
-<body>
-<div>You should see 'a' on the first line below, and 'zz a' on the second line. 'zz' (and only 'zz') should be marked as misspelled.</div>
-<div contenteditable id="root" class="editing">
-<span id="test">a</span>
-</div>
-
-<script>
-runEditingTest();
-</script>
-
-</body>
-</html>
