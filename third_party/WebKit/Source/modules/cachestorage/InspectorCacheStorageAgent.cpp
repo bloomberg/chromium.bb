@@ -98,10 +98,15 @@ CString serviceWorkerCacheErrorString(WebServiceWorkerCacheError error)
     case WebServiceWorkerCacheErrorExists:
         return CString("cache already exists.");
         break;
-    default:
-        return CString("unknown error.");
-        break;
+    case WebServiceWorkerCacheErrorQuotaExceeded:
+        return CString("quota exceeded.");
+    case WebServiceWorkerCacheErrorCacheNameNotFound:
+        return CString("cache not found.");
+    case WebServiceWorkerCacheErrorTooLarge:
+        return CString("operation too large.");
     }
+    NOTREACHED();
+    return "";
 }
 
 class RequestCacheNames

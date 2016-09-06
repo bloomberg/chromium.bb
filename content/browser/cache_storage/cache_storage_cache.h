@@ -61,11 +61,6 @@ class CONTENT_EXPORT CacheStorageCache {
       base::Callback<void(CacheStorageError, std::unique_ptr<Requests>)>;
   using SizeCallback = base::Callback<void(int64_t)>;
 
-  struct QueryCacheResults;
-  using QueryCacheResultsCallback =
-      base::Callback<void(CacheStorageError,
-                          std::unique_ptr<QueryCacheResults>)>;
-
   enum EntryIndex { INDEX_HEADERS = 0, INDEX_RESPONSE_BODY, INDEX_SIDE_DATA };
 
   static std::unique_ptr<CacheStorageCache> CreateMemoryCache(
@@ -160,13 +155,19 @@ class CONTENT_EXPORT CacheStorageCache {
   base::WeakPtr<CacheStorageCache> AsWeakPtr();
 
  private:
-  enum class QueryCacheType { REQUESTS, REQUESTS_AND_RESPONSES, CACHE_ENTRIES };
-
   friend class base::RefCounted<CacheStorageCache>;
   friend class TestCacheStorageCache;
+  friend class CacheStorageCacheTest;
 
   struct OpenAllEntriesContext;
   struct PutContext;
+  struct QueryCacheResults;
+
+  using QueryCacheResultsCallback =
+      base::Callback<void(CacheStorageError,
+                          std::unique_ptr<QueryCacheResults>)>;
+
+  enum class QueryCacheType { REQUESTS, REQUESTS_AND_RESPONSES, CACHE_ENTRIES };
 
   // The backend progresses from uninitialized, to open, to closed, and cannot
   // reverse direction.  The open step may be skipped.
@@ -379,6 +380,7 @@ class CONTENT_EXPORT CacheStorageCache {
   std::unique_ptr<CacheStorageScheduler> scheduler_;
   bool initializing_ = false;
   int64_t cache_size_ = 0;
+  size_t max_query_size_bytes_;
 
   // Owns the elements of the list
   BlobToDiskCacheIDMap active_blob_to_disk_cache_writers_;

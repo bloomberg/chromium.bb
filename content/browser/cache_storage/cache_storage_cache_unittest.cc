@@ -678,6 +678,10 @@ class CacheStorageCacheTest : public testing::Test {
 
   virtual bool MemoryOnly() { return false; }
 
+  void SetMaxQuerySizeBytes(size_t max_bytes) {
+    cache_->max_query_size_bytes_ = max_bytes;
+  }
+
  protected:
   base::ScopedTempDir temp_dir_;
   TestBrowserThreadBundle browser_thread_bundle_;
@@ -752,6 +756,69 @@ TEST_P(CacheStorageCacheTestP, PutBody_Multiple) {
   EXPECT_TRUE(Match(operation1.request));
   EXPECT_TRUE(Match(operation2.request));
   EXPECT_TRUE(Match(operation3.request));
+}
+
+TEST_P(CacheStorageCacheTestP, MatchLimit) {
+  EXPECT_TRUE(Put(no_body_request_, no_body_response_));
+  EXPECT_TRUE(Match(no_body_request_));
+
+  size_t max_size = no_body_request_.EstimatedStructSize() +
+                    callback_response_->EstimatedStructSize();
+  SetMaxQuerySizeBytes(max_size);
+  EXPECT_TRUE(Match(no_body_request_));
+
+  SetMaxQuerySizeBytes(max_size - 1);
+  EXPECT_FALSE(Match(no_body_request_));
+  EXPECT_EQ(CACHE_STORAGE_ERROR_QUERY_TOO_LARGE, callback_error_);
+}
+
+TEST_P(CacheStorageCacheTestP, MatchAllLimit) {
+  EXPECT_TRUE(Put(body_request_, no_body_response_));
+  EXPECT_TRUE(Put(body_request_with_query_, no_body_response_));
+  EXPECT_TRUE(Match(body_request_));
+
+  size_t body_request_size = body_request_.EstimatedStructSize() +
+                             callback_response_->EstimatedStructSize();
+  size_t query_request_size = body_request_with_query_.EstimatedStructSize() +
+                              callback_response_->EstimatedStructSize();
+
+  std::unique_ptr<CacheStorageCache::Responses> responses;
+  std::unique_ptr<CacheStorageCache::BlobDataHandles> body_handles;
+  CacheStorageCacheQueryParams match_params;
+
+  // There is enough room for both requests and responses
+  SetMaxQuerySizeBytes(body_request_size + query_request_size);
+  EXPECT_TRUE(MatchAll(body_request_, match_params, &responses, &body_handles));
+  EXPECT_EQ(1u, responses->size());
+
+  match_params.ignore_search = true;
+  EXPECT_TRUE(MatchAll(body_request_, match_params, &responses, &body_handles));
+  EXPECT_EQ(2u, responses->size());
+
+  // There is not enough room for both requests and responses
+  SetMaxQuerySizeBytes(body_request_size);
+  match_params.ignore_search = false;
+  EXPECT_TRUE(MatchAll(body_request_, match_params, &responses, &body_handles));
+  EXPECT_EQ(1u, responses->size());
+
+  match_params.ignore_search = true;
+  EXPECT_FALSE(
+      MatchAll(body_request_, match_params, &responses, &body_handles));
+  EXPECT_EQ(CACHE_STORAGE_ERROR_QUERY_TOO_LARGE, callback_error_);
+}
+
+TEST_P(CacheStorageCacheTestP, KeysLimit) {
+  EXPECT_TRUE(Put(no_body_request_, no_body_response_));
+  EXPECT_TRUE(Put(body_request_, body_response_));
+
+  size_t max_size = no_body_request_.EstimatedStructSize() +
+                    body_request_.EstimatedStructSize();
+  SetMaxQuerySizeBytes(max_size);
+  EXPECT_TRUE(Keys());
+
+  SetMaxQuerySizeBytes(no_body_request_.EstimatedStructSize());
+  EXPECT_FALSE(Keys());
+  EXPECT_EQ(CACHE_STORAGE_ERROR_QUERY_TOO_LARGE, callback_error_);
 }
 
 // TODO(nhiroki): Add a test for the case where one of PUT operations fails.

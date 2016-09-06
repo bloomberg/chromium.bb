@@ -40,6 +40,9 @@ namespace content {
 
 namespace {
 
+const size_t kMaxQueryCacheResultBytes =
+    1024 * 1024 * 10;  // 10MB query cache limit
+
 // This class ensures that the cache and the entry have a lifetime as long as
 // the blob that is created to contain them.
 class CacheStorageCacheDataHandle
@@ -226,6 +229,7 @@ struct CacheStorageCache::QueryCacheResults {
   CacheStorageCacheQueryParams options;
   QueryCacheResultsCallback callback;
   QueryCacheType query_type;
+  size_t estimated_out_bytes = 0;
 
   std::unique_ptr<Requests> out_requests;
   std::unique_ptr<Responses> out_responses;
@@ -503,6 +507,7 @@ CacheStorageCache::CacheStorageCache(
       blob_storage_context_(blob_context),
       scheduler_(
           new CacheStorageScheduler(CacheStorageSchedulerClient::CLIENT_CACHE)),
+      max_query_size_bytes_(kMaxQueryCacheResultBytes),
       memory_only_(path.empty()),
       weak_ptr_factory_(this) {
   DCHECK(!origin_.is_empty());
@@ -669,6 +674,13 @@ void CacheStorageCache::QueryCacheDidReadMetadata(
     return;
   }
 
+  query_cache_results->estimated_out_bytes += request.EstimatedStructSize();
+  if (query_cache_results->estimated_out_bytes > max_query_size_bytes_) {
+    query_cache_results->callback.Run(CACHE_STORAGE_ERROR_QUERY_TOO_LARGE,
+                                      std::unique_ptr<QueryCacheResults>());
+    return;
+  }
+
   query_cache_results->out_requests->push_back(request);
   if (query_cache_results->query_type == QueryCacheType::REQUESTS) {
     QueryCacheOpenNextEntry(std::move(query_cache_results));
@@ -677,6 +689,13 @@ void CacheStorageCache::QueryCacheDidReadMetadata(
 
   DCHECK_EQ(QueryCacheType::REQUESTS_AND_RESPONSES,
             query_cache_results->query_type);
+
+  query_cache_results->estimated_out_bytes += response.EstimatedStructSize();
+  if (query_cache_results->estimated_out_bytes > max_query_size_bytes_) {
+    query_cache_results->callback.Run(CACHE_STORAGE_ERROR_QUERY_TOO_LARGE,
+                                      std::unique_ptr<QueryCacheResults>());
+    return;
+  }
 
   if (entry->GetDataSize(INDEX_RESPONSE_BODY) == 0) {
     query_cache_results->out_responses->push_back(response);

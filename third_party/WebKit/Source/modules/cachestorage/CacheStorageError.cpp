@@ -22,10 +22,13 @@ DOMException* CacheStorageError::createException(WebServiceWorkerCacheError webE
         return DOMException::create(InvalidAccessError, "Entry already exists.");
     case WebServiceWorkerCacheErrorQuotaExceeded:
         return DOMException::create(QuotaExceededError, "Quota exceeded.");
-    default:
-        ASSERT_NOT_REACHED();
-        return DOMException::create(NotSupportedError, "Unknown error.");
+    case WebServiceWorkerCacheErrorCacheNameNotFound:
+        return DOMException::create(NotFoundError, "Cache was not found.");
+    case WebServiceWorkerCacheErrorTooLarge:
+        return DOMException::create(AbortError, "Operation too large.");
     }
+    NOTREACHED();
+    return nullptr;
 }
 
 } // namespace blink

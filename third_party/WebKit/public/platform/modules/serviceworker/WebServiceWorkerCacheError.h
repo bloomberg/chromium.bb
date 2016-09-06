@@ -13,7 +13,8 @@ enum WebServiceWorkerCacheError {
     WebServiceWorkerCacheErrorExists,
     WebServiceWorkerCacheErrorQuotaExceeded,
     WebServiceWorkerCacheErrorCacheNameNotFound,
-    WebServiceWorkerCacheErrorLast = WebServiceWorkerCacheErrorCacheNameNotFound
+    WebServiceWorkerCacheErrorTooLarge,
+    WebServiceWorkerCacheErrorLast = WebServiceWorkerCacheErrorTooLarge
 };
 
 } // namespace blink

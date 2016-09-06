@@ -146,7 +146,9 @@ struct CONTENT_EXPORT ServiceWorkerFetchRequest {
                             bool is_reload);
   ServiceWorkerFetchRequest(const ServiceWorkerFetchRequest& other);
   ~ServiceWorkerFetchRequest();
+  size_t EstimatedStructSize();
 
+  // Be sure to update EstimatedSize() when adding members.
   FetchRequestMode mode;
   bool is_main_resource_load;
   RequestContextType request_context_type;
@@ -183,7 +185,9 @@ struct CONTENT_EXPORT ServiceWorkerResponse {
       const ServiceWorkerHeaderList& cors_exposed_header_names);
   ServiceWorkerResponse(const ServiceWorkerResponse& other);
   ~ServiceWorkerResponse();
+  size_t EstimatedStructSize();
 
+  // Be sure to update EstimatedSize() when adding members.
   GURL url;
   int status_code;
   std::string status_text;
