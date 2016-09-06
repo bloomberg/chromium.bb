@@ -123,14 +123,14 @@ class MEDIA_EXPORT AudioManager {
   // recording.
   //
   // Not threadsafe; in production this should only be called from the
-  // Audio worker thread (see GetWorkerTaskRunner()).
+  // Audio worker thread (see GetTaskRunner()).
   virtual void GetAudioInputDeviceNames(AudioDeviceNames* device_names) = 0;
 
   // Appends a list of available output devices to |device_names|,
   // which must initially be empty.
   //
   // Not threadsafe; in production this should only be called from the
-  // Audio worker thread (see GetWorkerTaskRunner()).
+  // Audio worker thread (see GetTaskRunner()).
   virtual void GetAudioOutputDeviceNames(AudioDeviceNames* device_names) = 0;
 
   // Log callback used for sending log messages from a stream to the object
@@ -237,9 +237,16 @@ class MEDIA_EXPORT AudioManager {
   // will be empty (which the caller can then interpret to be the default output
   // device).  Implementations that don't yet support this feature, must return
   // an empty string. Must be called on the audio worker thread (see
-  // GetWorkerTaskRunner()).
+  // GetTaskRunner()).
   virtual std::string GetAssociatedOutputDeviceID(
       const std::string& input_device_id) = 0;
+
+  // These functions assign group ids to devices based on their device ids.
+  // The default implementation is an attempt to do this based on
+  // GetAssociatedOutputDeviceID. Must be called on the audio worker thread
+  // (see GetTaskRunner()).
+  virtual std::string GetGroupIDOutput(const std::string& output_device_id) = 0;
+  virtual std::string GetGroupIDInput(const std::string& input_device_id) = 0;
 
   // Create a new AudioLog object for tracking the behavior for one or more
   // instances of the given component.  See AudioLogFactory for more details.

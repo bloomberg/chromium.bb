@@ -31,6 +31,8 @@ AudioOutputDeviceEnumeration EnumerateDevicesOnDeviceThread(
     snapshot.devices.push_back(
         {media::AudioDeviceDescription::kDefaultDeviceId,
          media::AudioDeviceDescription::GetDefaultDeviceName(),
+         audio_manager->GetGroupIDOutput(
+             media::AudioDeviceDescription::kDefaultDeviceId),
          audio_manager->GetDefaultOutputStreamParameters()});
     return snapshot;
   }
@@ -38,6 +40,7 @@ AudioOutputDeviceEnumeration EnumerateDevicesOnDeviceThread(
   for (const media::AudioDeviceName& name : device_names) {
     snapshot.devices.push_back(
         {name.unique_id, name.device_name,
+         audio_manager->GetGroupIDOutput(name.unique_id),
          name.unique_id == media::AudioDeviceDescription::kDefaultDeviceId
              ? audio_manager->GetDefaultOutputStreamParameters()
              : audio_manager->GetOutputStreamParameters(name.unique_id)});
@@ -46,6 +49,29 @@ AudioOutputDeviceEnumeration EnumerateDevicesOnDeviceThread(
 }
 
 }  // namespace
+
+AudioOutputDeviceInfo::AudioOutputDeviceInfo() {}
+
+AudioOutputDeviceInfo::~AudioOutputDeviceInfo() {}
+
+AudioOutputDeviceInfo::AudioOutputDeviceInfo(
+    const std::string& unique_id,
+    const std::string& device_name,
+    const std::string& group_id,
+    media::AudioParameters output_params)
+    : unique_id(unique_id),
+      device_name(device_name),
+      group_id(group_id),
+      output_params(output_params) {}
+
+AudioOutputDeviceInfo::AudioOutputDeviceInfo(
+    const AudioOutputDeviceInfo& audio_output_device_info) = default;
+
+AudioOutputDeviceInfo::AudioOutputDeviceInfo(
+    AudioOutputDeviceInfo&& audio_output_device_info) = default;
+
+AudioOutputDeviceInfo& AudioOutputDeviceInfo::operator=(
+    const AudioOutputDeviceInfo& audio_output_device_info) = default;
 
 AudioOutputDeviceEnumeration::AudioOutputDeviceEnumeration(
     const std::vector<AudioOutputDeviceInfo>& devices,

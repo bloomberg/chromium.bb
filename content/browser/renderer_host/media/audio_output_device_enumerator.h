@@ -39,8 +39,19 @@ namespace content {
 // The enumerations returned by AudioOutputDeviceEnumerator::Enumerate() contain
 // elements of this type. It is used only in the browser side.
 struct AudioOutputDeviceInfo {
+  AudioOutputDeviceInfo();
+  AudioOutputDeviceInfo(const AudioOutputDeviceInfo& audio_output_device_info);
+  AudioOutputDeviceInfo(AudioOutputDeviceInfo&& audio_output_device_info);
+  AudioOutputDeviceInfo& operator=(
+      const AudioOutputDeviceInfo& audio_output_device_info);
+  AudioOutputDeviceInfo(const std::string& unique_id,
+                        const std::string& device_name,
+                        const std::string& group_id,
+                        media::AudioParameters output_params);
+  ~AudioOutputDeviceInfo();
   std::string unique_id;
   std::string device_name;
+  std::string group_id;
   media::AudioParameters output_params;
 };
 

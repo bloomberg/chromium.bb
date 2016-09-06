@@ -180,6 +180,10 @@ void AudioInputDeviceManager::EnumerateOnDeviceThread(
     devices->push_back(StreamDeviceInfo(
         stream_type, it->device_name, it->unique_id));
   }
+  for (StreamDeviceInfo& device_info : *devices) {
+    device_info.device.group_id =
+        audio_manager_->GetGroupIDInput(device_info.device.id);
+  }
 
   // Return the device list through the listener by posting a task on
   // IO thread since MediaStreamManager handles the callback asynchronously.

@@ -767,6 +767,7 @@ void MediaStreamManager::AudioOutputDevicesEnumerated(
     for (const auto& entry : device_enumeration.devices) {
       StreamDeviceInfo device_info(MEDIA_DEVICE_AUDIO_OUTPUT, entry.device_name,
                                    entry.unique_id);
+      device_info.device.group_id = entry.group_id;
       device_infos.push_back(device_info);
     }
   }
@@ -1040,6 +1041,9 @@ void MediaStreamManager::TranslateDeviceIdToSourceId(
       request->video_type() == MEDIA_DEVICE_VIDEO_CAPTURE) {
     device->id = GetHMACForMediaDeviceID(request->salt,
                                          request->security_origin, device->id);
+    if (!device->group_id.empty())
+      device->group_id = GetHMACForMediaDeviceID(
+          request->salt, request->security_origin, device->group_id);
   }
 }
 

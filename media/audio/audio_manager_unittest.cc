@@ -5,6 +5,7 @@
 #include "media/audio/audio_manager.h"
 
 #include <memory>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/environment.h"
@@ -16,7 +17,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "media/audio/audio_device_description.h"
-#include "media/audio/audio_manager.h"
 #include "media/audio/audio_output_proxy.h"
 #include "media/audio/audio_unittest_util.h"
 #include "media/audio/fake_audio_log_factory.h"
@@ -639,5 +639,68 @@ TEST_F(AudioManagerTest, GetAssociatedOutputDeviceID) {
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 }
 #endif  // defined(USE_CRAS)
+
+class TestAudioManager : public FakeAudioManager {
+  // For testing the default implementation of GetGroupId(Input|Output)
+  // input$i is associated to output$i, if both exist.
+  // Default input is input1.
+  // Default output is output2.
+ public:
+  TestAudioManager(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner,
+      AudioLogFactory* audio_log_factory)
+      : FakeAudioManager(task_runner, worker_task_runner, audio_log_factory) {}
+
+  void GetAudioInputDeviceNames(AudioDeviceNames* device_names) override {
+    device_names->emplace_back("Input 1", "input1");
+    device_names->emplace_back("Input 2", "input2");
+    device_names->emplace_back("Input 3", "input3");
+    device_names->push_front(AudioDeviceName::CreateDefault());
+  }
+
+  void GetAudioOutputDeviceNames(AudioDeviceNames* device_names) override {
+    device_names->emplace_back("Output 1", "output1");
+    device_names->emplace_back("Output 2", "output2");
+    device_names->emplace_back("Output 4", "output4");
+    device_names->push_front(AudioDeviceName::CreateDefault());
+  }
+
+  std::string GetDefaultOutputDeviceID() override { return "output4"; }
+
+  std::string GetAssociatedOutputDeviceID(
+      const std::string& input_id) override {
+    if (input_id == "input1")
+      return "output1";
+    if (input_id == "input2")
+      return "output2";
+    if (input_id == "default")
+      return "output1";
+    return "";
+  }
+};
+
+TEST_F(AudioManagerTest, GetGroupId) {
+  CreateAudioManagerForTesting<TestAudioManager>();
+  // Groups:
+  // 0: input1, output1, default input
+  // 1: input2, output2
+  // 2: input3,
+  // 3: output4, default output
+  std::vector<std::string> group;
+  group.push_back(audio_manager_->GetGroupIDInput("input1"));
+  group.push_back(audio_manager_->GetGroupIDInput("input2"));
+  group.push_back(audio_manager_->GetGroupIDInput("input3"));
+  group.push_back(audio_manager_->GetGroupIDOutput("output4"));
+  for (size_t i = 0; i < group.size(); ++i) {
+    for (size_t j = i + 1; j < group.size(); ++j) {
+      EXPECT_NE(group[i], group[j]);
+    }
+  }
+  EXPECT_EQ(group[0], audio_manager_->GetGroupIDOutput("output1"));
+  EXPECT_EQ(group[0], audio_manager_->GetGroupIDInput("default"));
+  EXPECT_EQ(group[1], audio_manager_->GetGroupIDOutput("output2"));
+  EXPECT_EQ(group[3], audio_manager_->GetGroupIDOutput("default"));
+}
 
 }  // namespace media

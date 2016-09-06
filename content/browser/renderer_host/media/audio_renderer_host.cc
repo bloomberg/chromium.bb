@@ -80,6 +80,8 @@ AudioOutputDeviceInfo GetDefaultDeviceInfoOnDeviceThread(
   AudioOutputDeviceInfo default_device_info = {
       media::AudioDeviceDescription::kDefaultDeviceId,
       media::AudioDeviceDescription::GetDefaultDeviceName(),
+      audio_manager->GetGroupIDOutput(
+          media::AudioDeviceDescription::kDefaultDeviceId),
       audio_manager->GetDefaultOutputStreamParameters()};
 
   return default_device_info;
@@ -856,7 +858,7 @@ void AudioRendererHost::TranslateDeviceID(
   }
   DCHECK(!device_id.empty());  // Default device must always be found
   AudioOutputDeviceInfo device_info = {
-      std::string(), std::string(),
+      std::string(), std::string(), std::string(),
       media::AudioParameters::UnavailableDeviceParams()};
   callback.Run(false, device_info);
 }

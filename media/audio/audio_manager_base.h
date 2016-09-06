@@ -93,6 +93,9 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
       const std::string& device_id,
       const LogCallback& log_callback) = 0;
 
+  std::string GetGroupIDOutput(const std::string& output_device_id) override;
+  std::string GetGroupIDInput(const std::string& input_device_id) override;
+
   // Get number of input or output streams.
   int input_stream_count() const { return num_input_streams_; }
   int output_stream_count() const { return num_output_streams_; }
