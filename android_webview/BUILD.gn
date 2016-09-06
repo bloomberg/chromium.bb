@@ -18,9 +18,6 @@ if (!defined(use_webview_internal_framework)) {
   use_webview_internal_framework = false
 }
 
-system_webview_android_manifest =
-    "$target_gen_dir/system_webview_apk/AndroidManifest.xml"
-
 group("android_webview") {
   if (!use_webview_internal_framework) {
     deps = [
@@ -31,7 +28,7 @@ group("android_webview") {
 
 jinja_template("system_webview_manifest") {
   input = "apk/java/AndroidManifest.xml"
-  output = system_webview_android_manifest
+  output = "$target_gen_dir/system_webview_manifest/AndroidManifest.xml"
   variables = [ "package=$system_webview_package_name" ]
 }
 
@@ -787,7 +784,8 @@ java_strings_grd("strings_grd") {
 
 if (!use_webview_internal_framework) {
   system_webview_apk_tmpl("system_webview_apk") {
-    android_manifest = system_webview_android_manifest
+    android_manifest = get_target_outputs(":system_webview_manifest")
+    android_manifest = android_manifest[1]
     android_manifest_dep = ":system_webview_manifest"
     deps = [
       ":system_webview_resources",

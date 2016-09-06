@@ -151,6 +151,7 @@ template("write_build_config") {
     _rebased_deps_configs = rebase_path(_deps_configs, root_build_dir)
 
     outputs = [
+      depfile,
       build_config,
     ]
 
@@ -385,18 +386,15 @@ template("copy_ex") {
       sources = []
     }
     script = "//build/android/gyp/copy_ex.py"
-    depfile = "$target_gen_dir/$target_name.d"
 
-    _stamp_file = "$target_gen_dir/$target_name.stamp"
+    depfile = "$target_gen_dir/$target_name.d"
     outputs = [
-      _stamp_file,
+      depfile,
     ]
 
     args = [
       "--depfile",
       rebase_path(depfile, root_build_dir),
-      "--stamp",
-      rebase_path(_stamp_file, root_build_dir),
       "--dest",
       rebase_path(invoker.dest, root_build_dir),
     ]
@@ -612,6 +610,7 @@ template("test_runner_script") {
 
     generated_script = "$root_build_dir/bin/run_${_test_name}"
     outputs = [
+      depfile,
       generated_script,
     ]
     data += [ generated_script ]
@@ -678,6 +677,7 @@ if (enable_java_templates) {
       ]
 
       outputs = [
+        depfile,
         _config_path,
         _result_path,
       ]
@@ -769,6 +769,7 @@ if (enable_java_templates) {
       }
       depfile = "${target_gen_dir}/${target_name}.d"
       outputs = [
+        depfile,
         _output_jar_path,
         "$_output_jar_path.dump",
         "$_output_jar_path.seeds",
@@ -821,6 +822,7 @@ if (enable_java_templates) {
       ]
 
       outputs = [
+        depfile,
         _result_path,
       ]
 
@@ -868,6 +870,7 @@ if (enable_java_templates) {
         _build_config,
       ]
       outputs = [
+        depfile,
         java_script,
       ]
       forward_variables_from(invoker, [ "deps" ])
@@ -928,6 +931,7 @@ if (enable_java_templates) {
         main_dex_rules = "//build/android/main_dex_classes.flags"
 
         outputs = [
+          depfile,
           _main_dex_list_path,
         ]
 
@@ -964,6 +968,7 @@ if (enable_java_templates) {
       script = "//build/android/gyp/dex.py"
       depfile = "$target_gen_dir/$target_name.d"
       outputs = [
+        depfile,
         invoker.output,
       ]
 
@@ -1155,6 +1160,7 @@ if (enable_java_templates) {
                  invoker.input_jar_path,
                ]
       outputs = [
+        depfile,
         _coverage_file,
         _source_dirs_listing_file,
         invoker.output_jar_path,
@@ -1229,6 +1235,7 @@ if (enable_java_templates) {
       }
 
       outputs = [
+        depfile,
         invoker.output_apk_path,
       ]
 
@@ -1325,6 +1332,7 @@ if (enable_java_templates) {
         invoker.keystore_path,
       ]
       outputs = [
+        depfile,
         invoker.output_apk_path,
       ]
       data = [
@@ -1461,6 +1469,7 @@ if (enable_java_templates) {
           inputs += [ _resources_zip ]
         }
         outputs = [
+          depfile,
           invoker.resource_packaged_apk_path,
         ]
 
@@ -1555,6 +1564,7 @@ if (enable_java_templates) {
         _android_manifest,
       ]
       outputs = [
+        depfile,
         _incremental_android_manifest,
       ]
 
@@ -1989,6 +1999,7 @@ if (enable_java_templates) {
       }
 
       outputs = [
+        depfile,
         _javac_jar_path,
         _javac_jar_path + ".md5.stamp",
       ]
@@ -2432,6 +2443,7 @@ if (enable_java_templates) {
 
       depfile = "$target_gen_dir/$target_name.d"
       outputs = [
+        depfile,
         zip_path,
         srcjar_path,
         r_text_path,
@@ -2633,6 +2645,7 @@ if (enable_java_templates) {
 
       script = "//build/android/gyp/generate_split_manifest.py"
       outputs = [
+        depfile,
         invoker.out_manifest,
       ]
       inputs = [
