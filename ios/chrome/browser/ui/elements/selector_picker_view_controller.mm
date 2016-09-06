@@ -76,6 +76,7 @@ CGFloat kUIPickerFontSize = 26;
 }
 
 - (void)viewDidLoad {
+  [super viewDidLoad];
   self.view.backgroundColor = [UIColor whiteColor];
 
   self.pickerView.showsSelectionIndicator = YES;
