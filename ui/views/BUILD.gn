@@ -553,10 +553,8 @@ component("views") {
         "widget/desktop_aura/desktop_screen_position_client.h",
         "widget/desktop_aura/desktop_window_tree_host.h",
       ]
-      if (use_atk) {
+      if (use_x11) {
         sources += [
-          "accessibility/native_view_accessibility_auralinux.cc",
-          "accessibility/native_view_accessibility_auralinux.h",
           "widget/desktop_aura/desktop_drag_drop_client_aurax11.cc",
           "widget/desktop_aura/desktop_drag_drop_client_aurax11.h",
           "widget/desktop_aura/desktop_screen_x11.cc",
@@ -579,7 +577,13 @@ component("views") {
           "widget/desktop_aura/x11_window_event_filter.cc",
           "widget/desktop_aura/x11_window_event_filter.h",
         ]
-        configs += [ "//build/config/linux/atk" ]
+        if (use_atk) {
+          sources += [
+            "accessibility/native_view_accessibility_auralinux.cc",
+            "accessibility/native_view_accessibility_auralinux.h",
+          ]
+          configs += [ "//build/config/linux/atk" ]
+        }
       } else if (is_win) {
         sources += [
           "widget/desktop_aura/desktop_cursor_loader_updater_aurawin.cc",
