@@ -64,6 +64,8 @@ Status ConsoleLogger::OnEvent(
     return OnConsoleMessageAdded(params);
   else if (method == "Log.entryAdded")
     return OnLogEntryAdded(params);
+  else if (method == "Runtime.consoleAPICalled")
+    return OnRuntimeConsoleApiCalled(params);
   else if (method == "Runtime.exceptionThrown")
     return OnRuntimeExceptionThrown(params);
   else
@@ -160,6 +162,65 @@ Status ConsoleLogger::OnLogEntryAdded(const base::DictionaryValue& params) {
                                                    origin.c_str(),
                                                    line_number.c_str(),
                                                    text.c_str()));
+  return Status(kOk);
+}
+
+Status ConsoleLogger::OnRuntimeConsoleApiCalled(
+    const base::DictionaryValue& params) {
+  std::string type;
+  if (!params.GetString("type", &type))
+    return Status(kUnknownError, "missing or invalid type");
+  Log::Level level;
+  if (!ConsoleLevelToLogLevel(type, &level))
+    return Status(kOk);
+
+  std::string origin = "console-api";
+  std::string line_column = "-";
+  const base::DictionaryValue* stack_trace = nullptr;
+  if (params.GetDictionary("stackTrace", &stack_trace)) {
+    const base::ListValue* call_frames = nullptr;
+    if (!stack_trace->GetList("callFrames", &call_frames))
+      return Status(kUnknownError, "missing or invalid callFrames");
+    const base::DictionaryValue* call_frame = nullptr;
+    if (call_frames->GetDictionary(0, &call_frame)) {
+      std::string url;
+      if (!call_frame->GetString("url", &url))
+        return Status(kUnknownError, "missing or invalid url");
+      if (!url.empty())
+        origin = url;
+      int line = -1;
+      if (!call_frame->GetInteger("lineNumber", &line))
+        return Status(kUnknownError, "missing or invalid lineNumber");
+      int column = -1;
+      if (!call_frame->GetInteger("columnNumber", &column))
+        return Status(kUnknownError, "missing or invalid columnNumber");
+      line_column = base::StringPrintf("%d:%d", line, column);
+    }
+  }
+
+  // TODO(samuong): Handle the case where args.GetSize() > 1. This happens when
+  // the first arg is a printf-style format string. We currently return the
+  // format string to the test client. For details, see
+  // https://bugs.chromium.org/p/chromedriver/issues/detail?id=669
+  std::string text;
+  const base::ListValue* args = nullptr;
+  const base::DictionaryValue* first_arg = nullptr;
+  if (!params.GetList("args", &args) ||
+      args->GetSize() < 1 ||
+      !args->GetDictionary(0, &first_arg))
+    return Status(kUnknownError, "missing or invalid args");
+  if (!first_arg->GetString("description", &text)) {
+    const base::Value* value = nullptr;
+    if (!first_arg->Get("value", &value))
+      return Status(kUnknownError, "missing or invalid arg value");
+    if (!base::JSONWriter::Write(*value, &text))
+      return Status(kUnknownError, "failed to convert value to text");
+  }
+
+  log_->AddEntry(level, "console-api", base::StringPrintf("%s %s %s",
+                                                          origin.c_str(),
+                                                          line_column.c_str(),
+                                                          text.c_str()));
   return Status(kOk);
 }
 
