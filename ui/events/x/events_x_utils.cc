@@ -270,6 +270,12 @@ ui::EventType GetTouchEventType(const XEvent& xev) {
     case XI_DeviceChanged:
       // This can happen when --touch-devices flag is used.
       return ui::ET_UNKNOWN;
+    case XI_Leave:
+    case XI_Enter:
+    case XI_FocusIn:
+    case XI_FocusOut:
+      // These may be handled by the PlatformEventDispatcher directly.
+      return ui::ET_UNKNOWN;
     default:
       NOTREACHED();
   }

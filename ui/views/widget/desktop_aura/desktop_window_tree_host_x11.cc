@@ -2059,12 +2059,12 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
           OnCrossingEvent(enter_event->evtype == XI_Enter, enter_event->focus,
                           XI2ModeToXMode(enter_event->mode),
                           enter_event->detail);
-          break;
+          return ui::POST_DISPATCH_STOP_PROPAGATION;
         case XI_FocusIn:
         case XI_FocusOut:
           OnFocusEvent(enter_event->evtype == XI_FocusIn,
                        XI2ModeToXMode(enter_event->mode), enter_event->detail);
-          break;
+          return ui::POST_DISPATCH_STOP_PROPAGATION;
         default:
           break;
       }
