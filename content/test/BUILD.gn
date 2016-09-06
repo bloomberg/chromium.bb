@@ -666,6 +666,7 @@ test("content_unittests") {
     "//media:test_support",
     "//media/audio:test_support",
     "//media/base:test_support",
+    "//media/blink",
     "//media/capture",
     "//media/midi:midi",
     "//mojo/edk/test:test_support",
@@ -729,7 +730,6 @@ test("content_unittests") {
                     ".",
                     "//content")
     deps += [
-      "//media/blink",
       "//third_party/libjingle:libjingle_webrtc",
       "//third_party/webrtc/api:libjingle_peerconnection",
       "//third_party/webrtc/base:rtc_base",
