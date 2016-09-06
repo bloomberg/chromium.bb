@@ -174,7 +174,7 @@ std::unique_ptr<InkDropHighlight> Checkbox::CreateInkDropHighlight() const {
 
 SkColor Checkbox::GetInkDropBaseColor() const {
   return GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_UnfocusedBorderColor);
+      ui::NativeTheme::kColorId_ButtonEnabledColor);
 }
 
 gfx::ImageSkia Checkbox::GetImage(ButtonState for_state) const {
@@ -183,7 +183,7 @@ gfx::ImageSkia Checkbox::GetImage(ButtonState for_state) const {
         GetVectorIconId(), 16,
         // When not checked, the icon color matches the button text color.
         GetNativeTheme()->GetSystemColor(
-            checked_ ? ui::NativeTheme::kColorId_CallToActionColor
+            checked_ ? ui::NativeTheme::kColorId_FocusedBorderColor
                      : ui::NativeTheme::kColorId_ButtonEnabledColor));
   }
 

@@ -21,6 +21,16 @@ namespace ui {
 
 SkColor GetAuraColor(NativeTheme::ColorId color_id,
                      const NativeTheme* base_theme) {
+  // Second wave of MD colors (colors that only appear in secondary UI).
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+    static const SkColor kPrimaryTextColor = SkColorSetRGB(0x33, 0x33, 0x33);
+
+    if (color_id == NativeTheme::kColorId_LabelEnabledColor)
+      return kPrimaryTextColor;
+    if (color_id == NativeTheme::kColorId_UnfocusedBorderColor)
+      return SkColorSetA(SK_ColorBLACK, 0x24);
+  }
+
   // MD colors.
   if (ui::MaterialDesignController::IsModeMaterial()) {
     // Dialogs:
@@ -68,6 +78,8 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       // FocusableBorder
       case NativeTheme::kColorId_FocusedBorderColor:
         return gfx::kGoogleBlue500;
+      // TODO(estade): I'm not sure why this one is here but it should be
+      // removed in favor of the value in the SecondaryUiMaterial block.
       case NativeTheme::kColorId_UnfocusedBorderColor:
         return SkColorSetA(SK_ColorBLACK, 0x66);
 
@@ -102,14 +114,6 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       default:
         break;
     }
-  }
-
-  // Second wave of MD colors (colors that only appear in secondary UI).
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
-    static const SkColor kPrimaryTextColor = SkColorSetRGB(0x33, 0x33, 0x33);
-
-    if (color_id == NativeTheme::kColorId_LabelEnabledColor)
-      return kPrimaryTextColor;
   }
 
   // Pre-MD colors.
