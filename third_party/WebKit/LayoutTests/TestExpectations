@@ -417,6 +417,17 @@ crbug.com/552532 [ Win10 ] plugins/tabindex.html [ Pass Crash ]
 
 crbug.com/602110 hittesting/border-hittest-with-image-fallback.html [ Failure ]
 
+crbug.com/640463 paint/caret/caret-subpixel.html [ NeedsRebaseline ]
+crbug.com/640463 editing/deleting/delete-at-start-or-end.html [ NeedsRebaseline ]
+crbug.com/640463 editing/deleting/delete-image-004.html [ NeedsRebaseline ]
+crbug.com/640463 editing/deleting/transpose-empty.html [ NeedsRebaseline ]
+crbug.com/640463 editing/execCommand/create-list-with-hr.html [ NeedsRebaseline ]
+crbug.com/640463 editing/selection/4975120.html [ NeedsRebaseline ]
+crbug.com/640463 editing/selection/contenteditable-click-inside.html [ NeedsRebaseline ]
+crbug.com/640463 fast/forms/text/input-placeholder-paint-order.html [ NeedsRebaseline ]
+crbug.com/640463 editing/pasteboard/4806874.html [ NeedsRebaseline ]
+crbug.com/640463 editing/pasteboard/pasting-object.html [ NeedsRebaseline ]
+
 crbug.com/387740 imported/wpt/mediacapture-streams/MediaStreamTrack-MediaElement-disabled-audio-is-silence.https.html [ Skip ]
 crbug.com/387740 imported/wpt/mediacapture-streams/MediaStreamTrack-MediaElement-disabled-video-is-black.https.html [ Skip ]
 crbug.com/387740 imported/wpt/mediacapture-streams/MediaStreamTrack-end.https.html [ Skip ]

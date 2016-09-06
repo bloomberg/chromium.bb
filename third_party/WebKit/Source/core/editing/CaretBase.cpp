@@ -217,9 +217,9 @@ void CaretBase::paintCaret(Node* node, GraphicsContext& context, const LayoutPoi
     if (element && element->layoutObject())
         caretColor = element->layoutObject()->resolveColor(CSSPropertyColor);
 
-    DrawingRecorder drawingRecorder(context, *this, DisplayItem::kCaret, FloatRect(drawingRect));
-
-    context.fillRect(FloatRect(drawingRect), caretColor);
+    IntRect paintRect = pixelSnappedIntRect(drawingRect);
+    DrawingRecorder drawingRecorder(context, *this, DisplayItem::kCaret, paintRect);
+    context.fillRect(paintRect, caretColor);
 }
 
 void CaretBase::setCaretVisibility(CaretVisibility visibility)
