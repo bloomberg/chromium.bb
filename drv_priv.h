@@ -67,6 +67,11 @@ struct backend
 	void (*close)(struct driver *drv);
 	int (*bo_create)(struct bo *bo, uint32_t width, uint32_t height,
 			 uint32_t format, uint32_t flags);
+	int (*bo_create_with_modifiers)(struct bo *bo,
+					uint32_t width, uint32_t height,
+					uint32_t format,
+					const uint64_t *modifiers,
+					uint32_t count);
 	void* (*bo_map)(struct bo *bo, struct map_info *data, size_t plane);
 	int (*bo_unmap)(struct bo *bo, struct map_info *data);
 	int (*bo_destroy)(struct bo *bo);

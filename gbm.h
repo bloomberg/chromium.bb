@@ -262,6 +262,12 @@ gbm_bo_create(struct gbm_device *gbm,
               uint32_t width, uint32_t height,
               uint32_t format, uint32_t flags);
 
+struct gbm_bo *
+gbm_bo_create_with_modifiers(struct gbm_device *gbm,
+                             uint32_t width, uint32_t height,
+                             uint32_t format,
+                             const uint64_t *modifiers, uint32_t count);
+
 #define GBM_BO_IMPORT_WL_BUFFER         0x5501
 #define GBM_BO_IMPORT_EGL_IMAGE         0x5502
 #define GBM_BO_IMPORT_FD                0x5503

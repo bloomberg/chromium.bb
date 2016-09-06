@@ -4,6 +4,7 @@
  * found in the LICENSE file.
  */
 #include <assert.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <pthread.h>
 #include <stdint.h>
@@ -248,6 +249,44 @@ struct bo *drv_bo_create(struct driver *drv, uint32_t width, uint32_t height,
 
 	return bo;
 }
+
+struct bo *drv_bo_create_with_modifiers(struct driver *drv,
+					uint32_t width, uint32_t height,
+					uint32_t format,
+					const uint64_t *modifiers, uint32_t count)
+{
+	int ret;
+	size_t plane;
+	struct bo *bo;
+
+	if (!drv->backend->bo_create_with_modifiers) {
+		errno = ENOENT;
+		return NULL;
+	}
+
+	bo = drv_bo_new(drv, width, height, format);
+
+	if (!bo)
+		return NULL;
+
+	ret = drv->backend->bo_create_with_modifiers(bo, width, height,
+						     format, modifiers, count);
+
+	if (ret) {
+		free(bo);
+		return NULL;
+	}
+
+	pthread_mutex_lock(&drv->driver_lock);
+
+	for (plane = 0; plane < bo->num_planes; plane++)
+		drv_increment_reference_count(drv, bo, plane);
+
+	pthread_mutex_unlock(&drv->driver_lock);
+
+	return bo;
+}
+
 
 void drv_bo_destroy(struct bo *bo)
 {

@@ -137,6 +137,32 @@ PUBLIC struct gbm_bo *gbm_bo_create(struct gbm_device *gbm, uint32_t width,
 	return bo;
 }
 
+PUBLIC struct gbm_bo *gbm_bo_create_with_modifiers(struct gbm_device *gbm,
+						   uint32_t width,
+						   uint32_t height,
+						   uint32_t format,
+						   const uint64_t *modifiers,
+						   uint32_t count)
+{
+	struct gbm_bo *bo;
+
+	bo = gbm_bo_new(gbm, format);
+
+	if (!bo)
+		return NULL;
+
+	bo->bo = drv_bo_create_with_modifiers(gbm->drv,
+					      width, height, format,
+					      modifiers, count);
+
+	if (!bo->bo) {
+		free(bo);
+		return NULL;
+	}
+
+	return bo;
+}
+
 PUBLIC void gbm_bo_destroy(struct gbm_bo *bo)
 {
 	if (bo->destroy_user_data) {
