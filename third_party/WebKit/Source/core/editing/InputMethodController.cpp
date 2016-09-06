@@ -321,6 +321,10 @@ void InputMethodController::setComposition(const String& text, const Vector<Comp
     if (!target)
         return;
 
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited. see http://crbug.com/590369 for more details.
+    frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
     int selectionOffsetsStart = static_cast<int>(getSelectionOffsets().start());
     int start = selectionOffsetsStart + selectionStart;
     int end = selectionOffsetsStart + selectionEnd;

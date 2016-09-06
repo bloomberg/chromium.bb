@@ -589,6 +589,11 @@ WebRange WebFrameWidgetImpl::compositionRange()
 
     Element* editable = focused->selection().rootEditableElementOrDocumentElement();
     DCHECK(editable);
+
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    editable->document().updateStyleAndLayoutIgnorePendingStylesheets();
+
     return PlainTextRange::create(*editable, range);
 }
 
@@ -786,6 +791,10 @@ WebRange WebFrameWidgetImpl::caretOrSelectionRange()
     LocalFrame* focused = focusedLocalFrameInWidget();
     if (!focused)
         return WebRange();
+
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    focused->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
     return focused->inputMethodController().getSelectionOffsets();
 }

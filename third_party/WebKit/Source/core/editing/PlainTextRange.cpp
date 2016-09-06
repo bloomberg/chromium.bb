@@ -176,9 +176,7 @@ PlainTextRange PlainTextRange::create(const ContainerNode& scope, const Ephemera
     if (endContainer != scope && !endContainer->isDescendantOf(&scope))
         return PlainTextRange();
 
-    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
-    // needs to be audited.  See http://crbug.com/590369 for more details.
-    scope.document().updateStyleAndLayoutIgnorePendingStylesheets();
+    DocumentLifecycle::DisallowTransitionScope disallowTransition(scope.document().lifecycle());
 
     size_t start = TextIterator::rangeLength(Position(&const_cast<ContainerNode&>(scope), 0), range.startPosition());
     size_t end = TextIterator::rangeLength(Position(&const_cast<ContainerNode&>(scope), 0), range.endPosition());
