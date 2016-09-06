@@ -100,6 +100,7 @@ public:
 
     String text() const;
 
+    void transformText();
 public:
     TextRun constructTextRunForInspector(const ComputedStyle&) const;
     LayoutRect calculateBoundaries() const override { return LayoutRect(x(), y(), width(), height()); }

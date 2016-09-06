@@ -607,6 +607,11 @@ String InlineTextBox::text() const
     return getLineLayoutItem().text().substring(start(), len());
 }
 
+void InlineTextBox::transformText()
+{
+    getLineLayoutItem().applyTextTransformFromTo(start(), len(), getLineLayoutItem().style(isFirstLineStyle()));
+}
+
 #ifndef NDEBUG
 
 void InlineTextBox::showBox(int printedCharacters) const
