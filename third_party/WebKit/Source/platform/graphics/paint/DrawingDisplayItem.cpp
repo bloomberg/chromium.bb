@@ -75,6 +75,7 @@ static SkBitmap pictureToBitmap(const SkPicture* picture)
     SkRect rect = picture->cullRect();
     bitmap.allocPixels(SkImageInfo::MakeN32Premul(rect.width(), rect.height()));
     SkCanvas canvas(bitmap);
+    canvas.clear(SK_ColorTRANSPARENT);
     canvas.translate(-rect.x(), -rect.y());
     canvas.drawPicture(picture);
     return bitmap;
