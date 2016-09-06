@@ -912,6 +912,7 @@ void GpuImageDecodeController::DecodeImageIfNecessary(
         backing_memory =
             base::DiscardableMemoryAllocator::GetInstance()
                 ->AllocateLockedDiscardableMemory(image_data->size);
+        CHECK(backing_memory);
         SkImageInfo image_info = CreateImageInfoForDrawImage(
             draw_image, image_data->upload_scale_mip_level);
         // In order to match GPU scaling quality (which uses mip-maps at high
@@ -932,6 +933,7 @@ void GpuImageDecodeController::DecodeImageIfNecessary(
         backing_memory =
             base::DiscardableMemoryAllocator::GetInstance()
                 ->AllocateLockedDiscardableMemory(image_data->size);
+        CHECK(backing_memory);
         auto params = SkImage::DeferredTextureImageUsageParams(
             draw_image.matrix(), draw_image.filter_quality(),
             image_data->upload_scale_mip_level);
