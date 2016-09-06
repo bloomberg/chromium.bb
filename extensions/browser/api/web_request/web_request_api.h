@@ -233,14 +233,33 @@ class ExtensionWebRequestEventRouter
   // the response have arrived.
   void OnResponseStarted(void* browser_context,
                          const extensions::InfoMap* extension_info_map,
+                         net::URLRequest* request,
+                         int net_error);
+  // Deprecated.
+  // TODO(maksims): Remove this.
+  void OnResponseStarted(void* browser_context,
+                         const extensions::InfoMap* extension_info_map,
                          net::URLRequest* request);
 
   // Dispatches the onComplete event.
   void OnCompleted(void* browser_context,
                    const extensions::InfoMap* extension_info_map,
+                   net::URLRequest* request,
+                   int net_error);
+  // Deprecated.
+  // TODO(maksims): Remove this.
+  void OnCompleted(void* browser_context,
+                   const extensions::InfoMap* extension_info_map,
                    net::URLRequest* request);
 
   // Dispatches an onErrorOccurred event.
+  void OnErrorOccurred(void* browser_context,
+                       const extensions::InfoMap* extension_info_map,
+                       net::URLRequest* request,
+                       bool started,
+                       int net_error);
+  // Deprecated.
+  // TODO(maksims): Remove this.
   void OnErrorOccurred(void* browser_context,
                        const extensions::InfoMap* extension_info_map,
                        net::URLRequest* request,

@@ -76,35 +76,30 @@ void ShellNetworkDelegate::OnBeforeRedirect(
       browser_context_, extension_info_map_.get(), request, new_location);
 }
 
-
-void ShellNetworkDelegate::OnResponseStarted(
-    net::URLRequest* request) {
+void ShellNetworkDelegate::OnResponseStarted(net::URLRequest* request,
+                                             int net_error) {
   ExtensionWebRequestEventRouter::GetInstance()->OnResponseStarted(
-      browser_context_, extension_info_map_.get(), request);
+      browser_context_, extension_info_map_.get(), request, net_error);
 }
 
-void ShellNetworkDelegate::OnCompleted(
-    net::URLRequest* request,
-    bool started) {
-  if (request->status().status() == net::URLRequestStatus::SUCCESS) {
+void ShellNetworkDelegate::OnCompleted(net::URLRequest* request,
+                                       bool started,
+                                       int net_error) {
+  DCHECK_NE(net::ERR_IO_PENDING, net_error);
+
+  if (net_error == net::OK) {
     bool is_redirect = request->response_headers() &&
         net::HttpResponseHeaders::IsRedirectResponseCode(
             request->response_headers()->response_code());
     if (!is_redirect) {
       ExtensionWebRequestEventRouter::GetInstance()->OnCompleted(
-          browser_context_, extension_info_map_.get(), request);
+          browser_context_, extension_info_map_.get(), request, net_error);
     }
-    return;
-  }
-
-  if (request->status().status() == net::URLRequestStatus::FAILED ||
-      request->status().status() == net::URLRequestStatus::CANCELED) {
+  } else {
     ExtensionWebRequestEventRouter::GetInstance()->OnErrorOccurred(
-        browser_context_, extension_info_map_.get(), request, started);
-    return;
+        browser_context_, extension_info_map_.get(), request, started,
+        net_error);
   }
-
-  NOTREACHED();
 }
 
 void ShellNetworkDelegate::OnURLRequestDestroyed(

@@ -869,12 +869,15 @@ void ExtensionWebRequestEventRouter::OnBeforeRedirect(
 void ExtensionWebRequestEventRouter::OnResponseStarted(
     void* browser_context,
     const InfoMap* extension_info_map,
-    net::URLRequest* request) {
+    net::URLRequest* request,
+    int net_error) {
+  DCHECK_NE(net::ERR_IO_PENDING, net_error);
+
   if (ShouldHideEvent(browser_context, extension_info_map, request))
     return;
 
   // OnResponseStarted is even triggered, when the request was cancelled.
-  if (request->status().status() != net::URLRequestStatus::SUCCESS)
+  if (net_error != net::OK)
     return;
 
   int extra_info_spec = 0;
@@ -892,10 +895,21 @@ void ExtensionWebRequestEventRouter::OnResponseStarted(
   DispatchEvent(browser_context, request, listeners, std::move(event_details));
 }
 
-void ExtensionWebRequestEventRouter::OnCompleted(
+// Deprecated.
+// TODO(maksims): Remove this.
+void ExtensionWebRequestEventRouter::OnResponseStarted(
     void* browser_context,
     const InfoMap* extension_info_map,
     net::URLRequest* request) {
+  OnResponseStarted(browser_context, extension_info_map, request,
+                    request->status().error());
+}
+
+void ExtensionWebRequestEventRouter::OnCompleted(
+    void* browser_context,
+    const InfoMap* extension_info_map,
+    net::URLRequest* request,
+    int net_error) {
   // We hide events from the system context as well as sensitive requests.
   // However, if the request first became sensitive after redirecting we have
   // already signaled it and thus we have to signal the end of it. This is
@@ -909,7 +923,7 @@ void ExtensionWebRequestEventRouter::OnCompleted(
   request_time_tracker_->LogRequestEndTime(request->identifier(),
                                            base::Time::Now());
 
-  DCHECK(request->status().status() == net::URLRequestStatus::SUCCESS);
+  DCHECK_EQ(net::OK, net_error);
 
   DCHECK(!GetAndSetSignaled(request->identifier(), kOnCompleted));
 
@@ -930,11 +944,22 @@ void ExtensionWebRequestEventRouter::OnCompleted(
   DispatchEvent(browser_context, request, listeners, std::move(event_details));
 }
 
+// Deprecated.
+// TODO(maksims): Remove this.
+void ExtensionWebRequestEventRouter::OnCompleted(
+    void* browser_context,
+    const InfoMap* extension_info_map,
+    net::URLRequest* request) {
+  OnCompleted(browser_context, extension_info_map, request,
+              request->status().error());
+}
+
 void ExtensionWebRequestEventRouter::OnErrorOccurred(
     void* browser_context,
     const InfoMap* extension_info_map,
     net::URLRequest* request,
-    bool started) {
+    bool started,
+    int net_error) {
   // We hide events from the system context as well as sensitive requests.
   // However, if the request first became sensitive after redirecting we have
   // already signaled it and thus we have to signal the end of it. This is
@@ -948,8 +973,8 @@ void ExtensionWebRequestEventRouter::OnErrorOccurred(
   request_time_tracker_->LogRequestEndTime(request->identifier(),
                                            base::Time::Now());
 
-  DCHECK(request->status().status() == net::URLRequestStatus::FAILED ||
-         request->status().status() == net::URLRequestStatus::CANCELED);
+  DCHECK_NE(net::OK, net_error);
+  DCHECK_NE(net::ERR_IO_PENDING, net_error);
 
   DCHECK(!GetAndSetSignaled(request->identifier(), kOnErrorOccurred));
 
@@ -968,10 +993,18 @@ void ExtensionWebRequestEventRouter::OnErrorOccurred(
     event_details->SetResponseSource(request);
   else
     event_details->SetBoolean(keys::kFromCache, request->was_cached());
-  event_details->SetString(keys::kErrorKey,
-                           net::ErrorToString(request->status().error()));
+  event_details->SetString(keys::kErrorKey, net::ErrorToString(net_error));
 
   DispatchEvent(browser_context, request, listeners, std::move(event_details));
+}
+
+void ExtensionWebRequestEventRouter::OnErrorOccurred(
+    void* browser_context,
+    const InfoMap* extension_info_map,
+    net::URLRequest* request,
+    bool started) {
+  OnErrorOccurred(browser_context, extension_info_map, request, started,
+                  request->status().error());
 }
 
 void ExtensionWebRequestEventRouter::OnURLRequestDestroyed(
