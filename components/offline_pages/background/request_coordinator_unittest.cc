@@ -132,7 +132,7 @@ class ObserverStub : public RequestCoordinator::Observer {
       : added_called_(false),
         completed_called_(false),
         changed_called_(false),
-        last_status_(RequestCoordinator::SavePageStatus::SUCCESS),
+        last_status_(RequestCoordinator::BackgroundSavePageResult::SUCCESS),
         state_(SavePageRequest::RequestState::PRERENDERING) {}
 
   void Clear() {
@@ -140,15 +140,16 @@ class ObserverStub : public RequestCoordinator::Observer {
     completed_called_ = false;
     changed_called_ = false;
     state_ = SavePageRequest::RequestState::PRERENDERING;
-    last_status_ = RequestCoordinator::SavePageStatus::SUCCESS;
+    last_status_ = RequestCoordinator::BackgroundSavePageResult::SUCCESS;
   }
 
   void OnAdded(const SavePageRequest& request) override {
     added_called_ = true;
   }
 
-  void OnCompleted(const SavePageRequest& request,
-                   RequestCoordinator::SavePageStatus status) override {
+  void OnCompleted(
+      const SavePageRequest& request,
+      RequestCoordinator::BackgroundSavePageResult status) override {
     completed_called_ = true;
     last_status_ = status;
   }
@@ -161,14 +162,16 @@ class ObserverStub : public RequestCoordinator::Observer {
   bool added_called() { return added_called_; }
   bool completed_called() { return completed_called_; }
   bool changed_called() { return changed_called_; }
-  RequestCoordinator::SavePageStatus last_status() { return last_status_; }
+  RequestCoordinator::BackgroundSavePageResult last_status() {
+    return last_status_;
+  }
   SavePageRequest::RequestState state() { return state_; }
 
  private:
   bool added_called_;
   bool completed_called_;
   bool changed_called_;
-  RequestCoordinator::SavePageStatus last_status_;
+  RequestCoordinator::BackgroundSavePageResult last_status_;
   SavePageRequest::RequestState state_;
 };
 
@@ -447,7 +450,7 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestSucceeded) {
   // Check that the observer got the notification that we succeeded, and that
   // the request got removed from the queue.
   EXPECT_TRUE(observer().completed_called());
-  EXPECT_EQ(RequestCoordinator::SavePageStatus::SUCCESS,
+  EXPECT_EQ(RequestCoordinator::BackgroundSavePageResult::SUCCESS,
             observer().last_status());
 }
 
@@ -506,7 +509,7 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailed) {
   // Check that the observer got the notification that we failed (and the
   // subsequent notification that the request was removed).
   EXPECT_TRUE(observer().completed_called());
-  EXPECT_EQ(RequestCoordinator::SavePageStatus::RETRY_COUNT_EXCEEDED,
+  EXPECT_EQ(RequestCoordinator::BackgroundSavePageResult::RETRY_COUNT_EXCEEDED,
             observer().last_status());
 }
 
@@ -938,7 +941,7 @@ TEST_F(RequestCoordinatorTest, RemoveRequest) {
   PumpLoop();
 
   EXPECT_TRUE(observer().completed_called());
-  EXPECT_EQ(RequestCoordinator::SavePageStatus::REMOVED,
+  EXPECT_EQ(RequestCoordinator::BackgroundSavePageResult::REMOVED,
             observer().last_status());
   EXPECT_EQ(1UL, last_remove_results().size());
   EXPECT_EQ(kRequestId1, std::get<0>(last_remove_results().at(0)));

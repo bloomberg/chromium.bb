@@ -60,13 +60,13 @@ void DownloadNotifyingObserver::OnChanged(const SavePageRequest& request) {
 
 void DownloadNotifyingObserver::OnCompleted(
     const SavePageRequest& request,
-    RequestCoordinator::SavePageStatus status) {
+    RequestCoordinator::BackgroundSavePageResult status) {
   DCHECK(notifier_.get());
   if (!DownloadUIAdapter::IsVisibleInUI(request.client_id()))
     return;
-  if (status == RequestCoordinator::SavePageStatus::SUCCESS)
+  if (status == RequestCoordinator::BackgroundSavePageResult::SUCCESS)
     notifier_->NotifyDownloadSuccessful(DownloadUIItem(request));
-  else if (status == RequestCoordinator::SavePageStatus::REMOVED)
+  else if (status == RequestCoordinator::BackgroundSavePageResult::REMOVED)
     notifier_->NotifyDownloadCanceled(DownloadUIItem(request));
   else
     notifier_->NotifyDownloadFailed(DownloadUIItem(request));

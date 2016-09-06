@@ -56,7 +56,7 @@ class RequestNotifierStub : public RequestNotifier {
   void NotifyChanged(const SavePageRequest& request) override {}
 
   void NotifyCompleted(const SavePageRequest& request,
-                       SavePageStatus status) override {
+                       BackgroundSavePageResult status) override {
     last_expired_request_ = request;
     last_request_expiration_status_ = status;
     total_expired_requests_++;
@@ -66,14 +66,15 @@ class RequestNotifierStub : public RequestNotifier {
     return last_expired_request_;
   }
 
-  RequestCoordinator::SavePageStatus last_request_expiration_status() {
+  RequestCoordinator::BackgroundSavePageResult
+  last_request_expiration_status() {
     return last_request_expiration_status_;
   }
 
   int32_t total_expired_requests() { return total_expired_requests_; }
 
  private:
-  SavePageStatus last_request_expiration_status_;
+  BackgroundSavePageResult last_request_expiration_status_;
   SavePageRequest last_expired_request_;
   int32_t total_expired_requests_;
 };
@@ -328,7 +329,7 @@ TEST_F(RequestPickerTest, ChooseNonExpiredRequest) {
   EXPECT_EQ(kRequestId1, last_picked_->request_id());
   EXPECT_FALSE(request_queue_not_picked_called_);
   EXPECT_EQ(kRequestId2, GetNotifier()->last_expired_request().request_id());
-  EXPECT_EQ(RequestNotifier::SavePageStatus::EXPIRED,
+  EXPECT_EQ(RequestNotifier::BackgroundSavePageResult::EXPIRED,
             GetNotifier()->last_request_expiration_status());
   EXPECT_EQ(1, GetNotifier()->total_expired_requests());
 }

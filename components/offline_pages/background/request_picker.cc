@@ -262,8 +262,8 @@ void RequestPicker::OnRequestExpired(
     const RequestQueue::UpdateMultipleRequestResults& results,
     const std::vector<SavePageRequest>& requests) {
   for (auto request : requests)
-    notifier_->NotifyCompleted(request,
-                               RequestCoordinator::SavePageStatus::EXPIRED);
+    notifier_->NotifyCompleted(
+        request, RequestCoordinator::BackgroundSavePageResult::EXPIRED);
 }
 
 }  // namespace offline_pages

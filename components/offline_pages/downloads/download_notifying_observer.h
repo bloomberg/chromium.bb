@@ -31,8 +31,9 @@ class DownloadNotifyingObserver : public RequestCoordinator::Observer,
   // RequestCoordinator::Observer implementation:
   void OnAdded(const SavePageRequest& request) override;
   void OnChanged(const SavePageRequest& request) override;
-  void OnCompleted(const SavePageRequest& request,
-                   RequestCoordinator::SavePageStatus status) override;
+  void OnCompleted(
+      const SavePageRequest& request,
+      RequestCoordinator::BackgroundSavePageResult status) override;
 
  private:
   friend class DownloadNotifyingObserverTest;

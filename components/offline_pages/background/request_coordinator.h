@@ -48,8 +48,9 @@ class RequestCoordinator : public KeyedService,
     virtual ~Observer() = default;
 
     virtual void OnAdded(const SavePageRequest& request) = 0;
-    virtual void OnCompleted(const SavePageRequest& request,
-                             RequestNotifier::SavePageStatus status) = 0;
+    virtual void OnCompleted(
+        const SavePageRequest& request,
+        RequestNotifier::BackgroundSavePageResult status) = 0;
     virtual void OnChanged(const SavePageRequest& request) = 0;
   };
 
@@ -129,8 +130,9 @@ class RequestCoordinator : public KeyedService,
 
   // Implement RequestNotifier
   void NotifyAdded(const SavePageRequest& request) override;
-  void NotifyCompleted(const SavePageRequest& request,
-                       RequestNotifier::SavePageStatus status) override;
+  void NotifyCompleted(
+      const SavePageRequest& request,
+      RequestNotifier::BackgroundSavePageResult status) override;
   void NotifyChanged(const SavePageRequest& request) override;
 
   // Returns the request queue used for requests.  Coordinator keeps ownership.
@@ -187,12 +189,12 @@ class RequestCoordinator : public KeyedService,
 
   void HandleRemovedRequestsAndCallback(
       const RemoveRequestsCallback& callback,
-      SavePageStatus status,
+      BackgroundSavePageResult status,
       const RequestQueue::UpdateMultipleRequestResults& results,
       const std::vector<SavePageRequest>& requests);
 
   void HandleRemovedRequests(
-      SavePageStatus status,
+      BackgroundSavePageResult status,
       const RequestQueue::UpdateMultipleRequestResults& results,
       const std::vector<SavePageRequest>& requests);
 
@@ -234,7 +236,7 @@ class RequestCoordinator : public KeyedService,
   // Remove the attempted request from the queue with status to pass through to
   // any observers and UMA histogram.
   void RemoveAttemptedRequest(const SavePageRequest& request,
-                              SavePageStatus status);
+                              BackgroundSavePageResult status);
 
   // Returns the appropriate offliner to use, getting a new one from the factory
   // if needed.

@@ -49,8 +49,8 @@ void RecordOfflinerResultUMA(const ClientId& client_id,
 // Records the number of started attempts for completed requests (whether
 // successful or not).
 void RecordAttemptCount(const SavePageRequest& request,
-                        RequestNotifier::SavePageStatus status) {
-  if (status == RequestNotifier::SavePageStatus::SUCCESS) {
+                        RequestNotifier::BackgroundSavePageResult status) {
+  if (status == RequestNotifier::BackgroundSavePageResult::SUCCESS) {
     // TODO(dougarnett): Also record UMA for completed attempts here.
     UMA_HISTOGRAM_CUSTOM_COUNTS(
         "OfflinePages.Background.RequestSuccess.StartedAttemptCount",
@@ -193,7 +193,8 @@ bool RequestCoordinator::CancelActiveRequestIfItMatches(
 void RequestCoordinator::AbortRequestAttempt(SavePageRequest* request) {
   request->MarkAttemptAborted();
   if (request->started_attempt_count() >= policy_->GetMaxStartedTries()) {
-    RemoveAttemptedRequest(*request, SavePageStatus::START_COUNT_EXCEEDED);
+    RemoveAttemptedRequest(*request,
+                           BackgroundSavePageResult::START_COUNT_EXCEEDED);
   } else {
     queue_->UpdateRequest(
         *request,
@@ -202,8 +203,8 @@ void RequestCoordinator::AbortRequestAttempt(SavePageRequest* request) {
   }
 }
 
-void RequestCoordinator::RemoveAttemptedRequest(const SavePageRequest& request,
-                                                SavePageStatus status) {
+void RequestCoordinator::RemoveAttemptedRequest(
+    const SavePageRequest& request, BackgroundSavePageResult status) {
   std::vector<int64_t> remove_requests;
   remove_requests.push_back(request.request_id());
   queue_->RemoveRequests(remove_requests,
@@ -220,7 +221,7 @@ void RequestCoordinator::RemoveRequests(
       request_ids,
       base::Bind(&RequestCoordinator::HandleRemovedRequestsAndCallback,
                  weak_ptr_factory_.GetWeakPtr(), callback,
-                 SavePageStatus::REMOVED));
+                 BackgroundSavePageResult::REMOVED));
   if (canceled)
     TryNextRequest();
 }
@@ -309,7 +310,7 @@ void RequestCoordinator::UpdateMultipleRequestsCallback(
 
 void RequestCoordinator::HandleRemovedRequestsAndCallback(
     const RemoveRequestsCallback& callback,
-    SavePageStatus status,
+    BackgroundSavePageResult status,
     const RequestQueue::UpdateMultipleRequestResults& results,
     const std::vector<SavePageRequest>& requests) {
   callback.Run(results);
@@ -317,7 +318,7 @@ void RequestCoordinator::HandleRemovedRequestsAndCallback(
 }
 
 void RequestCoordinator::HandleRemovedRequests(
-    SavePageStatus status,
+    BackgroundSavePageResult status,
     const RequestQueue::UpdateMultipleRequestResults& results,
     const std::vector<SavePageRequest>& requests) {
   for (SavePageRequest request : requests)
@@ -479,21 +480,22 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
     // aborted cases to treat this way (eg, for Render Process Killed).
     SavePageRequest updated_request(request);
     AbortRequestAttempt(&updated_request);
-    SavePageStatus notify_status =
+    BackgroundSavePageResult notify_status =
         (status == Offliner::RequestStatus::FOREGROUND_CANCELED)
-            ? SavePageStatus::FOREGROUND_CANCELED
-            : SavePageStatus::PRERENDER_CANCELED;
+            ? BackgroundSavePageResult::FOREGROUND_CANCELED
+            : BackgroundSavePageResult::PRERENDER_CANCELED;
     NotifyCompleted(updated_request, notify_status);
   } else if (status == Offliner::RequestStatus::SAVED) {
     // Remove the request from the queue if it succeeded.
-    RemoveAttemptedRequest(request, SavePageStatus::SUCCESS);
+    RemoveAttemptedRequest(request, BackgroundSavePageResult::SUCCESS);
   } else if (request.completed_attempt_count() + 1 >=
              policy_->GetMaxCompletedTries()) {
     // Remove from the request queue if we exceeded max retries. The +1
     // represents the request that just completed. Since we call
     // MarkAttemptCompleted within the if branches, the completed_attempt_count
     // has not yet been updated when we are checking the if condition.
-    RemoveAttemptedRequest(request, SavePageStatus::RETRY_COUNT_EXCEEDED);
+    RemoveAttemptedRequest(request,
+                           BackgroundSavePageResult::RETRY_COUNT_EXCEEDED);
   } else {
     // If we failed, but are not over the limit, update the request in the
     // queue.
@@ -552,7 +554,7 @@ void RequestCoordinator::NotifyAdded(const SavePageRequest& request) {
 }
 
 void RequestCoordinator::NotifyCompleted(const SavePageRequest& request,
-                                         SavePageStatus status) {
+                                         BackgroundSavePageResult status) {
   FOR_EACH_OBSERVER(Observer, observers_, OnCompleted(request, status));
 }
 
