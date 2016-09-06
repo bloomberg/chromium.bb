@@ -913,14 +913,14 @@ bool CSSSelector::matchesPseudoElement() const
 }
 
 template <typename Functor>
-static bool forEachTagSelector(const Functor& functor, const CSSSelector& selector)
+static bool forEachTagHistory(const Functor& functor, const CSSSelector& selector)
 {
     for (const CSSSelector* current = &selector; current; current = current->tagHistory()) {
         if (functor(*current))
             return true;
         if (const CSSSelectorList* selectorList = current->selectorList()) {
             for (const CSSSelector* subSelector = selectorList->first(); subSelector; subSelector = CSSSelectorList::next(*subSelector)) {
-                if (forEachTagSelector(functor, *subSelector))
+                if (forEachTagHistory(functor, *subSelector))
                     return true;
             }
         }
@@ -931,28 +931,28 @@ static bool forEachTagSelector(const Functor& functor, const CSSSelector& select
 
 bool CSSSelector::hasContentPseudo() const
 {
-    return forEachTagSelector([](const CSSSelector& selector) -> bool {
+    return forEachTagHistory([](const CSSSelector& selector) -> bool {
         return selector.relationIsAffectedByPseudoContent();
     }, *this);
 }
 
 bool CSSSelector::hasSlottedPseudo() const
 {
-    return forEachTagSelector([](const CSSSelector& selector) ->  bool {
+    return forEachTagHistory([](const CSSSelector& selector) ->  bool {
         return selector.getPseudoType() == CSSSelector::PseudoSlotted;
     }, *this);
 }
 
 bool CSSSelector::hasDeepCombinatorOrShadowPseudo() const
 {
-    return forEachTagSelector([](const CSSSelector& selector) -> bool {
+    return forEachTagHistory([](const CSSSelector& selector) -> bool {
         return selector.relation() == CSSSelector::ShadowDeep || selector.getPseudoType() == CSSSelector::PseudoShadow;
     }, *this);
 }
 
 bool CSSSelector::needsUpdatedDistribution() const
 {
-    return forEachTagSelector([](const CSSSelector& selector) -> bool {
+    return forEachTagHistory([](const CSSSelector& selector) -> bool {
         return selector.relationIsAffectedByPseudoContent() || selector.getPseudoType() == CSSSelector::PseudoSlotted || selector.getPseudoType() == CSSSelector::PseudoHostContext;
     }, *this);
 }

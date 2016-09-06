@@ -67,13 +67,18 @@ public:
     bool hasOneSelector() const { return m_selectorArray && !next(*m_selectorArray); }
     const CSSSelector& selectorAt(size_t index) const { return m_selectorArray[index]; }
 
+    size_t selectorIndex(const CSSSelector& selector) const
+    {
+        return &selector - m_selectorArray;
+    }
+
     size_t indexOfNextSelectorAfter(size_t index) const
     {
         const CSSSelector& current = selectorAt(index);
         const CSSSelector* next = this->next(current);
         if (!next)
             return kNotFound;
-        return next - m_selectorArray;
+        return selectorIndex(*next);
     }
 
     String selectorsText() const;
