@@ -15,8 +15,26 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #endif
 
+namespace {
+
+const bool* g_metrics_consent_for_testing = nullptr;
+
+}  // namespace
+
+// static
+void ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(
+    const bool* value) {
+  DCHECK_NE(g_metrics_consent_for_testing == nullptr, value == nullptr)
+      << "Unpaired set/reset";
+
+  g_metrics_consent_for_testing = value;
+}
+
 // static
 bool ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled() {
+  if (g_metrics_consent_for_testing)
+    return *g_metrics_consent_for_testing;
+
   // TODO(blundell): Fix the unittests that don't set up the UI thread and
   // change this to just be DCHECK_CURRENTLY_ON().
   DCHECK(

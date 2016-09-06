@@ -165,6 +165,10 @@ class ChromePasswordManagerClient
                            bool one_local_credential,
                            const autofill::PasswordForm* form);
 
+  // Returns true if this profile has metrics reporting and active sync
+  // without custom sync passphrase.
+  static bool ShouldAnnotateNavigationEntries(Profile* profile);
+
   Profile* const profile_;
 
   password_manager::PasswordManager password_manager_;

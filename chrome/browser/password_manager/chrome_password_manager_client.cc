@@ -15,6 +15,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
+#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -574,8 +575,29 @@ const GURL& ChromePasswordManagerClient::GetLastCommittedEntryURL() const {
   return entry->GetURL();
 }
 
+// static
+bool ChromePasswordManagerClient::ShouldAnnotateNavigationEntries(
+    Profile* profile) {
+  // Only annotate PasswordState onto the navigation entry if user is
+  // opted into UMA and they're not syncing w/ a custom passphrase.
+  if (!ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled())
+    return false;
+
+  ProfileSyncService* profile_sync_service =
+      ProfileSyncServiceFactory::GetForProfile(profile);
+  if (!profile_sync_service || !profile_sync_service->IsSyncActive() ||
+      profile_sync_service->IsUsingSecondaryPassphrase()) {
+    return false;
+  }
+
+  return true;
+}
+
 void ChromePasswordManagerClient::AnnotateNavigationEntry(
     bool has_password_field) {
+  if (!ShouldAnnotateNavigationEntries(profile_))
+    return;
+
   content::NavigationEntry* entry =
       web_contents()->GetController().GetLastCommittedEntry();
   if (!entry)

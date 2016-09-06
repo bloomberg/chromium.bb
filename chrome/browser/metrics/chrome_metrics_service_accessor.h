@@ -17,6 +17,7 @@
 class BrowserProcessImpl;
 class Profile;
 class ChromeMetricsServiceClient;
+class ChromePasswordManagerClient;
 
 namespace {
 class CrashesDOMHandler;
@@ -77,6 +78,14 @@ class ChromeInternalLogSource;
 // Since these methods are private, each user has to be explicitly declared
 // as a 'friend' below.
 class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
+ public:
+  // This test method is public so tests don't need to befriend this class.
+
+  // If arg is non-null, the value will be returned from future calls to
+  // IsMetricsAndCrashReportingEnabled().  Pointer must be valid until
+  // it is reset to null here.
+  static void SetMetricsAndCrashReportingForTesting(const bool* value);
+
  private:
   friend class ::CrashesDOMHandler;
   friend class ::FlashDOMHandler;
@@ -109,6 +118,7 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class safe_browsing::SafeBrowsingUIManager;
   friend void SyzyASANRegisterExperiment(const char*, const char*);
   friend class ChromeMetricsServiceClient;
+  friend class ChromePasswordManagerClient;
 
   FRIEND_TEST_ALL_PREFIXES(ChromeMetricsServiceAccessorTest,
                            MetricsReportingEnabled);
