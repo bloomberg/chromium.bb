@@ -2562,6 +2562,11 @@ void FrameView::notifyResizeObservers()
 // TODO(leviw): We don't assert lifecycle information from documents in child PluginViews.
 void FrameView::updateLifecyclePhasesInternal(DocumentLifecycle::LifecycleState targetState)
 {
+    if (m_currentUpdateLifecyclePhasesTargetState != DocumentLifecycle::Uninitialized) {
+        NOTREACHED() << "FrameView::updateLifecyclePhasesInternal() reentrance";
+        return;
+    }
+
     // This must be called from the root frame, since it recurses down, not up.
     // Otherwise the lifecycles of the frames might be out of sync.
     DCHECK(m_frame->isLocalRoot());
