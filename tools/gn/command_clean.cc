@@ -8,6 +8,7 @@
 #include "base/strings/stringprintf.h"
 #include "tools/gn/commands.h"
 #include "tools/gn/err.h"
+#include "tools/gn/filesystem_utils.h"
 #include "tools/gn/setup.h"
 
 namespace {
@@ -84,8 +85,9 @@ int RunClean(const std::vector<std::string>& args) {
   base::FilePath build_ninja_d_file = build_dir.AppendASCII("build.ninja.d");
   if (!base::PathExists(build_ninja_d_file)) {
     Err(Location(),
-        base::StringPrintf("%s does not look like a build directory.\n",
-                           build_ninja_d_file.DirName().value().c_str()))
+        base::StringPrintf(
+            "%s does not look like a build directory.\n",
+            FilePathToUTF8(build_ninja_d_file.DirName().value()).c_str()))
         .PrintToStdout();
     return 1;
   }
