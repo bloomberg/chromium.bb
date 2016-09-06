@@ -8,12 +8,16 @@ import android.app.Notification;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.os.Build;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
@@ -22,6 +26,7 @@ import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
+import java.net.URL;
 import java.util.List;
 
 /**
@@ -176,6 +181,40 @@ public class NotificationPlatformBridgeTest extends NotificationTestBase {
     }
 
     /**
+     * Verifies that on Android M+, notifications which specify a badge will have that icon
+     * fetched and included as the small icon in the notification.
+     * If the test target is L or below, verifies the small icon is the expected chrome logo.
+     */
+    @MediumTest
+    @Feature({"Browser", "Notifications"})
+    public void testShowNotificationWithBadge() throws Exception {
+        loadUrl(getTestServer().getURL(NOTIFICATION_TEST_PAGE));
+        setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
+
+        Notification notification =
+                showAndGetNotification("MyNotification", "{badge: 'badge.png'}");
+
+        assertEquals("MyNotification", NotificationTestUtil.getExtraTitle(notification));
+
+        Context context = getInstrumentation().getTargetContext();
+        Bitmap smallIcon = NotificationTestUtil.getSmallIconFromNotification(context, notification);
+        assertNotNull(smallIcon);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            URL badgeUrl =
+                    new URL(getTestServer().getURL("/chrome/test/data/notifications/badge.png"));
+            Bitmap bitmap = BitmapFactory.decodeStream(badgeUrl.openStream());
+            Bitmap expected = bitmap.copy(bitmap.getConfig(), true);
+            NotificationBuilderBase.applyWhiteOverlayToBitmap(expected);
+            assertTrue(expected.sameAs(smallIcon));
+        } else {
+            Bitmap expected =
+                    BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_chrome);
+            assertTrue(expected.sameAs(smallIcon));
+        }
+    }
+
+    /**
      * Verifies that notifications which specify an icon will have that icon fetched, converted into
      * a Bitmap and included as the large icon in the notification.
      */
@@ -185,16 +224,14 @@ public class NotificationPlatformBridgeTest extends NotificationTestBase {
         loadUrl(getTestServer().getURL(NOTIFICATION_TEST_PAGE));
         setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
 
-        Notification notification = showAndGetNotification("MyNotification", "{icon: 'icon.png'}");
+        Notification notification = showAndGetNotification("MyNotification", "{icon: 'red.png'}");
 
         assertEquals("MyNotification", NotificationTestUtil.getExtraTitle(notification));
 
         Context context = getInstrumentation().getTargetContext();
-        assertNotNull(NotificationTestUtil.getLargeIconFromNotification(context, notification));
-
-        // TODO(peter): Do some more sensible checking that |icon.png| could actually be loaded.
-        // One option might be to give that icon a solid color and check for it in the Bitmap, but
-        // I'm not certain how reliable that would be.
+        Bitmap largeIcon = NotificationTestUtil.getLargeIconFromNotification(context, notification);
+        assertNotNull(largeIcon);
+        assertEquals(Color.RED, largeIcon.getPixel(0, 0));
     }
 
     /**
