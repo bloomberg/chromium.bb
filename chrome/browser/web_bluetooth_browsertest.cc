@@ -132,10 +132,26 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothTest, BlacklistShouldBlock) {
   EXPECT_CALL(*adapter, IsPresent()).WillRepeatedly(Return(true));
   device::BluetoothAdapterFactory::SetAdapterForTesting(adapter);
 
-  ASSERT_TRUE(base::FieldTrialList::TrialExists("WebBluetoothBlacklist"))
-      << "ERROR: testing/variations/fieldtrial_testing_config_*.json must\n"
-      << "include WebBluetoothBlacklist trial with the blacklist_additions\n"
-      << "parameter including this test's random UUID 'ed5f25a4'.\n";
+  if (base::FieldTrialList::TrialExists("WebBluetoothBlacklist")) {
+    LOG(INFO) << "WebBluetoothBlacklist field trial already configured.";
+    ASSERT_NE(variations::GetVariationParamValue("WebBluetoothBlacklist",
+                                                 "blacklist_additions")
+                  .find("ed5f25a4"),
+              std::string::npos)
+        << "ERROR: WebBluetoothBlacklist field trial being tested in\n"
+           "testing/variations/fieldtrial_testing_config_*.json must\n"
+           "include this test's random UUID 'ed5f25a4' in\n"
+           "blacklist_additions.\n";
+  } else {
+    LOG(INFO) << "Creating WebBluetoothBlacklist field trial for test.";
+    // Create a field trial with test parameter.
+    std::map<std::string, std::string> params;
+    params["blacklist_additions"] = "ed5f25a4:e";
+    variations::AssociateVariationParams("WebBluetoothBlacklist", "TestGroup",
+                                         params);
+    base::FieldTrialList::CreateFieldTrial("WebBluetoothBlacklist",
+                                           "TestGroup");
+  }
 
   std::string rejection;
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
