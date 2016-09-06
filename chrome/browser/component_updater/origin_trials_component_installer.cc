@@ -39,6 +39,11 @@ namespace component_updater {
 
 namespace {
 
+static const char kManifestOriginTrialsKey[] = "origin-trials";
+static const char kManifestPublicKeyPath[] = "origin-trials.public-key";
+static const char kManifestDisabledFeaturesPath[] =
+    "origin-trials.disabled-features";
+
 // Extension id is kfoklmclfodeliojeaekpoflbkkhojea
 const uint8_t kSha256Hash[] = {0xa5, 0xea, 0xbc, 0x2b, 0x5e, 0x34, 0xb8, 0xe9,
                                0x40, 0x4a, 0xfe, 0x5b, 0x1a, 0xa7, 0xe9, 0x40,
@@ -51,7 +56,7 @@ bool OriginTrialsComponentInstallerTraits::VerifyInstallation(
     const base::DictionaryValue& manifest,
     const base::FilePath& install_dir) const {
   // Test if the "origin-trials" key is present in the manifest.
-  return manifest.HasKey("origin-trials");
+  return manifest.HasKey(kManifestOriginTrialsKey);
 }
 
 bool OriginTrialsComponentInstallerTraits::
@@ -73,19 +78,27 @@ void OriginTrialsComponentInstallerTraits::ComponentReady(
     const base::Version& version,
     const base::FilePath& install_dir,
     std::unique_ptr<base::DictionaryValue> manifest) {
-  // Read the public key from the manifest and set values in browser
+  // Read the configuration from the manifest and set values in browser
   // local_state. These will be used on the next browser restart.
+  // If an individual configuration value is missing, treat as a reset to the
+  // browser defaults.
   PrefService* local_state = g_browser_process->local_state();
   std::string override_public_key;
-  if (manifest->GetString("origin-trials.public-key", &override_public_key)) {
+  if (manifest->GetString(kManifestPublicKeyPath, &override_public_key)) {
     local_state->Set(prefs::kOriginTrialPublicKey,
                      base::StringValue(override_public_key));
+  } else {
+    local_state->ClearPref(prefs::kOriginTrialPublicKey);
   }
   base::ListValue* override_disabled_feature_list = nullptr;
-  if (manifest->GetList("origin-trials.disabled-features",
-                        &override_disabled_feature_list)) {
+  const bool manifest_has_disabled_features = manifest->GetList(
+      kManifestDisabledFeaturesPath, &override_disabled_feature_list);
+  if (manifest_has_disabled_features &&
+      !override_disabled_feature_list->empty()) {
     ListPrefUpdate update(local_state, prefs::kOriginTrialDisabledFeatures);
     update->Swap(override_disabled_feature_list);
+  } else {
+    local_state->ClearPref(prefs::kOriginTrialDisabledFeatures);
   }
 }
 
