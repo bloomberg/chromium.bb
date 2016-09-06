@@ -15,19 +15,20 @@
 #include "ui/message_center/views/message_bubble_base.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/image_button.h"
-#include "ui/views/controls/button/menu_button_listener.h"
+#include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/view.h"
 
+namespace ui {
+class ComboboxModel;
+}
+
 namespace views {
+class Combobox;
 class Label;
-class MenuButton;
-class MenuModelAdapter;
-class MenuRunner;
 }
 
 namespace message_center {
-class NotifierGroupMenuModel;
 
 // A class to show the list of notifier extensions / URL patterns and allow
 // users to customize the settings.
@@ -35,7 +36,7 @@ class MESSAGE_CENTER_EXPORT NotifierSettingsView
     : public NotifierSettingsObserver,
       public views::View,
       public views::ButtonListener,
-      public views::MenuButtonListener {
+      public views::ComboboxListener {
  public:
   explicit NotifierSettingsView(NotifierSettingsProvider* provider);
   ~NotifierSettingsView() override;
@@ -107,23 +108,19 @@ class MESSAGE_CENTER_EXPORT NotifierSettingsView
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  // Overridden from views::MenuButtonListener:
-  void OnMenuButtonClicked(views::MenuButton* source,
-                           const gfx::Point& point,
-                           const ui::Event* event) override;
+  // Overridden from views::ComboboxListener:
+  void OnPerformAction(views::Combobox* combobox) override;
 
   // Callback for views::MenuModelAdapter.
   void OnMenuClosed();
 
   views::ImageButton* title_arrow_;
   views::Label* title_label_;
-  views::MenuButton* notifier_group_selector_;
+  views::Combobox* notifier_group_combobox_;
   views::ScrollView* scroller_;
   NotifierSettingsProvider* provider_;
   std::set<NotifierButton*> buttons_;
-  std::unique_ptr<NotifierGroupMenuModel> notifier_group_menu_model_;
-  std::unique_ptr<views::MenuModelAdapter> notifier_group_menu_model_adapter_;
-  std::unique_ptr<views::MenuRunner> notifier_group_menu_runner_;
+  std::unique_ptr<ui::ComboboxModel> notifier_group_model_;
 
   DISALLOW_COPY_AND_ASSIGN(NotifierSettingsView);
 };

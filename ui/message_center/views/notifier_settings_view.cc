@@ -16,7 +16,7 @@
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/models/simple_menu_model.h"
+#include "ui/base/models/combobox_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -31,13 +31,11 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/label_button_border.h"
-#include "ui/views/controls/button/menu_button.h"
+#include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/link_listener.h"
-#include "ui/views/controls/menu/menu_model_adapter.h"
-#include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
 #include "ui/views/layout/box_layout.h"
@@ -47,7 +45,8 @@
 #include "ui/views/widget/widget.h"
 
 namespace message_center {
-namespace settings {
+
+namespace {
 
 // Additional views-specific parameters.
 
@@ -67,18 +66,8 @@ const int kLearnMoreTargetHeight = 40;
 const int kMinimumHeight = 480;
 
 // The horizontal margin of the title area of the settings pane in addition to
-// the standard margin from settings::kHorizontalMargin.
-const int kTitleMargin = 10;
-
-}  // namespace settings
-
-namespace {
-
-// Menu button metrics to make the text line up.
-const int kMenuButtonInnateMargin = 2;
-
-// Used to place the context menu correctly.
-const int kMenuWhitespaceOffset = 2;
+// the standard margin from kHorizontalMargin.
+const int kTitleMargin = 20;
 
 // The innate vertical blank space in the label for the title of the settings
 // pane.
@@ -97,10 +86,6 @@ const int kInnateCheckboxRightPadding = 2;
 // inhabit.
 const int kComputedCheckboxSize =
     settings::kCheckboxSizeWithPadding - kInnateCheckboxRightPadding;
-
-// The menubutton has innate margin, so we need to compensate for that when
-// figuring the margin of the title area.
-const int kComputedContentsTitleMargin = 0 - kMenuButtonInnateMargin;
 
 // The spec doesn't include the bottom blank area of the title bar or the innate
 // blank area in the description label, so we'll use this as the space between
@@ -169,7 +154,7 @@ void EntryView::Layout() {
 gfx::Size EntryView::GetPreferredSize() const {
   DCHECK_EQ(1, child_count());
   gfx::Size size = child_at(0)->GetPreferredSize();
-  size.SetToMax(gfx::Size(settings::kWidth, settings::kEntryHeight));
+  size.SetToMax(gfx::Size(kWidth, settings::kEntryHeight));
   return size;
 }
 
@@ -204,69 +189,41 @@ void EntryView::OnBlur() {
   SchedulePaint();
 }
 
-}  // namespace
+// NotifierGroupComboboxModel --------------------------------------------------
 
-
-// NotifierGroupMenuModel -----------------------------------------------------
-
-class NotifierGroupMenuModel : public ui::SimpleMenuModel,
-                               public ui::SimpleMenuModel::Delegate {
+class NotifierGroupComboboxModel : public ui::ComboboxModel {
  public:
-  NotifierGroupMenuModel(NotifierSettingsProvider* notifier_settings_provider);
-  ~NotifierGroupMenuModel() override;
+  explicit NotifierGroupComboboxModel(
+      NotifierSettingsProvider* notifier_settings_provider);
+  ~NotifierGroupComboboxModel() override;
 
-  // ui::SimpleMenuModel::Delegate:
-  bool IsCommandIdChecked(int command_id) const override;
-  bool IsCommandIdEnabled(int command_id) const override;
-  void ExecuteCommand(int command_id, int event_flags) override;
+  // ui::ComboboxModel:
+  int GetItemCount() const override;
+  base::string16 GetItemAt(int index) override;
 
  private:
   NotifierSettingsProvider* notifier_settings_provider_;
 
-  DISALLOW_COPY_AND_ASSIGN(NotifierGroupMenuModel);
+  DISALLOW_COPY_AND_ASSIGN(NotifierGroupComboboxModel);
 };
 
-NotifierGroupMenuModel::NotifierGroupMenuModel(
+NotifierGroupComboboxModel::NotifierGroupComboboxModel(
     NotifierSettingsProvider* notifier_settings_provider)
-    : ui::SimpleMenuModel(this),
-      notifier_settings_provider_(notifier_settings_provider) {
-  if (!notifier_settings_provider_)
-    return;
+    : notifier_settings_provider_(notifier_settings_provider) {}
 
-  size_t num_menu_items = notifier_settings_provider_->GetNotifierGroupCount();
-  for (size_t i = 0; i < num_menu_items; ++i) {
-    const NotifierGroup& group =
-        notifier_settings_provider_->GetNotifierGroupAt(i);
+NotifierGroupComboboxModel::~NotifierGroupComboboxModel() {}
 
-    AddCheckItem(i, group.login_info.empty() ? group.name : group.login_info);
-  }
+int NotifierGroupComboboxModel::GetItemCount() const {
+  return notifier_settings_provider_->GetNotifierGroupCount();
 }
 
-NotifierGroupMenuModel::~NotifierGroupMenuModel() {}
-
-bool NotifierGroupMenuModel::IsCommandIdChecked(int command_id) const {
-  // If there's no provider, assume only one notifier group - the active one.
-  return !notifier_settings_provider_ ||
-      notifier_settings_provider_->IsNotifierGroupActiveAt(command_id);
+base::string16 NotifierGroupComboboxModel::GetItemAt(int index) {
+  const NotifierGroup& group =
+      notifier_settings_provider_->GetNotifierGroupAt(index);
+  return group.login_info.empty() ? group.name : group.login_info;
 }
 
-bool NotifierGroupMenuModel::IsCommandIdEnabled(int command_id) const {
-  return true;
-}
-
-void NotifierGroupMenuModel::ExecuteCommand(int command_id, int event_flags) {
-  if (!notifier_settings_provider_)
-    return;
-
-  size_t notifier_group_index = static_cast<size_t>(command_id);
-  size_t num_notifier_groups =
-      notifier_settings_provider_->GetNotifierGroupCount();
-  if (notifier_group_index >= num_notifier_groups)
-    return;
-
-  notifier_settings_provider_->SwitchToNotifierGroup(notifier_group_index);
-}
-
+}  // namespace
 
 // NotifierSettingsView::NotifierButton ---------------------------------------
 
@@ -282,7 +239,7 @@ NotifierSettingsView::NotifierButton::NotifierButton(
       icon_view_(new views::ImageView()),
       name_view_(new views::Label(notifier_->name)),
       checkbox_(new views::Checkbox(base::string16())),
-      learn_more_(NULL) {
+      learn_more_(nullptr) {
   DCHECK(provider);
   DCHECK(notifier);
 
@@ -312,10 +269,9 @@ NotifierSettingsView::NotifierButton::NotifierButton(
         views::Button::STATE_PRESSED,
         rb.GetImageSkiaNamed(IDR_NOTIFICATION_ADVANCED_SETTINGS_PRESSED));
     learn_more_->SetState(views::Button::STATE_NORMAL);
-    int learn_more_border_width =
-        (settings::kLearnMoreTargetWidth - settings::kLearnMoreSize) / 2;
+    int learn_more_border_width = (kLearnMoreTargetWidth - kLearnMoreSize) / 2;
     int learn_more_border_height =
-        (settings::kLearnMoreTargetHeight - settings::kLearnMoreSize) / 2;
+        (kLearnMoreTargetHeight - kLearnMoreSize) / 2;
     // The image itself is quite small, this large invisible border creates a
     // much bigger click target.
     learn_more_->SetBorder(
@@ -357,7 +313,7 @@ bool NotifierSettingsView::NotifierButton::checked() const {
 }
 
 bool NotifierSettingsView::NotifierButton::has_learn_more() const {
-  return learn_more_ != NULL;
+  return learn_more_ != nullptr;
 }
 
 const Notifier& NotifierSettingsView::NotifierButton::notifier() const {
@@ -365,7 +321,7 @@ const Notifier& NotifierSettingsView::NotifierButton::notifier() const {
 }
 
 void NotifierSettingsView::NotifierButton::SendLearnMorePressedForTest() {
-  if (learn_more_ == NULL)
+  if (learn_more_ == nullptr)
     return;
   gfx::Point point(110, 120);
   ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED, point, point,
@@ -386,7 +342,7 @@ void NotifierSettingsView::NotifierButton::ButtonPressed(
   } else if (button == learn_more_) {
     DCHECK(provider_);
     provider_->OnNotifierAdvancedSettingsRequested(notifier_->notifier_id,
-                                                   NULL);
+                                                   nullptr);
   }
 }
 
@@ -460,12 +416,12 @@ void NotifierSettingsView::NotifierButton::GridChanged(bool has_learn_more,
 // NotifierSettingsView -------------------------------------------------------
 
 NotifierSettingsView::NotifierSettingsView(NotifierSettingsProvider* provider)
-    : title_arrow_(NULL),
-      title_label_(NULL),
-      notifier_group_selector_(NULL),
-      scroller_(NULL),
+    : title_arrow_(nullptr),
+      title_label_(nullptr),
+      notifier_group_combobox_(nullptr),
+      scroller_(nullptr),
       provider_(provider) {
-  // |provider_| may be NULL in tests.
+  // |provider_| may be null in tests.
   if (provider_)
     provider_->AddObserver(this);
 
@@ -482,9 +438,9 @@ NotifierSettingsView::NotifierSettingsView(NotifierSettingsProvider* provider)
   title_label_->SetMultiLine(true);
   title_label_->SetBorder(
       views::Border::CreateEmptyBorder(kComputedTitleTopMargin,
-                                       settings::kTitleMargin,
+                                       kTitleMargin,
                                        kComputedTitleBottomMargin,
-                                       settings::kTitleMargin));
+                                       kTitleMargin));
 
   AddChildView(title_label_);
 
@@ -500,7 +456,7 @@ NotifierSettingsView::NotifierSettingsView(NotifierSettingsProvider* provider)
 }
 
 NotifierSettingsView::~NotifierSettingsView() {
-  // |provider_| may be NULL in tests.
+  // |provider_| may be null in tests.
   if (provider_)
     provider_->RemoveObserver(this);
 }
@@ -541,11 +497,8 @@ void NotifierSettingsView::UpdateContentsView(
       views::BoxLayout::kVertical, settings::kHorizontalMargin, 0, 0));
 
   views::View* contents_title_view = new views::View();
-  contents_title_view->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical,
-                           kComputedContentsTitleMargin,
-                           0,
-                           kComputedTitleElementSpacing));
+  contents_title_view->SetLayoutManager(new views::BoxLayout(
+      views::BoxLayout::kVertical, 0, 0, kComputedTitleElementSpacing));
 
   bool need_account_switcher =
       provider_ && provider_->GetNotifierGroupCount() > 1;
@@ -555,29 +508,33 @@ void NotifierSettingsView::UpdateContentsView(
 
   views::Label* top_label =
       new views::Label(l10n_util::GetStringUTF16(top_label_resource_id));
-
+  top_label->SetBorder(views::Border::CreateEmptyBorder(
+      gfx::Insets(0, kTitleMargin - settings::kHorizontalMargin)));
   top_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   top_label->SetMultiLine(true);
-  top_label->SetBorder(views::Border::CreateEmptyBorder(
-      0,
-      settings::kTitleMargin + kMenuButtonInnateMargin,
-      0,
-      settings::kTitleMargin + kMenuButtonInnateMargin));
+
   contents_title_view->AddChildView(top_label);
 
   if (need_account_switcher) {
     const NotifierGroup& active_group = provider_->GetActiveNotifierGroup();
     base::string16 notifier_group_text = active_group.login_info.empty() ?
         active_group.name : active_group.login_info;
-    notifier_group_selector_ =
-        new views::MenuButton(notifier_group_text, this, true);
-    notifier_group_selector_->SetBorder(std::unique_ptr<views::Border>(
-        new views::LabelButtonAssetBorder(views::Button::STYLE_BUTTON)));
-    notifier_group_selector_->SetFocusPainter(nullptr);
-    notifier_group_selector_->set_animate_on_state_change(false);
-    notifier_group_selector_->SetFocusForPlatform();
-    notifier_group_selector_->set_request_focus_on_press(true);
-    contents_title_view->AddChildView(notifier_group_selector_);
+    notifier_group_model_.reset(new NotifierGroupComboboxModel(provider_));
+    notifier_group_combobox_ = new views::Combobox(notifier_group_model_.get());
+    notifier_group_combobox_->set_listener(this);
+
+    // Move the combobox over enough to align with the checkboxes.
+    views::View* combobox_spacer = new views::View();
+    combobox_spacer->SetLayoutManager(new views::FillLayout());
+    int padding = views::LabelButtonAssetBorder::GetDefaultInsetsForStyle(
+                      views::LabelButton::STYLE_TEXTBUTTON)
+                      .left() -
+                  notifier_group_combobox_->border()->GetInsets().left();
+    combobox_spacer->SetBorder(
+        views::Border::CreateEmptyBorder(0, padding, 0, 0));
+    combobox_spacer->AddChildView(notifier_group_combobox_);
+
+    contents_title_view->AddChildView(combobox_spacer);
   }
 
   contents_view->AddChildView(contents_title_view);
@@ -615,10 +572,7 @@ void NotifierSettingsView::UpdateContentsView(
 
 void NotifierSettingsView::Layout() {
   int title_height = title_label_->GetHeightForWidth(width());
-  title_label_->SetBounds(settings::kTitleMargin,
-                          0,
-                          width() - settings::kTitleMargin * 2,
-                          title_height);
+  title_label_->SetBounds(0, 0, width(), title_height);
 
   views::View* contents_view = scroller_->contents();
   int content_width = width();
@@ -632,10 +586,10 @@ void NotifierSettingsView::Layout() {
 }
 
 gfx::Size NotifierSettingsView::GetMinimumSize() const {
-  gfx::Size size(settings::kWidth, settings::kMinimumHeight);
+  gfx::Size size(kWidth, kMinimumHeight);
   int total_height = title_label_->GetPreferredSize().height() +
                      scroller_->contents()->GetPreferredSize().height();
-  if (total_height > settings::kMinimumHeight)
+  if (total_height > kMinimumHeight)
     size.Enlarge(scroller_->GetScrollBarWidth(), 0);
   return size;
 }
@@ -680,32 +634,10 @@ void NotifierSettingsView::ButtonPressed(views::Button* sender,
     provider_->SetNotifierEnabled((*iter)->notifier(), (*iter)->checked());
 }
 
-void NotifierSettingsView::OnMenuButtonClicked(views::MenuButton* source,
-                                               const gfx::Point& point,
-                                               const ui::Event* event) {
-  notifier_group_menu_model_.reset(new NotifierGroupMenuModel(provider_));
-  notifier_group_menu_model_adapter_.reset(new views::MenuModelAdapter(
-      notifier_group_menu_model_.get(),
-      base::Bind(&NotifierSettingsView::OnMenuClosed, base::Unretained(this))));
-
-  notifier_group_menu_runner_.reset(new views::MenuRunner(
-      notifier_group_menu_model_adapter_->CreateMenu(),
-      views::MenuRunner::CONTEXT_MENU | views::MenuRunner::ASYNC));
-  gfx::Rect menu_anchor = source->GetBoundsInScreen();
-  menu_anchor.Inset(
-      gfx::Insets(0, kMenuWhitespaceOffset, 0, kMenuWhitespaceOffset));
-  notifier_group_menu_runner_->RunMenuAt(
-      GetWidget(), notifier_group_selector_, menu_anchor,
-      views::MENU_ANCHOR_BUBBLE_ABOVE, ui::MENU_SOURCE_MOUSE);
-}
-
-void NotifierSettingsView::OnMenuClosed() {
+void NotifierSettingsView::OnPerformAction(views::Combobox* combobox) {
+  provider_->SwitchToNotifierGroup(combobox->selected_index());
   MessageCenterView* center_view = static_cast<MessageCenterView*>(parent());
   center_view->OnSettingsChanged();
-
-  notifier_group_menu_runner_.reset();
-  notifier_group_menu_model_adapter_.reset();
-  notifier_group_menu_model_.reset();
 }
 
 }  // namespace message_center

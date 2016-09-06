@@ -15,6 +15,8 @@ class ComboboxModelObserver;
 // A data model for a combo box.
 class UI_BASE_EXPORT ComboboxModel {
  public:
+  virtual ~ComboboxModel() {}
+
   // Returns the number of items in the combo box.
   virtual int GetItemCount() const = 0;
 
@@ -35,9 +37,6 @@ class UI_BASE_EXPORT ComboboxModel {
   // Adds/removes an observer. Override if model supports mutation.
   virtual void AddObserver(ComboboxModelObserver* observer) {}
   virtual void RemoveObserver(ComboboxModelObserver* observer) {}
-
- protected:
-  virtual ~ComboboxModel() {}
 };
 
 }  // namespace ui
