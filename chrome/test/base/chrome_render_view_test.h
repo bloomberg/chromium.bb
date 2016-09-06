@@ -36,6 +36,9 @@ class ChromeRenderViewTest : public content::RenderViewTest {
   content::ContentBrowserClient* CreateContentBrowserClient() override;
   content::ContentRendererClient* CreateContentRendererClient() override;
 
+  // Called from SetUp(). Override to register mojo interfaces.
+  virtual void RegisterMainFrameRemoteInterfaces();
+
   // Initializes commonly needed global state and renderer client parts.
   // Use when overriding CreateContentRendererClient.
   void InitChromeContentRendererClient(ChromeContentRendererClient* client);

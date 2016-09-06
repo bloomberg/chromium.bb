@@ -127,6 +127,7 @@
 #include "components/google/core/browser/google_util.h"
 #include "components/metrics/client_info.h"
 #include "components/net_log/chrome_net_log.h"
+#include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -2932,6 +2933,11 @@ void ChromeContentBrowserClient::RegisterRenderFrameMojoInterfaces(
 
   registry->AddInterface(
       base::Bind(&autofill::ContentAutofillDriverFactory::BindAutofillDriver,
+                 render_frame_host));
+
+  registry->AddInterface(
+      base::Bind(&password_manager::ContentPasswordManagerDriverFactory::
+                     BindPasswordManagerDriver,
                  render_frame_host));
 
 #if BUILDFLAG(ANDROID_JAVA_UI)

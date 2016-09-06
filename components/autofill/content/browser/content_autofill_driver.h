@@ -132,7 +132,7 @@ class ContentAutofillDriver : public AutofillDriver,
 
   mojo::Binding<mojom::AutofillDriver> binding_;
 
-  mojom::AutofillAgentPtr mojo_autofill_agent_;
+  mojom::AutofillAgentPtr autofill_agent_;
 };
 
 }  // namespace autofill

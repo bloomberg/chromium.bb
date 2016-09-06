@@ -111,6 +111,8 @@ void ChromeRenderViewTest::SetUp() {
 
   content::RenderViewTest::SetUp();
 
+  RegisterMainFrameRemoteInterfaces();
+
   // RenderFrame doesn't expose its Agent objects, because it has no need to
   // store them directly (they're stored as RenderFrameObserver*).  So just
   // create another set.
@@ -155,6 +157,8 @@ ChromeRenderViewTest::CreateContentRendererClient() {
   InitChromeContentRendererClient(client);
   return client;
 }
+
+void ChromeRenderViewTest::RegisterMainFrameRemoteInterfaces() {}
 
 void ChromeRenderViewTest::InitChromeContentRendererClient(
     ChromeContentRendererClient* client) {

@@ -4,6 +4,6 @@ include_rules = [
   "+components/autofill/content/public/interfaces",
   "+components/keyed_service/content",
   "+content/public/browser",
-  "+ipc",
   "+net",
+  "+services/shell/public/cpp",
 ]

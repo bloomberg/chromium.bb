@@ -6,7 +6,7 @@
 
 #include <vector>
 
-#include "components/autofill/content/common/autofill_messages.h"
+#include "base/strings/stringprintf.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/content/renderer/test_password_generation_agent.h"
 #include "components/autofill/core/common/password_form_generation_data.h"
@@ -21,8 +21,7 @@ void SetNotBlacklistedMessage(TestPasswordGenerationAgent* generation_agent,
   autofill::PasswordForm form;
   form.origin =
       GURL(base::StringPrintf("data:text/html;charset=utf-8,%s", form_str));
-  AutofillMsg_FormNotBlacklisted msg(0, form);
-  static_cast<IPC::Listener*>(generation_agent)->OnMessageReceived(msg);
+  generation_agent->FormNotBlacklisted(form);
 }
 
 // Sends a message that the |form_index| form on the page is valid for
@@ -43,8 +42,7 @@ void SetAccountCreationFormsDetectedMessage(
   std::vector<autofill::PasswordFormGenerationData> forms;
   forms.push_back(autofill::PasswordFormGenerationData{
       form_data.name, form_data.action, form_data.fields[field_index]});
-  AutofillMsg_FoundFormsEligibleForGeneration msg(0, forms);
-  static_cast<IPC::Listener*>(generation_agent)->OnMessageReceived(msg);
+  generation_agent->FoundFormsEligibleForGeneration(forms);
 }
 
 }  // namespace autofill

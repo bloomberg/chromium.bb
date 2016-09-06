@@ -11,7 +11,6 @@
 #include "base/stl_util.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
-#include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
@@ -23,7 +22,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/ssl_status.h"
-#include "ipc/ipc_message_macros.h"
 #include "net/cert/cert_status_flags.h"
 
 namespace password_manager {
@@ -75,6 +73,30 @@ ContentPasswordManagerDriverFactory::FromWebContents(
           kContentPasswordManagerDriverFactoryWebContentsUserDataKey));
 }
 
+// static
+void ContentPasswordManagerDriverFactory::BindPasswordManagerDriver(
+    content::RenderFrameHost* render_frame_host,
+    autofill::mojom::PasswordManagerDriverRequest request) {
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host);
+  if (!web_contents)
+    return;
+
+  ContentPasswordManagerDriverFactory* factory =
+      ContentPasswordManagerDriverFactory::FromWebContents(web_contents);
+  // We try to bind to the driver, but if driver is not ready for now or totally
+  // not available for this render frame host, the request will be just dropped.
+  // This would cause the message pipe to be closed, which will raise a
+  // connection error on the peer side.
+  if (!factory)
+    return;
+
+  ContentPasswordManagerDriver* driver =
+      factory->GetDriverForFrame(render_frame_host);
+  if (driver)
+    driver->BindRequest(std::move(request));
+}
+
 ContentPasswordManagerDriver*
 ContentPasswordManagerDriverFactory::GetDriverForFrame(
     content::RenderFrameHost* render_frame_host) {
@@ -99,25 +121,12 @@ void ContentPasswordManagerDriverFactory::RenderFrameDeleted(
   frame_driver_map_.erase(render_frame_host);
 }
 
-bool ContentPasswordManagerDriverFactory::OnMessageReceived(
-    const IPC::Message& message,
-    content::RenderFrameHost* render_frame_host) {
-  return frame_driver_map_.find(render_frame_host)
-      ->second->HandleMessage(message);
-}
-
 void ContentPasswordManagerDriverFactory::DidNavigateAnyFrame(
     content::RenderFrameHost* render_frame_host,
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
   frame_driver_map_.find(render_frame_host)
       ->second->DidNavigateFrame(details, params);
-}
-
-void ContentPasswordManagerDriverFactory::TestingSetDriverForFrame(
-    content::RenderFrameHost* render_frame_host,
-    std::unique_ptr<ContentPasswordManagerDriver> driver) {
-  frame_driver_map_[render_frame_host] = std::move(driver);
 }
 
 void ContentPasswordManagerDriverFactory::RequestSendLoggingAvailability() {

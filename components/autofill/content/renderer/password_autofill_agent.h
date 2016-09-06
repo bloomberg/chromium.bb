@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "components/autofill/content/public/interfaces/autofill_agent.mojom.h"
 #include "components/autofill/content/public/interfaces/autofill_driver.mojom.h"
 #include "components/autofill/content/renderer/autofill_agent.h"
 #include "components/autofill/content/renderer/password_form_conversion_utils.h"
@@ -19,6 +20,7 @@
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_view_observer.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
 
 namespace blink {
@@ -32,12 +34,26 @@ namespace autofill {
 class RendererSavePasswordProgressLogger;
 
 // This class is responsible for filling password forms.
-class PasswordAutofillAgent : public content::RenderFrameObserver {
+class PasswordAutofillAgent : public content::RenderFrameObserver,
+                              public mojom::PasswordAutofillAgent {
  public:
   explicit PasswordAutofillAgent(content::RenderFrame* render_frame);
   ~PasswordAutofillAgent() override;
 
+  void BindRequest(mojom::PasswordAutofillAgentRequest request);
+
   void SetAutofillAgent(AutofillAgent* autofill_agent);
+
+  const mojom::PasswordManagerDriverPtr& GetPasswordManagerDriver();
+
+  // mojom::PasswordAutofillAgent:
+  void FillPasswordForm(int key,
+                        const PasswordFormFillData& form_data) override;
+  void SetLoggingState(bool active) override;
+  void AutofillUsernameAndPasswordDataReceived(
+      const FormsPredictionsMap& predictions) override;
+  void FindFocusedPasswordForm(
+      const FindFocusedPasswordFormCallback& callback) override;
 
   // WebFrameClient editor related calls forwarded by AutofillAgent.
   // If they return true, it indicates the event was consumed and should not
@@ -165,7 +181,6 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
   };
 
   // RenderFrameObserver:
-  bool OnMessageReceived(const IPC::Message& message) override;
   void DidFinishDocumentLoad() override;
   void DidFinishLoad() override;
   void FrameDetached() override;
@@ -176,13 +191,6 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
   void WillSendSubmitEvent(const blink::WebFormElement& form) override;
   void WillSubmitForm(const blink::WebFormElement& form) override;
   void OnDestruct() override;
-
-  // RenderView IPC handlers:
-  void OnFillPasswordForm(int key, const PasswordFormFillData& form_data);
-  void OnSetLoggingState(bool active);
-  void OnAutofillUsernameAndPasswordDataReceived(
-      const FormsPredictionsMap& predictions);
-  void OnFindFocusedPasswordForm();
 
   // Scans the given frame for password forms and sends them up to the browser.
   // If |only_visible| is true, only forms visible in the layout are sent.
@@ -268,6 +276,10 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
   FormsPredictionsMap form_predictions_;
 
   AutofillAgent* autofill_agent_;  // Weak reference.
+
+  mojom::PasswordManagerDriverPtr password_manager_driver_;
+
+  mojo::Binding<mojom::PasswordAutofillAgent> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordAutofillAgent);
 };

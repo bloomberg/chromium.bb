@@ -6,24 +6,20 @@
 
 #include "base/strings/string16.h"
 #include "base/values.h"
-#include "components/autofill/content/common/autofill_messages.h"
-#include "ipc/ipc_sender.h"
 #include "third_party/WebKit/public/web/WebFormControlElement.h"
 
 namespace autofill {
 
 RendererSavePasswordProgressLogger::RendererSavePasswordProgressLogger(
-    IPC::Sender* sender,
-    int routing_id)
-    : sender_(sender), routing_id_(routing_id) {
-  DCHECK(sender_);
+    mojom::PasswordManagerDriver* password_manager_driver)
+    : password_manager_driver_(password_manager_driver) {
+  DCHECK(password_manager_driver);
 }
 
 RendererSavePasswordProgressLogger::~RendererSavePasswordProgressLogger() {}
 
 void RendererSavePasswordProgressLogger::SendLog(const std::string& log) {
-  sender_->Send(
-      new AutofillHostMsg_RecordSavePasswordProgress(routing_id_, log));
+  password_manager_driver_->RecordSavePasswordProgress(log);
 }
 
 void RendererSavePasswordProgressLogger::LogElementName(

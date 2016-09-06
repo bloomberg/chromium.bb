@@ -77,8 +77,7 @@ source_set("unit_tests") {
 
   deps = [
     ":test_support",
-    "//components/autofill/content/common",
-    "//ipc:test_support",
+    "//components/autofill/content/public/interfaces",
     "//testing/gtest",
   ]
 }

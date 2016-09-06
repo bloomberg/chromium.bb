@@ -62,6 +62,8 @@ class AutofillAgent : public content::RenderFrameObserver,
 
   const mojom::AutofillDriverPtr& GetAutofillDriver();
 
+  const mojom::PasswordManagerDriverPtr& GetPasswordManagerDriver();
+
   // mojom::AutofillAgent:
   void FirstUserGestureObservedInTab() override;
   void FillForm(int32_t id, const FormData& form) override;
@@ -300,7 +302,7 @@ class AutofillAgent : public content::RenderFrameObserver,
 
   mojo::Binding<mojom::AutofillAgent> binding_;
 
-  mojom::AutofillDriverPtr mojo_autofill_driver_;
+  mojom::AutofillDriverPtr autofill_driver_;
 
   base::WeakPtrFactory<AutofillAgent> weak_ptr_factory_;
 
