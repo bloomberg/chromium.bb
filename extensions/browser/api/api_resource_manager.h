@@ -12,6 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/scoped_observer.h"
+#include "base/sequence_checker.h"
 #include "base/threading/non_thread_safe.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -36,10 +37,6 @@ class UDPSocketEventDispatcher;
 
 template <typename T>
 struct NamedThreadTraits {
-  static bool IsCalledOnValidThread() {
-    return content::BrowserThread::CurrentlyOn(T::kThreadId);
-  }
-
   static bool IsMessageLoopValid() {
     return content::BrowserThread::IsMessageLoopValid(T::kThreadId);
   }
@@ -185,11 +182,11 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
     // Lookup map from extension id's to allocated resource id's.
     typedef std::map<std::string, base::hash_set<int> > ExtensionToResourceMap;
 
-    ApiResourceData() : next_id_(1) {}
+    ApiResourceData() : next_id_(1) { sequence_checker_.DetachFromSequence(); }
 
     // TODO(lazyboy): Pass unique_ptr<T> instead of T*.
     int Add(T* api_resource) {
-      DCHECK(ThreadingTraits::IsCalledOnValidThread());
+      DCHECK(sequence_checker_.CalledOnValidSequence());
       int id = GenerateId();
       if (id > 0) {
         api_resource_map_[id] = base::WrapUnique<T>(api_resource);
@@ -208,7 +205,7 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
     }
 
     void Remove(const std::string& extension_id, int api_resource_id) {
-      DCHECK(ThreadingTraits::IsCalledOnValidThread());
+      DCHECK(sequence_checker_.CalledOnValidSequence());
       if (GetOwnedResource(extension_id, api_resource_id)) {
         ExtensionToResourceMap::iterator it =
             extension_resource_map_.find(extension_id);
@@ -218,7 +215,7 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
     }
 
     T* Get(const std::string& extension_id, int api_resource_id) {
-      DCHECK(ThreadingTraits::IsCalledOnValidThread());
+      DCHECK(sequence_checker_.CalledOnValidSequence());
       return GetOwnedResource(extension_id, api_resource_id);
     }
 
@@ -229,7 +226,7 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
     bool Replace(const std::string& extension_id,
                  int api_resource_id,
                  T* api_resource) {
-      DCHECK(ThreadingTraits::IsCalledOnValidThread());
+      DCHECK(sequence_checker_.CalledOnValidSequence());
       T* old_resource = api_resource_map_[api_resource_id].get();
       if (old_resource && extension_id == old_resource->owner_extension_id()) {
         api_resource_map_[api_resource_id] = base::WrapUnique<T>(api_resource);
@@ -239,41 +236,29 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
     }
 
     base::hash_set<int>* GetResourceIds(const std::string& extension_id) {
-      DCHECK(ThreadingTraits::IsCalledOnValidThread());
+      DCHECK(sequence_checker_.CalledOnValidSequence());
       return GetOwnedResourceIds(extension_id);
     }
 
     void InitiateExtensionUnloadedCleanup(const std::string& extension_id) {
-      if (ThreadingTraits::IsCalledOnValidThread()) {
-        CleanupResourcesFromUnloadedExtension(extension_id);
-      } else {
         ThreadingTraits::GetSequencedTaskRunner()->PostTask(
             FROM_HERE,
             base::Bind(&ApiResourceData::CleanupResourcesFromUnloadedExtension,
                        this,
                        extension_id));
-      }
     }
 
     void InitiateExtensionSuspendedCleanup(const std::string& extension_id) {
-      if (ThreadingTraits::IsCalledOnValidThread()) {
-        CleanupResourcesFromSuspendedExtension(extension_id);
-      } else {
         ThreadingTraits::GetSequencedTaskRunner()->PostTask(
             FROM_HERE,
             base::Bind(&ApiResourceData::CleanupResourcesFromSuspendedExtension,
                        this,
                        extension_id));
-      }
     }
 
     void InititateCleanup() {
-      if (ThreadingTraits::IsCalledOnValidThread()) {
-        Cleanup();
-      } else {
         ThreadingTraits::GetSequencedTaskRunner()->PostTask(
             FROM_HERE, base::Bind(&ApiResourceData::Cleanup, this));
-      }
     }
 
    private:
@@ -290,7 +275,7 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
     }
 
     base::hash_set<int>* GetOwnedResourceIds(const std::string& extension_id) {
-      DCHECK(ThreadingTraits::IsCalledOnValidThread());
+      DCHECK(sequence_checker_.CalledOnValidSequence());
       ExtensionToResourceMap::iterator it =
           extension_resource_map_.find(extension_id);
       if (it == extension_resource_map_.end())
@@ -310,7 +295,7 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
 
     void CleanupResourcesFromExtension(const std::string& extension_id,
                                        bool remove_all) {
-      DCHECK(ThreadingTraits::IsCalledOnValidThread());
+      DCHECK(sequence_checker_.CalledOnValidSequence());
 
       ExtensionToResourceMap::iterator it =
           extension_resource_map_.find(extension_id);
@@ -346,7 +331,7 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
     }
 
     void Cleanup() {
-      DCHECK(ThreadingTraits::IsCalledOnValidThread());
+      DCHECK(sequence_checker_.CalledOnValidSequence());
 
       api_resource_map_.clear();
       extension_resource_map_.clear();
@@ -357,6 +342,7 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
     int next_id_;
     ApiResourceMap api_resource_map_;
     ExtensionToResourceMap extension_resource_map_;
+    base::SequenceChecker sequence_checker_;
   };
 
   content::NotificationRegistrar registrar_;
@@ -414,13 +400,6 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
 // }
 template <typename T>
 struct WorkerPoolThreadTraits {
-  static bool IsCalledOnValidThread() {
-    return content::BrowserThread::GetBlockingPool()
-        ->IsRunningSequenceOnCurrentThread(
-            content::BrowserThread::GetBlockingPool()->GetNamedSequenceToken(
-                T::kSequenceToken));
-  }
-
   static bool IsMessageLoopValid() {
     return content::BrowserThread::GetBlockingPool() != NULL;
   }
