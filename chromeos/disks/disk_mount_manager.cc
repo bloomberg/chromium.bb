@@ -360,16 +360,16 @@ class DiskMountManagerImpl : public DiskMountManager {
         DCHECK(disk);
         // The is_read_only field in *disk may be incorrect when this is called
         // from CrosDisksClientImpl::OnMountCompleted.
-        // Overwrite based on the access mode option that was passed when
-        // issuing
-        // mount command to the same mount path last time.
+        // The disk should be treated as read-only when:
+        //  - the read-only option was passed when issuing mount command
+        //  - or the device hardware is read-only.
         // |source_path| should be same as |disk->device_path| because
         // |VolumeManager::OnDiskEvent()| passes the latter to cros-disks as a
         // source path when mounting a device.
         AccessModeMap::iterator it = access_modes_.find(entry.source_path());
-        if (it != access_modes_.end()) {
-          disk->set_read_only(it->second ==
-                              chromeos::MOUNT_ACCESS_MODE_READ_ONLY);
+        if (it != access_modes_.end() &&
+            it->second == chromeos::MOUNT_ACCESS_MODE_READ_ONLY) {
+          disk->set_read_only(true);
         }
         disk->set_mount_path(mount_info.mount_path);
       }

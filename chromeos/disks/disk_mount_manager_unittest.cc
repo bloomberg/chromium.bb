@@ -703,4 +703,31 @@ TEST_F(DiskMountManagerTest, MountPath_RecordAccessMode) {
   EXPECT_TRUE(disks.find(kSourcePath2)->second->is_read_only());
 }
 
+TEST_F(DiskMountManagerTest, MountPath_ReadOnlyDevice) {
+  DiskMountManager* manager = DiskMountManager::GetInstance();
+  const std::string kSourceFormat = std::string();
+  const std::string kMountLabel = std::string();  // N/A for MOUNT_TYPE_DEVICE
+
+  // Event handlers of observers should be called.
+  EXPECT_CALL(
+      observer_,
+      OnMountEvent(DiskMountManager::MOUNTING, chromeos::MOUNT_ERROR_NONE,
+                   Field(&DiskMountManager::MountPointInfo::mount_path,
+                         kReadOnlyMountpath)));
+
+  // Attempt to mount a read-only device in read-write mode.
+  manager->MountPath(kReadOnlyDeviceSource, kSourceFormat, std::string(),
+                     chromeos::MOUNT_TYPE_DEVICE,
+                     chromeos::MOUNT_ACCESS_MODE_READ_WRITE);
+  // Simulate cros_disks reporting mount completed.
+  fake_cros_disks_client_->SendMountCompletedEvent(
+      chromeos::MOUNT_ERROR_NONE, kReadOnlyDeviceSource,
+      chromeos::MOUNT_TYPE_DEVICE, kReadOnlyMountpath);
+
+  const DiskMountManager::DiskMap& disks = manager->disks();
+  ASSERT_GT(disks.count(kReadOnlyDeviceSource), 0U);
+  // The mounted disk should preserve the read-only flag of the block device.
+  EXPECT_TRUE(disks.find(kReadOnlyDeviceSource)->second->is_read_only());
+}
+
 }  // namespace
