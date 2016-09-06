@@ -12,6 +12,8 @@
 #include "components/gcm_driver/gcm_channel_status_syncer.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/ntp_snippets/ntp_snippets_service.h"
+#include "components/ntp_tiles/most_visited_sites.h"
+#include "components/ntp_tiles/popular_sites.h"
 #include "components/omnibox/browser/zero_suggest_provider.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -88,6 +90,8 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   HostContentSettingsMap::RegisterProfilePrefs(registry);
   HttpServerPropertiesManagerFactory::RegisterProfilePrefs(registry);
   ntp_snippets::NTPSnippetsService::RegisterProfilePrefs(registry);
+  ntp_tiles::MostVisitedSites::RegisterProfilePrefs(registry);
+  ntp_tiles::PopularSites::RegisterProfilePrefs(registry);
   ios::NotificationPromo::RegisterProfilePrefs(registry);
   password_manager::PasswordManager::RegisterProfilePrefs(registry);
   PrefProxyConfigTrackerImpl::RegisterProfilePrefs(registry);
