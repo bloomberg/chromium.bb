@@ -861,7 +861,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   bool process_single_input_frame_ = false;
 
   bool use_new_methods_ =
-      FLAGS_chromium_http2_flag_spdy_framer_use_new_methods3;
+      FLAGS_chromium_http2_flag_spdy_framer_use_new_methods4;
 };
 
 }  // namespace net
