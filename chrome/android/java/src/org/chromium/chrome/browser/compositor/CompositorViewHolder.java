@@ -226,7 +226,8 @@ public class CompositorViewHolder extends CoordinatorLayout
         });
 
         mCompositorView = new CompositorView(getContext(), this);
-        addView(mCompositorView,
+        // mCompositorView should always be the first child.
+        addView(mCompositorView, 0,
                 new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
     }
 
@@ -811,9 +812,11 @@ public class CompositorViewHolder extends CoordinatorLayout
                             LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
                 }
                 layoutParams.setBehavior(mView.getBehavior());
-                // CompositorView has index of 0; TabContentViewParent has index of 1; Snackbar (if
-                // any) has index of 2. Setting index here explicitly to avoid TabContentViewParent
-                // hiding the snackbar.
+                // CompositorView has index of 0; TabContentViewParent has index of 1; omnibox
+                // result container (the scrim) has index of 2, Snackbar (if any) has index of 3.
+                // Setting index here explicitly to avoid TabContentViewParent hiding the scrim.
+                // TODO(ianwen): Use more advanced technologies to ensure z-order of the children of
+                // this class, instead of hard-coding.
                 addView(mView, 1, layoutParams);
 
                 setFocusable(false);

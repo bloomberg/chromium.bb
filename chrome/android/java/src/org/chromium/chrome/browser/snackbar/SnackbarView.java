@@ -13,11 +13,9 @@ import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.graphics.drawable.GradientDrawable;
 import android.support.design.widget.CoordinatorLayout;
-import android.support.design.widget.CoordinatorLayout.Behavior;
 import android.support.design.widget.CoordinatorLayout.LayoutParams;
 import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -32,6 +30,7 @@ import android.widget.TextView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.compositor.CompositorViewHolderBehavior;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
@@ -62,33 +61,6 @@ class SnackbarView {
         public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft,
                 int oldTop, int oldRight, int oldBottom) {
             adjustViewPosition();
-        }
-    };
-
-    /**
-     * Behavior that intercepts touch event from the CompositorViewHoder.
-     */
-    private final Behavior<View> mBehavior = new Behavior<View>() {
-
-        private boolean mShouldIntercept;
-
-        @Override
-        public boolean onInterceptTouchEvent(CoordinatorLayout parent, View child, MotionEvent ev) {
-            mShouldIntercept = isInBounds(ev, child);
-            return mShouldIntercept;
-        }
-
-        @Override
-        public boolean onTouchEvent(CoordinatorLayout parent, View child, MotionEvent ev) {
-            if (!isInBounds(ev, child) || !mShouldIntercept) return false;
-            ev.offsetLocation(-child.getX(), -child.getY());
-            child.dispatchTouchEvent(ev);
-            return true;
-        }
-
-        private boolean isInBounds(MotionEvent ev, View view) {
-            return ev.getX() > view.getX() && ev.getX() - view.getX() < view.getWidth()
-                    && ev.getY() > view.getY() && ev.getY() - view.getY() < view.getHeight();
         }
     };
 
@@ -218,7 +190,7 @@ class SnackbarView {
         if (mParent instanceof CoordinatorLayout) {
             CoordinatorLayout.LayoutParams lp = new LayoutParams(getLayoutParams());
             lp.gravity = Gravity.BOTTOM | Gravity.START;
-            lp.setBehavior(mBehavior);
+            lp.setBehavior(new CompositorViewHolderBehavior());
             mParent.addView(mView, lp);
         } else if (mParent instanceof FrameLayout) {
             FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(getLayoutParams());

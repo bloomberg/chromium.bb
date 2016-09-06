@@ -11,7 +11,6 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -43,7 +42,6 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -1869,6 +1867,10 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         } else if (v == mMicButton) {
             RecordUserAction.record("MobileOmniboxVoiceSearch");
             startVoiceRecognition();
+        } else if (v == mOmniboxResultsContainer) {
+            // This will only be triggered when no suggestion items are selected in the container.
+            setUrlBarFocus(false);
+            updateOmniboxResultsContainerBackground(false);
         }
     }
 
@@ -2181,20 +2183,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
                 (ViewStub) getRootView().findViewById(R.id.omnibox_results_container_stub);
         mOmniboxResultsContainer = (ViewGroup) overlayStub.inflate();
         mOmniboxResultsContainer.setBackgroundColor(CONTENT_OVERLAY_COLOR);
-        // Prevent touch events from propagating down to the chrome view.
-        mOmniboxResultsContainer.setOnTouchListener(new OnTouchListener() {
-            @Override
-            @SuppressLint("ClickableViewAccessibility")
-            public boolean onTouch(View v, MotionEvent event) {
-                int action = event.getActionMasked();
-                if (action == MotionEvent.ACTION_CANCEL
-                        || action == MotionEvent.ACTION_UP) {
-                    setUrlBarFocus(false);
-                    updateOmniboxResultsContainerBackground(false);
-                }
-                return true;
-            }
-        });
+        mOmniboxResultsContainer.setOnClickListener(this);
     }
 
     private void updateOmniboxResultsContainer() {
