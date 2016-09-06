@@ -6685,20 +6685,17 @@ Polymer({
 cr.define('cr.icon', function() {
   function getSupportedScaleFactors() {
     var supportedScaleFactors = [];
-    if (cr.isMac || cr.isChromeOS || cr.isWindows || cr.isLinux) {
+    if (!cr.isIOS) {
       supportedScaleFactors.push(1);
+    }
+    if (cr.isMac || cr.isChromeOS || cr.isWindows || cr.isLinux) {
       supportedScaleFactors.push(2);
     } else {
       supportedScaleFactors.push(window.devicePixelRatio);
     }
     return supportedScaleFactors;
   }
-  function getProfileAvatarIcon(path) {
-    var chromeThemePath = 'chrome://theme';
-    var isDefaultAvatar = path.slice(0, chromeThemePath.length) == chromeThemePath;
-    return isDefaultAvatar ? imageset(path + '@scalefactorx') : url(path);
-  }
-  function imageset(path) {
+  function getImageSet(path) {
     var supportedScaleFactors = getSupportedScaleFactors();
     var replaceStartIndex = path.indexOf('scalefactor');
     if (replaceStartIndex < 0) return url(path);
@@ -6711,16 +6708,20 @@ cr.define('cr.icon', function() {
     }
     return '-webkit-image-set(' + s + ')';
   }
+  function getImage(path) {
+    var chromeThemePath = 'chrome://theme';
+    var isChromeThemeUrl = path.slice(0, chromeThemePath.length) == chromeThemePath;
+    return isChromeThemeUrl ? getImageSet(path + '@scalefactorx') : url(path);
+  }
   var FAVICON_URL_REGEX = /\.ico$/i;
-  function getFaviconImageSet(url, opt_size, opt_type) {
+  function getFavicon(url, opt_size, opt_type) {
     var size = opt_size || 16;
     var type = opt_type || 'favicon';
-    return imageset('chrome://' + type + '/size/' + size + '@scalefactorx/' + (FAVICON_URL_REGEX.test(url) ? 'iconurl/' : '') + url);
+    return getImageSet('chrome://' + type + '/size/' + size + '@scalefactorx/' + (FAVICON_URL_REGEX.test(url) ? 'iconurl/' : '') + url);
   }
   return {
-    getSupportedScaleFactors: getSupportedScaleFactors,
-    getProfileAvatarIcon: getProfileAvatarIcon,
-    getFaviconImageSet: getFaviconImageSet
+    getImage: getImage,
+    getFavicon: getFavicon
   };
 });
 
@@ -6736,23 +6737,22 @@ Polymer({
   observers: [ 'setSearchedTextToBold_(title, searchTerm)' ],
   setSearchedTextToBold_: function() {
     var i = 0;
-    var titleElem = this.$.container;
     var titleText = this.title;
     if (this.searchTerm == '' || this.searchTerm == null) {
-      titleElem.textContent = titleText;
+      this.textContent = titleText;
       return;
     }
     var re = new RegExp(quoteString(this.searchTerm), 'gim');
     var match;
-    titleElem.textContent = '';
+    this.textContent = '';
     while (match = re.exec(titleText)) {
-      if (match.index > i) titleElem.appendChild(document.createTextNode(titleText.slice(i, match.index)));
+      if (match.index > i) this.appendChild(document.createTextNode(titleText.slice(i, match.index)));
       i = re.lastIndex;
       var b = document.createElement('b');
       b.textContent = titleText.substring(match.index, i);
-      titleElem.appendChild(b);
+      this.appendChild(b);
     }
-    if (i < titleText.length) titleElem.appendChild(document.createTextNode(titleText.slice(i)));
+    if (i < titleText.length) this.appendChild(document.createTextNode(titleText.slice(i)));
   }
 });
 
@@ -6844,7 +6844,7 @@ cr.define('md_history', function() {
       md_history.BrowserService.getInstance().recordAction('EntryLinkRightClick');
     },
     showIcon_: function() {
-      this.$.icon.style.backgroundImage = cr.icon.getFaviconImageSet(this.item.url);
+      this.$.icon.style.backgroundImage = cr.icon.getFavicon(this.item.url);
     },
     selectionNotAllowed_: function() {
       return !loadTimeData.getBoolean('allowDeletingHistory');
@@ -7093,7 +7093,7 @@ Polymer({
     return [ 'groupedHistoryData_', groupIndex, 'domains', domainIndex, 'visits', itemIndex ].join('.');
   },
   getWebsiteIconStyle_: function(domain) {
-    return 'background-image: ' + cr.icon.getFaviconImageSet(domain.visits[0].url);
+    return 'background-image: ' + cr.icon.getFavicon(domain.visits[0].url);
   },
   getDropdownIcon_: function(expanded) {
     return expanded ? 'cr:expand-less' : 'cr:expand-more';
@@ -8347,7 +8347,7 @@ Polymer({
     this.async(function() {
       var icons = Polymer.dom(this.root).querySelectorAll('.website-icon');
       for (var i = 0; i < this.tabs.length; i++) {
-        icons[i].style.backgroundImage = cr.icon.getFaviconImageSet(this.tabs[i].url);
+        icons[i].style.backgroundImage = cr.icon.getFavicon(this.tabs[i].url);
       }
     });
   },

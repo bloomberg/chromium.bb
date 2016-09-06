@@ -22,29 +22,28 @@ Polymer({
    */
   setSearchedTextToBold_: function() {
     var i = 0;
-    var titleElem = this.$.container;
     var titleText = this.title;
 
     if (this.searchTerm == '' || this.searchTerm == null) {
-      titleElem.textContent = titleText;
+      this.textContent = titleText;
       return;
     }
 
     var re = new RegExp(quoteString(this.searchTerm), 'gim');
     var match;
-    titleElem.textContent = '';
+    this.textContent = '';
     while (match = re.exec(titleText)) {
       if (match.index > i)
-        titleElem.appendChild(document.createTextNode(
+        this.appendChild(document.createTextNode(
             titleText.slice(i, match.index)));
       i = re.lastIndex;
       // Mark the highlighted text in bold.
       var b = document.createElement('b');
       b.textContent = titleText.substring(match.index, i);
-      titleElem.appendChild(b);
+      this.appendChild(b);
     }
     if (i < titleText.length)
-      titleElem.appendChild(
+      this.appendChild(
           document.createTextNode(titleText.slice(i)));
   },
 });

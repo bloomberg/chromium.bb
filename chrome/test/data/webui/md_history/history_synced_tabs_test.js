@@ -49,7 +49,7 @@ cr.define('md_history.history_synced_tabs_test', function() {
           assertEquals(
               'http://www.google.com',
               Polymer.dom(card.root)
-                  .querySelectorAll('.website-title')[0].children[0].$.container
+                  .querySelectorAll('.website-title')[0].children[0]
                   .textContent.trim());
           assertEquals(2, card.tabs.length);
         });
@@ -114,7 +114,7 @@ cr.define('md_history.history_synced_tabs_test', function() {
           assertEquals(
               'http://crbug.com/new',
               Polymer.dom(cards[0].root)
-                  .querySelectorAll('.website-title')[1].children[0].$.container
+                  .querySelectorAll('.website-title')[1].children[0]
                   .textContent.trim());
         });
       });
@@ -162,7 +162,7 @@ cr.define('md_history.history_synced_tabs_test', function() {
           assertEquals(
               'http://www.google.com',
               Polymer.dom(cards[0].root)
-                  .querySelectorAll('.website-title')[0].children[0].$.container
+                  .querySelectorAll('.website-title')[0].children[0]
                   .textContent.trim());
         });
       });
