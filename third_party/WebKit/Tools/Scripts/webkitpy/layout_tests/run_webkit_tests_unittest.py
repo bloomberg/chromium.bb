@@ -821,7 +821,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         _, err, _ = logging_run(['--details', 'virtual/virtual_passes/passes/reftest.html'], tests_included=True)
         self.assertTrue('ref: virtual/virtual_passes/passes/reftest-expected.html' in err.getvalue())
         self.assertTrue(
-            re.search('args: --virtual-arg\s*reference_args: --virtual-arg\s*ref:', err.getvalue()))
+            re.search(r'args: --virtual-arg\s*reference_args: --virtual-arg\s*ref:', err.getvalue()))
 
     def test_reftest_virtual_references_use_default_args(self):
         test_name = 'virtual/references_use_default_args/passes/reftest.html'
@@ -832,7 +832,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertEqual(test_result.test_name, test_name)
         self.assertEqual(test_result.references[0], 'passes/reftest-expected.html')
         # reference_args should be empty since we are using the default flags.
-        self.assertTrue(re.search('reference_args:\s*ref:', err.getvalue()))
+        self.assertTrue(re.search(r'reference_args:\s*ref:', err.getvalue()))
 
     def test_reftest_matching_text_expectation(self):
         test_name = 'passes/reftest.html'

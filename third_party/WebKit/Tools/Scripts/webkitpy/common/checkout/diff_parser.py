@@ -34,12 +34,12 @@ import re
 _log = logging.getLogger(__name__)
 
 conversion_patterns = (
-    (re.compile("^diff --git \w/(.+) \w/(?P<FilePath>.+)"), lambda matched: "Index: " + matched.group('FilePath') + "\n"),
-    (re.compile("^new file.*"), lambda matched: "\n"),
-    (re.compile("^index (([0-9a-f]{7}\.\.[0-9a-f]{7})|([0-9a-f]{40}\.\.[0-9a-f]{40})) [0-9]{6}"),
+    (re.compile(r"^diff --git \w/(.+) \w/(?P<FilePath>.+)"), lambda matched: "Index: " + matched.group('FilePath') + "\n"),
+    (re.compile(r"^new file.*"), lambda matched: "\n"),
+    (re.compile(r"^index (([0-9a-f]{7}\.\.[0-9a-f]{7})|([0-9a-f]{40}\.\.[0-9a-f]{40})) [0-9]{6}"),
      lambda matched: ("=" * 67) + "\n"),
-    (re.compile("^--- \w/(?P<FilePath>.+)"), lambda matched: "--- " + matched.group('FilePath') + "\n"),
-    (re.compile("^\+\+\+ \w/(?P<FilePath>.+)"), lambda matched: "+++ " + matched.group('FilePath') + "\n"),
+    (re.compile(r"^--- \w/(?P<FilePath>.+)"), lambda matched: "--- " + matched.group('FilePath') + "\n"),
+    (re.compile(r"^\+\+\+ \w/(?P<FilePath>.+)"), lambda matched: "+++ " + matched.group('FilePath') + "\n"),
 )
 
 index_pattern = re.compile(r"^Index: (?P<FilePath>.+)")

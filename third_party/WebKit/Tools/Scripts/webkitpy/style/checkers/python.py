@@ -102,7 +102,7 @@ class PythonChecker(object):
             "Instance of 'Popen' has no 'wait' member",
         ]
 
-        lint_regex = re.compile('([^:]+):([^:]+): \[([^]]+)\] (.*)')
+        lint_regex = re.compile(r'([^:]+):([^:]+): \[([^]]+)\] (.*)')
         errors = []
         for line in output.splitlines():
             if any(msg in line for msg in FALSE_POSITIVES):

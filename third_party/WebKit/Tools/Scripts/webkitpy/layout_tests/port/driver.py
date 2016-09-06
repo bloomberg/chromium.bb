@@ -383,9 +383,9 @@ class Driver(object):
         elif (error_line.startswith("#CRASHED - ")
               or error_line.startswith("#PROCESS UNRESPONSIVE - ")):
             # WebKitTestRunner uses this to report that the WebProcess subprocess crashed.
-            match = re.match('#(?:CRASHED|PROCESS UNRESPONSIVE) - (\S+)', error_line)
+            match = re.match(r'#(?:CRASHED|PROCESS UNRESPONSIVE) - (\S+)', error_line)
             self._crashed_process_name = match.group(1) if match else 'WebProcess'
-            match = re.search('pid (\d+)', error_line)
+            match = re.search(r'pid (\d+)', error_line)
             pid = int(match.group(1)) if match else None
             self._crashed_pid = pid
             # FIXME: delete this after we're sure this code is working :)
@@ -401,7 +401,7 @@ class Driver(object):
     def _check_for_leak(self, error_line):
         if error_line.startswith("#LEAK - "):
             self._leaked = True
-            match = re.match('#LEAK - (\S+) pid (\d+) (.+)\n', error_line)
+            match = re.match(r'#LEAK - (\S+) pid (\d+) (.+)\n', error_line)
             self._leak_log = match.group(3)
         return self._leaked
 

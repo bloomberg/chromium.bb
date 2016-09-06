@@ -313,7 +313,7 @@ class AndroidCommands(object):
 
     @staticmethod
     def _determine_adb_version(adb_command_path, executive, debug_logging):
-        re_version = re.compile('^.*version ([\d\.]+)')
+        re_version = re.compile(r'^.*version ([\d\.]+)')
         try:
             output = executive.run_command([adb_command_path, 'version'], error_handler=executive.ignore_error,
                                            debug_logging=debug_logging)
@@ -356,7 +356,7 @@ class AndroidDevices(object):
         # Example "adb devices" command output:
         #   List of devices attached
         #   0123456789ABCDEF        device
-        re_device = re.compile('^([a-zA-Z0-9_:.-]+)\tdevice$', re.MULTILINE)
+        re_device = re.compile(r'^([a-zA-Z0-9_:.-]+)\tdevice$', re.MULTILINE)
 
         result = executive.run_command([AndroidCommands.adb_command_path(executive, debug_logging=self._debug_logging), 'devices'],
                                        error_handler=executive.ignore_error, debug_logging=self._debug_logging)
@@ -399,7 +399,7 @@ class AndroidDevices(object):
             _log.warning('Unable to read the battery level from device with serial "%s".', commands.get_serial())
             return 0
 
-        return int(re.findall('level: (\d+)', battery_status)[0])
+        return int(re.findall(r'level: (\d+)', battery_status)[0])
 
     def _is_device_screen_on(self, commands):
         power_status = commands.run(['shell', 'dumpsys', 'power'])
@@ -760,7 +760,7 @@ http://goto.google.com/cr-android-perf-howto
         return self._cached_perf_host_path
 
     def _first_ten_lines_of_profile(self, perf_output):
-        match = re.search("^#[^\n]*\n((?: [^\n]*\n){1,10})", perf_output, re.MULTILINE)
+        match = re.search(r"^#[^\n]*\n((?: [^\n]*\n){1,10})", perf_output, re.MULTILINE)
         return match.group(1) if match else None
 
     def profile_after_exit(self):

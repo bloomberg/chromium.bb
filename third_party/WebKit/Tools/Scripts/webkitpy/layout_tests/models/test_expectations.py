@@ -310,7 +310,7 @@ class TestExpectationParser(object):
                 elif token.startswith(V8_BUG_PREFIX):
                     bugs.append(token)
                 else:
-                    match = re.match('Bug\((\w+)\)$', token)
+                    match = re.match(r'Bug\((\w+)\)$', token)
                     if not match:
                         warnings.append('unrecognized bug identifier "%s"' % token)
                         break

@@ -159,7 +159,7 @@ class PrintBaselines(Command):
                         help='Include virtual tests'),
         ] + platform_options(use_globs=True)
         super(PrintBaselines, self).__init__(options=options)
-        self._platform_regexp = re.compile('platform/([^\/]+)/(.+)')
+        self._platform_regexp = re.compile(r'platform/([^\/]+)/(.+)')
 
     def execute(self, options, args, tool):
         if not args and not options.all:

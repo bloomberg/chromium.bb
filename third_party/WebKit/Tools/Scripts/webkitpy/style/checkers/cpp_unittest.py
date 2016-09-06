@@ -2254,7 +2254,7 @@ class CppStyleTest(CppStyleTestBase):
         self.process_file_data(file_path, 'h', [], error_collector)
         expected_guard = ''
         matcher = re.compile(
-            'No \#ifndef header guard found\, suggested CPP variable is\: ([A-Za-z_0-9]+) ')
+            r'No \#ifndef header guard found\, suggested CPP variable is\: ([A-Za-z_0-9]+) ')
         for error in error_collector.result_list():
             matches = matcher.match(error)
             if matches:
@@ -2693,7 +2693,7 @@ class CleansedLinesTest(unittest.TestCase):
         self.assertEqual('', collapse('\\012'))            # '\012' (char)
         self.assertEqual('', collapse('\\xfF0'))           # '\xfF0' (char)
         self.assertEqual('', collapse('\\n'))              # '\n' (char)
-        self.assertEqual('\#', collapse('\\#'))            # '\#' (bad)
+        self.assertEqual('\\#', collapse('\\#'))           # '\#' (bad)
 
         self.assertEqual('StringReplace(body, "", "");',
                          collapse('StringReplace(body, "\\\\", "\\\\\\\\");'))

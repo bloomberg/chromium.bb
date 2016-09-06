@@ -115,8 +115,7 @@ def _read_configuration_from_gn(fs, options):
 
     args = fs.read_text_file(path)
     for l in args.splitlines():
-        m = re.match('^\s*is_debug\s*=\s*false(\s*$|\s*#.*$)', l)
-        if m:
+        if re.match(r'^\s*is_debug\s*=\s*false(\s*$|\s*#.*$)', l):
             return 'Release'
 
     # if is_debug is set to anything other than false, or if it

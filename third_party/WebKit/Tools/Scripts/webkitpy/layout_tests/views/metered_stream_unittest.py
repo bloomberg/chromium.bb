@@ -138,18 +138,18 @@ class VerboseTest(RegularTest):
         buflist = self._basic([0, 1, 2.1, 13, 14.1234])
         # We don't bother to match the hours and minutes of the timestamp since
         # the local timezone can vary and we can't set that portably and easily.
-        self.assertTrue(re.match('\d\d:\d\d:00.000 8675 foo\n', buflist[0]))
-        self.assertTrue(re.match('\d\d:\d\d:01.000 8675 bar\n', buflist[1]))
-        self.assertTrue(re.match('\d\d:\d\d:13.000 8675 baz 2\n', buflist[2]))
-        self.assertTrue(re.match('\d\d:\d\d:14.123 8675 done\n', buflist[3]))
+        self.assertTrue(re.match(r'\d\d:\d\d:00.000 8675 foo\n', buflist[0]))
+        self.assertTrue(re.match(r'\d\d:\d\d:01.000 8675 bar\n', buflist[1]))
+        self.assertTrue(re.match(r'\d\d:\d\d:13.000 8675 baz 2\n', buflist[2]))
+        self.assertTrue(re.match(r'\d\d:\d\d:14.123 8675 done\n', buflist[3]))
         self.assertEqual(len(buflist), 4)
 
     def test_log_after_update(self):
         buflist = self._log_after_update()
-        self.assertTrue(re.match('\d\d:\d\d:00.000 8675 foo\n', buflist[0]))
+        self.assertTrue(re.match(r'\d\d:\d\d:00.000 8675 foo\n', buflist[0]))
 
         # The second argument should have a real timestamp and pid, so we just check the format.
-        self.assertTrue(re.match('\d\d:\d\d:\d\d.\d\d\d \d+ bar\n', buflist[1]))
+        self.assertTrue(re.match(r'\d\d:\d\d:\d\d.\d\d\d \d+ bar\n', buflist[1]))
 
         self.assertEqual(len(buflist), 2)
 

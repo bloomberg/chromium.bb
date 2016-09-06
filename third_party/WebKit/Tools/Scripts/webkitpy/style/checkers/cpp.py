@@ -3647,7 +3647,7 @@ def check_for_object_static_cast(processing_file, line_number, line, error):
     if not matched:
         return
 
-    class_name = re.sub('[\*]', '', matched.group(1))
+    class_name = re.sub(r'[\*]', '', matched.group(1))
     class_name = class_name.strip()
     # Ignore (for now) when the casting is to void*,
     if class_name == 'void':
