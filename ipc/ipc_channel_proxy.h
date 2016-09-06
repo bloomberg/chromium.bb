@@ -111,13 +111,27 @@ class IPC_EXPORT ChannelProxy : public Endpoint, public base::NonThreadSafe {
   ~ChannelProxy() override;
 
   // Initializes the channel proxy. Only call this once to initialize a channel
-  // proxy that was not initialized in its constructor. If create_pipe_now is
+  // proxy that was not initialized in its constructor. If |create_pipe_now| is
   // true, the pipe is created synchronously. Otherwise it's created on the IO
-  // thread.
+  // thread. If |create_paused| is true, outgoing messages will continue to be
+  // queued until Unpause() is called.
   void Init(const IPC::ChannelHandle& channel_handle,
             Channel::Mode mode,
-            bool create_pipe_now);
-  void Init(std::unique_ptr<ChannelFactory> factory, bool create_pipe_now);
+            bool create_pipe_now,
+            bool create_paused = false);
+  void Init(std::unique_ptr<ChannelFactory> factory,
+            bool create_pipe_now,
+            bool create_paused = false);
+
+  // Unpause the channel. Only useful if Init was called with |create_paused|.
+  // If |flush| is true the channel will be flushed as soon as it's unpaused.
+  // Otherwise you must explicitly call Flush() to flush messages which were
+  // queued while the channel was paused.
+  void Unpause(bool flush);
+
+  // Flush the channel. This sends any messages which were queued before calling
+  // Connect. Only useful if Unpause(false) was called previously.
+  void Flush();
 
   // Close the IPC::Channel.  This operation completes asynchronously, once the
   // background thread processes the command to close the channel.  It is ok to
@@ -274,8 +288,11 @@ class IPC_EXPORT ChannelProxy : public Endpoint, public base::NonThreadSafe {
     // Returns true if the message was processed, false otherwise.
     bool TryFilters(const Message& message);
 
+    void UnpauseChannel(bool flush);
+    void FlushChannel();
+
     // Like Open and Close, but called on the IPC thread.
-    virtual void OnChannelOpened();
+    virtual void OnChannelOpened(bool pause);
     virtual void OnChannelClosed();
 
     // Called on the consumers thread when the ChannelProxy is closed.  At that

@@ -739,7 +739,7 @@ class ChannelProxyRunner {
         listener, io_thread_.task_runner(), &never_signaled_);
   }
 
-  void RunProxy() {
+  void RunProxy(bool create_paused) {
     std::unique_ptr<IPC::ChannelFactory> factory;
     if (for_server_) {
       factory = IPC::ChannelMojo::CreateServerFactory(
@@ -748,7 +748,7 @@ class ChannelProxyRunner {
       factory = IPC::ChannelMojo::CreateClientFactory(
           std::move(handle_), io_thread_.task_runner());
     }
-    proxy_->Init(std::move(factory), true);
+    proxy_->Init(std::move(factory), true, create_paused);
   }
 
   IPC::ChannelProxy* proxy() { return proxy_.get(); }
@@ -771,7 +771,9 @@ class IPCChannelProxyMojoTest : public IPCChannelMojoTestBase {
     runner_.reset(new ChannelProxyRunner(TakeHandle(), true));
   }
   void CreateProxy(IPC::Listener* listener) { runner_->CreateProxy(listener); }
-  void RunProxy() { runner_->RunProxy(); }
+  void RunProxy(bool create_paused = false) {
+    runner_->RunProxy(create_paused);
+  }
   void DestroyProxy() {
     runner_.reset();
     base::RunLoop().RunUntilIdle();
@@ -876,7 +878,7 @@ class ChannelProxyClient {
 
   void CreateProxy(IPC::Listener* listener) { runner_->CreateProxy(listener); }
 
-  void RunProxy() { runner_->RunProxy(); }
+  void RunProxy() { runner_->RunProxy(false); }
 
   void DestroyProxy() {
     runner_.reset();
@@ -919,6 +921,97 @@ DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(ProxyThreadAssociatedInterfaceClient,
   }
   driver->RequestQuit(base::MessageLoop::QuitWhenIdleClosure());
   base::RunLoop().Run();
+
+  DestroyProxy();
+}
+
+class ListenerWithIndirectProxyAssociatedInterface
+    : public IPC::Listener,
+      public IPC::mojom::IndirectTestDriver,
+      public IPC::mojom::PingReceiver {
+ public:
+  ListenerWithIndirectProxyAssociatedInterface()
+      : driver_binding_(this), ping_receiver_binding_(this) {}
+  ~ListenerWithIndirectProxyAssociatedInterface() override {}
+
+  bool OnMessageReceived(const IPC::Message& message) override { return true; }
+
+  void RegisterInterfaceFactory(IPC::ChannelProxy* proxy) {
+    proxy->AddAssociatedInterface(
+        base::Bind(&ListenerWithIndirectProxyAssociatedInterface::BindRequest,
+                   base::Unretained(this)));
+  }
+
+  void set_ping_handler(const base::Closure& handler) {
+    ping_handler_ = handler;
+  }
+
+ private:
+  // IPC::mojom::IndirectTestDriver:
+  void GetPingReceiver(
+      IPC::mojom::PingReceiverAssociatedRequest request) override {
+    ping_receiver_binding_.Bind(std::move(request));
+  }
+
+  // IPC::mojom::PingReceiver:
+  void Ping(const PingCallback& callback) override {
+    callback.Run();
+    ping_handler_.Run();
+  }
+
+  void BindRequest(IPC::mojom::IndirectTestDriverAssociatedRequest request) {
+    DCHECK(!driver_binding_.is_bound());
+    driver_binding_.Bind(std::move(request));
+  }
+
+  mojo::AssociatedBinding<IPC::mojom::IndirectTestDriver> driver_binding_;
+  mojo::AssociatedBinding<IPC::mojom::PingReceiver> ping_receiver_binding_;
+
+  base::Closure ping_handler_;
+};
+
+TEST_F(IPCChannelProxyMojoTest, ProxyThreadAssociatedInterfaceIndirect) {
+  // Tests that we can pipeline interface requests and subsequent messages
+  // targeting proxy thread bindings, and the channel will still dispatch
+  // messages appropriately.
+
+  InitWithMojo("ProxyThreadAssociatedInterfaceIndirectClient");
+
+  ListenerWithIndirectProxyAssociatedInterface listener;
+  CreateProxy(&listener);
+  listener.RegisterInterfaceFactory(proxy());
+  RunProxy();
+
+  base::RunLoop loop;
+  listener.set_ping_handler(loop.QuitClosure());
+  loop.Run();
+
+  EXPECT_TRUE(WaitForClientShutdown());
+
+  DestroyProxy();
+}
+
+DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(
+    ProxyThreadAssociatedInterfaceIndirectClient,
+    ChannelProxyClient) {
+  DummyListener listener;
+  CreateProxy(&listener);
+  RunProxy();
+
+  // Use an interface requested via another interface. On the remote end both
+  // interfaces are bound on the proxy thread. This ensures that the Ping
+  // message we send will still be dispatched properly even though the remote
+  // endpoint may not have been bound yet by the time the message is initially
+  // processed on the IO thread.
+  IPC::mojom::IndirectTestDriverAssociatedPtr driver;
+  IPC::mojom::PingReceiverAssociatedPtr ping_receiver;
+  proxy()->GetRemoteAssociatedInterface(&driver);
+  driver->GetPingReceiver(
+      mojo::GetProxy(&ping_receiver, driver.associated_group()));
+
+  base::RunLoop loop;
+  ping_receiver->Ping(loop.QuitClosure());
+  loop.Run();
 
   DestroyProxy();
 }
@@ -1156,6 +1249,87 @@ DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(SyncAssociatedInterface,
   client_impl.UseSyncSenderForRequest(false);
   client_impl.WaitForValueRequest();
 
+  DestroyProxy();
+}
+
+TEST_F(IPCChannelProxyMojoTest, CreatePaused) {
+  // Ensures that creating a paused channel elicits the expected behavior when
+  // sending messages, unpausing, sending more messages, and then manually
+  // flushing. Specifically a sequence like:
+  //
+  //   Connect()
+  //   Send(A)
+  //   Send(B)
+  //   Unpause(false)
+  //   Send(C)
+  //   Flush()
+  //
+  // must result in the other end receiving messages C, A, and then B, in that
+  // order.
+  //
+  // This behavior is required by some consumers of IPC::Channel, and it is not
+  // sufficient to leave this up to the consumer to implement since associated
+  // interface requests and messages also need to be queued according to the
+  // same policy.
+  InitWithMojo("CreatePausedClient");
+
+  DummyListener listener;
+  CreateProxy(&listener);
+  RunProxy(true /* create_paused */);
+
+  // These messages must be queued internally since the channel is paused.
+  SendValue(proxy(), 1);
+  SendValue(proxy(), 2);
+
+  proxy()->Unpause(false /* flush */);
+
+  // These messages must be sent immediately since the channel is unpaused.
+  SendValue(proxy(), 3);
+  SendValue(proxy(), 4);
+
+  // Now we flush the previously queued messages.
+  proxy()->Flush();
+
+  EXPECT_TRUE(WaitForClientShutdown());
+  DestroyProxy();
+}
+
+class ExpectValueSequenceListener : public IPC::Listener {
+ public:
+  explicit ExpectValueSequenceListener(std::queue<int32_t>* expected_values)
+      : expected_values_(expected_values) {}
+  ~ExpectValueSequenceListener() override {}
+
+  // IPC::Listener:
+  bool OnMessageReceived(const IPC::Message& message) override {
+    DCHECK(!expected_values_->empty());
+    base::PickleIterator iter(message);
+    int32_t should_be_expected;
+    EXPECT_TRUE(iter.ReadInt(&should_be_expected));
+    EXPECT_EQ(expected_values_->front(), should_be_expected);
+    expected_values_->pop();
+    if (expected_values_->empty())
+      base::MessageLoop::current()->QuitWhenIdle();
+    return true;
+  }
+
+ private:
+  std::queue<int32_t>* expected_values_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExpectValueSequenceListener);
+};
+
+DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(CreatePausedClient, ChannelProxyClient) {
+  std::queue<int32_t> expected_values;
+  ExpectValueSequenceListener listener(&expected_values);
+  CreateProxy(&listener);
+  expected_values.push(3);
+  expected_values.push(4);
+  expected_values.push(1);
+  expected_values.push(2);
+  RunProxy();
+  base::RunLoop().Run();
+  EXPECT_TRUE(expected_values.empty());
   DestroyProxy();
 }
 

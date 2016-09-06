@@ -189,7 +189,7 @@ class IPC_EXPORT SyncChannel : public ChannelProxy {
     // Called on the IPC thread.
     bool OnMessageReceived(const Message& msg) override;
     void OnChannelError() override;
-    void OnChannelOpened() override;
+    void OnChannelOpened(bool pause) override;
     void OnChannelClosed() override;
 
     // Cancels all pending Send calls.

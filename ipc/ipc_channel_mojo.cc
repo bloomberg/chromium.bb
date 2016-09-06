@@ -282,6 +282,14 @@ ChannelMojo::~ChannelMojo() {
 }
 
 bool ChannelMojo::Connect() {
+  if (!ConnectPaused())
+    return false;
+
+  Unpause(true);
+  return true;
+}
+
+bool ChannelMojo::ConnectPaused() {
   WillConnect();
 
   DCHECK(!task_runner_);
@@ -290,6 +298,22 @@ bool ChannelMojo::Connect() {
 
   bootstrap_->Connect();
   return true;
+}
+
+void ChannelMojo::Unpause(bool flush) {
+  bootstrap_->Start();
+
+  // Ensure that no matter what messages have been queued so far, the first
+  // message we send is always the peer PID.
+  DCHECK(message_reader_);
+  message_reader_->sender()->SetPeerPid(GetSelfPID());
+
+  if (flush)
+    Flush();
+}
+
+void ChannelMojo::Flush() {
+  bootstrap_->Flush();
 }
 
 void ChannelMojo::Close() {
@@ -306,7 +330,6 @@ void ChannelMojo::Close() {
 // MojoBootstrap::Delegate implementation
 void ChannelMojo::OnPipesAvailable(mojom::ChannelAssociatedPtr sender,
                                    mojom::ChannelAssociatedRequest receiver) {
-  sender->SetPeerPid(GetSelfPID());
   message_reader_.reset(new internal::MessagePipeReader(
       pipe_, std::move(sender), std::move(receiver), this));
 }

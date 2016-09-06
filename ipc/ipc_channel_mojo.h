@@ -68,6 +68,9 @@ class IPC_EXPORT ChannelMojo
 
   // Channel implementation
   bool Connect() override;
+  bool ConnectPaused() override;
+  void Unpause(bool flush) override;
+  void Flush() override;
   void Close() override;
   bool Send(Message* message) override;
   bool IsSendThreadSafe() const override;

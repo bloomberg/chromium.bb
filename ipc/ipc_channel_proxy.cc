@@ -115,6 +115,18 @@ bool ChannelProxy::Context::TryFilters(const Message& message) {
 }
 
 // Called on the IPC::Channel thread
+void ChannelProxy::Context::UnpauseChannel(bool flush) {
+  DCHECK(channel_);
+  channel_->Unpause(flush);
+}
+
+// Called on the IPC::Channel thread
+void ChannelProxy::Context::FlushChannel() {
+  DCHECK(channel_);
+  channel_->Flush();
+}
+
+// Called on the IPC::Channel thread
 bool ChannelProxy::Context::OnMessageReceived(const Message& message) {
   // First give a chance to the filters to process this message.
   if (!TryFilters(message))
@@ -159,14 +171,15 @@ void ChannelProxy::Context::OnChannelError() {
 }
 
 // Called on the IPC::Channel thread
-void ChannelProxy::Context::OnChannelOpened() {
+void ChannelProxy::Context::OnChannelOpened(bool pause) {
   DCHECK(channel_ != NULL);
 
   // Assume a reference to ourselves on behalf of this thread.  This reference
   // will be released when we are closed.
   AddRef();
 
-  if (!channel_->Connect()) {
+  bool success = pause ? channel_->ConnectPaused() : channel_->Connect();
+  if (!success) {
     OnChannelError();
     return;
   }
@@ -462,7 +475,8 @@ ChannelProxy::~ChannelProxy() {
 
 void ChannelProxy::Init(const IPC::ChannelHandle& channel_handle,
                         Channel::Mode mode,
-                        bool create_pipe_now) {
+                        bool create_pipe_now,
+                        bool create_paused) {
 #if defined(OS_POSIX)
   // When we are creating a server on POSIX, we need its file descriptor
   // to be created immediately so that it can be accessed and passed
@@ -474,11 +488,12 @@ void ChannelProxy::Init(const IPC::ChannelHandle& channel_handle,
 #endif  // defined(OS_POSIX)
   Init(
       ChannelFactory::Create(channel_handle, mode, context_->ipc_task_runner()),
-      create_pipe_now);
+      create_pipe_now, create_paused);
 }
 
 void ChannelProxy::Init(std::unique_ptr<ChannelFactory> factory,
-                        bool create_pipe_now) {
+                        bool create_pipe_now,
+                        bool create_paused) {
   DCHECK(CalledOnValidThread());
   DCHECK(!did_init_);
 
@@ -496,10 +511,21 @@ void ChannelProxy::Init(std::unique_ptr<ChannelFactory> factory,
 
   // complete initialization on the background thread
   context_->ipc_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&Context::OnChannelOpened, context_));
+      FROM_HERE,
+      base::Bind(&Context::OnChannelOpened, context_, create_paused));
 
   did_init_ = true;
   OnChannelInit();
+}
+
+void ChannelProxy::Unpause(bool flush) {
+  context_->ipc_task_runner()->PostTask(
+      FROM_HERE, base::Bind(&Context::UnpauseChannel, context_, flush));
+}
+
+void ChannelProxy::Flush() {
+  context_->ipc_task_runner()->PostTask(
+      FROM_HERE, base::Bind(&Context::FlushChannel, context_));
 }
 
 void ChannelProxy::Close() {

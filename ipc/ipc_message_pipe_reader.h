@@ -88,6 +88,8 @@ class IPC_EXPORT MessagePipeReader : public NON_EXPORTED_BASE(mojom::Channel) {
 
   base::ProcessId GetPeerPid() const { return peer_pid_; }
 
+  mojom::Channel* sender() const { return sender_.get(); }
+
  protected:
   void OnPipeClosed();
   void OnPipeError(MojoResult error);
@@ -107,12 +109,6 @@ class IPC_EXPORT MessagePipeReader : public NON_EXPORTED_BASE(mojom::Channel) {
   base::ProcessId peer_pid_ = base::kNullProcessId;
   mojom::ChannelAssociatedPtr sender_;
   mojo::AssociatedBinding<mojom::Channel> binding_;
-
-  // Raw message pipe handle and interface ID we use to send legacy IPC messages
-  // over the associated pipe.
-  const uint32_t sender_interface_id_;
-  const mojo::MessagePipeHandle sender_pipe_;
-
   base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(MessagePipeReader);

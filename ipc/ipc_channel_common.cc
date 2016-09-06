@@ -80,6 +80,15 @@ Channel::AssociatedInterfaceSupport* Channel::GetAssociatedInterfaceSupport() {
   return nullptr;
 }
 
+bool Channel::ConnectPaused() {
+  NOTREACHED();
+  return false;
+}
+
+void Channel::Unpause(bool flush) { NOTREACHED(); }
+
+void Channel::Flush() { NOTREACHED(); }
+
 bool Channel::IsSendThreadSafe() const {
   return false;
 }

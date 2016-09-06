@@ -20,3 +20,11 @@ interface SimpleTestClient {
   [Sync]
   RequestValue() => (int32 value);
 };
+
+interface PingReceiver {
+  Ping() => ();
+};
+
+interface IndirectTestDriver {
+  GetPingReceiver(associated PingReceiver& request);
+};

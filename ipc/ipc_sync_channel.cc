@@ -450,12 +450,12 @@ void SyncChannel::SyncContext::OnChannelError() {
   Context::OnChannelError();
 }
 
-void SyncChannel::SyncContext::OnChannelOpened() {
+void SyncChannel::SyncContext::OnChannelOpened(bool pause) {
   shutdown_watcher_.StartWatching(
       shutdown_event_,
       base::Bind(&SyncChannel::SyncContext::OnShutdownEventSignaled,
                  base::Unretained(this)));
-  Context::OnChannelOpened();
+  Context::OnChannelOpened(pause);
 }
 
 void SyncChannel::SyncContext::OnChannelClosed() {
