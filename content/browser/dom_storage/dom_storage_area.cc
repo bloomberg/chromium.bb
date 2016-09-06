@@ -195,7 +195,8 @@ bool DOMStorageArea::SetItem(const base::string16& key,
   if (success && backing_ &&
       (old_value->is_null() || old_value->string() != value)) {
     CommitBatch* commit_batch = CreateCommitBatchIfNeeded();
-    commit_batch->changed_values[key] = base::NullableString16(value, false);
+    // Values are populated later to avoid holding duplicate memory.
+    commit_batch->changed_values[key] = base::NullableString16();
   }
   return success;
 }
@@ -327,6 +328,12 @@ void DOMStorageArea::PurgeMemory() {
 void DOMStorageArea::Shutdown() {
   DCHECK(!is_shutdown_);
   is_shutdown_ = true;
+
+  if (commit_batch_) {
+    DCHECK(backing_);
+    PopulateCommitBatchValues();
+  }
+
   map_ = NULL;
   if (!backing_)
     return;
@@ -427,6 +434,12 @@ DOMStorageArea::CommitBatch* DOMStorageArea::CreateCommitBatchIfNeeded() {
   return commit_batch_.get();
 }
 
+void DOMStorageArea::PopulateCommitBatchValues() {
+  DCHECK(task_runner_->IsRunningOnPrimarySequence());
+  for (auto& key_value : commit_batch_->changed_values)
+    key_value.second = map_->GetItem(key_value.first);
+}
+
 void DOMStorageArea::StartCommitTimer() {
   if (is_shutdown_ || !commit_batch_)
     return;
@@ -473,6 +486,7 @@ void DOMStorageArea::PostCommitTask() {
 
   DCHECK(backing_.get());
 
+  PopulateCommitBatchValues();
   commit_rate_limiter_.add_samples(1);
   data_rate_limiter_.add_samples(commit_batch_->GetDataSize());
 
