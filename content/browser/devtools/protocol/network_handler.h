@@ -50,9 +50,6 @@ class NetworkHandler {
                                     double download_throughput,
                                     double upload_throughput,
                                     const std::string* connection_type);
-  Response GetCertificateDetails(int certificate_id,
-                                 scoped_refptr<CertificateDetails>* result);
-  Response ShowCertificateViewer(int certificate_id);
 
  private:
   void SendGetCookiesResponse(

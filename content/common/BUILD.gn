@@ -297,6 +297,8 @@ source_set("common") {
     "savable_url_schemes.cc",
     "savable_url_schemes.h",
     "screen_orientation_messages.h",
+    "security_style_util.cc",
+    "security_style_util.h",
     "send_zygote_child_ping_linux.cc",
     "service_worker/embedded_worker_messages.h",
     "service_worker/embedded_worker_settings.h",

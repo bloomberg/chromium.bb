@@ -33,8 +33,8 @@
 #include "content/child/weburlresponse_extradata_impl.h"
 #include "content/common/resource_messages.h"
 #include "content/common/resource_request_body_impl.h"
+#include "content/common/security_style_util.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "content/common/ssl_status_serialization.h"
 #include "content/common/url_loader.mojom.h"
 #include "content/public/child/fixed_received_data.h"
 #include "content/public/child/request_peer.h"
@@ -45,6 +45,7 @@
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/ct_sct_to_string.h"
+#include "net/cert/x509_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
@@ -224,22 +225,13 @@ void SetSecurityStyleAndDetails(const GURL& url,
 
   // There are cases where an HTTPS request can come in without security
   // info attached (such as a redirect response).
-  const std::string& security_info = info.security_info;
-  if (security_info.empty()) {
+  if (info.certificate.empty()) {
     response->setSecurityStyle(WebURLResponse::SecurityStyleUnknown);
-    return;
-  }
-
-  SSLStatus ssl_status;
-  if (!DeserializeSecurityInfo(security_info, &ssl_status)) {
-    response->setSecurityStyle(WebURLResponse::SecurityStyleUnknown);
-    DLOG(ERROR)
-        << "DeserializeSecurityInfo() failed for an authenticated request.";
     return;
   }
 
   int ssl_version =
-      net::SSLConnectionStatusToVersion(ssl_status.connection_status);
+      net::SSLConnectionStatusToVersion(info.ssl_connection_status);
   const char* protocol;
   net::SSLVersionToString(&protocol, ssl_version);
 
@@ -248,7 +240,7 @@ void SetSecurityStyleAndDetails(const GURL& url,
   const char* mac;
   bool is_aead;
   uint16_t cipher_suite =
-      net::SSLConnectionStatusToCipherSuite(ssl_status.connection_status);
+      net::SSLConnectionStatusToCipherSuite(info.ssl_connection_status);
   net::SSLCipherSuiteToStrings(&key_exchange, &cipher, &mac, &is_aead,
                                cipher_suite);
   if (mac == NULL) {
@@ -256,27 +248,30 @@ void SetSecurityStyleAndDetails(const GURL& url,
     mac = "";
   }
 
-  blink::WebURLResponse::SecurityStyle securityStyle =
+  SecurityStyle security_style = GetSecurityStyleForResource(
+      url, true, info.cert_status);
+
+  blink::WebURLResponse::SecurityStyle security_style_blink =
       WebURLResponse::SecurityStyleUnknown;
-  switch (ssl_status.security_style) {
+  switch (security_style) {
     case SECURITY_STYLE_UNKNOWN:
-      securityStyle = WebURLResponse::SecurityStyleUnknown;
+      security_style_blink = WebURLResponse::SecurityStyleUnknown;
       break;
     case SECURITY_STYLE_UNAUTHENTICATED:
-      securityStyle = WebURLResponse::SecurityStyleUnauthenticated;
+      security_style_blink = WebURLResponse::SecurityStyleUnauthenticated;
       break;
     case SECURITY_STYLE_AUTHENTICATION_BROKEN:
-      securityStyle = WebURLResponse::SecurityStyleAuthenticationBroken;
+      security_style_blink = WebURLResponse::SecurityStyleAuthenticationBroken;
       break;
     case SECURITY_STYLE_WARNING:
-      securityStyle = WebURLResponse::SecurityStyleWarning;
+      security_style_blink = WebURLResponse::SecurityStyleWarning;
       break;
     case SECURITY_STYLE_AUTHENTICATED:
-      securityStyle = WebURLResponse::SecurityStyleAuthenticated;
+      security_style_blink = WebURLResponse::SecurityStyleAuthenticated;
       break;
   }
 
-  response->setSecurityStyle(securityStyle);
+  response->setSecurityStyle(security_style_blink);
 
   blink::WebURLResponse::SignedCertificateTimestampList sct_list(
       info.signed_certificate_timestamps.size());
@@ -284,9 +279,39 @@ void SetSecurityStyleAndDetails(const GURL& url,
   for (size_t i = 0; i < sct_list.size(); ++i)
     sct_list[i] = NetSCTToBlinkSCT(info.signed_certificate_timestamps[i]);
 
+  std::string subject, issuer;
+  base::Time valid_start, valid_expiry;
+  std::vector<std::string> san;
+  bool rv = net::x509_util::ParseCertificateSandboxed(
+      info.certificate[0], &subject, &issuer, &valid_start, &valid_expiry, &san,
+      &san);
+  if (!rv) {
+    NOTREACHED();
+    response->setSecurityStyle(WebURLResponse::SecurityStyleUnknown);
+    return;
+  }
+
+  blink::WebVector<blink::WebString> web_san(san.size());
+  std::transform(
+      san.begin(),
+      san.end(), web_san.begin(),
+      [](const std::string& h) { return blink::WebString::fromLatin1(h); });
+
+  blink::WebVector<blink::WebString> web_cert(info.certificate.size());
+  std::transform(
+      info.certificate.begin(),
+      info.certificate.end(), web_cert.begin(),
+      [](const std::string& h) { return blink::WebString::fromLatin1(h); });
+
   blink::WebURLResponse::WebSecurityDetails webSecurityDetails(
       WebString::fromUTF8(protocol), WebString::fromUTF8(key_exchange),
-      WebString::fromUTF8(cipher), WebString::fromUTF8(mac), ssl_status.cert_id,
+      WebString::fromUTF8(cipher), WebString::fromUTF8(mac),
+      WebString::fromUTF8(subject),
+      web_san,
+      WebString::fromUTF8(issuer),
+      valid_start.ToDoubleT(),
+      valid_expiry.ToDoubleT(),
+      web_cert,
       sct_list);
 
   response->setSecurityDetails(webSecurityDetails);

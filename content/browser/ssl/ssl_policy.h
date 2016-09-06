@@ -12,7 +12,6 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/common/resource_type.h"
-#include "content/public/common/security_style.h"
 #include "net/cert/cert_status_flags.h"
 
 class GURL;
@@ -53,13 +52,6 @@ class CONTENT_EXPORT SSLPolicy {
   void UpdateEntry(NavigationEntryImpl* entry, WebContents* web_contents);
 
   SSLPolicyBackend* backend() const { return backend_; }
-
-  // Returns a security style describing an individual resource. Does
-  // not take into account any of the page- or host-level state such as
-  // mixed content or whether the host has run insecure content.
-  static SecurityStyle GetSecurityStyleForResource(const GURL& url,
-                                                   int cert_id,
-                                                   net::CertStatus cert_status);
 
  private:
   enum OnCertErrorInternalOptionsMask {

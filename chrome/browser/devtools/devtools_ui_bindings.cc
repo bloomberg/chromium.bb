@@ -681,23 +681,41 @@ void DevToolsUIBindings::SetWhitelistedShortcuts(const std::string& message) {
 void DevToolsUIBindings::ShowCertificateViewer(const std::string& cert_chain) {
   std::unique_ptr<base::Value> value =
       base::JSONReader::Read(cert_chain);
-  if (!value || value->GetType() != base::Value::TYPE_LIST)
+  if (!value || value->GetType() != base::Value::TYPE_LIST) {
+    NOTREACHED();
     return;
+  }
 
   std::unique_ptr<base::ListValue> list =
       base::ListValue::From(std::move(value));
-  std::vector<base::StringPiece> cert_string_piece;
+  std::vector<std::string> decoded;
   for (size_t i = 0; i < list->GetSize(); ++i) {
     base::Value* item;
-    if (!list->Get(i, &item) || item->GetType() != base::Value::TYPE_STRING)
+    if (!list->Get(i, &item) || item->GetType() != base::Value::TYPE_STRING) {
+      NOTREACHED();
       return;
-    cert_string_piece.push_back(
-        *static_cast<base::StringValue*>(item)->GetString());
+    }
+    std::string temp;
+    if (!item->GetAsString(&temp)) {
+      NOTREACHED();
+      return;
+    }
+    if (!base::Base64Decode(temp, &temp)) {
+      NOTREACHED();
+      return;
+    }
+    decoded.push_back(temp);
   }
+
+  std::vector<base::StringPiece> cert_string_piece;
+  for (const auto& str : decoded)
+    cert_string_piece.push_back(str);
   scoped_refptr<net::X509Certificate> cert =
        net::X509Certificate::CreateFromDERCertChain(cert_string_piece);
-  if (!cert)
+  if (!cert) {
+    NOTREACHED();
     return;
+  }
 
   // TODO(jam): temporarily add the certificate to the cert store to get an ID
   // so that we don't have to change the WCD method signature
@@ -709,7 +727,7 @@ void DevToolsUIBindings::ShowCertificateViewer(const std::string& cert_chain) {
   int cert_id = content::CertStore::GetInstance()->StoreCert(
       cert.get(), rph->GetID());
   web_contents_->GetDelegate()->ShowCertificateViewerInDevTools(
-      web_contents_, cert_id);
+      inspected_wc, cert_id);
 }
 
 void DevToolsUIBindings::ZoomIn() {

@@ -101,7 +101,8 @@ public:
     struct SecurityDetails {
         DISALLOW_NEW();
         SecurityDetails()
-            : certID(0)
+            : validFrom(0)
+            , validTo(0)
         {
         }
         // All strings are human-readable values.
@@ -111,7 +112,13 @@ public:
         // mac is the empty string when the connection cipher suite does not
         // have a separate MAC value (i.e. if the cipher suite is AEAD).
         String mac;
-        int certID;
+        String subjectName;
+        Vector<String> sanList;
+        String issuer;
+        time_t validFrom;
+        time_t validTo;
+        // DER-encoded X509Certificate certificate chain.
+        Vector<AtomicString> certificate;
         SignedCertificateTimestampList sctList;
     };
 
@@ -212,7 +219,7 @@ public:
     void setSecurityStyle(SecurityStyle securityStyle) { m_securityStyle = securityStyle; }
 
     const SecurityDetails* getSecurityDetails() const { return &m_securityDetails; }
-    void setSecurityDetails(const String& protocol, const String& keyExchange, const String& cipher, const String& mac, int certId, const SignedCertificateTimestampList& sctList);
+    void setSecurityDetails(const String& protocol, const String& keyExchange, const String& cipher, const String& mac, const String& subjectName, const Vector<String>& sanList, const String& issuer, time_t validFrom, time_t validTo, const Vector<AtomicString>& certificate, const SignedCertificateTimestampList& sctList);
 
     long long appCacheID() const { return m_appCacheID; }
     void setAppCacheID(long long id) { m_appCacheID = id; }
@@ -451,6 +458,9 @@ public:
     bool m_hasMajorCertificateErrors;
     ResourceResponse::SecurityStyle m_securityStyle;
     ResourceResponse::SecurityDetails m_securityDetails;
+    // This is |certificate| from SecurityDetails since that structure should
+    // use an AtomicString but this temporary structure is sent across threads.
+    Vector<String> m_certificate;
     ResourceResponse::HTTPVersion m_httpVersion;
     long long m_appCacheID;
     KURL m_appCacheManifestURL;

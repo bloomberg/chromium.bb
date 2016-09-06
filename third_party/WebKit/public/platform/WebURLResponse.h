@@ -99,13 +99,23 @@ public:
             const WebString& keyExchange,
             const WebString& cipher,
             const WebString& mac,
-            int certId,
+            const WebString& subjectName,
+            const WebVector<WebString>& sanList,
+            const WebString& issuer,
+            double validFrom,
+            double validTo,
+            WebVector<WebString>& certificate,
             const SignedCertificateTimestampList& sctList)
             : protocol(protocol)
             , keyExchange(keyExchange)
             , cipher(cipher)
             , mac(mac)
-            , certId(certId)
+            , subjectName(subjectName)
+            , sanList(sanList)
+            , issuer(issuer)
+            , validFrom(validFrom)
+            , validTo(validTo)
+            , certificate(certificate)
             , sctList(sctList)
         {
         }
@@ -116,7 +126,13 @@ public:
         // mac is the empty string when the connection cipher suite does not
         // have a separate MAC value (i.e. if the cipher suite is AEAD).
         WebString mac;
-        int certId;
+        WebString subjectName;
+        WebVector<WebString> sanList;
+        WebString issuer;
+        double validFrom;
+        double validTo;
+        // DER-encoded X509Certificate certificate chain.
+        WebVector<WebString> certificate;
         SignedCertificateTimestampList sctList;
     };
 

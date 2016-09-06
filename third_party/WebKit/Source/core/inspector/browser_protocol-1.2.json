@@ -1333,7 +1333,8 @@
                 "returns": [
                     { "name": "result", "$ref": "CertificateDetails", "description": "Certificate details." }
                 ],
-                "handlers": ["browser"]
+                "handlers": ["browser"],
+                "experimental": true
             },
             {
                 "name": "showCertificateViewer",
@@ -1341,7 +1342,8 @@
                 "parameters": [
                     { "name": "certificateId", "$ref": "Security.CertificateId", "description": "Certificate id." }
                 ],
-                "handlers": ["browser"]
+                "handlers": ["browser"],
+                "experimental": true
             }
         ],
         "events": [

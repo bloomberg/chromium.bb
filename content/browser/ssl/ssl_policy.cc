@@ -17,6 +17,7 @@
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/ssl/ssl_error_handler.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/security_style_util.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/resource_type.h"
@@ -232,27 +233,6 @@ void SSLPolicy::UpdateEntry(NavigationEntryImpl* entry,
   }
 }
 
-// Static
-SecurityStyle SSLPolicy::GetSecurityStyleForResource(
-    const GURL& url,
-    int cert_id,
-    net::CertStatus cert_status) {
-  // An HTTPS response may not have a certificate for some reason.  When that
-  // happens, use the unauthenticated (HTTP) rather than the authentication
-  // broken security style so that we can detect this error condition.
-  if (!url.SchemeIsCryptographic() || !cert_id)
-    return SECURITY_STYLE_UNAUTHENTICATED;
-
-  // Minor errors don't lower the security style to
-  // SECURITY_STYLE_AUTHENTICATION_BROKEN.
-  if (net::IsCertStatusError(cert_status) &&
-      !net::IsCertStatusMinorError(cert_status)) {
-    return SECURITY_STYLE_AUTHENTICATION_BROKEN;
-  }
-
-  return SECURITY_STYLE_AUTHENTICATED;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // Certificate Error Routines
 
@@ -279,7 +259,7 @@ void SSLPolicy::InitializeEntryIfNeeded(NavigationEntryImpl* entry) {
     return;
 
   entry->GetSSL().security_style = GetSecurityStyleForResource(
-      entry->GetURL(), entry->GetSSL().cert_id, entry->GetSSL().cert_status);
+      entry->GetURL(), !!entry->GetSSL().cert_id, entry->GetSSL().cert_status);
 }
 
 }  // namespace content

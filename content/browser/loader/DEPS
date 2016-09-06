@@ -236,6 +236,7 @@ specific_include_rules = {
     "+content/browser/service_worker/service_worker_response_info.h",
     "+content/browser/ssl/ssl_manager.h",
     "+content/browser/ssl/ssl_policy.h",
+    "+content/common/security_style_util.h",
     "+content/public/common/content_client.h",
     "+content/public/common/content_switches.h",
     "+content/public/common/process_type.h",

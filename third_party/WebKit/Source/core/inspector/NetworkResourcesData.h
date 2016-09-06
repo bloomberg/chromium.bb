@@ -37,6 +37,8 @@
 #include "platform/weborigin/KURL.h"
 #include "wtf/Deque.h"
 #include "wtf/HashMap.h"
+#include "wtf/Vector.h"
+#include "wtf/text/AtomicString.h"
 #include "wtf/text/WTFString.h"
 
 
@@ -126,6 +128,9 @@ public:
         BlobDataHandle* downloadedFileBlob() const { return m_downloadedFileBlob.get(); }
         void setDownloadedFileBlob(PassRefPtr<BlobDataHandle> blob) { m_downloadedFileBlob = blob; }
 
+        Vector<AtomicString> certificate() { return m_certificate; }
+        void setCertificate(const Vector<AtomicString>& certificate) { m_certificate = certificate; }
+
         DECLARE_TRACE();
     private:
         bool hasData() const { return m_dataBuffer.get(); }
@@ -153,6 +158,7 @@ public:
         RefPtr<SharedBuffer> m_buffer;
         WeakMember<Resource> m_cachedResource;
         RefPtr<BlobDataHandle> m_downloadedFileBlob;
+        Vector<AtomicString> m_certificate;
     };
 
     static NetworkResourcesData* create(size_t totalBufferSize, size_t resourceBufferSize)
@@ -175,6 +181,7 @@ public:
     void setResourcesDataSizeLimits(size_t maximumResourcesContentSize, size_t maximumSingleResourceContentSize);
     void setXHRReplayData(const String& requestId, XHRReplayData*);
     XHRReplayData* xhrReplayData(const String& requestId);
+    void setCertificate(const String& requestId, const Vector<AtomicString>& certificate);
     HeapVector<Member<ResourceData>> resources();
 
     DECLARE_TRACE();

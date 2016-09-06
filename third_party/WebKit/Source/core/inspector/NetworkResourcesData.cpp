@@ -306,6 +306,14 @@ XHRReplayData* NetworkResourcesData::xhrReplayData(const String& requestId)
     return resourceData->xhrReplayData();
 }
 
+void NetworkResourcesData::setCertificate(const String& requestId, const Vector<AtomicString>& certificate)
+{
+    ResourceData* resourceData = resourceDataForRequestId(requestId);
+    if (!resourceData)
+        return;
+    resourceData->setCertificate(certificate);
+}
+
 void NetworkResourcesData::setXHRReplayData(const String& requestId, XHRReplayData* xhrReplayData)
 {
     ResourceData* resourceData = resourceDataForRequestId(requestId);

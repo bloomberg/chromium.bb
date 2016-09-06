@@ -147,6 +147,15 @@ Response SecurityHandler::Disable() {
   return Response::OK();
 }
 
+Response SecurityHandler::ShowCertificateViewer(int certificate_id) {
+  if (!host_)
+    return Response::InternalError("Could not connect to view");
+  WebContents* web_contents = WebContents::FromRenderFrameHost(host_);
+  web_contents->GetDelegate()->ShowCertificateViewerInDevTools(
+      web_contents, certificate_id);
+  return Response::OK();
+}
+
 }  // namespace security
 }  // namespace devtools
 }  // namespace content

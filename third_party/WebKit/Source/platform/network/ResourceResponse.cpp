@@ -35,9 +35,10 @@ namespace blink {
 
 namespace {
 
-Vector<ResourceResponse::SignedCertificateTimestamp> isolatedCopy(const Vector<ResourceResponse::SignedCertificateTimestamp>& src)
+template <typename Interface>
+Vector<Interface> isolatedCopy(const Vector<Interface>& src)
 {
-    Vector<ResourceResponse::SignedCertificateTimestamp> result;
+    Vector<Interface> result;
     result.reserveCapacity(src.size());
     for (const auto& timestamp : src) {
         result.append(timestamp.isolatedCopy());
@@ -169,7 +170,13 @@ ResourceResponse::ResourceResponse(CrossThreadResourceResponseData* data)
     m_securityDetails.cipher = data->m_securityDetails.cipher;
     m_securityDetails.keyExchange = data->m_securityDetails.keyExchange;
     m_securityDetails.mac = data->m_securityDetails.mac;
-    m_securityDetails.certID = data->m_securityDetails.certID;
+    m_securityDetails.subjectName = data->m_securityDetails.subjectName;
+    m_securityDetails.sanList = data->m_securityDetails.sanList;
+    m_securityDetails.issuer = data->m_securityDetails.issuer;
+    m_securityDetails.validFrom = data->m_securityDetails.validFrom;
+    m_securityDetails.validTo = data->m_securityDetails.validTo;
+    for (auto& cert : data->m_certificate)
+        m_securityDetails.certificate.append(AtomicString(cert));
     m_securityDetails.sctList = data->m_securityDetails.sctList;
     m_httpVersion = data->m_httpVersion;
     m_appCacheID = data->m_appCacheID;
@@ -221,7 +228,13 @@ std::unique_ptr<CrossThreadResourceResponseData> ResourceResponse::copyData() co
     data->m_securityDetails.cipher = m_securityDetails.cipher.isolatedCopy();
     data->m_securityDetails.keyExchange = m_securityDetails.keyExchange.isolatedCopy();
     data->m_securityDetails.mac = m_securityDetails.mac.isolatedCopy();
-    data->m_securityDetails.certID = m_securityDetails.certID;
+    data->m_securityDetails.subjectName = m_securityDetails.subjectName.isolatedCopy();
+    data->m_securityDetails.sanList = isolatedCopy(m_securityDetails.sanList);
+    data->m_securityDetails.issuer = m_securityDetails.issuer.isolatedCopy();
+    data->m_securityDetails.validFrom = m_securityDetails.validFrom;
+    data->m_securityDetails.validTo = m_securityDetails.validTo;
+    for (auto& cert : m_securityDetails.certificate)
+        data->m_certificate.append(cert.getString().isolatedCopy());
     data->m_securityDetails.sctList = isolatedCopy(m_securityDetails.sctList);
     data->m_httpVersion = m_httpVersion;
     data->m_appCacheID = m_appCacheID;
@@ -377,13 +390,18 @@ void ResourceResponse::updateHeaderParsedState(const AtomicString& name)
         m_haveParsedLastModifiedHeader = false;
 }
 
-void ResourceResponse::setSecurityDetails(const String& protocol, const String& keyExchange, const String& cipher, const String& mac, int certId, const SignedCertificateTimestampList& sctList)
+void ResourceResponse::setSecurityDetails(const String& protocol, const String& keyExchange, const String& cipher, const String& mac, const String& subjectName, const Vector<String>& sanList, const String& issuer, time_t validFrom, time_t validTo, const Vector<AtomicString>& certificate, const SignedCertificateTimestampList& sctList)
 {
     m_securityDetails.protocol = protocol;
     m_securityDetails.keyExchange = keyExchange;
     m_securityDetails.cipher = cipher;
     m_securityDetails.mac = mac;
-    m_securityDetails.certID = certId;
+    m_securityDetails.subjectName = subjectName;
+    m_securityDetails.sanList = sanList;
+    m_securityDetails.issuer = issuer;
+    m_securityDetails.validFrom = validFrom;
+    m_securityDetails.validTo = validTo;
+    m_securityDetails.certificate = certificate;
     m_securityDetails.sctList = sctList;
 }
 

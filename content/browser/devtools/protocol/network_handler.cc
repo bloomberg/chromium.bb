@@ -20,10 +20,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_client.h"
-#include "net/cert/x509_cert_types.h"
-#include "net/cert/x509_certificate.h"
 #include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -408,52 +405,6 @@ Response NetworkHandler::EmulateNetworkConditions(
     double upload_throughput,
     const std::string* connection_type) {
   return Response::FallThrough();
-}
-
-Response NetworkHandler::GetCertificateDetails(
-    int certificate_id,
-    scoped_refptr<CertificateDetails>* result) {
-  scoped_refptr<net::X509Certificate> cert;
-  content::CertStore* cert_store = CertStore::GetInstance();
-  cert_store->RetrieveCert(certificate_id, &cert);
-  if (!cert.get())
-    return Response::InvalidParams("certificateId");
-
-  std::string name(cert->subject().GetDisplayName());
-  std::string issuer(cert->issuer().GetDisplayName());
-  base::Time valid_from = cert->valid_start();
-  base::Time valid_to = cert->valid_expiry();
-
-  std::vector<std::string> dns_names;
-  std::vector<std::string> ip_addrs;
-  cert->GetSubjectAltName(&dns_names, &ip_addrs);
-
-  // IP addresses are in raw network bytes and must be converted to string form
-  std::vector<std::string> ip_addrs_string;
-  for (const std::string& ip : ip_addrs) {
-    net::IPAddress ip_addr(reinterpret_cast<const uint8_t*>(ip.c_str()),
-                           ip.length());
-    ip_addrs_string.push_back(ip_addr.ToString());
-  }
-
-  *result = CertificateDetails::Create()
-                ->set_subject(CertificateSubject::Create()
-                                  ->set_name(name)
-                                  ->set_san_dns_names(dns_names)
-                                  ->set_san_ip_addresses(ip_addrs_string))
-                ->set_issuer(issuer)
-                ->set_valid_from(valid_from.ToDoubleT())
-                ->set_valid_to(valid_to.ToDoubleT());
-  return Response::OK();
-}
-
-Response NetworkHandler::ShowCertificateViewer(int certificate_id) {
-  if (!host_)
-    return Response::InternalError("Could not connect to view");
-  WebContents* web_contents = WebContents::FromRenderFrameHost(host_);
-  web_contents->GetDelegate()->ShowCertificateViewerInDevTools(
-      web_contents, certificate_id);
-  return Response::OK();
 }
 
 }  // namespace network

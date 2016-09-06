@@ -335,12 +335,24 @@ void WebURLResponse::setSecurityDetails(const WebSecurityDetails& webSecurityDet
     blink::ResourceResponse::SignedCertificateTimestampList sctList;
     for (const auto& iter : webSecurityDetails.sctList)
         sctList.append(static_cast<blink::ResourceResponse::SignedCertificateTimestamp>(iter));
+    Vector<String> sanList;
+    sanList.append(webSecurityDetails.sanList.data(), webSecurityDetails.sanList.size());
+    Vector<AtomicString> certificate;
+    for (const auto& iter : webSecurityDetails.certificate) {
+        AtomicString cert = iter;
+        certificate.append(cert);
+    }
     m_resourceResponse->setSecurityDetails(
         webSecurityDetails.protocol,
         webSecurityDetails.keyExchange,
         webSecurityDetails.cipher,
         webSecurityDetails.mac,
-        webSecurityDetails.certId,
+        webSecurityDetails.subjectName,
+        sanList,
+        webSecurityDetails.issuer,
+        static_cast<time_t>(webSecurityDetails.validFrom),
+        static_cast<time_t>(webSecurityDetails.validTo),
+        certificate,
         sctList);
 }
 

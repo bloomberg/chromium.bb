@@ -25,6 +25,7 @@
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/browser/ssl/ssl_manager.h"
 #include "content/browser/ssl/ssl_policy.h"
+#include "content/common/security_style_util.h"
 #include "content/common/ssl_status_serialization.h"
 #include "content/public/browser/cert_store.h"
 #include "content/public/browser/resource_dispatcher_host_login_delegate.h"
@@ -109,11 +110,25 @@ void PopulateResourceResponse(ResourceRequestInfoImpl* info,
         net::IsCertStatusError(ssl_status.cert_status) &&
         !net::IsCertStatusMinorError(ssl_status.cert_status);
     if (info->ShouldReportRawHeaders()) {
-      // Only pass the Signed Certificate Timestamps (SCTs) when the network
-      // panel of the DevTools is open, i.e. ShouldReportRawHeaders() is set.
-      // These data are used to populate the requests in the security panel too.
+      // Only pass these members when the network panel of the DevTools is open,
+      // i.e. ShouldReportRawHeaders() is set. These data are used to populate
+      // the requests in the security panel too.
+      response->head.cert_status = request->ssl_info().cert_status;
+      response->head.ssl_connection_status =
+          request->ssl_info().connection_status;
       response->head.signed_certificate_timestamps =
           request->ssl_info().signed_certificate_timestamps;
+      std::string encoded;
+      bool rv = net::X509Certificate::GetDEREncoded(
+          request->ssl_info().cert->os_cert_handle(), &encoded);
+      DCHECK(rv);
+      response->head.certificate.push_back(encoded);
+      for (auto& cert :
+               request->ssl_info().cert->GetIntermediateCertificates()) {
+        rv = net::X509Certificate::GetDEREncoded(cert, &encoded);
+        DCHECK(rv);
+        response->head.certificate.push_back(encoded);
+      }
     }
   } else {
     // We should not have any SSL state.
@@ -134,8 +149,8 @@ void ResourceLoader::GetSSLStatusForRequest(const GURL& url,
   DCHECK(ssl_info.cert);
   int cert_id = cert_store->StoreCert(ssl_info.cert.get(), child_id);
 
-  *ssl_status = SSLStatus(SSLPolicy::GetSecurityStyleForResource(
-                              url, cert_id, ssl_info.cert_status),
+  *ssl_status = SSLStatus(GetSecurityStyleForResource(
+                              url, !!cert_id, ssl_info.cert_status),
                           cert_id, ssl_info);
 }
 

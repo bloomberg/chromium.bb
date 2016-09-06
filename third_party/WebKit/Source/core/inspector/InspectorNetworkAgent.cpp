@@ -68,6 +68,7 @@
 #include "platform/network/WebSocketHandshakeRequest.h"
 #include "platform/network/WebSocketHandshakeResponse.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebMixedContent.h"
 #include "public/platform/WebURLRequest.h"
@@ -420,6 +421,10 @@ static std::unique_ptr<protocol::Network::Response> buildObjectForResourceRespon
 
         const ResourceResponse::SecurityDetails* responseSecurityDetails = response.getSecurityDetails();
 
+        std::unique_ptr<protocol::Array<String>> sanList = protocol::Array<String>::create();
+        for (auto const& san : responseSecurityDetails->sanList)
+            sanList->addItem(san);
+
         std::unique_ptr<protocol::Array<protocol::Network::SignedCertificateTimestamp>> signedCertificateTimestampList = protocol::Array<protocol::Network::SignedCertificateTimestamp>::create();
         for (auto const& sct : responseSecurityDetails->sctList) {
             std::unique_ptr<protocol::Network::SignedCertificateTimestamp> signedCertificateTimestamp = protocol::Network::SignedCertificateTimestamp::create()
@@ -439,7 +444,12 @@ static std::unique_ptr<protocol::Network::Response> buildObjectForResourceRespon
             .setProtocol(responseSecurityDetails->protocol)
             .setKeyExchange(responseSecurityDetails->keyExchange)
             .setCipher(responseSecurityDetails->cipher)
-            .setCertificateId(responseSecurityDetails->certID)
+            .setSubjectName(responseSecurityDetails->subjectName)
+            .setSanList(std::move(sanList))
+            .setIssuer(responseSecurityDetails->issuer)
+            .setValidFrom(responseSecurityDetails->validFrom)
+            .setValidTo(responseSecurityDetails->validTo)
+            .setCertificateId(0) // Keep this in protocol for compatability.
             .setSignedCertificateTimestampList(std::move(signedCertificateTimestampList))
             .build();
         if (responseSecurityDetails->mac.length() > 0)
@@ -596,6 +606,12 @@ void InspectorNetworkAgent::didReceiveResourceResponse(LocalFrame* frame, unsign
     String loaderId = loader ? IdentifiersFactory::loaderId(loader) : "";
     m_resourcesData->responseReceived(requestId, frameId, response);
     m_resourcesData->setResourceType(requestId, type);
+
+    if (response.getSecurityStyle() != ResourceResponse::SecurityStyleUnknown
+        && response.getSecurityStyle() != ResourceResponse::SecurityStyleUnauthenticated) {
+        const ResourceResponse::SecurityDetails* responseSecurityDetails = response.getSecurityDetails();
+        m_resourcesData->setCertificate(requestId, responseSecurityDetails->certificate);
+    }
 
     if (resourceResponse && !resourceIsEmpty)
         frontend()->responseReceived(requestId, frameId, loaderId, monotonicallyIncreasingTime(), InspectorPageAgent::resourceTypeJson(type), std::move(resourceResponse));
@@ -1118,6 +1134,20 @@ void InspectorNetworkAgent::setBypassServiceWorker(ErrorString*, bool bypass)
 void InspectorNetworkAgent::setDataSizeLimitsForTest(ErrorString*, int maxTotal, int maxResource)
 {
     m_resourcesData->setResourcesDataSizeLimits(maxTotal, maxResource);
+}
+
+void InspectorNetworkAgent::getCertificate(ErrorString*, const String& origin, std::unique_ptr<protocol::Array<String>>* certificate)
+{
+    *certificate = protocol::Array<String>::create();
+    RefPtr<SecurityOrigin> securityOrigin = SecurityOrigin::createFromString(origin);
+    for (auto& resource : m_resourcesData->resources()) {
+        RefPtr<SecurityOrigin> resourceOrigin = SecurityOrigin::create(resource->requestedURL());
+        if (resourceOrigin->isSameSchemeHostPort(securityOrigin.get())) {
+            for (auto& cert : resource->certificate())
+                certificate->get()->addItem(base64Encode(cert.latin1()));
+            return;
+        }
+    }
 }
 
 void InspectorNetworkAgent::didCommitLoad(LocalFrame* frame, DocumentLoader* loader)

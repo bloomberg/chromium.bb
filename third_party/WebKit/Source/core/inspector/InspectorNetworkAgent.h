@@ -146,6 +146,7 @@ public:
     void setCacheDisabled(ErrorString*, bool cacheDisabled) override;
     void setBypassServiceWorker(ErrorString*, bool bypass) override;
     void setDataSizeLimitsForTest(ErrorString*, int maxTotalSize, int maxResourceSize) override;
+    void getCertificate(ErrorString*, const String& origin, std::unique_ptr<protocol::Array<String>>* certificate) override;
 
     // Called from other agents.
     void setHostId(const String&);
