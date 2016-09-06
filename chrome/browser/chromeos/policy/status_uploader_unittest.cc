@@ -141,7 +141,7 @@ class StatusUploaderTest : public testing::Test {
 
     // Now that the previous request was satisfied, a task to do the next
     // upload should be queued.
-    EXPECT_EQ(1U, task_runner_->GetPendingTasks().size());
+    EXPECT_EQ(1U, task_runner_->NumPendingTasks());
 
     CheckPendingTaskDelay(uploader, expected_delay);
   }
@@ -171,7 +171,7 @@ class StatusUploaderTest : public testing::Test {
 TEST_F(StatusUploaderTest, BasicTest) {
   EXPECT_TRUE(task_runner_->GetPendingTasks().empty());
   StatusUploader uploader(&client_, std::move(collector_), task_runner_);
-  EXPECT_EQ(1U, task_runner_->GetPendingTasks().size());
+  EXPECT_EQ(1U, task_runner_->NumPendingTasks());
   // On startup, first update should happen in 1 minute.
   EXPECT_EQ(base::TimeDelta::FromMinutes(1),
             task_runner_->NextPendingTaskDelay());
@@ -184,7 +184,7 @@ TEST_F(StatusUploaderTest, DifferentFrequencyAtStart) {
       new_delay);
   EXPECT_TRUE(task_runner_->GetPendingTasks().empty());
   StatusUploader uploader(&client_, std::move(collector_), task_runner_);
-  ASSERT_EQ(1U, task_runner_->GetPendingTasks().size());
+  ASSERT_EQ(1U, task_runner_->NumPendingTasks());
   // On startup, first update should happen in 1 minute.
   EXPECT_EQ(base::TimeDelta::FromMinutes(1),
             task_runner_->NextPendingTaskDelay());
@@ -204,7 +204,7 @@ TEST_F(StatusUploaderTest, ResetTimerAfterStatusCollection) {
 
   // Now that the previous request was satisfied, a task to do the next
   // upload should be queued again.
-  EXPECT_EQ(1U, task_runner_->GetPendingTasks().size());
+  EXPECT_EQ(1U, task_runner_->NumPendingTasks());
 }
 
 TEST_F(StatusUploaderTest, ResetTimerAfterFailedStatusCollection) {
@@ -213,7 +213,7 @@ TEST_F(StatusUploaderTest, ResetTimerAfterFailedStatusCollection) {
   // Running the queued task should pass two callbacks into GetDeviceStatusAsync
   // and GetDeviceSessionStatusAsync. We'll grab these two callbacks and send
   // nullptrs to them in order to simulate failure to get status.
-  EXPECT_EQ(1U, task_runner_->GetPendingTasks().size());
+  EXPECT_EQ(1U, task_runner_->NumPendingTasks());
   DeviceStatusCollector::DeviceStatusCallback ds_callback;
   DeviceStatusCollector::DeviceSessionStatusCallback ss_callback;
   EXPECT_CALL(*collector_ptr_, GetDeviceStatusAsync(_))
@@ -228,11 +228,11 @@ TEST_F(StatusUploaderTest, ResetTimerAfterFailedStatusCollection) {
   // failure to get status and queue another status upload.
   std::unique_ptr<em::DeviceStatusReportRequest> invalid_device_status;
   ds_callback.Run(std::move(invalid_device_status));
-  EXPECT_EQ(0U, task_runner_->GetPendingTasks().size());  // Not yet...
+  EXPECT_EQ(0U, task_runner_->NumPendingTasks());  // Not yet...
 
   std::unique_ptr<em::SessionStatusReportRequest> invalid_session_status;
   ss_callback.Run(std::move(invalid_session_status));
-  EXPECT_EQ(1U, task_runner_->GetPendingTasks().size());  // but now!
+  EXPECT_EQ(1U, task_runner_->NumPendingTasks());  // but now!
 
   // Check the delay of the queued upload
   const base::TimeDelta expected_delay = base::TimeDelta::FromMilliseconds(

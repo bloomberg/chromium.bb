@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_simple_task_runner.h"
+#include "base/threading/thread_checker.h"
 #include "base/trace_event/trace_event.h"
 
 namespace cc {

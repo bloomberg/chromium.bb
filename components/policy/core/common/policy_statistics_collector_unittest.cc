@@ -144,7 +144,7 @@ TEST_F(PolicyStatisticsCollectorTest, CollectPending) {
               RecordPolicyUse(kTestPolicy1Id));
 
   policy_statistics_collector_->Initialize();
-  EXPECT_EQ(1u, task_runner_->GetPendingTasks().size());
+  EXPECT_EQ(1u, task_runner_->NumPendingTasks());
   EXPECT_EQ(update_delay_, GetFirstDelay());
 }
 
@@ -159,7 +159,7 @@ TEST_F(PolicyStatisticsCollectorTest, CollectPendingVeryOld) {
               RecordPolicyUse(kTestPolicy1Id));
 
   policy_statistics_collector_->Initialize();
-  EXPECT_EQ(1u, task_runner_->GetPendingTasks().size());
+  EXPECT_EQ(1u, task_runner_->NumPendingTasks());
   EXPECT_EQ(update_delay_, GetFirstDelay());
 }
 
@@ -170,7 +170,7 @@ TEST_F(PolicyStatisticsCollectorTest, CollectLater) {
                   (base::Time::Now() - update_delay_ / 2).ToInternalValue());
 
   policy_statistics_collector_->Initialize();
-  EXPECT_EQ(1u, task_runner_->GetPendingTasks().size());
+  EXPECT_EQ(1u, task_runner_->NumPendingTasks());
   EXPECT_LT(GetFirstDelay(), update_delay_);
 }
 
@@ -187,7 +187,7 @@ TEST_F(PolicyStatisticsCollectorTest, MultiplePolicies) {
               RecordPolicyUse(kTestPolicy2Id));
 
   policy_statistics_collector_->Initialize();
-  EXPECT_EQ(1u, task_runner_->GetPendingTasks().size());
+  EXPECT_EQ(1u, task_runner_->NumPendingTasks());
 }
 
 }  // namespace policy

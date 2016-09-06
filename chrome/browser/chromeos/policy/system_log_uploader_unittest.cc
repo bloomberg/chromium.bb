@@ -162,7 +162,7 @@ class SystemLogUploaderTest : public testing::Test {
     task_runner_->RunPendingTasks();
 
     // The previous task should have uploaded another log upload task.
-    EXPECT_EQ(1U, task_runner_->GetPendingTasks().size());
+    EXPECT_EQ(1U, task_runner_->NumPendingTasks());
 
     CheckPendingTaskDelay(uploader, expected_delay);
   }
@@ -207,7 +207,7 @@ TEST_F(SystemLogUploaderTest, SuccessTest) {
   settings_helper_.SetBoolean(chromeos::kSystemLogUploadEnabled, true);
   SystemLogUploader uploader(std::move(syslog_delegate), task_runner_);
 
-  EXPECT_EQ(1U, task_runner_->GetPendingTasks().size());
+  EXPECT_EQ(1U, task_runner_->NumPendingTasks());
 
   RunPendingUploadTaskAndCheckNext(
       uploader, base::TimeDelta::FromMilliseconds(
@@ -224,7 +224,7 @@ TEST_F(SystemLogUploaderTest, ThreeFailureTest) {
   settings_helper_.SetBoolean(chromeos::kSystemLogUploadEnabled, true);
   SystemLogUploader uploader(std::move(syslog_delegate), task_runner_);
 
-  EXPECT_EQ(1U, task_runner_->GetPendingTasks().size());
+  EXPECT_EQ(1U, task_runner_->NumPendingTasks());
 
   // Do not retry two times consequentially.
   RunPendingUploadTaskAndCheckNext(uploader,
@@ -251,7 +251,7 @@ TEST_F(SystemLogUploaderTest, CheckHeaders) {
   settings_helper_.SetBoolean(chromeos::kSystemLogUploadEnabled, true);
   SystemLogUploader uploader(std::move(syslog_delegate), task_runner_);
 
-  EXPECT_EQ(1U, task_runner_->GetPendingTasks().size());
+  EXPECT_EQ(1U, task_runner_->NumPendingTasks());
 
   RunPendingUploadTaskAndCheckNext(
       uploader, base::TimeDelta::FromMilliseconds(
@@ -269,7 +269,7 @@ TEST_F(SystemLogUploaderTest, DisableLogUpload) {
   mock_delegate->set_upload_allowed(true);
   SystemLogUploader uploader(std::move(syslog_delegate), task_runner_);
 
-  EXPECT_EQ(1U, task_runner_->GetPendingTasks().size());
+  EXPECT_EQ(1U, task_runner_->NumPendingTasks());
   RunPendingUploadTaskAndCheckNext(uploader,
                                    base::TimeDelta::FromMilliseconds(
                                        SystemLogUploader::kErrorUploadDelayMs));

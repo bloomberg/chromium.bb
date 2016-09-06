@@ -59,7 +59,7 @@ class CloudPolicyRefreshSchedulerTest : public testing::Test {
   }
 
   CloudPolicyRefreshScheduler* CreateRefreshScheduler() {
-    EXPECT_EQ(0u, task_runner_->GetPendingTasks().size());
+    EXPECT_EQ(0u, task_runner_->NumPendingTasks());
     CloudPolicyRefreshScheduler* scheduler =
         new CloudPolicyRefreshScheduler(&client_, &store_, task_runner_);
     scheduler->SetDesiredRefreshDelay(kPolicyRefreshRate);
@@ -218,13 +218,13 @@ TEST_F(CloudPolicyRefreshSchedulerTest, InvalidationsAvailable) {
   scheduler->SetDesiredRefreshDelay(kPolicyRefreshRate);
 
   // The scheduler has scheduled refreshes at the initial refresh rate.
-  EXPECT_EQ(2u, task_runner_->GetPendingTasks().size());
+  EXPECT_EQ(2u, task_runner_->NumPendingTasks());
 
   // Signal that invalidations are available.
   scheduler->SetInvalidationServiceAvailability(true);
   EXPECT_EQ(CloudPolicyRefreshScheduler::kWithInvalidationsRefreshDelayMs,
             scheduler->GetActualRefreshDelay());
-  EXPECT_EQ(3u, task_runner_->GetPendingTasks().size());
+  EXPECT_EQ(3u, task_runner_->NumPendingTasks());
 
   CheckInitialRefresh(true);
 
@@ -237,7 +237,7 @@ TEST_F(CloudPolicyRefreshSchedulerTest, InvalidationsAvailable) {
   client_.NotifyPolicyFetched();
 
   // The next refresh has been scheduled using a lower refresh rate.
-  EXPECT_EQ(1u, task_runner_->GetPendingTasks().size());
+  EXPECT_EQ(1u, task_runner_->NumPendingTasks());
   CheckTiming(CloudPolicyRefreshScheduler::kWithInvalidationsRefreshDelayMs);
 }
 
@@ -250,7 +250,7 @@ TEST_F(CloudPolicyRefreshSchedulerTest, InvalidationsNotAvailable) {
   // schedule refreshes since the available state is not changed.
   for (int i = 0; i < 10; ++i) {
     scheduler->SetInvalidationServiceAvailability(false);
-    EXPECT_EQ(2u, task_runner_->GetPendingTasks().size());
+    EXPECT_EQ(2u, task_runner_->NumPendingTasks());
   }
 
   // This scheduled the initial refresh.
@@ -267,7 +267,7 @@ TEST_F(CloudPolicyRefreshSchedulerTest, InvalidationsNotAvailable) {
   client_.NotifyPolicyFetched();
 
   // The next refresh has been scheduled at the normal rate.
-  EXPECT_EQ(1u, task_runner_->GetPendingTasks().size());
+  EXPECT_EQ(1u, task_runner_->NumPendingTasks());
   CheckTiming(kPolicyRefreshRate);
 }
 

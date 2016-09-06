@@ -218,7 +218,7 @@ TEST_F(HeartbeatSchedulerTest, ChangeHeartbeatFrequency) {
   gcm_driver_.CompleteRegistration(
       kHeartbeatGCMAppID, gcm::GCMClient::SUCCESS);
 
-  EXPECT_EQ(1U, task_runner_->GetPendingTasks().size());
+  EXPECT_EQ(1U, task_runner_->NumPendingTasks());
   // Should have a heartbeat task posted with zero delay on startup.
   EXPECT_EQ(base::TimeDelta(), task_runner_->NextPendingTaskDelay());
   testing::Mock::VerifyAndClearExpectations(&gcm_driver_);
@@ -240,7 +240,7 @@ TEST_F(HeartbeatSchedulerTest, ChangeHeartbeatFrequency) {
   // even if the previous attempt failed.
   gcm_driver_.CompleteSend(
       kHeartbeatGCMAppID, message.id, gcm::GCMClient::SERVER_ERROR);
-  EXPECT_EQ(1U, task_runner_->GetPendingTasks().size());
+  EXPECT_EQ(1U, task_runner_->NumPendingTasks());
   CheckPendingTaskDelay(scheduler_.last_heartbeat(),
                         base::TimeDelta::FromMilliseconds(new_delay));
 }
@@ -257,7 +257,7 @@ TEST_F(HeartbeatSchedulerTest, DisableHeartbeats) {
   gcm_driver_.CompleteRegistration(
       kHeartbeatGCMAppID, gcm::GCMClient::SUCCESS);
   // Should have a heartbeat task posted.
-  EXPECT_EQ(1U, task_runner_->GetPendingTasks().size());
+  EXPECT_EQ(1U, task_runner_->NumPendingTasks());
   task_runner_->RunPendingTasks();
 
   // Complete sending a message - we should queue up the next heartbeat.
@@ -265,7 +265,7 @@ TEST_F(HeartbeatSchedulerTest, DisableHeartbeats) {
       kHeartbeatGCMAppID, message.id, gcm::GCMClient::SUCCESS);
 
   // Should have a new heartbeat task posted.
-  ASSERT_EQ(1U, task_runner_->GetPendingTasks().size());
+  ASSERT_EQ(1U, task_runner_->NumPendingTasks());
   CheckPendingTaskDelay(
       scheduler_.last_heartbeat(),
       base::TimeDelta::FromMilliseconds(
