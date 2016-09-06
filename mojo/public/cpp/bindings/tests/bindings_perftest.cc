@@ -9,6 +9,11 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/interface_endpoint_client.h"
+#include "mojo/public/cpp/bindings/lib/message_builder.h"
+#include "mojo/public/cpp/bindings/lib/multiplex_router.h"
+#include "mojo/public/cpp/bindings/lib/router.h"
+#include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/test_support/test_support.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "mojo/public/interfaces/bindings/tests/ping_service.mojom.h"
@@ -131,6 +136,118 @@ TEST_F(MojoBindingsPerftest, InProcessPingPong) {
 
     delete[] inactive_services;
   }
+}
+
+class PingPongPaddle : public MessageReceiverWithResponderStatus {
+ public:
+  PingPongPaddle(MessageReceiver* sender) : sender_(sender) {}
+
+  void set_sender(MessageReceiver* sender) { sender_ = sender; }
+
+  bool Accept(Message* message) override {
+    uint32_t count = message->header()->name;
+    if (!quit_closure_.is_null()) {
+      count++;
+      if (count >= expected_count_) {
+        quit_closure_.Run();
+        return true;
+      }
+    }
+
+    internal::MessageBuilder builder(count, 8);
+    bool result = sender_->Accept(builder.message());
+    DCHECK(result);
+    return true;
+  }
+
+  bool AcceptWithResponder(Message* message,
+                           MessageReceiverWithStatus* responder) override {
+    NOTREACHED();
+    return true;
+  }
+
+  void Serve(uint32_t expected_count) {
+    base::RunLoop run_loop;
+
+    expected_count_ = expected_count;
+    quit_closure_ = run_loop.QuitClosure();
+
+    internal::MessageBuilder builder(0, 8);
+    bool result = sender_->Accept(builder.message());
+    DCHECK(result);
+
+    run_loop.Run();
+  }
+
+ private:
+  uint32_t expected_count_ = 0;
+  MessageReceiver* sender_;
+  base::Closure quit_closure_;
+};
+
+TEST_F(MojoBindingsPerftest, RouterPingPong) {
+  MessagePipe pipe;
+  internal::Router router0(std::move(pipe.handle0), FilterChain(), false,
+                           base::ThreadTaskRunnerHandle::Get(), 0u);
+  internal::Router router1(std::move(pipe.handle1), FilterChain(), false,
+                           base::ThreadTaskRunnerHandle::Get(), 0u);
+  PingPongPaddle paddle0(&router0);
+  router0.set_incoming_receiver(&paddle0);
+  PingPongPaddle paddle1(&router1);
+  router1.set_incoming_receiver(&paddle1);
+
+  static const uint32_t kWarmUpIterations = 1000;
+  static const uint32_t kTestIterations = 100000;
+
+  paddle0.Serve(kWarmUpIterations);
+
+  const MojoTimeTicks start_time = MojoGetTimeTicksNow();
+  paddle0.Serve(kTestIterations);
+  const MojoTimeTicks end_time = MojoGetTimeTicksNow();
+
+  test::LogPerfResult(
+      "RouterPingPong", nullptr,
+      kTestIterations / MojoTicksToSeconds(end_time - start_time),
+      "pings/second");
+}
+
+TEST_F(MojoBindingsPerftest, MultiplexRouterPingPong) {
+  MessagePipe pipe;
+  scoped_refptr<internal::MultiplexRouter> router0(
+      new internal::MultiplexRouter(true, std::move(pipe.handle0),
+                                    base::ThreadTaskRunnerHandle::Get()));
+  scoped_refptr<internal::MultiplexRouter> router1(
+      new internal::MultiplexRouter(false, std::move(pipe.handle1),
+                                    base::ThreadTaskRunnerHandle::Get()));
+
+  PingPongPaddle paddle0(nullptr);
+  PingPongPaddle paddle1(nullptr);
+
+  InterfaceEndpointClient client0(
+      router0->CreateLocalEndpointHandle(kMasterInterfaceId), &paddle0,
+      base::MakeUnique<PassThroughFilter>(), false,
+      base::ThreadTaskRunnerHandle::Get(), 0u);
+  InterfaceEndpointClient client1(
+      router1->CreateLocalEndpointHandle(kMasterInterfaceId), &paddle1,
+      base::MakeUnique<PassThroughFilter>(), false,
+      base::ThreadTaskRunnerHandle::Get(), 0u);
+
+  paddle0.set_sender(&client0);
+  paddle1.set_sender(&client1);
+
+  static const uint32_t kWarmUpIterations = 1000;
+  static const uint32_t kTestIterations = 100000;
+
+  paddle0.Serve(kWarmUpIterations);
+
+  const MojoTimeTicks start_time = MojoGetTimeTicksNow();
+  paddle0.Serve(kTestIterations);
+  const MojoTimeTicks end_time = MojoGetTimeTicksNow();
+
+  test::LogPerfResult(
+      "MultiplexRouterPingPong", nullptr,
+      kTestIterations / MojoTicksToSeconds(end_time - start_time),
+      "pings/second");
 }
 
 }  // namespace
