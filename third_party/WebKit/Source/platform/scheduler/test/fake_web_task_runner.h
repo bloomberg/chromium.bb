@@ -7,6 +7,8 @@
 
 #include "base/macros.h"
 #include "public/platform/WebTaskRunner.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
 
 namespace blink {
 namespace scheduler {
@@ -29,8 +31,10 @@ class FakeWebTaskRunner : public WebTaskRunner {
   SingleThreadTaskRunner* toSingleThreadTaskRunner() override;
 
  private:
-  std::unique_ptr<Task> task_;
-  double time_;
+  class Data;
+  RefPtr<Data> data_;
+
+  FakeWebTaskRunner(PassRefPtr<Data> data);
 
   DISALLOW_COPY_AND_ASSIGN(FakeWebTaskRunner);
 };

@@ -4,23 +4,47 @@
 
 #include "platform/scheduler/test/fake_web_task_runner.h"
 
+#include "base/logging.h"
+#include "wtf/RefCounted.h"
+
 namespace blink {
 namespace scheduler {
 
-FakeWebTaskRunner::FakeWebTaskRunner() : time_(0.0) {}
+class FakeWebTaskRunner::Data : public WTF::ThreadSafeRefCounted<Data> {
+ public:
+  Data() : time_(0.0) {}
 
-FakeWebTaskRunner::~FakeWebTaskRunner() {}
+  std::unique_ptr<Task> task_;
+  double time_;
 
-void FakeWebTaskRunner::setTime(double new_time) {
-  time_ = new_time;
+ private:
+  ~Data() {}
+
+  friend ThreadSafeRefCounted<Data>;
+  DISALLOW_COPY_AND_ASSIGN(Data);
+};
+
+FakeWebTaskRunner::FakeWebTaskRunner() : data_(adoptRef(new Data)) {}
+
+FakeWebTaskRunner::FakeWebTaskRunner(PassRefPtr<Data> data)
+    : data_(std::move(data)) {
 }
 
-void FakeWebTaskRunner::postTask(const WebTraceLocation&, Task*) {}
+FakeWebTaskRunner::~FakeWebTaskRunner() {
+}
+
+void FakeWebTaskRunner::setTime(double new_time) {
+  data_->time_ = new_time;
+}
+
+void FakeWebTaskRunner::postTask(const WebTraceLocation&, Task*) {
+  NOTREACHED();
+}
 
 void FakeWebTaskRunner::postDelayedTask(const WebTraceLocation&,
                                         Task* task,
                                         double) {
-  task_.reset(task);
+  data_->task_.reset(task);
 }
 
 bool FakeWebTaskRunner::runsTasksOnCurrentThread() {
@@ -28,18 +52,19 @@ bool FakeWebTaskRunner::runsTasksOnCurrentThread() {
 }
 
 std::unique_ptr<WebTaskRunner> FakeWebTaskRunner::clone() {
-  return nullptr;
+  return WTF::wrapUnique(new FakeWebTaskRunner(data_));
 }
 
 double FakeWebTaskRunner::virtualTimeSeconds() const {
-  return time_;
+  return data_->time_;
 }
 
 double FakeWebTaskRunner::monotonicallyIncreasingVirtualTimeSeconds() const {
-  return time_;
+  return data_->time_;
 }
 
 SingleThreadTaskRunner* FakeWebTaskRunner::toSingleThreadTaskRunner() {
+  NOTREACHED();
   return nullptr;
 }
 

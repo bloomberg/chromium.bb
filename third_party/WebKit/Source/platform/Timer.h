@@ -130,7 +130,7 @@ private:
     double m_repeatInterval; // 0 if not repeating
     WebTraceLocation m_location;
     CancellableTimerTask* m_cancellableTimerTask; // NOT OWNED
-    WebTaskRunner* m_webTaskRunner; // Not owned.
+    std::unique_ptr<WebTaskRunner> m_webTaskRunner;
 
 #if DCHECK_IS_ON()
     ThreadIdentifier m_thread;

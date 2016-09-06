@@ -116,9 +116,10 @@ class MockTimer : public TaskRunnerTimer<ImageQualityController> {
 public:
     using TimerFiredFunction = typename TaskRunnerTimer<ImageQualityController>::TimerFiredFunction;
 
-    MockTimer(ImageQualityController* o, TimerFiredFunction f)
-        : TaskRunnerTimer(&m_taskRunner, o, f)
+    static std::unique_ptr<MockTimer> create(ImageQualityController* o, TimerFiredFunction f)
     {
+        auto taskRunner = WTF::wrapUnique(new scheduler::FakeWebTaskRunner);
+        return WTF::wrapUnique(new MockTimer(std::move(taskRunner), o, f));
     }
 
     void fire()
@@ -129,16 +130,24 @@ public:
 
     void setTime(double newTime)
     {
-        m_taskRunner.setTime(newTime);
+        m_taskRunner->setTime(newTime);
     }
 
 private:
-    scheduler::FakeWebTaskRunner m_taskRunner;
+    MockTimer(std::unique_ptr<scheduler::FakeWebTaskRunner> taskRunner, ImageQualityController* o, TimerFiredFunction f)
+        : TaskRunnerTimer(taskRunner.get(), o, f)
+        , m_taskRunner(std::move(taskRunner))
+    {
+    }
+
+    std::unique_ptr<scheduler::FakeWebTaskRunner> m_taskRunner;
+
+    DISALLOW_COPY_AND_ASSIGN(MockTimer);
 };
 
 TEST_F(ImageQualityControllerTest, LowQualityFilterForResizingImage)
 {
-    MockTimer* mockTimer = new MockTimer(controller(), &ImageQualityController::highQualityRepaintTimerFired);
+    MockTimer* mockTimer = MockTimer::create(controller(), &ImageQualityController::highQualityRepaintTimerFired).release();
     controller()->setTimer(wrapUnique(mockTimer));
     setBodyInnerHTML("<img src='myimage'></img>");
     LayoutImage* img = toLayoutImage(document().body()->firstChild()->layoutObject());
@@ -163,7 +172,7 @@ TEST_F(ImageQualityControllerTest, LowQualityFilterForResizingImage)
 
 TEST_F(ImageQualityControllerTest, MediumQualityFilterForNotAnimatedWhileAnotherAnimates)
 {
-    MockTimer* mockTimer = new MockTimer(controller(), &ImageQualityController::highQualityRepaintTimerFired);
+    MockTimer* mockTimer = MockTimer::create(controller(), &ImageQualityController::highQualityRepaintTimerFired).release();
     controller()->setTimer(wrapUnique(mockTimer));
     setBodyInnerHTML("<img id='myAnimatingImage' src='myimage'></img> <img id='myNonAnimatingImage' src='myimage2'></img>");
     LayoutImage* animatingImage = toLayoutImage(document().getElementById("myAnimatingImage")->layoutObject());
@@ -193,7 +202,7 @@ TEST_F(ImageQualityControllerTest, MediumQualityFilterForNotAnimatedWhileAnother
 
 TEST_F(ImageQualityControllerTest, DontKickTheAnimationTimerWhenPaintingAtTheSameSize)
 {
-    MockTimer* mockTimer = new MockTimer(controller(), &ImageQualityController::highQualityRepaintTimerFired);
+    MockTimer* mockTimer = MockTimer::create(controller(), &ImageQualityController::highQualityRepaintTimerFired).release();
     controller()->setTimer(wrapUnique(mockTimer));
     setBodyInnerHTML("<img src='myimage'></img>");
     LayoutImage* img = toLayoutImage(document().body()->firstChild()->layoutObject());
@@ -219,7 +228,7 @@ TEST_F(ImageQualityControllerTest, DontKickTheAnimationTimerWhenPaintingAtTheSam
 
 TEST_F(ImageQualityControllerTest, DontRestartTimerUnlessAdvanced)
 {
-    MockTimer* mockTimer = new MockTimer(controller(), &ImageQualityController::highQualityRepaintTimerFired);
+    MockTimer* mockTimer = MockTimer::create(controller(), &ImageQualityController::highQualityRepaintTimerFired).release();
     controller()->setTimer(wrapUnique(mockTimer));
     setBodyInnerHTML("<img src='myimage'></img>");
     LayoutImage* img = toLayoutImage(document().body()->firstChild()->layoutObject());

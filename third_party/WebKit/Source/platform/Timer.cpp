@@ -44,7 +44,7 @@ TimerBase::TimerBase(WebTaskRunner* webTaskRunner)
     : m_nextFireTime(0)
     , m_repeatInterval(0)
     , m_cancellableTimerTask(nullptr)
-    , m_webTaskRunner(webTaskRunner)
+    , m_webTaskRunner(webTaskRunner->clone())
 #if DCHECK_IS_ON()
     , m_thread(currentThread())
 #endif
@@ -100,7 +100,7 @@ WebTaskRunner* TimerBase::getUnthrottledTaskRunner()
 
 WebTaskRunner* TimerBase::timerTaskRunner() const
 {
-    return m_webTaskRunner;
+    return m_webTaskRunner.get();
 }
 
 void TimerBase::setNextFireTime(double now, double delay)
