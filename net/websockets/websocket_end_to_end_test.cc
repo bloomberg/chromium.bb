@@ -435,7 +435,7 @@ TEST_F(WebSocketEndToEndTest, DISABLED_ON_ANDROID(HstsHttpsToWebSocket)) {
   request->Start();
   // TestDelegate exits the message loop when the request completes.
   base::RunLoop().Run();
-  EXPECT_EQ(OK, delegate.request_status());
+  EXPECT_TRUE(request->status().is_success());
 
   // Check HSTS with ws:
   // Change the scheme from wss: to ws: to verify that it is switched back.
@@ -469,7 +469,7 @@ TEST_F(WebSocketEndToEndTest, DISABLED_ON_ANDROID(HstsWebSocketToHttps)) {
   request->Start();
   // TestDelegate exits the message loop when the request completes.
   base::RunLoop().Run();
-  EXPECT_EQ(OK, delegate.request_status());
+  EXPECT_TRUE(request->status().is_success());
   EXPECT_TRUE(request->url().SchemeIs("https"));
 }
 

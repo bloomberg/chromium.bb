@@ -31,14 +31,16 @@ const int kBufferSize = 4096;
 
 // Map the bytes_read result from a read attempt and a URLRequest's
 // status into a single net return value.
-int GetReadResult(int rv, const URLRequest* request) {
-  DCHECK_NE(ERR_IO_PENDING, rv);
-
-  if (rv < 0) {
+int GetReadResult(int bytes_read, const URLRequest* request) {
+  int rv = request->status().error();
+  if (request->status().is_success() && bytes_read < 0) {
     rv = ERR_FAILED;
     request->net_log().AddEventWithNetErrorCode(
         NetLog::TYPE_SDCH_DICTIONARY_FETCH_IMPLIED_ERROR, rv);
   }
+
+  if (rv == OK)
+    rv = bytes_read;
 
   return rv;
 }
@@ -153,29 +155,28 @@ void SdchDictionaryFetcher::OnReceivedRedirect(
   DoLoop(OK);
 }
 
-void SdchDictionaryFetcher::OnResponseStarted(URLRequest* request,
-                                              int net_error) {
+void SdchDictionaryFetcher::OnResponseStarted(URLRequest* request) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(request, current_request_.get());
   DCHECK_EQ(next_state_, STATE_SEND_REQUEST_PENDING);
   DCHECK(!in_loop_);
-  DCHECK_NE(ERR_IO_PENDING, net_error);
 
   // Confirm that the response isn't a stale read from the cache (as
   // may happen in the reload case).  If the response was not retrieved over
   // HTTP, it is presumed to be fresh.
   HttpResponseHeaders* response_headers = request->response_headers();
-  if (net_error == OK && response_headers) {
+  int result = request->status().error();
+  if (result == OK && response_headers) {
     ValidationType validation_type = response_headers->RequiresValidation(
         request->response_info().request_time,
         request->response_info().response_time, base::Time::Now());
     // TODO(rdsmith): Maybe handle VALIDATION_ASYNCHRONOUS by queueing
     // a non-reload request for the dictionary.
     if (validation_type != VALIDATION_NONE)
-      net_error = ERR_FAILED;
+      result = ERR_FAILED;
   }
 
-  DoLoop(net_error);
+  DoLoop(result);
 }
 
 void SdchDictionaryFetcher::OnReadCompleted(URLRequest* request,
@@ -184,7 +185,6 @@ void SdchDictionaryFetcher::OnReadCompleted(URLRequest* request,
   DCHECK_EQ(request, current_request_.get());
   DCHECK_EQ(next_state_, STATE_READ_BODY_COMPLETE);
   DCHECK(!in_loop_);
-  DCHECK_NE(ERR_IO_PENDING, bytes_read);
 
   DoLoop(GetReadResult(bytes_read, current_request_.get()));
 }
@@ -329,8 +329,9 @@ int SdchDictionaryFetcher::DoReadBody(int rv) {
   }
 
   next_state_ = STATE_READ_BODY_COMPLETE;
-  int bytes_read = current_request_->Read(buffer_.get(), kBufferSize);
-  if (bytes_read == ERR_IO_PENDING)
+  int bytes_read = 0;
+  current_request_->Read(buffer_.get(), kBufferSize, &bytes_read);
+  if (current_request_->status().is_io_pending())
     return ERR_IO_PENDING;
 
   return GetReadResult(bytes_read, current_request_.get());
@@ -346,7 +347,7 @@ int SdchDictionaryFetcher::DoReadBodyComplete(int rv) {
     return OK;
   }
 
-  DCHECK_GE(rv, 0);
+  DCHECK(current_request_->status().is_success());
 
   // Data; append to the dictionary and look for more data.
   if (rv > 0) {

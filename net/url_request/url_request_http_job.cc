@@ -1586,8 +1586,7 @@ void URLRequestHttpJob::DoneWithRequest(CompletionCause reason) {
     NetworkQualityEstimator* network_quality_estimator =
         request()->context()->network_quality_estimator();
     if (network_quality_estimator)
-      network_quality_estimator->NotifyRequestCompleted(
-          *request(), request_->status().error());
+      network_quality_estimator->NotifyRequestCompleted(*request());
   }
 
   RecordPerfHistograms(reason);

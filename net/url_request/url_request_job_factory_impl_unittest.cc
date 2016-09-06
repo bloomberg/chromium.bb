@@ -69,7 +69,8 @@ TEST(URLRequestJobFactoryTest, NoProtocolHandler) {
   request->Start();
 
   base::RunLoop().Run();
-  EXPECT_EQ(ERR_UNKNOWN_URL_SCHEME, delegate.request_status());
+  EXPECT_EQ(URLRequestStatus::FAILED, request->status().status());
+  EXPECT_THAT(request->status().error(), IsError(ERR_UNKNOWN_URL_SCHEME));
 }
 
 TEST(URLRequestJobFactoryTest, BasicProtocolHandler) {
@@ -84,7 +85,8 @@ TEST(URLRequestJobFactoryTest, BasicProtocolHandler) {
   request->Start();
 
   base::RunLoop().Run();
-  EXPECT_EQ(OK, delegate.request_status());
+  EXPECT_EQ(URLRequestStatus::SUCCESS, request->status().status());
+  EXPECT_THAT(request->status().error(), IsOk());
 }
 
 TEST(URLRequestJobFactoryTest, DeleteProtocolHandler) {

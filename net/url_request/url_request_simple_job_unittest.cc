@@ -88,6 +88,11 @@ class CancelAfterFirstReadURLRequestDelegate : public TestDelegate {
     run_loop_->Quit();
   }
 
+  void OnReadCompleted(URLRequest* request, int bytes_read) override {
+    // Read should have been cancelled.
+    EXPECT_EQ(ERR_ABORTED, bytes_read);
+  }
+
   void WaitUntilHeadersReceived() const { run_loop_->Run(); }
 
  private:
@@ -158,7 +163,7 @@ class URLRequestSimpleJobTest : public ::testing::Test {
 
 TEST_F(URLRequestSimpleJobTest, SimpleRequest) {
   StartRequest(NULL);
-  EXPECT_THAT(delegate_.request_status(), IsOk());
+  ASSERT_TRUE(request_->status().is_success());
   EXPECT_EQ(kTestData, delegate_.data_received());
 }
 
@@ -173,7 +178,7 @@ TEST_F(URLRequestSimpleJobTest, RangeRequest) {
 
   StartRequest(&headers);
 
-  EXPECT_THAT(delegate_.request_status(), IsOk());
+  ASSERT_TRUE(request_->status().is_success());
   EXPECT_EQ(kExpectedBody, delegate_.data_received());
 }
 
@@ -190,7 +195,8 @@ TEST_F(URLRequestSimpleJobTest, MultipleRangeRequest) {
   StartRequest(&headers);
 
   EXPECT_TRUE(delegate_.request_failed());
-  EXPECT_EQ(ERR_REQUEST_RANGE_NOT_SATISFIABLE, delegate_.request_status());
+  EXPECT_THAT(request_->status().error(),
+              IsError(ERR_REQUEST_RANGE_NOT_SATISFIABLE));
 }
 
 TEST_F(URLRequestSimpleJobTest, InvalidRangeRequest) {
@@ -201,7 +207,7 @@ TEST_F(URLRequestSimpleJobTest, InvalidRangeRequest) {
 
   StartRequest(&headers);
 
-  EXPECT_THAT(delegate_.request_status(), IsOk());
+  ASSERT_TRUE(request_->status().is_success());
   EXPECT_EQ(kTestData, delegate_.data_received());
 }
 
@@ -209,7 +215,7 @@ TEST_F(URLRequestSimpleJobTest, EmptyDataRequest) {
   request_ =
       context_.CreateRequest(GURL("data:empty"), DEFAULT_PRIORITY, &delegate_);
   StartRequest(nullptr);
-  EXPECT_THAT(delegate_.request_status(), IsOk());
+  ASSERT_TRUE(request_->status().is_success());
   EXPECT_EQ("", delegate_.data_received());
 }
 
@@ -220,7 +226,7 @@ TEST_F(URLRequestSimpleJobTest, CancelBeforeResponseStarts) {
   request_->Cancel();
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_THAT(delegate_.request_status(), IsError(ERR_ABORTED));
+  EXPECT_EQ(URLRequestStatus::CANCELED, request_->status().status());
   EXPECT_EQ(1, delegate_.response_started_count());
 }
 
@@ -238,7 +244,7 @@ TEST_F(URLRequestSimpleJobTest, CancelAfterFirstReadStarted) {
       FROM_HERE, base::Bind(&base::DoNothing), run_loop.QuitClosure()));
   run_loop.Run();
 
-  EXPECT_THAT(cancel_delegate.request_status(), IsError(ERR_ABORTED));
+  EXPECT_EQ(URLRequestStatus::CANCELED, request_->status().status());
   EXPECT_EQ(1, cancel_delegate.response_started_count());
   EXPECT_EQ("", cancel_delegate.data_received());
   // Destroy the request so it doesn't outlive its delegate.

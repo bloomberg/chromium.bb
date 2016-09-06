@@ -99,7 +99,7 @@ class URLRequestDataJobFuzzerHarness : public net::URLRequest::Delegate {
   }
 
   void ReadFromRequest(net::URLRequest* request) {
-    int bytes_read = 0;
+    bool sync = false;
     do {
       // If possible, pop the next read size. If none exists, then this should
       // be the last call to Read.
@@ -110,10 +110,11 @@ class URLRequestDataJobFuzzerHarness : public net::URLRequest::Delegate {
         read_lengths_.pop_back();
       }
 
-      bytes_read = request->Read(buf_.get(), read_size);
-    } while (bytes_read > 0);
+      int bytes_read = 0;
+      sync = request->Read(buf_.get(), read_size, &bytes_read);
+    } while (sync);
 
-    if (bytes_read != net::ERR_IO_PENDING)
+    if (!request->status().is_io_pending())
       QuitLoop();
   }
 
@@ -129,23 +130,21 @@ class URLRequestDataJobFuzzerHarness : public net::URLRequest::Delegate {
   void OnSSLCertificateError(net::URLRequest* request,
                              const net::SSLInfo& ssl_info,
                              bool fatal) override {}
-  void OnResponseStarted(net::URLRequest* request, int net_error) override {
+  void OnResponseStarted(net::URLRequest* request) override {
+    DCHECK(!request->status().is_io_pending());
     DCHECK(buf_.get());
     DCHECK(read_loop_);
-    DCHECK_NE(net::ERR_IO_PENDING, net_error);
-
-    if (net_error == net::OK) {
+    if (request->status().is_success()) {
       ReadFromRequest(request);
     } else {
       QuitLoop();
     }
   }
   void OnReadCompleted(net::URLRequest* request, int bytes_read) override {
-    DCHECK_NE(net::ERR_IO_PENDING, bytes_read);
+    DCHECK(!request->status().is_io_pending());
     DCHECK(buf_.get());
     DCHECK(read_loop_);
-
-    if (bytes_read > 0) {
+    if (request->status().is_success() && bytes_read > 0) {
       ReadFromRequest(request);
     } else {
       QuitLoop();

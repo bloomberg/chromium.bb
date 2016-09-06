@@ -805,8 +805,8 @@ void NetworkQualityEstimator::RecordAccuracyAfterMainFrame(
   }
 }
 
-void NetworkQualityEstimator::NotifyRequestCompleted(const URLRequest& request,
-                                                     int net_error) {
+void NetworkQualityEstimator::NotifyRequestCompleted(
+    const URLRequest& request) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("net"),
                "NetworkQualityEstimator::NotifyRequestCompleted");
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -815,11 +815,11 @@ void NetworkQualityEstimator::NotifyRequestCompleted(const URLRequest& request,
     return;
 
   throughput_analyzer_->NotifyRequestCompleted(request);
-  RecordCorrelationMetric(request, net_error);
+  RecordCorrelationMetric(request);
 }
 
-void NetworkQualityEstimator::RecordCorrelationMetric(const URLRequest& request,
-                                                      int net_error) const {
+void NetworkQualityEstimator::RecordCorrelationMetric(
+    const URLRequest& request) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // The histogram is recorded with probability
@@ -844,7 +844,7 @@ void NetworkQualityEstimator::RecordCorrelationMetric(const URLRequest& request,
   }
 
   // Record UMA only for successful requests that have completed.
-  if (net_error != OK)
+  if (!request.status().is_success() || request.status().is_io_pending())
     return;
   if (request.GetResponseCode() != HTTP_OK)
     return;

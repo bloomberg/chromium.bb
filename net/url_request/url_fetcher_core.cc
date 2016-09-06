@@ -407,17 +407,15 @@ void URLFetcherCore::OnReceivedRedirect(URLRequest* request,
     was_fetched_via_proxy_ = request_->was_fetched_via_proxy();
     was_cached_ = request_->was_cached();
     total_received_bytes_ += request_->GetTotalReceivedBytes();
-    int result = request->Cancel();
-    OnReadCompleted(request, result);
+    request->Cancel();
+    OnReadCompleted(request, 0);
   }
 }
 
-void URLFetcherCore::OnResponseStarted(URLRequest* request, int net_error) {
+void URLFetcherCore::OnResponseStarted(URLRequest* request) {
   DCHECK_EQ(request, request_.get());
   DCHECK(network_task_runner_->BelongsToCurrentThread());
-  DCHECK_NE(ERR_IO_PENDING, net_error);
-
-  if (net_error == OK) {
+  if (request_->status().is_success()) {
     response_code_ = request_->GetResponseCode();
     response_headers_ = request_->response_headers();
     socket_address_ = request_->GetSocketAddress();
@@ -454,7 +452,10 @@ void URLFetcherCore::OnReadCompleted(URLRequest* request,
   if (throttler_manager)
     url_throttler_entry_ = throttler_manager->RegisterRequestUrl(url_);
 
-  while (bytes_read > 0) {
+  do {
+    if (!request_->status().is_success() || bytes_read <= 0)
+      break;
+
     current_response_bytes_ += bytes_read;
     InformDelegateDownloadProgress();
 
@@ -464,12 +465,13 @@ void URLFetcherCore::OnReadCompleted(URLRequest* request,
       // Write failed or waiting for write completion.
       return;
     }
-    bytes_read = request_->Read(buffer_.get(), kBufferSize);
-  }
+  } while (request_->Read(buffer_.get(), kBufferSize, &bytes_read));
+
+  const URLRequestStatus status = request_->status();
 
   // See comments re: HEAD requests in ReadResponse().
-  if (bytes_read != ERR_IO_PENDING || request_type_ == URLFetcher::HEAD) {
-    status_ = URLRequestStatus::FromError(bytes_read);
+  if (!status.is_io_pending() || request_type_ == URLFetcher::HEAD) {
+    status_ = status;
     received_response_content_length_ =
         request_->received_response_content_length();
     total_received_bytes_ += request_->GetTotalReceivedBytes();
@@ -884,9 +886,11 @@ void URLFetcherCore::ReadResponse() {
   // completed immediately, without trying to read any data back (all we care
   // about is the response code and headers, which we already have).
   int bytes_read = 0;
-  if (request_type_ != URLFetcher::HEAD)
-    bytes_read = request_->Read(buffer_.get(), kBufferSize);
-
+  if (request_->status().is_success() &&
+      (request_type_ != URLFetcher::HEAD)) {
+    if (!request_->Read(buffer_.get(), kBufferSize, &bytes_read))
+      bytes_read = -1;  // Match OnReadCompleted() interface contract.
+  }
   OnReadCompleted(request_.get(), bytes_read);
 }
 

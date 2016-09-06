@@ -178,7 +178,7 @@ class NET_EXPORT NetworkQualityEstimator
 
   // Notifies NetworkQualityEstimator that the response body of |request| has
   // been received.
-  void NotifyRequestCompleted(const URLRequest& request, int net_error);
+  void NotifyRequestCompleted(const URLRequest& request);
 
   // Notifies NetworkQualityEstimator that |request| will be destroyed.
   void NotifyURLRequestDestroyed(const URLRequest& request);
@@ -477,7 +477,7 @@ class NET_EXPORT NetworkQualityEstimator
   // Records a correlation metric that can be used for computing the correlation
   // between HTTP-layer RTT, transport-layer RTT, throughput and the time
   // taken to complete |request|.
-  void RecordCorrelationMetric(const URLRequest& request, int net_error) const;
+  void RecordCorrelationMetric(const URLRequest& request) const;
 
   // Returns true if transport RTT should be used for computing the effective
   // connection type.
