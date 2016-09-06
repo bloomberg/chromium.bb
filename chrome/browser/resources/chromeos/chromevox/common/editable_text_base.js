@@ -352,7 +352,14 @@ cvox.ChromeVoxEditableTextBase.prototype.describeSelectionChanged =
       this.speak(Msgs.getMsg('Unselected'), evt.triggeredByUser);
     } else if (this.getLineIndex(this.start) !=
         this.getLineIndex(evt.start)) {
-      this.describeLine(this.getLineIndex(evt.start), evt.triggeredByUser);
+      // Moved to a different line; read it.
+      var lineValue = this.getLine(this.getLineIndex(evt.start));
+      if (lineValue == '') {
+        lineValue = Msgs.getMsg('text_box_blank');
+      } else if (/^\s+$/.test(lineValue)) {
+        lineValue = Msgs.getMsg('text_box_whitespace');
+      }
+      this.speak(lineValue, evt.triggeredByUser);
     } else if (this.start == evt.start + 1 ||
         this.start == evt.start - 1) {
       // Moved by one character; read it.
@@ -417,22 +424,6 @@ cvox.ChromeVoxEditableTextBase.prototype.describeSelectionChanged =
       this.speak(Msgs.getMsg('selected'));
     }
   }
-};
-
-/**
- * Describes a line given a line index and whether it was user triggered.
- * @param {number} lineIndex
- * @param {boolean} triggeredByUser
- */
-cvox.ChromeVoxEditableTextBase.prototype.describeLine =
-    function(lineIndex, triggeredByUser) {
-  var lineValue = this.getLine(lineIndex);
-  if (lineValue == '') {
-    lineValue = Msgs.getMsg('text_box_blank');
-  } else if (/^\s+$/.test(lineValue)) {
-    lineValue = Msgs.getMsg('text_box_whitespace');
-  }
-  this.speak(lineValue, triggeredByUser);
 };
 
 

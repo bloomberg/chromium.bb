@@ -1075,23 +1075,6 @@ Output.prototype = {
           var earcon = node ? this.findEarcon_(node, opt_prevNode) : null;
           if (earcon)
             options.annotation.push(earcon);
-
-          // Reflect the selection here except when we're dealing with a node
-          // that has a value.
-          var selStart, selEnd;
-          if (node == node.root.anchorObject && node == node.root.focusObject) {
-            selStart = node.root.anchorOffset;
-            selEnd = node.root.focusOffset;
-          } else if (node == node.root.anchorObject) {
-            selStart = node.root.anchorOffset;
-            selEnd = selStart;
-          } else if (node == node.root.focusObject) {
-            selStart = node.root.focusOffset;
-            selEnd = selStart;
-          }
-          if (!node.value && goog.isDef(selStart) && goog.isDef(selEnd))
-            options.annotation.push(new Output.SelectionSpan(selStart, selEnd));
-
           this.append_(buff, node.name, options);
         } else if (token == 'nameFromNode') {
           if (chrome.automation.NameFromType[node.nameFrom] ==
@@ -1689,12 +1672,7 @@ Output.prototype = {
             elem.end);
       });
       spansToRemove.forEach(result.removeSpan.bind(result));
-
-      // No separator needed if the previous result did end with our separator.
-      if (cur.toString()[cur.length - 1] == Output.SPACE || result.length == 0)
-        separator = '';
-      else
-        separator = Output.SPACE;
+      separator = Output.SPACE;
     });
     return result;
   },

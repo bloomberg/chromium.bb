@@ -989,9 +989,8 @@ TEST_F('BackgroundTest', 'Selection', function() {
         .call(doCmd('previousCharacter'))
         .expectSpeech('i', 'unselected')
         .call(doCmd('nextCharacter'))
-        .expectSpeech('i', 'selected')
         .call(doCmd('nextCharacter'))
-        .expectSpeech('m', 'selected')
+        .expectSpeech('End selection', 'sim')
         .replay();
   });
 });
