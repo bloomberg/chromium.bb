@@ -73,7 +73,7 @@ protected:
     // Number of rectangles that make up the root layer's touch handler region.
     size_t touchHandlerRegionSize()
     {
-        return webView().mainFrameImpl()->frame()->contentLayoutItem().layer()->graphicsLayerBacking()->platformLayer()->touchEventHandlerRegion().size();
+        return webView().mainFrameImpl()->frame()->contentLayoutItem().layer()->graphicsLayerBackingForScrolling()->platformLayer()->touchEventHandlerRegion().size();
     }
 };
 
@@ -311,7 +311,7 @@ TEST_F(FrameThrottlingTest, UnthrottlingTriggersRepaint)
 
     // Scroll down to unthrottle the frame. The first frame we composite after
     // scrolling won't contain the frame yet, but will schedule another repaint.
-    webView().mainFrameImpl()->frameView()->setScrollPosition(DoublePoint(0, 480), ProgrammaticScroll);
+    webView().mainFrameImpl()->frameView()->layoutViewportScrollableArea()->setScrollPosition(DoublePoint(0, 480), ProgrammaticScroll);
     auto displayItems = compositeFrame();
     EXPECT_FALSE(displayItems.contains(SimCanvas::Rect, "green"));
 
@@ -347,7 +347,7 @@ TEST_F(FrameThrottlingTest, UnthrottlingTriggersRepaintInCompositedChild)
 
     // Scroll down to unthrottle the frame. The first frame we composite after
     // scrolling won't contain the frame yet, but will schedule another repaint.
-    webView().mainFrameImpl()->frameView()->setScrollPosition(DoublePoint(0, 480), ProgrammaticScroll);
+    webView().mainFrameImpl()->frameView()->layoutViewportScrollableArea()->setScrollPosition(DoublePoint(0, 480), ProgrammaticScroll);
     auto displayItems = compositeFrame();
     EXPECT_FALSE(displayItems.contains(SimCanvas::Rect, "green"));
 
@@ -377,7 +377,7 @@ TEST_F(FrameThrottlingTest, ChangeStyleInThrottledFrame)
     frameElement->contentDocument()->body()->setAttribute(styleAttr, "background: green");
 
     // Scroll down to unthrottle the frame.
-    webView().mainFrameImpl()->frameView()->setScrollPosition(DoublePoint(0, 480), ProgrammaticScroll);
+    webView().mainFrameImpl()->frameView()->layoutViewportScrollableArea()->setScrollPosition(DoublePoint(0, 480), ProgrammaticScroll);
     auto displayItems = compositeFrame();
     EXPECT_FALSE(displayItems.contains(SimCanvas::Rect, "red"));
     EXPECT_FALSE(displayItems.contains(SimCanvas::Rect, "green"));

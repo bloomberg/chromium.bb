@@ -7,8 +7,10 @@
 #include "core/frame/FrameView.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
+#include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/graphics/ContentLayerDelegate.h"
+#include "platform/graphics/GraphicsLayer.h"
 #include "public/platform/WebRect.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
@@ -17,29 +19,29 @@
 
 namespace blink {
 
-static void paintLayers(PaintLayer& layer, SimDisplayItemList& displayList)
+static void paintLayers(GraphicsLayer& layer, SimDisplayItemList& displayList)
 {
-    if (layer.isAllowedToQueryCompositingState() && layer.compositingState() == PaintsIntoOwnBacking) {
-        CompositedLayerMapping* mapping = layer.compositedLayerMapping();
-        GraphicsLayer* graphicsLayer = mapping->mainGraphicsLayer();
-        if (graphicsLayer->hasTrackedPaintInvalidations()) {
-            ContentLayerDelegate* delegate = graphicsLayer->contentLayerDelegateForTesting();
-            delegate->paintContents(&displayList);
-            graphicsLayer->resetTrackedPaintInvalidations();
-        }
+    if (layer.drawsContent() && layer.hasTrackedPaintInvalidations()) {
+        ContentLayerDelegate* delegate = layer.contentLayerDelegateForTesting();
+        delegate->paintContents(&displayList);
+        layer.resetTrackedPaintInvalidations();
     }
-    for (PaintLayer* child = layer.firstChild(); child; child = child->nextSibling())
+
+    if (GraphicsLayer* maskLayer = layer.maskLayer())
+        paintLayers(*maskLayer, displayList);
+    if (GraphicsLayer* contentsClippingMaskLayer = layer.contentsClippingMaskLayer())
+        paintLayers(*contentsClippingMaskLayer, displayList);
+    if (GraphicsLayer* replicaLayer = layer.replicaLayer())
+        paintLayers(*replicaLayer, displayList);
+
+    for (auto child : layer.children())
         paintLayers(*child, displayList);
 }
 
 static void paintFrames(LocalFrame& root, SimDisplayItemList& displayList)
 {
-    for (Frame* frame = &root; frame; frame = frame->tree().traverseNext(&root)) {
-        if (!frame->isLocalFrame())
-            continue;
-        PaintLayer* layer = toLocalFrame(frame)->view()->layoutViewItem().layer();
-        paintLayers(*layer, displayList);
-    }
+    GraphicsLayer* layer = root.view()->layoutViewItem().compositor()->rootGraphicsLayer();
+    paintLayers(*layer, displayList);
 }
 
 SimCompositor::SimCompositor()
