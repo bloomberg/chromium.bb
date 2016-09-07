@@ -199,26 +199,16 @@ bool ThemePainterMac::paintProgressBar(const LayoutObject& layoutObject, const P
     if (!layoutObject.isProgress())
         return true;
 
-    float zoomLevel = layoutObject.styleRef().effectiveZoom();
-    NSControlSize controlSize = m_layoutTheme.controlSizeForFont(layoutObject.styleRef());
-    IntSize size = m_layoutTheme.progressBarSizes()[controlSize];
-    size.setHeight(size.height() * zoomLevel);
-    size.setWidth(rect.width());
-
-    // Now inflate it to account for the shadow.
-    IntRect inflatedRect = rect;
-    if (rect.height() <= m_layoutTheme.minimumProgressBarHeight(layoutObject.styleRef()))
-        inflatedRect = ThemeMac::inflateRect(inflatedRect, size, m_layoutTheme.progressBarMargins(controlSize), zoomLevel);
-
     const LayoutProgress& layoutProgress = toLayoutProgress(layoutObject);
     HIThemeTrackDrawInfo trackInfo;
     trackInfo.version = 0;
+    NSControlSize controlSize = m_layoutTheme.controlSizeForFont(layoutObject.styleRef());
     if (controlSize == NSRegularControlSize)
         trackInfo.kind = layoutProgress.position() < 0 ? kThemeLargeIndeterminateBar : kThemeLargeProgressBar;
     else
         trackInfo.kind = layoutProgress.position() < 0 ? kThemeMediumIndeterminateBar : kThemeMediumProgressBar;
 
-    trackInfo.bounds = IntRect(IntPoint(), inflatedRect.size());
+    trackInfo.bounds = IntRect(IntPoint(), rect.size());
     trackInfo.min = 0;
     trackInfo.max = std::numeric_limits<SInt32>::max();
     trackInfo.value = lround(layoutProgress.position() * nextafter(trackInfo.max, 0));
@@ -228,11 +218,11 @@ bool ThemePainterMac::paintProgressBar(const LayoutObject& layoutObject, const P
     trackInfo.reserved = 0;
     trackInfo.filler1 = 0;
 
-    std::unique_ptr<ImageBuffer> imageBuffer = ImageBuffer::create(inflatedRect.size());
+    std::unique_ptr<ImageBuffer> imageBuffer = ImageBuffer::create(rect.size());
     if (!imageBuffer)
         return true;
 
-    IntRect clipRect = IntRect(IntPoint(), inflatedRect.size());
+    IntRect clipRect = IntRect(IntPoint(), rect.size());
     LocalCurrentGraphicsContext localContext(imageBuffer->canvas(), 1, clipRect);
     CGContextRef cgContext = localContext.cgContext();
     HIThemeDrawTrack(&trackInfo, 0, cgContext, kHIThemeOrientationNormal);
@@ -240,12 +230,12 @@ bool ThemePainterMac::paintProgressBar(const LayoutObject& layoutObject, const P
     GraphicsContextStateSaver stateSaver(paintInfo.context);
 
     if (!layoutProgress.styleRef().isLeftToRightDirection()) {
-        paintInfo.context.translate(2 * inflatedRect.x() + inflatedRect.width(), 0);
+        paintInfo.context.translate(2 * rect.x() + rect.width(), 0);
         paintInfo.context.scale(-1, 1);
     }
 
     if (!paintInfo.context.contextDisabled())
-        imageBuffer->draw(paintInfo.context, FloatRect(inflatedRect.location(), FloatSize(imageBuffer->size())), nullptr, SkXfermode::kSrcOver_Mode);
+        imageBuffer->draw(paintInfo.context, FloatRect(rect.location(), FloatSize(imageBuffer->size())), nullptr, SkXfermode::kSrcOver_Mode);
     return false;
 }
 

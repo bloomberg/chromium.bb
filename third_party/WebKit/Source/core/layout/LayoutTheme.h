@@ -153,6 +153,8 @@ public:
 
     virtual ScrollbarControlSize scrollbarControlSizeForPart(ControlPart) { return RegularScrollbar; }
 
+    virtual void adjustProgressBarBounds(ComputedStyle& style) const { }
+
     // Returns the repeat interval of the animation for the progress bar.
     virtual double animationRepeatIntervalForProgressBar() const;
     // Returns the duration of the animation for the progress bar.

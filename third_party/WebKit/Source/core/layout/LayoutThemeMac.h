@@ -131,10 +131,6 @@ public:
     // A view associated to the contained document. Subclasses may not have such a view and return a fake.
     NSView* documentViewFor(const LayoutObject&) const;
 
-    int minimumProgressBarHeight(const ComputedStyle&) const;
-    const IntSize* progressBarSizes() const;
-    const int* progressBarMargins(NSControlSize) const;
-
     void updateActiveState(NSCell*, const LayoutObject&);
 
     // We estimate the animation rate of a Mac OS X progress bar is 33 fps.
@@ -165,7 +161,11 @@ protected:
 
     bool shouldUseFallbackTheme(const ComputedStyle&) const override;
 
+    void adjustProgressBarBounds(ComputedStyle&) const override;
+
 private:
+    const int* progressBarHeights() const;
+    const int* progressBarMargins(NSControlSize) const;
     String fileListNameForWidth(Locale&, const FileList*, const Font&, int width) const override;
     String extraDefaultStyleSheet() override;
     bool themeDrawsFocusRing(const ComputedStyle&) const override;

@@ -180,7 +180,11 @@ void LayoutTheme::adjustStyle(ComputedStyle& style, Element* e)
                 if (style.setFontDescription(controlFont))
                     style.font().update(nullptr);
             }
+            break;
         }
+        case ProgressBarPart:
+            adjustProgressBarBounds(style);
+            break;
         default:
             break;
         }

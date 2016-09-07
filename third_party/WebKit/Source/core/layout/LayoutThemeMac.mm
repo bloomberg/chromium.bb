@@ -684,26 +684,10 @@ const int* LayoutThemeMac::popupButtonPadding(NSControlSize size) const
     return padding[size];
 }
 
-const IntSize* LayoutThemeMac::progressBarSizes() const
+const int* LayoutThemeMac::progressBarHeights() const
 {
-    static const IntSize sizes[3] = { IntSize(0, 20), IntSize(0, 12), IntSize(0, 12) };
+    static const int sizes[3] = { 20, 12, 12 };
     return sizes;
-}
-
-const int* LayoutThemeMac::progressBarMargins(NSControlSize controlSize) const
-{
-    static const int margins[3][4] =
-    {
-        { 0, 0, 1, 0 },
-        { 0, 0, 1, 0 },
-        { 0, 0, 1, 0 },
-    };
-    return margins[controlSize];
-}
-
-int LayoutThemeMac::minimumProgressBarHeight(const ComputedStyle& style) const
-{
-    return sizeForSystemFont(style, progressBarSizes()).height();
 }
 
 double LayoutThemeMac::animationRepeatIntervalForProgressBar() const
@@ -923,6 +907,16 @@ IntSize LayoutThemeMac::sliderTickSize() const
 int LayoutThemeMac::sliderTickOffsetFromTrackCenter() const
 {
     return -9;
+}
+
+void LayoutThemeMac::adjustProgressBarBounds(ComputedStyle& style) const
+{
+    float zoomLevel = style.effectiveZoom();
+    NSControlSize controlSize = controlSizeForFont(style);
+    int height = progressBarHeights()[controlSize] * zoomLevel;
+
+    // Now inflate it to account for the shadow.
+    style.setMinHeight(Length(height + zoomLevel, Fixed));
 }
 
 void LayoutThemeMac::adjustSliderThumbSize(ComputedStyle& style) const
