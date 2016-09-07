@@ -46,12 +46,6 @@ AXTableHeaderContainer* AXTableHeaderContainer::create(AXObjectCacheImpl& axObje
     return new AXTableHeaderContainer(axObjectCache);
 }
 
-LayoutRect AXTableHeaderContainer::elementRect() const
-{
-    // this will be filled in when addChildren is called
-    return m_headerRect;
-}
-
 bool AXTableHeaderContainer::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReasons) const
 {
     if (!m_parent)
@@ -76,10 +70,6 @@ void AXTableHeaderContainer::addChildren()
         return;
 
     toAXTable(m_parent)->columnHeaders(m_children);
-
-    unsigned length = m_children.size();
-    for (unsigned k = 0; k < length; ++k)
-        m_headerRect.unite(m_children[k]->elementRect());
 }
 
 } // namespace blink

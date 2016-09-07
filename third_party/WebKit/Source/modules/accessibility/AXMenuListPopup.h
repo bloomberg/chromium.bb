@@ -53,7 +53,6 @@ private:
 
     bool isMenuListPopup() const override { return true; }
 
-    LayoutRect elementRect() const override { return LayoutRect(); }
     AccessibilityRole roleValue() const override { return MenuListPopupRole; }
 
     bool isVisible() const override;

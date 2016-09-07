@@ -101,15 +101,6 @@ LayoutRect AbstractInlineTextBox::localBounds() const
     return m_inlineTextBox->calculateBoundaries();
 }
 
-LayoutRect AbstractInlineTextBox::absoluteBounds() const
-{
-    if (!m_inlineTextBox || !m_lineLayoutItem)
-        return LayoutRect();
-
-    FloatRect boundaries(m_inlineTextBox->calculateBoundaries());
-    return LayoutRect(m_lineLayoutItem.localToAbsoluteQuad(boundaries).enclosingBoundingBox());
-}
-
 unsigned AbstractInlineTextBox::len() const
 {
     if (!m_inlineTextBox)

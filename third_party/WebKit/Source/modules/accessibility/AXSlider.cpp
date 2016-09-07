@@ -108,7 +108,7 @@ AXObject* AXSlider::elementAccessibilityHitTest(const IntPoint& point) const
 {
     if (m_children.size()) {
         ASSERT(m_children.size() == 1);
-        if (m_children[0]->elementRect().contains(point))
+        if (m_children[0]->getBoundsInFrameCoordinates().contains(point))
             return m_children[0].get();
     }
 
@@ -143,15 +143,17 @@ AXSliderThumb* AXSliderThumb::create(AXObjectCacheImpl& axObjectCache)
     return new AXSliderThumb(axObjectCache);
 }
 
-LayoutRect AXSliderThumb::elementRect() const
+LayoutObject* AXSliderThumb::layoutObjectForRelativeBounds() const
 {
     if (!m_parent)
-        return LayoutRect();
+        return nullptr;
 
     LayoutObject* sliderLayoutObject = m_parent->getLayoutObject();
     if (!sliderLayoutObject || !sliderLayoutObject->isSlider())
-        return LayoutRect();
-    return toElement(sliderLayoutObject->node())->userAgentShadowRoot()->getElementById(ShadowElementNames::sliderThumb())->boundingBox();
+        return nullptr;
+    Element* thumbElement = toElement(sliderLayoutObject->node())->userAgentShadowRoot()->getElementById(ShadowElementNames::sliderThumb());
+    DCHECK(thumbElement);
+    return thumbElement->layoutObject();
 }
 
 bool AXSliderThumb::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReasons) const

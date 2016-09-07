@@ -50,11 +50,7 @@ public:
 
     void addChildren() override;
 
-    LayoutRect elementRect() const override;
-
 private:
-    LayoutRect m_headerRect;
-
     bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 };
 

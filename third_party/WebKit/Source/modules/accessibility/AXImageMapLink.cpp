@@ -28,9 +28,11 @@
 
 #include "modules/accessibility/AXImageMapLink.h"
 
+#include "SkMatrix44.h"
 #include "core/dom/ElementTraversal.h"
 #include "modules/accessibility/AXLayoutObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
+#include "platform/graphics/Path.h"
 
 namespace blink {
 
@@ -102,12 +104,16 @@ KURL AXImageMapLink::url() const
     return areaElement()->href();
 }
 
-LayoutRect AXImageMapLink::elementRect() const
+void AXImageMapLink::getRelativeBounds(AXObject** outContainer, FloatRect& outBoundsInContainer, SkMatrix44& outContainerTransform) const
 {
+    *outContainer = nullptr;
+    outBoundsInContainer = FloatRect();
+    outContainerTransform.setIdentity();
+
     HTMLAreaElement* area = areaElement();
     HTMLMapElement* map = mapElement();
     if (!area || !map)
-        return LayoutRect();
+        return;
 
     LayoutObject* layoutObject;
     if (m_parent && m_parent->isAXLayoutObject())
@@ -116,9 +122,10 @@ LayoutRect AXImageMapLink::elementRect() const
         layoutObject = map->layoutObject();
 
     if (!layoutObject)
-        return LayoutRect();
+        return;
 
-    return area->computeAbsoluteRect(layoutObject);
+    outBoundsInContainer = area->getPath(layoutObject).boundingRect();
+    *outContainer = axObjectCache().getOrCreate(layoutObject);
 }
 
 DEFINE_TRACE(AXImageMapLink)

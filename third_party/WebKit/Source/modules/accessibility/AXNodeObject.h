@@ -167,7 +167,6 @@ protected:
     bool nameFromLabelElement() const override;
 
     // Location
-    LayoutRect elementRect() const override;
     void getRelativeBounds(AXObject** outContainer, FloatRect& outBoundsInContainer, SkMatrix44& outContainerTransform) const override;
 
     // High-level accessibility tree access.

@@ -60,14 +60,6 @@ void AXInlineTextBox::detach()
     m_inlineTextBox = nullptr;
 }
 
-LayoutRect AXInlineTextBox::elementRect() const
-{
-    if (!m_inlineTextBox)
-        return LayoutRect();
-
-    return m_inlineTextBox->absoluteBounds();
-}
-
 void AXInlineTextBox::getRelativeBounds(AXObject** outContainer, FloatRect& outBoundsInContainer, SkMatrix44& outContainerTransform) const
 {
     *outContainer = nullptr;

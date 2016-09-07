@@ -1056,12 +1056,14 @@ int WebAXObjectProxy::SetSize() {
 
 int WebAXObjectProxy::ClickPointX() {
   accessibility_object_.updateLayoutAndCheckValidity();
-  return accessibility_object_.clickPoint().x;
+  blink::WebFloatRect bounds = BoundsForObject(accessibility_object_);
+  return bounds.x + bounds.width / 2;
 }
 
 int WebAXObjectProxy::ClickPointY() {
   accessibility_object_.updateLayoutAndCheckValidity();
-  return accessibility_object_.clickPoint().y;
+  blink::WebFloatRect bounds = BoundsForObject(accessibility_object_);
+  return bounds.y + bounds.height / 2;
 }
 
 int32_t WebAXObjectProxy::RowCount() {

@@ -654,18 +654,6 @@ bool WebAXObject::ariaOwns(WebVector<WebAXObject>& ownsElements) const
     return false;
 }
 
-WebRect WebAXObject::boundingBoxRect() const
-{
-    if (isDetached())
-        return WebRect();
-
-#if DCHECK_IS_ON()
-    DCHECK(isLayoutClean(m_private->getDocument()));
-#endif
-
-    return pixelSnappedIntRect(m_private->elementRect());
-}
-
 WebString WebAXObject::fontFamily() const
 {
     if (isDetached())
@@ -688,14 +676,6 @@ bool WebAXObject::canvasHasFallbackContent() const
         return false;
 
     return m_private->canvasHasFallbackContent();
-}
-
-WebPoint WebAXObject::clickPoint() const
-{
-    if (isDetached())
-        return WebPoint();
-
-    return WebPoint(m_private->clickPoint());
 }
 
 WebAXInvalidState WebAXObject::invalidState() const
@@ -753,7 +733,7 @@ WebAXObject WebAXObject::hitTest(const WebPoint& point) const
     if (hit)
         return WebAXObject(hit);
 
-    if (m_private->elementRect().contains(contentsPoint))
+    if (m_private->getBoundsInFrameCoordinates().contains(contentsPoint))
         return *this;
 
     return WebAXObject();
@@ -1586,14 +1566,6 @@ void WebAXObject::scrollToGlobalPoint(const WebPoint& point) const
 {
     if (!isDetached())
         m_private->scrollToGlobalPoint(point);
-}
-
-SkMatrix44 WebAXObject::transformFromLocalParentFrame() const
-{
-    if (isDetached())
-        return SkMatrix44();
-
-    return m_private->transformFromLocalParentFrame();
 }
 
 WebAXObject::WebAXObject(AXObject* object)

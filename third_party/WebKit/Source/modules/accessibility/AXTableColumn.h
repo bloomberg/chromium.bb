@@ -61,11 +61,8 @@ public:
     void addChildren() override;
     void setParent(AXObject*) override;
 
-    LayoutRect elementRect() const override;
-
 private:
     unsigned m_columnIndex;
-    LayoutRect m_columnRect;
 
     bool isTableCol() const override { return true; }
     bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;

@@ -152,7 +152,6 @@ public:
     BLINK_EXPORT WebString fontFamily() const;
     BLINK_EXPORT float fontSize() const;
     BLINK_EXPORT bool canvasHasFallbackContent() const;
-    BLINK_EXPORT WebPoint clickPoint() const;
     BLINK_EXPORT WebAXInvalidState invalidState() const;
     // Only used when invalidState() returns WebAXInvalidStateOther.
     BLINK_EXPORT WebString ariaInvalidValue() const;
@@ -294,11 +293,8 @@ public:
     BLINK_EXPORT WebPoint maximumScrollOffset() const;
     BLINK_EXPORT void setScrollOffset(const WebPoint&) const;
 
-    // Old bounds calculation interface. DEPRECATED, to be replaced with getRelativeBounds.
-    BLINK_EXPORT WebRect boundingBoxRect() const;
-
-    // NEW bounds calculation interface. Every object's bounding box is returned
-    // relative to a container object (which is guaranteed to be an ancestor) and
+    // Every object's bounding box is returned relative to a
+    // container object (which is guaranteed to be an ancestor) and
     // optionally a transformation matrix that needs to be applied too.
     // To compute the absolute bounding box of an element, start with its
     // boundsInContainer and apply the transform. Then as long as its container is
@@ -306,10 +302,6 @@ public:
     // origin, the container's scroll position if any, and apply the container's transform.
     // Do this until you reach the root of the tree.
     BLINK_EXPORT void getRelativeBounds(WebAXObject& offsetContainer, WebFloatRect& boundsInContainer, SkMatrix44& containerTransform) const;
-
-    // Transformation relative to the parent frame, if local (otherwise returns identity).
-    // DEPRECATED, to be replaced with getRelativeBounds.
-    BLINK_EXPORT SkMatrix44 transformFromLocalParentFrame() const;
 
     // Make this object visible by scrolling as many nested scrollable views as needed.
     BLINK_EXPORT void scrollToMakeVisible() const;

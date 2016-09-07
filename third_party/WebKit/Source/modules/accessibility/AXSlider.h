@@ -72,12 +72,11 @@ public:
 
     AccessibilityRole roleValue() const override { return SliderThumbRole; }
 
-    LayoutRect elementRect() const override;
-
 private:
     explicit AXSliderThumb(AXObjectCacheImpl&);
 
     bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
+    LayoutObject* layoutObjectForRelativeBounds() const override;
 };
 
 

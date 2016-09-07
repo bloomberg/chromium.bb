@@ -52,12 +52,12 @@ DEFINE_TRACE(AXSpinButton)
     AXMockObject::trace(visitor);
 }
 
-LayoutRect AXSpinButton::elementRect() const
+LayoutObject* AXSpinButton::layoutObjectForRelativeBounds() const
 {
     if (!m_spinButtonElement || !m_spinButtonElement->layoutObject())
-        return LayoutRect();
+        return nullptr;
 
-    return LayoutRect(m_spinButtonElement->layoutObject()->absoluteElementBoundingBoxRect());
+    return m_spinButtonElement->layoutObject();
 }
 
 void AXSpinButton::detach()
@@ -115,20 +115,26 @@ AXSpinButtonPart* AXSpinButtonPart::create(AXObjectCacheImpl& axObjectCache)
     return new AXSpinButtonPart(axObjectCache);
 }
 
-LayoutRect AXSpinButtonPart::elementRect() const
+void AXSpinButtonPart::getRelativeBounds(AXObject** outContainer, FloatRect& outBoundsInContainer, SkMatrix44& outContainerTransform) const
 {
+    *outContainer = nullptr;
+    outBoundsInContainer = FloatRect();
+    outContainerTransform.setIdentity();
+
+    if (!parentObject())
+        return;
+
     // FIXME: This logic should exist in the layout tree or elsewhere, but there is no
     // relationship that exists that can be queried.
-
-    LayoutRect parentRect = parentObject()->elementRect();
+    parentObject()->getRelativeBounds(outContainer, outBoundsInContainer, outContainerTransform);
+    outBoundsInContainer = FloatRect(0, 0, outBoundsInContainer.width(), outBoundsInContainer.height());
     if (m_isIncrementor) {
-        parentRect.setHeight(parentRect.height() / 2);
+        outBoundsInContainer.setHeight(outBoundsInContainer.height() / 2);
     } else {
-        parentRect.setY(parentRect.y() + parentRect.height() / 2);
-        parentRect.setHeight(parentRect.height() / 2);
+        outBoundsInContainer.setY(outBoundsInContainer.y() + outBoundsInContainer.height() / 2);
+        outBoundsInContainer.setHeight(outBoundsInContainer.height() / 2);
     }
-
-    return parentRect;
+    *outContainer = parentObject();
 }
 
 bool AXSpinButtonPart::press() const

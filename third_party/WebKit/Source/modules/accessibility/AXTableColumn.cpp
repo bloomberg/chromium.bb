@@ -59,12 +59,6 @@ void AXTableColumn::setParent(AXObject* parent)
     clearChildren();
 }
 
-LayoutRect AXTableColumn::elementRect() const
-{
-    // this will be filled in when addChildren is called
-    return m_columnRect;
-}
-
 void AXTableColumn::headerObjectsForColumn(AXObjectVector& headers)
 {
     if (!m_parent)
@@ -156,7 +150,6 @@ void AXTableColumn::addChildren()
             continue;
 
         m_children.append(cell);
-        m_columnRect.unite(cell->elementRect());
     }
 }
 

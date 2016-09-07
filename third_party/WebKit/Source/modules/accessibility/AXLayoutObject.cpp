@@ -180,7 +180,6 @@ static LayoutBoxModelObject* nextContinuation(LayoutObject* layoutObject)
 AXLayoutObject::AXLayoutObject(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
     : AXNodeObject(layoutObject->node(), axObjectCache)
     , m_layoutObject(layoutObject)
-    , m_cachedElementRectDirty(true)
 {
 #if ENABLE(ASSERT)
     m_layoutObject->setHasAXObject(true);
@@ -195,38 +194,6 @@ AXLayoutObject* AXLayoutObject::create(LayoutObject* layoutObject, AXObjectCache
 AXLayoutObject::~AXLayoutObject()
 {
     ASSERT(isDetached());
-}
-
-LayoutRect AXLayoutObject::elementRect() const
-{
-    if (!m_explicitElementRect.isEmpty()) {
-        LayoutRect bounds = m_explicitElementRect;
-        AXObject* canvas = axObjectCache().objectFromAXID(m_explicitContainerID);
-        if (canvas)
-            bounds.moveBy(canvas->elementRect().location());
-        return bounds;
-    }
-
-    // FIXME(dmazzoni): use relative bounds instead since this is a bottleneck.
-    // http://crbug.com/618120
-    return computeElementRect();
-}
-
-SkMatrix44 AXLayoutObject::transformFromLocalParentFrame() const
-{
-    if (!m_layoutObject)
-        return SkMatrix44();
-    LayoutView* layoutView = toLayoutView(LayoutAPIShim::layoutObjectFrom(documentFrameView()->layoutViewItem()));
-
-    FrameView* parentFrameView = documentFrameView()->parentFrameView();
-    if (!parentFrameView)
-        return SkMatrix44();
-    LayoutView* parentLayoutView = toLayoutView(LayoutAPIShim::layoutObjectFrom(parentFrameView->layoutViewItem()));
-
-    TransformationMatrix accumulatedTransform = layoutView->localToAncestorTransform(parentLayoutView, TraverseDocumentBoundaries);
-    IntPoint scrollPosition = documentFrameView()->scrollPosition();
-    accumulatedTransform.translate(scrollPosition.x(), scrollPosition.y());
-    return TransformationMatrix::toSkMatrix44(accumulatedTransform);
 }
 
 LayoutBoxModelObject* AXLayoutObject::getLayoutBoxModelObject() const
@@ -249,92 +216,6 @@ ScrollableArea* AXLayoutObject::getScrollableAreaIfScrollable() const
         return 0;
 
     return box->getScrollableArea();
-}
-
-void AXLayoutObject::getRelativeBounds(AXObject** outContainer, FloatRect& outBoundsInContainer, SkMatrix44& outContainerTransform) const
-{
-    *outContainer = nullptr;
-    outBoundsInContainer = FloatRect();
-    outContainerTransform.setIdentity();
-
-    // First check if it has explicit bounds, for example if this element is tied to a
-    // canvas path. When explicit coordinates are provided, the ID of the explicit container
-    // element that the coordinates are relative to must be provided too.
-    if (!m_explicitElementRect.isEmpty()) {
-        *outContainer = axObjectCache().objectFromAXID(m_explicitContainerID);
-        if (*outContainer) {
-            outBoundsInContainer = FloatRect(m_explicitElementRect);
-            return;
-        }
-    }
-
-    if (!m_layoutObject)
-        return;
-
-    if (isWebArea()) {
-        if (m_layoutObject->frame()->view())
-            outBoundsInContainer.setSize(FloatSize(m_layoutObject->frame()->view()->contentsSize()));
-        return;
-    }
-
-    // First compute the container. The container must be an ancestor in the accessibility tree, and
-    // its LayoutObject must be an ancestor in the layout tree. Get the first such ancestor that's
-    // either scrollable or has a paint layer.
-    AXObject* container = parentObjectUnignored();
-    LayoutObject* containerLayoutObject = nullptr;
-    while (container) {
-        containerLayoutObject = container->getLayoutObject();
-        if (containerLayoutObject && containerLayoutObject->isBoxModelObject() && m_layoutObject->isDescendantOf(containerLayoutObject)) {
-            if (container->isScrollableContainer() || containerLayoutObject->hasLayer())
-                break;
-        }
-
-        container = container->parentObjectUnignored();
-    }
-
-    if (!container)
-        return;
-    *outContainer = container;
-
-    // Next get the local bounds of this LayoutObject, which is typically
-    // a rect at point (0, 0) with the width and height of the LayoutObject.
-    LayoutRect localBounds;
-    if (m_layoutObject->isText()) {
-        Vector<FloatQuad> quads;
-        toLayoutText(m_layoutObject)->quads(quads, LayoutText::ClipToEllipsis, LayoutText::LocalQuads);
-        for (const FloatQuad& quad : quads)
-            localBounds.unite(LayoutRect(quad.boundingBox()));
-    } else if (m_layoutObject->isLayoutInline()) {
-        Vector<LayoutRect> rects;
-        toLayoutInline(m_layoutObject)->addOutlineRects(rects, LayoutPoint(), LayoutObject::IncludeBlockVisualOverflow);
-        localBounds = unionRect(rects);
-    } else if (m_layoutObject->isBox()) {
-        localBounds = LayoutRect(LayoutPoint(), toLayoutBox(m_layoutObject)->size());
-    } else if (m_layoutObject->isSVG()) {
-        localBounds = LayoutRect(m_layoutObject->strokeBoundingBox());
-    } else {
-        DCHECK(false);
-    }
-    outBoundsInContainer = FloatRect(localBounds);
-
-    // If the container has a scroll offset, subtract that out because we want our
-    // bounds to be relative to the *unscrolled* position of the container object.
-    ScrollableArea* scrollableArea = container->getScrollableAreaIfScrollable();
-    if (scrollableArea && !container->isWebArea()) {
-        IntPoint scrollPosition = scrollableArea->scrollPosition();
-        outBoundsInContainer.move(FloatSize(scrollPosition.x(), scrollPosition.y()));
-    }
-
-    // Compute the transform between the container's coordinate space and this object.
-    // If the transform is just a simple translation, apply that to the bounding box, but
-    // if it's a non-trivial transformation like a rotation, scaling, etc. then return
-    // the full matrix instead.
-    TransformationMatrix transform = m_layoutObject->localToAncestorTransform(toLayoutBoxModelObject(containerLayoutObject));
-    if (transform.isIdentityOr2DTranslation()) {
-        outBoundsInContainer.move(transform.to2DTranslation());
-    } else {
-        outContainerTransform = TransformationMatrix::toSkMatrix44(transform);
-    }
 }
 
 static bool isImageOrAltText(LayoutBoxModelObject* box, Node* node)
@@ -1440,85 +1321,6 @@ bool AXLayoutObject::liveRegionBusy() const
 }
 
 //
-// Position and size.
-//
-
-void AXLayoutObject::checkCachedElementRect() const
-{
-    if (m_cachedElementRectDirty)
-        return;
-
-    if (!m_layoutObject)
-        return;
-
-    if (!m_layoutObject->isBox())
-        return;
-
-    bool dirty = false;
-    LayoutBox* box = toLayoutBox(m_layoutObject);
-    if (box->frameRect() != m_cachedFrameRect)
-        dirty = true;
-
-    if (box->canBeScrolledAndHasScrollableArea()) {
-        ScrollableArea* scrollableArea = box->getScrollableArea();
-        if (scrollableArea && scrollableArea->scrollPosition() != m_cachedScrollPosition)
-            dirty = true;
-    }
-
-    if (dirty)
-        markCachedElementRectDirty();
-}
-
-void AXLayoutObject::updateCachedElementRect() const
-{
-    if (!m_cachedElementRectDirty)
-        return;
-
-    if (!m_layoutObject)
-        return;
-
-    if (!m_layoutObject->isBox())
-        return;
-
-    LayoutBox* box = toLayoutBox(m_layoutObject);
-    m_cachedFrameRect = box->frameRect();
-
-    if (box->canBeScrolledAndHasScrollableArea()) {
-        ScrollableArea* scrollableArea = box->getScrollableArea();
-        if (scrollableArea)
-            m_cachedScrollPosition = scrollableArea->scrollPosition();
-    }
-
-    m_cachedElementRect = computeElementRect();
-    m_cachedElementRectDirty = false;
-}
-
-void AXLayoutObject::markCachedElementRectDirty() const
-{
-    if (m_cachedElementRectDirty)
-        return;
-
-    // Marks children recursively, if this element changed.
-    m_cachedElementRectDirty = true;
-    for (AXObject* child = rawFirstChild(); child; child = child->rawNextSibling())
-        child->markCachedElementRectDirty();
-}
-
-IntPoint AXLayoutObject::clickPoint()
-{
-    // Headings are usually much wider than their textual content. If the mid point is used, often it can be wrong.
-    if (isHeading() && children().size() == 1)
-        return children()[0]->clickPoint();
-
-    // use the default position unless this is an editable web area, in which case we use the selection bounds.
-    if (!isWebArea() || isReadOnly())
-        return AXObject::clickPoint();
-
-    IntRect bounds = pixelSnappedIntRect(elementRect());
-    return IntPoint(bounds.x() + (bounds.width() / 2), bounds.y() - (bounds.height() / 2));
-}
-
-//
 // Hit testing.
 //
 
@@ -2348,7 +2150,7 @@ AXObject* AXLayoutObject::accessibilityImageMapHitTest(HTMLAreaElement* area, co
         return 0;
 
     for (const auto& child : parent->children()) {
-        if (child->elementRect().contains(point))
+        if (child->getBoundsInFrameCoordinates().contains(point))
             return child.get();
     }
 
@@ -2422,7 +2224,7 @@ AXObject* AXLayoutObject::remoteSVGElementHitTest(const IntPoint& point) const
     if (!remote)
         return 0;
 
-    IntSize offset = point - roundedIntPoint(elementRect().location());
+    IntSize offset = point - roundedIntPoint(getBoundsInFrameCoordinates().location());
     return remote->accessibilityHitTest(IntPoint(offset));
 }
 
@@ -2432,7 +2234,7 @@ void AXLayoutObject::offsetBoundingBoxForRemoteSVGElement(LayoutRect& rect) cons
 {
     for (AXObject* parent = parentObject(); parent; parent = parent->parentObject()) {
         if (parent->isAXSVGRoot()) {
-            rect.moveBy(parent->parentObject()->elementRect().location());
+            rect.moveBy(parent->parentObject()->getBoundsInFrameCoordinates().location());
             break;
         }
     }
@@ -2572,61 +2374,6 @@ bool AXLayoutObject::elementAttributeValue(const QualifiedName& attributeName) c
         return false;
 
     return equalIgnoringCase(getAttribute(attributeName), "true");
-}
-
-LayoutRect AXLayoutObject::computeElementRect() const
-{
-    LayoutObject* obj = m_layoutObject;
-
-    if (!obj)
-        return LayoutRect();
-
-    if (obj->node()) // If we are a continuation, we want to make sure to use the primary layoutObject.
-        obj = obj->node()->layoutObject();
-
-    // absoluteFocusRingBoundingBox will query the hierarchy below this element, which for large webpages can be very slow.
-    // For a web area, which will have the most elements of any element, absoluteQuads should be used.
-    // We should also use absoluteQuads for SVG elements, otherwise transforms won't be applied.
-
-    LayoutRect result;
-    if (obj->isText()) {
-        Vector<FloatQuad> quads;
-        toLayoutText(obj)->quads(quads, LayoutText::ClipToEllipsis, LayoutText::AbsoluteQuads);
-        result = LayoutRect(boundingBoxForQuads(obj, quads));
-    } else if (isWebArea() || obj->isSVGRoot()) {
-        result = LayoutRect(obj->absoluteBoundingBoxRect());
-    } else {
-        result = LayoutRect(obj->absoluteElementBoundingBoxRect());
-    }
-
-    Document* document = this->getDocument();
-    if (document && document->isSVGDocument())
-        offsetBoundingBoxForRemoteSVGElement(result);
-    if (document && document->frame() && document->frame()->pagePopupOwner()) {
-        IntPoint popupOrigin = document->view()->contentsToScreen(IntRect()).location();
-        IntPoint mainOrigin = axObjectCache().rootObject()->documentFrameView()->contentsToScreen(IntRect()).location();
-        result.moveBy(IntPoint(popupOrigin - mainOrigin));
-    }
-
-    // The size of the web area should be the content size, not the clipped size.
-    if (isWebArea() && obj->frame()->view())
-        result.setSize(LayoutSize(obj->frame()->view()->contentsSize()));
-
-    // Checkboxes and radio buttons include their labels as part of their rect.
-    if (isCheckboxOrRadio() && isLabelableElement(obj->node())) {
-        LabelsNodeList* labels = toLabelableElement(obj->node())->labels();
-        if (labels) {
-            for (unsigned labelIndex = 0; labelIndex < labels->length(); ++labelIndex) {
-                AXObject* labelAXObject = axObjectCache().getOrCreate(labels->item(labelIndex));
-                if (labelAXObject) {
-                    LayoutRect labelRect = labelAXObject->elementRect();
-                    result.unite(labelRect);
-                }
-            }
-        }
-    }
-
-    return result;
 }
 
 } // namespace blink

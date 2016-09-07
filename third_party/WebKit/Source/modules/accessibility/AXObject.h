@@ -838,23 +838,8 @@ public:
     bool containerLiveRegionAtomic() const;
     bool containerLiveRegionBusy() const;
 
-    // Location and click point in frame-relative coordinates. DEPRECATED, to be
-    // replaced by getRelativeBounds.
-    virtual LayoutRect elementRect() const { return m_explicitElementRect; }
-    void setElementRect(LayoutRect r, AXObject* container)
-    {
-        m_explicitElementRect = r;
-        m_explicitContainerID = container->axObjectID();
-    }
-    virtual void markCachedElementRectDirty() const;
-    virtual IntPoint clickPoint();
-
-    // Transformation relative to the parent frame, if local (otherwise returns identity).
-    // DEPRECATED, to be replaced by getRelativeBounds.
-    virtual SkMatrix44 transformFromLocalParentFrame() const;
-
-    // NEW bounds calculation interface. Every object's bounding box is returned
-    // relative to a container object (which is guaranteed to be an ancestor) and
+    // Every object's bounding box is returned relative to a
+    // container object (which is guaranteed to be an ancestor) and
     // optionally a transformation matrix that needs to be applied too.
     // To compute the absolute bounding box of an element, start with its
     // boundsInContainer and apply the transform. Then as long as its container is
@@ -862,6 +847,16 @@ public:
     // origin, the container's scroll position if any, and apply the container's transform.
     // Do this until you reach the root of the tree.
     virtual void getRelativeBounds(AXObject** outContainer, FloatRect& outBoundsInContainer, SkMatrix44& outContainerTransform) const;
+
+    // Get the bounds in frame-relative coordinates as a LayoutRect.
+    LayoutRect getBoundsInFrameCoordinates() const;
+
+    // Explicitly set an object's bounding rect and offset container.
+    void setElementRect(LayoutRect r, AXObject* container)
+    {
+        m_explicitElementRect = r;
+        m_explicitContainerID = container->axObjectID();
+    }
 
     // Hit testing.
     // Called on the root AX object to return the deepest available element.
@@ -960,7 +955,6 @@ public:
     static bool isARIAControl(AccessibilityRole);
     static bool isARIAInput(AccessibilityRole);
     static AccessibilityRole ariaRoleToWebCoreRole(const String&);
-    static IntRect boundingBoxForQuads(LayoutObject*, const Vector<FloatQuad>&);
     static const AtomicString& roleName(AccessibilityRole);
     static const AtomicString& internalRoleName(AccessibilityRole);
     static bool isInsideFocusableElementOrARIAWidget(const Node&);
@@ -991,6 +985,8 @@ protected:
     virtual bool nameFromContents() const;
 
     AccessibilityRole buttonRoleType() const;
+
+    virtual LayoutObject* layoutObjectForRelativeBounds() const { return nullptr; }
 
     mutable Member<AXObject> m_parent;
 

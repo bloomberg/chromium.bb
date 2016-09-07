@@ -1,0 +1,31 @@
+<!DOCTYPE HTML>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<input id="spin" type="number" min=0 max=10 value=0 style="position: absolute; left: 100px; top: 50px; width: 300px; height: 20px;">
+
+<script>
+test(function(t) {
+  var axSpin = accessibilityController.accessibleElementById("spin");
+  assert_equals(axSpin.role, "AXRole: AXSpinButton");
+
+  var axSpinUp = axSpin.childAtIndex(1).childAtIndex(0);
+  assert_equals(axSpinUp.role, "AXRole: AXButton");
+
+  var axSpinDown = axSpin.childAtIndex(1).childAtIndex(1);
+  assert_equals(axSpinDown.role, "AXRole: AXButton");
+
+  // The buttons should be near the right edge of the parent.
+  assert_true(Math.abs(axSpinUp.x + axSpinUp.width - (axSpin.x + axSpin.width)) < 5);
+  assert_true(Math.abs(axSpinDown.x + axSpinDown.width - (axSpin.x + axSpin.width)) < 5);
+
+  // The buttons should be small.
+  assert_true(axSpinUp.width < 30);
+  assert_true(axSpinUp.height < 30);
+  assert_true(axSpinDown.width < 30);
+  assert_true(axSpinDown.height < 30);
+}, "Test bounds of spin thumb");
+</script>
+
+</body>
+</html>

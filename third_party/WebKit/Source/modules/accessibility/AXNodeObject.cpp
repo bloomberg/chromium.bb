@@ -1801,57 +1801,13 @@ bool AXNodeObject::nameFromLabelElement() const
     return false;
 }
 
-LayoutRect AXNodeObject::elementRect() const
-{
-    // First check if it has a custom rect, for example if this element is tied to a canvas path.
-    if (!m_explicitElementRect.isEmpty()) {
-        LayoutRect bounds = m_explicitElementRect;
-        AXObject* canvas = axObjectCache().objectFromAXID(m_explicitContainerID);
-        if (canvas)
-            bounds.moveBy(canvas->elementRect().location());
-        return bounds;
-    }
-
-    // FIXME: If there are a lot of elements in the canvas, it will be inefficient.
-    // We can avoid the inefficient calculations by using AXComputedObjectAttributeCache.
-    if (getNode()->parentElement()->isInCanvasSubtree()) {
-        LayoutRect rect;
-
-        for (Node& child : NodeTraversal::childrenOf(*getNode())) {
-            if (child.isHTMLElement()) {
-                if (AXObject* obj = axObjectCache().get(&child)) {
-                    if (rect.isEmpty())
-                        rect = obj->elementRect();
-                    else
-                        rect.unite(obj->elementRect());
-                }
-            }
-        }
-
-        if (!rect.isEmpty())
-            return rect;
-    }
-
-    // If this object doesn't have an explicit element rect or computable from its children,
-    // for now, let's return the position of the ancestor that does have a position,
-    // and make it the width of that parent, and about the height of a line of text, so that it's clear the object is a child of the parent.
-
-    LayoutRect boundingBox;
-
-    for (AXObject* positionProvider = parentObject(); positionProvider; positionProvider = positionProvider->parentObject()) {
-        if (positionProvider->isAXLayoutObject()) {
-            LayoutRect parentRect = positionProvider->elementRect();
-            boundingBox.setSize(LayoutSize(parentRect.width(), LayoutUnit(std::min(10.0f, parentRect.height().toFloat()))));
-            boundingBox.setLocation(parentRect.location());
-            break;
-        }
-    }
-
-    return boundingBox;
-}
-
 void AXNodeObject::getRelativeBounds(AXObject** outContainer, FloatRect& outBoundsInContainer, SkMatrix44& outContainerTransform) const
 {
+    if (layoutObjectForRelativeBounds()) {
+        AXObject::getRelativeBounds(outContainer, outBoundsInContainer, outContainerTransform);
+        return;
+    }
+
     *outContainer = nullptr;
     outBoundsInContainer = FloatRect();
     outContainerTransform.setIdentity();

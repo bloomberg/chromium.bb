@@ -296,10 +296,11 @@ TEST_F(CanvasRenderingContext2DAPITest, AccessibilityRectTestForAddHitRegion)
     AXObjectCacheImpl* axObjectCache = toAXObjectCacheImpl(document().existingAXObjectCache());
     AXObject* axObject = axObjectCache->getOrCreate(buttonElement);
 
-    EXPECT_EQ(25, axObject->elementRect().x().toInt());
-    EXPECT_EQ(25, axObject->elementRect().y().toInt());
-    EXPECT_EQ(40, axObject->elementRect().width().toInt());
-    EXPECT_EQ(40, axObject->elementRect().height().toInt());
+    LayoutRect axBounds = axObject->getBoundsInFrameCoordinates();
+    EXPECT_EQ(25, axBounds.x().toInt());
+    EXPECT_EQ(25, axBounds.y().toInt());
+    EXPECT_EQ(40, axBounds.width().toInt());
+    EXPECT_EQ(40, axBounds.height().toInt());
 }
 
 TEST_F(CanvasRenderingContext2DAPITest, AccessibilityRectTestForDrawFocusIfNeeded)
@@ -319,10 +320,11 @@ TEST_F(CanvasRenderingContext2DAPITest, AccessibilityRectTestForDrawFocusIfNeede
     AXObjectCacheImpl* axObjectCache = toAXObjectCacheImpl(document().existingAXObjectCache());
     AXObject* axObject = axObjectCache->getOrCreate(buttonElement);
 
-    EXPECT_EQ(25, axObject->elementRect().x().toInt());
-    EXPECT_EQ(25, axObject->elementRect().y().toInt());
-    EXPECT_EQ(40, axObject->elementRect().width().toInt());
-    EXPECT_EQ(40, axObject->elementRect().height().toInt());
+    LayoutRect axBounds = axObject->getBoundsInFrameCoordinates();
+    EXPECT_EQ(25, axBounds.x().toInt());
+    EXPECT_EQ(25, axBounds.y().toInt());
+    EXPECT_EQ(40, axBounds.width().toInt());
+    EXPECT_EQ(40, axBounds.height().toInt());
 }
 
 } // namespace blink
