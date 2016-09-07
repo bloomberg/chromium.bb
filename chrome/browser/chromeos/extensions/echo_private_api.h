@@ -25,16 +25,16 @@ void RegisterPrefs(PrefRegistrySimple* registry);
 }  // namespace chromeos
 
 class EchoPrivateGetRegistrationCodeFunction
-    : public ChromeSyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   EchoPrivateGetRegistrationCodeFunction();
 
  protected:
   ~EchoPrivateGetRegistrationCodeFunction() override;
-  bool RunSync() override;
+  ResponseAction Run() override;
 
  private:
-  void GetRegistrationCode(const std::string& type);
+  ResponseValue GetRegistrationCode(const std::string& type);
   DECLARE_EXTENSION_FUNCTION("echoPrivate.getRegistrationCode",
                              ECHOPRIVATE_GETREGISTRATIONCODE)
 };
@@ -54,26 +54,26 @@ class EchoPrivateGetOobeTimestampFunction
                              ECHOPRIVATE_GETOOBETIMESTAMP)
 };
 
-class EchoPrivateSetOfferInfoFunction : public ChromeSyncExtensionFunction {
+class EchoPrivateSetOfferInfoFunction : public UIThreadExtensionFunction {
  public:
   EchoPrivateSetOfferInfoFunction();
 
  protected:
   ~EchoPrivateSetOfferInfoFunction() override;
-  bool RunSync() override;
+  ResponseAction Run() override;
 
  private:
   DECLARE_EXTENSION_FUNCTION("echoPrivate.setOfferInfo",
                              ECHOPRIVATE_SETOFFERINFO)
 };
 
-class EchoPrivateGetOfferInfoFunction : public ChromeSyncExtensionFunction {
+class EchoPrivateGetOfferInfoFunction : public UIThreadExtensionFunction {
  public:
   EchoPrivateGetOfferInfoFunction();
 
  protected:
   ~EchoPrivateGetOfferInfoFunction() override;
-  bool RunSync() override;
+  ResponseAction Run() override;
 
  private:
   DECLARE_EXTENSION_FUNCTION("echoPrivate.getOfferInfo",

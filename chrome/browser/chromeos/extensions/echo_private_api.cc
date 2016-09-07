@@ -60,7 +60,8 @@ EchoPrivateGetRegistrationCodeFunction::
 EchoPrivateGetRegistrationCodeFunction::
     ~EchoPrivateGetRegistrationCodeFunction() {}
 
-void EchoPrivateGetRegistrationCodeFunction::GetRegistrationCode(
+ExtensionFunction::ResponseValue
+EchoPrivateGetRegistrationCodeFunction::GetRegistrationCode(
     const std::string& type) {
   // Possible ECHO code type and corresponding key name in StatisticsProvider.
   const std::string kCouponType = "COUPON_CODE";
@@ -77,22 +78,22 @@ void EchoPrivateGetRegistrationCodeFunction::GetRegistrationCode(
                                   &result);
   }
 
-  results_ = echo_api::GetRegistrationCode::Results::Create(result);
+  return ArgumentList(echo_api::GetRegistrationCode::Results::Create(result));
 }
 
-bool EchoPrivateGetRegistrationCodeFunction::RunSync() {
+ExtensionFunction::ResponseAction
+EchoPrivateGetRegistrationCodeFunction::Run() {
   std::unique_ptr<echo_api::GetRegistrationCode::Params> params =
       echo_api::GetRegistrationCode::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
-  GetRegistrationCode(params->type);
-  return true;
+  return RespondNow(GetRegistrationCode(params->type));
 }
 
 EchoPrivateSetOfferInfoFunction::EchoPrivateSetOfferInfoFunction() {}
 
 EchoPrivateSetOfferInfoFunction::~EchoPrivateSetOfferInfoFunction() {}
 
-bool EchoPrivateSetOfferInfoFunction::RunSync() {
+ExtensionFunction::ResponseAction EchoPrivateSetOfferInfoFunction::Run() {
   std::unique_ptr<echo_api::SetOfferInfo::Params> params =
       echo_api::SetOfferInfo::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -104,14 +105,14 @@ bool EchoPrivateSetOfferInfoFunction::RunSync() {
   PrefService* local_state = g_browser_process->local_state();
   DictionaryPrefUpdate offer_update(local_state, prefs::kEchoCheckedOffers);
   offer_update->SetWithoutPathExpansion("echo." + service_id, std::move(dict));
-  return true;
+  return RespondNow(NoArguments());
 }
 
 EchoPrivateGetOfferInfoFunction::EchoPrivateGetOfferInfoFunction() {}
 
 EchoPrivateGetOfferInfoFunction::~EchoPrivateGetOfferInfoFunction() {}
 
-bool EchoPrivateGetOfferInfoFunction::RunSync() {
+ExtensionFunction::ResponseAction EchoPrivateGetOfferInfoFunction::Run() {
   std::unique_ptr<echo_api::GetOfferInfo::Params> params =
       echo_api::GetOfferInfo::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -124,14 +125,13 @@ bool EchoPrivateGetOfferInfoFunction::RunSync() {
   const base::DictionaryValue* offer_info = NULL;
   if (!offer_infos->GetDictionaryWithoutPathExpansion(
          "echo." + service_id, &offer_info)) {
-    error_ = "Not found";
-    return false;
+    return RespondNow(Error("Not found"));
   }
 
   echo_api::GetOfferInfo::Results::Result result;
   result.additional_properties.MergeDictionary(offer_info);
-  results_ = echo_api::GetOfferInfo::Results::Create(result);
-  return true;
+  return RespondNow(
+      ArgumentList(echo_api::GetOfferInfo::Results::Create(result)));
 }
 
 EchoPrivateGetOobeTimestampFunction::EchoPrivateGetOobeTimestampFunction() {

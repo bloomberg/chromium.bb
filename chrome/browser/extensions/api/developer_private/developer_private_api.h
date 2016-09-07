@@ -445,7 +445,7 @@ class DeveloperPrivatePackDirectoryFunction
 };
 
 class DeveloperPrivateIsProfileManagedFunction
-    : public ChromeSyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("developerPrivate.isProfileManaged",
                              DEVELOPERPRIVATE_ISPROFILEMANAGED);
@@ -454,7 +454,7 @@ class DeveloperPrivateIsProfileManagedFunction
   ~DeveloperPrivateIsProfileManagedFunction() override;
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class DeveloperPrivateLoadDirectoryFunction

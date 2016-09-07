@@ -5,20 +5,19 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_BROWSER_BROWSER_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_BROWSER_BROWSER_API_H_
 
-#include "chrome/browser/extensions/chrome_extension_function.h"
-#include "chrome/common/extensions/api/browser.h"
+#include "extensions/browser/extension_function.h"
 
 namespace extensions {
 namespace api {
 
-class BrowserOpenTabFunction : public ChromeSyncExtensionFunction {
+class BrowserOpenTabFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("browser.openTab", BROWSER_OPENTAB)
 
  protected:
   ~BrowserOpenTabFunction() override;
 
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 }  // namespace api

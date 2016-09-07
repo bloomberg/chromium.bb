@@ -99,7 +99,7 @@ class FontSettingsAPI : public BrowserContextKeyedAPI {
 };
 
 // fontSettings.clearFont API function.
-class FontSettingsClearFontFunction : public ChromeSyncExtensionFunction {
+class FontSettingsClearFontFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fontSettings.clearFont", FONTSETTINGS_CLEARFONT)
 
@@ -109,11 +109,11 @@ class FontSettingsClearFontFunction : public ChromeSyncExtensionFunction {
   ~FontSettingsClearFontFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 // fontSettings.getFont API function.
-class FontSettingsGetFontFunction : public ChromeSyncExtensionFunction {
+class FontSettingsGetFontFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fontSettings.getFont", FONTSETTINGS_GETFONT)
 
@@ -121,11 +121,11 @@ class FontSettingsGetFontFunction : public ChromeSyncExtensionFunction {
   ~FontSettingsGetFontFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 // fontSettings.setFont API function.
-class FontSettingsSetFontFunction : public ChromeSyncExtensionFunction {
+class FontSettingsSetFontFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fontSettings.setFont", FONTSETTINGS_SETFONT)
 
@@ -133,7 +133,7 @@ class FontSettingsSetFontFunction : public ChromeSyncExtensionFunction {
   ~FontSettingsSetFontFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 // fontSettings.getFontList API function.
@@ -154,12 +154,12 @@ class FontSettingsGetFontListFunction : public ChromeAsyncExtensionFunction {
 };
 
 // Base class for extension API functions that clear a browser font pref.
-class ClearFontPrefExtensionFunction : public ChromeSyncExtensionFunction {
+class ClearFontPrefExtensionFunction : public UIThreadExtensionFunction {
  protected:
   ~ClearFontPrefExtensionFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 
   // Implementations should return the name of the preference to clear, like
   // "webkit.webprefs.default_font_size".
@@ -167,12 +167,12 @@ class ClearFontPrefExtensionFunction : public ChromeSyncExtensionFunction {
 };
 
 // Base class for extension API functions that get a browser font pref.
-class GetFontPrefExtensionFunction : public ChromeSyncExtensionFunction {
+class GetFontPrefExtensionFunction : public UIThreadExtensionFunction {
  protected:
   ~GetFontPrefExtensionFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 
   // Implementations should return the name of the preference to get, like
   // "webkit.webprefs.default_font_size".
@@ -184,12 +184,12 @@ class GetFontPrefExtensionFunction : public ChromeSyncExtensionFunction {
 };
 
 // Base class for extension API functions that set a browser font pref.
-class SetFontPrefExtensionFunction : public ChromeSyncExtensionFunction {
+class SetFontPrefExtensionFunction : public UIThreadExtensionFunction {
  protected:
   ~SetFontPrefExtensionFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 
   // Implementations should return the name of the preference to set, like
   // "webkit.webprefs.default_font_size".

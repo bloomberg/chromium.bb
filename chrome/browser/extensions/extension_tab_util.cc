@@ -95,10 +95,8 @@ Browser* GetBrowserInProfileWithId(Profile* profile,
   return NULL;
 }
 
-Browser* CreateBrowser(ChromeUIThreadExtensionFunction* function,
-                       int window_id,
-                       std::string* error) {
-  Browser::CreateParams params(Browser::TYPE_TABBED, function->GetProfile());
+Browser* CreateBrowser(Profile* profile, int window_id, std::string* error) {
+  Browser::CreateParams params(Browser::TYPE_TABBED, profile);
   Browser* browser = new Browser(params);
   browser->window()->Show();
   return browser;
@@ -126,28 +124,29 @@ ExtensionTabUtil::OpenTabParams::~OpenTabParams() {
 // Opens a new tab for a given extension. Returns NULL and sets |error| if an
 // error occurs.
 base::DictionaryValue* ExtensionTabUtil::OpenTab(
-    ChromeUIThreadExtensionFunction* function,
+    UIThreadExtensionFunction* function,
     const OpenTabParams& params,
     std::string* error) {
+  ChromeExtensionFunctionDetails chrome_details(function);
+  Profile* profile = chrome_details.GetProfile();
   // windowId defaults to "current" window.
   int window_id = extension_misc::kCurrentWindowId;
   if (params.window_id.get())
     window_id = *params.window_id;
 
-  Browser* browser = GetBrowserFromWindowID(function, window_id, error);
+  Browser* browser = GetBrowserFromWindowID(chrome_details, window_id, error);
   if (!browser) {
     if (!params.create_browser_if_needed) {
       return NULL;
     }
-    browser = CreateBrowser(function, window_id, error);
+    browser = CreateBrowser(profile, window_id, error);
     if (!browser)
       return NULL;
   }
 
   // Ensure the selected browser is tabbed.
   if (!browser->is_type_tabbed() && browser->IsAttemptingToCloseBrowser())
-    browser = chrome::FindTabbedBrowser(function->GetProfile(),
-                                        function->include_incognito());
+    browser = chrome::FindTabbedBrowser(profile, function->include_incognito());
   if (!browser || !browser->window()) {
     if (error)
       *error = keys::kNoCurrentWindowError;
@@ -160,13 +159,9 @@ base::DictionaryValue* ExtensionTabUtil::OpenTab(
   if (params.opener_tab_id.get()) {
     int opener_id = *params.opener_tab_id;
 
-    if (!ExtensionTabUtil::GetTabById(opener_id,
-                                      function->GetProfile(),
-                                      function->include_incognito(),
-                                      NULL,
-                                      NULL,
-                                      &opener,
-                                      NULL)) {
+    if (!ExtensionTabUtil::GetTabById(opener_id, profile,
+                                      function->include_incognito(), NULL, NULL,
+                                      &opener, NULL)) {
       if (error) {
         *error = ErrorUtils::FormatErrorMessage(keys::kTabNotFoundError,
                                                 base::IntToString(opener_id));

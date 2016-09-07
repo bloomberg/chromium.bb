@@ -1163,10 +1163,10 @@ void DeveloperPrivateChoosePathFunction::FileSelectionCanceled() {
 
 DeveloperPrivateChoosePathFunction::~DeveloperPrivateChoosePathFunction() {}
 
-bool DeveloperPrivateIsProfileManagedFunction::RunSync() {
-  SetResult(
-      base::MakeUnique<base::FundamentalValue>(GetProfile()->IsSupervised()));
-  return true;
+ExtensionFunction::ResponseAction
+DeveloperPrivateIsProfileManagedFunction::Run() {
+  return RespondNow(OneArgument(base::MakeUnique<base::FundamentalValue>(
+      Profile::FromBrowserContext(browser_context())->IsSupervised())));
 }
 
 DeveloperPrivateIsProfileManagedFunction::

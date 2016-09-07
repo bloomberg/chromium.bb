@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_COMMANDS_COMMANDS_H_
 #define CHROME_BROWSER_EXTENSIONS_API_COMMANDS_COMMANDS_H_
 
-#include "chrome/browser/extensions/chrome_extension_function.h"
+#include "extensions/browser/extension_function.h"
 
-class GetAllCommandsFunction : public ChromeSyncExtensionFunction {
+class GetAllCommandsFunction : public UIThreadExtensionFunction {
   ~GetAllCommandsFunction() override {}
-  bool RunSync() override;
+  ResponseAction Run() override;
   DECLARE_EXTENSION_FUNCTION("commands.getAll", COMMANDS_GETALL)
 };
 

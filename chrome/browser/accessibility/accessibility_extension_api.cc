@@ -48,8 +48,9 @@ const char kHeight[] = "height";
 const char kErrorNotSupported[] = "This API is not supported on this platform.";
 }  // namespace
 
-bool AccessibilityPrivateSetNativeAccessibilityEnabledFunction::RunSync() {
-  bool enabled;
+ExtensionFunction::ResponseAction
+AccessibilityPrivateSetNativeAccessibilityEnabledFunction::Run() {
+  bool enabled = false;
   EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(0, &enabled));
   if (enabled) {
     content::BrowserAccessibilityState::GetInstance()->
@@ -58,10 +59,11 @@ bool AccessibilityPrivateSetNativeAccessibilityEnabledFunction::RunSync() {
     content::BrowserAccessibilityState::GetInstance()->
         DisableAccessibility();
   }
-  return true;
+  return RespondNow(NoArguments());
 }
 
-bool AccessibilityPrivateSetFocusRingFunction::RunSync() {
+ExtensionFunction::ResponseAction
+AccessibilityPrivateSetFocusRingFunction::Run() {
 #if defined(OS_CHROMEOS)
   base::ListValue* rect_values = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetList(0, &rect_values));
@@ -90,11 +92,10 @@ bool AccessibilityPrivateSetFocusRingFunction::RunSync() {
     manager->SetTouchAccessibilityAnchorPoint(rects[0].CenterPoint());
   }
 
-  return true;
+  return RespondNow(NoArguments());
 #endif  // defined(OS_CHROMEOS)
 
-  error_ = kErrorNotSupported;
-  return false;
+  return RespondNow(Error(kErrorNotSupported));
 }
 
 ExtensionFunction::ResponseAction

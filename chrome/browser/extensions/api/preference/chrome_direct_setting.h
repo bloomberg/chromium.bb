@@ -7,7 +7,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "chrome/browser/extensions/chrome_extension_function.h"
+#include "extensions/browser/extension_function.h"
 
 class PrefService;
 
@@ -15,7 +15,7 @@ namespace extensions {
 namespace chromedirectsetting {
 
 // Base class to host instance method helpers.
-class DirectSettingFunctionBase : public ChromeSyncExtensionFunction {
+class DirectSettingFunctionBase : public UIThreadExtensionFunction {
  protected:
   DirectSettingFunctionBase();
   ~DirectSettingFunctionBase() override;
@@ -39,7 +39,7 @@ class GetDirectSettingFunction : public DirectSettingFunctionBase {
 
  protected:
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 
  private:
   ~GetDirectSettingFunction() override;
@@ -55,7 +55,7 @@ class SetDirectSettingFunction : public DirectSettingFunctionBase {
 
  protected:
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 
  private:
   ~SetDirectSettingFunction() override;
@@ -71,7 +71,7 @@ class ClearDirectSettingFunction : public DirectSettingFunctionBase {
 
  protected:
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 
  private:
   ~ClearDirectSettingFunction() override;

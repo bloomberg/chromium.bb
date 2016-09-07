@@ -123,8 +123,8 @@ bool IsRemovalPermitted(int removal_mask, PrefService* prefs) {
 
 }  // namespace
 
-bool BrowsingDataSettingsFunction::RunSync() {
-  PrefService* prefs = GetProfile()->GetPrefs();
+ExtensionFunction::ResponseAction BrowsingDataSettingsFunction::Run() {
+  prefs_ = Profile::FromBrowserContext(browser_context())->GetPrefs();
 
   // Fill origin types.
   // The "cookies" and "hosted apps" UI checkboxes both map to
@@ -135,15 +135,15 @@ bool BrowsingDataSettingsFunction::RunSync() {
       new base::DictionaryValue);
   origin_types->SetBoolean(
       extension_browsing_data_api_constants::kUnprotectedWebKey,
-      prefs->GetBoolean(browsing_data::prefs::kDeleteCookies));
+      prefs_->GetBoolean(browsing_data::prefs::kDeleteCookies));
   origin_types->SetBoolean(
       extension_browsing_data_api_constants::kProtectedWebKey,
-      prefs->GetBoolean(browsing_data::prefs::kDeleteHostedAppsData));
+      prefs_->GetBoolean(browsing_data::prefs::kDeleteHostedAppsData));
   origin_types->SetBoolean(
       extension_browsing_data_api_constants::kExtensionsKey, false);
 
   // Fill deletion time period.
-  int period_pref = prefs->GetInteger(browsing_data::prefs::kDeleteTimePeriod);
+  int period_pref = prefs_->GetInteger(browsing_data::prefs::kDeleteTimePeriod);
   browsing_data::TimePeriod period =
       static_cast<browsing_data::TimePeriod>(period_pref);
   double since = 0;
@@ -162,8 +162,8 @@ bool BrowsingDataSettingsFunction::RunSync() {
   std::unique_ptr<base::DictionaryValue> permitted(new base::DictionaryValue);
 
   bool delete_site_data =
-      prefs->GetBoolean(browsing_data::prefs::kDeleteCookies) ||
-      prefs->GetBoolean(browsing_data::prefs::kDeleteHostedAppsData);
+      prefs_->GetBoolean(browsing_data::prefs::kDeleteCookies) ||
+      prefs_->GetBoolean(browsing_data::prefs::kDeleteHostedAppsData);
 
   SetDetails(selected.get(), permitted.get(),
              extension_browsing_data_api_constants::kAppCacheKey,
@@ -194,24 +194,25 @@ bool BrowsingDataSettingsFunction::RunSync() {
              delete_site_data);
 
   SetDetails(selected.get(), permitted.get(),
-      extension_browsing_data_api_constants::kPluginDataKey,
-      delete_site_data && prefs->GetBoolean(prefs::kClearPluginLSODataEnabled));
+             extension_browsing_data_api_constants::kPluginDataKey,
+             delete_site_data &&
+                 prefs_->GetBoolean(prefs::kClearPluginLSODataEnabled));
 
   SetDetails(selected.get(), permitted.get(),
              extension_browsing_data_api_constants::kHistoryKey,
-             prefs->GetBoolean(browsing_data::prefs::kDeleteBrowsingHistory));
+             prefs_->GetBoolean(browsing_data::prefs::kDeleteBrowsingHistory));
   SetDetails(selected.get(), permitted.get(),
              extension_browsing_data_api_constants::kDownloadsKey,
-             prefs->GetBoolean(browsing_data::prefs::kDeleteDownloadHistory));
+             prefs_->GetBoolean(browsing_data::prefs::kDeleteDownloadHistory));
   SetDetails(selected.get(), permitted.get(),
              extension_browsing_data_api_constants::kCacheKey,
-             prefs->GetBoolean(browsing_data::prefs::kDeleteCache));
+             prefs_->GetBoolean(browsing_data::prefs::kDeleteCache));
   SetDetails(selected.get(), permitted.get(),
              extension_browsing_data_api_constants::kFormDataKey,
-             prefs->GetBoolean(browsing_data::prefs::kDeleteFormData));
+             prefs_->GetBoolean(browsing_data::prefs::kDeleteFormData));
   SetDetails(selected.get(), permitted.get(),
              extension_browsing_data_api_constants::kPasswordsKey,
-             prefs->GetBoolean(browsing_data::prefs::kDeletePasswords));
+             prefs_->GetBoolean(browsing_data::prefs::kDeletePasswords));
 
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue);
   result->Set(extension_browsing_data_api_constants::kOptionsKey,
@@ -220,8 +221,7 @@ bool BrowsingDataSettingsFunction::RunSync() {
               selected.release());
   result->Set(extension_browsing_data_api_constants::kDataRemovalPermittedKey,
               permitted.release());
-  SetResult(std::move(result));
-  return true;
+  return RespondNow(OneArgument(std::move(result)));
 }
 
 void BrowsingDataSettingsFunction::SetDetails(
@@ -229,8 +229,7 @@ void BrowsingDataSettingsFunction::SetDetails(
     base::DictionaryValue* permitted_dict,
     const char* data_type,
     bool is_selected) {
-  bool is_permitted =
-      IsRemovalPermitted(MaskForKey(data_type), GetProfile()->GetPrefs());
+  bool is_permitted = IsRemovalPermitted(MaskForKey(data_type), prefs_);
   selected_dict->SetBoolean(data_type, is_selected && is_permitted);
   permitted_dict->SetBoolean(data_type, is_permitted);
 }

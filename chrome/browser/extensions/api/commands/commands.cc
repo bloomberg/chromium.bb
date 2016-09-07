@@ -25,11 +25,11 @@ base::DictionaryValue* CreateCommandValue(
 
 }  // namespace
 
-bool GetAllCommandsFunction::RunSync() {
+ExtensionFunction::ResponseAction GetAllCommandsFunction::Run() {
   std::unique_ptr<base::ListValue> command_list(new base::ListValue());
 
   extensions::CommandService* command_service =
-      extensions::CommandService::Get(GetProfile());
+      extensions::CommandService::Get(browser_context());
 
   extensions::Command browser_action;
   bool active = false;
@@ -64,6 +64,5 @@ bool GetAllCommandsFunction::RunSync() {
     command_list->Append(CreateCommandValue(iter->second, active));
   }
 
-  SetResult(std::move(command_list));
-  return true;
+  return RespondNow(OneArgument(std::move(command_list)));
 }

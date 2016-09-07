@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/chrome_extension_function.h"
 
 class PluginPrefs;
+class PrefService;
 
 namespace extension_browsing_data_api_constants {
 
@@ -54,12 +55,12 @@ extern const char kOneAtATimeError[];
 
 }  // namespace extension_browsing_data_api_constants
 
-class BrowsingDataSettingsFunction : public ChromeSyncExtensionFunction {
+class BrowsingDataSettingsFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("browsingData.settings", BROWSINGDATA_SETTINGS)
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 
  protected:
   ~BrowsingDataSettingsFunction() override {}
@@ -73,6 +74,8 @@ class BrowsingDataSettingsFunction : public ChromeSyncExtensionFunction {
                   base::DictionaryValue* permitted_dict,
                   const char* data_type,
                   bool is_selected);
+
+  PrefService* prefs_ = nullptr;
 };
 
 // This serves as a base class from which the browsing data API removal

@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FIRST_RUN_PRIVATE_API_H_
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/common/extensions/api/first_run_private.h"
+#include "extensions/browser/extension_function.h"
 
 class FirstRunPrivateGetLocalizedStringsFunction
-    : public ChromeSyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("firstRunPrivate.getLocalizedStrings",
                              FIRSTRUNPRIVATE_GETLOCALIZEDSTRINGS)
@@ -18,12 +18,11 @@ class FirstRunPrivateGetLocalizedStringsFunction
  protected:
   ~FirstRunPrivateGetLocalizedStringsFunction() override {}
 
-  // SyncExtensionFunction overrides.
-  bool RunSync() override;
+  // ExtensionFunction:
+  ResponseAction Run() override;
 };
 
-class FirstRunPrivateLaunchTutorialFunction
-    : public ChromeSyncExtensionFunction {
+class FirstRunPrivateLaunchTutorialFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("firstRunPrivate.launchTutorial",
                              FIRSTRUNPRIVATE_LAUNCHTUTORIAL)
@@ -31,8 +30,8 @@ class FirstRunPrivateLaunchTutorialFunction
  protected:
   ~FirstRunPrivateLaunchTutorialFunction() override {}
 
-  // SyncExtensionFunction overrides.
-  bool RunSync() override;
+  // ExtensionFunction:
+  ResponseAction Run() override;
 };
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FIRST_RUN_PRIVATE_API_H_
