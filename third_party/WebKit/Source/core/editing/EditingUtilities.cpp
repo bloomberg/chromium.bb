@@ -1695,6 +1695,8 @@ int indexForVisiblePosition(const VisiblePosition& visiblePosition, ContainerNod
 
     Position p(visiblePosition.deepEquivalent());
     Document& document = *p.document();
+    DCHECK(!document.needsLayoutTreeUpdate());
+
     ShadowRoot* shadowRoot = p.anchorNode()->containingShadowRoot();
 
     if (shadowRoot)
@@ -1702,12 +1704,7 @@ int indexForVisiblePosition(const VisiblePosition& visiblePosition, ContainerNod
     else
         scope = document.documentElement();
 
-    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
-    // needs to be audited.  See http://crbug.com/590369 for more details.
-    document.updateStyleAndLayoutIgnorePendingStylesheets();
-
     EphemeralRange range(Position::firstPositionInNode(scope), p.parentAnchoredEquivalent());
-
     return TextIterator::rangeLength(range.startPosition(), range.endPosition(), true);
 }
 
