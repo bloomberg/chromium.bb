@@ -72,12 +72,14 @@ class ExtensionMessageBubbleViewBrowserTest
   DISALLOW_COPY_AND_ASSIGN(ExtensionMessageBubbleViewBrowserTest);
 };
 
-class ExtensionMessageBubbleViewBrowserTestRedesign
+class ExtensionMessageBubbleViewBrowserTestLegacy
     : public ExtensionMessageBubbleViewBrowserTest {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionMessageBubbleViewBrowserTest::SetUpCommandLine(command_line);
     override_redesign_.reset();
+    override_redesign_.reset(new extensions::FeatureSwitch::ScopedOverride(
+        extensions::FeatureSwitch::extension_action_redesign(), false));
   }
 };
 
@@ -141,12 +143,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
   TestBubbleAnchoredToExtensionAction();
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
+IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTestLegacy,
                        ExtensionBubbleAnchoredToAppMenu) {
   TestBubbleAnchoredToAppMenu();
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
+IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTestLegacy,
                        ExtensionBubbleAnchoredToAppMenuWithOtherAction) {
   TestBubbleAnchoredToAppMenuWithOtherAction();
 }
@@ -174,17 +176,17 @@ IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
 // Tests for the extension bubble and settings overrides. These bubbles are
 // currently only shown on Windows.
 #if defined(OS_WIN)
-IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTestRedesign,
+IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
                        TestControlledNewTabPageMessageBubble) {
   TestControlledNewTabPageBubbleShown();
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTestRedesign,
+IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
                        TestControlledHomeMessageBubble) {
   TestControlledHomeBubbleShown();
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTestRedesign,
+IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
                        TestControlledSearchMessageBubble) {
   TestControlledSearchBubbleShown();
 }

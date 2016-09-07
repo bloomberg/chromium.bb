@@ -77,7 +77,7 @@ void BrowserActionsBarBrowserTest::SetUpCommandLine(
   // These tests are deliberately testing behavior without the redesign.
   // Forcefully disable it.
   override_redesign_.reset(new extensions::FeatureSwitch::ScopedOverride(
-      extensions::FeatureSwitch::extension_action_redesign(), false));
+      extensions::FeatureSwitch::extension_action_redesign(), true));
 }
 
 void BrowserActionsBarBrowserTest::SetUpOnMainThread() {
@@ -115,26 +115,26 @@ void BrowserActionsBarBrowserTest::LoadExtensions() {
   }
 }
 
-// BrowserActionsBarRedesignBrowserTest:
+// BrowserActionsBarLegacyBrowserTest:
 
-BrowserActionsBarRedesignBrowserTest::BrowserActionsBarRedesignBrowserTest() {
+BrowserActionsBarLegacyBrowserTest::BrowserActionsBarLegacyBrowserTest() {
 }
 
-BrowserActionsBarRedesignBrowserTest::~BrowserActionsBarRedesignBrowserTest() {
+BrowserActionsBarLegacyBrowserTest::~BrowserActionsBarLegacyBrowserTest() {
 }
 
-void BrowserActionsBarRedesignBrowserTest::SetUpCommandLine(
+void BrowserActionsBarLegacyBrowserTest::SetUpCommandLine(
     base::CommandLine* command_line) {
   BrowserActionsBarBrowserTest::SetUpCommandLine(command_line);
   // Override to force the redesign. Completely clear the previous override
   // first, since doing so resets the value of the switch.
   override_redesign_.reset();
   override_redesign_.reset(new extensions::FeatureSwitch::ScopedOverride(
-      extensions::FeatureSwitch::extension_action_redesign(), true));
+      extensions::FeatureSwitch::extension_action_redesign(), false));
 }
 
 // Test the basic functionality.
-IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, Basic) {
+IN_PROC_BROWSER_TEST_F(BrowserActionsBarLegacyBrowserTest, Basic) {
   // Load an extension with no browser action.
   extension_service()->AddExtension(CreateExtension("alpha", false).get());
   // This extension should not be in the model (has no browser action).
@@ -185,7 +185,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, MoveBrowserActions) {
 
 // Test that explicitly hiding an extension action results in it disappearing
 // from the browser actions bar.
-IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, ForceHide) {
+IN_PROC_BROWSER_TEST_F(BrowserActionsBarLegacyBrowserTest, ForceHide) {
   LoadExtensions();
 
   EXPECT_EQ(3, browser_actions_bar()->VisibleBrowserActions());
@@ -295,7 +295,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, Visibility) {
 
 // Test that, with the toolbar action redesign, actions that want to run have
 // the proper appearance.
-IN_PROC_BROWSER_TEST_F(BrowserActionsBarRedesignBrowserTest,
+IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest,
                        TestUiForActionsWantToRun) {
   LoadExtensions();
   EXPECT_EQ(3, browser_actions_bar()->VisibleBrowserActions());
@@ -412,7 +412,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest,
   }
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserActionsBarRedesignBrowserTest,
+IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest,
                        OverflowedBrowserActionPopupTest) {
   std::unique_ptr<BrowserActionTestUtil> overflow_bar =
       browser_actions_bar()->CreateOverflowBar();
@@ -499,7 +499,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarRedesignBrowserTest,
 
 // Test removing an extension that has an popup showing.
 // Regression test for crbug.com/599467.
-IN_PROC_BROWSER_TEST_F(BrowserActionsBarRedesignBrowserTest,
+IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest,
                        OverflowedBrowserActionPopupTestRemoval) {
   std::unique_ptr<BrowserActionTestUtil> overflow_bar =
       browser_actions_bar()->CreateOverflowBar();
@@ -539,7 +539,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarRedesignBrowserTest,
 }
 
 // Test that page action popups work with the toolbar redesign.
-IN_PROC_BROWSER_TEST_F(BrowserActionsBarRedesignBrowserTest,
+IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest,
                        PageActionPopupsTest) {
   ExtensionTestMessageListener listener("ready", false);
   const extensions::Extension* page_action_extension =
@@ -560,8 +560,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarRedesignBrowserTest,
 }
 
 // Test removing an action while it is popped out.
-IN_PROC_BROWSER_TEST_F(BrowserActionsBarRedesignBrowserTest,
-                       RemovePoppedOutAction) {
+IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, RemovePoppedOutAction) {
   // First, load up three separate extensions and reduce the visible count to
   // one (so that two are in the overflow).
   scoped_refptr<const extensions::Extension> extension1 =

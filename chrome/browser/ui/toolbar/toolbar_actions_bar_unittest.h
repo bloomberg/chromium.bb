@@ -13,7 +13,6 @@
 #include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
-#include "extensions/common/feature_switch.h"
 #include "ui/base/material_design/material_design_controller.h"
 
 class ExtensionAction;
@@ -40,9 +39,6 @@ class ToolbarActionsBarUnitTest :
   ~ToolbarActionsBarUnitTest() override;
 
  protected:
-  // A constructor to allow subclasses to override the redesign value.
-  explicit ToolbarActionsBarUnitTest(bool use_redesign);
-
   void SetUp() override;
   void TearDown() override;
 
@@ -97,28 +93,13 @@ class ToolbarActionsBarUnitTest :
   // ToolbarActionsBar.
   std::unique_ptr<BrowserActionTestUtil> browser_action_test_util_;
 
-  // The overflow container's BrowserActionTestUtil (only non-null if
-  // |use_redesign| is true).
+  // The overflow container's BrowserActionTestUtil.
   std::unique_ptr<BrowserActionTestUtil> overflow_browser_action_test_util_;
-
-  // True if the extension action redesign switch should be enabled.
-  bool use_redesign_;
-
-  std::unique_ptr<extensions::FeatureSwitch::ScopedOverride> redesign_switch_;
 
   std::unique_ptr<ui::test::MaterialDesignControllerTestAPI>
       material_design_state_;
 
   DISALLOW_COPY_AND_ASSIGN(ToolbarActionsBarUnitTest);
-};
-
-class ToolbarActionsBarRedesignUnitTest : public ToolbarActionsBarUnitTest {
- public:
-  ToolbarActionsBarRedesignUnitTest();
-  ~ToolbarActionsBarRedesignUnitTest() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ToolbarActionsBarRedesignUnitTest);
 };
 
 #endif  // CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_ACTIONS_BAR_UNITTEST_H_

@@ -105,12 +105,14 @@ class ExtensionMessageBubbleBrowserTestMac
   DISALLOW_COPY_AND_ASSIGN(ExtensionMessageBubbleBrowserTestMac);
 };
 
-class ExtensionMessageBubbleBrowserTestRedesignMac
+class ExtensionMessageBubbleBrowserTestLegacyMac
     : public ExtensionMessageBubbleBrowserTestMac {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionMessageBubbleBrowserTestMac::SetUpCommandLine(command_line);
     override_redesign_.reset();
+    override_redesign_.reset(new extensions::FeatureSwitch::ScopedOverride(
+        extensions::FeatureSwitch::extension_action_redesign(), false));
   }
 };
 
@@ -178,12 +180,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleBrowserTestMac,
   TestBubbleAnchoredToExtensionAction();
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleBrowserTestMac,
+IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleBrowserTestLegacyMac,
                        ExtensionBubbleAnchoredToAppMenu) {
   TestBubbleAnchoredToAppMenu();
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleBrowserTestMac,
+IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleBrowserTestLegacyMac,
                        ExtensionBubbleAnchoredToAppMenuWithOtherAction) {
   TestBubbleAnchoredToAppMenuWithOtherAction();
 }
@@ -228,12 +230,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleBrowserTestMac,
   TestClickingDismissButton();
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleBrowserTestRedesignMac,
+IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleBrowserTestMac,
                        TestControlledHomeMessageBubble) {
   TestControlledHomeBubbleShown();
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleBrowserTestRedesignMac,
+IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleBrowserTestMac,
                        TestControlledSearchMessageBubble) {
   TestControlledSearchBubbleShown();
 }

@@ -248,7 +248,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, HighlightMode) {
 
 // Test the behavior of the overflow container for Extension Actions.
 class BrowserActionsContainerOverflowTest
-    : public BrowserActionsBarRedesignBrowserTest {
+    : public BrowserActionsBarBrowserTest {
  public:
   BrowserActionsContainerOverflowTest() : main_bar_(nullptr),
                                           overflow_bar_(nullptr) {

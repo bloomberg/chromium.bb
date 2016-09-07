@@ -139,9 +139,6 @@ class ToolbarActionViewInteractiveUITest : public ExtensionBrowserTest {
   void TearDownOnMainThread() override;
 
  private:
-  // Override the extensions-action-redesign switch.
-  std::unique_ptr<extensions::FeatureSwitch::ScopedOverride> feature_override_;
-
   DISALLOW_COPY_AND_ASSIGN(ToolbarActionViewInteractiveUITest);
 };
 
@@ -151,10 +148,6 @@ ToolbarActionViewInteractiveUITest::~ToolbarActionViewInteractiveUITest() {}
 void ToolbarActionViewInteractiveUITest::SetUpCommandLine(
     base::CommandLine* command_line) {
   ExtensionBrowserTest::SetUpCommandLine(command_line);
-  // We do this before the rest of the setup because it can affect how the views
-  // are constructed.
-  feature_override_.reset(new extensions::FeatureSwitch::ScopedOverride(
-      extensions::FeatureSwitch::extension_action_redesign(), true));
   ToolbarActionsBar::disable_animations_for_testing_ = true;
 }
 

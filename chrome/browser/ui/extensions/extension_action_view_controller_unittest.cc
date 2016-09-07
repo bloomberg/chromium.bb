@@ -13,13 +13,27 @@
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_unittest.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "extensions/common/feature_switch.h"
 #include "extensions/common/user_script.h"
 #include "ui/base/l10n/l10n_util.h"
+
+class ToolbarActionsBarLegacyUnitTest : public ToolbarActionsBarUnitTest {
+ public:
+  ToolbarActionsBarLegacyUnitTest()
+      : extension_action_redesign_override_(
+            extensions::FeatureSwitch::extension_action_redesign(), true) {}
+  ~ToolbarActionsBarLegacyUnitTest() override {}
+
+ private:
+  extensions::FeatureSwitch::ScopedOverride extension_action_redesign_override_;
+
+  DISALLOW_COPY_AND_ASSIGN(ToolbarActionsBarLegacyUnitTest);
+};
 
 // Tests the icon appearance of extension actions without the toolbar redesign.
 // In this case, the action should never be grayscaled or decorated to indicate
 // whether or not it wants to run.
-TEST_P(ToolbarActionsBarUnitTest, ExtensionActionNormalAppearance) {
+TEST_P(ToolbarActionsBarLegacyUnitTest, ExtensionActionNormalAppearance) {
   CreateAndAddExtension("extension",
                         extensions::extension_action_test_util::BROWSER_ACTION);
   EXPECT_EQ(1u, toolbar_actions_bar()->GetIconCount());
@@ -60,7 +74,7 @@ TEST_P(ToolbarActionsBarUnitTest, ExtensionActionNormalAppearance) {
 // Tests the icon appearance of extension actions with the toolbar redesign.
 // Extensions that don't want to run should have their icons grayscaled.
 // Overflowed extensions that want to run should have an additional decoration.
-TEST_P(ToolbarActionsBarRedesignUnitTest, ExtensionActionWantsToRunAppearance) {
+TEST_P(ToolbarActionsBarUnitTest, ExtensionActionWantsToRunAppearance) {
   CreateAndAddExtension("extension",
                         extensions::extension_action_test_util::PAGE_ACTION);
   EXPECT_EQ(1u, toolbar_actions_bar()->GetIconCount());
@@ -105,7 +119,7 @@ TEST_P(ToolbarActionsBarRedesignUnitTest, ExtensionActionWantsToRunAppearance) {
   EXPECT_FALSE(image_source->paint_blocked_actions_decoration());
 }
 
-TEST_P(ToolbarActionsBarRedesignUnitTest, ExtensionActionBlockedActions) {
+TEST_P(ToolbarActionsBarUnitTest, ExtensionActionBlockedActions) {
   scoped_refptr<const extensions::Extension> browser_action_ext =
       CreateAndAddExtension(
           "browser action",
@@ -198,7 +212,7 @@ TEST_P(ToolbarActionsBarRedesignUnitTest, ExtensionActionBlockedActions) {
   EXPECT_FALSE(image_source->paint_blocked_actions_decoration());
 }
 
-TEST_P(ToolbarActionsBarRedesignUnitTest, ExtensionActionContextMenu) {
+TEST_P(ToolbarActionsBarUnitTest, ExtensionActionContextMenu) {
   CreateAndAddExtension("extension",
                         extensions::extension_action_test_util::BROWSER_ACTION);
   EXPECT_EQ(1u, toolbar_actions_bar()->GetIconCount());
