@@ -62,7 +62,7 @@ class CallbackThread : public base::SimpleThread {
     scoped_refptr<MessageLoopResource> message_loop(message_loop_);
     message_loop->AttachToCurrentThread();
     // Note, run releases the lock to run events.
-    message_loop->Run();
+    base::RunLoop().Run();
     message_loop->DetachFromThread();
   }
 
