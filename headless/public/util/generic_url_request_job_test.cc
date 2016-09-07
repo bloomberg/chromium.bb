@@ -146,7 +146,7 @@ class GenericURLRequestJobTest : public testing::Test {
     std::unique_ptr<net::URLRequest> request(url_request_context_.CreateRequest(
         url, net::DEFAULT_PRIORITY, &request_delegate_));
     request->Start();
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     return request;
   }
 
@@ -179,7 +179,7 @@ TEST_F(GenericURLRequestJobTest, BasicRequestParams) {
   request->SetExtraRequestHeaderByName("User-Agent", "TestBrowser", true);
   request->SetExtraRequestHeaderByName("Accept", "text/plain", true);
   request->Start();
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   std::string expected_request_json =
       "{\"url\": \"https://example.com/\","
