@@ -13,14 +13,14 @@ PASS focusedFieldValueDescription() is "Seconds, AXValueDescription: 56, 0, 59"
 PASS focusedFieldValueDescription() is "Milliseconds, AXValueDescription: 789, 0, 999"
 PASS focusedFieldValueDescription() is "AM/PM, AXValueDescription: PM, 1, 2"
 Empty value
-PASS focusedFieldValueDescription() is "AM/PM, AXValueDescription: blank, 1, 2"
-PASS focusedFieldValueDescription() is "Milliseconds, AXValueDescription: blank, 0, 999"
-PASS focusedFieldValueDescription() is "Seconds, AXValueDescription: blank, 0, 59"
-PASS focusedFieldValueDescription() is "Minutes, AXValueDescription: blank, 0, 59"
-PASS focusedFieldValueDescription() is "Hours, AXValueDescription: blank, 1, 12"
-PASS focusedFieldValueDescription() is "Year, AXValueDescription: blank, 1, 275760"
-PASS focusedFieldValueDescription() is "Day, AXValueDescription: blank, 1, 31"
-PASS focusedFieldValueDescription() is "Month, AXValueDescription: blank, 1, 12"
+PASS focusedFieldValueDescription() is "AM/PM, AXValueDescription: --, 1, 2"
+PASS focusedFieldValueDescription() is "Milliseconds, AXValueDescription: ---, 0, 999"
+PASS focusedFieldValueDescription() is "Seconds, AXValueDescription: --, 0, 59"
+PASS focusedFieldValueDescription() is "Minutes, AXValueDescription: --, 0, 59"
+PASS focusedFieldValueDescription() is "Hours, AXValueDescription: --, 1, 12"
+PASS focusedFieldValueDescription() is "Year, AXValueDescription: yyyy, 1, 275760"
+PASS focusedFieldValueDescription() is "Day, AXValueDescription: dd, 1, 31"
+PASS focusedFieldValueDescription() is "Month, AXValueDescription: mm, 1, 12"
 
 PASS successfullyParsed is true
 

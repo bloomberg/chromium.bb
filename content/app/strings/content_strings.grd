@@ -544,10 +544,6 @@ below:
         Day
       </message>
 
-      <message name="IDS_AX_DATE_TIME_FIELD_EMPTY_VALUE_TEXT" desc="Accessible description of empty value of field in a date/time control">
-        blank
-      </message>
-
       <message name="IDS_AX_HOUR_FIELD_TEXT" desc="Accessible description of the hour field in a date/time control">
         Hours
       </message>

@@ -22,10 +22,10 @@ else {
 
     debug('Empty value');
     eventSender.keyDown('Backspace');
-    checkFocusedElementAXAttributes('Year, AXValueDescription: blank, intValue:0, range:1-275760');
+    checkFocusedElementAXAttributes('Year, AXValueDescription: ----, intValue:0, range:1-275760');
     eventSender.keyDown('\t', ['shiftKey']);
     eventSender.keyDown('Backspace');
-    checkFocusedElementAXAttributes('Month, AXValueDescription: blank, intValue:0, range:1-12');
+    checkFocusedElementAXAttributes('Month, AXValueDescription: ---------, intValue:0, range:1-12');
 
     debug('');
     testInput.remove();

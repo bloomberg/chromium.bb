@@ -7,8 +7,8 @@ Non-empty value
 PASS focusedElementDescription() is "Month, AXValueDescription: October, intValue:10, range:1-12"
 PASS focusedElementDescription() is "Year, AXValueDescription: 2012, intValue:2012, range:1-275760"
 Empty value
-PASS focusedElementDescription() is "Year, AXValueDescription: blank, intValue:0, range:1-275760"
-PASS focusedElementDescription() is "Month, AXValueDescription: blank, intValue:0, range:1-12"
+PASS focusedElementDescription() is "Year, AXValueDescription: ----, intValue:0, range:1-275760"
+PASS focusedElementDescription() is "Month, AXValueDescription: ---------, intValue:0, range:1-12"
 
 PASS successfullyParsed is true
 

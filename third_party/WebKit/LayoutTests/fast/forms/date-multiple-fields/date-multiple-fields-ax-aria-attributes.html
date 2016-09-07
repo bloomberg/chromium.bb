@@ -16,11 +16,11 @@ if (!window.accessibilityController || !window.eventSender)
 else {
     testInput.focus();
     debug('Initial empty state');
-    checkFocusedElementAXAttributes('Month, AXValueDescription: blank, intValue:0, range:1-12');
+    checkFocusedElementAXAttributes('Month, AXValueDescription: mm, intValue:0, range:1-12');
     eventSender.keyDown('\t');
-    checkFocusedElementAXAttributes('Day, AXValueDescription: blank, intValue:0, range:1-31');
+    checkFocusedElementAXAttributes('Day, AXValueDescription: dd, intValue:0, range:1-31');
     eventSender.keyDown('\t');
-    checkFocusedElementAXAttributes('Year, AXValueDescription: blank, intValue:0, range:1-275760');
+    checkFocusedElementAXAttributes('Year, AXValueDescription: yyyy, intValue:0, range:1-275760');
 
     eventSender.keyDown('\t', ['shiftKey']);
     eventSender.keyDown('\t', ['shiftKey']);
@@ -34,13 +34,13 @@ else {
 
     debug('Empty value');
     eventSender.keyDown('Backspace');
-    checkFocusedElementAXAttributes('Year, AXValueDescription: blank, intValue:0, range:1-275760');
+    checkFocusedElementAXAttributes('Year, AXValueDescription: yyyy, intValue:0, range:1-275760');
     eventSender.keyDown('\t', ['shiftKey']);
     eventSender.keyDown('Backspace');
-    checkFocusedElementAXAttributes('Day, AXValueDescription: blank, intValue:0, range:1-31');
+    checkFocusedElementAXAttributes('Day, AXValueDescription: dd, intValue:0, range:1-31');
     eventSender.keyDown('\t', ['shiftKey']);
     eventSender.keyDown('Backspace');
-    checkFocusedElementAXAttributes('Month, AXValueDescription: blank, intValue:0, range:1-12');
+    checkFocusedElementAXAttributes('Month, AXValueDescription: mm, intValue:0, range:1-12');
 
     debug('');
     testInput.parentNode.removeChild(testInput);

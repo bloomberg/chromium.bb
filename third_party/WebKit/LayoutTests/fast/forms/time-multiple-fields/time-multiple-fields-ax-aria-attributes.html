@@ -43,19 +43,19 @@ checkFocusedElementAXAttributes('AM/PM, AXValueDescription: PM, intValue:2, rang
 
 debug('Empty value');
 keyDown('Backspace');
-checkFocusedElementAXAttributes('AM/PM, AXValueDescription: blank, intValue:0, range:1-2');
+checkFocusedElementAXAttributes('AM/PM, AXValueDescription: --, intValue:0, range:1-2');
 keyDown('\t', ['shiftKey']);
 keyDown('Backspace');
-checkFocusedElementAXAttributes('Milliseconds, AXValueDescription: blank, intValue:0, range:0-999');
+checkFocusedElementAXAttributes('Milliseconds, AXValueDescription: ---, intValue:0, range:0-999');
 keyDown('\t', ['shiftKey']);
 keyDown('Backspace');
-checkFocusedElementAXAttributes('Seconds, AXValueDescription: blank, intValue:0, range:0-59');
+checkFocusedElementAXAttributes('Seconds, AXValueDescription: --, intValue:0, range:0-59');
 keyDown('\t', ['shiftKey']);
 keyDown('Backspace');
-checkFocusedElementAXAttributes('Minutes, AXValueDescription: blank, intValue:0, range:0-59');
+checkFocusedElementAXAttributes('Minutes, AXValueDescription: --, intValue:0, range:0-59');
 keyDown('\t', ['shiftKey']);
 keyDown('Backspace');
-checkFocusedElementAXAttributes('Hours, AXValueDescription: blank, intValue:0, range:1-12');
+checkFocusedElementAXAttributes('Hours, AXValueDescription: --, intValue:0, range:1-12');
 
 debug('');
 testInput.parentNode.removeChild(testInput);

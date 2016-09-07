@@ -10,11 +10,11 @@ PASS focusedElementDescription() is "Seconds, AXValueDescription: 56, intValue:5
 PASS focusedElementDescription() is "Milliseconds, AXValueDescription: 789, intValue:789, range:0-999"
 PASS focusedElementDescription() is "AM/PM, AXValueDescription: PM, intValue:2, range:1-2"
 Empty value
-PASS focusedElementDescription() is "AM/PM, AXValueDescription: blank, intValue:0, range:1-2"
-PASS focusedElementDescription() is "Milliseconds, AXValueDescription: blank, intValue:0, range:0-999"
-PASS focusedElementDescription() is "Seconds, AXValueDescription: blank, intValue:0, range:0-59"
-PASS focusedElementDescription() is "Minutes, AXValueDescription: blank, intValue:0, range:0-59"
-PASS focusedElementDescription() is "Hours, AXValueDescription: blank, intValue:0, range:1-12"
+PASS focusedElementDescription() is "AM/PM, AXValueDescription: --, intValue:0, range:1-2"
+PASS focusedElementDescription() is "Milliseconds, AXValueDescription: ---, intValue:0, range:0-999"
+PASS focusedElementDescription() is "Seconds, AXValueDescription: --, intValue:0, range:0-59"
+PASS focusedElementDescription() is "Minutes, AXValueDescription: --, intValue:0, range:0-59"
+PASS focusedElementDescription() is "Hours, AXValueDescription: --, intValue:0, range:1-12"
 
 PASS successfullyParsed is true
 

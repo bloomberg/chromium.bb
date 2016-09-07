@@ -7,8 +7,8 @@ Non-empty value
 PASS focusedFieldValueDescription() is "Week, AXValueDescription: 10, 1, 53"
 PASS focusedFieldValueDescription() is "Year, AXValueDescription: 2012, 1, 275760"
 Empty value
-PASS focusedFieldValueDescription() is "Year, AXValueDescription: blank, 1, 275760"
-PASS focusedFieldValueDescription() is "Week, AXValueDescription: blank, 1, 53"
+PASS focusedFieldValueDescription() is "Year, AXValueDescription: ----, 1, 275760"
+PASS focusedFieldValueDescription() is "Week, AXValueDescription: --, 1, 53"
 
 PASS successfullyParsed is true
 

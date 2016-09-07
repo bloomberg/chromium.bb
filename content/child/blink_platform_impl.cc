@@ -94,8 +94,6 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_AX_CALENDAR_WEEK_DESCRIPTION;
     case WebLocalizedString::AXCheckedCheckBoxActionVerb:
       return IDS_AX_CHECKED_CHECK_BOX_ACTION_VERB;
-    case WebLocalizedString::AXDateTimeFieldEmptyValueText:
-      return IDS_AX_DATE_TIME_FIELD_EMPTY_VALUE_TEXT;
     case WebLocalizedString::AXDayOfMonthFieldText:
       return IDS_AX_DAY_OF_MONTH_FIELD_TEXT;
     case WebLocalizedString::AXDefaultActionVerb:

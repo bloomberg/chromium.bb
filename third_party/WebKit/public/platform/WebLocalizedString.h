@@ -42,7 +42,6 @@ struct WebLocalizedString {
         AXCalendarShowPreviousMonth,
         AXCalendarWeekDescription,
         AXCheckedCheckBoxActionVerb,
-        AXDateTimeFieldEmptyValueText,
         AXDayOfMonthFieldText,
         AXDefaultActionVerb,
         AXHeadingText, // Deprecated.

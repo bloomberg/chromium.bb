@@ -39,28 +39,28 @@ else {
 
     debug('Empty value');
     eventSender.keyDown('Backspace');
-    shouldBeEqualToString('focusedFieldValueDescription()', 'AM/PM, AXValueDescription: blank, 1, 2');
+    shouldBeEqualToString('focusedFieldValueDescription()', 'AM/PM, AXValueDescription: --, 1, 2');
     eventSender.keyDown('\t', ['shiftKey']);
     eventSender.keyDown('Backspace');
-    shouldBeEqualToString('focusedFieldValueDescription()', 'Milliseconds, AXValueDescription: blank, 0, 999');
+    shouldBeEqualToString('focusedFieldValueDescription()', 'Milliseconds, AXValueDescription: ---, 0, 999');
     eventSender.keyDown('\t', ['shiftKey']);
     eventSender.keyDown('Backspace');
-    shouldBeEqualToString('focusedFieldValueDescription()', 'Seconds, AXValueDescription: blank, 0, 59');
+    shouldBeEqualToString('focusedFieldValueDescription()', 'Seconds, AXValueDescription: --, 0, 59');
     eventSender.keyDown('\t', ['shiftKey']);
     eventSender.keyDown('Backspace');
-    shouldBeEqualToString('focusedFieldValueDescription()', 'Minutes, AXValueDescription: blank, 0, 59');
+    shouldBeEqualToString('focusedFieldValueDescription()', 'Minutes, AXValueDescription: --, 0, 59');
     eventSender.keyDown('\t', ['shiftKey']);
     eventSender.keyDown('Backspace');
-    shouldBeEqualToString('focusedFieldValueDescription()', 'Hours, AXValueDescription: blank, 1, 12');
+    shouldBeEqualToString('focusedFieldValueDescription()', 'Hours, AXValueDescription: --, 1, 12');
     eventSender.keyDown('\t', ['shiftKey']);
     eventSender.keyDown('Backspace');
-    shouldBeEqualToString('focusedFieldValueDescription()', 'Year, AXValueDescription: blank, 1, 275760');
+    shouldBeEqualToString('focusedFieldValueDescription()', 'Year, AXValueDescription: yyyy, 1, 275760');
     eventSender.keyDown('\t', ['shiftKey']);
     eventSender.keyDown('Backspace');
-    shouldBeEqualToString('focusedFieldValueDescription()', 'Day, AXValueDescription: blank, 1, 31');
+    shouldBeEqualToString('focusedFieldValueDescription()', 'Day, AXValueDescription: dd, 1, 31');
     eventSender.keyDown('\t', ['shiftKey']);
     eventSender.keyDown('Backspace');
-    shouldBeEqualToString('focusedFieldValueDescription()', 'Month, AXValueDescription: blank, 1, 12');
+    shouldBeEqualToString('focusedFieldValueDescription()', 'Month, AXValueDescription: mm, 1, 12');
 
     debug('');
     testInput.parentNode.removeChild(testInput);

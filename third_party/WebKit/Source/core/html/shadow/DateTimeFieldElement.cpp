@@ -39,11 +39,6 @@ namespace blink {
 
 using namespace HTMLNames;
 
-static String emptyValueAXText()
-{
-    return Locale::defaultLocale().queryString(WebLocalizedString::AXDateTimeFieldEmptyValueText);
-}
-
 DateTimeFieldElement::FieldOwner::~FieldOwner()
 {
 }
@@ -159,7 +154,7 @@ void DateTimeFieldElement::initialize(const AtomicString& pseudo, const String& 
 {
     // On accessibility, DateTimeFieldElement acts like spin button.
     setAttribute(roleAttr, AtomicString("spinbutton"));
-    setAttribute(aria_valuetextAttr, AtomicString(emptyValueAXText()));
+    setAttribute(aria_valuetextAttr, AtomicString(visibleValue()));
     setAttribute(aria_valueminAttr, AtomicString::number(axMinimum));
     setAttribute(aria_valuemaxAttr, AtomicString::number(axMaximum));
 
@@ -227,12 +222,11 @@ void DateTimeFieldElement::updateVisibleValue(EventBehavior eventBehavior)
 
     textNode->replaceWholeText(newVisibleValue);
     if (hasValue()) {
-        setAttribute(aria_valuetextAttr, AtomicString(newVisibleValue));
         setAttribute(aria_valuenowAttr, AtomicString::number(valueForARIAValueNow()));
     } else {
-        setAttribute(aria_valuetextAttr, AtomicString(emptyValueAXText()));
         removeAttribute(aria_valuenowAttr);
     }
+    setAttribute(aria_valuetextAttr, AtomicString(newVisibleValue));
 
     if (eventBehavior == DispatchEvent && m_fieldOwner)
         m_fieldOwner->fieldValueChanged();
