@@ -5,26 +5,77 @@
 'use strict';
 
 /**
+ * Creates a new NavigatorDelegate for calling browser-specific functions to
+ * do the actual navigating.
+ * @param {boolean} isInTab Indicates if the PDF viewer is displayed in a tab.
+ * @param {boolean} isSourceFileUrl Indicates if the navigation source is a
+ *     file:// URL.
+ */
+function NavigatorDelegate(isInTab, isSourceFileUrl) {
+  this.isInTab_ = isInTab;
+  this.isSourceFileUrl_ = isSourceFileUrl;
+}
+
+/**
  * Creates a new Navigator for navigating to links inside or outside the PDF.
  * @param {string} originalUrl The original page URL.
  * @param {Object} viewport The viewport info of the page.
  * @param {Object} paramsParser The object for URL parsing.
- * @param {Function} navigateInCurrentTabCallback The Callback function that
- *    gets called when navigation happens in the current tab.
- * @param {Function} navigateInNewTabCallback The Callback function
- *    that gets called when navigation happens in the new tab.
+ * @param {Object} navigatorDelegate The object with callback functions that
+ *    get called when navigation happens in the current tab, a new tab,
+ *    and a new window.
  */
-function Navigator(originalUrl,
-                   viewport,
-                   paramsParser,
-                   navigateInCurrentTabCallback,
-                   navigateInNewTabCallback) {
+function Navigator(originalUrl, viewport, paramsParser, navigatorDelegate) {
   this.originalUrl_ = originalUrl;
   this.viewport_ = viewport;
   this.paramsParser_ = paramsParser;
-  this.navigateInCurrentTabCallback_ = navigateInCurrentTabCallback;
-  this.navigateInNewTabCallback_ = navigateInNewTabCallback;
+  this.navigatorDelegate_ = navigatorDelegate;
 }
+
+NavigatorDelegate.prototype = {
+  /**
+   * @public
+   * Called when navigation should happen in the current tab.
+   * @param {string} url The url to be opened in the current tab.
+   */
+  navigateInCurrentTab: function(url) {
+    // When the PDFviewer is inside a browser tab, prefer the tabs API because
+    // it can navigate from one file:// URL to another.
+    if (chrome.tabs && this.isInTab_ && this.isSourceFileUrl_)
+      chrome.tabs.update({url: url});
+    else
+      window.location.href = url;
+  },
+
+  /**
+   * @public
+   * Called when navigation should happen in the new tab.
+   * @param {string} url The url to be opened in the new tab.
+   * @param {boolean} active Indicates if the new tab should be the active tab.
+   */
+  navigateInNewTab: function(url, active) {
+    // Prefer the tabs API because it guarantees we can just open a new tab.
+    // window.open doesn't have this guarantee.
+    if (chrome.tabs)
+      chrome.tabs.create({url: url, active: active});
+    else
+      window.open(url);
+  },
+
+  /**
+   * @public
+   * Called when navigation should happen in the new window.
+   * @param {string} url The url to be opened in the new window.
+   */
+  navigateInNewWindow: function(url) {
+    // Prefer the windows API because it guarantees we can just open a new
+    // window. window.open with '_blank' argument doesn't have this guarantee.
+    if (chrome.windows)
+      chrome.windows.create({url: url});
+    else
+      window.open(url, '_blank');
+  }
+};
 
 /**
  * Represents options when navigating to a new url. C++ counterpart of
@@ -78,16 +129,13 @@ Navigator.prototype = {
             url, this.onViewportReceived_.bind(this));
         break;
       case Navigator.WindowOpenDisposition.NEW_BACKGROUND_TAB:
-        this.navigateInNewTabCallback_(url, false);
+        this.navigatorDelegate_.navigateInNewTab(url, false);
         break;
       case Navigator.WindowOpenDisposition.NEW_FOREGROUND_TAB:
-        this.navigateInNewTabCallback_(url, true);
+        this.navigatorDelegate_.navigateInNewTab(url, true);
         break;
       case Navigator.WindowOpenDisposition.NEW_WINDOW:
-        // TODO(jaepark): Shift + left clicking a link in PDF should open the
-        // link in a new window. See http://crbug.com/628057.
-        this.paramsParser_.getViewportFromUrlParams(
-            url, this.onViewportReceived_.bind(this));
+        this.navigatorDelegate_.navigateInNewWindow(url);
         break;
       case Navigator.WindowOpenDisposition.SAVE_TO_DISK:
         // TODO(jaepark): Alt + left clicking a link in PDF should
@@ -121,7 +169,7 @@ Navigator.prototype = {
     if (pageNumber != undefined && originalUrl == newUrl)
       this.viewport_.goToPage(pageNumber);
     else
-      this.navigateInCurrentTabCallback_(viewportPosition.url);
+      this.navigatorDelegate_.navigateInCurrentTab(viewportPosition.url);
   },
 
   /**

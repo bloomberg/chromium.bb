@@ -2,37 +2,40 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-function NavigateInCurrentTabCallback() {
-  this.navigateCalled = false;
+function MockNavigatorDelegate() {
+  this.navigateInCurrentTabCalled = false;
+  this.navigateInNewTabCalled = false;
+  this.navigateInNewWindowCalled = false;
   this.url = undefined;
-  this.callback = function(url) {
-    this.navigateCalled = true;
-    this.url = url;
-  }.bind(this);
-  this.reset = function() {
-    this.navigateCalled = false;
-    this.url = undefined;
-  };
 }
 
-function NavigateInNewTabCallback() {
-  this.navigateCalled = false;
-  this.url = undefined;
-  this.callback = function(url) {
-    this.navigateCalled = true;
+MockNavigatorDelegate.prototype = {
+  navigateInCurrentTab: function(url) {
+    this.navigateInCurrentTabCalled = true;
     this.url = url;
-  }.bind(this);
-  this.reset = function() {
-    this.navigateCalled = false;
+  },
+  navigateInNewTab: function(url) {
+    this.navigateInNewTabCalled = true;
+    this.url = url;
+
+  },
+  navigateInNewWindow: function(url) {
+    this.navigateInNewWindowCalled = true;
+    this.url = url;
+  },
+  reset: function() {
+    this.navigateInCurrentTabCalled = false;
+    this.navigateInNewTabCalled = false;
+    this.navigateInNewWindowCalled = false;
     this.url = undefined;
-  };
+  }
 }
 
 /**
- * Given a |navigator|, navigate to |url| in the current tab or new tab,
- * depending on the value of |openInNewTab|. Use |viewportChangedCallback|
- * and |navigateCallback| to check the callbacks, and that the navigation
- * to |expectedResultUrl| happened.
+ * Given a |navigator|, navigate to |url| in the current tab, a new tab, or
+ * a new window depending on the value of |disposition|. Use
+ * |viewportChangedCallback| and |navigatorDelegate| to check the callbacks,
+ * and that the navigation to |expectedResultUrl| happened.
  */
 function doNavigationUrlTest(
     navigator,
@@ -40,32 +43,56 @@ function doNavigationUrlTest(
     disposition,
     expectedResultUrl,
     viewportChangedCallback,
-    navigateCallback) {
+    navigatorDelegate) {
   viewportChangedCallback.reset();
-  navigateCallback.reset();
+  navigatorDelegate.reset();
   navigator.navigate(url, disposition);
   chrome.test.assertFalse(viewportChangedCallback.wasCalled);
-  chrome.test.assertTrue(navigateCallback.navigateCalled);
-  chrome.test.assertEq(expectedResultUrl, navigateCallback.url);
+  switch (disposition) {
+    case Navigator.WindowOpenDisposition.CURRENT_TAB:
+      chrome.test.assertTrue(navigatorDelegate.navigateInCurrentTabCalled);
+      break;
+    case Navigator.WindowOpenDisposition.NEW_BACKGROUND_TAB:
+      chrome.test.assertTrue(navigatorDelegate.navigateInNewTabCalled);
+      break;
+    case Navigator.WindowOpenDisposition.NEW_WINDOW:
+      chrome.test.assertTrue(navigatorDelegate.navigateInNewWindowCalled);
+      break;
+    default:
+      break;
+  }
+  chrome.test.assertEq(expectedResultUrl, navigatorDelegate.url);
 }
 
 /**
- * Helper function to run doNavigationUrlTest() for the current tab and a new
- * tab.
+ * Helper function to run doNavigationUrlTest() for the current tab, a new
+ * tab, and a new window.
  */
-function doNavigationUrlTestInCurrentTabAndNewTab(
-    navigator,
-    url,
-    expectedResultUrl,
-    viewportChangedCallback,
-    navigateInCurrentTabCallback,
-    navigateInNewTabCallback) {
+function doNavigationUrlTests(originalUrl, url, expectedResultUrl) {
+  var mockWindow = new MockWindow(100, 100);
+  var mockSizer = new MockSizer();
+  var mockViewportChangedCallback = new MockViewportChangedCallback();
+  var viewport = new Viewport(mockWindow, mockSizer,
+                              mockViewportChangedCallback.callback,
+                              function() {}, function() {}, 0, 1, 0);
+
+  var paramsParser = new OpenPDFParamsParser(function(name) {
+    paramsParser.onNamedDestinationReceived(-1);
+  });
+
+  var navigatorDelegate = new MockNavigatorDelegate();
+  var navigator = new Navigator(originalUrl, viewport, paramsParser,
+                                navigatorDelegate);
+
   doNavigationUrlTest(navigator, url,
       Navigator.WindowOpenDisposition.CURRENT_TAB, expectedResultUrl,
-      viewportChangedCallback, navigateInCurrentTabCallback);
+      mockViewportChangedCallback, navigatorDelegate);
   doNavigationUrlTest(navigator, url,
       Navigator.WindowOpenDisposition.NEW_BACKGROUND_TAB, expectedResultUrl,
-      viewportChangedCallback, navigateInNewTabCallback);
+      mockViewportChangedCallback, navigatorDelegate);
+  doNavigationUrlTest(navigator, url,
+      Navigator.WindowOpenDisposition.NEW_WINDOW, expectedResultUrl,
+      mockViewportChangedCallback, navigatorDelegate);
 }
 
 var tests = [
@@ -90,11 +117,9 @@ var tests = [
     });
     var url = "http://xyz.pdf";
 
-    var navigateInCurrentTabCallback = new NavigateInCurrentTabCallback();
-    var navigateInNewTabCallback = new NavigateInNewTabCallback();
+    var navigatorDelegate = new MockNavigatorDelegate();
     var navigator = new Navigator(url, viewport, paramsParser,
-        navigateInCurrentTabCallback.callback,
-        navigateInNewTabCallback.callback);
+                                  navigatorDelegate);
 
     var documentDimensions = new MockDocumentDimensions();
     documentDimensions.addPage(100, 100);
@@ -112,13 +137,13 @@ var tests = [
     chrome.test.assertEq(0, viewport.position.y);
 
     mockCallback.reset();
-    navigateInNewTabCallback.reset();
+    navigatorDelegate.reset();
     // This should open "http://xyz.pdf#US" in a new tab. So current tab
     // viewport should not update and viewport position should remain same.
     navigator.navigate(url + "#US",
         Navigator.WindowOpenDisposition.NEW_BACKGROUND_TAB);
     chrome.test.assertFalse(mockCallback.wasCalled);
-    chrome.test.assertTrue(navigateInNewTabCallback.navigateCalled);
+    chrome.test.assertTrue(navigatorDelegate.navigateInNewTabCalled);
     chrome.test.assertEq(0, viewport.position.x);
     chrome.test.assertEq(0, viewport.position.y);
 
@@ -131,167 +156,101 @@ var tests = [
     chrome.test.assertEq(300, viewport.position.y);
 
     mockCallback.reset();
-    navigateInCurrentTabCallback.reset();
+    navigatorDelegate.reset();
     // #ABC is not a named destination in the page so viewport should not
     // update and viewport position should remain same. As this link will open
     // in the same tab.
     navigator.navigate(url + "#ABC",
         Navigator.WindowOpenDisposition.CURRENT_TAB);
     chrome.test.assertFalse(mockCallback.wasCalled);
-    chrome.test.assertTrue(navigateInCurrentTabCallback.navigateCalled);
+    chrome.test.assertTrue(navigatorDelegate.navigateInCurrentTabCalled);
     chrome.test.assertEq(0, viewport.position.x);
     chrome.test.assertEq(300, viewport.position.y);
 
     chrome.test.succeed();
   },
   /**
-   * Test opening a url in the same tab and opening a url in a new tab for
+   * Test opening a url in the same tab, in a new tab, and in a new window for
    * a http:// url as the current location. The destination url may not have
    * a valid scheme, so the navigator must determine the url by following
    * similar heuristics as Adobe Acrobat Reader.
    */
   function testNavigateForLinksWithoutScheme() {
-    var mockWindow = new MockWindow(100, 100);
-    var mockSizer = new MockSizer();
-    var mockCallback = new MockViewportChangedCallback();
-    var viewport = new Viewport(mockWindow, mockSizer, mockCallback.callback,
-                                function() {}, function() {}, 0, 1, 0);
-
-    var paramsParser = new OpenPDFParamsParser(function(name) {
-      paramsParser.onNamedDestinationReceived(-1);
-    });
     var url = "http://www.example.com/subdir/xyz.pdf";
 
-    var navigateInCurrentTabCallback = new NavigateInCurrentTabCallback();
-    var navigateInNewTabCallback = new NavigateInNewTabCallback();
-    var navigator = new Navigator(url, viewport, paramsParser,
-        navigateInCurrentTabCallback.callback,
-        navigateInNewTabCallback.callback);
-
     // Sanity check.
-    doNavigationUrlTestInCurrentTabAndNewTab(
-        navigator,
+    doNavigationUrlTests(
+        url,
         'https://www.foo.com/bar.pdf',
-        'https://www.foo.com/bar.pdf',
-        mockCallback,
-        navigateInCurrentTabCallback,
-        navigateInNewTabCallback);
+        'https://www.foo.com/bar.pdf');
 
     // Open relative links.
-    doNavigationUrlTestInCurrentTabAndNewTab(
-        navigator,
+    doNavigationUrlTests(
+        url,
         'foo/bar.pdf',
-        'http://www.example.com/subdir/foo/bar.pdf',
-        mockCallback,
-        navigateInCurrentTabCallback,
-        navigateInNewTabCallback);
-    doNavigationUrlTestInCurrentTabAndNewTab(
-        navigator,
+        'http://www.example.com/subdir/foo/bar.pdf');
+    doNavigationUrlTests(
+        url,
         'foo.com/bar.pdf',
-        'http://www.example.com/subdir/foo.com/bar.pdf',
-        mockCallback,
-        navigateInCurrentTabCallback,
-        navigateInNewTabCallback);
+        'http://www.example.com/subdir/foo.com/bar.pdf');
     // The expected result is not normalized here.
-    doNavigationUrlTestInCurrentTabAndNewTab(
-        navigator,
+    doNavigationUrlTests(
+        url,
         '../www.foo.com/bar.pdf',
-        'http://www.example.com/subdir/../www.foo.com/bar.pdf',
-        mockCallback,
-        navigateInCurrentTabCallback,
-        navigateInNewTabCallback);
+        'http://www.example.com/subdir/../www.foo.com/bar.pdf');
 
     // Open an absolute link.
-    doNavigationUrlTestInCurrentTabAndNewTab(
-        navigator,
+    doNavigationUrlTests(
+        url,
         '/foodotcom/bar.pdf',
-        'http://www.example.com/foodotcom/bar.pdf',
-        mockCallback,
-        navigateInCurrentTabCallback,
-        navigateInNewTabCallback);
+        'http://www.example.com/foodotcom/bar.pdf');
 
     // Open a http url without a scheme.
-    doNavigationUrlTestInCurrentTabAndNewTab(
-        navigator,
+    doNavigationUrlTests(
+        url,
         'www.foo.com/bar.pdf',
-        'http://www.foo.com/bar.pdf',
-        mockCallback,
-        navigateInCurrentTabCallback,
-        navigateInNewTabCallback);
+        'http://www.foo.com/bar.pdf');
 
     // Test three dots.
-    doNavigationUrlTestInCurrentTabAndNewTab(
-        navigator,
+    doNavigationUrlTests(
+        url,
         '.../bar.pdf',
-        'http://www.example.com/subdir/.../bar.pdf',
-        mockCallback,
-        navigateInCurrentTabCallback,
-        navigateInNewTabCallback);
+        'http://www.example.com/subdir/.../bar.pdf');
 
     // Test forward slashes.
-    doNavigationUrlTestInCurrentTabAndNewTab(
-        navigator,
+    doNavigationUrlTests(
+        url,
         '..\\bar.pdf',
-        'http://www.example.com/subdir/..\\bar.pdf',
-        mockCallback,
-        navigateInCurrentTabCallback,
-        navigateInNewTabCallback);
-    doNavigationUrlTestInCurrentTabAndNewTab(
-        navigator,
+        'http://www.example.com/subdir/..\\bar.pdf');
+    doNavigationUrlTests(
+        url,
         '.\\bar.pdf',
-        'http://www.example.com/subdir/.\\bar.pdf',
-        mockCallback,
-        navigateInCurrentTabCallback,
-        navigateInNewTabCallback);
-    doNavigationUrlTestInCurrentTabAndNewTab(
-        navigator,
+        'http://www.example.com/subdir/.\\bar.pdf');
+    doNavigationUrlTests(
+        url,
         '\\bar.pdf',
-        'http://www.example.com/subdir/\\bar.pdf',
-        mockCallback,
-        navigateInCurrentTabCallback,
-        navigateInNewTabCallback);
+        'http://www.example.com/subdir/\\bar.pdf');
 
     // Regression test for https://crbug.com/569040
-    doNavigationUrlTestInCurrentTabAndNewTab(
-        navigator,
+    doNavigationUrlTests(
+        url,
         'http://something.else/foo#page=5',
-        'http://something.else/foo#page=5',
-        mockCallback,
-        navigateInCurrentTabCallback,
-        navigateInNewTabCallback);
+        'http://something.else/foo#page=5');
 
     chrome.test.succeed();
   },
   /**
-   * Test opening a url in the same tab and opening a url in a new tab with a
-   * file:/// url as the current location.
+   * Test opening a url in the same tab, in a new tab, and in a new window with
+   * a file:/// url as the current location.
    */
   function testNavigateFromLocalFile() {
-    var mockWindow = new MockWindow(100, 100);
-    var mockSizer = new MockSizer();
-    var mockCallback = new MockViewportChangedCallback();
-    var viewport = new Viewport(mockWindow, mockSizer, mockCallback.callback,
-                                function() {}, function() {}, 0, 1, 0);
-
-    var paramsParser = new OpenPDFParamsParser(function(name) {
-      paramsParser.onNamedDestinationReceived(-1);
-    });
     var url = "file:///some/path/to/myfile.pdf";
 
-    var navigateInCurrentTabCallback = new NavigateInCurrentTabCallback();
-    var navigateInNewTabCallback = new NavigateInNewTabCallback();
-    var navigator = new Navigator(url, viewport, paramsParser,
-        navigateInCurrentTabCallback.callback,
-        navigateInNewTabCallback.callback);
-
     // Open an absolute link.
-    doNavigationUrlTestInCurrentTabAndNewTab(
-        navigator,
+    doNavigationUrlTests(
+        url,
         '/foodotcom/bar.pdf',
-        'file:///foodotcom/bar.pdf',
-        mockCallback,
-        navigateInCurrentTabCallback,
-        navigateInNewTabCallback);
+        'file:///foodotcom/bar.pdf');
 
     chrome.test.succeed();
   }

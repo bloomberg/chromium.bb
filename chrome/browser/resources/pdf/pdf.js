@@ -40,36 +40,6 @@ function getFilenameFromURL(url) {
 }
 
 /**
- * Called when navigation happens in the current tab.
- * @param {boolean} isInTab Indicates if the PDF viewer is displayed in a tab.
- * @param {boolean} isSourceFileUrl Indicates if the navigation source is a
- *     file:// URL.
- * @param {string} url The url to be opened in the current tab.
- */
-function onNavigateInCurrentTab(isInTab, isSourceFileUrl, url) {
-  // When the PDFviewer is inside a browser tab, prefer the tabs API because
-  // it can navigate from one file:// URL to another.
-  if (chrome.tabs && isInTab && isSourceFileUrl)
-    chrome.tabs.update({url: url});
-  else
-    window.location.href = url;
-}
-
-/**
- * Called when navigation happens in the new tab.
- * @param {string} url The url to be opened in the new tab.
- * @param {boolean} active Indicates if the new tab should be the active tab.
- */
-function onNavigateInNewTab(url, active) {
-  // Prefer the tabs API because it guarantees we can just open a new tab.
-  // window.open doesn't have this guarantee.
-  if (chrome.tabs)
-    chrome.tabs.create({url: url, active: active});
-  else
-    window.open(url);
-}
-
-/**
  * Whether keydown events should currently be ignored. Events are ignored when
  * an editable element has focus, to allow for proper editing controls.
  * @param {HTMLElement} activeElement The currently selected DOM node.
@@ -260,12 +230,9 @@ function PDFViewer(browserApi) {
 
   var isInTab = this.browserApi_.getStreamInfo().tabId != -1;
   var isSourceFileUrl = this.originalUrl_.indexOf('file://') == 0;
-  this.navigator_ = new Navigator(this.originalUrl_,
-                                  this.viewport_, this.paramsParser_,
-                                  onNavigateInCurrentTab.bind(undefined,
-                                                              isInTab,
-                                                              isSourceFileUrl),
-                                  onNavigateInNewTab);
+  this.navigator_ = new Navigator(
+      this.originalUrl_, this.viewport_, this.paramsParser_,
+      new NavigatorDelegate(isInTab, isSourceFileUrl));
   this.viewportScroller_ =
       new ViewportScroller(this.viewport_, this.plugin_, window);
 
