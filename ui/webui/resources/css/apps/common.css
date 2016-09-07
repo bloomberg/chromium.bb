@@ -7,6 +7,7 @@ button.blue-button {
   border: 5px solid transparent;
   box-sizing: content-box;
   cursor: default;
+  font-size: 14px;
   height: 21px;
   line-height: 21px;
   margin: 0;

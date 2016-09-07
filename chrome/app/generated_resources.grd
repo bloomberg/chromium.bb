@@ -7709,9 +7709,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <if expr="enable_extensions">
         <!-- Feedback Dialog -->
-        <message name="IDS_FEEDBACK_REPORT_PAGE_TITLE" desc="Label showing the title of the page that will be reported">
-          Tell us what's happening
-        </message>
+        <if expr="use_titlecase">
+          <message name="IDS_FEEDBACK_REPORT_PAGE_TITLE" desc="Label showing the title of the page that will be reported">
+            Tell Us What's Happening
+          </message>
+        </if>
+        <if expr="not use_titlecase">
+          <message name="IDS_FEEDBACK_REPORT_PAGE_TITLE" desc="Label showing the title of the page that will be reported">
+            Tell us what's happening
+          </message>
+        </if>
         <message name="IDS_FEEDBACK_REPORT_URL_LABEL" desc="Label showing the URL that will be reported">
           URL
         </message>

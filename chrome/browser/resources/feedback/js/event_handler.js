@@ -262,8 +262,10 @@ function startFeedbackUI(feedbackInfo) {
   chrome.app.window.create('html/default.html', {
       frame: feedbackInfo.useSystemWindowFrame ? 'chrome' : 'none',
       id: FEEDBACK_DEFAULT_WINDOW_ID,
-      width: FEEDBACK_WIDTH,
-      height: FEEDBACK_HEIGHT,
+      innerBounds: {
+        minWidth: FEEDBACK_WIDTH,
+        minHeight: FEEDBACK_HEIGHT,
+      },
       hidden: true,
       resizable: false },
       function(appWindow) {
