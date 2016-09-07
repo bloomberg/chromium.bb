@@ -112,6 +112,7 @@ class BluetoothDetailedView : public TrayDetailsView {
       : TrayDetailsView(owner),
         login_(login),
         manage_devices_(nullptr),
+        throbber_(nullptr),
         toggle_bluetooth_(nullptr),
         enable_bluetooth_(nullptr) {
     CreateItems();
