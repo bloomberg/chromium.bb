@@ -22,7 +22,8 @@ namespace {
 
 class MockSchedulerWorkerDelegate : public SchedulerWorker::Delegate {
  public:
-  void OnMainEntry(SchedulerWorker* worker) override {}
+  void OnMainEntry(SchedulerWorker* worker,
+                   const TimeDelta& detach_duration) override {}
   scoped_refptr<Sequence> GetWork(SchedulerWorker* worker) override {
     return nullptr;
   }
@@ -38,7 +39,6 @@ class MockSchedulerWorkerDelegate : public SchedulerWorker::Delegate {
   bool CanDetach(SchedulerWorker* worker) override {
     return false;
   }
-  void DidDetach() override {}
 };
 
 class TaskSchedulerWorkerStackTest : public testing::Test {

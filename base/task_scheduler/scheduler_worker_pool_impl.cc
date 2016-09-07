@@ -5,7 +5,6 @@
 #include "base/task_scheduler/scheduler_worker_pool_impl.h"
 
 #include <stddef.h>
-#include <stdint.h>
 
 #include <algorithm>
 #include <utility>
@@ -34,15 +33,7 @@ namespace {
 constexpr char kPoolNameSuffix[] = "Pool";
 constexpr char kDetachDurationHistogramPrefix[] =
     "TaskScheduler.DetachDuration.";
-constexpr char kTasksExecutedBeforeDetachHistogramPrefix[] =
-    "TaskScheduler.TasksExecutedBeforeDetach.";
 constexpr char kTaskLatencyHistogramPrefix[] = "TaskScheduler.TaskLatency.";
-
-// Theses values were copied from the UMA_HISTOGRAM_COUNTS macro. They shouldn't
-// be changed without renaming the histogram.
-constexpr HistogramBase::Sample kHistogramCountsMin = 1;
-constexpr HistogramBase::Sample kHistogramCountsMax = 1000000;
-constexpr uint32_t kHistogramCountsNumBuckets = 50;
 
 // SchedulerWorker that owns the current thread, if any.
 LazyInstance<ThreadLocalPointer<const SchedulerWorker>>::Leaky
@@ -239,13 +230,13 @@ class SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl
   }
 
   // SchedulerWorker::Delegate:
-  void OnMainEntry(SchedulerWorker* worker) override;
+  void OnMainEntry(SchedulerWorker* worker,
+                   const TimeDelta& detach_duration) override;
   scoped_refptr<Sequence> GetWork(SchedulerWorker* worker) override;
   void DidRunTask(const Task* task, const TimeDelta& task_latency) override;
   void ReEnqueueSequence(scoped_refptr<Sequence> sequence) override;
   TimeDelta GetSleepTimeout() override;
   bool CanDetach(SchedulerWorker* worker) override;
-  void DidDetach() override;
 
   void RegisterSingleThreadTaskRunner() {
     // No barrier as barriers only affect sequential consistency which is
@@ -271,13 +262,6 @@ class SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl
 
   // Time when GetWork() first returned nullptr.
   TimeTicks idle_start_time_;
-
-  // Number of tasks executed since the thread was created (i.e. since the last
-  // call to OnMainEntry()).
-  size_t num_tasks_executed_since_thread_creation_ = 0;
-
-  // Time of the last successful detach.
-  TimeTicks last_detach_time_;
 
   subtle::Atomic32 num_single_threaded_runners_ = 0;
 
@@ -474,7 +458,8 @@ SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::
     ~SchedulerWorkerDelegateImpl() = default;
 
 void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::OnMainEntry(
-    SchedulerWorker* worker) {
+    SchedulerWorker* worker,
+    const TimeDelta& detach_duration) {
 #if DCHECK_IS_ON()
   // Wait for |outer_->workers_created_| to avoid traversing
   // |outer_->workers_| while it is being filled by Initialize().
@@ -482,10 +467,8 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::OnMainEntry(
   DCHECK(ContainsWorker(outer_->workers_, worker));
 #endif
 
-  if (!last_detach_time_.is_null()) {
-    outer_->detach_duration_histogram_->AddTime(TimeTicks::Now() -
-                                                last_detach_time_);
-  }
+  if (!detach_duration.is_max())
+    outer_->detach_duration_histogram_->AddTime(detach_duration);
 
   PlatformThread::SetName(
       StringPrintf("TaskScheduler%sWorker%d", outer_->name_.c_str(), index_));
@@ -497,8 +480,6 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::OnMainEntry(
 
   // New threads haven't run GetWork() yet, so reset the idle_start_time_.
   idle_start_time_ = TimeTicks();
-
-  num_tasks_executed_since_thread_creation_ = 0;
 
   ThreadRestrictions::SetIOAllowed(
       outer_->io_restriction_ ==
@@ -622,12 +603,6 @@ bool SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::CanDetach(
   return can_detach;
 }
 
-void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::DidDetach() {
-  last_detach_time_ = TimeTicks::Now();
-  outer_->tasks_executed_before_detach_histogram_->Add(
-      num_tasks_executed_since_thread_creation_);
-}
-
 SchedulerWorkerPoolImpl::SchedulerWorkerPoolImpl(
     StringPiece name,
     SchedulerWorkerPoolParams::IORestriction io_restriction,
@@ -652,12 +627,6 @@ SchedulerWorkerPoolImpl::SchedulerWorkerPoolImpl(
           TimeDelta::FromHours(1),
           50,
           HistogramBase::kUmaTargetedHistogramFlag)),
-      tasks_executed_before_detach_histogram_(Histogram::FactoryGet(
-          kTasksExecutedBeforeDetachHistogramPrefix + name_ + kPoolNameSuffix,
-          kHistogramCountsMin,
-          kHistogramCountsMax,
-          kHistogramCountsNumBuckets,
-          base::HistogramBase::kUmaTargetedHistogramFlag)),
       task_tracker_(task_tracker),
       delayed_task_manager_(delayed_task_manager) {
   DCHECK(task_tracker_);
