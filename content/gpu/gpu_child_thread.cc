@@ -409,23 +409,32 @@ void GpuChildThread::OnCollectGraphicsInfo() {
          in_browser_process_);
 #endif  // OS_WIN
 
-  gpu::CollectInfoResult result =
-      gpu::CollectContextGraphicsInfo(&gpu_info_);
-  switch (result) {
-    case gpu::kCollectInfoFatalFailure:
-      LOG(ERROR) << "gpu::CollectGraphicsInfo failed (fatal).";
-      // TODO(piman): can we signal overall failure?
-      break;
-    case gpu::kCollectInfoNonFatalFailure:
-      DVLOG(1) << "gpu::CollectGraphicsInfo failed (non-fatal).";
-      break;
-    case gpu::kCollectInfoNone:
-      NOTREACHED();
-      break;
-    case gpu::kCollectInfoSuccess:
-      break;
+  // gpu::CollectContextGraphicsInfo() is already called during gpu process
+  // initialization on non-mac platforms (see GpuMain()). So it is necessary to
+  // call it here only when running in the browser process on these platforms.
+  bool should_collect_info = in_browser_process_;
+#if defined(OS_MACOSX)
+  should_collect_info = true;
+#endif
+  if (should_collect_info) {
+    DCHECK_EQ(gpu::kCollectInfoNone, gpu_info_.context_info_state);
+    gpu::CollectInfoResult result = gpu::CollectContextGraphicsInfo(&gpu_info_);
+    switch (result) {
+      case gpu::kCollectInfoFatalFailure:
+        LOG(ERROR) << "gpu::CollectGraphicsInfo failed (fatal).";
+        // TODO(piman): can we signal overall failure?
+        break;
+      case gpu::kCollectInfoNonFatalFailure:
+        DVLOG(1) << "gpu::CollectGraphicsInfo failed (non-fatal).";
+        break;
+      case gpu::kCollectInfoNone:
+        NOTREACHED();
+        break;
+      case gpu::kCollectInfoSuccess:
+        break;
+    }
+    GetContentClient()->SetGpuInfo(gpu_info_);
   }
-  GetContentClient()->SetGpuInfo(gpu_info_);
 
 #if defined(OS_WIN)
   // This is slow, but it's the only thing the unsandboxed GPU process does,
