@@ -10,7 +10,6 @@ visibility = [
   "//chromecast/*",
 ]
 
-# GYP version: cast.gypi:ozone_platform_cast
 # TODO(slan): gn check needs deps on ozone and media to pass. Correct this.
 source_set("cast") {
   sources = [

@@ -62,7 +62,6 @@ config("vgem_map") {
   }
 }
 
-# GYP version: ui/ozone/ozone.gyp:ozone_base
 component("ozone_base") {
   sources = [
     "public/cursor_factory_ozone.cc",
@@ -173,7 +172,6 @@ component("ozone") {
   ]
 }
 
-# GYP version: ui/ozone/ozone.gyp:generate_ozone_platform_list
 action("generate_ozone_platform_list") {
   script = "generate_ozone_platform_list.py"
   outputs = [
@@ -193,7 +191,6 @@ action("generate_ozone_platform_list") {
   visibility += [ "//media:*" ]
 }
 
-# GYP version: ui/ozone/ozone.gyp:generate_constructor_list
 action("generate_constructor_list") {
   script = "generate_constructor_list.py"
 
