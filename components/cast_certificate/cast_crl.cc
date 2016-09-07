@@ -125,10 +125,12 @@ bool VerifyCRL(const Crl& crl,
   auto signature_policy = CreateCastSignaturePolicy();
   std::unique_ptr<net::SignatureAlgorithm> signature_algorithm_type =
       net::SignatureAlgorithm::CreateRsaPkcs1(net::DigestAlgorithm::Sha256);
+  net::CertErrors errors;
   if (!VerifySignedData(*signature_algorithm_type,
                         net::der::Input(&crl.tbs_crl()),
                         signature_value_bit_string, parsed_cert->tbs().spki_tlv,
-                        signature_policy.get())) {
+                        signature_policy.get(), &errors)) {
+    // TODO(634443): Dump the error information.
     VLOG(2) << "CRL - Signature verification failed.";
     return false;
   }

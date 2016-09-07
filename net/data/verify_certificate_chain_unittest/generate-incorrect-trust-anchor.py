@@ -26,6 +26,6 @@ chain = [target, intermediate]
 trusted = common.TrustAnchor(bogus_root, constrained=False)
 time = common.DEFAULT_TIME
 verify_result = False
-errors = ['Signature verification failed']
+errors = ['Signature verification failed', 'VerifySignedData failed']
 
 common.write_test_file(__doc__, chain, trusted, time, verify_result, errors)

@@ -23,6 +23,8 @@ chain = [target, intermediate]
 trusted = common.TrustAnchor(root, constrained=False)
 time = common.DEFAULT_TIME
 verify_result = False
-errors = ['Signature verification failed']
+errors = ['RSA modulus too small',
+          'Unacceptable modulus length for RSA key',
+          'VerifySignedData failed']
 
 common.write_test_file(__doc__, chain, trusted, time, verify_result, errors)

@@ -139,10 +139,11 @@ class CertVerificationContextImpl : public CertVerificationContext {
     // least 2048-bits long.
     auto signature_policy = CreateCastSignaturePolicy();
 
+    net::CertErrors errors;
     return net::VerifySignedData(
         *signature_algorithm, net::der::Input(data),
         net::der::BitString(net::der::Input(signature), 0),
-        net::der::Input(&spki_), signature_policy.get());
+        net::der::Input(&spki_), signature_policy.get(), &errors);
   }
 
   std::string GetCommonName() const override { return common_name_; }
