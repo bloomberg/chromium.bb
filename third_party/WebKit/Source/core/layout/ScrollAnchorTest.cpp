@@ -502,6 +502,57 @@ TEST_F(ScrollAnchorTest, DescendsIntoContainerWithFloat)
         scrollAnchor(viewport).anchorObject());
 }
 
+// This test verifies that scroll anchoring is disabled when any element within
+// the main scroller changes its in-flow state.
+TEST_F(ScrollAnchorTest, ChangeInFlowStateDisablesAnchoringForMainScroller)
+{
+    setBodyInnerHTML(
+        "<style>"
+        "    body { height: 1000px; }"
+        "    #header { background-color: #F5B335; height: 50px; width: 100%; }"
+        "    #content { background-color: #D3D3D3; height: 200px; }"
+        "</style>"
+        "<div id='header'></div>"
+        "<div id='content'></div>");
+
+    ScrollableArea* viewport = layoutViewport();
+    scrollLayoutViewport(DoubleSize(0, 200));
+
+    document().getElementById("header")->setAttribute(
+        HTMLNames::styleAttr, "position: fixed;");
+    update();
+
+    EXPECT_EQ(200, viewport->scrollPosition().y());
+}
+
+// This test verifies that scroll anchoring is disabled when any element within
+// a scrolling div changes its in-flow state.
+TEST_F(ScrollAnchorTest, ChangeInFlowStateDisablesAnchoringForScrollingDiv)
+{
+    setBodyInnerHTML(
+        "<style>"
+        "    #container { position: relative; width: 500px; }"
+        "    #scroller { height: 200px; overflow: scroll; }"
+        "    #changer { background-color: #F5B335; height: 50px; width: 100%; }"
+        "    #anchor { background-color: #D3D3D3; height: 300px; }"
+        "</style>"
+        "<div id='container'>"
+        "    <div id='scroller'>"
+        "      <div id='changer'></div>"
+        "      <div id='anchor'></div>"
+        "    </div>"
+        "</div>");
+
+    ScrollableArea* scroller = scrollerForElement(document().getElementById("scroller"));
+    document().getElementById("scroller")->setScrollTop(100);
+
+    document().getElementById("changer")->setAttribute(
+        HTMLNames::styleAttr, "position: absolute;");
+    update();
+
+    EXPECT_EQ(100, scroller->scrollPosition().y());
+}
+
 TEST_F(ScrollAnchorTest, FlexboxDelayedClampingAlsoDelaysAdjustment)
 {
     setBodyInnerHTML(

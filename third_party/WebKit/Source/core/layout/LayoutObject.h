@@ -1588,6 +1588,10 @@ private:
 
     void setNeedsOverflowRecalcAfterStyleChange();
 
+    // Walk up the parent chain and find the first scrolling block to disable
+    // scroll anchoring on.
+    void setScrollAnchorDisablingStyleChangedOnAncestor();
+
     // FIXME: This should be 'markContaingBoxChainForOverflowRecalc when we make LayoutBox
     // recomputeOverflow-capable. crbug.com/437012 and crbug.com/434700.
     inline void markAncestorsForOverflowRecalcIfNeeded();

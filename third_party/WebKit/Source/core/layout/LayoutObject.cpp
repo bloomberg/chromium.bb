@@ -1712,6 +1712,24 @@ static inline bool areCursorsEqual(const ComputedStyle* a, const ComputedStyle* 
     return a->cursor() == b->cursor() && (a->cursors() == b->cursors() || areNonIdenticalCursorListsEqual(a, b));
 }
 
+void LayoutObject::setScrollAnchorDisablingStyleChangedOnAncestor()
+{
+    // Walk up the parent chain and find the first scrolling block to disable
+    // scroll anchoring on.
+    LayoutObject* object = parent();
+    Element* viewportDefiningElement = document().viewportDefiningElement();
+    while (object) {
+        if (object->isLayoutBlock()) {
+            LayoutBlock* block = toLayoutBlock(object);
+            if (block->hasOverflowClip() || block->node() == viewportDefiningElement) {
+                block->setScrollAnchorDisablingStyleChanged(true);
+                return;
+            }
+        }
+        object = object->parent();
+    }
+}
+
 void LayoutObject::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
 {
     if (s_affectsParentBlock)
@@ -1722,6 +1740,11 @@ void LayoutObject::styleDidChange(StyleDifference diff, const ComputedStyle* old
 
     if (diff.needsFullLayout()) {
         LayoutCounter::layoutObjectStyleChanged(*this, oldStyle, *m_style);
+
+        // If the in-flow state of an element is changed, disable scroll
+        // anchoring on the containing scroller.
+        if (oldStyle->hasOutOfFlowPosition() != m_style->hasOutOfFlowPosition())
+            setScrollAnchorDisablingStyleChangedOnAncestor();
 
         // If the object already needs layout, then setNeedsLayout won't do
         // any work. But if the containing block has changed, then we may need
