@@ -74,7 +74,6 @@ public:
     BLINK_EXPORT static void enableCredentialManagerAPI(bool);
     BLINK_EXPORT static void enableDatabase(bool);
     BLINK_EXPORT static void enableDecodeToYUV(bool);
-    BLINK_EXPORT static void enableDoNotUnlockSharedBuffer(bool);
     BLINK_EXPORT static void enableDocumentWriteEvaluator(bool);
     BLINK_EXPORT static void enableExperimentalCanvasFeatures(bool);
     BLINK_EXPORT static void enableFastMobileScrolling(bool);
@@ -114,7 +113,6 @@ public:
     BLINK_EXPORT static void enableTouch(bool);
     BLINK_EXPORT static void enableUnsafeES3APIs(bool);
     BLINK_EXPORT static void enableV8IdleTasks(bool);
-    BLINK_EXPORT static void enableWeakMemoryCache(bool);
     BLINK_EXPORT static void enableWebAssemblySerialization(bool);
     BLINK_EXPORT static void enableWebBluetooth(bool);
     BLINK_EXPORT static void enableWebFontsInterventionV2With2G(bool);

@@ -29,10 +29,6 @@ const base::Feature kCredentialManagementAPI{"CredentialManagementAPI",
 const base::Feature kDefaultEnableGpuRasterization{
     "DefaultEnableGpuRasterization", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Do not call SharedBuffer::unlock() (https://crbug.com/603791).
-const base::Feature kDoNotUnlockSharedBuffer{"DoNotUnlockSharedBuffer",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Speculatively pre-evaluate Javascript which will likely use document.write to
 // load an external script. The feature extracts the written markup and sends it
 // to the preload scanner.
@@ -147,10 +143,6 @@ const base::Feature kTokenBinding{"token-binding",
 // Enables touchpad and wheel scroll latching.
 const base::Feature kTouchpadAndWheelScrollLatching{
     "TouchpadAndWheelScrollLatching", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Weak MemoryCache (https://crbug.com/603462).
-const base::Feature kWeakMemoryCache{"WeakMemoryCache",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If WebGL Image Chromium is allowed, this feature controls whether it is
 // enabled.
