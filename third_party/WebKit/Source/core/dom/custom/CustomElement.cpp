@@ -15,7 +15,6 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLUnknownElement.h"
-#include "platform/text/Character.h"
 #include "wtf/text/AtomicStringHash.h"
 
 namespace blink {
@@ -45,28 +44,15 @@ CustomElementDefinition* CustomElement::definitionForElement(const Element* elem
     return definitionForElementWithoutCheck(*element);
 }
 
-bool CustomElement::isValidName(const AtomicString& name)
+bool CustomElement::isHyphenatedSpecElementName(const AtomicString& name)
 {
-    if (!name.length() || name[0] < 'a' || name[0] > 'z')
-        return false;
-
-    bool hasHyphens = false;
-    for (size_t i = 1; i < name.length(); ) {
-        UChar32 ch;
-        if (name.is8Bit())
-            ch = name[i++];
-        else
-            U16_NEXT(name.characters16(), i, name.length(), ch);
-        if (ch == '-')
-            hasHyphens = true;
-        else if (!Character::isPotentialCustomElementNameChar(ch))
-            return false;
-    }
-    if (!hasHyphens)
-        return false;
-
-    // https://html.spec.whatwg.org/multipage/scripting.html#valid-custom-element-name
-    DEFINE_STATIC_LOCAL(HashSet<AtomicString>, hyphenContainingElementNames, ({
+    // Even if Blink does not implement one of the related specs, (for
+    // example annotation-xml is from MathML, which Blink does not
+    // implement) we must prohibit using the name because that is
+    // required by the HTML spec which we *do* implement. Don't remove
+    // names from this list without removing them from the HTML spec
+    // first.
+    DEFINE_STATIC_LOCAL(HashSet<AtomicString>, hyphenatedSpecElementNames, ({
         "annotation-xml",
         "color-profile",
         "font-face",
@@ -76,7 +62,7 @@ bool CustomElement::isValidName(const AtomicString& name)
         "font-face-name",
         "missing-glyph",
     }));
-    return !hyphenContainingElementNames.contains(name);
+    return hyphenatedSpecElementNames.contains(name);
 }
 
 bool CustomElement::shouldCreateCustomElement(const AtomicString& localName)
@@ -107,7 +93,7 @@ HTMLElement* CustomElement::createCustomElementSync(Document& document, const At
 
 HTMLElement* CustomElement::createCustomElementSync(Document& document, const QualifiedName& tagName, ExceptionState& exceptionState)
 {
-    CHECK(shouldCreateCustomElement(tagName));
+    DCHECK(shouldCreateCustomElement(tagName));
 
     // To create an element:
     // https://dom.spec.whatwg.org/#concept-create-element
@@ -121,7 +107,7 @@ HTMLElement* CustomElement::createCustomElementSync(Document& document, const Qu
 
 HTMLElement* CustomElement::createCustomElementSync(Document& document, const QualifiedName& tagName)
 {
-    CHECK(shouldCreateCustomElement(tagName));
+    DCHECK(shouldCreateCustomElement(tagName));
 
     // When invoked from "create an element for a token":
     // https://html.spec.whatwg.org/multipage/syntax.html#create-an-element-for-the-token
@@ -136,7 +122,7 @@ HTMLElement* CustomElement::createCustomElementSync(Document& document, const Qu
 
 HTMLElement* CustomElement::createCustomElementAsync(Document& document, const QualifiedName& tagName)
 {
-    CHECK(shouldCreateCustomElement(tagName));
+    DCHECK(shouldCreateCustomElement(tagName));
 
     // To create an element:
     // https://dom.spec.whatwg.org/#concept-create-element

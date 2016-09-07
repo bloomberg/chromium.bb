@@ -90,7 +90,12 @@ static void create{{namespace}}FunctionMap()
         return function(document, {% if namespace == 'HTML' %}formElement, {% endif %}flags);
 
     {% if namespace == 'HTML' %}
-    if (CustomElement::shouldCreateCustomElement(localName)) {
+    // createElement handles custom element creation itself in order to
+    // transmit exceptions.
+    // TODO(dominicc): When the HTML parser can pass an error
+    // reporting ExceptionState, and "v0" custom elements have been
+    // removed, consolidate custom element creation into one place.
+    if (flags != CreatedByCreateElement && CustomElement::shouldCreateCustomElement(localName)) {
         QualifiedName tagName(nullAtom, localName, HTMLNames::xhtmlNamespaceURI);
         if (flags & AsynchronousCustomElements)
             return CustomElement::createCustomElementAsync(document, tagName);

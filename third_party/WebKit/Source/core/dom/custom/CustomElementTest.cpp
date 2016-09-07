@@ -10,6 +10,7 @@
 #include "core/html/HTMLElement.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include <ios>
 #include <memory>
 
 namespace blink {
@@ -97,6 +98,20 @@ TEST(CustomElementTest, TestIsValidNamePotentialCustomElementNameChar)
         for (UChar32 c = range.from; c <= range.to; ++c)
             testIsPotentialCustomElementNameChar(c, true);
         testIsPotentialCustomElementNameChar(range.to + 1, false);
+    }
+}
+
+TEST(CustomElementTest, TestIsValidNamePotentialCustomElementName8BitChar)
+{
+    // isPotentialCustomElementName8BitChar must match
+    // isPotentialCustomElementNameChar, so we just test it returns
+    // the same result throughout its range.
+    for (UChar ch = 0x0; ch <= 0xff; ++ch) {
+        EXPECT_EQ(
+            Character::isPotentialCustomElementName8BitChar(ch),
+            Character::isPotentialCustomElementNameChar(ch))
+            << "isPotentialCustomElementName8BitChar must agree with "
+            << "isPotentialCustomElementNameChar: 0x" << std::hex << ch;
     }
 }
 

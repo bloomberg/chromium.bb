@@ -36,6 +36,7 @@
 #include "platform/text/TextDirection.h"
 #include "platform/text/TextPath.h"
 #include "platform/text/TextRun.h"
+#include "wtf/ASCIICType.h"
 #include "wtf/Allocator.h"
 #include "wtf/HashSet.h"
 #include "wtf/text/CharacterNames.h"
@@ -81,6 +82,13 @@ public:
     static bool isUprightInMixedVertical(UChar32 character);
 
     // https://html.spec.whatwg.org/multipage/scripting.html#prod-potentialcustomelementname
+    static bool isPotentialCustomElementName8BitChar(LChar ch)
+    {
+        return isASCIILower(ch)
+            || isASCIIDigit(ch)
+            || ch == '-' || ch == '.' || ch == '_' || ch == 0xb7
+            || (0xc0 <= ch && ch != 0xd7 && ch != 0xf7);
+    }
     static bool isPotentialCustomElementNameChar(UChar32 character);
 
     static bool treatAsSpace(UChar32 c)

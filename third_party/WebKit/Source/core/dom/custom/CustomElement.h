@@ -8,6 +8,8 @@
 #include "core/CoreExport.h"
 #include "core/HTMLNames.h"
 #include "core/dom/Element.h"
+#include "platform/text/Character.h"
+#include "wtf/ASCIICType.h"
 #include "wtf/Allocator.h"
 #include "wtf/text/AtomicString.h"
 
@@ -32,7 +34,33 @@ public:
 
     static CustomElementDefinition* definitionForElement(const Element*);
 
-    static bool isValidName(const AtomicString& name);
+    static bool isValidName(const AtomicString& name)
+    {
+        // This quickly rejects all common built-in element names.
+        if (name.find('-', 1) == kNotFound)
+            return false;
+
+        if (!isASCIILower(name[0]))
+            return false;
+
+        if (name.is8Bit()) {
+            const LChar* characters = name.characters8();
+            for (size_t i = 1; i < name.length(); ++i) {
+                if (!Character::isPotentialCustomElementName8BitChar(characters[i]))
+                    return false;
+            }
+        } else {
+            const UChar* characters = name.characters16();
+            for (size_t i = 1; i < name.length(); ) {
+                UChar32 ch;
+                U16_NEXT(characters, i, name.length(), ch);
+                if (!Character::isPotentialCustomElementNameChar(ch))
+                    return false;
+            }
+        }
+
+        return !isHyphenatedSpecElementName(name);
+    }
 
     static bool shouldCreateCustomElement(const AtomicString& localName);
     static bool shouldCreateCustomElement(const QualifiedName&);
@@ -55,6 +83,11 @@ public:
     static void tryToUpgrade(Element*);
 
 private:
+    // Some existing specs have element names with hyphens in them,
+    // like font-face in SVG. The custom elements spec explicitly
+    // disallows these as custom element names.
+    // https://html.spec.whatwg.org/#valid-custom-element-name
+    static bool isHyphenatedSpecElementName(const AtomicString&);
     static HTMLElement* createUndefinedElement(Document&, const QualifiedName&);
 };
 
