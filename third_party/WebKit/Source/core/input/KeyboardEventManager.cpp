@@ -8,7 +8,8 @@
 #include "core/editing/Editor.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/html/HTMLDialogElement.h"
-#include "core/input/EventHandler.h"
+#include "core/input/EventHandlingUtil.h"
+#include "core/input/ScrollManager.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTextControlSingleLine.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -56,10 +57,6 @@ KeyboardEventManager::KeyboardEventManager(
     LocalFrame* frame, ScrollManager* scrollManager)
 : m_frame(frame)
 , m_scrollManager(scrollManager)
-{
-}
-
-KeyboardEventManager::~KeyboardEventManager()
 {
 }
 
@@ -120,7 +117,7 @@ WebInputEventResult KeyboardEventManager::keyEvent(
     if (initialKeyEvent.type == WebInputEvent::KeyUp || initialKeyEvent.type == WebInputEvent::Char) {
         KeyboardEvent* domEvent = KeyboardEvent::create(initialKeyEvent, m_frame->document()->domWindow());
 
-        return EventHandler::toWebInputEventResult(node->dispatchEvent(domEvent));
+        return EventHandlingUtil::toWebInputEventResult(node->dispatchEvent(domEvent));
     }
 
     WebKeyboardEvent keyDownEvent = initialKeyEvent;
@@ -133,7 +130,7 @@ WebInputEventResult KeyboardEventManager::keyEvent(
 
     DispatchEventResult dispatchResult = node->dispatchEvent(keydown);
     if (dispatchResult != DispatchEventResult::NotCanceled)
-        return EventHandler::toWebInputEventResult(dispatchResult);
+        return EventHandlingUtil::toWebInputEventResult(dispatchResult);
     // If frame changed as a result of keydown dispatch, then return early to avoid sending a subsequent keypress message to the new frame.
     bool changedFocusedFrame = m_frame->page() && m_frame != m_frame->page()->focusController().focusedOrMainFrame();
     if (changedFocusedFrame)
@@ -164,7 +161,7 @@ WebInputEventResult KeyboardEventManager::keyEvent(
         return WebInputEventResult::NotHandled;
     KeyboardEvent* keypress = KeyboardEvent::create(keyPressEvent, m_frame->document()->domWindow());
     keypress->setTarget(node);
-    return EventHandler::toWebInputEventResult(node->dispatchEvent(keypress));
+    return EventHandlingUtil::toWebInputEventResult(node->dispatchEvent(keypress));
 }
 
 void KeyboardEventManager::capsLockStateMayHaveChanged()
@@ -310,6 +307,7 @@ void KeyboardEventManager::defaultEscapeEventHandler(KeyboardEvent* event)
 DEFINE_TRACE(KeyboardEventManager)
 {
     visitor->trace(m_frame);
+    visitor->trace(m_scrollManager);
 }
 
 static OverrideCapsLockState s_overrideCapsLockState;

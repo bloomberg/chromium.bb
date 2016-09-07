@@ -11,6 +11,7 @@
 #include "core/frame/TopControls.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/input/EventHandler.h"
+#include "core/input/EventHandlingUtil.h"
 #include "core/layout/LayoutPart.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/AutoscrollController.h"
@@ -30,10 +31,6 @@ ScrollManager::ScrollManager(LocalFrame* frame)
 : m_frame(frame)
 {
     clear();
-}
-
-ScrollManager::~ScrollManager()
-{
 }
 
 void ScrollManager::clear()
@@ -404,7 +401,7 @@ WebInputEventResult ScrollManager::handleGestureScrollEvent(const PlatformGestur
             DispatchEventResult gestureDomEventResult = eventTarget->dispatchEvent(gestureDomEvent);
             if (gestureDomEventResult != DispatchEventResult::NotCanceled) {
                 DCHECK(gestureDomEventResult != DispatchEventResult::CanceledByEventHandler);
-                return EventHandler::toWebInputEventResult(gestureDomEventResult);
+                return EventHandlingUtil::toWebInputEventResult(gestureDomEventResult);
             }
         }
     }

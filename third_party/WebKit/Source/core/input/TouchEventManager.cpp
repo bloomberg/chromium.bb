@@ -11,7 +11,7 @@
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLCanvasElement.h"
-#include "core/input/EventHandler.h"
+#include "core/input/EventHandlingUtil.h"
 #include "core/input/TouchActionUtil.h"
 #include "core/layout/HitTestCanvasResult.h"
 #include "core/page/ChromeClient.h"
@@ -85,10 +85,6 @@ TouchEventManager::TouchEventManager(LocalFrame* frame)
 : m_frame(frame)
 {
     clear();
-}
-
-TouchEventManager::~TouchEventManager()
-{
 }
 
 WebInputEventResult TouchEventManager::dispatchTouchEvents(
@@ -213,8 +209,8 @@ WebInputEventResult TouchEventManager::dispatchTouchEvents(
                     touchDispositionsDuringFlingHistogram.count(touchEvent->preventDefaultCalledOnUncancelableEvent() ? HandledTouches : UnhandledTouches);
                 }
             }
-            eventResult = EventHandler::mergeEventResult(eventResult,
-                EventHandler::toWebInputEventResult(domDispatchResult));
+            eventResult = EventHandlingUtil::mergeEventResult(eventResult,
+                EventHandlingUtil::toWebInputEventResult(domDispatchResult));
         }
     }
 
@@ -246,7 +242,7 @@ void TouchEventManager::updateTargetAndRegionMapsForTouchStarts(
                 || &touchInfo.touchNode->document() != m_touchSequenceDocument)) {
                 if (m_touchSequenceDocument->frame()) {
                     LayoutPoint framePoint = roundedLayoutPoint(m_touchSequenceDocument->frame()->view()->rootFrameToContents(touchInfo.point.pos()));
-                    result = EventHandler::hitTestResultInFrame(m_touchSequenceDocument->frame(), framePoint, hitType);
+                    result = EventHandlingUtil::hitTestResultInFrame(m_touchSequenceDocument->frame(), framePoint, hitType);
                     Node* node = result.innerNode();
                     if (!node)
                         continue;

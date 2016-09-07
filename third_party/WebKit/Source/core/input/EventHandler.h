@@ -30,6 +30,7 @@
 #include "core/events/TextEventInputType.h"
 #include "core/input/GestureManager.h"
 #include "core/input/KeyboardEventManager.h"
+#include "core/input/MouseEventManager.h"
 #include "core/input/PointerEventManager.h"
 #include "core/input/ScrollManager.h"
 #include "core/layout/HitTestRequest.h"
@@ -111,8 +112,6 @@ public:
     void dispatchFakeMouseMoveEventSoon();
     void dispatchFakeMouseMoveEventSoonInQuad(const FloatQuad&);
 
-    static HitTestResult hitTestResultInFrame(LocalFrame*, const LayoutPoint&, HitTestRequest::HitTestRequestType hitType = HitTestRequest::ReadOnly | HitTestRequest::Active);
-
     HitTestResult hitTestResultAtPoint(const LayoutPoint&,
         HitTestRequest::HitTestRequestType hitType = HitTestRequest::ReadOnly | HitTestRequest::Active,
         const LayoutSize& padding = LayoutSize());
@@ -193,9 +192,6 @@ public:
 
     void setMouseDownMayStartAutoscroll() { m_mouseDownMayStartAutoscroll = true; }
 
-    static WebInputEventResult mergeEventResult(WebInputEventResult resultA, WebInputEventResult resultB);
-    static WebInputEventResult toWebInputEventResult(DispatchEventResult);
-
     bool handleAccessKey(const WebKeyboardEvent&);
     WebInputEventResult keyEvent(const WebKeyboardEvent&);
     void defaultKeyboardEventHandler(KeyboardEvent*);
@@ -216,8 +212,6 @@ public:
     void notifyElementActivated();
 
     PassRefPtr<UserGestureToken> takeLastMouseDownGestureToken() { return m_lastMouseDownUserGestureToken.release(); }
-
-    int clickCount() { return m_clickCount; }
 
     SelectionController& selectionController() const { return *m_selectionController; }
 
@@ -373,6 +367,7 @@ private:
     Member<Node> m_capturingMouseEventsNode;
     bool m_eventHandlerWillResetCapturingMouseEventsNode;
 
+    // TODO(nzolghadr): Refactor the mouse related fields to MouseEventManager.
     // Note the difference of this and m_nodeUnderPointer in PointerEventManager
     Member<Node> m_nodeUnderMouse;
 
@@ -396,10 +391,11 @@ private:
     PlatformMouseEvent m_mouseDown;
     RefPtr<UserGestureToken> m_lastMouseDownUserGestureToken;
 
-    PointerEventManager m_pointerEventManager;
-    ScrollManager m_scrollManager;
-    KeyboardEventManager m_keyboardEventManager;
-    GestureManager m_gestureManager;
+    Member<ScrollManager> m_scrollManager;
+    Member<MouseEventManager> m_mouseEventManager;
+    Member<KeyboardEventManager> m_keyboardEventManager;
+    Member<PointerEventManager> m_pointerEventManager;
+    Member<GestureManager> m_gestureManager;
 
     double m_maxMouseMovedDuration;
 

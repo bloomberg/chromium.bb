@@ -21,9 +21,8 @@ class PlatformTouchEvent;
 
 // This class takes care of dispatching all touch events and
 // maintaining related states.
-class CORE_EXPORT TouchEventManager: public UserGestureUtilizedCallback {
+class CORE_EXPORT TouchEventManager : public GarbageCollectedFinalized<TouchEventManager>, public UserGestureUtilizedCallback {
     WTF_MAKE_NONCOPYABLE(TouchEventManager);
-    DISALLOW_NEW();
 public:
     class TouchInfo {
         DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
@@ -44,7 +43,6 @@ public:
     };
 
     explicit TouchEventManager(LocalFrame*);
-    ~TouchEventManager();
     DECLARE_TRACE();
 
     // Does the hit-testing again if the original hit test result was not inside

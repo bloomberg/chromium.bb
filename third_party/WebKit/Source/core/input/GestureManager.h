@@ -20,14 +20,12 @@ class PointerEventManager;
 
 // This class takes care of gestures and delegating the action based on the
 // gesture to the responsible class.
-class CORE_EXPORT GestureManager {
+class CORE_EXPORT GestureManager : public GarbageCollectedFinalized<GestureManager> {
     WTF_MAKE_NONCOPYABLE(GestureManager);
-    DISALLOW_NEW();
 
 public:
     GestureManager(LocalFrame*, ScrollManager*, PointerEventManager*,
         SelectionController*);
-    ~GestureManager();
     DECLARE_TRACE();
 
     void clear();
@@ -57,8 +55,8 @@ private:
 
     const Member<LocalFrame> m_frame;
 
-    ScrollManager* m_scrollManager;
-    PointerEventManager* m_pointerEventManager;
+    Member<ScrollManager> m_scrollManager;
+    Member<PointerEventManager> m_pointerEventManager;
 
     // Set on GestureTapDown if the |pointerdown| event corresponding to the
     // triggering |touchstart| event was canceled. This suppresses mouse event

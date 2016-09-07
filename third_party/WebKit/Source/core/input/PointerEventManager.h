@@ -8,6 +8,7 @@
 #include "core/CoreExport.h"
 #include "core/events/PointerEvent.h"
 #include "core/events/PointerEventFactory.h"
+#include "core/input/BoundaryEventDispatcher.h"
 #include "core/input/TouchEventManager.h"
 #include "public/platform/WebInputEventResult.h"
 #include "public/platform/WebPointerProperties.h"
@@ -17,15 +18,14 @@
 namespace blink {
 
 class LocalFrame;
+class MouseEventManager;
 
 // This class takes care of dispatching all pointer events and keeps track of
 // properties of active pointer events.
-class CORE_EXPORT PointerEventManager {
+class CORE_EXPORT PointerEventManager : public GarbageCollectedFinalized<PointerEventManager> {
     WTF_MAKE_NONCOPYABLE(PointerEventManager);
-    DISALLOW_NEW();
 public:
-    explicit PointerEventManager(LocalFrame*);
-    ~PointerEventManager();
+    explicit PointerEventManager(LocalFrame*, MouseEventManager*);
     DECLARE_TRACE();
 
     // Sends the mouse pointer events and the boundary events
@@ -106,6 +106,26 @@ private:
         , hasRecievedOverEvent(hasRecievedOverEvent) {}
     };
 
+    class PointerEventBoundaryEventDispatcher : public BoundaryEventDispatcher {
+        WTF_MAKE_NONCOPYABLE(PointerEventBoundaryEventDispatcher);
+
+    public:
+        PointerEventBoundaryEventDispatcher(PointerEventManager*, PointerEvent*);
+
+    protected:
+        void dispatchOut(EventTarget*, EventTarget* relatedTarget) override;
+        void dispatchOver(EventTarget*, EventTarget* relatedTarget) override;
+        void dispatchLeave(EventTarget*, EventTarget* relatedTarget, bool checkForListener) override;
+        void dispatchEnter(EventTarget*, EventTarget* relatedTarget, bool checkForListener) override;
+        AtomicString getLeaveEvent() override;
+        AtomicString getEnterEvent() override;
+
+    private:
+        void dispatch(EventTarget*, EventTarget* relatedTarget, const AtomicString&, bool checkForListener);
+        Member<PointerEventManager> m_pointerEventManager;
+        Member<PointerEvent> m_pointerEvent;
+    };
+
     // Inhibits firing of touch-type PointerEvents until unblocked by unblockTouchPointers(). Also
     // sends pointercancels for existing touch-type PointerEvents.
     // See: www.w3.org/TR/pointerevents/#declaring-candidate-regions-for-default-touch-behaviors
@@ -126,9 +146,7 @@ private:
     void sendBoundaryEvents(
         EventTarget* exitedTarget,
         EventTarget* enteredTarget,
-        PointerEvent*,
-        const PlatformMouseEvent& = PlatformMouseEvent(),
-        bool sendMouseEvent = false);
+        PointerEvent*);
     void setNodeUnderPointer(PointerEvent*,
         EventTarget*);
 
@@ -194,7 +212,8 @@ private:
     PointerCapturingMap m_pendingPointerCaptureTarget;
 
     PointerEventFactory m_pointerEventFactory;
-    TouchEventManager m_touchEventManager;
+    Member<TouchEventManager> m_touchEventManager;
+    Member<MouseEventManager> m_mouseEventManager;
 };
 
 } // namespace blink

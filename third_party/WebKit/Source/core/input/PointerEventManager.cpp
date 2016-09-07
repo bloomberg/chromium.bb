@@ -11,6 +11,8 @@
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/input/EventHandler.h"
+#include "core/input/EventHandlingUtil.h"
+#include "core/input/MouseEventManager.h"
 #include "core/input/TouchActionUtil.h"
 #include "core/layout/HitTestCanvasResult.h"
 #include "core/page/ChromeClient.h"
@@ -47,88 +49,59 @@ bool isInDocument(EventTarget* n)
     return n && n->toNode() && n->toNode()->isConnected();
 }
 
-WebInputEventResult dispatchMouseEvent(
-    EventTarget* target,
-    const AtomicString& mouseEventType,
-    const PlatformMouseEvent& mouseEvent,
-    EventTarget* relatedTarget,
-    int detail = 0,
-    bool checkForListener = false)
-{
-    if (target && target->toNode()
-        && (!checkForListener || target->hasEventListeners(mouseEventType))) {
-        Node* targetNode = target->toNode();
-        MouseEvent* event = MouseEvent::create(mouseEventType,
-            targetNode->document().domWindow(), mouseEvent, detail,
-            relatedTarget ? relatedTarget->toNode() : nullptr);
-        DispatchEventResult dispatchResult = target->dispatchEvent(event);
-        return EventHandler::toWebInputEventResult(dispatchResult);
-    }
-    return WebInputEventResult::NotHandled;
-}
-
-PlatformMouseEvent mouseEventWithRegion(Node* node, const PlatformMouseEvent& mouseEvent)
-{
-    if (!node->isElementNode())
-        return mouseEvent;
-
-    Element* element = toElement(node);
-    if (!element->isInCanvasSubtree())
-        return mouseEvent;
-
-    HTMLCanvasElement* canvas = Traversal<HTMLCanvasElement>::firstAncestorOrSelf(*element);
-    // In this case, the event target is canvas and mouse rerouting doesn't happen.
-    if (canvas == element)
-        return mouseEvent;
-    String region = canvas->getIdFromControl(element);
-    PlatformMouseEvent newMouseEvent = mouseEvent;
-    newMouseEvent.setRegion(region);
-    return newMouseEvent;
-}
-
-void buildAncestorChain(
-    EventTarget* target,
-    HeapVector<Member<Node>, 20>* ancestors)
-{
-    if (!isInDocument(target))
-        return;
-    Node* targetNode = target->toNode();
-    DCHECK(targetNode);
-    targetNode->updateDistribution();
-    // Index 0 element in the ancestors arrays will be the corresponding
-    // target. So the root of their document will be their last element.
-    for (Node* node = targetNode; node; node = FlatTreeTraversal::parent(*node))
-        ancestors->append(node);
-}
-
-void buildAncestorChainsAndFindCommonAncestors(
-    EventTarget* exitedTarget, EventTarget* enteredTarget,
-    HeapVector<Member<Node>, 20>* exitedAncestorsOut,
-    HeapVector<Member<Node>, 20>* enteredAncestorsOut,
-    size_t* exitedAncestorsCommonParentIndexOut,
-    size_t* enteredAncestorsCommonParentIndexOut)
-{
-    DCHECK(exitedAncestorsOut);
-    DCHECK(enteredAncestorsOut);
-    DCHECK(exitedAncestorsCommonParentIndexOut);
-    DCHECK(enteredAncestorsCommonParentIndexOut);
-
-    buildAncestorChain(exitedTarget, exitedAncestorsOut);
-    buildAncestorChain(enteredTarget, enteredAncestorsOut);
-
-    *exitedAncestorsCommonParentIndexOut = exitedAncestorsOut->size();
-    *enteredAncestorsCommonParentIndexOut = enteredAncestorsOut->size();
-    while (*exitedAncestorsCommonParentIndexOut > 0
-        && *enteredAncestorsCommonParentIndexOut > 0) {
-        if ((*exitedAncestorsOut)[(*exitedAncestorsCommonParentIndexOut)-1]
-            != (*enteredAncestorsOut)[(*enteredAncestorsCommonParentIndexOut)-1])
-            break;
-        (*exitedAncestorsCommonParentIndexOut)--;
-        (*enteredAncestorsCommonParentIndexOut)--;
-    }
-}
-
 } // namespace
+
+PointerEventManager::PointerEventBoundaryEventDispatcher::PointerEventBoundaryEventDispatcher(
+    PointerEventManager* pointerEventManager,
+    PointerEvent* pointerEvent)
+    : m_pointerEventManager(pointerEventManager)
+    , m_pointerEvent(pointerEvent)
+{
+}
+
+void PointerEventManager::PointerEventBoundaryEventDispatcher::dispatchOut(
+    EventTarget* target, EventTarget* relatedTarget)
+{
+    dispatch(target, relatedTarget, EventTypeNames::pointerout, false);
+}
+
+void PointerEventManager::PointerEventBoundaryEventDispatcher::dispatchOver(
+    EventTarget* target, EventTarget* relatedTarget)
+{
+    dispatch(target, relatedTarget, EventTypeNames::pointerover, false);
+}
+
+void PointerEventManager::PointerEventBoundaryEventDispatcher::dispatchLeave(
+    EventTarget* target, EventTarget* relatedTarget, bool checkForListener)
+{
+    dispatch(target, relatedTarget, EventTypeNames::pointerleave, checkForListener);
+}
+
+void PointerEventManager::PointerEventBoundaryEventDispatcher::dispatchEnter(
+    EventTarget* target, EventTarget* relatedTarget, bool checkForListener)
+{
+    dispatch(target, relatedTarget, EventTypeNames::pointerenter, checkForListener);
+}
+
+AtomicString PointerEventManager::PointerEventBoundaryEventDispatcher::getLeaveEvent()
+{
+    return EventTypeNames::pointerleave;
+}
+
+AtomicString PointerEventManager::PointerEventBoundaryEventDispatcher::getEnterEvent()
+{
+    return EventTypeNames::pointerenter;
+}
+
+void PointerEventManager::PointerEventBoundaryEventDispatcher::dispatch(
+    EventTarget* target, EventTarget* relatedTarget, const AtomicString& type,
+    bool checkForListener)
+{
+    m_pointerEventManager->dispatchPointerEvent(target,
+        m_pointerEventManager->m_pointerEventFactory.createPointerBoundaryEvent(
+            m_pointerEvent, type, relatedTarget),
+        checkForListener);
+}
 
 WebInputEventResult PointerEventManager::dispatchPointerEvent(
     EventTarget* target,
@@ -161,7 +134,7 @@ WebInputEventResult PointerEventManager::dispatchPointerEvent(
             UseCounter::count(m_frame->document(), UseCounter::PointerEventDispatchPointerDown);
 
         DispatchEventResult dispatchResult = target->dispatchEvent(pointerEvent);
-        return EventHandler::toWebInputEventResult(dispatchResult);
+        return EventHandlingUtil::toWebInputEventResult(dispatchResult);
     }
     return WebInputEventResult::NotHandled;
 }
@@ -205,109 +178,10 @@ void PointerEventManager::sendMouseAndPossiblyPointerBoundaryEvents(
 void PointerEventManager::sendBoundaryEvents(
     EventTarget* exitedTarget,
     EventTarget* enteredTarget,
-    PointerEvent* pointerEvent,
-    const PlatformMouseEvent& mouseEvent, bool sendMouseEvent)
+    PointerEvent* pointerEvent)
 {
-    if (exitedTarget == enteredTarget)
-        return;
-
-    // Dispatch pointerout/mouseout events
-    if (isInDocument(exitedTarget)) {
-        if (!sendMouseEvent) {
-            dispatchPointerEvent(exitedTarget, m_pointerEventFactory.createPointerBoundaryEvent(
-                pointerEvent, EventTypeNames::pointerout, enteredTarget));
-        } else {
-            dispatchMouseEvent(exitedTarget,
-                EventTypeNames::mouseout,
-                mouseEventWithRegion(exitedTarget->toNode(), mouseEvent),
-                enteredTarget);
-        }
-    }
-
-    // Create lists of all exited/entered ancestors, locate the common ancestor
-    // Based on httparchive, in more than 97% cases the depth of DOM is less
-    // than 20.
-    HeapVector<Member<Node>, 20> exitedAncestors;
-    HeapVector<Member<Node>, 20> enteredAncestors;
-    size_t exitedAncestorsCommonParentIndex = 0;
-    size_t enteredAncestorsCommonParentIndex = 0;
-
-    // A note on mouseenter and mouseleave: These are non-bubbling events, and they are dispatched if there
-    // is a capturing event handler on an ancestor or a normal event handler on the element itself. This special
-    // handling is necessary to avoid O(n^2) capturing event handler checks.
-    //
-    //   Note, however, that this optimization can possibly cause some unanswered/missing/redundant mouseenter or
-    // mouseleave events in certain contrived eventhandling scenarios, e.g., when:
-    // - the mouseleave handler for a node sets the only capturing-mouseleave-listener in its ancestor, or
-    // - DOM mods in any mouseenter/mouseleave handler changes the common ancestor of exited & entered nodes, etc.
-    // We think the spec specifies a "frozen" state to avoid such corner cases (check the discussion on "candidate event
-    // listeners" at http://www.w3.org/TR/uievents), but our code below preserves one such behavior from past only to
-    // match Firefox and IE behavior.
-    //
-    // TODO(mustaq): Confirm spec conformance, double-check with other browsers.
-
-    buildAncestorChainsAndFindCommonAncestors(
-        exitedTarget, enteredTarget,
-        &exitedAncestors, &enteredAncestors,
-        &exitedAncestorsCommonParentIndex, &enteredAncestorsCommonParentIndex);
-
-    bool exitedNodeHasCapturingAncestor = false;
-    for (size_t j = 0; j < exitedAncestors.size(); j++) {
-        if (exitedAncestors[j]->hasCapturingEventListeners(EventTypeNames::mouseleave)
-            || (RuntimeEnabledFeatures::pointerEventEnabled()
-            && exitedAncestors[j]->hasCapturingEventListeners(EventTypeNames::pointerleave)))
-            exitedNodeHasCapturingAncestor = true;
-    }
-
-    // Dispatch pointerleave/mouseleave events, in child-to-parent order.
-    for (size_t j = 0; j < exitedAncestorsCommonParentIndex; j++) {
-        if (!sendMouseEvent) {
-            dispatchPointerEvent(exitedAncestors[j].get(),
-                m_pointerEventFactory.createPointerBoundaryEvent(
-                    pointerEvent, EventTypeNames::pointerleave, enteredTarget),
-                !exitedNodeHasCapturingAncestor);
-        } else {
-            dispatchMouseEvent(exitedAncestors[j].get(),
-                EventTypeNames::mouseleave,
-                mouseEventWithRegion(exitedTarget->toNode(), mouseEvent),
-                enteredTarget, 0, !exitedNodeHasCapturingAncestor);
-        }
-    }
-
-    // Dispatch pointerover/mouseover.
-    if (isInDocument(enteredTarget)) {
-        if (!sendMouseEvent) {
-            dispatchPointerEvent(enteredTarget, m_pointerEventFactory.createPointerBoundaryEvent(
-                pointerEvent, EventTypeNames::pointerover, exitedTarget));
-        } else {
-            dispatchMouseEvent(enteredTarget,
-                EventTypeNames::mouseover, mouseEvent, exitedTarget);
-        }
-    }
-
-    // Defer locating capturing pointeenter/mouseenter listener until /after/ dispatching the leave events because
-    // the leave handlers might set a capturing enter handler.
-    bool enteredNodeHasCapturingAncestor = false;
-    for (size_t i = 0; i < enteredAncestors.size(); i++) {
-        if (enteredAncestors[i]->hasCapturingEventListeners(EventTypeNames::mouseenter)
-            || (RuntimeEnabledFeatures::pointerEventEnabled()
-            && enteredAncestors[i]->hasCapturingEventListeners(EventTypeNames::pointerenter)))
-            enteredNodeHasCapturingAncestor = true;
-    }
-
-    // Dispatch pointerenter/mouseenter events, in parent-to-child order.
-    for (size_t i = enteredAncestorsCommonParentIndex; i > 0; i--) {
-        if (!sendMouseEvent) {
-            dispatchPointerEvent(enteredAncestors[i-1].get(),
-                m_pointerEventFactory.createPointerBoundaryEvent(
-                    pointerEvent, EventTypeNames::pointerenter, exitedTarget),
-                !enteredNodeHasCapturingAncestor);
-        } else {
-            dispatchMouseEvent(enteredAncestors[i-1].get(),
-                EventTypeNames::mouseenter, mouseEvent, exitedTarget,
-                0, !enteredNodeHasCapturingAncestor);
-        }
-    }
+    PointerEventBoundaryEventDispatcher boundaryEventDispatcher(this, pointerEvent);
+    boundaryEventDispatcher.sendBoundaryEvents(exitedTarget, enteredTarget);
 }
 
 void PointerEventManager::setNodeUnderPointer(
@@ -380,7 +254,7 @@ WebInputEventResult PointerEventManager::handleTouchEvents(
 
     if (event.type() == PlatformEvent::TouchScrollStarted) {
         blockTouchPointers();
-        m_touchEventManager.setTouchScrollStarted();
+        m_touchEventManager->setTouchScrollStarted();
         return WebInputEventResult::HandledSystem;
     }
 
@@ -397,7 +271,7 @@ WebInputEventResult PointerEventManager::handleTouchEvents(
 
     dispatchTouchPointerEvents(event, touchInfos);
 
-    return m_touchEventManager.handleTouchEvent(event, touchInfos);
+    return m_touchEventManager->handleTouchEvent(event, touchInfos);
 }
 
 void PointerEventManager::dispatchTouchPointerEvents(
@@ -577,9 +451,9 @@ WebInputEventResult PointerEventManager::sendMousePointerEvent(
                 }
             }
         }
-        result = EventHandler::mergeEventResult(result,
-            dispatchMouseEvent(mouseTarget, mouseEventType, mouseEvent,
-            nullptr, clickCount));
+        result = EventHandlingUtil::mergeEventResult(result,
+            m_mouseEventManager->dispatchMouseEvent(mouseTarget, mouseEventType,
+                mouseEvent, nullptr, clickCount));
     }
 
     if (pointerEvent->type() == EventTypeNames::pointerup
@@ -598,22 +472,20 @@ WebInputEventResult PointerEventManager::sendMousePointerEvent(
     return result;
 }
 
-PointerEventManager::PointerEventManager(LocalFrame* frame)
-: m_frame(frame)
-, m_touchEventManager(frame)
+PointerEventManager::PointerEventManager(LocalFrame* frame,
+    MouseEventManager* mouseEventManager)
+    : m_frame(frame)
+    , m_touchEventManager(new TouchEventManager(frame))
+    , m_mouseEventManager(mouseEventManager)
 {
     clear();
-}
-
-PointerEventManager::~PointerEventManager()
-{
 }
 
 void PointerEventManager::clear()
 {
     for (auto& entry : m_preventMouseEventForPointerType)
         entry = false;
-    m_touchEventManager.clear();
+    m_touchEventManager->clear();
     m_inCanceledStateForPointerTypeTouch = false;
     m_pointerEventFactory.clear();
     m_touchIdsForCanceledPointerdowns.clear();
@@ -659,8 +531,8 @@ EventTarget* PointerEventManager::processCaptureAndPositionOfPointerEvent(
     }
     if (sendMouseEvent) {
         // lastNodeUnderMouse is needed here because it is still stored in EventHandler.
-        sendBoundaryEvents(lastNodeUnderMouse, hitTestTarget,
-            pointerEvent, mouseEvent, true);
+        m_mouseEventManager->sendBoundaryEvents(lastNodeUnderMouse,
+            hitTestTarget, mouseEvent);
     }
     return hitTestTarget;
 }
@@ -783,7 +655,7 @@ bool PointerEventManager::isActive(const int pointerId) const
 
 bool PointerEventManager::isAnyTouchActive() const
 {
-    return m_touchEventManager.isAnyTouchActive();
+    return m_touchEventManager->isAnyTouchActive();
 }
 
 bool PointerEventManager::primaryPointerdownCanceled(uint32_t uniqueTouchEventId)
@@ -814,6 +686,7 @@ DEFINE_TRACE(PointerEventManager)
     visitor->trace(m_pointerCaptureTarget);
     visitor->trace(m_pendingPointerCaptureTarget);
     visitor->trace(m_touchEventManager);
+    visitor->trace(m_mouseEventManager);
 }
 
 

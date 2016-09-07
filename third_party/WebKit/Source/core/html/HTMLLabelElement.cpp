@@ -172,7 +172,7 @@ void HTMLLabelElement::defaultEventHandler(Event* evt)
                 // should pass click event to control element.
                 // Only in case of drag, *neither* we pass the click event,
                 // *nor* we focus the control element.
-                if (isLabelTextSelected && frame->eventHandler().clickCount() == 1)
+                if (isLabelTextSelected && toMouseEvent(evt)->clickCount() == 1)
                     return;
             }
         }

@@ -33,12 +33,10 @@ class ScrollState;
 // This class takes care of scrolling and resizing and the related states. The
 // user action that causes scrolling or resizing is determined in other *Manager
 // classes and they call into this class for doing the work.
-class CORE_EXPORT ScrollManager {
+class CORE_EXPORT ScrollManager : public GarbageCollectedFinalized<ScrollManager> {
     WTF_MAKE_NONCOPYABLE(ScrollManager);
-    DISALLOW_NEW();
 public:
     explicit ScrollManager(LocalFrame*);
-    ~ScrollManager();
     DECLARE_TRACE();
 
     void clear();

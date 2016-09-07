@@ -26,9 +26,8 @@ enum class OverrideCapsLockState {
     Off
 };
 
-class CORE_EXPORT KeyboardEventManager {
+class CORE_EXPORT KeyboardEventManager : public GarbageCollectedFinalized<KeyboardEventManager> {
     WTF_MAKE_NONCOPYABLE(KeyboardEventManager);
-    DISALLOW_NEW();
 public:
     static const int kAccessKeyModifiers =
 // TODO(crbug.com/618397): Add a settings to control this behavior.
@@ -39,7 +38,6 @@ public:
 #endif
 
     KeyboardEventManager(LocalFrame*, ScrollManager*);
-    ~KeyboardEventManager();
     DECLARE_TRACE();
 
     bool handleAccessKey(const WebKeyboardEvent&);
@@ -63,7 +61,7 @@ private:
 
     const Member<LocalFrame> m_frame;
 
-    ScrollManager* m_scrollManager;
+    Member<ScrollManager> m_scrollManager;
 };
 
 } // namespace blink

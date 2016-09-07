@@ -12,6 +12,7 @@
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
 #include "core/input/EventHandler.h"
+#include "core/input/EventHandlingUtil.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 
@@ -28,10 +29,6 @@ GestureManager::GestureManager(LocalFrame* frame, ScrollManager* scrollManager,
     clear();
 }
 
-GestureManager::~GestureManager()
-{
-}
-
 void GestureManager::clear()
 {
     m_suppressMouseEventsFromGestures = false;
@@ -43,6 +40,8 @@ DEFINE_TRACE(GestureManager)
 {
     visitor->trace(m_frame);
     visitor->trace(m_selectionController);
+    visitor->trace(m_pointerEventManager);
+    visitor->trace(m_scrollManager);
 }
 
 HitTestRequest::HitTestRequestType GestureManager::getHitTypeForGestureType(PlatformEvent::EventType type)
@@ -87,7 +86,7 @@ WebInputEventResult GestureManager::handleGestureEventInFrame(const GestureEvent
             DispatchEventResult gestureDomEventResult = eventTarget->dispatchEvent(gestureDomEvent);
             if (gestureDomEventResult != DispatchEventResult::NotCanceled) {
                 DCHECK(gestureDomEventResult != DispatchEventResult::CanceledByEventHandler);
-                return EventHandler::toWebInputEventResult(gestureDomEventResult);
+                return EventHandlingUtil::toWebInputEventResult(gestureDomEventResult);
             }
         }
     }
@@ -162,7 +161,7 @@ WebInputEventResult GestureManager::handleGestureTap(const GestureEventWithHitTe
         if (mainFrame && mainFrame->view())
             mainFrame->view()->updateLifecycleToCompositingCleanPlusScrolling();
         adjustedPoint = frameView->rootFrameToContents(gestureEvent.position());
-        currentHitTest = EventHandler::hitTestResultInFrame(m_frame, adjustedPoint, hitType);
+        currentHitTest = EventHandlingUtil::hitTestResultInFrame(m_frame, adjustedPoint, hitType);
     }
 
     // Capture data for showUnhandledTapUIIfNeeded.
@@ -205,7 +204,7 @@ WebInputEventResult GestureManager::handleGestureTap(const GestureEventWithHitTe
         if (mainFrame && mainFrame->view())
             mainFrame->view()->updateAllLifecyclePhases();
         adjustedPoint = frameView->rootFrameToContents(gestureEvent.position());
-        currentHitTest = EventHandler::hitTestResultInFrame(m_frame, adjustedPoint, hitType);
+        currentHitTest = EventHandlingUtil::hitTestResultInFrame(m_frame, adjustedPoint, hitType);
     }
 
     PlatformMouseEvent fakeMouseUp(gestureEvent.position(), gestureEvent.globalPosition(),
@@ -235,7 +234,7 @@ WebInputEventResult GestureManager::handleGestureTap(const GestureEventWithHitTe
         mouseUpEventResult = m_frame->eventHandler().handleMouseReleaseEvent(MouseEventWithHitTestResults(fakeMouseUp, currentHitTest));
     m_frame->eventHandler().clearDragHeuristicState();
 
-    WebInputEventResult eventResult = EventHandler::mergeEventResult(EventHandler::mergeEventResult(mouseDownEventResult, mouseUpEventResult), clickEventResult);
+    WebInputEventResult eventResult = EventHandlingUtil::mergeEventResult(EventHandlingUtil::mergeEventResult(mouseDownEventResult, mouseUpEventResult), clickEventResult);
     if (eventResult == WebInputEventResult::NotHandled && tappedNode && m_frame->page()) {
         bool domTreeChanged = preDispatchDomTreeVersion != m_frame->document()->domTreeVersion();
         bool styleChanged = preDispatchStyleVersion != m_frame->document()->styleVersion();

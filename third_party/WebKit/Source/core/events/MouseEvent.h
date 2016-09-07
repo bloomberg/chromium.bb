@@ -92,6 +92,8 @@ public:
 
     EventDispatchMediator* createMediator() override;
 
+    int clickCount() { return detail(); }
+
     DECLARE_VIRTUAL_TRACE();
 
 protected:

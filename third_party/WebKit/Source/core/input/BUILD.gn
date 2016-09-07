@@ -6,14 +6,20 @@ import("//third_party/WebKit/Source/core/core.gni")
 
 blink_core_sources("input") {
   sources = [
+    "BoundaryEventDispatcher.cpp",
+    "BoundaryEventDispatcher.h",
     "EventHandler.cpp",
     "EventHandler.h",
+    "EventHandlingUtil.cpp",
+    "EventHandlingUtil.h",
     "GestureManager.cpp",
     "GestureManager.h",
     "InputDeviceCapabilities.cpp",
     "InputDeviceCapabilities.h",
     "KeyboardEventManager.cpp",
     "KeyboardEventManager.h",
+    "MouseEventManager.cpp",
+    "MouseEventManager.h",
     "PointerEventManager.cpp",
     "PointerEventManager.h",
     "ScrollManager.cpp",
