@@ -75,10 +75,6 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
 
     private NewTabPage mVisibleNtp;
 
-    // TODO(twellington): Once incognito is supported, we will need one OfflinePageDownloadBridges
-    // for each profile (normal and incognito).
-    private OfflinePageDownloadBridge mOfflinePageDownloadBridge;
-
     /**
      * Constructs a ToolbarTablet object.
      * @param context The Context in which this View object is created.
@@ -312,12 +308,10 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
                 mTabSwitcherListener.onClick(mAccessibilitySwitcherButton);
             }
         } else if (mSaveOfflineButton == v) {
-            // This is a temporary hookup point to save a page later.
             Tab tab = getToolbarDataProvider().getTab();
-            if (mOfflinePageDownloadBridge == null) {
-                mOfflinePageDownloadBridge = new OfflinePageDownloadBridge(tab.getProfile());
-            }
-            mOfflinePageDownloadBridge.startDownload(tab);
+            OfflinePageDownloadBridge bridge = new OfflinePageDownloadBridge(tab.getProfile());
+            bridge.startDownload(tab);
+            bridge.destroy();
             RecordUserAction.record("MobileToolbarDownloadPage");
             DownloadUtils.recordDownloadPageMetrics(tab);
             DownloadUtils.showDownloadStartToast(getContext());

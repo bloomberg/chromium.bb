@@ -198,8 +198,6 @@ void DownloadUIAdapter::OnOfflinePagesChanged(
     items_[guid] = base::MakeUnique<ItemInfo>(page);
     added_guids.push_back(guid);
   }
-  // Only one added page
-  CHECK(added_guids.size() <= 1);
   for (auto& guid : added_guids) {
     const DownloadUIItem& item = *(items_.find(guid)->second->ui_item.get());
     FOR_EACH_OBSERVER(Observer, observers_, ItemAdded(item));
