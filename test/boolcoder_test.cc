@@ -119,15 +119,15 @@ TEST(AV1, TestTell) {
     aom_stop_encode(&bw);
     aom_reader br;
     aom_reader_init(&br, bw_buffer, kBufferSize, NULL, NULL);
-    ptrdiff_t last_tell = aom_reader_tell(&br);
-    ptrdiff_t last_tell_frac = aom_reader_tell_frac(&br);
+    uint32_t last_tell = aom_reader_tell(&br);
+    uint32_t last_tell_frac = aom_reader_tell_frac(&br);
     double frac_diff_total = 0;
-    GTEST_ASSERT_GE(aom_reader_tell(&br), 0);
-    GTEST_ASSERT_LE(aom_reader_tell(&br), 1);
+    GTEST_ASSERT_GE(aom_reader_tell(&br), 0u);
+    GTEST_ASSERT_LE(aom_reader_tell(&br), 1u);
     for (int i = 0; i < kSymbols; i++) {
       aom_read(&br, p, NULL);
-      ptrdiff_t tell = aom_reader_tell(&br);
-      ptrdiff_t tell_frac = aom_reader_tell_frac(&br);
+      uint32_t tell = aom_reader_tell(&br);
+      uint32_t tell_frac = aom_reader_tell_frac(&br);
       GTEST_ASSERT_GE(tell, last_tell) << "tell: " << tell
                                        << ", last_tell: " << last_tell;
       GTEST_ASSERT_GE(tell_frac, last_tell_frac)
@@ -140,9 +140,11 @@ TEST(AV1, TestTell) {
           fabs(((tell_frac - last_tell_frac) / 8.0) + log2(probability));
       last_tell_frac = tell_frac;
     }
-    const int expected = -kSymbols * log2(probability);
-    // Last tell should be close to the expected value.
-    GTEST_ASSERT_LE(last_tell - expected, 20) << " last_tell: " << last_tell;
+    const uint32_t expected = -kSymbols * log2(probability);
+    if (last_tell > expected) {
+      // Last tell should be close to the expected value.
+      GTEST_ASSERT_LE(last_tell - expected, 20u) << " last_tell: " << last_tell;
+    }
     // The average frac_diff error should be pretty small.
     GTEST_ASSERT_LE(frac_diff_total / kSymbols, FRAC_DIFF_TOTAL_ERROR)
         << " frac_diff_total: " << frac_diff_total;
